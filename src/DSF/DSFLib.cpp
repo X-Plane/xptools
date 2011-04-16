@@ -462,7 +462,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		unsigned int	index, index1, index2;
 		unsigned int	count, counter, dim;
 
-		double			objCoord2[2], objRotation;
+		double			objCoord3[3], objRotation;
 
 		double			segCoord6[6];
 		unsigned int	segID;
@@ -522,10 +522,16 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			index = cmdsAtom.ReadUInt16();
 				if (flags & dsf_CmdObjects)
 				{
-			objCoord2[0] = DECODE_SCALED(index, currentPool, 0, planarData, planeDepths, planeScales, planeOffsets);
-			objCoord2[1] = DECODE_SCALED(index, currentPool, 1, planarData, planeDepths, planeScales, planeOffsets);
-			objRotation =  DECODE_SCALED(index, currentPool, 2, planarData, planeDepths, planeScales, planeOffsets);
-			inCallbacks->AddObject_f(currentDefinition, objCoord2, objRotation, ref);
+					objCoord3[0] = DECODE_SCALED(index, currentPool, 0, planarData, planeDepths, planeScales, planeOffsets);
+					objCoord3[1] = DECODE_SCALED(index, currentPool, 1, planarData, planeDepths, planeScales, planeOffsets);
+					objRotation =  DECODE_SCALED(index, currentPool, 2, planarData, planeDepths, planeScales, planeOffsets);
+					if(planeDepths[currentPool] > 3)
+					{
+						objCoord3[3] = DECODE_SCALED(index, currentPool, 3, planarData, planeDepths, planeScales, planeOffsets);
+						inCallbacks->AddObjectAbsolute_f(currentDefinition, objCoord3, objRotation, ref);
+					}
+					else
+						inCallbacks->AddObject_f(currentDefinition, objCoord3, objRotation, ref);
 				}
 			break;
 		case dsf_Cmd_ObjectRange				:
@@ -534,10 +540,16 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (flags & dsf_CmdObjects)
 			for (index = index1; index < index2; ++index)
 			{
-				objCoord2[0] = DECODE_SCALED(index, currentPool, 0, planarData, planeDepths, planeScales, planeOffsets);
-				objCoord2[1] = DECODE_SCALED(index, currentPool, 1, planarData, planeDepths, planeScales, planeOffsets);
+				objCoord3[0] = DECODE_SCALED(index, currentPool, 0, planarData, planeDepths, planeScales, planeOffsets);
+				objCoord3[1] = DECODE_SCALED(index, currentPool, 1, planarData, planeDepths, planeScales, planeOffsets);
 				objRotation =  DECODE_SCALED(index, currentPool, 2, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddObject_f(currentDefinition, objCoord2, objRotation, ref);
+				if(planeDepths[currentPool] > 3)
+				{
+					objCoord3[2] = DECODE_SCALED(index, currentPool, 3, planarData, planeDepths, planeScales, planeOffsets);
+					inCallbacks->AddObjectAbsolute_f(currentDefinition, objCoord3, objRotation, ref);
+				}
+				else
+					inCallbacks->AddObject_f(currentDefinition, objCoord3, objRotation, ref);
 			}
 			break;
 

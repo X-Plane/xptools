@@ -131,6 +131,12 @@ struct	DSFCallbacks_t {
 					double			inCoordinates[2],
 					double			inRotation,
 					void *			inRef);
+	/* Same as above, but OBJ also has an MSL */
+	void (*	AddObjectAbsolute_f)(
+					unsigned int	inObjectType,
+					double			inCoordinates[3],
+					double			inRotation,
+					void *			inRef);
 
 	/* This function adds a complete chain.  All chains
 	 * take 3 coordinates for non-curved nodes and 6

@@ -171,7 +171,8 @@ public:
 	vector<string>		properties;
 
 	/********** OBJECT STORAGE **********/
-	DSFContiguousPointPool	objectPool;
+	DSFContiguousPointPool	objectPool  ;
+	DSFContiguousPointPool	objectPool3d;
 
 	struct	ObjectSpec {
 		int						type;
@@ -184,6 +185,7 @@ public:
 	};
 	typedef vector<ObjectSpec>	ObjectSpecVector;
 	ObjectSpecVector			objects;
+	ObjectSpecVector			objects3d;
 
 	/********** POLYGON STORAGE **********/
 	typedef map<int, DSFContiguousPointPool>	DSFContiguousPointPoolMap;
@@ -313,6 +315,11 @@ public:
 					double			inCoordinates[2],
 					double			inRotation,
 					void *			inRef);
+	static void	AddObjectAbsolute(
+					unsigned int	inObjectType,
+					double			inCoordinates[3],
+					double			inRotation,
+					void *			inRef);
 
 	static void BeginSegment(
 					unsigned int	inNetworkType,
@@ -379,6 +386,7 @@ void	DSFGetWriterCallbacks(DSFCallbacks_t * ioCallbacks)
 	ioCallbacks->EndPrimitive_f = DSFFileWriterImp::EndPrimitive;
 	ioCallbacks->EndPatch_f = DSFFileWriterImp::EndPatch;
 	ioCallbacks->AddObject_f = DSFFileWriterImp::AddObject;
+	ioCallbacks->AddObjectAbsolute_f = DSFFileWriterImp::AddObjectAbsolute;
 	ioCallbacks->BeginSegment_f = DSFFileWriterImp::BeginSegment;
 	ioCallbacks->AddSegmentShapePoint_f = DSFFileWriterImp::AddSegmentShapePoint;
 	ioCallbacks->EndSegment_f = DSFFileWriterImp::EndSegment;
@@ -449,6 +457,24 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 		objectPool.AddPool(fracMin, fracMax);
 		objectPool.AddPool(fracMin, fracMax);
 	}
+	
+	objRangeMin.push_back(mElevMin);
+	objRangeMax.push_back(mElevMax);
+		
+	objectPool3d.SetRange(objRangeMin, objRangeMax);
+	for (int i = 0; i < divisions; ++i)
+	for (int j = 0; j < divisions; ++j)
+	{
+		DSFTuple	fracMin, fracMax;
+		fracMin.push_back((double) i / double (divisions));
+		fracMin.push_back((double) j / double (divisions));
+		fracMin.push_back(0.0);
+		fracMax.push_back((double) (i+1) / double (divisions));
+		fracMax.push_back((double) (j+1) / double (divisions));
+		fracMax.push_back(1.0);
+		objectPool3d.AddPool(fracMin, fracMax);
+		objectPool3d.AddPool(fracMin, fracMax);
+	}	
 
 	// POLYGON POINT POOLS ARE BUILT ON THE FLY
 
@@ -581,6 +607,12 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	objectPool.ProcessPoints();
 	for (objSpec = objects.begin(); objSpec != objects.end(); ++objSpec)
 		objSpec->pool = objectPool.MapPoolNumber(objSpec->pool);
+
+	sort(objects3d.begin(),	objects3d.end());
+
+	objectPool3d.ProcessPoints();
+	for (objSpec = objects3d.begin(); objSpec != objects3d.end(); ++objSpec)
+		objSpec->pool = objectPool3d.MapPoolNumber(objSpec->pool);
 
 	/************************************************************************************************************/
 	/******************** PREPROCESS POLYGONS **************************/
@@ -832,6 +864,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 
 
 	int		last_pool_offset = 0;
+	int		offset_to_3d_objs;
 	TPDOM	offset_to_terrain_pool_of_depth;
 	TPDOM	offset_to_poly_pool_of_depth;
 
@@ -840,6 +873,12 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 
 		last_pool_offset = objectPool.WritePoolAtoms (fi, def_PointPoolAtom);
 						   objectPool.WriteScaleAtoms(fi, def_PointScaleAtom);
+
+		offset_to_3d_objs = last_pool_offset;
+		
+		last_pool_offset += objectPool3d.WritePoolAtoms (fi, def_PointPoolAtom);
+						    objectPool3d.WriteScaleAtoms(fi, def_PointScaleAtom);
+		
 
 		for (DSFSharedPointPoolMap::iterator sp = terrainPool.begin(); sp != terrainPool.end(); ++sp)
 		{
@@ -861,6 +900,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		vectorPoolCurved.WriteScaleAtoms(fi, def_PointScale32Atom);
 	}
 
+	printf("3-d Objs pool starts at: %d\n", offset_to_3d_objs);
 	for (TPDOM::iterator i = offset_to_terrain_pool_of_depth.begin(); i != offset_to_terrain_pool_of_depth.end(); ++i)
 		printf("Terrain pool depth %d starts at %d\n", i->first, i->second);
 	for (TPDOM::iterator i = offset_to_poly_pool_of_depth.begin(); i != offset_to_poly_pool_of_depth.end(); ++i)
@@ -894,6 +934,28 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 				last_loc = objSpecNext->location, ++objSpecNext;
 
 			UpdatePoolState(fi, objSpec->type, objSpec->pool, curDef, curPool);
+			if (first_loc != last_loc)
+			{
+				WriteUInt8(fi, dsf_Cmd_Object);
+				if (first_loc > 65535) 	Assert(!"Overflow writing objects (indexed object).\n");
+				WriteUInt16(fi, first_loc);
+			} else {
+				WriteUInt8(fi, dsf_Cmd_ObjectRange);
+				if (first_loc > 65535) 	Assert(!"Overflow writing objects (first loc of range).\n");
+				if (last_loc > 65534) 	Assert(!"Overflow writing objects (last loc of range).\n");
+				WriteUInt16(fi, first_loc);
+				WriteUInt16(fi, last_loc+1);
+			}
+		}
+
+		for (objSpec = objects3d.begin(); objSpec != objects3d.end(); ++objSpec)
+		{
+			int first_loc = objSpec->location, last_loc = objSpec->location;
+			ObjectSpecVector::iterator objSpecNext = objSpec;
+			while (objSpecNext != objects3d.end() && objSpec->pool == objSpecNext->pool && objSpec->type == objSpecNext->type)
+				last_loc = objSpecNext->location, ++objSpecNext;
+
+			UpdatePoolState(fi, objSpec->type, objSpec->pool + offset_to_3d_objs, curDef, curPool);
 			if (first_loc != last_loc)
 			{
 				WriteUInt8(fi, dsf_Cmd_Object);
@@ -1307,6 +1369,28 @@ void	DSFFileWriterImp::AddObject(
 	}
 }
 
+void	DSFFileWriterImp::AddObjectAbsolute(
+				unsigned int	inObjectType,
+				double			inCoordinates[3],
+				double			inRotation,
+				void *			inRef)
+{
+	DSFTuple	p(inCoordinates,2);
+	p.push_back(inRotation);
+	p.push_back(inCoordinates[2]);
+	DSFPointPoolLoc loc = REF(inRef)->objectPool3d.AccumulatePoint(p);
+	if (loc.first == -1 || loc.second == -1) {
+		printf("ERROR: could not place object %lf, %lf, %lf\n", inCoordinates[0], inCoordinates[1], inCoordinates[2]);
+		Assert(!"ERROR: could not place object.\n");
+	} else {
+		ObjectSpec o;
+		o.type = inObjectType;
+		o.pool = loc.first;
+		o.location = loc.second;
+		REF(inRef)->objects3d.push_back(o);
+	}
+}
+
 void 	DSFFileWriterImp::BeginSegment(
 				unsigned int	inNetworkType,
 				unsigned int	inNetworkSubtype,
@@ -1468,6 +1552,7 @@ void	DSFFileWriterImp::EndPolygon(
 
 		if(hash_depth == 6)
 		{
+			// Legacy beaches: lonh lat ele, normal DX/DZ, beach type
 			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
 			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
 			polyRangeMin.push_back(REF(inRef)->mElevMin);	polyRangeMax.push_back(REF(inRef)->mElevMax);
@@ -1475,8 +1560,26 @@ void	DSFFileWriterImp::EndPolygon(
 			polyRangeMin.push_back(-1.0);					polyRangeMax.push_back(1.0);					
 			polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);											
 		}
+		else if(hash_depth == 5)
+		{
+			// Bezier Facade with wall: lon lat wall_type clon clat
+			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+			polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);											
+			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+		}
+		else if(hash_depth == 3)
+		{
+			// Flat facade with wall: lon lat wall_type
+			// v10 beach: lon lat beach type
+			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
+			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
+			polyRangeMin.push_back(0.0);					polyRangeMax.push_back(0.0);											
+		}
 		else
 		{
+			// All combos of UV-mapped and/or bezier polygons....
 			polyRangeMin.push_back(ll_extent[0]);		polyRangeMax.push_back(ll_extent[2]);
 			polyRangeMin.push_back(ll_extent[1]);		polyRangeMax.push_back(ll_extent[3]);
 			if(has_bezier)
