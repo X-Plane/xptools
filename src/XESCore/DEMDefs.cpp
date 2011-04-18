@@ -22,6 +22,7 @@
  */
 #include "DEMDefs.h"
 #include "CompGeomDefs3.h"
+#include "MathUtils.h"
 
 
 #define HIST_MAX	10
@@ -293,8 +294,6 @@ void DEMGeo::derez(int r)
 	smaller.mEast = mEast;
 	smaller.mWest = mWest;
 	
-	int so = mPost * r / 2;
-
 	for(int x = 0; x < smaller.mWidth; ++x)
 	for(int y=  0; y < smaller.mHeight; ++y)
 	{
@@ -303,10 +302,14 @@ void DEMGeo::derez(int r)
 		for (int dx = 0; dx < r; ++dx)
 		for (int dy = 0; dy < r; ++dy)
 		{
-			float e = get(x * r + dx - so,y * r + dy - so);
-			if (e != DEM_NO_DATA)
-				tot += 1, ct += e;
-		}
+            if ((x * r + dx) < mWidth)
+            if ((y * r + dy) < mHeight)
+            {
+                float e = get(x * r + dx,y * r + dy);
+                if (e != DEM_NO_DATA)
+                    tot += 1, ct += e;
+			}
+ 		}
 		if (tot > 0.0)
 			smaller(x,y) = (ct / tot);
 		else
@@ -1026,3 +1029,4 @@ void	DEMMask::copy_geo_from(const DEMMask& rhs)
 	mEast = rhs.mEast;
 	mWest = rhs.mWest;
 }
+
