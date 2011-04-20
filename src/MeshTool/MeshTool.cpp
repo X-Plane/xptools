@@ -121,7 +121,7 @@ int	main(int argc, char * argv[])
 				exit(1);
 			}
 		}
-		if(strstr(argv[3],".hgt"))
+		else if(strstr(argv[3],".hgt"))
 		{
 			if (!ReadRawHGT(dem_elev, argv[3]))
 			{

@@ -1,6 +1,8 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	4/20/10 2.0 r4
+		Fixed failure to export with .bil files
 	3/31/10 2.0 r3
 		Fixed crash on quit in Windows
 		Fixed SHAPEFILE_MASK command.
