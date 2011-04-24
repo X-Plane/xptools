@@ -222,7 +222,7 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 	DebugAssert(pythag(coords[3],coords[4]) <= 1.01);
 #endif	
 	coords[2] = kind;
-	printf("Beach: %lf,%lf,%lf,%lf,%lf,%lf\n",coords[0],coords[1],coords[2],coords[3],coords[4],coords[5]);
+	//printf("Beach: %lf,%lf,%lf,%lf,%lf,%lf\n",coords[0],coords[1],coords[2],coords[3],coords[4],coords[5]);
 }
 
 float GetParamConst(const Face_handle face, int e)
@@ -1395,7 +1395,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			cbs.EndPolygonWinding_f(writer1);
 			cbs.EndPolygon_f(writer1);
-			printf("end non-circular.\n");
+			//printf("end non-circular.\n");
 		}
 
 	#if DEV
