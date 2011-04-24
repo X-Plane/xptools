@@ -293,6 +293,7 @@ void DEMGeo::derez(int r)
 	smaller.mSouth = mSouth;
 	smaller.mEast = mEast;
 	smaller.mWest = mWest;
+	smaller.mPost = mPost;
 	
 	for(int x = 0; x < smaller.mWidth; ++x)
 	for(int y=  0; y < smaller.mHeight; ++y)
@@ -326,6 +327,7 @@ void DEMGeo::derez_nearest(DEMGeo& smaller)
 	smaller.mSouth = mSouth;
 	smaller.mEast = mEast;
 	smaller.mWest = mWest;
+	smaller.mPost = mPost;
 
 	for(int x = 0; x < smaller.mWidth; ++x)
 	for(int y=  0; y < smaller.mHeight; ++y)
