@@ -26,9 +26,12 @@ int main(int argc, const char ** argv)
 	// the second is the "granularity" for cutting it with require_even.  If we don't care where it is
 	// cut, specify a second number of 0.0 and require_even won't be used.
 		
-	vert_props	len_normal = { 100.0, 25.0 };
-	vert_props	len_fence = { 25.0, 25.0 };
-
+	vert_props	len_core = { 128.0, 32.0 };
+	vert_props	len_guardrail = { 8.0, 2.0 };
+	vert_props	len_jersey_barrier = { 16.0, 4.0 };
+	vert_props	len_embankment = { 16.0, 4.0 };
+    
+    
 	//----------------------------------------------------------------------------------------------------
 	// SHADER DECLARATIONS
 	//----------------------------------------------------------------------------------------------------
@@ -36,11 +39,49 @@ int main(int argc, const char ** argv)
 	// that they will appear in the file.  
 	// Tiling params are: x tiles, y tiles, x bias, y bias, x wavelength, y wavelength.
 	
-	shader	base_offset("roads_1000_provisional1.dds",1, 2048);
-			base_offset.set_tile(1,4,0.25, 1.0, 100.0, 200.0);
+	shader  hwy_US_drp("CoresHighwayRailWetUS.dds", 1,    1024);
+		hwy_US_drp.set_tile(1,    4,  0.25,   0.5,    100.0,  200.0);
+	
+	shader  hwy_US_grd("CoresHighwayRailWetUS.dds", 0,    1024);
+		hwy_US_grd.set_tile(1,    4,  0.25,   0.5,    100.0,  200.0);
+		
+	shader  res_wet_drp("CoresResidentialWetUS.dds", 1,    2048);
+		res_wet_drp.set_tile(2,    4,  0.0,   1.0,    100.0,  200.0);
+	
+	shader  res_wet_grd("CoresResidentialWetUS.dds", 0,    2048);
+		res_wet_grd.set_tile(2,    4,  0.0,   1.0,    100.0,  200.0);
+	
+	shader  emb_wet("EmbankmentsWet.dds", 0,    1024);
+		emb_wet.set_tile(1,    4,  0.0,   0.75,    100.0,  200.0);
+	
+	shader  brg_8v("bridges.dds", 0,    2048);
+		brg_8v.set_tile(1,    8,  0.0,   0.0,    100.0,  200.0);
+	
+	shader  brg_2v("bridges.dds", 0,    2048);
+		brg_2v.set_tile(1,    2,  0.0,   0.0,    100.0,  200.0);
+	
+	shader  brg_1v("bridges.dds", 0,    2048);
+		brg_1v.set_tile(1,    1,  0.0,   0.0,    100.0,  200.0);
+	
+	shader	bar_2u_4v("barriers_and_fences.dds", 0, 2048);
+		bar_2u_4v.set_tile(2,	4,	0.0,	1.0,	100.0,	200.0);
+	
+	shader	bar_2u_2v("barriers_and_fences.dds", 0, 2048);
+		bar_2u_2v.set_tile(2,	2,	0.0,	0.0,	100.0,	200.0);
+            
+	shader	bar_1u_4v("barriers_and_fences.dds", 0, 2048);
+		bar_1u_4v.set_tile(1,	4,	0.0,	0.0,	100.0,	200.0);
+	
+	// this table maps from a draped shader to its graded friend.
+	map<shader *, shader *>	shader_map;
+	shader_map[&hwy_US_drp] = &hwy_US_grd;
+	shader_map[&res_wet_drp] = &res_wet_grd;
+            
+    //	shader	base_offset("roads_1000_provisional1.dds",1, 2048);
+    //			base_offset.set_tile(1,4,0.25, 1.0, 100.0, 200.0);
 
-	shader	base_normal("roads_1000_provisional1.dds",0, 2048);
-			base_normal.set_tile(1,4,0.25, 1.0, 100.0, 200.0);
+    //	shader	base_normal("roads_1000_provisional1.dds",0, 2048);
+    //			base_normal.set_tile(1,4,0.25, 1.0, 100.0, 200.0);
 
 	//----------------------------------------------------------------------------------------------------
 	// VEHICLES
@@ -48,8 +89,9 @@ int main(int argc, const char ** argv)
 
 	// Trivial vehicles are declared into a traffic object as follows:
 	traffic	car("lib/cars/car.obj");
-	traffic truck("lib/cars/car_or_truck.obj");
-
+	traffic car_or_truck("lib/cars/car_or_truck.obj");
+	traffic	cops("lib/cars/police_car.obj");
+	
 	// For trains, things are slightly more tricky.   Each train car is individually
 	// declared (here we have a virtual path into the lib and then the two half-lengths of the train, just
 	// as in the old format).
@@ -96,49 +138,64 @@ int main(int argc, const char ** argv)
 	road_map	road_cores_graded, road_cores_draped;	
 
 	// This declares a simple asphalt standard LOD deck based on the normal shader.  Numbers are a pair of x,y,s coordinates.
-	road	primary_left = make_deck_draped(base_offset, lod_standard, len_normal, 0,334,8.5625,402.5,asphalt);
-	road	primary_right = make_deck_draped(base_offset, lod_standard,len_normal,  0,447.5,8.5625,516,asphalt);
-	road	residential	= make_deck_draped(base_offset, lod_standard, len_normal, 0.0,589,9.0,661,asphalt);
+	//road	primary_left = make_deck_draped(base_offset, lod_standard, len_normal, 0,334,8.5625,402.5,asphalt);
+	//road	primary_right = make_deck_draped(base_offset, lod_standard,len_normal,  0,447.5,8.5625,516,asphalt);
+	//road	residential	= make_deck_draped(base_offset, lod_standard, len_normal, 0.0,589,9.0,661,asphalt);
 	
-	road_cores_draped[15] = make_deck_draped(base_offset, lod_standard, len_normal, 0,1,16.25,131,asphalt);	// 6 lane city
-	road_cores_draped[16] = make_deck_draped(base_offset, lod_standard, len_normal, 0,1,16.25,131,asphalt);// Clone 6 lane city for rural
+	road_cores_draped[1] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	794,	17.125,	931,	asphalt);	// primary
 	
-	road_cores_draped[17] = make_deck_draped(base_offset, lod_standard, len_normal, 0,242, 7,298,asphalt);
+	road_cores_draped[3] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	862,	8.625,	931,	asphalt);	// primary one-way
+	
+	road_cores_draped[5] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	452,	12.125,	549,	asphalt);	// secondary 
 
-	road_cores_draped[20] = make_deck_draped(base_offset, lod_standard, len_normal, 0,1455, 5,1490, none);
+	road_cores_draped[7] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	623,	12.125,	720,	asphalt);	// secondary one-way   
 	
-	road_cores_draped[1] = primary_left + primary_right;	
-	road_cores_draped[3] = primary_right;
-	road_cores_draped[5] = primary_left + primary_right;			// copy primary to secondary for now
-	road_cores_draped[7] = primary_right;
-	road_cores_draped[9] = residential;
-	road_cores_draped[11] = primary_right;
+	road_cores_draped[9] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	38,	9.0,	110,	asphalt);	// local var 1  
+	road_cores_draped[9] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	186,	9.0,	258,	asphalt);	// local var 2
+	road_cores_draped[9] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	320,	9.0,	392,	asphalt);	// local var 3
+	
+	road_cores_draped[9] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	38,	9.0,	110,	asphalt);	// local one-way var 1 (same metrics as two-way, diff traffic!)
+	road_cores_draped[9] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	186,	9.0,	258,	asphalt);	// local one-way var 2		"
+	road_cores_draped[9] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	320,	9.0,	392,	asphalt);	// local one-way var 3		"
+	
+	road_cores_draped[15] = make_deck_draped(hwy_US_drp, lod_standard, len_core,	0.0,	22,	16.25,	152,	asphalt);	// 6 lane urban
+	
+	road_cores_draped[16] = make_deck_draped(hwy_US_drp, lod_standard, len_core,	0.0,	196,	11.5,	288,	asphalt);	// 4 lane urban
+	
+	road_cores_draped[17] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	967,	7.0,	1023,	asphalt);	// ramp urban
+	
+	road_cores_draped[18] = make_deck_draped(hwy_US_drp, lod_standard, len_core,	0.0,	22,	16.25,	152,	asphalt);	// 6 lane rural
+	
+	road_cores_draped[19] = make_deck_draped(hwy_US_drp, lod_standard, len_core,	0.0,	196,	11.5,	288,	asphalt);	// 4 lane rural
+	
+	road_cores_draped[20] = make_deck_draped(res_wet_drp, lod_standard, len_core,	0.0,	967,	7.0,	1023,	asphalt);	// ramp rural
+
 	
 	// This goes through and marks the center of every road core as the centerline point.  (The center
 	// is computed for us.)  Only one road atom can have a center marker when we merge road atoms, so
 	// we mark the cores and nothing else.
 	for(map<int,road>::iterator r = road_cores_draped.begin(); r != road_cores_draped.end(); ++r)
 	{
-		// Cars: ptr to car, pixel ofset, velocity in meters, density, and then optionally: 0 for same dir, 1 for reverse direction
-		r->second.add_traffic(&car  , &base_offset, 34, 35, 0.06);
-		r->second.add_traffic(&car  , &base_offset, 62, 30, 0.06);
-		r->second.add_traffic(&truck, &base_offset, 90, 25, 0.06);
+		// Cars: ptr to car, shader, pixel ofset, velocity in meters, density, and then optionally: 0 for same dir, 1 for reverse direction
+		r->second.add_traffic(&car  , &hwy_US_drp, 34, 35, 0.06);
+		r->second.add_traffic(&car  , &hwy_US_drp, 62, 30, 0.06);
+//		r->second.add_traffic(&truck, &hwy_US_drp, 90, 25, 0.06);
 
-		r->second.add_traffic(&car  , &base_offset, 170, 30, 0.06);
-		r->second.add_traffic(&truck, &base_offset, 199, 25, 0.06);
+		r->second.add_traffic(&car  , &hwy_US_drp, 170, 30, 0.06);
+//		r->second.add_traffic(&truck, &hwy_US_drp, 199, 25, 0.06);
 
-		r->second.add_traffic(&truck, &base_offset, 265, 25, 0.06);
+//		r->second.add_traffic(&truck, &hwy_US_drp, 265, 25, 0.06);
 
 
-		r->second.add_traffic(&truck, &base_offset, 363, 25, 0.06, 1);
-		r->second.add_traffic(&car  , &base_offset, 386, 20, 0.06, 1);
-		r->second.add_traffic(&car  , &base_offset, 461, 20, 0.06, 0);
-		r->second.add_traffic(&truck, &base_offset, 486, 25, 0.06, 0);
+//		r->second.add_traffic(&truck, &hwy_US_drp, 363, 25, 0.06, 1);
+		r->second.add_traffic(&car  , &hwy_US_drp, 386, 20, 0.06, 1);
+		r->second.add_traffic(&car  , &hwy_US_drp, 461, 20, 0.06, 0);
+//		r->second.add_traffic(&truck, &hwy_US_drp, 486, 25, 0.06, 0);
 
-		r->second.add_traffic(&train_freight, &base_offset, 1473, 25, 0.01);
+		r->second.add_traffic(&train_freight, &hwy_US_drp, 1473, 25, 0.01);
 
 		r->second.set_center_at_center();
-		road_cores_graded[r->first] = graded_from_draped(base_normal, r->second);
+		road_cores_graded[r->first] = graded_from_draped(shader_map, r->second);
 	}
 	
 	// This is just idiotic test code to show how to make objs...

@@ -514,13 +514,15 @@ road make_wire(lod_range r, float lat, float y, float d)
 	return ret;
 }
 
-road	graded_from_draped(shader& shad, const road& r)
+road	graded_from_draped(map<shader *, shader *> shaders, const road& r)
 {
 	road ret(r);
 	for(vector<road_segment>::iterator s = ret.segments.begin(); s != ret.segments.end(); ++s)
 	{
 //		fprintf(stderr,"Making graded.\n");
-		s->shad = &shad;
+		if(shaders.count(s->shad) == 0)
+			fprintf(stderr,"ERROR: could not find shader %s when making a graded road.\n", s->shad->tex.c_str());
+		s->shad = shaders[s->shad];
 		s->grad = graded;
 		s->y[0] = 0;
 		s->y[1] = 0;
