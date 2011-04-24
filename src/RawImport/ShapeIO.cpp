@@ -31,6 +31,7 @@
 //#include "GISTool_Globals.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
+#include "PolyRasterUtils.h"
 
 //#include <CGAL/Snap_rounding_2.h>
 //#include <CGAL/Snap_rounding_traits_2.h>
@@ -1078,3 +1079,208 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	return true;
 }
 
+bool	RasterShapeFile(
+			const char *			inFile,
+			DEMGeo&					dem,
+			shp_Flags				flags,
+			const char *			feature_desc,
+			ProgressFunc			inFunc)
+{
+		int		entity_count;
+		int		shape_type;
+		double	bounds_lo[4], bounds_hi[4];
+		static	bool first_time = true;
+
+	if(sProj) pj_free(sProj);sProj=NULL;
+
+	s_crop[0] = dem.mWest;
+	s_crop[1] = dem.mSouth;
+	s_crop[2] = dem.mEast;
+	s_crop[3] = dem.mNorth;
+	
+	if(first_time)
+	{
+		RegisterLineHandler("SHAPE_FEATURE", ShapeLineImporter, NULL);
+		RegisterLineHandler("ROAD_LAYER_TAG",ShapeLineImporter, NULL);
+		RegisterLineHandler("SHAPE_ARC_REVERSE",ShapeLineImporter, NULL);
+		RegisterLineHandler("SHAPE_ARC_BRIDGE",ShapeLineImporter, NULL);
+		RegisterLineHandler("PROJ",ShapeLineImporter, NULL);
+		first_time = false;
+	}
+
+	SHPHandle file =  SHPOpen(inFile, "rb");
+	if(!file) 
+		return false;
+		
+	// Gotta do this before we crop out the whole file.  Why?  Cuz we might wnat the projection info!
+	if(flags & shp_Mode_Map)
+	{
+		sShapeRules.clear();
+		sLineReverse.clear();
+		sLineBridge.clear();
+		sLayerTag.clear();
+		if (!LoadConfigFile(feature_desc))
+		{
+			printf("Could not load shape mapping file %s\n", feature_desc);
+			SHPClose(file);
+			return false;
+		}
+	}
+	
+	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
+	
+	if(sProj) reproj(bounds_lo);
+	if(sProj) reproj(bounds_hi);
+
+	if(flags & shp_Use_Crop)
+	{
+		if(bounds_lo[0] > dem.mEast  ||
+		   bounds_hi[0] < dem.mWest  ||
+		   bounds_lo[1] > dem.mNorth ||
+		   bounds_hi[1] < dem.mSouth)
+		{
+			SHPClose(file);
+			return true;
+		}
+	}
+
+	map<int, PolyRasterizer<double> >	rasterizers;
+	
+	int feat = NO_VALUE;
+	if(flags & shp_Mode_Simple)
+		feat = LookupToken(feature_desc);
+	else
+		feat = atoi(feature_desc);
+
+	DBFHandle db = NULL;
+	if(flags & shp_Mode_Map)
+	{
+		db = DBFOpen(inFile,"rb");
+		if(db == NULL)
+		{
+			printf("Could not open shape DB file.n\n");
+			SHPClose(file);
+			return false;
+		}
+
+		for(shape_pattern_vector::iterator r = sShapeRules.begin(); r != sShapeRules.end(); ++r)
+		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
+			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
+
+		for(shape_pattern_vector::iterator r = sLineReverse.begin(); r != sLineReverse.end(); ++r)
+		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
+			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
+
+		for(shape_pattern_vector::iterator r = sLineBridge.begin(); r != sLineBridge.end(); ++r)
+		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
+			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
+		
+		
+		if(!sLayerTag.empty())
+			sLayerID = DBFGetFieldIndex(db, sLayerTag.c_str());
+
+	}
+
+	PROGRESS_START(inFunc, 0, 1, "Reading shape file...")
+
+	/************************************************************************************************************************************
+	 * MAIN SHAPE READING LOOP
+	 ************************************************************************************************************************************/
+
+	int step = entity_count ? (entity_count / 150) : 2;
+	for(int n = 0; n < entity_count; ++n)
+	{
+		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
+		SHPObject * obj = SHPReadObject(file, n);
+		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
+		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != -1))
+		switch(obj->nSHPType) {
+		case SHPT_POLYGON:
+		case SHPT_POLYGONZ:
+		case SHPT_POLYGONM:
+			if (obj->nVertices > 0)
+			{
+				for (int part = 0; part < obj->nParts; ++part)
+				{
+					int start_idx = obj->panPartStart[part];
+					int stop_idx = ((part+1) == obj->nParts) ? obj->nVertices : obj->panPartStart[part+1];
+					Polygon2	p;
+					for (int i = start_idx; i < stop_idx; ++i)
+					{
+						Point2 pt(obj->padfX[i],obj->padfY[i]);
+						if(sProj) 
+						{
+							if(sProj) reproj(pt);
+						}
+						if(p.empty() || pt != p[p.size()-1])					// Do not add point if it equals the prev!
+							p.push_back(pt);
+					}
+					
+					DebugAssert(p[0] == p[p.size()-1]);
+					while(p.size() > 0 && p[0] == p[p.size()-1])
+						p.erase(p.end()-1);
+
+					PolyRasterizer<double>& rasterizer(rasterizers[feat]);
+
+					if(p.size() > 2)
+					{
+						for(int s = 0; s < p.size(); ++s)
+						{
+							Segment2 si(p.side(s));
+							rasterizer.AddEdge(	dem.lon_to_x(si.p1.x()),
+												dem.lat_to_y(si.p1.y()),
+												dem.lon_to_x(si.p2.x()),
+												dem.lat_to_y(si.p2.y()));
+						}
+						
+					}
+				}
+				
+			}
+			break;
+		case SHPT_MULTIPOINT:
+		case SHPT_MULTIPOINTZ:
+		case SHPT_MULTIPOINTM:
+		case SHPT_MULTIPATCH:
+			break;
+		}
+		SHPDestroyObject(obj);
+	}
+
+	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
+	
+	/************************************************************************************************************************************
+	 * PROCESS
+	 ************************************************************************************************************************************/
+	SHPClose(file);
+	if(db)	DBFClose(db);
+	
+	for(map<int, PolyRasterizer<double> >::iterator r = rasterizers.begin(); r != rasterizers.end(); ++r)
+	{
+		r->second.SortMasters();		
+		int x, y = 0;
+		r->second.StartScanline(y);
+		while (!r->second.DoneScan())
+		{
+			DebugAssert(y >= 0);
+			if (y >= dem.mHeight) 
+				break;
+
+			int x1, x2;
+			while (r->second.GetRange(x1, x2))
+			{
+				x1 = max(x1,0);
+				x2 = min(x2,dem.mWidth);
+				
+				for (x = x1; x < x2; ++x)
+				{
+					dem(x,y) = r->first;
+				}
+			}
+			++y;
+			r->second.AdvanceScanline(y);
+		}
+	}
+
+	return true;
+}

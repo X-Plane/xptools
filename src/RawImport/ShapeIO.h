@@ -26,6 +26,7 @@
 
 #include "MapDefs.h"
 #include "ProgressUtils.h"
+struct DEMGeo;
 
 enum {
 		shp_None			= 0,
@@ -55,6 +56,13 @@ bool	ReadShapeFile(
 			double					io_bounds[4],			// input: cropping box if desired.  output: actual map bounds.
 			double					simplify_mtr,			// For line imports: if > 0, apply this many meters maximum erro douglas-peuker to reduce vertex count.
 			int						grid_divisions,			// If > 0, granularity of the grid to apply.  This requires io_bounds to be set.
+			ProgressFunc			inFunc);
+
+bool	RasterShapeFile(
+			const char *			inFile,
+			DEMGeo&					outRaster,
+			shp_Flags				mode,
+			const char *			feature_desc,
 			ProgressFunc			inFunc);
 
 #endif /* ShapeIO_H */
