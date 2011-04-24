@@ -44,6 +44,7 @@
 #include <ctype.h>
 #include "MapAlgs.h"
 #include "MapHelpers.h"
+#include "MapBuffer.h"
 #include "NetAlgs.h"
 
 #if OPENGL_MAP
@@ -610,6 +611,42 @@ static int DoShapeImport(const vector<const char *>& args)
 	return 0;
 }
 
+//"-shapefile_raster <mode> <feature> <filename> <layer>n" 
+static int DoShapeRaster(const vector<const char *>& inArgs)
+{
+	int layer = LookupToken(inArgs[3]);
+	if(layer == -1)
+	{
+		fprintf(stderr,"Unknown raster layer %d\n", layer);
+		return 1;		
+	}
+	if (gDem.count(layer) == 0)
+	{
+		fprintf(stderr,"Layer %s is not initialized.\n", inArgs[3]);
+		return 1;
+	}
+
+	shp_Flags flags = shp_None;
+	if(strstr(inArgs[0], "s"))	flags |= shp_Mode_Simple;
+	if(strstr(inArgs[0], "m"))	flags |= shp_Mode_Map;
+	
+	if(!RasterShapeFile(
+				inArgs[2],
+				gDem[layer],
+				flags,
+				inArgs[1],
+				gProgress))
+	{
+		fprintf(stderr,"Unable to load shapefile: %s\n",inArgs[2]);
+		return 1;
+	}
+	else
+	{
+		if(gVerbose) printf("Loaded shapefile: %s\n", inArgs[2]);
+	}
+	return 0;
+}
+
 
 /*
 int DoWetMask(const vector<const char *>& args)
@@ -749,6 +786,30 @@ int DoRemoveWetAntennas(const vector<const char *>& args)
 	return 0;	
 }
 
+int DoBufferWater(const vector<const char *>& args)
+{
+	double inset = atof(args[0]);
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+		f->set_contained(f->data().IsWater());
+	Polygon_set_2 all_water(gMap), buffered_water;
+	gMap.clear();
+	if(inset == 0.0)
+		buffered_water = all_water;
+	else
+		BufferPolygonSet(all_water, inset, buffered_water);
+	all_water.clear();
+	gMap = buffered_water.arrangement();
+	buffered_water.clear();
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+		f->data().mTerrainType = f->contained() ? terrain_Water : NO_VALUE;
+
+#if OPENGL_MAP
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
+#endif
+	
+	return 0;
+}
+
 
 
 static	GISTool_RegCmd_t		sVectorCmds[] = {
@@ -760,10 +821,12 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
+{ "-shapefile_raster", 4, 4, DoShapeRaster,			"Raster shapefile.", "" },
 { "-reduce_vectors", 1, 1,	DoReduceVectors,		"Simplify vector map by a certain error distance.", HELP_REDUCE_VECTORS },
 { "-remove_outsets", 2, 2, DoRemoveOutsets,			"Remove square outset piers from water areas.", HELP_REMOVE_OUTSETS },
 { "-remove_islands", 1, 1, DoRemoveIslands,			"Remove square outset piers from water areas.", HELP_REMOVE_ISLANDS },
 { "-remove_wet_antennas", 2, 2, DoRemoveWetAntennas,	"Remove roads that hang out into the water.", HELP_REMOVE_WET_ANTENNAS },	
+{ "-buffer_water", 1, 1, DoBufferWater,				"Buffer water by a certain amonut.", "" },
 { "-desliver",		1, 1, DoDesliver,				"Remove slivered polygons.", HELP_DESLIVER },
 #if OPENGL_MAP && DEV
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },

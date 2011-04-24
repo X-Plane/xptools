@@ -536,7 +536,7 @@ static int DoHackTestrasterizer(const vector<const char *>& args)
 	
 	{
 		PolyRasterizer<double>	r;
-		SetupWaterRasterizer(gMap, d, r);
+		SetupWaterRasterizer(gMap, d, r, terrain_Water);
 	
 		StElapsedTime	time_scan("time_scan line");
 		
@@ -567,7 +567,7 @@ static int DoHackTestrasterizer(const vector<const char *>& args)
 	}
 	{
 		PolyRasterizer<double>	rr;
-		SetupWaterRasterizer(gMap, d, rr);
+		SetupWaterRasterizer(gMap, d, rr, terrain_Water);
 	
 		StElapsedTime	time_scan("time_scan box");
 		
