@@ -1,4 +1,4 @@
-all: gen_roads gen_path osm_tile osm2shape split_image GenTerrain
+all: gen_roads gen_path osm_tile osm2shape split_image GenTerrain shape2xon
 
 
 gen_roads: gen_roads.cpp
@@ -18,3 +18,6 @@ split_image: SplitImage.c
 
 GenTerrain: GenTerrain.c
 	gcc GenTerrain.c -o GenTerrain
+
+shape2xon: shape2xon.cpp
+	g++ shape2xon.cpp -o shape2xon -lshp -O3
