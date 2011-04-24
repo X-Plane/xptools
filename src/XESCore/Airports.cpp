@@ -502,6 +502,15 @@ bool NeighborsWater(Face_handle f)
 	return false;
 }
 
+static void mask_with(DEMGeo& dst, const DEMGeo& src)
+{
+	DEMGeo::iterator d;
+	DEMGeo::const_iterator s;
+	for(d = dst.begin(), s = src.begin(); d != dst.end(); ++s, ++d)
+	if(*s == DEM_NO_DATA)
+		*d = DEM_NO_DATA;
+}
+
 void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMGeo& transport, bool crop, bool dems, bool kill_rivers, ProgressFunc prog)
 {
 	int x1, x2, x, y1, y2, y;
@@ -552,9 +561,22 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 
 	// Pass 2 - wide boundaries, kill roads but not water, and burn DEM.
 	// BUT...if we have user-specified boundaries, this is the only pass and we do fill water.
+
+#if DEV && OPENGL_MAP	
+	gDem[dem_Wizard] = elevation;
+	gDem[dem_Wizard] = DEM_NO_DATA;
+	gDem[dem_Wizard1] = gDem[dem_Wizard];
+	gDem[dem_Wizard2] = gDem[dem_Wizard];
+	gDem[dem_Wizard3] = gDem[dem_Wizard];
+	gDem[dem_Wizard4] = gDem[dem_Wizard];
+	gDem[dem_Wizard5] = gDem[dem_Wizard];
+	gDem[dem_Wizard6] = gDem[dem_Wizard];
+#endif
+	
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
 	{
+		//printf("%d: %s\n", n, apts[n].icao.c_str());
 		PROGRESS_SHOW(prog, 0, 1, "Burning in airports...", n+apts.size(), apts.size()*2);
 		Polygon_set_2	foo;
 		BurnInAirport(&apts[n], foo, fill_dirt2apt);
@@ -582,23 +604,46 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 					#endif
 					DEMGeo		airport_area;
 					working.subset(airport_area, x1, y1, x2-1,y2-1);
-					vector<DEMGeo>	fft;
-					DEMMakeFFT(airport_area, fft);
-					if (fft.size() > 1)		fft[0] *= 0.0;
-					if (fft.size() > 2)		fft[1] *= 0.0;
-					if (fft.size() > 3)		fft[2] *= 0.0;
-					#if PHONE
-					if (fft.size() > 4)		fft[3] *= 0.0;
-					if (fft.size() > 5)		fft[4] *= 0.0;
-					if (fft.size() > 6)		fft[5] *= 0.0;
-					if (fft.size() > 7)		fft[6] *= 0.0;
-					if (fft.size() > 8)		fft[7] *= 0.0;
-					if (fft.size() > 9)		fft[8] *= 0.0;
-					if (fft.size() > 10)	fft[9] *= 0.0;
-					if (fft.size() > 11)	fft[10] *= 0.0;
-					if (fft.size() > 12)	fft[11] *= 0.0;
-					#endif
-					FFTMakeDEM(fft,airport_area);
+
+//					vector<DEMGeo>	fft;
+//					DEMMakeFFT(airport_area, fft);		
+//					printf("%s: FFT has %d layers.\n",apts[n].icao.c_str(),fft.size());
+//					if(n == 5)
+//					for(int k = 0; k < min(6UL,fft.size()); ++k)
+//						gDem[dem_Wizard1 + k] = fft[k];
+//					if (fft.size() > 1)		fft[0] *= 0.0;
+//					if (fft.size() > 2)		fft[1] *= 0.0;
+//					if (fft.size() > 3)		fft[2] *= 0.0;
+//					#if PHONE
+//					if (fft.size() > 4)		fft[3] *= 0.0;
+//					if (fft.size() > 5)		fft[4] *= 0.0;
+//					if (fft.size() > 6)		fft[5] *= 0.0;
+//					if (fft.size() > 7)		fft[6] *= 0.0;
+//					if (fft.size() > 8)		fft[7] *= 0.0;
+//					if (fft.size() > 9)		fft[8] *= 0.0;
+//					if (fft.size() > 10)	fft[9] *= 0.0;
+//					if (fft.size() > 11)	fft[10] *= 0.0;
+//					if (fft.size() > 12)	fft[11] *= 0.0;
+//					#endif
+//					FFTMakeDEM(fft,airport_area);
+
+#if DEV && OPENGL_MAP
+					DEMGeo a(airport_area);
+					a += (-(float) apts[n].elevation_ft * FT_TO_MTR);
+					gDem[dem_Wizard].overlay(a, x1,y1);
+					float sigma[6] = { 1.0, 2.0, 3.0, 4.0, 6.0, 8.0 };
+					for(int k = 0; k < 6; ++k)					
+					{
+						DEMGeo t(airport_area);
+						GaussianBlurDEM(t,sigma[k]);
+						mask_with(t,airport_area);
+						t += (-(float) apts[n].elevation_ft * FT_TO_MTR);
+						gDem[dem_Wizard1+k].overlay(t, x1,y1);
+						
+					}
+#endif					
+					GaussianBlurDEM(airport_area,3.0);
+					
 					#if PHONE
 					for(y = 0; y < airport_area.mHeight; ++y)
 					for(x = 0; x < airport_area.mWidth ; ++x)
