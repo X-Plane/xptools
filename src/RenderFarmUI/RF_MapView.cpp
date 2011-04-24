@@ -140,6 +140,13 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_HydroElevation,		"Hydro Elevation"				,	dem_Elevation,				false,	false,	"%fm "			},
 {		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Strata,					false,	false,	"%fm "			},
 
+{		dem_Wizard1,			"Spreadsheet Wizard 1"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard2,			"Spreadsheet Wizard 2"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard3,			"Spreadsheet Wizard 3"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard4,			"Spreadsheet Wizard 4"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard5,			"Spreadsheet Wizard 5"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard6,			"Spreadsheet Wizard 6"			,	dem_Strata,					false,	false,	"%fm "			},
+
 };
 
 const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
