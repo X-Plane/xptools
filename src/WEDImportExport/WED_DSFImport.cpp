@@ -44,6 +44,9 @@
 #include "WED_TextureNode.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 #include "WED_SimpleBoundaryNode.h"
+#include "WED_ForestRing.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
 
 #include "WED_GISUtils.h"
 
@@ -82,10 +85,12 @@ public:
 	WED_Archive *		archive;
 
 	vector<BezierPoint2>pts,uvs;
+	vector<int>			walls;
 	WED_Thing *			ring;
 	WED_Thing *			poly;
 	bool				want_uv;
 	bool				want_bezier;
+	bool				want_wall;
 
 	void make_exclusion(const char * ex, int k)
 	{
@@ -233,8 +238,12 @@ public:
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
 			me->want_uv=false;
-			me->want_bezier=(inCoordDepth == 4);
+			me->want_bezier=(inCoordDepth >= 4);
+			me->want_wall = (inCoordDepth == 3 || inCoordDepth == 5);
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(me->archive);
+			#if AIRPORT_ROUTING
+			fac->SetCustomWalls(me->want_wall);
+			#endif
 			me->poly = fac;
 			me->ring = NULL;
 			fac->SetHeight(inParam);
@@ -245,10 +254,14 @@ public:
 		{
 			me->want_uv=false;
 			me->want_bezier=false;
+			me->want_wall=false;
 			WED_ForestPlacement * forst = WED_ForestPlacement::CreateTyped(me->archive);
 			me->poly = forst;
 			me->ring = NULL;
-			forst->SetDensity(inParam / 255.0);
+			forst->SetDensity((inParam % 256) / 255.0);
+			#if AIRPORT_ROUTING
+			forst->SetFillMode(inParam / 256);
+			#endif
 			forst->SetResource(r);
 		}
 
@@ -256,6 +269,7 @@ public:
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
+			me->want_wall=false;
 			WED_LinePlacement * lin = WED_LinePlacement::CreateTyped(me->archive);
 			me->poly = NULL;
 			me->ring = lin;
@@ -267,6 +281,7 @@ public:
 		{
 			me->want_uv=false;
 			me->want_bezier=inCoordDepth == 4;
+			me->want_wall=false;
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(me->archive);
 			me->poly = NULL;
 			me->ring = str;
@@ -278,6 +293,7 @@ public:
 		{
 			me->want_uv=inParam == 65535;
 			me->want_bezier=me->want_uv ? (inCoordDepth == 8) : (inCoordDepth == 4);
+			me->want_wall=false;
 			if(me->want_uv)
 			{
 				WED_DrapedOrthophoto * orth = WED_DrapedOrthophoto::CreateTyped(me->archive);
@@ -311,10 +327,16 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->pts.clear();
+		me->walls.clear();
 		me->uvs.clear();
 		if(me->poly != NULL)
-		{			
-			me->ring = WED_Ring::CreateTyped(me->archive);
+		{
+			if(me->poly->GetClass() == WED_ForestPlacement::sClass)
+				me->ring = WED_ForestRing::CreateTyped(me->archive);
+			else if(me->poly->GetClass() == WED_FacadePlacement::sClass)
+				me->ring = WED_FacadeRing::CreateTyped(me->archive);
+			else
+				me->ring = WED_Ring::CreateTyped(me->archive);
 			me->ring->SetParent(me->poly,me->poly->CountChildren());
 			me->ring->SetName("Ring");
 		}
@@ -326,7 +348,27 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		WED_Thing * node;
-		if(me->want_uv && me->want_bezier)
+		if(me->want_wall && me->want_bezier)
+		{
+			BezierPoint2	p;
+			p.pt.x_ = inCoordinates[0];
+			p.pt.y_ = inCoordinates[1];
+			p.hi.x_ = inCoordinates[3];
+			p.hi.y_ = inCoordinates[4];
+			p.lo = p.pt + Vector2(p.hi, p.pt);
+			me->pts.push_back(p);		
+			me->walls.push_back(inCoordinates[2]);
+		}
+		else if(me->want_wall)
+		{
+			BezierPoint2	p;
+			p.pt.x_ = inCoordinates[0];
+			p.pt.y_ = inCoordinates[1];
+			p.lo = p.hi = p.pt;
+			me->pts.push_back(p);		
+			me->walls.push_back(inCoordinates[2]);
+		}
+		else if(me->want_uv && me->want_bezier)
 		{
 			BezierPoint2	p, u;
 			p.pt.x_ = inCoordinates[0];
@@ -434,6 +476,16 @@ public:
 				t->SetLocation(gis_Geo,me->pts[n].pt);
 				t->SetLocation(gis_UV,me->uvs[n].pt);
 			}
+			else if (me->ring && me->ring->GetClass() == WED_FacadeRing::sClass)
+			{
+				WED_FacadeNode * b = WED_FacadeNode::CreateTyped(me->archive);
+				node=b;
+				b->SetBezierLocation(gis_Geo,me->pts[n]);
+				#if AIRPORT_ROUTING
+				if(me->want_wall)
+					b->SetWallType(me->walls[n]);
+				#endif	
+			}
 			else if (me->want_bezier)
 			{
 				WED_SimpleBezierBoundaryNode * b = WED_SimpleBezierBoundaryNode::CreateTyped(me->archive);
@@ -470,7 +522,7 @@ public:
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,
+								AddObject,AddObject,	// NOTE: we are simply IGNORING MSL for now!!
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon };
 
