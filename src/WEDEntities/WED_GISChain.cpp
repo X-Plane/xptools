@@ -36,6 +36,7 @@ WED_GISChain::~WED_GISChain()
 
 GISClass_t		WED_GISChain::GetGISClass		(void				 ) const
 {
+	if(IsJustPoints()) return gis_Composite;
 	return IsClosed() ? gis_Ring : gis_Chain;
 }
 
@@ -349,4 +350,51 @@ void WED_GISChain::Reverse(GISLayer_t l)
 		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_h[n]);
 		else			mCachePtsBezier[t]->DeleteHandleLo();
 	}	
+}
+
+void WED_GISChain::Shuffle(GISLayer_t l)
+{
+	if (CacheBuild())	RebuildCache();
+	int n,t,np = GetNumPoints();
+	vector<Point2>	p(np);
+	vector<Point2>	p_l(np);
+	vector<Point2>	p_h(np);
+	vector<int>		split(np);
+	vector<int>		has_lo(np);
+	vector<int>		has_hi(np);
+
+	for(n = 0; n < np; ++n)
+	{
+		mCachePtsBezier[n]->GetLocation(l, p[n]);
+		has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(l, p_l[n]);
+		has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(l, p_h[n]);
+		split[n] = mCachePtsBezier[n]->IsSplit();
+	}
+
+	for(n = 0; n < np; ++n)
+	{
+		t = (n + 1) % np;
+		mCachePtsBezier[t]->SetLocation(l, p[n]);
+		mCachePtsBezier[t]->SetSplit(split[n]);
+
+		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_l[n]);
+		else			mCachePtsBezier[t]->DeleteHandleHi();
+
+		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_h[n]);
+		else			mCachePtsBezier[t]->DeleteHandleLo();
+	}	
+}
+
+
+
+int				WED_GISChain::GetNumEntities(void ) const
+{
+	if (CacheBuild())	RebuildCache();
+	return mCachePts.size();
+}
+
+IGISEntity *	WED_GISChain::GetNthEntity  (int n) const
+{
+	if (CacheBuild())	RebuildCache();
+	return mCachePts[n];
 }

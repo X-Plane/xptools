@@ -38,10 +38,22 @@ public:
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
 
+			int			GetFillMode(void) const;
+#if AIRPORT_ROUTING			
+			void		SetFillMode(int mode);
+#endif			
+
+protected:
+
+	virtual	bool		IsInteriorFilled(void) const { return GetFillMode() == 0; }
+
 private:
 
 	WED_PropDoubleText		density;
 	WED_PropStringText		resource;
+#if AIRPORT_ROUTING	
+	WED_PropIntEnum			fill_mode;
+#endif	
 
 };
 

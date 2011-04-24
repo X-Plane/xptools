@@ -263,6 +263,11 @@ void WED_GISEdge::Reverse(GISLayer_t l)
 	AddSource(p2, 0);
 }
 
+void WED_GISEdge::Shuffle(GISLayer_t l)
+{
+	this->Reverse(l);
+}
+
 
 IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 {

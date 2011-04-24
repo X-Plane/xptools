@@ -65,7 +65,8 @@ public:
 	//IGISLine
 	virtual		  IGISPoint *		GetSource(void)	const;
 	virtual		  IGISPoint *		GetTarget(void)	const;
-	virtual		void				Reverse(GISLayer_t l);
+	virtual		  void				Reverse(GISLayer_t l);
+	virtual		  void				Shuffle(GISLayer_t l);
 
 };
 

@@ -37,6 +37,10 @@ public:
 		void	Import(const AptBoundary_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 		void	Export(		 AptBoundary_t& x) const;
 
+protected:
+
+	virtual	bool		IsInteriorFilled(void) const { return true; }
+
 };
 
 #endif /* WED_AIRPORTBOUNDARY_H */

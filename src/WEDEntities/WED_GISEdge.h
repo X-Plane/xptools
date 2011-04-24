@@ -69,6 +69,7 @@ public:
 
 	virtual	bool				IsClosed(void) const;
 	virtual	void				Reverse(GISLayer_t l);
+	virtual	void				Shuffle(GISLayer_t l);
 	virtual	IGISPoint *			SplitSide   (const Point2& p, double dist);
 	
 	virtual	void				SetSide(GISLayer_t layer, const Segment2& b);

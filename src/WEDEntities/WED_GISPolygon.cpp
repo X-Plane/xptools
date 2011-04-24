@@ -61,7 +61,7 @@ WED_GISPolygon::~WED_GISPolygon()
 
 GISClass_t		WED_GISPolygon::GetGISClass		(void				 ) const
 {
-	return gis_Polygon;
+	return IsInteriorFilled() ? gis_Polygon : gis_Composite;
 }
 
 const char *	WED_GISPolygon::GetGISSubtype	(void				 ) const
@@ -260,6 +260,17 @@ void WED_GISPolygon::Reverse(GISLayer_t l)
 		GetNthHole(h)->Reverse(l);
 	}
 }
+
+void WED_GISPolygon::Shuffle(GISLayer_t l)
+{
+	GetOuterRing()->Shuffle(l);
+	int hh = GetNumHoles();
+	for (int h = 0; h < hh; ++h)
+	{
+		GetNthHole(h)->Shuffle(l);
+	}
+}
+
 Bezier_Seq_Iterator::Bezier_Seq_Iterator(IGISPointSequence * seq, GISLayer_t l, int n) :
 	mSeq(seq), mIndex(n), mLayer(l)
 {
@@ -315,3 +326,12 @@ Bezier2 Bezier_Seq_Iterator::operator*(void) const
 	return ret;
 }
 
+int				WED_GISPolygon::GetNumEntities(void ) const
+{
+	return CountChildren();
+}
+
+IGISEntity *	WED_GISPolygon::GetNthEntity  (int n) const
+{
+	return dynamic_cast<IGISEntity *>(GetNthChild(n));
+}

@@ -22,12 +22,16 @@
  */
 
 #include "WED_ForestPlacement.h"
+#include "WED_EnumSystem.h"
 
 DEFINE_PERSISTENT(WED_ForestPlacement)
 TRIVIAL_COPY(WED_ForestPlacement,WED_GISPolygon)
 
 WED_ForestPlacement::WED_ForestPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	density(this,"Density","WED_dsf_polygon","param",10.0,3,1),
+#if AIRPORT_ROUTING
+	fill_mode(this,"Fill Mode", "WED_dsf_polygon", "closed", ForestFill, forest_Fill),
+#endif	
 	resource(this,"Resource", "WED_dsf_overlay", "resource", "")
 {
 }
@@ -56,3 +60,18 @@ void		WED_ForestPlacement::SetResource(const string& r)
 	resource = r;
 }
 
+int			WED_ForestPlacement::GetFillMode(void) const
+{
+#if AIRPORT_ROUTING
+	return ENUM_Export(fill_mode.value);
+#else
+	return 0;
+#endif
+}
+
+#if AIRPORT_ROUTING
+void		WED_ForestPlacement::SetFillMode(int mode)
+{
+	fill_mode = ENUM_Import(ForestFill, mode);
+}
+#endif

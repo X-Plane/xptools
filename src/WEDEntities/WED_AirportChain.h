@@ -48,6 +48,10 @@ public:
 			void			Import(const AptMarking_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 			void			Export(		 AptMarking_t& x) const;
 
+protected:
+
+	virtual	bool			IsJustPoints(void) const { return false; }
+
 private:
 
 	WED_PropIntEnumSetUnion	lines;

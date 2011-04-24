@@ -22,12 +22,19 @@
  */
 
 #include "WED_FacadePlacement.h"
+#include "WED_ResourceMgr.h"
+#include "WED_EnumSystem.h"
+#include "WED_ToolUtils.h"
+#include "WED_FacadeNode.h"
 
 DEFINE_PERSISTENT(WED_FacadePlacement)
 TRIVIAL_COPY(WED_FacadePlacement,WED_GISPolygon)
 
 WED_FacadePlacement::WED_FacadePlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
 	height(this,"Height","WED_dsf_polygon","param",10.0,3,1),
+#if AIRPORT_ROUTING
+	pick_walls(this,"Pick Walls","WED_dsf_polygon","closed",0),
+#endif	
 	resource(this,"Resource", "WED_dsf_overlay", "resource", "")
 {
 }
@@ -56,3 +63,63 @@ void		WED_FacadePlacement::SetResource(const string& r)
 	resource = r;
 }
 
+int		WED_FacadePlacement::GetTopoMode(void) const 
+{
+	IResolver * r = GetArchive()->GetResolver();
+	if(r)
+	{
+		WED_ResourceMgr* rr = WED_GetResourceMgr(r);
+		if(rr)
+		{
+			fac_info_t f;
+			if(rr->GetFac(resource.value,f))
+			{
+				if(f.roof) return 0;
+				return f.ring ? 1 : 2;
+			}
+		}
+	}
+	return 0;
+}
+
+//void		WED_FacadePlacement::GetWallChoices(vector<int>& out_walls)
+//{
+//	out_walls.clear();
+//	if (pick_walls.value)
+//	{
+//		for(int h = -1; h < GetNumHoles(); ++h)
+//		{
+//			IGISPointSequence * s = (h == -1) ? GetOuterRing() : GetNthHole(h);
+//			for(int n = 0; n < s->GetNumSides(); ++n)
+//			{
+//				IGISPoint * p = s->GetNthPoint(n);
+//				WED_FacadeNode * n = dynamic_cast<WED_FacadeNode *>(p);
+//				if(n)
+//					out_walls.push_back(n->GetWallType());
+//			}
+//		}
+//	}
+//}
+
+#if AIRPORT_ROUTING
+bool		WED_FacadePlacement::HasLayer		(GISLayer_t layer							  ) const
+{
+	if(layer == gis_Param)	return pick_walls.value;
+	return					WED_GISPolygon::HasLayer(layer);
+}
+
+void		WED_FacadePlacement::SetCustomWalls(bool has) 
+{
+	pick_walls = (has ? 1 : 0);
+}
+
+#endif
+
+bool		WED_FacadePlacement::HasCustomWalls(void) const 
+{
+	#if AIRPORT_ROUTING
+		return pick_walls.value; 
+	#else
+		return false;
+	#endif
+}

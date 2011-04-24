@@ -44,6 +44,10 @@ public:
 	virtual	void	ResizeSide(GISLayer_t l,int side, const Vector2& delta, bool symetric);
 	virtual	void	ResizeCorner(GISLayer_t l,int side, const Vector2& delta, bool symetric);
 
+protected:
+
+	virtual	bool		IsInteriorFilled(void) const { return true; }
+
 private:
 
 	WED_PropFileText			mImageFile;

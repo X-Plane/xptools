@@ -32,16 +32,35 @@ DECLARE_PERSISTENT(WED_FacadePlacement)
 
 public:
 
+#if AIRPORT_ROUTING
+	virtual	bool			HasLayer		(GISLayer_t layer							  ) const;
+#endif			
+
 			double		GetHeight(void) const;
 			void		SetHeight(double h);
 
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
 
+			int			GetTopoMode(void) const;
+
+//			void		GetWallChoices(vector<int>& out_walls);
+			bool		HasCustomWalls(void) const;
+#if AIRPORT_ROUTING
+			void		SetCustomWalls(bool has);
+#endif			
+
+protected:
+
+	virtual	bool		IsInteriorFilled(void) const { return GetTopoMode() == 0; }
+
 private:
 
 	WED_PropDoubleText		height;
 	WED_PropStringText		resource;
+#if AIRPORT_ROUTING	
+	WED_PropBoolText		pick_walls;
+#endif	
 
 };
 

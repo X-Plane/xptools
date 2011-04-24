@@ -27,7 +27,7 @@
 #include "WED_Entity.h"
 #include "IGIS.h"
 
-class	WED_GISChain : public WED_Entity, public virtual IGISPointSequence {
+class	WED_GISChain : public WED_Entity, public virtual IGISPointSequence, public virtual IGISComposite {
 
 DECLARE_INTERMEDIATE(WED_GISChain)
 
@@ -56,6 +56,15 @@ public:
 
 //	virtual	bool				IsClosed(void) const;
 	virtual			void		Reverse(GISLayer_t l);
+	virtual			void		Shuffle(GISLayer_t l);
+
+	// IGISComposite
+	virtual	int				GetNumEntities(void ) const;
+	virtual	IGISEntity *	GetNthEntity  (int n) const;
+
+protected:
+
+	virtual	bool			IsJustPoints(void) const=0;
 
 private:
 

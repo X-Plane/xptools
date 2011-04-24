@@ -39,7 +39,7 @@
 
 */
 
-class	WED_GISPolygon : public WED_Entity, public virtual IGISPolygon {
+class	WED_GISPolygon : public WED_Entity, public virtual IGISPolygon, public virtual IGISComposite {
 
 DECLARE_INTERMEDIATE(WED_GISPolygon)
 
@@ -65,7 +65,16 @@ public:
 	virtual			void					DeleteHole  (int n)					;
 	virtual			void					AddHole		(IGISPointSequence * r) ;
 	virtual			void					Reverse(GISLayer_t l);
+	virtual			void					Shuffle(GISLayer_t l);
 
+	// IGISComposite
+	virtual	int				GetNumEntities(void ) const;
+	virtual	IGISEntity *	GetNthEntity  (int n) const;
+
+protected:
+
+	// interior filled?  Normal answer is true!  But if false, we act like a container of rings, not a polygon.
+	virtual	bool			IsInteriorFilled(void) const=0;
 
 };
 

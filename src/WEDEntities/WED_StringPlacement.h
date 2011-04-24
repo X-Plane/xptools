@@ -40,6 +40,10 @@ public:
 			void			GetResource(	  string& r) const;
 			void			SetResource(const string& r);
 
+protected:
+
+	virtual	bool			IsJustPoints(void) const { return false; }
+
 private:
 
 	WED_PropStringText		resource;

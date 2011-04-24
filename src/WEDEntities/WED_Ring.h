@@ -44,6 +44,7 @@ public:
 
 //	virtual	IGISPoint *		SplitSide   (int n	)		;		// Split the side from pt N to pt N + 1 in half. Return the new pt.
 	virtual	bool			IsClosed	(void	) const	;
+	virtual	bool			IsJustPoints(void) const { return false; }
 
 };
 

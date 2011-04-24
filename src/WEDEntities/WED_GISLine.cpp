@@ -179,3 +179,12 @@ void WED_GISLine::Reverse(GISLayer_t l)
 	GetSource()->SetLocation(l,ends[1]);
 	GetTarget()->SetLocation(l,ends[0]);
 }
+
+void WED_GISLine::Shuffle(GISLayer_t l)
+{
+	Point2	ends[2];
+	GetSource()->GetLocation(l,ends[0]);
+	GetTarget()->GetLocation(l,ends[1]);
+	GetSource()->SetLocation(l,ends[1]);
+	GetTarget()->SetLocation(l,ends[0]);
+}

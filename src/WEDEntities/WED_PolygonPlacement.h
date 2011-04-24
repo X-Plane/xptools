@@ -38,6 +38,10 @@ public:
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
 
+protected:
+
+	virtual	bool		IsInteriorFilled(void) const { return true; }
+
 private:
 
 	WED_PropDoubleText		heading;
