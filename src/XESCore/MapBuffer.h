@@ -56,10 +56,15 @@ void	BufferPolygon(
 				double						in_inset,
 				Polygon_set_2&				out_new_polygon);
 
-// Same as above, but for a polygon with holes.  All requiremetns apply plus the holes must be CW.
+// Same as above, but for a polygon with holes.  All requirements apply plus the holes must be CW.
 void	BufferPolygonWithHoles(
 				const Polygon_with_holes_2&	in_polygon,
 				const PolyInset_t *			in_insets,
+				double						in_inset,
+				Polygon_set_2&				out_new_polygon);
+
+void	BufferPolygonSet(
+				const Polygon_set_2&		in_polygon,
 				double						in_inset,
 				Polygon_set_2&				out_new_polygon);
 

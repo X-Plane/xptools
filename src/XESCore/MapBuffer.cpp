@@ -40,8 +40,8 @@
 
 // This is a hack - by converting our buffer pts to double, we shorten their mantissas, which cuts down the computing 
 // we must do on the planar map build-up by, well, a lot!
-//#define PROCESS(x) (ben2cgal(cgal2ben((x))))
-#define PROCESS(x) (x)
+#define PROCESS(x) (ben2cgal(cgal2ben((x))))
+//#define PROCESS(x) (x)
 
 /***************************************************************************************************************************************
  * POLYGON TAGGING
@@ -598,4 +598,21 @@ void	ValidateBuffer(
 
 
 	}
+}
+void	BufferPolygonSet(
+				const Polygon_set_2&		in_polygon,
+				double						in_inset,
+				Polygon_set_2&				out_new_polygon)
+{
+	list<Polygon_with_holes_2>	plist_in, plist_out;
+	in_polygon.polygons_with_holes(back_inserter(plist_in));
+	for(list<Polygon_with_holes_2>::iterator i = plist_in.begin(); i != plist_in.end(); ++i)
+	{
+		Polygon_set_2 buffered;
+		BufferPolygonWithHoles(*i, NULL, in_inset, buffered);
+		buffered.polygons_with_holes(back_inserter(plist_out));
+	}
+	out_new_polygon.clear();
+	plist_in.clear();
+	out_new_polygon.join(plist_out.begin(),plist_out.end());
 }
