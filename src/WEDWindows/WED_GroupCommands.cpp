@@ -1249,6 +1249,33 @@ static int IterateDoReverse(ISelectable * what, void * ref)
 	return 0;
 }
 
+int		WED_CanRotate(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionOr(IterateNonReversable, NULL)) return 0;
+	return 1;
+}
+
+static int IterateDoRotate(ISelectable * what, void * ref)
+{
+	IGISPolygon * p;
+	IGISPointSequence * ps;
+	if ((p =  dynamic_cast<IGISPolygon*      >(what))!= NULL) p->Shuffle(gis_Geo);
+	if ((ps = dynamic_cast<IGISPointSequence*>(what))!= NULL) ps->Shuffle(gis_Geo);
+	return 0;
+}
+
+void	WED_DoRotate(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Reverse");
+	sel->IterateSelectionOr(IterateDoRotate, NULL);
+	op->CommitOperation();
+	
+}
+
 
 void	WED_DoReverse(IResolver * resolver)
 {

@@ -285,6 +285,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif	
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
+	case wed_Rotate:	WED_DoRotate(mDocument); return 1;
 	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
@@ -351,6 +352,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);
+	case wed_Rotate:	return WED_CanRotate(mDocument);	
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);

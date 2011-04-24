@@ -74,7 +74,8 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 #if AIRPORT_ROUTING
 {	"Merge",				'M',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Merge		},
 #endif
-{	"Rever&se",				0,		0,								0,	wed_Reverse		},
+{	"Rever&se",				'R',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Reverse		},
+{	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 {	"Error-Check Polygons",	0,		0,								0,	wed_CheckPolys	},

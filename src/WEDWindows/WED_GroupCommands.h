@@ -65,6 +65,8 @@ int		WED_CanSplit(IResolver * resolver);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanReverse(IResolver * resolver);
 void	WED_DoReverse(IResolver * resolver);
+int		WED_CanRotate(IResolver * resolver);
+void	WED_DoRotate(IResolver * resolver);
 int		WED_CanDuplicate(IResolver * resolver);
 void	WED_DoDuplicate(IResolver * resolver, bool wrap_in_cmd);
 
