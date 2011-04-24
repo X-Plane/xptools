@@ -34,10 +34,12 @@
 #include "PerfUtils.h"
 #include "MapAlgs.h"
 #include "DEMAlgs.h"
+#include "DEMGrid.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
 #include "XESConstants.h"
 #include "GreedyMesh.h"
+#include "NetHelpers.h"
 #if APL && !defined(__MACH__)
 #define __DEBUGGING__
 #include "XUtils.h"
@@ -50,8 +52,10 @@
 
 #if PHONE
 #define LOW_RES_WATER_INTERVAL 50
+#define APT_INTERVAL 40
 #else
 #define LOW_RES_WATER_INTERVAL 40
+#define APT_INTERVAL 2
 #endif
 
 // Burn every road segment!
@@ -119,7 +123,7 @@
 #endif
 
 MeshPrefs_t gMeshPrefs = {		/*iphone*/
-/* max_points		*/	PHONE ?		25000	: 78000,
+/* max_points		*/	PHONE ?		25000	: 278000,
 /* max_error		*/	PHONE ?		15		: 5.0,
 /* border_match		*/	PHONE ?		1		: 1,
 /* optimize_borders	*/	PHONE ?		1		: 1,
@@ -927,6 +931,7 @@ double CopyWetPoints(
 					  DEMMask&			io_used,
 					  CDT&				io_mesh,
 					  int				in_skip,
+					  int				in_terrain,
 				const Pmwx& 			map)		// The map we get the water bodies from
 {
 	// BEN NOTE ON CLAMPING: I think we do NOT care if an edge is microscopically outside the DEM
@@ -934,7 +939,7 @@ double CopyWetPoints(
 	// either.  We do not generate any coastline edges here.
 
 	PolyRasterizer<double>	rasterizer;
-	SetupWaterRasterizer(map, in_orig, rasterizer);
+	SetupWaterRasterizer(map, in_orig, rasterizer, in_terrain);
 
 	CDT::Face_handle	hint;
 
@@ -1629,18 +1634,48 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	
 	/* TRIANGULATE WATER INTERIOR */
 	
-	double wet_ratio = CopyWetPoints(orig, deriv, outMesh, LOW_RES_WATER_INTERVAL, inMap);
+	double wet_ratio = CopyWetPoints(orig, deriv, outMesh, LOW_RES_WATER_INTERVAL, terrain_Water, inMap);
+					   CopyWetPoints(orig, deriv, outMesh,APT_INTERVAL, terrain_Airport, inMap);
 	double dry_ratio = 1.0 - wet_ratio;
 
 	PAUSE_STEP("Finished water interior")
 	
 	/* TRINAGULATE GREEDILY */
 
-	GreedyMeshBuild(outMesh, orig, deriv, gMeshPrefs.max_error, 0.0, (dry_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
+	DEMGrid	gridlines(orig);
+
+#if 0	
+	for(Pmwx::Vertex_iterator v = gMap.vertices_begin(); v != gMap.vertices_end(); ++v)
+	if(!v->is_isolated())
+	{
+		Pmwx::Halfedge_around_vertex_circulator circ, stop;
+		circ = stop = v->incident_halfedges();
+		bool has_must_burn = false, has_road = false;
+		do {
+			if(must_burn_he(circ))
+			{
+				has_must_burn = true; 
+				break;
+			}
+			if(he_has_any_roads(circ));
+			{
+				has_road = true;				
+			}
+		} while(++circ != stop);
+		if(!has_must_burn && has_road)
+		{
+			int x = round(orig.lon_to_x(CGAL::to_double(v->point().x())));
+			int y = round(orig.lat_to_y(CGAL::to_double(v->point().y())));
+			gridlines.set_pt(x,y,v->point(),1);
+		}
+	}
+#endif	
+	
+	GreedyMeshBuild(outMesh, orig, deriv, gridlines, gMeshPrefs.max_error, 0.0, (dry_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
 
 	PAUSE_STEP("Finished greedy1")
 
-	GreedyMeshBuild(outMesh, orig, deriv, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
+	GreedyMeshBuild(outMesh, orig, deriv, gridlines, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
 
 	PAUSE_STEP("Finished greedy2")
 
@@ -2499,12 +2534,12 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 /*******************************************************************************************
  *	UTILITY ROUTINES
  *******************************************************************************************/
-void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer<double>& rasterizer)
+void SetupWaterRasterizer(const Pmwx& map, const DEMGeo& orig, PolyRasterizer<double>& rasterizer, int terrain_wanted)
 {
 	for (Pmwx::Edge_const_iterator i = map.edges_begin(); i != map.edges_end(); ++i)
 	{
-		bool	iWet = i->face()->data().IsWater() && !i->face()->is_unbounded();
-		bool	oWet = i->twin()->face()->data().IsWater() && !i->twin()->face()->is_unbounded();
+		bool	iWet = i->face()->data().mTerrainType == terrain_wanted && !i->face()->is_unbounded();
+		bool	oWet = i->twin()->face()->data().mTerrainType == terrain_wanted && !i->twin()->face()->is_unbounded();
 
 		if (iWet != oWet)
 		{
