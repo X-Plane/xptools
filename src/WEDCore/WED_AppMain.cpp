@@ -83,7 +83,10 @@
 	_R(WED_FacadePlacement) \
 	_R(WED_PolygonPlacement) \
 	_R(WED_DrapedOrthophoto) \
-	_R(WED_ExclusionZone)
+	_R(WED_ExclusionZone) \
+	_R(WED_ForestRing) \
+	_R(WED_FacadeRing) \
+	_R(WED_FacadeNode)
 
 #define REGISTER_LIST_ATC \
 	_R(WED_TaxiRoute) \

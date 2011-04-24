@@ -92,6 +92,7 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 	}
 
 	process_texture_path(p,obj->texture);
+	process_texture_path(p,obj->texture_draped);
 
 	mObj[path] = obj;
 	return true;
@@ -200,3 +201,77 @@ void	WED_ResourceMgr::ReceiveMessage(
 		Purge();
 	}
 }
+
+bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
+{
+	out_info.ring = true;
+	out_info.roof = true;
+	out_info.modern = true;
+	
+	map<string,fac_info_t>::iterator i = mFac.find(path);
+	if(i != mFac.end())
+	{
+		out_info = i->second;
+		return true;
+	}
+
+	string p = mLibrary->GetResourcePath(path);
+	MFMemFile * fac = MemFile_Open(p.c_str());
+	if(!fac) return false;
+
+
+	MFScanner	s;
+	MFS_init(&s, fac);
+
+	int versions[] = { 800,900,1000, 0 };
+	int v;
+	if((v=MFS_xplane_header(&s,versions,"FACADE",NULL)) == 0)
+	{
+		MemFile_Close(fac);
+		return false;
+	}
+	out_info.modern = v > 800;
+
+	out_info.ring = true;
+	out_info.roof = false;
+
+	while(!MFS_done(&s))
+	{
+		// RING
+		if (MFS_string_match(&s,"RING", false))
+		{
+			out_info.ring = MFS_int(&s) > 0;
+		}
+		// ROOF
+		else if (MFS_string_match(&s,"ROOF", false))
+		{
+			out_info.roof = true;
+		}
+		else if (MFS_string_match(&s,"ROOF_SCALE", false))
+		{
+			out_info.roof = true;
+		}
+		// ROOF_HEIGHT
+		else if (MFS_string_match(&s,"ROOF_HEIGHT", false))
+		{
+			out_info.roof = true;
+		}
+		// WALL min max min max name
+		else if (MFS_string_match(&s,"WALL",false))
+		{
+			MFS_double(&s);
+			MFS_double(&s);
+			MFS_double(&s);
+			MFS_double(&s);
+			out_info.walls.push_back(string());
+			MFS_string(&s,&out_info.walls.back());
+		}
+
+		MFS_string_eol(&s,NULL);
+	}
+	MemFile_Close(fac);
+
+	mFac[path] = out_info;
+	return true;
+}
+

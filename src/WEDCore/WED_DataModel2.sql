@@ -56,4 +56,9 @@ CREATE TABLE IF NOT EXISTS WED_roadedge(
 	subtype			integer		NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS WED_facadenode(
+	id				integer		PRIMARY KEY,
+	wall			integer		NOT NULL
+);
+
 COMMIT TRANSACTION setup2;

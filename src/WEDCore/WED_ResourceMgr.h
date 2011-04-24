@@ -59,6 +59,13 @@ struct	pol_info_t {
 	bool		wrap;
 };
 
+struct	fac_info_t {
+	bool			ring;
+	bool			roof;
+	bool			modern;
+	vector<string>	walls;
+};
+
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
@@ -68,6 +75,7 @@ public:
 
 			void	Purge(void);
 
+			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
 			void	MakePol(const string& path, const pol_info_t& out_info);
 			bool	GetObj(const string& path, XObj8 *& obj);
@@ -79,6 +87,7 @@ public:
 
 private:
 
+	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
 	map<string,XObj8 *>			mObj;
 	WED_LibraryMgr *			mLibrary;

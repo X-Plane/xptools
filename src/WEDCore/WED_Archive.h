@@ -50,6 +50,8 @@ class	WED_Persistent;
 class	WED_UndoLayer;
 class	WED_UndoMgr;
 
+class	IResolver;
+
 #include "GUI_Broadcaster.h"
 
 enum {
@@ -60,7 +62,7 @@ enum {
 class	WED_Archive : public GUI_Broadcaster {
 public:
 
-					WED_Archive();
+					WED_Archive(IResolver * resolver);
 					~WED_Archive();
 
 	// Find an object in the archive by ID
@@ -86,6 +88,8 @@ public:
 	long long		CacheKey(void);
 	
 	void			Validate(void);
+	
+	IResolver *		GetResolver(void) { return mResolver; }
 
 private:
 
@@ -110,6 +114,8 @@ private:
 	int				mOpCount;
 
 	long long		mCacheKey;
+	
+	IResolver *		mResolver;
 
 };
 

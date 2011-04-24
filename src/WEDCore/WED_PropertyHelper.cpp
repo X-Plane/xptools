@@ -196,6 +196,8 @@ void 		WED_PropIntText::WriteTo(IOWriter * writer)
 
 void		WED_PropIntText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mColumn[0] == 0) return;
+
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -212,6 +214,7 @@ void		WED_PropIntText::ToDB(sqlite3 * db, const char * id_col, const char * id_v
 
 void		WED_PropIntText::GetUpdate(SQL_Update& io_update)
 {
+	if(mColumn[0] == 0) return;
 	char as_int[1024];
 	sprintf(as_int,"%d", value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));
@@ -266,6 +269,8 @@ void 		WED_PropBoolText::WriteTo(IOWriter * writer)
 
 void		WED_PropBoolText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mTable[0] == 0)	
+		return;
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -282,6 +287,7 @@ void		WED_PropBoolText::ToDB(sqlite3 * db, const char * id_col, const char * id_
 
 void		WED_PropBoolText::GetUpdate(SQL_Update& io_update)
 {
+	if(mColumn[0] == 0)	return;
 	char as_int[1024];
 	sprintf(as_int,"%d", value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));
@@ -338,6 +344,7 @@ void 		WED_PropDoubleText::WriteTo(IOWriter * writer)
 
 void		WED_PropDoubleText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mColumn[0] == 0) return;
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -354,6 +361,7 @@ void		WED_PropDoubleText::ToDB(sqlite3 * db, const char * id_col, const char * i
 
 void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 {
+	if(mColumn[0] == 0) return;
 	char as_double[1024];
 	sprintf(as_double,"%.10lf", value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_double));
@@ -429,6 +437,7 @@ void 		WED_PropStringText::WriteTo(IOWriter * writer)
 
 void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mColumn[0] == 0) return;
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -445,6 +454,7 @@ void		WED_PropStringText::ToDB(sqlite3 * db, const char * id_col, const char * i
 
 void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
 {
+	if(mColumn[0] == 0) return;
 	string quoted = sqlite3_quote_string(value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
 }
@@ -503,6 +513,7 @@ void 		WED_PropFileText::WriteTo(IOWriter * writer)
 
 void		WED_PropFileText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mColumn[0] == 0) return;
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -519,6 +530,7 @@ void		WED_PropFileText::ToDB(sqlite3 * db, const char * id_col, const char * id_
 
 void		WED_PropFileText::GetUpdate(SQL_Update& io_update)
 {
+	if(mColumn[0] == 0) return;
 	string quoted = sqlite3_quote_string(value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, quoted));
 }
@@ -573,6 +585,7 @@ void 		WED_PropIntEnum::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mColumn[0] == 0) return;
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -592,6 +605,8 @@ void		WED_PropIntEnum::ToDB(sqlite3 * db, const char * id_col, const char * id_v
 
 void		WED_PropIntEnum::GetUpdate(SQL_Update& io_update)
 {
+	if(mColumn[0] == 0) return;
+
 	char as_int[1024];
 	sprintf(as_int,"%d", value);
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));
@@ -661,6 +676,7 @@ void 		WED_PropIntEnumSet::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mColumn[0] == 0) return;
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -686,6 +702,8 @@ void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause, const 
 
 void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
 {
+	if(mColumn[0] == 0) return;
+
 	char cmd_buf[1000];
 
 	{
@@ -778,6 +796,7 @@ void 		WED_PropIntEnumBitfield::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnumBitfield::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
 {
+	if(mColumn[0] == 0) return;
 	char cmd_buf[1000];
 	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mColumn,mTable, where_clause);
 	sql_command cmd(db, cmd_buf,NULL);
@@ -794,6 +813,7 @@ void		WED_PropIntEnumBitfield::ToDB(sqlite3 * db, const char * id_col, const cha
 
 void		WED_PropIntEnumBitfield::GetUpdate(SQL_Update& io_update)
 {
+	if(mColumn[0] == 0) return;
 	char as_int[1024];
 	sprintf(as_int,"%d", ENUM_ExportSet(value));
 	io_update[mTable].push_back(SQL_ColumnUpdate(mColumn, as_int));

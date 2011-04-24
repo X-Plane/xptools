@@ -31,7 +31,7 @@
 #include "SQLUtils.h"
 #include "WED_Messages.h"
 
-WED_Archive::WED_Archive() : mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1), mOpCount(0), mCacheKey(0)
+WED_Archive::WED_Archive(IResolver * r) : mResolver(r), mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1), mOpCount(0), mCacheKey(0)
 {
 }
 

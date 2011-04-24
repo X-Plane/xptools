@@ -46,6 +46,43 @@ void	BezierPointToBezier(const BezierPoint2& p1,const BezierPoint2& p2, Bezier2&
 
 
 
+void	BezierToBezierPointStart (const Bezier2p& next,BezierPoint2p& out_pt)
+{
+	out_pt.lo = out_pt.pt = next.p1;
+	out_pt.hi = next.c1;
+	out_pt.param = next.param;
+}
+
+void	BezierToBezierPointMiddle(const Bezier2p& prev,const Bezier2p& next,BezierPoint2p& out_pt)
+{
+	// CGAL gives imprecise matching...need to investigate.
+//	DebugAssert(prev.p2 == next.p1);
+	out_pt.lo = prev.c2;
+	out_pt.hi = next.c1;
+	out_pt.pt = next.p1;
+	out_pt.param = next.param;
+}
+
+void	BezierToBezierPointEnd	 (const Bezier2p& prev,					BezierPoint2p& out_pt)
+{
+	out_pt.lo = prev.c2;
+	out_pt.hi = out_pt.pt = prev.p2;
+	out_pt.param = prev.param;
+}
+
+void	BezierPointToBezier(const BezierPoint2p& p1,const BezierPoint2p& p2, Bezier2p& b)
+{
+	b.p1 = p1.pt;
+	b.c1 = p1.hi;
+	b.c2 = p2.lo;
+	b.p2 = p2.pt;	
+	b.param = p1.param;
+}
+
+
+
+
+
 
 /************************************************************************************************************************************************************************************
  *
@@ -89,6 +126,24 @@ bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2>& ou
 			return false;
 
 		out_pol.push_back(s);
+	}
+	return true;
+}
+
+bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2p>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b;
+		Segment2	s;
+		Segment2	sp;
+		if(in_seq->GetSide(gis_Geo, n, s, b))
+			return false;
+		if(in_seq->GetSide(gis_Param, n, sp, b))
+			return false;
+
+		out_pol.push_back(Segment2p(s,sp.p1.x()));
 	}
 	return true;
 }
@@ -175,6 +230,24 @@ bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2&
 	bool ok = tr.is_valid_2_object()(out_pol);
 	return ok;
 }
+
+bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<vector<Segment2p> >& out_pol)
+{
+	out_pol.clear();
+	int nn = in_poly->GetNumHoles();
+	out_pol.reserve(nn+1);
+	out_pol.push_back(vector<Segment2p>());
+	if (!WED_VectorForPointSequence(in_poly->GetOuterRing(), out_pol.back()))
+		return false;
+	for(int n = 0; n < nn; ++n)
+	{
+		out_pol.push_back(vector<Segment2p>());
+		if (!WED_VectorForPointSequence(in_poly->GetNthHole(n), out_pol.back()))
+			return false;
+	}
+	return true;
+}
+
 
 bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 {
@@ -317,6 +390,29 @@ void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2
 	}
 }
 
+
+void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2p>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b;
+		Bezier2		bp;
+		Segment2	s;
+		if(!in_seq->GetSide(gis_Geo, n, s, b))
+		{
+			b.p1 = b.c1 = s.p1;
+			b.p2 = b.c2 = s.p2;
+		}
+		if(!in_seq->GetSide(gis_Param, n, s, bp))
+		{
+			bp.p1 = bp.c1 = s.p1;
+			bp.p2 = bp.c2 = s.p2;
+		}
+		out_pol.push_back(Bezier2p(b,bp.p1.x()));
+	}
+}
+
 void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier_curve_2>& out_pol)
 {
 	int ns = in_seq->GetNumSides();
@@ -389,6 +485,22 @@ bool	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_
 	return ok;
 	
 }
+
+bool	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<vector<Bezier2p> >& out_pol)
+{
+	int nn = in_poly->GetNumHoles();
+	out_pol.clear();
+	out_pol.reserve(nn+1);
+	out_pol.push_back(vector<Bezier2p>());
+	WED_BezierVectorForPointSequence(in_poly->GetOuterRing(),out_pol.back());
+	for(int n = 0; n < nn; ++n)
+	{
+		out_pol.push_back(vector<Bezier2p>());
+		WED_BezierVectorForPointSequence(in_poly->GetNthHole(n),out_pol.back());
+	}
+	return true;
+}
+
 
 
 

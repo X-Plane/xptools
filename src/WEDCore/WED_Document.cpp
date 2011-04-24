@@ -57,7 +57,8 @@ WED_Document::WED_Document(
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
 	mDB(mFilePath.c_str()),
 //	mPackage(inPackage),
-	mUndo(&mArchive)
+	mUndo(&mArchive),
+	mArchive(this)
 {
 	mTexMgr = new WED_TexMgr(package);
 	mLibraryMgr = new WED_LibraryMgr(package);
