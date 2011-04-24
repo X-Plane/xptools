@@ -736,9 +736,11 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 	for (AptVector::iterator a = outApts.begin(); a != outApts.end(); ++a)
 	{
+		a->bounds = Bbox2();
 		if (a->tower.draw_obj != -1)
 			a->bounds = Bbox2(a->tower.location);
-		a->bounds += a->beacon.location;
+		if(a->beacon.color_code != apt_beacon_none)
+			a->bounds += a->beacon.location;
 		for (int w = 0; w < a->windsocks.size(); ++w)
 			a->bounds += a->windsocks[w].location;
 		for (int r = 0; r < a->gates.size(); ++r)
