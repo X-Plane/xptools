@@ -658,7 +658,7 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 		ioTransport(xp, yp) = (ioTransport(xp, yp) == lu_globcover_WATER) ? 1.0 : 0.0;
 
 	PolyRasterizer<double>	rasterizer;
-	SetupWaterRasterizer(inMap, ioTransport, rasterizer);
+	SetupWaterRasterizer(inMap, ioTransport, rasterizer, terrain_Water);
 	int x, y = 0;
 	rasterizer.StartScanline(y);
 	while (!rasterizer.DoneScan())
@@ -1678,6 +1678,8 @@ static	void	FFTSplit(const DEMGeo& inSrc, DEMGeo& equiv, DEMGeo& reduc, int n)
 {
 	reduc.copy_geo_from(inSrc);
 	equiv.copy_geo_from(inSrc);
+	reduc.mPost = inSrc.mPost;
+	equiv.mPost = inSrc.mPost;
 	equiv.resize(inSrc.mWidth, inSrc.mHeight);
 	reduc.resize(inSrc.mWidth, inSrc.mHeight);
 
