@@ -22,7 +22,10 @@
  */
 
 #include "../XPTools/version.h"
-#include "dsf_export.h"
+#include "TclStubs.h"
+#include <ac_plugin.h>
+
+//#include "dsf_export.h"
 #include "obj8_export.h"
 #include "obj8_import.h"
 #include "obj_tools.h"

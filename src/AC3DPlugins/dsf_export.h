@@ -24,6 +24,8 @@
 #ifndef DSF_EXPORT_H
 #define DSF_EXPORT_H
 
+#error this isn't really ready for prime time.
+
 #include "TclStubs.h"
 #include <ac_plugin.h>
 
