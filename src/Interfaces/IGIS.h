@@ -77,8 +77,9 @@ enum GISClass_t {
 };
 
 enum GISLayer_t {
-	gis_Geo,
-	gis_UV
+	gis_Geo  ,
+	gis_UV   ,
+	gis_Param
 };
 
 class	IGISEntity : public virtual ISelectable {
@@ -191,6 +192,7 @@ public:
 	virtual	bool				IsClosed(void) const=0;
 
 	virtual	void				Reverse(GISLayer_t l)=0;
+	virtual	void				Shuffle(GISLayer_t l)=0;
 
 	// Split the side at this point, returning the new point.  Or return NULL if the split is 
 	// impossible/makes no sense.  Dist is a maximum distance from the point where "where" can be 
@@ -242,6 +244,7 @@ public:
 	virtual			void					AddHole		(IGISPointSequence * r) =0;
 
 	virtual			void					Reverse(GISLayer_t l)=0;
+	virtual			void					Shuffle(GISLayer_t l)=0;
 
 };
 
