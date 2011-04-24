@@ -35,7 +35,7 @@
 struct XObj;
 struct XObj8;
 
-struct	ObjDrawFuncs_t {
+struct	ObjDrawFuncs10_t {
 	// These routines are called to set up OGL for a certain mode.
 	void (* SetupPoly_f)(void * ref);
 	void (* SetupLine_f)(void * ref);
@@ -47,9 +47,11 @@ struct	ObjDrawFuncs_t {
 	void (* TexCoordPointer_f)(int size, unsigned long type, long stride, const void * pointer, void * ref);
 	// Return anim params here.
 	float (* GetAnimParam)(const char * string, float v1, float v2, void * ref);
+	void (* SetupDraped_f)(void * ref);
+	void (* SetupNoDraped_f)(void * ref);
 };
 
-void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref);
-void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref);
+void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref);
+void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref);
 
 #endif

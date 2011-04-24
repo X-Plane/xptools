@@ -76,9 +76,13 @@ static float	Default_GetAnimParam(const char * string, float v1, float v2, void 
 	return 0.0;
 }
 
-static	ObjDrawFuncs_t sDefault = {
+static void	Default_SetDraped(void * ref) { }
+static void	Default_SetNoDraped(void * ref) { }
+
+static	ObjDrawFuncs10_t sDefault = {
 	Default_SetupPoly, Default_SetupLine, Default_SetupLight,
-	Default_SetupMovie, Default_SetupPanel, Default_TexCoord, Default_TexCoordPointer, Default_GetAnimParam
+	Default_SetupMovie, Default_SetupPanel, Default_TexCoord, Default_TexCoordPointer, Default_GetAnimParam, 
+	Default_SetDraped, Default_SetNoDraped
 };
 
 enum {
@@ -97,7 +101,7 @@ enum {
 	arrayMode_Lgt
 };
 
-void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
+void	ObjDraw(const XObj& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref)
 {
 	if (funcs == NULL) funcs = &sDefault;
 	int 	drawMode = drawMode_Non;
@@ -246,7 +250,7 @@ inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 }
 
 
-void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
+void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref)
 {
 	if (funcs == NULL) funcs = &sDefault;
 	int 	drawMode = drawMode_Non;
@@ -377,6 +381,8 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs_t * funcs, void * ref)
 				{	glDisable(GL_POLYGON_OFFSET_FILL);glPolygonOffset(0.0, 0.0);glDepthMask(GL_TRUE);	}
 				CHECK_GL_ERR
 				break;
+			case attr_Draped:	funcs->SetupDraped_f(ref);	break;
+			case attr_NoDraped:	funcs->SetupNoDraped_f(ref);	break;
 			} // Case
 
 		} // cmd loop

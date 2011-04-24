@@ -93,6 +93,10 @@ cmd_info	gCmds[] = {
 {	attr_Draw_Enable,		type_Attr,	"ATTR_draw_enable",			0,0,1},
 {	attr_Solid_Wall,		type_Attr,	"ATTR_solid_camera",		0,0,1},
 {	attr_No_Solid_Wall,		type_Attr,	"ATTR_no_solid_camera",		0,0,1},
+// 10000
+{	attr_Draped,			type_Attr,	"ATTR_draped",				0,0,1},
+{	attr_NoDraped,			type_Attr,	"ATTR_no_draped",			0,0,1},
+
 
 
 {	attr_Manip_Push,		type_Attr,	"ATTR_manip_push",			1,0,1},

@@ -132,6 +132,10 @@ enum {
 	attr_Draw_Enable,
 	attr_Solid_Wall,
 	attr_No_Solid_Wall,
+	
+	// 1000 commands
+	attr_Draped,
+	attr_NoDraped,
 	attr_Max
 };
 
@@ -233,6 +237,7 @@ struct XObjPanelRegion8 {
 struct	XObj8 {
 	string 					texture;
 	string 					texture_lit;
+	string 					texture_draped;
 	vector<XObjPanelRegion8>regions;
 	vector<int>				indices;
 	ObjPointPool			geo_tri;

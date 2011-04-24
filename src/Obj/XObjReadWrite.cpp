@@ -595,6 +595,10 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_lit);
 		}
+		if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_DRAPED", xfals))
+		{
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_draped);
+		}
 		// POINT_COUNTS tris lines lites geo indices
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "POINT_COUNTS", xfals))
 		{
