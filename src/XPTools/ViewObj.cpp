@@ -855,6 +855,7 @@ struct	ObjViewInfo_t {
 	GLenum		tex_lit;
 	GLenum		pan;
 	GLenum		pan_lit;
+	GLenum		drp;
 };
 
 static void	ObjView_SetupPoly(void * ref)
@@ -958,9 +959,24 @@ static float	ObjView_GetAnimParam(const char * string, float v1, float v2, void 
 	return v1 + (v2 - v1) * now;
 }
 
-static	ObjDrawFuncs_t sCallbacks = {
+static void ObjView_SetDraped(void * ref)
+{
+	ObjViewInfo_t * i = (ObjViewInfo_t *) ref;
+	if(i->drp)
+		glBindTexture(GL_TEXTURE_2D, i->drp);		CHECK_ERR();
+}
+
+static void ObjView_SetNoDraped(void * ref)
+{
+	ObjViewInfo_t * i = (ObjViewInfo_t *) ref;
+	if(i->tex)
+		glBindTexture(GL_TEXTURE_2D, i->tex);		CHECK_ERR();
+}
+
+static	ObjDrawFuncs10_t sCallbacks = {
 	ObjView_SetupPoly, ObjView_SetupLine, ObjView_SetupLine,
-	ObjView_SetupPoly, ObjView_SetupPanel, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam
+	ObjView_SetupPoly, ObjView_SetupPanel, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam, 
+	ObjView_SetDraped, ObjView_SetNoDraped
 };
 
 static void setup_lights(bool inLighting, bool inLit, bool inShowCulled)
@@ -1014,11 +1030,14 @@ static void setup_baseline_ogl(int hidden_geo)
 	glCullFace(hidden_geo ? GL_FRONT : GL_BACK);
 }
 
-static void setup_textures(const string& in_tex, const string& in_lit, bool inLit, bool inSolid, ObjViewInfo_t& info)
+static void setup_textures(const string& in_tex, const string& in_lit, const string& tex_drp, bool inLit, bool inSolid, ObjViewInfo_t& info)
 {
 	string	tex = in_tex;
+	string	drp = tex_drp;
 //	if (tex.size() > 4)	tex.erase(tex.size()-4);
 	StripPathCP(tex);
+	StripPathCP(drp);
+	
 	info.tex = FindTexture(tex, false);
 	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
 
@@ -1039,6 +1058,8 @@ static void setup_textures(const string& in_tex, const string& in_lit, bool inLi
 				info.pan	 = FindTexture("panel", false);
 	if (inLit)	info.pan_lit = FindTexture("panel", true);
 
+				info.drp = FindTexture(drp, false);
+
 	if (inSolid)	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	else			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -1053,12 +1074,12 @@ static void setup_textures(const string& in_tex, const string& in_lit, bool inLi
 void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist)
 {
 	inLighting = false;	// NEVER light these - it don't work yet!
-	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
+	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0, 0 };
 
 	string lit_tex = inObj.texture;
 	if (!lit_tex.empty()) lit_tex += "_LIT";
 
-	setup_textures(inObj.texture, lit_tex, inLit, inSolid, info);
+	setup_textures(inObj.texture, lit_tex, "", inLit, inSolid, info);
 
 	if (inShowCulled)
 	{
@@ -1090,7 +1111,9 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
 
 	setup_textures(inObj.texture.substr(0,(inObj.texture.length() > 4) ? (inObj.texture.length() - 4) : (inObj.texture.length())),
-					inObj.texture_lit.substr(0,(inObj.texture_lit.length() > 4) ? (inObj.texture_lit.length() - 4) : (inObj.texture_lit.length())), inLit, inSolid, info);
+					inObj.texture_lit.substr(0,(inObj.texture_lit.length() > 4) ? (inObj.texture_lit.length() - 4) : (inObj.texture_lit.length())), 
+					inObj.texture_draped.substr(0,(inObj.texture_draped.length() > 4) ? (inObj.texture_draped.length() - 4) : (inObj.texture_draped.length())),
+					inLit, inSolid, info);
 
 	if (inShowCulled)
 	{
