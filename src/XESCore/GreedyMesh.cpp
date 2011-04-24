@@ -25,7 +25,10 @@
 
 #include "GreedyMesh.h"
 #include "MeshDefs.h"
+#include "DEMGrid.h"
 #include "DEMDefs.h"
+#include "PerfUtils.h"
+#include "MathUtils.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 #include "PolyRasterUtils.h"
@@ -33,6 +36,7 @@
 static		 CDT *		sCurrentMesh = NULL;
 static const DEMGeo *	sCurrentDEM = NULL;
 static		 DEMMask *	sUsedDEM = NULL;
+static const DEMGrid *	sGridUsed = NULL;
 
 static FaceQueue	sBestChoices;
 
@@ -86,9 +90,9 @@ bool	InitOneTri(CDT::Face_handle face)
 // The rasterization of triangles is done in floating point, but this can lead to subtle errors.  This code goes back
 // and checks the final point (converted back to precise CGAL coordinates) against the original triangle.  We don't include
 // the point if (1) it is outside the triangle bounds or (2) it duplicates a corner (since corners are already exact).
-bool really_ok_point(const DEMGeo * dem, int x, int y, const CDT::Point& v1, const CDT::Point& v2, const CDT::Point& v3)
+bool really_ok_point(const DEMGeo * dem, const DEMGrid * g, int x, int y, const CDT::Point& v1, const CDT::Point& v2, const CDT::Point& v3)
 {
-	CDT::Point p(dem->x_to_lon(x), dem->y_to_lat(y));
+	CDT::Point p(g->xy_to_pt(x,y));
 	return p != v1 && p != v2 && p != v3 &&
 		!Triangle_2(v1,v2,v3).has_on_unbounded_side(p);
 }
@@ -96,6 +100,7 @@ bool really_ok_point(const DEMGeo * dem, int x, int y, const CDT::Point& v1, con
 inline float ScanlineMaxError(
 					const DEMGeo *	inDEMSrc,
 					const DEMMask *	inDEMUsed,
+					const DEMGrid *	inGrid,
 					int				y,
 					double			x1,
 					double			x2,
@@ -115,8 +120,8 @@ inline float ScanlineMaxError(
 	DebugAssert(y >= 0);
 	DebugAssert(y < inDEMSrc->mHeight);
 
-	int ix1 = ceil(min(x1,x2));
-	int ix2 = floor(max(x1,x2));
+	int ix1 = max(0,(int)round(min(x1,x2)));
+	int ix2 = min(inDEMSrc->mWidth-1,(int)round(max(x1,x2)));
 	DebugAssert(ix1 >= 0);
 	DebugAssert(ix2 < inDEMSrc->mWidth);
 
@@ -134,7 +139,7 @@ inline float ScanlineMaxError(
 			float diff = want - got;
 			if (diff < 0.0) diff = -diff;
 			if (diff > worst)
-			if (really_ok_point(inDEMSrc,x,y,v1,v2,v3))
+			if (really_ok_point(inDEMSrc,inGrid, x,y,v1,v2,v3))
 			{
 				worst = diff;
 				*worst_x = x;
@@ -202,6 +207,8 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(2)->point().x(),face->vertex(2)->point().y()), Point3(1,0,0)));
 //	gMeshLines.push_back(pair<Point2,Point3>(Point2(face->vertex(0)->point().x(),face->vertex(0)->point().y()), Point3(1,0,0)));
 
+#if 1
+
 	if (p2.y() < p1.y()) swap(p1, p2);
 	if (p1.y() < p0.y()) swap(p1, p0);
 	if (p2.y() < p1.y()) swap(p1, p2);
@@ -214,24 +221,21 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 		return;
 	}
 
-
 	float err = 0;
 
-	double	p0yc = ceil(p0.y());
-	double	p1yc = ceil(p1.y());
-	double	p2yc = ceil(p2.y());
-	int y0 = p0yc;
-	int y1 = p1yc;
-	int y2 = p2yc;
 	int y;
-
-	double dx1, dx2, x1, x2;
+	
+	int y0 = max(0,int(round(p0.y())));
+	int y1 = min(sCurrentDEM->mHeight-1,int(round(p2.y())));
+	int yc = max(y0,(int)floor(p1.y()));
+	
+	DebugAssert(yc >= y0);
+	DebugAssert(y1 >= yc);
 
 	double a = face->info().plane_a;
 	double b = face->info().plane_b;
 	double c = face->info().plane_c;
 
-	x1 = x2 = p0.x();
 /*	
 	if(p0.y() == p2.y())
 	{		
@@ -242,51 +246,55 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 */
 	DebugAssert(p0.y() != p2.y());
 
-	if (p0.y() != p2.y())
-		dx2 = (p2.x() - p0.x()) / (p2.y() - p0.y());
-
 	int 	worst_x = 0, worst_y = 0;
-
-	double partial = p0yc-p0.y();
-	x2 += dx2 * partial;
 
 	CDT::Point v1(face->vertex(0)->point());
 	CDT::Point v2(face->vertex(1)->point());
 	CDT::Point v3(face->vertex(2)->point());
 
-	// SPECIAL CASE: if p1 and p2 are horizontal, there is no section 2 of the tri - it has a flat top.  Do NOT miss that top scanline!
-	// Basically use floor + 1 to INCLDE the top scanline if we have a perfect match.
-	if (p1.y() == p2.y())
-		y1 = floor(p1.y())+1;
-
-	if (p0.y() != p1.y())
+	for (y = y0; y < yc; ++y)
 	{
-		dx1 = (p1.x() - p0.x()) / (p1.y() - p0.y());
-		x1 += dx1 * partial;
-		for (y = y0; y < y1; ++y)
-		{
-//			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x1), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
-//			gMeshPoints.push_back(pair<Point2,Point3>(Point2(sCurrentDEM->x_to_lon_double(x2), sCurrentDEM->y_to_lat_double(y)),Point3(0,0,1)));
-			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c, v1, v2, v3);
-			x1 += dx1;
-			x2 += dx2;
-		}
+		double x1 = double_interp(p0.y(),p0.x(),p1.y(),p1.x(),y);
+		double x2 = double_interp(p0.y(),p0.x(),p2.y(),p2.x(),y);
+		err = ScanlineMaxError(sCurrentDEM, sUsedDEM, sGridUsed, y, x1, x2, err, &worst_x, &worst_y, a, b, c, v1, v2, v3);
 	}
 
-	if (p1.y() != p2.y())
+	for (y = yc; y < y1; ++y)
 	{
-		dx1 = (p2.x() - p1.x()) / (p2.y() - p1.y());
-		x1 = p1.x();
-		partial = p1yc-p1.y();
-		x1 += dx1 * partial;
-
-		for (y = y1; y < y2; ++y)
-		{
-			err = ScanlineMaxError(sCurrentDEM, sUsedDEM, y, x1, x2, err, &worst_x, &worst_y, a, b, c, v1, v2, v3);
-			x1 += dx1;
-			x2 += dx2;
-		}
+		double x1 = double_interp(p0.y(),p0.x(),p2.y(),p2.x(),y);
+		double x2 = double_interp(p1.y(),p1.x(),p2.y(),p2.x(),y);
+		err = ScanlineMaxError(sCurrentDEM, sUsedDEM, sGridUsed, y, x1, x2, err, &worst_x, &worst_y, a, b, c, v1, v2, v3);
 	}
+
+#endif
+
+#if 0
+	double ymin = min(min(CGAL::to_double(face->vertex(0)->point().y()),CGAL::to_double(face->vertex(1)->point().y())),CGAL::to_double(face->vertex(2)->point().y()));
+	double ymax = max(max(CGAL::to_double(face->vertex(0)->point().y()),CGAL::to_double(face->vertex(1)->point().y())),CGAL::to_double(face->vertex(2)->point().y()));
+	double xmin = min(min(CGAL::to_double(face->vertex(0)->point().x()),CGAL::to_double(face->vertex(1)->point().x())),CGAL::to_double(face->vertex(2)->point().x()));
+	double xmax = max(max(CGAL::to_double(face->vertex(0)->point().x()),CGAL::to_double(face->vertex(1)->point().x())),CGAL::to_double(face->vertex(2)->point().x()));
+
+	int x1 = max(0,(int) floor(sCurrentDEM->lon_to_x(xmin)-0.5));
+	int y1 = max(0,(int) floor(sCurrentDEM->lat_to_y(ymin)-0.5));
+	int x2 = min(sCurrentDEM->mWidth -1,(int) ceil(sCurrentDEM->lon_to_x(xmax)+0.5));
+	int y2 = min(sCurrentDEM->mHeight-1,(int) ceil(sCurrentDEM->lat_to_y(ymax)+0.5));
+
+	float	err = 0;
+	int 	worst_x = 0, worst_y = 0;
+
+	double a = face->info().plane_a;
+	double b = face->info().plane_b;
+	double c = face->info().plane_c;
+
+	CDT::Point v1(face->vertex(0)->point());
+	CDT::Point v2(face->vertex(1)->point());
+	CDT::Point v3(face->vertex(2)->point());
+	
+	for(int y = y1; y <= y2; ++y)
+	{
+		err = ScanlineMaxError(sCurrentDEM, sUsedDEM, sGridUsed, y, x1, x2, err, &worst_x, &worst_y, a, b, c, v1, v2, v3);		
+	}
+#endif	
 
 	face->info().insert_err = err;
 	if (err > 0)
@@ -297,11 +305,12 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 }
 
 // Init the whole mesh - all tris, calc errs, queue
-void	InitMesh(CDT& inCDT, const DEMGeo& inDem, DEMMask& inUsed, double err_cutoff, double size_lim)
+void	InitMesh(CDT& inCDT, const DEMGeo& inDem, DEMMask& inUsed, const DEMGrid& inGrid, double err_cutoff, double size_lim)
 {
 	sBestChoices.clear();
 	sCurrentDEM = &inDem;
 	sUsedDEM = &inUsed;
+	sGridUsed = &inGrid,
 	sCurrentMesh = &inCDT;
 
 	for (CDT::All_faces_iterator face = inCDT.all_faces_begin(); face != inCDT.all_faces_end(); ++face)
@@ -326,14 +335,16 @@ void	DoneMesh(void)
 	sBestChoices.clear();
 	sCurrentDEM = NULL;
 	sUsedDEM = NULL;
+	sGridUsed = NULL;
 	sCurrentMesh = NULL;
 }
 
-void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func)
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, const DEMGrid& gridlines, double err_lim, double size_lim, int max_num, ProgressFunc func)
 {
+	StElapsedTime gr("greedymesh");
 //	fprintf(stderr,"Building Mesh err=%lf size=%lf max=%d\n", err_lim, size_lim, max_num);
 	PROGRESS_START(func, 0, 1, "Building Mesh")
-	InitMesh(inCDT, inAvail, ioUsed, err_lim, size_lim);
+	InitMesh(inCDT, inAvail, ioUsed, gridlines, err_lim, size_lim);
 
 	if (max_num == 0) max_num = INT_MAX;
 	int cnt_insert = 0, cnt_new = 0, cnt_recalc = 0;
@@ -357,8 +368,7 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 
 		DebugAssert(!inCDT.is_infinite(face_handle));
 
-		CDT::Point p(inAvail.x_to_lon(the_face->info().insert_x),
-					  inAvail.y_to_lat(the_face->info().insert_y));
+		CDT::Point p(gridlines.xy_to_pt(the_face->info().insert_x,the_face->info().insert_y));
 
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(0)->point().x(),the_face->vertex(0)->point().y()), Point3(1,0,1)));
 //		gMeshLines.push_back(pair<Point2,Point3>(Point2(the_face->vertex(1)->point().x(),the_face->vertex(1)->point().y()), Point3(1,0,1)));
