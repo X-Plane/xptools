@@ -28,13 +28,16 @@
 #include "GISUtils.h"
 #include "ISelection.h"
 #include "WED_AirportNode.h"
+#include "WED_FacadeNode.h"
 #include "WED_ToolUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_AirportBoundary.h"
 #include "WED_Airport.h"
 #include "WED_Ring.h"
 #include "WED_FacadePlacement.h"
+#include "WED_ForestRing.h"
 #include "WED_ForestPlacement.h"
+#include "WED_FacadeRing.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_LinePlacement.h"
@@ -122,6 +125,9 @@ void	WED_CreatePolygonTool::AcceptPath(
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
 	int is_texed = 0;
+	int is_forest = mType == create_Forest;
+	int is_facade = mType == create_Facade;
+	
 	if(mType == create_Polygon)
 	{
 		is_texed = mUVMap.value;
@@ -145,13 +151,17 @@ void	WED_CreatePolygonTool::AcceptPath(
 		is_poly = true;
 		is_texed = dynamic_cast<WED_TextureNode*>(old_outer_ring->GetNthChild(0)) != NULL ||
 				   dynamic_cast<WED_TextureBezierNode*>(old_outer_ring->GetNthChild(0)) != NULL;
+		is_forest = dynamic_cast<WED_ForestRing*>(old_outer_ring) != NULL;
+		is_facade = dynamic_cast<WED_FacadeRing*>(old_outer_ring) != NULL;
 	}
 
 	WED_AirportChain *	apt_ring=NULL;
 	WED_Thing *			outer_ring;
 
-		 if(is_apt)				outer_ring = apt_ring = WED_AirportChain::CreateTyped(GetArchive());
-	else if(is_poly)			outer_ring			  = WED_Ring::CreateTyped(GetArchive());
+		 if(is_apt)					outer_ring = apt_ring = WED_AirportChain::CreateTyped(GetArchive());
+	else if(is_forest)				outer_ring			  = WED_ForestRing::CreateTyped(GetArchive());
+	else if(is_facade)				outer_ring			  = WED_FacadeRing::CreateTyped(GetArchive());
+	else if(is_poly)				outer_ring			  = WED_Ring::CreateTyped(GetArchive());
 
 	static int n = 0;
 	++n;
@@ -339,6 +349,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 		WED_TextureBezierNode *	tbnode=NULL;
 
 		if(is_apt)							node = bnode = anode = WED_AirportNode::CreateTyped(GetArchive());
+		else if(is_facade)					node = bnode = WED_FacadeNode::CreateTyped(GetArchive());
 		else if (is_bezier && is_texed)		node = bnode = tbnode = WED_TextureBezierNode::CreateTyped(GetArchive());
 		else if (is_bezier)					node = bnode = WED_SimpleBezierBoundaryNode::CreateTyped(GetArchive());
 		else if (is_texed)					node = tnode = WED_TextureNode::CreateTyped(GetArchive());

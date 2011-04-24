@@ -749,7 +749,7 @@ WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity *
 	case gis_Composite:		return	ent_Container;
 	case gis_Polygon:		return	pt_sel ? ent_AtomicOrContainer : ent_Container;
 	case gis_PointSequence: return	ent_Container;
-	case gis_Ring:			return	ent_Container;
+	case gis_Ring:			return	pt_sel ? ent_AtomicOrContainer : ent_Container;		// single click on the chain edge?  Grab the chain.  But drag to encompass?  collect vertices but don't "move up" to the chain.
 	case gis_Chain:			return	pt_sel ? ent_AtomicOrContainer : ent_Container;		// single click on the chain edge?  Grab the chain.  But drag to encompass?  collect vertices but don't "move up" to the chain.
 	case gis_Line:			return	ent_AtomicOrContainer;
 	case gis_Line_Width:	return	ent_AtomicOrContainer;

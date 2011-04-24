@@ -283,6 +283,9 @@ bool			WED_IsSelectionNested(IResolver * resolver)
 
 bool WED_IsFolder(WED_Thing * what)
 {
+	IGISEntity * ent;
+	if(dynamic_cast<IGISPolygon*>(what))					return false;
+	if(dynamic_cast<IGISPointSequence*>(what))				return false;
 	if(dynamic_cast<IGISComposite*>(what))					return true;
 #if AIRPORT_ROUTING
 	if(strcmp(what->GetClass(), WED_ATCFlow::sClass)==0)	return true;
@@ -435,6 +438,8 @@ int	Iterate_IsStructuredObject(ISelectable * what, void * ref)
 	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
 	if (!e) return 0;
 
+	if(dynamic_cast<IGISPolygon*>(e)) return 1;
+	if(dynamic_cast<IGISPointSequence*>(e)) return 1;
 	switch(e->GetGISClass()) {
 	case gis_PointSequence:
 	case gis_Line:
@@ -651,7 +656,8 @@ bool IsGraphNode(WED_Thing * what)
 {
 	if(what->CountViewers() == 0) return false;
 	WED_Thing * parent = what->GetParent();	
-	if(SAFE_CAST(IGISComposite,parent) == NULL) return false;	
+	IGISComposite * c = SAFE_CAST(IGISComposite,parent);
+	if (c == NULL || c->GetGISClass() != gis_Composite) return false;
 	return SAFE_CAST(IGISPoint, what) != NULL;
 }
 

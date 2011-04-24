@@ -40,6 +40,7 @@
 #include "ObjDraw.h"
 #include "XObjDefs.h"
 #include "MathUtils.h"
+#include "WED_UIDefs.h"
 
 #if APL
 #include <OpenGL/gl.h>
@@ -104,6 +105,12 @@ static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, b
 	return true;
 }
 
+struct	Obj_DrawStruct {
+	GUI_GraphState *	g;
+	int					tex;
+	int					drp;
+};
+
 static void kill_pol_texture(void)
 {
 	glDisable(GL_TEXTURE_GEN_S);
@@ -113,36 +120,36 @@ static void kill_pol_texture(void)
 
 void Obj_SetupPoly(void * ref)
 {
-	GUI_GraphState * g= (GUI_GraphState*) ref;
-	g->SetTexUnits(1);
+	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
+	d->g->SetTexUnits(1);
 	glColor3f(1,1,1);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 void Obj_SetupLine(void * ref)
 {
-	GUI_GraphState * g= (GUI_GraphState*) ref;
-	g->SetTexUnits(0);
+	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
+	d->g->SetTexUnits(0);
 	glColor3f(1,1,1);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 void Obj_SetupLight(void * ref)
 {
-	GUI_GraphState * g= (GUI_GraphState*) ref;
-	g->SetTexUnits(0);
+	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
+	d->g->SetTexUnits(0);
 	glColor3f(1,1,1);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 void Obj_SetupMovie(void * ref)
 {
-	GUI_GraphState * g= (GUI_GraphState*) ref;
-	g->SetTexUnits(0);
+	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
+	d->g->SetTexUnits(0);
 	glColor3f(1,1,1);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 void Obj_SetupPanel(void * ref)
 {
-	GUI_GraphState * g= (GUI_GraphState*) ref;
-	g->SetTexUnits(0);
+	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
+	d->g->SetTexUnits(0);
 	glColor3f(1,1,1);
 }
 
@@ -161,7 +168,20 @@ float Obj_GetAnimParam(const char * string, float v1, float v2, void * ref)
 	return v1;
 }
 
-static ObjDrawFuncs_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam };
+void Obj_SetDraped(void * ref)
+{	
+	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
+	d->g->BindTex(d->drp,0);
+}
+
+void Obj_SetNoDraped(void * ref)
+{
+	Obj_DrawStruct * d= (Obj_DrawStruct*) ref;
+	d->g->BindTex(d->tex,0);
+}
+
+
+static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam, Obj_SetDraped, Obj_SetNoDraped };
 
 WED_PreviewLayer::WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) : WED_MapLayer(host, zoomer, resolver)
 {
@@ -217,7 +237,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			gis_poly = orth = NULL;
 	}
 
-	if(gis_poly)
+	if(gis_poly && gis_poly->GetGISClass() == gis_Polygon)
 	{
 			vector<Point2>	pts;
 			vector<int>		is_hole_start;
@@ -264,6 +284,81 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			kill_pol_texture();
 		}
 	}
+	
+	if(fac && fac->GetTopoMode() < 2)
+	{
+		vector<Point2>	pts;
+		vector<int>		is_hole_start;
+
+		PointSequenceToVector(gis_poly->GetOuterRing(), GetZoomer(), pts, orth != NULL, is_hole_start, 0);
+
+		glColor3f(1,1,1);
+		glLineWidth(3);
+		glBegin(GL_LINE_STRIP);
+		glVertex2(pts[0]);
+		glVertex2(pts[1]);
+		glEnd();
+		glLineWidth(1);
+	}
+	if(fac && fac->HasCustomWalls())
+	{
+		for(int h = -1; h < fac->GetNumHoles(); ++h)
+		{
+			IGISPointSequence * ps = (h == -1 ? fac->GetOuterRing() : fac->GetNthHole(h));
+			for(int i = 0; i < ps->GetNumSides(); ++i)
+			{
+				vector<Point2>	pts;
+				Segment2	s;
+				Bezier2		b;
+				if (ps->GetSide(gis_Geo,i,s,b))
+				{
+					s.p1 = b.p1;
+					s.p2 = b.p2;
+
+					b.p1 = GetZoomer()->LLToPixel(b.p1);
+					b.p2 = GetZoomer()->LLToPixel(b.p2);
+					b.c1 = GetZoomer()->LLToPixel(b.c1);
+					b.c2 = GetZoomer()->LLToPixel(b.c2);
+
+
+					int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
+										sqrt(Vector2(b.c1,b.c2).squared_length()) +
+										sqrt(Vector2(b.c2,b.p2).squared_length());
+					int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+					pts.reserve(point_count+1);
+					for (int n = 0; n <= point_count; ++n)
+						pts.push_back(b.midpoint((float) n / (float) point_count));
+
+				}
+				else
+				{
+					pts.push_back(GetZoomer()->LLToPixel(s.p1));
+					pts.push_back(GetZoomer()->LLToPixel(s.p2));
+				}
+				
+				Segment2	sp;
+				Bezier2		bp;
+				int param;
+				if(ps->GetSide(gis_Param,i,sp,bp))
+					param = bp.p1.x();
+				else
+					param = sp.p1.x();
+				
+				float colors[24] = {  1, 0, 0, 0.75,
+									1, 1, 0, 0.75,
+									0, 1, 0, 0.75,
+									0, 1, 1, 0.75,
+									0, 0, 1, 0.75,
+									1, 0, 1, 0.75};
+				glColor4fv(colors + (param % 6) * 4);
+				glLineWidth(2);
+				glShapeOffset2v(GL_LINE_STRIP, &*pts.begin(), pts.size(), -3);
+				glLineWidth(1);
+
+			}
+			
+		}
+	}
 
 	/******************************************************************************************************************************
 	 * OBJECT preview
@@ -275,9 +370,12 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		XObj8 * o;
 		if(rmgr->GetObj(vpath,o))
 		{
-			TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);
+			TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);			
+			TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap);
+			int id1 = ref  ? tman->GetTexID(ref ) : 0;
+			int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 			g->SetTexUnits(1);
-			if(ref)g->BindTex(tman->GetTexID(ref),0);
+			if(id1)g->BindTex(id1,0);
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
 			Point2 loc;
@@ -291,7 +389,8 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			glRotatef(r, 0, -1, 0);
 			g->EnableDepth(true,true);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			ObjDraw8(*o, 0, &kFuncs, (void *) g);
+			Obj_DrawStruct ds = { g, id1, id2 };
+			ObjDraw8(*o, 0, &kFuncs, &ds); 
 			g->EnableDepth(false,false);
 			glPopMatrix();
 		}

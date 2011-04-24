@@ -167,6 +167,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	intptr_t eid;
 	int ei, n;
 
+	DebugAssert(mDragType == drag_None);
 	mDragType = drag_None;
 
 	//------------------------------ CONTROL HANDLE TAG-UP -------------------------------------------------------
@@ -458,6 +459,12 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
 	IGISPolygon * poly = SAFE_CAST(IGISPolygon, entity);
+	if(com && com->GetGISClass() != gis_Composite) com = NULL;
+	if(seq && seq->GetGISClass() == gis_Composite) seq = NULL;
+	if(poly && poly->GetGISClass() != gis_Polygon) poly = NULL;
+	//string n = "???";
+	//	if (thang) thang->GetName(n);
+	//printf("Recursive traverse on %s: com=%p seq=%p, poly=%p, choice=%d\n", n.c_str(), com,seq,poly,choice);
 	switch(choice) {
 	case ent_Atomic:
 		if (pt_sel)	{ if (entity->PtWithin(gis_Geo,psel) || entity->PtOnFrame(gis_Geo,psel, frame_dist))	result.insert(entity); return 1;	}
