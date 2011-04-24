@@ -72,7 +72,15 @@
 	/* Boolean DEMs. */
 
 	TOKEN(dem_Wizard)				//	Derived dem for the purpose of illustrating stuff.
-
+	#if OPENGL_MAP
+	TOKEN(dem_Wizard1)				//	Derived dem for the purpose of illustrating stuff.
+	TOKEN(dem_Wizard2)				//	Derived dem for the purpose of illustrating stuff.
+	TOKEN(dem_Wizard3)				//	Derived dem for the purpose of illustrating stuff.
+	TOKEN(dem_Wizard4)				//	Derived dem for the purpose of illustrating stuff.
+	TOKEN(dem_Wizard5)				//	Derived dem for the purpose of illustrating stuff.
+	TOKEN(dem_Wizard6)				//	Derived dem for the purpose of illustrating stuff.
+	#endif
+	
 	/* HALFEDGE PARAMS */
 
 	TOKEN(he_IsUnderpassing)
