@@ -71,6 +71,7 @@ protected:
 		WED_PropDoubleText		tower_height;
 		WED_PropBoolText		windsock_lit;
 		WED_PropStringText		resource;
+		WED_PropBoolText		sign_clipboard;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

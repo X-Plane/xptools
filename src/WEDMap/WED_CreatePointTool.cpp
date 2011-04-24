@@ -38,6 +38,7 @@
 #include "GISUtils.h"
 #include "WED_ToolUtils.h"
 #include "IResolver.h"
+#include "GUI_Clipboard.h"
 
 static int kIsToolDirectional[] = { 0, 1, 1, 1, 1, 0, 0, 1 };
 static int kIsAirport[]			= { 1, 1, 1, 1, 1, 1, 1, 0 };
@@ -80,7 +81,8 @@ WED_CreatePointTool::WED_CreatePointTool(
 		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle","","",3.0,4,2),
 		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	"","",25.0,5,1),
 		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			"","",0),
-		resource		(tool==create_Object		?this:NULL,"Object",		"","","")
+		resource		(tool==create_Object		?this:NULL,"Object",		"","",""),
+		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	"","",0)
 {
 }
 
@@ -116,6 +118,7 @@ void	WED_CreatePointTool::AcceptPath(
 	WED_TowerViewpoint * tower;
 	WED_Windsock * sock;
 	WED_ObjPlacement * obj;
+		string ct;
 
 	switch(mType) {
 	case create_Beacon:
@@ -126,7 +129,10 @@ void	WED_CreatePointTool::AcceptPath(
 		new_pt_obj = new_pt_h = sign = WED_AirportSign::CreateTyped(GetArchive());
 		sign->SetStyle(sign_style.value);
 		sign->SetHeight(sign_height.value);
-		sign->SetName(sign_text.value);
+		if(sign_clipboard.value && GUI_GetTextFromClipboard(ct))
+			sign->SetName(ct);
+		else
+			sign->SetName(sign_text.value);
 		break;
 	case create_Helipad:
 		new_pt_obj = new_pt_h = helipad = WED_Helipad::CreateTyped(GetArchive());
