@@ -71,6 +71,7 @@ SOURCES += ./src/XESCore/Beaches.cpp
 SOURCES += ./src/XESCore/ConfigSystem.cpp
 SOURCES += ./src/XESCore/DEMAlgs.cpp
 SOURCES += ./src/XESCore/DEMDefs.cpp
+SOURCES += ./src/XESCore/DEMGrid.cpp
 SOURCES += ./src/XESCore/DEMToVector.cpp
 SOURCES += ./src/XESCore/DEMIO.cpp
 SOURCES += ./src/XESCore/DSFBuilder.cpp
