@@ -189,7 +189,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 
 	WriteXESFile("temp1.xes", *the_map,sMesh,sDem,sApts,ConsoleProgressFunc);
 
-	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],sDem[dem_Temperature], sDem[dem_Rainfall],ConsoleProgressFunc);
+	CalcRoadTypes(*the_map, sDem[dem_Elevation], sDem[dem_UrbanDensity],ConsoleProgressFunc);
 
 	// -assignterrain
 	AssignLandusesToMesh(sDem,sMesh,dump,ConsoleProgressFunc);
@@ -753,7 +753,6 @@ void MT_QMID(const char * id, int back_with_water)
 		if(!CreateBitmapFromFile(fname,&lit))
 		{
 			sprintf(fname,"%s%s_LIT.dds",g_qmid_prefix.c_str(),id);
-			ConvertBitmapToAlpha(&lit,false);
 			MakeMipmapStack(&lit);
 			WriteBitmapToDDS(lit,1,fname);
 			DestroyBitmap(&lit);
