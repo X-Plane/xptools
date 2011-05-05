@@ -25,6 +25,7 @@
 #include "BitmapUtils.h"
 #include "QuiltUtils.h"
 #include "FileUtils.h"
+#include "MathUtils.h"
 
 #if PHONE
 	#define WANT_PVR 1
@@ -314,6 +315,45 @@ static bool HandleScale(ImageInfo& info, bool up, bool down, bool square)
 	return false;
 }
 
+unsigned char night_filter(unsigned char src[], int count, int channel, int level)
+{
+	int total = 0;
+	for(int i = 0; i < count; ++i)
+		total += (int) src[i];
+	total *= 2;
+	return min(255,total / count);	
+}
+
+unsigned char fade_filter(unsigned char src[], int count, int channel, int level)
+{
+	int total = 0;
+	for(int i = 0; i < count; ++i)
+		total += (int) src[i];
+	total /= count;
+	if (channel == 3)
+	{
+		float alpha = interp(3,1.0,6,0.0,level);
+		total = (float) total * alpha;
+	}
+		
+	return total;
+}
+
+unsigned char fade_2_black_filter(unsigned char src[], int count, int channel, int level)
+{
+	int total = 0;
+	for(int i = 0; i < count; ++i)
+		total += (int) src[i];
+	total /= count;
+	{
+		float alpha = interp(3,1.0,6,0.0,level);
+		total = (float) total * alpha;
+	}
+		
+	return total;
+}
+
+
 int main(int argc, char * argv[])
 {
 	char	my_dir[2048];
@@ -344,7 +384,11 @@ int main(int argc, char * argv[])
 		printf("RADIO DDS_MODE 0 --png2dxt5 Use DXT5 Compression (smooth alpha)\n");
 		printf("RADIO DDS_MODE 0 --png2rgb No Compression\n");
 		printf("DIV\n");
-		printf("CHECK HAS_MIPS 0 --has_mips Image is already mip-mapped\n");
+		printf("RADIO HAS_MIPS 1 --std_mips Generate Mip-Maps\n");
+		printf("RADIO HAS_MIPS 0 --pre_mips Image Is a Mip-Map Tree\n");
+		printf("RADIO HAS_MIPS 0 --night_mips Generate Night-Style Mip-Map\n");
+		printf("RADIO HAS_MIPS 0 --fade_mips Generate Fading Mip-Map\n");
+		printf("RADIO HAS_MIPS 0 --ctl_mips Generate Fading CTL Mip-Map\n");
 
 #if WANT_ATI
 		printf("CMD .png .atc \"%s\" ATC_MODE PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
@@ -559,10 +603,35 @@ int main(int argc, char * argv[])
 	   strcmp(argv[1],"--png2dxt3")==0 ||
 	   strcmp(argv[1],"--png2dxt5")==0)
 	{
-		bool has_mips = strcmp(argv[2], "--has_mips") == 0;
+		int arg_base = 2;
+		int has_mips = 0;
+		if(strcmp(argv[2], "--std_mips") == 0)
+		{
+			has_mips = 0;
+			++arg_base;
+		} 
+		else if(strcmp(argv[2], "--pre_mips") == 0)
+		{
+			has_mips = 1;
+			++arg_base;
+		}
+		else if(strcmp(argv[2], "--night_mips") == 0)
+		{
+			has_mips = 2;
+			++arg_base;
+		}
+		else if(strcmp(argv[2], "--fade_mips") == 0)
+		{
+			has_mips = 3;
+			++arg_base;
+		}
+		else if(strcmp(argv[2], "--ctl_mips") == 0)
+		{
+			has_mips = 4;
+			++arg_base;
+		}
 
-		int arg_base = has_mips ? 3 : 2;
-
+		
 		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
 		arg_base +=1;
@@ -606,9 +675,14 @@ int main(int argc, char * argv[])
 		}
 
 		ConvertBitmapToAlpha(&info,false);
-		if(has_mips)	MakeMipmapStackFromImage(&info);
-		else			MakeMipmapStack(&info);
-
+		switch(has_mips) {
+		case 0:			MakeMipmapStack(&info);							break;
+		case 1:			MakeMipmapStackFromImage(&info);				break;
+		case 2:			MakeMipmapStackWithFilter(&info,night_filter);	break;
+		case 3:			MakeMipmapStackWithFilter(&info,fade_filter);	break;
+		case 4:			MakeMipmapStackWithFilter(&info,fade_2_black_filter);	break;
+		}
+		
 		if (WriteBitmapToDDS(info, dxt_type, outf)!=0)
 		{
 			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
@@ -618,9 +692,34 @@ int main(int argc, char * argv[])
 	}
 	else if(strcmp(argv[1],"--png2rgb")==0)
 	{
-		bool has_mips 	= strcmp(argv[2], "--has_mips") == 0;
+		int arg_base = 2;
+		int has_mips = 0;
+		if(strcmp(argv[2], "--std_mips") == 0)
+		{
+			has_mips = 0;
+			++arg_base;
+		} 
+		else if(strcmp(argv[2], "--pre_mips") == 0)
+		{
+			has_mips = 1;
+			++arg_base;
+		} 
+		else if(strcmp(argv[2], "--night_mips") == 0)
+		{
+			has_mips = 2;
+			++arg_base;
+		}
+		else if(strcmp(argv[2], "--fade_mips") == 0)
+		{
+			has_mips = 3;
+			++arg_base;
+		}
+		else if(strcmp(argv[2], "--ctl_mips") == 0)
+		{
+			has_mips = 4;
+			++arg_base;
+		}
 
-		int arg_base = has_mips ? 3 : 2;
 
 		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
@@ -653,8 +752,14 @@ int main(int argc, char * argv[])
 			outf=buf;
 		}
 
-		if(has_mips)	MakeMipmapStackFromImage(&info);
-		else			MakeMipmapStack(&info);
+		switch(has_mips) {
+		case 0:			MakeMipmapStack(&info);							break;
+		case 1:			MakeMipmapStackFromImage(&info);				break;
+		case 2:			MakeMipmapStackWithFilter(&info,night_filter);	break;
+		case 3:			MakeMipmapStackWithFilter(&info,fade_filter);	break;
+		case 4:			MakeMipmapStackWithFilter(&info,fade_2_black_filter);	break;
+		}
+		
 
 		if (WriteUncompressedToDDS(info, outf)!=0)
 		{
