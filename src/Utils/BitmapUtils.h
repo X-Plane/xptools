@@ -84,7 +84,10 @@ int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath
 /* Given an imageInfo structure, this routine writes it to disk as a .png file.  */
 int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath, char * inPalette, int inPaletteLen);
 
-/* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
+/* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image.
+ * NOTE: if you compile with PHONE then DDS are written upside down (lower left origin
+ * instead of upper-left).  This is an optimization for the iphone, which can then
+ * pass the data DIRECTLY to OpenGL. */
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name);
 
 /* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
@@ -176,6 +179,11 @@ int MakeMipmapStack(struct ImageInfo * ioImage);
 
 /* Same as above, but we take a "tree" of lower-left justified images...*/
 int MakeMipmapStackFromImage(struct ImageInfo * ioImage);
+
+/* Make a mip-map stack with a custom filter. */
+int MakeMipmapStackWithFilter(struct ImageInfo * ioImage, unsigned char (* filter)(unsigned char src[], int count, int channel, int level));
+
+
 
 /* This routine "advances" the ptr and sizes in the image to go to the next
  * mip-map.  This is ONLY safe if the image is a mip-map stack.  IMPORTANT: 

@@ -32,7 +32,6 @@
 #include <squish.h>
 
 
-
 /*
 	WARNING: Struct alignment must be "68K" (e.g. 2-byte alignment) for these
 	structures to be happy!!!
@@ -1404,6 +1403,32 @@ static void	in_place_scaleY(int x, int y, unsigned char * src, unsigned char * d
 	}
 }
 
+static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level, unsigned char (* filter)(unsigned char src[], int count, int channel, int level))
+{
+	unsigned char temp_buf[4];	// Enough storage for RGBA 2x2
+	int xr = src.width == dst.width ? 1 : 2;
+	int yr = src.height == dst.height ? 1 : 2;
+
+	int srb = src.width * src.channels + src.pad;
+	int drb = dst.width * dst.channels + dst.pad;
+
+	for(int y = 0; y < dst.height; ++y)
+	for(int x = 0; x < dst.width; ++x)
+	{
+		for(int c = 0; c < src.channels; ++c)
+		{
+			int ns = 0;
+			for(int dy = 0; dy < yr; ++dy)
+			for(int dx = 0; dx < xr; ++dx)
+			{
+				temp_buf[ns++] = src.data[(y * yr + dy) * srb + (x * xr + dx) * src.channels + c];
+			}
+			dst.data[y * drb + x * dst.channels + c] = 
+				filter(temp_buf,ns,c,level);
+		}
+	}
+}
+
 #if BIG
 	#if APL
 		#if defined(__MACH__)
@@ -1709,8 +1734,6 @@ void	FlipImageY(struct ImageInfo&	io_image)
 
 int MakeMipmapStack(struct ImageInfo * ioImage)
 {
-//	if(ioImage->channels == 3)
-//		ConvertBitmapToAlpha(ioImage, false);
 	int storage = 0;
 	int mips = 0;
 	int x = ioImage->width;
@@ -1795,6 +1818,50 @@ int MakeMipmapStackFromImage(struct ImageInfo * ioImage)
 	ioImage->data = base;
 
 	ioImage->width /= 2;
+
+	return mips;
+}
+
+int MakeMipmapStackWithFilter(struct ImageInfo * ioImage, unsigned char (* filter)(unsigned char src[], int count, int channel, int level))
+{
+	int storage = 0;
+	int mips = 0;
+	int x = ioImage->width;
+	int y = ioImage->height;
+	do {
+		storage += (x * y * ioImage->channels);
+		++mips;
+		if(x == 1 && y == 1) break;
+		if (x > 1) x >>= 1;
+		if (y > 1) y >>= 1;
+	} while (1);
+
+	unsigned char * base = (unsigned char *) malloc(storage);
+
+	ImageInfo ni;
+	ni.width = ioImage->width;
+	ni.height = ioImage->height;
+	ni.pad = 0;
+	ni.channels = ioImage->channels;
+	ni.data = base;
+
+	CopyBitmapSectionDirect(*ioImage, ni, 0, 0, 0, 0, ni.width, ni.height);
+	int level = 0;
+
+	while(ni.width > 1 || ni.height > 1)
+	{
+		ImageInfo sd(ni);
+		sd.data += (ni.channels * ni.width * ni.height);
+		if(sd.width > 1) sd.width >>= 1;
+		if(sd.height > 1) sd.height >>= 1;
+		
+		copy_mip_with_filter(ni,sd,level,filter);
+		ni=sd;
+		++level;
+	}
+
+	free(ioImage->data);
+	ioImage->data = base;
 
 	return mips;
 }
