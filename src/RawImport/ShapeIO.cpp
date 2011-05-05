@@ -230,6 +230,10 @@ inline void DEBUG_POLYGON(const Polygon_2& p, const Point3& c1, const Point3& c2
 }
 */
 
+// SPECIAL CHARS:
+// *			Match any empty string
+// -			Match null
+// !-			Match any non-null (including empty string)
 static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vector& rules)
 {
 	for(shape_pattern_vector::const_iterator r = rules.begin(); r != rules.end(); ++r)
@@ -240,16 +244,19 @@ static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vecto
 		{
 			if(r->dbf_id[n] == -1)														{ rule_ok = false; break; }
 
-				const char * field_val = DBFReadStringAttribute(db,shape_id,r->dbf_id[n]);
-				if(field_val == NULL)														{ rule_ok = false; break; }
-				if(strcmp(r->values[n].c_str(),"*") == 0)
-				{
-					if(field_val[0] == 0)													 { rule_ok = false; break; }
-				}
-				else
-				{
-					if(strcmp(r->values[n].c_str(),field_val) != 0)								{ rule_ok = false; break; }
-				}
+			const char * field_val = DBFReadStringAttribute(db,shape_id,r->dbf_id[n]);
+			if(field_val == NULL && strcmp(r->values[n].c_str(),"-") == 0)				continue;
+			if(field_val != NULL && strcmp(r->values[n].c_str(),"!-") == 0)				continue;
+							
+			if(field_val == NULL)														{ rule_ok = false; break; }
+			if(strcmp(r->values[n].c_str(),"*") == 0)
+			{
+				if(field_val[0] == 0)													{ rule_ok = false; break; }
+			}
+			else
+			{
+				if(strcmp(r->values[n].c_str(),field_val) != 0)							{ rule_ok = false; break; }
+			}
 		}
 
 		if(rule_ok) return r->feature;
