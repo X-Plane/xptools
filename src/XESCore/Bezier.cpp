@@ -32,6 +32,7 @@ inline Point2 rat2ben(const Rat_point_2& p) { return Point2(p.x().doubleValue(),
 
 Bezier_curve_2	ben2cgal(const Bezier2& b)
 {
+	Point2 hack_pt;
 	vector<Rat_point_2>	cp;
 
 	if(b.p1 == b.c1 && b.p2 == b.c2)
@@ -44,13 +45,19 @@ Bezier_curve_2	ben2cgal(const Bezier2& b)
 		cp.push_back(ben2rat(b.p1));
 
 		if(b.p1 == b.c1)
-			cp.push_back(ben2rat(Segment2(b.p1,b.c2).midpoint(BEZ_HACK)));
-		else
+		{
+			hack_pt = Segment2(b.p1,b.c2).midpoint(BEZ_HACK);
+			if(hack_pt != b.p1)
+				cp.push_back(ben2rat(hack_pt));
+		} else
 			cp.push_back(ben2rat(b.c1));
 
 		if(b.p2 == b.c2)
-			cp.push_back(ben2rat(Segment2(b.p2,b.c1).midpoint(BEZ_HACK)));
-		else
+		{
+			hack_pt = Segment2(b.p2,b.c1).midpoint(BEZ_HACK);
+			if(hack_pt != b.p2)
+				cp.push_back(ben2rat(hack_pt));
+		} else
 			cp.push_back(ben2rat(b.c2));
 		
 		cp.push_back(ben2rat(b.p2));
@@ -153,14 +160,19 @@ void	find_crossing_beziers(
 	vector<Bezier_curve_2>	curves;
 	vector<Bezier_point_2>		pts;
 	
-	for(vector<Bezier2>::const_iterator b = in_curves.begin(); b != in_curves.end(); ++b)
-	if(b->p1 != b->c1 ||
-	   b->c1 != b->c2 ||
-	   b->c2 != b->p2)
-		curves.push_back(ben2cgal(*b));
-	
-	find_crossing_beziers(curves,pts);
 	out_xons.clear();
+	for(vector<Bezier2>::const_iterator b = in_curves.begin(); b != in_curves.end(); ++b)
+	{
+		if(b->p1 != b->p2 && (b->p1 != b->c1 || b->p2 != b->c2) && (b->c1 == b->p2 || b->c2 == b->p1))
+		{
+			out_xons.push_back(b->c1);
+		}		
+		else if(b->p1 != b->c1 ||
+		   b->c1 != b->c2 ||
+		   b->c2 != b->p2)
+			curves.push_back(ben2cgal(*b));
+	}
+	find_crossing_beziers(curves,pts);
 	for(vector<Bezier_point_2>::iterator p = pts.begin(); p != pts.end(); ++p)
 	{
 		pair<double,double>	pp = p->approximate();
