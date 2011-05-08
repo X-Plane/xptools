@@ -1,6 +1,9 @@
 MeshTool Instructions and Release Notes
 
 Version History
+	5/8/10 2.0 r5
+		Fixed snap rounding on GeoTIFF images
+		Fixed incorrect creation of DDS files
 	4/20/10 2.0 r4
 		Fixed failure to export with .bil files
 	3/31/10 2.0 r3
