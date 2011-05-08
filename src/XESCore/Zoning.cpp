@@ -42,6 +42,8 @@
 // a single tall building in a block from turning into a sea of tall buildings.
 #define MAX_OBJ_SPREAD 100000
 
+#define ZONING_METRICS 0
+
 ZoningRuleTable				gZoningRules;
 ZoningInfoTable				gZoningInfo;
 EdgeRuleTable				gEdgeRules;
@@ -275,6 +277,10 @@ void	ZoneManMadeAreas(
 	int total = ioMap.number_of_faces() * 2;
 	int check = total / 100;
 	int ctr = 0;
+	
+#if ZONING_METRICS
+	map<int, map<int, int> > slope_zoning;
+#endif	
 
 	/*****************************************************************************
 	 * PASS 1 - ZONING ASSIGNMENT VIA LAD USE DATA + FEATURES
@@ -461,7 +467,16 @@ void	ZoneManMadeAreas(
 						my_pt_features);
 
 		if(zone != NO_VALUE)
+		{
 			face->data().SetZoning(zone);
+#if ZONING_METRICS			
+			double slope_d = acos(1.0 - max_slope) * RAD_TO_DEG;
+			int slope_id = 3.0 * ceil(slope_d / 3.0);
+			
+			slope_zoning[zone][slope_id]++;
+#endif			
+			
+		}
 		face->data().mParams[af_HeightObjs] = max_height;
 
 		face->data().mParams[af_UrbanAverage] = total_urban / (float) count;
@@ -602,6 +617,69 @@ void	ZoneManMadeAreas(
 
 	}
 	PROGRESS_DONE(inProg, 2, 3, "Checking Water")
+	
+#if ZONING_METRICS
+
+	map<int,map<int, int> >		histo;
+
+	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
+	if (!face->is_unbounded())
+	{
+		int z = face->data().GetZoning();
+		if (z != NO_VALUE)
+		{
+			Pmwx::Ccb_halfedge_circulator circ, stop;
+			circ = stop = face->outer_ccb();
+			int c = 0;
+			do {
+				++c;
+			} while(++circ != stop);
+			if(c == 4)
+			{
+				circ = stop = face->outer_ccb();
+				do
+				{
+					double m = LonLatDistMeters(
+									CGAL::to_double(circ->source()->point().x()),
+									CGAL::to_double(circ->source()->point().y()),
+									CGAL::to_double(circ->target()->point().x()),
+									CGAL::to_double(circ->target()->point().y()));
+					int mi = round(m / 5.0) * 5.0;
+					histo[z][mi]++;
+				} while(++circ != stop);			
+			}
+		}
+	}
+	for(map<int,map<int, int> >::iterator z = histo.begin(); z != histo.end(); ++z)
+	{
+		printf("%s:\n", FetchTokenString(z->first));
+		map<int,int>::iterator h;
+		int t = 0;
+		for(h = z->second.begin(); h != z->second.end(); ++h)
+			t += h->second;
+		for(h = z->second.begin(); h != z->second.end(); ++h)		
+		if((100.0 * (float) h->second / (float) t) >= 5.0)
+			printf("%d: %.0f%%\n", h->first, 100.0 * (float) h->second / (float) t);
+	}
+
+	printf("---slope---\n");
+	for(map<int,map<int, int> >::iterator z = slope_zoning.begin(); z != slope_zoning.end(); ++z)
+	{
+		printf("%s:\n", FetchTokenString(z->first));
+		map<int,int>::iterator h;
+		int t = 0;
+		for(h = z->second.begin(); h != z->second.end(); ++h)
+			t += h->second;
+		for(h = z->second.begin(); h != z->second.end(); ++h)		
+		if((100.0 * (float) h->second / (float) t) >= 5.0)
+			printf("%d: %.0f%%\n", h->first, 100.0 * (float) h->second / (float) t);
+	}
+	
+	
+
+	
+	
+#endif	
 }
 
 
