@@ -128,7 +128,6 @@ SOURCES += ./src/WEDEntities/WED_Airport.cpp
 SOURCES += ./src/WEDEntities/WED_AirportNode.cpp
 SOURCES += ./src/WEDEntities/WED_AirportSign.cpp
 SOURCES += ./src/WEDEntities/WED_ATCFrequency.cpp
-SOURCES += ./src/WEDEntities/WED_DrapedOrthophotoBoundary.cpp
 SOURCES += ./src/WEDEntities/WED_DrapedOrthophoto.cpp
 SOURCES += ./src/WEDEntities/WED_ExclusionZone.cpp
 SOURCES += ./src/WEDEntities/WED_TextureBezierNode.cpp
