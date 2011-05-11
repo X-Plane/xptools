@@ -565,7 +565,7 @@ void assemble_dsf_pt(double c[8], const Point2& pt, const Point2 * bez, UVMap_t 
 	}
 }	
 
-void assemble_dsf_pt(double c[8], const Point2& pt, int pt_param, const Point2 * bez, const Bbox2& bounds)
+void assemble_dsf_pt_param(double c[8], const Point2& pt, int pt_param, const Point2 * bez, const Bbox2& bounds)
 {	
 	Point2	p = pt;
 	gentle_crop(p, bounds, g_dropped_pts);
@@ -671,7 +671,7 @@ static void	DSF_AccumChainBezier(
 			
 			for(int i = 0; i < pts_triple.size(); ++i)
 			{
-				assemble_dsf_pt(c, 
+				assemble_dsf_pt_param(c, 
 						pts_triple[i].pt, 
 						pts_triple[i].param,
 						&pts_triple[i].hi, 
@@ -872,7 +872,7 @@ void DSF_AccumPolygonBezier(
 	{	
 		double crd[8];
 
-		assemble_dsf_pt(crd, pts3[p].pt, pts3[p].param, &pts3[p].hi, bounds);
+		assemble_dsf_pt_param(crd, pts3[p].pt, pts3[p].param, &pts3[p].hi, bounds);
 		cbs->AddPolygonPoint_f(crd,writer);		
 	}
 }						
@@ -901,7 +901,7 @@ void DSF_AccumPolygon(
 	for(vector<Segment2p>::const_iterator s = poly.begin(); s != poly.end(); ++s)
 	{
 		double c[4];
-		assemble_dsf_pt(c, s->source(), s->param, NULL, bounds);
+		assemble_dsf_pt_param(c, s->source(), s->param, NULL, bounds);
 		cbs->AddPolygonPoint_f(c,writer);
 	}
 }						
