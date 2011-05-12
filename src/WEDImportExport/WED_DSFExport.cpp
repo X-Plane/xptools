@@ -592,7 +592,7 @@ static void	DSF_AccumChainBezier(
 						void *									writer,
 						int										idx,
 						int										param,
-						int										closed)						
+						int										auto_closed)						
 {
 	vector<Bezier2>::const_iterator n = start;
 	
@@ -612,7 +612,7 @@ static void	DSF_AccumChainBezier(
 			for(int i = 0; i < pts_triple.size(); ++i)
 			{
 				assemble_dsf_pt(c, pts_triple[i].pt, &pts_triple[i].hi, NULL, bounds);
-				if(!closed || i != (pts_triple.size()-1))
+				if(!auto_closed || i != (pts_triple.size()-1))
 				{
 //					debug_mesh_line(pts_triple[i].pt,pts_triple[i].hi,1,1,1,0,1,0);
 					cbs->AddPolygonPoint_f(c,writer);							
@@ -635,7 +635,7 @@ static void	DSF_AccumChainBezier(
 						void *									writer,
 						int										idx,
 						int										param,
-						int										closed)						
+						int										auto_closed)						
 {
 	vector<Bezier2p>::const_iterator n = start;
 	
@@ -677,7 +677,7 @@ static void	DSF_AccumChainBezier(
 						&pts_triple[i].hi, 
 						bounds);
 				printf("bezier: %f %f %f   %f %f\n", c[0],c[1],c[2],c[3],c[4]);
-				if(!closed || i != (pts_triple.size()-1))
+				if(!auto_closed || i != (pts_triple.size()-1))
 				{
 //					debug_mesh_line(pts_triple[i].pt,pts_triple[i].hi,1,1,1,0,1,0);
 					cbs->AddPolygonPoint_f(c,writer);							
@@ -701,7 +701,7 @@ static void	DSF_AccumChain(
 						void *								writer,
 						int									idx,
 						int									param,
-						int									closed)		// If true, the entity we are writing is 'closed' in the DSF - no need to repush the first point as the last
+						int									auto_closed)		// If true, the entity we are writing is implicitly 'closed' in the DSF - no need to repush the first point as the last
 {
 	vector<Segment2>::const_iterator next;
 	for(vector<Segment2>::const_iterator i = start; i != end; ++i)
@@ -728,13 +728,13 @@ static void	DSF_AccumChain(
 			cbs->BeginPolygon_f(idx, param, 2, writer);
 			cbs->BeginPolygonWinding_f(writer);
 		}
-		else if(next == end && (i->target() != start->source() || !closed))				// If we are ending AND we need a last point, write it.
+		else if(next == end && (i->target() != start->source() || !auto_closed))		// If we are ending AND we need a last point, write it.
 		{																				// We need that last pt if we are not closed or if the
 			assemble_dsf_pt(c, i->target(), NULL, NULL, bounds);						// closure is not part of the DSF
 			cbs->AddPolygonPoint_f(c,writer);			
 		}	
 
-		DebugAssert(!(next == end && i->target() == start->source() && closed));		// If start is end AND we are closed and discontinuous, it's a nerror in the code that called us.
+		DebugAssert(!(next == end && i->target() == start->source() && auto_closed));	// If start is end AND we are closed and discontinuous, it's a nerror in the code that called us.
 		
 		if(next == end)																	// Always cap at end
 		{
@@ -752,7 +752,7 @@ static void	DSF_AccumChain(
 						void *								writer,
 						int									idx,
 						int									param,
-						int									closed)
+						int									auto_closed)
 {
 	vector<Segment2p>::const_iterator next;
 	for(vector<Segment2p>::const_iterator i = start; i != end; ++i)
@@ -781,7 +781,7 @@ static void	DSF_AccumChain(
 			cbs->BeginPolygon_f(idx, param, 3, writer);
 			cbs->BeginPolygonWinding_f(writer);
 		}
-		else if(next == end && (i->target() != start->source() || !closed))
+		else if(next == end && (i->target() != start->source() || !auto_closed))
 		{
 			assemble_dsf_pt(c, i->target(), NULL, NULL, bounds);
 			c[2] = i->param;
@@ -1054,6 +1054,7 @@ static void	DSF_ExportTileRecursive(
 		fac->GetResource(r);
 		idx = io_table.accum_pol(r);
 		bool bez = WED_HasBezierPol(fac);
+		bool fac_is_auto_closed = fac->GetTopoMode() != 2;
 		
 		if(fac->GetTopoMode() == 0 && fac->HasCustomWalls())
 		{
@@ -1133,7 +1134,7 @@ static void	DSF_ExportTileRecursive(
 					CropBezierChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
-						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), 0);
+						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 				}
 				else
 				{		
@@ -1146,7 +1147,7 @@ static void	DSF_ExportTileRecursive(
 					CropSegmentChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
-						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), 0);
+						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 				}
 			}
 		}
@@ -1164,7 +1165,7 @@ static void	DSF_ExportTileRecursive(
 					CropBezierChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
-						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), 0);
+						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 				}
 				else
 				{		
@@ -1174,7 +1175,7 @@ static void	DSF_ExportTileRecursive(
 					CropSegmentChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
-						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), 0);
+						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 				}
 			}
 		}

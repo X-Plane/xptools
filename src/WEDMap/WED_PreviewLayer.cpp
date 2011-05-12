@@ -302,6 +302,8 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	}
 	if(fac && fac->HasCustomWalls())
 	{
+		g->SetState(false,0,false,true,true,false,false);
+	
 		for(int h = -1; h < fac->GetNumHoles(); ++h)
 		{
 			IGISPointSequence * ps = (h == -1 ? fac->GetOuterRing() : fac->GetNthHole(h));
