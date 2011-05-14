@@ -304,21 +304,38 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	case gis_Point_Heading:
 		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)
 		{
-			pt_h->GetLocation(gis_Geo,*p);
-			Vector2	vdir;
-			NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading(),vdir);
-			if(n==1)
+			if(mInEdit)
 			{
-				Point2 orig (*p);
-				*p = GetZoomer()->LLToPixel(*p);
-				*p += vdir * 15.0;
-				*p = GetZoomer()->PixelToLL(*p);
-				if (dir) *dir = Vector2(orig, *p);
-				if (con_type) *con_type = handle_Rotate;
-			} else
-				if (con_type) *con_type = handle_Icon;
-				if (radius) *radius = GetFurnitureIconRadius();
-
+				if(n==1)
+				{
+					*p = mTaxiDest;
+					if (dir) *dir = Vector2(mRotateCtr, mTaxiDest);
+					if (con_type) *con_type = handle_Rotate;
+				}
+				else
+				{
+					*p = mRotateCtr;
+					if (con_type) *con_type = handle_Icon;
+					if (radius) *radius = GetFurnitureIconRadius();
+				}
+			}
+			else
+			{
+				pt_h->GetLocation(gis_Geo,*p);
+				Vector2	vdir;
+				NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading(),vdir);
+				if(n==1)
+				{
+					Point2 orig (*p);
+					*p = GetZoomer()->LLToPixel(*p);
+					*p += vdir * 15.0;
+					*p = GetZoomer()->PixelToLL(*p);
+					if (dir) *dir = Vector2(orig, *p);
+					if (con_type) *con_type = handle_Rotate;
+				} else
+					if (con_type) *con_type = handle_Icon;
+					if (radius) *radius = GetFurnitureIconRadius();
+			}
 			return;
 		}
 		break;
@@ -672,16 +689,23 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				SnapMovePoint(p,delta, en);
 				pt_h->SetLocation(gis_Geo,p);
 			} else {
-				Point2 me = p;
-				Vector2	dir;
-				NorthHeading2VectorMeters(p,p,pt_h->GetHeading(),dir);
-				p = GetZoomer()->LLToPixel(p);
-				p += dir * 15.0;
-				p = GetZoomer()->PixelToLL(p);
-				p += delta;
-				dir = Vector2(me,p);
+				if(!mInEdit)
+				{
+					mInEdit = 1;
+					mRotateCtr = p;
+					Point2 me = p;
+					Vector2	dir;
+					NorthHeading2VectorMeters(p,p,pt_h->GetHeading(),dir);
+					p = GetZoomer()->LLToPixel(p);
+					p += dir * 15.0;
+					p = GetZoomer()->PixelToLL(p);
+					mTaxiDest = p;
+				}
+
+				mTaxiDest += delta;				
+				Vector2 dir = Vector2(mRotateCtr,mTaxiDest);
 				dir.normalize();
-				pt_h->SetHeading(VectorDegs2NorthHeading(me,me,dir));
+				pt_h->SetHeading(VectorDegs2NorthHeading(mRotateCtr,mRotateCtr,dir));
 			}
 			return;
 		}
