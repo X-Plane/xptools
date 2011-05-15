@@ -682,6 +682,26 @@ void copy_scanline(
 	}
 }
 
+template<typename T>
+void copy_tile(
+				const T * v,
+				int x,
+				int y,
+				int dx,			// tile size
+				int dy,
+				DEMGeo& dem)
+{
+	for (int cy = 0; cy < dy; ++cy)
+	for (int cx = 0; cx < dx; ++cx)
+	{
+		int dem_x = x + cx;
+		int dem_y = dem.mHeight - (y + cy) - 1;
+		float e = *v;
+		dem(dem_x,dem_y) = e;
+		++v;
+	}
+}
+
 /*
 	GeoTiff notes -
 	First of all, Geotiff - unlike our DEMs, the first scanline is the "top" of the image, meaning north-most scanline.
@@ -756,6 +776,83 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style)
 	printf("Image is: %dx%d, samples: %d, depth: %d, format: %d\n", w, h, cc, d, format);
 
 	inMap.resize(w,h);
+	
+	if(TIFFIsTiled(tif))
+	{
+		uint32	tw, th;
+		TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tw);
+		TIFFGetField(tif, TIFFTAG_TILELENGTH, &th);
+		tdata_t buf = _TIFFmalloc(TIFFTileSize(tif));
+		for (int y = 0; y < h; y += th)
+		for (int x = 0; x < w; x += tw)
+		{
+			result = TIFFReadTile(tif, buf, x, y, 0, 0);
+			if (result == -1) { printf("Tiff error in read.\n"); break; }
+
+			int ux = min(tw,w-x);
+			int uy = min(th,h-y);
+
+			switch(format) {
+			case SAMPLEFORMAT_UINT:
+				switch(d) {
+				case 8:
+					copy_tile<unsigned char>((const unsigned char *) buf, x,y,ux,uy, inMap);
+					break;
+				case 16:
+					copy_tile<unsigned short>((const unsigned short *) buf, x,y,ux,uy, inMap);
+					break;
+				case 32:
+					copy_tile<unsigned int>((const unsigned int *) buf, x,y,ux,uy, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported unsigned int sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			case SAMPLEFORMAT_INT:
+				switch(d) {
+				case 8:
+					copy_tile<char>((const char *) buf, x,y,ux,uy, inMap);
+					break;
+				case 16:
+					copy_tile<short>((const short *) buf, x,y,ux,uy, inMap);
+					break;
+				case 32:
+					copy_tile<int>((const int *) buf, x,y,ux,uy, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported signed int sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			case SAMPLEFORMAT_IEEEFP:
+				switch(d) {
+				case 32:
+					copy_tile<float>((const float *) buf, x,y,ux,uy, inMap);
+					break;
+				case 64:
+					copy_tile<double>((const double *) buf, x,y,ux,uy, inMap);
+					break;
+				default:
+					printf("TIFF error: unsupported floating point sample depth: %d\n", d);
+					goto bail;
+				}
+				break;
+			default:
+				printf("TIFF error: unsupported pixel format %d\n", format);
+				break;			
+			}
+		}
+
+		_TIFFfree(buf);	
+
+		TIFFClose(tif);
+
+		TIFFSetWarningHandler(warnH);
+		TIFFSetErrorHandler(errH);
+		return result != -1;
+	}
+	else
 	{
 		tsize_t line_size = TIFFScanlineSize(tif);
 		tdata_t aline = _TIFFmalloc(line_size);
