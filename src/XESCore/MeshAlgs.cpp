@@ -57,7 +57,7 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 #define BURN_ROADS 0
 
 // This adds more vertices to cliffs.
-#define SPLIT_CLIFFS 1
+#define SPLIT_CLIFFS 0
 
 // Don't do ANY borders - really only for debugging - when we want to see the mesh tri choice with NO borders (since wide borders can "swamp" a triangle).
 #define NO_BORDERS_AT_ALL 0
@@ -68,10 +68,6 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
 // This causes the alg to print out timing of individual meshing steps.
 #define PROFILE_PERFORMANCE 1
-
-// Stop RFUI to show in progress triangulation
-#define SHOW_STEPS 0
-
 
 // This guarantees that we don't have "beached" triangles - that is, water trianglse where all 3 points are coastal, and thus the water depth is ZERO in the entire
 // thing.
@@ -85,21 +81,6 @@ typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
 #if DEBUG_DROPPED_PTS
 #include "GISTool_Globals.h"
-#endif
-
-#if SHOW_STEPS
-
-#include "RF_Notify.h"
-#include "RF_Msgs.h"
-
-#define PAUSE_STEP(x) \
-		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL); \
-		DoUserAlert(x);
-
-#else
-
-#define PAUSE_STEP(x) 
-
 #endif
 
 #if PROFILE_PERFORMANCE
@@ -151,11 +132,8 @@ inline bool must_burn_he(Halfedge_handle he)
 	
 	return he->data().mParams.count(he_MustBurn) ||
 		   tw->data().mParams.count(he_MustBurn) ||
-//		   f1->data().GetZoning() != f2->data().GetZoning() ||
-#if !DEV
-	#error put zoning back
-#endif
-		   f1->data().mTerrainType != f2->data().mTerrainType;
+		   f1->data().mTerrainType != f2->data().mTerrainType ||
+		   f1->data().GetZoning() != f2->data().GetZoning();
 }
 
 inline bool collinear_he(Halfedge_handle he1, Halfedge_handle he2)
@@ -450,6 +428,17 @@ inline void ZapBorders(CDT::Vertex_handle v)
 		i->second = 0.0;
 }
 
+// We generally are only missing a terrain from a border file when a MeshTool user 
+// doesn't include the border orthos in the scripts to both sessions - the second
+// session doesn't know what's _on_ the border, let alone whether it should make
+// border tris or not.  Try to give them an error message that explains how to fix
+// it.  This should never happen for the global sceney case unless we are seriously
+// fubar!
+#define MISSING_ORTHO_WARNING \
+"A neighboring DSF that you already created uses the terrain or orthophoto %s.\n"\
+"That terrain or orthophoto touches the border with the DSF you are rendering now.\n"\
+"But the terrain is not defined in the script file for this DSF.  You must add the\n"\
+"terrain or orthophoto definition to the script file for this DSF.\n"
 static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match_t& outBottom, mesh_match_t& outRight, mesh_match_t& outTop)
 {
 	outTop.vertices.clear();
@@ -507,7 +496,11 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 				sscanf(buf, "VB %f %s", &mix, ter);
 				dest->vertices.back().blending[token=LookupToken(ter)] = mix;
-				DebugAssert(token != -1);
+				if(token == -1)
+				{
+					fprintf(stderr,MISSING_ORTHO_WARNING,ter);
+					exit(1);
+				}
 			}
 			if (go)
 			{
@@ -515,7 +508,11 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				sscanf(buf, "TERRAIN %s", ter);
 				dest->edges.push_back(mesh_match_edge_t());
 				dest->edges.back().base = token=LookupToken(ter);
-				DebugAssert(token != -1);
+				if(token == -1)
+				{
+					fprintf(stderr,MISSING_ORTHO_WARNING,ter);
+					exit(1);
+				}
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 				sscanf(buf, "BORDER_C %d", &count);
 				while (count--)
@@ -523,7 +520,11 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 					if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 					sscanf(buf, "BORDER_T %s", ter);
 					dest->edges.back().borders.insert( token=LookupToken(ter));
-					DebugAssert(token != -1);
+					if(token == -1)
+					{
+						fprintf(stderr,MISSING_ORTHO_WARNING,ter);
+						exit(1);
+					}
 				}
 			}
 		}
@@ -1551,13 +1552,15 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	InsertDEMPoint(orig, deriv, outMesh, orig.mWidth-1, orig.mHeight-1, hint);
 	InsertDEMPoint(orig, deriv, outMesh, 0, orig.mHeight-1, hint);
 
-	PAUSE_STEP("Finished corners")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Finished corners");
 	
 	/* TRIANGULATE CONSTRAINTS */
 	
 	AddConstraintPoints(inMap, orig, outMesh, coastlines_markers);
 
-	PAUSE_STEP("Finished constraints")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Finished constraints");
 	
 	/* TRIANGULATE SLAVED BORDER */
 	
@@ -1565,34 +1568,40 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	if (!gMatchBorders[b].vertices.empty())
 		match_border(outMesh, gMatchBorders[b], b);
 
-	PAUSE_STEP("Finished borders")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Finished borders");
 	
 	/* TRIANGULATE NON-SLAVED EDGES */
 
 	AddEdgePoints(orig, deriv, 20, 1, has_borders, outMesh);
 
-	PAUSE_STEP("Finished edges")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Finished edges");
 	
 	/* TRIANGULATE WATER INTERIOR */
 	
 	double wet_ratio = CopyWetPoints(orig, deriv, outMesh, LOW_RES_WATER_INTERVAL, inMap);
 	double dry_ratio = 1.0 - wet_ratio;
 
-	PAUSE_STEP("Finished water interior")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Finished water interior");
 	
 	/* TRINAGULATE GREEDILY */
 
 	GreedyMeshBuild(outMesh, orig, deriv, gMeshPrefs.max_error, 0.0, (dry_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
 
-	PAUSE_STEP("Finished greedy1")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Finished greedy1");
 
 	GreedyMeshBuild(outMesh, orig, deriv, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
 
-	PAUSE_STEP("Finished greedy2")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Finished greedy2");
 
 	SplitConstraints(outMesh, orig, coastlines_markers, gMeshPrefs.max_error);
 
-	PAUSE_STEP("Split Contraints")
+//	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL);
+//	DoUserAlert("Split Contraints");
 
 #if SPLIT_CLIFFS
 
