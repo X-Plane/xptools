@@ -27,60 +27,131 @@
 #include "MapDefs.h"
 #include "STLUtils.h"	// for pqueue
 #include "MathUtils.h"
+#include "point_index.h"
 #include "ProgressUtils.h"
 
 #define DEBUG_SIMPLIFY 0
 
-// move this
+/************************************************************************************************************************************************
+ * SUB-PMWX FOLLOWING
+ ************************************************************************************************************************************************/
+// These routines help identify connected half-edges that all meet some 'predicate'.  This is a way to work on a virtual meta-arrangement (where
+// one meta-face is many faces) within an arrangement based on a run-time selectable parameter.  An example might be to look at the DSF map and
+// select for terrain changes but not roads.  
 
-template <class Point>
-class spatial_index {
-public:
-	spatial_index(const Point2& minc, const Point2& maxc, int idim)
+// Given a half-edge that meets a predicate, if there is exactly one predicate going out from this predicate's target that ALSO meets the predicate,
+// return it, otherwise return a null halfedge.  This lets us follow "poly-lines" of the predicate until we hit a node whose degree (with respect
+// to the predicate) is not two.
+
+template <class Arr, bool(* Pred)(typename Arr::Halfedge_handle)>
+typename Arr::Halfedge_handle next_he_pred(typename Arr::Halfedge_handle he)
+{
+	DebugAssert(Pred(he));
+	typename Arr::Halfedge_around_vertex_circulator circ, stop;
+	typename Arr::Halfedge_handle ret, cand;
+	circ = stop = he->target()->incident_halfedges();
+	do
 	{
-		dim = idim;
-		min_corner = minc; max_corner = maxc; buckets.resize(dim*dim);
-	}
-	
-	void	insert(const Point& p)
+		cand = circ->twin();
+		if(circ != he)
+		if(Pred(cand))
+		{
+			if (ret == typename Arr::Halfedge_handle())
+				ret = cand;
+			else
+				return typename Arr::Halfedge_handle();
+		}
+	} while(++circ != stop);
+	return ret;
+}
+
+// Given two vertices, this finds the left-hand face to a poly-line made up entirely of edges that 
+// meet the predicate and travel from v1 to v2.  The poly-line must be connected only by nodes of
+// degree 2 (with respect to the predicate).  
+// Note that it is an error to call this if there exist several such paths (an ambiguous poly-line).
+// If no such poly-line exists, return a null face handle.
+// "wrong ways" are vertices that we must NOT go through.  This allows us to disambiguate going
+// the wrong way around a loop.
+template <typename Arr, bool(* Pred)(typename Arr::Halfedge_handle)>
+typename Arr::Face_handle face_for_vertices(typename Arr::Vertex_handle v1, typename Arr::Vertex_handle v2, const set<typename Arr::Vertex_handle>& wrong_ways)
+{
+	typename Arr::Halfedge_around_vertex_circulator circ, stop;
+	circ = stop = v1->incident_halfedges();
+	typename Arr::Face_handle ret;
+	do
 	{
-		Point2 pp = cgal2ben(p);
-		int x_bucket = double_interp(min_corner.x(),0,max_corner.x(),dim-1,pp.x());
-		int y_bucket = double_interp(min_corner.y(),0,max_corner.y(),dim-1,pp.y());
-		buckets[x_bucket + y_bucket * dim].push_back(p);
-	}
-	
-	bool	pts_in_tri_no_corners(const Point& a, const Point& b, const Point& c)
+		typename Arr::Halfedge_handle h = circ->twin();
+		if(Pred(h))
+		{
+			while(h != Halfedge_handle() && h->target() != v2 && wrong_ways.count(h->target()) == 0)
+				h = next_he_pred<Arr,Pred>(h);
+			if(h != typename Arr::Halfedge_handle() && wrong_ways.count(h->target()) == 0)
+			{
+				DebugAssert(h->target() == v2);
+				#if !DEV
+					return circ->twin()->face();
+				#endif
+				// Debug mode runs ALL paths and checks to make sure
+				// we don't have an ambiguity.
+				if (ret != typename Arr::Face_handle())
+					return typename Arr::Face_handle();
+				DebugAssert(ret == typename Arr::Face_handle());
+				ret = circ->twin()->face();
+			}
+		}
+	} while(++circ != stop);
+	return ret;
+}
+
+// Given a vertex, how many of the incoming half-edges meet the predicate?
+template <typename Arr, bool(* Pred)(typename Arr::Halfedge_handle)>
+int degree_with_predicate(typename Arr::Vertex_handle v)
+{
+	if (v->is_isolated()) return 0;
+	typename Arr::Halfedge_around_vertex_circulator circ, stop;
+	circ = stop = v->incident_halfedges();
+	int t = 0;
+	do {
+		if(Pred(circ))
+			++t;
+	} while(++circ != stop);
+	return t;
+}
+
+// given two vertices, how many unambiguous paths are there out of v1 to v2
+// that use only the predicate?
+template <typename Arr, bool(* Pred)(typename Arr::Halfedge_handle)>
+int count_paths_to(typename Arr::Vertex_handle v1, typename Arr::Vertex_handle v2)
+{
+	typename Arr::Halfedge_around_vertex_circulator circ, stop;
+	circ = stop = v1->incident_halfedges();
+	int ret = 0;
+	do
 	{
-		Point2 aa(cgal2ben(a));
-		Point2 bb(cgal2ben(b));
-		Point2 cc(cgal2ben(c));
-		
-		int x1_bucket = intlim(double_interp(min_corner.x(),0,max_corner.x(),dim-1,min(min(aa.x(),bb.x()),cc.x()))-1,0,dim-1);
-		int y1_bucket = intlim(double_interp(min_corner.y(),0,max_corner.y(),dim-1,min(min(aa.y(),bb.y()),cc.y()))-1,0,dim-1);
-		int x2_bucket = intlim(double_interp(min_corner.x(),0,max_corner.x(),dim-1,max(max(aa.x(),bb.x()),cc.x()))+1,0,dim-1);
-		int y2_bucket = intlim(double_interp(min_corner.y(),0,max_corner.y(),dim-1,max(max(aa.y(),bb.y()),cc.y()))+1,0,dim-1);
-		
-		Triangle_2 tri(a,b,c);
-		for(int y = y1_bucket; y <= y2_bucket; ++y)
-		for(int x = x1_bucket; x <= x2_bucket; ++x)
-		for(typename list<Point>::const_iterator i = buckets[x+y*dim].begin(); i != buckets[x+y*dim].end(); ++i)
-		if(tri.bounded_side(*i) != CGAL::ON_UNBOUNDED_SIDE)
-		if (*i != a && 
-			*i != b &&
-			*i != c)		
-			return true;
-		return false;
-	}
-	
-	int						dim;
-	Point2					min_corner;
-	Point2					max_corner;
-	vector<list<Point> >	buckets;
-};
+		typename Arr::Halfedge_handle h = circ->twin();
+		if(Pred(h))
+		{
+			// This 'spoke' off of v1 via 'h' is in the predicate set.
+			// Run unambiguously until we hit something - v2, or a non-deg-2 node.
+			while(h != Halfedge_handle() && h->target() != v2)
+				h = next_he_pred<Arr,Pred>(h);
+			// Now if we stopped at a vert and not a dead end (non-deg-2 node) we fonud a path.
+			if(h != typename Arr::Halfedge_handle())
+			{				
+				DebugAssert(h->target() == v2);
+				++ret;
+			}
+		}
+	} while(++circ != stop);
+	return ret;
+}
 
 
 
+
+/************************************************************************************************************************************************
+ * CURVE DIRECTION UTILS
+ ************************************************************************************************************************************************/
 
 
 template<class He>
@@ -104,7 +175,9 @@ inline bool he_is_same_direction_as(He he, const Curve_2& c)
 		he->target()->point() + Vector_2(c.source(),c.target())) == CGAL::OBTUSE;
 }
 
-
+/************************************************************************************************************************************************
+ * ARRANGEMENT OBSERVERS
+ ************************************************************************************************************************************************/
 
 
 
@@ -189,50 +262,131 @@ public:
 
 };
 
+/************************************************************************************************************************************************
+ * TOPOLOGY TESTING
+ ************************************************************************************************************************************************/
+
+// This visitor class is used to check whether an insert line would crash into, um, stuff.
 template <typename Arr>
 class check_split_zone_visitor {
 public:
-  typedef std::pair<typename Arr::Halfedge_handle, bool>            Result;
+	typedef std::pair<typename Arr::Halfedge_handle, bool>            Result;
 
-	X_monotone_curve_2		cv;
+	X_monotone_curve_2			cv;
 	typename Arr::Vertex_handle	v1;
 	typename Arr::Vertex_handle	v2;
-	bool					has_overlap;
-	bool					has_split;
-	bool					has_complete;
-	typename Arr::Face_handle		found_face;
+	bool						has_overlap;
+	bool						has_split;
+	bool						has_complete;
+	typename Arr::Face_handle	found_face;
 
-  void init (Arr *arr)
-  {
-	has_overlap = false;
-	has_split = false;
-	has_complete = false;
-  }
-
-  Result found_subcurve (const X_monotone_curve_2& partial,
-                         typename Arr::Face_handle face,
-                         typename Arr::Vertex_handle left_v, typename Arr::Halfedge_handle left_he,
-                         typename Arr::Vertex_handle right_v, typename Arr::Halfedge_handle right_he)
+	void init (Arr *arr)
 	{
-		if(				partial.left() != cv.left() ||
-						partial.right() != cv.right())
+		has_overlap = false;
+		has_split = false;
+		has_complete = false;
+	}
+
+	Result found_subcurve (const X_monotone_curve_2& partial,
+							typename Arr::Face_handle face,
+							typename Arr::Vertex_handle left_v, typename Arr::Halfedge_handle left_he,
+							typename Arr::Vertex_handle right_v, typename Arr::Halfedge_handle right_he)
+	{
+		if(partial.left() != cv.left() || partial.right() != cv.right())
 			has_split=true;
 		else
 			has_complete=true;
-			found_face=face;
-	return Result(typename Arr::Halfedge_handle(), true);
+		found_face=face;
+		return Result(typename Arr::Halfedge_handle(), true);
 	}
 
-  Result found_overlap (const X_monotone_curve_2& cv,
-                        typename Arr::Halfedge_handle he,
-                        typename Arr::Vertex_handle left_v, typename Arr::Vertex_handle right_v)
+	Result found_overlap (const X_monotone_curve_2& cv,
+							typename Arr::Halfedge_handle he,
+							typename Arr::Vertex_handle left_v, typename Arr::Vertex_handle right_v)
+	{
+		has_overlap = true;
+		return Result(he,true);
+	}
+};
+
+// This tells us if we can insert an edge between v1 and v2 without hitting any other edges or end-point nodes.
+// it does NOT tell us if this would change the topology in a substantial way - just whether we can insert without
+// intersection.
+template<class Arr>
+bool			can_insert(
+							Arr&								p,
+							typename Arr::Vertex_handle			v1,
+							typename Arr::Vertex_handle			v2)
 {
-	has_overlap = true;
-	return Result(he,true);
+	if(v1->point() == v2->point()) return false;
+	typedef	CGAL::Arrangement_zone_2<Arr,check_split_zone_visitor<Arr> >	zone_type;
+
+	check_split_zone_visitor<Arr> v;
+	zone_type		zone(p, &v);
+	v.cv = X_monotone_curve_2(Segment_2(v1->point(),v2->point()),0);
+	v.v1 = v1;
+	v.v2 = v2;
+
+	typename Arr::Vertex_const_handle lv = (v.cv.left() == v1->point()) ? v1 : v2;
+
+	zone.init_with_hint(v.cv,CGAL::make_object(lv));
+	zone.compute_zone();
+	return !v.has_overlap && !v.has_split && v.has_complete;
 }
+
+/************************************************************************************************************************************************
+ * SIMPLIFICATION
+ ************************************************************************************************************************************************/
+
+template <class Arr>
+struct default_lock_traits {
+	bool is_locked(typename Arr::Vertex_handle v) const { return false; }
+	void remove(typename Arr::Vertex_handle v) const { }
+};
+
+// Arrangement Simplifier
+// Given an arrangement, this simplifies it by merging adjacent edges and removing degree-two nodes.  It does so without changing the
+// topology of the arrangement.  
+// 
+// The implementation uses a spatial point index to improve topology check speed.
+// Besides a maximum error metric, you pass a functor that tells if a vertex should be locked (kept no matter what) and
+// is notified when a vertex is removed.  Vertices whose degree are not 2 are never removed.
+
+template <class Arr, class Traits=default_lock_traits<Arr> >
+class	arrangement_simplifier {
+public:
+	
+	// Traits has a lock_it method that is called to see if a vertex cannot be removed for arbitrary reasons.
+	void simplify(Arr& io_block, double max_err, const Traits& tr=Traits(), ProgressFunc=NULL);
+
+private:
+	typedef	map<typename Arr::Halfedge_handle, list<Point2> >		Error_map;
+	typedef pqueue<double, typename Arr::Vertex_handle>				Remove_Queue;
+
+	// Given a vertex, how much error do we pick up by removing it?  Also, return the two half-edges pointing to the vertex.
+	double simple_vertex_error(typename Arr::Vertex_handle v, typename Arr::Halfedge_handle * he1, typename Arr::Halfedge_handle * he2);
+	
+	// Return whether the error from removing 'v' is within max-err.  We evaluate ALL past points that were removed, to make sure cumulative error does not
+	// get out of control.
+	bool total_error_ok(typename Arr::Vertex_handle v, typename Arr::Halfedge_handle h1, typename Arr::Halfedge_handle h2, const list<Point2>& l1, const list<Point2>& l2, double max_err);
+	
+	// Given two HEs, queue up their end points into our curve map if needed.
+	void queue_incident_edges_if_needed(typename Arr::Halfedge_iterator he1, typename Arr::Halfedge_iterator he2, Error_map& err_checks);
 
 };
 
+
+#pragma mark -
+
+/************************************************************************************************************************************************
+ * INLINE FUNCTIONS AND IMPLEMENTATION
+ ************************************************************************************************************************************************/
+
+// Given a halfedg, this tells if we can possibly merge it with its next halfedge.  The merge is impossible if:
+// - The edge's target degree is not two (ambiguous who to merge with or no one to merge with) or
+// - Our next edge's destination links to our source (we can't merge a triangle down to a line) or
+// - We don't have the same X direction as our next edge.  This is a CGAL API limitation - since a merge is assumed
+//   to replace one monotone curve with another, CGAL won't re-evalutate left-right caching flags.
 template <class Arr>
 bool			can_possibly_merge(
 							Arr&							p,
@@ -260,18 +414,58 @@ bool			can_possibly_merge(
 	return true;
 }
 
-template <class Arr>
-bool			possible_interference_with_merge(
-							Arr&							p,
-							typename Arr::Halfedge_handle	he,
-							spatial_index<Point_2>&			idx)
-{
-	DebugAssert(he->next() != he->twin());
-	// Colinear points?  We are trying to merge truly colinear edges, which generally is fine.  can't do triangle query into
-	// all vertices soo...
-	if(CGAL::collinear(he->source()->point(),he->target()->point(),he->next()->target()->point()))
+// A collection-visitor that checks for points within the triangle ABC - used to find 'squatters'.
+struct visit_pt_in_tri {
+	visit_pt_in_tri(const Point_2& a, const Point_2& b, const Point_2& c) : tri(a,b,c)
 	{
-		if(CGAL::collinear_are_ordered_along_line(he->source()->point(),he->target()->point(),he->next()->target()->point()))
+		if(tri.orientation() == CGAL::CLOCKWISE)	
+			tri = tri.opposite();
+		count = 0;
+	}
+	Triangle_2	tri;
+	bool operator()(const Point_2& p)
+	{
+		for(int n = 0; n < 3; ++n)
+			if(tri.vertex(n) == p)
+				return false;
+		if(tri.has_on_unbounded_side(p))
+			return false;
+		++count;
+		return true;
+	}
+	int count;
+};
+
+// Given a triangle ABC, this calculates the minimal search radius circle for our spatial index.
+template <class Traits>
+void	circle_to_search(const typename Traits::Point_2& a,const typename Traits::Point_2& b,const typename Traits::Point_2& c,typename Traits::Circle_2& circ)
+{	
+	// If any circle from two points contains the third, use that - otherwise, we'll build a cirlce aronud all 3. For nearly colinear points,
+	// A cirlce touching all three is a lot bigger than one touching just two.
+	if(CGAL::side_of_bounded_circle(a,b,c) != CGAL::ON_UNBOUNDED_SIDE)
+		circ = typename Traits::Circle_2(a,b,CGAL::COUNTERCLOCKWISE);
+	else if(CGAL::side_of_bounded_circle(b,c,a) != CGAL::ON_UNBOUNDED_SIDE)
+		circ = typename Traits::Circle_2(b,c,CGAL::COUNTERCLOCKWISE);
+	else if(CGAL::side_of_bounded_circle(c,a,b) != CGAL::ON_UNBOUNDED_SIDE)
+		circ = typename Traits::Circle_2(c,a,CGAL::COUNTERCLOCKWISE);
+	else
+		circ = typename Traits::Circle_2(a,b,c);
+}
+
+// Given a pair of ordered points ABC, this returns true if the spatial index has any points in the interior of ABC or between A and C (not including B).
+// We use this to check for squatters.
+template <class Arr>
+bool			squatters_in_area(
+							const typename Arr::Point_2&						a,
+							const typename Arr::Point_2&						b,
+							const typename Arr::Point_2&						c,
+							spatial_index_2<typename Arr::Geometry_traits_2>&	idx)
+{
+	CGAL::Orientation o = CGAL::orientation(a,b,c);
+
+	if(o == CGAL::COLLINEAR)
+	{
+		if(CGAL::collinear_are_ordered_along_line(a,b,c))
 			return false;
 		else
 		{
@@ -280,122 +474,55 @@ bool			possible_interference_with_merge(
 		}
 	}
 
-	Point_2 a(he->source()->point());
-	Point_2 b(he->target()->point());
-	Point_2 c(he->next()->target()->point());
 	DebugAssert(a != b);
 	DebugAssert(b != c);
 	DebugAssert(a != c);
-	if(idx.pts_in_tri_no_corners(a,b,c))
-		return true;
-	return false;
+	
+	if(o == CGAL::LEFT_TURN)
+	{
+		visit_pt_in_tri visitor(a,b,c);		
+		typename Arr::Geometry_traits_2::Circle_2 where;
+		circle_to_search<typename Arr::Geometry_traits_2>(a,b,c,where);
+		
+		idx.search(where,visitor);
+		return visitor.count > 0;
+	}
+	else
+	{
+		visit_pt_in_tri visitor(c,b,a);		
+
+		Point_2 ctr = CGAL::circumcenter(a,b,c);
+		typename Arr::Geometry_traits_2::Circle_2 where;
+		circle_to_search<typename Arr::Geometry_traits_2>(c,b,a,where);
+
+		idx.search(where,visitor);
+		return visitor.count > 0;
+	}
+}
+
+// Given a halfedge that can be merged with its next topology wise, are
+// any squatters in the spatial index stopping us?
+template <class Arr>
+bool			squatters_stopping_merge(
+							Arr&												p,
+							typename Arr::Halfedge_handle						he,
+							spatial_index_2<typename Arr::Geometry_traits_2>&	idx)
+{
+	DebugAssert(he->next() != he->twin());
+	// Colinear points?  We are trying to merge truly colinear edges, which generally is fine.  can't do triangle query into
+	// all vertices soo...
+
+	typename Arr::Point_2 a(he->source()->point());
+	typename Arr::Point_2 b(he->target()->point());
+	typename Arr::Point_2 c(he->next()->target()->point());
+	return squatters_in_area<Arr>(a,b,c,idx);
 }							
 
+// Utility adapter to dump points into an index directly from an arrangement.
 template <class Arr>
-bool			can_merge(
-							Arr&							p,
-							typename Arr::Halfedge_handle	he)
-{
-	// Ben says: degree isn't 2?  This can can happen - for example,
-	//	*
-	//	|\
-	//	*-*
-	//	|\|\
-	//	*-*-*
-	// Using GPS this is one outer triangle and one inner hole.  But as a planar map,
-	// outside junctions have degree 4.  So...if our degree isn't 2, it probably means
-	// our outer CCB touches our hole at a noded point.  No biggie, but we're not going
-	// to remove that node, ever!	
-	if(he->target()->degree() != 2)	return false;
-	
-	typename Arr::Vertex_handle v1 = he->source();
-	typename Arr::Vertex_handle v2 = he->next()->target();
-
-	if(v1->point() == v2->point()) return false;
-	if(he->direction() != he->next()->direction())
-		return false;
-
-	// Ben says: we cannot test the collinear case (a truly unneeded vertex because it doesn't turn anything) because
-	// we cannot tell what an "overlap" result from the test insertion REALLY means.  It could mean we are collinear, so the
-	// test insertion of the "bypass" edge covers both originals perfectly.  It could also mean that there is already a bypass
-	// edge in place that we are going to overlap.  In this second case, the merge will create an invalid pmwx.  So just
-	// test collinear here, rather than trying to make the overlap detector wicked smart.
-	if(CGAL::collinear(he->source()->point(),he->target()->point(),he->next()->target()->point()))
-	if(CGAL::collinear_are_ordered_along_line(he->source()->point(),he->target()->point(),he->next()->target()->point()))
-		return true;
-	typedef	CGAL::Arrangement_zone_2<Arr,check_split_zone_visitor<Arr> >	zone_type;
-
-	check_split_zone_visitor<Arr> v;
-	zone_type		zone(p, &v);
-	v.cv = X_monotone_curve_2(Segment_2(v1->point(),v2->point()),0);
-	v.v1 = v1;
-	v.v2 = v2;
-
-	typename Arr::Vertex_const_handle lv = (v.cv.left() == v1->point()) ? v1 : v2;
-
-	zone.init_with_hint(v.cv,CGAL::make_object(lv));
-	zone.compute_zone();
-	if (v.has_overlap || v.has_split || !v.has_complete) return false;
-
-	// Topology check: if we have a non-convex quad, merging the edges might put them in a different face - but
-	// CGAL's merge op does NOT handle topology changes.  So be sure the face isn't going to change!
-	if(CGAL::left_turn(he->source()->point(),he->target()->point(),he->next()->target()->point()))
-		return v.found_face == he->face();
-	else
-		return v.found_face == he->twin()->face();
-}
-
-template<class Arr>
-bool			can_insert(
-							Arr&								p,
-							typename Arr::Vertex_handle			v1,
-							typename Arr::Vertex_handle			v2)
-{
-	if(v1->point() == v2->point()) return false;
-	typedef	CGAL::Arrangement_zone_2<Arr,check_split_zone_visitor<Arr> >	zone_type;
-
-	check_split_zone_visitor<Arr> v;
-	zone_type		zone(p, &v);
-	v.cv = X_monotone_curve_2(Segment_2(v1->point(),v2->point()),0);
-	v.v1 = v1;
-	v.v2 = v2;
-
-	typename Arr::Vertex_const_handle lv = (v.cv.left() == v1->point()) ? v1 : v2;
-
-	zone.init_with_hint(v.cv,CGAL::make_object(lv));
-	zone.compute_zone();
-	return !v.has_overlap && !v.has_split && v.has_complete;
-}
-
-template <class Arr>
-struct default_lock_traits {
-	bool is_locked(typename Arr::Vertex_handle v) const { return false; }
-	void remove(typename Arr::Vertex_handle v) const { }
+struct arr_vertex_pt_extractor {
+	typename Arr::Point_2 operator()(typename Arr::Vertex_handle v) const { return v->point(); }
 };
-
-template <class Arr, class Traits=default_lock_traits<Arr> >
-class	arrangement_simplifier {
-public:
-	
-	// Traits has a lock_it method that is called to see if a vertex cannot be removed for arbitrary reasons.
-	void simplify(Arr& io_block, double max_err, const Traits& tr=Traits(), ProgressFunc=NULL);
-
-private:
-	typedef	map<typename Arr::Halfedge_handle, list<Point2> >		Error_map;
-	typedef pqueue<double, typename Arr::Vertex_handle>				Remove_Queue;
-
-	// Given a vertex, how much error do we pick up by removing it?  Also, return the two half-edges pointing to the vertex.
-	double simple_vertex_error(typename Arr::Vertex_handle v, typename Arr::Halfedge_handle * he1, typename Arr::Halfedge_handle * he2);
-	
-	// Return whether the error from removing 'v' is within max-err.  We evaluate ALL past points that were removed, to make sure cumulative error does not
-	// get out of control.
-	bool total_error_ok(typename Arr::Vertex_handle v, typename Arr::Halfedge_handle h1, typename Arr::Halfedge_handle h2, const list<Point2>& l1, const list<Point2>& l2, double max_err);
-	
-	// Given two HEs, queue up their end points into our curve map if needed.
-	void queue_incident_edges_if_needed(typename Arr::Halfedge_iterator he1, typename Arr::Halfedge_iterator he2, Error_map& err_checks);
-
-};
-
 
 template <class Arr, class Traits>
 double arrangement_simplifier<Arr,Traits>::simple_vertex_error(typename Arr::Vertex_handle v, typename Arr::Halfedge_handle * he1, typename Arr::Halfedge_handle * he2)
@@ -476,28 +603,30 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 	int check = max(total / 100, 1);
 	PROGRESS_START(func,0,1,"Simplifying...")
 	
-
-	Point2	minc = cgal2ben(io_block.vertices_begin()->point());
-	Point2	maxc = minc;
-	for(typename Arr::Vertex_iterator v = io_block.vertices_begin(); v != io_block.vertices_end(); ++v)
-	{
-		Point2	p = cgal2ben(v->point());
-		minc.x_ = min(minc.x(),p.x());
-		minc.y_ = min(minc.y(),p.y());
-		maxc.x_ = max(maxc.x(),p.x());
-		maxc.y_ = max(maxc.y(),p.y());
-	}
+//
+//	Point2	minc = cgal2ben(io_block.vertices_begin()->point());
+//	Point2	maxc = minc;
+//	for(typename Arr::Vertex_iterator v = io_block.vertices_begin(); v != io_block.vertices_end(); ++v)
+//	{
+//		Point2	p = cgal2ben(v->point());
+//		minc.x_ = min(minc.x(),p.x());
+//		minc.y_ = min(minc.y(),p.y());
+//		maxc.x_ = max(maxc.x(),p.x());
+//		maxc.y_ = max(maxc.y(),p.y());
+//	}
 		
-	spatial_index<Point_2>	vertex_index(minc, maxc, 1024);
-	for(typename Arr::Vertex_iterator v = io_block.vertices_begin(); v != io_block.vertices_end(); ++v)
-	{
-		vertex_index.insert(v->point());
-	}
+	spatial_index_2<typename Arr::Geometry_traits_2>	vertex_index;
+	
+	vertex_index.insert(io_block.vertices_begin(), io_block.vertices_end(), arr_vertex_pt_extractor<Arr>());
+	
 	
 	int tot = 0, qwik=0;
 	
+//	int ctr = 1;
 	while(!q.empty())
 	{
+//		if(ctr <= 0) 
+//			break;
 		PROGRESS_CHECK(func,0,1,"Simplifying...", (total-q.size()),total, check)
 		typename Arr::Vertex_handle v = q.front_value();
 //		printf("Q contains %d items, trying: 0x%08x\n", q.size(), &*v);
@@ -519,91 +648,91 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 		if(!tr.is_locked(v))
 		{
 			if(can_possibly_merge(io_block,h1))
-			if(!possible_interference_with_merge(io_block,h1,vertex_index) || can_merge(io_block, h1))
 			{
-				#if DEV && DEBUG_SIMPLIFY
-				++tot;
-				if (!possible_interference_with_merge(io_block,h1,vertex_index))
+//				if(!CGAL::collinear(h1->source()->point(),h1->target()->point(),h1	->next()->target()->point()))
+//				{
+//					debug_mesh_point(cgal2ben(h1->target()->point()),1,1,0);
+//					--ctr;
+//				}
+				if(!squatters_stopping_merge(io_block,h1,vertex_index))
 				{
-					++qwik;					
-					DebugAssert(can_merge(io_block, h1));
-				}
-//				printf(" Eliminate: 0x%08x\n",&*v);
-				#endif
-				list<Point2>	ml;
-				if(i1->second.front() == i2->second.front())
-				{
-					ml.swap(i1->second);
-					ml.reverse();
-					ml.pop_back();
-					ml.splice(ml.end(), i2->second);
-				}
-				else if(i1->second.front() == i2->second.back())
-				{
-					ml.swap(i2->second);
-					ml.pop_back();
-					ml.splice(ml.end(),i1->second);
-				}
-				else if(i1->second.back() == i2->second.front())
-				{
-					ml.swap(i1->second);
-					ml.pop_back();
-					ml.splice(ml.end(),i2->second);
-				}
-				else if(i1->second.back() == i2->second.back())
-				{
-					ml.swap(i1->second);
-					ml.pop_back();
-					i2->second.reverse();
-					ml.splice(ml.end(), i2->second);
-				}
-				else
-				{
-					DebugAssert(!"NO COMMON END VERTEX FOUND.");
-				}
-				DebugAssert(i1->second.empty());
-				DebugAssert(i2->second.empty());
-				err_checks.erase(i1);
-				err_checks.erase(i2);
-				
-				q.erase(h1->source());
-				q.erase(h2->source());
-				
-				tr.remove(h1->target());
-				
-				typename Arr::Halfedge_handle next = h1->next();
-				typename Arr::Halfedge_handle remain = io_block.merge_edge(h1,next,Curve_2(Segment_2(h1->source()->point(),next->target()->point())));
-				typename Arr::Halfedge_handle rk = he_get_same_direction(remain);
-				DebugAssert(err_checks.count(rk) == 0);
-				err_checks.insert(typename Error_map::value_type(rk, ml));
-				
-				DebugAssert(q.count(remain->source()) == 0);
-				DebugAssert(q.count(remain->target()) == 0);
-				if(remain->source()->degree() == 2)
-				if(!tr.is_locked(remain->source()))
-				{
-					typename Arr::Halfedge_handle ne1, ne2;
-					double e = simple_vertex_error(remain->source(), &ne1, &ne2);
-					if(e <= max_err)
+					list<Point2>	ml;
+					if(i1->second.front() == i2->second.front())
 					{
-						// Why would this be neeed?  Because the max vertex error may have been too great before we moved
-						// the side before but not now.  This is partly becuase simple vertex error is the wrong metric, but
-						// we can fine tune this later.
-						queue_incident_edges_if_needed(ne1,ne2,err_checks);
-						q.insert(e,remain->source());
-//						printf(" Q prev 0x%08x\n",&*remain->source());
+						ml.swap(i1->second);
+						ml.reverse();
+						ml.pop_back();
+						ml.splice(ml.end(), i2->second);
 					}
-				}
-				if(remain->target()->degree() == 2)
-				if(!tr.is_locked(remain->target()))
-				{
-					typename Arr::Halfedge_handle ne1, ne2;
-					double e = simple_vertex_error(remain->target(), &ne1, &ne2);
-					if(e <= max_err)
+					else if(i1->second.front() == i2->second.back())
 					{
-						queue_incident_edges_if_needed(ne1,ne2,err_checks);
-						q.insert(e,remain->target());
-//						printf(" Q targ 0x%08x\n",&*remain->target());
+						ml.swap(i2->second);
+						ml.pop_back();
+						ml.splice(ml.end(),i1->second);
+					}
+					else if(i1->second.back() == i2->second.front())
+					{
+						ml.swap(i1->second);
+						ml.pop_back();
+						ml.splice(ml.end(),i2->second);
+					}
+					else if(i1->second.back() == i2->second.back())
+					{
+						ml.swap(i1->second);
+						ml.pop_back();
+						i2->second.reverse();
+						ml.splice(ml.end(), i2->second);
+					}
+					else
+					{
+						DebugAssert(!"NO COMMON END VERTEX FOUND.");
+					}
+					DebugAssert(i1->second.empty());
+					DebugAssert(i2->second.empty());
+					err_checks.erase(i1);
+					err_checks.erase(i2);
+					
+					q.erase(h1->source());
+					q.erase(h2->source());
+					
+					tr.remove(h1->target());
+
+					vertex_index.remove(h1->target()->point());
+					
+					typename Arr::Halfedge_handle next = h1->next();
+					typename Arr::Halfedge_handle remain = io_block.merge_edge(h1,next,Curve_2(Segment_2(h1->source()->point(),next->target()->point())));
+					typename Arr::Halfedge_handle rk = he_get_same_direction(remain);
+					DebugAssert(err_checks.count(rk) == 0);
+					err_checks.insert(typename Error_map::value_type(rk, ml));
+					
+					DebugAssert(q.count(remain->source()) == 0);
+					DebugAssert(q.count(remain->target()) == 0);
+					if(remain->source()->degree() == 2)
+					if(!tr.is_locked(remain->source()))
+					{
+						typename Arr::Halfedge_handle ne1, ne2;
+						double e = simple_vertex_error(remain->source(), &ne1, &ne2);
+						if(e <= max_err)
+						{
+							// Why would this be neeed?  Because the max vertex error may have been too great before we moved
+							// the side before but not now.  This is partly becuase simple vertex error is the wrong metric, but
+							// we can fine tune this later.
+							queue_incident_edges_if_needed(ne1,ne2,err_checks);
+							q.insert(e,remain->source());
+	//						printf(" Q prev 0x%08x\n",&*remain->source());
+						}
+					}
+					if(remain->target()->degree() == 2)
+					if(!tr.is_locked(remain->target()))
+					{
+						typename Arr::Halfedge_handle ne1, ne2;
+						double e = simple_vertex_error(remain->target(), &ne1, &ne2);
+						if(e <= max_err)
+						{
+							queue_incident_edges_if_needed(ne1,ne2,err_checks);
+							q.insert(e,remain->target());
+	//						printf(" Q targ 0x%08x\n",&*remain->target());
+						}
 					}
 				}
 			}

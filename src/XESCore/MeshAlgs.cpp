@@ -23,6 +23,7 @@
  */
 
 #include "MapDefs.h"
+#include "MapHelpers.h"
 #include "MeshAlgs.h"
 #include "ParamDefs.h"
 #include "CompGeomDefs2.h"
@@ -39,6 +40,7 @@
 #include "GISUtils.h"
 #include "XESConstants.h"
 #include "GreedyMesh.h"
+#include "MeshSimplify.h"
 #include "NetHelpers.h"
 #if APL && !defined(__MACH__)
 #define __DEBUGGING__
@@ -57,9 +59,6 @@
 #define LOW_RES_WATER_INTERVAL 40
 #define APT_INTERVAL 2
 #endif
-
-// Burn every road segment!
-#define BURN_ROADS 0
 
 // This adds more vertices to cliffs.
 #define SPLIT_CLIFFS 1
@@ -86,16 +85,14 @@
 	#define SPLIT_BEACHED_WATER 1
 #endif
 
-// This is the max distance that we can have from a planar map edge.  If we have a longer edge we subdivide it.
+// This sets the range of legal edges for subdivisions of constrained edges - in meters.
 #define MAX_EDGE_DIST	500.0
-
 #define MIN_EDGE_DIST	50.0
 
-#define DEBUG_DROPPED_PTS 0
-
-#if DEBUG_DROPPED_PTS
-#include "GISTool_Globals.h"
-#endif
+// This is how much LESS to subdivide the edge of a constraint than we theoretically need ot - in this case
+// we are subidving half as much as required.  Since we also add points for too-long edges and elevation
+// changes, we don't need to overdo basic subdivision - this produces acceptable triangles.
+#define REDUCE_SUBDIVIDE 2
 
 #if SHOW_STEPS
 
@@ -130,90 +127,6 @@ MeshPrefs_t gMeshPrefs = {		/*iphone*/
 /* max_tri_size_m	*/	PHONE ?		6000	: 1500,
 /* rep_switch_m		*/	PHONE ?		50000	: 50000
 };
-
-/* Conststraint markers - here's the deal: the way we set the water body
- * triangles to water (precisely) is we remember the pairs of vertices that
- * make up their constrained edges.  These vertices are directed and form
- * a CCB, so we know that the left side of this pair is a triangle that is
- * wet.  This lets us seed the water-finding process. */
-
-typedef pair<CDT::Vertex_handle, CDT::Vertex_handle>	ConstraintMarker_t;
-typedef pair< Halfedge_handle,  Halfedge_handle>		LandusePair_t;			// "Left" and "right" side
-typedef pair<ConstraintMarker_t, LandusePair_t>			LanduseConstraint_t;
-
-struct FaceHandleVectorHack {
-	vector<CDT::Face_handle>	v;
-};
-
-inline bool must_burn_he(Halfedge_handle he)
-{
-	Halfedge_handle tw = he->twin();
-	Face_handle f1 = he->face();
-	Face_handle f2 = tw->face();
-	
-	if(f1->is_unbounded() || f2->is_unbounded()) 
-		return false;
-
-#if BURN_ROADS
-	if(!he->data().mSegments.empty() ||
-		!he->twin()->data().mSegments.empty()) return true;
-#endif
-	
-	return he->data().mParams.count(he_MustBurn) ||
-		   tw->data().mParams.count(he_MustBurn) ||
-//		   f1->data().GetZoning() != f2->data().GetZoning() ||
-#if !DEV
-//	#error put zoning back
-#endif
-		   f1->data().mTerrainType != f2->data().mTerrainType;
-}
-
-inline bool collinear_he(Halfedge_handle he1, Halfedge_handle he2)
-{
-	DebugAssert(he1->target() == he2->source());
-	if(!CGAL::collinear(he1->source()->point(), he1->target()->point(), he2->target()->point()))
-		return false;
-	if(!CGAL::collinear_are_ordered_along_line(he1->source()->point(), he1->target()->point(), he2->target()->point()))
-		return false;
-	return true;
-}
-
-bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b, vector<CDT::Vertex_handle>& out_pts);
-
-inline bool	PersistentFindEdge(CDT& ioMesh, CDT::Vertex_handle a, CDT::Vertex_handle b, CDT::Face_handle& h, int& vnum)
-{
-	if (ioMesh.is_edge(a, b, h, vnum))
-	{
-		DebugAssert(ioMesh.is_constrained(CDT::Edge(h, vnum)));
-		return true;
-	}
-
-	vector<CDT::Vertex_handle>	pts;
-	if(!collect_virtual_edge(ioMesh, a,b,pts))
-		AssertPrintf("Failed to collect edge.\n");
-
-	Assert(pts.size() > 1);
-	
-	if (ioMesh.is_edge(pts[0],pts[1], h, vnum))
-	{
-		DebugAssert(ioMesh.is_constrained(CDT::Edge(h, vnum)));
-		return true;
-	}
-	
-	Assert(!"Failed persistent find edge.");
-	return false;
-}
-
-inline bool IsEdgeVertex(CDT& inMesh, CDT::Vertex_handle v)
-{
-	CDT::Vertex_circulator circ, stop;
-	circ = stop = inMesh.incident_vertices(v);
-	do {
-		if (inMesh.is_infinite(circ)) return true;
-		circ++;
-	} while (circ != stop);
-	return false;
-}
 
 inline bool is_border(const CDT& inMesh, CDT::Face_handle f)
 {
@@ -288,39 +201,6 @@ inline void FindNextNorth(CDT& ioMesh, CDT::Face_handle& ioFace, int& index, boo
 	} while (stop != now);
 	Assert(!"Next pt not found.");
 }
-
-/*
-// This builds the set of all continuous triangles that have the same variation of a terrain (a contiguous blob if you will)
-void	FindAllCovariant(CDT& inMesh, CDT::Face_handle f, set<CDT::Face_handle>& all, Bbox_2& bounds)
-{
-	bounds = Point_2(f->vertex(0)->point().x(),f->vertex(0)->point().y()).bbox();
-	bounds = bounds + Point_2(f->vertex(1)->point().x(),f->vertex(1)->point().y()).bbox();
-	bounds = bounds + Point_2(f->vertex(2)->point().x(),f->vertex(2)->point().y()).bbox();
-
-	all.clear();
-	set<CDT::Face_handle>	working;
-	working.insert(f);
-
-	while (!working.empty())
-	{
-		CDT::Face_handle w = *working.begin();
-		working.erase(working.begin());
-		all.insert(w);
-
-		for (int n = 0; n < 3; ++n)
-		{
-			bounds = bounds + Point_2(w->vertex(0)->point().x(),w->vertex(0)->point().y()).bbox();
-			CDT::Face_handle t = w->neighbor(n);
-
-			if (!inMesh.is_infinite(t))
-			if (t->info().terrain != terrain_Water)
-			if (AreVariants(t->info().terrain, w->info().terrain))
-			if (all.count(t) == 0)
-				working.insert(t);
-		}
-	}
-}
-*/
 
 #pragma mark -
 /************************************************************************************************************************
@@ -648,7 +528,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 	if (pts->buddy == NULL)
 	{	
 		//printf("Found no buddy for: %lf,%lf\n", CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y()));
-		pts->buddy = ioMesh.safe_insert(CDT::Point(CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y())), nearf);
+		pts->buddy = ioMesh.insert(CDT::Point(CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y())), nearf);
 		nearf = pts->buddy->face();
 		pts->buddy->info().height = pts->height;
 //		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(pts->loc),Point3(1,0,0)));
@@ -882,6 +762,9 @@ CDT::Vertex_handle InsertAnyPoint(
 	return v;
 }
 
+
+
+
 /*
  * InsertMidPoints
  *
@@ -912,9 +795,9 @@ void InsertMidPoints(const DEMGeo& in_orig, CDT& io_mesh, CDT::Vertex_handle v1,
 
 	if(want_split)
 	{
-		CDT::Vertex_handle vm = InsertAnyPoint(in_orig, io_mesh, midp, hint);
-		InsertMidPoints(in_orig,io_mesh,v1,vm,hint);
-		InsertMidPoints(in_orig,io_mesh,vm,v2,hint);
+		CDT::Vertex_handle vm = InsertAnyPoint(in_orig, io_mesh, midp,hint);
+								InsertMidPoints(in_orig,io_mesh,v1,vm,hint);
+								InsertMidPoints(in_orig,io_mesh,vm,v2,hint);
 	}
 }
 
@@ -1022,210 +905,6 @@ void AddEdgePoints(
 	}
 }
 
-// Given a halfedge of the map that needs to be "burned" into the mesh, this attempts to find the farthest "extension" 
-// we can make by:
-// - only going to halfedges in the same collinear direction
-// - only going through connected vertices
-// - only going through other need-burn halfedges
-// - stopping when we hit an edge we already marked
-// - stopping if there are crossing burn-in edges.
-// The result is that given a single coastline edge from source data that was split by a crossing overlay that is not burned
-// (e.g. a bridge crossing a coastline) we will consolidate the coastline back into one edge, reducing start mesh complexity.
-static Halfedge_handle ExtendLanduseEdge(Halfedge_handle start)
-{
-	Pmwx::Halfedge_around_vertex_circulator	circ, stop;
-	Halfedge_handle next;
-
-	Halfedge_handle best = start;
-	
-	while(1)
-	{
-		best->data().mMark = true;
-		Vertex_handle v = best->target();
-		
-		Pmwx::Halfedge_around_vertex_circulator circ, stop;
-		circ = stop = v->incident_halfedges();
-		
-		Halfedge_handle new_best = Halfedge_handle();
-		do {
-			Halfedge_handle cand = circ->twin();
-			
-			if(must_burn_he(cand) && circ != best)						// For every outgoing edge that gets burned and isn't us
-			{
-				if(cand->data().mMark || cand->twin()->data().mMark)	// Already burned?  Can't extend, we're done.
-					return best;
-				else if (new_best != Halfedge_handle())					// Two best edges?  T junction, we're done.
-					return best;
-				else
-					new_best = cand;
-			}
-			
-		} while(++circ != stop);
-
-		if(new_best == Halfedge_handle())			// Didn't hit ANY "next" edge?  We're done.
-			return best;
-			
-		if(!collinear_he(best,new_best))			// Next edge is a turn?  Can't consolidate out this pt.
-			return best;
-
-		best = new_best;
-		
-//		debug_mesh_point(cgal2ben(best->source()->point()),1,0,1);
-	}
-}
-
-/*
- * Given a start and end point, collect all mesh points along the straight edge of the mesh.  Return true
- * if the edge is made entirely of sub-edges (or false if we must cut through the middle of a triangle).  Since 
- * constraints can be cut, this gievs us a way to do a colinear test. */
-bool collect_virtual_edge(CDT& mesh, CDT::Vertex_handle a, CDT::Vertex_handle b, vector<CDT::Vertex_handle>& out_pts)
-{
-	Face_handle h;
-	int vnum;
-	if (mesh.is_edge(a, b)) 
-	{
-		out_pts.push_back(a);
-		out_pts.push_back(b);
-		return true;
-	}
-
-	Point_2 pa = a->point();
-	Point_2 pb = b->point();
-	
-	out_pts.push_back(a);
-	
-	CDT::Vertex_handle s = a;
-	
-	while(1)
-	{
-		CDT::Vertex_handle	n = CDT::Vertex_handle();
-		CDT::Vertex_circulator circ,stop;
-		circ = stop = s->incident_vertices();
-		
-		do {
-			if(!mesh.is_infinite(circ))
-			{
-				Point_2 pc = circ->point();
-				
-				if(CGAL::collinear(pa,pc,pb) &&
-					CGAL::collinear_are_ordered_along_line(s->point(),pc,pb))	// Require in-order from the current point or else we will take the halfedge going backward.
-				{
-					n = circ;
-					break;
-				}
-			}
-		} while(++circ != stop);
-		
-		if(n == CDT::Vertex_handle())
-			return false;
-		
-		if(n == b) break;
-		
-		out_pts.push_back(n);
-		s = n;		
-	}
-	
-	out_pts.push_back(b);
-	return true;
-}
-
-#if 0
-
-/* This routine atttempts to determine if a constraint needs to be split.  For now, split if the mesh err gets too high along the constraint.
- * But don't try to split long thin tris - that code does not work. */
-static bool needs_split(CDT& mesh, const DEMGeo& elev, CDT::Vertex_handle a, CDT::Vertex_handle b, Point_2& candidate, float err)
-{
-	return false;
-	Point_2 pa(a->point());
-	Point_2 pb(b->point());
-	
-	candidate = CGAL::midpoint(pa,pb);
-	
-	float h1 = elev.value_linear(CGAL::to_double(pa.x()),CGAL::to_double(pa.y()));
-	float h2 = elev.value_linear(CGAL::to_double(pb.x()),CGAL::to_double(pb.y()));
-	float hc = elev.value_linear(CGAL::to_double(candidate.x()),CGAL::to_double(candidate.y()));
-	
-	float ha = (h1 + h2) * 0.5;
-	if (fabs(ha - hc) > err)
-		return true;
-	
-	return false;
-	/*
-	// This tries to split long thin tris but never worked well.
-	CDT::Face_handle	f1,f2;
-	int					n1,n2;
-	if(!mesh.is_edge(a,b,f1,n1))
-	{
-		DebugAssert(!"Not an edge?");
-	}
-	f2 = f1->neighbor(n1);
-	n2 = f2->index(f1);
-	
-	Line_2 s(pa,pb);
-	NT ll(CGAL::squared_distance(pa,pb));
-	
-	NT dl = CGAL::min(
-		CGAL::squared_distance(s, f1->vertex(n1)->point()),
-		CGAL::squared_distance(s, f2->vertex(n2)->point()));
-
-	double l = sqrt(CGAL::to_double(ll)) * DEG_TO_MTR_LAT;
-	double d = sqrt(CGAL::to_double(dl)) * DEG_TO_MTR_LAT;
-
-	if(d < err || l < err) return false;
-
-	return (l / d) > 20.0;
-	*/
-}
-
-
-/* This burns the constraints into the mesh, splitting them as needed to reduce error. */
-void	SplitConstraints(
-				CDT&								io_mesh,
-				const DEMGeo&						elev,
-				const vector<LanduseConstraint_t>&	cons,
-				float								max_err)
-{
-	int total = 0;
-	list<ConstraintMarker_t>	queue;
-	
-	for(vector<LanduseConstraint_t>::const_iterator c = cons.begin(); c != cons.end(); ++c)
-		queue.push_back(c->first);
-		
-	while(!queue.empty())
-	{
-		ConstraintMarker_t m = queue.front();
-		queue.pop_front();
-		io_mesh.insert_constraint(m.first,m.second);
-		
-		vector<CDT::Vertex_handle> actual_pts;
-	
-		DebugAssert(m.first->point() != m.second->point());
-		
-		if(!collect_virtual_edge(io_mesh, m.first,m.second,actual_pts))
-		{
-			DebugAssert(!"Invalid constraint");
-		}
-		
-		CDT::Face_handle hint;
-		
-		for(int n = 1; n < actual_pts.size(); ++n)
-		{
-			Point_2 candidate;
-			if (needs_split(io_mesh, elev, actual_pts[n-1], actual_pts[n], candidate, max_err))
-			{
-				CDT::Vertex_handle v =  InsertAnyPoint(elev, io_mesh, candidate, hint);
-				//debug_mesh_point(cgal2ben(candidate), 1,1,0);
-				++total;
-				queue.push_back(ConstraintMarker_t(actual_pts[n-1], v));
-				queue.push_back(ConstraintMarker_t(v, actual_pts[n]));
-			}
-		}
-	}
-	printf("Added %d vertices to reduce error on constraints.\n",total);
-}
-
-#endif
-
 /*
  * AddConstraintPoints
  *
@@ -1237,8 +916,7 @@ void	SplitConstraints(
 void	AddConstraintPoints(
 				Pmwx& 								inMap, 		// Vec Map of waterbodies
 				const DEMGeo& 						master, 	// Master DEM with elevations
-				CDT& 								outMesh, 	// Vertices and constraints added to this mesh
-				vector<LanduseConstraint_t>&		outCons)	// The constraints we add for water are added here for later use
+				CDT& 								outMesh) 	// Vertices and constraints added to this mesh
 {
 	/*******************************************************************************************
 	 * FIND POLYGON GROUPS THAT CONTAIN LAND USE DIFFERENCES
@@ -1267,80 +945,156 @@ void	AddConstraintPoints(
 			DebugAssert(!f1->is_unbounded());
 			DebugAssert(!f2->is_unbounded());
 			
-			Halfedge_handle extended1 = ExtendLanduseEdge(he);
-			Halfedge_handle extended2 = ExtendLanduseEdge(he->twin());
-
-			v1 = InsertAnyPoint(master, outMesh, extended2->target()->point(), locale);
-			v2 = InsertAnyPoint(master, outMesh, extended1->target()->point(), locale);
+			v1 = InsertAnyPoint(master, outMesh, he->source()->point(), locale);
+			v2 = InsertAnyPoint(master, outMesh, he->target()->point(), locale);
+			v1->info().orig_vertex = he->source();
+			v2->info().orig_vertex = he->target();
 
 			// Ben says: constrain now!  This will force near-edge triangles to flip to the way they 
 			// will have to be, which will then help the greedy mesh understand where the worst errors are.
 			outMesh.insert_constraint(v1,v2);
 			locale = CDT::Face_handle();			// Face handle may be trashed by constraint propagation!
-			
-			// Subdivide if necessary; our CDT can handle subdividing constraints.
-			InsertMidPoints(master, outMesh, v1, v2, locale);
-
-			outCons.push_back(LanduseConstraint_t(ConstraintMarker_t(v1,v2),LandusePair_t(he, he->twin())));
 		}
 	}
 }
 
+/*
+ * SubdivideConstraints
+ *
+ * This routine finds all of the constraints in the CDT and subdivides them based on a DEM indicating ideal
+ * mesh density and also some subidvision rules.
+ *
+ */
+void SubdivideConstraints(CDT& io_mesh, const DEMGeo& master, const DEMGeo& ideal_density)
+{
+	list<pair<CDT::Vertex_handle,CDT::Vertex_handle> >		edges;
+	for(CDT::Finite_edges_iterator eit = io_mesh.finite_edges_begin(); eit != io_mesh.finite_edges_end(); ++eit)
+	if(io_mesh.is_constrained(*eit))
+	{
+		edges.push_back(pair<CDT::Vertex_handle,CDT::Vertex_handle>(CDT_he_source(*eit),CDT_he_target(*eit)));
+	}
+
+	CDT::Face_handle	locale = CDT::Face_handle();	// For cache coherency
+	
+	for(list<pair<CDT::Vertex_handle,CDT::Vertex_handle> >::iterator e = edges.begin(); e != edges.end(); ++e)
+	{
+		vector<CDT::Vertex_handle>	pts;
+		pts.push_back(e->first);
+		
+		Vector_2	vec(e->first->point(),e->second->point());
+		
+		int num_verts = IntegLine(
+								ideal_density, 
+									ideal_density.lon_to_x(CGAL::to_double(e->first->point().x())),
+									ideal_density.lat_to_y(CGAL::to_double(e->first->point().y())),
+									ideal_density.lon_to_x(CGAL::to_double(e->second->point().x())),
+									ideal_density.lat_to_y(CGAL::to_double(e->second->point().y())),4) / REDUCE_SUBDIVIDE;
+		
+		for(int n = 0; n < num_verts; ++n)
+		{
+			float r = ((float) (n+1)) / (float) (num_verts+1);
+			DebugAssert(r > 0.0);
+			DebugAssert(r < 1.0);
+			Point_2 p = e->first->point() + (vec * r);
+			pts.push_back(InsertAnyPoint(master, io_mesh, p, locale));
+//			debug_mesh_point(cgal2ben(p),0,1,1);
+		}
+		
+		pts.push_back(e->second);
+		for(int n = 1; n < pts.size(); ++n)
+			InsertMidPoints(master, io_mesh,pts[n-1],pts[n], locale);
+	}
+			
+}
+
+
 /* This routine sets the feature type for the mesh tris from the terrain that required burn-in for constraints.
  * This is how we know that our water tris should be wet.  We set every tri on the border of a constraint, then 
  * flood-fill.*/
-void	SetTerrainForConstraints(CDT& ioMesh, vector<LanduseConstraint_t>& inCoastlines, const DEMGeo& allPts)
+void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 {
 	set<CDT::Face_handle>		wet_faces;
 	set<CDT::Face_handle>		visited;
 
-	// Quick pass - set everyone to natural.   This is needed because if there are no polys,
-	// then the outside of those polys won't make natural terrain.
+	vector<CDT::Face_handle>	seed_faces;
+
+	// FIRST: we are going to go throguh and set everybody to either uninited/natural (if we aren't constrained)
+	// or, for any constrain-edged triangle, we're going to figure out who our initial face was and init like that.
 
 	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi)
 	{
 		ffi->info().terrain = terrain_Natural;
 		ffi->info().feature = NO_VALUE;
+		ffi->info().orig_face == Face_handle();
+
+		for(int n = 0; n < 3; ++n)
+		if(ffi->is_constrained(n))
+		{
+			CDT::Edge e(ffi,n);
+			CDT::Vertex_handle source(CDT_he_source(e));
+			Vertex_handle orig_source = source->info().orig_vertex;
+			if(orig_source != Vertex_handle())
+			{
+				CDT::Vertex_handle target(CDT_he_target(e));
+			
+				// This is a mess...since the relationship between the CDT and Pmwx is many-to-many,
+				// the only way to help the face resolver not freak out is to tell it the nearest WRONG WAY
+				// vertices - those are paths going NOT along our edge.  So...circulate, and for all other
+				// constrained edges, walk the constraint until we find a sync point, and save that in
+				// 'stop here' markers.
+				set<Vertex_handle> wrong_ways;
+				CDT::Vertex_circulator circ, stop;
+				circ = stop = source->incident_vertices();
+				do 
+				{
+					if(circ != target)
+					{
+						CDT::Edge e;
+						if(ioMesh.is_edge(source,circ,e.first,e.second))
+						if(ioMesh.is_constrained(e))
+						{
+							if (CDT_he_source(e) != source)
+								e = CDT_he_twin(e);
+							while(CDT_he_target(e)->info().orig_vertex == Vertex_handle())
+							{
+								e = CDT_next_constraint(e);
+								DebugAssert(e.first != CDT::Face_handle());
+							}
+							DebugAssert(CDT_he_target(e)->info().orig_vertex != Vertex_handle());
+							wrong_ways.insert(CDT_he_target(e)->info().orig_vertex);
+						}
+					}
+				} while (++circ != stop);
+				
+				Vertex_handle orig_target = target->info().orig_vertex;
+				while(orig_target == Vertex_handle())
+				{
+					e = CDT_next_constraint(e);
+					DebugAssert(e.first != CDT::Face_handle());
+					target = CDT_he_target(e);
+					orig_target = target->info().orig_vertex;
+				}
+				
+				// Now given two sync points (our source and the next sync point along) and all of the wrong
+				// ways. we can find the original Pmwx face.
+				Face_handle	orig_face = face_for_vertices<Pmwx,must_burn_he>(orig_source,orig_target, wrong_ways);
+//				if(orig_face == Face_handle())
+//				{
+//					debug_mesh_point(cgal2ben(orig_source->point()),1,0,0);
+//					debug_mesh_point(cgal2ben(orig_target->point()),0,1,0);
+//				}
+				DebugAssert(orig_face != Face_handle());
+				
+				ffi->info().terrain = orig_face->data().mTerrainType;
+				ffi->info().feature = orig_face->data().mTerrainType;
+				ffi->info().orig_face = orig_face;
+				wet_faces.insert(ffi);				
+				break;
+			}
+		}
 	}
 
-	// Next mark every point on a tri that's just inside as hot unless it's also an edge point.
-	// Also mark these tris as wet.
-	for (vector<LanduseConstraint_t>::iterator c = inCoastlines.begin(); c != inCoastlines.end(); ++c)
-	{
-		CDT::Face_handle	face_h;
-		int					vnum;
-		// Dig up the face that includes our edge.  is_edge gives us the right-hand side triangle, but we want
-		// the left since this is a counter clockwise boundary, so go backward on the constraint.
-
-		if (!PersistentFindEdge(ioMesh, c->first.second, c->first.first, face_h, vnum))
-		{
-			AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
-		} else {
-			face_h->info().terrain = c->second.first->face()->data().mTerrainType;
-			face_h->info().feature = c->second.first->face()->data().mTerrainType;
-			// BEN SEZ: we will get conflicts on origin faces!  imagine water tries separated by a bridge - WED thinks they're
-			// al the same but they're not.
-//			DebugAssert(face_h->info().orig_face == NULL || face_h->info().orig_face == c->second.first->face());
-			if (face_h->info().orig_face == Face_handle())
-				face_h->info().orig_face = c->second.first->face();
-			wet_faces.insert(face_h);
-		}
-
-		if (!PersistentFindEdge(ioMesh, c->first.first, c->first.second, face_h, vnum))
-		{
-			AssertPrintf("ASSERTION FAILURE: constraint not an edge.\n");
-		} else {
-			face_h->info().terrain = c->second.second->face()->data().mTerrainType;
-			face_h->info().feature = c->second.second->face()->data().mTerrainType;
-//			DebugAssert(face_h->info().orig_face == NULL || face_h->info().orig_face == c->second.second->face());
-			if (face_h->info().orig_face == Face_handle())
-				face_h->info().orig_face = c->second.second->face();
-
-			wet_faces.insert(face_h);
-		}
-	}
-
-
+	// Now flood fill the rest of the triangles from the constrain-edged triangles.
 	while (!wet_faces.empty())
 	{
 		CDT::Face_handle f = *wet_faces.begin();
@@ -1544,6 +1298,11 @@ void CalculateMeshNormals(CDT& ioMesh)
  *******************************************************************************************/
 
 
+double dist_from_line(const Point_2& p, const Point_2& q, const Point_2& r)
+{
+	Line_2 l(p,r);
+	return CGAL::to_double(CGAL::squared_distance(l,q));
+}
 
 
 
@@ -1565,9 +1324,9 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	DEMMask	deriv(orig.mWidth, orig.mHeight,false);					// A mash-up of points we will add to the final mesh.
 	deriv.copy_geo_from(orig);
 
-	vector<LanduseConstraint_t>	coastlines_markers;
-
-	/* LOAD SLAVED EDGES */
+	/************************************************************************************************************
+	 * PRE-SET UP -- LOAD BORDERS
+	 ************************************************************************************************************/
 
 	bool	has_borders[4];
 	
@@ -1601,6 +1360,60 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		has_borders[2] = gMeshPrefs.border_match ? load_match_file(fname_rgt, gMatchBorders[2], junk1, junk2, junk3) : false;
 		has_borders[3] = gMeshPrefs.border_match ? load_match_file(fname_top, junk1, gMatchBorders[3], junk2, junk3) : false;
 	}
+
+	/************************************************************************************************************
+	 * PRE-SET UP -- PRE-TRIANGULATION
+	 ************************************************************************************************************/
+
+	DEMGeo	best_density(100,100);
+	best_density.copy_geo_from(orig);
+	
+	{
+		// We are going to do a temporary triangulation to measure the ideal point distribution for our mesh
+		// given our budget and its actual shape, if elevation was the only concern.  We do this by just
+		// running the greedy mesh.  
+		CDT		temp_mesh;
+
+		CDT::Face_handle temp_hint;
+		InsertDEMPoint(orig, deriv, temp_mesh, 0, 0, temp_hint);
+		InsertDEMPoint(orig, deriv, temp_mesh, orig.mWidth-1, 0, temp_hint);
+		InsertDEMPoint(orig, deriv, temp_mesh, orig.mWidth-1, orig.mHeight-1, temp_hint);
+		InsertDEMPoint(orig, deriv, temp_mesh, 0, orig.mHeight-1, temp_hint);
+
+		for(int b=0;b<4;++b)
+		if (!gMatchBorders[b].vertices.empty())
+			match_border(temp_mesh, gMatchBorders[b], b);
+
+		AddEdgePoints(orig, deriv, 20, 1, has_borders, temp_mesh);
+
+		DEMGrid	gridlines(orig);
+		GreedyMeshBuild(temp_mesh, orig, deriv, gridlines, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
+		
+		// Now iterate and accumulate the vertices into a low res DEM - we will end up with linear vertex density per
+		// tile.
+		
+		for(CDT::Finite_vertices_iterator i = temp_mesh.finite_vertices_begin(); i != temp_mesh.finite_vertices_end(); ++i)
+		{
+			int x = round(best_density.lon_to_x(CGAL::to_double(i->point().x())));
+			int y = round(best_density.lat_to_y(CGAL::to_double(i->point().y())));
+			if(x >= 0 && x < best_density.mWidth &&
+			   y >= 0 && y < best_density.mHeight)
+			best_density(x,y) = best_density.get(x,y) + 1;
+		}
+
+		for(DEMGeo::iterator i = best_density.begin(); i != best_density.end(); ++i)
+			*i = sqrtf(*i);
+
+		#if DEV
+		inDEMs[dem_Wizard] = best_density;		
+		#endif
+	}
+	
+	deriv = false;
+
+	/************************************************************************************************************
+	 * ACTUAL TRIANGULATION
+	 ************************************************************************************************************/
 	
 	/* TRIANGULATE CORNERS */
 	
@@ -1614,10 +1427,30 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	
 	/* TRIANGULATE CONSTRAINTS */
 	
-	AddConstraintPoints(inMap, orig, outMesh, coastlines_markers);
+	AddConstraintPoints(inMap, orig, outMesh);
+	
+	PAUSE_STEP("Pre-simplify")
+	
+	/* SIMPLIFY CONSTRAINTS TO CUT DOWN MESH DENSITY */
+	
+	{
+		StElapsedTime simp("simplify edges");
+		
+		printf("Before simplify: %d/%d\n",outMesh.number_of_vertices(),outMesh.number_of_faces());
+//		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL); 
+		MeshSimplify	simplify_me(outMesh, dist_from_line);
+		simplify_me.simplify(0.0001 * 0.0001);
+		printf("After simplify: %d/%d\n",outMesh.number_of_vertices(),outMesh.number_of_faces());
+	}
 
 	PAUSE_STEP("Finished constraints")
 	
+	/* SUBDIVIDE CONSTRAINTS TO AVOID CREASE LINES IN MESH */
+	
+	SubdivideConstraints(outMesh, orig, best_density);
+
+	PAUSE_STEP("Finished subdivide constraints")
+		
 	/* TRIANGULATE SLAVED BORDER */
 	
 	for(int b=0;b<4;++b)
@@ -1679,11 +1512,6 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	PAUSE_STEP("Finished greedy2")
 
-	// We no longer do this; constraints are added up front.
-//	SplitConstraints(outMesh, orig, coastlines_markers, gMeshPrefs.max_error);
-
-//	PAUSE_STEP("Split Contraints")
-
 #if SPLIT_CLIFFS
 
 	// Cliff splitting: any time we have a triangle that is a cliff whose three neighbors are all NOT a cliff, we have
@@ -1718,7 +1546,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		}
 	}
 	
-	PAUSE_STEP("Split Cliffs")
+	PAUSE_STEP("Finished Split Cliffs")
 	
 #endif
 
@@ -1764,12 +1592,12 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 #endif
 	
 	/*********************************************************************************************************************
-	 * LAND USE CALC (A LITTLE BIT)
+	 * LAND USE CALC (A LITTLE BIT) AND WATER PROCESSING
 	 *********************************************************************************************************************/
 
 	PROGRESS_START(prog,1,3,"Calculating Wet Areas");
 	{
-		SetTerrainForConstraints(outMesh, coastlines_markers, orig);
+		SetTerrainForConstraints(outMesh, orig);
 	}
 
 	// To guarantee that the sea floor of wet triangles can be flat (e.g. we don't have three coastal vertices) we 
@@ -1834,7 +1662,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		} while(++circ != stop);
 	}
 	
-	SetTerrainForConstraints(outMesh, coastlines_markers, orig);
+	SetTerrainForConstraints(outMesh, orig);
 
 	for(set<CDT::Face_handle>::iterator w = who.begin(); w != who.end(); ++w)
 	{
@@ -1844,9 +1672,6 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	PAUSE_STEP("Split Beached Water")
 
 #endif
-
-
-
 
 	/*********************************************************************************************************************
 	 * CLEANUP - CALC MESH NORMALS
@@ -2805,222 +2630,8 @@ int	CalcMeshTextures(CDT& inMesh, map<int, int>& out_lus)
 	return total;
 }
 
-static bool RayInTri(CDT::Face_handle tri, CDT::Vertex_handle v, const CDT::Point& goal)
-{
-	CDT::Orientation_2 pred;
-
-	CDT::Vertex_handle	v_cw =  tri->vertex(CDT::cw (tri->index(v)));
-	CDT::Vertex_handle	v_ccw = tri->vertex(CDT::ccw(tri->index(v)));
-
-	if (pred(v->point(),  v_cw->point(), goal) == CGAL::LEFT_TURN ) return false;
-	if (pred(v->point(), v_ccw->point(), goal) == CGAL::RIGHT_TURN) return false;
-																	 return true;
-}
-
-bool common_vertex(CDT::Face_handle t1, CDT::Face_handle t2, int& index)
-{
-	if (t2->has_vertex(t1->vertex(0))) { index = 0; return true; }
-	if (t2->has_vertex(t1->vertex(1))) { index = 1; return true; }
-	if (t2->has_vertex(t1->vertex(2))) { index = 2; return true; }
-	return false;
-}
-
-
-
-CDT_MarchOverTerrain_t::CDT_MarchOverTerrain_t()
-{
-	locate_face = NULL;
-}
-
-void MarchHeightStart(CDT& inMesh, const CDT::Point& loc, CDT_MarchOverTerrain_t& info)
-{
-	CDT::Locate_type	locate_type;
-	int					locate_index;
-
-	info.locate_face = inMesh.locate(loc, locate_type, locate_index, info.locate_face);
-
-	// Special case: under some conditions we'll get the infinite-face edge.  This actually depends
-	// on what our seed locate was.  Either way it is unacceptable - passing in an infinite face
-	// generally makes the locate algorithm a little bonkers.  Reverse it here.
-	if (inMesh.is_infinite(info.locate_face) && (locate_type == CDT::EDGE || locate_type == CDT::VERTEX))
-	{
-		info.locate_face = info.locate_face->neighbor(info.locate_face->index(inMesh.infinite_vertex()));
-	}
-	info.locate_pt = loc;
-	info.locate_height = HeightWithinTri(inMesh, info.locate_face, loc);
-}
-
-void  MarchHeightGo(CDT& inMesh, const CDT::Point& goal, CDT_MarchOverTerrain_t& march_info, vector<Point3>& intermediates)
-{
-	static int level = 0;
-	Assert(level < 2);
-
-	// Makse sure our input makes some sense!
-	DebugAssert(!inMesh.is_infinite(march_info.locate_face));
-	DebugAssert(inMesh.triangle(march_info.locate_face).bounded_side(march_info.locate_pt) != CGAL::ON_UNBOUNDED_SIDE);
-
-	intermediates.clear();
-
-	CDT::Line_face_circulator circ(inMesh.line_walk(march_info.locate_pt, goal, march_info.locate_face));
-	CDT::Line_face_circulator stop(circ);
-
-	// Ben says: CGAL allows this, believe it or not - see special "null-type" comparator.
-	// The REAL handle comparator is zapped out of MSC for templating reasons.
-	if (circ == NULL)
-	{
-		CDT::Locate_type	goal_type;
-		int					goal_index;
-		CDT::Face_handle	goal_face;
-		CDT::Point			rev_goal = march_info.locate_pt;
-		goal_face = inMesh.locate(goal, goal_type, goal_index, march_info.locate_face);
-		if (inMesh.is_infinite(goal_face) && goal_type == CDT::EDGE)
-			goal_face = goal_face->neighbor(goal_index);
-
-		double				goal_height = HeightWithinTri(inMesh, goal_face, goal);
-
-		march_info.locate_pt = goal;
-		march_info.locate_face = goal_face;
-		march_info.locate_height = goal_height;
-
-		++level;
-		MarchHeightGo(inMesh, rev_goal, march_info, intermediates);
-		--level;
-
-		march_info.locate_pt = goal;
-		march_info.locate_face = goal_face;
-		march_info.locate_height = goal_height;
-
-		int s = intermediates.size() / 2;
-		for (int n = 0; n < s; ++n)
-		{
-			swap(intermediates[n], intermediates[intermediates.size() - n - 1]);
-		}
-		DebugAssert(!inMesh.is_infinite(march_info.locate_face));
-		DebugAssert(inMesh.triangle(march_info.locate_face).bounded_side(march_info.locate_pt) != CGAL::ON_UNBOUNDED_SIDE);
-		return;
-	}
-
-	intermediates.push_back(Point3(CGAL::to_double(march_info.locate_pt.x()), CGAL::to_double(march_info.locate_pt.y()), march_info.locate_height));
-
-	CDT::Segment	ray(march_info.locate_pt, goal);
-	int				cross_side;
-
-	CDT::Geom_traits::Orientation_2 pred;
-
-	while (1)
-	{
-		CDT::Point	last_pt;
-		double		last_ht;
-
-		CDT::Face_handle now = circ;
-		++circ;
-		CDT::Face_handle next = circ;
-
-		if (!inMesh.is_infinite(now) && inMesh.triangle(now).bounded_side(goal) != CGAL::ON_UNBOUNDED_SIDE)
-		{
-			march_info.locate_pt = last_pt = goal;
-			march_info.locate_height = last_ht = HeightWithinTri(inMesh, now, goal);
-			march_info.locate_face = now;
-			intermediates.push_back(Point3(CGAL::to_double(last_pt.x()), CGAL::to_double(last_pt.y()), last_ht));
-			DebugAssert(!inMesh.is_infinite(march_info.locate_face));
-			DebugAssert(inMesh.triangle(march_info.locate_face).bounded_side(march_info.locate_pt) != CGAL::ON_UNBOUNDED_SIDE);
-			break;
-		}
-
-		if (now->has_neighbor(next))
-		{
-			cross_side = now->index(next);
-			CDT::Segment crossed_seg = inMesh.segment(CDT::Edge(now, cross_side));
-
-			CGAL::Orientation o1 = pred(ray.source(), ray.target(), crossed_seg.source());
-			CGAL::Orientation o2 = pred(ray.source(), ray.target(), crossed_seg.target());
-
-			// We can't both be any one value - that means the common side is on both tris -
-			// one tri shouldn't be in the iteration!
-			DebugAssert(o1 != o2);
-
-			if (o1 == CGAL::COLLINEAR)
-			{
-				last_pt = now->vertex(CDT::ccw(cross_side))->point();
-				last_ht = now->vertex(CDT::ccw(cross_side))->info().height ;
-				intermediates.push_back(Point3(CGAL::to_double(last_pt.x()), CGAL::to_double(last_pt.y()), last_ht));
-			} else if (o2 == CGAL::COLLINEAR)
-			{
-				last_pt = now->vertex(CDT::cw(cross_side))->point();
-				last_ht = now->vertex(CDT::cw(cross_side))->info().height ;
-				intermediates.push_back(Point3(CGAL::to_double(last_pt.x()), CGAL::to_double(last_pt.y()), last_ht));
-
-			} else {
-				CGAL::Object o = CGAL::intersection(ray, crossed_seg);
-				if (CGAL::assign(last_pt, o))
-				{
-					Bbox_2 lim_ray = CDT::Segment(march_info.locate_pt,goal).bbox();
-					Bbox_2 lim_seg = crossed_seg.bbox();
-					Point_2	result(last_pt.x(),last_pt.y());
-					if(!CGAL::do_overlap(lim_ray, result.bbox()))
-					{
-						#if DEBUG_DROPPED_PTS
-							printf("WARNING: failed intersection: %.10lf, %.10lf\n",last_pt.x(),last_pt.y());
-							gMeshPoints.push_back(pair<Point_2,Point_3>(last_pt,Point_3(1,1,0)));
-							gMeshLines.push_back(pair<Point_2,Point_3>(march_info,Point_3(0,1,0)));
-							gMeshLines.push_back(pair<Point_2,Point_3>(goal,Point_3(0,1,0)));
-							gMeshLines.push_back(pair<Point_2,Point_3>(crossed_seg.source(),Point_3(0,0,1)));
-							gMeshLines.push_back(pair<Point_2,Point_3>(crossed_seg.target(),Point_3(0,0,1)));
-						#endif
-					} else {
-
-						last_ht = HeightWithinTri(inMesh, now, last_pt) ;
-						intermediates.push_back(Point3(CGAL::to_double(last_pt.x()), CGAL::to_double(last_pt.y()), last_ht));
-					}
-
-				} else {
-#if DEV
-					printf("Ray: %lf,%lf->%lf,%lf\nSide: %lf,%lf->%lf,%lf\n",
-						CGAL::to_double(ray.source().x()), CGAL::to_double(ray.source().y()),
-						CGAL::to_double(ray.target().x()), CGAL::to_double(ray.target().y()),
-						CGAL::to_double(crossed_seg.source().x()), CGAL::to_double(crossed_seg.source().y()),
-						CGAL::to_double(crossed_seg.target().x()), CGAL::to_double(crossed_seg.target().y()));
-#endif
-					AssertPrintf("Intersection failed.");
-				}
-			}
-		}
-		else if (common_vertex(now, next, cross_side))
-		{
-			last_pt = now->vertex(cross_side)->point();
-			last_ht = now->vertex(cross_side)->info().height ;
-			printf("On Vertex: %lf, %lf\n", CGAL::to_double(last_pt.x()), CGAL::to_double(last_pt.y()));
-			intermediates.push_back(Point3(CGAL::to_double(last_pt.x()), CGAL::to_double(last_pt.y()), last_ht));
-		} else
-			AssertPrintf("Cannot determine relationship between triangles!");
-
-		// If we hit our goal dead-on, great!
-		if (last_pt == goal)
-		{
-			march_info.locate_pt = last_pt;
-			march_info.locate_height = last_ht;
-			march_info.locate_face = next;
-			DebugAssert(!inMesh.is_infinite(march_info.locate_face));
-			DebugAssert(inMesh.triangle(march_info.locate_face).bounded_side(march_info.locate_pt) != CGAL::ON_UNBOUNDED_SIDE);
-			break;
-		}
-
-/*
-		// VERY STRANGE: given a simple horizontal line case, collinear_has_on is returning CRAP results.
-		if (!ray.collinear_has_on(last_pt))
-		{
-			intermediates.pop_back();
-			march_info.locate_pt = last_pt = goal;
-			march_info.locate_height = last_ht = HeightWithinTri(now, goal.x(), goal.y());
-			march_info.locate_face = now;
-			intermediates.push_back(Point_3(last_pt.x(), last_pt.y(), last_ht));
-			DebugAssert(!inMesh.is_infinite(march_info.locate_face));
-			DebugAssert(inMesh.triangle(march_info.locate_face).bounded_side(march_info.locate_pt) != CGAL::ON_UNBOUNDED_SIDE);
-			break;
-		}
-*/
-		DebugAssert(circ != stop);
-	}
-}
-
+/****************************************************************************************************************************************************************
+ *
+ ****************************************************************************************************************************************************************/
+#pragma mark -
 

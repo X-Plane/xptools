@@ -169,8 +169,9 @@ void	CropMap(
  * to de-rez a map.
  *
  */
+#if CGAL_BETA_SIMPLIFIER
 void MapSimplify(Pmwx& pmwx, double metric);
-
+#endif
 /*
  * MapDesliver
  *

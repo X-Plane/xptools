@@ -2132,9 +2132,9 @@ void insert_poly_line(Simplify_polylines_2& simplifier, const vector<Point_2>& p
 
 #endif
 
+#if CGAL_BETA_SIMPLIFIER
 void MapSimplify(Pmwx& pmwx, double metric)
 {
-#if CGAL_BETA_SIMPLIFIER
 	Simplify_polylines_2	simplifier;
 	
 	Pmwx::Halfedge_iterator e;
@@ -2230,8 +2230,8 @@ void MapSimplify(Pmwx& pmwx, double metric)
 //		debug_mesh_point(cgal2ben(v->point()),1,1,1);
 #endif		
 
-#endif
 }
+#endif
 
 bool IsFaceNotSliverFast(Pmwx::Face_handle f, double metric)
 {
@@ -2415,7 +2415,7 @@ bool	connected_vertices(Pmwx::Vertex_handle v1, Pmwx::Vertex_handle v2)
 	} while(++circ != stop);
 	return false;
 }
-int remove_outsets_ccb(Pmwx& io_map, Pmwx::Face_handle f, Pmwx::Ccb_halfedge_circulator circ, double max_len_sq, double max_area, spatial_index<Point_2>& idx)
+int remove_outsets_ccb(Pmwx& io_map, Pmwx::Face_handle f, Pmwx::Ccb_halfedge_circulator circ, double max_len_sq, double max_area, spatial_index_2<Pmwx::Geometry_traits_2>& idx)
 {
 	int ret = 0;
 	int tot=0,kwik=0;
@@ -2456,10 +2456,10 @@ int remove_outsets_ccb(Pmwx& io_map, Pmwx::Face_handle f, Pmwx::Ccb_halfedge_cir
 			{
 				if(signed_area_pt(pts,pts+4) > -max_area)
 				{					
-					if((!connected_vertices(h1->target(),h4->target()) &&
-						!idx.pts_in_tri_no_corners(h1->target()->point(),h2->target()->point(),h3->target()->point()) &&
-						!idx.pts_in_tri_no_corners(h1->target()->point(),h3->target()->point(),h4->target()->point()))
-						|| can_insert(io_map, h1->target(),h4->target()))
+					if(!connected_vertices(h1->target(),h4->target()) &&
+						!squatters_in_area<Pmwx>(h1->target()->point(),h2->target()->point(),h3->target()->point(),idx) &&
+						!squatters_in_area<Pmwx>(h1->target()->point(),h3->target()->point(),h4->target()->point(),idx))
+//						|| can_insert(io_map, h1->target(),h4->target()))
 					{	
 						#if DEV && DEBUG_OUTSET_REMOVER
 							DebugAssert(can_insert(io_map, h1->target(),h4->target()));
@@ -2498,12 +2498,8 @@ int RemoveOutsets(Pmwx& io_map, double max_len_sq, double max_area)
 		maxc.y_ = max(maxc.y(),p.y());
 	}
 		
-	spatial_index<Point_2>	vertex_index(minc, maxc, 1024);
-	for(Pmwx::Vertex_iterator v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)
-	{
-		vertex_index.insert(v->point());
-	}
-
+	spatial_index_2<Pmwx::Geometry_traits_2>	vertex_index;
+	vertex_index.insert(io_map.vertices_begin(), io_map.vertices_end(), arr_vertex_pt_extractor<Pmwx>());
 	
 	int ret = 0;
 	data_preserver_t<Pmwx>	preserve(io_map);

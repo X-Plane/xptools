@@ -27,6 +27,12 @@
 #include "ProgressUtils.h"
 #include "CompGeomDefs3.h"
 
+
+// Burn...everything.
+#define BURN_EVERYTHING 0
+// Burn every road segment!
+#define BURN_ROADS 0
+
 template<typename Number>
 struct	PolyRasterizer;
 struct	DEMGeo;
@@ -57,21 +63,35 @@ void	Calc2ndDerivative(DEMGeo& ioDEM);
 int		CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float& out_ave, float& std_dev, ProgressFunc inFunc);
 int		CalcMeshTextures(CDT& inMesh, map<int, int>& out_lus);
 
-// MESH MARCH - Walk from one lat/lon to another in the mesh, returning the heights at the start and end
-// points as well as all points that cross a mesh boundary.
 
-// State struct - where are we?
-struct CDT_MarchOverTerrain_t {
-	CDT_MarchOverTerrain_t();
+// This routine is inline because we need a semi-global definition of what a "real" edge of the pmwx is.
 
-	CDT::Face_handle	locate_face;		// Face that contains the current point in its interior or boundary.
-	CDT::Point			locate_pt;			// Current location
-	double				locate_height;		// Vertical at that point
-};
+inline bool must_burn_he(Halfedge_handle he)
+{
+	#if BURN_EVERYTHING
+		return true;
+	#endif
+	Halfedge_handle tw = he->twin();
+	Face_handle f1 = he->face();
+	Face_handle f2 = tw->face();
+	
+	if(f1->is_unbounded() || f2->is_unbounded()) 
+		return false;
 
-// Initialize the start point of a march.
-void MarchHeightStart(CDT& inMesh, const CDT::Point& inLoc, CDT_MarchOverTerrain_t& march_info);
-// March to a new point.  Fills out intermediates with at least two points plus any intermediates.
-void MarchHeightGo   (CDT& inMesh, const CDT::Point& inLoc, CDT_MarchOverTerrain_t& march_info, vector<Point3>& intermediates);
+#if BURN_ROADS
+	if(!he->data().mSegments.empty() ||
+		!he->twin()->data().mSegments.empty()) return true;
+#endif
+	
+	return he->data().mParams.count(he_MustBurn) ||
+		   tw->data().mParams.count(he_MustBurn) ||
+//		   f1->data().GetZoning() != f2->data().GetZoning() ||
+#if !DEV
+//	#error put zoning back
+#endif
+		   f1->data().mTerrainType != f2->data().mTerrainType;
+}
+
+
 
 #endif

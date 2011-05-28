@@ -38,8 +38,46 @@
 #include "DEMDefs.h"
 #include "MapDefs.h"			// We need this for face-handle forward declaration.
 
+/*
+
+	Pmwx-CDT Synchronization - THEORY OF DESIGN
+	
+	The CDT is designed to be derived from a Pmwx, with the constraints in the CDT coming from Pmwx edges that needed to be "burned".
+
+	The relationship between vertices in the CDT and vertices in the Pmwx is many-to-many:
+	- Some Pmwx vertices will be dropped to simplify the complexity of the arrangement.  In particular, if a burned edge intersects a 
+	  non-burned edge in the Pmwx, the vertex defining that point will NOT make it to the CDT.
+	- The CDT may contain some vertices that don't come from the Pmwx, to shorten the max length of a constraint via subdivision.
+	
+	The orig_vertex field links the CDT back to the Pmwx.  In order to keep sync working we need to meet a few criteria:
+	
+	- If a CDT vertex has no incident constraints, it must have a null orig-ptr because it comes from an interior point and isn't synced
+	  to a burnable edge.
+	- If a CDT vertex has either one or more than two incident constraints, it must have a non-null orig-ptr because it is a "node" -
+	  that is, a point of interest in the network topology of constraints.  These points cannot be optimized out, and they cannot
+	  be created via subdivision, hence their original ptr.
+	- Similarly, any Pmwx node whose degree of burned edges is 1 or more than 2 must have a corresponding CDT vertex with a ptr back to it.
+	- If a CDT vertex has two incident constraints, it may or may not have an orig-ptr because it could be a subdivision.
+	- Similarly, any Pmwx node whose degree of burned edges is 2 may or may not have a corresponding CDT vertex with a ptr back to it.
+
+	Finally, there is one more rule for reduction that is slightly non-intuitive:
+	- Define a burned poly-line as the extension of a must-burn Pmwx edge in both directions until we hit a vertex whose must-burn degree
+	  is not two. (These are analogous to "shape points" in topology terms.)  If there is at least one interior burn-degree two vertex
+	  along the line, then at least one of the shape points must be in the CDT.
+	  
+	In other words, we cannot drop ALL of the shape points of a poly-line unless there were none to begin with. 	This last rule is
+	necessary to ensure that given multiple poly-liens between two vertices, that there is at least one disambiguating "sync point"
+	in each.  (In theory we could drop the sync points out of one of the poly-lines, perhaps the one with the most direct path, but
+	in practice the code would be more complex if we did.)
+	
+	Note that a triangle-loop can never be reduced to an edge because given any two points, the third point is the only "shape point'
+	between the first two.  The "one sync point" rule thus makes a "don't reduce triangles to lines" rule unnecessary.
+
+ */
+
 
 typedef multimap<float, void *, greater<float> >			FaceQueue;	// YUCK - hard cast to avoid snarky problems with forward decls
+typedef multimap<double, void *>							VertexQueue;
 
 struct	MeshVertexInfo {
 	MeshVertexInfo() : height(0.0), wave_height(1.0) { }
@@ -54,12 +92,16 @@ struct	MeshVertexInfo {
 								normal[0] = rhs.normal[0];
 								normal[1] = rhs.normal[1];
 								normal[2] = rhs.normal[2];
+								orig_vertex = rhs.orig_vertex;
 								border_blend = rhs.border_blend; return *this; }
 
 	double					height;					// Height of mesh at this vertex.
 	double					wave_height;			// ratio of vegetation to terrain at this vertex.
 	float					normal[3];				// Normal - X,Y,Z in OGL coords(!)
 	hash_map<int, float>	border_blend;			// blend level for a border of this layer at this triangle!
+	
+	Vertex_handle			orig_vertex;			// Original vertex in the Pmwx.
+	VertexQueue::iterator	self;
 
 };
 
@@ -140,60 +182,6 @@ public:
 
 	Vertex_handle	insert_collect_flips(const Point& p, Face_handle hint, set<Face_handle>& all);
 
-	// SAFE insert...basically when using a fast cartesian kernel, the
-	// face locate may return 'face' when it means 'edge' because the
-	// set of tests for the march-locate aren't quite specific enough to resolve
-	// rounding errors.  (At least that's what I _think_ it is.)  So...
-	// We do the locate, check for this case, and try to manually find an edge
-	// we're on.  If we do, we fix up the locate info and procede safely.  If not
-	// we assert - we would have done that anyway.
-#if 1
-	Vertex_handle	safe_insert(const Point& p, Face_handle hint);
-#else
-	Vertex_handle	safe_insert(const Point& p, Face_handle hint)
-	{
-		int			li;
-		Locate_type	lt;
-		Face_handle	who = locate(p, lt, li, hint);
-		if (lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
-		{
-			if(lt == FACE && oriented_side(who, p) != CGAL::ON_POSITIVE_SIDE)
-			{
-
-				Point	p0(who->vertex(0)->point());
-				Point	p1(who->vertex(1)->point());
-				Point	p2(who->vertex(2)->point());
-
-				CGAL_triangulation_precondition( orientation(p0, p1, p2) != CGAL::COLLINEAR);
-
-				CGAL::Orientation 	o2 = orientation(p0, p1, p),
-									o0 = orientation(p1, p2, p),
-									o1 = orientation(p2, p0, p),
-									o2b= orientation(p1, p0, p),
-									o0b= orientation(p2, p1, p),
-									o1b= orientation(p0, p2, p);
-
-				// Collinear witih TWO sides?  Hrmm...should be a vertex.
-				if (o1 == CGAL::COLLINEAR && o2 == CGAL::COLLINEAR) { li = 0; lt = VERTEX; }
-				if (o2 == CGAL::COLLINEAR && o0 == CGAL::COLLINEAR) { li = 1; lt = VERTEX; }
-				if (o0 == CGAL::COLLINEAR && o1 == CGAL::COLLINEAR) { li = 2; lt = VERTEX; }
-
-				// Colinear with a side and positive on the other two - should be on that edge.
-				if (o1 == CGAL::COLLINEAR && o2 == CGAL::POSITIVE && o0 == CGAL::POSITIVE) 				{ li = 1; lt = EDGE; }
-				if (o2 == CGAL::COLLINEAR && o0 == CGAL::POSITIVE && o1 == CGAL::POSITIVE) 				{ li = 2; lt = EDGE; }
-				if (o0 == CGAL::COLLINEAR && o1 == CGAL::POSITIVE && o2 == CGAL::POSITIVE) 				{ li = 0; lt = EDGE; }
-
-				// On negative of a side AND its opposite?  We've got a rounding error.  Call it the edge and go home.
-				if (o0 == CGAL::NEGATIVE && o0b == CGAL::NEGATIVE) { li = 0; lt = EDGE; }
-				if (o1 == CGAL::NEGATIVE && o1b == CGAL::NEGATIVE) { li = 1; lt = EDGE; }
-				if (o2 == CGAL::NEGATIVE && o2b == CGAL::NEGATIVE) { li = 2; lt = EDGE; }
-
-				if (lt == FACE) AssertPrintf("Unable to resolve bad locate.");
-			}
-		}
-		return CDTBase::insert(p, lt, who, li);
-	}
-#endif
 private:
 
 	void			my_propagating_flip(Face_handle& f,int i, set<Face_handle>& all);
@@ -203,7 +191,117 @@ private:
 
 };
 
-#define CONVERT_POINT(__X)	(CDT::Point((__X).x(),(__X).y()))
+// Directed edge is one whose triangle face is on the LEFT when walking from src to dst.  This returns
+// the srcand dst vertices.
+inline CDT::Vertex_handle	CDT_he_source(const CDT::Edge& e);
+inline CDT::Vertex_handle	CDT_he_target(const CDT::Edge& e);
+
+// Return directed TWIN
+inline CDT::Edge			CDT_he_twin(CDT::Edge& e);
+
+// Make a DIRECTED halfedge from A to B.  Returns NULL if not connected!
+inline CDT::Edge			CDT_make_he(CDT::Vertex_handle a, CDT::Vertex_handle b);
+
+// Given a directed halfedge, if there is only one other constraint with e's target
+// as it's source, return it, otherwise null.
+inline CDT::Edge			CDT_next_constraint(CDT::Edge& e);
+
+// Is this vertex on the edge of the triangulation?
+inline bool IsEdgeVertex(CDT& inMesh, CDT::Vertex_handle v);
+
+
+/*************
+ * INLINES 
+ *************/
+
+inline bool IsEdgeVertex(CDT& inMesh, CDT::Vertex_handle v)
+{
+	CDT::Vertex_circulator circ, stop;
+	circ = stop = inMesh.incident_vertices(v);
+	do {
+		if (inMesh.is_infinite(circ)) return true;
+		circ++;
+	} while (circ != stop);
+	return false;
+}
+
+
+inline CDT::Vertex_handle	CDT_he_source(const CDT::Edge& e) { return e.first->vertex(CDT::ccw(e.second)); }
+inline CDT::Vertex_handle	CDT_he_target(const CDT::Edge& e) { return e.first->vertex(CDT::cw (e.second)); }
+
+inline CDT::Edge			CDT_he_twin(CDT::Edge& e) { 	
+	CDT::Face_handle neighbor = e.first->neighbor(e.second);
+	CDT::Vertex_handle my_src = CDT_he_source(e);
+	int target_index = neighbor->index(my_src);	
+	#if DEV
+		CDT::Edge r(neighbor, CDT::ccw(target_index));
+		DebugAssert(CDT_he_source(e) == CDT_he_target(r));
+		DebugAssert(CDT_he_source(r) == CDT_he_target(e));
+	#endif
+	return CDT::Edge(neighbor, CDT::ccw(target_index));
+}
+
+inline CDT::Edge			CDT_make_he(const CDT& cdt, CDT::Vertex_handle a, CDT::Vertex_handle b)
+{
+	CDT::Edge r;
+	if (cdt.is_edge(a,b,r.first,r.second))
+	{
+		DebugAssert(CDT_he_source(r) == a || CDT_he_source(r) == b);
+		DebugAssert(CDT_he_target(r) == a || CDT_he_target(r) == b);
+		if(CDT_he_source(r) == a)
+			return r;
+		else
+			return CDT_he_twin(r);
+	}
+	else
+	{
+		DebugAssert(r.first == CDT::Face_handle());
+		return r;
+	}
+}
+
+inline CDT::Edge			CDT_next_constraint(CDT::Edge& e)
+{
+	//printf("\tLooking for next constraint for %s.\n",print_edge(e));
+	DebugAssert(e.first->is_constrained(e.second));
+	CDT::Edge	best;
+	DebugAssert(best.first == CDT::Face_handle());
+	CDT::Edge_circulator circ, stop;
+	CDT::Vertex_handle	t = CDT_he_target(e);
+	//printf("\tCirculating target %p.\n", &*t);
+	circ = stop = t->incident_edges();
+	do 
+	{
+		//printf("\t\tcirculator edge %s.\n", print_edge(*circ));
+		if (circ->first->is_constrained(circ->second))
+		{
+			//printf("\t\t\tIs constrained.\n");
+			// Get C, an edge pointing OUT of e's target (the circulated vertex).
+			CDT::Edge c(*circ);
+			if(CDT_he_source(c) != t)
+				c = CDT_he_twin(c);
+			//printf("\t\t\tright dir is: %s.\n",print_edge(c));
+				
+			// If C and e aren't twins, this is a new departure route.
+			if(CDT_he_twin(c) != e)
+			{
+				//printf("\t\t\tDoesn't match previous.\n");
+				// Two exits?  We're done.
+				if(best.first != CDT::Face_handle())	
+				{
+					//printf("   Bail - hit a Y split.\n");
+					return CDT::Edge();
+				}
+				best = c;
+			}
+		}
+	}
+	while(++circ != stop);
+	//printf("\tBest was: %s\n", print_edge(best));
+	return best;
+}
+
+
 
 #endif
 
