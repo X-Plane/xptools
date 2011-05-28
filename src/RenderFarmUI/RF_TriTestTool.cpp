@@ -77,7 +77,7 @@ bool	RF_TriTestTool::HandleClick(
 	{
 		RF_MapZoomer * z = GetZoomer();
 		Point2 p = Point2(z->XPixelToLon(inX), z->YPixelToLat(inY));
-		gTriangulationHi.insert(CONVERT_POINT(p));
+		gTriangulationHi.insert(ben2cgal(p));
 //		gTriangulationLo.insert(CONVERT_POINT(p));
 	}
 	return true;

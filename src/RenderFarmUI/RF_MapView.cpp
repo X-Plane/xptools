@@ -632,7 +632,9 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 					GLfloat	color[4] = { 1.0, 1.0, 1.0, 1.0 };
 					if (!gTriangulationHi.is_constrained(*eit))
 					{
-						if (sDEMType)
+						if(gTriangulationHi.is_flipable(eit->first,eit->second))
+							color[0] = 0.8, color[1] = 0.4, color[2] = 0.4, color[3] = 0.8;						
+						else if (sDEMType)
 							color[0] = 0.0, color[1] = 0.0, color[2] = 0.5, color[3] = 0.8;
 						else
 							color[0] = 0.4, color[1] = 0.4, color[2] = 0.8, color[3] = 0.8;
