@@ -154,7 +154,7 @@ inline float interp(	const float x1,const float y1,
 inline double double_interp(const double x1,const double y1,const double x2,const double y2,const double x)
 {
 	if(x1==x2)	return (y1+y2)*0.5;
-				return fltlim(y1+((y2-y1)/(x2-x1))*(x-x1),dobmin2(y1,y2),dobmax2(y1,y2));
+				return doblim(y1+((y2-y1)/(x2-x1))*(x-x1),dobmin2(y1,y2),dobmax2(y1,y2));
 }
 
 inline float extrap(const float x1,const float y1,const float x2,const float y2,const float x)
