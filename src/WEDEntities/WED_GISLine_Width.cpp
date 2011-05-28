@@ -93,7 +93,7 @@ void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info)
 
 	switch(n) {
 	case rwy_prop_length:	info.digits = 5; info.decimals = 1; break;
-	case rwy_prop_heading:	info.digits = 5; info.decimals = 1; break;
+	case rwy_prop_heading:	info.digits = 5; info.decimals = 2; break;
 	case rwy_prop_lat1:		info.digits = 10; info.decimals = 6; break;
 	case rwy_prop_lon1:		info.digits = 11; info.decimals = 6; break;
 	case rwy_prop_latc:		info.digits = 10; info.decimals = 6; break;
