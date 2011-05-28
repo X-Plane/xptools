@@ -40,10 +40,10 @@ bool	ConsoleProgressFunc(
 				for (int n = last_char; n < pos; ++n)
 					printf(".");
 				last_char = pos;
-//				fflush(stdout);
 	//			last_progress = inProgress;
 			}
 			printf("Done\n");
+			fflush(stdout);
 			is_shown = false;
 		}
 	} else {
@@ -52,6 +52,7 @@ bool	ConsoleProgressFunc(
 			is_shown = true;
 			printf("Task %d of %d - %s...\n", inCurrentStage+1, inCurrentStageCount, inCurrentStageName);
 			printf("+----+----+----+----+----+----+----+----+----+----+\n");
+			fflush(stdout);
 //			last_progress = 0.0;
 			last_char = 0;
 		}
