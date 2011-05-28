@@ -40,6 +40,7 @@
 #include "MemFileUtils.h"
 #include "XESIO.h"
 #include "ForestTables.h"
+#include "MathUtils.h"
 
 DEMPrefs_t	gDemPrefs = { 3, 0.5, 1.0 };
 
@@ -1940,4 +1941,23 @@ void GaussianBlurDEM(DEMGeo& dem, float sigma)
 	normalize_kernel(&*k.begin(),width);
 	copy_kernel_v(dem,temp,&*k.begin(),width);
 	copy_kernel_h(temp,dem,&*k.begin(),width);
+}
+
+// Line integral of the DEM over the points x1,y1 to x2,y2.  Over-sample by over_sample_ratio (should
+// usually be higher than 1.4.
+float	IntegLine(const DEMGeo& dem, double x1, double y1, double x2, double y2, int over_sample_ratio)
+{
+	double dx = x2-x1;
+	double dy = y2-y1;
+	
+	double len = sqrt(dx*dx+dy*dy);
+	int samples = intmax2(1,(round(len * (double) over_sample_ratio)));
+	float t = 0.0;
+	for(int s = 0; s < samples; ++s)
+	{
+		double x = double_interp(0,x1,samples-1,x2,s);
+		double y = double_interp(0,y1,samples-1,y2,s);
+		t += dem.get(round(x), round(y));
+	}
+	return t * len / ((double) samples);
 }

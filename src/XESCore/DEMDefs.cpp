@@ -23,7 +23,7 @@
 #include "DEMDefs.h"
 #include "CompGeomDefs3.h"
 #include "MathUtils.h"
-
+#include <list>
 
 #define HIST_MAX	10
 
@@ -516,46 +516,55 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 
 void DEMGeo::fill_nearest(void)
 {
-	int x1 = 0, x2 = mWidth, y1 = 0, y2 = mHeight;
-	DEMGeo	fill(*this);
-	while (x1 < x2 && y1 < y2)
+	const int x_off[8] = { -1, 0, 1, -1, 1, -1, 0, 1 };
+	const int y_off[8] = { -1, -1, -1, 0, 0, 1, 1, 1 };
+	
+	int x, y, n;
+	
+	// We have to use a queue of work - if we iterate over the entire DEM
+	// multiple times (to get a breadth-first search) performance is too
+	// slow with a 1000x1000 DEM.
+	list<pair<int,int> >	todo_list;
+	
+	for(y = 0; y < mHeight; ++y)
+	for(x = 0; x < mWidth; ++x)
+	if(get(x,y) == DEM_NO_DATA)
 	{
-		bool changed = false;
-		int x_min = mWidth, x_max = 0, y_min = mHeight, y_max = 0;
-		for (int x = x1; x < x2; ++x)
-		for (int y = y1; y < y2; ++y)
+		for(n = 0; n < 8; ++n)
+		if(get(x+x_off[n],y+y_off[n]) != DEM_NO_DATA)
+			break;
+		if(n < 8)
+			todo_list.push_back(pair<int,int>(x,y));
+	}
+	
+	while(!todo_list.empty())
+	{		
+		x = todo_list.begin()->first;
+		y = todo_list.begin()->second;
+		todo_list.pop_front();
+		
+		// We might discover a point from multiple sources but 
+		// queue it because we don't have a "marked" value (and
+		// this code is stupid).  So just skip if it's already
+		// handled.  Not good, but adequate for a 1000 x 1000 DEM.
+		if(get(x,y) != DEM_NO_DATA)
+			continue;
+		HistoHelper helper;
+		for(n = 0; n < 8; ++n)
 		{
-			float e = (*this)(x,y);
-			if (e == DEM_NO_DATA)
+			int dx= x + x_off[n];
+			int dy = y + y_off[n];
+			if(dx >= 0 && dx < mWidth && dy >= 0 && dy < mHeight)
 			{
-				HistoHelper	helper;
-				helper.Accum(get(x-1,y-1), DEM_NO_DATA);
-				helper.Accum(get(x+1,y-1), DEM_NO_DATA);
-				helper.Accum(get(x-1,y+1), DEM_NO_DATA);
-				helper.Accum(get(x+1,y+1), DEM_NO_DATA);
-
-				helper.Accum(get(x-1,y  ), DEM_NO_DATA);
-				helper.Accum(get(x+1,y  ), DEM_NO_DATA);
-				helper.Accum(get(x  ,y+1), DEM_NO_DATA);
-				helper.Accum(get(x  ,y-1), DEM_NO_DATA);
-				if (helper.HasBest())
-				{
-					changed = true;
-					fill(x,y) = helper.GetBest();
-				} else {
-					x_min = min(x_min, x);
-					x_max = max(x_max, x+1);
-					y_min = min(y_min, y);
-					y_max = max(y_max, y+1);
+				float e = get(dx,dy);
+				if(e == DEM_NO_DATA)
+					todo_list.push_back(pair<int,int>(dx,dy));
+				else
+					helper.Accum(e, DEM_NO_DATA);
 				}
-			}
 		}
-		x1 = x_min;
-		x2 = x_max;
-		y1 = y_min;
-		y2 = y_max;
-		if (!changed) return;
-		memcpy(mData, fill.mData, mWidth * mHeight * sizeof(float));
+		DebugAssert(helper.HasBest());
+		(*this)(x,y) = helper.GetBest();
 	}
 }
 

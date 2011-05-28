@@ -86,4 +86,6 @@ void	MakeTiles(const DEMGeo& inDEM, list<DEMGeo>& outTiles);
 void	DifferenceDEM(const DEMGeo& bottom, const DEMGeo& top, DEMGeo& diff);
 void	GaussianBlurDEM(DEMGeo& dem, float sigma);
 
+float	IntegLine(const DEMGeo& dem, double x1, double y1, double x2, double y2, int over_sample_ratio);
+
 #endif
