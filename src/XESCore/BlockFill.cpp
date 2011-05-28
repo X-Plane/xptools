@@ -42,6 +42,7 @@
 
 #include "BlockFill.h"
 #include "BlockAlgs.h"
+#include "douglas_peuker.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"
 #include "MapPolygon.h"
@@ -85,77 +86,6 @@ struct block_pt_err {
 		return Segment2(p1.loc,p2.loc).squared_distance(x.loc); 
 	}
 };
-
-
-
-template <typename __InputIterator, typename __OutputIterator, typename __LockFunctor, typename __MeasureFunctor>
-void douglas_peuker(
-			__InputIterator			start,
-			__InputIterator			stop,
-			__OutputIterator		out,
-			double					epsi_2,
-			const __LockFunctor&	lock_check,
-			const __MeasureFunctor& measure)
-{
-	if(start == stop)
-		return;
-	if(*start == *stop)
-	{
-		int n = stop - start;
-		if (n == 1) 
-			return;
-		
-		__InputIterator p(start);
-		++p;
-		while(p < stop)
-		{
-			if(lock_check(*p))
-			{
-				douglas_peuker(start,p,out,epsi_2,lock_check,measure);
-				douglas_peuker(p,stop,out,epsi_2,lock_check,measure);
-				return;
-			}
-			++p;
-		}
-			
-		__InputIterator mid(start);
-		advance(mid,n/2);
-		douglas_peuker(start,mid,out,epsi_2,lock_check,measure);
-		douglas_peuker(mid,stop,out,epsi_2,lock_check,measure);
-		return;		
-	}
-	
-	
-	__InputIterator p(start);
-	++p;
-	double max_d=0.0;
-	__InputIterator worst(stop);
-	while(p < stop)
-	{
-		if(lock_check(*p))
-		{
-			douglas_peuker(start,p,out,epsi_2,lock_check,measure);
-			douglas_peuker(p,stop,out,epsi_2,lock_check,measure);
-			return;
-		}
-		double d = measure(*start, *stop, *p);
-		if(d > max_d)
-		{
-			max_d = d;
-			worst = p;
-		}
-		++p;
-	}
-	if(max_d >= epsi_2)
-	{
-		douglas_peuker(start,worst,out,epsi_2,lock_check,measure);
-		douglas_peuker(worst,stop,out,epsi_2,lock_check,measure);
-	}
-	else
-	{
-		*out++ = *start;
-	}
-}
 
 
 
