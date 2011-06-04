@@ -340,6 +340,17 @@ inline void ZapBorders(CDT::Vertex_handle v)
 		i->second = 0.0;
 }
 
+// We generally are only missing a terrain from a border file when a MeshTool user 
+// doesn't include the border orthos in the scripts to both sessions - the second
+// session doesn't know what's _on_ the border, let alone whether it should make
+// border tris or not.  Try to give them an error message that explains how to fix
+// it.  This should never happen for the global sceney case unless we are seriously
+// fubar!
+#define MISSING_ORTHO_WARNING \
+"A neighboring DSF that you already created uses the terrain or orthophoto %s.\n"\
+"That terrain or orthophoto touches the border with the DSF you are rendering now.\n"\
+"But the terrain is not defined in the script file for this DSF.  You must add the\n"\
+"terrain or orthophoto definition to the script file for this DSF.\n"
 static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match_t& outBottom, mesh_match_t& outRight, mesh_match_t& outTop)
 {
 	outTop.vertices.clear();
@@ -397,7 +408,11 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 				sscanf(buf, "VB %f %s", &mix, ter);
 				dest->vertices.back().blending[token=LookupToken(ter)] = mix;
-				DebugAssert(token != -1);
+				if(token == -1)
+				{
+					fprintf(stderr,MISSING_ORTHO_WARNING,ter);
+					exit(1);
+				}
 			}
 			if (go)
 			{
@@ -405,7 +420,11 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				sscanf(buf, "TERRAIN %s", ter);
 				dest->edges.push_back(mesh_match_edge_t());
 				dest->edges.back().base = token=LookupToken(ter);
-				DebugAssert(token != -1);
+				if(token == -1)
+				{
+					fprintf(stderr,MISSING_ORTHO_WARNING,ter);
+					exit(1);
+				}
 				if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 				sscanf(buf, "BORDER_C %d", &count);
 				while (count--)
@@ -413,7 +432,11 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 					if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 					sscanf(buf, "BORDER_T %s", ter);
 					dest->edges.back().borders.insert( token=LookupToken(ter));
-					DebugAssert(token != -1);
+					if(token == -1)
+					{
+						fprintf(stderr,MISSING_ORTHO_WARNING,ter);
+						exit(1);
+					}
 				}
 			}
 		}
