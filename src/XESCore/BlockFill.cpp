@@ -171,6 +171,7 @@ inline void push_block_curve(vector<Block_2::X_monotone_curve_2>& curves, const 
 	EdgeKey_container	keys;
 	keys.insert(idx1);
 	keys.insert(idx2);
+	DebugAssert(p1 != p2);
 	curves.push_back(Block_2::X_monotone_curve_2(Segment_2(ben2cgal(p1),ben2cgal(p2)),keys));
 }
 
@@ -378,51 +379,70 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 			if(w == 0.0 || w2 == 0.0)
 				w2 = 0.0;
 		
+			// NOTE: a reflex vertex can be semi-degenerate - that is, just enough for right_hand to return true in floating point, yet
+			// some segments might be zero length.  Run a bunch of checks to eliminate degenerate infrastructure before passing back to CGAL!
 			if(er2 && w2 > 0.0)
 			{			
-				push_block_curve(curves, pts[j].loc,pts[j].offset_next1, cur_base + span);
-				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
-//				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_prev1, cur_base + span, cur_base);
-				push_block_curve(curves, pts[j].offset_prev1, pts[j].offset_reflex1[0], cur_base + span, cur_base);
+				if(pts[j].offset_next1 != pts[j].offset_prev1)
+				{
+					push_block_curve(curves, pts[j].loc,pts[j].offset_next1, cur_base + span);
+					push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
+				}
+				if(pts[j].offset_prev1 != pts[j].offset_reflex1[0])
+					push_block_curve(curves, pts[j].offset_prev1, pts[j].offset_reflex1[0], cur_base + span, cur_base);
 				if(pts[j].offset_reflex1[0] != pts[j].offset_reflex1[1])
 					push_block_curve(curves, pts[j].offset_reflex1[0],pts[j].offset_reflex1[1], cur_base + span, cur_base);
 				if(pts[j].offset_reflex1[1] != pts[j].offset_reflex1[2])
 					push_block_curve(curves, pts[j].offset_reflex1[1],pts[j].offset_reflex1[2], cur_base + span, cur_base);
-				push_block_curve(curves, pts[j].offset_reflex1[2], pts[j].offset_next1, cur_base + span, cur_base);
+				if(curves, pts[j].offset_reflex1[2] != pts[j].offset_next1)
+					push_block_curve(curves, pts[j].offset_reflex1[2], pts[j].offset_next1, cur_base + span, cur_base);
 
-				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_next2, cur_base);
-				push_block_curve(curves, pts[j].offset_prev1,pts[j].offset_prev2, cur_base);
-				push_block_curve(curves, pts[j].offset_prev2, pts[j].offset_reflex2[0], cur_base);
+				if(pts[j].offset_next1 != pts[j].offset_prev1 || pts[j].offset_next2 != pts[j].offset_prev2)
+				{
+					push_block_curve(curves, pts[j].offset_next1,pts[j].offset_next2, cur_base);
+					push_block_curve(curves, pts[j].offset_prev1,pts[j].offset_prev2, cur_base);
+				}
+				if(pts[j].offset_prev2 != pts[j].offset_reflex2[0])
+					push_block_curve(curves, pts[j].offset_prev2, pts[j].offset_reflex2[0], cur_base);
 				if(pts[j].offset_reflex2[0] != pts[j].offset_reflex2[1])
 					push_block_curve(curves, pts[j].offset_reflex2[0],pts[j].offset_reflex2[1], cur_base);
 				if(pts[j].offset_reflex2[1] != pts[j].offset_reflex2[2])
 					push_block_curve(curves, pts[j].offset_reflex2[1],pts[j].offset_reflex2[2], cur_base);				
-				push_block_curve(curves, pts[j].offset_reflex2[2], pts[j].offset_next2, cur_base);
+				if(pts[j].offset_reflex2[2] != pts[j].offset_next2)
+					push_block_curve(curves, pts[j].offset_reflex2[2], pts[j].offset_next2, cur_base);
 
 			}
 			else if(er2)
 			{
-				push_block_curve(curves, pts[j].loc,pts[j].offset_next2, cur_base);
-				push_block_curve(curves, pts[j].loc,pts[j].offset_prev2, cur_base);
-//				push_block_curve(curves, pts[j].offset_next2,pts[j].offset_prev2, cur_base);
-				push_block_curve(curves, pts[j].offset_prev2, pts[j].offset_reflex2[0], cur_base);
+				if(pts[j].offset_next2 != pts[j].offset_prev2)
+				{
+					push_block_curve(curves, pts[j].loc,pts[j].offset_next2, cur_base);
+					push_block_curve(curves, pts[j].loc,pts[j].offset_prev2, cur_base);
+				}
+				if(pts[j].offset_prev2 != pts[j].offset_reflex2[0])
+					push_block_curve(curves, pts[j].offset_prev2, pts[j].offset_reflex2[0], cur_base);
 				if(pts[j].offset_reflex2[0] != pts[j].offset_reflex2[1])
 					push_block_curve(curves, pts[j].offset_reflex2[0],pts[j].offset_reflex2[1], cur_base);
 				if(pts[j].offset_reflex2[1] != pts[j].offset_reflex2[2])
 					push_block_curve(curves, pts[j].offset_reflex2[1],pts[j].offset_reflex2[2], cur_base);				
-				push_block_curve(curves, pts[j].offset_reflex2[2], pts[j].offset_next2, cur_base);
+				if(pts[j].offset_reflex2[2] != pts[j].offset_next2)
+					push_block_curve(curves, pts[j].offset_reflex2[2], pts[j].offset_next2, cur_base);
 			}
 			else if (w2 > 0.0)
 			{
-				push_block_curve(curves, pts[j].loc,pts[j].offset_next1, cur_base + span);
-				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
-//				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_prev1, cur_base + span);
-				push_block_curve(curves, pts[j].offset_prev1, pts[j].offset_reflex1[0], cur_base + span);
+				if(pts[j].offset_next1 != pts[j].offset_prev1)
+				{
+					push_block_curve(curves, pts[j].loc,pts[j].offset_next1, cur_base + span);
+					push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
+				}
+				if(pts[j].offset_prev1 != pts[j].offset_reflex1[0])
+					push_block_curve(curves, pts[j].offset_prev1, pts[j].offset_reflex1[0], cur_base + span);
 				if(pts[j].offset_reflex1[0] != pts[j].offset_reflex1[1])
 					push_block_curve(curves, pts[j].offset_reflex1[0],pts[j].offset_reflex1[1], cur_base + span);
 				if(pts[j].offset_reflex1[1] != pts[j].offset_reflex1[2])
 					push_block_curve(curves, pts[j].offset_reflex1[1],pts[j].offset_reflex1[2], cur_base + span);
-				push_block_curve(curves, pts[j].offset_reflex1[2], pts[j].offset_next1, cur_base + span);
+				if(pts[j].offset_reflex1[2] != pts[j].offset_next1)
+					push_block_curve(curves, pts[j].offset_reflex1[2], pts[j].offset_next1, cur_base + span);
 			}
 			else
 			{
