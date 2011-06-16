@@ -258,6 +258,9 @@
 		D629FADF0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FADE0B95DE3E00A2FB57 /* WED_MapBkgnd.cpp */; };
 		D629FB020B95E38900A2FB57 /* WED_HandleToolBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FB010B95E38900A2FB57 /* WED_HandleToolBase.cpp */; };
 		D629FB3D0B960A7200A2FB57 /* WED_MarqueeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D629FB3C0B960A7200A2FB57 /* WED_MarqueeTool.cpp */; };
+		D62F3A56138D4E8900F2C120 /* MeshSimplify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62F3A55138D4E8900F2C120 /* MeshSimplify.cpp */; };
+		D62F3A57138D4E8900F2C120 /* MeshSimplify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62F3A55138D4E8900F2C120 /* MeshSimplify.cpp */; };
+		D62F3A58138D4E8900F2C120 /* MeshSimplify.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62F3A55138D4E8900F2C120 /* MeshSimplify.cpp */; };
 		D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FC9990BCEF3D600ED6CF8 /* WED_Map.cpp */; };
 		D62FC99E0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FC99C0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp */; };
 		D62FCC960BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FCC950BD3C6C600ED6CF8 /* WED_CreateToolBase.cpp */; };
@@ -1078,6 +1081,10 @@
 		D629FBA80B962DC400A2FB57 /* IDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IDirectory.h; sourceTree = "<group>"; };
 		D629FBAB0B962E1100A2FB57 /* IResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IResolver.h; sourceTree = "<group>"; };
 		D629FBC00B962F5F00A2FB57 /* ISelection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ISelection.h; sourceTree = "<group>"; };
+		D62F3A54138D4E8900F2C120 /* MeshSimplify.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshSimplify.h; sourceTree = "<group>"; };
+		D62F3A55138D4E8900F2C120 /* MeshSimplify.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshSimplify.cpp; sourceTree = "<group>"; };
+		D62F3B05138D92CB00F2C120 /* point_index.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = point_index.h; sourceTree = "<group>"; };
+		D62F3DBF1390110500F2C120 /* douglas_peuker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = douglas_peuker.h; sourceTree = "<group>"; };
 		D62FC9990BCEF3D600ED6CF8 /* WED_Map.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Map.cpp; sourceTree = "<group>"; };
 		D62FC99A0BCEF3D600ED6CF8 /* WED_Map.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Map.h; sourceTree = "<group>"; };
 		D62FC99C0BCEF3E400ED6CF8 /* WED_PropertyPane.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PropertyPane.cpp; sourceTree = "<group>"; };
@@ -2931,6 +2938,8 @@
 				D67682B60CC669830032B90C /* TensorUtils.cpp */,
 				D6A88BE411820B05000EBFBF /* MemUtils.h */,
 				D6A88BE511820B05000EBFBF /* MemUtils.cpp */,
+				D62F3B05138D92CB00F2C120 /* point_index.h */,
+				D62F3DBF1390110500F2C120 /* douglas_peuker.h */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -3204,6 +3213,8 @@
 				D6BC387D0AB22C85003949C5 /* Zoning.h */,
 				D6DBA33910576739004E1089 /* BugTest.h */,
 				D6DBA33A10576739004E1089 /* BugTest.cpp */,
+				D62F3A54138D4E8900F2C120 /* MeshSimplify.h */,
+				D62F3A55138D4E8900F2C120 /* MeshSimplify.cpp */,
 			);
 			path = XESCore;
 			sourceTree = "<group>";
@@ -3981,6 +3992,7 @@
 				D64A08AC127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
 				D64A08B1127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B41358D71300C524FD /* DEMGrid.cpp in Sources */,
+				D62F3A58138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4149,6 +4161,7 @@
 				D64A08AA127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
 				D64A08B0127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B21358D71300C524FD /* DEMGrid.cpp in Sources */,
+				D62F3A56138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4256,6 +4269,7 @@
 				D64A08AB127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
 				D64A08AF127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B31358D71300C524FD /* DEMGrid.cpp in Sources */,
+				D62F3A57138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
