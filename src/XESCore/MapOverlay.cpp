@@ -220,6 +220,14 @@ public:
 	Overlay functors to try to merge our meta-data as best we can when we do a full overlay and have overlapping data.
 */
 
+void merge_params(GISParamMap& out, const GISParamMap& lhs, const GISParamMap& rhs)
+{
+	out = rhs;
+	for(GISParamMap::const_iterator i = lhs.begin(); i != lhs.end(); ++i)
+	if(rhs.count(i->first) == 0)
+		out.insert(*i);
+}
+
 struct Overlay_vertex
 {
 	GIS_vertex_data operator()(GIS_vertex_data a, GIS_vertex_data b) const
@@ -235,6 +243,7 @@ struct Overlay_terrain
 	GIS_face_data operator() (GIS_face_data a, GIS_face_data b) const
 	{
 		GIS_face_data r;
+		merge_params(r.mParams,a.mParams,b.mParams);
 		// Our overlay comes from the RHS, but it might be a hole (in which case mTerrainType will be 0)
 		if (b.mTerrainType != 0 ) {
 			r.mTerrainType = b.mTerrainType;
@@ -257,6 +266,8 @@ struct Overlay_network
 	GIS_halfedge_data operator() (GIS_halfedge_data a, GIS_halfedge_data b) const
 	{
 		GIS_halfedge_data r;
+		merge_params(r.mParams,a.mParams,b.mParams);
+		
 		GISNetworkSegmentVector::iterator i;
 		if (b.mSegments.empty())
 			for (i = a.mSegments.begin(); i != a.mSegments.end(); ++i)
