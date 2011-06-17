@@ -529,6 +529,25 @@ void MT_Mask(const char * shapefile)
 	}
 }
 
+void MT_Contour(const char * shapefile)
+{
+	const char * lu = FetchTokenString(NO_VALUE);
+	Pmwx	contours;
+	double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
+	if(!ReadShapeFile(shapefile,contours,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , lu, b, 0.0, 0, ConsoleProgressFunc))
+		die_err("Unable to load shape file: %s\n", shapefile);
+
+	for(Pmwx::Edge_iterator e = contours.edges_begin(); e != contours.edges_end(); ++e)
+		e->data().mParams[he_MustBurn] = 1.0;
+
+	Pmwx *	new_map = new Pmwx;
+	MapMerge(*the_map, contours, *new_map);
+	delete the_map;
+	the_map = new_map;
+
+
+}
+
 void MT_OrthoPhoto(
 					const char * terrain_name,
 					double		 proj_lon[4],

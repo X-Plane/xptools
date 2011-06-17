@@ -374,6 +374,10 @@ int	main(int argc, char * argv[])
 			{
 				MT_Mask(shp_path);
 			}
+			if(sscanf(buf,"SHAPEFILE_CONTOUR %s",shp_path)==1)
+			{
+				MT_Contour(shp_path);
+			}
 			if(strncmp(buf,"CLEAR_MASK",strlen("CLEAR_MASK"))==0)
 			{
 				MT_Mask(NULL);

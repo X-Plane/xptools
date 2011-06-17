@@ -64,6 +64,7 @@ void MT_EnableDDSGeneration(int create);
 void MT_SetMeshSpecs(int max_pts, float max_err);
 
 void MT_Mask(const char * shapefile);	// or NULL
+void MT_Contour(const char * shapefile);
 
 void MT_OrthoPhoto(
 					const char * terrain_name,

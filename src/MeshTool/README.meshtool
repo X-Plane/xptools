@@ -1,6 +1,8 @@
 MeshTool Instructions and Release Notes
 
 Version History
+		2.1 d1
+		SHAPEFILE_CONTOUR introduced.
 	6/4/11 2.0 r6
 		Fixed TIFF loader to work with tiled TIFFs.
 		Improved error reporting when orthophoto spans a DSF boundary.
@@ -463,6 +465,26 @@ that is inside the wet_areas shape file will act wet.
 WARNING: masks induce vertices in your mesh, so when using a mask to make wet
 and dry areas, reduce th resolution of your mesh.  Users probably won't notice
 the lack of detail in the physics mesh, but it will save triangles.
+
+SHAPEFILE_CONTOUR <file>
+
+This command "burns" the polygons in a shapefile into the mesh without changing
+the underlying terrain or orthophotos - in effect it forces triangles around a
+polygon without changing terrain.
+
+The main usage for this is to guarantee that certain critical contours are
+represented in the final mesh.  For example, to make sure that an airport 
+surface area is flat, you need to:
+
+1. Ensure that the airport surface area is flat in the original raster DEM 
+   file and
+2. Use SHAPEFILE_CONTOUR with a shapefile containing the polygonal outlines
+   of each airport.
+
+Note: set the segment length for the polygons to something appropriate to the
+level of triangulation desired.  For example, if your polygon contains 1m sides
+then MeshTool will create a huge number of triangles to burn the contour line,
+even if several sides are colinear.  MeshTool does _not_ simplify Shapefiles!
 
 -------------------------------------------------------------------------------
 LEGACY COMMANDS
