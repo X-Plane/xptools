@@ -335,7 +335,7 @@ static int DoSave(const vector<const char *>& args)
 		if (nland > 0)
 			break;
 	}
-	if (!gDem.empty() || (nland > 0) || distance(gMap.unbounded_face()->holes_begin(),gMap.unbounded_face()->holes_end()) > 1)
+	if (/*!gDem.empty() || */(nland > 0) || distance(gMap.unbounded_face()->holes_begin(),gMap.unbounded_face()->holes_end()) > 1)
 	{
 		if (gVerbose) printf("Saving file %s\n", args[0]);
 		WriteXESFile(args[0], gMap, gTriangulationHi, gDem, gApts, gProgress);

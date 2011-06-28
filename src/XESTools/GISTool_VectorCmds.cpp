@@ -50,6 +50,7 @@
 #if OPENGL_MAP
 	#include "RF_Msgs.h"
 	#include "RF_Notify.h"
+	#include "RF_Selection.h"
 #endif
 
 const double	kShapeFileEpsi = 0.1 / (DEG_TO_NM_LAT * NM_TO_MTR);
@@ -810,7 +811,26 @@ int DoBufferWater(const vector<const char *>& args)
 	return 0;
 }
 
+void	MapFromDEM(
+				const DEMGeo&		in_dem,
+				int					x1,
+				int					y1,
+				int					x2,
+				int					y2,
+				float				null_post,
+				Pmwx&				out_map,
+				CoordTranslator2 *	translator);
 
+//void	ColorFaces(set<Face_handle>&	io_faces);
+int DoRasterDEM(const vector<const char *>& args)
+{
+	DEMGeo& d(gDem[LookupToken(args[0])]);
+	MapFromDEM(d,0,0,d.mWidth,d.mHeight,0,gMap,NULL);
+#if OPENGL_MAP
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
+#endif
+	return 0;
+}
 
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
@@ -832,6 +852,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
 #endif
 { "-fix_roads",	0, 0, DoFixRoads,				"Fix road errors.", "" },
+{ "-raster_dem",	1, 1, DoRasterDEM,				"Map Color.", "" },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

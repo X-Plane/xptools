@@ -589,6 +589,40 @@ int DoRasterMerge(const vector<const char *>& args)
 	return 0;
 }
 
+#define DoRasterWatershed_HELP \
+"Usage: -raster_watershed <layer> <radius> <mmu_size>"
+static int DoRasterWatershed(const vector<const char *>& args)
+{
+	int layer1 = LookupToken(args[0]);
+	if(layer1 == -1) return 1;
+	if(gDem.count(layer1) == 0) return 1;
+	
+	int radius = atoi(args[1]);
+	int mmu_size = atoi(args[2]);
+	
+	
+	DEMGeo& dem(gDem[layer1]);
+	DEMGeo	lhi;
+	DEMGeo	ws_dem;
+	vector<DEMGeo::address> ws;
+	
+	NeighborHisto(dem, lhi, radius);	
+	Watershed(lhi, ws_dem,&ws);
+	#if DEV
+	VerifySheds(ws_dem,ws);
+	#endif
+	
+	MergeMMU(ws_dem,ws,mmu_size);
+
+	SetWatershedsToDominant(dem,ws_dem, ws);
+
+	return 0;
+
+}
+
+
+
+
 
 static int DoAnyImport(const vector<const char *>& args,
 					bool (* import_f)(DEMGeo& inMap, const char * inFileName))
@@ -865,7 +899,8 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-raster_init",	4, 5, DoRasterInit,			"Create new empty raster layer.", DoRasterInit_HELP }, 
 { "-raster_resample",4, 4, DoRasterResample,	"Resample raster layer.", DoRasterResample_HELP }, 
 { "-raster_adjust", 4, 4, DoRasterAdjust,		"Adjust levels of raster layers to match.", DoRasterAdjust_HELP },
-{ "-raster_merge", 4, 4, DoRasterMerge,			"Merge two raster layers.", "DoRasterMerge_HELP" },
+{ "-raster_merge", 4, 4, DoRasterMerge,			"Merge two raster layers.", DoRasterMerge_HELP },
+{ "-raster_watershed", 3, 3, DoRasterWatershed,	"Calculate watersheds from one layer, dump in another", DoRasterWatershed_HELP },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

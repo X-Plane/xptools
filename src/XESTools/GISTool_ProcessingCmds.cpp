@@ -115,7 +115,7 @@ static int DoBurnAirports(const vector<const char *>& args)
 static int DoZoning(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating zoning info...\n");
-	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_Slope],gApts,Pmwx::Face_handle(), gProgress);
+	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_ParkType], gDem[dem_Slope],gApts,Pmwx::Face_handle(), gProgress);
 	return 0;
 }
 
