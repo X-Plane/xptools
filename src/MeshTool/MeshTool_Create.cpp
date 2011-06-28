@@ -184,7 +184,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	DeriveDEMs(*the_map, sDem,sApts, sAptIndex, true, ConsoleProgressFunc);
 
 	// -zoning
-	ZoneManMadeAreas(*the_map, sDem[dem_LandUse], sDem[dem_ForestType], sDem[dem_Slope],sApts,Pmwx::Face_handle(),ConsoleProgressFunc);
+	ZoneManMadeAreas(*the_map, sDem[dem_LandUse], sDem[dem_ForestType], sDem[dem_ParkType],  sDem[dem_Slope],sApts,Pmwx::Face_handle(),ConsoleProgressFunc);
 
 	// -calcmesh
 	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);
@@ -291,7 +291,7 @@ int MT_CreateCustomTerrain(
 	nr.urban_square = 0;
 	nr.lat_min = DEM_NO_DATA;
 	nr.lat_max = DEM_NO_DATA;
-	nr.variant = 0;
+//	nr.variant = 0;
 //	nr.related = -1;
 	nr.name = tt;
 	ni.layer = 0;
@@ -529,6 +529,25 @@ void MT_Mask(const char * shapefile)
 		
 		layer_mask = mask_map;
 	}
+}
+
+void MT_Contour(const char * shapefile)
+{
+	const char * lu = FetchTokenString(NO_VALUE);
+	Pmwx	contours;
+	double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
+	if(!ReadShapeFile(shapefile,contours,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , lu, b, 0.0, 0, ConsoleProgressFunc))
+		die_err("Unable to load shape file: %s\n", shapefile);
+
+	for(Pmwx::Edge_iterator e = contours.edges_begin(); e != contours.edges_end(); ++e)
+		e->data().mParams[he_MustBurn] = 1.0;
+
+	Pmwx *	new_map = new Pmwx;
+	MapMerge(*the_map, contours, *new_map);
+	delete the_map;
+	the_map = new_map;
+
+
 }
 
 void MT_OrthoPhoto(
