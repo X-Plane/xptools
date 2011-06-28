@@ -106,7 +106,11 @@ struct	MeshVertexInfo {
 };
 
 struct	MeshFaceInfo {
-	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { }
+	enum {
+		flag_Feature = 1
+	};
+	
+	MeshFaceInfo() : terrain(DEM_NO_DATA),feature(NO_VALUE),flag(0), orig_face(NULL) { edge_flags[0] = edge_flags[1] = edge_flags[2] = 0; }
 	MeshFaceInfo(const MeshFaceInfo& rhs) :
 								terrain(rhs.terrain),
 								feature(rhs.feature),
@@ -115,6 +119,9 @@ struct	MeshFaceInfo {
 								normal[0] = rhs.normal[0];
 								normal[1] = rhs.normal[1];
 								normal[2] = rhs.normal[2];
+								edge_flags[0] = rhs.edge_flags[0];
+								edge_flags[1] = rhs.edge_flags[1];
+								edge_flags[2] = rhs.edge_flags[2];
 								orig_face = rhs.orig_face; }
 
 
@@ -127,7 +134,13 @@ struct	MeshFaceInfo {
 								normal[1] = rhs.normal[1];
 								normal[2] = rhs.normal[2];
 								orig_face = rhs.orig_face;
+								edge_flags[0] = rhs.edge_flags[0];
+								edge_flags[1] = rhs.edge_flags[1];
+								edge_flags[2] = rhs.edge_flags[2];
 								return *this; }
+
+	inline	bool get_edge_feature(int e) const { return edge_flags[e] & flag_Feature; }
+	inline	void set_edge_feature(int e, bool val) { if (val) edge_flags[e] |= flag_Feature; else edge_flags[e] &= ~flag_Feature; }
 
 	int				insert_x;
 	int				insert_y;
@@ -141,6 +154,7 @@ struct	MeshFaceInfo {
 	int				flag;					// General purpose, useful for..um...algorithms.
 	set<int>		terrain_border;			// All terrains on top of us!
 	float			normal[3];				// Tri flat normal - not in final DSF but handy for other sh-t.
+	char			edge_flags[3];
 
 	Face_handle		orig_face;				// If a face caused us to get the terrain we did, this is who!
 

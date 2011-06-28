@@ -28,17 +28,18 @@
  * FACE SETS AND EDGE SETS
  ************************************************************************************************/
 
+#if 0
+struct FaceIsWet { bool operator()(const Face_handle f) const { return f->data().IsWater(); } };
+
 void	FindAdjacentWetFaces(Face_handle inFace, set<Face_handle>& outFaces)
 {
 	outFaces.clear();
-	set<Halfedge_handle> e;
-	FindEdgesForFace<Pmwx>(inFace, e);
-	for (set<Halfedge_handle>::iterator he = e.begin(); he != e.end(); ++he)
-	if ((*he)->twin()->face() != inFace)
-	if ((*he)->twin()->face()->data().IsWater())
-		outFaces.insert((*he)->twin()->face());
+	typedef CollectionVisitor<Pmwx,Face_handle, FaceIsWet>	Collector;
+	Collector	 col(&outFaces);
+	VisitAdjacentFaces<Pmwx,Collector>(inFace, col);	
 }
 
+#endif
 bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet)
 {
 	DebugAssert(!in_face->is_unbounded());
@@ -60,7 +61,7 @@ bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet)
 	}
 	return false;
 }
-
+#if 0
 
 
 void	FindConnectedWetFaces(Face_handle inFace, set<Face_handle>& outFaces)
@@ -83,7 +84,7 @@ void	FindConnectedWetFaces(Face_handle inFace, set<Face_handle>& outFaces)
 			working.insert(*f);
 	}
 }
-
+#endif
 
 // Clean face - hrm - this is still written using topological delete - yuck!
 void	CleanFace(

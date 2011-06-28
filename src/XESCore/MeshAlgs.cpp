@@ -128,6 +128,9 @@ MeshPrefs_t gMeshPrefs = {		/*iphone*/
 /* rep_switch_m		*/	PHONE ?		50000	: 50000
 };
 
+Pmwx::Halfedge_handle	mesh_to_pmwx_he(CDT& io_mesh, CDT::Edge& e);
+
+
 inline bool is_border(const CDT& inMesh, CDT::Face_handle f)
 {
 	for (int n = 0; n < 3; ++n)
@@ -1054,53 +1057,24 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 		if(ffi->is_constrained(n))
 		{
 			CDT::Edge e(ffi,n);
-			CDT::Vertex_handle source(CDT_he_source(e));
-			Vertex_handle orig_source = source->info().orig_vertex;
-			if(orig_source != Vertex_handle())
-			{
-				CDT::Vertex_handle target(CDT_he_target(e));
+//			// DEBUG CODE
+//			{
+//				Halfedge_handle he = mesh_to_pmwx_he(ioMesh, e);
+//				DebugAssert(he != Halfedge_handle());
+//				if(he_has_any_roads(he))
+//					debug_mesh_line(cgal2ben(he->source()->point()),cgal2ben(he->target()->point()),1,0,0, 1,0,0);
+//				else
+//					debug_mesh_line(cgal2ben(he->source()->point()),cgal2ben(he->target()->point()),0,0,1, 0,0,1);
+//			}
 			
-				// This is a mess...since the relationship between the CDT and Pmwx is many-to-many,
-				// the only way to help the face resolver not freak out is to tell it the nearest WRONG WAY
-				// vertices - those are paths going NOT along our edge.  So...circulate, and for all other
-				// constrained edges, walk the constraint until we find a sync point, and save that in
-				// 'stop here' markers.
-				set<Vertex_handle> wrong_ways;
-				CDT::Vertex_circulator circ, stop;
-				circ = stop = source->incident_vertices();
-				do 
-				{
-					if(circ != target)
-					{
-						CDT::Edge e;
-						if(ioMesh.is_edge(source,circ,e.first,e.second))
-						if(ioMesh.is_constrained(e))
-						{
-							if (CDT_he_source(e) != source)
-								e = CDT_he_twin(e);
-							while(CDT_he_target(e)->info().orig_vertex == Vertex_handle())
-							{
-								e = CDT_next_constraint(e);
-								DebugAssert(e.first != CDT::Face_handle());
-							}
-							DebugAssert(CDT_he_target(e)->info().orig_vertex != Vertex_handle());
-							wrong_ways.insert(CDT_he_target(e)->info().orig_vertex);
-						}
-					}
-				} while (++circ != stop);
-				
-				Vertex_handle orig_target = target->info().orig_vertex;
-				while(orig_target == Vertex_handle())
-				{
-					e = CDT_next_constraint(e);
-					DebugAssert(e.first != CDT::Face_handle());
-					target = CDT_he_target(e);
-					orig_target = target->info().orig_vertex;
-				}
-				
-				// Now given two sync points (our source and the next sync point along) and all of the wrong
-				// ways. we can find the original Pmwx face.
-				Face_handle	orig_face = face_for_vertices<Pmwx,must_burn_he>(orig_source,orig_target, wrong_ways);
+			
+			CDT::Vertex_handle source(CDT_he_source(e));
+			Vertex_handle orig_source = source->info().orig_vertex;			
+//			if(orig_source != Vertex_handle())		// only sync first constraint along a run. -- no sync all - to get whether we have roads along da constraints.
+			{
+				Halfedge_handle orig_he = mesh_to_pmwx_he(ioMesh, e);
+				DebugAssert(orig_he != Halfedge_handle());
+				Face_handle	orig_face = orig_he->face();
 //				if(orig_face == Face_handle())
 //				{
 //					debug_mesh_point(cgal2ben(orig_source->point()),1,0,0);
@@ -1112,7 +1086,10 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 				ffi->info().feature = orig_face->data().mTerrainType;
 				ffi->info().orig_face = orig_face;
 				wet_faces.insert(ffi);				
-				break;
+				
+				
+				if(orig_he->data().HasRoads() || orig_he->twin()->data().HasRoads())
+					ffi->info().set_edge_feature(n,true);				
 			}
 		}
 	}
@@ -1894,15 +1871,15 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float	patches = (gMeshPrefs.rep_switch_m == 0.0) ? 100.0 : (60.0 * NM_TO_MTR / gMeshPrefs.rep_switch_m);
 				int x_variant = fabs(center_x /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
 				int y_variant = fabs(center_y /*+ RandRange(-0.03, 0.03)*/) * patches; // 25.0;
-				int variant_blob = ((x_variant + y_variant * 2) % 4) + 1;
-				int variant_head = (tri->info().normal[0] > 0.0) ? 6 : 8;
-
-				if (sh_tri < -0.7)	variant_head = 7;
-				if (sh_tri >  0.7)	variant_head = 5;
+//				int variant_blob = ((x_variant + y_variant * 2) % 4) + 1;
+//				int variant_head = (tri->info().normal[0] > 0.0) ? 6 : 8;
+//
+//				if (sh_tri < -0.7)	variant_head = 7;
+//				if (sh_tri >  0.7)	variant_head = 5;
 
 				//fprintf(stderr, " %d", tri->info().feature);
 				int zoning = (tri->info().orig_face == Pmwx::Face_handle()) ? NO_VALUE : tri->info().orig_face->data().GetZoning();
-				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y), variant_blob, variant_head);
+				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y)/*, variant_blob, variant_head*/);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %f\n", FetchTokenString(lu), /*FetchTokenString(cl), el, */ sl);
 
@@ -2162,9 +2139,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				CDT::Face_handle b2 = border->neighbor(1);
 				CDT::Face_handle b3 = border->neighbor(2);
 
-				if (b1->info().flag != visited && !ioMesh.is_infinite(b1) && b1->info().terrain != terrain_Water && LowerPriorityNaturalTerrain(b1->info().terrain, layer))	to_visit.insert(b1);
-				if (b2->info().flag != visited && !ioMesh.is_infinite(b2) && b2->info().terrain != terrain_Water && LowerPriorityNaturalTerrain(b2->info().terrain, layer))	to_visit.insert(b2);
-				if (b3->info().flag != visited && !ioMesh.is_infinite(b3) && b3->info().terrain != terrain_Water && LowerPriorityNaturalTerrain(b3->info().terrain, layer))	to_visit.insert(b3);
+				if (b1->info().flag != visited && !ioMesh.is_infinite(b1) && b1->info().terrain != terrain_Water && !border->info().get_edge_feature(0) && LowerPriorityNaturalTerrain(b1->info().terrain, layer))	to_visit.insert(b1);
+				if (b2->info().flag != visited && !ioMesh.is_infinite(b2) && b2->info().terrain != terrain_Water && !border->info().get_edge_feature(1) && LowerPriorityNaturalTerrain(b2->info().terrain, layer))	to_visit.insert(b2);
+				if (b3->info().flag != visited && !ioMesh.is_infinite(b3) && b3->info().terrain != terrain_Water && !border->info().get_edge_feature(2) && LowerPriorityNaturalTerrain(b3->info().terrain, layer))	to_visit.insert(b3);
 			}
 		}
 	}
@@ -2658,3 +2635,64 @@ int	CalcMeshTextures(CDT& inMesh, map<int, int>& out_lus)
  ****************************************************************************************************************************************************************/
 #pragma mark -
 
+Pmwx::Halfedge_handle	mesh_to_pmwx_he(CDT& ioMesh, CDT::Edge& e)
+{
+	// Figure out our source vertex, which must be a sync point.  If it isn't already one, walk backward
+	// via our twin...we either hit a sync point or an unsync-Y (in which case we're f---ed and bail.)
+	CDT::Vertex_handle source(CDT_he_source(e));
+	Vertex_handle orig_source = source->info().orig_vertex;
+	if(orig_source == Vertex_handle())
+	{
+		CDT::Edge t = CDT_he_twin(e);
+		while(t.first != CDT::Face_handle() && CDT_he_target(t)->info().orig_vertex == Vertex_handle())
+			t = CDT_next_constraint(t);
+			
+		source = CDT_he_target(t);
+		orig_source = source->info().orig_vertex;
+		if (orig_source == Vertex_handle()) 
+			return Halfedge_handle();
+		e = CDT_he_twin(t);
+	}
+		
+	CDT::Vertex_handle target(CDT_he_target(e));
+
+	// This is a mess...since the relationship between the CDT and Pmwx is many-to-many,
+	// the only way to help the face resolver not freak out is to tell it the nearest WRONG WAY
+	// vertices - those are paths going NOT along our edge.  So...circulate, and for all other
+	// constrained edges, walk the constraint until we find a sync point, and save that in
+	// 'stop here' markers.
+	set<Vertex_handle> wrong_ways;
+	CDT::Vertex_circulator circ, stop;
+	circ = stop = source->incident_vertices();
+	do 
+	{
+		if(circ != target)
+		{
+			CDT::Edge e;
+			if(ioMesh.is_edge(source,circ,e.first,e.second))
+			if(ioMesh.is_constrained(e))
+			{
+				if (CDT_he_source(e) != source)
+					e = CDT_he_twin(e);
+				while(CDT_he_target(e)->info().orig_vertex == Vertex_handle())
+				{
+					e = CDT_next_constraint(e);
+					DebugAssert(e.first != CDT::Face_handle());
+				}
+				DebugAssert(CDT_he_target(e)->info().orig_vertex != Vertex_handle());
+				wrong_ways.insert(CDT_he_target(e)->info().orig_vertex);
+			}
+		}
+	} while (++circ != stop);
+	
+	Vertex_handle orig_target = target->info().orig_vertex;
+	while(orig_target == Vertex_handle())
+	{
+		e = CDT_next_constraint(e);
+		DebugAssert(e.first != CDT::Face_handle());
+		target = CDT_he_target(e);
+		orig_target = target->info().orig_vertex;
+	}
+
+	return halfedge_for_vertices<Pmwx,must_burn_he>(orig_source,orig_target, wrong_ways);
+}	

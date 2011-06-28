@@ -69,7 +69,7 @@ static const SnowLineInfo_t kSnowLineInfo[] = {
 
 
 // Spread is approx URBAN_KERN_SIZE / 2 KM
-#define 	URBAN_DENSE_KERN_SIZE	4	// Tried 17 before
+#define 	URBAN_DENSE_KERN_SIZE	3	// Tried 17 before
 #define 	URBAN_RADIAL_KERN_SIZE	33
 #define 	URBAN_TRANS_KERN_SIZE	5
 
@@ -1155,6 +1155,7 @@ void	DeriveDEMs(
 		for (x = 0; x < urbanTemp.mWidth; ++x)
 		{
 			urban(x,y) 		= urbanTemp.kernelN(x,y, URBAN_DENSE_KERN_SIZE , sUrbanDenseSpreaderKernel);
+//			urban(x,y) 		= urbanTemp(x,y);
 			double local 	= urbanTemp.kernelN(x,y, URBAN_RADIAL_KERN_SIZE, sUrbanRadialSpreaderKernel);
 			urbanRadial(x,y) = local;
 			radial_max = max(local, radial_max);
@@ -1530,9 +1531,11 @@ else														e = DEM_NO_DATA;
 
 		int f = FindForest(l,t,r);
 		
-		forests(x,y) = f;		
+		if(f == NO_VALUE) f = DEM_NO_DATA;
+		forests(x,y) = f;				
 	}
 
+	forests.fill_nearest();
 
 
 	ioDEMs[dem_UrbanDensity	   ].swap(urban);
@@ -1960,4 +1963,407 @@ float	IntegLine(const DEMGeo& dem, double x1, double y1, double x2, double y2, i
 		t += dem.get(round(x), round(y));
 	}
 	return t * len / ((double) samples);
+}
+
+#pragma mark -
+
+struct sort_pixel_by_height {
+	sort_pixel_by_height(const DEMGeo& d) : d_(d) { }
+	const DEMGeo& d_;
+	bool operator()(const DEMGeo::address lhs, const DEMGeo::address rhs) const {
+		return d_[lhs] < d_[rhs]; 
+	}
+};
+
+// This code is directly based on "Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion Simulations"
+// by Luc Vincent and Pierre Soille from their 1991 paper.
+void	Watershed(DEMGeo& input, DEMGeo& output,vector<DEMGeo::address> * out_watersheds)
+{
+	#define MASK -2.0f
+	#define WSHED DEM_NO_DATA
+	#define INIT -1.0f
+	#define FICT -1
+	
+	output.clear_from(input, INIT);
+
+	float	current_label = -1.0f;
+	float	current_dist;
+
+	DEMGeo	dist;
+	dist.clear_from(input,0.0f);
+	
+	address_fifo	fifo(input.mWidth * input.mHeight + 2);
+	
+	vector<DEMGeo::address>	all_pixels;
+	all_pixels.reserve(input.mWidth * input.mHeight);
+	for(DEMGeo::address i = input.address_begin(); i != input.address_end(); ++i)
+		all_pixels.push_back(i);
+		
+	sort(all_pixels.begin(), all_pixels.end(), sort_pixel_by_height(input));	
+
+	DEMGeo::neighbor_iterator<4> n;
+	vector<DEMGeo::address>::iterator hi = all_pixels.begin(), p;
+	while(hi != all_pixels.end())
+	{
+		//printf("Processing altitude %f\n", input[*hi]);
+		// Part 1
+		p = hi;
+		do {
+			output[*p] = MASK;
+			for(n = output.neighbor_begin<4>(*p); n != output.neighbor_end<4>(*p); ++n)
+			{
+				if(output[*n] == WSHED || output[*n] >= 0)
+				{
+					dist[*p] = 1.0f;
+					fifo.push(*p);
+				}
+			}
+		
+			++p;
+		} while(p != all_pixels.end() && input[*p] == input[*hi]);
+		
+		// Part 2
+		fifo.push(FICT);
+		current_dist = 1.0f;
+		while(1)
+		{			
+			//printf("Spreading batch of %d pixels.\n", fifo.size());
+			DEMGeo::address p = fifo.pop();
+			if(p == FICT)
+			{
+				if (fifo.empty())
+					break;
+				else
+				{
+					fifo.push(FICT);
+					++current_dist;					
+					p = fifo.pop();
+					DebugAssert(p != FICT);
+				}
+			}
+			
+			for(n = input.neighbor_begin<4>(p); n != input.neighbor_end<4>(p); ++n)
+			{
+				if(dist[*n] < current_dist && (output[*n] == WSHED || output[*n] >= 0))
+				{
+					if(output[*n] >= 0)
+					{
+						if(output[p] == MASK || output[p] == WSHED)
+							output[p] = output[*n];
+						else if(output[p] != output[*n])
+							output[p] = WSHED;
+					}
+					else if (output[p] == MASK)
+						output[p] = WSHED;
+				}
+				else if (output[*n] == MASK && dist[*n] == 0.0f)
+				{
+					dist[*n] = current_dist + 1.0f;
+					fifo.push(*n);
+				}
+			}
+		}
+		
+		
+		// Part 3
+		p = hi;
+		do {
+			dist[*p] = 0.0f;
+			
+			if(output[*p] == MASK)
+			{
+				current_label++;
+				//printf("Adding watershed: %f.\n", current_label);
+				output[*p] = current_label;
+				if(out_watersheds)
+				{
+					out_watersheds->push_back(*p);
+					DebugAssert(out_watersheds->size() == current_label+1);
+					DebugAssert((*out_watersheds)[current_label] == *p);
+					DebugAssert(output[*p] == current_label);
+				}
+				fifo.push(*p);
+				while(!fifo.empty())
+				{
+					DEMGeo::address pp = fifo.pop();
+					for(n = input.neighbor_begin<4>(pp); n != input.neighbor_end<4>(pp); ++n)
+					if(output[*n] == MASK)
+					{
+						fifo.push(*n);
+						output[*n] = current_label;
+					}
+				}
+			}
+
+			++p;
+			
+		} while(p != all_pixels.end() && input[*p] == input[*hi]);		
+		
+		//printf("Finished %f, %d pixels.\n", input[*hi], p - hi);
+		hi = p;
+		
+	}
+
+	// Part 4 - made up by me: go "fix" all of the watershed pixels.  The paper eludes that 'thick' watersheds
+	// need handling - in our case, we do a breadth-first search using the FIFO to spill any arbitrary watershed into
+	// neighbors.  Good enough for our purposes I think.
+	for(DEMGeo::address p = input.address_begin(); p != input.address_end(); ++p)
+	if(output[p] == WSHED)
+		fifo.push(p);
+	
+	while(!fifo.empty())		
+	{
+		DEMGeo::address p = fifo.pop();
+		
+		if(output[p] != WSHED) 
+			continue;
+		
+		float l = WSHED;
+		for(n = input.neighbor_begin<4>(p); n != input.neighbor_end<4>(p); ++n)
+		if(output[*n] != WSHED)
+		{
+			l = output[*n];
+			break;
+		}
+		if(l != WSHED)
+		{
+			output[p] = l;
+			for(n = input.neighbor_begin<4>(p); n != input.neighbor_end<4>(p); ++n)
+			if(output[*n] == WSHED)
+				fifo.push(*n);
+		}
+	}
+	
+}
+
+void VerifySheds(const DEMGeo& ws, vector<DEMGeo::address>& seeds)
+{
+	set<float>	found;
+	for(DEMGeo::const_iterator i = ws.begin(); i != ws.end(); ++i)
+		found.insert(*i);
+
+	for(int id = 0; id < seeds.size(); ++id)
+	{
+		DebugAssert(found.count(id) > 0);
+		DebugAssert(ws[seeds[id]] == id);
+	}
+}
+
+
+void	NeighborHisto(const DEMGeo& input, DEMGeo& output, int semi)
+{
+	output.clear_from(input);
+	
+	for(int y = 0; y < input.mHeight; ++y)
+	for(int x = 0; x < input.mWidth; ++x)
+	{
+		float v = input.get(x,y);
+		int c = 0;
+		for(int dy = y-semi; dy <= y+semi; ++dy)
+		for(int dx = x-semi; dx <= x+semi; ++dx)
+		if(input.get(dx,dy) != v)
+			++c;
+		
+		output(x,y) = c;
+	}
+}
+
+void	FindWatersheds(DEMGeo& ws, vector<DEMGeo::address>& out_sheds)
+{
+	for(DEMGeo::address a = ws.address_begin(); a != ws.address_end(); ++a)
+	{
+		int ws_id = ws[a];
+		if(ws_id >= out_sheds.size())
+		{
+			out_sheds.resize(ws_id+1,DEM_NO_DATA);
+		}
+		out_sheds[ws_id] = a;
+	}
+}
+
+static void flood_fill_shed(DEMGeo& ws, DEMGeo::address seed, float old_id, float new_id, int shed_size)
+{
+	DebugAssert(old_id != new_id);
+	DebugAssert(ws.valid(seed));
+	address_fifo fifo(shed_size);
+	fifo.push(seed);
+	#if DEV
+		int changed = 0;
+	#endif
+	while(!fifo.empty())
+	{
+		DEMGeo::address p = fifo.pop();
+		DebugAssert(ws[p] == old_id || ws[p] == new_id);
+		if(ws[p] == old_id)
+		{
+			#if DEV
+			++changed;
+			DebugAssert(changed <= shed_size);
+			#endif
+			ws[p] = new_id;
+			for(DEMGeo::neighbor_iterator<4> n = ws.neighbor_begin<4>(p); n != ws.neighbor_end<4>(p); ++n)
+			if(ws[*n] == old_id)
+				fifo.push(*n);
+		}
+	}
+	DebugAssert(shed_size == changed);
+}
+
+static float find_best_neighbor(DEMGeo& ws, DEMGeo::address seed, int old_id, int new_id, int max_size)
+{
+	DebugAssert(old_id != new_id);
+
+	DebugAssert(max_size > 0);
+	DebugAssert(ws.valid(seed));
+	DebugAssert(ws[seed] == old_id);
+	map<float, int>	neighbor_count;
+	address_fifo fifo(max_size);
+	fifo.push(seed);
+	#if DEV	
+	int filled = 0;
+	#endif
+	while(!fifo.empty())
+	{
+		DEMGeo::address p = fifo.pop();
+		DebugAssert(ws[p] == old_id || ws[p] == new_id);
+		if(ws[p] == old_id)
+		{
+			ws[p] = new_id;
+			#if DEV
+			++filled;			
+			DebugAssert(filled <= max_size);
+			#endif
+			for(DEMGeo::neighbor_iterator<4> n = ws.neighbor_begin<4>(p); n != ws.neighbor_end<4>(p); ++n)
+			if(ws[*n] == old_id)
+			{
+				fifo.push(*n);
+			} 
+			else if(ws[*n] != new_id)
+			{
+				float nid = ws[*n];
+				neighbor_count[nid]++;
+			}
+		}
+	}
+	DebugAssert(filled == max_size);
+	if(neighbor_count.empty()) 
+		return -1.0;
+	map<float,int>::iterator n, best;
+	n = best = neighbor_count.begin();
+	++n;
+	while(n != neighbor_count.end())
+	{
+		if(n->second > best->second)
+			best = n;
+		++n;
+	}
+	return best->first;
+}
+
+
+void	MergeMMU(DEMGeo& ws, vector<DEMGeo::address>& io_sheds, int min_mmu_size)
+{
+	vector<int>	ws_size_table;
+	ws_size_table.resize(io_sheds.size(), 0);
+	DEMGeo::address a;
+	for(a = ws.address_begin(); a != ws.address_end(); ++a)
+		ws_size_table[ws[a]]++;
+	
+	multimap<int, int>	ws_size_q;
+	
+	int ws_id;
+	int q_size;
+	
+	for(ws_id = 0; ws_id < ws_size_table.size(); ++ws_id)
+	if(ws_size_table[ws_id] < min_mmu_size && ws_size_table[ws_id] > 0)
+		ws_size_q.insert(multimap<int,int>::value_type(ws_size_table[ws_id],ws_id));
+
+	while(!ws_size_q.empty())
+	{
+		ws_id = ws_size_q.begin()->second;
+		q_size = ws_size_q.begin()->first;
+
+		ws_size_q.erase(ws_size_q.begin());
+		
+		if(q_size != ws_size_table[ws_id])
+		{
+			if (ws_size_table[ws_id] < min_mmu_size && ws_size_table[ws_id] > 0)
+				ws_size_q.insert(multimap<int,int>::value_type(ws_size_table[ws_id],ws_id));
+		} 
+		else
+		{
+			int n_id = find_best_neighbor(ws, io_sheds[ws_id], ws_id, -1.0, ws_size_table[ws_id]);
+			DebugAssert(n_id >= 0);
+			int old_shed_size = ws_size_table[ws_id];
+			ws_size_table[n_id] += old_shed_size;
+			ws_size_table[ws_id] = 0;
+			flood_fill_shed(ws,io_sheds[ws_id],-1.0, n_id, old_shed_size);
+			io_sheds[ws_id] = -1;
+		}			
+	}
+
+}
+
+static void	SetWatershedToDominant(DEMGeo& underlying, DEMGeo& ws, DEMGeo::address seed, address_fifo& fifo)
+{
+	DebugAssert(seed != -1);
+	DebugAssert(fifo.empty());
+	DEMGeo::address p;
+	DEMGeo::neighbor_iterator<4>	n;
+	map<float,int>	histo;
+
+	fifo.push(seed);
+	float my_id = ws[seed];
+	DebugAssert(my_id != -1);
+	
+	while(!fifo.empty())
+	{
+		p = fifo.pop();
+		if(ws[p] == my_id)
+		{
+			ws[p] = -1;
+			histo[underlying[p]]++;
+			for(n = ws.neighbor_begin<4>(p); n != ws.neighbor_end<4>(p); ++n)
+			if(ws[*n] == my_id)
+				fifo.push(*n);				
+			
+		}
+	}
+	
+	DebugAssert(!histo.empty());
+	map<float,int>::iterator best, i;
+	best = i = histo.begin();
+	++n;
+	while(i != histo.end())
+	{
+		if(i->second > best->second)
+			best = i;
+		++i;
+	}
+	
+	float best_lu = best->first;
+	
+	fifo.push(seed);
+	while(!fifo.empty())
+	{
+		p = fifo.pop();
+		if(ws[p] == -1)
+		{
+			ws[p] = my_id;
+			underlying[p] = best_lu;
+			for(n = ws.neighbor_begin<4>(p); n != ws.neighbor_end<4>(p); ++n)
+			if(ws[*n] == -1)
+				fifo.push(*n);				
+			
+		}
+	}
+	DebugAssert(fifo.empty());
+}
+
+void	SetWatershedsToDominant(DEMGeo& underlying, DEMGeo& ws, const vector<DEMGeo::address>& io_sheds)
+{
+	address_fifo fifo(underlying.mWidth * underlying.mHeight);
+	for(vector<DEMGeo::address>::const_iterator a = io_sheds.begin(); a != io_sheds.end(); ++a)
+	if(*a != -1)
+		SetWatershedToDominant(underlying, ws, *a, fifo);
 }

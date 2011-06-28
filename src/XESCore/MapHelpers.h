@@ -103,6 +103,45 @@ typename Arr::Face_handle face_for_vertices(typename Arr::Vertex_handle v1, type
 	return ret;
 }
 
+// Given two vertices, this finds the left-hand face to a poly-line made up entirely of edges that 
+// meet the predicate and travel from v1 to v2.  The poly-line must be connected only by nodes of
+// degree 2 (with respect to the predicate).  
+// Note that it is an error to call this if there exist several such paths (an ambiguous poly-line).
+// If no such poly-line exists, return a null face handle.
+// "wrong ways" are vertices that we must NOT go through.  This allows us to disambiguate going
+// the wrong way around a loop.
+template <typename Arr, bool(* Pred)(typename Arr::Halfedge_handle)>
+typename Arr::Halfedge_handle halfedge_for_vertices(typename Arr::Vertex_handle v1, typename Arr::Vertex_handle v2, const set<typename Arr::Vertex_handle>& wrong_ways)
+{
+	typename Arr::Halfedge_around_vertex_circulator circ, stop;
+	circ = stop = v1->incident_halfedges();
+	typename Arr::Halfedge_handle ret;
+	do
+	{
+		typename Arr::Halfedge_handle h = circ->twin();
+		if(Pred(h))
+		{
+			while(h != Halfedge_handle() && h->target() != v2 && wrong_ways.count(h->target()) == 0)
+				h = next_he_pred<Arr,Pred>(h);
+			if(h != typename Arr::Halfedge_handle() && wrong_ways.count(h->target()) == 0)
+			{
+				DebugAssert(h->target() == v2);
+				#if !DEV
+					return circ->twin();
+				#endif
+				// Debug mode runs ALL paths and checks to make sure
+				// we don't have an ambiguity.
+				if (ret != typename Arr::Halfedge_handle())
+					return typename Arr::Halfedge_handle();
+				DebugAssert(ret == typename Arr::Halfedge_handle());
+				ret = circ->twin();
+			}
+		}
+	} while(++circ != stop);
+	return ret;
+}
+
+
 // Given a vertex, how many of the incoming half-edges meet the predicate?
 template <typename Arr, bool(* Pred)(typename Arr::Halfedge_handle)>
 int degree_with_predicate(typename Arr::Vertex_handle v)

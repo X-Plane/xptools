@@ -53,15 +53,16 @@ struct ZoningInfo_t {
 	int			fill_edge;								// Use rules to put AG along edges.
 	int			fill_area;								// Use rules to put AG in interior areas
 	int			fill_veg;								// Use rules to put forests into remaining area
+	int			terrain_type;							// Source terrain type required for this zoning.
 };
 
 struct ZoningRule_t {
-
 	int			terrain;								// Required base terrain (or require natural)
 	float		size_min,		size_max;				// Size of block in square meters
 	float		slope_min,		slope_max;				// Max slope within block
 	float		urban_avg_min,	urban_avg_max;			// Average urbanization level
 	float		forest_avg_min,	forest_avg_max;			// Average forest level
+	float		park_avg_min,	park_avg_max;			// Average park level
 	float		bldg_min,		bldg_max;				// Maximum building height (0 if none)
 
 	int			req_cat1;
@@ -81,10 +82,18 @@ struct ZoningRule_t {
 	int			zoning;
 };
 
+struct LandFillRule_t {
+	set<int>	required_zoning;
+	int			color;
+	int			terrain;
+};
+
 typedef vector<ZoningRule_t>	ZoningRuleTable;
 typedef map<int, ZoningInfo_t>	ZoningInfoTable;
+typedef vector<LandFillRule_t>	LandFillRuleTable;
 extern ZoningRuleTable				gZoningRules;
 extern ZoningInfoTable				gZoningInfo;
+extern LandFillRuleTable			gLandFillRules;
 
 /************************************************************************************************
  * 3-D FILL RULES
@@ -138,6 +147,7 @@ void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
 				const DEMGeo& 		inLanduse,
 				const DEMGeo&		inForest,
+				const DEMGeo&		inPark,
 				const DEMGeo& 		inSlope,
 				const AptVector&	inApts,
 				Pmwx::Face_handle	inDebug,

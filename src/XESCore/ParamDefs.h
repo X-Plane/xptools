@@ -68,6 +68,7 @@
 	TOKEN(dem_Climate)				//	Type of climate
 //	TOKEN(dem_NudeColor)			//	Color of nude terrain (geology)
 	TOKEN(dem_ForestType)			//	Forest token type...
+	TOKEN(dem_ParkType)				//	Park presence...
 
 	/* Boolean DEMs. */
 
@@ -105,10 +106,12 @@
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
 	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?	
 	TOKEN(af_Zoning)
+	TOKEN(af_Variant)
 	
 	// These tokens are derived 
 	TOKEN(af_UrbanAverage)
 	TOKEN(af_ForestAverage)
+	TOKEN(af_ParkAverage)
 	TOKEN(af_SlopeMax)
 	TOKEN(af_Relief)
 	TOKEN(af_AreaMeters)
@@ -610,6 +613,11 @@
 	TOKEN(terrain_ForestPark)
 	TOKEN(terrain_Airport)
 	TOKEN(terrain_AirportOuter)				// Temporary - we use two land-uses when building airports to make sure we have inner and outer area.
+	TOKEN(terrain_Industrial)
+	TOKEN(terrain_Urban)
+	TOKEN(terrain_Urban1)
+	TOKEN(terrain_Urban2)
+	TOKEN(terrain_Urban3)
 
 	// NOTE: this terrain is at the END of the terrain enums so we can serialize
 	// specific natural terrain after this!

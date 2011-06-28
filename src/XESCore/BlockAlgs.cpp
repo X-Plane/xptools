@@ -111,6 +111,27 @@ public:
 	}
 };
 
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Triangulation_data_structure_2.h>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Filtered_kernel.h>
+
+typedef CGAL::Filtered_kernel< CGAL::Simple_cartesian<double> >	HackKernel;
+//typedef FastKernel HackKernel;
+typedef CGAL::Triangulation_data_structure_2 <
+						CGAL::Triangulation_vertex_base_2<HackKernel>,
+						CGAL::Constrained_triangulation_face_base_2<HackKernel> >	FastCDTDS;
+typedef CGAL::Constrained_Delaunay_triangulation_2<
+	HackKernel,
+	FastCDTDS,
+	CGAL::Exact_predicates_tag
+	>		
+FastCDT;
+
+inline HackKernel::Point_2 C(const FastKernel::Point_2& p)
+{
+	return HackKernel::Point_2(CGAL::to_double(p.x()),CGAL::to_double(p.y()));
+}
 
 // We build a block from scratch with a bunch of polygons.  Note that where polygons overlap, the earliest one in the block will "win" - that is, unneeded halfedges
 // WILL exist, but the "tags" will match the lower prio blokc data.
@@ -124,8 +145,53 @@ void	create_block(
 	
 	// First we are going to build up a curve list and bulk insert them all.  Each curve has the polygon number as its data.
 	// This should be faster than doing a series of piece-wise inserts.
-	
+
+#if 0
+	vector<Block_2::X_monotone_curve_2>	keep;
+	set<pair<Point_2,Point_2> >	we_have;
+	for(int n = 0; n < in_bounds.size(); ++n)
+	{
+		pair<Point_2,Point_2>	s(in_bounds[n].source(),in_bounds[n].target());
+		if(s.first < s.second) swap(s.first,s.second);
+		if(we_have.count(s) == 0)
+		{
+			keep.push_back(in_bounds[n]);
+			we_have.insert(s);
+		}
+	}
+
+	CGAL::insert(block, keep.begin(), keep.end());
+#endif	
+
 	CGAL::insert(block, in_bounds.begin(), in_bounds.end());
+
+#if 0
+	FastCDT	cdt;
+	FastCDT::Face_handle hint;
+	vector<pair<FastCDT::Vertex_handle, FastCDT::Vertex_handle> >	vv;
+	
+	set<pair<FastCDT::Vertex_handle, FastCDT::Vertex_handle> > we_have;
+	
+	for(int n = 0; n < in_bounds.size(); ++n)
+	{
+		pair<FastCDT::Vertex_handle,FastCDT::Vertex_handle>	r;
+		r.first = cdt.insert(C(in_bounds[n].source()),hint);
+		hint = r.first->face();
+		r.second = cdt.insert(C(in_bounds[n].target()),hint);
+		hint = r.second->face();
+		if(r.first < r.second)	swap(r.first,r.second);
+		if(we_have.count(r) == 0)
+		{
+			we_have.insert(r);
+			vv.push_back(r);
+		}	
+	}
+	for(int n = 0; n < vv.size(); ++n)
+	{
+		DebugAssert(vv[n].first != vv[n].second);
+		cdt.insert_constraint(vv[n].first,vv[n].second);
+	}
+#endif	
 
 	// Now we go back and do a search from the outside in, toggling our "membership" each time we cross a bounding edge, to keep track of
 	// which face we are in.
@@ -140,6 +206,7 @@ void	create_block(
 		visitor.initial.insert(unbounded_idx);
 	
 	visitor.Visit(&block);
+
 }
 
 // This routine checks whether a poylgon can be inserted into a block such that the interior of the polygon does not at all overlap with used space

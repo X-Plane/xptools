@@ -56,9 +56,8 @@
 #include "STLUtils.h"
 //#include "RF_Selection.h"
 #include "MapHelpers.h"
-//#if !DEV
-//	#error nuke tihs
-//#endif
+
+#include "GISTool_Globals.h"
 
 #include <CGAL/Arr_overlay_2.h>
 
@@ -71,8 +70,10 @@ struct block_pt {
 	Point2			offset_prev2;	// This is our offset location parallel to our PREVIOUS segment.
 	Point2			offset_next2;	// This is our offset location parallel to our NEXT segment.
 	Point2			offset_reflex1[3];// If we have a reflex vertex, up to 3 points form the "shape" around it.
-	Point2			offset_reflex2[3];// If we have a reflex vertex, up to 3 points form the "shape" around it.
+	Point2			offset_reflex2[3];// If non-reflex but non-discon, this gives us one useful "mid" point.
 	bool			locked;			// Is this point locked.  We lock any point that has high internal valence.
+	bool			discon;			// Discontinuity in road or edge type - requires a "hard cap" between this segment and the next one.
+	bool			reflex;
 	int				edge_type;		// Edge type OUTGOING from this point.
 	float			dot;
 	Halfedge_handle	orig;
@@ -241,6 +242,15 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 		v1.normalize();
 		v2.normalize();
 		pts[j].dot = v1.dot(v2);
+		pts[j].reflex = right_turn(pts[i].loc,pts[j].loc,pts[k].loc) || pts[i].loc == pts[k].loc;
+		pts[j].discon = pts[j].edge_type != pts[i].edge_type || j == 0;
+
+		if(pts[j].reflex && !pts[j].discon && pts[j].dot > 0.5)
+		{
+			pts[j].reflex = false;
+		}
+		if(pts[j].reflex) 
+			pts[j].discon = true;
 
 		Segment2	real_side(pts[i].loc, pts[j].loc);
 		Segment2	offset;		
@@ -260,8 +270,13 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 	{
 		j = (i+1) % pts.size();
 		k = (i+2) % pts.size();
-		if(right_turn(pts[i].loc,pts[j].loc,pts[k].loc) || pts[i].loc == pts[k].loc)
+		if(pts[j].reflex)
 		{
+			// These calculations build the paths for the reflex "cap" for right turns.  We always do this, EVEN
+			// if our edge types don't match.  why?  Imagine a local and secondary road at an L corner with an AG 
+			// string around it - by putting the reflex corner in we capture (1) the junction and (2) the AG string fill
+			// which lets us realize that it's really one big contiguous AG string.
+		
 			float w1_prev = WidthForSegment(pts[i].edge_type);
 			float w1_next = WidthForSegment(pts[j].edge_type);
 			EdgeRule_t * er_prev = fill_edges ? edge_for_road(pts[i].edge_type, zoning) : NULL;
@@ -284,12 +299,14 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 				// Make this better??!
 				pts[j].offset_reflex1[1] = pts[j].offset_reflex1[0];
 				pts[j].offset_reflex2[1] = pts[j].offset_reflex2[0];
+				//debug_mesh_point(translator.Reverse(pts[j].offset_reflex1[1]),1,0,0);
 			}
 			else if(pts[j].dot > 0.99)
 			{
 				// Very slight corner - don't trust intersection.
 				pts[j].offset_reflex1[0] = pts[j].offset_reflex1[1] = pts[j].offset_reflex1[2] = Segment2(pts[j].offset_prev1,pts[j].offset_next1).midpoint();
 				pts[j].offset_reflex2[0] = pts[j].offset_reflex2[1] = pts[j].offset_reflex2[2] = Segment2(pts[j].offset_prev2,pts[j].offset_next2).midpoint();
+				//debug_mesh_point(translator.Reverse(pts[j].offset_reflex1[1]),0,1,0);
 			}
 			else
 			{
@@ -305,8 +322,60 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 				
 				pts[j].offset_reflex1[0] = pts[j].offset_reflex1[1] = pts[j].offset_reflex1[2];
 				pts[j].offset_reflex2[0] = pts[j].offset_reflex2[1] = pts[j].offset_reflex2[2];
+				//debug_mesh_point(translator.Reverse(pts[j].offset_reflex1[1]),0,0,1);
+			}
+		} 
+		else if (!pts[j].discon)
+		{
+			// These calculations try to build the path when we have contiguous left turns.  In this case, look at a few cases:
+			if(pts[j].dot > 0.99)
+			{
+				// do not trust intersection, just run right through
+				// Very slight corner - don't trust intersection.
+				pts[j].offset_reflex1[0] = pts[j].offset_reflex1[1] = pts[j].offset_reflex1[2] = Segment2(pts[j].offset_prev1,pts[j].offset_next1).midpoint();
+				pts[j].offset_reflex2[0] = pts[j].offset_reflex2[1] = pts[j].offset_reflex2[2] = Segment2(pts[j].offset_prev2,pts[j].offset_next2).midpoint();
+				
+			}
+			else if(pts[j].dot >= 0.0)
+			{
+				Segment2	to_prev(pts[j].loc,pts[i].loc);
+				Segment2	to_next(pts[j].loc,pts[k].loc);
+				Point2 next_on_prev = to_prev.projection(pts[j].offset_next2);
+				Point2 prev_on_next = to_prev.projection(pts[j].offset_prev2);
+				
+				if(!right_turn(pts[i].loc,pts[j].loc,pts[k].loc) && 
+					(
+						pts[j].loc.squared_distance(next_on_prev) > pts[j].loc.squared_distance(to_prev.midpoint()) ||
+						pts[j].loc.squared_distance(prev_on_next) > pts[j].loc.squared_distance(to_next.midpoint())
+					))
+				{
+					pts[j].discon = true;
+					//debug_mesh_point(translator.Reverse(pts[j].offset_prev1),1,0,1);
+					//debug_mesh_point(translator.Reverse(pts[j].offset_next1),1,0,1);
+				}
+				else
+				{
+					Line2 prev1(pts[i].offset_next1,pts[j].offset_prev1);
+					Line2 prev2(pts[i].offset_next2,pts[j].offset_prev2);
+					Line2 next1(pts[j].offset_next1,pts[k].offset_prev1);
+					Line2 next2(pts[j].offset_next2,pts[k].offset_prev2);
+					if(!prev1.intersect(next1,pts[j].offset_reflex1[2]))
+						printf("WTF?\n");
+					if(!prev2.intersect(next2,pts[j].offset_reflex2[2]))
+						printf("WTF?\n");
+					
+					pts[j].offset_reflex1[0] = pts[j].offset_reflex1[1] = pts[j].offset_reflex1[2];
+					pts[j].offset_reflex2[0] = pts[j].offset_reflex2[1] = pts[j].offset_reflex2[2];					
+				}
+				
+			}
+			else {
+				// TIGHT left turn - don't even try, we can't figure out if we're going to have a crash.
+				//debug_mesh_point(translator.Reverse(pts[j].loc),1,0,0);
+				pts[j].discon = true;
 			}
 		}
+		
 	}
 	
 
@@ -325,33 +394,100 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 		DebugAssert(er == NULL || w > 0.0);
 
 		// PART 1 - Build geometry directly opposite the road.
+		// This is the segment from I to J.
 
 		if(er && w > 0.0)
-		{
-			push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+		{		
+			if(pts[i].discon && pts[j].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[i].loc,pts[i].offset_next1, cur_base + span);
+				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
+				push_block_curve(curves, pts[i].offset_next1,pts[j].offset_prev1, cur_base + span, cur_base);
 
-			push_block_curve(curves, pts[i].loc,pts[i].offset_next1, cur_base + span);
-			push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
-			push_block_curve(curves, pts[i].offset_next1,pts[j].offset_prev1, cur_base + span, cur_base);
+				push_block_curve(curves, pts[i].offset_next1,pts[i].offset_next2, cur_base);
+				push_block_curve(curves, pts[j].offset_prev1,pts[j].offset_prev2, cur_base);
+				push_block_curve(curves, pts[i].offset_next2,pts[j].offset_prev2, cur_base);
+			}
+			else if(pts[i].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[i].loc,pts[i].offset_next1, cur_base + span);
+				push_block_curve(curves, pts[i].offset_next1,pts[j].offset_reflex1[0], cur_base + span, cur_base);
 
-			push_block_curve(curves, pts[i].offset_next1,pts[i].offset_next2, cur_base);
-			push_block_curve(curves, pts[j].offset_prev1,pts[j].offset_prev2, cur_base);
-			push_block_curve(curves, pts[i].offset_next2,pts[j].offset_prev2, cur_base);
+				push_block_curve(curves, pts[i].offset_next1,pts[i].offset_next2, cur_base);
+				push_block_curve(curves, pts[i].offset_next2,pts[j].offset_reflex2[0], cur_base);
+			}
+			else if(pts[j].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
+				push_block_curve(curves, pts[i].offset_reflex1[0],pts[j].offset_prev1, cur_base + span, cur_base);
 
+				push_block_curve(curves, pts[j].offset_prev1,pts[j].offset_prev2, cur_base);
+				push_block_curve(curves, pts[i].offset_reflex2[0],pts[j].offset_prev2, cur_base);
+			}
+			else
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[i].offset_reflex1[0],pts[j].offset_reflex1[0], cur_base + span, cur_base);
+
+				push_block_curve(curves, pts[i].offset_reflex2[0],pts[j].offset_reflex2[0], cur_base);
+			}
 		}
 		else if(er)
 		{
-			push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base);
-			push_block_curve(curves, pts[i].loc,pts[i].offset_next2, cur_base);
-			push_block_curve(curves, pts[j].loc,pts[j].offset_prev2, cur_base);
-			push_block_curve(curves, pts[i].offset_next2,pts[j].offset_prev2, cur_base);
+			if(pts[i].discon && pts[j].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base);
+				push_block_curve(curves, pts[i].loc,pts[i].offset_next2, cur_base);
+				push_block_curve(curves, pts[j].loc,pts[j].offset_prev2, cur_base);
+				push_block_curve(curves, pts[i].offset_next2,pts[j].offset_prev2, cur_base);
+			}
+			else if(pts[i].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base);
+				push_block_curve(curves, pts[i].loc,pts[i].offset_next2, cur_base);
+				push_block_curve(curves, pts[i].offset_next2,pts[j].offset_reflex2[0], cur_base);
+			}
+			else if(pts[j].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base);
+				push_block_curve(curves, pts[j].loc,pts[j].offset_prev2, cur_base);
+				push_block_curve(curves, pts[i].offset_reflex2[0],pts[j].offset_prev2, cur_base);
+			}
+			else
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base);
+				push_block_curve(curves, pts[i].offset_reflex2[0],pts[j].offset_reflex2[0], cur_base);
+			}
 		}
 		else if (w > 0.0)
 		{
-			push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
-			push_block_curve(curves, pts[i].loc,pts[i].offset_next1, cur_base + span);
-			push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
-			push_block_curve(curves, pts[i].offset_next1,pts[j].offset_prev1, cur_base + span);
+			if(pts[i].discon && pts[j].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[i].loc,pts[i].offset_next1, cur_base + span);
+				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
+				push_block_curve(curves, pts[i].offset_next1,pts[j].offset_prev1, cur_base + span);
+			}
+			else if(pts[i].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[i].loc,pts[i].offset_next1, cur_base + span);
+				push_block_curve(curves, pts[i].offset_next1,pts[j].offset_reflex1[0], cur_base + span);
+			}
+			else if(pts[j].discon)
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
+				push_block_curve(curves, pts[i].offset_reflex1[0],pts[j].offset_prev1, cur_base + span);
+			}
+			else
+			{
+				push_block_curve(curves, pts[i].loc,pts[j].loc, oob_idx, cur_base + span);
+				push_block_curve(curves, pts[i].offset_reflex1[0],pts[j].offset_reflex1[0], cur_base + span);
+			}
 		}
 		else
 		{
@@ -361,14 +497,17 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 		DebugAssert(pieces[cur_base + span].usage == usage_Empty);
 		DebugAssert(pieces[cur_base		  ].usage == usage_Empty);
 		
-		pieces[cur_base] = BLOCK_face_data(usage_Polygonal_Feature,er ? er->resource_id : NO_VALUE);
-		pieces[cur_base + span] = BLOCK_face_data(usage_Road, pts[i].edge_type);
+		if(pts[j].discon)
+		{
+			pieces[cur_base] = BLOCK_face_data(usage_Polygonal_Feature,er ? er->resource_id : NO_VALUE);
+			pieces[cur_base + span] = BLOCK_face_data(usage_Road, pts[i].edge_type);
+			
+			++cur_base;
+		}
 		
-		++cur_base;
-
 		// Part 2 - reflex vertices.  These need a little "extra" around their edges.
 
-		if(right_turn(pts[i].loc,pts[j].loc,pts[k].loc) || pts[i].loc == pts[k].loc)
+		if(pts[j].reflex)
 		{
 			EdgeRule_t * er2 = fill_edges ? edge_for_road(pts[j].edge_type, zoning) : NULL;
 			float w2 = WidthForSegment(pts[j].edge_type);
@@ -462,12 +601,65 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 	} 	
 }
 
-static bool want_face(CDT::Face_handle f,float max_slope,int need_lu)
+enum face_cat {
+	cat_urban = -1,
+	cat_forest,
+	cat_flat,
+	cat_oob,
+	cat_DIM
+};
+
+static face_cat categorize_vertex(CDT& mesh, CDT::Face_handle f, int n, Bbox2& bounds, float max_slope)
 {
-	return (f->info().normal[2] < cos(max_slope * DEG_TO_RAD))
-			||	
-			(need_lu && !gNaturalTerrainInfo[f->info().terrain].is_city);
+	if(mesh.is_infinite(f)) return cat_oob;
+	Bbox2	cb;
+	cb += cgal2ben(f->vertex(0)->point());
+	cb += cgal2ben(f->vertex(1)->point());
+	cb += cgal2ben(f->vertex(2)->point());
+	if(!bounds.overlap(cb))
+		return cat_oob;
+	
+	if(f->info().terrain == terrain_Water)
+		return cat_flat;
+
+	CDT::Vertex_handle v = f->vertex(n);
+	
+	int lu = f->info().terrain;
+//	CDT::Face_circulator circ, stop;
+//	circ = stop = v->incident_faces();
+//	do 
+//	{
+//		if(!mesh.is_infinite(circ))
+//		if(LowerPriorityNaturalTerrain(lu, circ->info().terrain))
+//			lu = circ->info().terrain;
+//	} while(++circ != stop);
+	
+	for(hash_map<int,float>::iterator b = v->info().border_blend.begin(); b != v->info().border_blend.end(); ++b)
+	if(b->second > 0.5)
+	if(f->info().terrain_border.count(b->first))
+	if(LowerPriorityNaturalTerrain(lu, b->first))
+		lu = b->first;
+	
+	if(gNaturalTerrainInfo[lu].is_city)	return (f->info().normal[2] < cos(max_slope * DEG_TO_RAD)) ? cat_forest : cat_urban;
+	else if (gNaturalTerrainInfo[lu].is_forest)	return cat_forest;
+	else return cat_flat;
 }
+
+
+/*	
+	if (f->info().normal[2] < cos(max_slope * DEG_TO_RAD)
+			||	
+			(need_lu && !gNaturalTerrainInfo[f->info().terrain].is_city))
+	{
+		if(gNaturalTerrainInfo[f->info().terrain].is_forest)
+			return cat_forest;
+		else
+			return cat_flat;
+	}
+	else
+		return cat_urban;
+}
+*/
 
 static bool in_range(CDT::Face_handle f, CoordTranslator2& t)
 {
@@ -482,7 +674,29 @@ static bool in_range(CDT::Face_handle f, CoordTranslator2& t)
 	return cb.overlap(fb);
 }
 
-static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int oob_idx,float max_slope, int need_lu)
+static void push_curve(vector<Block_2::X_monotone_curve_2>& curves, const Point_2& p1, const Point_2& p2, face_cat cat1, face_cat cat2, int cat_base)
+{
+	DebugAssert(cat1 != cat2);
+	if(cat1 != cat_urban && cat2 != cat_urban && cat1 != cat_oob && cat2 != cat_oob)
+	{
+		EdgeKey_container	keys;
+		keys.insert(cat1 + cat_base);
+		keys.insert(cat2 + cat_base);
+		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), keys));
+	}
+	else if(cat1 != cat_urban && cat1 != cat_oob)
+	{
+		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), cat1 + cat_base));
+	}
+	else if(cat2 != cat_urban && cat2 != cat_oob)
+	{
+		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), cat2 + cat_base));
+	}	
+}
+
+
+
+static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int cat_base,float max_slope, int need_lu)
 {
 	Point_2 start = Point_2(
 						(translator.mSrcMin.x() + translator.mSrcMax.x()) * 0.5,
@@ -501,35 +715,98 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 	set<CDT::Face_handle>	to_visit;
 	to_visit.insert(root);
 
+	Bbox2	 lim;
+	lim += translator.mSrcMin;
+	lim += translator.mSrcMax;
+
 	while(!to_visit.empty())
 	{
 		CDT::Face_handle f = *to_visit.begin();
 		to_visit.erase(to_visit.begin());
 		visited.insert(f);
-
-		int want_this_face = want_face(f,max_slope,need_lu);
-
+			
+		face_cat cat[3] = {
+			categorize_vertex(mesh, f, 0, lim, max_slope),
+			categorize_vertex(mesh, f, 1, lim, max_slope),
+			categorize_vertex(mesh, f, 2, lim, max_slope) };
+		
+		DebugAssert(cat[0] != cat_oob);
+		DebugAssert(cat[1] != cat_oob);
+		DebugAssert(cat[2] != cat_oob);
+		
+		if(cat[0] != cat[1] || cat[1] != cat[2])
+		{
+			Point_2	p0 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
+			Point_2	p1 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
+			Point_2	p2 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
+			Point_2	p01 = ben2cgal(translator.Forward(cgal2ben(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()))));
+			Point_2	p12 = ben2cgal(translator.Forward(cgal2ben(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()))));
+			Point_2	p20 = ben2cgal(translator.Forward(cgal2ben(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()))));
+			Point_2 p012 = ben2cgal(translator.Forward(cgal2ben(CGAL::centroid(mesh.triangle(f)))));
+			
+			
+			if(cat[0] == cat[1])
+			{
+				push_curve(curves,p12, p20, cat[0], cat[2], cat_base);
+			}
+			else if(cat[1] == cat[2])
+			{
+				push_curve(curves,p20, p01, cat[1], cat[0], cat_base);
+			}
+			else if(cat[2] == cat[0])
+			{
+				push_curve(curves,p01, p12, cat[2], cat[1], cat_base);
+			}
+			else
+			{
+				push_curve(curves,p01, p012, cat[0], cat[1], cat_base);
+				push_curve(curves,p012, p20, cat[0], cat[2], cat_base);
+				push_curve(curves,p12, p012, cat[1], cat[2], cat_base);
+			}
+		}
+		
 		for(int n = 0; n < 3; ++n)
 		{
 			CDT::Face_handle nf = f->neighbor(n);
 
-			int nf_ok = !mesh.is_infinite(nf) && in_range(nf,translator);
-			int want_nf = nf_ok && want_face(nf,max_slope,need_lu);
+			bool face_is_new = visited.count(nf) == 0;// && to_visit.count(nf) == 0;
+
+			face_cat l = cat[CDT::cw (n)];
+			face_cat r = cat[CDT::ccw(n)];
 			
-			if(want_this_face && !want_nf)
+			face_cat L = categorize_vertex(mesh, nf, nf->index(f->vertex(CDT::cw (n))),lim, max_slope);
+			face_cat R = categorize_vertex(mesh, nf, nf->index(f->vertex(CDT::ccw(n))),lim, max_slope);
+
+			if(face_is_new)
 			{
-				curves.push_back(Block_2::X_monotone_curve_2(Segment_2(
-					ben2cgal(translator.Forward(cgal2ben(f->vertex(CDT::ccw(n))->point()))),
-					ben2cgal(translator.Forward(cgal2ben(f->vertex(CDT::cw (n))->point())))), oob_idx));
+				Point_2	pl = ben2cgal(translator.Forward(cgal2ben(f->vertex(CDT::cw (n))->point())));
+				Point_2	pr = ben2cgal(translator.Forward(cgal2ben(f->vertex(CDT::ccw(n))->point())));
+				Point_2	pm = ben2cgal(translator.Forward(cgal2ben(CGAL::midpoint(f->vertex(CDT::cw (n))->point(),f->vertex(CDT::ccw(n))->point()))));
+
+				if(l == r && L == R)
+				{
+					if(l != L)
+						push_curve(curves,pr,pl,l,L,cat_base);
+				}
+				else
+				{
+					if(l != L)
+						push_curve(curves,pm,pl,l,L,cat_base);
+					if(r != R)
+						push_curve(curves,pr,pm,r,R,cat_base);
+				}
 			}
-				
-			if(nf_ok)
-			if(visited.count(nf) == 0 && to_visit.count(nf) == 0)
-			{			
+			
+			int nf_ok = (L != cat_oob || R != cat_oob);
+			
+			DebugAssert(!nf_ok || !mesh.is_infinite(nf));
+			if(nf_ok && face_is_new)
+			{
 				to_visit.insert(nf);				
 			}
 		}	
 	}
+
 }
 
 
@@ -569,27 +846,65 @@ bool	init_block(
 	vector<Block_2::X_monotone_curve_2> curves;
 
 	num_he *= 2;
-	parts.resize(2 * num_he + 2, BLOCK_face_data(usage_Empty, NO_VALUE));
+	parts.resize(2 * num_he + cat_DIM, BLOCK_face_data(usage_Empty, NO_VALUE));
 
-	int idx_oob = num_he + 1;
-	int idx_mesh = num_he;
+	int cat_base = 2 * num_he;
 
-	parts[idx_mesh] = BLOCK_face_data(usage_Steep, NO_VALUE);
-	parts[idx_oob ] = BLOCK_face_data(usage_OOB  , NO_VALUE);
-	
+	parts[cat_base + cat_oob] = BLOCK_face_data(usage_OOB, NO_VALUE);
+	parts[cat_base + cat_forest] = BLOCK_face_data(usage_Steep, NO_VALUE);
+	parts[cat_base + cat_flat] = BLOCK_face_data(usage_OOB  , NO_VALUE);
+
 	num_he += 2;
 	
 	if(info && (info->need_lu || info->max_slope))
-		init_mesh(mesh, translator, curves, idx_mesh,info->max_slope,info->need_lu);
+		init_mesh(mesh, translator, curves, cat_base,info->max_slope,info->need_lu);
 
 	int base_offset = 0;
-	init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, base_offset, num_he, idx_oob, info && info->fill_edge);
+	init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, base_offset, num_he, cat_base + cat_oob, info && info->fill_edge);
 	for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
-		init_road_ccb(zoning, *h, translator, parts, curves, base_offset, num_he, idx_oob, info && info->fill_edge);
+		init_road_ccb(zoning, *h, translator, parts, curves, base_offset, num_he, cat_base + cat_oob, info && info->fill_edge);
 
 //	printf("Num HE: %d.  Added: %d\n", num_he, base_offset);
 
-	create_block(out_block,parts, curves, idx_oob);	// First "parts" block is outside of CCB, marked as "out of bounds", so trapped areas are not marked empty.
+#if 0
+	for(vector<Block_2::X_monotone_curve_2>::iterator c = curves.begin(); c != curves.end(); ++c)
+	{
+		for(EdgeKey_iterator i = c->data().begin(); i != c->data().end(); ++i)
+		if(*i == cat_base + cat_oob)
+		{
+			debug_mesh_line(
+					translator.Reverse(cgal2ben(c->source())),
+					translator.Reverse(cgal2ben(c->target())),
+						0.5,0,0,
+						1,0,0);
+		}
+		else if(*i == cat_base + cat_forest)
+		{
+			debug_mesh_line(
+					translator.Reverse(cgal2ben(c->source())),
+					translator.Reverse(cgal2ben(c->target())),
+						0,0.5,0,
+						0,1,0);
+		}
+		else if(*i == cat_base + cat_flat)
+		{
+			debug_mesh_line(
+					translator.Reverse(cgal2ben(c->source())),
+					translator.Reverse(cgal2ben(c->target())),
+						0,0,0.5,
+						0,0,1);
+		}
+		else
+		{
+			debug_mesh_line(
+					translator.Reverse(cgal2ben(c->source())),
+					translator.Reverse(cgal2ben(c->target())),
+						0.4,0.4,0.4,
+						0.8,0.8,0.8);
+		}
+	}
+#endif
+	create_block(out_block,parts, curves, cat_base + cat_oob);	// First "parts" block is outside of CCB, marked as "out of bounds", so trapped areas are not marked empty.
 	clean_block(out_block);
 	return true;
 }					
@@ -718,30 +1033,37 @@ bool	apply_fill_rules(
 		f->data().usage = usage_Empty;
 
 	clean_block(block);
+//	simplify_block(block, 0.75);
+//	clean_block(block);
 	
 	if(gZoningInfo[zoning].fill_veg)
 	{
-		int x1 = intmax2(floor(forest_dem.lon_to_x(translator.mSrcMin.x())),0);
-		int y1 = intmax2(floor(forest_dem.lat_to_y(translator.mSrcMin.y())),0);
-		int x2 = intmin2(ceil (forest_dem.lon_to_x(translator.mSrcMax.x())),forest_dem.mWidth );
-		int y2 = intmin2(ceil (forest_dem.lat_to_y(translator.mSrcMax.y())),forest_dem.mHeight);
+		if(0)
+		{
+			int bounds[4];
+			dem_coverage_nearest(forest_dem,
+									translator.mSrcMin.x(),
+									translator.mSrcMin.y(),
+									translator.mSrcMax.x(),
+									translator.mSrcMax.y(),
+									bounds);
 
-		Pmwx forest_areas;
-		
-		MapFromDEM(forest_dem,x1,y1,x2,y2,NO_VALUE, forest_areas, &translator);
+			Pmwx forest_areas;
+			
+			MapFromDEM(forest_dem,bounds[0],bounds[1],bounds[2],bounds[3],NO_VALUE, forest_areas, &translator);
 
-		arrangement_simplifier<Pmwx> simplifier;
-		simplifier.simplify(forest_areas, 0.75);
-		
-		simplify_block(block, 0.75);
-		
+			arrangement_simplifier<Pmwx> simplifier;
+			simplifier.simplify(forest_areas, forest_dem.y_dist_to_m(2.0));
+			
+			simplify_block(block, 0.75);		
 
-		Block_2	orig(block);
-		overlay_forests traits;
-		CGAL::overlay(orig, forest_areas, block, traits);
+			Block_2	orig(block);
+			overlay_forests traits;
+			CGAL::overlay(orig, forest_areas, block, traits);
+			clean_block(block);
+		}
 
-		clean_block(block);
-
+		if(1)
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
 		if(!f->is_unbounded())
 		if(f->data().usage == usage_Empty)
@@ -926,7 +1248,10 @@ bool process_block(Pmwx::Face_handle f, CDT& mesh, DEMGeo& forest_dem)
 {
 	bool ret = false;
 	int z = f->data().GetZoning();
-	if(z == NO_VALUE || z == terrain_Natural || gZoningInfo.count(z) == 0)
+	if(z == NO_VALUE || z == terrain_Natural)
+		return false;
+	DebugAssert(gZoningInfo.count(z) != 0);
+	if (gZoningInfo.count(z) == 0)
 		return false;
 		
 	CoordTranslator2	trans;
@@ -934,7 +1259,7 @@ bool process_block(Pmwx::Face_handle f, CDT& mesh, DEMGeo& forest_dem)
 	
 	if(init_block(mesh, f, block, trans))
 	{
-		simplify_block(block, 0.75);
+//		simplify_block(block, 0.75);
 		clean_block(block);
 
 		if (apply_fill_rules(z, block, trans, forest_dem))

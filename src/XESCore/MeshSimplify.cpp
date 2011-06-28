@@ -54,6 +54,7 @@ void MeshSimplify::simplify(double in_max_err)
 	{
 		CDT::Vertex_handle v = CDT_Recover_Handle((CDT::Vertex *) queue.begin()->second);
 		queue.erase(queue.begin());
+		v->info().self = queue.end();
 		
 		run_vertex(v);		
 	}

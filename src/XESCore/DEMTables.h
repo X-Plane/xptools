@@ -103,7 +103,7 @@ struct	NaturalTerrainRule_t {
 	int				urban_square;
 	float			lat_min;
 	float			lat_max;
-	int				variant;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5.  This is a SELECTOR for terrain.
+//	int				variant;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5.  This is a SELECTOR for terrain.
 
 	int				name;
 
@@ -130,6 +130,7 @@ struct	NaturalTerrainInfo_t {
 	int				regionalization;	// index into regionalization table for correct library output.
 	int				layer;
 	int				is_city;
+	int				is_forest;
 	float			xon_dist;
 	int				custom_ter;
 	proj_dir_t		proj_angle;			// Projection angle.  For legacy terrain this influences the xon distances.  For next-gen, always use "down"...the way the xon is scaled
@@ -201,9 +202,9 @@ int		FindNaturalTerrain(
 				float	urban_radial,
 				float	urban_trans,
 				int		urban_square,	// use 1=square, 2=irregulra NO_DATA
-				float	lat,			// use NO_DATA!
-				int		variant_blob,
-				int		variant_head);	// use 0
+				float	lat);			// use NO_DATA!
+//				int		variant_blob,
+//				int		variant_head);	// use 0
 
 // This routine creates a rule whereby if the "terrain" input type matches a real .ter file, we simply use it, period.
 // This allows MeshTool to allow authors to direct-select final x-plane terrain types.  This is an optional init so we 

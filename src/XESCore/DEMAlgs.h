@@ -26,9 +26,8 @@
 // Now you give dem algs to hypno-nerd...
 
 #include "MapDefs.h"
+#include "DEMDefs.h"
 
-struct	DEMGeo;
-class	DEMGeoMap;
 //class	Pmwx;
 
 #include "AptDefs.h"
@@ -87,5 +86,14 @@ void	DifferenceDEM(const DEMGeo& bottom, const DEMGeo& top, DEMGeo& diff);
 void	GaussianBlurDEM(DEMGeo& dem, float sigma);
 
 float	IntegLine(const DEMGeo& dem, double x1, double y1, double x2, double y2, int over_sample_ratio);
+
+/* WATERSHED GUNK */
+
+void	NeighborHisto(const DEMGeo& input, DEMGeo& output, int semi_distance);
+void	Watershed(DEMGeo& input, DEMGeo& output, vector<DEMGeo::address> * out_watersheds);
+void	FindWatersheds(DEMGeo& ws, vector<DEMGeo::address>& out_sheds);
+void	MergeMMU(DEMGeo& ws, vector<DEMGeo::address>& io_sheds, int min_mmu_size);
+void	VerifySheds(const DEMGeo& ws, vector<DEMGeo::address>& seeds);
+void	SetWatershedsToDominant(DEMGeo& underlying, DEMGeo& ws, const vector<DEMGeo::address>& io_sheds);
 
 #endif

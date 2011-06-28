@@ -34,6 +34,8 @@
 #include "AptDefs.h"
 #include "ObjPlacement2.h"
 #include "ConfigSystem.h"
+#include "MapTopology.h"
+//#include "GISTool_Globals.h"
 
 // NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
 // it isn't assigned.
@@ -49,6 +51,7 @@ ZoningInfoTable				gZoningInfo;
 EdgeRuleTable				gEdgeRules;
 FillRuleTable				gFillRules;
 LandClassInfoTable			gLandClassInfo;
+LandFillRuleTable			gLandFillRules;
 
 static bool ReadLandClassRule(const vector<string>& tokens, void * ref)
 {
@@ -97,7 +100,7 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 {
 	ZoningInfo_t	info;
 	int				zoning;
-	if(TokenizeLine(tokens," efiiii", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_veg) != 7)
+	if(TokenizeLine(tokens," efiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_veg,&info.terrain_type) != 8)
 		return false;
 	if(gZoningInfo.count(zoning) != 0)
 	{
@@ -111,12 +114,13 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 {
 	ZoningRule_t	r;
-	if(TokenizeLine(tokens," effffffffffefefiiiiiSSe",
+	if(TokenizeLine(tokens," effffffffffffefefiiiiiSSe",
 		&r.terrain,
 		&r.size_min,			&r.size_max,
 		&r.slope_min,			&r.slope_max,
 		&r.urban_avg_min,		&r.urban_avg_max,
 		&r.forest_avg_min,		&r.forest_avg_max,
+		&r.park_avg_min,		&r.park_avg_max,
 		&r.bldg_min,			&r.bldg_max,
 
 		&r.req_cat1, &r.req_cat1_min,
@@ -129,7 +133,7 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 		&r.crud_ok,
 		&r.require_features,
 		&r.consume_features,
-		&r.zoning) != 24)	return false;
+		&r.zoning) != 26)	return false;
 
 	r.slope_min = 1.0 - cos(r.slope_min * DEG_TO_RAD);
 	r.slope_max = 1.0 - cos(r.slope_max * DEG_TO_RAD);
@@ -142,6 +146,17 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 	return true;
 }
 
+static bool ReadLandFillRule(const vector<string>& tokens, void * ref)
+{
+	LandFillRule_t r;
+	if(TokenizeLine(tokens," Sie",&r.required_zoning,&r.color, &r.terrain) != 4)	
+		return false;
+	
+	gLandFillRules.push_back(r);
+	
+	return true;
+}
+
 void LoadZoningRules(void)
 {
 	gLandClassInfo.clear();
@@ -149,12 +164,14 @@ void LoadZoningRules(void)
 	gZoningInfo.clear();
 	gEdgeRules.clear();
 	gFillRules.clear();
+	gLandFillRules.clear();
 
 	RegisterLineHandler("LANDCLASS_INFO", ReadLandClassRule, NULL);
 	RegisterLineHandler("ZONING_RULE", ReadZoningRule, NULL);
 	RegisterLineHandler("ZONING_INFO", ReadZoningInfo, NULL);
 	RegisterLineHandler("EDGE_RULE", ReadEdgeRule, NULL);
 	RegisterLineHandler("FILL_RULE", ReadFillRule, NULL);
+	RegisterLineHandler("LANDFILL_RULE", ReadLandFillRule, NULL);
 	LoadConfigFile("zoning.txt");	
 }
 
@@ -207,6 +224,7 @@ static int		PickZoningRule(
 						float		max_slope,
 						float		urban_avg,
 						float		forest_avg,
+						float		park_avg,
 						float		bldg_hgt,
 						int			cat1,
 						float		rat1,
@@ -225,6 +243,7 @@ static int		PickZoningRule(
 		if(check_rule(r->slope_min, r->slope_max, max_slope))
 		if(check_rule(r->urban_avg_min, r->urban_avg_max, urban_avg))
 		if(check_rule(r->forest_avg_min, r->forest_avg_max, forest_avg))
+		if(check_rule(r->park_avg_min, r->park_avg_max, park_avg))
 		if(check_rule(r->bldg_min, r->bldg_max, bldg_hgt))
 		if(r->req_cat1 == NO_VALUE || (r->req_cat1 == cat1 && r->req_cat1_min <= rat1))
 		if(r->req_cat2 == NO_VALUE || cat2 == NO_VALUE || (r->req_cat2 == cat2 && r->req_cat2_min <= rat2))
@@ -261,10 +280,19 @@ int evaluate_he(Pmwx::Halfedge_handle he)
 }
 
 
+struct is_same_terrain_p { 
+	int terrain_;
+	is_same_terrain_p(int terrain) : terrain_(terrain) { }
+	bool operator()(Face_handle f) const { return !f->is_unbounded() && f->data().mTerrainType == terrain_; } 
+};
+
+void	ColorFaces(set<Face_handle>&	io_faces);
+
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
 				const DEMGeo& 		inLanduse,
 				const DEMGeo&		inForest,
+				const DEMGeo&		inPark,
 				const DEMGeo& 		inSlope,
 				const AptVector&	inApts,
 				Pmwx::Face_handle	inDebug,
@@ -329,7 +357,7 @@ void	ZoneManMadeAreas(
 		int x, y, x1, x2;
 		y = SetupRasterizerForDEM(face, inLanduse, r);
 		r.StartScanline(y);
-		float count = 0, total_forest = 0, total_urban = 0;
+		float count = 0, total_forest = 0, total_urban = 0, total_park = 0;
 		map<int, int>		histo;
 		
 		while (!r.DoneScan())
@@ -340,6 +368,7 @@ void	ZoneManMadeAreas(
 				{
 					float e = inLanduse.get(x,y);
 					float f = inForest.get(x,y);
+					float p = inPark.get(x,y);
 					count++;
 
 					if(gLandClassInfo.count(e))
@@ -348,12 +377,16 @@ void	ZoneManMadeAreas(
 						histo[i.category]++;
 						total_urban += i.urban_density;
 						total_forest += i.veg_density;						
+						if(p != NO_VALUE)
+							total_park += 1.0;
 					} 
 					else
 					{
 						histo[terrain_Natural]++;
 						if(f != NO_VALUE)
 							total_forest += 1.0;
+//						if(p != NO_VALUE)
+//							total_park += 1.0;
 					}
 
 				}
@@ -368,6 +401,7 @@ void	ZoneManMadeAreas(
 			Point2 any = cgal2ben(face->outer_ccb()->source()->point());
 			float e = inLanduse.xy_nearest(any.x(),any.y());
 			float f = inForest.xy_nearest(any.x(),any.y());
+			float p = inPark.xy_nearest(any.x(),any.y());
 
 			count++;
 
@@ -376,13 +410,17 @@ void	ZoneManMadeAreas(
 				LandClassInfo_t& i(gLandClassInfo[e]);
 				histo[i.category]++;
 				total_urban += i.urban_density;
-				total_forest += i.veg_density;						
+				total_forest += i.veg_density;			
+				if(p != NO_VALUE)
+					total_park += 1.0;
 			} 
 			else
 			{
 				histo[terrain_Natural]++;
 				if(f != NO_VALUE)
 					total_forest += 1.0;
+				if(p != NO_VALUE)
+					total_park += 1.0;
 			}
 
 		}
@@ -454,7 +492,7 @@ void	ZoneManMadeAreas(
 						mfam,
 //						num_sides,
 						max_slope,
-						total_urban/(float)count,total_forest/(float)count,
+						total_urban/(float)count,total_forest/(float)count,total_park/(float)count,
 						max_height,
 						face->data().mParams[af_Cat1],
 						face->data().mParams[af_Cat1Rat],
@@ -469,6 +507,9 @@ void	ZoneManMadeAreas(
 		if(zone != NO_VALUE)
 		{
 			face->data().SetZoning(zone);
+			int wanted_terrain = gZoningInfo[zone].terrain_type;
+			if(wanted_terrain != NO_VALUE)
+				face->data().mTerrainType = wanted_terrain;
 #if ZONING_METRICS			
 			double slope_d = acos(1.0 - max_slope) * RAD_TO_DEG;
 			int slope_id = 3.0 * ceil(slope_d / 3.0);
@@ -481,6 +522,7 @@ void	ZoneManMadeAreas(
 
 		face->data().mParams[af_UrbanAverage] = total_urban / (float) count;
 		face->data().mParams[af_ForestAverage] = total_forest / (float) count;
+		face->data().mParams[af_ParkAverage] = total_park / (float) count;
 		face->data().mParams[af_SlopeMax] = max_slope;
 		face->data().mParams[af_AreaMeters] = mfam;
 		
@@ -680,6 +722,395 @@ void	ZoneManMadeAreas(
 	
 	
 #endif	
+
+	for(face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
+	if(!face->is_unbounded())
+	if(!face->data().IsWater())
+	if(!face->data().HasParam(af_Variant))
+	{		
+		set<Face_handle>	the_blob;
+		CollectionVisitor<Pmwx,Face_handle,is_same_terrain_p>	col(&the_blob, is_same_terrain_p(face->data().mTerrainType));
+		VisitContiguousFaces<Pmwx,CollectionVisitor<Pmwx,Face_handle,is_same_terrain_p> >(face, col);
+		ColorFaces(the_blob);
+	}
+
 }
+
+/***
+ *
+ **/
+#pragma mark -
+
+inline int MIN_NOVALUE(int a, int b)
+{
+	if(a == NO_VALUE) return b;
+	if(b == NO_VALUE) return a;
+	return min(a,b);
+}
+
+
+struct EdgeNode_t;
+
+typedef multimap<float, EdgeNode_t *, greater<float> >	EdgeQ;
+
+struct	FaceNode_t {
+	
+	FaceNode_t *			prev;
+	FaceNode_t *			next;
+
+	list<Face_handle>		real_faces;
+	list<EdgeNode_t *>		edges;
+	float					area;
+	int						color;
+
+};
+
+struct EdgeNode_t {
+	EdgeNode_t *	prev;
+	EdgeNode_t *	next;
+
+	FaceNode_t *	f1;
+	FaceNode_t *	f2;
+	float			length;
+	int				count;
+	int				road_type;
+	EdgeQ::iterator	self;
+	
+	FaceNode_t *	other(FaceNode_t * f) const { DebugAssert(f == f1 || f == f2); return (f == f1) ? f2 : f1; }
+};
+
+struct edge_contains_f {
+	FaceNode_t * f_;
+	edge_contains_f(FaceNode_t * f) : f_(f) { }
+	bool operator()(const EdgeNode_t *& e) const { return e->f1 == f_ || e->f2 == f_; }
+};
+
+struct FaceGraph_t {
+	
+	FaceGraph_t() { edges = NULL; faces = NULL; }
+	
+	EdgeNode_t *	edges;
+	FaceNode_t *	faces;	
+	EdgeQ			queue;
+	
+	~FaceGraph_t() { clear(); }
+	void			clear();
+	FaceNode_t *	new_face();
+	EdgeNode_t *	new_edge();
+	void			delete_face(FaceNode_t * f);
+	void			delete_edge(EdgeNode_t * e);
+	bool			connected(FaceNode_t * f1, FaceNode_t * f2);
+	void			merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& merged_neighbors);
+	
+	void			enqueue(EdgeNode_t * en,float (* cost_func)(EdgeNode_t * en));
+	EdgeNode_t *	pop(void);
+
+};
+
+FaceNode_t *	FaceGraph_t::new_face()
+{
+	FaceNode_t * n = new FaceNode_t;
+	n->prev = NULL;
+	n->next = faces;
+	faces = n;
+	if(n->next)
+		n->next->prev = n;
+	return n;
+}
+
+EdgeNode_t *	FaceGraph_t::new_edge()
+{
+	EdgeNode_t * n = new EdgeNode_t;
+	n->prev = NULL;
+	n->next = edges;
+	if(n->next)
+		n->next->prev = n;
+	edges = n;
+	return n;
+}	
+
+
+void			FaceGraph_t::delete_face(FaceNode_t * f)
+{
+	if(f == faces)
+		faces = f->next;
+	if(f->prev)	f->prev->next = f->next;
+	if(f->next) f->next->prev = f->prev;
+	delete f;
+}
+
+void			FaceGraph_t::delete_edge(EdgeNode_t * e)
+{
+	if(e->self != queue.end())
+		queue.erase(e->self);
+		
+	if(e == edges)
+		edges = e->next;
+	if(e->prev)	e->prev->next = e->next;
+	if(e->next) e->next->prev = e->prev;
+	delete e;
+}
+
+bool			FaceGraph_t::connected(FaceNode_t * f1, FaceNode_t * f2)
+{
+	if(f1->edges.size() > f2->edges.size())
+		swap(f1,f2);
+	for(list<EdgeNode_t *>::iterator e = f1->edges.begin(); e != f1->edges.end(); ++e)
+	if(((*e)->f1 == f1 && (*e)->f2 == f2) ||
+	   ((*e)->f1 == f2 && (*e)->f2 == f1))
+		return true;
+	return false;
+}
+
+void			FaceGraph_t::merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& out_neighbors)
+{
+	f1->area += f2->area;
+	f1->real_faces.splice(f1->real_faces.end(),f2->real_faces);
+	
+	map<FaceNode_t *, EdgeNode_t *>						neighbors;
+	map<FaceNode_t *, EdgeNode_t *>::iterator			ni;
+	list<EdgeNode_t *>::iterator ei;
+	EdgeNode_t * en;
+	FaceNode_t * fn;
+	
+	
+	// First: grab up all edges that we may keep.  This is our neighbor set.
+	// We have one edge to f2 which we will cope with later.
+	for(list<EdgeNode_t *>::iterator ei = f1->edges.begin(); ei != f1->edges.end(); ++ei)
+	{
+		en = * ei;
+		fn = en->other(f1);
+		if(fn != f2)
+		{
+			DebugAssert(neighbors.count(fn) == 0);
+			neighbors[fn] = en;
+		}
+	}
+	
+	// Now we can "merge in" F2's edges.
+	for(list<EdgeNode_t *>::iterator ei = f2->edges.begin(); ei != f2->edges.end(); ++ei)
+	{
+		en = *ei;
+		fn = en->other(f2);
+		if(fn == f1)
+		{
+			// This is the f1-f2 edge - it's GONE.
+			f1->edges.remove(en);
+			delete_edge(en);
+		}
+		else if (neighbors.count(fn) > 0)
+		{
+			// Both f1 and f2 were connected to this face.  We need to merge these edges.
+			EdgeNode_t * oe = neighbors[fn];
+			oe->length += en->length;
+			oe->count += en->count;
+			oe->road_type = MIN_NOVALUE(oe->road_type,en->road_type);
+			fn->edges.remove(en);
+			delete_edge(en);
+			out_neighbors.push_back(oe);
+		}
+		else
+		{
+			// This is a face adjacent to f2 but not f1.  So now that f1 and f2 are merged,
+			// f1 accumulates it in its neighborhood.
+			neighbors[fn] = en;
+			// Migrate links over...edge is literally moved, so this is the easy case.
+			if(en->f1 == f2)
+				en->f1 = f1;
+			else if(en->f2 == f2)
+				en->f2 = f1;
+			f1->edges.push_back(en);
+		}
+	}
+	
+	delete_face(f2);	
+}
+
+void			FaceGraph_t::enqueue(EdgeNode_t * en, float (* cost_func)(EdgeNode_t * en))
+{	
+	if(queue.end() != en->self)
+		queue.erase(en->self);
+	float cost_now = cost_func(en);
+	if(cost_now > 0.0f)
+	{
+		en->self = queue.insert(EdgeQ::value_type(cost_now,en));
+	}
+	else	
+		en->self = queue.end();
+}
+
+
+EdgeNode_t *	FaceGraph_t::pop(void)
+{
+	if(queue.empty())
+		return NULL;
+	EdgeNode_t * ret = queue.begin()->second;
+	queue.erase(queue.begin());
+	ret->self = queue.end();
+	return ret;	
+}
+
+
+
+
+
+void		FaceGraph_t::clear(void)
+{	
+	while(faces)
+	{
+		FaceNode_t * f = faces;
+		faces = faces->next;
+		delete f;
+	}
+	while(edges)
+	{
+		EdgeNode_t * e = edges;
+		edges = edges->next;
+		delete e;
+	}
+}
+
+#define MAX_AREA (1000.0 * 1000.0)
+float	edge_cost_func(EdgeNode_t * en)
+{
+	if((en->f1->area + en->f2->area) > MAX_AREA)	return 0.0f;
+//	if(Road_IsHighway(en->road_type) || Road_IsHighway(en->road_type))
+//	   return en->length * 0.5;
+	return en->length;
+}
+
+struct UnlinkedFace_p {
+	set<Face_handle> *						universe_;
+	UnlinkedFace_p(set<Face_handle> * universe) : universe_(universe) { }
+	bool operator()(Face_handle who) const { 
+		return universe_->count(who) > 0;
+	}
+};
+
+void	ColorFaces(set<Face_handle>&	io_faces)
+{
+		FaceGraph_t								graph;
+		set<Face_handle>::iterator				f, ff;
+		FaceNode_t *							fn;
+		EdgeNode_t *							en;
+		map<Face_handle, FaceNode_t *>			face_mapping;
+	
+	/* First: build our graph structure */
+	for(f = io_faces.begin(); f != io_faces.end(); ++f)
+	{
+		fn = graph.new_face();
+		fn->real_faces.push_back(*f);
+		fn->area = GetMapFaceAreaMeters(*f);
+		fn->color = -1;
+		face_mapping[*f] = fn;
+	}
+	
+	for(f = io_faces.begin(); f != io_faces.end(); ++f)
+	{
+		set<Face_handle>	friends;
+		CollectionVisitor<Pmwx,Face_handle,UnlinkedFace_p> face_collector(&friends, UnlinkedFace_p(&io_faces));
+		VisitAdjacentFaces<Pmwx, CollectionVisitor<Pmwx,Face_handle,UnlinkedFace_p> >(*f, face_collector);
+		for(ff = friends.begin(); ff != friends.end(); ++ff)
+		{
+			DebugAssert(face_mapping.count(*f ));
+			DebugAssert(face_mapping.count(*ff));
+			FaceNode_t * f1 = face_mapping[*f ];
+			FaceNode_t * f2 = face_mapping[*ff];
+			if(!graph.connected(f1,f2))
+			{
+				en = graph.new_edge();
+				en->f1 = f1;
+				en->f2 = f2;
+				f1->edges.push_back(en);
+				f2->edges.push_back(en);
+				en->self = graph.queue.end();
+				en->length = 0.0f;
+				en->count = 0;
+				en->road_type = NO_VALUE;
+				set<Halfedge_handle>	edges;
+				FindEdgesForFace<Pmwx>(*f, edges);
+				for(set<Halfedge_handle>::iterator i = edges.begin(); i != edges.end(); ++i)
+					if((*i)->twin()->face() == *ff)
+					{
+						en->length += GetMapEdgeLengthMeters(*i);
+						en->count++;
+						if((*i)->data().HasRoads())
+							en->road_type = MIN_NOVALUE(en->road_type, (*i)->data().mSegments.front().mFeatType);
+						if((*i)->twin()->data().HasRoads())
+							en->road_type = MIN_NOVALUE(en->road_type, (*i)->twin()->data().mSegments.front().mFeatType);
+					}
+			}
+		}
+	}
+	
+	/* Second: seed the initial PQ with edges. */
+	
+	for(en = graph.edges; en; en = en->next)
+		graph.enqueue(en, edge_cost_func);
+	
+	/* Third: run the PQ until we have done our "merges". */
+	while((en = graph.pop()) != NULL)
+	{
+		list<EdgeNode_t *>	neighbors;
+		graph.merge(en->f1, en->f2, neighbors);
+		for(list<EdgeNode_t *>::iterator n = neighbors.begin(); n != neighbors.end(); ++n)
+			graph.enqueue(*n, edge_cost_func);
+	}
+	
+	int highest = 0, total = 0, over_4 = 0;
+	
+	multimap<int, FaceNode_t *, greater<int> >		nodes_by_degree;
+	
+	/* Fourth: color the remaining edges. */
+	for(fn = graph.faces; fn; fn = fn->next)
+	{
+
+//		set<Face_handle>		faces;
+//		set<Halfedge_handle>	edges;
+//		faces.insert(fn->real_faces.begin(),fn->real_faces.end());			
+//		FindEdgesForFaceSet<Pmwx>(faces,edges);
+//		for(set<Halfedge_handle>::iterator e = edges.begin(); e != edges.end(); ++e)
+//			debug_mesh_line(cgal2ben((*e)->source()->point()),cgal2ben((*e)->target()->point()),1,0,0,0,1,0);
+
+		nodes_by_degree.insert(multimap<int, FaceNode_t *, greater<int> >::value_type(fn->edges.size(),fn));
+	}
+	
+	for(multimap<int, FaceNode_t *, greater<int> >::iterator i = nodes_by_degree.begin(); i != nodes_by_degree.end(); ++i)
+	{
+		set<int> used;
+		i->second->color = 0;
+		for(list<EdgeNode_t *>::iterator ei = i->second->edges.begin(); ei != i->second->edges.end(); ++ei)
+		{
+			en = *ei;
+			fn = en->other(i->second);
+			if(fn->color != -1)	used.insert(fn->color);
+		}
+		while(used.count(i->second->color))
+			++i->second->color;
+		
+		highest = max(highest,i->second->color);
+		++total;
+		if(i->second->color > 3)
+			++over_4;
+			
+		set<int> zoning_we_have;	
+			
+		for(list<Face_handle>::iterator fh = i->second->real_faces.begin(); fh != i->second->real_faces.end(); ++fh)
+		{
+			(*fh)->data().mParams[af_Variant] = i->second->color;
+			zoning_we_have.insert((*fh)->data().GetZoning());
+		}		
+		for(LandFillRuleTable::iterator r = gLandFillRules.begin(); r != gLandFillRules.end(); ++r)
+		if(zoning_we_have == r->required_zoning && r->color == i->second->color)
+		{		
+			for(list<Face_handle>::iterator fh = i->second->real_faces.begin(); fh != i->second->real_faces.end(); ++fh)
+			if((*fh)->data().mTerrainType == NO_VALUE)
+				(*fh)->data().mTerrainType = r->terrain;
+			break;
+		}
+	}
+//	printf("Highest color: %d.  Total before: %d.  Total after: %d.  Over_4: %d.\n", highest, io_faces.size(), total,over_4);
+}
+
 
 

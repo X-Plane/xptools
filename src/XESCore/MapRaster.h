@@ -29,6 +29,12 @@
 
 struct CoordTranslator2;
 
+// This creates a planar map from a DEM - each contiguous (orthogonally connected, not diagonally connected) region of same values becomes a 
+// face; DEM samples that have the "null post" value may be in the unbounded face if they aren't fully surrounded. When done, the face
+// terrain type is copied from the DEM.
+// Note: x1/y1 is the address of the lower left SAMPLE to use, and x2/y2 is the first sample NOT to use - that is, this is [) style range,
+// no matter WHAT the DEM format - we are referring to samples, not lat/lon coords.
+// So passing 0,0,mWidth,mHeight converts the entire DEM.
 void	MapFromDEM(
 				const DEMGeo&		in_dem,
 				int					x1,

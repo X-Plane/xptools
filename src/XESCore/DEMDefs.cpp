@@ -247,6 +247,61 @@ DEMGeo& DEMGeo::operator=(const DEMGeo& x)
 	return *this;
 }
 
+void DEMGeo::clear_from(const DEMGeo& x, float v)
+{
+	if (this == &x) 
+	{	
+		for(iterator i = begin(); i != end(); ++i)
+			*i = v;
+		return;
+	}
+	
+	if (x.mWidth != mWidth || x.mHeight != mHeight || mData == NULL)
+	{
+		if (mData)	free(mData);
+		mWidth = x.mWidth;
+		mHeight = x.mHeight;
+		mData = (float *) malloc(mWidth * mHeight * sizeof(float));
+	}
+
+	mSouth = x.mSouth;
+	mNorth = x.mNorth;
+	mWest = x.mWest;
+	mEast = x.mEast;
+	mPost = x.mPost;
+	
+	if (mData == NULL)
+		mWidth = mHeight = 0;
+	else {
+		for(iterator i = begin(); i != end(); ++i)
+			*i = v;
+	}
+}
+
+void DEMGeo::clear_from(const DEMGeo& x)
+{
+	if (this == &x) 
+		return;
+	
+	if (x.mWidth != mWidth || x.mHeight != mHeight || mData == NULL)
+	{
+		if (mData)	free(mData);
+		mWidth = x.mWidth;
+		mHeight = x.mHeight;
+		mData = (float *) malloc(mWidth * mHeight * sizeof(float));
+	}
+
+	mSouth = x.mSouth;
+	mNorth = x.mNorth;
+	mWest = x.mWest;
+	mEast = x.mEast;
+	mPost = x.mPost;
+	
+	if (mData == NULL)
+		mWidth = mHeight = 0;
+}
+
+
 void DEMGeo::overlay(const DEMGeo& x)	// Overlay
 {
 	if (x.mWidth != mWidth || x.mHeight != mHeight || mPost != x.mPost || mData == NULL || x.mData == NULL)
@@ -1041,3 +1096,18 @@ void	DEMMask::copy_geo_from(const DEMMask& rhs)
 	mWest = rhs.mWest;
 }
 
+void		dem_coverage_nearest(const DEMGeo& d, double lon1, double lat1, double lon2, double lat2, int bounds[4])
+{
+	DebugAssert(lon1 >= d.mWest);
+	DebugAssert(lat1 >= d.mSouth);
+	DebugAssert(lon2 <= d.mEast);
+	DebugAssert(lat2 <= d.mNorth);
+	bounds[0] = floor(d.lon_to_x(lon1) + d.pixel_offset());
+	bounds[1] = floor(d.lat_to_y(lat1) + d.pixel_offset());
+	bounds[2] = ceil(d.lon_to_x(lon2) - d.pixel_offset()) + 1;
+	bounds[3] = ceil(d.lat_to_y(lat2) - d.pixel_offset()) + 1;
+	DebugAssert(bounds[0] >= 0);
+	DebugAssert(bounds[1] >= 0);
+	DebugAssert(bounds[2] <= d.mWidth);
+	DebugAssert(bounds[3] <= d.mHeight);
+}

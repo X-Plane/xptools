@@ -32,6 +32,8 @@
 #define BURN_EVERYTHING 0
 // Burn every road segment!
 #define BURN_ROADS 0
+// Burn zones
+#define BURN_ZONING 0
 
 template<typename Number>
 struct	PolyRasterizer;
@@ -78,6 +80,10 @@ inline bool must_burn_he(Halfedge_handle he)
 	if(f1->is_unbounded() || f2->is_unbounded()) 
 		return false;
 
+//	if (f1->data().GetParam(af_Variant,0) != 
+//		f2->data().GetParam(af_Variant,0))
+//			return true;
+
 #if BURN_ROADS
 	if(!he->data().mSegments.empty() ||
 		!he->twin()->data().mSegments.empty()) return true;
@@ -85,13 +91,10 @@ inline bool must_burn_he(Halfedge_handle he)
 	
 	return he->data().mParams.count(he_MustBurn) ||
 		   tw->data().mParams.count(he_MustBurn) ||
-//		   f1->data().GetZoning() != f2->data().GetZoning() ||
-#if !DEV
-//	#error put zoning back
+#if BURN_ZONING		   
+		   f1->data().GetZoning() != f2->data().GetZoning() ||
 #endif
 		   f1->data().mTerrainType != f2->data().mTerrainType;
 }
-
-
 
 #endif

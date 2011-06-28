@@ -56,6 +56,25 @@
 
 	One or more DEMGeos are used in XES files to represent elevation, land type,
 	and other continuous parameters.
+	
+	ITERATION AND ACCESS
+	
+	The DEM supports four kinds of access:
+	
+	-	Iterators refer to a specific pixel of a specific object, and are implemented
+		via pointers; they are unstable when the DEM is resized.
+	-	Addresses refer to the numeric address of a pixel within the DEM in one
+		dimension; the advantage of addresses is that they provide single-word access
+		but aren't tied to a specific DEM - given two DEMs of the same dimensions,
+		overlapped pixels have the same address.
+	-	Coordinates - 2-d pair of ints - the STL-pair form is rarely used in the API but
+		is useful for internal calculations.
+	-	Neighbor iterators.  A neighbor iterator iterates over zero to four/eight
+		orthogonally connected pixels from a given address; the neighbor iterates
+		on addresses.  Template with 4 for orthogonal connection or 8 for diagonal
+		conncetion.
+		
+	
 
  */
 
@@ -109,6 +128,10 @@ inline	float	MIN_NODATA_XY(float a, float b, int& xo, int& yo, int xn, int yn )
 
 struct	DEMGeo {
 
+	/****************************************************************************
+	 * RAW DATA MEMBERS
+	 ****************************************************************************/
+
 	// The bounding box of the DEM, defining the lat/lons of the corner
 	// heights.
 	double	mWest;
@@ -121,12 +144,61 @@ struct	DEMGeo {
 	int		mWidth;
 	int		mHeight;
 	int		mPost;		// If 1, pixels sit "on" grid-lines, e.g. 1201 samples on a 90m DEM. If 0, a pixel is an _area_ between grid-lines.
-	inline	float	pixel_offset() const { return mPost ? 0.0 : 0.5; }	// distance from the coordinate defining a pixel to its sampling center.
-	inline	int		pixel_area() const { return mWidth * mHeight; }
-	
+
 	// An array of width*height data points in floating point format.
 	// The first sample is the southwest corner, we then proceed east.
 	float *	mData;
+
+	inline	float	pixel_offset() const { return mPost ? 0.0 : 0.5; }	// distance from the coordinate defining a pixel to its sampling center.
+	inline	int		pixel_area() const { return mWidth * mHeight; }
+	
+	/****************************************************************************
+	 * PIXEL ACCESS
+	 ****************************************************************************/	
+
+	typedef float *			iterator;
+	typedef	const float *	const_iterator;
+	typedef int				address;
+	typedef	pair<int,int>	coordinates;
+
+	template<int __dim>
+	struct					neighbor_iterator;
+
+	iterator		begin(void) { return mData; }
+	iterator		end(void) { return mData + mWidth * mHeight; }
+	const_iterator	begin(void) const { return mData; }
+	const_iterator	end(void) const { return mData + mWidth * mHeight; }
+	address			address_begin(void) const;
+	address			address_end(void) const;
+	
+	template<int __dim>
+	neighbor_iterator<__dim> neighbor_begin(address a);
+	template<int __dim>
+	neighbor_iterator<__dim> neighbor_end(address a);
+
+	bool			valid(address a) const;
+	bool			valid(iterator i) const;
+	bool			valid(const coordinates& c) const;
+	
+	inline float&	operator()(int, int);						// Direct member access; individual coordinates must use operator() because no two-dim [] in C
+	inline float	operator()(int, int) const;
+	float&			operator[](const coordinates& C);
+	float&			operator[](address a);
+	float			operator[](const coordinates& C) const;
+	float			operator[](address a) const;
+	
+	address			to_address(const_iterator i) const;			// Coordinate coersion.
+	address			to_address(const coordinates& c) const;
+	coordinates		to_coordinates(const_iterator i) const;
+	coordinates		to_coordinates(address a) const;
+	const_iterator	to_iterator(const coordinates& c) const;
+	const_iterator	to_iterator(address a) const;
+	iterator		to_iterator(const coordinates& c);
+	iterator		to_iterator(address a);
+
+	/****************************************************************************
+	 * WHOLE-DEM OPS
+	 ****************************************************************************/	
 
 	DEMGeo();
 	DEMGeo(const DEMGeo&);
@@ -140,26 +212,27 @@ struct	DEMGeo {
 	DEMGeo& operator*=(float);
 	DEMGeo& operator*=(const DEMGeo&);
 
-	typedef float *			iterator;
-	typedef	const float *	const_iterator;
-	iterator begin(void) { return mData; }
-	iterator end(void) { return mData + mWidth * mHeight; }
-	const_iterator begin(void) const { return mData; }
-	const_iterator end(void) const { return mData + mWidth * mHeight; }
-
 	void	resize(int width, int height);					// Resize, reset to 0
 	void	set_rez(double x_res, double y_res);			// Given target res and geo already set, recalc dims and resize.
 	void	resize_save(int width, int height, float fill);	// REsize, save lower left data,  fill with param
+	void	copy_geo_from(const DEMGeo& rhs);				// geo-Coordinates from other
+	void	clear_from(const DEMGeo&, float v);				// Copy/clear: size and coordinates and post from other, but filled with 'v'
+	void	clear_from(const DEMGeo&		 );				// Copy/no-clear: size and coordinates and post from other, but UNDEFINED contents!
+
 	void	derez(int n);									// Reduce size by a factor of "n".  Averages down (box filter).
 	void	derez_nearest(void);							// Derez by a factor of two with nearest-neighbor down-sampling....good for enums.
 	void	derez_nearest(DEMGeo& smaller);					// Derez by a factor of two with nearest-neighbor down-sampling....good for enums.
 	void	overlay(const DEMGeo& onTop);					// Overlay - requires 1:1 layout
 	void	overlay(const DEMGeo& onTop, int dx, int dy);	// Overlay - requires onTop <= main
-	void	copy_geo_from(const DEMGeo& rhs);
+
+	void	subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const;					// INCLUSIVE for post, EXCLUSIVE for area.
+	void	swap(DEMGeo& otherDEM);															// Swap all params, good for avoiding mem copies
+
+	/****************************************************************************
+	 * FILTER FUNCTIONS AND SPECIALIZED PIXEL ACCESS
+	 ****************************************************************************/	
 
 	// Access to the data points by discrete address
-	inline float&	operator()(int, int);
-	inline float	operator()(int, int) const;
 	inline float	get(int x, int y) const;									// Get value at x,y, DEM_NO_DATA if out of bonds
 	inline void		set(int x, int y, float v);									// Safe set - no-op if off
 	inline float	get_clamp(int x, int y) const;								// Get value at x,y, clamped to within the DEM
@@ -174,15 +247,19 @@ struct	DEMGeo {
 	inline float	kernelmaxN(int x, int y, int dim, float * k) const;			// Get value of kernel applied at N, taking max instead of average
 	inline float	kernelN_Normalize(int x, int y, int dim, float * k) const;	// ...
 
-	inline void	zap(int x, int y);												// Set x,y to DEM_NO_DATA
+	inline void		zap(int x, int y);												// Set x,y to DEM_NO_DATA
 
 	// Lat/lon access and erasing
 	inline float	value_linear(double lon, double lat) const;					// Get linear interp value of coordinate
-//	inline void	zap_linear(double lon, double lat);							// Zap all values that are near the point (up to 2x2)
+//	inline void		zap_linear(double lon, double lat);							// Zap all values that are near the point (up to 2x2)
 	inline float	xy_nearest(double lon, double lat				 ) const;	// Get nearest-neighbor value (nearest non-void)
 	inline float	xy_nearest(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value, (nearest non-void), return coordinate used
 	inline float	xy_nearest_raw(double lon, double lat            ) const;	// Get nearest-neighbor value void ok
 	inline float	search_nearest(double lon, double lat) const;				// Get nearest-neighbor value, search indefinitely
+
+	/****************************************************************************
+	 * GEOCODING FUNCTIONS
+	 ****************************************************************************/	
 
 	// These routines convert grid positions to lat/lon.  NOTE: x/y positions are based on pixel _centroids, _not_ the lower left
 	// corner.  Thus for an area-sampled file, the XY of the SW corner is usually -0.5,-0.5.
@@ -208,28 +285,56 @@ struct	DEMGeo {
 	inline int		y_lower(double lat) const;
 	inline int		y_upper(double lat) const;
 
-	// This routine creates an extracted DEM along grid lines.
-	void	subset(DEMGeo& newDEM, int x1, int y1, int x2, int y2) const;					// INCLUSIVE for post, EXCLUSIVE for area.
-	void	swap(DEMGeo& otherDEM);															// Swap all params, good for avoiding mem copies
-	void	calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inFunc) const;
+	/****************************************************************************
+	 * ADVANCED ROUTINES
+	 ****************************************************************************/	
 
-	void	fill_nearest(void);
 
-	// Advanced routines
-	int		remove_linear(int iterations, float max_err);
-	float	local_minmax(int x1, int y1, int x2, int y2,
-						 int& minx, int& miny, float& minh,
-						 int& maxx, int& maxy, float& maxh);
+			void	calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inFunc) const;
+			void	fill_nearest(void);
+			int		remove_linear(int iterations, float max_err);
+			float	local_minmax(int x1, int y1, int x2, int y2,
+								 int& minx, int& miny, float& minh,
+								 int& maxx, int& maxy, float& maxh);
 
-	void	filter_self(int dim, float * k);
-	void	filter_self_normalize(int dim, float * k);
+			void	filter_self(int dim, float * k);
+			void	filter_self_normalize(int dim, float * k);
 
 	inline	float	gradient_x(int x, int y) const;					// These return exact gradients at HALF-POSTINGS!
 	inline	float	gradient_y(int x, int y) const;					// So for a 1201 DEM there are 1200 gradients.  This is really utility funcs
 	inline	float	gradient_x_bilinear(float x, float y) const;	// These return interp'd gradients on WHOLE POSTINGS, which is what we REALLY
 	inline	float	gradient_y_bilinear(float x, float y) const;	// want...remember that we can't get an exact discrete gradient on the post (duh).
 
+	/****************************************************************************
+	 * NEIGHBOR-ITERATOR
+	 ****************************************************************************/	
+
+	template<int __dim>
+	struct neighbor_iterator {
+		neighbor_iterator();
+		neighbor_iterator(const neighbor_iterator& rhs);
+		neighbor_iterator& operator=(const neighbor_iterator& rhs);
+		bool operator==(const neighbor_iterator& rhs) const;
+		bool operator!=(const neighbor_iterator& rhs) const;		
+		bool operator()(void) const;
+		
+		address operator * (void);
+		neighbor_iterator operator++(int);
+		neighbor_iterator& operator++(void);
+	private:
+		friend class DEMGeo;
+		neighbor_iterator(const DEMGeo * d, address a);
+		const DEMGeo *			parent;
+		DEMGeo::coordinates		coords;
+		int						step;
+		void	inc(void);
+	};
+	
 };
+
+/*************************************************************************************
+ * DEM MASK
+ *************************************************************************************/
 
 // Same idea, except we use a bit-mask.  Use STL vector to get the bit mask.  32x memory savings compared to a DEM.
 struct	DEMMask {
@@ -246,7 +351,6 @@ struct	DEMMask {
 	void	copy_geo_from(const DEMGeo& rhs);
 	void	copy_geo_from(const DEMMask& rhs);
 
-//	inline bool&	operator()(int, int);
 	inline bool		operator()(int, int) const;
 	inline bool		get(int x, int y) const;									// Get value at x,y, false
 	inline void		set(int x, int y, bool v);									// Safe set - no-op if off
@@ -264,8 +368,10 @@ struct	DEMMask {
 };
 
 /*************************************************************************************
- * DEMGeo - SINGLE RASTER LAYER
+ * FREE LOW-LEVEL DEM PROCESSING FUNCS
  *************************************************************************************/
+
+void		dem_coverage_nearest(const DEMGeo& d, double lon1, double lat1, double lon2, double lat2, int bounds[4]);
 
 // Given two DEMs that represent the minimum and maximum possible values for various
 // points, this routine produces two DEMs of half dimension.  Each point has the min
@@ -349,6 +455,31 @@ public:
 		return f->second;
 	}
  };
+
+/*************************************************************************************
+ * DEM address FIFO
+ *************************************************************************************/
+
+// Some raster algorithms use a FIFO of pixels to process - this is about the simplest
+// FIFO we can build - a fixed capacity ring buffer built around a vector.
+ 
+struct address_fifo {
+public:
+	typedef DEMGeo::address address;
+	address_fifo(int capacity) { inp_ = outp_ = size_ = 0; data_.resize(capacity); }
+
+	bool empty(void) const { return size_ == 0; }
+	size_t size(void) const { return size_; }
+	
+	void push(address n) { DebugAssert(size_ < data_.size()); data_[inp_] = n; inp_ = (inp_+1) % data_.size(); ++size_; }
+	address pop(void) { DebugAssert(size_ > 0); address r = data_[outp_]; outp_ = (outp_+1) % data_.size(); --size_; return r; }
+
+	vector<address> data_;
+	size_t size_;
+	size_t inp_;
+	size_t outp_;	
+};
+
 
 
 
@@ -1016,6 +1147,194 @@ inline void	DEMMask::set(int x, int y, bool v)
 	mData[x + y * mWidth] = v;
 }
 
+
+
+
+inline bool	DEMGeo::valid(address a) const
+{
+	return a >= address_begin() && a < address_end();
+}
+inline bool	DEMGeo::valid(iterator i) const
+{
+	return i >= begin() && i < end();
+}
+
+inline bool	DEMGeo::valid(const coordinates& c) const
+{
+	return c.first >= 0 && c.first < mWidth && c.second >= 0 && c.second < mHeight;
+}
+	
+inline float& DEMGeo::operator[](const coordinates& c)
+{
+	return mData[c.first + c.second * mWidth];
+}
+
+inline float& DEMGeo::operator[](address a)
+{
+	return mData[a];
+}
+
+inline float DEMGeo::operator[](const coordinates& c) const
+{
+	return mData[c.first + c.second * mWidth];
+}
+
+inline float DEMGeo::operator[](address a) const
+{
+	return mData[a];
+}
+
+inline DEMGeo::address DEMGeo::address_begin(void) const
+{
+	return 0;
+}
+
+inline DEMGeo::address DEMGeo::address_end(void) const
+{
+	return mWidth * mHeight;
+}
+	
+inline DEMGeo::address DEMGeo::to_address(const_iterator i) const
+{
+	return i - begin();
+}
+
+inline DEMGeo::address DEMGeo::to_address(const coordinates& c) const
+{
+	return c.first + c.second * mWidth;
+}
+
+inline DEMGeo::coordinates DEMGeo::to_coordinates(const_iterator i) const
+{
+	return to_coordinates(to_address(i));
+}
+
+inline DEMGeo::coordinates DEMGeo::to_coordinates(address a) const
+{
+	return pair<int,int>(a % mWidth, a / mWidth);
+}
+
+inline DEMGeo::const_iterator DEMGeo::to_iterator(const coordinates& c) const
+{
+	return to_iterator(to_address(c));
+}
+
+inline DEMGeo::iterator DEMGeo::to_iterator(const coordinates& c) 
+{
+	return to_iterator(to_address(c));
+}
+
+inline DEMGeo::iterator DEMGeo::to_iterator(address a)
+{
+	return begin() + a;
+}
+
+inline DEMGeo::const_iterator DEMGeo::to_iterator(address a) const
+{
+	return begin() + a;
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim>::neighbor_iterator() : parent(NULL), coords(DEMGeo::coordinates(0,0)), step(0)
+{
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim>::neighbor_iterator(const neighbor_iterator& rhs) :
+	parent(rhs.parent), coords(rhs.coords), step(rhs.step)
+{
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim>& DEMGeo::neighbor_iterator<__dim>::operator=(const neighbor_iterator& rhs)
+{
+	parent = rhs.parent;
+	coords = rhs.coords;
+	step = rhs.step;
+	return *this;
+}
+
+template<int __dim>
+inline bool DEMGeo::neighbor_iterator<__dim>::operator==(const neighbor_iterator& rhs) const
+{
+	return parent == rhs.parent && coords == rhs.coords && step == rhs.step;
+}
+
+template<int __dim>
+inline bool DEMGeo::neighbor_iterator<__dim>::operator!=(const neighbor_iterator& rhs) const
+{
+	return parent != rhs.parent || coords != rhs.coords || step != rhs.step;
+}
+
+template<int __dim>
+inline bool DEMGeo::neighbor_iterator<__dim>::operator()(void) const
+{
+	return parent != NULL;
+}
+
+const int kStepsX[8] = { -1,  0, 1, 0,  1, 1, -1, -1 };
+const int kStepsY[8] = {  0, -1, 0, 1, -1, 1, -1,  1 };
+
+template<int __dim>
+inline DEMGeo::address DEMGeo::neighbor_iterator<__dim>::operator * (void)
+{
+	return parent->to_address(DEMGeo::coordinates(coords.first+kStepsX[step],coords.second+kStepsY[step]));
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim> DEMGeo::neighbor_iterator<__dim>::operator++(int)
+{
+	DEMGeo::neighbor_iterator<__dim> ret(*this);
+	++(*this);
+	return ret;
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim>& DEMGeo::neighbor_iterator<__dim>::operator++(void)
+{
+	inc();
+	return *this;
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim>::neighbor_iterator(const DEMGeo * d, address a) :
+	parent(d), step(-1)
+{
+	coords = d->to_coordinates(a);
+	inc();
+	
+}
+
+template<int __dim>
+inline void	DEMGeo::neighbor_iterator<__dim>::inc(void)
+{
+	while(parent)
+	{
+		++step;
+		if(step >= __dim)
+		{
+			parent = NULL;
+			coords = DEMGeo::coordinates(0,0);
+			step = 0;
+			return;
+		}
+		DEMGeo::coordinates dc(coords.first + kStepsX[step],coords.second + kStepsY[step]);
+		if(parent->valid(dc))
+			break;
+	}
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim> DEMGeo::neighbor_begin(address i)
+{
+	return DEMGeo::neighbor_iterator<__dim>(this, i);
+}
+
+template<int __dim>
+inline DEMGeo::neighbor_iterator<__dim> DEMGeo::neighbor_end(address i)
+{
+	return DEMGeo::neighbor_iterator<__dim>();
+}
 
 
 

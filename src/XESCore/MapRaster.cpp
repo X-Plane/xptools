@@ -57,88 +57,56 @@ void	MapFromDEM(
 				Pmwx&				out_map,
 				CoordTranslator2 *	translator)
 {
+	DebugAssert(x2 > x1);
+	DebugAssert(y2 > y1);
 	out_map.clear();
 	int x, y;
 	
 	vector<X_monotone_curve_2>		curves;
 	
-	if(in_dem.mPost)
+	// Ben says: we used to have to do area vs point DEMs separately, but now the coorinate mappers
+	// for DEMs always return pixel centers, doing the offset for you.  So one "equation" works for both
+	// cases.
+	
+	/* Vertical dividers */		
+	for(y = y1; y < y2; ++y)
 	{
-		/* Vertical dividers */		
-		for(y = y1; y < y2; ++y)
-		{
-			double y_bot = in_dem.y_to_lat_double(y-0.5);
-			double y_top = in_dem.y_to_lat_double(y+0.5);
-			
-			if(in_dem.get(x1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x1-0.5), y_bot, y_top, curves, null_post, translator);
+		double y_bot = in_dem.y_to_lat_double(y-0.5);
+		double y_top = in_dem.y_to_lat_double(y+0.5);
+		
+		if(in_dem.get(x1,y) != null_post)
+			push_vertical(in_dem.x_to_lon_double(x1-0.5), y_bot, y_top, curves, null_post, translator);
 
-			for(x = x1+1; x < x2; ++x)
-			if(in_dem.get(x-1,y) != in_dem.get(x,y))
-				push_vertical(in_dem.x_to_lon_double(x-0.5), y_bot, y_top, curves, in_dem.get(x-1,y), translator);
+		for(x = x1+1; x < x2; ++x)
+		if(in_dem.get(x-1,y) != in_dem.get(x,y))
+			push_vertical(in_dem.x_to_lon_double(x-0.5), y_bot, y_top, curves, in_dem.get(x-1,y), translator);
 
-			if(in_dem.get(x2-1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x2-0.5), y_bot, y_top, curves, in_dem.get(x2-1,y), translator);
-			
-		}
+		if(in_dem.get(x2-1,y) != null_post)
+			push_vertical(in_dem.x_to_lon_double(x2-0.5), y_bot, y_top, curves, in_dem.get(x2-1,y), translator);
+		
+	}
 
-		/* Horizontal dividers */
-		for(x = x1; x < x2; ++x)
-		{
-			double x_lft = in_dem.x_to_lon_double(x-0.5);
-			double x_rgt = in_dem.x_to_lon_double(x+0.5);
-			
-			if(in_dem.get(x,y1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y1-0.5), x_rgt, x_lft, curves, null_post, translator);
-
-			for(y = y1+1; y < y2; ++y)
-			if(in_dem.get(x,y-1) != in_dem.get(x,y))
-				push_horizontal(in_dem.y_to_lat_double(y-0.5), x_rgt, x_lft, curves, in_dem.get(x,y-1), translator);
-
-			if(in_dem.get(x,y2-1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y2-0.5), x_rgt, x_lft, curves, in_dem.get(x,y2-1), translator);			
-		}
-	} 
-	else
+	/* Horizontal dividers */
+	for(x = x1; x < x2; ++x)
 	{
-		/* Vertical dividers */		
-		for(y = y1; y < y2; ++y)
-		{
-			double y_bot = in_dem.y_to_lat_double(y  );
-			double y_top = in_dem.y_to_lat_double(y+1);
-			
-			if(in_dem.get(x1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x1), y_bot, y_top, curves, null_post, translator);
+		double x_lft = in_dem.x_to_lon_double(x-0.5);
+		double x_rgt = in_dem.x_to_lon_double(x+0.5);
+		
+		if(in_dem.get(x,y1) != null_post)
+			push_horizontal(in_dem.y_to_lat_double(y1-0.5), x_rgt, x_lft, curves, null_post, translator);
 
-			for(x = x1+1; x < x2; ++x)
-			if(in_dem.get(x-1,y) != in_dem.get(x,y))
-				push_vertical(in_dem.x_to_lon_double(x), y_bot, y_top, curves, in_dem.get(x-1,y), translator);
-				
-			if(in_dem.get(x2-1,y) != null_post)
-				push_vertical(in_dem.x_to_lon_double(x2), y_bot, y_top, curves, null_post, translator);
-				
-				
-		}
+		for(y = y1+1; y < y2; ++y)
+		if(in_dem.get(x,y-1) != in_dem.get(x,y))
+			push_horizontal(in_dem.y_to_lat_double(y-0.5), x_rgt, x_lft, curves, in_dem.get(x,y-1), translator);
 
-		/* Horizontal dividers */
-		for(x = x1; x < x2; ++x)
-		{
-			double x_lft = in_dem.x_to_lon_double(x  );
-			double x_rgt = in_dem.x_to_lon_double(x+1);
-			
-			if(in_dem.get(x,y1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y1), x_rgt, x_lft, curves, null_post, translator);
-
-			for(y = y1+1; y < y2; ++y)
-			if(in_dem.get(x,y-1) != in_dem.get(x,y))
-				push_horizontal(in_dem.y_to_lat_double(y), x_rgt, x_lft, curves, in_dem.get(x,y-1), translator);
-
-			if(in_dem.get(x,y2-1) != null_post)
-				push_horizontal(in_dem.y_to_lat_double(y2), x_rgt, x_lft, curves, null_post, translator);
-		}	
+		if(in_dem.get(x,y2-1) != null_post)
+			push_horizontal(in_dem.y_to_lat_double(y2-0.5), x_rgt, x_lft, curves, in_dem.get(x,y2-1), translator);			
 	}
 	
 	CGAL::insert_non_intersecting_curves(out_map, curves.begin(), curves.end());
+	
+	for(Pmwx::Face_iterator f = out_map.faces_begin(); f != out_map.faces_end(); ++f)
+		f->data().mTerrainType = null_post;
 	
 	for(Pmwx::Edge_iterator e = out_map.edges_begin(); e != out_map.edges_end(); ++e)
 	{

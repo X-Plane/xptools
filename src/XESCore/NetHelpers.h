@@ -215,7 +215,7 @@ inline void set_he_rep_type(Pmwx::Halfedge_handle he, int t)
 inline int get_he_road_use(Pmwx::Halfedge_handle he)
 {
 	int rep = get_he_rep_type(he);
-	DebugAssert(gNetReps.count(rep) > 0);
+	if (gNetReps.count(rep) == 0) return use_None;
 	return gNetReps[rep].use_mode;
 }
 

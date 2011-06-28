@@ -338,10 +338,12 @@ int	optimize_one_junction(Pmwx::Vertex_handle v)
 	} while (++circ != stop);
 
 	if(he_list.empty()) return score;
+	if(he_list.size() > 8) return score;
 
 	// now stuff all number combos, score, retry.
 	vector<int>		best;
 	int				best_score=0;
+		
 	for(int l = 1; l <= he_list.size(); ++l)
 	{
 		int mc = max_code(he_list.size(), l);

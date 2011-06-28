@@ -129,6 +129,27 @@ inline Pmwx_Coastal_t pmwx_categorize(Pmwx::Vertex_const_handle v)
  *
  */
 
+template <typename Arr, typename Visitor>
+void	VisitEdgesOfFace(typename Arr::Face_handle face, const Visitor& v);
+
+template <typename Arr, typename Visitor>
+void	VisitAdjacentFaces(typename Arr::Face_handle face, const Visitor& v);
+
+template <typename Arr, typename Visitor>
+void	VisitContiguousFaces(typename Arr::Face_handle face, const Visitor& v);
+
+template <typename Value>
+struct PredicateAlways { bool operator()(const Value& v) const { return true; } };
+
+template <typename Arr, typename Value, typename Predicate=PredicateAlways<Value> >
+struct CollectionVisitor {
+	typedef set<Value>	CollectionType;	
+	CollectionType *		col_;
+	Predicate				pred_;
+	CollectionVisitor(CollectionType * col, const Predicate& pred=Predicate()) : col_(col), pred_(pred) { }
+	bool operator()(const Value& v) const { if (pred_(v)) { col_->insert(v); return true; } else return false; }
+};
+
 /*
  * FindEdgesForFace
  *
@@ -184,6 +205,7 @@ void	FindAdjacentFaces(typename Arr::Face_handle inFace, set<typename Arr::Face_
  * Given a face, returns all faces that are touching this face.
  *
  */
+ #if 0
 void	FindAdjacentWetFaces(Face_handle inFace, set<Face_handle>& outFaces);
 
 /*
@@ -192,8 +214,10 @@ void	FindAdjacentWetFaces(Face_handle inFace, set<Face_handle>& outFaces);
  * Return true if adjacent to any water poly.
  *
  */
+ #endif
 bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet);
 
+#if 0
 /*
  * FindConnectedWetFaces
  *
@@ -202,7 +226,7 @@ bool		IsAdjacentWater(Face_const_handle in_face, bool unbounded_is_wet);
  *
  */
 void	FindConnectedWetFaces(Face_handle inFace, set<Face_handle>& outFaces);
-
+#endif
 /*
  * CleanFace
  *
@@ -326,15 +350,15 @@ private:
  * TEMPLATE IMPLS
  ************************************************************************************************************************/
 
-template <typename Arr>
-inline void	FindEdgesForFace(typename Arr::Face_handle face, set<typename Arr::Halfedge_handle> &outEdges)
+template <typename Arr, typename Visitor>
+void	VisitEdgesOfFace(typename Arr::Face_handle face, Visitor& v)
 {
 	typename Arr::Ccb_halfedge_circulator	circ, stop;
 	if (!face->is_unbounded())
 	{
 		circ = stop = face->outer_ccb();
 		do {
-			outEdges.insert(circ);
+			v(circ);
 			++circ;
 		} while (circ != stop);
 	}
@@ -344,11 +368,96 @@ inline void	FindEdgesForFace(typename Arr::Face_handle face, set<typename Arr::H
 	{
 		circ = stop = *hole;
 		do {
-			outEdges.insert(circ);
+			v(circ);
+			++circ;
+		} while (circ != stop);
+	}
+}
+
+template <typename Arr, typename Visitor>
+void	VisitAdjacentFaces(typename Arr::Face_handle face, Visitor& v)
+{
+	typedef typename Arr::Face_handle	Face_handle;
+	set<Face_handle>					visited_faces;
+	
+	typename Arr::Ccb_halfedge_circulator	circ, stop;
+	if (!face->is_unbounded())
+	{
+		circ = stop = face->outer_ccb();
+		do {
+			Face_handle f = circ->twin()->face();
+			if(f != face)
+			if(visited_faces.insert(f).second)
+				v(f);
 			++circ;
 		} while (circ != stop);
 	}
 
+	for (typename Arr::Hole_iterator hole = face->holes_begin();
+		hole != face->holes_end(); ++hole)
+	{
+		circ = stop = *hole;
+		do {
+			Face_handle f = circ->twin()->face();
+			if(f != face)
+			if(visited_faces.insert(f).second)
+				v(f);
+			++circ;
+		} while (circ != stop);
+	}
+}
+
+template <typename Arr, typename Visitor>
+void	VisitContiguousFaces(typename Arr::Face_handle face, Visitor& v)
+{
+	typedef typename Arr::Face_handle	Face_handle;
+	set<Face_handle>					visited_faces, to_visit;
+	to_visit.insert(face);
+	visited_faces.insert(face);
+	
+	while(!to_visit.empty())
+	{
+		Face_handle ff = *to_visit.begin();
+		to_visit.erase(to_visit.begin());
+		if(v(ff))		
+		{		
+			typename Arr::Ccb_halfedge_circulator	circ, stop;
+			if (!ff->is_unbounded())
+			{
+				circ = stop = ff->outer_ccb();
+				do {
+					Face_handle f = circ->twin()->face();
+					if(visited_faces.insert(f).second)
+						to_visit.insert(f);
+					++circ;
+				} while (circ != stop);
+			}
+
+			for (typename Arr::Hole_iterator hole = ff->holes_begin(); hole != ff->holes_end(); ++hole)
+			{
+				circ = stop = *hole;
+				do {
+					Face_handle f = circ->twin()->face();
+					if(f != face)
+					if(visited_faces.insert(f).second)
+						to_visit.insert(f);
+					++circ;
+				} while (circ != stop);
+			}
+		}
+	}
+}
+
+
+
+
+
+template <typename Arr>
+inline void	FindEdgesForFace(typename Arr::Face_handle face, set<typename Arr::Halfedge_handle> &outEdges)
+{
+	typedef CollectionVisitor<Arr, typename Arr::Halfedge_handle>	Collector;
+	Collector col(&outEdges);
+	VisitEdgesOfFace<Arr, Collector>(face,col);
 }
 
 template <typename Arr>
@@ -453,7 +562,7 @@ inline void	FindAdjacentFaces(typename Arr::Face_handle inFace, set<typename Arr
 {
 	outFaces.clear();
 	set<typename Arr::Halfedge_handle> e;
-	FindEdgesForFace(inFace, e);
+	FindEdgesForFace<Arr>(inFace, e);
 	for (typename set<typename Arr::Halfedge_handle>::iterator he = e.begin(); he != e.end(); ++he)
 	if ((*he)->twin()->face() != inFace)
 		outFaces.insert((*he)->twin()->face());

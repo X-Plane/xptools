@@ -28,7 +28,13 @@
 #include <ctype.h>
 //#include "CoverageFinder.h"
 
+// Sergio's rule spreadsheets from v8/v9 used an older syntax.  Andras has since normalized the syntax 
+// using new commands for v10.  This code base is meant to run with v10.  For v9-compatible rules, 
+// use the MeshTool release branch to avoid this fundamental change!
+#define OLD_SERGIO_RULES 0
+
 static int s_is_city = 0;
+static int s_is_forest = 0;
 
 
 EnumColorTable				gEnumColors;
@@ -216,6 +222,11 @@ bool HandleFlags(const vector<string>& tokens, void * ref)
 		s_is_city = atoi(tokens[1].c_str());
 		return true;
 	}
+	if(tokens[0] == "TERRAIN_FOREST")
+	{
+		s_is_forest = atoi(tokens[1].c_str());
+		return true;
+	}
 	return false;
 }
 bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
@@ -254,7 +265,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		rule.urban_trans_min = rule.urban_trans_max = 0.0;
 		rule.urban_square = 0;
 		rule.slope_heading_min = rule.slope_heading_max = 0.0;
-		rule.variant = 0;
+//		rule.variant = 0;
 		if (rule.elev_min > rule.elev_max)
 			{ fprintf(stderr, "Illegal elevation\n"); return false; }
 		if (rule.slope_min > rule.slope_max)	
@@ -363,6 +374,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 
 		NaturalTerrainInfo_t	info;
 		info.is_city = s_is_city;
+		info.is_forest = s_is_forest;
 		if(TokenizeLine(tokens," eifcssPisfss",
 			&ter_name,	
 			&info.layer,
@@ -460,13 +472,14 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		return false;
 }
 
-
+#if OLD_SERGIO_RULES
 bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 {
 	NaturalTerrainInfo_t	info;
 	NaturalTerrainRule_t	rule;
 	
 	info.is_city = s_is_city;
+	info.is_Forest = s_is_forest;
 	int						forest_type;	// no longer used
 	string					ter_name, tex_name, proj;
 
@@ -724,7 +737,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (auto_vary < 3)
 	{
 
-		rule.variant = 0;			// Auto case - we don't use a variant-selector!
+//		rule.variant = 0;			// Auto case - we don't use a variant-selector!
 //		rule.related = -1;			// Auto case - we don't need related.
 
 		string rep_name = ter_name;
@@ -802,6 +815,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 
 	return true;
 }
+#endif
 
 static bool HandleTranslate(const vector<string>& inTokenLine, void * inRef)
 {
@@ -869,14 +883,17 @@ void	LoadDEMTables(void)
 
 	sCliffs.clear();
 	s_is_city = 0;
+	s_is_forest = 0;
 
 	RegisterLineHandler("ENUM_COLOR", ReadEnumColor, NULL);
 	RegisterLineHandler("COLOR_BAND", ReadEnumBand, NULL);
 	RegisterLineHandler("COLOR_ENUM_DEM", ReadEnumDEM, NULL);
 	RegisterLineHandler("BEACH", ReadBeachInfo, NULL);
+#if OLD_SERGIO_RULES	
 	RegisterLineHandler("NTERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("STERRAIN", ReadNaturalTerrainInfo, NULL);
 	RegisterLineHandler("MTERRAIN", ReadNaturalTerrainInfo, NULL);
+#endif	
 	RegisterLineHandler("TERRAIN_RULE", ReadNewTerrainInfo, NULL);
 	RegisterLineHandler("REGIONALIZATION", ReadNewTerrainInfo, NULL);	
 	RegisterLineHandler("TERRAIN_INFO", ReadNewTerrainInfo, NULL);
@@ -884,6 +901,7 @@ void	LoadDEMTables(void)
 //	RegisterLineHandler("PROMOTE_TERRAIN", ReadPromoteTerrainInfo, NULL);
 	RegisterLineHandler("LU_TRANSLATE", HandleTranslate, NULL);
 	RegisterLineHandler("TERRAIN_IS_CITY",HandleFlags,NULL);
+	RegisterLineHandler("TERRAIN_FOREST", HandleFlags, NULL);
 
 	if (gNaturalTerrainFile.empty())	LoadConfigFile("master_terrain.txt");
 	else								LoadConfigFileFullPath(gNaturalTerrainFile.c_str());
@@ -904,7 +922,6 @@ void	LoadDEMTables(void)
 	{
 		printf("%s\n", FetchTokenString(*f));
 	}*/
-
 }
 
 #pragma mark -
@@ -928,9 +945,9 @@ int	FindNaturalTerrain(
 				float	urban_radial,
 				float	urban_trans,
 				int		urban_square,
-				float	lat,
-				int		variant_blob,
-				int		variant_head)
+				float	lat)
+//				int		variant_blob,
+//				int		variant_head)
 {
 	// Check for no data in the continuous floating point inputs!
 //	DebugAssert(DEM_NO_DATA !=  	elevation);
@@ -964,7 +981,7 @@ int	FindNaturalTerrain(
 		MATCH_RANGE(rain,rain_min,rain_max)
 		MATCH_RANGE(temp_rng,temp_rng_min,temp_rng_max)
 		MATCH_RANGE(slopeheading,slope_heading_min,slope_heading_max)
-		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
+//		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
 		MATCH_ENUM(landuse,landuse)
 		MATCH_ENUM(terrain,terrain)
 		MATCH_ENUM(zoning,zoning)
@@ -1295,7 +1312,7 @@ void MakeDirectRules(void)
 
 		rule.lat_min=0.0;
 		rule.lat_max=0.0;
-		rule.variant=0;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
+//		rule.variant=0;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
 //		printf("Adding rule: %s->%s\n", FetchTokenString(rule.terrain), FetchTokenString(rule.name));
 
 		rule.name = all_names->first;
