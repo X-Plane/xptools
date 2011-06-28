@@ -34,6 +34,7 @@ enum {
 	dem_Shaded,
 	dem_Enum,
 	dem_Normals,
+	dem_Zones,		// Random colors designed to show integral differences.
 //	dem_DDA,
 
 	dem_StrataBiomass,

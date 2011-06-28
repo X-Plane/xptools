@@ -363,6 +363,23 @@ int	DEMToBitmap(
 			outImage.data[(x + y * outImage.width) * outImage.channels+2] = col[0];
 		}
 		break;
+	case dem_Zones:
+		for (y = 0; y < inDEM.mHeight; ++y)
+		for (x = 0; x < inDEM.mWidth; ++x)
+		{
+			float h = inDEM(x,y);
+			unsigned int n = round(fabsf(h));
+			unsigned char col[3];
+			col[0] = (n * 59) % 256;
+			col[1] = (n * 239) % 256;
+			col[2] = (n * 383) % 256;
+			
+			outImage.data[(x + y * outImage.width) * outImage.channels  ] = col[2];
+			outImage.data[(x + y * outImage.width) * outImage.channels+1] = col[1];
+			outImage.data[(x + y * outImage.width) * outImage.channels+2] = col[0];
+			
+		}
+		break;
 	case dem_Enum:
 		for (y = 0; y < inDEM.mHeight; ++y)
 		for (x = 0; x < inDEM.mWidth; ++x)

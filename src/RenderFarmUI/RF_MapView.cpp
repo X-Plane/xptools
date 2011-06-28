@@ -77,8 +77,13 @@
 	#include <GL/glext.h>
 #endif
 
+#define TRI_DARKEN 1.0
+
 // Draw mesh borders onto the colored mesh layer.
 #define DRAW_MESH_BORDERS 1
+
+// Use this to fade out the border a bit.
+#define BORDER_FADE_FACTOR 1.0
 
 // Draw mesh tris with some shading.  Generally not as useful as it would sound.
 #define SHADE_TRIS 0
@@ -119,7 +124,8 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_ElevationOverlay,	"Elevation Overlay"				,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
-{		dem_ForestType,			"Forests"						,	dem_Enum,					false,  true,	"Forest=%s"		},
+{		dem_ParkType,			"Parks"							,	dem_Enum,					false,  true,	"Park=%s"		},
+{		dem_ForestType,			"Forests"						,	dem_Zones,					false,  true,	"Forest=%s"		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
 {		dem_Biomass,			"Biomass"						,	dem_Biomass,				true,	false,	"Biomass=%f "	},
 {		dem_Rainfall,			"Rainfall"						,	dem_Rainfall,				true,	false,	"Rain=%fmm "	},
@@ -140,7 +146,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_HydroElevation,		"Hydro Elevation"				,	dem_Elevation,				false,	false,	"%fm "			},
 {		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Strata,					false,	false,	"%fm "			},
 
-{		dem_Wizard1,			"Spreadsheet Wizard 1"			,	dem_Strata,					false,	false,	"%fm "			},
+{		dem_Wizard1,			"Spreadsheet Wizard 1"			,	dem_Zones,					false,	false,	"%fm "			},
 {		dem_Wizard2,			"Spreadsheet Wizard 2"			,	dem_Strata,					false,	false,	"%fm "			},
 {		dem_Wizard3,			"Spreadsheet Wizard 3"			,	dem_Strata,					false,	false,	"%fm "			},
 {		dem_Wizard4,			"Spreadsheet Wizard 4"			,	dem_Strata,					false,	false,	"%fm "			},
@@ -285,15 +291,26 @@ int		RF_MapView::HandleCommand(int command)
 		sShowDEMData[n-1] = 1 - sShowDEMData[n-1];
 		return 1;
 	}
+	int i;
 	switch(command) {
 	case viewCmd_PrevDEM:
-		sDEMType--;
-		if (sDEMType < 0) sDEMType = DEMChoiceCount-1;
+		for(i = 0; i < DEMChoiceCount; ++i)
+		{
+			sDEMType--;
+			if (sDEMType < 0) sDEMType = DEMChoiceCount-1;
+			if (gDem.count(kDEMs[sDEMType].dem))
+				break;
+		}
 		mNeedRecalcDEM = true;
 		return 1;
 	case viewCmd_NextDEM:
-		sDEMType++;
-		if (sDEMType >= DEMChoiceCount) sDEMType = 0;
+		for(i = 0; i < DEMChoiceCount; ++i)
+		{
+			sDEMType++;
+			if (sDEMType >= DEMChoiceCount) sDEMType = 0;
+			if (gDem.count(kDEMs[sDEMType].dem))
+				break;
+		}
 		mNeedRecalcDEM = true;
 		return 1;
 	case viewCmd_RecalcDEM:
@@ -638,7 +655,9 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 							color[0] = 0.0, color[1] = 0.0, color[2] = 0.5, color[3] = 0.8;
 						else
 							color[0] = 0.4, color[1] = 0.4, color[2] = 0.8, color[3] = 0.8;
-					}
+					} else
+						if(eit->first->info().get_edge_feature(eit->second))
+							color[0] = 1.0, color[1] = 0.4, color[2] = 0.2, color[3] = 1.0;												
 
 					CDT::Vertex_handle	a = eit->first->vertex(eit->first->ccw(eit->second));
 					CDT::Vertex_handle	b = eit->first->vertex(eit->first->cw(eit->second));
@@ -699,7 +718,10 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 						if (fit->info().terrain != terrain_Water)
 						{
 							GetNaturalTerrainColor(fit->info().terrain, col);
-							col[3] = 0.5;
+							col[0] *= TRI_DARKEN;
+							col[1] *= TRI_DARKEN;
+							col[2] *= TRI_DARKEN;
+							col[3] = 1.0;
 						} else {
 
 							RGBColor_t&	rgbc = gEnumColors[fit->info().terrain];
@@ -740,16 +762,19 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 						for (set<int>::iterator i = fit->info().terrain_border.begin(); i != fit->info().terrain_border.end(); ++i)
 						{
 							GetNaturalTerrainColor(*i, col);
+							col[0] *= TRI_DARKEN;
+							col[1] *= TRI_DARKEN;
+							col[2] *= TRI_DARKEN;
 
-							col[3] = 0.5 * fit->vertex(2)->info().border_blend[*i];
+							col[3] = BORDER_FADE_FACTOR * fit->vertex(2)->info().border_blend[*i];
 							glColor4fv(col);
 							glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
 
-							col[3] = 0.5 * fit->vertex(1)->info().border_blend[*i];
+							col[3] = BORDER_FADE_FACTOR * fit->vertex(1)->info().border_blend[*i];
 							glColor4fv(col);
 							glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
 
-							col[3] = 0.5 * fit->vertex(0)->info().border_blend[*i];
+							col[3] = BORDER_FADE_FACTOR * fit->vertex(0)->info().border_blend[*i];
 							glColor4fv(col);
 							glVertex2f(CGAL::to_double(p3.x()), CGAL::to_double(p3.y()));
 						}

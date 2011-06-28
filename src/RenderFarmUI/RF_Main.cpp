@@ -58,6 +58,8 @@
 #include "MathUtils.h"
 #include "RF_Selection.h"
 #include "NetHelpers.h"
+#include "MapTopology.h"
+#include "MapAlgs.h"
 
 #if APL && defined(__MWERKS__)
 #include "SIOUX.h"
@@ -225,6 +227,47 @@ static int DoSelectFaces(const vector<const char *>& args)
 	return 0;
 }
 
+struct is_same_terrain_p { 
+	int terrain_;
+	is_same_terrain_p(Face_handle f) : terrain_(f->data().mTerrainType) { }
+	bool operator()(Face_handle f) const { return f->data().mTerrainType == terrain_; } 
+};
+
+struct is_same_terrain_c { 
+	float variant_;
+	int terrain_;
+	is_same_terrain_c(Face_handle f) : variant_(f->data().GetParam(af_Variant,-1.0f)), terrain_(f->data().mTerrainType)  { }
+	bool operator()(Face_handle f) const { return f->data().GetParam(af_Variant,-1.0f) == variant_ && f->data().mTerrainType == terrain_;  }
+};
+
+static int DoSelectAdjacentFaces(const vector<const char *>& args)
+{
+	set<Face_handle>	total_sel(gFaceSelection);
+	for(set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+	{
+		CollectionVisitor<Pmwx,Face_handle,is_same_terrain_p>	col(&total_sel, is_same_terrain_p(*f));
+		VisitContiguousFaces<Pmwx,CollectionVisitor<Pmwx,Face_handle,is_same_terrain_p> >(*f, col);
+	}
+	gFaceSelection = total_sel;
+	return 0;
+}
+
+static int DoSelectSuperBlock(const vector<const char *>& args)
+{
+	set<Face_handle>	total_sel(gFaceSelection);
+	for(set<Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+	{
+		CollectionVisitor<Pmwx,Face_handle,is_same_terrain_c>	col(&total_sel, is_same_terrain_c(*f));
+		VisitContiguousFaces<Pmwx,CollectionVisitor<Pmwx,Face_handle,is_same_terrain_c> >(*f, col);
+	}
+	gFaceSelection = total_sel;
+	float a = 0.0f;
+	for(set<Face_handle>::iterator t = total_sel.begin(); t != total_sel.end(); ++t)
+		a += GetMapFaceAreaMeters(*t);
+	printf("%d faces, %f meters.\n", total_sel.size(), a);
+	return 0;	
+}
+
 static int DoSetSelMode(const vector<const char *>& args) { RF_SetSelectionMode(atoi(args[0])); return 0; } 
 
 static int DoClearMarks(const vector<const char *>& args) { gMeshLines.clear(); gMeshPoints.clear(); return 0; }
@@ -252,6 +295,8 @@ static	GISTool_RegCmd_t		sUtilCmds[] = {
 #endif
 { "-selectf",	3, 3, DoSelectFaces, "Select faces.", "" },
 { "-select_complex", 0, 0, DoSelectComplexVertices, "Select complex vertices.", "" },
+{ "-select_adjacent", 0, 0, DoSelectAdjacentFaces, "Select adjacent faces of same terrain.", "" },
+{ "-select_superblock", 0, 0, DoSelectSuperBlock, "Select super block.", "" },
 { "-sel_mode", 1, 1, DoSetSelMode, "Set Selection Mode", "" },
 { "-clear_marks", 0, 0, DoClearMarks, "Clear Markings", "" },
 
