@@ -29,8 +29,8 @@
 #include "WED_FastBuffer.h"
 // NOTE: we could store no turd for created objs
 
-WED_UndoLayer::WED_UndoLayer(WED_Archive * inArchive, const string& inName) :
-	mArchive(inArchive), mName(inName), mChangeMask(0)
+WED_UndoLayer::WED_UndoLayer(WED_Archive * inArchive, const string& inName, const char * inFile, int inLine) :
+	mArchive(inArchive), mName(inName), mChangeMask(0), mFile(inFile), mLine(inLine)
 {
 	mStorage = new WED_FastBufferGroup;
 }

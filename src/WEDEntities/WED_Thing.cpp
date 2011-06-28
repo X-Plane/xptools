@@ -445,9 +445,9 @@ IBase *		WED_Thing::Directory_Find(const char * name)
 	return GetNamedChild(name);
 }
 
-void	WED_Thing::StartOperation(const char * op_name)
+void	WED_Thing::__StartOperation(const char * op_name, const char * inFile, int inLine)
 {
-	StartCommand(op_name);
+	__StartCommand(op_name, inFile, inLine);
 }
 
 void	WED_Thing::CommitOperation(void)

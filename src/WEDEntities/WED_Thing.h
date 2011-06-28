@@ -97,7 +97,7 @@ public:
 	virtual	IBase *		Directory_Find(const char * name);
 
 	// IOperation
-	virtual		void			StartOperation(const char * op_name);
+	virtual		void			__StartOperation(const char * op_name, const char * inFile, int inLine);
 	virtual		void			CommitOperation(void);
 	virtual		void			AbortOperation(void);
 

@@ -38,7 +38,7 @@ public:
 	WED_UndoMgr(WED_Archive * inArchive);
 	~WED_UndoMgr();
 
-	void	StartCommand(const string& inName);
+	void	__StartCommand(const string& inName, const char * inFile, int inLine);
 	void	CommitCommand(void);
 	void	AbortCommand(void);
 

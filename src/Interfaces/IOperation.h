@@ -37,10 +37,12 @@
 
 #include "IBase.h"
 
+#define StartOperation(x) __StartOperation(x,__FILE__,__LINE__)
+
 class	IOperation : public virtual IBase {
 public:
 
-	virtual	void		StartOperation(const char * op_name)=0;
+	virtual	void		__StartOperation(const char * op_name, const char * inFile, int inLine)=0;
 	virtual	void		CommitOperation(void)=0;
 	virtual	void		AbortOperation(void)=0;
 

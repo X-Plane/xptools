@@ -48,9 +48,9 @@ WED_Persistent *		WED_Persistent::FetchPeer(int id) const
 	return mArchive->Fetch(id);
 }
 
-void		WED_Persistent::StartCommand(const string& inName)
+void		WED_Persistent::__StartCommand(const string& inName, const char * inFile, int inLine)
 {
-	mArchive->StartCommand(inName);
+	mArchive->__StartCommand(inName, inFile, inLine);
 }
 
 void		WED_Persistent::CommitCommand(void)

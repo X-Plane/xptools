@@ -49,7 +49,19 @@ WED_UndoMgr::~WED_UndoMgr()
 	PurgeRedo();
 }
 
-void	WED_UndoMgr::StartCommand(const string& inName)
+static const char * trim_file(const char * p)
+{
+	const char * ret = p;
+	while(*p)
+	{
+		if(*p == '\\' || *p == ':' || *p == '/')
+			ret = p+1;
+		++p;
+	}
+	return ret;
+}
+
+void	WED_UndoMgr::__StartCommand(const string& inName, const char * file, int line)
 {
 	while(mUndo.size() > MAX_UNDO_LEVELS)
 	{
@@ -57,8 +69,8 @@ void	WED_UndoMgr::StartCommand(const string& inName)
 		mUndo.pop_front();
 	}
 	if (mCommand != NULL)
-		AssertPrintf("Command %s started while command %s still active.",inName.c_str(), mCommand->GetName().c_str());
-	mCommand = new WED_UndoLayer(mArchive, inName);
+		AssertPrintf("Command %s (%s:%d) started while command %s (%s:%d) still active.",inName.c_str(), trim_file(file), line, mCommand->GetName().c_str(), trim_file(mCommand->GetFile()), mCommand->GetLine());
+	mCommand = new WED_UndoLayer(mArchive, inName, file, line);
 	mArchive->SetUndo(mCommand);
 }
 
@@ -116,7 +128,7 @@ void	WED_UndoMgr::Undo(void)
 {
 	DebugAssert(!mUndo.empty());
 	WED_UndoLayer * undo = mUndo.back();
-	WED_UndoLayer * redo = new WED_UndoLayer(mArchive, undo->GetName());
+	WED_UndoLayer * redo = new WED_UndoLayer(mArchive, undo->GetName(), undo->GetFile(), undo->GetLine());
 	mArchive->SetUndo(redo);
 	int change_mask = undo->GetChangeMask();
 	undo->Execute();
@@ -132,7 +144,7 @@ void	WED_UndoMgr::Redo(void)
 {
 	DebugAssert(!mRedo.empty());
 	WED_UndoLayer * redo = mRedo.front();
-	WED_UndoLayer * undo = new WED_UndoLayer(mArchive, redo->GetName());
+	WED_UndoLayer * undo = new WED_UndoLayer(mArchive, redo->GetName(), redo->GetFile(), redo->GetLine());
 	mArchive->SetUndo(undo);
 	int change_mask = redo->GetChangeMask();
 	redo->Execute();

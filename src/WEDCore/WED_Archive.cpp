@@ -189,10 +189,10 @@ void			WED_Archive::SetUndoManager(WED_UndoMgr * mgr)
 	mUndoMgr = mgr;
 }
 
-void			WED_Archive::StartCommand(const string& inName)
+void			WED_Archive::__StartCommand(const string& inName, const char * file, int line)
 {
 	DebugAssert(mUndoMgr != NULL);
-	mUndoMgr->StartCommand(inName);
+	mUndoMgr->__StartCommand(inName, file, line);
 }
 
 void			WED_Archive::CommitCommand(void)

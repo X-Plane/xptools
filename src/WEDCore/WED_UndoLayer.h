@@ -36,7 +36,7 @@ class	WED_Persistent;
 class	WED_UndoLayer {
 public:
 
-				WED_UndoLayer(WED_Archive * inArchive, const string& inName);
+				WED_UndoLayer(WED_Archive * inArchive, const string& inName, const char * file, int line);
 				~WED_UndoLayer(void);
 
 		void 	ObjectCreated(WED_Persistent * inObject);
@@ -45,8 +45,9 @@ public:
 
 		void	Execute(void);
 
-		string	GetName(void) { return mName; }
-
+		string	GetName(void) const { return mName; }
+		const char * GetFile(void) const { return mFile; }
+		int		GetLine(void) const { return mLine; }
 		bool	Empty(void) const { return mObjects.empty(); }
 
 		int		GetChangeMask(void) { return mChangeMask; }
@@ -71,6 +72,8 @@ private:
 	ObjInfoMap				mObjects;
 	WED_Archive *			mArchive;
 	string					mName;
+	const char *			mFile;
+	int						mLine;
 	int						mChangeMask;
 	WED_FastBufferGroup *	mStorage;
 

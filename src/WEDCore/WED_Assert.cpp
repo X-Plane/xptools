@@ -27,14 +27,28 @@
 
 static char gAssertBuf[65536];
 
+static const char * trim_file(const char * p)
+{
+	const char * ret = p;
+	while(*p)
+	{
+		if(*p == '\\' || *p == ':' || *p == '/')
+			ret = p+1;
+		++p;
+	}
+	return ret;
+}
+
+
+
 void WED_AssertHandler_f(const char * condition, const char * file, int line)
 {
 	FILE * efile = fopen("error.out", "a");
-	fprintf(efile ? efile : stderr, "ASSERTION FAILED: %s (%s, %d.)\n", condition, file, line);
+	fprintf(efile ? efile : stderr, "ASSERTION FAILED: %s (%s:%d.)\n", condition, trim_file(file), line);
 	if (efile) fclose(efile);
 
 	sprintf(gAssertBuf, "WorldEditor has hit an error due to a bug.  Please report the following to Ben:\n"
-						"%s (%s, %d.)\n", condition, file, line);
+						"%s (%s:%d.)\n", condition, trim_file(file), line);
 
 	DoUserAlert(gAssertBuf);
 

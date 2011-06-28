@@ -166,7 +166,7 @@ void	WED_Document::Save(void)
 
 void	WED_Document::Revert(void)
 {
-	mUndo.StartCommand("Revert from Saved.");
+	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
 	enum_map_t	mapping;
 	ENUM_read(mDB.get(), mapping);

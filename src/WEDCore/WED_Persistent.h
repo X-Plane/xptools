@@ -155,6 +155,8 @@ void __Class::CopyFrom(const __Class * rhs)						\
 	__Base::CopyFrom(rhs);										\
 }
 
+#define StartCommand(x) __StartCommand(x,__FILE__,__LINE__)
+
 class	WED_Persistent : public virtual ISelectable {
 public:
 
@@ -175,7 +177,7 @@ public:
 	WED_Persistent *		FetchPeer(int inID) const;
 
 	// Convenience routines for undo...
-	void					StartCommand(const string& inName);		// pass-throughs
+	void					__StartCommand(const string& inName, const char * inFile, int inLine);		// pass-throughs
 	void					CommitCommand(void);
 	void					AbortCommand(void);
 

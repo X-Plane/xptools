@@ -78,7 +78,7 @@ public:
 
 	// Undo convenience API.
 	void			SetUndoManager(WED_UndoMgr * mgr);
-	void			StartCommand(const string& inName);		// pass-throughs
+	void			__StartCommand(const string& inName, const char * file, int line);		// pass-throughs
 	void			CommitCommand(void);
 	void			AbortCommand(void);
 
