@@ -287,7 +287,7 @@ static int DoScreenShot(const vector<const char *>& args)
 #else
 		glReadPixels(0, 0, viewport[2], viewport[3], GL_RGB, GL_UNSIGNED_BYTE, cap.data);
 #endif
-		WriteBitmapToPNG(&cap, args[0], NULL, 0);
+		WriteBitmapToPNG(&cap, args[0], NULL, 0, GAMMA_SRGB);
 		DestroyBitmap(&cap);
 	}
 

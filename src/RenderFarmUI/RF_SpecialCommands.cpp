@@ -543,7 +543,7 @@ void DoScreenshot(void)
 				break;
 		} while (1);
 		++rev;
-		WriteBitmapToPNG(&cap, buf, NULL, 0);
+		WriteBitmapToPNG(&cap, buf, NULL, 0, GAMMA_SRGB);
 		DestroyBitmap(&cap);
 	}
 }

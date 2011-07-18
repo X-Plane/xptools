@@ -376,7 +376,7 @@ int main(int argc, char * argv[])
 	}
 	if (argc == 2 && strcmp(argv[1],"--auto_config")==0)
 	{
-		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .dds \"%s\" DDS_MODE HAS_MIPS GAMMA_MODE PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("OPTIONS DDSTool\n");
 		printf("RADIO DDS_MODE 1 --png2dxt Auto-pick compression\n");
 		printf("RADIO DDS_MODE 0 --png2dxt1 Use DXT1 Compression (1-bit alpha)\n");
@@ -389,6 +389,9 @@ int main(int argc, char * argv[])
 		printf("RADIO HAS_MIPS 0 --night_mips Generate Night-Style Mip-Map\n");
 		printf("RADIO HAS_MIPS 0 --fade_mips Generate Fading Mip-Map\n");
 		printf("RADIO HAS_MIPS 0 --ctl_mips Generate Fading CTL Mip-Map\n");
+		printf("DIV\n");
+		printf("RADIO GAMMA_MODE 1 --gamma_22 Use X-Plane 10 Gamma\n");
+		printf("RADIO GAMMA_MODE 0 --gamma_18 Use X-Plane 9 Gamma\n");
 
 #if WANT_ATI
 		printf("CMD .png .atc \"%s\" ATC_MODE PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
@@ -403,10 +406,12 @@ int main(int argc, char * argv[])
 		printf("RADIO PVR_MODE 0 --png2pvrtc4 4-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw16 PVR uses 16-bit color\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw24 PVR uses 24-bit color\n");
+#endif		
 		printf("DIV\n");
 		printf("RADIO PVR_SCALE 1 --scale_none Do not resize images\n");
 		printf("RADIO PVR_SCALE 0 --scale_up Scale up to nearest power of 2\n");
 		printf("RADIO PVR_SCALE 0 --scale_down Scale down to nearest power of 2\n");
+#if PHONE		
 		printf("DIV\n");
 		printf("CHECK PREVIEW 0 --make_preview Output preview of compressed PVR image\n");
 		printf("CHECK MIPS 1 --make_mips Create mipmap for PVR image\n");
@@ -431,7 +436,7 @@ int main(int argc, char * argv[])
 		bool one_file = false;
 
 		if(strcmp(argv[n],"--one_file")==0) { ++n; one_file = true; }
-		if(CreateBitmapFromPNG(argv[n], &info, true))
+		if(CreateBitmapFromPNG(argv[n], &info, true, GAMMA_SRGB))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
@@ -483,7 +488,7 @@ int main(int argc, char * argv[])
 		if(strcmp(argv[n],"--make_mips")==0) { want_mips = true; ++n; }
 
 		ImageInfo	info;
-		if(CreateBitmapFromPNG(argv[n], &info, true))
+		if(CreateBitmapFromPNG(argv[n], &info, true, 1.8f))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
@@ -500,14 +505,14 @@ int main(int argc, char * argv[])
 			else if(want_preview)
 			{
 				string preview_path = string(argv[n]) + ".scl.png";
-				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0);
+				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0, 1.8f);
 			}
 		}
 
 		FlipImageY(info);
 		string temp_path = argv[n];
 		temp_path += "_temp";
-		if(WriteBitmapToPNG(&info, temp_path.c_str(), NULL, 0))
+		if(WriteBitmapToPNG(&info, temp_path.c_str(), NULL, 0, 1.8f))
 		{
 			printf("Unable to write temp file %s\n", temp_path.c_str());
 			return 1;
@@ -531,10 +536,10 @@ int main(int argc, char * argv[])
 		FILE_delete_file(temp_path.c_str(), 0);
 		if(want_preview)
 		{
-			if(!CreateBitmapFromPNG(preview.c_str(), &info, true))
+			if(!CreateBitmapFromPNG(preview.c_str(), &info, true, 1.8f))
 			{
 				FlipImageY(info);
-				WriteBitmapToPNG(&info, preview.c_str(),0,false);
+				WriteBitmapToPNG(&info, preview.c_str(),0,false, 1.8f);
 				DestroyBitmap(&info);
 			}
 		}
@@ -605,31 +610,35 @@ int main(int argc, char * argv[])
 	{
 		int arg_base = 2;
 		int has_mips = 0;
-		if(strcmp(argv[2], "--std_mips") == 0)
+		
+		if(strcmp(argv[arg_base], "--std_mips") == 0)
 		{
 			has_mips = 0;
 			++arg_base;
 		} 
-		else if(strcmp(argv[2], "--pre_mips") == 0)
+		else if(strcmp(argv[arg_base], "--pre_mips") == 0)
 		{
 			has_mips = 1;
 			++arg_base;
 		}
-		else if(strcmp(argv[2], "--night_mips") == 0)
+		else if(strcmp(argv[arg_base], "--night_mips") == 0)
 		{
 			has_mips = 2;
 			++arg_base;
 		}
-		else if(strcmp(argv[2], "--fade_mips") == 0)
+		else if(strcmp(argv[arg_base], "--fade_mips") == 0)
 		{
 			has_mips = 3;
 			++arg_base;
 		}
-		else if(strcmp(argv[2], "--ctl_mips") == 0)
+		else if(strcmp(argv[arg_base], "--ctl_mips") == 0)
 		{
 			has_mips = 4;
 			++arg_base;
 		}
+		
+		float gamma = (strcmp(argv[arg_base], "--gamma_22") == 0) ? 2.2f : 1.8f;
+		arg_base +=1;
 
 		
 		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
@@ -637,7 +646,7 @@ int main(int argc, char * argv[])
 		arg_base +=1;
 
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
+		if (CreateBitmapFromPNG(argv[arg_base], &info, false, gamma)!=0)
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
@@ -683,7 +692,7 @@ int main(int argc, char * argv[])
 		case 4:			MakeMipmapStackWithFilter(&info,fade_2_black_filter);	break;
 		}
 		
-		if (WriteBitmapToDDS(info, dxt_type, outf)!=0)
+		if (WriteBitmapToDDS(info, dxt_type, outf, gamma == GAMMA_SRGB)!=0)
 		{
 			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
 			return 1;
@@ -720,13 +729,16 @@ int main(int argc, char * argv[])
 			++arg_base;
 		}
 
+		float gamma = (strcmp(argv[arg_base], "--gamma_22") == 0) ? 2.2f : 1.8f;
+		arg_base +=1;
+
 
 		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
 		arg_base +=1;
 
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[arg_base], &info, true)!=0)
+		if (CreateBitmapFromPNG(argv[arg_base], &info, true, gamma)!=0)
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
@@ -761,7 +773,7 @@ int main(int argc, char * argv[])
 		}
 		
 
-		if (WriteUncompressedToDDS(info, outf)!=0)
+		if (WriteUncompressedToDDS(info, outf, gamma == GAMMA_SRGB)!=0)
 		{
 			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
 			return 1;
@@ -772,7 +784,7 @@ int main(int argc, char * argv[])
 	else if (strcmp(argv[1],"--quilt")==0)
 	{
 		ImageInfo src, dst;
-		if(CreateBitmapFromPNG(argv[2], &src, false) != 0)
+		if(CreateBitmapFromPNG(argv[2], &src, false, 1.8f) != 0)
 			return 1;
 
 		int dst_w = atoi(argv[3]);
@@ -788,7 +800,7 @@ int main(int argc, char * argv[])
 
 		make_texture(src, dst, splat, overlap, trials);
 
-		WriteBitmapToPNG(&dst, argv[8], NULL, 0);
+		WriteBitmapToPNG(&dst, argv[8], NULL, 0, 1.8f);
 
 	}
 #if PHONE && WANT_ATI

@@ -53,6 +53,9 @@
 #include "FileUtils.h"
 #include "NetAlgs.h"
 
+#define MT_GAMMA 2.2f
+#define MT_USE_WIN_GAMMA (1)
+
 static DEMGeoMap			sDem;
 static CDT					sMesh;
 static AptVector			sApts;
@@ -663,7 +666,7 @@ void MT_GeoTiff(const char * fname, int back_with_water)
 					CopyBitmapSection(&rgba,&smaller, 0,0,rgba.width,rgba.height, 0, 0, smaller.width,smaller.height);				
 					
 					MakeMipmapStack(&smaller);
-					WriteBitmapToDDS(smaller, 5, dname);
+					WriteBitmapToDDS(smaller, 5, dname, MT_USE_WIN_GAMMA);
 					DestroyBitmap(&smaller);
 				}
 				DestroyBitmap(&rgba);
@@ -751,7 +754,7 @@ void MT_QMID(const char * id, int back_with_water)
 
 					MakeMipmapStack(&rgb);
 					sprintf(fname,"%s%s.dds",g_qmid_prefix.c_str(),id);
-					WriteBitmapToDDS(rgb, 5, fname);
+					WriteBitmapToDDS(rgb, 5, fname, MT_USE_WIN_GAMMA);
 				}
 
 				DestroyBitmap(&rgb);
@@ -776,7 +779,7 @@ void MT_QMID(const char * id, int back_with_water)
 			sprintf(fname,"%s%s_LIT.dds",g_qmid_prefix.c_str(),id);
 			ConvertBitmapToAlpha(&lit,false);
 			MakeMipmapStack(&lit);
-			WriteBitmapToDDS(lit,1,fname);
+			WriteBitmapToDDS(lit,1,fname, MT_USE_WIN_GAMMA);
 			DestroyBitmap(&lit);
 			want_lite=true;
 		}

@@ -319,7 +319,7 @@ int GUI_GetImageResource(
         ret = 1;
     #endif
 	} else
-		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0);
+		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0, GAMMA_SRGB);
 	GUI_UnloadResource(res);
 	return ret;
 }
