@@ -108,7 +108,7 @@ bool LoadTextureFromFile(
 	}
 */
 
-	int result =  CreateBitmapFromPNG(inFileName, &im, false);
+	int result =  CreateBitmapFromPNG(inFileName, &im, false, GAMMA_SRGB);
 	if (result) result = CreateBitmapFromDDS(inFileName, &im);
 	if (result) result = CreateBitmapFromFile(inFileName, &im);
 	#if USE_TIF

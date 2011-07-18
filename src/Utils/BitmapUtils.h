@@ -23,6 +23,13 @@
 #ifndef _BitmapUtils_h_
 #define _BitmapUtils_h_
 
+/* Technically sRGB is a gamma of 2.4 plus some weird stuff on the end, but 2.2 is often a good
+ * proxy if we just have to pick a number.  So the new nominal work-flow for X-Plane is: author
+ * in sRGB, mark the file as 2.2, and X-Plane will then not molest the image and show it
+ * on your sRGB display.  So define this here for 80 places in the code that just need to use
+ * "the right gamma for modern computers." */
+#define GAMMA_SRGB 2.2f
+
 /*
 	This is our in memory way of storing an image.  Data is a pointer
 	to an array of bytes large enough to hold the image.  We always
@@ -51,9 +58,10 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
  * in the imageInfo structure by loading the bitmap. */
 int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageInfo);
 
-/* Yada yada yada, libPNG. */
-int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed);
-int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed);
+/* Yada yada yada, libPNG.  Gamma is the gamma color curve we want our pixels in.  Since gamma is recorded on the png file
+ * we have to tell libpng to convert it.  Use 0.0 for no conversion, just the raw 8-bit values.  */
+int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma);
+int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma);
 
 /* Create a 4-channel image from a DDS file. */
 int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInfo);
@@ -81,17 +89,17 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
  * Note that only 3-channel bitmaps may be written as .bmp files!! */
 int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath);
 
-/* Given an imageInfo structure, this routine writes it to disk as a .png file.  */
-int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath, char * inPalette, int inPaletteLen);
+/* Given an imageInfo structure, this routine writes it to disk as a .png file.  Image is tagged with gamma, or 0.0f to leave untagged. */
+int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath, char * inPalette, int inPaletteLen, float gamma);
 
 /* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image.
  * NOTE: if you compile with PHONE then DDS are written upside down (lower left origin
  * instead of upper-left).  This is an optimization for the iphone, which can then
  * pass the data DIRECTLY to OpenGL. */
-int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name);
+int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name, int use_win_gamma);
 
 /* This routine writes a 3 or 4 channel bitmap as a mip-mapped DXT1 or DXT3 image. */
-int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name);
+int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, int use_win_gamma);
 
 
 /* This routine deallocates a bitmap that was created with CreateBitmapFromFile or

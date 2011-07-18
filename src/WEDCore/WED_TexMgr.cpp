@@ -97,7 +97,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 		MemFile_Close(dds_file);
 	}
 */
-	if (CreateBitmapFromPNG(fpath.c_str(), &im, false) != 0)
+	if (CreateBitmapFromPNG(fpath.c_str(), &im, false, GAMMA_SRGB) != 0)
 	if (CreateBitmapFromDDS(fpath.c_str(), &im) != 0)
 	if (CreateBitmapFromFile(fpath.c_str(), &im) != 0)
 #if USE_JPEG

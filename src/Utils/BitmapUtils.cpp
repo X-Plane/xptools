@@ -1047,7 +1047,7 @@ void png_buffered_read_func(png_structp png_ptr, png_bytep data, png_size_t leng
 }
 
 // PNG is 0,0 = upper left so we vertically flip.  Lib gives us image in any component order we want.
-int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bool leaveIndexed)
+int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma)
 {
 	FILE * file = fopen(fname, "rb");
 	if (!file)
@@ -1069,12 +1069,12 @@ int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bo
 		return -1;
 	}
 	fclose(file);
-	int result = CreateBitmapFromPNGData(buffer, fileLength, outImageInfo, leaveIndexed);
+	int result = CreateBitmapFromPNGData(buffer, fileLength, outImageInfo, leaveIndexed, target_gamma);
 	delete [] buffer;
 	return result;
 }
 
-int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed)
+int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma)
 {
 	png_uint_32	width, height;
 	int bit_depth,color_type,interlace_type,compression_type,P_filter_type;
@@ -1115,18 +1115,14 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	outImageInfo->width = width;
 	outImageInfo->height = height;
 
-								// This will be the gamma of the file if it has one.
-#if APL							// Macs and PCs have different gamma responses.
-	screen_gamma=1.8;			// Darks look darker and brights brighter on the PC.
-#endif							// Macs are more even.
-#if IBM||LIN
-	screen_gamma=2.2;
-#endif
 
-	if(  png_get_gAMA (pngPtr,infoPtr     ,&lcl_gamma))		// Perhaps the file has its gamma recorded, for example by photoshop. Just tell png to callibrate for our hw platform.
-	     png_set_gamma(pngPtr,screen_gamma, lcl_gamma);
-	else png_set_gamma(pngPtr,screen_gamma, 1.0/1.8  );		// If the file doesn't have gamma, assume it was drawn on a Mac.
-
+	if(target_gamma)
+	{
+		if(  png_get_gAMA (pngPtr,infoPtr     ,&lcl_gamma))		// Perhaps the file has its gamma recorded, for example by photoshop. Just tell png to callibrate for our hw platform.
+			 png_set_gamma(pngPtr,target_gamma, lcl_gamma);
+		else png_set_gamma(pngPtr,target_gamma, 1.0/1.8  );		// If the file doesn't have gamma, assume it was drawn on a Mac - true for really old stuff.
+	}
+	
 	if(color_type==PNG_COLOR_TYPE_PALETTE && bit_depth<= 8)if (!leaveIndexed)	png_set_expand	  (pngPtr);
 	if(color_type==PNG_COLOR_TYPE_GRAY    && bit_depth<  8)						png_set_expand	  (pngPtr);
 	if(png_get_valid(pngPtr,infoPtr,PNG_INFO_tRNS)        )						png_set_expand	  (pngPtr);
@@ -1184,7 +1180,7 @@ bail:
 
 }
 
-int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath, char * inPalette, int inPaletteLen)
+int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath, char * inPalette, int inPaletteLen, float target_gamma)
 {
 	FILE *		file = NULL;
 	png_structp	png_ptr = NULL;
@@ -1210,6 +1206,8 @@ int		WriteBitmapToPNG(const struct ImageInfo * inImage, const char * inFilePath,
 	png_set_compression_window_bits(png_ptr, 15);
 	png_set_compression_method(png_ptr, 8);
 	png_set_compression_buffer_size(png_ptr, 8192);
+	if(target_gamma)
+		png_set_gAMA(png_ptr, info_ptr, 1.0 / target_gamma);
 
 	png_set_bgr(png_ptr);
 
@@ -1474,7 +1472,7 @@ static void swap_bgra_y(struct ImageInfo& i)
 }
 
 // Compressed DDS.  
-int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
+int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name, int use_win_gamma)
 {
 	FILE * fi = fopen(file_name,"wb");
 	if (fi == NULL) return -1;
@@ -1516,7 +1514,10 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 	header.ddpfPixelFormat.dwFourCC[1]='X';
 	header.ddpfPixelFormat.dwFourCC[2]='T';
 	header.ddpfPixelFormat.dwFourCC[3]='0' + dxt;
-	header.ddsCaps.dwCaps=SWAP32(0x00001000l|0x00400000l|0x00000008l);
+	if(use_win_gamma)
+		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP				   );
+	else
+		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
 
 	fwrite(&header,sizeof(header),1,fi);
 
@@ -1543,7 +1544,7 @@ int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name)
 }
 
 // Uncomp: write BGR or BGRA, origin depends on phone or desktop - see below.
-int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
+int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, int use_win_gamma)
 {
 	FILE * fi = fopen(file_name,"wb");
 	if (fi == NULL) return -1;
@@ -1591,7 +1592,10 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name)
 		header.ddpfPixelFormat.dwRGBAlphaBitMask=SWAP32(0xFF000000);
 	}
 
-	header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
+	if(use_win_gamma)
+		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP				   );
+	else
+		header.ddsCaps.dwCaps=SWAP32(DDSCAPS_TEXTURE|DDSCAPS_MIPMAP|DDSCAPS_COMPLEX);
 
 	fwrite(&header,sizeof(header),1,fi);
 
