@@ -33,6 +33,8 @@
 #include <errno.h>
 #include "STLUtils.h"
 
+#define STUB_GAMMA 2.2f
+
 static void	only_dir(string& iopath)
 {
 	string::size_type p = iopath.find_last_of("\\/:");
@@ -318,7 +320,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			{
 				++image_ctr;
 				printf("Creating %s.\n",path_as_png.c_str());
-				WriteBitmapToPNG(&image_data, path_as_png.c_str(), NULL, 0);		
+				WriteBitmapToPNG(&image_data, path_as_png.c_str(), NULL, 0, STUB_GAMMA);		
 			}
 		}
 
@@ -349,7 +351,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			{
 				++image_ctr;
 				printf("Creating %s.\n",path_as_png.c_str());
-				WriteBitmapToPNG(&nrml_data, path_as_png.c_str(), NULL, 0);		
+				WriteBitmapToPNG(&nrml_data, path_as_png.c_str(), NULL, 0, STUB_GAMMA);		
 			}
 		}
 
@@ -377,7 +379,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			{
 				++border_ctr;
 				printf("Creating %s.\n",path.c_str());
-				WriteBitmapToPNG(&border, path.c_str(), NULL, 0);
+				WriteBitmapToPNG(&border, path.c_str(), NULL, 0, STUB_GAMMA);
 			}
 		}
 
