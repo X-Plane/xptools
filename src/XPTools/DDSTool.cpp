@@ -488,7 +488,7 @@ int main(int argc, char * argv[])
 		if(strcmp(argv[n],"--make_mips")==0) { want_mips = true; ++n; }
 
 		ImageInfo	info;
-		if(CreateBitmapFromPNG(argv[n], &info, true, 1.8f))
+		if(CreateBitmapFromPNG(argv[n], &info, true, 2.2f))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
@@ -505,14 +505,14 @@ int main(int argc, char * argv[])
 			else if(want_preview)
 			{
 				string preview_path = string(argv[n]) + ".scl.png";
-				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0, 1.8f);
+				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0, 2.2f);
 			}
 		}
 
 		FlipImageY(info);
 		string temp_path = argv[n];
 		temp_path += "_temp";
-		if(WriteBitmapToPNG(&info, temp_path.c_str(), NULL, 0, 1.8f))
+		if(WriteBitmapToPNG(&info, temp_path.c_str(), NULL, 0, 2.2f))
 		{
 			printf("Unable to write temp file %s\n", temp_path.c_str());
 			return 1;
@@ -536,10 +536,10 @@ int main(int argc, char * argv[])
 		FILE_delete_file(temp_path.c_str(), 0);
 		if(want_preview)
 		{
-			if(!CreateBitmapFromPNG(preview.c_str(), &info, true, 1.8f))
+			if(!CreateBitmapFromPNG(preview.c_str(), &info, true, 2.2f))
 			{
 				FlipImageY(info);
-				WriteBitmapToPNG(&info, preview.c_str(),0,false, 1.8f);
+				WriteBitmapToPNG(&info, preview.c_str(),0,false, 2.2f);
 				DestroyBitmap(&info);
 			}
 		}
@@ -784,7 +784,7 @@ int main(int argc, char * argv[])
 	else if (strcmp(argv[1],"--quilt")==0)
 	{
 		ImageInfo src, dst;
-		if(CreateBitmapFromPNG(argv[2], &src, false, 1.8f) != 0)
+		if(CreateBitmapFromPNG(argv[2], &src, false, 2.2f) != 0)
 			return 1;
 
 		int dst_w = atoi(argv[3]);
@@ -800,7 +800,7 @@ int main(int argc, char * argv[])
 
 		make_texture(src, dst, splat, overlap, trials);
 
-		WriteBitmapToPNG(&dst, argv[8], NULL, 0, 1.8f);
+		WriteBitmapToPNG(&dst, argv[8], NULL, 0, 2.2f);
 
 	}
 #if PHONE && WANT_ATI
