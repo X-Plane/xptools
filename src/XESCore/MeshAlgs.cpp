@@ -281,6 +281,7 @@ inline bool MATCH(const char * big, const char * msmall)
 static mesh_match_t gMatchBorders[4];
 
 
+// Given a border plus the matched slaves, we identify our triangles...
 static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 {
 //	printf("Finding edge tris for %d edgse.\n",ioBorder.edges.size());
@@ -288,6 +289,10 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 	for (int n = 0; n < ioBorder.edges.size(); ++n)
 	{
 #if DEV
+		DebugAssert(ioBorder.vertices[n  ].buddy != CDT::Vertex_handle());
+		DebugAssert(ioBorder.vertices[n+1].buddy != CDT::Vertex_handle());
+		DebugAssert(ioBorder.vertices[n  ].buddy != ioMesh.infinite_vertex());
+		DebugAssert(ioBorder.vertices[n+1].buddy != ioMesh.infinite_vertex());
 		CDT::Point	p1 = ioBorder.vertices[n  ].buddy->point();
 		CDT::Point	p2 = ioBorder.vertices[n+1].buddy->point();
 #endif
@@ -317,6 +322,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 		// BEN SEZ: this used to be an error but - there are cases where the SLAVE file has a lake ENDING at the edge...there is no way the MASTER
 		// could have induced these pts, so we're screwed.  For now - we'll just blunder on.
 			ioBorder.edges[n].buddy = CDT::Face_handle();
+//			debug_mesh_line(cgal2ben(p1),cgal2ben(p2),1,0,0,1,0,0);
 		} else {
 			int idx = ioBorder.edges[n].buddy->index(ioMesh.infinite_vertex());
 			ioBorder.edges[n].buddy = ioBorder.edges[n].buddy->neighbor(idx);
@@ -543,12 +549,11 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 		//	   CGAL::to_double(best_match.second->loc.x()),			CGAL::to_double(best_match.second->loc.y()));
 		slaves.erase(best_match.first);
 
-//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(best_match.second->buddy->point()	),Point3(1,1,0)));
-//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(best_match.second->loc				),Point3(0,1,0)));
-		
+//		debug_mesh_point(cgal2ben(best_match.second->buddy->point()	),1,1,0);
+//		debug_mesh_point(cgal2ben(best_match.second->loc			),0,1,0);		
 	}
 
-	// Step 3.  Go through all unmatched masters and insert them diriectly into the mesh.
+	// Step 3.  Go through all unmatched masters and insert them directly into the mesh.
 	CDT::Face_handle	nearf = NULL;
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 	if (pts->buddy == NULL)
@@ -557,7 +562,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 		pts->buddy = ioMesh.insert(CDT::Point(CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y())), nearf);
 		nearf = pts->buddy->face();
 		pts->buddy->info().height = pts->height;
-//		gMeshPoints.push_back(pair<Point2,Point3>(cgal2ben(pts->loc),Point3(1,0,0)));
+//		debug_mesh_point(cgal2ben(pts->loc),1,0,0);
 		
 	}
 
@@ -1089,6 +1094,7 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 				
 				
 				if(orig_he->data().HasRoads() || orig_he->twin()->data().HasRoads())
+				if(!orig_he->data().HasRoadOfType(powerline_Generic) || !orig_he->data().HasRoadOfType(powerline_Generic))
 					ffi->info().set_edge_feature(n,true);				
 			}
 		}
@@ -1349,10 +1355,10 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		border_loc = appP + border_loc;
 #endif
 
-		sprintf(fname_lef,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth),latlon_bucket(deriv.mWest - 1), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest - 1));
-		sprintf(fname_bot ,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth - 1),latlon_bucket(deriv.mWest), DIR_STR, (int) (deriv.mSouth - 1), (int) (deriv.mWest));
-		sprintf(fname_rgt,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth),latlon_bucket(deriv.mWest + 1), DIR_STR, (int) (deriv.mSouth), (int) (deriv.mWest + 1));
-		sprintf(fname_top ,"%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR,latlon_bucket(deriv.mSouth + 1),latlon_bucket(deriv.mWest), DIR_STR, (int) (deriv.mSouth + 1), (int) (deriv.mWest));
+		make_cache_file_path(border_loc.c_str(),deriv.mWest-1, deriv.mSouth,"border",fname_lef);
+		make_cache_file_path(border_loc.c_str(),deriv.mWest+1, deriv.mSouth,"border",fname_rgt);
+		make_cache_file_path(border_loc.c_str(),deriv.mWest, deriv.mSouth-1,"border",fname_bot);
+		make_cache_file_path(border_loc.c_str(),deriv.mWest, deriv.mSouth+1,"border",fname_top);
 
 		mesh_match_t junk1, junk2, junk3;
 		has_borders[0] = gMeshPrefs.border_match ? load_match_file(fname_lef, junk1, junk2, gMatchBorders[0], junk3) : false;
@@ -1380,11 +1386,12 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		InsertDEMPoint(orig, deriv, temp_mesh, orig.mWidth-1, orig.mHeight-1, temp_hint);
 		InsertDEMPoint(orig, deriv, temp_mesh, 0, orig.mHeight-1, temp_hint);
 
-		for(int b=0;b<4;++b)
-		if (!gMatchBorders[b].vertices.empty())
-			match_border(temp_mesh, gMatchBorders[b], b);
+//		for(int b=0;b<4;++b)
+//		if (!gMatchBorders[b].vertices.empty())
+//			match_border(temp_mesh, gMatchBorders[b], b);
 
-		AddEdgePoints(orig, deriv, 20, 1, has_borders, temp_mesh);
+		bool fake_has_borders[4] = { false, false, false, false };
+		AddEdgePoints(orig, deriv, 20, 1, fake_has_borders, temp_mesh);
 
 		DEMGrid	gridlines(orig);
 		GreedyMeshBuild(temp_mesh, orig, deriv, gridlines, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
@@ -2278,8 +2285,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		border_loc = appP + border_loc;
 #endif
 
-
-		sprintf(fname, "%s%s%+03d%+04d%s%+03d%+04d.border.txt", border_loc.c_str(), DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west);
+		make_cache_file_path(border_loc.c_str(),west, south,"border",fname);
 
 		FILE * border = fopen(fname, "w");
 		if (border == NULL) AssertPrintf("Unable to open file %s for writing.", fname);

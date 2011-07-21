@@ -281,6 +281,8 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, GLubyte outColor[4])
 		outColor[3] = 128;
 	}
 	
+	outColor[3] -= ((f->data().GetParam(af_Variant,0)) * 24);
+	
 }
 
 void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
@@ -669,7 +671,16 @@ void	DrawMapBucketed(
 		for (vector<Pmwx::Vertex_handle>::iterator v = vertices.begin(); v != vertices.end(); ++v)
 		{
 			if (vertexSel.find(*v) == vertexSel.end())
+			{
+				if((*v)->data().mNeighborBurned)
+					glColor3f(1,0,0);
+				else if((*v)->data().mNeighborNotBurned)
+					glColor3f(1,1,0);
+				else
+					continue;
+				glVertex2fv((*v)->data().mGL);				
 				continue;
+			}
 
 //			double	x1 = CGAL::to_double((*v)->point().x());
 //			double	y1 = CGAL::to_double((*v)->point().y());

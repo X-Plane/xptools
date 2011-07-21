@@ -97,4 +97,15 @@ inline bool must_burn_he(Halfedge_handle he)
 		   f1->data().mTerrainType != f2->data().mTerrainType;
 }
 
+inline bool must_burn_v(Vertex_handle v)
+{
+	Pmwx::Halfedge_around_vertex_circulator circ, stop;
+	circ = stop = v->incident_halfedges();
+	do {
+		if(must_burn_he(circ))
+			return true;
+	} while (++circ != stop);
+	return false;
+}
+
 #endif

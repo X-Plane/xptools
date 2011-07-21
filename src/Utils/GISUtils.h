@@ -70,6 +70,7 @@ inline int	latlon_bucket(int p)
 	else return ((-p + 9) / 10) * -10;
 }
 
+void	make_cache_file_path(const char * cache_base, int lon, int lat, const char * cache_name, char path[1024]);
 
 // Round a floating point number to fall as closely as possible onto a grid of N parts. 
 // We use this to try to clean up screwed up DEM coordinates...1/1200 = floating point

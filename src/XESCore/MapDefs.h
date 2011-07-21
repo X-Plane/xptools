@@ -244,6 +244,8 @@ public:
 
 struct GIS_vertex_data {
 	bool mTunnelPortal;
+	bool mNeighborBurned;
+	bool mNeighborNotBurned;
 #if OPENGL_MAP
 	float						mGL[2];				// Pre-expanded line!
 #endif
@@ -270,6 +272,11 @@ public:
 						if(r->mSourceHeight > 0.0 || r->mTargetHeight > 0.0) 
 							return true; 
 						return false; }	
+	inline bool		HasRoadOfType(int t) const {
+						for(GISNetworkSegmentVector::const_iterator r = mSegments.begin(); r != mSegments.end(); ++r)
+						if(r->mFeatType == t)
+							return true;
+						return false; }
 #if OPENGL_MAP
 	unsigned char				mGLColor[3];
 #endif

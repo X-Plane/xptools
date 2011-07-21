@@ -36,6 +36,7 @@
 #include "ConfigSystem.h"
 #include "MapTopology.h"
 //#include "GISTool_Globals.h"
+#include "MeshAlgs.h"
 
 // NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
 // it isn't assigned.
@@ -262,6 +263,77 @@ static int		PickZoningRule(
 }
 						
 
+
+//----------------------------------------------------------------------------------------------------------------------------------------
+
+struct zone_borders_t {
+	set<double>		lock_pts[4];
+};
+
+int mark_is_locked(Vertex_handle v, NT coord, const set<double>& locked_pts)
+{
+	double coordf = CGAL::to_double(coord);
+	
+	set<double>::const_iterator k = locked_pts.lower_bound(coordf);
+	double k1, k2;
+	DebugAssert(!locked_pts.empty());
+	if(locked_pts.size() == 1)
+		k1 = k2 = *k;
+	else if (k == locked_pts.begin())
+		k1 = k2 = *k;
+	else if (k == locked_pts.end())
+	{
+		--k;
+		k1 = k2 = *k;		
+	} else
+	{
+		k2 = *k;
+		--k;
+		k1 = *k;
+	}
+
+	const double epsi = 1.0 / 10000000.0;
+	if(fabs(coordf - k1) < epsi || fabs(coordf - k2) < epsi)
+	{
+		v->data().mNeighborBurned = true;
+		v->data().mNeighborNotBurned = false;
+		return 1;
+	} 
+	else
+	{
+		v->data().mNeighborBurned = false;
+		v->data().mNeighborNotBurned = true;
+		return 0;
+	}
+}
+
+static bool load_zone_border(const char * fname, zone_borders_t& border)
+{
+	for(int n = 0; n < 4; ++n)
+		border.lock_pts[n].clear();
+	FILE * fi = fopen(fname,"r");
+	if(fi)
+	{
+		char buf[256];
+		while(fgets(buf,sizeof(buf), fi))
+		{	
+			double l;
+			if(sscanf(buf,"LOCK_WEST %lf",&l)==1)
+				border.lock_pts[0].insert(l);
+			if(sscanf(buf,"LOCK_SOUTH %lf",&l)==1)
+				border.lock_pts[1].insert(l);
+			if(sscanf(buf,"LOCK_EAST %lf",&l)==1)
+				border.lock_pts[2].insert(l);
+			if(sscanf(buf,"LOCK_NORTH %lf",&l)==1)
+				border.lock_pts[3].insert(l);				
+		}
+		fclose(fi);
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------------------------------------------
 
 
 typedef int(* Feature_Is_f)(int);
@@ -723,6 +795,48 @@ void	ZoneManMadeAreas(
 	
 #endif	
 
+	NT west(inLanduse.mWest);
+	NT east(inLanduse.mEast);
+	NT north(inLanduse.mNorth);
+	NT south(inLanduse.mSouth);
+	
+
+	{	
+		zone_borders_t	n_west, n_south, n_east, n_north;
+		
+		char path[1024];
+
+		make_cache_file_path("../rendering_data/OUTPUT-border/earth", inLanduse.mWest-1, inLanduse.mSouth,"zoning", path);
+		bool has_west = load_zone_border(path, n_west);
+		make_cache_file_path("../rendering_data/OUTPUT-border/earth", inLanduse.mWest+1, inLanduse.mSouth,"zoning", path);
+		bool has_east = load_zone_border(path, n_east);
+
+		make_cache_file_path("../rendering_data/OUTPUT-border/earth", inLanduse.mWest, inLanduse.mSouth-1,"zoning", path);
+		bool has_south = load_zone_border(path, n_south);
+		make_cache_file_path("../rendering_data/OUTPUT-border/earth", inLanduse.mWest, inLanduse.mSouth+1,"zoning", path);
+		bool has_north = load_zone_border(path, n_north);
+
+		int marked = 0;
+
+		for(Pmwx::Vertex_iterator v = ioMap.vertices_begin(); v != ioMap.vertices_end(); ++v)
+		{
+			Point_2 p(v->point());
+			if(p.x() == west && has_west)
+				marked += mark_is_locked(v, p.y(), n_west.lock_pts[2]);
+			else if (p.x() == east && has_east)
+				marked += mark_is_locked(v, p.y(), n_east.lock_pts[0]);			
+			else if (p.y() == south && has_south)			
+				marked += mark_is_locked(v, p.x(), n_south.lock_pts[3]);
+			else if (p.y() == north && has_north)			
+				marked += mark_is_locked(v, p.x(), n_north.lock_pts[1]);
+			else
+				v->data().mNeighborBurned = v->data().mNeighborNotBurned = false;
+		}
+
+		printf("Marked: %d. Imported: %d.\n", marked, n_west.lock_pts[2].size() + n_east.lock_pts[0].size() + n_south.lock_pts[3].size() + n_north.lock_pts[1].size());
+	}
+
+
 	for(face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
 	if(!face->is_unbounded())
 	if(!face->data().IsWater())
@@ -732,6 +846,50 @@ void	ZoneManMadeAreas(
 		CollectionVisitor<Pmwx,Face_handle,is_same_terrain_p>	col(&the_blob, is_same_terrain_p(face->data().mTerrainType));
 		VisitContiguousFaces<Pmwx,CollectionVisitor<Pmwx,Face_handle,is_same_terrain_p> >(face, col);
 		ColorFaces(the_blob);
+	}
+
+	char zbpath[1024];
+	make_cache_file_path("../rendering_data/OUTPUT-border/earth", inLanduse.mWest, inLanduse.mSouth,"zoning", zbpath);
+
+	FILE * bf = fopen(zbpath,"w");
+	if(bf)
+	{
+		set<double>	edge_l, edge_r, edge_b, edge_t;
+
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		DebugAssert(ioMap.unbounded_face()->number_of_holes() == 1);
+		circ = stop = *ioMap.unbounded_face()->holes_begin();//->outer_ccb();
+		do
+		{
+			if(must_burn_v(circ->target()))
+			{
+				Point_2 p(circ->target()->point());
+				if(p.x() == west)
+					edge_l.insert(CGAL::to_double(p.y()));
+				else if(p.x() == east)
+					edge_r.insert(CGAL::to_double(p.y()));
+				else if(p.y() == south)
+					edge_b.insert(CGAL::to_double(p.x()));
+				else if(p.y() == north)
+					edge_t.insert(CGAL::to_double(p.x()));
+				else
+				{
+					DebugAssert(!"Point is not on an edge.");
+				}
+//				debug_mesh_point(cgal2ben(circ->target()->point()),1,1,1);
+			}
+		} while(++circ != stop);
+		
+		set<double>::iterator i;
+		for(i = edge_l.begin(); i != edge_l.end(); ++i)
+			fprintf(bf,"LOCK_WEST %.12lf\n",*i);
+		for(i = edge_b.begin(); i != edge_b.end(); ++i)
+			fprintf(bf,"LOCK_SOUTH %.12lf\n",*i);
+		for(i = edge_r.begin(); i != edge_r.end(); ++i)
+			fprintf(bf,"LOCK_EAST %.12lf\n",*i);
+		for(i = edge_t.begin(); i != edge_t.end(); ++i)
+			fprintf(bf,"LOCK_NORTH %.12lf\n",*i);
+		fclose(bf);
 	}
 
 }
@@ -771,9 +929,11 @@ struct EdgeNode_t {
 
 	FaceNode_t *	f1;
 	FaceNode_t *	f2;
-	float			length;
-	int				count;
-	int				road_type;
+	float			length;		// Length of edge in meters
+	int				count;		// Number of edges
+	int				road_type;	// Lowest enum overlying road on this edge
+	bool			must_lock;
+	bool			must_merge;
 	EdgeQ::iterator	self;
 	
 	FaceNode_t *	other(FaceNode_t * f) const { DebugAssert(f == f1 || f == f2); return (f == f1) ? f2 : f1; }
@@ -895,6 +1055,7 @@ void			FaceGraph_t::merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& 
 		if(fn == f1)
 		{
 			// This is the f1-f2 edge - it's GONE.
+			DebugAssert(!en->must_lock);
 			f1->edges.remove(en);
 			delete_edge(en);
 		}
@@ -904,6 +1065,16 @@ void			FaceGraph_t::merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& 
 			EdgeNode_t * oe = neighbors[fn];
 			oe->length += en->length;
 			oe->count += en->count;
+			if(en->must_lock)
+				oe->must_lock = true;
+			if(en->must_merge)
+				oe->must_merge = true;
+//			DebugAssert(!(oe->must_merge && oe->must_lock));
+			if(oe->must_lock) 
+				oe->must_merge = false;
+//			#if !DEV
+//				#error temp hack
+//			#endif
 			oe->road_type = MIN_NOVALUE(oe->road_type,en->road_type);
 			fn->edges.remove(en);
 			delete_edge(en);
@@ -931,7 +1102,7 @@ void			FaceGraph_t::enqueue(EdgeNode_t * en, float (* cost_func)(EdgeNode_t * en
 	if(queue.end() != en->self)
 		queue.erase(en->self);
 	float cost_now = cost_func(en);
-	if(cost_now > 0.0f)
+	if(cost_now >= 0.0f)
 	{
 		en->self = queue.insert(EdgeQ::value_type(cost_now,en));
 	}
@@ -973,7 +1144,9 @@ void		FaceGraph_t::clear(void)
 #define MAX_AREA (1000.0 * 1000.0)
 float	edge_cost_func(EdgeNode_t * en)
 {
-	if((en->f1->area + en->f2->area) > MAX_AREA)	return 0.0f;
+	if(en->must_lock) return -1.0f;
+	if(en->must_merge) return 0.0f;
+	if((en->f1->area + en->f2->area) > MAX_AREA)	return -1.0f;
 //	if(Road_IsHighway(en->road_type) || Road_IsHighway(en->road_type))
 //	   return en->length * 0.5;
 	return en->length;
@@ -1026,19 +1199,47 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 				en->self = graph.queue.end();
 				en->length = 0.0f;
 				en->count = 0;
+				en->must_merge = false;
+				en->must_lock = false;
 				en->road_type = NO_VALUE;
 				set<Halfedge_handle>	edges;
 				FindEdgesForFace<Pmwx>(*f, edges);
 				for(set<Halfedge_handle>::iterator i = edges.begin(); i != edges.end(); ++i)
-					if((*i)->twin()->face() == *ff)
+				if((*i)->twin()->face() == *ff)
+				{
+					en->length += GetMapEdgeLengthMeters(*i);
+					en->count++;
+					if((*i)->data().HasRoads())
 					{
-						en->length += GetMapEdgeLengthMeters(*i);
-						en->count++;
-						if((*i)->data().HasRoads())
-							en->road_type = MIN_NOVALUE(en->road_type, (*i)->data().mSegments.front().mFeatType);
-						if((*i)->twin()->data().HasRoads())
-							en->road_type = MIN_NOVALUE(en->road_type, (*i)->twin()->data().mSegments.front().mFeatType);
+						en->road_type = MIN_NOVALUE(en->road_type, (*i)->data().mSegments.front().mFeatType);
+						if((*i)->data().mSegments.front().mFeatType == powerline_Generic)
+							en->must_merge = true;
 					}
+					if((*i)->twin()->data().HasRoads())
+					{
+						en->road_type = MIN_NOVALUE(en->road_type, (*i)->twin()->data().mSegments.front().mFeatType);
+						if((*i)->twin()->data().mSegments.front().mFeatType == powerline_Generic)
+							en->must_merge = true;
+					}
+					if((*i)->source()->data().mNeighborBurned ||
+					   (*i)->target()->data().mNeighborBurned)
+					{
+						en->must_merge = false;
+						en->must_lock = true;
+					}
+					if((*i)->source()->data().mNeighborNotBurned ||
+					   (*i)->target()->data().mNeighborNotBurned)
+					{
+						en->must_merge = true;
+						en->must_lock = false;
+					}
+				}
+				
+//				for(set<Halfedge_handle>::iterator i = edges.begin(); i != edges.end(); ++i)
+//				if((*i)->twin()->face() == *ff)
+//				if(en->must_merge)
+//					debug_mesh_line(cgal2ben((*i)->source()->point()),cgal2ben((*i)->target()->point()),1,1,0,1,1,0);
+				
 			}
 		}
 	}
@@ -1060,6 +1261,11 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 	int highest = 0, total = 0, over_4 = 0;
 	
 	multimap<int, FaceNode_t *, greater<int> >		nodes_by_degree;
+	
+	for(en = graph.edges; en; en = en->next)
+	{
+		DebugAssert(!en->must_merge);
+	}
 	
 	/* Fourth: color the remaining edges. */
 	for(fn = graph.faces; fn; fn = fn->next)
