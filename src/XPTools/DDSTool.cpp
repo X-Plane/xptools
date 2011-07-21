@@ -293,18 +293,23 @@ int pow2_down(int n)
 // returns true if the image ALREADY meets these criteria, false if it must
 // be resized.  if up & down are both false, a "false" return leaves the image in its
 // original (unusable) form.
-static bool HandleScale(ImageInfo& info, bool up, bool down, bool square)
+static bool HandleScale(ImageInfo& info, bool up, bool down, bool half, bool square)
 {
 	int nx = down ? pow2_down(info.width) : pow2_up(info.width);
 	int ny = down ? pow2_down(info.height) : pow2_up(info.height);
+	if(half) nx /= 2.0;
+	if(half) ny /= 2.0;
 
-	if(square && up) nx = ny = max(nx,ny);
+	if(square && up	 ) nx = ny = max(nx,ny);
 	if(square && down) nx = ny = min(nx, ny);
 
 	if(nx == info.width && ny == info.height)
 		return true;
 
-	if(!up && !down) return false;
+
+
+	if(!up && !down && !half) 
+		return false;
 
 	ImageInfo	n;
 	CreateNewBitmap(nx,ny,info.channels, &n);
@@ -411,6 +416,7 @@ int main(int argc, char * argv[])
 		printf("RADIO PVR_SCALE 1 --scale_none Do not resize images\n");
 		printf("RADIO PVR_SCALE 0 --scale_up Scale up to nearest power of 2\n");
 		printf("RADIO PVR_SCALE 0 --scale_down Scale down to nearest power of 2\n");
+		printf("RADIO PVR_SCALE 0 --scale_half Scale down by a factor of two\n");
 #if PHONE
 		printf("DIV\n");
 		printf("CHECK PREVIEW 0 --make_preview Output preview of compressed PVR image\n");
@@ -481,6 +487,7 @@ int main(int argc, char * argv[])
 		bool want_mips = false;
 		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		bool scale_half = strcmp(argv[2], "--scale_half") == 0;
 
 		int n = 3;
 
@@ -494,10 +501,10 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 
-		if (!HandleScale(info, scale_up, scale_down, true))
+		if (!HandleScale(info, scale_up, scale_down, scale_half, true))
 		{
 			// Image does NOT meet our power of 2 needs.
-			if(!scale_up && !scale_down)
+			if(!scale_up && !scale_down && !scale_half)
 			{
 				printf("The image is not a square power of 2.  It is: %d by %d\n", info.width, info.height);
 				return 1;
@@ -554,6 +561,7 @@ int main(int argc, char * argv[])
 		bool want_mips = false;
 		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		bool scale_half = strcmp(argv[2], "--scale_half") == 0;
 
 		int n = 3;
 
@@ -567,10 +575,10 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 
-		if (!HandleScale(info, scale_up, scale_down, false))
+		if (!HandleScale(info, scale_up, scale_down, scale_half, false))
 		{
 			// Image does NOT meet our power of 2 needs.
-			if(!scale_up && !scale_down)
+			if(!scale_up && !scale_down && !scale_half)
 			{
 				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
 				return 1;
@@ -643,6 +651,7 @@ int main(int argc, char * argv[])
 
 		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
+		bool scale_half = strcmp(argv[arg_base], "--scale_half") == 0;
 		arg_base +=1;
 
 		ImageInfo	info;
@@ -652,10 +661,10 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 
-		if (!HandleScale(info, scale_up, scale_down, false))
+		if (!HandleScale(info, scale_up, scale_down, scale_half, false))
 		{
 			// Image does NOT meet our power of 2 needs.
-			if(!scale_up && !scale_down)
+			if(!scale_up && !scale_down && !scale_half)
 			{
 				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
 				return 1;
@@ -735,6 +744,7 @@ int main(int argc, char * argv[])
 
 		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
+		bool scale_half = strcmp(argv[arg_base], "--scale_half") == 0;
 		arg_base +=1;
 
 		ImageInfo	info;
@@ -744,10 +754,10 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 
-		if (!HandleScale(info, scale_up, scale_down, false))
+		if (!HandleScale(info, scale_up, scale_down, scale_half, false))
 		{
 			// Image does NOT meet our power of 2 needs.
-			if(!scale_up && !scale_down)
+			if(!scale_up && !scale_down && !scale_half)
 			{
 				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
 				return 1;
@@ -808,6 +818,7 @@ int main(int argc, char * argv[])
 	{
 		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		bool scale_half = strcmp(argv[2], "--scale_half") == 0;
 		int n = 3;
 
 		ImageInfo	info;
@@ -817,10 +828,10 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 
-		if (!HandleScale(info, scale_up, scale_down, false))
+		if (!HandleScale(info, scale_up, scale_down, scale_half, false))
 		{
 			// Image does NOT meet our power of 2 needs.
-			if(!scale_up && !scale_down)
+			if(!scale_up && !scale_down && !scale_half)
 			{
 				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
 				return 1;
@@ -908,6 +919,7 @@ int main(int argc, char * argv[])
 	{
 		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
+		bool scale_half = strcmp(argv[2], "--scale_half") == 0;
 		int n = 3;
 
 		ImageInfo	info;
@@ -917,10 +929,10 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 
-		if (!HandleScale(info, scale_up, scale_down, false))
+		if (!HandleScale(info, scale_up, scale_down, scale_half, false))
 		{
 			// Image does NOT meet our power of 2 needs.
-			if(!scale_up && !scale_down)
+			if(!scale_up && !scale_down && !scale_half)
 			{
 				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
 				return 1;
