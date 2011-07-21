@@ -321,7 +321,7 @@ unsigned char night_filter(unsigned char src[], int count, int channel, int leve
 	for(int i = 0; i < count; ++i)
 		total += (int) src[i];
 	total *= 2;
-	return min(255,total / count);	
+	return min(255,total / count);
 }
 
 unsigned char fade_filter(unsigned char src[], int count, int channel, int level)
@@ -335,7 +335,7 @@ unsigned char fade_filter(unsigned char src[], int count, int channel, int level
 		float alpha = interp(3,1.0,6,0.0,level);
 		total = (float) total * alpha;
 	}
-		
+
 	return total;
 }
 
@@ -349,7 +349,7 @@ unsigned char fade_2_black_filter(unsigned char src[], int count, int channel, i
 		float alpha = interp(3,1.0,6,0.0,level);
 		total = (float) total * alpha;
 	}
-		
+
 	return total;
 }
 
@@ -406,12 +406,12 @@ int main(int argc, char * argv[])
 		printf("RADIO PVR_MODE 0 --png2pvrtc4 4-bit PVR compression\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw16 PVR uses 16-bit color\n");
 		printf("RADIO PVR_MODE 0 --png2pvr_raw24 PVR uses 24-bit color\n");
-#endif		
+#endif
 		printf("DIV\n");
 		printf("RADIO PVR_SCALE 1 --scale_none Do not resize images\n");
 		printf("RADIO PVR_SCALE 0 --scale_up Scale up to nearest power of 2\n");
 		printf("RADIO PVR_SCALE 0 --scale_down Scale down to nearest power of 2\n");
-#if PHONE		
+#if PHONE
 		printf("DIV\n");
 		printf("CHECK PREVIEW 0 --make_preview Output preview of compressed PVR image\n");
 		printf("CHECK MIPS 1 --make_mips Create mipmap for PVR image\n");
@@ -610,12 +610,12 @@ int main(int argc, char * argv[])
 	{
 		int arg_base = 2;
 		int has_mips = 0;
-		
+
 		if(strcmp(argv[arg_base], "--std_mips") == 0)
 		{
 			has_mips = 0;
 			++arg_base;
-		} 
+		}
 		else if(strcmp(argv[arg_base], "--pre_mips") == 0)
 		{
 			has_mips = 1;
@@ -636,11 +636,11 @@ int main(int argc, char * argv[])
 			has_mips = 4;
 			++arg_base;
 		}
-		
+
 		float gamma = (strcmp(argv[arg_base], "--gamma_22") == 0) ? 2.2f : 1.8f;
 		arg_base +=1;
 
-		
+
 		bool scale_up = strcmp(argv[arg_base], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[arg_base], "--scale_down") == 0;
 		arg_base +=1;
@@ -691,7 +691,7 @@ int main(int argc, char * argv[])
 		case 3:			MakeMipmapStackWithFilter(&info,fade_filter);	break;
 		case 4:			MakeMipmapStackWithFilter(&info,fade_2_black_filter);	break;
 		}
-		
+
 		if (WriteBitmapToDDS(info, dxt_type, outf, gamma == GAMMA_SRGB)!=0)
 		{
 			printf("Unable to write DDS file %s\n", argv[arg_base+1]);
@@ -707,12 +707,12 @@ int main(int argc, char * argv[])
 		{
 			has_mips = 0;
 			++arg_base;
-		} 
+		}
 		else if(strcmp(argv[2], "--pre_mips") == 0)
 		{
 			has_mips = 1;
 			++arg_base;
-		} 
+		}
 		else if(strcmp(argv[2], "--night_mips") == 0)
 		{
 			has_mips = 2;
@@ -771,7 +771,7 @@ int main(int argc, char * argv[])
 		case 3:			MakeMipmapStackWithFilter(&info,fade_filter);	break;
 		case 4:			MakeMipmapStackWithFilter(&info,fade_2_black_filter);	break;
 		}
-		
+
 
 		if (WriteUncompressedToDDS(info, outf, gamma == GAMMA_SRGB)!=0)
 		{
@@ -811,7 +811,7 @@ int main(int argc, char * argv[])
 		int n = 3;
 
 		ImageInfo	info;
-		if(CreateBitmapFromPNG(argv[n], &info, true))
+		if(CreateBitmapFromPNG(argv[n], &info, true, 2.2f))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
@@ -911,7 +911,7 @@ int main(int argc, char * argv[])
 		int n = 3;
 
 		ImageInfo	info;
-		if(CreateBitmapFromPNG(argv[n], &info, true))
+		if(CreateBitmapFromPNG(argv[n], &info, true, 2.2f))
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
