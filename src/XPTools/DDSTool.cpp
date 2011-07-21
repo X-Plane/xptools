@@ -561,7 +561,7 @@ int main(int argc, char * argv[])
 		if(strcmp(argv[n],"--make_mips")==0) { want_mips = true; ++n; }
 
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[n], &info, true)!=0)
+		if (CreateBitmapFromPNG(argv[n], &info, true,2.2f)!=0)
 		{
 			printf("Unable to open png file %s\n", argv[n]);
 			return 1;
@@ -578,7 +578,7 @@ int main(int argc, char * argv[])
 			else if(want_preview)
 			{
 				string preview_path = string(argv[n]) + ".scl.png";
-				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0);
+				WriteBitmapToPNG(&info, preview_path.c_str(), NULL, 0, 2.2f);
 			}
 		}
 
