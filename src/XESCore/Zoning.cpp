@@ -272,11 +272,17 @@ struct zone_borders_t {
 
 int mark_is_locked(Vertex_handle v, NT coord, const set<double>& locked_pts)
 {
+	if(locked_pts.empty()) 
+	{
+		v->data().mNeighborBurned = false;
+		v->data().mNeighborNotBurned = true;
+		return 0;
+	}
+	
 	double coordf = CGAL::to_double(coord);
 	
 	set<double>::const_iterator k = locked_pts.lower_bound(coordf);
 	double k1, k2;
-	DebugAssert(!locked_pts.empty());
 	if(locked_pts.size() == 1)
 		k1 = k2 = *k;
 	else if (k == locked_pts.begin())
