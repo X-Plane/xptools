@@ -124,6 +124,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_ElevationOverlay,	"Elevation Overlay"				,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
+{		dem_Region,				"Region"						,	dem_Enum,					false,	true,	"Region=%s "	},
 {		dem_ParkType,			"Parks"							,	dem_Enum,					false,  true,	"Park=%s"		},
 {		dem_ForestType,			"Forests"						,	dem_Zones,					false,  true,	"Forest=%s"		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
