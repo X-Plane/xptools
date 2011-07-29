@@ -640,8 +640,8 @@ static face_cat categorize_vertex(CDT& mesh, CDT::Face_handle f, int n, Bbox2& b
 	if(LowerPriorityNaturalTerrain(lu, b->first))
 		lu = b->first;
 	
-	if(gNaturalTerrainInfo[lu].is_city)	return (f->info().normal[2] < cos(max_slope * DEG_TO_RAD)) ? cat_forest : cat_urban;
-	else if (gNaturalTerrainInfo[lu].is_forest)	return cat_forest;
+	if(gNaturalTerrainInfo[lu].autogen_mode == URBAN)	return (f->info().normal[2] < cos(max_slope * DEG_TO_RAD)) ? cat_forest : cat_urban;
+	else if (gNaturalTerrainInfo[lu].autogen_mode == FOREST)	return cat_forest;
 	else return cat_flat;
 }
 

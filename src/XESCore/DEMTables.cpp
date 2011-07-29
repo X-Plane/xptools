@@ -33,8 +33,8 @@
 // use the MeshTool release branch to avoid this fundamental change!
 #define OLD_SERGIO_RULES 0
 
-static int s_is_city = 0;
-static int s_is_forest = 0;
+//static int s_is_city = 0;
+//static int s_is_forest = 0;
 
 
 EnumColorTable				gEnumColors;
@@ -219,12 +219,12 @@ bool HandleFlags(const vector<string>& tokens, void * ref)
 {
 	if(tokens[0] == "TERRAIN_IS_CITY")
 	{
-		s_is_city = atoi(tokens[1].c_str());
+//		s_is_city = atoi(tokens[1].c_str());
 		return true;
 	}
 	if(tokens[0] == "TERRAIN_FOREST")
 	{
-		s_is_forest = atoi(tokens[1].c_str());
+//		s_is_forest = atoi(tokens[1].c_str());
 		return true;
 	}
 	return false;
@@ -373,8 +373,8 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		string	shader_mode;
 
 		NaturalTerrainInfo_t	info;
-		info.is_city = s_is_city;
-		info.is_forest = s_is_forest;
+//		info.is_city = s_is_city;
+//		info.is_forest = s_is_forest;
 		if(TokenizeLine(tokens," eifcessPisfss",
 			&ter_name,	
 			&info.layer,
@@ -488,8 +488,8 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	NaturalTerrainInfo_t	info;
 	NaturalTerrainRule_t	rule;
 	
-	info.is_city = s_is_city;
-	info.is_Forest = s_is_forest;
+//	info.is_city = s_is_city;
+//	info.is_forest = s_is_forest;
 	int						forest_type;	// no longer used
 	string					ter_name, tex_name, proj;
 
@@ -894,8 +894,8 @@ void	LoadDEMTables(void)
 	gLandUseTransTable.clear();
 
 	sCliffs.clear();
-	s_is_city = 0;
-	s_is_forest = 0;
+//	s_is_city = 0;
+//	s_is_forest = 0;
 
 	RegisterLineHandler("ENUM_COLOR", ReadEnumColor, NULL);
 	RegisterLineHandler("COLOR_BAND", ReadEnumBand, NULL);

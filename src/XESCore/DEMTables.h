@@ -130,8 +130,8 @@ struct	NaturalTerrainInfo_t {
 	// DEFS
 	int				regionalization;	// index into regionalization table for correct library output.
 	int				layer;
-	int				is_city;
-	int				is_forest;
+//	int				is_city;
+//	int				is_forest;
 	float			xon_dist;
 	int				custom_ter;
 	proj_dir_t		proj_angle;			// Projection angle.  For legacy terrain this influences the xon distances.  For next-gen, always use "down"...the way the xon is scaled
