@@ -237,8 +237,8 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		string		lu_set_string;
 	
 		NaturalTerrainRule_t	rule;
-		if(TokenizeLine(tokens," eesffffffffffiffffffe",
-			&rule.terrain, &rule.zoning, &lu_set_string,
+		if(TokenizeLine(tokens," eeseffffffffffiffffffe",
+			&rule.terrain, &rule.zoning, &lu_set_string, &rule.region,
 			&rule.elev_min,
 			&rule.elev_max,
 			&rule.slope_min,
@@ -256,7 +256,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&rule.elev_range_max,
 			&rule.lat_min,
 			&rule.lat_max,
-			&rule.name) != 22)
+			&rule.name) != 23)
 				return false;
 		
 		rule.climate = NO_VALUE;
@@ -375,11 +375,12 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		NaturalTerrainInfo_t	info;
 		info.is_city = s_is_city;
 		info.is_forest = s_is_forest;
-		if(TokenizeLine(tokens," eifcssPisfss",
+		if(TokenizeLine(tokens," eifcessPisfss",
 			&ter_name,	
 			&info.layer,
 			&info.xon_dist,
 			&info.map_rgb,
+			&info.autogen_mode,
 			&info.base_tex,
 			&info.border_tex,
 			&info.base_res,
@@ -387,8 +388,17 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.decal,
 			&info.normal_scale,
 			&info.normal,
-			&shader_mode) != 13)
+			&shader_mode) != 14)
 		return false;
+		
+		if(info.autogen_mode != BARE &&
+			info.autogen_mode != FOREST &&
+			info.autogen_mode != URBAN)
+		{
+			fprintf(stderr,"ERROR: terrain info %s has bad autogen mode %s.\n", FetchTokenString(ter_name), FetchTokenString(info.autogen_mode));
+			return false;
+			
+		}
 
 		info.regionalization = -1;
 		string ter_string(FetchTokenString(ter_name));
@@ -430,23 +440,23 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		switch(info.shader) {
 		case shader_slope:
 		case shader_slope2:
-			if(TokenizeLine(tokens,"             s", &id) != 14) return false;
+			if(TokenizeLine(tokens,"              s", &id) != 15) return false;
 			if(sCliffs.count(id) == 0) { fprintf(stderr,"Unknown cliff type: %s\n", id.c_str()); return false; }
 			
 			info.cliff_info = sCliffs[id];
 			break;
 		case shader_tile:
-			if(TokenizeLine(tokens,"             iii",
+			if(TokenizeLine(tokens,"              iii",
 				&info.tiles_x,
 				&info.tiles_y,
-				&has_compo) != 16) return false;
+				&has_compo) != 17) return false;
 			if(has_compo)info.compo_tex = MakeCompo(info.base_tex);	
 			break;
 		case shader_vary:
 			info.compo_tex = MakeCompo(info.base_tex);	
 			break;			
 		case shader_composite:
-			if(TokenizeLine(tokens,"             sPsffffff",
+			if(TokenizeLine(tokens,"              sPsffffff",
 				&info.compo_tex,
 				&info.comp_res,
 				&info.noise_tex,
@@ -455,7 +465,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 				&info.composite_params[2],
 				&info.composite_params[3],
 				&info.composite_params[4],
-				&info.composite_params[5]) != 22) return false;
+				&info.composite_params[5]) != 23) return false;
 			break;
 		}
 		
@@ -487,6 +497,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	int						auto_vary;									// 0 = none. 1 = 4 variations, all fake. 2 = 4 variations, 2 & 2. 3 = 4 variations for HEADING.
 
 	rule.zoning = NO_VALUE;
+	info.region = NO_VALUE;
 	rule.climate = NO_VALUE;
 	rule.urban_density_min = rule.urban_density_max = 0.0;
 	rule.urban_radial_min = rule.urban_radial_max = 0.0;
@@ -746,6 +757,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		LowerCheckName(rep_name);
 		rule.name = LookupTokenCreate(rep_name.c_str());
 		info.base_tex = tex_name;
+		info.autogen_mode = BARE;
 		if(auto_vary == 2)								// Auto-vary with two textures - convention is "2" on end of second texture.
 		{
 			info.compo_tex = MakeCompo(info.base_tex);

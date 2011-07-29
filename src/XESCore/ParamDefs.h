@@ -32,6 +32,11 @@
 
 	TOKEN(NO_VALUE)
 
+	/* AUTOGEN MOES */
+	TOKEN(BARE)
+	TOKEN(FOREST)
+	TOKEN(URBAN)
+
 	/* CONTINUOUS PARAM (DEM) TYPES */
 
 	/* These are continuous data DEMs. */

@@ -120,7 +120,7 @@
 #endif
 
 MeshPrefs_t gMeshPrefs = {		/*iphone*/
-/* max_points		*/	PHONE ?		25000	: 278000,
+/* max_points		*/	PHONE ?		25000	: 78000,
 /* max_error		*/	PHONE ?		15		: 5.0,
 /* border_match		*/	PHONE ?		1		: 1,
 /* optimize_borders	*/	PHONE ?		1		: 1,

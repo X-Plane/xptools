@@ -76,6 +76,7 @@ struct	NaturalTerrainRule_t {
 	int				terrain;	//	e.g. natural_Terrain
 	int				zoning;
 	int				landuse;
+	int				region;
 	int				climate;
 	float			elev_min;
 	float			elev_max;
@@ -137,6 +138,7 @@ struct	NaturalTerrainInfo_t {
 										// is pretty reasonable for a next-gen terrain because xon distances are horizontal.
 
 	// 2-D texturing common to pretty much everything.
+	int				autogen_mode;
 	string			base_tex;
 	string			lit_tex;
 	Point2			base_res;
