@@ -63,7 +63,7 @@ void		WED_FacadePlacement::SetResource(const string& r)
 	resource = r;
 }
 
-int		WED_FacadePlacement::GetTopoMode(void) const 
+WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const 
 {
 	IResolver * r = GetArchive()->GetResolver();
 	if(r)
@@ -74,12 +74,12 @@ int		WED_FacadePlacement::GetTopoMode(void) const
 			fac_info_t f;
 			if(rr->GetFac(resource.value,f))
 			{
-				if(f.roof) return 0;
-				return f.ring ? 1 : 2;
+				if(f.roof) return topo_Area;
+				return f.ring ? topo_Ring : topo_Chain;
 			}
 		}
 	}
-	return 0;
+	return topo_Area;
 }
 
 //void		WED_FacadePlacement::GetWallChoices(vector<int>& out_walls)

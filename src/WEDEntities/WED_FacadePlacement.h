@@ -32,6 +32,13 @@ DECLARE_PERSISTENT(WED_FacadePlacement)
 
 public:
 
+	enum TopoMode {
+		topo_Area = 0,
+		topo_Ring = 1,
+		topo_Chain = 2
+	};
+
+
 #if AIRPORT_ROUTING
 	virtual	bool			HasLayer		(GISLayer_t layer							  ) const;
 #endif			
@@ -42,7 +49,7 @@ public:
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
 
-			int			GetTopoMode(void) const;
+			TopoMode	GetTopoMode(void) const;
 
 //			void		GetWallChoices(vector<int>& out_walls);
 			bool		HasCustomWalls(void) const;
