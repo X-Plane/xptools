@@ -26,7 +26,12 @@
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 
-WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
+WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
+	WED_GISPoint_Heading(a,i),
+#if AIRPORT_ROUTING
+	has_msl(this,"Set MSL", "", "", 0),
+	msl(this,"MSL", "", "", 0, 5,3),
+#endif
 	resource(this,"Resource", "WED_dsf_overlay", "resource", "")
 {
 }
@@ -54,3 +59,27 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	Bbox2	my_bounds(my_loc - Vector2(SLOP,SLOP), my_loc + Vector2(SLOP, SLOP));	
 	return b.overlap(my_bounds);
 }
+
+#if AIRPORT_ROUTING
+bool		WED_ObjPlacement::HasCustomMSL(void) const
+{
+	return has_msl.value;
+}
+
+double		WED_ObjPlacement::GetCustomMSL(void) const
+{
+	return msl.value;
+}
+
+void		WED_ObjPlacement::SetCustomMSL(double in_msl)
+{
+	has_msl = 1;
+	msl = in_msl;
+}
+
+void		WED_ObjPlacement::SetDefaultMSL(void)
+{
+	has_msl = 0;
+}
+
+#endif

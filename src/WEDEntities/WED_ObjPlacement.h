@@ -36,10 +36,19 @@ public:
 	virtual	bool		Cull(const Bbox2& b) const;
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
+
+			bool		HasCustomMSL(void) const;
+			double		GetCustomMSL(void) const;
 			
+			void		SetCustomMSL(double msl);
+			void		SetDefaultMSL(void);
 
 private:
 
+#if AIRPORT_ROUTING
+	WED_PropBoolText		has_msl;
+	WED_PropDoubleText		msl;	
+#endif
 	WED_PropStringText		resource;
 
 };
