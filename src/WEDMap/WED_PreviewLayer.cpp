@@ -285,22 +285,21 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		}
 	}
 	
-	if(fac && fac->GetTopoMode() < 2)
+	if(fac && fac->GetTopoMode() != WED_FacadePlacement::topo_Chain)
 	{
 		vector<Point2>	pts;
-		vector<int>		is_hole_start;
 
-		PointSequenceToVector(gis_poly->GetOuterRing(), GetZoomer(), pts, orth != NULL, is_hole_start, 0);
+		SideToPoints(gis_poly->GetOuterRing(), 0, GetZoomer(), pts);
 
 		glColor3f(1,1,1);
 		glLineWidth(3);
-		glBegin(GL_LINE_STRIP);
-		glVertex2(pts[0]);
-		glVertex2(pts[1]);
+		glBegin(GL_LINES/*GL_LINE_STRIP*/);
+		for(vector<Point2>::iterator p = pts.begin(); p != pts.end(); ++p)
+			glVertex2(*p);
 		glEnd();
 		glLineWidth(1);
 	}
-	if(fac && fac->HasCustomWalls())
+	if(fac)
 	{
 		g->SetState(false,0,false,true,true,false,false);
 	
@@ -310,41 +309,19 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 			for(int i = 0; i < ps->GetNumSides(); ++i)
 			{
 				vector<Point2>	pts;
-				Segment2	s;
-				Bezier2		b;
-				if (ps->GetSide(gis_Geo,i,s,b))
-				{
-					s.p1 = b.p1;
-					s.p2 = b.p2;
-
-					b.p1 = GetZoomer()->LLToPixel(b.p1);
-					b.p2 = GetZoomer()->LLToPixel(b.p2);
-					b.c1 = GetZoomer()->LLToPixel(b.c1);
-					b.c2 = GetZoomer()->LLToPixel(b.c2);
-
-
-					int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
-										sqrt(Vector2(b.c1,b.c2).squared_length()) +
-										sqrt(Vector2(b.c2,b.p2).squared_length());
-					int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
-					pts.reserve(point_count+1);
-					for (int n = 0; n <= point_count; ++n)
-						pts.push_back(b.midpoint((float) n / (float) point_count));
-
-				}
-				else
-				{
-					pts.push_back(GetZoomer()->LLToPixel(s.p1));
-					pts.push_back(GetZoomer()->LLToPixel(s.p2));
-				}
 				
-				Segment2	sp;
-				Bezier2		bp;
-				int param;
-				if(ps->GetSide(gis_Param,i,sp,bp))
-					param = bp.p1.x();
-				else
-					param = sp.p1.x();
+				SideToPoints(ps,i,GetZoomer(), pts);
+				
+				int param = 0;
+				if(fac->HasCustomWalls())				
+				{
+					Segment2	sp;
+					Bezier2		bp;
+					if(ps->GetSide(gis_Param,i,sp,bp))
+						param = bp.p1.x();
+					else
+						param = sp.p1.x();
+				}
 				
 				float colors[24] = {  1, 0, 0, 0.75,
 									1, 1, 0, 0.75,
@@ -354,7 +331,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 									1, 0, 1, 0.75};
 				glColor4fv(colors + (param % 6) * 4);
 				glLineWidth(2);
-				glShapeOffset2v(GL_LINE_STRIP, &*pts.begin(), pts.size(), -3);
+				glShapeOffset2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size(), -3);
 				glLineWidth(1);
 
 			}
