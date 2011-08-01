@@ -53,7 +53,7 @@ void WED_generate_routes(
 
 //	make_cgal_net_for_map(pavement, routing, in_poi);
 
-	printf("We have %d edges and %d nodes.\n", routing.edges.size(), routing.nodes.size());
+	printf("We have %zd edges and %zd nodes.\n", routing.edges.size(), routing.nodes.size());
 
 
 
