@@ -309,10 +309,10 @@ void	WindingToFile(const vector<Polygon2>& w, const char * filename)
 {
 	FILE * fi = fopen(filename,"w");
 	if(fi == NULL) return;
-	fprintf(fi,"TOTAL %d\n", w.size());
+	fprintf(fi,"TOTAL %zd\n", w.size());
 	for(vector<Polygon2>::const_iterator i = w.begin(); i != w.end(); ++i)
 	{
-		fprintf(fi,"POLYGON %d\n",i->size());
+		fprintf(fi,"POLYGON %zd\n",i->size());
 		for(Polygon2::const_iterator c = i->begin(); c != i->end(); ++c)
 		{
 			fprintf(fi,"PT 0x%016llX 0x%016llX\n", *((unsigned long long *) &c->x_), *((unsigned long long *) &c->y_));
