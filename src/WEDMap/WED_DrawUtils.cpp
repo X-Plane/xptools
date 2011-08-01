@@ -26,6 +26,7 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_UIDefs.h"
 #include "MathUtils.h"
+#include "WED_EnumSystem.h"
 #if APL
 #include <OpenGL/glu.h>
 #else
@@ -176,3 +177,371 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n)
 	gluDeleteTess(tess);
 }
 
+
+void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const set<int>& attrs, WED_Color c)
+{
+	if (attrs.empty())
+	{
+		glColor4fv(WED_Color_RGBA(c));
+		glShape2v(GL_LINE_STRIP, pts, count);
+		return;
+	}
+	else for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
+	switch(*a) {
+	// ------------ STANDARD TAXIWAY LINES ------------
+	case line_SolidYellow:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BrokenYellow:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0x3333);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_DoubleSolidYellow:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(3);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0,0,0,1);
+		glLineWidth(1);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_RunwayHold:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x3333);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,3);
+		glDisable(GL_LINE_STIPPLE);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-3);
+		glColor4f(0,0,0,1);
+		glLineWidth(1);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,3);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-3);
+		break;
+	case line_OtherHold:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x3333);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,1.5);
+		glDisable(GL_LINE_STIPPLE);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-1.5);
+		break;
+	case line_ILSHold:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(5);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0,0,0,1);
+		glLineWidth(3);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0x1111);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_ILSCriticalCenter:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(5);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xF0F0);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0,0,0,1);
+		glLineWidth(3);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_WideBrokenSingle:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xF0F0);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_WideBrokenDouble:
+
+		glColor4f(1,1,0,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xF0F0);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0,0,0,1);
+		glLineWidth(1);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+
+	// ------------ ROADWAY TAXIWAY LINES ------------
+	case line_SolidWhite:
+
+		glColor4f(1,1,1,1);
+		glLineWidth(1);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_Chequered:
+
+		glColor4f(1,1,1,1);
+		glLineWidth(6);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0x3333);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0,0,0,1);
+		glLineWidth(2);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,1,1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0xCCCC);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BrokenWhite:
+
+		glColor4f(1,1,1,1);
+		glLineWidth(1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0x3333);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+
+	// ------------ BLACK-BACKED TAXIWAY LINES ------------
+	case line_BSolidYellow:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(3);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BBrokenYellow:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(3);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0x3333);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BDoubleSolidYellow:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(5);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(3);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(1);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BRunwayHold:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(12);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x3333);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,3);
+		glDisable(GL_LINE_STIPPLE);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-3);
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(1);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,3);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-3);
+		break;
+	case line_BOtherHold:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(6);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x3333);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,1.5);
+		glDisable(GL_LINE_STIPPLE);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-1.5);
+		break;
+	case line_BILSHold:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(7);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(5);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(3);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0x1111);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BILSCriticalCenter:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(7);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(5);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xF0F0);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(3);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BWideBrokenSingle:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(3);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(1);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xF0F0);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BWideBrokenDouble:
+
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(5);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,1,0,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xF0F0);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0.3,0.3,0.3,1);
+		glLineWidth(1);
+		glDisable(GL_LINE_STIPPLE);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+
+	// ------------ LIGHTS ------------
+	case line_TaxiCenter:
+
+		glColor4f(0.3,1,0.3,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x7000);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_TaxiEdge:
+
+		glColor4f(0,0,1,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x7000);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count,-5);
+		break;
+	case line_HoldLights:
+
+		glColor4f(1,0.5,0,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x7070);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_HoldLightsPulse:
+
+		glColor4f(1,0.5,0,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x7000);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(0.3,0.1,0,1);
+		glLineStipple(1,0x0070);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_HoldShortCenter:
+
+		glColor4f(0.3,1,0.3,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x7000);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		glColor4f(1,0.5,0,1);
+		glLineStipple(1,0x0070);
+		glShape2v(GL_LINE_STRIP, pts, count);
+		break;
+	case line_BoundaryEdge:
+
+		glColor4f(1,0,0,1);
+		glLineWidth(3);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1,0x7000);
+		glShapeOffset2v(GL_LINE_STRIP, pts, count, -5);
+		break;
+	}
+
+	glLineWidth(1);
+	glDisable(GL_LINE_STIPPLE);
+}
+
+void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<Point2>& pts)
+{
+	Segment2	s;
+	Bezier2		b;
+	if (ps->GetSide(gis_Geo,i,s,b))
+	{
+		s.p1 = b.p1;
+		s.p2 = b.p2;
+
+		b.p1 = z->LLToPixel(b.p1);
+		b.p2 = z->LLToPixel(b.p2);
+		b.c1 = z->LLToPixel(b.c1);
+		b.c2 = z->LLToPixel(b.c2);
+
+
+		int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
+							sqrt(Vector2(b.c1,b.c2).squared_length()) +
+							sqrt(Vector2(b.c2,b.p2).squared_length());
+		int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+		pts.reserve(point_count+1);
+		for (int n = 0; n <= point_count; ++n)
+			pts.push_back(b.midpoint((float) n / (float) point_count));
+
+	}
+	else
+	{
+		pts.push_back(z->LLToPixel(s.p1));
+		pts.push_back(z->LLToPixel(s.p2));
+	}
+}
