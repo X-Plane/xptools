@@ -968,16 +968,17 @@ void DSF_AccumPolygonWithHoles(
 	cbs->EndPolygonWinding_f(writer);
 }
 
-static void	DSF_ExportTileRecursive(
+static int	DSF_ExportTileRecursive(
 						WED_Thing *					what, 
 						ILibrarian *				pkg, 
 						const Bbox2&				bounds, 
-						set<string>&				io_resources, 
 						DSF_ResourceTable&			io_table, 
 						const DSFCallbacks_t *		cbs, 
 						void *						writer,
 						set<WED_Thing *>&			problem_children)
 {
+	int real_thingies = 0;
+	
 	WED_ObjPlacement * obj;
 	WED_FacadePlacement * fac;
 	WED_ForestPlacement * fst;
@@ -991,15 +992,15 @@ static void	DSF_ExportTileRecursive(
 	string r;
 	Point2	p;
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
-	if (!ent) return;
-	if (ent->GetHidden()) return;
+	if (!ent) return 0;
+	if (ent->GetHidden()) return 0;
 	
 	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
 	
 		Bbox2	ent_box;
 		e->GetBounds(gis_Geo,ent_box);
 	if(!ent_box.overlap(bounds))
-		return;
+		return 0;
 		
 	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
 	{
@@ -1030,6 +1031,7 @@ static void	DSF_ExportTileRecursive(
 			{
 				char valbuf[512];
 				sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
+				++real_thingies;
 				cbs->AcceptProperty_f(pname, valbuf, writer);
 			}
 		}
@@ -1042,11 +1044,20 @@ static void	DSF_ExportTileRecursive(
 		obj->GetLocation(gis_Geo,p);
 		if(bounds.contains(p))
 		{
-			double xy[2] = { p.x(), p.y() };
+			double xy[3] = { p.x(), p.y(), 0.0 };
 			float heading = obj->GetHeading();
 			while(heading < 0) heading += 360.0;
 			while(heading >= 360.0) heading -= 360.0;
-			cbs->AddObject_f(idx, xy, heading, writer);
+			++real_thingies;
+			#if AIRPORT_ROUTING
+			if(obj->HasCustomMSL())
+			{
+				xy[2] = obj->GetCustomMSL();
+				cbs->AddObjectAbsolute_f(idx, xy, heading, writer);
+			}
+			else
+			#endif
+				cbs->AddObject_f(idx, xy, heading, writer);
 		}
 	}
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
@@ -1054,15 +1065,16 @@ static void	DSF_ExportTileRecursive(
 		fac->GetResource(r);
 		idx = io_table.accum_pol(r);
 		bool bez = WED_HasBezierPol(fac);
-		bool fac_is_auto_closed = fac->GetTopoMode() != 2;
+		bool fac_is_auto_closed = fac->GetTopoMode() != WED_FacadePlacement::topo_Chain;
 		
-		if(fac->GetTopoMode() == 0 && fac->HasCustomWalls())
+		if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area && fac->HasCustomWalls())
 		{
 			if(bez)
 			{
 				vector<vector<Bezier2p> >	fac_area;
 				if(WED_BezierPolygonWithHolesForPolygon(fac, fac_area) && shape_in_bbox(fac_area, bounds))
 				{
+					++real_thingies;
 					cbs->BeginPolygon_f(idx,fac->GetHeight(),5,writer);			
 					DSF_AccumPolygonWithHolesBezier(fac_area, bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
@@ -1074,6 +1086,7 @@ static void	DSF_ExportTileRecursive(
 				vector<vector<Segment2p> >		fac_area;
 				if(WED_PolygonWithHolesForPolygon(fac,fac_area) && shape_in_bbox(fac_area, bounds))
 				{
+					++real_thingies;
 					cbs->BeginPolygon_f(idx,fac->GetHeight(),3,writer);
 					DSF_AccumPolygonWithHoles(fac_area, bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
@@ -1082,7 +1095,7 @@ static void	DSF_ExportTileRecursive(
 					problem_children.insert(what);
 			}		
 		}		
-		else if(fac->GetTopoMode() == 0)
+		else if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area)
 		{		
 			if(bez)
 			{
@@ -1093,6 +1106,7 @@ static void	DSF_ExportTileRecursive(
 					ClipBezierPolygon(fac_area,bounds, cuts);
 					for(vector<Bezier_polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
 					{
+						++real_thingies;
 						cbs->BeginPolygon_f(idx,fac->GetHeight(),4,writer);			
 						DSF_AccumPolygonWithHolesBezier(*ci, NULL, bounds, cbs, writer);
 						cbs->EndPolygon_f(writer);
@@ -1111,6 +1125,7 @@ static void	DSF_ExportTileRecursive(
 					
 					for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
 					{
+						++real_thingies;
 						cbs->BeginPolygon_f(idx,fac->GetHeight(),2,writer);
 						DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
 						cbs->EndPolygon_f(writer);
@@ -1134,7 +1149,10 @@ static void	DSF_ExportTileRecursive(
 					CropBezierChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
+					{
+						++real_thingies;
 						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+					}
 				}
 				else
 				{		
@@ -1147,7 +1165,10 @@ static void	DSF_ExportTileRecursive(
 					CropSegmentChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
+					{
+						++real_thingies;
 						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+					}
 				}
 			}
 		}
@@ -1165,7 +1186,10 @@ static void	DSF_ExportTileRecursive(
 					CropBezierChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
+					{
+						++real_thingies;
 						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+					}
 				}
 				else
 				{		
@@ -1175,7 +1199,10 @@ static void	DSF_ExportTileRecursive(
 					CropSegmentChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
+					{
+						++real_thingies;
 						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+					}
 				}
 			}
 		}
@@ -1198,6 +1225,7 @@ static void	DSF_ExportTileRecursive(
 					ClipPolygon(fst_area, bounds,cuts);
 					for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
 					{
+						++real_thingies;
 						cbs->BeginPolygon_f(idx,param,2,writer);
 						DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
 						cbs->EndPolygon_f(writer);
@@ -1218,7 +1246,10 @@ static void	DSF_ExportTileRecursive(
 					CropSegmentChainBox(chain,cut_chain,bounds);
 
 					if(!cut_chain.empty())
+					{
+						++real_thingies;
 						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, param, 0);
+					}
 				}
 			}
 			break;
@@ -1239,6 +1270,7 @@ static void	DSF_ExportTileRecursive(
 				}
 				if(!pts.empty())
 				{
+					++real_thingies;
 					DSF_AccumPts(pts.begin(),pts.end(), bounds, cbs,writer, idx, param);
 				}
 			}
@@ -1260,7 +1292,10 @@ static void	DSF_ExportTileRecursive(
 			CropBezierChainBox(chain,cut_chain,bounds);
 
 			if(!cut_chain.empty())
+			{
+				++real_thingies;
 				DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, str->GetSpacing(), 0);
+			}
 		}
 		else
 		{		
@@ -1270,7 +1305,10 @@ static void	DSF_ExportTileRecursive(
 			CropSegmentChainBox(chain,cut_chain,bounds);
 
 			if(!cut_chain.empty())
+			{
+				++real_thingies;
 				DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, str->GetSpacing(), 0);
+			}
 		}
 	}
 
@@ -1305,6 +1343,7 @@ static void	DSF_ExportTileRecursive(
 						cut_chain.pop_back();
 					}
 				}
+				++real_thingies;
 				DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
 			}
 		}
@@ -1334,6 +1373,7 @@ static void	DSF_ExportTileRecursive(
 						cut_chain.pop_back();
 					}
 				}
+				++real_thingies;					
 				DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
 			}
 		}
@@ -1354,6 +1394,7 @@ static void	DSF_ExportTileRecursive(
 				ClipBezierPolygon(pol_area,bounds, cuts);
 				for(vector<Bezier_polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
 				{
+					++real_thingies;
 					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHolesBezier(*ci, NULL, bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
@@ -1371,6 +1412,7 @@ static void	DSF_ExportTileRecursive(
 				ClipPolygon(pol_area, bounds,cuts);
 				for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
 				{
+					++real_thingies;
 					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
 					DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
@@ -1398,6 +1440,7 @@ static void	DSF_ExportTileRecursive(
 				ClipBezierPolygon(orth_area,bounds, cuts);
 				for(vector<Bezier_polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
 				{
+					++real_thingies;
 					cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
 					DSF_AccumPolygonWithHolesBezier(*ci, &uv, bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
@@ -1415,6 +1458,7 @@ static void	DSF_ExportTileRecursive(
 				ClipPolygon(orth_area, bounds,cuts);
 				for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
 				{
+					++real_thingies;
 					cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
 					DSF_AccumPolygonWithHoles(*ci, &uv, bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
@@ -1427,10 +1471,11 @@ static void	DSF_ExportTileRecursive(
 
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
-		DSF_ExportTileRecursive(what->GetNthChild(c), pkg, bounds, io_resources, io_table, cbs, writer, problem_children);
+		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), pkg, bounds, io_table, cbs, writer, problem_children);
+	return real_thingies;	
 }
 
-static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set<string>& io_resources, set <WED_Thing *>& problem_children)
+static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set <WED_Thing *>& problem_children)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
@@ -1453,7 +1498,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	DSF_ResourceTable	rsrc;
 
 	Bbox2	clip_bounds(x,y,x+1,y+1);
-	DSF_ExportTileRecursive(base, pkg, clip_bounds, io_resources, rsrc, &cbs, writer,problem_children);
+	int entities = DSF_ExportTileRecursive(base, pkg, clip_bounds, rsrc, &cbs, writer,problem_children);
 
 	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
 		cbs.AcceptObjectDef_f(s->c_str(), writer);
@@ -1470,8 +1515,11 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	full_dir  = rel_dir ;
 	pkg->LookupPath(full_dir );
 	pkg->LookupPath(full_path);
-	FILE_make_dir_exist(full_dir.c_str());
-	DSFWriteToFile(full_path.c_str(), writer);
+	if(entities)	// empty DSF?  Don't write a empty file, makes a mess!
+	{
+		FILE_make_dir_exist(full_dir.c_str());
+		DSFWriteToFile(full_path.c_str(), writer);
+	}
 	DSFDestroyWriter(writer);
 }
 
@@ -1485,12 +1533,10 @@ void DSF_Export(WED_Group * base, ILibrarian * package, set<WED_Thing *>& proble
 	int tile_south = floor(wrl_bounds.p1.y());
 	int tile_north = ceil (wrl_bounds.p2.y());
 
-	set<string>	generated_resources;
-
 	for (int y = tile_south; y < tile_north; ++y)
 	for (int x = tile_west ; x < tile_east ; ++x)
 	{
-		DSF_ExportTile(base, package, x, y, generated_resources, problem_children);
+		DSF_ExportTile(base, package, x, y, problem_children);
 	}
 
 	if(g_dropped_pts)
