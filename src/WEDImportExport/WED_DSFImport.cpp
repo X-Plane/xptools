@@ -196,6 +196,26 @@ public:
 		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 		obj->SetResource(me->obj_table[inObjectType]);
 		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
+		#if AIRPORT_ROUTING
+		obj->SetDefaultMSL();
+		#endif
+		obj->SetHeading(inRotation);
+		obj->SetName(me->obj_table[inObjectType]);
+		obj->SetParent(me->parent,me->parent->CountChildren());
+	}
+	static void	AddObjectMSL(
+					unsigned int	inObjectType,
+					double			inCoordinates[3],
+					double			inRotation,
+					void *			inRef)
+	{
+		DSF_Importer * me = (DSF_Importer *) inRef;
+		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
+		obj->SetResource(me->obj_table[inObjectType]);
+		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
+		#if AIRPORT_ROUTING
+		obj->SetCustomMSL(inCoordinates[2]);
+		#endif
 		obj->SetHeading(inRotation);
 		obj->SetName(me->obj_table[inObjectType]);
 		obj->SetParent(me->parent,me->parent->CountChildren());
@@ -522,7 +542,7 @@ public:
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,AddObject,	// NOTE: we are simply IGNORING MSL for now!!
+								AddObject,AddObjectMSL,	// NOTE: we are simply IGNORING MSL for now!!
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon };
 
