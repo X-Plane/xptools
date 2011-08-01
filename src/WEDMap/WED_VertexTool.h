@@ -99,6 +99,8 @@ private:
 		int						mIsTaxiSpin;
 		mutable Point2			mRotateCtr;
 		mutable Point2			mTaxiDest;
+		mutable double			mRotateOffset;
+		mutable	int				mRotateIndex;
 
 		IGISPoint *				mNewSplitPoint;		// When we option-click to get a split point...this is the newly born point.
 		

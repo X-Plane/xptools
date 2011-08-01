@@ -38,6 +38,7 @@
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
+#include "MathUtils.h"
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
 
@@ -163,7 +164,7 @@ int		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)	return 3;
 		break;
 	case gis_Point_Heading:
-		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)	return 2;
+		if ((pt_h = SAFE_CAST(IGISPoint_Heading, en)) != NULL)	return 5;
 		break;
 	case gis_Line:
 		if ((ln = SAFE_CAST(IGISLine,en)) != NULL)				return 2;
@@ -306,10 +307,30 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		{
 			if(mInEdit)
 			{
-				if(n==1)
+				if(n!=0)
 				{
-					*p = mTaxiDest;
-					if (dir) *dir = Vector2(mRotateCtr, mTaxiDest);
+					if(n == mRotateIndex)
+						*p = mTaxiDest;
+					else
+					{
+						Vector2 to_real_handle(mRotateCtr, mTaxiDest);
+						
+						to_real_handle = VectorLLToMeters(mRotateCtr,to_real_handle);
+						int cw_steps = n - mRotateIndex;
+						while(cw_steps > 0)
+						{
+							cw_steps--;
+							to_real_handle = to_real_handle.perpendicular_ccw();
+						}
+						while(cw_steps < 0)
+						{
+							cw_steps++;
+							to_real_handle = to_real_handle.perpendicular_cw();
+						}
+						to_real_handle = VectorMetersToLL(mRotateCtr, to_real_handle);
+						*p = mRotateCtr + to_real_handle;
+					}	
+					if (dir) *dir = Vector2(mRotateCtr, *p);
 					if (con_type) *con_type = handle_Rotate;
 				}
 				else
@@ -323,8 +344,9 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			{
 				pt_h->GetLocation(gis_Geo,*p);
 				Vector2	vdir;
-				NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading(),vdir);
-				if(n==1)
+				NorthHeading2VectorMeters(*p,*p,pt_h->GetHeading()+dobmax2(n-1,0)*90.0,vdir);
+				
+				if(n > 0)
 				{
 					Point2 orig (*p);
 					*p = GetZoomer()->LLToPixel(*p);
@@ -691,11 +713,13 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			} else {
 				if(!mInEdit)
 				{
+					mRotateIndex = n;
 					mInEdit = 1;
 					mRotateCtr = p;
 					Point2 me = p;
 					Vector2	dir;
-					NorthHeading2VectorMeters(p,p,pt_h->GetHeading(),dir);
+					mRotateOffset = (dobmax2(0,n-1)) * 90.0;
+					NorthHeading2VectorMeters(p,p,pt_h->GetHeading()+mRotateOffset,dir);
 					p = GetZoomer()->LLToPixel(p);
 					p += dir * 15.0;
 					p = GetZoomer()->PixelToLL(p);
@@ -705,7 +729,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 				mTaxiDest += delta;				
 				Vector2 dir = Vector2(mRotateCtr,mTaxiDest);
 				dir.normalize();
-				pt_h->SetHeading(VectorDegs2NorthHeading(mRotateCtr,mRotateCtr,dir));
+				pt_h->SetHeading(VectorDegs2NorthHeading(mRotateCtr,mRotateCtr,dir)-mRotateOffset);
 			}
 			return;
 		}
