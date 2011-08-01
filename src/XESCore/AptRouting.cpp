@@ -505,7 +505,7 @@ bool make_map_with_skeleton(
 //		CGAL::compute_intersection_points(edges_to_check.begin(), edges_to_check.end(), back_inserter(errs), false, tr);
 		if(!errs.empty())
 		{
-			printf("Found %d errs.\n", errs.size());
+			printf("Found %zd errs.\n", errs.size());
 			#if DEV
 			for(vector<Point_2>::iterator i = errs.begin(); i != errs.end(); ++i)
 				debug_mesh_point(cgal2ben(*i),1,0,0);
@@ -553,7 +553,7 @@ bool make_map_with_skeleton(
 		
 		if(bad_locs > 0 || !errs.empty())
 		{
-			printf("This layout is invalid: %d skeleton self-intersections and %d points outside the polygon area.  (Also, %d degen)\n",
+			printf("This layout is invalid: %zd skeleton self-intersections and %d points outside the polygon area.  (Also, %d degen)\n",
 				errs.size(), bad_locs, num_degen);
 			return false;
 		} else if (num_degen)
