@@ -142,7 +142,7 @@ void	find_crossing_beziers(
 	try {
 		CGAL::compute_intersection_points(in_curves.begin(),in_curves.end(),back_inserter(out_xons), false, traits);
 	} catch(...) {
-		printf("Crossing beziers blew up.  Listing %d curves:\n", in_curves.size());
+		printf("Crossing beziers blew up.  Listing %zd curves:\n", in_curves.size());
 		for(int n = 0; n < in_curves.size(); ++n)
 		{
 			printf("  Curve %d has %d points:\n", n, in_curves[n].number_of_control_points());
