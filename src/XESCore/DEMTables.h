@@ -189,6 +189,7 @@ int		FindNaturalTerrain(
 				int		terrain,
 				int		zoning,
 				int 	landuse,
+				int		region,
 //				int 	climate,
 //				float 	elevation,
 				float 	slope,

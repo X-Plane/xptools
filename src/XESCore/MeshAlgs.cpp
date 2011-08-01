@@ -1725,7 +1725,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 	if (inProg) inProg(0, 1, "Assigning Landuses", 0.0);
 
-	DEMGeo&	inClimate(inDEMs[dem_Climate]);
+//	DEMGeo&	inClimate(inDEMs[dem_Climate]);
+	DEMGeo&	inRegion(inDEMs[dem_Region]);
 	DEMGeo&	inElevation(inDEMs[dem_Elevation]);
 	DEMGeo&	inSlope(inDEMs[dem_Slope]);
 	DEMGeo&	inSlopeHeading(inDEMs[dem_SlopeHeading]);
@@ -1784,6 +1785,12 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float lu2 = landuse.search_nearest(x1,y1);
 				float lu3 = landuse.search_nearest(x2,y2);
 				float lu = MAJORITY_RULES(lu0,lu1,lu2, lu3);
+
+				float rg0 = inRegion.search_nearest(center_x, center_y);
+				float rg1 = inRegion.search_nearest(x0,y0);
+				float rg2 = inRegion.search_nearest(x1,y1);
+				float rg3 = inRegion.search_nearest(x2,y2);
+				float rg = MAJORITY_RULES(rg0,rg1,rg2, rg3);
 
 //				float cl  = inClimate.search_nearest(center_x, center_y);
 //				float cl1 = inClimate.search_nearest(x0,y0);
@@ -1886,7 +1893,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 				//fprintf(stderr, " %d", tri->info().feature);
 				int zoning = (tri->info().orig_face == Pmwx::Face_handle()) ? NO_VALUE : tri->info().orig_face->data().GetZoning();
-				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, /* cl, el, */ sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y)/*, variant_blob, variant_head*/);
+				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, rg, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y)/*, variant_blob, variant_head*/);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %f\n", FetchTokenString(lu), /*FetchTokenString(cl), el, */ sl);
 

@@ -845,7 +845,7 @@ void copy_tile(
 	In other words, the CGIAR SRTM files have essentially been shifted to the northeast by 1.5 arc-seconds.
 
 */
-bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style)
+bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style, int no_geo_needed)
 {
 	int result = -1;
 	double	corners[8];
@@ -868,8 +868,20 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style)
 
 	if (!FetchTIFFCornersWithTIFF(tif, corners, post_style))
 	{
-		printf("Could not read GeoTiff projection data.\n");
-		return false;
+		if(no_geo_needed)
+		{
+			printf("TIFF has no corners - using default.\n");
+			inMap.mWest = -180;
+			inMap.mSouth = -90;
+			inMap.mEast = 180;
+			inMap.mNorth = 90;
+			inMap.mPost = 1;
+		}
+		else
+		{
+			printf("Could not read GeoTiff projection data.\n");
+			return false;
+		}
 	}
 
 	inMap.mWest = corners[0];
@@ -914,6 +926,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style)
 			switch(format) {
 			case SAMPLEFORMAT_UINT:
 			case 49151:
+			case 0:
 				switch(d) {
 				case 8:
 					copy_tile<unsigned char>((const unsigned char *) buf, x,y,ux,uy, inMap);
@@ -989,6 +1002,7 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style)
 			switch(format) {
 			case SAMPLEFORMAT_UINT:
 			case 49151:
+			case 0:
 				switch(d) {
 				case 8:
 					copy_scanline<unsigned char>((const unsigned char *) aline, y, inMap);

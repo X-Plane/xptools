@@ -55,6 +55,7 @@
 " c Check for conflicts in duplicate posts between new and old DEM (only makes sense with o flag.\n"\
 " a GeoTiff only - allow DEM to be area data if file contains area data.\n"\
 " a bil/hgt only - force area-style DEM.  Otherwise area/point comes from the particular .hdr file.\n"\
+" l force DEM location to current bounding box.\n"\
 "Format can be one of: \n"\
 "tiff\n"\
 "hgt\n"\
@@ -102,7 +103,7 @@ static int DoRasterImport(const vector<const char *>& args)
 	}
 	else if(strcmp(args[1],"tiff") == 0)
 	{
-		if(!ExtractGeoTiff(*dem, args[2], mode))
+		if(!ExtractGeoTiff(*dem, args[2], mode, strstr(args[0],"l") != NULL))
 		{
 			if(strstr(args[0],"i")) return 0;
 			fprintf(stderr,"Unable to read GeoTiff file %s\n", args[2]);
@@ -167,6 +168,14 @@ static int DoRasterImport(const vector<const char *>& args)
 	{
 		fprintf(stderr,"Unknown importer: %s\n", args[1]);
 		return 1;
+	}
+	
+	if(strstr(args[0],"l"))
+	{
+		dem->mWest = gMapWest;
+		dem->mEast = gMapEast;
+		dem->mNorth = gMapNorth;
+		dem->mSouth = gMapSouth;
 	}
 
 	if(strstr(args[0],"p"))
@@ -745,7 +754,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	int n;
 	int mode = dem_want_Post;
 	sprintf(path, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], x, y);
-	if (!ExtractGeoTiff(me, path,mode))
+	if (!ExtractGeoTiff(me, path,mode,0))
 	{
 		printf("File %s not found.\n", path);
 		return 0;
@@ -758,7 +767,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	}
 
 	sprintf(path2, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], (x%72)+1, y);
-	if (ExtractGeoTiff(east, path2, mode))
+	if (ExtractGeoTiff(east, path2, mode,0))
 	{
 		if (east.mWest != me.mEast ||
 			east.mSouth != me.mSouth ||
@@ -773,7 +782,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	}
 
 	sprintf(path2, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], x, y - 1);
-	if (ExtractGeoTiff(north, path2, mode))
+	if (ExtractGeoTiff(north, path2, mode,0))
 	{
 		if (north.mSouth != me.mNorth ||
 			north.mWest != me.mWest ||
@@ -788,7 +797,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	}
 
 	sprintf(path2, "%s" DIR_STR "srtm_%02d_%02d.zip", args[0], (x%72)+1, y - 1);
-	if (ExtractGeoTiff(northeast, path2, mode))
+	if (ExtractGeoTiff(northeast, path2, mode,0))
 	{
 		if (northeast.mSouth != me.mNorth ||
 			northeast.mWest != me.mEast)

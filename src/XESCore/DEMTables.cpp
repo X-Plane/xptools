@@ -942,6 +942,7 @@ int	FindNaturalTerrain(
 				int		terrain,
 				int		zoning,
 				int 	landuse,
+				int		region,
 //				int 	climate,
 //				float 	elevation,
 				float 	slope,
@@ -995,6 +996,7 @@ int	FindNaturalTerrain(
 		MATCH_RANGE(slopeheading,slope_heading_min,slope_heading_max)
 //		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
 		MATCH_ENUM(landuse,landuse)
+		MATCH_ENUM(region,region)
 		MATCH_ENUM(terrain,terrain)
 		MATCH_ENUM(zoning,zoning)
 		MATCH_RANGE(relelevation,rel_elev_min,rel_elev_max)

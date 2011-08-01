@@ -350,7 +350,7 @@ int DoMakeLUCoverage(const vector<const char *>& args)
 			sprintf(buf,"%s%+03d%+04d%c%+03d%+04d.tif", dir, latlon_bucket(y), latlon_bucket(x), dirchar, y, x);
 
 			DEMGeo	g;
-			if(!ExtractGeoTiff(g,buf,dem_want_File))
+			if(!ExtractGeoTiff(g,buf,dem_want_File,0))
 			{
 				fputc(255,fi);				
 			}

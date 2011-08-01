@@ -83,7 +83,7 @@ bool	ExtractIDAFile(DEMGeo& inMap, const char * inFileName);
 bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName);
 
 // GeoTiff - must be geographic projected for us to use.  Origin is NW corner.
-bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style);
+bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style, int no_geo_needed);
 bool	WriteGeoTiff(DEMGeo& inMap, const char * inFileName);
 
 // DTED - contains its own geo info

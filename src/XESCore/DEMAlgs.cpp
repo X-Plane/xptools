@@ -464,6 +464,60 @@ void BlobifyEnvironment(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo
 	}
 }
 
+// Same idea as above, but...try to "snap" enums.
+void BlobifyEnvironmentEnum(const DEMGeo& variant_source, const DEMGeo& base, DEMGeo& derived, int xmult, int ymult)
+{
+	derived.resize((base.mWidth-1)*xmult+1,(base.mHeight-1)*ymult+1);
+	derived.copy_geo_from(base);
+
+	// for every 'block' to be usampled
+	for (int yiz = 0; yiz < base.mHeight-1; ++yiz)
+	for (int xiz = 0; xiz < base.mWidth-1; ++xiz)
+	{
+		// fer each point
+		for (int dy = 0; dy <= ymult; ++dy)
+		for (int dx = 0; dx <= xmult; ++dx)
+		{
+			float dx_fac = (float) dx / (float) xmult;
+			float dy_fac = (float) dy / (float) ymult;
+
+			// This is the weights for a linear blend
+			double q1 = 	 dx_fac  * 		dy_fac;
+			double q2 = (1.0-dx_fac) * 		dy_fac;
+			double q3 = 	 dx_fac  * (1.0-dy_fac);
+			double q4 = (1.0-dx_fac) * (1.0-dy_fac);
+
+			// Four corner values
+			float v1 = base.get(xiz+1, yiz+1);
+			float v2 = base.get(xiz  , yiz+1);
+			float v3 = base.get(xiz+1, yiz  );
+			float v4 = base.get(xiz  , yiz  );
+
+			float w1 = variant_source.value_linear(base.x_to_lon(xiz+1), base.y_to_lat(yiz+1));
+			float w2 = variant_source.value_linear(base.x_to_lon(xiz  ), base.y_to_lat(yiz+1));
+			float w3 = variant_source.value_linear(base.x_to_lon(xiz+1), base.y_to_lat(yiz  ));
+			float w4 = variant_source.value_linear(base.x_to_lon(xiz  ), base.y_to_lat(yiz  ));
+
+			float w = variant_source.value_linear(derived.x_to_lon(xiz * xmult + dx), derived.y_to_lat(yiz * ymult + dy));
+		
+			float d1 = fabsf(w1-w);
+			float d2 = fabsf(w2-w);
+			float d3 = fabsf(w3-w);
+			float d4 = fabsf(w4-w);
+			
+			if(d1 > d2 && d1 > d3 && d1 > d4)
+				derived(xiz * xmult + dx, yiz * ymult + dy) = v1;
+			else if(d2 > d3 && d2 > d4)
+				derived(xiz * xmult + dx, yiz * ymult + dy) = v2;
+			else if (d3 > d4)
+				derived(xiz * xmult + dx, yiz * ymult + dy) = v3;
+			else
+				derived(xiz * xmult + dx, yiz * ymult + dy) = v4;
+		}
+	}
+}
+
+
 /*
  * UpsampleFromParamLinear
  *
@@ -972,7 +1026,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
 	BlobifyEnvironment(ioDEMs[dem_RelativeElevation], rainfall, derived_rainfall, 60, 60);
 	BlobifyEnvironment(ioDEMs[dem_RelativeElevation], temprange, derived_temprange, 60, 60);
 //	BlobifyEnvironment(ioDEMs[dem_RelativeElevation], temprange, derived_temprange, 60, 60);
-	BlobifyEnvironment(ioDEMs[dem_RelativeElevation], region, derived_region, 60, 60);
+	BlobifyEnvironmentEnum(ioDEMs[dem_RelativeElevation], region, derived_region, 60, 60);
 
 	/*************** STEP 3 - INTERPOLATE CLIMATE! ***************/
 
@@ -1077,14 +1131,14 @@ void	DeriveDEMs(
 
 	}
 
-	const DEMGeo&		climate = 	ioDEMs[dem_Climate];
-	const DEMGeo&		biomass = 	ioDEMs[dem_Biomass];
+//	const DEMGeo&		climate = 	ioDEMs[dem_Climate];
+//	const DEMGeo&		biomass = 	ioDEMs[dem_Biomass];
 	const DEMGeo&		landuse = 	ioDEMs[dem_LandUse];
 	const DEMGeo&		temp = 		ioDEMs[dem_Temperature];
-	const DEMGeo&		tempRange = ioDEMs[dem_TemperatureRange];
+//	const DEMGeo&		tempRange = ioDEMs[dem_TemperatureRange];
 	const DEMGeo&		elevation = ioDEMs[dem_Elevation];
-	const DEMGeo&		slope = 	ioDEMs[dem_Slope];
-	const DEMGeo&		slopeHeading = ioDEMs[dem_SlopeHeading];
+//	const DEMGeo&		slope = 	ioDEMs[dem_Slope];
+//	const DEMGeo&		slopeHeading = ioDEMs[dem_SlopeHeading];
 	const DEMGeo&		rainfall = 	ioDEMs[dem_Rainfall];
 		  DEMGeo&		urbanSquare =ioDEMs[dem_UrbanSquare];
 
