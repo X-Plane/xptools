@@ -47,7 +47,7 @@ static int is_direct_parent(const string& parent, const string& child)
 	if(parent.empty()) return child.find('/',1) == child.npos;
 
 	if((parent.size()+1) >= child.size())							return false;	// Not a child if parent is longer than child - remember we need '/' too.
-	if(strncmp(parent.c_str(),child.c_str(),parent.size()) != 0)	return false;	// Not a child if doesn't contain parent path
+	if(strncasecmp(parent.c_str(),child.c_str(),parent.size()) != 0)return false;	// Not a child if doesn't contain parent path
 	if(child[parent.size()] != '/')									return false;	// Not a child if parent name has gunk after it
 	if(child.find('/',parent.size()+1) != child.npos)				return false;	// Not a child if child contains subdirs beyond parent
 																	return true;
@@ -83,8 +83,8 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 
 	while(me != res_table.end())
 	{
-		if(me->first.size() < r.size())							break;
-		if(strncmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
+		if(me->first.size() < r.size())								break;
+		if(strncasecmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
 		if(is_direct_parent(r,me->first))
 		{
 			bool want_it = true;
