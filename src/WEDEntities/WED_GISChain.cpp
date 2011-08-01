@@ -377,11 +377,11 @@ void WED_GISChain::Shuffle(GISLayer_t l)
 		mCachePtsBezier[t]->SetLocation(l, p[n]);
 		mCachePtsBezier[t]->SetSplit(split[n]);
 
-		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_l[n]);
-		else			mCachePtsBezier[t]->DeleteHandleHi();
-
-		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_h[n]);
+		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_l[n]);
 		else			mCachePtsBezier[t]->DeleteHandleLo();
+
+		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_h[n]);
+		else			mCachePtsBezier[t]->DeleteHandleHi();
 	}	
 }
 
