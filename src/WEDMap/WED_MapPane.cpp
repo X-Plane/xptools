@@ -213,7 +213,6 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	}
 	mToolbar->SetToolTips(tips);
 
-
 	GUI_ScrollerPane * map_scroller = new GUI_ScrollerPane(1,1);
 	map_scroller->SetParent(this);
 	map_scroller->Show();
@@ -239,7 +238,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mMap->SetTool(mTools[0]);
 	mInfoAdapter->SetTool(mTools[0]);
-	mToolbar->SetValue(mTools.size()-1);
+	mToolbar->SetValue(mTools.size()-2);
 
 	// This is a bit of a hack.  The archive provides whole-doc "changed" messages at the minimum global times:
 	// 1. On the commit of any operation.
