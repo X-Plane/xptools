@@ -716,7 +716,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				if (TextScanner_FormatScan(s, "iiT|",
 					&outApts.back().atc.back().atc_type,
 					&outApts.back().atc.back().freq,
-					&outApts.back().atc.back().name) != 3)
+					&outApts.back().atc.back().name) < 2)	// ATC name can be blank in v9...sketchy but apparently true.
 				ok = "Illegal ATC frequency";
 			} else
 				ok = "Illegal unknown record";
@@ -813,7 +813,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for (AptRunwayVector::const_iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
-			fprintf(fi,"%d %4.0f %d %d %.2f %d %d %d "
+			fprintf(fi,"%d %4.2f %d %d %.2f %d %d %d "
 						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d "
 						"%s % 012.8lf % 013.8lf %4.0f %4.0f %d %d %d %d" CRLF,
 						apt_rwy_new, rwy->width_mtr, rwy->surf_code, rwy->shoulder_code, rwy->roughness_ratio, rwy->has_centerline, rwy->edge_light_code, rwy->has_distance_remaining,
@@ -823,7 +823,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for(AptSealaneVector::const_iterator sea = apt->sealanes.begin(); sea != apt->sealanes.end(); ++sea)
 		{
-			fprintf(fi,"%d %4.0f %d %s % 012.8lf % 013.8lf %s % 012.8lf % 013.8lf" CRLF,
+			fprintf(fi,"%d %4.2f %d %s % 012.8lf % 013.8lf %s % 012.8lf % 013.8lf" CRLF,
 					apt_sea_new, sea->width_mtr, sea->has_buoys,
 					sea->id[0].c_str(), CGAL2DOUBLE(sea->ends.source().y()), CGAL2DOUBLE(sea->ends.source().x()),
 					sea->id[1].c_str(), CGAL2DOUBLE(sea->ends.target().y()), CGAL2DOUBLE(sea->ends.target().x()));
@@ -853,7 +853,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for(AptHelipadVector::const_iterator heli = apt->helipads.begin(); heli != apt->helipads.end(); ++heli)
 		{
-			fprintf(fi,"%d %s % 012.8lf % 013.8lf %6.2lf %4.0f %4.0f %d %d %d %.2f %d" CRLF,
+			fprintf(fi,"%d %s % 012.8lf % 013.8lf %6.2lf %4.2f %4.2f %d %d %d %.2f %d" CRLF,
 				apt_heli_new, heli->id.c_str(), CGAL2DOUBLE(heli->location.y()), CGAL2DOUBLE(heli->location.x()), heli->heading, heli->length_mtr, heli->width_mtr,
 						heli->surface_code,heli->marking_code,heli->shoulder_code,heli->roughness_ratio,heli->edge_light_code);
 		}
