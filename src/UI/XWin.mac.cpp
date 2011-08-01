@@ -202,10 +202,9 @@ XWin::~XWin()
 
 void			XWin::SetTitle(const char * inTitle)
 {
-	Str255	title;
-	title[0] = strlen(inTitle);
-	memcpy(title+1,inTitle, title[0]);
-	::SetWTitle(mWindow, title);
+	CFStringRef ref = CFStringCreateWithCString(kCFAllocatorDefault,inTitle, kCFStringEncodingUTF8);
+	SetWindowTitleWithCFString(mWindow,ref);
+	CFRelease(ref);
 }
 
 
