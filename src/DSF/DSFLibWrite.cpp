@@ -469,8 +469,10 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 		fracMin.push_back((double) i / double (divisions));
 		fracMin.push_back((double) j / double (divisions));
 		fracMin.push_back(0.0);
+		fracMin.push_back(0.0);
 		fracMax.push_back((double) (i+1) / double (divisions));
 		fracMax.push_back((double) (j+1) / double (divisions));
+		fracMax.push_back(1.0);
 		fracMax.push_back(1.0);
 		objectPool3d.AddPool(fracMin, fracMax);
 		objectPool3d.AddPool(fracMin, fracMax);
