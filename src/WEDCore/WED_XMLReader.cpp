@@ -49,34 +49,33 @@ void	WED_XMLReader::FailWithError(const string& e)
 	XML_StopParser(parser, false);		// we're dead!
 }
 
-string	WED_XMLReader::ReadFile(const char * filename)
+string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 {
 	XML_ParserReset(parser, NULL);
 	XML_SetElementHandler(parser, StartElementHandler, EndElementHandler);
 	XML_SetUserData(parser, reinterpret_cast<void*>(this));
 
 	FILE * fi = fopen(filename,"rb");
+	if(exists) *exists = (fi != NULL);
 	if(!fi)
 		return string("Unable to open file:") + string(filename);
 
 	char buf[1024];
 
-	int total = 0;
 	while(!feof(fi))
 	{
 		int len = fread(buf,1,sizeof(buf),fi);
 		if(len > 0)
 		if(XML_Parse(parser, buf, len, 0) == XML_STATUS_ERROR)
 		{
-			total += len;
 			XML_Error e = XML_GetErrorCode(parser);
-			printf("Got error: %d (%s).\n", e, XML_ErrorString(e));
-			printf("At: %d,%d\n", XML_GetCurrentLineNumber(parser), XML_GetCurrentColumnNumber(parser));
+			if(err.empty())
+				err = XML_ErrorString(e);
+//			printf("At: %d,%d\n", XML_GetCurrentLineNumber(parser), XML_GetCurrentColumnNumber(parser));
 			break;
 		}
 	}
 	XML_Parse(parser, buf, 0, 1);
-	printf("read %d bytes.\n", total);
 	fclose(fi);
 
 	return err;

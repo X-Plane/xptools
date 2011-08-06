@@ -29,7 +29,7 @@ DEFINE_PERSISTENT(WED_OverlayImage)
 TRIVIAL_COPY(WED_OverlayImage, WED_GISPolygon)
 
 WED_OverlayImage::WED_OverlayImage(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	mImageFile(this, "File", "WED_overlayimage", "file", "")
+	mImageFile(this, "File", SQL_Name("WED_overlayimage", "file"), XML_Name("overlay_image","file_path"),"")
 {
 }
 

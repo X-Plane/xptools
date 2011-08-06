@@ -44,11 +44,14 @@
 
 */
 
+#include "WED_XMLReader.h"
+
 struct sqlite3;
 
 class	WED_Persistent;
 class	WED_UndoLayer;
 class	WED_UndoMgr;
+class	WED_XMLElement;
 
 class	IResolver;
 
@@ -59,7 +62,7 @@ enum {
 	wed_Change_CreateDestroy =  1
 };
 
-class	WED_Archive : public GUI_Broadcaster {
+class	WED_Archive : public GUI_Broadcaster, public WED_XMLHandler {
 public:
 
 					WED_Archive(IResolver * resolver);
@@ -75,6 +78,7 @@ public:
 	void			ClearAll(void);
 	void			LoadFromDB(sqlite3 * db, const map<int,int>& mapping);
 	void			SaveToDB(sqlite3 * db);
+	void			SaveToXML(WED_XMLElement * parent);
 
 	// Undo convenience API.
 	void			SetUndoManager(WED_UndoMgr * mgr);
@@ -90,6 +94,14 @@ public:
 	void			Validate(void);
 	
 	IResolver *		GetResolver(void) { return mResolver; }
+	
+	virtual void		StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts);
+	virtual	void		EndElement(void);
+	virtual	void		PopHandler(void);
+	
 
 private:
 

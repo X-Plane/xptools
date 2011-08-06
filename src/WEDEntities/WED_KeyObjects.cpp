@@ -25,6 +25,7 @@
 #include "IODefs.h"
 #include "SQLUtils.h"
 #include "WED_Errors.h"
+#include "WED_XMLWriter.h"
 
 DEFINE_PERSISTENT(WED_KeyObjects)
 
@@ -144,3 +145,45 @@ void			WED_KeyObjects::ToDB(sqlite3 * db)
 	}
 }
 
+void			WED_KeyObjects::AddExtraXML(WED_XMLElement * obj)
+{
+	WED_XMLElement * xml = obj->add_sub_element("keys");
+	for(map<string,int>::iterator i = choices.begin(); i != choices.end(); ++i)
+	{
+		WED_XMLElement * c = xml->add_sub_element("key");
+		c->add_attr_stl_str("name",i->first);
+		c->add_attr_int("id",i->second);
+	}
+}
+
+
+void		WED_KeyObjects::StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts)
+{
+	if(strcasecmp(name,"keys")==0)
+	{
+		choices.clear();
+	}
+	else if(strcasecmp(name,"key")==0)
+	{
+		const XML_Char * k = get_att("name",atts);
+		const XML_Char * v = get_att("id",atts);
+		if(k && v)
+		{
+			choices[k] = atoi(v);
+		}
+		else 
+			reader->FailWithError("bad key");
+	}
+	else
+		WED_Thing::StartElement(reader,name,atts);
+}
+void		WED_KeyObjects::EndElement(void)
+{
+}
+
+void		WED_KeyObjects::PopHandler(void)
+{
+}

@@ -52,17 +52,17 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	1,						// close allowed?
 	0),						// close required
 	mType(tool),
-	mName(this, "Name", "", "", "N"),
-	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", "", "", 1),
-	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway", "", "", ATCRunwayTwoway, atc_rwy_None),
-	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", "", "", ATCRunwayOneway,false),
-	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", "", "", ATCRunwayOneway,false),
-	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", "", "", ATCRunwayOneway,false),
+	mName(this, "Name", SQL_Name("",""),XML_Name("",""), "N"),
+	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", SQL_Name("",""),XML_Name("",""), 1),
+	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway", SQL_Name("",""),XML_Name("",""), ATCRunwayTwoway, atc_rwy_None),
+	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
+	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
+	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 
-	mLayer(tool == create_Road ? this : NULL, "Layer", "", "", 0, 2),
-	mSubtype(tool == create_Road ? this : NULL, "Type", "", "", RoadSubType, road_Highway),
+	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
+	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), RoadSubType, road_Highway),
 	
-	mSlop(this, "Slop", "", "", 10, 2)
+	mSlop(this, "Slop", SQL_Name("",""),XML_Name("",""), 10, 2)
 {
 }
 

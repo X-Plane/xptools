@@ -81,8 +81,13 @@ public:
 	virtual	void 			WriteTo(IOWriter * writer);
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
 	virtual void			ToDB(sqlite3 * db);
-
+	virtual	void			ToXML(WED_XMLElement * parent);	
+	virtual	void			FromXML(WED_XMLReader * reader, const XML_Char ** atts);
 	virtual	void			Validate(void);
+
+	// This is a template method - sub-classes of things that have to add MORE XML than they would get via the property system and the thing
+	// itself override this method.  This way their extra XML is _inside_ the toplevel obj.
+	virtual	void			AddExtraXML(WED_XMLElement * obj) { }
 
 	// From WED_PropertyHelper...
 	virtual	void			PropEditCallback(int before);
@@ -100,6 +105,14 @@ public:
 	virtual		void			__StartOperation(const char * op_name, const char * inFile, int inLine);
 	virtual		void			CommitOperation(void);
 	virtual		void			AbortOperation(void);
+	
+	virtual void		StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts);
+	virtual	void		EndElement(void);
+	virtual	void		PopHandler(void);
+	
 
 protected:
 

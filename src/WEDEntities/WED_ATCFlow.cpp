@@ -33,16 +33,16 @@ TRIVIAL_COPY(WED_ATCFlow, WED_Thing)
 
 WED_ATCFlow::WED_ATCFlow(WED_Archive * a, int i) : 
 	WED_Thing(a,i),
-	icao(this,"METAR ICAO","WED_atcflow","icao",""),
-	cld_min(this,"Minimum Ceiling","WED_atcflow","cld_min", 2500, 4),
-	vis_min(this,"Minimum Visibility","WED_atcflow","vis_min", 2, 2),
-	wnd_spd_max(this,"Wind Speed Maximum","WED_atcflow","wnd_spd_max", 0, 3),
-	wnd_dir_min(this,"Wind Direction Minimum","WED_atcflow","wnd_dir_min", 0, 3),
-	wnd_dir_max(this,"Wind Direction Maximum","WED_atcflow","wnd_dir_max", 360, 3),
-	time_min(this,"Start Time (Local)","WED_atcflow","time_min", 0, 3),
-	time_max(this,"End Time (Local)","WED_atcflow","time_max", 2400, 3),
-	traffic_dir(this,"Pattern Direction","WED_atcflow","pattern_side",ATCPatternSide,atc_Left),
-	pattern_rwy(this,"Pattern Runway", "WED_atcflow","pattern_rwy",ATCRunwayOneway, atc_Runway_None)
+	icao(this,"METAR ICAO",						SQL_Name("WED_atcflow","icao"),			XML_Name("atc_flow","icao"),		""),
+	cld_min(this,"Minimum Ceiling",				SQL_Name("WED_atcflow","cld_min"),		XML_Name("atc_flow","cld_min"),		2500, 4),
+	vis_min(this,"Minimum Visibility",			SQL_Name("WED_atcflow","vis_min"),		XML_Name("atc_flow","vis_min"),		2, 2),
+	wnd_spd_max(this,"Wind Speed Maximum",		SQL_Name("WED_atcflow","wnd_spd_max"),	XML_Name("atc_flow","wnd_spd_max"),	0, 3),
+	wnd_dir_min(this,"Wind Direction Minimum",	SQL_Name("WED_atcflow","wnd_dir_min"),	XML_Name("atc_flow","wnd_dir_min"),	0, 3),
+	wnd_dir_max(this,"Wind Direction Maximum",	SQL_Name("WED_atcflow","wnd_dir_max"),	XML_Name("atc_flow","wnd_dir_max"),	360, 3),
+	time_min(this,"Start Time (Local)",			SQL_Name("WED_atcflow","time_min"),		XML_Name("atc_flow","time_min"),	0, 3),
+	time_max(this,"End Time (Local)",			SQL_Name("WED_atcflow","time_max"),		XML_Name("atc_flow","time_max"),	2400, 3),
+	traffic_dir(this,"Pattern Direction",		SQL_Name("WED_atcflow","pattern_side"),	XML_Name("atc_flow","pattern_side"),ATCPatternSide,atc_Left),
+	pattern_rwy(this,"Pattern Runway",			SQL_Name("WED_atcflow","pattern_rwy"),	XML_Name("atc_flow","pattern_rwy"),	ATCRunwayOneway, atc_Runway_None)
 {
 	
 }

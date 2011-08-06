@@ -30,10 +30,10 @@ DEFINE_PERSISTENT(WED_Airport)
 TRIVIAL_COPY(WED_Airport, WED_GISComposite)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
-	airport_type	(this, "Type",				"WED_airport",	"kind",			Airport_Type, type_Airport),
-	elevation		(this, "Field Elevation",	"WED_airport",	"elevation",	0,6,1),
-	has_atc			(this, "Has ATC",			"WED_airport",	"has_atc",		1),
-	icao			(this, "ICAO Identifier",	"WED_airport",	"icao",			"xxxx")
+	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
+	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
+	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
+	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx")
 {
 }
 

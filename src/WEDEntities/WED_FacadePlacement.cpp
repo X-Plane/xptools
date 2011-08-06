@@ -31,11 +31,11 @@ DEFINE_PERSISTENT(WED_FacadePlacement)
 TRIVIAL_COPY(WED_FacadePlacement,WED_GISPolygon)
 
 WED_FacadePlacement::WED_FacadePlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	height(this,"Height","WED_dsf_polygon","param",10.0,3,1),
+	height(this,"Height",SQL_Name("WED_dsf_polygon","param"),XML_Name("facade_placement","height"),10.0,3,1),
 #if AIRPORT_ROUTING
-	pick_walls(this,"Pick Walls","WED_dsf_polygon","closed",0),
+	pick_walls(this,"Pick Walls",SQL_Name("WED_dsf_polygon","closed"),XML_Name("facade_placement","pick_walls"),0),
 #endif	
-	resource(this,"Resource", "WED_dsf_overlay", "resource", "")
+	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("facade_placement","resource"),"")
 {
 }
 

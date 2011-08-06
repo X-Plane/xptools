@@ -67,7 +67,7 @@ public:
 	void	FailWithError(const string& err);
 	
 	// Returns err msg or "" for none.
-	string	ReadFile(const char * filename);
+	string	ReadFile(const char * filename, bool * exists);
 
 private:
 

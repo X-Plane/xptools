@@ -24,6 +24,7 @@
 #include "WED_Select.h"
 #include "IODefs.h"
 #include "SQLUtils.h"
+#include "WED_XMLWriter.h"
 #include "WED_Errors.h"
 #include "WED_Messages.h"
 
@@ -111,6 +112,41 @@ void			WED_Select::ToDB(sqlite3 * db)
 		}
 	}
 }
+
+void		WED_Select::AddExtraXML(WED_XMLElement * obj)
+{
+	WED_XMLElement * selection = obj->add_sub_element("selection");
+	for(set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
+	{
+		WED_XMLElement * sel = selection->add_sub_element("sel");
+		sel->add_attr_int("id",*i);
+	}
+}
+
+void		WED_Select::StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts)
+{
+	if(strcasecmp(name,"sel")==0)
+	{
+		const XML_Char * id = get_att("id",atts);
+		if(!id)
+			reader->FailWithError("No id");
+		else
+			mSelected.insert(atoi(id));
+	}
+	else if(strcasecmp(name,"selection")==0)
+	{
+		mSelected.clear();
+	}
+	else
+		WED_Thing::StartElement(reader,name,atts);
+}
+
+void		WED_Select::EndElement(void) { }
+void		WED_Select::PopHandler(void) { }
+
 
 #pragma mark -
 

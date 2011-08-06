@@ -28,7 +28,7 @@ DEFINE_PERSISTENT(WED_Sealane)
 TRIVIAL_COPY(WED_Sealane, WED_GISLine_Width)
 
 WED_Sealane::WED_Sealane(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
-	buoys(this,"Show Buoys", "WED_sealane","buoys",1)
+	buoys(this,"Show Buoys", SQL_Name("WED_sealane","buoys"),XML_Name("sealane","has_buoys"),1)
 {
 }
 

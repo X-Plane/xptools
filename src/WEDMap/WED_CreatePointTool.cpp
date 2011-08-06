@@ -68,21 +68,21 @@ WED_CreatePointTool::WED_CreatePointTool(
 	0,								// close allowed
 	0),								// close required?
 	mType(tool),
-		beacon_kind		(tool==create_Beacon		?this:NULL,"Kind",			"","",Airport_Beacon,beacon_Airport),
-		sign_text		(tool==create_Sign			?this:NULL,"Text",			"","","{@L}A"),
-		sign_style		(tool==create_Sign			?this:NULL,"Style",			"","",Sign_Style,style_Default),
-		sign_height		(tool==create_Sign			?this:NULL,"Size",			"","",Sign_Size,size_MediumTaxi),
-		heli_surface	(tool==create_Helipad		?this:NULL,"Surface",		"","",Surface_Type,surf_Concrete),
-		heli_markings	(tool==create_Helipad		?this:NULL,"Markings",		"","",Helipad_Markings,heli_Mark_Default),
-		heli_shoulder	(tool==create_Helipad		?this:NULL,"Shoulder",		"","",Shoulder_Type,shoulder_None),
-		heli_roughness	(tool==create_Helipad		?this:NULL,"Roughness",		"","",0.25,4,2),
-		heli_edgelights	(tool==create_Helipad		?this:NULL,"Edge Lights",	"","",Heli_Lights,heli_Yellow),
-		light_kind		(tool==create_Lights		?this:NULL,"Fixture Type",	"","",Light_Fixt,light_VASI),
-		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle","","",3.0,4,2),
-		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	"","",25.0,5,1),
-		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			"","",0),
-		resource		(tool==create_Object		?this:NULL,"Object",		"","",""),
-		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	"","",0)
+		beacon_kind		(tool==create_Beacon		?this:NULL,"Kind",			SQL_Name("",""),XML_Name("",""),Airport_Beacon,beacon_Airport),
+		sign_text		(tool==create_Sign			?this:NULL,"Text",			SQL_Name("",""),XML_Name("",""),"{@L}A"),
+		sign_style		(tool==create_Sign			?this:NULL,"Style",			SQL_Name("",""),XML_Name("",""),Sign_Style,style_Default),
+		sign_height		(tool==create_Sign			?this:NULL,"Size",			SQL_Name("",""),XML_Name("",""),Sign_Size,size_MediumTaxi),
+		heli_surface	(tool==create_Helipad		?this:NULL,"Surface",		SQL_Name("",""),XML_Name("",""),Surface_Type,surf_Concrete),
+		heli_markings	(tool==create_Helipad		?this:NULL,"Markings",		SQL_Name("",""),XML_Name("",""),Helipad_Markings,heli_Mark_Default),
+		heli_shoulder	(tool==create_Helipad		?this:NULL,"Shoulder",		SQL_Name("",""),XML_Name("",""),Shoulder_Type,shoulder_None),
+		heli_roughness	(tool==create_Helipad		?this:NULL,"Roughness",		SQL_Name("",""),XML_Name("",""),0.25,4,2),
+		heli_edgelights	(tool==create_Helipad		?this:NULL,"Edge Lights",	SQL_Name("",""),XML_Name("",""),Heli_Lights,heli_Yellow),
+		light_kind		(tool==create_Lights		?this:NULL,"Fixture Type",	SQL_Name("",""),XML_Name("",""),Light_Fixt,light_VASI),
+		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle",SQL_Name("",""),XML_Name("",""),3.0,4,2),
+		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	SQL_Name("",""),XML_Name("",""),25.0,5,1),
+		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			SQL_Name("",""),XML_Name("",""),0),
+		resource		(tool==create_Object		?this:NULL,"Object",		SQL_Name("",""),XML_Name("",""),""),
+		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	SQL_Name("",""),XML_Name("",""),0)
 {
 }
 

@@ -33,11 +33,11 @@ DEFINE_PERSISTENT(WED_TaxiRoute)
 TRIVIAL_COPY(WED_TaxiRoute, WED_GISEdge)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	oneway(this,"One-Way","WED_taxiroute","oneway", 1),
-	runway(this,"Runway", "WED_taxiroute","runway", ATCRunwayTwoway, atc_rwy_None),
-	hot_depart(this,"Departures","WED_taxiroute_depart","departures", ATCRunwayOneway,false),
-	hot_arrive(this,"Arrivals","WED_taxiroute_arrive","arrivals", ATCRunwayOneway,false),
-	hot_ils(this,"ILS Precision Area","WED_taxiroute_ils","ils", ATCRunwayOneway,false)
+	oneway(this,"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
+	runway(this,"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
+	hot_depart(this,"Departures",		SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
+	hot_arrive(this,"Arrivals",			SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
+	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false)
 {
 }
 

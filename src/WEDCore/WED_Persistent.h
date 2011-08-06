@@ -28,10 +28,12 @@
 #include "WED_Archive.h"
 #include "AssertUtils.h"
 #include "ISelection.h"
+#include "WED_XMLReader.h"
 
 struct	sqlite3;
 class	IOReader;
 class	IOWriter;
+class	WED_XMLElement;
 
 /*
 	WED_Persistent.h - THEORY OF OPERATION
@@ -199,6 +201,8 @@ public:
 	virtual	void 			WriteTo(IOWriter * writer)=0;
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping)=0;
 	virtual void			ToDB(sqlite3 * db)=0;
+	virtual	void			ToXML(WED_XMLElement * parent)=0;
+	virtual	void			FromXML(WED_XMLReader * reader, const XML_Char ** atts)=0;
 
 	virtual void			Validate(void) { }
 

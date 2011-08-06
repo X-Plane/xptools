@@ -28,13 +28,14 @@
 #include "WED_EnumSystem.h"
 #include "WED_Errors.h"
 #include "AptDefs.h"
+#include "WED_XMLWriter.h"
 
 DEFINE_PERSISTENT(WED_AirportChain)
 
 WED_AirportChain::WED_AirportChain(WED_Archive * a, int i) : WED_GISChain(a,i),
 	closed(0),
-	lines(this,"Line Attributes","","","Line Attributes", 1),
-	lights(this,"Light Attributes","","","Light Attributes", 1)
+	lines(this,"Line Attributes",SQL_Name("",""),XML_Name("",""),"Line Attributes", 1),
+	lights(this,"Light Attributes",SQL_Name("",""),XML_Name("",""),"Light Attributes", 1)
 {
 }
 
@@ -136,6 +137,32 @@ void			WED_AirportChain::ToDB(sqlite3 * db)
 	err = write_me.simple_exec(bindings);
 	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 }
+
+void	WED_AirportChain::AddExtraXML(WED_XMLElement * obj)
+{
+	WED_XMLElement * xml = obj->add_sub_element("airport_chain");
+	xml->add_attr_int("closed",closed);
+}
+
+void		WED_AirportChain::StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts)
+{
+	if(strcasecmp(name,"airport_chain")==0)
+	{
+		const XML_Char * c = get_att("closed",atts);
+		if(c)
+			closed = atoi(c);
+		else reader->FailWithError("closed is missing.");
+	}
+	else
+	WED_GISChain::StartElement(reader,name,atts);
+}								
+
+void		WED_AirportChain::EndElement(void) { }
+
+void		WED_AirportChain::PopHandler(void) { }
 
 
 void	WED_AirportChain::Import(const AptMarking_t& x, void (* print_func)(void *, const char *, ...), void * ref)

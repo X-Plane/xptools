@@ -44,6 +44,16 @@ public:
 	virtual	void 			WriteTo(IOWriter * writer);
 	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
 	virtual void			ToDB(sqlite3 * db);
+	
+	// WED_Thing
+	virtual	void			AddExtraXML(WED_XMLElement * obj);
+
+	virtual void		StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts);
+	virtual	void		EndElement(void);
+	virtual	void		PopHandler(void);
 
 			void			Import(const AptMarking_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 			void			Export(		 AptMarking_t& x) const;
@@ -57,6 +67,9 @@ private:
 	WED_PropIntEnumSetUnion	lines;
 	WED_PropIntEnumSetUnion	lights;
 
+	// Why is "closed" not a user-settable property?  Well, airport chains are used as the children of a number of
+	// entities.  Some, like taxiway pavement polygons, _cannot_ be non-closed.  So don't let the user go around manually
+	// opening up these polygons.
 	int		closed;
 
 };

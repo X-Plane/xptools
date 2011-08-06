@@ -24,6 +24,7 @@
 #ifndef WED_DOCUMENT_H
 #define WED_DOCUMENT_H
 
+#include "WED_XMLReader.h"
 //#include "WED_Globals.h"
 #include "GUI_Destroyable.h"
 //#include "MeshDefs.h"
@@ -64,7 +65,7 @@ typedef struct sqlite3 sqlite3;
 */
 
 
-class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver, public virtual ILibrarian, public IDocPrefs {
+class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver, public virtual ILibrarian, public IDocPrefs, public WED_XMLHandler {
 public:
 
 						WED_Document(
@@ -97,6 +98,13 @@ public:
 
 	WED_LibraryMgr *	GetLibrary(void) { return mLibraryMgr; }
 	WED_ResourceMgr *	GetResourceMgr(void) { return mResourceMgr; }
+
+	virtual void		StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts);
+	virtual	void		EndElement(void);
+	virtual	void		PopHandler(void);
 
 	bool				TryClose(void);
 	void				Save(void);

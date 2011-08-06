@@ -32,6 +32,7 @@
 #include "WED_Messages.h"
 #include "WED_EnumSystem.h"
 #include <sqlite3.h>
+#include "WED_XMLWriter.h"
 #include "WED_Errors.h"
 #include "GUI_Resources.h"
 #include "GUI_Prefs.h"
@@ -134,11 +135,9 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 void	WED_Document::Save(void)
 {
 	BroadcastMessage(msg_DocWillSave, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));
-	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
-	#if ERROR_CHECK
-	hello
-	#endif
 
+/*
+	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
 	mArchive.SaveToDB(mDB.get());
 	ENUM_write(mDB.get());
 
@@ -162,34 +161,74 @@ void	WED_Document::Save(void)
 	}
 
 	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
+*/
+	string xml = mFilePath;
+	xml += ".xml";
+	FILE * xml_file = fopen(xml.c_str(),"w");
+	if(xml_file)
+	{
+		fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		{
+			WED_XMLElement	top_level("doc",0,xml_file);
+			mArchive.SaveToXML(&top_level);
+			WED_XMLElement * prefs = top_level.add_sub_element("prefs");
+			for(map<string,string>::iterator p = mDocPrefs.begin(); p != mDocPrefs.end(); ++p)
+			{
+				WED_XMLElement * pref = prefs->add_sub_element("pref");
+				pref->add_attr_stl_str("name",p->first);
+				pref->add_attr_stl_str("value",p->second);
+			}
+		}
+		fclose(xml_file);
+	}
 }
 
 void	WED_Document::Revert(void)
 {
+		mDocPrefs.clear();
 	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
-	enum_map_t	mapping;
-	ENUM_read(mDB.get(), mapping);
-	mArchive.ClearAll();
-	mArchive.LoadFromDB(mDB.get(), mapping);
-	mUndo.CommitCommand();
+	try {
 
-	mDocPrefs.clear();
-	int err;
-	{
-		sql_command	get_prefs(mDB.get(),"SELECT key,value FROM WED_doc_prefs WHERE 1;",NULL);
-
-		sql_row2<string, string>	p;
-		get_prefs.begin();
-		while((err = get_prefs.get_row(p)) == SQLITE_ROW)
+		WED_XMLReader	reader;
+		reader.PushHandler(this);
+		string fname(mFilePath);
+		fname+=".xml";
+		mArchive.ClearAll();
+		bool xml_exists;
+		string result = reader.ReadFile(fname.c_str(),&xml_exists);
+		if(xml_exists && !result.empty())
+			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
+		if(!xml_exists)
 		{
-			mDocPrefs[p.a] = p.b;
-			sGlobalPrefs[p.a] = p.b;
-		}
-		if (err != SQLITE_DONE)
-			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
-	}
+			enum_map_t	mapping;
+			ENUM_read(mDB.get(), mapping);
+			mArchive.ClearAll();
+			mArchive.LoadFromDB(mDB.get(), mapping);
 
+			int err;
+			{
+				sql_command	get_prefs(mDB.get(),"SELECT key,value FROM WED_doc_prefs WHERE 1;",NULL);
+
+				sql_row2<string, string>	p;
+				get_prefs.begin();
+				while((err = get_prefs.get_row(p)) == SQLITE_ROW)
+				{
+					mDocPrefs[p.a] = p.b;
+					sGlobalPrefs[p.a] = p.b;
+				}
+				if (err != SQLITE_DONE)
+					WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
+			}
+
+		}
+	} catch(...) {
+		// don't bail out of the load loop without aborting the command - otherwise undo mgr goes ape.
+		mUndo.AbortCommand();
+		throw;
+	}
+	mUndo.CommitCommand();
+	
 	BroadcastMessage(msg_DocLoaded, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));
 }
 
@@ -377,3 +416,55 @@ void	WED_Document::WriteGlobalPrefs(void)
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
 		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
 }
+
+void		WED_Document::StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts)
+{
+	if(strcasecmp(name,"objects")==0)
+	{
+		
+		reader->PushHandler(&mArchive);
+	}
+	if(strcasecmp(name,"prefs")==0)
+	{
+		mDocPrefs.clear();
+	}
+	else if(strcasecmp(name,"pref")==0)
+	{
+		const char * n = NULL, * v = NULL;
+		while(*atts)
+		{
+			if(strcasecmp(*atts, "name")==0)
+			{
+				++atts;
+				n = *atts;
+				++atts;
+			}
+			else if(strcasecmp(*atts,"value")==0)
+			{
+				++atts;
+				v = *atts;
+				++atts;
+			}
+			else
+			{
+				++atts;
+				++atts;
+			}
+		}
+		if(n && v)
+			mDocPrefs[n] = v;
+		else
+			reader->FailWithError("Invalid pref: missing key or value.");
+	}
+}
+
+void		WED_Document::EndElement(void)
+{
+}
+void		WED_Document::PopHandler(void)
+{
+}
+

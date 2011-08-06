@@ -35,11 +35,11 @@ TRIVIAL_COPY(WED_GISPoint_Bezier, WED_GISPoint)
 
 WED_GISPoint_Bezier::WED_GISPoint_Bezier(WED_Archive * parent, int id) :
 	WED_GISPoint(parent, id),
-	is_split(this,"Split", "GIS_points_bezier","split",0),
-	ctrl_lat_lo(this,"control_latitude_lo" ,"GIS_points_bezier","ctrl_latitude_lo" ,0.0,13,9),
-	ctrl_lon_lo(this,"control_longitude_lo","GIS_points_bezier","ctrl_longitude_lo",0.0,14,9),
-	ctrl_lat_hi(this,"control_latitude_hi" ,"GIS_points_bezier","ctrl_latitude_hi" ,0.0,13,9),
-	ctrl_lon_hi(this,"control_longitude_hi","GIS_points_bezier","ctrl_longitude_hi",0.0,14,9)
+	is_split(this,"Split", SQL_Name("GIS_points_bezier","split"),XML_Name("point","split"),0),
+	ctrl_lat_lo(this,"control_latitude_lo" ,SQL_Name("GIS_points_bezier","ctrl_latitude_lo" ),XML_Name("point","ctrl_latitude_lo" ),0.0,13,9),
+	ctrl_lon_lo(this,"control_longitude_lo",SQL_Name("GIS_points_bezier","ctrl_longitude_lo"),XML_Name("point","ctrl_longitude_lo"),0.0,14,9),
+	ctrl_lat_hi(this,"control_latitude_hi" ,SQL_Name("GIS_points_bezier","ctrl_latitude_hi" ),XML_Name("point","ctrl_latitude_hi" ),0.0,13,9),
+	ctrl_lon_hi(this,"control_longitude_hi",SQL_Name("GIS_points_bezier","ctrl_longitude_hi"),XML_Name("point","ctrl_longitude_hi"),0.0,14,9)
 {
 }
 

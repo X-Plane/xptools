@@ -331,11 +331,10 @@ int			WED_StartWindow::HandleCommand(int command)
 					sDocs.push_back(nd);
 					mPackageList->LockPackage(nd.n);
 					nd.d->AddListener(this);
+				} catch(exception& e) {
+					DoUserAlert(e.what());				
 				} catch (...) {
-					DoUserAlert("An error occurred");
-					#if ERROR_HANDLING
-					fix this
-					#endif
+					DoUserAlert("An unknown error occurred.");
 				}
 		}
 		return 1;

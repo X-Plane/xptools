@@ -25,11 +25,12 @@
 #include "IODefs.h"
 #include "SQLUtils.h"
 #include "WED_Errors.h"
+#include "WED_XMLWriter.h"
 #include <algorithm>
 
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
-	name(this,"Name","WED_things", "name","unnamed entity")
+	name(this,"Name",SQL_Name("WED_things", "name"),XML_Name("hierarchy","name"),"unnamed entity")
 {
 	parent_id = 0;
 }
@@ -243,6 +244,81 @@ void			WED_Thing::ToDB(sqlite3 * db)
 	char id_str[20];
 	sprintf(id_str,"%d",GetID());
 	PropsToDB(db,"id",id_str, "WED_things");
+}
+
+void			WED_Thing::ToXML(WED_XMLElement * parent)
+{
+	WED_XMLElement * obj = parent->add_sub_element("object");
+	
+	obj->add_attr_c_str("class",this->GetClass());
+	obj->add_attr_int("id",GetID());
+	obj->add_attr_int("parent_id",parent_id);
+	
+	WED_XMLElement * src = obj->add_sub_element("sources");
+	for(int n = 0; n < source_id.size(); ++n)
+	{
+		WED_XMLElement * s = src->add_sub_element("source");
+		s->add_attr_int("id",source_id[n]);
+	}
+
+	WED_XMLElement * vwr = obj->add_sub_element("viewers");
+	for(set<int>::iterator v = viewer_id.begin(); v != viewer_id.end(); ++v)
+	{
+		WED_XMLElement * vi = src->add_sub_element("viewer");
+		vi->add_attr_int("id",*v);
+	}
+
+	WED_XMLElement * chld = obj->add_sub_element("children");
+	for(int n = 0; n < child_id.size(); ++n)
+	{
+		WED_XMLElement * c = src->add_sub_element("child");
+		c->add_attr_int("id",child_id[n]);
+	}
+	
+	WED_PropertyHelper::PropsToXML(obj);
+	this->AddExtraXML(obj);
+}
+
+void	WED_Thing::FromXML(WED_XMLReader * reader, const XML_Char ** atts)
+{
+	const XML_Char ** a = atts;
+	reader->PushHandler(this);
+	const char * pid = get_att("parent_id",atts);
+	if(!pid) reader->FailWithError("No parent ID");
+	parent_id = atoi(pid);
+	child_id.clear();
+	source_id.clear();
+}
+
+void		WED_Thing::StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts)
+{
+	if(strcasecmp(name,"viewer")==0)
+	{
+		const char * id = get_att("id",atts);
+		if(!id)
+			reader->FailWithError("no id");
+		viewer_id.insert(atoi(id));
+	} 
+	else if(strcasecmp(name,"child") == 0)
+	{
+		const char * id = get_att("id",atts);
+		if(!id)
+			reader->FailWithError("no id");
+		child_id.push_back(atoi(id));
+	}
+	else
+		WED_PropertyHelper::StartElement(reader,name,atts);
+}
+
+void		WED_Thing::EndElement(void)
+{
+}
+
+void		WED_Thing::PopHandler(void)
+{
 }
 
 int					WED_Thing::CountChildren(void) const

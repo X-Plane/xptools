@@ -29,6 +29,7 @@
 #include "WED_Errors.h"
 #include "sqlite3.h"
 #include "SQLUtils.h"
+#include "WED_XMLWriter.h"
 #include "WED_Messages.h"
 
 WED_Archive::WED_Archive(IResolver * r) : mResolver(r), mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1), mOpCount(0), mCacheKey(0)
@@ -184,6 +185,22 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 	mOpCount = 0;
 }
 
+void			WED_Archive::SaveToXML(WED_XMLElement * parent)
+{	
+	// old code bumps cache key on save...wHY?!
+	//++mCacheKey;
+	WED_XMLElement * obj = parent->add_sub_element("objects");
+	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
+	if(ob->second != NULL)
+	{
+		ob->second->ToXML(obj);
+		obj->flush();
+	}
+
+	mOpCount = 0;
+}
+
+
 void			WED_Archive::SetUndoManager(WED_UndoMgr * mgr)
 {
 	mUndoMgr = mgr;
@@ -235,4 +252,59 @@ void	WED_Archive::Validate(void)
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	if (ob->second != NULL)
 		ob->second->Validate();
+}
+
+
+void		WED_Archive::StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts)
+{
+	const XML_Char ** a = atts;
+	const char * class_name = NULL;
+	const char * id_str = NULL;
+	while(*a)
+	{
+		if(strcasecmp(*a,"class")==0)
+		{
+			++a;
+			class_name = *a;
+			++a;
+		}
+		if(strcasecmp(*a,"id")==0)
+		{
+			++a;
+			id_str = *a;
+			++a;
+		}
+		else
+		{
+			++a;
+			++a;
+		}		
+	}
+	if(id_str == NULL || class_name == NULL)
+	{
+		reader->FailWithError("Object missing ID/Class.");
+		return;
+	}
+
+	WED_Persistent * new_obj = WED_Persistent::CreateByClass(class_name, this, atoi(id_str));
+	if(new_obj==NULL)
+	{
+		reader->FailWithError("Create obj failed.");
+		return;
+	}
+	new_obj->FromXML(reader, atts);
+	
+}
+
+void		WED_Archive::EndElement(void)
+{
+}
+
+void		WED_Archive::PopHandler(void)
+{
+	mOpCount = 0;
+	++mCacheKey;
 }

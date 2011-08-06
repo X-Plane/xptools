@@ -106,6 +106,7 @@ int					DOMAIN_Create(const char * domain, const char * desc)
 //	printf("Creating domain %s as %d\n", domain, idx);
 
 	sEnums.push_back(e);
+	DebugAssert(sEnumsReverse.count(pair<int,string>(-1,d))==0);
 	sEnumsReverse[pair<int,string>(-1,d)] = idx;
 	domain_Info di = { -1, -1 };
 	sDomains[idx] = di;
@@ -184,6 +185,7 @@ int					ENUM_Create(int domain, const char * value, const char * desc, int expor
 	e.export_value = export_value;
 
 	sEnums.push_back(e);
+	DebugAssert(sEnumsReverse.count(pair<int,string>(domain,desc))==0);	
 	sEnumsReverse[pair<int,string>(domain,desc)] = idx;
 
 	return idx;
