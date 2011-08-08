@@ -57,6 +57,8 @@ struct	pol_info_t {
 	float		proj_t;
 	bool		kill_alpha;
 	bool		wrap;
+	string		group;
+	int			group_offset;
 };
 
 struct	fac_info_t {

@@ -65,7 +65,7 @@ typedef struct sqlite3 sqlite3;
 */
 
 
-class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver, public virtual ILibrarian, public IDocPrefs, public WED_XMLHandler {
+class	WED_Document : public GUI_Broadcaster, public GUI_Destroyable, public virtual IResolver, public virtual ILibrarian, public IDocPrefs, public WED_XMLHandler, public WED_UndoFatalErrorHandler {
 public:
 
 						WED_Document(
@@ -105,6 +105,8 @@ public:
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
+	
+	virtual	void		Panic(void);
 
 	bool				TryClose(void);
 	void				Save(void);

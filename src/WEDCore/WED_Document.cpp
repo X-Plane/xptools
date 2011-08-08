@@ -58,7 +58,7 @@ WED_Document::WED_Document(
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
 	mDB(mFilePath.c_str()),
 //	mPackage(inPackage),
-	mUndo(&mArchive),
+	mUndo(&mArchive, this),
 	mArchive(this)
 {
 	mTexMgr = new WED_TexMgr(package);
@@ -467,4 +467,30 @@ void		WED_Document::EndElement(void)
 void		WED_Document::PopHandler(void)
 {
 }
+
+void WED_Document::Panic(void)
+{
+	// Panic case: means undo system blew up.  Try to save off the current project with a special "crash" extension - if we get lucky, 
+	// we save the user's work.
+	string xml = mFilePath;
+	xml += ".crash.xml";
+	FILE * xml_file = fopen(xml.c_str(),"w");
+	if(xml_file)
+	{
+		fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		{
+			WED_XMLElement	top_level("doc",0,xml_file);
+			mArchive.SaveToXML(&top_level);
+			WED_XMLElement * prefs = top_level.add_sub_element("prefs");
+			for(map<string,string>::iterator p = mDocPrefs.begin(); p != mDocPrefs.end(); ++p)
+			{
+				WED_XMLElement * pref = prefs->add_sub_element("pref");
+				pref->add_attr_stl_str("name",p->first);
+				pref->add_attr_stl_str("value",p->second);
+			}
+		}
+		fclose(xml_file);
+	}	
+}
+
 
