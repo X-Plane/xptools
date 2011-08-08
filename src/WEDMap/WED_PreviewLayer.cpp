@@ -30,6 +30,7 @@
 #include "WED_TexMgr.h"
 #include "MatrixUtils.h"
 #include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_DrawUtils.h"
@@ -257,6 +258,56 @@ void Obj_SetNoDraped(void * ref)
 }
 
 static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight, Obj_SetupMovie, Obj_SetupPanel, Obj_TexCoord, Obj_TexCoordPointer, Obj_GetAnimParam, Obj_SetDraped, Obj_SetNoDraped };
+
+void draw_obj_at_ll(ITexMgr * tman, XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
+{
+	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);			
+	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap);
+	int id1 = ref  ? tman->GetTexID(ref ) : 0;
+	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
+	g->SetTexUnits(1);
+	if(id1)g->BindTex(id1,0);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	Point2 l = zoomer->LLToPixel(loc);
+	glTranslatef(l.x(),l.y(),0.0);
+	float ppm = zoomer->GetPPM();
+	glScalef(ppm,ppm,0.001);
+	glRotatef(90, 1,0,0);
+	glRotatef(r, 0, -1, 0);
+//	GLfloat mv[16], pv[16];
+//	glGetFloatv(GL_MODELVIEW_MATRIX,mv);
+//	glGetFloatv(GL_PROJECTION_MATRIX,pv);
+	g->EnableDepth(true,true);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	Obj_DrawStruct ds = { g, id1, id2 };
+	ObjDraw8(*o, 0, &kFuncs, &ds); 
+	g->EnableDepth(false,false);
+	glPopMatrix();
+}
+
+void draw_obj_at_xyz(ITexMgr * tman, XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
+{
+	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);			
+	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap);
+	int id1 = ref  ? tman->GetTexID(ref ) : 0;
+	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
+	g->SetTexUnits(1);
+	if(id1)g->BindTex(id1,0);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+	glTranslatef(x,y,z);
+	glRotatef(r, 0, -1, 0);
+	g->EnableDepth(true,true);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	Obj_DrawStruct ds = { g, id1, id2 };
+	ObjDraw8(*o, 0, &kFuncs, &ds); 
+	g->EnableDepth(false,false);
+	glPopMatrix();
+}
+
+
 
 // Given a group name and an offset, this comes up with the total layer number...
 
@@ -590,13 +641,23 @@ struct	preview_object : public WED_PreviewItem {
 
 		obj->GetResource(vpath);
 		XObj8 * o;
+		#if AIRPORT_ROUTING
+		agp_t agp;
+		#endif
 		if(rmgr->GetObj(vpath,o))
 		{
-			TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);			
-			TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap);
+			g->SetState(false,1,false,false,true,false,false);
+			glColor3f(1,1,1);
+			Point2 loc;
+			obj->GetLocation(gis_Geo,loc);
+			draw_obj_at_ll(tman, o, loc, obj->GetHeading(), g, zoomer);
+		}
+		#if AIRPORT_ROUTING
+		else if (rmgr->GetAGP(vpath,agp))
+		{
+			g->SetState(false,1,false,false,true,false,false);
+			TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap);			
 			int id1 = ref  ? tman->GetTexID(ref ) : 0;
-			int id2 = ref2 ? tman->GetTexID(ref2) : 0;
-			g->SetTexUnits(1);
 			if(id1)g->BindTex(id1,0);
 			glMatrixMode(GL_MODELVIEW);
 			glPushMatrix();
@@ -606,15 +667,44 @@ struct	preview_object : public WED_PreviewItem {
 			float r = obj->GetHeading();
 			glTranslatef(loc.x(),loc.y(),0.0);
 			float ppm = zoomer->GetPPM();
-			glScalef(ppm,ppm,0.0001);
+			glScalef(ppm,ppm,0.001);
 			glRotatef(90, 1,0,0);
 			glRotatef(r, 0, -1, 0);
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			Obj_DrawStruct ds = { g, id1, id2 };
-			ObjDraw8(*o, 0, &kFuncs, &ds); 
-			g->EnableDepth(false,false);
+			glColor3f(1,1,1);
+			if(!agp.tile.empty())
+			{
+				glBegin(GL_TRIANGLE_FAN);
+				for(int n = 0; n < agp.tile.size(); n += 4)
+				{
+					glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
+					glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
+				}
+				glEnd();
+			}	
+			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+			{
+				XObj8 * oo;
+				if(rmgr->GetObj(o->name,oo))
+					draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);			
+			}
+			
+			
+//			g->EnableDepth(true,true);
+//			glClear(GL_DEPTH_BUFFER_BIT);
+//			Obj_DrawStruct ds = { g, id1, id2 };
+//			ObjDraw8(*o, 0, &kFuncs, &ds); 
+//			g->EnableDepth(false,false);
 			glPopMatrix();
+
+		}
+		#endif
+		else
+		{
+			Point2 l;
+			obj->GetLocation(gis_Geo,l);
+			l = zoomer->LLToPixel(l);
+			glColor3f(1,0,0);
+			GUI_PlotIcon(g,"map_missing_obj.png", l.x(),l.y(),0,1.0);
 		}
 	}
 };
@@ -694,7 +784,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 
 	int lg = group_TaxiwaysBegin;
 	if(pol)	pol->GetResource(vpath);
-	if(orth) pol->GetResource(vpath);
+	if(orth) orth->GetResource(vpath);
 	if(!vpath.empty())
 	if(rmgr->GetPol(vpath,pol_info))
 	if(!pol_info.group.empty())

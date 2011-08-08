@@ -1395,6 +1395,13 @@ int		MFS_string_match(MFScanner * s, const char * input, int eol_ok)
 	s->cur=c1;								   return 0;
 }
 
+int		MFS_has_word(MFScanner * s)
+{
+	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur))	s->cur++;
+	if(s->cur == s->end) return false;
+	return !iseoln(*s->cur);
+}
+
 int		MFS_string_match_no_case(MFScanner * s, const char * input, int eol_ok)
 {
 	while(s->cur<s->end && isspace(*s->cur) && !iseoln(*s->cur)) s->cur++;				const char* c1=s->cur;

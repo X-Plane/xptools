@@ -68,6 +68,18 @@ struct	fac_info_t {
 	vector<string>	walls;
 };
 
+#if AIRPORT_ROUTING
+struct agp_t {
+	struct obj {
+		double  x,y,r;			// annotation position
+		string	name;
+	};
+	string			base_tex;
+	vector<double>	tile;	// the base tile in x,y,s,t quads.
+	vector<obj>		objs;
+};
+#endif
+
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
@@ -81,6 +93,9 @@ public:
 			bool	GetPol(const string& path, pol_info_t& out_info);
 			void	MakePol(const string& path, const pol_info_t& out_info);
 			bool	GetObj(const string& path, XObj8 *& obj);
+#if AIRPORT_ROUTING
+			bool	GetAGP(const string& path, agp_t& out_info);
+#endif			
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -92,6 +107,9 @@ private:
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
 	map<string,XObj8 *>			mObj;
+#if AIRPORT_ROUTING	
+	map<string,agp_t>			mAGP;
+#endif	
 	WED_LibraryMgr *			mLibrary;
 };
 

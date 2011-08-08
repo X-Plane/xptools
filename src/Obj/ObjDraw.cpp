@@ -261,16 +261,12 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 
 	float v;
 
-	const XObjLOD8 * our_lod = &obj.lods.back();
 	for (vector<XObjLOD8>::const_iterator lod = obj.lods.begin(); lod != obj.lods.end(); ++lod)
-	if (lod->lod_near <= dist && lod->lod_far >= dist)
-		our_lod = &*lod;
-
-	float	mat_col[3] = { 1.0, 1.0, 1.0 };
-
-	if (our_lod != NULL)
+	if (lod->lod_near <= dist && dist < lod->lod_far)
 	{
-		for (vector<XObjCmd8>::const_iterator cmd = our_lod->cmds.begin(); cmd != our_lod->cmds.end(); ++cmd)
+		float	mat_col[3] = { 1.0, 1.0, 1.0 };
+
+		for (vector<XObjCmd8>::const_iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
 		{
 			switch(cmd->cmd) {
 			case obj8_Tris:
