@@ -36,7 +36,7 @@
 #define WARN_IF_LESS_LEVEL	10
 #define MAX_UNDO_LEVELS 20
 
-WED_UndoMgr::WED_UndoMgr(WED_Archive * inArchive) : mCommand(NULL), mArchive(inArchive)
+WED_UndoMgr::WED_UndoMgr(WED_Archive * inArchive, WED_UndoFatalErrorHandler * panic_handler) : mCommand(NULL), mArchive(inArchive), mPanicHandler(panic_handler)
 {
 }
 
@@ -68,8 +68,23 @@ void	WED_UndoMgr::__StartCommand(const string& inName, const char * file, int li
 		delete mUndo.front();
 		mUndo.pop_front();
 	}
+	
+	// This is the asset case that often burns us: a command is started WHILE another command is going on.  This happens due to
+	// either bad UI code or unknown weird shit from the window mgr.
 	if (mCommand != NULL)
+	{
+		if (mPanicHandler) 
+		{
+			// If we have a panic handler, abort the old cmd, don't start the new one. 
+			mArchive->SetUndo(NULL);
+			mArchive->SetUndo(UNDO_DISCARD);
+			mCommand->Execute();
+			// Now when we call panic, the previous unfinished cmd is backed out and we are in the last sane state.  The user loses the
+			// TWO half-done cmds that clashed, and that's it.
+			mPanicHandler->Panic();
+		}
 		AssertPrintf("Command %s (%s:%d) started while command %s (%s:%d) still active.",inName.c_str(), trim_file(file), line, mCommand->GetName().c_str(), trim_file(mCommand->GetFile()), mCommand->GetLine());
+	}
 	mCommand = new WED_UndoLayer(mArchive, inName, file, line);
 	mArchive->SetUndo(mCommand);
 }

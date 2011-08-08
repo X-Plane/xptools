@@ -126,77 +126,13 @@ WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, 
 {
 	mRealLines = true;
 	mVertices = true;
-	mPavementAlpha = 0.5;
+//	mPavementAlpha = 0.5;
 }
 
 WED_StructureLayer::~WED_StructureLayer()
 {
 }
 
-static bool setup_taxi_texture(int surface_code, double heading, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha)
-{
-	if (surface_code==surf_Trans) return false;
-	if (surface_code==shoulder_None) return false;
-	int tex_id = 0;
-	switch(surface_code) {
-	case shoulder_Asphalt:
-	case surf_Asphalt:	tex_id = GUI_GetTextureResource("asphalt.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-	case shoulder_Concrete:
-	case surf_Concrete:	tex_id = GUI_GetTextureResource("concrete.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);break;
-	case surf_Grass:	tex_id = GUI_GetTextureResource("grass.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-	case surf_Dirt:		tex_id = GUI_GetTextureResource("dirt.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-	case surf_Gravel:	tex_id = GUI_GetTextureResource("gravel.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-	case surf_Lake:		tex_id = GUI_GetTextureResource("lake.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-	case surf_Water:	tex_id = GUI_GetTextureResource("water.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-	case surf_Snow:		tex_id = GUI_GetTextureResource("snow.png",tex_Wrap+tex_Linear+tex_Mipmap,NULL);	break;
-	}
-	if (tex_id == 0)
-	{
-		g->SetState(false,0,false,true,true,false,false);
-		glColor4f(0.5,0.5,0.5,alpha);
-		return true;
-	}
-	g->SetState(false,1,false,true,true,false,false);
-	glColor4f(1,1,1,alpha);
-	g->BindTex(tex_id,0);
-	double ppm = z->GetPPM() * 12.5;
-	GLdouble	m1[16] = { 1.0,		0.0,		0.0, 					 0.0,
-							0.0, 		1.0,	0.0, 					 0.0,
-							0.0, 		0.0,		1.0, 					 0.0,
-							0.0, 		0.0,		0.0, 					 1.0 };
-
-	double l,b,r,t;
-
-	for (int n = 0; n < 16; ++n)
-		m1[n] /= ppm;
-
-	z->GetPixelBounds(l,b,r,t);
-
-	applyRotation(m1, heading, 0, 0, 1);
-
-	applyTranslation(m1, l-centroid.x(),b-centroid.y(),0);
-
-	double	proj_tex_s[4], proj_tex_t[4];
-
-	proj_tex_s[0] = m1[0 ];
-	proj_tex_s[1] = m1[4 ];
-	proj_tex_s[2] = m1[8 ];
-	proj_tex_s[3] = m1[12];
-	proj_tex_t[0] = m1[1 ];
-	proj_tex_t[1] = m1[5 ];
-	proj_tex_t[2] = m1[9 ];
-	proj_tex_t[3] = m1[13];
-
-	glEnable(GL_TEXTURE_GEN_S);	glTexGeni(GL_S,GL_TEXTURE_GEN_MODE,GL_OBJECT_LINEAR);	glTexGendv(GL_S,GL_OBJECT_PLANE,proj_tex_s);
-	glEnable(GL_TEXTURE_GEN_T);	glTexGeni(GL_T,GL_TEXTURE_GEN_MODE,GL_OBJECT_LINEAR);	glTexGendv(GL_T,GL_OBJECT_PLANE,proj_tex_t);
-	return true;
-}
-
-static void kill_taxi_texture(void)
-{
-	glDisable(GL_TEXTURE_GEN_S);
-	glDisable(GL_TEXTURE_GEN_T);
-}
 
 bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
@@ -280,23 +216,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		if (has_disp1 = rwy->GetCornersDisp1(disp1))				GetZoomer()->LLToPixelv(disp1, disp1, 4);
 		if (has_disp2 = rwy->GetCornersDisp2(disp2))				GetZoomer()->LLToPixelv(disp2, disp2, 4);
 		if (has_shoulders = rwy->GetCornersShoulders(shoulders))	GetZoomer()->LLToPixelv(shoulders, shoulders, 8);
-
-		if (mPavementAlpha > 0.0f)
-		{
-			// "Solid" geometry.
-			if (setup_taxi_texture(rwy->GetSurface(),rwy->GetHeading(), GetZoomer()->LLToPixel(rwy->GetCenter()),g,GetZoomer(), mPavementAlpha))
-			{
-											glShape2v(GL_QUADS, corners, 4);
-				if (has_blas1)				glShape2v(GL_QUADS, blas1,4);
-				if (has_blas2)				glShape2v(GL_QUADS, blas2,4);
-			}
-			if (setup_taxi_texture(rwy->GetShoulder(),rwy->GetHeading(), GetZoomer()->LLToPixel(rwy->GetCenter()),g,GetZoomer(), mPavementAlpha))
-			{
-				if (has_shoulders)			glShape2v(GL_QUADS, shoulders, 8);
-			}
-			kill_taxi_texture();
-			g->SetState(false,0,false, true,true, false,false);
-		}
 
 		//  "Outline" geometry
 		glColor4fv(WED_Color_RGBA(struct_color));
@@ -399,13 +318,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				Point2 corners[4];
 				ptwl->GetCorners(gis_Geo,corners);
 				GetZoomer()->LLToPixelv(corners, corners, 4);
-
-				if (helipad && mPavementAlpha > 0.0f)
-				{
-					glColor4fv(WED_Color_Surface(helipad->GetSurface(), mPavementAlpha, storage));
-					glShape2v(GL_QUADS, corners, 4);
-					glColor4fv(WED_Color_RGBA(struct_color));
-				}
 
 				glShape2v(GL_LINE_LOOP, corners, 4);
 
@@ -539,13 +451,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			lw->GetCorners(gis_Geo,corners);
 			GetZoomer()->LLToPixelv(corners, corners, 4);
 
-			if (sea && mPavementAlpha > 0.0f)
-			{
-				glColor4fv(WED_Color_RGBA_Alpha(wed_Surface_Water,mPavementAlpha, storage));
-				glShape2v(GL_QUADS, corners, 4);
-				glColor4fv(WED_Color_RGBA(struct_color));
-			}
-
 			glShape2v(GL_LINE_LOOP, corners, 4);
 
 			glBegin(GL_LINES);
@@ -566,7 +471,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			box->GetMin()->GetLocation(gis_Geo,pts[0]);
 			box->GetMax()->GetLocation(gis_Geo,pts[1]);
 			GetZoomer()->LLToPixelv(pts,pts,2);
-			glColor4fv(WED_Color_RGBA_Alpha(wed_Link, mPavementAlpha, storage));
+			glColor4fv(WED_Color_RGBA_Alpha(wed_Link, 1.0/*mPavementAlpha*/, storage));
 			glBegin(GL_LINE_LOOP);
 			glVertex2f(pts[0].x(), pts[0].y());
 			glVertex2f(pts[0].x(), pts[1].y());
@@ -588,44 +493,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 
 		if (poly)
 		{
-			if (taxi && mPavementAlpha > 0.0f && taxi->GetSurface() != surf_Trans)
-			{
-				// I tried "LODing" out the solid pavement, but the margin between when the pavement can disappear and when the whole
-				// airport can is tiny...most pavement is, while visually insignificant, still sprawling, so a bbox-sizes test is poor.
-				// Any other test is too expensive, and for the small pavement squares that would get wiped out, the cost of drawing them
-				// is negligable anyway.
-				vector<Point2>	pts;
-				vector<int>		is_hole_start;
-
-				PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, false, is_hole_start, 0);
-				int n = poly->GetNumHoles();
-				for (int i = 0; i < n; ++i)
-					PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false, is_hole_start, 1);
-
-				if (!pts.empty())
-				{
-					Point2 centroid(0,0);
-					for (int i = 0; i < pts.size(); ++i)
-					{
-						centroid.x_ += pts[i].x();
-						centroid.y_ += pts[i].y();
-					}
-					centroid.x_ /= (double) pts.size();
-					centroid.y_ /= (double) pts.size();
-
-//					glColor4fv(WED_Color_Surface(taxi->GetSurface(), mPavementAlpha, storage));
-					if (setup_taxi_texture(taxi->GetSurface(), taxi->GetHeading(), centroid, g, GetZoomer(), mPavementAlpha))
-					{
-//						glDisable(GL_CULL_FACE);
-						glFrontFace(GL_CCW);
-						glPolygon2(&*pts.begin(),false,  &*is_hole_start.begin(), pts.size());
-						glFrontFace(GL_CW);
-//						glEnable(GL_CULL_FACE);
-					}
-					kill_taxi_texture();
-				}
-			}
-
 			this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
 			int n = poly->GetNumHoles();
 			for (int c = 0; c < n; ++c)
@@ -781,16 +648,16 @@ void		WED_StructureLayer::SetRealLinesShowing(bool show)
 	GetHost()->Refresh();
 }
 
-void		WED_StructureLayer::SetPavementTransparency(float alpha)
-{
-	mPavementAlpha = alpha;
-	GetHost()->Refresh();
-}
-
-float		WED_StructureLayer::GetPavementTransparency(void) const
-{
-	return mPavementAlpha;
-}
+//void		WED_StructureLayer::SetPavementTransparency(float alpha)
+//{
+//	mPavementAlpha = alpha;
+//	GetHost()->Refresh();
+//}
+//
+//float		WED_StructureLayer::GetPavementTransparency(void) const
+//{
+//	return mPavementAlpha;
+//}
 
 bool		WED_StructureLayer::GetVerticesShowing(void) const
 {

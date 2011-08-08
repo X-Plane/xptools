@@ -314,11 +314,11 @@ int		WED_MapPane::Map_HandleCommand(int command)
 //	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
 	case wed_TogglePreview:	mPreview->ToggleVisible(); return 1;
 
-	case wed_Pavement0:		mStructureLayer->SetPavementTransparency(0.0f);		return 1;
-	case wed_Pavement25:	mStructureLayer->SetPavementTransparency(0.25f);	return 1;
-	case wed_Pavement50:	mStructureLayer->SetPavementTransparency(0.5f);		return 1;
-	case wed_Pavement75:	mStructureLayer->SetPavementTransparency(0.75f);	return 1;
-	case wed_Pavement100:	mStructureLayer->SetPavementTransparency(1.0f);		return 1;
+//	case wed_Pavement0:		mStructureLayer->SetPavementTransparency(0.0f);		return 1;
+//	case wed_Pavement25:	mStructureLayer->SetPavementTransparency(0.25f);	return 1;
+//	case wed_Pavement50:	mStructureLayer->SetPavementTransparency(0.5f);		return 1;
+//	case wed_Pavement75:	mStructureLayer->SetPavementTransparency(0.75f);	return 1;
+//	case wed_Pavement100:	mStructureLayer->SetPavementTransparency(1.0f);		return 1;
 	case wed_ToggleLines:	mStructureLayer->SetRealLinesShowing(!mStructureLayer->GetRealLinesShowing());				return 1;
 	case wed_ToggleVertices:mStructureLayer->SetVerticesShowing(!mStructureLayer->GetVerticesShowing());				return 1;
 
@@ -341,11 +341,11 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_ToggleTerraserver: ioCheck = mTerraserver->IsVisible();							return 1;
 //	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
 	case wed_TogglePreview: ioCheck = mPreview->IsVisible();								return 1;
-	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;
-	case wed_Pavement25:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.25f;	return 1;
-	case wed_Pavement50:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.5f;	return 1;
-	case wed_Pavement75:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.75f;	return 1;
-	case wed_Pavement100:	ioCheck = mStructureLayer->GetPavementTransparency() == 1.0f;	return 1;
+//	case wed_Pavement0:		ioCheck = mStructureLayer->GetPavementTransparency() == 0.0f;	return 1;
+//	case wed_Pavement25:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.25f;	return 1;
+//	case wed_Pavement50:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.5f;	return 1;
+//	case wed_Pavement75:	ioCheck = mStructureLayer->GetPavementTransparency() == 0.75f;	return 1;
+//	case wed_Pavement100:	ioCheck = mStructureLayer->GetPavementTransparency() == 1.0f;	return 1;
 	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
 	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();				return 1;
 
@@ -377,7 +377,7 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
 	if ((mPreview->IsVisible ()     ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"    ,mPreview->IsVisible()      ? 1 : 0))		mPreview->ToggleVisible();
 
-	mStructureLayer->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4) * 0.25f);
+//	mStructureLayer->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4) * 0.25f);
 	mStructureLayer->SetRealLinesShowing(	 prefs->ReadIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0) != 0);
 	mStructureLayer->SetVerticesShowing(	 prefs->ReadIntPref("map/vertices_vis",	 mStructureLayer->GetVerticesShowing() ? 1 : 0) != 0);
 
@@ -444,7 +444,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	prefs->WriteIntPref("map/world_map_vis",mWorldMap->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
-	prefs->WriteIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4);
+//	prefs->WriteIntPref("map/pavement_alpha",mStructureLayer->GetPavementTransparency()*4);
 	prefs->WriteIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0);
 	prefs->WriteIntPref("map/vertices_vis",mStructureLayer->GetVerticesShowing() ? 1 : 0);
 

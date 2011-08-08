@@ -12,8 +12,8 @@ public:
 
 			bool		GetRealLinesShowing(void) const;
 			void		SetRealLinesShowing(bool show);
-			void		SetPavementTransparency(float alpha);
-			float		GetPavementTransparency(void) const;
+//			void		SetPavementTransparency(float alpha);
+//			float		GetPavementTransparency(void) const;
 			bool		GetVerticesShowing(void) const;
 			void		SetVerticesShowing(bool show);
 
@@ -25,7 +25,6 @@ public:
 private:
 
 	bool							mRealLines;
-	float							mPavementAlpha;
 	bool							mVertices;
 
 	vector<int>			mAirportIconsX;

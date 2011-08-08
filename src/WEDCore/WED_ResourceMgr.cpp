@@ -154,6 +154,12 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		{
 			out_info.kill_alpha=true;
 		}
+		// LAYER_GROUP
+		else if (MFS_string_match(&s,"LAYER_GROUP",false))
+		{
+			MFS_string(&s,&out_info.group);
+			out_info.group_offset = MFS_int(&s);
+		}
 
 		MFS_string_eol(&s,NULL);
 	}

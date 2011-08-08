@@ -100,7 +100,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
-{	"Pavement Transparenc&y",	0,	0,										0,	0					},
+//{	"Pavement Transparenc&y",	0,	0,										0,	0					},
 {	"-",						0,	0,										0,	0					},
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
@@ -112,14 +112,14 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	NULL,						0,	0,										0,	0					},
 };
 
-static const GUI_MenuItem_t kPavementMenu[] = {
-{	"&None",					0,	0,							0,	wed_Pavement0		},
-{	"&25%",						0,	0,							0,	wed_Pavement25		},
-{	"&50%",						0,	0,							0,	wed_Pavement50		},
-{	"&75%",						0,	0,							0,	wed_Pavement75		},
-{	"&Solid",					0,	0,							0,	wed_Pavement100		},
-{	NULL,						0,	0,							0,	0					}
-};
+//static const GUI_MenuItem_t kPavementMenu[] = {
+//{	"&None",					0,	0,							0,	wed_Pavement0		},
+//{	"&25%",						0,	0,							0,	wed_Pavement25		},
+//{	"&50%",						0,	0,							0,	wed_Pavement50		},
+//{	"&75%",						0,	0,							0,	wed_Pavement75		},
+//{	"&Solid",					0,	0,							0,	wed_Pavement100		},
+//{	NULL,						0,	0,							0,	0					}
+//};
 
 static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select &All",		'A',			gui_ControlFlag,				0,	gui_SelectAll		},
@@ -202,8 +202,8 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
 
-	GUI_Menu	pave_menu = inApp->CreateMenu(
-		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
+//	GUI_Menu	pave_menu = inApp->CreateMenu(
+//		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
 
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
