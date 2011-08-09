@@ -792,8 +792,13 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	
 	if(pol)		mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
 	if(orth)	mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
-	if(forst)	mPreviewItems.push_back(new preview_forest(forst,group_Objects));
 	if(fac)		mPreviewItems.push_back(new preview_facade(fac,group_Objects));
+	if(forst)	
+#if AIRPORT_ROUTING
+	if(forst->GetGISClass() == gis_Polygon)
+#endif
+		mPreviewItems.push_back(new preview_forest(forst,group_Objects));
+	
 
 	/******************************************************************************************************************************
 	 * OBJECT preview
