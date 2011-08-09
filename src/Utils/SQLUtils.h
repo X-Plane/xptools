@@ -264,7 +264,7 @@ public:
 
 class	sql_db {
 public:
-	 sql_db(const char * in_filename);
+	 sql_db(const char * in_filename, int flags);
 	~sql_db();
 
 	sqlite3 * get(void);

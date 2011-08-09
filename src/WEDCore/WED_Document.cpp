@@ -29,6 +29,10 @@
 #include "AptIO.h"
 //#include "MapAlgs.h"
 #include "WED_Thing.h"
+#include "WED_Group.h"
+#include "WED_KeyObjects.h"
+#include "WED_Select.h"
+#include "WED_Root.h"
 #include "WED_Messages.h"
 #include "WED_EnumSystem.h"
 #include <sqlite3.h>
@@ -56,7 +60,7 @@ WED_Document::WED_Document(
 //	mProperties(mDB.get()),
 	mPackage(package),
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
-	mDB(mFilePath.c_str()),
+//	mDB(mFilePath.c_str()),
 //	mPackage(inPackage),
 	mUndo(&mArchive, this),
 	mArchive(this)
@@ -69,22 +73,22 @@ WED_Document::WED_Document(
 
 	string buf;
 
-	GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
-	if (res == NULL)
-		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf.c_str());
-
-	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
-	GUI_UnloadResource(res);
+//	GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
+//	if (res == NULL)
+//		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf.c_str());
+//
+//	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
+//	GUI_UnloadResource(res);
 
 #if AIRPORT_ROUTING
-	string buf2;
-
-	GUI_Resource res2 = GUI_LoadResource("WED_DataModel2.sql");
-	if (res2 == NULL)
-		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf2.c_str());
-
-	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res2), GUI_GetResourceEnd(res2));
-	GUI_UnloadResource(res2);
+//	string buf2;
+//
+//	GUI_Resource res2 = GUI_LoadResource("WED_DataModel2.sql");
+//	if (res2 == NULL)
+//		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf2.c_str());
+//
+//	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res2), GUI_GetResourceEnd(res2));
+//	GUI_UnloadResource(res2);
 #endif
 
 	mBounds[0] = inBounds[0];
@@ -195,30 +199,55 @@ void	WED_Document::Revert(void)
 		string fname(mFilePath);
 		fname+=".xml";
 		mArchive.ClearAll();
+
+		// First: try to IO the XML file.
 		bool xml_exists;
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
 		if(xml_exists && !result.empty())
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
+
 		if(!xml_exists)
 		{
-			enum_map_t	mapping;
-			ENUM_read(mDB.get(), mapping);
-			mArchive.ClearAll();
-			mArchive.LoadFromDB(mDB.get(), mapping);
-
-			int err;
+			// If XML fails because it's AWOL, go back and do the SQL-style read-in.
+			sql_db db(mFilePath.c_str(), SQLITE_OPEN_READONLY);
+			if(db.get())
 			{
-				sql_command	get_prefs(mDB.get(),"SELECT key,value FROM WED_doc_prefs WHERE 1;",NULL);
+				enum_map_t	mapping;
+				ENUM_read(db.get(), mapping);
+				mArchive.ClearAll();
+				mArchive.LoadFromDB(db.get(), mapping);
 
-				sql_row2<string, string>	p;
-				get_prefs.begin();
-				while((err = get_prefs.get_row(p)) == SQLITE_ROW)
+				int err;
 				{
-					mDocPrefs[p.a] = p.b;
-					sGlobalPrefs[p.a] = p.b;
+					sql_command	get_prefs(db.get(),"SELECT key,value FROM WED_doc_prefs WHERE 1;",NULL);
+
+					sql_row2<string, string>	p;
+					get_prefs.begin();
+					while((err = get_prefs.get_row(p)) == SQLITE_ROW)
+					{
+						mDocPrefs[p.a] = p.b;
+						sGlobalPrefs[p.a] = p.b;
+					}
+					if (err != SQLITE_DONE)
+						WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db.get()),err);
 				}
-				if (err != SQLITE_DONE)
-					WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
+			}
+			else
+			{
+				/* We have a brand new blank doc.  In WED 1.0, we ran a SQL script that built the core objects,
+				 * then we IO-ed it in.  In WED 1.1 we just build the world and the few named objs immediately. */
+
+				WED_Root * root = WED_Root::CreateTyped(&mArchive);				// Root object anchors all WED things and supports named searches.
+				WED_Select * sel = WED_Select::CreateTyped(&mArchive);			// Sel and key-choice objs are known by name in the root!
+				WED_KeyObjects * key = WED_KeyObjects::CreateTyped(&mArchive);
+				WED_Group * wrl = WED_Group::CreateTyped(&mArchive);			// The world is a group of name "world" inside the root.
+				sel->SetParent(root,0);
+				key->SetParent(root,1);
+				wrl->SetParent(root,2);
+				root->SetName("root");
+				sel->SetName("selection");
+				key->SetName("choices");
+				wrl->SetName("world");
 			}
 
 		}

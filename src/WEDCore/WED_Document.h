@@ -130,7 +130,7 @@ private:
 	string				mFilePath;
 	string				mPackage;
 
-	sql_db				mDB;
+//	sql_db				mDB;
 	WED_Archive			mArchive;
 	WED_UndoMgr			mUndo;
 

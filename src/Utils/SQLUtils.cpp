@@ -24,20 +24,26 @@
 #include "SQLUtils.h"
 #include "AssertUtils.h"
 #include "WED_Errors.h"
-sql_db::sql_db(const char * in_filename)
+sql_db::sql_db(const char * in_filename, int flags)
 {
-	int	result = sqlite3_open(in_filename, &db);
+	int	result = sqlite3_open_v2(in_filename, &db, flags, NULL);
 	if (result != SQLITE_OK)
 	{
 		sqlite3_close(db);
-		AssertPrintf("Unable to open file %s: %d\n", in_filename, result);
+		if(result == SQLITE_CANTOPEN && (flags == SQLITE_OPEN_READONLY))
+			db = NULL;
+		else
+			AssertPrintf("Unable to open file %s: %d\n", in_filename, result);
 	}
 }
 
 sql_db::~sql_db()
 {
-	int result = 	sqlite3_close(db);
-	DebugAssert(result == SQLITE_OK);
+	if(db)
+	{
+		int result = 	sqlite3_close(db);
+		DebugAssert(result == SQLITE_OK);
+	}
 }
 
 sqlite3 * sql_db::get(void) { return db; }
