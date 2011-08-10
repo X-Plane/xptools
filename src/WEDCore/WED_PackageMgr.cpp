@@ -172,8 +172,11 @@ int WED_PackageMgr::CreateNewCustomPackage(void)
 	return -1;
 }
 
+static bool CompareNoCase(const string& s1, const string& s2) { return strcasecmp(s1.c_str(), s2.c_str()) < 0; }
+
 void		WED_PackageMgr::Rescan(void)
 {
+
 	custom_package_names.clear();
 	global_package_names.clear();
 	default_package_names.clear();
@@ -185,6 +188,7 @@ void		WED_PackageMgr::Rescan(void)
 		{
 			system_exists=true;
 			MF_IterateDirectory(cus_dir.c_str(), package_scan_func, &custom_package_names);
+			sort(custom_package_names.begin(),custom_package_names.end(),CompareNoCase);
 		}
 
 		string glb_dir = system_path + DIR_STR GLOBAL_PACKAGE_PATH;
@@ -192,6 +196,7 @@ void		WED_PackageMgr::Rescan(void)
 		{
 			system_exists=true;
 			MF_IterateDirectory(glb_dir.c_str(), package_scan_func, &global_package_names);
+			sort(global_package_names.begin(),global_package_names.end(),CompareNoCase);
 		}
 
 		string def_dir = system_path + DIR_STR DEFAULT_PACKAGE_PATH;
@@ -199,6 +204,7 @@ void		WED_PackageMgr::Rescan(void)
 		{
 			system_exists=true;
 			MF_IterateDirectory(def_dir.c_str(), package_scan_func, &default_package_names);
+			sort(default_package_names.begin(),default_package_names.end(),CompareNoCase);
 		}
 	}
 	BroadcastMessage(msg_SystemFolderChanged,0);
