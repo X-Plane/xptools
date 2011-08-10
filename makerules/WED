@@ -339,6 +339,7 @@ RESOURCES += ./src/WEDResources/handles/handle_rotatehead.png
 RESOURCES += ./src/WEDResources/handles/handle_closeloop.png
 RESOURCES += ./src/WEDResources/handles/handle_control.png
 RESOURCES += ./src/WEDResources/icons/map_heliport.png
+RESOURCES += ./src/WEDResources/icons/map_missing_obj.png
 RESOURCES += ./src/WEDResources/icons/map_light.png
 RESOURCES += ./src/WEDResources/icons/map_rampstart.png
 RESOURCES += ./src/WEDResources/icons/map_airport.png
