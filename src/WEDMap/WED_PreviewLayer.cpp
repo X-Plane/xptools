@@ -520,7 +520,8 @@ struct	preview_facade : public preview_polygon {
 		g->SetState(false,0,false,false, false,false,false);
 		glColor3f(0.7,0.7,0.7);
 
-		preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+		if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area)
+			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 		if(fac->GetTopoMode() != WED_FacadePlacement::topo_Chain)
 		{
 			vector<Point2>	pts;
