@@ -30,7 +30,7 @@ sql_db::sql_db(const char * in_filename, int flags)
 	if (result != SQLITE_OK)
 	{
 		sqlite3_close(db);
-		if(result == SQLITE_CANTOPEN && (flags == SQLITE_OPEN_READONLY))
+		if(result == SQLITE_CANTOPEN)
 			db = NULL;
 		else
 			AssertPrintf("Unable to open file %s: %d\n", in_filename, result);

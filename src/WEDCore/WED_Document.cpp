@@ -209,9 +209,20 @@ void	WED_Document::Revert(void)
 		if(!xml_exists)
 		{
 			// If XML fails because it's AWOL, go back and do the SQL-style read-in.
-			sql_db db(mFilePath.c_str(), SQLITE_OPEN_READONLY);
+			sql_db db(mFilePath.c_str(), SQLITE_OPEN_READWRITE);
 			if(db.get())
 			{
+				GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
+				if (res == NULL)
+					WED_ThrowPrintf("Unable to open SQL code resource.",0);
+
+				sql_do_bulk_range(db.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
+				GUI_UnloadResource(res);
+			
+			
+			
+			
+			
 				enum_map_t	mapping;
 				ENUM_read(db.get(), mapping);
 				mArchive.ClearAll();
