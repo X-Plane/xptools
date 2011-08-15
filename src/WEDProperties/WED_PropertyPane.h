@@ -42,6 +42,7 @@
 #include "GUI_Packer.h"
 #include "GUI_TextTable.h"
 #include "WED_PropertyTable.h"
+#include "IDocPrefs.h"
 
 class	GUI_Commander;
 class	GUI_ScrollerPane;
@@ -71,6 +72,9 @@ public:
 						int						pane_style,
 						const char **			filter);
 	virtual	~WED_PropertyPane();
+
+	void		ToPrefs(IDocPrefs * prefs,int id);
+	void		FromPrefs(IDocPrefs * prefs,int id);
 
 private:
 

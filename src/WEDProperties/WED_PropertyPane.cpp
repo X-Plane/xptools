@@ -151,5 +151,27 @@ WED_PropertyPane::~WED_PropertyPane()
 {
 }
 
+void	WED_PropertyPane::FromPrefs(IDocPrefs * prefs,int id)
+{
+	char buf[256];
+	string key = "PropertyPane";
+	sprintf(buf,"%d/Closed",id);
+	key += buf;
 
+	vector<int> mClosedList;
+	prefs->ReadEnumIntPref(key.c_str(),&mClosedList);
+	mPropertyTable.SetClosed(&mClosedList);
+}
+
+void	WED_PropertyPane::ToPrefs(IDocPrefs * prefs,int id)
+{
+	char buf[256];
+	string key = "PropertyPane";
+	sprintf(buf,"%d/Closed",id);
+	key += buf;
+
+	vector<int> mClosedList;
+	mPropertyTable.GetClosed(&mClosedList);
+	prefs->WriteEnumIntPref(key.c_str(), &mClosedList);
+}
 

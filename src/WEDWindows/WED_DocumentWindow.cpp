@@ -216,10 +216,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
 	static int widths[] =			{ 50,		50,		200		};
 
-	WED_PropertyPane * prop_pane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);
-	prop_pane->SetParent(mPropSplitter);
-	prop_pane->Show();
-	prop_pane->SetSticky(1,0.5,1,1);
+	mPropPane = new WED_PropertyPane(this, inDocument, titles, widths,inDocument->GetArchive(), propPane_Hierarchy, 0);
+	mPropPane->SetParent(mPropSplitter);
+	mPropPane->Show();
+	mPropPane->SetSticky(1,0.5,1,1);
 
 	/****************************************************************************************************************************************************************
 	 * FINAL CLEANUP
@@ -239,6 +239,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mMapPane->ZoomShowAll();
 
 	mMapPane->FromPrefs(inDocument);
+	mPropPane->FromPrefs(inDocument,0);
 	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
 
 }
@@ -282,7 +283,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #if AIRPORT_ROUTING
 	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
 	case wed_Merge:		WED_DoMerge(mDocument); return 1;
-#endif	
+#endif
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
 	case wed_Rotate:	WED_DoRotate(mDocument); return 1;
@@ -298,7 +299,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #if AIRPORT_ROUTING
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
 	case wed_AddATCRunwayUse:WED_DoMakeNewATCRunwayUse(mDocument); return 1;
-#endif	
+#endif
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -346,13 +347,13 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #if AIRPORT_ROUTING
 	case wed_MakeRouting:
 	case wed_Merge:		return WED_CanMerge(mDocument);
-#endif	
+#endif
 	case wed_CheckPolys:
 	case wed_Overlay:														return 1;
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);
-	case wed_Rotate:	return WED_CanRotate(mDocument);	
+	case wed_Rotate:	return WED_CanRotate(mDocument);
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
@@ -360,7 +361,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #if AIRPORT_ROUTING
 	case wed_AddATCFlow:return WED_CanMakeNewATCFlow(mDocument);
 	case wed_AddATCRunwayUse: return WED_CanMakeNewATCRunwayUse(mDocument);
-#endif	
+#endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
 	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);
@@ -408,6 +409,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->ToPrefs(prefs);
+		mPropPane->ToPrefs(prefs,0);
+
 		prefs->WriteIntPref("doc/use_feet",gIsFeet);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
 		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
@@ -417,6 +420,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 	{
 		IDocPrefs * prefs = reinterpret_cast<IDocPrefs *>(inParam);
 		mMapPane->FromPrefs(prefs);
+		mPropPane->FromPrefs(prefs,0);
+
 		gIsFeet = prefs->ReadIntPref("doc/use_feet",gIsFeet);
 	}
 }

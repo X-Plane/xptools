@@ -832,7 +832,7 @@ void	WED_PropertyTable::ReceiveMessage(
 	{
 		// Set this to false FIRST, lest we have an explosion due to a stale cache!
 		if (inParam & (wed_Change_CreateDestroy | wed_Change_Topology))
-			mCacheValid = false;
+   			mCacheValid = false;
 
 		if (mSelOnly && (inParam & wed_Change_Selection))
 			mCacheValid = false;
@@ -883,6 +883,23 @@ void	WED_PropertyTable::GetHeaderContent(
 	}
 }
 
+void WED_PropertyTable::SetClosed(vector<int>* closed_list)
+{
+	for( vector<int>::iterator it = closed_list->begin(); it != closed_list->end(); ++it)
+	    SetOpen(*it,0);
+	mCacheValid = false;
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+}
+
+void WED_PropertyTable::GetClosed(vector<int>* closed_list)
+{
+	for( hash_map<int,int>::iterator it = mOpen.begin(); it != mOpen.end(); ++it)
+	{
+	    if(!GetOpen(it->first)) closed_list->push_back(it->first) ;
+	}
+}
+
+
 // These routines encapsulate the hash table that tracks the disclosure of various WED things.  We wrap it like this so we can
 // easily map "no entry" to open.  This makes new entities default to open, which seems to be preferable.  It'd be easy to customize
 // the behavior.
@@ -902,6 +919,7 @@ void WED_PropertyTable::SetOpen(int id, int o)
 {
 	mOpen[id] = o;
 }
+
 
 // This is the main "filter" function - it determines four properties at once about an entity:
 // 1. Can we actually see this entity?

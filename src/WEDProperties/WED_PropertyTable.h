@@ -50,7 +50,7 @@ public:
 									const char **			filter);
 	virtual			~WED_PropertyTable();
 
-	virtual void	GetCellContent(
+	virtual    void	GetCellContent(
 						int							cell_x,
 						int							cell_y,
 						GUI_CellContent&			the_content);
@@ -157,6 +157,9 @@ public:
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
+
+	virtual	void    SetClosed(vector<int>* closed_list);
+	virtual	void    GetClosed(vector<int>* closed_list);
 
 private:
 

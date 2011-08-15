@@ -95,6 +95,8 @@ public:
 	virtual	void		WriteDoublePref(const char * in_key, double in_value);
 	virtual	string		ReadStringPref(const char * in_key, const string& in_default);
 	virtual	void		WriteStringPref(const char * in_key, const string& in_value);
+	virtual	void		ReadEnumIntPref(const char * in_key, vector<int> * out_value);
+	virtual	void		WriteEnumIntPref(const char * in_key, vector<int> * in_value);
 
 	WED_LibraryMgr *	GetLibrary(void) { return mLibraryMgr; }
 	WED_ResourceMgr *	GetResourceMgr(void) { return mResourceMgr; }
@@ -143,7 +145,9 @@ private:
 	WED_Document(const WED_Document&);
 	WED_Document& operator=(const WED_Document&);
 
-	map<string,string>	mDocPrefs;
+	string				mDocPrefsActName;
+	map<string,string>		mDocPrefs;
+	map<string,vector<string> >	mDocPrefsItems;
 
 };
 

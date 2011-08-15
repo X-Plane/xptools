@@ -181,6 +181,16 @@ void	WED_Document::Save(void)
 				WED_XMLElement * pref = prefs->add_sub_element("pref");
 				pref->add_attr_stl_str("name",p->first);
 				pref->add_attr_stl_str("value",p->second);
+				if(p->second == "enum")
+				{
+				    map<string,vector<string> >::iterator i = mDocPrefsItems.find(p->first);
+				    if (i != mDocPrefsItems.end())
+					for(vector<string>::iterator pi = i->second.begin(); pi != i->second.end(); ++pi)
+					{
+					    WED_XMLElement *item = pref->add_sub_element("item");
+					    item->add_attr_stl_str("value",*pi);
+					}
+				}
 			}
 		}
 		fclose(xml_file);
@@ -218,11 +228,11 @@ void	WED_Document::Revert(void)
 
 				sql_do_bulk_range(db.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
 				GUI_UnloadResource(res);
-			
-			
-			
-			
-			
+	
+	
+	
+	
+	
 				enum_map_t	mapping;
 				ENUM_read(db.get(), mapping);
 				mArchive.ClearAll();
@@ -268,7 +278,7 @@ void	WED_Document::Revert(void)
 		throw;
 	}
 	mUndo.CommitCommand();
-	
+
 	BroadcastMessage(msg_DocLoaded, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));
 }
 
@@ -440,6 +450,33 @@ void		WED_Document::WriteStringPref(const char * in_key, const string& in_value)
 	sGlobalPrefs[in_key] = in_value;
 }
 
+void		WED_Document::ReadEnumIntPref(const char * in_key, vector<int>* out_value)
+{
+	if(!out_value) return;
+
+	string key(in_key);
+	map<string,vector<string> >::iterator i = mDocPrefsItems.find(key);
+	if (i == mDocPrefsItems.end()) return;
+
+	for(vector<string>::iterator si = i->second.begin(); si !=  i->second.end(); ++si)
+	{
+	      out_value->push_back(atoi(si->c_str()));
+	}
+}
+
+void		WED_Document::WriteEnumIntPref(const char * in_key, vector<int>* in_value)
+{
+	char buf[256];
+	vector<string> v;
+	for(vector<int>::iterator i = in_value->begin(); i != in_value->end(); ++i)
+	{
+	    sprintf(buf,"%d",*i);
+	    v.push_back(buf);
+	}
+	mDocPrefs[in_key] = "enum";
+	mDocPrefsItems[in_key] = v;
+}
+
 static void PrefCB(const char * key, const char * value, void * ref)
 {
 	sGlobalPrefs[key] = value;
@@ -462,18 +499,21 @@ void		WED_Document::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
+	const char * n = NULL, * v = NULL;
+
 	if(strcasecmp(name,"objects")==0)
 	{
-		
+
 		reader->PushHandler(&mArchive);
 	}
 	if(strcasecmp(name,"prefs")==0)
 	{
 		mDocPrefs.clear();
+		mDocPrefsItems.clear();
+		mDocPrefsActName = "";
 	}
 	else if(strcasecmp(name,"pref")==0)
 	{
-		const char * n = NULL, * v = NULL;
 		while(*atts)
 		{
 			if(strcasecmp(*atts, "name")==0)
@@ -495,9 +535,43 @@ void		WED_Document::StartElement(
 			}
 		}
 		if(n && v)
+		{
 			mDocPrefs[n] = v;
+			if(strcasecmp(v,"enum")==0)
+			{
+			    mDocPrefsActName = n;
+			    mDocPrefsItems[n]= vector<string>();
+			}
+		}
 		else
 			reader->FailWithError("Invalid pref: missing key or value.");
+	}
+	else if(strcasecmp(name,"item")==0)
+	{
+        while(*atts)
+		{
+			if(strcasecmp(*atts,"value")==0)
+			{
+				++atts;
+				v = *atts;
+				++atts;
+			}
+			else
+			{
+				++atts;
+				++atts;
+			}
+		}
+		if(v)
+		{
+			map<string,vector<string> >::iterator i = mDocPrefsItems.find(mDocPrefsActName);
+			if (i == mDocPrefsItems.end())
+			   reader->FailWithError("Invalid item: no parent entry.");
+			else
+			   i->second.push_back(v);
+		}
+		else
+			reader->FailWithError("Invalid item: missing  value.");
 	}
 }
 
@@ -510,7 +584,7 @@ void		WED_Document::PopHandler(void)
 
 void WED_Document::Panic(void)
 {
-	// Panic case: means undo system blew up.  Try to save off the current project with a special "crash" extension - if we get lucky, 
+	// Panic case: means undo system blew up.  Try to save off the current project with a special "crash" extension - if we get lucky,
 	// we save the user's work.
 	string xml = mFilePath;
 	xml += ".crash.xml";
@@ -527,10 +601,20 @@ void WED_Document::Panic(void)
 				WED_XMLElement * pref = prefs->add_sub_element("pref");
 				pref->add_attr_stl_str("name",p->first);
 				pref->add_attr_stl_str("value",p->second);
+				if(p->second == "enum")
+				{
+				      map<string,vector<string> >::iterator i = mDocPrefsItems.find(p->first);
+				      if (i != mDocPrefsItems.end())
+					  for(vector<string>::iterator pi = i->second.begin(); pi != i->second.end(); ++pi)
+					  {
+					      WED_XMLElement *item = pref->add_sub_element("item");
+					      item->add_attr_stl_str("value",*pi);
+					  }
+				}
 			}
 		}
 		fclose(xml_file);
-	}	
+	}
 }
 
 
