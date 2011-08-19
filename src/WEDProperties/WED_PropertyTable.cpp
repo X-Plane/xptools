@@ -883,20 +883,24 @@ void	WED_PropertyTable::GetHeaderContent(
 	}
 }
 
-void WED_PropertyTable::SetClosed(vector<int>* closed_list)
+void WED_PropertyTable::SetClosed(const set<int>& closed_list)
 {
-	for( vector<int>::iterator it = closed_list->begin(); it != closed_list->end(); ++it)
+	WED_Thing * root = WED_GetWorld(mResolver);
+	WED_Archive * arch = root->GetArchive();
+	for( set<int>::const_iterator it = closed_list.begin(); it != closed_list.end(); ++it)
+	if(arch->Fetch(*it) != NULL)
+	{
 	    SetOpen(*it,0);
+	}	
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
 
-void WED_PropertyTable::GetClosed(vector<int>* closed_list)
+void WED_PropertyTable::GetClosed(set<int>& closed_list)
 {
+	closed_list.clear();
 	for( hash_map<int,int>::iterator it = mOpen.begin(); it != mOpen.end(); ++it)
-	{
-	    if(!GetOpen(it->first)) closed_list->push_back(it->first) ;
-	}
+	    if(!GetOpen(it->first)) closed_list.insert(it->first) ;
 }
 
 

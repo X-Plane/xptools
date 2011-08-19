@@ -35,8 +35,8 @@ public:
 	virtual	void	WriteDoublePref(const char * in_key, double in_value)=0;
 	virtual	string	ReadStringPref(const char * in_key, const string& in_default)=0;
 	virtual	void	WriteStringPref(const char * in_key, const string& in_value)=0;
-	virtual	void	ReadEnumIntPref(const char * in_key, vector<int> * out_value)=0;
-	virtual	void	WriteEnumIntPref(const char * in_key, vector<int> * in_value)=0;
+	virtual	void	ReadIntSetPref(const char * in_key, set<int>& out_value)=0;
+	virtual	void	WriteIntSetPref(const char * in_key, const set<int>& in_value)=0;
 };
 
 #endif /* IDocPrefs_H */

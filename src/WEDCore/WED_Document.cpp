@@ -171,30 +171,7 @@ void	WED_Document::Save(void)
 	FILE * xml_file = fopen(xml.c_str(),"w");
 	if(xml_file)
 	{
-		fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-		{
-			WED_XMLElement	top_level("doc",0,xml_file);
-			mArchive.SaveToXML(&top_level);
-			WED_XMLElement * pref;
-			WED_XMLElement * prefs = top_level.add_sub_element("prefs");
-			for(map<string,vector<string> >::iterator pi = mDocPrefsItems.begin(); pi != mDocPrefsItems.end(); ++pi)
-			{
-				pref = prefs->add_sub_element("pref");
-				pref->add_attr_stl_str("name",pi->first);
-				pref->add_attr_stl_str("value","enum");
-				for(vector<string>::iterator i = pi->second.begin(); i != pi->second.end(); ++i)
-				{
-					WED_XMLElement *item = pref->add_sub_element("item");
-					item->add_attr_stl_str("value",*i);
-				}
-			}
-			for(map<string,string>::iterator p = mDocPrefs.begin(); p != mDocPrefs.end(); ++p)
-			{
-				pref = prefs->add_sub_element("pref");
-				pref->add_attr_stl_str("name",p->first);
-				pref->add_attr_stl_str("value",p->second);
-			}
-		}
+		WriteXML(xml_file);
 		fclose(xml_file);
 	}
 }
@@ -452,30 +429,17 @@ void		WED_Document::WriteStringPref(const char * in_key, const string& in_value)
 	sGlobalPrefs[in_key] = in_value;
 }
 
-void		WED_Document::ReadEnumIntPref(const char * in_key, vector<int>* out_value)
+void		WED_Document::ReadIntSetPref(const char * in_key, set<int>& out_value)
 {
-	if(!out_value) return;
-
 	string key(in_key);
-	map<string,vector<string> >::iterator i = mDocPrefsItems.find(key);
+	map<string,set<int> >::iterator i = mDocPrefsItems.find(key);
 	if (i == mDocPrefsItems.end()) return;
-
-	for(vector<string>::iterator si = i->second.begin(); si !=  i->second.end(); ++si)
-	{
-	      out_value->push_back(atoi(si->c_str()));
-	}
+	out_value = i->second;
 }
 
-void		WED_Document::WriteEnumIntPref(const char * in_key, vector<int>* in_value)
+void		WED_Document::WriteIntSetPref(const char * in_key, const set<int>& in_value)
 {
-	char buf[256];
-	vector<string> v;
-	for(vector<int>::iterator i = in_value->begin(); i != in_value->end(); ++i)
-	{
-	    sprintf(buf,"%d",*i);
-	    v.push_back(buf);
-	}
-	mDocPrefsItems[in_key] = v;
+	mDocPrefsItems[in_key] = in_value;
 }
 
 static void PrefCB(const char * key, const char * value, void * ref)
@@ -537,13 +501,11 @@ void		WED_Document::StartElement(
 		}
 		if(n && v)
 		{
-			if(strcasecmp(v,"enum")==0)
-			{
-				mDocPrefsActName = n;
-				mDocPrefsItems[n]= vector<string>();
-			}
-			else
 				mDocPrefs[n] = v;
+		} 
+		else if(n)
+		{
+			mDocPrefsActName = n;
 		}
 		else
 			reader->FailWithError("Invalid pref: missing key or value.");
@@ -566,11 +528,8 @@ void		WED_Document::StartElement(
 		}
 		if(v)
 		{
-			map<string,vector<string> >::iterator i = mDocPrefsItems.find(mDocPrefsActName);
-			if (i == mDocPrefsItems.end())
-			   reader->FailWithError("Invalid item: no parent entry.");
-			else
-			   i->second.push_back(v);
+			set<int>& ip(mDocPrefsItems[mDocPrefsActName]);
+			ip.insert(atoi(v));
 		}
 		else
 			reader->FailWithError("Invalid item: missing  value.");
@@ -593,31 +552,35 @@ void WED_Document::Panic(void)
 	FILE * xml_file = fopen(xml.c_str(),"w");
 	if(xml_file)
 	{
-		fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		WriteXML(xml_file);
+		fclose(xml_file);
+	}
+}
+
+void		WED_Document::WriteXML(FILE * xml_file)
+{
+	fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+	{
+		WED_XMLElement	top_level("doc",0,xml_file);
+		mArchive.SaveToXML(&top_level);
+		WED_XMLElement * pref;
+		WED_XMLElement * prefs = top_level.add_sub_element("prefs");
+		for(map<string,set<int> >::iterator pi = mDocPrefsItems.begin(); pi != mDocPrefsItems.end(); ++pi)
 		{
-			WED_XMLElement	top_level("doc",0,xml_file);
-			mArchive.SaveToXML(&top_level);
-			WED_XMLElement * pref;
-			WED_XMLElement * prefs = top_level.add_sub_element("prefs");
-			for(map<string,vector<string> >::iterator pi = mDocPrefsItems.begin(); pi != mDocPrefsItems.end(); ++pi)
+			pref = prefs->add_sub_element("pref");
+			pref->add_attr_stl_str("name",pi->first);
+			for(set<int>::iterator i = pi->second.begin(); i != pi->second.end(); ++i)
 			{
-				pref = prefs->add_sub_element("pref");
-				pref->add_attr_stl_str("name",pi->first);
-				pref->add_attr_stl_str("value","enum");
-				for(vector<string>::iterator i = pi->second.begin(); i != pi->second.end(); ++i)
-				{
-					WED_XMLElement *item = pref->add_sub_element("item");
-					item->add_attr_stl_str("value",*i);
-				}
-			}
-			for(map<string,string>::iterator p = mDocPrefs.begin(); p != mDocPrefs.end(); ++p)
-			{
-				pref = prefs->add_sub_element("pref");
-				pref->add_attr_stl_str("name",p->first);
-				pref->add_attr_stl_str("value",p->second);
+				WED_XMLElement *item = pref->add_sub_element("item");
+				item->add_attr_int("value",*i);
 			}
 		}
-		fclose(xml_file);
+		for(map<string,string>::iterator p = mDocPrefs.begin(); p != mDocPrefs.end(); ++p)
+		{
+			pref = prefs->add_sub_element("pref");
+			pref->add_attr_stl_str("name",p->first);
+			pref->add_attr_stl_str("value",p->second);
+		}
 	}
 }
 

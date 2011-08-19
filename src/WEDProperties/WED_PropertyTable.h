@@ -158,8 +158,8 @@ public:
 							intptr_t				inMsg,
 							intptr_t				inParam);
 
-	virtual	void    SetClosed(vector<int>* closed_list);
-	virtual	void    GetClosed(vector<int>* closed_list);
+	virtual	void    SetClosed(const set<int>& closed_list);
+	virtual	void    GetClosed(		set<int>& closed_list);
 
 private:
 

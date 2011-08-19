@@ -84,8 +84,14 @@ int		WED_CanUngroup(IResolver * inResolver)
 	ISelection * sel = WED_GetSelect(inResolver);
 	DebugAssert(sel != NULL);
 
+	// Can't ungroup something that is not a group.  
 	if(sel->IterateSelectionOr(Iterate_IsNotGroup, NULL)) return 0;
 
+	// The world is a group.  If the user tries to ungroup it, the world is destroyed and, well, life on the Erf ends.  So...don't allow that!
+	WED_Thing * wrl = WED_GetWorld(inResolver);
+	if (sel->IterateSelectionOr(Iterate_MatchesThing,wrl)) return 0;
+
+	// No selection, no ungrouping.
 	if (sel->GetSelectionCount() == 0) return 0;
 	return 1;
 }

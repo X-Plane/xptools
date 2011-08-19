@@ -95,8 +95,8 @@ public:
 	virtual	void		WriteDoublePref(const char * in_key, double in_value);
 	virtual	string		ReadStringPref(const char * in_key, const string& in_default);
 	virtual	void		WriteStringPref(const char * in_key, const string& in_value);
-	virtual	void		ReadEnumIntPref(const char * in_key, vector<int> * out_value);
-	virtual	void		WriteEnumIntPref(const char * in_key, vector<int> * in_value);
+	virtual	void		ReadIntSetPref(const char * in_key, set<int>& out_value);
+	virtual	void		WriteIntSetPref(const char * in_key, const set<int>& in_value);
 
 	WED_LibraryMgr *	GetLibrary(void) { return mLibraryMgr; }
 	WED_ResourceMgr *	GetResourceMgr(void) { return mResourceMgr; }
@@ -127,6 +127,8 @@ public:
 
 private:
 
+	void				WriteXML(FILE * fi);
+
 	double				mBounds[4];
 
 	string				mFilePath;
@@ -145,9 +147,9 @@ private:
 	WED_Document(const WED_Document&);
 	WED_Document& operator=(const WED_Document&);
 
-	string				mDocPrefsActName;
-	map<string,string>		mDocPrefs;
-	map<string,vector<string> >	mDocPrefsItems;
+	string						mDocPrefsActName;		// Temporary for tracking the current int-set on read-i.
+	map<string,string>			mDocPrefs;				// All string, int and double (non-set) prefs
+	map<string,set<int> >		mDocPrefsItems;			// The int-set prefs, separated out.
 
 };
 
