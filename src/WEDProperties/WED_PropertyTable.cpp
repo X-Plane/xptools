@@ -891,7 +891,7 @@ void WED_PropertyTable::SetClosed(const set<int>& closed_list)
 	if(arch->Fetch(*it) != NULL)
 	{
 	    SetOpen(*it,0);
-	}	
+	}
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
@@ -899,8 +899,11 @@ void WED_PropertyTable::SetClosed(const set<int>& closed_list)
 void WED_PropertyTable::GetClosed(set<int>& closed_list)
 {
 	closed_list.clear();
+	WED_Thing * root = WED_GetWorld(mResolver);
+	WED_Archive * arch = root->GetArchive();
 	for( hash_map<int,int>::iterator it = mOpen.begin(); it != mOpen.end(); ++it)
-	    if(!GetOpen(it->first)) closed_list.insert(it->first) ;
+	    if((arch->Fetch(it->first) != NULL)&&(!GetOpen(it->first)))
+			closed_list.insert(it->first) ;
 }
 
 
