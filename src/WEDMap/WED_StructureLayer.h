@@ -12,8 +12,6 @@ public:
 
 			bool		GetRealLinesShowing(void) const;
 			void		SetRealLinesShowing(bool show);
-//			void		SetPavementTransparency(float alpha);
-//			float		GetPavementTransparency(void) const;
 			bool		GetVerticesShowing(void) const;
 			void		SetVerticesShowing(bool show);
 

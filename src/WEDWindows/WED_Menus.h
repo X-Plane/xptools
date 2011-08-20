@@ -61,11 +61,11 @@ enum {
 	wed_MoveNext,
 	wed_MoveLast,
 	// Pavement menu
-//	wed_Pavement0,
-//	wed_Pavement25,
-//	wed_Pavement50,
-//	wed_Pavement75,
-//	wed_Pavement100,
+	wed_Pavement0,
+	wed_Pavement25,
+	wed_Pavement50,
+	wed_Pavement75,
+	wed_Pavement100,
 	// view menu
 	wed_ZoomWorld,
 	wed_ZoomAll,

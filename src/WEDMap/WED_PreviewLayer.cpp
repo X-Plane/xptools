@@ -828,3 +828,14 @@ void		WED_PreviewLayer::DrawVisualization			(bool inCurent, GUI_GraphState * g)
 	mShoulderLayer=	group_ShouldersBegin;
 	
 }
+
+void		WED_PreviewLayer::SetPavementTransparency(float alpha)
+{
+	mPavementAlpha = alpha;
+	GetHost()->Refresh();
+}
+
+float		WED_PreviewLayer::GetPavementTransparency(void) const
+{
+	return mPavementAlpha;
+}

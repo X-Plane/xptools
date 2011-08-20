@@ -66,6 +66,9 @@ public:
 						 WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_PreviewLayer();
 
+			void		SetPavementTransparency(float alpha);
+			float		GetPavementTransparency(void) const;
+
 	virtual	bool		DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
 	virtual	void		GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel);
 	virtual	void		DrawVisualization			(bool inCurent, GUI_GraphState * g);

@@ -648,17 +648,6 @@ void		WED_StructureLayer::SetRealLinesShowing(bool show)
 	GetHost()->Refresh();
 }
 
-//void		WED_StructureLayer::SetPavementTransparency(float alpha)
-//{
-//	mPavementAlpha = alpha;
-//	GetHost()->Refresh();
-//}
-//
-//float		WED_StructureLayer::GetPavementTransparency(void) const
-//{
-//	return mPavementAlpha;
-//}
-
 bool		WED_StructureLayer::GetVerticesShowing(void) const
 {
 	return mVertices;
