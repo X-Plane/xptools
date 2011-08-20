@@ -190,6 +190,11 @@ pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 	return pair<int, int>(-1, -1);
 }
 
+void			DSFSharedPointPool::Trim(void)
+{
+	for (list<SharedSubPool>::iterator i = mPools.begin(); i != mPools.end(); ++i)
+		trim(i->mPoints);
+}
 
 void			DSFSharedPointPool::ProcessPoints(void)
 {
@@ -348,6 +353,15 @@ pair<int, int>	DSFContiguousPointPool::AccumulatePoints(const DSFTupleVector& in
 	return pair<int, int>(-1, -1);
 }
 
+void			DSFContiguousPointPool::Trim(void)
+{
+	for (list<ContiguousSubPool>::iterator i = mPools.begin(); i != mPools.end(); ++i)
+	{
+		trim(i->mPoints);
+	}
+}
+
+
 void			DSFContiguousPointPool::ProcessPoints(void)
 {
 	int new_p = 0;
@@ -473,6 +487,11 @@ DSFPointPoolLoc	DSF32BitPointPool::AcceptShared(const DSFTuple& inPoint)
 	mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(pt, mPoints.size()));
 	mPoints.push_back(pt);
 	return result;
+}
+
+void				DSF32BitPointPool::Trim(void)
+{
+	trim(mPoints);
 }
 
 int				DSF32BitPointPool::WritePoolAtoms(FILE * fi, int32_t id)

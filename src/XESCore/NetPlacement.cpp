@@ -1436,6 +1436,8 @@ void generate_bezier(
 	
 	if(dot < crease_angle_cos)
 	{
+		// This is the crease case - it is a very SHARP turn - so sharp that we assume it is intentional and the road really does make a corner.
+		// Useful to make 90 degree turns at the edge of a street grid stay "sharp".
 		pts.push_back(b);
 		flags.push_back(0);
 //		printf("   Crease.\n");
@@ -1448,14 +1450,29 @@ void generate_bezier(
 		
 		if(angle < near_angle)
 		{
+			// This is the "barely turned" case - if the turn is really really tiny, 
+			// just put one point down and hope the user can't "see" the sharp turn.
+			// This is for a, like, one-degee turn.  This also protects us from having the 
+			// pull-back case with TINY turns.
 			pts.push_back(b);
 			flags.push_back(0);
 //			printf("   Near angle.\n");
 		}
 		else
-		{		
-			bool straight_ab = (angle / len_ab) < min_deflection_deg_mtr;
-			bool straight_bc = (angle / len_bc) < min_deflection_deg_mtr;	
+		{	
+			// The rest of the cases will all result in some kind of bezier, because the angle isn't really flat and isn't really sharp.
+			// we categorize each of our two incoming segments as "straight" if they are longer than the distance needed to complete the
+			// angular change in a sane distance.  (Really we care if we can complete half the angular turn in half the segment, since 
+			// the other turn might nede the other half.  The two halves wash out of course.)
+			// 
+			// So a straight segment means this segment shouldn't be ENTIRELY bezier...for example, a long highway stretch really is truly 
+			// straight.
+			//
+			// 0.99 = fudge factor - basically if a line is BARELY straight the two pull-back points colide near the mid-point of the vector.
+			// we want to avoid that.
+				
+			bool straight_ab = (angle / (len_ab * 0.99)) < min_deflection_deg_mtr;
+			bool straight_bc = (angle / (len_bc * 0.99)) < min_deflection_deg_mtr;	
 			if(straight_ab)
 			{
 				if(straight_bc)

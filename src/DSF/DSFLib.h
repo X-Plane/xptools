@@ -24,7 +24,7 @@
 #define DSFLIB_H
 
 #include "XChunkyFileUtils.h"
-
+#include "DSFDefs.h"
 /*
  * DSFLib Error enumerations.
  *
@@ -68,7 +68,8 @@ enum {
 	dsf_CmdVectors = 0x08,	/* Return vector types							*/
 	dsf_CmdPolys   = 0x10,	/* Return polygons (facades, etc.)				*/
 	dsf_CmdObjects = 0x20,	/* Return objects								*/
-	dsf_CmdAll	   = 0x3F	/* Return everything at once.					*/
+	dsf_CmdRaster  = 0x40,	/* Raster data									*/
+	dsf_CmdAll	   = 0x7F	/* Return everything at once.					*/
 };
 
 
@@ -98,6 +99,7 @@ struct	DSFCallbacks_t {
 	void (*	AcceptObjectDef_f )(const char * inPartialPath, void * inRef);
 	void (*	AcceptPolygonDef_f)(const char * inPartialPath, void * inRef);
 	void (*	AcceptNetworkDef_f)(const char * inPartialPath, void * inRef);
+	void (* AcceptRasterDef_f)(const char * inPartialPath, void * inRef);
 
 	/* This function accepts properties from the file. */
 	void (* AcceptProperty_f)(const char * inProp, const char * inValue, void * inRef);
@@ -175,6 +177,11 @@ struct	DSFCallbacks_t {
 					void *			inRef);
 	void (* EndPolygon_f)(
 					void *			inRef);
+
+	void (* AddRasterData_f)(
+					DSFRasterHeader_t *	header,
+					void *				data,
+					void *				inRef);
 
 };
 

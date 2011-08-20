@@ -168,6 +168,7 @@ public:
 	vector<string>		objectDefs;
 	vector<string>		polygonDefs;
 	vector<string>		networkDefs;
+	vector<string>		rasterDefs;
 	vector<string>		properties;
 
 	/********** OBJECT STORAGE **********/
@@ -280,6 +281,9 @@ public:
 		bool operator()(const ChainSpec& lhs, const ChainSpec& rhs) const {
 			return lhs.path.size() > rhs.path.size(); } };
 
+	/********** Raster Storage **********/
+	vector<DSFRasterHeader_t>	raster_headers;
+	vector<void *>				raster_data;
 
 	DSFFileWriterImp(double inWest, double inSouth, double inEast, double inNorth, double inElevMin, double inElevMax, int divisions);
 	void WriteToFile(const char * inPath);
@@ -290,6 +294,7 @@ public:
 	static void	AcceptObjectDef(const char * inPartialPath, void * inRef);
 	static void	AcceptPolygonDef(const char * inPartialPath, void * inRef);
 	static void	AcceptNetworkDef(const char * inPartialPath, void * inRef);
+	static void AcceptRasterDef(const char * inPartialPath, void * inRef);
 	static void AcceptProperty(const char * inProp, const char * inValue, void * inRef);
 
 	static void BeginPatch(
@@ -325,17 +330,17 @@ public:
 					unsigned int	inNetworkType,
 					unsigned int	inNetworkSubtype,
 					unsigned int	inStartNodeID,
-					double			inCoordinates[6],
-					bool			inCurved,
+					double			inCoordinates[3],
+					bool			inCurved,			// Must be false!
 					void *			inRef);
 	static void	AddSegmentShapePoint(
-					double			inCoordinates[6],
-					bool			inCurved,
+					double			inCoordinates[3],
+					bool			inCurved,			// Must be false!
 					void *			inRef);
 	static void EndSegment(
 					unsigned int	inEndNodeID,
-					double			inCoordinates[6],
-					bool			inCurved,
+					double			inCoordinates[3],
+					bool			inCurved,			// Must be false!
 					void *			inRef);
 
 	static void BeginPolygon(
@@ -352,7 +357,10 @@ public:
 					void *			inRef);
 	static void EndPolygon(
 					void *			inRef);
-
+	static void AddRasterData(
+					DSFRasterHeader_t *	header,
+					void *				data,
+					void *				inRef);					
 
 };
 
@@ -379,6 +387,7 @@ void	DSFGetWriterCallbacks(DSFCallbacks_t * ioCallbacks)
 	ioCallbacks->AcceptObjectDef_f = DSFFileWriterImp::AcceptObjectDef;
 	ioCallbacks->AcceptPolygonDef_f = DSFFileWriterImp::AcceptPolygonDef;
 	ioCallbacks->AcceptNetworkDef_f = DSFFileWriterImp::AcceptNetworkDef;
+	ioCallbacks->AcceptRasterDef_f = DSFFileWriterImp::AcceptRasterDef;
 	ioCallbacks->AcceptProperty_f = DSFFileWriterImp::AcceptProperty;
 	ioCallbacks->BeginPatch_f = DSFFileWriterImp::BeginPatch;
 	ioCallbacks->BeginPrimitive_f = DSFFileWriterImp::BeginPrimitive;
@@ -395,6 +404,7 @@ void	DSFGetWriterCallbacks(DSFCallbacks_t * ioCallbacks)
 	ioCallbacks->AddPolygonPoint_f = DSFFileWriterImp::AddPolygonPoint;
 	ioCallbacks->EndPolygonWinding_f = DSFFileWriterImp::EndPolygonWinding;
 	ioCallbacks->EndPolygon_f = DSFFileWriterImp::EndPolygon;
+	ioCallbacks->AddRasterData_f = DSFFileWriterImp::AddRasterData;
 }
 
 void	DSFWriteToFile(const char * inPath, void * inRef)
@@ -422,16 +432,16 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 	vecRangeMax.push_back(inNorth);
 	vecRangeMax.push_back(32767.0);
 	vecRangeMax.push_back(0.0);
-	DSFTuple	vecRangeCurveMin(vecRangeMin), vecRangeCurveMax(vecRangeMax);
-	vecRangeCurveMin.push_back(inWest);
-	vecRangeCurveMin.push_back(inSouth);
-	vecRangeCurveMin.push_back(-32768.0);
-	vecRangeCurveMax.push_back(inEast);
-	vecRangeCurveMax.push_back(inNorth);
-	vecRangeCurveMax.push_back(32767.0);
+//	DSFTuple	vecRangeCurveMin(vecRangeMin), vecRangeCurveMax(vecRangeMax);
+//	vecRangeCurveMin.push_back(inWest);
+//	vecRangeCurveMin.push_back(inSouth);
+//	vecRangeCurveMin.push_back(-32768.0);
+//	vecRangeCurveMax.push_back(inEast);
+//	vecRangeCurveMax.push_back(inNorth);
+//	vecRangeCurveMax.push_back(32767.0);
 
 	vectorPool.SetRange(vecRangeMin, vecRangeMax);
-	vectorPoolCurved.SetRange(vecRangeCurveMin, vecRangeCurveMax);
+//	vectorPoolCurved.SetRange(vecRangeCurveMin, vecRangeCurveMax);
 
 	// BUILD OBJECT POINT POOLS
 
@@ -483,12 +493,25 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 	// POINT POOL TERRAINS ARE DRAWN ON THE FLY
 }
 
+template<typename DT, void (* RF)(FILE * fi, DT data)>
+void write_raster_pile(FILE * fi, int count, const DT * data)
+{
+	while(count--)
+	{
+		RF(fi,*data++);
+	}
+}
 
 void DSFFileWriterImp::WriteToFile(const char * inPath)
 {
 	int n, i, p;
 	pair<int, int> loc;
 
+	objectPool.Trim();
+	objectPool3d.Trim();
+	for (DSFContiguousPointPoolMap::iterator polygonPool = polygonPools.begin(); polygonPool != polygonPools.end(); ++polygonPool)
+		polygonPool->second.Trim();
+		
 	/************************************************************************************************************/
 	/***************************************** PREPROCESS PATCHES ***********************************************/
 	/************************************************************************************************************/
@@ -593,8 +616,10 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 
 	// Compact final pool data.
 	for(DSFSharedPointPoolMap::iterator pool = terrainPool.begin(); pool != terrainPool.end(); ++pool)
+	{	
+		pool->second.Trim();
 		pool->second.ProcessPoints();
-
+	}
 	for (patchSpec = patches.begin(); patchSpec != patches.end(); ++patchSpec)
 	for (primIter = patchSpec->primitives.begin(); primIter != patchSpec->primitives.end(); ++primIter)
 	for (v = primIter->indices.begin(); v != primIter->indices.end(); ++v)
@@ -769,8 +794,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	for (n = 0; n < chainSpecs.size(); ++n)
 	if(!chainSpecs[n].path.empty())
 	{
-		DSF32BitPointPool& targetPool = chainSpecs[n].curved ? vectorPoolCurved : vectorPool;
-		int	sharedLen = targetPool.CountShared(chainSpecs[n].path);
+		int	sharedLen = vectorPool.CountShared(chainSpecs[n].path);
 		int planes = chainSpecs[n].curved ? 7 : 4;
 		int chainLen = chainSpecs[n].path.size();
 		if ((2 + chainLen * planes) > (chainLen + (chainLen - sharedLen) * planes))
@@ -779,7 +803,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			chainSpecs[n].contiguous = false;
 			for (i = 0; i < chainSpecs[n].path.size(); ++i)
 			{
-				DSFPointPoolLoc	loc = 	targetPool.AcceptShared(chainSpecs[n].path[i]);
+				DSFPointPoolLoc	loc = 	vectorPool.AcceptShared(chainSpecs[n].path[i]);
 				if (loc.first == -1 || loc.second == -1)
 					Assert(!"ERROR: Could not sink chain.\n");
 				chainSpecs[n].indices.push_back(loc);
@@ -793,7 +817,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			}
 		} else {
 			// Sink into the least shared pool, but contiguous.
-			DSFPointPoolLoc	loc = 	targetPool.AcceptContiguous(chainSpecs[n].path);
+			DSFPointPoolLoc	loc = 	vectorPool.AcceptContiguous(chainSpecs[n].path);
 			if (loc.first == -1 || loc.second == -1)
 			{
 #if DEV
@@ -814,7 +838,8 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 				chainSpecs[n].indices.push_back(DSFPointPoolLoc(loc.first, loc.second + i));
 		}
 	}
-
+	vectorPool.Trim();
+	
 	/************************************************************************************************************/
 	/******************** WRITE HEADER **************************/
 	/************************************************************************************************************/
@@ -857,6 +882,10 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		{
 			StAtomWriter	writeNetw(fi, dsf_NetworkAtom);
 			WriteStringTable(fi, networkDefs);
+		}
+		{
+			StAtomWriter	writeRast(fi, dsf_RasterNameAtom);
+			WriteStringTable(fi, rasterDefs);
 		}
 	}
 
@@ -1189,6 +1218,30 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			}
 		}
 	}
+	
+	if(!raster_data.empty())
+	{
+		Assert(raster_data.size() == raster_headers.size());
+		StAtomWriter rasters(fi,dsf_RasterContainerAtom);
+		
+		for(int r = 0; r < raster_data.size(); ++r)
+		{
+			{
+				StAtomWriter write_header(fi,dsf_RasterInfoAtom);
+				WriteUInt8 (fi,raster_headers[r].version);
+				WriteUInt8 (fi,raster_headers[r].bytes_per_pixel);
+				WriteUInt16(fi,raster_headers[r].flags);
+				WriteUInt32(fi,raster_headers[r].width);
+				WriteUInt32(fi,raster_headers[r].height);
+				WriteFloat32(fi,raster_headers[r].scale);
+				WriteFloat32(fi,raster_headers[r].offset);
+			}
+			{
+				StAtomWriter write_data(fi,dsf_RasterDataAtom);
+				fwrite(raster_data[r],raster_headers[r].width * raster_headers[r].height*raster_headers[r].bytes_per_pixel,1,fi);
+			}
+		}
+	}
 
 	/************************************************************************************************************/
 	/******************** WRITE FOOTER **************************/
@@ -1227,6 +1280,13 @@ void	DSFFileWriterImp::AcceptNetworkDef(const char * inPartialPath, void * inRef
 {
 	REF(inRef)->networkDefs.push_back(inPartialPath);
 }
+
+void	DSFFileWriterImp::AcceptRasterDef(const char * inPartialPath, void * inRef)
+{
+	REF(inRef)->rasterDefs.push_back(inPartialPath);
+}
+
+
 void	DSFFileWriterImp::AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 {
 	REF(inRef)->properties.push_back(inProp);
@@ -1401,6 +1461,7 @@ void 	DSFFileWriterImp::BeginSegment(
 				bool			inCurved,
 				void *			inRef)
 {
+	Assert(!inCurved);
 	REF(inRef)->chainSpecs.push_back(ChainSpec());
 	REF(inRef)->chainSpecs.back().type = inNetworkType;
 	REF(inRef)->chainSpecs.back().subType = inNetworkSubtype;
@@ -1418,6 +1479,7 @@ void	DSFFileWriterImp::AddSegmentShapePoint(
 				bool			inCurved,
 				void *			inRef)
 {
+	Assert(!inCurved);
 	DSFTuple	tuple(inCoordinates, inCurved ? 6 : 3);
 	tuple.insert(tuple.begin()+3,0);
 	REF(inRef)->accum_chain->path.push_back(tuple);
@@ -1429,6 +1491,7 @@ void 	DSFFileWriterImp::EndSegment(
 				bool			inCurved,
 				void *			inRef)
 {
+	Assert(!inCurved);
 	DSFTuple	tuple(inCoordinates, inCurved ? 6 : 3);
 	tuple.insert(tuple.begin()+3,inEndNodeID);
 	REF(inRef)->accum_chain->path.push_back(tuple);
@@ -1633,3 +1696,13 @@ void	DSFFileWriterImp::EndPolygon(
 		REF(inRef)->accum_poly->intervals.push_back(REF(inRef)->accum_poly->intervals.back() + i->size());
 	}
 }
+
+void DSFFileWriterImp::AddRasterData(
+					DSFRasterHeader_t *	header,
+					void *				data,
+					void *				inRef)
+{
+	REF(inRef)->raster_headers.push_back(*header);
+	REF(inRef)->raster_data.push_back(data);
+}
+

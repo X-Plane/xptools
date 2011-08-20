@@ -74,6 +74,7 @@
 #include "ParamDefs.h"
 #include "AssertUtils.h"
 #include "CompGeomDefs2.h"
+#include "STLUtils.h"
 
 /******************************************************************************************************************************************************
  * GIS DATA
@@ -217,6 +218,7 @@ public:
 //	Point_2				mLocation;	// Nominal center - used primarily for debugging!
 	unsigned short		mParam;
 	bool				mDerived;
+	inline void trim(void) { ::trim(mShape); }
 };
 
 /* GISNetworkSegment_t
@@ -246,6 +248,7 @@ struct GIS_vertex_data {
 	bool mTunnelPortal;
 	bool mNeighborBurned;
 	bool mNeighborNotBurned;
+	inline void trim(void) { }
 #if OPENGL_MAP
 	float						mGL[2];				// Pre-expanded line!
 #endif
@@ -277,6 +280,9 @@ public:
 						if(r->mFeatType == t)
 							return true;
 						return false; }
+						
+	inline void trim(void) { ::trim(mSegments); }
+						
 #if OPENGL_MAP
 	unsigned char				mGLColor[3];
 #endif
@@ -307,6 +313,9 @@ public:
 
 	bool		TerrainMatch(const GIS_face_data& rhs) const { return mTerrainType == rhs.mTerrainType; }
 	bool		AreaMatch(const GIS_face_data& rhs) const { return (mTerrainType == rhs.mTerrainType && mAreaFeature.mFeatType == rhs.mAreaFeature.mFeatType); }
+
+	inline void trim(void) { ::trim(mPointFeatures); ::trim(mPolygonFeatures); ::trim(mObjs); ::trim(mPolyObjs); 
+		for(int i = 0; i < mPolyObjs.size(); ++i) mPolyObjs[i].trim(); }
 
 	#if DEV
 		~GIS_face_data() { mTerrainType = 0xDEADBEEF; }

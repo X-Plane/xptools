@@ -27,6 +27,17 @@
 #include "AssertUtils.h"
 #include <iterator>
 
+template<typename T>
+void trim(T& v)
+{
+	if(v.size() != v.capacity())
+	{
+		T c(v);
+		c.swap(v);
+	}
+}
+
+
 template <class Container>
 class set_insert_iterator
 	: public iterator<output_iterator_tag,void,void,void,void>

@@ -22,6 +22,9 @@
  */
 #include <stdio.h>
 #include "DSFLib.h"
+#include <list>
+
+using std::list;
 
 static int sDSF2TEXT_CoordDepth;
 
@@ -35,6 +38,8 @@ static int count_obj = 0;
 static int count_pol = 0;
 static int count_net = 0;
 
+string			base_name;
+list<string>	dem_names;
 
 void DSF2Text_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
@@ -62,6 +67,14 @@ void DSF2Text_AcceptNetworkDef(const char * inPartialPath, void * inRef)
 	++count_net;
 	FILE * fi = (FILE *) inRef;
 	fprintf(fi, "NETWORK_DEF %s\n", inPartialPath);
+}
+
+void DSF2Text_AcceptRasterDef(const char * inPartialPath, void * inRef)
+{
+	++count_net;
+	FILE * fi = (FILE *) inRef;
+	fprintf(fi, "RASTER_DEF %s\n", inPartialPath);
+	dem_names.push_back(inPartialPath);
 }
 
 void DSF2Text_AcceptProperty(const char * inProp, const char * inValue, void * inRef)
@@ -225,6 +238,33 @@ void DSF2Text_EndPolygonWinding(
 	fprintf(fi, "END_WINDING\n");
 }
 
+void DSF2Text_AddRaterData(
+					DSFRasterHeader_t *	header,
+					void *				data,
+					void *				inRef)
+{
+	FILE * fi = (FILE *) inRef;
+	fprintf(fi,"RASTER_DATA version=%d bpp=%d flags=%d width=%d height=%d scale=%f offset=%f\n",
+		header->version, header->bytes_per_pixel, header->flags, header->width, header->height, header->scale,header->offset);
+
+	if(!base_name.empty() && !dem_names.empty())
+	{
+		string p(base_name);
+		p += ".";
+		p += dem_names.front();
+		p += ".raw";
+		dem_names.pop_front();
+		FILE * fb = fopen(p.c_str(),"wb");
+		if(fb)
+		{
+			fprintf(fi,"# Wrote %d bytes to %s.\n", header->bytes_per_pixel * header->width * header->height, p.c_str());
+			fwrite(data,header->bytes_per_pixel * header->width * header->height, 1, fb);
+			fclose(fb);
+		}
+	}
+		
+}
+
 void DSF2Text_EndPolygon(
 	void *			inRef)
 {
@@ -237,6 +277,9 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	FILE * fi = strcmp(inFileName, "-") ? fopen(inFileName, "w") : stdout;
 	if (fi == NULL) return false;
 
+	base_name = strcmp(inFileName, "-") ? inFileName : "";
+	dem_names.clear();
+	
 	#if APL
 	fprintf(fi, "A\n800\nDSF2TEXT\n\n");
 	#elif IBM
@@ -248,6 +291,7 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	cbs.AcceptObjectDef_f			=DSF2Text_AcceptObjectDef			;
 	cbs.AcceptPolygonDef_f			=DSF2Text_AcceptPolygonDef			;
 	cbs.AcceptNetworkDef_f			=DSF2Text_AcceptNetworkDef			;
+	cbs.AcceptRasterDef_f			=DSF2Text_AcceptRasterDef			;
 	cbs.AcceptProperty_f			=DSF2Text_AcceptProperty			;
 	cbs.BeginPatch_f				=DSF2Text_BeginPatch				;
 	cbs.BeginPrimitive_f			=DSF2Text_BeginPrimitive			;
@@ -264,6 +308,7 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	cbs.AddPolygonPoint_f			=DSF2Text_AddPolygonPoint			;
 	cbs.EndPolygonWinding_f			=DSF2Text_EndPolygonWinding			;
 	cbs.EndPolygon_f				=DSF2Text_EndPolygon				;
+	cbs.AddRasterData_f				=DSF2Text_AddRaterData				;
 	cbs.NextPass_f					=DSF2Text_NextPass					;
 
 	while(n--)

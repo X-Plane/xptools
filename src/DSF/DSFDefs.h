@@ -74,14 +74,45 @@ enum {
 		dsf_ObjectsAtom				= 'OBJT',	//	String table
 		dsf_PolygonAtom				= 'POLY',	//	String table
 		dsf_NetworkAtom				= 'NETW',	//	String table
+		dsf_RasterNameAtom			= 'DEMN',	//	String table
 	dsf_GeoDataAtom					= 'GEOD',	//	Atom of atoms
 		def_PointPoolAtom			= 'POOL',	//	Planar Numeric 16-bit
 		def_PointScaleAtom			= 'SCAL',	//	32-bit scaling values for point pools
 		def_PointPool32Atom			= 'PO32',	//	Planar Numeric 16-bit
 		def_PointScale32Atom		= 'SC32',	//	32-bit scaling values for point pools
-	dsf_CommandsAtom				= 'CMDS'	//	(command structure)
+	dsf_CommandsAtom				= 'CMDS',	//	(command structure)
+	dsf_RasterContainerAtom			= 'DEMS',	//	Atom of atoms
+		dsf_RasterInfoAtom			= 'DEMI',	//	Raster header
+		dsf_RasterDataAtom			= 'DEMD'	//	Raw Data
 
 };
+
+/***********************************************************************
+ * RASTER HEADER ATOM
+ ***********************************************************************/
+
+enum {															// BPP must be...
+	dsf_Raster_Format_Float						= 0,			//	4
+	dsf_Raster_Format_Int						= 1,			//	1,2,4
+	dsf_Raster_Format_Unsigned_Int				= 2,			//	1,2,4
+	dsf_Raster_Format_Unsigned_Int_Normalized	= 3,			//	1,2,4
+
+	dsf_Raster_Post								= 4,
+	dsf_Raster_Area								= 0,
+	
+	dsf_RasterVersion							= 1
+};	
+
+struct DSFRasterHeader_t {
+	uint8_t		version;
+	uint8_t		bytes_per_pixel;	
+	uint16_t	flags;
+	uint32_t	width;
+	uint32_t	height;	
+	float		scale ;
+	float		offset;
+};
+	
 
 /***********************************************************************
  * DSF COMMAND ENUMERATIONS

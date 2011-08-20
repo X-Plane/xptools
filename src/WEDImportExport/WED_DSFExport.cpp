@@ -1556,8 +1556,11 @@ void	WED_DoExportPack(IResolver * resolver)
 	DSF_Export(dynamic_cast<WED_Group *>(w), l,problem_children);
 
 	string	apt = "Earth nav data" DIR_STR "apt.dat";
+	string	apt_dir = "Earth nav data";
 	l->LookupPath(apt);
-	
+	l->LookupPath(apt_dir);
+
+	FILE_make_dir_exist(apt_dir.c_str());
 	WED_AptExport(w, apt.c_str());
 	if(!problem_children.empty())
 	{

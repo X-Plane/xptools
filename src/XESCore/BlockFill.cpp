@@ -736,31 +736,49 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 		
 		if(cat[0] != cat[1] || cat[1] != cat[2])
 		{
-			Point_2	p0 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
-			Point_2	p1 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
-			Point_2	p2 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
+//			Point_2	p0 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
+//			Point_2	p1 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
+//			Point_2	p2 = ben2cgal(translator.Forward(cgal2ben(f->vertex(0)->point())));
 			Point_2	p01 = ben2cgal(translator.Forward(cgal2ben(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()))));
 			Point_2	p12 = ben2cgal(translator.Forward(cgal2ben(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()))));
 			Point_2	p20 = ben2cgal(translator.Forward(cgal2ben(CGAL::midpoint(f->vertex(2)->point(),f->vertex(0)->point()))));
 			Point_2 p012 = ben2cgal(translator.Forward(cgal2ben(CGAL::centroid(mesh.triangle(f)))));
 			
+//			if(p01 == p12 ||
+//			   p01 == p20 ||
+//			   p12 == p20 ||
+//			   p012 == p01 ||
+//			   p012 == p12 ||
+//			   p012 == p20)
+//			{
+//				debug_mesh_point(cgal2ben(f->vertex(0)->point()),1,0,0);
+//				debug_mesh_point(cgal2ben(f->vertex(1)->point()),1,0,0);
+//				debug_mesh_point(cgal2ben(f->vertex(2)->point()),1,0,0);
+//				DebugAssert(!"Degenerate tri");
+//			}
 			
 			if(cat[0] == cat[1])
 			{
+				if(p12 != p20)
 				push_curve(curves,p12, p20, cat[0], cat[2], cat_base);
 			}
 			else if(cat[1] == cat[2])
 			{
+				if(p20 != p01)
 				push_curve(curves,p20, p01, cat[1], cat[0], cat_base);
 			}
 			else if(cat[2] == cat[0])
 			{
+				if(p01 != p12)
 				push_curve(curves,p01, p12, cat[2], cat[1], cat_base);
 			}
 			else
 			{
+				if(p01 != p012)
 				push_curve(curves,p01, p012, cat[0], cat[1], cat_base);
+				if(p012 != p20)
 				push_curve(curves,p012, p20, cat[0], cat[2], cat_base);
+				if(p12 != p012)
 				push_curve(curves,p12, p012, cat[1], cat[2], cat_base);
 			}
 		}

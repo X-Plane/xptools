@@ -45,6 +45,7 @@
 #include "PerfUtils.h"
 #include "BlockFill.h"
 #include "RF_Selection.h"
+#include "MapTopology.h"
 
 static int DoSpreadsheet(const vector<const char *>& args)
 {
@@ -168,6 +169,7 @@ static int DoRemoveDupeObjs(const vector<const char *>& args)
 static int DoInstantiateObjs(const vector<const char *>& args)
 {
 	PROGRESS_START(gProgress, 0, 1, "Creating 3-d.")
+	trim_map(gMap);
 	int idx = 0;
 	int t = gMap.number_of_faces();
 	int step = t / 100;
@@ -187,6 +189,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
 		process_block(f,gTriangulationHi,gDem[dem_ForestType]);
 	}
+	trim_map(gMap);
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
 
 	
@@ -304,7 +307,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 
 	if(strcmp(args[0],"-") == 0) b1 = NULL; else CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf1);
 	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
-	BuildDSF(b1,b2, gDem[dem_Elevation],gDem[dem_Bathymetry],gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
+	BuildDSF(b1,b2, gDem[dem_Elevation],gDem[dem_Bathymetry],gDem[dem_UrbanDensity],gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
 	return 0;
 }
 

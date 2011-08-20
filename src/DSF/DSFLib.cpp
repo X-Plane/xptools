@@ -230,10 +230,10 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 
 	/* Fetch all atoms. */
 
-		XAtom			headAtom, 		defnAtom, 		geodAtom;
-		XAtomContainer	headContainer, 	defnContainer,	geodContainer;
+		XAtom			headAtom, 		defnAtom, 		geodAtom,		demsAtom	;
+		XAtomContainer	headContainer, 	defnContainer,	geodContainer,	demsContainer;
 		XAtomPackedData					cmdsAtom, scalAtom;
-		XAtomStringTable				propAtom, tertAtom, objtAtom, polyAtom, netwAtom;
+		XAtomStringTable				propAtom, tertAtom, objtAtom, polyAtom, netwAtom, demnAtom;
 		XAtomPlanerNumericTable			poolAtom;
 
 	if (!dsf_container.GetNthAtomOfID(dsf_MetaDataAtom, 0, headAtom))
@@ -304,6 +304,9 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 #endif
 		return dsf_ErrMissingAtom;
 	}
+	
+	bool has_demn = defnContainer.GetNthAtomOfID(dsf_RasterNameAtom, 0, demnAtom);
+	
 
 #if PRINT_ATOM_SIZES
 	printf("Geo data is	%d bytes.\n", geodAtom.GetContentLength());
@@ -414,34 +417,38 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 
 		if (flags & dsf_CmdProps)
 		{
-	/* Read Properties. */
-	for (str = propAtom.GetFirstString(); str != NULL; str = propAtom.GetNextString(str))
-	{
-		const char * str2 = propAtom.GetNextString(str);
-		if (str2 == NULL)
-		{
-#if DEBUG_MESSAGES
-			printf("DSF ERROR: We have an odd number of property strings.  The overhanging property is: %s\n", str);
-#endif
-			return dsf_ErrBadProperties;
+			/* Read Properties. */
+			for (str = propAtom.GetFirstString(); str != NULL; str = propAtom.GetNextString(str))
+			{
+				const char * str2 = propAtom.GetNextString(str);
+				if (str2 == NULL)
+				{
+		#if DEBUG_MESSAGES
+					printf("DSF ERROR: We have an odd number of property strings.  The overhanging property is: %s\n", str);
+		#endif
+					return dsf_ErrBadProperties;
+				}
+				inCallbacks->AcceptProperty_f(str, str2, ref);
+				str = str2;
+			}
 		}
-		inCallbacks->AcceptProperty_f(str, str2, ref);
-		str = str2;
-	}
-	}
 
 		if (flags & dsf_CmdDefs)
 		{
-	/* Send definitions. */
+			/* Send definitions. */
 
-	for (str = tertAtom.GetFirstString(); str != NULL; str = tertAtom.GetNextString(str))
-		inCallbacks->AcceptTerrainDef_f(str, ref);
-	for (str = objtAtom.GetFirstString(); str != NULL; str = objtAtom.GetNextString(str))
-		inCallbacks->AcceptObjectDef_f(str, ref);
-	for (str = polyAtom.GetFirstString(); str != NULL; str = polyAtom.GetNextString(str))
-		inCallbacks->AcceptPolygonDef_f(str, ref);
-	for (str = netwAtom.GetFirstString(); str != NULL; str = netwAtom.GetNextString(str))
-		inCallbacks->AcceptNetworkDef_f(str, ref);
+			for (str = tertAtom.GetFirstString(); str != NULL; str = tertAtom.GetNextString(str))
+				inCallbacks->AcceptTerrainDef_f(str, ref);
+			for (str = objtAtom.GetFirstString(); str != NULL; str = objtAtom.GetNextString(str))
+				inCallbacks->AcceptObjectDef_f(str, ref);
+			for (str = polyAtom.GetFirstString(); str != NULL; str = polyAtom.GetNextString(str))
+				inCallbacks->AcceptPolygonDef_f(str, ref);
+			for (str = netwAtom.GetFirstString(); str != NULL; str = netwAtom.GetNextString(str))
+				inCallbacks->AcceptNetworkDef_f(str, ref);
+			if(has_demn)
+			for (str = demnAtom.GetFirstString(); str != NULL; str = demnAtom.GetNextString(str))
+				inCallbacks->AcceptRasterDef_f(str, ref);
+			
 		}
 
 	/* Now we're ready to do the commands. */
@@ -996,6 +1003,39 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		printf("DSF ERROR: We overran the command atom.\n");
 #endif
 		return dsf_ErrMisformattedCommandAtom;
+		}
+
+		if(flags & dsf_CmdRaster)
+		{
+			if(dsf_container.GetNthAtomOfID(dsf_RasterContainerAtom, 0, demsAtom))
+			{
+				demsAtom.GetContents(demsContainer);
+				XAtom				raster_data;
+				XSpan				the_data;
+				XAtomPackedData		raster_header;
+				
+				int r = 0;
+				while (demsContainer.GetNthAtomOfID(dsf_RasterInfoAtom, r, raster_header) &&
+					   demsContainer.GetNthAtomOfID(dsf_RasterDataAtom, r, raster_data))
+				{
+					raster_data.GetContents(the_data);
+					DSFRasterHeader_t	h;
+					
+					raster_header.Reset();
+					h.version			= raster_header.ReadUInt8  ();
+					h.bytes_per_pixel	= raster_header.ReadUInt8  ();
+					h.flags				= raster_header.ReadUInt16 ();
+					h.width				= raster_header.ReadUInt32 ();
+					h.height			= raster_header.ReadUInt32 ();
+					h.scale				= raster_header.ReadFloat32();
+					h.offset			= raster_header.ReadFloat32();
+					
+					inCallbacks->AddRasterData_f(&h, the_data.begin, ref);
+					
+					++r;
+				}
+				
+			}
 		}
 
 

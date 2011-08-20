@@ -194,6 +194,16 @@ void ReduceToWaterBodies(Pmwx& ioMap)
 	}
 }
 
+void trim_map(Pmwx& ioMap)
+{
+	for(Pmwx::Vertex_handle v = ioMap.vertices_begin(); v != ioMap.vertices_end(); ++v)
+		v->data().trim();
+	for(Pmwx::Halfedge_handle e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
+		e->data().trim();
+	for(Pmwx::Face_handle f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+		f->data().trim();
+}
+
 
 int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 {

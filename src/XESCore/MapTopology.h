@@ -280,7 +280,7 @@ void ReduceToWaterBodies(Pmwx& ioMap);
  *
  */
 int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func);
-
+void trim_map(Pmwx& ioMap);
 
 
 template <typename Properties, typename Arr=Pmwx>

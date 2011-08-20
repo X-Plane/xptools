@@ -139,6 +139,10 @@ public:
 	static void	AcceptNetworkDef(const char * inPartialPath, void * inRef)
 	{
 	}
+	
+	static void AcceptRasterDef(const char * inPartalPath, void * inRef)
+	{
+	}
 
 	static void	AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 	{
@@ -533,6 +537,13 @@ public:
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->poly = NULL;
 	}
+	
+	static void AddRasterData(
+					DSFRasterHeader_t *	header,
+					void *				data,
+					void *				inRef)
+	{
+	}
 
 
 	void do_import(const char * file_name, WED_Group * base)
@@ -540,11 +551,11 @@ public:
 		parent = base;
 		archive = parent->GetArchive();
 
-		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptProperty,
+		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,AddObjectMSL,	// NOTE: we are simply IGNORING MSL for now!!
+								AddObject,AddObjectMSL,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
-								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon };
+								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData };
 
 		int res = DSFReadFile(file_name, &cb, NULL, this);
 		if(res != 0)

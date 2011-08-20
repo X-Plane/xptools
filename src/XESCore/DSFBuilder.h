@@ -40,6 +40,7 @@ void	BuildDSF(
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
 			const DEMGeo&	inBathymetry,			
+			const DEMGeo&	inUrbanDensity,
 //			const DEMGeo&	inVege,
 			CDT&			inHiresMesh,
 //			CDT&			inLowresMesh,

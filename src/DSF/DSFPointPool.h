@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 #include "AssertUtils.h"
+#include "STLUtils.h"
 
 using namespace std;
 
@@ -41,8 +42,8 @@ using namespace std;
 
 /* Of course, in practice, variable sized arrays are way too
  * expensive to manipulate, so we're fixed sized.  Right now
- * 10 planes covers the worst case - XYZ, norm, STx2 + A */
- #define	MAX_TUPLE_LEN 10
+ * 7 planes covers the worst case for global - XYZ, norm, ST */
+ #define	MAX_TUPLE_LEN 7
 
 class	DSFTuple {
 public:
@@ -151,6 +152,7 @@ public:
 
 	void			ProcessPoints(void);
 	int				MapPoolNumber(int);	// From full to used pool #s
+	void			Trim(void);
 
 	int				WritePoolAtoms(FILE * fi, int32_t id);
 	int				WriteScaleAtoms(FILE * fi, int32_t id);
@@ -203,6 +205,8 @@ public:
 	int				WritePoolAtoms(FILE * fi, int32_t id);
 	int				WriteScaleAtoms(FILE * fi, int32_t id);
 
+	void			Trim(void);
+
 private:
 
 	DSFTuple			mMin;
@@ -239,6 +243,8 @@ public:
 
 	int				WritePoolAtoms(FILE * fi, int32_t id);
 	int				WriteScaleAtoms(FILE * fi, int32_t id);
+
+	void			Trim(void);
 
 private:
 

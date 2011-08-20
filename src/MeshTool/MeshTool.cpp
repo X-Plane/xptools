@@ -143,7 +143,7 @@ int	main(int argc, char * argv[])
 		else if(strstr(argv[3],".tif"))
 		{
 			int align = dem_want_Post;
-			if (!ExtractGeoTiff(dem_elev, argv[3], align))
+			if (!ExtractGeoTiff(dem_elev, argv[3], align,false))
 			{
 				fprintf(stderr,"Could not read GeoTIFF file: %s\n", argv[3]);
 				exit(1);

@@ -81,6 +81,48 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define 	TEST_FORESTS 0
 
 
+#define USE_DEM(x)	0.0f
+
+class	deferred_pool : public list<void *> {
+public:
+	~deferred_pool()
+	{
+		for(list<void*>::iterator i = begin(); i != end(); ++i)
+			free(*i);
+	}
+};
+
+template<typename T>
+T * ConvertDEMTo(const DEMGeo& d, DSFRasterHeader_t& h, int fmt, float s, float o)
+{
+	T * mem = (T *) malloc(sizeof(T) * d.mWidth * d.mHeight);
+	T * p = mem;
+
+	h.version = dsf_RasterVersion;
+	h.bytes_per_pixel = sizeof(T);
+	h.flags = fmt;
+	if(d.mPost) h.flags |= dsf_Raster_Post;
+	h.width = d.mWidth;
+	h.height = d.mHeight;
+	h.offset = o;
+	h.scale = s;
+	
+	int pc = d.mWidth * d.mHeight;
+	DEMGeo::const_iterator i = d.begin();
+	
+	float sp = 1.0 / s;
+	float op = -sp * o;
+		
+	while(pc--)
+	{
+		*p++ = (*i++) * sp + op;
+	}
+	
+	return mem;
+}
+
+
+
 struct	road_coords_checker {
 	double last[2];
 	void * ptr;
@@ -94,6 +136,7 @@ struct	road_coords_checker {
 		if(fabs(c[0] - last[0]) < epsi &&
 		   fabs(c[1] - last[1]) < epsi)
 		{
+//			debug_mesh_point(Point2(c[0],c[1]),1,1,1);
 			printf("ERROR: double point: %lf, %lf to %lf, %lf (%p)\n", last[0],last[1], c[0], c[1], ptr);
 			exit(1);
 		}
@@ -753,12 +796,15 @@ void	BuildDSF(
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
 			const DEMGeo&	inBathymetry,			
+			const DEMGeo&	inUrbanDensity,
 //			const DEMGeo&	inVegeDem,
 			CDT&			inHiresMesh,
 //			CDT&			inLoresMesh,
 			Pmwx&			inVectorMap,
 			ProgressFunc	inProgress)
 {
+
+
 vector<CDT::Face_handle>	sHiResTris[PATCH_DIM_HI * PATCH_DIM_HI];
 vector<CDT::Face_handle>	sLoResTris[PATCH_DIM_LO * PATCH_DIM_LO];
 set<int>					sHiResLU[PATCH_DIM_HI * PATCH_DIM_HI];
@@ -820,6 +866,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		map<int, int, ObjPrio>		objects;
 
 		char	prop_buf[256];
+		
+		deferred_pool	must_dealloc;
 
 	/****************************************************************
 	 * SETUP
@@ -842,7 +890,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	int use_max = use_min + erange2;
 	printf("Real span: %lf to %lf.  Using: %d to %d\n", hmin, hmax, use_min, use_max);
 	// Andrew: change divisions to 16
-	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, use_min, use_max, 16) : NULL;
+	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, 0, 0, 16) : NULL;
 	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth,use_min, use_max, 16)) : NULL;
 	StNukeWriter	dontLeakWriter1(writer1);
 	StNukeWriter	dontLeakWriter2(writer2==writer1 ? NULL : writer2);
@@ -1100,9 +1148,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				{
 					coords8[0] = (*vert)->point().x();
 					coords8[1] = (*vert)->point().y();
-					coords8[2] = (*vert)->info().height;
-					coords8[3] = (*vert)->info().normal[0];
-					coords8[4] =-(*vert)->info().normal[1];
+					coords8[2] =USE_DEM( (*vert)->info().height   );
+					coords8[3] =USE_DEM( (*vert)->info().normal[0]);
+					coords8[4] =USE_DEM(-(*vert)->info().normal[1]);
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
@@ -1176,9 +1224,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inElevation.mSouth,inElevation.mNorth);
 					DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 					DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
-					coords8[2] = (*vert)->info().height;
-					coords8[3] = (*vert)->info().normal[0];
-					coords8[4] =-(*vert)->info().normal[1];
+					coords8[2] =USE_DEM( (*vert)->info().height   );
+					coords8[3] =USE_DEM( (*vert)->info().normal[0]);
+					coords8[4] =USE_DEM(-(*vert)->info().normal[1]);
 					if (is_water)
 					{
 						coords8[5] = GetWaterBlend((*vert), inElevation, inBathymetry);
@@ -1261,9 +1309,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 							DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
 							
-							coords8[2] = f->vertex(vi)->info().height;
-							coords8[3] = f->vertex(vi)->info().normal[0];
-							coords8[4] =-f->vertex(vi)->info().normal[1];
+							coords8[2] =USE_DEM( f->vertex(vi)->info().height   );
+							coords8[3] =USE_DEM( f->vertex(vi)->info().normal[0]);
+							coords8[4] =USE_DEM(-f->vertex(vi)->info().normal[1]);
 //							coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
 							coords8[5] = vi == border_pass ? 0.0 : bblend[vi];
 							coords8[6] = GetTightnessBlend(inHiresMesh, f, f->vertex(vi), lu_ranked->first);
@@ -1301,6 +1349,22 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	}
 
 	if (inProgress && inProgress(1, 5, "Sorting Mesh", 1.0)) return;
+
+
+	if(writer1)
+	{
+		cbs.AcceptRasterDef_f("elevation",writer1);
+		cbs.AcceptRasterDef_f("bathymetry",writer1);
+	
+		DSFRasterHeader_t	header;
+		short * data = ConvertDEMTo<short>(inElevation,header, dsf_Raster_Format_Int,1.0,0.0);
+		must_dealloc.push_back(data);
+		cbs.AddRasterData_f(&header,data,writer1);
+
+		data = ConvertDEMTo<short>(inBathymetry,header, dsf_Raster_Format_Int,1.0,0.0);
+		must_dealloc.push_back(data);
+		cbs.AddRasterData_f(&header,data,writer1);
+	}
 
 	/****************************************************************
 	 * BEACH EXPORT
@@ -1570,81 +1634,6 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 	if (inProgress && inProgress(2, 5, "Compiling Objects", 1.0)) return;
 
-	/***************************************************************
-	 * HACKED TREE CODE
-	 ****************************************************************/
-
-#if TEST_FORESTS
-	if(writer2)
-	{
-		int for_def = facades_reversed.size() + 1;
-		cbs.BeginPolygon_f(for_def, 255, 2, writer2);
-		cbs.BeginPolygonWinding_f(writer2);
-		coords2[0] = -117.1;
-		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.1;
-		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.12;
-		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.12;
-		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		cbs.EndPolygonWinding_f(writer2);
-		cbs.EndPolygon_f(writer2);
-		////////////////////////////////////////////////////////
-		cbs.BeginPolygon_f(for_def, 150, 2, writer2);
-		cbs.BeginPolygonWinding_f(writer2);
-		coords2[0] = -117.2;
-		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.2;
-		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.22;
-		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.22;
-		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		cbs.EndPolygonWinding_f(writer2);
-		cbs.EndPolygon_f(writer2);
-		////////////////////////////////////////////////////////
-		cbs.BeginPolygon_f(for_def, 40, 2, writer2);
-		cbs.BeginPolygonWinding_f(writer2);
-		coords2[0] = -117.3;
-		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.3;
-		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.32;
-		coords2[1] = 32.92;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		coords2[0] = -117.32;
-		coords2[1] = 32.9;
-		cbs.AddPolygonPoint_f(coords2, writer2);
-
-		cbs.EndPolygonWinding_f(writer2);
-		cbs.EndPolygon_f(writer2);
-
-		cbs.AcceptPolygonDef_f("test.for", writer2);
-	}
-#endif
-
 	/****************************************************************
 	 * VECTOR EXPORT
 	 ****************************************************************/
@@ -1785,8 +1774,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 									(*ci)->shape[n+1],
 									info->min_defl_deg_mtr, info->crease_angle_cos,
 									pts,flags);
-				}
+				}				
 			}
+			
+			//merge here?
 			
 			DebugAssert(pts.size() == flags.size());
 			for(int n = 0; n < pts.size(); ++n)
@@ -1863,7 +1854,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.0)) return;
 	if (writer1) DSFWriteToFile(inFileName1, writer1);
 	if (inProgress && inProgress(4, 5, "Writing DSF file", 0.5)) return;
-	if (writer2 && writer2 != writer1) DSFWriteToFile(inFileName2, writer2);
+																																																																																												if (writer2 && writer2 != writer1) DSFWriteToFile(inFileName2, writer2);
 	if (inProgress && inProgress(4, 5, "Writing DSF file", 1.0)) return;
 
 //	printf("Patches: %d, Free Tris: %d, Tri Fans: %d, Tris in Fans: %d, Border Tris: %d, Avg Per Patch: %f, avg per fan: %f\n",
