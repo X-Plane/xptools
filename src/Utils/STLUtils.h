@@ -37,6 +37,13 @@ void trim(T& v)
 	}
 }
 
+template <typename I>
+I nth_from(const I& i, int n)
+{
+	I r(i);
+	advance(r,n);
+	return r;
+}
 
 template <class Container>
 class set_insert_iterator
