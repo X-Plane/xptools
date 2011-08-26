@@ -445,6 +445,7 @@ struct	Polygon2 : public vector<Point2> {
 struct	Bezier2 {
 	Bezier2() { }
 	Bezier2(const Point2& ip1, const Point2& ic1, const Point2& ic2, const Point2& ip2) : p1(ip1), p2(ip2), c1(ic1), c2(ic2) { }
+	Bezier2(const Point2& ip1, const Point2& ic, const Point2& ip2);	// quadratic-equivalent...
 	Bezier2(const Bezier2& x) : p1(x.p1), p2(x.p2), c1(x.c1), c2(x.c2) { }
 	Bezier2(const Segment2& x) : p1(x.p1), p2(x.p2), c1(x.p1), c2(x.p2) { }
 	Bezier2& operator=(const Bezier2& x) { p1 = x.p1; p2 = x.p2; c1 = x.c1; c2 = x.c2; return *this; }
@@ -1018,6 +1019,18 @@ inline bool Polygon2::is_ccw(void) const
 	if(at(p).y() == at(b).y())	return false;				// prev is same height? - top is flat, we are CW
 	
 	return Vector2(at(p),at(b)).left_turn(Vector2(at(b),at(n)));	// we are truly highest.  Check for left-turn.
+}
+
+inline	Bezier2::Bezier2(const Point2& ip1, const Point2& ic, const Point2& ip2) :
+	p1(ip1),
+	c1(Point2(
+			(ip1.x() * 2.0 + ic.x()) / 3.0,
+			(ip1.y() * 2.0 + ic.y()) / 3.0)),
+	c2(Point2(
+			(ip2.x() * 2.0 + ic.x()) / 3.0,
+			(ip2.y() * 2.0 + ic.y()) / 3.0)),
+	p2(ip2)
+{
 }
 
 
