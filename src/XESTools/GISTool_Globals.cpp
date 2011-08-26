@@ -37,7 +37,7 @@ CDT					gTriangulationHi;
 
 vector<pair<Point2,Point3> >		gMeshPoints;
 vector<pair<Point2,Point3> >		gMeshLines;
-
+vector<pair<Bezier2,pair<Point3, Point3> > >		gMeshBeziers;
 bool				gVerbose = true;
 bool				gTiming = false;
 ProgressFunc		gProgress = ConsoleProgressFunc;
@@ -61,4 +61,15 @@ void	debug_mesh_point(const Point2& p1, float r1, float g1, float b1)
 {
 	gMeshPoints.push_back(pair<Point2,Point3>(p1,Point3(r1,g1,b1)));
 }
+
+void	debug_mesh_bezier(const Point2& p1, const Point2& p2, const Point2& p3, float r1, float g1, float b1, float r2, float g2, float b2)
+{
+	gMeshBeziers.push_back(pair<Bezier2,pair<Point3,Point3> >(Bezier2(p1,p2,p3), pair<Point3,Point3>(Point3(r1,g1,b1),Point3(r2,g2,b2))));
+}
+
+void	debug_mesh_bezier(const Point2& p1, const Point2& p2, const Point2& p3, const Point2& p4, float r1, float g1, float b1, float r2, float g2, float b2)
+{
+	gMeshBeziers.push_back(pair<Bezier2,pair<Point3,Point3> >(Bezier2(p1,p2,p3, p4), pair<Point3,Point3>(Point3(r1,g1,b1),Point3(r2,g2,b2))));
+}
+
 #endif
