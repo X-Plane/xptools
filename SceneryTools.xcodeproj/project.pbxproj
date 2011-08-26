@@ -707,6 +707,10 @@
 		D6CB54740CEC9DB0000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6CD435C0E68A61F0071A622 /* XObjWriteEmbedded.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */; };
 		D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
+		D6D408291406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
+		D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
+		D6D4082B1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
+		D6D4082C1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */ = {isa = PBXBuildFile; fileRef = D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */; };
 		D6DBA1E210572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
 		D6DBA1E310572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
@@ -1648,7 +1652,7 @@
 		D6BC37800AB22C85003949C5 /* HLCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = HLCamera.cpp; sourceTree = "<group>"; };
 		D6BC37810AB22C85003949C5 /* HLCamera.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = HLCamera.h; sourceTree = "<group>"; };
 		D6BC37820AB22C85003949C5 /* Interpolation.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Interpolation.h; sourceTree = "<group>"; };
-		D6BC37830AB22C85003949C5 /* Interpolation.i */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.interfacer; path = Interpolation.i; sourceTree = "<group>"; };
+		D6BC37830AB22C85003949C5 /* Interpolation.i */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c.preprocessed; path = Interpolation.i; sourceTree = "<group>"; };
 		D6BC37840AB22C85003949C5 /* MacImageToClipboard.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = MacImageToClipboard.c; sourceTree = "<group>"; };
 		D6BC37850AB22C85003949C5 /* MacImageToClipboard.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MacImageToClipboard.h; sourceTree = "<group>"; };
 		D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MatrixUtils.cpp; sourceTree = "<group>"; };
@@ -1899,6 +1903,8 @@
 		D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GroupCommands.cpp; sourceTree = "<group>"; };
 		D6CD435A0E68A61F0071A622 /* XObjWriteEmbedded.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XObjWriteEmbedded.h; sourceTree = "<group>"; };
 		D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XObjWriteEmbedded.cpp; sourceTree = "<group>"; };
+		D6D408271406C6A20061EBF9 /* BezierApprox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BezierApprox.cpp; sourceTree = "<group>"; };
+		D6D408281406C6A20061EBF9 /* BezierApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierApprox.h; sourceTree = "<group>"; };
 		D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_rotatehead.png; sourceTree = "<group>"; };
 		D6DBA1E010572F33004E1089 /* AptRouting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AptRouting.h; sourceTree = "<group>"; };
 		D6DBA1E110572F33004E1089 /* AptRouting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AptRouting.cpp; sourceTree = "<group>"; };
@@ -3120,6 +3126,8 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6D408271406C6A20061EBF9 /* BezierApprox.cpp */,
+				D6D408281406C6A20061EBF9 /* BezierApprox.h */,
 				D6BC38300AB22C85003949C5 /* Airports.cpp */,
 				D6BC38310AB22C85003949C5 /* Airports.h */,
 				D6BC38320AB22C85003949C5 /* AptDefs.h */,
@@ -3733,7 +3741,14 @@
 			isa = PBXProject;
 			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 20286C29FDCF999611CA2CEA /* SceneryTools */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -4007,6 +4022,7 @@
 				D64A08B1127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B41358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A58138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
+				D6D4082C1406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4176,6 +4192,7 @@
 				D64A08B0127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B21358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A56138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
+				D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4284,6 +4301,7 @@
 				D64A08AF127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B31358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A57138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
+				D6D408291406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4406,6 +4424,7 @@
 				D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */,
 				D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */,
 				D63099F0114BF9BA00882D66 /* FileUtils.cpp in Sources */,
+				D6D4082B1406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
