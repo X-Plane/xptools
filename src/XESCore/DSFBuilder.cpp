@@ -80,7 +80,8 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		NO_BORDERS 0
 #define 	TEST_FORESTS 0
 
-
+#define		ONLY_OPTIMIZE_RAMPS 0
+#define		SHOW_BEZIERS 0
 #define USE_DEM(x)	0.0f
 
 class	deferred_pool : public list<void *> {
@@ -121,6 +122,43 @@ T * ConvertDEMTo(const DEMGeo& d, DSFRasterHeader_t& h, int fmt, float s, float 
 	return mem;
 }
 
+#if SHOW_BEZIERS
+void visualize_bezier(list<Point2c>& bez, bool want_straight_segs, float nt, float r)
+{
+	list<Point2c>::iterator start(bez.begin()), stop(bez.begin()), last(bez.end());
+	--last;
+	DebugAssert(!last->c);
+	
+	while(start != last)
+	{
+		debug_mesh_point(*start,nt,nt,nt);
+		DebugAssert(!start->c);
+		stop = start;
+		++stop;
+		while(stop->c) ++stop;
+		
+		int d = distance(start,stop);
+		switch(d) {
+		case 1:
+			if(want_straight_segs)	
+				debug_mesh_line(*start, *stop, 0,1,0, 0, 1, 0);
+			break;
+		case 2:
+			debug_mesh_bezier(*start, *nth_from(start,1), *nth_from(start,2), r,0,1,r,0,1);
+			debug_mesh_point(*nth_from(start,1), r*nt, 0, nt);
+			break;
+		case 3: 
+			debug_mesh_bezier(*start, *nth_from(start,1), *nth_from(start,2),*nth_from(start,3), r,1,1,r,1,1);
+			debug_mesh_point(*nth_from(start,1), r*nt, nt,nt);
+			debug_mesh_point(*nth_from(start,2), r*nt, nt,nt);
+			break;
+		}
+		start = stop;		
+	}
+	debug_mesh_point(*last,nt,nt,nt);
+
+}
+#endif
 
 
 struct	road_coords_checker {
@@ -1706,121 +1744,151 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 //		}
 		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.7)) return;
 
-		cur_id = 1;
-		for (ji = junctions.begin(); ji != junctions.end(); ++ji)
-			(*ji)->index = cur_id++;
-
-		for (ci = chains.begin(); ci != chains.end(); ++ci)
 		{
-			coords3[0] = (*ci)->start_junction->location.x();
-			coords3[1] = (*ci)->start_junction->location.y();
-			coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
+			int orig_shape_count = 0;
+			int reduced_shape_count = 0;
+			TIMER(OptimizePush)
 
-			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
-				printf("WARNING: coordinate out of range.\n");
+			cur_id = 1;
+			for (ji = junctions.begin(); ji != junctions.end(); ++ji)
+				(*ji)->index = cur_id++;
 
-			DebugAssert(junctions.count((*ci)->start_junction));
-			DebugAssert(((*ci)->start_junction->index) != 0xDEADBEEF);
-			DebugAssert(junctions.count((*ci)->end_junction));
-			DebugAssert(((*ci)->end_junction->index) != 0xDEADBEEF);
-
-			road_coords_checker	checker((*ci), coords3);
-//			printf("Bgn: %lf, %lf, %lf (%d)\n", coords3[0],coords3[1],coords3[2], (*ci)->start_junction->index);
-			cbs.BeginSegment_f(
-							0,
-							(*ci)->export_type,
-							(*ci)->start_junction->index,
-							coords3,
-							false,
-							writer2);
-			++total_chains;
-			//debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,0);
-
-
-			NetRepInfo * info = &gNetReps[(*ci)->rep_type];
-
-			vector<Point2>	pts;
-			vector<int>		flags;
-			for(int n = 0; n < (*ci)->shape.size(); ++n)
+			for (ci = chains.begin(); ci != chains.end(); ++ci)
 			{
-				if((*ci)->shape.size() == 1)
-				{
-					generate_bezier((*ci)->start_junction->location,
-									(*ci)->shape[0  ],
-									(*ci)->end_junction->location,
-									info->min_defl_deg_mtr, info->crease_angle_cos,
-									pts,flags);
-				}
-				else if(n == 0)
-				{
-					generate_bezier((*ci)->start_junction->location,
-									(*ci)->shape[n  ],
-									(*ci)->shape[n+1],
-									info->min_defl_deg_mtr, info->crease_angle_cos,
-									pts,flags);
-				}
-				else if (n == (*ci)->shape.size()-1)
-				{
-					generate_bezier((*ci)->shape[n-1],
-									(*ci)->shape[n  ],
-									(*ci)->end_junction->location,
-									info->min_defl_deg_mtr, info->crease_angle_cos,
-									pts,flags);
-				}
-				else
-				{
-					generate_bezier((*ci)->shape[n-1],
-									(*ci)->shape[n  ],
-									(*ci)->shape[n+1],
-									info->min_defl_deg_mtr, info->crease_angle_cos,
-									pts,flags);
-				}				
-			}
-			
-			//merge here?
-			
-			DebugAssert(pts.size() == flags.size());
-			for(int n = 0; n < pts.size(); ++n)
-			{
-				coords3[0] = doblim(pts[n].x(),inElevation.mWest,inElevation.mEast);
-				coords3[1] = doblim(pts[n].y(),inElevation.mSouth,inElevation.mNorth);
-				coords3[2] = flags[n];
-				
+				coords3[0] = (*ci)->start_junction->location.x();
+				coords3[1] = (*ci)->start_junction->location.y();
+				coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
+
 				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
-				{
 					printf("WARNING: coordinate out of range.\n");
-//					debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,coords3[2]);
+
+				DebugAssert(junctions.count((*ci)->start_junction));
+				DebugAssert(((*ci)->start_junction->index) != 0xDEADBEEF);
+				DebugAssert(junctions.count((*ci)->end_junction));
+				DebugAssert(((*ci)->end_junction->index) != 0xDEADBEEF);
+
+				road_coords_checker	checker((*ci), coords3);
+	//			printf("Bgn: %lf, %lf, %lf (%d)\n", coords3[0],coords3[1],coords3[2], (*ci)->start_junction->index);
+				cbs.BeginSegment_f(
+								0,
+								(*ci)->export_type,
+								(*ci)->start_junction->index,
+								coords3,
+								false,
+								writer2);
+				++total_chains;
+				//debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,0);
+
+
+				NetRepInfo * info = &gNetReps[(*ci)->rep_type];
+
+				list<Point2c>	pts;
+				
+				pts.push_back(Point2c((*ci)->start_junction->location,false));
+				
+				for(int n = 0; n < (*ci)->shape.size(); ++n)
+				{
+					if((*ci)->shape.size() == 1)
+					{
+						generate_bezier((*ci)->start_junction->location,
+										(*ci)->shape[0  ],
+										(*ci)->end_junction->location,
+										info->min_defl_deg_mtr, info->crease_angle_cos,
+										pts);
+					}
+					else if(n == 0)
+					{
+						generate_bezier((*ci)->start_junction->location,
+										(*ci)->shape[n  ],
+										(*ci)->shape[n+1],
+										info->min_defl_deg_mtr, info->crease_angle_cos,
+										pts);
+					}
+					else if (n == (*ci)->shape.size()-1)
+					{
+						generate_bezier((*ci)->shape[n-1],
+										(*ci)->shape[n  ],
+										(*ci)->end_junction->location,
+										info->min_defl_deg_mtr, info->crease_angle_cos,
+										pts);
+					}
+					else
+					{
+						generate_bezier((*ci)->shape[n-1],
+										(*ci)->shape[n  ],
+										(*ci)->shape[n+1],
+										info->min_defl_deg_mtr, info->crease_angle_cos,
+										pts);
+					}				
 				}
+				
+				pts.push_back(Point2c((*ci)->end_junction->location,false));
+				DebugAssert(pts.size() >= 2);
+				
+				list<Point2c>::iterator last(pts.end()), start(pts.begin());
+				--last;
+				DebugAssert(last->c == 0);
+				#if ONLY_OPTIMIZE_RAMPS
+				if(gNetReps[(*ci)->rep_type].use_mode == use_Ramp && pts.size() > 20)
+				#endif
+				{
+					#if SHOW_BEZIERS
+						visualize_bezier(pts,true,0.1f, 0.0f);				
+					#endif
+					orig_shape_count += pts.size();				
+					bezier_multi_simplify_straight_ok(pts, MTR_TO_DEG_LAT * 0.1);// * MTR_TO_DEG_LAT * 5.0 * 5.0);
+					reduced_shape_count += pts.size();
+					#if SHOW_BEZIERS
+						visualize_bezier(pts,false,1.0f,1.0f);
+					#endif
+				}
+				DebugAssert(pts.size() >= 2);
+				pts.pop_back();
+				pts.pop_front();
+				for(list<Point2c>::iterator p = pts.begin(); p != pts.end(); ++p)
+				{
+					coords3[0] = doblim(p->x(),inElevation.mWest,inElevation.mEast);
+					coords3[1] = doblim(p->y(),inElevation.mSouth,inElevation.mNorth);
+					coords3[2] = p->c ? 1 : 0;
+					
+					if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
+					{
+						printf("WARNING: coordinate out of range.\n");
+	//					debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,coords3[2]);
+					}
+					checker.check(coords3);
+	//				printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
+					cbs.AddSegmentShapePoint_f(coords3, false, writer2);
+					++total_shapes;
+					//debug_mesh_point(Point2(coords3[0],coords3[1]),1,1,coords3[2]);
+				}
+
+				coords3[0] = (*ci)->end_junction->location.x();
+				coords3[1] = (*ci)->end_junction->location.y();
+				coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
+
+				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
+					printf("WARNING: coordinate out of range.\n");
+
 				checker.check(coords3);
-//				printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
-				cbs.AddSegmentShapePoint_f(coords3, false, writer2);
-				++total_shapes;
-				//debug_mesh_point(Point2(coords3[0],coords3[1]),1,1,coords3[2]);
+
+				cbs.EndSegment_f(
+						(*ci)->end_junction->index,
+						coords3,
+						false,
+						writer2);
+				//debug_mesh_point(Point2(coords3[0],coords3[1]),0,1,0);
 			}
+			if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;
 
-			coords3[0] = (*ci)->end_junction->location.x();
-			coords3[1] = (*ci)->end_junction->location.y();
-			coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
-
-			if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
-				printf("WARNING: coordinate out of range.\n");
-
-			checker.check(coords3);
-
-			cbs.EndSegment_f(
-					(*ci)->end_junction->index,
-					coords3,
-					false,
-					writer2);
-			//debug_mesh_point(Point2(coords3[0],coords3[1]),0,1,0);
+			CleanupNetworkTopology(junctions, chains);
+			if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
+			cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);
+			
+			printf("Shape points: %d to %d.\n", orig_shape_count, reduced_shape_count);
 		}
-		if (inProgress && inProgress(3, 5, "Compiling Vectors", 0.9)) return;
-
-		CleanupNetworkTopology(junctions, chains);
-		if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
-		cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);
 	}
-
+	
 	/****************************************************************
 	 * MANIFEST
 	 ****************************************************************/

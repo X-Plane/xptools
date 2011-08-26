@@ -26,6 +26,7 @@
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 #include "ProgressUtils.h"
+#include "BezierApprox.h"
 
 class	CDT;
 
@@ -140,8 +141,7 @@ void generate_bezier(
 				const Point2&	c,
 				double			min_deflection,
 				double			crease_angle_cos,
-				vector<Point2>&	pts,
-				vector<int>&	flags);
+				list<Point2c>&	pts);
 
 #endif
 

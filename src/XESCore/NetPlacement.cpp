@@ -388,7 +388,7 @@ void	MergeNearJunctions(Net_JunctionInfoSet& juncs, Net_ChainInfoSet& chains, do
 {
 //		ValidateNetworkTopology(juncs,chains);
 
-	printf("Before merge: %d juncs, %d chains.\n", juncs.size(), chains.size());
+	printf("Before merge: %zd juncs, %zd chains.\n", juncs.size(), chains.size());
 
 	while(1)
 	{
@@ -456,7 +456,7 @@ void	MergeNearJunctions(Net_JunctionInfoSet& juncs, Net_ChainInfoSet& chains, do
 		if(!did_work)	
 			break;
 		else
-			printf("After merge: %d juncs, %d chains.\n", juncs.size(), chains.size());
+			printf("After merge: %zd juncs, %zd chains.\n", juncs.size(), chains.size());
 	}
 	
 	Net_JunctionInfo_t * bad_a = NULL, * bad_b = NULL;
@@ -1408,8 +1408,7 @@ void generate_bezier(
 				const Point2&	c,
 				double			min_deflection_deg_mtr,
 				double			crease_angle_cos,
-				vector<Point2>&	pts,
-				vector<int>&	flags)
+				list<Point2c>&	pts)
 {
 	//printf("Bezier for: %lf,%lf %lf,%lf %lf,%lf\n", a.x(),a.y(),b.x(),b.y(),c.x(),c.y());
 	DebugAssert(a != b);
@@ -1438,8 +1437,7 @@ void generate_bezier(
 	{
 		// This is the crease case - it is a very SHARP turn - so sharp that we assume it is intentional and the road really does make a corner.
 		// Useful to make 90 degree turns at the edge of a street grid stay "sharp".
-		pts.push_back(b);
-		flags.push_back(0);
+		pts.push_back(Point2c(b,false));
 //		printf("   Crease.\n");
 	}
 	else
@@ -1454,8 +1452,7 @@ void generate_bezier(
 			// just put one point down and hope the user can't "see" the sharp turn.
 			// This is for a, like, one-degee turn.  This also protects us from having the 
 			// pull-back case with TINY turns.
-			pts.push_back(b);
-			flags.push_back(0);
+			pts.push_back(Point2c(b,false));
 //			printf("   Near angle.\n");
 		}
 		else
@@ -1486,12 +1483,9 @@ void generate_bezier(
 					Point2 b2 = mb + (bc * pull_back);
 					from_metric(b,cos_lat,b1);
 					from_metric(b,cos_lat,b2);
-					pts.push_back(b1);
-					pts.push_back(b );		// B becomes quadratic control point - ensures nice tangents.
-					pts.push_back(b2);
-					flags.push_back(0);
-					flags.push_back(1);
-					flags.push_back(0);
+					pts.push_back(Point2c(b1,false));
+					pts.push_back(Point2c(b ,true ));		// B becomes quadratic control point - ensures nice tangents.
+					pts.push_back(Point2c(b2,false));
 					#if DEBUG_BEZIERS
 					printf("   Pull back of %lf mtrs for %lf degs.\n", pull_back, angle);
 					debug_mesh_line(b1,b,0.5,0.5,0,1,1,0);
@@ -1503,10 +1497,8 @@ void generate_bezier(
 					// AB is straight, BC is curved.  We will start a curve after AB.
 					Point2 b2 = mb + (ab * 0.33 * len_bc);
 					from_metric(b,cos_lat,b2);
-					pts.push_back(b );
-					pts.push_back(b2);
-					flags.push_back(0);
-					flags.push_back(1);
+					pts.push_back(Point2c(b ,false));
+					pts.push_back(Point2c(b2,true ));
 					#if DEBUG_BEZIERS
 					debug_mesh_line(b,b2,0,0.5,0,0,1,0);
 					printf("   straight->curve, handle is %lf.\n", 0.33 * len_bc);
@@ -1520,10 +1512,8 @@ void generate_bezier(
 					// AB is curved, BC is straight.  We will end the curve going into BC.
 					Point2 b1 = mb - (bc * 0.33 * len_ab);
 					from_metric(b,cos_lat,b1);
-					pts.push_back(b1);
-					pts.push_back(b );
-					flags.push_back(1);
-					flags.push_back(0);
+					pts.push_back(Point2c(b1,true ));
+					pts.push_back(Point2c(b ,false));
 					#if DEBUG_BEZIERS
 					debug_mesh_line(b1,b,0.5,0,0,1,0,0);
 					printf("   curve->straight, handle is %lf.\n", 0.33 * len_ab);
@@ -1539,12 +1529,9 @@ void generate_bezier(
 					Point2 b2 = mb + (tangent * 0.33 * len_bc);
 					from_metric(b,cos_lat,b1);
 					from_metric(b,cos_lat,b2);
-					pts.push_back(b1);
-					pts.push_back(b );		// B becomes real point, with b1/b2 forming tangent controls
-					pts.push_back(b2);
-					flags.push_back(1);
-					flags.push_back(0);
-					flags.push_back(1);
+					pts.push_back(Point2c(b1,true ));
+					pts.push_back(Point2c(b ,false));		// B becomes real point, with b1/b2 forming tangent controls
+					pts.push_back(Point2c(b2,true ));
 					#if DEBUG_BEZIERS
 					printf("   Flow curve, length of %lf, %lf\n", 0.33 * len_ab, 0.33 * len_bc);
 					debug_mesh_line(b1,b,0,0,0.5,0,0,1);
