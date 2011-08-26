@@ -50,6 +50,8 @@
 
 #include "RF_DEMGraphics.h"
 
+#include "MatrixUtils.h"
+#include "MathUtils.h"
 #include "ParamDefs.h"
 #include "MapAlgs.h"
 #include "AptIO.h"
@@ -107,6 +109,16 @@
 #define DEBUG_PRINT_FOREST_TYPE 0
 
 RF_MapView *		gMapView = NULL;
+
+static GLdouble		xfrm[16];
+
+inline void xxVertex2d(GLdouble x, GLdouble y)
+{
+	GLdouble	src[4] = { x, y, 0.0, 1.0 };
+	GLdouble	dst[4];
+	multMatrixVec(dst,xfrm, src);
+	glVertex4dv(dst);
+}
 
 struct	DEMViewInfo_t {
 	int				dem;
@@ -801,11 +813,23 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 	double	pw = pr - pl;
 	double	ph = pt - pb;
 	Bbox2	logical_vis(ll, lb, lr, lt);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslated(pl, pb, 0.0);
-	glScaled(pw / lw, ph / lh, 1.0);
-	glTranslated(-ll, -lb, 0.0);
+	
+	GLdouble	m1[16], scale[16];
+	setIdentityMatrix(m1);
+
+	applyTranslation(m1,pl,pb,0.0);
+	
+	setIdentityMatrix(scale);
+	m1[0] = pw / lw;
+	m1[5] = ph / lh;
+	multMatrices(xfrm, m1, scale);
+
+	applyTranslation(xfrm,-ll, -lb, 0.0);
+		
+	
+//	glTranslated(pl, pb, 0.0);
+//	glScaled(pw / lw, ph / lh, 1.0);
+//	glTranslated(-ll, -lb, 0.0);
 
 	/***************************************************************************************************************************************
 	 * RASTER LAYER
@@ -832,15 +856,15 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		glBegin(GL_QUADS);
 		if (do_relief)
 		{
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0  , 0.0  );glTexCoord2f(0.0     , 0.0     );		glVertex2f((mDEMBounds[0]), (mDEMBounds[1]));
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0  , mTexT);glTexCoord2f(0.0     , mReliefT);		glVertex2f((mDEMBounds[0]), (mDEMBounds[3]));
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, mTexS, mTexT);glTexCoord2f(mReliefS, mReliefT);		glVertex2f((mDEMBounds[2]), (mDEMBounds[3]));
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, mTexS, 0.0  );glTexCoord2f(mReliefS, 0.0     );		glVertex2f((mDEMBounds[2]), (mDEMBounds[1]));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0  , 0.0  );glTexCoord2f(0.0     , 0.0     );		xxVertex2d((mDEMBounds[0]), (mDEMBounds[1]));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0  , mTexT);glTexCoord2f(0.0     , mReliefT);		xxVertex2d((mDEMBounds[0]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, mTexS, mTexT);glTexCoord2f(mReliefS, mReliefT);		xxVertex2d((mDEMBounds[2]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, mTexS, 0.0  );glTexCoord2f(mReliefS, 0.0     );		xxVertex2d((mDEMBounds[2]), (mDEMBounds[1]));
 		} else {
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  , 0.0  );glVertex2f((mDEMBounds[0]), (mDEMBounds[1]));
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  , mTexT);glVertex2f((mDEMBounds[0]), (mDEMBounds[3]));
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mTexS, mTexT);glVertex2f((mDEMBounds[2]), (mDEMBounds[3]));
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mTexS, 0.0  );glVertex2f((mDEMBounds[2]), (mDEMBounds[1]));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  , 0.0  );xxVertex2d((mDEMBounds[0]), (mDEMBounds[1]));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  , mTexT);xxVertex2d((mDEMBounds[0]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mTexS, mTexT);xxVertex2d((mDEMBounds[2]), (mDEMBounds[3]));
+			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mTexS, 0.0  );xxVertex2d((mDEMBounds[2]), (mDEMBounds[1]));
 		}
 		glEnd();
 
@@ -857,10 +881,10 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		state->BindTex(mFlowID, 0);
 		glColor3f(1.0, 1.0, 1.0);
 		glBegin(GL_QUADS);
-		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  ,  0.0   );glVertex2f((mFlowBounds[0]), (mFlowBounds[1]));
-		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  ,  mFlowT);glVertex2f((mFlowBounds[0]), (mFlowBounds[3]));
-		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mFlowS, mFlowT);glVertex2f((mFlowBounds[2]), (mFlowBounds[3]));
-		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mFlowS, 0.0   );glVertex2f((mFlowBounds[2]), (mFlowBounds[1]));
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  ,  0.0   );xxVertex2d((mFlowBounds[0]), (mFlowBounds[1]));
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0  ,  mFlowT);xxVertex2d((mFlowBounds[0]), (mFlowBounds[3]));
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mFlowS, mFlowT);xxVertex2d((mFlowBounds[2]), (mFlowBounds[3]));
+		glMultiTexCoord2fARB(GL_TEXTURE0_ARB, mFlowS, 0.0   );xxVertex2d((mFlowBounds[2]), (mFlowBounds[1]));
 		glEnd();
 	}
 
@@ -870,6 +894,10 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 
 	if (sShowMap)
 	{
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glMultMatrixd(xfrm);
+		
 		DrawMapBucketed(state, gMap,
 			ll, lb, lr, lt,
 //			pl, pb, pr, pt,
@@ -877,6 +905,8 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 			gEdgeSelection,
 			gFaceSelection,
 			gPointFeatureSelection);
+			
+		glPopMatrix();
 	}
 
 	/***************************************************************************************************************************************
@@ -892,7 +922,7 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		for (vector<pair<Point2, Point3> >::iterator i = gMeshPoints.begin(); i != gMeshPoints.end(); ++i)
 		{
 			glColor3f(i->second.x, i->second.y, i->second.z);
-			glVertex2f((i->first.x()),
+			xxVertex2d((i->first.x()),
 					   (i->first.y()));
 		}
 		glEnd();
@@ -906,10 +936,27 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		for (vector<pair<Point2, Point3> >::iterator i = gMeshLines.begin(); i != gMeshLines.end(); ++i)
 		{
 			glColor4f(i->second.x, i->second.y, i->second.z, 0.5);
-			glVertex2f((i->first.x()),
+			xxVertex2d((i->first.x()),
 					   (i->first.y()));
 		}
 		glEnd();
+		
+		for(vector<pair<Bezier2, pair<Point3, Point3> > >::iterator i = gMeshBeziers.begin(); i != gMeshBeziers.end(); ++i)
+		{	
+			glBegin(GL_LINE_STRIP);
+			for(double t = 0.0; t <= 1.0; t += 0.0625)
+			{
+				glColor4f(
+					interp(0,i->second.first.x,1,i->second.second.x,t),
+					interp(0,i->second.first.y,1,i->second.second.y,t),
+					interp(0,i->second.first.z,1,i->second.second.z,t),
+					0.5);
+				Point2 mp(i->first.midpoint(t));
+				xxVertex2d(mp.x(),mp.y());				
+			}
+			glEnd();
+		}
+		
 		glLineWidth(1);
 	}
 	
@@ -924,14 +971,14 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 			for(int x = 0; x <= (d.mWidth - d.mPost); ++x)
 			{
 				double ew = d.x_to_lon_double((double) x - d.pixel_offset());
-				glVertex2f(ew,d.mSouth);
-				glVertex2f(ew,d.mNorth);
+				xxVertex2d(ew,d.mSouth);
+				xxVertex2d(ew,d.mNorth);
 			}
 			for(int y = 0; y <= (d.mHeight - d.mPost); ++y)			
 			{
 				double ns = d.y_to_lat_double((double) y - d.pixel_offset());
-				glVertex2f(d.mEast,ns);
-				glVertex2f(d.mWest,ns);
+				xxVertex2d(d.mEast,ns);
+				xxVertex2d(d.mWest,ns);
 			}
 			glEnd();
 		}
@@ -941,16 +988,20 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 	{
 		glColor3f(1,1,0);
 		glBegin(GL_LINE_LOOP);
-		glVertex2f(gMapWest,gMapSouth);
-		glVertex2f(gMapEast,gMapSouth);
-		glVertex2f(gMapEast,gMapNorth);
-		glVertex2f(gMapWest,gMapNorth);
+		xxVertex2d(gMapWest,gMapSouth);
+		xxVertex2d(gMapEast,gMapSouth);
+		xxVertex2d(gMapEast,gMapNorth);
+		xxVertex2d(gMapWest,gMapNorth);
 		glEnd();
 	}
 
 	/***************************************************************************************************************************************
 	 * MESH AS LINES AND TERRAIN (DISPLAY LISTS - EASY)
 	 ***************************************************************************************************************************************/
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glMultMatrixd(xfrm);
 
 	if (sShowMeshTrisHi)
 	{
@@ -971,6 +1022,8 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		}
 
 	}
+
+	glPopMatrix();
 
 	/***************************************************************************************************************************************
 	 * AIRPORTS
@@ -993,13 +1046,13 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 				glColor3f(1.0, 0.0, 1.0);
 //				DebugAssert(gApts[n].bounds.xmin() <= gApts[n].bounds.xmax());
 //				DebugAssert(gApts[n].bounds.ymin() <= gApts[n].bounds.ymax());
-//				glVertex2f((gApts[n].bounds.xmin()),
+//				xxVertex2d((gApts[n].bounds.xmin()),
 //							(gApts[n].bounds.ymin()));
-//				glVertex2f((gApts[n].bounds.xmin()),
+//				xxVertex2d((gApts[n].bounds.xmin()),
 //							(gApts[n].bounds.ymax()));
-//				glVertex2f((gApts[n].bounds.xmax()),
+//				xxVertex2d((gApts[n].bounds.xmax()),
 //							(gApts[n].bounds.ymax()));
-//				glVertex2f((gApts[n].bounds.xmax()),
+//				xxVertex2d((gApts[n].bounds.xmax()),
 //							(gApts[n].bounds.ymin()));
 
 				for(vector<AptInfo_t::AptLineLoop_t>::iterator ogl = gApts[n].ogl.begin(); ogl != gApts[n].ogl.end(); ++ogl)
@@ -1007,7 +1060,7 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 					glColor3fv(ogl->rgb);
 					glBegin(GL_LINE_LOOP);
 					for(vector<Point2>::iterator pt = ogl->pts.begin(); pt != ogl->pts.end(); ++pt)
-						glVertex2d(pt->x(),pt->y());
+						xxVertex2d(pt->x(),pt->y());
 					glEnd();
 				}
 				glPointSize(3);
@@ -1016,7 +1069,7 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 				{
 					glColor3fv(ogl->rgb);
 					for(vector<Point2>::iterator pt = ogl->pts.begin(); pt != ogl->pts.end(); ++pt)
-						glVertex2d(pt->x(),pt->y());
+						xxVertex2d(pt->x(),pt->y());
 				}
 				glEnd();
 				glPointSize(1);
@@ -1058,23 +1111,23 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 
 				if (fit->info().beaches[0] != -1)
 				{
-					glVertex2f(	(p1.x()),
+					xxVertex2d(	(p1.x()),
 								(p1.y()));
-					glVertex2f(	(p2.x()),
+					xxVertex2d(	(p2.x()),
 								(p2.y()));
 				}
 				if (fit->info().beaches[1] != -1)
 				{
-					glVertex2f(	(p1.x()),
+					xxVertex2d(	(p1.x()),
 								(p1.y()));
-					glVertex2f(	(p3.x()),
+					xxVertex2d(	(p3.x()),
 								(p3.y()));
 				}
 				if (fit->info().beaches[2] != -1)
 				{
-					glVertex2f(	(p2.x()),
+					xxVertex2d(	(p2.x()),
 								(p2.y()));
-					glVertex2f(	(p3.x()),
+					xxVertex2d(	(p3.x()),
 								(p3.y()));
 				}
 			}
@@ -1111,9 +1164,9 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 			CDT::Point	p1 = a->point();
 			CDT::Point p2 = b->point();
 
-			glVertex2f(	(p1.x()),
+			xxVertex2d(	(p1.x()),
 						(p1.y()));
-			glVertex2f(	(p2.x()),
+			xxVertex2d(	(p2.x()),
 						(p2.y()));
 
 			glEnd();
@@ -1147,11 +1200,11 @@ put in  color enums?
 				CDT::Point p2 = b->point();
 				CDT::Point p3 = c->point();
 
-				glVertex2f(	(p1.x()),
+				xxVertex2d(	(p1.x()),
 							(p1.y()));
-				glVertex2f(	(p2.x()),
+				xxVertex2d(	(p2.x()),
 							(p2.y()));
-				glVertex2f(	(p3.x()),
+				xxVertex2d(	(p3.x()),
 							(p3.y()));
 
 			}
@@ -1163,8 +1216,6 @@ put in  color enums?
 	/***************************************************************************************************************************************
 	 * MISC CLEANUP AND CAPTIONS
 	 ***************************************************************************************************************************************/
-
-	glPopMatrix();
 
 	for (int n = 0; n < mTools.size(); ++n)
 		mTools[n]->DrawFeedbackOverlay(state,mTools[n] == cur);
