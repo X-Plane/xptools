@@ -162,6 +162,7 @@ SOURCES += ./src/XESCore/AptAlgs.cpp
 SOURCES += ./src/XESCore/AptRouting.cpp
 SOURCES += ./src/XESCore/Airports.cpp
 SOURCES += ./src/XESCore/Beaches.cpp
+SOURCES += ./src/XESCore/BezierApprox.cpp
 SOURCES += ./src/XESCore/BlockAlgs.cpp
 SOURCES += ./src/XESCore/BlockFill.cpp
 SOURCES += ./src/XESCore/ConfigSystem.cpp

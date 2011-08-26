@@ -68,6 +68,7 @@ SOURCES += ./src/XESCore/ForestTables.cpp
 SOURCES += ./src/XESCore/AptAlgs.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
 SOURCES += ./src/XESCore/Beaches.cpp
+SOURCES += ./src/XESCore/BezierApprox.cpp
 SOURCES += ./src/XESCore/ConfigSystem.cpp
 SOURCES += ./src/XESCore/DEMAlgs.cpp
 SOURCES += ./src/XESCore/DEMDefs.cpp
