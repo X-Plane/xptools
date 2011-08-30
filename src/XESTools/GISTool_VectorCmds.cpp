@@ -46,6 +46,7 @@
 #include "MapHelpers.h"
 #include "MapBuffer.h"
 #include "NetAlgs.h"
+#include "MapRaster.h"
 
 #if OPENGL_MAP
 	#include "RF_Msgs.h"
@@ -661,9 +662,11 @@ struct debug_lock_traits {
 	bool is_locked(Pmwx::Vertex_handle v) const { 
 		Pmwx::Halfedge_handle h1(v->incident_halfedges());
 		Pmwx::Halfedge_handle h2(h1->next());
-		if(h1->face()->data().IsWater() == h1->twin()->face()->data().IsWater())
-			return true;
-			
+//		if(h1->face()->data().IsWater() == h1->twin()->face()->data().IsWater())
+//		{
+//			debug_mesh_point(cgal2ben(v->point()),1,1,1);
+//			return true;
+//		}	
 		Point2 p1(cgal2ben(h1->source()->point()));
 		Point2 p2(cgal2ben(h1->target()->point()));
 		Point2 p3(cgal2ben(h2->target()->point()));
@@ -734,6 +737,37 @@ int DoDesliver(const vector<const char *> &args)
 	printf("Flipped %d faces.\n",r);
 	return 0;
 }
+
+
+#define HELP_KILL_SLIVER_WATER \
+"-kill_sliver_water <tolerance>\n"\
+"This command changes the land class of very wet areas to remove polygonal rivers that we can't afford.\n"
+int DoKillSliverWater(const vector<const char *> &args)
+{
+	int r = KillSliverWater(gMap, atof(args[0]), gProgress);
+	printf("Flipped %d faces.\n",r);
+	return 0;
+}
+
+#define HELP_KILL_SLOPED_WATER \
+"-kill_sloped_water <gradient>\n"\
+"This removes wet polygons whose net slope is approximately more than 1/x^2 where x is the gradient factor.\n"
+int DoKillSlopedWater(const vector<const char *> &args)
+{
+	int r = KillSlopedWater(gMap, gDem[dem_Elevation], atof(args[0]), gProgress);
+	printf("Flipped %d faces.\n",r);
+	return 0;
+}
+
+int DoKillTunnels(const vector<const char *>& args)
+{
+	int k = KillTunnels(gMap);
+	printf("Removed %d tunnels.\n",k);
+	return 0;
+}
+
+
+
 
 #if OPENGL_MAP && DEV
 int DoCheckRoads(const vector<const char *>& args)
@@ -811,15 +845,6 @@ int DoBufferWater(const vector<const char *>& args)
 	return 0;
 }
 
-void	MapFromDEM(
-				const DEMGeo&		in_dem,
-				int					x1,
-				int					y1,
-				int					x2,
-				int					y2,
-				float				null_post,
-				Pmwx&				out_map,
-				CoordTranslator2 *	translator);
 
 //void	ColorFaces(set<Face_handle>&	io_faces);
 int DoRasterDEM(const vector<const char *>& args)
@@ -848,6 +873,9 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-remove_wet_antennas", 2, 2, DoRemoveWetAntennas,	"Remove roads that hang out into the water.", HELP_REMOVE_WET_ANTENNAS },	
 { "-buffer_water", 1, 1, DoBufferWater,				"Buffer water by a certain amonut.", "" },
 { "-desliver",		1, 1, DoDesliver,				"Remove slivered polygons.", HELP_DESLIVER },
+{ "-kill_sliver_water",1,1,DoKillSliverWater,		"Remove slivers of water",HELP_KILL_SLIVER_WATER },
+{ "-kill_sloped_water",1,1,DoKillSlopedWater,		"Remove slopeds of water",HELP_KILL_SLOPED_WATER },
+{ "-kill_tunnels",0,0,DoKillTunnels,				"Remove all tunnel vectors", "" },
 #if OPENGL_MAP && DEV
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
 #endif

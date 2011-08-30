@@ -307,7 +307,12 @@ static int DoBuildDSF(const vector<const char *>& args)
 
 	if(strcmp(args[0],"-") == 0) b1 = NULL; else CreatePackageForDSF(args[0], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf1);
 	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
-	BuildDSF(b1,b2, gDem[dem_Elevation],gDem[dem_Bathymetry],gDem[dem_UrbanDensity],gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
+	BuildDSF(b1,b2, 
+		gDem[dem_Elevation],
+		gDem[dem_WaterSurface],
+		gDem[dem_Bathymetry],
+		gDem[dem_UrbanDensity],
+		gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
 	return 0;
 }
 

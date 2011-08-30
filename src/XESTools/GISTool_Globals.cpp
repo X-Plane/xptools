@@ -27,7 +27,15 @@
 #include "DEMDefs.h"
 #include "MeshDefs.h"
 
+#if OPENGL_MAP
+#include "RF_DrawMap.h"
+#endif
+
 Pmwx				gMap;
+#if OPENGL_MAP
+PmwxIndex_t			gMapIndex;
+#endif
+
 DEMGeoMap			gDem;
 //CDT					gTriangulationLo;
 CDT					gTriangulationHi;

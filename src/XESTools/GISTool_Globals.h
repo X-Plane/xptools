@@ -33,6 +33,7 @@
 //class Pmwx;
 class CDT;
 class DEMGeoMap;
+struct	PmwxIndex_t;
 
 extern Pmwx					gMap;
 extern DEMGeoMap			gDem;
@@ -54,6 +55,10 @@ extern AptIndex				gAptIndex;
 extern vector<pair<Point2,Point3> >					gMeshPoints;
 extern vector<pair<Point2,Point3> >					gMeshLines;
 extern vector<pair<Bezier2,pair<Point3, Point3> > >	gMeshBeziers;
+
+#if OPENGL_MAP
+extern PmwxIndex_t			gMapIndex;
+#endif
 
 #if DEV
 void	debug_mesh_line	 (const Point2& p1, const Point2& p2, float r1, float g1, float b1, float r2, float g2, float b2);
