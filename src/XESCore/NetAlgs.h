@@ -29,6 +29,7 @@
 
 class	DEMGeo;
 
+int		KillTunnels(Pmwx& ioMap);
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg);
 
 #if OPENGL_MAP && DEV

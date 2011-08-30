@@ -41,6 +41,8 @@
 
 #define DEBUG_BEZIERS 0
 
+#define MIN_ANGLE_FOR_CURVE 0.0
+
 #if 0
 bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
 {
@@ -1444,7 +1446,7 @@ void generate_bezier(
 	{
 		double angle = acos(doblim(ab.dot(bc),-1.0,1.0)) * RAD_TO_DEG;
 		
-		double near_angle = 2.0 * min_deflection_deg_mtr;
+		double near_angle = max(MIN_ANGLE_FOR_CURVE, 2.0 * min_deflection_deg_mtr);
 		
 		if(angle < near_angle)
 		{

@@ -59,8 +59,8 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 
 	float	crease, max_rad;
 
-	if (TokenizeLine(tokens, " efffeiiff",&rep_type,
-		&info.width, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped, &crease, &max_rad) != 10)
+	if (TokenizeLine(tokens, " efffeiifff",&rep_type,
+		&info.width, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped, &crease, &max_rad, &info.max_err) != 11)
 	{
 		return false;
 	}

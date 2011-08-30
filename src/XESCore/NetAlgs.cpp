@@ -34,6 +34,22 @@
 
 #define	MIN_DIST_FOR_TYPE 0.005
 
+int	KillTunnels(Pmwx& ioMap)
+{
+	int k = 0;
+	for(Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
+	for(GISNetworkSegmentVector::iterator s = e->data().mSegments.begin(); s != e->data().mSegments.end();)
+	if(s->mSourceHeight < 0 || s->mTargetHeight < 0)
+	{
+		s = e->data().mSegments.erase(s);		
+//		debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,0,0,1,1,0);
+		++k;
+	} else
+		++s;
+	return k;
+}
+
+
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg)
 {
 	int kill = 0;

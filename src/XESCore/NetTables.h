@@ -53,6 +53,7 @@ struct	NetRepInfo {
 	int			export_type_draped;
 	float		crease_angle_cos;
 	float		min_defl_deg_mtr;
+	float		max_err;
 };
 typedef hash_map<int, NetRepInfo>				NetRepInfoTable;
 extern 	NetRepInfoTable							gNetReps;
