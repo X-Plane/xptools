@@ -52,11 +52,15 @@
 
 //typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
+// This is the frequency of triangulation in open water, where we have no height, as 
+// a multiple of DEM pts.
 #if PHONE
 #define LOW_RES_WATER_INTERVAL 50
 #define APT_INTERVAL 40
 #else
 #define LOW_RES_WATER_INTERVAL 40
+
+// This is the freuqency of forced triangulatoin at airports as a multiple of DEM points.
 #define APT_INTERVAL 2
 #endif
 
@@ -77,7 +81,7 @@
 #define SHOW_STEPS 0
 
 
-// This guarantees that we don't have "beached" triangles - that is, water trianglse where all 3 points are coastal, and thus the water depth is ZERO in the entire
+// This guarantees that we don't have "beached" triangles - that is, water triangles where all 3 points are coastal, and thus the water depth is ZERO in the entire
 // thing.
 #if PHONE
 	#define SPLIT_BEACHED_WATER 0
@@ -93,6 +97,9 @@
 // we are subidving half as much as required.  Since we also add points for too-long edges and elevation
 // changes, we don't need to overdo basic subdivision - this produces acceptable triangles.
 #define REDUCE_SUBDIVIDE 2
+
+// This previews cases where water flattening in x-plane are going to seriously deform the DEM!
+#define DEBUG_FLATTEN_ERROR 0
 
 #if SHOW_STEPS
 
@@ -1321,6 +1328,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	int		x, y;
 	DEMGeo&	orig(inDEMs[dem_Elevation]);
+	const DEMGeo& inWaterSurface(inDEMs[dem_WaterSurface]);
 
 	Assert(orig.get(0			 ,0				) != DEM_NO_DATA);
 	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != DEM_NO_DATA);
@@ -1443,11 +1451,11 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	{
 		StElapsedTime simp("simplify edges");
 		
-		printf("Before simplify: %d/%d\n",outMesh.number_of_vertices(),outMesh.number_of_faces());
+		printf("Before simplify: %zd/%zd\n",outMesh.number_of_vertices(),outMesh.number_of_faces());
 //		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_TriangleHiChange, NULL); 
 		MeshSimplify	simplify_me(outMesh, dist_from_line);
 		simplify_me.simplify(0.0001 * 0.0001);
-		printf("After simplify: %d/%d\n",outMesh.number_of_vertices(),outMesh.number_of_faces());
+		printf("After simplify: %zd/%zd\n",outMesh.number_of_vertices(),outMesh.number_of_faces());
 	}
 
 	PAUSE_STEP("Finished constraints")
@@ -1544,7 +1552,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 			}
 		}
 		
-		printf("Need %d splits.\n", splits_needed.size());
+		printf("Need %zd splits.\n", splits_needed.size());
 		hint = CDT::Face_handle();
 		for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
 		{
@@ -1612,6 +1620,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	// we subdivide the 'open' side (to try to get less slivery triangles).
 
 #if SPLIT_BEACHED_WATER
+
 	set<Point_2> splits_needed;
 	int ctr=0,tot=outMesh.number_of_faces();
 	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f,++ctr)
@@ -1619,35 +1628,13 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		if( f->info().terrain == terrain_Water)
 		{
 			PROGRESS_SHOW(prog,1,3,"Calculating Wet Areas",ctr,tot);
-			CDT::Face_handle f0(f->neighbor(0));
-			CDT::Face_handle f1(f->neighbor(1));
-			CDT::Face_handle f2(f->neighbor(2));
+			int c0 = CategorizeVertex(outMesh, f->vertex(0), terrain_Water);
+			int c1 = CategorizeVertex(outMesh, f->vertex(1), terrain_Water);
+			int c2 = CategorizeVertex(outMesh, f->vertex(2), terrain_Water);
 			
-			bool dry_a = (outMesh.is_infinite(f0) || f0->info().terrain != terrain_Water);
-			bool dry_b = (outMesh.is_infinite(f1) || f1->info().terrain != terrain_Water);
-			bool dry_c = (outMesh.is_infinite(f2) || f2->info().terrain != terrain_Water);
-			
-			if(dry_a && dry_b && dry_c)
+			if(c1 == 0 && c2 == 0 && c0 == 0)
 			{
 				Point_2 c(CGAL::centroid(outMesh.triangle(f)));
-				splits_needed.insert(c);
-//				debug_mesh_point(cgal2ben(c),1,1,0);
-			}
-			else if (dry_a && dry_b)
-			{
-				Point_2 c(CGAL::midpoint(f->vertex(0)->point(),f->vertex(1)->point()));
-				splits_needed.insert(c);
-//				debug_mesh_point(cgal2ben(c),1,1,0);
-			}
-			else if (dry_a && dry_c)
-			{
-				Point_2 c(CGAL::midpoint(f->vertex(0)->point(),f->vertex(2)->point()));
-				splits_needed.insert(c);
-//				debug_mesh_point(cgal2ben(c),1,1,0);
-			}
-			else if (dry_b && dry_c)
-			{
-				Point_2 c(CGAL::midpoint(f->vertex(1)->point(),f->vertex(2)->point()));
 				splits_needed.insert(c);
 //				debug_mesh_point(cgal2ben(c),1,1,0);
 			}
@@ -1656,7 +1643,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	PROGRESS_DONE(prog,1,3,"Calculating Wet Areas");
 
-	printf("Need %d splits for beaches.\n", splits_needed.size());
+	printf("Need %zd splits for beaches.\n", splits_needed.size());
 	hint = CDT::Face_handle();
 	set<CDT::Face_handle>	who;
 	for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
@@ -1674,6 +1661,25 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	for(set<CDT::Face_handle>::iterator w = who.begin(); w != who.end(); ++w)
 	{
 		DebugAssert((*w)->info().terrain == terrain_Water);
+	}
+
+	for(CDT::Finite_vertices_iterator fvi = outMesh.finite_vertices_begin(); fvi != outMesh.finite_vertices_end(); ++fvi)
+	{
+		if(CategorizeVertex(outMesh, fvi, terrain_Water) < 1)
+		{
+			double oh = fvi->info().height;
+			fvi->info().height = inWaterSurface.value_linear(CGAL::to_double(fvi->point().x()),CGAL::to_double(fvi->point().y()));
+//			debug_mesh_point(cgal2ben(fvi->point()),1,1,1);
+			#if DEBUG_FLATTEN_ERROR
+			double err = fabs(oh - fvi->info().height);
+			if(err > 15.0)
+			debug_mesh_point(cgal2ben(fvi->point()),1,0,0);
+			else if(err > 10.0)
+			debug_mesh_point(cgal2ben(fvi->point()),1,1,0);
+			else if(err > 5.0)
+			debug_mesh_point(cgal2ben(fvi->point()),0,1,0);
+			#endif
+		}
 	}
 
 	PAUSE_STEP("Split Beached Water")

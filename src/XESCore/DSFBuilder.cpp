@@ -76,13 +76,25 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		ORTHO_FAR_LOD			-1.0
 #define		MAX_TRIS_PER_PATCH		85
 
+// Disable ortho-mesh
 #define		NO_ORTHO 1
-#define		NO_BORDERS 0
-#define 	TEST_FORESTS 0
 
+// Don't output borders
+#define		NO_BORDERS 0
+
+// Enable reduction of bezier curves.
+#define		CAN_OPTIMIZE_BEZIERS 1
+
+// Set this 1 to only optimize the longer ramps in the DSF - useful when step-debugging
+// bezier optimization because you only get the really interesting cases.
 #define		ONLY_OPTIMIZE_RAMPS 0
+
+// Set to 1 to visualize beters on screen.
 #define		SHOW_BEZIERS 0
-#define USE_DEM(x)	0.0f
+
+// These macros set the height and normal in the mesh to the new-style modes.
+#define USE_DEM_H(x,v,m)	(CategorizeVertex((m),(v),terrain_Water)+1)
+#define USE_DEM_N(x)		0.0f
 
 class	deferred_pool : public list<void *> {
 public:
@@ -138,6 +150,7 @@ void visualize_bezier(list<Point2c>& bez, bool want_straight_segs, float nt, flo
 		while(stop->c) ++stop;
 		
 		int d = distance(start,stop);
+//		printf("Debugging %d\n", d);
 		switch(d) {
 		case 1:
 			if(want_straight_segs)	
@@ -149,8 +162,8 @@ void visualize_bezier(list<Point2c>& bez, bool want_straight_segs, float nt, flo
 			break;
 		case 3: 
 			debug_mesh_bezier(*start, *nth_from(start,1), *nth_from(start,2),*nth_from(start,3), r,1,1,r,1,1);
-			debug_mesh_point(*nth_from(start,1), r*nt, nt,nt);
-			debug_mesh_point(*nth_from(start,2), r*nt, nt,nt);
+			debug_mesh_point(*nth_from(start,1), r*nt, 0,nt);
+			debug_mesh_point(*nth_from(start,2), r*nt, 0,nt);
 			break;
 		}
 		start = stop;		
@@ -162,20 +175,29 @@ void visualize_bezier(list<Point2c>& bez, bool want_straight_segs, float nt, flo
 
 
 struct	road_coords_checker {
-	double last[2];
+	double last[3];
 	void * ptr;
-	road_coords_checker(void * p, double c[2]) {ptr = p;  last[0] = c[0]; last[1] = c[1]; }
+	char lm;
+	road_coords_checker(void * p, double c[3], char m) {ptr = p;  last[0] = c[0]; last[1] = c[1]; last[2] = c[2]; lm = m; }
 	
 //	#define epsi 0.00001
 	#define epsi 0.0000001
 	
-	void check(double c[2]) { 
+	void check(double c[3], char m) { 
 	
 		if(fabs(c[0] - last[0]) < epsi &&
-		   fabs(c[1] - last[1]) < epsi)
+		   fabs(c[1] - last[1]) < epsi &&
+		   (
+			(lm == 'B' && c[2] == 0.0) ||
+			(m == 'E' && last[2] == 0.0) ||
+			(lm == 'B' && m == 'E') ||
+			(c[2] == 0.0 && last[2] == 0.0)
+		   )
+		)
 		{
 //			debug_mesh_point(Point2(c[0],c[1]),1,1,1);
-			printf("ERROR: double point: %lf, %lf to %lf, %lf (%p)\n", last[0],last[1], c[0], c[1], ptr);
+//			debug_mesh_point(Point2(last[0],last[1]),1,0,0);
+			printf("ERROR: double point: %c %lf, %lf (%lf) to %c %lf, %lf (%lf) (%p)\n", lm, last[0],last[1], last[2], m, c[0], c[1], c[2], ptr);
 			exit(1);
 		}
 		last[0] = c[0]; last[1] = c[1];
@@ -217,20 +239,6 @@ struct hash_edge {
 #endif
 HASH_MAP_NAMESPACE_END
 
-bool	IsCoastal(const CDT& inMesh, CDT::Vertex_handle v)
-{
-	CDT::Face_circulator circ, stop;
-	circ = stop = inMesh.incident_faces(v);
-	DebugAssert(!inMesh.is_infinite(v));
-	int ctr = 0;
-	do {
-		if(!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water)
-			return true;
-		++ctr;
-	} while (++circ != stop);
-	DebugAssert(ctr < 100);
-	return false;
-}
 
 // Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
 static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[3], int kind)
@@ -833,6 +841,7 @@ void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
+			const DEMGeo&	inSeaLevel,
 			const DEMGeo&	inBathymetry,			
 			const DEMGeo&	inUrbanDensity,
 //			const DEMGeo&	inVegeDem,
@@ -1186,9 +1195,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				{
 					coords8[0] = (*vert)->point().x();
 					coords8[1] = (*vert)->point().y();
-					coords8[2] =USE_DEM( (*vert)->info().height   );
-					coords8[3] =USE_DEM( (*vert)->info().normal[0]);
-					coords8[4] =USE_DEM(-(*vert)->info().normal[1]);
+					coords8[2] =USE_DEM_H( (*vert)->info().height   ,*vert,inHiresMesh);
+					coords8[3] =USE_DEM_N( (*vert)->info().normal[0]);
+					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
 					DebugAssert(coords8[3] >= -1.0);
 					DebugAssert(coords8[3] <=  1.0);
 					DebugAssert(coords8[4] >= -1.0);
@@ -1262,13 +1271,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inElevation.mSouth,inElevation.mNorth);
 					DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 					DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
-					coords8[2] =USE_DEM( (*vert)->info().height   );
-					coords8[3] =USE_DEM( (*vert)->info().normal[0]);
-					coords8[4] =USE_DEM(-(*vert)->info().normal[1]);
+					coords8[2] =USE_DEM_H( (*vert)->info().height   ,*vert,inHiresMesh);
+					coords8[3] =USE_DEM_N( (*vert)->info().normal[0]);
+					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
 					if (is_water)
 					{
 						coords8[5] = GetWaterBlend((*vert), inElevation, inBathymetry);
-						coords8[6] = IsCoastal(inHiresMesh,*vert) ? 0.0 : 1.0;
+						coords8[6] = CategorizeVertex(inHiresMesh,*vert,terrain_Water) >= 0 ? 0.0 : 1.0;
 						DebugAssert(coords8[5] >= 0.0);
 						DebugAssert(coords8[5] <= 1.0);
 					}
@@ -1347,9 +1356,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 							DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
 							
-							coords8[2] =USE_DEM( f->vertex(vi)->info().height   );
-							coords8[3] =USE_DEM( f->vertex(vi)->info().normal[0]);
-							coords8[4] =USE_DEM(-f->vertex(vi)->info().normal[1]);
+							coords8[2] =USE_DEM_H( f->vertex(vi)->info().height   ,f->vertex(vi),inHiresMesh);
+							coords8[3] =USE_DEM_N( f->vertex(vi)->info().normal[0]);
+							coords8[4] =USE_DEM_N(-f->vertex(vi)->info().normal[1]);
 //							coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
 							coords8[5] = vi == border_pass ? 0.0 : bblend[vi];
 							coords8[6] = GetTightnessBlend(inHiresMesh, f, f->vertex(vi), lu_ranked->first);
@@ -1392,10 +1401,15 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if(writer1)
 	{
 		cbs.AcceptRasterDef_f("elevation",writer1);
+		cbs.AcceptRasterDef_f("sea_level",writer1);
 		cbs.AcceptRasterDef_f("bathymetry",writer1);
 	
 		DSFRasterHeader_t	header;
 		short * data = ConvertDEMTo<short>(inElevation,header, dsf_Raster_Format_Int,1.0,0.0);
+		must_dealloc.push_back(data);
+		cbs.AddRasterData_f(&header,data,writer1);
+
+		data = ConvertDEMTo<short>(inSeaLevel,header, dsf_Raster_Format_Int,1.0,0.0);
 		must_dealloc.push_back(data);
 		cbs.AddRasterData_f(&header,data,writer1);
 
@@ -1767,8 +1781,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				DebugAssert(junctions.count((*ci)->end_junction));
 				DebugAssert(((*ci)->end_junction->index) != 0xDEADBEEF);
 
-				road_coords_checker	checker((*ci), coords3);
-	//			printf("Bgn: %lf, %lf, %lf (%d)\n", coords3[0],coords3[1],coords3[2], (*ci)->start_junction->index);
+				road_coords_checker	checker((*ci), coords3, 'B');
+				//printf("Bgn: %lf, %lf, %lf (%d)\n", coords3[0],coords3[1],coords3[2], (*ci)->start_junction->index);
 				cbs.BeginSegment_f(
 								0,
 								(*ci)->export_type,
@@ -1828,6 +1842,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				list<Point2c>::iterator last(pts.end()), start(pts.begin());
 				--last;
 				DebugAssert(last->c == 0);
+				#if CAN_OPTIMIZE_BEZIERS
+				if(gNetReps[(*ci)->rep_type].max_err > 0.0)
 				#if ONLY_OPTIMIZE_RAMPS
 				if(gNetReps[(*ci)->rep_type].use_mode == use_Ramp && pts.size() > 20)
 				#endif
@@ -1836,12 +1852,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						visualize_bezier(pts,true,0.1f, 0.0f);				
 					#endif
 					orig_shape_count += pts.size();				
-					bezier_multi_simplify_straight_ok(pts, MTR_TO_DEG_LAT * 0.1);// * MTR_TO_DEG_LAT * 5.0 * 5.0);
+					bezier_multi_simplify_straight_ok(pts, MTR_TO_DEG_LAT * gNetReps[(*ci)->rep_type].max_err, 0.00005);// * MTR_TO_DEG_LAT * 5.0 * 5.0);
 					reduced_shape_count += pts.size();
 					#if SHOW_BEZIERS
 						visualize_bezier(pts,false,1.0f,1.0f);
 					#endif
 				}
+				#endif
 				DebugAssert(pts.size() >= 2);
 				pts.pop_back();
 				pts.pop_front();
@@ -1856,8 +1873,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						printf("WARNING: coordinate out of range.\n");
 	//					debug_mesh_point(Point2(coords3[0],coords3[1]),1,0,coords3[2]);
 					}
-					checker.check(coords3);
-	//				printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
+					checker.check(coords3,'S');
+					//printf("Shp: %lf, %lf, %lf\n", coords3[0],coords3[1],coords3[2]);
 					cbs.AddSegmentShapePoint_f(coords3, false, writer2);
 					++total_shapes;
 					//debug_mesh_point(Point2(coords3[0],coords3[1]),1,1,coords3[2]);
@@ -1870,7 +1887,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
-				checker.check(coords3);
+				checker.check(coords3,'E');
 
 				cbs.EndSegment_f(
 						(*ci)->end_junction->index,

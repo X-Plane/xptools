@@ -41,6 +41,13 @@
 #include "XESIO.h"
 #include "ForestTables.h"
 #include "MathUtils.h"
+#include "MapAlgs.h"
+#include "MapTopology.h"
+
+// Minimum bathymetric depth from water surface at any point!
+#define	MIN_DEPTH 10.0f
+
+#define WATER_SURF_DIM 256
 
 DEMPrefs_t	gDemPrefs = { 3, 0.5, 1.0 };
 
@@ -1108,7 +1115,7 @@ void	UpsampleEnvironmentalParams(DEMGeoMap& ioDEMs, ProgressFunc inProg)
  *
  */
 void	DeriveDEMs(
-			const Pmwx& 	inMap,
+			Pmwx&			inMap,
 			DEMGeoMap& 		ioDEMs,
 			AptVector&		ioApts,
 			AptIndex&		ioAptIndex,
@@ -1609,6 +1616,94 @@ else														e = DEM_NO_DATA;
 	ioDEMs[dem_UrbanRadial].swap(urbanRadial);
 	ioDEMs[dem_UrbanTransport].swap(urbanTrans);
 	ioDEMs[dem_ForestType].swap(forests);
+	
+	/************************************************************************************************************************
+	 * WATER AND BATHYMETRY CALC
+	 ************************************************************************************************************************/
+
+	DEMGeo	water_surface(WATER_SURF_DIM,WATER_SURF_DIM);
+	water_surface.mPost = 0;
+	water_surface.copy_geo_from(elevation);
+	water_surface = DEM_NO_DATA;
+
+	map<float, int>	histo[WATER_SURF_DIM][WATER_SURF_DIM];
+	int total[WATER_SURF_DIM][WATER_SURF_DIM] = { 0 };
+	set<Halfedge_handle>	coast_edges;
+	set<Face_handle>	wet_faces;
+
+
+	for(Pmwx::Face_handle f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().IsWater())
+		wet_faces.insert(f);
+
+	FindEdgesForFaceSet<Pmwx>(wet_faces, coast_edges);
+
+	PolyRasterizer<double> raster;
+
+	y = SetupRasterizerForDEM(coast_edges, elevation, raster);
+	int x1, x2;
+	raster.StartScanline(0);
+	
+	while (!raster.DoneScan())
+	{
+		while (raster.GetRange(x1, x2))
+		{
+			for (x = x1; x < x2; ++x)
+			{
+				float e = elevation(x,y);
+				if(e != DEM_NO_DATA)
+				{
+					double lon = elevation.x_to_lon(x);
+					double lat = elevation.y_to_lat(y);
+					int bucket_x = water_surface.lon_to_x(lon);
+					int bucket_y = water_surface.lat_to_y(lat);
+//					debug_mesh_point(Point2(lon,lat),1,1,1);
+					histo[bucket_x][bucket_y][e]++;
+					++total[bucket_x][bucket_y];
+				}
+			}
+		}
+		++y;
+		if (y >= elevation.mHeight) 
+			break;
+		raster.AdvanceScanline(y);
+	}	
+
+	for(y = 0; y < water_surface.mHeight; ++y)
+	for(x = 0; x < water_surface.mWidth; ++x)
+	{		
+		if(total[x][y])
+		{
+//			for(map<float,int>::iterator h = msl_hysto[x][y].begin(); h != msl_hysto[x][y].end(); ++h)
+//				printf("%f: %d\n", h->first, h->second);
+			int want = total[x][y] / 10;
+//			if(wet < (total /2)) want = 0;
+			for(map<float,int>::iterator h = histo[x][y].begin(); h != histo[x][y].end(); ++h)
+			if(h->second > want)
+			{
+				water_surface(x,y) = h->first;
+				break;
+				
+			} else
+				want -= h->second;			
+		}
+		
+	}
+	
+	water_surface.fill_nearest();
+	ioDEMs[dem_WaterSurface] = water_surface;
+	DEMGeo& bath_old(ioDEMs[dem_Bathymetry]);
+	
+	DEMGeo	bath_new(water_surface);
+	for(y = 0; y < bath_new.mHeight; ++y)
+	for(x = 0; x < bath_new.mWidth ; ++x)
+	{
+		bath_new(x,y) = min(bath_new(x,y) - MIN_DEPTH, bath_old.value_linear(bath_new.x_to_lon(x),bath_new.y_to_lat(y)));		
+	}
+	
+	bath_old.swap(bath_new);
+	
 
 }
 
