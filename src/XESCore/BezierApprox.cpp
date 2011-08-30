@@ -28,7 +28,92 @@
 #include "XESConstants.h"
 #include "PlatformUtils.h"
 
+/*
+
+	A few implementation notes:
+	
+	SEQUENCES:
+	
+	To work on point sequences, we introduce the "sequence" concept.  A sequence gives us a series of points with these operators:
+
+		*x			give us the current point.
+		++x			go to the next point.
+		x()			return true if we are at the end of sequence.  When x() then *x is invalid.
+		
+	We can then wrap one sequence inside another using various adaptors.  The advance of sequences over iterators is that we don't need to
+	generate an "end" adapter for an end iterator.
+
+	INDEXING:
+	
+	The main "error" test we use is to find the distance of a point P to a sequence X.  This runs in linear time.  We then find the
+	variance in distance between sequences X and Y by calculating the variance of every one of Y's points P along X.  This is of
+	course N^2, which just sucks.  (But since bezier curves don't "jump" in even, predictable ways, there's not much we can do about this.
+	We could in theory subdivide the curves based on some kind of length-along metric, but this would get expensive.)
+	
+	Since we are going to compare one "master" curve M to many guesses G, we can spatially index the segments on M, and then run points on
+	G into the spatial index M.  This gives us len(G) log(len(M)) which is acceptable.
+	
+	In our case, our spatial index is really stupidly simple: 
+	1. We pick a single axis to index along, based on the larger axis of the AABB of the sequence.
+	2. We break the sequence into sub-sequences that are monotone along that axis.
+	3. We store each sub-sequence in ascending value order.
+	
+	Note that this means that the interior vertices where monotone changes are stored twice - once at the end of one sequence and once at
+	the beginning of the other.
+	
+	Searching within a window is then pretty easily: for each monotone chain, we take the lower bound of our search window along the index
+	axis and then walk forward until we run out the window.  In practice, we will typically only have a few matching segments for reasonably
+	well-aligned beziers.
+	
+	The nice thing about this system is that we can build it using vectors, so we get good local coherency (each monotone chain is contiguous
+	in memory) and low overhead (we store only the actual sorted points).  For our use our chains often have a very small number of points 
+	(e.g. 20-30) so constant-time factors really matter.  Comparison numbers at KSAN (simplify all roads, full optimization):
+	
+	- No index: 83 seconds
+	- CGAL R-trees using cartesian-double: 150 seconds
+	- sorted vector monotone index: 11 seconds
+
+	BEZIER SCRUBBING
+	
+	The fundamental algorithm observation is this: if we are going to preserve the continuous derivative of a piece-wise bezier curve, the 
+	approximation's tangents at the non-removed points can change only in magnitude, not direction (because the next separate piece-wise
+	curve might not change in the same way if direction is up for grabs).  
+	
+	Therefore, given a piece-wise bezier curve, we can attempt to approximate it by rescaling the distance of the first and last control 
+	points along the line from the ends to the control points, while dropping the rest.
+	
+	We can measure the error as the variance of the rasterized approximate curve to the rasterized original.  (Why not the Hausdorff 
+	distance?  I wanted something that captures the net effect of _all_ points; Hausdorff is based on the worst case error - if one part
+	of the curve is bad, we can't "rank" how much better the rest of the curve is doing.)
+	
+	The algorithm thus works as a bottom-up approximator:
+	
+	1. We Create a priority queue of possible merges for every interior point on the curve, queued by error.
+
+	2. We merge the two curves that produce minimum error, and re-prioritize our two neighbors (whose error may now be larger since one half
+	of their merge is the result of our prior merge.
+	
+	3. When we exceed our error bounds or the queue is empty, we're done.
+	
+	Why not something more like Douglas-Peuker?  Well, DP starts with the WORST approximation and adds points back.  The problem with this
+	is that for very long piece-wise curves we're going to have to do a lot of error measurement against the ENTIRE curve up front just to
+	discover that yes, we DO need MOST of the nodes.  Since curve compare is linaer with the number of pieces, consider the effect of this
+	when we have N curves and NO merges will happen.
+	
+	Bottom-up: we do N-1 error measurements, each with 2 curves and stop.  Cost: O(2N-2)
+	DP: we do N-1 vertex inserts.  Each one will try every possible vertex (to find the worst error).  Just to add the first point we
+		will do N(N-1) measurements.  This will then happen again for N/2, N/4, etc.  So we're looking at (N^2-N)logN.
+
+	The reason this is so much worse than regular DP is because we don't have a constant-time error metric.
+	
+*/
+
+// Use spatial indexing?  KEEP THIS ON!  HUGE speed win!
+#define INDEXED 1
+
+// Debugging - steps the UI version through the curve process.
 #define DEBUG_CURVE_FIT_TRIALS 0
+#define DEBUG_CURVE_INDEX 0
 #define DEBUG_CURVE_FIT_SOLUTION 0
 #define DEBUG_MERGE 0
 #define DEBUG_START_END 0
@@ -76,6 +161,176 @@ void visualize_bezier_seq(__Iter first, __Iter last, int r, int g, int b)
 	
 }
 
+#if INDEXED
+
+typedef	pair<list<vector<Point2> >, bool>		PolyLineIndex;
+
+bool is_reverse_x(const Point2& p1, const Point2& p2, const Point2& p3)
+{
+	double dx1 = p2.x() - p1.x();
+	double dx2 = p3.x() - p2.x();
+	if(dx1 > 0.0 && dx2 < 0.0) return true;
+	if(dx1 < 0.0 && dx2 > 0.0) return true;
+	return false;
+}
+
+bool is_reverse_y(const Point2& p1, const Point2& p2, const Point2& p3)
+{
+	double dy1 = p2.y() - p1.y();
+	double dy2 = p3.y() - p2.y();
+	if(dy1 > 0.0 && dy2 < 0.0) return true;
+	if(dy1 < 0.0 && dy2 > 0.0) return true;
+	return false;
+}
+
+template <class __Seq>
+void make_index_seq(__Seq seq, PolyLineIndex& out_index)
+{
+	out_index.first.clear();
+	
+	vector<Point2>	all;
+	DebugAssert(!seq());
+	Bbox2			bbox;
+	while(!seq())
+	{	
+		all.push_back(*seq);
+		bbox += *seq;
+		++seq;
+	}
+	DebugAssert(all.size() > 1);
+	if(bbox.xspan() > bbox.yspan())
+	{
+		// SORT BY X
+		out_index.second = false;
+		int span_start = 0;
+		while(span_start < all.size())
+		{
+			int span_stop = span_start + 1;
+			DebugAssert(span_stop != all.size());
+			++span_stop;
+			while(span_stop < all.size() && !is_reverse_x(all[span_stop-2],all[span_stop-1],all[span_stop])) 
+				++span_stop;
+
+			out_index.first.push_back(vector<Point2>(all.begin()+span_start, all.begin()+span_stop));
+			DebugAssert((span_stop-span_start) > 1);
+			if (span_stop == all.size()) break;
+			span_start = span_stop-1;
+		}
+		for(list<vector<Point2> >::iterator ps = out_index.first.begin(); ps != out_index.first.end(); ++ps)
+		{
+			bool is_rev = false;
+			for(int n = 1; n < ps->size(); ++n)
+			if(ps->at(n-1).x() > ps->at(n).x())
+			{
+				is_rev = true;
+				break;
+			}
+			if(is_rev)
+				reverse(ps->begin(),ps->end());
+		}
+	} 
+	else
+	{
+		// SORT BY Y
+		out_index.second = true;
+		int span_start = 0;
+		while(span_start < all.size())
+		{
+			int span_stop = span_start + 1;
+			DebugAssert(span_stop != all.size());
+			++span_stop;
+			while(span_stop < all.size() && !is_reverse_y(all[span_stop-2],all[span_stop-1],all[span_stop])) 
+				++span_stop;
+
+			out_index.first.push_back(vector<Point2>(all.begin()+span_start, all.begin()+span_stop));
+			DebugAssert((span_stop-span_start) > 1);
+			if (span_stop == all.size()) break;
+			span_start = span_stop-1;
+		}
+		for(list<vector<Point2> >::iterator ps = out_index.first.begin(); ps != out_index.first.end(); ++ps)
+		{
+			bool is_rev = false;
+			for(int n = 1; n < ps->size(); ++n)
+			if(ps->at(n-1).y() > ps->at(n).y())
+			{
+				is_rev = true;
+				break;
+			}
+			if(is_rev)
+				reverse(ps->begin(),ps->end());
+		}
+	}
+	
+}
+
+double squared_distance_pt_seq(PolyLineIndex& iseq, const Point2& p, double max_err)
+{
+	double worst = max_err * 10.0;
+	for(list<vector<Point2> >::iterator ps = iseq.first.begin(); ps != iseq.first.end(); ++ps)
+	{
+		if(iseq.second)
+		{
+			vector<Point2>::iterator start = lower_bound(ps->begin(),ps->end(), Point2(p.y(),p.y()-max_err), lesser_y());
+			if(start != ps->end())
+			{
+				vector<Point2>::iterator prev(start);
+				++start;
+				if(start != ps->end())
+				do
+				{
+					Segment2 seg(*prev, *start);
+					worst = min(worst,seg.squared_distance(p));		
+					if((start->y() - max_err) > p.y())
+						break;
+					prev = start;
+					++start;
+				} while(start != ps->end());
+			}
+		}
+		else
+		{
+			vector<Point2>::iterator start = lower_bound(ps->begin(),ps->end(), Point2(p.x()-max_err,p.y()), lesser_x());			
+			if(start != ps->end())
+			{				
+				vector<Point2>::iterator prev(start);
+				++start;
+				if(start != ps->end())
+				do
+				{
+					Segment2 seg(*prev, *start);
+					worst = min(worst,seg.squared_distance(p));		
+					if((start->x() - max_err) > p.x())
+						break;
+					prev = start;
+					++start;
+				} while(start != ps->end());
+			}
+		}
+	}
+	return worst;
+
+	
+}
+
+template <class __Seq>
+double squared_distance_seq_seq(PolyLineIndex& s2, __Seq s1, double max_err)
+{
+	double t = 0.0;
+	double v = 0.0;
+	while(!s1())
+	{
+		Point2 p = *s1;
+		++s1;
+//		worst = max(worst, squared_distance_pt_seq<__Seq2>(s2, p));
+		v += squared_distance_pt_seq(s2, p, max_err);
+		++t;
+	}
+	return sqrt(v) / t;
+}
+
+
+#else
+
 template <class __Seq>
 double squared_distance_pt_seq(__Seq seq, const Point2& p)
 {
@@ -114,6 +369,8 @@ double squared_distance_seq_seq(__Seq1 s1, __Seq2 s2)
 	return sqrt(v) / t;
 }
 
+
+#endif
 
 template <class __Seq>
 struct bezier_approx_seq {
@@ -233,6 +490,20 @@ struct seq_concat {
 
 typedef list<Point2c>	bez_list;
 
+#if INDEXED
+template <typename T>
+double error_for_approx(PolyLineIndex& index, T s2_begin, T s2_end, double max_err)
+{
+	typedef seq_for_container<T>	TS;
+	typedef bezier_approx_seq<TS>	TAS;
+		
+	TS ts(s2_begin,s2_end);
+	TAS	tas(ts,true);
+
+	return squared_distance_seq_seq(index, tas, max_err);
+}
+#else
+
 template <typename T1, typename T2>
 double error_for_approx(T1 s1_begin, T1 s1_end, T2 s2_begin, T2 s2_end)
 {
@@ -246,34 +517,9 @@ double error_for_approx(T1 s1_begin, T1 s1_end, T2 s2_begin, T2 s2_end)
 	T1AS	t1as(t1s,true);
 	T2AS	t2as(t2s,true);
 
-		
-
-	double err = squared_distance_seq_seq(t1as, t2as);
-	return err;
-
-//	typedef bezier_approx_seq<T1S>	APVIS;
-//	typedef bezier_approx_seq<T2RS> APVRIS;
-//
-//	APVIS apvis(t1s,true);
-//	APVRIS apvris(t2rs,true);
-//
-//	float s = 0.0;
-//	while(!apvis())
-//	{
-//		debug_mesh_point(*apvis,1,1,s - floorf(s));
-//		++apvis;
-//		s += 0.06125;
-//	}
-//	s = 0.0;
-//	while(!apvris())
-//	{
-//		debug_mesh_point(*apvris,1,0,s);
-//		++apvris;
-//		s += 0.06125;
-//	}
-//	
-//	return signed_area_pt_from_seq(my_seq);
+	return squared_distance_seq_seq(t1as, t2as);
 }
+#endif
 
 double best_bezier_approx(
 					list<Point2c>::iterator orig_first,
@@ -283,7 +529,8 @@ double best_bezier_approx(
 					double&			 t2_best,
 					double			 frac_ratio,
 					int				 step_start,
-					int				 step_stop)
+					int				 step_stop,
+					double			max_err)
 {
 	DebugAssert(orig_last != orig_first);
 	list<Point2c>::iterator orig_c1(orig_first); ++orig_c1;
@@ -296,6 +543,40 @@ double best_bezier_approx(
 	DebugAssert(orig_c2->c);
 	list<Point2c>::iterator orig_end(orig_last);
 	++orig_end;
+	
+	#if INDEXED
+	PolyLineIndex	orig_index;
+
+	typedef seq_for_container<list<Point2c>::iterator>	orig_seq_type;
+	typedef bezier_approx_seq<orig_seq_type>			approx_seq_type;
+		
+	make_index_seq<approx_seq_type>(approx_seq_type(orig_seq_type(orig_first,orig_end),true),orig_index);
+	
+	#if DEBUG_CURVE_INDEX
+	
+	if(orig_index.first.size() > 1)
+	{
+		gMeshLines.clear();
+		gMeshPoints.clear();
+		gMeshBeziers.clear();
+		for (list<vector<Point2> >::iterator ps = orig_index.first.begin(); ps != orig_index.first.end(); ++ps)
+		{
+			for(int n = 1; n < ps->size(); ++n)
+			{
+				debug_mesh_point(ps->at(n),0.2,0.2,0.2);		
+				debug_mesh_line(ps->at(n-1),ps->at(n),
+					orig_index.second ? 1.0 : 0.0,1,interp(0,0,ps->size()-1,1,n-1),
+					orig_index.second ? 1.0 : 0.0,1,interp(0,0,ps->size()-1,1,n  ));
+			}	
+			debug_mesh_point(ps->front(),1,1,1);
+			debug_mesh_point(ps->back(),1,1,1);
+		}
+		DoUserAlert("Index");
+	}
+	#endif
+	
+	
+	#endif
 		
 	DebugAssert(*orig_first != *orig_c1);	
 	DebugAssert(*orig_last != *orig_c2);	
@@ -325,7 +606,11 @@ double best_bezier_approx(
 		this_approx[2] = Point2c(*orig_last + c2v * t2,true);
 		this_approx[3] = *orig_last;		
 
-		double my_err = fabs(error_for_approx<list<Point2c>::iterator,Point2c*>(orig_first,orig_end, this_approx,this_approx+4));
+		#if INDEXED
+		double my_err = fabs(error_for_approx<Point2c*>(orig_index, this_approx,this_approx+4, max_err));
+		#else
+		double my_err = fabs(error_for_approx<list<Point2c>::iterator,Point2c*>(orig_first, orig_end, this_approx,this_approx+4));
+		#endif
 
 		#if DEBUG_CURVE_FIT_TRIALS
 		gMeshBeziers.clear();
@@ -394,7 +679,7 @@ struct	possible_approx_t {
 	possible_approx_q::iterator	self;
 };
 
-void setup_approx(approx_t * l, approx_t * r, possible_approx_t * who, possible_approx_q * q)
+void setup_approx(approx_t * l, approx_t * r, possible_approx_t * who, possible_approx_q * q, double err_lim)
 {
 	DebugAssert(l->next == r);
 	DebugAssert(r->prev == l);
@@ -410,7 +695,7 @@ void setup_approx(approx_t * l, approx_t * r, possible_approx_t * who, possible_
 	who->approx[3] = r->approx[3];
 	
 	who->err = best_bezier_approx(l->orig_first, r->orig_last, who->approx, 
-						t1, t2, 2.0, -1, 3);
+						t1, t2, 2.0, -1, 3, err_lim);
 
 	// We have to RESET the approx - our big win is that our t1/t2 are now LOOSELY calibrated.
 	// So the bezier approx must start over or we double-apply the approx.
@@ -420,7 +705,7 @@ void setup_approx(approx_t * l, approx_t * r, possible_approx_t * who, possible_
 	who->approx[3] = r->approx[3];
 
 	who->err = best_bezier_approx(l->orig_first, r->orig_last, who->approx, 
-						t1, t2, 1.22, -2, 2);
+						t1, t2, 1.22, -2, 2, err_lim);
 
 	if(q)
 		who->self = q->insert(possible_approx_q::value_type(who->err, who));
@@ -429,7 +714,7 @@ void setup_approx(approx_t * l, approx_t * r, possible_approx_t * who, possible_
 
 // Apply the merge described by "who" - when done, the right edge (and who)
 // are gone, and the new edge is returned.
-approx_t * merge_approx(possible_approx_t * who, possible_approx_q * q)
+approx_t * merge_approx(possible_approx_t * who, possible_approx_q * q, double err_lim)
 {
 	approx_t * l = who->left;
 	approx_t * r = who->right;
@@ -460,7 +745,7 @@ approx_t * merge_approx(possible_approx_t * who, possible_approx_q * q)
 		DebugAssert(l->prev);
 		if(q && l->merge_left->self != q->end())
 			q->erase(l->merge_left->self);		
-		setup_approx(l->prev, l, l->merge_left, q);
+		setup_approx(l->prev, l, l->merge_left, q, err_lim);
 			
 	}
 	if(l->merge_right)
@@ -468,7 +753,7 @@ approx_t * merge_approx(possible_approx_t * who, possible_approx_q * q)
 		DebugAssert(l->next);
 		if(q && l->merge_right->self != q->end())
 			q->erase(l->merge_right->self);		
-		setup_approx(l, l->next, l->merge_right, q);
+		setup_approx(l, l->next, l->merge_right, q, err_lim);
 	}
 	
 	#if DEBUG_MERGE
@@ -488,7 +773,8 @@ void bezier_multi_simplify(
 					list<Point2c>::iterator	first,
 					list<Point2c>::iterator	last,
 					list<Point2c>&			simplified,
-					double					max_err)
+					double					max_err,
+					double					lim_err)
 {
 	#if DEBUG_START_END
 	gMeshBeziers.clear();
@@ -549,7 +835,7 @@ void bezier_multi_simplify(
 	for(seg = orig; seg->next; seg = seg->next)
 	{
 		possible_approx_t * app = new possible_approx_t;
-		setup_approx(seg, seg->next, app, &q);		
+		setup_approx(seg, seg->next, app, &q, lim_err);		
 	}
 	
 	/* Step 3 - run the Q to do the actual merges. */
@@ -559,7 +845,7 @@ void bezier_multi_simplify(
 			break;
 
 		possible_approx_t * who = q.begin()->second;
-		merge_approx(who, &q);						
+		merge_approx(who, &q, lim_err);						
 	}
 	
 	/* Step 4 - output the final approxiamte sequence! */
@@ -592,7 +878,8 @@ void bezier_multi_simplify(
 
 void bezier_multi_simplify_straight_ok(
 					list<Point2c>&		seq,
-					double				max_err)
+					double				max_err,
+					double				lim_err)
 {
 	list<Point2c>::iterator start(seq.begin()), stop, last(seq.end());
 	--last;
@@ -621,7 +908,7 @@ void bezier_multi_simplify_straight_ok(
 			if(curves > 1)
 			{
 				list<Point2c>	better;
-				bezier_multi_simplify(start,stop,better,max_err);
+				bezier_multi_simplify(start,stop,better,max_err, lim_err);
 				
 				if(ctr >= better.size())				// old has to be SMALLER since it isn't counting its end node!
 				{
