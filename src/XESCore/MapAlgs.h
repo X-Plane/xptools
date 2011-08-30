@@ -193,6 +193,10 @@ int RemoveIslands(Pmwx& io_map, double max_area);
 int KillWetAntennaRoads(Pmwx& io_map);
 int LandFillStrandedRoads(Pmwx& io_map, double dist_lo, double dist_hi);
 
+int KillSliverWater(Pmwx& pmwx, double metric, ProgressFunc func);
+int KillSlopedWater(Pmwx& pmwx, DEMGeo& dem, double zlimit, ProgressFunc func);
+
+
 /************************************************************************************************
  * MAP ANALYSIS AND RASTERIZATION/ANALYSIS
  ************************************************************************************************/

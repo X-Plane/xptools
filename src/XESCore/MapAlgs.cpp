@@ -2394,6 +2394,101 @@ int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func)
 	return ret;
 }
 
+int KillSliverWater(Pmwx& pmwx, double metric, ProgressFunc func)
+{
+	PROGRESS_START(func, 0, 1, "Deslivering...")
+	int ctr = 0, tot = pmwx.number_of_faces();
+	int chk = max(1,tot/100);
+	int ret = 0;
+	
+	int fast = 0;
+	int sliver = 0;
+	int total = 0;
+	
+	set<Pmwx::Face_handle> bad;
+
+	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
+	if(!f->is_unbounded())
+	if(f->data().IsWater())
+	#if OPENGL_MAP
+	if(gFaceSelection.empty() || gFaceSelection.count(f))
+	#endif
+	{
+		PROGRESS_CHECK(func, 0, 1, "Deslivering...", ctr, tot,chk);
+		Polygon_with_holes_2 pwh;
+		Bbox_2 bbox;
+		bool maybe_sliver = !IsFaceNotSliverFast(f, metric * 3.0);
+		bool is_sliver = false;
+		
+		if(maybe_sliver)
+		{
+			PolygonFromFace(f, pwh, NULL, NULL, &bbox);
+			is_sliver = IsPolygonSliver(pwh, metric, bbox);
+		}
+		++total;
+		if(is_sliver) ++sliver;
+		if(!maybe_sliver) ++fast;
+		if(is_sliver)
+		{
+			f->data().mTerrainType = NO_VALUE;
+		}
+	}
+	PROGRESS_DONE(func, 0, 1, "Deslivering...")
+	printf("Fast checks: %d, slivers: %d, fixed: %d, total: %d\n", fast, sliver, ret, total);
+	
+	return ret;
+}
+
+int KillSlopedWater(Pmwx& pmwx, DEMGeo& dem, double zlimit, ProgressFunc func)
+{
+	PROGRESS_START(func, 0, 1, "Deslivering...")
+	int ctr = 0, tot = pmwx.number_of_faces();
+	int chk = max(1,tot/100);
+	int ret = 0;
+	
+	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
+	if(!f->is_unbounded())
+	if(f->data().IsWater())
+	#if OPENGL_MAP
+	if(gFaceSelection.empty() || gFaceSelection.count(f))
+	#endif
+	{
+		PROGRESS_CHECK(func, 0, 1, "Deslivering...", ctr, tot,chk);
+		Bbox_2	box;
+		Polygon_2 poly;
+		float zmin, zmax;
+		Pmwx::Ccb_halfedge_const_circulator stop, circ;
+		circ = stop = f->outer_ccb();
+		zmin = zmax = dem.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
+		box = circ->source()->point().bbox();
+		do {
+			float e = dem.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
+			zmin = min(zmin, e);
+			zmax = max(zmax, e);
+			box += circ->source()->point().bbox();
+		} while (stop != ++circ);
+
+
+		double DEG_TO_NM_LON = DEG_TO_NM_LAT * cos(CGAL::to_double(box.ymin()) * DEG_TO_RAD);
+		double rhs = (pow((box.xmax()-box.xmin())*DEG_TO_NM_LON*NM_TO_MTR,2) + pow((box.ymax()-box.ymin())*DEG_TO_NM_LAT*NM_TO_MTR,2));
+		double lhs = pow((double)(zmax-zmin),2);
+		#if OPENGL_MAP
+		if(!gFaceSelection.empty())
+			printf("Z limit: %f (Z^2 = %f, L^2 = %f\n", rhs / lhs, lhs, rhs);
+		#endif
+//		fprintf(stderr," %9.0lf,%9.0lf ", rhs, lhs);
+		if (zlimit*lhs > rhs) 
+		{
+			f->data().mTerrainType = NO_VALUE;
+			++ret;
+		}
+	}
+	PROGRESS_DONE(func, 0, 1, "Deslivering...")
+	
+	return ret;
+	
+}
+
 bool	convex_quad(const Point_2& p1, const Point_2& p2, const Point_2& p3, const Point_2& p4)
 {
 	if(CGAL::right_turn(p1,p2,p3))
