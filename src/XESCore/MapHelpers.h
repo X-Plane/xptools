@@ -30,6 +30,7 @@
 #include "point_index.h"
 #include "ProgressUtils.h"
 
+
 #define DEBUG_SIMPLIFY 0
 
 /************************************************************************************************************************************************
@@ -431,14 +432,16 @@ bool			can_possibly_merge(
 							Arr&							p,
 							typename Arr::Halfedge_handle	he)
 {
-	if(he->target()->degree() != 2)	return false;
+	if(he->target()->degree() != 2)	return false;		// Complex junction, not shape point? No merge!
 	
 	typename Arr::Vertex_handle v1 = he->source();
 	typename Arr::Vertex_handle v2 = he->next()->target();
 
-	if(v1->point() == v2->point()) return false;
-	if(he->direction() != he->next()->direction())
-		return false;
+	if(v1->point() == v2->point()) return false;		// Same side of antenna?  no merge!
+	
+	// Ben says: by being very careful about the order of merge we can work around this limitation.
+//	if(he->direction() != he->next()->direction())		// This is a CGAL bug/sadness: can't change the monotone direction of the underlying curve
+//		return false;									// because it is cached. :-(
 
 	typename Arr::Halfedge_around_vertex_circulator circ, stop;
 	circ = stop = v1->incident_halfedges();
@@ -684,97 +687,132 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 		DebugAssert(i1->second.size() >= 2);
 
 		if(total_error_ok(v, h1, h2, i1->second, i2->second, max_err2))
-		if(!tr.is_locked(v))
 		{
-			if(can_possibly_merge(io_block,h1))
+			if(!tr.is_locked(v))
 			{
-//				if(!CGAL::collinear(h1->source()->point(),h1->target()->point(),h1	->next()->target()->point()))
-//				{
-//					debug_mesh_point(cgal2ben(h1->target()->point()),1,1,0);
-//					--ctr;
-//				}
-				if(!squatters_stopping_merge(io_block,h1,vertex_index))
+				if(can_possibly_merge(io_block,h1))
 				{
-					list<Point2>	ml;
-					if(i1->second.front() == i2->second.front())
+	//				if(!CGAL::collinear(h1->source()->point(),h1->target()->point(),h1	->next()->target()->point()))
+	//				{
+	//					debug_mesh_point(cgal2ben(h1->target()->point()),1,1,0);
+	//					--ctr;
+	//				}
+					if(!squatters_stopping_merge(io_block,h1,vertex_index))
 					{
-						ml.swap(i1->second);
-						ml.reverse();
-						ml.pop_back();
-						ml.splice(ml.end(), i2->second);
-					}
-					else if(i1->second.front() == i2->second.back())
-					{
-						ml.swap(i2->second);
-						ml.pop_back();
-						ml.splice(ml.end(),i1->second);
-					}
-					else if(i1->second.back() == i2->second.front())
-					{
-						ml.swap(i1->second);
-						ml.pop_back();
-						ml.splice(ml.end(),i2->second);
-					}
-					else if(i1->second.back() == i2->second.back())
-					{
-						ml.swap(i1->second);
-						ml.pop_back();
-						i2->second.reverse();
-						ml.splice(ml.end(), i2->second);
-					}
-					else
-					{
-						DebugAssert(!"NO COMMON END VERTEX FOUND.");
-					}
-					DebugAssert(i1->second.empty());
-					DebugAssert(i2->second.empty());
-					err_checks.erase(i1);
-					err_checks.erase(i2);
-					
-					q.erase(h1->source());
-					q.erase(h2->source());
-					
-					tr.remove(h1->target());
-
-					vertex_index.remove(h1->target()->point());
-					
-					typename Arr::Halfedge_handle next = h1->next();
-					typename Arr::Halfedge_handle remain = io_block.merge_edge(h1,next,Curve_2(Segment_2(h1->source()->point(),next->target()->point())));
-					typename Arr::Halfedge_handle rk = he_get_same_direction(remain);
-					DebugAssert(err_checks.count(rk) == 0);
-					err_checks.insert(typename Error_map::value_type(rk, ml));
-					
-					DebugAssert(q.count(remain->source()) == 0);
-					DebugAssert(q.count(remain->target()) == 0);
-					if(remain->source()->degree() == 2)
-					if(!tr.is_locked(remain->source()))
-					{
-						typename Arr::Halfedge_handle ne1, ne2;
-						double e = simple_vertex_error(remain->source(), &ne1, &ne2);
-						if(e <= max_err)
+						list<Point2>	ml;
+						if(i1->second.front() == i2->second.front())
 						{
-							// Why would this be neeed?  Because the max vertex error may have been too great before we moved
-							// the side before but not now.  This is partly becuase simple vertex error is the wrong metric, but
-							// we can fine tune this later.
-							queue_incident_edges_if_needed(ne1,ne2,err_checks);
-							q.insert(e,remain->source());
-	//						printf(" Q prev 0x%08x\n",&*remain->source());
+							ml.swap(i1->second);
+							ml.reverse();
+							ml.pop_back();
+							ml.splice(ml.end(), i2->second);
 						}
-					}
-					if(remain->target()->degree() == 2)
-					if(!tr.is_locked(remain->target()))
-					{
-						typename Arr::Halfedge_handle ne1, ne2;
-						double e = simple_vertex_error(remain->target(), &ne1, &ne2);
-						if(e <= max_err)
+						else if(i1->second.front() == i2->second.back())
 						{
-							queue_incident_edges_if_needed(ne1,ne2,err_checks);
-							q.insert(e,remain->target());
-	//						printf(" Q targ 0x%08x\n",&*remain->target());
+							ml.swap(i2->second);
+							ml.pop_back();
+							ml.splice(ml.end(),i1->second);
+						}
+						else if(i1->second.back() == i2->second.front())
+						{
+							ml.swap(i1->second);
+							ml.pop_back();
+							ml.splice(ml.end(),i2->second);
+						}
+						else if(i1->second.back() == i2->second.back())
+						{
+							ml.swap(i1->second);
+							ml.pop_back();
+							i2->second.reverse();
+							ml.splice(ml.end(), i2->second);
+						}
+						else
+						{
+							DebugAssert(!"NO COMMON END VERTEX FOUND.");
+						}
+						DebugAssert(i1->second.empty());
+						DebugAssert(i2->second.empty());
+						err_checks.erase(i1);
+						err_checks.erase(i2);
+						
+						q.erase(h1->source());
+						q.erase(h2->source());
+						
+						tr.remove(h1->target());
+
+						vertex_index.remove(h1->target()->point());
+						
+						// CGAL caches the x directions of half-edges. (Since all curves are
+						// x-monotone the direction must be left or right.)  The problem is that
+						// the x-direction of the merged edges might not match the x-direction of
+						// the edge CGAL keeps.  So we have to carefully check what we're doing.
+						
+						// CGAL, as of this writing, will preserve the first of two half-edges if
+						// you pass them to merge like this:
+						//
+						//   --h1-->o--h2-->
+						//
+						// Now there are two cases: if h1 and h2 have the SAME x direction, their
+						// sum will have the same x direction.  That is, the sum of two x+ or x-
+						// vectors is x+ or x-.
+						//
+						// If the two halfedges go in opposite directions, then the curve must match
+						// one of them.
+						// Case 1: the curve matches h1 - we just pass h1->h2.
+						// Case 2: the curve matches h2.  Therefore the curve's opposite will 
+						// match h2's twin.  we pass the curve's opposite and h2'->h1'.
+						
+						typename Arr::Halfedge_handle next = h1->next();
+						Curve_2 nc(Segment_2(h1->source()->point(),next->target()->point()));
+
+						typename Arr::Halfedge_handle remain;						
+						if(nc.is_directed_right() == (h1->direction() == CGAL::ARR_LEFT_TO_RIGHT))
+						{
+							remain = io_block.merge_edge(h1,next,nc);
+						}
+						else 
+						{
+							Curve_2 nco(Segment_2(next->target()->point(), h1->source()->point()));
+							DebugAssert(nco.is_directed_right() == (next->twin()->direction() == CGAL::ARR_LEFT_TO_RIGHT));
+							remain = io_block.merge_edge(next->twin(),h1->twin(),nc)->twin();
+						}
+					
+						typename Arr::Halfedge_handle rk = he_get_same_direction(remain);
+						DebugAssert(err_checks.count(rk) == 0);
+						err_checks.insert(typename Error_map::value_type(rk, ml));
+						
+						DebugAssert(q.count(remain->source()) == 0);
+						DebugAssert(q.count(remain->target()) == 0);
+						if(remain->source()->degree() == 2)
+						if(!tr.is_locked(remain->source()))
+						{
+							typename Arr::Halfedge_handle ne1, ne2;
+							double e = simple_vertex_error(remain->source(), &ne1, &ne2);
+							if(e <= max_err)
+							{
+								// Why would this be neeed?  Because the max vertex error may have been too great before we moved
+								// the side before but not now.  This is partly becuase simple vertex error is the wrong metric, but
+								// we can fine tune this later.
+								queue_incident_edges_if_needed(ne1,ne2,err_checks);
+								q.insert(e,remain->source());
+		//						printf(" Q prev 0x%08x\n",&*remain->source());
+							}
+						}
+						if(remain->target()->degree() == 2)
+						if(!tr.is_locked(remain->target()))
+						{
+							typename Arr::Halfedge_handle ne1, ne2;
+							double e = simple_vertex_error(remain->target(), &ne1, &ne2);
+							if(e <= max_err)
+							{
+								queue_incident_edges_if_needed(ne1,ne2,err_checks);
+								q.insert(e,remain->target());
+		//						printf(" Q targ 0x%08x\n",&*remain->target());
+							}
 						}
 					}
 				}
-			}
+			} 
 		}
 	}
 	#if DEV && DEBUG_SIMPLIFY

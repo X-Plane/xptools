@@ -282,6 +282,8 @@ public:
 						return false; }
 						
 	inline void trim(void) { ::trim(mSegments); }
+	
+	inline bool operator==(const GIS_halfedge_data& rhs) const { return mTransition == rhs.mTransition && mSegments == rhs.mSegments && mParams == rhs.mParams && mInset == rhs.mInset; }
 						
 #if OPENGL_MAP
 	unsigned char				mGLColor[3];

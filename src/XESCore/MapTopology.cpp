@@ -215,15 +215,16 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 
 // TODO: it would be nice to pass in a functor to evaluate edges.
 
-	PROGRESS_START(func, 0, 1, "Finding unneeded half-edges...")
+	PROGRESS_START(func, 0, 2, "Finding unneeded half-edges...")
 	int ctr = 0;
 	int dead = 0;
 	int tot = ioMap.number_of_halfedges();
+	int check = tot / 100;
 
 	for (Pmwx::Edge_iterator he = ioMap.edges_begin();
 		he != ioMap.edges_end(); ctr += 2)
 	{
-		PROGRESS_CHECK(func,0,1,"Finding unneeded half-edges...",ctr,tot,1000);
+		PROGRESS_CHECK(func,0,2,"Finding unneeded half-edges...",ctr,tot,check);
 		Pmwx::Halfedge_handle h = he;
 
 		bool	iWet = h->face()->data().IsWater();
@@ -244,13 +245,39 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 		{
 			Halfedge_handle k = he;
 			++he;
+	
 			ioMap.remove_edge(k);
 			dead += 2;
 		}
 		else
 			++he;
 	}
-	PROGRESS_DONE(func, 0, 1, "Finding unneeded half-edges...");
+	PROGRESS_DONE(func, 0, 2, "Finding unneeded half-edges...");
+
+	ctr = 0;
+	tot = ioMap.number_of_vertices();
+	check = tot / 100;
+	PROGRESS_START(func,1,2, "Eliminating cuts in straight segments...");
+	for(Pmwx::Vertex_iterator v = ioMap.vertices_begin(); v != ioMap.vertices_end(); ++ctr)
+	{
+		Pmwx::Vertex_handle k(v);
+		++v;
+		PROGRESS_CHECK(func,1,2, "Eliminating cuts in straight segments...",ctr,tot,check);		
+		if(k->degree() == 2)
+		{
+			Halfedge_handle e1 = k->incident_halfedges();
+			Halfedge_handle e2 = e1->next();
+			DebugAssert(e1->target() == k);
+			DebugAssert(e2->source() == k);
+			if(e1->data() == e2->data() && CGAL::collinear(e1->source()->point(),e1->target()->point(),e2->target()->point()))
+			{
+				Curve_2	nc(Segment_2(e1->source()->point(),e2->target()->point()));
+				ioMap.merge_edge(e1,e2,nc);
+				++dead;			
+			}	
+		}
+	}
+	PROGRESS_DONE(func,1,2, "Eliminating cuts in straight segments...");
 
 	return dead;
 }
