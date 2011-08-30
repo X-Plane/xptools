@@ -26,18 +26,42 @@
 #include "MapDefs.h"
 #include "RF_Selection.h"
 #include "ProgressUtils.h"
+#include "RTree2.h"
 
 class	GUI_GraphState;
 void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc);
 void	RecalcOGLColors(Pmwx&					ioMap, ProgressFunc inFunc);
 
+
+struct PmwxIndex_t {
+	PmwxIndex_t() { }
+	typedef	RTree2<Face_handle,16>		FaceTree;
+	typedef	RTree2<Halfedge_handle,16>	HalfedgeTree;
+	typedef RTree2<Vertex_handle,16>	VertexTree;
+
+	FaceTree		faces;
+	HalfedgeTree 	halfedges;
+	VertexTree		vertices;
+
+	void	IndexPmwx(Pmwx& pmwx, PmwxIndex_t& index);
+
+private:
+	PmwxIndex_t(const PmwxIndex_t&);
+	PmwxIndex_t& operator=(const PmwxIndex_t&);
+};
+
+void	IndexPmwx(Pmwx& pmwx, PmwxIndex_t& index);
+
+	
+
 void	DrawMapBucketed(
 				GUI_GraphState *				inState,
 				Pmwx&	 						inMap,
+				PmwxIndex_t&					inIndex,
 				double							mapWest,
 				double							mapSouth,
 				double							mapEast,
-				double							mapNorth,
+				double							mapNorth,				
 //				double							screenLeft,
 //				double							screenBottom,
 //				double							screenRight,
@@ -48,16 +72,14 @@ void	DrawMapBucketed(
 				const set<PointFeatureSelection>&	pointFeatureSel);
 
 
+void		FindFaceTouchesPt(Pmwx& inMap, PmwxIndex_t& index, const Point2&, vector<Face_handle>& outIDs);									// Fully checks for pt containment
+void		FindFaceTouchesRectFast(Pmwx& inMap, PmwxIndex_t& index, const Point2&, const Point2&, vector<Face_handle>& outIDs);				// Intersects with face bbox, not face
+void		FindFaceFullyInRect(Pmwx& inMap, PmwxIndex_t& index, const Point2&, const Point2&, vector<Face_handle>& outIDs);					// Full containment
 
-void		FindFaceTouchesPt(Pmwx& inMap, const Point2&, vector<Face_handle>& outIDs);									// Fully checks for pt containment
-void		FindFaceTouchesRectFast(Pmwx& inMap, const Point2&, const Point2&, vector<Face_handle>& outIDs);				// Intersects with face bbox, not face
-void		FindFaceFullyInRect(Pmwx& inMap, const Point2&, const Point2&, vector<Face_handle>& outIDs);					// Full containment
+void		FindHalfedgeTouchesRectFast(Pmwx& inMap, PmwxIndex_t& index, const Point2&, const Point2&, vector<Halfedge_handle>& outIDs);		// Intersects with half-edge bbox, not half-edge
+void		FindHalfedgeFullyInRect(Pmwx& inMap, PmwxIndex_t& index, const Point2&, const Point2&, vector<Halfedge_handle>& outIDs);			// Full containment
 
-void		FindHalfedgeTouchesRectFast(Pmwx& inMap, const Point2&, const Point2&, vector<Halfedge_handle>& outIDs);		// Intersects with half-edge bbox, not half-edge
-void		FindHalfedgeFullyInRect(Pmwx& inMap, const Point2&, const Point2&, vector<Halfedge_handle>& outIDs);			// Full containment
-
-void		FindVerticesTouchesPt(Pmwx& inMap, const Point2&, vector<Vertex_handle>& outIDs);								// Perfect equalty.
-void		FindVerticesTouchesRect(Pmwx& inMap, const Point2&, const Point2&, vector<Vertex_handle>& outIDs);				// Full containment (any containment is full for pts)
-
+void		FindVerticesTouchesPt(Pmwx& inMap, PmwxIndex_t& index, const Point2&, vector<Vertex_handle>& outIDs);								// Perfect equalty.
+void		FindVerticesTouchesRect(Pmwx& inMap, PmwxIndex_t& index, const Point2&, const Point2&, vector<Vertex_handle>& outIDs);				// Full containment (any containment is full for pts)
 
 #endif

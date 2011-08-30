@@ -46,11 +46,66 @@
 #define DRAW_VERTICES 1
 #define DRAW_FOOTPRINTS 1
 
+void	IndexPmwx(Pmwx& pmwx, PmwxIndex_t& index)
+{
+	index.faces.clear();
+	vector<pair<Bbox2, Face_handle> >	faces;
+	faces.reserve(pmwx.number_of_faces());	
+	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f)
+	if(!f->is_unbounded())
+	{
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		circ = stop = f->outer_ccb();
+		Bbox2	bbox(cgal2ben(circ->source()->point()));
+		do
+		{
+			bbox += cgal2ben(circ->source()->point());
+		} while(++circ != stop);
+
+		faces.push_back(pair<Bbox2,Face_handle>(bbox, f));
+	}	
+	index.faces.insert(faces.begin(),faces.end());
+	faces.clear();
+	trim(faces);
+	
+	index.halfedges.clear();
+	vector<pair<Bbox2, Halfedge_handle> >	halfedges;
+	halfedges.reserve(pmwx.number_of_edges());	
+	for(Pmwx::Edge_iterator e = pmwx.edges_begin(); e != pmwx.edges_end(); ++e)
+	{
+		Bbox2	bbox(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()));
+		halfedges.push_back(pair<Bbox2,Halfedge_handle>(bbox, e));
+	}	
+	index.halfedges.insert(halfedges.begin(),halfedges.end());	
+	halfedges.clear();
+	trim(halfedges);
+	
+	index.vertices.clear();
+	vector<pair<Bbox2, Vertex_handle> > vertices;
+	vertices.reserve(pmwx.number_of_vertices());	
+	for(Pmwx::Vertex_iterator v = pmwx.vertices_begin(); v != pmwx.vertices_end(); ++v)
+	{
+		Bbox2	bbox(cgal2ben(v->point()));
+		
+		vertices.push_back(pair<Bbox2,Vertex_handle>(bbox, v));
+	}	
+	index.vertices.insert(vertices.begin(),vertices.end());	
+	vertices.clear();
+	trim(vertices);
+	
+}
+
+
+
+
 #if APL || LIN
 #define STDCALL_MACRO
 #elif IBM
 #define STDCALL_MACRO __stdcall
 #endif
+
+
+
 
 vector<const float*> *	gAccum;
 int						gMode;
@@ -515,6 +570,7 @@ void	FaceToScaledPoly(Pmwx::Face_const_handle	f, Polygon2& p, vector<Polygon2>& 
 void	DrawMapBucketed(
 				GUI_GraphState *state,
 				Pmwx&			inMap,
+				PmwxIndex_t&	inIndex,
 				double			mapWest,
 				double			mapSouth,
 				double			mapEast,
@@ -550,13 +606,22 @@ void	DrawMapBucketed(
 //	double	screenWidth = screenRight - screenLeft;
 //	double	screenHeight = screenTop - screenBottom;
 
-	vector<Pmwx::Face_handle>		faces;
-	vector<Pmwx::Halfedge_handle>	halfedges;
-	vector<Pmwx::Vertex_handle>		vertices;
-	FindFaceTouchesRectFast(inMap,Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), faces);
-	FindHalfedgeTouchesRectFast(inMap,Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), halfedges);
-	FindVerticesTouchesRect(inMap,Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), vertices);
+	vector<PmwxIndex_t::FaceTree::item_type>		faces;
+	vector<PmwxIndex_t::HalfedgeTree::item_type>	halfedges;
+	vector<PmwxIndex_t::VertexTree::item_type>		vertices;
+//	FindFaceTouchesRectFast(inMap,Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), faces);
+//	FindHalfedgeTouchesRectFast(inMap,Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), halfedges);
+//	FindVerticesTouchesRect(inMap,Point2(mapWest, mapSouth), Point2(mapEast, mapNorth), vertices);
 
+	Bbox2	box(Point2(mapWest,mapSouth),Point2(mapEast,mapNorth));
+
+	faces.reserve(inMap.number_of_faces());
+	inIndex.faces.query<back_insert_iterator<vector<PmwxIndex_t::FaceTree::item_type> > > (box,back_inserter(faces));
+	halfedges.reserve(inMap.number_of_edges());
+	inIndex.halfedges.query(box, back_inserter(halfedges));
+	vertices.reserve(inMap.number_of_vertices());
+	inIndex.vertices.query(box, back_inserter(vertices));
+	
 //	for (Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f) faces.push_back(f);
 //	for (Pmwx::Halfedge_iterator e = inMap.halfedges_begin(); e != inMap.halfedges_end(); ++e) halfedges.push_back(e);
 //	for (Pmwx::Vertex_iterator v = inMap.vertices_begin(); v != inMap.vertices_end(); ++v) vertices.push_back(v);
@@ -575,9 +640,9 @@ void	DrawMapBucketed(
 	glDisable(GL_CULL_FACE);
 	glBegin(GL_TRIANGLES);
 
-	for (vector<Pmwx::Face_handle>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
+	for (vector<PmwxIndex_t::FaceTree::item_type>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
 	{
-		Pmwx::Face_handle f = *fi;
+		Pmwx::Face_handle f = fi->second;
 		if (!f->is_unbounded())
 		{
 			bool	sel = faceSel.count(f) > 0;
@@ -605,9 +670,10 @@ void	DrawMapBucketed(
 #if DRAW_EDGES
 	glBegin(GL_LINES);
 	int	width = 1;
-	for (vector<Pmwx::Halfedge_handle>::iterator he = halfedges.begin(); he != halfedges.end(); ++he)
+	for (vector<PmwxIndex_t::HalfedgeTree::item_type>::iterator he = halfedges.begin(); he != halfedges.end(); ++he)
+	for(int n = 0; n < 2; ++n)
 	{
-		Pmwx::Halfedge_handle e = *he;
+		Pmwx::Halfedge_handle e = n ? he->second->twin() : he->second;
 		{
 			glColor3ubv(e->data().mGLColor);
 			int wantWidth = (edgeSel.find(e) != edgeSel.end() || edgeSel.find(e->twin()) != edgeSel.end()) ? 2 : 1;
@@ -633,9 +699,9 @@ void	DrawMapBucketed(
 	 * DRAW POLYGON AND POINT OBJECTS INSIDE FACES
 	 ******************************************************************************************/
 #if DRAW_FEATURES
-	for (vector<Pmwx::Face_handle>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
+	for (vector<PmwxIndex_t::FaceTree::item_type>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
 	{
-		Pmwx::Face_handle f = *fi;
+		Pmwx::Face_handle f = fi->second;
 		if (!f->is_unbounded())
 		{
 			bool	draw = faceSel.count(f);
@@ -668,47 +734,47 @@ void	DrawMapBucketed(
 		glPointSize(3);
 		glColor3f(1.0, 1.0, 0.0);
 		glBegin(GL_POINTS);
-		for (vector<Pmwx::Vertex_handle>::iterator v = vertices.begin(); v != vertices.end(); ++v)
+		for (vector<PmwxIndex_t::VertexTree::item_type>::iterator v = vertices.begin(); v != vertices.end(); ++v)
 		{
-			if (vertexSel.find(*v) == vertexSel.end())
+			if (vertexSel.find(v->second) == vertexSel.end())
 			{
-				if((*v)->data().mNeighborBurned)
+				if(v->second->data().mNeighborBurned)
 					glColor3f(1,0,0);
-				else if((*v)->data().mNeighborNotBurned)
+				else if(v->second->data().mNeighborNotBurned)
 					glColor3f(1,1,0);
 				else
 					continue;
-				glVertex2fv((*v)->data().mGL);				
+				glVertex2fv(v->second->data().mGL);				
 				continue;
 			}
 
-//			double	x1 = CGAL::to_double((*v)->point().x());
-//			double	y1 = CGAL::to_double((*v)->point().y());
+//			double	x1 = CGAL::to_double(v->second->point().x());
+//			double	y1 = CGAL::to_double(v->second->point().y());
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
-			glVertex2fv((*v)->data().mGL);
+			glVertex2fv(v->second->data().mGL);
 			
-			if(!(*v)->is_isolated())
+			if(!v->second->is_isolated())
 			{
 				Pmwx::Halfedge_around_vertex_circulator circ,stop;
 				GISNetworkSegmentVector::iterator r;
-				circ=stop=(*v)->incident_halfedges();
+				circ=stop=v->second->incident_halfedges();
 				char str[25];
 				do {
 					for(r=circ->data().mSegments.begin(); r != circ->data().mSegments.end(); ++r)
 					{
 						sprintf(str,"%d",(int) r->mTargetHeight);
 						ACCUM_LABEL(
-							(*v)->data().mGL[0] + 0.25 * (circ->source()->data().mGL[0] - circ->target()->data().mGL[0]),
-							(*v)->data().mGL[1] + 0.25 * (circ->source()->data().mGL[1] - circ->target()->data().mGL[1]),
+							v->second->data().mGL[0] + 0.25 * (circ->source()->data().mGL[0] - circ->target()->data().mGL[0]),
+							v->second->data().mGL[1] + 0.25 * (circ->source()->data().mGL[1] - circ->target()->data().mGL[1]),
 							str);
 					}
 					for(r=circ->twin()->data().mSegments.begin(); r != circ->twin()->data().mSegments.end(); ++r)
 					{
 						sprintf(str,"%d",(int) r->mSourceHeight);
 						ACCUM_LABEL(
-							(*v)->data().mGL[0] + 0.25 * (circ->source()->data().mGL[0] - circ->target()->data().mGL[0]),
-							(*v)->data().mGL[1] + 0.25 * (circ->source()->data().mGL[1] - circ->target()->data().mGL[1]),
+							v->second->data().mGL[0] + 0.25 * (circ->source()->data().mGL[0] - circ->target()->data().mGL[0]),
+							v->second->data().mGL[1] + 0.25 * (circ->source()->data().mGL[1] - circ->target()->data().mGL[1]),
 							str);
 					}
 				} while (++circ != stop);
@@ -720,17 +786,17 @@ void	DrawMapBucketed(
 		
 		glBegin(GL_LINES);
 		
-		for (vector<Pmwx::Vertex_handle>::iterator v = vertices.begin(); v != vertices.end(); ++v)
-		if((*v)->degree() == 2)
+		for (vector<PmwxIndex_t::VertexTree::item_type>::iterator v = vertices.begin(); v != vertices.end(); ++v)
+		if(v->second->degree() == 2)
 		{
-			if (vertexSel.find(*v) == vertexSel.end())
+			if (vertexSel.find(v->second) == vertexSel.end())
 				continue;
 				
 			continue;
 				
-			Point2	p1(cgal2ben((*v)->incident_halfedges()->next()->target()->point()));
-			Point2	p2(cgal2ben((*v)->point()));
-			Point2	p3(cgal2ben((*v)->incident_halfedges()->source()->point()));
+			Point2	p1(cgal2ben(v->second->incident_halfedges()->next()->target()->point()));
+			Point2	p2(cgal2ben(v->second->point()));
+			Point2	p3(cgal2ben(v->second->incident_halfedges()->source()->point()));
 			
 			Vector2	v1(p2,p1);
 			Vector2 v2(p2,p3);
@@ -784,23 +850,23 @@ void	DrawMapBucketed(
 
 #if DRAW_FOOTPRINTS
 	glMatrixMode(GL_MODELVIEW);
-	for (vector<Pmwx::Face_handle>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
+	for (vector<PmwxIndex_t::FaceTree::item_type>::iterator fi = faces.begin(); fi != faces.end(); ++fi)
 	{
 		int n = 0;
-		bool	 fsel = faceSel.find(*fi) != faceSel.end();
+		bool	 fsel = faceSel.find(fi->second) != faceSel.end();
 		if (!fsel) continue;
-		for (int j = 0; j < (*fi)->data().mObjs.size(); ++j)
+		for (int j = 0; j < fi->second->data().mObjs.size(); ++j)
 		{
 			float shade = (float) (n % 10) / 20.0 + 0.1;
 			++n;
-			glColor4f(shade, shade, (*fi)->data().mObjs[j].mDerived ? 1.0 : 0.0, 1.0);
+			glColor4f(shade, shade, fi->second->data().mObjs[j].mDerived ? 1.0 : 0.0, 1.0);
 
-			double	x1 = CGAL::to_double((*fi)->data().mObjs[j].mLocation.x());
-			double	y1 = CGAL::to_double((*fi)->data().mObjs[j].mLocation.y());
-			double r = (*fi)->data().mObjs[j].mHeading;
+			double	x1 = CGAL::to_double(fi->second->data().mObjs[j].mLocation.x());
+			double	y1 = CGAL::to_double(fi->second->data().mObjs[j].mLocation.y());
+			double r = fi->second->data().mObjs[j].mHeading;
 
-			double	w = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->data().mObjs[j].mRepType]].width_min;
-			double	h = 0.5 * gRepTable[gRepFeatureIndex[(*fi)->data().mObjs[j].mRepType]].depth_min;
+			double	w = 0.5 * gRepTable[gRepFeatureIndex[fi->second->data().mObjs[j].mRepType]].width_min;
+			double	h = 0.5 * gRepTable[gRepFeatureIndex[fi->second->data().mObjs[j].mRepType]].depth_min;
 
 			Point2	corners[4];
 			Quad_1to4(Point2(x1,y1), r, 2.0 * h, 2.0 * w, corners);
@@ -837,7 +903,7 @@ void	DrawMapBucketed(
 			
 		}
 
-		for (GISPolyObjPlacementVector::iterator j = (*fi)->data().mPolyObjs.begin(); j != (*fi)->data().mPolyObjs.end(); ++j)
+		for (GISPolyObjPlacementVector::iterator j = fi->second->data().mPolyObjs.begin(); j != fi->second->data().mPolyObjs.end(); ++j)
 		{
 			int is_string = strstr(FetchTokenString(j->mRepType),".ags") != NULL;		
 			
@@ -881,14 +947,14 @@ void	DrawMapBucketed(
 	glColor4f(0.0, 1.0, 1.0, 1.0);
 	glBegin(GL_POINTS);
 	int osz = 3;
-	for (vector<Pmwx::Face_handle>::iterator fi = faces.begin();
+	for (vector<PmwxIndex_t::FaceTree::item_type>::iterator fi = faces.begin();
 		fi != faces.end(); ++fi)
 	{
-		bool	 fsel = faceSel.find(*fi) != faceSel.end();
-		for (int j = 0; j < (*fi)->data().mPointFeatures.size(); ++j)
+		bool	 fsel = faceSel.find(fi->second) != faceSel.end();
+		for (int j = 0; j < fi->second->data().mPointFeatures.size(); ++j)
 		{
-			bool	isel = pointFeatureSel.find(PointFeatureSelection(*fi, j)) != pointFeatureSel.end();
-			bool	has_height = (*fi)->data().mPointFeatures[j].mParams.count(pf_Height) != 0;
+			bool	isel = pointFeatureSel.find(PointFeatureSelection(fi->second, j)) != pointFeatureSel.end();
+			bool	has_height = fi->second->data().mPointFeatures[j].mParams.count(pf_Height) != 0;
 			
 			int sz = has_height ? 4 : 2;
 			
@@ -902,15 +968,15 @@ void	DrawMapBucketed(
 
 			if (isel || fsel)
 				glColor4f(1.0, 1.0, 1.0, 1.0);
-			else if(gEnumColors.count((*fi)->data().mPointFeatures[j].mFeatType))
+			else if(gEnumColors.count(fi->second->data().mPointFeatures[j].mFeatType))
 			{
-				glColor3fv(gEnumColors[(*fi)->data().mPointFeatures[j].mFeatType].rgb);
+				glColor3fv(gEnumColors[fi->second->data().mPointFeatures[j].mFeatType].rgb);
 			}
 			else
 				glColor4f(0.0, 0.6, 0.6, 1.0);
 
-			double	x1 = CGAL::to_double((*fi)->data().mPointFeatures[j].mLocation.x());
-			double	y1 = CGAL::to_double((*fi)->data().mPointFeatures[j].mLocation.y());
+			double	x1 = CGAL::to_double(fi->second->data().mPointFeatures[j].mLocation.x());
+			double	y1 = CGAL::to_double(fi->second->data().mPointFeatures[j].mLocation.y());
 //			x1 = screenLeft + ((x1 - mapWest) * screenWidth / mapWidth);
 //			y1 = screenBottom + ((y1 - mapSouth) * screenHeight / mapHeight);
 			glVertex2f(x1, y1);
@@ -1006,12 +1072,14 @@ void	DrawMapBucketed(
 
 
 
-void		FindFaceTouchesPt(Pmwx& inMap, const Point2& p, vector<Face_handle>& outIDs)
+void		FindFaceTouchesPt(Pmwx& inMap, PmwxIndex_t& index, const Point2& p, vector<Face_handle>& outIDs)
 {
+	vector<Face_handle>	faces;
 	outIDs.clear();
-	for(Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
-	if(!f->is_unbounded())
+	index.faces.query_value(Bbox2(p), back_inserter(faces));
+	for (vector<Face_handle>::iterator ff = faces.begin(); ff != faces.end(); ++ff)
 	{
+		Face_handle f = *ff;
 //		printf("Scanning poly...\n");
 		Polygon2	pol;
 		Pmwx::Ccb_halfedge_circulator circ = f->outer_ccb(), stop = f->outer_ccb();
@@ -1043,83 +1111,54 @@ void		FindFaceTouchesPt(Pmwx& inMap, const Point2& p, vector<Face_handle>& outID
 	}
 }
 
-void		FindFaceTouchesRectFast(Pmwx& inMap, const Point2& p1, const Point2& p2, vector<Face_handle>& outIDs)
+void		FindFaceTouchesRectFast(Pmwx& inMap, PmwxIndex_t& index, const Point2& p1, const Point2& p2, vector<Face_handle>& outIDs)
 {
-	outIDs.clear();
 	Bbox2	sel(p1, p2);
-	for(Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
-	if(!f->is_unbounded())
-	{
-		Bbox2	fb;
-		Pmwx::Ccb_halfedge_circulator circ = f->outer_ccb(), stop = f->outer_ccb();
-		do {
-			fb += cgal2ben(circ->target()->point());
-		} while(++circ != stop);
-		if(sel.overlap(sel))
-			outIDs.push_back(f);
-	}
+	outIDs.clear();
+	index.faces.query_value(sel, back_inserter(outIDs));
 }
 
-void		FindFaceFullyInRect(Pmwx& inMap, const Point2& p1, const Point2& p2, vector<Face_handle>& outIDs)
+void		FindFaceFullyInRect(Pmwx& inMap, PmwxIndex_t& index, const Point2& p1, const Point2& p2, vector<Face_handle>& outIDs)
 {
 	outIDs.clear();
 	Bbox2	sel(p1,p2);
-	for(Pmwx::Face_iterator f = inMap.faces_begin(); f != inMap.faces_end(); ++f)
-	if(!f->is_unbounded())
-	{
-		bool ok = true;
-		Pmwx::Ccb_halfedge_circulator circ = f->outer_ccb(), stop = f->outer_ccb();
-		do {
-			if (!sel.contains(cgal2ben(circ->target()->point())))
-			{
-				ok=false;
-				break;
-			}
-		} while(++circ != stop);
-		if(ok)
-			outIDs.push_back(f);
-	}
+	vector<PmwxIndex_t::FaceTree::item_type>	faces;
+	outIDs.clear();
+	index.faces.query(sel, back_inserter(faces));
+	for (vector<PmwxIndex_t::FaceTree::item_type>::iterator ff = faces.begin(); ff != faces.end(); ++ff)
+	if(sel.contains(ff->first))
+		outIDs.push_back(ff->second);
 }
 
-void		FindHalfedgeTouchesRectFast(Pmwx& inMap, const Point2& p1, const Point2& p2, vector<Halfedge_handle>& outIDs)
+void		FindHalfedgeTouchesRectFast(Pmwx& inMap, PmwxIndex_t& index, const Point2& p1, const Point2& p2, vector<Halfedge_handle>& outIDs)
 {
 	outIDs.clear();
 	Bbox2 sel(p1,p2);
-	for(Pmwx::Edge_iterator e = inMap.edges_begin(); e != inMap.edges_end(); ++e)
-	{
-		Bbox2	ebox(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()));
-		if(sel.overlap(ebox))
-			outIDs.push_back(e);
-	}
+	index.halfedges.query_value(sel,back_inserter(outIDs));
 }
 
-void		FindHalfedgeFullyInRect(Pmwx& inMap, const Point2& p1, const Point2& p2, vector<Halfedge_handle>& outIDs)
+void		FindHalfedgeFullyInRect(Pmwx& inMap, PmwxIndex_t& index, const Point2& p1, const Point2& p2, vector<Halfedge_handle>& outIDs)
 {
 	outIDs.clear();
 	Bbox2 sel(p1,p2);
-	for(Pmwx::Edge_iterator e = inMap.edges_begin(); e != inMap.edges_end(); ++e)
-	{
-		Bbox2	ebox(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()));
-		if(sel.contains(ebox))
-			outIDs.push_back(e);
-	}
+	vector<PmwxIndex_t::HalfedgeTree::item_type>	edges;
+	index.halfedges.query(sel,back_inserter(edges));
+	for(vector<PmwxIndex_t::HalfedgeTree::item_type>::iterator e = edges.begin(); e != edges.end(); ++e)
+	if(sel.contains(e->first))
+		outIDs.push_back(e->second);
 }
 
 
-void		FindVerticesTouchesPt(Pmwx& inMap, const Point2& p, vector<Vertex_handle>& outIDs)
+void		FindVerticesTouchesPt(Pmwx& inMap, PmwxIndex_t& index, const Point2& p, vector<Vertex_handle>& outIDs)
 {
-	Point_2 pp(ben2cgal(p));
 	outIDs.clear();
-	for(Pmwx::Vertex_iterator v = inMap.vertices_begin(); v != inMap.vertices_end(); ++v)
-	if(pp==v->point())
-		outIDs.push_back(v);
+	index.vertices.query_value(Bbox2(p), back_inserter(outIDs));
+
 }
 
-void		FindVerticesTouchesRect(Pmwx& inMap, const Point2& p1, const Point2& p2, vector<Vertex_handle>& outIDs)
+void		FindVerticesTouchesRect(Pmwx& inMap, PmwxIndex_t& index, const Point2& p1, const Point2& p2, vector<Vertex_handle>& outIDs)
 {
 	Bbox2 sel(p1,p2);
 	outIDs.clear();
-	for(Pmwx::Vertex_iterator v = inMap.vertices_begin(); v != inMap.vertices_end(); ++v)
-	if(sel.contains(cgal2ben(v->point())))
-		outIDs.push_back(v);
+	index.vertices.query_value(sel, back_inserter(outIDs));
 }

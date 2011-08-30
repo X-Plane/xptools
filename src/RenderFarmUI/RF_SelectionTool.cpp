@@ -745,13 +745,13 @@ void	RF_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				FindFaceFullyInRect(gMap,
+				FindFaceFullyInRect(gMap,gMapIndex,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]),
 							faceitems);
 				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & gui_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			} else {
-				FindFaceTouchesPt(gMap,
+				FindFaceTouchesPt(gMap,gMapIndex,
 							Point2(bounds[0], bounds[1]), faceitems);
 				ApplyRange(faceitems.begin(), faceitems.end(), (mModifiers & gui_ControlFlag) ? InsertFaceInSet : ToggleFaceInSet, &gFaceSelection);
 			}
@@ -764,7 +764,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				FindHalfedgeFullyInRect(gMap,
+				FindHalfedgeFullyInRect(gMap,gMapIndex,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]),
 							halfedgeitems);
@@ -774,7 +774,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 				t.found = false;
 				t.lon = bounds[0];
 				t.lat = bounds[1];
-				FindHalfedgeTouchesRectFast(gMap,
+				FindHalfedgeTouchesRectFast(gMap,gMapIndex,
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), halfedgeitems);
 				ApplyRange(halfedgeitems.begin(), halfedgeitems.end(),
@@ -797,7 +797,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 			double	bounds[4];
 			if (GetRectMapCoords(bounds))
 			{
-				FindVerticesTouchesRect(gMap,
+				FindVerticesTouchesRect(gMap,gMapIndex,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), vertexitems);
 				ApplyRange(vertexitems.begin(), vertexitems.end(),
@@ -808,7 +808,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 				t.found = false;
 				t.lon = bounds[0];
 				t.lat = bounds[1];
-				FindVerticesTouchesRect(gMap,
+				FindVerticesTouchesRect(gMap,gMapIndex,
 							Point2(GetZoomer()->XPixelToLon(mMouseX - kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY - kPointClickSlop)),
 							Point2(GetZoomer()->XPixelToLon(mMouseX + kPointClickSlop), GetZoomer()->YPixelToLat(mMouseY + kPointClickSlop)), vertexitems);
 				ApplyRange(vertexitems.begin(), vertexitems.end(),
@@ -832,7 +832,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 			if (GetRectMapCoords(bounds))
 			{
 				vector<Pmwx::Face_handle>	faces;
-				FindFaceTouchesRectFast(gMap,
+				FindFaceTouchesRectFast(gMap,gMapIndex,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), faces);
 				for (vector<Pmwx::Face_handle>::iterator i = faces.begin(); i != faces.end(); ++i)
@@ -857,7 +857,7 @@ void	RF_SelectionTool::DoSelectionPreview()
 				t.lon = bounds[0];
 				t.lat = bounds[1];
 				vector<Pmwx::Face_handle>	faces;
-				FindFaceTouchesRectFast(gMap,
+				FindFaceTouchesRectFast(gMap,gMapIndex,
 							Point2(bounds[0], bounds[1]),
 							Point2(bounds[2], bounds[3]), faces);
 				for (vector<Pmwx::Face_handle>::iterator i = faces.begin(); i != faces.end(); ++i)

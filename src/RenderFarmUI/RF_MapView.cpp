@@ -132,7 +132,8 @@ struct	DEMViewInfo_t {
 static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
-{		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"MSL=%fm "		},
+{		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"Bath=%fm "		},
+{		dem_WaterSurface,		"Water Surface"					,	dem_Elevation,				false,	false,	"Water=%fm "	},
 {		dem_ElevationOverlay,	"Elevation Overlay"				,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
@@ -627,6 +628,7 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 //			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 0.5);
 			PrecalcOGL(gMap,RF_ProgressFunc);
 //			RF_ProgressFunc(0, 1, "Building graphics for vector map...", 1.0);
+			IndexPmwx(gMap,gMapIndex);
 		}
 		else if (mNeedRecalcMapMeta)
 		{
@@ -898,7 +900,7 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		glPushMatrix();
 		glMultMatrixd(xfrm);
 		
-		DrawMapBucketed(state, gMap,
+		DrawMapBucketed(state, gMap,gMapIndex,
 			ll, lb, lr, lt,
 //			pl, pb, pr, pt,
 			gVertexSelection,
