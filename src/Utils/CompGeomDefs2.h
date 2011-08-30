@@ -530,6 +530,10 @@ inline int	turn_direction(const Point2& p1, const Point2& p2, const Point2& p3)
  * Comparison
  ****************************************************************************************************/
 
+struct lesser_y {	bool	operator()(const Point2& lhs, const Point2& rhs) const { return (lhs.y_ < rhs.y_);}};
+struct lesser_x {	bool	operator()(const Point2& lhs, const Point2& rhs) const { return (lhs.x_ < rhs.x_);}};
+
+
 struct lesser_y_then_x {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
 		return (lhs.y_ == rhs.y_) ? (lhs.x_ < rhs.x_) : (lhs.y_ < rhs.y_);
