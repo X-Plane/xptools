@@ -163,7 +163,7 @@ inline void DEBUG_POLYGON(const Polygon_2& p, const Point3& c1, const Point3& c2
 // *			Match any empty string
 // -			Match null
 // !-			Match any non-null (including empty string)
-static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vector& rules)
+static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vector& rules, int * value)
 {
 	for(shape_pattern_vector::const_iterator r = rules.begin(); r != rules.end(); ++r)
 	{
@@ -188,9 +188,14 @@ static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vecto
 			}
 		}
 
-		if(rule_ok) return r->feature;
+		if(rule_ok) 
+		{
+			if(value) *value = r->feature;
+			return 1;
+		}
+			
 	}
-	return -1;
+	return 0;
 }
 
 static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
@@ -590,7 +595,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
 		SHPObject * obj = SHPReadObject(file, n);
 		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
-		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != -1))
+		if(!db || want_this_thing(db, obj->nShapeId, sShapeRules, &feat))
 		switch(obj->nSHPType) {
 		case SHPT_POINT:
 		case SHPT_POINTZ:
@@ -603,12 +608,11 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			{
 				feature_map[n] = feat;
 				if(db) {
-					feature_rev[n] = want_this_thing(db,obj->nShapeId, sLineReverse) != -1 ? 1 : 0;
+					feature_rev[n] = want_this_thing(db,obj->nShapeId, sLineReverse, NULL) ? 1 :0;
 					if(!sLayerTag.empty() && sLayerID != -1)
 						feature_lay[n] = DBFReadIntegerAttribute(db, obj->nShapeId, sLayerID);
 					if(sLayerTag.empty() || sLayerID == -1 || DBFIsAttributeNULL(db, obj->nShapeId, sLayerID))
-					if(want_this_thing(db,obj->nShapeId,sLineBridge) != -1)
-						feature_lay[n] = want_this_thing(db,obj->nShapeId,sLineBridge);
+					want_this_thing(db,obj->nShapeId,sLineBridge, &feature_lay[n]);
 				}	
 				for (int part = 0; part < obj->nParts; ++part)
 				{
@@ -843,12 +847,12 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			
 			if(simplify_mtr)
 			{
-				printf("Before import simplify: %d. ", targ->number_of_halfedges());
+				printf("Before import simplify: %zd. ", targ->number_of_halfedges());
 //				MapSimplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT);
 				arrangement_simplifier<Pmwx, shape_lock_traits> simplifier;
 				simplifier.simplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT, shape_lock_traits(), inFunc);
 
-				printf("After import simplify: %d.\n", targ->number_of_halfedges());
+				printf("After import simplify: %zd.\n", targ->number_of_halfedges());
 			}
 			
 			if(flags & shp_Overlay)
@@ -988,11 +992,11 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 			if(simplify_mtr)
 			{
-				printf("Before import simplify: %d. ", targ->number_of_halfedges());
+				printf("Before import simplify: %zd. ", targ->number_of_halfedges());
 //				MapSimplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT);
 				arrangement_simplifier<Pmwx, shape_lock_traits> simplifier;
 				simplifier.simplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT,shape_lock_traits(), inFunc);
-				printf("After import simplify: %d.\n", targ->number_of_halfedges());
+				printf("After import simplify: %zd.\n", targ->number_of_halfedges());
 			}
 			
 			if(flags & shp_Overlay)
@@ -1129,7 +1133,7 @@ bool	RasterShapeFile(
 		PROGRESS_CHECK(inFunc, 0, 1, "Reading shape file...", n, entity_count, step)
 		SHPObject * obj = SHPReadObject(file, n);
 		if((flags & shp_Use_Crop) == 0 || shape_in_bounds(obj))
-		if(!db || ((feat = want_this_thing(db, obj->nShapeId, sShapeRules)) != -1))
+		if(!db || want_this_thing(db, obj->nShapeId, sShapeRules, &feat))
 		switch(obj->nSHPType) {
 		case SHPT_POLYGON:
 		case SHPT_POLYGONZ:
