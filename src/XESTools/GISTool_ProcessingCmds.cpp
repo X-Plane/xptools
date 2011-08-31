@@ -46,6 +46,11 @@
 #include "BlockFill.h"
 #include "RF_Selection.h"
 #include "MapTopology.h"
+#include "RTree2.h"
+#include "MapRaster.h"
+#include "MapHelpers.h"
+
+#define DEBUG_SHOW_FOREST_POLYS 0
 
 static int DoSpreadsheet(const vector<const char *>& args)
 {
@@ -168,7 +173,58 @@ static int DoRemoveDupeObjs(const vector<const char *>& args)
 
 static int DoInstantiateObjs(const vector<const char *>& args)
 {
-	PROGRESS_START(gProgress, 0, 1, "Creating 3-d.")
+
+	Pmwx	forest_stands;
+	
+	const DEMGeo& forests(gDem[dem_ForestType]);
+	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, NO_VALUE, forest_stands,NULL);
+	SimplifyMap(gMap, false, gProgress);
+
+	arrangement_simplifier<Pmwx> simplifier;
+	simplifier.simplify(forest_stands, 0.002, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
+	
+	ForestIndex								forest_index;
+	vector<ForestIndex::item_type>			forest_faces;
+	forest_faces.reserve(forest_stands.number_of_faces());
+	
+	for(Pmwx::Face_handle f = forest_stands.faces_begin(); f != forest_stands.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().mTerrainType != NO_VALUE)
+	{
+		Bbox2	bounds;
+		Pmwx::Ccb_halfedge_circulator circ,stop;
+		circ=stop=f->outer_ccb();
+		do
+		{
+			bounds += cgal2ben(circ->source()->point());
+		}while(++circ != stop);
+		forest_faces.push_back(pair<Bbox2,Pmwx::Face_handle>(bounds,f));
+	}
+	forest_index.insert(forest_faces.begin(),forest_faces.end());
+	forest_faces.clear();
+	trim(forest_faces);
+	
+	#if DEBUG_SHOW_FOREST_POLYS
+	for(Pmwx::Edge_iterator e = forest_stands.edges_begin(); e != forest_stands.edges_end(); ++e)
+	{
+		int ee = e->face()->data().mTerrainType;
+		if(ee == NO_VALUE)
+			ee = e->twin()->face()->data().mTerrainType;
+		DebugAssert(ee != NO_VALUE);
+		if(gEnumColors.count(ee))
+		{
+			RGBColor_t& c(gEnumColors[ee]);
+			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),c.rgb[0],c.rgb[1],c.rgb[2],c.rgb[0],c.rgb[1],c.rgb[2]);
+		} else
+			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,0,1, 1,0,1);
+	}
+	#endif
+	
+	
+
+	
+	
+	PROGRESS_START(gProgress, 0, 2, "Creating 3-d.")
 	trim_map(gMap);
 	int idx = 0;
 	int t = gMap.number_of_faces();
@@ -187,7 +243,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	#endif
 	{
 		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
-		process_block(f,gTriangulationHi,gDem[dem_ForestType]);
+		process_block(f,gTriangulationHi,forests, forest_index);
 	}
 	trim_map(gMap);
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
