@@ -526,6 +526,8 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	#if DEBUG_FLATTENING
 	gDem[dem_Wizard] = elevation;
 	gDem[dem_Wizard] = DEM_NO_DATA;
+	gDem[dem_Wizard1] = elevation;
+	gDem[dem_Wizard1] = DEM_NO_DATA;
 	#endif
 
 	if (dems)
@@ -600,11 +602,15 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 						--y1;
 						++x2;
 						++y2;
-						SpreadDEMValues(working, 1, x1, y1, x2, y2);
+//						SpreadDEMValues(working, 1, x1, y1, x2, y2);
 					#endif
 					DEMGeo		airport_area;
 					working.subset(airport_area, x1, y1, x2-1,y2-1);
-
+					
+					#if DEBUG_FLATTENING
+					gDem[dem_Wizard].overlay(airport_area, x1,y1);
+					#endif
+					
 //					vector<DEMGeo>	fft;
 //					DEMMakeFFT(airport_area, fft);		
 //					printf("%s: FFT has %d layers.\n",apts[n].icao.c_str(),fft.size());
@@ -627,7 +633,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 //					#endif
 //					FFTMakeDEM(fft,airport_area);
 
-#if DEV && OPENGL_MAP
+#if DEV && OPENGL_MAP && 0
 					DEMGeo a(airport_area);
 					a += (-(float) apts[n].elevation_ft * FT_TO_MTR);
 					gDem[dem_Wizard].overlay(a, x1,y1);
@@ -643,6 +649,9 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 					}
 #endif					
 					GaussianBlurDEM(airport_area,3.0);
+					#if DEBUG_FLATTENING
+					gDem[dem_Wizard1].overlay(airport_area, x1,y1);
+					#endif
 					
 					#if PHONE
 					for(y = 0; y < airport_area.mHeight; ++y)
@@ -658,10 +667,6 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 					}
 				}
 				elevation.overlay(working);
-				#if DEBUG_FLATTENING
-				gDem[dem_Wizard].overlay(working);
-				#endif
-
 				ClipDEMToFaceSet(simple_faces, transport_src, transport, x1, y1, x2, y2);
 			}
 		}

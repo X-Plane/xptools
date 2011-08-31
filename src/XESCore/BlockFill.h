@@ -26,8 +26,12 @@
 
 #include "BlockDefs.h"
 #include "MeshDefs.h"
+#include "RTree2.h"
+#include "MapDefs.h"
 
 struct CoordTranslator2;
+
+typedef RTree2<Pmwx::Face_handle, 4>		ForestIndex;
 
 bool	init_block(
 					CDT&					mesh,
@@ -38,17 +42,19 @@ bool	init_block(
 bool	apply_fill_rules(
 					int						zoning,
 					Block_2&				block,
-					CoordTranslator2&		translator,
-					DEMGeo&					forest_dem);
+					CoordTranslator2&		translator);
 
 void	extract_features(
 					Block_2&				block,
 					Pmwx::Face_handle		dest_face,
-					CoordTranslator2&		translator);
+					CoordTranslator2&		translator,
+					const DEMGeo&			forest_dem,
+					ForestIndex&			forest_index);
 
 bool	process_block(
 					Pmwx::Face_handle		f, 
 					CDT&					mesh,
-					DEMGeo&					forest_dem);
+					const DEMGeo&			forest_dem,
+					ForestIndex&			forest_index);
 
 #endif /* BlockFill_H */

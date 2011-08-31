@@ -395,6 +395,8 @@ struct default_lock_traits {
 template <class Arr, class Traits=default_lock_traits<Arr> >
 class	arrangement_simplifier {
 public:
+
+	typedef Traits		traits_type;
 	
 	// Traits has a lock_it method that is called to see if a vertex cannot be removed for arbitrary reasons.
 	void simplify(Arr& io_block, double max_err, const Traits& tr=Traits(), ProgressFunc=NULL);

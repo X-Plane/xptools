@@ -35,14 +35,16 @@ enum {
 	usage_Steep,
 
 	usage_Point_Feature,
-	usage_Polygonal_Feature,
+	usage_Polygonal_Feature,	
+	usage_Forest,
+	
 	
 	usage_OOB
 
 };
 
 struct BLOCK_vertex_data { };
-struct BLOCK_halfedge_data { };
+struct BLOCK_halfedge_data { bool operator==(const BLOCK_halfedge_data& rhs) const { return true; } };
 
 struct BLOCK_face_data {
 	BLOCK_face_data() : usage(usage_Empty), feature(0) { }

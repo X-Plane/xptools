@@ -26,10 +26,12 @@
 
 #include "BlockDefs.h"
 
+/*
 struct block_create_t {
 	BLOCK_face_data		data;
 	Polygon_2			bounds;
 };
+*/
 
 // Create a block from a set of polygons.  
 // When two polygons overlap, the LATER polygon in the vector takes priority.

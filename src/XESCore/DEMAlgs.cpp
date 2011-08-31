@@ -2045,7 +2045,7 @@ static float sample_kernel_h(const DEMGeo& src, int x, int y, float k[], int wid
 		}
 		++k;
 	}
-	if (wt == 0.0f) wt = 1.0;
+	if (wt == 0.0f) return DEM_NO_DATA;
 	return s / wt;
 }
 
@@ -2063,7 +2063,7 @@ static float sample_kernel_v(const DEMGeo& src, int x, int y, float k[], int wid
 		}
 		++k;
 	}
-	if (wt == 0.0f) wt = 1.0;
+	if (wt == 0.0f) return DEM_NO_DATA;
 	return s / wt;
 }
 

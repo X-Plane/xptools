@@ -305,6 +305,25 @@ void clean_block(Block_2& block)
 	for(vector<Block_2::Halfedge_handle>::iterator k = kill.begin(); k != kill.end(); ++k)
 		block.remove_edge(*k);
 
+	for(Block_2::Vertex_iterator v = block.vertices_begin(); v != block.vertices_end();)
+	{
+		Block_2::Vertex_handle k(v);
+		++v;
+		if(k->degree() == 2)
+		{
+			Block_2::Halfedge_handle e1 = k->incident_halfedges();
+			Block_2::Halfedge_handle e2 = e1->next();
+			DebugAssert(e1->target() == k);
+			DebugAssert(e2->source() == k);
+			if(e1->data() == e2->data() && CGAL::collinear(e1->source()->point(),e1->target()->point(),e2->target()->point()))
+			{
+				Block_2::X_monotone_curve_2	nc(Segment_2(e1->source()->point(),e2->target()->point()));
+				block.merge_edge(e1,e2,nc);
+			}	
+		}
+	}
+	
+
 //	printf("After:\n");
 //	for(Block_2::Face_handle f = block.faces_begin(); f != block.faces_end(); ++f)
 //		printf("%d/%s\n",f->data().usage, FetchTokenString(f->data().feature));

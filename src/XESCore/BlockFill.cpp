@@ -54,12 +54,15 @@
 #include "MathUtils.h"
 #include "MapRaster.h"
 #include "STLUtils.h"
+#include "PolyRasterUtils.h"
 //#include "RF_Selection.h"
 #include "MapHelpers.h"
 
 #include "GISTool_Globals.h"
 
 #include <CGAL/Arr_overlay_2.h>
+
+#define FOREST_SUBDIVIDE_AREA	(10000)
 
 #define BLOCK_ERR_MTR 1.0 
 struct block_pt {
@@ -602,7 +605,7 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 }
 
 enum face_cat {
-	cat_urban = -1,
+	cat_urban = 0,
 	cat_forest,
 	cat_flat,
 	cat_oob,
@@ -674,29 +677,29 @@ static bool in_range(CDT::Face_handle f, CoordTranslator2& t)
 	return cb.overlap(fb);
 }
 
-static void push_curve(vector<Block_2::X_monotone_curve_2>& curves, const Point_2& p1, const Point_2& p2, face_cat cat1, face_cat cat2, int cat_base)
+static void push_curve(vector<Block_2::X_monotone_curve_2>& curves, const Point_2& p1, const Point_2& p2, int cat1, int cat2, int urban_idx, int oob_idx)
 {
 	DebugAssert(cat1 != cat2);
-	if(cat1 != cat_urban && cat2 != cat_urban && cat1 != cat_oob && cat2 != cat_oob)
+	if(cat1 != urban_idx && cat2 != urban_idx && cat1 != oob_idx && cat2 != oob_idx)
 	{
 		EdgeKey_container	keys;
-		keys.insert(cat1 + cat_base);
-		keys.insert(cat2 + cat_base);
+		keys.insert(cat1);
+		keys.insert(cat2);
 		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), keys));
 	}
-	else if(cat1 != cat_urban && cat1 != cat_oob)
+	else if(cat1 != urban_idx && cat1 != oob_idx)
 	{
-		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), cat1 + cat_base));
+		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), cat1));
 	}
-	else if(cat2 != cat_urban && cat2 != cat_oob)
+	else if(cat2 != urban_idx && cat2 != oob_idx)
 	{
-		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), cat2 + cat_base));
+		curves.push_back(Block_2::X_monotone_curve_2(Segment_2(p1, p2), cat2));
 	}	
 }
 
 
 
-static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int cat_base,float max_slope, int need_lu)
+static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int cat_table[cat_DIM],float max_slope, int need_lu)
 {
 	Point_2 start = Point_2(
 						(translator.mSrcMin.x() + translator.mSrcMax.x()) * 0.5,
@@ -725,14 +728,14 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 		to_visit.erase(to_visit.begin());
 		visited.insert(f);
 			
-		face_cat cat[3] = {
-			categorize_vertex(mesh, f, 0, lim, max_slope),
-			categorize_vertex(mesh, f, 1, lim, max_slope),
-			categorize_vertex(mesh, f, 2, lim, max_slope) };
+		int cat[3] = {
+			cat_table[categorize_vertex(mesh, f, 0, lim, max_slope)],
+			cat_table[categorize_vertex(mesh, f, 1, lim, max_slope)],
+			cat_table[categorize_vertex(mesh, f, 2, lim, max_slope)] };
 		
-		DebugAssert(cat[0] != cat_oob);
-		DebugAssert(cat[1] != cat_oob);
-		DebugAssert(cat[2] != cat_oob);
+		DebugAssert(cat[0] != cat_table[cat_oob]);
+		DebugAssert(cat[1] != cat_table[cat_oob]);
+		DebugAssert(cat[2] != cat_table[cat_oob]);
 		
 		if(cat[0] != cat[1] || cat[1] != cat[2])
 		{
@@ -760,26 +763,26 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 			if(cat[0] == cat[1])
 			{
 				if(p12 != p20)
-				push_curve(curves,p12, p20, cat[0], cat[2], cat_base);
+				push_curve(curves,p12, p20, cat[0], cat[2], cat_table[cat_urban], cat_table[cat_oob]);
 			}
 			else if(cat[1] == cat[2])
 			{
 				if(p20 != p01)
-				push_curve(curves,p20, p01, cat[1], cat[0], cat_base);
+				push_curve(curves,p20, p01, cat[1], cat[0], cat_table[cat_urban], cat_table[cat_oob]);
 			}
 			else if(cat[2] == cat[0])
 			{
 				if(p01 != p12)
-				push_curve(curves,p01, p12, cat[2], cat[1], cat_base);
+				push_curve(curves,p01, p12, cat[2], cat[1], cat_table[cat_urban], cat_table[cat_oob]);
 			}
 			else
 			{
 				if(p01 != p012)
-				push_curve(curves,p01, p012, cat[0], cat[1], cat_base);
+				push_curve(curves,p01, p012, cat[0], cat[1], cat_table[cat_urban], cat_table[cat_oob]);
 				if(p012 != p20)
-				push_curve(curves,p012, p20, cat[0], cat[2], cat_base);
+				push_curve(curves,p012, p20, cat[0], cat[2], cat_table[cat_urban], cat_table[cat_oob]);
 				if(p12 != p012)
-				push_curve(curves,p12, p012, cat[1], cat[2], cat_base);
+				push_curve(curves,p12, p012, cat[1], cat[2], cat_table[cat_urban], cat_table[cat_oob]);
 			}
 		}
 		
@@ -789,11 +792,11 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 
 			bool face_is_new = visited.count(nf) == 0;// && to_visit.count(nf) == 0;
 
-			face_cat l = cat[CDT::cw (n)];
-			face_cat r = cat[CDT::ccw(n)];
+			int l = cat[CDT::cw (n)];
+			int r = cat[CDT::ccw(n)];
 			
-			face_cat L = categorize_vertex(mesh, nf, nf->index(f->vertex(CDT::cw (n))),lim, max_slope);
-			face_cat R = categorize_vertex(mesh, nf, nf->index(f->vertex(CDT::ccw(n))),lim, max_slope);
+			int L = cat_table[categorize_vertex(mesh, nf, nf->index(f->vertex(CDT::cw (n))),lim, max_slope)];
+			int R = cat_table[categorize_vertex(mesh, nf, nf->index(f->vertex(CDT::ccw(n))),lim, max_slope)];
 
 			if(face_is_new)
 			{
@@ -804,18 +807,18 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 				if(l == r && L == R)
 				{
 					if(l != L)
-						push_curve(curves,pr,pl,l,L,cat_base);
+						push_curve(curves,pr,pl,l,L,cat_table[cat_urban], cat_table[cat_oob]);
 				}
 				else
 				{
 					if(l != L)
-						push_curve(curves,pm,pl,l,L,cat_base);
+						push_curve(curves,pm,pl,l,L,cat_table[cat_urban], cat_table[cat_oob]);
 					if(r != R)
-						push_curve(curves,pr,pm,r,R,cat_base);
+						push_curve(curves,pr,pm,r,R,cat_table[cat_urban], cat_table[cat_oob]);
 				}
 			}
 			
-			int nf_ok = (L != cat_oob || R != cat_oob);
+			int nf_ok = (L != cat_table[cat_oob] || R != cat_table[cat_oob]);
 			
 			DebugAssert(!nf_ok || !mesh.is_infinite(nf));
 			if(nf_ok && face_is_new)
@@ -869,18 +872,24 @@ bool	init_block(
 	int cat_base = 2 * num_he;
 
 	parts[cat_base + cat_oob] = BLOCK_face_data(usage_OOB, NO_VALUE);
-	parts[cat_base + cat_forest] = BLOCK_face_data(usage_Steep, NO_VALUE);
+	parts[num_he] = BLOCK_face_data(usage_Steep, NO_VALUE);
 	parts[cat_base + cat_flat] = BLOCK_face_data(usage_OOB  , NO_VALUE);
 
 	num_he += 2;
 	
+	int cat_table[cat_DIM];
+	cat_table[cat_urban] = -1;
+	cat_table[cat_oob] = cat_base + cat_oob;
+	cat_table[cat_forest] = num_he;
+	cat_table[cat_flat] = cat_base + cat_flat;
+	
 	if(info && (info->need_lu || info->max_slope))
-		init_mesh(mesh, translator, curves, cat_base,info->max_slope,info->need_lu);
+		init_mesh(mesh, translator, curves, cat_table,info->max_slope,info->need_lu);
 
 	int base_offset = 0;
-	init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, base_offset, num_he, cat_base + cat_oob, info && info->fill_edge);
+	init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge);
 	for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
-		init_road_ccb(zoning, *h, translator, parts, curves, base_offset, num_he, cat_base + cat_oob, info && info->fill_edge);
+		init_road_ccb(zoning, *h, translator, parts, curves, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge);
 
 //	printf("Num HE: %d.  Added: %d\n", num_he, base_offset);
 
@@ -896,7 +905,7 @@ bool	init_block(
 						0.5,0,0,
 						1,0,0);
 		}
-		else if(*i == cat_base + cat_forest)
+		else if(*i == num_he)
 		{
 			debug_mesh_line(
 					translator.Reverse(cgal2ben(c->source())),
@@ -975,8 +984,7 @@ public:
 bool	apply_fill_rules(
 					int						zoning,
 					Block_2&				block,
-					CoordTranslator2&		translator,
-					DEMGeo&					forest_dem)
+					CoordTranslator2&		translator)
 {
 	bool did_promote = false;
 	if(gZoningInfo[zoning].fill_area)
@@ -1056,66 +1064,45 @@ bool	apply_fill_rules(
 	
 	if(gZoningInfo[zoning].fill_veg)
 	{
-		if(0)
-		{
-			int bounds[4];
-			dem_coverage_nearest(forest_dem,
-									translator.mSrcMin.x(),
-									translator.mSrcMin.y(),
-									translator.mSrcMax.x(),
-									translator.mSrcMax.y(),
-									bounds);
-
-			Pmwx forest_areas;
-			
-			MapFromDEM(forest_dem,bounds[0],bounds[1],bounds[2],bounds[3],NO_VALUE, forest_areas, &translator);
-
-			arrangement_simplifier<Pmwx> simplifier;
-			simplifier.simplify(forest_areas, forest_dem.y_dist_to_m(2.0));
-			
-			simplify_block(block, 0.75);		
-
-			Block_2	orig(block);
-			overlay_forests traits;
-			CGAL::overlay(orig, forest_areas, block, traits);
-			clean_block(block);
-		}
-
-		if(1)
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
 		if(!f->is_unbounded())
 		if(f->data().usage == usage_Empty)
 		{
-			Block_2::Ccb_halfedge_circulator circ(f->outer_ccb()), stop;
-			stop = circ;
-			do {
-				Point2 sample = translator.Reverse(cgal2ben(circ->source()->point()));				
-				float fe = forest_dem.xy_nearest(sample.x(),sample.y());
-				if(fe != NO_VALUE)
-				{
-					f->data().usage = usage_Polygonal_Feature;
-					f->data().feature = fe;
-//					f->data().pre_placed = false;
-					break;
-				}
-			} while (++circ !=  stop);		
+
+			f->data().usage = usage_Forest;
+			f->data().feature = NO_VALUE;
 		}	
 	}
 	return did_promote;
 }
 
 
-void	PolygonFromBlockCCB(Block_2::Ccb_halfedge_const_circulator circ, Polygon2& out_poly, CoordTranslator2& translator)
+void	PolygonFromBlockCCB(Block_2::Ccb_halfedge_const_circulator circ, Polygon2& out_poly, CoordTranslator2 * translator)
 {
 	out_poly.clear();
 	Block_2::Ccb_halfedge_const_circulator stop = circ;
 
 	do {
-		out_poly.push_back(translator.Reverse(cgal2ben(circ->source()->point())));
+		if(translator)
+			out_poly.push_back(translator->Reverse(cgal2ben(circ->source()->point())));
+		else
+			out_poly.push_back(cgal2ben(circ->source()->point()));
 	} while (stop != ++circ);
 }
 
-void	PolygonFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps, CoordTranslator2& translator)
+void extract_ccb(Block_2::Ccb_halfedge_const_circulator circ, Polygon2& out_poly, Polygon2& out_poly_mtr, CoordTranslator2& translator)
+{
+	out_poly.clear();
+	out_poly_mtr.clear();
+	Block_2::Ccb_halfedge_const_circulator stop = circ;
+
+	do {
+		out_poly_mtr.push_back(cgal2ben(circ->source()->point()));
+		out_poly.push_back(translator.Reverse(out_poly_mtr.back()));
+	} while (stop != ++circ);
+}
+
+void	PolygonFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps, CoordTranslator2 * translator)
 {
 	DebugAssert(!in_face->is_unbounded());
 
@@ -1131,7 +1118,7 @@ void	PolygonFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_
 	}
 	if (in_face->number_of_holes() >= 255)
 	{
-		printf("Face had %d holes.\n",in_face->number_of_holes());
+		printf("Face had %zd holes.\n",in_face->number_of_holes());
 		throw "too many holes.";
 	}
 }
@@ -1205,7 +1192,7 @@ int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps
 
 	if((ps_use.size() + ps_bad.size()) > 255)
 	{
-		printf("ag string had %d useful and %d boundaries.\n", ps_use.size(), ps_bad.size());
+		printf("ag string had %zd useful and %zd boundaries.\n", ps_use.size(), ps_bad.size());
 		throw "too many contours";
 	}
 	out_ps.insert(out_ps.end(), ps_use.begin(),ps_use.end());
@@ -1214,47 +1201,236 @@ int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps
 	return ps_use.size();
 }
 
+void push_one_forest(vector<Polygon2>& bounds, const DEMGeo& dem, Pmwx::Face_handle dest_face)
+{
+	GISPolyObjPlacement_t o;
+	o.mShape = bounds;
+	o.mDerived = true;
+	o.mParam = 255;
+	// rep type?
+	int lu_any = NO_VALUE;
+
+	PolyRasterizer<double>	raster;
+	for(vector<Polygon2>::const_iterator p = bounds.begin(); p != bounds.end(); ++p)
+	for(int s = 0; s < p->size(); ++s)
+	{
+		Segment2 seg(p->side(s));
+		raster.AddEdge(
+			dem.lon_to_x(seg.p1.x()),
+			dem.lat_to_y(seg.p1.y()),
+			dem.lon_to_x(seg.p2.x()),
+			dem.lat_to_y(seg.p2.y()));
+		if(lu_any == NO_VALUE)
+			lu_any = dem.xy_nearest(seg.p1.x(),seg.p1.y());
+	}
+	map<int,int> histo;
+	
+	raster.SortMasters();
+	int y = 0, x1, x2, x;
+	int total = 0;
+	raster.StartScanline(y);
+	while(y < dem.mHeight)
+	{
+		while(raster.GetRange(x1,x2))
+		{
+			for(x = x1; x < x2; ++x)
+			{
+				float sample = dem.get(x,y);
+				if(sample != NO_VALUE)
+					histo[sample]++;
+				++total;
+			}
+		}
+		++y;
+		raster.AdvanceScanline(y);		
+	}
+	if(!histo.empty())
+	{
+		map<int,int>::iterator h = histo.end();
+		--h;
+		o.mRepType = h->first;
+		dest_face->data().mPolyObjs.push_back(o);				
+	}
+	else if(lu_any != NO_VALUE)
+	{
+		o.mRepType = lu_any;
+		dest_face->data().mPolyObjs.push_back(o);						
+	}
+	else
+		printf("Lost forest: %d total points included.\n", total);
+}	
+
 
 void	extract_features(
 					Block_2&				block,
 					Pmwx::Face_handle		dest_face,
-					CoordTranslator2&		translator)
+					CoordTranslator2&		translator,
+					const DEMGeo&			forest_dem,
+					ForestIndex&			forest_index)					
 {
 	try {
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
 		if(!f->is_unbounded())
-		if(f->data().usage == usage_Polygonal_Feature)
-	//	if(!f->data().pre_placed)
 		{
-			GISPolyObjPlacement_t o;
-			
-			o.mRepType = f->data().feature;
-			o.mDerived = true;
-			if(strstr(FetchTokenString(o.mRepType),".fac"))
-				o.mParam = 10;
-			else
-				o.mParam = 255;
+			if(f->data().usage == usage_Polygonal_Feature)
+		//	if(!f->data().pre_placed)
+			{
+				GISPolyObjPlacement_t o;
+				
+				o.mRepType = f->data().feature;
+				o.mDerived = true;
+				if(strstr(FetchTokenString(o.mRepType),".fac"))
+					o.mParam = 10;
+				else
+					o.mParam = 255;
 
-			if(strstr(FetchTokenString(o.mRepType),".ags"))
-			{
-				o.mParam = StringFromBlock(f,o.mShape,translator);
-				DebugAssert(o.mShape.size() <= 255);
-				dest_face->data().mPolyObjs.push_back(o);				
-			}
-			else
-			{
-				PolygonFromBlock(f,o.mShape, translator);
-				DebugAssert(o.mShape.size() <= 255);
-				if(strstr(FetchTokenString(o.mRepType),".agb"))
+				if(strstr(FetchTokenString(o.mRepType),".ags"))
 				{
-					int ls = o.mShape[0].longest_side();
-					while(ls-- > 0)
+					o.mParam = StringFromBlock(f,o.mShape,translator);
+					DebugAssert(o.mShape.size() <= 255);
+					dest_face->data().mPolyObjs.push_back(o);				
+				}
+				else
+				{
+					PolygonFromBlock(f,o.mShape, &translator);
+					DebugAssert(o.mShape.size() <= 255);
+					if(strstr(FetchTokenString(o.mRepType),".agb"))
 					{
-						o.mShape[0].push_back(o.mShape[0].front());
-						o.mShape[0].erase(o.mShape[0].begin());
+						int ls = o.mShape[0].longest_side();
+						while(ls-- > 0)
+						{
+							o.mShape[0].push_back(o.mShape[0].front());
+							o.mShape[0].erase(o.mShape[0].begin());
+						}
+					}
+					dest_face->data().mPolyObjs.push_back(o);
+				}
+			}
+			if(f->data().usage == usage_Forest)
+			{
+				vector<Polygon2>	forest(1);
+				forest.reserve(1+f->number_of_holes());
+				Polygon2	outer_m;
+				extract_ccb(f->outer_ccb(),forest.back(),outer_m, translator);
+				double area = outer_m.area();
+				
+				for(Block_2::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+				{
+					Polygon2 hole_m;
+					forest.push_back(Polygon2());
+					extract_ccb(*h, forest.back(), hole_m, translator); 
+					area -= hole_m.area();
+				}
+				
+				if(area < FOREST_SUBDIVIDE_AREA)
+				{
+					push_one_forest(forest, forest_dem, dest_face);					
+				} 
+				else
+				{
+					Bbox2	total_forest_bounds;
+					for(Polygon2::iterator p = forest.front().begin(); p != forest.front().end(); ++p)
+						total_forest_bounds += *p;
+					set<Face_handle>	forest_faces;
+					forest_index.query_value(total_forest_bounds,set_inserter(forest_faces));
+					
+					vector<BLOCK_face_data>		block_types;
+					map<int,int>				forest_type_idx;
+					
+					block_types.push_back(BLOCK_face_data());
+					forest_type_idx[NO_VALUE] = 0;
+					for(set<Face_handle>::iterator f = forest_faces.begin(); f != forest_faces.end(); ++f)
+					{
+						int ft = (*f)->data().mTerrainType;
+						if(forest_type_idx.count(ft) == 0)
+						{
+							forest_type_idx[ft] = block_types.size();
+							block_types.push_back(BLOCK_face_data(usage_Forest, ft));
+						}
+					}
+					int oob_idx = block_types.size();
+					block_types.push_back(BLOCK_face_data(usage_OOB, 0));
+					vector<Block_2::X_monotone_curve_2>	curves;
+					
+					for(set<Face_handle>::iterator f = forest_faces.begin(); f != forest_faces.end(); ++f)
+					{
+						DebugAssert(forest_type_idx.count((*f)->data().mTerrainType));
+						int ft = forest_type_idx[(*f)->data().mTerrainType];
+						DebugAssert(!(*f)->is_unbounded());
+						Pmwx::Ccb_halfedge_circulator circ, stop;
+						{
+							circ= stop = (*f)->outer_ccb();
+							do {
+								DebugAssert(circ->face() != circ->twin()->face());
+								if(forest_faces.count(circ->twin()->face()) == 0 || he_is_same_direction(circ))
+								{
+									int ot = (forest_faces.count(circ->twin()->face()) == 0) ? -1 :
+										forest_type_idx[circ->twin()->face()->data().mTerrainType];
+									push_curve(curves,circ->source()->point(),circ->target()->point(),
+										ft, ot, -1, -1);
+								}
+							}while(++circ != stop);
+						}
+						for(Pmwx::Hole_iterator h = (*f)->holes_begin(); h != (*f)->holes_end(); ++h)
+						{
+							circ= stop = *h;
+							do {
+								DebugAssert(circ->face() != circ->twin()->face());							
+							if(forest_faces.count(circ->twin()->face()) == 0 || he_is_same_direction(circ))
+							{
+									int ot = (forest_faces.count(circ->twin()->face()) == 0) ? -1 :
+										forest_type_idx[circ->twin()->face()->data().mTerrainType];
+							
+									push_curve(curves,circ->source()->point(),circ->target()->point(),
+										ft, ot, -1, -1);
+								}
+							}while(++circ != stop);
+						}
+					}
+					
+					
+					for(vector<Polygon2>::iterator w = forest.begin(); w != forest.end(); ++w)
+					for(int s = 0; s < w->size(); ++s)
+					{
+						Segment2	seg(w->side(s));
+						if(seg.p1 != seg.p2)
+							push_curve(curves, ben2cgal(seg.p1),ben2cgal(seg.p2),oob_idx, -1, NO_VALUE, -1);
+					}
+
+					Block_2		divided_forest;
+
+/*					
+					for(vector<Block_2::X_monotone_curve_2>::iterator c = curves.begin(); c != curves.end(); ++c)					
+					{
+						if(c->data().size() > 1)
+							debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),1,1,0,1,1,0);
+						else
+						for(EdgeKey_iterator i = c->data().begin(); i != c->data().end(); ++i)
+						{
+							if(*i == 0)
+								debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),0.5,0.5,0.5, 0.5,0.5,0.5);
+							else if(*i == oob_idx)
+								debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),1,0,0, 1,0,0);
+							else
+								debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),0,0.5,0, 0,0.5,0);
+							
+						}
+					}
+*/
+					
+					create_block(divided_forest, block_types, curves, oob_idx);
+					clean_block(divided_forest);
+//					for(Block_2::Edge_iterator de= divided_forest.edges_begin(); de != divided_forest.edges_end(); ++de)
+//						debug_mesh_line(cgal2ben(de->source()->point()),cgal2ben(de->target()->point()),1,1,1,1,1,1);
+					for(Block_2::Face_iterator df = divided_forest.faces_begin(); df != divided_forest.faces_end(); ++df)
+					if(!df->is_unbounded())
+					if(df->data().usage == usage_Forest)
+					{
+						vector<Polygon2>	a_forest;
+						PolygonFromBlock(df,a_forest, NULL);
+						push_one_forest(a_forest, forest_dem, dest_face);					
 					}
 				}
-				dest_face->data().mPolyObjs.push_back(o);
 			}
 		}
 	} catch (...) {
@@ -1262,7 +1438,7 @@ void	extract_features(
 	}
 }
 
-bool process_block(Pmwx::Face_handle f, CDT& mesh, DEMGeo& forest_dem)
+bool process_block(Pmwx::Face_handle f, CDT& mesh, const DEMGeo& forest_dem,ForestIndex&	forest_index)
 {
 	bool ret = false;
 	int z = f->data().GetZoning();
@@ -1280,9 +1456,9 @@ bool process_block(Pmwx::Face_handle f, CDT& mesh, DEMGeo& forest_dem)
 //		simplify_block(block, 0.75);
 		clean_block(block);
 
-		if (apply_fill_rules(z, block, trans, forest_dem))
+		if (apply_fill_rules(z, block, trans))
 			ret = true;
-		extract_features(block, f, trans);
+		extract_features(block, f, trans, forest_dem, forest_index);
 	}
 	return ret;
 }
