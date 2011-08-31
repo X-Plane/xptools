@@ -48,6 +48,7 @@ map_windsock.png		GUI_RES		icons\map_windsock.png
 map_seaport.png			GUI_RES		icons\map_seaport.png
 map_taxisign.png		GUI_RES		icons\map_taxisign.png
 map_towerview.png		GUI_RES		icons\map_towerview.png
+map_missing_obj.png		GUI_RES		icons\map_missing_obj.png
 
 /* table artwork */
 eye.png					GUI_RES		tables\eye.png
