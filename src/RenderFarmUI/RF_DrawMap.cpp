@@ -906,10 +906,22 @@ void	DrawMapBucketed(
 		for (GISPolyObjPlacementVector::iterator j = fi->second->data().mPolyObjs.begin(); j != fi->second->data().mPolyObjs.end(); ++j)
 		{
 			int is_string = strstr(FetchTokenString(j->mRepType),".ags") != NULL;		
+			int is_block = strstr(FetchTokenString(j->mRepType),".agb") != NULL;		
+			int is_forest = !is_string && !is_block;
 			
 			float shade = (float) (n % 10) / 20.0 + 0.1;
 			++n;
-			glColor4f(shade, shade, j->mDerived ? 1.0 : 0.0, 1.0);
+//			glColor4f(shade, shade, j->mDerived ? 1.0 : 0.0, 1.0);
+			if(is_string)		glColor4f(shade, shade,1,1);
+			else if(is_block)	glColor4f(1,shade,shade,1);
+			else if(is_forest)	glColor4f(shade,1,shade,1);
+			else				glColor4f(shade, shade, j->mDerived ? 1.0 : 0.0, 1.0);
+
+			if(gEnumColors.count(j->mRepType))
+			{
+				RGBColor_t& rgbc = gEnumColors[j->mRepType];
+				glColor3fv(rgbc.rgb);
+			}
 
 			for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
 			{
@@ -923,6 +935,29 @@ void	DrawMapBucketed(
 				glEnd();
 			}
 			glLineWidth(1);
+			
+			if(is_forest)
+			{
+				glBegin(GL_LINES);
+				for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
+				for(int s = 0; s < r->size(); ++s)
+				{
+					Segment2 seg(r->side(s));
+					Vector2	v(seg.p1,seg.p2);
+					v.normalize();
+					v = v.perpendicular_ccw();
+					int snips = (sqrt(seg.squared_length()) * DEG_TO_MTR_LAT * 0.05);
+					v *= (MTR_TO_DEG_LAT  * 20.0);
+					for(int t = 1; t < snips; ++t)
+					{
+						Point2 p = seg.midpoint((double) t / (double) snips);
+						glVertex2f(p.x(),p.y());
+						glVertex2f(p.x() + v.dx,p.y() + v.dy);
+					}
+				}
+				
+				glEnd();
+			}
 			
 			glPointSize(2);
 			glColor3f(1,1,1);
