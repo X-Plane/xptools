@@ -32,13 +32,13 @@
 // would need to be at least 1 byte and would then be padded by 3-bytes for alignment.
 // We use this to note leaf vs intermediate nodes without wasting storage.
 
-const intptr_t	lsb_bit = 1;
-const intptr_t  lsb_mask = ~1;
+const uintptr_t	lsb_bit = 1;
+const uintptr_t  lsb_mask = ~1;
 
-template <typename T>	T * _set_lsb(T * v)		{	return reinterpret_cast<T*>(reinterpret_cast<intptr_t>(v) | lsb_bit);}
-template <typename T>	T * _clear_lsb(T * v)	{	return reinterpret_cast<T*>(reinterpret_cast<intptr_t>(v) & lsb_mask);}
-template <typename T>	T * _clean_ptr(T * v)	{	return reinterpret_cast<T*>(reinterpret_cast<intptr_t>(v) & lsb_mask);}
-template <typename T>	bool _get_lsb(T * v)	{	return reinterpret_cast<T*>(reinterpret_cast<intptr_t>(v) & lsb_bit);}
+template <typename T>	T * _set_lsb(T * v)		{	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(v) | lsb_bit);}
+template <typename T>	T * _clear_lsb(T * v)	{	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(v) & lsb_mask);}
+template <typename T>	T * _clean_ptr(T * v)	{	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(v) & lsb_mask);}
+template <typename T>	bool _get_lsb(T * v)	{	return reinterpret_cast<T*>(reinterpret_cast<uintptr_t>(v) & lsb_bit);}
 
 // RTree2 - a 2-d range tree templated on a value, using Bbox2 as a key.  N is the number of items per leaf node.
 // Note that this is NOT an incremental range tree - it must be cleared and re-filled.  Insert works by dividing
