@@ -44,7 +44,7 @@
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
-
+#include "GUI_Unicode.h"
 // TODO:
 // migrate all old stuff
 // wire dirty to obj persistence
@@ -171,7 +171,7 @@ void	WED_Document::Save(void)
 #if IBM	
 	string_utf16 wname;
 	string_utf_8_to_16(xml,wname);
-	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),"w");
+	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
 #else	
 	FILE * xml_file = fopen(xml.c_str(),"w");
 #endif	
@@ -558,7 +558,7 @@ void WED_Document::Panic(void)
 #if IBM	
 	string_utf16 wname;
 	string_utf_8_to_16(xml,wname);
-	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),"w");
+	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
 #else	
 	FILE * xml_file = fopen(xml.c_str(),"w");
 #endif	

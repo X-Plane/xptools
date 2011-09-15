@@ -59,7 +59,7 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 #if IBM
 	string_utf16 wname;
 	string_utf_8_to_16(filename,wname);
-	FILE * fi = _wfopen((const wchar_t*) wname.c_str(),"rb");
+	FILE * fi = _wfopen((const wchar_t*) wname.c_str(),L"rb");
 #else
 	FILE * fi = fopen(filename,"rb");
 #endif	
