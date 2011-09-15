@@ -23,6 +23,7 @@
 
 #include "WED_XMLWriter.h"
 #include "AssertUtils.h"
+#include "GUI_Unicode.h"
 /*
 	PERFORMANCE NOTES:
 
@@ -46,28 +47,60 @@ inline void fi_indent(int n, FILE * fi) { while(n--) fputc(' ', fi); }
 
 inline void fi_escape(const char * str, FILE * fi)
 {
-	while(*str)
-	{
-		switch(*str) {
-		case '<':
-			fprintf(fi,"&lt;");
-			break;			
-		case '>':
-			fprintf(fi,"&gt;");
-			break;
-		case '"':
-			fprintf(fi,"&quot;");
-			break;
-		case '&':
-			fprintf(fi,"&amp;");
-			break;
-		default:
-			fputc(*str,fi);
-			break;
-		}
-		++str;
-	}
+	UTF8 * b = (UTF8 *) str;
+	UTF8 * e = b + strlen(str);
 	
+	// This fixes a problem, but not the way I intended, and may be worth some examination.
+	// WED uses UTF8.  Period.  That is all it has ever displayed sanely, and it should be the only thing
+	// you can get INTO it.  (At least, on mac and windows if you get a non-ASCII char in, it DOES come in
+	// as UTF8.  I assume Linux isn't the offender putting ISO-Latin-1 in.)
+	//
+	// But.  Names of airports come straight from apt.dat, and some users encode the apt.dat file 
+	// incorrectly as ISO-Latin-1.  We really only wanted ASCII, and X-Plane never liked ISO, so who knows
+	// what is up.  Anyway: it is conceivable that at run time we have ISO-Latin-1 chars that are not valid 
+	// UTF8 sequences.
+	// This routine writes each invalid 8-bit char as a numeric code reference into the XML.  This has the
+	// wrong effect: on read-in, we interpret what WAS a byte as a Unicode char.
+	// 
+	// And yet, this is actually useful.  It turns out that ISO-Latin-1 128-255 are mostly mapped to
+	// unicode 128-255 (but NOT UTF8 128-255, which are bit encodings).  So for example:
+	//
+	// User wants unicode U+00C5.  In ISO-Latin-1 we have 0xC5.  This displays as a U or something wrong in
+	// WED because the char printer will "muddle through" randomly with invalid input.  But we write it out
+	// as %#xC5.  On read-in, Expat thinsk this is U+00C5 and gives us the correct 2-byte sequence UTF8 valid
+	// sequence 0xC3 0x85.  This is of course what the user ORIGINALLY wanted.
+	 
+	while(b < e)
+	{
+		const UTF8 * v = UTF8_ValidRange(b,e);
+		while(b < v)
+		{	
+			switch(*b) {
+			case '<':
+				fprintf(fi,"&lt;");
+				break;			
+			case '>':
+				fprintf(fi,"&gt;");
+				break;
+			case '"':
+				fprintf(fi,"&quot;");
+				break;
+			case '&':
+				fprintf(fi,"&amp;");
+				break;
+			default:
+				fputc(*b,fi);
+				break;
+			}
+			++b;
+		}
+		const UTF8 * iv = UTF8_InvalidRange(b,e);
+		while(b < iv)
+		{
+			fprintf(fi,"&#x%2X;",(int) *b);
+			++b;
+		}
+	}	
 }
 
 WED_XMLElement::WED_XMLElement(

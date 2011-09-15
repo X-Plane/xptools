@@ -74,6 +74,8 @@ inline const UTF8 *		UTF8_next(const UTF8 * string);
 
 inline bool				UTF8_IsValid(const UTF8 * start, const UTF8 * end);					// Is this a valid UTF8 string?  UTF8 has string bit-patterns; often we can tell if we are UTF8 or not!
 inline bool				UTF8_IsValid(const string& utf8_str);								// Just for convenience.
+inline const UTF8 *		UTF8_ValidRange(const UTF8 * s, const UTF8 * e);					// Return a ptr within [s,e) that is the first inval char.  Thus [s,ret) is the longest valid range starting at S.
+inline const UTF8 *		UTF8_InvalidRange(const UTF8 * s, const UTF8 * e);					// Return a ptr within [s,e) that is the first val char.  Thus [s,ret) is the longest invalid range starting at S.
 
 // UTF 8 and 16 encode and decode routines
 
@@ -168,6 +170,46 @@ inline bool			UTF8_IsValid(const UTF8 * s, const UTF8 * e)
 		}
 	}
 	return true;
+}
+
+inline const UTF8 *		UTF8_ValidRange(const UTF8 * s, const UTF8 * e)
+{
+	// For every valid UTF8 start, we are going to advance over that char
+	// IF it is valid.  Once we hit a badly formed UTF8 char _or_ a
+	// badly starting char (e.g. 10xxxxxx up front) we bail.
+	while(s < e && ((*s & 0xC0) != 0x80))
+	{
+		const UTF8 * nc = s;
+		++nc;
+		while(nc < e && ((*nc & 0xC0) == 0x80))
+			++nc;		
+		if(!UTF8_IsValid(s,nc))
+			return s;			
+		s = nc;
+	}
+	return s;
+}
+
+inline const UTF8 *		UTF8_InvalidRange(const UTF8 * s, const UTF8 * e)
+{
+	while(1)
+	{
+		// First: skip over any "mid-char" crud we are in.
+		while(s < e && ((*s & 0xC0) == 0x80))
+			++s;		
+		if(s == e) return s;
+		
+		// Now: we are at a possible char start.  Figure out if the continuous
+		// char is valid.
+		const UTF8 * nc = s;
+		++nc;
+		while(nc < e && ((*nc & 0xC0) == 0x80))
+			++nc;
+		if(UTF8_IsValid(s,nc))
+			return s;		
+		s = nc;
+	}		
+	return s;
 }
 
 inline bool			UTF8_IsValid(const string& utf8_str)

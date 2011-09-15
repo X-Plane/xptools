@@ -23,6 +23,7 @@
 
 #include "WED_XMLReader.h"
 #include "AssertUtils.h"
+#include "GUI_Unicode.h"
 
 WED_XMLReader::WED_XMLReader()
 {
@@ -55,7 +56,13 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 	XML_SetElementHandler(parser, StartElementHandler, EndElementHandler);
 	XML_SetUserData(parser, reinterpret_cast<void*>(this));
 
+#if IBM
+	string_utf16 wname;
+	string_utf_8_to_16(filename,wname);
+	FILE * fi = _wfopen((const wchar_t*) wname.c_str(),"rb");
+#else
 	FILE * fi = fopen(filename,"rb");
+#endif	
 	if(exists) *exists = (fi != NULL);
 	if(!fi)
 		return string("Unable to open file:") + string(filename);
@@ -71,7 +78,7 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 			XML_Error e = XML_GetErrorCode(parser);
 			if(err.empty())
 				err = XML_ErrorString(e);
-//			printf("At: %d,%d\n", XML_GetCurrentLineNumber(parser), XML_GetCurrentColumnNumber(parser));
+			printf("%s At: %zd,%zd\n", err.c_str(), XML_GetCurrentLineNumber(parser), XML_GetCurrentColumnNumber(parser));
 			break;
 		}
 	}
