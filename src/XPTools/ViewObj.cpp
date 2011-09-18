@@ -975,7 +975,7 @@ static void ObjView_SetNoDraped(void * ref)
 
 static	ObjDrawFuncs10_t sCallbacks = {
 	ObjView_SetupPoly, ObjView_SetupLine, ObjView_SetupLine,
-	ObjView_SetupPoly, ObjView_SetupPanel, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam, 
+	ObjView_SetupPoly, ObjView_SetupPanel, ObjView_TexCoord, ObjView_TexCoordPointer, ObjView_GetAnimParam,
 	ObjView_SetDraped, ObjView_SetNoDraped
 };
 
@@ -1037,7 +1037,7 @@ static void setup_textures(const string& in_tex, const string& in_lit, const str
 //	if (tex.size() > 4)	tex.erase(tex.size()-4);
 	StripPathCP(tex);
 	StripPathCP(drp);
-	
+
 	info.tex = FindTexture(tex, false);
 	if (info.tex)	glBindTexture(GL_TEXTURE_2D, info.tex);		CHECK_ERR();
 
@@ -1074,7 +1074,7 @@ static void setup_textures(const string& in_tex, const string& in_lit, const str
 void	PlotOneObj(const XObj& inObj, int inShowCulled, bool inLit, bool inLighting, bool inSolid, bool inAnimate, float dist)
 {
 	inLighting = false;	// NEVER light these - it don't work yet!
-	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0, 0 };
+	ObjViewInfo_t info = { inLit, inSolid, (inShowCulled != 0), inAnimate, 0, 0, 0, 0, 0 };
 
 	string lit_tex = inObj.texture;
 	if (!lit_tex.empty()) lit_tex += "_LIT";
@@ -1108,10 +1108,10 @@ void	PlotOneObj8(const XObj8& inObj, int inShowCulled, bool inLit, bool inLighti
 {
 	CHECK_ERR();
 
-	ObjViewInfo_t info = { inLit, inSolid, inShowCulled, inAnimate, 0, 0, 0, 0 };
+	ObjViewInfo_t info = { inLit, inSolid, (inShowCulled != 0), inAnimate, 0, 0, 0, 0 };
 
 	setup_textures(inObj.texture.substr(0,(inObj.texture.length() > 4) ? (inObj.texture.length() - 4) : (inObj.texture.length())),
-					inObj.texture_lit.substr(0,(inObj.texture_lit.length() > 4) ? (inObj.texture_lit.length() - 4) : (inObj.texture_lit.length())), 
+					inObj.texture_lit.substr(0,(inObj.texture_lit.length() > 4) ? (inObj.texture_lit.length() - 4) : (inObj.texture_lit.length())),
 					inObj.texture_draped.substr(0,(inObj.texture_draped.length() > 4) ? (inObj.texture_draped.length() - 4) : (inObj.texture_draped.length())),
 					inLit, inSolid, info);
 

@@ -32,7 +32,9 @@ static unsigned char * get_image_data(ACImage * im)
 {
 	int addr;
 	if (!ac_entity_get_int_value(im, (char*)"data", &addr)) return NULL;
-	return (unsigned char *) addr;
+
+	uintptr_t a = (uintptr_t)addr;
+	return (unsigned char *) a;
 }
 
 

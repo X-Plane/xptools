@@ -535,7 +535,7 @@ int			GUI_Pane::InternalMouseWheel(int x, int y, int dist, int axis)
 				return 1;
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 int			GUI_Pane::InternalGetCursor(int x, int y)

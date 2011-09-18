@@ -161,7 +161,7 @@ void	WED_LibraryListAdapter::SelectRange(
 	if(is_toggle && r == mSel)	SetSel("");
 	else						SetSel(r);
 
-	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,NULL);
+	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 }
 
 void	WED_LibraryListAdapter::SelectionEnd(void)
@@ -232,7 +232,7 @@ void	WED_LibraryListAdapter::ReceiveMessage(
 	if(inMsg == msg_LibraryChanged)
 	{
 		mCacheValid = false;
-		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,NULL);
+		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
 }
 

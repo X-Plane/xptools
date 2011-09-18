@@ -1,22 +1,22 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
@@ -59,13 +59,13 @@ namespace CGAL {
 	public:
 		typedef Tag_true	type;
 	};
-	
+
 	template<>
 	class Has_inexact_constructions<FastKernel> {
 	public:
 		typedef Tag_false	type;
 	};
-	
+
 	template<>
 	class Has_inexact_constructions<Simple_cartesian<Gmpq> > {
 	public:
@@ -111,7 +111,7 @@ struct comp_hehandle {
 
 // Allow in-place djikstra...since these structs don't go out to WED, who cares if we jam some extra fields in place?
 
-cgal_node_t * cgal_edge_t::other(cgal_node_t * who) const 
+cgal_node_t * cgal_edge_t::other(cgal_node_t * who) const
 {
 	if(who==src) return dst;
 	if(who==dst) return src;
@@ -119,7 +119,7 @@ cgal_node_t * cgal_edge_t::other(cgal_node_t * who) const
 	return NULL;
 }
 
-double cgal_edge_t::cost(void) const 
+double cgal_edge_t::cost(void) const
 {
 	double c=1.0;
 	if(src->yuck) c++;
@@ -128,7 +128,7 @@ double cgal_edge_t::cost(void) const
 }
 
 void cgal_net_t::clear(void)
-{	
+{
 	for(vector<cgal_node_t *>::iterator n = nodes.begin(); n != nodes.end(); ++n) delete *n;
 	for(vector<cgal_edge_t *>::iterator e = edges.begin(); e != edges.end(); ++e) delete *e;
 	nodes.clear();
@@ -226,37 +226,37 @@ static bool calc_one_routing(cgal_net_t& io_net, cgal_node_t * src, cgal_node_t 
 		(**n).done = false;
 		(**n).prev = NULL;
 	}
-	
+
 	vector<cgal_node_t *>	hot_nodes;
-	
-	src->cost = NULL;
+
+	src->cost = 0.0;
 	hot_nodes.push_back(src);
-	
+
 	while(dst->prev == NULL)
 	{
 		if(hot_nodes.empty())
 			return false;
-			
+
 		cgal_node_t * n = hot_nodes.front();
 		hot_nodes.erase(hot_nodes.begin());
 		n->done = true;
-		
+
 		for(vector<cgal_edge_t *>::iterator inc = n->edges.begin(); inc != n->edges.end(); ++inc)
 		{
 			cgal_edge_t * e = *inc;
 			cgal_node_t * w = e->other(n);
-			
-			if(w->done)													// totally done - skip him...Djikstra alg guarantees that if he's done, 
-			{															// we can't improve his path anyway, because we've already gone on a LONGER trip than him!	
+
+			if(w->done)													// totally done - skip him...Djikstra alg guarantees that if he's done,
+			{															// we can't improve his path anyway, because we've already gone on a LONGER trip than him!
 				#if DEV
 					DebugAssert(w->cost <= n->cost + e->cost());		// verify djikstra isn't hosed...rounding error could be a porblem?
-				#endif	
-				continue;		
-								
+				#endif
+				continue;
+
 			}
 			double nc = n->cost + e->cost();
-			
-			// if we have never gotten ot this node, or it's cheaper to get there via us, 
+
+			// if we have never gotten ot this node, or it's cheaper to get there via us,
 			// mark this guy.
 			if(w->prev == NULL || nc < w->cost)
 			{
@@ -265,12 +265,12 @@ static bool calc_one_routing(cgal_net_t& io_net, cgal_node_t * src, cgal_node_t 
 				w->cost = nc;
 			}
 		}
-		
+
 		// resort the PQ by cost.  Mutable PQ would work too.
 		sort(hot_nodes.begin(),hot_nodes.end(), node_comp_cost());
 	}
 
-	// Now: 
+	// Now:
 	cgal_node_t * i = dst;
 	while(i)
 	{
@@ -279,7 +279,7 @@ static bool calc_one_routing(cgal_net_t& io_net, cgal_node_t * src, cgal_node_t 
 			#if DEV
 			if(debug)
 				debug_mesh_line(cgal2ben(i->prev->src->loc),cgal2ben(i->prev->dst->loc), 1,0,0,  1,1,0);
-			#endif	
+			#endif
 			i->prev->used = true;
 			DebugAssert(i != i->prev->other(i));
 			i = i->prev->other(i);
@@ -287,13 +287,13 @@ static bool calc_one_routing(cgal_net_t& io_net, cgal_node_t * src, cgal_node_t 
 			break;
 	}
 	return true;
-	
+
 }
 
 static void find_all_routes(cgal_net_t& io_map)
 {
 	static int debug = 0;
-	
+
 	int n = 0;
 	for(vector<cgal_node_t *>::iterator sn = io_map.nodes.begin(); sn != io_map.nodes.end(); ++sn)
 	if(!(**sn).poi.empty())
@@ -306,8 +306,8 @@ static void find_all_routes(cgal_net_t& io_map)
 			bool worked = calc_one_routing(io_map,*sn,*dn, false);//n == debug);
 			++n;
 			DebugAssert(worked);
-		}		
-	}	
+		}
+	}
 	++debug;
 }
 
@@ -321,38 +321,38 @@ bool make_map_with_skeleton(
 					const vector<Point2>&		in_poi,
 					cgal_net_t&					out_route)
 {
-	Polygon_set_2 merged_area; 
-	
+	Polygon_set_2 merged_area;
+
 	apt_make_map_from_polygons(in_pavement, merged_area);
-	
+
 	#if DEV
 		for(Pmwx::Edge_iterator e = merged_area.arrangement().edges_begin();
 								e != merged_area.arrangement().edges_end(); ++e)
 			debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,1,1,  1,1,1);
 
 	#endif
-	
+
 		for(Pmwx::Vertex_iterator v = merged_area.arrangement().vertices_begin(); v != merged_area.arrangement().vertices_end(); ++v)
 		if(v->degree() != 2)
 		{
 			printf("ERROR: input is not strictly simple!\n");
 			return false;
 		}
-	
-	if(!merged_area.arrangement().is_valid()) 
+
+	if(!merged_area.arrangement().is_valid())
 	{
 		printf("Basic arrangement setup failed.\n");
 		return false;
 	}
 
 	Straight_skeleton_builder_2	ssb;
-	
+
 	vector<Polygon_with_holes_2>	polys;
-	
+
 	vector<FPolygon_2>	outer_contours, inner_contours;
-	
+
 	double shortest = 9.9e9;
-	
+
 	merged_area.polygons_with_holes(back_inserter(polys));
 	{
 		StElapsedTime timer("enter contours");
@@ -371,7 +371,7 @@ bool make_map_with_skeleton(
 				FPolygon_2::Segment_2 s=pts.edge(n);
 				shortest = min(shortest,sqrt(s.squared_length()));
 			}
-			
+
 			outer_contours.push_back(pts);
 			ssb.enter_contour(pts.vertices_begin(),pts.vertices_end());
 
@@ -387,16 +387,16 @@ bool make_map_with_skeleton(
 					return false;
 				}
 				DebugAssert(pts.bounded_side(hole[0]) == CGAL::ON_BOUNDED_SIDE);
-				
+
 				ssb.enter_contour(hole.vertices_begin(),hole.vertices_end());
 				inner_contours.push_back(hole);
 			}
 		}
 	}
-	
+
 	printf("Shortest side is: %lf degs.\n", shortest);
 
-	boost::shared_ptr<Straight_skeleton_2> ss;	
+	boost::shared_ptr<Straight_skeleton_2> ss;
 	{
 		StElapsedTime timer("skel");
 		ss = ssb.construct_skeleton();
@@ -405,9 +405,9 @@ bool make_map_with_skeleton(
 			return false;
 		}
 	}
-	
+
 	boost::shared_ptr<Slow_skeleton_2>	sss;
-	
+
 	#if USE_EXACT
 		sss = ss;
 	#else
@@ -421,19 +421,19 @@ bool make_map_with_skeleton(
 		}
 	}
 	#endif
-	
+
 	{
 		vector<Curve_2>	edges_to_check;
 		vector<Point_2>	pts_to_check;
-	
+
 		typedef map<Slow_skeleton_2::Vertex_handle, cgal_node_t *, comp_vhandle>	node_map_t;
 		typedef set<Slow_skeleton_2::Halfedge_handle, comp_hehandle>				edge_set_t;
 		node_map_t::iterator i;
-	
+
 		node_map_t	nodes;
 		edge_set_t	edges;
-		
-		
+
+
 		int num_degen = 0;
 
 		for(Slow_skeleton_2::Halfedge_iterator e = sss->halfedges_begin(); e != sss->halfedges_end(); ++e)
@@ -445,7 +445,7 @@ bool make_map_with_skeleton(
 			#endif
 		}
 
-		
+
 		for(Slow_skeleton_2::Halfedge_iterator e = sss->halfedges_begin(); e != sss->halfedges_end(); ++e)
 		if(e->is_inner_bisector())
 		if(edges.count(e) == 0)
@@ -461,15 +461,15 @@ bool make_map_with_skeleton(
 				#if DEV
 				debug_mesh_point(cgal2ben(e->vertex()->point()),0.2,0.4,1);
 				#endif
-			} else	
+			} else
 				edges_to_check.push_back(Curve_2(Segment_2(e->vertex()->point(),e->opposite()->vertex()->point())));
 			edges.insert(e);
 			edges.insert(e->opposite());
 			Slow_skeleton_2::Vertex_handle v1 = e->vertex();
 			Slow_skeleton_2::Vertex_handle v2 = e->opposite()->vertex();
-		
+
 			cgal_node_t * n1, * n2;
-		
+
 			i = nodes.find(v1);
 			if(i == nodes.end())
 			{
@@ -492,14 +492,14 @@ bool make_map_with_skeleton(
 			}
 			else
 				n2 = i->second;
-							
+
 			out_route.new_edge_between(n1,n2);
 		}
-		
+
 		for(Pmwx::Edge_iterator e = merged_area.arrangement().edges_begin();
 								e != merged_area.arrangement().edges_end(); ++e)
 			edges_to_check.push_back(e->curve());
-		
+
 		Traits_2			tr;
 		vector<Point_2>		errs;
 //		CGAL::compute_intersection_points(edges_to_check.begin(), edges_to_check.end(), back_inserter(errs), false, tr);
@@ -509,14 +509,14 @@ bool make_map_with_skeleton(
 			#if DEV
 			for(vector<Point_2>::iterator i = errs.begin(); i != errs.end(); ++i)
 				debug_mesh_point(cgal2ben(*i),1,0,0);
-			#endif	
+			#endif
 		}
-		
+
 		list<pair<Point_2, CGAL::Object> > queries;
 		CGAL::locate(merged_area.arrangement(), pts_to_check.begin(), pts_to_check.end(), back_inserter(queries));
-		
+
 		int bad_locs = 0;
-		
+
 		for(list<pair<Point_2,CGAL::Object> >::iterator q = queries.begin(); q != queries.end(); ++q)
 		{
 			Pmwx::Face_const_handle f;
@@ -529,7 +529,7 @@ bool make_map_with_skeleton(
 					debug_mesh_point(cgal2ben(q->first),1,0,0);
 					#endif
 					FPoint_2	approx = to_fast(q->first);
-					
+
 					bool in_any = false;
 					for(vector<FPolygon_2>::iterator c = outer_contours.begin(); c != outer_contours.end(); ++c)
 					if(c->bounded_side(approx) == CGAL::ON_BOUNDED_SIDE)
@@ -538,7 +538,7 @@ bool make_map_with_skeleton(
 						break;
 					}
 					if(in_any) printf("But: the point is inside the approximate boundary.\n");
-					
+
 					++bad_locs;
 				}
 			}
@@ -550,7 +550,7 @@ bool make_map_with_skeleton(
 				++bad_locs;
 			}
 		}
-		
+
 		if(bad_locs > 0 || !errs.empty())
 		{
 			printf("This layout is invalid: %zd skeleton self-intersections and %d points outside the polygon area.  (Also, %d degen)\n",
@@ -558,12 +558,12 @@ bool make_map_with_skeleton(
 			return false;
 		} else if (num_degen)
 			printf("Layout okay but %d degenreate edges.\n", num_degen);
-	}	
+	}
 
 	for(vector<Point2>::const_iterator p = in_poi.begin(); p != in_poi.end(); ++p)
 	{
 		Point_2 loc = ben2cgal(*p);
-		
+
 		cgal_node_t * best_node = NULL;
 		cgal_edge_t * best_edge = NULL;
 		NT	best_d;
@@ -588,7 +588,7 @@ bool make_map_with_skeleton(
 				best_d = my_dist;
 			}
 		}
-		
+
 		if(best_node)
 		{
 			cgal_node_t * new_poi_node = out_route.new_node_at(loc);
@@ -600,15 +600,15 @@ bool make_map_with_skeleton(
 			Line_2	l(best_edge->src->loc,best_edge->dst->loc);
 			Point_2 on_e = l.projection(loc);
 			cgal_node_t * n = out_route.split_edge_at(best_edge, on_e);
-						
+
 			cgal_node_t * new_poi_node = out_route.new_node_at(loc);
-			new_poi_node->poi.push_back(*p);			
+			new_poi_node->poi.push_back(*p);
 			out_route.new_edge_between(n,new_poi_node);
 		}
-		else 
+		else
 			DebugAssert(!"Logic error.");
-		
-	}	
+
+	}
 	return true;
 }
 
@@ -626,9 +626,9 @@ static void make_cgal_net_for_map(
 {
 	typedef map<Face_const_handle, cgal_node_t *> mapping_t;
 	mapping_t		face_mapping;		// This is how we converted each CGAL face into a node.
-	
+
 	// Step 1. Every contained face gets a node at its centroid, e.g. "how do we get to this face?"
-	
+
 	for(Pmwx::Face_iterator f = in_map.faces_begin(); f != in_map.faces_end(); ++f)
 	if(f->contained())
 	{
@@ -644,7 +644,7 @@ static void make_cgal_net_for_map(
 		n->loc = CGAL::centroid(pts.begin(),pts.end());
 		n->yuck = false;
 	}
-	
+
 	// Step 2.  Every face that touches another face gets exactly one edge going between the two.
 	for(Pmwx::Face_iterator f = in_map.faces_begin(); f != in_map.faces_end(); ++f)
 	if(f->contained())
@@ -652,11 +652,11 @@ static void make_cgal_net_for_map(
 		set<Face_handle> neighbors;
 		FindAdjacentFaces(f, neighbors);
 		for(set<Face_handle>::iterator n = neighbors.begin(); n != neighbors.end(); ++n)
-		{			
+		{
 			Face_handle nn = *n;
 			DebugAssert(nn != f);
 			if(!nn->contained())
-			{				
+			{
 				mapping_t::iterator i = face_mapping.find(f);
 				if(i != face_mapping.end())
 					i->second->yuck = true;
@@ -673,7 +673,7 @@ static void make_cgal_net_for_map(
 				i = face_mapping.find(nn);
 				DebugAssert(i != face_mapping.end());
 				ne->dst = i->second;
-				
+
 				ne->src->edges.push_back(ne);
 				ne->dst->edges.push_back(ne);
 			}
@@ -685,9 +685,9 @@ static void make_cgal_net_for_map(
 		#error the right thing to do would actually be to connect each POI to the nearest node by a single edge?
 		#error or better connect to EVERY nearby node via an edge and let the alg clean the mess up?
 	#endif
-	
+
 	Locator	loc(in_map);
-	
+
 	for(vector<Point2>::const_iterator poi = in_poi.begin(); poi != in_poi.end(); ++poi)
 	{
 		Point_2 p = ben2cgal(*poi);
@@ -698,7 +698,7 @@ static void make_cgal_net_for_map(
 		Pmwx::Face_const_handle		lf;
 		Pmwx::Halfedge_const_handle le;
 		Pmwx::Vertex_const_handle	lv;
-		
+
 		if(CGAL::assign(lf,o))
 		{
 			// trivial case: directh it.
@@ -714,7 +714,7 @@ static void make_cgal_net_for_map(
 		else if(CGAL::assign(lv,o))
 		{
 			// hit a vertex.  Try all faces adgacent to incident halfedges.
-			// Note that we don't need the "twin" of an incident edge - 
+			// Note that we don't need the "twin" of an incident edge -
 			// that face must be the same face as our next incident.
 			// (Becasue c->twin->next == c+1 for circulators.)
 			Pmwx::Halfedge_around_vertex_const_circulator circ, stop;
@@ -731,7 +731,7 @@ static void make_cgal_net_for_map(
 		{
 			DebugAssert(!"Locate found NO valid object?!? code bug.");
 		}
-		
+
 		// Do some validation!?
 
 		#if !DEV

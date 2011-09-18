@@ -64,121 +64,121 @@ typedef int GUI_KeyFlags;
  * VIRTUAL KEY CODES
  ***************************************************************************/
 
-#define GUI_VK_BACK         0x08
-#define GUI_VK_TAB          0x09
-#define GUI_VK_CLEAR        0x0C
-#define GUI_VK_RETURN       0x0D
-#define GUI_VK_ESCAPE       0x1B
-#define GUI_VK_SPACE        0x20
-#define GUI_VK_PRIOR        0x21
-#define GUI_VK_NEXT         0x22
-#define GUI_VK_END          0x23
-#define GUI_VK_HOME         0x24
-#define GUI_VK_LEFT         0x25
-#define GUI_VK_UP           0x26
-#define GUI_VK_RIGHT        0x27
-#define GUI_VK_DOWN         0x28
-#define GUI_VK_SELECT       0x29
-#define GUI_VK_PRINT        0x2A
-#define GUI_VK_EXECUTE      0x2B
-#define GUI_VK_SNAPSHOT     0x2C
-#define GUI_VK_INSERT       0x2D
-#define GUI_VK_DELETE       0x2E
-#define GUI_VK_HELP         0x2F
+#define GUI_VK_BACK         ((const char)0x08)
+#define GUI_VK_TAB          ((const char)0x09)
+#define GUI_VK_CLEAR        ((const char)0x0C)
+#define GUI_VK_RETURN       ((const char)0x0D)
+#define GUI_VK_ESCAPE       ((const char)0x1B)
+#define GUI_VK_SPACE        ((const char)0x20)
+#define GUI_VK_PRIOR        ((const char)0x21)
+#define GUI_VK_NEXT         ((const char)0x22)
+#define GUI_VK_END          ((const char)0x23)
+#define GUI_VK_HOME         ((const char)0x24)
+#define GUI_VK_LEFT         ((const char)0x25)
+#define GUI_VK_UP           ((const char)0x26)
+#define GUI_VK_RIGHT        ((const char)0x27)
+#define GUI_VK_DOWN         ((const char)0x28)
+#define GUI_VK_SELECT       ((const char)0x29)
+#define GUI_VK_PRINT        ((const char)0x2A)
+#define GUI_VK_EXECUTE      ((const char)0x2B)
+#define GUI_VK_SNAPSHOT     ((const char)0x2C)
+#define GUI_VK_INSERT       ((const char)0x2D)
+#define GUI_VK_DELETE       ((const char)0x2E)
+#define GUI_VK_HELP         ((const char)0x2F)
 /* GUI_VK_0 thru GUI_VK_9 are the same as ASCII '0' thru '9' (0x30 - 0x39)   */
-#define GUI_VK_0            0x30
-#define GUI_VK_1            0x31
-#define GUI_VK_2            0x32
-#define GUI_VK_3            0x33
-#define GUI_VK_4            0x34
-#define GUI_VK_5            0x35
-#define GUI_VK_6            0x36
-#define GUI_VK_7            0x37
-#define GUI_VK_8            0x38
-#define GUI_VK_9            0x39
+#define GUI_VK_0            ((const char)0x30)
+#define GUI_VK_1            ((const char)0x31)
+#define GUI_VK_2            ((const char)0x32)
+#define GUI_VK_3            ((const char)0x33)
+#define GUI_VK_4            ((const char)0x34)
+#define GUI_VK_5            ((const char)0x35)
+#define GUI_VK_6            ((const char)0x36)
+#define GUI_VK_7            ((const char)0x37)
+#define GUI_VK_8            ((const char)0x38)
+#define GUI_VK_9            ((const char)0x39)
 /* GUI_VK_A thru GUI_VK_Z are the same as ASCII 'A' thru 'Z' (0x41 - 0x5A)   */
-#define GUI_VK_A            0x41
-#define GUI_VK_B            0x42
-#define GUI_VK_C            0x43
-#define GUI_VK_D            0x44
-#define GUI_VK_E            0x45
-#define GUI_VK_F            0x46
-#define GUI_VK_G            0x47
-#define GUI_VK_H            0x48
-#define GUI_VK_I            0x49
-#define GUI_VK_J            0x4A
-#define GUI_VK_K            0x4B
-#define GUI_VK_L            0x4C
-#define GUI_VK_M            0x4D
-#define GUI_VK_N            0x4E
-#define GUI_VK_O            0x4F
-#define GUI_VK_P            0x50
-#define GUI_VK_Q            0x51
-#define GUI_VK_R            0x52
-#define GUI_VK_S            0x53
-#define GUI_VK_T            0x54
-#define GUI_VK_U            0x55
-#define GUI_VK_V            0x56
-#define GUI_VK_W            0x57
-#define GUI_VK_X            0x58
-#define GUI_VK_Y            0x59
-#define GUI_VK_Z            0x5A
-#define GUI_VK_NUMPAD0      0x60
-#define GUI_VK_NUMPAD1      0x61
-#define GUI_VK_NUMPAD2      0x62
-#define GUI_VK_NUMPAD3      0x63
-#define GUI_VK_NUMPAD4      0x64
-#define GUI_VK_NUMPAD5      0x65
-#define GUI_VK_NUMPAD6      0x66
-#define GUI_VK_NUMPAD7      0x67
-#define GUI_VK_NUMPAD8      0x68
-#define GUI_VK_NUMPAD9      0x69
-#define GUI_VK_MULTIPLY     0x6A
-#define GUI_VK_ADD          0x6B
-#define GUI_VK_SEPARATOR    0x6C
-#define GUI_VK_SUBTRACT     0x6D
-#define GUI_VK_DECIMAL      0x6E
-#define GUI_VK_DIVIDE       0x6F
-#define GUI_VK_F1           0x70
-#define GUI_VK_F2           0x71
-#define GUI_VK_F3           0x72
-#define GUI_VK_F4           0x73
-#define GUI_VK_F5           0x74
-#define GUI_VK_F6           0x75
-#define GUI_VK_F7           0x76
-#define GUI_VK_F8           0x77
-#define GUI_VK_F9           0x78
-#define GUI_VK_F10          0x79
-#define GUI_VK_F11          0x7A
-#define GUI_VK_F12          0x7B
-#define GUI_VK_F13          0x7C
-#define GUI_VK_F14          0x7D
-#define GUI_VK_F15          0x7E
-#define GUI_VK_F16          0x7F
-#define GUI_VK_F17          0x80
-#define GUI_VK_F18          0x81
-#define GUI_VK_F19          0x82
-#define GUI_VK_F20          0x83
-#define GUI_VK_F21          0x84
-#define GUI_VK_F22          0x85
-#define GUI_VK_F23          0x86
-#define GUI_VK_F24          0x87
+#define GUI_VK_A            ((const char)0x41)
+#define GUI_VK_B            ((const char)0x42)
+#define GUI_VK_C            ((const char)0x43)
+#define GUI_VK_D            ((const char)0x44)
+#define GUI_VK_E            ((const char)0x45)
+#define GUI_VK_F            ((const char)0x46)
+#define GUI_VK_G            ((const char)0x47)
+#define GUI_VK_H            ((const char)0x48)
+#define GUI_VK_I            ((const char)0x49)
+#define GUI_VK_J            ((const char)0x4A)
+#define GUI_VK_K            ((const char)0x4B)
+#define GUI_VK_L            ((const char)0x4C)
+#define GUI_VK_M            ((const char)0x4D)
+#define GUI_VK_N            ((const char)0x4E)
+#define GUI_VK_O            ((const char)0x4F)
+#define GUI_VK_P            ((const char)0x50)
+#define GUI_VK_Q            ((const char)0x51)
+#define GUI_VK_R            ((const char)0x52)
+#define GUI_VK_S            ((const char)0x53)
+#define GUI_VK_T            ((const char)0x54)
+#define GUI_VK_U            ((const char)0x55)
+#define GUI_VK_V            ((const char)0x56)
+#define GUI_VK_W            ((const char)0x57)
+#define GUI_VK_X            ((const char)0x58)
+#define GUI_VK_Y            ((const char)0x59)
+#define GUI_VK_Z            ((const char)0x5A)
+#define GUI_VK_NUMPAD0      ((const char)0x60)
+#define GUI_VK_NUMPAD1      ((const char)0x61)
+#define GUI_VK_NUMPAD2      ((const char)0x62)
+#define GUI_VK_NUMPAD3      ((const char)0x63)
+#define GUI_VK_NUMPAD4      ((const char)0x64)
+#define GUI_VK_NUMPAD5      ((const char)0x65)
+#define GUI_VK_NUMPAD6      ((const char)0x66)
+#define GUI_VK_NUMPAD7      ((const char)0x67)
+#define GUI_VK_NUMPAD8      ((const char)0x68)
+#define GUI_VK_NUMPAD9      ((const char)0x69)
+#define GUI_VK_MULTIPLY     ((const char)0x6A)
+#define GUI_VK_ADD          ((const char)0x6B)
+#define GUI_VK_SEPARATOR    ((const char)0x6C)
+#define GUI_VK_SUBTRACT     ((const char)0x6D)
+#define GUI_VK_DECIMAL      ((const char)0x6E)
+#define GUI_VK_DIVIDE       ((const char)0x6F)
+#define GUI_VK_F1           ((const char)0x70)
+#define GUI_VK_F2           ((const char)0x71)
+#define GUI_VK_F3           ((const char)0x72)
+#define GUI_VK_F4           ((const char)0x73)
+#define GUI_VK_F5           ((const char)0x74)
+#define GUI_VK_F6           ((const char)0x75)
+#define GUI_VK_F7           ((const char)0x76)
+#define GUI_VK_F8           ((const char)0x77)
+#define GUI_VK_F9           ((const char)0x78)
+#define GUI_VK_F10          ((const char)0x79)
+#define GUI_VK_F11          ((const char)0x7A)
+#define GUI_VK_F12          ((const char)0x7B)
+#define GUI_VK_F13          ((const char)0x7C)
+#define GUI_VK_F14          ((const char)0x7D)
+#define GUI_VK_F15          ((const char)0x7E)
+#define GUI_VK_F16          ((const char)0x7F)
+#define GUI_VK_F17          ((const char)0x80)
+#define GUI_VK_F18          ((const char)0x81)
+#define GUI_VK_F19          ((const char)0x82)
+#define GUI_VK_F20          ((const char)0x83)
+#define GUI_VK_F21          ((const char)0x84)
+#define GUI_VK_F22          ((const char)0x85)
+#define GUI_VK_F23          ((const char)0x86)
+#define GUI_VK_F24          ((const char)0x87)
 /* The following definitions are extended and are not based on the Microsoft   *
  * key set.                                                                    */
-#define GUI_VK_EQUAL        0xB0
-#define GUI_VK_MINUS        0xB1
-#define GUI_VK_RBRACE       0xB2
-#define GUI_VK_LBRACE       0xB3
-#define GUI_VK_QUOTE        0xB4
-#define GUI_VK_SEMICOLON    0xB5
-#define GUI_VK_BACKSLASH    0xB6
-#define GUI_VK_COMMA        0xB7
-#define GUI_VK_SLASH        0xB8
-#define GUI_VK_PERIOD       0xB9
-#define GUI_VK_BACKQUOTE    0xBA
-#define GUI_VK_ENTER        0xBB
-#define GUI_VK_NUMPAD_ENT   0xBC
-#define GUI_VK_NUMPAD_EQ    0xBD
+#define GUI_VK_EQUAL        ((const char)0xB0)
+#define GUI_VK_MINUS        ((const char)0xB1)
+#define GUI_VK_RBRACE       ((const char)0xB2)
+#define GUI_VK_LBRACE       ((const char)0xB3)
+#define GUI_VK_QUOTE        ((const char)0xB4)
+#define GUI_VK_SEMICOLON    ((const char)0xB5)
+#define GUI_VK_BACKSLASH    ((const char)0xB6)
+#define GUI_VK_COMMA        ((const char)0xB7)
+#define GUI_VK_SLASH        ((const char)0xB8)
+#define GUI_VK_PERIOD       ((const char)0xB9)
+#define GUI_VK_BACKQUOTE    ((const char)0xBA)
+#define GUI_VK_ENTER        ((const char)0xBB)
+#define GUI_VK_NUMPAD_ENT   ((const char)0xBC)
+#define GUI_VK_NUMPAD_EQ    ((const char)0xBD)
 
 /***************************************************************************
  * CURSORS

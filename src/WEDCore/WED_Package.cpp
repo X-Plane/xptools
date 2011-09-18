@@ -166,7 +166,7 @@ WED_Document *	WED_Package::GetTileDocument(int lon, int lat)
 
 WED_Document *	WED_Package::OpenTile(int lon, int lat)
 {
-	double bounds[4] = { lon, lat, lon + 1, lat + 1 };
+	double bounds[4] = { (double)lon, (double)lat, (double)lon + 1.0, (double)lat + 1.0 };
 	char partial[30];
 	sprintf(partial, DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.xes", latlon_bucket(lat),latlon_bucket(lon),lat,lon);
 	string path = mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME + partial;
@@ -189,7 +189,7 @@ WED_Document *	WED_Package::OpenTile(int lon, int lat)
 
 WED_Document *	WED_Package::NewTile(int lon, int lat)
 {
-	double bounds[4] = { lon, lat, lon + 1, lat + 1 };
+	double bounds[4] = { (double)lon, (double)lat, (double)lon + 1.0, (double)lat + 1.0 };
 	char partial[30];
 	sprintf(partial, DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.xes", latlon_bucket(lat),latlon_bucket(lon),lat,lon);
 	string path = mPackageBase + EDIT_DIR_NAME + EARTH_DIR_NAME + partial;

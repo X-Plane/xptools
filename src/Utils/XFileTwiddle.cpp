@@ -67,7 +67,7 @@ int	ZipBlock(const char * inRaw, int inSize,
 	stream.total_in = 0;
 	stream.next_out = (unsigned char *) ioZipped;
 	stream.avail_out = *ioZippedSize;
-	stream.total_out = NULL;
+	stream.total_out = 0;
 	int deflate_result = deflate(&stream, Z_FINISH);
 	if (deflate_result != Z_STREAM_END)
 		return 0;

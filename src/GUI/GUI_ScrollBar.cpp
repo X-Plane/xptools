@@ -117,7 +117,8 @@ int			GUI_ScrollBar::MouseDown(int x, int y, int button)
 {
 	int b[4];
 	GetBounds(b);
-	float bf[6] = { b[0], b[1], b[2], b[3], b[2]-b[0],b[3]-b[1] };
+	float bf[6] = { (float)b[0], (float)b[1], (float)b[2],
+		(float)b[3], (float)b[2]-(float)b[0], (float)b[3]-(float)b[1] };
 	float vnow, vmin, vmax, vpage;
 	float b1, b2, t1, t2;
 	vnow = this->GetValue();
@@ -185,7 +186,8 @@ void		GUI_ScrollBar::MouseDrag(int x, int y, int button)
 	int oip = mInPart;
 	int b[4];
 	GetBounds(b);
-	float bf[6] = { b[0], b[1], b[2], b[3], b[2]-b[0],b[3]-b[1] };
+	float bf[6] = { (float)b[0], (float)b[1], (float)b[2],
+		(float)b[3], (float)b[2]-(float)b[0], (float)b[3]-(float)b[1] };
 	float vnow, vmin, vmax, vpage;
 	float b1, b2, t1, t2;
 	vnow = this->GetValue();
@@ -308,7 +310,8 @@ void		GUI_ScrollBar::Draw(GUI_GraphState * state)
 
 	int b[4];
 	GetBounds(b);
-	float bf[6] = { b[0], b[1], b[2], b[3], b[2]-b[0],b[3]-b[1] };
+	float bf[6] = { (float)b[0], (float)b[1], (float)b[2],
+		(float)b[3], (float)b[2]-(float)b[0], (float)b[3]-(float)b[1] };
 
 
 	float vnow, vmin, vmax, vpage;
@@ -331,28 +334,28 @@ void		GUI_ScrollBar::Draw(GUI_GraphState * state)
 					   b1, t1, t2, b2);
 
 		int tile_s_bar[4] = { 0, 0, 1, 2 };
-		int bounds_bar[4] = { b1, bf[1], b2, bf[3] };
+		int bounds_bar[4] = { (int)b1, (int)bf[1], (int)b2, (int)bf[3] };
 		GUI_DrawHorizontalStretch(state, "scrollbar_h.png", bounds_bar, tile_s_bar);
 
 		if (alive)
 		{
 			// thumb
 			int thumb_sel[4] = { 0, 1, 1, 2 };
-			int thumb_bnd[4] = { t1, bf[1], t2, bf[3] };
+			int thumb_bnd[4] = { (int)t1, (int)bf[1], (int)t2, (int)bf[3] };
 //			glColor3f(0.0, (mInPart && mClickPart == sb_PartThumb) ? 1.0 : 0.5, 0.0);
 			GUI_DrawHorizontalStretch(state, "scrollbar_h.png", thumb_bnd, thumb_sel);
 		}
 
 		// Down btn
 		int tile_sel[4] = { 0, (mInPart && mClickPart == sb_PartDownButton) ? 1 :0, 2, 2 };
-		int	bounds[4] = { bf[0], bf[1], b1, bf[3] };
+		int	bounds[4] = { (int)bf[0], (int)bf[1], (int)b1, (int)bf[3] };
 //		glColor3f((mInPart && mClickPart == sb_PartDownButton) ? 0.0 : 1.0, 1.0, 1.0);
 		GUI_DrawCentered(state, "scroll_btn_h.png", bounds, 0, 0, tile_sel, NULL, NULL);
 
 
 		// up button
 		int up_sel[4] = { 1, (mInPart && mClickPart == sb_PartUpButton) ? 1 : 0, 2, 2 };
-		int	up_bnd[4] = { b2, bf[1], bf[2], bf[3] };
+		int	up_bnd[4] = { (int)b2, (int)bf[1], (int)bf[2], (int)bf[3] };
 //		glColor3f((mInPart && mClickPart == sb_PartUpButton) ? 0.0 : 1.0, 1.0, 1.0);
 		GUI_DrawCentered(state, "scroll_btn_h.png", up_bnd, 0, 0, up_sel, NULL, NULL);
 	}
@@ -366,28 +369,28 @@ void		GUI_ScrollBar::Draw(GUI_GraphState * state)
 					   b1, t1, t2, b2);
 
 		int tile_s_bar[4] = { 0, 0, 2, 1 };
-		int bounds_bar[4] = { bf[0], b1, bf[2], b2 };
+		int bounds_bar[4] = { (int)bf[0], (int)b1, (int)bf[2], (int)b2 };
 		GUI_DrawVerticalStretch(state, "scrollbar_v.png", bounds_bar, tile_s_bar);
 
 		if (alive)
 		{
 			// thumb
 			int thumb_sel[4] = { 1, 0, 2, 1 };
-			int thumb_bnd[4] = { bf[0], t1, bf[2], t2 };
+			int thumb_bnd[4] = { (int)bf[0], (int)t1, (int)bf[2], (int)t2 };
 //			glColor3f(0.0, (mInPart && mClickPart == sb_PartThumb) ? 1.0 : 0.5, 0.0);
 			GUI_DrawVerticalStretch(state, "scrollbar_v.png", thumb_bnd, thumb_sel);
 		}
 
 		// Down btn
 		int tile_sel[4] = { (mInPart && mClickPart == sb_PartDownButton) ? 1 : 0, 0, 2, 2 };
-		int	bounds[4] = { bf[0], bf[1], bf[2], b1 };
+		int	bounds[4] = { (int)bf[0], (int)bf[1], (int)bf[2], (int)b1 };
 //		glColor3f((mInPart && mClickPart == sb_PartDownButton) ? 0.0 : 1.0, 1.0, 1.0);
 		GUI_DrawCentered(state, "scroll_btn_v.png", bounds, 0, 0, tile_sel, NULL, NULL);
 
 
 		// up button
 		int up_sel[4] = { (mInPart && mClickPart == sb_PartUpButton) ? 1 : 0, 1, 2, 2 };
-		int	up_bnd[4] = { bf[0], b2, bf[2], bf[3] };
+		int	up_bnd[4] = { (int)bf[0], (int)b2, (int)bf[2], (int)bf[3] };
 //		glColor3f((mInPart && mClickPart == sb_PartUpButton) ? 0.0 : 1.0, 1.0, 1.0);
 		GUI_DrawCentered(state, "scroll_btn_v.png", up_bnd, 0, 0, up_sel, NULL, NULL);
 

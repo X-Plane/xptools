@@ -223,7 +223,7 @@ void		WED_LibraryMgr::Rescan()
 		MF_IterateDirectory(package_base.c_str(), AccumLocalFile, reinterpret_cast<void*>(&info));
 	}
 
-	BroadcastMessage(msg_LibraryChanged,NULL);
+	BroadcastMessage(msg_LibraryChanged,0);
 }
 
 void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup)

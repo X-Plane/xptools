@@ -114,10 +114,10 @@ void	GUI_DrawCentered(
 	int tex_id = GUI_GetTextureResource(in_resource, UI_TEX_FLAGS, &metrics);
 
 	int	image_size[4] = {
-		(float) tile_sel[0]    * (float)metrics.real_width  / (float)tile_sel[2],
-		(float) tile_sel[1]    * (float)metrics.real_height / (float)tile_sel[3],
-		(float)(tile_sel[0]+1) * (float)metrics.real_width  / (float)tile_sel[2],
-		(float)(tile_sel[1]+1) * (float)metrics.real_height / (float)tile_sel[3] };
+		(int)((float) tile_sel[0]    * (float)metrics.real_width  / (float)tile_sel[2]),
+		(int)((float) tile_sel[1]    * (float)metrics.real_height / (float)tile_sel[3]),
+		(int)((float)(tile_sel[0]+1) * (float)metrics.real_width  / (float)tile_sel[2]),
+		(int)((float)(tile_sel[1]+1) * (float)metrics.real_height / (float)tile_sel[3]) };
 
 	GUI_PositionRect(bounds, image_size, just_h, just_v);
 

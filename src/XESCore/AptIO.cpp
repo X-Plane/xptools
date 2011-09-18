@@ -179,7 +179,7 @@ string	ReadAptFile(const char * inFileName, AptVector& outApts)
 {
 	outApts.clear();
 	MFMemFile * f = MemFile_Open(inFileName);
-	if (f == NULL) return false;
+	if (f == NULL) return string("memfile_open failed");
 
 	string err = ReadAptFileMem(MemFile_GetBegin(f), MemFile_GetEnd(f), outApts);
 	MemFile_Close(f);
@@ -598,10 +598,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else if (outApts.back().flows.empty()) ok = "Error: traffic pattern outside a flow.";
 			else {
 				string side;
-				if(TextScanner_FormatScan(s,"iTT", &rec_code, 
+				if(TextScanner_FormatScan(s,"iTT", &rec_code,
 					&outApts.back().flows.back().pattern_runway,
 					&side) != 3) ok =  "Error: incorrect pattrn record";
-				else 
+				else
 					outApts.back().flows.back().pattern_side = scan_bitfields(side.c_str(), pattern_strings);
 			}
 			break;
@@ -612,7 +612,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else {
 				outApts.back().flows.back().runway_rules.push_back(AptRunwayRule_t());
 				string op, equip;
-				if(TextScanner_FormatScan(s,"iTiTTiiT|", &rec_code, 
+				if(TextScanner_FormatScan(s,"iTiTTiiT|", &rec_code,
 					&outApts.back().flows.back().runway_rules.back().runway,
 					&outApts.back().flows.back().runway_rules.back().dep_freq,
 					&op,
@@ -633,8 +633,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 			}
 			break;
-			
-			
+
+
 		case apt_taxi_header:
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: taxi layout use outside an airport.";
@@ -650,7 +650,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				outApts.back().taxi_route.nodes.push_back(AptRouteNode_t());
 				string flags;
 				if(TextScanner_FormatScan(s,"iddTiT|",
-					&rec_code, 
+					&rec_code,
 					&outApts.back().taxi_route.nodes.back().location.y_,
 					&outApts.back().taxi_route.nodes.back().location.x_,
 					&flags,
@@ -665,15 +665,15 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				outApts.back().taxi_route.edges.push_back(AptRouteEdge_t());
 				string oneway_flag, runway_flag;
 				if(TextScanner_FormatScan(s,"iiiTTT|",
-					&rec_code, 
+					&rec_code,
 					&outApts.back().taxi_route.edges.back().src,
 					&outApts.back().taxi_route.edges.back().dst,
 					&oneway_flag,
 					&runway_flag,
-					&outApts.back().taxi_route.edges.back().name) != 6) ok = "Error: illegal taxi layout edge.";				
+					&outApts.back().taxi_route.edges.back().name) != 6) ok = "Error: illegal taxi layout edge.";
 				outApts.back().taxi_route.edges.back().oneway = oneway_flag == "oneway";
 				outApts.back().taxi_route.edges.back().runway = runway_flag == "runway";
-				
+
 			}
 			break;
 		case apt_taxi_shape:
@@ -686,10 +686,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().taxi_route.edges.back().shape.back().y_,
 					&outApts.back().taxi_route.edges.back().shape.back().x_) != 3) ok = "Error: illegal shape point record.";
 			}
-			break;			
+			break;
 		case apt_taxi_active:
-		
-			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";			
+
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: taxi active zone outside an airport.";
 			else if (outApts.back().taxi_route.edges.empty()) ok = "Error: taxi taxi active zone without an edge.";
 			else {
@@ -917,30 +917,30 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 			fprintf(fi, "%2d %d %s" CRLF, atc->atc_type,
 					atc->freq, atc->name.c_str());
 		}
-		
+
 		for(AptFlowVector::const_iterator flow = apt->flows.begin(); flow != apt->flows.end(); ++flow)
 		{
-			fprintf(fi,"%2d %s %d %d %03d%03d %d %04d %04d %s" CRLF, apt_flow_def, 
+			fprintf(fi,"%2d %s %d %d %03d%03d %d %04d %04d %s" CRLF, apt_flow_def,
 					flow->icao.c_str(), flow->ceiling, flow->visibility, flow->wind_dir_min, flow->wind_dir_max, flow->wind_speed_max,
 									flow->time_min, flow->time_max, flow->name.c_str());
-									
+
 			if(!flow->pattern_runway.empty() && flow->pattern_side)
 			{
 				fprintf(fi,"%02d %s ", apt_flow_pattern, flow->pattern_runway.c_str());
 				print_bitfields(fi,flow->pattern_side,pattern_strings);
 				fprintf(fi,CRLF);
-			}	 
+			}
 
 			for(AptRunwayRuleVector::const_iterator	rule = flow->runway_rules.begin(); rule != flow->runway_rules.end(); ++rule)
 			{
-				fprintf(fi,"%2d %s %6d ",apt_flow_rwy_rule, rule->runway.c_str(), rule->dep_freq);							
+				fprintf(fi,"%2d %s %6d ",apt_flow_rwy_rule, rule->runway.c_str(), rule->dep_freq);
 				print_bitfields(fi,rule->operations, op_strings);
 				fprintf(fi," ");
-				print_bitfields(fi,rule->equipment, equip_strings);				
+				print_bitfields(fi,rule->equipment, equip_strings);
 				fprintf(fi," %03d%03d %03d%03d %s" CRLF, rule->dep_heading_lo, rule->dep_heading_hi, rule->ini_heading_lo, rule->ini_heading_hi, rule->name.c_str());
 			}
 		}
-		
+
 		if(!apt->taxi_route.edges.empty())
 		{
 			fprintf(fi,"%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
@@ -975,7 +975,7 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 						fprintf(fi,"%c%s", s == e->hot_ils.begin() ? ' ' : ',', s->c_str());
 					fprintf(fi,CRLF);
 				}
-			}			
+			}
 		}
 	}
 	fprintf(fi, "%d" CRLF, apt_done);

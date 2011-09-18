@@ -49,7 +49,7 @@ void		WED_PackageStatusPane::Draw(GUI_GraphState * state)
 {
 	int bounds[4];
 	this->GetBounds(bounds);
-	float fbounds[4] = { bounds[0], bounds[1], bounds[2] - bounds[0], bounds[3] - bounds[1] };
+	float fbounds[4] = { (float)bounds[0], (float)bounds[1], (float)bounds[2] - (float)bounds[0], (float)bounds[3] - (float)bounds[1] };
 
 	state->SetState(false, 0, false,   false, false,  false, false);
 
@@ -119,10 +119,10 @@ int			WED_PackageStatusPane::MouseDown(int x, int y, int button)
 	}
 	int bounds[4];
 	this->GetBounds(bounds);
-	float fbounds[4] = { bounds[0],
-						bounds[1],
-						bounds[2] - bounds[0],
-						bounds[3] - bounds[1] };
+	float fbounds[4] = { (float)bounds[0],
+						(float)bounds[1],
+						(float)bounds[2] - (float)bounds[0],
+						(float)bounds[3] - (float)bounds[1] };
 	int xp = ((float) (x - fbounds[0]) * 360.0 / fbounds[2]) - 180;
 	int yp = ((float) (y - fbounds[1]) * 180.0 / fbounds[3]) -  90;
 

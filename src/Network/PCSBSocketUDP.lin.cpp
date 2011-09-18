@@ -44,7 +44,7 @@ PCSBSocketUDP::PCSBSocketUDP(unsigned short inPort)
 		throw udp_Exception_UnknownError;
 	}
 
-	if (bind(mWinSocket, (sockaddr*)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
+	if (::bind(mWinSocket, (sockaddr*)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
 	{
 		// This is almost always because our port is in use.
 		close(mWinSocket);

@@ -189,10 +189,6 @@ void *	WED_Buffer::AllocContiguous(int len)
 	return buf->data;
 }
 
-#if SOTHIS_REMARK
-    f
-#endif
-
 void WED_Buffer::GetWritePos(long& a, long& b)
 {
 	a = (long) mWriteIterator;
@@ -202,7 +198,7 @@ void WED_Buffer::GetWritePos(long& a, long& b)
 	b = mWriteIterator ? mWriteIterator->size : 0;
 }
 
-void WED_Buffer::SetReadPos(int a, int b)
+void WED_Buffer::SetReadPos(uintptr_t a, int b)
 {
 	mReadIterator = (Storage *) a;
 	if (mReadIterator == NULL && mStorage != NULL)
