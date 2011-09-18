@@ -38,6 +38,22 @@ BUILDDIR	:= $(OUTDIR)/$(PLATFORM)/$(conf)
 
 ifdef PLAT_LINUX
 
+MOCEXISTS	:= $(shell moc -E /dev/null > /dev/null 2>&1; echo $$?)
+MOCQT4EXISTS	:= $(shell moc-qt4 -E /dev/null > /dev/null 2>&1; echo $$?)
+
+ifneq ($(MOCEXISTS), 0)
+ifneq ($(MOCQT4EXISTS), 0)
+$(error neither 'moc' nor 'moc-qt4' found, install qt4-dev)
+endif
+endif
+
+ifeq ($(MOCQT4EXISTS), 0)
+MOC	:= moc-qt4
+endif
+ifeq ($(MOCEXISTS), 0)
+MOC	:= moc
+endif
+
 ifeq ($(ARCHITECTURE), x86_64)
 #ifeq ($(cross), m32)
 #	MULTI_SUFFIX	:= 32
@@ -89,7 +105,7 @@ ifdef PLAT_LINUX
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:=  $(M32_SWITCH) -std=gnu++0x -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
@@ -182,7 +198,6 @@ AR	:= $(CROSSPREFIX)ar
 OBJCOPY	:= $(CROSSPREFIX)objcopy
 STRIP	:= $(CROSSPREFIX)strip
 WINDRES	:= $(CROSSPREFIX)windres
-MOC	:= moc-qt4
 endif
 
 
