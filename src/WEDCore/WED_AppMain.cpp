@@ -114,15 +114,29 @@ HINSTANCE gInstance = NULL;
 CGAL::Failure_function	gFailure = NULL;
 void	cgal_failure(const char* a, const char* b, const char* c, int d, const char* e)
 {
+#if IBM
+	char str[65536];
+	snprintf(str, 65536, "%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
+	MessageBox(0, str, "CGAL error", MB_OK);
+	volatile char* segfault = 0;
+	printf("%c\n", *segfault);
+	if (gFailure)
+		(*gFailure)(a, b, c, d, e);
+#else
 	printf("%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
 	if (gFailure)
 		(*gFailure)(a, b, c, d, e);
+#endif
 	throw a;
 }
 
 void	cgal_warning(const char* a, const char* b, const char* c, int d, const char* e)
 {
+#if IBM
+	MessageBox(0, b, "CGAL error", MB_OK);
+#else
 	printf("%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
+#endif
 }
 
 #if IBM

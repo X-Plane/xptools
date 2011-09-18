@@ -122,7 +122,7 @@ endif
 ifdef PLAT_MINGW
 	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:= -Wno-deprecated-declarations -Wno-multichar
-	CXXFLAGS	:= -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar
+	CXXFLAGS	:= -std=gnu++0x -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar
 	LDFLAGS		:= -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
