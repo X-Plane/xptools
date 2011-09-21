@@ -428,7 +428,7 @@ AsyncConnectionPool::AsyncConnectionPool(int max_cons, int max_depth) :
 	mMaxCons(max_cons),
 	mMaxDepths(max_depth),
 	mLocatorCon(NULL),
-	mImageCon(vector<HTTPConnection *>(64))
+	mImageCon(0)
 {
 }
 
