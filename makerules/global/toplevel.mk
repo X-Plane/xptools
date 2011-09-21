@@ -105,7 +105,7 @@ ifdef PLAT_LINUX
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
 	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:=  $(M32_SWITCH) -std=gnu++0x -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
