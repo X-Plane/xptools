@@ -47,6 +47,7 @@
 
 #include <list>
 #include <vector>
+#include <stdint.h>
 using std::list;
 using std::vector;
 

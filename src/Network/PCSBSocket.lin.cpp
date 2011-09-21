@@ -308,7 +308,7 @@ long PCSBSocket::WriteData(const void* inBuf,long inLength)
 	//DumpHex(hexdump,(char*)inBuf,inLength);
 	//fflush(hexdump);
 
-	nReturn = send(mLinSocket,(char*)inBuf,inLength,NULL);
+	nReturn = send(mLinSocket,(char*)inBuf,inLength,0);
 	if(nReturn == -1)
 	{
 		if(errno == EWOULDBLOCK)
