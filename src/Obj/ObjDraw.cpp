@@ -382,6 +382,18 @@ void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref
 			} // Case
 
 		} // cmd loop
+		
+		funcs->SetupNoDraped_f(ref);
+		{ float amb[4] = { 0.2, 0.2, 0.2, 1.0 }, diff[4] = { 0.8, 0.8, 0.8, 1.0 }, zero[4] = { 0.0, 0.0, 0.0, 1.0 };
+			glMaterialfv(GL_FRONT, GL_AMBIENT, amb);
+			glMaterialfv(GL_FRONT, GL_DIFFUSE, diff);
+			glMaterialfv(GL_FRONT, GL_SPECULAR, zero);
+			glMaterialfv(GL_FRONT, GL_EMISSION, zero);
+			glColor3f(1.0, 1.0, 1.0);
+			mat_col[0] = mat_col[1] = mat_col[2] = 1.0;
+			glMateriali (GL_FRONT,GL_SHININESS,0); 
+		}
+		
 	} // our LOD
 }
 
