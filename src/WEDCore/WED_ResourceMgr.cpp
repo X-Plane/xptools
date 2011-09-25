@@ -66,6 +66,43 @@ void	WED_ResourceMgr::Purge(void)
 	mObj.clear();
 }
 
+bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj)
+{
+	if(GetObj(obj_path,obj))
+		return true;
+	string lib_key = parent_path + string("\n") + obj_path;
+	if(GetObj(lib_key,obj))
+		return true;
+	string full_parent = mLibrary->GetResourcePath(parent_path);
+	string::size_type s = full_parent.find_last_of("\\/:");
+	if(s == full_parent.npos) full_parent.clear(); else full_parent.erase(s+1);
+	string p = full_parent + obj_path;
+
+	obj = new XObj8;
+	if(!XObj8Read(p.c_str(),*obj))
+	{
+		XObj obj7;
+		if(XObjRead(p.c_str(),obj7))
+		{
+			Obj7ToObj8(obj7,*obj);
+		}
+		else
+		{
+			delete obj;
+			obj = NULL;
+			return false;
+		}
+	}
+
+	process_texture_path(p,obj->texture);
+	process_texture_path(p,obj->texture_draped);
+
+	mObj[lib_key] = obj;
+	return true;
+	
+	
+}
+
 bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 {
 	map<string,XObj8 *>::iterator i = mObj.find(path);

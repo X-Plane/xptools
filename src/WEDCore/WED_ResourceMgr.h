@@ -93,6 +93,7 @@ public:
 			bool	GetPol(const string& path, pol_info_t& out_info);
 			void	MakePol(const string& path, const pol_info_t& out_info);
 			bool	GetObj(const string& path, XObj8 *& obj);
+			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING
 			bool	GetAGP(const string& path, agp_t& out_info);
 #endif			

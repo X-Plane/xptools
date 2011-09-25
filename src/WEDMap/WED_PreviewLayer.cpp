@@ -637,7 +637,7 @@ struct	preview_object : public WED_PreviewItem {
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
-
+		ILibrarian * lmgr = WED_GetLibrarian(resolver);
 		string vpath;
 
 		obj->GetResource(vpath);
@@ -674,6 +674,7 @@ struct	preview_object : public WED_PreviewItem {
 			glColor3f(1,1,1);
 			if(!agp.tile.empty())
 			{
+				glDisable(GL_CULL_FACE);
 				glBegin(GL_TRIANGLE_FAN);
 				for(int n = 0; n < agp.tile.size(); n += 4)
 				{
@@ -681,12 +682,15 @@ struct	preview_object : public WED_PreviewItem {
 					glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
 				}
 				glEnd();
+				glEnable(GL_CULL_FACE);
 			}	
 			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
 			{
 				XObj8 * oo;
-				if(rmgr->GetObj(o->name,oo))
+				if(rmgr->GetObjRelative(o->name,vpath,oo))
+				{
 					draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);			
+				} 
 			}
 			
 			
