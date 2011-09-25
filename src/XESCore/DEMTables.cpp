@@ -237,8 +237,9 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		string		lu_set_string;
 	
 		NaturalTerrainRule_t	rule;
-		if(TokenizeLine(tokens," eeseffffffffffiffffffe",
-			&rule.terrain, &rule.zoning, &lu_set_string, &rule.region,
+		if(TokenizeLine(tokens," eeseeeffffffffffiffffffe",
+			&rule.terrain, &rule.zoning, &lu_set_string, 
+			&rule.soil_style,&rule.agri_style,&rule.clim_style,
 			&rule.elev_min,
 			&rule.elev_max,
 			&rule.slope_min,
@@ -256,10 +257,9 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&rule.elev_range_max,
 			&rule.lat_min,
 			&rule.lat_max,
-			&rule.name) != 23)
+			&rule.name) != 25)
 				return false;
 		
-		rule.climate = NO_VALUE;
 		rule.urban_density_min = rule.urban_density_max = 0.0;
 		rule.urban_radial_min = rule.urban_radial_max = 0.0;
 		rule.urban_trans_min = rule.urban_trans_max = 0.0;
@@ -497,8 +497,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	int						auto_vary;									// 0 = none. 1 = 4 variations, all fake. 2 = 4 variations, 2 & 2. 3 = 4 variations for HEADING.
 
 	rule.zoning = NO_VALUE;
-	info.region = NO_VALUE;
-	rule.climate = NO_VALUE;
+	info.clim_style = NO_VALUE;
+	info.agri_style = NO_VALUE;
+	info.soil_style = NO_VALUE;
 	rule.urban_density_min = rule.urban_density_max = 0.0;
 	rule.urban_radial_min = rule.urban_radial_max = 0.0;
 	rule.urban_trans_min = rule.urban_trans_max = 0.0;
@@ -942,7 +943,9 @@ int	FindNaturalTerrain(
 				int		terrain,
 				int		zoning,
 				int 	landuse,
-				int		region,
+				int		soil_style,
+				int		agri_style,
+				int		clim_style,
 //				int 	climate,
 //				float 	elevation,
 				float 	slope,
@@ -996,7 +999,9 @@ int	FindNaturalTerrain(
 		MATCH_RANGE(slopeheading,slope_heading_min,slope_heading_max)
 //		if (rec.variant == 0 || rec.variant == variant_blob || rec.variant == variant_head)
 		MATCH_ENUM(landuse,landuse)
-		MATCH_ENUM(region,region)
+		MATCH_ENUM(soil_style,soil_style)
+		MATCH_ENUM(agri_style,agri_style)
+		MATCH_ENUM(clim_style,clim_style)
 		MATCH_ENUM(terrain,terrain)
 		MATCH_ENUM(zoning,zoning)
 		MATCH_RANGE(relelevation,rel_elev_min,rel_elev_max)
@@ -1305,7 +1310,8 @@ void MakeDirectRules(void)
 		
 		rule.terrain = all_names->first;
 		rule.landuse = NO_VALUE;
-		rule.climate = NO_VALUE;
+		rule.clim_style = rule.soil_style = rule.agri_style = NO_VALUE;
+//		rule.climate = NO_VALUE;
 		rule.elev_min = rule.elev_max = 0.0f;
 		rule.slope_min = rule.slope_max = 0.0;
 		rule.temp_min = rule.temp_max = 0.0;

@@ -1731,8 +1731,10 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 	if (inProg) inProg(0, 1, "Assigning Landuses", 0.0);
 
-//	DEMGeo&	inClimate(inDEMs[dem_Climate]);
-	DEMGeo&	inRegion(inDEMs[dem_Region]);
+//	DEMGeo&	inClimate(inDEMs[dem_Clima0te]);
+	DEMGeo&	inClimStyle(inDEMs[dem_ClimStyle]);
+	DEMGeo&	inAgriStyle(inDEMs[dem_AgriStyle]);
+	DEMGeo&	inSoilStyle(inDEMs[dem_SoilStyle]);
 	DEMGeo&	inElevation(inDEMs[dem_Elevation]);
 	DEMGeo&	inSlope(inDEMs[dem_Slope]);
 	DEMGeo&	inSlopeHeading(inDEMs[dem_SlopeHeading]);
@@ -1792,11 +1794,24 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float lu3 = landuse.search_nearest(x2,y2);
 				float lu = MAJORITY_RULES(lu0,lu1,lu2, lu3);
 
-				float rg0 = inRegion.search_nearest(center_x, center_y);
-				float rg1 = inRegion.search_nearest(x0,y0);
-				float rg2 = inRegion.search_nearest(x1,y1);
-				float rg3 = inRegion.search_nearest(x2,y2);
-				float rg = MAJORITY_RULES(rg0,rg1,rg2, rg3);
+				float cs0 = inClimStyle.search_nearest(center_x, center_y);
+				float cs1 = inClimStyle.search_nearest(x0,y0);
+				float cs2 = inClimStyle.search_nearest(x1,y1);
+				float cs3 = inClimStyle.search_nearest(x2,y2);
+				float cs = MAJORITY_RULES(cs0,cs1,cs2,cs3);
+
+				float as0 = inAgriStyle.search_nearest(center_x, center_y);
+				float as1 = inAgriStyle.search_nearest(x0,y0);
+				float as2 = inAgriStyle.search_nearest(x1,y1);
+				float as3 = inAgriStyle.search_nearest(x2,y2);
+				float as = MAJORITY_RULES(as0,as1,as2,as3);
+
+				float ss0 = inSoilStyle.search_nearest(center_x, center_y);
+				float ss1 = inSoilStyle.search_nearest(x0,y0);
+				float ss2 = inSoilStyle.search_nearest(x1,y1);
+				float ss3 = inSoilStyle.search_nearest(x2,y2);
+				float ss = MAJORITY_RULES(ss0,ss1,ss2,ss3);
+				
 
 //				float cl  = inClimate.search_nearest(center_x, center_y);
 //				float cl1 = inClimate.search_nearest(x0,y0);
@@ -1899,7 +1914,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 				//fprintf(stderr, " %d", tri->info().feature);
 				int zoning = (tri->info().orig_face == Pmwx::Face_handle()) ? NO_VALUE : tri->info().orig_face->data().GetZoning();
-				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, rg, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y)/*, variant_blob, variant_head*/);
+				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, ss, as,cs, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y)/*, variant_blob, variant_head*/);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %f\n", FetchTokenString(lu), /*FetchTokenString(cl), el, */ sl);
 

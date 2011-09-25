@@ -76,8 +76,9 @@ struct	NaturalTerrainRule_t {
 	int				terrain;	//	e.g. natural_Terrain
 	int				zoning;
 	int				landuse;
-	int				region;
-	int				climate;
+	int				soil_style;
+	int				agri_style;
+	int				clim_style;
 	float			elev_min;
 	float			elev_max;
 	float			slope_min;
@@ -189,7 +190,9 @@ int		FindNaturalTerrain(
 				int		terrain,
 				int		zoning,
 				int 	landuse,
-				int		region,
+				int		soil_style,
+				int		agri_style,
+				int		clim_style,
 //				int 	climate,
 //				float 	elevation,
 				float 	slope,

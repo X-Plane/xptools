@@ -72,7 +72,9 @@
 //	TOKEN(dem_OrigLandUse)			//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_LandUse)				//	Standard land use codes, USGS or XP6/7
 	TOKEN(dem_Climate)				//	Type of climate
-	TOKEN(dem_Region)				//	Region codes
+	TOKEN(dem_SoilStyle)			//	Soil style codes
+	TOKEN(dem_AgriStyle)			//	Agriculture style codes
+	TOKEN(dem_ClimStyle)			//	Climate style codes
 //	TOKEN(dem_NudeColor)			//	Color of nude terrain (geology)
 	TOKEN(dem_ForestType)			//	Forest token type...
 	TOKEN(dem_ParkType)				//	Park presence...

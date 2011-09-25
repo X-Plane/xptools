@@ -897,6 +897,8 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style, int 
 	uint16 cc;
 	uint16 d;
 	uint16 format;
+	
+	format = SAMPLEFORMAT_UINT;	// sample format is NOT mandatory - unsigned int is the default if not present!
 
 
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
@@ -925,8 +927,6 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style, int 
 
 			switch(format) {
 			case SAMPLEFORMAT_UINT:
-			case 49151:
-			case 0:
 				switch(d) {
 				case 8:
 					copy_tile<unsigned char>((const unsigned char *) buf, x,y,ux,uy, inMap);
@@ -1001,8 +1001,6 @@ bool	ExtractGeoTiff(DEMGeo& inMap, const char * inFileName, int post_style, int 
 
 			switch(format) {
 			case SAMPLEFORMAT_UINT:
-			case 49151:
-			case 0:
 				switch(d) {
 				case 8:
 					copy_scanline<unsigned char>((const unsigned char *) aline, y, inMap);
