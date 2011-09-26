@@ -411,7 +411,7 @@ void	SetupNormalShading(void)
 	double	nrm_x = scale_xy * sin(sShadingAzi * DEG_TO_RAD);
 	double	nrm_y = scale_xy * cos(sShadingAzi * DEG_TO_RAD);
 
-	GLfloat	color[4] = { nrm_x * 0.5 + 0.5, nrm_y * 0.5 + 0.5, nrm_z * 0.5 + 0.5, 1.0 };
+	GLfloat	color[4] = { (GLfloat) (nrm_x * 0.5 + 0.5), (GLfloat) (nrm_y * 0.5 + 0.5), (GLfloat) (nrm_z * 0.5 + 0.5), (GLfloat) 1.0 };
 	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, color);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_ARB);
 
