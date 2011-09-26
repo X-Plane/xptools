@@ -499,7 +499,7 @@ static int DoVPFImport(const vector<const char *>& args)
 */
 static int DoGSHHSImport(const vector<const char *>& args)
 {
-	double c[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
+	double c[4] = { (double) gMapWest, (double) gMapSouth, (double) gMapEast, (double) gMapNorth };
 	if (ImportGSHHS(args[0], gMap, c))
 	{
 		if (gVerbose)printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
@@ -586,7 +586,7 @@ static int DoShapeImport(const vector<const char *>& args)
 
 	for(int n = 4; n < args.size(); ++n)
 	{
-		double b[4] = { gMapWest, gMapSouth, gMapEast, gMapNorth };
+		double b[4] = { (double) gMapWest, (double) gMapSouth, (double) gMapEast, (double) gMapNorth };
 		
 		Pmwx backup;
 		
