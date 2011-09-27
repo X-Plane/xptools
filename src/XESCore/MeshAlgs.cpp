@@ -1401,8 +1401,8 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		bool fake_has_borders[4] = { false, false, false, false };
 		AddEdgePoints(orig, deriv, 20, 1, fake_has_borders, temp_mesh);
 
-		DEMGrid	gridlines(orig);
-		GreedyMeshBuild(temp_mesh, orig, deriv, gridlines, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
+//		DEMGrid	gridlines(orig);
+		GreedyMeshBuild(temp_mesh, orig, deriv, gMeshPrefs.max_error, 0.0, gMeshPrefs.max_points, prog);
 		
 		// Now iterate and accumulate the vertices into a low res DEM - we will end up with linear vertex density per
 		// tile.
@@ -1490,7 +1490,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	
 	/* TRINAGULATE GREEDILY */
 
-	DEMGrid	gridlines(orig);
+//	DEMGrid	gridlines(orig);
 
 #if 0	
 	for(Pmwx::Vertex_iterator v = gMap.vertices_begin(); v != gMap.vertices_end(); ++v)
@@ -1519,11 +1519,11 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	}
 #endif	
 	
-	GreedyMeshBuild(outMesh, orig, deriv, gridlines, gMeshPrefs.max_error, 0.0, (dry_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
+	GreedyMeshBuild(outMesh, orig, deriv, /*gridlines,*/ gMeshPrefs.max_error, 0.0, (dry_ratio * 0.8 + 0.2) * gMeshPrefs.max_points, prog);
 
 	PAUSE_STEP("Finished greedy1")
 
-	GreedyMeshBuild(outMesh, orig, deriv, gridlines, 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
+	GreedyMeshBuild(outMesh, orig, deriv, /*gridlines,*/ 0.0, gMeshPrefs.max_tri_size_m * MTR_TO_NM * NM_TO_DEG_LAT, gMeshPrefs.max_points, prog);
 
 	PAUSE_STEP("Finished greedy2")
 

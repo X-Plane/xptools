@@ -28,9 +28,8 @@
 class CDT;
 struct DEMGeo;
 struct DEMMask;
-struct	DEMGrid;
 
-void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, const DEMGrid& posts, double err_lim, double size_lim, int max_num, ProgressFunc func);
+void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double err_lim, double size_lim, int max_num, ProgressFunc func);
 
 #endif /* GREEDYMESH_H */
 
