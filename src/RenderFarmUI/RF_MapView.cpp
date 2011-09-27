@@ -160,6 +160,11 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_HydroDirection,		"Hydro Flow Direction"			,	dem_Enum,					false,	true,	"%s "			},
 {		dem_HydroQuantity,		"Hydro Flow Quantity"			,	dem_HydroQuantity,			true,	false,	"%fm "			},
 {		dem_HydroElevation,		"Hydro Elevation"				,	dem_Elevation,				false,	false,	"%fm "			},
+
+{		dem_NormalX,			"Normals: X"					,	dem_Strata,					false, false,	"dx=%f "		},
+{		dem_NormalY,			"Normals: Y"					,	dem_Strata,					false, false,	"dy=%f "		},
+{		dem_NormalZ,			"Normals: Z"					,	dem_Strata,					false, false,	"dz=%f "		},
+
 {		dem_Wizard,				"Spreadsheet Wizard"			,	dem_Strata,					false,	false,	"%fm "			},
 
 {		dem_Wizard1,			"Spreadsheet Wizard 1"			,	dem_Strata,					false,	false,	"%fm "			},

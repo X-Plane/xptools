@@ -460,6 +460,27 @@ int DoRasterInit(const vector<const char *>& args)
 	return 0;
 }
 
+#define DoRasterScale_HELP \
+"USAGE: -raster_scale scale layer\n"\
+"Resize a layer down by a scale factor."
+int DoRasterScale(const vector<const char *>& args)
+{
+	int layer = LookupToken(args[1]);
+	if(layer == -1)
+	if(layer == -1)
+	{
+		fprintf(stderr,"Raster Layer %s - unknown layer name.\n",args[0]);
+		return 1;
+	}
+	int scale = atoi(args[0]);
+	DEMGeo temp;
+	DownsampleDEM(gDem[layer], temp, scale);
+	temp.swap(gDem[layer]);
+	return 0;
+	
+}
+
+
 #define DoRasterResample_HELP \
 "USAGE: -raster_resample x_res y_res post layer\n"\
 "This resamples a raster layer.  The resampling occurs over\n"\
@@ -488,7 +509,7 @@ int DoRasterResample(const vector<const char *>& args)
 	dem.mNorth = gMapNorth;
 	dem.mSouth = gMapSouth;
 	dem.mPost = atoi(args[2]);
-	dem.set_rez(atoi(args[0]),atoi(args[1]));
+	dem.set_rez(atof(args[0]),atof(args[1]));
 
 	ResampleDEM(src, dem);
 	swap(src,dem);
@@ -890,6 +911,20 @@ static int DoApply(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoSaveNormals(const vector<const char *>& args)
+{
+	if(!WriteNormalWithHeight(args[0], 
+		gDem[dem_Elevation], 
+		gDem[dem_NormalX], 
+		gDem[dem_NormalY], 
+		gDem[dem_NormalZ]))
+		{
+			fprintf(stderr, "Save normals to %s failed.\n", args[0]);
+			return 1;
+		}
+	return 0;
+}
+
 static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-hgt", 			1, 1, DoHGTImport, 			"Import 16-bit BE raw HGT DEM.", "" },
 { "-hgtzip", 		1, 1, DoHGTExport, 			"Export 16-bit BE raw HGT DEM.", "" },
@@ -906,10 +941,12 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-raster_import",	4, 7, DoRasterImport,		"Import one raster DEM file.", DoRasterImport_HELP },
 { "-raster_export", 4, 5, DoRasterExport,		"Export one raster DEM file.", DoRasterExport_HELP }, 
 { "-raster_init",	4, 5, DoRasterInit,			"Create new empty raster layer.", DoRasterInit_HELP }, 
+{ "-raster_scale",	2, 2, DoRasterScale,		"Resize a raster layer.", DoRasterScale_HELP },
 { "-raster_resample",4, 4, DoRasterResample,	"Resample raster layer.", DoRasterResample_HELP }, 
 { "-raster_adjust", 4, 4, DoRasterAdjust,		"Adjust levels of raster layers to match.", DoRasterAdjust_HELP },
 { "-raster_merge", 4, 4, DoRasterMerge,			"Merge two raster layers.", DoRasterMerge_HELP },
 { "-raster_watershed", 3, 3, DoRasterWatershed,	"Calculate watersheds from one layer, dump in another", DoRasterWatershed_HELP },
+{ "-save_normals", 1, 1, DoSaveNormals, "", "" },
 { "-applyoverlay",	0, 0, DoApply	,			"Use overlay.", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

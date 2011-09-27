@@ -99,6 +99,11 @@ static int DoUpsample(const vector<const char *>& args)
 static int DoCalcSlope(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating slope...\n");
+	if(args.size() > 0)
+	{
+		gDem[dem_Elevation	 ].calc_normal(gDem[dem_NormalX],gDem[dem_NormalY],gDem[dem_NormalZ],gProgress);
+	}
+	else
 	CalcSlopeParams(gDem, true, gProgress);
 	return 0;
 }
@@ -377,7 +382,7 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-spreadsheet",	1, 2, DoSpreadsheet,	"Set the spreadsheet file.",		  "" },
 { "-mesh_level",	1, 1, DoSetMeshLevel,	"Set mesh complexity.",				  "" },
 { "-upsample", 		0, 0, DoUpsample, 		"Upsample environmental parameters.", "" },
-{ "-calcslope", 	0, 0, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
+{ "-calcslope", 	0, 1, DoCalcSlope, 		"Calculate slope derivatives.", 	  "" },
 { "-calcmesh", 		1, 1, DoCalcMesh, 		"Calculate Terrain Mesh.", 	 		  "" },
 { "-burnapts", 		0, 0, DoBurnAirports, 	"Burn Airports into vectors.", 		  "" },
 { "-zoning",	 	0, 0, DoZoning, 		"Calculate Zoning info.", 			  "" },
