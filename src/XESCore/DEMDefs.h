@@ -291,6 +291,7 @@ struct	DEMGeo {
 
 
 			void	calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inFunc) const;
+			void	calc_normal(DEMGeo& outX, DEMGeo& outY, DEMGeo& outZ, ProgressFunc inFunc) const;
 			void	fill_nearest(void);
 			int		remove_linear(int iterations, float max_err);
 			float	local_minmax(int x1, int y1, int x2, int y2,

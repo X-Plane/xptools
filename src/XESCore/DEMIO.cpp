@@ -29,6 +29,8 @@
 #include "EnumSystem.h"
 #include "PlatformUtils.h"
 #include "DEMTables.h"
+#include "BitmapUtils.h"
+#include "MathUtils.h"
 
 #if IBM
 #define AVOID_WIN32_FILEIO
@@ -1676,4 +1678,36 @@ bool	TranslateDEM(DEMGeo& ioDEM, const char * inFileName)
 	if (!LoadTranslationFile(inFileName, mapping, NULL, NULL))	return false;
 	TranslateDEMForward(ioDEM, mapping);
 	return true;
+}
+
+bool	WriteNormalWithHeight(const string& out_file, const DEMGeo& elev, const DEMGeo& nx, const DEMGeo& ny, const DEMGeo& nz)
+{
+	ImageInfo	image;
+	if(CreateNewBitmap(elev.mWidth,elev.mHeight, 4, &image))
+	{
+		printf("Could not allocate memory to save a normal map.\n");
+		return false;
+	}
+		
+	unsigned char * ptr = image.data;
+	for(int y = 0; y < elev.mHeight; ++y)
+	for(int x = 0; x < elev.mWidth; ++x)	
+	{
+		*ptr++ = intlim(nz(x,y)*255.0,0,255);
+		*ptr++ = intlim(ny(x,y)*127.0+128.0,0,255);
+		*ptr++ = intlim(nx(x,y)*127.0+128.0,0,255);
+#define max_ele  8848
+#define min_ele  -418		
+		*ptr++ = interp( min_ele,255.0 , max_ele,0.0 , elev(x,y));
+	}
+
+	printf("Saving: %s\n", out_file.c_str());
+	if(WriteBitmapToPNG(&image, out_file.c_str(), NULL, NULL, 2.2f))
+	{
+		DestroyBitmap(&image);
+		return false;
+	}
+	DestroyBitmap(&image);
+
+	return true;	
 }

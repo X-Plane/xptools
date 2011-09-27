@@ -79,6 +79,11 @@
 	TOKEN(dem_ForestType)			//	Forest token type...
 	TOKEN(dem_ParkType)				//	Park presence...
 
+	/* Normal Map Support. */
+	TOKEN(dem_NormalX)
+	TOKEN(dem_NormalY)
+	TOKEN(dem_NormalZ)
+
 	/* Boolean DEMs. */
 
 	TOKEN(dem_Wizard)				//	Derived dem for the purpose of illustrating stuff.

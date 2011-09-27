@@ -113,6 +113,8 @@ bool	ReadShortOz(DEMGeo& inMap, const char * inFileName);			// No header, little
 
 void	ReadHDR(const string& in_real_file, DEMSpec& io_header, bool force_area);
 
+bool	WriteNormalWithHeight(const string& out_file, const DEMGeo& elev, const DEMGeo& nx, const DEMGeo& ny, const DEMGeo& nz);
+
 /*****************************************************************************
  * DEM TRANSLATION SYSTEM
  *****************************************************************************/

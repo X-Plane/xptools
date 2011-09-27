@@ -433,8 +433,8 @@ void	DEMGeo::resize(int width, int height)
 
 void DEMGeo::set_rez(double x_res, double y_res)
 {
-	int want_x = x_res * (mEast - mWest) + mPost;
-	int want_y = y_res * (mNorth - mSouth) + mPost;
+	int want_x = round(x_res * (mEast - mWest)) + mPost;
+	int want_y = round(y_res * (mNorth - mSouth)) + mPost;
 	this->resize(want_x,want_y);
 }
 
@@ -484,13 +484,103 @@ void	DEMGeo::swap(DEMGeo& rhs)
 	std::swap(mPost, rhs.mPost);
 }
 
+void	DEMGeo::calc_normal(DEMGeo& outX, DEMGeo& outY, DEMGeo& outZ, ProgressFunc inProg) const
+{
+	outX.resize(mWidth, mHeight);
+	outX.copy_geo_from(*this);
+	outX.mPost = mPost;
+	outY.resize(mWidth, mHeight);
+	outY.copy_geo_from(*this);
+	outY.mPost = mPost;
+	outZ.resize(mWidth, mHeight);
+	outZ.copy_geo_from(*this);
+	outZ.mPost = mPost;
 
-//// Past here I have not checked for correct post use.
+	double	x_res = x_dist_to_m(1);
+	double	y_res = y_dist_to_m(1);
+	float	h, hl, ht, hb, hr;
+	float	ld, rd, bd, td;
+
+	if (inProg) inProg(0, 1, "Calculating Slope", 0.0);
+	for (int x = 0; x < mWidth; ++x)
+	for (int y = 0; y < mHeight;++y)
+	{
+		if (y == 0 && (x % 50) == 0)
+			if (inProg) inProg(0, 1, "Calculating Slope", (double) x / (double) mWidth);
+
+		h = get(x,y);
+		if (h == DEM_NO_DATA)
+		{
+			outX(x,y) = 0;
+			outY(x,y) = 0;
+			outZ(x,y) = 1;
+		} else {
+			Point3 me(0,0,h);
+			hl = get_dir(x,y,-1,0,        x,DEM_NO_DATA,ld);	Point3 pl(-ld*x_res,0,hl);
+			hr = get_dir(x,y, 1,0, mWidth-x,DEM_NO_DATA,rd);	Point3 pr( rd*x_res,0,hr);
+			hb = get_dir(x,y,0,-1,        y,DEM_NO_DATA,bd);	Point3 pb(0,-bd*y_res,hb);
+			ht = get_dir(x,y,0, 1,mHeight-y,DEM_NO_DATA,td);	Point3 pt(0, td*y_res,ht);
+
+			Point3 * ph = NULL, * pv = NULL;
+
+			if (hl != DEM_NO_DATA)
+			{
+				if (hr != DEM_NO_DATA)
+					ph = (ld < rd) ? &pl : &pr;
+				else
+					ph = &pl;
+			} else {
+				if (hr != DEM_NO_DATA)
+					ph = &pr;
+				else
+					fprintf(stderr, "NO H ELEVATION\n");
+			}
+
+			if (hb != DEM_NO_DATA)
+			{
+				if (ht != DEM_NO_DATA)
+					pv = (bd < td) ? &pb : &pt;
+				else
+					pv = &pb;
+			} else {
+				if (ht != DEM_NO_DATA)
+					pv = &pt;
+				else
+					fprintf(stderr, "NO V ELEVATION\n");
+			}
+
+			if (!ph || !pv)
+			{
+				outX(x,y) = 0;
+				outY(x,y) = 0;
+				outZ(x,y) = 1;
+				continue;
+			}
+			Vector3	v1(me,*ph);
+			Vector3	v2(me,*pv);
+			Vector3	normal(v1.cross(v2));
+			if (normal.dz < 0.0)
+				normal *= -1.0;
+			normal.normalize();
+//			double	xy = sqrt(normal.dx * normal.dx + normal.dy * normal.dy);
+//			outHeading(x,y) = atan2(normal.dx, normal.dy) * RAD_TO_DEG;
+			outX(x,y)=normal.dx;
+			outY(x,y)=normal.dy;
+			outZ(x,y)=normal.dz;
+//			outSlope(x,y) = atan2(xy, normal.dz) * RAD_TO_DEG;
+
+		}
+	}
+	if (inProg) inProg(0, 1, "Calculating Slope", 1.0);
+}
+
 
 void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inProg) const
 {
 	outSlope.resize(mWidth, mHeight);
 	outHeading.resize(mWidth, mHeight);
+	outHeading.mPost = mPost;
+	outSlope.mPost = mPost;
 
 	double	x_res = x_dist_to_m(1);
 	double	y_res = y_dist_to_m(1);
@@ -568,6 +658,10 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 	}
 	if (inProg) inProg(0, 1, "Calculating Slope", 1.0);
 }
+
+
+
+//// Past here I have not checked for correct post use.
 
 void DEMGeo::fill_nearest(void)
 {

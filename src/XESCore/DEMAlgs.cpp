@@ -296,6 +296,7 @@ void	DownsampleDEM(const DEMGeo& ioDem, DEMGeo& smaller, int ratio)
 	smaller.mSouth = ioDem.mSouth;
 	smaller.mEast = ioDem.mEast;
 	smaller.mWest = ioDem.mWest;
+	smaller.mPost = ioDem.mPost;
 
 	for (int y = 0; y < smaller.mHeight; ++y)
 	for (int x = 0; x < smaller.mWidth; ++x)
