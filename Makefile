@@ -2,7 +2,7 @@ BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
 # http://gforge.inria.fr/frs/?group_id=52
-VER_CGAL	:= 3.4
+VER_CGAL	:= 3.9
 # http://www.freetype.org/
 # http://sourceforge.net/projects/freetype/files/
 VER_FREETYPE	:= 2.3.11
@@ -593,7 +593,7 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
-	@cp patches/0001-libcgal-3.4-various-fixes.patch \
+	#@cp patches/0001-libcgal-3.4-various-fixes.patch \
 	"CGAL-$(VER_CGAL)" && cd "CGAL-$(VER_CGAL)" && \
 	patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 ifdef PLAT_DARWIN
