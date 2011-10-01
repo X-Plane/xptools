@@ -68,7 +68,6 @@ ifdef PLAT_MINGW
 SOURCES += ./src/UI/XWin.win.cpp
 SOURCES += ./src/UI/XWinGL.win.cpp
 SOURCES += ./src/UI/XWin32DND.cpp
-SOURCES += ./src/Utils/XFileTwiddle.win.cpp
 SOURCES += ./src/Utils/PlatformUtils.win.cpp
 SOURCES += ./src/Network/PCSBSocket.win.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
@@ -76,7 +75,6 @@ endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
 SOURCES += ./src/linuxinit/initializer.cpp
-SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
@@ -91,11 +89,9 @@ endif #PLAT_LINUX
 ifdef PLAT_DARWIN
 SOURCES += ./src/UI/XWin.mac.cpp
 SOURCES += ./src/UI/XWinGL.mac.cpp
-SOURCES += ./src/Utils/XFileTwiddle.mac.cpp
 SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
-SOURCES += ./src/Installer/MacSpec.cpp
 endif #PLAT_DARWIN
 
 SOURCES += ./src/WEDCore/WED_AppMain.cpp
@@ -272,11 +268,9 @@ SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/Utils/XUtils.cpp
 SOURCES += ./src/Utils/BWImage.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
-SOURCES += ./src/Utils/XFileTwiddle.cpp
 SOURCES += ./src/Utils/Skeleton.cpp
 SOURCES += ./src/Utils/perlin.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
-SOURCES += ./src/Installer/ErrMsg.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp

@@ -39,19 +39,6 @@ endif #PLAT_DARWIN
 # sources
 #########
 
-ifdef PLAT_MINGW
-SOURCES += ./src/Utils/XFileTwiddle.win.cpp
-endif #PLAT_MINGW
-
-ifdef PLAT_LINUX
-SOURCES += ./src/Utils/XFileTwiddle.unix.cpp
-endif #PLAT_LINUX
-
-ifdef PLAT_DARWIN
-SOURCES += ./src/Utils/XFileTwiddle.mac.cpp
-SOURCES += ./src/Installer/MacSpec.cpp
-endif #PLAT_DARWIN
-
 SOURCES += ./src/MeshTool/MeshTool.cpp
 SOURCES += ./src/MeshTool/MeshTool_Create.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
@@ -61,7 +48,6 @@ SOURCES += ./src/Obj/XObjReadWrite.cpp
 SOURCES += ./src/DSF/DSFLib.cpp
 SOURCES += ./src/DSF/DSFLibWrite.cpp
 SOURCES += ./src/DSF/DSFPointPool.cpp
-SOURCES += ./src/Installer/ErrMsg.cpp
 SOURCES += ./src/XESCore/XESInit.cpp
 SOURCES += ./src/XESCore/DEMTables.cpp
 SOURCES += ./src/XESCore/ForestTables.cpp
@@ -120,7 +106,6 @@ SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/Utils/XUtils.cpp
 SOURCES += ./src/Utils/BWImage.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
-SOURCES += ./src/Utils/XFileTwiddle.cpp
 SOURCES += ./src/Utils/Skeleton.cpp
 SOURCES += ./src/Utils/perlin.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
