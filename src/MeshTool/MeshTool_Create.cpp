@@ -267,7 +267,9 @@ int MT_CreateCustomTerrain(
 	NaturalTerrainRule_t nr = { 0 };
 	nr.terrain = tt;
 	nr.landuse = NO_VALUE;
-	nr.climate = NO_VALUE;
+	nr.clim_style = NO_VALUE;
+	nr.agri_style = NO_VALUE;
+	nr.soil_style = NO_VALUE;
 	nr.elev_min = DEM_NO_DATA;;
 	nr.elev_max = DEM_NO_DATA;;
 	nr.slope_min = DEM_NO_DATA;;
