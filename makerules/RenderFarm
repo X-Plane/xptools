@@ -7,12 +7,14 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 LIBS		+= -lCGAL -lCGAL_Core -lsquish -lgeotiff -lshp -lproj -ltiff
-LIBS		+= -ljpeg -lpng -lz -lboost_thread -lpthread -lgmp -lmpfr
+LIBS		+= -ljpeg -lpng -lz -lboost_thread -lpthread 
 #FORCEREBUILD_SUFFIX := _rf
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static
-LIBS		+=
+LIBS		+= ./libs/local/lib/libmpfr.a
+LIBS            += ./libs/local/lib/libgmp.a
+LIBS            += ./libs/local/lib/libgmpxx.a
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
