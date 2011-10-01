@@ -30,8 +30,8 @@
 #include "DEMDefs.h"
 #include "AptAlgs.h"
 #include "AptRouting.h"
+#include "FileUtils.h"
 #include "AssertUtils.h"
-#include "XFileTwiddle.h"
 #include "FAA_Obs.h"
 #include "EnumSystem.h"
 #include "MiscFuncs.h"
@@ -138,7 +138,7 @@ static int DoAptBulkExport(const vector<const char *>& args)
 				char	path[1024];
 				sprintf(path, "%s%+03d%+04d%c", args[0],
 								latlon_bucket(y), latlon_bucket(x), DIR_CHAR);
-				MakeDirExist(path);
+				FILE_make_dir_exist(path);
 				sprintf(path, "%s%+03d%+04d%c%+03d%+04d.apt", args[0],
 								latlon_bucket(y), latlon_bucket(x), DIR_CHAR, y, x);
 				WriteAptFile(path, aptCopy);

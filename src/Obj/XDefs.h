@@ -86,6 +86,8 @@
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
 
+#define XUTILS_EXCLUDE_MAC_CRAP 1
+
 #include "MemUtils.h"
 
 
@@ -235,6 +237,10 @@ using namespace std;
 #if IBM
 #include <winsock2.h>
 #include <windows.h>
+#endif
+
+#if APL
+#define __ASSERTMACROS__
 #endif
 
 /************************************************************************************************************************************************************************

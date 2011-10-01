@@ -375,7 +375,7 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 		if(hh)
 		{
 			printf("ERROR: we want to do this.\n");
-			printf("Inserting: 0x%08lx, %d,%d, err was %f\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, the_face->info().insert_err);
+			printf("Inserting: 0x%p, %d,%d, err was %f\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, the_face->info().insert_err);
 			printf("But the point is not available for insert.\n");
 		}
 		DebugAssert(!hh);

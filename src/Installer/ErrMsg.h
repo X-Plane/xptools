@@ -23,6 +23,8 @@
 #ifndef ERRMSG_H
 #define ERRMSG_H
 
+#error this file is deprecated.
+
 typedef	void( * ErrFunc_f)(
 				const char * 	inMessage,
 				int 			errNum,

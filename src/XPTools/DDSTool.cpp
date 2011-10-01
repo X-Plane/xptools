@@ -468,7 +468,7 @@ int main(int argc, char * argv[])
 					name = p+1;
 				++p;
 			}
-			fprintf(fi,"\"%s\", %d, %d, %d\n", name, info.width, info.height, info.channels);
+			fprintf(fi,"\"%s\", %ld, %ld, %hd\n", name, info.width, info.height, info.channels);
 			fclose(fi);
 		}
 
@@ -506,7 +506,7 @@ int main(int argc, char * argv[])
 			// Image does NOT meet our power of 2 needs.
 			if(!scale_up && !scale_down && !scale_half)
 			{
-				printf("The image is not a square power of 2.  It is: %d by %d\n", info.width, info.height);
+				printf("The image is not a square power of 2.  It is: %ld by %ld\n", info.width, info.height);
 				return 1;
 			}
 			else if(want_preview)
@@ -666,7 +666,7 @@ int main(int argc, char * argv[])
 			// Image does NOT meet our power of 2 needs.
 			if(!scale_up && !scale_down && !scale_half)
 			{
-				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
+				printf("The imager is not a power of 2.  It is: %ld by %ld\n", info.width, info.height);
 				return 1;
 			}
 		}
@@ -759,7 +759,7 @@ int main(int argc, char * argv[])
 			// Image does NOT meet our power of 2 needs.
 			if(!scale_up && !scale_down && !scale_half)
 			{
-				printf("The imager is not a power of 2.  It is: %d by %d\n", info.width, info.height);
+				printf("The imager is not a power of 2.  It is: %ld by %ld\n", info.width, info.height);
 				return 1;
 			}
 		}

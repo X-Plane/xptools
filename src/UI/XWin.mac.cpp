@@ -23,6 +23,8 @@
 #include "XWin.h"
 #include "XUtils.h"
 
+#include <CoreFoundation/CFURL.h>
+
 static	bool	MacCanAcceptDrag(DragReference theDrag, vector<string> * outFiles);
 static	bool	sIniting = false;
 
@@ -530,7 +532,6 @@ bool	MacCanAcceptDrag(DragReference theDrag, vector<string> * outFiles)
 	UInt16			count, index;
 	DragItemRef		item;
 	FlavorFlags		flags;
-	HFSFlavor		hfsFlavor;
 	Size			dataSize;
 
 	if (::CountDragItems(theDrag, &count) != noErr) return false;
@@ -539,23 +540,34 @@ bool	MacCanAcceptDrag(DragReference theDrag, vector<string> * outFiles)
 	{
 		if (::GetDragItemReferenceNumber(theDrag, index, &item) != noErr) return false;
 
-		if ((::GetFlavorFlags(theDrag, item, kDragFlavorTypeHFS, &flags) == noErr) &&
+		if ((::GetFlavorFlags(theDrag, item, typeFileURL, &flags) == noErr) &&
 			((flags & flavorSenderOnly) == 0))
 		{
-			dataSize = sizeof(hfsFlavor);
-			if ((::GetFlavorData(theDrag, item, kDragFlavorTypeHFS, &hfsFlavor, &dataSize, 0L) != noErr) ||
-				(dataSize != sizeof(hfsFlavor)))
+			Size dataSize = 0;
+			if(::GetFlavorDataSize(theDrag, item, typeFileURL, &dataSize) == noErr && dataSize > 0)
 			{
-				return false;
+			
+				vector<UInt8>	buf(dataSize);
+				
+				if ((::GetFlavorData(theDrag, item, typeFileURL, &*buf.begin(), &dataSize, 0L) != noErr) ||
+					(dataSize != buf.size()))
+					return false;
+					
+                CFURLRef url = CFURLCreateWithBytes(nil, &*buf.begin(), buf.size(),kCFStringEncodingUTF8, nil);
+				CFStringRef str = url ? CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle) : NULL;
+				if(str)
+				{
+					CFIndex act_len;
+					CFStringGetBytes(str, CFRangeMake(0,CFStringGetLength(str)), kCFStringEncodingUTF8, 0, 0, NULL, 0, &act_len);
+					vector<UInt8>	chars(act_len);
+					CFStringGetBytes(str, CFRangeMake(0,CFStringGetLength(str)), kCFStringEncodingUTF8, 0, 0, &*chars.begin(),chars.size(),&act_len);
+					if(outFiles)
+						outFiles->push_back(string(chars.begin(),chars.end()));
+				}
+				
+				if(str) CFRelease(str);
+				if(url) CFRelease(url);
 			}
-
-			if (outFiles)
-			{
-				string	foo;
-				FSSpec_2_String(hfsFlavor.fileSpec, foo);
-				outFiles->push_back(foo);
-			}
-
 		} else
 			return false;
 

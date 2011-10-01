@@ -105,10 +105,6 @@
 		D60734E10D197D1400E08F61 /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
 		D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
 		D60734E30D197D1900E08F61 /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
-		D60734EE0D197D3300E08F61 /* XFileTwiddle.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B12A0B51778F003FF84F /* XFileTwiddle.mac.cpp */; };
-		D60734F30D197D4700E08F61 /* ErrMsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B11A0B51778F003FF84F /* ErrMsg.cpp */; };
-		D60734F40D197D4800E08F61 /* MacSpec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1260B51778F003FF84F /* MacSpec.cpp */; };
-		D60734F50D197D4900E08F61 /* XFileTwiddle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1280B51778F003FF84F /* XFileTwiddle.cpp */; };
 		D607357C0D19832500E08F61 /* Zoning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387C0AB22C85003949C5 /* Zoning.cpp */; };
 		D607AC890C0385AA00992876 /* scroll_btn_h.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC850C0385AA00992876 /* scroll_btn_h.png */; };
 		D607AC8A0C0385AA00992876 /* scroll_btn_v.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC860C0385AA00992876 /* scroll_btn_v.png */; };
@@ -334,10 +330,6 @@
 		D656B0E00B517587003FF84F /* ogle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37290AB22C84003949C5 /* ogle.cpp */; };
 		D656B0EC0B5175EA003FF84F /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D656B0ED0B5175FC003FF84F /* PolyRasterUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */; };
-		D656B1310B51778F003FF84F /* ErrMsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B11A0B51778F003FF84F /* ErrMsg.cpp */; };
-		D656B1370B51778F003FF84F /* MacSpec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1260B51778F003FF84F /* MacSpec.cpp */; };
-		D656B1380B51778F003FF84F /* XFileTwiddle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1280B51778F003FF84F /* XFileTwiddle.cpp */; };
-		D656B1390B51778F003FF84F /* XFileTwiddle.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B12A0B51778F003FF84F /* XFileTwiddle.mac.cpp */; };
 		D656B1A20B517E87003FF84F /* b64.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36CD0AB22C84003949C5 /* b64.c */; };
 		D656B1C40B517EC6003FF84F /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
 		D656B1E00B517FB0003FF84F /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
@@ -417,13 +409,8 @@
 		D65E4BED0B65474C004D7887 /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
 		D65E4BEE0B65474E004D7887 /* XObjReadWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36F00AB22C84003949C5 /* XObjReadWrite.cpp */; };
 		D65E4BFB0B654774004D7887 /* ProgressUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37990AB22C85003949C5 /* ProgressUtils.cpp */; };
-		D65E4C000B6547B6004D7887 /* XFileTwiddle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1280B51778F003FF84F /* XFileTwiddle.cpp */; };
-		D65E4C010B6547B8004D7887 /* XFileTwiddle.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B12A0B51778F003FF84F /* XFileTwiddle.mac.cpp */; };
-		D65E4C020B6547BD004D7887 /* MacSpec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1260B51778F003FF84F /* MacSpec.cpp */; };
-		D65E4C0F0B654865004D7887 /* ErrMsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B11A0B51778F003FF84F /* ErrMsg.cpp */; };
 		D65E4C160B65487B004D7887 /* GISUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377E0AB22C85003949C5 /* GISUtils.cpp */; };
 		D65E4C180B654888004D7887 /* Skeleton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC379F0AB22C85003949C5 /* Skeleton.cpp */; };
-		D65E4C200B65489B004D7887 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
 		D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
@@ -691,6 +678,7 @@
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */; };
 		D6C390020FA0D93400EFA56C /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
+		D6C46B7E14376BD30067B004 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D6C579D10C7E3C7B00FCB4C1 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D6C579D20C7E3C7B00FCB4C1 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6C57A120C7E3E1600FCB4C1 /* DDSTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C579EB0C7E3D1800FCB4C1 /* DDSTool.cpp */; };
@@ -709,7 +697,6 @@
 		D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
 		D6D408291406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
-		D6D4082B1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6D4082C1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */ = {isa = PBXBuildFile; fileRef = D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */; };
 		D6DBA1E210572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
@@ -789,10 +776,6 @@
 		D6ED370D0B67964D00D5484E /* ogle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37290AB22C84003949C5 /* ogle.cpp */; };
 		D6ED37100B67964D00D5484E /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D6ED37110B67964D00D5484E /* PolyRasterUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37970AB22C85003949C5 /* PolyRasterUtils.cpp */; };
-		D6ED37120B67964D00D5484E /* ErrMsg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B11A0B51778F003FF84F /* ErrMsg.cpp */; };
-		D6ED37130B67964D00D5484E /* MacSpec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1260B51778F003FF84F /* MacSpec.cpp */; };
-		D6ED37140B67964D00D5484E /* XFileTwiddle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B1280B51778F003FF84F /* XFileTwiddle.cpp */; };
-		D6ED37150B67964D00D5484E /* XFileTwiddle.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D656B12A0B51778F003FF84F /* XFileTwiddle.mac.cpp */; };
 		D6ED371F0B67964D00D5484E /* b64.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36CD0AB22C84003949C5 /* b64.c */; };
 		D6ED37220B67964D00D5484E /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
 		D6ED37230B67964D00D5484E /* GISUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377E0AB22C85003949C5 /* GISUtils.cpp */; };
@@ -3994,10 +3977,6 @@
 				D60734E10D197D1400E08F61 /* XObjDefs.cpp in Sources */,
 				D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */,
 				D60734E30D197D1900E08F61 /* ObjPointPool.cpp in Sources */,
-				D60734EE0D197D3300E08F61 /* XFileTwiddle.mac.cpp in Sources */,
-				D60734F30D197D4700E08F61 /* ErrMsg.cpp in Sources */,
-				D60734F40D197D4800E08F61 /* MacSpec.cpp in Sources */,
-				D60734F50D197D4900E08F61 /* XFileTwiddle.cpp in Sources */,
 				D607357C0D19832500E08F61 /* Zoning.cpp in Sources */,
 				D6B0DCD30E155AF400DDBD89 /* ObjPlacement.cpp in Sources */,
 				D6B0DD080E155D6A00DDBD89 /* BWImage.cpp in Sources */,
@@ -4084,10 +4063,6 @@
 				D656B0E00B517587003FF84F /* ogle.cpp in Sources */,
 				D656B0EC0B5175EA003FF84F /* MemFileUtils.cpp in Sources */,
 				D656B0ED0B5175FC003FF84F /* PolyRasterUtils.cpp in Sources */,
-				D656B1310B51778F003FF84F /* ErrMsg.cpp in Sources */,
-				D656B1370B51778F003FF84F /* MacSpec.cpp in Sources */,
-				D656B1380B51778F003FF84F /* XFileTwiddle.cpp in Sources */,
-				D656B1390B51778F003FF84F /* XFileTwiddle.mac.cpp in Sources */,
 				D656B1A20B517E87003FF84F /* b64.c in Sources */,
 				D656B1C40B517EC6003FF84F /* MapAlgs.cpp in Sources */,
 				D656B1E00B517FB0003FF84F /* BWImage.cpp in Sources */,
@@ -4263,13 +4238,8 @@
 				D65E4BED0B65474C004D7887 /* XObjDefs.cpp in Sources */,
 				D65E4BEE0B65474E004D7887 /* XObjReadWrite.cpp in Sources */,
 				D65E4BFB0B654774004D7887 /* ProgressUtils.cpp in Sources */,
-				D65E4C000B6547B6004D7887 /* XFileTwiddle.cpp in Sources */,
-				D65E4C010B6547B8004D7887 /* XFileTwiddle.mac.cpp in Sources */,
-				D65E4C020B6547BD004D7887 /* MacSpec.cpp in Sources */,
-				D65E4C0F0B654865004D7887 /* ErrMsg.cpp in Sources */,
 				D65E4C160B65487B004D7887 /* GISUtils.cpp in Sources */,
 				D65E4C180B654888004D7887 /* Skeleton.cpp in Sources */,
-				D65E4C200B65489B004D7887 /* XUtils.cpp in Sources */,
 				D65E4C2C0B6548D6004D7887 /* BitmapUtils.cpp in Sources */,
 				D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */,
 				D65E4C380B654901004D7887 /* perlin.cpp in Sources */,
@@ -4302,6 +4272,7 @@
 				D63390B31358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A57138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 				D6D408291406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
+				D6C46B7E14376BD30067B004 /* XUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4424,7 +4395,6 @@
 				D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */,
 				D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */,
 				D63099F0114BF9BA00882D66 /* FileUtils.cpp in Sources */,
-				D6D4082B1406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4481,10 +4451,6 @@
 				D6ED370D0B67964D00D5484E /* ogle.cpp in Sources */,
 				D6ED37100B67964D00D5484E /* MemFileUtils.cpp in Sources */,
 				D6ED37110B67964D00D5484E /* PolyRasterUtils.cpp in Sources */,
-				D6ED37120B67964D00D5484E /* ErrMsg.cpp in Sources */,
-				D6ED37130B67964D00D5484E /* MacSpec.cpp in Sources */,
-				D6ED37140B67964D00D5484E /* XFileTwiddle.cpp in Sources */,
-				D6ED37150B67964D00D5484E /* XFileTwiddle.mac.cpp in Sources */,
 				D6ED371F0B67964D00D5484E /* b64.c in Sources */,
 				D6ED37220B67964D00D5484E /* BWImage.cpp in Sources */,
 				D6ED37230B67964D00D5484E /* GISUtils.cpp in Sources */,
@@ -5325,11 +5291,6 @@
 				DYLIB_CURRENT_VERSION = "";
 				EXECUTABLE_EXTENSION = p;
 				EXECUTABLE_PREFIX = "";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
 					"$(inherited)",
@@ -5416,11 +5377,6 @@
 				DYLIB_CURRENT_VERSION = "";
 				EXECUTABLE_EXTENSION = p;
 				EXECUTABLE_PREFIX = "";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1)",
-				);
-				FRAMEWORK_SEARCH_PATHS_QUOTED_FOR_TARGET_1 = "\"$(SRCROOT)/../../System/Library/Frameworks\"";
 				GCC_DYNAMIC_NO_PIC = NO;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,

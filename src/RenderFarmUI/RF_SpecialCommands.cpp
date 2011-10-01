@@ -488,7 +488,7 @@ void	HandleSpecialCommand(int cmd)
 //					olus.insert(old_lu.get(x,y));
 
 				char buf[1024];
-				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %d new landuses.  Max temp change = %f, Max rain dif = %f",
+				sprintf(buf,"Temp: %.1fC..%.1fC SeaLevelTemp: %.1fC..%.1fC Rain: %.1fmm..%.1fmm Elevation: %.1fm..%.1fm.  %zd new landuses.  Max temp change = %f, Max rain dif = %f",
 						tmin, tmax, tsmin,tsmax, rmin, rmax, emin, emax, lus.size(), temp_max_dif, rain_max_dif);
 				DoUserAlert(buf);
 				set<int>::iterator iter;

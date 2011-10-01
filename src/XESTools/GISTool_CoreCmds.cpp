@@ -30,10 +30,9 @@
 #include "AptAlgs.h"
 #include "MeshDefs.h"
 #include "MapAlgs.h"
-#include "XFileTwiddle.h"
 #include "AptIO.h"
 #include "DEMDefs.h"
-
+#include "FileUtils.h"
 #include "EnumSystem.h"
 #include "FAA_Obs.h"
 #include "XESIO.h"
@@ -418,7 +417,7 @@ static int DoCropSave(const vector<const char *>& args)
 		{
 			char	fbuf[1024];
 			sprintf(fbuf,"%s%+03d%+04d/", args[0], latlon_bucket(s), latlon_bucket(w));
-			MakeDirExist(fbuf);
+			FILE_make_dir_exist(fbuf);
 			sprintf(fbuf,"%s%+03d%+04d/%+03d%+04d.xes", args[0], latlon_bucket(s), latlon_bucket(w), s, w);
 			if (gVerbose) printf("Saving file %s\n", fbuf);
 			DEMGeoMap	dem;

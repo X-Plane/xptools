@@ -25,7 +25,7 @@
 #define FORESTS_H
 
 #include "ProgressUtils.h"
-#include "Skeleton.h"
+//#include "Skeleton.h"
 #include "ObjPlacement.h"
 #include "MapDefs.h"
 class 	CDT;

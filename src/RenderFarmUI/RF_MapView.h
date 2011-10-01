@@ -31,7 +31,7 @@
 #include "GUI_Listener.h"
 #include "RF_Notify.h"
 #include "GUI_GraphState.h"
-#include "AssertUtils.h"
+//#include "AssertUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>

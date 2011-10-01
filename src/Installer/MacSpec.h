@@ -23,6 +23,8 @@
 #ifndef MACSPEC_H
 #define MACSPEC_H
 
+#error this file is deprecated.
+
 struct FSSpec;
 
 int		GetForkSizes(const char * inPath, long& outDF, long& outRF);

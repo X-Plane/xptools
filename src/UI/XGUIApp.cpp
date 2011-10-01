@@ -99,7 +99,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 #if APL
 pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
 {
-	string	fpath;
 	vector<string>	files;
 
 
@@ -120,13 +119,16 @@ pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, l
 	for (SInt32 i = 1; i <= numDocs; i++) {
 		AEKeyword	theKey;
 		DescType	theType;
-		FSSpec		theFileSpec;
+		FSRef		theFileSpec;
 		Size		theSize;
-		err = ::AEGetNthPtr(&inDocList, i, typeFSS, &theKey, &theType,
-							(Ptr) &theFileSpec, sizeof(FSSpec), &theSize);
+		err = ::AEGetNthPtr(&inDocList, i, typeFSRef, &theKey, &theType,
+							(Ptr) &theFileSpec, sizeof(FSRef), &theSize);
 		if (err) goto puke;
-		FSSpec_2_String(theFileSpec, fpath);
-		files.push_back(fpath);
+
+		UInt8 buf[2048];
+
+		if(FSRefMakePath(&theFileSpec, buf, sizeof(buf)) == noErr)
+		files.push_back((const char *) buf);
 	}
 	XGrindFiles(files);
 

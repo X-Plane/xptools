@@ -23,6 +23,8 @@
 #ifndef XRESOURCES_H
 #define XRESOURCES_H
 
+#error this file is deprecated.
+
 /*******************************************************
  * RESOURCE READING FROM THE APP ITSELF
  *******************************************************/

@@ -839,7 +839,7 @@ void	ZoneManMadeAreas(
 				v->data().mNeighborBurned = v->data().mNeighborNotBurned = false;
 		}
 
-		printf("Marked: %d. Imported: %d.\n", marked, n_west.lock_pts[2].size() + n_east.lock_pts[0].size() + n_south.lock_pts[3].size() + n_north.lock_pts[1].size());
+		printf("Marked: %d. Imported: %zd.\n", marked, n_west.lock_pts[2].size() + n_east.lock_pts[0].size() + n_south.lock_pts[3].size() + n_north.lock_pts[1].size());
 	}
 
 

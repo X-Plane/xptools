@@ -264,7 +264,7 @@ static int DoSelectSuperBlock(const vector<const char *>& args)
 	float a = 0.0f;
 	for(set<Face_handle>::iterator t = total_sel.begin(); t != total_sel.end(); ++t)
 		a += GetMapFaceAreaMeters(*t);
-	printf("%d faces, %f meters.\n", total_sel.size(), a);
+	printf("%zd faces, %f meters.\n", total_sel.size(), a);
 	return 0;	
 }
 

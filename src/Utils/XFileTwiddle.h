@@ -23,6 +23,8 @@
 #ifndef XFILETWIDDLE_H
 #define XFILETWIDDLE_H
 
+#error DO NOT USE THIS FILE - IT IS DEPRACATED!
+
 
 /*******************************************************
  * MD5 SIGNING

@@ -29,7 +29,6 @@
 #include "GISUtils.h"
 #include "PerfUtils.h"
 #include "PlatformUtils.h"
-#include "XFileTwiddle.h"
 #include "FileUtils.h"
 #include "MemFileUtils.h"
 
@@ -837,7 +836,7 @@ static int DoBulkConvertSRTM(const vector<const  char *>& args)
 	{
 		me.subset(sub, i * 1200, j * 1200, i * 1200 + 1200, j * 1200 + 1200);
 		sprintf(path, "%s" DIR_STR "%+03d%+04d" DIR_STR, args[1], latlon_bucket(sub.mSouth), latlon_bucket(sub.mWest));
-		MakeDirExist(path);
+		FILE_make_dir_exist(path);
 		sprintf(path, "%s" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.hgt.zip", args[1], latlon_bucket(sub.mSouth), latlon_bucket(sub.mWest), (int) sub.mSouth, (int) sub.mWest);
 		printf("Writing %s...\n", path);
 		if (!WriteRawHGT(sub, path))

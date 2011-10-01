@@ -10,6 +10,7 @@
 #include "WED_GISUtils.h"
 #include "IGIS.h"
 #include <CGAL/Sweep_line_2_algorithms.h>
+#include <CGAL/Boolean_set_operations_2/Gps_polygon_validation.h>
 //#include "WED_Globals.h"
 #include "WED_GISEdge.h"
 #include "WED_Thing.h"
@@ -227,7 +228,9 @@ bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2&
 	}
 	
 	Traits_2 tr;
-	bool ok = tr.is_valid_2_object()(out_pol);
+	bool ok = CGAL::is_valid_unknown_polygon(out_pol,tr);
+	
+//	bool ok = tr.is_valid_2_object()(out_pol);
 	return ok;
 }
 
@@ -481,7 +484,8 @@ bool	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_
 		out_pol.add_hole(hole);
 	}
 	Bezier_traits_2 tr;
-	bool ok = tr.is_valid_2_object()(out_pol);
+//	bool ok = tr.is_valid_2_object()(out_pol);
+	bool ok = CGAL::is_valid_unknown_polygon(out_pol,tr);
 	return ok;
 	
 }

@@ -20,14 +20,15 @@
  * THE SOFTWARE.
  *
  */
+ #define check CHECK
 #include "RF_MapView.h"
+#include "Forests.h"
 
 #include "GUI_Application.h"
 
 #include "DEMTables.h"
 #include "GUI_Fonts.h"
 #include "AssertUtils.h"
-#include "Forests.h"
 #include "RF_MapZoomer.h"
 #include "RF_MapTool.h"
 #include "ObjTables.h"
