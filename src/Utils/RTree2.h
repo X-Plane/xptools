@@ -25,6 +25,7 @@
 #define RTree2_H
 
 #include "CompGeomDefs2.h"
+#include <stdint.h>
 
 // Quick aside:
 // A tagged ptr is a ptr + a boolean flag - because ptrs are always 4-byte aligned for dynamic memory.
