@@ -594,8 +594,8 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
 	#@cp patches/0001-libcgal-3.4-various-fixes.patch \
-	"CGAL-$(VER_CGAL)" && cd "CGAL-$(VER_CGAL)" && \
-	patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
+	#"CGAL-$(VER_CGAL)" && cd "CGAL-$(VER_CGAL)" && \
+	#patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
 	export MACOSX_DEPLOYMENT_TARGET=10.5 && CXXFLAGS="-fvisibility=hidden" cmake \
