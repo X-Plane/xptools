@@ -34,7 +34,7 @@ LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
 LIBS		+= -luuid -lws2_32
 LIBS		+= -Wl,-Bstatic
 LIBS		+= -lexpat -lCGAL -lCGAL_Core -lsquish -lsqlite3 -lshp -lgeotiff
-LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lgmp -lmpfr -lboost_thread
+LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lmpfr -lgmp -lboost_thread
 WIN_RESOURCES	+= ./src/WEDResources/WED.rc
 endif #PLAT_MINGW
 
