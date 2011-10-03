@@ -28,6 +28,7 @@
 #else
 #include <xtiffio.h>
 #endif
+#define PVALUE LIBPROJ_PVALUE
 #include <projects.h>
 #include <cpl_serv.h>
 #include "XESConstants.h"
@@ -37,12 +38,12 @@
 
 void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
 {
-	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);	
+	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
 }
 
 
 static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y, double& outLon, double& outLat)
-{	
+{
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
         return false;
@@ -103,7 +104,7 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 			double dy=0.0;
 			double xsize=xs;
 			double ysize=ys;
-			
+
 			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
 				pixel_type=RasterPixelIsArea;
 
@@ -125,22 +126,22 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 
 			if(pixel_type==RasterPixelIsPoint && post_pos == dem_want_Area)
 			{
-				// This is a center post sampled image, but we are going to treat it as area.  Each 
+				// This is a center post sampled image, but we are going to treat it as area.  Each
 				// pixel "sticks out" a bit in its coverage, so extend.
 				dx=-0.5;
 				dy=-0.5;
 			}
-			
+
 			if(post_pos == dem_want_File)
 				post_pos = (pixel_type==RasterPixelIsPoint) ? dem_want_Post : dem_want_Area;
-			
+
         	if (TransformTiffCorner(gtif, &defn,	   dx, ysize-dy, corners[0], corners[1]) &&
 	        	TransformTiffCorner(gtif, &defn, xsize-dx, ysize-dy, corners[2], corners[3]) &&
 	        	TransformTiffCorner(gtif, &defn,	   dx,		 dy, corners[4], corners[5]) &&
 	        	TransformTiffCorner(gtif, &defn, xsize-dx,		 dy, corners[6], corners[7]))
 	        {
 				// Ben says: we used to snap round.  Since the 'far' tie point is calculated by res * pixels
-				// and res might be 1/1200 or 1/1201, we get floating point crud in our tiff calcs.  But 
+				// and res might be 1/1200 or 1/1201, we get floating point crud in our tiff calcs.  But
 				// if we aren't known to be on 1-degree boundaries, this snap rounding is just wrong.  So:
 				// don't round - we need good precision in other places.  Instead, we can round in the raster-import cmd.
 //				corners[0]=round_by_parts_guess(corners[0],xs);
@@ -152,8 +153,8 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 //				corners[3]=round_by_parts_guess(corners[3],ys);
 //				corners[5]=round_by_parts_guess(corners[5],ys);
 //				corners[7]=round_by_parts_guess(corners[7],ys);
-				
-				
+
+
 	        	retVal = true;
 	        }
 		}
@@ -254,7 +255,7 @@ void	CreateTranslatorForBounds(
 {
 	trans.mSrcMin = inSrcMin;
 	trans.mSrcMax = inSrcMax;
-	
+
 	trans.mDstMin = Point_2(0,0);
 	trans.mDstMax = Point_2(
 					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(to_double((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
@@ -267,7 +268,7 @@ void	CreateTranslatorForBounds(
 {
 	trans.mSrcMin = inBounds.p1;
 	trans.mSrcMax = inBounds.p2;
-	
+
 	trans.mDstMin = Point2(0,0);
 	trans.mDstMax = Point2(
 					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),

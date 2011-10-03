@@ -1,28 +1,36 @@
-/* 
+/*
  * Copyright (c) 2009, Laminar Research.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a 
- * copy of this software and associated documentation files (the "Software"), 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
- * and/or sell copies of the Software, and to permit persons to whom the 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
  * Software is furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
  */
 
 #include "Bezier.h"
+#if !defined(__i386__) && defined(IBM)
+#define __i386__
+#define __i386__defined 1
+#endif
 #include <CGAL/Sweep_line_2_algorithms.h>
+#if __i386__defined
+#undef __i386__
+#undef __i386__defined
+#endif
 #include "AssertUtils.h"
 
 inline Rat_point_2 ben2rat(const Point2& p) { return Rat_point_2(p.x(),p.y()); }
@@ -59,11 +67,11 @@ Bezier_curve_2	ben2cgal(const Bezier2& b)
 				cp.push_back(ben2rat(hack_pt));
 		} else
 			cp.push_back(ben2rat(b.c2));
-		
+
 		cp.push_back(ben2rat(b.p2));
 	}
-	
-	
+
+
 	return Bezier_curve_2(cp.begin(),cp.end());
 }
 
@@ -94,21 +102,21 @@ Bezier2 cgal2ben(const Bezier_curve_2& b)
 Bezier2 cgal2ben(const Bezier_polygon_2::X_monotone_curve_2& e)
 {
 	// This isn't entirely obvious: first...CGAL stores x-monotone curves as their supporting original bezier and the time-range that we selected.
-	// Second, the time "t" where interesting things happen are algebraic, not rational.  (This is because the roots of a polynomial may not be 
+	// Second, the time "t" where interesting things happen are algebraic, not rational.  (This is because the roots of a polynomial may not be
 	// rational if the degree is higher than one.)  So...we can't EXACTLY get the time "t" when things happen.)
-	
+
 	// So our conversion process is to get the supporting curve (which, since it was made by us, does have rational control points), convert that,
 	// and then take our sub-range in floating point.
-	
+
 	// There is a problem with that, too: we want adjacent curevs in a general polygon to share an end point, but the approximations we use mean that
 	// might not be true.  To work around this, we use the approximation of the "source" and "target" accessors, which produce consistent results
 	// across curves.  That is: because the source and target are shared, their approximations are always equal.
-	
+
 	// Finally, we have one special case: if we detect that the underlying polygon is a linear (only end points) we go back and "fix" c1/c2 to be exactly
 	// the same as the end points - with the amount of rounding we've done, it is unlikely that this will turn out to be true on its own.
-	
+
 	Bezier2	sub;
-	
+
 	Bezier_curve_2 support = e.supporting_curve();									// Convert supporting
 	pair<double,double>	range = e.parameter_range();
 	Bezier2 support_ben = cgal2ben(support);
@@ -159,14 +167,14 @@ void	find_crossing_beziers(
 {
 	vector<Bezier_curve_2>	curves;
 	vector<Bezier_point_2>		pts;
-	
+
 	out_xons.clear();
 	for(vector<Bezier2>::const_iterator b = in_curves.begin(); b != in_curves.end(); ++b)
 	{
 		if(b->p1 != b->p2 && (b->p1 != b->c1 || b->p2 != b->c2) && (b->c1 == b->p2 || b->c2 == b->p1))
 		{
 			out_xons.push_back(b->c1);
-		}		
+		}
 		else if(b->p1 != b->c1 ||
 		   b->c1 != b->c2 ||
 		   b->c2 != b->p2)
@@ -190,14 +198,14 @@ bool	do_beziers_cross(
 		return true;
 	}
 }
-					
+
 bool	do_beziers_cross(
 					const vector<Bezier2>&	in_curves)
 {
 	vector<Bezier_curve_2>	curves;
-	
+
 	for(vector<Bezier2>::const_iterator b = in_curves.begin(); b != in_curves.end(); ++b)
-	{		
+	{
 		curves.push_back(ben2cgal(*b));
 	}
 	return do_beziers_cross(curves);
@@ -214,7 +222,7 @@ void	clip_bezier_polygon(
 	out_remaining.clear();
 	out_remaining.push_back(in_poly);
 }
-					
+
 void	clip_bezier_chain(
 					const vector<Bezier_curve_2>&			in_curves,
 					vector<Bezier_curve_2>&					out_curves,

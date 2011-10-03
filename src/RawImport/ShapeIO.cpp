@@ -22,7 +22,7 @@
  */
 
 #include "ShapeIO.h"
-#include <proj_api.h>	
+#include <proj_api.h>
 #include <shapefil.h>
 #include "MapOverlay.h"
 #include "MapPolygon.h"
@@ -35,9 +35,15 @@
 
 //#include <CGAL/Snap_rounding_2.h>
 //#include <CGAL/Snap_rounding_traits_2.h>
-
+#if !defined(__i386__) && defined(IBM)
+#define __i386__
+#define __i386__defined 1
+#endif
 #include <CGAL/Sweep_line_2_algorithms.h>
-
+#if __i386__defined
+#undef __i386__
+#undef __i386__defined
+#endif
 // Ben says: this can be modified to printf the points.  If a shape-file import ever blows up,
 // we can use it to rapidly generate a numeric dataset - then we send a test program to the CGAL
 // team if they want one.
@@ -49,7 +55,7 @@ static void ISR(vector<Curve_2>& io_curves)
 	vector<Curve_2>			results;
 	list<list<Point_2> >	poly_lines;
 
-	
+
 	CGAL::snap_rounding_2<CGAL::Snap_rounding_traits_2<FastKernel>, vector<Curve_2>::const_iterator,list<list<Point_2> > >
 		(io_curves.begin(), io_curves.end(), poly_lines, 0.00001, false, false, 1);
 
@@ -57,9 +63,9 @@ static void ISR(vector<Curve_2>& io_curves)
 	for(list<list<Point_2> >::iterator pli = poly_lines.begin(); pli != poly_lines.end(); ++pli)
 		ts += (pli->size() - 1);
 	results.reserve(ts);
-	
+
 	printf("ISR before: %d after %d\n", io_curves.size(), ts);
-	
+
 	int ic = 0;
 	for(list<list<Point_2> >::iterator pli = poly_lines.begin(); pli != poly_lines.end(); ++pli, ++ic)
 	if(pli->size() > 1)
@@ -176,7 +182,7 @@ static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vecto
 			const char * field_val = DBFReadStringAttribute(db,shape_id,r->dbf_id[n]);
 			if(field_val == NULL && strcmp(r->values[n].c_str(),"-") == 0)				continue;
 			if(field_val != NULL && strcmp(r->values[n].c_str(),"!-") == 0)				continue;
-							
+
 			if(field_val == NULL)														{ rule_ok = false; break; }
 			if(strcmp(r->values[n].c_str(),"*") == 0)
 			{
@@ -188,12 +194,12 @@ static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vecto
 			}
 		}
 
-		if(rule_ok) 
+		if(rule_ok)
 		{
 			if(value) *value = r->feature;
 			return 1;
 		}
-			
+
 	}
 	return 0;
 }
@@ -259,7 +265,7 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 			printf("mismatch in number of columns vs. patterns.\n");
 			return false;
 		}
-		
+
 		if(inTokenLine[0] == "SHAPE_ARC_REVERSE")
 			sLineReverse.push_back(pat);
 		else if (inTokenLine[0] == "SHAPE_ARC_BRIDGE")
@@ -273,7 +279,7 @@ static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 		if(inTokenLine.size() != 2)
 		{
 			printf("Bad shape import line.\n");
-			return false;		
+			return false;
 		}
 		sLayerTag=inTokenLine[1];
 		return true;
@@ -292,7 +298,7 @@ public:
 	{
 		io_properties.clear();
 	}
-	
+
 	virtual	void	adjust_properties(Pmwx::Halfedge_handle edge, Prop_t& io_properties)
 	{
 		for(EdgeKey_iterator k = edge->curve().data().begin(); k != edge->curve().data().end(); ++k)
@@ -305,14 +311,14 @@ public:
 			}
 		}
 	}
-	
+
 	virtual	void	mark_face(const Prop_t& in_properties, Face_handle face)
 	{
 		face->set_contained(!in_properties.empty());
 		if(!in_properties.empty())
 		{
 			face->data().mTerrainType = (*feature_map)[*(--in_properties.end())];
-		}	
+		}
 	}
 };
 
@@ -320,20 +326,20 @@ static void round_grid(Point2& io_pt, int steps)
 {
 	int x_steps = round((io_pt.x() - s_crop[0]) * (double) steps / (s_crop[2] - s_crop[0]));
 	int y_steps = round((io_pt.y() - s_crop[1]) * (double) steps / (s_crop[3] - s_crop[1]));
-	
+
 	io_pt.x_ = s_crop[0] + (double) x_steps * (s_crop[2] - s_crop[0]) / (double) steps;
 	io_pt.y_ = s_crop[1] + (double) y_steps * (s_crop[3] - s_crop[1]) / (double) steps;
 }
 
 struct shape_lock_traits {
-	bool is_locked(Pmwx::Vertex_handle v) const { 
+	bool is_locked(Pmwx::Vertex_handle v) const {
 
 		Pmwx::Halfedge_handle h1(v->incident_halfedges());
 		Pmwx::Halfedge_handle h2(h1->next());
 
 		Pmwx::Halfedge_handle t1(h1->twin());
 		Pmwx::Halfedge_handle t2(h2->twin());
-		
+
 		// Verify our assumption; that all road segments are "flat" on import, that is, source and target height are the same.
 		// This is how shape data comes in these days because we get one layer per SEGMENT.  If we ever get a sr/dst height pair,
 		// our alg will fail, these asserts will squawk, and we will go to the #if 0 code.
@@ -348,17 +354,17 @@ struct shape_lock_traits {
 		for(r=t2->data().mSegments.begin();r!=t2->data().mSegments.end();++r)
 			DebugAssert(r->mSourceHeight == r->mTargetHeight);
 	#endif
-		
+
 		// If we don't have matched segments, lock the point so we don't lose the road type data.
 		if(h1->data().mSegments == h2->data().mSegments &&
 		   t1->data().mSegments == t2->data().mSegments)	return false;
 
 		if(h1->data().mSegments == t2->data().mSegments &&
 		   t1->data().mSegments == h2->data().mSegments)	return false;
-		
+
 //		debug_mesh_point(cgal2ben(v->point()),1,0,0);
 		return true;
-	
+
 
 	// This is a more correct version of the lock alg: if attempts to check what is happening at the
 	// vertex to be eliminated.  If we ever have 'ramped' data (src height != dst height) we can use this.
@@ -376,10 +382,10 @@ struct shape_lock_traits {
 			debug_mesh_point(cgal2ben(v->point()),1,0,0);
 			return true;
 		}
-		
+
 		if(r1 == 0 || r2 == 0)
 			return false;
-			
+
 		if(r1 > 1 || r2 > 1)
 		{
 			debug_mesh_point(cgal2ben(v->point()),1,0,1);
@@ -431,7 +437,7 @@ struct shape_lock_traits {
 		return false;
 #endif
 	}
-	void remove(Pmwx::Vertex_handle v) const { 
+	void remove(Pmwx::Vertex_handle v) const {
 //		debug_mesh_point(cgal2ben(v->point()),0.6,0.6,0.6);
 	}
 };
@@ -461,9 +467,9 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	}
 
 	SHPHandle file =  SHPOpen(in_file, "rb");
-	if(!file) 
+	if(!file)
 		return false;
-		
+
 	// Gotta do this before we crop out the whole file.  Why?  Cuz we might wnat the projection info!
 	if(flags & shp_Mode_Map)
 	{
@@ -478,7 +484,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			return false;
 		}
 	}
-	
+
 	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
 	if(sProj) reproj(bounds_lo);
 	if(sProj) reproj(bounds_hi);
@@ -499,7 +505,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		io_map.clear();								// one-by-one burn in) we are going to work on the final map, so this is needed.
 
 		vector<Curve_2>							curves;
-	
+
 	int feat = NO_VALUE;
 	if(flags & shp_Mode_Simple)
 		feat = LookupToken(feature_desc);
@@ -526,8 +532,8 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		for(shape_pattern_vector::iterator r = sLineBridge.begin(); r != sLineBridge.end(); ++r)
 		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
 			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
-		
-		
+
+
 		if(!sLayerTag.empty())
 			sLayerID = DBFGetFieldIndex(db, sLayerTag.c_str());
 
@@ -549,7 +555,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	feature_map.resize(entity_count,NO_VALUE);
 	feature_rev.resize(entity_count,0);
 	feature_lay.resize(entity_count,0);
-	
+
 	/************************************************************************************************************************************
 	 * MAIN SHAPE READING LOOP
 	 ************************************************************************************************************************************/
@@ -613,7 +619,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						feature_lay[n] = DBFReadIntegerAttribute(db, obj->nShapeId, sLayerID);
 					if(sLayerTag.empty() || sLayerID == -1 || DBFIsAttributeNULL(db, obj->nShapeId, sLayerID))
 					want_this_thing(db,obj->nShapeId,sLineBridge, &feature_lay[n]);
-				}	
+				}
 				for (int part = 0; part < obj->nParts; ++part)
 				{
 					int start_idx = obj->panPartStart[part];
@@ -623,7 +629,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					{
 						Point2 pt(obj->padfX[i],obj->padfY[i]);
 						if(sProj)	   reproj(pt);
-						if(grid_steps) round_grid(pt, grid_steps);						
+						if(grid_steps) round_grid(pt, grid_steps);
 						if(p.empty() || pt != p.back())
 						{
 							p.push_back(pt);
@@ -631,14 +637,14 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					}
 					vector<Point2> reduced;
 					swap(p,reduced);
-					
-					/* 
+
+					/*
 					// we could see what points we killed.
 					for(int dp=0;dp<p.size();++dp)
 					if(find(reduced.begin(),reduced.end(),p[dp])==reduced.end())
 						debug_mesh_point(p[dp],1,1,1);
 					*/
-					
+
 					total += (p.size());
 //					DebugAssert(reduced.size() >= 2);
 					for(int i = 1; i < reduced.size(); ++i)
@@ -667,7 +673,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		case SHPT_POLYGONM:
 			if (obj->nVertices > 0)
 			{
-				feature_map[n] = feat;				
+				feature_map[n] = feat;
 				for (int part = 0; part < obj->nParts; ++part)
 				{
 					int start_idx = obj->panPartStart[part];
@@ -676,7 +682,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point_2 pt(obj->padfX[i],obj->padfY[i]);
-						if(grid_steps || sProj) 
+						if(grid_steps || sProj)
 						{
 							Point2 raw_pt(obj->padfX[i],obj->padfY[i]);
 							if(sProj) reproj(raw_pt);
@@ -686,7 +692,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						if(p.is_empty() || pt != p.vertex(p.size()-1))					// Do not add point if it equals the prev!
 							p.push_back(pt);
 					}
-					
+
 					DebugAssert(p[0] == p[p.size()-1]);
 					while(p.size() > 0 && p[0] == p[p.size()-1])
 						p.erase(p.vertices_end()-1);
@@ -721,7 +727,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 						}
 					}
 				}
-				
+
 			}
 			break;
 		case SHPT_MULTIPOINT:
@@ -734,7 +740,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	}
 
 	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
-	
+
 	/************************************************************************************************************************************
 	 * CROP, INSERT AND TRIM
 	 ************************************************************************************************************************************/
@@ -780,7 +786,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 	Pmwx	local;
 	Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
-	
+
 	if(flags & shp_ErrCheck)
 	{
 		Traits_2			tr;
@@ -795,7 +801,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 	SHPClose(file);
 	if(db)	DBFClose(db);
-	
+
 //	printf("Inserting %d curves into %d.\n", curves.size(), targ->number_of_edges());
 //	ISR(curves);
 	CGAL::insert(*targ, curves.begin(), curves.end());
@@ -818,7 +824,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 			toggle_properties_visitor	visitor;
 			visitor.feature_map = &feature_map;
-			
+
 			visitor.Visit(targ);
 
 			int count = 0;
@@ -839,12 +845,12 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					CGAL::compare_y(k->source()->point(),ne) == CGAL::LARGER ||
 					CGAL::compare_y(k->target()->point(),ne) == CGAL::LARGER)
 				{
-					targ->remove_edge(k); 
+					targ->remove_edge(k);
 					++count;
 				}
 			}
 			if(count) printf("Removed: %d edges.\n", count);
-			
+
 			if(simplify_mtr)
 			{
 				printf("Before import simplify: %zd. ", targ->number_of_halfedges());
@@ -854,13 +860,13 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 				printf("After import simplify: %zd.\n", targ->number_of_halfedges());
 			}
-			
+
 			if(flags & shp_Overlay)
 			{
 				nuke_container(feature_map);
 				nuke_container(feature_rev);
-				nuke_container(feature_lay);			
-			
+				nuke_container(feature_lay);
+
 				Pmwx	src(io_map);
 				io_map.clear();
 				MapOverlay(src,local,io_map);
@@ -868,9 +874,9 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 		}
 		break;
-	
-	
-	
+
+
+
 /*			Pmwx	local;
 			Pmwx *	targ = (flags & shp_Overlay) ? &local : &io_map;
 
@@ -935,7 +941,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				}
 			}
 			if(count) printf("Removed: %d edges.\n", count);
-			
+
 			GISNetworkSegment_t r;
 			r.mFeatType = feat;
 			r.mRepType = NO_VALUE;
@@ -977,13 +983,13 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 					feature = feat;
 				if(flags & shp_Mode_Map)
 					feature = sShapeRules.front().feature;
-		
+
 				bool hosed = false;
 				for(Pmwx::Edge_iterator e = targ->edges_begin(); e != targ->edges_end(); ++e)
 				if(*e->curve().data().begin() < entity_count)
 				{
 					Pmwx::Halfedge_handle ee = he_get_same_direction(Halfedge_handle(e));
-					ee->twin()->face()->set_contained(true);					
+					ee->twin()->face()->set_contained(true);
 					ee->twin()->face()->data().mTerrainType = feature;
 					if(ee->face()->contained())
 						hosed = true;
@@ -998,12 +1004,12 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 				simplifier.simplify(*targ, simplify_mtr*MTR_TO_NM * NM_TO_DEG_LAT,shape_lock_traits(), inFunc);
 				printf("After import simplify: %zd.\n", targ->number_of_halfedges());
 			}
-			
+
 			if(flags & shp_Overlay)
 			{
 				nuke_container(feature_map);
 				nuke_container(feature_rev);
-				nuke_container(feature_lay);	
+				nuke_container(feature_lay);
 				int n1 = SimplifyMap(io_map,false,NULL);
 				int n2 = SimplifyMap(local,false,NULL);
 				printf("Simplify: %d and %d\n", n1, n2);
@@ -1037,7 +1043,7 @@ bool	RasterShapeFile(
 	s_crop[1] = dem.mSouth;
 	s_crop[2] = dem.mEast;
 	s_crop[3] = dem.mNorth;
-	
+
 	if(first_time)
 	{
 		RegisterLineHandler("SHAPE_FEATURE", ShapeLineImporter, NULL);
@@ -1049,9 +1055,9 @@ bool	RasterShapeFile(
 	}
 
 	SHPHandle file =  SHPOpen(inFile, "rb");
-	if(!file) 
+	if(!file)
 		return false;
-		
+
 	// Gotta do this before we crop out the whole file.  Why?  Cuz we might wnat the projection info!
 	if(flags & shp_Mode_Map)
 	{
@@ -1066,9 +1072,9 @@ bool	RasterShapeFile(
 			return false;
 		}
 	}
-	
+
 	SHPGetInfo(file, &entity_count, &shape_type, bounds_lo, bounds_hi);
-	
+
 	if(sProj) reproj(bounds_lo);
 	if(sProj) reproj(bounds_hi);
 
@@ -1085,7 +1091,7 @@ bool	RasterShapeFile(
 	}
 
 	map<int, PolyRasterizer<double> >	rasterizers;
-	
+
 	int feat = NO_VALUE;
 	if(flags & shp_Mode_Simple)
 		feat = LookupToken(feature_desc);
@@ -1114,8 +1120,8 @@ bool	RasterShapeFile(
 		for(shape_pattern_vector::iterator r = sLineBridge.begin(); r != sLineBridge.end(); ++r)
 		for(vector<string>::iterator c = r->columns.begin(); c != r->columns.end(); ++c)
 			r->dbf_id.push_back(DBFGetFieldIndex(db,c->c_str()));
-		
-		
+
+
 		if(!sLayerTag.empty())
 			sLayerID = DBFGetFieldIndex(db, sLayerTag.c_str());
 
@@ -1148,14 +1154,14 @@ bool	RasterShapeFile(
 					for (int i = start_idx; i < stop_idx; ++i)
 					{
 						Point2 pt(obj->padfX[i],obj->padfY[i]);
-						if(sProj) 
+						if(sProj)
 						{
 							if(sProj) reproj(pt);
 						}
 						if(p.empty() || pt != p[p.size()-1])					// Do not add point if it equals the prev!
 							p.push_back(pt);
 					}
-					
+
 					DebugAssert(p[0] == p[p.size()-1]);
 					while(p.size() > 0 && p[0] == p[p.size()-1])
 						p.erase(p.end()-1);
@@ -1172,10 +1178,10 @@ bool	RasterShapeFile(
 												dem.lon_to_x(si.p2.x()),
 												dem.lat_to_y(si.p2.y()));
 						}
-						
+
 					}
 				}
-				
+
 			}
 			break;
 		case SHPT_MULTIPOINT:
@@ -1188,22 +1194,22 @@ bool	RasterShapeFile(
 	}
 
 	PROGRESS_DONE(inFunc, 0, 1, "Reading shape file...")
-	
+
 	/************************************************************************************************************************************
 	 * PROCESS
 	 ************************************************************************************************************************************/
 	SHPClose(file);
 	if(db)	DBFClose(db);
-	
+
 	for(map<int, PolyRasterizer<double> >::iterator r = rasterizers.begin(); r != rasterizers.end(); ++r)
 	{
-		r->second.SortMasters();		
+		r->second.SortMasters();
 		int x, y = 0;
 		r->second.StartScanline(y);
 		while (!r->second.DoneScan())
 		{
 			DebugAssert(y >= 0);
-			if (y >= dem.mHeight) 
+			if (y >= dem.mHeight)
 				break;
 
 			int x1, x2;
@@ -1211,7 +1217,7 @@ bool	RasterShapeFile(
 			{
 				x1 = max(x1,0);
 				x2 = min(x2,dem.mWidth);
-				
+
 				for (x = x1; x < x2; ++x)
 				{
 					dem(x,y) = r->first;

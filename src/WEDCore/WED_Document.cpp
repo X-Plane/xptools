@@ -138,7 +138,7 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 
 void	WED_Document::Save(void)
 {
-	BroadcastMessage(msg_DocWillSave, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));
+	BroadcastMessage(msg_DocWillSave, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 
 /*
 	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
@@ -168,13 +168,13 @@ void	WED_Document::Save(void)
 */
 	string xml = mFilePath;
 	xml += ".xml";
-#if IBM	
+#if IBM
 	string_utf16 wname;
 	string_utf_8_to_16(xml,wname);
 	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
-#else	
+#else
 	FILE * xml_file = fopen(xml.c_str(),"w");
-#endif	
+#endif
 	if(xml_file)
 	{
 		WriteXML(xml_file);
@@ -264,7 +264,7 @@ void	WED_Document::Revert(void)
 	}
 	mUndo.CommitCommand();
 
-	BroadcastMessage(msg_DocLoaded, reinterpret_cast<long>(static_cast<IDocPrefs *>(this)));
+	BroadcastMessage(msg_DocLoaded, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 }
 
 bool	WED_Document::IsDirty(void)
@@ -508,7 +508,7 @@ void		WED_Document::StartElement(
 		if(n && v)
 		{
 				mDocPrefs[n] = v;
-		} 
+		}
 		else if(n)
 		{
 			mDocPrefsActName = n;
@@ -555,13 +555,13 @@ void WED_Document::Panic(void)
 	// we save the user's work.
 	string xml = mFilePath;
 	xml += ".crash.xml";
-#if IBM	
+#if IBM
 	string_utf16 wname;
 	string_utf_8_to_16(xml,wname);
 	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
-#else	
+#else
 	FILE * xml_file = fopen(xml.c_str(),"w");
-#endif	
+#endif
 	if(xml_file)
 	{
 		WriteXML(xml_file);

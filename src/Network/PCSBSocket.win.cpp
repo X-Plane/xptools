@@ -65,7 +65,7 @@ PCSBSocket::PCSBSocket(unsigned short inPort, bool inServer)
    {
 	   printf("-----------------------Could not set TCP_NODELAY on port %d-------------\n",inPort);
    }
-	if (bind(mWinSocket, (LPSOCKADDR)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
+	if (::bind(mWinSocket, (LPSOCKADDR)&sIn, sizeof(sIn)) != 0) //Bind the socket to the local addy
 	{
 		socketStatus = status_Error;
 		return;

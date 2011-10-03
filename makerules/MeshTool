@@ -18,6 +18,16 @@ endif #PLAT_LINUX
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
+LIBS		:= ./libs/local/lib/libCGAL.a
+LIBS		+= ./libs/local/lib/libboost_thread.dll
+LIBS		+= ./libs/local/lib/libsquish.a
+LIBS		+= ./libs/local/lib/libgeotiff.a
+LIBS		+= ./libs/local/lib/libshp.a
+LIBS		+= ./libs/local/lib/libproj.a
+LIBS		+= ./libs/local/lib/libtiff.a
+LIBS		+= ./libs/local/lib/libjpeg.a
+LIBS		+= ./libs/local/lib/libpng.a
+LIBS		+= ./libs/local/lib/libz.a
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN

@@ -120,9 +120,9 @@ ifdef PLAT_DARWIN
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
-	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:= -Wno-deprecated-declarations -Wno-multichar
-	CXXFLAGS	:= -std=gnu++0x -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar
+	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0 -DBOOST_THREAD_USE_LIB=1
+	CFLAGS		:= -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:= -std=gnu++0x -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:= -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
@@ -322,6 +322,7 @@ endif
 ifdef StripDebug
 	@$(STRIP) $(STRIPFLAGS) $(@)
 endif
+	@cp libs/local/lib/*.dll $(dir $(@))
 	@$(print_finished)
 
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).res.o : %

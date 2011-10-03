@@ -9,7 +9,7 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 ifdef PLAT_MINGW
 DEFINES		+= -DDIME_NOT_DLL -DUNDER_CE -DWINDOWS -DMINGW_BUILD=1
 LIBPATHS	+= -L./SDK/ac3d
-LIBS		+= -lac3d -lopengl32
+LIBS		+= -lac3d_64 -lopengl32
 LDFLAGS		:= -static-libgcc -Wl,-O2 -Wl,-Bstatic
 REAL_TARGET	:= XPlaneSupportWin
 endif #PLAT_MINGW

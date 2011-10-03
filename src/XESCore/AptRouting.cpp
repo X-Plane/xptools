@@ -74,11 +74,18 @@ namespace CGAL {
 };
 
 
-
-
+#if !defined(__i386__) && defined(IBM)
+#define __i386__
+#define __i386__defined 1
+#endif
 #include <CGAL/Sweep_line_2_algorithms.h>
 #include <CGAL/Straight_skeleton_builder_2.h>
 #include <CGAL/Straight_skeleton_converter_2.h>
+#if __i386__defined
+#undef __i386__
+#undef __i386__defined
+#endif
+
 #include "WED_AptIE.h"
 
 
