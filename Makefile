@@ -29,7 +29,7 @@ VER_LIBPNG	:= 1.2.41
 VER_ZLIB	:= 1.2.3
 # http://www.libtiff.org/
 # ftp://ftp.remotesensing.org/pub/libtiff
-VER_LIBTIFF	:= 4.0.0beta5
+VER_LIBTIFF	:= 4.0.0beta7
 # http://shapelib.maptools.org/
 # http://dl.maptools.org/dl/shapelib/
 VER_LIBSHP	:= 1.2.10
@@ -38,8 +38,8 @@ VER_LIBSHP	:= 1.2.10
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
 # http://sourceforge.net/projects/boost/files/
-VER_BOOST	:= 1_41_0
-BOOST_SHORTVER	:= 1_41
+VER_BOOST	:= 1_47_0
+BOOST_SHORTVER	:= 1_47
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
 VER_MESA	:= 7.5
@@ -48,10 +48,10 @@ VER_MESA	:= 7.5
 VER_LIBEXPAT	:= 2.0.1
 # http://gmplib.org/
 # http://gmplib.org/#DOWNLOAD
-VER_LIBGMP	:= 4.3.1
+VER_LIBGMP	:= 2.4.0
 # http://www.mpfr.org/
 # http://www.mpfr.org/mpfr-current/#download
-VER_LIBMPFR	:= 2.4.2
+VER_LIBMPFR	:= 3.0.1
 
 
 
@@ -121,13 +121,14 @@ LDFLAGS_ZLIB		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_ZLIB		:= --prefix=$(DEFAULT_PREFIX)
 
 # libgmp
-ARCHIVE_LIBGMP		:= gmp-$(VER_LIBGMP).tar.gz
+ARCHIVE_LIBGMP		:= mpir-$(VER_LIBGMP).tar.lzma
 CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 CXXFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBGMP		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBGMP		+= --enable-shared=no
 CONF_LIBGMP		+= --enable-cxx
+CONF_LIBGMP		+= --enable-gmpcompat
 # no assembler code
 ifdef PLAT_DARWIN
 # Ben turned off to fix bug in WED
@@ -135,7 +136,7 @@ ifdef PLAT_DARWIN
 CONF_LIBGMP		+= --host=none-apple-darwin
 endif
 ifdef PLAT_MINGW
-CONF_LIBGMP		+= --host=none-pc-mingw32
+CONF_LIBGMP		+= --build=none-pc-mingw32
 #CONF_LIBGMP		+= --host=$(CROSSHOST)
 endif
 ifdef PLAT_LINUX
@@ -143,7 +144,7 @@ CONF_LIBGMP		+= --host=none-pc-linux-gnu
 endif
 
 # libmpfr
-ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.gz
+ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.xz
 CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBMPFR		:= --prefix=$(DEFAULT_PREFIX)
@@ -289,6 +290,7 @@ LDFLAGS_LIBDIME		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBDIME		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBDIME		+= --enable-static=yes
 CONF_LIBDIME		+= --enable-shared=no
+CONF_LIBDIME		+= --disable-msvc
 CONF_LIBDIME		+= --disable-dependency-tracking
 ifdef PLAT_MINGW
 CONF_LIBDIME		+= --host=$(CROSSHOST)
@@ -356,14 +358,8 @@ ifdef PLAT_LINUX
 endif
 ifdef PLAT_MINGW
 	cd "boost_$(VER_BOOST)" && \
-	bjam.exe install --toolset=gcc --prefix=$(DEFAULT_PREFIX) \
-	--with-thread --without-python $(BE_QUIET)
-	@cd local/include && \
-	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET) && \
-	rm -rf boost-$(BOOST_SHORTVER)
-	@cd local/lib && \
-	ln -sf libboost_thread*-mt.lib libboost_thread.a && \
-	rm -f *.lib
+	b2 install --toolset=gcc --layout=system --prefix=$(DEFAULT_PREFIX) \
+	--with-thread variant=release link=shared $(BE_QUIET)
 endif
 	@-rm -rf boost_$(VER_BOOST)
 	@touch $@
@@ -407,20 +403,20 @@ libexpat: ./local$(MULTI_SUFFIX)/lib/.xpt_libexpat
 libgmp: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp:
 	@echo "building libgmp..."
-	@tar -xzf "./archives/$(ARCHIVE_LIBGMP)"
-	@cd "gmp-$(VER_LIBGMP)" && \
+	@tar -xJf "./archives/$(ARCHIVE_LIBGMP)"
+	@cd "mpir-$(VER_LIBGMP)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBGMP) CXXFLAGS=$(CXXFLAGS_LIBGMP) LDFLAGS=$(LDFLAGS_LIBGMP) \
 	./configure $(CONF_LIBGMP) $(BE_QUIET)
-	@$(MAKE) -C "gmp-$(VER_LIBGMP)" $(BE_QUIET)
-	@$(MAKE) -C "gmp-$(VER_LIBGMP)" install $(BE_QUIET)
-	@-rm -rf gmp-$(VER_LIBGMP)
+	@$(MAKE) -C "mpir-$(VER_LIBGMP)" $(BE_QUIET)
+	@$(MAKE) -C "mpir-$(VER_LIBGMP)" install $(BE_QUIET)
+	@-rm -rf mpir-$(VER_LIBGMP)
 	@touch $@
 
 libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr
 ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 	@echo "building libmpfr..."
-	@tar -xzf "./archives/$(ARCHIVE_LIBMPFR)"
+	@tar -xJf "./archives/$(ARCHIVE_LIBMPFR)"
 	@cd "mpfr-$(VER_LIBMPFR)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBMPFR) LDFLAGS=$(LDFLAGS_LIBMPFR) \
