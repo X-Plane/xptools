@@ -1,0 +1,56 @@
+ARCHITECTURE	:= $(shell uname -m)
+PLATFORM	:= $(shell uname)
+
+VERSION	:= 1_47_0
+
+ARCHIVE	:= boost_$(VERSION).tar.gz
+
+
+ifneq (, $(findstring MINGW, $(PLATFORM)))
+	PLAT_WINNT	:= Yes
+	MULTILIB	:= Yes
+endif
+
+ifeq ($(PLATFORM), Linux)
+	PLAT_LINUX	:= Yes
+ifeq ($(ARCHITECTURE), x86_64)
+	MULTILIB	:= Yes
+endif
+endif
+
+ifeq ($(PLATFORM), Darwin)
+	PLAT_DARWIN	:= Yes
+endif
+
+PREFIX		:= $(shell pwd)/local
+PREFIX32	:= $(shell pwd)/local32
+
+ifdef MULTILIB
+	TARGETS := $(PREFIX32)/lib/libboost_thread.a
+else
+	TARGETS := $(PREFIX)/lib/libboost_thread.a
+endif
+
+
+.PHONY: all clean
+
+all: $(TARGETS)
+
+clean:
+	@-rm -rf boost_$(VERSION)
+
+./boost_$(VERSION)/boost-build.jam:
+	@tar -xzf "./archives/$(ARCHIVE)"
+
+$(PREFIX)/lib/libboost_thread.a: ./boost_$(VERSION)/boost-build.jam
+	@echo "building boost..."
+	@cd "boost_$(VERSION)" && \
+	b2 --toolset=gcc --layout=system --with-thread \
+	--prefix="$(PREFIX)" variant=release link=static install
+
+$(PREFIX32)/lib/libboost_thread.a: $(PREFIX)/lib/libboost_thread.a ./boost_$(VERSION)/boost-build.jam
+	@echo "building boost 32-bit..."
+	@cd "boost_$(VERSION)" && \
+	b2 --toolset=gcc --layout=system --with-thread \
+	--prefix="$(PREFIX32)" variant=release link=static \
+	address-model=32 install

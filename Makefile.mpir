@@ -1,0 +1,62 @@
+ARCHITECTURE	:= $(shell uname -m)
+PLATFORM	:= $(shell uname)
+
+VERSION	:= 2.4.0
+
+ARCHIVE	:= mpir-$(VERSION).tar.lzma
+
+
+ifneq (, $(findstring MINGW, $(PLATFORM)))
+	PLAT_WINNT	:= Yes
+	MULTILIB	:= Yes
+endif
+
+ifeq ($(PLATFORM), Linux)
+	PLAT_LINUX	:= Yes
+ifeq ($(ARCHITECTURE), x86_64)
+	MULTILIB	:= Yes
+endif
+endif
+
+ifeq ($(PLATFORM), Darwin)
+	PLAT_DARWIN	:= Yes
+endif
+
+PREFIX		:= $(shell pwd)/local
+PREFIX32	:= $(shell pwd)/local32
+
+ifdef MULTILIB
+	TARGETS := $(PREFIX32)/lib/libgmp.a
+else
+	TARGETS := $(PREFIX)/lib/libgmp.a
+endif
+
+
+.PHONY: all clean
+
+all: $(TARGETS)
+
+clean:
+	@-rm -rf mpir-$(VERSION)
+
+./mpir-$(VERSION)/configure:
+	@tar -xJf "./archives/$(ARCHIVE)"
+
+$(PREFIX)/lib/libgmp.a: ./mpir-$(VERSION)/configure
+	@echo "building mpir..."
+	@-$(MAKE) -s -C mpir-$(VERSION) distclean
+	@cd "mpir-$(VERSION)" && \
+	./configure --prefix="$(PREFIX)" --enable-shared=no --enable-cxx \
+	--enable-gmpcompat --build=k8-w64-mingw32
+	$(MAKE) -C mpir-$(VERSION)
+	$(MAKE) -C mpir-$(VERSION) install
+
+$(PREFIX32)/lib/libgmp.a: $(PREFIX)/lib/libgmp.a ./mpir-$(VERSION)/configure
+	@echo "building mpir 32-bit..."
+	@-$(MAKE) -s -C mpir-$(VERSION) distclean
+	@cd "mpir-$(VERSION)" && \
+	./configure --prefix="$(PREFIX32)" --enable-shared=no --enable-cxx \
+	--enable-gmpcompat --build=pentium4-pc-mingw32
+	$(MAKE) -C mpir-$(VERSION)
+	$(MAKE) -C mpir-$(VERSION) install
+
