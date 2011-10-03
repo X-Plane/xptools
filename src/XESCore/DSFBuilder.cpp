@@ -119,18 +119,18 @@ T * ConvertDEMTo(const DEMGeo& d, DSFRasterHeader_t& h, int fmt, float s, float 
 	h.height = d.mHeight;
 	h.offset = o;
 	h.scale = s;
-	
+
 	int pc = d.mWidth * d.mHeight;
 	DEMGeo::const_iterator i = d.begin();
-	
+
 	float sp = 1.0 / s;
 	float op = -sp * o;
-		
+
 	while(pc--)
 	{
 		*p++ = (*i++) * sp + op;
 	}
-	
+
 	return mem;
 }
 
@@ -140,7 +140,7 @@ void visualize_bezier(list<Point2c>& bez, bool want_straight_segs, float nt, flo
 	list<Point2c>::iterator start(bez.begin()), stop(bez.begin()), last(bez.end());
 	--last;
 	DebugAssert(!last->c);
-	
+
 	while(start != last)
 	{
 		debug_mesh_point(*start,nt,nt,nt);
@@ -148,25 +148,25 @@ void visualize_bezier(list<Point2c>& bez, bool want_straight_segs, float nt, flo
 		stop = start;
 		++stop;
 		while(stop->c) ++stop;
-		
+
 		int d = distance(start,stop);
 //		printf("Debugging %d\n", d);
 		switch(d) {
 		case 1:
-			if(want_straight_segs)	
+			if(want_straight_segs)
 				debug_mesh_line(*start, *stop, 0,1,0, 0, 1, 0);
 			break;
 		case 2:
 			debug_mesh_bezier(*start, *nth_from(start,1), *nth_from(start,2), r,0,1,r,0,1);
 			debug_mesh_point(*nth_from(start,1), r*nt, 0, nt);
 			break;
-		case 3: 
+		case 3:
 			debug_mesh_bezier(*start, *nth_from(start,1), *nth_from(start,2),*nth_from(start,3), r,1,1,r,1,1);
 			debug_mesh_point(*nth_from(start,1), r*nt, 0,nt);
 			debug_mesh_point(*nth_from(start,2), r*nt, 0,nt);
 			break;
 		}
-		start = stop;		
+		start = stop;
 	}
 	debug_mesh_point(*last,nt,nt,nt);
 
@@ -179,12 +179,12 @@ struct	road_coords_checker {
 	void * ptr;
 	char lm;
 	road_coords_checker(void * p, double c[3], char m) {ptr = p;  last[0] = c[0]; last[1] = c[1]; last[2] = c[2]; lm = m; }
-	
+
 //	#define epsi 0.00001
 	#define epsi 0.0000001
-	
-	void check(double c[3], char m) { 
-	
+
+	void check(double c[3], char m) {
+
 		if(fabs(c[0] - last[0]) < epsi &&
 		   fabs(c[1] - last[1]) < epsi &&
 		   (
@@ -209,7 +209,7 @@ struct	road_coords_checker {
 // Edge-wrapper...turns out CDT::Edge is so deeply templated that stuffing it in a map crashes CW8.
 // So we build a dummy wrapper around an edge to prevent a template with a huge expanded name.
 struct	edge_wrapper {
-	edge_wrapper() : edge(NULL, 0) { };
+	edge_wrapper() : edge((const void*)NULL, 0) { };
 	edge_wrapper(const CDT::Edge e) : edge(e) { };
 	edge_wrapper(const edge_wrapper& x) : edge(x.edge) { }
 	edge_wrapper(CDT::Face_handle f, int i) : edge(CDT::Edge(f, i)) { }
@@ -307,9 +307,9 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 		coords[3] = nrml_s.dx;
 		coords[4] =-nrml_s.dy;
 	}
-		
+
 	DebugAssert(pythag(coords[3],coords[4]) <= 1.01);
-#endif	
+#endif
 	coords[2] = kind;
 	//printf("Beach: %lf,%lf,%lf,%lf,%lf,%lf\n",coords[0],coords[1],coords[2],coords[3],coords[4],coords[5]);
 }
@@ -759,7 +759,7 @@ string		get_terrain_name(int composite)
 			}
 			return FetchTokenString(composite);
 		} else
-#if PHONE		
+#if PHONE
 			return string(FetchTokenString(composite)) + ".ter";
 #else
 			return string("lib/g10/") + FetchTokenString(composite) + ".ter";
@@ -824,13 +824,13 @@ struct	ObjPrio {
 
 static int IsAliased(int lu)
 {
-	if (lu == terrain_VisualWater) 
+	if (lu == terrain_VisualWater)
 		return terrain_Water;
 	if (IsCustomOverWaterSoft(lu))
 	{
 		string  rn(FetchTokenString(lu));
 		if(!StripSoft(rn)) return NO_VALUE;
-		
+
 		int lup = LookupToken(rn.c_str());
 		return (lup == -1) ? 0 : lup;
 	}
@@ -842,7 +842,7 @@ void	BuildDSF(
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
 			const DEMGeo&	inSeaLevel,
-			const DEMGeo&	inBathymetry,			
+			const DEMGeo&	inBathymetry,
 			const DEMGeo&	inUrbanDensity,
 //			const DEMGeo&	inVegeDem,
 			CDT&			inHiresMesh,
@@ -913,7 +913,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		map<int, int, ObjPrio>		objects;
 
 		char	prop_buf[256];
-		
+
 		deferred_pool	must_dealloc;
 
 	/****************************************************************
@@ -958,7 +958,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		double x = CGAL::to_double(fi->vertex(n)->point().x());
 		double y = CGAL::to_double(fi->vertex(n)->point().y());
-	
+
 		if(x < inElevation.mWest)
 			DebugAssert(fi->vertex(n)->point().x() == inElevation.mWest);
 		if(x > inElevation.mEast)
@@ -968,7 +968,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			DebugAssert(fi->vertex(n)->point().y() == inElevation.mSouth);
 		if(y > inElevation.mNorth)
 			DebugAssert(fi->vertex(n)->point().y() == inElevation.mNorth);
-	
+
 		if(fi->vertex(n)->point().y() > inElevation.mNorth)
 			printf("WARNING: out of bounds pt: %lf\n", CGAL::to_double(fi->vertex(n)->point().y()));
 		if(fi->vertex(n)->point().y() < inElevation.mSouth)
@@ -1001,7 +1001,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			printf("WARNING: skipping colinear out of bounds triange.\n");
 			continue;
 		}
-			
+
 
 		if (fi->vertex(0)->point().x() >= inElevation.mEast &&
 			fi->vertex(1)->point().x() >= inElevation.mEast &&
@@ -1010,7 +1010,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			printf("WARNING: skipping colinear out of bounds triange.\n");
 			continue;
 		}
-			
+
 
 		if (fi->vertex(0)->point().x() <= inElevation.mWest &&
 			fi->vertex(1)->point().x() <= inElevation.mWest &&
@@ -1139,10 +1139,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		landuses_reversed[cur_id] = lu_ranked->first;
 		++cur_id;
 	}
-	
+
 	for (lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked)
 	if(IsAliased(lu_ranked->first))
-		lu_ranked->second = landuses[IsAliased(lu_ranked->first)];	
+		lu_ranked->second = landuses[IsAliased(lu_ranked->first)];
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;
 
@@ -1157,7 +1157,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		is_water		= lu_ranked->first == terrain_VisualWater || lu_ranked->first == terrain_Water;
 		is_overlay		= IsCustomOverWaterAny(lu_ranked->first);		// This layer is an overlay to water, so be sure to set the flags!
-		
+
 #if !NO_ORTHO
 		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
 		if (sLoResLU[cur_id].count(lu_ranked->first))
@@ -1215,13 +1215,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 * WRITE OUT HI RES BASE PATCHES
 		 ***************************************************************************************************************************************/
 		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)
-		if (sHiResLU[cur_id].count(lu_ranked->first))		
+		if (sHiResLU[cur_id].count(lu_ranked->first))
 		{
 			TriFanBuilder	fan_builder(&inHiresMesh);
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
 			{
 				f = sHiResTris[cur_id][tri];
-				if (f->info().terrain == lu_ranked->first || 
+				if (f->info().terrain == lu_ranked->first ||
 					(IsCustomOverWaterHard(f->info().terrain) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
 					(IsCustomOverWaterSoft(f->info().terrain) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water
 				{
@@ -1234,13 +1234,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			fan_builder.CalcFans();
 
 			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
-			
+
 			int flags = 0;
 			if(is_overlay)  flags |= dsf_Flag_Overlay;
 			if(lu_ranked->first != terrain_VisualWater &&			// Every patch is physical EXCEPT: visual water, obviously just for looks!
 				!IsCustomOverWaterSoft(lu_ranked->first))			// custom over soft water - we get physics from who is underneath
-				flags |= dsf_Flag_Physical;						
-			
+				flags |= dsf_Flag_Physical;
+
 			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, is_water ? 7 : (pinfo ? 7 : 5), writer1);
 			list<CDT::Vertex_handle>				primv;
 			list<CDT::Vertex_handle>::iterator		vert;
@@ -1259,12 +1259,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
                 }
                 cbs.BeginPrimitive_f(primt, writer1);
                 for(vert = primv.begin(); vert != primv.end(); ++vert)
-                {	
+                {
 					// Ben says: the use of doblim warrants some explanation: CGAL provides EXACT arithmetic, but it does not give exact
 					// conversion back to float EVEN when that is possible!!  So the edge of our tile is guaranteed to be exactly on the DSF
 					// border but is not guaranteed to be within the DSF border once rounded.
 					// Because of this, we have to clamp our output to the double-precision bounds after conversion, since DSFLib is sensitive
-					// to out-of-boundary conditions!				
+					// to out-of-boundary conditions!
 					DebugAssert((*vert)->point().x() >= inElevation.mWest  && (*vert)->point().x() <= inElevation.mEast );
 					DebugAssert((*vert)->point().y() >= inElevation.mSouth && (*vert)->point().y() <= inElevation.mNorth);
 					coords8[0] = doblim(CGAL::to_double((*vert)->point().x()),inElevation.mWest ,inElevation.mEast );
@@ -1355,7 +1355,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							coords8[1] = doblim(CGAL::to_double(f->vertex(vi)->point().y()),inElevation.mSouth,inElevation.mNorth);
 							DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 							DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
-							
+
 							coords8[2] =USE_DEM_H( f->vertex(vi)->info().height   ,f->vertex(vi),inHiresMesh);
 							coords8[3] =USE_DEM_N( f->vertex(vi)->info().normal[0]);
 							coords8[4] =USE_DEM_N(-f->vertex(vi)->info().normal[1]);
@@ -1403,7 +1403,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		cbs.AcceptRasterDef_f("elevation",writer1);
 		cbs.AcceptRasterDef_f("sea_level",writer1);
 		cbs.AcceptRasterDef_f("bathymetry",writer1);
-	
+
 		DSFRasterHeader_t	header;
 		short * data = ConvertDEMTo<short>(inElevation,header, dsf_Raster_Format_Int,1.0,0.0);
 		must_dealloc.push_back(data);
@@ -1641,7 +1641,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 						polyObj->mParam, 2,
 						writer2);
 			// boundary
-			
+
 			for (polyHole = polyObj->mShape.begin(); polyHole != polyObj->mShape.end(); ++ polyHole)
 			{
 				cbs.BeginPolygonWinding_f(writer2);
@@ -1672,7 +1672,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	{
 		Assert(obdef->second != NO_VALUE);
 		string facName = FetchTokenString(obdef->second);
-		
+
 		if(facName.find('.') == facName.npos)
 		{
 			if (IsForestType(obdef->second))
@@ -1751,7 +1751,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			TIMER(OptimizeNetwork)
 			OptimizeNetwork(junctions, chains, false);
 		}
-		
+
 //		{
 //			TIMER(SpacePowerlines)
 //			SpacePowerlines(junctions, chains, 1000.0, 10.0);
@@ -1797,9 +1797,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				NetRepInfo * info = &gNetReps[(*ci)->rep_type];
 
 				list<Point2c>	pts;
-				
+
 				pts.push_back(Point2c((*ci)->start_junction->location,false));
-				
+
 				for(int n = 0; n < (*ci)->shape.size(); ++n)
 				{
 					if((*ci)->shape.size() == 1)
@@ -1833,12 +1833,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 										(*ci)->shape[n+1],
 										info->min_defl_deg_mtr, info->crease_angle_cos,
 										pts);
-					}				
+					}
 				}
-				
+
 				pts.push_back(Point2c((*ci)->end_junction->location,false));
 				DebugAssert(pts.size() >= 2);
-				
+
 				list<Point2c>::iterator last(pts.end()), start(pts.begin());
 				--last;
 				DebugAssert(last->c == 0);
@@ -1849,9 +1849,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				#endif
 				{
 					#if SHOW_BEZIERS
-						visualize_bezier(pts,true,0.1f, 0.0f);				
+						visualize_bezier(pts,true,0.1f, 0.0f);
 					#endif
-					orig_shape_count += pts.size();				
+					orig_shape_count += pts.size();
 					bezier_multi_simplify_straight_ok(pts, MTR_TO_DEG_LAT * gNetReps[(*ci)->rep_type].max_err, 0.00005);// * MTR_TO_DEG_LAT * 5.0 * 5.0);
 					reduced_shape_count += pts.size();
 					#if SHOW_BEZIERS
@@ -1867,7 +1867,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords3[0] = doblim(p->x(),inElevation.mWest,inElevation.mEast);
 					coords3[1] = doblim(p->y(),inElevation.mSouth,inElevation.mNorth);
 					coords3[2] = p->c ? 1 : 0;
-					
+
 					if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
 					{
 						printf("WARNING: coordinate out of range.\n");
@@ -1901,11 +1901,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			CleanupNetworkTopology(junctions, chains);
 			if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
 			cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);
-			
+
 			printf("Shape points: %d to %d.\n", orig_shape_count, reduced_shape_count);
 		}
 	}
-	
+
 	/****************************************************************
 	 * MANIFEST
 	 ****************************************************************/

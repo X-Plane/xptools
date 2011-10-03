@@ -94,7 +94,7 @@ bool	RegisterLineHandler(
 {
 	if (sHandlerTable.empty())
 	{
-		sHandlerTable.insert(HandlerMap::value_type("INCLUDE", HandlerEntry(HandleInclude, NULL)));
+		sHandlerTable.insert(HandlerMap::value_type("INCLUDE", HandlerEntry(HandleInclude, (void*)NULL)));
 	}
 	string	token(inToken);
 	if (sHandlerTable.find(inToken) != sHandlerTable.end())
@@ -263,7 +263,7 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots)
 			subst=tokens.substr(s);
 		else
 			subst=tokens.substr(s,e-s);
-		
+
 		int bade;
 		slots.insert(bade = LookupToken(subst.c_str()));
 		if (bade == -1)
@@ -341,7 +341,7 @@ int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 			break;
 		case 'P':
 			pp = va_arg(args,Point2 *);
-			if(sscanf(tokens[n].c_str(),"%lf,%lf",&pp->x_, &pp->y_) != 2)			
+			if(sscanf(tokens[n].c_str(),"%lf,%lf",&pp->x_, &pp->y_) != 2)
 				pp->x_ = pp->y_ = TokenizeFloat(tokens[n]);
 			break;
 		case ' ':

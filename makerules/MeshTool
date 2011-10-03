@@ -75,6 +75,7 @@ SOURCES += ./src/XESCore/MapTopology.cpp
 SOURCES += ./src/XESCore/MeshAlgs.cpp
 SOURCES += ./src/XESCore/MeshDefs.cpp
 SOURCES += ./src/XESCore/MeshIO.cpp
+SOURCES += ./src/XESCore/MeshSimplify.cpp
 SOURCES += ./src/XESCore/NetPlacement.cpp
 SOURCES += ./src/XESCore/NetHelpers.cpp
 SOURCES += ./src/XESCore/NetAlgs.cpp
