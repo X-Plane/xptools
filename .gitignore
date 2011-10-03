@@ -3,6 +3,10 @@ build
 local
 local32
 local64
+libs/CGAL*
+libs/mpfr*
+libs/mpir*
+libs/boost*
 .directory
 .DS_Store
 callgrind.out.*
