@@ -122,9 +122,9 @@ CONF_ZLIB		:= --prefix=$(DEFAULT_PREFIX)
 
 # libgmp
 ARCHIVE_LIBGMP		:= mpir-$(VER_LIBGMP).tar.bz2
-CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
-CXXFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
-LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+#CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+#CXXFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+#LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBGMP		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBGMP		+= --enable-shared=no
 CONF_LIBGMP		+= --enable-cxx
@@ -133,7 +133,7 @@ CONF_LIBGMP		+= --enable-gmpcompat
 ifdef PLAT_DARWIN
 # Ben turned off to fix bug in WED
 #CONF_LIBGMP		+= --enable-fat
-CONF_LIBGMP		+= --host=none-apple-darwin
+CONF_LIBGMP		+= --build=pentium4-apple-darwin
 endif
 ifdef PLAT_MINGW
 CONF_LIBGMP		+= --build=none-pc-mingw32
@@ -145,11 +145,17 @@ endif
 
 # libmpfr
 ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.bz2
-CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
-LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+#CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+#LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBMPFR		:= --prefix=$(DEFAULT_PREFIX)
+CONF_LIBMPFR		+= --with-gmp=$(DEFAULT_PREFIX)
 CONF_LIBMPFR		+= --enable-shared=no
 CONF_LIBMPFR		+= --disable-dependency-tracking
+ifdef PLAT_DARWIN
+CONF_LIBMPFR		+= --disable-thread-safe
+else
+CONF_LIBMPFR		+= --enable-thread-safe
+endif
 ifdef PLAT_MINGW
 CONF_LIBMPFR		+= --host=$(CROSSHOST)
 endif
@@ -410,7 +416,6 @@ libgmp: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 	@tar -xjf "./archives/$(ARCHIVE_LIBGMP)"
 	@cd "mpir-$(VER_LIBGMP)" && \
 	chmod +x configure && \
-	CFLAGS=$(CFLAGS_LIBGMP) CXXFLAGS=$(CXXFLAGS_LIBGMP) LDFLAGS=$(LDFLAGS_LIBGMP) \
 	./configure $(CONF_LIBGMP) $(BE_QUIET)
 	@$(MAKE) -C "mpir-$(VER_LIBGMP)" $(BE_QUIET)
 	@$(MAKE) -C "mpir-$(VER_LIBGMP)" install $(BE_QUIET)
@@ -423,7 +428,6 @@ libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr
 	@tar -xjf "./archives/$(ARCHIVE_LIBMPFR)"
 	@cd "mpfr-$(VER_LIBMPFR)" && \
 	chmod +x configure && \
-	CFLAGS=$(CFLAGS_LIBMPFR) LDFLAGS=$(LDFLAGS_LIBMPFR) \
 	./configure $(CONF_LIBMPFR) $(BE_QUIET)
 	@$(MAKE) -C "mpfr-$(VER_LIBMPFR)" $(BE_QUIET)
 	@$(MAKE) -C "mpfr-$(VER_LIBMPFR)" install $(BE_QUIET)
