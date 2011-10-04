@@ -1,29 +1,54 @@
 ARCHITECTURE	:= $(shell uname -m)
 PLATFORM	:= $(shell uname)
+MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 VERSION	:= 2.4.0
+ARCHIVE	:= $(MAKEFILE_DIR)archives/mpir-$(VERSION).tar.lzma
+SRCTREE := $(MAKEFILE_DIR)mpir-$(VERSION)
 
-ARCHIVE	:= mpir-$(VERSION).tar.lzma
-
+PREFIX		:= $(MAKEFILE_DIR)local
+PREFIX32	:= $(MAKEFILE_DIR)local32
 
 ifneq (, $(findstring MINGW, $(PLATFORM)))
 	PLAT_WINNT	:= Yes
 	MULTILIB	:= Yes
+
+	CONF		:= --prefix="$(PREFIX)"
+	CONF		+= --enable-shared=no
+	CONF		+= --enable-cxx
+	CONF		+= --enable-gmpcompat
+	CONF		+= --build=k8-w64-mingw32
+
+	CONF32		:= --prefix="$(PREFIX)"
+	CONF32		+= --enable-shared=no
+	CONF32		+= --enable-cxx
+	CONF32		+= --enable-gmpcompat
+	CONF32		+= --build=pentium4-pc-mingw32
 endif
 
 ifeq ($(PLATFORM), Linux)
 	PLAT_LINUX	:= Yes
+
+	CONF		:= --prefix="$(PREFIX)"
+	CONF		+= --enable-shared=no
+	CONF		+= --enable-cxx
+	CONF		+= --enable-gmpcompat
 ifeq ($(ARCHITECTURE), x86_64)
 	MULTILIB	:= Yes
+
+	CONF		+= --build=k8-pc-linux-gnu
+
+	CONF32		:= --prefix="$(PREFIX32)"
+	CONF32		+= --enable-shared=no
+	CONF32		+= --enable-cxx
+	CONF32		+= --enable-gmpcompat
+	CONF32		+= --build=pentium4-pc-linux-gnu
 endif
 endif
 
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN	:= Yes
 endif
-
-PREFIX		:= $(shell pwd)/local
-PREFIX32	:= $(shell pwd)/local32
 
 ifdef MULTILIB
 	TARGETS := $(PREFIX32)/lib/libgmp.a
@@ -37,26 +62,24 @@ endif
 all: $(TARGETS)
 
 clean:
-	@-rm -rf mpir-$(VERSION)
+	@-rm -rf $(SRCTREE)
 
-./mpir-$(VERSION)/configure:
-	@tar -xJf "./archives/$(ARCHIVE)"
+$(SRCTREE)/configure:
+	@tar -C "$(MAKEFILE_DIR)" -xJf "$(ARCHIVE)"
 
-$(PREFIX)/lib/libgmp.a: ./mpir-$(VERSION)/configure
+$(PREFIX)/lib/libgmp.a: $(SRCTREE)/configure
 	@echo "building mpir..."
-	@-$(MAKE) -s -C mpir-$(VERSION) distclean
-	@cd "mpir-$(VERSION)" && \
-	./configure --prefix="$(PREFIX)" --enable-shared=no --enable-cxx \
-	--enable-gmpcompat --build=k8-w64-mingw32
-	$(MAKE) -C mpir-$(VERSION)
-	$(MAKE) -C mpir-$(VERSION) install
+	@-$(MAKE) -s -C "$(SRCTREE)" distclean
+	@cd "$(SRCTREE)" && \
+	./configure $(CONF)
+	$(MAKE) -C "$(SRCTREE)"
+	$(MAKE) -C "$(SRCTREE)" install
 
-$(PREFIX32)/lib/libgmp.a: $(PREFIX)/lib/libgmp.a ./mpir-$(VERSION)/configure
+$(PREFIX32)/lib/libgmp.a: $(PREFIX)/lib/libgmp.a $(SRCTREE)/configure
 	@echo "building mpir 32-bit..."
-	@-$(MAKE) -s -C mpir-$(VERSION) distclean
-	@cd "mpir-$(VERSION)" && \
-	./configure --prefix="$(PREFIX32)" --enable-shared=no --enable-cxx \
-	--enable-gmpcompat --build=pentium4-pc-mingw32
-	$(MAKE) -C mpir-$(VERSION)
-	$(MAKE) -C mpir-$(VERSION) install
+	@-$(MAKE) -s -C "$(SRCTREE)" distclean
+	@cd "$(SRCTREE)" && \
+	./configure $(CONF32)
+	$(MAKE) -C "$(SRCTREE)"
+	$(MAKE) -C "$(SRCTREE)" install
 
