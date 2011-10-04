@@ -20,6 +20,7 @@ LIBS		+= ./libs/local/lib/libtiff.a
 LIBS		+= ./libs/local/lib/libjpeg.a
 LIBS		+= ./libs/local/lib/libpng.a
 LIBS		+= ./libs/local/lib/libz.a
+LDFLAGS		+= -framework Carbon
 endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW

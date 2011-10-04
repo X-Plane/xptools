@@ -185,9 +185,9 @@ print_error	:= (echo "[ --FAILED-- ]" && false)
 #############################
 
 ifdef PLAT_DARWIN
-#CC	:= gcc-4.2
-#CXX	:= g++-4.2
-#LD	:= g++-4.2
+CC	:= gcc
+CXX	:= g++
+LD	:= g++
 AR	:= libtool
 STRIP	:= strip
 else
