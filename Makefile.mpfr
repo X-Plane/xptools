@@ -3,7 +3,7 @@ PLATFORM	:= $(shell uname)
 
 VERSION	:= 3.0.1
 
-ARCHIVE	:= mpfr-$(VERSION).tar.xz
+ARCHIVE	:= mpfr-$(VERSION).tar.bz2
 
 
 ifneq (, $(findstring MINGW, $(PLATFORM)))
@@ -43,7 +43,7 @@ $(PREFIX)/lib/libgmp.a $(PREFIX32)/lib/libgmp.a:
 	$(MAKE) -C . -f Makefile.mpir
 
 ./mpfr-$(VERSION)/configure:
-	@tar -xJf "./archives/$(ARCHIVE)"
+	@tar -xjf "./archives/$(ARCHIVE)"
 
 # mpfr configure inherits CFLAGS from gmp/mpir header files, therefore we
 # don't need to set them here explicitly

@@ -3,7 +3,7 @@ PLATFORM	:= $(shell uname)
 MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 VERSION	:= 2.4.0
-ARCHIVE	:= $(MAKEFILE_DIR)archives/mpir-$(VERSION).tar.lzma
+ARCHIVE	:= $(MAKEFILE_DIR)archives/mpir-$(VERSION).tar.bz2
 SRCTREE := $(MAKEFILE_DIR)mpir-$(VERSION)
 
 PREFIX		:= $(MAKEFILE_DIR)local
@@ -83,7 +83,7 @@ clean:
 	@-rm -rf $(SRCTREE)
 
 $(SRCTREE)/configure:
-	@tar -C "$(MAKEFILE_DIR)" -xJf "$(ARCHIVE)"
+	@tar -C "$(MAKEFILE_DIR)" -xjf "$(ARCHIVE)"
 
 $(PREFIX)/lib/libgmp.a: $(SRCTREE)/configure
 	@echo "building mpir..."

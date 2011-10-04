@@ -121,7 +121,7 @@ LDFLAGS_ZLIB		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_ZLIB		:= --prefix=$(DEFAULT_PREFIX)
 
 # libgmp
-ARCHIVE_LIBGMP		:= mpir-$(VER_LIBGMP).tar.lzma
+ARCHIVE_LIBGMP		:= mpir-$(VER_LIBGMP).tar.bz2
 CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 CXXFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
@@ -144,7 +144,7 @@ CONF_LIBGMP		+= --host=none-pc-linux-gnu
 endif
 
 # libmpfr
-ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.xz
+ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.bz2
 CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBMPFR		:= --prefix=$(DEFAULT_PREFIX)
@@ -405,7 +405,7 @@ libexpat: ./local$(MULTI_SUFFIX)/lib/.xpt_libexpat
 libgmp: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp:
 	@echo "building libgmp..."
-	@tar -xJf "./archives/$(ARCHIVE_LIBGMP)"
+	@tar -xjf "./archives/$(ARCHIVE_LIBGMP)"
 	@cd "mpir-$(VER_LIBGMP)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBGMP) CXXFLAGS=$(CXXFLAGS_LIBGMP) LDFLAGS=$(LDFLAGS_LIBGMP) \
@@ -418,7 +418,7 @@ libgmp: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr
 ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 	@echo "building libmpfr..."
-	@tar -xJf "./archives/$(ARCHIVE_LIBMPFR)"
+	@tar -xjf "./archives/$(ARCHIVE_LIBMPFR)"
 	@cd "mpfr-$(VER_LIBMPFR)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBMPFR) LDFLAGS=$(LDFLAGS_LIBMPFR) \
