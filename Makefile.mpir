@@ -9,46 +9,64 @@ SRCTREE := $(MAKEFILE_DIR)mpir-$(VERSION)
 PREFIX		:= $(MAKEFILE_DIR)local
 PREFIX32	:= $(MAKEFILE_DIR)local32
 
+COMMONCONF	:= --prefix="$(PREFIX)"
+COMMONCONF	+= --enable-shared=no
+COMMONCONF	+= --enable-cxx
+COMMONCONF	+= --enable-gmpcompat
+
 ifneq (, $(findstring MINGW, $(PLATFORM)))
 	PLAT_WINNT	:= Yes
 	MULTILIB	:= Yes
-
-	CONF		:= --prefix="$(PREFIX)"
-	CONF		+= --enable-shared=no
-	CONF		+= --enable-cxx
-	CONF		+= --enable-gmpcompat
-	CONF		+= --build=k8-w64-mingw32
-
-	CONF32		:= --prefix="$(PREFIX)"
-	CONF32		+= --enable-shared=no
-	CONF32		+= --enable-cxx
-	CONF32		+= --enable-gmpcompat
-	CONF32		+= --build=pentium4-pc-mingw32
 endif
 
 ifeq ($(PLATFORM), Linux)
 	PLAT_LINUX	:= Yes
-
-	CONF		:= --prefix="$(PREFIX)"
-	CONF		+= --enable-shared=no
-	CONF		+= --enable-cxx
-	CONF		+= --enable-gmpcompat
 ifeq ($(ARCHITECTURE), x86_64)
 	MULTILIB	:= Yes
-
-	CONF		+= --build=k8-pc-linux-gnu
-
-	CONF32		:= --prefix="$(PREFIX32)"
-	CONF32		+= --enable-shared=no
-	CONF32		+= --enable-cxx
-	CONF32		+= --enable-gmpcompat
-	CONF32		+= --build=pentium4-pc-linux-gnu
 endif
 endif
 
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN	:= Yes
+ifeq ($(ARCHITECTURE), x86_64)
+	MULTILIB	:= Yes
 endif
+endif
+
+ifdef PLAT_WINNT
+	CONF		:= $(COMMONCONF)
+	CONF		+= --build=k8-w64-mingw32
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --build=pentium4-pc-mingw32
+endif
+
+ifdef PLAT_LINUX
+	CONF		:= $(COMMONCONF)
+ifdef MULTILIB
+# use k8 instruction set as minimum 64-bit optimization level
+	CONF		+= --build=k8-pc-linux-gnu
+else
+# no assembler optimizations for portability
+	CONF		+= --build=none-pc-linux-gnu
+endif
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --build=pentium4-pc-linux-gnu
+endif
+
+ifdef PLAT_DARWIN
+	CONF		:= $(COMMONCONF)
+ifdef MULTILIB
+# use core2 instruction set as minimum 64-bit optimization level
+	CONF		+= --build=core2-apple-darwin
+else
+# no assembler optimizations for portability
+	CONF		+= --build=none-apple-darwin
+endif
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --build=pentium4-apple-darwin
+endif
+
 
 ifdef MULTILIB
 	TARGETS := $(PREFIX32)/lib/libgmp.a
