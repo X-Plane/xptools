@@ -344,8 +344,8 @@ ifdef PLAT_DARWIN
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
 	$(BE_QUIET) && \
-	./bjam address-model=32 cxxflags="$(VIS) $(DEFAULT_MACARGS)" \
-	cflags=-m32 architecture=x86 instruction-set=i686 $(BE_QUIET) && \
+	./bjam cxxflags="$(VIS) $(DEFAULT_MACARGS)" \
+	$(BE_QUIET) && \
 	./bjam install $(BE_QUIET)
 	@cd local/lib && \
 	rm -f *.dylib*
