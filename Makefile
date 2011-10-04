@@ -209,6 +209,8 @@ CONF_LIBTIFF		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBTIFF		+= --enable-shared=no
 CONF_LIBTIFF		+= --enable-maintainer-mode
 CONF_LIBTIFF		+= --disable-dependency-tracking
+CONF_LIBTIFF		+= --disable-lzma
+CONF_LIBTIFF		+= --disable-jbig
 CONF_LIBTIFF		+= --with-jpeg-include-dir=$(DEFAULT_INCDIR)
 CONF_LIBTIFF		+= --with-jpeg-lib-dir=$(DEFAULT_LIBDIR)
 CONF_LIBTIFF		+= --with-zlib-include-dir=$(DEFAULT_INCDIR)
