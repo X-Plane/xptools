@@ -6,7 +6,7 @@ VERSION		:= 3.9
 # see: http://gforge.inria.fr/frs/?group_id=52
 URLPREFIX	:= https://gforge.inria.fr/frs/download.php
 URL		:= $(URLPREFIX)/29125/CGAL-$(VERSION).tar.gz
-TARFLAGS	:= -xz
+TARFLAGS	:= -xzf -
 SRCTREE		:= $(MAKEFILE_DIR)src/CGAL-$(VERSION)
 
 

@@ -3,7 +3,7 @@ include $(MAKEFILE_DIR)environment.mk
 
 VERSION		:= 1_47_0
 URL		:= http://downloads.sourceforge.net/boost/boost_$(VERSION).tar.bz2
-TARFLAGS	:= -xj
+TARFLAGS	:= -xjf -
 SRCTREE		:= $(MAKEFILE_DIR)src/boost_$(VERSION)
 
 
@@ -83,6 +83,12 @@ $(SRCTREE)/boost-build.jam:
 
 $(TARGET): $(SRCTREE)/boost-build.jam
 	@cd '$(SRCTREE)' && $(BOOTSTRAP) && $(B2) $(CONF) install
+ifdef PLAT_WINNT
+	@cp $(dir $(@))/libboost_thread.dll.a $(@)
+endif
 
 $(TARGET32): $(SRCTREE)/boost-build.jam $(TARGET)
 	@cd '$(SRCTREE)' && $(BOOTSTRAP) && $(B2) $(CONF32) install
+ifdef PLAT_WINNT
+	@cp $(dir $(@))/libboost_thread.dll.a $(@)
+endif

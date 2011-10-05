@@ -3,7 +3,7 @@ include $(MAKEFILE_DIR)environment.mk
 
 VERSION		:= 2.4.0
 URL		:= http://mpir.org/mpir-$(VERSION).tar.bz2
-TARFLAGS	:= -xj
+TARFLAGS	:= -xjf -
 SRCTREE		:= $(MAKEFILE_DIR)src/mpir-$(VERSION)
 
 
