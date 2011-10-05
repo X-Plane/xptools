@@ -2,7 +2,7 @@ ARCHITECTURE	:= $(shell uname -m)
 PLATFORM	:= $(shell uname)
 
 SAMPLESRC	:= 'int main(){return 0;}'
-EXECFLAGS	:= -o /dev/null - > /dev/null 2>&1
+EXECFLAGS	:= -c -o /dev/null - > /dev/null 2>&1
 HAVE_MULTILIB := $(shell \
 	(echo $(SAMPLESRC) | $(CC) -m32 -xc $(EXECFLAGS)) && \
 	(echo $(SAMPLESRC) | $(CXX) -m32 -xc++ $(EXECFLAGS)) && \
