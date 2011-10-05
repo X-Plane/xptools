@@ -45,12 +45,15 @@ endif
 
 
 ifdef PLAT_DARWIN
-	# 32-bit only at the moment
-	MULTILIB	:= No
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
 	CONF		+= --with-gmp='$(PREFIX)'
 	CONF		+= --disable-thread-safe
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --with-gmp='$(PREFIX32)'
+	CONF32		+= --disable-thread-safe
 endif
 
 

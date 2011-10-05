@@ -53,11 +53,19 @@ endif
 
 
 ifdef PLAT_DARWIN
-	# 32-bit only at the moment
-	MULTILIB	:= No
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
-	CONF		+= --build=pentium4-apple-darwin
+ifdef MULTILIB
+	# use core2 instruction set as minimum 64-bit optimization level
+	CONF		+= --build=core2-apple-darwin
+else
+	# no assembler optimizations for portability
+	CONF		+= --build=none-apple-darwin
+endif
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --build=pentium4-apple-darwin
 endif
 
 
