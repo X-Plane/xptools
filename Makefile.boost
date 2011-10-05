@@ -13,8 +13,7 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 TARGET		:= $(PREFIX)/lib/libboost_thread.a
 TARGET32	:= $(PREFIX32)/lib/libboost_thread.a
 
-COMMONCONF	:= --toolset=gcc
-COMMONCONF	+= --layout=system
+COMMONCONF	:= --layout=system
 COMMONCONF	+= variant=release
 COMMONCONF	+= --with-thread
 
@@ -25,10 +24,12 @@ ifdef PLAT_WINNT
 
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= --toolset=gcc
 	CONF		+= link=shared
 
 	CONF32		:= $(COMMONCONF)
 	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --toolset=gcc
 	CONF32		+= link=shared
 	CONF32		+= address-model=32
 endif
@@ -61,6 +62,7 @@ ifdef PLAT_DARWIN
 	CONF32		+= --prefix='$(PREFIX32)'
 	CONF32		+= link=static
 	CONF32		+= address-model=32
+	CONF32		+= cxxflags='-m32'
 endif
 
 
