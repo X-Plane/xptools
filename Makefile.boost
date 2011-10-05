@@ -79,7 +79,7 @@ clean:
 
 $(SRCTREE)/boost-build.jam:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@curl -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(SRCTREE)/boost-build.jam
 	@cd '$(SRCTREE)' && $(BOOTSTRAP) && $(B2) $(CONF) install
