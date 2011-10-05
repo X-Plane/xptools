@@ -3,6 +3,7 @@ build
 local
 local32
 local64
+libs/src
 libs/CGAL*
 libs/mpfr*
 libs/mpir*
