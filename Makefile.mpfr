@@ -57,7 +57,7 @@ ifdef PLAT_DARWIN
 endif
 
 
-.PHONY: all clean gmp
+.PHONY: all clean
 
 ifeq ($(MULTILIB), Yes)
 all: $(TARGET32)
@@ -68,21 +68,25 @@ endif
 clean:
 	@-rm -rf $(SRCTREE)
 
-gmp:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir
+$(PREFIX)/lib/libgmp.a:
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
+
+$(PREFIX32)/lib/libgmp.a:
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
+
 
 $(SRCTREE)/configure:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
 	@echo 'downloading source to $(SRCTREE)'
 	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
-$(TARGET): gmp $(SRCTREE)/configure
+$(TARGET): $(PREFIX)/lib/libgmp.a $(SRCTREE)/configure
 	@-$(MAKE) -s -C '$(SRCTREE)' distclean
 	@cd '$(SRCTREE)' && ./configure $(CONF)
 	$(MAKE) -C '$(SRCTREE)'
 	$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): gmp $(TARGET) $(SRCTREE)/configure
+$(TARGET32): $(PREFIX32)/lib/libgmp.a $(TARGET) $(SRCTREE)/configure
 	@-$(MAKE) -s -C '$(SRCTREE)' distclean
 	@cd '$(SRCTREE)' && ./configure $(CONF32)
 	$(MAKE) -C '$(SRCTREE)'
