@@ -46,6 +46,7 @@ LIBS		+= ./libs/local/lib/libCGAL_Core.a
 LIBS		+= ./libs/local/lib/libboost_thread.a
 LIBS		+= ./libs/local/lib/libgmp.a
 LIBS		+= ./libs/local/lib/libgmpxx.a
+LIBS		+= ./libs/local/lib/libmpfr.a
 LIBS		+= ./libs/local/lib/libexpat.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libsqlite3.a
