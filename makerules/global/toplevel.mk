@@ -113,9 +113,9 @@ endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= -isysroot /Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	CFLAGS		:= -isysroot /Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	LDFLAGS		:= -isysroot /Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.5 -static-libgcc
+	CXXFLAGS	:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	CFLAGS		:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	LDFLAGS		:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -static-libgcc
 	MACARCHS	:= -arch i386
 	STRIPFLAGS	:= -x
 endif
