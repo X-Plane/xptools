@@ -1,108 +1,88 @@
-ARCHITECTURE	:= $(shell uname -m)
-PLATFORM	:= $(shell uname)
 MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+include $(MAKEFILE_DIR)environment.mk
 
-VERSION	:= 2.4.0
-ARCHIVE	:= $(MAKEFILE_DIR)archives/mpir-$(VERSION).tar.bz2
-SRCTREE := $(MAKEFILE_DIR)mpir-$(VERSION)
+VERSION		:= 2.4.0
+URL		:= http://mpir.org/mpir-$(VERSION).tar.bz2
+TARFLAGS	:= -xj
+SRCTREE		:= $(MAKEFILE_DIR)src/mpir-$(VERSION)
+
 
 PREFIX		:= $(MAKEFILE_DIR)local
 PREFIX32	:= $(MAKEFILE_DIR)local32
+
+TARGET		:= $(PREFIX)/lib/libgmp.a
+TARGET32	:= $(PREFIX32)/lib/libgmp.a
 
 COMMONCONF	:= --enable-shared=no
 COMMONCONF	+= --enable-cxx
 COMMONCONF	+= --enable-gmpcompat
 
-ifneq (, $(findstring MINGW, $(PLATFORM)))
-	PLAT_WINNT	:= Yes
-	MULTILIB	:= Yes
-endif
-
-ifeq ($(PLATFORM), Linux)
-	PLAT_LINUX	:= Yes
-ifeq ($(ARCHITECTURE), x86_64)
-	MULTILIB	:= Yes
-endif
-endif
-
-ifeq ($(PLATFORM), Darwin)
-	PLAT_DARWIN	:= Yes
-ifeq ($(ARCHITECTURE), x86_64)
-	MULTILIB	:= Yes
-endif
-endif
 
 ifdef PLAT_WINNT
 	CONF		:= $(COMMONCONF)
-	CONF		:= --prefix="$(PREFIX)"
+	CONF		+= --prefix='$(PREFIX)'
+ifdef MULTILIB
+	# use k8 instruction set as minimum 64-bit optimization level
 	CONF		+= --build=k8-w64-mingw32
+else
+	# no assembler optimizations for portability
+	CONF		+= --build=none-pc-mingw32
+endif
 
 	CONF32		:= $(COMMONCONF)
-	CONF32		:= --prefix="$(PREFIX32)"
+	CONF32		+= --prefix='$(PREFIX32)'
 	CONF32		+= --build=pentium4-pc-mingw32
 endif
 
+
 ifdef PLAT_LINUX
 	CONF		:= $(COMMONCONF)
-	CONF		:= --prefix="$(PREFIX)"
+	CONF		+= --prefix='$(PREFIX)'
 ifdef MULTILIB
-# use k8 instruction set as minimum 64-bit optimization level
+	# use k8 instruction set as minimum 64-bit optimization level
 	CONF		+= --build=k8-pc-linux-gnu
 else
-# no assembler optimizations for portability
+	# no assembler optimizations for portability
 	CONF		+= --build=none-pc-linux-gnu
 endif
+
 	CONF32		:= $(COMMONCONF)
-	CONF32		:= --prefix="$(PREFIX32)"
+	CONF32		+= --prefix='$(PREFIX32)'
 	CONF32		+= --build=pentium4-pc-linux-gnu
 endif
 
+
 ifdef PLAT_DARWIN
+	# 32-bit only at the moment
 	CONF		:= $(COMMONCONF)
-	CONF		:= --prefix="$(PREFIX)"
-ifdef MULTILIB
-# use core2 instruction set as minimum 64-bit optimization level
-	CONF		+= --build=core2-apple-darwin
-else
-# no assembler optimizations for portability
-	CONF		+= --build=none-apple-darwin
-endif
-	CONF32		:= $(COMMONCONF)
-	CONF32		:= --prefix="$(PREFIX32)"
-	CONF32		+= --build=pentium4-apple-darwin
-endif
-
-
-ifdef MULTILIB
-	TARGETS := $(PREFIX32)/lib/libgmp.a
-else
-	TARGETS := $(PREFIX)/lib/libgmp.a
+	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= --build=pentium4-apple-darwin
 endif
 
 
 .PHONY: all clean
 
-all: $(TARGETS)
+ifdef MULTILIB
+all: $(TARGET32)
+else
+all: $(TARGET)
+endif
 
 clean:
 	@-rm -rf $(SRCTREE)
 
 $(SRCTREE)/configure:
-	@tar -C "$(MAKEFILE_DIR)" -xjf "$(ARCHIVE)"
+	@-mkdir -p '$(MAKEFILE_DIR)src'
+	@wget -O - '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
-$(PREFIX)/lib/libgmp.a: $(SRCTREE)/configure
-	@echo "building mpir..."
-	@-$(MAKE) -s -C "$(SRCTREE)" distclean
-	@cd "$(SRCTREE)" && \
-	./configure $(CONF)
-	$(MAKE) -C "$(SRCTREE)"
-	$(MAKE) -C "$(SRCTREE)" install
+$(TARGET): $(SRCTREE)/configure
+	@-$(MAKE) -s -C '$(SRCTREE)' distclean
+	@cd '$(SRCTREE)' && ./configure $(CONF)
+	$(MAKE) -C '$(SRCTREE)'
+	$(MAKE) -C '$(SRCTREE)' install
 
-$(PREFIX32)/lib/libgmp.a: $(PREFIX)/lib/libgmp.a $(SRCTREE)/configure
-	@echo "building mpir 32-bit..."
-	@-$(MAKE) -s -C "$(SRCTREE)" distclean
-	@cd "$(SRCTREE)" && \
-	./configure $(CONF32)
-	$(MAKE) -C "$(SRCTREE)"
-	$(MAKE) -C "$(SRCTREE)" install
-
+$(TARGET32): $(SRCTREE)/configure $(TARGET)
+	@-$(MAKE) -s -C '$(SRCTREE)' distclean
+	@cd '$(SRCTREE)' && ./configure $(CONF32)
+	$(MAKE) -C '$(SRCTREE)'
+	$(MAKE) -C '$(SRCTREE)' install
