@@ -1,56 +1,86 @@
-ARCHITECTURE	:= $(shell uname -m)
-PLATFORM	:= $(shell uname)
+MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+include $(MAKEFILE_DIR)environment.mk
 
-VERSION	:= 1_47_0
+VERSION		:= 1_47_0
+URL		:= http://downloads.sourceforge.net/boost/boost_$(VERSION).tar.bz2
+TARFLAGS	:= -xj
+SRCTREE		:= $(MAKEFILE_DIR)src/boost_$(VERSION)
 
-ARCHIVE	:= boost_$(VERSION).tar.gz
+
+PREFIX		:= $(MAKEFILE_DIR)local
+PREFIX32	:= $(MAKEFILE_DIR)local32
+
+TARGET		:= $(PREFIX)/lib/libboost_thread.a
+TARGET32	:= $(PREFIX32)/lib/libboost_thread.a
+
+COMMONCONF	:= --toolset=gcc
+COMMONCONF	+= --layout=system
+COMMONCONF	+= variant=release
+COMMONCONF	+= --with-thread
 
 
-ifneq (, $(findstring MINGW, $(PLATFORM)))
-	PLAT_WINNT	:= Yes
-	MULTILIB	:= Yes
+ifdef PLAT_WINNT
+	BOOTSTRAP	:= true
+	B2		:= b2
+
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= link=shared
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= link=shared
+	CONF32		+= address-model=32
 endif
 
-ifeq ($(PLATFORM), Linux)
-	PLAT_LINUX	:= Yes
-ifeq ($(ARCHITECTURE), x86_64)
-	MULTILIB	:= Yes
-endif
+
+ifdef PLAT_LINUX
+	BOOTSTRAP	:= ./bootstrap.sh
+	B2		:= ./b2
+
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= link=static
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= link=static
+	CONF32		+= address-model=32
 endif
 
-ifeq ($(PLATFORM), Darwin)
-	PLAT_DARWIN	:= Yes
-endif
 
-PREFIX		:= $(shell pwd)/local
-PREFIX32	:= $(shell pwd)/local32
+ifdef PLAT_DARWIN
+	BOOTSTRAP	:= ./bootstrap.sh
+	B2		:= ./b2
 
-ifdef MULTILIB
-	TARGETS := $(PREFIX32)/lib/libboost_thread.a
-else
-	TARGETS := $(PREFIX)/lib/libboost_thread.a
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= link=static
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= link=static
+	CONF32		+= address-model=32
 endif
 
 
 .PHONY: all clean
 
-all: $(TARGETS)
+ifeq ($(MULTILIB), Yes)
+all: $(TARGET32)
+else
+all: $(TARGET)
+endif
 
 clean:
-	@-rm -rf boost_$(VERSION)
+	@-rm -rf $(SRCTREE)
 
-./boost_$(VERSION)/boost-build.jam:
-	@tar -xzf "./archives/$(ARCHIVE)"
+$(SRCTREE)/boost-build.jam:
+	@-mkdir -p '$(MAKEFILE_DIR)src'
+	@curl -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
-$(PREFIX)/lib/libboost_thread.a: ./boost_$(VERSION)/boost-build.jam
-	@echo "building boost..."
-	@cd "boost_$(VERSION)" && \
-	b2 --toolset=gcc --layout=system --with-thread \
-	--prefix="$(PREFIX)" variant=release link=static install
+$(TARGET): $(SRCTREE)/boost-build.jam
+	@cd '$(SRCTREE)' && $(BOOTSTRAP) && $(B2) $(CONF) install
 
-$(PREFIX32)/lib/libboost_thread.a: $(PREFIX)/lib/libboost_thread.a ./boost_$(VERSION)/boost-build.jam
-	@echo "building boost 32-bit..."
-	@cd "boost_$(VERSION)" && \
-	b2 --toolset=gcc --layout=system --with-thread \
-	--prefix="$(PREFIX32)" variant=release link=static \
-	address-model=32 install
+$(TARGET32): $(SRCTREE)/boost-build.jam $(TARGET)
+	@cd '$(SRCTREE)' && $(BOOTSTRAP) && $(B2) $(CONF32) install

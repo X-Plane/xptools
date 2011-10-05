@@ -73,7 +73,7 @@ $(PREFIX)/lib/libgmp.a $(PREFIX32)/lib/libgmp.a:
 
 $(SRCTREE)/configure:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@curl '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+	@curl -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(SRCTREE)/configure $(PREFIX)/lib/libgmp.a
 	@-$(MAKE) -s -C '$(SRCTREE)' distclean

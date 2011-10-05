@@ -82,7 +82,7 @@ clean:
 
 $(SRCTREE)/configure:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@curl '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+	@curl -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(SRCTREE)/configure
 	@-$(MAKE) -s -C '$(SRCTREE)' distclean
