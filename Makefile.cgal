@@ -103,7 +103,7 @@ ifdef PLAT_DARWIN
 endif
 
 
-.PHONY: all clean
+.PHONY: all clean boost mpfr
 
 ifeq ($(MULTILIB), Yes)
 all: $(TARGET32)
@@ -114,10 +114,10 @@ endif
 clean:
 	@-rm -rf $(SRCTREE)
 
-$(PREFIX)/lib/libboost_thread.a $(PREFIX32)/lib/libboost_thread.a:
+boost:
 	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost
 
-$(PREFIX)/lib/libmpfr.a $(PREFIX32)/lib/libmpfr.a:
+mpfr:
 	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr
 
 $(SRCTREE)/CMakeLists.txt:
@@ -125,14 +125,14 @@ $(SRCTREE)/CMakeLists.txt:
 	@echo 'downloading source to $(SRCTREE)'
 	@curl -s -k -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
-$(TARGET): $(SRCTREE)/CMakeLists.txt $(PREFIX)/lib/libboost_thread.a $(PREFIX)/lib/libmpfr.a
+$(TARGET): mpfr boost $(SRCTREE)/CMakeLists.txt
 	@-$(MAKE) -s -C '$(SRCTREE)' clean
 	@-rm -f '$(SRCTREE)/CMakeCache.txt'
 	@cd '$(SRCTREE)' && cmake $(CONF) .
 	$(MAKE) -C '$(SRCTREE)'
 	$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): $(SRCTREE)/CMakeLists.txt $(TARGET) $(PREFIX32)/lib/libboost_thread.a $(PREFIX32)/lib/libmpfr.a
+$(TARGET32): mpfr boost $(SRCTREE)/CMakeLists.txt $(TARGET)
 	@-$(MAKE) -s -C '$(SRCTREE)' clean
 	@-rm -f '$(SRCTREE)/CMakeCache.txt'
 	@cd '$(SRCTREE)' && cmake $(CONF32) .
