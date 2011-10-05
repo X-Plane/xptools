@@ -54,6 +54,7 @@ endif
 
 ifdef PLAT_DARWIN
 	# 32-bit only at the moment
+	MULTILIB	:= No
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
 	CONF		+= --build=pentium4-apple-darwin
@@ -62,7 +63,7 @@ endif
 
 .PHONY: all clean
 
-ifdef MULTILIB
+ifeq ($(MULTILIB), Yes)
 all: $(TARGET32)
 else
 all: $(TARGET)
@@ -73,7 +74,7 @@ clean:
 
 $(SRCTREE)/configure:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@wget -O - '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+	@curl '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(SRCTREE)/configure
 	@-$(MAKE) -s -C '$(SRCTREE)' distclean
