@@ -82,6 +82,7 @@ clean:
 
 $(SRCTREE)/configure:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
+	@echo 'downloading source to $(SRCTREE)'
 	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(SRCTREE)/configure
