@@ -98,7 +98,7 @@ DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN := Yes
 	# Ben removed ppc and x86_64 to fix libgmp compilation
-	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.7.sdk -mmacosx-version-min=10.5 -m32
+	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -m32
 	VIS	:= -fvisibility=hidden
 endif
 ifeq ($(PLATFORM), Linux)
@@ -603,7 +603,7 @@ ifdef PLAT_DARWIN
 	export MACOSX_DEPLOYMENT_TARGET=10.5 && CXXFLAGS="-fvisibility=hidden" cmake \
 	-DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=FALSE \
-	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.7.sdk -arch i386 -I$(DEFAULT_INCDIR)" \
+	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -I$(DEFAULT_INCDIR)" \
 	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
