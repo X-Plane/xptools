@@ -1,99 +1,133 @@
-ARCHITECTURE	:= $(shell uname -m)
-PLATFORM	:= $(shell uname)
+MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+include $(MAKEFILE_DIR)environment.mk
 
-VERSION	:= 3.9
+VERSION		:= 3.9
+# note: the download link is not predictable for other versions
+# see: http://gforge.inria.fr/frs/?group_id=52
+URLPREFIX	:= https://gforge.inria.fr/frs/download.php
+URL		:= $(URLPREFIX)/29125/CGAL-$(VERSION).tar.gz
+TARFLAGS	:= -xz
+SRCTREE		:= $(MAKEFILE_DIR)src/CGAL-$(VERSION)
 
-ARCHIVE	:= CGAL-$(VERSION).tar.gz
+
+PREFIX		:= $(MAKEFILE_DIR)local
+PREFIX32	:= $(MAKEFILE_DIR)local32
+
+TARGET		:= $(PREFIX)/lib/libCGAL.a
+TARGET32	:= $(PREFIX32)/lib/libCGAL.a
+
+COMMONCONF	:= -DCMAKE_BUILD_TYPE=Release
+COMMONCONF	+= -DBUILD_SHARED_LIBS=FALSE
+COMMONCONF	+= -DWITH_CGAL_ImageIO=OFF
+COMMONCONF	+= -DWITH_CGAL_Qt3=OFF
+COMMONCONF	+= -DWITH_CGAL_Qt4=OFF
 
 
-ifneq (, $(findstring MINGW, $(PLATFORM)))
-	PLAT_WINNT	:= Yes
-	MULTILIB	:= Yes
+ifdef PLAT_WINNT
+	CONF	:= -G 'MSYS Makefiles'
+	CONF	+= $(COMMONCONF)
+	CONF	+= -DCGAL_CXX_FLAGS='-std=gnu++0x'
+	CONF	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX)'
+	CONF	+= -DBOOST_ROOT='$(PREFIX)'
+	CONF	+= -DGMP_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DGMP_LIBRARIES='$(PREFIX)/lib/libgmp.a'
+	CONF	+= -DGMPXX_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DGMPXX_LIBRARIES='$(PREFIX)/lib/libgmpxx.a'
+	CONF	+= -DMPFR_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DMPFR_LIBRARIES='$(PREFIX)/lib/libmpfr.a'
+
+	CONF32	:= -G 'MSYS Makefiles'
+	CONF32	+= $(COMMONCONF)
+	CONF32	+= -DCGAL_CXX_FLAGS='-std=gnu++0x -m32'
+	CONF32	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX32)'
+	CONF32	+= -DBOOST_ROOT='$(PREFIX32)'
+	CONF32	+= -DGMP_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DGMP_LIBRARIES='$(PREFIX32)/lib/libgmp.a'
+	CONF32	+= -DGMPXX_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DGMPXX_LIBRARIES='$(PREFIX32)/lib/libgmpxx.a'
+	CONF32	+= -DMPFR_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DMPFR_LIBRARIES='$(PREFIX32)/lib/libmpfr.a'
 endif
 
-ifeq ($(PLATFORM), Linux)
-	PLAT_LINUX	:= Yes
-ifeq ($(ARCHITECTURE), x86_64)
-	MULTILIB	:= Yes
-endif
+
+ifdef PLAT_LINUX
+	CONF	:= -G 'Unix Makefiles'
+	CONF	+= $(COMMONCONF)
+	CONF	+= -DCGAL_CXX_FLAGS='-std=gnu++0x'
+	CONF	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX)'
+	CONF	+= -DBOOST_ROOT='$(PREFIX)'
+	CONF	+= -DGMP_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DGMP_LIBRARIES='$(PREFIX)/lib/libgmp.a'
+	CONF	+= -DGMPXX_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DGMPXX_LIBRARIES='$(PREFIX)/lib/libgmpxx.a'
+	CONF	+= -DMPFR_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DMPFR_LIBRARIES='$(PREFIX)/lib/libmpfr.a'
+
+	CONF32	:= -G 'Unix Makefiles'
+	CONF32	+= $(COMMONCONF)
+	CONF32	+= -DCGAL_CXX_FLAGS='-std=gnu++0x -m32'
+	CONF32	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX32)'
+	CONF32	+= -DBOOST_ROOT='$(PREFIX32)'
+	CONF32	+= -DGMP_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DGMP_LIBRARIES='$(PREFIX32)/lib/libgmp.a'
+	CONF32	+= -DGMPXX_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DGMPXX_LIBRARIES='$(PREFIX32)/lib/libgmpxx.a'
+	CONF32	+= -DMPFR_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DMPFR_LIBRARIES='$(PREFIX32)/lib/libmpfr.a'
 endif
 
-ifeq ($(PLATFORM), Darwin)
-	PLAT_DARWIN	:= Yes
-endif
 
-PREFIX		:= $(shell pwd)/local
-PREFIX32	:= $(shell pwd)/local32
+ifdef PLAT_DARWIN
+	CONF	:= -G 'Unix Makefiles'
+	CONF	+= $(COMMONCONF)
+	CONF	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX)'
+	CONF	+= -DBOOST_ROOT='$(PREFIX)'
+	CONF	+= -DGMP_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DGMP_LIBRARIES='$(PREFIX)/lib/libgmp.a'
+	CONF	+= -DGMPXX_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DGMPXX_LIBRARIES='$(PREFIX)/lib/libgmpxx.a'
+	CONF	+= -DMPFR_INCLUDE_DIR='$(PREFIX)/include'
+	CONF	+= -DMPFR_LIBRARIES='$(PREFIX)/lib/libmpfr.a'
 
-ifdef MULTILIB
-	TARGETS := $(PREFIX32)/lib/libCGAL.a
-else
-	TARGETS := $(PREFIX)/lib/libCGAL.a
+	CONF32	:= -G 'Unix Makefiles'
+	CONF32	+= $(COMMONCONF)
+	CONF32	+= -DCGAL_CXX_FLAGS='-m32'
+	CONF32	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX32)'
+	CONF32	+= -DBOOST_ROOT='$(PREFIX32)'
+	CONF32	+= -DGMP_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DGMP_LIBRARIES='$(PREFIX32)/lib/libgmp.a'
+	CONF32	+= -DGMPXX_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DGMPXX_LIBRARIES='$(PREFIX32)/lib/libgmpxx.a'
+	CONF32	+= -DMPFR_INCLUDE_DIR='$(PREFIX32)/include'
+	CONF32	+= -DMPFR_LIBRARIES='$(PREFIX32)/lib/libmpfr.a'
 endif
 
 
 .PHONY: all clean
 
-all: $(TARGETS)
+ifeq ($(MULTILIB), Yes)
+all: $(TARGET32)
+else
+all: $(TARGET)
+endif
 
 clean:
-	@-rm -rf CGAL-$(VERSION)
+	@-rm -rf $(SRCTREE)
 
-$(PREFIX)/lib/libboost_thread.a $(PREFIX32)/lib/libboost_thread.a:
-	$(MAKE) -C . -f Makefile.boost
+$(SRCTREE)/CMakeLists.txt:
+	@-mkdir -p '$(MAKEFILE_DIR)src'
+	@curl -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
-$(PREFIX)/lib/libgmp.a $(PREFIX32)/lib/libgmp.a:
-	$(MAKE) -C . -f Makefile.mpir
+$(TARGET): $(SRCTREE)/CMakeLists.txt
+	@-$(MAKE) -s -C '$(SRCTREE)' clean
+	@-rm -f '$(SRCTREE)/CMakeCache.txt'
+	@cd '$(SRCTREE)' && cmake $(CONF) .
+	$(MAKE) -C '$(SRCTREE)'
+	$(MAKE) -C '$(SRCTREE)' install
 
-$(PREFIX)/lib/libmpfr.a $(PREFIX32)/lib/libmpfr.a:
-	$(MAKE) -C . -f Makefile.mpfr
-
-./CGAL-$(VERSION)/CMakeLists.txt:
-	@tar -xzf "./archives/$(ARCHIVE)"
-
-$(PREFIX)/lib/libCGAL.a: ./CGAL-$(VERSION)/CMakeLists.txt $(PREFIX)/lib/libboost_thread.a $(PREFIX)/lib/libgmp.a $(PREFIX)/lib/libmpfr.a
-	@echo "building CGAL..."
-	@-$(MAKE) -s -C CGAL-$(VERSION) clean
-	@cd "CGAL-$(VERSION)" && \
-	cmake -G "MSYS Makefiles" . \
-	-DBOOST_ROOT="$(PREFIX)" \
-	-DGMP_INCLUDE_DIR="$(PREFIX)/include" \
-	-DGMP_LIBRARIES="$(PREFIX)/lib/libgmp.a" \
-	-DGMPXX_INCLUDE_DIR="$(PREFIX)/include" \
-	-DGMPXX_LIBRARIES="$(PREFIX)/lib/libgmpxx.a" \
-	-DMPFR_INCLUDE_DIR="$(PREFIX)/include" \
-	-DMPFR_LIBRARIES="$(PREFIX)/lib/libmpfr.a" \
-	-DCMAKE_INSTALL_PREFIX="$(PREFIX)" \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=FALSE \
-	-DCGAL_CXX_FLAGS="-std=gnu++0x"  \
-	-DWITH_CGAL_ImageIO=OFF \
-	-DWITH_CGAL_Qt3=OFF \
-	-DWITH_CGAL_Qt4=OFF
-	$(MAKE) -C CGAL-$(VERSION)
-	$(MAKE) -C CGAL-$(VERSION) install
-
-
-$(PREFIX32)/lib/libCGAL.a: $(PREFIX)/lib/libCGAL.a ./CGAL-$(VERSION)/CMakeLists.txt $(PREFIX32)/lib/libboost_thread.a $(PREFIX32)/lib/libgmp.a $(PREFIX32)/lib/libmpfr.a
-	@echo "building CGAL 32-bit..."
-	@-$(MAKE) -s -C CGAL-$(VERSION) clean
-	@cd "CGAL-$(VERSION)" && \
-	cmake -G "MSYS Makefiles" . \
-	-DBOOST_ROOT="$(PREFIX32)" \
-	-DGMP_INCLUDE_DIR="$(PREFIX32)/include" \
-	-DGMP_LIBRARIES="$(PREFIX32)/lib/libgmp.a" \
-	-DGMPXX_INCLUDE_DIR="$(PREFIX32)/include" \
-	-DGMPXX_LIBRARIES="$(PREFIX32)/lib/libgmpxx.a" \
-	-DMPFR_INCLUDE_DIR="$(PREFIX32)/include" \
-	-DMPFR_LIBRARIES="$(PREFIX32)/lib/libmpfr.a" \
-	-DCMAKE_INSTALL_PREFIX="$(PREFIX32)" \
-	-DCMAKE_BUILD_TYPE=Release \
-	-DBUILD_SHARED_LIBS=FALSE \
-	-DCGAL_CXX_FLAGS="-std=gnu++0x -m32"  \
-	-DWITH_CGAL_ImageIO=OFF \
-	-DWITH_CGAL_Qt3=OFF \
-	-DWITH_CGAL_Qt4=OFF
-	$(MAKE) -C CGAL-$(VERSION)
-	$(MAKE) -C CGAL-$(VERSION) install
-
-
+$(TARGET32): $(SRCTREE)/CMakeLists.txt $(TARGET)
+	@-$(MAKE) -s -C '$(SRCTREE)' clean
+	@-rm -f '$(SRCTREE)/CMakeCache.txt'
+	@cd '$(SRCTREE)' && cmake $(CONF32) .
+	$(MAKE) -C '$(SRCTREE)'
+	$(MAKE) -C '$(SRCTREE)' install
