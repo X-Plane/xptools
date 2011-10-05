@@ -1,67 +1,85 @@
-ARCHITECTURE	:= $(shell uname -m)
-PLATFORM	:= $(shell uname)
+MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+include $(MAKEFILE_DIR)environment.mk
 
-VERSION	:= 3.0.1
+VERSION		:= 3.1.0
+URL		:= http://www.mpfr.org/mpfr-current/mpfr-$(VERSION).tar.bz2
+TARFLAGS	:= -xj
+SRCTREE		:= $(MAKEFILE_DIR)src/mpfr-$(VERSION)
 
-ARCHIVE	:= mpfr-$(VERSION).tar.bz2
 
+PREFIX		:= $(MAKEFILE_DIR)local
+PREFIX32	:= $(MAKEFILE_DIR)local32
 
-ifneq (, $(findstring MINGW, $(PLATFORM)))
-	PLAT_WINNT	:= Yes
-	MULTILIB	:= Yes
+TARGET		:= $(PREFIX)/lib/libmpfr.a
+TARGET32	:= $(PREFIX32)/lib/libmpfr.a
+
+COMMONCONF	:= --enable-shared=no
+
+# mpfr configure inherits CFLAGS from gmp/mpir header files, therefore we
+# don't need to set them here explicitly
+
+ifdef PLAT_WINNT
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= --with-gmp='$(PREFIX)'
+	CONF		+= --enable-thread-safe
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --with-gmp='$(PREFIX32)'
+	CONF32		+= --enable-thread-safe
 endif
 
-ifeq ($(PLATFORM), Linux)
-	PLAT_LINUX	:= Yes
-ifeq ($(ARCHITECTURE), x86_64)
-	MULTILIB	:= Yes
-endif
+
+ifdef PLAT_LINUX
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= --with-gmp='$(PREFIX)'
+	CONF		+= --enable-thread-safe
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --with-gmp='$(PREFIX32)'
+	CONF32		+= --enable-thread-safe
 endif
 
-ifeq ($(PLATFORM), Darwin)
-	PLAT_DARWIN	:= Yes
-endif
 
-PREFIX		:= $(shell pwd)/local
-PREFIX32	:= $(shell pwd)/local32
-
-ifdef MULTILIB
-	TARGETS := $(PREFIX32)/lib/libmpfr.a
-else
-	TARGETS := $(PREFIX)/lib/libmpfr.a
+ifdef PLAT_DARWIN
+	# 32-bit only at the moment
+	MULTILIB	:= No
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= --with-gmp='$(PREFIX)'
+	CONF		+= --disable-thread-safe
 endif
 
 
 .PHONY: all clean
 
-all: $(TARGETS)
+ifeq ($(MULTILIB), Yes)
+all: $(TARGET32)
+else
+all: $(TARGET)
+endif
 
 clean:
-	@-rm -rf mpfr-$(VERSION)
+	@-rm -rf $(SRCTREE)
 
 $(PREFIX)/lib/libgmp.a $(PREFIX32)/lib/libgmp.a:
-	$(MAKE) -C . -f Makefile.mpir
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir
 
-./mpfr-$(VERSION)/configure:
-	@tar -xjf "./archives/$(ARCHIVE)"
+$(SRCTREE)/configure:
+	@-mkdir -p '$(MAKEFILE_DIR)src'
+	@curl '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
-# mpfr configure inherits CFLAGS from gmp/mpir header files, therefore we
-# don't need to set them here explicitly
-$(PREFIX)/lib/libmpfr.a: ./mpfr-$(VERSION)/configure $(PREFIX)/lib/libgmp.a
-	@echo "building mpfr..."
-	@-$(MAKE) -s -C mpfr-$(VERSION) distclean
-	@cd "mpfr-$(VERSION)" && \
-	./configure --prefix="$(PREFIX)" --enable-shared=no \
-	--enable-thread-safe --with-gmp="$(PREFIX)"
-	$(MAKE) -C mpfr-$(VERSION)
-	$(MAKE) -C mpfr-$(VERSION) install
+$(TARGET): $(SRCTREE)/configure $(PREFIX)/lib/libgmp.a
+	@-$(MAKE) -s -C '$(SRCTREE)' distclean
+	@cd '$(SRCTREE)' && ./configure $(CONF)
+	$(MAKE) -C '$(SRCTREE)'
+	$(MAKE) -C '$(SRCTREE)' install
 
-$(PREFIX32)/lib/libmpfr.a: $(PREFIX)/lib/libmpfr.a ./mpfr-$(VERSION)/configure $(PREFIX32)/lib/libgmp.a
-	@echo "building mpfr 32-bit..."
-	@-$(MAKE) -s -C mpfr-$(VERSION) distclean
-	@cd "mpfr-$(VERSION)" && \
-	./configure --prefix="$(PREFIX32)" --enable-shared=no \
-	--enable-thread-safe --with-gmp="$(PREFIX32)"
-	$(MAKE) -C mpfr-$(VERSION)
-	$(MAKE) -C mpfr-$(VERSION) install
-
+$(TARGET32): $(SRCTREE)/configure $(TARGET) $(PREFIX32)/lib/libgmp.a
+	@-$(MAKE) -s -C '$(SRCTREE)' distclean
+	@cd '$(SRCTREE)' && ./configure $(CONF32)
+	$(MAKE) -C '$(SRCTREE)'
+	$(MAKE) -C '$(SRCTREE)' install
