@@ -116,7 +116,7 @@ clean:
 
 $(SRCTREE)/CMakeLists.txt:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@curl -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+	@curl -k -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(SRCTREE)/CMakeLists.txt
 	@-$(MAKE) -s -C '$(SRCTREE)' clean
