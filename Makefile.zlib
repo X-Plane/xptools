@@ -58,18 +58,22 @@ clean:
 	@-rm -rf $(SRCTREE32)
 
 $(ARCHIVE):
-	@if test -f $@; then :; else               			\
-		if mkdir data.lock 2>/dev/null; then			\
-			echo 'downloading $(URL)';			\
+	@if test -f $@; then exit 0; else              			\
+		trap 'rm -rf '$(notdir $(@)).lock' '$(@)'' 1 2 13 15;	\
+		if mkdir $(notdir $(@)).lock 2>/dev/null; then		\
+			echo 'downloading '$(notdir $(@))'';		\
 			mkdir -p '$(dir $(@))';				\
 			curl -s -L '$(URL)' -o $(@);			\
+			touch '$(@)';					\
 			result=$$?;					\
-			rm -rf data.lock;				\
+			rm -rf '$(notdir $(@)).lock';			\
 			exit $$result;					\
 		else               					\
-			echo 'download already started, waiting for it';\
-			while test -d data.lock; do sleep 1; done;	\
-			test -f $(@);					\
+			echo ''$(notdir $(@))' is downloading';		\
+			while test -d '$(notdir $(@)).lock';		\
+				do sleep 1;				\
+			done;						\
+			test -f $(@); exit $$?;				\
 		fi;							\
 	fi
 
@@ -84,7 +88,6 @@ $(SRCTREE32)/configure: $(ARCHIVE)
 	@touch $(@)
 
 $(TARGET): $(SRCTREE)/configure
-	@echo $(@)
 	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
 ifndef PLAT_WINNT
 	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
@@ -99,7 +102,6 @@ else
 endif
 
 $(TARGET32): $(SRCTREE32)/configure
-	@echo $(@)
 	@-$(MAKE) -C '$(SRCTREE32)' distclean > /dev/null 2>&1
 ifndef PLAT_WINNT
 	@cd '$(SRCTREE32)' && $(CONVENV32) ./configure $(CONF32)
