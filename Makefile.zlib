@@ -42,6 +42,12 @@ endif
 
 
 ifdef PLAT_DARWIN
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONVENV32	:= CFLAGS='-O3 -m32'
 endif
 
 

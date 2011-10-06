@@ -45,6 +45,16 @@ endif
 
 
 ifdef PLAT_DARWIN
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONVENV		:= LDFLAGS='-L'$(PREFIX)/lib''
+	CONVENV		+= CPPFLAGS='-I'$(PREFIX)/include''
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONVENV32	:= LDFLAGS='-m32 -L'$(PREFIX32)/lib''
+	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
+	CONVENV32	+= CFLAGS='-m32 -O2 -g'
 endif
 
 
