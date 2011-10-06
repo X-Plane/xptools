@@ -6,7 +6,7 @@ include $(MAKEFILE_DIR)environment.mk
 VERSION		:= 1.2.5
 URL		:= http://zlib.net/zlib-$(VERSION).tar.bz2
 ARCHIVE		:= $(MAKEFILE_DIR)archives/zlib-$(VERSION).tar.bz2
-TARFLAGS	:= -j
+TARFLAGS	:= -xjf -
 SRCTREE		:= $(PREFIX)/src/zlib-$(VERSION)
 SRCTREE32	:= $(PREFIX32)/src/zlib-$(VERSION)
 
@@ -75,13 +75,13 @@ $(ARCHIVE):
 
 $(SRCTREE)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX)/src'
-	tar -C '$(PREFIX)/src' $(TARFLAGS) -xf $(<)
-	touch $(@)
+	@cat $(<) | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	@touch $(@)
 
 $(SRCTREE32)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX32)/src'
-	tar -C '$(PREFIX32)/src' $(TARFLAGS) -xf $(<)
-	touch $(@)
+	@cat $(<) | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	@touch $(@)
 
 $(TARGET): $(SRCTREE)/configure
 	@echo $(@)
