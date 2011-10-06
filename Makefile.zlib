@@ -1,0 +1,69 @@
+MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+include $(MAKEFILE_DIR)environment.mk
+
+VERSION		:= 1.2.5
+URL		:= http://zlib.net/zlib-$(VERSION).tar.bz2
+TARFLAGS	:= -xjf -
+SRCTREE		:= $(MAKEFILE_DIR)src/zlib-$(VERSION)
+
+
+PREFIX		:= $(MAKEFILE_DIR)local
+PREFIX32	:= $(MAKEFILE_DIR)local32
+
+TARGET		:= $(PREFIX)/lib/libz.a
+TARGET32	:= $(PREFIX32)/lib/libz.a
+
+COMMONCONF	:= --static
+
+
+ifdef PLAT_WINNT
+endif
+
+
+ifdef PLAT_LINUX
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONVENV32	+= CFLAGS='-O3 -m32'
+endif
+
+
+ifdef PLAT_DARWIN
+endif
+
+
+.PHONY: all clean
+
+ifeq ($(MULTILIB), Yes)
+all: $(TARGET32)
+else
+all: $(TARGET)
+endif
+
+clean:
+	@-rm -rf $(SRCTREE)
+
+$(SRCTREE)/configure:
+	@-mkdir -p '$(MAKEFILE_DIR)src'
+	@echo 'downloading source to $(SRCTREE)'
+	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+
+$(TARGET): $(SRCTREE)/configure
+	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
+	@$(MAKE) -C '$(SRCTREE)'
+	# zlib-1.2.5's make install tries to copy the shared library,
+	# even when it was not build due to the --static configure option.
+	# overcome this by letting make continue with the -i option.
+	@$(MAKE) -i -C '$(SRCTREE)' install
+
+$(TARGET32): $(SRCTREE)/configure $(TARGET)
+	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE)' && $(CONVENV32) ./configure $(CONF32)
+	@$(MAKE) -C '$(SRCTREE)'
+	# zlib-1.2.5's make install tries to copy the shared library,
+	# even when it was not build due to the --static configure option.
+	# overcome this by letting make continue with the -i option.
+	@$(MAKE) -i -C '$(SRCTREE)' install

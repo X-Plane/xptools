@@ -69,10 +69,10 @@ clean:
 	@-rm -rf $(SRCTREE)
 
 $(PREFIX)/lib/libgmp.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
 
 $(PREFIX32)/lib/libgmp.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
 
 
 $(SRCTREE)/configure:
@@ -81,13 +81,13 @@ $(SRCTREE)/configure:
 	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(PREFIX)/lib/libgmp.a $(SRCTREE)/configure
-	@-$(MAKE) -s -C '$(SRCTREE)' distclean
-	@cd '$(SRCTREE)' && ./configure $(CONF)
-	$(MAKE) -C '$(SRCTREE)'
-	$(MAKE) -C '$(SRCTREE)' install
+	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
+	@$(MAKE) -C '$(SRCTREE)'
+	@$(MAKE) -C '$(SRCTREE)' install
 
 $(TARGET32): $(PREFIX32)/lib/libgmp.a $(TARGET) $(SRCTREE)/configure
-	@-$(MAKE) -s -C '$(SRCTREE)' distclean
-	@cd '$(SRCTREE)' && ./configure $(CONF32)
-	$(MAKE) -C '$(SRCTREE)'
-	$(MAKE) -C '$(SRCTREE)' install
+	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE)' && $(CONVENV32) ./configure $(CONF32)
+	@$(MAKE) -C '$(SRCTREE)'
+	@$(MAKE) -C '$(SRCTREE)' install

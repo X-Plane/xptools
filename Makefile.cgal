@@ -115,16 +115,16 @@ clean:
 	@-rm -rf $(SRCTREE)
 
 $(PREFIX)/lib/libmpfr.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr $(@)
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr $(@)
 
 $(PREFIX32)/lib/libmpfr.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr $(@)
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr $(@)
 
 $(PREFIX)/lib/libboost_thread.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost $(@)
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost $(@)
 
 $(PREFIX32)/lib/libboost_thread.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost $(@)
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost $(@)
 
 
 $(SRCTREE)/CMakeLists.txt:
@@ -133,15 +133,15 @@ $(SRCTREE)/CMakeLists.txt:
 	@curl -s -k -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
 
 $(TARGET): $(PREFIX)/lib/libmpfr.a $(PREFIX)/lib/libboost_thread.a $(SRCTREE)/CMakeLists.txt
-	@-$(MAKE) -s -C '$(SRCTREE)' clean
+	@-$(MAKE) -C '$(SRCTREE)' clean > /dev/null 2>&1
 	@-rm -f '$(SRCTREE)/CMakeCache.txt'
 	@cd '$(SRCTREE)' && cmake $(CONF) .
-	$(MAKE) -C '$(SRCTREE)'
-	$(MAKE) -C '$(SRCTREE)' install
+	@$(MAKE) -C '$(SRCTREE)'
+	@$(MAKE) -C '$(SRCTREE)' install
 
 $(TARGET32): $(PREFIX32)/lib/libmpfr.a $(PREFIX32)/lib/libboost_thread.a $(SRCTREE)/CMakeLists.txt $(TARGET)
-	@-$(MAKE) -s -C '$(SRCTREE)' clean
+	@-$(MAKE) -C '$(SRCTREE)' clean > /dev/null 2>&1
 	@-rm -f '$(SRCTREE)/CMakeCache.txt'
 	@cd '$(SRCTREE)' && cmake $(CONF32) .
-	$(MAKE) -C '$(SRCTREE)'
-	$(MAKE) -C '$(SRCTREE)' install
+	@$(MAKE) -C '$(SRCTREE)'
+	@$(MAKE) -C '$(SRCTREE)' install
