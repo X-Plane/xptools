@@ -58,7 +58,7 @@ clean:
 	@-rm -rf '$(SRCTREE32)'
 
 $(ARCHIVE):
-	if test -f '$@'; then exit 0; else             			\
+	@if test -f '$@'; then exit 0; else             		\
 		trap 'rm -rf '$(notdir $(@)).lock' '$(@)'' 1 2 13 15;	\
 		if mkdir '$(notdir $(@)).lock' 2>/dev/null; then	\
 			echo 'downloading '$(notdir $(@))'';		\
