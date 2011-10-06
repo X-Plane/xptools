@@ -19,13 +19,13 @@ COMMONCONF	:= --enable-shared=no
 ifdef PLAT_WINNT
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
-	CONVENV		:= LDFLAGS='-L$(PREFIX)/lib'
-	CONVENV		+= CPPFLAGS='-I$(PREFIX)/include'
+	CONVENV		:= LDFLAGS='-L'$(PREFIX)/lib''
+	CONVENV		+= CPPFLAGS='-I'$(PREFIX)/include''
 
 	CONF32		:= $(COMMONCONF)
 	CONF32		+= --prefix='$(PREFIX32)'
-	CONVENV32	:= LDFLAGS='-m32 -L$(PREFIX32)/lib'
-	CONVENV32	+= CPPFLAGS='-I$(PREFIX32)/include'
+	CONVENV32	:= LDFLAGS='-m32 -L'$(PREFIX32)/lib''
+	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
 	CONVENV32	+= CFLAGS='-m32 -O2 -g'
 endif
 
@@ -33,13 +33,13 @@ endif
 ifdef PLAT_LINUX
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
-	CONVENV		:= LDFLAGS='-L$(PREFIX)/lib'
-	CONVENV		+= CPPFLAGS='-I$(PREFIX)/include'
+	CONVENV		:= LDFLAGS='-L'$(PREFIX)/lib''
+	CONVENV		+= CPPFLAGS='-I'$(PREFIX)/include''
 
 	CONF32		:= $(COMMONCONF)
 	CONF32		+= --prefix='$(PREFIX32)'
-	CONVENV32	:= LDFLAGS='-m32 -L$(PREFIX32)/lib'
-	CONVENV32	+= CPPFLAGS='-I$(PREFIX32)/include'
+	CONVENV32	:= LDFLAGS='-m32 -L'$(PREFIX32)/lib''
+	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
 	CONVENV32	+= CFLAGS='-m32 -O2 -g'
 endif
 
@@ -57,17 +57,16 @@ all: $(TARGET)
 endif
 
 clean:
-	@-rm -rf $(SRCTREE)
-	@-rm -rf $(SRCTREE32)
+	@-rm -rf '$(SRCTREE)'
+	@-rm -rf '$(SRCTREE32)'
 
 $(ARCHIVE):
-	@if test -f $@; then exit 0; else              			\
+	if test -f '$@'; then exit 0; else             			\
 		trap 'rm -rf '$(notdir $(@)).lock' '$(@)'' 1 2 13 15;	\
-		if mkdir $(notdir $(@)).lock 2>/dev/null; then		\
+		if mkdir '$(notdir $(@)).lock' 2>/dev/null; then	\
 			echo 'downloading '$(notdir $(@))'';		\
 			mkdir -p '$(dir $(@))';				\
-			curl -s -L '$(URL)' -o $(@);			\
-			touch '$(@)';					\
+			curl -s -L '$(URL)' -o '$(@)';			\
 			result=$$?;					\
 			rm -rf '$(notdir $(@)).lock';			\
 			exit $$result;					\
@@ -76,7 +75,7 @@ $(ARCHIVE):
 			while test -d '$(notdir $(@)).lock';		\
 				do sleep 1;				\
 			done;						\
-			test -f $(@); exit $$?;				\
+			test -f '$(@)'; exit $$?;			\
 		fi;							\
 	fi
 
@@ -85,13 +84,13 @@ $(ARCHIVE):
 
 $(SRCTREE)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX)/src'
-	@cat $(<) | tar -C '$(PREFIX)/src' $(TARFLAGS)
-	@touch $(@)
+	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	@touch '$(@)'
 
 $(SRCTREE32)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX32)/src'
-	@cat $(<) | tar -C '$(PREFIX32)/src' $(TARFLAGS)
-	@touch $(@)
+	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	@touch '$(@)'
 
 $(TARGET): $(PREFIX)/lib/libz.a $(SRCTREE)/configure
 	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
