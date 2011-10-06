@@ -1,0 +1,69 @@
+MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+include $(MAKEFILE_DIR)environment.mk
+
+VERSION		:= 1.5.5
+URL		:= http://download.sourceforge.net/libpng/libpng-$(VERSION).tar.gz
+TARFLAGS	:= -xzf -
+SRCTREE		:= $(MAKEFILE_DIR)src/libpng-$(VERSION)
+
+
+PREFIX		:= $(MAKEFILE_DIR)local
+PREFIX32	:= $(MAKEFILE_DIR)local32
+
+TARGET		:= $(PREFIX)/lib/libpng.a
+TARGET32	:= $(PREFIX32)/lib/libpng.a
+
+COMMONCONF	:= --enable-shared=no
+
+ifdef PLAT_WINNT
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+	CONVENV		:= LDFLAGS='-L$(PREFIX)/lib'
+	CONVENV		+= CPPFLAGS='-I$(PREFIX)/include'
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONVENV32	:= LDFLAGS='-m32 -L$(PREFIX32)/lib'
+	CONVENV32	+= CPPFLAGS='-I$(PREFIX32)/include'
+	CONVENV32	+= CFLAGS='-m32 -O2 -g'
+endif
+
+
+ifdef PLAT_LINUX
+endif
+
+
+ifdef PLAT_DARWIN
+endif
+
+
+.PHONY: all clean
+
+ifeq ($(MULTILIB), Yes)
+all: $(TARGET32)
+else
+all: $(TARGET)
+endif
+
+clean:
+	@-rm -rf $(SRCTREE)
+
+$(PREFIX)/lib/libz.a:
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.zlib
+
+$(SRCTREE)/configure:
+	@-mkdir -p '$(MAKEFILE_DIR)src'
+	@echo 'downloading source to $(SRCTREE)'
+	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+
+$(TARGET): $(PREFIX)/lib/libz.a $(SRCTREE)/configure
+	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
+	@$(MAKE) -C '$(SRCTREE)'
+	@$(MAKE) -C '$(SRCTREE)' install
+
+$(TARGET32): $(TARGET)
+	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE)' && $(CONVENV32) ./configure $(CONF32)
+	@$(MAKE) -C '$(SRCTREE)'
+	@$(MAKE) -C '$(SRCTREE)' install

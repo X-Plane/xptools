@@ -69,11 +69,7 @@ clean:
 	@-rm -rf $(SRCTREE)
 
 $(PREFIX)/lib/libgmp.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
-
-$(PREFIX32)/lib/libgmp.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir $(@)
-
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir
 
 $(SRCTREE)/configure:
 	@-mkdir -p '$(MAKEFILE_DIR)src'
@@ -86,7 +82,7 @@ $(TARGET): $(PREFIX)/lib/libgmp.a $(SRCTREE)/configure
 	@$(MAKE) -C '$(SRCTREE)'
 	@$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): $(PREFIX32)/lib/libgmp.a $(TARGET) $(SRCTREE)/configure
+$(TARGET32): $(TARGET)
 	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
 	@cd '$(SRCTREE)' && $(CONVENV32) ./configure $(CONF32)
 	@$(MAKE) -C '$(SRCTREE)'
