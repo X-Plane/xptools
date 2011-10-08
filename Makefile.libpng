@@ -108,13 +108,13 @@ $(SRCTREE32)/configure: $(ARCHIVE)
 	@touch '$(@)'
 
 $(TARGET): $(SRCTREE)/configure
-	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@-$(MAKE) -r -j1 -C '$(SRCTREE)' distclean > /dev/null 2>&1
 	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
-	@$(MAKE) -C '$(SRCTREE)'
-	@$(MAKE) -C '$(SRCTREE)' install
+	@$(MAKE) -r -C '$(SRCTREE)'
+	@$(MAKE) -r -j1 -C '$(SRCTREE)' install
 
 $(TARGET32): $(SRCTREE32)/configure
-	@-$(MAKE) -C '$(SRCTREE32)' distclean > /dev/null 2>&1
+	@-$(MAKE) -r -j1 -C '$(SRCTREE32)' distclean > /dev/null 2>&1
 	@cd '$(SRCTREE32)' && $(CONVENV32) ./configure $(CONF32)
-	@$(MAKE) -C '$(SRCTREE32)'
-	@$(MAKE) -C '$(SRCTREE32)' install
+	@$(MAKE) -r -C '$(SRCTREE32)'
+	@$(MAKE) -r -j1 -C '$(SRCTREE32)' install
