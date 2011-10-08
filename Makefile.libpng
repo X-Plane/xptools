@@ -58,9 +58,12 @@ endif
 .PHONY: all clean
 
 ifeq ($(MULTILIB), Yes)
-all: $(TARGET) $(TARGET32)
+all:
+	@echo "providing: '$(TARGET)'"
+	@echo "providing: '$(TARGET32)'"
 else
-all: $(TARGET)
+all:
+	@echo "providing: '$(TARGET)'"
 endif
 
 clean:
@@ -92,9 +95,6 @@ $(ARCHIVE):
 		fi;							\
 	fi
 
-%/libz.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.zlib '$(@)'
-
 $(SRCTREE)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX)/src'
 	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
@@ -107,13 +107,13 @@ $(SRCTREE32)/configure: $(ARCHIVE)
 	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
-$(TARGET): $(PREFIX)/lib/libz.a $(SRCTREE)/configure
+$(TARGET): $(SRCTREE)/configure
 	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
 	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
 	@$(MAKE) -C '$(SRCTREE)'
 	@$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): $(PREFIX32)/lib/libz.a $(SRCTREE32)/configure
+$(TARGET32): $(SRCTREE32)/configure
 	@-$(MAKE) -C '$(SRCTREE32)' distclean > /dev/null 2>&1
 	@cd '$(SRCTREE32)' && $(CONVENV32) ./configure $(CONF32)
 	@$(MAKE) -C '$(SRCTREE32)'

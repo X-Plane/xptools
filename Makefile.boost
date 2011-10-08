@@ -66,9 +66,12 @@ endif
 .PHONY: all clean
 
 ifeq ($(MULTILIB), Yes)
-all: $(TARGET) $(TARGET32)
+all:
+	@echo "providing: '$(TARGET)'"
+	@echo "providing: '$(TARGET32)'"
 else
-all: $(TARGET)
+all:
+	@echo "providing: '$(TARGET)'"
 endif
 
 clean:

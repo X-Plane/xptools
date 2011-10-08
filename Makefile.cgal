@@ -102,9 +102,12 @@ endif
 .PHONY: all clean
 
 ifeq ($(MULTILIB), Yes)
-all: $(TARGET) $(TARGET32)
+all:
+	@echo "providing: '$(TARGET)'"
+	@echo "providing: '$(TARGET32)'"
 else
-all: $(TARGET)
+all:
+	@echo "providing: '$(TARGET)'"
 endif
 
 clean:
@@ -136,12 +139,6 @@ $(ARCHIVE):
 		fi;							\
 	fi
 
-%/libmpfr.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr '$(@)'
-
-%/libboost_thread.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost '$(@)'
-
 $(SRCTREE)/CMakeLists.txt: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX)/src'
 	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
@@ -154,14 +151,14 @@ $(SRCTREE32)/CMakeLists.txt: $(ARCHIVE)
 	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
-$(TARGET): $(PREFIX)/lib/libmpfr.a $(PREFIX)/lib/libboost_thread.a $(SRCTREE)/CMakeLists.txt
+$(TARGET): $(SRCTREE)/CMakeLists.txt
 	@-$(MAKE) -C '$(SRCTREE)' clean > /dev/null 2>&1
 	@-rm -f '$(SRCTREE)/CMakeCache.txt'
 	@cd '$(SRCTREE)' && cmake $(CONF) .
 	@$(MAKE) -C '$(SRCTREE)'
 	@$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): $(PREFIX32)/lib/libmpfr.a $(PREFIX32)/lib/libboost_thread.a $(SRCTREE32)/CMakeLists.txt
+$(TARGET32): $(SRCTREE32)/CMakeLists.txt
 	@-$(MAKE) -C '$(SRCTREE32)' clean > /dev/null 2>&1
 	@-rm -f '$(SRCTREE32)/CMakeCache.txt'
 	@cd '$(SRCTREE32)' && cmake $(CONF32) .
