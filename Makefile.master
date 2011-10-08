@@ -3,6 +3,7 @@ PREFIX		:= $(MAKEFILE_DIR)local
 PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
+.NOTPARALLEL:
 .PHONY: all zlib boost libgmp libmpfr libpng cgal
 
 all: zlib boost libgmp libmpfr libpng cgal
