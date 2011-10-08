@@ -6,9 +6,8 @@ include $(MAKEFILE_DIR)environment.mk
 VERSION		:= 3.9
 # note: the download link is not predictable for other versions
 # see: http://gforge.inria.fr/frs/?group_id=52
-#URLPREFIX	:= https://gforge.inria.fr/frs/download.php
-#URL		:= $(URLPREFIX)/29125/CGAL-$(VERSION).tar.gz
-URL		:= http://192.168.0.3/lib/CGAL-$(VERSION).tar.gz
+URL		:= https://gforge.inria.fr/frs/download.php/29125/CGAL-$(VERSION).tar.gz
+#URL		:= http://192.168.0.3/lib/CGAL-$(VERSION).tar.gz
 ARCHIVE		:= $(MAKEFILE_DIR)cache/CGAL-$(VERSION).tar.gz
 TARFLAGS	:= -xzf -
 SRCTREE		:= $(PREFIX)/src/CGAL-$(VERSION)

@@ -4,8 +4,8 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 VERSION		:= 1_47_0
-#URL		:= http://downloads.sourceforge.net/boost/boost_$(VERSION).tar.bz2
-URL		:= http://192.168.0.3/lib/boost_$(VERSION).tar.bz2
+URL		:= http://downloads.sourceforge.net/boost/boost_$(VERSION).tar.bz2
+#URL		:= http://192.168.0.3/lib/boost_$(VERSION).tar.bz2
 ARCHIVE		:= $(MAKEFILE_DIR)cache/boost_$(VERSION).tar.bz2
 TARFLAGS	:= -xjf -
 SRCTREE		:= $(PREFIX)/src/boost_$(VERSION)

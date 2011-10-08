@@ -4,8 +4,8 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 VERSION		:= 2.4.0
-#URL		:= http://mpir.org/mpir-$(VERSION).tar.bz2
-URL		:= http://192.168.0.3/lib/mpir-$(VERSION).tar.bz2
+URL		:= http://mpir.org/mpir-$(VERSION).tar.bz2
+#URL		:= http://192.168.0.3/lib/mpir-$(VERSION).tar.bz2
 ARCHIVE		:= $(MAKEFILE_DIR)cache/mpir-$(VERSION).tar.bz2
 TARFLAGS	:= -xjf -
 SRCTREE		:= $(PREFIX)/src/mpir-$(VERSION)
