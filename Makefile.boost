@@ -9,7 +9,7 @@ URL		:= http://192.168.0.3/lib/boost_$(VERSION).tar.bz2
 ARCHIVE		:= $(MAKEFILE_DIR)cache/boost_$(VERSION).tar.bz2
 TARFLAGS	:= -xjf -
 SRCTREE		:= $(PREFIX)/src/boost_$(VERSION)
-SRCTREE32	:= $(PREFIX32)/src/boost_-$(VERSION)
+SRCTREE32	:= $(PREFIX32)/src/boost_$(VERSION)
 
 TARGET		:= $(PREFIX)/lib/libboost_thread.a
 TARGET32	:= $(PREFIX32)/lib/libboost_thread.a
@@ -103,11 +103,13 @@ $(ARCHIVE):
 $(SRCTREE)/boost-build.jam: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX)/src'
 	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
 $(SRCTREE32)/boost-build.jam: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX32)/src'
 	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
 $(TARGET): $(SRCTREE)/boost-build.jam

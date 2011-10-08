@@ -106,11 +106,13 @@ $(ARCHIVE):
 $(SRCTREE)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX)/src'
 	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
 $(SRCTREE32)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX32)/src'
 	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
 $(TARGET): $(SRCTREE)/configure
