@@ -16,7 +16,6 @@ TARGET32	:= $(PREFIX32)/lib/libz.a
 
 COMMONCONF	:= --static
 
-
 ifdef PLAT_WINNT
 	MAKEENV		+= INSTALL=install
 	MAKEENV		+= BINARY_PATH='$(PREFIX)/bin'
@@ -31,7 +30,6 @@ ifdef PLAT_WINNT
 	MAKEENV32	+= RCFLAGS='--define GCC_WINDRES -F pe-i386'
 endif
 
-
 ifdef PLAT_LINUX
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -41,7 +39,6 @@ ifdef PLAT_LINUX
 	CONVENV32	:= CFLAGS='-O3 -m32'
 endif
 
-
 ifdef PLAT_DARWIN
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -50,7 +47,6 @@ ifdef PLAT_DARWIN
 	CONF32		+= --prefix='$(PREFIX32)'
 	CONVENV32	:= CFLAGS='-O3 -m32'
 endif
-
 
 .PHONY: all clean
 

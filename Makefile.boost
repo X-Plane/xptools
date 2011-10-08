@@ -18,7 +18,6 @@ COMMONCONF	:= --layout=system
 COMMONCONF	+= variant=release
 COMMONCONF	+= --with-thread
 
-
 ifdef PLAT_WINNT
 	BOOTSTRAP	:= true
 	B2		:= b2
@@ -35,7 +34,6 @@ ifdef PLAT_WINNT
 	CONF32		+= address-model=32
 endif
 
-
 ifdef PLAT_LINUX
 	BOOTSTRAP	:= ./bootstrap.sh
 	B2		:= ./b2
@@ -49,7 +47,6 @@ ifdef PLAT_LINUX
 	CONF32		+= link=static
 	CONF32		+= address-model=32
 endif
-
 
 ifdef PLAT_DARWIN
 	BOOTSTRAP	:= ./bootstrap.sh
@@ -65,7 +62,6 @@ ifdef PLAT_DARWIN
 	CONF32		+= address-model=32
 	CONF32		+= cxxflags='-m32'
 endif
-
 
 .PHONY: all clean
 
@@ -104,19 +100,24 @@ $(ARCHIVE):
 		fi;							\
 	fi
 
-$(SRCTREE)/boost-build.jam:
-	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@echo 'downloading source to $(SRCTREE)'
-	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+$(SRCTREE)/boost-build.jam: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX)/src'
+	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	@touch '$(@)'
+
+$(SRCTREE32)/boost-build.jam: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX32)/src'
+	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	@touch '$(@)'
 
 $(TARGET): $(SRCTREE)/boost-build.jam
 	@cd '$(SRCTREE)' && $(BOOTSTRAP) && $(B2) $(CONF) install
 ifdef PLAT_WINNT
-	@cp $(dir $(@))/libboost_thread.dll.a $(@)
+	@cp '$(dir $(@))/libboost_thread.dll.a' '$(@)'
 endif
 
-$(TARGET32): $(SRCTREE)/boost-build.jam $(TARGET)
-	@cd '$(SRCTREE)' && $(BOOTSTRAP) && $(B2) $(CONF32) install
+$(TARGET32): $(SRCTREE32)/boost-build.jam
+	@cd '$(SRCTREE32)' && $(BOOTSTRAP) && $(B2) $(CONF32) install
 ifdef PLAT_WINNT
-	@cp $(dir $(@))/libboost_thread.dll.a $(@)
+	@cp '$(dir $(@))/libboost_thread.dll.a' '$(@)'
 endif

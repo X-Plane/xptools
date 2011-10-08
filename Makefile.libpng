@@ -16,7 +16,6 @@ TARGET32	:= $(PREFIX32)/lib/libpng.a
 
 COMMONCONF	:= --enable-shared=no
 
-
 ifdef PLAT_WINNT
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -29,7 +28,6 @@ ifdef PLAT_WINNT
 	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
 	CONVENV32	+= CFLAGS='-m32 -O2 -g'
 endif
-
 
 ifdef PLAT_LINUX
 	CONF		:= $(COMMONCONF)
@@ -44,7 +42,6 @@ ifdef PLAT_LINUX
 	CONVENV32	+= CFLAGS='-m32 -O2 -g'
 endif
 
-
 ifdef PLAT_DARWIN
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -57,7 +54,6 @@ ifdef PLAT_DARWIN
 	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
 	CONVENV32	+= CFLAGS='-m32 -O2 -g'
 endif
-
 
 .PHONY: all clean
 

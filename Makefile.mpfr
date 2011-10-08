@@ -31,7 +31,6 @@ ifdef PLAT_WINNT
 	CONF32		+= --enable-thread-safe
 endif
 
-
 ifdef PLAT_LINUX
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -44,7 +43,6 @@ ifdef PLAT_LINUX
 	CONF32		+= --enable-thread-safe
 endif
 
-
 ifdef PLAT_DARWIN
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -56,7 +54,6 @@ ifdef PLAT_DARWIN
 	CONF32		+= --with-gmp='$(PREFIX32)'
 	CONF32		+= --disable-thread-safe
 endif
-
 
 .PHONY: all clean
 
@@ -95,13 +92,18 @@ $(ARCHIVE):
 		fi;							\
 	fi
 
-$(PREFIX)/lib/libgmp.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir
+%/libgmp.a:
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir '$(@)'
 
-$(SRCTREE)/configure:
-	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@echo 'downloading source to $(SRCTREE)'
-	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+$(SRCTREE)/configure: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX)/src'
+	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	@touch '$(@)'
+
+$(SRCTREE32)/configure: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX32)/src'
+	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	@touch '$(@)'
 
 $(TARGET): $(PREFIX)/lib/libgmp.a $(SRCTREE)/configure
 	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
@@ -109,8 +111,8 @@ $(TARGET): $(PREFIX)/lib/libgmp.a $(SRCTREE)/configure
 	@$(MAKE) -C '$(SRCTREE)'
 	@$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): $(TARGET)
-	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
-	@cd '$(SRCTREE)' && $(CONVENV32) ./configure $(CONF32)
-	@$(MAKE) -C '$(SRCTREE)'
-	@$(MAKE) -C '$(SRCTREE)' install
+$(TARGET32): $(PREFIX32)/lib/libgmp.a $(SRCTREE32)/configure
+	@-$(MAKE) -C '$(SRCTREE32)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE32)' && $(CONVENV32) ./configure $(CONF32)
+	@$(MAKE) -C '$(SRCTREE32)'
+	@$(MAKE) -C '$(SRCTREE32)' install

@@ -23,7 +23,6 @@ COMMONCONF	+= -DWITH_CGAL_ImageIO=OFF
 COMMONCONF	+= -DWITH_CGAL_Qt3=OFF
 COMMONCONF	+= -DWITH_CGAL_Qt4=OFF
 
-
 ifdef PLAT_WINNT
 	CONF	:= -G 'MSYS Makefiles'
 	CONF	+= $(COMMONCONF)
@@ -49,7 +48,6 @@ ifdef PLAT_WINNT
 	CONF32	+= -DMPFR_INCLUDE_DIR='$(PREFIX32)/include'
 	CONF32	+= -DMPFR_LIBRARIES='$(PREFIX32)/lib/libmpfr.a'
 endif
-
 
 ifdef PLAT_LINUX
 	CONF	:= -G 'Unix Makefiles'
@@ -77,7 +75,6 @@ ifdef PLAT_LINUX
 	CONF32	+= -DMPFR_LIBRARIES='$(PREFIX32)/lib/libmpfr.a'
 endif
 
-
 ifdef PLAT_DARWIN
 	CONF	:= -G 'Unix Makefiles'
 	CONF	+= $(COMMONCONF)
@@ -102,7 +99,6 @@ ifdef PLAT_DARWIN
 	CONF32	+= -DMPFR_INCLUDE_DIR='$(PREFIX32)/include'
 	CONF32	+= -DMPFR_LIBRARIES='$(PREFIX32)/lib/libmpfr.a'
 endif
-
 
 .PHONY: all clean
 
@@ -141,16 +137,20 @@ $(ARCHIVE):
 		fi;							\
 	fi
 
-$(PREFIX)/lib/libmpfr.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr
+%/libmpfr.a:
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr '$(@)'
 
-$(PREFIX)/lib/libboost_thread.a:
-	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost
+%/libboost_thread.a:
+	@$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost '$(@)'
 
-$(SRCTREE)/CMakeLists.txt:
-	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@echo 'downloading source to $(SRCTREE)'
-	@curl -s -k -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+$(SRCTREE)/CMakeLists.txt: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX)/src'
+	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	@touch '$(@)'
+
+$(SRCTREE32)/CMakeLists.txt: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX32)/src'
+	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
 
 $(TARGET): $(PREFIX)/lib/libmpfr.a $(PREFIX)/lib/libboost_thread.a $(SRCTREE)/CMakeLists.txt
 	@-$(MAKE) -C '$(SRCTREE)' clean > /dev/null 2>&1
@@ -159,9 +159,9 @@ $(TARGET): $(PREFIX)/lib/libmpfr.a $(PREFIX)/lib/libboost_thread.a $(SRCTREE)/CM
 	@$(MAKE) -C '$(SRCTREE)'
 	@$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): $(TARGET)
-	@-$(MAKE) -C '$(SRCTREE)' clean > /dev/null 2>&1
-	@-rm -f '$(SRCTREE)/CMakeCache.txt'
-	@cd '$(SRCTREE)' && cmake $(CONF32) .
-	@$(MAKE) -C '$(SRCTREE)'
-	@$(MAKE) -C '$(SRCTREE)' install
+$(TARGET32): $(PREFIX32)/lib/libmpfr.a $(PREFIX32)/lib/libboost_thread.a $(SRCTREE32)/CMakeLists.txt
+	@-$(MAKE) -C '$(SRCTREE32)' clean > /dev/null 2>&1
+	@-rm -f '$(SRCTREE32)/CMakeCache.txt'
+	@cd '$(SRCTREE32)' && cmake $(CONF32) .
+	@$(MAKE) -C '$(SRCTREE32)'
+	@$(MAKE) -C '$(SRCTREE32)' install

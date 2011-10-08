@@ -18,7 +18,6 @@ COMMONCONF	:= --enable-shared=no
 COMMONCONF	+= --enable-cxx
 COMMONCONF	+= --enable-gmpcompat
 
-
 ifdef PLAT_WINNT
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -34,7 +33,6 @@ endif
 	CONF32		+= --prefix='$(PREFIX32)'
 	CONF32		+= --build=pentium4-pc-mingw32
 endif
-
 
 ifdef PLAT_LINUX
 	CONF		:= $(COMMONCONF)
@@ -52,7 +50,6 @@ endif
 	CONF32		+= --build=pentium4-pc-linux-gnu
 endif
 
-
 ifdef PLAT_DARWIN
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
@@ -68,7 +65,6 @@ endif
 	CONF32		+= --prefix='$(PREFIX32)'
 	CONF32		+= --build=pentium4-apple-darwin
 endif
-
 
 .PHONY: all clean
 
@@ -107,10 +103,15 @@ $(ARCHIVE):
 		fi;							\
 	fi
 
-$(SRCTREE)/configure:
-	@-mkdir -p '$(MAKEFILE_DIR)src'
-	@echo 'downloading source to $(SRCTREE)'
-	@curl -s -L '$(URL)' | tar -C '$(MAKEFILE_DIR)src' $(TARFLAGS)
+$(SRCTREE)/configure: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX)/src'
+	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	@touch '$(@)'
+
+$(SRCTREE32)/configure: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX32)/src'
+	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	@touch '$(@)'
 
 $(TARGET): $(SRCTREE)/configure
 	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
@@ -118,8 +119,8 @@ $(TARGET): $(SRCTREE)/configure
 	@$(MAKE) -C '$(SRCTREE)'
 	@$(MAKE) -C '$(SRCTREE)' install
 
-$(TARGET32): $(SRCTREE)/configure $(TARGET)
-	@-$(MAKE) -C '$(SRCTREE)' distclean > /dev/null 2>&1
-	@cd '$(SRCTREE)' && $(CONVENV32) ./configure $(CONF32)
-	@$(MAKE) -C '$(SRCTREE)'
-	@$(MAKE) -C '$(SRCTREE)' install
+$(TARGET32): $(SRCTREE32)/configure
+	@-$(MAKE) -C '$(SRCTREE32)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE32)' && $(CONVENV32) ./configure $(CONF32)
+	@$(MAKE) -C '$(SRCTREE32)'
+	@$(MAKE) -C '$(SRCTREE32)' install
