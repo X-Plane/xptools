@@ -3,7 +3,7 @@ PREFIX		:= $(MAKEFILE_DIR)local
 PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
-.NOTPARALLEL:
+#.NOTPARALLEL:
 .PHONY: all zlib boost libgmp libmpfr libpng cgal
 
 all: zlib boost libgmp libmpfr libpng cgal
@@ -62,7 +62,7 @@ libpng: $(PREFIX)/lib/libpng.a
 endif
 
 
-%/libCGAL.a: %/libboost_thread.a %/libmpfr.a
+%/libCGAL.a: %/libboost_thread.a %/libgmp.a %/libmpfr.a
 	@rm -f '$(@)'
 	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.cgal '$(@)'
 
