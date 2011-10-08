@@ -4,8 +4,9 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 VERSION		:= 1.2.5
-URL		:= http://zlib.net/zlib-$(VERSION).tar.bz2
-ARCHIVE		:= $(MAKEFILE_DIR)archives/zlib-$(VERSION).tar.bz2
+#URL		:= http://zlib.net/zlib-$(VERSION).tar.bz2
+URL		:= http://192.168.0.3/lib/zlib-$(VERSION).tar.bz2
+ARCHIVE		:= $(MAKEFILE_DIR)cache/zlib-$(VERSION).tar.bz2
 TARFLAGS	:= -xjf -
 SRCTREE		:= $(PREFIX)/src/zlib-$(VERSION)
 SRCTREE32	:= $(PREFIX32)/src/zlib-$(VERSION)
@@ -70,7 +71,7 @@ $(ARCHIVE):
 		if mkdir '$(notdir $(@)).lock' 2>/dev/null; then	\
 			echo 'downloading '$(notdir $(@))'';		\
 			mkdir -p '$(dir $(@))';				\
-			curl -s -L '$(URL)' -o '$(@)'.tmp;		\
+			curl -k -s -L '$(URL)' -o '$(@)'.tmp;		\
 			result=$$?;					\
 			if [ $$result = "0" ]; then			\
 				mv '$(@)'.tmp '$(@)';			\
