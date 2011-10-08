@@ -10,8 +10,9 @@ all: zlib boost libgmp libmpfr libpng cgal
 	@echo "done"
 
 
-%/libz.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.zlib '$(@)'
+%/libz.a: $(MAKEFILE_DIR)Makefile.zlib
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
 
 ifeq ($(MULTILIB), Yes)
 zlib: $(PREFIX)/lib/libz.a $(PREFIX32)/lib/libz.a
@@ -20,8 +21,9 @@ zlib: $(PREFIX)/lib/libz.a
 endif
 
 
-%/libboost_thread.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.boost '$(@)'
+%/libboost_thread.a: $(MAKEFILE_DIR)Makefile.boost
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
 
 ifeq ($(MULTILIB), Yes)
 boost: $(PREFIX)/lib/libboost_thread.a $(PREFIX32)/lib/libboost_thread.a
@@ -30,8 +32,9 @@ boost: $(PREFIX)/lib/libboost_thread.a
 endif
 
 
-%/libgmp.a:
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpir '$(@)'
+%/libgmp.a: $(MAKEFILE_DIR)Makefile.mpir
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
 
 ifeq ($(MULTILIB), Yes)
 libgmp: $(PREFIX)/lib/libgmp.a $(PREFIX32)/lib/libgmp.a
@@ -40,9 +43,9 @@ libgmp: $(PREFIX)/lib/libgmp.a
 endif
 
 
-%/libmpfr.a: %/libgmp.a
+%/libmpfr.a: $(MAKEFILE_DIR)Makefile.mpfr %/libgmp.a
 	@rm -f '$(@)'
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.mpfr '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
 
 ifeq ($(MULTILIB), Yes)
 libmpfr: $(PREFIX)/lib/libmpfr.a $(PREFIX32)/lib/libmpfr.a
@@ -51,9 +54,9 @@ libmpfr: $(PREFIX)/lib/libmpfr.a
 endif
 
 
-%/libpng.a: %/libz.a
+%/libpng.a: $(MAKEFILE_DIR)Makefile.libpng %/libz.a
 	@rm -f '$(@)'
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.libpng '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
 
 ifeq ($(MULTILIB), Yes)
 libpng: $(PREFIX)/lib/libpng.a $(PREFIX32)/lib/libpng.a
@@ -62,9 +65,9 @@ libpng: $(PREFIX)/lib/libpng.a
 endif
 
 
-%/libCGAL.a: %/libboost_thread.a %/libgmp.a %/libmpfr.a
+%/libCGAL.a: $(MAKEFILE_DIR)Makefile.cgal %/libboost_thread.a %/libgmp.a %/libmpfr.a
 	@rm -f '$(@)'
-	$(MAKE) -C '$(MAKEFILE_DIR)' -f Makefile.cgal '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
 
 ifeq ($(MULTILIB), Yes)
 cgal: $(PREFIX)/lib/libCGAL.a $(PREFIX32)/lib/libCGAL.a
