@@ -308,7 +308,7 @@ void swap_double(double * a, double * b)
 int is_inner(int r, int w)
 {
 	if(g_rels[r].way_roles[w] == NULL) return 0;
-	return strcmp(g_rels[r].way_roles[w],"inner") == 0;
+	return (strcmp(g_rels[r].way_roles[w],"inner") == 0) ? 1 : 0;
 }
 
 int is_multipolygon(int r)
@@ -523,6 +523,16 @@ static void accum_attribute(const char * key, int len)
 	++g_num_atts;
 }
 
+static void dump_atts(entity_t * ent)
+{
+	int a;
+	if(!ent->atts) return;
+	att_info_t * na = g_atts;
+	for(a = 0; a < g_num_atts; ++a, na = na->next)
+	if(ent->atts[a])
+		printf("%s=%s\n",na->name,ent->atts[a]);
+	
+}
 
 
 static XML_Parser   g_parser=NULL;
@@ -535,7 +545,7 @@ void xml_die(const char * fmt, ...)
 	va_start(va,fmt);
 	vprintf(fmt, va);
 
-	printf("Line: %d, Col: %d (Byte %d)\n",
+	printf("Line: %zd, Col: %zd (Byte %zd)\n",
 		XML_GetCurrentLineNumber(g_parser),
 		XML_GetCurrentColumnNumber(g_parser),
 		XML_GetCurrentByteIndex(g_parser));
@@ -1024,67 +1034,94 @@ int main(int argc, const char * argv[])
 			int w,n;
 			int ok = 1;
 			int total_nodes = 0;
-			
+			int passes;
+
+			// Some OSM rels contain the same way twice.  Really.
+			for(w=0;w<rel->way_count;++w)
+				rel->ways.way_ptrs[w]->ent.flag = 0;
+			for(w=0;w<rel->way_count;++w)
+			{
+				if(rel->ways.way_ptrs[w]->ent.flag)
+				{
+					printf("WARNING: removing second copy of way %d from rel %d\n", rel->ways.way_ptrs[w]->ent.id, rel->ent.id);
+					kill_way(id,w);
+					--w;
+				}
+				else
+					rel->ways.way_ptrs[w]->ent.flag=1;
+			}	
+
+
 			// Ben says: this is NOT quite the greatest scheme.  The problem is that we DEMAND no X shapes...because we don't 
 			// know how the hell to resolve them.  Unfortunately you sometimes DO get them.  We end up nuking the X ways.
 			
-			while(1)
-			{
-				// Our count for connectivity has to be RECURSIVE.  The reason: we can have a way with a valid link on one side
-				// (e.g. our start matches someone else's end exactly, for a count of 2) but our way's end is hanging.  We nuke
-				// the way, but our neighbor is considered link.  He links to us and we are DEAD!  So we need to recount with
-				// us gone to determine that our friend is gone.
-				//
-				// A lot of the time this is going to chain react heavily and nuke a LOT more stuff.  But we might recover, e.g. if
-				// our outer is sane and our inner is just goo.
-				int did_nuke = 0;
-				
-				for(w=0;w<rel->way_count;++w)
-				for(n=0;n<rel->ways.way_ptrs[w]->node_count; ++n, ++total_nodes)
-					rel->ways.way_ptrs[w]->nodes.node_ptrs[n]->ent.flag = 0;
+			// Note: we need to separately ref-count-check inner vs. outer.  If we don't, then if a relation has a ring that
+			// is heterogeneously tagged (yes, this happens!) we will pass the count check only to die later.
+			
+			for(passes = 0; passes < 2; ++passes)
+			{			
+				while(1)
+				{
+					// Our count for connectivity has to be RECURSIVE.  The reason: we can have a way with a valid link on one side
+					// (e.g. our start matches someone else's end exactly, for a count of 2) but our way's end is hanging.  We nuke
+					// the way, but our neighbor is considered link.  He links to us and we are DEAD!  So we need to recount with
+					// us gone to determine that our friend is gone.
+					//
+					// A lot of the time this is going to chain react heavily and nuke a LOT more stuff.  But we might recover, e.g. if
+					// our outer is sane and our inner is just goo.
+					int did_nuke = 0;
+					
+					for(w=0;w<rel->way_count;++w)
+					for(n=0;n<rel->ways.way_ptrs[w]->node_count; ++n, ++total_nodes)
+						rel->ways.way_ptrs[w]->nodes.node_ptrs[n]->ent.flag = 0;
 
-				for(w=0;w<rel->way_count;++w)
-				if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0] != rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1])
-				{
-					rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag++;
-					rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag++;
-				}
-					
-				for(w=0;w<rel->way_count;++w)
-				if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0] != rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1])				
-				{
-					if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag != 2)
+					for(w=0;w<rel->way_count;++w)
+					if(is_inner(id,w) == passes)
+					if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0] != rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1])
 					{
-						printf("     Node %d has %d links in way %d\n", 
-								rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.id,
-								rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag,
-								rel->ways.way_ptrs[w]->ent.id);
-						ok = 0;
+						rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag++;
+						rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag++;
 					}
-					if(rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag != 2)
+						
+					for(w=0;w<rel->way_count;++w)
+					if(is_inner(id,w) == passes)
+					if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0] != rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1])				
 					{
-						printf("     Node %d has %d links in way %d\n", 
-								rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.id,
-								rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag,
-								rel->ways.way_ptrs[w]->ent.id);
-						ok = 0;
+						if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag != 2)
+						{
+							printf("     Node %d has %d links in way %d\n", 
+									rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.id,
+									rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag,
+									rel->ways.way_ptrs[w]->ent.id);
+							ok = 0;
+						}
+						if(rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag != 2)
+						{
+							printf("     Node %d has %d links in way %d\n", 
+									rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.id,
+									rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag,
+									rel->ways.way_ptrs[w]->ent.id);
+							ok = 0;
+						}
+						
+						if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag != 2 ||
+						   rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag != 2)
+						{
+							kill_way(id,w);
+							did_nuke = 1;
+							break;
+						}
 					}
-					
-					if(rel->ways.way_ptrs[w]->nodes.node_ptrs[0]->ent.flag != 2 ||
-					   rel->ways.way_ptrs[w]->nodes.node_ptrs[rel->ways.way_ptrs[w]->node_count-1]->ent.flag != 2)
-					{
-						kill_way(id,w);
-						did_nuke = 1;
+					if(!did_nuke)
 						break;
-					}
 				}
-				if(!did_nuke)
-					break;
 			}
 			
 			if(!ok)
 			{
-				printf("Relation %d has a topology link error. (%d nodes, %d ways\n", rel->ent.id, total_nodes, rel->way_count);
+				printf("Relation %d has a topology link error. (%d nodes, %d ways)\n", rel->ent.id, total_nodes, rel->way_count);
+				dump_atts(&rel->ent);
+					
 			}
 			
 			n=0;
@@ -1094,7 +1131,8 @@ int main(int argc, const char * argv[])
 
 			if(n == 0)
 			{
-				printf("(Relation %d is entirely removed, as it is unsalvageable.\n",rel->ent.id);
+				printf("Relation %d is entirely removed, as it is unsalvageable - it has no outer ways!\n",rel->ent.id);
+				dump_atts(&rel->ent);
 				free(rel->rel_type);
 				rel->rel_type = strdup("<broken>");
 			}
@@ -1181,7 +1219,7 @@ int main(int argc, const char * argv[])
 						{
 //							printf("Exporting way %d\n", link_way->ent.id);
 							if(is_inner_link != main_inner) 
-								die("inner-outer conflict.");
+								die("inner-outer conflict.");	//TODO
 							link_way->ent.flag = 1;
 							for(n = 1; n < link_way->node_count; ++n)
 							{
@@ -1198,7 +1236,7 @@ int main(int argc, const char * argv[])
 						{
 //							printf("Exporting way %d\n", link_way->ent.id);
 							if(is_inner_link != main_inner) 
-								die("inner-outer conflict.");
+								die("inner-outer conflict.");	//TODO
 							link_way->ent.flag = 1;
 							for(n = link_way->node_count-2; n >= 0; --n)
 							{
@@ -1216,17 +1254,19 @@ int main(int argc, const char * argv[])
 				{
 					int wc, nc;
 					printf("ERROR with rel: %d (type=%s)\n", rel->ent.id, rel->rel_type ? rel->rel_type : "<none>");
-					printf("WAYS:\n");
+					dump_atts(&rel->ent);
+					printf("\nWAYS:\n");
 					for(wc=0;wc < rel->way_count; ++wc)
 					{
 						printf("   Way %d: %d (%s) used = %d\n", wc, rel->ways.way_ptrs[wc]->ent.id, rel->way_roles[wc] ? rel->way_roles[wc] : "<null>", rel->ways.way_ptrs[wc]->ent.flag);
 						printf("     contains %d nodes.\n", rel->ways.way_ptrs[wc]->node_count); 
-						for(nc = 0; nc < rel->ways.way_ptrs[wc]->node_count; ++nc)
+						for(nc = 0; nc < rel->ways.way_ptrs[wc]->node_count; // ++nc)
+								nc += rel->ways.way_ptrs[wc]->node_count-1)
 							printf("          %d: %d\n", nc, rel->ways.way_ptrs[wc]->nodes.node_ptrs[nc]->ent.id);
 					}
 					printf("We were trying to connect to %d or stop at %d.  But no remaining ways do that.\n",
 						want_link->ent.id, want_stop->ent.id);
-					die("error connecting multipolygon.\n");
+					die("error connecting multipolygon.\n");	//TODO
 				}
 								
 				if(is_ccw_poly(x+offsets[cur_p],y+offsets[cur_p],cur_r - offsets[cur_p]))
