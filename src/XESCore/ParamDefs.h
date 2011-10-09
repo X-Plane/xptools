@@ -455,6 +455,8 @@
 	TOKEN(lu_globcover_INDUSTRY_SQUARE)
 	TOKEN(lu_globcover_NO_DATA)
 	TOKEN(lu_globcover_PASTURES)
+	TOKEN(lu_globcover_SALT)
+	TOKEN(lu_globcover_SALT_HEM)
 	TOKEN(lu_globcover_SHRUB)
 	TOKEN(lu_globcover_SNOW_ICE)
 	TOKEN(lu_globcover_SPARSE)
@@ -474,7 +476,6 @@
 	TOKEN(lu_globcover_WETLAND_BROADLEAVED_OPEN)
 	TOKEN(lu_globcover_WETLAND_GRASSLAND)
 	TOKEN(lu_globcover_WETLAND_SHRUB_CLOSED)
-
 	/* Natural phenomena for dem_TerrainPhenomena - these define things
 	   that happen on the ground other than plants. */
 
