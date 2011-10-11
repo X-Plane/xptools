@@ -603,6 +603,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 						++x2;
 						++y2;
 //						SpreadDEMValues(working, 1, x1, y1, x2, y2);
+						dem_copy_buffer_one(elevation, working, DEM_NO_DATA);
 					#endif
 					DEMGeo		airport_area;
 					working.subset(airport_area, x1, y1, x2-1,y2-1);

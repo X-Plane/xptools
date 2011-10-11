@@ -1419,9 +1419,9 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		for(DEMGeo::iterator i = best_density.begin(); i != best_density.end(); ++i)
 			*i = sqrtf(*i);
 
-		#if DEV
-		inDEMs[dem_Wizard] = best_density;		
-		#endif
+//		#if DEV
+//		inDEMs[dem_Wizard] = best_density;		
+//		#endif
 	}
 	
 	deriv = false;

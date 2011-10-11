@@ -373,6 +373,7 @@ struct	DEMMask {
  *************************************************************************************/
 
 void		dem_coverage_nearest(const DEMGeo& d, double lon1, double lat1, double lon2, double lat2, int bounds[4]);
+void		dem_copy_buffer_one(const DEMGeo& orig_src, DEMGeo& io_dst, float null_value);
 
 // Given two DEMs that represent the minimum and maximum possible values for various
 // points, this routine produces two DEMs of half dimension.  Each point has the min

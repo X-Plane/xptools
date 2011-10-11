@@ -663,6 +663,37 @@ void	DEMGeo::calc_slope(DEMGeo& outSlope, DEMGeo& outHeading, ProgressFunc inPro
 
 //// Past here I have not checked for correct post use.
 
+void dem_copy_buffer_one(const DEMGeo& orig_src, DEMGeo& io_dst, float null_value)
+{
+	address_fifo	fifo(io_dst.mWidth * io_dst.mHeight);
+	for(DEMGeo::address a = io_dst.address_begin(); a != io_dst.address_end(); ++a)
+	if(io_dst[a] == null_value)
+	{
+		const int x_off[8] = { -1, 1, 0, 0, -1, -1, 1, 1 };
+		const int y_off[8] = { 0, 0, -1, 1, -1, 1, -1, 1 };
+		
+		DEMGeo::coordinates c(io_dst.to_coordinates(a));
+		bool has_data = false;
+		for(int n = 0; n < 8; ++n)
+		{
+			DEMGeo::coordinates nn(c.first + x_off[n], c.second + y_off[n]);
+			if(io_dst.valid(nn) && io_dst[nn] != null_value)
+			{
+				has_data = true;
+				break;
+			}
+		}
+		if(has_data) 
+			fifo.push(a);		
+	}
+	
+	while(!fifo.empty())
+	{
+		DEMGeo::address a = fifo.pop();
+		io_dst[a] = orig_src[a];
+	}
+}
+
 void DEMGeo::fill_nearest(void)
 {
 	const int x_off[8] = { -1, 0, 1, -1, 1, -1, 0, 1 };
