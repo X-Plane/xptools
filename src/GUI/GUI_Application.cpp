@@ -196,49 +196,65 @@ GUI_QtMenu::GUI_QtMenu
 GUI_QtMenu::~GUI_QtMenu()
 {}
 
-void GUI_QtMenu::showEvent ( QShowEvent * event )
+void GUI_QtMenu::showEvent( QShowEvent * e )
 {
     QList<QAction*> actlist = this->actions();
-    if (actlist.isEmpty()) return;
-    for (int i = 0; i < actlist.size(); ++i)
+    QList<QAction*>::iterator it = actlist.begin();
+    for (it ; it != actlist.end(); ++it)
     {
-        QAction * act = actlist.at(i);
-        int cmd = act->data().toInt();
+        int cmd = (*it)->data().toInt();
         if (cmd)
         {
             int checked = 0;
             string new_name;
-            act->setEnabled(app->DispatchCanHandleCommand(cmd,new_name,checked));
-            if (!new_name.empty())
-                act->setText(QString::fromStdString(new_name));
-            act->setCheckable(checked);
-            act->setChecked(checked);
+            (*it)->setEnabled(app->DispatchCanHandleCommand(cmd,new_name,checked));
+            if (!new_name.empty())(*it)->setText(QString::fromStdString(new_name));
+            (*it)->setCheckable(checked);
+            (*it)->setChecked(checked);
         }
     }
+}
 
+void GUI_QtMenu::hideEvent( QHideEvent * e )
+{
+    // mroe:
+    // We must set to 'enabled' again, since we have disabled
+    // items and their shortcut-action while showevent .
+    QList<QAction*> actlist = this->actions();
+    QList<QAction*>::iterator it = actlist.begin();
+    for (it ; it != actlist.end(); ++it)
+    {
+        int cmd = (*it)->data().toInt();
+        if (cmd)  (*it)->setEnabled(true);
+    }
 }
 
 GUI_QtAction::GUI_QtAction
-(const QString& text,const QString& sc ,int cmd, GUI_Application *app, bool checkable)
-: app(app)
+(const QString& text,QObject * parent,const QString& sc ,int cmd, GUI_Application *app, bool checkable)
+: QAction(text,parent) ,app(app)
 {
-	qaction = new QAction(text, this);
-	qaction->setData(cmd);
-	qaction->setShortcut(sc);
-	qaction->setCheckable(checkable);
-	qaction->setChecked(checkable);
-	connect(qaction, SIGNAL(triggered()), this, SLOT(ontriggered()));
+	setData(cmd);
+	setShortcut(sc);
+	setCheckable(checkable);
+	setChecked(checkable);
+	connect(this, SIGNAL(triggered()), this, SLOT(ontriggered()));
 }
 
 GUI_QtAction::~GUI_QtAction()
-{
-	delete qaction;
-}
+{}
 
 void GUI_QtAction::ontriggered()
 {
-	app->DispatchHandleCommand(qaction->data().toInt());
+    int cmd = data().toInt();
+    if (!cmd) return;
+    int  ioCheck = 0;
+    string ioName;
+    //mroe : We must check again if the cmd can be handled ,
+    //		because shortcut-actions allways enabled .
+    if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
+			app->DispatchHandleCommand(cmd);
 }
+
 
 QMenuBar* GUI_Application::getqmenu()
 {
@@ -575,10 +591,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 					case GUI_KEY_RETURN:sc += "Return"; break;
 					default:            sc += key_cstr; break;
 				}
-			    menu->addAction(
-			     (new GUI_QtAction(items[n].name,sc,items[n].cmd,
-			  		this, false))->qaction);
-
+			    menu->addAction(new GUI_QtAction(items[n].name,menu,sc,items[n].cmd,this,false));
 		    }
 		++n;
 	}

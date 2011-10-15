@@ -118,19 +118,20 @@ public:
 private:
 	GUI_Application* app;
 protected:
-    void showEvent ( QShowEvent * event );
+	void showEvent( QShowEvent * e );
+	void hideEvent( QHideEvent * e );
 };
 
-class GUI_QtAction : public QObject
+class GUI_QtAction : public QAction
 {
 	Q_OBJECT
 public:
-	GUI_QtAction(const QString& text,const QString& sc , int cmd, GUI_Application *app, bool checkable);
+	GUI_QtAction(const QString& text,QObject * parent,const QString& sc ,int cmd, GUI_Application *app,bool checkable);
 	~GUI_QtAction();
 
-	QAction* qaction;
 public slots:
 	void ontriggered();
+
 private:
 	GUI_Application* app;
 };
