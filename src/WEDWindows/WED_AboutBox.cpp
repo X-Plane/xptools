@@ -75,9 +75,9 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	// Don't like how you have been acredited (or NOT acredited)?  FIX IT!  Change the code
 	// here, submit a patch, or file a bug report.
 
-	const char * credits[] = { 
-		"Thanks to Janos Laube and everyone else", 
-		"who has contributed to WorldEditor's development.", 
+	const char * credits[] = {
+		"Thanks to Janos Laube, Mathias Roedel and everyone else",
+		"who has contributed to WorldEditor's development.",
 		0 };
 	int n = 0;
 	while(credits[n])
@@ -85,7 +85,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 		GUI_FontDrawScaled(
 			state,font_UI_Basic,color,
 			bounds[0],
-			bounds[0] * 0.75 + 
+			bounds[0] * 0.75 +
 			bounds[2] * 0.25 - 2.5 * f - n * f,
 			bounds[2],bounds[0] * 0.75 + bounds[2] * 0.25 - 1.5 * f - n * f,
 			credits[n],credits[n]+strlen(credits[n]),align_Center);
