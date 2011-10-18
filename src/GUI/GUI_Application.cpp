@@ -227,6 +227,7 @@ void GUI_QtMenu::hideEvent( QHideEvent * e )
         int cmd = (*it)->data().toInt();
         if (cmd)  (*it)->setEnabled(true);
     }
+    this->QMenu::hideEvent(e);
 }
 
 GUI_QtAction::GUI_QtAction
