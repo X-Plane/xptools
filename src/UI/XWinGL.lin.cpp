@@ -28,13 +28,13 @@ void glWidget::initializeGL(void)
 
 void glWidget::focusInEvent(QFocusEvent* e)
 {
-	if (mXWinGL->mInited)
+	if (mXWinGL->mInited && e->reason()==Qt::ActiveWindowFocusReason)
 		mXWinGL->Activate(1);
 }
 
 void glWidget::focusOutEvent(QFocusEvent* e)
 {
-	if (mXWinGL->mInited)
+	if (mXWinGL->mInited && e->reason()==Qt::ActiveWindowFocusReason)
 		mXWinGL->Activate(0);
 }
 

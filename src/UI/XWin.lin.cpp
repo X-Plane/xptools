@@ -159,12 +159,14 @@ void XWin::timerEvent(QTimerEvent* e)
 
 void XWin::focusInEvent(QFocusEvent* e)
 {
-	Activate(1);
+	if(e->reason()==Qt::ActiveWindowFocusReason)
+		Activate(1);
 }
 
 void XWin::focusOutEvent(QFocusEvent* e)
 {
-	Activate(0);
+	if(e->reason()==Qt::ActiveWindowFocusReason)
+		Activate(0);
 }
 
 /* prevent pure virtual function calls. ben, we need to restructure this,
