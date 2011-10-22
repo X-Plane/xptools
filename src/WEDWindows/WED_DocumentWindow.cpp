@@ -242,7 +242,6 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropPane->FromPrefs(inDocument,0);
 	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
 
-	HandleCommand(wed_RestorePanes);
 }
 
 WED_DocumentWindow::~WED_DocumentWindow()
