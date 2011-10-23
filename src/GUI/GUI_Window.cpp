@@ -1114,7 +1114,8 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case Qt::Key_Enter:
 		case Qt::Key_Return:	charCode = GUI_KEY_RETURN;	break;
 		case Qt::Key_Escape:	charCode = GUI_KEY_ESCAPE;	break;
-		case Qt::Key_Tab:	charCode = GUI_KEY_TAB;		break;
+		case Qt::Key_Tab:
+		case Qt::Key_Backtab:	charCode = GUI_KEY_TAB;		break;
 		case Qt::Key_Delete:	charCode = GUI_KEY_DELETE;	break;
 		case Qt::Key_Left:	charCode = GUI_KEY_LEFT;	break;
 		case Qt::Key_Up:	charCode = GUI_KEY_UP;		break;
@@ -1123,21 +1124,21 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	}
     // are the same as virtualkey
 	if ((0x2F < inMsg) && (inMsg < 0x5b))
-        virtualCode=inMsg;
-    else
+	  virtualCode=inMsg;
+	else
 	{
-	    switch(inMsg)
-        {
-          case Qt::Key_Enter:
-          case Qt::Key_Return:  virtualCode = GUI_VK_RETURN;break;
-          case Qt::Key_PageUp:  virtualCode = GUI_VK_PRIOR; break;
-          case Qt::Key_PageDown:virtualCode = GUI_VK_NEXT;  break;
-          case Qt::Key_End:     virtualCode = GUI_VK_END;   break;
-          case Qt::Key_Home:    virtualCode = GUI_VK_HOME;  break;
-          case Qt::Key_Left :   virtualCode = GUI_VK_LEFT;  break;
-          case Qt::Key_Right:   virtualCode = GUI_VK_RIGHT; break;
-	  default: virtualCode = 0;
-        }
+	  switch(inMsg)
+	  {
+		case Qt::Key_Enter:
+		case Qt::Key_Return:	virtualCode = GUI_VK_RETURN;	break;
+		case Qt::Key_PageUp:	virtualCode = GUI_VK_PRIOR;	break;
+		case Qt::Key_PageDown:	virtualCode = GUI_VK_NEXT;	break;
+		case Qt::Key_End:	virtualCode = GUI_VK_END;	break;
+		case Qt::Key_Home:	virtualCode = GUI_VK_HOME;	break;
+		case Qt::Key_Left :	virtualCode = GUI_VK_LEFT;	break;
+		case Qt::Key_Right:	virtualCode = GUI_VK_RIGHT;	break;
+		default: virtualCode = 0;
+	  }
 	}
 
 #endif

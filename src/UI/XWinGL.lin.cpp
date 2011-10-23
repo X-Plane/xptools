@@ -42,7 +42,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default
 {
 	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
 	mGlWidget->setMouseTracking(true);
-	mGlWidget->setFocusPolicy(Qt::StrongFocus);
+	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
 	mGlWidget->updateGL();
 	XWin::show();
@@ -54,7 +54,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 {
 	mGlWidget = new glWidget(this, this, inShare?inShare->mGlWidget:0);
 	mGlWidget->setMouseTracking(true);
-	mGlWidget->setFocusPolicy(Qt::StrongFocus);
+	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
 	mGlWidget->updateGL();
 	if (inAttributes & xwin_style_visible) {
