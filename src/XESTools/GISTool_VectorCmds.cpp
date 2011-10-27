@@ -769,13 +769,13 @@ int DoKillTunnels(const vector<const char *>& args)
 
 
 
-#if OPENGL_MAP && DEV
 int DoCheckRoads(const vector<const char *>& args)
 {
-	debug_network(gMap);
+//	debug_network(gMap);
+	MarkFunkyRoadIssues(gMap);
+
 	return 0;
 }
-#endif
 
 int DoFixRoads(const vector<const char *>& args)
 {
@@ -876,9 +876,7 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-kill_sliver_water",1,1,DoKillSliverWater,		"Remove slivers of water",HELP_KILL_SLIVER_WATER },
 { "-kill_sloped_water",1,1,DoKillSlopedWater,		"Remove slopeds of water",HELP_KILL_SLOPED_WATER },
 { "-kill_tunnels",0,0,DoKillTunnels,				"Remove all tunnel vectors", "" },
-#if OPENGL_MAP && DEV
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
-#endif
 { "-fix_roads",	0, 0, DoFixRoads,				"Fix road errors.", "" },
 { "-raster_dem",	1, 1, DoRasterDEM,				"Map Color.", "" },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },

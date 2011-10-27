@@ -221,7 +221,7 @@ void	CalcBoundingBox(
  * Given a map in lat/lon and a face, return its area in meters.
  *
  */
-double	GetMapFaceAreaMeters(const Face_handle f);
+double	GetMapFaceAreaMeters(const Face_handle f, Bbox2 * out_bounds = NULL);
 
 /*
  * GetMapFaceAreaDegrees

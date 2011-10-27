@@ -296,7 +296,12 @@ void clean_block(Block_2& block)
 	for(Block_2::Edge_iterator eig = block.edges_begin(); eig != block.edges_end(); ++eig)
 		if(eig->face()->data().usage == eig->twin()->face()->data().usage &&
 		   eig->face()->data().feature == eig->twin()->face()->data().feature)
+		   if(strstr(FetchTokenString(eig->face()->data().feature),".agb") == 0)
+		   if(strstr(FetchTokenString(eig->face()->data().feature),".fac") == 0)
 			kill.push_back(eig);
+//		#if !DEV
+//			#error this is a hokey way to prevent conslidatoin!
+//		#endif
 
 //	printf("Before:\n");
 //	for(Block_2::Face_handle f = block.faces_begin(); f != block.faces_end(); ++f)
@@ -350,4 +355,77 @@ void simplify_block(Block_2& io_block, double max_err)
 	arrangement_simplifier<Block_2, traits> simplifier;
 	traits tr;
 	simplifier.simplify(io_block, max_err, tr);
+}
+
+
+
+void find_major_axis(vector<block_pt>&	pts,
+				Segment2 *			out_segment,
+				Vector2 *			out_major,
+				Vector2 *			out_minor,
+				double *			bounds)
+{
+	double best_v = -1.0;
+	Vector2	temp_a, temp_b;
+	double bounds_temp[4];
+	
+	if(out_major == NULL) out_major = &temp_a;
+	if(out_minor == NULL) out_minor = &temp_b;
+	if(bounds == NULL) bounds = bounds_temp;
+	
+	for(int i = 0; i < pts.size(); ++i)
+	{
+		int j = (i + 1) % pts.size();
+		Vector2	v_a(pts[i].loc,pts[j].loc);
+		v_a.normalize();
+		Vector2 v_b(v_a.perpendicular_ccw());
+		
+		double total = 0.0;
+		for(int k = 0; k < pts.size(); ++k)
+		{
+			int l = (k + 1) % pts.size();
+			Vector2	s(pts[k].loc,pts[l].loc);
+			
+			total += max(fabs(v_a.dot(s)),fabs(v_b.dot(s)));			
+		}
+		
+		if(total >= best_v)
+		{
+			best_v = total;
+			if(out_segment) *out_segment = Segment2(pts[i].loc,pts[j].loc);
+			*out_major = v_a;
+			*out_minor = v_b;			
+		}	
+	}
+	
+	bounds[2] = bounds[0] = out_major->dot(Vector2(pts[0].loc));
+	bounds[3] = bounds[1] = out_minor->dot(Vector2(pts[0].loc));
+	for(int n = 1; n < pts.size(); ++n)
+	{
+		double ca = out_major->dot(Vector2(pts[n].loc));
+		double cb = out_minor->dot(Vector2(pts[n].loc));
+		bounds[0] = min(bounds[0],ca);
+		bounds[1] = min(bounds[1],cb);
+		bounds[2] = max(bounds[2],ca);
+		bounds[3] = max(bounds[3],cb);
+	}
+	
+	if(fabs(bounds[3] - bounds[1]) > fabs(bounds[2] - bounds[0]))
+	{
+		*out_major = out_major->perpendicular_ccw();
+		*out_minor = out_minor->perpendicular_ccw();
+
+		bounds[2] = bounds[0] = out_major->dot(Vector2(pts[0].loc));
+		bounds[3] = bounds[1] = out_minor->dot(Vector2(pts[0].loc));
+		for(int n = 1; n < pts.size(); ++n)
+		{
+			double ca = out_major->dot(Vector2(pts[n].loc));
+			double cb = out_minor->dot(Vector2(pts[n].loc));
+			bounds[0] = min(bounds[0],ca);
+			bounds[1] = min(bounds[1],cb);
+			bounds[2] = max(bounds[2],ca);
+			bounds[3] = max(bounds[3],cb);
+		}
+
+	}
 }

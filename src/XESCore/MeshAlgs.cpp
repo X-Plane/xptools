@@ -1913,7 +1913,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 //				if (sh_tri >  0.7)	variant_head = 5;
 
 				//fprintf(stderr, " %d", tri->info().feature);
-				int zoning = (tri->info().orig_face == Pmwx::Face_handle()) ? NO_VALUE : tri->info().orig_face->data().GetZoning();
+				int zoning = NO_VALUE;//(tri->info().orig_face == Pmwx::Face_handle()) ? NO_VALUE : tri->info().orig_face->data().GetZoning();
+				if(zoning == NO_VALUE && tri->info().orig_face != Pmwx::Face_handle())
+					zoning = tri->info().orig_face->data().GetParam(af_Variant,-1.0) + 1.0;
 				int terrain = FindNaturalTerrain(tri->info().feature, zoning, lu, ss, as,cs, sl, sl_tri, tm, tmr, rn, near_water, sh_tri, re, er, uden, urad, utrn, usq, fabs((float) center_y)/*, variant_blob, variant_head*/);
 				if (terrain == -1)
 					AssertPrintf("Cannot find terrain for: %s, %f\n", FetchTokenString(lu), /*FetchTokenString(cl), el, */ sl);

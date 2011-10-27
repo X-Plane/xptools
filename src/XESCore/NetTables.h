@@ -36,13 +36,16 @@
 struct	NetFeatureInfo {
 	float		density_factor;
 	int			oneway_feature;
+	int			is_oneway;
 };
 typedef hash_map<int, NetFeatureInfo>	NetFeatureInfoTable;
 extern	NetFeatureInfoTable				gNetFeatures;
 
 
 struct	NetRepInfo {
-	float		width;
+	float		semi_l;
+	float		semi_r;
+	inline float width() const { return semi_l + semi_r; }
 	float		pad;
 	float		building_percent;
 //	float		max_slope;
@@ -60,17 +63,18 @@ extern 	NetRepInfoTable							gNetReps;
 
 
 struct	Feature2RepInfo {
+	int			feature;
 	float		min_density;
 	float		max_density;
-	int			zoning_left;
-	int			zoning_right;
+	set<int>	zoning_left;
+	set<int>	zoning_right;
 	float		rain_min;
 	float		rain_max;
 	float		temp_min;
 	float		temp_max;
 	int			rep_type;
 };
-typedef hash_multimap<int, Feature2RepInfo>		Feature2RepInfoTable;
+typedef vector<Feature2RepInfo>		Feature2RepInfoTable;
 extern	Feature2RepInfoTable					gFeature2Rep;
 
 
@@ -127,12 +131,15 @@ struct	BridgeInfo {
 typedef	vector<BridgeInfo>				BridgeInfoTable;
 extern	BridgeInfoTable					gBridgeInfo;
 
+extern map<int,int>						gTwinRules;
 
 void	LoadNetFeatureTables(void);
 
 //bool	IsSeparatedHighway(int feat_type);
 //int		SeparatedToOneway(int feat_type);
 bool	IsOneway(int rep_type);
+
+bool	IsTwinRoads(int rep_type1, int rep_type2);
 
 int		FindBridgeRule(int rep_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2);
 

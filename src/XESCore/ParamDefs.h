@@ -87,14 +87,13 @@
 	/* Boolean DEMs. */
 
 	TOKEN(dem_Wizard)				//	Derived dem for the purpose of illustrating stuff.
-	#if OPENGL_MAP
+
 	TOKEN(dem_Wizard1)				//	Derived dem for the purpose of illustrating stuff.
 	TOKEN(dem_Wizard2)				//	Derived dem for the purpose of illustrating stuff.
 	TOKEN(dem_Wizard3)				//	Derived dem for the purpose of illustrating stuff.
 	TOKEN(dem_Wizard4)				//	Derived dem for the purpose of illustrating stuff.
 	TOKEN(dem_Wizard5)				//	Derived dem for the purpose of illustrating stuff.
 	TOKEN(dem_Wizard6)				//	Derived dem for the purpose of illustrating stuff.
-	#endif
 	
 	/* HALFEDGE PARAMS */
 
@@ -135,6 +134,20 @@
 	TOKEN(af_Cat2Rat)
 	TOKEN(af_Cat3)				// Dominant land class
 	TOKEN(af_Cat3Rat)
+
+	TOKEN(af_AGSides)
+	
+	TOKEN(af_ShortestSide)
+	TOKEN(af_LongestSide)
+	TOKEN(af_ShortAxisLength)
+	TOKEN(af_LongAxisLength)
+	TOKEN(af_MinAngle)
+	TOKEN(af_MaxAngle)
+	TOKEN(af_BlockErr)
+	
+	TOKEN(af_WaterEdge)
+	TOKEN(af_RoadEdge)
+	TOKEN(af_RailEdge)
 	
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.

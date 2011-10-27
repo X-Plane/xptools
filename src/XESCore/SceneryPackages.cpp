@@ -81,7 +81,7 @@ static string FixRegionPrefix(const string& name)
 	return name;
 }
 
-int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
+int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs, bool dry_run)
 {
 	int 	n;
 	string	lib_path, dir_path;
@@ -99,7 +99,7 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	}
 
 	lib_path = package + "library.txt";
-	lib = fopen(lib_path.c_str(), "w");
+	lib = dry_run ? stdout : fopen(lib_path.c_str(), "w");
 	if(lib == NULL)
 	{
 		fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
@@ -111,6 +111,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 	set<string> normalFiles;
 	set<string>	imageFiles;
 	set<string> borderFiles;
+	
+	int missing_pol = 0, missing_ter = 0;
 
 	if(!gRegionalizations.empty())
 	for (int r = gRegionalizations.size()-1; r >= 0; --r)
@@ -149,7 +151,17 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 				fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
 				return e;
 			}
-			ter = fopen(lib_path.c_str(), "w");
+			
+			if(dry_run)
+			{
+				if(!FILE_exists(lib_path.c_str()))
+				{
+					fprintf(stderr,"Missing ter: %s\n", lib_path.c_str());
+					++missing_ter;
+				}
+			}
+
+			ter = dry_run ? stdout : fopen(lib_path.c_str(), "w");
 			if(ter == NULL)
 			{
 				fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
@@ -228,7 +240,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			if (!n->second.lit_tex.empty())		imageFiles.insert(dir_path+n->second.lit_tex);
 			borderFiles.insert(dir_path+n->second.border_tex);
 
-			fclose(ter);
+			if (ter != stdout)
+				fclose(ter);
 		}
 
 		for (NaturalTerrainInfoMap::iterator p = gNaturalTerrainInfo.begin(); p != gNaturalTerrainInfo.end(); ++p)
@@ -246,8 +259,17 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 				fprintf(stderr,"Could not make directory %s: %d.\n",dir_path.c_str(), e); 
 				return e;
 			}
+			
+			if(dry_run)
+			{
+				if(!FILE_exists(lib_path.c_str()))
+				{
+					fprintf(stderr,"Missing pol: %s\n", lib_path.c_str());
+					++missing_pol;
+				}
+			}
 
-			pol = fopen(lib_path.c_str(), "w");
+			pol = dry_run ? stdout : fopen(lib_path.c_str(), "w");
 			if(pol == NULL)
 			{
 				fprintf(stderr,"Could not make file %s.\n", lib_path.c_str());
@@ -262,10 +284,13 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			fprintf(pol, "NO_ALPHA" CRLF);
 			fprintf(pol, "SURFACE dirt" CRLF);
 			fprintf(pol, "LAYER_GROUP airports -1" CRLF);
-			fclose(pol);
+			if(pol != stdout)
+				fclose(pol);
+
 		}
 	}
-	fclose(lib);
+	if(lib != stdout)
+		fclose(lib);
 
 	if (make_stub_pngs)
 	{
@@ -320,7 +345,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			{
 				++image_ctr;
 				printf("Creating %s.\n",path_as_png.c_str());
-				WriteBitmapToPNG(&image_data, path_as_png.c_str(), NULL, 0, STUB_GAMMA);		
+				if(!dry_run)
+					WriteBitmapToPNG(&image_data, path_as_png.c_str(), NULL, 0, STUB_GAMMA);		
 			}
 		}
 
@@ -351,7 +377,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			{
 				++image_ctr;
 				printf("Creating %s.\n",path_as_png.c_str());
-				WriteBitmapToPNG(&nrml_data, path_as_png.c_str(), NULL, 0, STUB_GAMMA);		
+				if(!dry_run)
+					WriteBitmapToPNG(&nrml_data, path_as_png.c_str(), NULL, 0, STUB_GAMMA);		
 			}
 		}
 
@@ -379,7 +406,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 			{
 				++border_ctr;
 				printf("Creating %s.\n",path.c_str());
-				WriteBitmapToPNG(&border, path.c_str(), NULL, 0, STUB_GAMMA);
+				if(!dry_run)
+					WriteBitmapToPNG(&border, path.c_str(), NULL, 0, STUB_GAMMA);
 			}
 		}
 
@@ -389,6 +417,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs)
 		DestroyBitmap(&border);
 
 //		char buf[1024];
+		if(dry_run)
+			fprintf(stderr," Missing: %d ter, %d pol, %d images, %d borders.\n", missing_ter, missing_pol, image_ctr, border_ctr);
 		printf("Made %d images and %d borders that were missing.\n", image_ctr, border_ctr);
 //		DoUserAlert(buf);
 	}

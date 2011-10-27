@@ -61,16 +61,18 @@ static double calc_water_area(void)
 		Pmwx::Ccb_halfedge_circulator circ, stop;
 		circ = stop = face->outer_ccb();
 		do {
-			total += CGAL::to_double(Vector_2(stop->source()->point(), circ->source()->point()) *
-									 Vector_2(stop->source()->point(), circ->target()->point()).perpendicular(CGAL::COUNTERCLOCKWISE));
+			if(circ->source() != stop->source() &&
+			   circ->target() != stop->source())
+			total += 0.5 * CGAL::to_double(Vector_2(stop->source()->point(), circ->source()->point()) *
+									 Vector_2(stop->source()->point(), circ->target()->point()).perpendicular(CGAL::CLOCKWISE));
 			++circ;
 		} while (circ != stop);
 		for (Pmwx::Hole_iterator hole = face->holes_begin(); hole != face->holes_end(); ++hole)
 		{
 			circ = stop = *hole;
 			do {
-				total += CGAL::to_double(Vector_2(stop->source()->point(), circ->source()->point()) *
-										 Vector_2(stop->source()->point(), circ->target()->point()).perpendicular(CGAL::COUNTERCLOCKWISE));
+				total += 0.5 * CGAL::to_double(Vector_2(stop->source()->point(), circ->source()->point()) *
+										 Vector_2(stop->source()->point(), circ->target()->point()).perpendicular(CGAL::CLOCKWISE));
 				++circ;
 			} while (circ != stop);
 		}
@@ -167,6 +169,62 @@ static int DoCheckWaterConform(const vector<const char *>& args)
 	return 0;
 }
 
+static int DoPreCheckWaterConform(const vector<const char *>& args)
+{
+	// layer, lu, out-file
+
+	int layer = LookupToken(args[0]);
+	int lu = LookupToken(args[1]);
+	if(layer == -1)
+	{
+		fprintf(stderr,"Unknown layer %s\n", args[0]);
+		return 1;
+	}
+	if(lu == -1)
+	{
+		fprintf(stderr,"Unknown landuse %s\n", args[1]);
+		return 1;
+	}
+
+	if(gDem.count(layer) == 0)
+	{
+		fprintf(stderr,"Empty layer %s\n", args[0]);
+		return 1;
+	}
+	
+	DEMGeo& d(gDem[layer]);
+	double wet_lu = 0.0;
+	for(DEMGeo::iterator i = d.begin(); i != d.end(); ++i)
+	if(*i == lu)
+		wet_lu += 1.0;
+	wet_lu /= (((double) d.mWidth * (double) d.mHeight));
+		
+	double wet_vec = calc_water_area();
+
+	printf("By vector: %lf.  By LU: %lf.  Absolute: %lf.  Relative: %lf.\n", 
+			wet_vec, 
+			wet_lu,
+			fabs(wet_vec-wet_lu),
+			max(wet_vec,wet_lu) == 0.0 ? 0.0 :
+			fabs(wet_vec-wet_lu) / max(wet_vec,wet_lu));
+
+	if(args.size() > 2)
+	{
+
+		FILE * im = fopen(args[2], "ab");
+		if(!im)
+		{
+			fprintf(stderr,"Could not open %s\n", args[2]);
+			return 1;
+		}
+		fputc(255.0 * fabsf(wet_vec - wet_lu),im);
+		fclose(im);
+	}
+	return 0;
+}
+
+
+
 int KillBadDSF(const vector<const char *>& args)
 {
 	if (DSFCheckSignature(args[0]) != dsf_ErrOK)
@@ -181,17 +239,24 @@ int KillBadDSF(const vector<const char *>& args)
 
 int DoShowCoverage(const vector<const char *>& args)
 {
+	int thresh = 1;
+	if(args.size() > 1)
+		thresh = atoi(args[1]);
 	FILE * fi = fopen(args[0], "rb");
 	if (fi == NULL)
 	{
 		fprintf(stderr, "Could not open %s\n", args[0]);
 		return 1;
 	}
-	for (int y = gMapSouth; y < gMapNorth; ++y)
-	for (int x = gMapWest; x < gMapEast; ++x)
+//	for (int y = gMapSouth; y < gMapNorth; ++y)
+//	for (int x = gMapWest; x < gMapEast; ++x)
+	for(int y = -90; y < 90; ++y)
+	for(int x = -180; x < 180; ++x)
 	{
-		char c = fgetc(fi);
-		if (c != 0) printf("Includes %+03d%+04d\n", y, x);
+		int c = fgetc(fi);
+		if(y >= gMapSouth && y <= gMapNorth)
+		if(x >= gMapWest  && x <= gMapEast )
+			if (c >= thresh) printf("Includes %+03d%+04d\n", y, x);
 	}
 	fclose(fi);
 	return 0;
@@ -432,7 +497,15 @@ int InitFromWet(const vector<const char *>& args)
 "updated/rewritten, as is the library.\n"
 int DoMakeTerrainPackage(const vector<const char *>& args)
 {
-	return CreateTerrainPackage(args[0],true);
+	return CreateTerrainPackage(args[0],true,false);
+}
+
+#define test_terrain_package_HELP \
+"-test_terrain_package <path to pack base\n"\
+"This command checks an existing scenery pack to see if any files are missing.\n"
+int DoTestTerrainPackage(const vector<const char *>& args)
+{
+	return CreateTerrainPackage(args[0],true,true);
 }
 
 #define dump_forests_HELP \
@@ -611,7 +684,7 @@ static int DoMeshErrStats(const vector<const char *>& s)
 
 static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
-{ "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "Given a raw 360x180 file, this prints the lat-lon of every none-black point.\n" },
+{ "-showcoverage", 1, 2, DoShowCoverage,			"Show coverage of a file as text", "Given a raw 360x180 file, this prints the lat-lon of every none-black point.\n" },
 { "-diffcoverage", 2, 2, DoDiffCoverage,			"Difference two coverages.","Given two raw 360x180s, shows a list of all tiles in the first but NOT the second one.\n" },
 { "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master md5|- - make coverage.", "This makes a black & white coverage indicating what files exist.  Optionally also prints md5 signature of each file to another text file." },
 { "-wetcoverage", 2, 2, DoMakeWetCoverage,			"dir output.", "This produces a coverage from XES files - 0-100 = amount of water, 255=missing,254=invalid map.\n" },
@@ -621,8 +694,10 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-obj2config", 	2, -1, 	DoObjToConfig, 			"Make obj spreadsheet from a real OBJ.", "" },
 //{ "-checkdem",		0, 0,  DoCheckSpreadsheet,		"Check spreadsheet coverage.", "" },
 { "-checkwaterconform", 3, 3, DoCheckWaterConform, 	"Check water matchup", "" },
+{ "-compare_water",	2,3,DoPreCheckWaterConform,		"Check LU vs. vector water", "" },
 { "-forest_types",	0,	1, DoDumpForests,			"Output types of forests from the spreadsaheet.", dump_forests_HELP },
 { "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },
+{ "-test_terrain_package", 1, 1, DoTestTerrainPackage, "Check a terrain package based on the spreadsheets.", test_terrain_package_HELP },
 { "-mesh_err_stats", 0, 0, DoMeshErrStats,			"Print statistics about mesh error.", "" },
 { "-hack",				   1, 1, DoHack, "", "" },
 #if OPENGL_MAP

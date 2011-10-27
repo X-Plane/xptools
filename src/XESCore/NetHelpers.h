@@ -31,7 +31,7 @@
 	These routines help treat the planar map like a connected road network.  This means that they do a certain amount of analysis on what would
 	be otherwise trivial operations (e.g. "Find the next road segment") because the routines have to (1) skip through non-road planar map 
 	segments and (2) treat roads at differing levels as not intersecting.
-
+	
 	NOTE: by convention unless otherwise noted, a road is noted by the halfedge that goes in the _same_ direction as the underlying road.
 	(For two-way roads, the road will still be stored on one half-edge or the other.)
 	
@@ -67,21 +67,29 @@ inline double set_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v, d
 inline Vector2 get_he_road_dir(Pmwx::Halfedge_handle he);
 // Approximate dot product of two roads.
 inline double get_he_road_dot(Pmwx::Halfedge_handle h1,Pmwx::Halfedge_handle h2);
+inline int get_he_feat_type(Pmwx::Halfedge_handle he);
 // Actual rep type
 inline int get_he_rep_type(Pmwx::Halfedge_handle he);
 inline void set_he_rep_type(Pmwx::Halfedge_handle he, int t);
+// Swap the data on the two edges, effectively reversing road directions.
+inline void swap_he_road_dir(Pmwx::Halfedge_handle he);
 // Use category for road (e.g. use_Limited)
 inline int get_he_road_use(Pmwx::Halfedge_handle he);
 // Are we a highway or ramp?
 inline int get_he_limited_access(Pmwx::Halfedge_handle he);
+inline int get_he_street(Pmwx::Halfedge_handle he);
 // Approximate length in degrees lat/lon.
 inline double approx_he_len(Pmwx::Halfedge_handle he);
+inline int get_he_is_bridge(Pmwx::Halfedge_handle he);
+inline int get_he_is_bridge_xon(Pmwx::Halfedge_handle he);
+inline int get_he_is_on_ground(Pmwx::Halfedge_handle he);
 
 // A few predicates:
 inline bool matches_any(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2) { return true; }
 inline bool matches_rep_type(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2);
 inline bool matches_use(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2);
 inline bool matches_limited_access(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2);
+inline bool matches_street(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2);
 
 // Typically we store a "level" of a junction as a vector of half-edges in clock-wise rotation, where the half-edge must be the one that supports
 // the directed road.  We store the entire junction as a map of integer level numbers to vector levels.  This is a "levelized" junction.
@@ -192,6 +200,17 @@ inline double get_he_road_dot(Pmwx::Halfedge_handle h1,Pmwx::Halfedge_handle h2)
 	return doblim(v1.dot(v2),-1.0,1.0);
 }
 
+inline int get_he_feat_type(Pmwx::Halfedge_handle he)
+{
+	int rep = NO_VALUE;
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() >= 1);
+	if(!he->data().mSegments.empty())
+		rep = he->data().mSegments.back().mFeatType;
+	else
+		rep = he->twin()->data().mSegments.back().mFeatType;
+	return rep;
+}
+
 inline int get_he_rep_type(Pmwx::Halfedge_handle he)
 {
 	int rep = NO_VALUE;
@@ -212,6 +231,16 @@ inline void set_he_rep_type(Pmwx::Halfedge_handle he, int t)
 		he->twin()->data().mSegments.back().mRepType = t;
 }
 
+inline void swap_he_road_dir(Pmwx::Halfedge_handle he)
+{
+	GISNetworkSegmentVector::iterator i;
+	for(i = he->data().mSegments.begin(); i != he->data().mSegments.end(); ++i)
+		swap(i->mSourceHeight, i->mTargetHeight);
+	for(i = he->twin()->data().mSegments.begin(); i != he->twin()->data().mSegments.end(); ++i)
+		swap(i->mSourceHeight, i->mTargetHeight);
+	he->data().mSegments.swap(he->twin()->data().mSegments);
+}
+
 inline int get_he_road_use(Pmwx::Halfedge_handle he)
 {
 	int rep = get_he_rep_type(he);
@@ -223,6 +252,12 @@ inline int get_he_limited_access(Pmwx::Halfedge_handle he)
 {
 	int use = get_he_road_use(he);
 	return use == use_Limited || use == use_Ramp;
+}
+
+inline int get_he_street(Pmwx::Halfedge_handle he)
+{
+	int use = get_he_road_use(he);
+	return use == use_Street;
 }
 
 inline bool	is_level_highway     (const vector<Pmwx::Halfedge_handle>& l)
@@ -327,6 +362,39 @@ inline double approx_he_len(Pmwx::Halfedge_handle he)
 	return sqrt(cgal2ben(he->source()->point()).squared_distance(cgal2ben(he->target()->point())));
 }
 
+inline int get_he_is_on_ground(Pmwx::Halfedge_handle he)
+{
+	int ret = 0;
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() >= 1);
+	if(!he->data().mSegments.empty())
+		ret = he->data().mSegments.back().mSourceHeight == 0.0 && he->data().mSegments.back().mTargetHeight == 0.0;
+	else
+		ret = he->twin()->data().mSegments.back().mSourceHeight == 0.0 && he->twin()->data().mSegments.back().mTargetHeight == 0.0;
+	return ret;
+}
+
+inline int get_he_is_bridge(Pmwx::Halfedge_handle he)
+{
+	int ret = 0;
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() >= 1);
+	if(!he->data().mSegments.empty())
+		ret = he->data().mSegments.back().mSourceHeight > 0.0 && he->data().mSegments.back().mTargetHeight > 0.0;
+	else
+		ret = he->twin()->data().mSegments.back().mSourceHeight > 0.0 && he->twin()->data().mSegments.back().mTargetHeight > 0.0;
+	return ret;
+}
+
+inline int get_he_is_bridge_xon(Pmwx::Halfedge_handle he)
+{
+	int ret = 0;
+	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() >= 1);
+	if(!he->data().mSegments.empty())
+		ret = (he->data().mSegments.back().mSourceHeight > 0.0) != (he->data().mSegments.back().mTargetHeight > 0.0);
+	else
+		ret = (he->twin()->data().mSegments.back().mSourceHeight > 0.0) != (he->twin()->data().mSegments.back().mTargetHeight > 0.0);
+	return ret;
+}
+
 inline bool matches_rep_type(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2)
 {
 	return get_he_rep_type(he1) == get_he_rep_type(he2);
@@ -340,6 +408,11 @@ inline bool matches_use(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2)
 inline bool matches_limited_access(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2)
 {
 	return get_he_limited_access(he1) == get_he_limited_access(he2);
+}
+
+inline bool matches_street(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2)
+{
+	return get_he_street(he1) == get_he_street(he2);
 }
 
 

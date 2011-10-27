@@ -235,10 +235,10 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 	{
 		set<int>	lu_set;
 		string		lu_set_string;
-	
+		string		zone_string;
 		NaturalTerrainRule_t	rule;
-		if(TokenizeLine(tokens," eeseeeffffffffffiffffffe",
-			&rule.terrain, &rule.zoning, &lu_set_string, 
+		if(TokenizeLine(tokens," esseeeffffffffffiffffffe",
+			&rule.terrain, &zone_string, &lu_set_string, 
 			&rule.soil_style,&rule.agri_style,&rule.clim_style,
 			&rule.elev_min,
 			&rule.elev_max,
@@ -259,6 +259,20 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&rule.lat_max,
 			&rule.name) != 25)
 				return false;
+		
+		rule.zoning = LookupToken(zone_string.c_str());
+		if(rule.zoning == -1)
+		{
+			rule.zoning = atoi(zone_string.c_str());
+			if(rule.zoning == 0)
+			{
+				return false;
+			}
+		} else {
+			if (rule.zoning != NO_VALUE)
+				Assert(!"hrm.");
+		}
+
 		
 		rule.urban_density_min = rule.urban_density_max = 0.0;
 		rule.urban_radial_min = rule.urban_radial_max = 0.0;
@@ -290,7 +304,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			return false;
 		}	
 		
-		if(rule.zoning != NO_VALUE && gZoningInfo.count(rule.zoning) == 0)
+		if(rule.zoning > 4 && gZoningInfo.count(rule.zoning) == 0)
 		{
 			fprintf(stderr,"Zoning type %s is unknown.\n", FetchTokenString(rule.zoning));
 			return false;

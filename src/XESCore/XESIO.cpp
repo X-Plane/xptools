@@ -137,7 +137,8 @@ void	ReadXESFile(
 			int demID = conversionMap[dems[i]];
 			if (demID == dem_LandUse || demID == dem_Climate)	// || demID == dem_NudeColor)
 				RemapEnumDEM(aDem, conversionMap);
-			inDEM->insert(DEMGeoMap::value_type(demID, aDem));
+			//inDEM->insert(DEMGeoMap::value_type(demID, aDem));
+			(*inDEM)[demID] = aDem;
 		}
 	}
 }

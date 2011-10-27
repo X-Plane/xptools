@@ -27,12 +27,16 @@
 #include "XESConstants.h"
 #include "GISTool_Globals.h"
 #include "DEMDefs.h"
+#include "DEMAlgs.h"
 #include "GISUtils.h"
+#include "STLUtils.h"
 #if OPENGL_MAP && DEV
 	#include "RF_Selection.h"
 #endif
 
 #define	MIN_DIST_FOR_TYPE 0.005
+
+
 
 int	KillTunnels(Pmwx& ioMap)
 {
@@ -49,26 +53,81 @@ int	KillTunnels(Pmwx& ioMap)
 	return k;
 }
 
+static void strip_segments_to_one(GISNetworkSegmentVector& v)
+{
+	if(v.size() < 2) return;
+	GISNetworkSegmentVector::iterator best = v.begin();
+	for(GISNetworkSegmentVector::iterator i = v.begin(); i != v.end(); ++i)
+		if(i->mFeatType < best->mFeatType)
+			best = i;
+	GISNetworkSegment_t keep = *best;
+	v.clear();
+	v.push_back(keep);
+}
 
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg)
 {
+	// Merge dupe segments 
 	int kill = 0;
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge)
-	for (int i = 0    ; i < edge->data().mSegments.size(); ++i)
-	for (int j = i + 1; j < edge->data().mSegments.size(); ++j)
 	{
-		if(edge->data().mSegments[i] == edge->data().mSegments[j])
+		edge->data().mMark = 0;
+		for (int i = 0    ; i < edge->data().mSegments.size(); ++i)
+		for (int j = i + 1; j < edge->data().mSegments.size(); ++j)
 		{
-			edge->data().mSegments.erase(edge->data().mSegments.begin() + j);
-			--j;
-			++kill;
+			if(edge->data().mSegments[i] == edge->data().mSegments[j])
+			{
+				edge->data().mSegments.erase(edge->data().mSegments.begin() + j);
+				--j;
+				++kill;
+			}
 		}
 	}
 	if(kill > 0)
 		printf("Killed %d duplicate roads.\n", kill);
 
+	// And...screwit.  Just cut down to ONE road segment per halfedge.
+	
+	for(Pmwx::Edge_iterator e = ioMap.edges_begin(); e != ioMap.edges_end(); ++e)
+	{
+		strip_segments_to_one(e->data().mSegments);
+		strip_segments_to_one(e->twin()->data().mSegments);
+		if(!e->data().mSegments.empty() && !e->twin()->data().mSegments.empty())
+		{
+			if(e->data().mSegments.front().mFeatType < e->twin()->data().mSegments.front().mFeatType)
+				e->twin()->data().mSegments.clear();
+			else
+				e->data().mSegments.clear();
+		}
+	}
+
 	double	total = ioMap.number_of_faces() + ioMap.number_of_halfedges();
 	int		ctr = 0;
+
+	// Also, try to get same-type roads in same direction when possible.
+	
+	for(Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
+	if(he_has_any_roads(e))
+	if(prev_contig(e) == Pmwx::Halfedge_handle())
+	{
+		Pmwx::Halfedge_handle n1(e);
+		// start with e
+		Pmwx::Halfedge_handle n2 = next_contig(n1);
+		while(n2 != Pmwx::Halfedge_handle())
+		{
+			int ft_2 = get_he_feat_type(n2);
+			int ft_1 = get_he_feat_type(n1);
+			if(ft_1 == ft_2)
+			if(!gNetFeatures[ft_1].is_oneway)
+			if(!n2->data().HasRoads())
+				swap_he_road_dir(n2);
+		
+			n1 = n2;
+			n2 = next_contig(n1);
+		}
+	}
+	
+	
 
 	if (inProg) inProg(0, 1, "Calculating Road Types", 0.0);
 
@@ -136,10 +195,23 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	}
 #endif
 
+	/***************************************************************************************************
+	 * PICK BASIC ROAD REP TYPES FROM THE FORMULA
+	 ***************************************************************************************************/
+
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge, ++ctr)
 	{
+		if(edge->data().mMark || edge->twin()->data().mMark)
+			continue;
+		if(!he_has_any_roads(edge))
+			continue;
+
 		if (inProg && total && (ctr % 1000) == 0) inProg(0, 1, "Calculating Road Types", (double) ctr / total);
 
+		Pmwx::Halfedge_handle start(edge), p;
+		while((p=prev_contig(start)) != Pmwx::Halfedge_handle() && p != edge && he_has_any_roads(p) && get_he_feat_type(p) == get_he_feat_type(start))
+			start = p;
+				
 		double	x1 = CGAL::to_double(edge->source()->point().x());
 		double	y1 = CGAL::to_double(edge->source()->point().y());
 		double	x2 = CGAL::to_double(edge->target()->point().x());
@@ -154,43 +226,54 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 		double	tempE = inRain.value_linear(x2,y2);
 
 
-		double	dist = LonLatDistMeters(x1,y1,x2,y2);
-		if (dist <= 0.0) continue;
+//		double	dist = LonLatDistMeters(x1,y1,x2,y2);
+//		if (dist <= 0.0) continue;
 
-		double gradient = fabs(startE - endE) / dist;
+//		double gradient = fabs(startE - endE) / dist;
 		double urban = (urbanS + urbanE) * 0.5;
 		double rain = (rainS + rainE) * 0.5;
 		double temp = (tempS + tempE) * 0.5;
 
-		int zl = edge->face()->data().GetZoning();
-		int zr = edge->twin()->face()->data().GetZoning();
-
-		for (GISNetworkSegmentVector::iterator seg = edge->data().mSegments.begin(); seg != edge->data().mSegments.end(); ++seg)
+		while(start != Pmwx::Halfedge_handle() && !start->data().mMark && he_has_any_roads(start) && get_he_feat_type(start) == get_he_feat_type(edge))
 		{
-			// GRADIENT BRIDGES ARE TURNED OFF!!  We do NOT have the calculations
-			// to do these right. :-(
-//			bool bridge = false; // gradient > gNetFeatures[seg->mFeatType].max_gradient;
-//			if (edge->face()->IsWater() && edge->twin()->face()->IsWater())
-//				bridge = true;
 
+			int zl = start->face()->data().GetZoning();
+			int zr = start->twin()->face()->data().GetZoning();
 
-			seg->mRepType = NO_VALUE;
-			for (Feature2RepInfoTable::iterator p = gFeature2Rep.begin(); p != gFeature2Rep.end(); ++p)
+			Pmwx::Halfedge_handle h = start->data().HasRoads() ? start : start->twin();
+			if(h != start)
+				swap(zl,zr);
+
+			for (GISNetworkSegmentVector::iterator seg = h->data().mSegments.begin(); seg != h->data().mSegments.end(); ++seg)
 			{
-				Feature2RepInfo& r(p->second);
-				if(p->first == seg->mFeatType)
-				if(r.min_density == r.max_density || (r.min_density <= urban && urban <= r.max_density))
-				if(r.rain_min == r.rain_max || (r.rain_min <= rain && rain <= r.rain_max))
-				if(r.temp_min == r.temp_max || (r.temp_min <= temp && temp <= r.temp_max))
-				if(r.zoning_left == NO_VALUE || r.zoning_left == zl)
-				if(r.zoning_right == NO_VALUE || r.zoning_right == zr)
+				// GRADIENT BRIDGES ARE TURNED OFF!!  We do NOT have the calculations
+				// to do these right. :-(
+	//			bool bridge = false; // gradient > gNetFeatures[seg->mFeatType].max_gradient;
+	//			if (start->face()->IsWater() && start->twin()->face()->IsWater())
+	//				bridge = true;
+
+
+				seg->mRepType = NO_VALUE;
+				for (Feature2RepInfoTable::iterator p = gFeature2Rep.begin(); p != gFeature2Rep.end(); ++p)
 				{
-					seg->mRepType = p->second.rep_type;
+					Feature2RepInfo& r(*p);
+					if(r.feature == seg->mFeatType)
+					if(r.min_density == r.max_density || (r.min_density <= urban && urban <= r.max_density))
+					if(r.rain_min == r.rain_max || (r.rain_min <= rain && rain <= r.rain_max))
+					if(r.temp_min == r.temp_max || (r.temp_min <= temp && temp <= r.temp_max))
+					if(r.zoning_left.empty() || r.zoning_left.count(zl))
+					if(r.zoning_right.empty() ||r.zoning_right.count(zr))
+					{
+						seg->mRepType = r.rep_type;
+						break;
+					}
 				}
 			}
+			start->data().mMark = 1;
+			start->twin()->data().mMark = 1;
+			start = next_contig(start);
 		}
 	}
-
 	if (inProg) inProg(0, 1, "Calculating Road Types", 1.0);
 }
 
@@ -464,18 +547,6 @@ static void elevate_segments_to(GISNetworkSegmentVector& v, double h)
 	}
 }
 
-static void strip_segments_to_one(GISNetworkSegmentVector& v)
-{
-	if(v.size() < 2) return;
-	GISNetworkSegmentVector::iterator best = v.begin();
-	for(GISNetworkSegmentVector::iterator i = v.begin(); i != v.end(); ++i)
-		if(i->mFeatType < best->mFeatType)
-			best = i;
-	GISNetworkSegment_t keep = *best;
-	v.clear();
-	v.push_back(keep);
-}
-
 Pmwx::Vertex_handle apply_type_change_forward(Pmwx::Halfedge_handle he, int new_type, bool debug)
 {
 	if(get_he_rep_type(he) == new_type)
@@ -605,20 +676,42 @@ void check_junction_highways(Pmwx::Vertex_handle v, set<Pmwx::Vertex_handle>& ch
 
 void repair_network(Pmwx& io_map)
 {
-	// FIRST: cut down any duplicate data.  Road code really needs to NOT have vertically stacked crap!
-
-	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+	
+	// NEXT: same-direction optimizations...any time we have a contiguous "string" and the road direction
+	// is ping-ponging but for no reason (e.g. the "native" direction of a two-way is just bouncing up and back)
+	// normalize it.  That way contiguous type analysis done later has a prayer of working.
+	
+	for(Pmwx::Halfedge_iterator e = io_map.halfedges_begin(); e != io_map.halfedges_end(); ++e)
+	if(he_has_any_roads(e))
+	if(prev_contig(e) == Pmwx::Halfedge_handle())
 	{
-		strip_segments_to_one(e->data().mSegments);
-		strip_segments_to_one(e->twin()->data().mSegments);
-		if(!e->data().mSegments.empty() && !e->twin()->data().mSegments.empty())
+		Pmwx::Halfedge_handle n1(e);
+		// start with e
+		Pmwx::Halfedge_handle n2 = next_contig(n1);
+		while(n2 != Pmwx::Halfedge_handle())
 		{
-			if(e->data().mSegments.front().mFeatType < e->twin()->data().mSegments.front().mFeatType)
-				e->twin()->data().mSegments.clear();
-			else
-				e->data().mSegments.clear();
+			int rt_2 = get_he_rep_type(n2);
+			int rt_1 = get_he_rep_type(n1);
+			if(rt_1 != NO_VALUE && rt_2 != NO_VALUE)
+			{
+				bool rev_2 = get_he_with_roads(n2) != n2;
+				bool rev_1 = get_he_with_roads(n1) != n1;
+				if(rev_2 != rev_1)
+				{
+					if(IsTwinRoads(rt_1,rt_2))
+					{
+						set_he_rep_type(n2, rt_1);
+						swap_he_road_dir(n2);
+						//debug_mesh_line(cgal2ben(n2->source()->point()),cgal2ben(n2->target()->point()),1,0,0, 1,0,0);
+					}
+				}
+			}
+		
+			n1 = n2;
+			n2 = next_contig(n1);
 		}
 	}
+	
 
 	// NEXT: junction optimization...redo levels into junctions to minimize "weird shit".
 	// We are going to save any junctions that had a crash...do not even TRY to fix them until
@@ -829,6 +922,82 @@ void repair_network(Pmwx& io_map)
 		h2->data().mSegments.back().mSourceHeight = max(hs,ht);
 	}
 
+	// BRIDGE consolidation.  If we have a bridge and the road type is changing, well, that's just sort of silly.  We'd really
+	// like to take the road type of either of the on/off segments.  The "flying" part is up for grabs.
+
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+	{
+		bool has_road = he_has_any_roads(e) && get_he_street(e);
+		e->data().mMark = e->twin()->data().mMark = has_road;
+	}
+
+	for(Pmwx::Edge_iterator e = io_map.edges_begin(); e != io_map.edges_end(); ++e)
+	if(e->data().mMark)
+	{
+		Pmwx::Halfedge_handle he = get_he_with_roads(e);
+		list<Pmwx::Halfedge_handle>	strand;
+		double len = collect_contig<matches_street>(he, strand);
+
+		for(list<Pmwx::Halfedge_handle>::iterator r = strand.begin(); r != strand.end(); ++r)
+		{
+			(*r)->data().mMark = false;
+			(*r)->twin()->data().mMark = false;
+		}
+		
+		list<Pmwx::Halfedge_handle>::iterator s = strand.begin(), e, l;
+		while(s != strand.end())
+		{
+			while(s != strand.end() && get_he_is_on_ground(*s)) ++s;
+			if(s == strand.end())
+				break;
+			
+			e = s;
+			++e;
+			while(e != strand.end() && get_he_is_bridge(*e)) ++e;
+			
+			if(e != strand.end() && get_he_is_bridge_xon(*e)) ++e;
+			
+			// Consolidate type between [s..e)
+			
+			l = e;
+			--l;
+			
+			int rs = get_he_rep_type(*s);
+			int rl = get_he_rep_type(*l);
+			if(rs != rl)
+			{
+				int cr = 0, cl = 0;
+				for(list<Pmwx::Halfedge_handle>::iterator i = s; i != e; ++i)
+				{
+					int ri = get_he_rep_type(*i);
+					if(ri == rs) ++cr;
+					if(ri == rl) ++cl;
+				}
+				if(cl > cr)
+					swap(rl,rs);
+				
+				// assign rs to all in between
+				++s;
+				for(list<Pmwx::Halfedge_handle>::iterator i = s; i != l; ++i)
+				{
+					if(get_he_rep_type(*i) == rs)
+					{
+//						debug_mesh_line(cgal2ben((*i)->source()->point()),cgal2ben((*i)->target()->point()),0,1,0,0,1,0);
+					}
+					else
+					{
+						set_he_rep_type(*i, rs);
+//						debug_mesh_line(cgal2ben((*i)->source()->point()),cgal2ben((*i)->target()->point()),1,0,0, 1,0,0);
+					}
+				}
+				--s;
+//				debug_mesh_line(cgal2ben((*s)->source()->point()),cgal2ben((*s)->target()->point()),1,1,0,1,1,0);
+//				debug_mesh_line(cgal2ben((*l)->source()->point()),cgal2ben((*l)->target()->point()),0,0,1,0,0,1);
+			}
+			
+			s = e;
+		}		
+	}
 
 
 	// FORK CONTROL/CHANGE CONTROL.  First: run fork control over every vertex once.
@@ -942,6 +1111,149 @@ void repair_network(Pmwx& io_map)
 			{
 //				debug_mesh_line(cgal2ben((*r)->source()->point()),cgal2ben((*r)->target()->point()),0,0,1,1,0,0);
 			}
+		}
+	}
+
+}
+
+void MarkFunkyRoadIssues(Pmwx& ioMap)
+{
+	int total_bad = 0;
+	int total_hplug = 0;
+	int total_mid_change = 0;
+	int total_mid_change_size = 0;
+	map<pair<int,int>, int> histo;
+	
+	map<vector<int>,int>	total_histo_feat[5], total_histo_rep[5];
+	
+	for(Pmwx::Vertex_handle v = ioMap.vertices_begin(); v != ioMap.vertices_end(); ++v)
+	if(!v->is_isolated())
+	{
+		int s = score_for_junction(v);
+		if(s >= E_CRSH)
+		{
+			#if OPENGL_MAP
+			debug_mesh_point(cgal2ben(v->point()),1,0,0);
+			#endif
+			++total_bad;
+		}
+		else if(s >= E_HPLG)
+		{
+			#if OPENGL_MAP
+			debug_mesh_point(cgal2ben(v->point()),1,1,0);
+			#endif
+			++total_hplug;
+		}
+		map<int,vector<Pmwx::Halfedge_handle> > ljunc;
+		levelize_junction(v,ljunc);
+		for(map<int,vector<Pmwx::Halfedge_handle> >::iterator l = ljunc.begin(); l != ljunc.end(); ++l)
+		{
+			vector<int> feat, rep;
+			for(vector<Pmwx::Halfedge_handle>::iterator he = l->second.begin(); he != l->second.end(); ++he)
+			{
+				int rt = get_he_rep_type(*he);
+				int ft = get_he_feat_type(*he);
+				
+				if(ft != powerline_Generic)
+				{
+					feat.push_back(ft);
+					rep.push_back(rt);
+				}
+			}
+			
+			Pmwx_Coastal_t cat = pmwx_categorize(v);
+			if(cat != pmwx_WetBoundary && cat != pmwx_DryBoundary && cat != pmwx_CoastalBoundary && cat != pmwx_Unbounded)
+			if(!feat.empty())
+			{
+				sort(feat.begin(),feat.end());
+				sort(rep.begin(),rep.end());
+				DebugAssert(feat.size() == rep.size());
+				int my_bucket = feat.size() - 1;
+				if(my_bucket > 4) my_bucket = 4;
+				
+				if(feat.size() != 2 || feat[0] != feat[1])
+					total_histo_feat[my_bucket][feat]++;
+				if(rep.size() != 2 || rep[0] != rep[1])
+					total_histo_rep[my_bucket][rep]++;
+			}
+			if(l->second.size() == 2)
+			{
+				Vector2	v1(cgal2ben(l->second[0]->source()->point()),cgal2ben(l->second[0]->target()->point()));
+				Vector2	v2(cgal2ben(l->second[1]->source()->point()),cgal2ben(l->second[1]->target()->point()));
+				v1.normalize();
+				v2.normalize();
+				int r1 = get_he_rep_type(l->second[0]);
+				int r2 = get_he_rep_type(l->second[1]);
+				if(v1.dot(v2) > 0.7 || v1.dot(v2) < -0.7)				
+				if(r1 != r2 && get_he_street(l->second[0]) && get_he_street(l->second[1]))
+				{
+					pair<int,int> offender(r1,r2);
+					if(offender.first > offender.second)
+						swap(offender.first,offender.second);
+					histo[offender]++;
+					++total_mid_change;
+					
+					if(gNetReps[r1].semi_l != gNetReps[r2].semi_l ||
+					   gNetReps[r1].semi_r != gNetReps[r2].semi_r)
+					{
+						++total_mid_change_size;
+						#if OPENGL_MAP						
+						debug_mesh_point(cgal2ben(v->point()),1,0,1);
+						#endif
+					}
+					else
+					{
+						#if OPENGL_MAP
+						debug_mesh_point(cgal2ben(v->point()),0,1,1);
+						#endif
+					}
+				}
+			}
+		}
+		
+	}
+	
+	multimap<int,pair<int,int> > rhisto;
+	multimap<int,vector<int> >	feat_histo[5], rep_histo[5];
+	int totals[5];
+	int total_fubar = reverse_histo(histo, rhisto);
+	for(int n = 0; n <5; ++n)
+	{
+		totals[n] = reverse_histo(total_histo_feat[n], feat_histo[n]);
+					reverse_histo(total_histo_rep[n], rep_histo[n]);
+	}
+	for(map<pair<int,int>, int>::iterator i = histo.begin(); i != histo.end(); ++i)
+	rhisto.insert(multimap<int,pair<int,int> >::value_type(i->second,i->first));
+	
+	printf("Bad: %d, highway plugs: %d, mid-seg changes :%d (%d with size change).\n", total_bad, total_hplug, total_mid_change, total_mid_change_size);
+	printf("Degree 2 locals with low corner.\n");
+	for(multimap<int,pair<int, int> >::iterator r = rhisto.begin(); r != rhisto.end(); ++r)
+		printf("%d: %s/%s\n", r->first,FetchTokenString(r->second.first),FetchTokenString(r->second.second));
+		
+	for(int n = 0; n < 5; ++n)
+	{
+		printf("----- degree %d (%d) ---- \n", n+1, totals[n]);
+		
+		int cutoff = totals[n] / 500;
+		if(cutoff < 5) cutoff = 5;
+		
+		printf("Total junction histo: feature type (at least %d)...\n", cutoff);
+		for(multimap<int,vector<int> >::iterator f = feat_histo[n].begin(); f != feat_histo[n].end(); ++f)
+		if(f->first >= cutoff)
+		{
+			printf("%d:",f->first);
+			for(vector<int>::iterator t = f->second.begin(); t != f->second.end(); ++t)
+				printf(" %s", FetchTokenString(*t));
+			printf("\n");
+		}
+		printf("Total junction histo: rep type (at least %d)...\n", cutoff);
+		for(multimap<int,vector<int> >::iterator f = rep_histo[n].begin(); f != rep_histo[n].end(); ++f)
+		if(f->first >= cutoff)
+		{
+			printf("%d:",f->first);
+			for(vector<int>::iterator t = f->second.begin(); t != f->second.end(); ++t)
+				printf(" %s", FetchTokenString(*t));
+			printf("\n");
 		}
 	}
 

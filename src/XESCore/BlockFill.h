@@ -41,6 +41,7 @@ bool	init_block(
 
 bool	apply_fill_rules(
 					int						zoning,
+					Pmwx::Face_handle		orig_face,
 					Block_2&				block,
 					CoordTranslator2&		translator);
 
@@ -56,5 +57,16 @@ bool	process_block(
 					CDT&					mesh,
 					const DEMGeo&			forest_dem,
 					ForestIndex&			forest_index);
+
+
+
+
+void block_pts_from_ccb(
+			Pmwx::Ccb_halfedge_circulator	he, 
+			CoordTranslator2&				translator, 
+			vector<block_pt>&				pts,
+			double							dp_err_mtr,
+			bool							is_hole);
+
 
 #endif /* BlockFill_H */

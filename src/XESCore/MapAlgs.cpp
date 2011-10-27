@@ -1658,7 +1658,7 @@ void	CalcBoundingBox(
 }
 
 
-double	GetMapFaceAreaMeters(const Face_handle f)
+double	GetMapFaceAreaMeters(const Face_handle f, Bbox2 * out_bounds)
 {
 	if (f->is_unbounded()) return -1.0;
 	Polygon2	outer;
@@ -1672,6 +1672,11 @@ double	GetMapFaceAreaMeters(const Face_handle f)
 	CoordTranslator2 trans;
 
 	CreateTranslatorForPolygon(outer, trans);
+
+	if(out_bounds)
+	{
+		*out_bounds = Bbox2(trans.mSrcMin,trans.mSrcMax);
+	}
 
 	for (int n = 0; n < outer.size(); ++n)
 	{

@@ -50,11 +50,11 @@ struct BLOCK_face_data {
 	BLOCK_face_data() : usage(usage_Empty), feature(0) { }
 	BLOCK_face_data(int u,int f) : usage(u), feature(f) { }
 	int		usage;
-	int		feature;
+	int		feature;			// Road feature type for roads?
 //	int		pre_placed;
 	Point2	center;
 	double	heading;
-	
+	Vector2	major_axis;
 };
 
 typedef Arr_seg_traits_					Block_traits_2;
@@ -79,6 +79,25 @@ inline bool operator<(const Block_2::Face_const_handle& lhs, const Block_2::Face
 inline bool operator<(const Block_2::Vertex_const_handle& lhs, const Block_2::Vertex_const_handle& rhs)		{	return &*lhs < &*rhs;	}
 inline bool operator<(const Block_2::Halfedge_const_handle& lhs, const Block_2::Halfedge_const_handle& rhs)	{	return &*lhs < &*rhs;	}
 
+
+
+struct block_pt {
+	bool operator==(const block_pt& rhs) const { return loc == rhs.loc; }
+	Point2			loc;			// This is our original location on 
+	Point2			offset_prev1;	// This is our offset location parallel to our PREVIOUS segment.
+	Point2			offset_next1;	// This is our offset location parallel to our NEXT segment.
+	Point2			offset_prev2;	// This is our offset location parallel to our PREVIOUS segment.
+	Point2			offset_next2;	// This is our offset location parallel to our NEXT segment.
+	Point2			offset_reflex1[3];// If we have a reflex vertex, up to 3 points form the "shape" around it.
+	Point2			offset_reflex2[3];// If non-reflex but non-discon, this gives us one useful "mid" point.
+	bool			locked;			// Is this point locked.  We lock any point that has high internal valence.
+	bool			antenna;		// Is the side whose SOURCE is this pt an antenna?
+	bool			discon;			// Discontinuity in road or edge type - requires a "hard cap" between this segment and the next one.
+	bool			reflex;
+	pair<int,bool>	edge_type;		// Edge type OUTGOING from this point.  Flag is true if reversed (twin is source)
+	float			dot;
+	Halfedge_handle	orig;
+};
 
 
 

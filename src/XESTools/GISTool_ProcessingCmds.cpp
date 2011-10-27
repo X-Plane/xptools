@@ -49,6 +49,7 @@
 #include "RTree2.h"
 #include "MapRaster.h"
 #include "MapHelpers.h"
+#include "ForestTables.h"
 
 #define DEBUG_SHOW_FOREST_POLYS 0
 
@@ -126,7 +127,7 @@ static int DoBurnAirports(const vector<const char *>& args)
 static int DoZoning(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating zoning info...\n");
-	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_ParkType], gDem[dem_Slope],gApts,Pmwx::Face_handle(), gProgress);
+	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_ParkType], gDem[dem_Slope],gApts,	Pmwx::Face_handle(), 	gProgress);
 	return 0;
 }
 
@@ -180,14 +181,15 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 {
 
 	Pmwx	forest_stands;
-	
+
 	const DEMGeo& forests(gDem[dem_ForestType]);
+
 	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, NO_VALUE, forest_stands,NULL);
 	SimplifyMap(gMap, false, gProgress);
 
 	arrangement_simplifier<Pmwx> simplifier;
 	simplifier.simplify(forest_stands, 0.002, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
-	
+
 	ForestIndex								forest_index;
 	vector<ForestIndex::item_type>			forest_faces;
 	forest_faces.reserve(forest_stands.number_of_faces());
@@ -253,6 +255,18 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	trim_map(gMap);
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
 
+
+	map<int,int>	asset_histo;
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	for(GISPolyObjPlacementVector::iterator i = f->data().mPolyObjs.begin(); i != f->data().mPolyObjs.end(); ++i)
+	if(!IsForestType(i->mRepType))
+		asset_histo[i->mRepType]++;
+
+	multimap<int,int>	rh;
+	int ta = reverse_histo(asset_histo,rh);
+	printf("Total art assets: %d\n", ta);
+	for(multimap<int,int>::iterator r = rh.begin(); r != rh.end(); ++r)
+		printf("%d (%f): %s\n", r->first, (float) (r->first * 100.0) / (float) ta, FetchTokenString(r->second));
 	
 //	if (gVerbose)	printf("Instantiating objects...\n");
 //	vector<PreinsetFace>	insets;
@@ -348,13 +362,13 @@ static int DoAssignLandUse(const vector<const char *>& args)
 	if (gVerbose) printf("Assigning land use...\n");
 	AssignLandusesToMesh(gDem,gTriangulationHi,args[0],gProgress);
 
-	map<int, int> lus;
-	int t = CalcMeshTextures(gTriangulationHi,lus);
-	multimap<int,int> sorted;
-	for(map<int,int>::iterator l = lus.begin(); l != lus.end(); ++l)
-		sorted.insert(multimap<int,int>::value_type(l->second,l->first));
-	for(multimap<int,int>::iterator s = sorted.begin(); s != sorted.end(); ++s)
-		printf("%f (%d): %s\n", (float) s->first / (float) t, s->first, FetchTokenString(s->second));
+//	map<int, int> lus;
+//	int t = CalcMeshTextures(gTriangulationHi,lus);
+//	multimap<int,int> sorted;
+//	for(map<int,int>::iterator l = lus.begin(); l != lus.end(); ++l)
+//		sorted.insert(multimap<int,int>::value_type(l->second,l->first));
+//	for(multimap<int,int>::iterator s = sorted.begin(); s != sorted.end(); ++s)
+//		printf("%f (%d): %s\n", (float) s->first / (float) t, s->first, FetchTokenString(s->second));
 
 	return 0;
 }

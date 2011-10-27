@@ -40,4 +40,6 @@ void	repair_network(Pmwx& io_map);
 int score_for_junction(Pmwx::Vertex_handle v);
 int optimize_one_junction(Pmwx::Vertex_handle v);
 
+void MarkFunkyRoadIssues(Pmwx& ioMap);
+
 #endif /* NetAlgs_H */

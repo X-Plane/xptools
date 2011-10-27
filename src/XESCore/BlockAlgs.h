@@ -57,4 +57,10 @@ void clean_block(Block_2& block);
 
 void simplify_block(Block_2& io_block, double max_err);
 
+void find_major_axis(vector<block_pt>&	pts,
+				Segment2 *			out_segment,
+				Vector2 *			out_major,
+				Vector2 *			out_minor,
+				double				bounds[4]);
+
 #endif /* BlockAlgs_H */

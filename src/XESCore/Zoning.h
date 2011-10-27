@@ -64,7 +64,7 @@ struct ZoningRule_t {
 	float		forest_avg_min,	forest_avg_max;			// Average forest level
 	float		park_avg_min,	park_avg_max;			// Average park level
 	float		bldg_min,		bldg_max;				// Maximum building height (0 if none)
-
+	float		ang_min,		ang_max;				// Angle turn range.  Left turns are positive.
 	int			req_cat1;
 	float		req_cat1_min;
 	int			req_cat2;
@@ -73,6 +73,14 @@ struct ZoningRule_t {
 	int			req_water;								// Are we adjacent to water (not counting holes/lakes)
 	int			req_train;								// Train tracks on outer border?
 	int			req_road;								// Roads with direct access (primary/secondary, not highway or ramp)
+
+	float		min_side_len;							// Side length constraints
+	float		max_side_len;
+	float		block_err_max;							// Maximum acceptable block error
+	float		min_side_major;							// Bounds range on the major and minor block axes
+	float		max_side_major;
+	float		min_side_minor;
+	float		max_side_minor;
 
 	set<int>	require_features;						// One of these features MUST be present or we can't use the rule.
 	set<int>	consume_features;						// These features get consumed by the act of zoning.
@@ -101,7 +109,7 @@ extern LandFillRuleTable			gLandFillRules;
 
 struct EdgeRule_t {
 	int			zoning;
-	int			road_type;
+	int			road_type;		
 	int			resource_id;
 	float		width;
 };
@@ -111,13 +119,22 @@ struct FillRule_t {
 	
 	int			zoning;									// Base zoning we act upon
 	
-	float		size_min,		size_max;				// These params limit the kind of block we act upon
-	int			side_min,		side_max;
-	float		slope_min,		slope_max;
+	float		min_side_len;							// Side length constraints
+	float		max_side_len;
+	float		block_err_max;							// Maximum acceptable block error
+	float		min_side_major;							// Bounds range on the major and minor block axes
+	float		max_side_major;
+	float		min_side_minor;
+	float		max_side_minor;
+	float		ang_min,ang_max;						// Angle turn range.  Left turns are positive.
+
+//	float		slope_min,		slope_max;
+//	
+//	int			hole_ok;								// Okay to have holes or interruptions in our block?
 	
-	int			hole_ok;								// Okay to have holes or interruptions in our block?
-	
-	int			resource_id;
+	int			agb_id;
+	int			fac_id;
+	int			ags_id;
 	
 	
 //	float		bldg_min,		bldg_max;
@@ -152,5 +169,7 @@ void	ZoneManMadeAreas(
 				const AptVector&	inApts,
 				Pmwx::Face_handle	inDebug,
 				ProgressFunc		inProg);
+				
+FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f);
 
 #endif /* ZONING_H */

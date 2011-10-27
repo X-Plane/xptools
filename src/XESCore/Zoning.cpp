@@ -35,8 +35,14 @@
 #include "ObjPlacement2.h"
 #include "ConfigSystem.h"
 #include "MapTopology.h"
-//#include "GISTool_Globals.h"
+#include "GISTool_Globals.h"
 #include "MeshAlgs.h"
+#include "DemAlgs.h"
+#include "GISUtils.h"
+#include "CompGeomUtils.h"
+#include "BlockFill.h"
+#include "BlockAlgs.h"
+#include "MathUtils.h"
 
 // NOTE: all that this does is propegate parks, forestparks, cemetaries and golf courses to the feature type if
 // it isn't assigned.
@@ -45,6 +51,7 @@
 // a single tall building in a block from turning into a sea of tall buildings.
 #define MAX_OBJ_SPREAD 100000
 
+#define ZONING_HISTO 0
 #define ZONING_METRICS 0
 
 ZoningRuleTable				gZoningRules;
@@ -72,27 +79,52 @@ static bool ReadLandClassRule(const vector<string>& tokens, void * ref)
 static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 {
 	EdgeRule_t e;
-	if(TokenizeLine(tokens," eeef",&e.zoning, &e.road_type, &e.resource_id, &e.width) != 5) return false;
-	if(gZoningInfo.count(e.zoning) == 0)
-		printf("WARNING: zoning type %s, required in rule for %s is unknown.\n",
-			FetchTokenString(e.zoning),FetchTokenString(e.resource_id));
-	gEdgeRules.push_back(e);
+	set<int>	zoning_list;
+	set<int>	road_list;
+	if(TokenizeLine(tokens," SSef",&zoning_list, &road_list, &e.resource_id, &e.width) != 5) return false;
+		
+	for(set<int>::iterator z = zoning_list.begin(); z != zoning_list.end(); ++z)	
+	for(set<int>::iterator r = road_list.begin(); r != road_list.end(); ++r)
+	{
+		e.road_type = *r;
+		e.zoning = *z;
+		if(gZoningInfo.count(e.zoning) == 0)
+			printf("WARNING: zoning type %s, required in edge rule for %s is unknown.\n",
+				FetchTokenString(e.zoning),FetchTokenString(e.resource_id));
+		gEdgeRules.push_back(e);
+	}
 	return true;
 }
 
 static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
-	if(TokenizeLine(tokens, " effiiffie", &r.zoning,
-			&r.size_min, &r.size_max,
-			&r.side_min, &r.side_max,
-			&r.slope_min,&r.slope_max,
-			&r.hole_ok,
-			&r.resource_id) != 10)  return false;
+	if(TokenizeLine(tokens, " efffffffffeee",	
+			&r.zoning,
+			&r.min_side_len, &r.max_side_len,
+			&r.block_err_max,
+			&r.min_side_major,&r.max_side_major,
+			&r.min_side_minor,&r.max_side_minor,
+			&r.ang_min,&r.ang_max,
+
+			&r.agb_id,
+			&r.fac_id,
+			&r.ags_id) != 14)
+			return false;
 	
 	if(gZoningInfo.count(r.zoning) == 0)
-		printf("WARNING: zoning type %s, required in rule for %s is unknown.\n",
-			FetchTokenString(r.zoning),FetchTokenString(r.resource_id));
+		printf("WARNING: zoning type %s, required in fill rule for %s/%s/%s is unknown.\n",
+			FetchTokenString(r.zoning),
+			FetchTokenString(r.agb_id),
+			FetchTokenString(r.fac_id),
+			FetchTokenString(r.ags_id));
+			
+	if(r.agb_id != NO_VALUE && strstr(FetchTokenString(r.agb_id),".agb") == NULL)
+				printf("WARNING: zoning type %s with AGB %s - illegal agb.\n", FetchTokenString(r.zoning),FetchTokenString(r.agb_id));
+	if(r.fac_id != NO_VALUE && strstr(FetchTokenString(r.fac_id),".fac") == NULL)
+				printf("WARNING: zoning type %s with FAC %s - illegal fac.\n", FetchTokenString(r.zoning),FetchTokenString(r.fac_id));
+	if(r.ags_id != NO_VALUE && strstr(FetchTokenString(r.ags_id),".ags") == NULL)
+				printf("WARNING: zoning type %s with AGS %s - illegal ags.\n", FetchTokenString(r.zoning),FetchTokenString(r.ags_id));
 	gFillRules.push_back(r);
 	return true;
 }
@@ -103,6 +135,9 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 	int				zoning;
 	if(TokenizeLine(tokens," efiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_veg,&info.terrain_type) != 8)
 		return false;
+	// optimization: if slope will never filter out AND we don't need LU, set slope to 0 to turn the mesh check off entirely!
+	if(info.max_slope == 90.0 && info.need_lu == 0)
+		info.max_slope = 0.0;
 	if(gZoningInfo.count(zoning) != 0)
 	{
 		printf("WARNING: duplicate zoning info for %s\n", FetchTokenString(zoning));
@@ -115,7 +150,7 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 {
 	ZoningRule_t	r;
-	if(TokenizeLine(tokens," effffffffffffefefiiiiiSSe",
+	if(TokenizeLine(tokens," effffffffffffffefefiiiiifffffffSSe",
 		&r.terrain,
 		&r.size_min,			&r.size_max,
 		&r.slope_min,			&r.slope_max,
@@ -123,6 +158,7 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 		&r.forest_avg_min,		&r.forest_avg_max,
 		&r.park_avg_min,		&r.park_avg_max,
 		&r.bldg_min,			&r.bldg_max,
+		&r.ang_min,				&r.ang_max,
 
 		&r.req_cat1, &r.req_cat1_min,
 		&r.req_cat2, &r.req_cat2_min,
@@ -132,9 +168,16 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 		&r.req_road,
 		&r.hole_ok,
 		&r.crud_ok,
+		&r.block_err_max,
+		&r.min_side_len,
+		&r.max_side_len,
+		&r.min_side_major,
+		&r.max_side_major,
+		&r.min_side_minor,
+		&r.max_side_minor,
 		&r.require_features,
 		&r.consume_features,
-		&r.zoning) != 26)	return false;
+		&r.zoning) != 26+7+2)	return false;
 
 	r.slope_min = 1.0 - cos(r.slope_min * DEG_TO_RAD);
 	r.slope_max = 1.0 - cos(r.slope_max * DEG_TO_RAD);
@@ -227,14 +270,22 @@ static int		PickZoningRule(
 						float		forest_avg,
 						float		park_avg,
 						float		bldg_hgt,
+						float		min_ang,
+						float		max_ang,
 						int			cat1,
 						float		rat1,
 						int			cat2,
 						float		rat2,
-						int			has_water,
-						int			has_train,
-						int			has_road,
-						int			has_hole,
+						int			has_water,			// 0 = none, 1 = some, 2 = all
+						int			has_train,			// 0 = none, 1 = some, 2 = all
+						int			has_road,			// 0 = none, 1 = some, 2 = all
+						int			has_hole,			// 0 = no, 1 = yes
+
+						float		block_err,			// Worst distance in meters of any point from the "frame" of the supporting grid block structure.  Low for very REGULAR blocks.
+						float		short_side,			// Length in meters of the shortest side.
+						float		long_side,			// Length  in meters of the longest side.
+						float		major_length,		// Length along the "long" axis of the block
+						float		minor_length,		// Length along the "short" axis of the block.
 						set<int>&	features)
 {
 	for(ZoningRuleTable::const_iterator r = gZoningRules.begin(); r != gZoningRules.end(); ++r)
@@ -246,14 +297,19 @@ static int		PickZoningRule(
 		if(check_rule(r->forest_avg_min, r->forest_avg_max, forest_avg))
 		if(check_rule(r->park_avg_min, r->park_avg_max, park_avg))
 		if(check_rule(r->bldg_min, r->bldg_max, bldg_hgt))
+		if(r->ang_min == r->ang_max || (r->ang_min < min_ang && max_ang < r->ang_max))
 		if(r->req_cat1 == NO_VALUE || (r->req_cat1 == cat1 && r->req_cat1_min <= rat1))
 		if(r->req_cat2 == NO_VALUE || cat2 == NO_VALUE || (r->req_cat2 == cat2 && r->req_cat2_min <= rat2))
-		if(has_water || !r->req_water)
-		if(has_train || !r->req_train)
-		if(has_road || !r->req_road)
+		if(has_water >= r->req_water)
+		if(has_train >= r->req_train)
+		if(has_road >= r->req_road)
 		if(!has_hole || r->hole_ok)		
+		if(block_err <= r->block_err_max || r->block_err_max == 0.0)
+		if(check_rule(r->min_side_major,r->max_side_major,major_length))
+		if(check_rule(r->min_side_minor,r->max_side_minor,minor_length))
+		if(r->min_side_len  == r->max_side_len || (r->min_side_len <= short_side && long_side <= r->max_side_len))
 		if(r->require_features.empty() || any_match(r->require_features, features))
-		if(r->crud_ok || all_match(r->consume_features, features))
+		if(r->crud_ok || is_subset(features, r->consume_features))
 		{
 			remove_these(features, r->consume_features);
 			return r->zoning;
@@ -354,7 +410,7 @@ int evaluate_he(Pmwx::Halfedge_handle he)
 	for(i = he->twin()->data().mSegments.begin(); i != he->twin()->data().mSegments.end(); ++i)
 		if(evaluator(i->mFeatType))
 			return 1;
-	
+	return 0;
 }
 
 
@@ -363,6 +419,8 @@ struct is_same_terrain_p {
 	is_same_terrain_p(int terrain) : terrain_(terrain) { }
 	bool operator()(Face_handle f) const { return !f->is_unbounded() && f->data().mTerrainType == terrain_; } 
 };
+
+
 
 void	ColorFaces(set<Face_handle>&	io_faces);
 
@@ -383,10 +441,32 @@ void	ZoneManMadeAreas(
 	int total = ioMap.number_of_faces() * 2;
 	int check = total / 100;
 	int ctr = 0;
+
+#if ZONING_HISTO
+	map<int,int>	zone_count;
+	map<int,double>	zone_area;
+#endif
 	
 #if ZONING_METRICS
 	map<int, map<int, int> > slope_zoning;
 #endif	
+
+	/*****************************************************************************
+	 * PRE-COMP - DERIVE SOME LANDUSE INFO
+	 *****************************************************************************/
+	DEMGeo	urban_density_from_lu(inLanduse);
+	for(DEMGeo::iterator i = urban_density_from_lu.begin(); i != urban_density_from_lu.end(); ++i)
+	{
+		LandClassInfoTable::iterator lu = gLandClassInfo.find(*i);
+		if(lu == gLandClassInfo.end())
+			*i = 0;
+		else
+			*i = lu->second.urban_density;
+	}
+	
+	GaussianBlurDEM(urban_density_from_lu, 1.0);
+	
+	gDem[dem_Wizard] = urban_density_from_lu;
 
 	/*****************************************************************************
 	 * PASS 1 - ZONING ASSIGNMENT VIA LAD USE DATA + FEATURES
@@ -398,8 +478,11 @@ void	ZoneManMadeAreas(
 	{
 		PROGRESS_CHECK(inProg, 0, 3, "Zoning terrain...", ctr, total, check)
 
-		double mfam = GetMapFaceAreaMeters(face);
+		//--------------------------------------------------------------------------------------------------------------------------------
+		// BASIC BLOCK INFO - AREA, RASTER FEATURES
+		//--------------------------------------------------------------------------------------------------------------------------------
 
+		double mfam = GetMapFaceAreaMeters(face);
 		double	max_height = 0.0;
 		set<int>	my_pt_features;
 
@@ -419,17 +502,35 @@ void	ZoneManMadeAreas(
 		}
 	
 		int has_water = 0;
+		int has_non_water = 0;
 		int has_train = 0;
+		int	has_non_train = 0;
 		int has_local = 0;		
+		int has_non_local = 0;
+		Bbox2 face_extent;
 	
 		Pmwx::Ccb_halfedge_circulator circ, stop;
 		circ = stop = face->outer_ccb();
 		do {
-			if(evaluate_he<Road_IsTrain>(circ)) has_train = true;
-			if(evaluate_he<Road_IsLocal>(circ) || 
-				evaluate_he<Road_IsMainDrag>(circ)) has_local = true;			
-			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater()) has_water = 1;
+			face_extent += cgal2ben(circ->source()->point());
+			if(evaluate_he<Road_IsTrain>(circ)) 
+				has_train = 1;
+			else
+				has_non_train = 1;
+			if((evaluate_he<Road_IsLocal>(circ) || evaluate_he<Road_IsMainDrag>(circ)) &&
+				(circ->data().HasGroundRoads() || circ->twin()->data().HasGroundRoads()))
+				has_local = 1;			
+			else
+				has_non_local = 1;
+			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater()) 
+				has_water = 1;
+			else
+				has_non_water;
 		} while (++circ != stop);
+
+		if(has_water && !has_non_water) has_water = 2;
+		if(has_train && !has_non_train) has_train = 2;
+		if(has_local && !has_non_local)	has_local = 2;
 
 		PolyRasterizer<double>	r;
 		int x, y, x1, x2;
@@ -447,14 +548,20 @@ void	ZoneManMadeAreas(
 					float e = inLanduse.get(x,y);
 					float f = inForest.get(x,y);
 					float p = inPark.get(x,y);
+					float d = urban_density_from_lu.get(x,y);
 					count++;
+
+					total_urban += d;
 
 					if(gLandClassInfo.count(e))
 					{
 						LandClassInfo_t& i(gLandClassInfo[e]);
 						histo[i.category]++;
-						total_urban += i.urban_density;
 						total_forest += i.veg_density;						
+						
+						// THIS IS INTENTIONAL!  We are ONLY accepting park raster points that CONVERT
+						// urban to park.  The reason: a giant state forest is tagged "forest park" in OSM
+						// but does NOT get special zoning treatment.
 						if(p != NO_VALUE)
 							total_park += 1.0;
 					} 
@@ -463,8 +570,6 @@ void	ZoneManMadeAreas(
 						histo[terrain_Natural]++;
 						if(f != NO_VALUE)
 							total_forest += 1.0;
-//						if(p != NO_VALUE)
-//							total_park += 1.0;
 					}
 
 				}
@@ -480,14 +585,15 @@ void	ZoneManMadeAreas(
 			float e = inLanduse.xy_nearest(any.x(),any.y());
 			float f = inForest.xy_nearest(any.x(),any.y());
 			float p = inPark.xy_nearest(any.x(),any.y());
+			float d = urban_density_from_lu.value_linear(any.x(), any.y());
 
 			count++;
 
+			total_urban += d;
 			if(gLandClassInfo.count(e))
 			{
 				LandClassInfo_t& i(gLandClassInfo[e]);
 				histo[i.category]++;
-				total_urban += i.urban_density;
 				total_forest += i.veg_density;			
 				if(p != NO_VALUE)
 					total_park += 1.0;
@@ -497,8 +603,6 @@ void	ZoneManMadeAreas(
 				histo[terrain_Natural]++;
 				if(f != NO_VALUE)
 					total_forest += 1.0;
-				if(p != NO_VALUE)
-					total_park += 1.0;
 			}
 
 		}
@@ -534,14 +638,123 @@ void	ZoneManMadeAreas(
             float s = inSlope.xy_nearest(any.x(),any.y());
             max_slope = s;
         }
+
+		//--------------------------------------------------------------------------------------------------------------------------------
+		// DETAILED EXAMINATION: VECTOR ANALYSIS IN METRIC SPACE
+		//--------------------------------------------------------------------------------------------------------------------------------
+
+
+		CoordTranslator2	trans;
+		CreateTranslatorForBounds(face_extent,trans);
+		vector<block_pt>		outer_border;
+		block_pts_from_ccb(face->outer_ccb(), trans, outer_border, 1.0,false);
+
+		Segment2	major;
+		double	bounds[4];
+		Vector2	v_x,v_y;
+		
+		find_major_axis(outer_border, &major,&v_x,&v_y,bounds);
+
+//		debug_mesh_line(trans.Reverse(major.p1 + v_y),trans.Reverse(major.p2 + v_y),1,0,0,1,0,0);
   
-		Polygon_with_holes_2	ra;
+		double max_err = 0.0;
 
-		GetTotalAreaForFaceSet(face,ra);
-
+		double short_side = sqrt(major.squared_length());
+		double long_side = short_side;
+		
+		for(vector<block_pt>::iterator p = outer_border.begin(); p != outer_border.end(); ++p)
+		{
+			vector<block_pt>::iterator n(p);
+			++n;
+			if(n == outer_border.end()) n = outer_border.begin();
+			double slen = sqrt(p->loc.squared_distance(n->loc));
+			short_side = min(short_side,slen);
+			long_side = max(long_side,slen);
+		
+			double cx = v_x.dot(Vector2(p->loc));
+			double cy = v_y.dot(Vector2(p->loc));
+			double x_err = min(fabs(cx-bounds[0]),fabs(cx-bounds[2]));
+			double y_err = min(fabs(cy-bounds[1]),fabs(cy-bounds[3]));
+			max_err = max(max_err,min(x_err,y_err));
+		}
+		
+		double short_axis_length = fabs(bounds[3] - bounds[1]);
+		double long_axis_length = fabs(bounds[2] - bounds[0]);
+		
+		DebugAssert(long_axis_length >= short_axis_length);
+		
+		float min_angle = 180.0;
+		float max_angle = -180.0;
+		
+		for(int i = 0; i < outer_border.size(); ++i)
+		{
+			int j = (i + 1) % outer_border.size();
+			int k = (i + 2) % outer_border.size();
+			Vector2	v1(outer_border[i].loc,outer_border[j].loc);
+			Vector2	v2(outer_border[j].loc,outer_border[k].loc);
+			v1.normalize();
+			v2.normalize();
+			float ang = doblim(acos(doblim(v1.dot(v2),-1.0,1.0)) * RAD_TO_DEG,-180.0,180.0);
+			if(v1.right_turn(v2))
+				ang = -ang;
+			if(outer_border[i].loc == outer_border[k].loc)
+				ang = -180.0;
 			
-		bool has_holes = ra.has_holes();
-		int num_sides = ra.outer_boundary().size();
+			// Nearly straight angle AND a road size change?  Assume we're going to get a "jaggy" and be a bit screwed.
+			if(outer_border[i].edge_type != outer_border[j].edge_type && (ang > -30 && ang < 30))
+			{
+				//debug_mesh_point(trans.Reverse(outer_border[j].loc),1,0,0);
+				min_angle = min(ang-90.0f,min_angle);
+				max_angle = max(ang+90.0f,max_angle);
+
+				min_angle = max(min_angle,-180.0f);
+				max_angle = min(max_angle, 180.0f);
+			}
+						
+			min_angle = min(ang,min_angle);
+			max_angle = max(ang,max_angle);
+			
+		}
+		
+		
+//		Point2	c = trans.Forward(face_extent.centroid());
+  
+//		if(max_err < 1.0)// && max_y_err < 2.0)
+//			debug_mesh_point(trans.Reverse(c),1,1,0);
+//		else
+//			debug_mesh_point(trans.Reverse(c),1,0,0);
+
+//		face->data().mParams[af_AGErrX] = max_err;
+//		face->data().mParams[af_AGErrY] = max_y_err;
+
+//		if(outer_border.size() > 4)
+//			debug_mesh_point(trans.Reverse(c),1,0,0);
+//		else
+//			debug_mesh_point(trans.Reverse(c),1,1,0);
+		
+		
+		
+//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[1]), 
+//						trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[1]), 1,1,1,1,1,1);
+//
+//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[3]), 
+//						trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[3]), 1,1,1,1,1,1);
+//
+//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[1]), 
+//						trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[3]), 1,1,1,1,1,1);
+//
+//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[1]), 
+//						trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[3]), 1,1,1,1,1,1);
+  
+//		for(int n = 0; n < outer_border.size(); ++n)
+//		{
+//			debug_mesh_point(trans.Reverse(Segment2(outer_border[n].loc,c).midpoint(0.1)),n == 0 ? 1 : 0,outer_border[n].reflex ? 0 : 1,outer_border[n].locked ? 1 : 0);
+//		}
+		
+  
+		bool has_holes = face->number_of_holes() > 0;
+		int num_sides = outer_border.size();
+		face->data().mParams[af_AGSides] = num_sides;
 
 		multimap<int, int, greater<int> >::iterator i = histo2.begin();
 		if(histo2.size() > 0)
@@ -565,6 +778,10 @@ void	ZoneManMadeAreas(
 			}			
 		}
 
+		//--------------------------------------------------------------------------------------------------------------------------------
+		// LET US MAKE A FREAKING DECISION!!!
+		//--------------------------------------------------------------------------------------------------------------------------------
+
 		int zone = PickZoningRule(
 						face->data().mTerrainType,
 						mfam,
@@ -572,6 +789,8 @@ void	ZoneManMadeAreas(
 						max_slope,
 						total_urban/(float)count,total_forest/(float)count,total_park/(float)count,
 						max_height,
+						min_angle,
+						max_angle,
 						face->data().mParams[af_Cat1],
 						face->data().mParams[af_Cat1Rat],
 						face->data().mParams[af_Cat2],
@@ -580,6 +799,15 @@ void	ZoneManMadeAreas(
 						has_train,																// words when we can accept a mix, this lets the DOMINANT type crowd out the secondary.
 						has_local,
 						has_holes,
+
+						max_err,
+						
+						short_side,
+						long_side,
+						
+						long_axis_length,
+						short_axis_length,
+						
 						my_pt_features);
 
 		if(zone != NO_VALUE)
@@ -604,41 +832,36 @@ void	ZoneManMadeAreas(
 		face->data().mParams[af_SlopeMax] = max_slope;
 		face->data().mParams[af_AreaMeters] = mfam;
 		
+
+		face->data().mParams[af_ShortestSide]		= short_side;
+		face->data().mParams[af_LongestSide]		= long_side;
+		face->data().mParams[af_ShortAxisLength]	= short_axis_length;
+		face->data().mParams[af_LongAxisLength]		= long_axis_length;
+		face->data().mParams[af_BlockErr]			= max_err;
+
+		face->data().mParams[af_MinAngle]			= min_angle;
+		face->data().mParams[af_MaxAngle]			= max_angle;
+
+		face->data().mParams[af_WaterEdge]	=	has_water;
+		face->data().mParams[af_RoadEdge]	=	has_local;
+		face->data().mParams[af_RailEdge]	=	has_train;
+		
+		
+		
 		// FEATURE ASSIGNMENT - first go and assign any features we might have.
 		face->data().mTemp1 = NO_VALUE;
 		face->data().mTemp2 = 0;
 
-		// Quick bail - if we're assigned, we're done. - Moving this to first place because...
-		// airports take the cake/
+#if ZONING_HISTO
+		zone_count[zone]++;
+		zone_area[zone] += (mfam / (1000.0 * 1000.0));
+#endif
 
-		if (face->data().mTerrainType != terrain_Natural) continue;
-
-//		switch(face->data().mAreaFeature[0].mFeatType) {
-////		case feat_MilitaryBase:	face->mTerrainType = terrain_MilitaryBase;	break;
-////		case feat_TrailerPark:	face->mTerrainType = terrain_TrailerPark;	break;
-////		case feat_Campground:	face->mTerrainType = terrain_Campground;	break;
-////		case feat_Marina:		face->mTerrainType = terrain_Marina;		break;
-//		case feat_GolfCourse:	face->data().mTerrainType = terrain_GolfCourse;	break;
-//		case feat_Cemetary:		face->data().mTerrainType = terrain_Cemetary;		break;
-////		case feat_Airport:		face->mTerrainType = terrain_Airport;		break;
-//		case feat_Park:			face->data().mTerrainType = terrain_Park;			break;
-//		case feat_ForestPark:	face->data().mTerrainType = terrain_ForestPark;	break;
-//		}
-
-/*
-		switch(face->data().mAreaFeature.mFeatType) {
-//		case feat_MilitaryBase:	face->mTerrainType = terrain_MilitaryBase;	break;
-//		case feat_TrailerPark:	face->mTerrainType = terrain_TrailerPark;	break;
-//		case feat_Campground:	face->mTerrainType = terrain_Campground;	break;
-//		case feat_Marina:		face->mTerrainType = terrain_Marina;		break;
-		case feat_GolfCourse:	face->mTerrainType = terrain_GolfCourse;	break;
-		case feat_Cemetary:		face->mTerrainType = terrain_Cemetary;		break;
-//		case feat_Airport:		face->mTerrainType = terrain_Airport;		break;
-		case feat_Park:			face->mTerrainType = terrain_Park;			break;
-		case feat_ForestPark:	face->mTerrainType = terrain_ForestPark;	break;
-		}
-*/
 	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// DEAD CODE - APPROACH PATHS
+	//--------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -711,6 +934,9 @@ void	ZoneManMadeAreas(
 	PROGRESS_DONE(inProg, 1, 3, "Checking approach paths...")
 #endif
 
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// WATER ANALYSIS
+	//--------------------------------------------------------------------------------------------------------------------------------
 
 
 	PROGRESS_START(inProg, 2, 3, "Checking Water")
@@ -737,6 +963,10 @@ void	ZoneManMadeAreas(
 
 	}
 	PROGRESS_DONE(inProg, 2, 3, "Checking Water")
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// ZONING DEBUG OUTPUT, HISTOGRAMS, ALL THAT GOOD STUFF.
+	//--------------------------------------------------------------------------------------------------------------------------------
 	
 #if ZONING_METRICS
 
@@ -794,12 +1024,23 @@ void	ZoneManMadeAreas(
 		if((100.0 * (float) h->second / (float) t) >= 5.0)
 			printf("%d: %.0f%%\n", h->first, 100.0 * (float) h->second / (float) t);
 	}
-	
-	
-
-	
-	
 #endif	
+
+#if ZONING_HISTO
+	multimap<int,int>		zcr;
+	multimap<double,int>	zar;
+	int tc = reverse_histo(zone_count,zcr);
+	double ta = reverse_histo(zone_area,zar);
+	
+	printf("Zoning by count (%d total).\n",tc);
+	for(multimap<int,int>::iterator i = zcr.begin(); i != zcr.end(); ++i)
+		printf("%d (%lf): %s\n", i->first,(double) i->first / (double) tc, FetchTokenString(i->second));
+	
+	printf("Zoning by area (%lf total).\n",ta);
+	for(multimap<double,int>::iterator i = zar.begin(); i != zar.end(); ++i)
+		printf("%lf (%lf): %s\n", i->first, i->first / ta, FetchTokenString(i->second));
+
+#endif
 
 	NT west(inLanduse.mWest);
 	NT east(inLanduse.mEast);
@@ -925,7 +1166,9 @@ struct	FaceNode_t {
 	list<Face_handle>		real_faces;
 	list<EdgeNode_t *>		edges;
 	float					area;
-	int						color;
+	Bbox2					bounds;
+	set<int>				zoning;
+	int						color;	
 
 };
 
@@ -1032,6 +1275,9 @@ void			FaceGraph_t::merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& 
 {
 	f1->area += f2->area;
 	f1->real_faces.splice(f1->real_faces.end(),f2->real_faces);
+	copy(f2->zoning.begin(),f2->zoning.end(),set_inserter(f1->zoning));
+	
+	f1->bounds += f2->bounds;
 	
 	map<FaceNode_t *, EdgeNode_t *>						neighbors;
 	map<FaceNode_t *, EdgeNode_t *>::iterator			ni;
@@ -1097,6 +1343,7 @@ void			FaceGraph_t::merge(FaceNode_t * f1, FaceNode_t * f2, list<EdgeNode_t *>& 
 			else if(en->f2 == f2)
 				en->f2 = f1;
 			f1->edges.push_back(en);
+			out_neighbors.push_back(en);
 		}
 	}
 	
@@ -1148,14 +1395,44 @@ void		FaceGraph_t::clear(void)
 }
 
 #define MAX_AREA (1000.0 * 1000.0)
+#define MAX_DIM 0.01
 float	edge_cost_func(EdgeNode_t * en)
 {
 	if(en->must_lock) return -1.0f;
-	if(en->must_merge) return 0.0f;
-	if((en->f1->area + en->f2->area) > MAX_AREA)	return -1.0f;
-//	if(Road_IsHighway(en->road_type) || Road_IsHighway(en->road_type))
-//	   return en->length * 0.5;
-	return en->length;
+	if(en->must_merge) return 9.9e9f;
+	if((en->f1->area + en->f2->area) > MAX_AREA)	return -1.0f;	
+
+
+	Bbox2	nb = en->f1->bounds;
+	nb += en->f2->bounds;
+	DebugAssert(nb.area() > 0.0);
+
+//	if(nb.xspan() > MAX_DIM || nb.yspan() > MAX_DIM)
+//		return -1.0f;
+
+	DebugAssert(nb.xspan() > 0.0);
+	DebugAssert(nb.yspan() > 0.0);
+	double max_aspect = max(nb.xspan() / nb.yspan(), nb.yspan() / nb.xspan());
+
+	int diversity = set_union_length(en->f1->zoning,en->f2->zoning);
+
+	if(en->f1->zoning.empty() && en->f2->zoning.empty())
+		return en->length / max_aspect;
+	else {
+		return en->length / (max_aspect * (double) (1 << diversity));
+	}
+
+//	if(en->f1->zoning == en->f2->zoning)
+//		return 10.0 * en->length / max_aspect; 
+//	else
+//		return en->length / max_aspect;
+
+
+
+//	f(en->f1->zoning == en->f2->zoning)
+//		return (en->f1->bounds.area() + en->f2->bounds.area()) ;
+//	else
+//		return en->f1->bounds.area() + en->f2->bounds.area();
 }
 
 struct UnlinkedFace_p {
@@ -1179,7 +1456,10 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 	{
 		fn = graph.new_face();
 		fn->real_faces.push_back(*f);
-		fn->area = GetMapFaceAreaMeters(*f);
+		Bbox2 me;
+		fn->area = GetMapFaceAreaMeters(*f,&me);
+		fn->bounds = me;
+		fn->zoning.insert((*f)->data().GetZoning());
 		fn->color = -1;
 		face_mapping[*f] = fn;
 	}
@@ -1285,6 +1565,7 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 //			debug_mesh_line(cgal2ben((*e)->source()->point()),cgal2ben((*e)->target()->point()),1,0,0,0,1,0);
 
 		nodes_by_degree.insert(multimap<int, FaceNode_t *, greater<int> >::value_type(fn->edges.size(),fn));
+		
 	}
 	
 	for(multimap<int, FaceNode_t *, greater<int> >::iterator i = nodes_by_degree.begin(); i != nodes_by_degree.end(); ++i)
@@ -1297,13 +1578,28 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 			fn = en->other(i->second);
 			if(fn->color != -1)	used.insert(fn->color);
 		}
-		while(used.count(i->second->color))
-			++i->second->color;
+		
+		vector<int>	avail;
+		for(int n = 0; n < 4; ++n)
+			if(used.count(n) == 0) avail.push_back(n);
+		
+		if(!avail.empty())
+		{
+			i->second->color = avail[random() % avail.size()];
+		}
+		else
+		{
+			while(used.count(i->second->color))
+				++i->second->color;
+		}
 		
 		highest = max(highest,i->second->color);
 		++total;
 		if(i->second->color > 3)
+		{
 			++over_4;
+			i->second->color = i->second->color % 4;
+		}
 			
 		set<int> zoning_we_have;	
 			
@@ -1311,12 +1607,18 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 		{
 			(*fh)->data().mParams[af_Variant] = i->second->color;
 			zoning_we_have.insert((*fh)->data().GetZoning());
-		}		
+		}
+		
+		set<int>	my_possible_terrains;
 		for(LandFillRuleTable::iterator r = gLandFillRules.begin(); r != gLandFillRules.end(); ++r)
-		if(zoning_we_have == r->required_zoning && r->color == i->second->color)
+		if(is_subset(zoning_we_have,r->required_zoning))
+			my_possible_terrains.insert(r->terrain);
+								
+		for(LandFillRuleTable::iterator r = gLandFillRules.begin(); r != gLandFillRules.end(); ++r)
+		if(is_subset(zoning_we_have,r->required_zoning) && r->color == i->second->color)
 		{		
 			for(list<Face_handle>::iterator fh = i->second->real_faces.begin(); fh != i->second->real_faces.end(); ++fh)
-			if((*fh)->data().mTerrainType == NO_VALUE)
+			if((*fh)->data().mTerrainType == NO_VALUE || my_possible_terrains.count((*fh)->data().mTerrainType))
 				(*fh)->data().mTerrainType = r->terrain;
 			break;
 		}
@@ -1326,3 +1628,27 @@ void	ColorFaces(set<Face_handle>&	io_faces)
 
 
 
+FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f)
+{
+	int z = f->data().GetZoning();
+	if(z == NO_VALUE) return NULL;
+
+	float short_side = f->data().GetParam(af_ShortestSide,-1.0f);
+	float long_side = f->data().GetParam(af_LongestSide,-1.0f);
+	float short_axis = f->data().GetParam(af_ShortAxisLength,-1.0f);
+	float long_axis = f->data().GetParam(af_LongAxisLength,-1.0f);
+	float block_err = f->data().GetParam(af_BlockErr,-1.0f);
+	float	ang_min = f->data().GetParam(af_MinAngle,-1.0f);
+	float	ang_max = f->data().GetParam(af_MaxAngle,-1.0f);
+	
+	for(FillRuleTable::iterator r = gFillRules.begin(); r != gFillRules.end(); ++r)
+	if(r->zoning == z)
+	if(r->min_side_len == r->max_side_len || (r->min_side_len <= short_side && long_side <= r->max_side_len))
+	if(r->block_err_max == 0.0 || block_err < r->block_err_max)
+	if(r->min_side_major == r->max_side_major || (r->min_side_major <= long_axis && long_axis <= r->max_side_major))
+	if(r->min_side_minor == r->max_side_minor || (r->min_side_minor <= short_axis && short_axis <= r->max_side_minor))
+	if(r->ang_min == r->ang_max || (r->ang_min <= ang_min && ang_max < r->ang_max))
+		return &*r;
+
+	return NULL;
+}

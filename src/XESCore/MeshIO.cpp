@@ -177,7 +177,7 @@ void ReadMesh(XAtomContainer& container, CDT& mesh, int atomID, const TokenConve
 	MemFileReader	readCtrl(ctrlContainer.begin, ctrlContainer.end);
 	MemFileReader	readData1(data1Container.begin, data1Container.end);
 
-	if (mesh.tds().number_of_vertices() != 0)    mesh.tds().clear();
+	if (mesh.tds().number_of_vertices() != 0)    { mesh.tds().clear(); mesh.cache_reset(); }
 
 	int n, m, d;	// number of verts, faces, dimension
 	int i, j;

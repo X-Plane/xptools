@@ -33,14 +33,16 @@ Feature2RepInfoTable			gFeature2Rep;
 ForkRuleTable					gForkRules;
 ChangeRuleTable					gChangeRules;
 BridgeInfoTable					gBridgeInfo;
+map<int,int>					gTwinRules;
+
 
 
 bool	RoadGeneralProps(const vector<string>& tokens, void * ref)
 {
 	int				feature_type;
 	NetFeatureInfo	info;
-	if (TokenizeLine(tokens, " efe", &feature_type,
-		&info.density_factor, &info.oneway_feature) != 4) return false;
+	if (TokenizeLine(tokens, " efie", &feature_type,
+		&info.density_factor, &info.is_oneway, &info.oneway_feature) != 5) return false;
 
 
 	if (gNetFeatures.count(feature_type) > 0)
@@ -59,8 +61,8 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 
 	float	crease, max_rad;
 
-	if (TokenizeLine(tokens, " efffeiifff",&rep_type,
-		&info.width, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped, &crease, &max_rad, &info.max_err) != 11)
+	if (TokenizeLine(tokens, " effffeiifff",&rep_type,
+		&info.semi_l, &info.semi_r, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped, &crease, &max_rad, &info.max_err) != 12)
 	{
 		return false;
 	}
@@ -80,7 +82,7 @@ bool	ReadRoadPick(const vector<string>& tokens, void * ref)
 	Feature2RepInfo	info;
 	int				feature_type;
 
-	if (TokenizeLine(tokens, " effeeffffe", &feature_type, 
+	if (TokenizeLine(tokens, " effSSffffe", &info.feature, 
 		&info.min_density,&info.max_density, 
 		&info.zoning_left,
 		&info.zoning_right,
@@ -90,7 +92,7 @@ bool	ReadRoadPick(const vector<string>& tokens, void * ref)
 		&info.temp_max,
 		&info.rep_type) != 11)	return false;
 
-	gFeature2Rep.insert(Feature2RepInfoTable::value_type(feature_type, info));
+	gFeature2Rep.push_back(info);
 	return true;
 }
 
@@ -151,12 +153,29 @@ bool	ReadRoadBridge(const vector<string>& tokens, void * ref)
 	return true;
 }
 
+bool ReadTwinRule(const vector<string>& tokens, void * ref)
+{
+	int type_1, type_2;
+	if(TokenizeLine(tokens, " ee",&type_1,&type_2) != 3) return false;
+	
+	if(gTwinRules.count(type_1) || 
+		gTwinRules.count(type_2))
+	{
+		printf("ERROR: duplicate twin rule.\n");
+		return false;
+	}
+	gTwinRules[type_1] = type_2;
+	gTwinRules[type_2] = type_1;
+	return true;
+}
+
 void	LoadNetFeatureTables(void)
 {
 	gNetFeatures.clear();
 	gNetReps.clear();
 	gFeature2Rep.clear();
 	gBridgeInfo.clear();
+	gTwinRules.clear();
 	gForkRules.clear();
 	gChangeRules.clear();
 
@@ -166,6 +185,7 @@ void	LoadNetFeatureTables(void)
 	RegisterLineHandler("FORK_RULE",ReadForkRule,NULL);
 	RegisterLineHandler("CHANGE_RULE",ReadChangeRule,NULL);
 	RegisterLineHandler("ROAD_BRIDGE", ReadRoadBridge, NULL);
+	RegisterLineHandler("ROAD_TWIN", ReadTwinRule, NULL);
 	LoadConfigFile("road_properties.txt");
 }
 
@@ -189,6 +209,13 @@ bool	IsOneway(int rep_type)
 	if (gNetReps.count(rep_type) == 0) return 0;
 	return gNetReps[rep_type].is_oneway;
 }
+
+bool	IsTwinRoads(int rep_type1, int rep_type2)
+{
+	map<int,int>::iterator i = gTwinRules.find(rep_type1);
+	return i != gTwinRules.end() && i->second == rep_type2;
+}
+
 
 
 int		FindBridgeRule(int rep_type, double len, double smallest_seg, double biggest_seg, int num_segments, double curve_dot, double agl1, double agl2)

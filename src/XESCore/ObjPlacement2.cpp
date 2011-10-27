@@ -33,19 +33,19 @@ static int	WidestRoadTypeForSegment(Pmwx::Halfedge_const_handle he)
 	double best_width = 0.0;
 	for (GISNetworkSegmentVector::const_iterator i = he->data().mSegments.begin(); i != he->data().mSegments.end(); ++i)
 	{
-		if (gNetReps[i->mRepType].width > best_width)
+		if (gNetReps[i->mRepType].width() > best_width)
 		{
 			best_type = i->mRepType;
-			best_width = gNetReps[i->mRepType].width;
+			best_width = gNetReps[i->mRepType].width();
 		}
 	}
 
 	for (GISNetworkSegmentVector::const_iterator i = he->twin()->data().mSegments.begin(); i != he->twin()->data().mSegments.end(); ++i)
 	{
-		if (gNetReps[i->mRepType].width > best_width)
+		if (gNetReps[i->mRepType].width() > best_width)
 		{
 			best_type = i->mRepType;
-			best_width = gNetReps[i->mRepType].width;
+			best_width = gNetReps[i->mRepType].width();
 		}
 	}
 	return best_type;
