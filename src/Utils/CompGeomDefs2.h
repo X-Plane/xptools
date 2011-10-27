@@ -358,6 +358,7 @@ struct	Bbox2 {
 	double		ymax() const { return p2.y_; }
 	double		xspan() const { return p2.x_ - p1.x_; }
 	double		yspan() const { return p2.y_ - p1.y_; }
+	double		area() const { return max(p2.x_ - p1.x_,0.0) * max(p2.y_ - p1.y_,0.0); }
 	
 	Point2		bottom_left (void) const { return Point2(p1.x(),p1.y()); }
 	Point2		bottom_right(void) const { return Point2(p2.x(),p1.y()); }
