@@ -264,14 +264,14 @@ void			WED_Thing::ToXML(WED_XMLElement * parent)
 	WED_XMLElement * vwr = obj->add_sub_element("viewers");
 	for(set<int>::iterator v = viewer_id.begin(); v != viewer_id.end(); ++v)
 	{
-		WED_XMLElement * vi = src->add_sub_element("viewer");
+		WED_XMLElement * vi = vwr->add_sub_element("viewer");
 		vi->add_attr_int("id",*v);
 	}
 
 	WED_XMLElement * chld = obj->add_sub_element("children");
 	for(int n = 0; n < child_id.size(); ++n)
 	{
-		WED_XMLElement * c = src->add_sub_element("child");
+		WED_XMLElement * c = chld->add_sub_element("child");
 		c->add_attr_int("id",child_id[n]);
 	}
 	
@@ -301,6 +301,13 @@ void		WED_Thing::StartElement(
 		if(!id)
 			reader->FailWithError("no id");
 		viewer_id.insert(atoi(id));
+	} 
+	else if(strcasecmp(name,"source")==0)
+	{
+		const char * id = get_att("id",atts);
+		if(!id)
+			reader->FailWithError("no id");
+		source_id.push_back(atoi(id));
 	} 
 	else if(strcasecmp(name,"child") == 0)
 	{
