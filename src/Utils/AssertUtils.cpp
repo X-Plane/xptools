@@ -72,6 +72,15 @@ void	AssertPrintf(const char * fmt, ...)
 	__AssertHandler(buf, __FILE__, __LINE__);
 }
 
+void	AssertPrintfv(const char * fmt, va_list arg)
+{
+	static char buf[4096];
+	vsnprintf(buf, sizeof(buf), fmt, arg);
+
+	__AssertHandler(buf, __FILE__, __LINE__);
+}
+
+
 
 void __DebugAssertHandler(const char * c, const char * f, int l)
 {

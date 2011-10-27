@@ -52,6 +52,7 @@
 	((__Condition) ? ((void) 0) : __AssertHandler(#__Condition, __FILE__, __LINE__))
 
 void	AssertPrintf(const char * fmt, ...);
+void	AssertPrintfv(const char * fmt, va_list args);
 
 void __DebugAssertHandler(const char *, const char *, int);
 void __AssertHandler(const char *, const char *, int);
