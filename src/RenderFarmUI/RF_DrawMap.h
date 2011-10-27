@@ -28,6 +28,11 @@
 #include "ProgressUtils.h"
 #include "RTree2.h"
 
+extern int g_color_face_with_terr;
+extern int g_color_face_with_zone;
+extern int g_color_face_with_supr;
+extern int g_color_face_use_supr_tint;
+
 class	GUI_GraphState;
 void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc);
 void	RecalcOGLColors(Pmwx&					ioMap, ProgressFunc inFunc);

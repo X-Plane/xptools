@@ -181,15 +181,21 @@ const int DEMChoiceCount = sizeof(kDEMs) / sizeof(DEMViewInfo_t);
 
 GUI_MenuItem_t	kViewItems[] = {
 {	"Raster Layer",							0,				0,										0,	viewCmd_DEMChoice		},
-{	"Show Shading on Raster Layer",			'S',			gui_ControlFlag,						0,	viewCmd_ShowShading		},
 {	"Show Grid lines on Raster Layer",		'G',			gui_ControlFlag,						0,	viewCmd_ShowGrids		},
-{	"Show Tensors",							'T',			gui_ControlFlag,						0,	viewCmd_ShowTensor		},
+//{	"Show Tensors",							'T',			gui_ControlFlag,						0,	viewCmd_ShowTensor		},
 {	"Show Raster Data",						0,				0,										0,	viewCmd_DEMDataChoice	},
 {	"Show Extent",							'E',			gui_ControlFlag,						0,	viewCmd_ShowExtent		},
+{	"Show Shading on Raster Layer",			'S',			gui_ControlFlag,						0,	viewCmd_ShowShading		},
+{	"Shade Map Faces With Superblock Color",'S',			gui_ControlFlag + gui_ShiftFlag,		0,	viewCmd_ShowSuper		},
 {	"-",									0,				0,										0,	0						},
 {	"Recalculate Raster Data Preview",		'R',			gui_ControlFlag,						0,	viewCmd_RecalcDEM		},
 {	"Previous Raster",						GUI_KEY_UP,		gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_PrevDEM			},
 {	"Next Raster",							GUI_KEY_DOWN,	gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_NextDEM			},
+{	"-",									0,				0,										0,	0						},
+{	"Color Vector Map Features",			'F',			gui_ControlFlag,						0,	viewCmd_ColorMapFeat	},
+{	"Color Vector Map Terrain",				'T',			gui_ControlFlag,						0,	viewCmd_ColorMapTerr	},
+{	"Color Vector Map Zoning",				'Z',			gui_ControlFlag,						0,	viewCmd_ColorMapZone	},
+{	"Color Vector Map Superblocks",			'C',			gui_ControlFlag,						0,	viewCmd_ColorMapSupr	},
 {	"-",									0,				0,										0,	0						},
 {	"Vector Map",							'1',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_VecMap			},
 {	"Airports",								'2',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_Airports		},
@@ -267,8 +273,13 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	case viewCmd_ZoomLoad:		ioCheck = sZoomLoad;			return 1;
 	case viewCmd_ShowExtent:	ioCheck = sShowExtent;			return 1;
 	case viewCmd_VecMap:		ioCheck = sShowMap;				return 1;
+	case viewCmd_ColorMapFeat:	ioCheck = !g_color_face_with_terr && !g_color_face_with_zone && !g_color_face_with_supr; return 1;
+	case viewCmd_ColorMapTerr:	ioCheck = g_color_face_with_terr;return 1;
+	case viewCmd_ColorMapZone:	ioCheck = g_color_face_with_zone;return 1;
+	case viewCmd_ColorMapSupr:	ioCheck = g_color_face_with_supr;return 1;	
 	case viewCmd_Airports:		ioCheck = sShowAirports;		return 1;
 	case viewCmd_ShowShading:	ioCheck = sShowShading;			return 1;
+	case viewCmd_ShowSuper:		ioCheck = g_color_face_use_supr_tint;	return 1;
 	case viewCmd_ShowGrids:		ioCheck = sShowGrids;			return 1;
 	case viewCmd_ShowTensor:	ioCheck = sShowTensors;			return 1;
 	case viewCmd_MeshPoints:	ioCheck = sShowMeshPoints;		return 1;
@@ -342,6 +353,17 @@ int		RF_MapView::HandleCommand(int command)
 	case viewCmd_VecMap:		sShowMap = !sShowMap;				return 1;
 	case viewCmd_Airports:		sShowAirports = !sShowAirports;		return 1;
 	case viewCmd_ShowShading:	sShowShading = !sShowShading;		return 1;
+	case viewCmd_ShowSuper:		g_color_face_use_supr_tint = !g_color_face_use_supr_tint;		mNeedRecalcMapMeta = 1;	return 1;
+
+	case viewCmd_ColorMapTerr:
+	case viewCmd_ColorMapZone:
+	case viewCmd_ColorMapSupr:
+	case viewCmd_ColorMapFeat:
+		g_color_face_with_terr = command == viewCmd_ColorMapTerr;
+		g_color_face_with_zone = command == viewCmd_ColorMapZone;
+		g_color_face_with_supr = command == viewCmd_ColorMapSupr;
+		mNeedRecalcMapMeta = 1;	return 1;	
+		
 	case viewCmd_ShowGrids:		sShowGrids = !sShowGrids;			return 1;
 	case viewCmd_ShowTensor:	sShowTensors = !sShowTensors;		return 1;
 	case viewCmd_MeshPoints:	sShowMeshPoints = !sShowMeshPoints;	return 1;
@@ -648,61 +670,6 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		mNeedRecalcMapMeta = mNeedRecalcMapFull = false;
 	}
 
-
-	if (sShowMeshTrisHi)
-	{
-		if (mNeedRecalcMeshHi)
-		{
-			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 0.0);
-
-			if (mDLMeshLine != 0)	glDeleteLists(mDLMeshLine, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
-			mDLMeshLine = glGenLists(MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
-
-			for (int n = 0; n <= MESH_BUCKET_SIZE * MESH_BUCKET_SIZE; ++n)
-			{
-				RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", (float) n / (float) (MESH_BUCKET_SIZE*MESH_BUCKET_SIZE));
-				glNewList(mDLMeshLine + n, GL_COMPILE);
-				glBegin(GL_LINES);
-				mEdges[n] = 0;
-
-				for (CDT::Finite_edges_iterator eit = gTriangulationHi.finite_edges_begin(); eit != gTriangulationHi.finite_edges_end(); ++eit)
-				if (GetBucketForEdge(mDLBuckets, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE, eit) == n)
-				{
-					++mEdges[n];
-					GLfloat	color[4] = { 1.0, 1.0, 1.0, 1.0 };
-					if (!gTriangulationHi.is_constrained(*eit))
-					{
-						if(gTriangulationHi.is_flipable(eit->first,eit->second))
-							color[0] = 0.8, color[1] = 0.4, color[2] = 0.4, color[3] = 0.8;						
-						else if (sDEMType)
-							color[0] = 0.0, color[1] = 0.0, color[2] = 0.5, color[3] = 0.8;
-						else
-							color[0] = 0.4, color[1] = 0.4, color[2] = 0.8, color[3] = 0.8;
-					} else
-						if(eit->first->info().get_edge_feature(eit->second))
-							color[0] = 1.0, color[1] = 0.4, color[2] = 0.2, color[3] = 1.0;												
-
-					CDT::Vertex_handle	a = eit->first->vertex(eit->first->ccw(eit->second));
-					CDT::Vertex_handle	b = eit->first->vertex(eit->first->cw(eit->second));
-
-					CDT::Point	p1 = a->point();
-					CDT::Point p2 = b->point();
-
-					glColor4fv(color);
-					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
-					glColor4fv(color);
-					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
-				}
-
-				glEnd();
-				glEndList();
-			}
-			mNeedRecalcMeshHi = false;
-			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 1.0);
-
-		}
-	}
-
 	if (sShowMeshAlphas)
 	{
 		glDisable(GL_CULL_FACE);
@@ -812,6 +779,62 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh colored preview...", 1.0);
 		}
 	}
+	
+
+	if (sShowMeshTrisHi)
+	{
+		if (mNeedRecalcMeshHi)
+		{
+			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 0.0);
+
+			if (mDLMeshLine != 0)	glDeleteLists(mDLMeshLine, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
+			mDLMeshLine = glGenLists(MESH_BUCKET_SIZE * MESH_BUCKET_SIZE + 1);
+
+			for (int n = 0; n <= MESH_BUCKET_SIZE * MESH_BUCKET_SIZE; ++n)
+			{
+				RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", (float) n / (float) (MESH_BUCKET_SIZE*MESH_BUCKET_SIZE));
+				glNewList(mDLMeshLine + n, GL_COMPILE);
+				glBegin(GL_LINES);
+				mEdges[n] = 0;
+
+				for (CDT::Finite_edges_iterator eit = gTriangulationHi.finite_edges_begin(); eit != gTriangulationHi.finite_edges_end(); ++eit)
+				if (GetBucketForEdge(mDLBuckets, MESH_BUCKET_SIZE * MESH_BUCKET_SIZE, eit) == n)
+				{
+					++mEdges[n];
+					GLfloat	color[4] = { 1.0, 1.0, 1.0, 1.0 };
+					if (!gTriangulationHi.is_constrained(*eit))
+					{
+						if(gTriangulationHi.is_flipable(eit->first,eit->second))
+							color[0] = 0.8, color[1] = 0.4, color[2] = 0.4, color[3] = 0.8;						
+						else if (sDEMType)
+							color[0] = 0.0, color[1] = 0.0, color[2] = 0.5, color[3] = 0.8;
+						else
+							color[0] = 0.4, color[1] = 0.4, color[2] = 0.8, color[3] = 0.8;
+					} else
+						if(eit->first->info().get_edge_feature(eit->second))
+							color[0] = 1.0, color[1] = 0.4, color[2] = 0.2, color[3] = 1.0;												
+
+					CDT::Vertex_handle	a = eit->first->vertex(eit->first->ccw(eit->second));
+					CDT::Vertex_handle	b = eit->first->vertex(eit->first->cw(eit->second));
+
+					CDT::Point	p1 = a->point();
+					CDT::Point p2 = b->point();
+
+					glColor4fv(color);
+					glVertex2f(CGAL::to_double(p1.x()), CGAL::to_double(p1.y()));
+					glColor4fv(color);
+					glVertex2f(CGAL::to_double(p2.x()), CGAL::to_double(p2.y()));
+				}
+
+				glEnd();
+				glEndList();
+			}
+			mNeedRecalcMeshHi = false;
+			RF_ProgressFunc(0, 1, "Updating graphics for terrain mesh line preview...", 1.0);
+
+		}
+	}
+	
 
 	/***************************************************************************************************************************************
 	 * MATRIX SETUP - AT THIS POINT WE ARE IN LAT LON COORDS
@@ -1013,6 +1036,16 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 	glPushMatrix();
 	glMultMatrixd(xfrm);
 
+	if (sShowMeshAlphas)
+	{
+		glDisable(GL_CULL_FACE);
+		for (int n = 0; n <= MESH_BUCKET_SIZE * MESH_BUCKET_SIZE; ++n)
+		if (mDLBuckets[n].overlap(logical_vis))
+		{
+			glCallList(mDLMeshFill + n);
+		}
+	}
+
 	if (sShowMeshTrisHi)
 	{
 		for (int n = 0; n <= MESH_BUCKET_SIZE * MESH_BUCKET_SIZE; ++n)
@@ -1022,16 +1055,6 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 		}
 	}
 
-	if (sShowMeshAlphas)
-	{
-		glDisable(GL_CULL_FACE);
-		for (int n = 0; n <= MESH_BUCKET_SIZE * MESH_BUCKET_SIZE; ++n)
-		if (mDLBuckets[n].overlap(logical_vis))
-		{
-			glCallList(mDLMeshFill + n);
-		}
-
-	}
 
 	glPopMatrix();
 
@@ -1326,7 +1349,7 @@ put in  color enums?
 
 			for(GISPolyObjPlacementVector::iterator i = f->data().mPolyObjs.begin(); i != f->data().mPolyObjs.end(); ++i)
 			{
-				sprintf(buf,"%s",FetchTokenString(i->mRepType));
+				sprintf(buf,"%s %hu",FetchTokenString(i->mRepType), i->mParam);
 				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
 				k -= (h+1);
 			}

@@ -63,6 +63,7 @@ enum {
 
 	viewCmd_DEMChoice = GUI_APP_MENUS,
 	viewCmd_ShowShading,
+	viewCmd_ShowSuper,	
 	viewCmd_ShowGrids,
 	viewCmd_ShowTensor,
 	viewCmd_DEMDataChoice,
@@ -71,6 +72,11 @@ enum {
 	viewCmd_RecalcDEM,
 	viewCmd_PrevDEM,
 	viewCmd_NextDEM,
+
+	viewCmd_ColorMapFeat,
+	viewCmd_ColorMapTerr,
+	viewCmd_ColorMapZone,
+	viewCmd_ColorMapSupr,
 
 	viewCmd_VecMap,
 	viewCmd_Airports,

@@ -46,6 +46,11 @@
 #define DRAW_VERTICES 1
 #define DRAW_FOOTPRINTS 1
 
+int g_color_face_with_terr = 1;
+int g_color_face_with_zone = 0;
+int g_color_face_with_supr = 0;
+int g_color_face_use_supr_tint = 0;
+
 void	IndexPmwx(Pmwx& pmwx, PmwxIndex_t& index)
 {
 	index.faces.clear();
@@ -312,19 +317,26 @@ static void	SetColorForHalfedge(Pmwx::Halfedge_const_handle i, GLubyte color[3])
 
 static	void	SetColorForFace(Pmwx::Face_const_handle f, GLubyte outColor[4])
 {
+	int variant = f->data().GetParam(af_Variant,-1);
 	outColor[0] = outColor[1] = outColor[2] = outColor[3] = 0;
-	
+
 	int our_prop = NO_VALUE;
-	if (f->data().mTerrainType != terrain_Natural && f->data().mTerrainType != NO_VALUE)
-		our_prop = f->data().mTerrainType;
 
 	if (f->data().mAreaFeature.mFeatType != NO_VALUE)
 	if(gEnumColors.count(f->data().mAreaFeature.mFeatType))
 		our_prop = f->data().mAreaFeature.mFeatType;
 		
+	if(g_color_face_with_terr)
+	if (f->data().mTerrainType != terrain_Natural && f->data().mTerrainType != NO_VALUE)
+		our_prop = f->data().mTerrainType;
+
+	if(g_color_face_with_zone)		
 	if(f->data().GetZoning() != NO_VALUE)	
 	if(gEnumColors.count(f->data().GetZoning()))
 		our_prop = f->data().GetZoning();
+
+	if(our_prop == NO_VALUE && f->data().IsWater())
+		our_prop = terrain_Water;
 
 	if(our_prop != NO_VALUE)
 	{
@@ -334,9 +346,21 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, GLubyte outColor[4])
 		outColor[1] = rgbc.rgb[1]*255.0f;
 		outColor[2] = rgbc.rgb[2]*255.0f;
 		outColor[3] = 128;
+	} 
+	else if(g_color_face_with_supr && variant >= 0)
+	{
+		outColor[3] = 128;
+		switch(variant) {
+		case 0:	outColor[0] = 255;	outColor[1] =   0;	outColor[2] =   0;		break;
+		case 1: outColor[0] = 255;	outColor[1] = 255;	outColor[2] =   0;		break;
+		case 2: outColor[0] =   0;	outColor[1] = 255;	outColor[2] =   0;		break;
+		case 3:
+		default:outColor[0] =   0;	outColor[1] = 255;	outColor[2] = 255;		break;
+		}
 	}
-	
-	outColor[3] -= ((f->data().GetParam(af_Variant,0)) * 24);
+
+	if(g_color_face_use_supr_tint && variant >= 0)
+		outColor[3] -= (variant * 24);
 	
 }
 
@@ -903,11 +927,16 @@ void	DrawMapBucketed(
 			
 		}
 
+		for(int pass = 0; pass < 2; ++pass)
 		for (GISPolyObjPlacementVector::iterator j = fi->second->data().mPolyObjs.begin(); j != fi->second->data().mPolyObjs.end(); ++j)
 		{
 			int is_string = strstr(FetchTokenString(j->mRepType),".ags") != NULL;		
 			int is_block = strstr(FetchTokenString(j->mRepType),".agb") != NULL;		
-			int is_forest = !is_string && !is_block;
+			int is_fac = strstr(FetchTokenString(j->mRepType),".fac") != NULL;
+			int is_forest = !is_string && !is_block && !is_fac;
+			
+			if((pass == 0) != is_forest)
+				continue;
 			
 			float shade = (float) (n % 10) / 20.0 + 0.1;
 			++n;
@@ -915,6 +944,7 @@ void	DrawMapBucketed(
 			if(is_string)		glColor4f(shade, shade,1,1);
 			else if(is_block)	glColor4f(1,shade,shade,1);
 			else if(is_forest)	glColor4f(shade,1,shade,1);
+			else if(is_fac)		glColor4f(1,1,shade,1);
 			else				glColor4f(shade, shade, j->mDerived ? 1.0 : 0.0, 1.0);
 
 			if(gEnumColors.count(j->mRepType))
@@ -923,10 +953,11 @@ void	DrawMapBucketed(
 				glColor3fv(rgbc.rgb);
 			}
 
+			if(is_string || is_forest)
 			for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
 			{
 				int is_hot = (r - j->mShape.begin()) < j->mParam;
-				glLineWidth(is_string ? (is_hot ? 3 : 1) : 1);
+				glLineWidth(is_string ? (is_hot ? 3 : 1) : (is_forest ? 2 : 1));
 				glBegin(is_string ? GL_LINE_STRIP : GL_LINE_LOOP);
 				for(int l = 0; l < r->size(); ++l)
 					glVertex2f(
@@ -934,7 +965,48 @@ void	DrawMapBucketed(
 						((*r)[l].y()));
 				glEnd();
 			}
-			glLineWidth(1);
+			else if(is_block)
+			{
+				for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
+				{
+					int flag = 1;
+					for(int s = 0; s < r->size(); ++s)
+					{
+						if (s == 0)
+							glLineWidth(4);
+						else
+						{
+							if(j->mParam & flag)
+								glLineWidth(2);
+							else 
+								glLineWidth(1);
+							flag *= 2;
+						}
+						Segment2 ss = r->side(s);
+						glBegin(GL_LINES);
+						glVertex2f(ss.p1.x(),ss.p1.y());
+						glVertex2f(ss.p2.x(),ss.p2.y());
+						glEnd();
+					}
+				}
+			}
+			else	
+			for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
+			{
+				glLineWidth(r == j->mShape.begin() ? 3 : 2);
+				glBegin(GL_LINES);
+				glVertex2f(r->at(0).x(),r->at(0).y());
+				glVertex2f(r->at(1).x(),r->at(1).y());
+				glEnd();
+				glLineWidth(1);
+				glBegin(GL_LINE_STRIP);
+				for(int l = 1; l < r->size(); ++l)
+					glVertex2f(
+						((*r)[l].x()),
+						((*r)[l].y()));
+				glVertex2f(r->at(0).x(),r->at(0).y());
+				glEnd();
+			}
 			
 			if(is_forest)
 			{

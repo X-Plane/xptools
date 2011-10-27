@@ -130,7 +130,7 @@ void	HandleSpecialCommand(int cmd)
 										(cmd == specCmd_UpdateTerrainPackage) ? "Update" : "Create", 5, buf, sizeof(buf))) return;
 //				if (cmd != specCmd_UpdateTerrainPackage)
 					strcat(buf, DIR_STR);
-				CreateTerrainPackage(buf, true);
+				CreateTerrainPackage(buf, true,false);
 			}
 			break;
 		case specCmd_ObjHeight:

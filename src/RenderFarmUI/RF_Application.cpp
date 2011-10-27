@@ -24,6 +24,13 @@
 #include "RF_Application.h"
 #include "PlatformUtils.h"
 #include "RF_FileCommands.h"
+#include "XESIO.h"
+#include "GISTool_Globals.h"
+#include "AptAlgs.h"
+#if OPENGL_MAP
+#include "RF_Notify.h"
+#include "RF_Msgs.h"
+#endif
 
 #if LIN
 RF_Application::RF_Application(int& argc, char* argv[])
@@ -40,6 +47,29 @@ RF_Application::~RF_Application()
 
 void	RF_Application::OpenFiles(const vector<string>& inFiles)
 {
+	for(int n = 0; n < inFiles.size(); ++n)
+	{
+		if (gVerbose) printf("Loading file %s...\n", inFiles[n].c_str());
+		MFMemFile * load = MemFile_Open(inFiles[n].c_str());
+		if (load)
+		{
+			ReadXESFile(load, &gMap, &gTriangulationHi, &gDem, &gApts, gProgress);
+			IndexAirports(gApts, gAptIndex);
+			MemFile_Close(load);
+
+		} else {
+			fprintf(stderr,"Could not load file %s.\n", inFiles[n].c_str());
+		}
+		if (gVerbose)
+				printf("Map contains: %llu faces, %llu half edges, %llu vertices.\n",
+					(unsigned long long)gMap.number_of_faces(),
+					(unsigned long long)gMap.number_of_halfedges(),
+					(unsigned long long)gMap.number_of_vertices());
+	}
+
+	#if OPENGL_MAP
+		RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
+	#endif
 }
 
 int		RF_Application::HandleCommand(int command)
