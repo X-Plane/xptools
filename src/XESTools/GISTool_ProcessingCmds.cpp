@@ -300,7 +300,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 		bool no_sel = gFaceSelection.empty();
 	#endif
 	
-	map<int,double> by_zone, by_sides;
+//	map<int,double> by_zone, by_sides;
 	
 	DEMGeo& ag_ok(gDem[dem_Wizard]);
 	
@@ -326,27 +326,27 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	if(gFaceSelection.count(f) || no_sel)
 	#endif
 	{
-		unsigned long long before, after;
-		Microseconds((UnsignedWide *)&before);
+//		unsigned long long before, after;
+//		Microseconds((UnsignedWide *)&before);
 		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
 		process_block(f,gTriangulationHi, ag_ok, forests, forest_index);
-		Microseconds((UnsignedWide *)&after);
-		double elapsed = (double) (after - before) / 1000000.0;
-		by_zone[f->data().GetZoning()] += elapsed;
-		int ns = count_circulator(f->outer_ccb());
-		by_sides[ns] += elapsed;
+//		Microseconds((UnsignedWide *)&after);
+//		double elapsed = (double) (after - before) / 1000000.0;
+//		by_zone[f->data().GetZoning()] += elapsed;
+//		int ns = count_circulator(f->outer_ccb());
+//		by_sides[ns] += elapsed;
 	}
 
 	printf("Blocks: %d.  Split: %d. Forests: %d.  Parts: %d\n",  num_block_processed, num_blocks_with_split, num_forest_split, num_line_integ);
 	
-	multimap<double, int> r_zone, r_sides;
-	reverse_histo(by_zone,r_zone);
-	reverse_histo(by_sides,r_sides);
-	multimap<double,int>::iterator r;
-	for(r = r_zone.begin(); r != r_zone.end(); ++r)
-		printf("%lf: %s\n", r->first, FetchTokenString(r->second));
-	for(r = r_sides.begin(); r != r_sides.end(); ++r)
-		printf("%lf: %d\n", r->first, r->second);
+//	multimap<double, int> r_zone, r_sides;
+//	reverse_histo(by_zone,r_zone);
+//	reverse_histo(by_sides,r_sides);
+//	multimap<double,int>::iterator r;
+//	for(r = r_zone.begin(); r != r_zone.end(); ++r)
+//		printf("%lf: %s\n", r->first, FetchTokenString(r->second));
+//	for(r = r_sides.begin(); r != r_sides.end(); ++r)
+//		printf("%lf: %d\n", r->first, r->second);
 	
 	trim_map(gMap);
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
