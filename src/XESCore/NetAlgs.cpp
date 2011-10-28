@@ -1132,14 +1132,14 @@ void MarkFunkyRoadIssues(Pmwx& ioMap)
 		int s = score_for_junction(v);
 		if(s >= E_CRSH)
 		{
-			#if OPENGL_MAP
+			#if OPENGL_MAP && DEV
 			debug_mesh_point(cgal2ben(v->point()),1,0,0);
 			#endif
 			++total_bad;
 		}
 		else if(s >= E_HPLG)
 		{
-			#if OPENGL_MAP
+			#if OPENGL_MAP && DEV
 			debug_mesh_point(cgal2ben(v->point()),1,1,0);
 			#endif
 			++total_hplug;
@@ -1197,13 +1197,13 @@ void MarkFunkyRoadIssues(Pmwx& ioMap)
 					   gNetReps[r1].semi_r != gNetReps[r2].semi_r)
 					{
 						++total_mid_change_size;
-						#if OPENGL_MAP						
+						#if OPENGL_MAP && DEV						
 						debug_mesh_point(cgal2ben(v->point()),1,0,1);
 						#endif
 					}
 					else
 					{
-						#if OPENGL_MAP
+						#if OPENGL_MAP && DEV
 						debug_mesh_point(cgal2ben(v->point()),0,1,1);
 						#endif
 					}

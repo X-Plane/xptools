@@ -276,7 +276,7 @@ void ring_simplify_polygon(Polygon2& io_poly, double err)
 	io_poly.swap(reduced);
 }
 
-#if OPENGL_MAP
+#if OPENGL_MAP && DEV
 static void	debug_show_block(Block_2& io_block, CoordTranslator2& t)
 {
 	for(Block_2::Halfedge_iterator e = io_block.halfedges_begin(); e != io_block.halfedges_end(); ++e)
