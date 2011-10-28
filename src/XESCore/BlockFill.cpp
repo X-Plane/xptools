@@ -58,7 +58,7 @@
 #include "RF_Selection.h"
 #include "MapHelpers.h"
 #include "UTL_interval.h"
-
+#include <stdarg.h>
 typedef UTL_interval<double>	time_region;
 
 #include "GISTool_Globals.h"

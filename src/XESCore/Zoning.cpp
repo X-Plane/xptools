@@ -37,7 +37,7 @@
 #include "MapTopology.h"
 #include "GISTool_Globals.h"
 #include "MeshAlgs.h"
-#include "DemAlgs.h"
+#include "DEMAlgs.h"
 #include "GISUtils.h"
 #include "CompGeomUtils.h"
 #include "BlockFill.h"
