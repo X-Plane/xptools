@@ -25,6 +25,7 @@
 #include "GISTool_Utils.h"
 #include "GISTool_Globals.h"
 #include "DEMAlgs.h"
+#include "PolyRasterUtils.h"
 #include "MeshAlgs.h"
 #include "ParamDefs.h"
 #include "Airports.h"
@@ -52,6 +53,63 @@
 #include "ForestTables.h"
 
 #define DEBUG_SHOW_FOREST_POLYS 0
+
+bool pred_want_ag(CDT::Face_handle f)
+{
+	int t = f->info().terrain;
+	if(gNaturalTerrainInfo[t].autogen_mode == URBAN) return true;
+	for(set<int>::iterator l = f->info().terrain_border.begin(); l != f->info().terrain_border.end(); ++l)
+	if(gNaturalTerrainInfo[*l].autogen_mode == URBAN) return true;
+	return false;
+}
+
+typedef bool(* want_tri_pred_f)(CDT::Face_handle f);
+
+template<want_tri_pred_f pred>
+void SetupRasterizerForMesh(PolyRasterizer<double>& rasterizer, CDT& ioMesh, DEMGeo& dem)
+{
+	for(CDT::Edge_iterator ei = ioMesh.edges_begin(); ei != ioMesh.edges_end(); ++ei)
+	{
+		CDT::Face_handle f1 = ei->first;
+		CDT::Face_handle f2 = f1->neighbor(ei->second);
+		bool want_f1 = !ioMesh.is_infinite(f1) && pred(f1);
+		bool want_f2 = !ioMesh.is_infinite(f2) && pred(f2);
+		if(want_f1 != want_f2)
+		{
+			Point2	p1(cgal2ben(f1->vertex(CDT::ccw(ei->second))->point()));
+			Point2	p2(cgal2ben(f1->vertex(CDT::cw (ei->second))->point()));
+			rasterizer.AddEdge(
+				dem.lon_to_x(p1.x()),
+				dem.lat_to_y(p1.y()),
+				dem.lon_to_x(p2.x()),
+				dem.lat_to_y(p2.y()));			
+		}
+	}
+	rasterizer.SortMasters();
+}
+
+void	RasterizerFill(PolyRasterizer<double>& rasterizer, DEMGeo& ag_ok, float v)
+{
+	int y = 0;
+	rasterizer.StartScanline(y);
+	while (!rasterizer.DoneScan())
+	{
+		int x1, x2;
+		while (rasterizer.GetRange(x1, x2))
+		{
+			for(int x = x1; x < x2; ++x)
+			{
+				ag_ok(x,y) = v;
+			}
+		}
+		// Yeah we could be more clever about modulus in the Y axis, but..the rasterizer might
+		// be unhappy skipping scanlines with "events" on them.
+		++y;
+		if (y >= ag_ok.mHeight) break;
+		rasterizer.AdvanceScanline(y);
+	}
+}
+
 
 static int DoSpreadsheet(const vector<const char *>& args)
 {
@@ -188,7 +246,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	SimplifyMap(gMap, false, gProgress);
 
 	arrangement_simplifier<Pmwx> simplifier;
-	simplifier.simplify(forest_stands, 0.002, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
+	simplifier.simplify(forest_stands, 0.003, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
 
 	ForestIndex								forest_index;
 	vector<ForestIndex::item_type>			forest_faces;
@@ -241,6 +299,25 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	#if OPENGL_MAP
 		bool no_sel = gFaceSelection.empty();
 	#endif
+	
+	map<int,double> by_zone, by_sides;
+	
+	DEMGeo& ag_ok(gDem[dem_Wizard]);
+	
+	ag_ok.resize(121,121);
+	ag_ok = DEM_NO_DATA;
+	ag_ok.copy_geo_from(forests);
+	
+	PolyRasterizer<double> raster;
+	
+	SetupRasterizerForMesh<pred_want_ag>(raster, gTriangulationHi, ag_ok);
+	RasterizerFill(raster, ag_ok, 1);
+	DEMGeo temp(ag_ok);
+	dem_copy_buffer_one(ag_ok,temp, DEM_NO_DATA);
+	dem_copy_buffer_one(temp,ag_ok, DEM_NO_DATA);
+	
+	// want it all? slow?  to test?  ok...
+	//ag_ok=1;
 
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f, ++idx)
 	if(!f->is_unbounded())
@@ -249,9 +326,28 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	if(gFaceSelection.count(f) || no_sel)
 	#endif
 	{
+		unsigned long long before, after;
+		Microseconds((UnsignedWide *)&before);
 		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
-		process_block(f,gTriangulationHi,forests, forest_index);
+		process_block(f,gTriangulationHi, ag_ok, forests, forest_index);
+		Microseconds((UnsignedWide *)&after);
+		double elapsed = (double) (after - before) / 1000000.0;
+		by_zone[f->data().GetZoning()] += elapsed;
+		int ns = count_circulator(f->outer_ccb());
+		by_sides[ns] += elapsed;
 	}
+
+	printf("Blocks: %d.  Split: %d. Forests: %d.  Parts: %d\n",  num_block_processed, num_blocks_with_split, num_forest_split, num_line_integ);
+	
+	multimap<double, int> r_zone, r_sides;
+	reverse_histo(by_zone,r_zone);
+	reverse_histo(by_sides,r_sides);
+	multimap<double,int>::iterator r;
+	for(r = r_zone.begin(); r != r_zone.end(); ++r)
+		printf("%lf: %s\n", r->first, FetchTokenString(r->second));
+	for(r = r_sides.begin(); r != r_sides.end(); ++r)
+		printf("%lf: %d\n", r->first, r->second);
+	
 	trim_map(gMap);
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
 

@@ -1878,10 +1878,10 @@ void	SubtractPlaced(
 		Quad_1to4(Point2(x1,y1), r, h+50, w+50, corners);
 		
 		Polygon_2	p;
-		p.push_back(ben2cgal(corners[3]));
-		p.push_back(ben2cgal(corners[2]));
-		p.push_back(ben2cgal(corners[1]));
-		p.push_back(ben2cgal(corners[0]));
+		p.push_back(ben2cgal<Point_2>(corners[3]));
+		p.push_back(ben2cgal<Point_2>(corners[2]));
+		p.push_back(ben2cgal<Point_2>(corners[1]));
+		p.push_back(ben2cgal<Point_2>(corners[0]));
 		
 		goo.push_back(p);
 	}

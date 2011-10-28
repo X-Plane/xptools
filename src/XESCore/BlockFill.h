@@ -55,6 +55,7 @@ void	extract_features(
 bool	process_block(
 					Pmwx::Face_handle		f, 
 					CDT&					mesh,
+					const DEMGeo&			ag_ok_approx_dem,
 					const DEMGeo&			forest_dem,
 					ForestIndex&			forest_index);
 
@@ -69,4 +70,8 @@ void block_pts_from_ccb(
 			bool							is_hole);
 
 
+extern int num_block_processed;
+extern int num_blocks_with_split;
+extern int num_forest_split;
+extern int num_line_integ;
 #endif /* BlockFill_H */

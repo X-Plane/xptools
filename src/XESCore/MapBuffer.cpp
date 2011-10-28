@@ -40,7 +40,7 @@
 
 // This is a hack - by converting our buffer pts to double, we shorten their mantissas, which cuts down the computing 
 // we must do on the planar map build-up by, well, a lot!
-#define PROCESS(x) (ben2cgal(cgal2ben((x))))
+#define PROCESS(x) (ben2cgal<Point_2>(cgal2ben((x))))
 //#define PROCESS(x) (x)
 
 /***************************************************************************************************************************************

@@ -47,7 +47,8 @@ class	spatial_index_2 {
 public:
 
 	typedef	typename Traits::Point_2		Point_2;
-
+	typedef typename Traits::FT				NT;
+	
 	void		insert(const Point_2& p);
 	
 	template<typename Iterator>

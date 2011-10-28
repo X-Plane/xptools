@@ -129,8 +129,10 @@ struct	CoordTranslator_2 {
 				  mSrcMin.y() + (input.y() - mDstMin.y()) * (mSrcMax.y() - mSrcMin.y()) / (mDstMax.y() - mDstMin.y()));
 }
 
-inline Point_2	ben2cgal(const Point2& p) { return Point_2(p.x(),p.y()); }
-inline Point2	cgal2ben(const Point_2& p) { return Point2(CGAL::to_double(p.x()),CGAL::to_double(p.y())); }
+template<typename P>
+inline P	ben2cgal(const Point2& p) { return P(p.x(),p.y()); }
+template <typename P>
+inline Point2	cgal2ben(const P& p) { return Point2(CGAL::to_double(p.x()),CGAL::to_double(p.y())); }
 inline Segment2	cgal2ben(const Segment_2& s) { return Segment2(cgal2ben(s.source()),cgal2ben(s.target())); }
 
 

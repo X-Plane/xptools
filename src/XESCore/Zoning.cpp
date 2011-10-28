@@ -61,6 +61,13 @@ FillRuleTable				gFillRules;
 LandClassInfoTable			gLandClassInfo;
 LandFillRuleTable			gLandFillRules;
 
+inline int RegisterAGResource(const string& r)
+{
+	if (r == "NO_VALUE") return NO_VALUE;
+	string res = "lib/g10/autogen/" + r;
+	return LookupTokenCreate(res.c_str());
+}
+
 static bool ReadLandClassRule(const vector<string>& tokens, void * ref)
 {
 	LandClassInfo_t info;
@@ -81,8 +88,9 @@ static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 	EdgeRule_t e;
 	set<int>	zoning_list;
 	set<int>	road_list;
-	if(TokenizeLine(tokens," SSef",&zoning_list, &road_list, &e.resource_id, &e.width) != 5) return false;
-		
+	string res_id;
+	if(TokenizeLine(tokens," SSsf",&zoning_list, &road_list, &res_id, &e.width) != 5) return false;
+	e.resource_id = RegisterAGResource(res_id);
 	for(set<int>::iterator z = zoning_list.begin(); z != zoning_list.end(); ++z)	
 	for(set<int>::iterator r = road_list.begin(); r != road_list.end(); ++r)
 	{
@@ -99,7 +107,8 @@ static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
-	if(TokenizeLine(tokens, " efffffffffeee",	
+	string agb, fac, ags;
+	if(TokenizeLine(tokens, " efffffffffsss",	
 			&r.zoning,
 			&r.min_side_len, &r.max_side_len,
 			&r.block_err_max,
@@ -107,10 +116,14 @@ static bool ReadFillRule(const vector<string>& tokens, void * ref)
 			&r.min_side_minor,&r.max_side_minor,
 			&r.ang_min,&r.ang_max,
 
-			&r.agb_id,
-			&r.fac_id,
-			&r.ags_id) != 14)
+			&agb,
+			&fac,
+			&ags) != 14)
 			return false;
+
+	r.agb_id = RegisterAGResource(agb);
+	r.ags_id = RegisterAGResource(ags);
+	r.fac_id = RegisterAGResource(fac);
 	
 	if(gZoningInfo.count(r.zoning) == 0)
 		printf("WARNING: zoning type %s, required in fill rule for %s/%s/%s is unknown.\n",

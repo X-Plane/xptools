@@ -1007,7 +1007,7 @@ void	DrawMapBucketed(
 				glVertex2f(r->at(0).x(),r->at(0).y());
 				glEnd();
 			}
-			
+			glLineWidth(1);
 			if(is_forest)
 			{
 				glBegin(GL_LINES);

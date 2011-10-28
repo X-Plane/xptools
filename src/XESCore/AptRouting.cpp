@@ -569,7 +569,7 @@ bool make_map_with_skeleton(
 
 	for(vector<Point2>::const_iterator p = in_poi.begin(); p != in_poi.end(); ++p)
 	{
-		Point_2 loc = ben2cgal(*p);
+		Point_2 loc = ben2cgal<Point_2>(*p);
 
 		cgal_node_t * best_node = NULL;
 		cgal_edge_t * best_edge = NULL;
@@ -697,7 +697,7 @@ static void make_cgal_net_for_map(
 
 	for(vector<Point2>::const_iterator poi = in_poi.begin(); poi != in_poi.end(); ++poi)
 	{
-		Point_2 p = ben2cgal(*poi);
+		Point_2 p = ben2cgal<Point_2>(*poi);
 
 		CGAL::Object	o;
 		o = loc.locate(p);

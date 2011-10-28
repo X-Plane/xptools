@@ -659,8 +659,8 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 							oob = true;
 						if(!oob)
 						ADD_PT_PAIR(
-							ben2cgal(reduced[i-1]),
-							ben2cgal(reduced[i]),
+							ben2cgal<Point_2>(reduced[i-1]),
+							ben2cgal<Point_2>(reduced[i]),
 							reduced[i-1],
 							reduced[i],
 							n);
@@ -687,7 +687,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 							Point2 raw_pt(obj->padfX[i],obj->padfY[i]);
 							if(sProj) reproj(raw_pt);
 							if(grid_steps) round_grid(raw_pt, grid_steps);
-							pt = ben2cgal(raw_pt);
+							pt = ben2cgal<Point_2>(raw_pt);
 						}
 						if(p.is_empty() || pt != p.vertex(p.size()-1))					// Do not add point if it equals the prev!
 							p.push_back(pt);

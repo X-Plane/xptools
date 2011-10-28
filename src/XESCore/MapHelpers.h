@@ -396,6 +396,8 @@ template <class Arr, class Traits=default_lock_traits<Arr> >
 class	arrangement_simplifier {
 public:
 
+	typedef typename Arr::Geometry_traits_2	ArrTraits;
+
 	typedef Traits		traits_type;
 	
 	// Traits has a lock_it method that is called to see if a vertex cannot be removed for arbitrary reasons.
@@ -459,7 +461,10 @@ bool			can_possibly_merge(
 }
 
 // A collection-visitor that checks for points within the triangle ABC - used to find 'squatters'.
+template <typename K>
 struct visit_pt_in_tri {
+	typedef typename K::Point_2	Point_2;
+	typedef typename K::Triangle_2	Triangle_2;
 	visit_pt_in_tri(const Point_2& a, const Point_2& b, const Point_2& c) : tri(a,b,c)
 	{
 		if(tri.orientation() == CGAL::CLOCKWISE)	
@@ -524,7 +529,7 @@ bool			squatters_in_area(
 	
 	if(o == CGAL::LEFT_TURN)
 	{
-		visit_pt_in_tri visitor(a,b,c);		
+		visit_pt_in_tri<typename Arr::Geometry_traits_2> visitor(a,b,c);		
 		typename Arr::Geometry_traits_2::Circle_2 where;
 		circle_to_search<typename Arr::Geometry_traits_2>(a,b,c,where);
 		
@@ -533,9 +538,9 @@ bool			squatters_in_area(
 	}
 	else
 	{
-		visit_pt_in_tri visitor(c,b,a);		
+		visit_pt_in_tri<typename Arr::Geometry_traits_2> visitor(c,b,a);		
 
-		Point_2 ctr = CGAL::circumcenter(a,b,c);
+		typename Arr::Point_2 ctr = CGAL::circumcenter(a,b,c);
 		typename Arr::Geometry_traits_2::Circle_2 where;
 		circle_to_search<typename Arr::Geometry_traits_2>(c,b,a,where);
 
@@ -582,7 +587,7 @@ double arrangement_simplifier<Arr,Traits>::simple_vertex_error(typename Arr::Ver
 	if(he2) *he2 = h2;
 	
 	DebugAssert(h1->source()->point() != h2->source()->point());
-	FastKernel::Line_2 sl(h1->source()->point(),h2->source()->point());
+	typename ArrTraits::Line_2 sl(h1->source()->point(),h2->source()->point());
 	return sqrt(CGAL::to_double(CGAL::squared_distance(sl, v->point())));
 }
 
@@ -765,7 +770,7 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 						// match h2's twin.  we pass the curve's opposite and h2'->h1'.
 						
 						typename Arr::Halfedge_handle next = h1->next();
-						Curve_2 nc(Segment_2(h1->source()->point(),next->target()->point()));
+						typename ArrTraits::Curve_2 nc(typename ArrTraits::Segment_2(h1->source()->point(),next->target()->point()));
 
 						typename Arr::Halfedge_handle remain;						
 						if(nc.is_directed_right() == (h1->direction() == CGAL::ARR_LEFT_TO_RIGHT))
@@ -774,7 +779,7 @@ void arrangement_simplifier<Arr,Traits>::simplify(Arr& io_block, double max_err,
 						}
 						else 
 						{
-							Curve_2 nco(Segment_2(next->target()->point(), h1->source()->point()));
+							typename ArrTraits::Curve_2 nco(typename ArrTraits::Segment_2(next->target()->point(), h1->source()->point()));
 							DebugAssert(nco.is_directed_right() == (next->twin()->direction() == CGAL::ARR_LEFT_TO_RIGHT));
 							remain = io_block.merge_edge(next->twin(),h1->twin(),nc)->twin();
 						}

@@ -274,7 +274,7 @@ void BulkInsertRoads(vector<Segment2>	roads, Pmwx& io_map)
 	vector<GIS_halfedge_data>	data_vec(roads.size(),hed);
 
 	for(int n = 0; n < roads.size(); ++n)
-		road_vec[n] = Segment_2(ben2cgal(roads[n].p1),ben2cgal(roads[n].p2));
+		road_vec[n] = Segment_2(ben2cgal<Point_2>(roads[n].p1),ben2cgal<Point_2>(roads[n].p2));
 
 	Map_CreateWithLineData(io_map, road_vec, data_vec);
 }

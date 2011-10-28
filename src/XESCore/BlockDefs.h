@@ -57,13 +57,26 @@ struct BLOCK_face_data {
 	Vector2	major_axis;
 };
 
-typedef Arr_seg_traits_					Block_traits_2;
+//typedef CGAL::Lazy_exact_nt<CGAL::Gmpq> GNT;
+//typedef CGAL::Filtered_kernel<CGAL::Simple_cartesian<GNT> > GK;
+//typedef CGAL::Simple_cartesian<CGAL::Gmpq>  GK;
+
+typedef FastKernel GK;
+
+typedef GK::Point_2																	BPoint_2;
+typedef GK::Segment_2																BSegment_2;
+
+typedef	std::vector<GK::Point_2>													GK_Container_;
+typedef CGAL::Arr_segment_traits_2<GK>												GK_TraitsBase;
+typedef CGAL::Arr_consolidated_curve_data_traits_2<GK_TraitsBase, int>				Block_traits_2;
+
+//typedef Arr_seg_traits_					Block_traits_2;
 
 typedef CGAL::Arr_extended_dcel<Block_traits_2,
 								BLOCK_vertex_data,
 								BLOCK_halfedge_data,
 								BLOCK_face_data,
-								CGAL::Arr_vertex_base<Point_2>,
+								CGAL::Arr_vertex_base<Block_traits_2::Point_2>,
 								CGAL::Arr_halfedge_base<Block_traits_2::X_monotone_curve_2>,
 								CGAL::Gps_face_base>								Block_dcel;
 
@@ -80,7 +93,7 @@ inline bool operator<(const Block_2::Vertex_const_handle& lhs, const Block_2::Ve
 inline bool operator<(const Block_2::Halfedge_const_handle& lhs, const Block_2::Halfedge_const_handle& rhs)	{	return &*lhs < &*rhs;	}
 
 
-
+struct EdgeRule_t;
 struct block_pt {
 	bool operator==(const block_pt& rhs) const { return loc == rhs.loc; }
 	Point2			loc;			// This is our original location on 
@@ -95,6 +108,7 @@ struct block_pt {
 	bool			discon;			// Discontinuity in road or edge type - requires a "hard cap" between this segment and the next one.
 	bool			reflex;
 	pair<int,bool>	edge_type;		// Edge type OUTGOING from this point.  Flag is true if reversed (twin is source)
+	EdgeRule_t *	edge_rule;		// AG rule for side outgoing or null if no AG.
 	float			dot;
 	Halfedge_handle	orig;
 };

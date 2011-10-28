@@ -187,7 +187,8 @@ int	CreateTerrainPackage(const char * inPackage, bool make_stub_pngs, bool dry_r
 			case shader_tile:	
 				if(!n->second.compo_tex.empty())
 					fprintf(ter, "COMPOSITE_TEX %s" CRLF, n->second.compo_tex.c_str());
-				fprintf(ter, "TEXTURE_TILE %d %d 256 256" CRLF, n->second.tiles_x, n->second.tiles_y);	
+				fprintf(ter, "TEXTURE_TILE %d %d 64 64 ../textures10/shared/tiles_%dx%d.png" CRLF, n->second.tiles_x, n->second.tiles_y,
+					n->second.tiles_x * (n->second.compo_tex.empty() ? 1 : 2), n->second.tiles_y);
 				break;
 			case shader_slope:	
 			case shader_slope2:	

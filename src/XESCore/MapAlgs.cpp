@@ -1653,8 +1653,8 @@ void	CalcBoundingBox(
 			++cur;
 		} while (cur != last);
 	}
-	sw = ben2cgal(box.p1);
-	ne = ben2cgal(box.p2);
+	sw = ben2cgal<Point_2>(box.p1);
+	ne = ben2cgal<Point_2>(box.p2);
 }
 
 

@@ -250,10 +250,10 @@ void BurnInAirport(
 			ExpandRunway(&inAirport->pavements[rwy],pad_width, pad_height, corners);
 
 			Polygon_2	poly;
-			poly.push_back(ben2cgal(corners[0]));
-			poly.push_back(ben2cgal(corners[1]));
-			poly.push_back(ben2cgal(corners[2]));
-			poly.push_back(ben2cgal(corners[3]));
+			poly.push_back(ben2cgal<Point_2>(corners[0]));
+			poly.push_back(ben2cgal<Point_2>(corners[1]));
+			poly.push_back(ben2cgal<Point_2>(corners[2]));
+			poly.push_back(ben2cgal<Point_2>(corners[3]));
 //			ioArea.join(poly);
 			poly_vec.push_back(poly);
 		}
@@ -267,10 +267,10 @@ void BurnInAirport(
 			ExpandRunway(&inAirport->runways[rwy],pad_width, pad_height, corners);
 
 			Polygon_2	poly;
-			poly.push_back(ben2cgal(corners[0]));
-			poly.push_back(ben2cgal(corners[1]));
-			poly.push_back(ben2cgal(corners[2]));
-			poly.push_back(ben2cgal(corners[3]));
+			poly.push_back(ben2cgal<Point_2>(corners[0]));
+			poly.push_back(ben2cgal<Point_2>(corners[1]));
+			poly.push_back(ben2cgal<Point_2>(corners[2]));
+			poly.push_back(ben2cgal<Point_2>(corners[3]));
 
 //			ioArea.join(poly);
 			poly_vec.push_back(poly);
@@ -286,10 +286,10 @@ void BurnInAirport(
 			ExpandRunway(&inAirport->helipads[rwy],pad_width, pad_height, corners);
 
 			Polygon_2	poly;
-			poly.push_back(ben2cgal(corners[0]));
-			poly.push_back(ben2cgal(corners[1]));
-			poly.push_back(ben2cgal(corners[2]));
-			poly.push_back(ben2cgal(corners[3]));
+			poly.push_back(ben2cgal<Point_2>(corners[0]));
+			poly.push_back(ben2cgal<Point_2>(corners[1]));
+			poly.push_back(ben2cgal<Point_2>(corners[2]));
+			poly.push_back(ben2cgal<Point_2>(corners[3]));
 
 //			ioArea.join(poly);
 			poly_vec.push_back(poly);
@@ -433,8 +433,8 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 		Halfedge_const_handle he;
 		for(int n = 0; n < orig.size(); ++n)
 		{
-			Point_2	a(ben2cgal(orig[n]));
-			Point_2 b(ben2cgal(orig[(n+orig.size()-1) % orig.size()]));
+			Point_2	a(ben2cgal<Point_2>(orig[n]));
+			Point_2 b(ben2cgal<Point_2>(orig[(n+orig.size()-1) % orig.size()]));
 
 			CGAL::insert_curve(temp, Curve_2(Segment_2(a,b)));
 			CGAL::Arr_walk_along_line_point_location<Arrangement_2>    pl(temp);
@@ -809,15 +809,15 @@ void	BezierToSegments(
 		if (b->p1 == b->p2 && (b->p1 == b->c1 || b->p2 == b->c2)) continue;
 		if(b->p1 == b->c1 && b->p2 == b->c2)
 		{
-			if(outWinding.is_empty() || outWinding[outWinding.size()-1] != ben2cgal(b->p1))
-				outWinding.push_back(ben2cgal(b->p1));
+			if(outWinding.is_empty() || outWinding[outWinding.size()-1] != ben2cgal<Point_2>(b->p1))
+				outWinding.push_back(ben2cgal<Point_2>(b->p1));
 		}
 		else
 		{
 			int tess = bz_tess(*b);
 			for (int n = 0; n < tess; ++n)
 			{
-				Point_2 bp(ben2cgal(b->midpoint((float)n / (float)tess)));
+				Point_2 bp(ben2cgal<Point_2>(b->midpoint((float)n / (float)tess)));
 				if(outWinding.is_empty() || outWinding[outWinding.size()-1] != bp)
 					outWinding.push_back(bp);
 			}

@@ -143,6 +143,12 @@ void	create_block(
 {
 	block.clear();
 	
+	#if DEV
+		for(int n = 0; n < in_data.size(); ++n)
+			if(in_data[n].usage == usage_Polygonal_Feature)
+				DebugAssert(in_data[n].feature != 0);
+	#endif
+	
 	// First we are going to build up a curve list and bulk insert them all.  Each curve has the polygon number as its data.
 	// This should be faster than doing a series of piece-wise inserts.
 
@@ -207,7 +213,15 @@ void	create_block(
 	
 	visitor.Visit(&block);
 
+	#if DEV
+	for (Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
+	if(f->data().usage == usage_Polygonal_Feature)
+				DebugAssert(f->data().feature != 0);
+	#endif
+
 }
+
+#if 0
 
 // This routine checks whether a poylgon can be inserted into a block such that the interior of the polygon does not at all overlap with used space
 // in the block.  We COULD do this using boolean operations (E.g. is the intersection of the used block space and our polygon empty?) but we do NOT want
@@ -289,6 +303,7 @@ void	do_insert_into_block(
 		(*f)->set_data(data);
 }					
 
+#endif
 
 void clean_block(Block_2& block)
 {
@@ -299,9 +314,6 @@ void clean_block(Block_2& block)
 		   if(strstr(FetchTokenString(eig->face()->data().feature),".agb") == 0)
 		   if(strstr(FetchTokenString(eig->face()->data().feature),".fac") == 0)
 			kill.push_back(eig);
-//		#if !DEV
-//			#error this is a hokey way to prevent conslidatoin!
-//		#endif
 
 //	printf("Before:\n");
 //	for(Block_2::Face_handle f = block.faces_begin(); f != block.faces_end(); ++f)
@@ -320,9 +332,10 @@ void clean_block(Block_2& block)
 			Block_2::Halfedge_handle e2 = e1->next();
 			DebugAssert(e1->target() == k);
 			DebugAssert(e2->source() == k);
+			
 			if(e1->data() == e2->data() && CGAL::collinear(e1->source()->point(),e1->target()->point(),e2->target()->point()))
 			{
-				Block_2::X_monotone_curve_2	nc(Segment_2(e1->source()->point(),e2->target()->point()));
+				Block_2::X_monotone_curve_2	nc(Block_traits_2::Segment_2(e1->source()->point(),e2->target()->point()));
 				block.merge_edge(e1,e2,nc);
 			}	
 		}

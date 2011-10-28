@@ -33,7 +33,7 @@ inline void push_vertical(double x, double y1, double y2, vector<X_monotone_curv
 		p1 = translator->Forward(p1);
 		p2 = translator->Forward(p2);
 	}
-	c.push_back(X_monotone_curve_2(Segment_2(ben2cgal(p1), ben2cgal(p2)),key));
+	c.push_back(X_monotone_curve_2(Segment_2(ben2cgal<Point_2>(p1), ben2cgal<Point_2>(p2)),key));
 }
 
 inline void push_horizontal(double y, double x1, double x2, vector<X_monotone_curve_2>& c, int key, CoordTranslator2 * translator)
@@ -44,7 +44,7 @@ inline void push_horizontal(double y, double x1, double x2, vector<X_monotone_cu
 		p1 = translator->Forward(p1);
 		p2 = translator->Forward(p2);
 	}
-	c.push_back(X_monotone_curve_2(Segment_2(ben2cgal(p1), ben2cgal(p2)),key));
+	c.push_back(X_monotone_curve_2(Segment_2(ben2cgal<Point_2>(p1), ben2cgal<Point_2>(p2)),key));
 }
 
 void	MapFromDEM(

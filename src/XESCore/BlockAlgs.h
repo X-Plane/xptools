@@ -44,14 +44,14 @@ void	create_block(
 					const vector<Block_2::X_monotone_curve_2>&	in_bounds,
 					int											unbounded_idx);
 
-bool	can_insert_into_block(
-					Block_2&						block,
-					const Polygon_2&				bounds);
-					
-void	do_insert_into_block(
-					Block_2&						block,
-					const Polygon_2&				bounds,
-					const BLOCK_face_data&			data);
+//bool	can_insert_into_block(
+//					Block_2&						block,
+//					const Polygon_2&				bounds);
+//					
+//void	do_insert_into_block(
+//					Block_2&						block,
+//					const Polygon_2&				bounds,
+//					const BLOCK_face_data&			data);
 
 void clean_block(Block_2& block);
 

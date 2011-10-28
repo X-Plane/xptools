@@ -169,7 +169,7 @@ void	ben2cgal(const Polygon2& ben, Polygon_2& cgal)
 {
 	cgal.clear();
 	for(int n = 0; n < ben.size(); ++n)
-		cgal.push_back(ben2cgal(ben[n]));
+		cgal.push_back(ben2cgal<Point_2>(ben[n]));
 }
 
 void	ben2cgal(const vector<Polygon2>& ben, Polygon_with_holes_2& cgal)
