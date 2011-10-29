@@ -166,6 +166,21 @@ int count_circulator(Circulator circ)
 	return r;
 }
 
+template <typename Circulator>
+int circulator_distance_to(Circulator circ, Circulator ent)
+{
+	if(circ == ent) return 0;
+	int r = 0;
+	Circulator stop(circ);
+	do {
+		++r;
+		++circ;
+	} while (circ != stop && circ != ent);
+	if(circ == stop) return -1;
+	return r;
+	
+}
+
 
 template <typename Priority, typename Value>
 class pqueue {

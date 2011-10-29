@@ -33,8 +33,8 @@ struct	CoordTranslator2 {
 	Point2	mDstMin;
 	Point2	mDstMax;
 
-	Point2	Forward(const Point2& input);
-	Point2	Reverse(const Point2& input);
+	Point2	Forward(const Point2& input) const;
+	Point2	Reverse(const Point2& input) const;
 };
 
 

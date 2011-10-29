@@ -1342,13 +1342,13 @@ static void PmwxToPoly(const Pmwx& inMap, Polygon2& outPoly)
 
 #endif
 
-Point2	CoordTranslator2::Forward(const Point2& input)
+Point2	CoordTranslator2::Forward(const Point2& input) const
 {
 	return Point2(
 				  mDstMin.x() + (input.x() - mSrcMin.x()) * (mDstMax.x() - mDstMin.x()) / (mSrcMax.x() - mSrcMin.x()),
 				  mDstMin.y() + (input.y() - mSrcMin.y()) * (mDstMax.y() - mDstMin.y()) / (mSrcMax.y() - mSrcMin.y()));
 }
-Point2	CoordTranslator2::Reverse(const Point2& input)
+Point2	CoordTranslator2::Reverse(const Point2& input) const
 {
 	return Point2(
 				  mSrcMin.x() + (input.x() - mDstMin.x()) * (mSrcMax.x() - mSrcMin.x()) / (mDstMax.x() - mDstMin.x()),
