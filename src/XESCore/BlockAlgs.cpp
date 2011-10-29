@@ -25,6 +25,10 @@
 #include "MapTopology.h"
 #include "MapHelpers.h"
 #include "STLUtils.h"
+#include "NetTables.h"
+#include "NetHelpers.h"
+#include "CompGeomUtils.h"
+#include "GISUtils.h"
 
 class check_block_visitor {
 public:
@@ -388,6 +392,39 @@ void find_major_axis(vector<block_pt>&	pts,
 	
 	for(int i = 0; i < pts.size(); ++i)
 	{
+		NetRepInfoTable::iterator r = gNetReps.find(pts[i].edge_type.first);
+		if(r != gNetReps.end() && r->second.use_mode != use_Street)
+			continue;
+		DebugAssert(pts[i].orig != Pmwx::Halfedge_handle());		
+		if(pts[i].orig->data().HasBridgeRoads())
+			continue;
+		
+		int j = (i + 1) % pts.size();
+		Vector2	v_a(pts[i].loc,pts[j].loc);
+		v_a.normalize();
+		Vector2 v_b(v_a.perpendicular_ccw());
+		
+		double total = 0.0;
+		for(int k = 0; k < pts.size(); ++k)
+		{
+			int l = (k + 1) % pts.size();
+			Vector2	s(pts[k].loc,pts[l].loc);
+			
+			total += max(fabs(v_a.dot(s)),fabs(v_b.dot(s)));			
+		}
+		
+		if(total >= best_v)
+		{
+			best_v = total;
+			if(out_segment) *out_segment = Segment2(pts[i].loc,pts[j].loc);
+			*out_major = v_a;
+			*out_minor = v_b;			
+		}	
+	}
+	
+	if(best_v == -1)
+	for(int i = 0; i < pts.size(); ++i)
+	{
 		int j = (i + 1) % pts.size();
 		Vector2	v_a(pts[i].loc,pts[j].loc);
 		v_a.normalize();
@@ -423,22 +460,205 @@ void find_major_axis(vector<block_pt>&	pts,
 		bounds[3] = max(bounds[3],cb);
 	}
 	
-	if(fabs(bounds[3] - bounds[1]) > fabs(bounds[2] - bounds[0]))
+//	if(fabs(bounds[3] - bounds[1]) > fabs(bounds[2] - bounds[0]))
+//	{
+//		*out_major = out_major->perpendicular_ccw();
+//		*out_minor = out_minor->perpendicular_ccw();
+//
+//		bounds[2] = bounds[0] = out_major->dot(Vector2(pts[0].loc));
+//		bounds[3] = bounds[1] = out_minor->dot(Vector2(pts[0].loc));
+//		for(int n = 1; n < pts.size(); ++n)
+//		{
+//			double ca = out_major->dot(Vector2(pts[n].loc));
+//			double cb = out_minor->dot(Vector2(pts[n].loc));
+//			bounds[0] = min(bounds[0],ca);
+//			bounds[1] = min(bounds[1],cb);
+//			bounds[2] = max(bounds[2],ca);
+//			bounds[3] = max(bounds[3],cb);
+//		}
+//
+//	}
+}
+
+bool	sides_can_merge(Pmwx::Halfedge_handle e1, Pmwx::Halfedge_handle e2)
+{
+	if(width_for_he(e1) != width_for_he(e2))	
+		return false;
+	if(ground_road_access_for_he(e1) != ground_road_access_for_he(e2))	
+		return false;
+	return true;
+}
+
+bool	within_err_metric(const Point_2& p1, const Point_2& p2, const Point_2& p3, const CoordTranslator2& trans, double max_err_sq)
+{
+	Segment2	s(
+		trans.Forward(cgal2ben(p1)),
+		trans.Forward(cgal2ben(p3)));
+	Point2	t(trans.Forward(cgal2ben(p2)));
+	
+	return (s.squared_distance_supporting_line(t) < max_err_sq);
+}
+
+bool	within_err_metric(Pmwx::Halfedge_handle h1, Pmwx::Halfedge_handle h2, const CoordTranslator2& trans, double max_err_sq)
+{
+	Point_2	p1(h1->source()->point());
+	Point_2	p2(h2->target()->point());
+	
+	while(h1 != h2)
 	{
-		*out_major = out_major->perpendicular_ccw();
-		*out_minor = out_minor->perpendicular_ccw();
-
-		bounds[2] = bounds[0] = out_major->dot(Vector2(pts[0].loc));
-		bounds[3] = bounds[1] = out_minor->dot(Vector2(pts[0].loc));
-		for(int n = 1; n < pts.size(); ++n)
-		{
-			double ca = out_major->dot(Vector2(pts[n].loc));
-			double cb = out_minor->dot(Vector2(pts[n].loc));
-			bounds[0] = min(bounds[0],ca);
-			bounds[1] = min(bounds[1],cb);
-			bounds[2] = max(bounds[2],ca);
-			bounds[3] = max(bounds[3],cb);
-		}
-
+		if(!within_err_metric(p1,h1->target()->point(),p2,trans,max_err_sq))
+			return false;
+		h1 = h1->next();	
 	}
+	return true;
+	
+}
+
+bool	build_convex_polygon(
+				Pmwx::Ccb_halfedge_circulator									ccb,
+				vector<pair<Pmwx::Halfedge_handle, Pmwx::Halfedge_handle> >&	sides,
+				const CoordTranslator2&											trans,
+				Polygon2&														metric_bounds,
+				double															max_err_mtrs,
+				double															min_side_len)
+{
+	double	e_sq = max_err_mtrs*max_err_mtrs;
+	sides.clear();
+	metric_bounds.clear();
+	
+	Pmwx::Ccb_halfedge_circulator circ(ccb);
+//	Bbox2				bounds;
+//	
+//	do {
+//		bounds += cgal2ben(circ->source()->point());
+//	} while (++circ != ccb);
+
+	Pmwx::Ccb_halfedge_circulator start,next;
+	start = ccb;
+	do {
+		--start;
+		if(!sides_can_merge(start,ccb))
+			break;
+		if(!within_err_metric(start,ccb,trans,e_sq))
+			break;		
+	} while(start != ccb);
+	++start;
+	
+	// now we can go around.
+
+	circ = start;
+	//int ne = count_circulator(start);
+	//printf("Poly has %d sides.\n", ne);
+	do {
+	 
+		Pmwx::Ccb_halfedge_circulator stop(circ);
+		do {
+			++stop;
+		} while(sides_can_merge(circ,stop) && within_err_metric(circ,stop,trans,e_sq) && stop != start);
+	
+		--stop;
+		//printf("Pushing side of %d, %d\n", circulator_distance_to(start, circ),circulator_distance_to(start,stop));
+		sides.push_back(pair<Pmwx::Halfedge_handle,Pmwx::Halfedge_handle>(circ, stop));
+		++stop;
+		circ = stop;
+	
+	} while(circ != start);
+	
+	if(sides.size() < 3)	
+	{
+		//debug_mesh_point(bounds.centroid(),1,1,1);
+		return false;
+	}
+	
+	int i, j, k;
+	
+	vector<Segment2>	msides;
+	for(i = 0; i < sides.size(); ++i)
+	{
+		j = (i + 1) % sides.size();		
+		DebugAssert(sides[i].second->target() == sides[j].first->source());
+		msides.push_back(Segment2(
+						trans.Forward(cgal2ben(sides[i].first->source()->point())),
+						trans.Forward(cgal2ben(sides[i].second->target()->point()))));						
+	}	
+	for(i = 0; i < sides.size(); ++i)
+	{
+		j = (i + 1) % sides.size();		
+		Vector2	v1(msides[i].p1,msides[i].p2);
+		Vector2	v2(msides[j].p1,msides[j].p2);
+		v1.normalize();
+		v2.normalize();
+		if(v1.dot(v2) > 0.9998 ||
+			!v1.left_turn(v2))
+		{
+			//debug_mesh_point(trans.Reverse(msides[i].p2),1,0,0);
+			return false;
+		}
+		double w = width_for_he(sides[i].first);
+		if(w)
+		{
+			v1 = v1.perpendicular_ccw();
+			v1 *= w;
+			msides[i].p1 += v1;
+			msides[i].p2 += v1;
+		}
+	}
+	for(j = 0; j < sides.size(); ++j)
+	{
+		i = (j + sides.size() - 1) % sides.size();
+		Line2 li(msides[i]), lj(msides[j]);
+		Point2	p;
+		if(!li.intersect(lj,p))
+		{
+			Assert(!"Failure to intersect.\n");
+			return false;
+		}
+		metric_bounds.push_back(p);
+	}
+	
+	for(i = 0; i < metric_bounds.size(); ++i)
+	{
+		j = (i + 1) % metric_bounds.size();
+		k = (i + 2) % metric_bounds.size();
+		if(metric_bounds.side(i).squared_length() < (min_side_len*min_side_len))
+		{
+			//debug_mesh_line(trans.Reverse(metric_bounds.side(i).p1),trans.Reverse(metric_bounds.side(i).p2),1,1,0,1,1,0);
+			return false;
+		}
+		if(!left_turn(metric_bounds[i],metric_bounds[j],metric_bounds[k]))
+		{
+			//debug_mesh_point(trans.Reverse(metric_bounds[j]),1,1,0);
+			return false;
+		}
+		if(Vector2(msides[i].p1,msides[i].p2).dot(Vector2(metric_bounds[i],metric_bounds[j])) < 0.0)
+		{
+			//debug_mesh_line(trans.Reverse(msides[i].p1),trans.Reverse(msides[i].p2),1,0,0,1,0,0);
+			return false;
+		}
+	}
+	DebugAssert(metric_bounds.size() == msides.size());
+	DebugAssert(msides.size() == sides.size());
+		
+	return true;
+}
+
+int	pick_major_axis(
+				vector<pair<Pmwx::Halfedge_handle, Pmwx::Halfedge_handle> >&	sides,				// Per side: inclusive range of half-edges "consolidated" into the sides.
+				Polygon2&														bounds,			// Inset boundary in metric, first side matched to the list.
+				Vector2&														v_x,
+				Vector2&														v_y)
+{
+	int i, best = -1;
+	for(i = 0; i < sides.size(); ++i)
+	if(ground_road_access_for_he(sides[i].first))
+	if(best == -1 || bounds.side(i).squared_length() > bounds.side(best).squared_length())
+		best = i;
+	if (best == -1)
+	for(i = 0; i < sides.size(); ++i)
+	if(best == -1 || bounds.side(i).squared_length() > bounds.side(best).squared_length())
+		best = i;
+	v_x = Vector2(bounds.side(best).p1,bounds.side(best).p2);
+	v_x.normalize();
+	v_y = v_x.perpendicular_ccw();
+	return best;
 }

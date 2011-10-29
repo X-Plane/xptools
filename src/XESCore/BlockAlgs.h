@@ -26,6 +26,8 @@
 
 #include "BlockDefs.h"
 
+struct CoordTranslator2;
+
 /*
 struct block_create_t {
 	BLOCK_face_data		data;
@@ -62,5 +64,26 @@ void find_major_axis(vector<block_pt>&	pts,
 				Vector2 *			out_major,
 				Vector2 *			out_minor,
 				double				bounds[4]);
+
+// Given a CCB halfedge circulator, this routine attempts to build a convex polygon that approximates it.  It has a number of
+// built in fail-safes:
+// - It won't merge sides that don't have the same AG spawning or width properties.
+// - It won't merge sides beyond an error metric.
+// It fails if it has fewer than 3 sides or the resulting shape isn't convex.  It also fails if the inset shape is not convex,
+// or if any side is shorter than "min side len".
+bool	build_convex_polygon(
+				Pmwx::Ccb_halfedge_circulator									ccb,				// Outer boundary of face to translate.
+				vector<pair<Pmwx::Halfedge_handle, Pmwx::Halfedge_handle> >&	sides,				// Per side: inclusive range of half-edges "consolidated" into the sides.
+				const CoordTranslator2&											trans,				// Coord tranlator that gets us metric.
+				Polygon2&														metric_bounds,		// Inset boundary in metric, first side matched to the list.
+				double															max_err_mtrs,		// Limit :max err in meters in simplifying sides.
+				double															min_side_len);		// Limit: shotest side length in polygon.
+
+int	pick_major_axis(
+				vector<pair<Pmwx::Halfedge_handle, Pmwx::Halfedge_handle> >&	sides,				// Per side: inclusive range of half-edges "consolidated" into the sides.
+				Polygon2&														metric_bounds,		// Inset boundary in metric, first side matched to the list.
+				Vector2&														v_x,
+				Vector2&														v_y);
+				
 
 #endif /* BlockAlgs_H */

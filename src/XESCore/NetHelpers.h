@@ -84,6 +84,10 @@ inline int get_he_is_bridge(Pmwx::Halfedge_handle he);
 inline int get_he_is_bridge_xon(Pmwx::Halfedge_handle he);
 inline int get_he_is_on_ground(Pmwx::Halfedge_handle he);
 
+// These are useful for zoning and such:
+inline float	width_for_he(Pmwx::Halfedge_handle he);
+inline bool		ground_road_access_for_he(Pmwx::Halfedge_handle he);
+
 // A few predicates:
 inline bool matches_any(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2) { return true; }
 inline bool matches_rep_type(Pmwx::Halfedge_handle he1, Pmwx::Halfedge_handle he2);
@@ -486,6 +490,38 @@ inline int levelize_junction(Pmwx::Vertex_handle v, map<int,vector<Pmwx::Halfedg
 		}
 	} while(++circ != stop);
 	return ret;
+}
+
+inline float	width_for_he(Pmwx::Halfedge_handle he)
+{
+	if(!he->data().mSegments.empty())
+	{
+		int rt = he->data().mSegments.front().mRepType;
+		return gNetReps[rt].semi_l;
+	}
+	if(!he->twin()->data().mSegments.empty())
+	{
+		int rt = he->twin()->data().mSegments.front().mRepType;
+		return gNetReps[rt].semi_r;
+	}
+	return 0.0f;
+}
+
+inline bool		ground_road_access_for_he(Pmwx::Halfedge_handle he)
+{
+	int rt = NO_VALUE;
+	if(!he->data().mSegments.empty())
+	{ 
+		if(he->data().mSegments.front().mSourceHeight != 0 || he->data().mSegments.front().mTargetHeight != 0)	return false;
+		rt = he->data().mSegments.front().mRepType;
+	}
+	if(!he->twin()->data().mSegments.empty())	
+	{
+		if(he->twin()->data().mSegments.front().mSourceHeight != 0 || he->twin()->data().mSegments.front().mTargetHeight != 0)	return false;
+		rt = he->twin()->data().mSegments.front().mRepType;
+	}
+	if(rt == NO_VALUE) return false;
+	return gNetReps[rt].use_mode == use_Street;
 }
 
 

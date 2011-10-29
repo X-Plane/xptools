@@ -30,6 +30,8 @@
 #include "ObjTables.h"
 #include "ParamDefs.h"
 #include "MapAlgs.h"
+#include "NetTables.h"
+#include "NetHelpers.h"
 #include "PolyRasterUtils.h"
 #include "AptDefs.h"
 #include "ObjPlacement2.h"
@@ -108,18 +110,28 @@ static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
 	string agb, fac, ags;
-	if(TokenizeLine(tokens, " efffffffffsss",	
+	if(TokenizeLine(tokens, " eiffffffffffffffsss",	
 			&r.zoning,
+			&r.road,
 			&r.min_side_len, &r.max_side_len,
 			&r.block_err_max,
 			&r.min_side_major,&r.max_side_major,
 			&r.min_side_minor,&r.max_side_minor,
 			&r.ang_min,&r.ang_max,
+			
+			&r.agb_min_width,
+			&r.agb_slop_width,
+			&r.fac_width,
+			&r.fac_depth,
+			&r.fac_extra,
+			
 
 			&agb,
 			&fac,
-			&ags) != 14)
+			&ags) != 20)
 			return false;
+
+	r.agb_slop_depth = r.agb_slop_width;
 
 	r.agb_id = RegisterAGResource(agb);
 	r.ags_id = RegisterAGResource(ags);
@@ -163,7 +175,7 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 {
 	ZoningRule_t	r;
-	if(TokenizeLine(tokens," effffffffffffffefefiiiiifffffffSSe",
+	if(TokenizeLine(tokens," effffffffffffffiiefefiiiiifffffffSSe",
 		&r.terrain,
 		&r.size_min,			&r.size_max,
 		&r.slope_min,			&r.slope_max,
@@ -172,6 +184,7 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 		&r.park_avg_min,		&r.park_avg_max,
 		&r.bldg_min,			&r.bldg_max,
 		&r.ang_min,				&r.ang_max,
+		&r.sides_min, &r.sides_max,
 
 		&r.req_cat1, &r.req_cat1_min,
 		&r.req_cat2, &r.req_cat2_min,
@@ -190,7 +203,7 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 		&r.max_side_minor,
 		&r.require_features,
 		&r.consume_features,
-		&r.zoning) != 26+7+2)	return false;
+		&r.zoning) != 26+7+4)	return false;
 
 	r.slope_min = 1.0 - cos(r.slope_min * DEG_TO_RAD);
 	r.slope_max = 1.0 - cos(r.slope_max * DEG_TO_RAD);
@@ -278,6 +291,7 @@ inline bool remove_these(set<int>& stuff, const set<int>& nuke_these)
 static int		PickZoningRule(
 						int			terrain,
 						float		area,
+						int			num_sides,
 						float		max_slope,
 						float		urban_avg,
 						float		forest_avg,
@@ -304,6 +318,7 @@ static int		PickZoningRule(
 	for(ZoningRuleTable::const_iterator r = gZoningRules.begin(); r != gZoningRules.end(); ++r)
 	{
 		if(r->terrain == NO_VALUE || r->terrain == terrain)
+		if(0 == r->sides_max || (r->sides_min <= num_sides && num_sides <= r->sides_max))
 		if(check_rule(r->size_min, r->size_max, area))
 		if(check_rule(r->slope_min, r->slope_max, max_slope))
 		if(check_rule(r->urban_avg_min, r->urban_avg_max, urban_avg))
@@ -693,8 +708,9 @@ void	ZoneManMadeAreas(
 		
 		double short_axis_length = fabs(bounds[3] - bounds[1]);
 		double long_axis_length = fabs(bounds[2] - bounds[0]);
-		
-		DebugAssert(long_axis_length >= short_axis_length);
+
+//				No this DOES happen - if we only have ROAD on the SHORT axis. 
+//		DebugAssert(long_axis_length >= short_axis_length);
 		
 		float min_angle = 180.0;
 		float max_angle = -180.0;
@@ -714,7 +730,8 @@ void	ZoneManMadeAreas(
 				ang = -180.0;
 			
 			// Nearly straight angle AND a road size change?  Assume we're going to get a "jaggy" and be a bit screwed.
-			if(outer_border[i].edge_type != outer_border[j].edge_type && (ang > -30 && ang < 30))
+			if(WidthForSegment(outer_border[i].edge_type) != WidthForSegment(outer_border[j].edge_type) && 
+				(ang > -30 && ang < 30))
 			{
 				//debug_mesh_point(trans.Reverse(outer_border[j].loc),1,0,0);
 				min_angle = min(ang-90.0f,min_angle);
@@ -766,7 +783,63 @@ void	ZoneManMadeAreas(
 		
   
 		bool has_holes = face->number_of_holes() > 0;
-		int num_sides = outer_border.size();
+		int num_sides = 0;
+		
+		vector<pair<Pmwx::Halfedge_handle, Pmwx::Halfedge_handle> >				sides;
+		Polygon2																mbounds;
+		
+		if(!has_holes)
+		if(build_convex_polygon(face->outer_ccb(),sides,trans,mbounds, 2.0, 2.0))
+		{
+			num_sides = mbounds.size();
+//			for(int i = 0; i < mbounds.size(); ++i)
+//				debug_mesh_line(trans.Reverse(mbounds.side(i).p1),
+//								trans.Reverse(mbounds.side(i).p2),1,1,0, 0,1,0);
+
+			int major = pick_major_axis(sides,mbounds, v_x,v_y);
+			if(major != -1)
+			{
+				bounds[0] = bounds[2] = v_x.dot(Vector2(mbounds[0]));
+				bounds[1] = bounds[3] = v_y.dot(Vector2(mbounds[0]));
+				for(int n = 1; n < mbounds.size(); ++n)
+				{
+					double x = v_x.dot(Vector2(mbounds[n]));
+					double y = v_y.dot(Vector2(mbounds[n]));
+					bounds[0] = min(bounds[0],x);
+					bounds[1] = min(bounds[1],y);
+					bounds[2] = max(bounds[2],x);
+					bounds[3] = max(bounds[3],y);
+				}
+				short_axis_length = fabs(bounds[3] - bounds[1]);
+				long_axis_length = fabs(bounds[2] - bounds[0]);
+			}
+			
+			min_angle = 180.0;
+			max_angle = -180.0;
+			
+			for(int i = 0; i < mbounds.size(); ++i)
+			{
+				int j = (i + 1) % mbounds.size();
+				int k = (i + 2) % mbounds.size();
+				Vector2	v1(mbounds[i],mbounds[j]);
+				Vector2	v2(mbounds[j],mbounds[k]);
+				v1.normalize();
+				v2.normalize();
+				float ang = doblim(acos(doblim(v1.dot(v2),-1.0,1.0)) * RAD_TO_DEG,-180.0,180.0);
+				min_angle = min(ang,min_angle);
+				max_angle = max(ang,max_angle);
+				
+			}
+			
+			has_local = has_non_local = 0;
+			for(int i = 0; i < sides.size(); ++i)
+			if(ground_road_access_for_he(sides[i].first))
+				has_local = 1;
+			else
+				has_non_local = 1;
+			if(has_local && !has_non_local) has_local = 2;
+		}
+		
 		face->data().mParams[af_AGSides] = num_sides;
 
 		multimap<int, int, greater<int> >::iterator i = histo2.begin();
@@ -798,7 +871,7 @@ void	ZoneManMadeAreas(
 		int zone = PickZoningRule(
 						face->data().mTerrainType,
 						mfam,
-//						num_sides,
+						num_sides,
 						max_slope,
 						total_urban/(float)count,total_forest/(float)count,total_park/(float)count,
 						max_height,
@@ -1152,6 +1225,38 @@ void	ZoneManMadeAreas(
 		fclose(bf);
 	}
 
+	
+	/************************
+	 * GO BACK AND FIX ZONING
+	 ************************/
+	 
+	for(Pmwx::Edge_iterator i = ioMap.edges_begin(); i != ioMap.edges_end(); ++i)
+	if(he_has_any_roads(i))
+	{
+		Pmwx::Halfedge_handle he =  get_he_with_roads(i);
+		Pmwx::Face_handle fl = he->face();
+		Pmwx::Face_handle fr = he->twin()->face();
+		int zl = fl->is_unbounded() ? NO_VALUE : fl->data().GetZoning();
+		int zr = fr->is_unbounded() ? NO_VALUE : fr->data().GetZoning();
+		
+		bool zone_left = gPromotedZoningSet.count(zl);
+		bool zone_right = gPromotedZoningSet.count(zr);
+		if(zone_left || zone_right)
+		{			
+			int rt = get_he_rep_type(he);
+			ZonePromoteTable::iterator p = gZonePromote.find(rt);
+			if(p != gZonePromote.end())
+			{
+				if(zone_left && zone_right)
+					set_he_rep_type(he,p->second.promote_both);
+				else if (zone_left)
+					set_he_rep_type(he,p->second.promote_left);
+				else if (zone_right)
+					set_he_rep_type(he,p->second.promote_right);					
+			}
+		}
+	}
+	 
 }
 
 /***
@@ -1653,9 +1758,11 @@ FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f)
 	float block_err = f->data().GetParam(af_BlockErr,-1.0f);
 	float	ang_min = f->data().GetParam(af_MinAngle,-1.0f);
 	float	ang_max = f->data().GetParam(af_MaxAngle,-1.0f);
+	int road_edge = f->data().GetParam(af_RoadEdge,0);
 	
 	for(FillRuleTable::iterator r = gFillRules.begin(); r != gFillRules.end(); ++r)
 	if(r->zoning == z)
+	if(r->road == 0 || r->road == road_edge)
 	if(r->min_side_len == r->max_side_len || (r->min_side_len <= short_side && long_side <= r->max_side_len))
 	if(r->block_err_max == 0.0 || block_err < r->block_err_max)
 	if(r->min_side_major == r->max_side_major || (r->min_side_major <= long_axis && long_axis <= r->max_side_major))

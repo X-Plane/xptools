@@ -35,6 +35,8 @@ ChangeRuleTable					gChangeRules;
 BridgeInfoTable					gBridgeInfo;
 map<int,int>					gTwinRules;
 
+ZonePromoteTable				gZonePromote;
+set<int>						gPromotedZoningSet;
 
 
 bool	RoadGeneralProps(const vector<string>& tokens, void * ref)
@@ -82,17 +84,34 @@ bool	ReadRoadPick(const vector<string>& tokens, void * ref)
 	Feature2RepInfo	info;
 	int				feature_type;
 
-	if (TokenizeLine(tokens, " effSSffffe", &info.feature, 
+	if (TokenizeLine(tokens, " effffffe", &info.feature, 
 		&info.min_density,&info.max_density, 
-		&info.zoning_left,
-		&info.zoning_right,
 		&info.rain_min,
 		&info.rain_max,
 		&info.temp_min,
 		&info.temp_max,
-		&info.rep_type) != 11)	return false;
+		&info.rep_type) != 9)	return false;
 
 	gFeature2Rep.push_back(info);
+	return true;
+}
+
+bool	ReadRoadPromoteZoning(const vector<string>& tokens, void * ref)
+{
+	gPromotedZoningSet.clear();
+	if(TokenizeLine(tokens," S",&gPromotedZoningSet) != 2)
+		return false;
+	return true;
+}
+
+bool	ReadRoadPromote(const vector<string>& tokens, void * ref)
+{
+	int	rt;
+	ZoningPromote	p;
+	if(TokenizeLine(tokens," eeee",&rt,&p.promote_left, &p.promote_right,&p.promote_both) != 5) return false;
+	if(gZonePromote.count(rt) != 0)
+		fprintf(stderr,"WARNING: promotion info for road %s included twice.\n", FetchTokenString(rt));
+	gZonePromote[rt] = p;
 	return true;
 }
 
@@ -178,6 +197,9 @@ void	LoadNetFeatureTables(void)
 	gTwinRules.clear();
 	gForkRules.clear();
 	gChangeRules.clear();
+	gZonePromote.clear();
+	gPromotedZoningSet.clear();
+
 
 	RegisterLineHandler("ROAD_GENERAL", RoadGeneralProps, NULL);
 	RegisterLineHandler("ROAD_PROP", ReadRoadSpecificProps, NULL);
@@ -186,6 +208,8 @@ void	LoadNetFeatureTables(void)
 	RegisterLineHandler("CHANGE_RULE",ReadChangeRule,NULL);
 	RegisterLineHandler("ROAD_BRIDGE", ReadRoadBridge, NULL);
 	RegisterLineHandler("ROAD_TWIN", ReadTwinRule, NULL);
+	RegisterLineHandler("ROAD_PROMOTE_ZONING", ReadRoadPromoteZoning, NULL);
+	RegisterLineHandler("ROAD_PROMOTE", ReadRoadPromote, NULL);
 	LoadConfigFile("road_properties.txt");
 }
 

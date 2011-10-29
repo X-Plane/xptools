@@ -65,6 +65,7 @@ struct ZoningRule_t {
 	float		park_avg_min,	park_avg_max;			// Average park level
 	float		bldg_min,		bldg_max;				// Maximum building height (0 if none)
 	float		ang_min,		ang_max;				// Angle turn range.  Left turns are positive.
+	int			sides_min,		sides_max;
 	int			req_cat1;
 	float		req_cat1_min;
 	int			req_cat2;
@@ -119,6 +120,8 @@ struct FillRule_t {
 	
 	int			zoning;									// Base zoning we act upon
 	
+	int			road;
+	
 	float		min_side_len;							// Side length constraints
 	float		max_side_len;
 	float		block_err_max;							// Maximum acceptable block error
@@ -131,6 +134,13 @@ struct FillRule_t {
 //	float		slope_min,		slope_max;
 //	
 //	int			hole_ok;								// Okay to have holes or interruptions in our block?
+	
+	float		agb_min_width;
+	float		agb_slop_width;
+	float		agb_slop_depth;
+	float		fac_width;
+	float		fac_depth;								// 0 if no subdivide in the back
+	float		fac_extra;								// add these to 
 	
 	int			agb_id;
 	int			fac_id;

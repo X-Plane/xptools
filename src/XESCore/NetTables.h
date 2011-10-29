@@ -41,7 +41,6 @@ struct	NetFeatureInfo {
 typedef hash_map<int, NetFeatureInfo>	NetFeatureInfoTable;
 extern	NetFeatureInfoTable				gNetFeatures;
 
-
 struct	NetRepInfo {
 	float		semi_l;
 	float		semi_r;
@@ -61,13 +60,12 @@ struct	NetRepInfo {
 typedef hash_map<int, NetRepInfo>				NetRepInfoTable;
 extern 	NetRepInfoTable							gNetReps;
 
-
 struct	Feature2RepInfo {
 	int			feature;
 	float		min_density;
 	float		max_density;
-	set<int>	zoning_left;
-	set<int>	zoning_right;
+//	set<int>	zoning_left;
+//	set<int>	zoning_right;
 	float		rain_min;
 	float		rain_max;
 	float		temp_min;
@@ -77,6 +75,15 @@ struct	Feature2RepInfo {
 typedef vector<Feature2RepInfo>		Feature2RepInfoTable;
 extern	Feature2RepInfoTable					gFeature2Rep;
 
+extern set<int>									gPromotedZoningSet;
+
+struct	ZoningPromote {
+	int			promote_left;
+	int			promote_right;
+	int			promote_both;
+};
+typedef hash_map<int, ZoningPromote>			ZonePromoteTable;
+extern ZonePromoteTable								gZonePromote;
 
 struct ForkRule {
 	int			trunk;

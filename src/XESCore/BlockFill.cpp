@@ -57,6 +57,7 @@
 #include "PolyRasterUtils.h"
 #include "RF_Selection.h"
 #include "MapHelpers.h"
+#include "NetHelpers.h"
 #include "UTL_interval.h"
 
 int num_block_processed = 0;
@@ -351,7 +352,7 @@ static pair<int,bool>	WidestRoadTypeForSegment(Pmwx::Halfedge_const_handle he)
 	double best_width = 0.0;
 	for (GISNetworkSegmentVector::const_iterator i = he->data().mSegments.begin(); i != he->data().mSegments.end(); ++i)
 	{
-		if(i->mRepType == NO_VALUE)	return pair<int,bool>(i->mFeatType,false);
+		DebugAssert(i->mRepType != NO_VALUE);
 		if (gNetReps[i->mRepType].width() > best_width)
 		{
 			best_type = i->mRepType;
@@ -372,7 +373,7 @@ static pair<int,bool>	WidestRoadTypeForSegment(Pmwx::Halfedge_const_handle he)
 	return pair<int,bool>(best_type, flip);
 }
 
-static float WidthForSegment(pair<int,bool> seg_type)
+float WidthForSegment(const pair<int,bool>& seg_type)
 {
 	if(gNetReps.count(seg_type.first) == 0) return 0.0f;
 	if(seg_type.second)
@@ -492,6 +493,7 @@ void block_pts_from_ccb(
 		pts.back().locked = WidestRoadTypeForSegment(circ->prev()) != pts.back().edge_type;
 		pts.back().antenna = circ->face() == circ->twin()->face();
 		pts.back().reflex = false;
+		pts.back().orig = circ;
 		
 		// We do NOT do dot products here!!  Calculate after we reduce unneeded points.
 
@@ -595,30 +597,50 @@ double find_b_interval(time_region::interval& range, const vector<Segment2>& seg
 }
 
 static int	init_subdivisions(
+							Pmwx::Face_handle f,
 							const FillRule_t * info, CoordTranslator2& translator, 
 							vector<block_pt>& outer_ccb_pts, 		
 							vector<BLOCK_face_data>& parts, 
 							vector<Block_2::X_monotone_curve_2>& curves)
 {
 	DebugAssert(info->fac_id != NO_VALUE || info->agb_id != NO_VALUE);
+
+	vector<pair<Pmwx::Halfedge_handle,Pmwx::Halfedge_handle> >	sides;
+	Polygon2													mbounds;
+	
+	if(!build_convex_polygon(f->outer_ccb(),sides,translator,mbounds, 2.0, 2.0))
+		return 0;
+	
+	Vector2	va, vb;
+	int mj = pick_major_axis(sides,mbounds,va,vb);
+	DebugAssert(mj >= 0);
 	
 	double bounds[4];
-	Vector2	va, vb;	
-	find_major_axis(outer_ccb_pts,NULL,&va,&vb, bounds);
+
+	bounds[0] = bounds[2] = va.dot(Vector2(mbounds[0]));
+	bounds[1] = bounds[3] = vb.dot(Vector2(mbounds[0]));
+	for(int i = 1; i < mbounds.size(); ++i)
+	{
+		double ca = va.dot(Vector2(mbounds[i]));
+		double cb = vb.dot(Vector2(mbounds[i]));
+		bounds[0] = min(bounds[0],ca);
+		bounds[1] = min(bounds[1],cb);
+		bounds[2] = max(bounds[2],ca);
+		bounds[3] = max(bounds[3],cb);	
+	}
+
 	
 	time_region		agb_friendly(bounds[0],bounds[2]);
 	
-	#define AGB_SUBDIV_LEN	60.0
-	#define FACADE_A_SLOP 2.0
-	#define FACADE_B_SLOP 2.0
+	#define AGB_SUBDIV_LEN	(info->agb_min_width)
+	#define FACADE_A_SLOP (info->agb_slop_width)
+	#define FACADE_B_SLOP (info->agb_slop_depth)
 	
-	#define MIN_AGB_SIZE	10.0
-	#define MIN_FAC_EXTRA_ADD 7.5
-	#define FAC_SUBDIV_WIDTH 20.0
-	#define FAC_DEPTH_SPLIT 20.0
+	#define MIN_AGB_SIZE	(info->agb_min_width)
+	#define MIN_FAC_EXTRA_ADD (info->fac_extra)
+	#define FAC_SUBDIV_WIDTH (info->fac_width)
+	#define FAC_DEPTH_SPLIT (info->fac_depth ? info->fac_depth : 100000.0)
 
-	
-	#define MIN_FAC_EXTRA_ADD 7.5
 	
 	double fac_extra_len = MIN_FAC_EXTRA_ADD;
 	for(int i = 0; i < outer_ccb_pts.size(); ++i)
@@ -904,6 +926,41 @@ static int	init_subdivisions(
 
 		}
 	}
+	
+	int ring_base = parts.size();
+	
+	for(int n = 0; n < mbounds.size(); ++n)
+	if(ground_road_access_for_he(sides[n].first))
+		parts.push_back(BLOCK_face_data(usage_Road,get_he_rep_type(sides[n].first)));
+	else
+		parts.push_back(BLOCK_face_data(usage_OOB,0));
+
+	for(int n = 0; n < mbounds.size(); ++n)
+	{
+		Segment2	side(mbounds.side(n));
+		
+		double w = width_for_he(sides[n].first);
+		if(w && ground_road_access_for_he(sides[n].first))
+		{
+			push_block_curve(curves,side.p1,side.p2,ring_base+n);
+			
+			Vector2	v_side(side.p1,side.p2);
+			v_side.normalize();
+			v_side = v_side.perpendicular_cw();
+			v_side *= (50.0 + w);
+			Segment2 rside(side.p1 + v_side,side.p2 + v_side);
+			push_block_curve(curves,side.p1,rside.p1,ring_base+n,parts.size());
+			push_block_curve(curves,side.p2,rside.p2,ring_base+n,parts.size());
+			push_block_curve(curves,rside.p1,rside.p2,ring_base+n,parts.size());
+			
+		}
+		else {
+			push_block_curve(curves,side.p1,side.p2,parts.size());
+		}
+	}
+	
+	parts.push_back(BLOCK_face_data(usage_OOB,0));
+	
 	return parts.size() - part_base;
 	
 }
@@ -1651,15 +1708,31 @@ bool	init_block(
 	ZoningInfo_t * info = (zi == gZoningInfo.end() ? NULL : &zi->second);
 	if(info == NULL) return false;
 
+	int has_road = 0;
+	int has_non_road = 0;
 
 	Pmwx::Ccb_halfedge_circulator circ, stop;
 	circ = stop = face->outer_ccb();
 	Bbox2	bounds;
 	do {
 		bounds += cgal2ben(circ->source()->point());
-
+		if(he_has_any_roads(circ) && get_he_street(circ) && (circ->data().HasGroundRoads() || circ->twin()->data().HasGroundRoads()))
+			has_road = 1;
+		else
+			has_non_road = 1;
 	} while(++circ != stop);
+	if(has_road && !has_non_road)	has_road = 2;
 
+#if OPENGL_MAP && DEV
+	if(has_road != face->data().GetParam(af_RoadEdge,-1))
+	{
+		printf("Failed.  Thought we had %f, actually had %d.  Zoning %s.\n", 
+				face->data().GetParam(af_RoadEdge,-1),
+				has_road,
+				FetchTokenString(zoning));
+		gFaceSelection.insert(face);
+	}
+#endif
 	CreateTranslatorForBounds(bounds, translator);
 	if(translator.mDstMax.x() < 1.0 || translator.mDstMax.y() < 1.0)
 		return false;
@@ -1698,44 +1771,53 @@ bool	init_block(
 	// 1	OOB - the out of bonuds area that will be reversed, to remove negative space.
 
 	int block_feature_count = 0;
+	int oob_idx = 0;
 	if(info && info->fill_area)
 	{
 		// For now we use our first X road halfedges ...
 		DebugAssert(!info->fill_edge);
 		FillRule_t * r = GetFillRuleForBlock(face);
 		if(r && (r->fac_id != NO_VALUE || r->agb_id != NO_VALUE))
-			block_feature_count = init_subdivisions(r, translator, outer_ccb_pts, parts, curves);
+			block_feature_count = init_subdivisions(face, r, translator, outer_ccb_pts, parts, curves);
+		if(block_feature_count)
+			oob_idx = parts.size() - 1;
 	}
 	
-	num_he *= 2;
-	DebugAssert(parts.size() == block_feature_count);
-	parts.resize(block_feature_count + 2 * num_he + cat_DIM, BLOCK_face_data(usage_Empty, NO_VALUE));
-	int cat_base = 2 * num_he + block_feature_count;
-	parts[block_feature_count + num_he] = BLOCK_face_data(usage_Steep, NO_VALUE);
-	parts[cat_base + cat_flat] = BLOCK_face_data(usage_OOB  , NO_VALUE);
-	parts[cat_base + cat_oob] = BLOCK_face_data(usage_OOB, NO_VALUE);
-
-	//num_he += 2;
-	
-	int cat_table[cat_DIM];
-	cat_table[cat_urban] = -1;
-	cat_table[cat_oob] = cat_base + cat_oob;
-	cat_table[cat_forest] = num_he + block_feature_count;
-	cat_table[cat_flat] = cat_base + cat_flat;
-	
-	if(info && (info->need_lu || info->max_slope))
-		init_mesh(mesh, translator, curves, cat_table,info->max_slope,info->need_lu);
-
-	int base_offset = block_feature_count;
-	init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
-	for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
+	if(block_feature_count == 0)
 	{
-		vector<block_pt>	hole_pts;
-		block_pts_from_ccb(*h,translator, hole_pts,BLOCK_ERR_MTR,true);		
-		init_road_ccb(zoning, *h, translator, parts, curves, hole_pts, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
-	}
-//	printf("Num HE: %d.  Added: %d\n", num_he, base_offset);
+	
+		num_he *= 2;
+		DebugAssert(parts.size() == block_feature_count);
+		parts.resize(block_feature_count + 2 * num_he + cat_DIM, BLOCK_face_data(usage_Empty, NO_VALUE));
+		int cat_base = 2 * num_he + block_feature_count;
+		parts[block_feature_count + num_he] = BLOCK_face_data(usage_Steep, NO_VALUE);
+		parts[cat_base + cat_flat] = BLOCK_face_data(usage_OOB  , NO_VALUE);
+		parts[cat_base + cat_oob] = BLOCK_face_data(usage_OOB, NO_VALUE);
 
+		//num_he += 2;
+		
+		int cat_table[cat_DIM];
+		cat_table[cat_urban] = -1;
+		cat_table[cat_oob] = cat_base + cat_oob;
+		cat_table[cat_forest] = num_he + block_feature_count;
+		cat_table[cat_flat] = cat_base + cat_flat;
+		
+		if(info && (info->need_lu || info->max_slope))
+			init_mesh(mesh, translator, curves, cat_table,info->max_slope,info->need_lu);
+
+		int base_offset = block_feature_count;
+		{
+			init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+			for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
+			{
+				vector<block_pt>	hole_pts;
+				block_pts_from_ccb(*h,translator, hole_pts,BLOCK_ERR_MTR,true);		
+				init_road_ccb(zoning, *h, translator, parts, curves, hole_pts, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+			}
+		}
+		oob_idx = cat_base + cat_oob;
+	//	printf("Num HE: %d.  Added: %d\n", num_he, base_offset);
+	}
 
 #if DEBUG_BLOCK_CREATE_LINES
 	for(vector<Block_2::X_monotone_curve_2>::iterator c = curves.begin(); c != curves.end(); ++c)
@@ -1750,27 +1832,27 @@ bool	init_block(
 		s.p1 = translator.Reverse(s.p1);
 		s.p2 = translator.Reverse(s.p2);
 		for(EdgeKey_iterator i = c->data().begin(); i != c->data().end(); ++i)
-		if(*i == cat_base + cat_oob)
+		if(*i == oob_idx)
 		{
 			debug_mesh_line(
 						s.p1,s.p2,					
 						0.5,0,0,
 						1,0,0);
 		}
-		else if(*i == num_he+block_feature_count)
-		{
-			debug_mesh_line(
-						s.p1,s.p2,					
-						0,0.5,0,
-						0,1,0);
-		}
-		else if(*i == cat_base + cat_flat)
-		{
-			debug_mesh_line(
-						s.p1,s.p2,					
-						0,0,0.5,
-						0,0,1);
-		}
+//		else if(*i == num_he+block_feature_count)
+//		{
+//			debug_mesh_line(
+//						s.p1,s.p2,					
+//						0,0.5,0,
+//						0,1,0);
+//		}
+//		else if(*i == cat_base + cat_flat)
+//		{
+//			debug_mesh_line(
+//						s.p1,s.p2,					
+//						0,0,0.5,
+//						0,0,1);
+//		}
 		else
 		{
 			int feat = parts[*i].feature;
@@ -1783,7 +1865,7 @@ bool	init_block(
 #endif
 //	for(int n = 0; n < parts.size(); ++n)
 //		printf("%d: %d %s\n", n, parts[n].usage, FetchTokenString(parts[n].feature));
-	create_block(out_block,parts, curves, cat_base + cat_oob);	// First "parts" block is outside of CCB, marked as "out of bounds", so trapped areas are not marked empty.
+	create_block(out_block,parts, curves, oob_idx);	// First "parts" block is outside of CCB, marked as "out of bounds", so trapped areas are not marked empty.
 	num_line_integ += curves.size();
 //	debug_show_block(out_block,translator);
 	clean_block(out_block);
@@ -2240,6 +2322,7 @@ void	extract_features(
 				GISPolyObjPlacement_t o;
 				
 				o.mRepType = f->data().feature;
+				Assert(o.mRepType != NO_VALUE);
 				o.mDerived = true;
 				//
 				// AGS CASE
@@ -2260,8 +2343,8 @@ void	extract_features(
 						start = f->outer_ccb();
 					o.mParam = 10.0 + random() % 10;;
 					PolygonFromBlock(f,start, o.mShape, &translator, 0.0);
-					if(fail_start)
-						fail_extraction(dest_face,o.mShape,NULL,"NO ANCHOR SIDE ON FAC.");										
+//					if(fail_start)
+//						fail_extraction(dest_face,o.mShape,NULL,"NO ANCHOR SIDE ON FAC.");										
 					DebugAssert(o.mShape.size() <= 255);
 					dest_face->data().mPolyObjs.push_back(o);
 				}

@@ -69,6 +69,8 @@ void block_pts_from_ccb(
 			double							dp_err_mtr,
 			bool							is_hole);
 
+float WidthForSegment(const pair<int,bool>& seg_type);
+
 
 extern int num_block_processed;
 extern int num_blocks_with_split;

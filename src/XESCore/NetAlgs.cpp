@@ -261,8 +261,8 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 					if(r.min_density == r.max_density || (r.min_density <= urban && urban <= r.max_density))
 					if(r.rain_min == r.rain_max || (r.rain_min <= rain && rain <= r.rain_max))
 					if(r.temp_min == r.temp_max || (r.temp_min <= temp && temp <= r.temp_max))
-					if(r.zoning_left.empty() || r.zoning_left.count(zl))
-					if(r.zoning_right.empty() ||r.zoning_right.count(zr))
+//					if(r.zoning_left.empty() || r.zoning_left.count(zl))
+//					if(r.zoning_right.empty() ||r.zoning_right.count(zr))
 					{
 						seg->mRepType = r.rep_type;
 						break;
