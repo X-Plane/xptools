@@ -623,13 +623,14 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 
 	#endif
 	#if LIN
-        this->setMenuBar(gApplication->getqmenu());
+		this->setMenuBar(gApplication->getqmenu());
 		mPopupMenu = new QMenu(this);
-		QApplication::setActiveWindow(this);
-		setFocusPolicy(Qt::StrongFocus);
+		QApplication::setActiveWindow(this);		
+		setFocusPolicy(Qt::StrongFocus);	
 		setAcceptDrops(true);
 		raise();
-		activateWindow();
+		setFocus();	
+		activateWindow();	
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;

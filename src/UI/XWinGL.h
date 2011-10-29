@@ -55,8 +55,8 @@ protected:
 	void resizeGL(int inWidth, int inHeight);
 	void paintGL(void);
 	void initializeGL(void);
-	void focusInEvent(QFocusEvent* e);
-	void focusOutEvent(QFocusEvent* e);
+// 	void focusInEvent(QFocusEvent* e);
+// 	void focusOutEvent(QFocusEvent* e);
 private:
 	XWinGL* mXWinGL;
 };
