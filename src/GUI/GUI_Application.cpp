@@ -328,6 +328,7 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 #endif
 #if LIN
 	qapp = new QApplication(argc, argv);
+	qapp->setAttribute(Qt::AA_DontUseNativeMenuBar);
 #endif
 }
 

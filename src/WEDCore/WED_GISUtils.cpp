@@ -168,7 +168,7 @@ bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment_2>& o
 		if(in_seq->GetSide(gis_Geo, n, s, b))
 			return false;
 
-		out_pol.push_back(Segment_2(ben2cgal(s.p1),ben2cgal(s.p2)));
+		out_pol.push_back(Segment_2(ben2cgal<Point_2>(s.p1),ben2cgal<Point_2>(s.p2)));
 	}
 	return true;
 }
@@ -194,7 +194,7 @@ bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, CGAL::Ori
 		Point2	pt;
 		ps->GetNthPoint(n)->GetLocation(gis_Geo,pt);
 		if(pt != last)
-			p.push_back(ben2cgal(pt));
+			p.push_back(ben2cgal<Point_2>(pt));
 		last = pt;
 	}
 	DebugAssert(p.size() >= 3);
@@ -325,10 +325,10 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 			Point2	crn[4];
 			q->GetCorners(gis_Geo,crn);
 			Polygon_2	bounds;
-			bounds.push_back(ben2cgal(crn[3]));
-			bounds.push_back(ben2cgal(crn[2]));
-			bounds.push_back(ben2cgal(crn[1]));
-			bounds.push_back(ben2cgal(crn[0]));
+			bounds.push_back(ben2cgal<Point_2>(crn[3]));
+			bounds.push_back(ben2cgal<Point_2>(crn[2]));
+			bounds.push_back(ben2cgal<Point_2>(crn[1]));
+			bounds.push_back(ben2cgal<Point_2>(crn[0]));
 			DebugAssert(bounds.orientation() != CGAL::CLOCKWISE);
 			out_pgs = bounds;
 		}
@@ -358,14 +358,14 @@ void WED_ApproxPolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, Pol
 				approximate_bezier_epsi(g_bez, epsi, back_inserter(pts_ben));
 			for(int n = 0; n < pts_ben.size(); ++n)
 			{
-				p.push_back(ben2cgal(pts_ben[n]));
+				p.push_back(ben2cgal<Point_2>(pts_ben[n]));
 				if(uv)
-					uv->push_back(ben2cgal(uv_ben[n]));
+					uv->push_back(ben2cgal<Point_2>(uv_ben[n]));
 			}
 		} else {
-			p.push_back(ben2cgal(g_seg.p1));
+			p.push_back(ben2cgal<Point_2>(g_seg.p1));
 			if(uv)
-				uv->push_back(ben2cgal(uv_seg.p1));
+				uv->push_back(ben2cgal<Point_2>(uv_seg.p1));
 		}
 	}
 }
@@ -595,8 +595,8 @@ static void	WED_MakeUVMapInternal(IGISEntity * entity, vector<Point_2>& pts_ll, 
 			pt->GetLocation(gis_Geo,g);
 			pt->GetLocation(gis_UV ,u);
 
-			pts_ll.push_back(ben2cgal(g));
-			pts_uv.push_back(ben2cgal(u));
+			pts_ll.push_back(ben2cgal<Point_2>(g));
+			pts_uv.push_back(ben2cgal<Point_2>(u));
 		}
 		break;
 	case gis_Point_Bezier:
@@ -604,21 +604,21 @@ static void	WED_MakeUVMapInternal(IGISEntity * entity, vector<Point_2>& pts_ll, 
 		{
 			bez->GetLocation(gis_Geo,g);
 			bez->GetLocation(gis_UV ,u);
-			pts_ll.push_back(ben2cgal(g));
-			pts_uv.push_back(ben2cgal(u));
+			pts_ll.push_back(ben2cgal<Point_2>(g));
+			pts_uv.push_back(ben2cgal<Point_2>(u));
 
 			if(bez->GetControlHandleLo(gis_Geo,g))
 			{
 				bez->GetControlHandleLo(gis_UV,u);
-				pts_ll.push_back(ben2cgal(g));
-				pts_uv.push_back(ben2cgal(u));
+				pts_ll.push_back(ben2cgal<Point_2>(g));
+				pts_uv.push_back(ben2cgal<Point_2>(u));
 			}
 
 			if(bez->GetControlHandleHi(gis_Geo,g))
 			{
 				bez->GetControlHandleHi(gis_UV,u);
-				pts_ll.push_back(ben2cgal(g));
-				pts_uv.push_back(ben2cgal(u));
+				pts_ll.push_back(ben2cgal<Point_2>(g));
+				pts_uv.push_back(ben2cgal<Point_2>(u));
 			}
 		}
 		break;

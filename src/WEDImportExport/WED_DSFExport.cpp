@@ -546,7 +546,7 @@ void assemble_dsf_pt(double c[8], const Point2& pt, const Point2 * bez, UVMap_t 
 	if(!bez && uv)
 	{
 		Point_2		u;
-		WED_MapPoint(*uv,ben2cgal(pt),u);
+		WED_MapPoint(*uv,ben2cgal<Point_2>(pt),u);
 		Point2 uu = cgal2ben(u);
 		c[2] = uu.x();
 		c[3] = uu.y();
@@ -554,8 +554,8 @@ void assemble_dsf_pt(double c[8], const Point2& pt, const Point2 * bez, UVMap_t 
 	if(bez && uv)
 	{
 		Point_2		u, v;
-		WED_MapPoint(*uv,ben2cgal(pt),u);
-		WED_MapPoint(*uv,ben2cgal(*bez),v);
+		WED_MapPoint(*uv,ben2cgal<Point_2>(pt),u);
+		WED_MapPoint(*uv,ben2cgal<Point_2>(*bez),v);
 		Point2 uu = cgal2ben(u);
 		Point2 vv = cgal2ben(v);
 		c[4] = uu.x();
