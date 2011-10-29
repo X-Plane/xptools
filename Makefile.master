@@ -4,9 +4,9 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 #.NOTPARALLEL:
-.PHONY: all zlib boost libgmp libmpfr libpng cgal
+.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite
 
-all: zlib boost libgmp libmpfr libpng cgal
+all: zlib boost libgmp libmpfr libpng cgal sqlite
 	@echo "done"
 
 
@@ -73,4 +73,15 @@ ifeq ($(MULTILIB), Yes)
 cgal: $(PREFIX)/lib/libCGAL.a $(PREFIX32)/lib/libCGAL.a
 else
 cgal: $(PREFIX)/lib/libCGAL.a
+endif
+
+
+%/libsqlite3.a: $(MAKEFILE_DIR)Makefile.sqlite
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
+
+ifeq ($(MULTILIB), Yes)
+sqlite: $(PREFIX)/lib/libsqlite3.a $(PREFIX32)/lib/libsqlite3.a
+else
+sqlite: $(PREFIX)/lib/libsqlite3.a
 endif
