@@ -477,7 +477,7 @@ void	rotate_to_corner(vector<block_pt>& outer_ccb_pts)
 		rotate(outer_ccb_pts.begin(),outer_ccb_pts.begin()+c,outer_ccb_pts.end());
 }
 
-void block_pts_from_ccb(
+bool block_pts_from_ccb(
 			Pmwx::Ccb_halfedge_circulator	he, 
 			CoordTranslator2&				translator, 
 			vector<block_pt>&				pts,
@@ -536,6 +536,20 @@ void block_pts_from_ccb(
 	if(r != 0)
 		rotate(pts.begin(),pts.begin()+r,pts.end());
 
+	DebugAssert(pts.size() >= (is_hole ? 2 :3));
+
+	for(int k = 1; k < pts.size(); ++k)
+	if(pts[k-1].loc == pts[k].loc)
+	{
+		pts.erase(pts.begin()+k);
+		--k;
+	}
+	while(pts.size() > 1 && pts.front().loc == pts.back().loc)
+		pts.pop_back();
+	
+	if(pts.size() < (is_hole ? 2 : 3))
+		return false;
+	
 #if DEV
 	for(int k = 0; k < pts.size(); ++k)
 		DebugAssert(pts[k].loc != pts[(k+1)%pts.size()].loc);
@@ -565,6 +579,7 @@ void block_pts_from_ccb(
 		pts.swap(pts2);
 
 	}
+	return true;
 }
 
 double find_b_interval(time_region::interval& range, const vector<Segment2>& segs, double b_range[4])
@@ -1669,14 +1684,14 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 
 				if(l == r && L == R)
 				{
-					if(l != L)
+					if(l != L && pl != pr)
 						push_curve(curves,pr,pl,l,L,cat_table[cat_urban], cat_table[cat_oob]);
 				}
 				else
 				{
-					if(l != L)
+					if(l != L && pm != pl)
 						push_curve(curves,pm,pl,l,L,cat_table[cat_urban], cat_table[cat_oob]);
-					if(r != R)
+					if(r != R && pr != pm)
 						push_curve(curves,pr,pm,r,R,cat_table[cat_urban], cat_table[cat_oob]);
 				}
 			}
@@ -2114,7 +2129,7 @@ void extract_ccb(Block_2::Ccb_halfedge_const_circulator circ, Polygon2& out_poly
 	} while (stop != ++circ);
 }
 
-void	PolygonFromBlock(Block_2::Face_const_handle in_face, Block_2::Halfedge_const_handle first_side, vector<Polygon2>& out_ps, CoordTranslator2 * translator, double err)
+void	PolygonFromBlock(Block_2::Face_const_handle in_face, Block_2::Halfedge_const_handle first_side, vector<Polygon2>& out_ps, CoordTranslator2 * translator, double err, bool will_split)
 {
 	DebugAssert(!in_face->is_unbounded());
 
@@ -2128,9 +2143,10 @@ void	PolygonFromBlock(Block_2::Face_const_handle in_face, Block_2::Halfedge_cons
 		PolygonFromBlockCCB(*h, out_ps.back(), translator, err);
 		DebugAssert(out_ps.back().size() > 2);
 	}
-	if (in_face->number_of_holes() >= 255)
+	if(!will_split)
+	if(out_ps.size() > 255)
 	{
-		printf("Face had %zd holes.\n",in_face->number_of_holes());
+		printf("Face %s had %zd holes.\n",FetchTokenString(in_face->data().feature),in_face->number_of_holes());
 		throw "too many holes.";
 	}
 }
@@ -2215,6 +2231,12 @@ int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps
 
 void push_one_forest(vector<Polygon2>& bounds, const DEMGeo& dem, Pmwx::Face_handle dest_face)
 {
+	if(bounds.size() > 255)
+	{
+		printf("Face had %zd holes.\n",bounds.size()-1);
+		throw "too many holes.";
+	}
+
 	GISPolyObjPlacement_t o;
 	o.mShape = bounds;
 	o.mDerived = true;
@@ -2312,7 +2334,10 @@ void	extract_features(
 					ForestIndex&			forest_index)					
 {
 	bool did_split = false;
-//	try {
+#if DEV && OPENGL_MAP
+	try
+#endif
+	{
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
 		if(!f->is_unbounded())
 		{
@@ -2342,7 +2367,7 @@ void	extract_features(
 					if(fail_start)
 						start = f->outer_ccb();
 					o.mParam = 10.0 + random() % 10;;
-					PolygonFromBlock(f,start, o.mShape, &translator, 0.0);
+					PolygonFromBlock(f,start, o.mShape, &translator, 0.0,false);
 //					if(fail_start)
 //						fail_extraction(dest_face,o.mShape,NULL,"NO ANCHOR SIDE ON FAC.");										
 					DebugAssert(o.mShape.size() <= 255);
@@ -2356,7 +2381,7 @@ void	extract_features(
 					if(fail_start)
 						start = f->outer_ccb();
 					// Simplify mandatory to fix colinear manifold pt split.
-					PolygonFromBlock(f,start, o.mShape, NULL, 3.0);
+					PolygonFromBlock(f,start, o.mShape, NULL, 3.0,false);
 					DebugAssert(o.mShape.size() <= 255);
 					if(fail_start)
 					{
@@ -2380,11 +2405,12 @@ void	extract_features(
 			if(f->data().usage == usage_Forest)
 			{
 				vector<Polygon2>	forest(1);
+				double area;
 				forest.reserve(1+f->number_of_holes());
 				Polygon2	outer_m;
 				extract_ccb(f->outer_ccb(),forest.back(),outer_m, translator);
-				double area = outer_m.area();
-				
+				area = outer_m.area();
+
 				for(Block_2::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
 				{
 					Polygon2 hole_m;
@@ -2392,8 +2418,7 @@ void	extract_features(
 					extract_ccb(*h, forest.back(), hole_m, translator); 
 					area -= hole_m.area();
 				}
-				
-				if(area < FOREST_SUBDIVIDE_AREA)
+				if(f->number_of_holes() < 255 && area < FOREST_SUBDIVIDE_AREA)
 				{
 					push_one_forest(forest, forest_dem, dest_face);					
 				} 
@@ -2499,20 +2524,43 @@ void	extract_features(
 					clean_block(divided_forest);
 //					for(Block_2::Edge_iterator de= divided_forest.edges_begin(); de != divided_forest.edges_end(); ++de)
 //						debug_mesh_line(cgal2ben(de->source()->point()),cgal2ben(de->target()->point()),1,1,1,1,1,1);
+
+					{
+retry:					
+						bool all_ok = true;
+						for(Block_2::Face_iterator df = divided_forest.faces_begin(); df != divided_forest.faces_end(); ++df)
+						if(!df->is_unbounded())
+						if(df->data().usage == usage_Forest)
+						if(df->number_of_holes() >= 255)
+						{
+							Block_2::Hole_iterator h = df->holes_begin();
+							Block_2::Point_2 p1 = (*h)->source()->point();
+							++h;
+							Block_2::Point_2 p2 = (*h)->source()->point();							
+							Block_2::X_monotone_curve_2 c (BSegment_2(p1, p2), 0);							
+							CGAL::insert(divided_forest, c);
+							goto retry;
+						}
+					}
+
 					for(Block_2::Face_iterator df = divided_forest.faces_begin(); df != divided_forest.faces_end(); ++df)
 					if(!df->is_unbounded())
 					if(df->data().usage == usage_Forest)
 					{
 						vector<Polygon2>	a_forest;
-						PolygonFromBlock(df,df->outer_ccb(),a_forest, NULL,0.0);
+						PolygonFromBlock(df,df->outer_ccb(),a_forest, NULL,0.0,false);
 						push_one_forest(a_forest, forest_dem, dest_face);					
 					}
 				}
 			}
-		}
-//	} catch (...) {
-//		gFaceSelection.insert(dest_face);
-//	}
+		}			
+	} 
+#if DEV && OPENGL_MAP
+	catch (...) 
+	{
+		gFaceSelection.insert(dest_face);
+	}
+#endif	
 	if(did_split)
 		num_blocks_with_split++;
 }

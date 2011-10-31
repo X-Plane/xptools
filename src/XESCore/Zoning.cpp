@@ -53,7 +53,7 @@
 // a single tall building in a block from turning into a sea of tall buildings.
 #define MAX_OBJ_SPREAD 100000
 
-#define ZONING_HISTO 0
+#define ZONING_HISTO 1
 #define ZONING_METRICS 0
 
 ZoningRuleTable				gZoningRules;
@@ -473,6 +473,8 @@ void	ZoneManMadeAreas(
 #if ZONING_HISTO
 	map<int,int>	zone_count;
 	map<int,double>	zone_area;
+	map<int, int>	short_axis_count;
+	map<int, int>	long_axis_count;
 #endif
 	
 #if ZONING_METRICS
@@ -675,7 +677,10 @@ void	ZoneManMadeAreas(
 		CoordTranslator2	trans;
 		CreateTranslatorForBounds(face_extent,trans);
 		vector<block_pt>		outer_border;
-		block_pts_from_ccb(face->outer_ccb(), trans, outer_border, 1.0,false);
+		if(!block_pts_from_ccb(face->outer_ccb(), trans, outer_border, 1.0,false))
+		{
+			continue;
+		}
 
 		Segment2	major;
 		double	bounds[4];
@@ -792,6 +797,7 @@ void	ZoneManMadeAreas(
 		if(build_convex_polygon(face->outer_ccb(),sides,trans,mbounds, 2.0, 2.0))
 		{
 			num_sides = mbounds.size();
+			
 //			for(int i = 0; i < mbounds.size(); ++i)
 //				debug_mesh_line(trans.Reverse(mbounds.side(i).p1),
 //								trans.Reverse(mbounds.side(i).p2),1,1,0, 0,1,0);
@@ -838,6 +844,19 @@ void	ZoneManMadeAreas(
 			else
 				has_non_local = 1;
 			if(has_local && !has_non_local) has_local = 2;
+			
+			#if ZONING_HISTO
+			if(num_sides == 4)
+			{				
+				int short_approx = round(short_axis_length / 5.0) * 5.0;
+				int long_approx = round(long_axis_length / 5.0) * 5.0;
+			
+				short_axis_count[short_approx]++;
+				long_axis_count[short_approx]++;
+			}
+			#endif
+			
+			
 		}
 		
 		face->data().mParams[af_AGSides] = num_sides;
@@ -1113,6 +1132,19 @@ void	ZoneManMadeAreas(
 #endif	
 
 #if ZONING_HISTO
+	multimap<int,int>		rshort, rlong;
+	
+	int ts = reverse_histo(short_axis_count, rshort);
+	int tl = reverse_histo(long_axis_count, rlong);
+	
+	printf("Short axes: out of %d blocks.\n", ts);
+	for(multimap<int,int>::iterator i = rshort.begin(); i != rshort.end(); ++i)
+		printf("%d (%lf): %d\n", i->first, (double) i->first/(double)ts,i->second);
+
+	printf("Long axes: out of %d blocks.\n", tl);
+	for(multimap<int,int>::iterator i = rlong.begin(); i != rlong.end(); ++i)
+		printf("%d (%lf): %d\n", i->first, (double) i->first/(double)tl,i->second);
+
 	multimap<int,int>		zcr;
 	multimap<double,int>	zar;
 	int tc = reverse_histo(zone_count,zcr);

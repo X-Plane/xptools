@@ -62,7 +62,7 @@ bool	process_block(
 
 
 
-void block_pts_from_ccb(
+bool block_pts_from_ccb(
 			Pmwx::Ccb_halfedge_circulator	he, 
 			CoordTranslator2&				translator, 
 			vector<block_pt>&				pts,
