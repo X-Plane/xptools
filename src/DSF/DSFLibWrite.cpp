@@ -1610,6 +1610,19 @@ void	DSFFileWriterImp::EndPolygon(
 		st_extent[2] = ceil (st_extent[2]);
 		st_extent[3] = ceil (st_extent[3]);
 	
+		// Uh oh.  If the input polygon is vertical or horizontal, the lat or lon bounding box min/max can be the same.
+		// IF they fall on an even grid line for DSF point pools, we end up with a "scale" of 0 (since the min and max are
+		// the same) and the DSF encode explodes.  This happens exactly once in the entire US render.  Sigh.  Increase the box max
+		// to the next gridline to avoid chaos - the box is by definition precise enough.
+		if(ll_extent[0] == ll_extent[2])
+		{
+			ll_extent[2] += 1.0 / n;
+		}
+		if(ll_extent[1] == ll_extent[3])
+		{
+			ll_extent[3] += 1.0 / n;
+		}
+		
 
 		DSFTuple	polyRangeMin, polyRangeMax;
 
