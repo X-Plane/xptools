@@ -956,7 +956,7 @@ void	DrawMapBucketed(
 			if(is_string || is_forest)
 			for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
 			{
-				int is_hot = (r - j->mShape.begin()) < j->mParam;
+				int is_hot = (r - j->mShape.begin()) < (j->mParam & 0xFF);
 				glLineWidth(is_string ? (is_hot ? 3 : 1) : (is_forest ? 2 : 1));
 				glBegin(is_string ? GL_LINE_STRIP : GL_LINE_LOOP);
 				for(int l = 0; l < r->size(); ++l)

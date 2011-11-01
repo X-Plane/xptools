@@ -314,11 +314,11 @@ void clean_block(Block_2& block)
 	vector<Block_2::Halfedge_handle> kill;
 	for(Block_2::Edge_iterator eig = block.edges_begin(); eig != block.edges_end(); ++eig)
 		if(eig->face()->data().usage == eig->twin()->face()->data().usage &&
-		   eig->face()->data().feature == eig->twin()->face()->data().feature)
-		   if(strstr(FetchTokenString(eig->face()->data().feature),".agb") == 0)
-		   if(strstr(FetchTokenString(eig->face()->data().feature),".fac") == 0)
+		   eig->face()->data().feature == eig->twin()->face()->data().feature &&
+		   eig->face()->data().can_simplify && eig->twin()->face()->data().can_simplify)
+	{
 			kill.push_back(eig);
-
+	}
 //	printf("Before:\n");
 //	for(Block_2::Face_handle f = block.faces_begin(); f != block.faces_end(); ++f)
 //		printf("%d/%s\n",f->data().usage, FetchTokenString(f->data().feature));

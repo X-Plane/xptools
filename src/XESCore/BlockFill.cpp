@@ -311,6 +311,13 @@ static void	debug_show_block(Block_2& io_block, CoordTranslator2& t)
 }
 #endif
 
+inline void		encode_ag_height(unsigned short& param, float h)
+{
+	h *= 0.25;
+	unsigned int hlim = intlim(h,1,255);
+	param |= (hlim << 8);
+}
+
 double my_turn_degs(const Point2& p1, const Point2& p2, const Point2& p3)
 {
 	if(p1 == p3)	return 180.0;
@@ -388,10 +395,11 @@ static bool edges_match(Block_2::Halfedge_handle a, Block_2::Halfedge_handle b)
 		   a->twin()->face()->data().feature== b->twin()->face()->data().feature;
 }
 
-static EdgeRule_t * edge_for_road(const pair<int,bool>& road_type, int zoning)
+static EdgeRule_t * edge_for_road(const pair<int,bool>& road_type, int zoning, int variant)
 {
 	for(EdgeRuleTable::iterator e = gEdgeRules.begin(); e != gEdgeRules.end(); ++e)
 	if(e->zoning == zoning && e->road_type == road_type.first)
+	if(e->variant == -1 || e->variant == variant)
 		return &*e;
 	return NULL;
 }
@@ -683,6 +691,7 @@ static int	init_subdivisions(
 		bool top = v_side.dx < 0.0;
 		v_side.dx = fabs(v_side.dx);
 		v_side.dy = fabs(v_side.dy);
+		DebugAssert(AGB_SUBDIV_LEN > 0.0);
 		double max_facade_subdivs = dobmax2(1,floor(v_side.dx / AGB_SUBDIV_LEN));
 		// Test for too much north-south travel is tempered by the distance - basically we can subdivide
 		// horizontally to fit AGBs in with some block drift.
@@ -790,8 +799,9 @@ static int	init_subdivisions(
 		if(fac.first != fac.second)
 		{
 			double width = fac.second - fac.first;
+			DebugAssert(FAC_SUBDIV_WIDTH > 0.0);
 			double subdiv = dobmax2(1,floor(width / FAC_SUBDIV_WIDTH));
-		
+			DebugAssert(subdiv < 500);
 			for(double s = 0.0; s < subdiv; s += 1.0)
 			{
 				a_cuts.push_back(pair<double,bool>(double_interp(0,fac.first,subdiv,fac.second,s),false));
@@ -835,6 +845,7 @@ static int	init_subdivisions(
 		DebugAssert(parts[pid].feature);
 		parts[pid].major_axis = va;
 		DebugAssert(parts[pid].feature != NO_VALUE);
+		parts[pid].can_simplify = false;
 	}
 
 	for(int a = 0; a < a_blocks; ++a)
@@ -1002,15 +1013,15 @@ bool edge_ok_for_ag(const Point2& i, const Point2& j, CoordTranslator2& c, const
 }
 
 
-static bool mismatched_edge_types(const pair<int,bool>& e1, const pair<int,bool>& e2, int zoning, bool fill_edges)
+static bool mismatched_edge_types(const pair<int,bool>& e1, const pair<int,bool>& e2, int zoning, int variant, bool fill_edges)
 {
 	float w1 = WidthForSegment(e1);
 	float w2 = WidthForSegment(e2);
 	if(w1 != w2) return true;
 	if(!fill_edges)	return false;
 
-	EdgeRule_t * r1 = edge_for_road(e1, zoning);
-	EdgeRule_t * r2 = edge_for_road(e1, zoning);
+	EdgeRule_t * r1 = edge_for_road(e1, zoning, variant);
+	EdgeRule_t * r2 = edge_for_road(e1, zoning, variant);
 	
 	if (r1 == NULL && r2 == NULL) return false;
 	if (r1 == NULL || r2 == NULL) return true;
@@ -1019,7 +1030,7 @@ static bool mismatched_edge_types(const pair<int,bool>& e1, const pair<int,bool>
 	return false;
 }
 
-static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTranslator2& translator, 
+static void	init_road_ccb(int zoning, int variant, Pmwx::Ccb_halfedge_circulator he, CoordTranslator2& translator, 
 							vector<BLOCK_face_data>& pieces, 
 							vector<Block_2::X_monotone_curve_2>& curves,
 							vector<block_pt>&	pts,
@@ -1045,7 +1056,7 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 		pts[j].reflex = right_turn(pts[i].loc,pts[j].loc,pts[k].loc) || pts[i].loc == pts[k].loc;
 		// Any change in edge type is a "discontinuity" - we can't optimize out the sides of our road.
 		// And...point 0 is ALWAYS discontinuous - um, something goes wrong if that isn't true.
-		pts[j].discon = j == 0 || mismatched_edge_types(pts[j].edge_type,pts[i].edge_type, zoning, fill_edges);
+		pts[j].discon = j == 0 || mismatched_edge_types(pts[j].edge_type,pts[i].edge_type, zoning, variant, fill_edges);
 		
 //		if(j == 0)
 //			debug_mesh_point(translator.Reverse(pts[j].loc),1,1,0);
@@ -1066,7 +1077,7 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 		pts[i].offset_next1 = offset.p1;
 		pts[j].offset_prev1 = offset.p2;
 
-		EdgeRule_t * er = (fill_edges && edge_ok_for_ag(pts[i].loc,pts[j].loc, translator,approx_ag)) ? edge_for_road(pts[i].edge_type, zoning) : NULL;
+		EdgeRule_t * er = (fill_edges && edge_ok_for_ag(pts[i].loc,pts[j].loc, translator,approx_ag)) ? edge_for_road(pts[i].edge_type, zoning, variant) : NULL;
 		real_side = offset;
 		MoveSegLeft(real_side, er ? er->width : 0.0, offset);
 
@@ -1576,6 +1587,66 @@ static void push_curve(vector<Block_2::X_monotone_curve_2>& curves, const BPoint
 }
 
 
+static void	init_point_features(const GISPointFeatureVector& feats, 
+							vector<Block_2::X_monotone_curve_2>& curves, 
+							vector<BLOCK_face_data>& parts, 
+							vector<block_pt>&	pts,
+							CoordTranslator2&	trans,
+							int offset, int zoning)
+{
+	PointRule_t * rule; 
+
+	int idx = 0;
+	for(GISPointFeatureVector::const_iterator f = feats.begin(); f != feats.end(); ++f, ++idx)
+	if((rule = GetPointRuleForFeature(zoning, *f)) != NULL)
+	{
+		Point2	fl(trans.Forward(cgal2ben(f->mLocation)));
+		int best = -1;
+		double best_dist = 0;
+		for(int i = 0; i < pts.size(); ++i)
+		{
+			int j = (i + 1) % pts.size();
+			DebugAssert(pts[i].loc != pts[j].loc);
+			if(ground_road_access_for_he(pts[i].orig))
+			if(pts[i].loc != pts[j].loc)
+			{
+				double my_dist = Segment2(pts[i].loc,pts[j].loc).squared_distance(fl);				
+				if(best == -1 || my_dist < best_dist)
+				{	
+					best = i;
+					best_dist = my_dist;
+				}
+			}
+		}
+		if(best == -1)
+			best = 0;
+		
+		Segment2	wall(pts[best].loc,pts[(best+1)%pts.size()].loc);
+		Assert(wall.p1 != wall.p2);
+		Point2		anchor(wall.midpoint());
+		Vector2		width(wall.p1,wall.p2);
+		width.normalize();
+		Vector2	depth(width.perpendicular_ccw());
+		
+		float w = WidthForSegment(pts[best].edge_type);
+		if(w > 1.0)
+			anchor += (depth * (w-1.0));
+		
+		width *= rule->width * 0.5;
+		depth *= rule->depth;
+		
+		push_block_curve(curves, anchor - width, anchor + width, offset + idx);
+		push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
+		push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
+		push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
+		
+		parts[offset + idx].usage = usage_Polygonal_Feature;
+		parts[offset + idx].feature = rule->fac_id;
+		
+	}
+}
+
+
 
 static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int cat_table[cat_DIM],float max_slope, int need_lu)
 {
@@ -1719,6 +1790,7 @@ bool	init_block(
 	DebugAssert(!face->is_unbounded());
 
 	int zoning = face->data().GetZoning();
+	int variant = face->data().GetParam(af_Variant,-1);
 	ZoningInfoTable::iterator zi = gZoningInfo.find(zoning);
 	ZoningInfo_t * info = (zi == gZoningInfo.end() ? NULL : &zi->second);
 	if(info == NULL) return false;
@@ -1792,24 +1864,30 @@ bool	init_block(
 		// For now we use our first X road halfedges ...
 		DebugAssert(!info->fill_edge);
 		FillRule_t * r = GetFillRuleForBlock(face);
-		if(r && (r->fac_id != NO_VALUE || r->agb_id != NO_VALUE))
+		if(r && (r->agb_id != NO_VALUE))
 			block_feature_count = init_subdivisions(face, r, translator, outer_ccb_pts, parts, curves);
 		if(block_feature_count)
 			oob_idx = parts.size() - 1;
 	}
 	
 	if(block_feature_count == 0)
-	{
+	{	
+		num_he *= 2;	// We need up to two parts (edge, corner) for each road.
 	
-		num_he *= 2;
+		int num_extras = 1;
+	
+		if(info->fill_points)
+		num_extras += face->data().mPointFeatures.size();
+	
 		DebugAssert(parts.size() == block_feature_count);
-		parts.resize(block_feature_count + 2 * num_he + cat_DIM, BLOCK_face_data(usage_Empty, NO_VALUE));
-		int cat_base = 2 * num_he + block_feature_count;
+		parts.resize(block_feature_count + num_extras + 2 * num_he + cat_DIM, BLOCK_face_data(usage_Empty, NO_VALUE));
+		int cat_base = 2 * num_he + block_feature_count + num_extras;
+
 		parts[block_feature_count + num_he] = BLOCK_face_data(usage_Steep, NO_VALUE);
+		
 		parts[cat_base + cat_flat] = BLOCK_face_data(usage_OOB  , NO_VALUE);
 		parts[cat_base + cat_oob] = BLOCK_face_data(usage_OOB, NO_VALUE);
 
-		//num_he += 2;
 		
 		int cat_table[cat_DIM];
 		cat_table[cat_urban] = -1;
@@ -1820,14 +1898,18 @@ bool	init_block(
 		if(info && (info->need_lu || info->max_slope))
 			init_mesh(mesh, translator, curves, cat_table,info->max_slope,info->need_lu);
 
+		if(info->fill_points)		
+		if(!face->data().mPointFeatures.empty())
+			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1, zoning);
+
 		int base_offset = block_feature_count;
 		{
-			init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+			init_road_ccb(zoning, variant, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
 			for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
 			{
 				vector<block_pt>	hole_pts;
 				block_pts_from_ccb(*h,translator, hole_pts,BLOCK_ERR_MTR,true);		
-				init_road_ccb(zoning, *h, translator, parts, curves, hole_pts, base_offset, num_he+1, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+				init_road_ccb(zoning, variant, *h, translator, parts, curves, hole_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
 			}
 		}
 		oob_idx = cat_base + cat_oob;
@@ -1963,7 +2045,7 @@ bool	apply_fill_rules(
 	if(gZoningInfo[zoning].fill_area)
 	{
 		FillRule_t * r = GetFillRuleForBlock(orig_face);
-		if(r != NULL && r->ags_id != NO_VALUE)
+		if(r != NULL && (r->agb_id == NO_VALUE))
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
 		if(!f->is_unbounded())
 		if(f->data().usage == usage_Empty)
@@ -1971,8 +2053,11 @@ bool	apply_fill_rules(
 		{
 			
 			f->data().usage = usage_Polygonal_Feature;
-			f->data().feature = r->ags_id;
-			DebugAssert(r->ags_id != NO_VALUE);
+			if(r->fac_id != NO_VALUE)
+				f->data().feature = r->fac_id;
+			else
+				f->data().feature = r->ags_id;
+			DebugAssert(f->data().feature != NO_VALUE);
 		}
 	}
 
@@ -2333,6 +2418,8 @@ void	extract_features(
 					const DEMGeo&			forest_dem,
 					ForestIndex&			forest_index)					
 {
+	double	block_height = dest_face->data().GetParam(af_HeightObjs,8.0);
+
 	bool did_split = false;
 #if DEV && OPENGL_MAP
 	try
@@ -2357,6 +2444,7 @@ void	extract_features(
 				if(strstr(FetchTokenString(o.mRepType),".ags"))
 				{
 					o.mParam = StringFromBlock(f,o.mShape,translator);
+					encode_ag_height(o.mParam,block_height);					
 					DebugAssert(o.mShape.size() <= 255);
 					dest_face->data().mPolyObjs.push_back(o);				
 				}
@@ -2366,7 +2454,7 @@ void	extract_features(
 					bool fail_start = start == Block_2::Halfedge_handle();
 					if(fail_start)
 						start = f->outer_ccb();
-					o.mParam = 10.0 + random() % 10;;
+						o.mParam = block_height;
 					PolygonFromBlock(f,start, o.mShape, &translator, 0.0,false);
 //					if(fail_start)
 //						fail_extraction(dest_face,o.mShape,NULL,"NO ANCHOR SIDE ON FAC.");										
@@ -2396,6 +2484,9 @@ void	extract_features(
 					if(o.mParam & 1)					PushSideIn(o.mShape[0],1,-3.0);
 					if(o.mParam & 2)					PushSideIn(o.mShape[0],2,-3.0);
 					if(o.mParam & 4)					PushSideIn(o.mShape[0],3,-3.0);
+					
+					encode_ag_height(o.mParam,block_height);
+					
 					for(int n = 0; n < o.mShape[0].size(); ++n)
 						o.mShape[0][n] = translator.Reverse(o.mShape[0][n]);
 

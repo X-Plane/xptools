@@ -47,14 +47,15 @@ struct BLOCK_vertex_data { };
 struct BLOCK_halfedge_data { bool operator==(const BLOCK_halfedge_data& rhs) const { return true; } };
 
 struct BLOCK_face_data {
-	BLOCK_face_data() : usage(usage_Empty), feature(0) { }
-	BLOCK_face_data(int u,int f) : usage(u), feature(f) { }
+	BLOCK_face_data() : usage(usage_Empty), feature(0), can_simplify(true) { }
+	BLOCK_face_data(int u,int f) : usage(u), feature(f), can_simplify(true) { }
 	int		usage;
 	int		feature;			// Road feature type for roads?
 //	int		pre_placed;
 	Point2	center;
 	double	heading;
 	Vector2	major_axis;
+	bool	can_simplify;
 };
 
 //typedef CGAL::Lazy_exact_nt<CGAL::Gmpq> GNT;

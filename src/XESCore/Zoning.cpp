@@ -60,6 +60,7 @@ ZoningRuleTable				gZoningRules;
 ZoningInfoTable				gZoningInfo;
 EdgeRuleTable				gEdgeRules;
 FillRuleTable				gFillRules;
+PointRuleTable				gPointRules;
 LandClassInfoTable			gLandClassInfo;
 LandFillRuleTable			gLandFillRules;
 
@@ -91,7 +92,7 @@ static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 	set<int>	zoning_list;
 	set<int>	road_list;
 	string res_id;
-	if(TokenizeLine(tokens," SSsf",&zoning_list, &road_list, &res_id, &e.width) != 5) return false;
+	if(TokenizeLine(tokens," SiSsf",&zoning_list, &e.variant, &road_list, &res_id, &e.width) != 6) return false;
 	e.resource_id = RegisterAGResource(res_id);
 	for(set<int>::iterator z = zoning_list.begin(); z != zoning_list.end(); ++z)	
 	for(set<int>::iterator r = road_list.begin(); r != road_list.end(); ++r)
@@ -106,13 +107,28 @@ static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 	return true;
 }
 
+static bool ReadPointFillRule(const vector<string>& tokens, void * ref)
+{
+	PointRule_t r;
+	string fac;
+	if(TokenizeLine(tokens," eeffffs",&r.zoning,&r.feature,&r.height_min,&r.height_max,&r.width,&r.depth,&fac) != 8)
+		return false;
+		
+	r.fac_id = RegisterAGResource(fac);
+
+	gPointRules.push_back(r);
+	return true;
+}
+
 static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
 	string agb, fac, ags;
-	if(TokenizeLine(tokens, " eiffffffffffffffsss",	
+	if(TokenizeLine(tokens, " eiiffffffffffffffffsss",	
 			&r.zoning,
 			&r.road,
+			&r.variant,
+			&r.min_height,&r.max_height,
 			&r.min_side_len, &r.max_side_len,
 			&r.block_err_max,
 			&r.min_side_major,&r.max_side_major,
@@ -128,7 +144,7 @@ static bool ReadFillRule(const vector<string>& tokens, void * ref)
 
 			&agb,
 			&fac,
-			&ags) != 20)
+			&ags) != 23)
 			return false;
 
 	r.agb_slop_depth = r.agb_slop_width;
@@ -137,6 +153,24 @@ static bool ReadFillRule(const vector<string>& tokens, void * ref)
 	r.ags_id = RegisterAGResource(ags);
 	r.fac_id = RegisterAGResource(fac);
 	
+	if(r.fac_width == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
+	{
+		printf("ERROR: FAC %s has no subdiv width but is paired with AGB %s.\n", FetchTokenString(r.fac_id), FetchTokenString(r.agb_id));
+		return false;
+	}
+
+	if(r.fac_extra == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
+	{
+		printf("ERROR: FAC %s has no extra width but is paired with AGB %s.\n", FetchTokenString(r.fac_id), FetchTokenString(r.agb_id));
+		return false;
+	}
+	
+	if(r.agb_slop_depth == 0.0 && r.agb_id != NO_VALUE)
+	{
+		printf("ERROR: AGB %s has 0 slop depth.\n", FetchTokenString(r.agb_id));
+		return false;
+	}
+
 	if(gZoningInfo.count(r.zoning) == 0)
 		printf("WARNING: zoning type %s, required in fill rule for %s/%s/%s is unknown.\n",
 			FetchTokenString(r.zoning),
@@ -158,7 +192,7 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 {
 	ZoningInfo_t	info;
 	int				zoning;
-	if(TokenizeLine(tokens," efiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_veg,&info.terrain_type) != 8)
+	if(TokenizeLine(tokens," efiiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_points, &info.fill_veg,&info.terrain_type) != 9)
 		return false;
 	// optimization: if slope will never filter out AND we don't need LU, set slope to 0 to turn the mesh check off entirely!
 	if(info.max_slope == 90.0 && info.need_lu == 0)
@@ -234,6 +268,7 @@ void LoadZoningRules(void)
 	gZoningInfo.clear();
 	gEdgeRules.clear();
 	gFillRules.clear();
+	gPointRules.clear();
 	gLandFillRules.clear();
 
 	RegisterLineHandler("LANDCLASS_INFO", ReadLandClassRule, NULL);
@@ -242,6 +277,7 @@ void LoadZoningRules(void)
 	RegisterLineHandler("EDGE_RULE", ReadEdgeRule, NULL);
 	RegisterLineHandler("FILL_RULE", ReadFillRule, NULL);
 	RegisterLineHandler("LANDFILL_RULE", ReadLandFillRule, NULL);
+	RegisterLineHandler("POINT_FILL", ReadPointFillRule, NULL);
 	LoadConfigFile("zoning.txt");	
 }
 
@@ -452,6 +488,48 @@ struct is_same_terrain_p {
 
 void	ColorFaces(set<Face_handle>&	io_faces);
 
+void kill_antennas(Pmwx& io_map, Pmwx::Face_handle f, float max_len)
+{
+	Pmwx::Ccb_halfedge_circulator circ, stop, x,y, ae;
+	circ = stop = f->outer_ccb();
+	do {
+		x = circ;
+		--x;
+		if(x->twin() == x->prev())
+		if(he_has_any_roads(x))
+		if(get_he_is_on_ground(x))
+		if(get_he_street(x))
+		{
+			ae = x;
+			while(ae->twin()->face() == f)
+				++ae;
+			double len = 0;
+			y = x;
+			while(y != ae)
+			{
+				Segment2 me(cgal2ben(y->source()->point()),cgal2ben(y->target()->point()));
+				len += LonLatDistMeters(me.p1.x(),me.p1.y(),me.p2.x(),me.p2.y());
+				++y;
+			}
+		
+			if (len < max_len)
+			{
+				if(x == stop)
+					++stop;
+				else if(x->prev() == stop)
+				{
+					++stop; ++stop;
+				}
+//				debug_mesh_line(cgal2ben(x->source()->point()), cgal2ben(x->target()->point()), 1,0,0,  1,0,0);
+				DebugAssert(x != stop);
+				DebugAssert(x->twin() != stop);
+				io_map.remove_edge(x);
+			}
+		}
+	} while (++circ != stop);
+}
+
+
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
 				const DEMGeo& 		inLanduse,
@@ -539,29 +617,6 @@ void	ZoneManMadeAreas(
 		int has_non_local = 0;
 		Bbox2 face_extent;
 	
-		Pmwx::Ccb_halfedge_circulator circ, stop;
-		circ = stop = face->outer_ccb();
-		do {
-			face_extent += cgal2ben(circ->source()->point());
-			if(evaluate_he<Road_IsTrain>(circ)) 
-				has_train = 1;
-			else
-				has_non_train = 1;
-			if((evaluate_he<Road_IsLocal>(circ) || evaluate_he<Road_IsMainDrag>(circ)) &&
-				(circ->data().HasGroundRoads() || circ->twin()->data().HasGroundRoads()))
-				has_local = 1;			
-			else
-				has_non_local = 1;
-			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater()) 
-				has_water = 1;
-			else
-				has_non_water;
-		} while (++circ != stop);
-
-		if(has_water && !has_non_water) has_water = 2;
-		if(has_train && !has_non_train) has_train = 2;
-		if(has_local && !has_non_local)	has_local = 2;
-
 		PolyRasterizer<double>	r;
 		int x, y, x1, x2;
 		y = SetupRasterizerForDEM(face, inLanduse, r);
@@ -636,6 +691,35 @@ void	ZoneManMadeAreas(
 			}
 
 		}
+
+		if(count)
+		if((total_urban / count) > 0.5)
+		if(face->number_of_holes() == 0)
+			kill_antennas(ioMap,face,  ((total_urban / count) > 0.75) ? 35.0 : 20.0);
+
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		circ = stop = face->outer_ccb();
+		do {
+			face_extent += cgal2ben(circ->source()->point());
+			if(evaluate_he<Road_IsTrain>(circ)) 
+				has_train = 1;
+			else
+				has_non_train = 1;
+			if((evaluate_he<Road_IsLocal>(circ) || evaluate_he<Road_IsMainDrag>(circ)) &&
+				(circ->data().HasGroundRoads() || circ->twin()->data().HasGroundRoads()))
+				has_local = 1;			
+			else
+				has_non_local = 1;
+			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater()) 
+				has_water = 1;
+			else
+				has_non_water;
+		} while (++circ != stop);
+
+		if(has_water && !has_non_water) has_water = 2;
+		if(has_train && !has_non_train) has_train = 2;
+		if(has_local && !has_non_local)	has_local = 2;
+
 		
 		multimap<int, int, greater<int> > histo2;
 		for(map<int,int>::iterator i = histo.begin(); i != histo.end(); ++i)
@@ -962,6 +1046,53 @@ void	ZoneManMadeAreas(
 		zone_area[zone] += (mfam / (1000.0 * 1000.0));
 #endif
 
+	}
+
+#define HEIGHT_SPREAD_FACTOR 0.5
+#define MIN_HEIGHT_TO_SPREAD 16.0
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// HEIGHT SPREAD
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+		set<Pmwx::Face_handle>	to_visit, visited;
+
+	for(Pmwx::Face_handle f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+	if(!f->is_unbounded()) 
+	if(f->data().GetZoning() != NO_VALUE)
+	if(!f->data().IsWater())
+	if(f->data().mParams.count(af_HeightObjs))
+	if(f->data().GetParam(af_AreaMeters,0) < MAX_OBJ_SPREAD)
+	{
+		double h = f->data().mParams[af_HeightObjs] * HEIGHT_SPREAD_FACTOR;
+		if(h > MIN_HEIGHT_TO_SPREAD)
+			to_visit.insert(f);			
+	}
+
+	while(!to_visit.empty())
+	{
+		Pmwx::Face_handle me = *to_visit.begin();
+		to_visit.erase(to_visit.begin());
+		
+		double h = me->data().mParams[af_HeightObjs] * HEIGHT_SPREAD_FACTOR;
+		if(h > MIN_HEIGHT_TO_SPREAD)
+		{
+			set<Pmwx::Face_handle>	neighbors;
+			FindAdjacentFaces<Pmwx>(me, neighbors);
+			for(set<Pmwx::Face_handle>::iterator n = neighbors.begin(); n != neighbors.end(); ++n)
+			if(!(*n)->is_unbounded())
+			if(!(*n)->data().IsWater())
+			if((*n)->data().GetParam(af_AreaMeters,0) < MAX_OBJ_SPREAD)
+			if((*n)->data().GetZoning() != NO_VALUE)
+			{
+				float my_height = (*n)->data().GetParam(af_HeightObjs,0.0);
+				if(h > my_height)
+				{
+					(*n)->data().mParams[af_HeightObjs] = h;
+					to_visit.insert(*n);
+				}
+			}
+		}
 	}
 
 	//--------------------------------------------------------------------------------------------------------------------------------
@@ -1783,6 +1914,8 @@ FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f)
 	int z = f->data().GetZoning();
 	if(z == NO_VALUE) return NULL;
 
+	float h = f->data().GetParam(af_HeightObjs,0.0f);
+
 	float short_side = f->data().GetParam(af_ShortestSide,-1.0f);
 	float long_side = f->data().GetParam(af_LongestSide,-1.0f);
 	float short_axis = f->data().GetParam(af_ShortAxisLength,-1.0f);
@@ -1791,6 +1924,7 @@ FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f)
 	float	ang_min = f->data().GetParam(af_MinAngle,-1.0f);
 	float	ang_max = f->data().GetParam(af_MaxAngle,-1.0f);
 	int road_edge = f->data().GetParam(af_RoadEdge,0);
+	int variant = f->data().GetParam(af_Variant,0);
 	
 	for(FillRuleTable::iterator r = gFillRules.begin(); r != gFillRules.end(); ++r)
 	if(r->zoning == z)
@@ -1800,7 +1934,22 @@ FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f)
 	if(r->min_side_major == r->max_side_major || (r->min_side_major <= long_axis && long_axis <= r->max_side_major))
 	if(r->min_side_minor == r->max_side_minor || (r->min_side_minor <= short_axis && short_axis <= r->max_side_minor))
 	if(r->ang_min == r->ang_max || (r->ang_min <= ang_min && ang_max < r->ang_max))
+	if(r->min_height == r->max_height || (r->min_height < h && h < r->max_height))
+	if(r->variant == -1 || r->variant == variant)
 		return &*r;
 
+	return NULL;
+}
+
+PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f)
+{
+	for(PointRuleTable::iterator r = gPointRules.begin(); r != gPointRules.end(); ++r)
+	if(r->zoning == NO_VALUE || r->zoning == zoning)
+	if(r->feature == f.mFeatType)
+	if(r->height_min == r->height_max || (f.mParams.count(pf_Height) && r->height_min <= f.mParams.find(pf_Height)->second && f.mParams.find(pf_Height)->second <= r->height_max))
+	{
+		return &*r;
+		
+	}
 	return NULL;
 }

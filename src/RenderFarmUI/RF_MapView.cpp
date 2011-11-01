@@ -1328,6 +1328,9 @@ put in  color enums?
 			
 			for(GISPointFeatureVector::iterator i = f->data().mPointFeatures.begin(); i != f->data().mPointFeatures.end(); ++i)
 			{
+				if(i->mParams.count(pf_Height))
+				sprintf(buf,"%s (%f)",FetchTokenString(i->mFeatType),i->mParams[pf_Height]);
+				else
 				sprintf(buf,"%s",FetchTokenString(i->mFeatType));
 				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
 				k -= (h+1);

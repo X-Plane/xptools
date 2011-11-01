@@ -52,6 +52,7 @@ struct ZoningInfo_t {
 	int			need_lu;								// Exclude areas that are not urban LU?
 	int			fill_edge;								// Use rules to put AG along edges.
 	int			fill_area;								// Use rules to put AG in interior areas
+	int			fill_points;
 	int			fill_veg;								// Use rules to put forests into remaining area
 	int			terrain_type;							// Source terrain type required for this zoning.
 };
@@ -110,6 +111,7 @@ extern LandFillRuleTable			gLandFillRules;
 
 struct EdgeRule_t {
 	int			zoning;
+	int			variant;
 	int			road_type;		
 	int			resource_id;
 	float		width;
@@ -122,6 +124,9 @@ struct FillRule_t {
 	
 	int			road;
 	
+	int			variant;
+	float		min_height;
+	float		max_height;
 	float		min_side_len;							// Side length constraints
 	float		max_side_len;
 	float		block_err_max;							// Maximum acceptable block error
@@ -155,10 +160,23 @@ struct FillRule_t {
 
 };	
 
+struct PointRule_t {
+	int		zoning;
+	int		feature;
+	float	height_min;
+	float	height_max;
+	float	width;
+	float	depth;
+	int		fac_id;
+};
+
+
 typedef vector<EdgeRule_t>		EdgeRuleTable;
 typedef vector<FillRule_t>		FillRuleTable;
+typedef vector<PointRule_t>		PointRuleTable;
 extern EdgeRuleTable			gEdgeRules;
 extern FillRuleTable			gFillRules;
+extern PointRuleTable			gPointRules;
 
 void	LoadZoningRules(void);
 
@@ -181,5 +199,7 @@ void	ZoneManMadeAreas(
 				ProgressFunc		inProg);
 				
 FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f);
+
+PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f);
 
 #endif /* ZONING_H */
