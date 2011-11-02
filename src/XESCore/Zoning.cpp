@@ -1934,7 +1934,7 @@ FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f)
 	if(r->min_side_major == r->max_side_major || (r->min_side_major <= long_axis && long_axis <= r->max_side_major))
 	if(r->min_side_minor == r->max_side_minor || (r->min_side_minor <= short_axis && short_axis <= r->max_side_minor))
 	if(r->ang_min == r->ang_max || (r->ang_min <= ang_min && ang_max < r->ang_max))
-	if(r->min_height == r->max_height || (r->min_height < h && h < r->max_height))
+	if(r->min_height == r->max_height || (r->min_height <= h && h <= r->max_height))
 	if(r->variant == -1 || r->variant == variant)
 		return &*r;
 
