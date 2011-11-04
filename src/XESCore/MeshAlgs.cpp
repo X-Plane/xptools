@@ -1717,6 +1717,59 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		on all but water through the spreadsheet.
 */
 
+float enum_sample_tri(DEMGeo& d, double x0, double y0, double x1, double y1, double x2, double y2, double center_x, double center_y)
+{
+	float lu0  = d.search_nearest(center_x, center_y);
+	float lu1 = d.search_nearest(x0,y0);
+	float lu2 = d.search_nearest(x1,y1);
+	float lu3 = d.search_nearest(x2,y2);
+	float lu = MAJORITY_RULES(lu0,lu1,lu2, lu3);
+	return lu;
+/*
+	x0 = d.lon_to_x(x0);
+	x1 = d.lon_to_x(x1);
+	x2 = d.lon_to_x(x2);
+	y0 = d.lat_to_y(y0);
+	y1 = d.lat_to_y(y1);
+	y2 = d.lat_to_y(y2);
+
+		PolyRasterizer<double>	 pr;
+	pr.AddEdge(x0,y0,x1,y1);
+	pr.AddEdge(x1,y1,x2,y2);
+	pr.AddEdge(x2,y2,x0,y0);
+	int x, y, xs, xe;
+	pr.SortMasters();
+	
+	y = intmax2(floor(pr.masters.front().y1), 0);
+
+	
+	hash_map<int,int>	histo;
+	
+	while(!pr.DoneScan())
+	{
+		while (pr.GetRange(xs, xe))
+		{
+			for(x = xs; x < xe; ++x)
+			{
+				int lu = d.get(x,y);
+				if(lu != DEM_NO_DATA)
+					histo[lu]++;
+			}
+		}
+		++y;
+		pr.AdvanceScanline(y);
+	}
+	if(histo.empty())
+		return d.xy_nearest(center_x,center_y);
+	hash_map<int,int>::iterator l, best;
+	best = histo.begin();
+	for(l = histo.begin(); l !=histo.end(); ++l)
+		if(best->second < l->second)
+			best = l;
+	return best->first;
+*/
+}
+
 void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 								CDT& ioMesh,
 								const char * mesh_folder,
@@ -1788,11 +1841,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				double	center_x = (x0 + x1 + x2) / 3.0;
 				double	center_y = (y0 + y1 + y2) / 3.0;
 
-				float lu0  = landuse.search_nearest(center_x, center_y);
-				float lu1 = landuse.search_nearest(x0,y0);
-				float lu2 = landuse.search_nearest(x1,y1);
-				float lu3 = landuse.search_nearest(x2,y2);
-				float lu = MAJORITY_RULES(lu0,lu1,lu2, lu3);
+				float lu = enum_sample_tri(landuse, x0,y0,x1,y1,x2,y2, center_x, center_y);
 
 				float cs0 = inClimStyle.search_nearest(center_x, center_y);
 				float cs1 = inClimStyle.search_nearest(x0,y0);
@@ -1930,10 +1979,10 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				tri->info().debug_heading = sh_tri;
 				tri->info().debug_re = re;
 				tri->info().debug_er = er;				
-				tri->info().debug_lu[0] = lu0;
-				tri->info().debug_lu[1] = lu1;
-				tri->info().debug_lu[2] = lu2;
-				tri->info().debug_lu[3] = lu3;
+				tri->info().debug_lu[0] = lu;
+				tri->info().debug_lu[1] = lu;
+				tri->info().debug_lu[2] = lu;
+				tri->info().debug_lu[3] = lu;
 				tri->info().debug_lu[4] = lu ;
 			#endif
 				if (terrain == -1)
