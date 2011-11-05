@@ -88,6 +88,7 @@ struct ZoningRule_t {
 	set<int>	consume_features;						// These features get consumed by the act of zoning.
 	int			crud_ok;								// We can live with "stuff" in our zone that we haven't consumed.
 	int			hole_ok;								// Is there a hole in the block?
+	int			want_prim;
 	
 	int			zoning;
 };
@@ -112,6 +113,8 @@ extern LandFillRuleTable			gLandFillRules;
 struct EdgeRule_t {
 	int			zoning;
 	int			variant;
+	float		height_min;
+	float		height_max;
 	int			road_type;		
 	int			resource_id;
 	float		width;
@@ -140,18 +143,21 @@ struct FillRule_t {
 //	
 //	int			hole_ok;								// Okay to have holes or interruptions in our block?
 	
-	float		agb_min_width;
-	float		agb_slop_width;
+	float		agb_min_width;							// Min width for an ABG - just use facades if smaller than this.	
+	float		agb_slop_width;							// 
 	float		agb_slop_depth;
-	float		fac_width;
-	float		fac_depth;								// 0 if no subdivide in the back
-	float		fac_extra;								// add these to 
+	
+	float		fac_min_width;							// Range of width and steps for facade art assets..
+	float		fac_max_width;
+	float		fac_step;
+	int			fac_depth_split;						// How much to split the depth of facades.
+	float		fac_extra;
 	
 	int			agb_id;
 	int			fac_id;
 	int			ags_id;
 	
-	
+	multimap<float, vector<float> >		spellings;
 //	float		bldg_min,		bldg_max;
 //
 //	int			adj_terrain;							// These locate an adjacent edge with a certain property.   We will key
@@ -160,20 +166,38 @@ struct FillRule_t {
 
 };	
 
+struct FacadeRule_t {
+	int		zoning;
+	int		variant;
+	float	min_height;
+	float	max_height;
+	float	min_width;
+	float	max_width;
+	int		fac_id;
+};
+	
+
 struct PointRule_t {
 	int		zoning;
 	int		feature;
 	float	height_min;
 	float	height_max;
-	float	width;
-	float	depth;
-	int		fac_id;
+
+	float	width_rd;
+	float	depth_rd;
+	int		fac_id_rd;
+
+	float	width_ant;
+	float	depth_ant;
+	int		fac_id_ant;
 };
 
 
+typedef	vector<FacadeRule_t>	FacadeRuleTable;
 typedef vector<EdgeRule_t>		EdgeRuleTable;
 typedef vector<FillRule_t>		FillRuleTable;
 typedef vector<PointRule_t>		PointRuleTable;
+extern FacadeRuleTable			gFacadeRules;
 extern EdgeRuleTable			gEdgeRules;
 extern FillRuleTable			gFillRules;
 extern PointRuleTable			gPointRules;
@@ -201,5 +225,7 @@ void	ZoneManMadeAreas(
 FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f);
 
 PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f);
+
+FacadeRule_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height);
 
 #endif /* ZONING_H */

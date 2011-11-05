@@ -81,6 +81,8 @@ typedef UTL_interval<double>	time_region;
 
 #define map2block(X) (X)
 
+#define TRACE_SUBDIVIDE if(0) printf
+
 struct block_pt_locked {
 	bool operator()(const block_pt& p) const { return p.locked; }
 };
@@ -395,11 +397,12 @@ static bool edges_match(Block_2::Halfedge_handle a, Block_2::Halfedge_handle b)
 		   a->twin()->face()->data().feature== b->twin()->face()->data().feature;
 }
 
-static EdgeRule_t * edge_for_road(const pair<int,bool>& road_type, int zoning, int variant)
+static EdgeRule_t * edge_for_road(const pair<int,bool>& road_type, int zoning, int variant, float height)
 {
 	for(EdgeRuleTable::iterator e = gEdgeRules.begin(); e != gEdgeRules.end(); ++e)
 	if(e->zoning == zoning && e->road_type == road_type.first)
 	if(e->variant == -1 || e->variant == variant)
+	if(e->height_min == e->height_max || (e->height_min <= height && height <= e->height_max))
 		return &*e;
 	return NULL;
 }
@@ -619,6 +622,117 @@ double find_b_interval(time_region::interval& range, const vector<Segment2>& seg
 	return max(maxv-minv,0.0);
 }
 
+double size_err(const FillRule_t * info, double width, const vector<double>& div_rats)
+{
+	double t = 0;
+	for(int n = 0; n < div_rats.size(); ++n)
+	{
+		double w_mtr = div_rats[n] * width;
+		double nearest = info->fac_min_width + round((w_mtr - info->fac_min_width) / info->fac_step) * info->fac_step;
+		nearest = doblim(nearest,info->fac_min_width, info->fac_max_width);
+		t += (w_mtr - nearest) * (w_mtr - nearest);		
+	}
+	return sqrt(t) / (double) div_rats.size();
+}
+
+static void make_one_subdiv_spelling(const FillRule_t * info, double width, vector<double>& div_rats)
+{
+	int approx_wanted = intmax2(1,width / ((info->fac_min_width + info->fac_max_width) * 0.5));
+
+	int range = 1 + (info->fac_max_width - info->fac_min_width) / info->fac_step;
+	
+	double t = 0.0;
+	for(int i = 0; i < approx_wanted; ++i)
+	{
+		div_rats.push_back(info->fac_max_width + info->fac_step * (rand() % range));
+		t += div_rats.back();
+	}
+	DebugAssert(t > 0.0);
+	t = 1.0 / t;
+	for(int i = 0; i < div_rats.size(); ++i)
+	{
+		div_rats[i] *= t;
+	}
+}
+
+static void make_fac_subdiv_spelling(const FillRule_t * info, double width, vector<double>& div_rats)
+{
+	typedef multimap<float,vector<float> >::const_iterator spelling_iter;
+	spelling_iter rs = info->spellings.lower_bound(width-info->fac_step);
+	spelling_iter re = info->spellings.upper_bound(width+info->fac_step);
+
+	int num_choices = distance(rs,re);
+	if(num_choices == 0)
+	{	
+		#if DEV
+		if(rs == info->spellings.end())
+			printf("WARNING: fill rule does not have enough length for %f\n",width);
+		#endif	
+		div_rats.push_back(1.0);
+		return;
+	}
+
+	int our_pick = rand() % num_choices;
+	
+	advance(rs,our_pick);
+	for(int n = 0; n < rs->second.size(); ++n)
+		div_rats.push_back(rs->second[n] / rs->first);
+
+//	printf("Best for %.1lf:", width);
+//	for(int n = 0; n < div_rats.size(); ++n)
+//		printf(" %.1lf", div_rats[n] * width);
+//	printf("\n");
+//	printf(" (Err = %lf\n", e_best);
+}
+
+/*
+static void dump_spelling(map<float,int>& histo)
+{
+	for(map<float,int>::iterator h = histo.begin(); h != histo.end(); ++h)
+		printf("%f: x%d\n", h->first,h->second);
+}
+
+static void make_fac_subdiv_spelling(const FillRule_t * info, double width, vector<double>& div_rats)
+{
+	float			total = 0;
+	map<float,int>	included;
+	while(total < width)
+	for(float w = info->fac_min_width; w <= info->fac_max_width; w += info->fac_step)
+	{
+		included[w] += 1;
+		total += w;
+	}
+//	printf("Total start: %f for %f\n", total, width);
+//	dump_spelling(included);
+	while(total > width && !included.empty())
+	{
+		float over = total - width;
+//		printf("over by %f\n",over);
+		map<float,int>::iterator i = included.lower_bound(over);
+		if(i != included.end() && i->first != over)
+			++i;
+		if(i == included.end())
+			--i;
+		total -= i->first;
+//		printf("Will pull %f\n", i->first);
+		if(i->second > 1)
+			i->second -= 1;
+		else
+			included.erase(i);
+//		dump_spelling(included);
+	}
+	
+	for(map<float,int>::iterator h = included.begin(); h != included.end(); ++h)
+	{
+		while(h->second--)
+			div_rats.push_back(h->first / total);
+	}
+//	printf("Best for %.1lf:", width);
+//	for(int n = 0; n < div_rats.size(); ++n)
+//		printf(" %.1lf", div_rats[n] * width);
+}
+*/
+
 static int	init_subdivisions(
 							Pmwx::Face_handle f,
 							const FillRule_t * info, CoordTranslator2& translator, 
@@ -652,30 +766,23 @@ static int	init_subdivisions(
 		bounds[3] = max(bounds[3],cb);	
 	}
 
+	TRACE_SUBDIVIDE("Block is from %lf,%lf to %lf,%lf\n", bounds[0],bounds[1],bounds[2],bounds[3]);
 	
 	time_region		agb_friendly(bounds[0],bounds[2]);
 	
-	#define AGB_SUBDIV_LEN	(info->agb_min_width)
-	#define FACADE_A_SLOP (info->agb_slop_width)
-	#define FACADE_B_SLOP (info->agb_slop_depth)
-	
-	#define MIN_AGB_SIZE	(info->agb_min_width)
-	#define MIN_FAC_EXTRA_ADD (info->fac_extra)
-	#define FAC_SUBDIV_WIDTH (info->fac_width)
-	#define FAC_DEPTH_SPLIT (info->fac_depth ? info->fac_depth : 100000.0)
-
-	
-	double fac_extra_len = MIN_FAC_EXTRA_ADD;
+	double fac_extra_len = info->fac_extra;
 	for(int i = 0; i < outer_ccb_pts.size(); ++i)
 	{
 		if(outer_ccb_pts[i].edge_type.first != NO_VALUE)
 			fac_extra_len = dobmax2(fac_extra_len,gNetReps[outer_ccb_pts[i].edge_type.first].width());
 	}
-	double real_min_agb = fac_extra_len * 2.0 + MIN_AGB_SIZE;
+	TRACE_SUBDIVIDE("Facade overhang is: %lf\n",fac_extra_len);
 
+	double real_min_agb = fac_extra_len * 2.0 + info->agb_min_width;
+	TRACE_SUBDIVIDE("Min Size For AGB: %lf\n",real_min_agb);
 	
 	// facade depth splits!
-	int fds = intlim(floor(fabs(bounds[3]-bounds[1]) / FAC_DEPTH_SPLIT), 1, 2);	// NEVER split more than twice.  Middle facades are STRANDED!
+	int fds = info->fac_depth_split;
 	
 	DebugAssert(outer_ccb_pts.size() >= 3);
 
@@ -691,21 +798,25 @@ static int	init_subdivisions(
 		bool top = v_side.dx < 0.0;
 		v_side.dx = fabs(v_side.dx);
 		v_side.dy = fabs(v_side.dy);
-		DebugAssert(AGB_SUBDIV_LEN > 0.0);
-		double max_facade_subdivs = dobmax2(1,floor(v_side.dx / AGB_SUBDIV_LEN));
+		DebugAssert(info->agb_min_width > 0.0);
+		double max_facade_subdivs = dobmax2(1,floor(v_side.dx / info->agb_min_width));
+		
+		TRACE_SUBDIVIDE("Side from %lf,%lf to %lf,%lf (vector %lf, %lf, max subdivide is %lf)\n", pi.x(),pi.y(),pj.x(),pj.y(), v_side.dx,v_side.dy,max_facade_subdivs);
+		
 		// Test for too much north-south travel is tempered by the distance - basically we can subdivide
 		// horizontally to fit AGBs in with some block drift.
-		if(v_side.dy > (FACADE_B_SLOP * max_facade_subdivs))
+		if(v_side.dy > (info->agb_slop_depth * max_facade_subdivs))
 		{		
 			// This side is sloping too much north-south to be an AGB.  But it MIGHT be the west or easet side
 			// of the block.
 			
 			// Since we don't subdivide vertically, we measure for absolute error on the easet and west side.
-			if(v_side.dx > FACADE_A_SLOP)
+			if(v_side.dx > info->agb_slop_width)
 			{
 				// okay - we have a slanty side - mark this east-west interval as NOT an AGB!
 				DebugAssert(pi.x() != pj.x());
 				agb_friendly -= time_region::interval(min(pi.x(),pj.x()),max(pi.x(),pj.x()));
+				TRACE_SUBDIVIDE("Region from %lf to %lf is not friendly - side slop %lf\n", min(pi.x(),pj.x()),max(pi.x(),pj.x()),v_side.dx);
 			}
 		} 
 		else
@@ -734,7 +845,7 @@ static int	init_subdivisions(
 			agb_friendly.empty() ||						// Whole area is facade
 			agb_friendly.get_min() > bounds[0] ||		// Block starts with facade
 			agb_friendly.get_max() < bounds[2] ||		// Block ends with facade
-			(bounds[2] - bounds[0]) < real_min_agb)		// Block is TOO SMALL - will become a facade!!
+			(bounds[2] - bounds[0]) < info->agb_min_width)		// Block is TOO SMALL - will become a facade!!
 			
 			return 0;
 	}
@@ -743,29 +854,33 @@ static int	init_subdivisions(
 	for(time_region::const_iterator agbs = agb_friendly.begin(); agbs != agb_friendly.end(); ++agbs)
 	{
 		double width = agbs->second - agbs->first;
-		if(width < real_min_agb)
-		{
-			DebugAssert(info->fac_id != NO_VALUE);
-			must_be_fac_too += *agbs;			
-		}
-		else
+//		if(width < real_min_agb)
+//		{
+//			TRACE_SUBDIVIDE("Time region %lf to %lf rejected - too small.\n", agbs->first, agbs->second);
+//			DebugAssert(info->fac_id != NO_VALUE);
+//			must_be_fac_too += *agbs;			
+//		}
+//		else
 		{
 			double must_have = 0.0;
 			if(agbs->first != bounds[0])
 				must_have += fac_extra_len;
 			if(agbs->second != bounds[2])
 				must_have += fac_extra_len;
-			if(width > must_have)
+			if(width > (must_have + info->agb_min_width))
 			{
 				if(agbs->first != bounds[0])
 					must_be_fac_too += time_region::interval(agbs->first,agbs->first + fac_extra_len);
 				if(agbs->second != bounds[2])
 					must_be_fac_too += time_region::interval(agbs->second - fac_extra_len, agbs->second);
-			} else 
+			} else {
 				must_be_fac_too += *agbs;			
+			}
 		}		
 	}
-	
+
+	DebugAssert(must_be_fac_too.empty() || info->fac_id);
+
 	agb_friendly -= must_be_fac_too;
 
 //	agb_friendly ^= time_region::interval(bounds[0],bounds[2]);
@@ -799,12 +914,16 @@ static int	init_subdivisions(
 		if(fac.first != fac.second)
 		{
 			double width = fac.second - fac.first;
-			DebugAssert(FAC_SUBDIV_WIDTH > 0.0);
-			double subdiv = dobmax2(1,floor(width / FAC_SUBDIV_WIDTH));
-			DebugAssert(subdiv < 500);
-			for(double s = 0.0; s < subdiv; s += 1.0)
+			
+			vector<double> rats;
+			make_fac_subdiv_spelling(info, width, rats);
+
+			TRACE_SUBDIVIDE("Subdiving facade from %lf to %lf ito %zd pieces.\n", fac.first,fac.second,rats.size());
+			double accum = 0.0;
+			for(int n = 0; n < rats.size(); ++n)
 			{
-				a_cuts.push_back(pair<double,bool>(double_interp(0,fac.first,subdiv,fac.second,s),false));
+				a_cuts.push_back(pair<double,bool>(double_interp(0,fac.first,1,fac.second,accum),false));
+				accum += rats[n];
 			}		
 		}
 		if(agb.first != agb.second)
@@ -812,7 +931,9 @@ static int	init_subdivisions(
 			double top_span = find_b_interval(agb,top_agbs, bounds);
 			double bot_span = find_b_interval(agb,bot_agbs, bounds);
 			double worst_span = max(top_span,bot_span);
-			double subdiv = dobmax2(1.0,floor(worst_span / FACADE_B_SLOP));
+			double subdiv = dobmax2(1.0,floor(worst_span / info->agb_slop_depth));
+			TRACE_SUBDIVIDE("top span: %lf, bottom span: %lf, worst span: %lf\n", top_span,bot_span,worst_span);
+			TRACE_SUBDIVIDE("Subdiving agb from %lf to %lf ito %lf pieces.\n", agb.first,agb.second,subdiv);
 			
 			for(double s = 0.0; s < subdiv; s += 1.0)
 			{
@@ -1013,15 +1134,15 @@ bool edge_ok_for_ag(const Point2& i, const Point2& j, CoordTranslator2& c, const
 }
 
 
-static bool mismatched_edge_types(const pair<int,bool>& e1, const pair<int,bool>& e2, int zoning, int variant, bool fill_edges)
+static bool mismatched_edge_types(const pair<int,bool>& e1, const pair<int,bool>& e2, int zoning, int variant, float height, bool fill_edges)
 {
 	float w1 = WidthForSegment(e1);
 	float w2 = WidthForSegment(e2);
 	if(w1 != w2) return true;
 	if(!fill_edges)	return false;
 
-	EdgeRule_t * r1 = edge_for_road(e1, zoning, variant);
-	EdgeRule_t * r2 = edge_for_road(e1, zoning, variant);
+	EdgeRule_t * r1 = edge_for_road(e1, zoning, variant, height);
+	EdgeRule_t * r2 = edge_for_road(e1, zoning, variant, height);
 	
 	if (r1 == NULL && r2 == NULL) return false;
 	if (r1 == NULL || r2 == NULL) return true;
@@ -1030,7 +1151,7 @@ static bool mismatched_edge_types(const pair<int,bool>& e1, const pair<int,bool>
 	return false;
 }
 
-static void	init_road_ccb(int zoning, int variant, Pmwx::Ccb_halfedge_circulator he, CoordTranslator2& translator, 
+static void	init_road_ccb(int zoning, int variant,float height,  Pmwx::Ccb_halfedge_circulator he, CoordTranslator2& translator, 
 							vector<BLOCK_face_data>& pieces, 
 							vector<Block_2::X_monotone_curve_2>& curves,
 							vector<block_pt>&	pts,
@@ -1056,7 +1177,7 @@ static void	init_road_ccb(int zoning, int variant, Pmwx::Ccb_halfedge_circulator
 		pts[j].reflex = right_turn(pts[i].loc,pts[j].loc,pts[k].loc) || pts[i].loc == pts[k].loc;
 		// Any change in edge type is a "discontinuity" - we can't optimize out the sides of our road.
 		// And...point 0 is ALWAYS discontinuous - um, something goes wrong if that isn't true.
-		pts[j].discon = j == 0 || mismatched_edge_types(pts[j].edge_type,pts[i].edge_type, zoning, variant, fill_edges);
+		pts[j].discon = j == 0 || mismatched_edge_types(pts[j].edge_type,pts[i].edge_type, zoning, variant, height, fill_edges);
 		
 //		if(j == 0)
 //			debug_mesh_point(translator.Reverse(pts[j].loc),1,1,0);
@@ -1077,7 +1198,7 @@ static void	init_road_ccb(int zoning, int variant, Pmwx::Ccb_halfedge_circulator
 		pts[i].offset_next1 = offset.p1;
 		pts[j].offset_prev1 = offset.p2;
 
-		EdgeRule_t * er = (fill_edges && edge_ok_for_ag(pts[i].loc,pts[j].loc, translator,approx_ag)) ? edge_for_road(pts[i].edge_type, zoning, variant) : NULL;
+		EdgeRule_t * er = (fill_edges && edge_ok_for_ag(pts[i].loc,pts[j].loc, translator,approx_ag)) ? edge_for_road(pts[i].edge_type, zoning, variant, height) : NULL;
 		real_side = offset;
 		MoveSegLeft(real_side, er ? er->width : 0.0, offset);
 
@@ -1601,47 +1722,97 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 	if((rule = GetPointRuleForFeature(zoning, *f)) != NULL)
 	{
 		Point2	fl(trans.Forward(cgal2ben(f->mLocation)));
+
 		int best = -1;
-		double best_dist = 0;
-		for(int i = 0; i < pts.size(); ++i)
+		
+		if(rule->fac_id_ant)
 		{
-			int j = (i + 1) % pts.size();
-			DebugAssert(pts[i].loc != pts[j].loc);
-			if(ground_road_access_for_he(pts[i].orig))
-			if(pts[i].loc != pts[j].loc)
+			double best_dist = 0;
+			for(int i = 0; i < pts.size(); ++i)
 			{
-				double my_dist = Segment2(pts[i].loc,pts[j].loc).squared_distance(fl);				
-				if(best == -1 || my_dist < best_dist)
-				{	
-					best = i;
-					best_dist = my_dist;
+				int j = (i + 1) % pts.size();
+				int k = (i + pts.size() - 1) % pts.size();
+				if(pts[j].loc == pts[k].loc)
+				if(ground_road_access_for_he(pts[i].orig))
+				{
+					double my_dist = pts[i].loc.squared_distance(fl);				
+					if(best == -1 || my_dist < best_dist)
+					{	
+						best = i;
+						best_dist = my_dist;
+					}
 				}
 			}
 		}
-		if(best == -1)
-			best = 0;
 		
-		Segment2	wall(pts[best].loc,pts[(best+1)%pts.size()].loc);
-		Assert(wall.p1 != wall.p2);
-		Point2		anchor(wall.midpoint());
-		Vector2		width(wall.p1,wall.p2);
-		width.normalize();
-		Vector2	depth(width.perpendicular_ccw());
+		if(best >= 0)
+		{
+			Point2		anchor(pts[best].loc);
+			int j = (best + pts.size() - 1) % pts.size();
+			Vector2		depth(pts[j].loc,pts[best].loc);
+			depth.normalize();
+			Vector2	width(depth.perpendicular_cw());
+
+			float w = WidthForSegment(pts[best].edge_type);
+			if(w > 1.0)
+				anchor += (depth * (w+0.5));
+
+			width *= rule->width_ant * 0.5;
+			depth *= rule->depth_ant;
+
+						
+			push_block_curve(curves, anchor - width, anchor + width, offset + idx);
+			push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
+			push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
+			push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
+			
+			parts[offset + idx].usage = usage_Polygonal_Feature;
+			parts[offset + idx].feature = rule->fac_id_ant;
 		
-		float w = WidthForSegment(pts[best].edge_type);
-		if(w > 1.0)
-			anchor += (depth * (w-1.0));
-		
-		width *= rule->width * 0.5;
-		depth *= rule->depth;
-		
-		push_block_curve(curves, anchor - width, anchor + width, offset + idx);
-		push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
-		push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
-		push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
-		
-		parts[offset + idx].usage = usage_Polygonal_Feature;
-		parts[offset + idx].feature = rule->fac_id;
+		}
+		else
+		{
+			double best_dist = 0;
+			for(int i = 0; i < pts.size(); ++i)
+			{
+				int j = (i + 1) % pts.size();
+				DebugAssert(pts[i].loc != pts[j].loc);
+				if(ground_road_access_for_he(pts[i].orig))
+				if(pts[i].loc != pts[j].loc)
+				{
+					double my_dist = Segment2(pts[i].loc,pts[j].loc).squared_distance(fl);				
+					if(best == -1 || my_dist < best_dist)
+					{	
+						best = i;
+						best_dist = my_dist;
+					}
+				}
+			}
+			if(best == -1)
+				best = 0;
+			
+			Segment2	wall(pts[best].loc,pts[(best+1)%pts.size()].loc);
+			Assert(wall.p1 != wall.p2);
+			Point2		anchor(wall.midpoint());
+			Vector2		width(wall.p1,wall.p2);
+			width.normalize();
+			Vector2	depth(width.perpendicular_ccw());
+			
+			float w = WidthForSegment(pts[best].edge_type);
+			if(w > 1.0)
+				anchor += (depth * (w-1.0));
+			
+			width *= rule->width_rd * 0.5;
+			depth *= rule->depth_rd;
+			
+			push_block_curve(curves, anchor - width, anchor + width, offset + idx);
+			push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
+			push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
+			push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
+			
+			parts[offset + idx].usage = usage_Polygonal_Feature;
+			parts[offset + idx].feature = rule->fac_id_rd;
+		}
 		
 	}
 }
@@ -1779,6 +1950,17 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 
 }
 
+inline bool too_damn_small(Block_2::Ccb_halfedge_circulator circ, double len)
+{
+	len *= len;
+	Block_2::Ccb_halfedge_circulator stop(circ);
+	do {
+		if(Segment2(cgal2ben(circ->source()->point()),cgal2ben(circ->target()->point())).squared_length() > len)
+			return false;
+	}while(++circ != stop);
+	return true;
+}
+
 
 bool	init_block(
 					CDT&					mesh,
@@ -1791,6 +1973,7 @@ bool	init_block(
 
 	int zoning = face->data().GetZoning();
 	int variant = face->data().GetParam(af_Variant,-1);
+	float height = face->data().GetParam(af_HeightObjs,0);
 	ZoningInfoTable::iterator zi = gZoningInfo.find(zoning);
 	ZoningInfo_t * info = (zi == gZoningInfo.end() ? NULL : &zi->second);
 	if(info == NULL) return false;
@@ -1904,12 +2087,12 @@ bool	init_block(
 
 		int base_offset = block_feature_count;
 		{
-			init_road_ccb(zoning, variant, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+			init_road_ccb(zoning, variant, height, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
 			for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
 			{
 				vector<block_pt>	hole_pts;
 				block_pts_from_ccb(*h,translator, hole_pts,BLOCK_ERR_MTR,true);		
-				init_road_ccb(zoning, variant, *h, translator, parts, curves, hole_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+				init_road_ccb(zoning, variant, height, *h, translator, parts, curves, hole_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
 			}
 		}
 		oob_idx = cat_base + cat_oob;
@@ -1964,8 +2147,59 @@ bool	init_block(
 //		printf("%d: %d %s\n", n, parts[n].usage, FetchTokenString(parts[n].feature));
 	create_block(out_block,parts, curves, oob_idx);	// First "parts" block is outside of CCB, marked as "out of bounds", so trapped areas are not marked empty.
 	num_line_integ += curves.size();
-//	debug_show_block(out_block,translator);
+	//debug_show_block(out_block,translator);
 	clean_block(out_block);
+	
+	/* Funky post processing step... */
+	
+	list<Block_2::Halfedge_handle>	splits_we_do_not_want;
+	for(Block_2::Edge_iterator e = out_block.edges_begin(); e != out_block.edges_end(); ++e)
+	if(!e->face()->is_unbounded() && !e->twin()->face()->is_unbounded())
+	{
+		Block_2::Face_handle f1(e->face());
+		Block_2::Face_handle f2(e->twin()->face());
+		if(f1->data().usage == f2->data().usage &&
+			f1->data().usage == usage_Polygonal_Feature)
+		if(f1->data().feature == f2->data().feature &&
+				strstr(FetchTokenString(f1->data().feature),".fac"))		
+		if(count_circulator(f1->outer_ccb()) < 4 ||
+			count_circulator(f2->outer_ccb()) < 4 ||
+			too_damn_small(f1->outer_ccb(),7.5) ||
+			too_damn_small(f2->outer_ccb(),7.5))
+		{
+//			for(EdgeKey_iterator i = e->curve().data().begin(); i != e->curve().data().end(); ++i)
+//				printf(" %d\n", *i);
+//			printf("\n");
+			EdgeKey_iterator k1(e->curve().data().begin());
+			if(k1 != e->curve().data().end())
+			{
+				EdgeKey_iterator k2(k1);
+				++k2;
+				bool consec = false;
+				while(k2 != e->curve().data().end())
+				{
+					if((*k1 + 1 == *k2) ||
+					   (*k2 + 1 == *k1))
+					{
+						consec = true;
+						break;
+					}
+					k1 = k2;
+					++k2;
+				}
+				if(consec)
+				{
+					splits_we_do_not_want.push_back(e);
+				}
+				
+			}
+		}
+	}
+	for(list<Block_2::Halfedge_handle>::iterator k =	splits_we_do_not_want.begin(); k != splits_we_do_not_want.end(); ++k)
+		out_block.remove_edge(*k);
+	if(!splits_we_do_not_want.empty())
+		clean_block(out_block);
+		
 	return true;
 }					
 
@@ -2454,8 +2688,18 @@ void	extract_features(
 					bool fail_start = start == Block_2::Halfedge_handle();
 					if(fail_start)
 						start = f->outer_ccb();
-						o.mParam = block_height;
+					o.mParam = intmax2(8,block_height);
+					
 					PolygonFromBlock(f,start, o.mShape, &translator, 0.0,false);
+					double len = sqrt(Segment2(cgal2ben(start->source()->point()),cgal2ben(start->target()->point())).squared_length());
+					if(!f->data().can_simplify)
+					{
+						FacadeRule_t * r = GetFacadeRule(dest_face->data().GetZoning(), dest_face->data().GetParam(af_Variant,-1),len,o.mParam);
+						if(r)
+							o.mRepType = r->fac_id;
+						else
+							fail_extraction(dest_face,o.mShape,NULL,"No AG fac found.");										
+					}
 //					if(fail_start)
 //						fail_extraction(dest_face,o.mShape,NULL,"NO ANCHOR SIDE ON FAC.");										
 					DebugAssert(o.mShape.size() <= 255);

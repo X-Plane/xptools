@@ -59,6 +59,7 @@
 ZoningRuleTable				gZoningRules;
 ZoningInfoTable				gZoningInfo;
 EdgeRuleTable				gEdgeRules;
+FacadeRuleTable				gFacadeRules;	
 FillRuleTable				gFillRules;
 PointRuleTable				gPointRules;
 LandClassInfoTable			gLandClassInfo;
@@ -92,7 +93,7 @@ static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 	set<int>	zoning_list;
 	set<int>	road_list;
 	string res_id;
-	if(TokenizeLine(tokens," SiSsf",&zoning_list, &e.variant, &road_list, &res_id, &e.width) != 6) return false;
+	if(TokenizeLine(tokens," SiffSsf",&zoning_list, &e.variant, &e.height_min, &e.height_max, &road_list, &res_id, &e.width) != 8) return false;
 	e.resource_id = RegisterAGResource(res_id);
 	for(set<int>::iterator z = zoning_list.begin(); z != zoning_list.end(); ++z)	
 	for(set<int>::iterator r = road_list.begin(); r != road_list.end(); ++r)
@@ -110,21 +111,48 @@ static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 static bool ReadPointFillRule(const vector<string>& tokens, void * ref)
 {
 	PointRule_t r;
-	string fac;
-	if(TokenizeLine(tokens," eeffffs",&r.zoning,&r.feature,&r.height_min,&r.height_max,&r.width,&r.depth,&fac) != 8)
+	string fac_rd, fac_ant;
+	if(TokenizeLine(tokens," eeffffsffs",&r.zoning,&r.feature,&r.height_min,&r.height_max,&r.width_rd,&r.depth_rd,&fac_rd, &r.width_ant,&r.depth_ant,&fac_ant) != 11)
 		return false;
 		
-	r.fac_id = RegisterAGResource(fac);
+	r.fac_id_ant = RegisterAGResource(fac_ant);
+	r.fac_id_rd = RegisterAGResource(fac_rd);
 
 	gPointRules.push_back(r);
 	return true;
+}
+
+static bool ReadFacadeRule(const vector<string>& tokens, void * ref)
+{
+	FacadeRule_t	r;
+	string fac;
+	if(TokenizeLine(tokens," eiffffs",&r.zoning,&r.variant,&r.min_width,&r.max_width, &r.min_height,&r.max_height,&fac) != 8)
+		return false;
+	
+	r.fac_id = RegisterAGResource(fac);
+	gFacadeRules.push_back(r);
+		
+	return true;
+}
+
+static void		pick_n(vector<float>& choices, int count, vector<float>& picks)
+{
+	int r = choices.size();
+	while(count--)
+	{
+		int choice = rand() % r;
+		picks.push_back(choices[choice]);
+		--r;
+		if(choice != r)
+			swap(choices[r],choices[choice]);
+	}
 }
 
 static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
 	string agb, fac, ags;
-	if(TokenizeLine(tokens, " eiiffffffffffffffffsss",	
+	if(TokenizeLine(tokens, " eiiffffffffffffffffifsss",	
 			&r.zoning,
 			&r.road,
 			&r.variant,
@@ -137,33 +165,86 @@ static bool ReadFillRule(const vector<string>& tokens, void * ref)
 			
 			&r.agb_min_width,
 			&r.agb_slop_width,
-			&r.fac_width,
-			&r.fac_depth,
-			&r.fac_extra,
-			
+			&r.fac_min_width,
+			&r.fac_max_width,
+			&r.fac_step,
+			&r.fac_depth_split,
+			&r.fac_extra,			
 
 			&agb,
 			&fac,
-			&ags) != 23)
+			&ags) != 25)
 			return false;
 
 	r.agb_slop_depth = r.agb_slop_width;
 
+	if(r.fac_step)
+	{
+		float width  = r.fac_max_width - r.fac_min_width;
+		float tiles = intmax2(1,1+width/r.fac_step);
+		vector<float>	widths;
+		for(int t = 0; t < tiles; ++t)
+			widths.push_back(r.fac_min_width + (float) t * r.fac_step);
+		
+		for(int c = 0; c < tiles; ++c)
+		{
+			for(int tries = 1; tries <= c; ++tries)
+			{
+				vector<float>	choices;
+				pick_n(widths, c, choices);
+				float total = 0;
+				for(int n = 0; n < choices.size(); ++n)
+					total += choices[n];
+			
+				r.spellings.insert(multimap<float,vector<float> >::value_type(total,choices));
+									
+			}
+		}		
+
+		float water_mark = (--r.spellings.end())->first;
+
+		for(int t = 0; t < tiles; ++t)
+			widths.push_back(r.fac_min_width + (float) t * r.fac_step);
+		
+		for(int c = tiles; c < (tiles*2); ++c)
+		{
+			for(int tries = 1; tries <= c; ++tries)
+			{
+				vector<float>	choices;
+				pick_n(widths, c, choices);
+				float total = 0;
+				for(int n = 0; n < choices.size(); ++n)
+					total += choices[n];
+				if(total > water_mark)
+					r.spellings.insert(multimap<float,vector<float> >::value_type(total,choices));
+									
+			}
+		}		
+		
+		
+//		for(multimap<float,vector<float> >::iterator s = r.spellings.begin(); s != r.spellings.end(); ++s)
+//		{
+//			printf("%f:", s->first);
+//			for(vector<float>::iterator ss = s->second.begin(); ss != s->second.end(); ++ss)
+//				printf(" %f", *ss);
+//			printf("\n");
+//		}
+	}
 	r.agb_id = RegisterAGResource(agb);
 	r.ags_id = RegisterAGResource(ags);
 	r.fac_id = RegisterAGResource(fac);
 	
-	if(r.fac_width == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
-	{
-		printf("ERROR: FAC %s has no subdiv width but is paired with AGB %s.\n", FetchTokenString(r.fac_id), FetchTokenString(r.agb_id));
-		return false;
-	}
-
-	if(r.fac_extra == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
-	{
-		printf("ERROR: FAC %s has no extra width but is paired with AGB %s.\n", FetchTokenString(r.fac_id), FetchTokenString(r.agb_id));
-		return false;
-	}
+//	if((r.fac_min_width == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
+//	{
+//		printf("ERROR: FAC %s has no subdiv width but is paired with AGB %s.\n", FetchTokenString(r.fac_id), FetchTokenString(r.agb_id));
+//		return false;
+//	}
+//
+//	if(r.fac_extra == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
+//	{
+//		printf("ERROR: FAC %s has no extra width but is paired with AGB %s.\n", FetchTokenString(r.fac_id), FetchTokenString(r.agb_id));
+//		return false;
+//	}
 	
 	if(r.agb_slop_depth == 0.0 && r.agb_id != NO_VALUE)
 	{
@@ -209,7 +290,7 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 {
 	ZoningRule_t	r;
-	if(TokenizeLine(tokens," effffffffffffffiiefefiiiiifffffffSSe",
+	if(TokenizeLine(tokens," effffffffffffffiiefefiiiiiifffffffSSe",
 		&r.terrain,
 		&r.size_min,			&r.size_max,
 		&r.slope_min,			&r.slope_max,
@@ -228,6 +309,7 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 		&r.req_road,
 		&r.hole_ok,
 		&r.crud_ok,
+		&r.want_prim,
 		&r.block_err_max,
 		&r.min_side_len,
 		&r.max_side_len,
@@ -237,7 +319,7 @@ static bool	ReadZoningRule(const vector<string>& tokens, void * ref)
 		&r.max_side_minor,
 		&r.require_features,
 		&r.consume_features,
-		&r.zoning) != 26+7+4)	return false;
+		&r.zoning) != 26+7+5)	return false;
 
 	r.slope_min = 1.0 - cos(r.slope_min * DEG_TO_RAD);
 	r.slope_max = 1.0 - cos(r.slope_max * DEG_TO_RAD);
@@ -267,6 +349,7 @@ void LoadZoningRules(void)
 	gZoningRules.clear();
 	gZoningInfo.clear();
 	gEdgeRules.clear();
+	gFacadeRules.clear();
 	gFillRules.clear();
 	gPointRules.clear();
 	gLandFillRules.clear();
@@ -278,6 +361,7 @@ void LoadZoningRules(void)
 	RegisterLineHandler("FILL_RULE", ReadFillRule, NULL);
 	RegisterLineHandler("LANDFILL_RULE", ReadLandFillRule, NULL);
 	RegisterLineHandler("POINT_FILL", ReadPointFillRule, NULL);
+	RegisterLineHandler("FACADE_RULE", ReadFacadeRule, NULL);
 	LoadConfigFile("zoning.txt");	
 }
 
@@ -343,6 +427,7 @@ static int		PickZoningRule(
 						int			has_train,			// 0 = none, 1 = some, 2 = all
 						int			has_road,			// 0 = none, 1 = some, 2 = all
 						int			has_hole,			// 0 = no, 1 = yes
+						int			has_prim,			// ...
 
 						float		block_err,			// Worst distance in meters of any point from the "frame" of the supporting grid block structure.  Low for very REGULAR blocks.
 						float		short_side,			// Length in meters of the shortest side.
@@ -368,6 +453,7 @@ static int		PickZoningRule(
 		if(has_train >= r->req_train)
 		if(has_road >= r->req_road)
 		if(!has_hole || r->hole_ok)		
+		if(!r->want_prim || has_prim)
 		if(block_err <= r->block_err_max || r->block_err_max == 0.0)
 		if(check_rule(r->min_side_major,r->max_side_major,major_length))
 		if(check_rule(r->min_side_minor,r->max_side_minor,minor_length))
@@ -612,6 +698,7 @@ void	ZoneManMadeAreas(
 		int has_water = 0;
 		int has_non_water = 0;
 		int has_train = 0;
+		int has_prim = 0;
 		int	has_non_train = 0;
 		int has_local = 0;		
 		int has_non_local = 0;
@@ -707,8 +794,12 @@ void	ZoneManMadeAreas(
 				has_non_train = 1;
 			if((evaluate_he<Road_IsLocal>(circ) || evaluate_he<Road_IsMainDrag>(circ)) &&
 				(circ->data().HasGroundRoads() || circ->twin()->data().HasGroundRoads()))
+			{
 				has_local = 1;			
-			else
+				int ft = get_he_feat_type(circ);
+				if(ft == road_Primary || ft == road_PrimaryOneway || ft == road_Secondary || ft == road_SecondaryOneway)
+					has_prim = 1;
+			} else
 				has_non_local = 1;
 			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater()) 
 				has_water = 1;
@@ -772,7 +863,7 @@ void	ZoneManMadeAreas(
 		
 		find_major_axis(outer_border, &major,&v_x,&v_y,bounds);
 
-//		debug_mesh_line(trans.Reverse(major.p1 + v_y),trans.Reverse(major.p2 + v_y),1,0,0,1,0,0);
+		//debug_mesh_line(trans.Reverse(major.p1 + v_y),trans.Reverse(major.p2 + v_y),1,0,0,1,0,0);
   
 		double max_err = 0.0;
 
@@ -988,6 +1079,7 @@ void	ZoneManMadeAreas(
 						has_train,																// words when we can accept a mix, this lets the DOMINANT type crowd out the secondary.
 						has_local,
 						has_holes,
+						has_prim,
 
 						max_err,
 						
@@ -1034,6 +1126,7 @@ void	ZoneManMadeAreas(
 		face->data().mParams[af_WaterEdge]	=	has_water;
 		face->data().mParams[af_RoadEdge]	=	has_local;
 		face->data().mParams[af_RailEdge]	=	has_train;
+		face->data().mParams[af_PrimaryEdge]=	has_prim;
 		
 		
 		
@@ -1951,5 +2044,19 @@ PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f)
 		return &*r;
 		
 	}
+	return NULL;
+}
+
+FacadeRule_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height)
+{
+	for(FacadeRuleTable::iterator r = gFacadeRules.begin(); r != gFacadeRules.end(); ++r)
+	if(r->zoning == NO_VALUE || r->zoning == zoning)
+	if(r->variant == -1 || r->variant == variant)
+	if(r->min_height == r->max_height || (r->min_height <= height && height <= r->max_height))
+	if(r->min_width == r->max_width || (r->min_width <= front_wall_len && front_wall_len <= r->max_width))
+		return &*r;
+	#if DEV
+		printf("WARNING: no facade rule for %s v%d at %lf x %lf\n", FetchTokenString(zoning), variant, front_wall_len,height);
+	#endif
 	return NULL;
 }

@@ -147,6 +147,7 @@
 	
 	TOKEN(af_WaterEdge)
 	TOKEN(af_RoadEdge)
+	TOKEN(af_PrimaryEdge)
 	TOKEN(af_RailEdge)
 	
 /*******************NETWORK TYPE CODES***********************************

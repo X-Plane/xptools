@@ -648,17 +648,81 @@ int	pick_major_axis(
 				Vector2&														v_x,
 				Vector2&														v_y)
 {
-	int i, best = -1;
+	// The basic idea: we want to pick the grid axis MOST aligned with the block such that
+	// the major axis supports roads.  
+
+	double best_corr = 0;
+	double best = -1;
+
+	int i, j;
 	for(i = 0; i < sides.size(); ++i)
-	if(ground_road_access_for_he(sides[i].first))
-	if(best == -1 || bounds.side(i).squared_length() > bounds.side(best).squared_length())
-		best = i;
-	if (best == -1)
-	for(i = 0; i < sides.size(); ++i)
-	if(best == -1 || bounds.side(i).squared_length() > bounds.side(best).squared_length())
-		best = i;
+	{
+		double score = 0.0;
+		Vector2 si = Vector2(bounds.side(i).p1,bounds.side(i).p2);
+		double il = si.normalize();
+		
+		//printf("Side %d: %lf,%lf for %lf\n", i, si.dx,si.dy,il);
+		for(int j = 0; j < sides.size(); ++j)
+		if(i != j)
+		{
+			Vector2	sj(bounds.side(j).p1,bounds.side(j).p2);
+			double jl = sj.normalize();
+
+			double my_corr = jl * fltmax2(fabs(si.dot(sj)),fabs(si.dot(sj.perpendicular_ccw())));
+			score += my_corr;
+			//printf("  Side %d: %lf,%lf for %lf\n, corr = %lf", j, sj.dx,sj.dy,jl, my_corr);
+		}
+
+		//printf("Total score for %d: %lf\n", i, score);
+		if(score > best_corr){
+			best = i;
+			best_corr = score;
+		}
+		
+	}
+	
 	v_x = Vector2(bounds.side(best).p1,bounds.side(best).p2);
 	v_x.normalize();
 	v_y = v_x.perpendicular_ccw();
+
+	//printf("So far our best is %d, with axes %lf, %lf to %lf, %lf\n", best, v_x.dx,v_x.dy,v_y.dx,v_y.dy);
+					
+
+	double bbox[4];
+	bbox[0] = bbox[2] = v_x.dot(Vector2(bounds[0]));
+	bbox[1] = bbox[3] = v_y.dot(Vector2(bounds[0]));
+	for(i = 1; i < sides.size(); ++i)
+	{
+		double va = v_x.dot(Vector2(bounds[i]));
+		double vb = v_y.dot(Vector2(bounds[i]));
+		bbox[0]=dobmin2(bbox[0], va);
+		bbox[1]=dobmin2(bbox[1], vb);
+		bbox[2]=dobmax2(bbox[2], va);
+		bbox[3]=dobmax2(bbox[3], vb);
+	}
+	
+	//printf("Our bbox is %lf,%lf to %lf,%lf\n", bbox[0],bbox[1],bbox[2],bbox[3]);
+
+	if((bbox[2] - bbox[0]) < (bbox[3] - bbox[1]))
+	{
+		v_x = v_x.perpendicular_ccw();
+		v_y = v_y.perpendicular_ccw();
+		//printf("Must rotate, the winner was a SHORT side.\n");
+	}
+
+	best = 0;
+	double best_dot = 0;
+	for(i = 0; i < sides.size(); ++i)
+	if(ground_road_access_for_he(sides[i].first))
+	{
+		Vector2	side_vec(bounds.side(i).p1,bounds.side(i).p2);
+		double slen = side_vec.normalize();
+		double corr = fabs(v_x.dot(side_vec));
+		if(corr > best_dot)
+		{
+			best = i;
+			corr = best_dot;
+		}
+	}
 	return best;
 }
