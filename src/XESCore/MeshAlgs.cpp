@@ -42,6 +42,7 @@
 #include "GreedyMesh.h"
 #include "MeshSimplify.h"
 #include "NetHelpers.h"
+#include "Zoning.h"	// for urban cheat table.
 #if APL && !defined(__MACH__)
 #define __DEBUGGING__
 #include "XUtils.h"
@@ -1719,13 +1720,14 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 float enum_sample_tri(DEMGeo& d, double x0, double y0, double x1, double y1, double x2, double y2, double center_x, double center_y)
 {
+/*
 	float lu0  = d.search_nearest(center_x, center_y);
 	float lu1 = d.search_nearest(x0,y0);
 	float lu2 = d.search_nearest(x1,y1);
 	float lu3 = d.search_nearest(x2,y2);
 	float lu = MAJORITY_RULES(lu0,lu1,lu2, lu3);
 	return lu;
-/*
+*/
 	x0 = d.lon_to_x(x0);
 	x1 = d.lon_to_x(x1);
 	x2 = d.lon_to_x(x2);
@@ -1761,13 +1763,24 @@ float enum_sample_tri(DEMGeo& d, double x0, double y0, double x1, double y1, dou
 	}
 	if(histo.empty())
 		return d.xy_nearest(center_x,center_y);
-	hash_map<int,int>::iterator l, best;
+	hash_map<int,int>::iterator l, best, town;
 	best = histo.begin();
+	town = histo.end();
 	for(l = histo.begin(); l !=histo.end(); ++l)
+	{
 		if(best->second < l->second)
 			best = l;
+		if(town == histo.end() || town->second < l->second)
+		if(gLandClassInfo.count(l->first) && gLandClassInfo[l->first].urban_density > 0.0)
+			town = l;
+	}
+	
+	if(town != histo.end())
+	// This is the RATIO of how much to AMPLIFY the urban to overcome other land classes.
+	// Set to 1.0 to disable magic behavior.
+	if((town->second * 1) > best->second)
+		return town->first;
 	return best->first;
-*/
 }
 
 void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
