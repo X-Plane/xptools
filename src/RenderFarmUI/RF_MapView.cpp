@@ -142,7 +142,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		dem_AgriStyle,			"Agriculture Style"				,	dem_Enum,					false,	true,	"Agriculture Style=%s "},
 {		dem_ClimStyle,			"Climate Style"					,	dem_Enum,					false,	true,	"Cliamte Style=%s "},
 {		dem_ParkType,			"Parks"							,	dem_Enum,					false,  true,	"Park=%s"		},
-{		dem_ForestType,			"Forests"						,	dem_Zones,					false,  true,	"Forest=%s"		},
+{		dem_ForestType,			"Forests"						,	dem_Enum,					false,  true,	"Forest=%s"		},
 {		dem_Climate,			"Climate"						,	dem_Enum,					false,	true,	"Climate=%s "	},
 {		dem_Biomass,			"Biomass"						,	dem_Biomass,				true,	false,	"Biomass=%f "	},
 {		dem_Rainfall,			"Rainfall"						,	dem_Rainfall,				true,	false,	"Rain=%fmm "	},
@@ -1341,21 +1341,35 @@ put in  color enums?
 				sprintf(buf,"%s",FetchTokenString(i->mFeatType));
 				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
 				k -= (h+1);
+
 			}
+			
+			vector<string>	poly_list;
 
 			for(GISObjPlacementVector::iterator i = f->data().mObjs.begin(); i != f->data().mObjs.end(); ++i)
 			{
 				sprintf(buf,"%s",FetchTokenString(i->mRepType));
-				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
-				k -= (h+1);
+				poly_list.push_back(buf);
 			}
 
 			for(GISPolyObjPlacementVector::iterator i = f->data().mPolyObjs.begin(); i != f->data().mPolyObjs.end(); ++i)
 			{
 				sprintf(buf,"%s %hu",FetchTokenString(i->mRepType), i->mParam);
-				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				poly_list.push_back(buf);
+			}
+			
+			if(poly_list.size() > 10)
+			{
+				sort(poly_list.begin(),poly_list.end());
+				poly_list.erase(unique(poly_list.begin(),poly_list.end()),poly_list.end());
+			}
+			for(vector<string>::iterator str = poly_list.begin(); str != poly_list.end(); ++str)
+			{
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, str->c_str());
 				k -= (h+1);
 			}
+			
+			
 		}				
 	}
 
