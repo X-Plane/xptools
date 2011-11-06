@@ -52,6 +52,7 @@
 #include "MapHelpers.h"
 #include "ForestTables.h"
 
+#define NO_FOREST_TYPES 0
 #define DEBUG_SHOW_FOREST_POLYS 0
 
 bool pred_want_ag(CDT::Face_handle f)
@@ -240,7 +241,23 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 
 	Pmwx	forest_stands;
 
+#if NO_FOREST_TYPES
+	// stupid experiment to homogenize forests...to see how it would affect perf.  Leave this off!
+	DEMGeo forests(gDem[dem_ForestType]);
+	int mt = NO_VALUE;
+	for(DEMGeo::iterator i = forests.begin(); i != forests.end(); ++i)
+	{
+		int v = *i;
+		if(v != NO_VALUE)
+		{
+			if(mt == NO_VALUE)
+				mt = v;
+			*i = mt;
+		}
+	}
+#else
 	const DEMGeo& forests(gDem[dem_ForestType]);
+#endif	
 
 	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, NO_VALUE, forest_stands,NULL);
 	SimplifyMap(gMap, false, gProgress);
@@ -352,6 +369,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
 
 
+//histo of used ag
 	map<int,int>	asset_histo;
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	for(GISPolyObjPlacementVector::iterator i = f->data().mPolyObjs.begin(); i != f->data().mPolyObjs.end(); ++i)
@@ -363,6 +381,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	printf("Total art assets: %d\n", ta);
 	for(multimap<int,int>::iterator r = rh.begin(); r != rh.end(); ++r)
 		printf("%d (%f): %s\n", r->first, (float) (r->first * 100.0) / (float) ta, FetchTokenString(r->second));
+
 	
 //	if (gVerbose)	printf("Instantiating objects...\n");
 //	vector<PreinsetFace>	insets;

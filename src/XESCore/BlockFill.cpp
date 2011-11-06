@@ -75,7 +75,11 @@ typedef UTL_interval<double>	time_region;
 
 #include <CGAL/Arr_overlay_2.h>
 
-#define FOREST_SUBDIVIDE_AREA	(1000000.0)
+// This controls how much we subdivide small forest stands.
+#define FOREST_SUBDIVIDE_AREA		(1000000.0)
+
+// Don't mess with this if you want to MAKE a DSF - larger than 255 and DSF encoder blows up.
+#define MAX_FOREST_RINGS			255
 
 #define BLOCK_ERR_MTR 0.5
 
@@ -2550,7 +2554,7 @@ int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps
 
 void push_one_forest(vector<Polygon2>& bounds, const DEMGeo& dem, Pmwx::Face_handle dest_face)
 {
-	if(bounds.size() > 255)
+	if(bounds.size() > MAX_FOREST_RINGS)
 	{
 		printf("Face had %zd holes.\n",bounds.size()-1);
 		throw "too many holes.";
@@ -2599,9 +2603,7 @@ void push_one_forest(vector<Polygon2>& bounds, const DEMGeo& dem, Pmwx::Face_han
 	}
 	if(!histo.empty())
 	{
-		map<int,int>::iterator h = histo.end();
-		--h;
-		o.mRepType = h->first;
+		o.mRepType = highest_key(histo);
 		dest_face->data().mPolyObjs.push_back(o);				
 	}
 	else if(lu_any != NO_VALUE)
@@ -2753,7 +2755,7 @@ void	extract_features(
 					extract_ccb(*h, forest.back(), hole_m, translator); 
 					area -= hole_m.area();
 				}
-				if(f->number_of_holes() < 255 && area < FOREST_SUBDIVIDE_AREA)
+				if(f->number_of_holes() < MAX_FOREST_RINGS && area < FOREST_SUBDIVIDE_AREA)
 				{
 					push_one_forest(forest, forest_dem, dest_face);					
 				} 
@@ -2873,7 +2875,11 @@ retry:
 							++h;
 							Block_2::Point_2 p2 = (*h)->source()->point();							
 							Block_2::X_monotone_curve_2 c (BSegment_2(p1, p2), 0);							
-							CGAL::insert(divided_forest, c);
+							
+							{
+								data_preserver_t<Block_2>	info(divided_forest);
+								CGAL::insert(divided_forest, c);
+							}
 							goto retry;
 						}
 					}
@@ -2923,5 +2929,15 @@ bool process_block(Pmwx::Face_handle f, CDT& mesh, const DEMGeo& ag_ok_approx_de
 			ret = true;
 		extract_features(block, f, trans, forest_dem, forest_index);
 	}
+
+// This counts the cost in vertices of polygonal autogen.
+	
+//	int total = 0;
+//	for(GISPolyObjPlacementVector::iterator p = f->data().mPolyObjs.begin(); p != f->data().mPolyObjs.end(); ++p)
+//	{
+//		for(vector<Polygon2>::iterator r = p->mShape.begin(); r != p->mShape.end(); ++r)
+//			total += r->size();
+//	}
+//	printf("Face had %d vertices.\n", total);
 	return ret;
 }
