@@ -993,6 +993,14 @@ void	ZoneManMadeAreas(
 				}
 				short_axis_length = fabs(bounds[3] - bounds[1]);
 				long_axis_length = fabs(bounds[2] - bounds[0]);
+
+//				debug_mesh_line(trans.Reverse(mbounds.centroid()),
+//								trans.Reverse(mbounds.centroid() + v_x * 20.0),
+//								1,0,0,1,0,0);
+//				debug_mesh_line(trans.Reverse(mbounds.centroid()),
+//								trans.Reverse(mbounds.centroid() + v_y * 20.0),
+//								0,1,0,0,1,0);
+
 			}
 			
 			min_angle = 180.0;
@@ -1012,13 +1020,24 @@ void	ZoneManMadeAreas(
 				
 			}
 			
+			int old_local = has_local;
 			has_local = has_non_local = 0;
 			for(int i = 0; i < sides.size(); ++i)
 			if(ground_road_access_for_he(sides[i].first))
-				has_local = 1;
-			else
+			{
+				Vector2	vside(mbounds.side(i).p1,mbounds.side(i).p2);
+				vside.normalize();
+				if(fabs(v_x.dot(vside)) > 0.996)
+					has_local = 1;
+			} else
 				has_non_local = 1;
 			if(has_local && !has_non_local) has_local = 2;
+			
+			if((has_local == 0) != (old_local == 0))
+			{
+				num_sides = 0;
+				has_local = old_local;
+			}
 			
 			#if ZONING_HISTO
 			if(num_sides == 4)

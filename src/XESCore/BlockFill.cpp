@@ -1997,16 +1997,16 @@ bool	init_block(
 	} while(++circ != stop);
 	if(has_road && !has_non_road)	has_road = 2;
 
-#if OPENGL_MAP && DEV
-	if(has_road != face->data().GetParam(af_RoadEdge,-1))
-	{
-		printf("Failed.  Thought we had %f, actually had %d.  Zoning %s.\n", 
-				face->data().GetParam(af_RoadEdge,-1),
-				has_road,
-				FetchTokenString(zoning));
-		gFaceSelection.insert(face);
-	}
-#endif
+//#if OPENGL_MAP && DEV
+//	if(has_road != face->data().GetParam(af_RoadEdge,-1))
+//	{
+//		printf("Failed.  Thought we had %f, actually had %d.  Zoning %s.\n", 
+//				face->data().GetParam(af_RoadEdge,-1),
+//				has_road,
+//				FetchTokenString(zoning));
+//		gFaceSelection.insert(face);
+//	}
+//#endif
 	CreateTranslatorForBounds(bounds, translator);
 	if(translator.mDstMax.x() < 1.0 || translator.mDstMax.y() < 1.0)
 		return false;

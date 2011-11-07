@@ -648,6 +648,90 @@ int	pick_major_axis(
 				Vector2&														v_x,
 				Vector2&														v_y)
 {
+	int right_angle = -1;
+	for(int i = 0; i < sides.size(); ++i)
+	{
+		int j = (i + 1) % sides.size();
+		int k = (i + 2) % sides.size();
+		Vector2	vx(Vector2(bounds[i],bounds[j]));
+		Vector2	vy(Vector2(bounds[j],bounds[k]));
+		vx.normalize();
+		vy.normalize();
+		double dot = fabs(vx.dot(vy));
+		if(dot < 0.087155742747658)
+		{
+			if(right_angle == -1)
+				right_angle = j;
+			else
+				right_angle = -2;
+		}
+	}
+	if(right_angle >= 0)
+	{
+		int prev = (right_angle + sides.size() - 1) % sides.size();
+		int next = (right_angle +				 1) % sides.size();
+		Vector2	vp(Vector2(bounds[prev],bounds[right_angle]));
+		Vector2	vn(Vector2(bounds[right_angle],bounds[next]));
+		double pl = vp.normalize();
+		double nl = vn.normalize();
+		if(pl > nl)
+			v_x = vp;	
+		else
+			v_x = vn;
+		v_y = v_x.perpendicular_ccw();
+		
+		return right_angle;
+	}
+
+	int shortest = -1;
+	double	thinnest_so_far = 0.0;
+	for(int i = 0; i < sides.size(); ++i)
+	{
+		Vector2 vx = Vector2(bounds.side(i).p1,bounds.side(i).p2);
+		vx.normalize();
+		Vector2 vy = vx.perpendicular_ccw();
+		double bbox[4];
+		bbox[0] = bbox[2] = vx.dot(Vector2(bounds[0]));
+		bbox[1] = bbox[3] = vy.dot(Vector2(bounds[0]));
+		for(int j = 0; j < sides.size(); ++j)
+		{
+			double x = vx.dot(Vector2(bounds[j]));
+			double y = vy.dot(Vector2(bounds[j]));
+			bbox[0] = dobmin2(bbox[0], x);
+			bbox[1] = dobmin2(bbox[1], y);
+			bbox[2] = dobmax2(bbox[2], x);
+			bbox[3] = dobmax2(bbox[3], y);
+		}
+		double xdist = fabs(bbox[2]-bbox[0]);
+		double ydist = fabs(bbox[3]-bbox[1]);
+		double my_dist = dobmin2(xdist,ydist);
+		if(shortest == -1 || my_dist < thinnest_so_far)
+		{
+			shortest = i;
+			thinnest_so_far = my_dist;
+			if(xdist < ydist)
+			{
+				v_x = vx.perpendicular_ccw();
+				v_y = vy.perpendicular_ccw();
+			}
+			else
+			{
+				v_x = vx;
+				v_y = vy;
+			}
+		}
+	}
+	
+	DebugAssert(shortest >= 0);
+	return shortest;
+	
+
+#if 0
+
+	#error This algo works 95% of the time, but 5% of the time it picks a slashed short end as the
+	#error long axis, which gives a long thin block a wrong axis alignment and a huge AABB.  Bad!
+
+
 	// The basic idea: we want to pick the grid axis MOST aligned with the block such that
 	// the major axis supports roads.  
 
@@ -724,5 +808,10 @@ int	pick_major_axis(
 			corr = best_dot;
 		}
 	}
+	DebugAssert(best >= 0.0);
+	v_x = Vector2(bounds.side(best).p1,bounds.side(best).p2);
+	v_x.normalize();
+	v_y = v_x.perpendicular_ccw();
 	return best;
+#endif	
 }
