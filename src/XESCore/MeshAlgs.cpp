@@ -1742,6 +1742,11 @@ float enum_sample_tri(DEMGeo& d, double x0, double y0, double x1, double y1, dou
 	int x, y, xs, xe;
 	pr.SortMasters();
 	
+	if(pr.masters.empty())
+	{
+		// triangle is so f--- thin that when rounded it is colinear.  No masters get kept. bail now to avoid seg fault?1
+		return d.xy_nearest(center_x,center_y);
+	}
 	y = intmax2(floor(pr.masters.front().y1), 0);
 
 	
