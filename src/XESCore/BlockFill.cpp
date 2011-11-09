@@ -608,7 +608,7 @@ double find_b_interval(time_region::interval& range, const vector<Segment2>& seg
 			continue;
 		if(range.second < s->p1.x())
 			continue;
-		
+			
 		double xmin = max(s->p1.x(),range.first);
 		double xmax = min(s->p2.x(),range.second);
 		DebugAssert(xmin <= xmax);
@@ -616,6 +616,8 @@ double find_b_interval(time_region::interval& range, const vector<Segment2>& seg
 		DebugAssert(xmax <= range.second);
 		DebugAssert(xmin >= s->p1.x());
 		DebugAssert(xmax <= s->p2.x());
+		
+		TRACE_SUBDIVIDE("B interval, segment from %lf,%lf to %lf,%lf, x range %lf, %lf\n",s->p1.x(),s->p1.y(),s->p2.x(),s->p2.y(), xmin, xmax);
 		
 		double y1 = s->y_at_x(xmin);
 		double y2 = s->y_at_x(xmax);
@@ -933,10 +935,12 @@ static int	init_subdivisions(
 		if(agb.first != agb.second)
 		{
 			double top_span = find_b_interval(agb,top_agbs, bounds);
+			TRACE_SUBDIVIDE("top span: %lf\n", top_span);
 			double bot_span = find_b_interval(agb,bot_agbs, bounds);
+			TRACE_SUBDIVIDE("bot span: %lf\n", bot_span);
 			double worst_span = max(top_span,bot_span);
 			double subdiv = dobmax2(1.0,floor(worst_span / info->agb_slop_depth));
-			TRACE_SUBDIVIDE("top span: %lf, bottom span: %lf, worst span: %lf\n", top_span,bot_span,worst_span);
+			TRACE_SUBDIVIDE("worst span: %lf\n", worst_span);
 			TRACE_SUBDIVIDE("Subdiving agb from %lf to %lf ito %lf pieces.\n", agb.first,agb.second,subdiv);
 			
 			for(double s = 0.0; s < subdiv; s += 1.0)
@@ -2606,7 +2610,7 @@ void push_one_forest(vector<Polygon2>& bounds, const DEMGeo& dem, Pmwx::Face_han
 		o.mRepType = highest_key(histo);
 		dest_face->data().mPolyObjs.push_back(o);				
 	}
-	else if(lu_any != NO_VALUE)
+	else if(lu_any != NO_VALUE && lu_any != DEM_NO_DATA)
 	{
 		o.mRepType = lu_any;
 		dest_face->data().mPolyObjs.push_back(o);						
