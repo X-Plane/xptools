@@ -85,6 +85,9 @@ bool			DSFSharedPointPool::CanBeContiguous(const DSFTupleVector& inPoints)
 {
 	for (list<SharedSubPool>::iterator p = mPools.begin(); p != mPools.end(); ++p)
 	{
+		// 65535?  yes, really.  The damn cross pool primitive uses [) notation, so it loses 1 unit capacity.
+		if((p->mPoints.size() + inPoints.size()) > 65535)
+			continue;
 		bool ok = true;
 		for (int n = 0; n < inPoints.size(); ++n)
 		{
@@ -113,6 +116,11 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 
 	for (list <SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
 	{
+		if((pool->mPoints.size() + inPoints.size()) > 65535)
+		{
+			printf("Skipping full pool, pool has %d, we need to sink %d.\n", pool->mPoints.size(), inPoints.size());
+			continue;
+		}
 		bool ok = true;
 		encoded.clear();
 		for (n = 0; n < inPoints.size(); ++n)
@@ -177,6 +185,7 @@ pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 	// Hrm...doesn't exist.  Try to add it.
 	p = 0;
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
+	if(pool->mPoints.size() < 65535)
 	{
 		DSFTuple	point(inPoint);
 		if (point.encode(pool->mOffset, pool->mScale))

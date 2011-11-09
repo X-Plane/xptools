@@ -575,6 +575,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		{
 			if (terrainPool[prims->first].CanBeContiguous((*prim)->vertices))
 			{
+				Assert((*prim)->vertices.size() < 65536);
 				loc = terrainPool[prims->first].AcceptContiguous((*prim)->vertices);
 				if (loc.first != -1 && loc.second != -1)
 				{
@@ -596,6 +597,11 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	for (n = 0; n < (*prim)->vertices.size(); ++n)
 	{
 		loc = terrainPool[prims->first].AcceptShared((*prim)->vertices[n]);
+		if(loc.second > 65536)
+		{
+			printf("ERROR: just sank at %d,%d\n",loc.first,loc.second);
+			Assert("!Out of bounds sink.");
+		}
 		if (loc.first == -1 || loc.second == -1)
 		{
 			(*prim)->vertices[n].dump();
@@ -1105,8 +1111,8 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 					if (primIter->type == dsf_Tri)			WriteUInt8(fi, dsf_Cmd_TriangleRange);
 					if (primIter->type == dsf_TriStrip)		WriteUInt8(fi, dsf_Cmd_TriangleStripRange);
 					if (primIter->type == dsf_TriFan)		WriteUInt8(fi, dsf_Cmd_TriangleFanRange);
-					if (primIter->indices[0].second > 65535) 							Assert(!"ERROR: array range primitive offsets out of bounds at beginning.\n");
-					if (primIter->indices[0].second + primIter->indices.size() > 65535) Assert(!"ERROR: array range primitive offsets out of bounds at end.\n");
+					if (primIter->indices[0].second > 65535) 							AssertPrintf("ERROR: array range primitive offsets out of bounds at beginning, offset is %d\n", primIter->indices[0].second);
+					if (primIter->indices[0].second + primIter->indices.size() > 65535) AssertPrintf("ERROR: array range primitive offsets out of bounds at end.  Start %d size %d result %d\n", primIter->indices[0].second, primIter->indices.size(), primIter->indices[0].second + primIter->indices.size());
 					WriteUInt16(fi,primIter->indices[0].second);
 					WriteUInt16(fi,primIter->indices[0].second + primIter->indices.size());
 				} else {
@@ -1143,8 +1149,16 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 				WriteUInt8(fi, primIter->indices.size());
 				for (n = 0; n < primIter->indices.size(); ++n)
 				{
-					if (primIter->indices[n].first + offset_to_terrain_pool_of_depth[patchSpec->depth] > 65535) Assert(!"ERROR: Overflow writing range primitive cross pool index.");	//, subpool =%d, offset to pool = %d.\n", primIter->indices[n].first, offset_to_terrain_pool_of_depth[patchSpec->depth]);
-					if (primIter->indices[n].second > 65535) 													Assert(!"ERROR: Overflow writing range primitive cross pool offset.\n");
+					if (primIter->indices[n].first + offset_to_terrain_pool_of_depth[patchSpec->depth] > 65535) 
+					{
+						printf("ERROR: overflow. subpool =%d, offset to pool = %d.\n", primIter->indices[n].first, offset_to_terrain_pool_of_depth[patchSpec->depth]);
+						Assert(!"ERROR: Overflow writing range primitive cross pool index.");	
+					}
+					if (primIter->indices[n].second > 65535)
+					{
+						printf("ERROR: primtive end is %d\n", primIter->indices[n].second);
+						Assert(!"ERROR: Overflow writing range primitive cross pool offset.\n");
+					}
 					WriteUInt16(fi, primIter->indices[n].first + offset_to_terrain_pool_of_depth[patchSpec->depth]);
 					WriteUInt16(fi, primIter->indices[n].second);
 				}
@@ -1334,6 +1348,7 @@ void 	DSFFileWriterImp::BeginPatch(
 			fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
 			for (int k = 0; k < (inCoordDepth-2); ++k)
 				fracMax.push_back(1.0);
+			accum_patch_pool->AddPool(fracMin, fracMax);
 			accum_patch_pool->AddPool(fracMin, fracMax);
 		}
 	}
