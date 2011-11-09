@@ -1350,6 +1350,8 @@ void 	DSFFileWriterImp::BeginPatch(
 				fracMax.push_back(1.0);
 			accum_patch_pool->AddPool(fracMin, fracMax);
 			accum_patch_pool->AddPool(fracMin, fracMax);
+			accum_patch_pool->AddPool(fracMin, fracMax);
+			accum_patch_pool->AddPool(fracMin, fracMax);
 		}
 	}
 

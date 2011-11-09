@@ -118,7 +118,7 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 	{
 		if((pool->mPoints.size() + inPoints.size()) > 65535)
 		{
-			printf("Skipping full pool, pool has %d, we need to sink %d.\n", pool->mPoints.size(), inPoints.size());
+			//printf("Skipping full pool, pool has %d, we need to sink %d.\n", pool->mPoints.size(), inPoints.size());
 			continue;
 		}
 		bool ok = true;
