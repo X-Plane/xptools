@@ -232,12 +232,17 @@ void	FillPolygonGaps(Polygon_set_2& ioPolygon, double dist)
 
 	Arrangement_2 pmwx(ioPolygon.arrangement());
 
+//	printf("Map has %zd holes.\n",pmwx.unbounded_face()->number_of_holes());
+	
 	vector<Vertex_handle>	vertices;
 	for(Pmwx::Hole_iterator h = pmwx.unbounded_face()->holes_begin(); h != pmwx.unbounded_face()->holes_end(); ++h)
 	{
 		Pmwx::Ccb_halfedge_circulator circ, stop;
 		circ = stop = *h;
+//		printf("Processing hole %p\n", &*h);
 		do {
+//			printf("Found %p (from %p): %lf, %lf\n", &*circ->target(), &*circ, CGAL::to_double(circ->target()->point().x()),CGAL::to_double(circ->target()->point().y()));
+			DebugAssert(circ->face() != circ->twin()->face());
 			vertices.push_back(circ->target());
 		}
 		while (stop != ++circ);
@@ -250,7 +255,9 @@ void	FillPolygonGaps(Polygon_set_2& ioPolygon, double dist)
 	for(vector<Vertex_handle>::iterator v1 = vertices.begin(); v1 != vertices.end(); ++v1)
 	for(vector<Vertex_handle>::iterator v2 = v1; v2 != vertices.end(); ++v2)
 	if(v1 != v2)
+	if(*v1 != *v2)
 	{
+		DebugAssert((*v1)->point() != (*v2)->point());
 		Segment_2 	s((*v1)->point(),(*v2)->point());
 		double len = CGAL::to_double(s.squared_length());
 		if(len < dsqr)
