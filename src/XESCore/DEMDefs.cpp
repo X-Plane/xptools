@@ -694,6 +694,41 @@ void dem_copy_buffer_one(const DEMGeo& orig_src, DEMGeo& io_dst, float null_valu
 	}
 }
 
+void		dem_erode(DEMGeo& dem, int steps, float null_value)
+{
+	address_fifo fifo(dem.mWidth * dem.mHeight);
+	
+	while(steps-- > 0)
+	{
+		for(DEMGeo::address a = dem.address_begin(); a != dem.address_end(); ++a)
+		if(dem[a] != null_value)
+		{
+			const int x_off[8] = { -1, 1, 0, 0, -1, -1, 1, 1 };
+			const int y_off[8] = { 0, 0, -1, 1, -1, 1, -1, 1 };
+			
+			DEMGeo::coordinates c(dem.to_coordinates(a));
+			bool has_neighbor_null = false;
+			for(int n = 0; n < 8; ++n)
+			{
+				DEMGeo::coordinates nn(c.first + x_off[n], c.second + y_off[n]);
+				if(dem.valid(nn) && dem[nn] == null_value)
+				{
+					has_neighbor_null = true;
+					break;
+				}
+			}
+			if(has_neighbor_null) 
+				fifo.push(a);
+		}
+		while(!fifo.empty())
+		{
+			DEMGeo::address a = fifo.pop();
+			dem[a] = null_value;
+		}
+	}
+}
+
+
 void DEMGeo::fill_nearest(void)
 {
 	const int x_off[8] = { -1, 0, 1, -1, 1, -1, 0, 1 };

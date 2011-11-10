@@ -2444,12 +2444,41 @@ int KillSliverWater(Pmwx& pmwx, double metric, ProgressFunc func)
 	return ret;
 }
 
-int KillSlopedWater(Pmwx& pmwx, DEMGeo& dem, double zlimit, ProgressFunc func)
+int KillSlopedWater(Pmwx& pmwx, 
+			DEMGeo& elev, 
+			DEMGeo& landuse, 
+			int max_horizontal_err_pix,
+			int	minimum_lu_size_pix,
+			float maximum_lu_err_rat,
+			double zlimit, 
+			ProgressFunc func)
 {
 	PROGRESS_START(func, 0, 1, "Deslivering...")
 	int ctr = 0, tot = pmwx.number_of_faces();
 	int chk = max(1,tot/100);
 	int ret = 0;
+	
+	DEMGeo water_up(elev.mWidth, elev.mHeight);
+	water_up=0;
+	water_up.copy_geo_from(elev);
+	water_up.mPost = elev.mPost;
+	for(int y = 0; y < landuse.mHeight; ++y)
+	for(int x = 0; x < landuse.mWidth; ++x)
+	if(landuse(x,y) == lu_globcover_WATER || landuse(x,y) == lu_globcover_WETLAND_BROADLEAVED_OPEN || 
+	   landuse(x,y) == lu_globcover_WETLAND_GRASSLAND || landuse(x,y) == lu_globcover_WETLAND_SHRUB_CLOSED)
+	{
+		int xx = water_up.map_x_from(landuse,x);
+		int yy = water_up.map_y_from(landuse,y);
+		for(int dy = -1; dy <= 1; ++dy)
+		for(int dx = -1; dx <= 1; ++dx)
+		{
+			if(water_up.valid(DEMGeo::coordinates(xx + dx, yy + dy)))
+				water_up(xx+dx,yy+dy) = 1;
+		}
+	}
+	
+	dem_erode(water_up, max_horizontal_err_pix, 1);
+	gDem[dem_Wizard] = water_up;
 	
 	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
 	if(!f->is_unbounded())
@@ -2464,28 +2493,66 @@ int KillSlopedWater(Pmwx& pmwx, DEMGeo& dem, double zlimit, ProgressFunc func)
 		float zmin, zmax;
 		Pmwx::Ccb_halfedge_const_circulator stop, circ;
 		circ = stop = f->outer_ccb();
-		zmin = zmax = dem.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
+		zmin = zmax = elev.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
 		box = circ->source()->point().bbox();
 		do {
-			float e = dem.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
+			float e = elev.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
 			zmin = min(zmin, e);
 			zmax = max(zmax, e);
 			box += circ->source()->point().bbox();
 		} while (stop != ++circ);
+	
+		PolyRasterizer<double>	raster;
+		int y = SetupRasterizerForDEM(f, elev, raster);
+		int x, xs, xe;
+		int water = 0;
+		int total = 0;
+		while(!raster.DoneScan())
+		{
+			while (raster.GetRange(xs, xe))
+			{
+				for(x = xs; x < xe; ++x)
+				{
+					int wet = water_up.get(x,y);
+					float e = elev.get(x,y);
 
+					if (e != DEM_NO_DATA)
+					{
+						zmin = min(zmin,e);
+						zmax = max(zmax,e);
+					}
+					++total;
+					if(wet == 1)
+						++water;
+				}
+			}
+			++y;
+			raster.AdvanceScanline(y);
+		}
+		int land = total - water;
+		float err = ((float) land) / ((float) total);
 
-		double DEG_TO_NM_LON = DEG_TO_NM_LAT * cos(CGAL::to_double(box.ymin()) * DEG_TO_RAD);
-		double rhs = (pow((box.xmax()-box.xmin())*DEG_TO_NM_LON*NM_TO_MTR,2) + pow((box.ymax()-box.ymin())*DEG_TO_NM_LAT*NM_TO_MTR,2));
-		double lhs = pow((double)(zmax-zmin),2);
-		#if OPENGL_MAP
-		if(!gFaceSelection.empty())
-			printf("Z limit: %f (Z^2 = %f, L^2 = %f\n", rhs / lhs, lhs, rhs);
-		#endif
-//		fprintf(stderr," %9.0lf,%9.0lf ", rhs, lhs);
-		if (zlimit*lhs > rhs) 
+		if(total > minimum_lu_size_pix && err > maximum_lu_err_rat)
 		{
 			f->data().mTerrainType = NO_VALUE;
 			++ret;
+				
+		} else {
+
+			double DEG_TO_NM_LON = DEG_TO_NM_LAT * cos(CGAL::to_double(box.ymin()) * DEG_TO_RAD);
+			double rhs = (pow((box.xmax()-box.xmin())*DEG_TO_NM_LON*NM_TO_MTR,2) + pow((box.ymax()-box.ymin())*DEG_TO_NM_LAT*NM_TO_MTR,2));
+			double lhs = pow((double)(zmax-zmin),2);
+			#if OPENGL_MAP
+			if(!gFaceSelection.empty())
+				printf("Z limit: %f (Z^2 = %f, L^2 = %f\n", rhs / lhs, lhs, rhs);
+			#endif
+	//		fprintf(stderr," %9.0lf,%9.0lf ", rhs, lhs);
+			if (zlimit*lhs > rhs) 
+			{
+				f->data().mTerrainType = NO_VALUE;
+				++ret;
+			}
+			
 		}
 	}
 	PROGRESS_DONE(func, 0, 1, "Deslivering...")

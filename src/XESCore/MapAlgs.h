@@ -194,7 +194,14 @@ int KillWetAntennaRoads(Pmwx& io_map);
 int LandFillStrandedRoads(Pmwx& io_map, double dist_lo, double dist_hi);
 
 int KillSliverWater(Pmwx& pmwx, double metric, ProgressFunc func);
-int KillSlopedWater(Pmwx& pmwx, DEMGeo& dem, double zlimit, ProgressFunc func);
+int KillSlopedWater(Pmwx& pmwx, 
+			DEMGeo& elev, 
+			DEMGeo& landuse, 
+			int max_horizontal_err_pix,
+			int	minimum_lu_size_pix,
+			float maximum_lu_err_pix,
+			double zlimit, 
+			ProgressFunc func);
 
 
 /************************************************************************************************

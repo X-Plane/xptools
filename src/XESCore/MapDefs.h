@@ -244,7 +244,8 @@ public:
 
 
 
-struct GIS_vertex_data {
+struct GIS_vertex_data { 
+	GIS_vertex_data() { mTunnelPortal = false; mNeighborBurned = false; mNeighborNotBurned = false; }
 	bool mTunnelPortal;
 	bool mNeighborBurned;
 	bool mNeighborNotBurned;

@@ -329,9 +329,9 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	
 	SetupRasterizerForMesh<pred_want_ag>(raster, gTriangulationHi, ag_ok);
 	RasterizerFill(raster, ag_ok, 1);
-	DEMGeo temp(ag_ok);
-	dem_copy_buffer_one(ag_ok,temp, DEM_NO_DATA);
-	dem_copy_buffer_one(temp,ag_ok, DEM_NO_DATA);
+	dem_erode(ag_ok, 1, 1);
+
+	gDem[dem_Wizard] = ag_ok;
 	
 	// want it all? slow?  to test?  ok...
 	//ag_ok=1;

@@ -41,6 +41,7 @@
 //#include "VPFImport.h"
 #include "CompGeomUtils.h"
 #include "ConfigSystem.h"
+#include "Hydro2.h"
 #include <ctype.h>
 #include "MapAlgs.h"
 #include "MapHelpers.h"
@@ -750,14 +751,20 @@ int DoKillSliverWater(const vector<const char *> &args)
 }
 
 #define HELP_KILL_SLOPED_WATER \
-"-kill_sloped_water <gradient>\n"\
+"-kill_sloped_water <horizontal> <min size> <max err size> <gradient>\n"\
 "This removes wet polygons whose net slope is approximately more than 1/x^2 where x is the gradient factor.\n"
 int DoKillSlopedWater(const vector<const char *> &args)
 {
-	int r = KillSlopedWater(gMap, gDem[dem_Elevation], atof(args[0]), gProgress);
+	int r = KillSlopedWater(gMap, gDem[dem_Elevation], gDem[dem_LandUse], atof(args[0]), atof(args[1]), atof(args[2]), atof(args[3]), gProgress);
 	printf("Flipped %d faces.\n",r);
 	return 0;
 }
+
+int DoAddMissingWater(const vector<const char *>& args)
+{
+	add_missing_water(gMap, gDem[dem_Elevation], gDem[dem_LandUse]);
+}
+
 
 int DoKillTunnels(const vector<const char *>& args)
 {
@@ -874,7 +881,8 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-buffer_water", 1, 1, DoBufferWater,				"Buffer water by a certain amonut.", "" },
 { "-desliver",		1, 1, DoDesliver,				"Remove slivered polygons.", HELP_DESLIVER },
 { "-kill_sliver_water",1,1,DoKillSliverWater,		"Remove slivers of water",HELP_KILL_SLIVER_WATER },
-{ "-kill_sloped_water",1,1,DoKillSlopedWater,		"Remove slopeds of water",HELP_KILL_SLOPED_WATER },
+{ "-kill_sloped_water",4,4,DoKillSlopedWater,		"Remove slopeds of water",HELP_KILL_SLOPED_WATER },
+{ "-add_missing_water", 0, 0, DoAddMissingWater,	"", "" },
 { "-kill_tunnels",0,0,DoKillTunnels,				"Remove all tunnel vectors", "" },
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
 { "-fix_roads",	0, 0, DoFixRoads,				"Fix road errors.", "" },
