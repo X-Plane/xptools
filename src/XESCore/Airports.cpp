@@ -37,6 +37,7 @@
 #include "MapAlgs.h"
 #include "CompGeomUtils.h"
 #include <CGAL/convex_hull_2.h>
+#include <CGAL/Boolean_set_operations_2/Gps_polygon_validation.h>
 #if DEV
 #include "GISTool_Globals.h"
 #endif
@@ -224,14 +225,17 @@ void BurnInAirport(
 			for (vector<vector<Bezier2> >::iterator w = bez_poly.begin(); w != bez_poly.end(); ++w)
 			{
 				Polygon_2	winding;
-				BezierToSegments(*w, winding,10.0);
+				BezierToSegments(*w, winding,10.0);				
 				if(w==bez_poly.begin())
 				{
+					if(!winding.is_counterclockwise_oriented())
+						winding.reverse_orientation();
 					ioArea.join(winding);
 				}
 				else
 				{
-					winding.reverse_orientation();
+					if(!winding.is_counterclockwise_oriented())
+						winding.reverse_orientation();
 					ioArea.difference(winding);
 				}
 			}
@@ -254,7 +258,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal<Point_2>(corners[1]));
 			poly.push_back(ben2cgal<Point_2>(corners[2]));
 			poly.push_back(ben2cgal<Point_2>(corners[3]));
-//			ioArea.join(poly);
+			Traits_2 traits;
+			DebugAssert(CGAL::is_valid_polygon(poly,traits));
 			poly_vec.push_back(poly);
 		}
 		for (int rwy = 0; rwy < inAirport->runways.size(); ++rwy)
@@ -272,7 +277,8 @@ void BurnInAirport(
 			poly.push_back(ben2cgal<Point_2>(corners[2]));
 			poly.push_back(ben2cgal<Point_2>(corners[3]));
 
-//			ioArea.join(poly);
+			Traits_2 traits;
+			DebugAssert(CGAL::is_valid_polygon(poly,traits));
 			poly_vec.push_back(poly);
 
 		}
@@ -291,56 +297,38 @@ void BurnInAirport(
 			poly.push_back(ben2cgal<Point_2>(corners[2]));
 			poly.push_back(ben2cgal<Point_2>(corners[3]));
 
-//			ioArea.join(poly);
+			Traits_2 traits;
+			DebugAssert(CGAL::is_valid_polygon(poly,traits));
 			poly_vec.push_back(poly);
 		}
 		for (AptTaxiwayVector::const_iterator b = inAirport->taxiways.begin(); b != inAirport->taxiways.end(); ++b)
 		if(b->surface_code != apt_surf_transparent)
 		{
+//			printf("%s...\n", b->name.c_str());
 			vector<vector<Bezier2> >	bez_poly;
 			Polygon_2					winding;
 			AptPolygonToBezier(b->area, bez_poly);
 			BezierToSegments(bez_poly.front(), winding,0.0);
-
 			Polygon_2					convex_hull;
 			CGAL::convex_hull_2(winding.vertices_begin(),winding.vertices_end(),
 									back_insert_iterator<Polygon_2>(convex_hull));
-
-/*
-//			MakePolygonConvex(winding);
-
-				int n;
-				CoordTranslator_2	t;
-			CreateTranslatorForPolygon(winding, t);
-			for(n = 0; n < winding.size(); ++n)
-				winding[n] = t.Forward(winding[n]);
-			windings.push_back(Polygon2());
-
-			InsetPolygon_2(winding, NULL, -InsetForFill(inFillWater), true, windings.back(), NULL, NULL);
-//			windings.back() = winding;
-			for(n = 0; n < windings.back().size(); ++n)
-				windings.back()[n] = t.Reverse(windings.back()[n]);
-
-
-			BurnInPolygon(ioMap, windings,faces);
-*/
-//			ioArea.join(convex_hull);
+			Traits_2 traits;
+			DebugAssert(CGAL::is_valid_polygon(convex_hull,traits));
 			poly_vec.push_back(convex_hull);
-
-
 		}
 
 		for(vector<Polygon_2>::iterator p  = poly_vec.begin(); p != poly_vec.end(); ++p)
 		{
-			DebugAssert(ioArea.is_valid());
-//			printf("Polygon contains %d points:\n", p->size());
+//			printf("Polygon contains %zd points:\n", p->size());
 //			for(Polygon_2::Vertex_iterator v = p->vertices_begin(); v != p->vertices_end(); ++v)
 //				printf("   %.15lf,%.15lf\n", CGAL::to_double(v->x()),CGAL::to_double(v->y()));
-//			ioArea.join(*p);
-//			printf("--\n");
-			DebugAssert(ioArea.is_valid());
+//			printf("--\n");			
+			Traits_2 traits;
+			DebugAssert(CGAL::is_valid_polygon(*p,traits));
 		}
+		DebugAssert(ioArea.is_valid());
 		ioArea.join(poly_vec.begin(), poly_vec.end());
+		DebugAssert(ioArea.is_valid());
 	}
 
 	if(inFillWater != fill_dirt2apt)
