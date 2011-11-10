@@ -81,6 +81,7 @@ SOURCES += ./src/XESCore/EnumSystem.cpp
 SOURCES += ./src/XESCore/Forests.cpp
 SOURCES += ./src/XESCore/ForestTables.cpp
 SOURCES += ./src/XESCore/GreedyMesh.cpp
+SOURCES += ./src/XESCore/Hydro2.cpp
 SOURCES += ./src/XESCore/MapAlgs.cpp
 SOURCES += ./src/XESCore/MapHelpers.cpp
 SOURCES += ./src/XESCore/MapBuffer.cpp
