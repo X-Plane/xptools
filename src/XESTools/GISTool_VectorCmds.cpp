@@ -769,6 +769,7 @@ int DoAddMissingWater(const vector<const char *>& args)
 	float zlimit = atof(args[1]);
 	float simplify = atof(args[2]);
 	add_missing_water(gMap, gDem[dem_Elevation], gDem[dem_LandUse],min_size,zlimit,simplify);
+	return 0;
 }
 
 
