@@ -255,6 +255,7 @@ struct	DEMGeo {
 	inline float	xy_nearest(double lon, double lat				 ) const;	// Get nearest-neighbor value (nearest non-void)
 	inline float	xy_nearest(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value, (nearest non-void), return coordinate used
 	inline float	xy_nearest_raw(double lon, double lat            ) const;	// Get nearest-neighbor value void ok
+	inline float	xy_nearest_raw(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value void ok
 	inline float	search_nearest(double lon, double lat) const;				// Get nearest-neighbor value, search indefinitely
 
 	/****************************************************************************
@@ -859,6 +860,12 @@ inline float	DEMGeo::xy_nearest(double lon, double lat, int& xo, int& yo) const
 
 inline float	DEMGeo::xy_nearest_raw(double lon, double lat) const
 {
+	int x, y;
+	return xy_nearest_raw(lon, lat, x,y);
+}
+
+inline float	DEMGeo::xy_nearest_raw(double lon, double lat, int& xo, int& yo) const
+{
 //	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
 	double x_fract = (lon - mWest) / (mEast - mWest);
 	double y_fract = (lat - mSouth) / (mNorth - mSouth);
@@ -880,14 +887,26 @@ inline float	DEMGeo::xy_nearest_raw(double lon, double lat) const
 	if (x_fract > 0.5)
 	{
 		if (y_fract > 0.5)
+		{
+			xo = x+1;
+			yo = y+1;
 			return e4;
-		else
+		} else {
+			xo = x + 1;
+			yo = y;
 			return e2;
+		}
 	} else {
 		if (y_fract > 0.5)
+		{
+			xo = x;
+			yo = y + 1;
 			return e3;
-		else
+		} else {
+			xo = x;
+			yo = y;
 			return e1;
+		}
 	}
 }
 

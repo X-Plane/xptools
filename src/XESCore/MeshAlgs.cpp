@@ -99,8 +99,6 @@
 // changes, we don't need to overdo basic subdivision - this produces acceptable triangles.
 #define REDUCE_SUBDIVIDE 2
 
-// This previews cases where water flattening in x-plane are going to seriously deform the DEM!
-#define DEBUG_FLATTEN_ERROR 0
 
 #if SHOW_STEPS
 
@@ -1209,29 +1207,53 @@ void FlattenWater(CDT& ioMesh)
 	while(!changed.empty())
 	{
 		CDT::Face_handle w = *changed.begin();
-		
-		#define MAX_SLOPE 0.5;
-		
-		float lowest = min(min(w->vertex(0)->info().height,w->vertex(1)->info().height),w->vertex(2)->info().height);
-		float ok = lowest + MAX_SLOPE;
 
+		double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(w->vertex(0)->point().x()) * DEG_TO_RAD);
+		
+		int low_i = 0;
+		float lowest = w->vertex(0)->info().height;
+		for(int n = 1; n < 2; ++n)
+		if(w->vertex(n)->info().height < w->vertex(low_i)->info().height)
+			low_i = n;
+		
+		Point2	low_p = cgal2ben(w->vertex(low_i)->point());
+		
+		double ok = w->vertex(low_i)->info().height;
+		
 		for(int n = 0; n < 3; ++n)
+		if(n != low_i)
 		{
 			if(w->vertex(n)->info().height > ok)
 			{
-				w->vertex(n)->info().height = ok;
-				CDT::Face_circulator circ, stop;
-				circ = stop = w->vertex(n)->incident_faces();
-				do {
-					if(!ioMesh.is_infinite(circ))
-					if(circ->info().terrain == terrain_Water)
-						changed.insert(circ);
-				} while(++circ != stop);
+				double dist_m = LonLatDistMetersWithScale(low_p.x(),low_p.y(), CGAL::to_double(w->vertex(n)->point().x()),
+									CGAL::to_double(w->vertex(n)->point().y()),DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
+				double h_lim = ok + dist_m / 100.0;
+				
+				if(w->vertex(n)->info().height > h_lim)
+				{
+//					double gap = w->vertex(n)->info().height - ok;
+//					if(gap > 15.0)
+//						debug_mesh_point(cgal2ben(w->vertex(n)->point()),1,0,0);
+//					else if(gap > 10.0)
+//						debug_mesh_point(cgal2ben(w->vertex(n)->point()),1,1,0);
+//					else if(gap > 5.0)
+//						debug_mesh_point(cgal2ben(w->vertex(n)->point()),0,1,0);
+//					else
+//						debug_mesh_point(cgal2ben(w->vertex(n)->point()),0,0,1);
+					
+					w->vertex(n)->info().height = h_lim;
+					CDT::Face_circulator circ, stop;
+					circ = stop = w->vertex(n)->incident_faces();
+					do {
+						if(!ioMesh.is_infinite(circ))
+						if(circ->info().terrain == terrain_Water)
+							changed.insert(circ);
+					} while(++circ != stop);
+				}
 			}
 		}
 		
-		changed.erase(w);
-		
+		changed.erase(w);		
 	}
 }
 
@@ -1329,7 +1351,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	int		x, y;
 	DEMGeo&	orig(inDEMs[dem_Elevation]);
-	const DEMGeo& inWaterSurface(inDEMs[dem_WaterSurface]);
+//	const DEMGeo& inWaterSurface(inDEMs[dem_WaterSurface]);
 
 	Assert(orig.get(0			 ,0				) != DEM_NO_DATA);
 	Assert(orig.get(orig.mWidth-1,orig.mHeight-1) != DEM_NO_DATA);
@@ -1664,24 +1686,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		DebugAssert((*w)->info().terrain == terrain_Water);
 	}
 
-	for(CDT::Finite_vertices_iterator fvi = outMesh.finite_vertices_begin(); fvi != outMesh.finite_vertices_end(); ++fvi)
-	{
-		if(CategorizeVertex(outMesh, fvi, terrain_Water) < 1)
-		{
-			double oh = fvi->info().height;
-			fvi->info().height = inWaterSurface.value_linear(CGAL::to_double(fvi->point().x()),CGAL::to_double(fvi->point().y()));
-//			debug_mesh_point(cgal2ben(fvi->point()),1,1,1);
-			#if DEBUG_FLATTEN_ERROR
-			double err = fabs(oh - fvi->info().height);
-			if(err > 15.0)
-			debug_mesh_point(cgal2ben(fvi->point()),1,0,0);
-			else if(err > 10.0)
-			debug_mesh_point(cgal2ben(fvi->point()),1,1,0);
-			else if(err > 5.0)
-			debug_mesh_point(cgal2ben(fvi->point()),0,1,0);
-			#endif
-		}
-	}
+	FlattenWater(outMesh);
 
 	PAUSE_STEP("Split Beached Water")
 
@@ -1691,9 +1696,6 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	 * CLEANUP - CALC MESH NORMALS
 	 *********************************************************************************************************************/
 
-#if PHONE
-	FlattenWater(outMesh);
-#endif	
 
 	if (prog) prog(2, 3, "Calculating Wet Areas", 0.5);
 	CalculateMeshNormals(outMesh);

@@ -1705,7 +1705,6 @@ else														e = DEM_NO_DATA;
 	}
 	
 	water_surface.fill_nearest();
-	ioDEMs[dem_WaterSurface] = water_surface;
 	DEMGeo& bath_old(ioDEMs[dem_Bathymetry]);
 	
 	DEMGeo	bath_new(water_surface);

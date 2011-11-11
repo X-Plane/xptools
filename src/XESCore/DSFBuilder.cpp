@@ -93,8 +93,94 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		SHOW_BEZIERS 0
 
 // These macros set the height and normal in the mesh to the new-style modes.
-#define USE_DEM_H(x,v,m)	(CategorizeVertex((m),(v),terrain_Water)+1)
+#define USE_DEM_H(x,w,m,v)	((CategorizeVertex(m,v,terrain_Water) <= 0) ? (x) : -32768.0)
 #define USE_DEM_N(x)		0.0f
+
+#if 0
+static void sub_heights(CDT& mesh, const DEMGeo& sl)
+{
+	CDT::Finite_faces_iterator ffi;
+	for(ffi = mesh.finite_faces_begin(); ffi != mesh.finite_faces_end(); ++ffi)
+	if(ffi->info().terrain == terrain_Water)
+		ffi->info().flag = 0;
+
+	for(ffi = mesh.finite_faces_begin(); ffi != mesh.finite_faces_end(); ++ffi)
+	if(ffi->info().terrain == terrain_Water)
+	if(ffi->info().flag == 0)
+	{
+		list<CDT::Face_handle>	water_body;
+		list<CDT::Face_handle>	to_visit;
+		to_visit.push_back(ffi);
+		ffi->info().flag = 1;
+		while(!to_visit.empty())
+		{
+			CDT::Face_handle f = to_visit.front();
+			to_visit.pop_front();
+			water_body.push_back(f);
+			for(int n = 0; n < 3; ++n)
+			{
+				CDT::Face_handle nf = f->neighbor(n);
+				if(!mesh.is_infinite(nf) && nf->info().terrain == terrain_Water && nf->info().flag == 0)
+				{
+					nf->info().flag = 1;
+					to_visit.push_back(nf);
+				}
+			}
+		}
+		
+		Bbox2	this_lake;
+		set<CDT::Vertex_handle> mv;
+		for(list<CDT::Face_handle>::iterator i = water_body.begin(); i != water_body.end(); ++i)
+		for(int n = 0; n < 3; ++n)
+		{
+			this_lake += cgal2ben((*i)->vertex(n)->point());
+			mv.insert((*i)->vertex(n));
+		}
+		
+		bool hosed = false;
+		for(set<CDT::Vertex_handle>::iterator v = mv.begin(); v != mv.end(); ++v)
+		{
+			double sh = sl.xy_nearest(CGAL::to_double((*v)->point().x()),CGAL::to_double((*v)->point().y()));
+			if(fabs(sh - (*v)->info().height) > 3.0)
+			{
+				debug_mesh_point(cgal2ben((*v)->point()),1,0,0);
+			
+				hosed = true;
+				break;
+			}
+		}
+		if(!hosed)
+		{
+			for(set<CDT::Vertex_handle>::iterator v = mv.begin(); v != mv.end(); ++v)
+			{
+				int c = CategorizeVertex(mesh, *v, terrain_Water);
+				(*v)->info().height = c + 1;				
+			}
+		}
+		else
+		{	
+			debug_mesh_line(
+				Point2(this_lake.xmin(),this_lake.ymin()),
+				Point2(this_lake.xmax(),this_lake.ymin()), 0, 0, 1, 0, 0, 1);
+			debug_mesh_line(
+				Point2(this_lake.xmin(),this_lake.ymax()),
+				Point2(this_lake.xmax(),this_lake.ymax()), 0, 0, 1, 0, 0, 1);
+
+			debug_mesh_line(
+				Point2(this_lake.xmin(),this_lake.ymin()),
+				Point2(this_lake.xmin(),this_lake.ymax()), 0, 0, 1, 0, 0, 1);
+			debug_mesh_line(
+				Point2(this_lake.xmax(),this_lake.ymin()),
+				Point2(this_lake.xmax(),this_lake.ymax()), 0, 0, 1, 0, 0, 1);
+			
+			for(set<CDT::Vertex_handle>::iterator v = mv.begin(); v != mv.end(); ++v)
+			{
+			}
+		}
+	}
+	
+}
+#endif
 
 class	deferred_pool : public list<void *> {
 public:
@@ -841,7 +927,6 @@ void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
 			const DEMGeo&	inElevation,
-			const DEMGeo&	inSeaLevel,
 			const DEMGeo&	inBathymetry,
 			const DEMGeo&	inUrbanDensity,
 //			const DEMGeo&	inVegeDem,
@@ -937,7 +1022,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	int use_max = use_min + erange2;
 	printf("Real span: %lf to %lf.  Using: %d to %d\n", hmin, hmax, use_min, use_max);
 	// Andrew: change divisions to 16
-	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, 0, 0, 16) : NULL;
+	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, -32768, 32767, 16) : NULL;
 	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth,use_min, use_max, 16)) : NULL;
 	StNukeWriter	dontLeakWriter1(writer1);
 	StNukeWriter	dontLeakWriter2(writer2==writer1 ? NULL : writer2);
@@ -1195,7 +1280,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				{
 					coords8[0] = (*vert)->point().x();
 					coords8[1] = (*vert)->point().y();
-					coords8[2] =USE_DEM_H( (*vert)->info().height   ,*vert,inHiresMesh);
+					coords8[2] =USE_DEM_H( (*vert)->info().height, false,gTriangulationHi,(*vert));
 					coords8[3] =USE_DEM_N( (*vert)->info().normal[0]);
 					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
 					DebugAssert(coords8[3] >= -1.0);
@@ -1271,7 +1356,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inElevation.mSouth,inElevation.mNorth);
 					DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 					DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
-					coords8[2] =USE_DEM_H( (*vert)->info().height   ,*vert,inHiresMesh);
+					coords8[2] =USE_DEM_H( (*vert)->info().height, is_water,gTriangulationHi,(*vert));
 					coords8[3] =USE_DEM_N( (*vert)->info().normal[0]);
 					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
 					if (is_water)
@@ -1356,7 +1441,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 							DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
 
-							coords8[2] =USE_DEM_H( f->vertex(vi)->info().height   ,f->vertex(vi),inHiresMesh);
+							coords8[2] =USE_DEM_H( f->vertex(vi)->info().height , is_water, gTriangulationHi,f->vertex(vi));
 							coords8[3] =USE_DEM_N( f->vertex(vi)->info().normal[0]);
 							coords8[4] =USE_DEM_N(-f->vertex(vi)->info().normal[1]);
 //							coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
@@ -1409,9 +1494,9 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		must_dealloc.push_back(data);
 		cbs.AddRasterData_f(&header,data,writer1);
 
-		data = ConvertDEMTo<short>(inSeaLevel,header, dsf_Raster_Format_Int,1.0,0.0);
-		must_dealloc.push_back(data);
-		cbs.AddRasterData_f(&header,data,writer1);
+//		data = ConvertDEMTo<short>(inSeaLevel,header, dsf_Raster_Format_Int,1.0,0.0);
+//		must_dealloc.push_back(data);
+//		cbs.AddRasterData_f(&header,data,writer1);
 
 		data = ConvertDEMTo<short>(inBathymetry,header, dsf_Raster_Format_Int,1.0,0.0);
 		must_dealloc.push_back(data);

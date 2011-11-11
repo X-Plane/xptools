@@ -36,6 +36,7 @@
 #include "CompGeomUtils.h"
 //#include "TensorRoads.h"
 #include "MapPolygon.h"
+#include "Hydro2.h"
 #include "Forests.h"
 #include "Zoning.h"
 #include "DEMDefs.h"
@@ -173,6 +174,9 @@ static int DoCalcMesh(const vector<const char *>& args)
 {
 	if (gVerbose)	printf("Calculating Mesh...\n");
 	TriangulateMesh(gMap, gTriangulationHi, gDem, args[0], gProgress);
+	
+//	build_water_surface_dem(gTriangulationHi, gDem[dem_Elevation], gDem[dem_WaterSurface], gDem[dem_Bathymetry]);
+
 	return 0;
 }
 
@@ -499,7 +503,7 @@ static int DoBuildDSF(const vector<const char *>& args)
 	if(strcmp(args[1],"-") == 0) b2 = NULL; else CreatePackageForDSF(args[1], (int) gDem[dem_LandUse].mWest,(int) gDem[dem_LandUse].mSouth, buf2);
 	BuildDSF(b1,b2, 
 		gDem[dem_Elevation],
-		gDem[dem_WaterSurface],
+//		gDem[dem_WaterSurface],
 		gDem[dem_Bathymetry],
 		gDem[dem_UrbanDensity],
 		gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);

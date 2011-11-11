@@ -33,6 +33,9 @@
 #include "MapTopology.h"
 #include "MapHelpers.h"
 
+// This previews cases where water flattening in x-plane are going to seriously deform the DEM!
+#define DEBUG_FLATTEN_ERROR 0
+
 static void copy_nearest_splat(DEMGeo& src, DEMGeo& dst, int lu)
 {
 	for(int y = 0; y < src.mHeight; ++y)
@@ -321,5 +324,54 @@ void add_missing_water(
 	Pmwx new_map;
 	MapOverlay(io_map, water,new_map);
 	io_map = new_map;
+
+}
+
+void	build_water_surface_dem(CDT& io_mesh, const DEMGeo& in_elev, DEMGeo& out_water, DEMGeo& io_bath)
+{
+	out_water.resize(256,256);
+	out_water.copy_geo_from(in_elev);
+	out_water.mPost = 1;
+	for(int y = 0; y < out_water.mHeight; ++y)
+	for(int x = 0; x < out_water.mWidth; ++x)
+		out_water(x,y) = in_elev.value_linear(out_water.x_to_lon(x),out_water.y_to_lat(y));
+	
+	out_water = DEM_NO_DATA;
+	
+	for(CDT::Finite_faces_iterator ffi = io_mesh.finite_faces_begin(); ffi != io_mesh.finite_faces_end(); ++ffi)	
+	if(ffi->info().terrain == terrain_Water)
+	{
+		for(int n = 0; n < 3; ++n)
+		{
+			Point2 p(cgal2ben(ffi->vertex(n)->point()));
+			
+			int x, y;
+			float hh = out_water.xy_nearest_raw(p.x(),p.y(),x,y);
+
+			out_water(x,y) = MIN_NODATA(hh, ffi->vertex(n)->info().height);
+
+		}
+	}
+	
+	out_water.fill_nearest();
+
+
+
+	#if DEBUG_FLATTEN_ERROR
+	for(CDT::Finite_vertices_iterator fvi = io_mesh.finite_vertices_begin(); fvi != io_mesh.finite_vertices_end(); ++fvi)
+	{
+		if(CategorizeVertex(io_mesh, fvi, terrain_Water) < 1)
+		{
+			double sh = out_water.xy_nearest(CGAL::to_double(fvi->point().x()),CGAL::to_double(fvi->point().y()));
+			double err = fabs(sh - fvi->info().height);
+			if(err > 15.0)
+			debug_mesh_point(cgal2ben(fvi->point()),1,0,0);
+			else if(err > 10.0)
+			debug_mesh_point(cgal2ben(fvi->point()),1,1,0);
+			else if(err > 5.0)
+			debug_mesh_point(cgal2ben(fvi->point()),0,1,0);
+		}
+	}
+	#endif
 
 }

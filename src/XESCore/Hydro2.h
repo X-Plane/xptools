@@ -26,11 +26,14 @@
 
 #include "MapDefs.h"
 #include "DEMDefs.h"
+#include "MeshDefs.h"
 
 void add_missing_water(Pmwx& io_map, DEMGeo& elev, DEMGeo& lu,
 			int				smallest_water,
 			float			zlimit,
 			float			simplify);
 
+
+void	build_water_surface_dem(CDT& io_mesh, const DEMGeo& in_elev, DEMGeo& out_water, DEMGeo& io_bath);
 
 #endif
