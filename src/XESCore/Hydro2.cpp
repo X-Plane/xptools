@@ -30,7 +30,8 @@
 #include "PolyRasterUtils.h"
 #include "MeshAlgs.h"
 #include "MathUtils.h"
-
+#include "MapTopology.h"
+#include "MapHelpers.h"
 
 static void copy_nearest_splat(DEMGeo& src, DEMGeo& dst, int lu)
 {
@@ -66,15 +67,12 @@ static void eliminate_isolated(DEMGeo& dem, int keep_v, int null_v, int min_size
 			DEMGeo::address w = fifo.pop();
 			++lc_count;
 			wet.push(w);
-			DEMGeo::coordinates wc(dem.to_coordinates(w));
-			for(int dx = -1; dx <= 1; ++dx)
-			for(int dy = -1; dy <= 1; ++dy)
+			for(DEMGeo::neighbor_iterator<4> n = dem.neighbor_begin<4>(w); n != dem.neighbor_end<4>(w); ++n)
 			{
-				DEMGeo::address n = dem.to_address(DEMGeo::coordinates(wc.first + dx, wc.second + dy));
-				if(dem.valid(n) && visited[n] == 0.0 && dem[n] == keep_v)
+				if(visited[*n] == 0.0 && dem[*n] == keep_v)
 				{
-					visited[n] = 1.0;
-					fifo.push(n);
+					visited[*n] = 1.0;
+					fifo.push(*n);
 				}
 			}
 		}
@@ -88,8 +86,42 @@ static void eliminate_isolated(DEMGeo& dem, int keep_v, int null_v, int min_size
 	}
 }
 
+template <class Arr>
+struct no_sharp_pt {
+	bool is_locked(typename Arr::Vertex_handle v) const { 
+		typename Arr::Halfedge_handle p = v->incident_halfedges();
+		typename Arr::Halfedge_handle pp, n, nn;
+		
+		pp = p->prev();
+		n = p->next();
+		nn = n->next();
+		
+		if(CGAL::angle(pp->source()->point(),p->source()->point(),n->target()->point()) == CGAL::ACUTE)
+		{
+//			debug_mesh_point(cgal2ben(v->point()),1,0,0);			
+			return true;
+		}
 
-void add_missing_water(Pmwx& io_map, DEMGeo& elev, DEMGeo& lu)
+		if(CGAL::angle(p->source()->point(),n->target()->point(),nn->target()->point()) == CGAL::ACUTE)
+		{
+//			debug_mesh_point(cgal2ben(v->point()),0,1,0);			
+			return true;
+		}
+	
+		return false;
+	}
+	void remove(typename Arr::Vertex_handle v) const { }
+};
+
+
+
+void add_missing_water(
+			Pmwx&			io_map, 
+			DEMGeo&			elev, 
+			DEMGeo&			lu,
+			int				smallest_water,
+			float			zlimit,
+			float			simplify)
 {
 	Pmwx	water;
 	
@@ -118,7 +150,7 @@ void add_missing_water(Pmwx& io_map, DEMGeo& elev, DEMGeo& lu)
 	dem_erode(water_dem,2,NO_VALUE);
 	dem_erode(water_dem,1,terrain_Water);
 
-	eliminate_isolated(water_dem, terrain_Water, NO_VALUE, 20);
+	eliminate_isolated(water_dem, terrain_Water, NO_VALUE, smallest_water);
 
 
 	
@@ -200,20 +232,94 @@ void add_missing_water(Pmwx& io_map, DEMGeo& elev, DEMGeo& lu)
 			water_dem[a] = NO_VALUE;
 	}
 
+	eliminate_isolated(water_dem, terrain_Water, NO_VALUE, smallest_water);
+
 	gDem[dem_Wizard5] = water_dem;
-	
-	eliminate_isolated(water_dem, terrain_Water, NO_VALUE, 20);
+
+
+	address_fifo fifo(water_dem.mWidth * water_dem.mHeight);
+	DEMGeo	visited(water_dem.mWidth,water_dem.mHeight);
+	for(DEMGeo::address a = water_dem.address_begin(); a != water_dem.address_end(); ++a)
+	if(water_dem[a] == terrain_Water)
+	if(visited[a] == 0.0f)
+	{
+		fifo.push(a);
+		visited[a] = 1.0f;
+		set<DEMGeo::address> wet;
+		
+		int lc_count = 0;
+		while(!fifo.empty())
+		{
+			DEMGeo::address w = fifo.pop();
+			++lc_count;
+			wet.insert(w);
+			for(DEMGeo::neighbor_iterator<4> n = water_dem.neighbor_begin<4>(w);  n != water_dem.neighbor_end<4>(w); ++n)
+			{
+				if(visited[*n] == 0.0 && water_dem[*n] == terrain_Water)
+				{
+					visited[*n] = 1.0;
+					fifo.push(*n);
+				}
+			}
+		}
+				
+		while(!wet.empty())
+		{
+			//printf("Looking at lake of %zd pts.\n", wet.size());
+			Bbox2	box;
+			float zmin = elev[*wet.begin()];
+			float zmax = zmin;
+			DEMGeo::address top = *wet.begin();
+			for(set<DEMGeo::address>::iterator w = wet.begin(); w != wet.end(); ++w)
+			{
+				DEMGeo::coordinates wc(water_dem.to_coordinates(*w));
+				float e = elev[*w];
+				box += Point2(water_dem.x_to_lon(wc.first),water_dem.y_to_lat(wc.second));
+				if(e > zmax)
+				{
+					top = *w;
+				}
+				zmin = min(zmin,e);
+				zmax = max(zmax,e);
+			}
+			
+			double DEG_TO_NM_LON = DEG_TO_NM_LAT * cos(CGAL::to_double(box.ymin()) * DEG_TO_RAD);
+			double rhs = (pow((box.xmax()-box.xmin())*DEG_TO_NM_LON*NM_TO_MTR,2) + pow((box.ymax()-box.ymin())*DEG_TO_NM_LAT*NM_TO_MTR,2));
+			double lhs = pow((double)(zmax-zmin),2);
+			//printf("Lake from %lf,%lf to %lf,%lf\n",box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());
+			//printf("Span is %lf, vertical is %lf\n", sqrt(rhs), sqrt(lhs));
+			if (zlimit*lhs > rhs) 
+			{
+				water_dem[top] = NO_VALUE;
+				wet.erase(top);
+				DEMGeo::coordinates c(water_dem.to_coordinates(top));
+//				debug_mesh_point(Point2(water_dem.x_to_lon(c.first),water_dem.y_to_lat(c.second)),1,0,0);
+			}
+			else
+				break;
+		}
+	}
 
 	gDem[dem_Wizard6] = water_dem;
 
-//	MapFromDEM(water_dem, 0, 0, water_dem.mWidth, water_dem.mHeight, NO_VALUE, water, NULL);
 
+	MapFromDEM(water_dem, 0, 0, water_dem.mWidth, water_dem.mHeight, 2, NO_VALUE, water, NULL, true);
+	for(Pmwx::Edge_iterator e = water.edges_begin(); e != water.edges_end(); ++e)
+	{
+//		debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,1,0,1,1,0);
+//		debug_mesh_point(cgal2ben(e->source()->point()),1,1,0);
+	}
 
-//	for(Pmwx::Face_handle f  =water.faces_begin(); f != water.faces_end(); ++f)
-//		f->set_contained(f->data().IsWater());
-		
-//	Pmwx new_map;
-//	MapOverlay(io_map, water,new_map);
-//	io_map = new_map;
+//	SimplifyMap(water, false, gProgress);
+
+	arrangement_simplifier<Pmwx,no_sharp_pt<Pmwx> > simplifier;
+	simplifier.simplify(water, simplify, arrangement_simplifier<Pmwx, no_sharp_pt<Pmwx> >::traits_type(), gProgress);
+
+	for(Pmwx::Face_handle f  =water.faces_begin(); f != water.faces_end(); ++f)
+		f->set_contained(f->data().IsWater());
+	
+	Pmwx new_map;
+	MapOverlay(io_map, water,new_map);
+	io_map = new_map;
 
 }

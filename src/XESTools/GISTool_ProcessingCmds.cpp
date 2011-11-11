@@ -259,7 +259,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	const DEMGeo& forests(gDem[dem_ForestType]);
 #endif	
 
-	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, NO_VALUE, forest_stands,NULL);
+	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, 2, NO_VALUE, forest_stands,NULL,false);
 	SimplifyMap(gMap, false, gProgress);
 
 	arrangement_simplifier<Pmwx> simplifier;

@@ -41,8 +41,10 @@ void	MapFromDEM(
 				int					y1,
 				int					x2,
 				int					y2,
+				int					splits,
 				float				null_post,
 				Pmwx&				out_map,
-				CoordTranslator2 *	translator);
+				CoordTranslator2 *	translator,
+				bool				want_rounding);
 
 #endif /* MapRaster_H */

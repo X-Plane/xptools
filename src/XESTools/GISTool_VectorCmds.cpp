@@ -760,9 +760,15 @@ int DoKillSlopedWater(const vector<const char *> &args)
 	return 0;
 }
 
+#define HELP_ADD_MISSING_WATER \
+"-add_missing_water <min size in pixels> <z limit> <simplify>\n"\
+"This adds in wet polygons where there is landuse water but no vector water.\n"
 int DoAddMissingWater(const vector<const char *>& args)
 {
-	add_missing_water(gMap, gDem[dem_Elevation], gDem[dem_LandUse]);
+	int min_size = atoi(args[0]);
+	float zlimit = atof(args[1]);
+	float simplify = atof(args[2]);
+	add_missing_water(gMap, gDem[dem_Elevation], gDem[dem_LandUse],min_size,zlimit,simplify);
 }
 
 
@@ -857,7 +863,7 @@ int DoBufferWater(const vector<const char *>& args)
 int DoRasterDEM(const vector<const char *>& args)
 {
 	DEMGeo& d(gDem[LookupToken(args[0])]);
-	MapFromDEM(d,0,0,d.mWidth,d.mHeight,0,gMap,NULL);
+	MapFromDEM(d,0,0,d.mWidth,d.mHeight,1,0,gMap,NULL,false);
 #if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 #endif
@@ -881,8 +887,8 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-buffer_water", 1, 1, DoBufferWater,				"Buffer water by a certain amonut.", "" },
 { "-desliver",		1, 1, DoDesliver,				"Remove slivered polygons.", HELP_DESLIVER },
 { "-kill_sliver_water",1,1,DoKillSliverWater,		"Remove slivers of water",HELP_KILL_SLIVER_WATER },
-{ "-kill_sloped_water",4,4,DoKillSlopedWater,		"Remove slopeds of water",HELP_KILL_SLOPED_WATER },
-{ "-add_missing_water", 0, 0, DoAddMissingWater,	"", "" },
+{ "-kill_sloped_water",4,4,DoKillSlopedWater,		"Remove sloped water",HELP_KILL_SLOPED_WATER },
+{ "-add_missing_water", 3, 3, DoAddMissingWater,	"Add missing water by land use", HELP_ADD_MISSING_WATER },
 { "-kill_tunnels",0,0,DoKillTunnels,				"Remove all tunnel vectors", "" },
 { "-check_roads",	0, 0, DoCheckRoads,				"Check roads for errors.", "" },
 { "-fix_roads",	0, 0, DoFixRoads,				"Fix road errors.", "" },

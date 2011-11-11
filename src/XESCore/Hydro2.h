@@ -27,6 +27,10 @@
 #include "MapDefs.h"
 #include "DEMDefs.h"
 
-void add_missing_water(Pmwx& io_map, DEMGeo& elev, DEMGeo& lu);
+void add_missing_water(Pmwx& io_map, DEMGeo& elev, DEMGeo& lu,
+			int				smallest_water,
+			float			zlimit,
+			float			simplify);
+
 
 #endif

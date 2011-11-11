@@ -657,6 +657,8 @@
 		D6BB23AE0EC1EBE0006499D7 /* CompGeomUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */; };
 		D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */; };
 		D6BB23B00EC1EBE3006499D7 /* CompGeomUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */; };
+		D6BC020C146CC17800A941C6 /* Hydro2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC020B146CC17800A941C6 /* Hydro2.cpp */; };
+		D6BC020D146CC17800A941C6 /* Hydro2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC020B146CC17800A941C6 /* Hydro2.cpp */; };
 		D6BC3A5C0AB22E0F003949C5 /* ViewObj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38CB0AB22C85003949C5 /* ViewObj.cpp */; };
 		D6BC3A6E0AB22E5C003949C5 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A6D0AB22E5C003949C5 /* AGL.framework */; };
 		D6BC3A720AB22E67003949C5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
@@ -1445,6 +1447,7 @@
 		D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DrawUtils.cpp; sourceTree = "<group>"; };
 		D6BB228E0EC13287006499D7 /* MapTopology.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapTopology.h; sourceTree = "<group>"; };
 		D6BB228F0EC13287006499D7 /* MapTopology.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapTopology.cpp; sourceTree = "<group>"; };
+		D6BC020B146CC17800A941C6 /* Hydro2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Hydro2.cpp; sourceTree = "<group>"; };
 		D6BC36450AB22C84003949C5 /* DSFDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFDefs.h; sourceTree = "<group>"; };
 		D6BC36460AB22C84003949C5 /* DSFLib.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFLib.cpp; sourceTree = "<group>"; };
 		D6BC36470AB22C84003949C5 /* DSFLib.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFLib.h; sourceTree = "<group>"; };
@@ -3109,6 +3112,7 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6BC020B146CC17800A941C6 /* Hydro2.cpp */,
 				D6D408271406C6A20061EBF9 /* BezierApprox.cpp */,
 				D6D408281406C6A20061EBF9 /* BezierApprox.h */,
 				D6BC38300AB22C85003949C5 /* Airports.cpp */,
@@ -4168,6 +4172,7 @@
 				D63390B21358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A56138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 				D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
+				D6BC020C146CC17800A941C6 /* Hydro2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4273,6 +4278,7 @@
 				D62F3A57138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 				D6D408291406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
 				D6C46B7E14376BD30067B004 /* XUtils.cpp in Sources */,
+				D6BC020D146CC17800A941C6 /* Hydro2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
