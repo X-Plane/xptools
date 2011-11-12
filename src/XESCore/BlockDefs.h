@@ -56,6 +56,7 @@ struct BLOCK_face_data {
 	double	heading;
 	Vector2	major_axis;
 	bool	can_simplify;
+	float	height;				// facades only?
 };
 
 //typedef CGAL::Lazy_exact_nt<CGAL::Gmpq> GNT;

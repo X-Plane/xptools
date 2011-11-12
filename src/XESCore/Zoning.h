@@ -148,16 +148,15 @@ struct FillRule_t {
 	float		agb_slop_depth;
 	
 	float		fac_min_width;							// Range of width and steps for facade art assets..
-	float		fac_max_width;
-	float		fac_step;
+//	float		fac_max_width;
+//	float		fac_step;
 	int			fac_depth_split;						// How much to split the depth of facades.
 	float		fac_extra;
 	
 	int			agb_id;
-	int			fac_id;
+	int			fac_id;									// Only used for whole-facade case
 	int			ags_id;
 	
-	multimap<float, vector<float> >		spellings;
 //	float		bldg_min,		bldg_max;
 //
 //	int			adj_terrain;							// These locate an adjacent edge with a certain property.   We will key
@@ -166,15 +165,39 @@ struct FillRule_t {
 
 };	
 
-struct FacadeRule_t {
+struct FacadeChoice_t {
+	int			fac_id_front;
+	int			fac_id_back;
+	float		width;
+	float		height_min;
+	float		height_max;
+	float		depth;
+};
+
+struct FacadeSpelling_t {
 	int		zoning;
 	int		variant;
-	float	min_height;
-	float	max_height;
-	float	min_width;
-	float	max_width;
-	int		fac_id;
+	float	width_min;				// Matching
+	float	width_max;
+	float	width_real;
+	float	height_min;
+	float	height_max;
+	float	depth_min;
+	float	depth_max;
+
+	vector<FacadeChoice_t>	facs;		// divs are in order first!
 };
+	
+
+//struct FacadeRule_t {
+//	int		zoning;
+//	int		variant;
+//	float	min_height;
+//	float	max_height;
+//	float	min_width;
+//	float	max_width;
+//	int		fac_id;
+//};
 	
 
 struct PointRule_t {
@@ -182,22 +205,33 @@ struct PointRule_t {
 	int		feature;
 	float	height_min;
 	float	height_max;
+	
 
 	float	width_rd;
 	float	depth_rd;
+	float	x_width_rd;
+	float	x_depth_rd;
 	int		fac_id_rd;
 
 	float	width_ant;
 	float	depth_ant;
+	float	x_width_ant;
+	float	x_depth_ant;
 	int		fac_id_ant;
+
+	float	width_free;
+	float	depth_free;
+	float	x_width_free;
+	float	x_depth_free;
+	int		fac_id_free;
 };
 
 
-typedef	vector<FacadeRule_t>	FacadeRuleTable;
+typedef	vector<FacadeSpelling_t>FacadeSpellingTable;
 typedef vector<EdgeRule_t>		EdgeRuleTable;
 typedef vector<FillRule_t>		FillRuleTable;
 typedef vector<PointRule_t>		PointRuleTable;
-extern FacadeRuleTable			gFacadeRules;
+extern FacadeSpellingTable		gFacadeSpellings;
 extern EdgeRuleTable			gEdgeRules;
 extern FillRuleTable			gFillRules;
 extern PointRuleTable			gPointRules;
@@ -226,6 +260,6 @@ FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f);
 
 PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f);
 
-FacadeRule_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height);
+FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth);
 
 #endif /* ZONING_H */

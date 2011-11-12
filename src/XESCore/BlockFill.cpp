@@ -59,6 +59,7 @@
 #include "MapHelpers.h"
 #include "NetHelpers.h"
 #include "UTL_interval.h"
+#include "XUtils.h"
 
 int num_block_processed = 0;
 int num_blocks_with_split = 0;
@@ -628,6 +629,7 @@ double find_b_interval(time_region::interval& range, const vector<Segment2>& seg
 	return max(maxv-minv,0.0);
 }
 
+/*
 double size_err(const FillRule_t * info, double width, const vector<double>& div_rats)
 {
 	double t = 0;
@@ -690,7 +692,7 @@ static void make_fac_subdiv_spelling(const FillRule_t * info, double width, vect
 //	printf("\n");
 //	printf(" (Err = %lf\n", e_best);
 }
-
+*/
 /*
 static void dump_spelling(map<float,int>& histo)
 {
@@ -845,7 +847,7 @@ static int	init_subdivisions(
 		}
 	}
 	
-	if(info->fac_id == NO_VALUE)
+	if(info->fac_min_width == 0.0)
 	{
 		if(!agb_friendly.is_simple() ||					// Hrm...AGB block has a facade hole in the middle
 			agb_friendly.empty() ||						// Whole area is facade
@@ -885,13 +887,14 @@ static int	init_subdivisions(
 		}		
 	}
 
-	DebugAssert(must_be_fac_too.empty() || info->fac_id);
+	DebugAssert(must_be_fac_too.empty() || info->fac_min_width);
 
 	agb_friendly -= must_be_fac_too;
 
 //	agb_friendly ^= time_region::interval(bounds[0],bounds[2]);
 
 	vector<pair<double, bool> >	a_cuts;
+	vector<pair<int, float>	>	a_features, b_features;
 
 	double last = bounds[0];
 
@@ -921,15 +924,22 @@ static int	init_subdivisions(
 		{
 			double width = fac.second - fac.first;
 			
-			vector<double> rats;
-			make_fac_subdiv_spelling(info, width, rats);
+			FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, f->data().GetParam(af_HeightObjs,0.0), info->min_side_minor);
+			if(fac_rule == NULL)
+				return 0;
 
-			TRACE_SUBDIVIDE("Subdiving facade from %lf to %lf ito %zd pieces.\n", fac.first,fac.second,rats.size());
-			double accum = 0.0;
-			for(int n = 0; n < rats.size(); ++n)
+			float accum = 0.0;
+			for(int n = 0; n < fac_rule->facs.size(); ++n)
 			{
-				a_cuts.push_back(pair<double,bool>(double_interp(0,fac.first,1,fac.second,accum),false));
-				accum += rats[n];
+				a_cuts.push_back(pair<double,bool>(
+					double_interp(
+							0,fac.first,fac_rule->width_real,fac.second,accum + RandRange(-2,2)),false));
+				a_features.push_back(pair<int,float>(fac_rule->facs[n].fac_id_front,RandRange(fac_rule->facs[n].height_min,fac_rule->facs[n].height_max)));
+				b_features.push_back(pair<int,float>(fac_rule->facs[n].fac_id_back,RandRange(fac_rule->facs[n].height_min,fac_rule->facs[n].height_max)));
+				a_features.back().second = min(a_features.back().second,max(f->data().GetParam(af_HeightObjs,0.0),16.0f));
+				b_features.back().second = min(b_features.back().second,max(f->data().GetParam(af_HeightObjs,0.0),16.0f));
+
+				accum += fac_rule->facs[n].width;
 			}		
 		}
 		if(agb.first != agb.second)
@@ -946,6 +956,8 @@ static int	init_subdivisions(
 			for(double s = 0.0; s < subdiv; s += 1.0)
 			{
 				a_cuts.push_back(pair<double,bool>(double_interp(0,agb.first,subdiv,agb.second,s),true));
+				a_features.push_back(pair<int,bool>(info->agb_id,0.0));
+				b_features.push_back(pair<int,bool>(info->agb_id,0.0));
 			}		
 		}
 				
@@ -958,6 +970,8 @@ static int	init_subdivisions(
 
 	
 	a_cuts.push_back(pair<double,bool>(bounds[2]+1,false));
+	a_features.push_back(pair<int,float>(NO_VALUE,0.0));
+	b_features.push_back(pair<int,float>(NO_VALUE,0.0));
 	a_cuts.front().first -= 1.0;
 
 	int part_base = parts.size();
@@ -970,8 +984,17 @@ static int	init_subdivisions(
 	{
 		int pid = part_base + a * fds + f;
 		parts[pid].usage = usage_Polygonal_Feature;
-		parts[pid].feature = a_cuts[a].second ? info->agb_id : info->fac_id;
-		DebugAssert(parts[pid].feature);
+//		parts[pid].feature = a_cuts[a].second ? info->agb_id : info->fac_id;
+		if(f == 0)
+		{
+			parts[pid].feature = a_features[a].first;
+			parts[pid].height = a_features[a].second;
+		} 
+		else
+		{
+			parts[pid].feature = b_features[a].first;
+			parts[pid].height = b_features[a].second;
+		}
 		parts[pid].major_axis = va;
 		DebugAssert(parts[pid].feature != NO_VALUE);
 		parts[pid].can_simplify = false;
@@ -1721,7 +1744,8 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 							vector<BLOCK_face_data>& parts, 
 							vector<block_pt>&	pts,
 							CoordTranslator2&	trans,
-							int offset, int zoning)
+							int offset, int zoning,
+							bool	want_feature)
 {
 	PointRule_t * rule; 
 
@@ -1732,10 +1756,10 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 		Point2	fl(trans.Forward(cgal2ben(f->mLocation)));
 
 		int best = -1;
+		double best_dist = 0;
 		
 		if(rule->fac_id_ant)
 		{
-			double best_dist = 0;
 			for(int i = 0; i < pts.size(); ++i)
 			{
 				int j = (i + 1) % pts.size();
@@ -1753,6 +1777,9 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 			}
 		}
 		
+		if(best >= 0 && rule->fac_id_free && best_dist > sqr(max(rule->x_width_ant,rule->x_depth_ant)))
+			best = -1;
+		
 		if(best >= 0)
 		{
 			Point2		anchor(pts[best].loc);
@@ -1765,22 +1792,29 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 			if(w > 1.0)
 				anchor += (depth * (w+0.5));
 
+			Vector2	xwidth(width);
+			Vector2	xdepth(depth);
+
+			if(want_feature)
+			{
 			width *= rule->width_ant * 0.5;
 			depth *= rule->depth_ant;
-
+			} else {
+			width *= rule->x_width_ant * 0.5;
+			depth *= rule->x_depth_ant;
+			}
 						
 			push_block_curve(curves, anchor - width, anchor + width, offset + idx);
 			push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
 			push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
 			push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
 			
-			parts[offset + idx].usage = usage_Polygonal_Feature;
+			parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
 			parts[offset + idx].feature = rule->fac_id_ant;
 		
 		}
 		else
 		{
-			double best_dist = 0;
 			for(int i = 0; i < pts.size(); ++i)
 			{
 				int j = (i + 1) % pts.size();
@@ -1798,28 +1832,70 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 			}
 			if(best == -1)
 				best = 0;
+			if(best >= 0 && rule->fac_id_free && best_dist > sqr(max(rule->x_width_rd,rule->x_depth_rd)))
+				best = -1;
 			
-			Segment2	wall(pts[best].loc,pts[(best+1)%pts.size()].loc);
-			Assert(wall.p1 != wall.p2);
-			Point2		anchor(wall.midpoint());
-			Vector2		width(wall.p1,wall.p2);
-			width.normalize();
-			Vector2	depth(width.perpendicular_ccw());
+			if(best >= 0)
+			{
+				Segment2	wall(pts[best].loc,pts[(best+1)%pts.size()].loc);
+				Assert(wall.p1 != wall.p2);
+				Point2		anchor(wall.midpoint());
+				Vector2		width(wall.p1,wall.p2);
+				width.normalize();
+				Vector2	depth(width.perpendicular_ccw());
+				
+				float w = WidthForSegment(pts[best].edge_type);
+				if(w > 1.0)
+					anchor += (depth * (w-1.0));
+				
+				if(want_feature)
+				{												
+					width *= rule->width_rd * 0.5;
+					depth *= rule->depth_rd;
+				}
+				else {
+					
+					width *= rule->x_width_rd * 0.5;
+					depth *= rule->x_depth_rd;
+				}
+
+				
+				push_block_curve(curves, anchor - width, anchor + width, offset + idx);
+				push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
+				push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
+				push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
+				
+				parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
+				parts[offset + idx].feature = rule->fac_id_rd;
+			}
+			else
+			{
+				
+				Point2		anchor(fl);
+				Vector2		width(1,0);
+				width.normalize();
+				Vector2	depth(width.perpendicular_ccw());
+				
+				if(want_feature)
+				{								
+					width *= rule->width_free * 0.5;
+					depth *= rule->depth_free;
+				}
+				else
+				{
+					width *= rule->x_width_free * 0.5;
+					depth *= rule->x_depth_free;
+				}
+				
+				push_block_curve(curves, anchor - width, anchor + width, offset + idx);
+				push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
+				push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
+				push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
+				
+				parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
+				parts[offset + idx].feature = rule->fac_id_free;
 			
-			float w = WidthForSegment(pts[best].edge_type);
-			if(w > 1.0)
-				anchor += (depth * (w-1.0));
-			
-			width *= rule->width_rd * 0.5;
-			depth *= rule->depth_rd;
-			
-			push_block_curve(curves, anchor - width, anchor + width, offset + idx);
-			push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
-			push_block_curve(curves, anchor + width + depth, anchor - width + depth, offset + idx);
-			push_block_curve(curves, anchor - width + depth, anchor - width, offset + idx);
-			
-			parts[offset + idx].usage = usage_Polygonal_Feature;
-			parts[offset + idx].feature = rule->fac_id_rd;
+			}
 		}
 		
 	}
@@ -2068,7 +2144,7 @@ bool	init_block(
 		int num_extras = 1;
 	
 		if(info->fill_points)
-		num_extras += face->data().mPointFeatures.size();
+		num_extras += face->data().mPointFeatures.size() * 2;
 	
 		DebugAssert(parts.size() == block_feature_count);
 		parts.resize(block_feature_count + num_extras + 2 * num_he + cat_DIM, BLOCK_face_data(usage_Empty, NO_VALUE));
@@ -2091,8 +2167,10 @@ bool	init_block(
 
 		if(info->fill_points)		
 		if(!face->data().mPointFeatures.empty())
-			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1, zoning);
-
+		{
+			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1, zoning, false);
+			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1 + face->data().mPointFeatures.size(), zoning, true);
+		}
 		int base_offset = block_feature_count;
 		{
 			init_road_ccb(zoning, variant, height, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
@@ -2700,11 +2778,7 @@ void	extract_features(
 					double len = sqrt(Segment2(cgal2ben(start->source()->point()),cgal2ben(start->target()->point())).squared_length());
 					if(!f->data().can_simplify)
 					{
-						FacadeRule_t * r = GetFacadeRule(dest_face->data().GetZoning(), dest_face->data().GetParam(af_Variant,-1),len,o.mParam);
-						if(r)
-							o.mRepType = r->fac_id;
-						else
-							fail_extraction(dest_face,o.mShape,NULL,"No AG fac found.");										
+						o.mParam = f->data().height;
 					}
 //					if(fail_start)
 //						fail_extraction(dest_face,o.mShape,NULL,"NO ANCHOR SIDE ON FAC.");										

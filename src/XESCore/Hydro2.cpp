@@ -29,6 +29,7 @@
 #include "GISTool_Globals.h"
 #include "PolyRasterUtils.h"
 #include "MeshAlgs.h"
+#include "MapAlgs.h"
 #include "MathUtils.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
@@ -91,7 +92,15 @@ static void eliminate_isolated(DEMGeo& dem, int keep_v, int null_v, int min_size
 
 template <class Arr>
 struct no_sharp_pt {
+	no_sharp_pt(const DEMGeo& d) : n(d.mNorth), s(d.mSouth),w(d.mWest),e(d.mEast) { }
+	double n,s,e,w;
 	bool is_locked(typename Arr::Vertex_handle v) const { 
+	
+		Point_2 ploc(v->point());
+		if(ploc.x() == e || ploc.x() == w ||
+		   ploc.y() == s || ploc.y() == n)
+			return true;
+	
 		typename Arr::Halfedge_handle p = v->incident_halfedges();
 		typename Arr::Halfedge_handle pp, n, nn;
 		
@@ -316,7 +325,9 @@ void add_missing_water(
 //	SimplifyMap(water, false, gProgress);
 
 	arrangement_simplifier<Pmwx,no_sharp_pt<Pmwx> > simplifier;
-	simplifier.simplify(water, simplify, arrangement_simplifier<Pmwx, no_sharp_pt<Pmwx> >::traits_type(), gProgress);
+	simplifier.simplify(water, simplify, no_sharp_pt<Pmwx>(water_dem), gProgress);
+
+	CropMap(water,water_dem.mWest,water_dem.mSouth,water_dem.mEast, water_dem.mNorth,false,gProgress);
 
 	for(Pmwx::Face_handle f  =water.faces_begin(); f != water.faces_end(); ++f)
 		f->set_contained(f->data().IsWater());

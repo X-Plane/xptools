@@ -2493,31 +2493,40 @@ int KillSlopedWater(Pmwx& pmwx,
 		float zmin, zmax;
 		Pmwx::Ccb_halfedge_const_circulator stop, circ;
 		circ = stop = f->outer_ccb();
-		zmin = zmax = elev.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
+		zmin = zmax = elev.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->source()->point().y()));
 		box = circ->source()->point().bbox();
 		do {
-			float e = elev.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->target()->point().y()));
+			float e = elev.value_linear(CGAL::to_double(circ->source()->point().x()),CGAL::to_double(circ->source()->point().y()));
 			zmin = min(zmin, e);
 			zmax = max(zmax, e);
+			
 			box += circ->source()->point().bbox();
 		} while (stop != ++circ);
 	
 		PolyRasterizer<double>	raster;
 		int y = SetupRasterizerForDEM(f, elev, raster);
-		int x, xs, xe;
+		int x;
 		int water = 0;
 		int total = 0;
 		while(!raster.DoneScan())
 		{
-			while (raster.GetRange(xs, xe))
+			vector<double>	l;
+			double ny;
+			raster.GetLine(l, ny);
+			DebugAssert(l.size() % 2== 0);
+			for(int i = 0; i < l.size(); i += 2)
 			{
-				for(x = xs; x < xe; ++x)
+				double xs = l[i];
+				double xe = l[i+1];
+				
+				for(x = ceil(xs); x <= floor(xe); ++x)
 				{
 					int wet = water_up.get(x,y);
 					float e = elev.get(x,y);
 
 					if (e != DEM_NO_DATA)
 					{
+						//debug_mesh_point(Point2(water_up.x_to_lon(x), water_up.y_to_lat(y)),1,1,0);
 						zmin = min(zmin,e);
 						zmax = max(zmax,e);
 					}

@@ -59,7 +59,7 @@
 ZoningRuleTable				gZoningRules;
 ZoningInfoTable				gZoningInfo;
 EdgeRuleTable				gEdgeRules;
-FacadeRuleTable				gFacadeRules;	
+FacadeSpellingTable			gFacadeSpellings;
 FillRuleTable				gFillRules;
 PointRuleTable				gPointRules;
 LandClassInfoTable			gLandClassInfo;
@@ -111,12 +111,18 @@ static bool ReadEdgeRule(const vector<string>& tokens, void * ref)
 static bool ReadPointFillRule(const vector<string>& tokens, void * ref)
 {
 	PointRule_t r;
-	string fac_rd, fac_ant;
-	if(TokenizeLine(tokens," eeffffsffs",&r.zoning,&r.feature,&r.height_min,&r.height_max,&r.width_rd,&r.depth_rd,&fac_rd, &r.width_ant,&r.depth_ant,&fac_ant) != 11)
+	string fac_rd, fac_ant, fac_free;
+	if(TokenizeLine(tokens," eeffffffsffffsffffs",
+			&r.zoning,&r.feature,&r.height_min,&r.height_max,
+			&r.width_rd,&r.depth_rd,&r.x_width_rd, &r.x_depth_rd,&fac_rd, 
+			&r.width_ant,&r.depth_ant,&r.x_width_ant, &r.x_depth_ant,&fac_ant,
+			&r.width_free,&r.depth_free,&r.x_width_free, &r.x_depth_free,&fac_free
+		) != 11+4+5)
 		return false;
 		
 	r.fac_id_ant = RegisterAGResource(fac_ant);
 	r.fac_id_rd = RegisterAGResource(fac_rd);
+	r.fac_id_free = RegisterAGResource(fac_free);
 
 	gPointRules.push_back(r);
 	return true;
@@ -124,17 +130,33 @@ static bool ReadPointFillRule(const vector<string>& tokens, void * ref)
 
 static bool ReadFacadeRule(const vector<string>& tokens, void * ref)
 {
-	FacadeRule_t	r;
-	string fac;
-	if(TokenizeLine(tokens," eiffffs",&r.zoning,&r.variant,&r.min_width,&r.max_width, &r.min_height,&r.max_height,&fac) != 8)
-		return false;
-	
-	r.fac_id = RegisterAGResource(fac);
-	gFacadeRules.push_back(r);
-		
-	return true;
+	if(tokens[0] == "FACADE_SPELLING")
+	{
+		FacadeSpelling_t spelling;
+		if(TokenizeLine(tokens," eiffff", 
+				&spelling.zoning, &spelling.variant, 
+				&spelling.height_min, &spelling.height_max, 
+				&spelling.depth_min, &spelling.depth_max) != 7)
+			return false;
+		gFacadeSpellings.push_back(spelling);
+		return true;
+	}
+
+	else if(tokens[0] == "FACADE_TILE")
+	{
+		string fac_front, fac_back;
+		FacadeChoice_t c;
+		if(TokenizeLine(tokens," ffffss",&c.width, &c.height_min, &c.height_max, &c.depth, &fac_front, &fac_back) != 7)
+			return false;
+		c.fac_id_front =  RegisterAGResource(fac_front);
+		c.fac_id_back =  RegisterAGResource(fac_back);
+		gFacadeSpellings.back().facs.push_back(c);
+		return true;
+	}
+	return false;
 }
 
+/*
 static void		pick_n(vector<float>& choices, int count, vector<float>& picks)
 {
 	int r = choices.size();
@@ -147,89 +169,28 @@ static void		pick_n(vector<float>& choices, int count, vector<float>& picks)
 			swap(choices[r],choices[choice]);
 	}
 }
-
+*/
 static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
 	string agb, fac, ags;
-	if(TokenizeLine(tokens, " eiiffffffffffffffffifsss",	
-			&r.zoning,
-			&r.road,
-			&r.variant,
-			&r.min_height,&r.max_height,
-			&r.min_side_len, &r.max_side_len,
-			&r.block_err_max,
-			&r.min_side_major,&r.max_side_major,
-			&r.min_side_minor,&r.max_side_minor,
-			&r.ang_min,&r.ang_max,
+	if(TokenizeLine(tokens, " eii"
+							"fffff"
+							"ffffff"
+							"fffif"
+							"sss",	
+			&r.zoning,			&r.road,			&r.variant,
+			&r.min_height,&r.max_height,			&r.min_side_len, &r.max_side_len,			&r.block_err_max,
+			&r.min_side_major,&r.max_side_major,	&r.min_side_minor,&r.max_side_minor,		&r.ang_min,&r.ang_max,
 			
-			&r.agb_min_width,
-			&r.agb_slop_width,
-			&r.fac_min_width,
-			&r.fac_max_width,
-			&r.fac_step,
-			&r.fac_depth_split,
-			&r.fac_extra,			
+			&r.agb_min_width,			&r.agb_slop_width,			&r.fac_min_width,			&r.fac_depth_split,			&r.fac_extra,			
 
-			&agb,
-			&fac,
-			&ags) != 25)
+			&agb,			&fac,			&ags) != 23)
 			return false;
 
 	r.agb_slop_depth = r.agb_slop_width;
 
-	if(r.fac_step)
-	{
-		float width  = r.fac_max_width - r.fac_min_width;
-		float tiles = intmax2(1,1+width/r.fac_step);
-		vector<float>	widths;
-		for(int t = 0; t < tiles; ++t)
-			widths.push_back(r.fac_min_width + (float) t * r.fac_step);
-		
-		for(int c = 0; c < tiles; ++c)
-		{
-			for(int tries = 1; tries <= c; ++tries)
-			{
-				vector<float>	choices;
-				pick_n(widths, c, choices);
-				float total = 0;
-				for(int n = 0; n < choices.size(); ++n)
-					total += choices[n];
-			
-				r.spellings.insert(multimap<float,vector<float> >::value_type(total,choices));
-									
-			}
-		}		
-
-		float water_mark = (--r.spellings.end())->first;
-
-		for(int t = 0; t < tiles; ++t)
-			widths.push_back(r.fac_min_width + (float) t * r.fac_step);
-		
-		for(int c = tiles; c < (tiles*2); ++c)
-		{
-			for(int tries = 1; tries <= c; ++tries)
-			{
-				vector<float>	choices;
-				pick_n(widths, c, choices);
-				float total = 0;
-				for(int n = 0; n < choices.size(); ++n)
-					total += choices[n];
-				if(total > water_mark)
-					r.spellings.insert(multimap<float,vector<float> >::value_type(total,choices));
-									
-			}
-		}		
-		
-		
-//		for(multimap<float,vector<float> >::iterator s = r.spellings.begin(); s != r.spellings.end(); ++s)
-//		{
-//			printf("%f:", s->first);
-//			for(vector<float>::iterator ss = s->second.begin(); ss != s->second.end(); ++ss)
-//				printf(" %f", *ss);
-//			printf("\n");
-//		}
-	}
+	
 	r.agb_id = RegisterAGResource(agb);
 	r.ags_id = RegisterAGResource(ags);
 	r.fac_id = RegisterAGResource(fac);
@@ -349,7 +310,7 @@ void LoadZoningRules(void)
 	gZoningRules.clear();
 	gZoningInfo.clear();
 	gEdgeRules.clear();
-	gFacadeRules.clear();
+	gFacadeSpellings.clear();
 	gFillRules.clear();
 	gPointRules.clear();
 	gLandFillRules.clear();
@@ -361,8 +322,21 @@ void LoadZoningRules(void)
 	RegisterLineHandler("FILL_RULE", ReadFillRule, NULL);
 	RegisterLineHandler("LANDFILL_RULE", ReadLandFillRule, NULL);
 	RegisterLineHandler("POINT_FILL", ReadPointFillRule, NULL);
-	RegisterLineHandler("FACADE_RULE", ReadFacadeRule, NULL);
+	RegisterLineHandler("FACADE_TILE", ReadFacadeRule, NULL);
+	RegisterLineHandler("FACADE_SPELLING", ReadFacadeRule, NULL);
+
 	LoadConfigFile("zoning.txt");	
+
+	for(FacadeSpellingTable::iterator sp = gFacadeSpellings.begin(); sp != gFacadeSpellings.end(); ++sp)
+	{	
+		sp->width_real = 0.0;
+		for(vector<FacadeChoice_t>::iterator fc = sp->facs.begin(); fc != sp->facs.end(); ++fc)
+		{
+			sp->width_real += fc->width;
+		}
+		sp->width_min = sp->width_real - 10.0;
+		sp->width_max = sp->width_real + 20.0;
+	}
 }
 
 template <typename T>
@@ -1482,6 +1456,7 @@ void	ZoneManMadeAreas(
 					edge_t.insert(CGAL::to_double(p.x()));
 				else
 				{
+					printf("Bad point: %lf,%lf\n",CGAL::to_double(p.x()),CGAL::to_double(p.y()));
 					DebugAssert(!"Point is not on an edge.");
 				}
 //				debug_mesh_point(cgal2ben(circ->target()->point()),1,1,1);
@@ -2066,14 +2041,47 @@ PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f)
 	return NULL;
 }
 
-FacadeRule_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height)
+FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth)
 {
-	for(FacadeRuleTable::iterator r = gFacadeRules.begin(); r != gFacadeRules.end(); ++r)
+	vector<FacadeSpelling_t *>	possible;
+	FacadeSpelling_t * emerg_big = NULL;
+	FacadeSpelling_t * emerg_small = NULL;
+	for(FacadeSpellingTable::iterator r = gFacadeSpellings.begin(); r != gFacadeSpellings.end(); ++r)
 	if(r->zoning == NO_VALUE || r->zoning == zoning)
 	if(r->variant == -1 || r->variant == variant)
-	if(r->min_height == r->max_height || (r->min_height <= height && height <= r->max_height))
-	if(r->min_width == r->max_width || (r->min_width <= front_wall_len && front_wall_len <= r->max_width))
-		return &*r;
+	if(r->height_min == r->height_max || (r->height_min <= height && height <= r->height_max))
+	if(r->depth_min == r->depth_max || (r->depth_min <= depth && depth <= r->depth_max))
+	{
+		if(emerg_big == NULL || r->width_max > emerg_big->width_max)
+			emerg_big = &*r;
+		if(emerg_small == NULL || r->width_min < emerg_small->width_min)
+			emerg_small = &*r;
+		if(r->width_min == r->width_max || (r->width_min <= front_wall_len && front_wall_len <= r->width_max))	
+			possible.push_back(&*r);
+	}
+	if(possible.empty() && emerg_big)
+	{
+		DebugAssert(emerg_small);
+		if(front_wall_len > emerg_big->width_max)
+		{
+			printf("Had to use %s (%lf to %lf) for %lf - too wide!\n", 
+				FetchTokenString(zoning),
+				emerg_big->width_min,emerg_big->width_max,front_wall_len);
+			return emerg_big;
+		}
+		else
+		{
+			printf("Had to use %s (%lf to %lf) for %lf - too narrow!\n", 
+				FetchTokenString(zoning),
+				emerg_small->width_min,emerg_small->width_min,front_wall_len);
+			return emerg_small;
+		}
+	}
+	if(!possible.empty())
+	{
+		return possible[rand() % possible.size()];
+	}
+	
 	#if DEV
 		printf("WARNING: no facade rule for %s v%d at %lf x %lf\n", FetchTokenString(zoning), variant, front_wall_len,height);
 	#endif
