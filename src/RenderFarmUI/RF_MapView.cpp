@@ -98,13 +98,13 @@
 #define DEBUG_PRINT_NORMALS 1
 
 // Print height at all 3 corners of tri under mouse
-#define DEBUG_PRINT_CORNERS 0
+#define DEBUG_PRINT_CORNERS 1
 
 // Print water params of tri under mouse
 #define DEBUG_PRINT_WAVES 0
 
 // Print input parameters used to pick LU rule for tri under mouse
-#define DEBUG_PRINT_TRI_PARAMS 1
+#define DEBUG_PRINT_TRI_PARAMS 0
 
 // Print out forest type
 #define DEBUG_PRINT_FOREST_TYPE 0
@@ -134,7 +134,7 @@ static DEMViewInfo_t	kDEMs[] = {
 {		NO_VALUE,				"None"							,	0,							false,	false,	" "				},
 {		dem_Elevation,			"Elevation"						,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 {		dem_Bathymetry,			"Bathymetry"					,	dem_Elevation,				false,	false,	"Bath=%fm "		},
-{		dem_WaterSurface,		"Water Surface"					,	dem_Elevation,				false,	false,	"Water=%fm "	},
+//{		dem_WaterSurface,		"Water Surface"					,	dem_Elevation,				false,	false,	"Water=%fm "	},
 {		dem_ElevationOverlay,	"Elevation Overlay"				,	dem_Elevation,				false,	false,	"MSL=%fm "		},
 //{		dem_OrigLandUse,		"Land Use (Old)"				,	dem_Enum,					false,	true,	"Old LU=%s "	},
 {		dem_LandUse,			"Land Use"						,	dem_Enum,					false,	true,	"LU=%s "		},
