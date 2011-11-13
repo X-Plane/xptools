@@ -256,7 +256,7 @@ int DoShowCoverage(const vector<const char *>& args)
 		int c = fgetc(fi);
 		if(y >= gMapSouth && y <= gMapNorth)
 		if(x >= gMapWest  && x <= gMapEast )
-			if (c >= thresh) printf("Includes %+03d%+04d\n", y, x);
+			if (c >= thresh) printf("Includes %+03d%+04d (%f)\n", y, x, (float) c * 100.0 / 255.0);
 	}
 	fclose(fi);
 	return 0;
