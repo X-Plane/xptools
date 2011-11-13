@@ -2541,7 +2541,7 @@ int KillSlopedWater(Pmwx& pmwx,
 		int land = total - water;
 		float err = ((float) land) / ((float) total);
 
-		if(total > minimum_lu_size_pix && err > maximum_lu_err_rat)
+		if(total > minimum_lu_size_pix && err > maximum_lu_err_rat && maximum_lu_err_rat <= 1.0)
 		{
 			f->data().mTerrainType = NO_VALUE;
 			++ret;
