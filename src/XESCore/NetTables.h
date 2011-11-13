@@ -64,6 +64,8 @@ struct	Feature2RepInfo {
 	int			feature;
 	float		min_density;
 	float		max_density;
+	float		min_rail;
+	float		max_rail;
 //	set<int>	zoning_left;
 //	set<int>	zoning_right;
 	float		rain_min;
@@ -103,6 +105,9 @@ struct ChangeRule {
 };
 typedef vector<ChangeRule>						ChangeRuleTable;
 extern ChangeRuleTable							gChangeRules;
+
+typedef map<int,int>							LevelCrossingTable;
+extern LevelCrossingTable						gLevelCrossings;
 
 struct	BridgeInfo {
 	int			rep_type;

@@ -831,6 +831,18 @@ void	ZoneManMadeAreas(
 			continue;
 		}
 
+		float len_train = 0.0, len_local = 0.0, len_total = 0.0;
+		for(int i = 0; i < outer_border.size(); ++i)
+		{
+			int j = (i + 1) % outer_border.size();
+			float len = sqrt(Segment2(outer_border[i].loc,outer_border[j].loc).squared_length());
+			len_total += len;
+			if(ground_road_access_for_he(outer_border[i].orig))
+				len_local += len;
+			if(ground_train_access_for_he(outer_border[i].orig))
+				len_train += len;			
+		}
+			
 		Segment2	major;
 		double	bounds[4];
 		Vector2	v_x,v_y;
@@ -1121,11 +1133,20 @@ void	ZoneManMadeAreas(
 		face->data().mParams[af_RailEdge]	=	has_train;
 		face->data().mParams[af_PrimaryEdge]=	has_prim;
 		
-		
+		face->data().mParams[af_LocalPercent] = len_local / len_total;
+		face->data().mParams[af_RailPercent] = len_train / len_total;
 		
 		// FEATURE ASSIGNMENT - first go and assign any features we might have.
 		face->data().mTemp1 = NO_VALUE;
 		face->data().mTemp2 = 0;
+
+
+		if(((len_local / len_total) < 0.1 && mfam < 10000.0) ||
+			short_axis_length < 20.0 ||
+			mfam < 900.0)
+		{
+			face->data().mParams[af_Median] = 2;
+		}
 
 #if ZONING_HISTO
 		zone_count[zone]++;
@@ -2044,38 +2065,42 @@ PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f)
 FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth)
 {
 	vector<FacadeSpelling_t *>	possible;
-	FacadeSpelling_t * emerg_big = NULL;
-	FacadeSpelling_t * emerg_small = NULL;
+	FacadeSpelling_t * emerg = NULL;
+	float emerg_dist = 0;
 	for(FacadeSpellingTable::iterator r = gFacadeSpellings.begin(); r != gFacadeSpellings.end(); ++r)
 	if(r->zoning == NO_VALUE || r->zoning == zoning)
 	if(r->variant == -1 || r->variant == variant)
 	if(r->height_min == r->height_max || (r->height_min <= height && height <= r->height_max))
 	if(r->depth_min == r->depth_max || (r->depth_min <= depth && depth <= r->depth_max))
 	{
-		if(emerg_big == NULL || r->width_max > emerg_big->width_max)
-			emerg_big = &*r;
-		if(emerg_small == NULL || r->width_min < emerg_small->width_min)
-			emerg_small = &*r;
+		{
+			double dist_to_this = 0;
+			if(r->width_min > front_wall_len)
+				dist_to_this = r->width_min - front_wall_len;
+			if(r->width_max < front_wall_len)
+				dist_to_this = front_wall_len - r->width_max;
+
+			if(emerg == NULL)
+			{
+				emerg = &*r;
+				emerg_dist = dist_to_this;
+			}
+			else if(dist_to_this < emerg_dist)
+			{
+				emerg = &*r;
+				emerg_dist = dist_to_this;
+			}
+		}
 		if(r->width_min == r->width_max || (r->width_min <= front_wall_len && front_wall_len <= r->width_max))	
 			possible.push_back(&*r);
 	}
-	if(possible.empty() && emerg_big)
-	{
-		DebugAssert(emerg_small);
-		if(front_wall_len > emerg_big->width_max)
-		{
-			printf("Had to use %s (%lf to %lf) for %lf - too wide!\n", 
-				FetchTokenString(zoning),
-				emerg_big->width_min,emerg_big->width_max,front_wall_len);
-			return emerg_big;
-		}
-		else
-		{
-			printf("Had to use %s (%lf to %lf) for %lf - too narrow!\n", 
-				FetchTokenString(zoning),
-				emerg_small->width_min,emerg_small->width_min,front_wall_len);
-			return emerg_small;
-		}
+	if(possible.empty() && emerg)
+	{	
+		printf("Wanted %lf for %s.  Best was: %lf, %lf\n",
+			front_wall_len,
+			FetchTokenString(zoning),
+			emerg->width_min,emerg->width_max);				
+		return emerg;
 	}
 	if(!possible.empty())
 	{

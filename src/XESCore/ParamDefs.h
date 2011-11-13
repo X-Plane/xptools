@@ -149,6 +149,9 @@
 	TOKEN(af_RoadEdge)
 	TOKEN(af_PrimaryEdge)
 	TOKEN(af_RailEdge)
+	TOKEN(af_LocalPercent)
+	TOKEN(af_RailPercent)
+	TOKEN(af_Median)
 	
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.

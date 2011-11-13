@@ -127,7 +127,49 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 		}
 	}
 	
+
+	DEMGeo	train_density(601, 601);
+	train_density.copy_geo_from(inUrbanDensity);
+	train_density.mPost = inUrbanDensity.mPost;
+	for (Pmwx::Edge_iterator edge = ioMap.edges_begin(); edge != ioMap.edges_end(); ++edge)
+	if(he_has_any_roads(edge))
+	if(Road_IsTrain(get_he_feat_type(edge)))
+	{
+		Segment2 s(cgal2ben(edge->source()->point()),cgal2ben(edge->target()->point()));
+		s.p1.x_ = doblim((train_density.lon_to_x(s.p1.x())),0,train_density.mWidth -1);
+		s.p1.y_ = doblim((train_density.lat_to_y(s.p1.y())),0,train_density.mHeight-1);
+		s.p2.x_ = doblim((train_density.lon_to_x(s.p2.x())),0,train_density.mWidth -1);
+		s.p2.y_ = doblim((train_density.lat_to_y(s.p2.y())),0,train_density.mHeight-1);
+		
+		double dx = fabs(s.p2.x() - s.p1.x());
+		double dy = fabs(s.p2.y() - s.p1.y());
+		double x, y;
+		if(dx > dy)
+		{
+			if(s.p1.x() > s.p2.x()) swap(s.p1,s.p2);
+			
+			for(x = round(s.p1.x()); x < round(s.p2.x()); ++x)
+			{
+				y = round(s.y_at_x(x));
+				train_density(x,y)++;
+			}
+		} 
+		else 
+		{
+			if(s.p1.y() > s.p2.y()) swap(s.p1,s.p2);
+			
+			for(y = round(s.p1.y()); y < round(s.p2.y()); ++y)
+			{
+				x = round(s.x_at_y(y));
+				train_density(x,y)++;
+			}
+		}
+		
+	}
 	
+	GaussianBlurDEM(train_density,0.5);
+	
+		gDem[dem_Wizard] = train_density;
 
 	if (inProg) inProg(0, 1, "Calculating Road Types", 0.0);
 
@@ -224,6 +266,8 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 		double	rainE = inRain.value_linear(x2,y2);
 		double	tempS = inRain.value_linear(x1,y1);
 		double	tempE = inRain.value_linear(x2,y2);
+		double	railS = train_density.value_linear(x1,y1);
+		double	railE = train_density.value_linear(x2,y2);
 
 
 //		double	dist = LonLatDistMeters(x1,y1,x2,y2);
@@ -233,6 +277,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 		double urban = (urbanS + urbanE) * 0.5;
 		double rain = (rainS + rainE) * 0.5;
 		double temp = (tempS + tempE) * 0.5;
+		double rail = max(railS,railE);
 
 		while(start != Pmwx::Halfedge_handle() && !start->data().mMark && he_has_any_roads(start) && get_he_feat_type(start) == get_he_feat_type(edge))
 		{
@@ -259,6 +304,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 					Feature2RepInfo& r(*p);
 					if(r.feature == seg->mFeatType)
 					if(r.min_density == r.max_density || (r.min_density <= urban && urban <= r.max_density))
+					if(r.min_rail == r.max_rail || (r.min_rail <= rail && rail <= r.max_rail))
 					if(r.rain_min == r.rain_max || (r.rain_min <= rain && rain <= r.rain_max))
 					if(r.temp_min == r.temp_max || (r.temp_min <= temp && temp <= r.temp_max))
 //					if(r.zoning_left.empty() || r.zoning_left.count(zl))
@@ -1111,6 +1157,40 @@ void repair_network(Pmwx& io_map)
 			{
 //				debug_mesh_line(cgal2ben((*r)->source()->point()),cgal2ben((*r)->target()->point()),0,0,1,1,0,0);
 			}
+		}
+	}
+
+	/* Level crossings... */
+	for(Pmwx::Vertex_handle v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)	
+	{	
+		map<int, vector<Pmwx::Halfedge_handle> > junc;
+		int t = levelize_junction(v,junc);
+		if(t > 0 && junc.count(0))
+		{
+			bool has_train = false;
+			bool has_road = false;
+			for(vector<Pmwx::Halfedge_handle>::iterator i = junc[0].begin(); i != junc[0].end(); ++i)
+			{
+				int r = get_he_rep_type(*i);
+				//printf("  Found type: %s (use %s)\n",FetchTokenString(r),FetchTokenString(gNetReps[r].use_mode));
+				if(gNetReps[r].use_mode == use_Rail)
+					has_train = true;
+				else if(gNetReps[r].use_mode != use_Power)
+					has_road = true;				
+			}
+			//printf("Road: %s, train: %s\n", has_road ? "yes" : "no", has_train ? "yes" : "no");
+			if(has_road && has_train)
+			{
+				//debug_mesh_point(cgal2ben(v->point()),1,0,0);
+				for(vector<Pmwx::Halfedge_handle>::iterator i = junc[0].begin(); i != junc[0].end(); ++i)
+				{
+					int r = get_he_rep_type(*i);
+					if(gLevelCrossings.count(r))
+						set_he_rep_type(*i,gLevelCrossings[r]);
+				}
+			}	
+			
+			
 		}
 	}
 

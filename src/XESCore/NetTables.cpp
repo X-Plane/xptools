@@ -35,6 +35,8 @@ ChangeRuleTable					gChangeRules;
 BridgeInfoTable					gBridgeInfo;
 map<int,int>					gTwinRules;
 
+LevelCrossingTable				gLevelCrossings;
+
 ZonePromoteTable				gZonePromote;
 set<int>						gPromotedZoningSet;
 
@@ -84,13 +86,14 @@ bool	ReadRoadPick(const vector<string>& tokens, void * ref)
 	Feature2RepInfo	info;
 	int				feature_type;
 
-	if (TokenizeLine(tokens, " effffffe", &info.feature, 
+	if (TokenizeLine(tokens, " effffffffe", &info.feature, 
 		&info.min_density,&info.max_density, 
+		&info.min_rail, &info.max_rail,
 		&info.rain_min,
 		&info.rain_max,
 		&info.temp_min,
 		&info.temp_max,
-		&info.rep_type) != 9)	return false;
+		&info.rep_type) != 11)	return false;
 
 	gFeature2Rep.push_back(info);
 	return true;
@@ -101,6 +104,15 @@ bool	ReadRoadPromoteZoning(const vector<string>& tokens, void * ref)
 	gPromotedZoningSet.clear();
 	if(TokenizeLine(tokens," S",&gPromotedZoningSet) != 2)
 		return false;
+	return true;
+}
+
+bool	ReadLevelCrossing(const vector<string>& tokens, void * ref)
+{
+	int t1, t2;
+	if(TokenizeLine(tokens," ee", &t1, &t2) != 3)
+		return false;
+	gLevelCrossings[t1] = t2;
 	return true;
 }
 
@@ -199,7 +211,7 @@ void	LoadNetFeatureTables(void)
 	gChangeRules.clear();
 	gZonePromote.clear();
 	gPromotedZoningSet.clear();
-
+	gLevelCrossings.clear();
 
 	RegisterLineHandler("ROAD_GENERAL", RoadGeneralProps, NULL);
 	RegisterLineHandler("ROAD_PROP", ReadRoadSpecificProps, NULL);
@@ -210,6 +222,7 @@ void	LoadNetFeatureTables(void)
 	RegisterLineHandler("ROAD_TWIN", ReadTwinRule, NULL);
 	RegisterLineHandler("ROAD_PROMOTE_ZONING", ReadRoadPromoteZoning, NULL);
 	RegisterLineHandler("ROAD_PROMOTE", ReadRoadPromote, NULL);
+	RegisterLineHandler("LEVEL_CROSSING", ReadLevelCrossing, NULL);
 	LoadConfigFile("road_properties.txt");
 }
 

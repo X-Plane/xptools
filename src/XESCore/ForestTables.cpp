@@ -99,7 +99,8 @@ int		FindForest(
 //				float temp_range,
 				float rain)
 {
-	DebugAssert(temp != DEM_NO_DATA);
+	if(temp == DEM_NO_DATA) 
+		return NO_VALUE;
 //	DebugAssert(temp_range != DEM_NO_DATA);
 	DebugAssert(rain != DEM_NO_DATA);
 	for(ForestRuleVector::iterator r = gForestRules.begin(); r != gForestRules.end(); ++r)

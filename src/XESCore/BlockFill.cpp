@@ -76,6 +76,8 @@ typedef UTL_interval<double>	time_region;
 
 #include <CGAL/Arr_overlay_2.h>
 
+#define TOO_SMALL_TO_CARE 300
+
 // This controls how much we subdivide small forest stands.
 #define FOREST_SUBDIVIDE_AREA		(1000000.0)
 
@@ -1813,6 +1815,10 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 			
 			parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
 			parts[offset + idx].feature = rule->fac_id_ant;
+			parts[offset + idx].height = f->mParams.count(pf_Height) ? f->mParams.find(pf_Height)->second : 0.0f;
+			parts[offset + idx].can_simplify = false;
+			
+
 		
 		}
 		else
@@ -1870,6 +1876,8 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 				
 				parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
 				parts[offset + idx].feature = rule->fac_id_rd;
+				parts[offset + idx].height = f->mParams.count(pf_Height) ? f->mParams.find(pf_Height)->second : 0.0f;
+				parts[offset + idx].can_simplify = false;
 			}
 			else
 			{
@@ -1900,6 +1908,8 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 				
 				parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
 				parts[offset + idx].feature = rule->fac_id_free;
+				parts[offset + idx].height = f->mParams.count(pf_Height) ? f->mParams.find(pf_Height)->second : 0.0f;
+				parts[offset + idx].can_simplify = false;
 			
 			}
 		}
@@ -2066,6 +2076,7 @@ bool	init_block(
 	float height = face->data().GetParam(af_HeightObjs,0);
 	ZoningInfoTable::iterator zi = gZoningInfo.find(zoning);
 	ZoningInfo_t * info = (zi == gZoningInfo.end() ? NULL : &zi->second);
+	int median = face->data().GetParam(af_Median,0);
 	if(info == NULL) return false;
 
 	int has_road = 0;
@@ -2132,7 +2143,7 @@ bool	init_block(
 
 	int block_feature_count = 0;
 	int oob_idx = 0;
-	if(info && info->fill_area)
+	if(info && info->fill_area && !median)
 	{
 		// For now we use our first X road halfedges ...
 		DebugAssert(!info->fill_edge);
@@ -2172,19 +2183,19 @@ bool	init_block(
 			init_mesh(mesh, translator, curves, cat_table,info->max_slope,info->need_lu);
 
 		if(info->fill_points)		
-		if(!face->data().mPointFeatures.empty())
+		if(!face->data().mPointFeatures.empty() && !median)
 		{
 			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1, zoning, false);
 			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1 + face->data().mPointFeatures.size(), zoning, true);
 		}
 		int base_offset = block_feature_count;
 		{
-			init_road_ccb(zoning, variant, height, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+			init_road_ccb(zoning, variant, height, face->outer_ccb(), translator, parts, curves, outer_ccb_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge && !median, ag_ok_approx_dem);
 			for(Pmwx::Hole_iterator h = face->holes_begin(); h != face->holes_end(); ++h)
 			{
 				vector<block_pt>	hole_pts;
 				block_pts_from_ccb(*h,translator, hole_pts,BLOCK_ERR_MTR,true);		
-				init_road_ccb(zoning, variant, height, *h, translator, parts, curves, hole_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge, ag_ok_approx_dem);
+				init_road_ccb(zoning, variant, height, *h, translator, parts, curves, hole_pts, base_offset, num_he+num_extras, cat_base + cat_oob, info && info->fill_edge && !median, ag_ok_approx_dem);
 			}
 		}
 		oob_idx = cat_base + cat_oob;
@@ -2368,6 +2379,7 @@ bool	apply_fill_rules(
 					CoordTranslator2&		translator)
 {
 	bool did_promote = false;
+	if(orig_face->data().GetParam(af_Median,0) == 0.0)
 	if(gZoningInfo[zoning].fill_area)
 	{
 		FillRule_t * r = GetFillRuleForBlock(orig_face);
@@ -2422,6 +2434,36 @@ bool	apply_fill_rules(
 		f->data().usage = usage_Empty;
 
 	clean_block(block);
+
+	
+	// Go find AGS that have been orphaned -- no point to having them.
+	for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().usage == usage_Polygonal_Feature)
+	{
+		if(strstr(FetchTokenString(f->data().feature),".ags"))
+		{
+			Block_2::Ccb_halfedge_circulator circ, stop;
+			bool found_road = false;
+			circ = stop = f->outer_ccb();
+			Polygon2 bounds;
+			do {
+				bounds.push_back(cgal2ben(circ->source()->point()));
+				if(circ->twin()->face()->data().usage == usage_Road ||
+					circ->twin()->face()->data().usage == usage_Road_End)
+				{
+					found_road = true;
+				}
+			} while (++circ != stop);
+			if(!found_road || bounds.area() < 900)
+			{
+				f->data().usage = usage_Empty;
+			}
+		}
+		
+	}
+	
+	
 //	simplify_block(block, 0.75);
 //	clean_block(block);
 	
@@ -2436,6 +2478,10 @@ bool	apply_fill_rules(
 			f->data().feature = NO_VALUE;
 		}	
 	}
+
+	// consolidate new forest against old....
+	clean_block(block);
+	
 	return did_promote;
 }
 
@@ -2839,142 +2885,145 @@ void	extract_features(
 					extract_ccb(*h, forest.back(), hole_m, translator); 
 					area -= hole_m.area();
 				}
-				if(f->number_of_holes() < MAX_FOREST_RINGS && area < FOREST_SUBDIVIDE_AREA)
+				if(area > TOO_SMALL_TO_CARE)
 				{
-					push_one_forest(forest, forest_dem, dest_face);					
-				} 
-				else
-				{
-					did_split = true;
-					++num_forest_split;
-					Bbox2	total_forest_bounds;
-					for(Polygon2::iterator p = forest.front().begin(); p != forest.front().end(); ++p)
-						total_forest_bounds += *p;
-					set<Face_handle>	forest_faces;
-					forest_index.query_value(total_forest_bounds,set_inserter(forest_faces));
-					
-					vector<BLOCK_face_data>		block_types;
-					map<int,int>				forest_type_idx;
-					
-					block_types.push_back(BLOCK_face_data());
-					forest_type_idx[NO_VALUE] = 0;
-					for(set<Face_handle>::iterator f = forest_faces.begin(); f != forest_faces.end(); ++f)
+					if(f->number_of_holes() < MAX_FOREST_RINGS && area < FOREST_SUBDIVIDE_AREA)
 					{
-						int ft = (*f)->data().mTerrainType;
-						if(forest_type_idx.count(ft) == 0)
+						push_one_forest(forest, forest_dem, dest_face);					
+					} 
+					else
+					{
+						did_split = true;
+						++num_forest_split;
+						Bbox2	total_forest_bounds;
+						for(Polygon2::iterator p = forest.front().begin(); p != forest.front().end(); ++p)
+							total_forest_bounds += *p;
+						set<Face_handle>	forest_faces;
+						forest_index.query_value(total_forest_bounds,set_inserter(forest_faces));
+						
+						vector<BLOCK_face_data>		block_types;
+						map<int,int>				forest_type_idx;
+						
+						block_types.push_back(BLOCK_face_data());
+						forest_type_idx[NO_VALUE] = 0;
+						for(set<Face_handle>::iterator f = forest_faces.begin(); f != forest_faces.end(); ++f)
 						{
-							forest_type_idx[ft] = block_types.size();
-							block_types.push_back(BLOCK_face_data(usage_Forest, ft));
+							int ft = (*f)->data().mTerrainType;
+							if(forest_type_idx.count(ft) == 0)
+							{
+								forest_type_idx[ft] = block_types.size();
+								block_types.push_back(BLOCK_face_data(usage_Forest, ft));
+							}
 						}
-					}
-					int oob_idx = block_types.size();
-					block_types.push_back(BLOCK_face_data(usage_OOB, 0));
-					vector<Block_2::X_monotone_curve_2>	curves;
-					
-					for(set<Face_handle>::iterator f = forest_faces.begin(); f != forest_faces.end(); ++f)
-					{
-						DebugAssert(forest_type_idx.count((*f)->data().mTerrainType));
-						int ft = forest_type_idx[(*f)->data().mTerrainType];
-						DebugAssert(!(*f)->is_unbounded());
-						Pmwx::Ccb_halfedge_circulator circ, stop;
+						int oob_idx = block_types.size();
+						block_types.push_back(BLOCK_face_data(usage_OOB, 0));
+						vector<Block_2::X_monotone_curve_2>	curves;
+						
+						for(set<Face_handle>::iterator f = forest_faces.begin(); f != forest_faces.end(); ++f)
 						{
-							circ= stop = (*f)->outer_ccb();
-							do {
-								DebugAssert(circ->face() != circ->twin()->face());
+							DebugAssert(forest_type_idx.count((*f)->data().mTerrainType));
+							int ft = forest_type_idx[(*f)->data().mTerrainType];
+							DebugAssert(!(*f)->is_unbounded());
+							Pmwx::Ccb_halfedge_circulator circ, stop;
+							{
+								circ= stop = (*f)->outer_ccb();
+								do {
+									DebugAssert(circ->face() != circ->twin()->face());
+									if(forest_faces.count(circ->twin()->face()) == 0 || he_is_same_direction(circ))
+									{
+										int ot = (forest_faces.count(circ->twin()->face()) == 0) ? -1 :
+											forest_type_idx[circ->twin()->face()->data().mTerrainType];
+										push_curve(curves,
+												map2block(circ->source()->point()),
+												map2block(circ->target()->point()),
+											ft, ot, -1, -1);
+									}
+								}while(++circ != stop);
+							}
+							for(Pmwx::Hole_iterator h = (*f)->holes_begin(); h != (*f)->holes_end(); ++h)
+							{
+								circ= stop = *h;
+								do {
+									DebugAssert(circ->face() != circ->twin()->face());							
 								if(forest_faces.count(circ->twin()->face()) == 0 || he_is_same_direction(circ))
 								{
-									int ot = (forest_faces.count(circ->twin()->face()) == 0) ? -1 :
-										forest_type_idx[circ->twin()->face()->data().mTerrainType];
-									push_curve(curves,
-											map2block(circ->source()->point()),
-											map2block(circ->target()->point()),
-										ft, ot, -1, -1);
-								}
-							}while(++circ != stop);
+										int ot = (forest_faces.count(circ->twin()->face()) == 0) ? -1 :
+											forest_type_idx[circ->twin()->face()->data().mTerrainType];
+								
+										push_curve(curves,
+												map2block(circ->source()->point()),
+												map2block(circ->target()->point()),
+											ft, ot, -1, -1);
+									}
+								}while(++circ != stop);
+							}
 						}
-						for(Pmwx::Hole_iterator h = (*f)->holes_begin(); h != (*f)->holes_end(); ++h)
+						
+						
+						for(vector<Polygon2>::iterator w = forest.begin(); w != forest.end(); ++w)
+						for(int s = 0; s < w->size(); ++s)
 						{
-							circ= stop = *h;
-							do {
-								DebugAssert(circ->face() != circ->twin()->face());							
-							if(forest_faces.count(circ->twin()->face()) == 0 || he_is_same_direction(circ))
-							{
-									int ot = (forest_faces.count(circ->twin()->face()) == 0) ? -1 :
-										forest_type_idx[circ->twin()->face()->data().mTerrainType];
-							
-									push_curve(curves,
-											map2block(circ->source()->point()),
-											map2block(circ->target()->point()),
-										ft, ot, -1, -1);
-								}
-							}while(++circ != stop);
+							Segment2	seg(w->side(s));
+							if(seg.p1 != seg.p2)
+								push_curve(curves, ben2cgal<BPoint_2>(seg.p1),ben2cgal<BPoint_2>(seg.p2),oob_idx, -1, NO_VALUE, -1);
 						}
-					}
-					
-					
-					for(vector<Polygon2>::iterator w = forest.begin(); w != forest.end(); ++w)
-					for(int s = 0; s < w->size(); ++s)
-					{
-						Segment2	seg(w->side(s));
-						if(seg.p1 != seg.p2)
-							push_curve(curves, ben2cgal<BPoint_2>(seg.p1),ben2cgal<BPoint_2>(seg.p2),oob_idx, -1, NO_VALUE, -1);
-					}
 
-					Block_2		divided_forest;
+						Block_2		divided_forest;
 
-/*					
-					for(vector<Block_2::X_monotone_curve_2>::iterator c = curves.begin(); c != curves.end(); ++c)					
-					{
-						if(c->data().size() > 1)
-							debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),1,1,0,1,1,0);
-						else
-						for(EdgeKey_iterator i = c->data().begin(); i != c->data().end(); ++i)
+	/*					
+						for(vector<Block_2::X_monotone_curve_2>::iterator c = curves.begin(); c != curves.end(); ++c)					
 						{
-							if(*i == 0)
-								debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),0.5,0.5,0.5, 0.5,0.5,0.5);
-							else if(*i == oob_idx)
-								debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),1,0,0, 1,0,0);
+							if(c->data().size() > 1)
+								debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),1,1,0,1,1,0);
 							else
-								debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),0,0.5,0, 0,0.5,0);
-							
+							for(EdgeKey_iterator i = c->data().begin(); i != c->data().end(); ++i)
+							{
+								if(*i == 0)
+									debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),0.5,0.5,0.5, 0.5,0.5,0.5);
+								else if(*i == oob_idx)
+									debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),1,0,0, 1,0,0);
+								else
+									debug_mesh_line(cgal2ben(c->source()),cgal2ben(c->target()),0,0.5,0, 0,0.5,0);
+								
+							}
 						}
-					}
-*/
-					
-					create_block(divided_forest, block_types, curves, oob_idx);
-					clean_block(divided_forest);
-//					for(Block_2::Edge_iterator de= divided_forest.edges_begin(); de != divided_forest.edges_end(); ++de)
-//						debug_mesh_line(cgal2ben(de->source()->point()),cgal2ben(de->target()->point()),1,1,1,1,1,1);
+	*/
+						
+						create_block(divided_forest, block_types, curves, oob_idx);
+						clean_block(divided_forest);
+	//					for(Block_2::Edge_iterator de= divided_forest.edges_begin(); de != divided_forest.edges_end(); ++de)
+	//						debug_mesh_line(cgal2ben(de->source()->point()),cgal2ben(de->target()->point()),1,1,1,1,1,1);
 
-					{
-retry:					
-						bool all_ok = true;
+						{
+	retry:					
+							bool all_ok = true;
+							for(Block_2::Face_iterator df = divided_forest.faces_begin(); df != divided_forest.faces_end(); ++df)
+							if(!df->is_unbounded())
+							if(df->data().usage == usage_Forest)
+							if(df->number_of_holes() >= 255)
+							{
+								Block_2::Hole_iterator h = df->holes_begin();
+								Block_2::Point_2 p1 = (*h)->source()->point();
+								++h;
+								Block_2::Point_2 p2 = (*h)->source()->point();							
+								Block_2::X_monotone_curve_2 c (BSegment_2(p1, p2), 0);							
+								
+								{
+									data_preserver_t<Block_2>	info(divided_forest);
+									CGAL::insert(divided_forest, c);
+								}
+								goto retry;
+							}
+						}
+
 						for(Block_2::Face_iterator df = divided_forest.faces_begin(); df != divided_forest.faces_end(); ++df)
 						if(!df->is_unbounded())
 						if(df->data().usage == usage_Forest)
-						if(df->number_of_holes() >= 255)
 						{
-							Block_2::Hole_iterator h = df->holes_begin();
-							Block_2::Point_2 p1 = (*h)->source()->point();
-							++h;
-							Block_2::Point_2 p2 = (*h)->source()->point();							
-							Block_2::X_monotone_curve_2 c (BSegment_2(p1, p2), 0);							
-							
-							{
-								data_preserver_t<Block_2>	info(divided_forest);
-								CGAL::insert(divided_forest, c);
-							}
-							goto retry;
+							vector<Polygon2>	a_forest;
+							PolygonFromBlock(df,df->outer_ccb(),a_forest, NULL,0.0,false);
+							push_one_forest(a_forest, forest_dem, dest_face);					
 						}
-					}
-
-					for(Block_2::Face_iterator df = divided_forest.faces_begin(); df != divided_forest.faces_end(); ++df)
-					if(!df->is_unbounded())
-					if(df->data().usage == usage_Forest)
-					{
-						vector<Polygon2>	a_forest;
-						PolygonFromBlock(df,df->outer_ccb(),a_forest, NULL,0.0,false);
-						push_one_forest(a_forest, forest_dem, dest_face);					
 					}
 				}
 			}
@@ -2996,6 +3045,8 @@ bool process_block(Pmwx::Face_handle f, CDT& mesh, const DEMGeo& ag_ok_approx_de
 	bool ret = false;
 	int z = f->data().GetZoning();
 	if(z == NO_VALUE || z == terrain_Natural)
+		return false;
+	if(f->data().GetParam(af_Median,0) > 1)
 		return false;
 	DebugAssert(gZoningInfo.count(z) != 0);
 	if (gZoningInfo.count(z) == 0)
