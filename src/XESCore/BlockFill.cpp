@@ -1797,12 +1797,14 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 
 			if(want_feature)
 			{
-			width *= rule->width_ant * 0.5;
-			depth *= rule->depth_ant;
+				width *= rule->width_ant * 0.5;
+				depth *= rule->depth_ant;
 			} else {
-			width *= rule->x_width_ant * 0.5;
-			depth *= rule->x_depth_ant;
+				anchor -= depth * 0.5 * (rule->x_depth_ant - rule->depth_ant);					
+				width *= rule->x_width_ant * 0.5;	
+				depth *= rule->x_depth_ant;
 			}
+			if(!want_feature && rule->x_width_ant == 0.0) continue;
 						
 			push_block_curve(curves, anchor - width, anchor + width, offset + idx);
 			push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
@@ -1854,11 +1856,12 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 					depth *= rule->depth_rd;
 				}
 				else {
-					
+					anchor -= depth * 0.5 * (rule->x_depth_rd - rule->depth_rd);					
 					width *= rule->x_width_rd * 0.5;
 					depth *= rule->x_depth_rd;
 				}
 
+				if(!want_feature && rule->x_width_rd == 0.0) continue;
 				
 				push_block_curve(curves, anchor - width, anchor + width, offset + idx);
 				push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
@@ -1883,9 +1886,12 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 				}
 				else
 				{
+					anchor -= depth * 0.5 * (rule->x_depth_free - rule->depth_free);					
 					width *= rule->x_width_free * 0.5;
 					depth *= rule->x_depth_free;
 				}
+
+				if(!want_feature && rule->x_width_free == 0.0) continue;
 				
 				push_block_curve(curves, anchor - width, anchor + width, offset + idx);
 				push_block_curve(curves, anchor + width, anchor + width + depth, offset + idx);
