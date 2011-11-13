@@ -360,8 +360,23 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, GLubyte outColor[4])
 	}
 
 	if(g_color_face_use_supr_tint && variant >= 0)
+	{
 		outColor[3] -= (variant * 24);
-	
+		if(f->data().GetParam(af_Median,0.0) > 1)
+		{
+			outColor[0] = 255.0;
+			outColor[1] =   0.0;
+			outColor[2] = 255.0;
+			outColor[3] = 255.0;
+		}
+		else if(f->data().GetParam(af_Median,0.0) > 0)
+		{
+			outColor[0] = 128.0;
+			outColor[1] =   0.0;
+			outColor[2] = 128.0;
+			outColor[3] = 255.0;
+		}
+	}
 }
 
 void	PrecalcOGL(Pmwx&						ioMap, ProgressFunc inFunc)
