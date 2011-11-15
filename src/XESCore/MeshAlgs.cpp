@@ -1195,23 +1195,112 @@ inline bool tri_is_cliff(CDT& io_mesh, CDT::Face_handle f)
 	return n.dz < 0.7;
 }
 
+struct sort_cdt_face_by_lowest_height {
+	bool operator()(const CDT::Face_handle& lhs, const CDT::Face_handle& rhs) const {
+		double	lh = fltmin3(
+						lhs->vertex(0)->info().height,
+						lhs->vertex(1)->info().height,
+						lhs->vertex(2)->info().height);
+		double	rh = fltmin3(
+						lhs->vertex(0)->info().height,
+						lhs->vertex(1)->info().height,
+						lhs->vertex(2)->info().height);
+		if (lh == rh) 
+			return &*lhs < &*rhs;
+		return lh < rh;
+	}
+	bool operator()(const CDT::Vertex_handle& lhs, const CDT::Vertex_handle& rhs) const {
+		if(lhs->info().height == rhs->info().height)
+			return &*lhs < &*rhs;
+		return lhs->info().height < rhs->info().height;
+	}
+};
+
+#define NEW_ALG 1
+// this is faster - by going in order from bottom to top we avoid a crapload of retries on neighboring verts.
+// going by MESH FACE is not so good - mesh face is at THREE alts at once..in theory at least.  or something.
 void FlattenWater(CDT& ioMesh)
 {
-	set<CDT::Face_handle>	changed;
+#if NEW_ALG
+	set<CDT::Vertex_handle, sort_cdt_face_by_lowest_height>		to_do;
+	
+	for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
+	{
+		if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
+			to_do.insert(v);
+	}
+	//printf("Q: %zd vertices.\n", to_do.size());
+	
+	double hwm = (*to_do.begin())->info().height;
+	
+	set<CDT::Vertex_handle, sort_cdt_face_by_lowest_height>::iterator i,p;
+	p = i = to_do.begin();
+	++i;
+	while(i != to_do.end())
+	{
+		//printf("   %p: %lf\n", &**i,(*i)->info().height);
+		DebugAssert((*i)->info().height >= (*p)->info().height);
+		p = i;
+		++i;
+	}
+	
+	while(!to_do.empty())
+	{
+		CDT::Vertex_handle v = *to_do.begin();
+		to_do.erase(to_do.begin());
+		
+		//printf("Vert %p: %lf, old hwm: %lf\n", &*v, v->info().height, hwm);
+
+		DebugAssert(v->info().height >= hwm);
+//		DebugAssert((v->info().height - hwm) > -0.00001);
+		hwm = v->info().height;
+		//printf("hwm now %lf from %p\n", hwm, &*v);
+		
+		Point2 low_p(cgal2ben(v->point()));	
+		double ok = v->info().height;
+		CDT::Face_circulator circ, stop;
+		circ = stop =v->incident_faces();
+		do {
+			if(!ioMesh.is_infinite(circ))
+			if(circ->info().terrain == terrain_Water)
+			{
+				CDT::Vertex_handle n = circ->vertex(CDT::ccw(circ->index(v)));
+
+				double dist_m = LonLatDistMeters(low_p.x(),low_p.y(), CGAL::to_double(n->point().x()),CGAL::to_double(n->point().y()));
+				double h_lim = ok + dist_m / 100.0 + 0.01;
+				if(n->info().height > h_lim)
+				{	
+					//printf("   %p: was %lf, must be %lf\n", &*n, n->info().height, h_lim);
+					//debug_mesh_point(cgal2ben(n->point()),1,0,0);
+					to_do.erase(n);
+					n->info().height = h_lim;
+					to_do.insert(n);					
+				}
+			}
+		} while(++circ != stop);
+	}
+	
+#else
+	set<CDT::Face_handle, sort_cdt_face_by_lowest_height>	changed;
 	for(CDT::Finite_faces_iterator f = ioMesh.finite_faces_begin(); f != ioMesh.finite_faces_end(); ++f)
 	{
 		if (f->info().terrain == terrain_Water)
 			changed.insert(f);
 	}
 	
+	int c = 0;
+	
 	while(!changed.empty())
 	{
+		++c;
 		CDT::Face_handle w = *changed.begin();
+		
+		changed.erase(w);		
 
 		double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(w->vertex(0)->point().x()) * DEG_TO_RAD);
 		
 		int low_i = 0;
-		float lowest = w->vertex(0)->info().height;
+		double lowest = w->vertex(0)->info().height;
 		for(int n = 1; n < 2; ++n)
 		if(w->vertex(n)->info().height < w->vertex(low_i)->info().height)
 			low_i = n;
@@ -1219,6 +1308,9 @@ void FlattenWater(CDT& ioMesh)
 		Point2	low_p = cgal2ben(w->vertex(low_i)->point());
 		
 		double ok = w->vertex(low_i)->info().height;
+
+		//printf("Face %p, low height is %f at %lf,%lf (vert %d/%p)\n",&*w,ok,low_p.x(),low_p.y(), low_i, &*w->vertex(low_i));
+
 		
 		for(int n = 0; n < 3; ++n)
 		if(n != low_i)
@@ -1227,7 +1319,10 @@ void FlattenWater(CDT& ioMesh)
 			{
 				double dist_m = LonLatDistMetersWithScale(low_p.x(),low_p.y(), CGAL::to_double(w->vertex(n)->point().x()),
 									CGAL::to_double(w->vertex(n)->point().y()),DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
-				double h_lim = ok + dist_m / 100.0;
+				double h_lim = ok + dist_m / 100.0 + 0.01;
+				
+				//printf("Vertex %d (%p), h_lim is %lf, ok is %lf, dist is %lf\n",
+					n, &*w->vertex(n), h_lim, ok, dist_m);
 				
 				if(w->vertex(n)->info().height > h_lim)
 				{
@@ -1240,21 +1335,27 @@ void FlattenWater(CDT& ioMesh)
 //						debug_mesh_point(cgal2ben(w->vertex(n)->point()),0,1,0);
 //					else
 //						debug_mesh_point(cgal2ben(w->vertex(n)->point()),0,0,1);
-					
-					w->vertex(n)->info().height = h_lim;
+										
+					//printf("  Lowering %p from %f to %f\n", &*w->vertex(n),w->vertex(n)->info().height,h_lim);
+					w->vertex(n)->info().height = ok + dist_m / 100.0;
 					CDT::Face_circulator circ, stop;
 					circ = stop = w->vertex(n)->incident_faces();
 					do {
+						if(circ != w)
 						if(!ioMesh.is_infinite(circ))
 						if(circ->info().terrain == terrain_Water)
+						{
+							//printf("   Q face %p\n", &*circ);
+							changed.erase(circ);
 							changed.insert(circ);
+						}	
 					} while(++circ != stop);
 				}
 			}
 		}
-		
-		changed.erase(w);		
 	}
+	//printf("processed: %d\n", c);
+#endif	
 }
 
 /*
