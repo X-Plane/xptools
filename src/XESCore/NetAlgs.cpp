@@ -30,6 +30,7 @@
 #include "DEMAlgs.h"
 #include "GISUtils.h"
 #include "STLUtils.h"
+#include "CompGeomUtils.h"
 #if OPENGL_MAP && DEV
 	#include "RF_Selection.h"
 #endif
@@ -1161,6 +1162,7 @@ void repair_network(Pmwx& io_map)
 	}
 
 	/* Level crossings... */
+	set<Pmwx::Vertex_handle>	verts;
 	for(Pmwx::Vertex_handle v = io_map.vertices_begin(); v != io_map.vertices_end(); ++v)	
 	{	
 		map<int, vector<Pmwx::Halfedge_handle> > junc;
@@ -1181,16 +1183,86 @@ void repair_network(Pmwx& io_map)
 			//printf("Road: %s, train: %s\n", has_road ? "yes" : "no", has_train ? "yes" : "no");
 			if(has_road && has_train)
 			{
+				verts.insert(v);
+			}
+		}
+	}
+	
+	set<Pmwx::Vertex_handle> all_level_crossings(verts);
+	
+	while(!verts.empty())
+	{
+		Vertex_handle v = *verts.begin();
+		verts.erase(verts.begin());
+		
+		map<int, vector<Pmwx::Halfedge_handle> > junc;
+		int t = levelize_junction(v,junc);
+		if(t > 0 && junc.count(0))
+		{
+			bool ok = junc[0].size() == 4;
+
+			if(ok)
+			{
+				if (get_he_rep_type(junc[0][0]) != get_he_rep_type(junc[0][2]) ||
+					get_he_rep_type(junc[0][1]) != get_he_rep_type(junc[0][3]))
+					ok = false;
+			}
+
+			vector<Vector2>	arms;
+						
+			if(ok)
+			{
+				CoordTranslator2	t;
+				Bbox2				bounds;
+				bounds +=			cgal2ben(junc[0][0]->source()->point());
+				bounds +=			cgal2ben(junc[0][0]->target()->point());
+				CreateTranslatorForBounds(bounds, t);
+				
+				for(vector<Pmwx::Halfedge_handle>::iterator i = junc[0].begin(); i != junc[0].end(); ++i)
+				{
+					arms.push_back(Vector2(t.Forward(cgal2ben((*i)->source()->point())),
+								   t.Forward(cgal2ben((*i)->target()->point()))));
+					if(arms.back().squared_length() < 15.0 * 15.0)
+					{
+						ok = false;
+						break;
+					}
+					arms.back().normalize();
+				}
+			}
+			if(ok)
+		
+			for(int i = 0; i < arms.size(); ++i)
+			{
+				double dot = arms[i].dot(arms[(i+1) % arms.size()]);
+				if(dot > 0.5 || dot < -0.5)
+					ok = false;
+			}
+		
+			if(ok)
+			{
+				//debug_mesh_point(cgal2ben(v->point()),0,1,0);
+			}
+			else
+			{
 				//debug_mesh_point(cgal2ben(v->point()),1,0,0);
 				for(vector<Pmwx::Halfedge_handle>::iterator i = junc[0].begin(); i != junc[0].end(); ++i)
 				{
 					int r = get_he_rep_type(*i);
 					if(gLevelCrossings.count(r))
+					{
 						set_he_rep_type(*i,gLevelCrossings[r]);
+						if(v == (*i)->source())
+						{
+							if(all_level_crossings.count((*i)->target()))
+								verts.insert((*i)->target());
+						} else {
+							if(all_level_crossings.count((*i)->source()))
+								verts.insert((*i)->source());
+						}
+					}
 				}
-			}	
-			
-			
+			}
 		}
 	}
 
