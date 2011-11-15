@@ -2740,7 +2740,8 @@ void push_one_forest(vector<Polygon2>& bounds, const DEMGeo& dem, Pmwx::Face_han
 	if(!histo.empty())
 	{
 		o.mRepType = highest_key(histo);
-		dest_face->data().mPolyObjs.push_back(o);				
+		if(o.mRepType != NO_VALUE && o.mRepType != DEM_NO_DATA)
+			dest_face->data().mPolyObjs.push_back(o);				
 	}
 	else if(lu_any != NO_VALUE && lu_any != DEM_NO_DATA)
 	{
