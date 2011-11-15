@@ -61,6 +61,8 @@
 #include "UTL_interval.h"
 #include "XUtils.h"
 
+#define	IGNORE_SHORT_AXIS	1
+
 int num_block_processed = 0;
 int num_blocks_with_split = 0;
 int num_forest_split = 0;
@@ -2853,20 +2855,26 @@ void	extract_features(
 					}
 
 
-						if(o.mShape[0].size() != 4)
+					if(o.mShape[0].size() != 4)
+					{
+						#if !IGNORE_SHORT_AXIS
 							fail_extraction(dest_face,o.mShape,&translator,"SHORT AXIS FAIL: %f\n", dest_face->data().GetParam(af_ShortAxisLength,0.0));
-			
-														PushSideIn(o.mShape[0],0,-3.0);
-					if(o.mParam & 1)					PushSideIn(o.mShape[0],1,-3.0);
-					if(o.mParam & 2)					PushSideIn(o.mShape[0],2,-3.0);
-					if(o.mParam & 4)					PushSideIn(o.mShape[0],3,-3.0);
+						#endif
+					}
+					else
+					{
+															PushSideIn(o.mShape[0],0,-3.0);
+						if(o.mParam & 1)					PushSideIn(o.mShape[0],1,-3.0);
+						if(o.mParam & 2)					PushSideIn(o.mShape[0],2,-3.0);
+						if(o.mParam & 4)					PushSideIn(o.mShape[0],3,-3.0);
 					
-					encode_ag_height(o.mParam,block_height);
+						encode_ag_height(o.mParam,block_height);
 					
-					for(int n = 0; n < o.mShape[0].size(); ++n)
-						o.mShape[0][n] = translator.Reverse(o.mShape[0][n]);
+						for(int n = 0; n < o.mShape[0].size(); ++n)
+							o.mShape[0][n] = translator.Reverse(o.mShape[0][n]);
 
-					dest_face->data().mPolyObjs.push_back(o);
+						dest_face->data().mPolyObjs.push_back(o);
+					}
 				}
 			}
 			if(f->data().usage == usage_Forest)
