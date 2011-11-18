@@ -196,6 +196,8 @@
 		D6226F250E4C6A48005BD1D7 /* WED_LibraryMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226F240E4C6A48005BD1D7 /* WED_LibraryMgr.cpp */; };
 		D6226FB30E4C8884005BD1D7 /* WED_LibraryListAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226FB20E4C8884005BD1D7 /* WED_LibraryListAdapter.cpp */; };
 		D6226FB90E4C889F005BD1D7 /* WED_LibraryPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6226FB80E4C889F005BD1D7 /* WED_LibraryPane.cpp */; };
+		D6240D6D1476EAAE00A28A6F /* WED_ATCTimeRule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */; };
+		D6240D6E1476EAAE00A28A6F /* WED_ATCWindRule.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */; };
 		D624339E0AE3CDFF004F00E3 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D62433A70AE3CE48004F00E3 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D62434200AE3D03E004F00E3 /* trackball.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A30AB22C85003949C5 /* trackball.c */; };
@@ -1058,6 +1060,8 @@
 		D6226FB20E4C8884005BD1D7 /* WED_LibraryListAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryListAdapter.cpp; sourceTree = "<group>"; };
 		D6226FB70E4C889F005BD1D7 /* WED_LibraryPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_LibraryPane.h; sourceTree = "<group>"; };
 		D6226FB80E4C889F005BD1D7 /* WED_LibraryPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryPane.cpp; sourceTree = "<group>"; };
+		D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCTimeRule.cpp; sourceTree = "<group>"; };
+		D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCWindRule.cpp; sourceTree = "<group>"; };
 		D62435440AE401EF004F00E3 /* RenderFarmUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RenderFarmUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6282EFB13EC782B00FD236C /* WED_XMLReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_XMLReader.h; sourceTree = "<group>"; };
 		D6282EFC13EC782B00FD236C /* WED_XMLReader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_XMLReader.cpp; sourceTree = "<group>"; };
@@ -3417,6 +3421,8 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */,
+				D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */,
 				D63A13AC132ABBC400D36061 /* WED_FacadeNode.cpp */,
 				D63A13AD132ABBC400D36061 /* WED_FacadeNode.h */,
 				D63A13AE132ABBC400D36061 /* WED_FacadeRing.cpp */,
@@ -4618,6 +4624,8 @@
 				D63A13B4132ABBC400D36061 /* WED_ForestRing.cpp in Sources */,
 				D63CC9F713E85B8B00468132 /* WED_XMLWriter.cpp in Sources */,
 				D6282EFD13EC782B00FD236C /* WED_XMLReader.cpp in Sources */,
+				D6240D6D1476EAAE00A28A6F /* WED_ATCTimeRule.cpp in Sources */,
+				D6240D6E1476EAAE00A28A6F /* WED_ATCWindRule.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
