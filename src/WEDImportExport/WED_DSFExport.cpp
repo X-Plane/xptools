@@ -1492,6 +1492,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	cbs.AcceptProperty_f("sim/creation_agent", "WorldEditor" WED_VERSION_STRING, writer);
 	cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
 	cbs.AcceptProperty_f("sim/overlay", "1", writer);
+	cbs.AcceptProperty_f("sim/require_agpoint", "1/0", writer);
 	cbs.AcceptProperty_f("sim/require_object", "1/0", writer);
 	cbs.AcceptProperty_f("sim/require_facade", "1/0", writer);
 
