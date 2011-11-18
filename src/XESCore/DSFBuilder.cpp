@@ -1747,6 +1747,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	if(writer2)
 	for (obdef = objects_reversed.begin(); obdef != objects_reversed.end(); ++obdef)
 	{
+		Assert(obdef->second != NO_VALUE);
+		Assert(obdef->second != DEM_NO_DATA);
 		string objName = gObjLibPrefix + FetchTokenString(obdef->second);
 		objName += ".obj";
 		cbs.AcceptObjectDef_f(objName.c_str(), writer2);
@@ -1756,6 +1758,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	for (obdef = facades_reversed.begin(); obdef != facades_reversed.end(); ++obdef)
 	{
 		Assert(obdef->second != NO_VALUE);
+		Assert(obdef->second != DEM_NO_DATA);
 		string facName = FetchTokenString(obdef->second);
 
 		if(facName.find('.') == facName.npos)
