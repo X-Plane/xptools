@@ -72,6 +72,9 @@ protected:
 		WED_PropBoolText		windsock_lit;
 		WED_PropStringText		resource;
 		WED_PropBoolText		sign_clipboard;
+		WED_PropIntEnum			ramp_type;
+		WED_PropIntEnumBitfield	equip_type;
+		
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

@@ -23,11 +23,15 @@
 
 #include "WED_RampPosition.h"
 #include "AptDefs.h"
+#include "WED_EnumSystem.h"
 
 DEFINE_PERSISTENT(WED_RampPosition)
 TRIVIAL_COPY(WED_RampPosition, WED_GISPoint_Heading)
 
-WED_RampPosition::WED_RampPosition(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i)
+WED_RampPosition::WED_RampPosition(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
+	ramp_type	(this, "Ramp Start Type",	SQL_Name("",""),	XML_Name("ramp_start","type"   ), ATCRampType, atc_Ramp_Misc),
+	equip_type  (this, "Equipment Type",		SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType)
+
 {
 }
 
@@ -40,6 +44,11 @@ void	WED_RampPosition::Import(const AptGate_t& x, void (* print_func)(void *, co
 	SetLocation(gis_Geo,x.location);
 	SetHeading(x.heading);
 	SetName(x.name);
+	
+	ramp_type			= ENUM_Import(ATCRampType,		x.type	);
+	ENUM_ImportSet(equip_type.domain,x.equipment,equip_type.value);
+	
+	
 }
 
 void	WED_RampPosition::Export(		 AptGate_t& x) const
@@ -47,4 +56,17 @@ void	WED_RampPosition::Export(		 AptGate_t& x) const
 	GetLocation(gis_Geo,x.location);
 	x.heading = GetHeading();
 	GetName(x.name);
+	x.type = ENUM_Export(ramp_type.value);
+	x.equipment = ENUM_ExportSet(equip_type.value);
+
+}
+
+void	WED_RampPosition::SetType(int	rt)
+{
+	ramp_type = rt;
+}
+
+void	WED_RampPosition::SetEquipment(const set<int>&	et)
+{
+	equip_type = et;
 }

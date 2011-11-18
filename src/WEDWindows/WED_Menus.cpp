@@ -144,6 +144,9 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 #if AIRPORT_ROUTING
 {	"Create Airport Flow",		0,		0,										0, wed_AddATCFlow },
 {	"Create Runway Use",		0,		0,										0, wed_AddATCRunwayUse },
+{	"Create Runway Time Rule",	0,		0,										0, wed_AddATCTimeRule },
+{	"Create Runway Wind rule",	0,		0,										0, wed_AddATCWindRule },
+
 #endif
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	NULL,						0,		0,										0, 0,				}

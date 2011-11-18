@@ -31,6 +31,8 @@
 #include "WED_ATCFrequency.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCRunwayUse.h"
+#include "WED_ATCTimeRule.h"
+#include "WED_ATCWindRule.h"
 #include "WED_AirportNode.h"
 #include "WED_Group.h"
 #include "BitmapUtils.h"
@@ -344,6 +346,16 @@ int		WED_CanMakeNewATCRunwayUse(IResolver * inResolver)
 	return WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass) != NULL;
 }
 
+int		WED_CanMakeNewATCTimeRule(IResolver * inResolver)
+{
+	return WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass) != NULL;
+}
+
+int		WED_CanMakeNewATCWindRule(IResolver * inResolver)
+{
+	return WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass) != NULL;
+}
+
 #endif
 
 void	WED_DoMakeNewATCFreq(IResolver * inResolver)
@@ -369,8 +381,26 @@ void	WED_DoMakeNewATCFlow(IResolver * inResolver)
 void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 {
 	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass);
-	now_sel->StartOperation("Add ATC Flow");
+	now_sel->StartOperation("Add ATC Runway Use");
 	WED_ATCRunwayUse * f=  WED_ATCRunwayUse::CreateTyped(now_sel->GetArchive());
+	f->SetParent(now_sel,now_sel->CountChildren());
+	now_sel->CommitOperation();
+}
+
+void	WED_DoMakeNewATCWindRule(IResolver * inResolver)
+{
+	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass);
+	now_sel->StartOperation("Add ATC Wind Rule");
+	WED_ATCWindRule * f=  WED_ATCWindRule::CreateTyped(now_sel->GetArchive());
+	f->SetParent(now_sel,now_sel->CountChildren());
+	now_sel->CommitOperation();
+}
+
+void	WED_DoMakeNewATCTimeRule(IResolver * inResolver)
+{
+	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass);
+	now_sel->StartOperation("Add ATC Time Rule");
+	WED_ATCTimeRule * f=  WED_ATCTimeRule::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
 	now_sel->CommitOperation();
 }

@@ -56,6 +56,8 @@
 #include "WED_ATCFlow.h"
 #include "WED_ATCFrequency.h"
 #include "WED_ATCRunwayUse.h"
+#include "WED_ATCTimeRule.h"
+#include "WED_ATCWindrule.h"
 
 using std::list;
 
@@ -324,6 +326,8 @@ const char *	WED_GetParentForClass(const char * in_class)
 #if AIRPORT_ROUTING
 	if(strcmp(in_class,WED_ATCFlow::sClass)==0)				return WED_Airport::sClass;
 	if(strcmp(in_class,WED_ATCRunwayUse::sClass)==0)		return WED_ATCFlow::sClass;
+	if(strcmp(in_class,WED_ATCTimeRule::sClass)==0)		return WED_ATCFlow::sClass;
+	if(strcmp(in_class,WED_ATCWindRule::sClass)==0)		return WED_ATCFlow::sClass;
 #endif
 	return NULL;
 }

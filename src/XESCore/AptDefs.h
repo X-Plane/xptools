@@ -64,15 +64,23 @@ enum {
 	apt_end_seg		 	= 115,
 	apt_end_crv 		= 116,
 
-	apt_flow_def		= 1000,			// <icao> <cld> <vis> <wind range> <wind max> <time on> <time off> <name> 		
-	apt_flow_rwy_rule	= 1100,			// <rwy> <freq> <ops> <equp> <dep range> <initial turn range> <name>
-	apt_flow_pattern	= 1101,			// <rwy> <left|right>
+	apt_flow_def		= 1000,			// 1000 <traffic flow name, must be unique to the ICAO airport>
+	apt_flow_wind		= 1001,			// 1001 <metar icao> <wind dir min> <wind dir max> <wind max speed>
+	apt_flow_ceil		= 1002,			// 1002 <metar icao> <ceiling minimum>
+	apt_flow_vis		= 1003,			// 1003 <metar icao> <vis minimum>
+	apt_flow_time		= 1004,			// 1004 <zulu time start> <zulu time end>
 	
-	apt_taxi_header		= 1200,			// <name>
-	apt_taxi_node		= 1201,			// <lat> <lon> <type> <id> <name>
-	apt_taxi_edge		= 1202,			// <src> <dst> <flags> <id> <name>
-	apt_taxi_shape		= 1203,			// <lat> <lon>
-	apt_taxi_active		= 1204,			// type|flags runway,list
+	apt_flow_rwy_rule	= 1100,
+	apt_flow_pattern	= 1101,
+	
+	apt_taxi_header		= 1200,			// 1200 <name>
+	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id> <name>
+	apt_taxi_edge		= 1202,			// 1202 <src> <dst> <flags> <id> <name>
+	apt_taxi_shape		= 1203,			// 1203 <lat> <lon>
+	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
+
+	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
+
 
 	// Surface codes
 	apt_surf_none		= 0,
@@ -221,8 +229,15 @@ enum {
 	atc_traffic_props = 8,
 	atc_traffic_helis = 16,
 	
+	atc_traffic_all = (atc_traffic_heavies|atc_traffic_jets|atc_traffic_turbos|atc_traffic_props|atc_traffic_helis),
+	
 	atc_op_arrivals = 1,
-	atc_op_departures = 2
+	atc_op_departures = 2,
+	
+	atc_ramp_misc = 0,
+	atc_ramp_gate = 1,
+	atc_ramp_tie_down = 2,
+	atc_ramp_hangar = 3
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -333,6 +348,8 @@ typedef vector<AptPavement_t>	AptPavementVector;
 struct	AptGate_t {
 	Point2		location;
 	float		heading;
+	int			type;
+	int			equipment;
 	string		name;
 };
 typedef vector<AptGate_t>		AptGateVector;
@@ -398,18 +415,28 @@ struct AptRunwayRule_t {
 };	
 typedef vector<AptRunwayRule_t>	AptRunwayRuleVector;
 
+struct AptWindRule_t {
+	string			icao;
+	int				dir_lo_degs_mag;
+	int				dir_hi_degs_mag;
+	int				max_speed_knots;
+};
+typedef vector<AptWindRule_t>	AptWindRuleVector;
+
+struct AptTimeRule_t {
+	int				start_zulu;
+	int				end_zulu;
+};
+typedef vector<AptTimeRule_t>	AptTimeRuleVector;
+
 struct AptFlow_t {
 	string						name;
 
 	string						icao;
-	int							ceiling;
-	int							visibility;
-	int							wind_speed_max;
-	int							wind_dir_min;
-	int							wind_dir_max;
-	int							time_min;
-	int							time_max;
-	
+	int							ceiling_ft;
+	int							visibility_sm;
+	AptTimeRuleVector			time_rules;
+	AptWindRuleVector			wind_rules;	
 	int							pattern_side;
 	string						pattern_runway;
 	AptRunwayRuleVector			runway_rules;

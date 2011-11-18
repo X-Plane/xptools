@@ -42,6 +42,7 @@
 void	GenerateOGL(AptInfo_t * a);
 #endif
 
+const char * ramp_type_strings[] = { "misc","gate","tie_down","hangar", 0 };
 const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", 0 };
 const char * op_strings[] = { "arrivals", "departures" };
@@ -67,6 +68,19 @@ int scan_bitfields(const char * str, const char * bits[])
 	}
 	return r;
 }
+
+int scan_enum(const char * str, const char * enums[])
+{
+	int n = 0;
+	while(enums[n])
+	{
+		if(strstr(str, enums[n]))
+			return n;
+		++n;
+	}
+	return -1;
+}
+
 
 void print_bitfields(FILE * fi, int flags, const char * bits[])
 {
@@ -571,25 +585,92 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			open_poly->back().ctrl = POINT2(p2x, p2y);
 			parse_linear_codes(codez,&open_poly->back().attributes);
 			break;
+		case apt_startup_loc_new:
+			if(vers < ATC_VERS) ok = "Error: no new ramp starts in older apt.dat files.";
+			else if(outApts.empty()) ok = "Error: new ramp start outside airport.";
+			else
+			{
+				AptGate_t gate;
+				string equip, ramp_type;
+				if (TextScanner_FormatScan(s, "iddfTTT|",
+					&rec_code,
+					&p1y,
+					&p1x,
+					&gate.heading,
+					&ramp_type,
+					&equip,
+					&gate.name) < 4)
+					ok = "Illegal startup loc";
+				else		
+				{					
+					gate.type = scan_enum(ramp_type.c_str(), ramp_type_strings);
+					if(gate.type == -1)
+						ok = "Illegal ramp ty.e";
+					else 
+					{
+						gate.equipment = scan_bitfields(equip.c_str(), equip_strings);
+						gate.location = POINT2(p1x, p1y);
+						outApts.back().gates.push_back(gate);
+					}
+				}
+			}
+			break;			
 		case apt_flow_def:
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: flow outside an airport.";
 			else {
 				outApts.back().flows.push_back(AptFlow_t());
-				if(TextScanner_FormatScan(s,"iTiiiiiiT|",
+				if(TextScanner_FormatScan(s,"iT|",
 					&rec_code,
-					&outApts.back().flows.back().icao,
-					&outApts.back().flows.back().ceiling,
-					&outApts.back().flows.back().visibility,
-					&outApts.back().flows.back().wind_dir_min,
-					&outApts.back().flows.back().wind_speed_max,
-					&outApts.back().flows.back().time_min,
-					&outApts.back().flows.back().time_max,
-					&outApts.back().flows.back().name) != 9) ok = "Error: bad apt flow record.";
-				else
-					divide_heading(
-						&outApts.back().flows.back().wind_dir_min,
-						&outApts.back().flows.back().wind_dir_max);
+					&outApts.back().flows.back().name) != 2) ok = "Error: bad apt flow record.";
+			}
+			break;
+		case apt_flow_wind:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: wind rule outside of an airport";
+			else if(outApts.back().flows.empty()) ok = "Error: wind rule outside of flow.";
+			else
+			{
+				AptWindRule_t	wr;
+				if(TextScanner_FormatScan(s,"iTiii",&rec_code,&wr.icao,&wr.dir_lo_degs_mag, &wr.dir_hi_degs_mag,&wr.max_speed_knots) != 5)
+					ok = "ERROR: bad wind rule record.";
+				else				
+					outApts.back().flows.back().wind_rules.push_back(wr);
+			}
+			break;
+
+		case apt_flow_ceil:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: ceiling rule outside of an airport";
+			else if(outApts.back().flows.empty()) ok = "Error: ceiling rule outside of flow.";
+			else
+			{				
+				if(TextScanner_FormatScan(s,"iTi",&rec_code,&outApts.back().flows.back().icao,&outApts.back().flows.back().ceiling_ft) != 3)
+					ok = "ERROR: ceiling wind rule record.";
+			}
+			break;
+
+		case apt_flow_vis:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: vis rule outside of an airport";
+			else if(outApts.back().flows.empty()) ok = "Error: vis rule outside of flow.";
+			else
+			{
+				if(TextScanner_FormatScan(s,"iTi",&rec_code,&outApts.back().flows.back().icao,&outApts.back().flows.back().visibility_sm) != 3)
+					ok = "ERROR: bad vis rule record.";
+			}
+			break;
+		case apt_flow_time:
+			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: time rule outside of an airport";
+			else if(outApts.back().flows.empty()) ok = "Error: time rule outside of flow.";
+			else
+			{
+				AptTimeRule_t	tr;
+				if(TextScanner_FormatScan(s,"iii",&rec_code,&tr.start_zulu,&tr.end_zulu) != 3)
+					ok = "ERROR: bad time rule record.";
+				else				
+					outApts.back().flows.back().time_rules.push_back(tr);
 			}
 			break;
 		case apt_flow_pattern:
@@ -898,8 +979,15 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for (AptGateVector::const_iterator gate = apt->gates.begin(); gate != apt->gates.end(); ++gate)
 		{
-			fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s" CRLF, apt_startup_loc,
-				CGAL2DOUBLE(gate->location.y()), CGAL2DOUBLE(gate->location.x()), gate->heading, gate->name.c_str());
+			if((gate->type == atc_ramp_misc && gate->equipment == atc_traffic_all) || gate->equipment == 0)
+				fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s" CRLF, apt_startup_loc,
+					CGAL2DOUBLE(gate->location.y()), CGAL2DOUBLE(gate->location.x()), gate->heading, gate->name.c_str());
+			else
+			{
+				fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s ",apt_startup_loc_new, CGAL2DOUBLE(gate->location.y()), CGAL2DOUBLE(gate->location.x()), gate->heading, ramp_type_strings[gate->type]);
+				print_bitfields(fi,gate->equipment, equip_strings);
+				fprintf(fi," %s" CRLF, gate->name.c_str());
+			}
 		}
 
 		if (apt->beacon.color_code != apt_beacon_none)
@@ -920,9 +1008,17 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts)
 
 		for(AptFlowVector::const_iterator flow = apt->flows.begin(); flow != apt->flows.end(); ++flow)
 		{
-			fprintf(fi,"%2d %s %d %d %03d%03d %d %04d %04d %s" CRLF, apt_flow_def,
-					flow->icao.c_str(), flow->ceiling, flow->visibility, flow->wind_dir_min, flow->wind_dir_max, flow->wind_speed_max,
-									flow->time_min, flow->time_max, flow->name.c_str());
+			fprintf(fi,"%2d %s" CRLF, apt_flow_def, flow->name.c_str());
+			
+			for(AptWindRuleVector::const_iterator wind = flow->wind_rules.begin(); wind != flow->wind_rules.end(); ++wind)
+				fprintf(fi,"%2d %s %03d %03d %d" CRLF, apt_flow_wind, wind->icao.c_str(), wind->dir_lo_degs_mag, wind->dir_hi_degs_mag, wind->max_speed_knots);
+			
+			fprintf(fi,"%2d %s %d" CRLF, apt_flow_ceil, flow->icao.c_str(), flow->ceiling_ft);
+			
+			fprintf(fi,"%2d %s %d" CRLF, apt_flow_vis, flow->icao.c_str(), flow->visibility_sm);
+			
+			for(AptTimeRuleVector::const_iterator time = flow->time_rules.begin(); time != flow->time_rules.end(); ++time)
+				fprintf(fi,"%2d %04d %04d" CRLF, apt_flow_time, time->start_zulu, time->end_zulu);
 
 			if(!flow->pattern_runway.empty() && flow->pattern_side)
 			{

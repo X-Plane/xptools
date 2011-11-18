@@ -299,6 +299,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #if AIRPORT_ROUTING
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
 	case wed_AddATCRunwayUse:WED_DoMakeNewATCRunwayUse(mDocument); return 1;
+	case wed_AddATCTimeRule: WED_DoMakeNewATCTimeRule(mDocument); return 1;
+	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;
 #endif
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
@@ -361,6 +363,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #if AIRPORT_ROUTING
 	case wed_AddATCFlow:return WED_CanMakeNewATCFlow(mDocument);
 	case wed_AddATCRunwayUse: return WED_CanMakeNewATCRunwayUse(mDocument);
+	case wed_AddATCTimeRule:return WED_CanMakeNewATCTimeRule(mDocument);
+	case wed_AddATCWindRule:return WED_CanMakeNewATCWindRule(mDocument);
+
 #endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);

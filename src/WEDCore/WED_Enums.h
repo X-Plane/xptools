@@ -186,6 +186,12 @@ ENUM_DOMAIN(ATCOperationType,"Operations")
 	ENUM(atc_Arrivals,				"Arrivals",							atc_op_arrivals)
 	ENUM(atc_Departures,			"Departures",						atc_op_departures)
 
+ENUM_DOMAIN(ATCRampType,"Ramp Start Type")
+	ENUM(atc_Ramp_Misc,				"Misc",								atc_ramp_misc)
+	ENUM(atc_Ramp_Gate,				"Gate",								atc_ramp_gate)
+	ENUM(atc_Ramp_TieDown,			"Tie-Down",							atc_ramp_tie_down)
+	ENUM(atc_Ramp_Hangar,			"Hangar",							atc_ramp_hangar)
+
 ENUM_DOMAIN(ATCRunwayOneway,"Runway Direction")
 	ENUM(atc_Runway_None,				"None",		0)
 	ENUM(atc_1,							"01",		10)

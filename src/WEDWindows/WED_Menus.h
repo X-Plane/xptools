@@ -97,6 +97,8 @@ enum {
 #if AIRPORT_ROUTING
 	wed_AddATCFlow,
 	wed_AddATCRunwayUse,
+	wed_AddATCTimeRule,
+	wed_AddATCWindRule,
 #endif
 	// Help Menu
 	wed_HelpManual,

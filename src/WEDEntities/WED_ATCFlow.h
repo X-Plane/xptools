@@ -43,15 +43,10 @@ public:
 private:
 
 	// Flow rules
-	WED_PropStringText	icao;
-	WED_PropIntText		cld_min;
-	WED_PropIntText		vis_min;
-	WED_PropIntText		wnd_spd_max;
-	WED_PropIntText		wnd_dir_min;
-	WED_PropIntText		wnd_dir_max;	
-	WED_PropIntText		time_min;
-	WED_PropIntText		time_max;	
-	
+	WED_PropStringText			icao;
+	WED_PropDoubleTextMeters	cld_min_mtr;
+	WED_PropIntText				vis_min_sm;
+
 	WED_PropIntEnum		pattern_rwy;
 	WED_PropIntEnum		traffic_dir;
 

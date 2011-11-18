@@ -42,6 +42,8 @@
 #include "WED_OverlayImage.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCRunwayUse.h"
+#include "WED_ATCTimeRule.h"
+#include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
 
 #include "AptIO.h"
@@ -187,6 +189,8 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 #if AIRPORT_ROUTING
 	WED_ATCFlow *			flw;
 	WED_ATCRunwayUse *		use;
+	WED_ATCTimeRule *		tim;
+	WED_ATCWindRule *		wnd;
 #endif
 	int holes, h;
 
@@ -301,6 +305,16 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	{
 		apts.back().flows.back().runway_rules.push_back(AptRunwayRule_t());
 		use->Export(apts.back().flows.back().runway_rules.back());
+	}
+	else if(tim = dynamic_cast<WED_ATCTimeRule *>(what))
+	{
+		apts.back().flows.back().time_rules.push_back(AptTimeRule_t());
+		tim->Export(apts.back().flows.back().time_rules.back());
+	}
+	else if(wnd = dynamic_cast<WED_ATCWindRule *>(what))
+	{
+		apts.back().flows.back().wind_rules.push_back(AptWindRule_t());
+		wnd->Export(apts.back().flows.back().wind_rules.back());
 	}
 #endif	
 
@@ -589,6 +603,18 @@ void	WED_AptImport(
 				WED_ATCRunwayUse * new_use = WED_ATCRunwayUse::CreateTyped(archive);
 				new_use->SetParent(new_flw, new_flw->CountChildren());
 				new_use->Import(*use, LazyPrintf, &log);
+			}
+			for(AptWindRuleVector::iterator wnd = flw->wind_rules.begin(); wnd != flw->wind_rules.end(); ++wnd)
+			{
+				WED_ATCWindRule * new_wnd = WED_ATCWindRule::CreateTyped(archive);
+				new_wnd->SetParent(new_flw, new_flw->CountChildren());
+				new_wnd->Import(*wnd, LazyPrintf, &log);
+			}
+			for(AptTimeRuleVector::iterator tim = flw->time_rules.begin(); tim != flw->time_rules.end(); ++tim)
+			{
+				WED_ATCTimeRule * new_tim = WED_ATCTimeRule::CreateTyped(archive);
+				new_tim->SetParent(new_flw, new_flw->CountChildren());
+				new_tim->Import(*tim, LazyPrintf, &log);
 			}
 		}
 		

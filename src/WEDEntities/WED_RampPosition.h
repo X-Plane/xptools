@@ -34,8 +34,16 @@ DECLARE_PERSISTENT(WED_RampPosition)
 
 public:
 
+	void	SetType(int		ramp_type);
+	void	SetEquipment(const set<int>&	et);
+
 	void	Import(const AptGate_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptGate_t& x) const;
+
+private:
+
+	WED_PropIntEnum			ramp_type;
+	WED_PropIntEnumBitfield	equip_type;
 
 };
 

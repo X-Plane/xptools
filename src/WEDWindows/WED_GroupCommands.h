@@ -45,6 +45,10 @@ int		WED_CanMakeNewATCFlow(IResolver * inResolver);
 void	WED_DoMakeNewATCFlow(IResolver * inResolver);
 int		WED_CanMakeNewATCRunwayUse(IResolver * inResolver);
 void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver);
+int		WED_CanMakeNewATCWindRule(IResolver * inResolver);
+void	WED_DoMakeNewATCWindRule(IResolver * inResolver);
+int		WED_CanMakeNewATCTimeRule(IResolver * inResolver);
+void	WED_DoMakeNewATCTimeRule(IResolver * inResolver);
 #endif
 
 int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name);

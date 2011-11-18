@@ -82,7 +82,10 @@ WED_CreatePointTool::WED_CreatePointTool(
 		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	SQL_Name("",""),XML_Name("",""),25.0,5,1),
 		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			SQL_Name("",""),XML_Name("",""),0),
 		resource		(tool==create_Object		?this:NULL,"Object",		SQL_Name("",""),XML_Name("",""),""),
-		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	SQL_Name("",""),XML_Name("",""),0)
+		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	SQL_Name("",""),XML_Name("",""),0),
+		ramp_type		(tool==create_RampStart		?this:NULL,"Ramp Start Type",SQL_Name("",""),XML_Name("",""   ), ATCRampType, atc_Ramp_Misc),
+		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType)
+
 {
 }
 
@@ -151,6 +154,8 @@ void	WED_CreatePointTool::AcceptPath(
 		break;
 	case create_RampStart:
 		new_pt_obj = new_pt_h = ramp = WED_RampPosition::CreateTyped(GetArchive());
+		ramp->SetType(ramp_type.value);
+		ramp->SetEquipment(equip_type.value);
 		break;
 	case create_TowerViewpoint:
 		new_pt_obj = tower = WED_TowerViewpoint::CreateTyped(GetArchive());
