@@ -52,7 +52,7 @@ endif
 ifdef PLAT_LINUX
 	CONF	:= -G 'Unix Makefiles'
 	CONF	+= $(COMMONCONF)
-	CONF	+= -DCGAL_CXX_FLAGS='-std=gnu++0x'
+#	CONF	+= -DCGAL_CXX_FLAGS='-std=gnu++0x'
 	CONF	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX)'
 	CONF	+= -DBOOST_ROOT='$(PREFIX)'
 	CONF	+= -DGMP_INCLUDE_DIR='$(PREFIX)/include'
@@ -64,7 +64,8 @@ ifdef PLAT_LINUX
 
 	CONF32	:= -G 'Unix Makefiles'
 	CONF32	+= $(COMMONCONF)
-	CONF32	+= -DCGAL_CXX_FLAGS='-std=gnu++0x -m32'
+	CONF32	+= -DCGAL_CXX_FLAGS='-m32'
+#	CONF32	+= -DCGAL_CXX_FLAGS='-std=gnu++0x -m32'
 	CONF32	+= -DCMAKE_INSTALL_PREFIX='$(PREFIX32)'
 	CONF32	+= -DBOOST_ROOT='$(PREFIX32)'
 	CONF32	+= -DGMP_INCLUDE_DIR='$(PREFIX32)/include'

@@ -15,7 +15,8 @@ TARGET		:= $(PREFIX)/lib/libfreetype.a
 TARGET32	:= $(PREFIX32)/lib/libfreetype.a
 
 COMMONCONF	:= --enable-shared=no
-COMMONCONF	+= --with-zlib
+COMMONCONF	+= --without-zlib
+COMMONCONF	+= --without-bzip2
 
 ifdef PLAT_WINNT
 	CONF		:= $(COMMONCONF)
