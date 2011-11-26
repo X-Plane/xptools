@@ -48,7 +48,7 @@ inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.b
 
 static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSource, size_t count)
 {
-	strncpy(strDest, strSource, count);
+	strncpy(strDest, strSource, strlen(strSource));
 	return 0;
 }
 
