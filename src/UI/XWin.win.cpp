@@ -369,7 +369,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			unsigned int vKey, RetCode, ScanCode;
 			unsigned short Char = 0;
 			BYTE KeyState[256];
-			HKL hKL = GetKeyboardLayout(NULL);
+			HKL hKL = GetKeyboardLayout(0);
 			ScanCode = ((lParam>> 16) & 0xff);
 			vKey = MapVirtualKeyEx(ScanCode, 1, hKL);
 			GetKeyboardState((unsigned char*)&KeyState);

@@ -1,6 +1,7 @@
 cache
 error.out
 build
+build32
 local
 local32
 local64

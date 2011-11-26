@@ -44,7 +44,7 @@ inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom-y; }
 
 #if MINGW_BUILD
-#define _TRUNCATE 0
+//#define _TRUNCATE 0
 
 static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSource, size_t count)
 {
@@ -625,12 +625,12 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	#if LIN
 		this->setMenuBar(gApplication->getqmenu());
 		mPopupMenu = new QMenu(this);
-		QApplication::setActiveWindow(this);		
-		setFocusPolicy(Qt::StrongFocus);	
+		QApplication::setActiveWindow(this);
+		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
 		raise();
-		setFocus();	
-		activateWindow();	
+		setFocus();
+		activateWindow();
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
@@ -1027,7 +1027,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		return 1;
 	}
 
-	hKL = GetKeyboardLayout(NULL);
+	hKL = GetKeyboardLayout(0);
 	ScanCode = ((inParam2 >> 16) & 0xff);
 	ExtendedKey =  ((inParam2 >> 24) & 0x01);
 	vKey = MapVirtualKeyEx(ScanCode, 1, hKL);

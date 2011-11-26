@@ -121,7 +121,7 @@ endif
 ifdef PLAT_MINGW
 	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0 -DBOOST_THREAD_USE_LIB=1
 	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= $(M32_SWITCH) -std=gnu++0x -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:= $(M32_SWITCH) -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:= $(M32_SWITCH) -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
@@ -142,14 +142,9 @@ else ifeq ($(conf), release)
 	CXXFLAGS	+= -O0 -g
 	DEFINES		+= -DDEV=0 -DNDEBUG
 else ifeq ($(conf), debug)
-	CFLAGS		+= -O0 -g
-	CXXFLAGS	+= -O0 -g
+	CFLAGS		+= -O1 -g
+	CXXFLAGS	+= -O1 -g
 	DEFINES		+= -DDEV=1
-else ifeq ($(conf), release_test)
-	CFLAGS		+= -O2 -fomit-frame-pointer -fstrict-aliasing
-	CXXFLAGS	+= -O2 -fomit-frame-pointer -fstrict-aliasing
-	DEFINES		+= -DDEV=1
-	StripDebug	:= Yes
 else ifeq ($(conf), phone)
 	CFLAGS		+= -O0 -g
 	CXXFLAGS	+= -O0 -g
@@ -288,7 +283,7 @@ RESOURCEOBJ	:= $(patsubst %, $(BUILDDIR)/obj/%$(BIN_SUFFIX).res.o, $(RESOURCES))
 RESOURCEOBJ	+= $(patsubst %, $(BUILDDIR)/obj/%$(BIN_SUFFIX).winres.o, $(WIN_RESOURCES))
 
 ALL_DEPS	:= $(sort $(CDEPS) $(CXXDEPS))
-ALL_OBJECTS	:= $(sort $(COBJECTS) $(CXXOBJECTS) $(RESOURCEOBJ))
+ALL_OBJECTS	:= $(sort $(COBJECTS) $(CXXOBJECTS))
 ALL_OBJECTFILES	:= $(notdir $(ALL_OBJECTS))
 
 SRC_DIRS	:= $(sort $(dir $(ALL_OBJECTS)))
@@ -302,12 +297,12 @@ FINALBUILTIN	:= $(BUILDDIR)/obj/builtin$(BIN_SUFFIX).o.$(TARGET).final
 
 all: $(REAL_TARGET)
 
-$(REAL_TARGET): $(ALL_OBJECTS)
+$(REAL_TARGET): $(ALL_OBJECTS) $(RESOURCEOBJ)
 	@-mkdir -p $(dir $(@))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
 ifdef TYPE_EXECUTABLE
 	@$(LD) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) -o $(@) \
-	$(ALL_OBJECTS) $(LIBS) || $(print_error)
+	$(ALL_OBJECTS) $(LIBS) $(RESOURCEOBJ) || $(print_error)
 endif
 ifdef TYPE_LIBDYNAMIC
 	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared \
@@ -337,7 +332,7 @@ $(BUILDDIR)/obj/%$(BIN_SUFFIX).res.o : %
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).winres.o : %
 	@$(print_comp_res) $(subst $(PWD)/, ./, $(abspath $(<)))
 	@-mkdir -p $(dir $(@))
-	@$(WINDRES) $< $(WINDRES_OPTS) -O coff -o $(@)
+	@$(WINDRES) $(WINDRES_OPTS) -O coff -i $(<) -o $(@)
 
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).moc.o: %
 	@$(print_moc) $(subst $(PWD)/, ./, $(abspath $(<)))
