@@ -21,17 +21,6 @@ LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc
 LIBS		+= -lboost_thread -lpthread
 endif #PLAT_LINUX
 
-ifdef PLAT_MINGW
-LDFLAGS		+= -Wl,-subsystem,windows
-DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
-LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
-LIBS		+= -luuid -lws2_32
-LIBS		+= -Wl,-Bstatic
-LIBS		+= -lexpat -lCGAL -lCGAL_Core -lsquish -lsqlite3 -lshp -lgeotiff -lgmp -lmpfr
-LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lboost_thread
-WIN_RESOURCES	+= ./src/WEDResources/rfui.rc
-endif #PLAT_MINGW
-
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
 LIBS		:= ./libs/local/lib/libCGAL.a
@@ -54,15 +43,6 @@ endif #PLAT_DARWIN
 ##
 # sources
 #########
-
-ifdef PLAT_MINGW
-SOURCES += ./src/UI/XWin.win.cpp
-SOURCES += ./src/UI/XWinGL.win.cpp
-SOURCES += ./src/UI/XWin32DND.cpp
-SOURCES += ./src/Utils/PlatformUtils.win.cpp
-SOURCES += ./src/Network/PCSBSocket.win.cpp
-SOURCES += ./src/Network/PCSBSocketUDP.win.cpp
-endif #PLAT_MINGW
 
 ifdef PLAT_LINUX
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
