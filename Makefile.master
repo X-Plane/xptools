@@ -4,9 +4,9 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 #.NOTPARALLEL:
-.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat
+.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj
 
-all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat
+all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj
 	@echo "done"
 
 
@@ -128,4 +128,15 @@ ifeq ($(MULTILIB), Yes)
 expat: $(PREFIX)/lib/libexpat.a $(PREFIX32)/lib/libexpat.a
 else
 expat: $(PREFIX)/lib/libexpat.a
+endif
+
+
+%/libproj.a: $(MAKEFILE_DIR)Makefile.libproj
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
+
+ifeq ($(MULTILIB), Yes)
+proj: $(PREFIX)/lib/libproj.a $(PREFIX32)/lib/libproj.a
+else
+proj: $(PREFIX)/lib/libproj.a
 endif
