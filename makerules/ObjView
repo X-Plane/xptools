@@ -8,38 +8,39 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _ov
 
-#-Wl,-Bstatic -lstdc++ -lm -lgcc -lgcc_eh -Wl,-Bdynamic -ldl -lpthread -lc -Wl,-Bstatic -lgcc -lgcc_eh
 ifdef PLAT_LINUX
-#LDFLAGS	+= -pie
 LDFLAGS		+= -nodefaultlibs
-LIBS		+= -Wl,--as-needed
-LIBS		+= -Wl,-Bstatic -Wl,--start-group
-LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
-LIBS		+= -lCGAL -lproj -lfreetype -ltiff -ljpeg -lpng -lz
-LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
-LIBS		+= -Wl,--end-group -Wl,-Bdynamic
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lpthread
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
-LIBS		+= -luuid
-LIBS		+= -Wl,-Bstatic
-LIBS		+= -lCGAL -lsquish -ltiff -ljpeg
-LIBS		+= -lpng -lz
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 WIN_RESOURCES	+= ./src/XPTools/ObjView.rc
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
+LIBS		+= -luuid
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
-LIBS		:= ./libs/local/lib/libCGAL.a
-LIBS		+= ./libs/local/lib/libsquish.a
-LIBS		+= ./libs/local/lib/libtiff.a
-LIBS		+= ./libs/local/lib/libjpeg.a
-LIBS		+= ./libs/local/lib/libpng.a
-LIBS		+= ./libs/local/lib/libz.a
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_DARWIN
 
 

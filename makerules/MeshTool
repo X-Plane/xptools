@@ -6,28 +6,36 @@ TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
-LIBS		+= -lCGAL -lsquish -lgeotiff -lshp -lproj
-LIBS		+= -ltiff -ljpeg -lpng -lz -lboost_thread -lpthread
 #FORCEREBUILD_SUFFIX := _mt
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static
-LIBS		+=
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
-LIBS		:= ./libs/local/lib/libCGAL.a
-LIBS		+= ./libs/local/lib/libboost_thread.dll
-LIBS		+= ./libs/local/lib/libsquish.a
-LIBS		+= ./libs/local/lib/libgeotiff.a
-LIBS		+= ./libs/local/lib/libshp.a
-LIBS		+= ./libs/local/lib/libproj.a
-LIBS		+= ./libs/local/lib/libtiff.a
-LIBS		+= ./libs/local/lib/libjpeg.a
-LIBS		+= ./libs/local/lib/libpng.a
-LIBS		+= ./libs/local/lib/libz.a
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.dll
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN

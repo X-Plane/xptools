@@ -9,9 +9,14 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 ifdef PLAT_MINGW
 DEFINES		+= -DDIME_NOT_DLL -DUNDER_CE -DWINDOWS -DMINGW_BUILD=1
 LIBPATHS	+= -L./SDK/ac3d
-LIBS		+= -lac3d_64 -lopengl32
-LDFLAGS		:= -static-libgcc -Wl,-O2 -Wl,-Bstatic
+LDFLAGS		:= -static-libgcc
 REAL_TARGET	:= XPlaneSupportWin
+ifeq ($(cross), m32)
+LIBS		+= -lac3d
+else
+LIBS		+= -lac3d_64
+endif
+LIBS		+= -lopengl32
 endif #PLAT_MINGW
 
 ifdef PLAT_LINUX

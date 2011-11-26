@@ -9,23 +9,21 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -nodefaultlibs
-LIBS		+= -Wl,--as-needed
-LIBS		+= -Wl,-Bstatic -Wl,--start-group
-LIBS		+= -lz -lstdc++ -lm -lgcc -lgcc_eh
-LIBS		+= -Wl,--end-group -Wl,-Bdynamic
-LIBS		+= -lQtCore -lQtGui  -lc -lpthread
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= -lQtCore -lQtGui -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-LIBS		+= -lcomctl32 -luuid -lcomdlg32 -lole32 -lgdi32 -lz
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 WIN_RESOURCES	+= ./src/XPTools/XGrinder.rc
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= -lcomctl32 -luuid -lcomdlg32 -lole32 -lgdi32
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
-LIBS		:= ./libs/local/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_DARWIN
 
 

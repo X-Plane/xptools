@@ -9,16 +9,18 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static
-LIBS		+= -lz
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DMINGW_BUILD=1
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_DARWIN
 
 ##

@@ -6,23 +6,30 @@ TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
-LIBS		+= -lCGAL -ldime -l3ds
 #FORCEREBUILD_SUFFIX := _oc
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static
-LIBS		+= -lz
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libdime.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/lib3ds.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-LIBS		:= ./libs/local/lib/libCGAL.a
-LIBS		+= ./libs/local/lib/libdime.a
-LIBS		+= ./libs/local/lib/lib3ds.a
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libdime.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/lib3ds.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_DARWIN
 
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DDIME_NOT_DLL -DUNDER_CE -DMINGW_BUILD=1
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libdime.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/lib3ds.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_MINGW
 
 
