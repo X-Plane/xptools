@@ -6,33 +6,41 @@ TYPE		:= EXECUTABLE
 CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
-LIBS		+= -lCGAL -lCGAL_Core -lsquish -lgeotiff -lshp -lproj -ltiff
-LIBS		+= -ljpeg -lpng -lz -lboost_thread -lpthread
 #FORCEREBUILD_SUFFIX := _rf
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -static
-LIBS		+= ./libs/local/lib/libmpfr.a
-LIBS            += ./libs/local/lib/libgmp.a
-LIBS            += ./libs/local/lib/libgmpxx.a
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
-LIBS		:= ./libs/local/lib/libCGAL.a
-LIBS		+= ./libs/local/lib/libCGAL_Core.a
-LIBS		+= ./libs/local/lib/libboost_thread.a
-LIBS		+= ./libs/local/lib/libgmp.a
-LIBS		+= ./libs/local/lib/libgmpxx.a
-LIBS		+= ./libs/local/lib/libmpfr.a
-LIBS		+= ./libs/local/lib/libsquish.a
-LIBS		+= ./libs/local/lib/libgeotiff.a
-LIBS		+= ./libs/local/lib/libshp.a
-LIBS		+= ./libs/local/lib/libproj.a
-LIBS		+= ./libs/local/lib/libtiff.a
-LIBS		+= ./libs/local/lib/libjpeg.a
-LIBS		+= ./libs/local/lib/libpng.a
-LIBS		+= ./libs/local/lib/libz.a
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_DARWIN
 
 

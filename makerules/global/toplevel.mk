@@ -94,6 +94,13 @@ else
 endif #CROSS_32
 endif #PLAT_MINGW
 
+ifdef PLAT_DARWIN
+ifeq ($(cross), m32)
+	MULTI_SUFFIX	:= 32
+	M32_SWITCH	:= -m32
+endif
+endif
+
 
 ##
 # intial tool flags
@@ -112,10 +119,9 @@ endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	CFLAGS		:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	LDFLAGS		:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -static-libgcc
-	MACARCHS	:= -arch i386
+	CXXFLAGS	:= $(M32_SWITCH) -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	CFLAGS		:= $(M32_SWITCH) -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	LDFLAGS		:= $(M32_SWITCH) -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -static-libgcc
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW
@@ -301,18 +307,19 @@ all: $(REAL_TARGET)
 $(REAL_TARGET): $(ALL_OBJECTS) $(RESOURCEOBJ)
 	@-mkdir -p $(dir $(@))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
+
 ifdef TYPE_EXECUTABLE
 	@$(LD) -o $(@) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) \
 	$(ALL_OBJECTS) $(LIBS) $(RESOURCEOBJ) || $(print_error)
 endif
 ifdef TYPE_LIBDYNAMIC
-	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared \
-	-o $(@) $(ALL_OBJECTS) \
-	$(LIBS) || $(print_error)
-ifdef PLAT_DARWIN
-else
+ifdef PLAT_LINUX
 	@$(LD) $(LDFLAGS) $(LIBPATHS) -shared \
 	-Wl,-soname,$(notdir $(@)) -o $(@) $(ALL_OBJECTS) \
+	$(LIBS) || $(print_error)
+else
+	@$(LD) $(MACARCHS) $(LDFLAGS) $(LIBPATHS) -shared \
+	-o $(@) $(ALL_OBJECTS) \
 	$(LIBS) || $(print_error)
 endif
 endif
