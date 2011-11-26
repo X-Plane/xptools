@@ -4,9 +4,9 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 #.NOTPARALLEL:
-.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds squish
+.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds squish shp
 
-all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds squish
+all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds squish shp
 	@echo "done"
 
 
@@ -98,7 +98,7 @@ freetype: $(PREFIX)/lib/libfreetype.a
 endif
 
 
-%/libjpeg.a: $(MAKEFILE_DIR)Makefile.jpeg
+%/libjpeg.a: $(MAKEFILE_DIR)Makefile.libjpeg
 	@rm -f '$(@)'
 	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
 
@@ -183,4 +183,15 @@ ifeq ($(MULTILIB), Yes)
 squish: $(PREFIX)/lib/libsquish.a $(PREFIX32)/lib/libsquish.a
 else
 squish: $(PREFIX)/lib/libsquish.a
+endif
+
+
+%/libshp.a: $(MAKEFILE_DIR)Makefile.libshp
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
+
+ifeq ($(MULTILIB), Yes)
+shp: $(PREFIX)/lib/libshp.a $(PREFIX32)/lib/libshp.a
+else
+shp: $(PREFIX)/lib/libshp.a
 endif

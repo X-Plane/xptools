@@ -3,61 +3,33 @@ PREFIX		:= $(MAKEFILE_DIR)local
 PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
-VERSION		:= 4.0.0beta7
+VERSION		:= 1.2.10
 #URL		:= http://www.ijg.org/files/tiff-$(VERSION).tar.gz
 #URL		:= http://192.168.0.3/lib/tiff-$(VERSION).tar.gz
-ARCHIVE		:= $(MAKEFILE_DIR)archives/tiff-$(VERSION).tar.gz
+ARCHIVE		:= $(MAKEFILE_DIR)archives/shapelib-$(VERSION).tar.gz
 TARFLAGS	:= -xzf -
-SRCTREE		:= $(PREFIX)/src/tiff-$(VERSION)
-SRCTREE32	:= $(PREFIX32)/src/tiff-$(VERSION)
+SRCTREE		:= $(PREFIX)/src/shapelib-$(VERSION)
+SRCTREE32	:= $(PREFIX32)/src/shapelib-$(VERSION)
 
-TARGET		:= $(PREFIX)/lib/libtiff.a
-TARGET32	:= $(PREFIX32)/lib/libtiff.a
-
-COMMONCONF	:= --enable-shared=no
-COMMONCONF	+= --enable-maintainer-mode
-COMMONCONF	+= --disable-dependency-tracking
-COMMONCONF	+= --disable-lzma
-COMMONCONF	+= --disable-jbig
-COMMONCONF	+= CCDEPMODE="depmode=none"
+TARGET		:= $(PREFIX)/lib/libshp.a
+TARGET32	:= $(PREFIX32)/lib/libshp.a
 
 ifdef PLAT_WINNT
-	CONF		:= $(COMMONCONF)
-	CONF		+= --prefix='$(PREFIX)'
-	CONVENV		:= LDFLAGS='-L'$(PREFIX)/lib''
-	CONVENV		+= CPPFLAGS='-I'$(PREFIX)/include''
+	CONF		:= CFLAGS='-g'
 
-	CONF32		:= $(COMMONCONF)
-	CONF32		+= --prefix='$(PREFIX32)'
-	CONVENV32	:= LDFLAGS='-m32 -L'$(PREFIX32)/lib''
-	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
-	CONVENV32	+= CFLAGS='-m32 -O2 -g'
+	CONF32		:= CFLAGS='-m32 -g'
 endif
 
 ifdef PLAT_LINUX
-	CONF		:= $(COMMONCONF)
-	CONF		+= --prefix='$(PREFIX)'
-	CONVENV		:= LDFLAGS='-L'$(PREFIX)/lib''
-	CONVENV		+= CPPFLAGS='-I'$(PREFIX)/include''
+	CONF		:= CFLAGS='-g'
 
-	CONF32		:= $(COMMONCONF)
-	CONF32		+= --prefix='$(PREFIX32)'
-	CONVENV32	:= LDFLAGS='-m32 -L'$(PREFIX32)/lib''
-	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
-	CONVENV32	+= CFLAGS='-m32 -O2 -g'
+	CONF32		:= CFLAGS='-m32 -g'
 endif
 
 ifdef PLAT_DARWIN
-	CONF		:= $(COMMONCONF)
-	CONF		+= --prefix='$(PREFIX)'
-	CONVENV		:= LDFLAGS='-L'$(PREFIX)/lib''
-	CONVENV		+= CPPFLAGS='-I'$(PREFIX)/include''
+	CONF		:= CFLAGS='-g'
 
-	CONF32		:= $(COMMONCONF)
-	CONF32		+= --prefix='$(PREFIX32)'
-	CONVENV32	:= LDFLAGS='-m32 -L'$(PREFIX32)/lib''
-	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
-	CONVENV32	+= CFLAGS='-m32 -O2 -g'
+	CONF32		:= CFLAGS='-m32 -g'
 endif
 
 .PHONY: all clean
@@ -103,23 +75,29 @@ $(ARCHIVE):
 $(SRCTREE)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX)/src'
 	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	@cp patches/0001-libshp-fix-makefile-for-multiple-platforms.patch \
+	'$(SRCTREE)' && cd '$(SRCTREE)' && \
+	patch -p1 < ./0001-libshp-fix-makefile-for-multiple-platforms.patch
 	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
 $(SRCTREE32)/configure: $(ARCHIVE)
 	@-mkdir -p '$(PREFIX32)/src'
 	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	@cp patches/0001-libshp-fix-makefile-for-multiple-platforms.patch \
+	'$(SRCTREE32)' && cd '$(SRCTREE32)' && \
+	patch -p1 < ./0001-libshp-fix-makefile-for-multiple-platforms.patch
 	# fix timestamp for make, which was preserved by tar
 	@touch '$(@)'
 
 $(TARGET): $(SRCTREE)/configure
 	@-$(MAKE) -r -j1 -C '$(SRCTREE)' distclean > /dev/null 2>&1
-	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
-	@$(MAKE) -r -j1 -C '$(SRCTREE)'
-	@$(MAKE) -r -j1 -C '$(SRCTREE)' install
+	@$(MAKE) -r -j1 -C '$(SRCTREE)' $(CONF) lib
+	@cp -Lp '$(SRCTREE)'/*.h $(PREFIX)/include
+	@cp '$(SRCTREE)'/.libs/libshp.a $(PREFIX)/lib
 
 $(TARGET32): $(SRCTREE32)/configure
 	@-$(MAKE) -r -j1 -C '$(SRCTREE32)' distclean > /dev/null 2>&1
-	@cd '$(SRCTREE32)' && $(CONVENV32) ./configure $(CONF32)
-	@$(MAKE) -r -j1 -C '$(SRCTREE32)'
-	@$(MAKE) -r -j1 -C '$(SRCTREE32)' install
+	@$(MAKE) -r -j1 -C '$(SRCTREE32)' $(CONF32) lib
+	@cp -Lp '$(SRCTREE32)'/*.h $(PREFIX32)/include
+	@cp '$(SRCTREE32)'/.libs/libshp.a $(PREFIX32)/lib
