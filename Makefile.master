@@ -4,9 +4,9 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 #.NOTPARALLEL:
-.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype
+.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg
 
-all: zlib boost libgmp libmpfr libpng cgal sqlite freetype
+all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg
 	@echo "done"
 
 
@@ -95,4 +95,15 @@ ifeq ($(MULTILIB), Yes)
 freetype: $(PREFIX)/lib/libfreetype.a $(PREFIX32)/lib/libfreetype.a
 else
 freetype: $(PREFIX)/lib/libfreetype.a
+endif
+
+
+%/libjpeg.a: $(MAKEFILE_DIR)Makefile.jpeg
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
+
+ifeq ($(MULTILIB), Yes)
+jpeg: $(PREFIX)/lib/libjpeg.a $(PREFIX32)/lib/libjpeg.a
+else
+jpeg: $(PREFIX)/lib/libjpeg.a
 endif
