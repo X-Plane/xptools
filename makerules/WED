@@ -6,37 +6,36 @@ TYPE			:= EXECUTABLE
 CFLAGS			+= -include ./src/Obj/XDefs.h
 CXXFLAGS		+= -include ./src/Obj/XDefs.h
 DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1
-FORCEREBUILD_SUFFIX := _wed
+FORCEREBUILD_SUFFIX	:= _wed
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -nodefaultlibs -rdynamic
-LIBS		+= -Wl,--as-needed
-LIBS		+= -Wl,-Bstatic -Wl,--start-group
-LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
-LIBS		+= -lCGAL -lCGAL_Core -lgmp -lmpfr -lboost_thread
-LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz
-LIBS		+= -lstdc++ -lm -lgcc -lgcc_eh
-LIBS		+= -Wl,--end-group -Wl,-Bdynamic
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lpthread
-#-ldl -lc -lpthread
-
-# we need this as preparation for an in-memory elf image loader
-# however, when we build the application as standalone image, we shouldn't
-# link it as PIE because the GUI filemanagers will recognize the file as
-# shared library then and won't execute it on double-click
-#LDFLAGS	+= -pie
+LDFLAGS		+= -rdynamic
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= -lQtCore
+LIBS		+= -lQtGui
+LIBS		+= -lQtOpenGL
+LIBS		+= -lGL
+LIBS		+= -lGLU
+LIBS		+= -ldl
+LIBS		+= -lpthread
 endif #PLAT_LINUX
 
-#ifdef PLAT_MINGW
-#LDFLAGS		+= -Wl,-subsystem,windows
-#DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
-#LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
-#LIBS		+= -luuid -lws2_32
-#LIBS		+= -Wl,-Bstatic
-#LIBS		+= -lexpat -lCGAL -lCGAL_Core -lsquish -lsqlite3 -lshp -lgeotiff
-#LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lmpfr -lgmp -lboost_thread.dll
-#WIN_RESOURCES	+= ./src/WEDResources/WED.rc
-#endif #PLAT_MINGW
 
 ifdef PLAT_MINGW
 WIN_RESOURCES	+= ./src/WEDResources/WED.rc

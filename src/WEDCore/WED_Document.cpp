@@ -21,6 +21,8 @@
  *
  */
 
+#include <stdint.h>
+
 #include "WED_Document.h"
 #include "GUI_Resources.h"
 #include "WED_PackageMgr.h"

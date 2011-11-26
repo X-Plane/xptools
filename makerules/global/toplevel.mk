@@ -103,8 +103,8 @@ ifdef PLAT_LINUX
 # if someone has a ppc linux machine, please define -DLIL/-DBIG in the code,
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:= $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= $(M32_SWITCH) -std=gnu++0x -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:= $(M32_SWITCH) -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
 	LDFLAGS		:= $(M32_SWITCH) -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
@@ -301,7 +301,7 @@ $(REAL_TARGET): $(ALL_OBJECTS) $(RESOURCEOBJ)
 	@-mkdir -p $(dir $(@))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
 ifdef TYPE_EXECUTABLE
-	@$(LD) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) -o $(@) \
+	@$(LD) -o $(@) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) \
 	$(ALL_OBJECTS) $(LIBS) $(RESOURCEOBJ) || $(print_error)
 endif
 ifdef TYPE_LIBDYNAMIC

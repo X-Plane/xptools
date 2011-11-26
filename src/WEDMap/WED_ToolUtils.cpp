@@ -57,7 +57,7 @@
 #include "WED_ATCFrequency.h"
 #include "WED_ATCRunwayUse.h"
 #include "WED_ATCTimeRule.h"
-#include "WED_ATCWindrule.h"
+#include "WED_ATCWindRule.h"
 
 using std::list;
 
@@ -291,7 +291,7 @@ bool WED_IsFolder(WED_Thing * what)
 	if(dynamic_cast<IGISComposite*>(what))					return true;
 #if AIRPORT_ROUTING
 	if(strcmp(what->GetClass(), WED_ATCFlow::sClass)==0)	return true;
-#endif	
+#endif
 	return false;
 }
 
@@ -321,7 +321,7 @@ const char *	WED_GetParentForClass(const char * in_class)
 	if(strcmp(in_class,WED_Taxiway::sClass)==0)				return WED_Airport::sClass;
 	if(strcmp(in_class,WED_TowerViewpoint::sClass)==0)		return WED_Airport::sClass;
 	if(strcmp(in_class,WED_Windsock::sClass)==0)			return WED_Airport::sClass;
-	
+
 	if(strcmp(in_class,WED_ATCFrequency::sClass)==0)		return WED_Airport::sClass;
 #if AIRPORT_ROUTING
 	if(strcmp(in_class,WED_ATCFlow::sClass)==0)				return WED_Airport::sClass;
@@ -354,7 +354,7 @@ static void WED_LookupRunwayRecursive(WED_Thing * thing, set<int>& runways, int 
 		int e3 = ENUM_LookupDesc(domain,name.c_str());
 		if(ENUM_Domain(e3) == domain)
 			runways.insert(e3);
-		
+
 	}
 	for(int n = 0; n < thing->CountChildren(); ++n)
 	{
@@ -380,12 +380,12 @@ int	Iterate_RequiresClass(ISelectable * what, void * ref)
 {
 	WED_Persistent * t = dynamic_cast<WED_Persistent *>(what);
 	if(t == NULL) return 0;
-	
+
 	const char * parent_class = WED_GetParentForClass(t->GetClass());
 	if(parent_class == NULL) return 0;
-	
+
 	const char * query_class = (const char *) ref;
-	return strcmp(parent_class, query_class) == 0;	
+	return strcmp(parent_class, query_class) == 0;
 }
 
 int	Iterate_ChildRequiresClass(ISelectable * what, void * ref)
@@ -659,7 +659,7 @@ double			WED_CalcDragAngle(const Point2& ctr, const Point2& handle, const Vector
 bool IsGraphNode(WED_Thing * what)
 {
 	if(what->CountViewers() == 0) return false;
-	WED_Thing * parent = what->GetParent();	
+	WED_Thing * parent = what->GetParent();
 	IGISComposite * c = SAFE_CAST(IGISComposite,parent);
 	if (c == NULL || c->GetGISClass() != gis_Composite) return false;
 	return SAFE_CAST(IGISPoint, what) != NULL;
