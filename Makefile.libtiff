@@ -50,14 +50,19 @@ endif
 ifdef PLAT_DARWIN
 	CONF		:= $(COMMONCONF)
 	CONF		+= --prefix='$(PREFIX)'
+	CONF		+= --with-apple-opengl-framework
 	CONVENV		:= LDFLAGS='-L'$(PREFIX)/lib''
 	CONVENV		+= CPPFLAGS='-I'$(PREFIX)/include''
+	CONVENV		+= CFLAGS='-DHAVE_APPLE_OPENGL_FRAMEWORK'
+	CONVENV		+= CXXFLAGS='-DHAVE_APPLE_OPENGL_FRAMEWORK'
 
 	CONF32		:= $(COMMONCONF)
 	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --with-apple-opengl-framework
 	CONVENV32	:= LDFLAGS='-m32 -L'$(PREFIX32)/lib''
 	CONVENV32	+= CPPFLAGS='-I'$(PREFIX32)/include''
-	CONVENV32	+= CFLAGS='-m32 -O2 -g'
+	CONVENV32	+= CFLAGS='-m32 -O2 -g -DHAVE_APPLE_OPENGL_FRAMEWORK'
+	CONVENV32	+= CXXFLAGS='-m32 -O2 -g -DHAVE_APPLE_OPENGL_FRAMEWORK'
 endif
 
 .PHONY: all clean
