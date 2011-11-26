@@ -3,23 +3,18 @@ PREFIX		:= $(MAKEFILE_DIR)local
 PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
-VERSION		:= 4.0.0beta7
-#URL		:= http://www.ijg.org/files/tiff-$(VERSION).tar.gz
-#URL		:= http://192.168.0.3/lib/tiff-$(VERSION).tar.gz
-ARCHIVE		:= $(MAKEFILE_DIR)archives/tiff-$(VERSION).tar.gz
+VERSION		:= 2.0.1
+URL		:= http://downloads.sourceforge.net/project/expat/expat/$(VERSION)/expat-$(VERSION).tar.gz
+#URL		:= http://192.168.0.3/lib/expat-$(VERSION).tar.gz
+ARCHIVE		:= $(MAKEFILE_DIR)cache/expat-$(VERSION).tar.gz
 TARFLAGS	:= -xzf -
-SRCTREE		:= $(PREFIX)/src/tiff-$(VERSION)
-SRCTREE32	:= $(PREFIX32)/src/tiff-$(VERSION)
+SRCTREE		:= $(PREFIX)/src/expat-$(VERSION)
+SRCTREE32	:= $(PREFIX32)/src/expat-$(VERSION)
 
-TARGET		:= $(PREFIX)/lib/libtiff.a
-TARGET32	:= $(PREFIX32)/lib/libtiff.a
+TARGET		:= $(PREFIX)/lib/libexpat.a
+TARGET32	:= $(PREFIX32)/lib/libexpat.a
 
 COMMONCONF	:= --enable-shared=no
-COMMONCONF	+= --enable-maintainer-mode
-COMMONCONF	+= --disable-dependency-tracking
-COMMONCONF	+= --disable-lzma
-COMMONCONF	+= --disable-jbig
-COMMONCONF	+= CCDEPMODE="depmode=none"
 
 ifdef PLAT_WINNT
 	CONF		:= $(COMMONCONF)
