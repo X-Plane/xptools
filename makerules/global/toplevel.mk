@@ -29,7 +29,6 @@ endif
 ifndef conf
 conf	:= debug
 endif
-BUILDDIR	:= $(OUTDIR)/$(PLATFORM)/$(conf)
 
 
 ##
@@ -55,16 +54,16 @@ MOC	:= moc
 endif
 
 ifeq ($(ARCHITECTURE), x86_64)
-#ifeq ($(cross), m32)
-#	MULTI_SUFFIX	:= 32
-#	M32_SWITCH	:= -m32
-#	BARE_LDFLAGS	:= -melf_i386
-#	OBJFORMAT	:= elf32-i386
-#	BINFORMAT	:= i386
-#else
+ifeq ($(cross), m32)
+	MULTI_SUFFIX	:= 32
+	M32_SWITCH	:= -m32
+	BARE_LDFLAGS	:= -melf_i386
+	OBJFORMAT	:= elf32-i386
+	BINFORMAT	:= i386
+else
 	OBJFORMAT = elf64-x86-64
 	BINFORMAT = i386:x86-64
-#endif #CROSS_32
+endif #CROSS_32
 	ARCH_X86_64	:= Yes
 endif #ARCH_X86_64
 
@@ -83,16 +82,16 @@ endif #ARCH_I686
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
-# FIXME: uname -m gives i686, regardless if on win32 or win64
-ifdef ARCH_I386
+ifeq ($(cross), m32)
+	MULTI_SUFFIX	:= 32
+	M32_SWITCH	:= -m32
 	OBJFORMAT 	:= pei-i386
 	BINFORMAT 	:= i386
-endif
-ifdef ARCH_X86_64
+	WINDRES_OPTS	:= -F pe-i386
+else
 	OBJFORMAT 	:= pei-x86-64
 	BINFORMAT 	:= i386
-endif
-	#CROSSPREFIX	:= i686-w64-mingw32-
+endif #CROSS_32
 endif #PLAT_MINGW
 
 
@@ -104,9 +103,9 @@ ifdef PLAT_LINUX
 # if someone has a ppc linux machine, please define -DLIL/-DBIG in the code,
 # remove them here and use the __ppc__ macro to resolve endianess issues
 	DEFINES		:= -DLIN=1 -DIBM=0 -DAPL=0 -DLIL=1 -DBIG=0
-	CFLAGS		:=  $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:=  $(M32_SWITCH) -std=gnu++0x -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	LDFLAGS		:=  $(M32_SWITCH) -static-libgcc
+	CFLAGS		:= $(M32_SWITCH) -fvisibility=hidden -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:= $(M32_SWITCH) -std=gnu++0x -fvisibility=hidden -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	LDFLAGS		:= $(M32_SWITCH) -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
 endif
@@ -121,9 +120,9 @@ ifdef PLAT_DARWIN
 endif
 ifdef PLAT_MINGW
 	DEFINES		:= -DLIN=0 -DIBM=1 -DAPL=0 -DLIL=1 -DBIG=0 -DBOOST_THREAD_USE_LIB=1
-	CFLAGS		:= -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	CXXFLAGS	:= -std=gnu++0x -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
-	LDFLAGS		:= -static-libgcc
+	CFLAGS		:= $(M32_SWITCH) -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	CXXFLAGS	:= $(M32_SWITCH) -std=gnu++0x -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -pipe -frounding-math
+	LDFLAGS		:= $(M32_SWITCH) -static-libgcc
 	BARE_LDFLAGS	:=
 	STRIPFLAGS	:= -s -x
 endif
@@ -205,6 +204,8 @@ endif
 # target specific environment
 #############################
 
+BUILDDIR	:= $(OUTDIR)$(MULTI_SUFFIX)/$(PLATFORM)/$(conf)
+
 ifdef TARGET
 include ./makerules/$(TARGET)
 include ./makerules/global/paths.mk
@@ -222,7 +223,7 @@ endif
 ifndef REAL_TARGET
 	REAL_TARGET := $(TARGET)
 endif
-REAL_TARGET := $(BUILDDIR)/$(REAL_TARGET)$(MULTI_SUFFIX)
+REAL_TARGET := $(BUILDDIR)/$(REAL_TARGET)
 
 ifdef PLAT_MINGW
 
@@ -323,7 +324,7 @@ ifdef StripDebug
 	@$(STRIP) $(STRIPFLAGS) $(@)
 endif
 ifdef PLAT_MINGW
-	@-cp libs/local/lib/*.dll $(dir $(@))
+	@-cp libs/local$(MULTI_SUFFIX)/lib/*.dll $(dir $(@))
 endif
 	@$(print_finished)
 
@@ -336,7 +337,7 @@ $(BUILDDIR)/obj/%$(BIN_SUFFIX).res.o : %
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).winres.o : %
 	@$(print_comp_res) $(subst $(PWD)/, ./, $(abspath $(<)))
 	@-mkdir -p $(dir $(@))
-	@$(WINDRES) $< -O coff -o $(@)
+	@$(WINDRES) $< $(WINDRES_OPTS) -O coff -o $(@)
 
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).moc.o: %
 	@$(print_moc) $(subst $(PWD)/, ./, $(abspath $(<)))

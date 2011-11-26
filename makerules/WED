@@ -27,15 +27,46 @@ LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lpthread
 #LDFLAGS	+= -pie
 endif #PLAT_LINUX
 
+#ifdef PLAT_MINGW
+#LDFLAGS		+= -Wl,-subsystem,windows
+#DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
+#LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
+#LIBS		+= -luuid -lws2_32
+#LIBS		+= -Wl,-Bstatic
+#LIBS		+= -lexpat -lCGAL -lCGAL_Core -lsquish -lsqlite3 -lshp -lgeotiff
+#LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lmpfr -lgmp -lboost_thread.dll
+#WIN_RESOURCES	+= ./src/WEDResources/WED.rc
+#endif #PLAT_MINGW
+
 ifdef PLAT_MINGW
+WIN_RESOURCES	+= ./src/WEDResources/WED.rc
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
-LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
-LIBS		+= -luuid -lws2_32
-LIBS		+= -Wl,-Bstatic
-LIBS		+= -lexpat -lCGAL -lCGAL_Core -lsquish -lsqlite3 -lshp -lgeotiff
-LIBS		+= -lproj -lfreetype -ltiff -ljpeg -lpng -lz -lmpfr -lgmp -lboost_thread.dll
-WIN_RESOURCES	+= ./src/WEDResources/WED.rc
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= -lglu32
+LIBS		+= -lopengl32
+LIBS		+= -lgdi32
+LIBS		+= -lole32
+LIBS		+= -lcomctl32
+LIBS		+= -lcomdlg32
+LIBS		+= -luuid
+LIBS		+= -lws2_32
+LIBS		+= -lboost_thread.dll
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
@@ -44,9 +75,9 @@ LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
 LIBS		:= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libCGAL_Core.a
 LIBS		+= ./libs/local/lib/libboost_thread.a
+LIBS		+= ./libs/local/lib/libmpfr.a
 LIBS		+= ./libs/local/lib/libgmp.a
 LIBS		+= ./libs/local/lib/libgmpxx.a
-LIBS		+= ./libs/local/lib/libmpfr.a
 LIBS		+= ./libs/local/lib/libexpat.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libsqlite3.a

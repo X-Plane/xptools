@@ -6,7 +6,7 @@ TARGETS :=	WED MeshTool ObjView DSFTool DDSTool ObjConverter \
 else
 TARGETS :=	WED MeshTool ObjView DSFTool DDSTool ObjConverter RenderFarm \
 		ac3d XGrinder RenderFarmUI
-endif	
+endif
 
 .PHONY: $(TARGETS) all clean distclean libs release linkclean release-test \
 srpm-head
@@ -46,7 +46,8 @@ srpm-head:
 	rm -rf xptools.tar.bz2
 
 ifndef rpmbuild
-$(TARGETS): libs
+#$(TARGETS): libs
+$(TARGETS):
 else
 $(TARGETS):
 endif

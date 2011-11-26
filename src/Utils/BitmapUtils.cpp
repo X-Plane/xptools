@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include "Interpolation.h"
 #include <squish.h>
+#include <zlib.h>
 
 
 /*
@@ -1098,7 +1099,8 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	if (png_sig_cmp((unsigned char *) png_current_pos,0,8)) goto bail;
 
 	png_set_interlace_handling(pngPtr);
-	if(setjmp(pngPtr->jmpbuf))
+
+	if(setjmp(png_jmpbuf(pngPtr)))
 	{
 		goto bail;
 	}
@@ -1122,7 +1124,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 			 png_set_gamma(pngPtr,target_gamma, lcl_gamma);
 		else png_set_gamma(pngPtr,target_gamma, 1.0/1.8  );		// If the file doesn't have gamma, assume it was drawn on a Mac - true for really old stuff.
 	}
-	
+
 	if(color_type==PNG_COLOR_TYPE_PALETTE && bit_depth<= 8)if (!leaveIndexed)	png_set_expand	  (pngPtr);
 	if(color_type==PNG_COLOR_TYPE_GRAY    && bit_depth<  8)						png_set_expand	  (pngPtr);
 	if(png_get_valid(pngPtr,infoPtr,PNG_INFO_tRNS)        )						png_set_expand	  (pngPtr);
@@ -1138,12 +1140,12 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	case PNG_COLOR_TYPE_RGBA:		outImageInfo->channels = 					4;		break;
 	default: goto bail;
 	}
-	
+
 	// Some pngs have PNG_INFO_tRNS as a transparent index color...since we set "expansion" on this,
 	// we need to update our channel count; lib png is going to write rgba data.
 	if(!leaveIndexed && png_get_valid(pngPtr,infoPtr,PNG_INFO_tRNS) && outImageInfo->channels == 3)
 		outImageInfo->channels = 4;
-	
+
 	// Since we use "BGR" conventions ask PNG to just swap red-blue for us.
 	png_set_bgr(pngPtr);
 	png_read_update_info(pngPtr,infoPtr);
@@ -1258,7 +1260,7 @@ static	void	IgnoreTiffWarnings(const char *, const char*, va_list)
 {
 }
 
-// TIFF is 0,0 = lower left.  But the byte order is ENDIAN dependent. 
+// TIFF is 0,0 = lower left.  But the byte order is ENDIAN dependent.
 // BIG ENDIAN: we get ABGR
 // LIL ENDIAN: we get RGBA
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo)
@@ -1421,7 +1423,7 @@ static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level,
 			{
 				temp_buf[ns++] = src.data[(y * yr + dy) * srb + (x * xr + dx) * src.channels + c];
 			}
-			dst.data[y * drb + x * dst.channels + c] = 
+			dst.data[y * drb + x * dst.channels + c] =
 				filter(temp_buf,ns,c,level);
 		}
 	}
@@ -1445,7 +1447,7 @@ static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level,
 	#error BIG or LIL are not defined - what endian are we?
 #endif
 
-// This routine swaps Y and BGRA on desktop, but only BGRA on phone.  
+// This routine swaps Y and BGRA on desktop, but only BGRA on phone.
 static void swap_bgra_y(struct ImageInfo& i)
 {
 	int num_swaps = (i.height+1) / 2;	// add 1 - if we have 9 lines, do 5 swaps, line 4 swaps on itself safely.
@@ -1462,16 +1464,16 @@ static void swap_bgra_y(struct ImageInfo& i)
 
 // On mobile devices, we pre-encode DXT with 0,0 = lower left so the phone doesn't have to flip the DDS before feeding it into OpenGL.
 // This will look upside down on all viewers.
-#if !PHONE			
+#if !PHONE
 			for(int c = 0; c < i.channels; ++c)	// This flips the image.
 				swap(srcp[c], dstp[c]);
-#endif				
+#endif
 		}
 	}
 
 }
 
-// Compressed DDS.  
+// Compressed DDS.
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name, int use_win_gamma)
 {
 	FILE * fi = fopen(file_name,"wb");
@@ -1858,7 +1860,7 @@ int MakeMipmapStackWithFilter(struct ImageInfo * ioImage, unsigned char (* filte
 		sd.data += (ni.channels * ni.width * ni.height);
 		if(sd.width > 1) sd.width >>= 1;
 		if(sd.height > 1) sd.height >>= 1;
-		
+
 		copy_mip_with_filter(ni,sd,level,filter);
 		ni=sd;
 		++level;
