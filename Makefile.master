@@ -4,9 +4,9 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 #.NOTPARALLEL:
-.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds
+.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds squish
 
-all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds
+all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime 3ds squish
 	@echo "done"
 
 
@@ -172,4 +172,15 @@ ifeq ($(MULTILIB), Yes)
 3ds: $(PREFIX)/lib/lib3ds.a $(PREFIX32)/lib/lib3ds.a
 else
 3ds: $(PREFIX)/lib/lib3ds.a
+endif
+
+
+%/libsquish.a: $(MAKEFILE_DIR)Makefile.libsquish
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
+
+ifeq ($(MULTILIB), Yes)
+squish: $(PREFIX)/lib/libsquish.a $(PREFIX32)/lib/libsquish.a
+else
+squish: $(PREFIX)/lib/libsquish.a
 endif
