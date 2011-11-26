@@ -4,9 +4,9 @@ PREFIX32	:= $(MAKEFILE_DIR)local32
 include $(MAKEFILE_DIR)environment.mk
 
 #.NOTPARALLEL:
-.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff
+.PHONY: all zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime
 
-all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff
+all: zlib boost libgmp libmpfr libpng cgal sqlite freetype jpeg tiff expat proj geotiff dime
 	@echo "done"
 
 
@@ -150,4 +150,15 @@ ifeq ($(MULTILIB), Yes)
 geotiff: $(PREFIX)/lib/libgeotiff.a $(PREFIX32)/lib/libgeotiff.a
 else
 geotiff: $(PREFIX)/lib/libgeotiff.a
+endif
+
+
+%/libdime.a: $(MAKEFILE_DIR)Makefile.libdime
+	@rm -f '$(@)'
+	$(MAKE) -C '$(MAKEFILE_DIR)' -f '$(notdir $(<))' '$(@)'
+
+ifeq ($(MULTILIB), Yes)
+dime: $(PREFIX)/lib/libdime.a $(PREFIX32)/lib/libdime.a
+else
+dime: $(PREFIX)/lib/libdime.a
 endif
