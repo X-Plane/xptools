@@ -1321,8 +1321,7 @@ void FlattenWater(CDT& ioMesh)
 									CGAL::to_double(w->vertex(n)->point().y()),DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
 				double h_lim = ok + dist_m / 100.0 + 0.01;
 				
-				//printf("Vertex %d (%p), h_lim is %lf, ok is %lf, dist is %lf\n",
-					n, &*w->vertex(n), h_lim, ok, dist_m);
+				//printf("Vertex %d (%p), h_lim is %lf, ok is %lf, dist is %lf\n",n, &*w->vertex(n), h_lim, ok, dist_m);
 				
 				if(w->vertex(n)->info().height > h_lim)
 				{
