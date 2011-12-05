@@ -24,6 +24,8 @@
 #include "WED_ATCWindRule.h"
 #include "AptDefs.h"
 
+#if AIRPORT_ROUTING
+
 DEFINE_PERSISTENT(WED_ATCWindRule)
 TRIVIAL_COPY(WED_ATCWindRule, WED_Thing)
 
@@ -55,3 +57,5 @@ void		WED_ATCWindRule::Export(		 AptWindRule_t& info) const
 	info.dir_hi_degs_mag = heading_hi.value;
 	info.max_speed_knots = speed_knots.value;
 }
+
+#endif

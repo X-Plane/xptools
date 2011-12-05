@@ -24,6 +24,9 @@
 #include "WED_ATCTimeRule.h"
 #include "AptDefs.h"
 
+#if AIRPORT_ROUTING
+
+
 DEFINE_PERSISTENT(WED_ATCTimeRule)
 TRIVIAL_COPY(WED_ATCTimeRule,WED_Thing)
 
@@ -49,3 +52,5 @@ void		WED_ATCTimeRule::Export(		 AptTimeRule_t& info) const
 	info.start_zulu = start_time_zulu.value;
 	info.end_zulu = end_time_zulu.value;
 }
+
+#endif
