@@ -403,6 +403,7 @@ int main(int argc, char * argv[])
 		printf("DIV\n");
 		printf("RADIO ATC_MODE 1 --png2atc4 4-bit ATC compression\n");
 		printf("RADIO ATC_MODE 0 --png2atc_raw16 ATC uses 16-bit color\n");
+		printf("RADIO ATC_MODE 0 --png2atc_raw24 ATC uses 24-bit color\n");
 #endif
 #if PHONE
 		printf("CMD .png .txt \"%s\" --info ONEFILE \"INFILE\" \"OUTFILE\"\n", argv[0]);
@@ -915,7 +916,8 @@ int main(int argc, char * argv[])
 		DestroyBitmap(&info);
 
 	}
-	else if(strcmp(argv[1],"--png2atc_raw16")==0)
+	else if(strcmp(argv[1],"--png2atc_raw16")==0 ||
+			strcmp(argv[1],"--png2atc_raw24")==0)
 	{
 		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
 		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
@@ -941,7 +943,7 @@ int main(int argc, char * argv[])
 
 		const char * outf = argv[++n];
 		// TODO: mipmaps?
-		if (WriteToRaw(info, outf, true, false,1/*only one mipmap level*/)!=0)
+		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2atc_raw16")==0, false,1/*only one mipmap level*/)!=0)
 		{
 			printf("Unable to write raw ARC file %s\n", argv[n]);
 			return 1;
