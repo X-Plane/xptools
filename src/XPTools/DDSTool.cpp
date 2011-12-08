@@ -308,7 +308,7 @@ static bool HandleScale(ImageInfo& info, bool up, bool down, bool half, bool squ
 
 
 
-	if(!up && !down && !half) 
+	if(!up && !down && !half)
 		return false;
 
 	ImageInfo	n;
@@ -399,7 +399,7 @@ int main(int argc, char * argv[])
 		printf("RADIO GAMMA_MODE 0 --gamma_18 Use X-Plane 9 Gamma\n");
 
 #if WANT_ATI
-		printf("CMD .png .atc \"%s\" ATC_MODE PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
+		printf("CMD .png .atc \"%s\" ATC_MODE MIPS PVR_SCALE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("DIV\n");
 		printf("RADIO ATC_MODE 1 --png2atc4 4-bit ATC compression\n");
 		printf("RADIO ATC_MODE 0 --png2atc_raw16 ATC uses 16-bit color\n");
@@ -919,10 +919,18 @@ int main(int argc, char * argv[])
 	else if(strcmp(argv[1],"--png2atc_raw16")==0 ||
 			strcmp(argv[1],"--png2atc_raw24")==0)
 	{
-		bool scale_up = strcmp(argv[2], "--scale_up") == 0;
-		bool scale_down = strcmp(argv[2], "--scale_down") == 0;
-		bool scale_half = strcmp(argv[2], "--scale_half") == 0;
-		int n = 3;
+		bool want_mips  = false;
+		bool scale_up   = false;
+		bool scale_down = false;
+		bool scale_half = false;
+
+		int n = 2;
+		     if(strcmp(argv[n], "--make_mips")  ==0) 	{ want_mips  = true;++n; }
+
+			 if(strcmp(argv[n], "--scale_none") ==0)	{					++n; }
+		else if(strcmp(argv[n], "--scale_up")   ==0)	{ scale_up   = true;++n; }
+		else if(strcmp(argv[n], "--scale_down") ==0)	{ scale_down = true;++n; }
+		else if(strcmp(argv[n], "--scale_half") ==0)	{ scale_half = true;++n; }
 
 		ImageInfo	info;
 		if(CreateBitmapFromPNG(argv[n], &info, true, 2.2f))
@@ -942,8 +950,12 @@ int main(int argc, char * argv[])
 		}
 
 		const char * outf = argv[++n];
-		// TODO: mipmaps?
-		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2atc_raw16")==0, false,1/*only one mipmap level*/)!=0)
+
+		int mc = 1;
+		if(want_mips)
+		mc = MakeMipmapStack(&info);
+
+		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2atc_raw16")==0, false, mc)!=0)
 		{
 			printf("Unable to write raw ARC file %s\n", argv[n]);
 			return 1;
