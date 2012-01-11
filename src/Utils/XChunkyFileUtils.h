@@ -202,7 +202,7 @@ struct	XAtomPackedData : public XAtom {
 	unsigned int				ReadUInt32(void)	{ unsigned int   v = *((unsigned int *	) position); position += sizeof(v);	return SWAP32(v); }
 			 int				ReadSInt32(void)	{ int 			 v = *((int *		  	) position); position += sizeof(v);	return SWAP32(v); }
 			 float				ReadFloat32(void)	{ float 		 v = *((float *			) position); *((int *	   ) &v) = SWAP32(*((int *		) &v));	position += sizeof(v);	return v; }
-			 double				ReadFloat64(void) 	{ double 		 v = *((double *		) position); *((long long *) &v) = SWAP32(*((long long *) &v));	position += sizeof(v);	return v; }
+			 double				ReadFloat64(void) 	{ double 		 v = *((double *		) position); *((long long *) &v) = SWAP64(*((long long *) &v));	position += sizeof(v);	return v; }
 
 	void						Advance(int bytes)	{ position += bytes; }
 
