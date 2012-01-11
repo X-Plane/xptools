@@ -267,9 +267,10 @@ public:
 		DebugAssert(he_is_same_direction_as<typename Arr::Halfedge_handle>(he_get_same_direction<typename Arr::Halfedge_handle>(e), input));		// Debug validation that we are okay.
 	}
 
-	// Modify edge.  If the edge overlaps an existing one, we get this message.  In this case, we need to compare our
-	// ideal curve to the one we got - CGAL will not reverse the underlying curve, just modify the tagged data.  So we
-	// look at the original for orientation - slightly slower, requires a predicate.
+	// Modify edge.  If there exists an edge in the arrangement that is totally "inside" (a subcurve) of our edge, 
+	// we get this message.  In this case, we need to compare our ideal curve to the one we got - CGAL will not 
+	// reverse the underlying curve, just modify the tagged data.  So we look at the original for
+	// orientation - slightly slower, requires a predicate.
 	virtual void after_modify_edge (typename Arr::Halfedge_handle e)
 	{
 		if(he_is_same_direction_as(e, input))
@@ -279,6 +280,11 @@ public:
 		++ctr;
 	}
 
+	// We get this message when an existing edge must be split to induce our edge.  There are actually TWO ways this can happen:
+	// 1. If we _intersect_ an existing edge (e.g. our interior or ends are in that edge's interior) we get a split message 
+	// telling us that one edge has become two.  We can ignore this if we are collecting OUR insertions.
+	// 2. A much more SUBTLE case: if we PARTLY overlap an existing edge, we hit this case - one of e1 or e2 will overlap us
+	//	  and the other will not.
 	virtual void after_split_edge(typename Arr::Halfedge_handle e1, typename Arr::Halfedge_handle e2)
 	{
 		DebugAssert(results.count(e1) == 0);
@@ -286,17 +292,56 @@ public:
 
 		data_preserver_t<Arr>::after_split_edge(e1,e2);
 
-		if(e1->source()->point() == input.source() &&
-		   e1->target()->point() == input.target())				{ results.insert(e1); ++ctr; }
+		DebugAssert(e1->twin() != e2);
+		
+		DebugAssert(e1->target() == e2->source());
 
-		if(e2->source()->point() == input.source() &&
-		   e2->target()->point() == input.target())				{ results.insert(e2); ++ctr; }
+		if(e1->target()->point() == input.source())
+		{
+			if(CGAL::collinear(input.source(),e1->source()->point(),input.target()) &&
+				CGAL::collinear_are_ordered_along_line(input.source(),e1->source()->point(),input.target()))
+			{
+				//        |--e1-->|--e2-->|
+				// <----input-----|
+				// e1's twin is along input
+				results.insert(e1->twin());
+				++ctr;
+			}
 
-		if(e1->target()->point() == input.source() &&
-		   e1->source()->point() == input.target())				{ results.insert(e1->twin()); ++ctr; }
+			if(CGAL::collinear(input.source(),e2->target()->point(),input.target()) &&
+				CGAL::collinear_are_ordered_along_line(input.source(),e2->target()->point(),input.target()))
+			{
+				// |--e1-->|--e2-->|
+				//         |-----input---->
+				// e2 is along input
+				results.insert(e2);
+				++ctr;
+			}
 
-		if(e2->target()->point() == input.source() &&
-		   e2->source()->point() == input.target())				{ results.insert(e2->twin()); ++ctr; }
+		}
+		
+		if(e1->target()->point() == input.target())
+		{
+			if(CGAL::collinear(input.source(),e1->source()->point(),input.target()) &&
+				CGAL::collinear_are_ordered_along_line(input.source(),e1->source()->point(),input.target()))
+			{
+				//        |--e1-->|--e2-->|
+				// |----input----->
+				// e1 is along input line
+				results.insert(e1);
+				++ctr;
+			}
+
+			if(CGAL::collinear(input.source(),e2->target()->point(),input.target()) &&
+				CGAL::collinear_are_ordered_along_line(input.source(),e2->target()->point(),input.target()))
+			{
+				// |--e1-->|--e2-->|
+				//         <-----input----|
+				// e2's twin is along input				
+				results.insert(e2->twin());
+				++ctr;
+			}
+		}
 	}
 
 

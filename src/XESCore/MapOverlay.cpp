@@ -25,7 +25,7 @@
 #include "MapAlgs.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
-
+#include "GISTool_Globals.h"
 /******************************************************************************************************************************************************
  * OVERLAY HELPERS
  ******************************************************************************************************************************************************/
@@ -347,6 +347,8 @@ static void		CollectEdges(Pmwx& io_dst, edge_collector_t<Pmwx> * collector, cons
 	{
 		DebugAssert(eit->face()->contained() || eit->twin()->face()->contained());			// If not true, why is this edge in the
 		DebugAssert(!eit->face()->contained() || !eit->twin()->face()->contained());		// arrangement?  Illegal for polygon set.
+		DebugAssert(eit->face() != eit->twin()->face());
+		DebugAssert(eit->face()->contained() != eit->twin()->face()->contained());
 		if(eit->face()->contained())
 			collector->input = Curve_2(Segment_2(eit->source()->point(),eit->target()->point()),0);
 		else
@@ -356,6 +358,8 @@ static void		CollectEdges(Pmwx& io_dst, edge_collector_t<Pmwx> * collector, cons
 		if(loc)			CGAL::insert(io_dst, collector->input,*loc);
 		else			CGAL::insert(io_dst, collector->input);
 		DebugAssert(collector->ctr > 0);
+		
+//		debug_mesh_line(cgal2ben(collector->input.source()),cgal2ben(collector->input.target()),1,0,0,0,1,0);
 
 	}
 }
@@ -458,6 +462,7 @@ void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * lo
 	{
 		DebugAssert(to_nuke.count((*k)->twin())==0);		// Make sure we didn't pick up edge twice!
 		io_dst.remove_edge(*k);								// Land-mark locator doesn't do full
+		collector.results.erase(*k);
 	}
 
 	if(faces)
