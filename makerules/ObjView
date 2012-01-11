@@ -9,7 +9,7 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _ov
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -nodefaultlibs
+#LDFLAGS		+= -nodefaultlibs
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a

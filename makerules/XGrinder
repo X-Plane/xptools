@@ -8,7 +8,7 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 #FORCEREBUILD_SUFFIX := _xg
 
 ifdef PLAT_LINUX
-LDFLAGS		+= -nodefaultlibs
+#LDFLAGS		+= -nodefaultlibs
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 LIBS		+= -lQtCore -lQtGui -lpthread
 endif #PLAT_LINUX

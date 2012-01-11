@@ -9,6 +9,7 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _rf
 
 ifdef PLAT_LINUX
+
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
@@ -23,6 +24,8 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+
+LIBS		+= -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
