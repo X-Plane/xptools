@@ -65,7 +65,7 @@ LIBS		+= -lcomctl32
 LIBS		+= -lcomdlg32
 LIBS		+= -luuid
 LIBS		+= -lws2_32
-LIBS		+= -lboost_thread.dll
+LIBS		+= -lboost_thread
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN

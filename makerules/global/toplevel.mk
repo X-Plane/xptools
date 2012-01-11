@@ -326,9 +326,9 @@ endif
 ifdef StripDebug
 	@$(STRIP) $(STRIPFLAGS) $(@)
 endif
-ifdef PLAT_MINGW
-	@-cp libs/local$(MULTI_SUFFIX)/lib/*.dll $(dir $(@))
-endif
+#ifdef PLAT_MINGW
+#	@-cp libs/local$(MULTI_SUFFIX)/lib/*.dll $(dir $(@))
+#endif
 	@$(print_finished)
 
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).res.o : %

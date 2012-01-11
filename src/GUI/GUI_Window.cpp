@@ -44,7 +44,7 @@ inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom-y; }
 
 #if MINGW_BUILD
-//#define _TRUNCATE 0
+#define _TRUNCATE 0
 
 static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSource, size_t count)
 {
