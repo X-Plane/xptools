@@ -14,7 +14,7 @@ diff -Naur shapelib-1.2.10.org/Makefile shapelib-1.2.10/Makefile
 +	CFLAGS	=	-g $(cross) -fpie
 +endif
 +ifeq ($(PLATFORM), Darwin)
-+	CFLAGS	=	-g -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -arch i386
++	CFLAGS	=	-g -mmacosx-version-min=10.4 -arch x86_64 -arch i386 -arch ppc
 +endif
 +
  

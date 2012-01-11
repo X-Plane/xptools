@@ -1,4 +1,4 @@
-#BE_QUIET	:= > /dev/null 2>&1
+BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
 # http://gforge.inria.fr/frs/?group_id=52
@@ -29,7 +29,7 @@ VER_LIBPNG	:= 1.2.41
 VER_ZLIB	:= 1.2.3
 # http://www.libtiff.org/
 # ftp://ftp.remotesensing.org/pub/libtiff
-VER_LIBTIFF	:= 4.0.0beta7
+VER_LIBTIFF	:= 4.0.0beta5
 # http://shapelib.maptools.org/
 # http://dl.maptools.org/dl/shapelib/
 VER_LIBSHP	:= 1.2.10
@@ -38,8 +38,8 @@ VER_LIBSHP	:= 1.2.10
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
 # http://sourceforge.net/projects/boost/files/
-VER_BOOST	:= 1_47_0
-BOOST_SHORTVER	:= 1_47
+VER_BOOST	:= 1_41_0
+BOOST_SHORTVER	:= 1_41
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
 VER_MESA	:= 7.5
@@ -48,10 +48,10 @@ VER_MESA	:= 7.5
 VER_LIBEXPAT	:= 2.0.1
 # http://gmplib.org/
 # http://gmplib.org/#DOWNLOAD
-VER_LIBGMP	:= 2.4.0
+VER_LIBGMP	:= 4.3.1
 # http://www.mpfr.org/
 # http://www.mpfr.org/mpfr-current/#download
-VER_LIBMPFR	:= 3.0.1
+VER_LIBMPFR	:= 2.4.2
 
 
 
@@ -98,7 +98,7 @@ DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN := Yes
 	# Ben removed ppc and x86_64 to fix libgmp compilation
-	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -m32
+	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -arch i386
 	VIS	:= -fvisibility=hidden
 endif
 ifeq ($(PLATFORM), Linux)
@@ -121,22 +121,21 @@ LDFLAGS_ZLIB		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_ZLIB		:= --prefix=$(DEFAULT_PREFIX)
 
 # libgmp
-ARCHIVE_LIBGMP		:= mpir-$(VER_LIBGMP).tar.bz2
-#CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
-#CXXFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
-#LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+ARCHIVE_LIBGMP		:= gmp-$(VER_LIBGMP).tar.gz
+CFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+CXXFLAGS_LIBGMP		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+LDFLAGS_LIBGMP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBGMP		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBGMP		+= --enable-shared=no
 CONF_LIBGMP		+= --enable-cxx
-CONF_LIBGMP		+= --enable-gmpcompat
 # no assembler code
 ifdef PLAT_DARWIN
 # Ben turned off to fix bug in WED
 #CONF_LIBGMP		+= --enable-fat
-CONF_LIBGMP		+= --build=pentium4-apple-darwin
+CONF_LIBGMP		+= --host=none-apple-darwin
 endif
 ifdef PLAT_MINGW
-CONF_LIBGMP		+= --build=none-pc-mingw32
+CONF_LIBGMP		+= --host=none-pc-mingw32
 #CONF_LIBGMP		+= --host=$(CROSSHOST)
 endif
 ifdef PLAT_LINUX
@@ -144,18 +143,12 @@ CONF_LIBGMP		+= --host=none-pc-linux-gnu
 endif
 
 # libmpfr
-ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.bz2
-#CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
-#LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+ARCHIVE_LIBMPFR		:= mpfr-$(VER_LIBMPFR).tar.gz
+CFLAGS_LIBMPFR		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+LDFLAGS_LIBMPFR		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBMPFR		:= --prefix=$(DEFAULT_PREFIX)
-CONF_LIBMPFR		+= --with-gmp=$(DEFAULT_PREFIX)
 CONF_LIBMPFR		+= --enable-shared=no
 CONF_LIBMPFR		+= --disable-dependency-tracking
-ifdef PLAT_DARWIN
-CONF_LIBMPFR		+= --disable-thread-safe
-else
-CONF_LIBMPFR		+= --enable-thread-safe
-endif
 ifdef PLAT_MINGW
 CONF_LIBMPFR		+= --host=$(CROSSHOST)
 endif
@@ -208,15 +201,13 @@ endif
 
 # libtiff
 ARCHIVE_LIBTIFF		:= tiff-$(VER_LIBTIFF).tar.gz
-CFLAGS_LIBTIFF		:= $(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)
+CFLAGS_LIBTIFF		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 CXXFLAGS_LIBTIFF	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 LDFLAGS_LIBTIFF		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBTIFF		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBTIFF		+= --enable-shared=no
 CONF_LIBTIFF		+= --enable-maintainer-mode
 CONF_LIBTIFF		+= --disable-dependency-tracking
-CONF_LIBTIFF		+= --disable-lzma
-CONF_LIBTIFF		+= --disable-jbig
 CONF_LIBTIFF		+= --with-jpeg-include-dir=$(DEFAULT_INCDIR)
 CONF_LIBTIFF		+= --with-jpeg-lib-dir=$(DEFAULT_LIBDIR)
 CONF_LIBTIFF		+= --with-zlib-include-dir=$(DEFAULT_INCDIR)
@@ -298,7 +289,6 @@ LDFLAGS_LIBDIME		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBDIME		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBDIME		+= --enable-static=yes
 CONF_LIBDIME		+= --enable-shared=no
-CONF_LIBDIME		+= --disable-msvc
 CONF_LIBDIME		+= --disable-dependency-tracking
 ifdef PLAT_MINGW
 CONF_LIBDIME		+= --host=$(CROSSHOST)
@@ -316,7 +306,6 @@ CONF_LIBSHP		+= cross=$(M32_SWITCH)
 ifeq ($(PLATFORM), Darwin)
 	AR_ZLIB			:= "libtool -static -o"
 	CONF_LIBTIFF		+= --with-apple-opengl-framework
-	CFLAGS_LIBTIFF		+= -DHAVE_APPLE_OPENGL_FRAMEWORK
 	LDFLAGS_GEOTIFF     	+= -Z
 endif
 ifeq ($(PLATFORM), Mingw)
@@ -349,9 +338,8 @@ ifdef PLAT_DARWIN
 	@cd "boost_$(VER_BOOST)" && \
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
-	$(BE_QUIET) && \
-	./bjam cxxflags="$(VIS) $(DEFAULT_MACARGS)" \
-	$(BE_QUIET) && \
+	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
+	./bjam cxxflags="$(VIS) $(DEFAULT_MACARGS)" $(BE_QUIET) && \
 	./bjam install $(BE_QUIET)
 	@cd local/lib && \
 	rm -f *.dylib*
@@ -360,16 +348,24 @@ ifdef PLAT_LINUX
 	@cd "boost_$(VER_BOOST)" && \
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
-	$(BE_QUIET) && \
+	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
 	./bjam cxxflags="$(VIS)" $(BE_QUIET) && \
 	./bjam install $(BE_QUIET)
 	@cd local/lib && \
 	rm -f *.so*
 endif
 ifdef PLAT_MINGW
+	@cp patches/0001-boost-tss-mingw.patch "boost_$(VER_BOOST)" && \
 	cd "boost_$(VER_BOOST)" && \
-	b2 install --toolset=gcc --layout=system --prefix=$(DEFAULT_PREFIX) \
-	--with-thread variant=release link=shared $(BE_QUIET)
+	patch -p1 < ./0001-boost-tss-mingw.patch $(BE_QUIET) && \
+	bjam.exe install --toolset=gcc --prefix=$(DEFAULT_PREFIX) \
+	--libdir=$(DEFAULT_PREFIX)/lib --with-thread $(BE_QUIET)
+	@cd local/include && \
+	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET) && \
+	rm -rf boost-$(BOOST_SHORTVER)
+	@cd local/lib && \
+	ln -sf libboost_thread*-mt.lib libboost_thread.a && \
+	rm -f *.lib
 endif
 	@-rm -rf boost_$(VER_BOOST)
 	@touch $@
@@ -413,21 +409,23 @@ libexpat: ./local$(MULTI_SUFFIX)/lib/.xpt_libexpat
 libgmp: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp:
 	@echo "building libgmp..."
-	@tar -xjf "./archives/$(ARCHIVE_LIBGMP)"
-	@cd "mpir-$(VER_LIBGMP)" && \
+	@tar -xzf "./archives/$(ARCHIVE_LIBGMP)"
+	@cd "gmp-$(VER_LIBGMP)" && \
 	chmod +x configure && \
+	CFLAGS=$(CFLAGS_LIBGMP) CXXFLAGS=$(CXXFLAGS_LIBGMP) LDFLAGS=$(LDFLAGS_LIBGMP) \
 	./configure $(CONF_LIBGMP) $(BE_QUIET)
-	@$(MAKE) -C "mpir-$(VER_LIBGMP)" $(BE_QUIET)
-	@$(MAKE) -C "mpir-$(VER_LIBGMP)" install $(BE_QUIET)
-	@-rm -rf mpir-$(VER_LIBGMP)
+	@$(MAKE) -C "gmp-$(VER_LIBGMP)" $(BE_QUIET)
+	@$(MAKE) -C "gmp-$(VER_LIBGMP)" install $(BE_QUIET)
+	@-rm -rf gmp-$(VER_LIBGMP)
 	@touch $@
 
 libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr
 ./local$(MULTI_SUFFIX)/lib/.xpt_libmpfr: ./local$(MULTI_SUFFIX)/lib/.xpt_libgmp
 	@echo "building libmpfr..."
-	@tar -xjf "./archives/$(ARCHIVE_LIBMPFR)"
+	@tar -xzf "./archives/$(ARCHIVE_LIBMPFR)"
 	@cd "mpfr-$(VER_LIBMPFR)" && \
 	chmod +x configure && \
+	CFLAGS=$(CFLAGS_LIBMPFR) LDFLAGS=$(LDFLAGS_LIBMPFR) \
 	./configure $(CONF_LIBMPFR) $(BE_QUIET)
 	@$(MAKE) -C "mpfr-$(VER_LIBMPFR)" $(BE_QUIET)
 	@$(MAKE) -C "mpfr-$(VER_LIBMPFR)" install $(BE_QUIET)
@@ -493,7 +491,7 @@ libtiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libtiff
 	$(BE_QUIET)
 	@cd "tiff-$(VER_LIBTIFF)" && \
 	chmod +x configure && \
-	CFLAGS="$(CFLAGS_LIBTIFF)" CXXFLAGS=$(CXXFLAGS_LIBTIFF) LDFLAGS=$(LDFLAGS_LIBTIFF) \
+	CFLAGS=$(CFLAGS_LIBTIFF) CXXFLAGS=$(CXXFLAGS_LIBTIFF) LDFLAGS=$(LDFLAGS_LIBTIFF) \
 	./configure $(CONF_LIBTIFF) $(BE_QUIET)
 	@$(MAKE) -C "tiff-$(VER_LIBTIFF)" $(BE_QUIET)
 	@$(MAKE) -C "tiff-$(VER_LIBTIFF)" install $(BE_QUIET)
@@ -603,7 +601,7 @@ ifdef PLAT_DARWIN
 	export MACOSX_DEPLOYMENT_TARGET=10.5 && CXXFLAGS="-fvisibility=hidden" cmake \
 	-DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=FALSE \
-	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -I$(DEFAULT_INCDIR)" \
+	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.5.sdk -arch i386 -I$(DEFAULT_INCDIR)" \
 	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
@@ -615,8 +613,8 @@ ifdef PLAT_DARWIN
 	-DMPFR_INCLUDE_DIR=$(DEFAULT_INCDIR) \
 	-DMPFR_LIBRARIES_DIR=$(DEFAULT_LIBDIR) \
 	-DMPFR_LIBRARIES=$(DEFAULT_LIBDIR)/libmpfr.a \
-	-DCMAKE_CXX_COMPILER=/usr/bin/g++ \
-	-DCMAKE_C_COMPILER=/usr/bin/gcc \
+	-DCMAKE_CXX_COMPILER=/usr/bin/g++-4.2 \
+	-DCMAKE_C_COMPILER=/usr/bin/gcc-4.2 \
 	-DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF \
 	-DWITH_CGAL_Qt4=OFF $(BE_QUIET) . && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
