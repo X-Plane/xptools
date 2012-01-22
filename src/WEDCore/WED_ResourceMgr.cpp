@@ -309,6 +309,10 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 			MFS_double(&s);
 			out_info.walls.push_back(string());
 			MFS_string(&s,&out_info.walls.back());
+		} 
+		else if(MFS_string_match(&s,"FLOOR",false))
+		{
+			out_info.walls.clear();
 		}
 
 		MFS_string_eol(&s,NULL);
