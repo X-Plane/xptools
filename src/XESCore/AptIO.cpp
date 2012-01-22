@@ -366,6 +366,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().gates.back().name) < 4)
 			ok = "Illegal startup loc";
 				outApts.back().gates.back().location = POINT2(p1x, p1y);
+				outApts.back().gates.back().type = atc_ramp_misc;
 			break;
 		case apt_beacon:
 			if (TextScanner_FormatScan(s, "iddiT|",
