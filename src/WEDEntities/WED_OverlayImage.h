@@ -35,6 +35,7 @@ public:
 
 	void		GetImage(string& image_file) const;
 	void		SetImage(const string& image_file);
+	double		GetAlpha(void) const;
 
 	virtual	void	GetCorners(GISLayer_t l,Point2 corners[4]) const;
 
@@ -51,6 +52,7 @@ protected:
 private:
 
 	WED_PropFileText			mImageFile;
+	WED_PropDoubleText			mAlpha;
 
 };
 
