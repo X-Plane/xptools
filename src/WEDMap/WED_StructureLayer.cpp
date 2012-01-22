@@ -620,7 +620,7 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 				st4.x_ *= sx; st4.y_ *= sy;
 				}
 				glDisable(GL_CULL_FACE);
-				glColor3f(1,1,1);
+				glColor4f(1,1,1,overlay->GetAlpha());
 				glBegin(GL_QUADS);
 				glTexCoord2(st4);	glVertex2(GetZoomer()->LLToPixel(v4));
 				glTexCoord2(st3);	glVertex2(GetZoomer()->LLToPixel(v3));
