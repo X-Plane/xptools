@@ -46,9 +46,12 @@ void	WED_RampPosition::Import(const AptGate_t& x, void (* print_func)(void *, co
 	SetName(x.name);
 	
 	ramp_type			= ENUM_Import(ATCRampType,		x.type	);
+	if(ramp_type == -1)
+	{
+		print_func(ref,"Illegal ramp type: %d\n",x.type);
+		ramp_type = atc_Ramp_Misc;
+	}
 	ENUM_ImportSet(equip_type.domain,x.equipment,equip_type.value);
-	
-	
 }
 
 void	WED_RampPosition::Export(		 AptGate_t& x) const
