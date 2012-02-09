@@ -66,7 +66,14 @@ enum {
 	wed_Pavement50,
 	wed_Pavement75,
 	wed_Pavement100,
-	// view menu
+	// Density Menu
+	wed_ObjDensity1,
+	wed_ObjDensity2,
+	wed_ObjDensity3,
+	wed_ObjDensity4,
+	wed_ObjDensity5,
+	wed_ObjDensity6,
+	// View menu
 	wed_ZoomWorld,
 	wed_ZoomAll,
 	wed_ZoomSelection,

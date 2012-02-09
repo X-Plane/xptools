@@ -101,6 +101,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
+{	"&Object Density",			0,	0,										0,	0					},
 {	"-",						0,	0,										0,	0					},
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
@@ -119,6 +120,16 @@ static const GUI_MenuItem_t kPavementMenu[] = {
 {	"&75%",						0,	0,							0,	wed_Pavement75		},
 {	"&Solid",					0,	0,							0,	wed_Pavement100		},
 {	NULL,						0,	0,							0,	0					}
+};
+
+static const GUI_MenuItem_t kObjDensityMenu[] = {
+{	"&1 Default",				'1',	gui_ControlFlag,		0,	wed_ObjDensity1		},
+{	"&2 A Lot",					'2',	gui_ControlFlag,		0,	wed_ObjDensity2		},
+{	"&3 Tons",					'3',	gui_ControlFlag,		0,	wed_ObjDensity3		},
+{	"&4 Mega Tons",				'4',	gui_ControlFlag,		0,	wed_ObjDensity4		},
+{	"&5 Too Many",				'5',	gui_ControlFlag,		0,	wed_ObjDensity5		},
+{	"&6 Totally Insane",		'6',	gui_ControlFlag,		0,	wed_ObjDensity6		},
+{	NULL,						0,		gui_ControlFlag,		0,	0					}
 };
 
 static const GUI_MenuItem_t kSelectMenu[] = {
@@ -207,6 +218,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
+		
+	GUI_Menu	objd_menu = inApp->CreateMenu(
+		"&Object Density", kObjDensityMenu, view_menu, 10);
 
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);

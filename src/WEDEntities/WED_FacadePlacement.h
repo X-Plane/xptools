@@ -57,6 +57,10 @@ public:
 			void		SetCustomWalls(bool has);
 #endif			
 
+			void		SetShowLevel(int show_level);
+			int			GetShowLevel(void) const;
+
+
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return GetTopoMode() == 0; }
@@ -68,6 +72,7 @@ private:
 #if AIRPORT_ROUTING	
 	WED_PropBoolText		pick_walls;
 #endif	
+	WED_PropIntEnum			show_level;
 
 };
 

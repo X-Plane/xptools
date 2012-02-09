@@ -78,6 +78,12 @@ inline bool end_match(const char * str, const char * suf)
 class	DSF_Importer {
 public:
 
+	DSF_Importer() { for(int n = 0; n < 7; ++n) req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1; }
+
+	int					req_level_obj[7];
+	int					req_level_agp[7];
+	int					req_level_fac[7];
+
 	vector<string>		obj_table;
 	vector<string>		pol_table;
 
@@ -91,6 +97,51 @@ public:
 	bool				want_uv;
 	bool				want_bezier;
 	bool				want_wall;
+
+	int GetShowForFacID(int id)
+	{
+		for(int l = 1; l <= 6; ++l)
+		if(req_level_fac[l] != -1)
+		if(req_level_fac[l] <= id)
+			return l;
+		return 6;
+	}
+
+	int GetShowForObjID(int id)
+	{
+		for(int l = 1; l <= 6; ++l)
+		if(req_level_obj[l] != -1)
+		if(req_level_obj[l] <= id)
+			return l;
+		return 6;
+	}
+
+	void handle_req_obj(const char * str)
+	{
+		int level, id;		
+		if(sscanf(str,"%d/%d",&level,&id) == 2)
+		for(int l = level; l <= 6; ++l)
+		if(req_level_obj[l] == -1 || req_level_obj[l] > id)
+			req_level_obj[l] = id;
+	}
+
+	void handle_req_agp(const char * str)
+	{
+		int level, id;		
+		if(sscanf(str,"%d/%d",&level,&id) == 2)
+		for(int l = level; l <= 6; ++l)
+		if(req_level_agp[l] == -1 || req_level_agp[l] > id)
+			req_level_agp[l] = id;
+	}
+
+	void handle_req_fac(const char * str)
+	{
+		int level, id;		
+		if(sscanf(str,"%d/%d",&level,&id) == 2)
+		for(int l = level; l <= 6; ++l)
+		if(req_level_fac[l] == -1 || req_level_fac[l] > id)
+			req_level_fac[l] = id;
+	}
 
 	void make_exclusion(const char * ex, int k)
 	{
@@ -156,6 +207,10 @@ public:
 		if(strcmp(inProp, "sim/exclude_lin") == 0)	me->make_exclusion(inValue, exclude_Lin);
 		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
 		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
+		
+		if(strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
+		if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
+		if(strcmp(inProp, "sim/require_facade") == 0)	me->handle_req_fac(inValue);
 	}
 
 	static void	BeginPatch(
@@ -206,6 +261,7 @@ public:
 		obj->SetHeading(inRotation);
 		obj->SetName(me->obj_table[inObjectType]);
 		obj->SetParent(me->parent,me->parent->CountChildren());
+		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
 	}
 	static void	AddObjectMSL(
 					unsigned int	inObjectType,
@@ -223,6 +279,7 @@ public:
 		obj->SetHeading(inRotation);
 		obj->SetName(me->obj_table[inObjectType]);
 		obj->SetParent(me->parent,me->parent->CountChildren());
+		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
 	}
 
 	static void	BeginSegment(
@@ -272,6 +329,8 @@ public:
 			me->ring = NULL;
 			fac->SetHeight(inParam);
 			fac->SetResource(r);
+			fac->SetShowLevel(me->GetShowForFacID(inPolygonType));
+			
 		}
 
 		if(end_match(r.c_str(),".for"))

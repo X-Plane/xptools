@@ -319,6 +319,14 @@ int		WED_MapPane::Map_HandleCommand(int command)
 	case wed_Pavement50:	mPreview->SetPavementTransparency(0.5f);		return 1;
 	case wed_Pavement75:	mPreview->SetPavementTransparency(0.75f);	return 1;
 	case wed_Pavement100:	mPreview->SetPavementTransparency(1.0f);		return 1;
+	
+	case wed_ObjDensity1:	mPreview->SetObjDensity(1);	return 1;
+	case wed_ObjDensity2:	mPreview->SetObjDensity(2);	return 1;
+	case wed_ObjDensity3:	mPreview->SetObjDensity(3);	return 1;
+	case wed_ObjDensity4:	mPreview->SetObjDensity(4);	return 1;
+	case wed_ObjDensity5:	mPreview->SetObjDensity(5);	return 1;
+	case wed_ObjDensity6:	mPreview->SetObjDensity(6);	return 1;
+	
 	case wed_ToggleLines:	mStructureLayer->SetRealLinesShowing(!mStructureLayer->GetRealLinesShowing());				return 1;
 	case wed_ToggleVertices:mStructureLayer->SetVerticesShowing(!mStructureLayer->GetVerticesShowing());				return 1;
 
@@ -346,6 +354,14 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_Pavement50:	ioCheck = mPreview->GetPavementTransparency() == 0.5f;	return 1;
 	case wed_Pavement75:	ioCheck = mPreview->GetPavementTransparency() == 0.75f;	return 1;
 	case wed_Pavement100:	ioCheck = mPreview->GetPavementTransparency() == 1.0f;	return 1;
+	
+	case wed_ObjDensity1:	ioCheck = mPreview->GetObjDensity() == 1;	return 1;
+	case wed_ObjDensity2:	ioCheck = mPreview->GetObjDensity() == 2;	return 1;
+	case wed_ObjDensity3:	ioCheck = mPreview->GetObjDensity() == 3;	return 1;
+	case wed_ObjDensity4:	ioCheck = mPreview->GetObjDensity() == 4;	return 1;
+	case wed_ObjDensity5:	ioCheck = mPreview->GetObjDensity() == 5;	return 1;
+	case wed_ObjDensity6:	ioCheck = mPreview->GetObjDensity() == 6;	return 1;
+	
 	case wed_ToggleLines:	ioCheck = mStructureLayer->GetRealLinesShowing();				return 1;
 	case wed_ToggleVertices:ioCheck = mStructureLayer->GetVerticesShowing();				return 1;
 
@@ -377,7 +393,9 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
 	if ((mPreview->IsVisible ()     ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"    ,mPreview->IsVisible()      ? 1 : 0))		mPreview->ToggleVisible();
 
-	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);
+	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);	
+	mPreview->SetObjDensity(prefs->ReadIntPref("map/obj_density",mPreview->GetObjDensity()));
+	
 	mStructureLayer->SetRealLinesShowing(	 prefs->ReadIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0) != 0);
 	mStructureLayer->SetVerticesShowing(	 prefs->ReadIntPref("map/vertices_vis",	 mStructureLayer->GetVerticesShowing() ? 1 : 0) != 0);
 
@@ -445,6 +463,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	prefs->WriteIntPref("map/terraserver_vis",mTerraserver->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4);
+	prefs->WriteIntPref("map/obj_density",mPreview->GetObjDensity());
 	prefs->WriteIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0);
 	prefs->WriteIntPref("map/vertices_vis",mStructureLayer->GetVerticesShowing() ? 1 : 0);
 

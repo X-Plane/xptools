@@ -82,6 +82,7 @@ WED_CreatePointTool::WED_CreatePointTool(
 		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	SQL_Name("",""),XML_Name("",""),25.0,5,1),
 		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			SQL_Name("",""),XML_Name("",""),0),
 		resource		(tool==create_Object		?this:NULL,"Object",		SQL_Name("",""),XML_Name("",""),""),
+		show_level		(tool==create_Object		?this:NULL,"Show with",		SQL_Name("",""),XML_Name("",""),ShowLevel,show_Level1),
 		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	SQL_Name("",""),XML_Name("",""),0),
 		ramp_type		(tool==create_RampStart		?this:NULL,"Ramp Start Type",SQL_Name("",""),XML_Name("",""   ), ATCRampType, atc_Ramp_Misc),
 		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType)
@@ -169,6 +170,7 @@ void	WED_CreatePointTool::AcceptPath(
 		{
 			new_pt_obj = new_pt_h = obj = WED_ObjPlacement::CreateTyped(GetArchive());
 			obj->SetResource(resource.value);
+			obj->SetShowLevel(ENUM_Export(show_level.value));
 			string n = resource.value;
 			string::size_type p = n.find_last_of("/\\:");
 			if(p != n.npos) n.erase(0,p+1);

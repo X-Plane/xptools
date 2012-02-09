@@ -35,7 +35,8 @@ WED_FacadePlacement::WED_FacadePlacement(WED_Archive * a, int i) : WED_GISPolygo
 #if AIRPORT_ROUTING
 	pick_walls(this,"Pick Walls",SQL_Name("WED_dsf_polygon","closed"),XML_Name("facade_placement","pick_walls"),0),
 #endif	
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("facade_placement","resource"),"")
+	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("facade_placement","resource"),""),
+	show_level(this,"Show with", SQL_Name("",""),XML_Name("facade_placement","show_level"),ShowLevel, show_Level1)
 {
 }
 
@@ -62,6 +63,17 @@ void		WED_FacadePlacement::SetResource(const string& r)
 {
 	resource = r;
 }
+
+void		WED_FacadePlacement::SetShowLevel(int sl)
+{
+	show_level = ENUM_Import(ShowLevel,sl);
+}
+
+int			WED_FacadePlacement::GetShowLevel(void) const
+{
+	return ENUM_Export(show_level.value);
+}
+
 
 WED_FacadePlacement::TopoMode		WED_FacadePlacement::GetTopoMode(void) const 
 {

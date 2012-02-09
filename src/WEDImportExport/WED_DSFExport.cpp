@@ -454,28 +454,36 @@ void CropSegmentChainBox(const vector<Segment>& in_chain, vector<Segment>& out_c
 static bool g_dropped_pts = false;
 
 struct	DSF_ResourceTable {
-	vector<string>		obj_defs;
-	map<string, int>	obj_defs_idx;
+	DSF_ResourceTable() { for(int i = 0; i < 7; ++i) show_level_obj[i] = show_level_pol[i] = -1; }
+	vector<string>				obj_defs;
+	map<pair<string,int>, int>	obj_defs_idx;
 
-	vector<string>		polygon_defs;
-	map<string, int>	polygon_defs_idx;
+	vector<string>				pol_defs;
+	map<pair<string, int>, int>	pol_defs_idx;
 
-	int accum_obj(const string& f)
+	int show_level_obj[7];
+	int show_level_pol[7];
+
+	int accum_obj(const string& f, int show_level)
 	{
-		map<string,int>::iterator i = obj_defs_idx.find(f);
+		map<pair<string,int>,int>::iterator i = obj_defs_idx.find(pair<string,int>(f,show_level));
 		if (i != obj_defs_idx.end()) return i->second;
+		obj_defs_idx[pair<string,int>(f,show_level)] = obj_defs.size();
+		if(show_level_obj[show_level] == -1)	show_level_obj[show_level] = obj_defs.size();
+		DebugAssert(show_level_obj[show_level] <= obj_defs.size());
 		obj_defs.push_back(f);
-		obj_defs_idx[f] = obj_defs.size()-1;
 		return			  obj_defs.size()-1;
 	}
 
-	int accum_pol(const string& f)
+	int accum_pol(const string& f, int show_level)
 	{
-		map<string,int>::iterator i = polygon_defs_idx.find(f);
-		if (i != polygon_defs_idx.end()) return i->second;
-		polygon_defs.push_back(f);
-		polygon_defs_idx[f] = polygon_defs.size()-1;
-		return				  polygon_defs.size()-1;
+		map<pair<string,int>,int>::iterator i = pol_defs_idx.find(pair<string,int>(f,show_level));
+		if (i != pol_defs_idx.end()) return i->second;
+		pol_defs_idx[pair<string,int>(f,show_level)] = pol_defs.size();
+		if(show_level_pol[show_level] == -1)	show_level_pol[show_level] = pol_defs.size();
+		DebugAssert(show_level_pol[show_level] <= pol_defs.size());
+		pol_defs.push_back(f);
+		return				  pol_defs.size()-1;
 	}
 };
 
@@ -975,7 +983,8 @@ static int	DSF_ExportTileRecursive(
 						DSF_ResourceTable&			io_table, 
 						const DSFCallbacks_t *		cbs, 
 						void *						writer,
-						set<WED_Thing *>&			problem_children)
+						set<WED_Thing *>&			problem_children,
+						int							show_level)
 {
 	int real_thingies = 0;
 	
@@ -1003,6 +1012,7 @@ static int	DSF_ExportTileRecursive(
 		return 0;
 		
 	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
+	if(show_level == 6)
 	{
 		set<int> xtypes;
 		xcl->GetExclusions(xtypes);
@@ -1038,9 +1048,10 @@ static int	DSF_ExportTileRecursive(
 	}
 
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
+	if(show_level == obj->GetShowLevel())
 	{
 		obj->GetResource(r);
-		idx = io_table.accum_obj(r);
+		idx = io_table.accum_obj(r,show_level);
 		obj->GetLocation(gis_Geo,p);
 		if(bounds.contains(p))
 		{
@@ -1061,9 +1072,10 @@ static int	DSF_ExportTileRecursive(
 		}
 	}
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
+	if(show_level == fac->GetShowLevel())
 	{
 		fac->GetResource(r);
-		idx = io_table.accum_pol(r);
+		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierPol(fac);
 		bool fac_is_auto_closed = fac->GetTopoMode() != WED_FacadePlacement::topo_Chain;
 		
@@ -1209,9 +1221,10 @@ static int	DSF_ExportTileRecursive(
 	}
 
 	if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
+	if(show_level == 6)
 	{
 		fst->GetResource(r);
-		idx = io_table.accum_pol(r);
+		idx = io_table.accum_pol(r,show_level);
 
 		DebugAssert(!WED_HasBezierPol(fst));
 		int param = intlim(fst->GetDensity() * 255.0,0,255) + fst->GetFillMode() * 256;
@@ -1279,9 +1292,10 @@ static int	DSF_ExportTileRecursive(
 	}
 	
 	if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
+	if(show_level == 6)
 	{
 		str->GetResource(r);
-		idx = io_table.accum_pol(r);
+		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierSeq(str);
 
 		if(bez)
@@ -1313,9 +1327,10 @@ static int	DSF_ExportTileRecursive(
 	}
 
 	if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
+	if(show_level == 6)
 	{
 		lin->GetResource(r);
-		idx = io_table.accum_pol(r);
+		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierSeq(lin);
 
 		if(bez)
@@ -1380,9 +1395,10 @@ static int	DSF_ExportTileRecursive(
 	}
 
 	if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
+	if(show_level == 6)
 	{
 		pol->GetResource(r);
-		idx = io_table.accum_pol(r);
+		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierPol(pol);
 
 		if(bez)
@@ -1423,9 +1439,10 @@ static int	DSF_ExportTileRecursive(
 		}
 	}
 	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
+	if(show_level == 6)
 	{
 		orth->GetResource(r);
-		idx = io_table.accum_pol(r);
+		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierPol(orth);
 
 		UVMap_t	uv;
@@ -1471,7 +1488,7 @@ static int	DSF_ExportTileRecursive(
 
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
-		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), pkg, bounds, io_table, cbs, writer, problem_children);
+		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), pkg, bounds, io_table, cbs, writer, problem_children,show_level);
 	return real_thingies;	
 }
 
@@ -1492,20 +1509,35 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	cbs.AcceptProperty_f("sim/creation_agent", "WorldEditor" WED_VERSION_STRING, writer);
 	cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
 	cbs.AcceptProperty_f("sim/overlay", "1", writer);
-	cbs.AcceptProperty_f("sim/require_agpoint", "1/0", writer);
-	cbs.AcceptProperty_f("sim/require_object", "1/0", writer);
-	cbs.AcceptProperty_f("sim/require_facade", "1/0", writer);
 
 	DSF_ResourceTable	rsrc;
 
 	Bbox2	clip_bounds(x,y,x+1,y+1);
-	int entities = DSF_ExportTileRecursive(base, pkg, clip_bounds, rsrc, &cbs, writer,problem_children);
+	int entities = 0;
+	for(int show_level = 6; show_level >= 1; --show_level)	
+		entities += DSF_ExportTileRecursive(base, pkg, clip_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
 	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
 		cbs.AcceptObjectDef_f(s->c_str(), writer);
 
-	for(vector<string>::iterator s = rsrc.polygon_defs.begin(); s != rsrc.polygon_defs.end(); ++s)
+	for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
 		cbs.AcceptPolygonDef_f(s->c_str(), writer);
+		
+	for(int i = 1; i <= 6; ++i)
+	{
+		char buf[20];
+		if(rsrc.show_level_obj[i] != -1)
+		{
+			sprintf(buf,"%d/%d",i,rsrc.show_level_obj[i]);
+			cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
+			cbs.AcceptProperty_f("sim/require_object", buf, writer);
+		}
+		if(rsrc.show_level_pol[i] != -1)
+		{
+			sprintf(buf,"%d/%d",i,rsrc.show_level_pol[i]);
+			cbs.AcceptProperty_f("sim/require_facade", buf, writer);
+		}
+	}		
 
 	char	rel_dir [512];
 	char	rel_path[512];

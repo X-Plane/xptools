@@ -42,6 +42,9 @@ public:
 			
 			void		SetCustomMSL(double msl);
 			void		SetDefaultMSL(void);
+			
+			void		SetShowLevel(int show_level);
+			int			GetShowLevel(void) const;
 
 private:
 
@@ -50,6 +53,7 @@ private:
 	WED_PropDoubleText		msl;	
 #endif
 	WED_PropStringText		resource;
+	WED_PropIntEnum			show_level;
 
 };
 

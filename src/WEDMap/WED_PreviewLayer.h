@@ -68,6 +68,8 @@ public:
 
 			void		SetPavementTransparency(float alpha);
 			float		GetPavementTransparency(void) const;
+			void		SetObjDensity(int density);
+			int			GetObjDensity(void) const;
 
 	virtual	bool		DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
 	virtual	void		GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel);
@@ -76,6 +78,7 @@ public:
 private:
 
 	float							mPavementAlpha;
+	int								mObjDensity;
 	
 	// This stuff is built temporarily between the entity and final draw.
 	vector<WED_PreviewItem *>	mPreviewItems;

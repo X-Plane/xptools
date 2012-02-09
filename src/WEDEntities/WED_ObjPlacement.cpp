@@ -22,6 +22,7 @@
  */
 
 #include "WED_ObjPlacement.h"
+#include "WED_EnumSystem.h"
 
 DEFINE_PERSISTENT(WED_ObjPlacement)
 TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
@@ -32,12 +33,24 @@ WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) :
 	has_msl(this,"Set MSL", SQL_Name("", ""), XML_Name("obj_placement","custom_msl"),0),
 	msl(this,"MSL", SQL_Name("", ""), XML_Name("obj_placement","msl"), 0, 5,3),
 #endif
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("obj_placement","resource"),"")
+	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("obj_placement","resource"),""),
+	show_level(this,"Show with", SQL_Name("",""),XML_Name("obj_placement","show_level"),ShowLevel, show_Level1)
+
 {
 }
 
 WED_ObjPlacement::~WED_ObjPlacement()
 {
+}
+
+void		WED_ObjPlacement::SetShowLevel(int sl)
+{
+	show_level = ENUM_Import(ShowLevel,sl);
+}
+
+int			WED_ObjPlacement::GetShowLevel(void) const
+{
+	return ENUM_Export(show_level.value);
 }
 
 void		WED_ObjPlacement::GetResource(	  string& r) const

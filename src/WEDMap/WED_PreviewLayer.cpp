@@ -722,6 +722,7 @@ struct	preview_object : public WED_PreviewItem {
 WED_PreviewLayer::WED_PreviewLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) : 
 	WED_MapLayer(host, zoomer, resolver), 
 	mPavementAlpha(1.0f),
+	mObjDensity(6),
 	mRunwayLayer(group_RunwaysBegin),
 	mTaxiLayer(group_TaxiwaysBegin),
 	mShoulderLayer(group_ShouldersBegin)
@@ -797,7 +798,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	
 	if(pol)		mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
 	if(orth)	mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
-	if(fac)		mPreviewItems.push_back(new preview_facade(fac,group_Objects));
+	if(fac)		if(fac->GetShowLevel() <= mObjDensity) mPreviewItems.push_back(new preview_facade(fac,group_Objects));
 	if(forst)	
 #if AIRPORT_ROUTING
 	if(forst->GetGISClass() == gis_Polygon)
@@ -810,6 +811,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	 ******************************************************************************************************************************/
 
 	if (sub_class == WED_ObjPlacement::sClass && (obj = SAFE_CAST(WED_ObjPlacement, entity)) != NULL)
+	if(obj->GetShowLevel() <= mObjDensity) 	
 	mPreviewItems.push_back(new preview_object(obj,group_Objects, GetResolver()));
 
 	return true;
@@ -843,3 +845,15 @@ float		WED_PreviewLayer::GetPavementTransparency(void) const
 {
 	return mPavementAlpha;
 }
+
+void		WED_PreviewLayer::SetObjDensity(int d)
+{
+	mObjDensity = d;
+	GetHost()->Refresh();
+}
+
+int			WED_PreviewLayer::GetObjDensity(void) const
+{
+	return mObjDensity;
+}
+	
