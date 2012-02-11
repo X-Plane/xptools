@@ -5,13 +5,13 @@
 #include <string.h>
 #include <stdint.h>
 
-#define XPT_PACKAGE_VER		"n/a"
+#define XPT_PACKAGE_VER		"12-2"
 
-#define DDSTOOL_VER		10100
+#define DDSTOOL_VER		10200
 #define DDSTOOL_EXTRAVER	"-r1"
 
-#define DSFTOOL_VER		10400
-#define DSFTOOL_EXTRAVER	""
+#define DSFTOOL_VER		20000
+#define DSFTOOL_EXTRAVER	"-r1"
 
 #define OBJCONVERT_VER		30100
 #define OBJCONVERT_EXTRAVER	"-r1"
