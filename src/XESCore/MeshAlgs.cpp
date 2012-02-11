@@ -1216,7 +1216,7 @@ struct sort_cdt_face_by_lowest_height {
 	}
 };
 
-#define NEW_ALG 1
+#define NEW_ALG 0
 // this is faster - by going in order from bottom to top we avoid a crapload of retries on neighboring verts.
 // going by MESH FACE is not so good - mesh face is at THREE alts at once..in theory at least.  or something.
 void FlattenWater(CDT& ioMesh)
