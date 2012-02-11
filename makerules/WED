@@ -431,6 +431,6 @@ RESOURCES += ./src/WEDResources/line_types/line_BRunwayHold.png
 RESOURCES += ./src/WEDResources/line_types/line_BOtherHold.png
 RESOURCES += ./src/WEDResources/line_types/line_BWideBrokenSingle.png
 RESOURCES += ./src/WEDResources/line_types/line_BILSCriticalCenter.png
-RESOURCES += ./src/WEDResources/WEDManual.pdf
+#RESOURCES += ./src/WEDResources/WEDManual.pdf
 RESOURCES += ./src/WEDCore/WED_DataModel.sql
 endif #PLAT_LINUX

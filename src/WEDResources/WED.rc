@@ -113,7 +113,7 @@ line_BOtherHold.png				GUI_RES		line_types/line_BOtherHold.png
 line_BWideBrokenSingle.png		GUI_RES		line_types/line_BWideBrokenSingle.png
 line_BILSCriticalCenter.png		GUI_RES		line_types/line_BILSCriticalCenter.png
 
-WEDManual.pdf					GUI_RES		WEDManual.pdf
+#WEDManual.pdf					GUI_RES		WEDManual.pdf
 
 /* Versioning info */
 #include "..\WEDCore\WED_Version.h"

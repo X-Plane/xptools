@@ -61,15 +61,22 @@ int		WED_Application::HandleCommand(int command)
 
 	switch(command) {
 	case wed_HelpScenery:
-		GUI_LaunchURL("http://scenery.x-plane.com/");
+		// LR maintains a forwarding directory for all v10-class products 
+		// so that we can restructure our content management without breaking binary
+		// apps in-field.  So...this is the perma-marker for WED 1.1 scenery help.
+		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_11_scenery.html");
 		return 1;
 	case wed_HelpManual:
 		{
-			string path;
-			if (GUI_GetTempResourcePath("WEDManual.pdf",path))
-			{
-				GUI_LaunchURL(path.c_str());
-			}
+			// We used to have a nice PDF published with WED, but...WED is changing fast
+			// and it stops going final to have to wait for doc complete.  So let's put
+			// the manual online and off we go.
+//			string path;
+//			if (GUI_GetTempResourcePath("WEDManual.pdf",path))
+//			{
+//				GUI_LaunchURL(path.c_str());
+//			}
+		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_11_manual.html");
 		}
 		return 1;
 	default:
@@ -82,7 +89,7 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 	switch(command) {
 	case gui_Undo:		ioName = "&Undo"; return 0;
 	case gui_Redo:		ioName = "&Redo"; return 0;
-	case wed_HelpScenery:
+	case wed_HelpScenery:	return 1;
 	case wed_HelpManual:	return 1;
 	default:				return GUI_Application::CanHandleCommand(command, ioName, ioCheck);
 	}
