@@ -323,7 +323,6 @@
 		D653D6D41054552100A502FF /* WED_DebugLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D653D6D31054552100A502FF /* WED_DebugLayer.cpp */; };
 		D653D6F610545A1C00A502FF /* MapPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */; };
 		D653D6F710545A2400A502FF /* MapTopology.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BB228F0EC13287006499D7 /* MapTopology.cpp */; };
-		D654C52F0C676995009726BD /* WEDManual.pdf in Resources */ = {isa = PBXBuildFile; fileRef = D654C52E0C676995009726BD /* WEDManual.pdf */; };
 		D656B0D90B517546003FF84F /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -3883,7 +3882,6 @@
 				D67B2A0E0C5661A100A21ABC /* line_TaxiEdge.png in Resources */,
 				D67B2A0F0C5661A100A21ABC /* line_WideBrokenDouble.png in Resources */,
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
-				D654C52F0C676995009726BD /* WEDManual.pdf in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
 				D6EA9CC711A0B2C8004ADCCC /* WED_DataModel2.sql in Resources */,
