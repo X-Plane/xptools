@@ -38,8 +38,8 @@ VER_LIBSHP	:= 1.2.10
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
 # http://sourceforge.net/projects/boost/files/
-VER_BOOST	:= 1_41_0
-BOOST_SHORTVER	:= 1_41
+VER_BOOST	:= 1_43_0
+BOOST_SHORTVER	:= 1_43
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
 VER_MESA	:= 7.5
@@ -613,8 +613,8 @@ ifdef PLAT_DARWIN
 	-DMPFR_INCLUDE_DIR=$(DEFAULT_INCDIR) \
 	-DMPFR_LIBRARIES_DIR=$(DEFAULT_LIBDIR) \
 	-DMPFR_LIBRARIES=$(DEFAULT_LIBDIR)/libmpfr.a \
-	-DCMAKE_CXX_COMPILER=/usr/bin/g++-4.2 \
-	-DCMAKE_C_COMPILER=/usr/bin/gcc-4.2 \
+	-DCMAKE_CXX_COMPILER=/usr/bin/g++ \
+	-DCMAKE_C_COMPILER=/usr/bin/gcc \
 	-DWITH_CGAL_ImageIO=OFF -DWITH_CGAL_PDB=OFF -DWITH_CGAL_Qt3=OFF \
 	-DWITH_CGAL_Qt4=OFF $(BE_QUIET) . && \
 	make $(BE_QUIET) && make install $(BE_QUIET)
