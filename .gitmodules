@@ -1,0 +1,3 @@
+[submodule "libs"]
+	path = libs
+	url = git://dev.x-plane.com/xptools_libs.git
