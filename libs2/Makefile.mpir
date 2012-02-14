@@ -1,0 +1,131 @@
+MAKEFILE_DIR	:= $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
+PREFIX		:= $(MAKEFILE_DIR)local
+PREFIX32	:= $(MAKEFILE_DIR)local32
+include $(MAKEFILE_DIR)environment.mk
+
+VERSION		:= 2.4.0
+URL		:= http://mpir.org/mpir-$(VERSION).tar.bz2
+#URL		:= http://192.168.0.3/lib/mpir-$(VERSION).tar.bz2
+ARCHIVE		:= $(MAKEFILE_DIR)cache/mpir-$(VERSION).tar.bz2
+TARFLAGS	:= -xjf -
+SRCTREE		:= $(PREFIX)/src/mpir-$(VERSION)
+SRCTREE32	:= $(PREFIX32)/src/mpir-$(VERSION)
+
+TARGET		:= $(PREFIX)/lib/libgmp.a
+TARGET32	:= $(PREFIX32)/lib/libgmp.a
+
+COMMONCONF	:= --enable-shared=no
+COMMONCONF	+= --enable-cxx
+COMMONCONF	+= --enable-gmpcompat
+
+ifdef PLAT_WINNT
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+ifdef MULTILIB
+	# use k8 instruction set as minimum 64-bit optimization level
+	CONF		+= --build=k8-w64-mingw32
+else
+	# no assembler optimizations for portability
+	CONF		+= --build=none-pc-mingw32
+endif
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --build=pentium4-pc-mingw32
+endif
+
+ifdef PLAT_LINUX
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+ifdef MULTILIB
+	# use k8 instruction set as minimum 64-bit optimization level
+	CONF		+= --build=k8-pc-linux-gnu
+else
+	# no assembler optimizations for portability
+	CONF		+= --build=none-pc-linux-gnu
+endif
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --build=pentium4-pc-linux-gnu
+endif
+
+ifdef PLAT_DARWIN
+	CONF		:= $(COMMONCONF)
+	CONF		+= --prefix='$(PREFIX)'
+ifdef MULTILIB
+	# use core2 instruction set as minimum 64-bit optimization level
+	CONF		+= --build=core2-apple-darwin
+else
+	# no assembler optimizations for portability
+	CONF		+= --build=none-apple-darwin
+endif
+
+	CONF32		:= $(COMMONCONF)
+	CONF32		+= --prefix='$(PREFIX32)'
+	CONF32		+= --build=pentium4-apple-darwin
+endif
+
+.PHONY: all clean
+
+ifeq ($(MULTILIB), Yes)
+all:
+	@echo "providing: '$(TARGET)'"
+	@echo "providing: '$(TARGET32)'"
+else
+all:
+	@echo "providing: '$(TARGET)'"
+endif
+
+clean:
+	@-rm -rf '$(SRCTREE)'
+	@-rm -rf '$(SRCTREE32)'
+
+$(ARCHIVE):
+	@if test -f '$@'; then exit 0; else            			\
+		trap 'rm -rf '$(notdir $(@)).lock' '$(@)' '$(@)'.tmp'	\
+			1 2 13 15;					\
+		if mkdir '$(notdir $(@)).lock' 2>/dev/null; then	\
+			echo 'downloading '$(notdir $(@))'';		\
+			mkdir -p '$(dir $(@))';				\
+			curl -k -s -L '$(URL)' -o '$(@)'.tmp;		\
+			result=$$?;					\
+			if [ $$result = "0" ]; then			\
+				mv '$(@)'.tmp '$(@)';			\
+			else						\
+				rm -f '$(@)'.tmp;			\
+			fi;						\
+			rm -rf '$(notdir $(@)).lock';			\
+			exit $$result;					\
+		else               					\
+			echo ''$(notdir $(@))' is downloading';		\
+			while test -d '$(notdir $(@)).lock';		\
+				do sleep 1;				\
+			done;						\
+			test -f '$(@)'; exit $$?;			\
+		fi;							\
+	fi
+
+$(SRCTREE)/configure: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX)/src'
+	@cat '$(<)' | tar -C '$(PREFIX)/src' $(TARFLAGS)
+	# fix timestamp for make, which was preserved by tar
+	@touch '$(@)'
+
+$(SRCTREE32)/configure: $(ARCHIVE)
+	@-mkdir -p '$(PREFIX32)/src'
+	@cat '$(<)' | tar -C '$(PREFIX32)/src' $(TARFLAGS)
+	# fix timestamp for make, which was preserved by tar
+	@touch '$(@)'
+
+$(TARGET): $(SRCTREE)/configure
+	@-$(MAKE) -r -j1 -C '$(SRCTREE)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE)' && $(CONVENV) ./configure $(CONF)
+	@$(MAKE) -r -C '$(SRCTREE)'
+	@$(MAKE) -r -j1 -C '$(SRCTREE)' install
+
+$(TARGET32): $(SRCTREE32)/configure
+	@-$(MAKE) -r -j1 -C '$(SRCTREE32)' distclean > /dev/null 2>&1
+	@cd '$(SRCTREE32)' && $(CONVENV32) ./configure $(CONF32)
+	@$(MAKE) -r -C '$(SRCTREE32)'
+	@$(MAKE) -r -j1 -C '$(SRCTREE32)' install
