@@ -364,7 +364,7 @@ ifdef PLAT_MINGW
 	ln -sf boost-$(BOOST_SHORTVER)/boost boost $(BE_QUIET) && \
 	rm -rf boost-$(BOOST_SHORTVER)
 	@cd local/lib && \
-	ln -sf libboost_thread*-mt.lib libboost_thread.a && \
+	ln -sf libboost_thread*-mt-$(BOOST_SHORTVER).a libboost_thread.a && \
 	rm -f *.lib
 endif
 	@-rm -rf boost_$(VER_BOOST)
