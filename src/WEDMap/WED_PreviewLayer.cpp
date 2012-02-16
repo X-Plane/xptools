@@ -631,8 +631,9 @@ struct	preview_ortho : public preview_polygon {
 
 struct	preview_object : public WED_PreviewItem {
 	WED_ObjPlacement * obj;	
+	int	preview_level;
 	IResolver * resolver;
-	preview_object(WED_ObjPlacement * o, int l, IResolver * r) : WED_PreviewItem(l), obj(o), resolver(r) { }
+	preview_object(WED_ObjPlacement * o, int l, int pl, IResolver * r) : WED_PreviewItem(l), obj(o), resolver(r), preview_level(pl) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
@@ -687,6 +688,7 @@ struct	preview_object : public WED_PreviewItem {
 			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
 			{
 				XObj8 * oo;
+				if((o->show_lo+o->show_hi)/2 <= preview_level)
 				if(rmgr->GetObjRelative(o->name,vpath,oo))
 				{
 					draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);			
@@ -812,7 +814,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 
 	if (sub_class == WED_ObjPlacement::sClass && (obj = SAFE_CAST(WED_ObjPlacement, entity)) != NULL)
 	if(obj->GetShowLevel() <= mObjDensity) 	
-	mPreviewItems.push_back(new preview_object(obj,group_Objects, GetResolver()));
+	mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
 
 	return true;
 }
