@@ -72,6 +72,7 @@ struct	fac_info_t {
 struct agp_t {
 	struct obj {
 		double  x,y,r;			// annotation position
+		int		show_lo,show_hi;
 		string	name;
 	};
 	string			base_tex;
