@@ -27,6 +27,7 @@ Version History
 							Vector roads are not reversed as part of optimization - this helps traffic flow.
 							DSF2Text will recognize the ST coordinates for draped polygons.
 							Precision increased to 9 digits.
+	2/18/12 - 2.0			Support for raster data for X-Plane 10
 								 
 -------------------------------------------------------------------------------
 OVERVIEW

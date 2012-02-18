@@ -8,7 +8,7 @@
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
-Version 3.1b1 4/24/09
+Version 3.1 4/24/09
 	- Command-line arguments open files.
 Version 3.0b1 3/11/08
 	- DDS image file support

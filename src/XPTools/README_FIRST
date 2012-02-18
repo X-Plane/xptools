@@ -5,37 +5,29 @@
 
 
 -------------------------------------------------------------------------------
-SCENERY TOOLS MARCH 08
+SCENERY TOOLS FEBRURARY 12
 -------------------------------------------------------------------------------
 
-This is the first release of the combined X-Plane scenery tools.  This 
+This is the second release of the combined X-Plane scenery tools.  This 
 distribution combines the following tools into one package:
 
-- DSF2Text (now renamed DSFTool)
+- DSFTool
+- DDSTool
 - ObjConverter
 - ObjView
+- XGrinder
 
-This release also introduces three new tools:
-
-- XGrinder replaces the UI versions of ObjConveter and DSF2Text, providing a
-  single drag & drop interface to all of the command-line file converters.
+This provides all command line tools as well as X-Grinder to automate use of 
+them. MeshTool, WorldEditor, and plugins for 3-d editors are all shipped 
+separately.
   
-- DDSTool provides high quality X-Plane cmopatible PNG->DDS conversion for 
-  Mac and Windows.
-  
-- MeshTool allows you to build base meshes with orthophotos from your own GIS
-  data.
-  
-At this point WorldEditor and the AC3D export plugin are stil separate
-releases.
-
 -------------------------------------------------------------------------------
 INSTALLATION, SYSTEM REQUIREMENTS AND LICENSING
 -------------------------------------------------------------------------------
 
 The scenery tools simply need to be unzipped somewhere on your hard drive.  In
 order for XGrinder to provide a UI around the command-line tools, all of the 
-tools need to stay in the same directory.
+tools need to stay in a subdirectory called "tools".
 
 The scenery tools should work on any computer that can run X-Plane 864.
 
@@ -45,9 +37,5 @@ that are compatible with either MIT/X11 or GPL.
 
 The source code for these tools is all available at:
 
-http://scenery.x-plane.com/code.php
-
-The latest scenery tools can be found at:
-
-http://scenery.x-plane.com/tools.php
+http://dev.x-plane.com/cgit/cgit.cgi/xptools.git/
 

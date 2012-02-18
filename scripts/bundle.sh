@@ -63,14 +63,23 @@ meshtool)
 wed)
 	out_file="wed_"$2"_"$3".zip"
 	src_files="WED$asuffix"
-	doc_files="src/WEDResources/WEDManual.pdf"
+	#doc_files="src/WEDResources/WEDManual.pdf"
+	doc_files=""
+	;;
+tools)
+	echo $build_dir/tools
+	mkdir $build_dir/tools
+	mv $build_dir/ObjConverter$tsuffix $build_dir/DDSTool$tsuffix $build_dir/DSFTool$tsuffix $build_dir/tools
+	out_file="xptools_"$2"_"$3".zip"
+	src_files="tools/ObjConverter$tsuffix tools/DDSTool$tsuffix tools/DSFTool$tsuffix ObjView$asuffix XGrinder$asuffix"
+	doc_files="src/XPTools/README_FIRST src/XPTools/README.DDSTool src/XPTools/README.ObjConverter src/XPTools/README.ObjView src/XPTools/README.XGrinder"
 	;;
 esac
 
 cd "$home_dir/scripts"
 rm $out_file
 cd ../$build_dir
-zip -r "$home_dir/scripts/$out_file" "$src_files"
+zip -r "$home_dir/scripts/$out_file" $src_files
 cd "$home_dir"
 zip -j "$home_dir/scripts/$out_file" $doc_files
 cd "$home_dir/scripts"

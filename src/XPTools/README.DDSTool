@@ -8,6 +8,7 @@
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
+1.2		2/18/10	More advanced mip-map contrl options
 1.1		1/25/10	Quilting Added
 				Mipmap support changed
 				Control over gamma
@@ -17,8 +18,8 @@ Version 3/11/08 Initial Version
 SYSTEM REQUIREMENTS AND INSTALLATION
 -------------------------------------------------------------------------------
 
-DDSTool runs on any Macintosh or Winodws machine that runs X-Plane.  It is a
-single executable that can be decompressed into any directory; for 
+DDSTool runs on any Macintosh,Windows or Linux machine that runs X-Plane.  It is 
+a single executable that can be decompressed into any directory; for 
 compatibility with X-Grinder it must be in the same directory as X-Grinder.
 See the X-Grinder documentation for more details.
 
@@ -68,7 +69,14 @@ This mode builds an uncompressed RGB DDS file.  Note that X-Plane may
 compress the image when loaded, so this should typically not be used except
 in a few rare cases.
 
---has_mips
+Mipmapping options:
+
+--std_mips
+
+With this option, DDSTool will produce mipmaps for you by box-filtering your
+image.
+
+--pre_mips
 
 If you pass this flag, the image is treated as if all mipmaps are present:
 the image should be double-width, and the images should be packed from
@@ -78,9 +86,41 @@ Instead of computing mipmaps using a box filter, your images will be used.
 Use this feature when you want to tune the look of lower-res images for 
 improved clarity.
 
-Note: the command-line version of DDSTool is capable of creating "PVRTC" format
-images; this is not shown in XGrinder because X-Plane does not use this format;
-this format is used or the iphone.
+--night_mips
+--fade_mips
+--ctl_mips
+
+Experimental mipmap generation techniques, docs coming later.
+
+Gamma control options:
+
+--gamma_22
+
+Write a DDS file with a gamma of 2.2, roughly matching sRGB.  Use this option
+when grinding files for X-Plane 10.
+
+--gamma_18
+
+Write a DDS file with a gamma of 1.8, roughly matching Mac gamma (pre 10.6.).
+Use this option when grinding images that must work on X-Plane 9 and 10.
+
+Scaling options:
+
+--scale_none
+
+Do not scale the image - it must already be a power of 2.
+
+--scale_up
+
+Scale up to the nearest poewr power of 2.
+
+--scale_down
+
+Scale down to the nearest power of 2.
+
+-- scale_half
+
+Scale down to half of the nearest power of 2.
 
 -------------------------------------------------------------------------------
 FORMS OF DXT COMPRESSION
