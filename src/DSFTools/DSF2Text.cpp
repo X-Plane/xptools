@@ -244,7 +244,7 @@ void DSF2Text_AddRaterData(
 					void *				inRef)
 {
 	FILE * fi = (FILE *) inRef;
-	fprintf(fi,"RASTER_DATA version=%d bpp=%d flags=%d width=%d height=%d scale=%f offset=%f\n",
+	fprintf(fi,"RASTER_DATA version=%d bpp=%d flags=%d width=%d height=%d scale=%f offset=%f ",
 		header->version, header->bytes_per_pixel, header->flags, header->width, header->height, header->scale,header->offset);
 
 	if(!base_name.empty() && !dem_names.empty())
@@ -257,10 +257,13 @@ void DSF2Text_AddRaterData(
 		FILE * fb = fopen(p.c_str(),"wb");
 		if(fb)
 		{
-			fprintf(fi,"# Wrote %d bytes to %s.\n", header->bytes_per_pixel * header->width * header->height, p.c_str());
+			fprintf(fi,"%s\n",p.c_str());
+			//fprintf(fi,"# Wrote %d bytes to %s.\n", header->bytes_per_pixel * header->width * header->height, p.c_str());
 			fwrite(data,header->bytes_per_pixel * header->width * header->height, 1, fb);
 			fclose(fb);
 		}
+		else
+			fprintf(fi,"<write error>\n");
 	}
 		
 }
@@ -363,6 +366,8 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 	int divisions = 8;
 	float west = 999.0, south = 999.0, north = 999.0, east = 999.0;
 
+	DSFRasterHeader_t	rheader;
+
 	char	buf[512];
 	char	prop_id[512];
 	char	prop_value[512];
@@ -448,10 +453,37 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		else if (sscanf(ptr, "OBJECT_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
 		else if (sscanf(ptr, "POLYGON_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
 		else if (sscanf(ptr, "NETWORK_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
+		else if (sscanf(ptr, "RASTER_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptRasterDef_f(prop_id, writer);
 
 		else if (sscanf(ptr,"BEGIN_SEGMENT_CURVED %d %d %d %lf %lf %lf %lf %lf %lf", &ptype, &subtype, &nodeid, &coords[0],&coords[1],&coords[2],&coords[3],&coords[4],&coords[5]) == 9) cbs.BeginSegment_f(ptype, subtype, nodeid, coords, true, writer);
 		else if (sscanf(ptr,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);
 		else if (sscanf(ptr,"SHAPE_POINT_CURVED %d %lf %lf %lf %lf %lf %lf ", &nodeid, &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 7) cbs.EndSegment_f(nodeid, coords, true, writer);
+
+		else if (sscanf(ptr,"RASTER_DATA version=%hhu bpp=%hhu flags=%hu width=%u height=%u scale=%f offset=%f %[^\r\n]",
+							&rheader.version,&rheader.bytes_per_pixel,&rheader.flags,&rheader.width,&rheader.height,&rheader.scale,&rheader.offset,prop_id) == 8)
+		{
+			int ds = rheader.bytes_per_pixel * rheader.width * rheader.height;
+			char * data = (char *) malloc(ds);
+			FILE * sf = fopen(prop_id,"rb");
+			if(sf)
+			{
+				if(fread(data,1,ds,sf) == ds)
+				{
+					cbs.AddRasterData_f(&rheader,data,writer);
+				} 
+				else
+				{
+					fprintf(stdout, "ERROR: could not write %d bytes to file %s\n", ds, prop_id);
+					fclose(sf);
+					return false;
+				}
+				fclose(sf);
+			} else {
+				fprintf(stdout, "ERROR: could not open file %s\n", prop_id);
+				return false;
+			}
+
+		}
 	}
 	while(fgets(buf, sizeof(buf), fi));
 

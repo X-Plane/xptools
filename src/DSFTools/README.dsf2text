@@ -153,6 +153,7 @@ TERRAIN_DEF <file name>
 OBJECT_DEF <file name>
 POLYGON_DEF <filename>
 NETWORK_DEF <filename>
+RASTER_DEF <filename>
 
 	These commands define a new type of building block.  Order is significant:
 	the first building block of each type has index zero and they then count
@@ -247,6 +248,12 @@ END_WINDING
 END_POLYGON
 
 	This ends the winding and polygon respectively.
+
+RASTER_DATA version=<version> bbp=<bpp> flags=<flags> width=<wdith> height=<hegiht> scale=<scale> offset=<offset> filename
+
+	This indicates a raster layer; the properties must be in this order and
+	match the DSF raster layer info atom.  The filename is the name of a binary
+	file that contains the raw data to include (or is output).
 
 -------------------------------------------------------------------------------
 MERGING TWO DSF FILES
