@@ -81,7 +81,7 @@
 // - Bogus output apt.dat files.
 // - Bogus earth.wed files that won't work with either future WEDs or the current WED.
 // So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!  
-#define AIRPORT_ROUTING 0
+#define AIRPORT_ROUTING 1
 
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
