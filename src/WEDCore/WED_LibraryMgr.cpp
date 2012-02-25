@@ -112,7 +112,11 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 
 string		WED_LibraryMgr::GetResourcePath(const string& r)
 {
-	res_map_t::iterator me = res_table.find(r);
+	string fixed(r);
+	for(string::size_type p = 0; p < fixed.size(); ++p)
+	if(fixed[p] == ':' || fixed[p] == '\\')
+		fixed[p] = '/';
+	res_map_t::iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return string();
 	return me->second.real_path;
 }
@@ -281,14 +285,14 @@ bool WED_LibraryMgr::AccumLocalFile(const char * filename, bool is_dir, void * r
 		{
 			local_scan_t sub_info;
 			sub_info.who = info->who;
-			sub_info.partial = info->partial + DIR_STR + filename;
+			sub_info.partial = info->partial + "/" + filename;
 			sub_info.full = info->full + DIR_STR + filename;
 			MF_IterateDirectory(sub_info.full.c_str(), AccumLocalFile, reinterpret_cast<void*>(&sub_info));
 		}
 	}
 	else
 	{
-		string r = info->partial + DIR_STR + filename;
+		string r = info->partial + "/" + filename;
 		string f = info->full + DIR_STR + filename;
 		r.erase(0,1);
 		info->who->AccumResource(r, pack_Local, f,false);
