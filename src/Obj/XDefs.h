@@ -85,7 +85,7 @@
 #define AIRPORT_ROUTING 1
 
 // mroe : -- really early stage of dev , do not change.
-#define WITHNWLINK 1
+#define WITHNWLINK 0
 
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
