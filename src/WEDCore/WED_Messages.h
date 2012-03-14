@@ -43,10 +43,13 @@ enum {
 	msg_DocLoaded,
 
 	msg_SystemFolderChanged,
-	msg_SystemFolderUpdated	,
+	msg_SystemFolderUpdated,
 
-	msg_LibraryChanged
+	msg_LibraryChanged,
 
+#if WITHNWLINK
+	msg_NetworkStatusInfo
+#endif
 };
 
 #endif /* WED_MESSAGES_H */

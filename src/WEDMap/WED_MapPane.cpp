@@ -58,14 +58,19 @@
 #include "WED_LibraryListAdapter.h"
 #include "WED_LibraryMgr.h"
 #include "IDocPrefs.h"
+#if WITHNWLINK
+#include "WED_Document.h"
+#include "WED_Server.h"
+#include "WED_NWInfoLayer.h"
+#endif
 char	kToolKeys[] = {
 	0, 0, 0, 0,
 	0, 0, 0, 0,
 
-	'b', 0, 'a', 'o', 
-	'e', 'w', 'f', 'g', 
-	
-	'l', 'k', 'h', 't', 
+	'b', 0, 'a', 'o',
+	'e', 'w', 'f', 'g',
+
+	'l', 'k', 'h', 't',
 	'r', 's', 'v', 'm'
 };
 
@@ -101,7 +106,7 @@ static void GetExtentSel(Bbox2& box, IResolver * resolver)
 WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library) : mResolver(resolver)
 {
 	this->SetBkgkndImage("gradient.png");
-	
+
 	mMap = new WED_Map(resolver);
 
 	// Visualization layers
@@ -112,15 +117,22 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mLayers.push_back(mPreview =		new WED_PreviewLayer(mMap, mMap, resolver));
 //	mLayers.push_back(mTileserver =		new WED_TileServerLayer(mMap, mMap, resolver));
 	mLayers.push_back(					new WED_DebugLayer(mMap, mMap, resolver));
-
+#if WITHNWLINK
+	WED_Server * ser = (dynamic_cast<WED_Document*>(resolver))->GetServer();
+	if(ser)
+	{
+		mLayers.push_back(mNWInfoLayer = new WED_NWInfoLayer(mMap, mMap, resolver));
+		ser->AddListener(mNWInfoLayer);
+	}
+#endif
 	// TOOLS
-	
+
 	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
 #if AIRPORT_ROUTING
 	mTools.push_back(					new WED_CreateEdgeTool("Roads",mMap, mMap, resolver, archive, create_Road));
 #else
 	mTools.push_back(					NULL);
-#endif	
+#endif
 
 	mTools.push_back(mLinTool=			new WED_CreatePolygonTool("Lines",mMap, mMap, resolver, archive, create_Line));
 	mTools.push_back(mPolTool=			new WED_CreatePolygonTool("Polygons",mMap, mMap, resolver, archive, create_Polygon));
@@ -137,7 +149,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_CreateEdgeTool("Taxi Routes",mMap, mMap, resolver, archive, create_TaxiRoute));
 #else
 	mTools.push_back(					NULL);
-#endif	
+#endif
 
 	mTools.push_back(					new WED_CreatePointTool("Tower Viewpoint", mMap, mMap, resolver, archive, create_TowerViewpoint));
 	mTools.push_back(					new WED_CreatePointTool("Ramp Start", mMap, mMap, resolver, archive, create_RampStart));
@@ -156,7 +168,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mTools.push_back(					new WED_CreateLineTool("Runway", mMap, mMap, resolver, archive, create_Runway));
 	mTools.push_back(					new WED_CreateLineTool("Sealane", mMap, mMap, resolver, archive, create_Sealane));
-	
+
 	mTools.push_back(					new WED_VertexTool("Vertex",mMap, mMap, resolver, 1));
 	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
 
@@ -207,7 +219,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 			tip += buf;
 		}
 		tips.push_back(tip);
-		
+
 		if(mTools[n] == NULL)
 			mToolbar->DisableTool(n);
 	}
@@ -295,7 +307,7 @@ int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 	if ((inFlags & (gui_ShiftFlag | gui_OptionAltFlag | gui_ControlFlag)) == 0)
 	for (int n = 0; n < sizeof(kToolKeys) / sizeof(kToolKeys[0]); ++n)
 	if (kToolKeys[n])
-	if (kToolKeys[n]==inKey)	
+	if (kToolKeys[n]==inKey)
 	{
 		mToolbar->SetValue(n);
 		return 1;
@@ -382,7 +394,7 @@ void	WED_MapPane::ReceiveMessage(
 	int i = mToolbar->GetValue();
 	WED_MapToolNew * t = NULL;
 	if (i >= 0 && i < mTools.size())
-		t = mTools[i];		
+		t = mTools[i];
 	mMap->SetTool(t);
 	mInfoAdapter->SetTool(t);
 }

@@ -20,7 +20,9 @@
  * THE SOFTWARE.
  *
  */
-
+#if WITHNWLINK
+#include "WED_NWLinkAdapter.h"
+#endif
 #include "WED_Archive.h"
 #include "WED_Persistent.h"
 #include "WED_UndoLayer.h"
@@ -32,8 +34,13 @@
 #include "WED_XMLWriter.h"
 #include "WED_Messages.h"
 
-WED_Archive::WED_Archive(IResolver * r) : mResolver(r), mDying(false), mUndo(NULL), mUndoMgr(NULL), mID(1), mOpCount(0), mCacheKey(0)
+WED_Archive::WED_Archive(IResolver * r) : mResolver(r), mDying(false), mUndo(NULL), mUndoMgr(NULL),
+ #if WITHNWLINK
+ mNWAdapter(NULL),
+ #endif
+ mID(1), mOpCount(0), mCacheKey(0)
 {
+
 }
 
 WED_Archive::~WED_Archive()
@@ -64,6 +71,9 @@ void		WED_Archive::ChangedObject(WED_Persistent * inObject, int change_kind)
 {
 	if (mDying) return;
 	++mCacheKey;
+#if WITHNWLINK
+	if (mNWAdapter) mNWAdapter->ObjectChanged(inObject, change_kind);
+#endif
 	if (mUndo == UNDO_DISCARD) return;
 	if (mUndo)	mUndo->ObjectChanged(inObject, change_kind);
 	else		DebugAssert(!"Error: object changed outside of a command.");
@@ -79,9 +89,12 @@ void		WED_Archive::AddObject(WED_Persistent * inObject)
 
 	if (iter == mObjects.end())			mObjects.insert(ObjectMap::value_type(inObject->GetID(), inObject));
 	else								iter->second = inObject;
-
+#if WITHNWLINK
+	if (mNWAdapter) mNWAdapter->ObjectCreated(inObject);
+#endif
 	if (mUndo == UNDO_DISCARD) return;
 	if (mUndo) mUndo->ObjectCreated(inObject);
+
 	else		DebugAssert(!"Error: object changed outside of a command.");
 }
 
@@ -92,6 +105,9 @@ void		WED_Archive::RemoveObject(WED_Persistent * inObject)
 	ObjectMap::iterator iter = mObjects.find(inObject->GetID());
 	Assert(iter != mObjects.end());
 	iter->second = NULL;
+#if WITHNWLINK
+	if (mNWAdapter) mNWAdapter->ObjectDestroyed(inObject);
+#endif
 	if (mUndo == UNDO_DISCARD) return;
 	if (mUndo) mUndo->ObjectDestroyed(inObject);
 	else		DebugAssert(!"Error: object changed outside of a command.");
@@ -145,10 +161,10 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 	++mCacheKey;
 
 	sql_command nuke_obj(db,"DELETE FROM WED_things WHERE id=@id;","@id");
-	
+
 	sql_command nuke_src(db,"DELETE FROM WED_thing_viewers where source=@id;","@id");
 	sql_command nuke_vew(db,"DELETE FROM WED_thing_viewers where viewer=@id;","@id");
-	
+
 	for (ObjectMap::iterator ob = mObjects.begin(); ob != mObjects.end(); ++ob)
 	{
 
@@ -186,7 +202,7 @@ void	WED_Archive::SaveToDB(sqlite3 * db)
 }
 
 void			WED_Archive::SaveToXML(WED_XMLElement * parent)
-{	
+{
 	// old code bumps cache key on save...wHY?!
 	//++mCacheKey;
 	WED_XMLElement * obj = parent->add_sub_element("objects");
@@ -199,8 +215,12 @@ void			WED_Archive::SaveToXML(WED_XMLElement * parent)
 
 	mOpCount = 0;
 }
-
-
+#if WITHNWLINK
+void			WED_Archive::SetNWLinkAdapter(WED_NWLinkAdapter * inAdapter)
+{
+	mNWAdapter = inAdapter;
+}
+#endif
 void			WED_Archive::SetUndoManager(WED_UndoMgr * mgr)
 {
 	mUndoMgr = mgr;
@@ -219,7 +239,7 @@ void			WED_Archive::CommitCommand(void)
 
 	++mOpCount;
 
-#if DEV	
+#if DEV
 	this->Validate();
 #endif
 }
@@ -281,7 +301,7 @@ void		WED_Archive::StartElement(
 		{
 			++a;
 			++a;
-		}		
+		}
 	}
 	if(id_str == NULL || class_name == NULL)
 	{
@@ -296,7 +316,7 @@ void		WED_Archive::StartElement(
 		return;
 	}
 	new_obj->FromXML(reader, atts);
-	
+
 }
 
 void		WED_Archive::EndElement(void)

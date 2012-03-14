@@ -26,8 +26,8 @@
 
 
 #if IBM
-        #include <Winsock2.h>
-        #include <Ws2tcpip.h>
+        #include <winsock2.h>
+        #include <ws2tcpip.h>
 #elif 0
 	#include <Carbon/Carbon.h>
 //	#include <OpenTransport.h>

@@ -43,7 +43,10 @@ class	WED_Thing;
 class	WED_TexMgr;
 class	WED_LibraryMgr;
 class	WED_ResourceMgr;
-
+#if WITHNWLINK
+class	WED_Server;
+class	WED_NWLinkAdapter;
+#endif
 typedef struct sqlite3 sqlite3;
 
 #include "GUI_Broadcaster.h"
@@ -84,7 +87,10 @@ public:
 	WED_Archive *		GetArchive(void);
 	WED_Thing *			GetRoot(void);
 	WED_UndoMgr *		GetUndoMgr(void);
-
+#if WITHNWLINK
+	WED_Server *		GetServer(void);
+	WED_NWLinkAdapter *	GetNWLink(void);
+#endif
 //	virtual void *		QueryInterface(const char * class_id);
 	virtual	IBase *		Resolver_Find(const char * path);
 	virtual void		LookupPath(string& io_path);		// Input: a relative or library path
@@ -107,7 +113,7 @@ public:
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
-	
+
 	virtual	void		Panic(void);
 
 	bool				TryClose(void);
@@ -142,7 +148,10 @@ private:
 	WED_LibraryMgr *	mLibraryMgr;
 	WED_ResourceMgr *	mResourceMgr;
 //	WED_Properties	mProperties;
-
+#if WITHNWLINK
+	WED_Server *		mServer;
+	WED_NWLinkAdapter *	mNWLink;
+#endif
 	WED_Document();
 	WED_Document(const WED_Document&);
 	WED_Document& operator=(const WED_Document&);

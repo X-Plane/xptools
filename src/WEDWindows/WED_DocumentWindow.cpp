@@ -50,7 +50,9 @@
 #include "WED_Routing.h"
 
 #include "WED_Orthophoto.h"
-
+#if WITHNWLINK
+#include "WED_Server.h"
+#endif
 #if LIN
 // temporary, testing stuff here
 #include "GUI_Fonts.h"
@@ -329,7 +331,18 @@ int	WED_DocumentWindow::HandleCommand(int command)
 
 	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
 	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
-
+#if WITHNWLINK
+	case wed_ToggleLiveView :
+		{
+			WED_Server * Serv = mDocument->GetServer();
+			if(Serv)
+			{
+				if	(Serv->IsStarted()) Serv->DoStop();
+				else					Serv->DoStart();
+			}
+		}
+		return 1;
+#endif
 	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
 	return 0;
@@ -398,8 +411,16 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 
 	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;
 	case wed_UnitMeters:ioCheck=!gIsFeet;return 1;
-
-	default:																return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
+#if WITHNWLINK
+	case wed_ToggleLiveView :
+		{
+			WED_Server * Serv = mDocument->GetServer();
+			if (Serv) {ioCheck = Serv->IsStarted(); return 1;}
+			ioCheck = false;
+		}
+		return 0;
+#endif
+	default: return mMapPane->Map_CanHandleCommand(command, ioName, ioCheck);
 	}
 }
 

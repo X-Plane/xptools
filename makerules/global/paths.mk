@@ -26,6 +26,7 @@ INCLUDEPATHS += -I./src/WEDImportExport
 INCLUDEPATHS += -I./src/WEDLayers
 INCLUDEPATHS += -I./src/WEDLibrary
 INCLUDEPATHS += -I./src/WEDMap
+INCLUDEPATHS += -I./src/WEDNetwork
 INCLUDEPATHS += -I./src/WEDProperties
 INCLUDEPATHS += -I./src/WEDResources
 INCLUDEPATHS += -I./src/WEDWindows

@@ -52,8 +52,10 @@ class	WED_Persistent;
 class	WED_UndoLayer;
 class	WED_UndoMgr;
 class	WED_XMLElement;
-
 class	IResolver;
+#if WITHNWLINK
+class	WED_NWLinkAdapter;
+#endif
 
 #include "GUI_Broadcaster.h"
 
@@ -79,7 +81,9 @@ public:
 	void			LoadFromDB(sqlite3 * db, const map<int,int>& mapping);
 	void			SaveToDB(sqlite3 * db);
 	void			SaveToXML(WED_XMLElement * parent);
-
+#if WITHNWLINK
+	void			SetNWLinkAdapter(WED_NWLinkAdapter * inAdapter);
+#endif
 	// Undo convenience API.
 	void			SetUndoManager(WED_UndoMgr * mgr);
 	void			__StartCommand(const string& inName, const char * file, int line);		// pass-throughs
@@ -90,18 +94,18 @@ public:
 	int				IsDirty(void);	// returns operation count since save, 0 if we're saved, or positive if new changes, or negative if saved changes were undone.
 
 	long long		CacheKey(void);
-	
+
 	void			Validate(void);
-	
+
 	IResolver *		GetResolver(void) { return mResolver; }
-	
+
 	virtual void		StartElement(
 								WED_XMLReader * reader,
 								const XML_Char *	name,
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
-	
+
 
 private:
 
@@ -117,6 +121,9 @@ private:
 	bool			mDying;			// Flag to self - WE are killing ourselves - ignore objects.
 	WED_UndoLayer *	mUndo;
 	WED_UndoMgr *	mUndoMgr;
+#if WITHNWLINK
+	WED_NWLinkAdapter *	mNWAdapter;
+#endif
 // Not allowed yet
 
 	WED_Archive(const WED_Archive& rhs);
@@ -126,7 +133,7 @@ private:
 	int				mOpCount;
 
 	long long		mCacheKey;
-	
+
 	IResolver *		mResolver;
 
 };

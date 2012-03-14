@@ -51,6 +51,9 @@ class	IDocPrefs;
 class	WED_Archive;
 class	GUI_Commander;
 class	WED_LibraryListAdapter;
+#if WITHNWLINK
+class	WED_NWInfoLayer;
+#endif
 /*
 
 	Note: the map pane is _not_ a commander.  Commanders participate in focus in a direct chain -- that is, two commanders can't "share" focus.  But
@@ -96,7 +99,9 @@ private:
 	WED_StructureLayer *	mStructureLayer;
 	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
-
+#if WITHNWLINK
+	WED_NWInfoLayer *		mNWInfoLayer;
+#endif
 	GUI_ToolBar *			mToolbar;
 
 	GUI_Table *						mTable;

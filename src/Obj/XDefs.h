@@ -76,12 +76,16 @@
 #define	CGAL_BETA_SIMPLIFIER 0
 
 // This define controls the inclusion of experimental next-gen features for ATC.  I have added them as I need to generate experimental data.
-// READ MY LIPS: DO NOT SET THIS TO 1.  
+// READ MY LIPS: DO NOT SET THIS TO 1.
 // The file formats for ATC are not even REMOTELY close to being finished...if you set this to 1 and compile WED, you will create a WED that will make:
 // - Bogus output apt.dat files.
 // - Bogus earth.wed files that won't work with either future WEDs or the current WED.
-// So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!  
+
+// So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!
 #define AIRPORT_ROUTING 1
+
+// mroe : -- really early stage of dev , do not change.
+#define WITHNWLINK 1
 
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
@@ -128,7 +132,7 @@
 		};
 	}
 	#define vector __dev_vector
-	
+
 #endif
 
 using namespace std;
@@ -244,16 +248,16 @@ using namespace std;
 #endif
 
 /************************************************************************************************************************************************************************
- * CGAL ADAPTER MACROS.  
+ * CGAL ADAPTER MACROS.
  ************************************************************************************************************************************************************************/
- 
+
 /*
 	The original theory was that we would use macros to let the airport code run in either double-precision or CGAL-precision math.  But in practice this is probably
 	not going to happen.  A few months ago as I was moving to CGAL 3.3 I thought this could be handy.  But the structure that is emerging now is a conversion from
 	IEEE to CGAL at the point where we need to do "precise" operations (like polygon intersections).  The storage of airports (and such) in IEEE usually is a flag
 	to the programmer that the data has not been validated.
-	
-	That's all a long way of saying: someday these will go away when I get around to it.  /ben	
+
+	That's all a long way of saying: someday these will go away when I get around to it.  /ben
 */
 
 #define CGAL2DOUBLE(x)		(x)

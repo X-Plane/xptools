@@ -49,7 +49,7 @@ enum {
 	wed_CheckPolys,
 #if AIRPORT_ROUTING
 	wed_MakeRouting,
-#endif	
+#endif
 	wed_Split,
 #if AIRPORT_ROUTING
 	wed_Merge,
@@ -85,6 +85,9 @@ enum {
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 	wed_ToggleTerraserver,
+#if WITHNWLINK
+	wed_ToggleLiveView,
+#endif
 	wed_TogglePreview,
 	wed_RestorePanes,
 	// Select Menu
@@ -96,7 +99,7 @@ enum {
 	wed_SelectZeroLength,
 	wed_SelectDoubles,
 	wed_SelectCrossing,
-#endif	
+#endif
 	// Airport Menu
 	wed_CreateApt,
 	wed_EditApt,

@@ -23,6 +23,10 @@
 
 #include <stdint.h>
 
+#if WITHNWLINK
+#include "WED_Server.h"
+#include "WED_NWLinkAdapter.h"
+#endif
 #include "WED_Document.h"
 #include "GUI_Resources.h"
 #include "WED_PackageMgr.h"
@@ -64,9 +68,14 @@ WED_Document::WED_Document(
 	mFilePath(gPackageMgr->ComputePath(package, "earth.wed")),
 //	mDB(mFilePath.c_str()),
 //	mPackage(inPackage),
+#if WITHNWLINK
+	mServer(NULL),
+	mNWLink(NULL),
+#endif
 	mUndo(&mArchive, this),
 	mArchive(this)
 {
+
 	mTexMgr = new WED_TexMgr(package);
 	mLibraryMgr = new WED_LibraryMgr(package);
 	mResourceMgr = new WED_ResourceMgr(mLibraryMgr);
@@ -101,6 +110,17 @@ WED_Document::WED_Document(
 	Revert();
 	mUndo.PurgeUndo();
 	mUndo.PurgeRedo();
+
+#if WITHNWLINK
+	if(sDocuments.size()==1)// only first document
+	{
+		mServer = new WED_Server(mPackage,ReadIntPref("network/port",10300));
+		mNWLink	= new WED_NWLinkAdapter(mServer,&mArchive);
+		mServer->AddListener(mNWLink);
+		AddListener(mNWLink);
+		mArchive.SetNWLinkAdapter(mNWLink);
+	}
+#endif
 }
 
 WED_Document::~WED_Document()
@@ -108,6 +128,10 @@ WED_Document::~WED_Document()
 	delete mTexMgr;
 	delete mResourceMgr;
 	delete mLibraryMgr;
+#if WITHNWLINK
+	delete mNWLink;
+	delete mServer;
+#endif
 	sDocuments.erase(this);
 	BroadcastMessage(msg_DocumentDestroyed, 0);
 }
@@ -137,7 +161,16 @@ WED_UndoMgr *	WED_Document::GetUndoMgr(void)
 {
 	return &mUndo;
 }
-
+#if WITHNWLINK
+WED_Server *	WED_Document::GetServer(void)
+{
+	return mServer;
+}
+WED_NWLinkAdapter *	WED_Document::GetNWLink(void)
+{
+	return mNWLink;
+}
+#endif
 void	WED_Document::Save(void)
 {
 	BroadcastMessage(msg_DocWillSave, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
@@ -286,6 +319,13 @@ bool	WED_Document::TryClose(void)
 		case close_Cancel:	return false;
 		}
 	}
+#if WITHNWLINK
+	if(mServer)
+	{
+		mServer->DoStop();
+		WriteIntPref("network/port", mServer->GetPort());
+	}
+#endif
 	AsyncDestroy();
 	return true;
 }
