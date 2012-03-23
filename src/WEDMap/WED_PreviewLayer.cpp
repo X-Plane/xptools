@@ -735,11 +735,12 @@ WED_PreviewLayer::~WED_PreviewLayer()
 {
 }
 
-void		WED_PreviewLayer::GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
+void		WED_PreviewLayer::GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = true;
 	draw_ent_s = false;
 	cares_about_sel = false;
+	wants_clicks = false;
 }
 
 

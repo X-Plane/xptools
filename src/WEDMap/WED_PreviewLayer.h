@@ -72,7 +72,7 @@ public:
 			int			GetObjDensity(void) const;
 
 	virtual	bool		DrawEntityVisualization		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected);
-	virtual	void		GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel);
+	virtual	void		GetCaps						(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 	virtual	void		DrawVisualization			(bool inCurent, GUI_GraphState * g);
 
 private:

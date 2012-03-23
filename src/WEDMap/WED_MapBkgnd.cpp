@@ -136,7 +136,7 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 
 }
 
-void		WED_MapBkgnd::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
+void		WED_MapBkgnd::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
-	draw_ent_v = draw_ent_s = cares_about_sel = 0;
+	draw_ent_v = draw_ent_s = cares_about_sel = wants_clicks = 0;
 }

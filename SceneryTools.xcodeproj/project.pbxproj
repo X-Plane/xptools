@@ -824,6 +824,10 @@
 		D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */; };
 		D6FA51D40E16DFAC001C1035 /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
 		D6FD4D7A0F1EC297005D8C93 /* WED_DSFImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FD4D790F1EC297005D8C93 /* WED_DSFImport.cpp */; };
+		D6FDBB4F15112F4D009DB5EF /* WED_Connection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FDBB4615112F4D009DB5EF /* WED_Connection.cpp */; };
+		D6FDBB5015112F4D009DB5EF /* WED_NWInfoLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FDBB4915112F4D009DB5EF /* WED_NWInfoLayer.cpp */; };
+		D6FDBB5115112F4D009DB5EF /* WED_NWLinkAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FDBB4B15112F4D009DB5EF /* WED_NWLinkAdapter.cpp */; };
+		D6FDBB5215112F4D009DB5EF /* WED_Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FDBB4D15112F4D009DB5EF /* WED_Server.cpp */; };
 		D6FEC58B0BE0E231006A99CC /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */; };
 		D6FEC6EF0BE0F019006A99CC /* WED_CreateLineTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */; };
 		D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */; };
@@ -1976,6 +1980,15 @@
 		D6F8E4D20C3D4DB1007A2EA7 /* ILibrarian.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ILibrarian.h; sourceTree = "<group>"; };
 		D6FD4D780F1EC297005D8C93 /* WED_DSFImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DSFImport.h; sourceTree = "<group>"; };
 		D6FD4D790F1EC297005D8C93 /* WED_DSFImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DSFImport.cpp; sourceTree = "<group>"; };
+		D6FDBB4615112F4D009DB5EF /* WED_Connection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Connection.cpp; sourceTree = "<group>"; };
+		D6FDBB4715112F4D009DB5EF /* WED_Connection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Connection.h; sourceTree = "<group>"; };
+		D6FDBB4815112F4D009DB5EF /* WED_NWDefs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NWDefs.h; sourceTree = "<group>"; };
+		D6FDBB4915112F4D009DB5EF /* WED_NWInfoLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_NWInfoLayer.cpp; sourceTree = "<group>"; };
+		D6FDBB4A15112F4D009DB5EF /* WED_NWInfoLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NWInfoLayer.h; sourceTree = "<group>"; };
+		D6FDBB4B15112F4D009DB5EF /* WED_NWLinkAdapter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_NWLinkAdapter.cpp; sourceTree = "<group>"; };
+		D6FDBB4C15112F4D009DB5EF /* WED_NWLinkAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NWLinkAdapter.h; sourceTree = "<group>"; };
+		D6FDBB4D15112F4D009DB5EF /* WED_Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Server.cpp; sourceTree = "<group>"; };
+		D6FDBB4E15112F4D009DB5EF /* WED_Server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Server.h; sourceTree = "<group>"; };
 		D6FE97C80D8858D30025D144 /* README_FIRST */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README_FIRST; sourceTree = "<group>"; };
 		D6FEC5890BE0E231006A99CC /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
 		D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
@@ -2514,6 +2527,7 @@
 				D60B0BD00C0658E600AD5EB7 /* WEDImportExport */,
 				D6226FB00E4C8874005BD1D7 /* WEDLibrary */,
 				D6BC37E10AB22C85003949C5 /* WEDMap */,
+				D6FDBB4515112F4D009DB5EF /* WEDNetwork */,
 				D6AC14390F126C930006E096 /* WEDTCE */,
 				D6BC37E70AB22C85003949C5 /* WEDWindows */,
 				D6BC382D0AB22C85003949C5 /* XESCore */,
@@ -3533,6 +3547,23 @@
 			);
 			path = WEDEntities;
 			sourceTree = "<group>";
+		};
+		D6FDBB4515112F4D009DB5EF /* WEDNetwork */ = {
+			isa = PBXGroup;
+			children = (
+				D6FDBB4615112F4D009DB5EF /* WED_Connection.cpp */,
+				D6FDBB4715112F4D009DB5EF /* WED_Connection.h */,
+				D6FDBB4815112F4D009DB5EF /* WED_NWDefs.h */,
+				D6FDBB4915112F4D009DB5EF /* WED_NWInfoLayer.cpp */,
+				D6FDBB4A15112F4D009DB5EF /* WED_NWInfoLayer.h */,
+				D6FDBB4B15112F4D009DB5EF /* WED_NWLinkAdapter.cpp */,
+				D6FDBB4C15112F4D009DB5EF /* WED_NWLinkAdapter.h */,
+				D6FDBB4D15112F4D009DB5EF /* WED_Server.cpp */,
+				D6FDBB4E15112F4D009DB5EF /* WED_Server.h */,
+			);
+			name = WEDNetwork;
+			path = ../xptools/src/WEDNetwork;
+			sourceTree = SOURCE_ROOT;
 		};
 		D6FF28500B6E42B000960D5E /* Interfaces */ = {
 			isa = PBXGroup;
@@ -4624,6 +4655,10 @@
 				D6282EFD13EC782B00FD236C /* WED_XMLReader.cpp in Sources */,
 				D6240D6D1476EAAE00A28A6F /* WED_ATCTimeRule.cpp in Sources */,
 				D6240D6E1476EAAE00A28A6F /* WED_ATCWindRule.cpp in Sources */,
+				D6FDBB4F15112F4D009DB5EF /* WED_Connection.cpp in Sources */,
+				D6FDBB5015112F4D009DB5EF /* WED_NWInfoLayer.cpp in Sources */,
+				D6FDBB5115112F4D009DB5EF /* WED_NWLinkAdapter.cpp in Sources */,
+				D6FDBB5215112F4D009DB5EF /* WED_Server.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

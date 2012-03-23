@@ -70,9 +70,10 @@ void	WED_DebugLayer::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 	#endif
 }
 
-void	WED_DebugLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
+void	WED_DebugLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = false;
 	draw_ent_s = false;
 	cares_about_sel = false;
+	wants_clicks = false;
 }

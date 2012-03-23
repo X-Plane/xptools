@@ -24,6 +24,8 @@
 #ifndef WED_MAPLAYER_H
 #define WED_MAPLAYER_H
 
+#include "GUI_Defs.h"
+
 class	WED_MapZoomerNew;
 class	GUI_GraphState;
 class	IGISEntity;
@@ -35,9 +37,14 @@ public:
 
 						 WED_MapLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver);
 	virtual				~WED_MapLayer();
+	
+	virtual	int					HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers) { return 0; }
+	virtual	void				HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers) {			}
+	virtual	void				HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers)	{			}
+	
 
 	// These provide generalized drawing routines.  Use this to draw background images and other such stuff.
-	virtual	void		DrawVisualization		(bool inCurrent, GUI_GraphState * g)	{ }
+	virtual	void		DrawVisualization		(bool inCurrent, GUI_GraphState * g) { }
 	virtual	void		DrawStructure			(bool inCurrent, GUI_GraphState * g) { }
 	virtual	void		DrawSelected			(bool inCurrent, GUI_GraphState * g) { }
 
@@ -51,7 +58,9 @@ public:
 	// Extra iterations over the entity hiearchy get very expensive.  This routine returns whether a layer wants
 	// per-entity drawing passes for either structure or visualization.  We can also say whether we need "seleted" to be
 	// calculated accurately - checking selection slows down the sped of drawing passes.
-	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)=0;
+	// Finally, "wants_clicks" tells if we want to interact with the mouse.  Tool derivatives do NOT need to set this -
+	// it is assumed that ALL tools get clicks.  But by asking for clicks, layers can jump in and grab the mouse too.
+	virtual	void		GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)=0;
 
 protected:
 

@@ -64,24 +64,24 @@ void		WED_TCEToolAdapter::DrawSelected			(bool inCurrent, GUI_GraphState * g)
 
 void		WED_TCEToolAdapter::DrawEntityVisualization	(bool inCurrent, IGISEntity * entity, GUI_GraphState * g)
 {
-	bool v,s,w;
-	brains->GetCaps(v,s,w);
+	bool v,s,w,c;
+	brains->GetCaps(v,s,w,c);
 	if(w)
 		brains->DrawEntityVisualization(inCurrent, entity, g, true);
 }
 
 void		WED_TCEToolAdapter::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g)
 {
-	bool v,s,w;
-	brains->GetCaps(v,s,w);
+	bool v,s,w,c;
+	brains->GetCaps(v,s,w,c);
 	if(w)
 		brains->DrawEntityStructure(inCurrent, entity, g, true);
 }
 
 void		WED_TCEToolAdapter::GetCaps(bool& draw_ent_v, bool& draw_ent_s)
 {
-	bool want_sel;
-	brains->GetCaps(draw_ent_v, draw_ent_s,want_sel);
+	bool want_sel, click;
+	brains->GetCaps(draw_ent_v, draw_ent_s,want_sel, click);
 }
 
 int			WED_TCEToolAdapter::FindProperty(const char * in_prop)

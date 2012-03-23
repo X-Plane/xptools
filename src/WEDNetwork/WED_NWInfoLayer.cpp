@@ -26,6 +26,7 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_Server.h"
 #include "WED_Messages.h"
+#include "GUI_GraphState.h"
 
 #include "GUI_Fonts.h"
 #if APL
@@ -39,6 +40,9 @@ WED_NWInfoLayer::WED_NWInfoLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResol
 {
 	mColor[0]= .5;mColor[1]= .5;mColor[2]= .5;mColor[3]= 1;
 	if(IsVisible()) ToggleVisible();
+	x = y = 100.0;
+	is_click = 0;
+	
 }
 
 WED_NWInfoLayer::~WED_NWInfoLayer()
@@ -51,11 +55,18 @@ void	WED_NWInfoLayer::DrawVisualization (bool inCurrent, GUI_GraphState * g)
 	int bnds[4];
 	GetHost()->GetBounds(bnds);
 	GUI_FontDraw(g, font_UI_Basic, mColor, bnds[2] - 90, bnds[3] - 18,"live mode");
+	g->SetState(false,0, false,false,false,false,false);
+	glPointSize(10);
+	glBegin(GL_POINTS);
+	glVertex2f(x,y);
+	glEnd();
+	glPointSize(1);
 }
 
-void	WED_NWInfoLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
+void	WED_NWInfoLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = 0;
+	wants_clicks = 1;
 }
 
 void	WED_NWInfoLayer::ReceiveMessage(GUI_Broadcaster * inSrc,intptr_t inMsg,intptr_t inParam)
@@ -82,4 +93,29 @@ void	WED_NWInfoLayer::ReceiveMessage(GUI_Broadcaster * inSrc,intptr_t inMsg,intp
 
 	GetHost()->Refresh();
 }
+
+int			WED_NWInfoLayer::HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
+{
+	if(fabsf(inX - x) > 10.0f||
+	   fabsf(inY - y) > 10.0f)
+		return 0;
+	   
+	x = inX;
+	y = inY;
+	is_click = 1;
+	return 1;
+}
+void		WED_NWInfoLayer::HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
+{
+	x = inX;
+	y = inY;
+}
+void		WED_NWInfoLayer::HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers)
+{
+	x = inX;
+	y = inY;
+	is_click = 0;
+}
+
+
 #endif

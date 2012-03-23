@@ -659,11 +659,12 @@ void		WED_StructureLayer::SetVerticesShowing(bool show)
 	GetHost()->Refresh();
 }
 
-void		WED_StructureLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
+void		WED_StructureLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = 1;
 	draw_ent_s = 1;
 	cares_about_sel = 1;
+	wants_clicks = 0;
 }
 
 void		WED_StructureLayer::DrawStructure(bool inCurrent, GUI_GraphState * g)

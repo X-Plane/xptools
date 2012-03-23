@@ -78,7 +78,7 @@ private:
 	WED_MapToolNew *				mTool;
 	IResolver *						mResolver;
 
-	int				mIsToolClick;
+	WED_MapLayer *	mClickLayer;
 	int				mX;
 	int				mY;
 

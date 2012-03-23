@@ -53,7 +53,7 @@ WED_Map::WED_Map(IResolver * in_resolver) :
 	mResolver(in_resolver)
 {
 	mTool = NULL;
-	mIsToolClick = 0;
+	mClickLayer = NULL;
 	mIsDownCount = 0;
 	mIsDownExtraCount = 0;
 }
@@ -64,7 +64,7 @@ WED_Map::~WED_Map()
 
 void		WED_Map::SetTool(WED_MapToolNew * tool)
 {
-	if (mTool) mTool->KillOperation(mIsToolClick);
+	if (mTool) mTool->KillOperation(mClickLayer == mTool);
 	mTool = tool;
 }
 
@@ -92,7 +92,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	Bbox2 bounds;
 
-	bool draw_ent_v, draw_ent_s, wants_sel;
+	bool draw_ent_v, draw_ent_s, wants_sel, wants_clicks;
 
 	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
@@ -102,7 +102,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
-		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel);
+		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
 		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
 		(*l)->DrawVisualization(cur == *l, state);
 	}
@@ -110,7 +110,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	for (l = mLayers.begin(); l != mLayers.end(); ++l)
 	if((*l)->IsVisible())
 	{
-		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel);
+		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
 		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
 		(*l)->DrawStructure(cur == *l, state);
 	}
@@ -282,8 +282,24 @@ int			WED_Map::MouseDown(int x, int y, int button)
 	}
 	if (button > 1) ++mIsDownExtraCount;
 
-	if(button==0) mIsToolClick = 0;
-	if(button==0 && mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { mIsToolClick=1; }
+	if(button==0)
+	{
+		mClickLayer = NULL;	
+		for(vector<WED_MapLayer *>::iterator l = mLayers.begin(); l != mLayers.end(); ++l)
+		{
+			bool draw_ent_v, draw_ent_s, wants_sel, wants_clicks;
+			(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
+			if(wants_clicks)
+			{
+				if((*l)->HandleClickDown(x,y,button, GetModifiersNow())) { 
+					mClickLayer = *l;
+					break;
+				}
+			}
+		}
+	}
+	if(button == 0 && mClickLayer == NULL && mTool && mTool->HandleClickDown(x,y,button, GetModifiersNow())) { mClickLayer=mTool; }	
+
 	if(button==1)
 	{
 		mX = x;
@@ -296,7 +312,7 @@ int			WED_Map::MouseDown(int x, int y, int button)
 
 void		WED_Map::MouseDrag(int x, int y, int button)
 {
-	if (button==0 && mIsToolClick && mTool) mTool->HandleClickDrag(x,y,button, GetModifiersNow());
+	if (button==0 && mClickLayer) mClickLayer->HandleClickDrag(x,y,button, GetModifiersNow());
 	if (button==1)
 	{
 		this->PanPixels(mX, mY, x, y);
@@ -311,9 +327,9 @@ void		WED_Map::MouseUp  (int x, int y, int button)
 	--mIsDownCount;
 	if (button > 1) --mIsDownExtraCount;
 
-	if (button==0&&mIsToolClick && mTool)	mTool->HandleClickUp(x,y,button, GetModifiersNow());
+	if (button==0&&mClickLayer)	mClickLayer->HandleClickUp(x,y,button, GetModifiersNow());
 	if (button==1)				this->PanPixels(mX, mY, x, y);
-	if(button==0)mIsToolClick = 0;
+	if(button==0)mClickLayer = NULL;
 	Refresh();
 }
 

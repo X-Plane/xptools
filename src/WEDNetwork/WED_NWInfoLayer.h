@@ -40,10 +40,18 @@ public:
 
 	virtual void	DrawVisualization		(bool inCurrent, GUI_GraphState * g);
 
-	virtual void	GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel);
+	virtual void	GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
+
+	virtual	int					HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
+	virtual	void				HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
+	virtual	void				HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers);
+	
 
 
 private:
+
+	float	x, y;
+	int	is_click;
 
 			float	mColor[4];
 };

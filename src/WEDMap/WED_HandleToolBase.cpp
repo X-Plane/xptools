@@ -652,9 +652,9 @@ void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 	mDragType = drag_None;
 }
 
-void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel)
+void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
-	draw_ent_v = draw_ent_s = cares_about_sel = 0;
+	draw_ent_v = draw_ent_s = cares_about_sel = wants_clicks = 0;
 }
 
 void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
