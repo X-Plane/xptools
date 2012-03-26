@@ -24,16 +24,21 @@
 #ifndef WED_XPLUGINCLIENT_H
 #define WED_XPLUGINCLIENT_H
 
+
 #include <vector>
+#include <string>
+
+using std::string;
+using std::vector;
 
 class PCSBSocket;
-class WED_XPLuginMgr;
+class WED_XPluginMgr;
 
 class	WED_XPluginClient  {
 
 public:
 
-				WED_XPluginClient();
+				WED_XPluginClient(WED_XPluginMgr* inMgr);
 			virtual	~WED_XPluginClient();
 
 				void 	Connect();
@@ -48,6 +53,7 @@ public:
 				int 	DoProcessing();
 				int 	SendData(const char * inBuffer ,int inSize);
 				int		SendData(const char* hdr,int type,int id,const string& args);
+
 
 
 private:

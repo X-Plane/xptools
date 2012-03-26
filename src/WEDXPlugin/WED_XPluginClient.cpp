@@ -33,8 +33,8 @@
 #define DEFAULT_Port		10300
 #define CLIENT_VERS			"100"
 
-WED_XPluginClient::WED_XPluginClient():
-	mIsReady(false),mSocket(NULL)
+WED_XPluginClient::WED_XPluginClient(WED_XPluginMgr* inMgr):
+	mMgr(inMgr),mIsReady(false),mSocket(NULL)
 
 {
     mStatus = "disconnected";
@@ -42,13 +42,12 @@ WED_XPluginClient::WED_XPluginClient():
 	mIdent  = (unsigned long) this;
 	mIPAddr = PCSBSocket::LookupAddress(DEFAULT_IPAddr);
 	mPort   = DEFAULT_Port;
-	mMgr = new WED_XPluginMgr(this);
 }
 
 WED_XPluginClient::~WED_XPluginClient()
 {
+    mMgr = NULL;
 	Disconnect();
-	delete mMgr;
 	PCSBSocket::ShutdownNetworking(true);
 }
 
@@ -78,7 +77,7 @@ void  WED_XPluginClient::Disconnect()
 	mOutBuf.clear();
 	mInBuf.clear();
 	mIsReady = false;
-	mMgr->SetPackage("unknown");
+	if(mMgr)mMgr->SetPackage("unknown");
 	mStatus = "disconnected";
 }
 
@@ -156,6 +155,8 @@ int  WED_XPluginClient::DoProcessing()
 
 void WED_XPluginClient::DoParseMore()
 {
+    if(!mMgr) return;
+
 	int id = 0;
 	int type = 0;
 	vector<string> tokens;
@@ -213,6 +214,7 @@ void WED_XPluginClient::DoParseMore()
 					else if (tokens[0] == WED_NWP_DEL) mMgr->Del(id);
 					else if (tokens[0] == WED_NWP_ADD) mMgr->Add(id,type,tokens);
 					else if (tokens[0] == WED_NWP_CHG) mMgr->Chg(id,type,tokens);
+					else if (tokens[0] == WED_NWP_CAM) mMgr->UpdateCam(type,tokens);
 				}
 			}
 

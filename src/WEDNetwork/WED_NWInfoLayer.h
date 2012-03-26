@@ -25,6 +25,7 @@
 #define WED_NWINFOLAYER_H
 
 #include "WED_MapLayer.h"
+#include "WED_NWLinkAdapter.h"
 #include "GUI_Timer.h"
 #include "GUI_Listener.h"
 
@@ -32,28 +33,37 @@
 class	WED_NWInfoLayer : public GUI_Listener, public WED_MapLayer {
 public:
 
-					WED_NWInfoLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver);
+        WED_NWInfoLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver,WED_NWLinkAdapter * nwlink);
 		virtual	~WED_NWInfoLayer();
 
 
 			void	ReceiveMessage(	GUI_Broadcaster * inSrc,intptr_t inMsg,intptr_t inParam);
 
-	virtual void	DrawVisualization		(bool inCurrent, GUI_GraphState * g);
-
+	virtual void	DrawStructure(bool inCurrent, GUI_GraphState * g);
+    virtual void	DrawVisualization(bool inCurrent, GUI_GraphState * g);
 	virtual void	GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 
-	virtual	int					HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
-	virtual	void				HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
-	virtual	void				HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers);
-	
+	virtual	int		HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
+	virtual	void	HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
+	virtual	void	HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 
 
 private:
 
-	float	x, y;
-	int	is_click;
+    enum drag_mode
+    {
+        dm_none    = 0,
+        dm_heading    ,
+        dm_altitude   ,
+        dm_pitch      ,
+    };
 
-			float	mColor[4];
+    drag_mode	mDragMode;
+	float	mTmpX, mTmpY;
+
+    float	mColor[4];
+    WED_NWLinkAdapter* mNWLink;
+
 };
 
 #endif /* WED_NWINFOLAYER_H */

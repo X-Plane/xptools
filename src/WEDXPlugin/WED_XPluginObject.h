@@ -33,7 +33,7 @@ class WED_XPluginObject : public WED_XPluginEntity
 {
 public:
 
-   		WED_XPluginObject(int inType,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef);
+   		WED_XPluginObject(WED_XPluginMgr * inRef);
     	virtual ~WED_XPluginObject();
 
 		void 	 		Draw(bool isLit);

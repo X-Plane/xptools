@@ -37,41 +37,44 @@ class WED_XPluginEntity
 {
 public:
 
-    WED_XPluginEntity(int inType ,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef);
+    WED_XPluginEntity(int inType,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef);
     virtual ~WED_XPluginEntity();
 
-	virtual void	 Draw(bool isLit);
-	virtual int     GetType(){return mType;}
-	virtual void 	 SetResPath(const string& inPath){mResPath=inPath;}
-  	virtual string	 GetResPath(){return mResPath;}
- 	virtual void	 SetName(const string& inName){mName=inName;}
-  	virtual string	 GetName(){return mName;}
-   	virtual void	 SetLat(double inLat){mLat = inLat;}
-   	virtual void	 SetLon(double inLon){mLon = inLon;}
-   	virtual void	 SetAlt(double inAlt){mAlt = inAlt;}
-	virtual void	 SetHdg(double inHdg){mHdg = inHdg;}
-	virtual void    SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
-
+    virtual void    Draw(bool isLit);
+    virtual int     GetType(){return mType;}
+    virtual void    SetResPath(const string& inPath){mResPath=inPath;}
+    virtual string  GetResPath(){return mResPath;}
+    virtual void    SetName(const string& inName){mName=inName;}
+    virtual string  GetName(){return mName;}
+    virtual void    SetLat(double inLat){mLat = inLat;}
+    virtual void    SetLon(double inLon){mLon = inLon;}
+    virtual void    SetAlt(double inAlt){mAlt = inAlt;}
+    virtual void    GetLoc(double * outLat,double * outLon,double * outAlt);
+    virtual void    GetPos(float * outX,float * outY,float * outZ);
+    virtual void    SetHdg(double inHdg){mHdg = inHdg;}
+    virtual void    SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
 
 private:
 
-	friend class WED_XPluginObject;
-	friend class WED_XPluginFacade;
+    friend class WED_XPluginObject;
+    friend class WED_XPluginFacade;
+    friend class WED_XPluginFacNode;
+    friend class WED_XPluginFacRing;
 
-	int					mType;
-	string 			 	mName;
-	string			 	mResPath;
-	WED_XPluginMgr * 	mMgrRef;
+    int					mType;
+    string 			 	mName;
+    string			 	mResPath;
+    WED_XPluginMgr * 	mMgrRef;
     XPLMProbeRef	 	mProbeRef;
 
-	double				mLon;
-	double				mLat;
-	double			 	mAlt;
-	float				mHdg;
+    double				mLon;
+    double				mLat;
+    double			 	mAlt;
+    float				mHdg;
 
     bool				mSetToTerrain;
 
-	void	WorldToLocal(float * outX,float * outY,float * outZ,bool inToTerrain);
+    static void	WorldToLocal(float * outX,float * outY,float * outZ,WED_XPluginEntity* inEntity);
 };
 
 #endif // WED_XPLUGINENTITY_H

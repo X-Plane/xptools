@@ -36,7 +36,8 @@
 
 
 WED_XPluginEntity::WED_XPluginEntity(int inType,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef):
- 	mType(inType),mMgrRef(inRef),mProbeRef(inProbeRef),mLon(0),mLat(0),mAlt(0),mHdg(0),mSetToTerrain(false)
+ 	mType(inType),mMgrRef(inRef),mProbeRef(inProbeRef),mLon(0),mLat(0),mAlt(0),mHdg(0),
+ 	mSetToTerrain(false)
 {
 	mResPath="";
 	mName="unknown";
@@ -48,10 +49,22 @@ WED_XPluginEntity::~WED_XPluginEntity()
 
 }
 
+void   WED_XPluginEntity::GetLoc(double * outLat,double * outLon,double * outAlt)
+{
+    if (outLat) *outLat = mLat;
+	if (outLon) *outLon = mLon;
+	if (outAlt) *outAlt = mAlt;
+}
+
+void   WED_XPluginEntity::GetPos(float * outX,float * outY,float * outZ)
+{
+	WorldToLocal(outX,outY,outZ,this);
+}
+
 void WED_XPluginEntity::Draw(bool isLit)
 {
 	float x,y,z;
-	WorldToLocal(&x,&y,&z,mSetToTerrain);
+	WorldToLocal(&x,&y,&z,this);
 
 	XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
 	glColor3f(1.0, 0.0, 0.5);
@@ -67,38 +80,38 @@ void WED_XPluginEntity::Draw(bool isLit)
 	glEnd();
 }
 
-void WED_XPluginEntity::WorldToLocal(float * outX,float * outY,float * outZ,bool inToTerrain)
+void WED_XPluginEntity::WorldToLocal(float * outX,float * outY,float * outZ,WED_XPluginEntity* inEntity)
 {
 	double x,y,z = 0;
 
-	if(inToTerrain)
+	if(inEntity->mSetToTerrain)
 	{
-		if (mProbeRef)
+		if (inEntity->mProbeRef)
 		{
 			double lat,lon,alt = 0;
 
 			XPLMProbeInfo_t	 aProbeInfo;
 			aProbeInfo.structSize = sizeof(XPLMProbeInfo_t);
 
-			XPLMWorldToLocal(mLat,mLon,0,&x,&y,&z);
+			XPLMWorldToLocal(inEntity->mLat,inEntity->mLon,0,&x,&y,&z);
 
-			if (XPLMProbeTerrainXYZ(mProbeRef,x,y,z,&aProbeInfo) == xplm_ProbeHitTerrain)
+			if (XPLMProbeTerrainXYZ(inEntity->mProbeRef,x,y,z,&aProbeInfo) == xplm_ProbeHitTerrain)
 			{
 				y = aProbeInfo.locationY ;
 
 				XPLMLocalToWorld(x,y,z,&lat,&lon,&alt);
-				XPLMWorldToLocal(mLat,mLon,alt,&x,&y,&z);
+				XPLMWorldToLocal(inEntity->mLat,inEntity->mLon,alt,&x,&y,&z);
 
-				XPLMProbeTerrainXYZ(mProbeRef,x,y,z,&aProbeInfo);
+				XPLMProbeTerrainXYZ(inEntity->mProbeRef,x,y,z,&aProbeInfo);
 				y = aProbeInfo.locationY ;
 
-				XPLMLocalToWorld(x,y,z,&lat,&lon,&mAlt);
-				mSetToTerrain = false;
+				XPLMLocalToWorld(x,y,z,&lat,&lon,&inEntity->mAlt);
+				inEntity->mSetToTerrain = false;
 			}
 		}
     }
     else
-    	XPLMWorldToLocal(mLat,mLon,mAlt,&x,&y,&z);
+    	XPLMWorldToLocal(inEntity->mLat,inEntity->mLon,inEntity->mAlt,&x,&y,&z);
 
 	if (outX) *outX = (float) x;
 	if (outY) *outY = (float) y;

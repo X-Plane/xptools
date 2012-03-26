@@ -27,22 +27,28 @@
 #include "WED_Server.h"
 #include "WED_Messages.h"
 #include "GUI_GraphState.h"
+#include "GUI_DrawUtils.h"
+#include "XESConstants.h"
+#include "WED_Colors.h"
 
 #include "GUI_Fonts.h"
 #if APL
-	#include <OpenGL/gl.h>
+#include <OpenGL/gl.h>
 #else
-	#include <GL/gl.h>
+#include <GL/gl.h>
 #endif
 
 
-WED_NWInfoLayer::WED_NWInfoLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) : WED_MapLayer(h, zoomer, resolver)
+WED_NWInfoLayer::WED_NWInfoLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver,WED_NWLinkAdapter * nwlink) :
+    WED_MapLayer(h, zoomer, resolver),mNWLink(nwlink)
 {
-	mColor[0]= .5;mColor[1]= .5;mColor[2]= .5;mColor[3]= 1;
-	if(IsVisible()) ToggleVisible();
-	x = y = 100.0;
-	is_click = 0;
-	
+    mColor[0]= .5;
+    mColor[1]= .5;
+    mColor[2]= .5;
+    mColor[3]= 1;
+    if(IsVisible()) ToggleVisible();
+    mTmpX = mTmpY = 0;
+    mDragMode = dm_none;
 }
 
 WED_NWInfoLayer::~WED_NWInfoLayer()
@@ -50,71 +56,244 @@ WED_NWInfoLayer::~WED_NWInfoLayer()
 
 }
 
-void	WED_NWInfoLayer::DrawVisualization (bool inCurrent, GUI_GraphState * g)
+void	WED_NWInfoLayer::DrawStructure(bool inCurrent, GUI_GraphState * g)
 {
-	int bnds[4];
-	GetHost()->GetBounds(bnds);
-	GUI_FontDraw(g, font_UI_Basic, mColor, bnds[2] - 90, bnds[3] - 18,"live mode");
-	g->SetState(false,0, false,false,false,false,false);
-	glPointSize(10);
-	glBegin(GL_POINTS);
-	glVertex2f(x,y);
-	glEnd();
-	glPointSize(1);
+    if(mNWLink && mNWLink->IsCamEnabled())
+    {
+        g->SetState(false,0, false,false,false,false,false);
+        glColor3f(.5,.1,.1);
+
+        float hX,hY;
+        float x = GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
+        float y = GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
+        float h = mNWLink->GetCamHdg();
+
+        glPointSize(10);
+        glBegin(GL_POINTS);
+        glVertex2f(x,y);
+        glEnd();
+
+        glColor4fv(WED_Color_RGBA(wed_ControlHandle));
+
+        if(mDragMode == dm_heading)
+        {
+            hX=mTmpX;
+            hY=mTmpY;
+        }
+        else
+        {
+            if(mDragMode == dm_altitude || mDragMode == dm_pitch)
+            {
+                glBegin(GL_POINTS);
+                glVertex2f(x,mTmpY);
+                glEnd();
+            }
+            hX = x+sin(h * DEG_TO_RAD)*20;
+            hY = y+cos(h * DEG_TO_RAD)*20;
+        }
+
+        glBegin(GL_LINE);
+        glVertex2f(x,y);
+        glVertex2f(hX,hY);
+        glEnd();
+        GUI_PlotIcon(g,"handle_rotatehead.png",hX,hY,h,1.0);
+
+        glPointSize(1);
+    }
+}
+void	WED_NWInfoLayer::DrawVisualization(bool inCurrent, GUI_GraphState * g)
+{
+    int bnds[4];
+    GetHost()->GetBounds(bnds);
+    GUI_FontDraw(g, font_UI_Basic, mColor, bnds[2] - 90, bnds[3] - 18,"live mode");
 }
 
 void	WED_NWInfoLayer::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
-	draw_ent_v = draw_ent_s = cares_about_sel = 0;
-	wants_clicks = 1;
+    draw_ent_v = draw_ent_s = cares_about_sel = 0;
+    wants_clicks = 1;
 }
 
 void	WED_NWInfoLayer::ReceiveMessage(GUI_Broadcaster * inSrc,intptr_t inMsg,intptr_t inParam)
 {
-	WED_Server * ser = dynamic_cast<WED_Server *>(inSrc);
-	if(!ser) return;
+    WED_NWLinkAdapter * nwlink = dynamic_cast<WED_NWLinkAdapter *>(inSrc);
+    if(!nwlink) return;
 
-	if(inMsg == msg_NetworkStatusInfo )
-	{
-		switch(inParam)
-		{
-			case WED_Server::s_newdata :		return;
-			case WED_Server::s_started :
-				if (!IsVisible())ToggleVisible(); break;
-			case WED_Server::s_stopped :
-				if (IsVisible())ToggleVisible(); break;
-		}
-	}
+    if(inMsg == msg_NetworkStatusInfo )
+    {
+        switch(inParam)
+        {
+        case WED_Server::s_newdata :
+            break;
+        case WED_Server::s_started :
+            if (!IsVisible())ToggleVisible();
+            break;
+        case WED_Server::s_stopped :
+            if (IsVisible())ToggleVisible();
+            break;
+        case WED_Server::s_changed :
+            break;
 
-	if (ser->IsReady())
-		{mColor[0]= .2 ;mColor[1]=  1;mColor[2]= .2;}
-	else
-		{mColor[0]=  1 ;mColor[1]= .2;mColor[2]= .2;}
+        default :
+            return;
+        }
 
-	GetHost()->Refresh();
+        if (nwlink->IsReady())
+        {
+            mColor[0]= .2 ;
+            mColor[1]=  1;
+            mColor[2]= .2;
+        }
+        else
+        {
+            mColor[0]=  1 ;
+            mColor[1]= .2;
+            mColor[2]= .2;
+        }
+
+        GetHost()->Refresh();
+    }
 }
 
 int			WED_NWInfoLayer::HandleClickDown(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
 {
-	if(fabsf(inX - x) > 10.0f||
-	   fabsf(inY - y) > 10.0f)
-		return 0;
-	   
-	x = inX;
-	y = inY;
-	is_click = 1;
-	return 1;
+    if(!mNWLink || mNWLink->IsCamEnabled() == false) return 0;
+
+    float x = GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
+    float y = GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
+
+    if(fabsf(inX - x) < 10.0f&&
+            fabsf(inY - y) < 10.0f)
+
+    {
+        if(modifiers == gui_ControlFlag)
+        {
+            mTmpY = y;
+            mDragMode = dm_altitude;
+        }
+        else if(modifiers == gui_ShiftFlag)
+        {
+            mTmpY = y;
+            mDragMode = dm_pitch;
+            mNWLink->SetCamPit(0);
+        }
+        else
+        {
+            mNWLink->SetCamLon(GetZoomer()->XPixelToLon(inX));
+            mNWLink->SetCamLat(GetZoomer()->YPixelToLat(inY));
+            mDragMode = dm_none;
+        }
+        mNWLink->SendCamData();
+        return 1;
+    }
+
+
+    float h = mNWLink->GetCamHdg();
+    float tx = x+sin(h * DEG_TO_RAD)*20;
+    float ty = y+cos(h * DEG_TO_RAD)*20;
+
+    if (fabsf(inX - tx) < 5.0f&&
+            fabsf(inY - ty) < 5.0f)
+    {
+        mTmpX = inX;
+        mTmpY = inY;
+        mNWLink->SetCamHdg(atan2(inX-x,inY-y)*RAD_TO_DEG);
+        mDragMode = dm_heading;
+        mNWLink->SendCamData();
+        return 1;
+    }
+
+    return 0;
 }
+
 void		WED_NWInfoLayer::HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFlags modifiers)
 {
-	x = inX;
-	y = inY;
+    if(!mNWLink || mNWLink->IsCamEnabled() == false) return;
+
+    float x,y,v;
+    switch(mDragMode)
+    {
+    case  dm_none :
+
+        mNWLink->SetCamLon(GetZoomer()->XPixelToLon(inX));
+        mNWLink->SetCamLat(GetZoomer()->YPixelToLat(inY));
+        break;
+
+    case dm_heading :
+
+        x = GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
+        y = GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
+        mNWLink->SetCamHdg(atan2(inX-x,inY-y)*RAD_TO_DEG);
+        mTmpX = inX;
+        mTmpY = inY;
+        break;
+
+    case  dm_altitude :
+
+        v = mNWLink->GetCamAlt();
+        v += inY-mTmpY;
+        if ( v < 2 )v = 2;
+        else  mTmpY = inY;
+        mNWLink->SetCamAlt(v);
+        break;
+
+    case dm_pitch :
+
+        v = mNWLink->GetCamPit();
+        v += inY-mTmpY;
+        if      ( v < -90 )v = -90;
+        else if ( v >  90 )v =  90;
+        else  mTmpY = inY;
+        mNWLink->SetCamPit(v);
+        break;
+    }
+
+    mNWLink->SendCamData();
 }
+
 void		WED_NWInfoLayer::HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFlags modifiers)
 {
-	x = inX;
-	y = inY;
-	is_click = 0;
+    if(!mNWLink || mNWLink->IsCamEnabled() == false) return;
+
+    float x,y,v;
+    switch(mDragMode)
+    {
+    case  dm_none :
+
+        mNWLink->SetCamLon(GetZoomer()->XPixelToLon(inX));
+        mNWLink->SetCamLat(GetZoomer()->YPixelToLat(inY));
+        break;
+
+    case dm_heading :
+
+        x = GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
+        y = GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
+        mNWLink->SetCamHdg(atan2(inX-x,inY-y)*RAD_TO_DEG);
+        break;
+
+    case dm_altitude :
+
+        v = mNWLink->GetCamAlt();
+        v += inY-mTmpY;
+        if ( v < 2 )v = 2;
+        else  mTmpY = inY;
+        mNWLink->SetCamAlt(v);
+        break;
+
+    case dm_pitch :
+
+        v = mNWLink->GetCamPit();
+        v += inY-mTmpY;
+        if      ( v < -90 )v = -90;
+        else if ( v >  90 )v =  90;
+        else  mTmpY = inY;
+        mNWLink->SetCamPit(v);
+        break;
+
+    }
+
+    mDragMode = dm_none;
+    mNWLink->SendCamData();
 }
 
 

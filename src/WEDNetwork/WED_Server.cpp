@@ -187,7 +187,8 @@ int WED_Server::DoParseMore(vector<char>& io_buf)
 			{
 				if (tokens[0] == WED_NWP_CON)
 					DoConnection(tokens);
-				else if (tokens[0] == WED_NWP_GET)
+				else if (tokens[0] == WED_NWP_GET||
+                         tokens[0] == WED_NWP_CAM)
 				{
 					//FIXME:mroe nobody wants the data ,
 					//		what now ?
