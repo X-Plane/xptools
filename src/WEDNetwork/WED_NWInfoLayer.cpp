@@ -163,8 +163,7 @@ int			WED_NWInfoLayer::HandleClickDown(int inX, int inY, int inButton, GUI_KeyFl
     float y = GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
 
     if(fabsf(inX - x) < 10.0f&&
-            fabsf(inY - y) < 10.0f)
-
+        fabsf(inY - y) < 10.0f)
     {
         if(modifiers == gui_ControlFlag)
         {
@@ -187,13 +186,12 @@ int			WED_NWInfoLayer::HandleClickDown(int inX, int inY, int inButton, GUI_KeyFl
         return 1;
     }
 
-
     float h = mNWLink->GetCamHdg();
     float tx = x+sin(h * DEG_TO_RAD)*20;
     float ty = y+cos(h * DEG_TO_RAD)*20;
 
     if (fabsf(inX - tx) < 5.0f&&
-            fabsf(inY - ty) < 5.0f)
+        fabsf(inY - ty) < 5.0f)
     {
         mTmpX = inX;
         mTmpY = inY;
@@ -210,7 +208,7 @@ void		WED_NWInfoLayer::HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFl
 {
     if(!mNWLink || mNWLink->IsCamEnabled() == false) return;
 
-    float x,y,v;
+    float dx,dy,dt,v;
     switch(mDragMode)
     {
     case  dm_none :
@@ -219,13 +217,19 @@ void		WED_NWInfoLayer::HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFl
         mNWLink->SetCamLat(GetZoomer()->YPixelToLat(inY));
         break;
 
-    case dm_heading :
+    case dm_heading  :
 
-        x = GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
-        y = GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
-        mNWLink->SetCamHdg(atan2(inX-x,inY-y)*RAD_TO_DEG);
         mTmpX = inX;
         mTmpY = inY;
+        dx = inX-GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
+        dy = inY-GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
+        mNWLink->SetCamHdg(atan2(dx,dy)*RAD_TO_DEG);
+        if(modifiers == gui_ShiftFlag)
+        {
+            dt = sqrt(dx*dx + dy*dy);
+            v = mNWLink->GetCamAlt();
+            mNWLink->SetCamPit((atan2(dt,v)*RAD_TO_DEG)-90);
+        }
         break;
 
     case  dm_altitude :
@@ -255,7 +259,7 @@ void		WED_NWInfoLayer::HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFl
 {
     if(!mNWLink || mNWLink->IsCamEnabled() == false) return;
 
-    float x,y,v;
+    float dx,dy,dt,v;
     switch(mDragMode)
     {
     case  dm_none :
@@ -266,9 +270,17 @@ void		WED_NWInfoLayer::HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFl
 
     case dm_heading :
 
-        x = GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
-        y = GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
-        mNWLink->SetCamHdg(atan2(inX-x,inY-y)*RAD_TO_DEG);
+        mTmpX = inX;
+        mTmpY = inY;
+        dx = inX-GetZoomer()->LonToXPixel(mNWLink->GetCamLon());
+        dy = inY-GetZoomer()->LatToYPixel(mNWLink->GetCamLat());
+        mNWLink->SetCamHdg(atan2(dx,dy)*RAD_TO_DEG);
+        if(modifiers == gui_ShiftFlag)
+        {
+            dt = sqrt(dx*dx + dy*dy);
+            v = mNWLink->GetCamAlt();
+            mNWLink->SetCamPit((atan2(dt,v)*RAD_TO_DEG)-90);
+        }
         break;
 
     case dm_altitude :
