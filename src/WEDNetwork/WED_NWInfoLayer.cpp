@@ -227,7 +227,7 @@ void		WED_NWInfoLayer::HandleClickDrag(int inX, int inY, int inButton, GUI_KeyFl
         if(modifiers == gui_ShiftFlag)
         {
             dt = sqrt(dx*dx + dy*dy);
-            v = mNWLink->GetCamAlt();
+            v = mNWLink->GetCamAlt() * GetZoomer()->GetPPM();
             mNWLink->SetCamPit((atan2(dt,v)*RAD_TO_DEG)-90);
         }
         break;
@@ -278,7 +278,7 @@ void		WED_NWInfoLayer::HandleClickUp  (int inX, int inY, int inButton, GUI_KeyFl
         if(modifiers == gui_ShiftFlag)
         {
             dt = sqrt(dx*dx + dy*dy);
-            v = mNWLink->GetCamAlt();
+            v = mNWLink->GetCamAlt() * GetZoomer()->GetPPM();
             mNWLink->SetCamPit((atan2(dt,v)*RAD_TO_DEG)-90);
         }
         break;
