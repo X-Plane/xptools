@@ -1074,26 +1074,26 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 #if IBM
 	switch (virtualCode)
 	{
-		case GUI_VK_RETURN:			charCode = GUI_KEY_RETURN;		break;
-		case GUI_VK_ESCAPE:			charCode = GUI_KEY_ESCAPE;		break;
-		case GUI_VK_TAB:			charCode = GUI_KEY_TAB;			break;
-		case GUI_VK_BACK:			charCode = GUI_KEY_DELETE;		break;
-		case GUI_VK_DELETE:			charCode = GUI_KEY_DELETE;		break;
-		case GUI_VK_LEFT:			charCode = GUI_KEY_LEFT;		break;
-		case GUI_VK_UP:				charCode = GUI_KEY_UP;			break;
-		case GUI_VK_RIGHT:			charCode = GUI_KEY_RIGHT;		break;
-		case GUI_VK_DOWN:			charCode = GUI_KEY_DOWN;		break;
-		case GUI_VK_NUMPAD0:		charCode = GUI_KEY_0;			break;
-		case GUI_VK_NUMPAD1:		charCode = GUI_KEY_1;			break;
-		case GUI_VK_NUMPAD2:		charCode = GUI_KEY_2;			break;
-		case GUI_VK_NUMPAD3:		charCode = GUI_KEY_3;			break;
-		case GUI_VK_NUMPAD4:		charCode = GUI_KEY_4;			break;
-		case GUI_VK_NUMPAD5:		charCode = GUI_KEY_5;			break;
-		case GUI_VK_NUMPAD6:		charCode = GUI_KEY_6;			break;
-		case GUI_VK_NUMPAD7:		charCode = GUI_KEY_7;			break;
-		case GUI_VK_NUMPAD8:		charCode = GUI_KEY_8;			break;
-		case GUI_VK_NUMPAD9:		charCode = GUI_KEY_9;			break;
-		case GUI_VK_DECIMAL:		charCode = GUI_KEY_DECIMAL;		break;
+		case GUI_VK_RETURN:	charCode = GUI_KEY_RETURN;	break;
+		case GUI_VK_ESCAPE:	charCode = GUI_KEY_ESCAPE;	break;
+		case GUI_VK_TAB:	charCode = GUI_KEY_TAB;		break;
+		case GUI_VK_BACK:	charCode = GUI_KEY_BACK;	break;
+		case GUI_VK_DELETE:	charCode = GUI_KEY_DELETE;	break;
+		case GUI_VK_LEFT:	charCode = GUI_KEY_LEFT;	break;
+		case GUI_VK_UP:		charCode = GUI_KEY_UP;		break;
+		case GUI_VK_RIGHT:	charCode = GUI_KEY_RIGHT;	break;
+		case GUI_VK_DOWN:	charCode = GUI_KEY_DOWN;	break;
+		case GUI_VK_NUMPAD0:	charCode = GUI_KEY_0;		break;
+		case GUI_VK_NUMPAD1:	charCode = GUI_KEY_1;		break;
+		case GUI_VK_NUMPAD2:	charCode = GUI_KEY_2;		break;
+		case GUI_VK_NUMPAD3:	charCode = GUI_KEY_3;		break;
+		case GUI_VK_NUMPAD4:	charCode = GUI_KEY_4;		break;
+		case GUI_VK_NUMPAD5:	charCode = GUI_KEY_5;		break;
+		case GUI_VK_NUMPAD6:	charCode = GUI_KEY_6;		break;
+		case GUI_VK_NUMPAD7:	charCode = GUI_KEY_7;		break;
+		case GUI_VK_NUMPAD8:	charCode = GUI_KEY_8;		break;
+		case GUI_VK_NUMPAD9:	charCode = GUI_KEY_9;		break;
+		case GUI_VK_DECIMAL:	charCode = GUI_KEY_DECIMAL;	break;
 	}
 #endif
 #if LIN
@@ -1117,6 +1117,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 		case Qt::Key_Escape:	charCode = GUI_KEY_ESCAPE;	break;
 		case Qt::Key_Tab:
 		case Qt::Key_Backtab:	charCode = GUI_KEY_TAB;		break;
+		case Qt::Key_Back:	charCode = GUI_KEY_BACK;	break;
 		case Qt::Key_Delete:	charCode = GUI_KEY_DELETE;	break;
 		case Qt::Key_Left:	charCode = GUI_KEY_LEFT;	break;
 		case Qt::Key_Up:	charCode = GUI_KEY_UP;		break;

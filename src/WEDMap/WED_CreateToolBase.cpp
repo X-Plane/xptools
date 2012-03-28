@@ -411,6 +411,7 @@ int			WED_CreateToolBase::HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags 
 {
 	if (!mCreating && (inFlags & gui_DownFlag))
 	switch (inKey) {
+	case GUI_KEY_BACK:
 	case GUI_KEY_DELETE:
 		if (!mPts.empty()) {
 			mPts.pop_back();

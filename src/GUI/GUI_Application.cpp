@@ -503,13 +503,13 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			CFRelease(cfstr);
 
 			switch(items[n].key) {
-			case GUI_KEY_UP:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuUpArrowGlyph);		break;
-			case GUI_KEY_DOWN:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDownArrowGlyph);	break;
-			case GUI_KEY_RIGHT:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuRightArrowGlyph);	break;
-			case GUI_KEY_LEFT:		SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuLeftArrowGlyph);	break;
-			case GUI_KEY_DELETE:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDeleteLeftGlyph);	break;
+			case GUI_KEY_UP:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuUpArrowGlyph);		break;
+			case GUI_KEY_DOWN:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDownArrowGlyph);	break;
+			case GUI_KEY_RIGHT:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuRightArrowGlyph);	break;
+			case GUI_KEY_LEFT:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuLeftArrowGlyph);	break;
+			case GUI_KEY_BACK:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDeleteLeftGlyph);	break;
 			case GUI_KEY_RETURN:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuReturnGlyph);		break;
-			default:				::SetItemCmd((MenuRef) new_menu, n+1, items[n].key);				break;
+			default:				::SetItemCmd((MenuRef) new_menu, n+1, items[n].key);	break;
 			}
 
 			::SetMenuItemModifiers((MenuRef) new_menu, n+1,
@@ -542,13 +542,13 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 				char key_cstr[2] = { items[n].key, 0 };
 				switch(items[n].key)
 				{
-					case GUI_KEY_UP:		itemname += "Up";		accel.key = VK_UP;		break;
-					case GUI_KEY_DOWN:		itemname += "Down";		accel.key = VK_DOWN;	break;
-					case GUI_KEY_RIGHT:		itemname += "Right";	accel.key = VK_RIGHT;	break;
-					case GUI_KEY_LEFT:		itemname += "Left";		accel.key = VK_LEFT;	break;
-					case GUI_KEY_DELETE:	itemname += "Del";		accel.key = VK_BACK;	break;
+					case GUI_KEY_UP:	itemname += "Up";	accel.key = VK_UP;	break;
+					case GUI_KEY_DOWN:	itemname += "Down";	accel.key = VK_DOWN;	break;
+					case GUI_KEY_RIGHT:	itemname += "Right";	accel.key = VK_RIGHT;	break;
+					case GUI_KEY_LEFT:	itemname += "Left";	accel.key = VK_LEFT;	break;
+					case GUI_KEY_BACK:	itemname += "Del";	accel.key = VK_BACK;	break;
 					case GUI_KEY_RETURN:	itemname += "Return";	accel.key = VK_RETURN;	break;
-					default:				itemname += key_cstr;	accel.key = VkKeyScan(items[n].key) & 0xFF;	break;
+					default:		itemname += key_cstr;	accel.key = VkKeyScan(items[n].key) & 0xFF;	break;
 				}
 				RegisterAccel(accel);
 			}
@@ -585,13 +585,13 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 				char key_cstr[2] = { items[n].key, 0 };
 				switch(items[n].key)
 				{
-					case GUI_KEY_UP:    sc += "Up";     break;
-					case GUI_KEY_DOWN:  sc += "Down";   break;
-					case GUI_KEY_RIGHT: sc += "Right";  break;
-					case GUI_KEY_LEFT:  sc += "Left";   break;
-					case GUI_KEY_DELETE:sc += "Del";    break;
-					case GUI_KEY_RETURN:sc += "Return"; break;
-					default:            sc += key_cstr; break;
+					case GUI_KEY_UP:	sc += "Up";     break;
+					case GUI_KEY_DOWN:	sc += "Down";   break;
+					case GUI_KEY_RIGHT:	sc += "Right";  break;
+					case GUI_KEY_LEFT:	sc += "Left";   break;
+					case GUI_KEY_BACK:	sc += "Del";    break;
+					case GUI_KEY_RETURN:	sc += "Return"; break;
+					default:            	sc += key_cstr; break;
 				}
 			    menu->addAction(new GUI_QtAction(items[n].name,menu,sc,items[n].cmd,this,false));
 		    }
