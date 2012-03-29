@@ -24,34 +24,40 @@
 #define WED_XPLUGINCAMERA_H
 
 #include "XPLMCamera.h"
-#include "stdlib.h"
+#include "XPLMScenery.h"
+
+#include <string>
+#include <vector>
+
+using std::vector ;
+using std::string ;
+
+class WED_XPluginMgr;
 
 class WED_XPluginCamera
 {
-    public:
-        WED_XPluginCamera();
-        virtual ~WED_XPluginCamera();
+public:
+    WED_XPluginCamera(WED_XPluginMgr * inRef);
+    virtual ~WED_XPluginCamera();
 
-        void Update(XPLMCameraPosition_t * inCameraPosition);
-        void GetPos(XPLMCameraPosition_t * outCameraPosition);
-        void Enable(XPLMCameraPosition_t * outCameraPosition);
-        void Disable();
-        int IsEnabled();
+    void SetProbeRef(XPLMProbeRef inProbeRef){mProbeRef=inProbeRef;}
+    void Update(int inType,const vector<string>& inArgs);
+    void GetPos(XPLMCameraPosition_t * outCameraPosition);
+    void Enable();
+    void Disable();
+    int IsEnabled();
 
-    protected:
-    private:
+protected:
+private:
 
-        bool mEnabled;
+    bool                 mEnabled;
+    XPLMCameraPosition_t mPos;
+    XPLMProbeRef         mProbeRef;
+    WED_XPluginMgr *     mMgrRef;
 
-        XPLMCameraPosition_t mPos;
-
-        static int 	 CamUpdFunc(XPLMCameraPosition_t * outCameraPosition,
-                                   int                  inIsLosingControl,
-                                   void *               inRefcon);
-
-        inline void CopyCamPos(XPLMCameraPosition_t * inCameraPosition,
-                               XPLMCameraPosition_t * outCameraPosition);
-
+    static int 	 CamUpdFunc(XPLMCameraPosition_t * outCameraPosition,
+                            int                  inIsLosingControl,
+                            void *               inRefcon);
 };
 
 #endif // WED_XPLUGINCAMERA_H

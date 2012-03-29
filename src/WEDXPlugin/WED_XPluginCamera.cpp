@@ -21,12 +21,16 @@
  *
  */
 #include "WED_XPluginCamera.h"
+#include "WED_XPluginMgr.h"
+#include "WED_NWDefs.h"
 #include "XPLMUtilities.h"
+#include "XPLMGraphics.h"
+
 #include "stdio.h"
 
 
-WED_XPluginCamera::WED_XPluginCamera():
-   mEnabled(false)
+WED_XPluginCamera::WED_XPluginCamera(WED_XPluginMgr * inRef):
+   mEnabled(false),mProbeRef(NULL),mMgrRef(inRef)
 {
     mPos.x = mPos.y = mPos.z = 0;
     mPos.heading = mPos.pitch = mPos.roll = 0;
@@ -43,31 +47,85 @@ int WED_XPluginCamera::IsEnabled()
     return XPLMIsCameraBeingControlled(NULL) && mEnabled ;
 }
 
-void WED_XPluginCamera::Update(XPLMCameraPosition_t * inCameraPosition)
+void WED_XPluginCamera::Update(int inType,const vector<string>& inArgs)
 {
-    mPos.x        = inCameraPosition->x;
-    mPos.y        = inCameraPosition->y;
-    mPos.z        = inCameraPosition->z;
-    mPos.pitch    = inCameraPosition->pitch;
-    mPos.roll     = inCameraPosition->roll;
-    mPos.heading  = inCameraPosition->heading;
-    //mPos.zoom     = inCameraPosition->zoom;
+    if(inType == nw_cam_state && inArgs.size() == 4)
+    {
+        int is_enabled = 0;
+        sscanf(inArgs[3].c_str(),"%d",&is_enabled);
+        if(is_enabled) Enable();
+        else Disable();
+    }
+    else
+    if (inType == nw_cam_data && inArgs.size() == 9 && IsEnabled())
+    {
+        double x,y,z,lat,lon,alt,agl;
+
+        sscanf(inArgs[3].c_str(),"%lf",&lat);
+        sscanf(inArgs[4].c_str(),"%lf",&lon);
+        sscanf(inArgs[5].c_str(),"%lf",&agl);
+        sscanf(inArgs[6].c_str(),"%f",&mPos.pitch);
+        sscanf(inArgs[7].c_str(),"%f",&mPos.roll);
+        sscanf(inArgs[8].c_str(),"%f",&mPos.heading);
+
+        XPLMWorldToLocal(lat,lon,0,&x,&y,&z);
+
+        XPLMProbeInfo_t	 aProbeInfo;
+        aProbeInfo.structSize = sizeof(XPLMProbeInfo_t);
+        if (mProbeRef && XPLMProbeTerrainXYZ(mProbeRef,x,y,z,&aProbeInfo) == xplm_ProbeHitTerrain)
+        {
+            y = aProbeInfo.locationY ;
+        }
+        XPLMLocalToWorld(x,y,z,&lat,&lon,&alt);
+        alt += agl;
+        XPLMWorldToLocal(lat,lon,alt,&x,&y,&z);
+
+        mPos.x = x;
+        mPos.y = y;
+        mPos.z = z;
+    }
 }
+
 void WED_XPluginCamera::GetPos(XPLMCameraPosition_t * outCameraPosition)
 {
     XPLMReadCameraPosition(outCameraPosition);
 }
 
-void WED_XPluginCamera::Enable(XPLMCameraPosition_t * outCameraPosition)
+void WED_XPluginCamera::Enable()
 {
+    char buf[256];
+    double x,y,z,lat,lon,alt,agl;
+
     XPLMReadCameraPosition(&mPos);
- 	XPLMReadCameraPosition(outCameraPosition);
-	XPLMControlCamera(xplm_ControlCameraForever, CamUpdFunc, this);
-	mEnabled=true;
+
+    XPLMLocalToWorld(mPos.x,mPos.y,mPos.z,&lat,&lon,&alt);
+    XPLMWorldToLocal(lat,lon,0,&x,&y,&z);
+
+    XPLMProbeInfo_t	 aProbeInfo;
+    aProbeInfo.structSize = sizeof(XPLMProbeInfo_t);
+    if (mProbeRef && XPLMProbeTerrainXYZ(mProbeRef,mPos.x,mPos.y,mPos.z,&aProbeInfo) == xplm_ProbeHitTerrain)
+    {
+        y = aProbeInfo.locationY ;
+    }
+    XPLMLocalToWorld(x,y,z,&lat,&lon,&agl);
+    agl = alt-agl;
+
+    mMgrRef->SendData(WED_NWP_CAM,nw_cam_state,0,"1:");
+    sprintf(buf,"%.8lf:%.8lf:%.2lf:%.2f:%.2f:%.2f:",lat,lon,agl,mPos.pitch,mPos.roll,mPos.heading);
+    mMgrRef->SendData(WED_NWP_CAM,nw_cam_data,0,buf);
+
+    if(!IsEnabled())
+    {
+        XPLMControlCamera(xplm_ControlCameraForever, CamUpdFunc, this);
+        mEnabled=true;
+    }
 }
+
 void WED_XPluginCamera::Disable()
 {
-    if(XPLMIsCameraBeingControlled(NULL)) XPLMDontControlCamera();
+    if(!IsEnabled()) return;
+    mMgrRef->SendData(WED_NWP_CAM,nw_cam_state,0,"0:");
+    XPLMDontControlCamera();
     mEnabled=false;
 }
 
