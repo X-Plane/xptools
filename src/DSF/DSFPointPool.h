@@ -43,7 +43,12 @@ using namespace std;
 /* Of course, in practice, variable sized arrays are way too
  * expensive to manipulate, so we're fixed sized.  Right now
  * 7 planes covers the worst case for global - XYZ, norm, ST */
- #define	MAX_TUPLE_LEN 7
+ 
+ // BEN SAYS: BEN IS AN IDIOT.  Max length is 7 for DSF base meshes.
+ // Max length is 8 for DSF overlays.  (UV mapped bezier polygon.)
+ // Set for 8 for now for WED, revisit how mem-strapped scenery is later.
+ 
+#define	MAX_TUPLE_LEN 8
 
 class	DSFTuple {
 public:
@@ -301,6 +306,9 @@ inline DSFTuple::DSFTuple(const DSFTuple& rhs) : mLen(rhs.mLen)
 
 inline DSFTuple::DSFTuple(const double * values, int length) : mLen(length)
 {
+	if (length > MAX_TUPLE_LEN)
+		AssertPrintf( "ERROR: overrun DSF tuple.\n");
+
 	double * d1 = mData;
 	const double * d2 = values;
 	while (length--)
