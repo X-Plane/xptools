@@ -320,6 +320,8 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 		int result = DSFReadFile(*inDSF, &cbs, NULL, fi);
 
 		fprintf(fi, "# Result code: %d\n", result);
+		if(result == dsf_ErrNoAtoms || result == dsf_ErrBadCookie || result == dsf_ErrBadVersion)
+			fprintf(stderr,"The DFS was not readable.  Perhaps you need to unzip it with 7-zip?\n");
 
 		printf("File %s had %d ter, %d obj, %d pol, %d net.\n", *inDSF,
 			count_ter, count_obj,count_pol,count_net);
