@@ -25,7 +25,9 @@
 #define WED_XPLUGINMGR_H
 
 
+#include "WED_XPluginClient.h"
 #include "WED_XPluginObject.h"
+#include "WED_XPluginCamera.h"
 #include "XPLMDataAccess.h"
 #include "XPLMGraphics.h"
 #include "XPLMDisplay.h"
@@ -40,23 +42,28 @@ struct WED_XPluginStats_t
     }
 };
 
-class WED_XPluginClient;
 
-class  WED_XPluginMgr
+class  WED_XPluginMgr : public WED_XPluginClient
 {
 public:
-    WED_XPluginMgr(WED_XPluginClient* inClient);
+             WED_XPluginMgr();
     virtual ~WED_XPluginMgr();
 
         void    SetPackage(const string& inPackage){mPackage=inPackage;}
         string  GetPackage(){return mPackage;}
         string  GetPackagePath();
+        XPLMProbeRef GetProbeRef(){return mProbeRef;}
 
     	void 	Add(int inId,int inType,const vector<string>& inArgs);
     	void	Chg(int inId,int inType,const vector<string>& inArgs);
 		void	Del(int inId);
 		void 	Sync();
 
+        bool    IsEnabledCam(){return mCamera.IsEnabled();}
+        void    EnableCam(bool inEnable);
+        void    UpdateCam(int inType,const vector<string>& inArgs);
+
+    WED_XPluginEntity * GetbyId(int inId);
 	static int	WEDXPluginDrawObjCB(XPLMDrawingPhase inPhase,int inIsBefore,void * inRefcon);
 
     //WED_XPluginStats_t * GetStats(){return &mEntityStats;}
@@ -65,15 +72,14 @@ protected:
 private:
 
    string                           mPackage;
-   WED_XPluginClient *				mClient;
+
    XPLMProbeRef		    			mProbeRef;
    XPLMDataRef						mLiteLevelRef;
    bool								mIsLit;
    WED_XPluginStats_t	    		mStats;
    map<int,WED_XPluginEntity *>  	mEntities;
 
-
-
+   WED_XPluginCamera                mCamera;
 
 };
 

@@ -29,8 +29,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////////
 //WED_XPluginObj constructor
-WED_XPluginObject::WED_XPluginObject(int inType,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef):
-		WED_XPluginEntity(inType,inProbeRef,inRef),mObjRef(NULL),mWantDraw(true)
+WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef):
+		WED_XPluginEntity(nw_obj_Object,inRef->GetProbeRef(),inRef),
+		mObjRef(NULL),mWantDraw(true)
 
 {
 
@@ -114,7 +115,7 @@ void WED_XPluginObject::Draw(bool isLit)
     if ( mWantDraw )
     {
 		float x,y,z;
-		WorldToLocal(&x,&y,&z,mSetToTerrain);
+		WorldToLocal(&x,&y,&z,this);
 		XPLMDrawInfo_t aDrawInfo[1];
 		aDrawInfo[0].structSize = sizeof(XPLMDrawInfo_t);
         aDrawInfo[0].x 		 = x;

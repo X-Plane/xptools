@@ -34,9 +34,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char WEDXPluginVersNumber[] = "v0.1d1 (development version)";
+char WEDXPluginVersNumber[] = "v0.1d2 (development version)";
 
-WED_XPluginClient *	gWEDXPluginClient	= NULL;
+WED_XPluginMgr *	gWEDXPluginMgr	= NULL;
 
 // Used by menus
 int	 		WEDXPluginItem;
@@ -59,29 +59,29 @@ void WEDXPluginMenuHandler(void *, void *);
 // Draw Text window callbacks
 void WEDXPluginWindowDraw(XPLMWindowID inWindowID, void * inRefcon);
 void WEDXPluginWindowKey(XPLMWindowID inWindowID, char inKey,XPLMKeyFlags inFlags,
-					char vkey, void * inRefcon, int losingFocus);
+                         char vkey, void * inRefcon, int losingFocus);
 int	 WEDXPluginWindowMouse(XPLMWindowID inWindowID, int x, int y,
-					XPLMMouseStatus isDown, void * inRefcon);
+                           XPLMMouseStatus isDown, void * inRefcon);
 int	 WEDXPluginWindowMouseWheel(XPLMWindowID	inWindowID,int x,int y,
-						 int wheel,int clicks, void * inRefcon);
+                                int wheel,int clicks, void * inRefcon);
 XPLMCursorStatus WEDXPluginWindowCursor(XPLMWindowID inWindowID,
-						 int x,int y,void * inRefcon);
+                                        int x,int y,void * inRefcon);
 
 #if DEBUG
 // Callback for Error Tests
 void WEDXPluginErrorCB(const char * msg)
 {
-	XPLMDebugString("xpdo: ERROR_CB called \n: ");
-	XPLMDebugString(msg);
-	XPLMDebugString("\n");
+    XPLMDebugString("xpdo: ERROR_CB called \n: ");
+    XPLMDebugString(msg);
+    XPLMDebugString("\n");
 }
 #endif
 
 PLUGIN_API int XPluginStart(char *	outName,char *	outSig,char *outDesc)
 {
-	strcpy(outName, "WEDXPlugin");
-	strcpy(outSig,  "wed.link.xplane");
-	sprintf(outDesc,"WED View, %s ",WEDXPluginVersNumber );
+    strcpy(outName, "WEDXPlugin");
+    strcpy(outSig,  "wed.link.xplane");
+    sprintf(outDesc,"WED View, %s ",WEDXPluginVersNumber );
 
     XPLMGetVersions(&WEDXPluginXPlaneVers,&WEDXPluginXPLMVers,&WEDXPluginXHostID);
     //check version
@@ -92,150 +92,157 @@ PLUGIN_API int XPluginStart(char *	outName,char *	outSig,char *outDesc)
     }
 
     // Create the menus
-	WEDXPluginItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(),"WEDPlugin", NULL, 1);
-	WEDXPluginMenuId = XPLMCreateMenu("WEDPlugin",
-										XPLMFindPluginsMenu(),
-										WEDXPluginItem,
-										WEDXPluginMenuHandler,
-										NULL);
-	XPLMAppendMenuItem(WEDXPluginMenuId, "Reload Scenery", (void *)"ReloadScenery", 1);
-	//XPLMCheckMenuItem (WEDXPluginMenuId,0,xplm_Menu_Checked);
-	XPLMAppendMenuItem(WEDXPluginMenuId, "Reload Plugins", (void *)"Reload plugins",1);
+    WEDXPluginItem = XPLMAppendMenuItem(XPLMFindPluginsMenu(),"WEDPlugin", NULL, 1);
+    WEDXPluginMenuId = XPLMCreateMenu("WEDPlugin",
+                                      XPLMFindPluginsMenu(),
+                                      WEDXPluginItem,
+                                      WEDXPluginMenuHandler,
+                                      NULL);
 
-
-	XPLMAppendMenuSeparator(WEDXPluginMenuId);
-	XPLMAppendMenuItem(WEDXPluginMenuId, "Toggle Connect",(void *)"ToggleConnect", 1);
+    XPLMAppendMenuItem(WEDXPluginMenuId, "Reload Scenery", (void *)"ReloadScenery", 1);
+    XPLMAppendMenuItem(WEDXPluginMenuId, "Reload Plugins", (void *)"Reload plugins",1);
+    XPLMAppendMenuSeparator(WEDXPluginMenuId);
+    XPLMAppendMenuItem(WEDXPluginMenuId, "Toggle Connect",(void *)"ToggleConnect", 1);
+    XPLMAppendMenuItem(WEDXPluginMenuId, "View from WED ",(void *)"ViewFromWED", 1);
+    //XPLMEnableMenuItem (WEDXPluginMenuId,4,false);
 
     // This is used to create a text window using the new XPLMCreateWindowEx function.
-	XPLMCreateWindow_t WEDXPluginWinData;
-	WEDXPluginWinData.structSize = sizeof(WEDXPluginWinData);
-	WEDXPluginWinData.left = 2;	// <- 275 ->
-	WEDXPluginWinData.top = 50;   //          |
-	WEDXPluginWinData.right = 277; //         100
-	WEDXPluginWinData.bottom = 10; //		    |
-	WEDXPluginWinData.visible= 1;
-	WEDXPluginWinData.drawWindowFunc		= WEDXPluginWindowDraw;
-	WEDXPluginWinData.handleKeyFunc			= WEDXPluginWindowKey;
-	WEDXPluginWinData.handleMouseClickFunc	= WEDXPluginWindowMouse;
-	WEDXPluginWinData.handleMouseWheelFunc	= WEDXPluginWindowMouseWheel;
-	WEDXPluginWinData.handleCursorFunc		= WEDXPluginWindowCursor;
-	WEDXPluginWinData.refcon = NULL;
-	WEDXPluginWindow = XPLMCreateWindowEx(&WEDXPluginWinData);
+    XPLMCreateWindow_t WEDXPluginWinData;
+    WEDXPluginWinData.structSize = sizeof(WEDXPluginWinData);
+    WEDXPluginWinData.left = 2;	// <- 275 ->
+    WEDXPluginWinData.top = 50;   //          |
+    WEDXPluginWinData.right = 277; //         100
+    WEDXPluginWinData.bottom = 10; //		    |
+    WEDXPluginWinData.visible= 1;
+    WEDXPluginWinData.drawWindowFunc		= WEDXPluginWindowDraw;
+    WEDXPluginWinData.handleKeyFunc			= WEDXPluginWindowKey;
+    WEDXPluginWinData.handleMouseClickFunc	= WEDXPluginWindowMouse;
+    WEDXPluginWinData.handleMouseWheelFunc	= WEDXPluginWindowMouseWheel;
+    WEDXPluginWinData.handleCursorFunc		= WEDXPluginWindowCursor;
+    WEDXPluginWinData.refcon = NULL;
+    WEDXPluginWindow = XPLMCreateWindowEx(&WEDXPluginWinData);
 
-	XPLMSetWindowIsVisible( WEDXPluginWindow,true);
+    XPLMSetWindowIsVisible( WEDXPluginWindow,true);
 
 #if DEBUG
-	// Register the callback for errors
-	XPLMSetErrorCallback(WEDXPluginErrorCB);
+    // Register the callback for errors
+    XPLMSetErrorCallback(WEDXPluginErrorCB);
 #endif
-	XPLMRegisterFlightLoopCallback(WEDXPluginInitCB, 1.0, NULL);
-	return 1;
+    XPLMRegisterFlightLoopCallback(WEDXPluginInitCB, 1.0, NULL);
+    return 1;
 }
 
 PLUGIN_API void XPluginStop(void)
 {
-   XPLMDestroyMenu(WEDXPluginMenuId);
-   XPLMUnregisterFlightLoopCallback(WEDXPluginInitCB, NULL);
-   XPLMDestroyWindow(WEDXPluginWindow);
+    XPLMDestroyMenu(WEDXPluginMenuId);
+    XPLMUnregisterFlightLoopCallback(WEDXPluginInitCB, NULL);
+    XPLMDestroyWindow(WEDXPluginWindow);
 }
 
 PLUGIN_API int XPluginEnable(void)
 {
-	XPLMCheckMenuItem(WEDXPluginMenuId,2,xplm_Menu_Unchecked);
-	gWEDXPluginClient = new WED_XPluginClient();
-	return 1;
+    XPLMCheckMenuItem(WEDXPluginMenuId,3,xplm_Menu_Unchecked);
+    XPLMCheckMenuItem(WEDXPluginMenuId,4,xplm_Menu_Unchecked);
+    gWEDXPluginMgr = new WED_XPluginMgr();
+    return 1;
 }
 
 PLUGIN_API void XPluginDisable(void)
 {
-	XPLMCheckMenuItem(WEDXPluginMenuId,2,xplm_Menu_Unchecked);
-	delete gWEDXPluginClient;
-	gWEDXPluginClient = NULL;
+    XPLMCheckMenuItem(WEDXPluginMenuId,3,xplm_Menu_Unchecked);
+    XPLMCheckMenuItem(WEDXPluginMenuId,4,xplm_Menu_Unchecked);
+    delete gWEDXPluginMgr;
+    gWEDXPluginMgr = NULL;
 }
 
 PLUGIN_API void XPluginReceiveMessage(XPLMPluginID inFrom, long inMsg, void * inParam)
 {
-	if (inFrom == XPLM_PLUGIN_XPLANE)
-	 if ((inMsg == XPLM_MSG_SCENERY_LOADED))//||(inMsg == XPLM_MSG_PLANE_LOADED))
-	 {
-        ;
-	 }
+    if (inFrom == XPLM_PLUGIN_XPLANE)
+        if ((inMsg == XPLM_MSG_SCENERY_LOADED))//||(inMsg == XPLM_MSG_PLANE_LOADED))
+        {
+            ;
+        }
 }
 
 float WEDXPluginInitCB(float elapsedMe, float elapsedSim, int counter, void * refcon)
 {
-	//FIXME : this CB is processed once after scenery is loaded.
+    //FIXME : this CB is processed once after scenery is loaded.
     // leave it in for some future use
-  return 0;
+    return 0;
 }
 
 // Process the menu selections
 void WEDXPluginMenuHandler(void * mRef, void * iRef)
 {
 
-     XPLMMenuCheck acheck;
+    XPLMMenuCheck acheck;
 
-	if (!strcmp((char *) iRef, "Reload plugins"))
-	{
-		XPLMReloadPlugins();
-	}
+    if (!strcmp((char *) iRef, "Reload plugins"))
+    {
+        XPLMReloadPlugins();
+    }
+    else
+    if (!strcmp((char *) iRef, "ReloadScenery"))
+    {
+        XPLMReloadScenery();
 
-	 if (!strcmp((char *) iRef, "ReloadScenery"))
-	 {
-	 	XPLMReloadScenery();
-//        XPLMCheckMenuItemState(WEDXPluginMenuId,0,&acheck);
-//         switch (acheck)
-//         {
-//             case xplm_Menu_Checked    :
-//
-//                XPLMSetWindowIsVisible(WEDXPluginWindow,false);
-//                XPLMCheckMenuItem( WEDXPluginMenuId,0,xplm_Menu_Unchecked);
-//                break;
-//
-//             case xplm_Menu_Unchecked	:
-//
-//                XPLMSetWindowIsVisible(WEDXPluginWindow,true);
-//                XPLMCheckMenuItem( WEDXPluginMenuId,0,xplm_Menu_Checked);
-//                break;
-//         }
-	 }
-	 if (!strcmp((char *) iRef, "ToggleConnect"))
-	 {
-		 XPLMCheckMenuItemState(WEDXPluginMenuId,2,&acheck);
-         switch (acheck)
-         {
-             case xplm_Menu_Checked    :
+    }
+    else
+    if (!strcmp((char *) iRef, "ToggleConnect"))
+    {
+        XPLMCheckMenuItemState(WEDXPluginMenuId,3,&acheck);
+        switch (acheck)
+        {
+        case xplm_Menu_Checked    :
 
-                if(gWEDXPluginClient)gWEDXPluginClient->Disconnect();
-                XPLMCheckMenuItem( WEDXPluginMenuId,2,xplm_Menu_Unchecked);
-                break;
+            if(gWEDXPluginMgr)gWEDXPluginMgr->Disconnect();
+            XPLMCheckMenuItem( WEDXPluginMenuId,3,xplm_Menu_Unchecked);
+            break;
 
-             case xplm_Menu_Unchecked	:
+        case xplm_Menu_Unchecked	:
 
-                if(gWEDXPluginClient)gWEDXPluginClient->Connect();
-                XPLMCheckMenuItem( WEDXPluginMenuId,2,xplm_Menu_Checked);
-                break;
-         }
-	 }
+            if(gWEDXPluginMgr)gWEDXPluginMgr->Connect();
+            XPLMCheckMenuItem( WEDXPluginMenuId,3,xplm_Menu_Checked);
+            break;
+        }
+    }
+    else
+    if (!strcmp((char *) iRef, "ViewFromWED"))
+    {
+        if(!gWEDXPluginMgr) return;
+
+        if(gWEDXPluginMgr->IsEnabledCam())
+        {
+            if(gWEDXPluginMgr)gWEDXPluginMgr->EnableCam(false);
+            XPLMCheckMenuItem( WEDXPluginMenuId,4,xplm_Menu_Unchecked);
+        }
+        else
+        {
+            if(gWEDXPluginMgr)gWEDXPluginMgr->EnableCam(true);
+            XPLMCheckMenuItem( WEDXPluginMenuId,4,xplm_Menu_Checked);
+        }
+    }
+
 }
 
 // Draw statistic window
 void	WEDXPluginWindowDraw(XPLMWindowID inWindowID, void * inRefcon)
 {
-	float		rgb1 [] = { 0.8, 0.8, 0.8 };
-	float		rgb2 [] = { 0.0, 0.5, 0.8 };
+    float		rgb1 [] = { 0.8, 0.8, 0.8 };
+    float		rgb2 [] = { 0.0, 0.5, 0.8 };
 
-	int			Left, Top, Right, Bottom;
-	char 		Buffer[256];
+    int			Left, Top, Right, Bottom;
+    char 		Buffer[256];
 
-    string status = gWEDXPluginClient->GetStatus();
+    string status = "";
+    if(gWEDXPluginMgr) status = gWEDXPluginMgr->GetStatus();
 
     XPLMGetWindowGeometry(inWindowID, &Left, &Top, &Right, &Bottom);
     XPLMDrawTranslucentDarkBox(Left, Top, Right, Bottom);
 
     sprintf(Buffer,"  WEDXPlugin %s ",WEDXPluginVersNumber);
     XPLMDrawString(rgb2, Left+10, Top-10, Buffer, NULL, xplmFont_Basic);
-	sprintf(Buffer,"   %s",status.c_str());
+    sprintf(Buffer,"   %s",status.c_str());
     XPLMDrawString(rgb1, Left+10, Top-30, Buffer, NULL, xplmFont_Basic);
 
 }
@@ -248,27 +255,27 @@ void WEDXPluginWindowKey(XPLMWindowID inWindowID, char inKey, XPLMKeyFlags inFla
 // Not used
 int	WEDXPluginWindowMouse(XPLMWindowID inWindowID, int x, int y, XPLMMouseStatus isDown, void * inRefcon)
 {
-	return 0;
+    return 0;
 }
 
 // Not used
 int	WEDXPluginWindowMouseWheel(XPLMWindowID inWindowID,
-						 int            x,
-						 int            y,
-						 int            wheel,
-						 int            clicks,
-						 void *         inRefcon)
+                               int            x,
+                               int            y,
+                               int            wheel,
+                               int            clicks,
+                               void *         inRefcon)
 {
-	return 0;
+    return 0;
 }
 
 // This will change the type of cursor
 XPLMCursorStatus WEDXPluginWindowCursor(XPLMWindowID inWindowID,
-								  int           x,
-                                  int           y,
-                                  void *        inRefcon)
+                                        int           x,
+                                        int           y,
+                                        void *        inRefcon)
 {
-	return xplm_CursorDefault;
+    return xplm_CursorDefault;
 }
 
 //---------------------------------------------------------------------------

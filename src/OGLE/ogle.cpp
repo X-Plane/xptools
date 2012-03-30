@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <algorithm>
+
 using std::vector;
 
 
@@ -431,6 +432,24 @@ void			OGLE_Key(
 	int sline = OGLE_CharPosToLine(handle, handle->sel_start)-1;
 	if (key != ogle_Up && key != ogle_Down)	handle->horizontal_gap = -1.0;
 	switch(key) {
+	case ogle_Delete:
+		if (handle->sel_end == handle->sel_start)
+		{
+			handle->callbacks.ReplaceText_f(handle,handle->sel_start,handle->callbacks.MBCS_NextPos_f(handle,handle->sel_start),NULL, NULL);
+			handle->sel_end = handle->sel_start;
+			OGLE_RepaginateInternal(handle, sline, handle->sel_end);
+			OGLE_RevealSelection(handle);
+		}
+		else
+		{
+			handle->callbacks.ReplaceText_f(handle, handle->sel_start,handle->sel_end,NULL, NULL);
+			handle->sel_end = handle->sel_start;
+			OGLE_RepaginateInternal(handle, sline, handle->sel_end);
+			OGLE_RevealSelection(handle);
+		}
+		handle->active_side = 1;
+		break;
+		
 	case ogle_DeleteBack:
 		if (handle->sel_end == handle->sel_start)
 		{

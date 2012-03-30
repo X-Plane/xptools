@@ -66,7 +66,6 @@ enum wed_nw_cmd {
 	nw_cmd_none  		= 0	,
 	nw_cmd_done   		= 1	,
 	nw_cmd_reloadscen  	= 2	,
-	nw_cmd_viewcenter  	= 3	,
 
 };
 
@@ -82,20 +81,33 @@ enum wed_nw_msg {
 	nw_msg_debug   		= 3	,
 
 };
+// camera/view related
+////////////////////////
+#define WED_NWP_CAM "cam"
+//cam:nw_cam_state:id:[off=0][on=1]:crlf
+//cam:nw_cam_data:id:lat:lon:alt:pitch:roll:hdg:crlf
+
+enum wed_nw_cam{
+
+	nw_cam_state 		= 0	,
+	nw_cam_data  	    = 1	,
+
+};
+
 
 // object related
 /////////////////////////
 #define WED_NWP_ADD "add"
-//add:obj_Object:id:lat:lon:[alt]:hdg:"name":"resourcename":crlf
-//add:obj_Facade:id:childcnt:height:"name":"resourcename":crlf
-//add:obj_FacadeRing:id:parent_id:childcnt:"name":crlf
-//add:obj_FacadeNode:id:parent_id:lat:lon:[lat_lo]:[lon_lo]:[lat_hi]:[lon_hi]:wall:"name":crlf
+//add:obj_Object:id:lat:lon:[alt]:hdg:["name":"resourcename":]crlf
+//add:obj_Facade:id:height:["name":"resourcename":]crlf
+//add:obj_FacadeRing:id:[parent_id:pos_idx:"name":]crlf
+//add:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:"name":]crlf
 
 #define WED_NWP_CHG "chg"
-//chg:obj_Object:lat:lon:[alt]:hdg:["name"]:["resourcename"]:crlf
-//chg:obj_Facade:id:height:"name":"resourcename":crlf
-//chg:obj_FacadeRing:id:parent_id:"name":crlf
-//chg:obj_FacadeNode:id:parent_id:lat:lon:[lat_lo]:[lon_lo]:[lat_hi]:[lon_hi]:[wall]:["name"]:crlf
+//chg:obj_Object:id:lat:lon:[alt]:hdg:["name":"resourcename":]crlf
+//chg:obj_Facade:id:height:["name":"resourcename":]crlf
+//chg:obj_FacadeRing:id:[parent_id:pos_idx:"name"]:crlf
+//chg:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:"name":]crlf
 
 #define WED_NWP_DEL "del"
 //del:nw_obj_none:id:crlf

@@ -42,7 +42,7 @@ typedef int GUI_KeyFlags;
 #define GUI_KEY_RETURN      13
 #define GUI_KEY_ESCAPE      27
 #define GUI_KEY_TAB         9
-#define GUI_KEY_DELETE      8
+#define GUI_KEY_BACK        8
 #define GUI_KEY_LEFT        28
 #define GUI_KEY_RIGHT       29
 #define GUI_KEY_UP          30
@@ -58,6 +58,8 @@ typedef int GUI_KeyFlags;
 #define GUI_KEY_8           56
 #define GUI_KEY_9           57
 #define GUI_KEY_DECIMAL     46
+#define GUI_KEY_DELETE      127
+
 
 
 /***************************************************************************

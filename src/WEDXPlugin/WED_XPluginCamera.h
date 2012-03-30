@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, mroe.
+ * Copyright (c) 2012, mroe.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,36 +20,44 @@
  * THE SOFTWARE.
  *
  */
+#ifndef WED_XPLUGINCAMERA_H
+#define WED_XPLUGINCAMERA_H
 
-#ifndef WED_XPLUGINOBJECT_H
-#define WED_XPLUGINOBJECT_H
-
-#include "WED_XPluginEntity.h"
-#include "WED_XPluginMgr.h"
+#include "XPLMCamera.h"
 #include "XPLMScenery.h"
 
+#include <string>
+#include <vector>
 
-class WED_XPluginObject : public WED_XPluginEntity
+using std::vector ;
+using std::string ;
+
+class WED_XPluginMgr;
+
+class WED_XPluginCamera
 {
 public:
+    WED_XPluginCamera(WED_XPluginMgr * inRef);
+    virtual ~WED_XPluginCamera();
 
-   		WED_XPluginObject(WED_XPluginMgr * inRef);
-    	virtual ~WED_XPluginObject();
-
-		void 	 		Draw(bool isLit);
-		int  			SetRessource(const string& inPath);
-		void 			Update(const vector<string>& inArgs);
+    void SetProbeRef(XPLMProbeRef inProbeRef){mProbeRef=inProbeRef;}
+    void Update(int inType,const vector<string>& inArgs);
+    void GetPos(XPLMCameraPosition_t * outCameraPosition);
+    void Enable();
+    void Disable();
+    int IsEnabled();
 
 protected:
 private:
 
-		XPLMObjectRef	mObjRef;
-    	bool			mWantDraw;
+    bool                 mEnabled;
+    XPLMCameraPosition_t mPos;
+    XPLMProbeRef         mProbeRef;
+    WED_XPluginMgr *     mMgrRef;
 
-
-static void 			XPDM_LoadObjectCB(const char * inPath,void * inRef);
-
-
+    static int 	 CamUpdFunc(XPLMCameraPosition_t * outCameraPosition,
+                            int                  inIsLosingControl,
+                            void *               inRefcon);
 };
 
-#endif // WED_XPLUGINOBJECT_H
+#endif // WED_XPLUGINCAMERA_H
