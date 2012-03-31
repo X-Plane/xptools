@@ -87,6 +87,10 @@
 // mroe : -- really early stage of dev , do not change.
 #define WITHNWLINK 0
 
+// Terraserver is always borked - I am killing it for now - will add back if it ever becomes useful.
+// Really we need a better tile service.
+#define WANT_TERRASEVER 0
+
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
 

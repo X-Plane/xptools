@@ -38,7 +38,9 @@ class GUI_Table;
 class GUI_TextTable;
 class WED_ToolInfoAdapter;
 
+#if WANT_TERRASEVER
 class	WED_TerraserverLayer;
+#endif
 class	WED_StructureLayer;
 class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
@@ -94,7 +96,9 @@ private:
 	vector<WED_MapLayer *>	mLayers;
 	vector<WED_MapToolNew *>mTools;
 
+#if WANT_TERRASEVER
 	WED_TerraserverLayer *	mTerraserver;
+#endif	
 //	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
 	WED_PreviewLayer *		mPreview;

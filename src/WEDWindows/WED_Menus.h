@@ -84,7 +84,9 @@ enum {
 	wed_PickOverlay,
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
+#if WANT_TERRASEVER	
 	wed_ToggleTerraserver,
+#endif	
 #if WITHNWLINK
 	wed_ToggleLiveView,
 #endif

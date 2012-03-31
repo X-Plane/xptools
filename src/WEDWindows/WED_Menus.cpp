@@ -107,7 +107,9 @@ static const GUI_MenuItem_t kViewMenu[] = {
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
 {	"Toggle Previe&w",			0,	0,										0,	wed_TogglePreview	},
+#if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
+#endif
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif
