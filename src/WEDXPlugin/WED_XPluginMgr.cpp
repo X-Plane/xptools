@@ -24,9 +24,9 @@
 
 #include "WED_XPluginMgr.h"
 #include "WED_XPluginClient.h"
-#include "WED_XPluginFacade.h"
-#include "WED_XPluginFacRing.h"
-#include "WED_XPluginFacNode.h"
+//#include "WED_XPluginFacade.h"
+//#include "WED_XPluginFacRing.h"
+//#include "WED_XPluginFacNode.h"
 #include "XPLMUtilities.h"
 
 #include <stdio.h>
