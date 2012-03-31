@@ -628,6 +628,64 @@ struct	preview_ortho : public preview_polygon {
 	}
 };
 
+bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll)
+{
+	float xs = obj->xyz_max[0] - obj->xyz_min[0];
+	float zs = obj->xyz_max[2] - obj->xyz_min[2];
+
+	double bounds_pix[4];
+	zoomer->GetPixelBounds(bounds_pix[0],bounds_pix[1],bounds_pix[2],bounds_pix[3]);
+	double extra_x = xs * zoomer->GetPPM();
+	double extra_z = zs * zoomer->GetPPM();
+	if(extra_x < 5 || extra_z < 5) return true;
+	bounds_pix[0] -= extra_x;
+	bounds_pix[1] -= extra_z;
+	bounds_pix[2] += extra_x;
+	bounds_pix[3] += extra_z;
+	Point2 xy = zoomer->LLToPixel(ll);
+	return 
+		xy.x() < bounds_pix[0] ||
+		xy.y() < bounds_pix[1] ||
+		xy.x() > bounds_pix[2] ||
+		xy.y() > bounds_pix[2];
+	
+
+}
+
+bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll)
+{
+	double x_min, x_max, z_min, z_max;
+	x_min = x_max = agp->tile[0];
+	z_min = z_max = agp->tile[1];
+	for(int n = 4; n < agp->tile.size(); n += 4)
+	{
+		x_min = min(x_min,agp->tile[n]);
+		x_max = max(x_max,agp->tile[n]);
+		z_min = min(z_min,agp->tile[n+1]);
+		z_max = max(z_max,agp->tile[n+1]);
+	}
+	float xs = x_max - x_min;
+	float zs = z_max - z_min;
+
+	double bounds_pix[4];
+	zoomer->GetPixelBounds(bounds_pix[0],bounds_pix[1],bounds_pix[2],bounds_pix[3]);
+	double extra_x = xs * zoomer->GetPPM();
+	double extra_z = zs * zoomer->GetPPM();
+	if(extra_x < 5 || extra_z < 5) return true;
+	bounds_pix[0] -= extra_x;
+	bounds_pix[1] -= extra_z;
+	bounds_pix[2] += extra_x;
+	bounds_pix[3] += extra_z;
+	Point2 xy = zoomer->LLToPixel(ll);
+	return 
+		xy.x() < bounds_pix[0] ||
+		xy.y() < bounds_pix[1] ||
+		xy.x() > bounds_pix[2] ||
+		xy.y() > bounds_pix[2];
+	
+
+}
+
 
 struct	preview_object : public WED_PreviewItem {
 	WED_ObjPlacement * obj;	
@@ -652,57 +710,62 @@ struct	preview_object : public WED_PreviewItem {
 			glColor3f(1,1,1);
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
-			draw_obj_at_ll(tman, o, loc, obj->GetHeading(), g, zoomer);
+			if(!cull_obj(zoomer,o, loc))
+			{
+				draw_obj_at_ll(tman, o, loc, obj->GetHeading(), g, zoomer);
+			}
 		}
 		#if AIRPORT_ROUTING
 		else if (rmgr->GetAGP(vpath,agp))
 		{
-			g->SetState(false,1,false,false,true,false,false);
-			TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap);			
-			int id1 = ref  ? tman->GetTexID(ref ) : 0;
-			if(id1)g->BindTex(id1,0);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
-			loc = zoomer->LLToPixel(loc);
-			float r = obj->GetHeading();
-			glTranslatef(loc.x(),loc.y(),0.0);
-			float ppm = zoomer->GetPPM();
-			glScalef(ppm,ppm,0.001);
-			glRotatef(90, 1,0,0);
-			glRotatef(r, 0, -1, 0);
-			glColor3f(1,1,1);
-			if(!agp.tile.empty())
+			if(!cull_agp(zoomer, &agp, loc))
 			{
-				glDisable(GL_CULL_FACE);
-				glBegin(GL_TRIANGLE_FAN);
-				for(int n = 0; n < agp.tile.size(); n += 4)
+				g->SetState(false,1,false,false,true,false,false);
+				TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap);			
+				int id1 = ref  ? tman->GetTexID(ref ) : 0;
+				if(id1)g->BindTex(id1,0);
+				glMatrixMode(GL_MODELVIEW);
+				glPushMatrix();
+				loc = zoomer->LLToPixel(loc);
+				float r = obj->GetHeading();
+				glTranslatef(loc.x(),loc.y(),0.0);
+				float ppm = zoomer->GetPPM();
+				glScalef(ppm,ppm,0.001);
+				glRotatef(90, 1,0,0);
+				glRotatef(r, 0, -1, 0);
+				glColor3f(1,1,1);
+				if(!agp.tile.empty())
 				{
-					glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-					glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
+					glDisable(GL_CULL_FACE);
+					glBegin(GL_TRIANGLE_FAN);
+					for(int n = 0; n < agp.tile.size(); n += 4)
+					{
+						glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
+						glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
+					}
+					glEnd();
+					glEnable(GL_CULL_FACE);
+				}	
+				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+				{
+					XObj8 * oo;
+					if((o->show_lo+o->show_hi)/2 <= preview_level)
+					if(rmgr->GetObjRelative(o->name,vpath,oo))
+					{
+						draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);			
+					} 
 				}
-				glEnd();
-				glEnable(GL_CULL_FACE);
-			}	
-			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
-			{
-				XObj8 * oo;
-				if((o->show_lo+o->show_hi)/2 <= preview_level)
-				if(rmgr->GetObjRelative(o->name,vpath,oo))
-				{
-					draw_obj_at_xyz(tman, oo, o->x,0,-o->y,o->r, g);			
-				} 
+				
+				
+	//			g->EnableDepth(true,true);
+	//			glClear(GL_DEPTH_BUFFER_BIT);
+	//			Obj_DrawStruct ds = { g, id1, id2 };
+	//			ObjDraw8(*o, 0, &kFuncs, &ds); 
+	//			g->EnableDepth(false,false);
+				glPopMatrix();
 			}
-			
-			
-//			g->EnableDepth(true,true);
-//			glClear(GL_DEPTH_BUFFER_BIT);
-//			Obj_DrawStruct ds = { g, id1, id2 };
-//			ObjDraw8(*o, 0, &kFuncs, &ds); 
-//			g->EnableDepth(false,false);
-			glPopMatrix();
-
 		}
 		#endif
 		else

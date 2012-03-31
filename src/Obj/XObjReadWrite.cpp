@@ -1087,6 +1087,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 	} // While loop
 
 	free(mem_buf);
+
+	outObj.geo_tri.get_minmax(outObj.xyz_min,outObj.xyz_max);
+	
 	return true;
 }
 

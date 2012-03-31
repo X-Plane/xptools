@@ -246,6 +246,9 @@ struct	XObj8 {
 	vector<XObjAnim8>		animation;
 	vector<XObjManip8>		manips;
 	vector<XObjLOD8>		lods;
+
+	float					xyz_min[3];
+	float					xyz_max[3];
 };
 
 #endif
