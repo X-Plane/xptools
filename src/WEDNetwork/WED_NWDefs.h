@@ -32,7 +32,7 @@
 #define INTERVALT 1  				// servers interval time
 #define MAX_WAIT_FORLOGIN  20 		// waittime = MAX_WAIT_FORLOGIN * servers interval time
 #define CLIENT_NAME "WEDXPLUGIN"
-#define MIN_CLIENT_VERS 104
+#define MIN_CLIENT_VERS 100
 
 
 // defines protocol ; just simple for now
