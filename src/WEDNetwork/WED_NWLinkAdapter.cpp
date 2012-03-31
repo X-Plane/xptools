@@ -197,13 +197,13 @@ void 	WED_NWLinkAdapter::DoSendData()
             astr += buf;
             if (bp.has_lo()||bp.has_hi())
             {
-                sprintf(buf,"%.8lf:%.8lf:%.8lf:%.8lf:",bp.hi.x(),bp.lo.x(),bp.lo.y(),bp.hi.y());
+                sprintf(buf,"%.8lf:%.8lf:%.8lf:%.8lf:",bp.hi.x(),bp.hi.y(),bp.lo.x(),bp.lo.y());
                 astr += buf;
             }
             if( it->second & wed_Change_CreateDestroy ||
                     (it->second == wed_Change_Properties ))
             {
-                sprintf(buf,"%d:%d:%d:",facnode->GetParent()->GetID(),facnode->GetMyPosition(),facnode->GetWallType());
+                sprintf(buf,"%d:%d:%d:0:",facnode->GetParent()->GetID(),facnode->GetMyPosition(),facnode->GetWallType());
                 facnode->GetName(n);
                 astr += buf + n + ":";
             }
