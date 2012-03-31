@@ -589,8 +589,28 @@ int Iterate_CollectRequiredParents(ISelectable * what, void * ref)
 	{
 		const char * p = WED_GetParentForClass(w->GetClass());
 		if(p) classes->insert(p);
+		
+		// This is slightly tricky - if our chilren have picky needs, we must cater
+		// to them.  So if I am a group and my kid is a wind rule, I need to be in a flow!
+		// Buuuut if I _already_ meet my kids needs (e.g I am a flow and my wind-rule child needs
+		// to be in a flow) then those needs are ALREADY met.
+
+		// So.  Gather up all of the kids reqs.
+		set<string>  child_reqs;
 		for(int n = 0; n < w->CountChildren(); ++n)
-			Iterate_CollectRequiredParents(w->GetNthChild(n), ref);
+			Iterate_CollectRequiredParents(w->GetNthChild(n), &child_reqs);
+
+		// And filter out the one that I need first.		
+		child_reqs.erase(w->GetClass());
+		
+		// Pass on the rest.
+		for(set<string>::iterator i = child_reqs.begin(); i != child_reqs.end(); ++i)
+			classes->insert(*i);
+			
+		// Since this is recursive, the only required parents that 'flow out' are the ones not met
+		// WITHIN the sub-tree of this item.
+		
+			
 	}
 	return 0;
 }

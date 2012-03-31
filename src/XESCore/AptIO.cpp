@@ -737,7 +737,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().taxi_route.nodes.back().location.x_,
 					&flags,
 					&outApts.back().taxi_route.nodes.back().id,
-					&outApts.back().taxi_route.nodes.back().name) != 6) ok = "illegal taxi node.";
+					&outApts.back().taxi_route.nodes.back().name) < 5) ok = "illegal taxi node.";
 			}
 			break;
 		case apt_taxi_edge:
@@ -752,7 +752,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().taxi_route.edges.back().dst,
 					&oneway_flag,
 					&runway_flag,
-					&outApts.back().taxi_route.edges.back().name) != 6) ok = "Error: illegal taxi layout edge.";
+					&outApts.back().taxi_route.edges.back().name) < 5) ok = "Error: illegal taxi layout edge.";
 				outApts.back().taxi_route.edges.back().oneway = oneway_flag == "oneway";
 				outApts.back().taxi_route.edges.back().runway = runway_flag == "runway";
 
