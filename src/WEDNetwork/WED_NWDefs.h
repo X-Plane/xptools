@@ -98,16 +98,16 @@ enum wed_nw_cam{
 // object related
 /////////////////////////
 #define WED_NWP_ADD "add"
-//add:obj_Object:id:lat:lon:[alt]:hdg:["name":"resourcename":]crlf
+//add:obj_Object:id:lon:lat:[alt]:hdg:["name":"resourcename":]crlf
 //add:obj_Facade:id:height:[topo:wall:"name":"resourcename":]crlf
 //add:obj_FacadeRing:id:[parent_id:pos_idx:"name":]crlf
-//add:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:wall:"name":]crlf
+//add:obj_FacadeNode:id:lon:lat:[lon_hi:lat_hi:lon_lo:lat_lo:][parent_id:pos_idx:wall:dummy:"name":]crlf
 
 #define WED_NWP_CHG "chg"
-//chg:obj_Object:id:lat:lon:[alt]:hdg:["name":"resourcename":]crlf
+//chg:obj_Object:id:lon:lat:[alt]:hdg:["name":"resourcename":]crlf
 //chg:obj_Facade:id:height:[topo:wall:"name":"resourcename":]crlf
 //chg:obj_FacadeRing:id:[parent_id:pos_idx:"name"]:crlf
-//chg:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:wall:"name":]crlf
+//chg:obj_FacadeNode:id:lon:lat:[lon_hi:lat_hi:lon_lo:lat_lo:][parent_id:pos_idx:wall:dummy:"name":]crlf
 
 #define WED_NWP_DEL "del"
 //del:nw_obj_none:id:crlf
