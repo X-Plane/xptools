@@ -173,9 +173,10 @@ void 	WED_NWLinkAdapter::DoSendData()
             if( it->second & wed_Change_CreateDestroy ||
                     (it->second == wed_Change_Properties ))
             {
+                sprintf(buf,"%d:%d:",fac->GetTopoMode(),fac->HasCustomWalls());
                 fac->GetName(n);
                 fac->GetResource(r);
-                astr +=  n + ":" + r +":";
+                astr += buf + n + ":" + r +":";
             }
         }
         else if((facring = dynamic_cast<WED_FacadeRing *>(it->first)) != NULL)
@@ -202,7 +203,7 @@ void 	WED_NWLinkAdapter::DoSendData()
             if( it->second & wed_Change_CreateDestroy ||
                     (it->second == wed_Change_Properties ))
             {
-                sprintf(buf,"%d:%d:",facnode->GetParent()->GetID(),facnode->GetMyPosition());
+                sprintf(buf,"%d:%d:%d:",facnode->GetParent()->GetID(),facnode->GetMyPosition(),facnode->GetWallType());
                 facnode->GetName(n);
                 astr += buf + n + ":";
             }

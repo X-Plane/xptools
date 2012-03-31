@@ -31,7 +31,7 @@
 
 #define DEFAULT_IPAddr 		"localhost"
 #define DEFAULT_Port		10300
-#define CLIENT_VERS			"100"
+#define CLIENT_VERS			"104"
 
 WED_XPluginClient::WED_XPluginClient(WED_XPluginMgr* inMgr):
 	mMgr(inMgr),mIsReady(false),mSocket(NULL)

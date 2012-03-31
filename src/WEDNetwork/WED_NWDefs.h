@@ -32,7 +32,7 @@
 #define INTERVALT 1  				// servers interval time
 #define MAX_WAIT_FORLOGIN  20 		// waittime = MAX_WAIT_FORLOGIN * servers interval time
 #define CLIENT_NAME "WEDXPLUGIN"
-#define MIN_CLIENT_VERS 100
+#define MIN_CLIENT_VERS 104
 
 
 // defines protocol ; just simple for now
@@ -99,15 +99,15 @@ enum wed_nw_cam{
 /////////////////////////
 #define WED_NWP_ADD "add"
 //add:obj_Object:id:lat:lon:[alt]:hdg:["name":"resourcename":]crlf
-//add:obj_Facade:id:height:["name":"resourcename":]crlf
+//add:obj_Facade:id:height:[topo:wall:"name":"resourcename":]crlf
 //add:obj_FacadeRing:id:[parent_id:pos_idx:"name":]crlf
-//add:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:"name":]crlf
+//add:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:wall:"name":]crlf
 
 #define WED_NWP_CHG "chg"
 //chg:obj_Object:id:lat:lon:[alt]:hdg:["name":"resourcename":]crlf
-//chg:obj_Facade:id:height:["name":"resourcename":]crlf
+//chg:obj_Facade:id:height:[topo:wall:"name":"resourcename":]crlf
 //chg:obj_FacadeRing:id:[parent_id:pos_idx:"name"]:crlf
-//chg:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:"name":]crlf
+//chg:obj_FacadeNode:id:lat:lon:[lat_hi:lat_lo:lon_hi:lon_lo:][parent_id:pos_idx:wall:"name":]crlf
 
 #define WED_NWP_DEL "del"
 //del:nw_obj_none:id:crlf
