@@ -50,7 +50,7 @@ public:
     virtual void    SetLon(double inLon){mLon = inLon;}
     virtual void    SetAlt(double inAlt){mAlt = inAlt;}
     virtual void    GetLoc(double * outLat,double * outLon,double * outAlt);
-    virtual void    GetPos(float * outX,float * outY,float * outZ);
+    virtual void    GetPos(double * outX,double * outY,double * outZ);
     virtual void    SetHdg(double inHdg){mHdg = inHdg;}
     virtual void    SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
 
@@ -74,7 +74,7 @@ private:
 
     bool				mSetToTerrain;
 
-    static void	WorldToLocal(float * outX,float * outY,float * outZ,WED_XPluginEntity* inEntity);
+    static void	WorldToLocal(double * outX,double * outY,double * outZ,WED_XPluginEntity* inEntity);
 };
 
 #endif // WED_XPLUGINENTITY_H

@@ -114,13 +114,13 @@ void WED_XPluginObject::Draw(bool isLit)
     if (!(this->mObjRef)) return;
     if ( mWantDraw )
     {
-		float x,y,z;
-		WorldToLocal(&x,&y,&z,this);
-		XPLMDrawInfo_t aDrawInfo[1];
-		aDrawInfo[0].structSize = sizeof(XPLMDrawInfo_t);
-        aDrawInfo[0].x 		 = x;
-        aDrawInfo[0].y 		 = y;
-        aDrawInfo[0].z 		 = z;
+        double x,y,z;
+        WorldToLocal(&x,&y,&z,this);
+        XPLMDrawInfo_t aDrawInfo[1];
+        aDrawInfo[0].structSize = sizeof(XPLMDrawInfo_t);
+        aDrawInfo[0].x 		 = (float) x;
+        aDrawInfo[0].y 		 = (float) y;
+        aDrawInfo[0].z 		 = (float) z;
         aDrawInfo[0].pitch 	 = 0;
         aDrawInfo[0].heading = mHdg;
         aDrawInfo[0].roll	 = 0;

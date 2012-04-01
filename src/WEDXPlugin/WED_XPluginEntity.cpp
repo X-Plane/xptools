@@ -56,14 +56,14 @@ void   WED_XPluginEntity::GetLoc(double * outLat,double * outLon,double * outAlt
 	if (outAlt) *outAlt = mAlt;
 }
 
-void   WED_XPluginEntity::GetPos(float * outX,float * outY,float * outZ)
+void   WED_XPluginEntity::GetPos(double * outX,double * outY,double * outZ)
 {
 	WorldToLocal(outX,outY,outZ,this);
 }
 
 void WED_XPluginEntity::Draw(bool isLit)
 {
-	float x,y,z;
+	double x,y,z;
 	WorldToLocal(&x,&y,&z,this);
 
 	XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
@@ -80,7 +80,7 @@ void WED_XPluginEntity::Draw(bool isLit)
 	glEnd();
 }
 
-void WED_XPluginEntity::WorldToLocal(float * outX,float * outY,float * outZ,WED_XPluginEntity* inEntity)
+void WED_XPluginEntity::WorldToLocal(double * outX,double * outY,double * outZ,WED_XPluginEntity* inEntity)
 {
 	double x,y,z = 0;
 
@@ -113,7 +113,7 @@ void WED_XPluginEntity::WorldToLocal(float * outX,float * outY,float * outZ,WED_
     else
     	XPLMWorldToLocal(inEntity->mLat,inEntity->mLon,inEntity->mAlt,&x,&y,&z);
 
-	if (outX) *outX = (float) x;
-	if (outY) *outY = (float) y;
-	if (outZ) *outZ = (float) z;
+	if (outX) *outX =  x;
+	if (outY) *outY =  y;
+	if (outZ) *outZ =  z;
 }
