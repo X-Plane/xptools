@@ -140,37 +140,12 @@ void WED_XPluginMgr::Add(int inId,int inType,const vector<string>& inArgs)
 
 	switch (inType)
 	{
-		case nw_obj_none		:return;
+		case nw_obj_none       :return;
 
-		case nw_obj_Object		:
-		{
-			WED_XPluginObject * aObj = new WED_XPluginObject(this);
-			aObj->Update(inArgs);
-			mEntities[inId] = aObj;
-		}
-		break;
-		case nw_obj_Facade 		:
-		{
-			//WED_XPluginFacade * aFac = new WED_XPluginFacade(this);
-			//aFac->Update(inArgs);
-			//mEntities[inId] = aFac;
-		}
-		break;
-		case nw_obj_FacadeRing	:
-		{
-		    //WED_XPluginFacRing * aFrg = new WED_XPluginFacRing(this);
-			//aFrg->Update(inArgs);
-			//mEntities[inId] = aFrg;
-
-		}
-		break;
-		case nw_obj_FacadeNode	:
-		{
-			//WED_XPluginFacNode * aFnd = new WED_XPluginFacNode(this);
-			//aFnd->Update(inArgs);
-			//mEntities[inId] = aFnd;
-		}
-		break;
+		case nw_obj_Object     :mEntities[inId] = new WED_XPluginObject(this,inArgs) ;break;
+		//case nw_obj_Facade     :mEntities[inId] = new WED_XPluginFacade(this,inArgs) ;break;
+		//case nw_obj_FacadeRing :mEntities[inId] = new WED_XPluginFacRing(this,inArgs);break;
+		//case nw_obj_FacadeNode :mEntities[inId] = new WED_XPluginFacNode(this,inArgs);break;
 
 		default : return;
 	}
@@ -198,30 +173,13 @@ void WED_XPluginMgr::Chg(int inId,int inType,const vector<string>& inArgs)
 
 		switch (inType)
 		{
-			case nw_obj_none		: break;
+			case nw_obj_none       : return;
+			case nw_obj_Object     :(static_cast<WED_XPluginObject*>(aEntity))->Update(inArgs);break;
+			//case nw_obj_Facade     :(static_cast<WED_XPluginFacade*>(aEntity))->Update(inArgs);break;
+			//case nw_obj_FacadeRing :(static_cast<WED_XPluginFacRing*>(aEntity))->Update(inArgs);break;
+			//case nw_obj_FacadeNode :(static_cast<WED_XPluginFacNode*>(aEntity))->Update(inArgs);break;
 
-			case nw_obj_Object 		:
-			{
-				(static_cast<WED_XPluginObject *>(aEntity))->Update(inArgs);
-			}
-			break;
-			case nw_obj_Facade 		:
-			{
-                //(static_cast<WED_XPluginFacade*>(aEntity))->Update(inArgs);
-			}
-			break;
-			case nw_obj_FacadeRing	:
-			{
-                //(static_cast<WED_XPluginFacRing*>(aEntity))->Update(inArgs);
-			}
-			break;
-			case nw_obj_FacadeNode	:
-			{
-                //(static_cast<WED_XPluginFacNode*>(aEntity))->Update(inArgs);
-			}
-			break;
-
-			default : break;
+			default : return;
 		} //switch type
 	}
 	else // Id not in my list , add and request ressource

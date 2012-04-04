@@ -29,12 +29,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////////
 //WED_XPluginObj constructor
-WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef):
+WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef,const vector<string>& inArgs):
 		WED_XPluginEntity(nw_obj_Object,inRef->GetProbeRef(),inRef),
 		mObjRef(NULL),mWantDraw(true)
 
 {
-
+    this->Update(inArgs);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////

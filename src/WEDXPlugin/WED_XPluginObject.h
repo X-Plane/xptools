@@ -33,7 +33,7 @@ class WED_XPluginObject : public WED_XPluginEntity
 {
 public:
 
-   		WED_XPluginObject(WED_XPluginMgr * inRef);
+   		WED_XPluginObject(WED_XPluginMgr * inRef,const vector<string>& inArgs);
     	virtual ~WED_XPluginObject();
 
 		void 	 		Draw(bool isLit);
