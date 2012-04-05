@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char WEDXPluginVersNumber[] = "v0.1d2 (development version)";
+char WEDXPluginVersNumber[] = "v0.1d3 (developer version)";
 
 WED_XPluginMgr *	gWEDXPluginMgr	= NULL;
 
@@ -222,7 +222,6 @@ void WEDXPluginMenuHandler(void * mRef, void * iRef)
             XPLMCheckMenuItem( WEDXPluginMenuId,4,xplm_Menu_Checked);
         }
     }
-
 }
 
 // Draw statistic window
@@ -234,17 +233,37 @@ void	WEDXPluginWindowDraw(XPLMWindowID inWindowID, void * inRefcon)
     int			Left, Top, Right, Bottom;
     char 		Buffer[256];
 
-    string status = "";
-    if(gWEDXPluginMgr) status = gWEDXPluginMgr->GetStatus();
-
     XPLMGetWindowGeometry(inWindowID, &Left, &Top, &Right, &Bottom);
     XPLMDrawTranslucentDarkBox(Left, Top, Right, Bottom);
 
     sprintf(Buffer,"  WEDXPlugin %s ",WEDXPluginVersNumber);
     XPLMDrawString(rgb2, Left+10, Top-10, Buffer, NULL, xplmFont_Basic);
-    sprintf(Buffer,"   %s",status.c_str());
-    XPLMDrawString(rgb1, Left+10, Top-30, Buffer, NULL, xplmFont_Basic);
 
+    if(!gWEDXPluginMgr) return;
+    string status  = gWEDXPluginMgr->GetStatus();
+    string package = gWEDXPluginMgr->GetPackage();
+    int outsz = gWEDXPluginMgr->GetOutBufSize();
+    int  insz = gWEDXPluginMgr->GetInBufSize();
+
+    if(status == "ready")
+    {
+        if((outsz+insz) == 0 )
+        {
+            rgb1[0] = .0f ;rgb1[1] = .8f ;rgb1[2] =.0f ;
+            sprintf(Buffer,"   ready %s",package.c_str());
+        }
+        else
+        {
+            rgb1[0] = .8f ;rgb1[1] = .0f ;rgb1[2] =.0f ;
+            sprintf(Buffer,"   busy  %s   %s %s ",package.c_str(),(outsz > 0 ) ? "<" : " " ,(insz > 0 ) ? ">" : " ");
+        }
+    }
+    else
+    {
+        sprintf(Buffer,"   %s",status.c_str());
+    }
+
+    XPLMDrawString(rgb1, Left+10, Top-30, Buffer, NULL, xplmFont_Basic);
 }
 
 // Not used

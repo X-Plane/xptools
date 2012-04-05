@@ -199,7 +199,7 @@ void WED_XPluginClient::DoParseMore()
 						if( sscanf(tokens[1].c_str(),"%d",&type) == 1 && type == nw_con_go_on)
 						{
 							mIsReady = true;
-							mStatus  = "ready " + tokens[3];
+							mStatus  = "ready";
 							mMgr->SetPackage(tokens[3]);
 							mMgr->Sync();
 						}

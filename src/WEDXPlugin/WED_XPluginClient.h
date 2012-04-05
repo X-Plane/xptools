@@ -54,6 +54,9 @@ public:
 				int 	SendData(const char * inBuffer ,int inSize);
 				int		SendData(const char* hdr,int type,int id,const string& args);
 
+				int     GetInBufSize() {return mInBuf.size() ;}
+				int     GetOutBufSize(){return mOutBuf.size();}
+
 
 
 private:
