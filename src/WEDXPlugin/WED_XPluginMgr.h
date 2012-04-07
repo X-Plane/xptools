@@ -49,6 +49,7 @@ public:
              WED_XPluginMgr();
     virtual ~WED_XPluginMgr();
 
+        void    ClearEntities();
         void    SetPackage(const string& inPackage){mPackage=inPackage;}
         string  GetPackage(){return mPackage;}
         string  GetPackagePath();

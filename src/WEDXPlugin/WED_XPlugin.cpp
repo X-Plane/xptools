@@ -99,11 +99,11 @@ PLUGIN_API int XPluginStart(char *	outName,char *	outSig,char *outDesc)
                                       WEDXPluginMenuHandler,
                                       NULL);
 
-    XPLMAppendMenuItem(WEDXPluginMenuId, "Reload Scenery", (void *)"ReloadScenery", 1);
-    XPLMAppendMenuItem(WEDXPluginMenuId, "Reload Plugins", (void *)"Reload plugins",1);
+    XPLMAppendMenuItem(WEDXPluginMenuId, "Reload Scenery",(void *)"ReloadScenery", 1);
     XPLMAppendMenuSeparator(WEDXPluginMenuId);
     XPLMAppendMenuItem(WEDXPluginMenuId, "Toggle Connect",(void *)"ToggleConnect", 1);
     XPLMAppendMenuItem(WEDXPluginMenuId, "View from WED ",(void *)"ViewFromWED", 1);
+    XPLMAppendMenuItem(WEDXPluginMenuId, "Reset "        ,(void *)"Reset", 1);
     //XPLMEnableMenuItem (WEDXPluginMenuId,4,false);
 
     // This is used to create a text window using the new XPLMCreateWindowEx function.
@@ -141,16 +141,16 @@ PLUGIN_API void XPluginStop(void)
 
 PLUGIN_API int XPluginEnable(void)
 {
+    XPLMCheckMenuItem(WEDXPluginMenuId,2,xplm_Menu_Unchecked);
     XPLMCheckMenuItem(WEDXPluginMenuId,3,xplm_Menu_Unchecked);
-    XPLMCheckMenuItem(WEDXPluginMenuId,4,xplm_Menu_Unchecked);
     gWEDXPluginMgr = new WED_XPluginMgr();
     return 1;
 }
 
 PLUGIN_API void XPluginDisable(void)
 {
+    XPLMCheckMenuItem(WEDXPluginMenuId,2,xplm_Menu_Unchecked);
     XPLMCheckMenuItem(WEDXPluginMenuId,3,xplm_Menu_Unchecked);
-    XPLMCheckMenuItem(WEDXPluginMenuId,4,xplm_Menu_Unchecked);
     delete gWEDXPluginMgr;
     gWEDXPluginMgr = NULL;
 }
@@ -177,15 +177,10 @@ void WEDXPluginMenuHandler(void * mRef, void * iRef)
 
     XPLMMenuCheck acheck;
 
-    if (!strcmp((char *) iRef, "Reload plugins"))
-    {
-        XPLMReloadPlugins();
-    }
-    else
     if (!strcmp((char *) iRef, "ReloadScenery"))
     {
+        if(gWEDXPluginMgr) gWEDXPluginMgr->ClearEntities();
         XPLMReloadScenery();
-
     }
     else
     if (!strcmp((char *) iRef, "ToggleConnect"))
@@ -196,13 +191,13 @@ void WEDXPluginMenuHandler(void * mRef, void * iRef)
         case xplm_Menu_Checked    :
 
             if(gWEDXPluginMgr)gWEDXPluginMgr->Disconnect();
-            XPLMCheckMenuItem( WEDXPluginMenuId,3,xplm_Menu_Unchecked);
+            XPLMCheckMenuItem( WEDXPluginMenuId,2,xplm_Menu_Unchecked);
             break;
 
         case xplm_Menu_Unchecked	:
 
             if(gWEDXPluginMgr)gWEDXPluginMgr->Connect();
-            XPLMCheckMenuItem( WEDXPluginMenuId,3,xplm_Menu_Checked);
+            XPLMCheckMenuItem( WEDXPluginMenuId,2,xplm_Menu_Checked);
             break;
         }
     }
@@ -214,13 +209,18 @@ void WEDXPluginMenuHandler(void * mRef, void * iRef)
         if(gWEDXPluginMgr->IsEnabledCam())
         {
             if(gWEDXPluginMgr)gWEDXPluginMgr->EnableCam(false);
-            XPLMCheckMenuItem( WEDXPluginMenuId,4,xplm_Menu_Unchecked);
+            XPLMCheckMenuItem( WEDXPluginMenuId,3,xplm_Menu_Unchecked);
         }
         else
         {
             if(gWEDXPluginMgr)gWEDXPluginMgr->EnableCam(true);
-            XPLMCheckMenuItem( WEDXPluginMenuId,4,xplm_Menu_Checked);
+            XPLMCheckMenuItem( WEDXPluginMenuId,3,xplm_Menu_Checked);
         }
+    }
+    else
+    if (!strcmp((char *) iRef, "Reset"))
+    {
+        if(gWEDXPluginMgr)gWEDXPluginMgr->ClearEntities();
     }
 }
 

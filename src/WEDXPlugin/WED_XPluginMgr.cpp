@@ -27,6 +27,8 @@
 //#include "WED_XPluginFacade.h"
 //#include "WED_XPluginFacRing.h"
 //#include "WED_XPluginFacNode.h"
+//#include "WED_XPluginLine.h"
+//#include "WED_XPluginLinNode.h"
 #include "XPLMUtilities.h"
 
 #include <stdio.h>
@@ -48,14 +50,18 @@ WED_XPluginMgr::WED_XPluginMgr() : WED_XPluginClient(this),
 
 WED_XPluginMgr::~WED_XPluginMgr()
 {
-	XPLMUnregisterDrawCallback(WEDXPluginDrawObjCB,xplm_Phase_Objects,0,this);
-
-	map<int ,WED_XPluginEntity *>::iterator it ;
-	for (it = mEntities.begin(); it != mEntities.end(); ++it) delete it->second ;
-
-	mEntities.clear();
-	XPLMDestroyProbe(mProbeRef);
+    XPLMUnregisterDrawCallback(WEDXPluginDrawObjCB,xplm_Phase_Objects,0,this);
+    ClearEntities();
+    XPLMDestroyProbe(mProbeRef);
 }
+
+void WED_XPluginMgr::ClearEntities()
+{
+    map<int ,WED_XPluginEntity *>::iterator it ;
+    for (it = mEntities.begin(); it != mEntities.end(); ++it) delete it->second ;
+    mEntities.clear();
+}
+
 
 // Callback for Draw Objects
 int	 WED_XPluginMgr::WEDXPluginDrawObjCB(XPLMDrawingPhase inPhase,int inIsBefore,void * inRefcon)
@@ -106,10 +112,6 @@ string  WED_XPluginMgr::GetPackagePath()
 
 void WED_XPluginMgr::Sync()
 {
-	//TODO:mroe this forces WED_Server to processing data
-	//even there is no object in our list and we would'nt send any data
-	//i think we should request document related data here
-	SendData(WED_NWP_GET,0,0,"");
 
 	if(mCamera.IsEnabled()) mCamera.Enable();
 
@@ -124,6 +126,10 @@ void WED_XPluginMgr::Add(int inId,int inType,const vector<string>& inArgs)
 {
 	map<int ,WED_XPluginEntity *>::iterator it = mEntities.find(inId);
 	//Id is allready there ,if  same type do change ,else delete and add new
+	//TODO:mroe this forces WED_Server to processing data
+	//even there is no object in our list and we would'nt send any data
+	//i think we should request document related data here
+	SendData(WED_NWP_GET,0,0,"");
 	if(it != mEntities.end())
 	{
 		if (it->second->GetType() == inType)
@@ -143,9 +149,11 @@ void WED_XPluginMgr::Add(int inId,int inType,const vector<string>& inArgs)
 		case nw_obj_none       :return;
 
 		case nw_obj_Object     :mEntities[inId] = new WED_XPluginObject(this,inArgs) ;break;
-		//case nw_obj_Facade     :mEntities[inId] = new WED_XPluginFacade(this,inArgs) ;break;
-		//case nw_obj_FacadeRing :mEntities[inId] = new WED_XPluginFacRing(this,inArgs);break;
-		//case nw_obj_FacadeNode :mEntities[inId] = new WED_XPluginFacNode(this,inArgs);break;
+//		case nw_obj_Facade     :mEntities[inId] = new WED_XPluginFacade(this,inArgs) ;break;
+//		case nw_obj_FacadeRing :mEntities[inId] = new WED_XPluginFacRing(this,inArgs);break;
+//		case nw_obj_FacadeNode :mEntities[inId] = new WED_XPluginFacNode(this,inArgs);break;
+//		case nw_obj_Line       :mEntities[inId] = new WED_XPluginLine(this,inArgs)   ;break;
+//		case nw_obj_LineNode   :mEntities[inId] = new WED_XPluginLinNode(this,inArgs);break;
 
 		default : return;
 	}
@@ -174,11 +182,12 @@ void WED_XPluginMgr::Chg(int inId,int inType,const vector<string>& inArgs)
 		switch (inType)
 		{
 			case nw_obj_none       : return;
-			case nw_obj_Object     :(static_cast<WED_XPluginObject*>(aEntity))->Update(inArgs);break;
-			//case nw_obj_Facade     :(static_cast<WED_XPluginFacade*>(aEntity))->Update(inArgs);break;
-			//case nw_obj_FacadeRing :(static_cast<WED_XPluginFacRing*>(aEntity))->Update(inArgs);break;
-			//case nw_obj_FacadeNode :(static_cast<WED_XPluginFacNode*>(aEntity))->Update(inArgs);break;
-
+			case nw_obj_Object     :(static_cast<WED_XPluginObject* >(aEntity))->Update(inArgs);break;
+//			case nw_obj_Facade     :(static_cast<WED_XPluginFacade* >(aEntity))->Update(inArgs);break;
+//			case nw_obj_FacadeRing :(static_cast<WED_XPluginFacRing*>(aEntity))->Update(inArgs);break;
+//			case nw_obj_FacadeNode :(static_cast<WED_XPluginFacNode*>(aEntity))->Update(inArgs);break;
+//			case nw_obj_Line       :(static_cast<WED_XPluginLine   *>(aEntity))->Update(inArgs);break;
+//			case nw_obj_LineNode   :(static_cast<WED_XPluginLinNode*>(aEntity))->Update(inArgs);break;
 			default : return;
 		} //switch type
 	}
