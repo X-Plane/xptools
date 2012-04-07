@@ -33,6 +33,8 @@
 #include "WED_FacadePlacement.h"
 #include "WED_FacadeNode.h"
 #include "WED_FacadeRing.h"
+#include "WED_LinePlacement.h"
+#include "WED_SimpleBezierBoundaryNode.h"
 
 WED_NWLinkAdapter::WED_NWLinkAdapter(WED_Server * inServer,WED_Archive * inArchive) :
     mServer(inServer),mArchive(inArchive),mTimerIsStarted(false)
@@ -88,10 +90,12 @@ void	WED_NWLinkAdapter::ObjectChanged(WED_Persistent * inObject, int chgkind)
 void 	WED_NWLinkAdapter::ObjectDestroyed(WED_Persistent * inObject)
 {
     mObjCache.erase(inObject);
-    if(	inObject->GetClass() == WED_ObjPlacement::sClass 	||
-            inObject->GetClass() == WED_FacadePlacement::sClass	||
-            inObject->GetClass() == WED_FacadeRing::sClass		||
-            inObject->GetClass() == WED_FacadeNode::sClass 		 )
+    if( inObject->GetClass() == WED_ObjPlacement::sClass            ||
+        inObject->GetClass() == WED_FacadePlacement::sClass         ||
+        inObject->GetClass() == WED_FacadeRing::sClass              ||
+        inObject->GetClass() == WED_FacadeNode::sClass              ||
+        inObject->GetClass() == WED_LinePlacement::sClass           ||
+        inObject->GetClass() == WED_SimpleBezierBoundaryNode::sClass )
     {
         mDelList.insert(inObject->GetID());
     }
@@ -115,10 +119,12 @@ void 	WED_NWLinkAdapter::DoSendData()
     Point2 p;
     BezierPoint2 bp;
 
-    WED_ObjPlacement *		obj;
-    WED_FacadePlacement *	fac;
-    WED_FacadeNode *		facnode;
-    WED_FacadeRing *		facring;
+    WED_ObjPlacement *             obj;
+    WED_FacadePlacement *          fac;
+    WED_FacadeNode *               facnode;
+    WED_FacadeRing *               facring;
+    WED_LinePlacement *            line;
+    WED_SimpleBezierBoundaryNode * sbbnode;
 
     map<WED_Persistent *,int >::iterator it;
     for(it = mObjCache.begin(); it != mObjCache.end(); ++it)
@@ -208,6 +214,41 @@ void 	WED_NWLinkAdapter::DoSendData()
                 astr += buf + n + ":";
             }
         }
+        else if((line = dynamic_cast<WED_LinePlacement*>(it->first)) != NULL)
+        {
+            objtype = nw_obj_Line;
+            id = line->GetID();
+            sprintf(buf,"%d:",line->IsClosed());
+            line->GetName(n);
+            line->GetResource(r);
+            astr += buf + n + ":" + r +":";
+        }
+        else if((sbbnode = dynamic_cast<WED_SimpleBezierBoundaryNode*>(it->first)) != NULL)
+        {
+            WED_Persistent * entity = sbbnode->GetParent();
+            if(!entity) continue;
+
+            if(entity->GetClass() == WED_LinePlacement::sClass) objtype = nw_obj_LineNode;
+            else continue;
+
+            id = sbbnode->GetID();
+            sbbnode->GetBezierLocation(gis_Geo,bp);
+
+            sprintf(buf,"%.8lf:%.8lf:",bp.pt.x(),bp.pt.y());
+            astr += buf;
+            if (bp.has_lo()||bp.has_hi())
+            {
+                sprintf(buf,"%.8lf:%.8lf:%.8lf:%.8lf:",bp.hi.x(),bp.hi.y(),bp.lo.x(),bp.lo.y());
+                astr += buf;
+            }
+            if( it->second & wed_Change_CreateDestroy ||
+                    (it->second == wed_Change_Properties ))
+            {
+                sprintf(buf,"%d:%d:",entity->GetID(),sbbnode->GetMyPosition());
+                sbbnode->GetName(n);
+                astr += buf + n + ":";
+            }
+        }
         else
         {
             continue;
@@ -261,10 +302,12 @@ void	WED_NWLinkAdapter::DoReadData()
             {
                 WED_Persistent * entity = mArchive->Fetch(id);
                 if(entity && (
-                            entity->GetClass() == WED_ObjPlacement::sClass 		||
-                            entity->GetClass() == WED_FacadePlacement::sClass	||
-                            entity->GetClass() == WED_FacadeRing::sClass		||
-                            entity->GetClass() == WED_FacadeNode::sClass 		))
+                   entity->GetClass() == WED_ObjPlacement::sClass             ||
+                   entity->GetClass() == WED_FacadePlacement::sClass          ||
+                   entity->GetClass() == WED_FacadeRing::sClass               ||
+                   entity->GetClass() == WED_FacadeNode::sClass               ||
+                   entity->GetClass() == WED_LinePlacement::sClass            ||
+                   entity->GetClass() == WED_SimpleBezierBoundaryNode::sClass ))
                 {
                     mObjCache[entity] = wed_Change_CreateDestroy;
                 }

@@ -102,12 +102,16 @@ enum wed_nw_cam{
 //add:obj_Facade:id:height:[topo:wall:"name":"resourcename":]crlf
 //add:obj_FacadeRing:id:[parent_id:pos_idx:"name":]crlf
 //add:obj_FacadeNode:id:lon:lat:[lon_hi:lat_hi:lon_lo:lat_lo:][parent_id:pos_idx:wall:dummy:"name":]crlf
+//add:obj_Line:id:[is_closed:"name":"resourcename":]crlf
+//add:obj_LineNode:id:lon:lat:[lon_hi:lat_hi:lon_lo:lat_lo:][parent_id:pos_idx:"name":]crlf
 
 #define WED_NWP_CHG "chg"
 //chg:obj_Object:id:lon:lat:[alt]:hdg:["name":"resourcename":]crlf
 //chg:obj_Facade:id:height:[topo:wall:"name":"resourcename":]crlf
 //chg:obj_FacadeRing:id:[parent_id:pos_idx:"name"]:crlf
 //chg:obj_FacadeNode:id:lon:lat:[lon_hi:lat_hi:lon_lo:lat_lo:][parent_id:pos_idx:wall:dummy:"name":]crlf
+//chg:obj_Line:id:[is_closed:"name":"resourcename":]crlf
+//chg:obj_LineNode:id:lon:lat:[lon_hi:lat_hi:lon_lo:lat_lo:][parent_id:pos_idx:"name":]crlf
 
 #define WED_NWP_DEL "del"
 //del:nw_obj_none:id:crlf
@@ -116,11 +120,13 @@ enum wed_nw_cam{
 
 enum wed_nw_obj{
 
-	nw_obj_none   		= 0	,
-	nw_obj_Object 		= 1	,
-	nw_obj_Facade	  	= 2	,
-	nw_obj_FacadeNode	= 3	,
-	nw_obj_FacadeRing  	= 4	,
+	nw_obj_none     = 0 ,
+	nw_obj_Line         ,
+	nw_obj_LineNode     ,
+	nw_obj_Object       ,
+	nw_obj_Facade       ,
+	nw_obj_FacadeNode   ,
+	nw_obj_FacadeRing   ,
 };
 
 

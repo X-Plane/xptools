@@ -58,8 +58,11 @@ private:
 
     friend class WED_XPluginObject;
     friend class WED_XPluginFacade;
-    friend class WED_XPluginFacNode;
     friend class WED_XPluginFacRing;
+    friend class WED_XPluginFacNode;
+    friend class WED_XPluginLine;
+    friend class WED_XPluginLinNode;
+    friend class WED_XPluginBezierNode;
 
     int					mType;
     string 			 	mName;
