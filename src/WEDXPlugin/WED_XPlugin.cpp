@@ -185,7 +185,7 @@ void WEDXPluginMenuHandler(void * mRef, void * iRef)
     else
     if (!strcmp((char *) iRef, "ToggleConnect"))
     {
-        XPLMCheckMenuItemState(WEDXPluginMenuId,3,&acheck);
+        XPLMCheckMenuItemState(WEDXPluginMenuId,2,&acheck);
         switch (acheck)
         {
         case xplm_Menu_Checked    :

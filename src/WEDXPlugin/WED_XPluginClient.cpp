@@ -157,71 +157,80 @@ void WED_XPluginClient::DoParseMore()
 {
     if(!mMgr) return;
 
-	int id = 0;
-	int type = 0;
-	vector<string> tokens;
-	for (unsigned int n = 1; n < mInBuf.size(); ++n)
-	{
-		if (mInBuf[n-1] == '\r' && mInBuf[n] == '\n')
-		{
-			//we have a line
-			tokens.clear();
-			vector<char>::iterator it = mInBuf.begin();
-			vector<char>::iterator eit = mInBuf.begin() + n - 1;
-			// break to tokens
-			while (it < eit)
-			{
-				vector<char>::iterator s = it;
-				while (s < eit && *s ==':')
-					++s;
-				vector<char>::iterator e = s;
-				while (e < eit && *e !=':')
-					++e;
-				if (s < e)
-				{
-					tokens.push_back(string(s,e));
-				}
-				it = e;
-			}
-			if (!tokens.empty())
-			{
-				if(!mIsReady)
-				{
-					if(tokens[0].find("WED") != string::npos)//TODO:mroe check WED vers here ?
-					{
-						char str[] = { CLIENT_NAME ":" CLIENT_VERS ":"};
-						SendData(WED_NWP_CON,nw_con_login,mIdent,str);
-						mStatus = "connected";
-					}
-					else
-					if(tokens[0] == WED_NWP_CON && tokens.size() == 4)
-					{
-						if( sscanf(tokens[1].c_str(),"%d",&type) == 1 && type == nw_con_go_on)
-						{
-							mIsReady = true;
-							mStatus  = "ready";
-							mMgr->SetPackage(tokens[3]);
-							mMgr->Sync();
-						}
-					}
-				}
-				else if (tokens.size() >= 3)
-				{
-					sscanf(tokens[1].c_str(),"%d",&type);
-					sscanf(tokens[2].c_str(),"%d",&id);
+    int id = 0;
+    int type = 0;
+    vector<string> tokens;
+    for (unsigned int n = 1; n < mInBuf.size(); ++n)
+    {
+        if (mInBuf[n-1] == '\r' && mInBuf[n] == '\n')
+        {
+            //we have a line
+            tokens.clear();
+            vector<char>::iterator it = mInBuf.begin();
+            vector<char>::iterator eit = mInBuf.begin() + n - 1;
+            // break to tokens
+            while (it < eit)
+            {
+                vector<char>::iterator s = it;
+                while (s < eit && *s ==':')
+                    ++s;
+                vector<char>::iterator e = s;
+                while (e < eit && *e !=':')
+                    ++e;
+                if (s < e)
+                {
+                    tokens.push_back(string(s,e));
+                }
+                it = e;
+            }
+            if (!tokens.empty())
+            {
+                if(!mIsReady)
+                {
+                    if(tokens[0].find("WED") != string::npos)//TODO:mroe check WED vers here ?
+                    {
+                        char str[] = { CLIENT_NAME ":" CLIENT_VERS ":"};
+                        SendData(WED_NWP_CON,nw_con_login,mIdent,str);
+                        mStatus = "connected";
+                    }
+                    else if(tokens[0] == WED_NWP_CON && tokens.size() == 4)
+                    {
+                        if( sscanf(tokens[1].c_str(),"%d",&type) == 1 && type == nw_con_go_on)
+                        {
+                            mIsReady = true;
+                            mStatus  = "ready";
+                            mMgr->SetPackage(tokens[3]);
+                            mMgr->Sync();
+                        }
+                    }
+                }
+                else if (tokens.size() >= 3)
+                {
+                    sscanf(tokens[1].c_str(),"%d",&type);
+                    sscanf(tokens[2].c_str(),"%d",&id);
 
-					if 		 (tokens[0] == WED_NWP_CMD) {;}
-					else if (tokens[0] == WED_NWP_DEL) mMgr->Del(id);
-					else if (tokens[0] == WED_NWP_ADD) mMgr->Add(id,type,tokens);
-					else if (tokens[0] == WED_NWP_CHG) mMgr->Chg(id,type,tokens);
-					else if (tokens[0] == WED_NWP_CAM) mMgr->UpdateCam(type,tokens);
-				}
-			}
+                    if 	(tokens[0] == WED_NWP_CMD)
+                    {
+                        switch(type)
+                        {
+                        case nw_cmd_none  : break;
+                        case nw_cmd_sync  : mMgr->Sync();break;
+                        case nw_cmd_clear : mMgr->ClearEntities();break;
 
-			mInBuf.erase(mInBuf.begin(), mInBuf.begin() + n + 1);
-			n = 0;
-		}
-	}
-	//no line found after max len ,must be garbage in the inbuffer ;simply delete all
-	if(mInBuf.size() > MAX_LINE_LEN) mInBuf.clear();
+                        default           : break;
+                        }
+                    }
+                    else if (tokens[0] == WED_NWP_DEL) mMgr->Del(id);
+                    else if (tokens[0] == WED_NWP_ADD) mMgr->Add(id,type,tokens);
+                    else if (tokens[0] == WED_NWP_CHG) mMgr->Chg(id,type,tokens);
+                    else if (tokens[0] == WED_NWP_CAM) mMgr->UpdateCam(type,tokens);
+                }
+            }
+
+            mInBuf.erase(mInBuf.begin(), mInBuf.begin() + n + 1);
+            n = 0;
+        }
+    }
+    //no line found after max len ,must be garbage in the inbuffer ;simply delete all
+    if(mInBuf.size() > MAX_LINE_LEN) mInBuf.clear();
 }

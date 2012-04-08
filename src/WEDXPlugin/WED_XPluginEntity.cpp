@@ -36,7 +36,8 @@
 
 
 WED_XPluginEntity::WED_XPluginEntity(int inType,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef):
- 	mType(inType),mMgrRef(inRef),mProbeRef(inProbeRef),mLon(0),mLat(0),mAlt(0),mHdg(0),
+ 	mType(inType),mMgrRef(inRef),mIdx(0),mParent(NULL),
+ 	mProbeRef(inProbeRef),mLon(0),mLat(0),mAlt(0),mHdg(0),
  	mSetToTerrain(false)
 {
 	mResPath="";
@@ -68,14 +69,11 @@ void WED_XPluginEntity::Draw(bool isLit)
 
 	XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
 	glColor3f(1.0, 0.0, 0.5);
-//  glPointSize(3.0);
-//	glBegin(GL_POINTS);
-//	glVertex3f(x,y,z);
-//	glEnd();
-	glBegin(GL_QUADS);
+
+	glBegin(GL_LINES);
 	glVertex3f(x+1, y, z+1);
-	glVertex3f(x-1, y, z+1);
 	glVertex3f(x-1, y, z-1);
+	glVertex3f(x-1, y, z+1);
 	glVertex3f(x+1, y, z-1);
 	glEnd();
 }

@@ -53,6 +53,11 @@ public:
     virtual void    GetPos(double * outX,double * outY,double * outZ);
     virtual void    SetHdg(double inHdg){mHdg = inHdg;}
     virtual void    SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
+    virtual void    SetIdx(unsigned int inIdx){mIdx = inIdx;}
+    virtual void    SetParent(WED_XPluginEntity * inEntity){mParent=inEntity;}
+
+    virtual unsigned int        GetIdx(){return mIdx;}
+    virtual WED_XPluginEntity * GetParent(){return mParent;}
 
 private:
 
@@ -68,6 +73,8 @@ private:
     string 			 	mName;
     string			 	mResPath;
     WED_XPluginMgr * 	mMgrRef;
+    unsigned int        mIdx;
+    WED_XPluginEntity * mParent;
     XPLMProbeRef	 	mProbeRef;
 
     double				mLon;

@@ -59,14 +59,14 @@ enum wed_nw_con {
 /////////////////////////
 #define WED_NWP_CMD "cmd"
 // cmd:wed_nw_cmd:0:crlf					(request a operation)
-// cmd:cmd_done:WED_nwt_cmdcrlf  		    (annswer from the other side if done)
+// cmd:cmd_done:WED_nwt_cmd:crlf  		    (annswer from the other side if done)
 
 enum wed_nw_cmd {
 
 	nw_cmd_none  		= 0	,
 	nw_cmd_done   		= 1	,
-	nw_cmd_reloadscen  	= 2	,
-
+	nw_cmd_sync             ,
+	nw_cmd_clear            ,
 };
 
 // messages
