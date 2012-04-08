@@ -57,51 +57,52 @@ struct WED_NWCamera_t
 class	WED_NWLinkAdapter :public GUI_Broadcaster,public GUI_Listener,public GUI_Timer  {
 public:
 
-				WED_NWLinkAdapter(WED_Server * inServer,WED_Archive * inArchive);
+    WED_NWLinkAdapter(WED_Server * inServer,WED_Archive * inArchive);
 	virtual	~WED_NWLinkAdapter();
 
-				void 	ObjectCreated(WED_Persistent * inObject);
-				void	ObjectChanged(WED_Persistent * inObject, int chgkind);
-				void	ObjectDestroyed(WED_Persistent * inObject);
+    void    ObjectCreated(WED_Persistent * inObject);
+    void    ObjectChanged(WED_Persistent * inObject, int chgkind);
+    void    ObjectDestroyed(WED_Persistent * inObject);
+    void    SendCamData();
+    int     IsCamEnabled(){return mCamera.enabled;}
+    double  GetCamLon(){return mCamera.lon;}
+    void    SetCamLon(const double inLon){mCamera.lon = inLon;}
+    double  GetCamLat(){return mCamera.lat;}
+    void    SetCamLat(const double inLat){mCamera.lat = inLat;}
+    float   GetCamHdg(){return mCamera.heading;}
+    void    SetCamHdg(const float inHdg){mCamera.heading= inHdg;}
+    float   GetCamAlt(){return mCamera.alt;}
+    void    SetCamAlt(const float inAlt){mCamera.alt = inAlt;}
+    float   GetCamPit(){return mCamera.pitch;}
+    void    SetCamPit(const float inPitch){mCamera.pitch = inPitch;}
 
-				void	SendCamData();
-				int     IsCamEnabled(){return mCamera.enabled;}
-				double  GetCamLon(){return mCamera.lon;}
-				void    SetCamLon(const double inLon){mCamera.lon = inLon;}
-				double  GetCamLat(){return mCamera.lat;}
-				void    SetCamLat(const double inLat){mCamera.lat = inLat;}
-                float   GetCamHdg(){return mCamera.heading;}
-                void    SetCamHdg(const float inHdg){mCamera.heading= inHdg;}
-                float   GetCamAlt(){return mCamera.alt;}
-                void    SetCamAlt(const float inAlt){mCamera.alt = inAlt;}
-                float   GetCamPit(){return mCamera.pitch;}
-                void    SetCamPit(const float inPitch){mCamera.pitch = inPitch;}
+    int     IsLiveMode(void);
+    int     IsReady(void);
+    void    DoReadData();
+    void    DoSendData();
 
-                int     IsReady(void);
-				void    DoReadData();
-				void    DoSendData();
+    void    TimerFired();
 
-				void   	TimerFired();
-
-				void	ReceiveMessage(	GUI_Broadcaster * inSrc,intptr_t inMsg,intptr_t inParam);
+    void    ReceiveMessage(	GUI_Broadcaster * inSrc,intptr_t inMsg,intptr_t inParam);
 
 private:
-				//ToDo:mroe privat for now,should merged with the other changeflags
-				// found in WED_Archive.h ,WED_Thing.h
-				enum {
-					wed_Change_Any_Ex   = 32,
-				};
 
-				bool			 mTimerIsStarted;
+    //ToDo:mroe privat for now,should merged with the other changeflags
+    // found in WED_Archive.h ,WED_Thing.h
+    enum {
+        wed_Change_Any_Ex   = 32,
+    };
 
+    bool                      mBlockChanges;
+    bool                      mTimerIsStarted;
 
-				set<int>		 mDelList;
-	map<WED_Persistent *,int>	 mObjCache;
+    set<int>                  mDelList;
+    map<WED_Persistent *,int> mObjCache;
 
-			WED_Archive *		 mArchive;
-			WED_Server * 		 mServer;
+    WED_Archive *             mArchive;
+    WED_Server *              mServer;
 
-			WED_NWCamera_t       mCamera;
+    WED_NWCamera_t            mCamera;
 };
 
 #endif // WED_NWLINKADAPTER_H

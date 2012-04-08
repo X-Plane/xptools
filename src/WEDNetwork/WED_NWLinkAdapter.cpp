@@ -24,6 +24,7 @@
 #if WITHNWLINK
 
 #include "WED_NWLinkAdapter.h"
+#include "PlatformUtils.h"
 #include "WED_Messages.h"
 #include "WED_Server.h"
 #include "WED_Thing.h"
@@ -36,8 +37,10 @@
 #include "WED_LinePlacement.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 
+#define MAX_WARN_SIZE 100
+
 WED_NWLinkAdapter::WED_NWLinkAdapter(WED_Server * inServer,WED_Archive * inArchive) :
-    mServer(inServer),mArchive(inArchive),mTimerIsStarted(false)
+    mServer(inServer),mArchive(inArchive),mBlockChanges(false),mTimerIsStarted(false)
 {
 
 }
@@ -47,26 +50,45 @@ WED_NWLinkAdapter::~WED_NWLinkAdapter()
     mObjCache.clear();
 }
 
+int     WED_NWLinkAdapter::IsLiveMode(void)
+{
+    return  (mServer != NULL && mServer->IsStarted());
+}
+
 int     WED_NWLinkAdapter::IsReady(void)
 {
-    return  (mServer != NULL) && mServer->IsReady();
+    return  (mServer != NULL && mServer->IsReady() );
 }
 
 //acting as archive-change event
 void  	WED_NWLinkAdapter::TimerFired()
 {
+    char buf[256];
     GUI_Timer::Stop();
-    mTimerIsStarted = false;
     if(mServer && mServer->IsReady())
     {
+        int ccnt = mObjCache.size()+mDelList.size();
+        if(ccnt > MAX_WARN_SIZE )
+        {
+            sprintf(buf," live mode - %d changes at once !\n Do you want this in the live-preview ?\n",ccnt);
+            if(!ConfirmMessage(buf,"no","yes"))
+            {
+                mObjCache.clear();
+                mDelList.clear();
+                mServer->SendData(WED_NWP_CMD,nw_cmd_sync,0,"");
+            }
+        }
+
         this->DoReadData();
         this->DoSendData();
         mServer->DoProcessing();
     }
+    mTimerIsStarted = false;
 }
 
 void 	WED_NWLinkAdapter::ObjectCreated(WED_Persistent * inObject)
 {
+    if(mBlockChanges) return;
     mObjCache[inObject] = wed_Change_CreateDestroy ;
     if (mTimerIsStarted) return;
     GUI_Timer::Start(0);
@@ -75,6 +97,7 @@ void 	WED_NWLinkAdapter::ObjectCreated(WED_Persistent * inObject)
 
 void	WED_NWLinkAdapter::ObjectChanged(WED_Persistent * inObject, int chgkind)
 {
+    if (mBlockChanges) return;
     if (chgkind == wed_Change_Selection) return;
     if (chgkind == wed_Change_Topology) return;
     if (chgkind == wed_Change_Any)
@@ -89,6 +112,7 @@ void	WED_NWLinkAdapter::ObjectChanged(WED_Persistent * inObject, int chgkind)
 
 void 	WED_NWLinkAdapter::ObjectDestroyed(WED_Persistent * inObject)
 {
+    if(mBlockChanges) return;
     mObjCache.erase(inObject);
     if( inObject->GetClass() == WED_ObjPlacement::sClass            ||
         inObject->GetClass() == WED_FacadePlacement::sClass         ||
