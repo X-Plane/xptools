@@ -71,7 +71,7 @@ void  	WED_NWLinkAdapter::TimerFired()
         if(ccnt > MAX_WARN_SIZE )
         {
             sprintf(buf," live mode - %d changes at once !\n Do you want this in the live-preview ?\n",ccnt);
-            if(!ConfirmMessage(buf,"no","yes"))
+            if(!ConfirmMessage(buf,"yes","no"))
             {
                 mObjCache.clear();
                 mDelList.clear();

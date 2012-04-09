@@ -98,7 +98,8 @@ void	ShowProgressMessage(const char * inMsg, float * inProgress)
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
-    return  QMessageBox::question(0,"", inMsg, proceedBtn, cancelBtn);
+    int result = QMessageBox::question(0,"", inMsg, proceedBtn, cancelBtn) ;
+    return  result == 0 ;
 }
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
