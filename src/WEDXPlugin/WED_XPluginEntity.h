@@ -49,8 +49,12 @@ public:
     virtual void    SetLat(double inLat){mLat = inLat;}
     virtual void    SetLon(double inLon){mLon = inLon;}
     virtual void    SetAlt(double inAlt){mAlt = inAlt;}
+    virtual void    SetLoc(const double inLat,const double intLon,const double inAlt);
     virtual void    GetLoc(double * outLat,double * outLon,double * outAlt);
+    virtual void    SetPos(const double inX,const double inY,const double inZ);
     virtual void    GetPos(double * outX,double * outY,double * outZ);
+    virtual void    UpdatePos(){WorldToLocal(this);}
+    virtual void    SceneryShift(){UpdatePos();}
     virtual void    SetHdg(double inHdg){mHdg = inHdg;}
     virtual void    SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
     virtual void    SetIdx(unsigned int inIdx){mIdx = inIdx;}
@@ -77,14 +81,18 @@ private:
     WED_XPluginEntity * mParent;
     XPLMProbeRef	 	mProbeRef;
 
-    double				mLon;
-    double				mLat;
-    double			 	mAlt;
-    float				mHdg;
+    double              mX;
+    double              mY;
+    double              mZ;
 
-    bool				mSetToTerrain;
+    double              mLon;
+    double              mLat;
+    double              mAlt;
+    float               mHdg;
 
-    static void	WorldToLocal(double * outX,double * outY,double * outZ,WED_XPluginEntity* inEntity);
+    bool                mSetToTerrain;
+
+    static void         WorldToLocal(WED_XPluginEntity * inEnt);
 };
 
 #endif // WED_XPLUGINENTITY_H

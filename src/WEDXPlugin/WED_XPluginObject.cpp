@@ -32,11 +32,16 @@
 WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef,const vector<string>& inArgs):
 		WED_XPluginEntity(nw_obj_Object,inRef->GetProbeRef(),inRef),
 		mObjRef(NULL),mWantDraw(true)
-
 {
     this->Update(inArgs);
 }
 
+WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef):
+		WED_XPluginEntity(nw_obj_Object,inRef->GetProbeRef(),inRef),
+		mObjRef(NULL),mWantDraw(true)
+{
+
+}
 ///////////////////////////////////////////////////////////////////////////////////
 //WED_XPluginObj destructor
 WED_XPluginObject::~WED_XPluginObject()
@@ -48,7 +53,6 @@ void WED_XPluginObject::Update(const vector<string>& inArgs)
 {
 	if (inArgs.size() == 6 || inArgs.size() == 8)	//Object
 	{
-		SetToTerrain(true);
 		sscanf(inArgs[3].c_str(),"%lf",&mLon) ;
 		sscanf(inArgs[4].c_str(),"%lf",&mLat) ;
 		sscanf(inArgs[5].c_str(),"%f" ,&mHdg) ;
@@ -57,11 +61,12 @@ void WED_XPluginObject::Update(const vector<string>& inArgs)
 			mName = inArgs[6];
 			SetRessource(inArgs[7]);
 		}
+		SetToTerrain(true);
+		UpdatePos();
 	}
 	else
 	if (inArgs.size() == 7 || inArgs.size() == 9)	//ObjectAbs
 	{
-		SetToTerrain(false);
 		sscanf(inArgs[3].c_str(),"%lf",&mLon) ;
 		sscanf(inArgs[4].c_str(),"%lf",&mLat) ;
 		sscanf(inArgs[5].c_str(),"%lf",&mAlt) ;
@@ -71,6 +76,8 @@ void WED_XPluginObject::Update(const vector<string>& inArgs)
 			mName = inArgs[7];
 			SetRessource(inArgs[8]);
 		}
+		SetToTerrain(false);
+		UpdatePos();
 	}
 }
 
@@ -108,19 +115,16 @@ int  WED_XPluginObject::SetRessource(const string& inPath)
 // drawing the Object
 void WED_XPluginObject::Draw(bool isLit)
 {
-
 	WED_XPluginEntity::Draw(isLit);
 
     if (!(this->mObjRef)) return;
     if ( mWantDraw )
     {
-        double x,y,z;
-        WorldToLocal(&x,&y,&z,this);
         XPLMDrawInfo_t aDrawInfo[1];
         aDrawInfo[0].structSize = sizeof(XPLMDrawInfo_t);
-        aDrawInfo[0].x 		 = (float) x;
-        aDrawInfo[0].y 		 = (float) y;
-        aDrawInfo[0].z 		 = (float) z;
+        aDrawInfo[0].x 		 = (float) mX;
+        aDrawInfo[0].y 		 = (float) mY;
+        aDrawInfo[0].z 		 = (float) mZ;
         aDrawInfo[0].pitch 	 = 0;
         aDrawInfo[0].heading = mHdg;
         aDrawInfo[0].roll	 = 0;

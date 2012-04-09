@@ -46,42 +46,51 @@ struct WED_XPluginStats_t
 class  WED_XPluginMgr : public WED_XPluginClient
 {
 public:
-             WED_XPluginMgr();
+    WED_XPluginMgr();
     virtual ~WED_XPluginMgr();
 
-        void    ClearEntities();
-        void    SetPackage(const string& inPackage){mPackage=inPackage;}
-        string  GetPackage(){return mPackage;}
-        string  GetPackagePath();
-        XPLMProbeRef GetProbeRef(){return mProbeRef;}
+    void    ClearEntities();
+    void    SetPackage(const string& inPackage){mPackage=inPackage;}
+    string  GetPackage(){return mPackage;}
+    string  GetPackagePath();
 
-    	void 	Add(int inId,int inType,const vector<string>& inArgs);
-    	void	Chg(int inId,int inType,const vector<string>& inArgs);
-		void	Del(int inId);
-		void 	Sync();
+    void    Add(int inId,int inType,const vector<string>& inArgs);
+    void    Chg(int inId,int inType,const vector<string>& inArgs);
+    void    Del(int inId);
+    void    Sync();
 
-        bool    IsEnabledCam(){return mCamera.IsEnabled();}
-        void    EnableCam(bool inEnable);
-        void    UpdateCam(int inType,const vector<string>& inArgs);
+    bool    IsEnabledCam(){return mCamera.IsEnabled();}
+    void    EnableCam(bool inEnable);
+    void    UpdateCam(int inType,const vector<string>& inArgs);
 
+    XPLMProbeRef        GetProbeRef(){return mProbeRef;}
     WED_XPluginEntity * GetbyId(int inId);
-	static int	WEDXPluginDrawObjCB(XPLMDrawingPhase inPhase,int inIsBefore,void * inRefcon);
+
+    static int	WEDXPluginDrawObjCB(XPLMDrawingPhase inPhase,int inIsBefore,void * inRefcon);
 
     //WED_XPluginStats_t * GetStats(){return &mEntityStats;}
 
 protected:
 private:
 
-   string                           mPackage;
+    string                        mPackage;
 
-   XPLMProbeRef		    			mProbeRef;
-   XPLMDataRef						mLiteLevelRef;
-   bool								mIsLit;
-   WED_XPluginStats_t	    		mStats;
-   map<int,WED_XPluginEntity *>  	mEntities;
+    double                        mActLatRef;
+    double                        mActLonRef;
+    XPLMDataRef                   mRefLatDRef;
+    XPLMDataRef                   mRefLonDRef;
 
-   WED_XPluginCamera                mCamera;
+    XPLMProbeRef                  mProbeRef;
 
+    XPLMDataRef                   mLiteLevelRef;
+    bool                          mIsLit;
+
+    WED_XPluginStats_t            mStats;
+
+    WED_XPluginCamera             mCamera;
+    map<int,WED_XPluginEntity *>  mEntities;
+
+    int                           IsSceneryShift();
 };
 
 #endif // WED_XPLUGINMGR_H

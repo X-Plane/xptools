@@ -33,22 +33,21 @@ class WED_XPluginObject : public WED_XPluginEntity
 {
 public:
 
-   		WED_XPluginObject(WED_XPluginMgr * inRef,const vector<string>& inArgs);
-    	virtual ~WED_XPluginObject();
+    WED_XPluginObject(WED_XPluginMgr * inRef,const vector<string>& inArgs);
+    WED_XPluginObject(WED_XPluginMgr * inRef);
+    virtual ~WED_XPluginObject();
 
-		void 	 		Draw(bool isLit);
-		int  			SetRessource(const string& inPath);
-		void 			Update(const vector<string>& inArgs);
+    void           Draw(bool isLit);
+    int            SetRessource(const string& inPath);
+    void           Update(const vector<string>& inArgs);
 
 protected:
 private:
 
-		XPLMObjectRef	mObjRef;
-    	bool			mWantDraw;
+    XPLMObjectRef  mObjRef;
+    bool           mWantDraw;
 
-
-static void 			XPDM_LoadObjectCB(const char * inPath,void * inRef);
-
+    static void    XPDM_LoadObjectCB(const char * inPath,void * inRef);
 
 };
 

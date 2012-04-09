@@ -44,6 +44,11 @@ WED_XPluginMgr::WED_XPluginMgr() : WED_XPluginClient(this),
     mCamera.SetProbeRef(mProbeRef);
 
     mLiteLevelRef = XPLMFindDataRef("sim/graphics/scenery/percent_lights_on");
+    mRefLatDRef   = XPLMFindDataRef("sim/flightmodel/position/lat_ref");
+    mRefLonDRef   = XPLMFindDataRef("sim/flightmodel/position/lon_ref");
+
+    mActLatRef    = XPLMGetDataf(mRefLatDRef);
+    mActLonRef    = XPLMGetDataf(mRefLonDRef);
 
 	XPLMRegisterDrawCallback(WEDXPluginDrawObjCB, xplm_Phase_Objects, 0,this);
 }
@@ -62,15 +67,33 @@ void WED_XPluginMgr::ClearEntities()
     mEntities.clear();
 }
 
+int WED_XPluginMgr::IsSceneryShift()
+{
+    double newlatref = XPLMGetDataf(mRefLatDRef);
+    double newlonref = XPLMGetDataf(mRefLonDRef);
+
+    if((newlatref==mActLatRef)&&(newlonref==mActLonRef))
+        return false;
+
+    mActLatRef = newlatref;
+    mActLonRef = newlonref;
+
+    return true;
+}
 
 // Callback for Draw Objects
 int	 WED_XPluginMgr::WEDXPluginDrawObjCB(XPLMDrawingPhase inPhase,int inIsBefore,void * inRefcon)
 {
 	WED_XPluginMgr * mgr = static_cast<WED_XPluginMgr *>(inRefcon);
+
+	bool is_sceneryshift = mgr->IsSceneryShift();
     XPLMSetGraphicsState(0, 0, 1, 1, 1, 1, 1);
 	map<int,WED_XPluginEntity *>::iterator it;
 	for (it = mgr->mEntities.begin();it != mgr->mEntities.end();++it)
-		(it->second)->Draw(mgr->mIsLit);
+    {
+       if(is_sceneryshift)(it->second)->SceneryShift();
+       (it->second)->Draw(mgr->mIsLit);
+    }
 	return 1;
 }
 

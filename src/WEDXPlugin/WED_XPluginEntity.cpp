@@ -37,7 +37,7 @@
 
 WED_XPluginEntity::WED_XPluginEntity(int inType,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef):
  	mType(inType),mMgrRef(inRef),mIdx(0),mParent(NULL),
- 	mProbeRef(inProbeRef),mLon(0),mLat(0),mAlt(0),mHdg(0),
+ 	mProbeRef(inProbeRef),mX(0),mY(0),mZ(0),mLon(0),mLat(0),mAlt(0),mHdg(0),
  	mSetToTerrain(false)
 {
 	mResPath="";
@@ -50,68 +50,79 @@ WED_XPluginEntity::~WED_XPluginEntity()
 
 }
 
-void   WED_XPluginEntity::GetLoc(double * outLat,double * outLon,double * outAlt)
+void WED_XPluginEntity::GetLoc(double * outLat,double * outLon,double * outAlt)
 {
     if (outLat) *outLat = mLat;
-	if (outLon) *outLon = mLon;
-	if (outAlt) *outAlt = mAlt;
+    if (outLon) *outLon = mLon;
+    if (outAlt) *outAlt = mAlt;
 }
 
-void   WED_XPluginEntity::GetPos(double * outX,double * outY,double * outZ)
+void WED_XPluginEntity::SetLoc(const double inLat,const double inLon,const double inAlt)
 {
-	WorldToLocal(outX,outY,outZ,this);
+    mLat = inLat;
+    mLon = inLon;
+    mAlt = inAlt;
+}
+
+void WED_XPluginEntity::GetPos(double * outX,double * outY,double * outZ)
+{
+    if (outX) *outX = mX;
+    if (outY) *outY = mY;
+    if (outZ) *outZ = mZ;
+}
+
+void WED_XPluginEntity::SetPos(const double inX,const double inY,const double inZ)
+{
+    mX = inX;
+    mY = inY;
+    mZ = inZ;
 }
 
 void WED_XPluginEntity::Draw(bool isLit)
 {
-	double x,y,z;
-	WorldToLocal(&x,&y,&z,this);
-
 	XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
 	glColor3f(1.0, 0.0, 0.5);
 
 	glBegin(GL_LINES);
-	glVertex3f(x+1, y, z+1);
-	glVertex3f(x-1, y, z-1);
-	glVertex3f(x-1, y, z+1);
-	glVertex3f(x+1, y, z-1);
+	glVertex3f(mX+1, mY, mZ+1);
+	glVertex3f(mX-1, mY, mZ-1);
+	glVertex3f(mX-1, mY, mZ+1);
+	glVertex3f(mX+1, mY, mZ-1);
 	glEnd();
 }
 
-void WED_XPluginEntity::WorldToLocal(double * outX,double * outY,double * outZ,WED_XPluginEntity* inEntity)
+void WED_XPluginEntity::WorldToLocal(WED_XPluginEntity * inEnt)
 {
-	double x,y,z = 0;
-
-	if(inEntity->mSetToTerrain)
+    double x,y,z;
+	if(inEnt->mSetToTerrain)
 	{
-		if (inEntity->mProbeRef)
+		if (inEnt->mProbeRef)
 		{
 			double lat,lon,alt = 0;
 
 			XPLMProbeInfo_t	 aProbeInfo;
 			aProbeInfo.structSize = sizeof(XPLMProbeInfo_t);
 
-			XPLMWorldToLocal(inEntity->mLat,inEntity->mLon,0,&x,&y,&z);
+			XPLMWorldToLocal(inEnt->mLat,inEnt->mLon,0,&x,&y,&z);
 
-			if (XPLMProbeTerrainXYZ(inEntity->mProbeRef,x,y,z,&aProbeInfo) == xplm_ProbeHitTerrain)
+			if (XPLMProbeTerrainXYZ(inEnt->mProbeRef,x,y,z,&aProbeInfo) == xplm_ProbeHitTerrain)
 			{
-				y = aProbeInfo.locationY ;
+				y = aProbeInfo.locationY;
 
 				XPLMLocalToWorld(x,y,z,&lat,&lon,&alt);
-				XPLMWorldToLocal(inEntity->mLat,inEntity->mLon,alt,&x,&y,&z);
+				XPLMWorldToLocal(inEnt->mLat,inEnt->mLon,alt,&x,&y,&z);
 
-				XPLMProbeTerrainXYZ(inEntity->mProbeRef,x,y,z,&aProbeInfo);
-				y = aProbeInfo.locationY ;
+				XPLMProbeTerrainXYZ(inEnt->mProbeRef,x,y,z,&aProbeInfo);
+				y = aProbeInfo.locationY;
 
-				XPLMLocalToWorld(x,y,z,&lat,&lon,&inEntity->mAlt);
-				inEntity->mSetToTerrain = false;
+				XPLMLocalToWorld(x,y,z,&lat,&lon,&inEnt->mAlt);
 			}
 		}
     }
     else
-    	XPLMWorldToLocal(inEntity->mLat,inEntity->mLon,inEntity->mAlt,&x,&y,&z);
+    	XPLMWorldToLocal(inEnt->mLat,inEnt->mLon,inEnt->mAlt,&x,&y,&z);
 
-	if (outX) *outX =  x;
-	if (outY) *outY =  y;
-	if (outZ) *outZ =  z;
+    inEnt->mX = x;
+    inEnt->mY = y;
+    inEnt->mZ = z;
 }
