@@ -24,12 +24,11 @@
 #ifndef WED_XPLUGINENTITY_H
 #define WED_XPLUGINENTITY_H
 
-#include "XPLMScenery.h"
-#include <map>
 #include <string>
 #include <vector>
 
-using namespace std ;
+using  std::vector ;
+using  std::string ;
 
 class WED_XPluginMgr;
 
@@ -37,62 +36,41 @@ class WED_XPluginEntity
 {
 public:
 
-    WED_XPluginEntity(int inType,XPLMProbeRef inProbeRef,WED_XPluginMgr * inRef);
+    WED_XPluginEntity(int inType,WED_XPluginMgr * inRef);
     virtual ~WED_XPluginEntity();
 
-    virtual void    Draw(bool isLit);
-    virtual int     GetType(){return mType;}
-    virtual void    SetResPath(const string& inPath){mResPath=inPath;}
-    virtual string  GetResPath(){return mResPath;}
-    virtual void    SetName(const string& inName){mName=inName;}
-    virtual string  GetName(){return mName;}
-    virtual void    SetLat(double inLat){mLat = inLat;}
-    virtual void    SetLon(double inLon){mLon = inLon;}
-    virtual void    SetAlt(double inAlt){mAlt = inAlt;}
-    virtual void    SetLoc(const double inLat,const double intLon,const double inAlt);
-    virtual void    GetLoc(double * outLat,double * outLon,double * outAlt);
-    virtual void    SetPos(const double inX,const double inY,const double inZ);
-    virtual void    GetPos(double * outX,double * outY,double * outZ);
-    virtual void    UpdatePos(){WorldToLocal(this);}
-    virtual void    SceneryShift(){UpdatePos();}
-    virtual void    SetHdg(double inHdg){mHdg = inHdg;}
-    virtual void    SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
-    virtual void    SetIdx(unsigned int inIdx){mIdx = inIdx;}
-    virtual void    SetParent(WED_XPluginEntity * inEntity){mParent=inEntity;}
+    virtual void        Draw(bool isLit){;}
+    virtual void        UpdatePos(){;}
+    virtual void        SceneryShift(){;}
+    virtual void        SetToTerrain(bool inToTerrain){;}
 
-    virtual unsigned int        GetIdx(){return mIdx;}
-    virtual WED_XPluginEntity * GetParent(){return mParent;}
+    int                 GetType(){return mType;}
+    void                SetResPath(const string& inPath){mResPath=inPath;}
+    string              GetResPath(){return mResPath;}
+    void                SetName(const string& inName){mName=inName;}
+    string              GetName(){return mName;}
+    void                SetParent(WED_XPluginEntity * inEntity){mParent=inEntity;}
+    WED_XPluginEntity * GetParent(){return mParent;}
+    void                SetIdx(unsigned int inIdx){mIdx = inIdx;}
+    unsigned int        GetIdx(){return mIdx;}
 
 private:
 
-    friend class WED_XPluginObject;
-    friend class WED_XPluginFacade;
-    friend class WED_XPluginFacRing;
-    friend class WED_XPluginFacNode;
-    friend class WED_XPluginLine;
-    friend class WED_XPluginLinNode;
-    friend class WED_XPluginBezierNode;
+    friend class        WED_XPluginObject;
+//    friend class        WED_XPluginFacade;
+//    friend class        WED_XPluginFacNode;
+//    friend class        WED_XPluginFacRing;
+//    friend class        WED_XPluginLine;
+//    friend class        WED_XPluginLinNode;
+
+    unsigned int        mIdx;
 
     int					mType;
     string 			 	mName;
     string			 	mResPath;
     WED_XPluginMgr * 	mMgrRef;
-    unsigned int        mIdx;
     WED_XPluginEntity * mParent;
-    XPLMProbeRef	 	mProbeRef;
 
-    double              mX;
-    double              mY;
-    double              mZ;
-
-    double              mLon;
-    double              mLat;
-    double              mAlt;
-    float               mHdg;
-
-    bool                mSetToTerrain;
-
-    static void         WorldToLocal(WED_XPluginEntity * inEnt);
 };
 
 #endif // WED_XPLUGINENTITY_H

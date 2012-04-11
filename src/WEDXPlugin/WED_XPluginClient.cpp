@@ -20,7 +20,12 @@
  * THE SOFTWARE.
  *
  */
-
+//FIXME:TODO:mroe
+//WED crashed whith exeption  'broken pipe '
+//if hugh traffic going on and client disconnects
+//- no idea yet ,how we can handle this
+//
+// some double Ack seen on netwerk while connect ; occours on both sides
 
 #include "WED_NWDefs.h"
 #include "PCSBSocket.h"
@@ -29,6 +34,10 @@
 #include "XPLMProcessing.h"
 #include <stdio.h>
 
+//TODO:mroe: only run local for now ,
+//do __not__ try go over the network
+//it is not well tested and there still some improvements
+//neccessary
 #define DEFAULT_IPAddr 		"localhost"
 #define DEFAULT_Port		10300
 #define CLIENT_VERS			"104"

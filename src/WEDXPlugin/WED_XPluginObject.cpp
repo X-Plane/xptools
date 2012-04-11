@@ -24,20 +24,21 @@
 #include "XPLMUtilities.h"
 #include "XPLMGraphics.h"
 #include "WED_XPluginObject.h"
+#include "WED_XPluginMgr.h"
 
 #include "stdio.h"
 
 ///////////////////////////////////////////////////////////////////////////////////
 //WED_XPluginObj constructor
 WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef,const vector<string>& inArgs):
-		WED_XPluginEntity(nw_obj_Object,inRef->GetProbeRef(),inRef),
+		WED_XPluginNode(nw_obj_Object,inRef),
 		mObjRef(NULL),mWantDraw(true)
 {
     this->Update(inArgs);
 }
 
 WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef):
-		WED_XPluginEntity(nw_obj_Object,inRef->GetProbeRef(),inRef),
+		WED_XPluginNode(nw_obj_Object,inRef),
 		mObjRef(NULL),mWantDraw(true)
 {
 
@@ -53,12 +54,13 @@ void WED_XPluginObject::Update(const vector<string>& inArgs)
 {
 	if (inArgs.size() == 6 || inArgs.size() == 8)	//Object
 	{
-		sscanf(inArgs[3].c_str(),"%lf",&mLon) ;
-		sscanf(inArgs[4].c_str(),"%lf",&mLat) ;
-		sscanf(inArgs[5].c_str(),"%f" ,&mHdg) ;
+		sscanf(inArgs[3].c_str(),"%lf",&mLon);
+		sscanf(inArgs[4].c_str(),"%lf",&mLat);
+		sscanf(inArgs[5].c_str(),"%f" ,&mHdg);
+
 		if(inArgs.size() == 8)
 		{
-			mName = inArgs[6];
+			SetName(inArgs[6]);
 			SetRessource(inArgs[7]);
 		}
 		SetToTerrain(true);
@@ -67,13 +69,13 @@ void WED_XPluginObject::Update(const vector<string>& inArgs)
 	else
 	if (inArgs.size() == 7 || inArgs.size() == 9)	//ObjectAbs
 	{
-		sscanf(inArgs[3].c_str(),"%lf",&mLon) ;
-		sscanf(inArgs[4].c_str(),"%lf",&mLat) ;
-		sscanf(inArgs[5].c_str(),"%lf",&mAlt) ;
-		sscanf(inArgs[6].c_str(),"%f" ,&mHdg) ;
+		sscanf(inArgs[3].c_str(),"%lf",&mLon);
+		sscanf(inArgs[4].c_str(),"%lf",&mLat);
+		sscanf(inArgs[5].c_str(),"%lf",&mAlt);
+		sscanf(inArgs[6].c_str(),"%f" ,&mHdg);
 		if(inArgs.size() == 9)
 		{
-			mName = inArgs[7];
+			SetName(inArgs[7]);
 			SetRessource(inArgs[8]);
 		}
 		SetToTerrain(false);
@@ -115,7 +117,7 @@ int  WED_XPluginObject::SetRessource(const string& inPath)
 // drawing the Object
 void WED_XPluginObject::Draw(bool isLit)
 {
-	WED_XPluginEntity::Draw(isLit);
+	WED_XPluginNode::Draw(isLit);
 
     if (!(this->mObjRef)) return;
     if ( mWantDraw )

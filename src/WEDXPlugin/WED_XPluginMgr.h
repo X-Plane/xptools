@@ -24,15 +24,16 @@
 #ifndef WED_XPLUGINMGR_H
 #define WED_XPLUGINMGR_H
 
-
 #include "WED_XPluginClient.h"
-#include "WED_XPluginObject.h"
 #include "WED_XPluginCamera.h"
 #include "XPLMDataAccess.h"
 #include "XPLMGraphics.h"
 #include "XPLMDisplay.h"
 #include "WED_NWDefs.h"
 
+#include <map>
+
+using std::map;
 
 struct WED_XPluginStats_t
 {
@@ -41,6 +42,8 @@ struct WED_XPluginStats_t
 
     }
 };
+
+class WED_XPluginEntity;
 
 
 class  WED_XPluginMgr : public WED_XPluginClient

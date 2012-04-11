@@ -24,11 +24,14 @@
 
 #include "WED_XPluginMgr.h"
 #include "WED_XPluginClient.h"
+#include "WED_XPluginEntity.h"
+#include "WED_XPluginObject.h"
 //#include "WED_XPluginFacade.h"
 //#include "WED_XPluginFacRing.h"
 //#include "WED_XPluginFacNode.h"
 //#include "WED_XPluginLine.h"
 //#include "WED_XPluginLinNode.h"
+
 #include "XPLMUtilities.h"
 
 #include <stdio.h>
@@ -170,7 +173,6 @@ void WED_XPluginMgr::Add(int inId,int inType,const vector<string>& inArgs)
 	switch (inType)
 	{
 		case nw_obj_none       :return;
-
 		case nw_obj_Object     :mEntities[inId] = new WED_XPluginObject(this,inArgs) ;break;
 //		case nw_obj_Facade     :mEntities[inId] = new WED_XPluginFacade(this,inArgs) ;break;
 //		case nw_obj_FacadeRing :mEntities[inId] = new WED_XPluginFacRing(this,inArgs);break;

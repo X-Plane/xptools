@@ -24,12 +24,12 @@
 #ifndef WED_XPLUGINOBJECT_H
 #define WED_XPLUGINOBJECT_H
 
-#include "WED_XPluginEntity.h"
-#include "WED_XPluginMgr.h"
+#include "WED_XPluginNode.h"
 #include "XPLMScenery.h"
 
+class WED_XPluginMgr;
 
-class WED_XPluginObject : public WED_XPluginEntity
+class WED_XPluginObject : public WED_XPluginNode
 {
 public:
 
