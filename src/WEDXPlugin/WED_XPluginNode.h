@@ -38,6 +38,9 @@ public:
     virtual void         SceneryShift(){WorldToLocal(this);}
     virtual void         UpdatePos(){WorldToLocal(this);}
 
+            bool         GetDrawVertex(){return mWantDraw;}
+            void         SetDrawVertex(bool inWantDraw){mWantDraw=inWantDraw;}
+
             bool         GetToTerrain(){return mSetToTerrain;}
             void         SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
 
@@ -60,11 +63,14 @@ public:
 protected:
 private:
 
+    friend class WED_XPluginObject;
+    friend class WED_XPluginDrawObj;
 //    friend class WED_XPluginBezierNode;
 //    friend class WED_XPluginFacNode;
 //    friend class WED_XPluginLinNode;
-    friend class WED_XPluginObject;
 //    friend class WED_XPluginFacade;
+
+    bool         mWantDraw;
 
     XPLMProbeRef mProbeRef;
 
@@ -75,7 +81,6 @@ private:
     double       mLon;
     double       mLat;
     double       mAlt;
-
     float        mHdg;
 
     bool         mSetToTerrain;

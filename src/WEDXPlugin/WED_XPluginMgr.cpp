@@ -131,7 +131,7 @@ string  WED_XPluginMgr::GetPackagePath()
 
     XPLMGetSystemPath(DirPath);
 
-    sprintf(DirPath,"%s%s%s%s%s",DirPath,SCNFOLDERNAME,PS,mPackage.c_str(),PS);
+    sprintf(DirPath,"%s%s%s%s",SCNFOLDERNAME,PS,mPackage.c_str(),PS);
 
     return DirPath ;
 }

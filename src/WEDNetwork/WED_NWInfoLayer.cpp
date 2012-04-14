@@ -186,9 +186,9 @@ int			WED_NWInfoLayer::HandleClickDown(int inX, int inY, int inButton, GUI_KeyFl
         return 1;
     }
 
-    float h = mNWLink->GetCamHdg();
-    float tx = x+sin(h * DEG_TO_RAD)*20;
-    float ty = y+cos(h * DEG_TO_RAD)*20;
+    float psi = mNWLink->GetCamHdg() * DEG_TO_RAD;
+    float tx = x+sin(psi)*20;
+    float ty = y+cos(psi)*20;
 
     if (fabsf(inX - tx) < 5.0f&&
         fabsf(inY - ty) < 5.0f)

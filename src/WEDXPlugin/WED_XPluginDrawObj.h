@@ -21,46 +21,44 @@
  *
  */
 
-#ifndef WED_XPLUGINOBJECT_H
-#define WED_XPLUGINOBJECT_H
+#ifndef WED_XPLUGINDRAWOBJ_H
+#define WED_XPLUGINDRAWOBJ_H
 
 #include "WED_XPluginNode.h"
-#include "WED_XPluginDrawObj.h"
-#include "XPLMGraphics.h"
+#include "XPLMScenery.h"
 
 class WED_XPluginMgr;
 
-class WED_XPluginObject : public WED_XPluginNode
+class WED_XPluginDrawObj : public WED_XPluginNode
 {
 public:
 
-    WED_XPluginObject(WED_XPluginMgr * inRef,const vector<string>& inArgs);
-    WED_XPluginObject(WED_XPluginMgr * inRef);
-    virtual ~WED_XPluginObject();
+    WED_XPluginDrawObj(XPLMObjectRef inObjRef,WED_XPluginMgr * inRef);
+    virtual ~WED_XPluginDrawObj();
 
-    void                 Draw(bool isLit);
-    int                  SetRessource(const string& inPath);
-    void                 Update(const vector<string>& inArgs);
-    void                 UpdatePos();
-    void                 SceneryShift(){UpdatePos();}
-
-    void                 AddObj(WED_XPluginDrawObj * inObj){mObjs.push_back(inObj);}
-    unsigned int         GetObjCnt(){return mObjs.size();}
-    WED_XPluginDrawObj * GetObjAt(unsigned int n){return mObjs.at(n);}
+    void           Draw(bool isLit);
+    double         oX(){return mOX;}
+    double         oY(){return mOY;}
+    double         oH(){return mOH;}
+    void           oX(double inX){mOX = inX;}
+    void           oY(double inY){mOY = inY;}
+    void           oH(double inH){mOH = inH;}
+    void           SetOffsets(const double inX,
+                              const double inY,
+                              const double inHdg);
 
 protected:
 private:
 
-    bool           mIsAGP;
     bool           mWantDraw;
+    XPLMObjectRef  mObjRef;
 
-    vector<WED_XPluginDrawObj *> mObjs;
+    double         mOX;
+    double         mOY;
+    double         mOH;
 
-    void          ClearObjs();
-    static void   LoadObjectCB(const char * inPath,void * inRef);
-    static int    DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,
-                                              WED_XPluginObject * inObj);
+
 
 };
 
-#endif // WED_XPLUGINOBJECT_H
+#endif // WED_XPLUGINDRAWOBJ_H
