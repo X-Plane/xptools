@@ -178,11 +178,11 @@ void 	WED_NWLinkAdapter::DoSendData()
             if(obj->HasCustomMSL())
             {
                 double alt = obj->GetCustomMSL();
-                sprintf(buf,"%.8lf:%.8lf:%.8lf:%.2f:",p.x(),p.y(),alt,hdg);
+                sprintf(buf,"%.9lf:%.9lf:%.3lf:%.6f:",p.x(),p.y(),alt,hdg);
             }
             else
 #endif
-                sprintf(buf,"%.8lf:%.8lf:%.2f:",p.x(),p.y(),hdg);
+                sprintf(buf,"%.9lf:%.9lf:%.6f:",p.x(),p.y(),hdg);
 
             astr += buf;
 
@@ -223,11 +223,11 @@ void 	WED_NWLinkAdapter::DoSendData()
             id = facnode->GetID();
             facnode->GetBezierLocation(gis_Geo,bp);
 
-            sprintf(buf,"%.8lf:%.8lf:",bp.pt.x(),bp.pt.y());
+            sprintf(buf,"%.9lf:%.9lf:",bp.pt.x(),bp.pt.y());
             astr += buf;
             if (bp.has_lo()||bp.has_hi())
             {
-                sprintf(buf,"%.8lf:%.8lf:%.8lf:%.8lf:",bp.hi.x(),bp.hi.y(),bp.lo.x(),bp.lo.y());
+                sprintf(buf,"%.9lf:%.9lf:%.9lf:%.9lf:",bp.hi.x(),bp.hi.y(),bp.lo.x(),bp.lo.y());
                 astr += buf;
             }
             if( it->second & wed_Change_CreateDestroy ||
@@ -258,11 +258,11 @@ void 	WED_NWLinkAdapter::DoSendData()
             id = sbbnode->GetID();
             sbbnode->GetBezierLocation(gis_Geo,bp);
 
-            sprintf(buf,"%.8lf:%.8lf:",bp.pt.x(),bp.pt.y());
+            sprintf(buf,"%.9lf:%.9lf:",bp.pt.x(),bp.pt.y());
             astr += buf;
             if (bp.has_lo()||bp.has_hi())
             {
-                sprintf(buf,"%.8lf:%.8lf:%.8lf:%.8lf:",bp.hi.x(),bp.hi.y(),bp.lo.x(),bp.lo.y());
+                sprintf(buf,"%.9lf:%.9lf:%.9lf:%.9lf:",bp.hi.x(),bp.hi.y(),bp.lo.x(),bp.lo.y());
                 astr += buf;
             }
             if( it->second & wed_Change_CreateDestroy ||
