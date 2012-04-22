@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, mroe.
+ * Copyright (c) 2012, mroe.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,31 +20,28 @@
  * THE SOFTWARE.
  *
  */
+#ifndef WED_XPLUGINFACRING_H
+#define WED_XPLUGINFACRING_H
 
-#ifndef WED_XPLUGINDRAWOBJ_H
-#define WED_XPLUGINDRAWOBJ_H
+#include "WED_XPluginEntity.h"
+#include "WED_XPluginBezierChain.h"
 
-#include "WED_XPluginNode.h"
-#include "XPLMScenery.h"
 
 class WED_XPluginMgr;
 
-class WED_XPluginDrawObj : public WED_XPluginNode
+class WED_XPluginFacRing : public WED_XPluginEntity ,public WED_XPluginBezierChain
 {
 public:
+    WED_XPluginFacRing(WED_XPluginMgr * inRef,const vector<string>& inArgs);
+    WED_XPluginFacRing(WED_XPluginMgr * inRef);
+    virtual ~WED_XPluginFacRing();
 
-    WED_XPluginDrawObj(XPLMObjectRef inObjRef,WED_XPluginMgr * inRef);
-    virtual ~WED_XPluginDrawObj();
-
-    void           Draw(bool isLit);
-    void           SetDrawVertex(bool inDrawVertex){mDrawVertex = inDrawVertex;}
+    void            Update(const vector<string>& inArgs);
+    void            UpdatePos();
 
 protected:
 private:
 
-    bool           mWantDraw;
-    bool           mDrawVertex;
-    XPLMObjectRef  mObjRef;
 };
 
-#endif // WED_XPLUGINDRAWOBJ_H
+#endif // WED_XPLUGINFACRING_H

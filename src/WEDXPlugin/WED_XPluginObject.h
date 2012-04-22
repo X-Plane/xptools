@@ -25,10 +25,11 @@
 #define WED_XPLUGINOBJECT_H
 
 #include "WED_XPluginNode.h"
-#include "WED_XPluginDrawObj.h"
 #include "XPLMGraphics.h"
 
 class WED_XPluginMgr;
+class WED_XPluginFacade;
+class WED_XPluginDrawObj;
 
 class WED_XPluginObject : public WED_XPluginNode
 {
@@ -48,6 +49,12 @@ public:
     unsigned int         GetObjCnt(){return mObjs.size();}
     WED_XPluginDrawObj * GetObjAt(unsigned int n){return mObjs.at(n);}
 
+    void                 AddFac(WED_XPluginFacade * inFac){mFacs.push_back(inFac);}
+    unsigned int         GetFacCnt(){return mFacs.size();}
+    WED_XPluginFacade  * GetFacAt(unsigned int n){return mFacs.at(n);}
+
+    void                 AddTileNode(WED_XPluginNode * inNode){mTile.push_back(inNode);}
+
 protected:
 private:
 
@@ -55,8 +62,13 @@ private:
     bool           mWantDraw;
 
     vector<WED_XPluginDrawObj *> mObjs;
+    vector<WED_XPluginFacade  *> mFacs;
+    vector<WED_XPluginNode    *> mTile;
 
     void          ClearObjs();
+    void          ClearFacs();
+    void          ClearTile();
+
     static void   LoadObjectCB(const char * inPath,void * inRef);
     static int    DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,
                                               WED_XPluginObject * inObj);

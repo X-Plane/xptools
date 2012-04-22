@@ -30,7 +30,7 @@
 
 WED_XPluginDrawObj::WED_XPluginDrawObj(XPLMObjectRef inObjRef,WED_XPluginMgr * inRef):
 		WED_XPluginNode(nw_obj_Object,inRef),
-		mWantDraw(true),mObjRef(inObjRef),mOX(0),mOY(0),mOH(0)
+		mWantDraw(true),mDrawVertex(true),mObjRef(inObjRef)
 {
 
 }
@@ -41,29 +41,20 @@ WED_XPluginDrawObj::~WED_XPluginDrawObj()
 	if(mObjRef)XPLMUnloadObject(mObjRef);
 }
 
-void WED_XPluginDrawObj::SetOffsets(const double inX,
-                                    const double inY,
-                                    const double inHdg)
-{
-    mOX = inX;
-    mOY = inY;
-    mOH = inHdg;
-}
-
 ///////////////////////////////////////////////////////////////////////////////////
 // drawing the Object
 void WED_XPluginDrawObj::Draw(bool isLit)
 {
-	WED_XPluginNode::Draw(isLit);
+	if(mDrawVertex) WED_XPluginNode::Draw(isLit);
 
     if (!(this->mObjRef)) return;
     if ( mWantDraw )
     {
         XPLMDrawInfo_t aDrawInfo[1];
         aDrawInfo[0].structSize = sizeof(XPLMDrawInfo_t);
-        aDrawInfo[0].x 		 = (float) mX;
-        aDrawInfo[0].y 		 = (float) mY;
-        aDrawInfo[0].z 		 = (float) mZ;
+        aDrawInfo[0].x 		 = mX;
+        aDrawInfo[0].y 		 = mY;
+        aDrawInfo[0].z 		 = mZ;
         aDrawInfo[0].pitch 	 = 0;
         aDrawInfo[0].heading = mHdg;
         aDrawInfo[0].roll	 = 0;

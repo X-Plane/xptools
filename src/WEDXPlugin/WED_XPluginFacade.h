@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, mroe.
+ * Copyright (c) 2012, mroe.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,31 +20,53 @@
  * THE SOFTWARE.
  *
  */
-
-#ifndef WED_XPLUGINDRAWOBJ_H
-#define WED_XPLUGINDRAWOBJ_H
+#ifndef WED_XPLUGINFACADE_H
+#define WED_XPLUGINFACADE_H
 
 #include "WED_XPluginNode.h"
-#include "XPLMScenery.h"
 
 class WED_XPluginMgr;
+class WED_XPluginFacRing;
 
-class WED_XPluginDrawObj : public WED_XPluginNode
+class WED_XPluginFacade : public WED_XPluginNode
 {
 public:
 
-    WED_XPluginDrawObj(XPLMObjectRef inObjRef,WED_XPluginMgr * inRef);
-    virtual ~WED_XPluginDrawObj();
+    WED_XPluginFacade(WED_XPluginMgr * inRef,const vector<string>& inArgs);
+    WED_XPluginFacade(WED_XPluginMgr * inRef);
+    virtual ~WED_XPluginFacade();
 
-    void           Draw(bool isLit);
-    void           SetDrawVertex(bool inDrawVertex){mDrawVertex = inDrawVertex;}
+    enum fac_topo
+    {
+        topo_unknown = -1,
+        topo_Area    =  0,
+        topo_Ring    =  1,
+        topo_Chain   =  2
+    };
+
+    void     Draw(bool isLit);
+    void     UpdatePos();
+    void     Update(const vector<string>& inArgs);
+    void     SceneryShift(){;}
+
+    void     SetTopo(int inTopo){mTopo = inTopo;}
+    void     SetHeight(int inHeight){mHeight = inHeight;}
+    void     SetHasWall(int inHasWall){mHasWall = inHasWall;}
+
+    int      SetRessource(const string& inPath);
+    void     AddRing(WED_XPluginFacRing * inRing);
+    void     DelRing(WED_XPluginFacRing * inRing);
+    int      GetRingCnt(){return mRings.size();}
+    WED_XPluginFacRing * GetRingAt(int n){return mRings.at(n);}
 
 protected:
 private:
 
-    bool           mWantDraw;
-    bool           mDrawVertex;
-    XPLMObjectRef  mObjRef;
+    float     mHeight;
+    int       mHasWall;
+    int       mTopo;
+
+    vector<WED_XPluginFacRing *> mRings;
 };
 
-#endif // WED_XPLUGINDRAWOBJ_H
+#endif // WED_XPLUGINFACADE_H

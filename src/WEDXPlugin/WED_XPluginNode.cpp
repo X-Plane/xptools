@@ -37,9 +37,9 @@
 
 WED_XPluginNode::WED_XPluginNode(int inType,WED_XPluginMgr * inRef):
     WED_XPluginEntity(inType,inRef),
-    mWantDraw(true),mProbeRef(inRef->GetProbeRef()),
-    mX(0),mY(0),mZ(0),mLon(0),mLat(0),mAlt(0),mHdg(0),
-    mSetToTerrain(true)
+    mWantDraw(true),mX(0),mY(0),mZ(0),mOX(0),mOY(0),mOH(0),
+    mLon(0),mLat(0),mAlt(0),mHdg(0),
+    mSetToTerrain(true),mProbeRef(inRef->GetProbeRef())
 {
     //ctor
 }
@@ -81,7 +81,7 @@ void WED_XPluginNode::Draw(bool isLit)
 {
     if(mWantDraw)
     {
-        XPLMSetGraphicsState(0, 0, 0, 0, 0, 0, 0);
+        XPLMSetGraphicsState(0, 0, 0, 0, 0, 1, 1);
         glColor3f(1.0, 0.0, 0.5);
 
         glBegin(GL_LINES);
@@ -91,6 +91,14 @@ void WED_XPluginNode::Draw(bool isLit)
         glVertex3f(mX+1, mY, mZ-1);
         glEnd();
     }
+}
+
+
+void WED_XPluginNode::SetOffsets(const double inX,const double inY,const double inHdg)
+{
+    mOX = inX;
+    mOY = inY;
+    mOH = inHdg;
 }
 
 void WED_XPluginNode::WorldToLocal(WED_XPluginNode * inNode)

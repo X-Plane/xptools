@@ -26,11 +26,11 @@
 #include "WED_XPluginClient.h"
 #include "WED_XPluginEntity.h"
 #include "WED_XPluginObject.h"
-//#include "WED_XPluginFacade.h"
-//#include "WED_XPluginFacRing.h"
-//#include "WED_XPluginFacNode.h"
-//#include "WED_XPluginLine.h"
-//#include "WED_XPluginLinNode.h"
+#include "WED_XPluginFacade.h"
+#include "WED_XPluginFacRing.h"
+#include "WED_XPluginFacNode.h"
+#include "WED_XPluginLine.h"
+#include "WED_XPluginLinNode.h"
 
 #include "XPLMUtilities.h"
 
@@ -174,11 +174,11 @@ void WED_XPluginMgr::Add(int inId,int inType,const vector<string>& inArgs)
 	{
 		case nw_obj_none       :return;
 		case nw_obj_Object     :mEntities[inId] = new WED_XPluginObject(this,inArgs) ;break;
-//		case nw_obj_Facade     :mEntities[inId] = new WED_XPluginFacade(this,inArgs) ;break;
-//		case nw_obj_FacadeRing :mEntities[inId] = new WED_XPluginFacRing(this,inArgs);break;
-//		case nw_obj_FacadeNode :mEntities[inId] = new WED_XPluginFacNode(this,inArgs);break;
-//		case nw_obj_Line       :mEntities[inId] = new WED_XPluginLine(this,inArgs)   ;break;
-//		case nw_obj_LineNode   :mEntities[inId] = new WED_XPluginLinNode(this,inArgs);break;
+		case nw_obj_Facade     :mEntities[inId] = new WED_XPluginFacade(this,inArgs) ;break;
+		case nw_obj_FacadeRing :mEntities[inId] = new WED_XPluginFacRing(this,inArgs);break;
+		case nw_obj_FacadeNode :mEntities[inId] = new WED_XPluginFacNode(this,inArgs);break;
+		case nw_obj_Line       :mEntities[inId] = new WED_XPluginLine(this,inArgs)   ;break;
+		case nw_obj_LineNode   :mEntities[inId] = new WED_XPluginLinNode(this,inArgs);break;
 
 		default : return;
 	}
@@ -208,11 +208,11 @@ void WED_XPluginMgr::Chg(int inId,int inType,const vector<string>& inArgs)
 		{
 			case nw_obj_none       : return;
 			case nw_obj_Object     :(static_cast<WED_XPluginObject* >(aEntity))->Update(inArgs);break;
-//			case nw_obj_Facade     :(static_cast<WED_XPluginFacade* >(aEntity))->Update(inArgs);break;
-//			case nw_obj_FacadeRing :(static_cast<WED_XPluginFacRing*>(aEntity))->Update(inArgs);break;
-//			case nw_obj_FacadeNode :(static_cast<WED_XPluginFacNode*>(aEntity))->Update(inArgs);break;
-//			case nw_obj_Line       :(static_cast<WED_XPluginLine   *>(aEntity))->Update(inArgs);break;
-//			case nw_obj_LineNode   :(static_cast<WED_XPluginLinNode*>(aEntity))->Update(inArgs);break;
+			case nw_obj_Facade     :(static_cast<WED_XPluginFacade* >(aEntity))->Update(inArgs);break;
+			case nw_obj_FacadeRing :(static_cast<WED_XPluginFacRing*>(aEntity))->Update(inArgs);break;
+			case nw_obj_FacadeNode :(static_cast<WED_XPluginFacNode*>(aEntity))->Update(inArgs);break;
+			case nw_obj_Line       :(static_cast<WED_XPluginLine   *>(aEntity))->Update(inArgs);break;
+			case nw_obj_LineNode   :(static_cast<WED_XPluginLinNode*>(aEntity))->Update(inArgs);break;
 			default : return;
 		} //switch type
 	}

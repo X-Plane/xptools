@@ -38,9 +38,6 @@ public:
     virtual void         SceneryShift(){WorldToLocal(this);}
     virtual void         UpdatePos(){WorldToLocal(this);}
 
-            bool         GetDrawVertex(){return mWantDraw;}
-            void         SetDrawVertex(bool inWantDraw){mWantDraw=inWantDraw;}
-
             bool         GetToTerrain(){return mSetToTerrain;}
             void         SetToTerrain(bool inToTerrain){mSetToTerrain = inToTerrain;}
 
@@ -49,42 +46,51 @@ public:
             void         SetPos(const double inX,const double inY,const double inZ);
             void         GetPos(double * outX,double * outY,double * outZ);
 
-            void         SetHdg(float inHdg){mHdg = inHdg;}
-            float        GetHdg(){return mHdg;}
+            void         SetHdg(double inHdg){mHdg = inHdg;}
+            double       GetHdg(){return mHdg;}
 
             void         X(const double inVal){mX = inVal;}
             void         Y(const double inVal){mY = inVal;}
             void         Z(const double inVal){mZ = inVal;}
-
             double       X(){return mX;}
             double       Y(){return mY;}
             double       Z(){return mZ;}
+
+            double       oX(){return mOX;}
+            double       oY(){return mOY;}
+            double       oH(){return mOH;}
+            void         oX(double inX){mOX = inX;}
+            void         oY(double inY){mOY = inY;}
+            void         oH(double inH){mOH = inH;}
+            void         SetOffsets(const double inX,const double inY,const double inHdg);
 
 protected:
 private:
 
     friend class WED_XPluginObject;
     friend class WED_XPluginDrawObj;
-//    friend class WED_XPluginBezierNode;
-//    friend class WED_XPluginFacNode;
-//    friend class WED_XPluginLinNode;
-//    friend class WED_XPluginFacade;
+    friend class WED_XPluginBezierNode;
+    friend class WED_XPluginFacNode;
+    friend class WED_XPluginLinNode;
+    friend class WED_XPluginFacade;
 
     bool         mWantDraw;
-
-    XPLMProbeRef mProbeRef;
 
     double       mX;
     double       mY;
     double       mZ;
 
+    double       mOX;
+    double       mOY;
+    double       mOH;
+
     double       mLon;
     double       mLat;
     double       mAlt;
-    float        mHdg;
+    double       mHdg;
 
     bool         mSetToTerrain;
-
+    XPLMProbeRef mProbeRef;
     static void  WorldToLocal(WED_XPluginNode * inNode);
 
 };

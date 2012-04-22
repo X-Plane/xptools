@@ -23,6 +23,10 @@
 
 #include "XPLMUtilities.h"
 #include "WED_XPluginObject.h"
+#include "WED_XPluginDrawObj.h"
+#include "WED_XPluginFacade.h"
+#include "WED_XPluginFacRing.h"
+#include "WED_XPluginBezierNode.h"
 #include "WED_XPluginDrawUtils.h"
 #include "WED_XPluginMgr.h"
 
@@ -52,6 +56,17 @@ WED_XPluginObject::WED_XPluginObject(WED_XPluginMgr * inRef):
 WED_XPluginObject::~WED_XPluginObject()
 {
     ClearObjs();
+    ClearFacs();
+    ClearTile();
+}
+
+void WED_XPluginObject::ClearTile()
+{
+    vector<WED_XPluginNode*>::iterator it;
+    for(it = mTile.begin(); it != mTile.end(); ++it)
+        if (*it) delete (*it);
+
+    mTile.clear();
 }
 
 void WED_XPluginObject::ClearObjs()
@@ -63,26 +78,84 @@ void WED_XPluginObject::ClearObjs()
     mObjs.clear();
 }
 
-
+void WED_XPluginObject::ClearFacs()
+{
+    vector<WED_XPluginFacade *>::iterator it;
+    for(it = mFacs.begin(); it != mFacs.end(); ++it)
+    {
+        WED_XPluginFacade * fac = *it;
+        for(int i = 0 ; i < fac->GetRingCnt(); ++i)
+        {
+            WED_XPluginFacRing * ring = fac->GetRingAt(0);
+            for(int j = 0 ; j < ring->GetNodeCnt(); ++j)
+            {
+                delete ring->GetNodeAt(j);
+            }
+            delete ring;
+        }
+        if (*it) delete (*it);
+    }
+    mFacs.clear();
+}
 
 void WED_XPluginObject::UpdatePos()
 {
     WED_XPluginNode::UpdatePos();
 
-    double x,z,lat,lon,alt;
+    if(!mIsAGP && mObjs.size() == 1)
+    {
+        WED_XPluginDrawObj * obj = mObjs.at(0);
+        obj->SetPos(mX,mY,mZ);
+        obj->SetHdg(mHdg);
+        return;
+    }
+
+    double x,y = mY,z,lat,lon,alt;
+
+    vector<WED_XPluginNode*>::iterator nit;
+    for(nit = mTile.begin(); nit != mTile.end(); ++nit)
+    {
+        WED_XPluginNode * node = *nit;
+        if(node == NULL) continue;
+        rotate2d(mHdg,node->oX(),-node->oY(),mX,mZ,&x,&z);
+        XPLMLocalToWorld(x,y,z,&lat,&lon,&alt);
+        node->SetLoc(lat,lon,alt);
+        node->UpdatePos();
+        if(nit == mTile.begin()) y = node->Y();
+    }
 
     vector<WED_XPluginDrawObj *>::iterator it;
     for(it = mObjs.begin(); it != mObjs.end(); ++it)
     {
         WED_XPluginDrawObj * obj = *it;
         if(obj == NULL) continue;
-
         rotate2d(mHdg,obj->oX(),-obj->oY(),mX,mZ,&x,&z);
-
-        XPLMLocalToWorld(x,mY,z,&lat,&lon,&alt);
+        XPLMLocalToWorld(x,y,z,&lat,&lon,&alt);
         obj->SetLoc(lat,lon,alt);
-        obj->UpdatePos();
         obj->SetHdg(mHdg+obj->oH());
+        obj->UpdatePos();
+    }
+
+    vector<WED_XPluginFacade *>::iterator fit;
+    for(fit = mFacs.begin(); fit != mFacs.end(); ++fit)
+    {
+        WED_XPluginFacade * fac = *fit;
+        if(fac == NULL) continue;
+        for(int j = 0 ; j < fac->GetRingCnt() ; ++j)
+        {
+            WED_XPluginFacRing * ring = fac->GetRingAt(j);
+            if(ring == NULL) continue;
+            for(int k = 0 ; k < ring->GetNodeCnt() ; ++k)
+            {
+                WED_XPluginBezierNode * node = ring->GetNodeAt(k);
+                if(node == NULL) continue;
+                rotate2d(mHdg,node->oX(),-node->oY(),mX,mZ,&x,&z);
+                XPLMLocalToWorld(x,y,z,&lat,&lon,&alt);
+                node->SetLoc(lat,lon,alt);
+                node->UpdatePos();
+            }
+        }
+        fac->UpdatePos();
     }
 }
 
@@ -92,7 +165,7 @@ void WED_XPluginObject::Update(const vector<string>& inArgs)
     {
         sscanf(inArgs[3].c_str(),"%lf",&mLon);
         sscanf(inArgs[4].c_str(),"%lf",&mLat);
-        sscanf(inArgs[5].c_str(),"%f" ,&mHdg);
+        sscanf(inArgs[5].c_str(),"%lf",&mHdg);
 
         if(inArgs.size() == 8)
         {
@@ -107,13 +180,13 @@ void WED_XPluginObject::Update(const vector<string>& inArgs)
         sscanf(inArgs[3].c_str(),"%lf",&mLon);
         sscanf(inArgs[4].c_str(),"%lf",&mLat);
         sscanf(inArgs[5].c_str(),"%lf",&mAlt);
-        sscanf(inArgs[6].c_str(),"%f" ,&mHdg);
+        sscanf(inArgs[6].c_str(),"%lf",&mHdg);
         if(inArgs.size() == 9)
         {
             SetName(inArgs[7]);
             SetRessource(inArgs[8]);
         }
-        SetToTerrain(false);
+        SetToTerrain(mIsAGP);
         UpdatePos();
     }
 }
@@ -121,19 +194,13 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
 {
 
     char PS[1];
-    char msg[512];
     string  dir("");
     strcpy(PS,XPLMGetDirectorySeparator());
     size_t pos = inPath.find_last_of(PS);
     if(pos != string::npos) dir = inPath.substr(0,pos+1);
 
     FILE * fi = fopen(inPath.c_str(),"r") ;
-    if (!fi)
-    {
-        sprintf(msg,"wedxpl: ERROR could not open %s\n",inPath.c_str());
-        XPLMDebugString(const_cast<char *>(msg));
-        return false;
-    }
+    if (!fi) return false;
 
     char	buf[512];
     char	buf2[512];
@@ -146,13 +213,12 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
     sscanf(buf," %s", buf2);
     if (strncmp(buf,"AG_POINT", strlen("AG_POINT")) || vers < AGPVERS)
     {
-        sprintf(msg,"wedxpl: ERROR fileheader wrong or bad version in file: %s\n",inPath.c_str());
-        XPLMDebugString(const_cast<char *>(msg));
         fclose(fi);
         return false;
     }
 
     vector<string>objpaths;
+    vector<double>tiles;
 
     int p1,p2;
     int rotation = 0;
@@ -161,6 +227,7 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
     double tex_s = 1.0, tex_t = 1.0;		// these scale from pixels to UV coords
     double tex_x = 1.0, tex_y = 1.0;		// meters for tex, x & y
     double anchor_x = 0 , anchor_y = 0;
+    double ground_x = 0 , ground_y = 0;
 
     while (fgets(buf, sizeof(buf), fi))
     {
@@ -187,7 +254,6 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
         }
         else if (sscanf(buf,"TILE %lf %lf %lf %lf ",&s1,&t1,&s2,&t2) == 4)
         {
-
             double x1 = s1 * tex_s * tex_x;
             double x2 = s2 * tex_s * tex_x;
             double y1 = t1 * tex_t * tex_y;
@@ -198,13 +264,43 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
             t1 *= tex_t;
             t2 *= tex_t;
 
-            anchor_x = (x1 + x2) * 0.5;
-            anchor_y = (y1 + y2) * 0.5;
+            anchor_x = ground_x = (x1 + x2) * 0.5;
+            anchor_y = ground_y = (y1 + y2) * 0.5;
 
-            //FIXME:mroe fill in
-
-
+            tiles.resize(16);
+			tiles[ 0] = x1;
+			tiles[ 1] = y1;
+			tiles[ 2] = s1;
+			tiles[ 3] = t1;
+			tiles[ 4] = x2;
+			tiles[ 5] = y1;
+			tiles[ 6] = s2;
+			tiles[ 7] = t1;
+			tiles[ 8] = x2;
+			tiles[ 9] = y2;
+			tiles[10] = s2;
+			tiles[11] = t2;
+			tiles[12] = x1;
+			tiles[13] = y2;
+			tiles[14] = s1;
+			tiles[15] = t2;
         }
+		else if(sscanf(buf,"CROP_POLY %[^\r\n]",buf2) == 1)
+        {
+            tiles.clear();
+            bool go_on = true;
+            while(go_on)
+            {
+                int result = sscanf(buf2,"%lf %lf %[^\r\n]",&s1,&t1,buf2);
+                if(result < 2) break;
+                tiles.push_back(s1 * tex_s * tex_x);
+                tiles.push_back(t1 * tex_t * tex_y);
+                tiles.push_back(s1 * tex_s);
+                tiles.push_back(t1 * tex_t);
+                go_on = (result == 3 );
+            }
+            continue;
+		}
         else if( (sscanf(buf,"OBJ_DRAPED %lf %lf %lf %u ",&x,&y,&h,&idx) == 4             )||
                  (sscanf(buf,"OBJ_DRAPED %lf %lf %lf %u %d %d",&x,&y,&h,&idx,&p1,&p2) == 6) )
         {
@@ -212,9 +308,8 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
             XPLMObjectRef oref = XPLMLoadObject(objpaths[idx].c_str());
             WED_XPluginDrawObj * obj = new WED_XPluginDrawObj(oref ,inMgr);
             obj->SetToTerrain(true);
-            obj->SetDrawVertex(false);
+            obj->SetDrawVertex(true);
             obj->SetOffsets(x*tex_s*tex_x , y*tex_t*tex_y ,h);
-            obj->SetHdg(h);
             inObj->AddObj(obj);
             continue;
         }
@@ -225,10 +320,47 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
             XPLMObjectRef oref = XPLMLoadObject(objpaths[idx].c_str());
             WED_XPluginDrawObj * obj = new WED_XPluginDrawObj(oref ,inMgr);
             obj->SetToTerrain(false);
-            obj->SetDrawVertex(false);
+            obj->SetDrawVertex(true);
             obj->SetOffsets(x*tex_s*tex_x , y*tex_t*tex_y ,h);
-            obj->SetHdg(h);
             inObj->AddObj(obj);
+            continue;
+        }
+        else if( (sscanf(buf,"FAC %d %lf %[^\r\n]",&idx,&h,buf2) == 3     )||
+                 (sscanf(buf,"FAC_WALLS %d %lf %[^\r\n]",&idx,&h,buf2) == 3) )
+        {
+            bool has_wall = !strncmp("FAC_WALLS",buf,strlen("FAC_WALLS"));
+            WED_XPluginFacade * fac   = new WED_XPluginFacade(inMgr);
+            WED_XPluginFacRing * ring = new WED_XPluginFacRing(inMgr);
+            fac->AddRing(ring);
+            fac->SetHasWall(has_wall);
+            fac->SetHeight(2.0);
+            fac->SetTopo(2);
+            int nidx = 0 , result = 0;
+            bool go_on = true;
+            while(go_on)
+            {
+                if(has_wall)
+                {
+                    result = sscanf(buf2,"%lf %lf %d %[^\r\n]",&x,&y,&p1,buf2);
+                    if(result < 3) break;
+                }
+                else
+                {
+                    result = sscanf(buf2,"%lf %lf %[^\r\n]",&x,&y,buf2);
+                    p1 = 0;
+                    if(result < 2) break;
+                }
+
+                WED_XPluginBezierNode * node = new WED_XPluginBezierNode(nw_obj_FacadeNode,inMgr);
+
+                node->oX(x*tex_s*tex_x);
+                node->oY(y*tex_t*tex_y);
+                node->SetParam(p1);
+                node->SetIdx(nidx++);
+                ring->AddNode(node);
+                go_on = ((has_wall && result == 4) || (!has_wall && result == 3) );
+            }
+            inObj->AddFac(fac);
             continue;
         }
         else if (sscanf(buf,"ANCHOR_PT %lf %lf",&x,&y) == 2)
@@ -244,16 +376,43 @@ int WED_XPluginObject::DoParseAGP(const string& inPath,WED_XPluginMgr * inMgr,WE
         }
     }
 
-    if(anchor_x + anchor_x + rotation != 0 )
-    {
-        int ocnt = inObj->GetObjCnt();
-        for(int i = 0 ; i < ocnt ; ++i)
-        {
-            //TODO:mroe implement rotation
-            WED_XPluginDrawObj * obj = inObj->GetObjAt(i);
+    WED_XPluginNode * node = new WED_XPluginNode(0,inMgr);
+    node->oX(ground_x - anchor_x);
+    node->oY(ground_y - anchor_y);
+    inObj->AddTileNode(node);
 
-            obj->oX(obj->oX()-anchor_x);
-            obj->oY(obj->oY()-anchor_y);
+    for(unsigned int n = 0; n < tiles.size(); n += 4)
+	{
+	    node = new WED_XPluginNode(0,inMgr);
+
+		node->oX(tiles[n  ] - anchor_x);
+		node->oY(tiles[n+1] - anchor_y);
+		inObj->AddTileNode(node);
+		 //TODO:mroe implement rotation
+		 //do_rotate(rotation,out_info.tile[n  ],out_info.tile[n+1]);
+	}
+
+    for(unsigned int i = 0 ; i < inObj->GetObjCnt() ; ++i)
+    {
+        //TODO:mroe implement rotation
+        WED_XPluginDrawObj * obj = inObj->GetObjAt(i);
+        obj->oX(obj->oX()-anchor_x);
+        obj->oY(obj->oY()-anchor_y);
+    }
+
+    for(unsigned int i = 0 ; i < inObj->GetFacCnt() ; ++i)
+    {
+        //TODO:mroe implement rotation
+        WED_XPluginFacade * fac = inObj->GetFacAt(i);
+        for(int j = 0 ;j < fac->GetRingCnt() ; ++j)
+        {
+            WED_XPluginFacRing * ring = fac->GetRingAt(j);
+            for(int k = 0 ;k < ring->GetNodeCnt() ; ++k)
+            {
+                WED_XPluginBezierNode * node = ring->GetNodeAt(k);
+                node->oX(node->oX()-anchor_x);
+                node->oY(node->oY()-anchor_y);
+            }
         }
     }
 
@@ -273,7 +432,10 @@ int  WED_XPluginObject::SetRessource(const string& inPath)
     if (inPath == mResPath) return 1;
 
     SetResPath(inPath);
+
     ClearObjs();
+    ClearFacs();
+    ClearTile();
 
     vector<string> paths;
     XPLMLookupObjects(inPath.c_str(),mLat,mLon,LoadObjectCB,&paths);
@@ -292,11 +454,13 @@ int  WED_XPluginObject::SetRessource(const string& inPath)
         obj->SetToTerrain(false);
         obj->SetDrawVertex(false);
         mObjs.push_back(obj);
+        return 1;
     }
     else if(suffix == ".agp")
     {
         mIsAGP = true;
         //DoParseAGP(path,mMgrRef,this);
+        return 1;
     }
 
     return 0;
@@ -310,8 +474,30 @@ void WED_XPluginObject::Draw(bool isLit)
 
     if ( !mWantDraw ) return;
 
+    if(mTile.size() > 1)
+    {
+        mTile[0]->Draw(isLit);
+
+        XPLMSetGraphicsState(0, 0, 0, 1, 1, 0, 0);
+        glColor4f(0.5, 0.5, 0.5 ,0.4);
+        glDisable(GL_CULL_FACE);
+        glBegin(GL_TRIANGLE_FAN);
+        vector<WED_XPluginNode*>::iterator nit;
+        for(nit = mTile.begin(); nit != mTile.end(); ++nit)
+        {
+            if(nit == mTile.begin()) continue;
+            glVertex3f((*nit)->X(),(*nit)->Y(),(*nit)->Z());
+        }
+        glEnd();
+        glEnable(GL_CULL_FACE);
+    }
+
     vector<WED_XPluginDrawObj *>::iterator it;
     for(it = mObjs.begin(); it != mObjs.end(); ++it)
         (*it)->Draw(isLit);
+
+    vector<WED_XPluginFacade *>::iterator fit;
+    for(fit = mFacs.begin(); fit != mFacs.end(); ++fit)
+        (*fit)->Draw(isLit);
 }
 
