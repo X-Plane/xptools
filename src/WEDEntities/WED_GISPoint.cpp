@@ -142,8 +142,8 @@ void	WED_GISPoint::SetLocation(GISLayer_t l, const Point2& p)
 		StateChanged();
 		longitude.value = p.x();
 		latitude.value = p.y();
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -167,8 +167,8 @@ void			WED_GISPoint::Rotate			(GISLayer_t l, const Point2& ctr, double a)
 
 		SetLocation(l,ctr + v_new);
 
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 

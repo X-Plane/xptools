@@ -30,7 +30,7 @@ WED_Entity::WED_Entity(WED_Archive * parent, int id) :
 	WED_Thing(parent, id),
 	locked(this,"Locked",SQL_Name("WED_entities","locked"),XML_Name("hierarchy","locked"),0),
 	hidden(this,"Hidden",SQL_Name("WED_entities","hidden"),XML_Name("hierarchy","hidden"),0),
-	cache_valid(false)
+	cache_valid_(0)
 {
 }
 
@@ -41,7 +41,7 @@ WED_Entity::~WED_Entity()
 void WED_Entity::CopyFrom(const WED_Entity * rhs)
 {
 	WED_Thing::CopyFrom(rhs);
-	CacheInval();
+	CacheInval(cache_All);
 }
 
 int		WED_Entity::GetLocked(void) const
@@ -59,30 +59,32 @@ int		WED_Entity::GetHidden(void) const
 
 void 	WED_Entity::ReadFrom(IOReader * reader)
 {
-	CacheInval();
+	CacheInval(cache_All);
 	WED_Thing::ReadFrom(reader);
 }
 
 void	WED_Entity::FromDB(sqlite3 * db, const map<int,int>& mapping)
 {
-	CacheInval();
+	CacheInval(cache_All);
 	WED_Thing::FromDB(db,mapping);
 }
 
-void	WED_Entity::CacheInval(void)
+void	WED_Entity::CacheInval(int flags)
 {
 	// BEN SAYS: theoretically speaking, if we are invalid, we MUST have invalidated our
 	// parents previously.  So...do not run up the parent chain if we are already invalid,
 	// to prevent NlogN time access to N operations on entities.
-	if (cache_valid)
+	int new_invals = flags & cache_valid_;
+	
+	if (new_invals)
 	{
-		cache_valid = false;
+		cache_valid_ &= ~new_invals;
 		WED_Thing *  p = GetParent();
 		if (p)
 		{
 			WED_Entity * e = dynamic_cast<WED_Entity *>(p);
 			if (e)
-				e->CacheInval();
+				e->CacheInval(new_invals);
 		}
 		set<WED_Thing *>	viewers;
 		GetAllViewers(viewers);
@@ -90,37 +92,40 @@ void	WED_Entity::CacheInval(void)
 		{
 			WED_Entity * e = dynamic_cast<WED_Entity *>(*v);
 			if(e)
-				e->CacheInval();
+				e->CacheInval(new_invals);
 		}		
 	}
 }
 
-bool	WED_Entity::CacheBuild(void) const
+int	WED_Entity::CacheBuild(int flags) const
 {
-	if (cache_valid)	return false;
-	cache_valid = true;	return true ;
+	int needed_flags = flags & ~cache_valid_;
+	cache_valid_ |= needed_flags;
+	return needed_flags;
 }
 
 void	WED_Entity::AddChild(int id, int n)
 {
-	CacheInval();
+	CacheInval(cache_All);
 	WED_Thing::AddChild(id, n);
 }
 
 void	WED_Entity::RemoveChild(int id)
 {
-	CacheInval();
+	CacheInval(cache_All);
 	WED_Thing::RemoveChild(id);
 }
 
 void	WED_Entity::AddViewer(int id)
 {
-	CacheInval();
 	WED_Thing::AddViewer(id);
+	CacheInval(cache_All);
+	// FIRST we add the viewer.  Then by inval our own topo, we inval our viewer's topo which is what we REALLY wanted to do.
+	// Override of AddSource might have been less weird.
 }
 
 void	WED_Entity::RemoveViewer(int id)
 {
-	CacheInval();
 	WED_Thing::RemoveViewer(id);
+	CacheInval(cache_All);
 }

@@ -57,8 +57,8 @@ void		WED_TextureBezierNode::SetLocation(GISLayer_t l,const Point2& st)
 			StateChanged();
 			mS = st.x();
 			mT = st.y();
-			CacheInval();
-			CacheBuild();
+			CacheInval(cache_Spatial);
+			CacheBuild(cache_Spatial);
 		}
 	}
 	else 
@@ -107,8 +107,8 @@ void	WED_TextureBezierNode::SetControlHandleLo (GISLayer_t layer,const Point2& p
 			StateChanged();
 			mScL = p.x() - mS.value;
 			mTcL = p.y() - mT.value;
-			CacheInval();
-			CacheBuild();
+			CacheInval(cache_Spatial);
+			CacheBuild(cache_Spatial);
 		}
 	} else
 		WED_GISPoint_Bezier::SetControlHandleLo(layer,p);
@@ -124,8 +124,8 @@ void	WED_TextureBezierNode::SetControlHandleHi (GISLayer_t layer,const Point2& p
 			StateChanged();
 			mScH = p.x() - mS.value;
 			mTcH = p.y() - mT.value;
-			CacheInval();
-			CacheBuild();
+			CacheInval(cache_Spatial);
+			CacheBuild(cache_Spatial);
 		}
 	} else
 		WED_GISPoint_Bezier::SetControlHandleHi(layer,p);
@@ -150,8 +150,8 @@ void			WED_TextureBezierNode::Rescale			(GISLayer_t l, const Bbox2& old_bounds, 
 		mScH.value = old_bounds.rescale_to_xv(new_bounds,mScH.value);
 		mTcH.value = old_bounds.rescale_to_yv(new_bounds,mTcH.value );
 
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -194,8 +194,8 @@ void			WED_TextureBezierNode::Rotate			(GISLayer_t l, const Point2& ctr, double 
 		mScH.value = ctr.x() + v_new_hi.dx - p.x();
 		mTcL.value = ctr.y() + v_new_lo.dy - p.y();
 		mTcH.value = ctr.y() + v_new_hi.dy - p.y();
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 
 	}
 	

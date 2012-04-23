@@ -47,13 +47,13 @@ const char *	WED_GISChain::GetGISSubtype	(void				 ) const
 
 bool			WED_GISChain::HasLayer			(GISLayer_t l) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return (l == gis_UV) ? mHasUV : true;
 }
 
 void			WED_GISChain::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Spatial));
 	bounds = (l == gis_UV) ? mCacheBoundsUV : mCacheBounds;
 }
 
@@ -202,7 +202,7 @@ void			WED_GISChain::Rotate			(GISLayer_t l,const Point2& ctr, double angle)
 
 int					WED_GISChain::GetNumPoints(void ) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return mCachePts.size();
 }
 
@@ -218,21 +218,21 @@ void	WED_GISChain::DeletePoint(int n)
 
 IGISPoint *	WED_GISChain::GetNthPoint (int n) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return mCachePts[n];
 }
 
 
 int			WED_GISChain::GetNumSides(void) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	int n = mCachePts.size();
 	return (IsClosed()) ? n : (n-1);
 }
 
 bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 
 	int n1 = n;
 	int n2 = (n + 1) % mCachePts.size();
@@ -263,65 +263,72 @@ bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
 	return true;
 }
 
-void WED_GISChain::RebuildCache(void) const
+void WED_GISChain::RebuildCache(int flags) const
 {
-	mCachePts.clear();
-	mCachePtsBezier.clear();
-	int nc = CountChildren();
-	mCachePts.reserve(nc);
-	mCachePtsBezier.reserve(nc);
-	mHasUV = nc > 0;
-	
-	int n;
-	for (n = 0; n < nc; ++n)
+	if(flags & cache_Topological)
 	{
-		WED_Thing * c = GetNthChild(n);
-		IGISPoint *		   p = NULL;
-		IGISPoint_Bezier * b = dynamic_cast<IGISPoint_Bezier *>(c);
-		if (b) p = b; else p = dynamic_cast<IGISPoint *>(c);
-		if (p)
+		mCachePts.clear();
+		mCachePtsBezier.clear();
+		int nc = CountChildren();
+		mCachePts.reserve(nc);
+		mCachePtsBezier.reserve(nc);
+		mHasUV = nc > 0;
+		
+		int n;
+		for (n = 0; n < nc; ++n)
 		{
-			mCachePts.push_back(p);
-			mCachePtsBezier.push_back(b);
-			if(mHasUV && !p->HasLayer(gis_UV))
-				mHasUV = false;
+			WED_Thing * c = GetNthChild(n);
+			IGISPoint *		   p = NULL;
+			IGISPoint_Bezier * b = dynamic_cast<IGISPoint_Bezier *>(c);
+			if (b) p = b; else p = dynamic_cast<IGISPoint *>(c);
+			if (p)
+			{
+				mCachePts.push_back(p);
+				mCachePtsBezier.push_back(b);
+				if(mHasUV && !p->HasLayer(gis_UV))
+					mHasUV = false;
+			}
 		}
 	}
 
-	n = GetNumSides();
-	mCacheBounds = Bbox2();
-	mCacheBoundsUV = Bbox2();
-	
-	for (int i = 0; i < n; ++i)
+	if(flags & cache_Spatial)
 	{
-		Segment2 s;
-		Bezier2 b;
-		if (GetSide(gis_Geo, i,s,b))
+		int n = GetNumSides();			// We MUST ensure that this only builds topo cache or we are dead dead dead!!
+		mCacheBounds = Bbox2();
+		mCacheBoundsUV = Bbox2();
+		
+		for (int i = 0; i < n; ++i)
 		{
-			Bbox2	bb;
-			b.bounds(bb);
-			mCacheBounds += bb;
-		} else {
-			mCacheBounds += s.p1;
-			mCacheBounds += s.p2;
-		}
+			Segment2 s;
+			Bezier2 b;
+			if (GetSide(gis_Geo, i,s,b))
+			{
+				Bbox2	bb;
+				b.bounds(bb);
+				mCacheBounds += bb;
+			} else {
+				mCacheBounds += s.p1;
+				mCacheBounds += s.p2;
+			}
 
-		if(mHasUV)
-		if (GetSide(gis_UV, i,s,b))
-		{
-			Bbox2	bb;
-			b.bounds(bb);
-			mCacheBoundsUV += bb;
-		} else {
-			mCacheBoundsUV += s.p1;
-			mCacheBoundsUV += s.p2;
+			if(mHasUV)
+			if (GetSide(gis_UV, i,s,b))
+			{
+				Bbox2	bb;
+				b.bounds(bb);
+				mCacheBoundsUV += bb;
+			} else {
+				mCacheBoundsUV += s.p1;
+				mCacheBoundsUV += s.p2;
+			}
 		}
+	
 	}
 }
 
 void WED_GISChain::Reverse(GISLayer_t l)
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	int n,t,np = GetNumPoints();
 	vector<Point2>	p(np);
 	vector<Point2>	p_l(np);
@@ -354,7 +361,7 @@ void WED_GISChain::Reverse(GISLayer_t l)
 
 void WED_GISChain::Shuffle(GISLayer_t l)
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	int n,t,np = GetNumPoints();
 	vector<Point2>	p(np);
 	vector<Point2>	p_l(np);
@@ -389,12 +396,12 @@ void WED_GISChain::Shuffle(GISLayer_t l)
 
 int				WED_GISChain::GetNumEntities(void ) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return mCachePts.size();
 }
 
 IGISEntity *	WED_GISChain::GetNthEntity  (int n) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return mCachePts[n];
 }

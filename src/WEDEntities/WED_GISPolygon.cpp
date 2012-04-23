@@ -71,7 +71,7 @@ const char *	WED_GISPolygon::GetGISSubtype	(void				 ) const
 
 bool			WED_GISPolygon::HasLayer			(GISLayer_t l) const
 {
-	CacheBuild();
+	CacheBuild(cache_All);
 	if (!GetOuterRing()->HasLayer(l)) return false;
 	int h = GetNumHoles();
 	for(int hh = 0; hh < h; ++hh)
@@ -85,7 +85,7 @@ bool			WED_GISPolygon::HasLayer			(GISLayer_t l) const
 
 void			WED_GISPolygon::GetBounds		(GISLayer_t l,Bbox2&  bounds) const
 {
-	CacheBuild();
+	CacheBuild(cache_All);
 	GetOuterRing()->GetBounds(l,bounds);
 }
 

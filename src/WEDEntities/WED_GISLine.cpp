@@ -52,7 +52,8 @@ bool			WED_GISLine::HasLayer		(GISLayer_t l) const
 
 void			WED_GISLine::GetBounds		(GISLayer_t l,Bbox2&  bounds) const
 {
-	CacheBuild();
+	// Why is this here?  
+	CacheBuild(cache_All);
 	Point2 p1,p2;
 	GetSource()->GetLocation(l,p1);
 	GetTarget()->GetLocation(l,p2);
