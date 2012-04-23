@@ -294,24 +294,37 @@ bool	ReadRawBIL(DEMGeo& inMap, const char * inFileName, int bounds[4])
 }
 
 
-bool	WriteRawHGT(const DEMGeo& dem, const char * inFileName)
+bool	WriteRawHGT(const DEMGeo& dem, const char * inFileName, bool want_zip)
 {
 	string	sname(inFileName);
 	string::size_type p = sname.rfind(DIR_CHAR);
 	if (p != sname.npos)
 		sname.erase(0, p+1);
 	sname.erase(sname.length()-4);
-	ZipFileWriter	writer2(inFileName, sname.c_str(), platform_BigEndian);
-
-	WriterBuffer	writer(&writer2, platform_BigEndian);
-
-	for (int y = dem.mHeight-1; y >= 0; --y)
-	for (int x = 0; x < dem.mWidth; ++x)
+	if(want_zip)
 	{
-		short	v = dem.mData[x + y * dem.mWidth];
-		writer.WriteShort(v);
-	}
+		ZipFileWriter	writer2(inFileName, sname.c_str(), platform_BigEndian);
+		WriterBuffer	writer(&writer2, platform_BigEndian);
 
+		for (int y = dem.mHeight-1; y >= 0; --y)
+		for (int x = 0; x < dem.mWidth; ++x)
+		{
+			short	v = dem.mData[x + y * dem.mWidth];
+			writer.WriteShort(v);
+		}
+	}
+	else
+	{
+		FileWriter		writer2(inFileName, platform_BigEndian);
+		WriterBuffer	writer(&writer2, platform_BigEndian);
+
+		for (int y = dem.mHeight-1; y >= 0; --y)
+		for (int x = 0; x < dem.mWidth; ++x)
+		{
+			short	v = dem.mData[x + y * dem.mWidth];
+			writer.WriteShort(v);
+		}
+	}
 	return true;
 }
 
