@@ -80,7 +80,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 {	"Error-Check Polygons",	0,		0,								0,	wed_CheckPolys	},
 #if AIRPORT_ROUTING
-{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
+//{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
 #endif
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},

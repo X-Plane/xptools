@@ -48,7 +48,7 @@ enum {
 	wed_Overlay,
 	wed_CheckPolys,
 #if AIRPORT_ROUTING
-	wed_MakeRouting,
+//	wed_MakeRouting,
 #endif
 	wed_Split,
 #if AIRPORT_ROUTING

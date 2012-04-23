@@ -283,7 +283,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
 	case wed_CheckPolys:WED_CheckPolys(mDocument); return 1;
 #if AIRPORT_ROUTING
-	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
+//	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
 	case wed_Merge:		WED_DoMerge(mDocument); return 1;
 #endif
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
@@ -360,7 +360,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Clear:		return	WED_CanClear(mDocument);
 	case wed_Crop:		return	WED_CanCrop(mDocument);
 #if AIRPORT_ROUTING
-	case wed_MakeRouting:
+//	case wed_MakeRouting:
 	case wed_Merge:		return WED_CanMerge(mDocument);
 #endif
 	case wed_CheckPolys:
