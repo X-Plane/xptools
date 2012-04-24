@@ -54,8 +54,8 @@ void	WED_GISPoint_Heading::SetHeading(double h)
 	{
 		StateChanged();
 		heading.value = h;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 

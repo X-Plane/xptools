@@ -52,8 +52,8 @@ void		WED_TextureNode::SetLocation(GISLayer_t l, const Point2& st)
 			StateChanged();
 			mS = st.x();
 			mT = st.y();
-			CacheInval();
-			CacheBuild();			
+			CacheInval(cache_Spatial);
+			CacheBuild(cache_Spatial);			
 		}
 	} else
 		WED_GISPoint::SetLocation(l,st);
@@ -63,7 +63,7 @@ void		WED_TextureNode::GetLocation(GISLayer_t l,	   Point2& st) const
 {
 	if(l == gis_UV)
 	{
-		CacheBuild();
+		CacheBuild(cache_Spatial);
 		st.x_ = mS.value;
 		st.y_ = mT.value;
 	} else WED_GISPoint::GetLocation(l,st);

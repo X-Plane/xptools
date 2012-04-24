@@ -736,7 +736,7 @@ struct	preview_object : public WED_PreviewItem {
 				glRotatef(90, 1,0,0);
 				glRotatef(r, 0, -1, 0);
 				glColor3f(1,1,1);
-				if(!agp.tile.empty())
+				if(!agp.tile.empty() && !agp.hide_tiles)
 				{
 					glDisable(GL_CULL_FACE);
 					glBegin(GL_TRIANGLE_FAN);

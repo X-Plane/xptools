@@ -215,7 +215,7 @@ GISClass_t		WED_GISLine_Width::GetGISClass		(void				 ) const
 
 void			WED_GISLine_Width::GetBounds		(GISLayer_t l,  Bbox2&  bounds) const
 {
-	CacheBuild();
+	CacheBuild(cache_Spatial);
 	Point2 corners[4];
 	GetCorners(l,corners);
 	bounds = Bbox2(corners[0],corners[1]);

@@ -73,7 +73,7 @@ bool	ReadRawWithHeader(DEMGeo& inMap, const char * inFilename, const DEMSpec& sp
 //	DEM location taken from file name in the N42W073 format.  Works with raw SRTM data.
 //	This is a big-endian file.  Origin is NW corner.
 bool	ReadRawHGT(DEMGeo& inMap, const char * inFileName);
-bool	WriteRawHGT(const DEMGeo& inMap, const char * inFileName);
+bool	WriteRawHGT(const DEMGeo& inMap, const char * inFileName, bool want_zip=true);
 
 // IDA - a proprietary and rather weird old GIS raster format that we use for climate data.
 // Files contain their location.

@@ -45,14 +45,14 @@ const char *	WED_GISComposite::GetGISSubtype	(void				 ) const
 
 bool			WED_GISComposite::HasLayer	(GISLayer_t l) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return (l == gis_UV) ? mHasUV : true;
 }
 
 
 void			WED_GISComposite::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Spatial));
 	bounds = (l == gis_UV) ? mCacheBoundsUV : mCacheBounds;
 }
 
@@ -131,40 +131,57 @@ void			WED_GISComposite::Rotate(GISLayer_t l, const Point2& ctr, double angle)
 
 int				WED_GISComposite::GetNumEntities(void ) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return mEntities.size();
 }
 
 IGISEntity *	WED_GISComposite::GetNthEntity  (int n) const
 {
-	if (CacheBuild())	RebuildCache();
+	RebuildCache(CacheBuild(cache_Topological));
 	return mEntities[n];
 }
 
 
-void	WED_GISComposite::RebuildCache(void) const
+void	WED_GISComposite::RebuildCache(int flags) const
 {
-	mCacheBounds = Bbox2();
-	mCacheBoundsUV = Bbox2();	
-	mEntities.clear();
-	int n = CountChildren();
-	mHasUV = (n > 0);
-	mEntities.reserve(n);
-	for (int i = 0; i <  n; ++i)
+	if(flags & cache_Topological)
 	{
-		IGISEntity * ent = dynamic_cast<IGISEntity *>(GetNthChild(i));
-		if (ent)
+		mEntities.clear();
+		int n = CountChildren();
+		mHasUV = (n > 0);
+		mEntities.reserve(n);
+		for (int i = 0; i <  n; ++i)
 		{
-			Bbox2 child;
-			ent->GetBounds(gis_Geo,child);
-			mCacheBounds += child;
-			if(mHasUV && ent->HasLayer(gis_UV))
+			IGISEntity * ent = dynamic_cast<IGISEntity *>(GetNthChild(i));
+			if (ent)
 			{
-				ent->GetBounds(gis_UV,child);
-				mCacheBoundsUV += child;
-			} else
-				mHasUV = false;
-			mEntities.push_back(ent);
+				if(mHasUV && !ent->HasLayer(gis_UV))
+					mHasUV = false;
+				mEntities.push_back(ent);
+			}
 		}
 	}
+
+	if(flags & cache_Spatial)
+	{
+		mCacheBounds = Bbox2();
+		mCacheBoundsUV = Bbox2();	
+		int n = mEntities.size();
+		for (int i = 0; i <  n; ++i)
+		{
+			IGISEntity * ent = mEntities[i];
+			if (ent)
+			{
+				Bbox2 child;
+				ent->GetBounds(gis_Geo,child);
+				mCacheBounds += child;
+				if(mHasUV && ent->HasLayer(gis_UV))
+				{
+					ent->GetBounds(gis_UV,child);
+					mCacheBoundsUV += child;
+				} else
+					mHasUV = false;
+			}
+		}
+	}		
 }

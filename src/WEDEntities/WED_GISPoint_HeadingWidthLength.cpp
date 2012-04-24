@@ -50,7 +50,7 @@ GISClass_t	WED_GISPoint_HeadingWidthLength::GetGISClass		(void				 ) const
 
 void			WED_GISPoint_HeadingWidthLength::GetBounds		(GISLayer_t l,   Bbox2&  bounds) const
 {
-	CacheBuild();
+	CacheBuild(cache_Spatial);
 	Point2 corners[4];
 	GetCorners(l,corners);
 	bounds = Bbox2(corners[0],corners[1]);
@@ -127,8 +127,8 @@ void	WED_GISPoint_HeadingWidthLength::SetWidth (double w)
 	{
 		StateChanged();
 		width.value = w;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -144,8 +144,8 @@ void	WED_GISPoint_HeadingWidthLength::SetLength(double l)
 	{
 		StateChanged();
 		length.value = l;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 

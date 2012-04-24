@@ -222,7 +222,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
-		src = c = WED_AirportNode::CreateTyped(GetArchive());
+		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_AirportNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 		src->SetParent(host,idx);
 		src->SetName(mName.value + "_start");
 		c->SetLocation(gis_Geo,pts[0]);

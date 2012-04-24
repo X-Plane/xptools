@@ -56,17 +56,31 @@
 		
 	- The cache is rebuilt on demand by expensive-access routines.  Typically these include "GetBounds" and expensive
 	  iterators over children.  CacheRebuild is called to mark it as good and find out if real work must be done.
+	  
+	The cache is broken into multiple "bit planes", and only the dirtied planes get rebuilt.  The two planes for now are:
+	
+	 - topological, for who your child is and what properties they have and
+	 - spatial, for where they are.
+	 
+	The key optimization is that the spatial cache gets hit on expensive ops like live drag in the marquee tool; as long
+	as topology is not invalidated, a cache rebuild requires no dynamic type introspection and only one pass and is thus
+	quite fast.
 
 	CORRECT CACHING BEHAVIORS:
 
 	- Classes that use a cache should invalidate it if their internal state changes in a way that would change cached data,
 	  and force a rebuild any time it is accessed.  Example: GIS Chain
 
-	- Classes that do not cache but pas through conventionally cached data should rebuild their caches (a no-op but call
-	  BuildCache()) so that the next inval is passed to all parents.  Example: GIS Line-Width.
-
 	- Classes that do not cache but affect others should invalidate and immediately revalidate their caches (the second
 	  so that future invals are passed up).  Example: GIS Points.
+
+	  (This is needed so that their parent observers automatically get one cache dirty notification per _set_ of changes
+	  between _possible_ observations of the child data.)
+
+	- Classes that do not cache but pas through conventionally cached data should rebuild their caches (a no-op but call
+	  BuildCache()) so that the next inval is passed to all parents.  Example: GIS Line-Width.
+	
+	  (These classes never need to explicitly invalidate because all invalid state comes from the children they wrap.
 
 	CACHE AND UNDO
 
@@ -84,6 +98,12 @@
 
 #include "WED_Thing.h"
 
+enum {
+	cache_Spatial = 1,
+	cache_Topological = 2,
+	cache_All = 3
+};
+
 class	WED_Entity : public WED_Thing {
 
 DECLARE_INTERMEDIATE(WED_Entity)
@@ -98,8 +118,8 @@ public:
 
 protected:
 
-			void	CacheInval(void);			// Invalidate the cache.
-			bool	CacheBuild(void) const;		// Set cache to valid.  Returns true if cache needed rebuilding
+			void	CacheInval(int flags);			// Invalidate the cache.
+			int		CacheBuild(int flags) const;		// Set cache to valid.  Returns true if cache needed rebuilding
 
 	virtual	void	AddChild(int id, int n);
 	virtual	void	RemoveChild(int id);
@@ -108,7 +128,7 @@ protected:
 
 private:
 
-	mutable bool				cache_valid;
+	mutable int				cache_valid_;
 
 	WED_PropBoolText			locked;
 	WED_PropBoolText			hidden;

@@ -80,7 +80,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 {	"Error-Check Polygons",	0,		0,								0,	wed_CheckPolys	},
 #if AIRPORT_ROUTING
-{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
+//{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
 #endif
 {	"-",					0,  	0,								0,	0				},
 {	"Move &First",			'[',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveFirst	},
@@ -91,11 +91,11 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 };
 
 static const GUI_MenuItem_t kViewMenu[] = {
-{	"Zoom Worl&d",				'/',gui_ControlFlag+gui_OptionAltFlag,		0,	wed_ZoomWorld		},
-{	"&Zoom Package",			'/',gui_ControlFlag,						0,	wed_ZoomAll			},
-{	"Zoom &Selection",			'/',gui_ControlFlag+gui_ShiftFlag,			0,	wed_ZoomSelection	},
+{	"Zoom Worl&d",				'/',gui_ControlFlag+gui_ShiftFlag,			0,	wed_ZoomWorld		},	// This conflicts with a Mac key strkoe but zoom world is not THAT useful
+{	"&Zoom Package",			'/',gui_ControlFlag+gui_OptionAltFlag,		0,	wed_ZoomAll			},
+{	"Zoom &Selection",			'/',gui_ControlFlag,						0,	wed_ZoomSelection	},	// simple cmd-slash for MOST imoprtant zoom command!
 {	"-",						0,	0,										0,	0					},
-{	"&Feet",						0,	0,										0,	wed_UnitFeet		},
+{	"&Feet",					0,	0,										0,	wed_UnitFeet		},
 {	"&Meters",					0,	0,										0,	wed_UnitMeters		},
 {	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},

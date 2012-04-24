@@ -347,7 +347,7 @@ static int DoRasterImport(const vector<const char *>& args)
 " c - export only a cropping within the extent area.\n"\
 " r - resample - res in samples per DEM on end.  Outputs in post format.\n"\
 " f - generate filename based on location of export.  Pass a path with trailing /.\n"\
-"File Format must be: tiff.\n"
+"File Format must be: tiff, hgt\n"
 static int DoRasterExport(const vector<const char *>& args)
 {
 	int layer = LookupToken(args[3]);
@@ -397,6 +397,7 @@ static int DoRasterExport(const vector<const char *>& args)
 	string fname(args[2]);
 	string suffix;
 	if(strcmp(args[1],"tiff") == 0)	suffix = "tif";
+	if(strcmp(args[1],"hgt") == 0)	suffix = "hgt";
 	if(strstr(args[0],"f"))
 	{
 		if(suffix.empty())
@@ -418,6 +419,15 @@ static int DoRasterExport(const vector<const char *>& args)
 	if(strcmp(args[1],"tiff") == 0)
 	{	
 		if (!WriteGeoTiff(*src, fname.c_str()))
+		{
+			fprintf(stderr,"Error writing file: %s\n", fname.c_str());
+			return 1;
+		} else
+			if (gVerbose)	printf("Wrote %s\n",fname.c_str());
+	}
+	else if(strcmp(args[1],"hgt") == 0)
+	{	
+		if (!WriteRawHGT(*src, fname.c_str(),false))
 		{
 			fprintf(stderr,"Error writing file: %s\n", fname.c_str());
 			return 1;

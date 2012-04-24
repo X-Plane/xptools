@@ -109,8 +109,8 @@ void	WED_GISPoint_Bezier::SetControlHandleLo (GISLayer_t l, const Point2& p)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -133,8 +133,8 @@ void	WED_GISPoint_Bezier::SetControlHandleHi (GISLayer_t l, const Point2& p)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -155,8 +155,8 @@ void	WED_GISPoint_Bezier::DeleteHandleLo	   (void)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -177,8 +177,8 @@ void	WED_GISPoint_Bezier::DeleteHandleHi	   (void)
 		ctrl_lat_lo.value = lo_vec.dy;
 		ctrl_lon_hi.value = hi_vec.dx;
 		ctrl_lat_hi.value = hi_vec.dy;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -188,8 +188,8 @@ void	WED_GISPoint_Bezier::SetSplit		   (bool split)
 	{
 		StateChanged();
 		is_split.value = split;
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 	}
 }
 
@@ -216,8 +216,8 @@ void	WED_GISPoint_Bezier::SetBezierLocation  (GISLayer_t l, const BezierPoint2& 
 void WED_GISPoint_Bezier::Reverse_(void)
 {
 	StateChanged();
-	CacheInval();
-	CacheBuild();
+	CacheInval(cache_Spatial);
+	CacheBuild(cache_Spatial);
 	swap(ctrl_lat_lo.value, ctrl_lat_hi.value);
 	swap(ctrl_lon_lo.value, ctrl_lon_hi.value);
 }
@@ -261,8 +261,8 @@ void			WED_GISPoint_Bezier::Rotate			(GISLayer_t l, const Point2& ctr, double a)
 		ctrl_lon_hi.value = ctr.x() + v_new_hi.dx - p.x();
 		ctrl_lat_lo.value = ctr.y() + v_new_lo.dy - p.y();
 		ctrl_lat_hi.value = ctr.y() + v_new_hi.dy - p.y();
-		CacheInval();
-		CacheBuild();
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
 
 	}
 }

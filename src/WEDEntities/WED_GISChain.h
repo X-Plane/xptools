@@ -68,7 +68,7 @@ protected:
 
 private:
 
-			void				RebuildCache(void) const;
+			void				RebuildCache(int flags) const;
 
 	mutable	Bbox2						mCacheBounds;
 	mutable	Bbox2						mCacheBoundsUV;

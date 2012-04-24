@@ -366,7 +366,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 	double tex_x = 1.0, tex_y = 1.0;		// meters for tex, x & y
 	int	 rotation = 0;
 	double anchor_x = 0.0, anchor_y = 0.0;
-	int hide_tiles = 0;
+	out_info.hide_tiles = 0;
 	vector<string>	obj_paths;
 
 	while(!MFS_done(&s))
@@ -464,14 +464,12 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		}
 		else if (MFS_string_match(&s,"HIDE_TILES",true))
 		{
-			hide_tiles = 1;
+			out_info.hide_tiles = 1;
 		}
 		
 		MFS_string_eol(&s,NULL);
 	}
 	
-	if(hide_tiles)
-		out_info.tile.clear();
 	for(int n = 0; n < out_info.tile.size(); n += 4)
 	{
 		out_info.tile[n  ] -= anchor_x;
