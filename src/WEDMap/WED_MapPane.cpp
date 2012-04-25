@@ -175,7 +175,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	mTools.push_back(					new WED_MarqueeTool("Marquee",mMap, mMap, resolver));
 
 	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
-	mTextTable = new GUI_TextTable(cmdr,10);
+	mTextTable = new GUI_TextTable(cmdr,10,0);
 	mTable = new GUI_Table(1);
 
 	mTextTable->SetColors(

@@ -41,6 +41,15 @@ template <typename K, typename V>	V reverse_histo(const map<K,V>& in_histo, mult
 template<class InputIterator, class Separator, class OutputIterator>
 void tokenize_string(InputIterator begin, InputIterator end, OutputIterator oi, Separator sep);
 
+// Same as above, but the separator is treated as a character functor instead of a delimiting character.
+template<class InputIterator, class Separator, class OutputIterator>
+void tokenize_string_func(InputIterator begin, InputIterator end, OutputIterator oi, Separator sep);
+
+// Return true if any of the strings in the input range are case-insensitive sub-strings of the passed
+// in string.  Returns true if txt is empty, but false if the filter range is empty.
+template <class InputIterator, class String>
+bool filter_match(const String& txt, InputIterator begin, InputIterator end);
+
 // SET UTILS
 
 // Simple inserter and eraser output iterator adapter for STL sets.
@@ -285,6 +294,48 @@ void tokenize_string(InputIterator begin, InputIterator end, OutputIterator oi, 
 			*oi = WordType(mark1, mark2);		
 	}
 }
+
+template<class InputIterator, class Separator, class OutputIterator>
+void tokenize_string_func(InputIterator begin, InputIterator end, OutputIterator oi, Separator sep)
+{
+	typedef typename OutputIterator::container_type::value_type WordType;
+	while(begin != end)
+	{
+		while(begin != end && sep(*begin)) ++begin;
+		
+		InputIterator mark1(begin);
+		
+		while(begin != end && !sep(*begin)) ++begin;
+		
+		InputIterator mark2(begin);
+		
+		if(mark1 != mark2)
+			*oi = WordType(mark1, mark2);		
+	}
+}
+
+template <class InputIterator, class String>
+bool filter_match(const String& haystack, InputIterator begin, InputIterator end)
+{
+	typename String::size_type hlen = haystack.size();
+	
+	for (InputIterator needle = begin; needle != end; ++needle)
+	if(needle->size() <= hlen)
+	{
+		typename String::size_type maxpos = hlen - needle->size();
+		for(typename String::size_type offset = 0; offset <= maxpos; ++offset)
+		{
+			typename String::size_type ni = 0;
+			for(ni = 0; ni < needle->size(); ++ni)
+			if(toupper((*needle)[ni]) != toupper(haystack[ni+offset]))
+				break;
+			if(ni == needle->size())
+				return true;
+		}		
+	}
+	return false;
+}
+
 
 template<typename K, typename V>
 K highest_key(const map<K,V>& histo)

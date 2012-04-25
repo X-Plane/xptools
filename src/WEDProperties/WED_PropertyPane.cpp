@@ -35,7 +35,7 @@ WED_PropertyPane::WED_PropertyPane(
 						int						pane_style,
 						const char **			filter) :
 	GUI_Commander(inCommander),
-	mTextTable(this,WED_UIMeasurement("table_indent_width")),
+	mTextTable(this,WED_UIMeasurement("table_indent_width"),0),
 	mPropertyTable(resolver, col_names, def_col_widths,
 			pane_style == propPane_Selection || pane_style == propPane_FilteredVertical,
 			pane_style == propPane_Selection,
@@ -92,7 +92,7 @@ WED_PropertyPane::WED_PropertyPane(
 		mHeader = new GUI_Header(pane_style==propPane_Hierarchy);
 
 		bounds[1] = 0;
-		bounds[3] = GUI_GetImageResourceHeight("header.png");
+		bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
 		mHeader->SetBounds(bounds);
 		mHeader->SetGeometry(&mPropertyTable);
 		mHeader->SetHeader(&mTextTableHeader);

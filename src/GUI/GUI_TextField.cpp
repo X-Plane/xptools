@@ -41,7 +41,8 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	mState(NULL),
 	mScrollH(scrollH),
 	mCaret(0),
-	mFont(font_UI_Basic)
+	mFont(font_UI_Basic),
+	mMsg(0), mParam(0)
 {
 	mColorText[0] = 0.0;	mColorText[1] = 0.0;	mColorText[2] = 0.0;	mColorText[3] = 1.0;
 	mColorHilite[0] = 1.0;	mColorHilite[1] = 1.0;	mColorHilite[2] = 0.0;	mColorHilite[3] = 1.0;
@@ -60,6 +61,12 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 
 GUI_TextField::~GUI_TextField()
 {
+}
+
+void		GUI_TextField::SetKeyMsg(intptr_t msg, intptr_t param)
+{
+	mParam = param;
+	mMsg = msg;
 }
 
 void		GUI_TextField::SetFont(int font)
@@ -385,6 +392,8 @@ void			GUI_TextField::ReplaceText(
 	GetDescriptor(mText);
 	mText.replace(mText.begin()+offset1,mText.begin()+offset2,t1,t2);
 	SetDescriptor(mText);
+	if(mMsg)
+		BroadcastMessage(mMsg,mParam);
 }
 
 float			GUI_TextField::GetLineHeight(void)

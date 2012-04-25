@@ -144,8 +144,9 @@ void		GUI_Button::MouseUp  (int x, int y, int button)
 
 void		GUI_Button::Draw(GUI_GraphState * state)
 {
-	float c[4] = { 0,0,0,1 };
+	float c[4] = { 1,1,1,1 };
 	int w;
+	int h;
 	int bounds[4];
 	string desc;
 	glColor3f(1,1,1);
@@ -158,20 +159,22 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 	case btn_Push:
 	case btn_Web:
 		{
-			GUI_DrawStretched(state,mResource.c_str(),bounds,tile_p);
+			GUI_DrawHorizontalStretch(state,mResource.c_str(),bounds,tile_p);
 
 			if (!desc.empty())
 			{
 				w = GUI_MeasureRange(font_UI_Basic, &*desc.begin(), &*desc.end());
 				w = (bounds[2] - bounds[0] - w) / 2;
-				GUI_FontDraw(state, font_UI_Basic, c, bounds[0] + w, bounds[1], desc.c_str());
+				h = GUI_GetLineAscent(font_UI_Basic);
+				h = (bounds[3] - bounds[1] - h) / 2;
+				GUI_FontDraw(state, font_UI_Basic, c, bounds[0] + w, bounds[1] + h + GUI_GetLineDescent(font_UI_Basic), desc.c_str());
 			}
 		}
 		break;
 	case btn_Check:
 	case btn_Radio:
 		{
-			GUI_DrawCentered(state, mResource.c_str(), bounds, -1, 0, tile_p, &w, NULL);
+			GUI_DrawCentered(state, mResource.c_str(), bounds, -1, 0, tile_p, &w, &h);
 
 			if (!desc.empty())
 				GUI_FontDraw(state, font_UI_Basic, c, bounds[0] + w, bounds[1], desc.c_str());

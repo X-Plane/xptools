@@ -31,14 +31,20 @@
 
 class	GUI_ScrollerPane;
 class	WED_LibraryMgr;
+class	WED_FilterBar;
 
-class WED_LibraryPane : public GUI_Packer, public GUI_Commander {
+class WED_LibraryPane : public GUI_Packer, public GUI_Commander, public GUI_Listener {
 public:
 
 								 WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr);
 	virtual						~WED_LibraryPane();
 
 	WED_LibraryListAdapter *	GetAdapter(void) { return &mLibraryList; }
+
+	virtual	void	ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							intptr_t    			inMsg,
+							intptr_t				inParam);
 
 private:
 
@@ -49,6 +55,8 @@ private:
 	GUI_TextTable			mTextTable;
 	GUI_TextTableHeader		mTextTableHeader;
 
+
+	WED_FilterBar *			mFilter;
 	WED_LibraryListAdapter	mLibraryList;
 
 };

@@ -35,6 +35,7 @@
 #include "GUI_ScrollerPane.h"
 #include "GUI_Commander.h"
 #include "GUI_Timer.h"
+#include "GUI_Broadcaster.h"
 
 class	GUI_GraphState;
 
@@ -48,6 +49,7 @@ public:
 						 GUI_TextField(int h_scroll, GUI_Commander * parent);
 	virtual				~GUI_TextField();
 
+			void		SetKeyMsg(intptr_t msg, intptr_t param);
 			void		SetFont(int font);
 			void		SetColors(float text_color[4],
 								  float hilite_color[4],
@@ -150,6 +152,8 @@ private:
 		float				mColorHilite[4];
 		float				mColorBkgnd[4];
 		float				mColorBox[4];
+		
+		intptr_t			mMsg, mParam;
 
 };
 

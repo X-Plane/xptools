@@ -27,14 +27,18 @@
 #include "GUI_Messages.h"
 #include "WED_CreatePointTool.h"
 #include "WED_CreatePolygonTool.h"
+#include "WED_LibraryPreviewPane.h"
 #include "WED_MapPane.h"
+#include "GUI_Messages.h"
+#include "STLUtils.h"
 
 static int kDefCols[] = { 100, 100 };
 
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 		GUI_SimpleTableGeometry(1,kDefCols,20),
 	mCacheValid(false), mLibrary(who),
-	mMap(NULL)
+	mMap(NULL),
+	mPreview(NULL)
 {
 	mLibrary->AddListener(this);
 }
@@ -44,9 +48,18 @@ WED_LibraryListAdapter::~WED_LibraryListAdapter()
 {
 }
 
-void	WED_LibraryListAdapter::SetMap(WED_MapPane * amap)
+void	WED_LibraryListAdapter::SetMap(WED_MapPane * amap, WED_LibraryPreviewPane * apreview)
 {
 	mMap = amap;
+	mPreview = apreview;
+}
+
+void	WED_LibraryListAdapter::SetFilter(const string& f)
+{
+	mFilter.clear();
+	tokenize_string_func(f.begin(),f.end(),back_inserter(mFilter),::isspace);
+	mCacheValid = false;
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }
 
 /********************************************************************************************************************************************
@@ -255,9 +268,34 @@ void	WED_LibraryListAdapter::RebuildCache()
 	mCache.clear();
 
 	vector<string> seeds;
-	mLibrary->GetResourceChildren("",pack_All,seeds);
+	mLibrary->GetResourceChildren("",pack_Local,seeds);
 	for(vector<string>::iterator s = seeds.begin(); s != seeds.end(); ++s)
 		RebuildCacheRecursive(*s);
+
+	mLibrary->GetResourceChildren("",pack_Library,seeds);
+	for(vector<string>::iterator s = seeds.begin(); s != seeds.end(); ++s)
+		RebuildCacheRecursive(*s);
+
+	if(!mFilter.empty())
+	{
+		vector<string>	keepers;
+		int last = -1;
+		for(int i = 0; i < mCache.size(); ++i)
+		{
+			if(filter_match(mCache[i],mFilter.begin(),mFilter.end()))
+			{
+				for(int p = last+1; p < i; ++p)
+					if(mCache[p].size() < mCache[i].size() &&
+						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
+				{
+					keepers.push_back(mCache[p]);					
+				}
+				keepers.push_back(mCache[i]);
+				last = i;
+			}
+		}
+		swap(keepers,mCache);
+	}
 
 	reverse(mCache.begin(),mCache.end());
 }
@@ -265,7 +303,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 {
 	mCache.push_back(r);
-	if(IsOpen(r))
+	if(IsOpen(r) || !mFilter.empty())
 	{
 		vector<string> kids;
 		mLibrary->GetResourceChildren(r,pack_All,kids);
@@ -276,6 +314,21 @@ void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 
 void WED_LibraryListAdapter::SetSel(const string& s)
 {
-	if(s != mSel && !s.empty()) mMap->SetResource(s, mLibrary->GetResourceType(s));
-	mSel = s;
+	if(s != mSel)
+	{
+		if(s.empty())
+		{
+			if(mPreview)
+				mPreview->ClearResource();
+		}
+		else
+		{
+			if(mPreview)
+				mPreview->SetResource(s, mLibrary->GetResourceType(s));
+			if(mMap)
+				mMap->SetResource(s, mLibrary->GetResourceType(s));
+		}
+		
+		mSel = s;
+	}
 }

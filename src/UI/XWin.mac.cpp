@@ -280,6 +280,18 @@ void			XWin::GetBounds(int * outX, int * outY)
 	if (outY) *outY = bounds.bottom;
 }
 
+void			XWin::GetWindowLoc(int * outX, int * outY)
+{
+	Rect	bounds;
+
+	::GetWindowBounds(mWindow, kWindowContentRgn, &bounds);
+
+	if (outX) *outX = bounds.left;
+	if (outY) *outY = bounds.top;
+}
+
+
+
 void		XWin::GetMouseLoc(int * outX, int * outY)
 {
 	Point	pt;

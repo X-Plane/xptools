@@ -33,6 +33,7 @@ public:
 			 		 GUI_Control();
 	virtual			~GUI_Control();
 
+			void	SetMsg(intptr_t msg, intptr_t param);
 			float	GetValue(void) const;
 			float	GetMin(void) const;
 			float	GetMax(void) const;
@@ -51,7 +52,8 @@ private:
 		float		mMin;
 		float		mMax;
 		float		mPageSize;
-
+		intptr_t	mMsg;
+		intptr_t	mParam;
 };
 
 #endif /* GUI_CONTROL_H */

@@ -25,12 +25,20 @@
 #include "GUI_Messages.h"
 
 GUI_Control::GUI_Control() :
-	mMin(0), mMax(1), mValue(0), mPageSize(1)
+	mMin(0), mMax(1), mValue(0), mPageSize(1),
+	mMsg(GUI_CONTROL_VALUE_CHANGED),
+	mParam(0)
 {
 }
 
 GUI_Control::~GUI_Control()
 {
+}
+
+void	GUI_Control::SetMsg(intptr_t m, intptr_t v)
+{
+	mMsg = m;
+	mParam = v;
 }
 
 float	GUI_Control::GetValue(void) const
@@ -56,7 +64,7 @@ float	GUI_Control::GetPageSize(void) const
 void	GUI_Control::SetValue(float inValue)
 {
 	mValue = inValue;
-	BroadcastMessage(GUI_CONTROL_VALUE_CHANGED, 0);
+	BroadcastMessage(mMsg, mParam);
 }
 
 void	GUI_Control::SetMin(float inMin)

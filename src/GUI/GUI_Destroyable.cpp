@@ -66,5 +66,8 @@ void GUI_DestroyableTask::TimerFired(void)
 	mDeadList.swap(who);
 	for(set<GUI_Destroyable *>::iterator i = who.begin(); i != who.end(); ++i)
 		delete *i;
-	this->Stop();
+	// If our dead list is NOt empty it means that the async destruction of one obj queued ANOTHER async obj.
+	// When we async kill our doc, this can async kill an import dialog box.
+	if(mDeadList.empty())
+		this->Stop();
 }

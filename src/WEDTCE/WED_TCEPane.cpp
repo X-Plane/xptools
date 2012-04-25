@@ -53,7 +53,7 @@ WED_TCEPane::WED_TCEPane(GUI_Commander * cmdr, IResolver * resolver, WED_Archive
 
 
 	mInfoAdapter = new WED_ToolInfoAdapter(GUI_GetImageResourceHeight("property_bar.png") / 2);
-	mTextTable = new GUI_TextTable(cmdr,10);
+	mTextTable = new GUI_TextTable(cmdr,10,0);
 	mTable = new GUI_Table(1);
 
 	mTextTable->SetColors(
