@@ -122,7 +122,7 @@ XWin::XWin(
 		mDropTarget = NULL;
 
 	if (inAttributes & xwin_style_visible)
-		ShowWindow(mWindow, (inAttributes & xwin_style_fullscreen						) ? SW_SHOWMAXIMIZED : SW_SHOW);
+		ShowWindow(mWindow, (inAttributes & xwin_style_fullscreen						) ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
 	memset(mDragging,0,sizeof(mDragging));
 	mMouse.x = 0;
 	mMouse.y = 0;
@@ -156,6 +156,13 @@ void			XWin::MoveTo(int inX, int inY)
 
 void			XWin::Resize(int inWidth, int inHeight)
 {
+	WINDOWINFO info = { 0 };
+	if(::GetWindowInfo(mWindow,&info))
+	{
+		inWidth += (info.rcWindow.right - info.rcWindow.left) - (info.rcClient.right - info.rcClient.left);
+		inHeight+= (info.rcWindow.bottom - info.rcWindow.top) - (info.rcClient.bottom - info.rcClient.top);
+	}
+
 	SetWindowPos(mWindow, NULL, 0, 0, inWidth, inHeight, SWP_NOOWNERZORDER | SWP_NOMOVE);
 }
 
@@ -200,6 +207,16 @@ void			XWin::GetBounds(int * outX, int * outY)
 	{
 		if (outX) *outX = rect.right - rect.left;
 		if (outY) *outY = rect.bottom - rect.top;
+	}
+}
+
+void			XWin::GetWindowLoc(int * outX, int * outY)
+{
+	RECT	rect;
+	if (::GetWindowRect(mWindow, &rect))
+	{
+		if (outX) *outX = rect.left;
+		if (outY) *outY = rect.top;
 	}
 }
 
