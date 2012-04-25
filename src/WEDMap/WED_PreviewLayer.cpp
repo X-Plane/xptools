@@ -300,7 +300,7 @@ void draw_obj_at_xyz(ITexMgr * tman, XObj8 * o, double x, double y, double z, fl
 	glTranslatef(x,y,z);
 	glRotatef(r, 0, -1, 0);
 	g->EnableDepth(true,true);
-	glClear(GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 	Obj_DrawStruct ds = { g, id1, id2 };
 	ObjDraw8(*o, 0, &kFuncs, &ds); 
 	g->EnableDepth(false,false);
@@ -722,7 +722,7 @@ struct	preview_object : public WED_PreviewItem {
 			obj->GetLocation(gis_Geo,loc);
 			if(!cull_agp(zoomer, &agp, loc))
 			{
-				g->SetState(false,1,false,false,true,false,false);
+				g->SetState(false,1,false,true,true,false,false);
 				TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap);			
 				int id1 = ref  ? tman->GetTexID(ref ) : 0;
 				if(id1)g->BindTex(id1,0);
@@ -736,8 +736,10 @@ struct	preview_object : public WED_PreviewItem {
 				glRotatef(90, 1,0,0);
 				glRotatef(r, 0, -1, 0);
 				glColor3f(1,1,1);
+				g->EnableDepth(true,true);
+				glClear(GL_DEPTH_BUFFER_BIT);
 				if(!agp.tile.empty() && !agp.hide_tiles)
-				{
+				{					
 					glDisable(GL_CULL_FACE);
 					glBegin(GL_TRIANGLE_FAN);
 					for(int n = 0; n < agp.tile.size(); n += 4)

@@ -26,6 +26,9 @@
 
 #include "WED_MapLayer.h"
 
+struct	XObj8;
+class	ITexMgr;
+
 // We need int values for layer groups - these weird numbers actually came out of X-Plane's internal engine...who knew.
 // The important thing is that the spacing is enough to ensure separation even when we have lots of runways or taxiways.
 enum {
@@ -88,5 +91,7 @@ private:
 
 
 };
+
+void draw_obj_at_xyz(ITexMgr * tman, XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g);
 
 #endif /* WED_PreviewLayer_H */

@@ -203,6 +203,9 @@ public:
 	virtual	void	GetHeaderContent(
 						int							cell_x,
 						GUI_HeaderContent&			the_content)=0;
+						
+	virtual	void	SelectHeaderCell(
+						int							cell_x)=0;
 
 };
 
@@ -210,10 +213,10 @@ public:
 // It in turn queries the "provider" for the actual content.  It allows you to specify a table as strings (easy)
 // instead of drawing calls (PITA).
 
-class	GUI_TextTable : public GUI_TableContent, public GUI_Broadcaster, public GUI_Commander {
+class	GUI_TextTable : public GUI_TableContent, public GUI_Broadcaster, public GUI_Commander, public GUI_Listener {
 public:
 
-						 GUI_TextTable(GUI_Commander * parent, int indent);
+						 GUI_TextTable(GUI_Commander * parent, int indent, int live_edit);
 	virtual				~GUI_TextTable();
 
 			void		SetProvider(GUI_TextTableProvider * content);
@@ -250,6 +253,11 @@ public:
 	virtual	int			HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int			AcceptTakeFocus(void) 	{ return 1; }
 
+	virtual	void	ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							intptr_t    			inMsg,
+							intptr_t				inParam);
+
 private:
 
 	enum GUI_DragPart {			// DRAG PARTS - divide the cell into 4 zones, for the uppe rand lower half, and closer to the center or edges.
@@ -272,7 +280,7 @@ private:
 	};
 
 			void			CreateEdit(int cell_bounds[4]);
-			int				TerminateEdit(bool inSave, bool inAll);
+			int				TerminateEdit(bool inSave, bool inAll, bool inDone);
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
 
 	GUI_TextTableProvider * mContent;
@@ -301,6 +309,7 @@ private:
 	GUI_DragOperation		mLastOp;
 
 	int						mCellIndent;
+	int						mLiveEdit;
 	int						mDiscloseIndent;
 
 	float					mColorGridlines[4];

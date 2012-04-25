@@ -25,11 +25,13 @@
 #include "GUI_ScrollerPane.h"
 #include "WED_UIMeasurements.h"
 #include "WED_Colors.h"
+#include "WED_FilterBar.h"
 #include "GUI_Resources.h"
+#include "GUI_Messages.h"
 
 WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr) :
 	GUI_Commander(commander),
-	mTextTable(this,WED_UIMeasurement("table_indent_width")),
+	mTextTable(this,WED_UIMeasurement("table_indent_width"),0),
 	mLibraryList(mgr)
 {
 	int bounds[4] = { 0, 0, 100, 100 };
@@ -71,12 +73,12 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mTextTableHeader.SetImage("header.png");
 	mTextTableHeader.SetColors(
 			WED_Color_RGBA(wed_Table_Gridlines),
-			WED_Color_RGBA(wed_Header_Text));
+				WED_Color_RGBA(wed_Header_Text));
 
 	mHeader = new GUI_Header(true);
 
 	bounds[1] = 0;
-	bounds[3] = GUI_GetImageResourceHeight("header.png");
+	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
 	mHeader->SetBounds(bounds);
 	mHeader->SetGeometry(&mLibraryList);
 	mHeader->SetHeader(&mTextTableHeader);
@@ -91,6 +93,13 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
+	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Filter:", "");
+	mFilter->Show();
+	mFilter->SetParent(this);
+	mFilter->AddListener(this);
+	mFilter->SetSticky(1,0,1,1);
+	this->PackPane(mFilter,gui_Pack_Top);
+
 					this->PackPane(mHeader, gui_Pack_Top);
 					this->PackPane(mScroller, gui_Pack_Center);
 
@@ -99,4 +108,13 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 
 WED_LibraryPane::~WED_LibraryPane()
 {
+}
+
+void	WED_LibraryPane::ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							intptr_t    			inMsg,
+							intptr_t				inParam)
+{
+	if(inMsg == GUI_FILTER_FIELD_CHANGED)
+		mLibraryList.SetFilter(mFilter->GetText());
 }

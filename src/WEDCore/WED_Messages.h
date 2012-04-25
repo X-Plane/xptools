@@ -45,11 +45,15 @@ enum {
 	msg_SystemFolderChanged,
 	msg_SystemFolderUpdated,
 
-	msg_LibraryChanged,
+	msg_LibraryChanged
 
 #if WITHNWLINK
-	msg_NetworkStatusInfo
+	,msg_NetworkStatusInfo
 #endif
+
+	,WED_LAST_MSG,
+
+	WED_PRIVATE_MSG_BASE = WED_LAST_MSG + 1000
 };
 
 #endif /* WED_MESSAGES_H */

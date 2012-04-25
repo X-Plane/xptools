@@ -125,7 +125,8 @@ public:
 			void			UpdateNow(void);
 			void			SetTimerInterval(double seconds);
 
-			void			GetBounds(int * outX, int * outY);
+			void			GetBounds(int * outX, int * outY);			// "Matched" to Resize
+			void			GetWindowLoc(int * outX, int * outY);		// "Matched" to MoveTo
 			void			GetMouseLoc(int * outX, int * outY);
 
 			void			SetVisible(bool visible);

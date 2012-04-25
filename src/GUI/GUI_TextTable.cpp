@@ -52,7 +52,7 @@
 #define CELL_MARGIN 3
 #define	MIN_CELL_WIDTH	(CELL_MARGIN*2)
 
-GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander(parent),
+GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) : GUI_Commander(parent),
 	mContent(NULL),
 	mClickCellX(-1),
 	mClickCellY(-1),
@@ -66,6 +66,7 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent) : GUI_Commander
 	mDragDest(gui_Table_None),
 	mDragPart(drag_WholeCell),
 	mCellIndent(indent),
+	mLiveEdit(live_edit),
 	mGeometry(NULL)
 {
 	mEditInfo.content_type = gui_Cell_None;
@@ -158,7 +159,7 @@ void		GUI_TextTable::SetTextFieldColors(
 
 void	GUI_TextTable::KillEditing(bool save_it)
 {
-	TerminateEdit(save_it, false);
+	TerminateEdit(save_it, false, true);
 }
 
 
@@ -435,7 +436,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	if (mTextField)
 	{
-		TerminateEdit(true, false);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.
+		TerminateEdit(true, false, true);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.
 		mClickCellX = -1;
 		mClickCellY = -1;
 		mEditInfo.content_type = gui_Cell_None;
@@ -495,7 +496,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 								min(mSelStartY,cell_y),
 								max(mSelStartX,cell_x),
 								max(mSelStartY,cell_y),
-								mModifiers & gui_ControlFlag);
+								(mModifiers & gui_ControlFlag) ? 1 : 0);
 		mEditInfo.content_type = gui_Cell_None;
 		BroadcastMessage(GUI_TABLE_CONTENT_CHANGED, 0);
 
@@ -978,6 +979,8 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 	{
 		mTextField = new GUI_TextField(1,this);
 		mTextField->SetFont(mFont);
+		mTextField->SetKeyMsg(GUI_TEXT_FIELD_TEXT_CHANGED,0);
+		mTextField->AddListener(this);
 		mTextField->SetParent(mParent);
 		mTextField->SetVKAllowed(GUI_VK_RETURN, false);
 		mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false);
@@ -1012,13 +1015,12 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4])
 	mParent->TrapFocus();
 }
 
-int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
+int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 {
 	if (mTextField && mTextField->IsFocused() &&
 		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
 	{
 		GUI_TextField * f = mTextField;
-		mTextField = NULL;
 		if (inSave)
 		{
 			f->GetDescriptor(mEditInfo.text_val);
@@ -1032,11 +1034,15 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all)
 			}
 			mContent->AcceptEdit(mClickCellX, mClickCellY, mEditInfo, in_all);
 		}
-		this->TakeFocus();
-		f->Hide();
-		delete f;
-		mEditInfo.content_type = gui_Cell_None;
-		return 1;
+		if(in_close)
+		{
+			mTextField = NULL;
+			this->TakeFocus();
+			f->Hide();
+			delete f;
+			mEditInfo.content_type = gui_Cell_None;
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -1108,10 +1114,10 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 				} else {
 
 					switch(inKey) {
-					case GUI_KEY_LEFT:		--x1;	if ((inFlags & gui_ShiftFlag) == 0)	x2 = x1;	if(mParent)mParent->RevealCol(x1);	break;
-					case GUI_KEY_RIGHT:		++x2;	if ((inFlags & gui_ShiftFlag) == 0)	x1 = x2;	if(mParent)mParent->RevealCol(x2);	break;
-					case GUI_KEY_UP:		++y2;	if ((inFlags & gui_ShiftFlag) == 0)	y1 = y2;	if(mParent)mParent->RevealRow(y2);	break;
-					case GUI_KEY_DOWN:		--y1;	if ((inFlags & gui_ShiftFlag) == 0)	y2 = y1;	if(mParent)mParent->RevealRow(y1);	break;
+					case GUI_KEY_LEFT:		--x1;	if ((inFlags & gui_ShiftFlag) == 0)	x2 = x1;break;
+					case GUI_KEY_RIGHT:		++x2;	if ((inFlags & gui_ShiftFlag) == 0)	x1 = x2;break;
+					case GUI_KEY_UP:		++y2;	if ((inFlags & gui_ShiftFlag) == 0)	y1 = y2;break;
+					case GUI_KEY_DOWN:		--y1;	if ((inFlags & gui_ShiftFlag) == 0)	y2 = y1;break;
 					}
 
 					x1 = min(x1, x_max);
@@ -1122,6 +1128,15 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 					y2 = min(y2, y_max);
 					y1 = max(y1, y_min);
 					y2 = max(y2, y_min);
+
+					if(mParent)
+					switch(inKey) {
+					case GUI_KEY_LEFT:		mParent->RevealCol(x1);	break;
+					case GUI_KEY_RIGHT:		mParent->RevealCol(x2);	break;
+					case GUI_KEY_UP:		mParent->RevealRow(y2);	break;
+					case GUI_KEY_DOWN:		mParent->RevealRow(y1);	break;
+					}
+
 
 					mContent->SelectionStart(1);
 					mContent->SelectRange(x1,y1,x2,y2, 0);
@@ -1137,7 +1152,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 		int x = mClickCellX;
 		int y = mClickCellY;
 		int cell_bounds[4];
-		TerminateEdit(true, inFlags & inFlags & gui_OptionAltFlag);
+		TerminateEdit(true, inFlags & inFlags & gui_OptionAltFlag, true);
 		if (mParent)
 		{
 			if (mContent->TabAdvance(x,y, (inFlags & gui_ShiftFlag) ? -1 : 1, mEditInfo))
@@ -1156,7 +1171,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 
 	if(inVK == GUI_VK_RETURN && mTextField)
 	{
-		TerminateEdit(true, inFlags & gui_OptionAltFlag);
+		TerminateEdit(true, inFlags & gui_OptionAltFlag, true);
 		return 1;
 	}
 	else if (inVK == GUI_VK_RETURN && mContent && mParent)
@@ -1181,11 +1196,22 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 
 	if(inKey == GUI_KEY_ESCAPE && mTextField)
 	{
-		TerminateEdit(false, false);
+		TerminateEdit(false, false, true);
 		return 1;
 	}
 	return 0;
 }
+
+void	GUI_TextTable::ReceiveMessage(
+							GUI_Broadcaster *		inSrc,
+							intptr_t    			inMsg,
+							intptr_t				inParam)
+{
+	if(inMsg == GUI_TEXT_FIELD_TEXT_CHANGED && mLiveEdit)
+		TerminateEdit(true,false,false);
+	
+}
+
 
 
 
@@ -1239,6 +1265,13 @@ void		GUI_TextTableHeader::SetGeometry(GUI_TableGeometry * geometry)
 
 void		GUI_TextTableHeader::HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphState * inState			  )
 {
+	GUI_HeaderContent	c;
+	if(mContent)
+		mContent->GetHeaderContent(cell_x,c);
+	else
+		c.is_selected = 0;
+
+
 	if (mImage.empty())
 	{
 		inState->SetState(false, false, false,	false, false, false, false);
@@ -1252,14 +1285,11 @@ void		GUI_TextTableHeader::HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphS
 	else
 	{
 		glColor3f(1,1,1);
-		int tile[4] = { 0, 0, 1, 1 };
+		int tile[4] = { 0, c.is_selected, 1, 2 };
 		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
 	}
 
-
 	if (!mContent) return;
-	GUI_HeaderContent	c;
-	mContent->GetHeaderContent(cell_x,c);
 
 	int line_h = (cell_bounds[1] + cell_bounds[3]) / 2 - GUI_GetLineAscent(font_UI_Basic) / 2;
 
@@ -1271,20 +1301,32 @@ void		GUI_TextTableHeader::HeadDraw	 (int cell_bounds[4], int cell_x, GUI_GraphS
 
 int			GUI_TextTableHeader::HeadMouseDown(int cell_bounds[4], int cell_x, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
 {
+	if (!mContent) return 0;
+
+	GUI_HeaderContent	c;
+	mContent->GetHeaderContent(cell_x,c);
+
 	want_lock = 1;
 	mCellResize = -1;
-	if (mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
+	if (c.can_resize && mGeometry && abs(mouse_x - cell_bounds[0]) < RESIZE_MARGIN && cell_x > 0)
 	{
 		mLastX = mouse_x;
 		mCellResize = cell_x -1;
 		return 1;
 	}
-	if (mGeometry && abs(mouse_x - cell_bounds[2]) < RESIZE_MARGIN && cell_x < mGeometry->GetColCount())
+	if (c.can_resize && mGeometry && abs(mouse_x - cell_bounds[2]) < RESIZE_MARGIN && cell_x < mGeometry->GetColCount())
 	{
 		mLastX = mouse_x;
 		mCellResize = cell_x;
 		return 1;
 	}
+	
+	if(c.can_select)
+	{
+		mContent->SelectHeaderCell(cell_x);
+		return 1;
+	}
+
 	return 1;
 }
 

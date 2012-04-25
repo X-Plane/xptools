@@ -1153,9 +1153,13 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 }
 
 void		GUI_Window::Activate(int active)
-{
+{	
+	string d;
+	GetDescriptor(d);
 	if (active && !this->IsFocusedChain())
+	{
 		FocusChain(1);
+	}
 }
 
 void		GUI_Window::Timer(void)

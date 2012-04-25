@@ -129,7 +129,7 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 
 	mTable = new GUI_Table(1);		// 1=  fill right
 	mPackageList = new WED_PackageListAdapter;
-	mTextTable = new GUI_TextTable(this, 10);	// 10 = indent
+	mTextTable = new GUI_TextTable(this, 10,0);	// 10 = indent
 
 	mTextTable->SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),

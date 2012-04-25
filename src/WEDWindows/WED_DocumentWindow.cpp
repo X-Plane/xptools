@@ -47,7 +47,9 @@
 #include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
+#include "WED_LibraryPreviewPane.h"
 #include "WED_Routing.h"
+#include "WED_ToolUtils.h"
 
 #include "WED_Orthophoto.h"
 #if WITHNWLINK
@@ -103,20 +105,45 @@ WED_DocumentWindow::WED_DocumentWindow(
 //	GUI_Pane::GetBounds(splitter_b);
 //	mMainSplitter->SetBounds(splitter_b);
 	mMainSplitter->SetSticky(1,1,1,1);
+	
+	/****************************************************************************************************************************************************************
+	 * LIBRARY-SIDE
+	****************************************************************************************************************************************************************/
 
+	mLibSplitter = new GUI_Splitter(gui_Split_Vertical);
+	if (!WED_UIMeasurement("one_big_gradient")) {
+		mLibSplitter->SetImage1("gradient.png");
+		mLibSplitter->SetImage2("gradient.png");
+	}
+	mLibSplitter->SetParent(mMainSplitter);
+	mLibSplitter->Show();
+	GUI_Pane::GetBounds(splitter_b);
+	mLibSplitter->SetBounds(splitter_b);
+	mLibSplitter->SetSticky(1,1,0,1);
+
+	WED_LibraryPreviewPane * libprev = new WED_LibraryPreviewPane(mDocument->GetResourceMgr(), WED_GetTexMgr(mDocument));
+	libprev->SetParent(mLibSplitter);
+	libprev->Show();
+	libprev->SetSticky(1,1,1,0);
+	
 	WED_LibraryPane * lib = new WED_LibraryPane(this, inDocument->GetLibrary());
-	lib->SetParent(mMainSplitter);
+	lib->SetParent(mLibSplitter);
 	lib->Show();
-	lib->SetSticky(1,1,0,1);
+	lib->SetSticky(1,1,1,1);
+	
+	/****************************************************************************************************************************************************************
+	 * DA MAP
+	****************************************************************************************************************************************************************/
 
 	mMainSplitter2->SetParent(mMainSplitter);
 	mMainSplitter2->Show();
 	mMainSplitter2->SetSticky(1,1,1,1);
 
+
 	double	lb[4];
 	mDocument->GetBounds(lb);
 	mMapPane = new WED_MapPane(this, lb, inDocument,inDocument->GetArchive(),lib->GetAdapter());
-	lib->GetAdapter()->SetMap(mMapPane);
+	lib->GetAdapter()->SetMap(mMapPane, libprev);
 	mMapPane->SetParent(mMainSplitter2);
 	mMapPane->Show();
 	mMapPane->SetSticky(1,1,1,1);
@@ -127,6 +154,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	packer->PackPane(top_bar, gui_Pack_Top);
 	top_bar->SetSticky(1,0,1,1);
 	packer->PackPane(mMainSplitter, gui_Pack_Center);
+
 
 	/****************************************************************************************************************************************************************
 	 * PROPERTY-SIDE
@@ -143,7 +171,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropSplitter->Show();
 	GUI_Pane::GetBounds(splitter_b);
 	mPropSplitter->SetBounds(splitter_b);
-	mPropSplitter->SetSticky(0.5,1,1,1);
+	mPropSplitter->SetSticky(0,1,1,1);
 
 	GUI_TabPane * prop_tabs = new GUI_TabPane(this);
 	prop_tabs->SetParent(mPropSplitter);
@@ -227,18 +255,30 @@ WED_DocumentWindow::WED_DocumentWindow(
 	 * FINAL CLEANUP
 	****************************************************************************************************************************************************************/
 
+	int xy[2];
 	int zw[2];
 	XWin::GetBounds(zw,zw+1);
+	XWin::GetWindowLoc(xy,xy+1);
+	
+	xy[0]  = inDocument->ReadIntPref("window/x_loc",xy[0]);
+	xy[1]  = inDocument->ReadIntPref("window/y_loc",xy[1]);
+	zw[0] = inDocument->ReadIntPref("window/width",zw[0]);
+	zw[1] = inDocument->ReadIntPref("window/height",zw[1]);
+	
+	SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
 
 	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
 	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
 	int prop_split = inDocument->ReadIntPref("window/prop_split",zw[1] / 2);
+	int prev_split = inDocument->ReadIntPref("window/prev_split",zw[1] / 3);
 
 
 	mMainSplitter->AlignContentsAt(main_split);
 	mMainSplitter2->AlignContentsAt(main_split2);
 	mPropSplitter->AlignContentsAt(prop_split);
+	mLibSplitter->AlignContentsAt(prev_split);
 	mMapPane->ZoomShowAll();
+
 
 	mMapPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
@@ -269,10 +309,12 @@ int	WED_DocumentWindow::HandleCommand(int command)
 			int main_split = zw[0] / 5;
 			int main_split2 = zw[0] * 2 / 3;
 			int prop_split = zw[1] / 2;
+			int prev_split = zw[1] / 3;
 
 			mMainSplitter->AlignContentsAt(main_split);
 			mMainSplitter2->AlignContentsAt(main_split2);
 			mPropSplitter->AlignContentsAt(prop_split);
+			mLibSplitter->AlignContentsAt(prev_split);
 
 		}
 		return 1;
@@ -441,6 +483,18 @@ void	WED_DocumentWindow::ReceiveMessage(
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
 		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
 		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());
+		prefs->WriteIntPref("window/prev_split",mLibSplitter->GetSplitPoint());
+		
+		int xy[2];
+		int zw[2];
+		XWin::GetBounds(zw,zw+1);
+		XWin::GetWindowLoc(xy,xy+1);
+		
+		prefs->WriteIntPref("window/x_loc",xy[0]);
+		prefs->WriteIntPref("window/y_loc",xy[1]);
+		prefs->WriteIntPref("window/width",zw[0]);
+		prefs->WriteIntPref("window/height",zw[1]);
+		
 	}
 	if (inMsg == msg_DocLoaded)
 	{

@@ -45,6 +45,8 @@
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
+#include "WED_AptImportDialog.h"
+#include "GUI_Application.h"
 
 #include "AptIO.h"
 #include "AptAlgs.h"
@@ -455,16 +457,9 @@ void LazyPrintf(void * ref, const char * fmt, ...)
 void	WED_AptImport(
 				WED_Archive *	archive,
 				WED_Thing *		container,
-				const char *	file_path)
+				const char *	file_path,
+				AptVector&		apts)
 {
-	AptVector	apts;
-	string result = ReadAptFile(file_path, apts);
-	if (!result.empty())
-	{
-		string msg = string("Unable to read apt.dat file '") + file_path + string("': ") + result;
-		DoUserAlert(msg.c_str());
-		return;
-	}
 	char path[1024];
 	strcpy(path,file_path);
 	strcat(path,".log");
@@ -650,17 +645,22 @@ int		WED_CanImportApt(IResolver * resolver)
 	return 1;
 }
 
-void	WED_DoImportApt(IResolver * resolver, WED_Archive * archive)
+void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive)
 {
-	WED_Thing * wrl = WED_GetWorld(resolver);
 	char path[1024];
 	strcpy(path,"");
 	if (GetFilePathFromUser(getFile_Open,"Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT, path, sizeof(path)))
 	{
-		wrl->StartOperation("Import apt.dat");
-		WED_AptImport(archive, wrl, path);
-		WED_SetAnyAirport(resolver);
-		wrl->CommitOperation();
+		AptVector	apts;
+		string result = ReadAptFile(path, apts);
+		if (!result.empty())
+		{
+			string msg = string("Unable to read apt.dat file '") + path + string("': ") + result;
+			DoUserAlert(msg.c_str());
+			return;
+		}
+	
+		WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive);
 	}
 }
 

@@ -153,6 +153,9 @@ public:
 						int							cell_x,
 						GUI_HeaderContent&			the_content);
 
+	virtual	void	SelectHeaderCell(
+						int							cell_x) { }
+
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
