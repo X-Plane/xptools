@@ -251,6 +251,11 @@ void XWin::GetBounds(int * outX, int * outY)
 	if (outY) *outY = size().height();
 }
 
+void XWin::GetWindowLoc(int * outX, int * outY)
+{
+	if (outX) *outX = x();
+	if (outY) *outY = y();
+}
 void XWin::GetMouseLoc(int * outX, int * outY)
 {
 	if (outX) *outX = mMouse.x;
