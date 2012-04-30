@@ -37,12 +37,13 @@ public:
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
 
+#if AIRPORT_ROUTING
 			bool		HasCustomMSL(void) const;
 			double		GetCustomMSL(void) const;
 			
 			void		SetCustomMSL(double msl);
 			void		SetDefaultMSL(void);
-			
+#endif			
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
 

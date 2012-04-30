@@ -425,7 +425,7 @@ const char *	WED_CreatePolygonTool::GetStatusText(void)
 	if (GetHost(n) == NULL)
 	{
 		if (mType == create_Hole)
-			sprintf(buf,"You must selet a polygon before you can insert a hole into it.");
+			sprintf(buf,"You must selet a polygon before you can insert a hole into it.  Facades cannot have interior holes.");
 		else
 			sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
 		return buf;
@@ -445,7 +445,13 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 	{
 		ISelection * sel = WED_GetSelect(GetResolver());
 		if (sel->GetSelectionCount() != 1) return NULL;
-		return dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
+		WED_GISPolygon * igp = dynamic_cast<WED_GISPolygon *>(sel->GetNthSelection(0));
+		if(!igp) 
+			return NULL;
+		// A few polygons do NOT get holes: facades, um...that's it for now.
+		if(igp->GetClass() == WED_FacadePlacement::sClass)
+			return NULL;
+		return igp;
 	} else
 		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);
 }

@@ -121,6 +121,12 @@ bool shape_in_bbox(const Bezier2p& s, const Bbox2& bounds)
 	}
 }
 
+template <typename T>
+bool bad_match(const T& s1, const T& s2)
+{
+	return s1.p1 != s2.p2;
+}
+
 /************************************************************************************************************************************************
  * BEZIER AND SEGMENT POLYGON CUTTING
  ************************************************************************************************************************************************/
@@ -742,7 +748,7 @@ static void	DSF_AccumChain(
 			cbs->AddPolygonPoint_f(c,writer);			
 		}	
 
-		DebugAssert(!(next == end && i->target() == start->source() && auto_closed));	// If start is end AND we are closed and discontinuous, it's a nerror in the code that called us.
+		DebugAssert(!(next == end && i->target() != start->source() && auto_closed));	// If we are on the last segment but discontinuous back to the start AND we auto close, it's an error by the caller - segment lists that are auto-close must be, well, loops!
 		
 		if(next == end)																	// Always cap at end
 		{
@@ -976,6 +982,42 @@ void DSF_AccumPolygonWithHoles(
 	cbs->EndPolygonWinding_f(writer);
 }
 
+static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, double& out_msl_max)
+{
+	WED_ObjPlacement * obj;
+	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
+	{
+#if AIRPORT_ROUTING	
+		if(obj->HasCustomMSL())
+		{
+			out_msl_min = out_msl_max = obj->GetCustomMSL();
+			return 1;
+		}
+#endif		
+	}
+	int found = 0;
+	int nn = what->CountChildren();
+	for(int n = 0; n < nn; ++n)
+	{
+		double msl_min, msl_max;
+		if (DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max))
+		{
+			if(found)
+			{
+				out_msl_min=min(out_msl_min,msl_min);
+				out_msl_max=max(out_msl_max,msl_max);
+			}
+			else
+			{
+				out_msl_min=msl_min;
+				out_msl_max=msl_max;
+				found=1;
+			}
+		}
+	}
+	return found;
+}
+
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what, 
 						ILibrarian *				pkg, 
@@ -1163,7 +1205,10 @@ static int	DSF_ExportTileRecursive(
 					if(!cut_chain.empty())
 					{
 						++real_thingies;
-						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+							problem_children.insert(what);
+						else
+							DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 				else
@@ -1179,7 +1224,10 @@ static int	DSF_ExportTileRecursive(
 					if(!cut_chain.empty())
 					{
 						++real_thingies;
-						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+							problem_children.insert(what);
+						else						
+							DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 			}
@@ -1200,7 +1248,10 @@ static int	DSF_ExportTileRecursive(
 					if(!cut_chain.empty())
 					{
 						++real_thingies;
-						DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+							problem_children.insert(what);
+						else
+							DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 				else
@@ -1213,7 +1264,10 @@ static int	DSF_ExportTileRecursive(
 					if(!cut_chain.empty())
 					{
 						++real_thingies;
-						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+							problem_children.insert(what);
+						else
+							DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 			}
@@ -1359,7 +1413,10 @@ static int	DSF_ExportTileRecursive(
 					}
 				}
 				++real_thingies;
-				DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
+				if(closed && bad_match(cut_chain.front(),cut_chain.back()))
+					problem_children.insert(what);
+				else
+					DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
 			}
 		}
 		else
@@ -1389,7 +1446,10 @@ static int	DSF_ExportTileRecursive(
 					}
 				}
 				++real_thingies;					
-				DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
+				if(closed && bad_match(cut_chain.front(),cut_chain.back()))
+					problem_children.insert(what);
+				else
+					DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
 			}
 		}
 	}
@@ -1498,7 +1558,17 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	DSFCallbacks_t	cbs;
 	char	prop_buf[256];
 
-	writer = DSFCreateWriter(x,y,x+1,y+1, -32768.0,32767.0,DSF_DIVISIONS);
+	double msl_min, msl_max;
+	if(DSF_HeightRangeRecursive(base,msl_min,msl_max))
+	{
+		if(msl_min == msl_max)
+			msl_max = msl_min + 1.0;
+	}
+	else
+		msl_min = -32768.0, msl_max = 32767.0;
+	
+
+	writer = DSFCreateWriter(x,y,x+1,y+1, msl_min,msl_max,DSF_DIVISIONS);
 	DSFGetWriterCallbacks(&cbs);
 
 	sprintf(prop_buf, "%d", (int) x  );		cbs.AcceptProperty_f("sim/west", prop_buf, writer);
@@ -1597,7 +1667,7 @@ void	WED_DoExportPack(IResolver * resolver)
 	WED_AptExport(w, apt.c_str());
 	if(!problem_children.empty())
 	{
-		DoUserAlert("One or more objects could not exported - check for self intersecting polygons.");
+		DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
 		ISelection * sel = WED_GetSelect(resolver);
 		(*problem_children.begin())->StartOperation("Select broken items.");
 		sel->Clear();
