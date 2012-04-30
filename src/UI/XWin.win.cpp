@@ -149,6 +149,10 @@ void			XWin::SetTitle(const char * inTitle)
 	SetWindowText(mWindow, inTitle);
 }
 
+void			XWin::SetFilePath(const char * inPath,bool modified)
+{
+}
+
 void			XWin::MoveTo(int inX, int inY)
 {
 	SetWindowPos(mWindow, NULL, inX, inY, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE);

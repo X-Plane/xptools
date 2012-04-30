@@ -29,6 +29,7 @@ Version History
 							Precision increased to 9 digits.
 	2/18/12 - 2.0			Support for raster data for X-Plane 10
 			  2.0.1			Added error message that the file might be 7-zipped.
+							Fixed decode of MSL-base objects.
 								 
 -------------------------------------------------------------------------------
 OVERVIEW

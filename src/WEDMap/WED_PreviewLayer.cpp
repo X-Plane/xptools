@@ -652,6 +652,7 @@ bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll)
 
 }
 
+#if AIRPORT_ROUTING
 bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll)
 {
 	double x_min, x_max, z_min, z_max;
@@ -685,7 +686,7 @@ bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll)
 	
 
 }
-
+#endif
 
 struct	preview_object : public WED_PreviewItem {
 	WED_ObjPlacement * obj;	

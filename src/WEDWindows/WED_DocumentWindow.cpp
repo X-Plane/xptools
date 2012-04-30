@@ -76,7 +76,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 	#endif
 
 	GUI_Window::SetDescriptor(mDocument->GetFilePath());
+	XWin::SetFilePath(mDocument->GetFilePath().c_str(),false);
 	mDocument->AddListener(this);
+	mDocument->GetArchive()->AddListener(this);
 
 //	WED_Thing * root = SAFE_CAST(WED_Thing,mDocument->GetArchive()->Fetch(1));
 //	WED_Select * s = SAFE_CAST(WED_Select,root->GetNamedChild("selection"));
@@ -494,7 +496,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 		prefs->WriteIntPref("window/y_loc",xy[1]);
 		prefs->WriteIntPref("window/width",zw[0]);
 		prefs->WriteIntPref("window/height",zw[1]);
-		
+		XWin::SetFilePath(NULL,false);
 	}
 	if (inMsg == msg_DocLoaded)
 	{
@@ -503,7 +505,11 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mPropPane->FromPrefs(prefs,0);
 
 		gIsFeet = prefs->ReadIntPref("doc/use_feet",gIsFeet);
+		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}
+	if(inMsg == msg_ArchiveChanged)
+		XWin::SetFilePath(NULL,mDocument->IsDirty());
+	
 }
 
 bool	WED_DocumentWindow::Closed(void)
