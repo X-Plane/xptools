@@ -534,7 +534,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 					objRotation =  DECODE_SCALED(index, currentPool, 2, planarData, planeDepths, planeScales, planeOffsets);
 					if(planeDepths[currentPool] > 3)
 					{
-						objCoord3[3] = DECODE_SCALED(index, currentPool, 3, planarData, planeDepths, planeScales, planeOffsets);
+						objCoord3[2] = DECODE_SCALED(index, currentPool, 3, planarData, planeDepths, planeScales, planeOffsets);
 						inCallbacks->AddObjectAbsolute_f(currentDefinition, objCoord3, objRotation, ref);
 					}
 					else
