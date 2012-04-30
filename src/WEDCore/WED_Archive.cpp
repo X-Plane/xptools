@@ -235,9 +235,10 @@ void			WED_Archive::__StartCommand(const string& inName, const char * file, int 
 void			WED_Archive::CommitCommand(void)
 {
 	DebugAssert(mUndoMgr != NULL);
+	// Inc this first, so that anyone listening (via the undo mgr) sees we are dirty!
+	++mOpCount;
 	mUndoMgr->CommitCommand();
 
-	++mOpCount;
 
 #if DEV
 	this->Validate();

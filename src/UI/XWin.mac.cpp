@@ -209,6 +209,17 @@ void			XWin::SetTitle(const char * inTitle)
 	CFRelease(ref);
 }
 
+void			XWin::SetFilePath(const char * inPath,bool modified)
+{
+	FSRef	ref;
+	if(inPath)
+	if(FSPathMakeRef((UInt8*) inPath, &ref, NULL) == noErr)
+	{
+		HIWindowSetProxyFSRef(mWindow,&ref);
+	}
+	SetWindowModified(mWindow,modified ? 1 : 0);
+}
+
 
 void	XWin::SetVisible(bool visible)
 {

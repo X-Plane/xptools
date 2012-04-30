@@ -189,6 +189,10 @@ void XWin::SetTitle(const char * inTitle)
 	setWindowTitle(inTitle);
 }
 
+void			XWin::SetFilePath(const char * inPath,bool modified)
+{
+}
+
 void XWin::MoveTo(int inX, int inY)
 {
 	move(inX, inY);

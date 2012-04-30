@@ -119,6 +119,7 @@ public:
 
 	// Manipulators, etc.
 			void			SetTitle(const char * inTitle);
+			void			SetFilePath(const char * inFilePath,bool modified);
 			void			MoveTo(int inX, int inY);
 			void			Resize(int inWidth, int inHeight);
 			void			ForceRefresh(void);

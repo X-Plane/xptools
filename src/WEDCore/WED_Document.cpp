@@ -138,7 +138,7 @@ WED_Document::~WED_Document()
 
 string				WED_Document::GetFilePath(void) const
 {
-	return mFilePath;
+	return mFilePath + ".xml";
 }
 
 void		WED_Document::GetBounds(double bounds[4])
