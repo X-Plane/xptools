@@ -1020,7 +1020,20 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 	if (mTextField && mTextField->IsFocused() &&
 		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
 	{
+
+		// This is a bit tricky: _if_ we are going to kill off the text field later, memorize the field and mark our member var
+		// as null now.  The reason: sometimes the call to our content's AcceptEdit below in the in_save block can cause a message like
+		// "size changed" which in turn terminates editing anyway.  If this happens then our text field is removed out from under us and
+		// we will later die when trying to kill it off.
+		//
+		// Sooo...null out the field early - the callback will assume we are not editing, which is more or less true by the time we exit this func.
+		// If we are in continuous edit and the field is nuked the in_close block wouldn't be called anyway.
+		//
+		// This is, at best, hokey...maybe revisit someday?
 		GUI_TextField * f = mTextField;
+		if(in_close) 
+			mTextField = NULL;
+			
 		if (inSave)
 		{
 			f->GetDescriptor(mEditInfo.text_val);
