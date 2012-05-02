@@ -63,20 +63,20 @@ WED_AptImportDialog::WED_AptImportDialog(
 	
 	swap(mApts,apts);
 
-	int bounds[4] = { 0, 0, 500, 500 };
-	
-	GUI_Packer * mPacker = new GUI_Packer;
-	mPacker->SetParent(this);
-	mPacker->SetSticky(1,1,1,1);
-	mPacker->Show();
-	mPacker->SetBounds(bounds);
-	mPacker->SetBkgkndImage ("gradient.png");
+	int bounds[4];
+	GUI_Packer * packer = new GUI_Packer;
+	packer->SetParent(this);
+	packer->SetSticky(1,1,1,1);
+	packer->Show();
+	GUI_Pane::GetBounds(bounds);
+	packer->SetBounds(bounds);
+	packer->SetBkgkndImage ("gradient.png");
 	
 
 	mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Filter:","");
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
-	mFilter->SetParent(mPacker);
+	mFilter->SetParent(packer);
 	mFilter->AddListener(this);
 
 	resort();
@@ -138,8 +138,8 @@ WED_AptImportDialog::WED_AptImportDialog(
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					this->AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
-	mPacker->PackPane(mFilter,gui_Pack_Top);
-	mPacker->PackPane(mHeader,gui_Pack_Top);
+	packer->PackPane(mFilter,gui_Pack_Top);
+	packer->PackPane(mHeader,gui_Pack_Top);
 	
 	int k_reg[4] = { 0, 0, 1, 3 };
 	int k_hil[4] = { 0, 1, 1, 3 };
@@ -167,14 +167,14 @@ WED_AptImportDialog::WED_AptImportDialog(
 	cncl_btn->SetParent(holder);
 	cncl_btn->AddListener(this);
 	
-	holder->SetParent(mPacker);
+	holder->SetParent(packer);
 	holder->Show();
 	holder->SetSticky(1,1,1,0);
 	
-	mPacker->PackPane(holder,gui_Pack_Bottom);
+	packer->PackPane(holder,gui_Pack_Bottom);
 
 	
-	mPacker->PackPane(mScroller,gui_Pack_Center);
+	packer->PackPane(mScroller,gui_Pack_Center);
 
 	mScroller->PositionHeaderPane(mHeader);
 }

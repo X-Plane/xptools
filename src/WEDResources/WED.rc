@@ -7,6 +7,7 @@ sans.ttf				GUI_RES		sans.ttf
 pushbutton.png			GUI_RES		pushbutton.png
 checkbutton.png			GUI_RES		checkbutton.png
 radiobutton.png			GUI_RES		radiobutton.png
+push_buttons.png		GUI_RES		push_buttons.png
 tabs.png				GUI_RES		tabs.png
 splitter_h.png			GUI_RES		splitter_h.png
 splitter_v.png			GUI_RES		splitter_v.png
