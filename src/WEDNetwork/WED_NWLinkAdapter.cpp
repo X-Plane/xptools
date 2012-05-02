@@ -37,7 +37,7 @@
 #include "WED_LinePlacement.h"
 #include "WED_SimpleBezierBoundaryNode.h"
 
-#define MAX_WARN_SIZE 100
+#define MAX_WARN_SIZE 200
 
 WED_NWLinkAdapter::WED_NWLinkAdapter(WED_Server * inServer,WED_Archive * inArchive) :
     mServer(inServer),mArchive(inArchive),mBlockChanges(false),mTimerIsStarted(false)
