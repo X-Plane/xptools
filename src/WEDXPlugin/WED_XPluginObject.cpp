@@ -459,7 +459,7 @@ int  WED_XPluginObject::SetRessource(const string& inPath)
     else if(suffix == ".agp")
     {
         mIsAGP = true;
-        //DoParseAGP(path,mMgrRef,this);
+        DoParseAGP(path,mMgrRef,this);
         return 1;
     }
 
