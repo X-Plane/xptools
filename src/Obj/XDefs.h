@@ -85,7 +85,7 @@
 #define AIRPORT_ROUTING 1
 
 // mroe : -- really early stage of dev , do not change.
-#define WITHNWLINK 1
+#define WITHNWLINK 0
 
 // Terraserver is always borked - I am killing it for now - will add back if it ever becomes useful.
 // Really we need a better tile service.
