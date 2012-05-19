@@ -1100,7 +1100,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	charCode = inKey;
         Qt::KeyboardModifiers modstate = QApplication::keyboardModifiers();
 
-	if (modstate & Qt::AltModifier)
+	if (modstate & Qt::AltModifier||modstate & Qt::MetaModifier)
 		flags |= gui_OptionAltFlag;
 	if (modstate & Qt::ShiftModifier)
 		flags |= gui_ShiftFlag;
@@ -1153,7 +1153,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 }
 
 void		GUI_Window::Activate(int active)
-{	
+{
 	string d;
 	GetDescriptor(d);
 	if (active && !this->IsFocusedChain())
