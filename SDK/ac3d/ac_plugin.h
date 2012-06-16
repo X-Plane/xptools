@@ -15,9 +15,6 @@ extern "C"
 {
 #endif
 
-#ifdef LIN
-    #include <stdint.h>
-#endif
 
 
 #ifdef WINDOWS
