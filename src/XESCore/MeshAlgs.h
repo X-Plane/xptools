@@ -108,7 +108,7 @@ inline bool must_burn_v(Vertex_handle v)
 	return false;
 }
 
-inline	int	CategorizeVertex(const CDT& inMesh, CDT::Vertex_handle v, int water_type)
+inline	int	CategorizeVertex(const CDT& inMesh, CDT::Vertex_handle v, int water_type , int water_type2)
 {
 	bool has_wet = false;
 	bool has_dry = false;
@@ -117,9 +117,9 @@ inline	int	CategorizeVertex(const CDT& inMesh, CDT::Vertex_handle v, int water_t
 	DebugAssert(!inMesh.is_infinite(v));
 	int ctr = 0;
 	do {
-		if(!inMesh.is_infinite(circ) && circ->info().terrain != water_type)
+		if(!inMesh.is_infinite(circ) && circ->info().terrain != water_type && circ->info().terrain != water_type2)
 			has_dry = true;
-		if(!inMesh.is_infinite(circ) && circ->info().terrain == water_type)
+		if(!inMesh.is_infinite(circ) && (circ->info().terrain == water_type ||circ->info().terrain == water_type2))
 			has_wet = true;
 		if(has_wet && has_dry) return 0;
 		++ctr;

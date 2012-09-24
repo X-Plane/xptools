@@ -371,7 +371,7 @@ void	build_water_surface_dem(CDT& io_mesh, const DEMGeo& in_elev, DEMGeo& out_wa
 	#if DEBUG_FLATTEN_ERROR
 	for(CDT::Finite_vertices_iterator fvi = io_mesh.finite_vertices_begin(); fvi != io_mesh.finite_vertices_end(); ++fvi)
 	{
-		if(CategorizeVertex(io_mesh, fvi, terrain_Water) < 1)
+		if(CategorizeVertex(io_mesh, fvi, terrain_Water, terrain_Water2) < 1)
 		{
 			double sh = out_water.xy_nearest(CGAL::to_double(fvi->point().x()),CGAL::to_double(fvi->point().y()));
 			double err = fabs(sh - fvi->info().height);

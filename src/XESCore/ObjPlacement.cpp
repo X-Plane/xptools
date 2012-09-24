@@ -1775,7 +1775,7 @@ void	GenerateInsets(
 
 	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
 	if (!f->is_unbounded())
-	if (f->data().mTerrainType != terrain_Water)
+	if (f->data().mTerrainType != terrain_Water && f->data().mTerrainType != terrain_Water2)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Generating usable areas", ctr, total, step)
 		Polygon_with_holes_2		bounds;
@@ -1833,7 +1833,7 @@ void	GenerateInsets(
 
 	for (set<Face_handle>::const_iterator f = inFaces.begin(); f != inFaces.end(); ++f)
 	if (!(*f)->is_unbounded())
-	if ((*f)->data().mTerrainType != terrain_Water)
+	if ((*f)->data().mTerrainType != terrain_Water && (*f)->data().mTerrainType != terrain_Water2)
 	{
 		PROGRESS_CHECK(func, 0, 1, "Generating usable areas", ctr, total, step)
 		Polygon_with_holes_2		bounds;

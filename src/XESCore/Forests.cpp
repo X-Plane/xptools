@@ -206,7 +206,7 @@ void GenerateForests(
 	{
 		if (total && (ctr % 1000) == 0 && inProg && inProg(0, 2, "Indexing mesh", (float) ctr / total)) return;
 
-		if (ffi->info().terrain != terrain_Water)
+		if (ffi->info().terrain != terrain_Water && ffi->info().terrain != terrain_Water2)
 		{
 			if (tri_forest_type(ffi) != NO_VALUE)
 			{
@@ -232,7 +232,7 @@ void GenerateForests(
 	{
 		Face_handle face = fp->first;
 		DebugAssert(!face->is_unbounded());
-		DebugAssert(face->data().mTerrainType != terrain_Water);
+		DebugAssert(face->data().mTerrainType != terrain_Water && face->data().mTerrainType != terrain_Water2);
 
 		if (total && gap && (ctr % gap) == 0 && inProg && inProg(1, 2, "Processing faces", (float) ctr / total)) return;
 

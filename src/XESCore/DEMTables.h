@@ -331,8 +331,8 @@ inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)
 	// that they can't be lower/higher prioritY!
 	if (lhs == rhs) return false;
 
-	if (lhs == terrain_Water) return true;
-	if (rhs == terrain_Water) return false;
+	if (lhs == terrain_Water || lhs == terrain_Water2) return true;
+	if (rhs == terrain_Water || rhs == terrain_Water2) return false;
 
 	DebugAssert(gNaturalTerrainInfo.count(lhs));
 	DebugAssert(gNaturalTerrainInfo.count(rhs));

@@ -705,7 +705,7 @@ void	RF_MapView::Draw(GUI_GraphState * state)
 
 						float	col[4];
 
-						if (fit->info().terrain != terrain_Water)
+						if (fit->info().terrain != terrain_Water && fit->info().terrain != terrain_Water2)
 						{
 							GetNaturalTerrainColor(fit->info().terrain, col);
 							col[0] *= TRI_DARKEN;
@@ -1733,7 +1733,7 @@ char * RF_MapView::MonitorCaption(void)
 	
 #if HACK_CHECK_FLATCALCS
 		{
-			if (recent->info()->terrain == terrain_Water)
+			if (recent->info()->terrain == terrain_Water || recent->info()->terrain == terrain_Water2)
 			for (int vi = 0; vi < 3; ++vi)
 			{
 				DEMGeo& wetPts(gDem[dem_Elevation];

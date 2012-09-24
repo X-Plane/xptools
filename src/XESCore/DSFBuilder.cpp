@@ -93,7 +93,7 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 #define		SHOW_BEZIERS 0
 
 // These macros set the height and normal in the mesh to the new-style modes.
-#define USE_DEM_H(x,w,m,v)	((CategorizeVertex(m,v,terrain_Water) <= 0) ? (x) : -32768.0)
+#define USE_DEM_H(x,w,m,v)	((CategorizeVertex(m,v,terrain_Water, terrain_Water2) <= 0) ? (x) : -32768.0)
 #define USE_DEM_N(x)		0.0f
 
 #if 0
@@ -101,11 +101,11 @@ static void sub_heights(CDT& mesh, const DEMGeo& sl)
 {
 	CDT::Finite_faces_iterator ffi;
 	for(ffi = mesh.finite_faces_begin(); ffi != mesh.finite_faces_end(); ++ffi)
-	if(ffi->info().terrain == terrain_Water)
+	if(ffi->info().terrain == terrain_Water || ffi->info().terrain == terrain_Water2)
 		ffi->info().flag = 0;
 
 	for(ffi = mesh.finite_faces_begin(); ffi != mesh.finite_faces_end(); ++ffi)
-	if(ffi->info().terrain == terrain_Water)
+	if(ffi->info().terrain == terrain_Water || ffi->info().terrain == terrain_Water2)
 	if(ffi->info().flag == 0)
 	{
 		list<CDT::Face_handle>	water_body;
@@ -120,7 +120,7 @@ static void sub_heights(CDT& mesh, const DEMGeo& sl)
 			for(int n = 0; n < 3; ++n)
 			{
 				CDT::Face_handle nf = f->neighbor(n);
-				if(!mesh.is_infinite(nf) && nf->info().terrain == terrain_Water && nf->info().flag == 0)
+				if(!mesh.is_infinite(nf) && (nf->info().terrain == terrain_Water || nf->info().terrain == terrain_Water2) && nf->info().flag == 0)
 				{
 					nf->info().flag = 1;
 					to_visit.push_back(nf);
@@ -153,7 +153,7 @@ static void sub_heights(CDT& mesh, const DEMGeo& sl)
 		{
 			for(set<CDT::Vertex_handle>::iterator v = mv.begin(); v != mv.end(); ++v)
 			{
-				int c = CategorizeVertex(mesh, *v, terrain_Water);
+				int c = CategorizeVertex(mesh, *v, terrain_Water, terrain_Water2);
 				(*v)->info().height = c + 1;				
 			}
 		}
@@ -360,7 +360,7 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 
 	stop = circ = inMesh.incident_faces(v_s);
 	do {
-		if (!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water)
+		if (!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water && circ->info().terrain != terrain_Water2)
 		{
 //			if (lterrain == NO_VALUE)								lterrain = circ->info().terrain_specific;
 //			else if (lterrain != circ->info().terrain_specific)		lterrain = NO_DATA;
@@ -373,7 +373,7 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 
 	stop = circ = inMesh.incident_faces(v_t);
 	do {
-		if (!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water)
+		if (!inMesh.is_infinite(circ) && circ->info().terrain != terrain_Water && circ->info().terrain != terrain_Water2)
 		{
 			nrml_t.dx += circ->info().normal[0];
 			nrml_t.dy += circ->info().normal[1];
@@ -411,21 +411,21 @@ float GetParamConst(const Face_handle face, int e)
 
 inline bool IsCustomOverWaterHard(int n)
 {
-	if (n == terrain_Water)	return false;
+	if (n == terrain_Water || n == terrain_Water2)	return false;
 	if (n == terrain_VisualWater)	return false;
 	return gNaturalTerrainInfo[n].custom_ter == tex_custom_hard_water;
 }
 
 inline bool IsCustomOverWaterSoft(int n)
 {
-	if (n == terrain_Water)	return false;
+	if (n == terrain_Water || n == terrain_Water2)	return false;
 	if (n == terrain_VisualWater)	return false;
 	return gNaturalTerrainInfo[n].custom_ter == tex_custom_soft_water;
 }
 
 inline bool IsCustomOverWaterAny(int n)
 {
-	if (n == terrain_Water)	return false;
+	if (n == terrain_Water || n == terrain_Water2)	return false;
 	if (n == terrain_VisualWater)	return false;
 	return gNaturalTerrainInfo[n].custom_ter == tex_custom_hard_water ||
 			gNaturalTerrainInfo[n].custom_ter == tex_custom_soft_water;
@@ -433,7 +433,7 @@ inline bool IsCustomOverWaterAny(int n)
 
 inline bool IsCustom(int n)
 {
-	if (n == terrain_Water)	return false;
+	if (n == terrain_Water || n == terrain_Water2)	return false;
 	return gNaturalTerrainInfo[n].custom_ter != tex_not_custom;
 }
 
@@ -608,8 +608,8 @@ int is_coast(const edge_wrapper& inEdge, const CDT& inMesh)
 	if (inMesh.is_infinite(inEdge.edge.first)) return false;
 	if (inMesh.is_infinite(inEdge.edge.first->neighbor(inEdge.edge.second))) return false;
 
-	if (inEdge.edge.first->info().terrain != terrain_Water) return false;
-	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water) return false;
+	if (inEdge.edge.first->info().terrain != terrain_Water && inEdge.edge.first->info().terrain != terrain_Water2) return false;
+	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water || inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water2) return false;
 	return true;
 }
 
@@ -676,8 +676,8 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 
 	CDT::Face_handle tri = inEdge.edge.first;
 
-	DebugAssert(tri->info().terrain == terrain_Water);
-	if (tri->info().terrain == terrain_Water)
+	DebugAssert(tri->info().terrain == terrain_Water || tri->info().terrain == terrain_Water2);
+	if (tri->info().terrain == terrain_Water || tri->info().terrain == terrain_Water2)
 		tri = inEdge.edge.first->neighbor(inEdge.edge.second);
 
 	int lterrain = tri->info().terrain;
@@ -827,11 +827,11 @@ bool StripSoft(string& n)
 
 string		get_terrain_name(int composite)
 {
-	if (composite == terrain_Water)
+	if (composite == terrain_Water || composite == terrain_Water2)
 #if PHONE
 		return "RESOURCE:water.ter";
 #else
-		return FetchTokenString(composite);
+		return "terrain_Water";
 #endif
 	else if (gNaturalTerrainInfo.count(composite) > 0)
 	{
@@ -1240,7 +1240,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 * WRITE OUT LOW RES ORTHOPHOTO PATCHES
 		 ***************************************************************************************************************************************/
 
-		is_water		= lu_ranked->first == terrain_VisualWater || lu_ranked->first == terrain_Water;
+		is_water		= lu_ranked->first == terrain_VisualWater || lu_ranked->first == terrain_Water || lu_ranked->first == terrain_Water2;
 		is_overlay		= IsCustomOverWaterAny(lu_ranked->first);		// This layer is an overlay to water, so be sure to set the flags!
 
 #if !NO_ORTHO
@@ -1308,7 +1308,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				f = sHiResTris[cur_id][tri];
 				if (f->info().terrain == lu_ranked->first ||
 					(IsCustomOverWaterHard(f->info().terrain) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
-					(IsCustomOverWaterSoft(f->info().terrain) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water
+					(IsCustomOverWaterSoft(f->info().terrain) && lu_ranked->first == terrain_Water) ||				// Take soft cus tris when doing real water
+					(IsCustomOverWaterSoft(f->info().terrain) && lu_ranked->first == terrain_Water2))				// Take soft cus tris when doing real water
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
@@ -1362,7 +1363,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					if (is_water)
 					{
 						coords8[5] = GetWaterBlend((*vert), inElevation, inBathymetry);
-						coords8[6] = CategorizeVertex(inHiresMesh,*vert,terrain_Water) >= 0 ? 0.0 : 1.0;
+						coords8[6] = CategorizeVertex(inHiresMesh,*vert,terrain_Water, terrain_Water2) >= 0 ? 0.0 : 1.0;
 						DebugAssert(coords8[5] >= 0.0);
 						DebugAssert(coords8[5] <= 1.0);
 					}
@@ -1554,7 +1555,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					}
 					// If we hit something that isn't bounding water, we've gone out of our land into the next
 					// water out of this vertex.  Stop now before we link to a non-connected water body!!
-					if (iter.edge.first->info().terrain != terrain_Water)
+					if (iter.edge.first->info().terrain != terrain_Water && iter.edge.first->info().terrain != terrain_Water2)
 						break;
 				}
 			}

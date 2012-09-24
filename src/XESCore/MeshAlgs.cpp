@@ -338,7 +338,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 
 inline void AddZeroMixIfNeeded(CDT::Face_handle f, int layer)
 {
-	if (f->info().terrain == terrain_Water) return;
+	if (f->info().terrain == terrain_Water || f->info().terrain == terrain_Water2) return;
 	DebugAssert(layer != -1);
 	f->info().terrain_border.insert(layer);
 	for (int i = 0; i < 3; ++i)
@@ -589,15 +589,15 @@ static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT:
 {
 	int old_base = tri->info().terrain;
 
-	if (old_base == terrain_Water || new_base == terrain_Water)
+	if (old_base == terrain_Water || new_base == terrain_Water || old_base == terrain_Water2 || new_base == terrain_Water2)
 		return;
 	if(has_no_xon(old_base,new_base))
 		return;
 
-	DebugAssert(new_base != terrain_Water);
-	DebugAssert(tri->info().terrain != terrain_Water);
+	DebugAssert(new_base != terrain_Water && new_base != terrain_Water2);
+	DebugAssert(tri->info().terrain != terrain_Water && tri->info().terrain != terrain_Water2);
 	tri->info().terrain = new_base;
-	if (new_base != terrain_Water)
+	if (new_base != terrain_Water && new_base != terrain_Water2)
 	{
 		DebugAssert(old_base != -1);
 		tri->info().terrain_border.insert(old_base);
@@ -626,7 +626,7 @@ void SafeSmearBorder(CDT& mesh, CDT::Vertex_handle vert, int layer)
 		do {
 			if (!mesh.is_infinite(iter))
 			if (iter->info().terrain != layer)
-			if (iter->info().terrain != terrain_Water)
+			if (iter->info().terrain != terrain_Water && iter->info().terrain != terrain_Water2)
 			{
 				DebugAssert(layer != -1);
 				iter->info().terrain_border.insert(layer);
@@ -1139,7 +1139,7 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 	}
 
 	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi)
-	if (ffi->info().terrain == terrain_Water)
+	if (ffi->info().terrain == terrain_Water || ffi->info().terrain == terrain_Water2)
 	for (int vi = 0; vi < 3; ++vi)
 	{
 		int xw, yw;
@@ -1226,7 +1226,7 @@ void FlattenWater(CDT& ioMesh)
 	
 	for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
 	{
-		if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
+		if(CategorizeVertex(ioMesh, v,terrain_Water, terrain_Water) <= 0)
 			to_do.insert(v);
 	}
 	//printf("Q: %zd vertices.\n", to_do.size());
@@ -1606,6 +1606,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	/* TRIANGULATE WATER INTERIOR */
 	
 	double wet_ratio = CopyWetPoints(orig, deriv, outMesh, LOW_RES_WATER_INTERVAL, terrain_Water, inMap);
+	wet_ratio += CopyWetPoints(orig, deriv, outMesh, LOW_RES_WATER_INTERVAL, terrain_Water2, inMap);
 					   CopyWetPoints(orig, deriv, outMesh,APT_INTERVAL, terrain_Airport, inMap);
 	double dry_ratio = 1.0 - wet_ratio;
 
@@ -1748,12 +1749,12 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	int ctr=0,tot=outMesh.number_of_faces();
 	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f,++ctr)
 	{
-		if( f->info().terrain == terrain_Water)
+		if( f->info().terrain == terrain_Water || f->info().terrain == terrain_Water2)
 		{
 			PROGRESS_SHOW(prog,1,3,"Calculating Wet Areas",ctr,tot);
-			int c0 = CategorizeVertex(outMesh, f->vertex(0), terrain_Water);
-			int c1 = CategorizeVertex(outMesh, f->vertex(1), terrain_Water);
-			int c2 = CategorizeVertex(outMesh, f->vertex(2), terrain_Water);
+			int c0 = CategorizeVertex(outMesh, f->vertex(0), terrain_Water, terrain_Water2);
+			int c1 = CategorizeVertex(outMesh, f->vertex(1), terrain_Water, terrain_Water2);
+			int c2 = CategorizeVertex(outMesh, f->vertex(2), terrain_Water, terrain_Water2);
 			
 			if(c1 == 0 && c2 == 0 && c0 == 0)
 			{
@@ -1783,7 +1784,7 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 
 	for(set<CDT::Face_handle>::iterator w = who.begin(); w != who.end(); ++w)
 	{
-		DebugAssert((*w)->info().terrain == terrain_Water);
+		DebugAssert((*w)->info().terrain == terrain_Water || (*w)->info().terrain == terrain_Water2);
 	}
 
 	FlattenWater(outMesh);
@@ -1950,7 +1951,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		{
 			tri->info().flag = 0;
 			// Hires - take from DEM if we don't have one.
-			if (tri->info().terrain != terrain_Water)
+			if (tri->info().terrain != terrain_Water && tri->info().terrain != terrain_Water2)
 			{
 				double x0 = CGAL::to_double(tri->vertex(0)->point().x());
 				double y0 = CGAL::to_double(tri->vertex(0)->point().y());
@@ -2033,9 +2034,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				float	er3 = inRelElevRange.value_linear(x2,y2);
 				float	er = SAFE_AVERAGE(er1, er2, er3);	// Could be safe max.
 
-				int		near_water =(tri->neighbor(0)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(0))) ||
-									(tri->neighbor(1)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(1))) ||
-									(tri->neighbor(2)->info().terrain == terrain_Water && !ioMesh.is_infinite(tri->neighbor(2)));
+				int		near_water =((tri->neighbor(0)->info().terrain == terrain_Water || tri->neighbor(0)->info().terrain == terrain_Water2) && !ioMesh.is_infinite(tri->neighbor(0))) ||
+									((tri->neighbor(1)->info().terrain == terrain_Water || tri->neighbor(1)->info().terrain == terrain_Water2) && !ioMesh.is_infinite(tri->neighbor(1))) ||
+									((tri->neighbor(2)->info().terrain == terrain_Water || tri->neighbor(2)->info().terrain == terrain_Water2) && !ioMesh.is_infinite(tri->neighbor(2)));
 
 				float	uden1 = inUrbanDensity.value_linear(x0,y0);
 				float	uden2 = inUrbanDensity.value_linear(x1,y1);
@@ -2130,7 +2131,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	set<CDT::Face_handle>	all_variants;
 
 	for (CDT::Finite_faces_iterator f = ioMesh.finite_faces_begin(); f != ioMesh.finite_faces_end(); ++f)
-	if (f->info().terrain != terrain_Water)
+	if (f->info().terrain != terrain_Water && f->info().terrain != terrain_Water2)
 	if (HasVariant(f->info().terrain))
 		all_variants.insert(f);
 
@@ -2261,7 +2262,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 							// this all of the time.
 	int		tri_total = 0, tri_border = 0, tri_check = 0, tri_opt = 0;
 	for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
-	if (tri->info().terrain != terrain_Water)
+	if (tri->info().terrain != terrain_Water && tri->info().terrain != terrain_Water2)
 	{
 		++visited;
 		set<CDT::Face_handle>	to_visit;
@@ -2345,9 +2346,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				CDT::Face_handle b2 = border->neighbor(1);
 				CDT::Face_handle b3 = border->neighbor(2);
 
-				if (b1->info().flag != visited && !ioMesh.is_infinite(b1) && b1->info().terrain != terrain_Water && !border->info().get_edge_feature(0) && LowerPriorityNaturalTerrain(b1->info().terrain, layer))	to_visit.insert(b1);
-				if (b2->info().flag != visited && !ioMesh.is_infinite(b2) && b2->info().terrain != terrain_Water && !border->info().get_edge_feature(1) && LowerPriorityNaturalTerrain(b2->info().terrain, layer))	to_visit.insert(b2);
-				if (b3->info().flag != visited && !ioMesh.is_infinite(b3) && b3->info().terrain != terrain_Water && !border->info().get_edge_feature(2) && LowerPriorityNaturalTerrain(b3->info().terrain, layer))	to_visit.insert(b3);
+				if (b1->info().flag != visited && !ioMesh.is_infinite(b1) && b1->info().terrain != terrain_Water && b1->info().terrain != terrain_Water2 && !border->info().get_edge_feature(0) && LowerPriorityNaturalTerrain(b1->info().terrain, layer))	to_visit.insert(b1);
+				if (b2->info().flag != visited && !ioMesh.is_infinite(b2) && b2->info().terrain != terrain_Water && b2->info().terrain != terrain_Water2 && !border->info().get_edge_feature(1) && LowerPriorityNaturalTerrain(b2->info().terrain, layer))	to_visit.insert(b2);
+				if (b3->info().flag != visited && !ioMesh.is_infinite(b3) && b3->info().terrain != terrain_Water && b3->info().terrain != terrain_Water2 && !border->info().get_edge_feature(2) && LowerPriorityNaturalTerrain(b3->info().terrain, layer))	to_visit.insert(b3);
 			}
 		}
 	}
@@ -2372,7 +2373,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	for(b=0;b<4;++b)
 	for (n = 0; n < gMatchBorders[b].edges.size(); ++n)
 	if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
-	if (gMatchBorders[b].edges[n].buddy->info().terrain != terrain_Water)
+	if (gMatchBorders[b].edges[n].buddy->info().terrain != terrain_Water && gMatchBorders[b].edges[n].buddy->info().terrain != terrain_Water2)
 	{
 		// Handle the base terrain
 		if (gMatchBorders[b].edges[n].buddy->info().terrain != gMatchBorders[b].edges[n].base)
@@ -2408,7 +2409,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	if (gMeshPrefs.optimize_borders)
 	{
 		for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
-		if (tri->info().terrain != terrain_Water)
+		if (tri->info().terrain != terrain_Water && tri->info().terrain != terrain_Water2)
 		{
 			bool need_optimize = false;
 			for (set<int>::iterator blayer = tri->info().terrain_border.begin();
@@ -2450,7 +2451,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 	{
 		for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
-		if (tri->info().terrain != terrain_Water)
+		if (tri->info().terrain != terrain_Water && tri->info().terrain != terrain_Water2)
 		{
 			tri_total++;
 			tri_border += (tri->info().terrain_border.size());

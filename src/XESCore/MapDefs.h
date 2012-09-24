@@ -308,7 +308,7 @@ public:
 	int							mTemp1;							// Per face temp value
 	int							mTemp2;							// Per face temp value
 
-	bool		IsWater(void) const  { return (mTerrainType == terrain_Water); }
+	bool		IsWater(void) const  { return (mTerrainType == terrain_Water || mTerrainType == terrain_Water2); }
 	bool		HasParam(int p) const { return mParams.count(p) > 0; }
 	float		GetParam(int p, float d) const { GISParamMap::const_iterator i = mParams.find(p); return (i == mParams.end()) ? d : i->second; }
 	int			GetZoning(void) const { GISParamMap::const_iterator i = mParams.find(af_Zoning); return (i == mParams.end()) ? NO_VALUE : i->second; }
