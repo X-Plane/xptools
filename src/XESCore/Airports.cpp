@@ -354,6 +354,7 @@ void BurnInAirport(
 // by reducing the polygon complexity.
 void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handle>& outDstFaces, apt_fill_mode inFillWater, Locator * loc)
 {
+	//printf("Before airport: dst map has %zd faces.\n", inDstMap.number_of_faces());
 //	Pmwx	apt(in_area.arrangement());
 //	for(Pmwx::Face_iterator f = apt.faces_begin(); f != apt.faces_end(); ++f)
 //	if(f->contained())
@@ -389,6 +390,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 			(*f)->data().mAreaFeature.mFeatType = NO_VALUE;		//Remove area features but do not set LU yet.
 		}
 		#if KILL_IF_APT_LEAK
+		//printf("in count: %zd, out count: %zd\n", outDstFaces.size(), inDstMap.number_of_faces());
 		Assert((outDstFaces.size()+1) < inDstMap.number_of_faces());
 		#endif
 	}
@@ -406,6 +408,7 @@ void	SimplifyAirportAreas(Pmwx& inDstMap, Polygon_set_2& in_area, set<Face_handl
 			(*f)->data().mAreaFeature.mFeatType = NO_VALUE;		//Remove area features but do not set LU yet.
 		}
 		#if KILL_IF_APT_LEAK
+		//printf("in count: %zd, out count: %zd\n", outDstFaces.size(), inDstMap.number_of_faces());
 		Assert((outDstFaces.size()+1) < inDstMap.number_of_faces());
 		#endif
 	}

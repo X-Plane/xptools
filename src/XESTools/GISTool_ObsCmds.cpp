@@ -37,6 +37,7 @@
 #include "MiscFuncs.h"
 #include "GISUtils.h"
 #include "AptIO.h"
+#include "MapCreate.h"
 
 
 /*
@@ -385,7 +386,20 @@ static int DoAptTest(const vector<const char *>& args)
 			foo.mNorth =  90.0;
 			DEMGeo		bar(foo);
 			one.push_back(gApts[a]);
-
+			
+			vector<Segment_2>	input;
+			input.push_back(Segment_2(Point_2(foo.mWest,foo.mSouth),Point_2(foo.mEast,foo.mSouth)));
+			input.push_back(Segment_2(Point_2(foo.mEast,foo.mSouth),Point_2(foo.mEast,foo.mNorth)));
+			input.push_back(Segment_2(Point_2(foo.mEast,foo.mNorth),Point_2(foo.mWest,foo.mNorth)));
+			input.push_back(Segment_2(Point_2(foo.mWest,foo.mNorth),Point_2(foo.mWest,foo.mSouth)));
+			vector<vector<Pmwx::Halfedge_handle> > e;
+			Map_CreateReturnEdges(victim,input,e);
+			
+			DebugAssert(victim.number_of_faces() == 2);
+			DebugAssert(e.size() == 4);
+			DebugAssert(e[0].size() == 1);
+			e[0][0]->face()->data().mTerrainType = terrain_Natural;
+			
 			ProcessAirports(one, victim, foo, bar, false, false, false, NULL);
 //			if (gVerbose) printf("OK '%s' %s\n",
 //				gApts[a].icao.c_str(), gApts[a].name.c_str());
