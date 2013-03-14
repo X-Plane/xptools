@@ -647,7 +647,7 @@ bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll)
 		xy.x() < bounds_pix[0] ||
 		xy.y() < bounds_pix[1] ||
 		xy.x() > bounds_pix[2] ||
-		xy.y() > bounds_pix[2];
+		xy.y() > bounds_pix[3];
 	
 
 }
@@ -682,7 +682,7 @@ bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll)
 		xy.x() < bounds_pix[0] ||
 		xy.y() < bounds_pix[1] ||
 		xy.x() > bounds_pix[2] ||
-		xy.y() > bounds_pix[2];
+		xy.y() > bounds_pix[3];
 	
 
 }
