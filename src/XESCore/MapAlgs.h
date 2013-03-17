@@ -170,21 +170,6 @@ void	CropMap(
  */
 void MapSimplify(Pmwx& pmwx, double metric);
 
-/*
- * MapDesliver
- *
- * A sliver is a very long thin map face, typically induced by having slightly conflicting 
- * vector data.  This routine attempts to prevent slivering problems by changing the underlying
- * face properties of such slivers so that they will merge with their neighbors.  Generally after
- * a desliver the map should be simplified to eliminate unnecessary half-edges.  
- *
- * The metric is a degrees-lat/lon metric for the acceptable minimum radius of any feature...any
- * smaller feature will be a candidate for deslivering.
- * 
- * Returns the number of changed faces.
- *
- */
-int MapDesliver(Pmwx& pmwx, double metric, ProgressFunc func);
 
 /************************************************************************************************
  * MAP ANALYSIS AND RASTERIZATION/ANALYSIS

@@ -631,17 +631,6 @@ int DoReduceVectors(const vector<const char *>& args)
 	return 0;
 }
 
-#define HELP_DESLIVER \
-"-desliver <tolerance>\n"\
-"This command changes the land class of very thin areas to reduce the number of triangles needed in the mesh."
-int DoDesliver(const vector<const char *> &args)
-{
-	int r = MapDesliver(gMap, atof(args[0]), gProgress);
-	printf("Flipped %d faces.\n",r);
-	return 0;
-}
-
-
 static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-sdts", 			1, 1, 	DoSDTSImport, 			"Import SDTS VTP vector map.", "" },
 //{ "-tigermakeidx",	1, -1,	DoMakeTigerIndex,		"Make index line for files", "" },
@@ -652,7 +641,6 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
 { "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
 { "-reduce_vectors", 1, 1,	DoReduceVectors,		"Simplify vector map by a certain error distance.", HELP_REDUCE_VECTORS },
-{ "-desliver",		1, 1, DoDesliver,				"Remove slivered polygons.", HELP_DESLIVER },
 //{ "-wetmask",		2, 2,	DoWetMask,				"Make wet mask for file", "" },
 { 0, 0, 0, 0, 0, 0 }
 };

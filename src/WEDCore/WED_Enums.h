@@ -554,4 +554,4 @@ ENUM_DOMAIN(ATCRunwayTwoway,"Runway Name")
 
 ENUM_DOMAIN(RoadSubType, "Road Type")
 	ENUM(road_Highway,				"Highway",									1)
-	ENUM(road_Local_,				"Local",									2)
+	ENUM(road_Local,				"Local",									2)

@@ -51,29 +51,6 @@ void	BezierPointToBezier(const BezierPoint2& p1,const BezierPoint2& p2, Bezier2&
  *
  ************************************************************************************************************************************************************************************/
 
-
-int WED_HasBezierSeq(IGISPointSequence * ring)
-{
-	int np = ring->GetNumPoints();
-	IGISPoint_Bezier * b;
-	Point2 d;
-	for(int n = 0; n < np; ++n)
-	if(ring->GetNthPoint(n)->GetGISClass() == gis_Point_Bezier)
-	if((b =dynamic_cast<IGISPoint_Bezier *>(ring->GetNthPoint(n))) != NULL)
-	if(b->GetControlHandleHi(gis_Geo,d) || b->GetControlHandleLo(gis_Geo,d))
-		return 1;
-	return 0;
-}
-
-int WED_HasBezierPol(IGISPolygon * pol)
-{
-	if(WED_HasBezierSeq(pol->GetOuterRing())) return 1;
-	int hc = pol->GetNumHoles();
-	for(int h = 0; h < hc; ++h)
-	if(WED_HasBezierSeq(pol->GetNthHole(h))) return 1;
-	return 0;
-}
-
 // TODO:
 //	#error we need an option to get approximate pt sequenes from beziers!
 //	#error we need to handle degunking self-intersecting and backward polygons!
@@ -110,11 +87,10 @@ bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment_2>& o
 }
 
 
-bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, CGAL::Orientation wanted_orientation)
+bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p)
 {
 	DebugAssert(ps->IsClosed());
 	int ss = ps->GetNumSides();
-	DebugAssert(ss >= 3);
 	for(int s = 0; s < ss; ++s)
 	{
 		Segment2 seg;
@@ -123,57 +99,28 @@ bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon_2& p, CGAL::Ori
 			return false;
 	}
 	int nn = ps->GetNumPoints();
-	Point2 last;
-	ps->GetNthPoint(nn-1)->GetLocation(gis_Geo,last);
 	for(int n = 0; n < nn; ++n)
 	{
 		Point2	pt;
 		ps->GetNthPoint(n)->GetLocation(gis_Geo,pt);
-		if(pt != last)
-			p.push_back(ben2cgal(pt));
-		last = pt;
+		p.push_back(ben2cgal(pt));
 	}
-	DebugAssert(p.size() >= 3);
-	if(wanted_orientation != CGAL::ZERO)
-	{
-		if(!p.is_simple())
-			return false;
-		if(p.orientation() != wanted_orientation)
-			p.reverse_orientation();
-	}
-
-// Debug code if we have to sort out non-simple polygons...
-//					vector<Point_2>	errs;
-//					Traits_2			tr;					
-//					vector<Curve_2>	sides;
-//					for(Polygon_2::Edge_const_iterator e = pring.edges_begin(); e != pring.edges_end(); ++e)
-//					{
-//						sides.push_back(Curve_2(*e,0));
-//						#if DEV
-//						debug_mesh_line(cgal2ben(e->source()),cgal2ben(e->target()),1,0,0,  0,1,0  );
-//						#endif
-//					}
-//					CGAL::compute_intersection_points(sides.begin(),sides.end(), back_inserter(errs), false, tr);
-	
 	return true;
 }
 
 bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2& out_pol)
 {
-	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary(), CGAL::COUNTERCLOCKWISE))
+	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary()))
 		return false;
 	int nn = in_poly->GetNumHoles();
 	for(int n = 0; n < nn; ++n)
 	{
 		Polygon_2 hole;
-		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), hole, CGAL::CLOCKWISE))
+		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), hole))
 			return false;
 		out_pol.add_hole(hole);
 	}
-	
-	Traits_2 tr;
-	bool ok = tr.is_valid_2_object()(out_pol);
-	return ok;
+	return true;
 }
 
 bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
@@ -190,16 +137,44 @@ bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs)
 		if((p = SAFE_CAST(IGISPolygon, in_entity)) != NULL)
 		{
 			Polygon_2	pring;
-			if(!WED_PolygonForPointSequence(p->GetOuterRing(), pring, CGAL::COUNTERCLOCKWISE))
+			if(!WED_PolygonForPointSequence(p->GetOuterRing(), pring))
 				return false;
+			if (pring.orientation() == CGAL::CLOCKWISE)
+				pring.reverse_orientation();
 			
 			Polygon_with_holes_2 pwh(pring);
 			int nn = p->GetNumHoles();
 			for(int n = 0; n < nn; ++n)
 			{
 				pring.clear();
-				if(!WED_PolygonForPointSequence(p->GetNthHole(n), pring, CGAL::CLOCKWISE))
+				if(!WED_PolygonForPointSequence(p->GetNthHole(n), pring))
 					return false;
+				if(!pring.is_simple())
+				{
+					vector<Point_2>	errs;
+					Traits_2			tr;					
+					vector<Curve_2>	sides;
+					for(Polygon_2::Edge_const_iterator e = pring.edges_begin(); e != pring.edges_end(); ++e)
+					{
+						sides.push_back(Curve_2(*e,0));
+//						#if DEV
+//						debug_mesh_line(cgal2ben(e->source()),cgal2ben(e->target()),1,0,0,  0,1,0  );
+//						#endif
+					}
+					CGAL::compute_intersection_points(sides.begin(),sides.end(), back_inserter(errs), false, tr);
+					for(int n = 0; n < errs.size(); ++n)
+					{
+//						#if DEV
+//						debug_mesh_point(cgal2ben(errs[n]),1,0,0);
+//						#endif
+					}
+					return false;
+				}	
+					
+				if (pring.orientation() == CGAL::CLOCKWISE)
+					pring.reverse_orientation();
+				
+				pring.reverse_orientation();
 				pwh.add_hole(pring);
 			}
 			out_pgs.join(pwh);
@@ -333,7 +308,7 @@ void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier_
 	}
 }
 
-bool	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol, CGAL::Orientation orientation)
+void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol)
 {
 	vector<Bezier_curve_2>	crvs;
 	DebugAssert(in_seq->IsClosed());
@@ -357,37 +332,18 @@ bool	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygo
 		else
 			Assert(!"No cast.");
 	}
-	
-	if(orientation != CGAL::ZERO)
-	{
-		// Ben says: we should really check for self-intersecting polygons here...but...
-		// GPS doesn't seem to care for orientation, nor does it know about them, so defer until later.
-		// Once we get our orientation's right in WED_BezierPolygonWithHolesForPolygon we can validate the whole thing.
-//		if(!out_pol.is_simple())
-//			return false;
-		if(orientation != out_pol.orientation())
-			out_pol.reverse_orientation();
-	}
-	return true;
-	
 }
 
-bool	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol)
+void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol)
 {
-	if (!WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary(), CGAL::COUNTERCLOCKWISE))
-		return false;
+	WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(), out_pol.outer_boundary());
 	int nn = in_poly->GetNumHoles();
 	for(int n = 0; n < nn; ++n)
 	{
 		Bezier_polygon_2 hole;
-		if (!WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n), hole, CGAL::CLOCKWISE))
-			return false;
+		WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n), hole);
 		out_pol.add_hole(hole);
 	}
-	Bezier_traits_2 tr;
-	bool ok = tr.is_valid_2_object()(out_pol);
-	return ok;
-	
 }
 
 

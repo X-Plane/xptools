@@ -76,8 +76,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 #endif
 {	"Rever&se",				0,		0,								0,	wed_Reverse		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
-{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
-{	"Error-Check Polygons",	0,		0,								0,	wed_CheckPolys	},
+{	"Make Overla&y",		0,		0,								0,	wed_Overlay		},
 #if AIRPORT_ROUTING
 {	"Make Routing",			0,		0,								0,	wed_MakeRouting },
 #endif

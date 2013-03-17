@@ -24,7 +24,6 @@
 #include "BlockAlgs.h"
 #include "MapTopology.h"
 #include "MapHelpers.h"
-#include "STLUtils.h"
 
 class check_block_visitor {
 public:
@@ -98,9 +97,6 @@ public:
 	{
 		if(!in_properties.empty())
 		{
-//			printf("Tagging face with %d props.\n", in_properties.size());
-//			for(Prop_t::const_iterator pp = in_properties.begin(); pp != in_properties.end(); ++pp)
-//				printf("     %d (%d/%s)\n",  *pp, (*feature_map)[*pp].usage,FetchTokenString((*feature_map)[*pp].feature));
 			face->set_data((*feature_map)[*(--in_properties.end())]);
 		} 
 		else
@@ -231,36 +227,6 @@ void clean_block(Block_2& block)
 		   eig->face()->data().feature == eig->twin()->face()->data().feature)
 			kill.push_back(eig);
 
-//	printf("Before:\n");
-//	for(Block_2::Face_handle f = block.faces_begin(); f != block.faces_end(); ++f)
-//		printf("%d/%s\n",f->data().usage, FetchTokenString(f->data().feature));
-
 	for(vector<Block_2::Halfedge_handle>::iterator k = kill.begin(); k != kill.end(); ++k)
 		block.remove_edge(*k);
-
-//	printf("After:\n");
-//	for(Block_2::Face_handle f = block.faces_begin(); f != block.faces_end(); ++f)
-//		printf("%d/%s\n",f->data().usage, FetchTokenString(f->data().feature));
-}
-
-/********************************************************************************************************************************************
- *
- ********************************************************************************************************************************************/
-
-struct traits {
-	bool is_locked(Block_2::Vertex_handle v) const
-	{
-		DebugAssert(v->degree() == 2);
-		Block_2::Halfedge_handle he = v->incident_halfedges();
-		return he->face()->is_unbounded() || he->twin()->face()->is_unbounded();
-	}
-};
-
-
-
-void simplify_block(Block_2& io_block, double max_err)
-{
-	arrangement_simplifier<Block_2, traits> simplifier;
-	traits tr;
-	simplifier.simplify(io_block, max_err, tr);
 }

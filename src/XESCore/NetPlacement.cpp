@@ -28,13 +28,11 @@
 #include "XESConstants.h"
 #include "CompGeomDefs3.h"
 #include "MeshAlgs.h"
-#include "STLUtils.h"
-#include "MathUtils.h"
+
 
 // Move a bridge N meters to simlify it
 #define	BRIDGE_TURN_SIMPLIFY	20
 
-#if 0
 bool	HalfedgeIsSeparated(Pmwx::Halfedge_handle he)
 {
 	for (GISNetworkSegmentVector::iterator seg = he->data().mSegments.begin(); seg != he->data().mSegments.end(); ++seg)
@@ -55,9 +53,8 @@ void	MakeHalfedgeOneway(Pmwx::Halfedge_handle he)
 		seg->mFeatType = SeparatedToOneway(seg->mFeatType);
 	}
 }
-#endif
 
-void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg)
+void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, ProgressFunc inProg)
 {
 	int kill = 0;
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge)
@@ -79,7 +76,6 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 
 	if (inProg) inProg(0, 1, "Calculating Road Types", 0.0);
 
-#if 0
 	for (Pmwx::Face_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
 	if (!face->is_unbounded())
 	if (!face->data().IsWater())
@@ -141,7 +137,6 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 
 		}
 	}
-#endif	
 
 	for (Pmwx::Halfedge_iterator edge = ioMap.halfedges_begin(); edge != ioMap.halfedges_end(); ++edge, ++ctr)
 	{
@@ -155,22 +150,12 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 		double	endE = inElevation.value_linear(x2, y2);
 		double	urbanS = inUrbanDensity.value_linear(x1, y1);
 		double	urbanE = inUrbanDensity.value_linear(x2, y2);
-		double	rainS = inRain.value_linear(x1,y1);
-		double	rainE = inRain.value_linear(x2,y2);
-		double	tempS = inRain.value_linear(x1,y1);
-		double	tempE = inRain.value_linear(x2,y2);
-
 
 		double	dist = LonLatDistMeters(x1,y1,x2,y2);
 		if (dist <= 0.0) continue;
 
 		double gradient = fabs(startE - endE) / dist;
 		double urban = (urbanS + urbanE) * 0.5;
-		double rain = (rainS + rainE) * 0.5;
-		double temp = (tempS + tempE) * 0.5;
-
-		int zl = edge->face()->data().GetZoning();
-		int zr = edge->twin()->face()->data().GetZoning();
 
 		for (GISNetworkSegmentVector::iterator seg = edge->data().mSegments.begin(); seg != edge->data().mSegments.end(); ++seg)
 		{
@@ -179,18 +164,13 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 //			bool bridge = false; // gradient > gNetFeatures[seg->mFeatType].max_gradient;
 //			if (edge->face()->IsWater() && edge->twin()->face()->IsWater())
 //				bridge = true;
-
-
 			seg->mRepType = NO_VALUE;
 			for (Feature2RepInfoTable::iterator p = gFeature2Rep.begin(); p != gFeature2Rep.end(); ++p)
 			{
-				Feature2RepInfo& r(p->second);
-				if(p->first == seg->mFeatType)
-				if(r.min_density == r.max_density || (r.min_density <= urban && urban <= r.max_density))
-				if(r.rain_min == r.rain_max || (r.rain_min <= rain && rain <= r.rain_max))
-				if(r.temp_min == r.temp_max || (r.temp_min <= temp && temp <= r.temp_max))
-				if(r.zoning_left == NO_VALUE || r.zoning_left == zl)
-				if(r.zoning_right == NO_VALUE || r.zoning_right == zr)				
+				if (p->first == seg->mFeatType &&
+//					bridge == p->second.bridge &&
+					urban >= p->second.min_density &&
+					urban <= p->second.max_density)
 				{
 					seg->mRepType = p->second.rep_type;
 				}
@@ -219,18 +199,18 @@ Net_ChainInfo_t * Net_JunctionInfo_t::get_other(Net_ChainInfo_t * me)
 	return me;
 }
 
-//double		Net_JunctionInfo_t::GetMatchingAngle(Net_ChainInfo_t * chain1, Net_ChainInfo_t * chain2)
-//{
-//	Vector3	vec1 = chain1->vector_to_junc(this);
-//	Vector3	vec2 = chain2->vector_to_junc(this);
-//	vec1.normalize();
-//	vec2.normalize();
-//	double dot = -(vec1.dot(vec2));
-//	if (dot >= 0.0)
-//	if (chain1->rep_type == chain2->rep_type)
-//		dot += 1.0;
-//	return dot;
-//}
+double		Net_JunctionInfo_t::GetMatchingAngle(Net_ChainInfo_t * chain1, Net_ChainInfo_t * chain2)
+{
+	Vector3	vec1 = chain1->vector_to_junc(this);
+	Vector3	vec2 = chain2->vector_to_junc(this);
+	vec1.normalize();
+	vec2.normalize();
+	double dot = -(vec1.dot(vec2));
+	if (dot >= 0.0)
+	if (chain1->rep_type == chain2->rep_type)
+		dot += 1.0;
+	return dot;
+}
 
 int			Net_JunctionInfo_t::GetLayerForChain(Net_ChainInfo_t * me)
 {
@@ -254,154 +234,101 @@ void	Net_ChainInfo_t::reverse(void)
 	for (int n = 0; n < shape.size() / 2; ++n)
 	{
 		swap(shape[n], shape[shape.size()-n-1]);
-//		swap(agl[n], agl[shape.size()-n-1]);
-//		swap(power_crossing[n], power_crossing[shape.size()-n-1]);
+		swap(agl[n], agl[shape.size()-n-1]);
+		swap(power_crossing[n], power_crossing[shape.size()-n-1]);
 	}
 }
 
-//int				Net_ChainInfo_t::pt_count(void)
-//{
-//	return	shape.size() + 2;
-//}
-//
-//int				Net_ChainInfo_t::seg_count(void)
-//{
-//	return shape.size() + 1;
-//}
-//
-//Point3		Net_ChainInfo_t::nth_pt(int n)
-//{
-//	if (n == 0) return start_junction->location;
-//	if (n > shape.size()) return end_junction->location;
-//	return shape[n-1];
-//}
+int				Net_ChainInfo_t::pt_count(void)
+{
+	return	shape.size() + 2;
+}
 
-//double		Net_ChainInfo_t::nth_agl(int n)
-//{
-//	if (n == 0) return start_junction->agl;
-//	if (n > shape.size()) return end_junction->agl;
-//	return agl[n-1];
-//}
+int				Net_ChainInfo_t::seg_count(void)
+{
+	return shape.size() + 1;
+}
 
-//Segment3		Net_ChainInfo_t::nth_seg(int n)
-//{
-//	return Segment3(nth_pt(n), nth_pt(n+1));
-//}
+Point3		Net_ChainInfo_t::nth_pt(int n)
+{
+	if (n == 0) return start_junction->location;
+	if (n > shape.size()) return end_junction->location;
+	return shape[n-1];
+}
 
-//Vector3		Net_ChainInfo_t::vector_to_junc(Net_JunctionInfo_t * junc)
-//{
-//	if (junc == start_junction)
-//		return Vector3(nth_pt(1), nth_pt(0));
-//	else
-//		return Vector3(nth_pt(pt_count()-2),nth_pt(pt_count()-1));
-//}
-//
-//Vector2		Net_ChainInfo_t::vector_to_junc_flat(Net_JunctionInfo_t * junc)
-//{
-//	Vector3 foo = vector_to_junc(junc);
-//	return Vector2(foo.dx, foo.dy);
-//}
+double		Net_ChainInfo_t::nth_agl(int n)
+{
+	if (n == 0) return start_junction->agl;
+	if (n > shape.size()) return end_junction->agl;
+	return agl[n-1];
+}
+
+Segment3		Net_ChainInfo_t::nth_seg(int n)
+{
+	return Segment3(nth_pt(n), nth_pt(n+1));
+}
+
+Vector3		Net_ChainInfo_t::vector_to_junc(Net_JunctionInfo_t * junc)
+{
+	if (junc == start_junction)
+		return Vector3(nth_pt(1), nth_pt(0));
+	else
+		return Vector3(nth_pt(pt_count()-2),nth_pt(pt_count()-1));
+}
+
+Vector2		Net_ChainInfo_t::vector_to_junc_flat(Net_JunctionInfo_t * junc)
+{
+	Vector3 foo = vector_to_junc(junc);
+	return Vector2(foo.dx, foo.dy);
+}
 
 Net_JunctionInfo_t *	Net_ChainInfo_t::other_junc(Net_JunctionInfo_t * junc)
 {
 	return (junc == start_junction) ? end_junction : start_junction;
 }
 
-//double		Net_ChainInfo_t::meter_length(int pt_start, int pt_stop)
-//{
-//	// 0, pts-1 gives total length, 0 1 gives first seg len
-//	double total = 0.0;
-//
-//	for (int n = pt_start; n < pt_stop; ++n)
-//	{
-//		Point3 p1 = nth_pt(n  );
-//		Point3 p2 = nth_pt(n+1);
-//		total += LonLatDistMeters(p1.x, p1.y, p2.x, p2.y);
-//	}
-//	return total;
-//}
-//
-//double		Net_ChainInfo_t::dot_angle(int ctr_pt)
-//{
-//	Point3	p1(nth_pt(ctr_pt-1));
-//	Point3	p2(nth_pt(ctr_pt  ));
-//	Point3	p3(nth_pt(ctr_pt+1));
-//
-//	Vector2	v1(Point2(p1.x, p1.y), Point2(p2.x, p2.y));
-//	Vector2	v2(Point2(p2.x, p2.y), Point2(p3.x, p3.y));
-//
-//	v1.normalize();
-//	v2.normalize();
-//	return v1.dot(v2);
-//}
-//
-//void					Net_ChainInfo_t::split_seg(int n, double rat)
-//{
-//	Segment3	seg;
-//	seg.p1 = nth_pt(n  );
-//	seg.p2 = nth_pt(n+1);
-////	double	g1 = nth_agl(n  );
-////	double	g2 = nth_agl(n+1);
-//
-//	shape.insert(shape.begin()+n,seg.midpoint(rat));
-////	agl.insert(agl.begin()+n, g1 * (1.0-rat) + g2 * rat);
-////	power_crossing.insert(power_crossing.begin()+n, false);
-//}
-
-#pragma mark -
-
-#define REDUCE_SHAPE_ANGLE 	0.984807753012208	// 0.9961946980917455
-#define MAX_CUT_DIST		2000
-
-// This routine removes shape points that form less than a certain cosine dot angle, as long
-// as the two edges forming the angle are < 2 km.  We use this to reduce the number of nodes...
-// in particular, shape points that were due to the original crossing of a road with some
-// land use change or other arbitrary vector feature will get reduced if they are no longer
-// doing any good.
-int	NukeStraightShapePoints(Net_ChainInfoSet& ioChains)
+double		Net_ChainInfo_t::meter_length(int pt_start, int pt_stop)
 {
-	int reduces = 0;
-	for (Net_ChainInfoSet::iterator i = ioChains.begin(); i != ioChains.end(); ++i)
-	{
-		Net_ChainInfo_t * c = *i;
-		for (int v = 0; v < c->shape.size();)
-//		if (!c->power_crossing[v])							// Do not nuke power crossings - we flag them on purpsoe and need to preserve them in the export!!
-		{
-			Point2 * p1, * p2, * p3;
-			p2 = &c->shape[v];
-			if (v == 0)
-				p1 = &c->start_junction->location;
-			else
-				p1 = &c->shape[v-1];
-			if (v == (c->shape.size()-1))
-				p3 = &c->end_junction->location;
-			else
-				p3 = &c->shape[v+1];
-			Vector2 v1(*p1, *p2);
-			Vector2 v2(*p2, *p3);
+	// 0, pts-1 gives total length, 0 1 gives first seg len
+	double total = 0.0;
 
-			v1.dx *= (DEG_TO_MTR_LAT * cos(p2->y() * DEG_TO_RAD));
-			v2.dx *= (DEG_TO_MTR_LAT * cos(p2->y() * DEG_TO_RAD));
-			v1.dy *= (DEG_TO_MTR_LAT);
-			v2.dy *= (DEG_TO_MTR_LAT);
-			double	d1 = sqrt(v1.dot(v1));
-			double	d2 = sqrt(v2.dot(v2));
-			v1.normalize();
-			v2.normalize();
-			double ang = v1.dot(v2);
-			if (ang > REDUCE_SHAPE_ANGLE && d1 < MAX_CUT_DIST && d2 < MAX_CUT_DIST)
-			{
-				c->shape.erase(c->shape.begin()+v);
-//				c->agl.erase(c->agl.begin()+v);
-//				c->power_crossing.erase(c->power_crossing.begin()+v);
-				++reduces;
-			} else
-				++v;
-		}
+	for (int n = pt_start; n < pt_stop; ++n)
+	{
+		Point3 p1 = nth_pt(n  );
+		Point3 p2 = nth_pt(n+1);
+		total += LonLatDistMeters(p1.x, p1.y, p2.x, p2.y);
 	}
-	return reduces;
+	return total;
 }
 
+double		Net_ChainInfo_t::dot_angle(int ctr_pt)
+{
+	Point3	p1(nth_pt(ctr_pt-1));
+	Point3	p2(nth_pt(ctr_pt  ));
+	Point3	p3(nth_pt(ctr_pt+1));
+
+	Vector2	v1(Point2(p1.x, p1.y), Point2(p2.x, p2.y));
+	Vector2	v2(Point2(p2.x, p2.y), Point2(p3.x, p3.y));
+
+	v1.normalize();
+	v2.normalize();
+	return v1.dot(v2);
+}
+
+void					Net_ChainInfo_t::split_seg(int n, double rat)
+{
+	Segment3	seg;
+	seg.p1 = nth_pt(n  );
+	seg.p2 = nth_pt(n+1);
+	double	g1 = nth_agl(n  );
+	double	g2 = nth_agl(n+1);
+
+	shape.insert(shape.begin()+n,seg.midpoint(rat));
+	agl.insert(agl.begin()+n, g1 * (1.0-rat) + g2 * rat);
+	power_crossing.insert(power_crossing.begin()+n, false);
+}
+
+#pragma mark -
 
 // This routine takes a network and combines chains that are contiguous through a junction, reducing
 // junctions and forming longer chains.
@@ -425,7 +352,7 @@ void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChai
 			if (sc != ec && sc->rep_type == ec->rep_type &&					// Ignore layer?  YES!  If we only have 2 roads coming together, assume that differing layer does 
 						    sc->export_type == ec->export_type &&			// NOT mean that they really are hanging off.
 						    sc->over_water == ec->over_water &&
-//							sc->draped == ec->draped &&
+							sc->draped == ec->draped &&
 				sc->start_junction != sc->end_junction &&
 				ec->start_junction != ec->end_junction &&
 				sc->other_junc(me) != ec->other_junc(me))
@@ -448,11 +375,11 @@ void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChai
 					Assert (ej != me);
 					// Accumulate all shape points.
 					sc->shape.push_back(me->location);
-//					sc->agl.push_back(me->agl);
-//					sc->power_crossing.push_back(me->power_crossing);
+					sc->agl.push_back(me->agl);
+					sc->power_crossing.push_back(me->power_crossing);
 					sc->shape.insert(sc->shape.end(), ec->shape.begin(),ec->shape.end());
-//					sc->agl.insert(sc->agl.end(), ec->agl.begin(),ec->agl.end());
-//					sc->power_crossing.insert(sc->power_crossing.end(), ec->power_crossing.begin(), ec->power_crossing.end());
+					sc->agl.insert(sc->agl.end(), ec->agl.begin(),ec->agl.end());
+					sc->power_crossing.insert(sc->power_crossing.end(), ec->power_crossing.begin(), ec->power_crossing.end());
 					// We no longer have points.
 					me->chains.clear();
 					// End junction now has first chain instead of second.
@@ -488,172 +415,63 @@ void	OptimizeNetwork(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& outChai
 		ioJunctions.erase(*junc);
 		delete (*junc);
 	}
-	int s = NukeStraightShapePoints(outChains);
-	printf("Optimize: %d merged, %d removed, %d straight.\n", total_merged, total_removed, s);
-
+	printf("Optimize: %d merged, %d removed.\n", total_merged, total_removed);
 }
 
-typedef pair<Net_JunctionInfo_t *,Net_JunctionInfo_t *>	JuncPair;
+#define REDUCE_SHAPE_ANGLE 	0.984807753012208	// 0.9961946980917455
+#define MAX_CUT_DIST		2000
 
-struct sort_by_sqr_dist {
-	bool operator()(const JuncPair& lhs, const JuncPair& rhs) const
-	{
-		double d1 = lhs.first->location.squared_distance(lhs.second->location);
-		double d2 = rhs.first->location.squared_distance(rhs.second->location);
-		return d1 < d2;
-	}
-};
-
-struct sort_by_y {
-	bool operator()(Net_JunctionInfo_t * const & p1, Net_JunctionInfo_t * const & p2) const 
-	{
-		return p1->location.y() < p2->location.y(); 
-	}
-};
-
-inline bool within_box(const Point2& p1, const Point2& p2, double d)
+// This routine removes shape points that form less than a certain cosine dot angle, as long
+// as the two edges forming the angle are < 2 km.  We use this to reduce the number of nodes...
+// in particular, shape points that were due to the original crossing of a road with some
+// land use change or other arbitrary vector feature will get reduced if they are no longer
+// doing any good.
+int	NukeStraightShapePoints(Net_ChainInfoSet& ioChains)
 {
-	if(fabs(p1.x() - p2.x()) <= d)
-	if(fabs(p1.y() - p2.y()) <= d)
-		return true;
-	return false;
+	int reduces = 0;
+	for (Net_ChainInfoSet::iterator i = ioChains.begin(); i != ioChains.end(); ++i)
+	{
+		Net_ChainInfo_t * c = *i;
+		for (int v = 0; v < c->shape.size();)
+		if (!c->power_crossing[v])							// Do not nuke power crossings - we flag them on purpsoe and need to preserve them in the export!!
+		{
+			Point3 * p1, * p2, * p3;
+			p2 = &c->shape[v];
+			if (v == 0)
+				p1 = &c->start_junction->location;
+			else
+				p1 = &c->shape[v-1];
+			if (v == (c->shape.size()-1))
+				p3 = &c->end_junction->location;
+			else
+				p3 = &c->shape[v+1];
+			Vector3 v1(*p1, *p2);
+			Vector3 v2(*p2, *p3);
+
+			v1.dx *= (DEG_TO_MTR_LAT * cos(p2->y * DEG_TO_RAD));
+			v2.dx *= (DEG_TO_MTR_LAT * cos(p2->y * DEG_TO_RAD));
+			v1.dy *= (DEG_TO_MTR_LAT);
+			v2.dy *= (DEG_TO_MTR_LAT);
+			double	d1 = sqrt(v1.dot(v1));
+			double	d2 = sqrt(v2.dot(v2));
+			v1.normalize();
+			v2.normalize();
+			double ang = v1.dot(v2);
+			if (ang > REDUCE_SHAPE_ANGLE && d1 < MAX_CUT_DIST && d2 < MAX_CUT_DIST)
+			{
+				c->shape.erase(c->shape.begin()+v);
+				c->agl.erase(c->agl.begin()+v);
+				c->power_crossing.erase(c->power_crossing.begin()+v);
+				++reduces;
+			} else
+				++v;
+		}
+	}
+	return reduces;
 }
-
-typedef multiset<Net_JunctionInfo_t *, sort_by_y>	y_sorted_set;
-
-void	MergeNearJunctions(Net_JunctionInfoSet& juncs, Net_ChainInfoSet& chains, double dist)
-{
-//		ValidateNetworkTopology(juncs,chains);
-
-	printf("Before merge: %d juncs, %d chains.\n", juncs.size(), chains.size());
-
-	while(1)
-	{
-
-		bool did_work = false;
-		y_sorted_set	sorted_juncs;
-		
-		copy(juncs.begin(),juncs.end(),set_inserter(sorted_juncs));
-
-		vector<JuncPair> kill;
-		for(y_sorted_set::iterator i = sorted_juncs.begin(); i != sorted_juncs.end(); ++i)
-		{
-			y_sorted_set::iterator j(i);
-			++j;
-			while(j != sorted_juncs.end() && (((*j)->location.y() - (*i)->location.y()) < (2.0*dist)))
-			{
-//				printf("Measuring: 0x%08x, 0x%08x\n", (*i), (*j));
-			
-				if(within_box((*i)->location,(*j)->location,dist))
-				{
-					kill.push_back(JuncPair(*i,*j));
-				}
-				++j;
-			}
-		}
-		sort(kill.begin(),kill.end(), sort_by_sqr_dist());
-
-		for(vector<JuncPair>::iterator jp = kill.begin(); jp != kill.end(); ++jp)
-		{
-//			printf("Considering: 0x%08x, 0x%08x\n", jp->first, jp->second);			
-			if(juncs.count(jp->first) && juncs.count(jp->second))
-			if(within_box(jp->first->location,jp->second->location,dist))
-			{
-//				printf("Killing: 0x%08x, 0x%08x\n", jp->first, jp->second);			
-				list<Net_ChainInfo_t *>	dead;
-				for(Net_ChainInfoSet::iterator c = jp->first->chains.begin(); c != jp->first->chains.end(); ++c)
-				if((*c)->other_junc(jp->first) == jp->second)
-					dead.push_back(*c);
-
-				copy(dead.begin(),dead.end(),set_eraser(chains));
-				copy(dead.begin(),dead.end(),set_eraser(jp->first->chains));
-				
-				jp->first->location = Point2(
-								(jp->first->location.x() + jp->second->location.x()) * 0.5,
-								(jp->first->location.y() + jp->second->location.y()) * 0.5);
-				copy(jp->second->chains.begin(),jp->second->chains.end(), set_inserter(jp->first->chains));
-				
-				for(Net_ChainInfoSet::iterator c = jp->second->chains.begin(); c != jp->second->chains.end(); ++c)
-				{
-					if((*c)->start_junction == jp->second) (*c)->start_junction = jp->first;
-					if((*c)->end_junction == jp->second) (*c)->end_junction = jp->first;
-				}
-				
-				DebugAssert(juncs.count(jp->second));
-				juncs.erase(jp->second);
-				delete jp->second;
-				did_work = true;
-				// This was serious paranoia in inital implementation, but don't even have in dev, makes alg very slow.
-		//		ValidateNetworkTopology(juncs,chains);		
-			}
-		}	
-	#if DEV
-		ValidateNetworkTopology(juncs,chains);
-	#endif
-		if(!did_work)	
-			break;
-		else
-			printf("After merge: %d juncs, %d chains.\n", juncs.size(), chains.size());
-	}
-	
-	Net_JunctionInfo_t * bad_a = NULL, * bad_b = NULL;
-
-#if DEV	
-	for(Net_ChainInfoSet::iterator c = chains.begin(); c != chains.end(); ++c)
-	{
-		if(within_box((*c)->start_junction->location, (*c)->end_junction->location, dist))
-		{
-			bad_a = (*c)->start_junction; bad_b = (*c)->end_junction;
-			printf("%p: %f,%f to %f, %f\n", (*c), 
-						(*c)->start_junction->location.x(),
-						(*c)->start_junction->location.y(),
-						(*c)->end_junction->location.x(),
-						(*c)->end_junction->location.y());
-			printf("ERROR: junctions too close together (%p, %p).\n", 
-						(*c)->start_junction,(*c)->end_junction);
-		}
-	}
-#endif
-
-/*	
-	{
-		y_sorted_set	sorted_juncs;
-		
-		copy(juncs.begin(),juncs.end(),set_inserter(sorted_juncs));
-
-		printf("Bad a: %d\n", sorted_juncs.count(bad_a));
-		printf("Bad a: %d\n", sorted_juncs.count(bad_b));
-
-		vector<JuncPair> kill;
-		for(y_sorted_set::iterator i = sorted_juncs.begin(); i != sorted_juncs.end(); ++i)
-		{
-			y_sorted_set::iterator j(i);
-			++j;
-			while(j != sorted_juncs.end() && (((*j)->location.y() - (*i)->location.y()) < (2.0*dist)))
-			{
-				if(*i == bad_a || *j == bad_a ||
-				   *i == bad_b || *j == bad_b)
-				printf("Measuring: 0x%08x, 0x%08x\n", (*i), (*j));
-			
-				if(within_box((*i)->location,(*j)->location,dist))
-				{
-					if(*i == bad_a || *j == bad_a ||
-					   *i == bad_b || *j == bad_b)
-						printf("Killing: 0x%08x, 0x%08x\n", (*i), (*j));
-					kill.push_back(JuncPair(*i,*j));
-				}
-				++j;
-			}
-		}
-	}
-*/	
-}
-
-
-
 
 // This routine forms an original topology level 1 network from our planar map.
-void	BuildNetworkTopology(Pmwx& inMap, CDT& /*inMesh*/, Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
+void	BuildNetworkTopology(Pmwx& inMap, CDT& inMesh, Net_JunctionInfoSet& outJunctions, Net_ChainInfoSet& outChains)
 {
 	outJunctions.clear();
 	outChains.clear();
@@ -694,13 +512,13 @@ void	BuildNetworkTopology(Pmwx& inMap, CDT& /*inMesh*/, Net_JunctionInfoSet& out
 			continue;
 		
 		Net_JunctionInfo_t * junc = new Net_JunctionInfo_t;
-//		junc->vertical_locked = false;
-		junc->location.x_ = CGAL::to_double(v->point().x());
-		junc->location.y_ = CGAL::to_double(v->point().y());
-//		f = inMesh.locate(v->point(), lt, li, f);
-//		junc->location.z = HeightWithinTri(inMesh, f, v->point());
+		junc->vertical_locked = false;
+		junc->location.x = CGAL::to_double(v->point().x());
+		junc->location.y = CGAL::to_double(v->point().y());
+		f = inMesh.locate(v->point(), lt, li, f);
+		junc->location.z = HeightWithinTri(inMesh, f, v->point());
 		
-//		junc->power_crossing = false;
+		junc->power_crossing = false;
 		junctionTable.insert(JunctionTableType::value_type(&*v,junc));
 		outJunctions.insert(junc);
 		//printf("+");
@@ -712,7 +530,7 @@ void	BuildNetworkTopology(Pmwx& inMap, CDT& /*inMesh*/, Net_JunctionInfoSet& out
 		Net_ChainInfo_t *	chain = new Net_ChainInfo_t;
 		chain->rep_type = seg->mRepType;
 		chain->export_type = NO_VALUE;
-//		chain->draped = true;
+		chain->draped = true;
 		chain->over_water = e->face()->data().IsWater() && e->twin()->face()->data().IsWater();
 		chain->start_junction = junctionTable[&*e->source()];
 		chain->end_junction = junctionTable[&*e->target()];
@@ -726,10 +544,10 @@ void	BuildNetworkTopology(Pmwx& inMap, CDT& /*inMesh*/, Net_JunctionInfoSet& out
 
 	
 
-//	CountNetwork(outJunctions, outChains);
-//	int nukes = NukeStraightShapePoints(outChains);
-//	CountNetwork(outJunctions, outChains);
-//	printf("Nuked %d shape points.\n", nukes);
+	CountNetwork(outJunctions, outChains);
+	int nukes = NukeStraightShapePoints(outChains);
+	CountNetwork(outJunctions, outChains);
+	printf("Nuked %d shape points.\n", nukes);
 
 	// Now we need to start sorting out the big mess we have - we have a flat topology and in reality
 	// highways don't work that way!
@@ -781,7 +599,6 @@ void	CountNetwork(const Net_JunctionInfoSet& inJunctions, const Net_ChainInfoSet
 	printf("Junctions: %d, Chains: %d, Segs: %d\n", juncs, chains, segs);
 }
 
-#if 0
 void	DrapeRoads(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, CDT& inMesh, bool only_power_lines)
 {
 	int total = 0;
@@ -1371,8 +1188,6 @@ void	InterpolateRoadHeights(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& 
 */
 }
 
-#endif
-
 void	AssignExportTypes(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains)
 {
 	for (Net_ChainInfoSet::iterator chain = ioChains.begin(); chain != ioChains.end(); ++chain)
@@ -1410,8 +1225,6 @@ void DeleteBlankChains(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioCha
 		}
 	}
 }
-
-#if 0
 
 void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChains, double ideal_dist_m, double max_dip)
 {
@@ -1489,5 +1302,3 @@ void	SpacePowerlines(Net_JunctionInfoSet& ioJunctions, Net_ChainInfoSet& ioChain
 	}
 	printf("Total pts=%d total xos=%d, kill pts=%d, kill xos=%d, end xos=%d\n", total_pts, total_xos, kill_pts, kill_xos, end_crossings);
 }
-
-#endif

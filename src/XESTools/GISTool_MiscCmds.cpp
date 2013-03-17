@@ -45,7 +45,6 @@
 #include "MeshAlgs.h"
 #include "ForestTables.h"
 #include "BlockFill.h"
-#include "MapPolygon.h"
 
 static double calc_water_area(void)
 {
@@ -191,33 +190,6 @@ int DoShowCoverage(const vector<const char *>& args)
 		if (c != 0) printf("Includes %+03d%+04d\n", y, x);
 	}
 	fclose(fi);
-	return 0;
-}
-
-int DoDiffCoverage(const vector<const char *>& args)
-{
-	FILE * fi1 = fopen(args[0], "rb");
-	if (fi1 == NULL)
-	{
-		fprintf(stderr, "Could not open %s\n", args[0]);
-		return 1;
-	}
-	FILE * fi2 = fopen(args[1], "rb");
-	if (fi2 == NULL)
-	{
-		fprintf(stderr, "Could not open %s\n", args[1]);
-		fclose(fi1);
-		return 1;
-	}
-	for (int y = gMapSouth; y < gMapNorth; ++y)
-	for (int x = gMapWest; x < gMapEast; ++x)
-	{
-		char c1 = fgetc(fi1);
-		char c2 = fgetc(fi2);
-		if (c1 != 0 && c2 == 0) printf("%+03d%+04d\n", y, x);
-	}
-	fclose(fi1);
-	fclose(fi2);
 	return 0;
 }
 
@@ -447,34 +419,9 @@ int DoDumpForests(const vector<const char *>& args)
 	return 0;
 }
 
-#if OPENGL_MAP
-static int DoClear(const vector<const char *>& args)
-{
-	for(set<Pmwx::Face_handle>::iterator i = gFaceSelection.begin(); i != gFaceSelection.end(); ++i)
-	{
-		(*i)->data().mObjs.clear();
-		(*i)->data().mPolyObjs.clear();
-	}
-}
-#endif
 
 static int DoHack(const vector<const char *>& args)
 {
-#if 0
-	gFaceSelection.clear();
-	double r = atof(args[0]);
-	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-	if(!f->is_unbounded())
-	{
-		Polygon_with_holes_2 pwh;
-		Bbox_2 e;
-		PolygonFromFace(f, pwh, NULL, NULL, &e);
-		if(IsPolygonSliver(pwh, r, e))
-			gFaceSelection.insert(f);
-	}
-		//	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
-//	if(!f->is_unbounded())
-
 //	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 //	if(!f->is_unbounded())
 //	if(!f->data().IsWater())
@@ -497,10 +444,9 @@ static int DoHack(const vector<const char *>& args)
 
 //	if(!gFaceSelection.empty())
 //	ZoneManMadeAreas(gMap, gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_Slope],gApts,*gFaceSelection.begin(), gProgress);
-#endif
+
 	return 0;
 }
-
 static int DoMeshErrStats(const vector<const char *>& s)
 {
 	float minv, maxv, mean, devsq;
@@ -513,8 +459,7 @@ static int DoMeshErrStats(const vector<const char *>& s)
 static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-kill_bad_dsf", 1, 1, KillBadDSF,				"Delete a DSF file if its checksum fails.", "" },
 { "-showcoverage", 1, 1, DoShowCoverage,			"Show coverage of a file as text", "Given a raw 360x180 file, this prints the lat-lon of every none-black point.\n" },
-{ "-diffcoverage", 2, 2, DoDiffCoverage,			"Difference two coverages.","Given two raw 360x180s, shows a list of all tiles in the first but NOT the second one.\n" },
-{ "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master md5|- - make coverage.", "This makes a black & white coverage indicating what files exist.  Optionally also prints md5 signature of each file to another text file." },
+{ "-coverage", 4, 4, DoMakeCoverage, 				"prefix suffix master, md5 - make coverage.", "This makes a black & white coverage indicating what files exist.  Optionally also prints md5 signature of each file to another text file." },
 { "-wetcoverage", 2, 2, DoMakeWetCoverage,			"dir output.", "This produces a coverage from XES files - 0-100 = amount of water, 255=missing,254=invalid map.\n" },
 { "-lucoverage", 3, 3, DoMakeLUCoverage,			"dir LU output.", "This makes a coverage from geotif with a certain pixel value being treated as water.  Water=0-100,255=file missing or broken.\n" },
 { "-luinit", 1, 1, InitFromLU,						"init from landuse (LU file)." ,"Given a water coverage, this inits our tile to a single square that is all wet or dry, base on the coverage. " },
@@ -525,10 +470,7 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-forest_types",	0,	1, DoDumpForests,			"Output types of forests from the spreadsaheet.", dump_forests_HELP },
 { "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },
 { "-mesh_err_stats", 0, 0, DoMeshErrStats,			"Print statistics about mesh error.", "" },
-{ "-hack",				   1, 1, DoHack, "", "" },
-#if OPENGL_MAP
-{ "-clear_block",		   0, 0, DoClear, "", "" },
-#endif
+{ "-hack",				   0, 0, DoHack, "", "" },
 { 0, 0, 0, 0, 0, 0 }
 };
 

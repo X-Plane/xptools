@@ -27,19 +27,7 @@
 #include "FileUtils.h"
 
 #if PHONE
-	#define WANT_PVR 1
-	#define WANT_ATI IBM
-#else
-	#define WANT_PVR 0
-	#define WANT_ATI 0
-#endif
-
-
-
-#if PHONE
-	#if WANT_ATI
-		#include "ATI_Compress.h"
-	#endif
+	#include "ATI_Compress.h"
 	#include "MathUtils.h"
 #endif
 
@@ -55,6 +43,12 @@
 	to desktop users and (2) likely to create confusion.
 
 */
+
+#if PHONE
+	#define WANT_PVR 1
+#else
+	#define WANT_PVR 0
+#endif
 
 enum {
 	raw_16 = 0,
@@ -124,49 +118,22 @@ enum {
 };
 #endif
 
-static int size_for_image(int x, int y, int bpp, int min_bytes)
-{
-	return max(x * y * bpp / 8, min_bytes);
-}
-static int size_for_mipmap(int x, int y, int bpp, int min_bytes)
-{
-	int total = 0;
-	while (1)
-	{
-		total += size_for_image(x,y,bpp, min_bytes);
-		if (x == 1 && y == 1)
-			break;
-		if (x > 1) x >>= 1;
-		if (y > 1) y >>= 1;
-	}
-	return total;
-}
-
-#if PHONE
-static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit, bool isPvr, int mip_count)
+static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit, bool isPvr)
 {
 	PVR_Texture_Header	h 			= { 0 };
 	ATC_Texture_Header	atcHdr 		= { 0 };
 	unsigned int 		totalSize 	= 0;
 	unsigned int		hdrSize 	= 0;
 	void*				hdr			= NULL;
-	int					bpp = 8;
-	ImageInfo			img(info);				/// copy so we can advance the mip stack.
-
-	switch(info.channels) {
-	case 1:		bpp = 8;						break;
-	case 3:		bpp = s_raw_16_bit ? 16 : 24;	break;
-	case 4:		bpp = s_raw_16_bit ? 16 : 32;	break;
-	}
-	totalSize = (mip_count > 1) ? size_for_mipmap(info.width, info.height, bpp, 1) : size_for_image(info.width,info.height,bpp,1);
 
 	if(isPvr)
 	{
 		h.dwHeaderSize = sizeof(h);
 		h.dwHeight = info.height;
 		h.dwWidth = info.width;
-		h.dwMipMapCount = mip_count;
-		h.dwTextureDataSize = totalSize;
+		h.dwMipMapCount = 1;
+		if(s_raw_16_bit)		h.dwTextureDataSize = (info.channels > 1) ? (info.width * info.height * 2) : (info.width * info.height);
+		else					h.dwTextureDataSize = info.channels * info.width * info.height;
 		h.dwPVR = 0x21525650;
 		if(s_raw_16_bit)
 		switch(info.channels) {
@@ -181,6 +148,7 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 		case 4: h.dwpfFlags =	OGL_RGBA_8888;	break;
 		}
 
+		totalSize = h.dwTextureDataSize;
 		hdrSize = h.dwHeaderSize;
 		hdr = &h;
 	}
@@ -205,59 +173,54 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 		case 4: atcHdr.flags =	ATC_RAW_RGBA_8888;	break;
 		}
 
+		totalSize = (info.channels > 1) ? (info.width * info.height * 2) : (info.width * info.height);
 		hdrSize = sizeof(atcHdr);
 		hdr = &atcHdr;
 	}
 
 	int sbp = info.channels;
-	int dbp = bpp / 8;
-
+	int dbp = sbp >= 3 ? 2 : 1;
+	if(!s_raw_16_bit)
+		dbp = sbp;
 	unsigned char * storage = (unsigned char *) malloc(totalSize);
-	unsigned char * base_ptr = storage;
-	
-	while(mip_count--)
+
+	for(int y = 0; y < info.height; ++y)
+	for(int x = 0; x < info.width; ++x)
 	{
-		for(int y = 0; y < img.height; ++y)
-		for(int x = 0; x < img.width; ++x)
+		unsigned char * srcb = (unsigned char*)info.data + info.width * sbp * y + x * sbp;
+		unsigned char * dstb = storage + info.width * dbp * y + dbp * x;
+		if(info.channels == 1)
 		{
-			unsigned char * srcb = (unsigned char*)img.data + img.width * sbp * y + x * sbp;
-			unsigned char * dstb = base_ptr + img.width * dbp * y + dbp * x;
-			if(img.channels == 1)
-			{
-				*dstb = *srcb;
-			}
-			else if (img.channels == 3)
-			{
-				if(s_raw_16_bit)
-				*((unsigned short *) dstb) =
-				((srcb[2] & 0xF8) << 8) |
-				((srcb[1] & 0xFC) << 3) |
-				((srcb[0] & 0xF8) >> 3);
-				else
-					dstb[0]=srcb[2],
-					dstb[1]=srcb[1],
-					dstb[2]=srcb[0];
-			}
-			else if (img.channels == 4)
-			{
-				if(s_raw_16_bit)
-				*((unsigned short *) dstb) =
-				((srcb[2] & 0xF0) << 8) |
-				((srcb[1] & 0xF0) << 4) |
-				((srcb[0] & 0xF0) << 0) |
-				((srcb[3] & 0xF0) >> 4);
-				else
-					dstb[0]=srcb[2],
-					dstb[1]=srcb[1],
-					dstb[2]=srcb[0],
-					dstb[3]=srcb[3];
-			}
+			*dstb = *srcb;
 		}
-		
-		base_ptr += size_for_image(img.width,img.height,bpp,1);
-		AdvanceMipmapStack(&img);		
+		else if (info.channels == 3)
+		{
+			if(s_raw_16_bit)
+			*((unsigned short *) dstb) =
+			((srcb[2] & 0xF8) << 8) |
+			((srcb[1] & 0xFC) << 3) |
+			((srcb[0] & 0xF8) >> 3);
+			else
+				dstb[0]=srcb[2],
+				dstb[1]=srcb[1],
+				dstb[2]=srcb[0];
+		}
+		else if (info.channels == 4)
+		{
+			if(s_raw_16_bit)
+			*((unsigned short *) dstb) =
+			((srcb[2] & 0xF0) << 8) |
+			((srcb[1] & 0xF0) << 4) |
+			((srcb[0] & 0xF0) << 0) |
+			((srcb[3] & 0xF0) >> 4);
+			else
+				dstb[0]=srcb[2],
+				dstb[1]=srcb[1],
+				dstb[2]=srcb[0],
+				dstb[3]=srcb[3];
+		}
 	}
-	
+
 	FILE * fi = fopen(outf,"wb");
 	if(fi)
 	{
@@ -268,7 +231,6 @@ static int WriteToRaw(const ImageInfo& info, const char * outf, int s_raw_16_bit
 	free(storage);
 	return 0;
 }
-#endif
 
 int pow2_up(int n)
 {
@@ -346,13 +308,13 @@ int main(int argc, char * argv[])
 		printf("DIV\n");
 		printf("CHECK HAS_MIPS 0 --has_mips Image is already mip-mapped\n");
 
-#if WANT_ATI
+#if WANT_PVR
+	#if PHONE
 		printf("CMD .png .atc \"%s\" ATC_MODE \"INFILE\" \"OUTFILE\"\n",argv[0]);
 		printf("DIV\n");
 		printf("RADIO ATC_MODE 1 --png2atc4 4-bit ATC compression\n");
 		printf("RADIO ATC_MODE 0 --png2atc_raw16 ATC uses 16-bit color\n");
-#endif
-#if PHONE
+	#endif
 		printf("CMD .png .txt \"%s\" --info ONEFILE \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("DIV\n");
 		printf("RADIO PVR_MODE 1 --png2pvrtc2 2-bit PVR compression\n");
@@ -497,7 +459,6 @@ int main(int argc, char * argv[])
 
 		return 1;
 	}
-#if PHONE	
 	else if(strcmp(argv[1],"--png2pvr_raw16")==0 ||
 			strcmp(argv[1],"--png2pvr_raw24")==0)
 	{
@@ -542,18 +503,13 @@ int main(int argc, char * argv[])
 			strcat(buf,".raw");
 			outf=buf;
 		}
-		int mc = 1;
-		if(want_mips)
-		mc = MakeMipmapStack(&info);
-		
-		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2pvr_raw16")==0, true, mc)!=0)
+		if (WriteToRaw(info, outf, strcmp(argv[1],"--png2pvr_raw16")==0, true)!=0)
 		{
 			printf("Unable to write raw PVR file %s\n", argv[n+1]);
 			return 1;
 		}
 		return 0;
 	}
-#endif	
 	else if(strcmp(argv[1],"--png2dxt")==0 ||
 	   strcmp(argv[1],"--png2dxt1")==0 ||
 	   strcmp(argv[1],"--png2dxt3")==0 ||
@@ -591,7 +547,6 @@ int main(int argc, char * argv[])
 			else					dxt_type=5;
 		}
 
-		ConvertBitmapToAlpha(&info,false);
 		if(has_mips)	MakeMipmapStackFromImage(&info);
 		else			MakeMipmapStack(&info);
 
@@ -608,7 +563,7 @@ int main(int argc, char * argv[])
 		int arg_base = has_mips ? 3 : 2;
 
 		ImageInfo	info;
-		if (CreateBitmapFromPNG(argv[arg_base], &info, true)!=0)
+		if (CreateBitmapFromPNG(argv[arg_base], &info, false)!=0)
 		{
 			printf("Unable to open png file %s\n", argv[arg_base]);
 			return 1;
@@ -657,7 +612,7 @@ int main(int argc, char * argv[])
 		WriteBitmapToPNG(&dst, argv[8], NULL, 0);
 
 	}
-#if PHONE && WANT_ATI
+#if PHONE
 	else if(strcmp(argv[1],"--png2atc4")==0)
 	{
 		int n = 2;
@@ -672,12 +627,6 @@ int main(int argc, char * argv[])
 		// We need to save our channel count because MakeMipmapStack is going to
 		// manually force everything to have an alpha channel.
 		int channels = info.channels;
-		// Ben says: WTF? Well, in the old days, MakeMipmapStack "upgraded" the image to RGBA.  Chris's
-		// code goes through some hoops to avoid that.  The new MakeMipmapStack works in any color format.
-		// So to keep Chris's code working, I do the upgrade by hand.
-		// Chris, you could someday rip out the convert bitmap to alpha call here as well as the special
-		// handling of RGB images.
-		ConvertBitmapToAlpha(&info,false);
 		MakeMipmapStack(&info);
 		struct ImageInfo img(info);
 
@@ -756,8 +705,7 @@ int main(int argc, char * argv[])
 			return 1;
 		}
 		const char * outf = argv[++n];
-		// TODO: mipmaps?
-		if (WriteToRaw(info, outf, true, false,1/*only one mipmap level*/)!=0)
+		if (WriteToRaw(info, outf, true, false)!=0)
 		{
 			printf("Unable to write raw ARC file %s\n", argv[n]);
 			return 1;

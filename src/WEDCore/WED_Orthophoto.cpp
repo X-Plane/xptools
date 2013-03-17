@@ -18,8 +18,6 @@
 #include "WED_ResourceMgr.h"
 #include "WED_GISUtils.h"
 #include "PlatformUtils.h"
-#include "WED_DrawUtils.h"
-#include "WED_ObjPlacement.h"
 
 static void add_pol_ring(WED_OverlayImage * image, const Polygon_2& loc, const Polygon_2& uv, WED_Thing * parent, bool is_outer)
 {
@@ -106,38 +104,6 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 	return c;
 }
 
-void	WED_CheckPolys(IResolver * in_resolver)
-{
-	WED_Thing	*	wrl = 	WED_GetWorld(in_resolver);
-	ISelection * sel =		WED_GetSelect(in_resolver);
-	vector<IGISEntity *>	entities;	
-	vector<Point2>			fail_pts;
-	sel->IterateSelectionOr(Iterate_CollectEntities,&entities);
-	for(vector<IGISEntity *>::iterator e = entities.begin(); e != entities.end(); ++e)
-	{
-		IGISPolygon * poly = dynamic_cast<IGISPolygon *>(*e);
-		if(poly)
-		{
-			vector<Point2>	bad;
-			IsBezierPolyScrewed(poly, &bad);
-			fail_pts.insert(fail_pts.end(),bad.begin(),bad.end());
-		}
-	}
-	if(!fail_pts.empty())
-	{
-		wrl->StartOperation("Adding error pins.");
-
-		for(vector<Point2>::iterator b = fail_pts.begin(); b != fail_pts.end(); ++b)
-		{
-			WED_ObjPlacement * pin = WED_ObjPlacement::CreateTyped(wrl->GetArchive());
-			pin->SetLocation(gis_Geo,*b);
-			pin->SetParent(wrl,0);
-			pin->SetName("Error:Self-Crossing Polygon");
-		}
-		wrl->CommitOperation();
-	}
-}
-
 void	WED_MakeOrthos(IResolver * in_resolver)
 {
 	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
@@ -162,17 +128,7 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 	if (!all.is_empty())
 	{
 		wrl->StartCommand("Make orthophotos");
-		// Ben says: if the user has selected an overlay image itself, we are going to start our hierarchy traversal at THAT IMAGE,
-		// ensuring that we only spit out one draped polygon for that overlay.  
-		// This prevents the problem where, when two overlays are overlapped, WED creates the unnecessary overlap fragments of both.
-		// In the overlap case we have to assume that if the user is selecting images one at a time then he or she wants overlapping square
-		// draped polygons.
-		// If the selection isn't exactly one overlay image, then start the traversal at the entire world, so that we pick up ANY overlay
-		// that coincides with the area the user has selected.
-		WED_OverlayImage * sel_over = NULL;
-		if(entities.size() == 1)
-			sel_over = SAFE_CAST(WED_OverlayImage,entities[0]);
-		int num_made = cut_for_image(sel_over ? sel_over : wrl, all, wrl, WED_GetResourceMgr(in_resolver));
+		int num_made = cut_for_image(wrl, all, wrl, WED_GetResourceMgr(in_resolver));
 		if(num_made == 0)
 		{
 			wrl->AbortCommand();

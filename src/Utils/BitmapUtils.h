@@ -26,10 +26,8 @@
 /*
 	This is our in memory way of storing an image.  Data is a pointer
 	to an array of bytes large enough to hold the image.  We always
-	use 8-bit alpha, 24-bit BGR or 32-bit BGRA.  The lower left corner of the 
-	image file is in the first byte of data.  (Those naming conventions are
-	"OpenGL" conventions, so BGR means first byte is blue, regardless of
-	machine endian-ness.)
+	use 24-bit RGB or 32-bit ARGB.  The lower left corner of the BMP
+	file is in the first byte of data.
 
 	Pad is how many bytes we skip at the end of each scanline.  Each
 	scanline must start on a 4-byte boundary!

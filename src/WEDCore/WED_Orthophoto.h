@@ -13,7 +13,7 @@
 class IResolver;
 
 
-void	WED_CheckPolys(IResolver * in_resolver);
+
 void	WED_MakeOrthos(IResolver * in_resolver);
 
 

@@ -55,10 +55,14 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 	NetRepInfo	info;
 	info.export_type_draped = NO_VALUE;	// hack for mesh tool - allow draped param to not be attached!
 
-	if (TokenizeLine(tokens, " efffeii",&rep_type,
-		&info.width, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped) != 8)
+	if (TokenizeLine(tokens, " effffeiiii",&rep_type,
+		&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.is_oneway, &info.export_type_normal,&info.export_type_overpass,&info.export_type_draped) != 11)
 	{
-		return false;
+		if (TokenizeLine(tokens, " effffeii",&rep_type,
+			&info.width, &info.pad, &info.building_percent, &info.max_slope, &info.use_mode, &info.export_type_normal,&info.export_type_overpass) != 9)
+			return false;
+		info.is_oneway = false;
+		info.export_type_draped = NO_VALUE;
 	}
 	if (gNetReps.count(rep_type) > 0)
 		printf("WARNING: duplicate token %s\n", FetchTokenString(rep_type));
@@ -72,15 +76,8 @@ bool	ReadRoadPick(const vector<string>& tokens, void * ref)
 	Feature2RepInfo	info;
 	int				feature_type;
 
-	if (TokenizeLine(tokens, " effeeffffe", &feature_type, 
-		&info.min_density,&info.max_density, 
-		&info.zoning_left,
-		&info.zoning_right,
-		&info.rain_min,
-		&info.rain_max,
-		&info.temp_min,
-		&info.temp_max,
-		&info.rep_type) != 11)	return false;
+	if (TokenizeLine(tokens, " effe", &feature_type, &info.min_density,
+		&info.max_density, &info.rep_type) != 5)	return false;
 
 	gFeature2Rep.insert(Feature2RepInfoTable::value_type(feature_type, info));
 	return true;
@@ -127,20 +124,19 @@ void	LoadNetFeatureTables(void)
 	LoadConfigFile("road_properties.txt");
 }
 
-//bool	IsSeparatedHighway(int feat_type)
-//{
-//	if (gNetFeatures.count(feat_type) == 0) return false;
-//	return gNetFeatures[feat_type].oneway_feature != NO_VALUE;
-//}
-//
-//int		SeparatedToOneway(int feat_type)
-//{
-//	if (gNetFeatures.count(feat_type) == 0) return feat_type;
-//	int new_type = gNetFeatures[feat_type].oneway_feature;
-//	if (new_type == NO_VALUE) return feat_type;
-//	return new_type;
-//}
-//
+bool	IsSeparatedHighway(int feat_type)
+{
+	if (gNetFeatures.count(feat_type) == 0) return false;
+	return gNetFeatures[feat_type].oneway_feature != NO_VALUE;
+}
+
+int		SeparatedToOneway(int feat_type)
+{
+	if (gNetFeatures.count(feat_type) == 0) return feat_type;
+	int new_type = gNetFeatures[feat_type].oneway_feature;
+	if (new_type == NO_VALUE) return feat_type;
+	return new_type;
+}
 
 bool	IsOneway(int rep_type)
 {

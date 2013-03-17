@@ -230,14 +230,11 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 {
 	int								rt = res_None;
 	if(HasExtNoCase(path, ".obj"))	rt = res_Object;
-	if(HasExtNoCase(path, ".agp"))	rt = res_Object;
 	if(HasExtNoCase(path, ".fac"))	rt = res_Facade;
 	if(HasExtNoCase(path, ".for"))	rt = res_Forest;
 	if(HasExtNoCase(path, ".str"))	rt = res_String;
-	if(HasExtNoCase(path, ".ags"))	rt = res_Polygon;
 	if(HasExtNoCase(path, ".lin"))	rt = res_Line;
 	if(HasExtNoCase(path, ".pol"))	rt = res_Polygon;
-	if(HasExtNoCase(path, ".agb"))	rt = res_Polygon;
 	if(rt == res_None) return;
 
 	string p(path);

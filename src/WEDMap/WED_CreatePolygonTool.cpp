@@ -52,14 +52,6 @@ static const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
 static const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
 static const int kAllowCurved[] = { 1, 1, 1, 1,    1, 0,  1, 1, 1 };
 
-string stripped_resource(const string& r)
-{
-	string n(r);
-	string::size_type p = n.find_last_of("/\\:");
-	if(p != n.npos) n.erase(0,p+1);
-	return n;
-}
-
 WED_CreatePolygonTool::WED_CreatePolygonTool(
 									const char *		tool_name,
 									GUI_Pane *			host,
@@ -219,7 +211,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetParent(fac,0);
 			fac->SetParent(host,idx);
 			sprintf(buf,"Facade %d",n);
-			fac->SetName(stripped_resource(mResource.value));
+			fac->SetName(buf);
 			sprintf(buf,"Facade %d outer ring",n);
 			outer_ring->SetName(buf);
 			sel->Select(fac);
@@ -233,7 +225,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetParent(fst,0);
 			fst->SetParent(host,idx);
 			sprintf(buf,"Forest %d",n);
-			fst->SetName(stripped_resource(mResource.value));
+			fst->SetName(buf);
 			sprintf(buf,"Forest %d outer ring",n);
 			outer_ring->SetName(buf);
 			sel->Select(fst);
@@ -247,7 +239,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring = str;
 			str->SetParent(host,idx);
 			sprintf(buf,"String %d",n);
-			str->SetName(stripped_resource(mResource.value));
+			str->SetName(buf);
 			sel->Select(str);
 			str->SetClosed(closed);
 			str->SetResource(mResource.value);
@@ -260,7 +252,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring = lin;
 			lin->SetParent(host,idx);
 			sprintf(buf,"Line %d",n);
-			lin->SetName(stripped_resource(mResource.value));
+			lin->SetName(buf);
 			sel->Select(lin);
 			lin->SetClosed(closed);
 			lin->SetResource(mResource.value);
@@ -273,7 +265,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetParent(dpol,0);
 			dpol->SetParent(host,idx);
 			sprintf(buf,"Orthophoto %d",n);
-			dpol->SetName(stripped_resource(mResource.value));
+			dpol->SetName(buf);
 			sprintf(buf,"Polygon %d outer ring",n);
 			outer_ring->SetName(buf);
 			sel->Select(dpol);
@@ -285,7 +277,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetParent(pol,0);
 			pol->SetParent(host,idx);
 			sprintf(buf,"Polygon %d",n);
-			pol->SetName(stripped_resource(mResource.value));
+			pol->SetName(buf);
 			sprintf(buf,"Polygon %d outer ring",n);
 			outer_ring->SetName(buf);
 			sel->Select(pol);

@@ -310,7 +310,7 @@ static	void	RF_HandleProcMenuCmd(void *, void * i)
 			}
 			break;
 		case procCmd_BuildRoads:
-			CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gDem[dem_Temperature], gDem[dem_Rainfall],RF_ProgressFunc);
+			CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],RF_ProgressFunc);
 			break;
 		case procCmd_AssignLUToMesh:
 			AssignLandusesToMesh(gDem,gTriangulationHi,"../rendering_data/OUTPUT-border",RF_ProgressFunc);

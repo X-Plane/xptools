@@ -59,13 +59,11 @@
 #define BLOCK_ERR_MTR 1.0 
 struct block_pt {
 	bool operator==(const block_pt& rhs) const { return loc == rhs.loc; }
-	Point2			loc;			// This is our original location on 
+	Point2			loc;
 	Point2			offset_prev1;	// This is our offset location parallel to our PREVIOUS segment.
 	Point2			offset_next1;	// This is our offset location parallel to our NEXT segment.
 	Point2			offset_prev2;	// This is our offset location parallel to our PREVIOUS segment.
 	Point2			offset_next2;	// This is our offset location parallel to our NEXT segment.
-	Point2			offset_reflex1[3];// If we have a reflex vertex, up to 3 points form the "shape" around it.
-	Point2			offset_reflex2[3];// If we have a reflex vertex, up to 3 points form the "shape" around it.
 	bool			locked;			// Is this point locked.  We lock any point that has high internal valence.
 	int				edge_type;		// Edge type OUTGOING from this point.
 	float			dot;
@@ -290,10 +288,6 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 		pts.swap(pts2);
 	}
 
-	/********************************************************************************************************************************************
-	 * CALCULATE GEOMETRY OF INSET ELEMENTS RELATIVE TO THE ROAD
-	 ********************************************************************************************************************************************/
-
 	int i, j, k;
 
 	for(i = 0; i < pts.size(); ++i)
@@ -324,71 +318,11 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 	{
 		j = (i+1) % pts.size();
 		k = (i+2) % pts.size();
-		if(right_turn(pts[i].loc,pts[j].loc,pts[k].loc) || pts[i].loc == pts[k].loc)
-		{
-			float w1_prev = WidthForSegment(pts[i].edge_type);
-			float w1_next = WidthForSegment(pts[j].edge_type);
-			EdgeRule_t * er_prev = fill_edges ? edge_for_road(pts[i].edge_type, zoning) : NULL;
-			EdgeRule_t * er_next = fill_edges ? edge_for_road(pts[j].edge_type, zoning) : NULL;
-
-			float w2_prev = er_prev ? er_prev->width : 0.0f;
-			float w2_next = er_next ? er_next->width : 0.0f;
-		
-			if(pts[i].loc == pts[k].loc || pts[j].dot < 0)
-			{
-				Vector2 to_prev = Vector2(pts[i].loc,pts[j].loc);
-				Vector2 to_next = Vector2(pts[k].loc,pts[j].loc);
-				to_prev.normalize();
-				to_next.normalize();
-				pts[j].offset_reflex1[0] = pts[j].offset_prev1 + to_prev * w1_prev;
-				pts[j].offset_reflex1[2] = pts[j].offset_next1 + to_next * w1_next;
-				pts[j].offset_reflex2[0] = pts[j].offset_prev2 + to_prev * w2_prev;
-				pts[j].offset_reflex2[2] = pts[j].offset_next2 + to_next * w2_next;
-				
-				// Make this better??!
-				pts[j].offset_reflex1[1] = pts[j].offset_reflex1[0];
-				pts[j].offset_reflex2[1] = pts[j].offset_reflex2[0];
-			}
-			else if(pts[j].dot > 0.99)
-			{
-				// Very slight corner - don't trust intersection.
-				pts[j].offset_reflex1[0] = pts[j].offset_reflex1[1] = pts[j].offset_reflex1[2] = Segment2(pts[j].offset_prev1,pts[j].offset_next1).midpoint();
-				pts[j].offset_reflex2[0] = pts[j].offset_reflex2[1] = pts[j].offset_reflex2[2] = Segment2(pts[j].offset_prev2,pts[j].offset_next2).midpoint();
-			}
-			else
-			{
-				// Sane intersection case.
-				Line2 prev1(pts[i].offset_next1,pts[j].offset_prev1);
-				Line2 prev2(pts[i].offset_next2,pts[j].offset_prev2);
-				Line2 next1(pts[j].offset_next1,pts[k].offset_prev1);
-				Line2 next2(pts[j].offset_next2,pts[k].offset_prev2);
-				if(!prev1.intersect(next1,pts[j].offset_reflex1[2]))
-					printf("WTF?\n");
-				if(!prev2.intersect(next2,pts[j].offset_reflex2[2]))
-					printf("WTF?\n");
-				
-				pts[j].offset_reflex1[0] = pts[j].offset_reflex1[1] = pts[j].offset_reflex1[2];
-				pts[j].offset_reflex2[0] = pts[j].offset_reflex2[1] = pts[j].offset_reflex2[2];
-			}
-		}
-	}
-	
-
-	/********************************************************************************************************************************************
-	 * ATTACH GEOMETRY
-	 ********************************************************************************************************************************************/
-	
-	for(i = 0; i < pts.size(); ++i)
-	{
-		j = (i+1) % pts.size();
-		k = (i+2) % pts.size();
 
 		EdgeRule_t * er = fill_edges ? edge_for_road(pts[i].edge_type, zoning) : NULL;
 		float w = WidthForSegment(pts[i].edge_type);
 
 		DebugAssert(er == NULL || w > 0.0);
-
-		// PART 1 - Build geometry directly opposite the road.
 
 		if(er && w > 0.0)
 		{
@@ -430,9 +364,7 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 		
 		++cur_base;
 
-		// Part 2 - reflex vertices.  These need a little "extra" around their edges.
-
-		if(right_turn(pts[i].loc,pts[j].loc,pts[k].loc) || pts[i].loc == pts[k].loc)
+		if(right_turn(pts[i].loc,pts[j].loc,pts[k].loc))
 		{
 			EdgeRule_t * er2 = fill_edges ? edge_for_road(pts[j].edge_type, zoning) : NULL;
 			float w2 = WidthForSegment(pts[j].edge_type);
@@ -444,50 +376,27 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 				w2 = 0.0;
 		
 			if(er2 && w2 > 0.0)
-			{			
+			{
 				push_block_curve(curves, pts[j].loc,pts[j].offset_next1, cur_base + span);
 				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
-//				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_prev1, cur_base + span, cur_base);
-				push_block_curve(curves, pts[j].offset_prev1, pts[j].offset_reflex1[0], cur_base + span, cur_base);
-				if(pts[j].offset_reflex1[0] != pts[j].offset_reflex1[1])
-					push_block_curve(curves, pts[j].offset_reflex1[0],pts[j].offset_reflex1[1], cur_base + span, cur_base);
-				if(pts[j].offset_reflex1[1] != pts[j].offset_reflex1[2])
-					push_block_curve(curves, pts[j].offset_reflex1[1],pts[j].offset_reflex1[2], cur_base + span, cur_base);
-				push_block_curve(curves, pts[j].offset_reflex1[2], pts[j].offset_next1, cur_base + span, cur_base);
+				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_prev1, cur_base + span, cur_base);
 
 				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_next2, cur_base);
 				push_block_curve(curves, pts[j].offset_prev1,pts[j].offset_prev2, cur_base);
-				push_block_curve(curves, pts[j].offset_prev2, pts[j].offset_reflex2[0], cur_base);
-				if(pts[j].offset_reflex2[0] != pts[j].offset_reflex2[1])
-					push_block_curve(curves, pts[j].offset_reflex2[0],pts[j].offset_reflex2[1], cur_base);
-				if(pts[j].offset_reflex2[1] != pts[j].offset_reflex2[2])
-					push_block_curve(curves, pts[j].offset_reflex2[1],pts[j].offset_reflex2[2], cur_base);				
-				push_block_curve(curves, pts[j].offset_reflex2[2], pts[j].offset_next2, cur_base);
+				push_block_curve(curves, pts[j].offset_next2,pts[j].offset_prev2, cur_base);
 
 			}
 			else if(er2)
 			{
 				push_block_curve(curves, pts[j].loc,pts[j].offset_next2, cur_base);
 				push_block_curve(curves, pts[j].loc,pts[j].offset_prev2, cur_base);
-//				push_block_curve(curves, pts[j].offset_next2,pts[j].offset_prev2, cur_base);
-				push_block_curve(curves, pts[j].offset_prev2, pts[j].offset_reflex2[0], cur_base);
-				if(pts[j].offset_reflex2[0] != pts[j].offset_reflex2[1])
-					push_block_curve(curves, pts[j].offset_reflex2[0],pts[j].offset_reflex2[1], cur_base);
-				if(pts[j].offset_reflex2[1] != pts[j].offset_reflex2[2])
-					push_block_curve(curves, pts[j].offset_reflex2[1],pts[j].offset_reflex2[2], cur_base);				
-				push_block_curve(curves, pts[j].offset_reflex2[2], pts[j].offset_next2, cur_base);
+				push_block_curve(curves, pts[j].offset_next2,pts[j].offset_prev2, cur_base);
 			}
 			else if (w2 > 0.0)
 			{
 				push_block_curve(curves, pts[j].loc,pts[j].offset_next1, cur_base + span);
 				push_block_curve(curves, pts[j].loc,pts[j].offset_prev1, cur_base + span);
-//				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_prev1, cur_base + span);
-				push_block_curve(curves, pts[j].offset_prev1, pts[j].offset_reflex1[0], cur_base + span);
-				if(pts[j].offset_reflex1[0] != pts[j].offset_reflex1[1])
-					push_block_curve(curves, pts[j].offset_reflex1[0],pts[j].offset_reflex1[1], cur_base + span);
-				if(pts[j].offset_reflex1[1] != pts[j].offset_reflex1[2])
-					push_block_curve(curves, pts[j].offset_reflex1[1],pts[j].offset_reflex1[2], cur_base + span);
-				push_block_curve(curves, pts[j].offset_reflex1[2], pts[j].offset_next1, cur_base + span);
+				push_block_curve(curves, pts[j].offset_next1,pts[j].offset_prev1, cur_base + span);
 			}
 			else
 			{
@@ -507,11 +416,11 @@ static void	init_road_ccb(int zoning, Pmwx::Ccb_halfedge_circulator he, CoordTra
 	} 	
 }
 
-static bool want_face(CDT::Face_handle f,float max_slope,int need_lu)
+static bool want_face(CDT::Face_handle f)
 {
-	return (f->info().normal[2] < cos(max_slope * DEG_TO_RAD))
-			||	
-			(need_lu && !gNaturalTerrainInfo[f->info().terrain].is_city);
+	return (f->info().normal[2] < 0.98) ||
+	
+			!gNaturalTerrainInfo[f->info().terrain].is_city;
 }
 
 static bool in_range(CDT::Face_handle f, CoordTranslator2& t)
@@ -527,7 +436,7 @@ static bool in_range(CDT::Face_handle f, CoordTranslator2& t)
 	return cb.overlap(fb);
 }
 
-static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int oob_idx,float max_slope, int need_lu)
+static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X_monotone_curve_2>& curves, int oob_idx)
 {
 	Point_2 start = Point_2(
 						(translator.mSrcMin.x() + translator.mSrcMax.x()) * 0.5,
@@ -552,14 +461,14 @@ static void	init_mesh(CDT& mesh, CoordTranslator2& translator, vector<Block_2::X
 		to_visit.erase(to_visit.begin());
 		visited.insert(f);
 
-		int want_this_face = want_face(f,max_slope,need_lu);
+		int want_this_face = want_face(f);
 
 		for(int n = 0; n < 3; ++n)
 		{
 			CDT::Face_handle nf = f->neighbor(n);
 
 			int nf_ok = !mesh.is_infinite(nf) && in_range(nf,translator);
-			int want_nf = nf_ok && want_face(nf,max_slope,need_lu);
+			int want_nf = nf_ok && want_face(nf);
 			
 			if(want_this_face && !want_nf)
 			{
@@ -625,7 +534,7 @@ bool	init_block(
 	num_he += 2;
 	
 	if(info && (info->need_lu || info->max_slope))
-		init_mesh(mesh, translator, curves, idx_mesh,info->max_slope,info->need_lu);
+		init_mesh(mesh, translator, curves, idx_mesh);
 
 	int base_offset = 0;
 	init_road_ccb(zoning, face->outer_ccb(), translator, parts, curves, base_offset, num_he, idx_oob, info && info->fill_edge);
@@ -685,13 +594,12 @@ public:
 };
 
 
-bool	apply_fill_rules(
+void	apply_fill_rules(
 					int						zoning,
 					Block_2&				block,
 					CoordTranslator2&		translator,
 					DEMGeo&					forest_dem)
 {
-	bool did_promote = false;
 	if(gZoningInfo[zoning].fill_area)
 	{
 		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
@@ -733,36 +641,9 @@ bool	apply_fill_rules(
 
 	for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
 	if(!f->is_unbounded())
-	if(f->data().usage == usage_Empty)
-	{
-		Block_2::Ccb_halfedge_circulator circ(f->outer_ccb()), stop;
-		stop = circ;
-		if(stop->twin()->face()->data().usage == usage_Polygonal_Feature)
-		{
-			bool dif = false;
-			do {
-				if(circ->twin()->face()->data().usage != stop->twin()->face()->data().usage ||
-				 circ->twin()->face()->data().feature != stop->twin()->face()->data().feature)
-				{
-					dif = true;
-					break;
-				}
-			}
-			while(++circ != stop);
-			if(!dif)
-			{
-				f->data().feature = stop->twin()->face()->data().feature;
-				f->data().usage = stop->twin()->face()->data().usage;				
-				did_promote = true;
-			}
-		}
-	}
-	
-	for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
-	if(!f->is_unbounded())
 	if(f->data().usage == usage_Steep)
 		f->data().usage = usage_Empty;
-
+		
 	clean_block(block);
 	
 	if(gZoningInfo[zoning].fill_veg)
@@ -801,7 +682,6 @@ bool	apply_fill_rules(
 			} while (++circ !=  stop);		
 		}	
 	}
-	return did_promote;
 }
 
 
@@ -831,16 +711,15 @@ void	PolygonFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_
 	}
 }
 
-void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>& ps_use, vector<Polygon2>& ps_bad, CoordTranslator2& translator)
+void	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps, CoordTranslator2& translator)
 {
+	DebugAssert(!in_face->is_unbounded());
+
 	Block_2::Ccb_halfedge_const_circulator circ, stop, prev;
-	vector<Polygon2> * targ;
-	circ = stop = ccb;
+	circ = stop = in_face->outer_ccb();
 	bool has_gap = false;
 	do {
-		prev = circ;
-		--prev;
-		if(against_road(circ) != against_road(prev))
+		if(!against_road(circ))
 		{
 			has_gap = true;
 			break;
@@ -849,58 +728,28 @@ void	StringFromCCB(Block_2::Ccb_halfedge_const_circulator ccb, vector<Polygon2>&
 	
 	if(has_gap)
 	{
-		stop = circ;
-		// This is the case where there is at least one discontinuity in the contour.  We are at a "start", that is, a seg whose prev is NOT like us.
-		// For each of these "starts" we push the first and last, then we just push the last.
 		do {
 			prev = circ;
 			--prev;
-			
-			bool rc = against_road(circ);
-			bool rp = against_road(prev);
-			bool want_first = rc != rp;
-
-			targ = rc ? &ps_use : &ps_bad;
-			
-			if(want_first)
+			if(against_road(circ))
 			{
-				targ->push_back(Polygon2());
-				targ->back().push_back(translator.Reverse(cgal2ben(circ->source()->point())));
+				if(!against_road(prev))
+				{
+					out_ps.push_back(Polygon2());
+					out_ps.back().push_back(translator.Reverse(cgal2ben(circ->source()->point())));
+				}
+				out_ps.back().push_back(translator.Reverse(cgal2ben(circ->target()->point())));
 			}
-			targ->back().push_back(translator.Reverse(cgal2ben(circ->target()->point())));
-
 		} while(++circ != stop);
 	}
 	else
 	{	
-		// This is the case where the whole ring is the same...figure out which one it is, push the whole ring, and dupe the end to form a 'string'.
-		targ = against_road(circ) ? &ps_use : &ps_bad;
-		targ->push_back(Polygon2());
+		out_ps.push_back(Polygon2());
 		do {
-			targ->back().push_back(translator.Reverse(cgal2ben(circ->source()->point())));			
+			out_ps.back().push_back(translator.Reverse(cgal2ben(circ->source()->point())));			
 		} while(++circ != stop);
-		targ->back().push_back(targ->back().front());
+		out_ps.back().push_back(out_ps.back().front());
 	}
-	
-
-}
-
-
-int	StringFromBlock(Block_2::Face_const_handle in_face, vector<Polygon2>& out_ps, CoordTranslator2& translator)
-{
-	DebugAssert(!in_face->is_unbounded());
-
-	vector<Polygon2>	ps_use, ps_bad;
-
-	StringFromCCB(in_face->outer_ccb(), ps_use,ps_bad, translator);
-	for(Block_2::Hole_const_iterator h = in_face->holes_begin(); h != in_face->holes_end(); ++h)
-		StringFromCCB(*h, ps_use,ps_bad, translator);
-	out_ps.clear();
-	out_ps.reserve(ps_use.size() + ps_bad.size());
-	out_ps.insert(out_ps.end(), ps_use.begin(),ps_use.end());
-	out_ps.insert(out_ps.end(), ps_bad.begin(),ps_bad.end());
-	DebugAssert(ps_use.size() <= 65535);	// 
-	return ps_use.size();
 }
 
 
@@ -925,8 +774,14 @@ void	extract_features(
 
 		if(strstr(FetchTokenString(o.mRepType),".ags"))
 		{
-			o.mParam = StringFromBlock(f,o.mShape,translator);
-			dest_face->data().mPolyObjs.push_back(o);				
+			vector<Polygon2>	contours;
+			StringFromBlock(f,contours,translator);
+			o.mShape.resize(1);
+			for(int n = 0; n < contours.size(); ++n)
+			{
+				o.mShape[0] = contours[n];
+				dest_face->data().mPolyObjs.push_back(o);				
+			}
 		}
 		else
 		{
@@ -945,24 +800,18 @@ void	extract_features(
 	}
 }
 
-bool process_block(Pmwx::Face_handle f, CDT& mesh, DEMGeo& forest_dem)
+void process_block(Pmwx::Face_handle f, CDT& mesh, DEMGeo& forest_dem)
 {
-	bool ret = false;
 	int z = f->data().GetZoning();
 	if(z == NO_VALUE || z == terrain_Natural || gZoningInfo.count(z) == 0)
-		return false;
+		return;
 		
 	CoordTranslator2	trans;
 	Block_2 block;
 	
 	if(init_block(mesh, f, block, trans))
 	{
-		simplify_block(block, 0.75);
-		clean_block(block);
-
-		if (apply_fill_rules(z, block, trans, forest_dem))
-			ret = true;
+		apply_fill_rules(z, block, trans, forest_dem);	
 		extract_features(block, f, trans);
 	}
-	return ret;
 }

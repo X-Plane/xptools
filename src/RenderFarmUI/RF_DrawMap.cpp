@@ -746,8 +746,7 @@ void	DrawMapBucketed(
 
 			for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
 			{
-				int is_hot = (r - j->mShape.begin()) < j->mParam;
-				glLineWidth(is_string ? (is_hot ? 3 : 1) : 1);
+				glLineWidth(is_string ? 2 : 1);
 				glBegin(is_string ? GL_LINE_STRIP : GL_LINE_LOOP);
 				for(int l = 0; l < r->size(); ++l)
 					glVertex2f(
@@ -756,17 +755,6 @@ void	DrawMapBucketed(
 				glEnd();
 			}
 			glLineWidth(1);
-			
-			glPointSize(2);
-			glColor3f(1,1,1);
-			glBegin(GL_POINTS);
-			for(vector<Polygon2>::const_iterator r = j->mShape.begin(); r != j->mShape.end(); ++r)
-			for(int l = 0; l < r->size(); ++l)
-				glVertex2f(
-					((*r)[l].x()),
-					((*r)[l].y()));
-			glEnd();
-			
 		}
 	}
 #endif

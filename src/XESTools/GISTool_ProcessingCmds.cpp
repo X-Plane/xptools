@@ -173,24 +173,15 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	int step = t / 100;
 	if(step < 1) step = 1;
 
-	#if OPENGL_MAP
-		bool no_sel = gFaceSelection.empty();
-	#endif
-
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f, ++idx)
 	if(!f->is_unbounded())
 	if(!f->data().IsWater())
 	#if OPENGL_MAP
-	if(gFaceSelection.count(f) || no_sel)
+	if(gFaceSelection.count(f) || gFaceSelection.empty())
 	#endif
 	{
 		PROGRESS_CHECK(gProgress, 0, 1, "Creating 3-d.", idx, t, step);
-		if(process_block(f,gTriangulationHi,gDem[dem_ForestType]))
-		{
-			#if OPENGL_MAP
-			gFaceSelection.insert(f);
-			#endif
-		}
+		process_block(f,gTriangulationHi,gDem[dem_ForestType]);
 	}
 	PROGRESS_DONE(gProgress, 0, 1, "Creating 3-d.")
 
@@ -279,7 +270,7 @@ static int DoInstantiateObjsForests(const vector<const char *>& args)
 static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
-	CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gDem[dem_Temperature],gDem[dem_Rainfall],gProgress);
+	CalcRoadTypes(gMap, gDem[dem_Elevation], gDem[dem_UrbanDensity],gProgress);
 	return 0;
 }
 

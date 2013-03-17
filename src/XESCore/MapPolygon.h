@@ -26,7 +26,7 @@ void PolygonFromFaceEx(
 			CoordTranslator_2 *			xform,				// A function to transform the coordinate system or null
 			Simplify_f					simplify);			// A function to pick whether an edge stays in...or null
 
-bool	IsPolygonSliver(const Polygon_with_holes_2& pwh, double r, const Bbox_2& extent);
+
 
 // Given a polygon, try to reduce the number of sides based on some tollerance.
 // void	ReducePolygon(Polygon_2& ioPolygon, double tolerance, double angle, double min_len, double cut_len);

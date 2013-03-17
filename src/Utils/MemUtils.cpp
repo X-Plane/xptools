@@ -23,7 +23,7 @@
 
 #include "MemUtils.h"
 
-#if WANT_NED_MALLOC && 0
+#if WANT_NED_MALLOC
 
 #include <nedmalloc.h>
 

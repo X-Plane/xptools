@@ -27,9 +27,8 @@
 class	WED_Group;
 class	IResolver;
 class	ILibrarian;
-class	WED_Thing;
 
-void DSF_Export(WED_Group * base, ILibrarian * in_package, set<WED_Thing *>& problem_items);
+void DSF_Export(WED_Group * base, ILibrarian * in_package);
 
 int		WED_CanExportPack(IResolver * resolver);
 void	WED_DoExportPack(IResolver * resolver);
