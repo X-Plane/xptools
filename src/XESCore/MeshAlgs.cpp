@@ -136,6 +136,11 @@ MeshPrefs_t gMeshPrefs = {		/*iphone*/
 
 Pmwx::Halfedge_handle	mesh_to_pmwx_he(CDT& io_mesh, CDT::Edge& e);
 
+inline bool IsCustom(int n)
+{
+	if (n == terrain_Water) return false;
+	return gNaturalTerrainInfo[n].custom_ter != tex_not_custom;
+}
 
 inline bool is_border(const CDT& inMesh, CDT::Face_handle f)
 {
@@ -339,6 +344,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 inline void AddZeroMixIfNeeded(CDT::Face_handle f, int layer)
 {
 	if (f->info().terrain == terrain_Water) return;
+	DebugAssert(!IsCustom(f->info().terrain));
 	DebugAssert(layer != -1);
 	f->info().terrain_border.insert(layer);
 	for (int i = 0; i < 3; ++i)
@@ -600,6 +606,7 @@ static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT:
 	if (new_base != terrain_Water)
 	{
 		DebugAssert(old_base != -1);
+		DebugAssert(!IsCustom(tri->info().terrain));
 		tri->info().terrain_border.insert(old_base);
 
 		for (int i = 0; i < 3; ++i)
@@ -627,8 +634,10 @@ void SafeSmearBorder(CDT& mesh, CDT::Vertex_handle vert, int layer)
 			if (!mesh.is_infinite(iter))
 			if (iter->info().terrain != layer)
 			if (iter->info().terrain != terrain_Water)
+			if (!IsCustom(iter->info().terrain))
 			{
 				DebugAssert(layer != -1);
+				DebugAssert(!IsCustom(iter->info().terrain));
 				iter->info().terrain_border.insert(layer);
 				for (int n = 0; n < 3; ++n)
 				{
@@ -2182,12 +2191,14 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	for(b=0;b < 4; ++b)
 	{
 		for (n = 0; n < gMatchBorders[b].edges.size(); ++n)
-		if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
+               if(!IsCustom(gMatchBorders[b].edges[n].base))
+ 		if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
 		{
 			lowest = gMatchBorders[b].edges[n].buddy->info().terrain;
 			if (LowerPriorityNaturalTerrain(gMatchBorders[b].edges[n].base, lowest))
 				lowest = gMatchBorders[b].edges[n].base;
 			for (set<int>::iterator bl = gMatchBorders[b].edges[n].borders.begin(); bl != gMatchBorders[b].edges[n].borders.end(); ++bl)
+			if(!IsCustom(*bl))
 			{
 				if (LowerPriorityNaturalTerrain(*bl, lowest))
 					lowest = *bl;
@@ -2206,7 +2217,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				if (!is_border(ioMesh, circ))
 				{
 					lowest = circ->info().terrain;
+					if(!IsCustom(lowest))					
 					for (hash_map<int, float>::iterator bl = gMatchBorders[b].vertices[n].blending.begin(); bl != gMatchBorders[b].vertices[n].blending.end(); ++bl)
+					if(!IsCustom(bl->first))
 					if (bl->second > 0.0)
 					if (LowerPriorityNaturalTerrain(bl->first, lowest))
 						lowest = bl->first;
@@ -2328,6 +2341,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 						// HACK - does always extending the borders fix a bug?
 						DebugAssert(layer != -1);
+						DebugAssert(!IsCustom(border->info().terrain));
 						border->info().terrain_border.insert(layer);
 						spread = true;
 					}
@@ -2373,9 +2387,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	for (n = 0; n < gMatchBorders[b].edges.size(); ++n)
 	if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
 	if (gMatchBorders[b].edges[n].buddy->info().terrain != terrain_Water)
+	if(!IsCustom(gMatchBorders[b].edges[n].buddy->info().terrain))
 	{
 		// Handle the base terrain
 		if (gMatchBorders[b].edges[n].buddy->info().terrain != gMatchBorders[b].edges[n].base)
+		if(!IsCustom(gMatchBorders[b].edges[n].base))
 		{
 			AddZeroMixIfNeeded(gMatchBorders[b].edges[n].buddy, gMatchBorders[b].edges[n].base);
 			gMatchBorders[b].vertices[n].buddy->info().border_blend[gMatchBorders[b].edges[n].base] = 1.0;
@@ -2386,6 +2402,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 		// Handle any overlay layers...
 		for (set<int>::iterator bl = gMatchBorders[b].edges[n].borders.begin(); bl != gMatchBorders[b].edges[n].borders.end(); ++bl)
+		if(!IsCustom(*bl))
 		{
 			if (gMatchBorders[b].edges[n].buddy->info().terrain != *bl)
 			{
