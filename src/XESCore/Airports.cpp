@@ -345,6 +345,7 @@ void BurnInAirport(
 		if(!f->is_unbounded())
 			f->set_contained(true);
 		ioArea.remove_redundant_edges();
+		ioArea.fix_curves_direction();
 //		Polygon_set_2	filled_area(rep);
 //		ioArea = filled_area;
 	}

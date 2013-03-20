@@ -76,9 +76,6 @@
 #include "CompGeomDefs2.h"
 #include "STLUtils.h"
 
-// Debug code to validate that our half-edge directions are sane - leave off unless the polygon set goes haywire.
-#define CHECK_ARR_DIRECTIONS 0
-
 /******************************************************************************************************************************************************
  * GIS DATA
  ******************************************************************************************************************************************************/
@@ -468,8 +465,8 @@ public:
 		// curve should be with us or against us.  (By definition, the map will be 50-50 split
 		// between the two cases.)  Since we removed redundant edges, by definition there are 
 		// no degree > 2 vertices, and thus we can ensure that this can be applied everywhere.
-		swap_edges_to_contained();
-		CGAL_postcondition(m_arr->is_valid());		
+		fix_curves_direction();
+		CGAL_postcondition(this->is_valid());		
 	}
 
 	Polygon_set_2& operator=(const Arrangement_2& rhs)
@@ -478,8 +475,8 @@ public:
 	    delete m_arr;
 		m_arr = new Arrangement_2(rhs);
 		remove_redundant_edges();
-		swap_edges_to_contained();
-		CGAL_postcondition(m_arr->is_valid());		
+		fix_curves_direction();
+		CGAL_postcondition(this->is_valid());		
 		return *this;
 	}
 
@@ -497,80 +494,6 @@ public:
 		return (*this);
 	}
 	
-private:
-
-	#if CHECK_ARR_DIRECTIONS
-	bool is_same_dir(Arrangement_2::Halfedge_handle he)
-	{
-		return (he->curve().is_directed_right() == (he->direction() == CGAL::ARR_LEFT_TO_RIGHT));
-	}
-
-	bool is_ccb_consistent(Arrangement_2::Ccb_halfedge_circulator circ)
-	{
-		Arrangement_2::Ccb_halfedge_circulator stop(circ);
-		bool desired = is_same_dir(circ);
-		do {
-			if(is_same_dir(circ) != desired)
-				return false;
-		} while(++circ != stop);
-		return true;
-	}
-	
-	bool is_arr_consistent()
-	{
-		for(Arrangement_2::Face_iterator f = m_arr->faces_begin(); f != m_arr->faces_end(); ++f)
-		{
-			if(!f->is_unbounded())
-				if(!is_ccb_consistent(f->outer_ccb()))
-					return false;
-			for(Arrangement_2::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
-				if(!is_ccb_consistent(*h))
-					return false;					
-		}
-		return true;
-	}
-	#endif
-	
-	void swap_edges_to_contained()
-	{
-		// It turns out that it is a requirement of the GPS (and of polygons in general in CGAL) that the
-		// direction of the curves be correct for a given polygon - that is, they all go in the same 
-		// direction.  For arrangements built off of polygons, this is a non-issue - the 'raw' polygons wind 
-		// themselves correctly and the insertion code does the sane thing.
-		//
-		// But if, for example, we got our map from some Pmwx from some Shapefile, then the curves can be 
-		// going in all sorts of directions, particularly if the map has been processed to remove unnecessary
-		// cutlines, simplify, etc.
-		//
-		// So...we walk around the half-edges, and flip any curves that go against the edge that is in the
-		// interior of the arrangment (that is, faces for which 'contained' is true).
-		#if CHECK_ARR_DIRECTIONS
-		bool ok_before = is_arr_consistent();
-		#endif
-		for(Arrangement_2::Edge_iterator e = m_arr->edges_begin(); e != m_arr->edges_end(); ++e)
-		{
-			CGAL_assertion(e->face()->contained() != e->twin()->face()->contained());
-			
-			Arrangement_2::Halfedge_iterator he = e;
-			if(!he->face()->contained())
-				he = he->twin();
-			CGAL_assertion(he->face()->contained());
-			
-			if(he->curve().is_directed_right() != (he->direction() == CGAL::ARR_LEFT_TO_RIGHT))
-			{
-				Arrangement_2::X_monotone_curve_2 a = he->curve();
-				Arrangement_2::X_monotone_curve_2 b = a.flip();
-				he->curve() = b;
-			}
-		}
-		#if CHECK_ARR_DIRECTIONS
-		bool ok_after = is_arr_consistent();
-		printf("Before: %s, after: %s\n", ok_before ? "yes" : "no", ok_after ? "yes" : "no");
-		#endif
-		
-	}
-
-
 };
 
 
