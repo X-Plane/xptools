@@ -708,12 +708,23 @@ void WED_MapPoint(const UVMap_t&	in_map, const Point_2& ll, Point_2& uv)
 
 		if(want_it)
 		{
+			ll.x().exact();
+			ll.y().exact();
+			for(int i = 0; i < 3; ++i)
+			{
+				in_map[n].vertex(i).x().exact();
+				in_map[n].vertex(i).y().exact();
+			}
 			FastKernel::FT	total = in_map[n].area();
-
+			total.exact();
 			FastKernel::FT a0 = Triangle_2(in_map[n].vertex(1), in_map[n].vertex(2), ll).area() / total;
 			FastKernel::FT a1 = Triangle_2(in_map[n].vertex(2), in_map[n].vertex(0), ll).area() / total;
 			FastKernel::FT a2 = Triangle_2(in_map[n].vertex(0), in_map[n].vertex(1), ll).area() / total;
 
+			a0.exact();
+			a1.exact();
+			a2.exact();
+			
 			uv = CGAL::ORIGIN +
 				Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(0)) * a0 +
 				Vector_2(CGAL::ORIGIN, in_map[n+1].vertex(1)) * a1 +
