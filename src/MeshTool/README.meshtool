@@ -1,8 +1,10 @@
 MeshTool Instructions and Release Notes
 
 Version History
-		2.1 d1
+	3/20/13 2.1 b1
 		SHAPEFILE_CONTOUR introduced.
+		Fixed bug where shapefile masks can cause MT to fail.
+		Fixed nasty stretched textures where orthophotos sit on (but do not span) a DSF border.
 	6/4/11 2.0 r6
 		Fixed TIFF loader to work with tiled TIFFs.
 		Improved error reporting when orthophoto spans a DSF boundary.

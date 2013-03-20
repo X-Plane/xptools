@@ -423,6 +423,7 @@ public:
 	    delete m_arr;
 		m_arr = new Arrangement_2(rhs);
 		remove_redundant_edges();
+		fix_curves_direction();
 	}
 
 	Polygon_set_2& operator=(const Arrangement_2& rhs)
@@ -430,6 +431,7 @@ public:
 	    delete m_arr;
 		m_arr = new Arrangement_2(rhs);
 		remove_redundant_edges();
+		fix_curves_direction();
 		return *this;
 	}
 
