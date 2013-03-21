@@ -199,6 +199,20 @@ float				TokenizeFloat(const string& s)
 	else return val;
 }
 
+float				TokenizeFloatWithEnum(const string& s)
+{
+	if (s.empty()) return 0.0f;
+	if(s[0] < '0' || s[0] > '9')
+	{
+		int e = LookupToken(s.c_str());
+		if(e != -1)
+			return e;
+	}
+	float val = atof(s.c_str());
+	if (s[s.length()-1] == '%') return val / 100.0;
+	else return val;
+}
+
 inline  bool is_hex(char c)
 {
 	return ((c >= '0' && c <= '9') ||
@@ -310,6 +324,10 @@ int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...)
 		case 'f':
 			fp = va_arg(args, float *);
 			*fp = TokenizeFloat(tokens[n]);
+			break;
+		case 'F':
+			fp = va_arg(args, float *);
+			*fp = TokenizeFloatWithEnum(tokens[n]);
 			break;
 		case 'c':
 			cp = va_arg(args, RGBColor_t *);

@@ -131,5 +131,23 @@ inline	int	CategorizeVertex(const CDT& inMesh, CDT::Vertex_handle v, int water_t
 	return 0;
 }
 
+inline bool CanFlatten(CDT::Face_handle f)
+{
+	DebugAssert(f->info().orig_face != Face_handle());
+	return f->info().orig_face == Face_handle() ||
+		f->info().orig_face->data().GetParam(af_FlattenMode,FLATTEN) != NO_FLATTEN;
+}
+
+inline bool IsNoFlattenVertex(const CDT& inMesh, CDT::Vertex_handle v, int water_type)
+{
+	CDT::Face_circulator circ, stop;
+	circ = stop = inMesh.incident_faces(v);
+	DebugAssert(!inMesh.is_infinite(v));
+	do {
+		if(!inMesh.is_infinite(circ) && !CanFlatten(circ))
+			return true;
+	} while(++circ != stop);
+	return false;
+}
 
 #endif

@@ -1236,6 +1236,7 @@ void FlattenWater(CDT& ioMesh)
 	for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
 	{
 		if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
+		if(!IsNoFlattenVertex(ioMes,v))
 			to_do.insert(v);
 	}
 	//printf("Q: %zd vertices.\n", to_do.size());
@@ -1272,6 +1273,7 @@ void FlattenWater(CDT& ioMesh)
 		do {
 			if(!ioMesh.is_infinite(circ))
 			if(circ->info().terrain == terrain_Water)
+			if(CanFlatten(circ))
 			{
 				CDT::Vertex_handle n = circ->vertex(CDT::ccw(circ->index(v)));
 
@@ -1294,6 +1296,7 @@ void FlattenWater(CDT& ioMesh)
 	for(CDT::Finite_faces_iterator f = ioMesh.finite_faces_begin(); f != ioMesh.finite_faces_end(); ++f)
 	{
 		if (f->info().terrain == terrain_Water)
+		if(CanFlatten(f))
 			changed.insert(f);
 	}
 	
@@ -1352,6 +1355,7 @@ void FlattenWater(CDT& ioMesh)
 						if(circ != w)
 						if(!ioMesh.is_infinite(circ))
 						if(circ->info().terrain == terrain_Water)
+						if(CanFlatten(circ))
 						{
 							//printf("   Q face %p\n", &*circ);
 							changed.erase(circ);

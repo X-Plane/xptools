@@ -49,6 +49,42 @@
 // team if they want one.
 #define ADD_PT_PAIR(a,b,c,d,e)	curves.push_back(Curve_2(Segment_2((a),(b)),(e)));
 
+
+/*
+	ShapeIO config files:
+	
+	SHAPE_FEATURE		<column name list>	<value name list>	feature tag
+
+	If each of the cols matches each of the values, use this feature (and keep the immport).
+	Special col values: 
+				 *			Match any empty string
+				 -			Match null
+				 !-			Match any non-null (including empty string)
+
+
+	SHAPE_ARC_BRIDGE	<column name list>	<value name list>	resulting layer number
+
+	If each col has the respective value, the layer number is applied to the road
+
+	SHAPE_ARC_REVERSE	<column name list>	<value name list>
+	
+	If each col has the respective value, we reverse our direction from the shapefile direction.
+	
+	ROAD_LAYER_TAG		<single col name>
+	
+	This IDs the column where road layers come from.
+	
+	PROJ <projection params>
+	
+	This does a reprojection based on proj lib.
+	
+	COLUMN shape_col rf_key
+	
+	This maps a column in the shape file to a param of the GIS object.
+
+
+*/
+
 #if 0
 static void ISR(vector<Curve_2>& io_curves)
 {
@@ -96,6 +132,12 @@ static void ISR(vector<Curve_2>& io_curves)
 
 static double s_crop[4] = { -180.0, -90.0, 180.0, 90.0 };
 
+struct shape_import_data {
+	shape_import_data(int p) : feature(p) { }
+	int					feature;
+	GISParamMap			params;
+};
+
 struct shape_pattern_t {
 	vector<string>		columns;
 	vector<int>			dbf_id;
@@ -104,11 +146,21 @@ struct shape_pattern_t {
 };
 typedef vector<shape_pattern_t> shape_pattern_vector;
 
+struct import_column_t {
+	string				col_name;			// this is the name of the col in the shape file.
+	int					dbf_id;
+	int					rf_key;				// This is the enum to key off of for RF.
+};
+typedef vector<import_column_t>	import_column_vector;
+
+static import_column_vector	sImportColumns;
 static shape_pattern_vector	sShapeRules;
 static shape_pattern_vector sLineReverse;
 static shape_pattern_vector sLineBridge;
 static string				sLayerTag;
 static int					sLayerID;
+
+
 
 static projPJ 				sProj=NULL;
 
@@ -206,6 +258,17 @@ static int want_this_thing(DBFHandle db, int shape_id, const shape_pattern_vecto
 
 static bool ShapeLineImporter(const vector<string>& inTokenLine, void * inRef)
 {
+	if(inTokenLine[0] == "COLUMN")
+	{
+		if(inTokenLine.size() != 3)
+			return false;
+		
+		import_column_t ic;
+		ic.col_name = inTokenLine[1];
+		ic.rf_key = LookupTokenCreate(inTokenLine[2].c_str());
+		sImportColumns.push_back(ic);
+		return true;
+	}
 	if(inTokenLine[0] == "PROJ")
 	{
 		vector<char*> args;
@@ -292,7 +355,7 @@ public:
 
 	typedef	set<int>	Prop_t;
 
-	const vector<int> *	feature_map;
+	const vector<shape_import_data> *	feature_map;
 
 	virtual	void	initialize_properties(Prop_t& io_properties)
 	{
@@ -317,7 +380,8 @@ public:
 		face->set_contained(!in_properties.empty());
 		if(!in_properties.empty())
 		{
-			face->data().mTerrainType = (*feature_map)[*(--in_properties.end())];
+			face->data().mTerrainType = (*feature_map)[*(--in_properties.end())].feature;
+			face->data().mParams = (*feature_map)[*(--in_properties.end())].params;
 		}
 	}
 };
@@ -463,6 +527,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		RegisterLineHandler("SHAPE_ARC_REVERSE",ShapeLineImporter, NULL);
 		RegisterLineHandler("SHAPE_ARC_BRIDGE",ShapeLineImporter, NULL);
 		RegisterLineHandler("PROJ",ShapeLineImporter, NULL);
+		RegisterLineHandler("COLUMN", ShapeLineImporter, NULL);
 		first_time = false;
 	}
 
@@ -475,6 +540,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 	{
 		sShapeRules.clear();
 		sLineReverse.clear();
+		sImportColumns.clear();
 		sLineBridge.clear();
 		sLayerTag.clear();
 		if (!LoadConfigFile(feature_desc))
@@ -536,6 +602,8 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 		if(!sLayerTag.empty())
 			sLayerID = DBFGetFieldIndex(db, sLayerTag.c_str());
+		for(import_column_vector::iterator r = sImportColumns.begin(); r != sImportColumns.end(); ++r)
+			r->dbf_id = DBFGetFieldIndex(db, r->col_name.c_str());
 
 	}
 
@@ -551,8 +619,10 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 
 	PROGRESS_START(inFunc, 0, 1, "Reading shape file...")
 
-	vector<int>	feature_map, feature_rev, feature_lay;
-	feature_map.resize(entity_count,NO_VALUE);
+	vector<shape_import_data>	feature_map;
+	vector<int>					feature_rev, 
+								feature_lay;
+	feature_map.resize(entity_count,shape_import_data(NO_VALUE));
 	feature_rev.resize(entity_count,0);
 	feature_lay.resize(entity_count,0);
 
@@ -673,7 +743,18 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 		case SHPT_POLYGONM:
 			if (obj->nVertices > 0)
 			{
-				feature_map[n] = feat;
+				feature_map[n].feature = feat;
+				for(import_column_vector::iterator r = sImportColumns.begin(); r != sImportColumns.end(); ++r)
+				if(r->dbf_id != -1)
+				{
+					const char * field_val = DBFReadStringAttribute(db,obj->nShapeId,r->dbf_id);
+					if(field_val && field_val[0])
+					{
+						float f = TokenizeFloatWithEnum(field_val);
+						feature_map[n].params[r->rf_key] = f;
+					}
+				}
+
 				for (int part = 0; part < obj->nParts; ++part)
 				{
 					int start_idx = obj->panPartStart[part];
@@ -958,7 +1039,7 @@ bool	ReadShapeFile(const char * in_file, Pmwx& io_map, shp_Flags flags, const ch
 			for(EdgeKey_iterator k = eit->curve().data().begin(); k != eit->curve().data().end(); ++k)
 			if(*k < entity_count)
 			{
-				r.mFeatType = feature_map[*k];
+				r.mFeatType = feature_map[*k].feature;
 				r.mSourceHeight = r.mTargetHeight = feature_lay[*k];
 				if(feature_rev[*k])
 				{
@@ -1065,6 +1146,7 @@ bool	RasterShapeFile(
 		sLineReverse.clear();
 		sLineBridge.clear();
 		sLayerTag.clear();
+		sImportColumns.clear();
 		if (!LoadConfigFile(feature_desc))
 		{
 			printf("Could not load shape mapping file %s\n", feature_desc);
@@ -1124,6 +1206,8 @@ bool	RasterShapeFile(
 
 		if(!sLayerTag.empty())
 			sLayerID = DBFGetFieldIndex(db, sLayerTag.c_str());
+		for(import_column_vector::iterator r = sImportColumns.begin(); r != sImportColumns.end(); ++r)
+			r->dbf_id = DBFGetFieldIndex(db, r->col_name.c_str());
 
 	}
 
