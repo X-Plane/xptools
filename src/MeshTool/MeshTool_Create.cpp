@@ -51,6 +51,20 @@
 #include "ShapeIO.h"
 #include "FileUtils.h"
 
+// Shapefiles have double-precision floating point values. In theory the tile edges should be _exact_
+// (because a 64-bit float can easily represent the integer numbers from -180 to 180 without error.
+// But sometimes the sw that produces shapefiles does a lousy job of clipping and sets the DFS boundary
+// to be off by a tiny bit, e.g. instead of -72.0 they produce -71.99999999999999999.
+//
+// Because MT produces polygons exactly, this creates an infinitely thin land line on the edge of the 
+// DSF, which then promptly screws up everything.
+//
+// So: this sets up a DEM-aligned rounding grid of 2^31 units...this is about 1/20th of a mm alignment,
+// which is to say, no author is going to care about losing this 'precision'.  But it is quite a bit larger
+// than the 2^-45 maximum precision for a longitude value, which is to say, if there is a 1-bit clipping 
+// error this is likely to snap it.
+#define SNAP_FOR_MT 0x7FFFFFFF
+
 static DEMGeoMap			sDem;
 static CDT					sMesh;
 static AptVector			sApts;
@@ -392,7 +406,7 @@ void MT_LayerShapefile(const char * fi, const char * in_terrain_type)
 	
 	Pmwx	layer_map;
 	double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
-	if(!ReadShapeFile(fi,layer_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , in_terrain_type, b, 0.0, 0, ConsoleProgressFunc))
+	if(!ReadShapeFile(fi,layer_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , in_terrain_type, b, 0.0, SNAP_FOR_MT, ConsoleProgressFunc))
 		die_err("Unable to load shape file: %s\n", fi);
 
 	Pmwx *	new_map = new Pmwx;
@@ -519,7 +533,7 @@ void MT_Mask(const char * shapefile)
 	{
 		Pmwx	mask_map;
 		double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
-		if(!ReadShapeFile(shapefile,mask_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , "terrain_Water", b, 0.0, 0, ConsoleProgressFunc))
+		if(!ReadShapeFile(shapefile,mask_map,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , "terrain_Water", b, 0.0, SNAP_FOR_MT, ConsoleProgressFunc))
 			die_err("Unable to load shape file: %s\n", shapefile);
 
 		for(Pmwx::Face_iterator f = mask_map.faces_begin(); f != mask_map.faces_end(); ++f)
@@ -534,7 +548,7 @@ void MT_Contour(const char * shapefile)
 	const char * lu = FetchTokenString(NO_VALUE);
 	Pmwx	contours;
 	double b[4] = { sBounds[0],sBounds[1],sBounds[2],sBounds[3] };
-	if(!ReadShapeFile(shapefile,contours,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , lu, b, 0.0, 0, ConsoleProgressFunc))
+	if(!ReadShapeFile(shapefile,contours,shp_Mode_Landuse | shp_Mode_Simple | shp_Use_Crop , lu, b, 0.0, SNAP_FOR_MT, ConsoleProgressFunc))
 		die_err("Unable to load shape file: %s\n", shapefile);
 
 	for(Pmwx::Edge_iterator e = contours.edges_begin(); e != contours.edges_end(); ++e)
