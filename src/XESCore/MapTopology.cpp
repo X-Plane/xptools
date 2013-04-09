@@ -234,8 +234,9 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 		bool	lu_change = h->face()->data().mTerrainType != h->twin()->face()->data().mTerrainType;
 		bool	road = !h->data().mSegments.empty() || !h->twin()->data().mSegments.empty();
 		bool	stuff = h->face()->data().mAreaFeature.mFeatType != h->twin()->face()->data().mAreaFeature.mFeatType ||
-						(/*h->face()->data().mAreaFeature.mFeatType != NO_VALUE &&*/
-						h->face()->data().mAreaFeature.mParams != h->twin()->face()->data().mAreaFeature.mParams);
+						(h->face()->data().mAreaFeature.mFeatType != NO_VALUE &&
+						h->face()->data().mAreaFeature.mParams != h->twin()->face()->data().mAreaFeature.mParams) ||
+						(h->face()->data().mParams != h->twin()->face()->data().mParams);
 		bool	river = h->data().mParams.count(he_IsRiver) != 0 || h->twin()->data().mParams.count(he_IsRiver) != 0;
 		if (river && (iWet || oWet)) river = false;	// Wipe out rivers that are inside water bodies or coastlines too.
 		if (inKillRivers) river = false;
