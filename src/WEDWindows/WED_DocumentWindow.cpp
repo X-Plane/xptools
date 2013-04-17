@@ -376,7 +376,10 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ExportToRobin:		WED_DoExportRobin(mDocument); return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
+	
+#if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
+#endif	
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
 	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
@@ -466,7 +469,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportToRobin:	return 1;
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
+#if ROBIN_IMPORT_FEATURES
 	case wed_ImportRobin:	return 1;
+#endif	
 	case wed_Validate:		return 1;
 
 	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;

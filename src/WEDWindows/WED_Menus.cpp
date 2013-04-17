@@ -48,7 +48,9 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"-",					0,		0,								0,	0					},
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+#if ROBIN_IMPORT_FEATURES
 {	"Import from Global Airports",0,0,								0,	wed_ImportRobin		},
+#endif
 {	"-",					0,		0,								0,	0					},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},

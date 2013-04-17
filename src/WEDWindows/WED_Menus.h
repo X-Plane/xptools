@@ -42,7 +42,9 @@ enum {
 	wed_ExportPack,
 	wed_ExportToRobin,
 	wed_ImportDSF,
+#if ROBIN_IMPORT_FEATURES	
 	wed_ImportRobin,
+#endif	
 	// Export Target Submenu
 	wed_Export900,
 	wed_Export1000,

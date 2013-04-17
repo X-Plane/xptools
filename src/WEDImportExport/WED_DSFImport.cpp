@@ -671,6 +671,7 @@ void	WED_DoImportDSF(IResolver * resolver)
 
 }
 
+#if ROBIN_IMPORT_FEATURES
 void	WED_DoImportDSFText(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -698,3 +699,4 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		free(free_me);
 	}
 }
+#endif
