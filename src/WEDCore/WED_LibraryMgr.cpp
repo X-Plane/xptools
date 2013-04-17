@@ -121,6 +121,18 @@ string		WED_LibraryMgr::GetResourcePath(const string& r)
 	return me->second.real_path;
 }
 
+bool	WED_LibraryMgr::IsResourceDefault(const string& r)
+{
+	string fixed(r);
+	for(string::size_type p = 0; p < fixed.size(); ++p)
+	if(fixed[p] == ':' || fixed[p] == '\\')
+		fixed[p] = '/';
+	res_map_t::const_iterator me = res_table.find(fixed);
+	if (me==res_table.end()) return false;
+	return me->second.is_default;	
+}
+
+
 string		WED_LibraryMgr::CreateLocalResourcePath(const string& r)
 {
 	return gPackageMgr->ComputePath(local_package, r);
@@ -155,10 +167,13 @@ void		WED_LibraryMgr::Rescan()
 		gPackageMgr->GetNthPackagePath(p,pack_base);
 		pack_base += DIR_STR "Library.txt";
 
+		bool is_default_pack = gPackageMgr->IsPackageDefault(p);
+
 		MFMemFile * lib = MemFile_Open(pack_base.c_str());
 		if(lib)
 		{
 			gPackageMgr->GetNthPackagePath(p,pack_base);
+			
 			MFScanner	s;
 			MFS_init(&s, lib);
 
@@ -173,7 +188,7 @@ void		WED_LibraryMgr::Rescan()
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false);
+					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_EXTEND",false))
@@ -181,7 +196,7 @@ void		WED_LibraryMgr::Rescan()
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false);
+					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_EXCLUDE",false))
@@ -189,7 +204,7 @@ void		WED_LibraryMgr::Rescan()
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false);
+					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_BACKUP",false))
@@ -197,7 +212,7 @@ void		WED_LibraryMgr::Rescan()
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,true);
+					AccumResource(vpath, p, rpath,true,is_default_pack);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_RATIO",false))
@@ -206,7 +221,7 @@ void		WED_LibraryMgr::Rescan()
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false);
+					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}
 				MFS_string_eol(&s,NULL);
 			}
@@ -230,7 +245,7 @@ void		WED_LibraryMgr::Rescan()
 	BroadcastMessage(msg_LibraryChanged,0);
 }
 
-void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup)
+void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default)
 {
 	int								rt = res_None;
 	if(HasExtNoCase(path, ".obj"))	rt = res_Object;
@@ -255,6 +270,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.packages.insert(package);
 			new_info.real_path = rpath;
 			new_info.is_backup = is_backup;
+			new_info.is_default = is_default;
 			res_table.insert(res_map_t::value_type(p,new_info));
 		}
 		else
@@ -266,6 +282,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 				i->second.is_backup = false;
 				i->second.real_path = rpath;
 			}
+			if(is_default && !i->second.is_default)
+				i->second.is_default = true;
 		}
 
 		string par, f;
@@ -295,7 +313,7 @@ bool WED_LibraryMgr::AccumLocalFile(const char * filename, bool is_dir, void * r
 		string r = info->partial + "/" + filename;
 		string f = info->full + DIR_STR + filename;
 		r.erase(0,1);
-		info->who->AccumResource(r, pack_Local, f,false);
+		info->who->AccumResource(r, pack_Local, f,false,false);
 	}
 	return false;
 }

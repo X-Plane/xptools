@@ -26,6 +26,12 @@
 
 #include "WED_GISPolygon.h"
 
+enum {
+	dsf_fill_area = 0,
+	dsf_fill_line = 1,
+	dsf_fill_points = 2
+};
+
 class	WED_ForestPlacement : public WED_GISPolygon {
 
 DECLARE_PERSISTENT(WED_ForestPlacement)
@@ -45,7 +51,7 @@ public:
 
 protected:
 
-	virtual	bool		IsInteriorFilled(void) const { return GetFillMode() == 0; }
+	virtual	bool		IsInteriorFilled(void) const { return GetFillMode() == dsf_fill_area; }
 
 private:
 

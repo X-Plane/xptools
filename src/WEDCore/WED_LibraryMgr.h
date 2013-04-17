@@ -26,6 +26,7 @@
 
 #include "GUI_Broadcaster.h"
 #include "GUI_Listener.h"
+#include "IBase.h"
 
 enum {
 	res_None,
@@ -45,7 +46,7 @@ enum {
 	pack_All		= -3
 };
 
-class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener {
+class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
 
 				 WED_LibraryMgr(const string& local_package);
@@ -55,6 +56,8 @@ public:
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);
 	string		GetResourcePath(const string& r);
+	
+	bool		IsResourceDefault(const string& r);
 	
 	string		CreateLocalResourcePath(const string& r);
 
@@ -66,7 +69,7 @@ public:
 private:
 
 	void			Rescan();
-	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup);
+	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
 	struct	res_info_t {
@@ -74,6 +77,7 @@ private:
 		set<int>	packages;
 		string		real_path;
 		bool		is_backup;
+		bool		is_default;
 	};
 
 	struct compare_str_no_case {

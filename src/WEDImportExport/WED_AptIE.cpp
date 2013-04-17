@@ -47,6 +47,7 @@
 #include "WED_TaxiRoute.h"
 #include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
+#include "WED_Validate.h"
 
 #include "AptIO.h"
 #include "AptAlgs.h"
@@ -331,8 +332,19 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	AptExportRecursive(container, apts);
-	WriteAptFile(file_path,apts);
+	WriteAptFile(file_path,apts, gExportTarget == wet_xplane_900 ? 850 : 1000);
 }
+
+void	WED_AptExport(
+				WED_Thing *		container,
+				int (*			print_func)(void *, const char *, ...),
+				void *			ref)
+{
+	AptVector	apts;
+	AptExportRecursive(container, apts);
+	WriteAptFileProcs(print_func, ref, apts, gExportTarget == wet_xplane_900 ? 850 : 1000);
+}
+
 
 int		WED_CanExportApt(IResolver * resolver)
 {
@@ -662,179 +674,4 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive)
 	
 		WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive);
 	}
-}
-
-static set<string>	s_used_rwy;
-static set<string>	s_used_hel;
-
-static WED_Thing * ValidateRecursive(WED_Thing * who)
-{
-	string name, n1, n2;
-	string::size_type p;
-	int i;
-	who->GetName(name);
-	string msg;
-	if (who->GetClass() == WED_Runway::sClass || who->GetClass() == WED_Sealane::sClass)
-	{
-		if (s_used_rwy.count(name))	msg = "The runway/sealane name '" + name + "' has already been used.";
-		s_used_rwy.insert(name);
-		p = name.find("/");
-		if (p != name.npos)
-		{
-			n1 = name.substr(0,p);
-			n2 = name.substr(p+1);
-		} else
-			n1 = name;
-
-		int suf1 = 0, suf2 = 0;
-		int	num1 = -1, num2 = -1;
-
-		if (n1.empty())	msg = "The runway/sealane '" + name + "' has an empty low-end name.";
-		else {
-			int suffix = n1[n1.length()-1];
-			if (suffix < '0' || suffix > '9')
-			{
-				if (suffix == 'L' || suffix == 'R' || suffix == 'C') suf1 = suffix;
-				else msg = "The runway/sealane '" + name + "' has an illegal suffix for the low-end runway.";
-				n1.erase(n1.length()-1);
-			}
-
-			for (i = 0; i < n1.length(); ++i)
-			if (n1[i] < '0' || n1[i] > '9')
-			{
-				msg = "The runway/sealane '" + name + "' has an illegal characters in its low-end name.";
-				break;
-			}
-			if (i == n1.length())
-			{
-				num1 = atoi(n1.c_str());
-			}
-			if (num1 < 1 || num1 > 36)
-			{
-				msg = "The runway/sealane '" + name + "' has an illegal low-end number, which must be between 1 and 36.";
-				num1 = -1;
-			}
-		}
-
-		if (p != name.npos)
-		{
-			if (n2.empty())	msg = "The runway/sealane '" + name + "' has an empty high-end name.";
-			else {
-				int suffix = n2[n2.length()-1];
-				if (suffix < '0' || suffix > '9')
-				{
-					if (suffix == 'L' || suffix == 'R' || suffix == 'C') suf2 = suffix;
-					else msg = "The runway/sealane '" + name + "' has an illegal suffix for the high-end runway.";
-					n2.erase(n2.length()-1);
-				}
-
-				for (i = 0; i < n2.length(); ++i)
-				if (n2[i] < '0' || n2[i] > '9')
-				{
-					msg = "The runway/sealane '" + name + "' has an illegal characters in its high-end name.";
-					break;
-				}
-				if (i == n2.length())
-				{
-					num2 = atoi(n2.c_str());
-				}
-				if (num2 < 19 || num2 > 36)
-				{
-					msg = "The runway/sealane '" + name + "' has an illegal high-end number, which must be between 19 and 36.";
-					num2 = -1;
-				}
-			}
-		}
-
-		if (suf1 != 0 && suf2 != 0)
-		{
-			if ((suf1 == 'L' && suf2 != 'R') ||
-				(suf1 == 'R' && suf2 != 'L') ||
-				(suf1 == 'C' && suf2 != 'C'))
-					msg = "The runway/sealane '" + name + "' has mismatched suffixes - check L vs R, etc.";
-		}
-		if (num1 != -1 && num2 != -1)
-		{
-			if (num2 < num1)
-				msg = "The runway/sealane '" + name + "' has mismatched runway numbers - the low number must be first.'";
-			else if (num2 != num1 + 18)
-				msg = "The runway/sealane '" + name + "' has mismatched runway numbers - high end is not the reciprocal of the low-end.";
-		}
-
-		if (msg.empty())
-		{
-			WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
-			if (lw->GetWidth() < 1.0) msg = "The runway/sealane '" + name + "' must be at least one meter wide.";
-
-			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
-			if (rwy)
-			{
-				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced threshholds.";
-			}
-		}
-	}
-	if (who->GetClass() == WED_Helipad::sClass)
-	{
-		if (s_used_hel.count(name))	msg = "The helipad name '" + name + "' has already been used.";
-		s_used_hel.insert(name);
-
-		n1 = name;
-		if (n1.empty())	msg = "The selected helipad has no name.";
-		else {
-			if (n1[0] != 'H')	msg = "The helipad '" + name + "' does not start with the letter H.";
-			else {
-				n1.erase(0,1);
-				for (int i = 0; i < n1.length(); ++i)
-				{
-					if (n1[i] < '0' || n1[i] > '9')
-					{
-						msg = "The helipad '" + name + "' conntains illegal characters in its name.  It must be in the form H<number>.";
-						break;
-					}
-				}
-			}
-		}
-		if (msg.empty())
-		{
-			WED_Helipad * heli = dynamic_cast<WED_Helipad *>(who);
-			if (heli->GetWidth() < 1.0) msg = "The helipad '" + name + "' is less than one meter wide.";
-			if (heli->GetLength() < 1.0) msg = "The helipad '" + name + "' is less than one meter long.";
-		}
-	}
-	if(who->GetClass() == WED_Airport::sClass)
-	{
-		s_used_hel.clear();
-		s_used_rwy.clear();
-	}
-
-	if (!msg.empty())
-	{
-		DoUserAlert(msg.c_str());
-		return who;
-	}
-
-	int nn = who->CountChildren();
-	for (int n = 0; n < nn; ++n)
-	{
-		WED_Thing * fail = ValidateRecursive(who->GetNthChild(n));
-		if (fail) return fail;
-	}
-	return NULL;
-}
-
-bool	WED_ValidateApt(IResolver * resolver)
-{
-	s_used_hel.clear();
-	s_used_rwy.clear();
-	WED_Thing * wrl = WED_GetWorld(resolver);
-	ISelection * sel = WED_GetSelect(resolver);
-	WED_Thing * bad_guy = ValidateRecursive(wrl);
-	if (bad_guy)
-	{
-		wrl->StartOperation("Select Invalid");
-		sel->Select(bad_guy);
-		wrl->CommitOperation();
-		return false;
-	}
-	return true;
 }

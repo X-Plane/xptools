@@ -70,9 +70,10 @@ void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n);
 void PointSequenceToVector(IGISPointSequence * ps, WED_MapZoomerNew * z, vector<Point2>& pts, bool get_uv, vector<int>& contours, int is_hole);
 void SideToPoints(IGISPointSequence * ps, int n, WED_MapZoomerNew * z,  vector<Point2>& out_pts);
 
+#if !NO_CGAL_BEZIER
 bool IsBezierPolyScrewed(IGISPolygon * poly, vector<Point2> * where);
 bool IsBezierSequenceScrewed(IGISPointSequence * ps, vector<Point2> * where);
-
+#endif
 
 
 

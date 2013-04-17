@@ -118,6 +118,12 @@ void		WED_PackageMgr::GetNthPackagePath(int n, string& package) const
 	package = system_path + DIR_STR DEFAULT_PACKAGE_PATH DIR_STR + default_package_names[n];
 }
 
+bool		WED_PackageMgr::IsPackageDefault(int n) const
+{
+	return n >= (custom_package_names.size() + global_package_names.size());
+}
+
+
 
 void		WED_PackageMgr::RenameCustomPackage(int n, const string& new_name)
 {

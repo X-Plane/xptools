@@ -22,12 +22,13 @@
  */
 
 #include "WED_DSFExport.h"
+#include "WED_UIDefs.h"
 #include "WED_AptIE.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "WED_Entity.h"
 #include "PlatformUtils.h"
-#include "GISUtils.h"
+//#include "GISUtils.h"
 #include "CompGeomDefs2.h"
 #include "WED_Group.h"
 #include "WED_Version.h"
@@ -43,11 +44,53 @@
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ExclusionZone.h"
 #include "WED_EnumSystem.h"
+#include "WED_Airport.h"
 #include "WED_GISUtils.h"
+#include "WED_Group.h"
+#include "WED_Validate.h"
 #include "MathUtils.h"
+#include "DSF2Text.h"
+#include "WED_Clipping.h"
+#include "zip.h"
+
+// This is how much outside the DSF bounds we can legally go.
+// Between you, me, and the wall, X-Plane 10.21 actually allows
+// a full 0.5 degrees of 'extra'.  But...that's a LOT more than we
+// should ever need.  So: set our safe bounds WELL inside X-Plane's.
+// If we lose a bit or 2 in the DSF encoder, we won't have written
+// something on the ragged edge.
+#define DSF_EXTRA_1021 0.25
+
+
+#if !NO_CGAL_BEZIER
 #include "Bezier.h"
-#include <CGAL/Boolean_set_operations_2.h>
-#include "GISTool_Globals.h"
+#endif
+//#include <CGAL/Boolean_set_operations_2.h>
+//#include "GISTool_Globals.h"
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+int zip_printf(void * fi, const char * fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	char tmp[4000];
+	int l = vsprintf(tmp,fmt,args);
+	
+	zipWriteInFileInZip((zipFile) fi, tmp, l);
+}
+
+
+
+//---------------------------------------------------------------------------------------------------------------------------------------
+
+// stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
+inline int	latlon_bucket(int p)
+{
+	if (p > 0) return (p / 10) * 10;
+	else return ((-p + 9) / 10) * -10;
+}
+
 
 template <class __Iterator>
 __Iterator find_contiguous_beziers(__Iterator b, __Iterator e)
@@ -84,41 +127,14 @@ static bool one_winding(const vector<Bezier2>& v)
 // 2. CGAL sometimes gives us a point that is fractionally outside the DSF due to a rounding error.
 // So: apply clamping, but flag when we are off by more than 1 meter.  (CGAL is significantly better
 // than this.
-#define MAX_OUTSIDE 0.00001
+//#define MAX_OUTSIDE 0.00001
+
 static void gentle_crop(Point2& p, const Bbox2& bounds, bool& hard_crop)
 {
-	double x_outside = max(bounds.xmin() - p.x(), p.x() - bounds.xmax());
-	double y_outside = max(bounds.ymin() - p.y(), p.y() - bounds.ymax());
-	if(x_outside > MAX_OUTSIDE || y_outside > MAX_OUTSIDE)
-		hard_crop = true;
+	Point2 op(p);
 	p = bounds.clamp(p);
-}
-
-template <typename T>
-bool shape_in_bbox(const vector<T>& stuff, const Bbox2& bounds)
-{
-	for(typename vector<T>::const_iterator s = stuff.begin(); s != stuff.end(); ++s)
-		if(!shape_in_bbox(*s,bounds))
-			return false;
-	return true;
-}
-
-bool shape_in_bbox(const Segment2p& s, const Bbox2& bounds)
-{
-	return bounds.contains(s.p1) && bounds.contains(s.p2);
-}
-
-bool shape_in_bbox(const Bezier2p& s, const Bbox2& bounds)
-{
-	if(s.is_segment())
-		return bounds.contains(s.p1) && bounds.contains(s.p2);
-	else
-	{
-		return	bounds.contains(s.p1) && 
-				bounds.contains(s.p2) &&
-				bounds.contains(s.c1) &&
-				bounds.contains(s.p2 + Vector2(s.c2,s.p2));		
-	}
+	if(op != p) 
+		hard_crop = true;
 }
 
 template <typename T>
@@ -126,329 +142,6 @@ bool bad_match(const T& s1, const T& s2)
 {
 	return s1.p1 != s2.p2;
 }
-
-/************************************************************************************************************************************************
- * BEZIER AND SEGMENT POLYGON CUTTING
- ************************************************************************************************************************************************/
-
-// These routines cut down polygons with holes into sets of polygons with holes based on a bounding box.
-// Note that one polygon can be many - for example, if the top of a U is cut from, we get two small polygons.
-
-static void push_mono_curves(Bezier_curve_2 b, Bezier_polygon_2& out_pol)
-{
-	Bezier_traits_2 traits;
-	Bezier_traits_2::Make_x_monotone_2	monifier(traits.make_x_monotone_2_object());
-	
-	vector<CGAL::Object>	mono_curves;
-	
-	monifier(b, back_inserter(mono_curves));
-	
-	for(vector<CGAL::Object>::iterator o = mono_curves.begin(); o != mono_curves.end(); ++o)
-	{
-		Bezier_polygon_2::X_monotone_curve_2	c;
-		if(CGAL::assign(c,*o))
-			out_pol.push_back(c);
-		else
-			Assert(!"No cast.");
-	}
-}
-
-void ClipBezierPolygon(Bezier_polygon_with_holes_2& poly, const Bbox2& bounds, vector<Bezier_polygon_with_holes_2>& cuts)
-{
-	Bezier_polygon_2	clip;
-
-	push_mono_curves(ben2cgal(Bezier2(bounds.bottom_side())),clip);
-	push_mono_curves(ben2cgal(Bezier2(bounds.right_side())),clip);
-	push_mono_curves(ben2cgal(Bezier2(bounds.top_side())),clip);
-	push_mono_curves(ben2cgal(Bezier2(bounds.left_side())),clip);
-
-	CGAL::intersection(poly, clip, back_inserter(cuts));
-
-}
-
-void ClipPolygon(Polygon_with_holes_2& poly, const Bbox2& bounds, vector<Polygon_with_holes_2>& cuts)
-{
-	Polygon_2	clip;
-	clip.push_back(Point_2(bounds.xmin(), bounds.ymin()));
-	clip.push_back(Point_2(bounds.xmax(), bounds.ymin()));
-	clip.push_back(Point_2(bounds.xmax(), bounds.ymax()));
-	clip.push_back(Point_2(bounds.xmin(), bounds.ymax()));
-	
-	CGAL::intersection(poly,clip,back_inserter(cuts));
-}
-
-
-/************************************************************************************************************************************************
- * BEZIER AND SEGMENT CLIPPING
- ************************************************************************************************************************************************/
-
-// These routines push lists of curves that are cropped - we don't use the CGAL routines because we don't want curves induced at the crop edges;
-// instead we simply cut each segment and keep some of them.
- 
-template <typename Bezier>
-void	push_cuts_x(const Bezier& b, double t1, double t2, vector<Bezier>& out_curves, double x, bool want_right)
-{
-	Bezier	sub;
-	b.subcurve(sub, t1,t2);
-	if(t1 > 0.0 && t1 < 1.0)
-		sub.p1.x_ = x;
-	if(t2 > 0.0 && t2 < 1.0)
-		sub.p2.x_ = x;
-		
-	if(want_right)
-	{
-		if( sub.p1.x() < x ||
-			sub.p2.x() < x ||
-			sub.c1.x() < x ||
-			sub.c2.x() < x) return;
-	} else {
-		if( sub.p1.x() > x ||
-			sub.p2.x() > x ||
-			sub.c1.x() > x ||
-			sub.c2.x() > x) return;
-	}
-	out_curves.push_back(sub);
-}
-
-template <typename Segment>
-void push_cuts_x(const Segment& s, vector<Segment>& out_curves, double x, bool out_right)
-{
-	if(s.p1.x() <= x && s.p2.x() <= x && !out_right)			// These two cases are when we are entirely on the clip side	.
-		out_curves.push_back(s);								// we can just take the whole segment.
-	else if(s.p1.x() >= x && s.p2.x() >= x && out_right)
-		out_curves.push_back(s);
-	else if (s.p1.x() < x && s.p2.x() > x)						// Left to right segment, take the half we want.
-	{
-		out_curves.push_back(s);
-		if(out_right)		out_curves.back().p1 = Point2(x,s.y_at_x(x));
-		else				out_curves.back().p2 = Point2(x,s.y_at_x(x));
-	}
-	else if (s.p2.x() < x && s.p1.x() > x)
-	{
-		out_curves.push_back(s);
-		if(out_right)		out_curves.back().p2 = Point2(x,s.y_at_x(x));
-		else				out_curves.back().p1 = Point2(x,s.y_at_x(x));
-	}	
-}
-
-
-template<typename Segment, typename Bezier>
-void push_cuts_x(const Segment& s, vector<Bezier>& out_curves, double x, bool out_right)
-{
-	if(s.p1.x() <= x && s.p2.x() <= x && !out_right)			// These two cases are when we are entirely on the clip side	.
-		out_curves.push_back(s);								// we can just take the whole segment.
-	else if(s.p1.x() >= x && s.p2.x() >= x && out_right)
-		out_curves.push_back(s);
-	else if (s.p1.x() < x && s.p2.x() > x)						// Left to right segment, take the half we want.
-	{
-		out_curves.push_back(s);
-		if(out_right)		out_curves.back().p1 = Point2(x,s.y_at_x(x));
-		else				out_curves.back().p2 = Point2(x,s.y_at_x(x));
-	}
-	else if (s.p2.x() < x && s.p1.x() > x)
-	{
-		out_curves.push_back(s);
-		if(out_right)		out_curves.back().p2 = Point2(x,s.y_at_x(x));
-		else				out_curves.back().p1 = Point2(x,s.y_at_x(x));
-	}	
-}
-
-
-template <typename Bezier>
-void	push_cuts_y(const Bezier& b, double t1, double t2, vector<Bezier>& out_curves, double y, bool want_top)
-{
-	Bezier	sub;
-	b.subcurve(sub, t1,t2);
-	if(t1 > 0.0 && t1 < 1.0)
-		sub.p1.y_ = y;
-	if(t2 > 0.0 && t2 < 1.0)
-		sub.p2.y_ = y;
-		
-	if(want_top)
-	{
-		if( sub.p1.y() < y ||
-			sub.p2.y() < y ||
-			sub.c1.y() < y ||
-			sub.c2.y() < y) return;
-	} else {
-		if( sub.p1.y() > y ||
-			sub.p2.y() > y ||
-			sub.c1.y() > y ||
-			sub.c2.y() > y) return;
-	}
-	out_curves.push_back(sub);
-}
-
-
-template<typename Segment>
-void push_cuts_y(const Segment& s, vector<Segment>& out_curves, double y, bool out_top)
-{
-	if(s.p1.y() <= y && s.p2.y() <= y && !out_top)			// These two cases are when we are entirely on the clip side	.
-		out_curves.push_back(s);								// we can just take the whole segment.
-	else if(s.p1.y() >= y && s.p2.y() >= y && out_top)
-		out_curves.push_back(s);
-	else if (s.p1.y() < y && s.p2.y() > y)						// Left to right segment, take the half we want.
-	{
-		out_curves.push_back(s);
-		if(out_top)		out_curves.back().p1 = Point2(s.x_at_y(y),y);
-		else			out_curves.back().p2 = Point2(s.x_at_y(y),y);
-	}
-	else if (s.p2.y() < y && s.p1.y() > y)
-	{
-		out_curves.push_back(s);
-		if(out_top)		out_curves.back().p2 = Point2(s.x_at_y(y),y);
-		else			out_curves.back().p1 = Point2(s.x_at_y(y),y);
-	}	
-}
-
-template<typename Segment, typename Bezier>
-void push_cuts_y(const Segment& s, vector<Bezier>& out_curves, double y, bool out_top)
-{
-	if(s.p1.y() <= y && s.p2.y() <= y && !out_top)			// These two cases are when we are entirely on the clip side	.
-		out_curves.push_back(s);								// we can just take the whole segment.
-	else if(s.p1.y() >= y && s.p2.y() >= y && out_top)
-		out_curves.push_back(s);
-	else if (s.p1.y() < y && s.p2.y() > y)						// Left to right segment, take the half we want.
-	{
-		out_curves.push_back(s);
-		if(out_top)		out_curves.back().p1 = Point2(s.x_at_y(y),y);
-		else			out_curves.back().p2 = Point2(s.x_at_y(y),y);
-	}
-	else if (s.p2.y() < y && s.p1.y() > y)
-	{
-		out_curves.push_back(s);
-		if(out_top)		out_curves.back().p2 = Point2(s.x_at_y(y),y);
-		else			out_curves.back().p1 = Point2(s.x_at_y(y),y);
-	}	
-}
-
-
-template <typename Segment>
-void	CropSegmentChainVertical(const vector<Segment>& in_chain, vector<Segment>& out_chain, double x, bool want_right)
-{
-	out_chain.clear();
-	for(typename vector<Segment>::const_iterator b = in_chain.begin(); b != in_chain.end(); ++b)
-	{
-		push_cuts_x(*b, out_chain, x, want_right);
-	}
-}
-
-template <typename Segment>
-void	CropSegmentChainHorizontal(const vector<Segment>& in_chain, vector<Segment>& out_chain, double y, bool want_top)
-{
-	out_chain.clear();
-	for(typename vector<Segment>::const_iterator b = in_chain.begin(); b != in_chain.end(); ++b)
-	{
-		push_cuts_y(*b, out_chain,y, want_top);
-	}
-}
-
-template<typename Bezier>
-void	CropBezierChainVertical(const vector<Bezier>& in_chain, vector<Bezier>& out_chain, double x, bool want_right)
-{
-	out_chain.clear();
-	for(typename vector<Bezier>::const_iterator b = in_chain.begin(); b != in_chain.end(); ++b)
-	{
-		if(b->is_segment())
-		{
-			push_cuts_x(b->as_segment(), out_chain, x, want_right);		
-		}
-		else
-		{
-			double	t[4];
-
-			int cuts = b->t_at_x(x,t);
-			switch(cuts) {
-			case 0:
-				push_cuts_x(*b, 0,1,out_chain, x, want_right);	
-				break;
-			case 1:
-				push_cuts_x(*b, 0,t[0],out_chain, x, want_right);	
-				push_cuts_x(*b, t[0],1,out_chain, x, want_right);	
-				break;
-			case 2:
-				push_cuts_x(*b, 0,t[0],out_chain, x, want_right);	
-				push_cuts_x(*b, t[0],t[1],out_chain, x, want_right);	
-				push_cuts_x(*b, t[1],1,out_chain, x, want_right);	
-				break;
-			case 3:
-				push_cuts_x(*b, 0,t[0],out_chain, x, want_right);	
-				push_cuts_x(*b, t[0],t[1],out_chain, x, want_right);	
-				push_cuts_x(*b, t[1],t[2],out_chain, x, want_right);	
-				push_cuts_x(*b, t[2],1,out_chain, x, want_right);	
-				break;
-			default:
-				DebugAssert(!"Illegal t_at_x");
-				break;
-			}
-		}
-	}
-}
-
-template<typename Bezier>
-void	CropBezierChainHorizontal(const vector<Bezier>& in_chain, vector<Bezier>& out_chain, double y, bool want_top)
-{
-	out_chain.clear();
-	for(typename vector<Bezier>::const_iterator b = in_chain.begin(); b != in_chain.end(); ++b)
-	{
-		if(b->is_segment())
-		{
-			push_cuts_y(b->as_segment(), out_chain, y, want_top);		
-		}
-		else
-		{
-			double	t[4];
-
-			int cuts = b->t_at_y(y,t);
-			switch(cuts) {
-			case 0:
-				push_cuts_y(*b, 0,1,out_chain, y, want_top);	
-				break;
-			case 1:
-				push_cuts_y(*b, 0,t[0],out_chain, y, want_top);	
-				push_cuts_y(*b, t[0],1,out_chain, y, want_top);	
-				break;
-			case 2:
-				push_cuts_y(*b, 0,t[0],out_chain, y, want_top);	
-				push_cuts_y(*b, t[0],t[1],out_chain, y, want_top);	
-				push_cuts_y(*b, t[1],1,out_chain, y, want_top);	
-				break;
-			case 3:
-				push_cuts_y(*b, 0,t[0],out_chain, y, want_top);	
-				push_cuts_y(*b, t[0],t[1],out_chain, y, want_top);	
-				push_cuts_y(*b, t[1],t[2],out_chain, y, want_top);	
-				push_cuts_y(*b, t[2],1,out_chain, y, want_top);	
-				break;
-			default:
-				DebugAssert(!"Illegal t_at_y");
-				break;
-			}
-		}
-	}
-}
-
-template<typename Bezier>
-void CropBezierChainBox(const vector<Bezier>& in_chain, vector<Bezier>& out_chain, const Bbox2& box)
-{
-	vector<Bezier>	t;
-	CropBezierChainVertical(in_chain, t, box.xmin(), true);
-	CropBezierChainVertical(t, out_chain, box.xmax(), false);
-
-	CropBezierChainHorizontal(out_chain, t, box.ymin(), true);
-	CropBezierChainHorizontal(t, out_chain, box.ymax(), false);
-}
-
-template<typename Segment>
-void CropSegmentChainBox(const vector<Segment>& in_chain, vector<Segment>& out_chain, const Bbox2& box)
-{
-	vector<Segment>	t;
-	CropSegmentChainVertical(in_chain, t, box.xmin(), true);
-	CropSegmentChainVertical(t, out_chain, box.xmax(), false);
-
-	CropSegmentChainHorizontal(out_chain, t, box.ymin(), true);
-	CropSegmentChainHorizontal(t, out_chain, box.ymax(), false);
-}
-
 /************************************************************************************************************************************************
  * DSF EXPORT UTILS
  ************************************************************************************************************************************************/
@@ -506,43 +199,6 @@ static void strip_path(string& f)
 	if (p != f.npos) f.erase(0,p+1);
 }
 
-void assemble_dsf_pt(double c[8], const Point_2& pt, const Point_2 * bez, UVMap_t * uv, const Bbox2& bounds)
-{	
-	Point2	p = cgal2ben(pt);
-	gentle_crop(p, bounds, g_dropped_pts);
-	c[0] = p.x();
-	c[1] = p.y();
-
-	if(bez)
-	{
-		Point2 b = cgal2ben(*bez);
-		gentle_crop(b, bounds, g_dropped_pts);
-		c[2] = b.x();
-		c[3] = b.y();
-	}
-	if(!bez && uv)
-	{
-		Point_2		u;
-		WED_MapPoint(*uv,pt,u);
-		Point2 uu = cgal2ben(u);
-		c[2] = uu.x();
-		c[3] = uu.y();
-	}
-	if(bez && uv)
-	{
-		Point_2		u, v;
-		WED_MapPoint(*uv,pt,u);
-		WED_MapPoint(*uv,*bez,v);
-		Point2 uu = cgal2ben(u);
-		Point2 vv = cgal2ben(v);
-		c[4] = uu.x();
-		c[5] = uu.y();
-		c[6] = vv.x();
-		c[7] = vv.y();
-	}
-}	
-
-
 void assemble_dsf_pt(double c[8], const Point2& pt, const Point2 * bez, UVMap_t * uv, const Bbox2& bounds)
 {	
 	Point2	p = pt;
@@ -559,23 +215,20 @@ void assemble_dsf_pt(double c[8], const Point2& pt, const Point2 * bez, UVMap_t 
 	}
 	if(!bez && uv)
 	{
-		Point_2		u;
-		WED_MapPoint(*uv,ben2cgal<Point_2>(pt),u);
-		Point2 uu = cgal2ben(u);
-		c[2] = uu.x();
-		c[3] = uu.y();
+		Point2		u;
+		WED_MapPoint(*uv,pt,u);
+		c[2] = u.x();
+		c[3] = u.y();
 	}
 	if(bez && uv)
 	{
-		Point_2		u, v;
-		WED_MapPoint(*uv,ben2cgal<Point_2>(pt),u);
-		WED_MapPoint(*uv,ben2cgal<Point_2>(*bez),v);
-		Point2 uu = cgal2ben(u);
-		Point2 vv = cgal2ben(v);
-		c[4] = uu.x();
-		c[5] = uu.y();
-		c[6] = vv.x();
-		c[7] = vv.y();
+		Point2		u, v;
+		WED_MapPoint(*uv,pt,u);
+		WED_MapPoint(*uv,*bez,v);
+		c[4] = u.x();
+		c[5] = u.y();
+		c[6] = v.x();
+		c[7] = v.y();
 	}
 }	
 
@@ -837,25 +490,18 @@ void DSF_AccumPts(		vector<Point2>::const_iterator		begin,
  ************************************************************************************************************************************************/
 
 void DSF_AccumPolygonBezier(
-						Bezier_polygon_2&					poly,
+						BezierPolygon2&						poly,
 						UVMap_t *							uvmap,
 						const Bbox2&						bounds,
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-	vector<Bezier2>	converted;
-	for(Bezier_polygon_2::Curve_iterator e = poly.curves_begin(); e != poly.curves_end(); ++e)
-	{		
-		converted.push_back(cgal2ben(*e));
-	}
-	
 	vector<BezierPoint2>	pts, pts3;
 	
-	BezierToBezierPointSeq(converted.begin(),converted.end(),back_inserter(pts));
+	BezierToBezierPointSeq(poly.begin(),poly.end(),back_inserter(pts));
 	BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts3));
 
-//	PROBLEM: CGAL not exact matched endpoints!
-//	DebugAssert(pts3.front() == pts3.back());
+	DebugAssert(pts3.front() == pts3.back());
 	pts3.pop_back();
 	
 	for(int p = 0; p < pts3.size(); ++p)
@@ -868,7 +514,7 @@ void DSF_AccumPolygonBezier(
 }						
 
 void DSF_AccumPolygonBezier(
-						const vector<Bezier2p>&				poly,
+						const BezierPolygon2p&				poly,
 						const Bbox2&						bounds,
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
@@ -878,8 +524,6 @@ void DSF_AccumPolygonBezier(
 	BezierToBezierPointSeq(poly.begin(),poly.end(),back_inserter(pts));
 	BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts3));
 
-//	PROBLEM: CGAL not exact matched endpoints!
-//	DebugAssert(pts3.front() == pts3.back());
 	pts3.pop_back();
 	
 	for(int p = 0; p < pts3.size(); ++p)
@@ -892,13 +536,13 @@ void DSF_AccumPolygonBezier(
 }						
 
 void DSF_AccumPolygon(
-						Polygon_2&							poly,
+						Polygon2&							poly,
 						UVMap_t *							uvmap,
 						const Bbox2&						bounds,
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {	
-	for(Polygon_2::Vertex_iterator v = poly.vertices_begin(); v != poly.vertices_end(); ++v)
+	for(Polygon2::iterator v = poly.begin(); v != poly.end(); ++v)
 	{
 		double c[4];
 		assemble_dsf_pt(c, *v, NULL, uvmap, bounds);
@@ -922,25 +566,23 @@ void DSF_AccumPolygon(
 
 
 void DSF_AccumPolygonWithHolesBezier(
-						Bezier_polygon_with_holes_2&		poly,
+						vector<BezierPolygon2>&				poly,
 						UVMap_t *							uvmap,
 						const Bbox2&						bounds,
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-	cbs->BeginPolygonWinding_f(writer);
-	DSF_AccumPolygonBezier(poly.outer_boundary(), uvmap, bounds, cbs, writer);
-	cbs->EndPolygonWinding_f(writer);
-	for(Bezier_polygon_with_holes_2::Hole_iterator h = poly.holes_begin(); h != poly.holes_end(); ++h)
+//	cbs->BeginPolygonWinding_f(writer);
+	for(vector<BezierPolygon2>::iterator w = poly.begin(); w != poly.end(); ++w)
 	{
 		cbs->BeginPolygonWinding_f(writer);
-		DSF_AccumPolygonBezier(*h, uvmap, bounds, cbs, writer);
+		DSF_AccumPolygonBezier(*w, uvmap, bounds, cbs, writer);
 		cbs->EndPolygonWinding_f(writer);
 	}	
 }	
 
 void DSF_AccumPolygonWithHolesBezier(
-						vector<vector<Bezier2p> >&			poly,
+						vector<BezierPolygon2p>&			poly,
 						const Bbox2&						bounds,
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
@@ -952,16 +594,13 @@ void DSF_AccumPolygonWithHolesBezier(
 }	
 						
 void DSF_AccumPolygonWithHoles(
-						Polygon_with_holes_2&				poly,
+						vector<Polygon2>&					poly,
 						UVMap_t *							uvmap,
 						const Bbox2&						bounds,
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-	cbs->BeginPolygonWinding_f(writer);
-	DSF_AccumPolygon(poly.outer_boundary(), uvmap, bounds, cbs, writer);
-	cbs->EndPolygonWinding_f(writer);
-	for(Polygon_with_holes_2::Hole_iterator h = poly.holes_begin(); h != poly.holes_end(); ++h)
+	for(vector<Polygon2>::iterator h = poly.begin(); h != poly.end(); ++h)
 	{
 		cbs->BeginPolygonWinding_f(writer);
 		DSF_AccumPolygon(*h, uvmap, bounds, cbs, writer);
@@ -971,7 +610,7 @@ void DSF_AccumPolygonWithHoles(
 }
 
 void DSF_AccumPolygonWithHoles(
-						vector<vector<Segment2p> >&			poly,
+						vector<Polygon2p>&					poly,
 						const Bbox2&						bounds,
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
@@ -1021,7 +660,8 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what, 
 						ILibrarian *				pkg, 
-						const Bbox2&				bounds, 
+						const Bbox2&				cull_bounds,		// This is the area for which we are TRYING to get scenery.
+						const Bbox2&				safe_bounds,		// This is the 'safe' area into which we CAN write scenery without exploding.
 						DSF_ResourceTable&			io_table, 
 						const DSFCallbacks_t *		cbs, 
 						void *						writer,
@@ -1050,9 +690,21 @@ static int	DSF_ExportTileRecursive(
 	
 		Bbox2	ent_box;
 		e->GetBounds(gis_Geo,ent_box);
-	if(!ent_box.overlap(bounds))
+	
+	if(!ent_box.overlap(cull_bounds))
 		return 0;
 		
+	Point2	centroid = ent_box.centroid();
+	bool centroid_ob = false;
+	if(centroid.x() < cull_bounds.xmin() ||
+	   centroid.y() < cull_bounds.ymin() ||
+	   centroid.x() >=cull_bounds.xmax() ||
+	   centroid.y() >=cull_bounds.ymax())
+	{
+		centroid_ob = true;
+	}
+
+
 	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
 	if(show_level == 6)
 	{
@@ -1088,6 +740,10 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
+	
+	//------------------------------------------------------------------------------------------------------------
+	// OBJECT EXPORTER
+	//------------------------------------------------------------------------------------------------------------	
 
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	if(show_level == obj->GetShowLevel())
@@ -1095,7 +751,7 @@ static int	DSF_ExportTileRecursive(
 		obj->GetResource(r);
 		idx = io_table.accum_obj(r,show_level);
 		obj->GetLocation(gis_Geo,p);
-		if(bounds.contains(p))
+		if(cull_bounds.contains(p))
 		{
 			double xy[3] = { p.x(), p.y(), 0.0 };
 			float heading = obj->GetHeading();
@@ -1113,6 +769,11 @@ static int	DSF_ExportTileRecursive(
 				cbs->AddObject_f(idx, xy, heading, writer);
 		}
 	}
+	
+	//------------------------------------------------------------------------------------------------------------
+	// FACADE EXPORTER
+	//------------------------------------------------------------------------------------------------------------
+	
 	if((fac = dynamic_cast<WED_FacadePlacement *>(what)) != NULL)
 	if(show_level == fac->GetShowLevel())
 	{
@@ -1125,68 +786,105 @@ static int	DSF_ExportTileRecursive(
 		{
 			if(bez)
 			{
-				vector<vector<Bezier2p> >	fac_area;
-				if(WED_BezierPolygonWithHolesForPolygon(fac, fac_area) && shape_in_bbox(fac_area, bounds))
+				vector<BezierPolygon2p>				fac_area;
+				vector<vector<BezierPolygon2p> >	fac_cut;
+				WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
+				
+				if(gExportTarget < wet_xplane_1021)
 				{
+					if(!clip_polygon(fac_area,fac_cut,cull_bounds))
+					{
+						problem_children.insert(what);
+						fac_cut.clear();
+					}
+				} 
+				else if(!centroid_ob)
+					fac_cut.push_back(fac_area);
+
+				for(vector<vector<BezierPolygon2p> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
+				{				
 					++real_thingies;
 					cbs->BeginPolygon_f(idx,fac->GetHeight(),5,writer);			
-					DSF_AccumPolygonWithHolesBezier(fac_area, bounds, cbs, writer);
+					DSF_AccumPolygonWithHolesBezier(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
-				else problem_children.insert(what);
 			}
 			else
 			{
-				vector<vector<Segment2p> >		fac_area;
-				if(WED_PolygonWithHolesForPolygon(fac,fac_area) && shape_in_bbox(fac_area, bounds))
+				vector<Polygon2p>			fac_area;
+				vector<vector<Polygon2p> >	fac_cut;
+				Assert(WED_PolygonWithHolesForPolygon(fac,fac_area));
+
+				if(gExportTarget < wet_xplane_1021)
+				{
+					if (!clip_polygon(fac_area,fac_cut,cull_bounds))
+					{
+						fac_cut.clear();
+						problem_children.insert(what);						
+					}
+				} else if(!centroid_ob)
+					fac_cut.push_back(fac_area);
+
+				for(vector<vector<Polygon2p> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
 				{
 					++real_thingies;
 					cbs->BeginPolygon_f(idx,fac->GetHeight(),3,writer);
-					DSF_AccumPolygonWithHoles(fac_area, bounds, cbs, writer);
+					DSF_AccumPolygonWithHoles(*i, safe_bounds, cbs, writer);
 					cbs->EndPolygon_f(writer);
 				}
-				else
-					problem_children.insert(what);
 			}		
 		}		
 		else if(fac->GetTopoMode() == WED_FacadePlacement::topo_Area)
 		{		
 			if(bez)
 			{
-				Bezier_polygon_with_holes_2	fac_area;
-				vector<Bezier_polygon_with_holes_2> cuts;
-				if(WED_BezierPolygonWithHolesForPolygon(fac, fac_area))
+				vector<BezierPolygon2> fac_area;
+				vector<vector<BezierPolygon2> > fac_cut;
+				WED_BezierPolygonWithHolesForPolygon(fac, fac_area);
+				
+				if(gExportTarget < wet_xplane_1021)
 				{
-					ClipBezierPolygon(fac_area,bounds, cuts);
-					for(vector<Bezier_polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
+					if(!clip_polygon(fac_area,fac_cut,cull_bounds))
 					{
-						++real_thingies;
-						cbs->BeginPolygon_f(idx,fac->GetHeight(),4,writer);			
-						DSF_AccumPolygonWithHolesBezier(*ci, NULL, bounds, cbs, writer);
-						cbs->EndPolygon_f(writer);
+						problem_children.insert(what);
+						fac_cut.clear();
 					}
 				}
-				else problem_children.insert(what);
+				else if(!centroid_ob)
+					fac_cut.push_back(fac_area);
+			
+				for(vector<vector<BezierPolygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
+				{					
+					++real_thingies;
+					cbs->BeginPolygon_f(idx,fac->GetHeight(),4,writer);			
+					DSF_AccumPolygonWithHolesBezier(*i, NULL, safe_bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
 			}
 			else
 			{
-				Polygon_with_holes_2	fac_area;
-				vector<Polygon_with_holes_2>	cuts;
-				if(WED_PolygonWithHolesForPolygon(fac,fac_area))
+				vector<Polygon2>			fac_area;
+				vector<vector<Polygon2> >	fac_cut;
+				Assert(WED_PolygonWithHolesForPolygon(fac,fac_area));
+
+				if(gExportTarget < wet_xplane_1021)
 				{
-					ClipPolygon(fac_area, bounds,cuts);
-					
-					
-					for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
+					if (!clip_polygon(fac_area,fac_cut,cull_bounds))
 					{
-						++real_thingies;
-						cbs->BeginPolygon_f(idx,fac->GetHeight(),2,writer);
-						DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
-						cbs->EndPolygon_f(writer);
+						fac_cut.clear();
+						problem_children.insert(what);					
 					}
+				} else if(!centroid_ob)
+					fac_cut.push_back(fac_area);
+			
+				for(vector<vector<Polygon2> >::iterator i = fac_cut.begin(); i != fac_cut.end(); ++i)
+				{
+					++real_thingies;
+					cbs->BeginPolygon_f(idx,fac->GetHeight(),2,writer);
+					DSF_AccumPolygonWithHoles(*i, NULL, safe_bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
 				}
-				else
-					problem_children.insert(what);
+
 			}
 		}
 		else if (fac->HasCustomWalls())
@@ -1197,37 +895,40 @@ static int	DSF_ExportTileRecursive(
 
 				if(bez)
 				{
-					vector<Bezier2p>	chain, cut_chain;
+					vector<Bezier2p>	chain;
 				
 					WED_BezierVectorForPointSequence(seq,chain);
-					CropBezierChainBox(chain,cut_chain,bounds);
+					if(gExportTarget < wet_xplane_1021)
+						clip_segments(chain,cull_bounds);
+					else if(centroid_ob)
+						chain.clear();
 
-					if(!cut_chain.empty())
+					if(!chain.empty())
 					{
 						++real_thingies;
-						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 							problem_children.insert(what);
 						else
-							DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 				else
 				{		
-					vector<Segment2p>	chain, cut_chain;
+					vector<Segment2p>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
-					for(vector<Segment2p>::const_iterator i = chain.begin(); i != chain.end(); ++i)
-						printf("%lf,%lf->%lf,%lf %d\n",i->p1.x(),i->p1.y(),i->p2.x(),i->p2.y(),i->param);
+					if(gExportTarget < wet_xplane_1021)
+						clip_segments(chain,cull_bounds);
+					else if(centroid_ob)
+						chain.clear();
 					
-					CropSegmentChainBox(chain,cut_chain,bounds);
-
-					if(!cut_chain.empty())
-					{
+					if(!chain.empty())
+					{					
 						++real_thingies;
-						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 							problem_children.insert(what);
 						else						
-							DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 			}
@@ -1240,39 +941,48 @@ static int	DSF_ExportTileRecursive(
 
 				if(bez)
 				{
-					vector<Bezier2>	chain, cut_chain;
+					vector<Bezier2>	chain;
 				
 					WED_BezierVectorForPointSequence(seq,chain);
-					CropBezierChainBox(chain,cut_chain,bounds);
+					if(gExportTarget < wet_xplane_1021)
+						clip_segments(chain,cull_bounds);
+					else if(centroid_ob)
+						chain.clear();
 
-					if(!cut_chain.empty())
+					if(!chain.empty())
 					{
 						++real_thingies;
-						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 							problem_children.insert(what);
 						else
-							DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 				else
 				{		
-					vector<Segment2>	chain, cut_chain;
+					vector<Segment2>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
-					CropSegmentChainBox(chain,cut_chain,bounds);
-
-					if(!cut_chain.empty())
+					if(gExportTarget < wet_xplane_1021)
+						clip_segments(chain,cull_bounds);
+					else if(centroid_ob)
+						chain.clear();
+					if(!chain.empty())
 					{
 						++real_thingies;
-						if(fac_is_auto_closed && bad_match(cut_chain.front(),cut_chain.back()))
+						if(fac_is_auto_closed && bad_match(chain.front(),chain.back()))
 							problem_children.insert(what);
 						else
-							DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
+							DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, fac->GetHeight(), fac_is_auto_closed);
 					}
 				}
 			}
 		}
 	}
+	
+	//------------------------------------------------------------------------------------------------------------
+	// FOREST EXPORTER
+	//------------------------------------------------------------------------------------------------------------
 
 	if((fst = dynamic_cast<WED_ForestPlacement *>(what)) != NULL)
 	if(show_level == 6)
@@ -1283,44 +993,43 @@ static int	DSF_ExportTileRecursive(
 		DebugAssert(!WED_HasBezierPol(fst));
 		int param = intlim(fst->GetDensity() * 255.0,0,255) + fst->GetFillMode() * 256;
 		switch(fst->GetFillMode()) {
-		case 0:
+		case dsf_fill_area:
 			{
-				Polygon_with_holes_2	fst_area;
-				vector<Polygon_with_holes_2>	cuts;
-				if(WED_PolygonWithHolesForPolygon(fst,fst_area))
+				vector<Polygon2>	fst_area;
+				Assert(WED_PolygonWithHolesForPolygon(fst,fst_area));
+
+				vector<vector<Polygon2> >	fst_clipped;
+				if (!clip_polygon(fst_area, fst_clipped,cull_bounds))
 				{
-					ClipPolygon(fst_area, bounds,cuts);
-					for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
-					{
-						++real_thingies;
-						cbs->BeginPolygon_f(idx,param,2,writer);
-						DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
-						cbs->EndPolygon_f(writer);
-					}
-				}
-				else
+					fst_clipped.clear();
 					problem_children.insert(what);
+				}
+				
+				for(vector<vector<Polygon2> >::iterator i = fst_clipped.begin(); i != fst_clipped.end(); ++i)
+				{
+					++real_thingies;
+					cbs->BeginPolygon_f(idx,param,2,writer);
+					DSF_AccumPolygonWithHoles(*i, NULL, safe_bounds, cbs, writer);
+					cbs->EndPolygon_f(writer);
+				}
 			}
 			break;
-		case 1:
+		case dsf_fill_line:
 			{		
 				for(int h = -1; h < fst->GetNumHoles(); ++h)
 				{
 					IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
-					vector<Segment2>	chain, cut_chain;
+					vector<Segment2>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
-					CropSegmentChainBox(chain,cut_chain,bounds);
+					clip_segments(chain, cull_bounds);
 
-					if(!cut_chain.empty())
-					{
-						++real_thingies;
-						DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, param, 0);
-					}
+					++real_thingies;
+					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, param, 0);
 				}
 			}
 			break;
-		case 2:
+		case dsf_fill_points:
 			for(int h = -1; h < fst->GetNumHoles(); ++h)
 			{
 				IGISPointSequence * seq = (h == -1) ? fst->GetOuterRing() : fst->GetNthHole(h);
@@ -1330,7 +1039,7 @@ static int	DSF_ExportTileRecursive(
 				{
 					Point2 x;
 					seq->GetNthPoint(p)->GetLocation(gis_Geo,x);
-					if(bounds.contains(x))
+					if(safe_bounds.contains(x))
 					{
 						pts.push_back(x);
 					}
@@ -1338,12 +1047,17 @@ static int	DSF_ExportTileRecursive(
 				if(!pts.empty())
 				{
 					++real_thingies;
-					DSF_AccumPts(pts.begin(),pts.end(), bounds, cbs,writer, idx, param);
+					DSF_AccumPts(pts.begin(),pts.end(), safe_bounds, cbs,writer, idx, param);
 				}
 			}
 			break;
 		}		
 	}
+	
+	//------------------------------------------------------------------------------------------------------------
+	// OBJ STRING EXPORTER
+	//------------------------------------------------------------------------------------------------------------
+	
 	
 	if((str = dynamic_cast<WED_StringPlacement *>(what)) != NULL)
 	if(show_level == 6)
@@ -1354,31 +1068,33 @@ static int	DSF_ExportTileRecursive(
 
 		if(bez)
 		{
-			vector<Bezier2>	chain, cut_chain;
+			vector<Bezier2>	chain;
 		
 			WED_BezierVectorForPointSequence(str,chain);
-			CropBezierChainBox(chain,cut_chain,bounds);
-
-			if(!cut_chain.empty())
+			clip_segments(chain, cull_bounds);
+			if(!chain.empty())
 			{
 				++real_thingies;
-				DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, str->GetSpacing(), 0);
+				DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
 			}
 		}
 		else
 		{		
-			vector<Segment2>	chain, cut_chain;
+			vector<Segment2>	chain;
 		
 			WED_VectorForPointSequence(str,chain);
-			CropSegmentChainBox(chain,cut_chain,bounds);
-
-			if(!cut_chain.empty())
+			clip_segments(chain, cull_bounds);
+			if(!chain.empty())
 			{
 				++real_thingies;
-				DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, str->GetSpacing(), 0);
+				DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, str->GetSpacing(), 0);
 			}
 		}
 	}
+	
+	//------------------------------------------------------------------------------------------------------------
+	// OBJ LINE EXPORTER
+	//------------------------------------------------------------------------------------------------------------
 
 	if((lin = dynamic_cast<WED_LinePlacement *>(what)) != NULL)
 	if(show_level == 6)
@@ -1389,70 +1105,74 @@ static int	DSF_ExportTileRecursive(
 
 		if(bez)
 		{
-			vector<Bezier2>	chain, cut_chain;
+			vector<Bezier2>	chain;
 		
 			WED_BezierVectorForPointSequence(lin,chain);
-			CropBezierChainBox(chain,cut_chain,bounds);
 
-			if(!cut_chain.empty())
+			clip_segments(chain, cull_bounds);
+
+			int closed = 0;
+			if(one_winding(chain))
 			{
-				int closed = 0;
-				if(one_winding(cut_chain))
+				if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
 				{
-					if(cut_chain.front().p1 == cut_chain.back().p2 && cut_chain.size() > 1)
-					{
-						closed = 1;
-					}
+					closed = 1;
 				}
-				else
-				{
-					while(cut_chain.front().p1 == cut_chain.back().p2)
-					{
-						cut_chain.insert(cut_chain.begin(),cut_chain.back());
-						cut_chain.pop_back();
-					}
-				}
-				++real_thingies;
-				if(closed && bad_match(cut_chain.front(),cut_chain.back()))
-					problem_children.insert(what);
-				else
-					DSF_AccumChainBezier(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
 			}
+			else
+			{
+				while(chain.front().p1 == chain.back().p2)
+				{
+					chain.insert(chain.begin(),chain.back());
+					chain.pop_back();
+				}
+			}
+			++real_thingies;
+			if(closed && bad_match(chain.front(),chain.back()))
+			{
+				DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
+				problem_children.insert(what);
+			}
+			else
+				DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 		}
 		else
 		{		
-			vector<Segment2>	chain, cut_chain;
+			vector<Segment2>	chain;
 		
 			WED_VectorForPointSequence(lin,chain);
-			CropSegmentChainBox(chain,cut_chain,bounds);
+			clip_segments(chain, cull_bounds);
 
-			if(!cut_chain.empty())
+			int closed = 0;
+			if(one_winding(chain))
 			{
-				int closed = 0;
-				if(one_winding(cut_chain))
+				if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
 				{
-					if(cut_chain.front().p1 == cut_chain.back().p2 && cut_chain.size() > 1)
-					{
-						closed = 1;
-						cut_chain.pop_back();
-					}
+					closed = 1;
 				}
-				else
-				{
-					while(cut_chain.front().p1 == cut_chain.back().p2)
-					{
-						cut_chain.insert(cut_chain.begin(),cut_chain.back());
-						cut_chain.pop_back();
-					}
-				}
-				++real_thingies;					
-				if(closed && bad_match(cut_chain.front(),cut_chain.back()))
-					problem_children.insert(what);
-				else
-					DSF_AccumChain(cut_chain.begin(),cut_chain.end(), bounds, cbs,writer, idx, closed, closed);
 			}
+			else
+			{
+				while(chain.front().p1 == chain.back().p2)
+				{
+					chain.insert(chain.begin(),chain.back());
+					chain.pop_back();
+				}
+			}
+			++real_thingies;					
+			if(closed && bad_match(chain.front(),chain.back()))
+			{
+				DebugAssert(!"We should not get here - it's a logic error, not a precision error!");			
+				problem_children.insert(what);
+			}
+			else
+				DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 		}
 	}
+
+	//------------------------------------------------------------------------------------------------------------
+	// DRAPED POLYGON
+	//------------------------------------------------------------------------------------------------------------
 
 	if((pol = dynamic_cast<WED_PolygonPlacement *>(what)) != NULL)
 	if(show_level == 6)
@@ -1463,41 +1183,52 @@ static int	DSF_ExportTileRecursive(
 
 		if(bez)
 		{
-			Bezier_polygon_with_holes_2	pol_area;
-			vector<Bezier_polygon_with_holes_2> cuts;
-			if(WED_BezierPolygonWithHolesForPolygon(pol, pol_area))
+			vector<BezierPolygon2>			pol_area;
+			vector<vector<BezierPolygon2> >	pol_cuts;
+			
+			WED_BezierPolygonWithHolesForPolygon(pol, pol_area);
+
+			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
 			{
-				ClipBezierPolygon(pol_area,bounds, cuts);
-				for(vector<Bezier_polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
-					DSF_AccumPolygonWithHolesBezier(*ci, NULL, bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-			else
 				problem_children.insert(what);
+				pol_cuts.clear();
+			}
+			
+			for(vector<vector<BezierPolygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
+			{
+				++real_thingies;
+				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+				DSF_AccumPolygonWithHolesBezier(*i, NULL, safe_bounds, cbs, writer);
+				cbs->EndPolygon_f(writer);
+			}
 		}
 		else
 		{
-			Polygon_with_holes_2	pol_area;
-			vector<Polygon_with_holes_2>	cuts;
-			if(WED_PolygonWithHolesForPolygon(pol,pol_area))
+			vector<Polygon2> 	pol_area;
+			vector<vector<Polygon2> >	pol_cuts;
+
+			Assert(WED_PolygonWithHolesForPolygon(pol,pol_area));
+
+			if(!clip_polygon(pol_area,pol_cuts,cull_bounds))
 			{
-				ClipPolygon(pol_area, bounds,cuts);
-				for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
-					DSF_AccumPolygonWithHoles(*ci, NULL, bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-			else
 				problem_children.insert(what);
+				pol_cuts.clear();
+				
+			}
+			for(vector<vector<Polygon2> >::iterator i = pol_cuts.begin(); i != pol_cuts.end(); ++i)
+			{
+				++real_thingies;
+				cbs->BeginPolygon_f(idx,pol->GetHeading(),bez ? 4 : 2,writer);
+				DSF_AccumPolygonWithHoles(*i, NULL, safe_bounds, cbs, writer);
+				cbs->EndPolygon_f(writer);
+			}
 		}
 	}
+	
+	//------------------------------------------------------------------------------------------------------------
+	// UV-MAPPED DRAPED POLYGON
+	//------------------------------------------------------------------------------------------------------------
+	
 	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
 	if(show_level == 6)
 	{
@@ -1510,45 +1241,55 @@ static int	DSF_ExportTileRecursive(
 
 		if(bez)
 		{
-			Bezier_polygon_with_holes_2	orth_area;
-			vector<Bezier_polygon_with_holes_2> cuts;
-			if(WED_BezierPolygonWithHolesForPolygon(orth, orth_area))
+			vector<BezierPolygon2>			orth_area;
+			vector<vector<BezierPolygon2> >	orth_cuts;
+			WED_BezierPolygonWithHolesForPolygon(orth, orth_area);
+
+			if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
 			{
-				ClipBezierPolygon(orth_area,bounds, cuts);
-				for(vector<Bezier_polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
-					DSF_AccumPolygonWithHolesBezier(*ci, &uv, bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-			else 
 				problem_children.insert(what);
+				orth_cuts.clear();				
+			}
+
+			for(vector<vector<BezierPolygon2> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
+			{
+				++real_thingies;
+				cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
+				DSF_AccumPolygonWithHolesBezier(*i, &uv, safe_bounds, cbs, writer);
+				cbs->EndPolygon_f(writer);
+			}
 		}
 		else
 		{
-			Polygon_with_holes_2	orth_area;
-			vector<Polygon_with_holes_2>	cuts;
-			if(WED_PolygonWithHolesForPolygon(orth,orth_area))
+			vector<Polygon2>			orth_area;
+			vector<vector<Polygon2> >	orth_cuts;
+			Assert(WED_PolygonWithHolesForPolygon(orth,orth_area));
+
+			if(!clip_polygon(orth_area,orth_cuts,cull_bounds))
 			{
-				ClipPolygon(orth_area, bounds,cuts);
-				for(vector<Polygon_with_holes_2>::iterator ci = cuts.begin(); ci != cuts.end(); ++ci)			
-				{
-					++real_thingies;
-					cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
-					DSF_AccumPolygonWithHoles(*ci, &uv, bounds, cbs, writer);
-					cbs->EndPolygon_f(writer);
-				}
-			}
-			else
 				problem_children.insert(what);
+				orth_cuts.clear();
+			}
+			
+			for(vector<vector<Polygon2> >::iterator i = orth_cuts.begin(); i != orth_cuts.end(); ++i)
+			{
+				++real_thingies;
+				cbs->BeginPolygon_f(idx,65535,bez ? 8 : 4,writer);
+				DSF_AccumPolygonWithHoles(*i, &uv, safe_bounds, cbs, writer);
+				cbs->EndPolygon_f(writer);
+			}
 		}
 	}
 
+
+	//------------------------------------------------------------------------------------------------------------
+	// RECURSION
+	//------------------------------------------------------------------------------------------------------------
+
+
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
-		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), pkg, bounds, io_table, cbs, writer, problem_children,show_level);
+		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children,show_level);
 	return real_thingies;	
 }
 
@@ -1582,10 +1323,15 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 
 	DSF_ResourceTable	rsrc;
 
-	Bbox2	clip_bounds(x,y,x+1,y+1);
+	Bbox2	cull_bounds(x,y,x+1,y+1);
+	Bbox2	safe_bounds(cull_bounds);
+	if(gExportTarget == wet_xplane_1021)
+		safe_bounds.expand(DSF_EXTRA_1021);
+	
+	
 	int entities = 0;
 	for(int show_level = 6; show_level >= 1; --show_level)	
-		entities += DSF_ExportTileRecursive(base, pkg, clip_bounds, rsrc, &cbs, writer,problem_children,show_level);
+		entities += DSF_ExportTileRecursive(base, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
 	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
 		cbs.AcceptObjectDef_f(s->c_str(), writer);
@@ -1646,6 +1392,106 @@ void DSF_Export(WED_Group * base, ILibrarian * package, set<WED_Thing *>& proble
 		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");		
 }
 
+int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who, zipFile archive, set<WED_Thing *>& problem_children)
+{
+	if(who->GetClass() == WED_Airport::sClass)
+	{
+		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+
+		ILibrarian * pkg = WED_GetLibrarian(resolver);
+		string icao;
+		apt->GetICAO(icao);
+
+		icao += ".txt";
+		
+		if(zipOpenNewFileInZip (archive,icao.c_str(),
+						NULL,		// mod dates, etc??
+						NULL,0,
+						NULL,0,
+						NULL,		// comment
+						Z_DEFLATED,
+						Z_DEFAULT_COMPRESSION) != 0)
+		{
+			string msg = string("Unable to write to zip file.");
+			return 0;
+		}
+		
+		DSFCallbacks_t	cbs;
+		DSF2Text_CreateWriterCallbacks(&cbs);
+		print_funcs_s pf;
+		pf.print_func = (int (*)(void *,const char *,...)) zip_printf;
+		pf.ref = archive;
+		
+		void * writer = &pf;
+		
+		Bbox2	cull_bounds(-180,-90,180,90);
+		Bbox2	safe_bounds(-180,-90,180,90);
+
+		cbs.AcceptProperty_f("sim/west", "-180", writer);
+		cbs.AcceptProperty_f("sim/east", "180", writer);
+		cbs.AcceptProperty_f("sim/north", "90", writer);
+		cbs.AcceptProperty_f("sim/south", "-90", writer);
+		cbs.AcceptProperty_f("sim/planet", "earth", writer);
+		cbs.AcceptProperty_f("sim/creation_agent", "WorldEditor" WED_VERSION_STRING, writer);
+		cbs.AcceptProperty_f("laminar/internal_revision", "0", writer);
+		cbs.AcceptProperty_f("sim/overlay", "1", writer);
+
+		DSF_ResourceTable	rsrc;
+		
+		int entities = 0;
+		for(int show_level = 6; show_level >= 1; --show_level)	
+			entities += DSF_ExportTileRecursive(who, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+
+		for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
+			cbs.AcceptObjectDef_f(s->c_str(), writer);
+
+		for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
+			cbs.AcceptPolygonDef_f(s->c_str(), writer);
+			
+		for(int i = 1; i <= 6; ++i)
+		{
+			char buf[20];
+			if(rsrc.show_level_obj[i] != -1)
+			{
+				sprintf(buf,"%d/%d",i,rsrc.show_level_obj[i]);
+				cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
+				cbs.AcceptProperty_f("sim/require_object", buf, writer);
+			}
+			if(rsrc.show_level_pol[i] != -1)
+			{
+				sprintf(buf,"%d/%d",i,rsrc.show_level_pol[i]);
+				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
+			}
+		}		
+	
+		zipCloseFileInZip(archive);
+
+		return 1;
+	}
+	else if(who->GetClass() == WED_Group::sClass)
+	{
+		int n = who->CountChildren();
+		for(int i = 0; i < n; ++i)
+		{
+			WED_Thing * child = who->GetNthChild(i);
+			if(DSF_ExportOneAirportOverlayRecursive(resolver, child, archive,problem_children) == 0)
+			{
+				// err on export?  bail out of recursion.
+				return 0;
+			}
+		}
+		return 1;
+	} 
+	else
+	{
+		problem_children.insert(who);
+		DoUserAlert("You cannot export this scenery pack for Robin because some DSF overlay elements are not inside an airport.");
+		return 0;
+	}
+}
+
+
+
 int		WED_CanExportPack(IResolver * resolver)
 {
 	return 1;
@@ -1675,6 +1521,67 @@ void	WED_DoExportPack(IResolver * resolver)
 			sel->Insert(*p);
 		(*problem_children.begin())->CommitOperation();		
 	}
+}
+
+void	WED_DoExportRobin(IResolver * resolver)
+{
+	WED_Export_Target old_target = gExportTarget;
+	gExportTarget = wet_robin;
+
+	if(!WED_ValidateApt(resolver))
+	{
+		gExportTarget = old_target;
+		return;
+	}
+
+	char path[1024];
+	strcpy(path,"");
+	if (GetFilePathFromUser(getFile_Save,"Save for Global Airports...", "Export...", FILE_DIALOG_EXPORT_ROBIN, path, sizeof(path)))
+	{	
+		WED_Thing * w = WED_GetWorld(resolver);
+		set<WED_Thing *>	problem_children;
+		
+		zipFile archive = zipOpen(path, 0);
+		if(archive == NULL)
+		{
+			DoUserAlert("Unable to open zip archive.");
+			gExportTarget = old_target;
+			return;
+		}
 	
+		if(DSF_ExportOneAirportOverlayRecursive(resolver, w, archive, problem_children))
+		{
+			if(zipOpenNewFileInZip (archive, "apt.dat",
+							NULL,		// mod dates, etc??
+							NULL,0,
+							NULL,0,
+							NULL,		// comment
+							Z_DEFLATED,
+							Z_DEFAULT_COMPRESSION) != 0)
+			{
+				string msg = string("Unable to write to zip file.");
+				gExportTarget = old_target;
+				return;
+			}
+
+			
+			WED_AptExport(w, zip_printf, archive);
+			zipCloseFileInZip(archive);
+			zipClose(archive, NULL);
+		}
+
+		if(!problem_children.empty())
+		{
+			DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
+			ISelection * sel = WED_GetSelect(resolver);
+			(*problem_children.begin())->StartOperation("Select broken items.");
+			sel->Clear();
+			for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
+				sel->Insert(*p);
+			(*problem_children.begin())->CommitOperation();		
+		}
+	}
+	gExportTarget = old_target;
+
 }
 

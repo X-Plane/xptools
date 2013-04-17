@@ -61,7 +61,7 @@ void	WriteXESFile(
 	if (!inApts.empty())
 	{
 		StAtomWriter	aptDir(fi, kAptID);
-		WriteAptFileOpen(fi, inApts);
+		WriteAptFileOpen(fi, inApts, LATEST_APT_VERSION);
 	}
 
 	for (DEMGeoMap::iterator dem = inDEM.begin(); dem != inDEM.end(); ++dem)

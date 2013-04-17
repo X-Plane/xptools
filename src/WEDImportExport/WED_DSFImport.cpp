@@ -47,7 +47,7 @@
 #include "WED_ForestRing.h"
 #include "WED_FacadeRing.h"
 #include "WED_FacadeNode.h"
-
+#include "DSF2Text.h"
 #include "WED_GISUtils.h"
 
 static void debug_it(const vector<BezierPoint2>& pts)
@@ -605,7 +605,7 @@ public:
 	}
 
 
-	void do_import(const char * file_name, WED_Group * base)
+	void do_import_dsf(const char * file_name, WED_Group * base)
 	{
 		parent = base;
 		archive = parent->GetArchive();
@@ -620,13 +620,33 @@ public:
 		if(res != 0)
 			printf("DSF Error: %d\n", res);
 	}
+
+	void do_import_txt(const char * file_name, WED_Group * base)
+	{
+		parent = base;
+		archive = parent->GetArchive();
+
+		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
+								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
+								AddObject,AddObjectMSL,
+								BeginSegment, AddSegmentShapePoint, EndSegment,
+								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData };
+
+		int ok = Text2DSFWithWriter(file_name, &cb, this);
+
+		int res = DSFReadFile(file_name, &cb, NULL, this);
+		if(res != 0)
+			printf("DSF Error: %d\n", res);
+	}
+
+
 };
 
 
 void DSF_Import(const char * path, WED_Group * base)
 {
 	DSF_Importer importer;
-	importer.do_import(path, base);
+	importer.do_import_dsf(path, base);
 }
 
 int		WED_CanImportDSF(IResolver * resolver)
@@ -649,4 +669,32 @@ void	WED_DoImportDSF(IResolver * resolver)
 		wrl->CommitOperation();
 	}
 
+}
+
+void	WED_DoImportDSFText(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+
+	char * paths = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	if(paths)
+	{
+		char * free_me = paths;
+		
+		wrl->StartOperation("Import DSF");
+		
+		while(*paths)
+		{		
+			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
+			g->SetName(paths);
+			g->SetParent(wrl,wrl->CountChildren());
+	//		DSF_Import(path,g);
+			DSF_Importer importer;
+			importer.do_import_txt(paths, g);
+			
+			paths = paths + strlen(paths) + 1;
+		}
+
+		wrl->CommitOperation();
+		free(free_me);
+	}
 }

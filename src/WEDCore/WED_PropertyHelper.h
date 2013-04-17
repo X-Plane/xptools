@@ -41,10 +41,8 @@
 #include <vector>
 #include "IPropertyObject.h"
 #include "WED_XMLReader.h"
-
+#include "WED_Globals.h"
 using std::vector;
-
-extern	int	gIsFeet;
 
 class	WED_PropertyHelper;
 class	IOWriter;

@@ -32,5 +32,6 @@ void DSF_Import(const char * file, WED_Group * base);
 
 int		WED_CanImportDSF(IResolver * resolver);
 void	WED_DoImportDSF(IResolver * resolver);
+void	WED_DoImportDSFText(IResolver * resolver);
 
 #endif /* WED_DSFImport_H */

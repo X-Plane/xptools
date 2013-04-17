@@ -73,6 +73,12 @@ int		GetFilePathFromUser(
 					char * 				outFileName,
 					int					inBufSize);
 
+// 0-len-terminated list of paths, you must free!
+char *	GetMultiFilePathFromUser(
+					const char * 		inPrompt,
+					const char *		inAction,
+					int					inID);
+
 /*
  * DoUserAlert puts up an alert dialog box with the message and an OK button.
  *
