@@ -591,6 +591,8 @@ int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int cur
 	p.x = mouse_x;
 	p.y = mouse_y;
 	ClientToScreen(mWindow, &p);
+	mouse_x = p.x;
+	mouse_y = p.y;
 
 	vector<int> cmds(GetMenuItemCount(in_menu));
 	for (int i = 0; i < cmds.size(); ++i)

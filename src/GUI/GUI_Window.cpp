@@ -1220,9 +1220,19 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
             mPopupMenu->addSeparator();
         else
         {
-            QAction * aact =  mPopupMenu->addAction(items[n].name);
-            aact->setCheckable(items[n].checked);
-            aact->setChecked(items[n].checked);
+		if(items[n].name[0] == ';')
+		{
+			QAction * aact =  mPopupMenu->addAction(items[n].name+1);
+			aact->setCheckable(items[n].checked);
+			aact->setChecked(items[n].checked);
+			aact->setEnabled(false);
+		}
+		else
+		{
+			QAction * aact =  mPopupMenu->addAction(items[n].name);
+			aact->setCheckable(items[n].checked);
+			aact->setChecked(items[n].checked);
+		}
         }
         ++n;
     }

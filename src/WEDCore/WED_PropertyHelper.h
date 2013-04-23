@@ -117,7 +117,7 @@ public:
 
 
 
-			int			PropertyItemNumber(WED_PropertyItem * item);
+			int			PropertyItemNumber(const WED_PropertyItem * item) const;
 private:
 
 	friend class	WED_PropertyItem;

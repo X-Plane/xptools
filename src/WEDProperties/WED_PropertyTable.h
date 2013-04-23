@@ -35,8 +35,6 @@ class	WED_Thing;
 class	WED_Archive;
 class	WED_Select;
 
-extern int gExclusion;
-
 class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_Listener, public GUI_TextTableHeaderProvider, public GUI_Broadcaster {
 public:
 
@@ -57,7 +55,7 @@ public:
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
-						map<int, string>&			out_dictionary);
+						GUI_EnumDictionary&			out_dictionary);
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
