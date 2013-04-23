@@ -1303,6 +1303,8 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	double msl_min, msl_max;
 	if(DSF_HeightRangeRecursive(base,msl_min,msl_max))
 	{
+		msl_min = floor(msl_min);
+		msl_max = ceil(msl_max);
 		if(msl_min == msl_max)
 			msl_max = msl_min + 1.0;
 	}
