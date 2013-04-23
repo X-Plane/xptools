@@ -562,6 +562,7 @@
 		D68E2A8D0EBFC8280015648F /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
 		D68E2A8E0EBFC82C0015648F /* MapOverlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734BA40EACFCEE0002C4C1 /* MapOverlay.cpp */; };
 		D68E2A8F0EBFC82D0015648F /* MapPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */; };
+		D6917EBA172578270027AFBB /* WED_TaxiRouteNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6917EB9172578270027AFBB /* WED_TaxiRouteNode.cpp */; };
 		D691EDF91709F4DC00AD6E4C /* WED_Validate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D691EDF81709F4DC00AD6E4C /* WED_Validate.cpp */; };
 		D691EE75170A1DAD00AD6E4C /* WED_Clipping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */; };
 		D6951EC20EE18C4200A04BAD /* PlatformUtils.mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37950AB22C85003949C5 /* PlatformUtils.mac.cpp */; };
@@ -1311,6 +1312,8 @@
 		D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEVertexTool.cpp; sourceTree = "<group>"; };
 		D68E28810EBF5D3A0015648F /* ShapeIO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShapeIO.h; sourceTree = "<group>"; };
 		D68E28820EBF5D3A0015648F /* ShapeIO.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ShapeIO.cpp; sourceTree = "<group>"; };
+		D6917EB8172578270027AFBB /* WED_TaxiRouteNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TaxiRouteNode.h; sourceTree = "<group>"; };
+		D6917EB9172578270027AFBB /* WED_TaxiRouteNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TaxiRouteNode.cpp; sourceTree = "<group>"; };
 		D691EDF71709F4DC00AD6E4C /* WED_Validate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Validate.h; sourceTree = "<group>"; };
 		D691EDF81709F4DC00AD6E4C /* WED_Validate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Validate.cpp; sourceTree = "<group>"; };
 		D691EE73170A1DAD00AD6E4C /* WED_Clipping.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Clipping.h; sourceTree = "<group>"; };
@@ -3576,6 +3579,8 @@
 				D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */,
 				D6EAA00D11A19ECA004ADCCC /* WED_RoadEdge.h */,
 				D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */,
+				D6917EB8172578270027AFBB /* WED_TaxiRouteNode.h */,
+				D6917EB9172578270027AFBB /* WED_TaxiRouteNode.cpp */,
 			);
 			path = WEDEntities;
 			sourceTree = "<group>";
@@ -4699,6 +4704,7 @@
 				D691EE75170A1DAD00AD6E4C /* WED_Clipping.cpp in Sources */,
 				D687D5C6170E16E7007300E2 /* DSF2Text.cpp in Sources */,
 				D6304C43171CE83500FC4F2F /* CompGeomUtils.cpp in Sources */,
+				D6917EBA172578270027AFBB /* WED_TaxiRouteNode.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

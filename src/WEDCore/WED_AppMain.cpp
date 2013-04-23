@@ -90,6 +90,7 @@
 
 #define REGISTER_LIST_ATC \
 	_R(WED_TaxiRoute) \
+	_R(WED_TaxiRouteNode) \
 	_R(WED_ATCFlow) \
 	_R(WED_ATCTimeRule) \
 	_R(WED_ATCWindRule) \
