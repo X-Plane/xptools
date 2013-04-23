@@ -167,6 +167,10 @@ static WED_Airport *			FindAnyAirport(WED_Thing * who)
 
 void			WED_SetAnyAirport(IResolver * resolver)
 {
+	IBase * has_an_airport = resolver->Resolver_Find("choices.airport");
+	if(has_an_airport)
+		return;
+
 	WED_Thing * t = WED_GetWorld(resolver);
 	WED_SetCurrentAirport(resolver,FindAnyAirport(t));
 }
