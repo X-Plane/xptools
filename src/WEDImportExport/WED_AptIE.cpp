@@ -196,6 +196,10 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	WED_ATCWindRule *		wnd;
 #endif
 	int holes, h;
+	
+	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
+	if (ent && ent->GetHidden()) return;
+	
 
 	/* Special case bug fix: for old alphas we used the airport ring type (not the generic ring) to
 	 * build the interior ring of an overlay image.  If we recurse through the overlay image we  get
