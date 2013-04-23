@@ -45,6 +45,7 @@
 #include "WED_AirportBoundary.h"
 #include "WED_GISUtils.h"
 #include "WED_Group.h"
+#include "WED_ATCRunwayUse.h"
 
 #include "AptDefs.h"
 #include "IResolver.h"
@@ -57,6 +58,7 @@
 
 static set<string>	s_used_rwy;
 static set<string>	s_used_hel;
+static set<string>	s_icao;
 
 static bool GetThingResouce(WED_Thing * who, string& r)
 {
@@ -227,6 +229,19 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	{
 		s_used_hel.clear();
 		s_used_rwy.clear();
+		
+		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+		if(who)
+		{
+			string icao;
+			apt->GetICAO(icao);
+			if(s_icao.count(icao))
+			{
+				msg = "The airport ICAO code '" + icao + "' is used twice in your WED project file.";
+			}
+			else
+				s_icao.insert(icao);
+		}
 	}
 	
 	//------------------------------------------------------------------------------------
@@ -275,6 +290,9 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		if(g.equipment != 0)
 		if(g.type != atc_ramp_misc || g.equipment != atc_traffic_all)
 			msg = "Gates with specific traffic and types are only suported in X-Plane 10 and newer.";
+			
+		if(g.equipment == 0)
+			msg = "Gates must have at least one valid type of equipment selected.";
 	}
 
 	if(gExportTarget == wet_xplane_900)
@@ -287,6 +305,17 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		{
 			msg = "ATC taxi routes are only supported in x-Plane 10 and newer.";
 		}
+	}
+	
+	if(who->GetClass() == WED_ATCRunwayUse::sClass)
+	{
+		WED_ATCRunwayUse * use = dynamic_cast<WED_ATCRunwayUse *>(who);
+		AptRunwayRule_t urule;
+		use->Export(urule);
+		if(urule.operations == 0)
+			msg = "ATC runway use must support at least one operation type.";
+		else if(urule.equipment == 0)
+			msg = "ATC runway use must support at least one equipment type.";
 	}
 	
 	//------------------------------------------------------------------------------------
@@ -354,6 +383,7 @@ bool	WED_ValidateApt(IResolver * resolver)
 {
 	s_used_hel.clear();
 	s_used_rwy.clear();
+	s_icao.clear();
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	
