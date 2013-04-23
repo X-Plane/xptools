@@ -48,6 +48,7 @@
 #include "WED_UIDefs.h"
 #include "WED_EnumSystem.h"
 #include "GUI_Resources.h"
+#include "XESConstants.h"
 
 #if APL
 #include <OpenGL/gl.h>
@@ -628,32 +629,63 @@ struct	preview_ortho : public preview_polygon {
 	}
 };
 
-bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll)
+static bool cull_tile(WED_MapZoomerNew * zoomer, double x1, double z1, double x2, double z2, const Point2& ll, double heading)
 {
-	float xs = obj->xyz_max[0] - obj->xyz_min[0];
-	float zs = obj->xyz_max[2] - obj->xyz_min[2];
+	double cs = cos(heading * DEG_TO_RAD);
+	double ss = sin(heading * DEG_TO_RAD);
+	
+	double p[8] = {
+		x1,	z1,
+		x1,	z2,
+		x2,	z2,
+		x2,	z1 };
+
+	double y_scale = zoomer->GetPPM();
+	double x_scale = zoomer->GetPPM();
+	
+	for(int i = 0; i < 8; i += 2)
+	{
+		double x = p[i  ];
+		double z = p[i+1];
+		
+		p[i  ] = (x * cs - z * ss) *  x_scale;
+		p[i+1] = (z * cs - x * ss) * -y_scale;		// invert Y here...Z = down in obj space frmo above...
+		
+	}
+	
+	double x_min = min(min(p[0],p[2]),min(p[4],p[6]));
+	double x_max = max(min(p[0],p[2]),max(p[4],p[6]));
+	double z_min = min(min(p[1],p[3]),min(p[5],p[7]));
+	double z_max = max(min(p[1],p[3]),max(p[5],p[7]));
+
+	if(x_max - x_min < 5 && z_max - z_min < 5)
+		return true;
 
 	double bounds_pix[4];
 	zoomer->GetPixelBounds(bounds_pix[0],bounds_pix[1],bounds_pix[2],bounds_pix[3]);
-	double extra_x = xs * zoomer->GetPPM();
-	double extra_z = zs * zoomer->GetPPM();
-	if(extra_x < 5 || extra_z < 5) return true;
-	bounds_pix[0] -= extra_x;
-	bounds_pix[1] -= extra_z;
-	bounds_pix[2] += extra_x;
-	bounds_pix[3] += extra_z;
 	Point2 xy = zoomer->LLToPixel(ll);
+	x_min += xy.x();
+	x_max += xy.x();
+	z_min += xy.y();
+	z_max += xy.y();
 	return 
-		xy.x() < bounds_pix[0] ||
-		xy.y() < bounds_pix[1] ||
-		xy.x() > bounds_pix[2] ||
-		xy.y() > bounds_pix[3];
-	
+		x_max < bounds_pix[0] ||
+		z_max < bounds_pix[1] ||
+		x_min > bounds_pix[2] ||
+		z_min > bounds_pix[3];
+}
 
+bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll, double heading)
+{
+	return cull_tile(
+		zoomer,
+		obj->xyz_min[0],obj->xyz_min[2],
+		obj->xyz_min[2],obj->xyz_min[2],
+		ll,heading);
 }
 
 #if AIRPORT_ROUTING
-bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll)
+bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll, double heading)
 {
 	double x_min, x_max, z_min, z_max;
 	x_min = x_max = agp->tile[0];
@@ -665,25 +697,12 @@ bool cull_agp(WED_MapZoomerNew * zoomer, agp_t * agp, const Point2& ll)
 		z_min = min(z_min,agp->tile[n+1]);
 		z_max = max(z_max,agp->tile[n+1]);
 	}
-	float xs = x_max - x_min;
-	float zs = z_max - z_min;
 
-	double bounds_pix[4];
-	zoomer->GetPixelBounds(bounds_pix[0],bounds_pix[1],bounds_pix[2],bounds_pix[3]);
-	double extra_x = xs * zoomer->GetPPM();
-	double extra_z = zs * zoomer->GetPPM();
-	if(extra_x < 5 || extra_z < 5) return true;
-	bounds_pix[0] -= extra_x;
-	bounds_pix[1] -= extra_z;
-	bounds_pix[2] += extra_x;
-	bounds_pix[3] += extra_z;
-	Point2 xy = zoomer->LLToPixel(ll);
-	return 
-		xy.x() < bounds_pix[0] ||
-		xy.y() < bounds_pix[1] ||
-		xy.x() > bounds_pix[2] ||
-		xy.y() > bounds_pix[3];
-	
+	return cull_tile(
+		zoomer,
+		x_min,z_min,
+		x_max,z_max,
+		ll,heading);
 
 }
 #endif
@@ -711,7 +730,7 @@ struct	preview_object : public WED_PreviewItem {
 			glColor3f(1,1,1);
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
-			if(!cull_obj(zoomer,o, loc))
+			if(!cull_obj(zoomer,o, loc, obj->GetHeading()))
 			{
 				draw_obj_at_ll(tman, o, loc, obj->GetHeading(), g, zoomer);
 			}
@@ -721,7 +740,7 @@ struct	preview_object : public WED_PreviewItem {
 		{
 			Point2 loc;
 			obj->GetLocation(gis_Geo,loc);
-			if(!cull_agp(zoomer, &agp, loc))
+			if(!cull_agp(zoomer, &agp, loc, obj->GetHeading()))
 			{
 				g->SetState(false,1,false,true,true,false,false);
 				TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap);			
