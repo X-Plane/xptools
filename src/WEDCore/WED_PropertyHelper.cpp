@@ -966,6 +966,8 @@ void		WED_PropIntEnumBitfield::SetProperty(const PropertyVal_t& val, WED_Propert
 		for (set<int>::const_iterator e = val.set_val.begin(); e != val.set_val.end(); ++e)
 		if (ENUM_Domain(*e) != domain)
 			return;
+		if(!can_be_none && val.set_val.empty())
+			return;
 		parent->PropEditCallback(1);
 		value = val.set_val;
 		parent->PropEditCallback(0);

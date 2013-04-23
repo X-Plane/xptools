@@ -355,12 +355,13 @@ public:
 
 	set<int>	value;
 	int			domain;
+	int			can_be_none;
 						
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumBitfield& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, int idomain)  : WED_PropertyItem(parent, title, sql_col,xml_col), domain(idomain) { }
+	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, int idomain, int be_none)  : WED_PropertyItem(parent, title, sql_col,xml_col), domain(idomain), can_be_none(be_none) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
