@@ -84,6 +84,10 @@
 // So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!
 #define AIRPORT_ROUTING 1
 
+// Road-grid editor - NOT even remotely done yet, leave this off, dude.
+#define ROAD_EDITING 0
+
+
 // mroe : -- really early stage of dev , do not change.
 #define WITHNWLINK 0
 
