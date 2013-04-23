@@ -648,15 +648,15 @@ static bool cull_tile(WED_MapZoomerNew * zoomer, double x1, double z1, double x2
 		double x = p[i  ];
 		double z = p[i+1];
 		
-		p[i  ] = (x * cs - z * ss) *  x_scale;
-		p[i+1] = (z * cs - x * ss) * -y_scale;		// invert Y here...Z = down in obj space frmo above...
+		p[i  ] = (x * cs + z * ss) *  x_scale;
+		p[i+1] = (z * cs - x * ss) *  y_scale;		// invert Y here...Z = down in obj space frmo above...
 		
 	}
 	
 	double x_min = min(min(p[0],p[2]),min(p[4],p[6]));
-	double x_max = max(min(p[0],p[2]),max(p[4],p[6]));
+	double x_max = max(max(p[0],p[2]),max(p[4],p[6]));
 	double z_min = min(min(p[1],p[3]),min(p[5],p[7]));
-	double z_max = max(min(p[1],p[3]),max(p[5],p[7]));
+	double z_max = max(max(p[1],p[3]),max(p[5],p[7]));
 
 	if(x_max - x_min < 5 && z_max - z_min < 5)
 		return true;
@@ -679,8 +679,8 @@ bool cull_obj(WED_MapZoomerNew * zoomer, XObj8 * obj, const Point2& ll, double h
 {
 	return cull_tile(
 		zoomer,
-		obj->xyz_min[0],obj->xyz_min[2],
-		obj->xyz_min[2],obj->xyz_min[2],
+		obj->xyz_min[0],-obj->xyz_max[2],
+		obj->xyz_max[0],-obj->xyz_min[2],
 		ll,heading);
 }
 
