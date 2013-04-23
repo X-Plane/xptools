@@ -606,7 +606,7 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 				overlay->GetImage(img_file);
 
 				ITexMgr * mgr = WED_GetTexMgr(GetResolver());
-				TexRef ref = mgr->LookupTexture(img_file.c_str(),false,0);
+				TexRef ref = mgr->LookupTexture(img_file.c_str(),false,tex_Compress_Ok);
 				g->SetState(0,ref ? 1 : 0,0, 1, 1, 0, 0);
 				if (ref) { g->BindTex(mgr->GetTexID(ref),0);
 

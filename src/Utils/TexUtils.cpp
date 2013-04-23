@@ -38,28 +38,53 @@
 #include "XWinGL.h"
 #endif
 
+struct  gl_info_t {
+	int		gl_major_version;
+	int		gl_minor_version;
+	bool	has_tex_compression;
+	bool	has_edge_clamp;
+	int		max_tex_size;
+};
+
+static gl_info_t gl_info = { 0 };
+
+#define INIT_GL_INFO		if(gl_info.gl_major_version == 0) init_gl_info(&gl_info);
+
+static void init_gl_info(gl_info_t * i)
+{
+	const char * ver_str = (const char *) glGetString(GL_VERSION);
+	const char * ext_str = (const char *) glGetString(GL_EXTENSIONS);
+	
+	if(sscanf(ver_str,"%d.%d", &i->gl_major_version, &i->gl_minor_version) != 2)
+	{
+		i->gl_major_version = 1;
+		i->gl_minor_version = 2;
+	}
+	
+	int glv = i->gl_major_version * 100 + i->gl_minor_version * 10;
+	
+	i->has_edge_clamp = true;		// If a user runs WED on a machine with less than GL 1.2, I will find that user and punch him directly in the throat.
+	i->has_tex_compression = (glv >= 130) || strstr(ext_str,"GL_ARB_texture_compression") != NULL;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
+	if(i->max_tex_size > 8192)
+		i->max_tex_size = 8192;
+	if(i->has_tex_compression)
+	{
+		glHint(GL_TEXTURE_COMPRESSION_HINT,GL_NICEST);
+	}
+	
+	
+	
+}
+
 /*****************************************************************************************
  * UTILS
  *****************************************************************************************/
 
-// janos says: i just stumbled over this function while hunting a memory leak. ben you know
-// that i am a fan of microoptimizations, i couldn't resist :-)
-/*
-static int	NextPowerOf2(int v)
-{
-	GLint	maxDim = 1024;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maxDim);
-	int	pt = 4;
-	while (pt < v && pt < maxDim)
-		pt *= 2;
-	return pt;
-}
-*/
+
 inline int NextPowerOf2(int a)
 {
-	GLint	maxDim = 1024;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&maxDim);
-	if(maxDim > 4096) maxDim = 8192;
+	GLint	maxDim = gl_info.max_tex_size;
 	int rval = 2;
 	while(rval < a && rval < maxDim)
 		rval <<= 1;
@@ -134,6 +159,8 @@ bool LoadTextureFromFile(
  *****************************************************************************************/
 bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWidth, int * outHeight, float * outS, float * outT)
 {
+	INIT_GL_INFO
+	
 	long				count = 0;
 	unsigned char * 	p;
 	bool				ok = false;
@@ -206,10 +233,19 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (useIt->channels == 4)	glformat = GL_RGBA;
 	if (useIt->channels == 1)	glformat = GL_ALPHA;
 
+	int iformat = glformat;
+	if(gl_info.has_tex_compression && (inFlags & tex_Compress_Ok))
+	{
+		switch (glformat) {
+		case GL_RGB:	iformat = GL_COMPRESSED_RGB;	break;
+		case GL_RGBA:	iformat = GL_COMPRESSED_RGBA;	break;
+		}
+	}
+
 	if (inFlags & tex_Mipmap)
-		gluBuild2DMipmaps(GL_TEXTURE_2D, glformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data);
+		gluBuild2DMipmaps(GL_TEXTURE_2D, iformat, useIt->width, useIt->height, glformat, GL_UNSIGNED_BYTE, useIt->data);
 	else
-		glTexImage2D(GL_TEXTURE_2D, 0, glformat,
+		glTexImage2D(GL_TEXTURE_2D, 0, iformat,
 			useIt->width ,useIt->height, 0,
 			glformat,
 			GL_UNSIGNED_BYTE,
@@ -237,25 +273,11 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 		}
 
-		static const char * ver_str = (const char *) glGetString(GL_VERSION);
-		static const char * ext_str = (const char *) glGetString(GL_EXTENSIONS);
-
-		static bool tex_clamp_avail =
-			strstr(ext_str,"GL_SGI_texture_edge_clamp"		) ||
-			strstr(ext_str,"GL_SGIS_texture_edge_clamp"		) ||
-			strstr(ext_str,"GL_ARB_texture_edge_clamp"		) ||
-			strstr(ext_str,"GL_EXT_texture_edge_clamp"		) ||
-			strncmp(ver_str,"1.2", 3) ||
-			strncmp(ver_str,"1.3", 3) ||
-			strncmp(ver_str,"1.4", 3) ||
-			strncmp(ver_str,"1.5", 3);
-
-
 			 if(inFlags & tex_Wrap){glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT		 );
 								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT		 );}
 // Janos says: why not on windows? without it the terraserver overlay looks ...well, not clamped :-)
 //#if !IBM
-		else if(tex_clamp_avail)   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+		else if(gl_info.has_edge_clamp){glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
 								    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);}
 //#endif
 		else					   {glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP		 );

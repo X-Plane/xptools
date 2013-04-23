@@ -128,7 +128,7 @@ static void kill_taxi_texture(void)
 
 static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z)
 {
-	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? tex_Wrap : 0);
+	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 	if(ref == NULL) return false;
 	int tex_id = tman->GetTexID(ref);
 
@@ -262,8 +262,8 @@ static ObjDrawFuncs10_t kFuncs  = { Obj_SetupPoly, Obj_SetupLine, Obj_SetupLight
 
 void draw_obj_at_ll(ITexMgr * tman, XObj8 * o, const Point2& loc, float r, GUI_GraphState * g, WED_MapZoomerNew * zoomer)
 {
-	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);			
-	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap);
+	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok);			
+	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 	g->SetTexUnits(1);
@@ -289,8 +289,8 @@ void draw_obj_at_ll(ITexMgr * tman, XObj8 * o, const Point2& loc, float r, GUI_G
 
 void draw_obj_at_xyz(ITexMgr * tman, XObj8 * o, double x, double y, double z, float r, GUI_GraphState * g)
 {
-	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap);			
-	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap);
+	TexRef	ref = tman->LookupTexture(o->texture.c_str() ,true, tex_Wrap|tex_Compress_Ok);			
+	TexRef	ref2 = o->texture_draped.empty() ? ref : tman->LookupTexture(o->texture_draped.c_str() ,true, tex_Wrap|tex_Compress_Ok);
 	int id1 = ref  ? tman->GetTexID(ref ) : 0;
 	int id2 = ref2 ? tman->GetTexID(ref2) : 0;
 	g->SetTexUnits(1);
@@ -743,7 +743,7 @@ struct	preview_object : public WED_PreviewItem {
 			if(!cull_agp(zoomer, &agp, loc, obj->GetHeading()))
 			{
 				g->SetState(false,1,false,true,true,false,false);
-				TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap);			
+				TexRef	ref = tman->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
 				int id1 = ref  ? tman->GetTexID(ref ) : 0;
 				if(id1)g->BindTex(id1,0);
 				glMatrixMode(GL_MODELVIEW);

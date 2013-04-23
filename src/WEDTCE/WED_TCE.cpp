@@ -304,7 +304,7 @@ void WED_TCE::CalcBgknd(void)
 			ortho->GetResource(vpath);
 			if(rmgr->GetPol(vpath,pol_info))
 			{
-				mTex = tman->LookupTexture(pol_info.base_tex.c_str(),true, pol_info.wrap ? tex_Wrap : 0);
+				mTex = tman->LookupTexture(pol_info.base_tex.c_str(),true, pol_info.wrap ? (tex_Wrap|tex_Compress_Ok) : tex_Compress_Ok);
 				if(mTex)
 				{
 					mKillAlpha=pol_info.kill_alpha;

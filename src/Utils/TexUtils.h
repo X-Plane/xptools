@@ -32,7 +32,8 @@ enum {
 	tex_Linear			=	4,	// Linear filter (otherwise nearest)
 	tex_Mipmap			=	8,	// Generate mipmaps
 	tex_Rescale			=	16,	// Rescale to use whole tex
-	tex_Nearest			=	32
+	tex_Nearest			=	32,
+	tex_Compress_Ok		=	64
 
 };
 
