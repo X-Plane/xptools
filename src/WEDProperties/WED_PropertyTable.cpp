@@ -115,6 +115,11 @@ void	WED_PropertyTable::GetCellContent(
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
 	if (idx == -1) return;
 
+	WED_Thing * my_parent = t->GetParent();
+	if(my_parent)
+	if(!WED_IsFolder(my_parent))
+		the_content.can_drag = 0;
+
 	PropertyInfo_t	inf;
 	PropertyVal_t	val;
 	t->GetNthPropertyInfo(idx,inf);
