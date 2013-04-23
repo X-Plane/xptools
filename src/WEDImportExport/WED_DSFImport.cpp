@@ -511,8 +511,8 @@ public:
 		{
 			vector<BezierPoint2>	pc, uc;
 
-			debug_it(me->pts);
-			debug_it(me->uvs);
+//			debug_it(me->pts);
+//			debug_it(me->uvs);
 			
 			BezierPointSeqFromTriple(me->pts.begin(),me->pts.end(), back_inserter(pc));
 			me->pts.swap(pc);
@@ -537,8 +537,8 @@ public:
 					str->SetClosed(1);
 			}
 			
-			debug_it(me->pts);
-			debug_it(me->uvs);
+//			debug_it(me->pts);
+//			debug_it(me->uvs);
 			
 		}
 		
