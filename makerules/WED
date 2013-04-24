@@ -203,6 +203,7 @@ SOURCES += ./src/WEDEntities/WED_SimpleBezierBoundaryNode.cpp
 SOURCES += ./src/WEDEntities/WED_SimpleBoundaryNode.cpp
 SOURCES += ./src/WEDEntities/WED_StringPlacement.cpp
 SOURCES += ./src/WEDEntities/WED_TaxiRoute.cpp
+SOURCES += ./src/WEDEntities/WED_TaxiRouteNode.cpp
 SOURCES += ./src/WEDEntities/WED_Taxiway.cpp
 SOURCES += ./src/WEDEntities/WED_TextureNode.cpp
 SOURCES += ./src/WEDEntities/WED_Thing.cpp
