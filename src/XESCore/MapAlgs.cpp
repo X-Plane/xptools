@@ -2478,7 +2478,7 @@ int KillSlopedWater(Pmwx& pmwx,
 	}
 	
 	dem_erode(water_up, max_horizontal_err_pix, 1);
-	gDem[dem_Wizard] = water_up;
+	//gDem[dem_Wizard] = water_up;
 	
 	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
 	if(!f->is_unbounded())

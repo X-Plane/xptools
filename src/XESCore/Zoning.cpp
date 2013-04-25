@@ -634,7 +634,7 @@ void	ZoneManMadeAreas(
 
 	GaussianBlurDEM(urban_density_from_lu, 1.0);
 
-	gDem[dem_Wizard] = urban_density_from_lu;
+//	gDem[dem_Wizard] = urban_density_from_lu;
 
 	/*****************************************************************************
 	 * PASS 1 - ZONING ASSIGNMENT VIA LAD USE DATA + FEATURES

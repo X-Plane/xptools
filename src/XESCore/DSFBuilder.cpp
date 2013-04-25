@@ -1280,7 +1280,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				{
 					coords8[0] = (*vert)->point().x();
 					coords8[1] = (*vert)->point().y();
-					coords8[2] =USE_DEM_H( (*vert)->info().height, false,gTriangulationHi,(*vert));
+					coords8[2] =USE_DEM_H( (*vert)->info().height, false,inHiresMesh,(*vert));
 					coords8[3] =USE_DEM_N( (*vert)->info().normal[0]);
 					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
 					DebugAssert(coords8[3] >= -1.0);
@@ -1356,7 +1356,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inElevation.mSouth,inElevation.mNorth);
 					DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 					DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
-					coords8[2] =USE_DEM_H( (*vert)->info().height, is_water,gTriangulationHi,(*vert));
+					coords8[2] =USE_DEM_H( (*vert)->info().height, is_water,inHiresMesh,(*vert));
 					coords8[3] =USE_DEM_N( (*vert)->info().normal[0]);
 					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
 					if (is_water)
@@ -1441,7 +1441,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 							DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
 							DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
 
-							coords8[2] =USE_DEM_H( f->vertex(vi)->info().height , is_water, gTriangulationHi,f->vertex(vi));
+							coords8[2] =USE_DEM_H( f->vertex(vi)->info().height , is_water, inHiresMesh,f->vertex(vi));
 							coords8[3] =USE_DEM_N( f->vertex(vi)->info().normal[0]);
 							coords8[4] =USE_DEM_N(-f->vertex(vi)->info().normal[1]);
 //							coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];

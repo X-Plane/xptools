@@ -346,6 +346,14 @@ static int DoSave(const vector<const char *>& args)
 	}
 }
 
+static int DoSaveForce(const vector<const char *>& args)
+{
+	if (gVerbose) printf("Saving file %s (always)\n", args[0]);
+	WriteXESFile(args[0], gMap, gTriangulationHi, gDem, gApts, gProgress);
+	return 0;
+}
+
+
 static int DoIfEmpty(const vector<const char *>& args)
 {
 	if(args.size() == 1)
@@ -462,6 +470,7 @@ static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-validate", 		0, 0, DoValidate, 		"Test vector map integrity.", "" },
 { "-load", 			1, 1, DoLoad, 			"Load an XES file.", "" },
 { "-save", 			1, 1, DoSave, 			"Save an XES file.", "" },
+{ "-force_save", 	1, 1, DoSaveForce,		"Save an XES file, even if empty.", "" },
 { "-ifempty",		1, 2, DoIfEmpty,		"Skip the next N commands unless the map or a layer is empty.", "" },
 { "-cropsave", 		1, 1, DoCropSave, 		"Save only extent as an XES file.", "" },
 { "-overlay", 		1, 1, DoOverlay, 		"Superimpose/replace a second vector map.", "" },

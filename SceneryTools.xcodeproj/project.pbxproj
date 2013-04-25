@@ -106,6 +106,8 @@
 		D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EC0AB22C84003949C5 /* XObjBuilder.cpp */; };
 		D60734E30D197D1900E08F61 /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D607357C0D19832500E08F61 /* Zoning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387C0AB22C85003949C5 /* Zoning.cpp */; };
+		D607A6C51728E940001CCFB4 /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
+		D607A6C61728E942001CCFB4 /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
 		D607AC890C0385AA00992876 /* scroll_btn_h.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC850C0385AA00992876 /* scroll_btn_h.png */; };
 		D607AC8A0C0385AA00992876 /* scroll_btn_v.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC860C0385AA00992876 /* scroll_btn_v.png */; };
 		D607AC8B0C0385AA00992876 /* scrollbar_h.png in Resources */ = {isa = PBXBuildFile; fileRef = D607AC870C0385AA00992876 /* scrollbar_h.png */; };
@@ -4060,6 +4062,8 @@
 				D63390B41358D71300C524FD /* DEMGrid.cpp in Sources */,
 				D62F3A58138D4E8900F2C120 /* MeshSimplify.cpp in Sources */,
 				D6D4082C1406C6A20061EBF9 /* BezierApprox.cpp in Sources */,
+				D607A6C51728E940001CCFB4 /* BlockFill.cpp in Sources */,
+				D607A6C61728E942001CCFB4 /* BlockAlgs.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
