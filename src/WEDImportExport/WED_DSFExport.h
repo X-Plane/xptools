@@ -34,5 +34,8 @@ void DSF_Export(WED_Group * base, ILibrarian * in_package, set<WED_Thing *>& pro
 int		WED_CanExportPack(IResolver * resolver);
 void	WED_DoExportPack(IResolver * resolver);
 
+void	WED_DoExportRobin(IResolver * resolver);
+
+
 
 #endif /* WED_DSFExport_H */

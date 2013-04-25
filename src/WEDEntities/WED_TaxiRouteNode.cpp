@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011, Laminar Research.
+ * Copyright (c) 2013, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,33 +21,15 @@
  *
  */
 
-#include "WED_ForestRing.h"
-#include "WED_ForestPlacement.h"
+#include "WED_TaxiRouteNode.h"
 
-//#include "WED_AirportNode.h"
+DEFINE_PERSISTENT(WED_TaxiRouteNode)
+TRIVIAL_COPY(WED_TaxiRouteNode,WED_GISPoint)
 
-DEFINE_PERSISTENT(WED_ForestRing)
-TRIVIAL_COPY(WED_ForestRing, WED_GISChain)
-
-WED_ForestRing::WED_ForestRing(WED_Archive * a, int i) : WED_GISChain(a,i)
+WED_TaxiRouteNode::WED_TaxiRouteNode(WED_Archive * a, int i) : WED_GISPoint(a,i)
 {
 }
 
-WED_ForestRing::~WED_ForestRing()
+WED_TaxiRouteNode::~WED_TaxiRouteNode()
 {
 }
-
-bool	 WED_ForestRing::IsClosed	(void	) const
-{
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement,GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_area;
-	return true;
-}
-
-bool			WED_ForestRing::IsJustPoints(void) const
-{
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement, GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_points;
-	return false; 
-}
-

@@ -92,7 +92,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 void	WED_LibraryListAdapter::GetEnumDictionary(
 			int							cell_x,
 			int							cell_y,
-			map<int, string>&			out_dictionary)
+			GUI_EnumDictionary&			out_dictionary)
 {
 }
 

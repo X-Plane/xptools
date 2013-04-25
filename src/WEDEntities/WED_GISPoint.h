@@ -62,6 +62,7 @@ public:
 	virtual	void	GetLocation(GISLayer_t l,      Point2& p) const;
 	virtual	void	SetLocation(GISLayer_t l,const Point2& p)      ;
 
+	virtual	void				PropEditCallback(int before);
 
 private:
 

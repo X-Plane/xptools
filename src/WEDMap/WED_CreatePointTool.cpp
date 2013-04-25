@@ -85,7 +85,7 @@ WED_CreatePointTool::WED_CreatePointTool(
 		show_level		(tool==create_Object		?this:NULL,"Show with",		SQL_Name("",""),XML_Name("",""),ShowLevel,show_Level1),
 		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	SQL_Name("",""),XML_Name("",""),0),
 		ramp_type		(tool==create_RampStart		?this:NULL,"Ramp Start Type",SQL_Name("",""),XML_Name("",""   ), ATCRampType, atc_Ramp_Misc),
-		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType)
+		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType, 0)
 
 {
 }

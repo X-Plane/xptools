@@ -130,7 +130,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// TOOLS
 
 	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
-#if AIRPORT_ROUTING
+#if ROAD_EDITING
 	mTools.push_back(					new WED_CreateEdgeTool("Roads",mMap, mMap, resolver, archive, create_Road));
 #else
 	mTools.push_back(					NULL);

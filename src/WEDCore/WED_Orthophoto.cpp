@@ -16,12 +16,33 @@
 #include "WED_TextureNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ResourceMgr.h"
+
+#define USE_CGAL_POLYGONS 1
 #include "WED_GISUtils.h"
+
 #include "PlatformUtils.h"
 #include "WED_DrawUtils.h"
 #include "WED_ObjPlacement.h"
 
-static void add_pol_ring(WED_OverlayImage * image, const Polygon_2& loc, const Polygon_2& uv, WED_Thing * parent, bool is_outer)
+static void	cgal2ben(const Polygon_2& cgal, Polygon2& ben)
+{
+	ben.resize(cgal.size());
+	for(int n = 0; n < cgal.size(); ++n)
+		ben[n] = cgal2ben(cgal.vertex(n));
+}
+
+static void	cgal2ben(const Polygon_with_holes_2& cgal, vector<Polygon2>& ben)
+{
+	ben.push_back(Polygon2());
+	if(!cgal.is_unbounded())	cgal2ben(cgal.outer_boundary(),ben.back());
+	for(Polygon_with_holes_2::Hole_const_iterator h = cgal.holes_begin(); h != cgal.holes_end(); ++h)
+	{
+		ben.push_back(Polygon2());
+		cgal2ben(*h,ben.back());
+	}
+}
+
+static void add_pol_ring(WED_OverlayImage * image, const Polygon2& loc, const Polygon2& uv, WED_Thing * parent, bool is_outer)
 {
 	WED_Ring * r = WED_Ring::CreateTyped(parent->GetArchive());
 	r->SetParent(parent, parent->CountChildren());
@@ -31,14 +52,14 @@ static void add_pol_ring(WED_OverlayImage * image, const Polygon_2& loc, const P
 		WED_TextureNode * tnode = WED_TextureNode::CreateTyped(r->GetArchive());
 		tnode->SetParent(r, n);
 		tnode->SetName("node");
-		tnode->SetLocation(gis_Geo,cgal2ben(loc[n]));
-		tnode->SetLocation(gis_UV,cgal2ben(uv[n]));
+		tnode->SetLocation(gis_Geo,loc[n]);
+		tnode->SetLocation(gis_UV,uv[n]);
 	}	
 }
 
-static void make_one_pol(WED_OverlayImage * image, const Polygon_with_holes_2& area, WED_Thing * wrl, WED_ResourceMgr * rmgr)
+static void make_one_pol(WED_OverlayImage * image, const vector<Polygon2>& area, WED_Thing * wrl, WED_ResourceMgr * rmgr)
 {
-	Polygon_with_holes_2	uv_poly;	
+	vector<Polygon2>	uv_poly;	
 	UVMap_t	uv_map;
 	
 	WED_MakeUVMap((IGISQuad *) image, uv_map);
@@ -72,10 +93,9 @@ static void make_one_pol(WED_OverlayImage * image, const Polygon_with_holes_2& a
 	dpol->SetName(img);
 	dpol->SetResource(res);
 
-	DebugAssert(!area.is_unbounded());
+	DebugAssert(!area.empty() && !area[0].empty());
 
-	add_pol_ring(image,area.outer_boundary(),uv_poly.outer_boundary(), dpol, true);
-	for(Polygon_with_holes_2::Hole_const_iterator a = area.holes_begin(), b = uv_poly.holes_begin(); a != area.holes_end(); ++a, ++b)
+	for(vector<Polygon2>::const_iterator a = area.begin(), b = uv_poly.begin(); a != area.end(); ++a, ++b)
 		add_pol_ring(image,*a,*b, dpol, false);
 }
 
@@ -97,7 +117,10 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 		
 		for(vector<Polygon_with_holes_2>::iterator d = draped_orthos.begin(); d != draped_orthos.end(); ++d)
 		{
-			make_one_pol(ref_image, *d, wrl, rmgr);		
+			vector<Polygon2>	pwh;
+			cgal2ben(*d, pwh);
+		
+			make_one_pol(ref_image, pwh, wrl, rmgr);		
 			++c;
 		}		
 	}
@@ -106,6 +129,7 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 	return c;
 }
 
+#if !NO_CGAL_BEZIER
 void	WED_CheckPolys(IResolver * in_resolver)
 {
 	WED_Thing	*	wrl = 	WED_GetWorld(in_resolver);
@@ -137,6 +161,7 @@ void	WED_CheckPolys(IResolver * in_resolver)
 		wrl->CommitOperation();
 	}
 }
+#endif
 
 void	WED_MakeOrthos(IResolver * in_resolver)
 {

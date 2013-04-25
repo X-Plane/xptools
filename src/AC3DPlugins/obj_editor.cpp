@@ -31,6 +31,9 @@
 	// fix this if there is a 64bit version of ac3d somewhen
 	#define	intptr_t	int
 #endif
+#ifdef LIN
+    #include <stdint.h>
+#endif
 
 
 const int NUM_KEYFRAMES = 50;

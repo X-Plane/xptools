@@ -21,6 +21,8 @@
  *
  */
 
+#if !NO_CGAL_BEZIER
+
 #include "Bezier.h"
 #if !defined(__i386__) && defined(IBM)
 #define __i386__
@@ -231,3 +233,5 @@ void	clip_bezier_chain(
 	out_curves = in_curves;
 }
 
+
+#endif /* NO_CGAL_BEZIER */

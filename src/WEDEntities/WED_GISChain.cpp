@@ -330,6 +330,20 @@ void WED_GISChain::Reverse(GISLayer_t l)
 {
 	RebuildCache(CacheBuild(cache_Topological));
 	int n,t,np = GetNumPoints();
+	
+	// Sanity checking: our point count, and our cache really should
+	// be in size sync.  Then make sure that we are CONSISTENT in our
+	// having or not having beziers.  Heterogeneous _types_ of points
+	// are not what we want!
+	DebugAssert(mCachePtsBezier.size() == mCachePts.size());
+	DebugAssert(mCachePtsBezier.size() == np);
+	
+	bool has_bezier = mCachePtsBezier[0] != NULL;
+	for(n = 1; n < np; ++n)
+	{
+		Assert(has_bezier == (mCachePtsBezier[n] != NULL));
+	}
+	
 	vector<Point2>	p(np);
 	vector<Point2>	p_l(np);
 	vector<Point2>	p_h(np);
@@ -339,23 +353,30 @@ void WED_GISChain::Reverse(GISLayer_t l)
 
 	for(n = 0; n < np; ++n)
 	{
-		mCachePtsBezier[n]->GetLocation(l, p[n]);
-		has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(l, p_l[n]);
-		has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(l, p_h[n]);
-		split[n] = mCachePtsBezier[n]->IsSplit();
+		mCachePts[n]->GetLocation(l, p[n]);
+		if(has_bezier)
+		{
+			has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(l, p_l[n]);
+			has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(l, p_h[n]);
+			split[n] = mCachePtsBezier[n]->IsSplit();
+		}
 	}
 
 	for(n = 0; n < np; ++n)
 	{
 		t = np - n - 1;
-		mCachePtsBezier[t]->SetLocation(l, p[n]);
-		mCachePtsBezier[t]->SetSplit(split[n]);
+		mCachePts[t]->SetLocation(l, p[n]);
+		
+		if(has_bezier)
+		{
+			mCachePtsBezier[t]->SetSplit(split[n]);
 
-		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_l[n]);
-		else			mCachePtsBezier[t]->DeleteHandleHi();
+			if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_l[n]);
+			else			mCachePtsBezier[t]->DeleteHandleHi();
 
-		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_h[n]);
-		else			mCachePtsBezier[t]->DeleteHandleLo();
+			if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_h[n]);
+			else			mCachePtsBezier[t]->DeleteHandleLo();
+		}
 	}	
 }
 
@@ -363,6 +384,16 @@ void WED_GISChain::Shuffle(GISLayer_t l)
 {
 	RebuildCache(CacheBuild(cache_Topological));
 	int n,t,np = GetNumPoints();
+	
+	DebugAssert(mCachePtsBezier.size() == mCachePts.size());
+	DebugAssert(mCachePtsBezier.size() == np);
+	
+	bool has_bezier = mCachePtsBezier[0] != NULL;
+	for(n = 1; n < np; ++n)
+	{
+		Assert(has_bezier == (mCachePtsBezier[n] != NULL));
+	}
+	
 	vector<Point2>	p(np);
 	vector<Point2>	p_l(np);
 	vector<Point2>	p_h(np);
@@ -372,24 +403,30 @@ void WED_GISChain::Shuffle(GISLayer_t l)
 
 	for(n = 0; n < np; ++n)
 	{
-		mCachePtsBezier[n]->GetLocation(l, p[n]);
-		has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(l, p_l[n]);
-		has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(l, p_h[n]);
-		split[n] = mCachePtsBezier[n]->IsSplit();
+		mCachePts[n]->GetLocation(l, p[n]);
+		if(has_bezier)
+		{
+			has_lo[n] = mCachePtsBezier[n]->GetControlHandleLo(l, p_l[n]);
+			has_hi[n] = mCachePtsBezier[n]->GetControlHandleHi(l, p_h[n]);
+			split[n] = mCachePtsBezier[n]->IsSplit();
+		}
 	}
-
+	
 	for(n = 0; n < np; ++n)
 	{
 		t = (n + 1) % np;
-		mCachePtsBezier[t]->SetLocation(l, p[n]);
-		mCachePtsBezier[t]->SetSplit(split[n]);
+		mCachePts[t]->SetLocation(l, p[n]);
+		if(has_bezier)
+		{
+			mCachePtsBezier[t]->SetSplit(split[n]);
 
-		if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_l[n]);
-		else			mCachePtsBezier[t]->DeleteHandleLo();
+			if (has_lo[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_l[n]);
+			else			mCachePtsBezier[t]->DeleteHandleLo();
 
-		if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_h[n]);
-		else			mCachePtsBezier[t]->DeleteHandleHi();
-	}	
+			if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleHi(l, p_h[n]);
+			else			mCachePtsBezier[t]->DeleteHandleHi();
+		}	
+	}
 }
 
 

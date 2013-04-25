@@ -130,6 +130,8 @@ private:
 	set<int>		viewer_id;				// These are MY vieweres!  They are watching me.
 
 	WED_PropStringText			name;
+	
+friend class WED_TaxiRoute;
 
 };
 

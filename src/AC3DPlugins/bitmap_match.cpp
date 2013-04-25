@@ -26,6 +26,9 @@
 #include <ac_plugin.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef LIN
+    #include <stdint.h>
+#endif
 
 static unsigned char * get_image_data(ACImage * im);
 static unsigned char * get_image_data(ACImage * im)

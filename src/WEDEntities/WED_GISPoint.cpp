@@ -172,3 +172,14 @@ void			WED_GISPoint::Rotate			(GISLayer_t l, const Point2& ctr, double a)
 	}
 }
 
+void		WED_GISPoint::PropEditCallback(int before)
+{
+	WED_Entity::PropEditCallback(before);
+	
+	if(!before)
+	{
+		CacheInval(cache_Spatial);
+		CacheBuild(cache_Spatial);
+	}
+	
+}

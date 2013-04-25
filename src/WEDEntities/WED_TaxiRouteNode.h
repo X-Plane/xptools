@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011, Laminar Research.
+ * Copyright (c) 2013, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -20,34 +20,17 @@
  * THE SOFTWARE.
  *
  */
+#ifndef WED_TaxiRouteNode_H
+#define WED_TaxiRouteNode_H
 
-#include "WED_ForestRing.h"
-#include "WED_ForestPlacement.h"
+#include "WED_GISPoint.h"
+// A trivial bezier point with no properties, usually used inside the rings of non-airport stuff.
 
-//#include "WED_AirportNode.h"
+class WED_TaxiRouteNode : public WED_GISPoint {
 
-DEFINE_PERSISTENT(WED_ForestRing)
-TRIVIAL_COPY(WED_ForestRing, WED_GISChain)
+DECLARE_PERSISTENT(WED_TaxiRouteNode)
 
-WED_ForestRing::WED_ForestRing(WED_Archive * a, int i) : WED_GISChain(a,i)
-{
-}
+};
 
-WED_ForestRing::~WED_ForestRing()
-{
-}
 
-bool	 WED_ForestRing::IsClosed	(void	) const
-{
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement,GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_area;
-	return true;
-}
-
-bool			WED_ForestRing::IsJustPoints(void) const
-{
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement, GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_points;
-	return false; 
-}
-
+#endif /* WED_TaxiRouteNode_H */

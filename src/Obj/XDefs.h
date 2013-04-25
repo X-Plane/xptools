@@ -84,6 +84,10 @@
 // So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!
 #define AIRPORT_ROUTING 1
 
+// Road-grid editor - NOT even remotely done yet, leave this off, dude.
+#define ROAD_EDITING 0
+
+
 // mroe : -- really early stage of dev , do not change.
 #define WITHNWLINK 0
 
@@ -91,8 +95,16 @@
 // Really we need a better tile service.
 #define WANT_TERRASEVER 0
 
+// These turn on the features ot import the global apt databaes for the purpose of collecting - they're really only intended
+// for Robin Peel to use, and they are currently mac ony.
+#define ROBIN_IMPORT_FEATURES 0
+
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
+
+// This kills off usage of CGAL's Bezier_2...for WED, since this code seems to be exploding periodically, we can turn it off for now.
+#define NO_CGAL_BEZIER 1
+
 
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 
@@ -146,6 +158,8 @@ using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <unistd.h>
 
 #define SUPPORT_STL
 

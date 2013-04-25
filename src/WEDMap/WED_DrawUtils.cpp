@@ -32,6 +32,8 @@
 #else
 #include <GL/glu.h>
 #endif
+
+#if !NO_CGAL_BEZIER
 #include "Bezier.h"
 
 bool IsBezierPolyScrewed(IGISPolygon * poly, vector<Point2> * where)
@@ -84,6 +86,7 @@ bool IsBezierSequenceScrewed(IGISPointSequence * ps, vector<Point2> * where)
 	find_crossing_beziers(der_sides,*where);
 	return !where->empty();
 }
+#endif
 
 void PointSequenceToVector(
 			IGISPointSequence *		ps,

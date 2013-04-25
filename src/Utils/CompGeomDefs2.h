@@ -77,6 +77,8 @@ bool inside_polygon_bez(__Iterator begin, __Iterator end, const Point2& inPoint)
 template <class __Iterator>
 bool is_ccw_polygon_pt(__Iterator begin, __Iterator end);
 template <class __Iterator>
+bool is_ccw_polygon_seg(__Iterator begin, __Iterator end);
+template <class __Iterator>
 double signed_area_pt(__Iterator begin, __Iterator end);
 
 // This takes a Bezier2 and recursively output-iterates it into a point container.  A quick way to get guaranteed-approximation
@@ -408,6 +410,20 @@ struct	Polygon2 : public vector<Point2> {
 	template <typename __Iterator>
 				Polygon2(__Iterator s, __Iterator e) : vector<Point2>(s,e) { }
 
+	struct const_side_iterator : public std::iterator<forward_iterator_tag, Segment2> {
+	
+		const Polygon2 * p_;
+		int n_;
+		Segment2 operator*(){ return p_->side(n_); }
+		const_side_iterator& operator++() { ++n_; return *this; }
+		bool operator==(const const_side_iterator& rhs) const { return p_ == rhs.p_ && n_ == rhs.n_; }
+		bool operator!=(const const_side_iterator& rhs) const { return p_ != rhs.p_ || n_ != rhs.n_; }
+		const_side_iterator(const Polygon2 * p, int n) : p_(p), n_(n) { }
+	};
+	
+	const_side_iterator sides_begin() const { return const_side_iterator(this,0); }
+	const_side_iterator sides_end() const { return const_side_iterator(this,size()); }
+
 	// This returns side N, where side 0 goes from point 0 to point 1.
 	Segment2	side(int n) const { if (n == (size()-1)) return Segment2(at(n),at(0)); return Segment2(at(n), at(n+1)); }
 
@@ -437,6 +453,42 @@ struct	Polygon2 : public vector<Point2> {
 
 	bool		is_ccw(void) const;
 
+};
+
+/****************************************************************************************************
+ * Triangle2
+ ****************************************************************************************************/
+
+struct	Triangle2 {
+
+	Triangle2() { }
+	Triangle2(const Point2& ip1, const Point2& ip2, const Point2& ip3) : p1(p1), p2(p2), p3(p3) {}
+
+	double	signed_area(void) const { return Vector2(p1,p2).signed_area(Vector2(p1,p3)); }
+	bool	is_ccw(void) const { return Vector2(p1,p2).left_turn(Vector2(p2,p3)); }
+	bool	is_cw (void) const { return Vector2(p1,p2).right_turn(Vector2(p2,p3)); }
+	bool	inside_ccw(const Point2& p) const { return 
+					Vector2(p1,p2).left_turn(Vector2(p2,p)) && 
+					Vector2(p2,p3).left_turn(Vector2(p3,p)) && 
+					Vector2(p3,p1).left_turn(Vector2(p1,p)); }
+	double	squared_distance_ccw(const Point2& p) const { 
+		if(inside_ccw(p)) return 0.0; 
+		return min(min(Segment2(p1,p2).squared_distance(p),
+						Segment2(p2,p3).squared_distance(p)),Segment2(p3,p1).squared_distance(p)); }
+						
+	bool	bathymetric_interp(const Point2& p, double& v1, double& v2, double& v3) const {
+		double sa_me = signed_area();
+		if(sa_me == 0.0) return false;
+		sa_me = 1.0 / sa_me;
+		v1 = sa_me * Triangle2(p2,p3,p).signed_area();
+		v2 = sa_me * Triangle2(p3,p1,p).signed_area();
+		v3 = sa_me * Triangle2(p1,p2,p).signed_area();
+	}
+
+	Point2	p1;
+	Point2	p2;
+	Point2	p3;
+	
 };
 
 /****************************************************************************************************
@@ -503,6 +555,17 @@ struct	BezierPoint2 {
 	bool operator==(const BezierPoint2& rhs) const { return lo == rhs.lo && pt == rhs.pt && hi == rhs.hi; }
 };
 
+
+struct BezierPolygon2 : public vector<Bezier2> {
+				BezierPolygon2() 						: vector<Bezier2>() 		{ }
+				BezierPolygon2(const BezierPolygon2& rhs)   : vector<Bezier2>(rhs) 	{ }
+				BezierPolygon2(int x) 				: vector<Bezier2>(x) 	{ }
+	template <typename __Iterator>
+				BezierPolygon2(__Iterator s, __Iterator e) : vector<Bezier2>(s,e) { }
+
+
+};
+
 /****************************************************************************************************
  * FREE FUNCS
  ****************************************************************************************************/
@@ -539,11 +602,23 @@ struct lesser_y_then_x {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
 		return (lhs.y_ == rhs.y_) ? (lhs.x_ < rhs.x_) : (lhs.y_ < rhs.y_);
 	}
+	bool	operator()(const Segment2& lhs, const Segment2& rhs) const {
+		return (lhs.p2.y_ == rhs.p2.y_) ? (lhs.p2.x_ < rhs.p2.x_) : (lhs.p2.y_ < rhs.p2.y_);
+	}
+	bool	operator()(const Bezier2& lhs, const Bezier2& rhs) const {
+		return (lhs.p2.y_ == rhs.p2.y_) ? (lhs.p2.x_ < rhs.p2.x_) : (lhs.p2.y_ < rhs.p2.y_);
+	}
 };
 
 struct greater_y_then_x {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
 		return (lhs.y_ == rhs.y_) ? (lhs.x_ > rhs.x_) : (lhs.y_ > rhs.y_);
+	}
+	bool	operator()(const Segment2& lhs, const Segment2& rhs) const {
+		return (lhs.p2.y_ == rhs.p2.y_) ? (lhs.p2.x_ > rhs.p2.x_) : (lhs.p2.y_ > rhs.p2.y_);
+	}
+	bool	operator()(const Bezier2& lhs, const Bezier2& rhs) const {
+		return (lhs.p2.y_ == rhs.p2.y_) ? (lhs.p2.x_ > rhs.p2.x_) : (lhs.p2.y_ > rhs.p2.y_);
 	}
 };
 
@@ -551,11 +626,23 @@ struct lesser_x_then_y {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
 		return (lhs.x_ == rhs.x_) ? (lhs.y_ < rhs.y_) : (lhs.x_ < rhs.x_);
 	}
+	bool	operator()(const Segment2& lhs, const Segment2& rhs) const {
+		return (lhs.p2.x_ == rhs.p2.x_) ? (lhs.p2.y_ < rhs.p2.y_) : (lhs.p2.x_ < rhs.p2.x_);
+	}
+	bool	operator()(const Bezier2& lhs, const Bezier2& rhs) const {
+		return (lhs.p2.x_ == rhs.p2.x_) ? (lhs.p2.y_ < rhs.p2.y_) : (lhs.p2.x_ < rhs.p2.x_);
+	}
 };
 
 struct greater_x_then_y {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
 		return (lhs.x_ == rhs.x_) ? (lhs.y_ > rhs.y_) : (lhs.x_ > rhs.x_);
+	}
+	bool	operator()(const Segment2& lhs, const Segment2& rhs) const {
+		return (lhs.p2.x_ == rhs.p2.x_) ? (lhs.p2.y_ > rhs.p2.y_) : (lhs.p2.x_ > rhs.p2.x_);
+	}
+	bool	operator()(const Bezier2& lhs, const Bezier2& rhs) const {
+		return (lhs.p2.x_ == rhs.p2.x_) ? (lhs.p2.y_ > rhs.p2.y_) : (lhs.p2.x_ > rhs.p2.x_);
 	}
 };
 
@@ -1057,12 +1144,19 @@ inline	Point2	Bezier2::midpoint(double t) const
 inline Vector2 Bezier2::derivative(double t) const
 {
 	// Derivative taking by putting the formula in Ax^3+Bx^2+Cx+D form and taking 1st derivative.
+	if(t == 0.0)
+		return Vector2(-3.0 * p1.x_ + 3.0 * c1.x_,
+					   -3.0 * p1.y_ + 3.0 * c1.y_);
+
+	if(t == 1.0)
+		return Vector2(-3.0 * c2.x_ + 3.0 * p2.x_,
+					   -3.0 * c2.y_ + 3.0 * p2.y_);
 	return Vector2(
 		3.0 * t * t * (       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_) +
-		2.0 * t     * ( -3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_		) +
+		2.0 * t     * (  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_		) +
 					  ( -3.0 * p1.x_ + 3.0 * c1.x_						),
 		3.0 * t * t * (       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_) +
-		2.0 * t     * ( -3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_		) +
+		2.0 * t     * (  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_		) +
 					  ( -3.0 * p1.y_ + 3.0 * c1.y_						)
 	);
 }
@@ -1694,6 +1788,36 @@ bool is_ccw_polygon_pt(__Iterator begin, __Iterator end)
 	}
 	return is_ccw;
 }
+
+template <class __Iterator>
+bool is_ccw_polygon_seg(__Iterator begin, __Iterator end)
+{
+	if(begin == end)
+		return true;
+
+	lesser_x_then_y	better;
+		
+	__Iterator orig(begin), best(begin), next;
+
+	++begin;
+	if(begin == end)
+		return true;
+		
+	while(begin != end)
+	{
+		if(better(*begin,*best))
+			best = begin;
+		++begin;
+	}
+	
+	next = best;
+	++next;
+	if(next == end) 
+		next = orig;
+		
+	return left_turn(best->p1, best->p2,next->p2);
+}
+
 
 template <class __Iterator>
 double signed_area_pt(__Iterator begin, __Iterator end)

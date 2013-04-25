@@ -44,6 +44,8 @@ public:
 	int			CountPackages(void) const;
 	void		GetNthPackageName(int n, string& package) const;
 	void		GetNthPackagePath(int n, string& package) const;
+	
+	bool		IsPackageDefault(int n) const;
 
 	void		RenameCustomPackage(int n, const string& new_name);
 

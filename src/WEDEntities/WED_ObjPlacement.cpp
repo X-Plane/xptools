@@ -68,7 +68,9 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 	Point2	my_loc;
 	GetLocation(gis_Geo,my_loc);
 
-	#define SLOP 0.01
+	// 20 km - if your OBJ is bigger than that, you are REALLY doing it wrong.
+	// In fact, if your OBJ is bigger than 5 km you're doing it wrong.
+	#define SLOP 0.2
 	Bbox2	my_bounds(my_loc - Vector2(SLOP,SLOP), my_loc + Vector2(SLOP, SLOP));	
 	return b.overlap(my_bounds);
 }

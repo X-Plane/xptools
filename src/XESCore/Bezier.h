@@ -24,6 +24,10 @@
 #ifndef Bezier_H
 #define Bezier_H
 
+#if NO_CGAL_BEZIER
+#error Do not include bezier_2 functionality if NO_CGAL_BEZIER is defined to 1!
+#endif
+
 
 #include "CGALDefs.h"
 

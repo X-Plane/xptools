@@ -40,13 +40,24 @@ enum {
 	wed_ImportApt,
 	wed_ExportApt,
 	wed_ExportPack,
+	wed_ExportToRobin,
 	wed_ImportDSF,
+#if ROBIN_IMPORT_FEATURES	
+	wed_ImportRobin,
+#endif	
+	// Export Target Submenu
+	wed_Export900,
+	wed_Export1000,
+	wed_Export1021,
+	wed_ExportRobin,
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,
 	wed_Crop,
 	wed_Overlay,
+#if !NO_CGAL_BEZIER
 	wed_CheckPolys,
+#endif	
 #if AIRPORT_ROUTING
 //	wed_MakeRouting,
 #endif

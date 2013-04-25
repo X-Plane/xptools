@@ -41,6 +41,11 @@ void	WED_AptExport(
 				WED_Thing *		container,
 				const char *	file_path);
 
+void	WED_AptExport(
+				WED_Thing *		container,
+				int (*			print_func)(void *, const char *, ...),
+				void *			ref);
+
 // Given a "WED_thing", add it to the apts as needed.
 // A little bit dangerous but this can be a good way
 // to convert a selection into an aptdefs.h construct.
@@ -53,7 +58,5 @@ void	WED_DoExportApt(IResolver * resolver);
 
 int		WED_CanImportApt(IResolver * resolver);
 void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive);
-
-bool	WED_ValidateApt(IResolver * resolver);
 
 #endif /* WED_AptIE_H */
