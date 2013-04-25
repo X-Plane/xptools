@@ -492,7 +492,7 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 			{
 				go = false;
 				dest->vertices.push_back(mesh_match_vertex_t());
-				sscanf(buf, "VT %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
+				sscanf(buf, "VC %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
 				dest->vertices.back().loc = Point_2(x,y);
 				dest->vertices.back().buddy = NULL;
 			}
