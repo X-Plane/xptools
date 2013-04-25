@@ -107,7 +107,6 @@ void MT_StartCreate(const char * xes_path, const DEMGeo& in_dem, MT_Error_f err_
 	MFMemFile *	xes = MemFile_Open(xes_path);
 	if(xes == NULL)
 	{
-		MemFile_Close(xes);
 		die_err("ERROR: could not read XES file:%s\n", xes_path);
 		return;
 	}
