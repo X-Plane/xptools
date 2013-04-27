@@ -789,6 +789,26 @@ void WED_MapPoint(const UVMap_t&	in_map, const Point2& ll, Point2& uv)
 
 	for(int n = 0; n < in_map.size(); n += 2)
 	{
+		// Special case: most points come from the source geo and need no interpolation - only
+		// points from DSF tile cuts need interp.  But the bathymetric area process is full of
+		// rounding error and borks our UV map.  So if we detect a direct hit on a corner, just
+		// take it verbatim...this cleans the UV map a bit.
+		if(in_map[n].p1 == ll)
+		{
+			uv = in_map[n+1].p1;
+			return;
+		}
+		if(in_map[n].p2 == ll)
+		{
+			uv = in_map[n+1].p2;
+			return;
+		}
+		if(in_map[n].p3 == ll)
+		{
+			uv = in_map[n+1].p3;
+			return;
+		}
+	
 		DebugAssert(in_map[n].is_ccw());
 		
 		bool is_in = in_map[n].inside_ccw(ll);

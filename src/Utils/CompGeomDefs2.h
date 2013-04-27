@@ -462,7 +462,7 @@ struct	Polygon2 : public vector<Point2> {
 struct	Triangle2 {
 
 	Triangle2() { }
-	Triangle2(const Point2& ip1, const Point2& ip2, const Point2& ip3) : p1(p1), p2(p2), p3(p3) {}
+	Triangle2(const Point2& ip1, const Point2& ip2, const Point2& ip3) : p1(ip1), p2(ip2), p3(ip3) {}
 
 	double	signed_area(void) const { return Vector2(p1,p2).signed_area(Vector2(p1,p3)); }
 	bool	is_ccw(void) const { return Vector2(p1,p2).left_turn(Vector2(p2,p3)); }
