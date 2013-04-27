@@ -41,6 +41,17 @@ static void	NukeAmpersand(string& ioString)
 }
 #endif
 
+static bool IsDisabledString(string& ioString)
+{
+	if(!ioString.empty() && ioString[0] == ';')
+	{
+		ioString.erase(ioString.begin());
+		return true;
+	}
+	return false;
+}
+
+
 #if IBM
 HACCEL			gAccel = NULL;
 vector<ACCEL>	gAccelTable;
@@ -498,6 +509,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 		{
 			string	itemname(items[n].name);
 			NukeAmpersand(itemname);
+			bool is_disable = IsDisabledString(itemname);
 			CFStringRef cfstr = CFStringCreateWithCString(kCFAllocatorDefault, itemname.c_str(), kCFStringEncodingMacRoman);
 			::AppendMenuItemTextWithCFString((MenuRef) new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
 			CFRelease(cfstr);
@@ -518,6 +530,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 					((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));
 
 			::CheckMenuItem((MenuRef) new_menu,n+1,items[n].checked);
+			if(is_disable) ::DisableMenuItem((MenuRef) new_menu,n+1);
 
 			++n;
 		}
@@ -530,6 +543,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 		while (items[n].name)
 		{
 			string	itemname(items[n].name);
+			bool is_disable = IsDisabledString(itemname);
 			if(items[n].key != 0)
 			{
 				ACCEL accel = { 0 };
@@ -557,7 +571,9 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			mif.cbSize = sizeof(mif);
 			mif.fMask = MIIM_TYPE | MIIM_ID | MIIM_STATE;
 			mif.fType = (itemname=="-") ? MFT_SEPARATOR : MFT_STRING;
-			mif.fState = (items[n].checked) ? (MFS_CHECKED | MFS_ENABLED) : MFS_ENABLED;
+			mif.fState = 0;
+			if(items[n].checked) mif.fState |= MFS_CHECKED;
+			if(is_disable) mif.fState |= MFS_DISABLED;
 			mif.wID = items[n].cmd;
 			mif.dwItemData = items[n].cmd;
 			mif.dwTypeData = const_cast<char*>(itemname.c_str());
@@ -571,11 +587,14 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 	int n = 0;
 	while (items[n].name)
 	{
+		string	itemname(items[n].name);
+		bool is_disable = IsDisabledString(itemname);
+	
 		if (!strcmp(items[n].name, "-"))
 			menu->addSeparator();
 		else
             if (!items[n].cmd)
-                menu->addMenu(items[n].name);
+                menu->addMenu(itemname.c_str());
             else
 		    {
 		        QString	sc = "";
@@ -593,7 +612,10 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 					case GUI_KEY_RETURN:	sc += "Return"; break;
 					default:            	sc += key_cstr; break;
 				}
-			    menu->addAction(new GUI_QtAction(items[n].name,menu,sc,items[n].cmd,this,false));
+				QAction * act;
+				menu->addAction(act = new GUI_QtAction(itemname.c_str(),menu,sc,items[n].cmd,this,false));
+				if(is_disable)
+					act->setEnabled(false);
 		    }
 		++n;
 	}

@@ -44,10 +44,17 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Revert To Saved",		0,		0,								0,	gui_Revert			},
 {	"-",					0,  	0,								0,	0					},
 {	"&Validate",			'V',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Validate		},
+{	"Target X-Plane Version",0,		0,								0,	0					},
+{	"-",					0,		0,								0,	0					},
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+#if ROBIN_IMPORT_FEATURES
+{	"Import from Global Airports",0,0,								0,	wed_ImportRobin		},
+#endif
+{	"-",					0,		0,								0,	0					},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
+{	"Export for Global Airports",	0,	0,							0,	wed_ExportToRobin	},
 #if IBM || LIN
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},
@@ -56,6 +63,15 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 #endif
 {	NULL,					0,		0,								0,	0					},
 };
+
+static const GUI_MenuItem_t kExportTargetMenu[] = {
+{	"X-Plane 9.70",			0,		0,								0,	wed_Export900		},
+{	"X-Plane 10.00",		0,		0,								0,	wed_Export1000		},
+{	"X-Plane 10.21",		0,		0,								0,	wed_Export1021,		},
+{	"Global Airport Database",0,	0,								0,	wed_ExportRobin		},
+{	NULL,					0,		0,								0,	0					}
+};
+
 
 static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Undo",				'Z',	gui_ControlFlag,				0,	gui_Undo		},
@@ -78,7 +94,9 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
+#if !NO_CGAL_BEZIER
 {	"Error-Check Polygons",	0,		0,								0,	wed_CheckPolys	},
+#endif
 #if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
 #endif
@@ -214,6 +232,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu file_menu = inApp->CreateMenu(
 		"&File", kFileMenu, inApp->GetMenuBar(), 0);
+
+	GUI_Menu export_target_menu = inApp->CreateMenu(
+		"Export Target", kExportTargetMenu, file_menu, 9);
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);

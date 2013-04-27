@@ -111,7 +111,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	case res_Polygon:
 		if(mResMgr->GetPol(mRes,pol))
 		{
-			TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? tex_Wrap : 0);
+			TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 			if(ref != NULL)
 			{
 				int tex_id = mTexMgr->GetTexID(ref);
@@ -238,7 +238,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 
 
 				g->SetState(false,1,false,true,true,false,false);
-				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap);			
+				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
 				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
 				if(id1)g->BindTex(id1,0);
 

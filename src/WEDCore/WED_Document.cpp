@@ -339,6 +339,7 @@ IBase *	WED_Document::Resolver_Find(const char * in_path)
 	if (strcmp(in_path,"librarian")==0) return (ILibrarian *) this;
 	if (strcmp(in_path,"texmgr")==0) return (ITexMgr *) mTexMgr;
 	if (strcmp(in_path,"resmgr")==0) return (WED_ResourceMgr *) mResourceMgr;
+	if (strcmp(in_path,"libmgr")==0) return (WED_LibraryMgr *) mLibraryMgr;
 	if (strcmp(in_path,"docprefs")==0) return (IDocPrefs *) this;
 
 	IBase * who = mArchive.Fetch(1);

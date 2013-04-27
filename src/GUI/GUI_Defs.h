@@ -202,7 +202,7 @@ struct	GUI_MenuItem_t {
 	char			key;			// Menu Key - note that this is ASCII, not a vkey code
 	GUI_KeyFlags	flags;			// Modifier Flags
 	int				checked;		// Checked
-	int				cmd;			// Commadn enum for this menu item
+	int				cmd;			// Command enum for this menu item
 };
 
 /***************************************************************************

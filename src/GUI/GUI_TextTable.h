@@ -94,7 +94,7 @@ struct GUI_HeaderContent {
 	int						can_select;
 };
 
-typedef	map<int, string>		GUI_EnumDictionary;
+typedef	map<int, pair<string, bool> >	GUI_EnumDictionary;	// For each enum: what it is, can we pick it?
 
 class	GUI_TextTableProvider {
 public:

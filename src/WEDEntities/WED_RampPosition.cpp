@@ -30,7 +30,7 @@ TRIVIAL_COPY(WED_RampPosition, WED_GISPoint_Heading)
 
 WED_RampPosition::WED_RampPosition(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
 	ramp_type	(this, "Ramp Start Type",	SQL_Name("",""),	XML_Name("ramp_start","type"   ), ATCRampType, atc_Ramp_Misc),
-	equip_type  (this, "Equipment Type",		SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType)
+	equip_type  (this, "Equipment Type",		SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType, 0)
 
 {
 }

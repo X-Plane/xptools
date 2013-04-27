@@ -45,7 +45,7 @@ enum {
 	prop_EnumSet
 };
 
-typedef	map<int,string>	PropertyDict_t;
+typedef	map<int,pair<string, bool> >	PropertyDict_t;
 
 struct PropertyInfo_t {
 	int				can_edit;

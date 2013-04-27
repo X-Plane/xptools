@@ -29,6 +29,29 @@
 
 #if AIRPORT_ROUTING
 
+static void get_runway_parts(int rwy, set<int>& rwy_parts)
+{
+	if(rwy == atc_rwy_None)
+		return;
+
+	int rwy_int = ENUM_Export(rwy);
+	int rwy_dir = rwy_int/10;
+	int rwy_lane =rwy_int%10;
+	if(rwy_dir < 37)
+	{
+		rwy_parts.insert(ENUM_Import(ATCRunwayOneway,rwy_int));
+		return;
+	}
+	
+	rwy_dir -= 36;
+	int rwy_lane_recip = rwy_lane;
+	if(rwy_lane_recip) rwy_lane_recip = 4 - rwy_lane_recip;
+	rwy_parts.insert(ENUM_Import(ATCRunwayOneway,rwy_dir*10+rwy_lane));
+	rwy_parts.insert(ENUM_Import(ATCRunwayOneway,rwy_dir*10+180+rwy_lane_recip));
+	
+
+}
+
 DEFINE_PERSISTENT(WED_TaxiRoute)
 TRIVIAL_COPY(WED_TaxiRoute, WED_GISEdge)
 
@@ -157,7 +180,7 @@ void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict)
 		if(airport)
 		{
 			PropertyDict_t full;
-			WED_Thing::GetNthPropertyDict(n,full);			
+			WED_GISEdge::GetNthPropertyDict(n,full);			
 			set<int> legal;
 			WED_GetAllRunwaysTwoway(airport, legal);
 			legal.insert(runway.value);
@@ -175,8 +198,12 @@ void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict)
 		WED_Airport * airport = WED_GetParentAirport(this);
 		if(airport)
 		{
+			set<int>	runway_parts;
+			get_runway_parts(runway.value,runway_parts);
+			
+		
 			PropertyDict_t full;
-			WED_Thing::GetNthPropertyDict(n,full);			
+			WED_GISEdge::GetNthPropertyDict(n,full);			
 			set<int> legal;
 			WED_GetAllRunwaysOneway(airport, legal);
 			PropertyVal_t val;
@@ -186,11 +213,42 @@ void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict)
 			dict.clear();
 			for(PropertyDict_t::iterator f = full.begin(); f != full.end(); ++f)
 			if(legal.count(f->first))
-				dict.insert(PropertyDict_t::value_type(f->first,f->second));
+				dict.insert(PropertyDict_t::value_type(f->first,make_pair(f->second.first,runway_parts.count(f->first) == 0)));
 		}
 	}
 	else
-		WED_Thing::GetNthPropertyDict(n,dict);			
+		WED_GISEdge::GetNthPropertyDict(n,dict);			
+}
+
+void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+{
+	WED_GISEdge::GetNthPropertyInfo(n, info);
+	if(runway.value != atc_rwy_None)
+	if(n == PropertyItemNumber(&name))
+	{
+		info.can_edit = false;
+	}
+}
+
+void		WED_TaxiRoute::GetNthProperty(int n, PropertyVal_t& val) const
+{
+	WED_GISEdge::GetNthProperty(n, val);
+	if(runway.value != atc_rwy_None)
+	{
+		if(n == PropertyItemNumber(&name))
+		{
+			val.string_val = ENUM_Desc(runway.value);		
+		}
+		
+		if(n == PropertyItemNumber(&hot_depart) ||
+		n == PropertyItemNumber(&hot_arrive) ||
+		n == PropertyItemNumber(&hot_ils))
+		{
+			set<int>	runway_parts;
+			get_runway_parts(runway.value,runway_parts);
+			copy(runway_parts.begin(),runway_parts.end(),set_inserter(val.set_val));
+		}
+	}
 }
 
 bool	WED_TaxiRoute::IsOneway(void) const

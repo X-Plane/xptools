@@ -67,13 +67,15 @@ const char * GetApplicationPath(char * pathBuf, int pathLen)
 	return pathBuf;
 }
 
-int		GetFilePathFromUser(
+
+int		GetFilePathFromUserInternal(
 					int					inType,
 					const char * 		inPrompt,
 					const char *		inAction,
+					const char *		inDefaultFileName,
 					int					inID,
-					char * 				outFileName,
-					int					inBufSize)
+					int					inMulti,
+					vector<string>&		outFiles)
 {
 		OSErr						err;
 		NavDialogCreationOptions	options;
@@ -86,11 +88,14 @@ int		GetFilePathFromUser(
 	if (err != noErr) goto bail;
 
 	if (inType == getFile_Save)
-		options.saveFileName = CFStringCreateWithCString(kCFAllocatorDefault,outFileName,kCFStringEncodingMacRoman);
+		options.saveFileName = CFStringCreateWithCString(kCFAllocatorDefault,inDefaultFileName,kCFStringEncodingMacRoman);
 
 	options.message = CFStringCreateWithCString(kCFAllocatorDefault,inPrompt,kCFStringEncodingMacRoman);
 	options.actionButtonLabel = CFStringCreateWithCString(kCFAllocatorDefault,inAction,kCFStringEncodingMacRoman);
-	options.optionFlags &= ~kNavAllowMultipleFiles;
+	if(inMulti)
+		options.optionFlags |= kNavAllowMultipleFiles;
+	else
+		options.optionFlags &= ~kNavAllowMultipleFiles;
 	options.optionFlags &= ~kNavAllowStationery	;
 	options.optionFlags |=  kNavAllFilesInPopup	;
 	options.preferenceKey = inID;
@@ -125,13 +130,23 @@ int		GetFilePathFromUser(
 		err = NavDialogGetReply(dialog, &reply);
 		if (err != noErr) goto bail;
 
-		err = AEGetNthPtr(&reply.selection, 1, typeFSRef, NULL, NULL, &fileSpec, sizeof(fileSpec), NULL);
-		if (err != noErr)
-			goto bail;
+		SInt32		numDocs;
+		err = ::AECountItems(&reply.selection, &numDocs);
 
-		err = FSRefToPathName(&fileSpec, outFileName, inBufSize);
-		if (err != noErr)
-			goto bail;
+		for(int i = 1; i <= numDocs; ++i)
+		{
+			err = AEGetNthPtr(&reply.selection, i, typeFSRef, NULL, NULL, &fileSpec, sizeof(fileSpec), NULL);
+			if (err != noErr)
+				goto bail;
+				
+			char buf[4096];
+
+			err = FSRefToPathName(&fileSpec, buf, sizeof(buf));
+			if (err != noErr)
+				goto bail;
+			
+			outFiles.push_back(buf);
+		}
 
 		NavDisposeReply(&reply);
 
@@ -139,11 +154,13 @@ int		GetFilePathFromUser(
 		{
 			CFStringRef str = NavDialogGetSaveFileName(dialog);
 
-			strcat(outFileName,DIR_STR);
-			int p = strlen(outFileName);
+			char buf[1024];
 			int len = CFStringGetLength(str);
-			int got = CFStringGetBytes(str, CFRangeMake(0, len), kCFStringEncodingMacRoman, 0, 0, (UInt8*)outFileName+p, len, NULL);
-			outFileName[p+len] = 0;
+			int got = CFStringGetBytes(str, CFRangeMake(0, len), kCFStringEncodingMacRoman, 0, 0, (UInt8*)buf, len, NULL);
+			buf[len] = 0;
+			
+			outFiles[0] += DIR_STR;
+			outFiles[0] += buf;
 		}
 
 	}
@@ -162,6 +179,58 @@ bail:
 
 
 }
+
+int		GetFilePathFromUser(
+					int					inType,
+					const char * 		inPrompt,
+					const char *		inAction,
+					int					inID,
+					char * 				outFileName,
+					int					inBufSize)
+{
+	vector<string> files;
+	int result = GetFilePathFromUserInternal(inType,inPrompt,inAction, outFileName, inID, 0, files);
+	if(!result)
+		return 0;
+	if(files.size() != 1)
+		return 0;
+	strncpy(outFileName,files[0].c_str(),inBufSize);
+}
+
+char *	GetMultiFilePathFromUser(
+					const char * 		inPrompt,
+					const char *		inAction,
+					int					inID)
+{
+	vector<string> files;
+	int result = GetFilePathFromUserInternal(getFile_Open,inPrompt,inAction, "", inID, 1, files);
+	if(!result)
+		return NULL;
+	if(files.size() < 1)
+		return NULL;
+
+	for(int i = 0; i < files.size(); ++i)
+		if(files[i].empty())
+			return NULL;
+		
+	int buf_size = 1;
+	for(int i = 0; i < files.size(); ++i)
+		buf_size += (files[i].size() + 1);
+	
+	char * ret = (char *) malloc(buf_size);
+	char * p = ret;
+
+	for(int i = 0; i < files.size(); ++i)
+	{
+		strcpy(p, files[i].c_str());
+		p += (files[i].size() + 1);
+	}
+	++p;
+	
+	return ret;
+}
+
+
 
 void	DoUserAlert(const char * inMsg)
 {

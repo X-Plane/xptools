@@ -564,6 +564,10 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
+				for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
+				if(!di->second.second)
+					di->second.first.insert(0,";");
+			
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
 				int i = 0;
@@ -571,7 +575,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
 				{
 					enum_vals[i] = it->first;
-					items[i].name = it->second.c_str();
+					items[i].name = it->second.first.c_str();
 					items[i].key = 0;
 					items[i].flags = 0;
 					items[i].cmd = 0;
@@ -594,6 +598,10 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
+				for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
+				if(!di->second.second)
+					di->second.first.insert(0,";");
+			
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
 				int i = 0;
@@ -601,7 +609,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
 				{
 					enum_vals[i] = it->first;
-					items[i].name = it->second.c_str();
+					items[i].name = it->second.first.c_str();
 					items[i].key = 0;
 					items[i].flags = 0;
 					items[i].cmd = 0;

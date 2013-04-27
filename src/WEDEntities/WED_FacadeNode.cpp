@@ -66,7 +66,7 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict)
 			{
 				dict.clear();
 				for (int n = 0; n < info.walls.size(); ++n)
-					dict[n + facade_Wall0] = info.walls[n];
+					dict[n + facade_Wall0] = make_pair(info.walls[n],true);
 				return;
 			}
 		}

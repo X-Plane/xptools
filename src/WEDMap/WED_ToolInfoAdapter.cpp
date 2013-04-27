@@ -136,7 +136,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 void	WED_ToolInfoAdapter::GetEnumDictionary(
 			int							cell_x,
 			int							cell_y,
-			map<int, string>&			out_dictionary)
+			GUI_EnumDictionary&			out_dictionary)
 {
 	out_dictionary.clear();
 	PropertyInfo_t inf;
@@ -148,7 +148,7 @@ void	WED_ToolInfoAdapter::GetEnumDictionary(
 		mTool->GetNthPropertyInfo(cell_x / 2, inf);
 	}
 	if(inf.exclusive)
-		out_dictionary.insert(map<int,string>::value_type(0,"None"));
+		out_dictionary.insert(GUI_EnumDictionary::value_type(0,make_pair(string("None"),true)));
 }
 void	WED_ToolInfoAdapter::AcceptEdit(
 			int							cell_x,

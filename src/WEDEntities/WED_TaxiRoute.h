@@ -52,6 +52,9 @@ public:
 				void		SetHotILS(const set<int>& rwys);
 
 	virtual		void	GetNthPropertyDict(int n, PropertyDict_t& dict);
+
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
+	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	
 private:	
 

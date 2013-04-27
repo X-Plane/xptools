@@ -38,4 +38,19 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);
 #endif /* DEV */
 
 
+/* Is WED running in English or metric units?  (feet == 0 -> metric.) */
+extern	int	gIsFeet;
+
+enum WED_Export_Target {
+		wet_xplane_900,		// X-Plane 9-compatible DSFs.
+		wet_xplane_1000,	// X-Plane 10-compatible DSFs - includes, ATC, etc.
+		wet_xplane_1021,	// Adds out-of-DSF overlays
+		wet_robin			// Lates format but with strict checking for Robin.
+};
+
+/* What target output format does WED want? */
+extern WED_Export_Target gExportTarget;
+
+
+
 #endif

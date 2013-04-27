@@ -172,7 +172,7 @@ void		WED_PropertyHelper::PopHandler(void)
 {
 }
 
-int			WED_PropertyHelper::PropertyItemNumber(WED_PropertyItem * item)
+int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItem * item) const
 {
 	for(int n = 0; n < mItems.size(); ++n)
 		if(item == mItems[n]) return n;
@@ -671,8 +671,13 @@ void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 }
 
 void		WED_PropIntEnum::GetPropertyDict(PropertyDict_t& dict)
-{
-	DOMAIN_Members(domain,dict);
+{	
+	map<int, string>		dm;
+	
+	DOMAIN_Members(domain,dm);
+	
+	for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
+	dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,true)));
 }
 
 void		WED_PropIntEnum::GetPropertyDictItem(int e, string& item)
@@ -768,7 +773,12 @@ void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 
 void		WED_PropIntEnumSet::GetPropertyDict(PropertyDict_t& dict)
 {
-	DOMAIN_Members(domain,dict);
+	map<int, string>		dm;
+	
+	DOMAIN_Members(domain,dm);
+	
+	for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
+	dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,true)));
 }
 
 void		WED_PropIntEnumSet::GetPropertyDictItem(int e, string& item)
@@ -929,7 +939,12 @@ void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 
 void		WED_PropIntEnumBitfield::GetPropertyDict(PropertyDict_t& dict)
 {
-	DOMAIN_Members(domain,dict);
+	map<int, string>		dm;
+	
+	DOMAIN_Members(domain,dm);
+	
+	for(map<int, string>::iterator i = dm.begin(); i != dm.end(); ++i)
+	dict.insert(PropertyDict_t::value_type(i->first, make_pair(i->second,true)));
 }
 
 void		WED_PropIntEnumBitfield::GetPropertyDictItem(int e, string& item)
@@ -950,6 +965,8 @@ void		WED_PropIntEnumBitfield::SetProperty(const PropertyVal_t& val, WED_Propert
 	{
 		for (set<int>::const_iterator e = val.set_val.begin(); e != val.set_val.end(); ++e)
 		if (ENUM_Domain(*e) != domain)
+			return;
+		if(!can_be_none && val.set_val.empty())
 			return;
 		parent->PropEditCallback(1);
 		value = val.set_val;

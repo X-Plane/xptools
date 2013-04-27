@@ -1306,7 +1306,7 @@ void	WED_DoRotate(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	op->StartOperation("Reverse");
+	op->StartOperation("Rotate");
 	sel->IterateSelectionOr(IterateDoRotate, NULL);
 	op->CommitOperation();
 	

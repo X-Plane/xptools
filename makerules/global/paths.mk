@@ -11,6 +11,7 @@ INCLUDEPATHS += -I./src/linuxinit
 INCLUDEPATHS += -I./src/WEDTCE
 INCLUDEPATHS += -I./src/Env
 INCLUDEPATHS += -I./src/DSF
+INCLUDEPATHS += -I./src/DSFTools
 INCLUDEPATHS += -I./src/GUI
 INCLUDEPATHS += -I./src/GUI/mmenu
 INCLUDEPATHS += -I./src/Interfaces

@@ -23,7 +23,7 @@
 
 #include "WED_CreateEdgeTool.h"
 #include "WED_ToolUtils.h"
-#include "WED_AirportNode.h"
+#include "WED_TaxiRouteNode.h"
 #include "WED_TaxiRoute.h"
 #include "WED_RoadEdge.h"
 #include "WED_SimpleBoundaryNode.h"
@@ -47,7 +47,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	WED_CreateToolBase(tool_name, host, zoomer, resolver, archive,
 	2,						// min pts,
 	99999999,				// max pts - yes, I am a hack.
-	1,						// curve allowed?
+	0,						// curve allowed?					// Ben says: when we go road grids, we'll have to make this dynamic!
 	0,						// curve required?
 	1,						// close allowed?
 	0),						// close required
@@ -222,7 +222,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
-		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_AirportNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_SimpleBoundaryNode::CreateTyped(GetArchive());
+		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 		src->SetParent(host,idx);
 		src->SetName(mName.value + "_start");
 		c->SetLocation(gis_Geo,pts[0]);
@@ -258,7 +258,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		{
 			switch(mType) {
 			case create_TaxiRoute:
-				dst = c = WED_AirportNode::CreateTyped(GetArchive());
+				dst = c = WED_TaxiRouteNode::CreateTyped(GetArchive());
 				break;
 			case create_Road:
 				dst = c = WED_SimpleBoundaryNode::CreateTyped(GetArchive());

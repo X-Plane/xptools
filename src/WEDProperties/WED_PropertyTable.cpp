@@ -115,6 +115,11 @@ void	WED_PropertyTable::GetCellContent(
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
 	if (idx == -1) return;
 
+	WED_Thing * my_parent = t->GetParent();
+	if(my_parent)
+	if(!WED_IsFolder(my_parent))
+		the_content.can_drag = 0;
+
 	PropertyInfo_t	inf;
 	PropertyVal_t	val;
 	t->GetNthPropertyInfo(idx,inf);
@@ -202,7 +207,7 @@ void	WED_PropertyTable::GetCellContent(
 void	WED_PropertyTable::GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
-						map<int, string>&			out_dictionary)
+						GUI_EnumDictionary&			out_dictionary)
 {
 	out_dictionary.clear();
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
@@ -215,7 +220,7 @@ void	WED_PropertyTable::GetEnumDictionary(
 	t->GetNthPropertyInfo(idx,info);
 	if(info.prop_kind == prop_EnumSet)
 	if(info.exclusive)
-		out_dictionary.insert(map<int,string>::value_type(0,"None"));
+		out_dictionary.insert(GUI_EnumDictionary::value_type(0,make_pair(string("None"),true)));
 }
 
 void	WED_PropertyTable::AcceptEdit(

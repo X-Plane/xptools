@@ -73,6 +73,101 @@ template <typename T>					bool is_subset(const set<T>& sub, const set<T>& s);
 template <typename Priority, typename Value>
 class pqueue;
 
+// SEQUENCE STUFF
+// Sequence uses () to know that it is valid.
+
+template <typename T>
+struct sequence_for_container {
+
+	typedef typename T::value_type		value_type;
+	typedef sequence_for_container<T>	self;
+
+	typename T::iterator				begin;
+	typename T::iterator				end;
+	
+	sequence_for_container(T& c) : begin(c.begin()), end(c.end()) { }
+	self& operator++() { ++begin; return *this; }
+	value_type& operator*() { return *begin; }
+	bool operator()() { return begin != end; }
+
+};	
+
+template <typename T>
+struct const_sequence_for_container {
+
+	typedef typename T::value_type			value_type;
+	typedef const_sequence_for_container<T>	self;
+
+	typename T::const_iterator		begin;
+	typename T::const_iterator		end;
+	
+	const_sequence_for_container(const T& c) : begin(c.begin()), end(c.end()) { }
+	self& operator++() { ++begin; return *this; }
+	const value_type& operator*() { return *begin; }
+	bool operator()() { return begin != end; }
+
+};	
+
+template <typename S, typename F>
+struct filtered_seq {
+
+	typedef typename S::value_type	value_type;
+	typedef filtered_seq<S,F>		self;
+	
+	filtered_seq(const S& seq, const F& filter=F()) : s(seq), f(filter) { while(s() && !f(*s)) ++s; }
+	filtered_seq(const self& rhs) : s(rhs.s), f(rhs.f) { }
+	self& operator=(const self& rhs) { s = rhs.s; f = rhs.f; return *this; }
+
+	self& operator++() { ++s; while(s() && !f(*s)) ++s; return *this; }
+	value_type& operator*() { return *s; }
+	bool operator()()  { return s(); }
+
+	S	s;
+	F	f;
+};
+
+template <typename S, typename F, int N>
+struct split_seq {
+
+	typedef typename S::value_type	value_type;
+	typedef split_seq<S,F,N>		self;
+	
+	split_seq(S src, F functor) : s(src), f(functor), i(0), c(0) {
+		while (s() && i == c)
+		{
+			i = 0;
+			c = f(*s, v);
+			DebugAssert(c <= N);
+			++s;			
+		}
+	}
+
+	self& operator++() { ++i; 
+		while (s() && i == c)
+		{
+			i = 0;
+			c = f(*s, v);
+			DebugAssert(c <= N);
+			++s;			
+		}
+		return *this;
+	}
+	
+	value_type& operator*() { return v[i]; }
+	bool operator()()  { return i < c || s(); }
+
+	S			s;
+	F			f;
+	int			i;		// current index for push
+	int			c;		// count from current pull
+	value_type	v[N];
+
+};
+
+
+template <typename T, typename S>
+void sequence_push_back(T& container, S& seq);
+
 /*
 template <typename Priority, typename Value>
 class pqueue {
@@ -411,5 +506,17 @@ V reverse_histo(const map<K,V>& in_histo, multimap<V,K>& out_histo)
 	}
 	return total;
 }
+
+template <typename T, typename S>
+void sequence_push_back(T& container, S& seq)
+{
+	while(seq())
+	{
+		container.push_back(*seq);
+		++seq;
+	}
+}
+
+
 
 #endif /* STLUtils_H */

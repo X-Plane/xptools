@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2011, Laminar Research.
+ * Copyright (c) 2013, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,33 +21,31 @@
  *
  */
 
-#include "WED_ForestRing.h"
-#include "WED_ForestPlacement.h"
+#ifndef DSF2Text_H
+#define DSF2Text_H
 
-//#include "WED_AirportNode.h"
+struct	DSFCallbacks_t;
 
-DEFINE_PERSISTENT(WED_ForestRing)
-TRIVIAL_COPY(WED_ForestRing, WED_GISChain)
+// Scan a text file, shovel it into a writer.
+bool Text2DSFWithWriter(const char * inFileName, DSFCallbacks_t * cbs, void * writer);
 
-WED_ForestRing::WED_ForestRing(WED_Archive * a, int i) : WED_GISChain(a,i)
-{
-}
+// Complete translation - text to binary.
+bool Text2DSF(const char * inFileName, const char * inDSF);
 
-WED_ForestRing::~WED_ForestRing()
-{
-}
 
-bool	 WED_ForestRing::IsClosed	(void	) const
-{
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement,GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_area;
-	return true;
-}
 
-bool			WED_ForestRing::IsJustPoints(void) const
-{
-	WED_ForestPlacement * fst = SAFE_CAST(WED_ForestPlacement, GetParent());
-	if(fst) return fst->GetFillMode() == dsf_fill_points;
-	return false; 
-}
+struct print_funcs_s {
+	int (* print_func)(void *, const char *, ...);
+	void * ref;
+};
 
+
+// Want to write out DSF data as text?  This gives you writer callbacks
+// that just print text...pass a print_funcs_s * as the ref.
+void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs);
+
+// Complete tranlsation from binary to text.
+bool DSF2Text(char ** inDSF, int n, const char * inFileName);
+
+
+#endif /* DSF2Text_H */

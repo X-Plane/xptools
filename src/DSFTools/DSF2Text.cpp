@@ -21,6 +21,7 @@
  *
  */
 #include <stdio.h>
+#include "DSF2Text.h"
 #include "DSFLib.h"
 #include <list>
 
@@ -41,46 +42,48 @@ static int count_net = 0;
 string			base_name;
 list<string>	dem_names;
 
+
+
 void DSF2Text_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
 	++count_ter;
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "TERRAIN_DEF %s\n", inPartialPath);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "TERRAIN_DEF %s\n", inPartialPath);
 }
 
 void DSF2Text_AcceptObjectDef(const char * inPartialPath, void * inRef)
 {
 	++count_obj;
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "OBJECT_DEF %s\n", inPartialPath);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "OBJECT_DEF %s\n", inPartialPath);
 }
 
 void DSF2Text_AcceptPolygonDef(const char * inPartialPath, void * inRef)
 {
 	++count_pol;
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "POLYGON_DEF %s\n", inPartialPath);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "POLYGON_DEF %s\n", inPartialPath);
 }
 
 void DSF2Text_AcceptNetworkDef(const char * inPartialPath, void * inRef)
 {
 	++count_net;
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "NETWORK_DEF %s\n", inPartialPath);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "NETWORK_DEF %s\n", inPartialPath);
 }
 
 void DSF2Text_AcceptRasterDef(const char * inPartialPath, void * inRef)
 {
 	++count_net;
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "RASTER_DEF %s\n", inPartialPath);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "RASTER_DEF %s\n", inPartialPath);
 	dem_names.push_back(inPartialPath);
 }
 
 void DSF2Text_AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "PROPERTY %s %s\n", inProp, inValue);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "PROPERTY %s %s\n", inProp, inValue);
 }
 
 void DSF2Text_BeginPatch(
@@ -91,42 +94,42 @@ void DSF2Text_BeginPatch(
 	int				inCoordDepth,
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
+	print_funcs_s * p = (print_funcs_s *) inRef;
 	sDSF2TEXT_CoordDepth = inCoordDepth;
-	fprintf(fi, "BEGIN_PATCH %d %lf %lf %d %d\n", inTerrainType + offset_ter, inNearLOD, inFarLOD, inFlags, inCoordDepth);
+	p->print_func(p->ref, "BEGIN_PATCH %d %lf %lf %d %d\n", inTerrainType + offset_ter, inNearLOD, inFarLOD, inFlags, inCoordDepth);
 }
 
 void DSF2Text_BeginPrimitive(
 	int				inType,
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "BEGIN_PRIMITIVE %d\n", inType);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "BEGIN_PRIMITIVE %d\n", inType);
 }
 
 void DSF2Text_AddPatchVertex(
 	double			inCoordinates[],
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "PATCH_VERTEX");
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "PATCH_VERTEX");
 	for (int n = 0; n < sDSF2TEXT_CoordDepth; ++n)
-		fprintf(fi, " %.9lf", inCoordinates[n]);
-	fprintf(fi, "\n");
+		p->print_func(p->ref, " %.9lf", inCoordinates[n]);
+	p->print_func(p->ref, "\n");
 }
 
 void DSF2Text_EndPrimitive(
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "END_PRIMITIVE\n");
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "END_PRIMITIVE\n");
 }
 
 void DSF2Text_EndPatch(
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "END_PATCH\n");
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "END_PATCH\n");
 }
 
 void DSF2Text_AddObject(
@@ -137,8 +140,8 @@ void DSF2Text_AddObject(
 {
 	if(inObjectType >= count_obj)
 		printf("WARNING: out of bounds obj.\n");
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inRotation);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "OBJECT %d %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inRotation);
 }
 
 void DSF2Text_AddObjectAbsolute(
@@ -149,8 +152,8 @@ void DSF2Text_AddObjectAbsolute(
 {
 	if(inObjectType >= count_obj)
 		printf("WARNING: out of bounds obj.\n");
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "OBJECT_MSL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2], inRotation);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "OBJECT_MSL %d %.9lf %.9lf %.9lf %lf\n", inObjectType + offset_obj, inCoordinates[0], inCoordinates[1], inCoordinates[2], inRotation);
 }
 
 void DSF2Text_BeginSegment(
@@ -161,12 +164,12 @@ void DSF2Text_BeginSegment(
 	bool			inCurved,
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
+	print_funcs_s * p = (print_funcs_s *) inRef;
 	if (!inCurved)
-		fprintf(fi, "BEGIN_SEGMENT %d %d %d %.9lf %.9lf %.9lf\n", inNetworkType + offset_net, inNetworkSubtype, inStartNodeID,
+		p->print_func(p->ref, "BEGIN_SEGMENT %d %d %d %.9lf %.9lf %.9lf\n", inNetworkType + offset_net, inNetworkSubtype, inStartNodeID,
 															inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
-		fprintf(fi, "BEGIN_SEGMENT_CURVED %d %d %d %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
+		p->print_func(p->ref, "BEGIN_SEGMENT_CURVED %d %d %d %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n", inNetworkType, inNetworkSubtype, inStartNodeID,
 															inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 }
@@ -176,11 +179,11 @@ void DSF2Text_AddSegmentShapePoint(
 	bool			inCurved,
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
+	print_funcs_s * p = (print_funcs_s *) inRef;
 	if (!inCurved)
-		fprintf(fi, "SHAPE_POINT %.9lf %.9lf %.9lf\n", inCoordinates[0],inCoordinates[1],inCoordinates[2]);
+		p->print_func(p->ref, "SHAPE_POINT %.9lf %.9lf %.9lf\n", inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
-		fprintf(fi, "SHAPE_POINT_CURVED %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],
+		p->print_func(p->ref, "SHAPE_POINT_CURVED %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 }
 
@@ -190,11 +193,11 @@ void DSF2Text_EndSegment(
 	bool			inCurved,
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
+	print_funcs_s * p = (print_funcs_s *) inRef;
 	if (!inCurved)
-		fprintf(fi, "END_SEGMENT %d %.9lf %.9lf %.9lf\n", inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2]);
+		p->print_func(p->ref, "END_SEGMENT %d %.9lf %.9lf %.9lf\n", inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 	else
-		fprintf(fi, "END_SEGMENT_CURVED %d %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n",inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2],
+		p->print_func(p->ref, "END_SEGMENT_CURVED %d %.9lf %.9lf %.9lf %.9lf %.9lf %.9lf\n",inEndNodeID, inCoordinates[0],inCoordinates[1],inCoordinates[2],
 															inCoordinates[3],inCoordinates[4],inCoordinates[5]);
 }
 
@@ -210,32 +213,32 @@ void DSF2Text_BeginPolygon(
 	void *			inRef)
 {
 	sDSF2TEXT_CoordDepth = inDepth;
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "BEGIN_POLYGON %d %d %d\n", inPolygonType + offset_pol, inParam, inDepth);
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "BEGIN_POLYGON %d %d %d\n", inPolygonType + offset_pol, inParam, inDepth);
 }
 
 void DSF2Text_BeginPolygonWinding(
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "BEGIN_WINDING\n");
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "BEGIN_WINDING\n");
 }
 void DSF2Text_AddPolygonPoint(
 	double			inCoordinates[2],
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "POLYGON_POINT");
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "POLYGON_POINT");
 	for (int n = 0; n < sDSF2TEXT_CoordDepth; ++n)
-		fprintf(fi, " %.9lf", inCoordinates[n]);
-	fprintf(fi, "\n");
+		p->print_func(p->ref, " %.9lf", inCoordinates[n]);
+	p->print_func(p->ref, "\n");
 }
 
 void DSF2Text_EndPolygonWinding(
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "END_WINDING\n");
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "END_WINDING\n");
 }
 
 void DSF2Text_AddRaterData(
@@ -243,27 +246,27 @@ void DSF2Text_AddRaterData(
 					void *				data,
 					void *				inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi,"RASTER_DATA version=%d bpp=%d flags=%d width=%d height=%d scale=%f offset=%f ",
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref,"RASTER_DATA version=%d bpp=%d flags=%d width=%d height=%d scale=%f offset=%f ",
 		header->version, header->bytes_per_pixel, header->flags, header->width, header->height, header->scale,header->offset);
 
 	if(!base_name.empty() && !dem_names.empty())
 	{
-		string p(base_name);
-		p += ".";
-		p += dem_names.front();
-		p += ".raw";
+		string demp(base_name);
+		demp += ".";
+		demp += dem_names.front();
+		demp += ".raw";
 		dem_names.pop_front();
-		FILE * fb = fopen(p.c_str(),"wb");
+		FILE * fb = fopen(demp.c_str(),"wb");
 		if(fb)
 		{
-			fprintf(fi,"%s\n",p.c_str());
-			//fprintf(fi,"# Wrote %d bytes to %s.\n", header->bytes_per_pixel * header->width * header->height, p.c_str());
+			p->print_func(p->ref,"%s\n",demp.c_str());
+			//p->print_func(p->ref,"# Wrote %d bytes to %s.\n", header->bytes_per_pixel * header->width * header->height, p.c_str());
 			fwrite(data,header->bytes_per_pixel * header->width * header->height, 1, fb);
 			fclose(fb);
 		}
 		else
-			fprintf(fi,"<write error>\n");
+			p->print_func(p->ref,"<write error>\n");
 	}
 		
 }
@@ -271,9 +274,39 @@ void DSF2Text_AddRaterData(
 void DSF2Text_EndPolygon(
 	void *			inRef)
 {
-	FILE * fi = (FILE *) inRef;
-	fprintf(fi, "END_POLYGON\n");
+	print_funcs_s * p = (print_funcs_s *) inRef;
+	p->print_func(p->ref, "END_POLYGON\n");
 }
+
+void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs)
+{
+	cbs->AcceptTerrainDef_f			=DSF2Text_AcceptTerrainDef			;
+	cbs->AcceptObjectDef_f			=DSF2Text_AcceptObjectDef			;
+	cbs->AcceptPolygonDef_f			=DSF2Text_AcceptPolygonDef			;
+	cbs->AcceptNetworkDef_f			=DSF2Text_AcceptNetworkDef			;
+	cbs->AcceptRasterDef_f			=DSF2Text_AcceptRasterDef			;
+	cbs->AcceptProperty_f			=DSF2Text_AcceptProperty			;
+	cbs->BeginPatch_f				=DSF2Text_BeginPatch				;
+	cbs->BeginPrimitive_f			=DSF2Text_BeginPrimitive			;
+	cbs->AddPatchVertex_f			=DSF2Text_AddPatchVertex			;
+	cbs->EndPrimitive_f				=DSF2Text_EndPrimitive				;
+	cbs->EndPatch_f					=DSF2Text_EndPatch					;
+	cbs->AddObject_f					=DSF2Text_AddObject					;
+	cbs->AddObjectAbsolute_f			=DSF2Text_AddObjectAbsolute			;
+	cbs->BeginSegment_f				=DSF2Text_BeginSegment				;
+	cbs->AddSegmentShapePoint_f		=DSF2Text_AddSegmentShapePoint		;
+	cbs->EndSegment_f				=DSF2Text_EndSegment				;
+	cbs->BeginPolygon_f				=DSF2Text_BeginPolygon				;
+	cbs->BeginPolygonWinding_f		=DSF2Text_BeginPolygonWinding		;
+	cbs->AddPolygonPoint_f			=DSF2Text_AddPolygonPoint			;
+	cbs->EndPolygonWinding_f			=DSF2Text_EndPolygonWinding			;
+	cbs->EndPolygon_f				=DSF2Text_EndPolygon				;
+	cbs->AddRasterData_f				=DSF2Text_AddRaterData				;
+	cbs->NextPass_f					=DSF2Text_NextPass					;
+}
+
+
+
 
 bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 {
@@ -290,34 +323,16 @@ bool DSF2Text(char ** inDSF, int n, const char * inFileName)
 	#endif
 
 	DSFCallbacks_t	cbs;
-	cbs.AcceptTerrainDef_f			=DSF2Text_AcceptTerrainDef			;
-	cbs.AcceptObjectDef_f			=DSF2Text_AcceptObjectDef			;
-	cbs.AcceptPolygonDef_f			=DSF2Text_AcceptPolygonDef			;
-	cbs.AcceptNetworkDef_f			=DSF2Text_AcceptNetworkDef			;
-	cbs.AcceptRasterDef_f			=DSF2Text_AcceptRasterDef			;
-	cbs.AcceptProperty_f			=DSF2Text_AcceptProperty			;
-	cbs.BeginPatch_f				=DSF2Text_BeginPatch				;
-	cbs.BeginPrimitive_f			=DSF2Text_BeginPrimitive			;
-	cbs.AddPatchVertex_f			=DSF2Text_AddPatchVertex			;
-	cbs.EndPrimitive_f				=DSF2Text_EndPrimitive				;
-	cbs.EndPatch_f					=DSF2Text_EndPatch					;
-	cbs.AddObject_f					=DSF2Text_AddObject					;
-	cbs.AddObjectAbsolute_f			=DSF2Text_AddObjectAbsolute			;
-	cbs.BeginSegment_f				=DSF2Text_BeginSegment				;
-	cbs.AddSegmentShapePoint_f		=DSF2Text_AddSegmentShapePoint		;
-	cbs.EndSegment_f				=DSF2Text_EndSegment				;
-	cbs.BeginPolygon_f				=DSF2Text_BeginPolygon				;
-	cbs.BeginPolygonWinding_f		=DSF2Text_BeginPolygonWinding		;
-	cbs.AddPolygonPoint_f			=DSF2Text_AddPolygonPoint			;
-	cbs.EndPolygonWinding_f			=DSF2Text_EndPolygonWinding			;
-	cbs.EndPolygon_f				=DSF2Text_EndPolygon				;
-	cbs.AddRasterData_f				=DSF2Text_AddRaterData				;
-	cbs.NextPass_f					=DSF2Text_NextPass					;
+	DSF2Text_CreateWriterCallbacks(&cbs);
+	
+	print_funcs_s pf;
+	pf.print_func = (int (*)(void *,const char *,...)) fprintf;
+	pf.ref = fi;
 
 	while(n--)
 	{
 		fprintf(fi,"# file: %s\n\n",*inDSF);
-		int result = DSFReadFile(*inDSF, &cbs, NULL, fi);
+		int result = DSFReadFile(*inDSF, &cbs, NULL, &pf);
 
 		fprintf(fi, "# Result code: %d\n", result);
 		if(result == dsf_ErrNoAtoms || result == dsf_ErrBadCookie || result == dsf_ErrBadVersion)
@@ -360,9 +375,10 @@ static char * strip_and_clean(char * raw)
 }
 
 
-bool Text2DSF(const char * inFileName, const char * inDSF)
+static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, DSFCallbacks_t * in_cbs, void * in_writer)
 {
-	FILE * fi = (strcmp(inFileName, "-") ? fopen(inFileName, "r") : stdin);
+	bool is_pipe = strcmp(inFileName, "-") == 0;
+	FILE * fi = (!is_pipe) ? fopen(inFileName, "r") : stdin;
 	if (!fi) return NULL;
 
 	int divisions = 8;
@@ -395,6 +411,7 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		if (sscanf(ptr, "PROPERTY sim/south %f", &south) == 1) ++props_got;
 		sscanf(ptr, "DIVISIONS %d", &divisions);
 
+		if(is_pipe)
 		if (strncmp(ptr,"DIVISIONS",9) != 0 &&
 		   strncmp(ptr,"PROPERTY",8) != 0 &&
 		   strncmp(ptr,"I",1) != 0 &&
@@ -416,8 +433,19 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 
 	printf("Got dimension properties, establishing file writer...\n");
 
-	writer = DSFCreateWriter(west, south, east, north, -32768.0, 32767.0, divisions);
-	DSFGetWriterCallbacks(&cbs);
+	if(!is_pipe)
+		fseek(fi,0,SEEK_SET);
+
+	if(in_cbs)
+	{
+		memcpy(&cbs,in_cbs,sizeof(cbs));
+		writer = in_writer;
+	}
+	else
+	{
+		writer = DSFCreateWriter(west, south, east, north, -32768.0, 32767.0, divisions);
+		DSFGetWriterCallbacks(&cbs);
+	}
 
 	for (int p = 0; p < properties.size(); ++p)
 		cbs.AcceptProperty_f(properties[p].first.c_str(), properties[p].second.c_str(), writer);
@@ -426,6 +454,27 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 	double	lod_near, lod_far;
 
 	double	coords[10];
+
+	if(!is_pipe)
+	{
+		fseek(fi,0,SEEK_SET);
+		while(fgets(buf, sizeof(buf), fi))
+		{
+			char * ptr = strip_and_clean(buf);
+				 if (!is_pipe && sscanf(ptr, "TERRAIN_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptTerrainDef_f(prop_id, writer);
+			else if (!is_pipe && sscanf(ptr, "OBJECT_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
+			else if (!is_pipe && sscanf(ptr, "POLYGON_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
+			else if (!is_pipe && sscanf(ptr, "NETWORK_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
+			else if (!is_pipe && sscanf(ptr, "RASTER_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptRasterDef_f(prop_id, writer);
+
+		}
+
+		fseek(fi,0,SEEK_SET);
+		fgets(buf, sizeof(buf), fi);
+
+
+	}
+	
 
 	do 
 	{
@@ -450,12 +499,11 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 		else if (sscanf(ptr,"BEGIN_POLYGON %d %d %d", &ptype, &param, &depth)==2)			cbs.BeginPolygon_f(ptype, param, 2, 	writer);
 		else if (!strncmp(ptr, "END_POLYGON", strlen("END_POLYGON")))						cbs.EndPolygon_f(writer);
 
-
-		else if (sscanf(ptr, "TERRAIN_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptTerrainDef_f(prop_id, writer);
-		else if (sscanf(ptr, "OBJECT_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
-		else if (sscanf(ptr, "POLYGON_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
-		else if (sscanf(ptr, "NETWORK_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
-		else if (sscanf(ptr, "RASTER_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptRasterDef_f(prop_id, writer);
+		else if (is_pipe && sscanf(ptr, "TERRAIN_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptTerrainDef_f(prop_id, writer);
+		else if (is_pipe && sscanf(ptr, "OBJECT_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptObjectDef_f(prop_id, writer);
+		else if (is_pipe && sscanf(ptr, "POLYGON_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptPolygonDef_f(prop_id, writer);
+		else if (is_pipe && sscanf(ptr, "NETWORK_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptNetworkDef_f(prop_id, writer);
+		else if (is_pipe && sscanf(ptr, "RASTER_DEF %[^\r\n]", prop_id) == 1)							cbs.AcceptRasterDef_f(prop_id, writer);
 
 		else if (sscanf(ptr,"BEGIN_SEGMENT_CURVED %d %d %d %lf %lf %lf %lf %lf %lf", &ptype, &subtype, &nodeid, &coords[0],&coords[1],&coords[2],&coords[3],&coords[4],&coords[5]) == 9) cbs.BeginSegment_f(ptype, subtype, nodeid, coords, true, writer);
 		else if (sscanf(ptr,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);
@@ -490,12 +538,26 @@ bool Text2DSF(const char * inFileName, const char * inDSF)
 	while(fgets(buf, sizeof(buf), fi));
 
 
-	if (strcmp(inFileName, "-"))
+	if (!is_pipe)
 		fclose(fi);
 
 	printf("Got entire file, processing and creating DSF.\n");
 
-	DSFWriteToFile(inDSF, writer);
-	DSFDestroyWriter(writer);
+	if(!in_cbs)
+	{
+		DSFWriteToFile(inDSF, writer);
+		DSFDestroyWriter(writer);
+	}
 	return true;
+}
+
+bool Text2DSFWithWriter(const char * inFileName, DSFCallbacks_t * cbs, void * writer)
+{
+	return Text2DSFWithWriterAny(inFileName, NULL, cbs, writer);
+
+}
+bool Text2DSF(const char * inFileName, const char * inDSF)
+{
+	return Text2DSFWithWriterAny(inFileName, inDSF, NULL, NULL);
+
 }

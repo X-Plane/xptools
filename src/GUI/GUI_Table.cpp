@@ -314,10 +314,10 @@ GUI_DragOperation			GUI_Table::DragEnter	(int x, int y, GUI_DragData * drag, GUI
 
 	mDragX = MouseToCellX(x);
 	mDragY = MouseToCellY(y);
-	if (mClickCellX >= 0 &&
-		mClickCellX < mGeometry->GetColCount() &&
-		mClickCellY >= 0 &&
-		mClickCellY < mGeometry->GetRowCount())
+	if (mDragX >= 0 &&
+		mDragX < mGeometry->GetColCount() &&
+		mDragY >= 0 &&
+		mDragY < mGeometry->GetRowCount())
 	{
 		int cellbounds[4];
 		if (CalcCellBounds(mDragX, mDragY, cellbounds))

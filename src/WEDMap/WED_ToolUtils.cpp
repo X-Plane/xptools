@@ -58,6 +58,8 @@
 #include "WED_ATCRunwayUse.h"
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
+#include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
 
 using std::list;
 
@@ -165,6 +167,10 @@ static WED_Airport *			FindAnyAirport(WED_Thing * who)
 
 void			WED_SetAnyAirport(IResolver * resolver)
 {
+	IBase * has_an_airport = resolver->Resolver_Find("choices.airport");
+	if(has_an_airport)
+		return;
+
 	WED_Thing * t = WED_GetWorld(resolver);
 	WED_SetCurrentAirport(resolver,FindAnyAirport(t));
 }
@@ -305,6 +311,17 @@ WED_Thing *		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_
 	return who[0];
 }
 
+// A given entity class is allowe to require a parent - the parent can be _any_ parent 
+// in the hierarchy, not just its immediate parent.  
+//
+// We use this to enforce certain hierarchy semantic relationships like: no runway 
+// outside of an airport, no atc time rule outside of an ATC flow, etc.
+//
+// TODO: there is some relatively weird stuff going on.  Arguably the parent class for
+// specialized nodes should be their parent geometry.  The main reason this doens't
+// blow up is that the hieararchy also tries to disallow the reorganization of 
+// non-folders - in other words, you can't move a runway node ANYWHERE as a user 
+// because you don't know it exists.
 const char *	WED_GetParentForClass(const char * in_class)
 {
 	if(strcmp(in_class,WED_AirportBeacon::sClass)==0)		return WED_Airport::sClass;
@@ -326,8 +343,12 @@ const char *	WED_GetParentForClass(const char * in_class)
 #if AIRPORT_ROUTING
 	if(strcmp(in_class,WED_ATCFlow::sClass)==0)				return WED_Airport::sClass;
 	if(strcmp(in_class,WED_ATCRunwayUse::sClass)==0)		return WED_ATCFlow::sClass;
-	if(strcmp(in_class,WED_ATCTimeRule::sClass)==0)		return WED_ATCFlow::sClass;
-	if(strcmp(in_class,WED_ATCWindRule::sClass)==0)		return WED_ATCFlow::sClass;
+	if(strcmp(in_class,WED_ATCTimeRule::sClass)==0)			return WED_ATCFlow::sClass;
+	if(strcmp(in_class,WED_ATCWindRule::sClass)==0)			return WED_ATCFlow::sClass;
+
+	if(strcmp(in_class,WED_TaxiRoute::sClass)==0)			return WED_Airport::sClass;
+	if(strcmp(in_class,WED_TaxiRouteNode::sClass)==0)		return WED_Airport::sClass;
+
 #endif
 	return NULL;
 }
