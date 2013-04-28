@@ -483,6 +483,7 @@ struct	Triangle2 {
 		v1 = sa_me * Triangle2(p2,p3,p).signed_area();
 		v2 = sa_me * Triangle2(p3,p1,p).signed_area();
 		v3 = sa_me * Triangle2(p1,p2,p).signed_area();
+		return true;
 	}
 
 	Point2	p1;
