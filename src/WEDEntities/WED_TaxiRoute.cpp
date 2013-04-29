@@ -263,17 +263,19 @@ bool	WED_TaxiRoute::IsRunway(void) const
 
 bool	WED_TaxiRoute::HasHotArrival(void) const
 {
-	return !hot_arrive.value.empty();
+	// Ben says: since we auto-include ourselves in our flags if we are a runway, 
+	// set our status to match.  
+	return !hot_arrive.value.empty() || runway.value != atc_rwy_None;
 }
 
 bool	WED_TaxiRoute::HasHotDepart(void) const
 {
-	return !hot_depart.value.empty();
+	return !hot_depart.value.empty() || runway.value != atc_rwy_None;
 }
 
 bool	WED_TaxiRoute::HasHotILS(void) const
 {
-	return !hot_ils.value.empty();
+	return !hot_ils.value.empty() || runway.value != atc_rwy_None;
 }
 
 
