@@ -375,6 +375,7 @@ void	WED_DoMakeNewATCFlow(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Flow");
 	WED_ATCFlow * f=  WED_ATCFlow::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
+	f->SetName("Unnamed ATC Flow");
 	now_sel->CommitOperation();
 }
 
@@ -384,6 +385,7 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Runway Use");
 	WED_ATCRunwayUse * f=  WED_ATCRunwayUse::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
+	f->SetName("Unnamed Runway Use");
 	now_sel->CommitOperation();
 }
 
@@ -393,6 +395,7 @@ void	WED_DoMakeNewATCWindRule(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Wind Rule");
 	WED_ATCWindRule * f=  WED_ATCWindRule::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
+	f->SetName("Unnamed Wind Rule");
 	now_sel->CommitOperation();
 }
 
@@ -402,6 +405,7 @@ void	WED_DoMakeNewATCTimeRule(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Time Rule");
 	WED_ATCTimeRule * f=  WED_ATCTimeRule::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
+	f->SetName("Unnamed Time Rule");
 	now_sel->CommitOperation();
 }
 

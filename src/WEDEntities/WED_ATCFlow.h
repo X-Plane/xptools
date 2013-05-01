@@ -44,7 +44,7 @@ private:
 
 	// Flow rules
 	WED_PropStringText			icao;
-	WED_PropDoubleTextMeters	cld_min_mtr;
+	WED_PropDoubleText			cld_min_ft;
 	WED_PropIntText				vis_min_sm;
 
 	WED_PropIntEnum		pattern_rwy;
