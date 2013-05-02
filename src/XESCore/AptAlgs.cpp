@@ -577,6 +577,7 @@ pair<Point2, int>	AptPolygonIterator::operator*(void) const
 		return pair<Point2,int>(i->ctrl, p);
 	default:
 		DebugAssert(!"Should not be here.");
+		return make_pair(Point2(),0);
 	}
 }
 

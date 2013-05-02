@@ -882,7 +882,7 @@ bool	WriteAptFile(const char * inFileName, const AptVector& inApts, int version)
 
 bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts, int version)
 {
-	WriteAptFileProcs((int (*)(void *, const char *,...))fprintf,fi,inApts,version);
+	return WriteAptFileProcs((int (*)(void *, const char *,...))fprintf,fi,inApts,version);
 }
 
 bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void * fi, const AptVector& inApts, int version)

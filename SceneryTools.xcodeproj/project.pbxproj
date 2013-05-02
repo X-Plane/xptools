@@ -4857,6 +4857,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Debug;
 		};
@@ -4900,6 +4901,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Release;
 		};
@@ -5005,6 +5007,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Phone;
 		};
@@ -5790,6 +5793,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = DebugOpt;
 		};
