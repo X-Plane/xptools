@@ -166,7 +166,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	static int n = 0;
 	++n;
 
-	bool is_ccw = (mType == create_Marks) ? true : is_ccw_polygon_pt(pts.begin(), pts.end());
+	bool is_ccw = (mType == create_Marks || mType == create_String || mType == create_Line) ? true : is_ccw_polygon_pt(pts.begin(), pts.end());
 	if (mType == create_Hole) is_ccw = !is_ccw;
 
 	switch(mType) {
