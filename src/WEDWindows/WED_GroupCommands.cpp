@@ -757,6 +757,14 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 		// We are going into an airport.  DO NOT allow an airport into another one.
 		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_Airport::sClass)) return 0;
 	}
+
+	#if AIRPORT_ROUTING
+	// No nested flows either...
+	if (Iterate_IsOrParentClass(dest, (void*) WED_ATCFlow::sClass))
+	{
+		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_ATCFlow::sClass)) return 0;
+	}
+	#endif
 	
 	// Finally, we need to make sure that everyone in the selection is going to get their needs met.
 	set<string>	required_parents;
