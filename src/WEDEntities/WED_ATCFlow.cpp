@@ -52,6 +52,11 @@ WED_ATCFlow::~WED_ATCFlow()
 {
 }
 
+int		WED_ATCFlow::GetPatternRunway(void) const
+{
+	return pattern_rwy.value;
+}
+
 void	WED_ATCFlow::SetPatternRunway(int r)
 {
 	pattern_rwy = r;

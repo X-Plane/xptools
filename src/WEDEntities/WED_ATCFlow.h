@@ -38,6 +38,7 @@ public:
 	void	Import(const AptFlow_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptFlow_t& info) const;
 
+	int		GetPatternRunway(void) const;		// Return WED ENUM!!!
 	void	SetPatternRunway(int r);
 
 	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict);
