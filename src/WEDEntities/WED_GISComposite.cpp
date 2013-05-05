@@ -119,14 +119,27 @@ void			WED_GISComposite::Rescale(GISLayer_t l, const Bbox2& old_bounds,const Bbo
 {
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
-		GetNthEntity(i)->Rescale(l, old_bounds,new_bounds);
+	{
+		IGISEntity * ge = GetNthEntity(i);
+		// Big-ass hack: if a composite contains a taxi layout, it will tell all edges AND all nodes to move,
+		// and the edes will tell the nodes to move (once for each viewer) and we get a borked move.  So...
+		// just don't pass msg to edges.
+		//
+		// This breaks down if the taxi layout is PARTLY grouped...that's something I am going to punt on for now.
+		if(ge->GetGISClass() != gis_Edge)
+			ge->Rescale(l, old_bounds,new_bounds);
+	}
 }
 
 void			WED_GISComposite::Rotate(GISLayer_t l, const Point2& ctr, double angle)
 {
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
-		GetNthEntity(i)->Rotate(l, ctr, angle);
+	{
+		IGISEntity * ge = GetNthEntity(i);
+		if(ge->GetGISClass() != gis_Edge)	
+			ge->Rotate(l, ctr, angle);
+	}
 }
 
 int				WED_GISComposite::GetNumEntities(void ) const
