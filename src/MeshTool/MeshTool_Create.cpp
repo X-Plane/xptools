@@ -63,7 +63,8 @@
 // which is to say, no author is going to care about losing this 'precision'.  But it is quite a bit larger
 // than the 2^-45 maximum precision for a longitude value, which is to say, if there is a 1-bit clipping 
 // error this is likely to snap it.
-#define SNAP_FOR_MT 0x7FFFFFFF
+//#define SNAP_FOR_MT 0x7FFFFFFF
+#define SNAP_FOR_MT 0
 
 static DEMGeoMap			sDem;
 static CDT					sMesh;
