@@ -52,6 +52,11 @@ WED_ATCFlow::~WED_ATCFlow()
 {
 }
 
+void	WED_ATCFlow::SetPatternRunway(int r)
+{
+	pattern_rwy = r;
+}
+
 void	WED_ATCFlow::Import(const AptFlow_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	StateChanged();

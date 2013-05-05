@@ -377,6 +377,17 @@ void	WED_DoMakeNewATCFlow(IResolver * inResolver)
 	WED_ATCFlow * f=  WED_ATCFlow::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
 	f->SetName("Unnamed ATC Flow");
+	
+	WED_Airport * airport = WED_GetParentAirport(f);
+	if(airport)
+	{
+		set<int> legal;
+		WED_GetAllRunwaysOneway(airport, legal);
+		
+		if(!legal.empty())
+			f->SetPatternRunway(*legal.begin());		
+	}
+	
 	now_sel->CommitOperation();
 }
 
@@ -387,6 +398,17 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	WED_ATCRunwayUse * f=  WED_ATCRunwayUse::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
 	f->SetName("Unnamed Runway Use");
+	
+	WED_Airport * airport = WED_GetParentAirport(f);
+	if(airport)
+	{
+		set<int> legal;
+		WED_GetAllRunwaysOneway(airport, legal);
+		
+		if(!legal.empty())
+			f->SetRunway(*legal.begin());		
+	}
+	
 	now_sel->CommitOperation();
 }
 

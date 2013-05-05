@@ -49,6 +49,11 @@ WED_ATCRunwayUse::~WED_ATCRunwayUse()
 {
 }
 
+void	WED_ATCRunwayUse::SetRunway(int r)
+{
+	rwy.value = r;
+}
+
 void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
