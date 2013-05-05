@@ -1,7 +1,9 @@
 MeshTool Instructions and Release Notes
 
 Version History
-	3/20713 2.1 b1
+	5/5/13	2.1 r1
+		Turned off snapping to fix Windows numerics.
+	3/20/13 2.1 b1
 		SHAPEFILE_CONTOUR introduced.
 		Fixed bug where shapefile masks can cause MT to fail.
 		Fixed nasty stretched textures where orthophotos sit on (but do not span) a DSF border.
