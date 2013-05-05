@@ -47,6 +47,7 @@
 #include "WED_TextureNode.h"
 #include "WED_Airport.h"
 #include "XESConstants.h"
+#include "WED_TaxiRouteNode.h"
 
 #define DOUBLE_PT_DIST (10.0 * MTR_TO_DEG_LAT)
 
@@ -455,7 +456,7 @@ static bool WED_NoLongerViable(WED_Thing * t)
 			return true;
 	}
 
-	if(SAFE_CAST(WED_AirportNode,t) &&
+	if(SAFE_CAST(WED_TaxiRouteNode,t) &&
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
@@ -463,7 +464,7 @@ static bool WED_NoLongerViable(WED_Thing * t)
 	IGISPolygon * p = dynamic_cast<IGISPolygon *>(t);
 	if (p && t->CountChildren() == 0)
 		return true;
-
+		
 	return false;
 }
 
@@ -1194,8 +1195,8 @@ void	WED_DoSplit(IResolver * resolver)
 int	WED_CanMerge(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if(sel->GetSelectionCount() == 0) return 0;
-	if(!sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_AirportNode::sClass)) return 0;
+	if(sel->GetSelectionCount() < 2) return 0;		// can't merge 1 thing!
+	if(!sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_TaxiRouteNode::sClass)) return 0;
 	
 	if(sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
 	
@@ -1206,7 +1207,7 @@ static int iterate_do_merge(ISelectable * who, void * ref)
 {
 	vector<WED_Thing *> * nodes = (vector<WED_Thing *> *) ref;
 	
-	WED_AirportNode * n = dynamic_cast<WED_AirportNode *>(who);
+	WED_TaxiRouteNode * n = dynamic_cast<WED_TaxiRouteNode *>(who);
 	
 	if(n)
 	{
