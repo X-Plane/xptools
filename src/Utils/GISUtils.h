@@ -24,11 +24,14 @@
 #define GISUTILS_H
 
 #include <math.h>
+#if !NO_CGAL
 #include "CGALDefs.h"
+#endif
 
 struct	Polygon2;
 struct	Vector2;
 struct	Point2;
+struct	Bbox2;
 struct	CoordTranslator2;
 typedef	struct tiff TIFF;
 
@@ -55,10 +58,12 @@ void	CreateTranslatorForPolygon(
 					const Polygon2&		inPolygon,
 					CoordTranslator2&	outTranslator);
 					
+#if !NO_CGAL
 void	CreateTranslatorForBounds(
 					const Point_2&		inSrcMin,
 					const Point_2&		inSrcMax,
 					CoordTranslator_2&	outTranslator);
+#endif					
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,

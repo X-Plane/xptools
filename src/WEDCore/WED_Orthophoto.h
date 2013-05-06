@@ -12,9 +12,6 @@
 
 class IResolver;
 
-#if !NO_CGAL_BEZIER
-void	WED_CheckPolys(IResolver * in_resolver);
-#endif
 void	WED_MakeOrthos(IResolver * in_resolver);
 
 

@@ -94,9 +94,6 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
 {	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
-#if !NO_CGAL_BEZIER
-{	"Error-Check Polygons",	0,		0,								0,	wed_CheckPolys	},
-#endif
 #if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
 #endif

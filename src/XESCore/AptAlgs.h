@@ -100,9 +100,6 @@ void apt_make_cut_map(Polygon_set_2& in_area, Pmwx& out_map, double cut_x, doubl
 // Get all of the points of interest for a layout...gates, runway ends, etc.
 void GetAptPOI(const AptInfo_t * a, vector<Point2>& poi);
 
-// Convert 810 to 850 layout
-void	ConvertForward(AptInfo_t& io_apt);
-
 // Indexing
 void	IndexAirports(const AptVector& apts, AptIndex& index);
 void	FindAirports(const Bbox2& bounds, const AptIndex& index, set<int>& apts);

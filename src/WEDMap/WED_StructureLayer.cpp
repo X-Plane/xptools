@@ -63,8 +63,6 @@
 	#include <GL/glu.h>
 #endif
 
-#define		VALIDATE_WHACKO_BEZIERS 0
-
 // This was experimental code to draw lagrange polynomials for taxiway lines.  Turns out that they don't look very good and aren't useful.
 // Also, "combo" would need to be rewritten because it tends to overflow...of course we could just use long-long.
 
@@ -567,27 +565,6 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 
 		if (poly)
 		{
-			#if VALIDATE_WHACKO_BEZIERS
-				vector<Point2>	errs;			
-				if(IsBezierPolyScrewed(poly, &errs))
-				{
-					g->SetState(false,0,false,false, false,false,false);
-					glColor3f(1,0,0);
-					Bbox2	bounds;
-					poly->GetBounds(gis_Geo,bounds);
-					
-					glPointSize(5);
-					glBegin(GL_POINTS);
-					for(int n = 0; n < errs.size(); ++n)
-					{
-						glVertex2(GetZoomer()->LLToPixel(errs[n]));
-//						glVertex2(GetZoomer()->LLToPixel(bounds.p1));
-//						glVertex2(GetZoomer()->LLToPixel(bounds.p2));
-					}
-					glEnd();
-				}
-			#endif
-		
 			if (overlay)
 			{
 				IGISPointSequence * oring = overlay->GetOuterRing();

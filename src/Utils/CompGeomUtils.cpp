@@ -22,8 +22,8 @@
  */
 #include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
-#include "GISTool_Globals.h"
-#include "MapDefs.h"
+//#include "GISTool_Globals.h"
+//#include "MapDefs.h"
 #include "AssertUtils.h"
 #include "STLUtils.h"
 #include "XESConstants.h"
@@ -31,8 +31,6 @@
 #  include <stdio.h>
 #endif
 #include <algorithm>
-
-#include <CGAL/convex_hull_2.h>
 
 using namespace std;
 
@@ -1203,14 +1201,6 @@ inline bool	IsBetterHullPt(const Point2& anchor, const Point2& best_so_far, cons
 
 	// Take the shortest side possible.
 	return Vector2(newer, best_so_far).dot(Vector2(newer, anchor)) < 0.0;
-}
-
-void	MakePolygonConvex(Polygon_2& ioPolygon)
-{
-	Polygon_2	newp;
-	CGAL::convex_hull_2(ioPolygon.vertices_begin(), ioPolygon.vertices_end(),
-						back_insert_iterator<Polygon_2>(newp));
-	ioPolygon = newp;
 }
 
 void	MakePolygonConvex(Polygon2& ioPolygon)

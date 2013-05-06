@@ -33,61 +33,6 @@
 #include <GL/glu.h>
 #endif
 
-#if !NO_CGAL_BEZIER
-#include "Bezier.h"
-
-bool IsBezierPolyScrewed(IGISPolygon * poly, vector<Point2> * where)
-{
-	vector<Bezier2>	der_sides;
-	IGISPointSequence * outer = poly->GetOuterRing();	
-	for(int n = 0; n < outer->GetNumSides(); ++n)
-	{	
-		Bezier2 b;
-		Segment2 s;
-		outer->GetSide(gis_Geo, n,s,b);
-		der_sides.push_back(b);
-	}
-	for(int h = 0; h < poly->GetNumHoles(); ++h)
-	{
-		IGISPointSequence * hh = poly->GetNthHole(h);
-		for(int n = 0; n < hh->GetNumSides(); ++n)
-		{
-			Bezier2 b;
-			Segment2 s;
-			hh->GetSide(gis_Geo, n,s,b);
-			der_sides.push_back(b);
-		}
-	}
-	if(where == NULL) 
-		return do_beziers_cross(der_sides);
-	vector<Point2>	p;
-	if(where == NULL) where = &p;
-	find_crossing_beziers(der_sides,*where);
-	return !where->empty();
-}
-
-
-bool IsBezierSequenceScrewed(IGISPointSequence * ps, vector<Point2> * where)
-{
-	if(!ps->IsClosed()) return false;
-	
-	vector<Bezier2>	der_sides;
-	for(int n = 0; n < ps->GetNumSides(); ++n)
-	{	
-		Bezier2 b;
-		Segment2 s;
-		ps->GetSide(gis_Geo, n,s,b);
-		der_sides.push_back(b);
-	}
-	if(where == NULL) 
-		return do_beziers_cross(der_sides);
-	vector<Point2>	p;
-	if(where == NULL) where = &p;
-	find_crossing_beziers(der_sides,*where);
-	return !where->empty();
-}
-#endif
-
 void PointSequenceToVector(
 			IGISPointSequence *		ps,
 			WED_MapZoomerNew *		z,

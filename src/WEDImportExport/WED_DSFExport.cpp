@@ -63,12 +63,6 @@
 #define DSF_EXTRA_1021 0.25
 
 
-#if !NO_CGAL_BEZIER
-#include "Bezier.h"
-#endif
-//#include <CGAL/Boolean_set_operations_2.h>
-//#include "GISTool_Globals.h"
-
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 int zip_printf(void * fi, const char * fmt, ...)

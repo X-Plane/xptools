@@ -50,7 +50,6 @@
 #include "WED_Validate.h"
 
 #include "AptIO.h"
-#include "AptAlgs.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
 #include "PlatformUtils.h"

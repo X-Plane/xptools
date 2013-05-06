@@ -17,6 +17,8 @@
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ResourceMgr.h"
 
+#if 0
+
 #define USE_CGAL_POLYGONS 1
 #include "WED_GISUtils.h"
 
@@ -129,42 +131,11 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 	return c;
 }
 
-#if !NO_CGAL_BEZIER
-void	WED_CheckPolys(IResolver * in_resolver)
-{
-	WED_Thing	*	wrl = 	WED_GetWorld(in_resolver);
-	ISelection * sel =		WED_GetSelect(in_resolver);
-	vector<IGISEntity *>	entities;	
-	vector<Point2>			fail_pts;
-	sel->IterateSelectionOr(Iterate_CollectEntities,&entities);
-	for(vector<IGISEntity *>::iterator e = entities.begin(); e != entities.end(); ++e)
-	{
-		IGISPolygon * poly = dynamic_cast<IGISPolygon *>(*e);
-		if(poly)
-		{
-			vector<Point2>	bad;
-			IsBezierPolyScrewed(poly, &bad);
-			fail_pts.insert(fail_pts.end(),bad.begin(),bad.end());
-		}
-	}
-	if(!fail_pts.empty())
-	{
-		wrl->StartOperation("Adding error pins.");
-
-		for(vector<Point2>::iterator b = fail_pts.begin(); b != fail_pts.end(); ++b)
-		{
-			WED_ObjPlacement * pin = WED_ObjPlacement::CreateTyped(wrl->GetArchive());
-			pin->SetLocation(gis_Geo,*b);
-			pin->SetParent(wrl,0);
-			pin->SetName("Error:Self-Crossing Polygon");
-		}
-		wrl->CommitOperation();
-	}
-}
 #endif
 
 void	WED_MakeOrthos(IResolver * in_resolver)
 {
+/*
 	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
 	ISelection * sel = WED_GetSelect(in_resolver);
 	
@@ -211,4 +182,5 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 		}
 	} else 
 		DoUserAlert("No orthophotos were created because the selection contains no non-curved polygons.");
+*/		
 }
