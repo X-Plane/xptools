@@ -263,12 +263,27 @@ WED_DocumentWindow::WED_DocumentWindow(
 	XWin::GetBounds(zw,zw+1);
 	XWin::GetWindowLoc(xy,xy+1);
 	
+	// This is a safety-hack.  The user's prefs may specify the window at a location that
+	// is off screen,either because the prefs are borked or because the doc came from
+	// a machine with a much larger dekstop.  So...
+	//
+	// Coming in we have the default rect for a window - hopefully it is BIG because we
+	// pass xwin_style_fullscreen to XWin.  So if our currnet location does not overlap
+	// with that AT ALL assume the window is off in space.
+	//
+	// TODO: someday check the window against the real desktop per platform.
+	int safe_rect[4] = { xy[0] ,xy[1], xy[0] + zw[0], xy[1] + zw[1] };
+	
 	xy[0]  = inDocument->ReadIntPref("window/x_loc",xy[0]);
 	xy[1]  = inDocument->ReadIntPref("window/y_loc",xy[1]);
 	zw[0] = inDocument->ReadIntPref("window/width",zw[0]);
 	zw[1] = inDocument->ReadIntPref("window/height",zw[1]);
 	
-	SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
+	if(xy[0] < safe_rect[2] && xy[1] < safe_rect[3] && 
+	  (xy[0] + zw[0]) >= safe_rect[0] && (xy[1] + zw[1]) >= safe_rect[1])
+	{
+		SetBounds(xy[0],xy[1],xy[0]+zw[0],xy[1]+zw[1]);
+	}
 
 	int main_split = inDocument->ReadIntPref("window/main_split",zw[0] / 5);
 	int main_split2 = inDocument->ReadIntPref("window/main_split2",zw[0] * 2 / 3);
