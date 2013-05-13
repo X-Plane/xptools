@@ -186,7 +186,7 @@ private:
 	
 	void			resort(void);
 
-	IResolver *		mResolver;
+	WED_Document *	mResolver;
 	WED_Archive *	mArchive;
 	string			mPath;
 	AptVector		mApts;

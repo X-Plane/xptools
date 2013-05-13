@@ -32,10 +32,12 @@ class	IResolver;
 class	WED_Document;
 
 void	WED_AptImport(
-				WED_Archive *	archive,
-				WED_Thing *		container,
-				const char *	file_path,
-				AptVector&		apts);
+				WED_Archive *			archive,
+				WED_Thing *				container,
+				const char *			file_path,
+				AptVector&				apts,
+				vector<WED_Thing *> *	out_airports);
+				
 
 void	WED_AptExport(
 				WED_Thing *		container,

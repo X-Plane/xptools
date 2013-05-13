@@ -191,8 +191,18 @@ void WED_AptImportDialog::DoIt(void)
 	if(!apts.empty())
 	{
 		wrl->StartOperation("Import apt.dat");
-		WED_AptImport(mArchive, wrl, mPath.c_str(), apts);
+		vector<WED_Thing *>	new_apts;
+		WED_AptImport(mArchive, wrl, mPath.c_str(), apts, &new_apts);
 		WED_SetAnyAirport(mResolver);
+
+		if(!new_apts.empty())
+		{
+			ISelection * sel = WED_GetSelect(mResolver);
+			sel->Clear();
+			for (int n = 0; n < new_apts.size(); ++n)
+				sel->Insert(new_apts[n]);
+		}
+
 		wrl->CommitOperation();
 	}
 }

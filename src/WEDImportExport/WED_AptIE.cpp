@@ -471,10 +471,11 @@ void LazyPrintf(void * ref, const char * fmt, ...)
 }
 
 void	WED_AptImport(
-				WED_Archive *	archive,
-				WED_Thing *		container,
-				const char *	file_path,
-				AptVector&		apts)
+				WED_Archive *			archive,
+				WED_Thing *				container,
+				const char *			file_path,
+				AptVector&				apts,
+				vector<WED_Thing *> *	out_airports)
 {
 	char path[1024];
 	strcpy(path,file_path);
@@ -489,6 +490,7 @@ void	WED_AptImport(
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
 		new_apt->Import(*apt, LazyPrintf, &log);
+		if(out_airports) out_airports->push_back(new_apt);
 
 		for (AptRunwayVector::iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
