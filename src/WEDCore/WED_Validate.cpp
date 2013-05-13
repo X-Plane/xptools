@@ -335,10 +335,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		
 		if(who->GetClass() == WED_TaxiRoute::sClass && ((taxi = dynamic_cast<WED_TaxiRoute *>(who)) != NULL))
 		{
-			if (name.empty() && !taxi->IsRunway())
-			{
-				msg = "This taxi route has no name.  All taxi routes must have a name so that ATC can give taxi instructions.";
-			}
+			// See bug http://dev.x-plane.com/bugbase/view.php?id=602 - blank names are okay!
+//			if (name.empty() && !taxi->IsRunway())
+//			{
+//				msg = "This taxi route has no name.  All taxi routes must have a name so that ATC can give taxi instructions.";
+//			}
 			
 			if(taxi->HasInvalidHotZones(s_legal_rwy_oneway))
 			{
