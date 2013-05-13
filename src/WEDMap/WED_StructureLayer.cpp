@@ -51,6 +51,7 @@
 #include "WED_RampPosition.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
+#include "WED_SimpleBoundaryNode.h"
 #include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
 #include "WED_TaxiRoute.h"
@@ -260,6 +261,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				 if (sub_class == WED_TowerViewpoint::sClass&& (tower  = SAFE_CAST(WED_TowerViewpoint, entity)) != NULL) pt = tower , icon = "map_towerview.png";
 			else if (sub_class == WED_Windsock::sClass		&& (sock   = SAFE_CAST(WED_Windsock		 , entity)) != NULL) pt = sock  , icon = "map_windsock.png" ;
 			else if (sub_class == WED_AirportBeacon::sClass && (beacon = SAFE_CAST(WED_AirportBeacon , entity)) != NULL) pt = beacon, icon = "map_beacon.png"   ;
+			else if (sub_class == WED_SimpleBoundaryNode::sClass && (pt = SAFE_CAST(IGISPoint, entity)) != NULL) icon = "map_tree.png";
 			else pt = SAFE_CAST(IGISPoint,entity);
 			if (pt)
 			{
