@@ -233,6 +233,7 @@ enum {
 	
 	atc_op_arrivals = 1,
 	atc_op_departures = 2,
+	atc_op_all = (atc_op_arrivals | atc_op_departures),
 	
 	atc_ramp_misc = 0,
 	atc_ramp_gate = 1,
