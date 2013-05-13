@@ -71,6 +71,7 @@ WED_Document::WED_Document(
 #if WITHNWLINK
 	mServer(NULL),
 	mNWLink(NULL),
+	mOnDisk(false),
 #endif
 	mUndo(&mArchive, this),
 	mArchive(this)
@@ -214,11 +215,19 @@ void	WED_Document::Save(void)
 	{
 		WriteXML(xml_file);
 		fclose(xml_file);
+		mOnDisk=true;
 	}
 }
 
 void	WED_Document::Revert(void)
 {
+	if(this->IsDirty())
+	{
+		string msg = "Are you sure you want to revert the document '" + mPackage + "' to the saved version on disk?";
+		if(!ConfirmMessage(msg.c_str(),"Revert","Cancel"))
+			return;
+	}
+
 		mDocPrefs.clear();
 	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
@@ -236,7 +245,11 @@ void	WED_Document::Revert(void)
 		if(xml_exists && !result.empty())
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
 
-		if(!xml_exists)
+		if(xml_exists)
+		{
+			mOnDisk=true;
+		}
+		else
 		{
 			// If XML fails because it's AWOL, go back and do the SQL-style read-in.
 			sql_db db(mFilePath.c_str(), SQLITE_OPEN_READWRITE);
@@ -271,7 +284,8 @@ void	WED_Document::Revert(void)
 					}
 					if (err != SQLITE_DONE)
 						WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db.get()),err);
-				}
+				}				
+				mOnDisk=true;
 			}
 			else
 			{
@@ -305,6 +319,11 @@ void	WED_Document::Revert(void)
 bool	WED_Document::IsDirty(void)
 {
 	return mArchive.IsDirty() != 0;
+}
+
+bool	WED_Document::IsOnDisk(void)
+{
+	return mOnDisk;
 }
 
 bool	WED_Document::TryClose(void)

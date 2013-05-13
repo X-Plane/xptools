@@ -464,7 +464,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);
 
 	case gui_Save:		return mDocument->IsDirty();
-	case gui_Revert:	return mDocument->IsDirty();
+	case gui_Revert:	return mDocument->IsDirty() && mDocument->IsOnDisk();
 
 	case gui_SelectAll:		return WED_CanSelectAll(mDocument);
 	case gui_SelectNone:	return WED_CanSelectNone(mDocument);

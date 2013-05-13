@@ -120,6 +120,7 @@ public:
 	void				Save(void);
 	void				Revert(void);
 	bool				IsDirty(void);
+	bool				IsOnDisk(void);
 
 	// LEGACY STUFF
 
@@ -139,6 +140,7 @@ private:
 
 	string				mFilePath;
 	string				mPackage;
+	bool				mOnDisk;
 
 //	sql_db				mDB;
 	WED_Archive			mArchive;
