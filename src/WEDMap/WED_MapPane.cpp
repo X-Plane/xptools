@@ -74,6 +74,16 @@ char	kToolKeys[] = {
 	'r', 's', 'v', 'm'
 };
 
+
+// A bit of a hack...zoom to selection sets the zoom so that the screen is filled with the sel.  If the sel size is 0 in both
+// dimensions, our zoom is NaN, which is bad. But try telling that to users!
+//
+// So....IF the selected entity is a point AND it doesn't have an overloaded bounds that gives it some thickness, we apply this 
+// extra padding (in meters) around it.  The result is that we always zoom out enough to show 50 meters around point objects.
+// In practice this should be okay - you probably want to see SOME of what's happening, and padding a small distance around your 
+// airport when you have perimeter objects isn't going to kill anything.  We can tune the dimensions as desired.
+#define PAD_POINTS_FOR_ZOOM_MTR 50.0
+
 static void GetExtentAll(Bbox2& box, IResolver * resolver)
 {
 	box = Bbox2();
@@ -90,7 +100,19 @@ static int accum_box(ISelectable * who, void * ref)
 	{
 		Bbox2 ent_box;
 		ent->GetBounds(gis_Geo,ent_box);
-		*total += ent_box;
+		GISClass_t gc = ent->GetGISClass();
+		if(gc == gis_Point || gc == gis_Point_Bezier || gc == gis_Point_Heading)
+		{
+			if(ent_box.is_empty())
+			{
+				double lat = ent_box.ymin();
+				double MTR_TO_DEG_LON = MTR_TO_DEG_LAT * cos(lat * DEG_TO_RAD);
+				ent_box.expand(PAD_POINTS_FOR_ZOOM_MTR * MTR_TO_DEG_LON,PAD_POINTS_FOR_ZOOM_MTR * MTR_TO_DEG_LAT);
+			}
+		}
+
+		if(!ent_box.is_null())
+			*total += ent_box;
 	}
 	return 0;
 }
@@ -301,6 +323,15 @@ void	WED_MapPane::ZoomShowAll(void)
 //	mMap->GetMapLogicalBounds(l,b,r,t);
 //	mMap->SetAspectRatio(1.0 / cos((b+t) * 0.5 * DEG_TO_RAD));
 	mMap->ZoomShowAll();
+}
+
+void WED_MapPane::ZoomShowSel(void)
+{
+	Bbox2 box;
+	GetExtentSel(box, mResolver); 
+	if(!box.is_empty() && !box.is_null())
+		mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	
+	mMap->Refresh(); 
 }
 
 int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)

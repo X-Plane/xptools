@@ -34,6 +34,7 @@
 #include "STLUtils.h"
 #include "WED_Messages.h"
 #include "WED_Document.h"
+#include "WED_MapPane.h"
 
 static int import_bounds_default[4] = { 0, 0, 500, 500 };
 static int kDefCols[] = { 100, 100 };
@@ -49,10 +50,12 @@ WED_AptImportDialog::WED_AptImportDialog(
 		AptVector&		apts,
 		const char *	file_path,
 		WED_Document *	resolver, 
-		WED_Archive *	archive) : 
+		WED_Archive *	archive,
+		WED_MapPane *	pane) : 
 	GUI_Window("Import apt.dat", xwin_style_resizable|xwin_style_visible|xwin_style_centered, import_bounds_default, cmdr),
 	GUI_SimpleTableGeometry(2,kDefCols,20),
 	mTextTable(this,100,0),
+	mMapPane(pane),
 	mResolver(resolver),
 	mArchive(archive),
 	mPath(file_path),
@@ -204,6 +207,7 @@ void WED_AptImportDialog::DoIt(void)
 		}
 
 		wrl->CommitOperation();
+		mMapPane->ZoomShowSel();
 	}
 }
 

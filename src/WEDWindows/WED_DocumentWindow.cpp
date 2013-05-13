@@ -389,7 +389,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ExportPack:		WED_DoExportPack(mDocument);	return 1;
 	case wed_ExportToRobin:		WED_DoExportRobin(mDocument); return 1;
-	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive()); return 1;
+	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	
 #if ROBIN_IMPORT_FEATURES	

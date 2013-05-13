@@ -30,6 +30,7 @@ class	WED_Thing;
 class	WED_Archive;
 class	IResolver;
 class	WED_Document;
+class	WED_MapPane;
 
 void	WED_AptImport(
 				WED_Archive *			archive,
@@ -59,6 +60,6 @@ int		WED_CanExportApt(IResolver * resolver);
 void	WED_DoExportApt(IResolver * resolver);
 
 int		WED_CanImportApt(IResolver * resolver);
-void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive);
+void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);
 
 #endif /* WED_AptIE_H */

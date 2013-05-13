@@ -52,7 +52,7 @@ bool			WED_GISComposite::HasLayer	(GISLayer_t l) const
 
 void			WED_GISComposite::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
-	RebuildCache(CacheBuild(cache_Spatial));
+	RebuildCache(CacheBuild(cache_Spatial|cache_Topological));
 	bounds = (l == gis_UV) ? mCacheBoundsUV : mCacheBounds;
 }
 

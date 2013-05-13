@@ -663,7 +663,7 @@ int		WED_CanImportApt(IResolver * resolver)
 	return 1;
 }
 
-void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive)
+void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane)
 {
 	char path[1024];
 	strcpy(path,"");
@@ -678,6 +678,6 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive)
 			return;
 		}
 	
-		WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive);
+		WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive, pane);
 	}
 }
