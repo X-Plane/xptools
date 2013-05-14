@@ -138,7 +138,7 @@ inline bool CanFlatten(CDT::Face_handle f)
 		f->info().orig_face->data().GetParam(af_FlattenMode,FLATTEN) != NO_FLATTEN;
 }
 
-inline bool IsNoFlattenVertex(const CDT& inMesh, CDT::Vertex_handle v, int water_type)
+inline bool IsNoFlattenVertex(const CDT& inMesh, CDT::Vertex_handle v)
 {
 	CDT::Face_circulator circ, stop;
 	circ = stop = inMesh.incident_faces(v);

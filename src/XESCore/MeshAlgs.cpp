@@ -100,6 +100,10 @@
 #define REDUCE_SUBDIVIDE 2
 
 
+// Andras: define max slope for non flattened water edges and the number of iterations
+#define MAX_WATER_SLOPE 0.2
+#define WATER_SMOOTHER_ITERATIONS 25
+
 #if SHOW_STEPS
 
 #include "RF_Notify.h"
@@ -1367,6 +1371,89 @@ void FlattenWater(CDT& ioMesh)
 		}
 	}
 	//printf("processed: %d\n", c);
+
+	/////////////////////////////////////////////
+	//Andras: Water smoothing for rivers etc.
+	/////////////////////////////////////////////
+
+	for(int it_n = 0; it_n < WATER_SMOOTHER_ITERATIONS; ++it_n)
+	{
+		int water_vertices=0;
+		int changed_vertices=0;
+		// check all water vertices
+		for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
+		{
+			if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
+			if(IsNoFlattenVertex(ioMesh,v)) {
+
+				water_vertices++;
+				double v_height = v->info().height;
+
+				double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(v->point().x()) * DEG_TO_RAD);
+
+				Point2	v_p = cgal2ben(v->point());
+
+				//printf("---   %p: has x: %lf y: %lf height %lf \n", &*v, v_p.x(),v_p.y(), v_height);
+
+				bool is_first = true;
+				double steepest_height = 0;
+				double steepest_slope = 0;
+				double steepest_dist = 0;
+
+				// circulate each vertex and get all the surrounding vertices, then check how they relate to the central vertex (especially, what the slope of the edge is)
+				CDT::Face_circulator circ, stop;
+				circ = stop =v->incident_faces();
+				do {
+					if(!ioMesh.is_infinite(circ))
+					{
+						CDT::Vertex_handle vs = circ->vertex(CDT::ccw(circ->index(v)));
+
+						if(CategorizeVertex(ioMesh, vs,terrain_Water) <= 0)
+						if(IsNoFlattenVertex(ioMesh,vs)) {
+							double vs_height = vs->info().height;
+							double dist_m = LonLatDistMetersWithScale(v_p.x(),v_p.y(), CGAL::to_double(vs->point().x()),
+									CGAL::to_double(vs->point().y()),DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
+							DebugAssert(dist_m == 0);
+
+							double vvs_slope = (v_height - vs_height) / dist_m;
+							double height_diff = (v_height - vs_height) ;
+
+							//printf("--- ---  %p: has  x: %lf y: %lf height %lf , height_diff %lf , distance %lf , slope %lf \n", &*vs, CGAL::to_double(vs->point().x()), CGAL::to_double(vs->point().y()), vs_height, height_diff, dist_m, vvs_slope);
+
+							// here we are only looking for points which are lower than central vertex and the slope to them is steeper than we are comfortable with
+							if(vvs_slope > MAX_WATER_SLOPE) {
+								if(is_first) {
+									steepest_height = vs_height;
+									steepest_slope = vvs_slope;
+									steepest_dist = dist_m;
+									is_first = false;
+								} else {
+									if(steepest_slope < vvs_slope) {
+										steepest_slope = vvs_slope;
+										steepest_height = vs_height;
+										steepest_dist = dist_m;
+									}
+								}
+							}
+						}
+					}
+				} while(++circ != stop);
+
+				// if there was at least one relevant too steep & low candidate, then change center to a height which would bring it to the limit of acceptable slope
+				if(!is_first)
+				{
+					changed_vertices++;
+					double new_height = steepest_height + (MAX_WATER_SLOPE * steepest_dist);
+
+					//printf("###   %p: was %lf, must be %lf\n", &*v, v_height, new_height);
+					v->info().height = new_height;
+				}
+
+			}
+
+		}
+		printf("Water smoothing iteration %zd , water vertices: %zd , changed vertices: %zd .\n", it_n, water_vertices, changed_vertices);
+	}
 #endif	
 }
 
