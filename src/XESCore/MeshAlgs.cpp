@@ -1413,7 +1413,7 @@ void FlattenWater(CDT& ioMesh)
 							double vs_height = vs->info().height;
 							double dist_m = LonLatDistMetersWithScale(v_p.x(),v_p.y(), CGAL::to_double(vs->point().x()),
 									CGAL::to_double(vs->point().y()),DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
-							DebugAssert(dist_m == 0);
+							DebugAssert(dist_m != 0.0);
 
 							double vvs_slope = (v_height - vs_height) / dist_m;
 							double height_diff = (v_height - vs_height) ;
@@ -1452,7 +1452,7 @@ void FlattenWater(CDT& ioMesh)
 			}
 
 		}
-		printf("Water smoothing iteration %zd , water vertices: %zd , changed vertices: %zd .\n", it_n, water_vertices, changed_vertices);
+		printf("Water smoothing iteration %d , water vertices: %d , changed vertices: %d .\n", it_n, water_vertices, changed_vertices);
 	}
 #endif	
 }
