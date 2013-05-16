@@ -46,6 +46,9 @@ public:
 			int		GetWallType(void) const;
 #if AIRPORT_ROUTING
 			void	SetWallType(int wt);
+
+	virtual const char *	HumanReadableType(void) const { return "Facade Node"; }
+
 private:
 	
 	WED_PropIntEnum		wall_type;

@@ -58,6 +58,8 @@ public:
 
 	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
+
+	virtual const char *	HumanReadableType(void) const { return "Taxi Route"; }
 	
 private:	
 

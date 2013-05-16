@@ -39,6 +39,8 @@ public:
 	void		Import(const AptWindRule_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptWindRule_t& info) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Wind Rule"; }
+
 private:
 
 	WED_PropStringText			icao;

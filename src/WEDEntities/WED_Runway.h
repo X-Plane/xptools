@@ -78,6 +78,8 @@ public:
 	void		Import(const AptRunway_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptRunway_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Runway"; }
+
 private:
 
 	WED_PropIntEnum			surface;

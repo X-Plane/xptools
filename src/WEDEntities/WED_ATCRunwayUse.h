@@ -42,6 +42,8 @@ public:
 
 	virtual	void	GetNthPropertyDict(int n, PropertyDict_t& dict);
 
+	virtual const char *	HumanReadableType(void) const { return "Runway Use"; }
+
 private:
 
 	WED_PropIntEnum			rwy;

@@ -37,6 +37,8 @@ public:
 	void	Import(const AptATCFreq_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptATCFreq_t& info) const;
 
+	virtual const char *	HumanReadableType(void) const { return "ATC Frequency"; }
+
 private:
 
 	WED_PropIntEnum		freq_type;

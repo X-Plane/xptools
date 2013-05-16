@@ -39,6 +39,8 @@ public:
 	void		Import(const AptSealane_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptSealane_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Sea Lane"; }
+
 private:
 
 	WED_PropBoolText		buoys;
