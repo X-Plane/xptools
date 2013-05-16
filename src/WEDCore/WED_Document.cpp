@@ -291,6 +291,14 @@ void	WED_Document::Revert(void)
 			{
 				/* We have a brand new blank doc.  In WED 1.0, we ran a SQL script that built the core objects,
 				 * then we IO-ed it in.  In WED 1.1 we just build the world and the few named objs immediately. */
+				 
+				// BASIC DOCUMENT STRUCTURE:
+				// The first object ever made gets ID 1 and is the "root" - the one known object.  The WED doc goes
+				// to "object 1" to get started.
+				// THEN the root contains three well-known objects by name - so their order isn't super-important as
+				// children or in the archive.  The "World" is the outer most spatial group, the "selection" is our one
+				// and only selection object, and "choices" is our key-value dictionary for various random crap we'll
+				// need.  (Currently only current airprt is set in the key-value lookup.)
 
 				WED_Root * root = WED_Root::CreateTyped(&mArchive);				// Root object anchors all WED things and supports named searches.
 				WED_Select * sel = WED_Select::CreateTyped(&mArchive);			// Sel and key-choice objs are known by name in the root!

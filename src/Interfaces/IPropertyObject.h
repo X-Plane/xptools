@@ -45,7 +45,7 @@ enum {
 	prop_EnumSet
 };
 
-typedef	map<int,pair<string, bool> >	PropertyDict_t;
+typedef	map<int,pair<string, bool> >	PropertyDict_t;		// Maps integer enum value to (string name and true if selectable in the UI)
 
 struct PropertyInfo_t {
 	int				can_edit;
