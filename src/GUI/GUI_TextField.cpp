@@ -204,6 +204,12 @@ int			GUI_TextField::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 	if (inKey < 256 && !mAllowed[(unsigned char) inKey]) return 0;
 	if (inKey < 256 && !mAllowedVK[(unsigned char) inVK]) return 0;
 	
+	if(inVK == GUI_VK_HOME)
+		inKey = ogle_Home;
+	if(inVK == GUI_VK_END)
+		inKey = ogle_End;
+	
+	
 	UTF8 buf[4];
 	int l = UTF8_encode(inKey, buf);
 	if(l > 0)
