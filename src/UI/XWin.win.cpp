@@ -614,6 +614,8 @@ int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int cur
 			mWindow,
 			NULL);
 
+	memset(mDragging,0,sizeof(mDragging));
+
 	for (int i = 0; i < cmds.size(); ++i)
 	{
 		MENUITEMINFO mif = { 0 };
