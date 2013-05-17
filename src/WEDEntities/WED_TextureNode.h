@@ -36,6 +36,8 @@ public:
 	virtual		void		GetLocation	   (GISLayer_t l,      Point2& p) const;
 	virtual		void		SetLocation	   (GISLayer_t l,const Point2& p)      ;
 
+	virtual const char *	HumanReadableType(void) const { return "UV-Mapped Node"; }
+
 private:
 
 	WED_PropDoubleText			mS;

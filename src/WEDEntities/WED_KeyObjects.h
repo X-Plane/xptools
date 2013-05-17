@@ -55,6 +55,8 @@ public:
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
+
+	virtual const char *	HumanReadableType(void) const { return "Project Internal Directory"; }	// This better not be visible anywhere!
 	
 private:
 

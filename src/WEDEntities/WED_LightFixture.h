@@ -40,6 +40,8 @@ public:
 		void		Import(const AptLight_t& rhs, void (* print_func)(void *, const char *, ...), void * ref);
 		void		Export(		 AptLight_t& rhs) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Light Fixture"; }
+
 private:
 
 	WED_PropIntEnum		light_type;

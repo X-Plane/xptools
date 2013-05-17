@@ -30,6 +30,8 @@ class WED_ForestRing  : public WED_GISChain {
 
 DECLARE_PERSISTENT(WED_ForestRing)
 
+	virtual const char *	HumanReadableType(void) const { return "Forest Boundary"; }
+
 public:
 
 //	virtual	IGISPoint *		SplitSide   (int n	)		;		// Split the side from pt N to pt N + 1 in half. Return the new pt.

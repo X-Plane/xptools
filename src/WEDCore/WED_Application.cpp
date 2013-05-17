@@ -64,7 +64,7 @@ int		WED_Application::HandleCommand(int command)
 		// LR maintains a forwarding directory for all v10-class products 
 		// so that we can restructure our content management without breaking binary
 		// apps in-field.  So...this is the perma-marker for WED 1.1 scenery help.
-		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_11_scenery.html");
+		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_12_scenery.html");
 		return 1;
 	case wed_HelpManual:
 		{
@@ -76,7 +76,7 @@ int		WED_Application::HandleCommand(int command)
 //			{
 //				GUI_LaunchURL(path.c_str());
 //			}
-		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_11_manual.html");
+		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_12_manual.html");
 		}
 		return 1;
 	default:

@@ -52,7 +52,36 @@ enum {
 	wed_Change_Properties = 8
 };
 
-class	WED_Thing : public WED_Persistent, public WED_PropertyHelper, public virtual IArray, public virtual IDirectory, public virtual IOperation {
+class	WED_Thing;
+
+class WED_TypeField : public WED_PropertyItem {
+public:
+
+	WED_TypeField(WED_Thing * parent);
+
+	// From WED_PropertyItem - just to get our type
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual	void		GetPropertyDictItem(int e, string& item);
+	virtual void		GetProperty(PropertyVal_t& val) const;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
+	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
+	virtual	void		ToXML(WED_XMLElement * parent);
+	virtual	void		GetUpdate(SQL_Update& io_update);
+	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);	
+
+	WED_Thing * val;
+
+};
+
+class	WED_Thing :	public			WED_Persistent, 
+					public			WED_PropertyHelper, 
+					public virtual	IArray, 
+					public virtual	IDirectory, 
+					public virtual	IOperation {
 
 DECLARE_INTERMEDIATE(WED_Thing)
 
@@ -88,12 +117,16 @@ public:
 	// This is a template method - sub-classes of things that have to add MORE XML than they would get via the property system and the thing
 	// itself override this method.  This way their extra XML is _inside_ the toplevel obj.
 	virtual	void			AddExtraXML(WED_XMLElement * obj) { }
+	
+	// One more template method: all WED things must have a human-readable type!
+	virtual const char *	HumanReadableType(void) const=0;
+	
 
 	// From WED_PropertyHelper...
 	virtual	void			PropEditCallback(int before);
 	virtual	int					CountSubs(void);
 	virtual	IPropertyObject *	GetNthSub(int n);
-
+	
 	// IArray
 	virtual	int				Array_Count (void );
 	virtual IBase *			Array_GetNth(int n);
@@ -112,7 +145,6 @@ public:
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
-	
 
 protected:
 
@@ -129,6 +161,7 @@ private:
 	vector<int>		source_id;				// These are MY sources!  I am watching them.
 	set<int>		viewer_id;				// These are MY vieweres!  They are watching me.
 
+	WED_TypeField				type;
 	WED_PropStringText			name;
 	
 friend class WED_TaxiRoute;

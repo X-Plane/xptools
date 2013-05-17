@@ -60,6 +60,7 @@ public:
 			void		SetShowLevel(int show_level);
 			int			GetShowLevel(void) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Facade"; }
 
 protected:
 

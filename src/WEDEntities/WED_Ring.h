@@ -46,6 +46,8 @@ public:
 	virtual	bool			IsClosed	(void	) const	;
 	virtual	bool			IsJustPoints(void) const { return false; }
 
+	virtual const char *	HumanReadableType(void) const { return "Boundary"; }
+
 };
 
 #endif /* WED_Ring_H */

@@ -501,6 +501,7 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 	DebugAssert(sel != NULL);
 
 	vector<ISelectable *>	iu;
+	set<IGISEntity *>		ent_set;
 
 	sel->GetSelectionVector(iu);
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
@@ -513,11 +514,32 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 			if (went->GetHidden()) continue;
 		}
 
+		// This is a mess.  GIS edge's violate the tree structure of the GIS class by 
+		// referring to nodes outside of themselves.  The bug is that when you select 
+		// two edges, if you tell them both to move, they will EACH tell their attached
+		// common vertex to move - it will move by 2x the distance.
+		//
+		// So the marquee tool hacks hte hell around this by breaking down all edges into
+		// their sources in a set, which de-dupes the vertices.
 		if (ent)
 		{
-			ent->Rescale(gis_Geo,old_bounds,new_bounds);
+			if(ent->GetGISClass() == gis_Edge)
+			{
+				IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(ent);
+				if(ps)
+				{
+					int np = ps->GetNumPoints();
+					for(int n = 0; n < np; ++n)
+						ent_set.insert(ps->GetNthPoint(n));
+				}
+			}
+			else
+				ent_set.insert(ent);
 		}
 	}
+	
+	for(set<IGISEntity *>::iterator e = ent_set.begin(); e != ent_set.end(); ++e)
+		(*e)->Rescale(gis_Geo,old_bounds,new_bounds);
 
 }
 
@@ -527,6 +549,7 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 	DebugAssert(sel != NULL);
 
 	vector<ISelectable *>	iu;
+	set<IGISEntity *>		ent_set;
 
 	sel->GetSelectionVector(iu);
 	for (vector<ISelectable *>::iterator i = iu.begin(); i != iu.end(); ++i)
@@ -541,8 +564,21 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 
 		if (ent)
 		{
-			ent->Rotate(gis_Geo,ctr, angle);
+			if(ent->GetGISClass() == gis_Edge)
+			{
+				IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(ent);
+				if(ps)
+				{
+					int np = ps->GetNumPoints();
+					for(int n = 0; n < np; ++n)
+						ent_set.insert(ps->GetNthPoint(n));
+				}
+			}
+			else
+				ent_set.insert(ent);
 		}
 	}
-
+	
+	for(set<IGISEntity *>::iterator e = ent_set.begin(); e != ent_set.end(); ++e)
+		(*e)->Rotate(gis_Geo,ctr, angle);
 }

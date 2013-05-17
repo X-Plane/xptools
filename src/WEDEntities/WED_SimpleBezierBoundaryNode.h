@@ -31,6 +31,10 @@ class WED_SimpleBezierBoundaryNode : public WED_GISPoint_Bezier {
 
 DECLARE_PERSISTENT(WED_SimpleBezierBoundaryNode)
 
+public:
+
+	virtual const char *	HumanReadableType(void) const { return "Curved Boundary Node"; }
+
 };
 
 

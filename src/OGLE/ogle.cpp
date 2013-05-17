@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <math.h>
 #include <algorithm>
+#include <limits.h>
 
 using std::vector;
 
@@ -514,9 +515,9 @@ void			OGLE_Key(
 		if (extend)
 		{
 			if (handle->active_side)
-				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,-1, handle->horizontal_gap);
-			else
 				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,-1, handle->horizontal_gap);
+			else
+				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,-1, handle->horizontal_gap);
 			OGLE_NormalizeSelectionInternal(handle);
 			OGLE_RevealSelection(handle);
 		}
@@ -533,9 +534,9 @@ void			OGLE_Key(
 		if (extend)
 		{
 			if (handle->active_side)
-				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,1, handle->horizontal_gap);
-			else
 				handle->sel_end = OGLE_CharPosVerticalAdjust(handle,handle->sel_end,1, handle->horizontal_gap);
+			else
+				handle->sel_start = OGLE_CharPosVerticalAdjust(handle,handle->sel_start,1, handle->horizontal_gap);
 			OGLE_NormalizeSelectionInternal(handle);
 			OGLE_RevealSelection(handle);
 		}
@@ -548,6 +549,44 @@ void			OGLE_Key(
 			OGLE_RevealSelection(handle);
 		}
 		break;
+
+	case ogle_Home:
+		if (extend)
+		{
+			if (handle->active_side)
+				handle->sel_end = 0;
+			else
+				handle->sel_start = 0;
+			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
+		}
+		else
+		{
+			handle->sel_end = handle->sel_start = 0;
+			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
+		}
+		break;
+	case ogle_End:
+		if (extend)
+		{
+			if (handle->active_side)
+				handle->sel_end = INT_MAX;
+			else
+				handle->sel_start = INT_MAX;
+			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
+		}
+		else
+		{
+			handle->sel_start = handle->sel_end = INT_MAX;
+			OGLE_NormalizeSelectionInternal(handle);
+			OGLE_RevealSelection(handle);
+		}
+		break;
+
+
+
 	default:
 		handle->callbacks.ReplaceText_f(handle, handle->sel_start,handle->sel_end,&key,(&key)+1);
 		handle->sel_start++;		// Okay - guaranteed input key is NOT MBCS!

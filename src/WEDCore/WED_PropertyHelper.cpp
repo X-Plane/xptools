@@ -1117,6 +1117,7 @@ void		WED_PropIntEnumSetFilter::ToXML(WED_XMLElement * parent)
 
 bool		WED_PropIntEnumSetFilter::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
+	return false;
 }
 
 
@@ -1242,6 +1243,7 @@ void		WED_PropIntEnumSetUnion::ToXML(WED_XMLElement * parent)
 
 bool		WED_PropIntEnumSetUnion::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
+	return false;
 }
 
 void		WED_PropIntEnumSetUnion::GetUpdate(SQL_Update& io_update)

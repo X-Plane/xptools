@@ -49,6 +49,8 @@ public:
 			void		SetFillMode(int mode);
 #endif			
 
+	virtual const char *	HumanReadableType(void) const { return "Forest"; }
+
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return GetFillMode() == dsf_fill_area; }

@@ -32,6 +32,10 @@ class WED_RunwayNode : public WED_GISPoint {
 
 DECLARE_PERSISTENT(WED_RunwayNode)
 
+public:
+
+	virtual const char *	HumanReadableType(void) const { return "Runway Node"; }
+
 };
 
 #endif /* WED_RunwayNode_H */

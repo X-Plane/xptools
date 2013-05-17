@@ -64,6 +64,8 @@ bool			WED_GISEdge::HasLayer			(GISLayer_t l) const
 
 void			WED_GISEdge::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
+	CacheBuild(cache_Spatial);
+
 	Segment2	s;
 	Bezier2		b;
 	if(GetSide(l,0,s,b))

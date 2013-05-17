@@ -54,8 +54,11 @@ void divide_heading(int * lo, int * hi)
 	*lo = (*lo / 1000);
 }
 
-int scan_bitfields(const char * str, const char * bits[])
+int scan_bitfields(const char * str, const char * bits[], int all_value)
 {
+	if(all_value && strcmp(str,"all") == 0)
+		return all_value;
+		
 	int r = 0;
 	int n = 0;
 	int b = 1;
@@ -367,6 +370,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			ok = "Illegal startup loc";
 				outApts.back().gates.back().location = POINT2(p1x, p1y);
 				outApts.back().gates.back().type = atc_ramp_misc;
+				outApts.back().gates.back().equipment = atc_traffic_all;
 			break;
 		case apt_beacon:
 			if (TextScanner_FormatScan(s, "iddiT|",
@@ -606,10 +610,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				{					
 					gate.type = scan_enum(ramp_type.c_str(), ramp_type_strings);
 					if(gate.type == -1)
-						ok = "Illegal ramp ty.e";
+						ok = "Illegal ramp type";
 					else 
 					{
-						gate.equipment = scan_bitfields(equip.c_str(), equip_strings);
+						gate.equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
 						gate.location = POINT2(p1x, p1y);
 						outApts.back().gates.push_back(gate);
 					}
@@ -684,7 +688,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().flows.back().pattern_runway,
 					&side) != 3) ok =  "Error: incorrect pattrn record";
 				else
-					outApts.back().flows.back().pattern_side = scan_bitfields(side.c_str(), pattern_strings);
+					outApts.back().flows.back().pattern_side = scan_bitfields(side.c_str(), pattern_strings,0);
 			}
 			break;
 		case apt_flow_rwy_rule:
@@ -704,8 +708,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().flows.back().runway_rules.back().name) != 8) ok = "Error: incorrect runway use rule.";
 				else
 				{
-					outApts.back().flows.back().runway_rules.back().operations = scan_bitfields(op.c_str(),op_strings);
-					outApts.back().flows.back().runway_rules.back().equipment = scan_bitfields(equip.c_str(), equip_strings);
+					outApts.back().flows.back().runway_rules.back().operations = scan_bitfields(op.c_str(),op_strings, atc_op_all);
+					outApts.back().flows.back().runway_rules.back().equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
 					divide_heading(
 										&outApts.back().flows.back().runway_rules.back().dep_heading_lo,
 										&outApts.back().flows.back().runway_rules.back().dep_heading_hi);
@@ -882,7 +886,7 @@ bool	WriteAptFile(const char * inFileName, const AptVector& inApts, int version)
 
 bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts, int version)
 {
-	WriteAptFileProcs((int (*)(void *, const char *,...))fprintf,fi,inApts,version);
+	return WriteAptFileProcs((int (*)(void *, const char *,...))fprintf,fi,inApts,version);
 }
 
 bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void * fi, const AptVector& inApts, int version)

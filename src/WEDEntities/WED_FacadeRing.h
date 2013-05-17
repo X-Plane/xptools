@@ -39,6 +39,8 @@ public:
 	virtual	bool			IsClosed	(void	) const	;
 	virtual	bool			IsJustPoints(void) const { return false; }
 
+	virtual const char *	HumanReadableType(void) const { return "Facade Boundary"; }
+
 };
 
 #endif /* WED_FacadeRing_H */

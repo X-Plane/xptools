@@ -40,6 +40,8 @@ public:
 	void	Import(const AptGate_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptGate_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Ramp Start"; }
+
 private:
 
 	WED_PropIntEnum			ramp_type;

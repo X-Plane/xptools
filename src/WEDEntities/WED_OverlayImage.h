@@ -45,6 +45,8 @@ public:
 	virtual	void	ResizeSide(GISLayer_t l,int side, const Vector2& delta, bool symetric);
 	virtual	void	ResizeCorner(GISLayer_t l,int side, const Vector2& delta, bool symetric);
 
+	virtual const char *	HumanReadableType(void) const { return "Reference Image"; }
+
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return true; }
