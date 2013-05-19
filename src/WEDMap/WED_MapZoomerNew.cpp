@@ -196,6 +196,13 @@ void	WED_MapZoomerNew::ZoomShowArea(
 
 	double required_width_logical = inEast - inWest;
 	double required_height_logical = inNorth - inSouth;
+	
+	if(required_width_logical == 0)
+		required_width_logical = 0.00001;
+	
+	if(required_height_logical == 0)
+		required_height_logical = 0.00001;
+		
 	double pix_avail_width = mPixels[2] - mPixels[0];
 	double pix_avail_height = mPixels[3] - mPixels[1];
 
