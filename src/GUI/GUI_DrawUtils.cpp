@@ -284,10 +284,10 @@ void	GUI_PlotIconBulk(
 		register int yy = *y++;
 		glColor4fv(c);
 		c += 4;
-		glTexCoord2f(0.0f,0.0f);				glVertex2i(xx - width1, yy - height1);
-		glTexCoord2f(0.0f,1.0f);				glVertex2i(xx - width1, yy + height2);
-		glTexCoord2f(1.0f,1.0f);				glVertex2i(xx + width2, yy + height2);
-		glTexCoord2f(1.0f,0.0f);				glVertex2i(xx + width2, yy - height1);
+		glTexCoord2f(0.0f			  ,0.0f				);				glVertex2i(xx - width1, yy - height1);
+		glTexCoord2f(0.0f			  ,metrics.t_rescale);				glVertex2i(xx - width1, yy + height2);
+		glTexCoord2f(metrics.s_rescale,metrics.t_rescale);				glVertex2i(xx + width2, yy + height2);
+		glTexCoord2f(metrics.s_rescale,0.0f				);				glVertex2i(xx + width2, yy - height1);
 	}
 	glEnd();
 }

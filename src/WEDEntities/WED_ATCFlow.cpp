@@ -35,8 +35,8 @@ TRIVIAL_COPY(WED_ATCFlow, WED_Thing)
 WED_ATCFlow::WED_ATCFlow(WED_Archive * a, int i) : 
 	WED_Thing(a,i),
 	icao(this,"METAR ICAO",						SQL_Name("WED_atcflow","icao"),			XML_Name("atc_flow","icao"),		""),
-	cld_min_mtr(this,"Minimum Ceiling",			SQL_Name("WED_atcflow","cld_min"),		XML_Name("atc_flow","cld_min"),		2500, 4, 0),
-	vis_min_sm(this,"Minimum Visibility (sm)",		SQL_Name("WED_atcflow","vis_min"),	XML_Name("atc_flow","vis_min"),		2, 2),
+	cld_min_ft(this,"Minimum Ceiling (ft msl)",	SQL_Name("WED_atcflow","cld_min"),		XML_Name("atc_flow","cld_min"),		0, 4, 0),
+	vis_min_sm(this,"Minimum Visibility (sm)",	SQL_Name("WED_atcflow","vis_min"),		XML_Name("atc_flow","vis_min"),		0, 2),
 //	wnd_spd_max(this,"Wind Speed Maximum",		SQL_Name("WED_atcflow","wnd_spd_max"),	XML_Name("atc_flow","wnd_spd_max"),	0, 3),
 //	wnd_dir_min(this,"Wind Direction Minimum",	SQL_Name("WED_atcflow","wnd_dir_min"),	XML_Name("atc_flow","wnd_dir_min"),	0, 3),
 //	wnd_dir_max(this,"Wind Direction Maximum",	SQL_Name("WED_atcflow","wnd_dir_max"),	XML_Name("atc_flow","wnd_dir_max"),	360, 3),
@@ -52,12 +52,22 @@ WED_ATCFlow::~WED_ATCFlow()
 {
 }
 
+int		WED_ATCFlow::GetPatternRunway(void) const
+{
+	return pattern_rwy.value;
+}
+
+void	WED_ATCFlow::SetPatternRunway(int r)
+{
+	pattern_rwy = r;
+}
+
 void	WED_ATCFlow::Import(const AptFlow_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	StateChanged();
 	SetName(info.name);
 	icao = info.icao;
-	cld_min_mtr = info.ceiling_ft * FT_TO_MTR;
+	cld_min_ft = info.ceiling_ft;
 	vis_min_sm = info.visibility_sm;
 	traffic_dir = ENUM_Import(traffic_dir.domain, info.pattern_side);
 	if(traffic_dir == -1)
@@ -79,7 +89,7 @@ void	WED_ATCFlow::Export(		 AptFlow_t& info) const
 {
 	GetName(info.name);
 	info.icao = icao.value;
-	info.ceiling_ft = cld_min_mtr.value * MTR_TO_FT;
+	info.ceiling_ft = cld_min_ft.value;
 	info.visibility_sm = vis_min_sm.value;
 	info.pattern_side = ENUM_Export(traffic_dir.value);
 	info.pattern_runway = ENUM_Desc(pattern_rwy.value);

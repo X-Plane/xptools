@@ -34,19 +34,24 @@ TRIVIAL_COPY(WED_ATCRunwayUse,WED_Thing)
 
 WED_ATCRunwayUse::WED_ATCRunwayUse(WED_Archive * a, int i) :
 	WED_Thing(a,i),
-	rwy(this,"Runway",								SQL_Name("WED_runwayuse","rwy"),		XML_Name("runway_use","rwy"),		ATCRunwayOneway, atc_4L),
-	dep_frq(this,"Departure Frequency",				SQL_Name("WED_runwayuse","dep_frq"),	XML_Name("runway_use","dep_frq"),	133.0, 6, 3),
-	traffic(this,"Traffic Type",					SQL_Name("WED_runwayuse","traffic"),	XML_Name("runway_use","traffic"),	ATCTrafficType, 0),
-	operations(this,"Operations",					SQL_Name("WED_runwayuse","operations"),	XML_Name("runway_use","operations"),ATCOperationType, 0),
-	dep_heading_min(this,"Departure heading (min)", SQL_Name("WED_runwayuse", "dep_min"),	XML_Name("runway_use","dep_min"),	6, 3),
-	dep_heading_max(this,"Departure heading (max)", SQL_Name("WED_runwayuse", "dep_max"),	XML_Name("runway_use","dep_max"),	6, 3),
-	vec_heading_min(this,"Initial heading (min)",	SQL_Name("WED_runwayuse", "ini_min"),	XML_Name("runway_use","ini_min"),	6, 3),
-	vec_heading_max(this,"Initial heading (max)",	SQL_Name("WED_runwayuse", "ini_max"),	XML_Name("runway_use","ini_max"),	6, 3)
+	rwy(this,"Runway",									SQL_Name("WED_runwayuse","rwy"),		XML_Name("runway_use","rwy"),		ATCRunwayOneway, atc_4L),
+	dep_frq(this,"Departure Frequency",					SQL_Name("WED_runwayuse","dep_frq"),	XML_Name("runway_use","dep_frq"),	133.0, 6, 3),
+	traffic(this,"Traffic Type",						SQL_Name("WED_runwayuse","traffic"),	XML_Name("runway_use","traffic"),	ATCTrafficType, 0),
+	operations(this,"Operations",						SQL_Name("WED_runwayuse","operations"),	XML_Name("runway_use","operations"),ATCOperationType, 0),
+	dep_heading_min(this,"Legal On-Course hdg (min)",	SQL_Name("WED_runwayuse", "dep_min"),	XML_Name("runway_use","dep_min"),	0, 3),
+	dep_heading_max(this,"Legal On-Course hdg (max)",	SQL_Name("WED_runwayuse", "dep_max"),	XML_Name("runway_use","dep_max"),	0, 3),
+	vec_heading_min(this,"ATC Assigned hdg (min)",		SQL_Name("WED_runwayuse", "ini_min"),	XML_Name("runway_use","ini_min"),	0, 3),
+	vec_heading_max(this,"ATC Assigned hdg (max)",		SQL_Name("WED_runwayuse", "ini_max"),	XML_Name("runway_use","ini_max"),	0, 3)
 {
 }
 
 WED_ATCRunwayUse::~WED_ATCRunwayUse()
 {
+}
+
+void	WED_ATCRunwayUse::SetRunway(int r)
+{
+	rwy.value = r;
 }
 
 void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref)

@@ -681,7 +681,8 @@ bool			WED_IsIconic(IGISEntity * what)
 		// This is only for POINTS, not for BEZIER points, hence the "non-icon" bezier classes are NOT listed.
 		return what->GetGISSubtype() != WED_RunwayNode::sClass &&			// Runways have a special node type.  Special type avoids wed-airportnode with taxiway lines and bezier caps
 			   what->GetGISSubtype() != WED_TextureNode::sClass &&			// This is for non-bezier scenery UV mapped stuff
-			   what->GetGISSubtype() != WED_SimpleBoundaryNode::sClass;		// This is for non-bezier scenery non-UV mapped stuff.
+			   what->GetGISSubtype() != WED_SimpleBoundaryNode::sClass &&	// This is for non-bezier scenery non-UV mapped stuff.
+			   what->GetGISSubtype() != WED_TaxiRouteNode::sClass;
 
 	default:
 		return false;

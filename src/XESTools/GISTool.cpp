@@ -54,7 +54,7 @@ void	CGALFailure(
 	fprintf(stdout,"****************************************************************************\n");
 
 	fprintf(stderr,"ERROR  (%d,%d) %s: %s (%s:%d).%s\n", gMapWest, gMapSouth, what, expr, file, line, msg ? msg : "");
-	exit(1);
+	throw what;
 }
 
 static int DoHelp(const vector<const char *>& args)

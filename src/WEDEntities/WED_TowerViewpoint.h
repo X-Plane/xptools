@@ -39,6 +39,8 @@ public:
 	void		Import(const AptTowerPt_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptTowerPt_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Tower Viewpoint"; }
+
 private:
 
 	WED_PropDoubleTextMeters		height;

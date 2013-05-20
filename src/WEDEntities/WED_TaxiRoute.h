@@ -50,11 +50,16 @@ public:
 				void		SetHotDepart(const set<int>& rwys);
 				void		SetHotArrive(const set<int>& rwys);
 				void		SetHotILS(const set<int>& rwys);
+				
+				bool		HasInvalidHotZones(const set<int>& legal_rwys) const;
+				int			GetRunway(void) const;	// returns two-way enum!
 
 	virtual		void	GetNthPropertyDict(int n, PropertyDict_t& dict);
 
 	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
+
+	virtual const char *	HumanReadableType(void) const { return "Taxi Route"; }
 	
 private:	
 

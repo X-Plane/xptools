@@ -1182,6 +1182,7 @@ int side_of_clipping_line<Point2>(const Point2& p, const clipping_line& l)
 
 	if(v > 0) return l.dir * sign;
 	if(v < 0) return -l.dir * sign;
+	return 0;
 }
 
 template<>

@@ -36,6 +36,10 @@
 	TOKEN(BARE)
 	TOKEN(FOREST)
 	TOKEN(URBAN)
+	
+	/* Flattening modes */
+	TOKEN(FLATTEN)
+	TOKEN(NO_FLATTEN)
 
 	/* CONTINUOUS PARAM (DEM) TYPES */
 
@@ -115,13 +119,15 @@
 	TOKEN(af_Height)				// Highest legal auto-gen obj we can put here
 	TOKEN(af_HeightObjs)			// Height of tallest obj in face
 
+	TOKEN(af_FlattenMode)			// If present, defines enum for flatten mode.  NO_FLATTEN means skip flattening.
+
 	TOKEN(af_WaterArea)				// square area in sq meters
 	TOKEN(af_WaterOpen)				// 1 = this water reaches the end of the DSF - COULD be an ocean), 0 = fully enclosed within DSF
 	TOKEN(af_OriginCode)			// Origin of data code -- who did we get this from?	
-	TOKEN(af_Zoning)
-	TOKEN(af_Variant)
+	TOKEN(af_Zoning)				// Zoning enm for this block
+	TOKEN(af_Variant)				// Variant int (0-3) from super-block
 	
-	// These tokens are derived 
+	// These tokens are derived during zoning
 	TOKEN(af_UrbanAverage)
 	TOKEN(af_ForestAverage)
 	TOKEN(af_ParkAverage)
@@ -145,13 +151,13 @@
 	TOKEN(af_MaxAngle)
 	TOKEN(af_BlockErr)
 	
-	TOKEN(af_WaterEdge)
+	TOKEN(af_WaterEdge)			// Boolean props - if present they are set to 1 when twe are next to this.
 	TOKEN(af_RoadEdge)
 	TOKEN(af_PrimaryEdge)
 	TOKEN(af_RailEdge)
-	TOKEN(af_LocalPercent)
+	TOKEN(af_LocalPercent)		// Percentage of surrounding road meets this type
 	TOKEN(af_RailPercent)
-	TOKEN(af_Median)
+	TOKEN(af_Median)			// For some reason, set to 2 when we are median strip...why??
 	
 /*******************NETWORK TYPE CODES***********************************
  * These types define network features on a map.

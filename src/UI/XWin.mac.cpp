@@ -397,11 +397,15 @@ pascal OSStatus	XWin::MacEventHandler(
 		case kEventWindowHandleContentClick:
 			me->mIsControlClick = ((btn == 1) && (modifiers & controlKey));
 			if (me->mIsControlClick) btn=2;
-			me->mInDrag[btn-1] = true;
+
+			if(!me->mInDrag[btn-1])
+			{
+				me->mInDrag[btn-1] = true;
+				me->ClickDown(pt.h, pt.v, btn - 1);
+			}
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
 //			me->mLastMouseButton =btn-1;
-			me->ClickDown(pt.h, pt.v, btn - 1);
 			return noErr;
 		case kEventWindowDrawContent:
 			me->Update(NULL);
@@ -671,6 +675,7 @@ int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int curren
 	p.v = mouse_y;
 	LocalToGlobal(&p);
 	long result = PopUpMenuSelect(in_menu,p.v,p.h, current+1);
+	memset(mInDrag,0,sizeof(mInDrag));
 	return LoWord(result)-1;
 }
 

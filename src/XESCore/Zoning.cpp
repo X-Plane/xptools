@@ -634,7 +634,7 @@ void	ZoneManMadeAreas(
 
 	GaussianBlurDEM(urban_density_from_lu, 1.0);
 
-	gDem[dem_Wizard] = urban_density_from_lu;
+//	gDem[dem_Wizard] = urban_density_from_lu;
 
 	/*****************************************************************************
 	 * PASS 1 - ZONING ASSIGNMENT VIA LAD USE DATA + FEATURES
@@ -1783,6 +1783,16 @@ void		FaceGraph_t::clear(void)
 	}
 }
 
+bool fill_for_zoning(const set<int>& z)
+{
+	if(z.empty()) return false;
+	
+	for(LandFillRuleTable::iterator r = gLandFillRules.begin(); r != gLandFillRules.end(); ++r)
+	if(is_subset(z,r->required_zoning))
+		return true;
+	return false;
+}
+
 #define MAX_AREA (1000.0 * 1000.0)
 #define MAX_DIM 0.01
 float	edge_cost_func(EdgeNode_t * en)
@@ -1790,6 +1800,25 @@ float	edge_cost_func(EdgeNode_t * en)
 	if(en->must_lock) return -1.0f;
 	if(en->must_merge) return 9.9e9f;
 	if((en->f1->area + en->f2->area) > MAX_AREA)	return -1.0f;
+
+	if(
+		fill_for_zoning(en->f1->zoning) ||
+		fill_for_zoning(en->f2->zoning))
+	{
+		if(en->f1->zoning.empty() || en->f2->zoning.empty())
+			return -1.0f;
+
+		set<int> zc;
+		set_union(
+			en->f1->zoning.begin(),en->f1->zoning.end(),
+			en->f2->zoning.begin(),en->f2->zoning.end(),
+			set_inserter(zc));
+		if(!fill_for_zoning(zc))
+		{
+			return -1.0f;
+		}
+	}
+		
 
 
 	Bbox2	nb = en->f1->bounds;

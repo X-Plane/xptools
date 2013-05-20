@@ -44,6 +44,8 @@ public:
 	virtual	void	SetControlHandleLo (GISLayer_t layer,const Point2& p)      ;
 	virtual	void	SetControlHandleHi (GISLayer_t layer,const Point2& p)      ;
 
+	virtual const char *	HumanReadableType(void) const { return "Curved UV-Mapped Node"; }
+
 
 private:
 

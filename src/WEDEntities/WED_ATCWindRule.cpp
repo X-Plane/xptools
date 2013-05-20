@@ -31,10 +31,10 @@ TRIVIAL_COPY(WED_ATCWindRule, WED_Thing)
 
 
 WED_ATCWindRule::WED_ATCWindRule(WED_Archive * a, int id) : WED_Thing(a,id),
-	icao		(this,"Weather ICAO",	SQL_Name("",""), XML_Name("atc_windrule","weather_icao"),	""),
-	heading_lo	(this,"Direction From",	SQL_Name("",""), XML_Name("atc_windrule","dir_lo_degs_mag"),0,3),
-	heading_hi	(this,"Direction To",	SQL_Name("",""), XML_Name("atc_windrule","dir_hi_degs_mag"),0,3),
-	speed_knots	(this,"Speed (Knots)",	SQL_Name("",""), XML_Name("atc_windrule","speed_knots"),0,3)
+	icao		(this,"METAR ICAO",			SQL_Name("",""), XML_Name("atc_windrule","weather_icao"),	""),
+	heading_lo	(this,"Direction From",		SQL_Name("",""), XML_Name("atc_windrule","dir_lo_degs_mag"),0,3),
+	heading_hi	(this,"Direction To",		SQL_Name("",""), XML_Name("atc_windrule","dir_hi_degs_mag"),0,3),
+	speed_knots	(this,"Max Speed (Knots)",	SQL_Name("",""), XML_Name("atc_windrule","speed_knots"),0,3)
 {
 }
 

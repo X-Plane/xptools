@@ -100,6 +100,10 @@
 #define REDUCE_SUBDIVIDE 2
 
 
+// Andras: define max slope for non flattened water edges and the number of iterations
+#define MAX_WATER_SLOPE 0.2
+#define WATER_SMOOTHER_ITERATIONS 25
+
 #if SHOW_STEPS
 
 #include "RF_Notify.h"
@@ -136,6 +140,11 @@ MeshPrefs_t gMeshPrefs = {		/*iphone*/
 
 Pmwx::Halfedge_handle	mesh_to_pmwx_he(CDT& io_mesh, CDT::Edge& e);
 
+inline bool IsCustom(int n)
+{
+	if (n == terrain_Water) return false;
+	return gNaturalTerrainInfo[n].custom_ter != tex_not_custom;
+}
 
 inline bool is_border(const CDT& inMesh, CDT::Face_handle f)
 {
@@ -339,6 +348,7 @@ static void border_find_edge_tris(CDT& ioMesh, mesh_match_t& ioBorder)
 inline void AddZeroMixIfNeeded(CDT::Face_handle f, int layer)
 {
 	if (f->info().terrain == terrain_Water) return;
+	DebugAssert(!IsCustom(f->info().terrain));
 	DebugAssert(layer != -1);
 	f->info().terrain_border.insert(layer);
 	for (int i = 0; i < 3; ++i)
@@ -412,7 +422,7 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 			{
 				go = false;
 				dest->vertices.push_back(mesh_match_vertex_t());
-				sscanf(buf, "VT %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
+				sscanf(buf, "VC %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
 				dest->vertices.back().loc = Point_2(x,y);
 				dest->vertices.back().buddy = NULL;
 			}
@@ -600,6 +610,7 @@ static void RebaseTriangle(CDT& ioMesh, CDT::Face_handle tri, int new_base, CDT:
 	if (new_base != terrain_Water)
 	{
 		DebugAssert(old_base != -1);
+		DebugAssert(!IsCustom(tri->info().terrain));
 		tri->info().terrain_border.insert(old_base);
 
 		for (int i = 0; i < 3; ++i)
@@ -627,8 +638,10 @@ void SafeSmearBorder(CDT& mesh, CDT::Vertex_handle vert, int layer)
 			if (!mesh.is_infinite(iter))
 			if (iter->info().terrain != layer)
 			if (iter->info().terrain != terrain_Water)
+			if (!IsCustom(iter->info().terrain))
 			{
 				DebugAssert(layer != -1);
+				DebugAssert(!IsCustom(iter->info().terrain));
 				iter->info().terrain_border.insert(layer);
 				for (int n = 0; n < 3; ++n)
 				{
@@ -1227,6 +1240,7 @@ void FlattenWater(CDT& ioMesh)
 	for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
 	{
 		if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
+		if(!IsNoFlattenVertex(ioMes,v))
 			to_do.insert(v);
 	}
 	//printf("Q: %zd vertices.\n", to_do.size());
@@ -1263,6 +1277,7 @@ void FlattenWater(CDT& ioMesh)
 		do {
 			if(!ioMesh.is_infinite(circ))
 			if(circ->info().terrain == terrain_Water)
+			if(CanFlatten(circ))
 			{
 				CDT::Vertex_handle n = circ->vertex(CDT::ccw(circ->index(v)));
 
@@ -1285,6 +1300,7 @@ void FlattenWater(CDT& ioMesh)
 	for(CDT::Finite_faces_iterator f = ioMesh.finite_faces_begin(); f != ioMesh.finite_faces_end(); ++f)
 	{
 		if (f->info().terrain == terrain_Water)
+		if(CanFlatten(f))
 			changed.insert(f);
 	}
 	
@@ -1343,6 +1359,7 @@ void FlattenWater(CDT& ioMesh)
 						if(circ != w)
 						if(!ioMesh.is_infinite(circ))
 						if(circ->info().terrain == terrain_Water)
+						if(CanFlatten(circ))
 						{
 							//printf("   Q face %p\n", &*circ);
 							changed.erase(circ);
@@ -1354,6 +1371,89 @@ void FlattenWater(CDT& ioMesh)
 		}
 	}
 	//printf("processed: %d\n", c);
+
+	/////////////////////////////////////////////
+	//Andras: Water smoothing for rivers etc.
+	/////////////////////////////////////////////
+
+	for(int it_n = 0; it_n < WATER_SMOOTHER_ITERATIONS; ++it_n)
+	{
+		int water_vertices=0;
+		int changed_vertices=0;
+		// check all water vertices
+		for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
+		{
+			if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
+			if(IsNoFlattenVertex(ioMesh,v)) {
+
+				water_vertices++;
+				double v_height = v->info().height;
+
+				double DEG_TO_MTR_LON = DEG_TO_MTR_LAT * cos(CGAL::to_double(v->point().x()) * DEG_TO_RAD);
+
+				Point2	v_p = cgal2ben(v->point());
+
+				//printf("---   %p: has x: %lf y: %lf height %lf \n", &*v, v_p.x(),v_p.y(), v_height);
+
+				bool is_first = true;
+				double steepest_height = 0;
+				double steepest_slope = 0;
+				double steepest_dist = 0;
+
+				// circulate each vertex and get all the surrounding vertices, then check how they relate to the central vertex (especially, what the slope of the edge is)
+				CDT::Face_circulator circ, stop;
+				circ = stop =v->incident_faces();
+				do {
+					if(!ioMesh.is_infinite(circ))
+					{
+						CDT::Vertex_handle vs = circ->vertex(CDT::ccw(circ->index(v)));
+
+						if(CategorizeVertex(ioMesh, vs,terrain_Water) <= 0)
+						if(IsNoFlattenVertex(ioMesh,vs)) {
+							double vs_height = vs->info().height;
+							double dist_m = LonLatDistMetersWithScale(v_p.x(),v_p.y(), CGAL::to_double(vs->point().x()),
+									CGAL::to_double(vs->point().y()),DEG_TO_MTR_LON, DEG_TO_MTR_LAT);
+							DebugAssert(dist_m != 0.0);
+
+							double vvs_slope = (v_height - vs_height) / dist_m;
+							double height_diff = (v_height - vs_height) ;
+
+							//printf("--- ---  %p: has  x: %lf y: %lf height %lf , height_diff %lf , distance %lf , slope %lf \n", &*vs, CGAL::to_double(vs->point().x()), CGAL::to_double(vs->point().y()), vs_height, height_diff, dist_m, vvs_slope);
+
+							// here we are only looking for points which are lower than central vertex and the slope to them is steeper than we are comfortable with
+							if(vvs_slope > MAX_WATER_SLOPE) {
+								if(is_first) {
+									steepest_height = vs_height;
+									steepest_slope = vvs_slope;
+									steepest_dist = dist_m;
+									is_first = false;
+								} else {
+									if(steepest_slope < vvs_slope) {
+										steepest_slope = vvs_slope;
+										steepest_height = vs_height;
+										steepest_dist = dist_m;
+									}
+								}
+							}
+						}
+					}
+				} while(++circ != stop);
+
+				// if there was at least one relevant too steep & low candidate, then change center to a height which would bring it to the limit of acceptable slope
+				if(!is_first)
+				{
+					changed_vertices++;
+					double new_height = steepest_height + (MAX_WATER_SLOPE * steepest_dist);
+
+					//printf("###   %p: was %lf, must be %lf\n", &*v, v_height, new_height);
+					v->info().height = new_height;
+				}
+
+			}
+
+		}
+		printf("Water smoothing iteration %d , water vertices: %d , changed vertices: %d .\n", it_n, water_vertices, changed_vertices);
+	}
 #endif	
 }
 
@@ -2182,12 +2282,14 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	for(b=0;b < 4; ++b)
 	{
 		for (n = 0; n < gMatchBorders[b].edges.size(); ++n)
-		if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
+               if(!IsCustom(gMatchBorders[b].edges[n].base))
+ 		if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
 		{
 			lowest = gMatchBorders[b].edges[n].buddy->info().terrain;
 			if (LowerPriorityNaturalTerrain(gMatchBorders[b].edges[n].base, lowest))
 				lowest = gMatchBorders[b].edges[n].base;
 			for (set<int>::iterator bl = gMatchBorders[b].edges[n].borders.begin(); bl != gMatchBorders[b].edges[n].borders.end(); ++bl)
+			if(!IsCustom(*bl))
 			{
 				if (LowerPriorityNaturalTerrain(*bl, lowest))
 					lowest = *bl;
@@ -2206,7 +2308,9 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				if (!is_border(ioMesh, circ))
 				{
 					lowest = circ->info().terrain;
+					if(!IsCustom(lowest))					
 					for (hash_map<int, float>::iterator bl = gMatchBorders[b].vertices[n].blending.begin(); bl != gMatchBorders[b].vertices[n].blending.end(); ++bl)
+					if(!IsCustom(bl->first))
 					if (bl->second > 0.0)
 					if (LowerPriorityNaturalTerrain(bl->first, lowest))
 						lowest = bl->first;
@@ -2328,6 +2432,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 						// HACK - does always extending the borders fix a bug?
 						DebugAssert(layer != -1);
+						DebugAssert(!IsCustom(border->info().terrain));
 						border->info().terrain_border.insert(layer);
 						spread = true;
 					}
@@ -2373,9 +2478,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	for (n = 0; n < gMatchBorders[b].edges.size(); ++n)
 	if (gMatchBorders[b].edges[n].buddy != CDT::Face_handle())
 	if (gMatchBorders[b].edges[n].buddy->info().terrain != terrain_Water)
+	if(!IsCustom(gMatchBorders[b].edges[n].buddy->info().terrain))
 	{
 		// Handle the base terrain
 		if (gMatchBorders[b].edges[n].buddy->info().terrain != gMatchBorders[b].edges[n].base)
+		if(!IsCustom(gMatchBorders[b].edges[n].base))
 		{
 			AddZeroMixIfNeeded(gMatchBorders[b].edges[n].buddy, gMatchBorders[b].edges[n].base);
 			gMatchBorders[b].vertices[n].buddy->info().border_blend[gMatchBorders[b].edges[n].base] = 1.0;
@@ -2386,6 +2493,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 		// Handle any overlay layers...
 		for (set<int>::iterator bl = gMatchBorders[b].edges[n].borders.begin(); bl != gMatchBorders[b].edges[n].borders.end(); ++bl)
+		if(!IsCustom(*bl))
 		{
 			if (gMatchBorders[b].edges[n].buddy->info().terrain != *bl)
 			{

@@ -46,6 +46,10 @@ class WED_Root : public WED_Thing {
 
 DECLARE_PERSISTENT(WED_Root)
 
+public:
+
+	virtual const char *	HumanReadableType(void) const { return "Project Root Object"; }
+
 };
 
 #endif

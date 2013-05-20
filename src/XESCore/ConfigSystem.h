@@ -57,6 +57,7 @@ void	DebugPrintTokens(const vector<string>& tokens);
 // A few useful parsers
 int					TokenizeInt(const string&);
 float				TokenizeFloat(const string&);
+float				TokenizeFloatWithEnum(const string&);
 bool				TokenizeColor(const string&, RGBColor_t&);
 bool				TokenizeEnum(const string& token, int& slot, const char * errMsg);
 bool				TokenizeEnumSet(const string& tokens, set<int>& slots);
@@ -64,6 +65,7 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots);
 // Format is:
 // i - int
 // f - float
+// F - float, but enums are legal and translated.
 // c - color
 // e - enum
 // s - STL string

@@ -37,6 +37,7 @@ class	WED_Document;
 class	IResolver;
 class	WED_Archive;
 class	WED_FilterBar;
+class	WED_MapPane;
 
 #include "GUI_Window.h"
 #include "GUI_TextTable.h"
@@ -53,7 +54,7 @@ class WED_AptImportDialog :
 		
 public:
 
-						 WED_AptImportDialog(GUI_Commander * cmdr, AptVector& apts, const char * file_path, WED_Document * resolver, WED_Archive * archive);
+						 WED_AptImportDialog(GUI_Commander * cmdr, AptVector& apts, const char * file_path, WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);
 	virtual				~WED_AptImportDialog();
 	
 	virtual	bool		Closed(void);
@@ -175,6 +176,8 @@ public:
 
 private:
 
+	WED_MapPane *			mMapPane;
+
 	WED_FilterBar *			mFilter;
 
 	GUI_ScrollerPane *		mScroller;
@@ -186,7 +189,7 @@ private:
 	
 	void			resort(void);
 
-	IResolver *		mResolver;
+	WED_Document *	mResolver;
 	WED_Archive *	mArchive;
 	string			mPath;
 	AptVector		mApts;

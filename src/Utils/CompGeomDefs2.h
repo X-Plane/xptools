@@ -383,6 +383,7 @@ struct	Bbox2 {
 	bool		contains(const Segment2& p) const;
 
 	void		expand(double v) { p1.x_ -= v; p1.y_ -= v; p2.x_ += v; p2.y_ += v; }
+	void		expand(double vx, double vy) { p1.x_ -= vx; p1.y_ -= vy; p2.x_ += vx; p2.y_ += vy; }
 	Point2		centroid(void) const { return Point2((p1.x_ + p2.x_) * 0.5,(p1.y_+p2.y_) * 0.5); }
 
 	Point2		clamp(const Point2& p) const { return Point2(
@@ -462,7 +463,7 @@ struct	Polygon2 : public vector<Point2> {
 struct	Triangle2 {
 
 	Triangle2() { }
-	Triangle2(const Point2& ip1, const Point2& ip2, const Point2& ip3) : p1(p1), p2(p2), p3(p3) {}
+	Triangle2(const Point2& ip1, const Point2& ip2, const Point2& ip3) : p1(ip1), p2(ip2), p3(ip3) {}
 
 	double	signed_area(void) const { return Vector2(p1,p2).signed_area(Vector2(p1,p3)); }
 	bool	is_ccw(void) const { return Vector2(p1,p2).left_turn(Vector2(p2,p3)); }
@@ -483,6 +484,7 @@ struct	Triangle2 {
 		v1 = sa_me * Triangle2(p2,p3,p).signed_area();
 		v2 = sa_me * Triangle2(p3,p1,p).signed_area();
 		v3 = sa_me * Triangle2(p1,p2,p).signed_area();
+		return true;
 	}
 
 	Point2	p1;

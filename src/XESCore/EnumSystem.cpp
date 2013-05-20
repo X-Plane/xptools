@@ -41,6 +41,13 @@
 TokenMap		gTokens;
 TokenReverseMap	gReverse;
 
+static bool ConfirmNotNumber(const char * t)
+{
+	if(*t == 0 || isdigit(*t))
+		return false;
+	return true;
+}
+
 void InitEnumSystem()
 {
 	gTokens.clear();
@@ -128,6 +135,7 @@ void	ReadEnumsAtomFromFile(XAtomContainer& inAtomContainer, TokenMap& outTokens,
 
 int				NewToken(const char * inString)
 {
+	Assert(ConfirmNotNumber(inString));
 	int v = gTokens.size();
 	gTokens.push_back(inString);
 	gReverse[inString] = gTokens.size()-1;

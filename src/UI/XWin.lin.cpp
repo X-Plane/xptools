@@ -335,5 +335,8 @@ int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int curren
 	QCoreApplication::postEvent(this, e);
 
 	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
+	
+	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
+	
 	return in_menu->actions().indexOf(aaction);
 }

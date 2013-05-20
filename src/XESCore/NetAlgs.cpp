@@ -170,7 +170,7 @@ void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrban
 	
 	GaussianBlurDEM(train_density,0.5);
 	
-		gDem[dem_Wizard] = train_density;
+//		gDem[dem_Wizard] = train_density;
 
 	if (inProg) inProg(0, 1, "Calculating Road Types", 0.0);
 

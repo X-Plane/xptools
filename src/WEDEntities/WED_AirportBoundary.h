@@ -37,6 +37,8 @@ public:
 		void	Import(const AptBoundary_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 		void	Export(		 AptBoundary_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Airport Boundary"; }
+
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return true; }

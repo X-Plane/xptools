@@ -452,16 +452,31 @@ public:
 
 	Polygon_set_2(const Arrangement_2& rhs)
 	{
+		CGAL_precondition(rhs.is_valid());
 	    delete m_arr;
 		m_arr = new Arrangement_2(rhs);
+		// When we take someone else's arrangement, we need to do two things to 'prepare'
+		// it for use as a GPS:
+		// 1. We need to remove redundant edges.  The GPS assumes that edges only exist to
+		// separate the "in" and "out" areas!
 		remove_redundant_edges();
+		// 2. We need to ensure that the direction of the underlying curves of the arrangement
+		// is consistent with a single contiguous CCB.  In other words, as we walk a CCB, every
+		// curve should be with us or against us.  (By definition, the map will be 50-50 split
+		// between the two cases.)  Since we removed redundant edges, by definition there are 
+		// no degree > 2 vertices, and thus we can ensure that this can be applied everywhere.
+		fix_curves_direction();
+		CGAL_postcondition(this->is_valid());		
 	}
 
 	Polygon_set_2& operator=(const Arrangement_2& rhs)
 	{
+		CGAL_precondition(rhs.is_valid());
 	    delete m_arr;
 		m_arr = new Arrangement_2(rhs);
 		remove_redundant_edges();
+		fix_curves_direction();
+		CGAL_postcondition(this->is_valid());		
 		return *this;
 	}
 
@@ -478,8 +493,9 @@ public:
 		m_arr = new Arrangement_2(*(ps.m_arr));
 		return (*this);
 	}
-
+	
 };
+
 
 
 /******************************************************************************************************************************************************

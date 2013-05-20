@@ -40,6 +40,8 @@ public:
 		void		Import(const AptSign_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 		void		Export(		 AptSign_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Taxi Sign"; }
+
 private:
 
 	WED_PropIntEnum		style;

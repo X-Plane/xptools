@@ -263,17 +263,43 @@ bool	WED_TaxiRoute::IsRunway(void) const
 
 bool	WED_TaxiRoute::HasHotArrival(void) const
 {
-	return !hot_arrive.value.empty();
+	// Ben says: since we auto-include ourselves in our flags if we are a runway, 
+	// set our status to match.  
+	return !hot_arrive.value.empty() || runway.value != atc_rwy_None;
 }
 
 bool	WED_TaxiRoute::HasHotDepart(void) const
 {
-	return !hot_depart.value.empty();
+	return !hot_depart.value.empty() || runway.value != atc_rwy_None;
 }
 
 bool	WED_TaxiRoute::HasHotILS(void) const
 {
-	return !hot_ils.value.empty();
+	return !hot_ils.value.empty() || runway.value != atc_rwy_None;
+}
+
+bool	WED_TaxiRoute::HasInvalidHotZones(const set<int>& legal_rwys) const
+{
+	set<int>::const_iterator z;
+
+	for(z = hot_depart.value.begin(); z != hot_depart.value.end(); ++z)
+	if(legal_rwys.count(*z) == 0)
+		return true;
+
+	for(z = hot_arrive.value.begin(); z != hot_arrive.value.end(); ++z)
+	if(legal_rwys.count(*z) == 0)
+		return true;
+
+	for(z = hot_ils.value.begin(); z != hot_ils.value.end(); ++z)
+	if(legal_rwys.count(*z) == 0)
+		return true;
+	
+	return false;
+}
+
+int		WED_TaxiRoute::GetRunway(void) const
+{
+	return runway.value;
 }
 
 
