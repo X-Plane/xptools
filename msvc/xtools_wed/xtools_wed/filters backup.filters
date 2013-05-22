@@ -1,0 +1,795 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="WEDDocs">
+      <UniqueIdentifier>{23ffb6d7-c5b0-4455-88e8-ea25592d25b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDResources">
+      <UniqueIdentifier>{5bf6cbf3-1cac-4ea0-9422-638c986fdf9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{94afadd5-f838-4809-945b-7e763ab8130b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDCore">
+      <UniqueIdentifier>{274fd091-911f-4d87-a2df-3604e2f0635d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDEntities">
+      <UniqueIdentifier>{89cb0a7e-29ec-41d6-ac78-b623855185b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDImportExport">
+      <UniqueIdentifier>{4c1eac74-1710-417b-b191-b1e1400cb366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDLiberary">
+      <UniqueIdentifier>{8a7d5939-0b14-4ede-9fae-dec9987c9be6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDMap">
+      <UniqueIdentifier>{4e9ccfa0-feca-492c-ac77-37cb56016009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDNetwork">
+      <UniqueIdentifier>{3db5e03b-2ecc-4b5e-bcff-be95e4467907}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDProperties">
+      <UniqueIdentifier>{8ee24e5c-b4da-4bf8-b5b9-ed1d255816d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDTCE">
+      <UniqueIdentifier>{e683692c-9712-4a1a-9950-9e8899f8744e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDWindows">
+      <UniqueIdentifier>{5e5a4a51-f873-4791-8c6c-110888b02619}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WEDXPlugin">
+      <UniqueIdentifier>{6b81b0db-3a95-4768-9972-6b7601efbde3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_XMLWriter.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_XMLReader.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Version.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Validate.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_UndoMgr.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_UndoLayer.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_TexMgr.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Routing.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_ResourceMgr.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_PropertyHelper.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Properties.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Persistent.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_PackageMgr.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Package.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Orthophoto.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Messages.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_LibraryMgr.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Globals.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_GISUtils.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_FastBuffer.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Errors.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_EnumSystem.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Enums.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Document.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Clipping.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Buffer.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Assert.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Archive.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Windsock.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_TowerViewpoint.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Thing.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_TextureNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_TextureBezierNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Taxiway.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_TaxiRouteNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_TaxiRoute.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_StringPlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_SimpleBoundaryNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_SimpleBezierBoundaryNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Select.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Sealane.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_RunwayNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Runway.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Root.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_RoadEdge.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Ring.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_RampPosition.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_PolygonPlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_OverlayImage.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ObjPlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_LinePlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_LightFixture.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_KeyObjects.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Group.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_FacadeRing.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_FacadePlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_FacadeNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ExclusionZone.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Entity.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_DrapedOrthophoto.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ATCWindRule.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ATCTimeRule.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ATCRunwayUse.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ATCFrequency.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ATCFlow.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_AirportSign.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_AirportNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_AirportChain.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_AirportBoundary.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_AirportBeacon.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Airport.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFImport.h">
+      <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFExport.h">
+      <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.h">
+      <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_AptIE.h">
+      <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.h">
+      <Filter>WEDLiberary</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPane.h">
+      <Filter>WEDLiberary</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.h">
+      <Filter>WEDLiberary</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_Colors.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_CreateBoxTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_CreateEdgeTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_CreateLineTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_CreatePointTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_CreatePolygonTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_CreateToolBase.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_DebugLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_DrawUtils.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_Map.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_MapBkgnd.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_MapLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_MapPane.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_MapToolNew.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_MapZoomerNew.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_MarqueeTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_PreviewLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_StructureLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_TerraserverLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_ToolInfoAdapter.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_ToolUtils.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_UIMeasurements.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_VertexTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDMap\WED_WorldMapLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDNetwork\WED_Connection.h">
+      <Filter>WEDNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDNetwork\WED_NWDefs.h">
+      <Filter>WEDNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDNetwork\WED_NWInfoLayer.h">
+      <Filter>WEDNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDNetwork\WED_NWLinkAdapter.h">
+      <Filter>WEDNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDNetwork\WED_Server.h">
+      <Filter>WEDNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDTCE\WED_TCE.h">
+      <Filter>WEDTCE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDTCE\WED_TCELayer.h">
+      <Filter>WEDTCE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDTCE\WED_TCEMarqueeTool.h">
+      <Filter>WEDTCE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDTCE\WED_TCEPane.h">
+      <Filter>WEDTCE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDTCE\WED_TCEToolAdapter.h">
+      <Filter>WEDTCE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDTCE\WED_TCEToolNew.h">
+      <Filter>WEDTCE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDTCE\WED_TCEVertexTool.h">
+      <Filter>WEDTCE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_AboutBox.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_DocumentWindow.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_FilterBar.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_GroupCommands.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_Menus.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_PackageListAdapter.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_PackageStatusPane.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_PackageWindow.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_StartWindow.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDWindows\WED_UIDefs.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginCamera.h">
+      <Filter>WEDXPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginClient.h">
+      <Filter>WEDXPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginEntity.h">
+      <Filter>WEDXPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginMgr.h">
+      <Filter>WEDXPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginObject.h">
+      <Filter>WEDXPlugin</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IArray.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IBase.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IControlHandles.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IDirectory.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IDocPrefs.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IGIS.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\ILibrarian.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IOperation.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IPropertyObject.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\IResolver.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\ISelection.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Interfaces\ITexMgr.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISPoint_Heading.h" />
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISPoint_HeadingWidthLength.h" />
+    <ClInclude Include="..\..\..\src\WEDMap\WED_HandleToolBase.h" />
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_Helipad.h" />
+    <ClInclude Include="..\..\..\src\WEDProperties\WED_PropertyPane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDProperties\WED_PropertyTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ForestPlacement.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_ForestRing.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISBoundingBox.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISChain.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISComposite.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISEdge.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISLine.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISLine_Width.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISPoint.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISPoint_Bezier.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDEntities\WED_GISPolygon.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\WEDProperties\WED_PropertyTable.cpp">
+      <Filter>WEDProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDProperties\WED_PropertyPane.cpp">
+      <Filter>WEDProperties</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_Colors.cpp" />
+    <ClCompile Include="..\..\..\src\WEDNetwork\WED_Connection.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_CreateBoxTool.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_CreateEdgeTool.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_CreateLineTool.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_CreatePointTool.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_CreatePolygonTool.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_CreateToolBase.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_DebugLayer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Document.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_DrawUtils.cpp" />
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFExport.cpp" />
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFImport.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Entity.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_EnumSystem.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Errors.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_FacadeNode.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_FacadePlacement.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_FacadeRing.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_FastBuffer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_FilterBar.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ForestPlacement.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ForestRing.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISBoundingBox.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISChain.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISComposite.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISEdge.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISLine.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISLine_Width.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISPoint.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISPoint_Bezier.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISPoint_Heading.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISPoint_HeadingWidthLength.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_GISPolygon.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_GISUtils.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Globals.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Group.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_GroupCommands.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_HandleToolBase.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Helipad.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_KeyObjects.cpp" />
+    <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_LibraryMgr.cpp" />
+    <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
+    <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_LightFixture.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_LinePlacement.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_Menus.cpp" />
+    <ClCompile Include="..\..\..\src\WEDNetwork\WED_NWInfoLayer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDNetwork\WED_NWLinkAdapter.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ObjPlacement.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Orthophoto.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_OverlayImage.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Package.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_PackageMgr.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_PackageWindow.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Persistent.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_PolygonPlacement.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_PreviewLayer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Properties.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_PropertyHelper.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_RampPosition.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_ResourceMgr.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Ring.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_RoadEdge.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Root.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Routing.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Runway.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_RunwayNode.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Sealane.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Select.cpp" />
+    <ClCompile Include="..\..\..\src\WEDNetwork\WED_Server.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_SimpleBezierBoundaryNode.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_SimpleBoundaryNode.cpp" />
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_StartWindow.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_StringPlacement.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_StructureLayer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_TaxiRoute.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_TaxiRouteNode.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Taxiway.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_TerraserverLayer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_TexMgr.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_TextureBezierNode.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_TextureNode.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Thing.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_ToolUtils.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_TowerViewpoint.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_UIMeasurements.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_UndoLayer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_UndoMgr.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Validate.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_VertexTool.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Windsock.cpp" />
+    <ClCompile Include="..\..\..\src\WEDMap\WED_WorldMapLayer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_XMLReader.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_XMLWriter.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_AppMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Archive.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDWindows\WED_AboutBox.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_Airport.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_AirportBeacon.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_AirportBoundary.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_AirportChain.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_AirportNode.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_AirportSign.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_AptIE.cpp">
+      <Filter>WEDImportExport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.cpp">
+      <Filter>WEDImportExport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Assert.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCFlow.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCFrequency.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCRunwayUse.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCTimeRule.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCWindRule.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Buffer.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Clipping.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_Map.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_MapBkgnd.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_MapLayer.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_MapPane.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_MapToolNew.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_MapZoomerNew.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDMap\WED_MarqueeTool.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginWin.cpp">
+      <Filter>WEDXPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPlugin.cpp">
+      <Filter>WEDXPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginCamera.cpp">
+      <Filter>WEDXPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginClient.cpp">
+      <Filter>WEDXPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginEntity.cpp">
+      <Filter>WEDXPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginMgr.cpp">
+      <Filter>WEDXPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginObject.cpp">
+      <Filter>WEDXPlugin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDTCE\WED_TCE.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDTCE\WED_TCELayer.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDTCE\WED_TCEMarqueeTool.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDTCE\WED_TCEPane.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDTCE\WED_TCEToolAdapter.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDTCE\WED_TCEToolNew.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDTCE\WED_TCEVertexTool.cpp">
+      <Filter>WEDTCE</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\src\WEDResources\ui_measurements.txt">
+      <Filter>WEDResources</Filter>
+    </Text>
+    <Text Include="..\..\..\src\WEDDocs\Introduction.txt">
+      <Filter>WEDDocs</Filter>
+    </Text>
+    <Text Include="..\..\..\src\WEDDocs\README.txt">
+      <Filter>WEDDocs</Filter>
+    </Text>
+    <Text Include="..\..\..\src\WEDDocs\WED_Bezier_curves.txt">
+      <Filter>WEDDocs</Filter>
+    </Text>
+    <Text Include="..\..\..\src\WEDDocs\WED_shortcuts.txt">
+      <Filter>WEDDocs</Filter>
+    </Text>
+    <Text Include="..\..\..\src\WEDDocs\WED_Undo.txt">
+      <Filter>WEDDocs</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\WEDResources\WEDManual.pdf">
+      <Filter>WEDResources</Filter>
+    </None>
+  </ItemGroup>
+</Project>

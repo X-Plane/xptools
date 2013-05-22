@@ -1,0 +1,11 @@
+﻿Build started 5/21/2013 11:04:29 PM.
+     1>Project "C:\Users\Ted\Documents\Visual Studio 2012\Projects\xptenv\msvc\xtools_wed\xtools_wed\xtools_wed.vcxproj" on node 2 (ClCompile target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /I..\..\..\src\WEDXPlugin /I..\..\..\src\WEDWindows /I..\..\..\src\WEDTCE /I..\..\..\src\WEDResources /I..\..\..\src\WEDProperties /I..\..\..\src\WEDNetwork /I..\..\..\src\WEDMap /I..\..\..\src\WEDLibrary /I..\..\..\src\XESCore /I..\..\..\src\WEDImportExport /I..\..\..\src\Utils /I..\..\..\src\UI /I..\..\..\src\OGLE /I..\..\..\src\Obj /I..\..\..\src\WEDCore /I..\..\..\src\Network /I..\..\..\src\GUI /I..\..\..\src\Env /I..\..\..src\DSFTools /I..\..\..\src\DSF /I..\..\..\src\WEDEntities /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D APL=0 /D IBM=1 /D DEV=1 /D USE_JPEG=1 /D USE_TIF=1 /D WED=1 /D LIL=1 /D BIG=0 /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc110.pdb" /Gd /TP /FI..\..\src\Obj\XDefs.h /analyze- /errorReport:prompt ..\..\..\src\WEDCore\WED_Buffer.cpp
+         WED_Buffer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\..\..\src\Obj\XDefs.h(156): fatal error C1083: Cannot open include file: 'unistd.h': No such file or directory
+     1>Done Building Project "C:\Users\Ted\Documents\Visual Studio 2012\Projects\xptenv\msvc\xtools_wed\xtools_wed\xtools_wed.vcxproj" (ClCompile target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.74

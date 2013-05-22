@@ -1,0 +1,344 @@
+﻿Build started 5/21/2013 12:56:18 AM.
+     1>Project "C:\Users\Ted\Documents\Visual Studio 2012\Projects\xptenv\msvc\xtools_wed\xtools_wed\xtools_wed.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\..\src\WEDCore\WED_AppMain.cpp ..\..\..\src\WEDCore\WED_Application.cpp ..\..\..\src\WEDCore\WED_Archive.cpp ..\..\..\src\WEDCore\WED_Assert.cpp ..\..\..\src\WEDCore\WED_Buffer.cpp ..\..\..\src\WEDCore\WED_Clipping.cpp ..\..\..\src\WEDCore\WED_Document.cpp ..\..\..\src\WEDCore\WED_EnumSystem.cpp ..\..\..\src\WEDCore\WED_Errors.cpp ..\..\..\src\WEDCore\WED_FastBuffer.cpp ..\..\..\src\WEDCore\WED_GISUtils.cpp ..\..\..\src\WEDCore\WED_LibraryMgr.cpp ..\..\..\src\WEDCore\WED_Orthophoto.cpp ..\..\..\src\WEDCore\WED_Package.cpp ..\..\..\src\WEDCore\WED_PackageMgr.cpp ..\..\..\src\WEDCore\WED_Persistent.cpp ..\..\..\src\WEDCore\WED_Properties.cpp ..\..\..\src\WEDCore\WED_PropertyHelper.cpp ..\..\..\src\WEDCore\WED_ResourceMgr.cpp ..\..\..\src\WEDCore\WED_Routing.cpp ..\..\..\src\WEDCore\WED_TCEDebugLayer.cpp ..\..\..\src\WEDCore\WED_TexMgr.cpp ..\..\..\src\WEDCore\WED_UndoLayer.cpp ..\..\..\src\WEDCore\WED_UndoMgr.cpp ..\..\..\src\WEDCore\WED_Validate.cpp ..\..\..\src\WEDCore\WED_XMLReader.cpp ..\..\..\src\WEDCore\WED_XMLWriter.cpp ..\..\..\src\WEDEntities\WED_ATCFlow.cpp ..\..\..\src\WEDEntities\WED_ATCFrequency.cpp ..\..\..\src\WEDEntities\WED_ATCRunwayUse.cpp ..\..\..\src\WEDEntities\WED_ATCTimeRule.cpp ..\..\..\src\WEDEntities\WED_ATCWindRule.cpp ..\..\..\src\WEDEntities\WED_Airport.cpp ..\..\..\src\WEDEntities\WED_AirportBeacon.cpp ..\..\..\src\WEDEntities\WED_AirportBoundary.cpp ..\..\..\src\WEDEntities\WED_AirportChain.cpp ..\..\..\src\WEDEntities\WED_AirportNode.cpp ..\..\..\src\WEDEntities\WED_AirportSign.cpp ..\..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp ..\..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.cpp ..\..\..\src\WEDEntities\WED_Entity.cpp ..\..\..\src\WEDEntities\WED_ExclusionZone.cpp ..\..\..\src\WEDEntities\WED_FacadeNode.cpp ..\..\..\src\WEDEntities\WED_FacadePlacement.cpp ..\..\..\src\WEDEntities\WED_FacadeRing.cpp ..\..\..\src\WEDEntities\WED_ForestPlacement.cpp ..\..\..\src\WEDEntities\WED_ForestRing.cpp ..\..\..\src\WEDEntities\WED_GISBoundingBox.cpp ..\..\..\src\WEDEntities\WED_GISChain.cpp ..\..\..\src\WEDEntities\WED_GISComposite.cpp ..\..\..\src\WEDEntities\WED_GISEdge.cpp ..\..\..\src\WEDEntities\WED_GISLine.cpp ..\..\..\src\WEDEntities\WED_GISLine_Width.cpp ..\..\..\src\WEDEntities\WED_GISPoint.cpp ..\..\..\src\WEDEntities\WED_GISPoint_Bezier.cpp ..\..\..\src\WEDEntities\WED_GISPoint_Heading.cpp ..\..\..\src\WEDEntities\WED_GISPoint_HeadingWidthLength.cpp ..\..\..\src\WEDEntities\WED_GISPolygon.cpp ..\..\..\src\WEDEntities\WED_Group.cpp ..\..\..\src\WEDEntities\WED_Helipad.cpp ..\..\..\src\WEDEntities\WED_KeyObjects.cpp ..\..\..\src\WEDEntities\WED_LightFixture.cpp ..\..\..\src\WEDEntities\WED_LinePlacement.cpp ..\..\..\src\WEDEntities\WED_ObjPlacement.cpp ..\..\..\src\WEDEntities\WED_OverlayImage.cpp ..\..\..\src\WEDEntities\WED_PolygonPlacement.cpp ..\..\..\src\WEDEntities\WED_RampPosition.cpp ..\..\..\src\WEDEntities\WED_Ring.cpp ..\..\..\src\WEDEntities\WED_RoadEdge.cpp ..\..\..\src\WEDEntities\WED_Root.cpp ..\..\..\src\WEDEntities\WED_Runway.cpp ..\..\..\src\WEDEntities\WED_RunwayNode.cpp ..\..\..\src\WEDEntities\WED_Sealane.cpp ..\..\..\src\WEDEntities\WED_Select.cpp ..\..\..\src\WEDEntities\WED_SimpleBezierBoundaryNode.cpp ..\..\..\src\WEDEntities\WED_SimpleBoundaryNode.cpp ..\..\..\src\WEDEntities\WED_StringPlacement.cpp ..\..\..\src\WEDEntities\WED_TaxiRoute.cpp ..\..\..\src\WEDEntities\WED_TaxiRouteNode.cpp ..\..\..\src\WEDEntities\WED_Taxiway.cpp ..\..\..\src\WEDEntities\WED_TextureBezierNode.cpp ..\..\..\src\WEDEntities\WED_TextureNode.cpp ..\..\..\src\WEDEntities\WED_Thing.cpp ..\..\..\src\WEDEntities\WED_TowerViewpoint.cpp ..\..\..\src\WEDEntities\WED_Windsock.cpp ..\..\..\src\WEDImportExport\WED_AptIE.cpp ..\..\..\src\WEDImportExport\WED_AptImportDialog.cpp ..\..\..\src\WEDImportExport\WED_DSFExport.cpp ..\..\..\src\WEDImportExport\WED_DSFImport.cpp ..\..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp ..\..\..\src\WEDLibrary\WED_LibraryPane.cpp ..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp ..\..\..\src\WEDMap\WED_Colors.cpp ..\..\..\src\WEDMap\WED_CreateBoxTool.cpp ..\..\..\src\WEDMap\WED_CreateEdgeTool.cpp ..\..\..\src\WEDMap\WED_CreateLineTool.cpp ..\..\..\src\WEDMap\WED_CreatePointTool.cpp ..\..\..\src\WEDMap\WED_CreatePolygonTool.cpp ..\..\..\src\WEDMap\WED_CreateToolBase.cpp ..\..\..\src\WEDMap\WED_DebugLayer.cpp ..\..\..\src\WEDMap\WED_DrawUtils.cpp ..\..\..\src\WEDMap\WED_HandleToolBase.cpp ..\..\..\src\WEDMap\WED_Map.cpp ..\..\..\src\WEDMap\WED_MapBkgnd.cpp ..\..\..\src\WEDMap\WED_MapLayer.cpp ..\..\..\src\WEDMap\WED_MapPane.cpp ..\..\..\src\WEDMap\WED_MapToolNew.cpp ..\..\..\src\WEDMap\WED_MapZoomerNew.cpp ..\..\..\src\WEDMap\WED_MarqueeTool.cpp ..\..\..\src\WEDMap\WED_PreviewLayer.cpp ..\..\..\src\WEDMap\WED_StructureLayer.cpp ..\..\..\src\WEDMap\WED_TerraserverLayer.cpp ..\..\..\src\WEDMap\WED_ToolInfoAdapter.cpp ..\..\..\src\WEDMap\WED_ToolUtils.cpp ..\..\..\src\WEDMap\WED_UIMeasurements.cpp ..\..\..\src\WEDMap\WED_VertexTool.cpp ..\..\..\src\WEDMap\WED_WorldMapLayer.cpp ..\..\..\src\WEDProperties\WED_PropertyPane.cpp ..\..\..\src\WEDProperties\WED_PropertyTable.cpp ..\..\..\src\WEDTCE\WED_TCE.cpp ..\..\..\src\WEDTCE\WED_TCELayer.cpp ..\..\..\src\WEDTCE\WED_TCEMarqueeTool.cpp ..\..\..\src\WEDTCE\WED_TCEPane.cpp ..\..\..\src\WEDTCE\WED_TCEToolAdapter.cpp ..\..\..\src\WEDTCE\WED_TCEToolNew.cpp ..\..\..\src\WEDTCE\WED_TCEVertexTool.cpp ..\..\..\src\WEDWindows\WED_AboutBox.cpp ..\..\..\src\WEDWindows\WED_DocumentWindow.cpp ..\..\..\src\WEDWindows\WED_FilterBar.cpp ..\..\..\src\WEDWindows\WED_GroupCommands.cpp ..\..\..\src\WEDWindows\WED_Menus.cpp ..\..\..\src\WEDWindows\WED_PackageListAdapter.cpp ..\..\..\src\WEDWindows\WED_PackageStatusPane.cpp ..\..\..\src\WEDWindows\WED_PackageWindow.cpp ..\..\..\src\WEDWindows\WED_StartWindow.cpp ..\..\..\src\WEDXPlugin\WED_XPlugin.cpp ..\..\..\src\WEDXPlugin\WED_XPluginCamera.cpp ..\..\..\src\WEDXPlugin\WED_XPluginClient.cpp ..\..\..\src\WEDXPlugin\WED_XPluginEntity.cpp ..\..\..\src\WEDXPlugin\WED_XPluginMgr.cpp ..\..\..\src\WEDXPlugin\WED_XPluginObject.cpp
+         WED_XPluginObject.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedxplugin\wed_xpluginobject.cpp(24): fatal error C1083: Cannot open include file: 'XPLMUtilities.h': No such file or directory
+         WED_XPluginMgr.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedxplugin\wed_xpluginentity.h(27): fatal error C1083: Cannot open include file: 'XPLMScenery.h': No such file or directory
+         WED_XPluginEntity.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedxplugin\wed_xpluginentity.h(27): fatal error C1083: Cannot open include file: 'XPLMScenery.h': No such file or directory
+         WED_XPluginClient.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedxplugin\wed_xpluginclient.cpp(25): fatal error C1083: Cannot open include file: 'WED_NWDefs.h': No such file or directory
+         WED_XPluginCamera.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedxplugin\wed_xplugincamera.h(26): fatal error C1083: Cannot open include file: 'XPLMCamera.h': No such file or directory
+         WED_XPlugin.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedxplugin\wed_xplugin.cpp(24): fatal error C1083: Cannot open include file: 'XPLMPlugin.h': No such file or directory
+         WED_StartWindow.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_startwindow.h(27): fatal error C1083: Cannot open include file: 'GUI_Window.h': No such file or directory
+         WED_PackageWindow.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_packagewindow.h(27): fatal error C1083: Cannot open include file: 'GUI_Window.h': No such file or directory
+         WED_PackageStatusPane.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_packagestatuspane.h(30): fatal error C1083: Cannot open include file: 'GUI_Pane.h': No such file or directory
+         WED_PackageListAdapter.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_packagelistadapter.h(27): fatal error C1083: Cannot open include file: 'GUI_TextTable.h': No such file or directory
+         WED_Menus.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_menus.h(27): fatal error C1083: Cannot open include file: 'GUI_Application.h': No such file or directory
+         WED_GroupCommands.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_groupcommands.h(54): error C2061: syntax error : identifier 'string'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_groupcommands.cpp(25): fatal error C1083: Cannot open include file: 'WED_ToolUtils.h': No such file or directory
+         WED_FilterBar.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_filterbar.h(27): fatal error C1083: Cannot open include file: 'GUI_Table.h': No such file or directory
+         WED_DocumentWindow.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_documentwindow.h(27): fatal error C1083: Cannot open include file: 'GUI_Window.h': No such file or directory
+         WED_AboutBox.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedwindows\wed_aboutbox.h(27): fatal error C1083: Cannot open include file: 'GUI_Window.h': No such file or directory
+         WED_TCEVertexTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedtce\wed_tcevertextool.cpp(6): fatal error C1083: Cannot open include file: 'hl_types.h': No such file or directory
+         WED_TCEToolNew.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedtce\wed_tcetoolnew.h(28): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_TCEToolAdapter.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedtce\wed_tcetooladapter.cpp(6): fatal error C1083: Cannot open include file: 'hl_types.h': No such file or directory
+         WED_TCEPane.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedtce\wed_tcepane.h(27): fatal error C1083: Cannot open include file: 'GUI_Pane.h': No such file or directory
+         WED_TCEMarqueeTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedtce\wed_tcemarqueetool.h(27): fatal error C1083: Cannot open include file: 'WED_HandleToolBase.h': No such file or directory
+         Generating Code...
+         Compiling...
+         WED_TCELayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedtce\wed_tcelayer.cpp(25): fatal error C1083: Cannot open include file: 'MathUtils.h': No such file or directory
+         WED_TCE.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedtce\wed_tce.h(29): fatal error C1083: Cannot open include file: 'ITexMgr.h': No such file or directory
+         WED_PropertyTable.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedproperties\wed_propertytable.h(27): fatal error C1083: Cannot open include file: 'GUI_TextTable.h': No such file or directory
+         WED_PropertyPane.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedproperties\wed_propertypane.h(42): fatal error C1083: Cannot open include file: 'GUI_Packer.h': No such file or directory
+         WED_WorldMapLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maplayer.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_VertexTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_UIMeasurements.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_uimeasurements.cpp(25): fatal error C1083: Cannot open include file: 'GUI_Resources.h': No such file or directory
+         WED_ToolUtils.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_toolutils.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_ToolInfoAdapter.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_toolinfoadapter.h(27): fatal error C1083: Cannot open include file: 'GUI_TextTable.h': No such file or directory
+         WED_TerraserverLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maplayer.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_StructureLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maplayer.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_PreviewLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maplayer.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_MarqueeTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_MapZoomerNew.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_mapzoomernew.h(26): fatal error C1083: Cannot open include file: 'GUI_ScrollerPane.h': No such file or directory
+         WED_MapToolNew.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_MapPane.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_mappane.h(27): fatal error C1083: Cannot open include file: 'GUI_Pane.h': No such file or directory
+         WED_MapLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maplayer.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_MapBkgnd.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maplayer.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_Map.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_map.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_HandleToolBase.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         Generating Code...
+         Compiling...
+         WED_DrawUtils.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_drawutils.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_DebugLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maplayer.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_CreateToolBase.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_CreatePolygonTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_CreatePointTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_CreateLineTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_CreateEdgeTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_toolutils.h(27): fatal error C1083: Cannot open include file: 'GUI_Defs.h': No such file or directory
+         WED_CreateBoxTool.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_maptoolnew.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_Colors.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedmap\wed_colors.cpp(25): fatal error C1083: Cannot open include file: 'GUI_Resources.h': No such file or directory
+         WED_LibraryPreviewPane.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedlibrary\wed_librarypreviewpane.h(30): fatal error C1083: Cannot open include file: 'GUI_Pane.h': No such file or directory
+         WED_LibraryPane.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedlibrary\wed_librarypane.h(27): fatal error C1083: Cannot open include file: 'GUI_Packer.h': No such file or directory
+         WED_LibraryListAdapter.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedlibrary\wed_librarylistadapter.h(27): fatal error C1083: Cannot open include file: 'GUI_TextTable.h': No such file or directory
+         WED_DSFImport.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedimportexport\wed_dsfimport.cpp(25): fatal error C1083: Cannot open include file: 'DSFLib.h': No such file or directory
+         WED_DSFExport.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedimportexport\wed_dsfexport.h(32): error C2061: syntax error : identifier 'set'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedimportexport\wed_dsfexport.cpp(25): fatal error C1083: Cannot open include file: 'WED_UIDefs.h': No such file or directory
+         WED_AptImportDialog.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedimportexport\wed_aptimportdialog.h(42): fatal error C1083: Cannot open include file: 'GUI_Window.h': No such file or directory
+         WED_AptIE.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedimportexport\wed_aptie.h(27): fatal error C1083: Cannot open include file: 'AptDefs.h': No such file or directory
+         WED_Windsock.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_TowerViewpoint.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Thing.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_TextureNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         Generating Code...
+         Compiling...
+         WED_TextureBezierNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Taxiway.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_TaxiRouteNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_TaxiRoute.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_taxiroute.cpp(25): fatal error C1083: Cannot open include file: 'WED_EnumSystem.h': No such file or directory
+         WED_StringPlacement.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_SimpleBoundaryNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_SimpleBezierBoundaryNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Select.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Sealane.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_RunwayNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Runway.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Root.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_RoadEdge.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_roadedge.cpp(25): fatal error C1083: Cannot open include file: 'WED_EnumSystem.h': No such file or directory
+         WED_Ring.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_RampPosition.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_gispoint_heading.h(27): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         WED_PolygonPlacement.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_OverlayImage.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_ObjPlacement.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_gispoint_heading.h(27): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         WED_LinePlacement.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_LightFixture.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_gispoint_heading.h(27): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         Generating Code...
+         Compiling...
+         WED_KeyObjects.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Helipad.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_gispoint_heading.h(27): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         WED_Group.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISPolygon.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISPoint_HeadingWidthLength.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_gispoint_heading.h(27): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         WED_GISPoint_Heading.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_gispoint_heading.h(27): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         WED_GISPoint_Bezier.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISPoint.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISLine_Width.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISLine.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISEdge.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISComposite.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISChain.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_GISBoundingBox.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_ForestRing.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_ForestPlacement.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_FacadeRing.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_FacadePlacement.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_FacadeNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_ExclusionZone.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         Generating Code...
+         Compiling...
+         WED_Entity.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_DrapedOrthophotoBoundary.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_DrapedOrthophoto.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_AirportSign.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_gispoint_heading.h(27): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         WED_AirportNode.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_AirportChain.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_AirportBoundary.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_AirportBeacon.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_Airport.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_ATCWindRule.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_atcwindrule.cpp(25): fatal error C1083: Cannot open include file: 'AptDefs.h': No such file or directory
+         WED_ATCTimeRule.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_atctimerule.cpp(25): fatal error C1083: Cannot open include file: 'AptDefs.h': No such file or directory
+         WED_ATCRunwayUse.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_atcrunwayuse.cpp(25): fatal error C1083: Cannot open include file: 'WED_EnumSystem.h': No such file or directory
+         WED_ATCFrequency.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_thing.h(43): fatal error C1083: Cannot open include file: 'WED_Persistent.h': No such file or directory
+         WED_ATCFlow.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedentities\wed_atcflow.cpp(25): fatal error C1083: Cannot open include file: 'WED_EnumSystem.h': No such file or directory
+         WED_XMLWriter.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(38): error C2061: syntax error : identifier 'FILE'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(47): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(47): error C2143: syntax error : missing ',' before '&'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(65): error C2143: syntax error : missing ';' before '*'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(65): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(67): error C2146: syntax error : missing ';' before identifier 'name'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(67): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(68): error C2143: syntax error : missing ';' before '<'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(68): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(68): error C2238: unexpected token(s) preceding ';'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(69): error C2143: syntax error : missing ';' before '<'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(69): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.h(69): error C2238: unexpected token(s) preceding ';'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlwriter.cpp(25): fatal error C1083: Cannot open include file: 'AssertUtils.h': No such file or directory
+         WED_XMLReader.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlreader.h(30): fatal error C1083: Cannot open include file: 'expat.h': No such file or directory
+         WED_Validate.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_validate.cpp(28): fatal error C1083: Cannot open include file: 'WED_Runway.h': No such file or directory
+         WED_UndoMgr.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undomgr.h(27): fatal error C1083: Cannot open include file: 'GUI_MemoryHog.h': No such file or directory
+         WED_UndoLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(39): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(39): error C2143: syntax error : missing ',' before '&'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(48): error C2146: syntax error : missing ';' before identifier 'GetName'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(48): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(48): warning C4183: 'GetName': missing return type; assumed to be a member function returning 'int'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(70): error C2143: syntax error : missing ';' before '<'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(70): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(70): error C2238: unexpected token(s) preceding ';'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(72): error C2146: syntax error : missing ';' before identifier 'mObjects'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(72): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(74): error C2146: syntax error : missing ';' before identifier 'mName'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(74): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(48): error C2065: 'mName' : undeclared identifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(51): error C2065: 'mObjects' : undeclared identifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_undolayer.h(51): error C2228: left of '.empty' must have class/struct/union
+                 type is ''unknown-type''
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_persistent.h(27): fatal error C1083: Cannot open include file: 'IBase.h': No such file or directory
+         WED_TexMgr.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_texmgr.h(27): fatal error C1083: Cannot open include file: 'ITexMgr.h': No such file or directory
+         Generating Code...
+         Compiling...
+         WED_TCEDebugLayer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_tcedebuglayer.h(27): fatal error C1083: Cannot open include file: 'WED_TCELayer.h': No such file or directory
+         WED_Routing.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_routing.h(27): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_ResourceMgr.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_resourcemgr.h(47): fatal error C1083: Cannot open include file: 'GUI_Listener.h': No such file or directory
+         WED_PropertyHelper.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_propertyhelper.h(42): fatal error C1083: Cannot open include file: 'IPropertyObject.h': No such file or directory
+         WED_Properties.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_properties.h(28): fatal error C1083: Cannot open include file: 'SQLUtils.h': No such file or directory
+         WED_Persistent.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_persistent.h(27): fatal error C1083: Cannot open include file: 'IBase.h': No such file or directory
+         WED_PackageMgr.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_packagemgr.h(27): fatal error C1083: Cannot open include file: 'GUI_Broadcaster.h': No such file or directory
+         WED_Package.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_package.h(27): fatal error C1083: Cannot open include file: 'GUI_Broadcaster.h': No such file or directory
+         WED_Orthophoto.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_orthophoto.cpp(11): fatal error C1083: Cannot open include file: 'IGIS.h': No such file or directory
+         WED_LibraryMgr.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_librarymgr.h(27): fatal error C1083: Cannot open include file: 'GUI_Broadcaster.h': No such file or directory
+         WED_GISUtils.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_gisutils.h(14): fatal error C1083: Cannot open include file: 'MapDefs.h': No such file or directory
+         WED_FastBuffer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_fastbuffer.h(47): fatal error C1083: Cannot open include file: 'IODefs.h': No such file or directory
+         WED_Errors.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_errors.cpp(26): fatal error C1083: Cannot open include file: 'PlatformUtils.h': No such file or directory
+         WED_EnumSystem.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_enumsystem.h(60): error C2065: 'string' : undeclared identifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_enumsystem.h(60): error C2923: 'std::map' : 'string' is not a valid template type argument for parameter '_Ty'
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_enumsystem.cpp(25): fatal error C1083: Cannot open include file: 'AssertUtils.h': No such file or directory
+         WED_Document.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlreader.h(30): fatal error C1083: Cannot open include file: 'expat.h': No such file or directory
+         WED_Clipping.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_clipping.h(26): fatal error C1083: Cannot open include file: 'CompGeomDefs2.h': No such file or directory
+         WED_Buffer.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_buffer.h(46): fatal error C1083: Cannot open include file: 'IODefs.h': No such file or directory
+         WED_Assert.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_assert.h(31): error C3646: '_MSL_THROW' : unknown override specifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_assert.h(33): error C3646: '_MSL_THROW' : unknown override specifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_assert.h(35): error C3646: '_MSL_THROW' : unknown override specifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_assert.h(37): error C3646: '_MSL_THROW' : unknown override specifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_assert.h(38): error C3646: '_MSL_THROW' : unknown override specifier
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_assert.cpp(25): fatal error C1083: Cannot open include file: 'AssertUtils.h': No such file or directory
+         WED_Archive.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_xmlreader.h(30): fatal error C1083: Cannot open include file: 'expat.h': No such file or directory
+         WED_Application.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_application.h(27): fatal error C1083: Cannot open include file: 'GUI_Application.h': No such file or directory
+         Generating Code...
+         Compiling...
+         WED_AppMain.cpp
+     1>c:\users\ted\documents\visual studio 2012\projects\xptenv\src\wedcore\wed_appmain.cpp(26): fatal error C1083: Cannot open include file: 'WED_AboutBox.h': No such file or directory
+         Generating Code...
+     1>Done Building Project "C:\Users\Ted\Documents\Visual Studio 2012\Projects\xptenv\msvc\xtools_wed\xtools_wed\xtools_wed.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:05.88

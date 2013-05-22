@@ -1,0 +1,42 @@
+-------------------------------------------------------------------------------
+	                                 Microsoft Visual Studio Project
+-------------------------------------------------------------------------------
+
+[1.0.0] Introduction
+[2.0.0] Getting Started
+[3.0.0] Working With This Project
+[4.0.0] Troubleshooting and Tips
+[5.0.0] Appendix
+
+-------------------------------------------------------------------------------
+
+[1.0.0] Introduction
+	[1.1.0] Abstract
+	[1.2.0] Requirments
+	[1.3.0] Terms
+
+[1.1.0] Abstract: The purpose of this project is to let standard developement tools
+such as Microsoft Visual Studio 2012 and Git be used in the place of numours linux
+style developement tools. It is also designed to decrease the amount of work in
+obtaining, compiling, and implementing libereraries. Overall this project is designed
+to decrease the amount of set up time needed. It was first created by Theodore
+"Ted" Greene (theodorengreene at gmail dot com) and 
+Ben Supnik (bsupnik at xsquawkbox dot net).
+
+[1.2.0] Requirments: To use this software have the following tools
+
+* Microsoft Visual Studio Express 2012 for Desktop
+
+
+* freetype_libs
+* libjpeg
+ download jpeg9 http://www.ijg.org/
+ unzip
+ 
+ for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
+ use the following command
+ nmake -f set
+ 
+ http://stackoverflow.com/questions/12644343/configuring-libjpeg-in-visual-studio-2010 <- do this or cry
+ 
+ once thats done hit build on JPEG first then in Apps if you want those
