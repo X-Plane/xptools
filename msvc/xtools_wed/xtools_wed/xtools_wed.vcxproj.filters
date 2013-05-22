@@ -615,142 +615,10 @@
     <ClCompile Include="..\..\..\src\GUI\GUI_TextTable.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\AssertUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\BitmapUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\BWImage.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\CompGeomDefs2_TEST.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\CompGeomUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\CoverageFinder.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\EndianUtils.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\FileUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\GeoUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\GISUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\HLCamera.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\MacImageToClipboard.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\MacSpec.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\MatrixUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\md5.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\MemFileUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\MemUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\ObjUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\ObjUtilsGL.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\perlin.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\PlatformUtils.lin.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\PlatformUtils.mac.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\Utils\PlatformUtils.win.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\PolyRasterUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\ProgressUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\QuiltUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\RLERegion.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\RoadNetUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\Skeleton.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\SQLUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\STLUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\TensorUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\TexUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\trackball.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\UIUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\unzip.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\XBuckets_test.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\XCarBoneUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\Utils\XChunkyFileUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\XFileTwiddle.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\XFileTwiddle.mac.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\XFileTwiddle.unix.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\XFileTwiddle.win.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\XUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\zip.c">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Utils\ZLIBUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\Env\EnvParser.c">
@@ -927,34 +795,13 @@
     <ClCompile Include="..\..\..\src\DSF\DSFLib.cpp">
       <Filter>DSF</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\DSF\DSFLib_Print.cpp">
-      <Filter>DSF</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\DSF\DSFLib_TestGen.cpp">
-      <Filter>DSF</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\DSF\DSFLibWrite.cpp">
-      <Filter>DSF</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\DSF\DSFPointPool.cpp">
-      <Filter>DSF</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\DSF\tri_stripper_101\tri_stripper.cpp">
       <Filter>DSF\tri_stripper_101</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\DSFTools\DSF2Text.cpp">
       <Filter>DSFTools</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\DSFTools\DSF2TextGUI.cpp">
-      <Filter>DSFTools</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\DSFTools\DSFToolCmdLine.cpp">
-      <Filter>DSFTools</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\DSFTools\ENV2Overlay.cpp">
-      <Filter>DSFTools</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\DSFTools\ENV2OverlayGUI.cpp">
       <Filter>DSFTools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\Obj\XObjDefs.cpp">
@@ -978,19 +825,7 @@
     <ClCompile Include="..\..\..\src\Obj\XObjBuilder.cpp">
       <Filter>Obj</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\Network\PCSBSocket.lin.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Network\PCSBSocket.mac.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\Network\PCSBSocket.win.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Network\PCSBSocketUDP.lin.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Network\PCSBSocketUDP.mac.cpp">
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\Network\PCSBSocketUDP.win.cpp">
@@ -1008,44 +843,20 @@
     <ClCompile Include="..\..\..\src\Network\HTTPClient.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\FontMgr.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XGrinderApp.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XGUIApp.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XPopup.lin.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XPWidgetWin.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XWidgetApp.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XWin.lin.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XWin.mac.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\UI\XWin.win.cpp">
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\UI\XWin32DND.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XWinGL.lin.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\UI\XWinGL.mac.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\UI\XWinGL.win.cpp">
       <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\DSF\DSFPointPool.cpp">
+      <Filter>DSF</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\DSF\DSFLibWrite.cpp">
+      <Filter>DSF</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1607,169 +1418,10 @@
     <ClInclude Include="..\..\..\src\GUI\GUI_TextTable.h">
       <Filter>GUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\AssertUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\BitmapUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\BWImage.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\CarbonMemMap.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\CompGeomDefs2.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\CompGeomDefs3.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\CompGeomUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\CoverageFinder.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\douglas_peuker.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\EndianUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\FileUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\GeoUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\GISUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\HLCamera.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\Interpolation.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\MacImageToClipboard.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\MacSpec.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\MathUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\MatrixUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\md5.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\MemFileUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\MemIStreamBuf.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\MemUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\ObjUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\ObjUtilsGL.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\PerfUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\perlin.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\Utils\PlatformUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\point_index.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\PolyRasterUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\ProgressUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\QuadTree.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\QuiltUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\RLERegion.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\RoadNetUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\RTree2.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\Skeleton.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\SQLUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\STLUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\TensorUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\TexUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\trackball.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\UIUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\unzip.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\UTL_interval.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\XBuckets.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\XBuckets_inline.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\XCarBoneUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\Utils\XChunkyFileUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\XCull.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\XCull_inline.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\XFileTwiddle.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\XUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\zip.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\Utils\ZLIBUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\Env\EnvDefs.h">
@@ -1973,9 +1625,6 @@
     <ClInclude Include="..\..\..\src\DSF\DSFLib.h">
       <Filter>DSF</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\DSF\DSFPointPool.h">
-      <Filter>DSF</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\DSF\tri_stripper_101\cache_simulator.h">
       <Filter>DSF\tri_stripper_101</Filter>
     </ClInclude>
@@ -2036,24 +1685,6 @@
     <ClInclude Include="..\..\..\src\Network\XMLObject.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\UI\FontMgr.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\UI\XGrinderApp.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\UI\XGUIApp.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\UI\XPopup.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\UI\XPWidgetWin.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\UI\XWidgetApp.h">
-      <Filter>UI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\UI\XWin.h">
       <Filter>UI</Filter>
     </ClInclude>
@@ -2067,9 +1698,6 @@
   <ItemGroup>
     <Text Include="..\..\..\src\WEDResources\ui_measurements.txt">
       <Filter>WEDResources</Filter>
-    </Text>
-    <Text Include="..\..\..\src\DSF\README.txt">
-      <Filter>DSF</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>
@@ -2155,9 +1783,6 @@
     </None>
     <None Include="..\..\..\src\WEDResources\WEDManual.pdf">
       <Filter>WEDResources</Filter>
-    </None>
-    <None Include="..\..\..\src\Utils\Interpolation.i">
-      <Filter>Utils</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

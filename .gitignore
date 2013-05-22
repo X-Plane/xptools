@@ -15,3 +15,13 @@ libs/boost*
 callgrind.out.*
 *.moc.cpp
 *.swp
+
+#From the msvc project
+*.vcxproj.user
+*.sdf
+*.opensdf
+*.suo
+*.pdb
+*.obj
+msvc/xtools_wed/xtools_wed/Debug/*
+msvc/xtools_wed/xtools_wed/Release/*

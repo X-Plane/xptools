@@ -1,6 +1,14 @@
 -------------------------------------------------------------------------------
 	                                 Microsoft Visual Studio Project
 -------------------------------------------------------------------------------
+[Chapter.Section.Subsection] Title: Content is shown here in sentances.
+		* Content can also be shown here in bullet points.
+		* Like this.
+		* Also, like this.
+		1.) Content can also be shown in a numbered list.
+		2.) In this format as you can see.
+		3.) It can also have
+
 
 [1.0.0] Introduction
 [2.0.0] Getting Started
@@ -8,12 +16,14 @@
 [4.0.0] Troubleshooting and Tips
 [5.0.0] Appendix
 
--------------------------------------------------------------------------------
+/------------------------------------------------------------------------------
 
 [1.0.0] Introduction
 	[1.1.0] Abstract
 	[1.2.0] Requirments
 	[1.3.0] Terms
+
+~~~~~~~~~~~~~~~~~~~~
 
 [1.1.0] Abstract: The purpose of this project is to let standard developement tools
 such as Microsoft Visual Studio 2012 and Git be used in the place of numours linux
@@ -40,3 +50,19 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  http://stackoverflow.com/questions/12644343/configuring-libjpeg-in-visual-studio-2010 <- do this or cry
  
  once thats done hit build on JPEG first then in Apps if you want those
+ 
+ * expat appears to only need the .h, no other files. .h is located ..\..\msvc_libs\expat-2.0.1\lib otherwise a collection of other opt
+ ions 
+ -------------------------------------------------------------------------------/
+ 
+ /-------------------------------------------------------------------------------
+ [4.0.0] Troubleshooting
+		[4.X.0] Visual Studio Issues
+		[4.X.0] Compiling Issues
+		[4.X.0] Liberary Issues
+		[4.X.0] Git Issues
+		[4.X.0] Other Issues
+
+~~~~~~~~~~~~~~~~~~~~
+
+ I keep getting error C1083, what is that and how can I make it stop?
