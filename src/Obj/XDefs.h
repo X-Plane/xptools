@@ -153,7 +153,9 @@ using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(_MSC_VER)
 #include <unistd.h>
+#endif
 #include <stddef.h>
 #include <stdint.h>
 
