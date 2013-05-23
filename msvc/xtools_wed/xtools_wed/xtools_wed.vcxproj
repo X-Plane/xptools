@@ -71,6 +71,7 @@
     <ClCompile Include="..\..\..\src\UI\XWin.win.cpp" />
     <ClCompile Include="..\..\..\src\UI\XWin32DND.cpp" />
     <ClCompile Include="..\..\..\src\UI\XWinGL.win.cpp" />
+    <ClCompile Include="..\..\..\src\Utils\GISUtils.cpp" />
     <ClCompile Include="..\..\..\src\Utils\PlatformUtils.win.cpp" />
     <ClCompile Include="..\..\..\src\Utils\XChunkyFileUtils.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_Application.cpp" />
@@ -213,66 +214,6 @@
     <ClCompile Include="..\..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
     <ClCompile Include="..\..\..\src\WEDWindows\WED_PackageWindow.cpp" />
     <ClCompile Include="..\..\..\src\WEDWindows\WED_StartWindow.cpp" />
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPlugin.cpp" />
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginCamera.cpp" />
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginClient.cpp" />
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginEntity.cpp" />
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginMgr.cpp" />
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginObject.cpp" />
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginWin.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\Airports.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\AptAlgs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\AptIO.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\AptRouting.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\Beaches.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\BezierApprox.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\BlockAlgs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\BlockFill.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\CGALAlgs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\ConfigSystem.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\DEMAlgs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\DEMDefs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\DEMGrid.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\DEMIO.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\DEMTables.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\DEMToVector.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\DSFBuilder.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\EnumSystem.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\Forests.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\ForestTables.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\GreedyMesh.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\Hydro.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\Hydro2.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapAlgs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapBuffer.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapCreate.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapHelpers.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapIO.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapOverlay.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapPolygon.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapRaster.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MapTopology.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MeshAlgs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MeshAlgs_old.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MeshDefs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MeshIO.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\MeshSimplify.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\NetAlgs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\NetHelpers.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\NetPlacement.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\NetTables.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\ObjPlacement.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\ObjPlacement2.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\ObjTables.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\ParamDefs.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\SceneryPackages.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\SimpleIO.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\TensorRoads.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\TriFan.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\WTPM.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\XESInit.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\XESIO.cpp" />
-    <ClCompile Include="..\..\..\src\XESCore\Zoning.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\DSFTools\DSF2Text.h" />
@@ -342,6 +283,7 @@
     <ClInclude Include="..\..\..\src\UI\XWin.h" />
     <ClInclude Include="..\..\..\src\UI\XWin32DND.h" />
     <ClInclude Include="..\..\..\src\UI\XWinGL.h" />
+    <ClInclude Include="..\..\..\src\Utils\GISUtils.h" />
     <ClInclude Include="..\..\..\src\Utils\PlatformUtils.h" />
     <ClInclude Include="..\..\..\src\Utils\XChunkyFileUtils.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h" />
@@ -488,71 +430,6 @@
     <ClInclude Include="..\..\..\src\WEDWindows\WED_PackageWindow.h" />
     <ClInclude Include="..\..\..\src\WEDWindows\WED_StartWindow.h" />
     <ClInclude Include="..\..\..\src\WEDWindows\WED_UIDefs.h" />
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginCamera.h" />
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginClient.h" />
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginEntity.h" />
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginMgr.h" />
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginObject.h" />
-    <ClInclude Include="..\..\..\src\XESCore\Airports.h" />
-    <ClInclude Include="..\..\..\src\XESCore\AptAlgs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\AptDefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\AptIO.h" />
-    <ClInclude Include="..\..\..\src\XESCore\AptRouting.h" />
-    <ClInclude Include="..\..\..\src\XESCore\Beaches.h" />
-    <ClInclude Include="..\..\..\src\XESCore\BezierApprox.h" />
-    <ClInclude Include="..\..\..\src\XESCore\BlockAlgs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\BlockDefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\BlockFill.h" />
-    <ClInclude Include="..\..\..\src\XESCore\CGALAlgs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\CGALDefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\CGALTypes.h" />
-    <ClInclude Include="..\..\..\src\XESCore\ConfigSystem.h" />
-    <ClInclude Include="..\..\..\src\XESCore\DEMAlgs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\DEMDefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\DEMGrid.h" />
-    <ClInclude Include="..\..\..\src\XESCore\DEMIO.h" />
-    <ClInclude Include="..\..\..\src\XESCore\DEMTables.h" />
-    <ClInclude Include="..\..\..\src\XESCore\DEMToVector.h" />
-    <ClInclude Include="..\..\..\src\XESCore\DSFBuilder.h" />
-    <ClInclude Include="..\..\..\src\XESCore\EnumSystem.h" />
-    <ClInclude Include="..\..\..\src\XESCore\Forests.h" />
-    <ClInclude Include="..\..\..\src\XESCore\ForestTables.h" />
-    <ClInclude Include="..\..\..\src\XESCore\GreedyMesh.h" />
-    <ClInclude Include="..\..\..\src\XESCore\Hydro.h" />
-    <ClInclude Include="..\..\..\src\XESCore\Hydro2.h" />
-    <ClInclude Include="..\..\..\src\XESCore\IODefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapAlgs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapBuffer.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapCreate.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapDefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapHelpers.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapIO.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapOverlay.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapPolygon.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapRaster.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MapTopology.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MeshAlgs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MeshConformer.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MeshDefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MeshIO.h" />
-    <ClInclude Include="..\..\..\src\XESCore\MeshSimplify.h" />
-    <ClInclude Include="..\..\..\src\XESCore\NetAlgs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\NetHelpers.h" />
-    <ClInclude Include="..\..\..\src\XESCore\NetPlacement.h" />
-    <ClInclude Include="..\..\..\src\XESCore\NetTables.h" />
-    <ClInclude Include="..\..\..\src\XESCore\ObjPlacement.h" />
-    <ClInclude Include="..\..\..\src\XESCore\ObjPlacement2.h" />
-    <ClInclude Include="..\..\..\src\XESCore\ObjTables.h" />
-    <ClInclude Include="..\..\..\src\XESCore\ParamDefs.h" />
-    <ClInclude Include="..\..\..\src\XESCore\SceneryPackages.h" />
-    <ClInclude Include="..\..\..\src\XESCore\SimpleIO.h" />
-    <ClInclude Include="..\..\..\src\XESCore\TensorRoads.h" />
-    <ClInclude Include="..\..\..\src\XESCore\TriFan.h" />
-    <ClInclude Include="..\..\..\src\XESCore\WTPM.h" />
-    <ClInclude Include="..\..\..\src\XESCore\XESConstants.h" />
-    <ClInclude Include="..\..\..\src\XESCore\XESInit.h" />
-    <ClInclude Include="..\..\..\src\XESCore\XESIO.h" />
-    <ClInclude Include="..\..\..\src\XESCore\Zoning.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\src\WEDResources\ui_measurements.txt" />
@@ -609,7 +486,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -630,6 +507,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\msvc_libs\sqlite-3.6.21;..\..\..\src\Interfaces;..\..\msvc_libs\expat-2.0.1\lib;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -642,9 +520,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\msvc_libs\sqlite-3.6.21;..\..\..\src\Interfaces;..\..\msvc_libs\expat-2.0.1\lib;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\msvc_libs\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\zlib-1.2.8;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\expat-2.0.1\lib;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PreprocessorDefinitions>APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions); _CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -41,9 +41,9 @@ struct	Bbox2;
 struct  Line2;
 struct Bezier2;
 
-
-#if IBM
-//	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
+//This code is only for MSVC
+#if defined(_MSC_VER)
+	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
 #endif
 
 enum {
@@ -84,7 +84,7 @@ double signed_area_pt(__Iterator begin, __Iterator end);
 // This takes a Bezier2 and recursively output-iterates it into a point container.  A quick way to get guaranteed-approximation
 // bezier approximations.  Endpoint is omitted - for chaining!
 template <class __output_iterator>
-void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator output, double t_start=0.0, double t_middle=0.5, double t_end=1.0);
+void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator output, double t_start, double t_middle, double t_end);
 
 // This takes a "bezier sequence", which is an iterator pair of Point2 and int codes.  If you just ahve a "bezier polygon" (that is, a vector of Bezier2)
 // just iterate on it directly and call approximate_bezier_epsi.
@@ -98,7 +98,7 @@ void approximate_bezier_sequence_epsi(
 // Same as above, but we split TWO beziers.  "b" is used for error metrics, but b2 is output to output2 at the same T intervals.
 // We can use this to get the UV map for a bezier as we approximate it.
 template <class __output_iterator>
-void approximate_bezier_epsi_2(const Bezier2& b, const Bezier2& b2, double err, __output_iterator output1, __output_iterator output2, double t_start=0.0, double t_middle=0.5, double t_end=1.0);
+void approximate_bezier_epsi_2(const Bezier2& b, const Bezier2& b2, double err, __output_iterator output1, __output_iterator output2, double t_start, double t_middle, double t_end);
 
 
 

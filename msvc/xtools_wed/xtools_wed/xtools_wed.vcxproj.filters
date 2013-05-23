@@ -34,9 +34,6 @@
     <Filter Include="WEDWindows">
       <UniqueIdentifier>{d34fa293-e777-4462-b289-b0ce2abb0675}</UniqueIdentifier>
     </Filter>
-    <Filter Include="WEDXPlugin">
-      <UniqueIdentifier>{0aefa050-6acd-48c9-8e1d-544de88edae3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GUI">
       <UniqueIdentifier>{1c8767d4-0462-4bb0-bcfe-cd77f4f2740d}</UniqueIdentifier>
     </Filter>
@@ -54,9 +51,6 @@
     </Filter>
     <Filter Include="OGLE">
       <UniqueIdentifier>{55e2d45f-d0d4-4ab6-87fb-3ed3ae3e56ea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="XESCore">
-      <UniqueIdentifier>{4f8235f9-c2c6-4ce5-b253-1da27c42962d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Env">
       <UniqueIdentifier>{5b07cf95-cb4f-40bb-a900-01a5556e5965}</UniqueIdentifier>
@@ -102,9 +96,6 @@
     <ClCompile Include="..\..\..\src\WEDCore\WED_FastBuffer.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDCore\WED_GISUtils.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\WEDCore\WED_Globals.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
@@ -112,9 +103,6 @@
       <Filter>WEDCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\WEDCore\WED_Orthophoto.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDCore\WED_Package.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\WEDCore\WED_PackageMgr.cpp">
@@ -492,27 +480,6 @@
     <ClCompile Include="..\..\..\src\WEDWindows\WED_AboutBox.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPlugin.cpp">
-      <Filter>WEDXPlugin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginCamera.cpp">
-      <Filter>WEDXPlugin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginClient.cpp">
-      <Filter>WEDXPlugin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginEntity.cpp">
-      <Filter>WEDXPlugin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginMgr.cpp">
-      <Filter>WEDXPlugin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginObject.cpp">
-      <Filter>WEDXPlugin</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDXPlugin\WED_XPluginWin.cpp">
-      <Filter>WEDXPlugin</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\GUI\GUI_Timer.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
@@ -630,165 +597,6 @@
     <ClCompile Include="..\..\..\src\Env\Persistence.cpp">
       <Filter>Env</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\Airports.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\AptAlgs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\AptIO.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\AptRouting.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\Beaches.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\BezierApprox.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\BlockAlgs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\BlockFill.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\CGALAlgs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\ConfigSystem.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\DEMAlgs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\DEMDefs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\DEMGrid.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\DEMIO.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\DEMTables.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\DEMToVector.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\DSFBuilder.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\EnumSystem.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\Forests.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\ForestTables.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\GreedyMesh.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\Hydro.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\Hydro2.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapAlgs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapBuffer.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapCreate.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapHelpers.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapIO.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapOverlay.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapPolygon.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapRaster.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MapTopology.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MeshAlgs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MeshAlgs_old.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MeshDefs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MeshIO.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\MeshSimplify.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\NetAlgs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\NetHelpers.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\NetPlacement.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\NetTables.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\ObjPlacement.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\ObjPlacement2.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\ObjTables.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\ParamDefs.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\SceneryPackages.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\SimpleIO.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\TensorRoads.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\TriFan.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\WTPM.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\XESInit.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\XESIO.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\XESCore\Zoning.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\OGLE\ogle.cpp">
       <Filter>OGLE</Filter>
     </ClCompile>
@@ -857,6 +665,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\DSF\DSFLibWrite.cpp">
       <Filter>DSF</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_GISUtils.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Package.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\GISUtils.cpp">
+      <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1292,21 +1109,6 @@
     <ClInclude Include="..\..\..\src\WEDWindows\WED_UIDefs.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginCamera.h">
-      <Filter>WEDXPlugin</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginClient.h">
-      <Filter>WEDXPlugin</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginEntity.h">
-      <Filter>WEDXPlugin</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginMgr.h">
-      <Filter>WEDXPlugin</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\WEDXPlugin\WED_XPluginObject.h">
-      <Filter>WEDXPlugin</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\GUI\GUI_Timer.h">
       <Filter>GUI</Filter>
     </ClInclude>
@@ -1436,186 +1238,6 @@
     <ClInclude Include="..\..\..\src\Env\Persistence.h">
       <Filter>Env</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\Airports.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\AptAlgs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\AptDefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\AptIO.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\AptRouting.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\Beaches.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\BezierApprox.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\BlockAlgs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\BlockDefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\BlockFill.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\CGALAlgs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\CGALDefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\CGALTypes.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\ConfigSystem.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\DEMAlgs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\DEMDefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\DEMGrid.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\DEMIO.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\DEMTables.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\DEMToVector.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\DSFBuilder.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\EnumSystem.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\Forests.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\ForestTables.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\GreedyMesh.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\Hydro.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\Hydro2.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\IODefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapAlgs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapBuffer.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapCreate.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapDefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapHelpers.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapIO.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapOverlay.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapPolygon.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapRaster.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MapTopology.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MeshAlgs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MeshConformer.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MeshDefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MeshIO.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\MeshSimplify.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\NetAlgs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\NetHelpers.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\NetPlacement.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\NetTables.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\ObjPlacement.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\ObjPlacement2.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\ObjTables.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\ParamDefs.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\SceneryPackages.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\SimpleIO.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\TensorRoads.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\TriFan.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\WTPM.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\XESConstants.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\XESInit.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\XESIO.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\XESCore\Zoning.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\OGLE\ogle.h">
       <Filter>OGLE</Filter>
     </ClInclude>
@@ -1693,6 +1315,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\UI\XWinGL.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\GISUtils.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
