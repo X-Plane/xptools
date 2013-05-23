@@ -256,6 +256,7 @@ using namespace std;
 #endif
 
 #if IBM
+#define WINDOWS_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <windows.h>
 #endif

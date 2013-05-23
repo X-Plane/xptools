@@ -21,6 +21,7 @@
  *
  */
 
+#include "WED_AptImportDialog.h"
 #include "WED_AptIE.h"
 #include "WED_Airport.h"
 #include "WED_AirportBeacon.h"
@@ -45,16 +46,16 @@
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
-#include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
 
 #include "AptIO.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
-#include "PlatformUtils.h"
 
+#include "PlatformUtils.h"
 #include <stdarg.h>
+
 
 #if ERROR_CHECK
 error checking here and in apt-io
@@ -678,3 +679,4 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive)
 		WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive);
 	}
 }
+
