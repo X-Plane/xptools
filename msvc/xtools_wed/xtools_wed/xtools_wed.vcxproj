@@ -93,7 +93,6 @@
     <ClCompile Include="..\..\..\src\WEDCore\WED_Properties.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_PropertyHelper.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_ResourceMgr.cpp" />
-    <ClCompile Include="..\..\..\src\WEDCore\WED_Routing.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_TexMgr.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_UndoLayer.cpp" />
@@ -112,7 +111,7 @@
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCRunwayUse.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCTimeRule.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCWindRule.cpp" />
-    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_Entity.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_FacadeNode.cpp" />
@@ -305,7 +304,6 @@
     <ClInclude Include="..\..\..\src\WEDCore\WED_Properties.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_PropertyHelper.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_ResourceMgr.h" />
-    <ClInclude Include="..\..\..\src\WEDCore\WED_Routing.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_TexMgr.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_UndoLayer.h" />
