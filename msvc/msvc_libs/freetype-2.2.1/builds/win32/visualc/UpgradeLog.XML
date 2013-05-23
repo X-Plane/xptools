@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="freetype">
+</Property><Property Name="Solution File" Value="C:\Users\Ted\Documents\Visual Studio 2012\Projects\xptenv\msvc\msvc_libs\freetype-2.2.1\builds\win32\visualc\freetype.sln">
+</Property><Property Name="Date" Value="Thursday, May 23, 2013">
+</Property><Property Name="Time" Value="12:51 PM">
+</Property></Properties><Event ErrorLevel="3" Project="freetype" Source="freetype.vcproj" Description="No Conversion Required">
+</Event><Event ErrorLevel="0" Project="" Source="freetype.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="freetype.sln" Description="Converted">
+</Event></UpgradeLog>

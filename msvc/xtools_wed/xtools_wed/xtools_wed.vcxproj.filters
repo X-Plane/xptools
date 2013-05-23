@@ -120,9 +120,6 @@
     <ClCompile Include="..\..\..\src\WEDCore\WED_ResourceMgr.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDCore\WED_Routing.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
@@ -178,9 +175,6 @@
       <Filter>WEDEntities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp">
-      <Filter>WEDEntities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\WEDEntities\WED_Entity.cpp">
@@ -528,9 +522,6 @@
     <ClCompile Include="..\..\..\src\GUI\GUI_Help.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\GUI\GUI_Laftfont.cpp">
-      <Filter>GUI</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\GUI\GUI_Listener.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
@@ -738,9 +729,6 @@
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\WEDCore\WED_ResourceMgr.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\WEDCore\WED_Routing.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.h">
@@ -1158,9 +1146,6 @@
       <Filter>GUI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\GUI\GUI_Help.h">
-      <Filter>GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\GUI\GUI_Laftfont.h">
       <Filter>GUI</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\GUI\GUI_Listener.h">

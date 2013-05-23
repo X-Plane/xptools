@@ -32,7 +32,6 @@
     <ClCompile Include="..\..\..\src\GUI\GUI_Fonts.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_GraphState.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Help.cpp" />
-    <ClCompile Include="..\..\..\src\GUI\GUI_Laftfont.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Listener.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_MemoryHog.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Packer.cpp" />
@@ -94,7 +93,6 @@
     <ClCompile Include="..\..\..\src\WEDCore\WED_Properties.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_PropertyHelper.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_ResourceMgr.cpp" />
-    <ClCompile Include="..\..\..\src\WEDCore\WED_Routing.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_TexMgr.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_UndoLayer.cpp" />
@@ -114,7 +112,6 @@
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCTimeRule.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCWindRule.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp" />
-    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_Entity.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
     <ClCompile Include="..\..\..\src\WEDEntities\WED_FacadeNode.cpp" />
@@ -242,7 +239,6 @@
     <ClInclude Include="..\..\..\src\GUI\GUI_Fonts.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_GraphState.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Help.h" />
-    <ClInclude Include="..\..\..\src\GUI\GUI_Laftfont.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Listener.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_MemoryHog.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Menus.h" />
@@ -307,7 +303,6 @@
     <ClInclude Include="..\..\..\src\WEDCore\WED_Properties.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_PropertyHelper.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_ResourceMgr.h" />
-    <ClInclude Include="..\..\..\src\WEDCore\WED_Routing.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_TCEDebugLayer.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_TexMgr.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_UndoLayer.h" />
@@ -522,7 +517,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\msvc_libs\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\zlib-1.2.8;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\expat-2.0.1\lib;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PreprocessorDefinitions>APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions); _CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_CGAL=1;MSC=1;APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

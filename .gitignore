@@ -25,3 +25,5 @@ callgrind.out.*
 *.obj
 msvc/xtools_wed/xtools_wed/Debug/*
 msvc/xtools_wed/xtools_wed/Release/*
+msvc/msvc_libs/expat-2.0.1/win32/bin/*
+msvc/msvc_libs/expat-2.0.1/win32/tmp/*
