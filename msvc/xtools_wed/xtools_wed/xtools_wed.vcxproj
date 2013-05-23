@@ -522,7 +522,8 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\..\msvc_libs\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\zlib-1.2.8;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\expat-2.0.1\lib;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PreprocessorDefinitions>APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions); _CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS;NO_CGAL=1;MSC=1</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

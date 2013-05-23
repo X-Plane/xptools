@@ -324,7 +324,7 @@ struct	DEMGeo {
 		neighbor_iterator operator++(int);
 		neighbor_iterator& operator++(void);
 	private:
-		friend class DEMGeo;
+		friend struct DEMGeo;
 		neighbor_iterator(const DEMGeo * d, address a);
 		const DEMGeo *			parent;
 		DEMGeo::coordinates		coords;

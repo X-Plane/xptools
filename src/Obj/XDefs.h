@@ -116,6 +116,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <algorithm>
 
 #if SAFE_VECTORS && DEV
 
