@@ -3,7 +3,6 @@
  *
  */
 
-#include "hl_types.h"
 #include "WED_TCEToolAdapter.h"
 #include "WED_MapToolNew.h"
 

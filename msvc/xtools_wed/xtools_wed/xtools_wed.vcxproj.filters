@@ -174,9 +174,6 @@
     <ClCompile Include="..\..\..\src\WEDEntities\WED_ATCWindRule.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp">
-      <Filter>WEDEntities</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\WEDEntities\WED_Entity.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
@@ -666,6 +663,8 @@
     <ClCompile Include="..\..\..\src\Utils\GISUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Routing.cpp" />
+    <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h">
@@ -1304,6 +1303,8 @@
     <ClInclude Include="..\..\..\src\Utils\GISUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\GUI\GUI_Laftfont.h" />
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Routing.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\src\WEDResources\ui_measurements.txt">
