@@ -55,6 +55,20 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  * expat appears to only need the .h, no other files. .h is located ..\..\msvc_libs\expat-2.0.1\lib otherwise a collection of other opt
  ions 
  
+ geotiff
+ resave the geo_config.h.vc as geo_config.h
+ 
+ tiff
+ resave tiffconf.vc.h to tiffconf.h
+ 
+ jpeg
+ resave jconfig.vc to jconfig.h
+ 
+ expat
+ just build with the included vsproject file <-all linker errors gone
+ 
+ zlib  
+ you need to have xtools_wed to have ZLIB_WINAPI
  
 ==============================================================/
  

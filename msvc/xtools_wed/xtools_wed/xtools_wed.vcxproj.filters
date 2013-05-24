@@ -64,6 +64,9 @@
     <Filter Include="UI">
       <UniqueIdentifier>{6863eb79-d6f4-4984-bcde-9dd9bd90ba2d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="XPCompat">
+      <UniqueIdentifier>{e3c4ad7b-4c4f-4803-b7ed-e57d0e412f46}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\WEDCore\WED_Application.cpp">
@@ -665,6 +668,36 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp">
       <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\BitmapUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\MemFileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\MatrixUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\XPCompat\hl_types.cpp">
+      <Filter>XPCompat</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\md5.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\AssertUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\FileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\EndianUtils.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\zip.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\unzip.c">
+      <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1305,6 +1338,30 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\GUI\GUI_Laftfont.h" />
+    <ClInclude Include="..\..\..\src\Utils\MemFileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\XPCompat\hl_types.h">
+      <Filter>XPCompat</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\md5.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\AssertUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\FileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\EndianUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\zip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\unzip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\src\WEDResources\ui_measurements.txt">

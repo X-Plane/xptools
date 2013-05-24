@@ -28,8 +28,9 @@
 #endif
 
 #include <errno.h>
-#include <sys/stat.h>
+#if LIN
 #include <dirent.h>
+#endif
 
 #define LOG_CASE_DESENS 0
 
@@ -39,23 +40,26 @@
 	#define	LOG_MSG(fmt,...)
 #endif
 
-
+#if LIN
 static int desens_partial(DIR * dir, char * io_file)
 {
-	struct dirent* de;
-	while (de = readdir(dir))
-	{
-		if (!strcasecmp(io_file, de->d_name))
-		{
-			strcpy(io_file, de->d_name);
-			return 1;
-		}
-	}
-	return 0;
+ struct dirent* de;
+ while (de = readdir(dir))
+ {
+  if (!strcasecmp(io_file, de->d_name))
+  {
+   strcpy(io_file, de->d_name);
+   return 1;
+  }
+ }
+ return 0;
 }
+#endif
+
 
 int FILE_case_correct(char * buf)
 {
+	#if LIN
 	LOG_MSG("Case desens for: '%s'\n", buf);
 
 	// Fast match?  Try that first - MOST content in x-plane is case-correct, and any file path derived from dir scanning will be.
@@ -117,13 +121,15 @@ int FILE_case_correct(char * buf)
 			return 1;
 		}		
 	}
+#else 
+return 1;
+#endif
 }
 
-
-	FILE_case_correct_path::FILE_case_correct_path(const char * in_path) : path(strdup(in_path)) { FILE_case_correct(path); }
-	FILE_case_correct_path::~FILE_case_correct_path() { free(path); }
+FILE_case_correct_path::FILE_case_correct_path(const char * in_path) : path(strdup(in_path)) { FILE_case_correct(path); }
+FILE_case_correct_path::~FILE_case_correct_path() { free(path); }
 	
-	FILE_case_correct_path::operator const char * (void) const { return path; }
+FILE_case_correct_path::operator const char * (void) const { return path; }
 	
 
 

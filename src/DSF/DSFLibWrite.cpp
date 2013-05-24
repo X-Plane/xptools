@@ -22,7 +22,7 @@
  */
 #include "DSFLib.h"
 #include "AssertUtils.h"
-#include "FileUtils.h"
+//#include "FileUtils.h"
 #include "XChunkyFileUtils.h"
 #include <stdio.h>
 #include "md5.h"
@@ -82,7 +82,7 @@ static	void	DSFSignMD5(const char * inPath)
 
 struct	StCloseAndKill {
 	StCloseAndKill(FILE * f, const char * p) : f_(f), p_(p) { }
-	~StCloseAndKill() { if(f_) { fclose(f_); FILE_delete_file(p_.c_str(), false); } }
+	//~StCloseAndKill() { if(f_) { fclose(f_); FILE_delete_file(p_.c_str(), false); } }
 	void release() { f_ = NULL; }
 	FILE * f_;
 	string p_;

@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 11.00.60315.1	    05/21/13 21:17:22
+Microsoft (R) Macro Assembler Version 10.00.40219.01	    05/23/13 22:21:25
 match686.asm						     Page 1 - 1
 
 
@@ -509,7 +509,7 @@ match686.asm						     Page 1 - 1
 
  000001E9			_TEXT   ends
 				end
-Microsoft (R) Macro Assembler Version 11.00.60315.1	    05/21/13 21:17:22
+Microsoft (R) Macro Assembler Version 10.00.40219.01	    05/23/13 22:21:25
 match686.asm						     Symbols 2 - 1
 
 
