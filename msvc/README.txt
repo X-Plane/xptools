@@ -70,6 +70,17 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  zlib  
  you need to have xtools_wed to have ZLIB_WINAPI
  
+ squish
+ copied all the C++ files, had to replace std::min,std::max with min and max because windows
+ 
+ commctrl.h
+ 
+ 
+ sqlite3
+added the source and headers directly to the project, add these preprocessor directives
+
+freetype
+use the pre built
 ==============================================================/
  
  

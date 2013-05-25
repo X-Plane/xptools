@@ -135,20 +135,20 @@ public:
 	friend Vec4 Min( Vec4::Arg left, Vec4::Arg right )
 	{
 		return Vec4( 
-			std::min( left.m_x, right.m_x ), 
-			std::min( left.m_y, right.m_y ), 
-			std::min( left.m_z, right.m_z ), 
-			std::min( left.m_w, right.m_w ) 
+			min( left.m_x, right.m_x ), 
+			min( left.m_y, right.m_y ), 
+			min( left.m_z, right.m_z ), 
+			min( left.m_w, right.m_w ) 
 		);
 	}
 	
 	friend Vec4 Max( Vec4::Arg left, Vec4::Arg right )
 	{
 		return Vec4( 
-			std::max( left.m_x, right.m_x ), 
-			std::max( left.m_y, right.m_y ), 
-			std::max( left.m_z, right.m_z ), 
-			std::max( left.m_w, right.m_w ) 
+			max( left.m_x, right.m_x ), 
+			max( left.m_y, right.m_y ), 
+			max( left.m_z, right.m_z ), 
+			max( left.m_w, right.m_w ) 
 		);
 	}
 	

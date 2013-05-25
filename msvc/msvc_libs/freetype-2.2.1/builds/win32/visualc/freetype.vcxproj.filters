@@ -29,9 +29,6 @@
     <ClCompile Include="..\..\..\src\base\ftbitmap.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\cache\ftcache.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ftdebug.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -129,6 +126,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\freetype\config\ftstdlib.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\freetype\ftcache.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

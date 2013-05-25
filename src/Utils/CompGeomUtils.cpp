@@ -749,9 +749,9 @@ void	RemoveFromQuadStripFront(
 		if (cut_left != -1 && cut_right != -1)
 		{
 			int		cut_proj_left = cut_right + 1;
-			int		vertices_to_copy = std::min(cut_proj_left, cut_left) + 1;
-			int		vertices_to_nuke = std::max(cut_proj_left, cut_left) + 1;
-
+			int		vertices_to_copy = min(cut_proj_left, cut_left) + 1;
+			int		vertices_to_nuke = max(cut_proj_left, cut_left) + 1;
+			
 			outFront.insert(outFront.end(), ioChain.begin(), ioChain.begin() + vertices_to_copy);
 			ioChain.erase(ioChain.begin(), ioChain.begin() + vertices_to_nuke);
 

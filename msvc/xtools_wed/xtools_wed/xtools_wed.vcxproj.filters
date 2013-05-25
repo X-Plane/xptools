@@ -67,6 +67,15 @@
     <Filter Include="XPCompat">
       <UniqueIdentifier>{e3c4ad7b-4c4f-4803-b7ed-e57d0e412f46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="XESCore">
+      <UniqueIdentifier>{288927bc-9dc2-46ee-a91d-3c451344b887}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="squish-1.1.0">
+      <UniqueIdentifier>{6b22005d-c732-4b01-b535-074395d668d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SQLite">
+      <UniqueIdentifier>{81bee108-7857-464e-a673-c18b4b57b1fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\WEDCore\WED_Application.cpp">
@@ -582,9 +591,6 @@
     <ClCompile Include="..\..\..\src\Env\EnvParser.c">
       <Filter>Env</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\Env\EnvWrite.c">
-      <Filter>Env</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\Env\Persistence.cpp">
       <Filter>Env</Filter>
     </ClCompile>
@@ -698,6 +704,54 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\Utils\unzip.c">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\TexUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\SQLUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\CompGeomUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Utils\XUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\XESCore\AptIO.cpp">
+      <Filter>XESCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\alpha.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\clusterfit.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourblock.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourfit.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourset.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\maths.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\rangefit.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\singlecolourfit.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\squish.cpp">
+      <Filter>squish-1.1.0</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c">
+      <Filter>SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\shell.c">
+      <Filter>SQLite</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1250,9 +1304,6 @@
     <ClInclude Include="..\..\..\src\Env\EnvParser.h">
       <Filter>Env</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Env\EnvWrite.h">
-      <Filter>Env</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\Env\Persistence.h">
       <Filter>Env</Filter>
     </ClInclude>
@@ -1337,7 +1388,6 @@
     <ClInclude Include="..\..\..\src\Utils\GISUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\GUI\GUI_Laftfont.h" />
     <ClInclude Include="..\..\..\src\Utils\MemFileUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -1361,6 +1411,72 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\Utils\unzip.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\TexUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\SQLUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\CompGeomUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Utils\XUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\GUI\GUI_Laftfont.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\XESCore\AptIO.h">
+      <Filter>XESCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\alpha.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\clusterfit.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourblock.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourfit.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourset.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\config.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\maths.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\rangefit.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_float.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_sse.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_ve.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\singlecolourfit.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\squish.h">
+      <Filter>squish-1.1.0</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h">
+      <Filter>SQLite</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h">
+      <Filter>SQLite</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1451,6 +1567,9 @@
     </None>
     <None Include="..\..\..\src\WEDResources\WEDManual.pdf">
       <Filter>WEDResources</Filter>
+    </None>
+    <None Include="..\..\msvc_libs\squish-1.10\singlecolourlookup.inl">
+      <Filter>squish-1.1.0</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

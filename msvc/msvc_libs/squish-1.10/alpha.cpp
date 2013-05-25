@@ -92,9 +92,9 @@ void DecompressAlphaDxt3( u8* rgba, void const* block )
 static void FixRange( int& min, int& max, int steps )
 {
 	if( max - min < steps )
-		max = std::min( min + steps, 255 );
+		max = min( min + steps, 255 );
 	if( max - min < steps )
-		min = std::max( 0, max - steps );
+		min = max( 0, max - steps );
 }
 
 static int FitCodes( u8 const* rgba, int mask, u8 const* codes, u8* indices )

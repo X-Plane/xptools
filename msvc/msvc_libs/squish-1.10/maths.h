@@ -163,18 +163,18 @@ public:
 	friend Vec3 Min( Arg left, Arg right )
 	{
 		return Vec3(
-			std::min( left.m_x, right.m_x ), 
-			std::min( left.m_y, right.m_y ), 
-			std::min( left.m_z, right.m_z )
+			min( left.m_x, right.m_x ), 
+			min( left.m_y, right.m_y ), 
+			min( left.m_z, right.m_z )
 		);
 	}
 
 	friend Vec3 Max( Arg left, Arg right )
 	{
 		return Vec3(
-			std::max( left.m_x, right.m_x ), 
-			std::max( left.m_y, right.m_y ), 
-			std::max( left.m_z, right.m_z )
+			max( left.m_x, right.m_x ), 
+			max( left.m_y, right.m_y ), 
+			max( left.m_z, right.m_z )
 		);
 	}
 
