@@ -38,19 +38,6 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 
 * Microsoft Visual Studio Express 2012 for Desktop
 
-
-* freetype_libs
-* libjpeg
- download jpeg9 http://www.ijg.org/
- unzip
- 
- for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
- use the following command
- nmake -f set
- 
- http://stackoverflow.com/questions/12644343/configuring-libjpeg-in-visual-studio-2010 <- do this or cry
- 
- once thats done hit build on JPEG first then in Apps if you want those
  
  * expat appears to only need the .h, no other files. .h is located ..\..\msvc_libs\expat-2.0.1\lib otherwise a collection of other opt
  ions 
@@ -68,19 +55,33 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  just build with the included vsproject file <-all linker errors gone
  
  zlib  
- you need to have xtools_wed to have ZLIB_WINAPI
+ you need to have xtools_wed to NOT have ZLIB_WINAPI
  
  squish
  copied all the C++ files, had to replace std::min,std::max with min and max because windows
  
  commctrl.h
+ Just make sure its from windows SDK
  
  
  sqlite3
-added the source and headers directly to the project, add these preprocessor directives
+ added the source and headers directly to the project, add these preprocessor directives
 
-freetype
-use the pre built
+ freetype
+ in the msvc project Property Pages-> C/C++->Code Generation-> Change the Runtime Library to MT
+ /GS to /GS- to try and remove remote_rangecheckerror security buffer check
+
+ jpeg 
+ for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
+ use the following command
+ nmake -f set
+ 
+ http://stackoverflow.com/questions/12644343/configuring-libjpeg-in-visual-studio-2010 <- do this or cry
+ then use the jpeg .sln and make sure to
+ 
+ libpng
+ http://www.leptonica.org/vs2008doc/building-image-libraries.html <- follow this link
+
 ==============================================================/
  
  

@@ -26,7 +26,7 @@
 #include "GUI_Menus.h"
 #include "XWin.h"
 #include "GUI_Window.h"
-//#include <commctrl.h>
+#include <commctrl.h>
 #define __DEBUGGING__
 
 GUI_Application *	gApplication = NULL;
