@@ -52,7 +52,9 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  resave jconfig.vc to jconfig.h
  
  expat
+ files taken from the the latest expat 2.1.0 installer
  just build with the included vsproject file <-all linker errors gone
+ make sure that a preprocessor called XML_STATIC is put in there.
  
  zlib  
  you need to have xtools_wed to NOT have ZLIB_WINAPI
@@ -119,6 +121,8 @@ TO
 PREFIX = .
 
 Copied geotiff.lib to msvc_compiled_libs
+
+
 ==============================================================/
  
  
@@ -152,3 +156,10 @@ make sure to put in _CRT_SECURE_NO_WARNINGS
 
 
 openGL<-put in manually.
+==============================================================/
+ 
+ /== [5.0.0] Appendix==========================================
+		
+		[5.1.0] List of Preprocessor Definitions
+			[5.1.1] General
+			[5.1.2] 

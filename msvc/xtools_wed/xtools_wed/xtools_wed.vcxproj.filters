@@ -750,9 +750,6 @@
     <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c">
       <Filter>SQLite</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\shell.c">
-      <Filter>SQLite</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h">
