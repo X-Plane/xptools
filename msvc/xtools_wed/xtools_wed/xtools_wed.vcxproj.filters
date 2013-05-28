@@ -1573,9 +1573,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\src\WEDResources\rfui.rc">
-      <Filter>WEDResources</Filter>
-    </ResourceCompile>
     <ResourceCompile Include="..\..\..\src\WEDResources\WED.rc">
       <Filter>WEDResources</Filter>
     </ResourceCompile>

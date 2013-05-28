@@ -73,6 +73,8 @@ int zip_printf(void * fi, const char * fmt, ...)
 	int l = vsprintf(tmp,fmt,args);
 	
 	zipWriteInFileInZip((zipFile) fi, tmp, l);
+
+	return l;
 }
 
 

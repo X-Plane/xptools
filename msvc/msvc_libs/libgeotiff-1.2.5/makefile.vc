@@ -6,14 +6,14 @@
 #
 # You may want to add optimization options to the CFLAGS macro as well. 
 #
-TIFF_DIR = ..\libtiff\libtiff
+TIFF_DIR = ..\tiff-4.0.0beta5\libtiff
 
 TIFF_INC = -I$(TIFF_DIR)
-TIFF_LIB = $(TIFF_DIR)\libtiff.lib
+TIFF_LIB = ..\..\msvc_compiled_libs\libtiff.lib
 TIFF_LIB_DLL = $(TIFF_DIR)\libtiff_i.lib
 
 # Installation locations (with install, or devinstall targets)
-PREFIX =	c:\usr
+PREFIX =	.
 BINDIR =	$(PREFIX)\bin
 LIBDIR =	$(PREFIX)\lib
 INCDIR =	$(PREFIX)\include
@@ -33,7 +33,7 @@ LIBS    = geotiff_i.lib $(TIFF_LIB_DLL)
 DLLNAME = geotiff.dll
 
 # Set optimization or debug flags here.
-CFLAGS  = $(INCL) /MD /Ox /nologo
+CFLAGS  = $(INCL) /MT /Ox /nologo
 #CFLAGS  = $(INCL) /MD /Zi /nologo
 
 #

@@ -81,7 +81,44 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  
  libpng
  http://www.leptonica.org/vs2008doc/building-image-libraries.html <- follow this link
+ 
+libtiff
+C:\tiff-4.0.0> nmake /f makefile.vc clean
+C:\tiff-4.0.0> nmake /f makefile.vc
 
+proj-4.7.0
+C:\PROJ> nmake /f makefile.vc
+C:\PROJ> nmake /f makefile.vc install-all
+Cut from its default location to inside msvc_libs/proj-4.7.0, copy .lib to compiled libs
+
+geotiff
+change makefile.vc
+
+FROM
+TIFF_DIR = ..\libtiff\libtiff
+
+TIFF_INC = -I$(TIFF_DIR)
+TIFF_LIB = $(TIFF_DIR)\libtiff.lib
+TIFF_LIB_DLL = $(TIFF_DIR)\libtiff_i.lib
+
+TO
+TIFF_DIR = ..\tiff-4.0.0beta5\libtiff
+TIFF_INC = -I$(TIFF_DIR)
+TIFF_LIB = ..\..\msvc_compiled_libs\libtiff.lib
+TIFF_LIB_DLL = $(TIFF_DIR)\libtiff_i.lib
+
+FROM
+CFLAGS  = $(INCL) /MD /Ox /nologo
+TO
+CFLAGS  = $(INCL) /MT /Ox /nologo
+
+FROM
+# Installation locations (with install, or devinstall targets)
+PREFIX =	c:\usr
+TO
+PREFIX = .
+
+Copied geotiff.lib to msvc_compiled_libs
 ==============================================================/
  
  

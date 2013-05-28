@@ -516,7 +516,6 @@
     <None Include="..\..\msvc_libs\squish-1.10\singlecolourlookup.inl" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\src\WEDResources\rfui.rc" />
     <ResourceCompile Include="..\..\..\src\WEDResources\WED.rc" />
   </ItemGroup>
   <ItemGroup>
@@ -570,7 +569,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\sqlite-amalgamation-3071700;..\..\msvc_libs\expat-2.0.1\lib;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\expat-2.0.1\lib;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NO_CGAL=1;MSC=1;APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
@@ -580,8 +579,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpat.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpat.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

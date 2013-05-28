@@ -19,6 +19,6 @@
 #define HAVE_STRINGS_H 1
 
 /* Build as DLL */
-#define BUILD_AS_DLL      1
+#define BUILD_AS_DLL      0
 
 #endif /* ndef GEO_CONFIG_H */
