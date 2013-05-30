@@ -39,7 +39,6 @@ Global
 		{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}.Debug|Itanium.ActiveCfg = Debug|Win32
 		{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}.Debug|Win32.ActiveCfg = Debug|Win32
 		{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}.Debug|Win32.Build.0 = Debug|Win32
-		{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}.Debug|Win32.Deploy.0 = Debug|Win32
 		{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}.Debug|x64.ActiveCfg = Debug|Win32
 		{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}.Release Multithreaded|Itanium.ActiveCfg = Release|Win32
 		{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}.Release Multithreaded|Win32.ActiveCfg = Release|Win32

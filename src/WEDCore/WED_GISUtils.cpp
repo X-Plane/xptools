@@ -483,13 +483,6 @@ bool	WED_MakeUVMap(
 	
 	WED_MakeUVMap(verts,out_map);
 	
-	for(int i = 0; i < out_map.size(); i += 2)
-	{
-		debug_mesh_line(out_map[i].p1,out_map[i].p2, 1, 1, 1, 1, 1, 1);
-		debug_mesh_line(out_map[i].p2,out_map[i].p3, 1, 1, 1, 1, 1, 1);
-		debug_mesh_line(out_map[i].p3,out_map[i].p1, 1, 1, 1, 1, 1, 1);
-	}
-	
 	return true;
 }
 	

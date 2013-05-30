@@ -5,7 +5,7 @@
 bracket system makes for very easy searching. Try it out!
 		* Content can also be shown here in bullet points.
 		* Like this.
-		* Also, like this.
+			* Also, like this.
 		1.) Content can also be shown in a numbered list.
 		2.) In this format as you can see.
 		3.) It can also have a numbered list.
@@ -18,7 +18,7 @@ bracket system makes for very easy searching. Try it out!
 [4.0.0] Troubleshooting and Tips
 [5.0.0] Appendix
 
-/==[1.0.0] Introduction=============================================
+/*==[1.0.0] Introduction==============================================
 
 		[1.1.0] Abstract
 		[1.2.0] Requirments
@@ -37,19 +37,38 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 [1.2.0] Requirments: To use this software have the following tools
 
 * Microsoft Visual Studio Express 2012 for Desktop
+	* MSVC Studio 2010 has not been fully tested though it appears to be compatable
+* The latest version of Git
+
+[1.3.0] Terms
+==============================================================*/
+ 
+ /*
+ 
+ 
+/*==[3.0.0] Working With this Project==================================
+ 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+==============================================================*/
+ 
+ 
+ 
+ /*== [4.0.0] Troubleshooting==========================================
+
+		[4.X.0] Visual Studio Issues
+		[4.X.0] Compiling Issues
+		[4.X.0] Liberary Issues
+		[4.X.0] Git Issues
+		[4.X.0] Other Issues
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[4.X.0] Liberary Issues
+ 
 
  
- * expat appears to only need the .h, no other files. .h is located ..\..\msvc_libs\expat-2.0.1\lib otherwise a collection of other opt
- ions 
- 
- geotiff
- resave the geo_config.h.vc as geo_config.h
- 
- tiff
- resave tiffconf.vc.h to tiffconf.h
- 
- jpeg
- resave jconfig.vc to jconfig.h
+
  
  expat
  files taken from the the latest expat 2.1.0 installer
@@ -77,6 +96,8 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
  use the following command
  nmake -f set
+  jpeg
+ resave jconfig.vc to jconfig.h
  
  http://stackoverflow.com/questions/12644343/configuring-libjpeg-in-visual-studio-2010 <- do this or cry
  then use the jpeg .sln and make sure to
@@ -87,7 +108,9 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 libtiff
 C:\tiff-4.0.0> nmake /f makefile.vc clean
 C:\tiff-4.0.0> nmake /f makefile.vc
-
+ tiff
+ resave tiffconf.vc.h to tiffconf.h
+ 
 proj-4.7.0
 C:\PROJ> nmake /f makefile.vc
 C:\PROJ> nmake /f makefile.vc install-all
@@ -95,7 +118,7 @@ Cut from its default location to inside msvc_libs/proj-4.7.0, copy .lib to compi
 
 geotiff
 change makefile.vc
-
+ resave the geo_config.h.vc as geo_config.h
 FROM
 TIFF_DIR = ..\libtiff\libtiff
 
@@ -122,32 +145,6 @@ PREFIX = .
 
 Copied geotiff.lib to msvc_compiled_libs
 
-
-==============================================================/
- 
- 
- 
-/==[3.0.0] Working With this Project====================================
- 
-		[3.X.0] Special Pre Processor Directives
-			[3.X.1] Debug Mode
-			[3.X.2] Release Mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-==============================================================/
- 
- 
- 
- /== [4.0.0] Troubleshooting==========================================
-
-		[4.X.0] Visual Studio Issues
-		[4.X.0] Compiling Issues
-		[4.X.0] Liberary Issues
-		[4.X.0] Git Issues
-		[4.X.0] Other Issues
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
  I keep getting error C1083, what is that and how can I make it stop?
 	A liberary is out of place
 ErrorC4496
@@ -156,10 +153,147 @@ make sure to put in _CRT_SECURE_NO_WARNINGS
 
 
 openGL<-put in manually.
-==============================================================/
+==============================================================*/
  
- /== [5.0.0] Appendix==========================================
+ /*== [5.0.0] Appendix=============================================
 		
 		[5.1.0] List of Preprocessor Definitions
 			[5.1.1] General
-			[5.1.2] 
+			[5.1.2] Debug (x86)
+			[5.1.3] Release (x86)
+		[5.2.0] List of Other Configuration Properties
+			[5.2.1] General
+			[5.2.2] Debug (x86)
+			[5.2.3] Release (x86)
+			
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		
+ [5.1.1] General: These preprocessor definitions work for all build configurations.
+
+ -------------------------------------------------------------------------------
+| CODE | ORIGIN | PURPOSE                                                                          |
+| NO_CGAL=1 | WED | Turns off CGAL from being used, avoids remaing CGAL errors |
+| MSC=1 | WED | Have Visual C compiler, could be replaced by ifdef _MSC_VER      |
+| APL=0 | WED | Platform defined for Apple                                                      |
+| IBM=1 | WED | Platform defined for Windows                                                  |
+| USE_JPEG=1 | WED | ImgUtils will support libjpeg                                             |
+| USE_TIF=1 | WED | ImgUtils will support libtiff                                                |
+| WED=1 | WED | Declares that one is building WED and WED only                        |
+| LIL=1 | WED | For x86 CPU Arcatecture                                                         |
+| BIG=0 | WED | Depricated from supporting PowerPC                                         |
+| XML_STATIC | EXPAT | Stops missing .DLL error, see line 57 in expat_external.h   |
+| WIN32 | MSVC | Used in Windows SDK                                                          |
+| NDEBUG | MSVC | Activates assert.h functionality                                           |
+| _LIB | MSVC | Appears to be neither used nor detramental                                |
+| %(PreprocessorDefinitions) | MSVC | Puts in other hidden Preprocessor Definitions |
+| _CRT_SECURE_NO_WARNINGS | MSVC | Stops unneccassary Error C4496             |			
+ --------------------------------------------------------------------------------
+
+ [5.1.2] Debug (x86): These definitions only appear in debug configurations.
+  -------------------------------------------------------------------------------
+| CODE | ORIGIN | PURPOSE                                                                          |
+| DEV=1 | WED | Activates debug checks inside WED code                                 |
+  -------------------------------------------------------------------------------
+
+ [5.1.3] Release (x86): These definitions only appear in debug configurations.
+  -------------------------------------------------------------------------------
+| CODE | ORIGIN | PURPOSE                                                                          |
+| DEV=0 | WED | Activates debug checks inside WED code                                 |
+  -------------------------------------------------------------------------------
+
+ [5.2.1]  General: These settings apply to all configurations (and are not on by default)
+ 
+ * General
+	* Output Directory: $(Configuration)\bin\
+	* Intermediate Directory: $(Configuration)\tmp\
+	* Platform Toolset: Visual Studio 2010 (v100)
+ *  C/C++
+	* Additional Include Directories:
+	..\..\msvc_libs\sqlite-3.6.21;
+	..\..\msvc_libs\tiff-4.0.0beta5\libtiff;
+	..\..\msvc_libs\libgeotiff-1.2.5;
+	..\..\msvc_libs\jpeg-8c;
+	..\..\msvc_libs\squish-1.10;
+	..\..\msvc_libs\proj-4.7.0\src;
+	..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;
+	..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;
+	..\..\msvc_libs\freetype-2.2.1\include;
+	..\..\msvc_libs\libpng_zlib_BFOLDER\zlib; ..\..\msvc_libs\Expat2.1.0\Source\lib;
+	..\..\..\src\XPCompat\;
+	..\..\..\src\Interfaces;
+	..\..\..\src\WEDXPlugin;
+	..\..\..\src\WEDWindows;
+	..\..\..\src\WEDTCE;
+	..\..\..\src\WEDResources;
+	..\..\..\src\WEDProperties;
+	..\..\..\src\WEDNetwork;
+	..\..\..\src\WEDMap;
+	..\..\..\src\WEDLibrary;
+	..\..\..\src\XESCore;
+	..\..\..\src\WEDImportExport;
+	..\..\..\src\Utils;
+	..\..\..\src\UI;
+	..\..\..\src\OGLE;
+	..\..\..\src\Obj;
+	..\..\..\src\WEDCore;
+	..\..\..\src\Network;
+	..\..\..\src\GUI;
+	..\..\..\src\Env;
+	..\..\..\src\DSFTools;
+	..\..\..\src\DSF\tri_stripper_101;
+	..\..\..\src\DSF;
+	..\..\..\src\WEDEntities;
+	%(AdditionalIncludeDirectories)
+	
+	* Code Generation
+		* Runtime Library: Mutlti-threaded /MT
+		* Enable Function-Level Linking: Yes (/Gy)
+	
+	* Advanced
+		* Disable Specific Warnings: 4018;4244;4068;4800;4305;4355;4200;4250;
+		* Forced Include File: ..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)
+ 
+ * Linker
+	* Input
+		*Additional Dependencies:
+		Comctl32.lib;
+		Ws2_32.lib;
+		opengl32.lib;
+		glu32.lib;
+		..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;
+		..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;
+		..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;
+		..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;
+		..\..\msvc_libs\msvc_compiled_libs\libpng.lib;
+		..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;
+		..\..\msvc_libs\msvc_compiled_libs\proj.lib;
+		..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;
+		%(AdditionalDependencies)
+		*Ignore All Defualt Libraries: No
+	* Optimization
+		* Refrences: Yes
+		* Enable COMDAT Folding: Yes
+		* Link Time Code Generation: Default
+		
+ [5.2.2] Debug (x86): These settings only appear in debug configurations
+  *General
+	* Whole Program Optimization: No Whole Program Optimization
+  *C/C++
+	* Optimization
+		Optimization: Disabled
+		
+ [5.2.3] Debug (x86): These settings only appear in debug configurations
+  *General
+	* Whole Program Optimization: Use Link Time Code Generation
+  *C/C++
+	* Optimization
+		Optimization: /OS2
+  *Linker
+	*Debugging
+		* Generate Debug Info: No
+	*Optimization
+		* Link Time Code Generation: Use Link Time Code Generation (/LTCG)
+
+==============================================================*/
+
+Things to be done: Safe save, one incremental backup. If document is invalid, reject it instead.

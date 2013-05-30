@@ -184,9 +184,15 @@ public:
 			float			GetTimeNow(void);
 
 			void			TrapFocus(void);
-
+	
+	#if DEV
+	//Uses printf to print out pane information and all its children, may be over ridden to provide more information
+	// int identLevel indicates how much to indent
+	virtual void            PrintDebugInfo(int indentLevel);
+	#endif
+	
 	/* TEMPLATE METHODS - Override these to customize a pane. */
-
+	
 	virtual	void		Draw(GUI_GraphState * state) { }
 
 	virtual	int			MouseMove(int x, int y			  ) { return 0; }

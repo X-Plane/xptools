@@ -158,6 +158,10 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 
 	gPackageMgr->AddListener(this);				// We listen to package mgr to know when x-system folder changed - hide whole list if needed.
 	mTextTable->FocusChain(false);
+
+	#if DEV
+		PrintDebugInfo(0);
+	#endif
 }
 
 WED_StartWindow::~WED_StartWindow()

@@ -22,6 +22,10 @@
  */
 
  #define __DEBUGGING__
+#if DEV
+//Adds the abilty to bring up a console for debuging
+#include <stdio.h>
+#endif
 
 #include "WED_AboutBox.h"
 // Stuff we need to init
@@ -132,6 +136,16 @@ int main(int argc, char * argv[])
 	WED_Application	app;
 #endif
 	WED_PackageMgr	pMgr(NULL);
+
+#if IBM && DEV
+	// This is so we can actually see printf in a console on windows
+	if(AllocConsole())
+	{
+
+			freopen("CONOUT$", "w",stdout);
+			SetConsoleTitle("Debug Window for GUI_Pane Info");
+	}
+#endif
 
 	// Ben says: the about box is actually integral to WED's operation.  WED uses a series of shared OGL contexts to hold
 	// our textures, and WED cannot handle the textures being thrown away and needing a reload.  So logically we must have

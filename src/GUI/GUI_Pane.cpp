@@ -105,6 +105,62 @@ void		GUI_Pane::TrapFocus(void)
 	root->mTrap.insert(this);
 }
 
+/* Only in debug mode
+* printf the info you want
+* if there are children call the print f on each
+* if there are no more children back up the stack
+*/
+
+#if DEV
+void GUI_Pane::PrintDebugInfo(int indentLevel)
+{	
+	//Creates a temporary string
+	string temp;
+	//gets the descriptor
+	GetDescriptor(temp);
+	//If it has a name
+	if(temp != "")
+	{
+		//Add a space to it
+		temp += " ";
+	}
+	//Make the name be the type
+	temp += typeid(*this).name();
+	//Get temporary bounds
+	int tempBounds[4];
+	GetBounds(tempBounds);
+
+	//Get temporary visible bounds
+	int tempVisBounds[4];
+	GetVisibleBounds(tempVisBounds);
+
+	float tempSticky[4];
+	GetSticky(tempSticky);
+
+	//Prints goes to the indent level
+	printf("%*s %s",indentLevel,"","*Info:");
+	//Prints the information, goes down one line
+	printf("%s \n",temp.data());
+		printf("%*s *Bounds(L,B,R,T): %d %d %d %d\n",indentLevel+1,"", tempBounds[0], tempBounds[1], tempBounds[2], tempBounds[3]);
+		printf("%*s *Visible Bounds(L,B,R,T): %d %d %d %d \n",indentLevel+1,"", tempVisBounds[0], tempVisBounds[1], tempVisBounds[2], tempVisBounds[3]);
+		printf("%*s *Sticky(L,B,R,T): %.1f %.1f %.1f %.1f \n", indentLevel+1,"", tempSticky[0],tempSticky[1],tempSticky[2],tempSticky[3]);
+	
+		//The recursive part
+		//If this pane has children
+		if(mChildren.size() != 0)
+		{
+			//For every child
+			for (int i = 0; i < mChildren.size(); i++)
+			{
+				mChildren[i]->PrintDebugInfo(indentLevel+3);
+			}
+		}
+		else
+		{
+			return;
+		}
+}
+#endif
 
 GUI_Pane::GUI_Pane() :
 	mParent(NULL),
