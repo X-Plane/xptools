@@ -520,7 +520,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	if (!mEditInfo.can_edit)	return 1;
 
-	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
+	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
 	char  buf[256];
 	switch(mEditInfo.content_type) {
@@ -727,7 +727,7 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 		}
 	}
 
-	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
+	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
 	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
@@ -1173,7 +1173,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 		int x = mClickCellX;
 		int y = mClickCellY;
 		int cell_bounds[4];
-		TerminateEdit(true, inFlags & inFlags & gui_OptionAltFlag, true);
+		TerminateEdit(true, inFlags & inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		if (mParent)
 		{
 			if (mContent->TabAdvance(x,y, (inFlags & gui_ShiftFlag) ? -1 : 1, mEditInfo))
@@ -1192,7 +1192,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 
 	if(inVK == GUI_VK_RETURN && mTextField)
 	{
-		TerminateEdit(true, inFlags & gui_OptionAltFlag, true);
+		TerminateEdit(true, inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		return 1;
 	}
 	else if (inVK == GUI_VK_RETURN && mContent && mParent)

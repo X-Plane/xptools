@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */
+ */ 
 
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
@@ -125,7 +125,7 @@ void	WED_PropertyTable::GetCellContent(
 	t->GetNthPropertyInfo(idx,inf);
 	t->GetNthProperty(idx, val);
 
-	the_content.can_select = 1;
+	the_content.can_select = mSelOnly ? 0 : 1;
 	the_content.is_selected = s->IsSelected(t);
 
 	switch(inf.prop_kind) {
