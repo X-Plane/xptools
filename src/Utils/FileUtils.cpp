@@ -28,8 +28,9 @@
 #endif
 
 #include <errno.h>
-#if LIN
+#if LIN || APL
 #include <dirent.h>
+#include <sys/stat.h>
 #endif
 
 #define LOG_CASE_DESENS 0
