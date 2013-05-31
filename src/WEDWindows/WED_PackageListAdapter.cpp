@@ -30,7 +30,7 @@
 #define HACK_WIDTH 10
 #define HACK_HEIGHT 20
 
-WED_PackageListAdapter::WED_PackageListAdapter() : mSel(-1)
+WED_PackageListAdapter::WED_PackageListAdapter(GUI_Commander * cmd_target) : mSel(-1), mCmdTarget(cmd_target)
 
 {
 	gPackageMgr->AddListener(this);
@@ -163,7 +163,7 @@ int		WED_PackageListAdapter::DoubleClickCell(
 						int							cell_x,
 						int							cell_y)
 {
-	GUI_Commander::GetCommanderRoot()->DispatchHandleCommand(wed_OpenPackage);
+	mCmdTarget->DispatchHandleCommand(wed_OpenPackage);
 	return 1;
 }
 

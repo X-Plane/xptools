@@ -678,6 +678,7 @@ GUI_Window::~GUI_Window()
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
+	this->GetRootForCommander()->BeginDefer();
     #if LIN
     mMouseLastButton = inButton;
     #endif
@@ -708,6 +709,8 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 		SetTimerInterval(0.0);
 	}
 	mMouseFocusPane[inButton] = NULL;
+	this->GetRootForCommander()->EndDefer();
+	
 }
 
 void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
@@ -1196,6 +1199,7 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
 	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),-1);
+	this->GetRootForCommander()->EndDefer();
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
@@ -1208,7 +1212,12 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 
 	if (popup_temp)				 gApplication->RebuildMenu(popup_temp, items);
     else			popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
-    return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+    int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+	
+	this->GetRootForCommander()->EndDefer();
+	
+	return ret;
+	
 #else
     if (mMouseLastButton > 0) return current;
 
@@ -1237,7 +1246,9 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
         ++n;
     }
     mMouseFocusPane[0]= 0;
-    return TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+    int ret = TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+	this->GetRootForCommander()->EndDefer();
+	return ret;
 #endif
 }
 
@@ -1574,7 +1585,7 @@ void GUI_Window::EnableMenusWin(void)
 	FindCmdsRecursive(GetMenu(me->mWindow),cmds);
 
 	for(CmdMap_t::iterator cmd = cmds.begin(); cmd != cmds.end(); ++cmd)
-		cmd->second.enabled = GUI_Commander::GetCommanderRoot()->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
+		cmd->second.enabled = this->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
 
 	for (set<GUI_Window *>::iterator iter = sWindows.begin(); iter != sWindows.end(); ++iter)
 	{

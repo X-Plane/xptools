@@ -25,23 +25,20 @@
 #include "AssertUtils.h"
 #include <algorithm>
 
-GUI_Commander * GUI_Commander::mCmdRoot = NULL;
-
 static set<GUI_Commander_Notifiable *>	sNotify;
 
-GUI_Commander::GUI_Commander(GUI_Commander * inParent) : mCmdParent(inParent), mCmdFocus(NULL)
+GUI_Commander::GUI_Commander(GUI_Commander * inParent) : 
+	mCmdParent(inParent), 
+	mCmdFocus(NULL),
+	mDeferLevel(0)
 {
-	if (inParent == NULL)
-	{
-		Assert(mCmdRoot == NULL);
-		mCmdRoot = this;
-	} else
+	if (inParent != NULL)
 		inParent->mCmdChildren.push_back(this);
 }
 
 GUI_Commander::~GUI_Commander()
 {
-	if (mCmdRoot == this) mCmdRoot = NULL;
+	DebugAssert(mDeferLevel==0);
 
 	if (mCmdParent != NULL)
 	{
@@ -59,9 +56,33 @@ GUI_Commander::~GUI_Commander()
 	}
 }
 
+void			GUI_Commander::BeginDefer(void)
+{
+	DebugAssert(mDeferLevel < 1);
+	++mDeferLevel;
+}
+
+void			GUI_Commander::EndDefer(void)
+{
+	DebugAssert(mDeferLevel > 0);
+	--mDeferLevel;
+	if(mDeferLevel == 0)
+	{
+		for(int i = 0; i < mDeferredActions.size(); ++i)
+		{
+			if(mDeferredActions[i].cmd)
+				DispatchHandleCommand(mDeferredActions[i].cmd);
+			else
+				DispatchKeyPress(mDeferredActions[i].key,mDeferredActions[i].vk,mDeferredActions[i].flags);
+		}
+		mDeferredActions.clear();
+	}
+}
+
 int				GUI_Commander::TakeFocus(void)
 {
-	GUI_Commander *	loser = mCmdRoot ? mCmdRoot->GetFocusForCommander() : NULL;
+	GUI_Commander * root = this->GetRootForCommander();
+	GUI_Commander *	loser = root->GetFocusForCommander();
 	if (loser == NULL || loser->AcceptLoseFocus(0))
 	{
 		if (!mCmdParent || mCmdParent->FocusChain(0))
@@ -98,9 +119,12 @@ int				GUI_Commander::LoseFocus(int inForce)
 	return 0;
 }
 
-GUI_Commander *	GUI_Commander::GetCommanderRoot(void)
+GUI_Commander *	GUI_Commander::GetRootForCommander(void)
 {
-	return mCmdRoot;
+	GUI_Commander * root = this;
+	while(root->mCmdParent)
+		root = root->mCmdParent;
+	return root;
 }
 
 GUI_Commander *	GUI_Commander::GetFocusForCommander(void)
@@ -152,6 +176,15 @@ GUI_Commander * GUI_Commander::GetCmdParent(void) { return mCmdParent; }
 int				GUI_Commander::DispatchKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
 	GUI_Commander * who = this->GetFocusForCommander();
+	GUI_Commander * root = this->GetRootForCommander();
+	
+	if(root->mDeferLevel > 0)
+	{
+		root->mDeferredActions.push_back(deferred_cmd_or_key(inKey, inVK, inFlags));
+		return 0;
+	}	
+	
+	
 	while (who != NULL)
 	{
 		if (who->HandleKeyPress(inKey, inVK, inFlags)) return 1;
@@ -173,7 +206,16 @@ void		GUI_Commander::UnregisterNotifiable(GUI_Commander_Notifiable * notif)
 
 int				GUI_Commander::DispatchHandleCommand(int command)
 {
+	DebugAssert(command != 0);
 	GUI_Commander * who = this->GetFocusForCommander();
+	GUI_Commander * root = this->GetRootForCommander();
+
+	if(root->mDeferLevel > 0)
+	{
+		root->mDeferredActions.push_back(deferred_cmd_or_key(command));
+		return 0;
+	}	
+
 	for(set<GUI_Commander_Notifiable *>::iterator i = sNotify.begin(); i != sNotify.end();)
 	{
 		set<GUI_Commander_Notifiable *>::iterator j(i);
@@ -190,6 +232,8 @@ int				GUI_Commander::DispatchHandleCommand(int command)
 
 int				GUI_Commander::DispatchCanHandleCommand(int command, string& ioName, int& ioCheck)
 {
+	DebugAssert(command != 0);
+
 	GUI_Commander * who = this->GetFocusForCommander();
 	while (who != NULL)
 	{
@@ -199,3 +243,28 @@ int				GUI_Commander::DispatchCanHandleCommand(int command, string& ioName, int&
 	return 0;
 
 }
+
+#if DEV
+void			GUI_Commander::PrintCommandChain(int indent)
+{
+	GUI_Commander * my_root = GetRootForCommander();
+	GUI_Commander * global_focus = my_root->GetFocusForCommander();
+	GUI_Commander * my_focus = this->GetFocusForCommander();
+	const char * focus_str = "";
+	
+	if(mCmdParent && mCmdParent->mCmdFocus == this)
+		focus_str = ".";
+	
+	if(my_focus == global_focus)
+		focus_str = "*";
+	
+	if(this == global_focus)
+		focus_str = "#";
+		
+	printf("%*s%s\n",indent, focus_str,typeid(*this).name());
+	for(int n = 0; n < mCmdChildren.size(); ++n)
+		mCmdChildren[n]->PrintCommandChain(indent+2);
+	
+}
+
+#endif

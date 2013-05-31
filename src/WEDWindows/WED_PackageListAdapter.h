@@ -31,7 +31,7 @@
 class WED_PackageListAdapter : public GUI_TextTableProvider, public GUI_TableGeometry, public GUI_Broadcaster, public GUI_Listener {
 public:
 
-					 WED_PackageListAdapter();
+					 WED_PackageListAdapter(GUI_Commander * cmd_target);
 	virtual			~WED_PackageListAdapter();
 
 			bool	HasSelection(void);
@@ -163,8 +163,9 @@ public:
 
 private:
 
-	set<string>	mLock;
-	int			mSel;
+	GUI_Commander *	mCmdTarget;
+	set<string>		mLock;
+	int				mSel;
 
 };
 
