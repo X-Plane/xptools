@@ -233,6 +233,7 @@ void	WED_Document::Revert(void)
 		// First: try to IO the XML file.
 		bool xml_exists;
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
+
 		if(xml_exists && !result.empty())
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
 
