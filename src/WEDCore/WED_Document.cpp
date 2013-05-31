@@ -76,13 +76,9 @@ WED_Document::WED_Document(
 	mArchive(this)
 {
 
-	//Set up texture manager
 	mTexMgr = new WED_TexMgr(package);
-	//set up the library manager
 	mLibraryMgr = new WED_LibraryMgr(package);
-	//set up the resource manager
 	mResourceMgr = new WED_ResourceMgr(mLibraryMgr);
-	
 	sDocuments.insert(this);
 	mArchive.SetUndoManager(&mUndo);
 
@@ -111,8 +107,6 @@ WED_Document::WED_Document(
 	mBounds[2] = inBounds[2];
 	mBounds[3] = inBounds[3];
 
-	//This revert call is really what loads the file.
-	//Revert back to the thing on disc
 	Revert();
 	mUndo.PurgeUndo();
 	mUndo.PurgeRedo();
@@ -230,31 +224,18 @@ void	WED_Document::Revert(void)
 
 	try {
 
-		//Create the reader
 		WED_XMLReader	reader;
-
 		reader.PushHandler(this);
-
-		//String file name = mFilePath
 		string fname(mFilePath);
-
-		//Add .xml on the end
 		fname+=".xml";
-		//Clear out the archive
 		mArchive.ClearAll();
 
 		// First: try to IO the XML file.
 		bool xml_exists;
-		
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
-		
-		//if it exists and there is an error message or there is no file after all (
-		if(xml_exists && !result.empty() || result == "")
-		{
+		if(xml_exists && !result.empty())
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
-		}
 
-		//If the xml does not exist at all
 		if(!xml_exists)
 		{
 			// If XML fails because it's AWOL, go back and do the SQL-style read-in.
@@ -267,6 +248,10 @@ void	WED_Document::Revert(void)
 
 				sql_do_bulk_range(db.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
 				GUI_UnloadResource(res);
+
+
+
+
 
 				enum_map_t	mapping;
 				ENUM_read(db.get(), mapping);
