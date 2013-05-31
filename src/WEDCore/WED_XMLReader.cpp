@@ -62,11 +62,19 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 	FILE * fi = _wfopen((const wchar_t*) wname.c_str(),L"rb");
 #else
 	FILE * fi = fopen(filename,"rb");
-#endif	
-	if(exists) *exists = (fi != NULL);
+#endif
+	//If it does exist
+	if(exists)
+	{
+		//The pointer does idk what -TED
+		//Something like it the file pointer
+		*exists = (fi != NULL);
+	}
+	//If the file does not exist
 	if(!fi)
+	{
 		return string("Unable to open file:") + string(filename);
-
+	}
 	char buf[1024];
 
 	while(!feof(fi))

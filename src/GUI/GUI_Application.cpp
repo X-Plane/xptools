@@ -454,7 +454,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #endif
 
 #if IBM
-
+	//Makes the standard windows ui bar at the top
 	HMENU	new_menu;
 
 	if (parent == GetPopupContainer())	new_menu = CreatePopupMenu();

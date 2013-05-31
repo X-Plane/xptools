@@ -226,7 +226,6 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 
 void WED_MakeMenus(GUI_Application * inApp)
 {
-
 	GUI_Menu file_menu = inApp->CreateMenu(
 		"&File", kFileMenu, inApp->GetMenuBar(), 0);
 

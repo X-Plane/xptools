@@ -53,6 +53,7 @@ static int is_direct_parent(const string& parent, const string& child)
 																	return true;
 }
 
+//Library manager constructor
 WED_LibraryMgr::WED_LibraryMgr(const string& ilocal_package) : local_package(ilocal_package)
 {
 	DebugAssert(gPackageMgr != NULL);

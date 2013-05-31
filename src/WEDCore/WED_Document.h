@@ -132,22 +132,23 @@ public:
 	static	bool	TryCloseAll(void);
 
 private:
-
 	void				WriteXML(FILE * fi);
+
+	//Member Variables
 
 	double				mBounds[4];
 
 	string				mFilePath;
 	string				mPackage;
 
-//	sql_db				mDB;
+	//sql_db				mDB;
 	WED_Archive			mArchive;
 	WED_UndoMgr			mUndo;
 
 	WED_TexMgr *		mTexMgr;
 	WED_LibraryMgr *	mLibraryMgr;
 	WED_ResourceMgr *	mResourceMgr;
-//	WED_Properties	mProperties;
+	//WED_Properties	mProperties;
 #if WITHNWLINK
 	WED_Server *		mServer;
 	WED_NWLinkAdapter *	mNWLink;

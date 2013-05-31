@@ -288,9 +288,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
 	
-	#if DEV
-		PrintDebugInfo(0);
-	#endif
+	//#if DEV
+	//	PrintDebugInfo(0);
+	//#endif
 }
 
 WED_DocumentWindow::~WED_DocumentWindow()

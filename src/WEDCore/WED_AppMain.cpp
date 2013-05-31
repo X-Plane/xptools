@@ -144,6 +144,9 @@ int main(int argc, char * argv[])
 
 			freopen("CONOUT$", "w",stdout);
 			SetConsoleTitle("Debug Window for GUI_Pane Info");
+			//Minimizes the console, uncomment the next line to restore it for use
+			ShowWindow( GetConsoleWindow(), SW_HIDE );
+			ShowWindow( GetConsoleWindow(), SW_RESTORE );
 	}
 #endif
 

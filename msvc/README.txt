@@ -12,8 +12,8 @@ bracket system makes for very easy searching. Try it out!
 		
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[1.0.0] Introduction
 [2.0.0] Getting Started
+[1.0.0] Introduction
 [3.0.0] Working With This Project
 [4.0.0] Troubleshooting and Tips
 [5.0.0] Appendix
