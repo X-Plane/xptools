@@ -136,19 +136,19 @@ FILE_case_correct_path::operator const char * (void) const { return path; }
 
 
 
-int FILE_exists(const char * path)
+bool FILE_exists(const char * path)
 {
 #if IBM
 	struct _stat ss;
 	string input(path);
 	string_utf16 output;
 	string_utf_8_to_16(input, output);
-	if (_wstat((const wchar_t*)output.c_str(),&ss) < 0) return 0;
+	if (_wstat((const wchar_t*)output.c_str(),&ss) < 0) return false;
 #else
 	struct stat ss;
 	if (stat(path,&ss) < 0) return 0;
 #endif
-	return 1;
+	return true;
 //	return (S_ISDIR(ss.st_mode))? 1 : 0;
 }
 

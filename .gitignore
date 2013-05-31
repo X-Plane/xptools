@@ -15,6 +15,7 @@ libs/boost*
 callgrind.out.*
 *.moc.cpp
 *.swp
+Uninstall/
 
 #https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 ## Ignore Visual Studio temporary files, build results, and
@@ -166,3 +167,5 @@ $RECYCLE.BIN/
 # Mac crap
 .DS_Store
 msvc/xtools_wed/xtools_wed/xtools_wed.vcxproj.orig
+
+Uninstall/

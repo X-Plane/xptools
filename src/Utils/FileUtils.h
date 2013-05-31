@@ -37,7 +37,8 @@ private:
 	FILE_case_correct_path& operator=(const FILE_case_correct_path& rhs);
 };
 
-int FILE_exists(const char * path);
+//Returns true if the file exists, returns false if it doesn't
+bool FILE_exists(const char * path);
 int FILE_delete_file(const char * nuke_path, int is_dir);
 int FILE_rename_file(const char * old_name, const char * new_name);
 int FILE_make_dir(const char * in_dir);
