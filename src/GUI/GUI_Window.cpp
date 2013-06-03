@@ -1199,7 +1199,11 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
 	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),-1);
+#if !LIN
+	//mroe: commented out for linux , TrackPopupCommands fakes a UP_Click (QMenu eats the click) ,
+	//this results in a call of GUI_Window::ClickUp which does it at the end
 	this->GetRootForCommander()->EndDefer();
+#endif
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
@@ -1247,7 +1251,9 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
     }
     mMouseFocusPane[0]= 0;
     int ret = TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
-	this->GetRootForCommander()->EndDefer();
+        //mroe: commented out for linux , TrackPopupCommands fakes a UP_Click (QMenu eats the click) ,
+	//this results in a call of GUI_Window::ClickUp which does it at the end
+	//this->GetRootForCommander()->EndDefer();
 	return ret;
 #endif
 }
