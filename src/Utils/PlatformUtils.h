@@ -86,13 +86,6 @@ char *	GetMultiFilePathFromUser(
 void	DoUserAlert(const char * inMsg);
 
 /*
- * ShowProgressMessage puts up a dialog box with a progress message.  Calling it
- * repeatedly changes the progress message.
- *
- */
-void	ShowProgressMessage(const char * inMsg, float * progress);
-
-/*
  * ConfirmMessage puts up a dialog box with a message and two buttons.  The proceed
  * button is the default one.  Pass in the message and the text of the two buttons.
  * Returns 1 if the user clicks the proceed button, 0 if the user cancels.
