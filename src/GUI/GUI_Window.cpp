@@ -1488,7 +1488,8 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 			// Default behavior of xwin is quit-on-close - this stops that.
 			return 0;
 		case WM_COMMAND:
-			me->DispatchHandleCommand(LOWORD(wParam));
+			if(LOWORD(wParam))
+				me->DispatchHandleCommand(LOWORD(wParam));
 			return 0;
 		case WM_SETCURSOR:
 			{

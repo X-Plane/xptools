@@ -24,6 +24,7 @@
 #include "GUI_Commander.h"
 #include "AssertUtils.h"
 #include <algorithm>
+#include <typeinfo>
 
 static set<GUI_Commander_Notifiable *>	sNotify;
 
