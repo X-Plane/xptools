@@ -1584,8 +1584,13 @@ void GUI_Window::EnableMenusWin(void)
 
 	FindCmdsRecursive(GetMenu(me->mWindow),cmds);
 
+	// Why do we need the root commander?  We want to follow
+	// the _active_ window's focus chain, now the latent focus
+	// chain of the first window.  Maybe we can rewrite this
+	// someday to take the window that actually got the WM 
+	// message?? 
 	for(CmdMap_t::iterator cmd = cmds.begin(); cmd != cmds.end(); ++cmd)
-		cmd->second.enabled = this->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
+		cmd->second.enabled = me->GetRootForCommander()->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
 
 	for (set<GUI_Window *>::iterator iter = sWindows.begin(); iter != sWindows.end(); ++iter)
 	{
