@@ -97,7 +97,7 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 	XML_Error result = XML_GetErrorCode(parser);
 	 
 	//If the err string is empty and there is some kind of error
-	if(err.empty() &&  result != XML_Error::XML_ERROR_NONE)
+	if(err.empty() &&  result != XML_ERROR_NONE)
 	{
 		err = XML_ErrorString(result);
 	}
