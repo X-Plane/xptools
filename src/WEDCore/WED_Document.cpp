@@ -202,10 +202,19 @@ void	WED_Document::Save(void)
 	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
 */
 
+	/* Annnoymous enum and Stage: Used for switch statements throughoug this method
+	* int stage is just used for storing the varialbes,
+	* the enum is for readablity sake and not using magic numbers
+	* none: For when there is no earth.wed.xml (a brand new document is created)
+	* nobackup: For when the .bak file hasn't been created yet
+	* both: for when the .bak and regular files are in place
+	*/
+	enum {none,nobackup,both};
+	int stage;
 
 	//File path of the xml
 	string xml = mFilePath;
-
+	
 	//add .xml onto the end
 	xml += ".xml";
 	//File path of the back up starts as the normal file
@@ -213,148 +222,110 @@ void	WED_Document::Save(void)
 	//then it mutatats to include the .bak coming out to be earth.wed.bak.xml
 	bakXML = bakXML.insert((bakXML.length()-4),".bak");
 
-#if _MSC_VER
-#pragma region No File
-#endif
-	//If there is no file (aka there is a new doc)
-	if(FILE_exists(xml.c_str()) == false)
-	{
+	//Rename the current earth.wed.bak.xml to earth.wed.bak.bak.xml
+	string tempBakBak = bakXML;
 
-		#if IBM
-		string_utf16 wname;
-		string_utf_8_to_16(xml,wname);
+	//Mutate bak bak so the path is ...earth.wed.bak.bak.xml
+	tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
 
-		//Create an xml file by opening the file located on the hard drive (windows)
-		FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
-		#else
-		FILE * xml_file = fopen(xml.c_str(),"w");
-		#endif
+	//A wide name
+	string_utf16 wname;
+	string_utf_8_to_16(xml,wname);
 
-		//If there is a file
-		if(xml_file)
-		{
-			//Write the XML to the the file
-			WriteXML(xml_file);
-			//Close the file
-			fclose(xml_file);
-		}
+	//If there is no earth.wed.xml file
+	if(FILE_exists(xml.c_str()) == false){
+		//Set this variable for use later on
+		stage = none;
 	}
-#if _MSC_VER
-#pragma endregion
-#endif
-
-#if _MSC_VER
-#pragma region No Back Up
-#endif
-	//if "earth.wed.bak.xml does not exist but earth.wed.xml does exist
+	//If there is no back up and there is an earth.wed.xml
 	else if(FILE_exists(bakXML.c_str()) == false && FILE_exists(xml.c_str()) == true){
+		stage = nobackup;
+	}
+	//If there is a back up and an earth.wed.xml
+	else if(FILE_exists(xml.c_str()) == true && FILE_exists(bakXML.c_str()) == true){
+		stage = both;
+	}
 
+	//This is the renaming switch
+	switch(stage)
+	{
+	case none:
+		break;
+	case nobackup:
 		//Rename the current earth.wed.xml to earth.wed.bak.xml
 		FILE_rename_file(xml.c_str(),bakXML.c_str());
-
-	#if IBM
-
-		string_utf16 wname;
-		string_utf_8_to_16(xml,wname);
-
-		//Create an xml file by opening the file located on the hard drive (windows)
-		//open a file for writing creating/nukeing if necissary
-		FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
-	#else
-		FILE * xml_file = fopen(xml.c_str(),"w");
-	#endif
-		//If there is a file
-		if(xml_file)
-		{
-			//Write the XML to the the file
-			WriteXML(xml_file);
-		
-			#if DEV
-			//Ensures that there is an error for ferror to pick up on, comment out when not needing to debug
-			//xml_file->_flag |= _IOERR;
-			int ferrorErr = ferror(xml_file);
-			int fcloseErr = fclose(xml_file);
-			#endif
-			
-			//if there has been some error or fclose it has an error closing the file
-			if( ferrorErr != 0 || ferror != 0)
-			{
-				//un-rename
-				int error1 = FILE_rename_file(bakXML.c_str(),xml.c_str());
-			}
-			
-		}
-	}
-#if _MSC_VER
-#pragma endregion
-#endif
-
-#if _MSC_VER
-#pragma region Back Up Exists
-#endif
-	else if(FILE_exists(xml.c_str()) == true && FILE_exists(bakXML.c_str()) == true){//if "earth.wed.bak.xml does exists and earth.wed.xml does exist
-	
-		//Rename the current earth.wed.bak.xml to earth.wed.bak.bak.xml
-		string tempBakBak = bakXML;
-		//Mutate bak bak so the path is ...earth.wed.bak.bak.xml
-		tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
-
+		break;
+	case both:
 		//next rename the current earth.wed.bak.xml to earth.wed.bak.bak.xml
 		FILE_rename_file(bakXML.c_str(),tempBakBak.c_str());
 		
 		//Rename the current earth.wed.xml to earth.wed.bak.xml
 		FILE_rename_file(xml.c_str(),bakXML.c_str());
-
+		break;
+	}
+	
+	//Create the file
 	#if IBM
-
-		string_utf16 wname;
-		string_utf_8_to_16(xml,wname);
-
-		//Create an xml file by opening the file located on the hard drive (windows)
-		//open a file for writing creating/nukeing if necissary
-		FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
+	//Create an xml file by opening the file located on the hard drive (windows)
+	//open a file for writing creating/nukeing if necissary
+		
+	//A File
+	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
 	#else
-		FILE * xml_file = fopen(xml.c_str(),"w");
+	FILE * xml_file = fopen(xml.c_str(),"w");
 	#endif
-		//If there is a file
-		if(xml_file)
+	
+	//If there was not any error opening the file
+	if(xml_file != NULL)
+	{
+		//Write the XML to the the file
+		WriteXML(xml_file);
+	}
+	else
+	{
+		//Otherwise force an error flag
+		xml_file->_flag |= _IOERR;
+	}
+	
+	#if DEV		//Ensures that there is an error for ferror to pick up on, comment out when not needing to debug
+	//xml_file->_flag |= _IOERR;
+	#endif
+
+	//Checks for all errors
+	int ferrorErr = ferror(xml_file);
+	//Closes the file and returns any error number if so.
+	int fcloseErr = fclose(xml_file);
+	
+	//if there has been some error or fclose it has an error closing the file
+	if( ferrorErr != 0 || fcloseErr != 0)
+	{
+		//This is the error handling switch
+		switch(stage)
 		{
-			//Write the XML to the the file
-			WriteXML(xml_file);
-			
-			#if DEV
-			//Ensures that there is an error for ferror to pick up on, comment out when not needing to debug
-			//xml_file->_flag |= _IOERR;
-			#endif
-
-			//if there has been some error
-			int ferrorErr = ferror(xml_file);
-			int fcloseErr = fclose(xml_file);
-
-			//and fcose returns 0
-			if(ferrorErr != 0 || fcloseErr != 0)
-			{
+			case none:
+				break;
+			case nobackup:
+				//un-rename
+				FILE_rename_file(bakXML.c_str(),xml.c_str());
+				break;
+			case both:
 				//delete incomplete file
-				int error = FILE_delete_file(xml.c_str(),0);
+				FILE_delete_file(xml.c_str(),0);
 
 				//un-rename earth.wed.bak.xml to earth.wed.xml
 				FILE_rename_file(bakXML.c_str(),xml.c_str());
 
 				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
 				FILE_rename_file(tempBakBak.c_str(),bakXML.c_str());
-			}
-
-			//if the second backup still exists after the error handling
-			if(FILE_exists(tempBakBak.c_str()) == true)
-			{
-				//Delete it
-				FILE_delete_file(tempBakBak.c_str(),0);
-			}
+				break;
 		}
 	}
-#if _MSC_VER
-#pragma endregion
-#endif
+	//if the second backup still exists after the error handling
+	if(FILE_exists(tempBakBak.c_str()) == true)
+	{
+		//Delete it
+		FILE_delete_file(tempBakBak.c_str(),0);
+	}
 }
 
 void	WED_Document::Revert(void)
