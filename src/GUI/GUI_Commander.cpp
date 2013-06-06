@@ -39,6 +39,7 @@ GUI_Commander::GUI_Commander(GUI_Commander * inParent) :
 
 GUI_Commander::~GUI_Commander()
 {
+	// At destruction time, no outstanding defers should be pending - those commands will be lost!
 	DebugAssert(mDeferLevel==0);
 
 	if (mCmdParent != NULL)
@@ -59,12 +60,15 @@ GUI_Commander::~GUI_Commander()
 
 void			GUI_Commander::BeginDefer(void)
 {
-	DebugAssert(mDeferLevel < 1);
+	// Make sure we aren't at the 10+ level of defers - that much recursive
+	// defer implies that we're leaking defer count.
+	DebugAssert(mDeferLevel < 10);
 	++mDeferLevel;
 }
 
 void			GUI_Commander::EndDefer(void)
 {
+	// check for unbalanced begin/end defer!
 	DebugAssert(mDeferLevel > 0);
 	--mDeferLevel;
 	if(mDeferLevel == 0)
