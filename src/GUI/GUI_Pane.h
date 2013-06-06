@@ -192,7 +192,8 @@ public:
 		/*#if DEV
 			PrintDebugInfo(0);
 		#endif*/
-	virtual void            PrintDebugInfo(int indentLevel);
+	//The default value is 0 so feel free not to use it.
+	virtual void            PrintDebugInfo(int indentLevel=0);
 	#endif
 	
 	/* TEMPLATE METHODS - Override these to customize a pane. */
