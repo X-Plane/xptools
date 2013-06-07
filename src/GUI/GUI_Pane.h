@@ -186,13 +186,13 @@ public:
 			void			TrapFocus(void);
 	
 	#if DEV
-	//Uses printf to print out pane information and all its children, may be over ridden to provide more information
 	// int identLevel indicates how much to indent
 	// To use paste the following into any GUI Pane and uncomment
 		/*#if DEV
 			PrintDebugInfo(0);
 		#endif*/
 	//The default value is 0 so feel free not to use it.
+	//Uses printf to print out pane information and all its children, may be over ridden to provide more information
 	virtual void            PrintDebugInfo(int indentLevel=0);
 	#endif
 	

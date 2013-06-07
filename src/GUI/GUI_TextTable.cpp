@@ -181,10 +181,18 @@ void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 
 void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )
 {
+	int testingLeft = cell_bounds[0];
+	int testingBottom = cell_bounds[1];
+	int testingRight = cell_bounds[2];
+	int testingTop = cell_bounds[3];
+	//If there is no image
 	if (mImage.empty())
 	{
+		//Change the instage so it is completely deactivated
 		inState->SetState(false, false, false,	false, false, false, false);
+		//sets the color
 		glColor4fv(mColorGridlines);
+		//draws the border of where the image should be.
 		glBegin(GL_LINE_STRIP);
 		glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
 		glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
@@ -192,28 +200,43 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		glEnd();
 	}
 
+	//Cell Type, intacts with GUI_CellContentType enums
 	int cell_type = 0;
 
+	//Cell Content
 	GUI_CellContent	c;
+
+	//If there is content
 	if (mContent)
 	{
+		//Get the Cell content bassed on the x,y positions
 		mContent->GetCellContent(cell_x,cell_y,c);
+		//If there is an image
 		if (!mImage.empty())
-		if (c.can_edit)
-		if (c.content_type != gui_Cell_None) cell_type = 1;
+			//And it can be edited
+			if (c.can_edit)
+				//and the content type is not none, the cell type is 1 (aka Disclose)
+				if (c.content_type != gui_Cell_None) cell_type = 1;
 	}
 
+	//If there is an image
 	if (!mImage.empty())
 	{
+		//Set the color equal to white
 		glColor3f(1,1,1);
+		//Set the sprite sheet selector
 		int tile[4] = { 0, cell_type, 1, 2 };
+		//Draw it
 		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
 	}
 
+	//If there is no longer content, exit
 	if (!mContent) return;
 
+	//If the cell content is selected
 	if (c.is_selected)
 	{
+		//highlight the selected place
 		glColor4fv(mColorSelect);
 		glBegin(GL_QUADS);
 		glVertex2i(cell_bounds[0]  ,cell_bounds[1]+1);
@@ -221,21 +244,30 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		glVertex2i(cell_bounds[2]-1,cell_bounds[3]  );
 		glVertex2i(cell_bounds[2]-1,cell_bounds[1]+1);
 		glEnd();
+		//Reset the color
 		glColor4fv(mColorGridlines);
 	}
-
+	
+	//advance the left side of the cell bounds by the indent level * the pixels of an indent
 	cell_bounds[0] += (c.indent_level * mCellIndent);
 
+	//Buffer of charecters, apperently unused.
 	char buf[50];
+	
+	//Switch on the content type
 	switch(c.content_type) {
+	//If the Cell is disclosed
 	case gui_Cell_Disclose:
+		//clear the content's text value
 		c.text_val.clear();
 		break;
+	//If it is a check box, also clear the text value
 	case gui_Cell_CheckBox:
 		c.text_val = "";
 		break;
 	}
 
+	//if the content is 
 	if(c.is_disclosed || c.can_disclose)
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;

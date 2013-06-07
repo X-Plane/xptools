@@ -42,7 +42,9 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mScroller->Show();
 	mScroller->SetSticky(1,1,1,1);
 
+	//Library Pane's TextTable's provider is set to be the Library List Adapter
 	mTextTable.SetProvider(&mLibraryList);
+	
 	mTextTable.SetGeometry(&mLibraryList);
 
 	mTextTable.SetColors(
@@ -104,6 +106,10 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					this->PackPane(mScroller, gui_Pack_Center);
 
 					mScroller->PositionHeaderPane(mHeader);
+					
+					#if DEV
+					PrintDebugInfo();
+					#endif
 }
 
 WED_LibraryPane::~WED_LibraryPane()

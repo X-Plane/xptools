@@ -159,26 +159,45 @@ struct local_scan_t {
 
 void		WED_LibraryMgr::Rescan()
 {
+	//Clear the reasource table
 	res_table.clear();
 
+	//Number of packages?
 	int np = gPackageMgr->CountPackages();
+
+	//For the number of packages
 	for(int p = 0; p < np; ++p)
 	{
+		//the physical directory of the scenery pack
 		string pack_base;
+		//Get the pack's physical location
 		gPackageMgr->GetNthPackagePath(p,pack_base);
+		
+		//concatinate string
 		pack_base += DIR_STR "Library.txt";
 
+		//
 		bool is_default_pack = gPackageMgr->IsPackageDefault(p);
 
+		//Connects the physical Library.txt to the virual Memory File system? (95% sure) -Ted
 		MFMemFile * lib = MemFile_Open(pack_base.c_str());
+
+		//If there is a lib file
 		if(lib)
 		{
+			//Get the package again
 			gPackageMgr->GetNthPackagePath(p,pack_base);
 			
+			//Create a memory scanner
 			MFScanner	s;
+
+			//Initialize the Memory File System
 			MFS_init(&s, lib);
 
+			//Set the library version
 			int lib_version[] = { 800, 0 };
+
+			//
 			if(MFS_xplane_header(&s,lib_version,"LIBRARY",NULL))
 			while(!MFS_done(&s))
 			{

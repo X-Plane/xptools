@@ -71,20 +71,54 @@ void	WED_LibraryListAdapter::GetCellContent(
 			int							cell_y,
 			GUI_CellContent&			c)
 {
+	//creates a new copy of mCache
 	RebuildCache();
+	//If the cell_y is less than the size of the cache, it is an EditText cell, else
+	//if the cell_y is greater than the size of the cache it is a Cell None
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
+	//Set unable to edit
 	c.can_edit = false;
+
+	//Key point: string r is equal to...
+	//if cell_y is less than the cache than r is equal to the string in mCache at index of cell_y
+	//else it is equal to nothing
+	//r is used for spliting apart the full file path into sections
 	string r = cell_y < mCache.size() ? mCache[cell_y] : "";
+
+	//if the resource type is a directory than it can disclose
 	c.can_disclose = mLibrary->GetResourceType(r) == res_Directory;
+	//It is selectable
 	c.can_select = true;
+	//You cannot drag this content
 	c.can_drag = false;
-	if(c.can_disclose)	c.is_disclosed = IsOpen(r);
-	else				c.is_disclosed = false;
+
+	//If it can be disclosed
+	if(c.can_disclose)
+	{
+		//is disclosed is equal to the status of r as checked by IsOpen
+		c.is_disclosed = IsOpen(r);
+	}
+	else
+	{
+		//Otherwish it is not disclosed
+		c.is_disclosed = false;
+	}
+
+	//if r is the string selected in the library than c.is_selected is true
 	c.is_selected = r == mSel;
+
+	//Cut is a variable that helps with cuting the string apart
+	//It starts at -1 to offset 
 	int cut = -1;
 	c.indent_level = 0;
 	for(int n = 1; n < r.size(); ++n)
-		if(r[n] == '/') cut = n, ++c.indent_level;
+	{
+		if(r[n] == '/')
+		{
+			cut = n;
+			++c.indent_level;
+		}
+	}
 	c.text_val = r.substr(cut+1);
 	c.string_is_resource = false;
 }
@@ -263,48 +297,77 @@ void	WED_LibraryListAdapter::SetOpen(const string& r, int open)
 
 void	WED_LibraryListAdapter::RebuildCache()
 {
+	//If the cache is valid, exit early because it doesn't need to rebuild
 	if(mCacheValid) return;
+
+	//Set the cache to be valid
 	mCacheValid = true;
+
+	//Clear out all strings inside
 	mCache.clear();
 
-	vector<string> seeds;
-	mLibrary->GetResourceChildren("",pack_Local,seeds);
-	for(vector<string>::iterator s = seeds.begin(); s != seeds.end(); ++s)
+	//A collection of root paths, formerly known as seeds
+	vector<string> rootItems;
+
+	//Goes to the data model and gets all of the root items that are local
+	mLibrary->GetResourceChildren("",pack_Local,rootItems);
+
+	//For all the root items
+	for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
+		//Try to find their children
 		RebuildCacheRecursive(*s);
 
-	mLibrary->GetResourceChildren("",pack_Library,seeds);
-	for(vector<string>::iterator s = seeds.begin(); s != seeds.end(); ++s)
+	//Goes to the data model and gets all of the root items that are in the library
+	mLibrary->GetResourceChildren("",pack_Library,rootItems);
+	
+	//For all root items
+	for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
+		//Try to find their children
 		RebuildCacheRecursive(*s);
 
+	//If there is something in the filter
 	if(!mFilter.empty())
 	{
+		//A collection strings to keep
 		vector<string>	keepers;
 		int last = -1;
+
+		//For all the strings in the cache
 		for(int i = 0; i < mCache.size(); ++i)
 		{
+			//If the current string in mCache matches whats in the filter
 			if(filter_match(mCache[i],mFilter.begin(),mFilter.end()))
 			{
+
 				for(int p = last+1; p < i; ++p)
+				{
 					if(mCache[p].size() < mCache[i].size() &&
 						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
-				{
-					keepers.push_back(mCache[p]);					
+					{
+						keepers.push_back(mCache[p]);					
+					}
 				}
+				//Add the string to keepers
 				keepers.push_back(mCache[i]);
 				last = i;
 			}
 		}
+
+		//Swap keepers and mCache so mCache only has the strings to keep
 		swap(keepers,mCache);
 	}
-
+	//Reverse the order.
 	reverse(mCache.begin(),mCache.end());
 }
 
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 {
+	//Add the string to the cache
 	mCache.push_back(r);
+	//If the item is open or the filter has something in it
 	if(IsOpen(r) || !mFilter.empty())
 	{
+		//Recuse again
 		vector<string> kids;
 		mLibrary->GetResourceChildren(r,pack_All,kids);
 		for(vector<string>::iterator k = kids.begin(); k != kids.end(); ++k)

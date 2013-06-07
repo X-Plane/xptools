@@ -238,6 +238,7 @@ public:
 								float bkgnd_color[4],
 								float box_color[4]);
 
+	//Cell Drawing Method, takes the bounds of the cell, the x and y positions of the cell and the graph state
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState);
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );

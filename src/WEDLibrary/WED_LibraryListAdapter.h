@@ -29,7 +29,7 @@
 #include "GUI_SimpleTableGeometry.h"
 #include "GUI_Listener.h"
 
-class WED_LibraryMgr;
+class	WED_LibraryMgr;
 class	WED_CreatePointTool;
 class	WED_CreatePolygonTool;
 class	WED_MapPane;
@@ -163,10 +163,15 @@ private:
 			void	RebuildCache();
 			void	RebuildCacheRecursive(const string& r);
 			void	SetSel(const string& s);
-
+		
+		//A hash map of open folders in the heirarchy
 		hash_map<string,int>	mOpen;
+
+		//A cache of all paths to be shown
 		vector<string>			mCache;
 		bool					mCacheValid;
+
+		//A collection of strings for the filter to be checked against
 		vector<string>			mFilter;
 
 		WED_LibraryMgr *		mLibrary;
