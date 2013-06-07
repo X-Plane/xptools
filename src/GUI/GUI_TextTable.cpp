@@ -209,7 +209,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	//If there is content
 	if (mContent)
 	{
-		//Get the Cell content bassed on the x,y positions
+		//Get the Cell content bassed on the x,y positions and c
 		mContent->GetCellContent(cell_x,cell_y,c);
 		//If there is an image
 		if (!mImage.empty())

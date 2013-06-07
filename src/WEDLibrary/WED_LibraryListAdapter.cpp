@@ -362,7 +362,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 {
-	//Add the string to the cache
+	//Add the string to the cache.
 	mCache.push_back(r);
 	//If the item is open or the filter has something in it
 	if(IsOpen(r) || !mFilter.empty())

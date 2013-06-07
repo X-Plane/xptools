@@ -167,7 +167,7 @@ private:
 		//A hash map of open folders in the heirarchy
 		hash_map<string,int>	mOpen;
 
-		//A cache of all paths to be shown
+		//A cache of all paths to be shown.
 		vector<string>			mCache;
 		bool					mCacheValid;
 

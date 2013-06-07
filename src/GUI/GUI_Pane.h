@@ -191,7 +191,7 @@ public:
 		/*#if DEV
 			PrintDebugInfo(0);
 		#endif*/
-	//The default value is 0 so feel free not to use it.
+	//The default value is 0 so feel free not to use it
 	//Uses printf to print out pane information and all its children, may be over ridden to provide more information
 	virtual void            PrintDebugInfo(int indentLevel=0);
 	#endif

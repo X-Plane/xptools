@@ -108,7 +108,7 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					mScroller->PositionHeaderPane(mHeader);
 					
 					#if DEV
-					PrintDebugInfo();
+					//PrintDebugInfo();
 					#endif
 }
 

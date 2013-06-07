@@ -197,7 +197,7 @@ void		WED_LibraryMgr::Rescan()
 			//Set the library version
 			int lib_version[] = { 800, 0 };
 
-			//
+			
 			if(MFS_xplane_header(&s,lib_version,"LIBRARY",NULL))
 			while(!MFS_done(&s))
 			{

@@ -211,7 +211,7 @@ public:
 
 // A text table is table content - that is, the drawing brains of a table.
 // It in turn queries the "provider" for the actual content.  It allows you to specify a table as strings (easy)
-// instead of drawing calls (PITA).
+// instead of drawing calls (PITA)
 
 class	GUI_TextTable : public GUI_TableContent, public GUI_Broadcaster, public GUI_Commander, public GUI_Listener {
 public:
