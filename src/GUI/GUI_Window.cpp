@@ -28,7 +28,6 @@
 #include "GUI_Clipboard.h"
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
-static bool    mDragDetect = false;
 
 #if APL
 inline int Client2OGL_X(int x, WindowRef w) { return x; }
@@ -624,7 +623,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	#endif
 	#if LIN
 		this->setMenuBar(gApplication->getqmenu());
-		mPopupMenu = new QMenu(this);
+		popup_temp = new QMenu(this);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
@@ -679,9 +678,6 @@ GUI_Window::~GUI_Window()
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
 	this->GetRootForCommander()->BeginDefer();
-    #if LIN
-    mMouseLastButton = inButton;
-    #endif
 	mMouseFocusPane[inButton] = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
@@ -693,9 +689,6 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 
 void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 {
-    #if LIN
-    if(mDragDetect) return;
-    #endif
 	// Ben says: note that if we don't have a mouse focus paine we just "eat" the up-click.
 	// This deals with a Win32 design problem: Windows D&D _eats_ the up-click events.  So we
 	// post synthetic ones later.
@@ -1199,11 +1192,7 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
 {
 	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),-1);
-#if !LIN
-	//mroe: commented out for linux , TrackPopupCommands fakes a UP_Click (QMenu eats the click) ,
-	//this results in a call of GUI_Window::ClickUp which does it at the end
 	this->GetRootForCommander()->EndDefer();
-#endif
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
@@ -1216,46 +1205,50 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 
 	if (popup_temp)				 gApplication->RebuildMenu(popup_temp, items);
     else			popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
-    int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
-	
-	this->GetRootForCommander()->EndDefer();
-	
-	return ret;
-	
+		
 #else
-    if (mMouseLastButton > 0) return current;
+	//mroe: only left mouse button alone is allowed to open a popup.
+	//popup hide clicks!
+	//That's a try to prevent going out of sync with the clicks.
+	//Note: Since we not open a popup and reset the button down state
+	// the pending upclick proceeds later , with no effect 
+	if(!mDragging[0])	return -1;
+	for(int b=1;b<BUTTON_DIM;++b)
+		if(mDragging[b])return -1;
 
-     mPopupMenu->clear();
-    int n = 0;
-    while (items[n].name)
-    {
-        if (!strcmp(items[n].name, "-"))
-            mPopupMenu->addSeparator();
-        else
-        {
+	popup_temp->clear();
+	int n = 0;
+	while (items[n].name)
+	{
+		if (!strcmp(items[n].name, "-"))
+			popup_temp->addSeparator();
+		else
+		{
 		if(items[n].name[0] == ';')
 		{
-			QAction * aact =  mPopupMenu->addAction(items[n].name+1);
+			QAction * aact =  popup_temp->addAction(items[n].name+1);
 			aact->setCheckable(items[n].checked);
 			aact->setChecked(items[n].checked);
 			aact->setEnabled(false);
 		}
 		else
 		{
-			QAction * aact =  mPopupMenu->addAction(items[n].name);
+			QAction * aact =  popup_temp->addAction(items[n].name);
 			aact->setCheckable(items[n].checked);
 			aact->setChecked(items[n].checked);
 		}
         }
         ++n;
     }
-    mMouseFocusPane[0]= 0;
-    int ret = TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
-        //mroe: commented out for linux , TrackPopupCommands fakes a UP_Click (QMenu eats the click) ,
-	//this results in a call of GUI_Window::ClickUp which does it at the end
-	//this->GetRootForCommander()->EndDefer();
-	return ret;
+ 
 #endif
+	
+	int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
+	
+	this->GetRootForCommander()->EndDefer();
+	
+	return ret;	
+	
 }
 
 
@@ -1296,32 +1289,31 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 
 	#else
 
-        bool isdrag = false;
-        mDragDetect = true;
-        QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-        while( !isdrag && mDragging[button])
-        {
-            QCoreApplication::processEvents() ;
-            QPoint currentPos(mMouse.x,mMouse.y);
-            isdrag = ((startPos - currentPos).manhattanLength() >=
-                                    QApplication::startDragDistance());
-        }
-        mDragDetect = false;
+	bool isdrag = false;
 
-        if (!isdrag)
-        {
-          //sending fake UP-Click ( was blocked while dragdetection )
-          // we must set the button aktiv again
-            mDragging[button]=true;
-            unsigned int sbtn = 1 << button;
-            QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,(Qt::MouseButton)sbtn,
-                                        (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
+	unsigned int sbtn = 1 << button;
+	QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
 
-            QCoreApplication::postEvent(this, e);
-        }
-        else
-            mMouseFocusButton = button;
-        return isdrag;
+	mDragging[button] = 0;
+	while( !isdrag && (QApplication::mouseButtons() & (Qt::MouseButton)sbtn))
+	{
+		QCoreApplication::processEvents() ;
+		QPoint currentPos(mMouse.x,mMouse.y);
+		isdrag = ((startPos - currentPos).manhattanLength() >= QApplication::startDragDistance());
+	}
+	mDragging[button] = 1;
+
+	if (!isdrag)
+	{
+		//sending fake UP-Click ( was blocked while dragdetection )
+		QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,(Qt::MouseButton)sbtn,
+				     (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
+		QCoreApplication::postEvent(this, e);
+	}
+	else mMouseFocusButton = button;
+
+	return isdrag;
+	
 	#endif
 }
 

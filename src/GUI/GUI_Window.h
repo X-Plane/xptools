@@ -132,12 +132,11 @@ private:
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
 #if LIN
-	QMenu * mPopupMenu;
-	int     mMouseLastButton;
-    int Client2OGL_X(int x, void* w);
-    int Client2OGL_Y(int y, void* w);
-    int OGL2Client_X(int x, void* w);
-    int OGL2Client_Y(int y, void* w);
+	QMenu * popup_temp;
+	int Client2OGL_X(int x, void* w);
+	int Client2OGL_Y(int y, void* w);
+	int OGL2Client_X(int x, void* w);
+	int OGL2Client_Y(int y, void* w);
 protected:
 	void dragEnterEvent(QDragEnterEvent* e);
 	void dragLeaveEvent(QDragLeaveEvent* e);

@@ -328,15 +328,16 @@ int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int curren
 {
 	if(!in_menu) return -1;
 
-	QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,
-	QPoint(mouse_x, mouse_y), Qt::LeftButton, Qt::LeftButton,
-	QApplication::keyboardModifiers());
-
-	QCoreApplication::postEvent(this, e);
-
-	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
-	
+	//TODO:mroe: This is for reset the down-click-state since
+	//the popup hide the Upclick
+	//But we also block all pending upclicks for the GUI here.
+	//This is inteded since menu->exec procceeds all pending events
+	//and we döes'nt expect any.
+	//e.g. there is one (wrong) UP-Click pending from the GUI_Window::IsDrag
+	//which is catched here.
+	//Note we reset all button like the other Os'es.
+	//To avoid trouble we allow only left button in the GUI_Window dynamicpopup
 	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
-	
+	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
 	return in_menu->actions().indexOf(aaction);
 }
