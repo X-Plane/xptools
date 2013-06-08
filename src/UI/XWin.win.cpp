@@ -585,7 +585,7 @@ void			XWin::DrawMenuBar(void)
 	::DrawMenuBar(mWindow);
 }
 
-int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
+int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	POINT	p;
 	p.x = mouse_x;

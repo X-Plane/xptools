@@ -667,7 +667,7 @@ void	XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 		::DisableMenuItem(menu, item+1);
 }
 
-int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
+int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	SetPortWindowPort(mWindow);
 	Point p;

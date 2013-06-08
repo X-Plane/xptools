@@ -324,7 +324,7 @@ void XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 void XWin::DrawMenuBar(void)
 {}
 
-int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
+int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	if(!in_menu) return -1;
 
