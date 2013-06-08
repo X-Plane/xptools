@@ -84,6 +84,48 @@ struct	GUI_CellContent {
 	GUI_BoolIcon			bool_val;		// for get only - to pick check type!
 	int						bool_partial;	// for checks - if we are on but our parent is off...
 	int						string_is_resource;
+
+	//Prints a cell's information to the console window, by default it prints only important stuff
+	void printCellInfo(
+		//Boolean flags to turn on/off drawing
+		bool pcontType =true,
+		bool pcan_edit =true,
+		bool pcan_disclose =true,
+		bool pcan_select =true,
+		bool pcan_drag =false,
+
+		bool pis_disclosed =true,
+		bool pis_selected =true,
+		bool pindent_level =true,
+
+		bool ptext_val =true,
+		bool pint_val =false,
+		bool pdouble_val =false,
+		bool pbool_val =false,
+		bool pbool_partial =false,
+		bool pstring_is_resource = true
+		)
+	{
+	//if(flag is on) printf(stuff new line)
+	printf("\n ------------------------------- \n");
+	if(pcontType) printf("*content_type: %d \n",	content_type);
+	if(pcan_edit) printf("*can_edit: %d \n", can_edit);
+	if(pcan_disclose) printf("*can_disclose: %d \n", can_disclose);
+	if(pcan_select) printf("*can_select: %d \n", can_select);
+	if(pcan_drag) printf("can_drag: %d \n", can_drag);
+
+	if(pis_disclosed) printf("*is_disclosed: %d \n", is_disclosed);
+	if(pis_selected) printf("*is_selected: %d \n", is_selected);
+	if(pindent_level) printf("*indent_level: %d \n", indent_level);
+
+	if(ptext_val) printf("*text_val: %s \n", text_val.c_str());
+	if(pint_val) printf("int_val: %d \n", int_val);
+	if(pdouble_val) printf("double_val: %lf \n", double_val);
+	if(pbool_val) printf("bool_val: %d \n", bool_val);
+	if(pbool_partial) printf("bool_partial: %d \n", bool_partial);
+	if(pstring_is_resource) printf("string_is_resource: %d \n", string_is_resource);
+	}
+
 };
 
 struct GUI_HeaderContent {
