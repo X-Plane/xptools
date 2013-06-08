@@ -336,9 +336,10 @@ void	WED_PropertyTable::DoDrag(
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,
 						int							mouse_y,
+						int							button,
 						int							bounds[4])
 {
-	WED_DoDragSelection(drag_emitter, mouse_x, mouse_y, bounds);
+	WED_DoDragSelection(drag_emitter, mouse_x, mouse_y, button, bounds);
 }
 
 

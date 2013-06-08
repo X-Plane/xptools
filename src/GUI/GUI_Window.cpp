@@ -1189,13 +1189,13 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 }
 
 
-void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
+void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
 {
 	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),-1);
 	this->GetRootForCommander()->EndDefer();
 }
 
-int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
+int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int button, int current)
 {
  #if !LIN
 
@@ -1320,6 +1320,7 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 GUI_DragOperation	GUI_Window::DoDragAndDrop(
 							int						x,
 							int						y,
+							int						button,
 							int						where[4],
 							GUI_DragOperation		operations,
 							int						type_count,

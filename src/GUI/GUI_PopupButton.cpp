@@ -117,7 +117,7 @@ int			GUI_PopupButton::MouseDown(int x, int y, int button)
 	int bounds[4];
 	GetBounds(bounds);
 
-	int picked = PopupMenuDynamic(&*items.begin(), bounds[0], bounds[3], GetValue());
+	int picked = PopupMenuDynamic(&*items.begin(), bounds[0], bounds[3], button, GetValue());
 	if (picked >= 0)
 	{
 		SetValue(picked);

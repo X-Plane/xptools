@@ -370,14 +370,14 @@ void		GUI_Pane::Refresh(void)
 	if (mParent != NULL) mParent->Refresh();
 }
 
-void		GUI_Pane::PopupMenu(GUI_Menu menu, int x, int y)
+void		GUI_Pane::PopupMenu(GUI_Menu menu, int x, int y, int button)
 {
-	if (mParent) mParent->PopupMenu(menu, x, y);
+	if (mParent) mParent->PopupMenu(menu, x, y, button);
 }
 
-int		GUI_Pane::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
+int		GUI_Pane::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int button, int current)
 {
-	return (mParent) ? mParent->PopupMenuDynamic(items, x, y, current) : -1;
+	return (mParent) ? mParent->PopupMenuDynamic(items, x, y, button, current) : -1;
 }
 
 
@@ -630,6 +630,7 @@ bool				GUI_Pane::IsDragClick(int x, int y, int button)
 GUI_DragOperation	GUI_Pane::DoDragAndDrop(
 							int						x,
 							int						y,
+							int						button,
 							int						where[4],
 							GUI_DragOperation		operations,
 							int						type_count,
@@ -639,6 +640,6 @@ GUI_DragOperation	GUI_Pane::DoDragAndDrop(
 							GUI_GetData_f			fetch_func,
 							void *					ref)
 {
-	if (mParent)	return	mParent->DoDragAndDrop(x,y,where,operations,type_count,inTypes,sizes,ptrs,fetch_func,ref);
+	if (mParent)	return	mParent->DoDragAndDrop(x,y,button,where,operations,type_count,inTypes,sizes,ptrs,fetch_func,ref);
 	else			return	gui_Drag_None;
 }

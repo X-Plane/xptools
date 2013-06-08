@@ -503,7 +503,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 		{
 			mContent->SelectionEnd();
-			mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
+			mContent->DoDrag(mParent, mouse_x,mouse_y,button,cell_bounds);
 			return 0;
 		}
 
@@ -512,7 +512,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 	{
-		mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
+		mContent->DoDrag(mParent, mouse_x,mouse_y,button,cell_bounds);
 		return 0;
 	}
 
@@ -582,7 +582,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					if (mEditInfo.int_val == it->first) cur = i;
 					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
 				}
-				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
@@ -616,7 +616,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
 					if (mEditInfo.int_val == it->first && cur == -1) cur = i;
 				}
-				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val=enum_vals[choice];
