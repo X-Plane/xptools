@@ -171,10 +171,9 @@ protected:
 
 		WindowRef				mWindow;
 		EventLoopTimerRef		mTimer;
-		int						mInDrag[BUTTON_DIM];
+		int						mInDrag;			// Button being dragged or -1 if none.  This ensures we send only one down/drag/up sequence.
 		int						mLastMouseX;
 		int						mLastMouseY;
-//		int						mLastMouseButton;
 		int						mIsControlClick;
 public:
 		static pascal OSStatus	MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);

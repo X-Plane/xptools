@@ -1192,7 +1192,12 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
 {
 	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),button, -1);
+	#if !APL
+	// Ben says: with the "new design" XWin is required to send an up click after popups...so this is
+	// NOT needed or allowed.  Once XWin has the new design on all 3 paltform, this code will not
+	// be #if-defed.	
 	this->GetRootForCommander()->EndDefer();
+	#endif
 }
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int button, int current)
@@ -1244,8 +1249,12 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 #endif
 	
 	int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), button, current);
+	#if !APL
+	// Ben says: with the "new design" XWin is required to send an up click after popups...so this is
+	// NOT needed or allowed.  Once XWin has the new design on all 3 paltform, this code will not
+	// be #if-defed.	
 	this->GetRootForCommander()->EndDefer();
-	
+	#endif
 	return ret;	
 	
 }
