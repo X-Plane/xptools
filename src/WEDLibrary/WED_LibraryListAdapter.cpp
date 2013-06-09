@@ -34,11 +34,21 @@
 
 static int kDefCols[] = { 100, 100 };
 
+//IDK why having these in the header is giving me "identifier is undefined problems" in the watcher so they are now here
+int mCatLocInd = 0;
+int mCatLibInd = 0;
+//string	mCatChanger = "";
+
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 		GUI_SimpleTableGeometry(1,kDefCols,20),
 	mCacheValid(false), mLibrary(who),
 	mMap(NULL),
-	mPreview(NULL)
+	mPreview(NULL),
+	mLocalStr("Local"),
+	mLibraryStr("Library"),
+	mCatChanger("Local")/*,
+	mCatLocInd(0),
+	mCatLibInd(0)*/
 {
 	mLibrary->AddListener(this);
 }
@@ -78,6 +88,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
 	//Set unable to edit
 	c.can_edit = false;
+	
 
 	//Key point: string r is equal to...
 	//if cell_y is less than the cache than r is equal to the string in mCache at index of cell_y
@@ -85,11 +96,65 @@ void	WED_LibraryListAdapter::GetCellContent(
 	//r is used for spliting apart the full file path into sections
 	string r = cell_y < mCache.size() ? mCache[cell_y] : "";
 
+	//Set mCatChanger based on the r string, else it is carried over from whatever it was last set at
+	//if the string at mCache is the last one (aka Local/)
+
+	/*mCache by this point will look something like 
+	* index 0
+	* ...
+	* index mCatLibInd
+	* ...
+	* index mCatLocInd
+	* Therefore anything between 0 and mCatLibInd is underneath Library
+	* and anything mCatLibInd+1 and mCatLocInd is underneath Local
+	*
+	* Since we are already dealting with indecies we can imediantly snip off the prefix
+	*/
+	if(cell_y < mCatLibInd)
+	{
+		mCatChanger = mLibraryStr;
+		//Erase the prefix
+		r.erase(0, mCatChanger.size());
+	}
+	else if(cell_y > mCatLibInd && cell_y < mCatLocInd)
+	{
+		mCatChanger = mLocalStr;
+		//Erase the prefix
+		r.erase(0, mCatChanger.size());
+	}
+	/*
+	* Because none of the ranges of checking are <= or >=
+	* We'll handle those cases here.
+	* This is done so we don't accidentally cut off the word Local or Library
+	* and yet still be able to make sure CatChanger is correct.
+	* The content flag is also changed since in here we know we are one of the special Catagory Labels
+	*/
+	else if(cell_y == mCatLibInd)
+	{
+		mCatChanger = mLibraryStr;
+		c.can_disclose = 1;
+	}
+	else if(cell_y == mCatLocInd)
+	{
+		mCatChanger = mLocalStr;
+		c.can_disclose = 1;
+	}
+
+	//c.can_disclose = mLibrary->GetResourceType(r) == res_Directory;
+	//If it is either local or library
+	if(r == mCatChanger)
+	{
+		c.can_disclose = 1;
+	}
+
 	//if the resource type is a directory than it can disclose
-	c.can_disclose = mLibrary->GetResourceType(r) == res_Directory;
-	//It is selectable
+	if( mLibrary->GetResourceType(r) == res_Directory)
+	{
+		c.can_disclose = 1;
+	}
+	
 	c.can_select = true;
-	//You cannot drag this content
+	
 	c.can_drag = false;
 
 	//If it can be disclosed
@@ -107,10 +172,24 @@ void	WED_LibraryListAdapter::GetCellContent(
 	//if r is the string selected in the library than c.is_selected is true
 	c.is_selected = r == mSel;
 
+	//Add the prefix back in
+	//If R is not either Local/ or Library/
+	if(r != mCatChanger) 
+	{
+		//Erase the prefix
+		r.insert(0,mCatChanger);
+	}
+	if(r == "Library//lib")
+	{
+		//Cut off the 1 / due to that typo in the name
+		r.erase(mCatChanger.size(),1);
+	}
+
 	//Cut is a variable that helps with cuting the string apart
 	//It starts at -1 to offset 
 	int cut = -1;
 	c.indent_level = 0;
+
 	for(int n = 1; n < r.size(); ++n)
 	{
 		if(r[n] == '/')
@@ -119,8 +198,12 @@ void	WED_LibraryListAdapter::GetCellContent(
 			++c.indent_level;
 		}
 	}
+	
 	c.text_val = r.substr(cut+1);
-	c.string_is_resource = false;
+	c.string_is_resource = 0;
+#if DEV
+	//	c.printCellInfo();
+#endif
 }
 
 void	WED_LibraryListAdapter::GetEnumDictionary(
@@ -298,34 +381,57 @@ void	WED_LibraryListAdapter::SetOpen(const string& r, int open)
 void	WED_LibraryListAdapter::RebuildCache()
 {
 	//If the cache is valid, exit early because it doesn't need to rebuild
-	if(mCacheValid) return;
+	if(mCacheValid) 
+	{
+		return;
+	}
+
+	//A collection of root paths, formerly known as seeds
+	vector<string> rootItems;
 
 	//Set the cache to be valid
 	mCacheValid = true;
 
 	//Clear out all strings inside
 	mCache.clear();
-
-	//A collection of root paths, formerly known as seeds
-	vector<string> rootItems;
-
-	//Goes to the data model and gets all of the root items that are local
-	mLibrary->GetResourceChildren("",pack_Local,rootItems);
-
-	//For all the root items
-	for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
-		//Try to find their children
-		RebuildCacheRecursive(*s);
-
-	//Goes to the data model and gets all of the root items that are in the library
-	mLibrary->GetResourceChildren("",pack_Library,rootItems);
 	
-	//For all root items
-	for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
-		//Try to find their children
-		RebuildCacheRecursive(*s);
+	mCatChanger = mLocalStr;
+	mCache.push_back(mCatChanger);
+	
+	if(IsOpen(mLocalStr))
+	{
+		//Goes to the data model and gets all of the root items that are local
+		mLibrary->GetResourceChildren("",pack_Local,rootItems);
 
-	//If there is something in the filter
+		//For all the root items
+		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
+		{
+	
+			//Try to find their children
+			RebuildCacheRecursive(*s);
+	
+		}
+	}
+
+	mCatChanger = mLibraryStr;
+	mCache.push_back(mCatChanger);
+	
+	if(IsOpen(mLibraryStr))
+	{
+		//Goes to the data model and gets all of the root items that are in the library
+		mLibrary->GetResourceChildren("",pack_Library,rootItems);
+	
+		//For all root items
+		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
+		{
+		
+			//Try to find their children
+			RebuildCacheRecursive(*s);
+		
+		}
+	}
+
+	//If there is something in the filte
 	if(!mFilter.empty())
 	{
 		//A collection strings to keep
@@ -354,18 +460,32 @@ void	WED_LibraryListAdapter::RebuildCache()
 		}
 
 		//Swap keepers and mCache so mCache only has the strings to keep
-		swap(keepers,mCache);
+		std::swap(keepers,mCache);
 	}
 	//Reverse the order.
 	reverse(mCache.begin(),mCache.end());
+
+	//Set the locations of mCatLocInd and mCatLibInd
+	for(vector<string>::iterator itr = mCache.begin(); itr != mCache.end(); ++itr)
+	{
+		if(*itr == mLocalStr)
+		{
+			mCatLocInd = distance(mCache.begin(),itr);
+		}
+		if(*itr == mLibraryStr)
+		{
+			mCatLibInd = distance(mCache.begin(),itr);
+		}
+	}
 }
 
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 {
 	//Add the string to the cache.
-	mCache.push_back(r);
+	mCache.push_back(mCatChanger + "/"+r);
+
 	//If the item is open or the filter has something in it
-	if(IsOpen(r) || !mFilter.empty())
+	if(IsOpen(mCache.back()) || !mFilter.empty())
 	{
 		//Recuse again
 		vector<string> kids;

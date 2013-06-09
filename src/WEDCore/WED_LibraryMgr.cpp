@@ -98,6 +98,12 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 			if(want_it)
 			{
 				children.push_back(me->first);
+				#if DEV
+					//Gets the last thing added to the vector
+					//string temp = children.back();
+
+					//printf("GetResource:%s \n", temp.c_str());
+				#endif
 			}
 		}
 		++me;

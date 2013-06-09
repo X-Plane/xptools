@@ -170,6 +170,17 @@ private:
 		//A cache of all paths to be shown.
 		vector<string>			mCache;
 		bool					mCacheValid;
+		
+		//A string to switch library panes with
+		//Possible values Local or Library, listed below;
+		string					mCatChanger;
+		string					mLocalStr;
+		string					mLibraryStr;
+
+		//Index of Local/ in mCache
+		//int						mCatLocInd;
+		//Index of Library/ in mCache
+		//int					mCatLibInd;
 
 		//A collection of strings for the filter to be checked against
 		vector<string>			mFilter;
