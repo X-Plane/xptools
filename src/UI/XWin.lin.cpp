@@ -10,9 +10,9 @@ XWin::XWin(
 	int		inHeight,
 	QWidget *parent) : QMainWindow(parent), mInited(false)
 {
-	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
-	mMouse.x = 0;
-	mMouse.y = 0;
+	mDragging =-1;
+	mMouse.x  = 0;
+	mMouse.y  = 0;
 	SetTitle(inTitle);
 
 	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
@@ -31,9 +31,9 @@ XWin::XWin(
 
 XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(false)
 {
-	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
-	mMouse.x = 0;
-	mMouse.y = 0;
+	mDragging =-1;
+	mMouse.x  = 0;
+	mMouse.y  = 0;
 	setMouseTracking(true);
 	setFocusPolicy(Qt::StrongFocus);
 	if (default_dnd)
@@ -63,50 +63,52 @@ void XWin::resizeEvent(QResizeEvent* e)
 
 void XWin::mousePressEvent(QMouseEvent* e)
 {
-    unsigned int rbtn = e->button();
-    int btn = 0;
-    for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
-    if (btn==0 || btn > 3)  return;
-    btn--;
+	unsigned int rbtn = e->button();
+	int btn = 0;
+	for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
+	if (btn==0 || btn > 3)  return;
+	btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
 
-    if(!mDragging[btn])
-    {
-        mDragging[btn]=1;
-        ClickDown(mMouse.x, mMouse.y, btn);
-    }
+	if(mDragging == -1)
+	{
+		mDragging = btn;
+		ClickDown(mMouse.x, mMouse.y, btn);
+	}
 }
 
 void XWin::mouseReleaseEvent(QMouseEvent* e)
 {
-    unsigned int rbtn = e->button();
-    int btn = 0;
-    for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
-    if (btn==0 || btn > 3) return;
-    btn--;
+	unsigned int rbtn = e->button();
+	int btn = 0;
+	for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
+	if (btn==0 || btn > 3) return;
+	btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
 
-    if(mDragging[btn])
-			ClickUp(mMouse.x, mMouse.y, btn);
-    mDragging[btn]=0;
-
+	if(mDragging == btn)
+	{
+		mDragging = -1;
+		ClickUp(mMouse.x, mMouse.y, btn);
+	}
 }
 
 void XWin::mouseMoveEvent(QMouseEvent* e)
 {
 	mMouse.x = e->x();
 	mMouse.y = e->y();
-	int bc=0;
-	for(int b=0;b<BUTTON_DIM;++b) {
-		if(mDragging[b]) {
-			++bc;
-			ClickDrag(mMouse.x, mMouse.y, b);
-		}
+
+	if((mDragging >= 0 ) && (mDragging < BUTTON_DIM))
+	{
+		ClickDrag(mMouse.x, mMouse.y,mDragging);
 	}
-	if(bc==0)
+	
+	if (mDragging == -1)
+	{
 		ClickMove(mMouse.x, mMouse.y);
+	}
 }
 
 void XWin::wheelEvent(QWheelEvent* e)
@@ -327,17 +329,21 @@ void XWin::DrawMenuBar(void)
 int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	if(!in_menu) return -1;
-
-	//TODO:mroe: This is for reset the down-click-state since
-	//the popup hide the Upclick
-	//But we also block all pending upclicks for the GUI here.
-	//This is inteded since menu->exec procceeds all pending events
-	//and we döes'nt expect any.
-	//e.g. there is one (wrong) UP-Click pending from the GUI_Window::IsDrag
-	//which is catched here.
-	//Note we reset all button like the other Os'es.
-	//To avoid trouble we allow only left button in the GUI_Window dynamicpopup
-	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
+	//TODO:mroe
+	//this is to block a mouseUP from our own fakeUP-Click in GUI_Windows::IsDrag
+	//the click is needed by all dragable GUI_Textfield-Types except Enums they needs a popup
+	//the event is proceeded with the menu->exec what is to early
+	int temp = mDragging;
+	mDragging = -1;
+	
 	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
+	
+	mDragging = temp;
+	//sending fake UP-Click
+	unsigned int sbtn = 1 << button;
+	QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease, QPoint(mouse_x, mouse_y),
+					(Qt::MouseButton)sbtn,(Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());	
+	QCoreApplication::postEvent(this, e);
+		
 	return in_menu->actions().indexOf(aaction);
 }

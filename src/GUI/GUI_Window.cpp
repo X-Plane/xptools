@@ -1192,7 +1192,7 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
 {
 	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),button, -1);
-	#if !APL
+	#if IBM
 	// Ben says: with the "new design" XWin is required to send an up click after popups...so this is
 	// NOT needed or allowed.  Once XWin has the new design on all 3 paltform, this code will not
 	// be #if-defed.	
@@ -1212,14 +1212,6 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
     else			popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
 		
 #else
-	//mroe: only left mouse button alone is allowed to open a popup.
-	//popup hide clicks!
-	//That's a try to prevent going out of sync with the clicks.
-	//Note: Since we not open a popup and reset the button down state
-	// the pending upclick proceeds later , with no effect 
-	if(!mDragging[0])	return -1;
-	for(int b=1;b<BUTTON_DIM;++b)
-		if(mDragging[b])return -1;
 
 	popup_temp->clear();
 	int n = 0;
@@ -1249,7 +1241,7 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 #endif
 	
 	int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), button, current);
-	#if !APL
+	#if IBM
 	// Ben says: with the "new design" XWin is required to send an up click after popups...so this is
 	// NOT needed or allowed.  Once XWin has the new design on all 3 paltform, this code will not
 	// be #if-defed.	
@@ -1301,27 +1293,28 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 
 	unsigned int sbtn = 1 << button;
 	QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-
-	mDragging[button] = 0;
+	mDragging = -9999;// mroe:this blocks all button events for the GUI
 	while( !isdrag && (QApplication::mouseButtons() & (Qt::MouseButton)sbtn))
 	{
 		QCoreApplication::processEvents() ;
 		QPoint currentPos(mMouse.x,mMouse.y);
 		isdrag = ((startPos - currentPos).manhattanLength() >= QApplication::startDragDistance());
 	}
-	mDragging[button] = 1;
+	mDragging = button;
 
 	if (!isdrag)
 	{
-		//sending fake UP-Click ( was blocked while dragdetection )
+		//mroe:sending fake UP-Click ( was blocked while dragdetection )
+		//the click is needed by all dragable GUI_Textfield-Types except Enums since they needs a popup.
+		//we post the event anyway . unable determine the type of the dragable here.
+		//don't try to use the click from dragdetection ; is direct processed,to early for GUI
 		QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,(Qt::MouseButton)sbtn,
 				     (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
 		QCoreApplication::postEvent(this, e);
 	}
-	else mMouseFocusButton = button;
 
 	return isdrag;
-	
+
 	#endif
 }
 
@@ -1420,23 +1413,23 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 
         // TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
 
-        QDrag *drag = new QDrag(this);
-        QMimeData *mimeData = new QMimeData;
+	QDrag *drag = new QDrag(this);
+	QMimeData *mimeData = new QMimeData;
 
-//		mimeData->setData(mimeType, data);
-        drag->setMimeData(mimeData);
+	//mimeData->setData(mimeType, data);
+	drag->setMimeData(mimeData);
 
-		//start the drag
-        GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
+	//start the drag
+	GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
 
-        //sending fake UP-Click
-        QPoint aPos( OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-        unsigned int sbtn = 1 << mMouseFocusButton;
-        QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,aPos,(Qt::MouseButton)sbtn,
+	//sending fake UP-Click
+	QPoint aPos( OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
+	unsigned int sbtn = 1 << button;
+	QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,aPos,(Qt::MouseButton)sbtn,
                                 (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
-        QCoreApplication::postEvent(this, e);
+	QCoreApplication::postEvent(this, e);
 
-        return result;
+	return result;
 	#endif
 }
 

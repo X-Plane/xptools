@@ -201,8 +201,8 @@ public:
 #endif
 
 #if LIN
-	int	mDragging[BUTTON_DIM];
-	int mTimer;
+	int	mDragging; // Button being dragged or -1 if none ; -9999 to block all
+	int	mTimer;
 	POINT	mMouse;
 public:
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
