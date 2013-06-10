@@ -117,7 +117,9 @@ public:
 	virtual	void		Panic(void);
 
 	bool				TryClose(void);
-	void				Save(void);
+
+	//Saves the file, returns true if successful, false if not.
+	bool				Save(void);
 	void				Revert(void);
 	bool				IsDirty(void);
 

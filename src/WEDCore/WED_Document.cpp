@@ -171,7 +171,7 @@ WED_NWLinkAdapter *	WED_Document::GetNWLink(void)
 	return mNWLink;
 }
 #endif
-void	WED_Document::Save(void)
+bool	WED_Document::Save(void)
 {
 	BroadcastMessage(msg_DocWillSave, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 
@@ -209,7 +209,7 @@ void	WED_Document::Save(void)
 	* nobackup: For when the .bak file hasn't been created yet
 	* both: for when the .bak and regular files are in place
 	*/
-	enum {none,nobackup,both};
+	enum {none,nobackup,both,error};
 	int stage;
 
 	//File path of the xml
@@ -221,7 +221,7 @@ void	WED_Document::Save(void)
 	string bakXML = xml;
 	//then it mutatats to include the .bak coming out to be earth.wed.bak.xml
 	bakXML = bakXML.insert((bakXML.length()-4),".bak");
-
+	
 	//Rename the current earth.wed.bak.xml to earth.wed.bak.bak.xml
 	string tempBakBak = bakXML;
 
@@ -274,30 +274,36 @@ void	WED_Document::Save(void)
 	#else
 	FILE * xml_file = fopen(xml.c_str(),"w");
 	#endif
-	
+	int ferrorErr = 0;
+	int fcloseErr = 0;
 	//If there was not any error opening the file
 	if(xml_file != NULL)
 	{
 		//Write the XML to the the file
 		WriteXML(xml_file);
+		//Checks for all errors
+		ferrorErr = ferror(xml_file);
+		//Closes the file and returns any error number if so.
+		fcloseErr = fclose(xml_file);
+	}
+	else if (xml_file == NULL)
+	{
+		stage = error;
 	}
 	else
 	{
-		//Otherwise force an error flag
+		#if IBM
 		xml_file->_flag |= _IOERR;
+		#endif
+		stage = error;
 	}
 	
 	#if DEV		//Ensures that there is an error for ferror to pick up on, comment out when not needing to debug
 	//xml_file->_flag |= _IOERR;
 	#endif
-
-	//Checks for all errors
-	int ferrorErr = ferror(xml_file);
-	//Closes the file and returns any error number if so.
-	int fcloseErr = fclose(xml_file);
 	
 	//if there has been some error or fclose it has an error closing the file
-	if( ferrorErr != 0 || fcloseErr != 0)
+	if( ferrorErr != 0 || fcloseErr != 0 || stage == error)
 	{
 		//This is the error handling switch
 		switch(stage)
@@ -305,7 +311,9 @@ void	WED_Document::Save(void)
 			case none:
 				break;
 			case nobackup:
-				//un-rename
+				//Delete's the bad save
+				FILE_delete_file(xml.c_str(),0);
+				//un-renames the old one
 				FILE_rename_file(bakXML.c_str(),xml.c_str());
 				break;
 			case both:
@@ -318,6 +326,9 @@ void	WED_Document::Save(void)
 				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
 				FILE_rename_file(tempBakBak.c_str(),bakXML.c_str());
 				break;
+			case error:
+				DoUserAlert("Please check file path for errors or missing parts");
+				return false;
 		}
 	}
 	//if the second backup still exists after the error handling
@@ -326,6 +337,7 @@ void	WED_Document::Save(void)
 		//Delete it
 		FILE_delete_file(tempBakBak.c_str(),0);
 	}
+	return true;
 }
 
 void	WED_Document::Revert(void)
