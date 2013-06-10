@@ -126,7 +126,7 @@ static void kill_taxi_texture(void)
 }
 
 
-static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z)
+static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, bool no_proj, const Point2& centroid, GUI_GraphState * g, WED_MapZoomerNew * z, float alpha)
 {
 	TexRef	ref = tman->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 	if(ref == NULL) return false;
@@ -135,11 +135,11 @@ static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, b
 	if (tex_id == 0)
 	{
 		g->SetState(false,0,false,true,true,false,false);
-		glColor3f(0.5,0.5,0.5);
+		glColor4f(0.5,0.5,0.5,alpha);
 		return true;
 	}
 	g->SetState(false,1,false,!pol.kill_alpha,!pol.kill_alpha,false,false);
-	glColor3f(1,1,1);
+	glColor4f(1,1,1,alpha);
 	g->BindTex(tex_id,0);
 
 	if(no_proj)
@@ -595,7 +595,7 @@ struct	preview_pol : public preview_polygon {
 			Point2 centroid = Point2(
 				(bounds.xmin()+bounds.xmax())*0.5,
 				(bounds.ymin()+bounds.ymax())*0.5);
-			setup_pol_texture(tman, pol_info, pol->GetHeading(), false, centroid, g, zoomer);
+			setup_pol_texture(tman, pol_info, pol->GetHeading(), false, centroid, g, zoomer, mPavementAlpha);
 			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 			kill_pol_texture();
 		}	
@@ -622,7 +622,7 @@ struct	preview_ortho : public preview_polygon {
 			Point2 centroid = Point2(
 				(bounds.xmin()+bounds.xmax())*0.5,
 				(bounds.ymin()+bounds.ymax())*0.5);
-			setup_pol_texture(tman, pol_info, 0.0, true, centroid, g, zoomer);
+			setup_pol_texture(tman, pol_info, 0.0, true, centroid, g, zoomer, mPavementAlpha);
 			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
 			kill_pol_texture();
 		}	
