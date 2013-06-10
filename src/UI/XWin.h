@@ -172,6 +172,7 @@ protected:
 		WindowRef				mWindow;
 		EventLoopTimerRef		mTimer;
 		int						mInDrag;			// Button being dragged or -1 if none.  This ensures we send only one down/drag/up sequence.
+		int						mWantFakeUp;		// True if the down or drag handler should fake an up click and end the gesture.
 		int						mLastMouseX;
 		int						mLastMouseY;
 		int						mIsControlClick;

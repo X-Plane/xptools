@@ -37,6 +37,7 @@ XWin::XWin(int default_dnd)
 {
 	sIniting = true;
 	mInDrag = -1;
+	mWantFakeUp = 0;
 
 		Rect	bounds;
 
@@ -103,6 +104,7 @@ XWin::XWin(
 {
 	sIniting = true;
 	mInDrag = -1;
+	mWantFakeUp = 0;
 
 		Rect	bounds;
 
@@ -371,6 +373,18 @@ pascal OSStatus	XWin::MacEventHandler(
 			if (me->mInDrag >= 0)
 			{
 				me->ClickDrag(pt.h, pt.v, me->mInDrag);
+				// Every dispatch to a down or drag must then check for a request for an 
+				// immediate fake-up...if we get one, we dispatch the fake up event and then
+				// clear our button flag so that if the real up comes, we ignore it.  We
+				// need this for the popup menu since it sometimes 'eats' the up-click we 
+				// need.
+				if(me->mWantFakeUp)
+				{
+					btn = me->mInDrag + 1;
+					me->mInDrag = -1;
+					me->ClickUp(pt.h, pt.v, btn - 1);
+					me->mWantFakeUp = 0;
+				}
 			}
 			else
 			{
@@ -402,6 +416,14 @@ pascal OSStatus	XWin::MacEventHandler(
 			{
 				me->mInDrag = btn-1;
 				me->ClickDown(pt.h, pt.v, btn - 1);
+				
+				if(me->mWantFakeUp)
+				{
+					btn = me->mInDrag + 1;
+					me->mInDrag = -1;
+					me->ClickUp(pt.h, pt.v, btn - 1);
+					me->mWantFakeUp = 0;
+				}
 			}
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
@@ -460,6 +482,13 @@ pascal OSStatus	XWin::MacEventHandler(
 			if (me->mInDrag >= 0)
 			{
 				me->ClickDrag(me->mLastMouseX, me->mLastMouseY,me->mInDrag);
+				if(me->mWantFakeUp)
+				{
+					btn = me->mInDrag + 1;
+					me->mInDrag = -1;
+					me->ClickUp(pt.h, pt.v, btn - 1);
+					me->mWantFakeUp = 0;
+				}
 			}
 			else
 				me->ClickMove(me->mLastMouseX, me->mLastMouseY);
@@ -682,12 +711,12 @@ int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button
 	//assert(mInDrag == -1 || mInDrag == button);
 	if(mInDrag == button)
 	{
-		// IF the button dismissing the popup isn't our button, we will get a mouse-up for the real button
-		// later.  On OS X you can left-popup a menu, then right-click on the menu to close it, and the left
-		// button is still down.  By marking mInDrag -1 we note to ourselves that the click is closed off 
-		// already.
-		mInDrag = -1;
-		ClickUp(mouse_x,mouse_y,button);
+		// There is some chance that our mouse up will never show up, so...request a fake early mouse-up
+		// on our behalf here.
+		//
+		// We can't call mouseup directly from here because we are probably inside an event dispatch on 
+		// the stack.
+		mWantFakeUp = 1;
 	}
 	return LoWord(result)-1;
 }
