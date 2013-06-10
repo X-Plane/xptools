@@ -189,7 +189,8 @@ public:
 		CDropTarget *	mDropTarget;
 		POINT			mMouse;
 		POINT			mSizeMin;
-		int				mDragging[BUTTON_DIM];
+		int				mDragging;
+		int				mWantFakeUp;
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
