@@ -10,9 +10,11 @@ XWin::XWin(
 	int		inHeight,
 	QWidget *parent) : QMainWindow(parent), mInited(false)
 {
-	mDragging =-1;
-	mMouse.x  = 0;
-	mMouse.y  = 0;
+	mDragging    =-1;
+	mWantFakeUp  = 0;
+	mBlockEvents = 0;
+	mMouse.x     = 0;
+	mMouse.y     = 0;
 	SetTitle(inTitle);
 
 	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
@@ -31,9 +33,12 @@ XWin::XWin(
 
 XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(false)
 {
-	mDragging =-1;
-	mMouse.x  = 0;
-	mMouse.y  = 0;
+	mDragging    =-1;
+	mWantFakeUp  = 0;
+	mBlockEvents = 0;
+	mMouse.x     = 0;
+	mMouse.y     = 0;
+	
 	setMouseTracking(true);
 	setFocusPolicy(Qt::StrongFocus);
 	if (default_dnd)
@@ -71,10 +76,20 @@ void XWin::mousePressEvent(QMouseEvent* e)
 	mMouse.x = e->x();
 	mMouse.y = e->y();
 
+	if(mBlockEvents) return;
+	
 	if(mDragging == -1)
 	{
 		mDragging = btn;
 		ClickDown(mMouse.x, mMouse.y, btn);
+		
+		if(mWantFakeUp)
+		{
+			int btn = mDragging;
+			mDragging = -1;
+			ClickUp(mMouse.x, mMouse.y, btn);
+			mWantFakeUp = 0;
+		}
 	}
 }
 
@@ -87,6 +102,8 @@ void XWin::mouseReleaseEvent(QMouseEvent* e)
 	btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
+	
+	if(mBlockEvents) return;
 
 	if(mDragging == btn)
 	{
@@ -99,13 +116,26 @@ void XWin::mouseMoveEvent(QMouseEvent* e)
 {
 	mMouse.x = e->x();
 	mMouse.y = e->y();
+	
+	//mroe: We need the above calls , 
+	// also to get the event proceeded for the dragdetect in GUI_Windows::IsDrag.
+	// Seems the event is droped if the function does nothing.
+	// Having thecurrent mouse-position ever is not that bad at all.
+	if(mBlockEvents) return;
 
 	if((mDragging >= 0 ) && (mDragging < BUTTON_DIM))
 	{
 		ClickDrag(mMouse.x, mMouse.y,mDragging);
+		
+		if(mWantFakeUp)
+		{
+			int btn = mDragging;
+			mDragging = -1;
+			ClickUp(mMouse.x, mMouse.y, btn);
+			mWantFakeUp = 0;
+		}
 	}
-	
-	if (mDragging == -1)
+	else
 	{
 		ClickMove(mMouse.x, mMouse.y);
 	}
@@ -329,21 +359,12 @@ void XWin::DrawMenuBar(void)
 int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	if(!in_menu) return -1;
-	//TODO:mroe
-	//this is to block a mouseUP from our own fakeUP-Click in GUI_Windows::IsDrag
-	//the click is needed by all dragable GUI_Textfield-Types except Enums they needs a popup
-	//the event is proceeded with the menu->exec what is to early
-	int temp = mDragging;
-	mDragging = -1;
-	
 	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
 	
-	mDragging = temp;
-	//sending fake UP-Click
-	unsigned int sbtn = 1 << button;
-	QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease, QPoint(mouse_x, mouse_y),
-					(Qt::MouseButton)sbtn,(Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());	
-	QCoreApplication::postEvent(this, e);
-		
+	if(mDragging == button)
+	{
+		mWantFakeUp = 1;
+	}
+	
 	return in_menu->actions().indexOf(aaction);
 }

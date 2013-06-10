@@ -1293,25 +1293,16 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 
 	unsigned int sbtn = 1 << button;
 	QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-	mDragging = -9999;// mroe:this blocks all button events for the GUI
+	
+	mBlockEvents = 1;// mroe:this blocks all button events for the GUI in XWin
 	while( !isdrag && (QApplication::mouseButtons() & (Qt::MouseButton)sbtn))
 	{
 		QCoreApplication::processEvents() ;
 		QPoint currentPos(mMouse.x,mMouse.y);
 		isdrag = ((startPos - currentPos).manhattanLength() >= QApplication::startDragDistance());
 	}
-	mDragging = button;
-
-	if (!isdrag)
-	{
-		//mroe:sending fake UP-Click ( was blocked while dragdetection )
-		//the click is needed by all dragable GUI_Textfield-Types except Enums since they needs a popup.
-		//we post the event anyway . unable determine the type of the dragable here.
-		//don't try to use the click from dragdetection ; is direct processed,to early for GUI
-		QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,(Qt::MouseButton)sbtn,
-				     (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
-		QCoreApplication::postEvent(this, e);
-	}
+	mBlockEvents = 0;
+	mWantFakeUp  = 1;
 
 	return isdrag;
 
@@ -1411,23 +1402,13 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		return result;
 	#else
 
-        // TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
-
+	// TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
 	QDrag *drag = new QDrag(this);
 	QMimeData *mimeData = new QMimeData;
-
 	//mimeData->setData(mimeType, data);
 	drag->setMimeData(mimeData);
-
 	//start the drag
 	GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
-
-	//sending fake UP-Click
-	QPoint aPos( OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-	unsigned int sbtn = 1 << button;
-	QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,aPos,(Qt::MouseButton)sbtn,
-                                (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
-	QCoreApplication::postEvent(this, e);
 
 	return result;
 	#endif
