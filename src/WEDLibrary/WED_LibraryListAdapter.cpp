@@ -44,9 +44,9 @@ WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 	mCacheValid(false), mLibrary(who),
 	mMap(NULL),
 	mPreview(NULL),
-	mLocalStr("Local"),
-	mLibraryStr("Library"),
-	mCatChanger("Local")/*,
+	mLocalStr("Local/"),
+	mLibraryStr("Library/"),
+	mCatChanger("Local/")/*,
 	mCatLocInd(0),
 	mCatLibInd(0)*/
 {
@@ -81,19 +81,15 @@ void	WED_LibraryListAdapter::GetCellContent(
 			int							cell_y,
 			GUI_CellContent&			c)
 {
-	//creates a new copy of mCache
-	RebuildCache();
-	//If the cell_y is less than the size of the cache, it is an EditText cell, else
-	//if the cell_y is greater than the size of the cache it is a Cell None
-	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
-	//Set unable to edit
-	c.can_edit = false;
 	
+	RebuildCache();
+	
+	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
+	
+	c.can_edit = false;
+	c.can_disclose = 0;
 
-	//Key point: string r is equal to...
-	//if cell_y is less than the cache than r is equal to the string in mCache at index of cell_y
-	//else it is equal to nothing
-	//r is used for spliting apart the full file path into sections
+	//Key variable: r is used for spliting apart the full file path into sections
 	string r = cell_y < mCache.size() ? mCache[cell_y] : "";
 
 	//Set mCatChanger based on the r string, else it is carried over from whatever it was last set at
@@ -113,14 +109,14 @@ void	WED_LibraryListAdapter::GetCellContent(
 	if(cell_y < mCatLibInd)
 	{
 		mCatChanger = mLibraryStr;
-		//Erase the prefix
-		r.erase(0, mCatChanger.size());
+		//Erase the prefix + /
+		PrefixStripper(r);
 	}
 	else if(cell_y > mCatLibInd && cell_y < mCatLocInd)
 	{
 		mCatChanger = mLocalStr;
-		//Erase the prefix
-		r.erase(0, mCatChanger.size());
+		//Erase the prefix + /
+		PrefixStripper(r);
 	}
 	/*
 	* Because none of the ranges of checking are <= or >=
@@ -139,20 +135,12 @@ void	WED_LibraryListAdapter::GetCellContent(
 		mCatChanger = mLocalStr;
 		c.can_disclose = 1;
 	}
-
 	//c.can_disclose = mLibrary->GetResourceType(r) == res_Directory;
-	//If it is either local or library
-	if(r == mCatChanger)
-	{
-		c.can_disclose = 1;
-	}
-
-	//if the resource type is a directory than it can disclose
 	if( mLibrary->GetResourceType(r) == res_Directory)
 	{
 		c.can_disclose = 1;
 	}
-	
+
 	c.can_select = true;
 	
 	c.can_drag = false;
@@ -177,32 +165,33 @@ void	WED_LibraryListAdapter::GetCellContent(
 	if(r != mCatChanger) 
 	{
 		//Erase the prefix
-		r.insert(0,mCatChanger);
-	}
-	if(r == "Library//lib")
-	{
-		//Cut off the 1 / due to that typo in the name
-		r.erase(mCatChanger.size(),1);
+		PrefixAdder(r);
 	}
 
 	//Cut is a variable that helps with cuting the string apart
 	//It starts at -1 to offset 
 	int cut = -1;
 	c.indent_level = 0;
-
-	for(int n = 1; n < r.size(); ++n)
+	if(r != mCatChanger)
 	{
-		if(r[n] == '/')
+		for(int n = 1; n < r.size(); ++n)
 		{
-			cut = n;
-			++c.indent_level;
+			if(r[n] == '/')
+			{
+				cut = n;
+				++c.indent_level;
+			}
 		}
+		c.text_val = r.substr(cut+1);
 	}
-	
-	c.text_val = r.substr(cut+1);
+	else
+	{
+		r.erase(r.size()-1);
+		c.text_val = r;
+	}
 	c.string_is_resource = 0;
 #if DEV
-	//	c.printCellInfo();
+	c.printCellInfo(true,true,true,true,false,true,true,false,true,0,0,0,0,1);
 #endif
 }
 
@@ -288,8 +277,16 @@ void	WED_LibraryListAdapter::SelectRange(
 {
 	RebuildCache();
 	string r = mCache[start_y];
-	if(is_toggle && r == mSel)	SetSel("");
-	else						SetSel(r);
+	if(is_toggle && r == mSel)
+	{
+		SetSel("");
+	}
+	else
+	{
+		PrefixStripper(r);
+		SetSel(r);
+		PrefixAdder(r);
+	}
 
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 }
@@ -347,7 +344,7 @@ void	WED_LibraryListAdapter::GetHeaderContent(
 						int							cell_x,
 						GUI_HeaderContent&			c)
 {
-	c.title = "Library";
+	c.title = "Library Pane";
 	c.is_selected=false;
 	c.can_resize=false;
 	c.can_select=false;
@@ -482,7 +479,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 {
 	//Add the string to the cache.
-	mCache.push_back(mCatChanger + "/"+r);
+	mCache.push_back(mCatChanger + /*"/"+*/r);
 
 	//If the item is open or the filter has something in it
 	if(IsOpen(mCache.back()) || !mFilter.empty())
@@ -507,11 +504,25 @@ void WED_LibraryListAdapter::SetSel(const string& s)
 		else
 		{
 			if(mPreview)
-				mPreview->SetResource(s, mLibrary->GetResourceType(s));
+			{
+
+				int type =  mLibrary->GetResourceType(s);
+				mPreview->SetResource(s,type);
+			}
 			if(mMap)
 				mMap->SetResource(s, mLibrary->GetResourceType(s));
 		}
 		
 		mSel = s;
 	}
+}
+
+void WED_LibraryListAdapter::PrefixAdder(string& path)
+{
+	path.insert(0,mCatChanger);
+}
+
+void WED_LibraryListAdapter::PrefixStripper(string& path, int extra)
+{
+	path.erase(0, mCatChanger.size()+extra);
 }

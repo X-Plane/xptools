@@ -79,6 +79,9 @@
     <Filter Include="Interfaces">
       <UniqueIdentifier>{5e1ce0f9-593b-4814-aeba-ae3ddfa3caa7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="WEDResources\table">
+      <UniqueIdentifier>{4d190b19-e577-4964-bfd6-ea721e11ad27}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\WEDCore\WED_Application.cpp">
@@ -1606,6 +1609,33 @@
     </None>
     <None Include="..\..\msvc_libs\squish-1.10\singlecolourlookup.inl">
       <Filter>squish-1.1.0</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\arrows.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\check.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\disclose.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\eye.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\gradient.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\header.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\lock.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\property_bar.png">
+      <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\..\src\WEDResources\tables\sider.png">
+      <Filter>WEDResources\table</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

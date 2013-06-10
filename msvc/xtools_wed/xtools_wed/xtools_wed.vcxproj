@@ -521,6 +521,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\src\WEDResources\map_tools.psd" />
+    <None Include="..\..\..\src\WEDResources\tables\arrows.png" />
+    <None Include="..\..\..\src\WEDResources\tables\check.png" />
+    <None Include="..\..\..\src\WEDResources\tables\disclose.png" />
+    <None Include="..\..\..\src\WEDResources\tables\eye.png" />
+    <None Include="..\..\..\src\WEDResources\tables\gradient.png" />
+    <None Include="..\..\..\src\WEDResources\tables\header.png" />
+    <None Include="..\..\..\src\WEDResources\tables\lock.png" />
+    <None Include="..\..\..\src\WEDResources\tables\property_bar.png" />
+    <None Include="..\..\..\src\WEDResources\tables\sider.png" />
     <None Include="..\..\..\src\WEDResources\WED.icns" />
     <None Include="..\..\..\src\WEDResources\WEDManual.pdf" />
     <None Include="..\..\..\src\WEDResources\WED_Info.plist" />

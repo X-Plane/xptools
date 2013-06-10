@@ -157,13 +157,18 @@ public:
 
 private:
 
+		int		IsOpen(const string& r);
+		void	SetOpen(const string& r, int open);
+		void	RebuildCache();
+		void	RebuildCacheRecursive(const string& r);
+		void	SetSel(const string& s);
+			
+		//Adds the correct prefix (for drawing)
+		void	PrefixAdder(string& path);
 
-			int		IsOpen(const string& r);
-			void	SetOpen(const string& r, int open);
-			void	RebuildCache();
-			void	RebuildCacheRecursive(const string& r);
-			void	SetSel(const string& s);
-		
+		//Removes the correct prefix (for resource look up)
+		void	PrefixStripper(string& path, int extra=0);
+
 		//A hash map of open folders in the heirarchy
 		hash_map<string,int>	mOpen;
 
