@@ -160,32 +160,29 @@ private:
 		int		IsOpen(const string& r);
 		void	SetOpen(const string& r, int open);
 		void	RebuildCache();
+		//Recusively builds the cache, pass in a file path and a catagory string
 		void	RebuildCacheRecursive(const string& r);
 		void	SetSel(const string& s);
-			
-		//Adds the correct prefix (for drawing)
-		void	PrefixAdder(string& path);
-
-		//Removes the correct prefix (for resource look up)
-		void	PrefixStripper(string& path, int extra=0);
-
+		string GetNthCacheIndex (int index, bool havePrefix);
+		
+		
 		//A hash map of open folders in the heirarchy
 		hash_map<string,int>	mOpen;
 
 		//A cache of all paths to be shown.
 		vector<string>			mCache;
+		
 		bool					mCacheValid;
 		
 		//A string to switch library panes with
 		//Possible values Local or Library, listed below;
-		string					mCatChanger;
 		string					mLocalStr;
 		string					mLibraryStr;
 
 		//Index of Local/ in mCache
-		//int						mCatLocInd;
+		int						mCatLocInd;
 		//Index of Library/ in mCache
-		//int					mCatLibInd;
+		int						mCatLibInd;
 
 		//A collection of strings for the filter to be checked against
 		vector<string>			mFilter;
@@ -195,6 +192,7 @@ private:
 
 		WED_MapPane				* mMap;
 		WED_LibraryPreviewPane	* mPreview;
+		
 };
 
 #endif /* WED_LibraryListAdapter_H */

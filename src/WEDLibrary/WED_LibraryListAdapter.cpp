@@ -34,23 +34,17 @@
 
 static int kDefCols[] = { 100, 100 };
 
-//IDK why having these in the header is giving me "identifier is undefined problems" in the watcher so they are now here
-int mCatLocInd = 0;
-int mCatLibInd = 0;
-//string	mCatChanger = "";
-
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 		GUI_SimpleTableGeometry(1,kDefCols,20),
 	mCacheValid(false), mLibrary(who),
 	mMap(NULL),
 	mPreview(NULL),
-	mLocalStr("Local/"),
-	mLibraryStr("Library/"),
-	mCatChanger("Local/")/*,
 	mCatLocInd(0),
-	mCatLibInd(0)*/
+	mCatLibInd(0)
 {
 	mLibrary->AddListener(this);
+	this->mLocalStr = "Loc/";
+	this->mLibraryStr = "Lib/";
 }
 
 
@@ -81,117 +75,67 @@ void	WED_LibraryListAdapter::GetCellContent(
 			int							cell_y,
 			GUI_CellContent&			c)
 {
-	
+	/*How this works
+	* 1.) Rebuild the cache
+	* 2.) Get the path from mCache (with the prefixes)
+	* 3.) Set Flags
+	* 4.) Cut and draw (see more below)
+	*/
 	RebuildCache();
+	
+	//Key variable: path is used for spliting apart the full file path into sections (with prefix)
+	string path = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,true) : "";
+	//Path wihtout prefix
+	string rPath = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,false) : "";
 	
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
 	
+	//Defaults 0, makes !special or !normal
 	c.can_edit = false;
-	c.can_disclose = 0;
-
-	//Key variable: r is used for spliting apart the full file path into sections
-	string r = cell_y < mCache.size() ? mCache[cell_y] : "";
-
-	//Set mCatChanger based on the r string, else it is carried over from whatever it was last set at
-	//if the string at mCache is the last one (aka Local/)
-
-	/*mCache by this point will look something like 
-	* index 0
-	* ...
-	* index mCatLibInd
-	* ...
-	* index mCatLocInd
-	* Therefore anything between 0 and mCatLibInd is underneath Library
-	* and anything mCatLibInd+1 and mCatLocInd is underneath Local
-	*
-	* Since we are already dealting with indecies we can imediantly snip off the prefix
-	*/
-	if(cell_y < mCatLibInd)
-	{
-		mCatChanger = mLibraryStr;
-		//Erase the prefix + /
-		PrefixStripper(r);
-	}
-	else if(cell_y > mCatLibInd && cell_y < mCatLocInd)
-	{
-		mCatChanger = mLocalStr;
-		//Erase the prefix + /
-		PrefixStripper(r);
-	}
-	/*
-	* Because none of the ranges of checking are <= or >=
-	* We'll handle those cases here.
-	* This is done so we don't accidentally cut off the word Local or Library
-	* and yet still be able to make sure CatChanger is correct.
-	* The content flag is also changed since in here we know we are one of the special Catagory Labels
-	*/
-	else if(cell_y == mCatLibInd)
-	{
-		mCatChanger = mLibraryStr;
-		c.can_disclose = 1;
-	}
-	else if(cell_y == mCatLocInd)
-	{
-		mCatChanger = mLocalStr;
-		c.can_disclose = 1;
-	}
-	//c.can_disclose = mLibrary->GetResourceType(r) == res_Directory;
-	if( mLibrary->GetResourceType(r) == res_Directory)
+	c.can_disclose = 0; //Default no.
+	if(path.size() == (mLocalStr.size()-1) || path.size() == (mLibraryStr.size()-1))
 	{
 		c.can_disclose = 1;
 	}
-
-	c.can_select = true;
 	
+	c.can_select = true;
 	c.can_drag = false;
-
-	//If it can be disclosed
-	if(c.can_disclose)
-	{
-		//is disclosed is equal to the status of r as checked by IsOpen
-		c.is_disclosed = IsOpen(r);
-	}
-	else
-	{
-		//Otherwish it is not disclosed
-		c.is_disclosed = false;
-	}
-
-	//if r is the string selected in the library than c.is_selected is true
-	c.is_selected = r == mSel;
-
-	//Add the prefix back in
-	//If R is not either Local/ or Library/
-	if(r != mCatChanger) 
-	{
-		//Erase the prefix
-		PrefixAdder(r);
-	}
-
-	//Cut is a variable that helps with cuting the string apart
-	//It starts at -1 to offset 
-	int cut = -1;
 	c.indent_level = 0;
-	if(r != mCatChanger)
+	c.is_disclosed = IsOpen(rPath);
+	c.is_selected = rPath == mSel;
+	c.string_is_resource = 0;
+	c.text_val = path;	
+
+	//If it isn't one of the special catagory labels
+	if(path.size() != (mLocalStr.size()-1) || path.size() != (mLibraryStr.size()-1))
 	{
-		for(int n = 1; n < r.size(); ++n)
+		//Go through the string and increase the indent everytime one see's a /
+		int cut = 0;
+		for(int i = 0; i < c.text_val.size(); ++i)
 		{
-			if(r[n] == '/')
+			if(c.text_val[i] == '/')
 			{
-				cut = n;
+				//Update where to cut
+				cut = i;
 				++c.indent_level;
 			}
 		}
-		c.text_val = r.substr(cut+1);
+		
+		//If the fourth to last charecter in the path is a . then it must be a file
+		if( c.text_val.find_last_of('.',c.text_val.size()) == c.text_val.size()-4)
+		{
+			c.can_disclose = 0;
+		}
+		else
+		{
+			c.can_disclose = 1;
+		}
+		//Cut here
+		c.text_val = c.text_val.substr(cut+1);
+		return;
 	}
-	else
-	{
-		r.erase(r.size()-1);
-		c.text_val = r;
-	}
-	c.string_is_resource = 0;
 #if DEV
-	c.printCellInfo(true,true,true,true,false,true,true,false,true,0,0,0,0,1);
+	//c.printCellInfo(true,true,true,true,false,true,true,false,true,0,0,0,0,1);
 #endif
 }
 
@@ -283,9 +227,7 @@ void	WED_LibraryListAdapter::SelectRange(
 	}
 	else
 	{
-		PrefixStripper(r);
 		SetSel(r);
-		PrefixAdder(r);
 	}
 
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
@@ -392,9 +334,8 @@ void	WED_LibraryListAdapter::RebuildCache()
 	//Clear out all strings inside
 	mCache.clear();
 	
-	mCatChanger = mLocalStr;
-	mCache.push_back(mCatChanger);
-	
+	mCache.push_back(mLocalStr);
+
 	if(IsOpen(mLocalStr))
 	{
 		//Goes to the data model and gets all of the root items that are local
@@ -403,15 +344,12 @@ void	WED_LibraryListAdapter::RebuildCache()
 		//For all the root items
 		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
 		{
-	
 			//Try to find their children
 			RebuildCacheRecursive(*s);
-	
 		}
 	}
 
-	mCatChanger = mLibraryStr;
-	mCache.push_back(mCatChanger);
+	mCache.push_back(mLibraryStr);
 	
 	if(IsOpen(mLibraryStr))
 	{
@@ -421,10 +359,8 @@ void	WED_LibraryListAdapter::RebuildCache()
 		//For all root items
 		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
 		{
-		
 			//Try to find their children
 			RebuildCacheRecursive(*s);
-		
 		}
 	}
 
@@ -459,9 +395,10 @@ void	WED_LibraryListAdapter::RebuildCache()
 		//Swap keepers and mCache so mCache only has the strings to keep
 		std::swap(keepers,mCache);
 	}
+
 	//Reverse the order.
 	reverse(mCache.begin(),mCache.end());
-
+	
 	//Set the locations of mCatLocInd and mCatLibInd
 	for(vector<string>::iterator itr = mCache.begin(); itr != mCache.end(); ++itr)
 	{
@@ -479,7 +416,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
 {
 	//Add the string to the cache.
-	mCache.push_back(mCatChanger + /*"/"+*/r);
+	mCache.push_back(r);
 
 	//If the item is open or the filter has something in it
 	if(IsOpen(mCache.back()) || !mFilter.empty())
@@ -517,12 +454,52 @@ void WED_LibraryListAdapter::SetSel(const string& s)
 	}
 }
 
-void WED_LibraryListAdapter::PrefixAdder(string& path)
+string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool havePrefix)
 {
-	path.insert(0,mCatChanger);
-}
-
-void WED_LibraryListAdapter::PrefixStripper(string& path, int extra)
-{
-	path.erase(0, mCatChanger.size()+extra);
+	string path = mCache[index];
+	/*mCache by this point will look something like 
+	* index 0
+	* ...
+	* index mCatLibInd
+	* ...
+	* index mCatLocInd
+	* Therefore anything between 0 and mCatLibInd is underneath Library
+	* and anything mCatLibInd+1 and mCatLocInd is underneath Local
+	*/
+	if(index < mCatLibInd)
+	{
+		if(havePrefix)
+		{
+			return path.insert(0,mLibraryStr);
+		}
+		return path;
+	}
+	else if(index > mCatLibInd && index < mCatLocInd)
+	{
+		if(havePrefix)
+		{
+			return path.insert(0,mLocalStr);
+		}
+		return path;
+	}
+	/*
+	* Because none of the ranges of checking are <= or >=
+	* We'll handle those cases here.
+	*/
+	else if(index == mCatLibInd)
+	{
+		if(havePrefix)
+		{
+			return path.erase(path.size()-1);
+		}
+		return "";
+	}
+	else if(index == mCatLocInd)
+	{
+		if(havePrefix)
+		{
+			return path.erase(path.size()-1);
+		}
+		return "";
+	}
 }

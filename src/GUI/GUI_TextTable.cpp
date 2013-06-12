@@ -181,11 +181,7 @@ void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 
 void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )
 {
-	int testingLeft = cell_bounds[0];
-	int testingBottom = cell_bounds[1];
-	int testingRight = cell_bounds[2];
-	int testingTop = cell_bounds[3];
-	//If there is no image
+	//--This section draws?
 	if (mImage.empty())
 	{
 		//Change the instage so it is completely deactivated
@@ -199,7 +195,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
 		glEnd();
 	}
-
+	//---------
+	
 	//Cell Type, intacts with GUI_CellContentType enums
 	int cell_type = 0;
 
@@ -232,8 +229,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 
 	//If there is no longer content, exit
 	if (!mContent) return;
-
-	//If the cell content is selected
+	
+	//--Draw "selected" highlights
 	if (c.is_selected)
 	{
 		//highlight the selected place
@@ -247,7 +244,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		//Reset the color
 		glColor4fv(mColorGridlines);
 	}
-	
+	//-----------------------------------------------------
+
 	//advance the left side of the cell bounds by the indent level * the pixels of an indent
 	cell_bounds[0] += (c.indent_level * mCellIndent);
 
@@ -266,22 +264,32 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		c.text_val = "";
 		break;
 	}
-
-	//if the content is 
+	
+	
 	if(c.is_disclosed || c.can_disclose)
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
 
-		int tile[4] = { c.is_disclosed ? 1 : 0,
+		/*-----2x2 grid-
+		| A    | B  |
+		|  >  |  V  |
+		|_____|_____|
+		| C   | D   |
+		|_____|_____|*/
+			
+		int tile[4] = { 
+			//If discolosed V, else >
+			c.is_disclosed ? 1 : 0,
+			//If Everything is in its right place 1, else 0 (C or D)
 			(cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_Disclose && mInBounds) ? 1 : 0,
 			2, 2 };
-
+			
 		glColor3f(1,1,1);
 		GUI_DrawCentered(inState, "disclose.png", cell_bounds, -1, 0, tile, NULL, NULL);
 
 		cell_bounds[0] += mDiscloseIndent;
 	}
-
+	
 	float	cell_h = cell_bounds[3] - cell_bounds[1];
 	float	line_h = GUI_GetLineHeight(mFont);
 	int		descent = GUI_GetLineDescent(mFont);
@@ -323,19 +331,24 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		else
 		{
 			GUI_TruncateText(c.text_val, mFont, trunc_width);
+			
+			//Draws normal text
 			GUI_FontDraw(inState, mFont,
 				(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
 				cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());
 		}
 	}
 
+	//--Draws all enums
 	if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
 	{
 		int tile[4] = { 0, 0, 1, 1 };
 		glColor4fv((c.is_selected||cell_type) ? mColorTextSelect : mColorText);
 		GUI_DrawCentered(inState, "arrows.png", cell_bounds, 1, 0, tile, NULL, NULL);
 	}
+	//---------------------------------------------------------------------------
 
+	//--This section draws all Checkbox related items
 	if (c.content_type == gui_Cell_CheckBox)
 	{
 		int selector[4] = {
@@ -355,8 +368,10 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		case gui_Bool_Visible:		GUI_DrawCentered(inState, "eye.png", cell_bounds, 0, 0, selector, NULL, NULL);		break;
 		}
 	}
+	//---------------------------------------------------------------
 
 	inState->SetState(false, false, false,	true, true, false, false);
+	//----This switch draws highlights and effects for a dragging event
 	switch(mDragDest) {
 	case gui_Table_Row:
 	case gui_Table_Column:
@@ -406,7 +421,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		break;
 	}
 	glColor4fv(mColorGridlines);
-
+	//-----------------------------------------------------------------
 }
 
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
