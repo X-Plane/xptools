@@ -33,18 +33,22 @@
 #include "STLUtils.h"
 
 static int kDefCols[] = { 100, 100 };
-
+int printcounter = 0;
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 		GUI_SimpleTableGeometry(1,kDefCols,20),
 	mCacheValid(false), mLibrary(who),
 	mMap(NULL),
 	mPreview(NULL),
-	mCatLocInd(0),
-	mCatLibInd(0)
+	//Set to diffrent numbers so as not to cause conflicts
+	//in GetNthCacheIndex
+	mCatLocInd(-1234),
+	mCatLibInd(-5678)
 {
 	mLibrary->AddListener(this);
-	this->mLocalStr = "Loc/";
-	this->mLibraryStr = "Lib/";
+	this->mLocalStr = "Local/";
+	this->mLibraryStr = "Library/";
+	mOpen[mLocalStr] = 0;
+	mOpen[mLibraryStr] = 0;
 }
 
 
@@ -82,58 +86,59 @@ void	WED_LibraryListAdapter::GetCellContent(
 	* 4.) Cut and draw (see more below)
 	*/
 	RebuildCache();
-	
-	//Key variable: path is used for spliting apart the full file path into sections (with prefix)
-	string path = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,true) : "";
-	//Path wihtout prefix
-	string rPath = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,false) : "";
+
+	string pPath = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,true) : "";
+
+	string path = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,false) : "";
 	
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
 	
 	//Defaults 0, makes !special or !normal
 	c.can_edit = false;
 	c.can_disclose = 0; //Default no.
-	if(path.size() == (mLocalStr.size()-1) || path.size() == (mLibraryStr.size()-1))
-	{
-		c.can_disclose = 1;
-	}
 	
 	c.can_select = true;
 	c.can_drag = false;
 	c.indent_level = 0;
-	c.is_disclosed = IsOpen(rPath);
-	c.is_selected = rPath == mSel;
+	c.is_disclosed = IsOpen(path);
+	c.is_selected = path == mSel;
 	c.string_is_resource = 0;
-	c.text_val = path;	
+	c.text_val = path;
 
-	//If it isn't one of the special catagory labels
-	if(path.size() != (mLocalStr.size()-1) || path.size() != (mLibraryStr.size()-1))
+	//If the fourth to last charecter in the path is a . then it must be a file
+	if( c.text_val.find_last_of('.',c.text_val.size()) == c.text_val.size()-4)
 	{
-		//Go through the string and increase the indent everytime one see's a /
-		int cut = 0;
-		for(int i = 0; i < c.text_val.size(); ++i)
-		{
-			if(c.text_val[i] == '/')
-			{
-				//Update where to cut
-				cut = i;
-				++c.indent_level;
-			}
-		}
-		
-		//If the fourth to last charecter in the path is a . then it must be a file
-		if( c.text_val.find_last_of('.',c.text_val.size()) == c.text_val.size()-4)
-		{
-			c.can_disclose = 0;
-		}
-		else
-		{
-			c.can_disclose = 1;
-		}
-		//Cut here
-		c.text_val = c.text_val.substr(cut+1);
+		c.can_disclose = 0;
+	}
+	else
+	{
+		c.can_disclose = 1;
+	}
+	
+	if(cell_y == mCatLocInd || cell_y == mCatLibInd )
+	{
+		c.text_val = pPath;
 		return;
 	}
+	else
+	{
+		c.text_val = path;
+	}
+
+	//Go through the string and increase the indent everytime one see's a /
+	int cut = 0;
+	for(int i = 0; i < c.text_val.size(); ++i)
+	{
+		if(c.text_val[i] == '/' && c.text_val != pPath)
+		{
+			//Update where to cut
+			cut = i;
+			++c.indent_level;
+		}
+	}
+
+	//Cut here
+	c.text_val = c.text_val.substr(cut+1);
 #if DEV
 	//c.printCellInfo(true,true,true,true,false,true,true,false,true,0,0,0,0,1);
 #endif
@@ -158,11 +163,13 @@ void	WED_LibraryListAdapter::ToggleDisclose(
 			int							cell_x,
 			int							cell_y)
 {
+
 	RebuildCache();
+	string r = GetNthCacheIndex(cell_y,false);
 	if(cell_y < mCache.size())
 	{
-		string r(mCache[cell_y]);
 		SetOpen(r,1-IsOpen(r));
+
 		mCacheValid = false;
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
@@ -180,7 +187,7 @@ void	WED_LibraryListAdapter::SelectionStart(
 			int							clear)
 {
 	if(clear)
-		SetSel("");
+		SetSel("","");
 }
 
 int		WED_LibraryListAdapter::SelectGetExtent(
@@ -192,10 +199,12 @@ int		WED_LibraryListAdapter::SelectGetExtent(
 	RebuildCache();
 	low_x = high_x = 0;
 	for(int n = 0; n < mCache.size(); ++n)
-	if(mCache[n] == mSel)
 	{
-		low_y = high_y = n;
-		return true;
+		if(GetNthCacheIndex(n,false) == mSel)
+		{
+			low_y = high_y = n;
+			return true;
+		}
 	}
 	return false;
 }
@@ -220,14 +229,16 @@ void	WED_LibraryListAdapter::SelectRange(
 			int							is_toggle)
 {
 	RebuildCache();
-	string r = mCache[start_y];
+	string r = GetNthCacheIndex(start_y,false);
+	string noPrefix = GetNthCacheIndex(start_y,true);
+
 	if(is_toggle && r == mSel)
 	{
-		SetSel("");
+		SetSel("",noPrefix);
 	}
 	else
 	{
-		SetSel(r);
+		SetSel(r,noPrefix);
 	}
 
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
@@ -330,13 +341,14 @@ void	WED_LibraryListAdapter::RebuildCache()
 
 	//Set the cache to be valid
 	mCacheValid = true;
-
+	
 	//Clear out all strings inside
 	mCache.clear();
 	
 	mCache.push_back(mLocalStr);
+	mCatLocInd = mCache.size()-1;
 
-	if(IsOpen(mLocalStr))
+	if(IsOpen(GetNthCacheIndex(mCatLocInd,false)))
 	{
 		//Goes to the data model and gets all of the root items that are local
 		mLibrary->GetResourceChildren("",pack_Local,rootItems);
@@ -344,14 +356,17 @@ void	WED_LibraryListAdapter::RebuildCache()
 		//For all the root items
 		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
 		{
+			//Add the prefix
+			//s->insert(0,mLocalStr);
 			//Try to find their children
-			RebuildCacheRecursive(*s);
+			RebuildCacheRecursive(*s,pack_Local,mLocalStr);
 		}
 	}
 
 	mCache.push_back(mLibraryStr);
-	
-	if(IsOpen(mLibraryStr))
+	mCatLibInd = mCache.size()-1;
+
+	if(IsOpen(GetNthCacheIndex(mCatLibInd,false)))
 	{
 		//Goes to the data model and gets all of the root items that are in the library
 		mLibrary->GetResourceChildren("",pack_Library,rootItems);
@@ -360,7 +375,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
 		{
 			//Try to find their children
-			RebuildCacheRecursive(*s);
+			RebuildCacheRecursive(*s,pack_Library,mLibraryStr);
 		}
 	}
 
@@ -413,23 +428,23 @@ void	WED_LibraryListAdapter::RebuildCache()
 	}
 }
 
-void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
+void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r, int packType, const string& prefix)
 {
 	//Add the string to the cache.
-	mCache.push_back(r);
+	mCache.push_back(prefix+r);
 
 	//If the item is open or the filter has something in it
 	if(IsOpen(mCache.back()) || !mFilter.empty())
 	{
 		//Recuse again
 		vector<string> kids;
-		mLibrary->GetResourceChildren(r,pack_All,kids);
+		mLibrary->GetResourceChildren(r,packType,kids);
 		for(vector<string>::iterator k = kids.begin(); k != kids.end(); ++k)
-			RebuildCacheRecursive(*k);
+			RebuildCacheRecursive(*k, packType, prefix);
 	}
 }
 
-void WED_LibraryListAdapter::SetSel(const string& s)
+void WED_LibraryListAdapter::SetSel(const string& s,const string& noPrefix)
 {
 	if(s != mSel)
 	{
@@ -443,18 +458,18 @@ void WED_LibraryListAdapter::SetSel(const string& s)
 			if(mPreview)
 			{
 
-				int type =  mLibrary->GetResourceType(s);
-				mPreview->SetResource(s,type);
+				int type =  mLibrary->GetResourceType(noPrefix);
+				mPreview->SetResource(noPrefix,type);
 			}
 			if(mMap)
-				mMap->SetResource(s, mLibrary->GetResourceType(s));
+				mMap->SetResource(noPrefix, mLibrary->GetResourceType(noPrefix));
 		}
 		
 		mSel = s;
 	}
 }
 
-string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool havePrefix)
+string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool noPrefix)
 {
 	string path = mCache[index];
 	/*mCache by this point will look something like 
@@ -468,17 +483,17 @@ string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool havePrefix)
 	*/
 	if(index < mCatLibInd)
 	{
-		if(havePrefix)
+		if(noPrefix)
 		{
-			return path.insert(0,mLibraryStr);
+			return path.erase(0,mLibraryStr.length());
 		}
 		return path;
 	}
 	else if(index > mCatLibInd && index < mCatLocInd)
 	{
-		if(havePrefix)
+		if(noPrefix)
 		{
-			return path.insert(0,mLocalStr);
+			return path.erase(0,mLocalStr.length());
 		}
 		return path;
 	}
@@ -488,18 +503,34 @@ string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool havePrefix)
 	*/
 	else if(index == mCatLibInd)
 	{
-		if(havePrefix)
+		if(noPrefix)
 		{
 			return path.erase(path.size()-1);
 		}
-		return "";
+		return path;
 	}
 	else if(index == mCatLocInd)
 	{
-		if(havePrefix)
+		if(noPrefix)
 		{
 			return path.erase(path.size()-1);
 		}
-		return "";
+		return path;
 	}
 }
+
+#if DEV
+//Prints the contents of mOpen
+void WED_LibraryListAdapter::PrintMOpen(string path)
+{
+	hash_map<string,int>::iterator mOpItr; 
+	printf("\n ---------- \n %s \n ~~ \n", path);
+	for(mOpItr = mOpen.begin(); mOpItr != mOpen.end(); mOpItr++)
+	{
+		printf("Path: %s", mOpItr->first.c_str());
+		printf(", Open? %d \n", mOpItr->second);
+	}
+	printf("----------");
+	printcounter++;
+}
+#endif
