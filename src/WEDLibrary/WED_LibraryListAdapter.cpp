@@ -252,7 +252,25 @@ int		WED_LibraryListAdapter::SelectDisclose(
 			int							open_it,
 			int							all)
 {
-	if (!mSel.empty() && mLibrary->GetResourceType(mSel) == res_Directory)
+	/* Find the mSel, remove the prefix (correctly)
+	* Test if the current selection is not a file
+	* If it is not a file, do what it needs to do
+	* Else return nothing
+	*/
+	vector<string>::iterator itr = find(mCache.begin(),mCache.end(),mSel);
+	string tempMSel = "";
+	
+	if(*itr == mLocalStr || *itr == mLibraryStr)
+	{
+		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),false);
+	}
+	else
+	{
+		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),true);
+	}
+	
+	if (!mSel.empty() && mLibrary->GetResourceType(tempMSel) == res_Directory ||
+		mSel == mLocalStr || mSel == mLibraryStr)
 	{
 		SetOpen(mSel, open_it);
 		mCacheValid = false;
