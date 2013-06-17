@@ -139,6 +139,7 @@ public:
 	virtual void		SetBounds(int inBounds[4]);
 			void		GetSticky(float outSticky[4]);
 			void		SetSticky(float inSticky[4]);
+						//Left, Bottom, Right, Top
 			void		SetSticky(float x1, float y1, float x2, float y2);
 
 			int			GetID(void) const;

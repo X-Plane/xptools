@@ -19,6 +19,7 @@
     <ClCompile Include="..\..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
     <ClCompile Include="..\..\..\src\Env\EnvParser.c" />
     <ClCompile Include="..\..\..\src\Env\Persistence.cpp" />
+    <ClCompile Include="..\..\..\src\GUI\GUI_AdvancedFilterPane.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Application.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Broadcaster.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Button.cpp" />
@@ -173,7 +174,6 @@
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFExport.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFImport.cpp" />
-    <ClCompile Include="..\..\..\src\WEDLibrary\GUI_AdvancedFilterPane.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
@@ -250,6 +250,7 @@
     <ClInclude Include="..\..\..\src\Env\EnvDefs.h" />
     <ClInclude Include="..\..\..\src\Env\EnvParser.h" />
     <ClInclude Include="..\..\..\src\Env\Persistence.h" />
+    <ClInclude Include="..\..\..\src\GUI\GUI_AdvancedFilterPane.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Application.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Broadcaster.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Button.h" />
@@ -421,7 +422,6 @@
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFExport.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFImport.h" />
-    <ClInclude Include="..\..\..\src\WEDLibrary\GUI_AdvancedFilterPane.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPane.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
