@@ -45,6 +45,7 @@ WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 	mCatLibInd(-5678)
 {
 	mLibrary->AddListener(this);
+	//this->AddListener(
 	this->mLocalStr = "Local/";
 	this->mLibraryStr = "Library/";
 	mOpen[mLocalStr] = 0;
@@ -332,6 +333,49 @@ void	WED_LibraryListAdapter::ReceiveMessage(
 		mCacheValid = false;
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
+	if(inMsg == GUI_FILTER_MENU_CHANGED)
+	{
+		mCacheValid = false;
+	}
+
+}
+
+void WED_LibraryListAdapter::DoFilter()
+{
+	//If there is something in the filte
+	if(!mFilter.empty())
+	{
+		//A collection strings to keep
+		vector<string>	keepers;
+		int last = -1;
+
+		//For all the strings in the cache
+		for(int i = 0; i < mCache.size(); ++i)
+		{
+			//If the current string in mCache matches whats in the filter
+			if(filter_match(mCache[i],mFilter.begin(),mFilter.end()))
+			{
+
+				for(int p = last+1; p < i; ++p)
+				{
+					if(mCache[p].size() < mCache[i].size() &&
+						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
+					{
+						keepers.push_back(mCache[p]);					
+					}
+				}
+				//Add the string to keepers
+				keepers.push_back(mCache[i]);
+				last = i;
+			}
+		}
+
+		//Swap keepers and mCache so mCache only has the strings to keep
+		std::swap(keepers,mCache);
+	}
+
+	//Reverse the order.
+	reverse(mCache.begin(),mCache.end());
 }
 
 int		WED_LibraryListAdapter::IsOpen(const string& r)
@@ -396,42 +440,8 @@ void	WED_LibraryListAdapter::RebuildCache()
 			RebuildCacheRecursive(*s,pack_Library,mLibraryStr);
 		}
 	}
-
-	//If there is something in the filte
-	if(!mFilter.empty())
-	{
-		//A collection strings to keep
-		vector<string>	keepers;
-		int last = -1;
-
-		//For all the strings in the cache
-		for(int i = 0; i < mCache.size(); ++i)
-		{
-			//If the current string in mCache matches whats in the filter
-			if(filter_match(mCache[i],mFilter.begin(),mFilter.end()))
-			{
-
-				for(int p = last+1; p < i; ++p)
-				{
-					if(mCache[p].size() < mCache[i].size() &&
-						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
-					{
-						keepers.push_back(mCache[p]);					
-					}
-				}
-				//Add the string to keepers
-				keepers.push_back(mCache[i]);
-				last = i;
-			}
-		}
-
-		//Swap keepers and mCache so mCache only has the strings to keep
-		std::swap(keepers,mCache);
-	}
-
-	//Reverse the order.
-	reverse(mCache.begin(),mCache.end());
 	
+	DoFilter();
 	//Set the locations of mCatLocInd and mCatLibInd
 	for(vector<string>::iterator itr = mCache.begin(); itr != mCache.end(); ++itr)
 	{

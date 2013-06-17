@@ -34,6 +34,7 @@ class	WED_CreatePointTool;
 class	WED_CreatePolygonTool;
 class	WED_MapPane;
 class	WED_LibraryPreviewPane;
+class	GUI_AdvancedFilterPane;
 
 class WED_LibraryListAdapter : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_TextTableHeaderProvider, public GUI_Broadcaster, public GUI_Listener {
 public:
@@ -154,6 +155,9 @@ public:
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
+	
+	//Runs the filter based on a number of parameters
+	void			DoFilter(/*vector<strings> sources, vector<strings> types, string with, string without*/);
 
 private:
 		/* What is a prefix and how do I use it? A guide about how to use
@@ -240,6 +244,7 @@ private:
 		//A collection of strings for the filter to be checked against
 		vector<string>			mFilter;
 
+		
 		WED_LibraryMgr *		mLibrary;
 		string					mSel;
 

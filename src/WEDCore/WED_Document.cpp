@@ -296,11 +296,13 @@ bool	WED_Document::Save(void)
 		xml_file->_flag |= _IOERR;
 		#endif
 		stage = error;
+		//Checks for all errors
+		ferrorErr = ferror(xml_file);
+		//Closes the file and returns any error number if so.
+		fcloseErr = fclose(xml_file);
 	}
 	
-	#if DEV		//Ensures that there is an error for ferror to pick up on, comment out when not needing to debug
-	//xml_file->_flag |= _IOERR;
-	#endif
+	//stage = error;
 	
 	//if there has been some error or fclose it has an error closing the file
 	if( ferrorErr != 0 || fcloseErr != 0 || stage == error)
@@ -328,6 +330,10 @@ bool	WED_Document::Save(void)
 				break;
 			case error:
 				DoUserAlert("Please check file path for errors or missing parts");
+				/*while(mArchive.IsDirty()>0)
+				{
+					mUndo.Undo();
+				}*/
 				return false;
 		}
 	}

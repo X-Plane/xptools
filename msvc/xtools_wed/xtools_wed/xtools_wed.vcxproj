@@ -173,6 +173,7 @@
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFExport.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFImport.cpp" />
+    <ClCompile Include="..\..\..\src\WEDLibrary\GUI_AdvancedFilterPane.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
@@ -420,6 +421,7 @@
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFExport.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFImport.h" />
+    <ClInclude Include="..\..\..\src\WEDLibrary\GUI_AdvancedFilterPane.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPane.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
