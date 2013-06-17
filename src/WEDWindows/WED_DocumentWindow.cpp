@@ -373,16 +373,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
-	case gui_Save:
-		//If the document was saved succefully
-		if(mDocument->Save()==true)
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
+	case gui_Save:		mDocument->Save(); return 1;
+
 	case gui_Revert:	mDocument->Revert();	return 1;
 
 	case gui_SelectAll:		WED_DoSelectAll(mDocument);		return 1;

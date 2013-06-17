@@ -171,7 +171,7 @@ WED_NWLinkAdapter *	WED_Document::GetNWLink(void)
 	return mNWLink;
 }
 #endif
-bool	WED_Document::Save(void)
+void	WED_Document::Save(void)
 {
 	BroadcastMessage(msg_DocWillSave, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 
@@ -202,39 +202,32 @@ bool	WED_Document::Save(void)
 	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
 */
 
-	/* Annnoymous enum and Stage: Used for switch statements throughoug this method
-	* int stage is just used for storing the varialbes,
-	* the enum is for readablity sake and not using magic numbers
+	/* Annnoymous enum and Stage: Used for switch statements throughout this method
 	* none: For when there is no earth.wed.xml (a brand new document is created)
 	* nobackup: For when the .bak file hasn't been created yet
 	* both: for when the .bak and regular files are in place
 	*/
-	enum {none,nobackup,both,error};
+	enum {none,nobackup,both};
 	int stage;
 
-	//File path of the xml
-	string xml = mFilePath;
+	//Create the strings path..earth.wed.xml,earth.wed.bak.xml,earth.wed.bak.bak.xml
+	//All or some of these are used through out
 	
-	//add .xml onto the end
+	string xml = mFilePath;
 	xml += ".xml";
-	//File path of the back up starts as the normal file
-	string bakXML = xml;
-	//then it mutatats to include the .bak coming out to be earth.wed.bak.xml
+	
+	string bakXML = xml;	
 	bakXML = bakXML.insert((bakXML.length()-4),".bak");
 	
-	//Rename the current earth.wed.bak.xml to earth.wed.bak.bak.xml
 	string tempBakBak = bakXML;
-
-	//Mutate bak bak so the path is ...earth.wed.bak.bak.xml
 	tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
 
-	//A wide name
+
 	string_utf16 wname;
 	string_utf_8_to_16(xml,wname);
 
 	//If there is no earth.wed.xml file
 	if(FILE_exists(xml.c_str()) == false){
-		//Set this variable for use later on
 		stage = none;
 	}
 	//If there is no back up and there is an earth.wed.xml
@@ -274,49 +267,29 @@ bool	WED_Document::Save(void)
 	#else
 	FILE * xml_file = fopen(xml.c_str(),"w");
 	#endif
-	int ferrorErr = 0;
-	int fcloseErr = 0;
-	//If there was not any error opening the file
-	if(xml_file != NULL)
+	
+	int ferrorErr = ferror(xml_file);
+		//If everything else has worked
+	if(ferrorErr == 0)
 	{
-		//Write the XML to the the file
 		WriteXML(xml_file);
-		//Checks for all errors
-		ferrorErr = ferror(xml_file);
-		//Closes the file and returns any error number if so.
-		fcloseErr = fclose(xml_file);
 	}
-	else if (xml_file == NULL)
-	{
-		stage = error;
-	}
-	else
-	{
-		#if IBM
-		xml_file->_flag |= _IOERR;
-		#endif
-		stage = error;
-		//Checks for all errors
-		ferrorErr = ferror(xml_file);
-		//Closes the file and returns any error number if so.
-		fcloseErr = fclose(xml_file);
-	}
-	
-	//stage = error;
-	
-	//if there has been some error or fclose it has an error closing the file
-	if( ferrorErr != 0 || fcloseErr != 0 || stage == error)
+	int fcloseErr = fclose(xml_file);
+	if(ferrorErr != 0 || fcloseErr != 0)
 	{
 		//This is the error handling switch
 		switch(stage)
 		{
 			case none:
+				FILE_delete_file(xml.c_str(),0);
+				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 			case nobackup:
 				//Delete's the bad save
 				FILE_delete_file(xml.c_str(),0);
 				//un-renames the old one
 				FILE_rename_file(bakXML.c_str(),xml.c_str());
+				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 			case both:
 				//delete incomplete file
@@ -327,23 +300,17 @@ bool	WED_Document::Save(void)
 
 				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
 				FILE_rename_file(tempBakBak.c_str(),bakXML.c_str());
-				break;
-			case error:
 				DoUserAlert("Please check file path for errors or missing parts");
-				/*while(mArchive.IsDirty()>0)
-				{
-					mUndo.Undo();
-				}*/
-				return false;
+				break;
 		}
-	}
+	}	
+	
 	//if the second backup still exists after the error handling
 	if(FILE_exists(tempBakBak.c_str()) == true)
 	{
 		//Delete it
 		FILE_delete_file(tempBakBak.c_str(),0);
 	}
-	return true;
 }
 
 void	WED_Document::Revert(void)
