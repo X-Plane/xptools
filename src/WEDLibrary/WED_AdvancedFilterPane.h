@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef GUI_AdvancedFilterPane_H
-#define GUI_AdvancedFilterPane_H
+#ifndef WED_AdvancedFilterPane_H
+#define WED_AdvancedFilterPane_H
 
 #include "GUI_Commander.h"
 #include "GUI_Broadcaster.h"
@@ -70,11 +70,11 @@
 	* |_________________________________|_<_______________>___|
 	*/
 
-class GUI_AdvancedFilterPane : public GUI_Packer, public GUI_Commander, public GUI_Listener, public GUI_Broadcaster
+class WED_AdvancedFilterPane : public GUI_Packer, public GUI_Commander, public GUI_Listener, public GUI_Broadcaster
 {
 public:
-	GUI_AdvancedFilterPane(GUI_Commander * commander);
-	~GUI_AdvancedFilterPane(void);
+	WED_AdvancedFilterPane(GUI_Commander * commander);
+	~WED_AdvancedFilterPane(void);
 	//--Text Table Methods
 
 	void			ToggleAllOptions();
@@ -93,5 +93,5 @@ private:
 	vector<GUI_Pane>		mGUIElements;
 };
 
-#endif /* GUI_AdvancedFilterPane_H*/
+#endif /* WED_AdvancedFilterPane_H*/
 

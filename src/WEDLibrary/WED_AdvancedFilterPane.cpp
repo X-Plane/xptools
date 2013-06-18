@@ -1,7 +1,7 @@
-#include "GUI_AdvancedFilterPane.h"
+#include "WED_AdvancedFilterPane.h"
 #include "GUI_Menus.h"
 
-GUI_AdvancedFilterPane::GUI_AdvancedFilterPane(GUI_Commander * commander) : GUI_Commander(commander), GUI_Broadcaster()
+WED_AdvancedFilterPane::WED_AdvancedFilterPane(GUI_Commander * commander) : GUI_Commander(commander), GUI_Broadcaster()
 {
 	int temp[4] = {0,0,0,0};
 	mResetAllBtn = new GUI_Button("reset_options.png",btn_Push,temp,temp,temp,temp);
@@ -10,15 +10,13 @@ GUI_AdvancedFilterPane::GUI_AdvancedFilterPane(GUI_Commander * commander) : GUI_
 }
 
 
-GUI_AdvancedFilterPane::~GUI_AdvancedFilterPane(void)
+WED_AdvancedFilterPane::~WED_AdvancedFilterPane(void)
 {
-	delete mResetAllBtn;
-	delete mTFWith;
-	delete mTFWithout;
+
 }
 
 
-void GUI_AdvancedFilterPane::ToggleAllOptions()
+void WED_AdvancedFilterPane::ToggleAllOptions()
 {
 	/*For all elements
 	* Reset to their default states
@@ -34,7 +32,7 @@ void GUI_AdvancedFilterPane::ToggleAllOptions()
 }
 
 
-void GUI_AdvancedFilterPane::SendSearch()
+void WED_AdvancedFilterPane::SendSearch()
 {
 	BroadcastMessage(GUI_FILTER_MENU_CHANGED,0);
 }
