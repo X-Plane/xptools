@@ -137,18 +137,16 @@ int main(int argc, char * argv[])
 #endif
 	WED_PackageMgr	pMgr(NULL);
 
-#if IBM && DEV
-	// This is so we can actually see printf in a console on windows
-	if(AllocConsole())
-	{
-
-			freopen("CONOUT$", "w",stdout);
-			SetConsoleTitle("Debug Window for GUI_Pane Info");
-			//Minimizes the console, uncomment the next line to restore it for use
-			ShowWindow( GetConsoleWindow(), SW_HIDE );
-			//ShowWindow( GetConsoleWindow(), SW_RESTORE );
-	}
-#endif
+	#if IBM && DEV
+		//Creates a console window to use as a debuging place and starts it minimized
+		if(AllocConsole())
+		{
+				freopen("CONOUT$", "w",stdout);
+				SetConsoleTitle("Debug Window");
+				ShowWindowAsync(GetConsoleWindow(),SW_SHOWNORMAL);
+				ShowWindowAsync(GetConsoleWindow(),SW_SHOWMINNOACTIVE);
+		}
+	#endif
 
 	// Ben says: the about box is actually integral to WED's operation.  WED uses a series of shared OGL contexts to hold
 	// our textures, and WED cannot handle the textures being thrown away and needing a reload.  So logically we must have

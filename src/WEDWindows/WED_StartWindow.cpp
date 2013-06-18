@@ -292,6 +292,22 @@ int		WED_StartWindow::MouseMove(int x, int y)
 
 int			WED_StartWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
+#if IBM && DEV
+	//Press C to show to maximize the debug console
+	if(inVK == GUI_VK_C)
+	{
+		//Minimizes the console, uncomment the next line to restore it for use
+		ShowWindow( GetConsoleWindow(), SW_SHOWNOACTIVATE );
+
+		return 1;
+	}
+	//Press H to minimize
+	if(inVK = GUI_VK_H)
+	{
+		ShowWindow( GetConsoleWindow(), SW_SHOWMINNOACTIVE );
+		return 1;
+	}
+#endif
 	return 0;
 }
 
