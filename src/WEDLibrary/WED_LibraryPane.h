@@ -24,6 +24,7 @@
 #ifndef WED_LibraryPane_H
 #define WED_LibraryPane_H
 
+#include "GUI_Splitter.h"
 #include "GUI_Packer.h"
 #include "GUI_Commander.h"
 #include "GUI_TextTable.h"
@@ -32,8 +33,9 @@
 class	GUI_ScrollerPane;
 class	WED_LibraryMgr;
 class	WED_FilterBar;
+class	GUI_Splitter;
 
-class WED_LibraryPane : public GUI_Packer, public GUI_Commander, public GUI_Listener {
+class WED_LibraryPane : public GUI_Commander, public GUI_Listener, public GUI_Splitter {
 public:
 
 								 WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr);
@@ -55,7 +57,7 @@ private:
 	GUI_TextTable			mTextTable;
 	GUI_TextTableHeader		mTextTableHeader;
 
-
+	GUI_Packer	*			mTopPacker;
 	WED_FilterBar *			mFilter;
 	WED_LibraryListAdapter	mLibraryList;
 
