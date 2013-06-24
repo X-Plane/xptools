@@ -45,7 +45,7 @@ void	GenerateOGL(AptInfo_t * a);
 const char * ramp_type_strings[] = { "misc","gate","tie_down","hangar", 0 };
 const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", 0 };
-const char * op_strings[] = { "arrivals", "departures" };
+const char * op_strings[] = { "arrivals", "departures", 0 };
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)

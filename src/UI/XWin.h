@@ -134,7 +134,7 @@ public:
 			bool			GetVisible(void) const;
 			bool			GetActive(void) const;
 
-			int				TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current);
+			int				TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current);
 
 	// Callbacks
 	virtual	void			Timer(void)=0;
@@ -171,10 +171,10 @@ protected:
 
 		WindowRef				mWindow;
 		EventLoopTimerRef		mTimer;
-		int						mInDrag[BUTTON_DIM];
+		int						mInDrag;			// Button being dragged or -1 if none.  This ensures we send only one down/drag/up sequence.
+		int						mWantFakeUp;		// True if the down or drag handler should fake an up click and end the gesture.
 		int						mLastMouseX;
 		int						mLastMouseY;
-//		int						mLastMouseButton;
 		int						mIsControlClick;
 public:
 		static pascal OSStatus	MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
@@ -189,7 +189,8 @@ public:
 		CDropTarget *	mDropTarget;
 		POINT			mMouse;
 		POINT			mSizeMin;
-		int				mDragging[BUTTON_DIM];
+		int				mDragging;
+		int				mWantFakeUp;
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -202,8 +203,10 @@ public:
 #endif
 
 #if LIN
-	int	mDragging[BUTTON_DIM];
-	int mTimer;
+	int		mDragging; // Button being dragged or -1 if none ;
+	int		mWantFakeUp;
+	int		mBlockEvents;	
+	int		mTimer;
 	POINT	mMouse;
 public:
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);

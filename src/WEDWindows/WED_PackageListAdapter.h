@@ -31,7 +31,7 @@
 class WED_PackageListAdapter : public GUI_TextTableProvider, public GUI_TableGeometry, public GUI_Broadcaster, public GUI_Listener {
 public:
 
-					 WED_PackageListAdapter();
+					 WED_PackageListAdapter(GUI_Commander * cmd_target);
 	virtual			~WED_PackageListAdapter();
 
 			bool	HasSelection(void);
@@ -60,6 +60,7 @@ public:
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,
 						int							mouse_y,
+						int							button,
 						int							bounds[4]);
 
 	virtual void	SelectionStart(
@@ -163,8 +164,9 @@ public:
 
 private:
 
-	set<string>	mLock;
-	int			mSel;
+	GUI_Commander *	mCmdTarget;
+	set<string>		mLock;
+	int				mSel;
 
 };
 

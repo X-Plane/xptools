@@ -651,12 +651,13 @@ GUI_DragOperation	WED_DoDragSelection(
 								GUI_Pane *				pane,
 								int						x,
 								int						y,
+								int						button,
 								int						where[4])
 {
 	void * dummy = NULL;
 	const void *	ptrs[1] = { &dummy };
 	int		sizes[1] = { sizeof(dummy) };
-	return pane->DoDragAndDrop(x,y,where,
+	return pane->DoDragAndDrop(x,y,button,where,
 							gui_Drag_Move,
 							1,
 							&sSelectionType,

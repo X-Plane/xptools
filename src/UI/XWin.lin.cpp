@@ -10,9 +10,11 @@ XWin::XWin(
 	int		inHeight,
 	QWidget *parent) : QMainWindow(parent), mInited(false)
 {
-	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
-	mMouse.x = 0;
-	mMouse.y = 0;
+	mDragging    =-1;
+	mWantFakeUp  = 0;
+	mBlockEvents = 0;
+	mMouse.x     = 0;
+	mMouse.y     = 0;
 	SetTitle(inTitle);
 
 	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
@@ -31,9 +33,12 @@ XWin::XWin(
 
 XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(false)
 {
-	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
-	mMouse.x = 0;
-	mMouse.y = 0;
+	mDragging    =-1;
+	mWantFakeUp  = 0;
+	mBlockEvents = 0;
+	mMouse.x     = 0;
+	mMouse.y     = 0;
+	
 	setMouseTracking(true);
 	setFocusPolicy(Qt::StrongFocus);
 	if (default_dnd)
@@ -63,50 +68,77 @@ void XWin::resizeEvent(QResizeEvent* e)
 
 void XWin::mousePressEvent(QMouseEvent* e)
 {
-    unsigned int rbtn = e->button();
-    int btn = 0;
-    for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
-    if (btn==0 || btn > 3)  return;
-    btn--;
+	unsigned int rbtn = e->button();
+	int btn = 0;
+	for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
+	if (btn==0 || btn > 3)  return;
+	btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
 
-    if(!mDragging[btn])
-    {
-        mDragging[btn]=1;
-        ClickDown(mMouse.x, mMouse.y, btn);
-    }
+	if(mBlockEvents) return;
+	
+	if(mDragging == -1)
+	{
+		mDragging = btn;
+		ClickDown(mMouse.x, mMouse.y, btn);
+		
+		if(mWantFakeUp)
+		{
+			int btn = mDragging;
+			mDragging = -1;
+			ClickUp(mMouse.x, mMouse.y, btn);
+			mWantFakeUp = 0;
+		}
+	}
 }
 
 void XWin::mouseReleaseEvent(QMouseEvent* e)
 {
-    unsigned int rbtn = e->button();
-    int btn = 0;
-    for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
-    if (btn==0 || btn > 3) return;
-    btn--;
+	unsigned int rbtn = e->button();
+	int btn = 0;
+	for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
+	if (btn==0 || btn > 3) return;
+	btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
+	
+	if(mBlockEvents) return;
 
-    if(mDragging[btn])
-			ClickUp(mMouse.x, mMouse.y, btn);
-    mDragging[btn]=0;
-
+	if(mDragging == btn)
+	{
+		mDragging = -1;
+		ClickUp(mMouse.x, mMouse.y, btn);
+	}
 }
 
 void XWin::mouseMoveEvent(QMouseEvent* e)
 {
 	mMouse.x = e->x();
 	mMouse.y = e->y();
-	int bc=0;
-	for(int b=0;b<BUTTON_DIM;++b) {
-		if(mDragging[b]) {
-			++bc;
-			ClickDrag(mMouse.x, mMouse.y, b);
+	
+	//mroe: We need the above calls , 
+	// also to get the event proceeded for the dragdetect in GUI_Windows::IsDrag.
+	// Seems the event is droped if the function does nothing.
+	// Having thecurrent mouse-position ever is not that bad at all.
+	if(mBlockEvents) return;
+
+	if((mDragging >= 0 ) && (mDragging < BUTTON_DIM))
+	{
+		ClickDrag(mMouse.x, mMouse.y,mDragging);
+		
+		if(mWantFakeUp)
+		{
+			int btn = mDragging;
+			mDragging = -1;
+			ClickUp(mMouse.x, mMouse.y, btn);
+			mWantFakeUp = 0;
 		}
 	}
-	if(bc==0)
+	else
+	{
 		ClickMove(mMouse.x, mMouse.y);
+	}
 }
 
 void XWin::wheelEvent(QWheelEvent* e)
@@ -324,19 +356,15 @@ void XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 void XWin::DrawMenuBar(void)
 {}
 
-int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
+int XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	if(!in_menu) return -1;
-
-	QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,
-	QPoint(mouse_x, mouse_y), Qt::LeftButton, Qt::LeftButton,
-	QApplication::keyboardModifiers());
-
-	QCoreApplication::postEvent(this, e);
-
 	QAction * aaction = in_menu->exec(this->mapToGlobal(QPoint(mouse_x,mouse_y)));
 	
-	memset(mDragging,0,sizeof(int)*BUTTON_DIM);
+	if(mDragging == button)
+	{
+		mWantFakeUp = 1;
+	}
 	
 	return in_menu->actions().indexOf(aaction);
 }
