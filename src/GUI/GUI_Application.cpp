@@ -140,6 +140,7 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 					if (me->DispatchHandleCommand(gui_Prefs))			return noErr;
 					else												return eventNotHandledErr;
 				default:
+					if(cmd.commandID)
 					if (me->DispatchHandleCommand(cmd.commandID))		return noErr;
 					else												return eventNotHandledErr;
 				}

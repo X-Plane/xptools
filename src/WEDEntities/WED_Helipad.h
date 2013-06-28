@@ -45,6 +45,8 @@ public:
 	void	Import(const AptHelipad_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptHelipad_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Helipad"; }
+
 private:
 
 	WED_PropIntEnum		surface;

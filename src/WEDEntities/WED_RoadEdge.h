@@ -39,6 +39,8 @@ public:
 
 	virtual	bool			IsOneway(void) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Road"; }
+
 private:
 
 	WED_PropIntText			layer;

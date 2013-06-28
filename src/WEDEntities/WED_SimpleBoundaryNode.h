@@ -31,6 +31,10 @@ class WED_SimpleBoundaryNode : public WED_GISPoint {
 
 DECLARE_PERSISTENT(WED_SimpleBoundaryNode)
 
+public:
+
+	virtual const char *	HumanReadableType(void) const { return "Boundary Node"; }
+
 };
 
 

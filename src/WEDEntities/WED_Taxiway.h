@@ -43,6 +43,8 @@ public:
 	void		Import(const AptTaxiway_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptTaxiway_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Taxiway"; }
+
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return true; }

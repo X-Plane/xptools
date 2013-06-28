@@ -36,7 +36,8 @@ static EventLoopTimerUPP		mTimerHandler = NewEventLoopTimerUPP(XWin::MacTimer);
 XWin::XWin(int default_dnd)
 {
 	sIniting = true;
-	memset(mInDrag, 0, sizeof(mInDrag));
+	mInDrag = -1;
+	mWantFakeUp = 0;
 
 		Rect	bounds;
 
@@ -102,7 +103,8 @@ XWin::XWin(
 	int				inHeight)
 {
 	sIniting = true;
-	memset(mInDrag,0,sizeof(mInDrag));
+	mInDrag = -1;
+	mWantFakeUp = 0;
 
 		Rect	bounds;
 
@@ -352,32 +354,44 @@ pascal OSStatus	XWin::MacEventHandler(
 	SetPortWindowPort(me->mWindow);
 	GlobalToLocal(&pt);
 
-	int bcount;
-
 	switch(clss) {
 	case kEventClassMouse:
 		if (btn == 1 && me->mIsControlClick) btn = 2;
 		switch(kind) {
 		case kEventMouseUp:
-			if (me->mInDrag[btn-1])
+			if (me->mInDrag == (btn-1))
+			{
+				// Mark up click as dispatched FIRST - if click up calls back into the popup 
+				// tracking handler, we need it to know we are ALREADY closed off and to not
+				// send a fake up click.
+				me->mInDrag = -1;
 				me->ClickUp(pt.h, pt.v, btn - 1);
-			me->mInDrag[btn-1] = false;
+			}
 			return noErr;
 		case kEventMouseDragged:
-		case kEventMouseMoved:
-			bcount=0;
-			for(btn=0;btn<BUTTON_DIM;++btn)
-			if (me->mInDrag[btn])
+		case kEventMouseMoved:			
+			if (me->mInDrag >= 0)
 			{
-				++bcount;
-				me->ClickDrag(pt.h, pt.v, btn);
+				me->ClickDrag(pt.h, pt.v, me->mInDrag);
+				// Every dispatch to a down or drag must then check for a request for an 
+				// immediate fake-up...if we get one, we dispatch the fake up event and then
+				// clear our button flag so that if the real up comes, we ignore it.  We
+				// need this for the popup menu since it sometimes 'eats' the up-click we 
+				// need.
+				if(me->mWantFakeUp)
+				{
+					btn = me->mInDrag + 1;
+					me->mInDrag = -1;
+					me->ClickUp(pt.h, pt.v, btn - 1);
+					me->mWantFakeUp = 0;
+				}
 			}
-			if(bcount==0)
+			else
+			{
 				me->ClickMove(pt.h, pt.v);
+			}
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
-//			if (kind == kEventMouseDragged)
-//				me->mLastMouseButton = btn-1;
 			return noErr;
 		case kEventMouseWheelMoved:
 			me->MouseWheel(pt.h, pt.v, delta, (axis == kEventMouseWheelAxisY) ? 0 : 1);
@@ -397,11 +411,22 @@ pascal OSStatus	XWin::MacEventHandler(
 		case kEventWindowHandleContentClick:
 			me->mIsControlClick = ((btn == 1) && (modifiers & controlKey));
 			if (me->mIsControlClick) btn=2;
-			me->mInDrag[btn-1] = true;
+
+			if(me->mInDrag == -1)
+			{
+				me->mInDrag = btn-1;
+				me->ClickDown(pt.h, pt.v, btn - 1);
+				
+				if(me->mWantFakeUp)
+				{
+					btn = me->mInDrag + 1;
+					me->mInDrag = -1;
+					me->ClickUp(pt.h, pt.v, btn - 1);
+					me->mWantFakeUp = 0;
+				}
+			}
 			me->mLastMouseX = pt.h;
 			me->mLastMouseY = pt.v;
-//			me->mLastMouseButton =btn-1;
-			me->ClickDown(pt.h, pt.v, btn - 1);
 			return noErr;
 		case kEventWindowDrawContent:
 			me->Update(NULL);
@@ -454,14 +479,18 @@ pascal OSStatus	XWin::MacEventHandler(
 			}
 			return noErr;
 		case kEventRawKeyModifiersChanged:
-			bcount=0;
-			for(btn=0;btn<BUTTON_DIM;++btn)
-			if (me->mInDrag[btn])
+			if (me->mInDrag >= 0)
 			{
-				++bcount;
-				me->ClickDrag(me->mLastMouseX, me->mLastMouseY,btn);
+				me->ClickDrag(me->mLastMouseX, me->mLastMouseY,me->mInDrag);
+				if(me->mWantFakeUp)
+				{
+					btn = me->mInDrag + 1;
+					me->mInDrag = -1;
+					me->ClickUp(pt.h, pt.v, btn - 1);
+					me->mWantFakeUp = 0;
+				}
 			}
-			if(bcount==0)
+			else
 				me->ClickMove(me->mLastMouseX, me->mLastMouseY);
 			return noErr;
 		default:
@@ -663,7 +692,7 @@ void	XWin::EnableMenuItem(xmenu menu, int item, bool inEnable)
 		::DisableMenuItem(menu, item+1);
 }
 
-int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
+int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	SetPortWindowPort(mWindow);
 	Point p;
@@ -671,6 +700,24 @@ int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int curren
 	p.v = mouse_y;
 	LocalToGlobal(&p);
 	long result = PopUpMenuSelect(in_menu,p.v,p.h, current+1);
+	
+	// Ben says: Mac OS tracking handler consumes the up click that dismissed our popup.  Since this
+	// might have been the same click as the 'down' that launched the popup, we have to send a 'fake'
+	// up message to GUI to follow the one-down-one-up rule.  Otherwise GUI sees a hanging down click.
+	//
+	// If mInDrag is -1 then the up click has already been dispatched and we no-op.  If mInDrag is
+	// >= 0 and != button then we probably have a logic error?
+
+	//assert(mInDrag == -1 || mInDrag == button);
+	if(mInDrag == button)
+	{
+		// There is some chance that our mouse up will never show up, so...request a fake early mouse-up
+		// on our behalf here.
+		//
+		// We can't call mouseup directly from here because we are probably inside an event dispatch on 
+		// the stack.
+		mWantFakeUp = 1;
+	}
 	return LoWord(result)-1;
 }
 

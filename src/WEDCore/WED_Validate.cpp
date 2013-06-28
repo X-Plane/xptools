@@ -46,6 +46,9 @@
 #include "WED_GISUtils.h"
 #include "WED_Group.h"
 #include "WED_ATCRunwayUse.h"
+#include "WED_ATCWindRule.h"
+#include "WED_EnumSystem.h"
+
 
 #include "AptDefs.h"
 #include "IResolver.h"
@@ -59,6 +62,9 @@
 static set<string>	s_used_rwy;
 static set<string>	s_used_hel;
 static set<string>	s_icao;
+static set<string>	s_flow_names;
+static set<int>		s_legal_rwy_oneway;
+static set<int>		s_legal_rwy_twoway;
 
 static bool GetThingResouce(WED_Thing * who, string& r)
 {
@@ -229,18 +235,31 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	{
 		s_used_hel.clear();
 		s_used_rwy.clear();
+		s_flow_names.clear();
+		s_legal_rwy_oneway.clear();
+		s_legal_rwy_twoway.clear();
 		
 		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
 		if(who)
 		{
+			WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
+			WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
+		
 			string icao;
 			apt->GetICAO(icao);
-			if(s_icao.count(icao))
+			if(icao.empty())
 			{
-				msg = "The airport ICAO code '" + icao + "' is used twice in your WED project file.";
+				msg = "The airport '" + name + "' has an empty ICAO code.";
 			}
 			else
-				s_icao.insert(icao);
+			{
+				if(s_icao.count(icao))
+				{
+					msg = "The airport ICAO code '" + icao + "' is used twice in your WED project file.";
+				}
+				else
+					s_icao.insert(icao);
+			}
 		}
 	}
 	
@@ -273,6 +292,66 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		DebugAssert(fst);
 		if(gExportTarget == wet_xplane_900 && fst->GetFillMode() != dsf_fill_area)
 			msg = "Line and point forests are only supported in X-Plane 10 and newer.";
+	}
+	
+	//------------------------------------------------------------------------------------
+	// CHECKS FOR ATC FIELD BUGS
+	//------------------------------------------------------------------------------------	
+	
+	if(gExportTarget != wet_xplane_900)	// not even legal for v9
+	{
+		WED_ATCFlow * flow;
+		WED_ATCWindRule * wind;
+		WED_TaxiRoute * taxi;
+		
+		if(who->GetClass() == WED_ATCFlow::sClass && ((flow = dynamic_cast<WED_ATCFlow *>(who)) != NULL))
+		{
+			AptFlow_t exp;
+			flow->Export(exp);
+			if(exp.icao.empty())
+				msg = "ATC Flow '" + name + "' has a blank ICAO code for its METAR source.";
+				
+			if(name.empty())
+				msg = "An ATC flow has a blank name.  You must name every flow.";
+				
+			if(s_flow_names.count(name) > 0)
+			{
+				msg = "You have two airport flows named '" + name + "'.  Every ATC flow name must be unique.";				
+			}
+			else 
+				s_flow_names.insert(name);
+				
+			if(s_legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
+				msg = "The pattern runway " + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.";
+		}
+
+		if(who->GetClass() == WED_ATCWindRule::sClass && ((wind = dynamic_cast<WED_ATCWindRule *>(who)) != NULL))
+		{
+			AptWindRule_t exp;
+			wind->Export(exp);
+			if(exp.icao.empty())
+				msg = "ATC wind rule '" + name + "' has a blank ICAO code for its METAR source.";
+		}
+		
+		if(who->GetClass() == WED_TaxiRoute::sClass && ((taxi = dynamic_cast<WED_TaxiRoute *>(who)) != NULL))
+		{
+			// See bug http://dev.x-plane.com/bugbase/view.php?id=602 - blank names are okay!
+//			if (name.empty() && !taxi->IsRunway())
+//			{
+//				msg = "This taxi route has no name.  All taxi routes must have a name so that ATC can give taxi instructions.";
+//			}
+			
+			if(taxi->HasInvalidHotZones(s_legal_rwy_oneway))
+			{
+				msg = "The taxi route '" + name + "' has hot zones for runways not present at its airport.";
+			}
+			
+			if(taxi->IsRunway())
+			if(s_legal_rwy_twoway.count(taxi->GetRunway()) == 0)
+			{
+				msg = "The taxi route '" + name + "' is set to a ruwnay not present at the airport.";
+			}
+		}		
 	}
 	
 	//------------------------------------------------------------------------------------
@@ -376,6 +455,17 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		WED_Thing * fail = ValidateRecursive(who->GetNthChild(n), lib_mgr);
 		if (fail) return fail;
 	}
+	
+	if(who->GetClass() == WED_Airport::sClass)
+	{
+		if(s_used_hel.empty() && s_used_rwy.empty())
+		{
+			msg = "The airport '" + name + "' contains no runways, sea lanes, or helipads.";
+			DoUserAlert(msg.c_str());
+			return who;
+		}
+	}
+	
 	return NULL;
 }
 
@@ -383,6 +473,8 @@ bool	WED_ValidateApt(IResolver * resolver)
 {
 	s_used_hel.clear();
 	s_used_rwy.clear();
+	s_flow_names.clear();
+	s_legal_rwy_oneway.clear();
 	s_icao.clear();
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	ISelection * sel = WED_GetSelect(resolver);

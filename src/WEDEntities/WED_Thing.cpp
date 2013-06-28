@@ -30,6 +30,7 @@
 
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
+	type(this),
 	name(this,"Name",SQL_Name("WED_things", "name"),XML_Name("hierarchy","name"),"unnamed entity")
 {
 	parent_id = 0;
@@ -575,4 +576,64 @@ void	WED_Thing::Validate(void)
 		vector<int>::iterator me = find(vv->source_id.begin(), vv->source_id.end(), GetID());
 		DebugAssert(me != vv->source_id.end());
 	}
+}
+
+#pragma mark -
+
+WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", SQL_Name("",""),XML_Name("","")), val(t)
+{
+}
+
+void		WED_TypeField::GetPropertyInfo(PropertyInfo_t& info)
+{
+	info.can_edit = 0;
+	info.prop_kind = prop_String;
+	info.prop_name = "Class";
+}
+
+void		WED_TypeField::GetPropertyDict(PropertyDict_t& dict)
+{
+}
+
+void		WED_TypeField::GetPropertyDictItem(int e, string& item)
+{
+}
+
+void		WED_TypeField::GetProperty(PropertyVal_t& v) const
+{
+	v.prop_kind = prop_String;
+	v.string_val = val->HumanReadableType();
+}
+
+void		WED_TypeField::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+}
+
+void 		WED_TypeField::ReadFrom(IOReader * reader)
+{
+}
+
+void 		WED_TypeField::WriteTo(IOWriter * writer)
+{
+}
+
+void		WED_TypeField::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
+{
+}
+
+void		WED_TypeField::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
+{
+}
+
+void		WED_TypeField::ToXML(WED_XMLElement * parent)
+{
+}
+
+void		WED_TypeField::GetUpdate(SQL_Update& io_update)
+{
+}
+
+bool		WED_TypeField::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
+{
+	return false;
 }

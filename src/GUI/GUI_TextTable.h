@@ -161,6 +161,7 @@ public:
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,
 						int							mouse_y,
+						int							button,
 						int							bounds[4])=0;
 
 	virtual void	SelectionStart(

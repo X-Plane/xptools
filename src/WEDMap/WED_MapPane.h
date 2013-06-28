@@ -72,6 +72,7 @@ public:
 	virtual				~WED_MapPane();
 
 			void		ZoomShowAll(void);
+			void		ZoomShowSel(void);
 
 			void		SetResource(const string& r, int res_type);
 

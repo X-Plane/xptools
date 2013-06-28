@@ -550,7 +550,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 		{
 			mContent->SelectionEnd();
-			mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
+			mContent->DoDrag(mParent, mouse_x,mouse_y,button,cell_bounds);
 			return 0;
 		}
 
@@ -559,7 +559,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	if (mEditInfo.can_drag && mParent->IsDragClick(mouse_x,mouse_y,button))
 	{
-		mContent->DoDrag(mParent, mouse_x,mouse_y,cell_bounds);
+		mContent->DoDrag(mParent, mouse_x,mouse_y,button,cell_bounds);
 		return 0;
 	}
 
@@ -567,7 +567,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	if (!mEditInfo.can_edit)	return 1;
 
-	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
+	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
 	char  buf[256];
 	switch(mEditInfo.content_type) {
@@ -629,7 +629,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					if (mEditInfo.int_val == it->first) cur = i;
 					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
 				}
-				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
@@ -663,7 +663,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
 					if (mEditInfo.int_val == it->first && cur == -1) cur = i;
 				}
-				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val=enum_vals[choice];
@@ -774,7 +774,7 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 		}
 	}
 
-	int	all_edit = mParent->GetModifiersNow() & gui_OptionAltFlag;
+	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
 	switch(mEditInfo.content_type) {
 	case gui_Cell_Disclose:
@@ -1220,7 +1220,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 		int x = mClickCellX;
 		int y = mClickCellY;
 		int cell_bounds[4];
-		TerminateEdit(true, inFlags & inFlags & gui_OptionAltFlag, true);
+		TerminateEdit(true, inFlags & inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		if (mParent)
 		{
 			if (mContent->TabAdvance(x,y, (inFlags & gui_ShiftFlag) ? -1 : 1, mEditInfo))
@@ -1239,7 +1239,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 
 	if(inVK == GUI_VK_RETURN && mTextField)
 	{
-		TerminateEdit(true, inFlags & gui_OptionAltFlag, true);
+		TerminateEdit(true, inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		return 1;
 	}
 	else if (inVK == GUI_VK_RETURN && mContent && mParent)

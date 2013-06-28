@@ -50,6 +50,8 @@ public:
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
 
+	virtual const char *	HumanReadableType(void) const { return "Draped Orthophoto"; }
+
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return true; }

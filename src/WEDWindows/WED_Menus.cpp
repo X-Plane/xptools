@@ -162,7 +162,7 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select &Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
 #if AIRPORT_ROUTING
 {	"-",				0,				0,								0,	0					},
-{	"Select Zero-Length Edges",	0,		0,								0,	wed_SelectZeroLength },
+{	"Select Degenerate Edges",	0,		0,								0,	wed_SelectZeroLength },
 {	"Select Double Nodes",	0,			0,								0,	wed_SelectDoubles	},
 {	"Select Crossing Edges",	0,		0,								0,	wed_SelectCrossing	},
 #endif

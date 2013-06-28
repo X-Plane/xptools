@@ -383,6 +383,7 @@ struct	Bbox2 {
 	bool		contains(const Segment2& p) const;
 
 	void		expand(double v) { p1.x_ -= v; p1.y_ -= v; p2.x_ += v; p2.y_ += v; }
+	void		expand(double vx, double vy) { p1.x_ -= vx; p1.y_ -= vy; p2.x_ += vx; p2.y_ += vy; }
 	Point2		centroid(void) const { return Point2((p1.x_ + p2.x_) * 0.5,(p1.y_+p2.y_) * 0.5); }
 
 	Point2		clamp(const Point2& p) const { return Point2(

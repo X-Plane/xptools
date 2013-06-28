@@ -45,6 +45,8 @@ public:
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Airport"; }
+
 private:
 
 	WED_PropIntEnum				airport_type;

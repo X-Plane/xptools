@@ -1601,6 +1601,11 @@ void	DSFFileWriterImp::EndPolygon(
 				extend_box(st_extent,(*p)[4],(*p)[5]);
 				extend_box(st_extent,(*p)[6],(*p)[7]);
 			} 
+			
+			if(hash_depth == 5)
+			{
+				extend_box(ll_extent,(*p)[3],(*p)[4]);
+			}			
 			else if(has_bezier)
 				extend_box(ll_extent,(*p)[2],(*p)[3]);
 			else if (has_st)

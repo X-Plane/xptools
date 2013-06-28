@@ -35,6 +35,8 @@ public:
 			void		GetExclusions(		set<int>& excls) const;
 			void		SetExclusions(const set<int>& excls)	  ;
 
+	virtual const char *	HumanReadableType(void) const { return "Exclusion Zone"; }
+
 private:
 
 	WED_PropIntEnumSet	exclusions;

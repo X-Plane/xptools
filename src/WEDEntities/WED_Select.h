@@ -74,7 +74,8 @@ public:
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
-	
+
+	virtual const char *	HumanReadableType(void) const { return "Selection"; }	
 
 private:
 

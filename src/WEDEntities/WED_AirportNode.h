@@ -35,6 +35,8 @@ public:
 			void		GetAttributes(		set<int>& attrs) const;
 			void		SetAttributes(const set<int>& attrs)	  ;
 
+	virtual const char *	HumanReadableType(void) const { return "Airport Line Node"; }
+
 private:
 
 	WED_PropIntEnumSet			attrs;

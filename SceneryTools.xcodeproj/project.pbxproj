@@ -832,6 +832,7 @@
 		D6FDBB5015112F4D009DB5EF /* WED_NWInfoLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FDBB4915112F4D009DB5EF /* WED_NWInfoLayer.cpp */; };
 		D6FDBB5115112F4D009DB5EF /* WED_NWLinkAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FDBB4B15112F4D009DB5EF /* WED_NWLinkAdapter.cpp */; };
 		D6FDBB5215112F4D009DB5EF /* WED_Server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FDBB4D15112F4D009DB5EF /* WED_Server.cpp */; };
+		D6FE7C81173EC49C007721F2 /* map_tree.png in Resources */ = {isa = PBXBuildFile; fileRef = D6FE7C80173EC49C007721F2 /* map_tree.png */; };
 		D6FEC58B0BE0E231006A99CC /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */; };
 		D6FEC6EF0BE0F019006A99CC /* WED_CreateLineTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */; };
 		D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */; };
@@ -2005,6 +2006,7 @@
 		D6FDBB4C15112F4D009DB5EF /* WED_NWLinkAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_NWLinkAdapter.h; sourceTree = "<group>"; };
 		D6FDBB4D15112F4D009DB5EF /* WED_Server.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Server.cpp; sourceTree = "<group>"; };
 		D6FDBB4E15112F4D009DB5EF /* WED_Server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Server.h; sourceTree = "<group>"; };
+		D6FE7C80173EC49C007721F2 /* map_tree.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_tree.png; sourceTree = "<group>"; };
 		D6FE97C80D8858D30025D144 /* README_FIRST */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README_FIRST; sourceTree = "<group>"; };
 		D6FEC5890BE0E231006A99CC /* WED_CreatePointTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_CreatePointTool.h; sourceTree = "<group>"; };
 		D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreatePointTool.cpp; sourceTree = "<group>"; };
@@ -2236,6 +2238,7 @@
 		D60BFC3C0C03619A00AD5EB7 /* icons */ = {
 			isa = PBXGroup;
 			children = (
+				D6FE7C80173EC49C007721F2 /* map_tree.png */,
 				D63D8E6013F32E5500E353E8 /* map_missing_obj.png */,
 				D60BFC3E0C03619A00AD5EB7 /* map_airport.png */,
 				D60BFC3F0C03619A00AD5EB7 /* map_beacon.png */,
@@ -3946,6 +3949,7 @@
 				D6EA9CC711A0B2C8004ADCCC /* WED_DataModel2.sql in Resources */,
 				D63D8E6113F32E5500E353E8 /* map_missing_obj.png in Resources */,
 				D6080505154659A7001BE1A9 /* push_buttons.png in Resources */,
+				D6FE7C81173EC49C007721F2 /* map_tree.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4843,6 +4847,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Debug;
 		};
@@ -4886,6 +4891,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Release;
 		};
@@ -4991,6 +4997,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Phone;
 		};
@@ -5775,6 +5782,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = DebugOpt;
 		};

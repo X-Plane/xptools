@@ -128,7 +128,7 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 	mScroller->SetSticky(1,1,1,1);
 
 	mTable = new GUI_Table(1);		// 1=  fill right
-	mPackageList = new WED_PackageListAdapter;
+	mPackageList = new WED_PackageListAdapter(this);	// back-ptr to us so it can send an open command msg to SOMEONE in the command chain!
 	mTextTable = new GUI_TextTable(this, 10,0);	// 10 = indent
 
 	mTextTable->SetColors(
@@ -244,7 +244,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 
 bool	WED_StartWindow::Closed(void)
 {
-	GetCommanderRoot()->DispatchHandleCommand(gui_Quit);
+	this->DispatchHandleCommand(gui_Quit);
     return false;
 }
 

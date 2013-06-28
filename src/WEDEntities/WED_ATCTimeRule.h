@@ -39,6 +39,8 @@ public:
 	void		Import(const AptTimeRule_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptTimeRule_t& info) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Time Rule"; }
+
 private:
 
 	WED_PropIntText		start_time_zulu;
