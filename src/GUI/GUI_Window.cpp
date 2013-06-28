@@ -483,7 +483,7 @@ pascal OSErr	GUI_Window::ReceiveHandler(WindowRef theWindow, void * ref, DragRef
 }
 
 
-DragTrackingHandlerUPP	GUI_Window::sTrackingHandlerUPP = NewDragTrackingHandlerUPP(GUI_Wnidow::TrackingHandler);
+DragTrackingHandlerUPP	GUI_Window::sTrackingHandlerUPP = NewDragTrackingHandlerUPP(GUI_Window::TrackingHandler);
 DragReceiveHandlerUPP	GUI_Window::sReceiveHandlerUPP = NewDragReceiveHandlerUPP(GUI_Window::ReceiveHandler);
 
 #endif
