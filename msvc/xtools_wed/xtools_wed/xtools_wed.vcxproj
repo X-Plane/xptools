@@ -19,7 +19,6 @@
     <ClCompile Include="..\..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
     <ClCompile Include="..\..\..\src\Env\EnvParser.c" />
     <ClCompile Include="..\..\..\src\Env\Persistence.cpp" />
-    <ClCompile Include="..\..\..\src\GUI\GUI_AdvancedFilterPane.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Application.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Broadcaster.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Button.cpp" />
@@ -250,7 +249,6 @@
     <ClInclude Include="..\..\..\src\Env\EnvDefs.h" />
     <ClInclude Include="..\..\..\src\Env\EnvParser.h" />
     <ClInclude Include="..\..\..\src\Env\Persistence.h" />
-    <ClInclude Include="..\..\..\src\GUI\GUI_AdvancedFilterPane.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Application.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Broadcaster.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Button.h" />

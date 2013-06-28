@@ -160,6 +160,78 @@ void GUI_Pane::PrintDebugInfo(int indentLevel)
 			return;
 		}
 }
+
+
+void GUI_Pane::FPrintDebugInfo(FILE * pFile, int indentLevel)
+{	
+	//Creates a temporary string
+	string temp;
+	//gets the descriptor
+	GetDescriptor(temp);
+	//If it has a name
+	if(temp != "")
+	{
+		//Add a space to it
+		temp += " ";
+	}
+	//Make the name be the type
+	temp += typeid(*this).name();
+	//Get temporary bounds
+	int tempBounds[4];
+	GetBounds(tempBounds);
+
+	//Get temporary visible bounds
+	int tempVisBounds[4];
+	GetVisibleBounds(tempVisBounds);
+
+	float tempSticky[4];
+	GetSticky(tempSticky);
+
+	//Prints goes to the indent level
+	fprintf(pFile,"%*s %s",indentLevel,"","*Info:");
+	//Prints the information, goes down one line
+	fprintf(pFile,"%s \n",temp.data());
+		fprintf(pFile,"%*s *Bounds(L,B,R,T): %d %d %d %d\n",indentLevel+1,"", tempBounds[0], tempBounds[1], tempBounds[2], tempBounds[3]);
+		fprintf(pFile,"%*s *Visible Bounds(L,B,R,T): %d %d %d %d \n",indentLevel+1,"", tempVisBounds[0], tempVisBounds[1], tempVisBounds[2], tempVisBounds[3]);
+		fprintf(pFile,"%*s *Sticky(L,B,R,T): %.1f %.1f %.1f %.1f \n", indentLevel+1,"", tempSticky[0],tempSticky[1],tempSticky[2],tempSticky[3]);
+	
+		//The recursive part
+		//If this pane has children
+		if(mChildren.size() != 0)
+		{
+			//For every child
+			for (int i = 0; i < mChildren.size(); i++)
+			{
+				mChildren[i]->FPrintDebugInfo(pFile,indentLevel+3);
+			}
+		}
+		else
+		{
+			return;
+		}
+		
+}
+
+void GUI_Pane::DrawWireFrame(int realBounds[4], bool prinf)
+{
+	if (prinf==true)
+	{
+		std::printf("Name=%s left=%d bottom=%d right=%d top=%d \n",
+			typeid(*this).name(),
+			realBounds[0],
+			realBounds[1],
+			realBounds[2],
+			realBounds[3]);
+	}
+	glLineWidth(4);
+	glColor3f(1,0,0);
+	glBegin(GL_LINE_LOOP);
+		glVertex2f(realBounds[0],realBounds[1]);
+		glVertex2f(realBounds[2],realBounds[1]);
+		glVertex2f(realBounds[2],realBounds[3]);
+		glVertex2f(realBounds[0],realBounds[3]);
+	glEnd();
+}
 #endif
 
 GUI_Pane::GUI_Pane() :
@@ -239,7 +311,6 @@ void		GUI_Pane::GetVisibleBounds(int outBounds[4])
 		outBounds[3] = min(outBounds[3], b[3]);
 	}
 }
-
 
 void		GUI_Pane::SetBounds(int x1, int y1, int x2, int y2)
 {
@@ -698,3 +769,4 @@ GUI_DragOperation	GUI_Pane::DoDragAndDrop(
 	if (mParent)	return	mParent->DoDragAndDrop(x,y,where,operations,type_count,inTypes,sizes,ptrs,fetch_func,ref);
 	else			return	gui_Drag_None;
 }
+

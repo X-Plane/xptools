@@ -33,7 +33,7 @@
 #include "STLUtils.h"
 
 static int kDefCols[] = { 100, 100 };
-int printcounter = 0;
+
 WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 		GUI_SimpleTableGeometry(1,kDefCols,20),
 	mCacheValid(false), mLibrary(who),
@@ -45,7 +45,7 @@ WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 	mCatLibInd(-5678)
 {
 	mLibrary->AddListener(this);
-	//this->AddListener(
+
 	this->mLocalStr = "Local/";
 	this->mLibraryStr = "Library/";
 	mOpen[mLocalStr] = 0;
@@ -66,9 +66,21 @@ void	WED_LibraryListAdapter::SetMap(WED_MapPane * amap, WED_LibraryPreviewPane *
 void	WED_LibraryListAdapter::SetFilter(const string& f)
 {
 	mFilter.clear();
+	//Ensures that even with no library heirarchy things
+	//Can still be searched for
+	SetOpen(mLocalStr,1);
+	SetOpen(mLibraryStr,1);
+
 	tokenize_string_func(f.begin(),f.end(),back_inserter(mFilter),::isspace);
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+	
+	//In the case that nothing else has been opened revert back to the original state
+	if(mOpen.size() == 2 && f == "")
+	{
+		SetOpen(mLocalStr,0);
+		SetOpen(mLibraryStr,0);
+	}
 }
 
 /********************************************************************************************************************************************
@@ -559,6 +571,5 @@ void WED_LibraryListAdapter::PrintMOpen(string path)
 		printf(", Open? %d \n", mOpItr->second);
 	}
 	printf("----------");
-	printcounter++;
 }
 #endif

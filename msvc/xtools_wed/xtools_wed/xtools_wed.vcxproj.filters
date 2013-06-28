@@ -756,9 +756,6 @@
     <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c">
       <Filter>SQLite</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\GUI\GUI_AdvancedFilterPane.cpp">
-      <Filter>GUI</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h">
@@ -1519,9 +1516,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\Interfaces\ITexMgr.h">
       <Filter>Interfaces</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\GUI\GUI_AdvancedFilterPane.h">
-      <Filter>GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

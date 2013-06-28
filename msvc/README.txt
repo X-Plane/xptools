@@ -12,8 +12,8 @@ bracket system makes for very easy searching. Try it out!
 		
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-[2.0.0] Getting Started
 [1.0.0] Introduction
+[2.0.0] Getting Started
 [3.0.0] Working With This Project
 [4.0.0] Troubleshooting and Tips
 [5.0.0] Appendix
@@ -64,95 +64,91 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 		[4.X.0] Other Issues
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		[4.X.0] Compiling Issues
+			[4.X.0] Common Error Codes
+		I keep getting error C1083, what is that and how can I make it stop?
+			A liberary is out of place or you have changed the settings inside the projects settings
+			
+		ErrorC4496
+			http://nndung179.wordpress.com/2012/10/14/fix-error-c4996/
+			make sure to put in _CRT_SECURE_NO_WARNINGS
+		
 		[4.X.0] Liberary Issues
- 
+			[4.1.0] How to get the libraries prepared for MSVC
+			
+				 expat
+					 files taken from the the latest expat 2.1.0 installer
+					 just build with the included vsproject file <-all linker errors gone
+					 make sure that a preprocessor called XML_STATIC is put in there.
+				 
+				 zlib  
+					you need to have xtools_wed to NOT have ZLIB_WINAPI
+				 
+				 squish
+					copied all the C++ files, had to replace std::min,std::max with min and max because windows
+				 
+				 commctrl.h
+					Just make sure its from windows SDK
+				 
+				 sqlite3
+					added the source and headers directly to the project, add these preprocessor directives
 
- 
+				 freetype
+					in the msvc project Property Pages-> C/C++->Code Generation-> Change the Runtime Library to MT
+					/GS to /GS- to try and remove remote_rangecheckerror security buffer check
 
- 
- expat
- files taken from the the latest expat 2.1.0 installer
- just build with the included vsproject file <-all linker errors gone
- make sure that a preprocessor called XML_STATIC is put in there.
- 
- zlib  
- you need to have xtools_wed to NOT have ZLIB_WINAPI
- 
- squish
- copied all the C++ files, had to replace std::min,std::max with min and max because windows
- 
- commctrl.h
- Just make sure its from windows SDK
- 
- 
- sqlite3
- added the source and headers directly to the project, add these preprocessor directives
+				 jpeg 
+					for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
+					use the following command
+					nmake -f set
+					resave jconfig.vc to jconfig.h
+					 http://stackoverflow.com/questions/12644343/configuring-libjpeg-in-visual-studio-2010 <- do this or cry
+					 then use the jpeg .sln and make sure to
+				 
+				libpng
+					http://www.leptonica.org/vs2008doc/building-image-libraries.html <- follow this link
+				 
+				libtiff
+					C:\tiff-4.0.0> nmake /f makefile.vc clean
+					C:\tiff-4.0.0> nmake /f makefile.vc
+					 tiff
+					 resave tiffconf.vc.h to tiffconf.h
+				 
+				proj-4.7.0
+					C:\PROJ> nmake /f makefile.vc
+					C:\PROJ> nmake /f makefile.vc install-all
+					Cut from its default location to inside msvc_libs/proj-4.7.0, copy .lib to compiled libs
 
- freetype
- in the msvc project Property Pages-> C/C++->Code Generation-> Change the Runtime Library to MT
- /GS to /GS- to try and remove remote_rangecheckerror security buffer check
+				geotiff
+					change makefile.vc
+					resave the geo_config.h.vc as geo_config.h
+					FROM
+					TIFF_DIR = ..\libtiff\libtiff
 
- jpeg 
- for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
- use the following command
- nmake -f set
-  jpeg
- resave jconfig.vc to jconfig.h
- 
- http://stackoverflow.com/questions/12644343/configuring-libjpeg-in-visual-studio-2010 <- do this or cry
- then use the jpeg .sln and make sure to
- 
- libpng
- http://www.leptonica.org/vs2008doc/building-image-libraries.html <- follow this link
- 
-libtiff
-C:\tiff-4.0.0> nmake /f makefile.vc clean
-C:\tiff-4.0.0> nmake /f makefile.vc
- tiff
- resave tiffconf.vc.h to tiffconf.h
- 
-proj-4.7.0
-C:\PROJ> nmake /f makefile.vc
-C:\PROJ> nmake /f makefile.vc install-all
-Cut from its default location to inside msvc_libs/proj-4.7.0, copy .lib to compiled libs
+					TIFF_INC = -I$(TIFF_DIR)
+					TIFF_LIB = $(TIFF_DIR)\libtiff.lib
+					TIFF_LIB_DLL = $(TIFF_DIR)\libtiff_i.lib
 
-geotiff
-change makefile.vc
- resave the geo_config.h.vc as geo_config.h
-FROM
-TIFF_DIR = ..\libtiff\libtiff
+					TO
+					TIFF_DIR = ..\tiff-4.0.0beta5\libtiff
+					TIFF_INC = -I$(TIFF_DIR)
+					TIFF_LIB = ..\..\msvc_compiled_libs\libtiff.lib
+					TIFF_LIB_DLL = $(TIFF_DIR)\libtiff_i.lib
 
-TIFF_INC = -I$(TIFF_DIR)
-TIFF_LIB = $(TIFF_DIR)\libtiff.lib
-TIFF_LIB_DLL = $(TIFF_DIR)\libtiff_i.lib
+					FROM
+					CFLAGS  = $(INCL) /MD /Ox /nologo
+					TO
+					CFLAGS  = $(INCL) /MT /Ox /nologo
 
-TO
-TIFF_DIR = ..\tiff-4.0.0beta5\libtiff
-TIFF_INC = -I$(TIFF_DIR)
-TIFF_LIB = ..\..\msvc_compiled_libs\libtiff.lib
-TIFF_LIB_DLL = $(TIFF_DIR)\libtiff_i.lib
+					FROM
+					# Installation locations (with install, or devinstall targets)
+					PREFIX =	c:\usr
+					TO
+					PREFIX = .
 
-FROM
-CFLAGS  = $(INCL) /MD /Ox /nologo
-TO
-CFLAGS  = $(INCL) /MT /Ox /nologo
-
-FROM
-# Installation locations (with install, or devinstall targets)
-PREFIX =	c:\usr
-TO
-PREFIX = .
-
-Copied geotiff.lib to msvc_compiled_libs
-
- I keep getting error C1083, what is that and how can I make it stop?
-	A liberary is out of place
-ErrorC4496
-http://nndung179.wordpress.com/2012/10/14/fix-error-c4996/
-make sure to put in _CRT_SECURE_NO_WARNINGS
-
-
-openGL<-put in manually.
+					Copied geotiff.lib to msvc_compiled_libs
+						openGL<-put in manually (if not already in)
+					
 ==============================================================*/
  
  /*== [5.0.0] Appendix=============================================
@@ -295,5 +291,3 @@ openGL<-put in manually.
 		* Link Time Code Generation: Use Link Time Code Generation (/LTCG)
 
 ==============================================================*/
-
-Things to be done: Safe save, one incremental backup. If document is invalid, reject it instead.
