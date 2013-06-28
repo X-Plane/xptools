@@ -52,7 +52,7 @@ public:
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
-						GUI_EnumDictionary&			out_dictionary) { }
+						GUI_EnumDictionary&			out_dictionary);
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
@@ -144,7 +144,10 @@ public:
 	
 
 private:
-
+	//current pack one that is selected (used for GetCellContents)
+	//Data from AcceptEdit
+	string				mCurPak;
+	int					mCurIntVal;
 	string				mLabel;
 	string				mText;
 	intptr_t			mMsg;

@@ -108,7 +108,26 @@ struct	GUI_CellContent {
 	{
 	//if(flag is on) printf(stuff new line)
 	printf("\n ------------------------------- \n");
-	if(pcontType) printf("*content_type: %d \n",	content_type);
+	if(pcontType)
+	{
+		switch(content_type)
+		{
+			case gui_Cell_None: printf("*content_type: gui_Cell_None \n"); break;
+			case gui_Cell_Disclose: printf("*content_type: gui_Cell_Disclose \n"); break;
+			case gui_Cell_EditText: printf("*content_type: gui_Cell_EditText \n"); break;
+			case gui_Cell_FileText: printf("*content_type: gui_Cell_FileText \n"); break;
+			case gui_Cell_CheckBox: printf("*content_type: gui_Cell_CheckBox \n"); break;
+			case gui_Cell_Integer: printf("*content_type: gui_Cell_Integer \n"); break;
+			case gui_Cell_Double: printf("*content_type: gui_Cell_Double \n"); break;
+			case gui_Cell_Enum: printf("*content_type: gui_Cell_Enum \n"); break;
+			case gui_Cell_EnumSet: printf("*content_type: gui_Cell_EnumSet \n"); break;
+			//for(set<int>::iterator iter=int_set_val.begin();iter != int_set_val.end(); ++iter)
+			//{
+				
+			//}
+			default: printf("*content_type: %d \n", content_type); break;
+		}
+	}	
 	if(pcan_edit) printf("*can_edit: %d \n", can_edit);
 	if(pcan_disclose) printf("*can_disclose: %d \n", can_disclose);
 	if(pcan_select) printf("*can_select: %d \n", can_select);
@@ -144,7 +163,7 @@ public:
 	virtual void	GetCellContent(
 						int							cell_x,
 						int							cell_y,
-						GUI_CellContent&			the_content)=0;
+						GUI_CellContent			&the_content)=0;
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
@@ -260,7 +279,7 @@ public:
 
 						 GUI_TextTable(GUI_Commander * parent, int indent, int live_edit);
 	virtual				~GUI_TextTable();
-
+			//int			GetIntVal();
 			void		SetProvider(GUI_TextTableProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 			void		SetParentTable(GUI_Table * parent);
@@ -300,7 +319,6 @@ public:
 							GUI_Broadcaster *		inSrc,
 							intptr_t    			inMsg,
 							intptr_t				inParam);
-
 private:
 
 	enum GUI_DragPart {			// DRAG PARTS - divide the cell into 4 zones, for the uppe rand lower half, and closer to the center or edges.
