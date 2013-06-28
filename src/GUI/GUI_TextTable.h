@@ -163,7 +163,7 @@ public:
 	virtual void	GetCellContent(
 						int							cell_x,
 						int							cell_y,
-						GUI_CellContent			&the_content)=0;
+						GUI_CellContent&			the_content)=0;
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
@@ -279,7 +279,7 @@ public:
 
 						 GUI_TextTable(GUI_Commander * parent, int indent, int live_edit);
 	virtual				~GUI_TextTable();
-			//int			GetIntVal();
+
 			void		SetProvider(GUI_TextTableProvider * content);
 			void		SetGeometry(GUI_TableGeometry * geometry);
 			void		SetParentTable(GUI_Table * parent);
@@ -319,6 +319,7 @@ public:
 							GUI_Broadcaster *		inSrc,
 							intptr_t    			inMsg,
 							intptr_t				inParam);
+
 private:
 
 	enum GUI_DragPart {			// DRAG PARTS - divide the cell into 4 zones, for the uppe rand lower half, and closer to the center or edges.

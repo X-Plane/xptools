@@ -173,17 +173,6 @@ void		GUI_TextTable::SetGeometry(GUI_TableGeometry * geometry)
 	mGeometry = geometry;
 }
 
-/*int		GUI_TextTable::GetIntVal()
-{
-	if(mEditInfo.int_val >=0)
-	{
-		return mEditInfo.int_val;
-	}
-	else
-	{
-		return 0;
-	}
-}*/
 void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 {
 	mContent = content;
@@ -623,31 +612,28 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			if (!dict.empty())
 			{
 				for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
+				if(!di->second.second)
+					di->second.first.insert(0,";");
+			
+				vector<GUI_MenuItem_t>	items(dict.size()+1);
+				vector<int>				enum_vals(dict.size());
+				int i = 0;
+				int cur = -1;
+				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
 				{
-					if(!di->second.second)
-					{
-						di->second.first.insert(0,";");
-					}
-					vector<GUI_MenuItem_t>	items(dict.size()+1);
-					vector<int>				enum_vals(dict.size());
-					int i = 0;
-					int cur = -1;
-					for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
-					{
-						enum_vals[i] = it->first;
-						items[i].name = it->second.first.c_str();
-						items[i].key = 0;
-						items[i].flags = 0;
-						items[i].cmd = 0;
-						if (mEditInfo.int_val == it->first) cur = i;
-						items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
-					}
-					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
-					if (choice >= 0 && choice < enum_vals.size())
-					{
-						mEditInfo.int_val = enum_vals[choice];
-						mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
-					}
+					enum_vals[i] = it->first;
+					items[i].name = it->second.first.c_str();
+					items[i].key = 0;
+					items[i].flags = 0;
+					items[i].cmd = 0;
+					if (mEditInfo.int_val == it->first) cur = i;
+					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
+				}
+				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				if (choice >= 0 && choice < enum_vals.size())
+				{
+					mEditInfo.int_val = enum_vals[choice];
+					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}
 			mEditInfo.content_type = gui_Cell_None;
