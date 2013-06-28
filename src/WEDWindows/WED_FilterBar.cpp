@@ -135,7 +135,7 @@ void	WED_FilterBar::GetCellContent(
 			
 			//mTextTable.GetEditContent();
 			
-			gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val);
+			//gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val);
 			//the_content.int_val = mCurIntVal;
 			//the_content.text_val = mCurPak;
 			the_content.string_is_resource=0;
@@ -148,12 +148,17 @@ void	WED_FilterBar::GetEnumDictionary(
 						int							cell_y,
 						GUI_EnumDictionary&			out_dictionary)
 {
-	for(int i = 0; i < gPackageMgr->CountPackages(); i++)
+	/*for(int i = 0; i < gPackageMgr->CountPackages(); i++)
 	{
 		string temp = "";
 		gPackageMgr->GetNthPackageName(i,temp);
 		out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
-	}
+	}*/
+	out_dictionary.insert(GUI_EnumDictionary::value_type(0,make_pair("bip",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(1,make_pair("lop",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(2,make_pair("bibbip",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(3,make_pair("zifff",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(4,make_pair("nop nop",true)));
 }
 
 void	WED_FilterBar::AcceptEdit(
