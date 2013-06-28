@@ -36,6 +36,7 @@
 
 #include "GUI_Commander.h"
 
+
 class GUI_QtMenu;
 
 /*
@@ -103,8 +104,9 @@ private:
 #endif
 	bool                mDone;
 #if LIN
-	QList<GUI_QtMenu*>	mMenus;
-	QApplication*		qapp;
+	QList<GUI_QtMenu*>  mMenus;
+	QMenu *             mPopup;
+	QApplication*       qapp;
 #endif
 };
 #if LIN
@@ -112,7 +114,7 @@ class GUI_QtMenu : public QMenu
 {
 	Q_OBJECT
 public:
-	GUI_QtMenu(const QString& text, GUI_Application *app);
+	GUI_QtMenu(const QString& text ,GUI_Application *app);
 	~GUI_QtMenu();
 
 private:
@@ -135,10 +137,10 @@ public slots:
 private:
 	GUI_Application* app;
 };
+
 #endif
 
 extern	GUI_Application *	gApplication;
-
 
 #endif
 
