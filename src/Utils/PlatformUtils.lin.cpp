@@ -48,35 +48,35 @@ int		GetFilePathFromUser(
 		case getFile_Open:
 		{
 			QString fileName = QFileDialog::getOpenFileName(0,
-			inPrompt, "/");
+			QString::fromUtf8(inPrompt), "/");
 			if (!fileName.length())
 				return 0;
 			else {
-				::strncpy(outFileName, fileName.toAscii().constData(), inBufSize);
+				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
 				return 1;
 			}
 		}
 		case getFile_Save:
 		{
 			QString fileName = QFileDialog::getSaveFileName(0,
-			inPrompt, "/");
+			QString::fromUtf8(inPrompt), "/");
 			if (!fileName.length())
 				return 0;
 			else {
-				::strncpy(outFileName, fileName.toAscii().constData(), inBufSize);
+				::strncpy(outFileName, fileName.toUtf8().constData(), inBufSize);
 				return 1;
 			}
 		}
 		case getFile_PickFolder:
 		{
 			QString dir = QFileDialog::getExistingDirectory
-			(0, inPrompt, "/", QFileDialog::ShowDirsOnly);
+			(0, QString::fromUtf8(inPrompt), "/", QFileDialog::ShowDirsOnly);
 			if (!dir.length())
 				return 0;
 			else {
 				if(dir.endsWith ('/'))
 						dir.truncate(dir.size()-1);
-				::strncpy(outFileName, dir.toAscii().constData(), inBufSize);
+				::strncpy(outFileName, dir.toUtf8().constData(), inBufSize);
 				return 1;
 			}
 		}
@@ -85,9 +85,44 @@ int		GetFilePathFromUser(
 	}
 }
 
+char *	GetMultiFilePathFromUser(
+					const char * 		inPrompt,
+					const char *		inAction,
+					int					inID)
+{	
+	
+	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt), "/");
+	
+	vector<string> outFiles;	
+	if (fileNames.empty()) return NULL;	
+	for(int i=0; i < fileNames.size(); ++i)
+	{
+		if(!fileNames.at(i).isEmpty())
+			outFiles.push_back(fileNames[i].toUtf8().constData());
+	}
+	
+	if(outFiles.size() < 1) return NULL;
+
+	int buf_size = 1;
+	for(int i = 0; i < outFiles.size(); ++i)
+		buf_size += (outFiles[i].size() + 1);
+	
+	char * ret = (char *) malloc(buf_size);
+	char * p = ret;
+
+	for(int i = 0; i < outFiles.size(); ++i)
+	{
+		strcpy(p, outFiles[i].c_str());
+		p += (outFiles[i].size() + 1);
+	}
+	*p = 0;
+	
+	return ret;
+}
+
 void	DoUserAlert(const char * inMsg)
 {
-	QMessageBox::warning(0, "", inMsg);
+	QMessageBox::warning(0, "", QString::fromUtf8(inMsg));
 }
 
 void	ShowProgressMessage(const char * inMsg, float * inProgress)
@@ -98,13 +133,12 @@ void	ShowProgressMessage(const char * inMsg, float * inProgress)
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
-    int result = QMessageBox::question(0,"", inMsg, proceedBtn, cancelBtn) ;
-    return  result == 0 ;
+	return (QMessageBox::question(0,"", QString::fromUtf8(inMsg), proceedBtn, cancelBtn) == 0 ) ;
 }
 
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
-	int res = QMessageBox::question(0, inMessage1, inMessage2,
+	int res = QMessageBox::question(0, QString::fromUtf8(inMessage1), QString::fromUtf8(inMessage2),
 	QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel,
 	QMessageBox::Cancel);
 	switch (res)

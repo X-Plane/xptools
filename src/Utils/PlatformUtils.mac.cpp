@@ -226,7 +226,7 @@ char *	GetMultiFilePathFromUser(
 		strcpy(p, files[i].c_str());
 		p += (files[i].size() + 1);
 	}
-	++p;
+	*p = 0;
 	
 	return ret;
 }

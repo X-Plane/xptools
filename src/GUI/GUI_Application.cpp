@@ -137,6 +137,7 @@ pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCa
 					if (me->DispatchHandleCommand(gui_Prefs))			return noErr;
 					else												return eventNotHandledErr;
 				default:
+					if(cmd.commandID)
 					if (me->DispatchHandleCommand(cmd.commandID))		return noErr;
 					else												return eventNotHandledErr;
 				}
@@ -244,7 +245,7 @@ void GUI_QtMenu::hideEvent( QHideEvent * e )
 GUI_QtAction::GUI_QtAction
 (const QString& text,QObject * parent,const QString& sc ,int cmd, GUI_Application *app, bool checkable)
 : QAction(text,parent) ,app(app)
-{
+{	
 	setData(cmd);
 	setShortcut(sc);
 	setCheckable(checkable);
@@ -256,7 +257,7 @@ GUI_QtAction::~GUI_QtAction()
 {}
 
 void GUI_QtAction::ontriggered()
-{
+{	
     int cmd = data().toInt();
     if (!cmd) return;
     int  ioCheck = 0;
@@ -266,7 +267,6 @@ void GUI_QtAction::ontriggered()
     if(app->DispatchCanHandleCommand(cmd,ioName,ioCheck))
 			app->DispatchHandleCommand(cmd);
 }
-
 
 QMenuBar* GUI_Application::getqmenu()
 {
@@ -340,11 +340,15 @@ GUI_Application::GUI_Application() : GUI_Commander(NULL)
 #if LIN
 	qapp = new QApplication(argc, argv);
 	qapp->setAttribute(Qt::AA_DontUseNativeMenuBar);
+	mPopup = NULL;
 #endif
 }
 
 GUI_Application::~GUI_Application()
 {
+#if LIN	
+	if(mPopup) delete mPopup;
+#endif
 	DebugAssert(gApplication == this);
 	gApplication = NULL;
 }
@@ -398,24 +402,24 @@ GUI_Menu		GUI_Application::GetMenuBar(void)
 		::SetMenu(hwnd, mbar);
 		return mbar;
 	#else
-        QMainWindow* mwindow = ((QMainWindow*)qapp->activeWindow());
-        if (mwindow)
-        {
-            QMenuBar* mbar =  mwindow->menuBar();
-            return mbar;
-        }
-        return NULL;
+	QMainWindow* mwindow = ((QMainWindow*)qapp->activeWindow());
+	if (mwindow)
+	{
+		QMenuBar* mbar =  mwindow->menuBar();
+		return mbar;
+	}
+	return NULL;
 	#endif
 }
 
 GUI_Menu		GUI_Application::GetPopupContainer(void)
 {
 	#if APL
-		return (GUI_Menu) -1;
+	return (GUI_Menu) -1;
 	#elif IBM
-		return NULL;
+	return NULL;
 	#else
-		return 0;
+	return NULL;
 	#endif
 }
 
@@ -475,17 +479,29 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 	}
 #endif
 #if LIN
-	GUI_QtMenu* new_menu = new GUI_QtMenu(inTitle,this);
+	GUI_Menu new_menu = NULL;
+	
+	if(parent == GetPopupContainer()) 
+	{
+		if (mPopup == NULL) mPopup = new QMenu(0);			 
+		new_menu = mPopup;
+	}
+	else
+	{
+		GUI_QtMenu* new_qtmenu = new GUI_QtMenu(inTitle ,this);
 
-    if (parent==GetMenuBar())
-    {
-        mMenus << new_menu;
-        if (parent)
-                ((QMenuBar*) parent)->addMenu(new_menu);
-    }
-    else
-         ((GUI_QtMenu*) parent)->actions().at(parentItem)->setMenu(new_menu);
-
+		if (parent==GetMenuBar())
+		{
+			mMenus << new_qtmenu;
+			((QMenuBar*) parent)->addMenu(new_qtmenu);
+		}
+		else
+		{
+			((GUI_QtMenu*) parent)->actions().at(parentItem)->setMenu(new_qtmenu);	
+		}	
+		
+		new_menu = new_qtmenu;
+	}
 #endif
 	RebuildMenu(new_menu, items);
 #if !LIN
@@ -582,8 +598,11 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			++n;
 		}
 	#elif LIN
+	if(new_menu == NULL) return ;
 	QMenu * menu = (QMenu*) new_menu;
 	menu->clear();
+	
+	QAction * act;
 	int n = 0;
 	while (items[n].name)
 	{
@@ -593,30 +612,45 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 		if (!strcmp(items[n].name, "-"))
 			menu->addSeparator();
 		else
-            if (!items[n].cmd)
-                menu->addMenu(itemname.c_str());
-            else
-		    {
-		        QString	sc = "";
-				if (items[n].flags & gui_ControlFlag)	{sc += "Ctrl+";}
-				if (items[n].flags & gui_ShiftFlag)     {sc += "Shift+";}
-				if (items[n].flags & gui_OptionAltFlag) {sc += "Alt+";}
-				char key_cstr[2] = { items[n].key, 0 };
-				switch(items[n].key)
+			if (!items[n].cmd )
+			{
+				if(menu == mPopup)
 				{
-					case GUI_KEY_UP:	sc += "Up";     break;
-					case GUI_KEY_DOWN:	sc += "Down";   break;
-					case GUI_KEY_RIGHT:	sc += "Right";  break;
-					case GUI_KEY_LEFT:	sc += "Left";   break;
-					case GUI_KEY_BACK:	sc += "Del";    break;
-					case GUI_KEY_RETURN:	sc += "Return"; break;
-					default:            	sc += key_cstr; break;
+					act = menu->addAction(itemname.c_str());
+					act->setCheckable(items[n].checked);
+					act->setChecked(items[n].checked);
+					if (is_disable) act->setEnabled(false);
 				}
-				QAction * act;
+				else
+				{
+					menu->addMenu(itemname.c_str());
+				}				
+			}
+			else
+			{
+				QString	sc = "";
+				if(items[n].key != 0)
+				{
+					if (items[n].flags & gui_ControlFlag)	{sc += "Ctrl+";}
+					if (items[n].flags & gui_ShiftFlag)     {sc += "Shift+";}
+					if (items[n].flags & gui_OptionAltFlag) {sc += "Alt+";}
+					char key_cstr[2] = { items[n].key, 0 };
+					switch(items[n].key)
+					{
+						case GUI_KEY_UP:	sc += "Up";     break;
+						case GUI_KEY_DOWN:	sc += "Down";   break;
+						case GUI_KEY_RIGHT:	sc += "Right";  break;
+						case GUI_KEY_LEFT:	sc += "Left";   break;
+						case GUI_KEY_BACK:	sc += "Del";    break;
+						case GUI_KEY_RETURN:	sc += "Return"; break;
+						default:            	sc += key_cstr; break;
+					}
+				}
+
 				menu->addAction(act = new GUI_QtAction(itemname.c_str(),menu,sc,items[n].cmd,this,false));
 				if(is_disable)
 					act->setEnabled(false);
-		    }
+			}
 		++n;
 	}
 	#endif

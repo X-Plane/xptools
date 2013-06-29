@@ -28,7 +28,6 @@
 #include "GUI_Clipboard.h"
 #include "GUI_Unicode.h"
 static set<GUI_Window *>	sWindows;
-static bool    mDragDetect = false;
 
 #if APL
 inline int Client2OGL_X(int x, WindowRef w) { return x; }
@@ -624,7 +623,6 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	#endif
 	#if LIN
 		this->setMenuBar(gApplication->getqmenu());
-		mPopupMenu = new QMenu(this);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
@@ -678,9 +676,7 @@ GUI_Window::~GUI_Window()
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
-    #if LIN
-    mMouseLastButton = inButton;
-    #endif
+	this->GetRootForCommander()->BeginDefer();
 	mMouseFocusPane[inButton] = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
@@ -692,9 +688,6 @@ void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 
 void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 {
-    #if LIN
-    if(mDragDetect) return;
-    #endif
 	// Ben says: note that if we don't have a mouse focus paine we just "eat" the up-click.
 	// This deals with a Win32 design problem: Windows D&D _eats_ the up-click events.  So we
 	// post synthetic ones later.
@@ -708,6 +701,8 @@ void			GUI_Window::ClickUp(int inX, int inY, int inButton)
 		SetTimerInterval(0.0);
 	}
 	mMouseFocusPane[inButton] = NULL;
+	this->GetRootForCommander()->EndDefer();
+	
 }
 
 void			GUI_Window::ClickDrag(int inX, int inY, int inButton)
@@ -1192,53 +1187,22 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 	if (out_y) *out_y = Client2OGL_Y(y, mWindow);;
 }
 
-
-void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y)
+void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
 {
-	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),-1);
+	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),button, -1);
 }
 
-int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current)
+int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int button, int current)
 {
- #if !LIN
-
 	static GUI_Menu popup_temp = NULL;
 
 	DebugAssert(gApplication);
 
-	if (popup_temp)				 gApplication->RebuildMenu(popup_temp, items);
-    else			popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
-    return TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
-#else
-    if (mMouseLastButton > 0) return current;
-
-     mPopupMenu->clear();
-    int n = 0;
-    while (items[n].name)
-    {
-        if (!strcmp(items[n].name, "-"))
-            mPopupMenu->addSeparator();
-        else
-        {
-		if(items[n].name[0] == ';')
-		{
-			QAction * aact =  mPopupMenu->addAction(items[n].name+1);
-			aact->setCheckable(items[n].checked);
-			aact->setChecked(items[n].checked);
-			aact->setEnabled(false);
-		}
-		else
-		{
-			QAction * aact =  mPopupMenu->addAction(items[n].name);
-			aact->setCheckable(items[n].checked);
-			aact->setChecked(items[n].checked);
-		}
-        }
-        ++n;
-    }
-    mMouseFocusPane[0]= 0;
-    return TrackPopupCommands((xmenu) mPopupMenu,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), current);
-#endif
+	if  (popup_temp)  gApplication->RebuildMenu(popup_temp, items);
+	else popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
+		
+	int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), button, current);
+	return ret;	
 }
 
 
@@ -1279,38 +1243,30 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 
 	#else
 
-        bool isdrag = false;
-        mDragDetect = true;
-        QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-        while( !isdrag && mDragging[button])
-        {
-            QCoreApplication::processEvents() ;
-            QPoint currentPos(mMouse.x,mMouse.y);
-            isdrag = ((startPos - currentPos).manhattanLength() >=
-                                    QApplication::startDragDistance());
-        }
-        mDragDetect = false;
+	bool isdrag = false;
 
-        if (!isdrag)
-        {
-          //sending fake UP-Click ( was blocked while dragdetection )
-          // we must set the button aktiv again
-            mDragging[button]=true;
-            unsigned int sbtn = 1 << button;
-            QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,startPos,(Qt::MouseButton)sbtn,
-                                        (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
+	unsigned int sbtn = 1 << button;
+	QPoint startPos(OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
+	
+	mBlockEvents = 1;// mroe:this blocks all button events for the GUI in XWin
+	while( !isdrag && (QApplication::mouseButtons() & (Qt::MouseButton)sbtn))
+	{
+		QCoreApplication::processEvents() ;
+		QPoint currentPos(mMouse.x,mMouse.y);
+		isdrag = ((startPos - currentPos).manhattanLength() >= QApplication::startDragDistance());
+	}
+	mBlockEvents = 0;
+	mWantFakeUp  = 1;
 
-            QCoreApplication::postEvent(this, e);
-        }
-        else
-            mMouseFocusButton = button;
-        return isdrag;
+	return isdrag;
+
 	#endif
 }
 
 GUI_DragOperation	GUI_Window::DoDragAndDrop(
 							int						x,
 							int						y,
+							int						button,
 							int						where[4],
 							GUI_DragOperation		operations,
 							int						type_count,
@@ -1400,25 +1356,15 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 		return result;
 	#else
 
-        // TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
+	// TODO:mroe must create a dataobj class ( a wrapper around Qmimedata maybe) ;
+	QDrag *drag = new QDrag(this);
+	QMimeData *mimeData = new QMimeData;
+	//mimeData->setData(mimeType, data);
+	drag->setMimeData(mimeData);
+	//start the drag
+	GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
 
-        QDrag *drag = new QDrag(this);
-        QMimeData *mimeData = new QMimeData;
-
-//		mimeData->setData(mimeType, data);
-        drag->setMimeData(mimeData);
-
-		//start the drag
-        GUI_DragOperation result = OP_LIN2GUI(drag->start(OP_GUI2LIN(operations)));
-
-        //sending fake UP-Click
-        QPoint aPos( OGL2Client_X(x,mWindow),OGL2Client_Y(y,mWindow));
-        unsigned int sbtn = 1 << mMouseFocusButton;
-        QMouseEvent* e = new QMouseEvent(QEvent::MouseButtonRelease,aPos,(Qt::MouseButton)sbtn,
-                                (Qt::MouseButtons)sbtn,QApplication::keyboardModifiers());
-        QCoreApplication::postEvent(this, e);
-
-        return result;
+	return result;
 	#endif
 }
 
@@ -1477,7 +1423,8 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 			// Default behavior of xwin is quit-on-close - this stops that.
 			return 0;
 		case WM_COMMAND:
-			me->DispatchHandleCommand(LOWORD(wParam));
+			if(LOWORD(wParam))
+				me->DispatchHandleCommand(LOWORD(wParam));
 			return 0;
 		case WM_SETCURSOR:
 			{
@@ -1573,8 +1520,13 @@ void GUI_Window::EnableMenusWin(void)
 
 	FindCmdsRecursive(GetMenu(me->mWindow),cmds);
 
+	// Why do we need the root commander?  We want to follow
+	// the _active_ window's focus chain, now the latent focus
+	// chain of the first window.  Maybe we can rewrite this
+	// someday to take the window that actually got the WM 
+	// message?? 
 	for(CmdMap_t::iterator cmd = cmds.begin(); cmd != cmds.end(); ++cmd)
-		cmd->second.enabled = GUI_Commander::GetCommanderRoot()->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
+		cmd->second.enabled = me->GetRootForCommander()->DispatchCanHandleCommand(cmd->first,cmd->second.new_name,cmd->second.checked);
 
 	for (set<GUI_Window *>::iterator iter = sWindows.begin(); iter != sWindows.end(); ++iter)
 	{

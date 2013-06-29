@@ -236,8 +236,8 @@ int main(int argc, char * argv[])
 #if PHONE
 		printf("CMD .obj .obe \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --obj2obe \"INFILE\" \"OUTFILE\"\n", argv[0]);
 #endif
-		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
-		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .dxf .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --dxf2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
+		printf("CMD .3ds .obj \"%s\" CO_UNITS CO_CENTER CO_OPTIMIZE CO_FLIPX CO_FLIPY CO_FLIPZ CO_CCW CO_AXIS CO_OBJ8 --3ds2obj \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("OPTIONS ObjConverter\n");
 		printf("RADIO CO_UNITS 0 --inches Inches\n");
 		printf("RADIO CO_UNITS 0 --feet Feet\n");

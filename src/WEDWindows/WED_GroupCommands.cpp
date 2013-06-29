@@ -49,7 +49,7 @@
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
 
-#define DOUBLE_PT_DIST (10.0 * MTR_TO_DEG_LAT)
+#define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
 int		WED_CanGroup(IResolver * inResolver)
 {

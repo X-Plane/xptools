@@ -43,13 +43,14 @@ public:
 
 	// From GUI_Pane
 	virtual void			Refresh(void);
-	virtual	void			PopupMenu(GUI_Menu menu, int x, int y);
-	virtual	int				PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int current);
+	virtual	void			PopupMenu(GUI_Menu menu, int x, int y, int button);
+	virtual	int				PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int button, int current);
 	virtual bool			IsDragClick(int x, int y, int button);								// Returns true if the click is a drag, false if it is just a mouse release.
 	virtual	GUI_DragOperation
 							DoDragAndDrop(
 									int						x,
 									int						y,
+									int						button,
 									int						where[4],
 									GUI_DragOperation		operations,
 									int						type_count,
@@ -132,12 +133,10 @@ private:
 	int				mMouseFocusButton;	// Remembered for a drag-and-drop
 #endif
 #if LIN
-	QMenu * mPopupMenu;
-	int     mMouseLastButton;
-    int Client2OGL_X(int x, void* w);
-    int Client2OGL_Y(int y, void* w);
-    int OGL2Client_X(int x, void* w);
-    int OGL2Client_Y(int y, void* w);
+	int Client2OGL_X(int x, void* w);
+	int Client2OGL_Y(int y, void* w);
+	int OGL2Client_X(int x, void* w);
+	int OGL2Client_Y(int y, void* w);
 protected:
 	void dragEnterEvent(QDragEnterEvent* e);
 	void dragLeaveEvent(QDragLeaveEvent* e);

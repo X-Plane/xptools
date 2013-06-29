@@ -65,7 +65,8 @@ XWin::XWin(int default_dnd)
 		mDropTarget = NULL;
 
 	ShowWindow(mWindow, SW_SHOWMAXIMIZED);
-	memset(mDragging,0,sizeof(mDragging));
+	mDragging=-1;
+	mWantFakeUp=0;
 	mMouse.x = 0;
 	mMouse.y = 0;
 	mSizeMin.x = 0;
@@ -123,7 +124,8 @@ XWin::XWin(
 
 	if (inAttributes & xwin_style_visible)
 		ShowWindow(mWindow, (inAttributes & xwin_style_fullscreen						) ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
-	memset(mDragging,0,sizeof(mDragging));
+	mDragging=-1;
+	mWantFakeUp=0;
 	mMouse.x = 0;
 	mMouse.y = 0;
 	sIniting = false;
@@ -237,6 +239,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 
 	PAINTSTRUCT ps;
 	HDC hdc;
+	int btn;
 
 	switch (message) {
 
@@ -272,17 +275,24 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		if (obj)
 		{
 			POINTSTOPOINT(obj->mMouse, MAKEPOINTS(lParam));
-				int btn = 0;
+			btn = 0;
 			switch(message) {
 			case WM_LBUTTONDOWN:	btn = 0;	break;
 			case WM_RBUTTONDOWN:	btn = 1;	break;
 			case WM_MBUTTONDOWN:	btn = 2;	break;
 			case WM_XBUTTONDOWN:	btn = GET_XBUTTON_WPARAM(wParam) - XBUTTON1 + 3; break;
 			}
-			if(obj->mDragging[btn]==0)
+			if(obj->mDragging==-1)
 			{
-				obj->mDragging[btn]=1;
+				obj->mDragging=btn;
 				obj->ClickDown(obj->mMouse.x, obj->mMouse.y, btn);
+				if(obj->mWantFakeUp)
+				{
+					btn=obj->mDragging;
+					obj->mDragging=-1;
+					obj->mWantFakeUp=0;
+					obj->ClickUp(obj->mMouse.x,obj->mMouse.y,btn);
+				}
 			}
 			SetCapture(hWnd);
 		}
@@ -294,7 +304,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_XBUTTONUP:
 		if (obj)
 		{
-				int btn = 0;
+			btn = 0;
 			switch(message) {
 			case WM_LBUTTONUP:	btn = 0;	break;
 			case WM_RBUTTONUP:	btn = 1;	break;
@@ -303,9 +313,11 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			}
 
 			POINTSTOPOINT(obj->mMouse, MAKEPOINTS(lParam));
-			if(obj->mDragging[btn])
-			obj->ClickUp(obj->mMouse.x, obj->mMouse.y, btn);
-			obj->mDragging[btn]=0;
+			if(obj->mDragging==btn)
+			{
+				obj->mDragging=-1;
+				obj->ClickUp(obj->mMouse.x, obj->mMouse.y, btn);
+			}
 		}
 		ReleaseCapture();
 		break;
@@ -325,14 +337,18 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		if (obj)
 		{
 			POINTSTOPOINT(obj->mMouse, MAKEPOINTS(lParam));
-			int bc=0;
-			for(int b=0;b<BUTTON_DIM;++b)
-			if(obj->mDragging[b])
+			if(obj->mDragging >= 0)
 			{
-				++bc;
-				obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, b);
+				obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, obj->mDragging);
+				if(obj->mWantFakeUp)
+				{
+					btn=obj->mDragging;
+					obj->mDragging=-1;
+					obj->mWantFakeUp=0;
+					obj->ClickUp(obj->mMouse.x,obj->mMouse.y,btn);
+				}
 			}
-			if(bc==0)
+			else
 				obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 		}
 		break;
@@ -370,14 +386,18 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 		{
 			if (wParam == VK_SHIFT || wParam == VK_CONTROL || wParam == VK_MENU)
 			{
-				int bc=0;
-				for(int b=0;b<BUTTON_DIM;++b)
-				if (obj->mDragging[b])
+				if (obj->mDragging >= 0)
 				{
-					++bc;
-					obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, b);
+					obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, obj->mDragging);
+					if(obj->mWantFakeUp)
+					{
+						btn = obj->mDragging;
+						obj->mDragging = -1;
+						obj->mWantFakeUp = 0;
+						obj->ClickUp(obj->mMouse.x,obj->mMouse.y,btn);
+					}
 				}
-				if(bc==0)
+				else
 					obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 			}
 		}
@@ -416,14 +436,18 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 			}
 			if (wParam == VK_SHIFT || wParam == VK_CONTROL || wParam == VK_MENU)
 			{
-				int bc=0;
-				for(int b=0;b<BUTTON_DIM;++b)
-				if (obj->mDragging[b])
+				if (obj->mDragging >= 0)
 				{
-					++bc;
-					obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, b);
+					obj->ClickDrag(obj->mMouse.x,obj->mMouse.y, obj->mDragging);
+					if(obj->mWantFakeUp)
+					{
+						btn=obj->mDragging;
+						obj->mDragging=-1;
+						obj->mWantFakeUp=0;	
+						obj->ClickUp(obj->mMouse.x,obj->mMouse.y,btn);
+					}
 				}
-				if(bc==0)
+				else
 					obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 			}
 #if 1
@@ -585,7 +609,7 @@ void			XWin::DrawMenuBar(void)
 	::DrawMenuBar(mWindow);
 }
 
-int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int current)
+int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button, int current)
 {
 	POINT	p;
 	p.x = mouse_x;
@@ -614,8 +638,6 @@ int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int cur
 			mWindow,
 			NULL);
 
-	memset(mDragging,0,sizeof(mDragging));
-
 	for (int i = 0; i < cmds.size(); ++i)
 	{
 		MENUITEMINFO mif = { 0 };
@@ -623,6 +645,11 @@ int				XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int cur
 		mif.fMask = MIIM_ID;
 		mif.wID = cmds[i];
 		SetMenuItemInfo(in_menu, i, true, &mif);
+	}
+
+	if(button == mDragging)
+	{
+		mWantFakeUp = 1;
 	}
 
 	return result-1;
