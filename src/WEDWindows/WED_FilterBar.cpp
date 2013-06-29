@@ -132,12 +132,9 @@ void	WED_FilterBar::GetCellContent(
 			the_content.is_disclosed=0;
 			the_content.is_selected=0;
 			the_content.indent_level=0;
-			
-			//mTextTable.GetEditContent();
-			
-			//gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val);
-			//the_content.int_val = mCurIntVal;
-			//the_content.text_val = mCurPak;
+			the_content.int_val = mCurIntVal;
+
+			gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val);
 			the_content.string_is_resource=0;
 		}
 	}
@@ -148,17 +145,14 @@ void	WED_FilterBar::GetEnumDictionary(
 						int							cell_y,
 						GUI_EnumDictionary&			out_dictionary)
 {
-	/*for(int i = 0; i < gPackageMgr->CountPackages(); i++)
+	int i = 0;
+	while(i < gPackageMgr->CountPackages()-1)
 	{
 		string temp = "";
 		gPackageMgr->GetNthPackageName(i,temp);
 		out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
-	}*/
-	out_dictionary.insert(GUI_EnumDictionary::value_type(0,make_pair("bip",true)));
-	out_dictionary.insert(GUI_EnumDictionary::value_type(1,make_pair("lop",true)));
-	out_dictionary.insert(GUI_EnumDictionary::value_type(2,make_pair("bibbip",true)));
-	out_dictionary.insert(GUI_EnumDictionary::value_type(3,make_pair("zifff",true)));
-	out_dictionary.insert(GUI_EnumDictionary::value_type(4,make_pair("nop nop",true)));
+		i++;
+	}
 }
 
 void	WED_FilterBar::AcceptEdit(
@@ -171,6 +165,8 @@ void	WED_FilterBar::AcceptEdit(
 	{
 		mCurIntVal = the_content.int_val;
 		mCurPak = the_content.text_val;
+
+		BroadcastMessage(mMsg, mParam);
 	}
 	if(cell_x == 1 && cell_y == 1)
 	{

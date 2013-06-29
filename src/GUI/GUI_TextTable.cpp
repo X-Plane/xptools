@@ -626,13 +626,19 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].key = 0;
 					items[i].flags = 0;
 					items[i].cmd = 0;
-					if (mEditInfo.int_val == it->first) cur = i;
+					if (mEditInfo.int_val == it->first)
+					{
+						cur = i;
+						mEditInfo.text_val = it->second.first.c_str();
+					}
 					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
 				}
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],cur);
+				
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
+					
 					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}
