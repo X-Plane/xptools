@@ -268,6 +268,12 @@ void	WED_Document::Save(void)
 	FILE * xml_file = fopen(xml.c_str(),"w");
 	#endif
 	
+	if(xml_file == NULL)
+	{
+		DoUserAlert("Please check file path for errors or missing parts");
+		return;
+	}
+
 	int ferrorErr = ferror(xml_file);
 		//If everything else has worked
 	if(ferrorErr == 0)
