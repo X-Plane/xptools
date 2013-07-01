@@ -1402,6 +1402,9 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 	{
 		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
 
+
+		//----------------------------------------------------------------------------------------------------
+
 		ILibrarian * pkg = WED_GetLibrarian(resolver);
 		string icao;
 		apt->GetICAO(icao);
@@ -1469,6 +1472,29 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 		}		
 	
 		zipCloseFileInZip(archive);
+
+		//-------------------------------------------------------------------
+
+		apt->GetICAO(icao);
+
+		icao += ".dat";
+		
+		if(zipOpenNewFileInZip (archive, icao.c_str(),
+						NULL,		// mod dates, etc??
+						NULL,0,
+						NULL,0,
+						NULL,		// comment
+						Z_DEFLATED,
+						Z_DEFAULT_COMPRESSION) != 0)
+		{
+			string msg = string("Unable to write to zip file.");
+			return 0;
+		}
+		
+		WED_AptExport(apt, zip_printf, archive);
+		zipCloseFileInZip(archive);
+		
+
 
 		return 1;
 	}
@@ -1559,24 +1585,9 @@ void	WED_DoExportRobin(IResolver * resolver)
 	
 		if(DSF_ExportOneAirportOverlayRecursive(resolver, w, archive, problem_children))
 		{
-			if(zipOpenNewFileInZip (archive, "apt.dat",
-							NULL,		// mod dates, etc??
-							NULL,0,
-							NULL,0,
-							NULL,		// comment
-							Z_DEFLATED,
-							Z_DEFAULT_COMPRESSION) != 0)
-			{
-				string msg = string("Unable to write to zip file.");
-				gExportTarget = old_target;
-				return;
-			}
-
-			
-			WED_AptExport(w, zip_printf, archive);
-			zipCloseFileInZip(archive);
-			zipClose(archive, NULL);
+			// success.
 		}
+		zipClose(archive, NULL);
 
 		if(!problem_children.empty())
 		{
