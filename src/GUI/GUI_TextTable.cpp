@@ -629,6 +629,9 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					if (mEditInfo.int_val == it->first)
 					{
 						cur = i;
+						
+						//Saves the selected enum's text value to mEditInfo
+						//So the value can be used in whatever calls Accept Edit
 						mEditInfo.text_val = it->second.first.c_str();
 					}
 					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;

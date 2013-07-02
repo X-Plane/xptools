@@ -56,7 +56,7 @@ enum GUI_CellContentType {
 	gui_Cell_CheckBox,			// int val				int val
 	gui_Cell_Integer,			// string&int val		int val
 	gui_Cell_Double,			// string&double val	double val
-	gui_Cell_Enum,				// string&int			int
+	gui_Cell_Enum,				// string&int			string&int
 	gui_Cell_EnumSet			// string val&int set	int set, int
 };
 
