@@ -92,7 +92,8 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 			switch(filter_package) {
 			case pack_Library:		want_it = me->second.packages.size() > 1 || !me->second.packages.count(pack_Local);	// Lib if we are in two packs or we are NOT in local.  (We are always SOMEWHERE)
 			case pack_All:			break;
-			case pack_Local:
+			case pack_Default:		want_it = me->second.is_default;	break;
+			case pack_Local:		// Since "local" is a virtal index, the search for Nth pack works for local too.
 			default:				want_it = me->second.packages.count(filter_package);
 			}
 			if(want_it)
@@ -137,6 +138,14 @@ bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.is_default;	
+}
+
+bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
+{
+	for(res_map_t::iterator i = res_table.begin(); i != res_table.end(); ++i)
+	if(i->second.packages.count(package))
+		return true;
+	return false;
 }
 
 
