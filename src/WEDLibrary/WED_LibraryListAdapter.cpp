@@ -70,19 +70,10 @@ void	WED_LibraryListAdapter::SetFilter(const string& f, int int_val)
 	mCurIntVal = int_val;
 	//Ensures that even with no library heirarchy things
 	//Can still be searched for
-	SetOpen(mLocalStr,1);
-	SetOpen(mLibraryStr,1);
 
 	tokenize_string_func(f.begin(),f.end(),back_inserter(mFilter),::isspace);
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
-	
-	//In the case that nothing else has been opened revert back to the original state
-	if(mOpen.size() == 2 && f == "")
-	{
-		SetOpen(mLocalStr,0);
-		SetOpen(mLibraryStr,0);
-	}
 }
 
 /********************************************************************************************************************************************
@@ -432,7 +423,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 	mCache.push_back(mLocalStr);
 	mCatLocInd = mCache.size()-1;
 
-	if(IsOpen(GetNthCacheIndex(mCatLocInd,false)))
+	if(IsOpen(GetNthCacheIndex(mCatLocInd,false)) || !mFilter.empty()) //Will build if there is something in the filter bar
 	{
 		//Goes to the data model and gets all of the root items that are local
 		mLibrary->GetResourceChildren("",pack_Local,rootItems);
@@ -450,7 +441,7 @@ void	WED_LibraryListAdapter::RebuildCache()
 	mCache.push_back(mLibraryStr);
 	mCatLibInd = mCache.size()-1;
 
-	if(IsOpen(GetNthCacheIndex(mCatLibInd,false)))
+	if(IsOpen(GetNthCacheIndex(mCatLibInd,false)) || !mFilter.empty())
 	{
 		//Goes to the data model and gets all of the root items that are in the library
 		mLibrary->GetResourceChildren("",mCurIntVal,rootItems);

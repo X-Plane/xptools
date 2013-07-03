@@ -167,7 +167,7 @@ void	WED_FilterBar::GetEnumDictionary(
 	out_dictionary.insert(GUI_EnumDictionary::value_type(i-1,make_pair("Local",true)));
 	out_dictionary.insert(GUI_EnumDictionary::value_type(i-2,make_pair("Library",true)));
 	out_dictionary.insert(GUI_EnumDictionary::value_type(i-3,make_pair("All",true)));
-	while(i < gPackageMgr->CountPackages()-1)
+	while(i < gPackageMgr->CountPackages())
 	{
 		string temp = "";
 		gPackageMgr->GetNthPackageName(i,temp);
