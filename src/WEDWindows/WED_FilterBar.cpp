@@ -34,16 +34,20 @@ WED_FilterBar::WED_FilterBar(
 			intptr_t		in_msg, 
 			intptr_t		in_param, 
 			const string&	in_label, 
-			const string&	in_def) :
+			const string&	in_def,
+			WED_LibraryMgr *mLibrary,
+			bool havePacks) :
 	GUI_Table(1),
 	GUI_SimpleTableGeometry(2, cols, GUI_GetImageResourceHeight("property_bar.png") / 2),
-	mCurIntVal(-3), //Aka pack_All
+	mCurIntVal(pack_Default), //Aka pack_Default, aka (as drawn) Laminar Library (name idea curtesy of Tom Kyler)
 	mCurPak(""),
 	mTextTable(cmdr,0,1),
 	mLabel(in_label),
 	mText(in_def),
 	mMsg(in_msg),
-	mParam(in_param)
+	mParam(in_param),
+	mLibrary(mLibrary),
+	mHavePacks(havePacks)
 {
 	this->SetGeometry(this);
 	this->SetContent(&mTextTable);
@@ -86,7 +90,7 @@ void	WED_FilterBar::GetCellContent(
 	* Lable | Enum Dictionary (Build from PackageManager)	0
 	*/
 	//Cell 0,0 and 1,0
-	if(cell_y == 1)
+	if(cell_y == 1 || mHavePacks == false)
 	{
 		the_content.content_type=gui_Cell_EditText;
 		the_content.can_edit=(cell_x==1);
@@ -104,7 +108,8 @@ void	WED_FilterBar::GetCellContent(
 			the_content.text_val = mText;
 		the_content.string_is_resource=0;
 	}
-	if(cell_y == 0)
+
+	if(cell_y == 0 && mHavePacks == true)
 	{
 		//Label
 		if(cell_x == 0)
@@ -141,9 +146,8 @@ void	WED_FilterBar::GetCellContent(
 			//Default for any other value
 			switch(mCurIntVal)
 			{
-				case -1: the_content.text_val = "Local"; break;
 				case -2: the_content.text_val = "Library"; break;
-				case -3: the_content.text_val = "All"; break;
+				case -4: the_content.text_val = "Laminar Library"; break;
 				default: gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val); break;
 			}
 			the_content.string_is_resource=0;
@@ -164,14 +168,21 @@ void	WED_FilterBar::GetEnumDictionary(
 	*/
 	int i = 0;
 
-	out_dictionary.insert(GUI_EnumDictionary::value_type(i-1,make_pair("Local",true)));
-	out_dictionary.insert(GUI_EnumDictionary::value_type(i-2,make_pair("Library",true)));
-	out_dictionary.insert(GUI_EnumDictionary::value_type(i-3,make_pair("All",true)));
+	/*An important note!
+	* To make something the default enum choice make sure you update the inilized mCurIntVal this AND in the LibraryAdapter
+	*/
+	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_Library,make_pair("Library",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_Default,make_pair("Laminar Library",true))); //Aka the default library aka pack_Default
+
 	while(i < gPackageMgr->CountPackages())
 	{
 		string temp = "";
 		gPackageMgr->GetNthPackageName(i,temp);
-		out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
+
+		if(mLibrary->DoesPackHaveLibraryItems(i) == true)
+		{
+			out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
+		}
 		i++;
 	}
 
@@ -183,7 +194,7 @@ void	WED_FilterBar::AcceptEdit(
 						const GUI_CellContent&		the_content,
 						int							apply_all)
 {
-	if(cell_x == 1 && cell_y == 0)
+	if(cell_x == 1 && cell_y == 0 && mHavePacks)
 	{
 		mCurIntVal = the_content.int_val;
 		mCurPak = the_content.text_val;

@@ -95,7 +95,7 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
-	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Filter:", "");
+	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Filter:", "", mgr,true);
 	mFilter->Show();
 	mFilter->SetParent(this);
 	mFilter->AddListener(this);

@@ -43,7 +43,7 @@ WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 	//in GetNthCacheIndex
 	mCatLocInd(-1234),
 	mCatLibInd(-5678),
-	mCurIntVal(pack_All)
+	mCurIntVal(pack_Default)
 {
 	mLibrary->AddListener(this);
 
