@@ -641,7 +641,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
-					
+
 					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}

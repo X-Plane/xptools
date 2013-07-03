@@ -31,7 +31,6 @@
 #include "WED_MapPane.h"
 #include "GUI_Messages.h"
 #include "STLUtils.h"
-#include "WED_PackageMgr.h"
 
 static int kDefCols[] = { 100, 100 };
 
@@ -72,7 +71,7 @@ void	WED_LibraryListAdapter::SetFilter(const string& f, int int_val)
 	//Ensures that even with no library heirarchy things
 	//Can still be searched for
 	SetOpen(mLocalStr,1);
-	SetOpen(mLibraryStr,1);	
+	SetOpen(mLibraryStr,1);
 
 	tokenize_string_func(f.begin(),f.end(),back_inserter(mFilter),::isspace);
 	mCacheValid = false;
@@ -105,7 +104,6 @@ void	WED_LibraryListAdapter::GetCellContent(
 
 	string pPath = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,true) : "";
 
-	//if(
 	string path = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,false) : "";
 	
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
@@ -182,15 +180,7 @@ void	WED_LibraryListAdapter::ToggleDisclose(
 {
 
 	RebuildCache();
-
-	//if(mCurIntVal == pack_All)
-	//{
-		string r = GetNthCacheIndex(cell_y,false);
-	//}
-	//else
-	//{
-	//	r = GetNthCacheIndex(cell_y,true);
-	//}
+	string r = GetNthCacheIndex(cell_y,false);
 	if(cell_y < mCache.size())
 	{
 		SetOpen(r,1-IsOpen(r));
@@ -438,71 +428,39 @@ void	WED_LibraryListAdapter::RebuildCache()
 	
 	//Clear out all strings inside
 	mCache.clear();
-	/* If mCurIntVal is All it will do Local and Library
-	* If it is Local or Library it will do only that chosen one
-	* If it is any pack it will do that one only
-	*/
-	switch(mCurIntVal)
-	{
-		case pack_All:
-		case pack_Local:
-			mCache.push_back(mLocalStr);
-			mCatLocInd = mCache.size()-1;
-		
-			if(IsOpen(GetNthCacheIndex(mCatLocInd,false)))
-			{
-				//Goes to the data model and gets all of the root items that are local
-				mLibrary->GetResourceChildren("",pack_Local,rootItems);
-
-				//For all the root items
-				for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
-				{
-					//Add the prefix
-					//s->insert(0,mLocalStr);
-					//Try to find their children
-					RebuildCacheRecursive(*s,pack_Local,mLocalStr);
-				}
-			}
-			if(mCurIntVal != pack_All)
-			{
-				break;
-			}
-		case pack_Library:
-			mCache.push_back(mLibraryStr);
-			mCatLibInd = mCache.size()-1;
-
-			if(IsOpen(GetNthCacheIndex(mCatLibInd,false)))
-			{
-				//Goes to the data model and gets all of the root items that are in the library
-				mLibrary->GetResourceChildren("",pack_Library,rootItems);
 	
-				//For all root items
-				for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
-				{
-					//Try to find their children
-					RebuildCacheRecursive(*s,pack_Library,mLibraryStr);
-				}
-			}
-			if(mCurIntVal != pack_All)
-			{
-				break;
-			}
-		default:
-			if(mCurIntVal >=0)
-			{
-				//Goes to the data model and gets all of the root items that are local
-				mLibrary->GetResourceChildren("",mCurIntVal,rootItems);
+	mCache.push_back(mLocalStr);
+	mCatLocInd = mCache.size()-1;
 
-				//For all the root items
-				for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
-				{
-					//Add the prefix
-					//s->insert(0,mLocalStr);
-					//Try to find their children
-					RebuildCacheRecursive(*s,mCurIntVal,"");
-				}
-			}
-			break;
+	if(IsOpen(GetNthCacheIndex(mCatLocInd,false)))
+	{
+		//Goes to the data model and gets all of the root items that are local
+		mLibrary->GetResourceChildren("",pack_Local,rootItems);
+
+		//For all the root items
+		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
+		{
+			//Add the prefix
+			//s->insert(0,mLocalStr);
+			//Try to find their children
+			RebuildCacheRecursive(*s,pack_Local,mLocalStr);
+		}
+	}
+
+	mCache.push_back(mLibraryStr);
+	mCatLibInd = mCache.size()-1;
+
+	if(IsOpen(GetNthCacheIndex(mCatLibInd,false)))
+	{
+		//Goes to the data model and gets all of the root items that are in the library
+		mLibrary->GetResourceChildren("",mCurIntVal,rootItems);
+	
+		//For all root items
+		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
+		{
+			//Try to find their children
+			RebuildCacheRecursive(*s,mCurIntVal,mLibraryStr);
+		}
 	}
 
 	DoFilter();
