@@ -37,7 +37,7 @@ WED_FilterBar::WED_FilterBar(
 			const string&	in_def) :
 	GUI_Table(1),
 	GUI_SimpleTableGeometry(2, cols, GUI_GetImageResourceHeight("property_bar.png") / 2),
-	mCurIntVal(0),
+	mCurIntVal(-3), //Aka pack_All
 	mCurPak(""),
 	mTextTable(cmdr,0,1),
 	mLabel(in_label),
@@ -106,6 +106,7 @@ void	WED_FilterBar::GetCellContent(
 	}
 	if(cell_y == 0)
 	{
+		//Label
 		if(cell_x == 0)
 		{
 			the_content.content_type=gui_Cell_EditText;
@@ -121,6 +122,7 @@ void	WED_FilterBar::GetCellContent(
 			the_content.text_val = "Choose Pack:";
 			the_content.string_is_resource=0;
 		}
+		//Enum
 		if(cell_x == 1)
 		{
 			the_content.content_type=gui_Cell_Enum;
@@ -134,7 +136,16 @@ void	WED_FilterBar::GetCellContent(
 			the_content.indent_level=0;
 			the_content.int_val = mCurIntVal;
 
-			gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val);
+			//switch on the current int_val
+			//Special cases for Local, Library, and All
+			//Default for any other value
+			switch(mCurIntVal)
+			{
+				case -1: the_content.text_val = "Local"; break;
+				case -2: the_content.text_val = "Library"; break;
+				case -3: the_content.text_val = "All"; break;
+				default: gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val); break;
+			}
 			the_content.string_is_resource=0;
 		}
 	}
@@ -145,7 +156,17 @@ void	WED_FilterBar::GetEnumDictionary(
 						int							cell_y,
 						GUI_EnumDictionary&			out_dictionary)
 {
+	/* Force the dictionary to have Local, Library, and All
+	* their numbers correspond with the enum values found in the
+	* Library Managers
+	*
+	* Loop through the number of packages and add them to the dictionary
+	*/
 	int i = 0;
+
+	out_dictionary.insert(GUI_EnumDictionary::value_type(i-1,make_pair("Local",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(i-2,make_pair("Library",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(i-3,make_pair("All",true)));
 	while(i < gPackageMgr->CountPackages()-1)
 	{
 		string temp = "";
@@ -153,6 +174,7 @@ void	WED_FilterBar::GetEnumDictionary(
 		out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
 		i++;
 	}
+
 }
 
 void	WED_FilterBar::AcceptEdit(

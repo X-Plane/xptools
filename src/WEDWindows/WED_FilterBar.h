@@ -37,9 +37,10 @@ public:
 			intptr_t		in_param, 
 			const string&	in_label, 
 			const string&	in_def);
-
+			
 			string		GetText(void) { return mText; }
-
+			string		GetCurPak(void) {return mCurPak;}
+			int			GetIntVal(void) {return mCurIntVal;}
 	// GUI_SimpleTableGeometry
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);

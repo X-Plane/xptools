@@ -42,7 +42,7 @@ public:
 	virtual			~WED_LibraryListAdapter();
 
 			void	SetMap(WED_MapPane * amap, WED_LibraryPreviewPane * apreview);
-			void	SetFilter(const string& filter);
+			void	SetFilter(const string& filter, int int_val);
 
 	// GUI_TextTableProvider
 	virtual void	GetCellContent(
@@ -197,12 +197,12 @@ private:
 		*
 		*
 		* A table of how strings appear and move through the program
-		* Assume mLocalStr and mLibraryStr are equal to "Loc/" and "Lib/"
+		* Assume mLocalStr and mLibraryStr are equal to "Local/" and "Library/"
 		* 
-		*String|_Loc/ or Lib/_         | Loc or Lib         | Buildings/FoodStands/RustBurger.obj | Loc/Buildings/FoodStands/RustBurger.obj|
-		* Use  | mOpen,mCache,mSel     | Drawing            | Library Manager, reasource lookup   | Drawing, mOpen, mCache, mSel           |
-		* Get  | mCatLocInd, mCatLibInd| GetNth(index, true)| GetNth(index, true)                 | GetNth(index, false)                   |
-		* Set  | RebuildCache()        | Constructor        | LibraryManager(from your HDD)       | Manually change string (Danger)        |
+		*String| Local/ or Library/    | Local or Library   | Buildings/FoodStands/RustBurger.obj | Local/Buildings/FoodStands/RustBurger.obj|
+		* Use  | mOpen,mCache,mSel     | Drawing            | Library Manager, reasource lookup   | Drawing, mOpen, mCache, mSel             |
+		* Get  | mCatLocInd, mCatLibInd| GetNth(index, true)| GetNth(index, true)                 | GetNth(index, false)                     |
+		* Set  | RebuildCache()        | Constructor        | LibraryManager(from your HDD)       | Manually change string (Danger)          |
 		*
 		* Common trouble shooting tip: If something is not working it means you have added/not added the prefix propperly, 
 		* forgot it, or forgot to reset it.
@@ -231,6 +231,7 @@ private:
 		
 		bool					mCacheValid;
 		
+		int						mCurIntVal;
 		//A string to switch library panes with
 		//Possible values Local or Library, listed below;
 		string					mLocalStr;
@@ -244,6 +245,7 @@ private:
 		//A collection of strings for the filter to be checked against
 		vector<string>			mFilter;
 
+		string					mCurkPak;
 		
 		WED_LibraryMgr *		mLibrary;
 		string					mSel;
