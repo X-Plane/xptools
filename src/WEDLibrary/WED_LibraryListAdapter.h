@@ -231,7 +231,7 @@ private:
 		
 		bool					mCacheValid;
 		
-		int						mCurIntVal;
+		int						mCurPakVal;
 		//A string to switch library panes with
 		//Possible values Local or Library, listed below;
 		string					mLocalStr;

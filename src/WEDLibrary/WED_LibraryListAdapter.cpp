@@ -43,7 +43,7 @@ WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 	//in GetNthCacheIndex
 	mCatLocInd(-1234),
 	mCatLibInd(-5678),
-	mCurIntVal(pack_Default)
+	mCurPakVal(pack_Library)
 {
 	mLibrary->AddListener(this);
 
@@ -67,7 +67,7 @@ void	WED_LibraryListAdapter::SetMap(WED_MapPane * amap, WED_LibraryPreviewPane *
 void	WED_LibraryListAdapter::SetFilter(const string& f, int int_val)
 {
 	mFilter.clear();
-	mCurIntVal = int_val;
+	mCurPakVal = int_val;
 	//Ensures that even with no library heirarchy things
 	//Can still be searched for
 
@@ -444,13 +444,13 @@ void	WED_LibraryListAdapter::RebuildCache()
 	if(IsOpen(GetNthCacheIndex(mCatLibInd,false)) || !mFilter.empty())
 	{
 		//Goes to the data model and gets all of the root items that are in the library
-		mLibrary->GetResourceChildren("",mCurIntVal,rootItems);
+		mLibrary->GetResourceChildren("",mCurPakVal,rootItems);
 	
 		//For all root items
 		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
 		{
 			//Try to find their children
-			RebuildCacheRecursive(*s,mCurIntVal,mLibraryStr);
+			RebuildCacheRecursive(*s,mCurPakVal,mLibraryStr);
 		}
 	}
 

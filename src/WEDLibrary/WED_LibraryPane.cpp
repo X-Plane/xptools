@@ -122,5 +122,5 @@ void	WED_LibraryPane::ReceiveMessage(
 							intptr_t				inParam)
 {
 	if(inMsg == GUI_FILTER_FIELD_CHANGED)
-		mLibraryList.SetFilter(mFilter->GetText(),mFilter->GetIntVal());
+		mLibraryList.SetFilter(mFilter->GetText(),mFilter->GetPakVal());
 }

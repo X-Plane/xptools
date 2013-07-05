@@ -39,7 +39,7 @@ WED_FilterBar::WED_FilterBar(
 			bool havePacks) :
 	GUI_Table(1),
 	GUI_SimpleTableGeometry(2, cols, GUI_GetImageResourceHeight("property_bar.png") / 2),
-	mCurIntVal(pack_Default), //Aka pack_Default, aka (as drawn) Laminar Library (name idea curtesy of Tom Kyler)
+	mCurPakVal(pack_Library), //aka -2
 	mCurPak(""),
 	mTextTable(cmdr,0,1),
 	mLabel(in_label),
@@ -76,7 +76,14 @@ int			WED_FilterBar::GetColCount(void)
 
 int			WED_FilterBar::GetRowCount(void)
 {
-	return 2;
+	if(mHavePacks == false)
+	{
+		return 1;
+	}
+	else
+	{
+		return 2;
+	}
 }
 
 void	WED_FilterBar::GetCellContent(
@@ -139,16 +146,16 @@ void	WED_FilterBar::GetCellContent(
 			the_content.is_disclosed=0;
 			the_content.is_selected=0;
 			the_content.indent_level=0;
-			the_content.int_val = mCurIntVal;
+			the_content.int_val = mCurPakVal;
 
 			//switch on the current int_val
 			//Special cases for Local, Library, and All
 			//Default for any other value
-			switch(mCurIntVal)
+			switch(mCurPakVal)
 			{
-				case -2: the_content.text_val = "Library"; break;
-				case -4: the_content.text_val = "Laminar Library"; break;
-				default: gPackageMgr->GetNthPackageName(mCurIntVal,the_content.text_val); break;
+				case pack_Library: the_content.text_val = "Library"; break;
+				case pack_Default: the_content.text_val = "Laminar Library"; break;
+				default: gPackageMgr->GetNthPackageName(mCurPakVal,the_content.text_val); break;
 			}
 			the_content.string_is_resource=0;
 		}
@@ -169,7 +176,7 @@ void	WED_FilterBar::GetEnumDictionary(
 	int i = 0;
 
 	/*An important note!
-	* To make something the default enum choice make sure you update the inilized mCurIntVal this AND in the LibraryAdapter
+	* To make something the default enum choice make sure you update the inilized mCurPakVal this AND in the LibraryAdapter
 	*/
 	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_Library,make_pair("Library",true)));
 	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_Default,make_pair("Laminar Library",true))); //Aka the default library aka pack_Default
@@ -196,12 +203,12 @@ void	WED_FilterBar::AcceptEdit(
 {
 	if(cell_x == 1 && cell_y == 0 && mHavePacks)
 	{
-		mCurIntVal = the_content.int_val;
+		mCurPakVal = the_content.int_val;
 		mCurPak = the_content.text_val;
 
 		BroadcastMessage(mMsg, mParam);
 	}
-	if(cell_x == 1 && cell_y == 1)
+	if(cell_x == 1 && cell_y == 1 || mHavePacks == false)
 	{
 		if(mText != the_content.text_val)
 		{

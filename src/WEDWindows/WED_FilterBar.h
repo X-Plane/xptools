@@ -43,7 +43,7 @@ public:
 
 			string		GetText(void) { return mText; }
 			string		GetCurPak(void) {return mCurPak;}
-			int			GetIntVal(void) {return mCurIntVal;}
+			int			GetPakVal(void) {return mCurPakVal;}
 	// GUI_SimpleTableGeometry
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);
@@ -149,7 +149,7 @@ private:
 	//current pack one that is selected (used for GetCellContents)
 	//Data from AcceptEdit
 	string				mCurPak;
-	int					mCurIntVal;
+	int					mCurPakVal;
 	//Decides if it should have packs
 	bool				mHavePacks;
 	string				mLabel;
