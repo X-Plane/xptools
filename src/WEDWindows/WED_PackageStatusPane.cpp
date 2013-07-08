@@ -111,7 +111,7 @@ int			WED_PackageStatusPane::MouseDown(int x, int y, int button)
 		"Item 2", 0, 0, 0,0,
 		"Item 3", 0, 0, 0,0,
 		NULL, 0,0,0, 0 };
-		last = PopupMenuDynamic(items,x,y,last);
+		last = PopupMenuDynamic(items,x,y,button,last);
 		char buf[100];
 		sprintf(buf,"Got %d\n",last);
 		DoUserAlert(buf);

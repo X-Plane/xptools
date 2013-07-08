@@ -30,6 +30,10 @@ class	WED_Group : public WED_GISComposite {
 
 DECLARE_PERSISTENT(WED_Group)
 
+public:
+
+	virtual const char *	HumanReadableType(void) const { return "Group"; }
+
 };
 
 

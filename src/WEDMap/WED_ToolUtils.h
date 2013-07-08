@@ -129,6 +129,7 @@ GUI_DragOperation	WED_DoDragSelection(
 								GUI_Pane *				pane,
 								int						x,
 								int						y,
+								int						button,
 								int						where[4]);
 bool				WED_IsDragSelection(
 								GUI_DragData *			drag);

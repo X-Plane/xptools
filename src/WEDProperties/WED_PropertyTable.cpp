@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */
+ */ 
 
 #include "WED_PropertyTable.h"
 #include "WED_Archive.h"
@@ -125,7 +125,7 @@ void	WED_PropertyTable::GetCellContent(
 	t->GetNthPropertyInfo(idx,inf);
 	t->GetNthProperty(idx, val);
 
-	the_content.can_select = 1;
+	the_content.can_select = mSelOnly ? 0 : 1;
 	the_content.is_selected = s->IsSelected(t);
 
 	switch(inf.prop_kind) {
@@ -338,9 +338,10 @@ void	WED_PropertyTable::DoDrag(
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,
 						int							mouse_y,
+						int							button,
 						int							bounds[4])
 {
-	WED_DoDragSelection(drag_emitter, mouse_x, mouse_y, bounds);
+	WED_DoDragSelection(drag_emitter, mouse_x, mouse_y, button, bounds);
 }
 
 

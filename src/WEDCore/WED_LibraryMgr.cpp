@@ -29,6 +29,21 @@
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
 
+static void clean_vpath(string& s)
+{
+	for(string::size_type p = 0; p < s.size(); ++p)
+	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+		s[p] = '/';
+}
+
+static void clean_rpath(string& s)
+{
+	for(string::size_type p = 0; p < s.size(); ++p)
+	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+		s[p] = DIR_CHAR;
+}
+
+
 static void split_path(const string& i, string& p, string& f)
 {
 	string::size_type n=i.rfind('/');
@@ -222,6 +237,8 @@ void		WED_LibraryMgr::Rescan()
 				{
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
+					clean_vpath(vpath);
+					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
 					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}
@@ -230,6 +247,8 @@ void		WED_LibraryMgr::Rescan()
 				{
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
+					clean_vpath(vpath);
+					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
 					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}
@@ -238,6 +257,8 @@ void		WED_LibraryMgr::Rescan()
 				{
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
+					clean_vpath(vpath);
+					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
 					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}
@@ -246,6 +267,8 @@ void		WED_LibraryMgr::Rescan()
 				{
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
+					clean_vpath(vpath);
+					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
 					AccumResource(vpath, p, rpath,true,is_default_pack);
 				}
@@ -255,6 +278,8 @@ void		WED_LibraryMgr::Rescan()
 					MFS_int(&s);
 					MFS_string(&s,&vpath);
 					MFS_string(&s,&rpath);
+					clean_vpath(vpath);
+					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
 					AccumResource(vpath, p, rpath,false,is_default_pack);
 				}

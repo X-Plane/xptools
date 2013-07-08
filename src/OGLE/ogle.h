@@ -56,7 +56,9 @@ extern "C" {
 
 /* Special keys */
 enum {
-	ogle_DeleteBack 	= 8,
+	ogle_Home		= 1,
+	ogle_End		= 4,
+	ogle_DeleteBack = 8,
 	ogle_Left 		= 28,
 	ogle_Right 		= 29,
 	ogle_Up 		= 30,

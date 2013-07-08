@@ -2483,6 +2483,7 @@ int KillSlopedWater(Pmwx& pmwx,
 	for(Pmwx::Face_iterator f = pmwx.faces_begin(); f != pmwx.faces_end(); ++f, ++ctr)
 	if(!f->is_unbounded())
 	if(f->data().IsWater())
+	if(f->data().GetParam(af_FlattenMode,FLATTEN) == NO_FLATTEN)
 	#if OPENGL_MAP
 	if(gFaceSelection.empty() || gFaceSelection.count(f))
 	#endif

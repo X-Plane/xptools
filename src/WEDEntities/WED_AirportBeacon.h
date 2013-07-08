@@ -39,6 +39,8 @@ public:
 
 	void			SetKind(int kind);
 
+	virtual const char *	HumanReadableType(void) const { return "Airport Beacon"; }
+
 private:
 
 	WED_PropIntEnum			kind;

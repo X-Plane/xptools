@@ -30,6 +30,10 @@ class WED_TaxiRouteNode : public WED_GISPoint {
 
 DECLARE_PERSISTENT(WED_TaxiRouteNode)
 
+public:
+
+	virtual const char *	HumanReadableType(void) const { return "Taxi Route Node"; }
+
 };
 
 

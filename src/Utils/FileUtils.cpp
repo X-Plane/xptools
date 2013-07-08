@@ -122,8 +122,9 @@ int FILE_case_correct(char * buf)
 			return 1;
 		}		
 	}
+	return 0;	// we hit here if our file name was empty.
 #else 
-return 1;
+	return 1;
 #endif
 }
 

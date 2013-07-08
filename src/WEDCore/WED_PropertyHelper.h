@@ -60,7 +60,7 @@ struct XML_Name : public pair<const char *, const char *> { XML_Name(const char 
 
 class	WED_PropertyItem {
 public:
-	WED_PropertyItem(WED_PropertyHelper * parent, const char * tite, SQL_Name sql_column, XML_Name xml_column);
+	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, SQL_Name sql_column, XML_Name xml_column);
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
 	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;

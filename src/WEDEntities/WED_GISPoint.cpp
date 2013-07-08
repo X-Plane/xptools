@@ -57,6 +57,7 @@ bool			WED_GISPoint::HasLayer(GISLayer_t l) const
 
 void			WED_GISPoint::GetBounds		(GISLayer_t l,Bbox2&  bounds) const
 {
+	CacheBuild(cache_Spatial);
 	Point2	p;
 	GetLocation(l,p);
 	bounds = Bbox2(p);

@@ -40,6 +40,8 @@ public:
 			void			GetResource(	  string& r) const;
 			void			SetResource(const string& r);
 
+	virtual const char *	HumanReadableType(void) const { return "Object String"; }
+
 protected:
 
 	virtual	bool			IsJustPoints(void) const { return false; }

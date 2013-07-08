@@ -40,6 +40,16 @@
 
 	One exception is that windows are ALWAYS the root of both pane and commander trees!
 
+	DEFERMENT
+	
+	There's a nasty category of bugs that can occur: while the user cannot easily do two commands at once with the mouse
+	(e.g. select while moving an object) because there is only one left mouse button) the user CAN do two things at once
+	by running a command off the keyboard while editign with the mouse.
+	
+	We provide an API to _defer_ command processing until later - other code can thus tell commands to 'go wait' until we
+	are ready to accept them.  The GUI_Window mouse code uses this to defer commands while drags are in place to avoid 
+	double-commanding.
+
 	MEMORY MANAGEMENT
 
 	Because commanders are meant to be mix-ins for other classes, and very often at least some of those classes WILL be
@@ -64,22 +74,34 @@ public:
 
 			int				TakeFocus(void);				// Try to focus this commander - returns 1 if successful.
 			int				LoseFocus(int inForce);			// Unfocus this commander.  Pass 1 to disallow veto.  Returns true if successful.
-	static	GUI_Commander *	GetCommanderRoot(void);
-			GUI_Commander *	GetFocusForCommander(void);
 			int				FocusChain(int inForce);		// Make sure that we are participating in focus - force if needed.
 
+			GUI_Commander *	GetRootForCommander(void);		// Who is last in line in the chain that WE participate in?
+			GUI_Commander *	GetFocusForCommander(void);		// Who is in focus in the chain that WE participate in?
 			int				IsFocused(void);				// Are we THE focused commander?
-			int				IsFocusedChain(void);			// Is the focus belwo us (we might have a shot)?
+			int				IsFocusedChain(void);			// Is the focus below us (we might have a shot)?
 
 			GUI_Commander *	GetCmdParent(void);
+			
+			void			BeginDefer(void);
+			void			EndDefer(void);
 
 	static	void			RegisterNotifiable(GUI_Commander_Notifiable * notif);
 	static	void			UnregisterNotifiable(GUI_Commander_Notifiable * notif);
 
-	// Handler Dispatchers
+	// Handler Dispatchers - external code can call DispatchHandleCommand to "run" a command.
+	// The commands are sent to the focused commander in the CHAIN that we participate in. 
+	// In other words, if we DispatchHandleCommand to a window, the text field in the window gets
+	// first crack, the window goes second, and the app goes third.
 			int				DispatchKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
 			int				DispatchHandleCommand(int command);
 			int				DispatchCanHandleCommand(int command, string& ioName, int& ioCheck);
+
+#if DEV
+			void			PrintCommandChain(int indent);
+#endif
+
+protected:
 
 	// Commander handler messages:
 	virtual	int				HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)	 	{ return 0; }
@@ -92,7 +114,18 @@ public:
 
 private:
 
-		static	GUI_Commander *				mCmdRoot;
+			struct	deferred_cmd_or_key {
+				deferred_cmd_or_key(int c) : cmd(c) { }
+				deferred_cmd_or_key(uint32_t k, int v, GUI_KeyFlags f) : cmd(0), key(k), vk(v), flags(f) { }
+				int				cmd;
+				uint32_t		key;
+				int				vk;
+				GUI_KeyFlags	flags;
+			};
+
+				int							mDeferLevel;
+				vector<deferred_cmd_or_key>	mDeferredActions;
+				
 				GUI_Commander *				mCmdParent;
 				GUI_Commander *				mCmdFocus;
 				vector<GUI_Commander *>		mCmdChildren;

@@ -195,6 +195,7 @@ int		GetFilePathFromUser(
 	if(files.size() != 1)
 		return 0;
 	strncpy(outFileName,files[0].c_str(),inBufSize);
+	return 1;
 }
 
 char *	GetMultiFilePathFromUser(
@@ -225,7 +226,7 @@ char *	GetMultiFilePathFromUser(
 		strcpy(p, files[i].c_str());
 		p += (files[i].size() + 1);
 	}
-	++p;
+	*p = 0;
 	
 	return ret;
 }

@@ -335,6 +335,9 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 	}
 	Obj8_ConsolidateIndexCommands(obj8);
 	Obj8_CalcNormals(obj8);
+	
+	obj8.geo_tri.get_minmax(obj8.xyz_min,obj8.xyz_max);
+	
 }
 
 void	Obj8_ConsolidateIndexCommands(XObj8& obj8)

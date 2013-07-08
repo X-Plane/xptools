@@ -51,6 +51,7 @@ bool			WED_GISBoundingBox::HasLayer		(GISLayer_t l) const
 
 void			WED_GISBoundingBox::GetBounds		(GISLayer_t l,   Bbox2&  bounds) const
 {
+	CacheBuild(cache_Spatial);
 	Bbox2	b2;
 	GetMin()->GetBounds(l,bounds);
 	GetMax()->GetBounds(l,b2);

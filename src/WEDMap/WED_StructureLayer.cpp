@@ -51,9 +51,11 @@
 #include "WED_RampPosition.h"
 #include "WED_Windsock.h"
 #include "WED_AirportBeacon.h"
+#include "WED_SimpleBoundaryNode.h"
 #include "WED_DrawUtils.h"
 #include "GUI_DrawUtils.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -257,19 +259,64 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				 if (sub_class == WED_TowerViewpoint::sClass&& (tower  = SAFE_CAST(WED_TowerViewpoint, entity)) != NULL) pt = tower , icon = "map_towerview.png";
 			else if (sub_class == WED_Windsock::sClass		&& (sock   = SAFE_CAST(WED_Windsock		 , entity)) != NULL) pt = sock  , icon = "map_windsock.png" ;
 			else if (sub_class == WED_AirportBeacon::sClass && (beacon = SAFE_CAST(WED_AirportBeacon , entity)) != NULL) pt = beacon, icon = "map_beacon.png"   ;
+			else if (sub_class == WED_SimpleBoundaryNode::sClass && (pt = SAFE_CAST(IGISPoint, entity)) != NULL) icon = "map_tree.png";
 			else pt = SAFE_CAST(IGISPoint,entity);
 			if (pt)
 			{
 				pt->GetLocation(gis_Geo,l);
 				l = GetZoomer()->LLToPixel(l);
-				if (icon) GUI_PlotIcon(g,icon, l.x(),l.y(),0,icon_scale);
+				if (icon) 
+				{
+					// Pretty much all non-heading single point entities should have SOME kind of icon!!
+					// Off-hand I think windsocks, tower viewpoints and airport-beacons are the only ones 
+					// we have right now.
+					GUI_PlotIcon(g,icon, l.x(),l.y(),0,icon_scale);
+				}
 				else {
-					glBegin(GL_LINES);
-					glVertex2f(l.x(), l.y() - 3);
-					glVertex2f(l.x(), l.y() + 3);
-					glVertex2f(l.x() - 3, l.y());
-					glVertex2f(l.x() + 3, l.y());
-					glEnd();
+								
+					// Special case: for taxi routes, we are going to draw them here IF
+					// vertex-preview is on.  This way we can use the selection state of the 
+					// node itself to color the node.
+					//
+					// Note that for "line" types like taxi lines if vertex preview is on and we
+					// are using a random tool (not the vertex tool) this code does not kick in -
+					// instead we sub-iterate our chain.  The result is a bug we'll ship with for 
+					// now: incorrect node hilighting.  For line types, I think this is pretty 
+					// unimportant: a user has pretty much no reason to hilight a line vertex
+					// with a tool other than the vertex tool for editing, which is why no one
+					// reported the bug in the several years of WED's history.  
+					//
+					// So we will special-case taxi routes for now.  When we get road grids in 
+					// we may need a better heuristic for this case than the actual obj type.
+								
+					if (sub_class == WED_TaxiRouteNode::sClass)
+					{
+						if(mVertices)
+						{
+							glPointSize(5);
+							glColor4fv(WED_Color_RGBA(struct_color));
+							glBegin(GL_POINTS);
+							Point2 p;
+							pt->GetLocation(gis_Geo,p);
+							glVertex2(GetZoomer()->LLToPixel(p));
+							glEnd();
+							glPointSize(1);
+						}
+					}
+					else 
+					{
+						// Ideally if anything falls into here we'd like to know and fixit.  It probably
+						// means we need an icon but we are missing one.
+						//printf("Skipped preview of %s\n", sub_class);
+						/*
+							glBegin(GL_LINES);
+							glVertex2f(l.x(), l.y() - 3);
+							glVertex2f(l.x(), l.y() + 3);
+							glVertex2f(l.x() - 3, l.y());
+							glVertex2f(l.x() + 3, l.y());
+							glEnd();
+						*/
+					}
 				}
 			}
 		}
@@ -413,11 +460,12 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				}
 			}
 
-			if (mVertices)
+			if (mVertices && kind != gis_Edge)	// Gis EDGE points will be picked up separately!  That way we can get their hilite right.
 			{
 				n = ps->GetNumPoints();
 				glPointSize(5);
 				glColor4fv(WED_Color_RGBA(struct_color));
+
 				glBegin(GL_POINTS);
 
 				for (i = 0; i < n; ++i)

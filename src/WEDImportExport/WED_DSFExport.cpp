@@ -73,7 +73,6 @@ int zip_printf(void * fi, const char * fmt, ...)
 	int l = vsprintf(tmp,fmt,args);
 	
 	zipWriteInFileInZip((zipFile) fi, tmp, l);
-
 	return l;
 }
 
@@ -1498,6 +1497,10 @@ int		WED_CanExportPack(IResolver * resolver)
 
 void	WED_DoExportPack(IResolver * resolver)
 {
+	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
+	if(!WED_ValidateApt(resolver))
+		return;
+
 	ILibrarian * l = WED_GetLibrarian(resolver);
 	WED_Thing * w = WED_GetWorld(resolver);
 	set<WED_Thing *>	problem_children;

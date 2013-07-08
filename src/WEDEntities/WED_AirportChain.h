@@ -58,6 +58,8 @@ public:
 			void			Import(const AptMarking_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 			void			Export(		 AptMarking_t& x) const;
 
+	virtual const char *	HumanReadableType(void) const { return "Airport Line Marking"; }
+
 protected:
 
 	virtual	bool			IsJustPoints(void) const { return false; }
