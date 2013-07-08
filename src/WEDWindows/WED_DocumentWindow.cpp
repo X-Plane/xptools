@@ -136,22 +136,6 @@ WED_DocumentWindow::WED_DocumentWindow(
 	lib->Show();
 	lib->SetSticky(1,1,1,1);
 
-	/*mFiltSplitter = new GUI_Splitter(gui_Split_Vertical);
-	if (!WED_UIMeasurement("one_big_gradient")) {
-		mFiltSplitter->SetImage1("gradient.png");
-		mFiltSplitter->SetImage2("gradient.png");
-	}
-	
-	mFiltSplitter->SetParent(mLibSplitter);
-	mFiltSplitter->Show();
-	GUI_Pane::GetBounds(splitter_b);
-	mFiltSplitter->SetBounds(splitter_b);
-	mFiltSplitter->SetSticky(1,1,0,1);
-	
-	GUI_AdvancedFilterPane * advFlt = new GUI_AdvancedFilterPane(this);
-	advFlt->SetParent(mFiltSplitter);
-	advFlt->Show();
-	advFlt->SetSticky(1,1,1,1);*/
 	/****************************************************************************************************************************************************************
 	 * DA MAP
 	****************************************************************************************************************************************************************/
