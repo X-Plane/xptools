@@ -34,7 +34,7 @@ class	WED_CreatePointTool;
 class	WED_CreatePolygonTool;
 class	WED_MapPane;
 class	WED_LibraryPreviewPane;
-class	WED_AdvancedFilterPane;
+class	GUI_AdvancedFilterPane;
 
 class WED_LibraryListAdapter : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_TextTableHeaderProvider, public GUI_Broadcaster, public GUI_Listener {
 public:

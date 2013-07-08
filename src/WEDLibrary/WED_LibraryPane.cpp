@@ -32,22 +32,13 @@
 WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr) :
 	GUI_Commander(commander),
 	mTextTable(this,WED_UIMeasurement("table_indent_width"),0),
-	mLibraryList(mgr),
-	GUI_Splitter(gui_Split_Vertical)
+	mLibraryList(mgr)
 {
-	this->SetSticky(1,1,0,1);
-	//this->SetRestrict(500,920);
-	int bounds[4] = { 0, 0, 0, 0 };
-	this->GetBounds(bounds);
-	
-	//Set up mTopPacker
-	mTopPacker = new GUI_Packer();
-	mTopPacker->SetSticky(1,1,1,1);
-
+	int bounds[4] = { 0, 0, 100, 100 };
+//	SetBounds(bounds);
 	mScroller = new GUI_ScrollerPane(1,1);
-	
-	//mScroller
-	mScroller->SetParent(mTopPacker);
+
+	mScroller->SetParent(this);
 	mScroller->Show();
 	mScroller->SetSticky(1,1,1,1);
 
@@ -74,7 +65,6 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mTable->SetContent(&mTextTable);
 	mTable->SetParent(mScroller);
 	mTable->Show();
-
 	mScroller->PositionInContentArea(mTable);
 	mScroller->SetContent(mTable);
 	mTextTable.SetParentTable(mTable);
@@ -88,45 +78,38 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 				WED_Color_RGBA(wed_Header_Text));
 
 	mHeader = new GUI_Header(true);
-	
+
 	bounds[1] = 0;
 	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
 	mHeader->SetBounds(bounds);
 	mHeader->SetGeometry(&mLibraryList);
 	mHeader->SetHeader(&mTextTableHeader);
-	mHeader->SetParent(mTopPacker);
+	mHeader->SetParent(this);
 	mHeader->Show();
 	mHeader->SetSticky(1,0,1,1);
 	mHeader->SetTable(mTable);
 
 
-	mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
-	mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
-	mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
-	mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
+					mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
+					mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
+					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
+					mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
 	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Filter:", "");
 	mFilter->Show();
+	mFilter->SetParent(this);
 	mFilter->AddListener(this);
 	mFilter->SetSticky(1,0,1,1);
-		
-	mTopPacker->PackPane(mHeader, gui_Pack_Top);
-	mTopPacker->PackPane(mScroller, gui_Pack_Center);
-	this->GetBounds(bounds);
-	
-	mTopPacker->Show();
-	mTopPacker->SetParent(this);
-	mFilter->SetParent(this);
-	mScroller->PositionHeaderPane(mHeader);
-	
-	#if DEV
-		string path = "C:\\Users\\Ted\\Desktop\\FPrint\\";
-		path +="test.txt";
-		FILE * pFile;
-		pFile = fopen(path.c_str(),"w");
-		FPrintDebugInfo(pFile);
-		fclose(pFile);
-	#endif
+	this->PackPane(mFilter,gui_Pack_Top);
+
+					this->PackPane(mHeader, gui_Pack_Top);
+					this->PackPane(mScroller, gui_Pack_Center);
+
+					mScroller->PositionHeaderPane(mHeader);
+					
+					#if DEV
+					//PrintDebugInfo();
+					#endif
 }
 
 WED_LibraryPane::~WED_LibraryPane()

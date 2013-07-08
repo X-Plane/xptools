@@ -48,6 +48,7 @@
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
+
 #include "WED_Routing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
@@ -99,6 +100,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	****************************************************************************************************************************************************************/
 
 //	int		splitter_b[4];
+	//BEWARE! HORIZONTAL IS VERTICAL AND VERTICAL IS HORIZONTAL!
 	mMainSplitter  = new GUI_Splitter(gui_Split_Horizontal);
 	mMainSplitter2 = new GUI_Splitter(gui_Split_Horizontal);
 	if (WED_UIMeasurement("one_big_gradient"))		mMainSplitter->SetImage ("gradient.png");
@@ -131,13 +133,25 @@ WED_DocumentWindow::WED_DocumentWindow(
 	
 	WED_LibraryPane * lib = new WED_LibraryPane(this, inDocument->GetLibrary());
 	lib->SetParent(mLibSplitter);
-	GUI_Pane::GetBounds(splitter_b);
-	lib->SetBounds(splitter_b);
-	lib->GetBounds(splitter_b);
-	lib->AlignContentsAt(splitter_b[3]/1.25);
 	lib->Show();
 	lib->SetSticky(1,1,1,1);
 
+	/*mFiltSplitter = new GUI_Splitter(gui_Split_Vertical);
+	if (!WED_UIMeasurement("one_big_gradient")) {
+		mFiltSplitter->SetImage1("gradient.png");
+		mFiltSplitter->SetImage2("gradient.png");
+	}
+	
+	mFiltSplitter->SetParent(mLibSplitter);
+	mFiltSplitter->Show();
+	GUI_Pane::GetBounds(splitter_b);
+	mFiltSplitter->SetBounds(splitter_b);
+	mFiltSplitter->SetSticky(1,1,0,1);
+	
+	GUI_AdvancedFilterPane * advFlt = new GUI_AdvancedFilterPane(this);
+	advFlt->SetParent(mFiltSplitter);
+	advFlt->Show();
+	advFlt->SetSticky(1,1,1,1);*/
 	/****************************************************************************************************************************************************************
 	 * DA MAP
 	****************************************************************************************************************************************************************/

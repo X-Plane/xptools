@@ -26,12 +26,6 @@
 
 #include "GUI_Pane.h"
 
-//this DEBUG definition is to allow or disallow the visualization of the restrict line
-#define DEBUG_SPLITTER_RESTRICT 0
-#if !DEV && DEBUG_SPLITTER_RESTRICT
-#error you've left DEBUG_LEGAL_ZONE on!
-#endif
-
 enum {
 	gui_Split_Horizontal,
 	gui_Split_Vertical
@@ -56,23 +50,14 @@ public:
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp(int x, int y, int button);
 	virtual	int			GetCursor(int x, int y);
-	#if DEBUG_SPLITTER_RESTRICT
-	virtual void		GetRestrict(int outRestrict[2]);
-	virtual void		SetRestrict(int restMin, int restMax);
-	virtual void		CalcRestrict();
-	#endif
+	
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
 
 private:
-#if DEBUG_SPLITTER_RESTRICT	
-	//Restrict the movement of the splitter
-	// {min, max}
-	int		mOldBounds[4];
-	int		mRestrict[2];
-	int		mOldRestrict[2];
-#endif
-	int		GetSplitSize(void);
+
+			int			GetSplitSize(void);
+
 	int		mDirection;
 	int		mSlop;		// mouse - boundary = slop
 	int		mClick;
