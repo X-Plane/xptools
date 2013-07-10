@@ -1001,7 +1001,7 @@ static int	init_subdivisions(
 		}
 		parts[pid].major_axis = va;
 		DebugAssert(parts[pid].feature != NO_VALUE);
-		parts[pid].can_simplify = false;
+		parts[pid].simplify_id = part_base + f;
 	}
 
 	for(int a = 0; a < a_blocks; ++a)
@@ -1818,7 +1818,7 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 			parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
 			parts[offset + idx].feature = rule->fac_id_ant;
 			parts[offset + idx].height = f->mParams.count(pf_Height) ? f->mParams.find(pf_Height)->second : 0.0f;
-			parts[offset + idx].can_simplify = false;
+			parts[offset + idx].simplify_id = offset + idx;
 			
 
 		
@@ -1879,7 +1879,7 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 				parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
 				parts[offset + idx].feature = rule->fac_id_rd;
 				parts[offset + idx].height = f->mParams.count(pf_Height) ? f->mParams.find(pf_Height)->second : 0.0f;
-				parts[offset + idx].can_simplify = false;
+				parts[offset + idx].simplify_id = offset + idx;
 			}
 			else
 			{
@@ -1911,7 +1911,7 @@ static void	init_point_features(const GISPointFeatureVector& feats,
 				parts[offset + idx].usage = want_feature ? usage_Polygonal_Feature : usage_OOB;
 				parts[offset + idx].feature = rule->fac_id_free;
 				parts[offset + idx].height = f->mParams.count(pf_Height) ? f->mParams.find(pf_Height)->second : 0.0f;
-				parts[offset + idx].can_simplify = false;
+				parts[offset + idx].simplify_id = offset + idx;
 			
 			}
 		}
@@ -2145,6 +2145,9 @@ bool	init_block(
 
 	int block_feature_count = 0;
 	int oob_idx = 0;
+	
+	// THIS IS THE AUTOGEN BLOCK CASE - WE RUN DOWN THE BLOCK AND DRAW A NICE GRID, GO HOME HAPPY.
+	
 	if(info && info->fill_area && !median)
 	{
 		// For now we use our first X road halfedges ...
@@ -2155,6 +2158,8 @@ bool	init_block(
 		if(block_feature_count)
 			oob_idx = parts.size() - 1;
 	}
+	
+	// THIS IS THE AD-HOC CASE.  WE PUT IN POINT FEATURE FACADES, AGS, AND ALL SORTS OF OTHER CRAP!
 	
 	if(block_feature_count == 0)
 	{	
@@ -2187,7 +2192,9 @@ bool	init_block(
 		if(info->fill_points)		
 		if(!face->data().mPointFeatures.empty() && !median)
 		{
+			// First pass: antenna zones around point features...
 			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1, zoning, false);
+			// Second pass: the point features themselves.
 			init_point_features(face->data().mPointFeatures, curves, parts, outer_ccb_pts, translator, num_he + 1 + face->data().mPointFeatures.size(), zoning, true);
 		}
 		int base_offset = block_feature_count;
@@ -2263,41 +2270,23 @@ bool	init_block(
 	{
 		Block_2::Face_handle f1(e->face());
 		Block_2::Face_handle f2(e->twin()->face());
+
 		if(f1->data().usage == f2->data().usage &&
 			f1->data().usage == usage_Polygonal_Feature)
-		if(f1->data().feature == f2->data().feature &&
-				strstr(FetchTokenString(f1->data().feature),".fac"))		
+		if(f1->data().simplify_id == f2->data().simplify_id)			
+		if(strstr(FetchTokenString(f1->data().feature),".fac") &&
+		   strstr(FetchTokenString(f2->data().feature),".fac"))
 		if(count_circulator(f1->outer_ccb()) < 4 ||
 			count_circulator(f2->outer_ccb()) < 4 ||
 			too_damn_small(f1->outer_ccb(),7.5) ||
 			too_damn_small(f2->outer_ccb(),7.5))
 		{
-//			for(EdgeKey_iterator i = e->curve().data().begin(); i != e->curve().data().end(); ++i)
-//				printf(" %d\n", *i);
-//			printf("\n");
-			EdgeKey_iterator k1(e->curve().data().begin());
-			if(k1 != e->curve().data().end())
-			{
-				EdgeKey_iterator k2(k1);
-				++k2;
-				bool consec = false;
-				while(k2 != e->curve().data().end())
-				{
-					if((*k1 + 1 == *k2) ||
-					   (*k2 + 1 == *k1))
-					{
-						consec = true;
-						break;
-					}
-					k1 = k2;
-					++k2;
-				}
-				if(consec)
-				{
-					splits_we_do_not_want.push_back(e);
-				}
-				
-			}
+//			printf("Small side elim: %s\n", FetchTokenString(f1->data().feature));
+			splits_we_do_not_want.push_back(e);
+			debug_mesh_line(
+						translator.Reverse(cgal2ben(e->source()->point())),
+						translator.Reverse(cgal2ben(e->target()->point())),
+						1,0,0,1,0,0);
 		}
 	}
 	for(list<Block_2::Halfedge_handle>::iterator k =	splits_we_do_not_want.begin(); k != splits_we_do_not_want.end(); ++k)
@@ -2831,7 +2820,7 @@ void	extract_features(
 					
 					PolygonFromBlock(f,start, o.mShape, &translator, 0.0,false);
 					double len = sqrt(Segment2(cgal2ben(start->source()->point()),cgal2ben(start->target()->point())).squared_length());
-					if(!f->data().can_simplify)
+					if(f->data().simplify_id > 0)
 					{
 						o.mParam = f->data().height;
 					}

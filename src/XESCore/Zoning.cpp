@@ -53,9 +53,6 @@
 // a single tall building in a block from turning into a sea of tall buildings.
 #define MAX_OBJ_SPREAD 100000
 
-#define ZONING_HISTO 1
-#define ZONING_METRICS 0
-
 ZoningRuleTable				gZoningRules;
 ZoningInfoTable				gZoningInfo;
 EdgeRuleTable				gEdgeRules;
@@ -376,7 +373,7 @@ inline bool all_match(const set<int>& lhs, const set<int>& rhs)
 	return l == lhs.end() && r == rhs.end();// We match if we ran out of BOTH at the same time.
 }
 
-inline bool remove_these(set<int>& stuff, const set<int>& nuke_these)
+inline void remove_these(set<int>& stuff, const set<int>& nuke_these)
 {
 	for(set<int>::const_iterator i = nuke_these.begin(); i != nuke_these.end(); ++i)
 		stuff.erase(*i);
@@ -589,272 +586,262 @@ void kill_antennas(Pmwx& io_map, Pmwx::Face_handle f, float max_len)
 	} while (++circ != stop);
 }
 
-
-void	ZoneManMadeAreas(
+static void ZoneOneFace(
 				Pmwx& 				ioMap,
 				const DEMGeo& 		inLanduse,
 				const DEMGeo&		inForest,
 				const DEMGeo&		inPark,
 				const DEMGeo& 		inSlope,
 				const AptVector&	inApts,
-				Pmwx::Face_handle	inDebug,
-				ProgressFunc		inProg)
+				const DEMGeo&		urban_density_from_lu,
+				Pmwx::Face_handle	face)
 {
-		Pmwx::Face_iterator face;
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// BASIC BLOCK INFO - AREA, RASTER FEATURES
+	//--------------------------------------------------------------------------------------------------------------------------------
 
-	PROGRESS_START(inProg, 0, 3, "Zoning terrain...")
+	double mfam = GetMapFaceAreaMeters(face);
+	double	max_height = 0.0;
+	set<int>	my_pt_features;
 
-	int total = ioMap.number_of_faces() * 2;
-	int check = total / 100;
-	int ctr = 0;
-
-#if ZONING_HISTO
-	map<int,int>	zone_count;
-	map<int,double>	zone_area;
-	map<int, int>	short_axis_count;
-	map<int, int>	long_axis_count;
-#endif
-
-#if ZONING_METRICS
-	map<int, map<int, int> > slope_zoning;
-#endif
-
-	/*****************************************************************************
-	 * PRE-COMP - DERIVE SOME LANDUSE INFO
-	 *****************************************************************************/
-	DEMGeo	urban_density_from_lu(inLanduse);
-	for(DEMGeo::iterator i = urban_density_from_lu.begin(); i != urban_density_from_lu.end(); ++i)
+	if (mfam < MAX_OBJ_SPREAD)
+	for (GISPointFeatureVector::iterator feat = face->data().mPointFeatures.begin(); feat != face->data().mPointFeatures.end(); ++feat)
 	{
-		LandClassInfoTable::iterator lu = gLandClassInfo.find(*i);
-		if(lu == gLandClassInfo.end())
-			*i = 0;
-		else
-			*i = lu->second.urban_density;
+		my_pt_features.insert(feat->mFeatType);
+		if (feat->mFeatType == feat_Building)
+		{
+			if (feat->mParams.count(pf_Height))
+			{
+				max_height = max(max_height, feat->mParams[pf_Height]);
+			}
+		} else {
+			printf("Has other feature: %s\n", FetchTokenString(feat->mFeatType));
+		}
 	}
 
-	GaussianBlurDEM(urban_density_from_lu, 1.0);
+	int has_water = 0;
+	int has_non_water = 0;
+	int has_train = 0;
+	int has_prim = 0;
+	int	has_non_train = 0;
+	int has_local = 0;
+	int has_non_local = 0;
+	Bbox2 face_extent;
 
-//	gDem[dem_Wizard] = urban_density_from_lu;
+	PolyRasterizer<double>	r;
+	int x, y, x1, x2;
+	y = SetupRasterizerForDEM(face, inLanduse, r);
+	r.StartScanline(y);
+	float count = 0, total_forest = 0, total_urban = 0, total_park = 0;
+	map<int, int>		histo;
 
-	/*****************************************************************************
-	 * PASS 1 - ZONING ASSIGNMENT VIA LAD USE DATA + FEATURES
-	 *****************************************************************************/
-	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
-	if (!face->is_unbounded())
-	if(!face->data().IsWater())
-	if(inDebug == Pmwx::Face_handle() || face == inDebug)
+	while (!r.DoneScan())
 	{
-		PROGRESS_CHECK(inProg, 0, 3, "Zoning terrain...", ctr, total, check)
-
-		//--------------------------------------------------------------------------------------------------------------------------------
-		// BASIC BLOCK INFO - AREA, RASTER FEATURES
-		//--------------------------------------------------------------------------------------------------------------------------------
-
-		double mfam = GetMapFaceAreaMeters(face);
-		double	max_height = 0.0;
-		set<int>	my_pt_features;
-
-		if (mfam < MAX_OBJ_SPREAD)
-		for (GISPointFeatureVector::iterator feat = face->data().mPointFeatures.begin(); feat != face->data().mPointFeatures.end(); ++feat)
+		while (r.GetRange(x1, x2))
 		{
-			my_pt_features.insert(feat->mFeatType);
-			if (feat->mFeatType == feat_Building)
+			for (x = x1; x < x2; ++x)
 			{
-				if (feat->mParams.count(pf_Height))
+				float e = inLanduse.get(x,y);
+				float f = inForest.get(x,y);
+				float p = inPark.get(x,y);
+				float d = urban_density_from_lu.get(x,y);
+				count++;
+
+				total_urban += d;
+
+				if(gLandClassInfo.count(e))
 				{
-					max_height = max(max_height, feat->mParams[pf_Height]);
+					LandClassInfo_t& i(gLandClassInfo[e]);
+					histo[i.category]++;
+					total_forest += i.veg_density;
+
+					// THIS IS INTENTIONAL!  We are ONLY accepting park raster points that CONVERT
+					// urban to park.  The reason: a giant state forest is tagged "forest park" in OSM
+					// but does NOT get special zoning treatment.
+					if(p != NO_VALUE)
+						total_park += 1.0;
 				}
-			} else {
-				printf("Has other feature: %s\n", FetchTokenString(feat->mFeatType));
-			}
-		}
-
-		int has_water = 0;
-		int has_non_water = 0;
-		int has_train = 0;
-		int has_prim = 0;
-		int	has_non_train = 0;
-		int has_local = 0;
-		int has_non_local = 0;
-		Bbox2 face_extent;
-
-		PolyRasterizer<double>	r;
-		int x, y, x1, x2;
-		y = SetupRasterizerForDEM(face, inLanduse, r);
-		r.StartScanline(y);
-		float count = 0, total_forest = 0, total_urban = 0, total_park = 0;
-		map<int, int>		histo;
-
-		while (!r.DoneScan())
-		{
-			while (r.GetRange(x1, x2))
-			{
-				for (x = x1; x < x2; ++x)
+				else
 				{
-					float e = inLanduse.get(x,y);
-					float f = inForest.get(x,y);
-					float p = inPark.get(x,y);
-					float d = urban_density_from_lu.get(x,y);
-					count++;
-
-					total_urban += d;
-
-					if(gLandClassInfo.count(e))
-					{
-						LandClassInfo_t& i(gLandClassInfo[e]);
-						histo[i.category]++;
-						total_forest += i.veg_density;
-
-						// THIS IS INTENTIONAL!  We are ONLY accepting park raster points that CONVERT
-						// urban to park.  The reason: a giant state forest is tagged "forest park" in OSM
-						// but does NOT get special zoning treatment.
-						if(p != NO_VALUE)
-							total_park += 1.0;
-					}
-					else
-					{
-						histo[terrain_Natural]++;
-						if(f != NO_VALUE)
-							total_forest += 1.0;
-					}
-
+					histo[terrain_Natural]++;
+					if(f != NO_VALUE)
+						total_forest += 1.0;
 				}
+
 			}
-			++y;
-			if (y >= inLanduse.mHeight) break;
-			r.AdvanceScanline(y);
+		}
+		++y;
+		if (y >= inLanduse.mHeight) break;
+		r.AdvanceScanline(y);
+	}
+
+	if(count == 0)
+	{
+		Point2 any = cgal2ben(face->outer_ccb()->source()->point());
+		float e = inLanduse.xy_nearest(any.x(),any.y());
+		float f = inForest.xy_nearest(any.x(),any.y());
+		float p = inPark.xy_nearest(any.x(),any.y());
+		float d = urban_density_from_lu.value_linear(any.x(), any.y());
+
+		count++;
+
+		total_urban += d;
+		if(gLandClassInfo.count(e))
+		{
+			LandClassInfo_t& i(gLandClassInfo[e]);
+			histo[i.category]++;
+			total_forest += i.veg_density;
+			if(p != NO_VALUE)
+				total_park += 1.0;
+		}
+		else
+		{
+			histo[terrain_Natural]++;
+			if(f != NO_VALUE)
+				total_forest += 1.0;
 		}
 
-		if(count == 0)
+	}
+
+	if(count)
+	if((total_urban / count) > 0.5)
+	if(face->number_of_holes() == 0)
+		kill_antennas(ioMap,face,  ((total_urban / count) > 0.75) ? 35.0 : 20.0);
+
+	multimap<int, int, greater<int> > histo2;
+	for(map<int,int>::iterator i = histo.begin(); i != histo.end(); ++i)
+		histo2.insert(multimap<int,int, greater<int> >::value_type(i->second,i->first));
+
+	multimap<int, int, greater<int> >::iterator i = histo2.begin();
+	if(histo2.size() > 0)
+	{
+		face->data().mParams[af_Cat1] = i->second;
+		face->data().mParams[af_Cat1Rat] = (float) i->first / (float) count;
+		++i;
+
+		if(histo2.size() > 1)
 		{
-			Point2 any = cgal2ben(face->outer_ccb()->source()->point());
-			float e = inLanduse.xy_nearest(any.x(),any.y());
-			float f = inForest.xy_nearest(any.x(),any.y());
-			float p = inPark.xy_nearest(any.x(),any.y());
-			float d = urban_density_from_lu.value_linear(any.x(), any.y());
+			face->data().mParams[af_Cat2] = i->second;
+			face->data().mParams[af_Cat2Rat] = (float) i->first / (float) count;
+			++i;
 
-			count++;
-
-			total_urban += d;
-			if(gLandClassInfo.count(e))
+			if(histo2.size() > 2)
 			{
-				LandClassInfo_t& i(gLandClassInfo[e]);
-				histo[i.category]++;
-				total_forest += i.veg_density;
-				if(p != NO_VALUE)
-					total_park += 1.0;
+				face->data().mParams[af_Cat3] = i->second;
+				face->data().mParams[af_Cat3Rat] = (float) i->first / (float) count;
+				++i;
 			}
-			else
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// ROAD ANALYSIS
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+	Pmwx::Ccb_halfedge_circulator circ, stop;
+	circ = stop = face->outer_ccb();
+	do {
+		face_extent += cgal2ben(circ->source()->point());
+		if(evaluate_he<Road_IsTrain>(circ))
+			has_train = 1;
+		else
+			has_non_train = 1;
+		if((evaluate_he<Road_IsLocal>(circ) || evaluate_he<Road_IsMainDrag>(circ)) &&
+			(circ->data().HasGroundRoads() || circ->twin()->data().HasGroundRoads()))
+		{
+			has_local = 1;
+			int ft = get_he_feat_type(circ);
+			if(ft == road_Primary || ft == road_PrimaryOneway || ft == road_Secondary || ft == road_SecondaryOneway)
+				has_prim = 1;
+		} else
+			has_non_local = 1;
+		if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater())
+			has_water = 1;
+		else
+			has_non_water;
+	} while (++circ != stop);
+
+	if(has_water && !has_non_water) has_water = 2;
+	if(has_train && !has_non_train) has_train = 2;
+	if(has_local && !has_non_local)	has_local = 2;
+
+
+	PolyRasterizer<double>  r2;
+	y = SetupRasterizerForDEM(face, inSlope, r2);
+	r2.StartScanline(y);
+	int scount = 0;
+	float max_slope = 0.0;
+	while (!r2.DoneScan())
+	{
+		while (r2.GetRange(x1, x2))
+		{
+			for (x = x1; x < x2; ++x)
 			{
-				histo[terrain_Natural]++;
-				if(f != NO_VALUE)
-					total_forest += 1.0;
+				float s = inSlope.get(x,y);
+				max_slope = max(max_slope, s);
+				++scount;
 			}
-
 		}
+		++y;
+		if (y >= inLanduse.mHeight) break;
+		r2.AdvanceScanline(y);
+	}
 
-		if(count)
-		if((total_urban / count) > 0.5)
-		if(face->number_of_holes() == 0)
-			kill_antennas(ioMap,face,  ((total_urban / count) > 0.75) ? 35.0 : 20.0);
+	if(scount == 0)
+	{
+		Point2 any = cgal2ben(face->outer_ccb()->source()->point());
+		float s = inSlope.xy_nearest(any.x(),any.y());
+		max_slope = s;
+	}
 
-		Pmwx::Ccb_halfedge_circulator circ, stop;
-		circ = stop = face->outer_ccb();
-		do {
-			face_extent += cgal2ben(circ->source()->point());
-			if(evaluate_he<Road_IsTrain>(circ))
-				has_train = 1;
-			else
-				has_non_train = 1;
-			if((evaluate_he<Road_IsLocal>(circ) || evaluate_he<Road_IsMainDrag>(circ)) &&
-				(circ->data().HasGroundRoads() || circ->twin()->data().HasGroundRoads()))
-			{
-				has_local = 1;
-				int ft = get_he_feat_type(circ);
-				if(ft == road_Primary || ft == road_PrimaryOneway || ft == road_Secondary || ft == road_SecondaryOneway)
-					has_prim = 1;
-			} else
-				has_non_local = 1;
-			if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater())
-				has_water = 1;
-			else
-				has_non_water;
-		} while (++circ != stop);
-
-		if(has_water && !has_non_water) has_water = 2;
-		if(has_train && !has_non_train) has_train = 2;
-		if(has_local && !has_non_local)	has_local = 2;
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// DETAILED EXAMINATION: VECTOR ANALYSIS IN METRIC SPACE
+	//--------------------------------------------------------------------------------------------------------------------------------
 
 
-		multimap<int, int, greater<int> > histo2;
-		for(map<int,int>::iterator i = histo.begin(); i != histo.end(); ++i)
-			histo2.insert(multimap<int,int, greater<int> >::value_type(i->second,i->first));
+	CoordTranslator2	trans;
+	CreateTranslatorForBounds(face_extent,trans);
+	vector<block_pt>		outer_border;
+	if(!block_pts_from_ccb(face->outer_ccb(), trans, outer_border, 1.0,false))
+	{
+		return;
+	}
 
-		PolyRasterizer<double>  r2;
-        y = SetupRasterizerForDEM(face, inSlope, r2);
-        r2.StartScanline(y);
-        int scount = 0;
-        float max_slope = 0.0;
-        while (!r2.DoneScan())
-        {
-            while (r2.GetRange(x1, x2))
-            {
-                for (x = x1; x < x2; ++x)
-                {
-                    float s = inSlope.get(x,y);
-                    max_slope = max(max_slope, s);
-                    ++scount;
-                }
-            }
-            ++y;
-            if (y >= inLanduse.mHeight) break;
-            r2.AdvanceScanline(y);
-        }
+	float len_train = 0.0, len_local = 0.0, len_total = 0.0;
+	for(int i = 0; i < outer_border.size(); ++i)
+	{
+		int j = (i + 1) % outer_border.size();
+		float len = sqrt(Segment2(outer_border[i].loc,outer_border[j].loc).squared_length());
+		len_total += len;
+		if(ground_road_access_for_he(outer_border[i].orig))
+			len_local += len;
+		if(ground_train_access_for_he(outer_border[i].orig))
+			len_train += len;
+	}
 
-        if(scount == 0)
-        {
-            Point2 any = cgal2ben(face->outer_ccb()->source()->point());
-            float s = inSlope.xy_nearest(any.x(),any.y());
-            max_slope = s;
-        }
+	int num_sides = 0;
+	float min_angle = 0.0;
+	float max_angle = 0.0;
+	bool has_holes = face->number_of_holes() > 0;
+	double max_err = 0.0;
+	double short_side = 0.0;
+	double long_side = 0.0;
+	double short_axis_length = 0.0;
+	double long_axis_length = 0.0;
 
-		//--------------------------------------------------------------------------------------------------------------------------------
-		// DETAILED EXAMINATION: VECTOR ANALYSIS IN METRIC SPACE
-		//--------------------------------------------------------------------------------------------------------------------------------
-
-
-		CoordTranslator2	trans;
-		CreateTranslatorForBounds(face_extent,trans);
-		vector<block_pt>		outer_border;
-		if(!block_pts_from_ccb(face->outer_ccb(), trans, outer_border, 1.0,false))
-		{
-			continue;
-		}
-
-		float len_train = 0.0, len_local = 0.0, len_total = 0.0;
-		for(int i = 0; i < outer_border.size(); ++i)
-		{
-			int j = (i + 1) % outer_border.size();
-			float len = sqrt(Segment2(outer_border[i].loc,outer_border[j].loc).squared_length());
-			len_total += len;
-			if(ground_road_access_for_he(outer_border[i].orig))
-				len_local += len;
-			if(ground_train_access_for_he(outer_border[i].orig))
-				len_train += len;
-		}
-
+	if(outer_border.size() < 30)
+	{
 		Segment2	major;
 		double	bounds[4];
 		Vector2	v_x,v_y;
 
 		find_major_axis(outer_border, &major,&v_x,&v_y,bounds);
 
-		//debug_mesh_line(trans.Reverse(major.p1 + v_y),trans.Reverse(major.p2 + v_y),1,0,0,1,0,0);
+//		This shows the early major axis in red.
+//		debug_mesh_line(trans.Reverse(major.p1 + v_y),trans.Reverse(major.p2 + v_y),1,0,0,1,0,0);
 
-		double max_err = 0.0;
-
-		double short_side = sqrt(major.squared_length());
-		double long_side = short_side;
+		short_side = sqrt(major.squared_length());
+		long_side = short_side;
 
 		for(vector<block_pt>::iterator p = outer_border.begin(); p != outer_border.end(); ++p)
 		{
@@ -872,14 +859,11 @@ void	ZoneManMadeAreas(
 			max_err = max(max_err,min(x_err,y_err));
 		}
 
-		double short_axis_length = fabs(bounds[3] - bounds[1]);
-		double long_axis_length = fabs(bounds[2] - bounds[0]);
+		short_axis_length = fabs(bounds[3] - bounds[1]);
+		long_axis_length = fabs(bounds[2] - bounds[0]);
 
-//				No this DOES happen - if we only have ROAD on the SHORT axis.
-//		DebugAssert(long_axis_length >= short_axis_length);
-
-		float min_angle = 180.0;
-		float max_angle = -180.0;
+		min_angle = 180.0;
+		max_angle = -180.0;
 
 		for(int i = 0; i < outer_border.size(); ++i)
 		{
@@ -912,62 +896,25 @@ void	ZoneManMadeAreas(
 
 		}
 
-
-//		Point2	c = trans.Forward(face_extent.centroid());
-
-//		if(max_err < 1.0)// && max_y_err < 2.0)
-//			debug_mesh_point(trans.Reverse(c),1,1,0);
-//		else
-//			debug_mesh_point(trans.Reverse(c),1,0,0);
-
-//		face->data().mParams[af_AGErrX] = max_err;
-//		face->data().mParams[af_AGErrY] = max_y_err;
-
-//		if(outer_border.size() > 4)
-//			debug_mesh_point(trans.Reverse(c),1,0,0);
-//		else
-//			debug_mesh_point(trans.Reverse(c),1,1,0);
-
-
-
-//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[1]),
-//						trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[1]), 1,1,1,1,1,1);
-//
-//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[3]),
-//						trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[3]), 1,1,1,1,1,1);
-//
-//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[1]),
-//						trans.Reverse(Point2(0,0) + v_x * bounds[0] + v_y * bounds[3]), 1,1,1,1,1,1);
-//
-//		debug_mesh_line(trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[1]),
-//						trans.Reverse(Point2(0,0) + v_x * bounds[2] + v_y * bounds[3]), 1,1,1,1,1,1);
-
-//		for(int n = 0; n < outer_border.size(); ++n)
-//		{
-//			debug_mesh_point(trans.Reverse(Segment2(outer_border[n].loc,c).midpoint(0.1)),n == 0 ? 1 : 0,outer_border[n].reflex ? 0 : 1,outer_border[n].locked ? 1 : 0);
-//		}
-
-
-		bool has_holes = face->number_of_holes() > 0;
-		int num_sides = 0;
-
 		vector<pair<Pmwx::Halfedge_handle, Pmwx::Halfedge_handle> >				sides;
 		Polygon2																mbounds;
 
 		if(!has_holes)
+		if(short_axis_length > 1.0 && long_axis_length > 1.0)
 		if(build_convex_polygon(face->outer_ccb(),sides,trans,mbounds, 2.0, 2.0))
 		{
 			num_sides = mbounds.size();
 
-//			for(int i = 0; i < mbounds.size(); ++i)
-//				debug_mesh_line(trans.Reverse(mbounds.side(i).p1),
-//								trans.Reverse(mbounds.side(i).p2),1,1,0, 0,1,0);
-
 			int major = pick_major_axis(sides,mbounds, v_x,v_y);
 			if(major != -1)
 			{
+				// This shows the AG final major axis in green.
+//				Segment2 real_major = mbounds.side(major);
+//				debug_mesh_line(trans.Reverse(real_major.p1 + v_y),trans.Reverse(real_major.p2 + v_y),0,1,0,0,1,0);
+
+				
 				bounds[0] = bounds[2] = v_x.dot(Vector2(mbounds[0]));
-				bounds[1] = bounds[3] = v_y.dot(Vector2(mbounds[0]));
+				bounds[1] = bounds[3] = v_y.dot(Vector2(mbounds[0]));	
 				for(int n = 1; n < mbounds.size(); ++n)
 				{
 					double x = v_x.dot(Vector2(mbounds[n]));
@@ -979,13 +926,6 @@ void	ZoneManMadeAreas(
 				}
 				short_axis_length = fabs(bounds[3] - bounds[1]);
 				long_axis_length = fabs(bounds[2] - bounds[0]);
-
-//				debug_mesh_line(trans.Reverse(mbounds.centroid()),
-//								trans.Reverse(mbounds.centroid() + v_x * 20.0),
-//								1,0,0,1,0,0);
-//				debug_mesh_line(trans.Reverse(mbounds.centroid()),
-//								trans.Reverse(mbounds.centroid() + v_y * 20.0),
-//								0,1,0,0,1,0);
 
 			}
 
@@ -1025,134 +965,146 @@ void	ZoneManMadeAreas(
 				has_local = old_local;
 			}
 
-			#if ZONING_HISTO
-			if(num_sides == 4)
-			{
-				int short_approx = round(short_axis_length / 5.0) * 5.0;
-				int long_approx = round(long_axis_length / 5.0) * 5.0;
-
-				short_axis_count[short_approx]++;
-				long_axis_count[short_approx]++;
-			}
-			#endif
-
-
 		}
+	}
 
-		face->data().mParams[af_AGSides] = num_sides;
+	face->data().mParams[af_AGSides] = num_sides;
 
-		multimap<int, int, greater<int> >::iterator i = histo2.begin();
-		if(histo2.size() > 0)
-		{
-			face->data().mParams[af_Cat1] = i->second;
-			face->data().mParams[af_Cat1Rat] = (float) i->first / (float) count;
-			++i;
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// LET US MAKE A FREAKING DECISION!!!
+	//--------------------------------------------------------------------------------------------------------------------------------
 
-			if(histo2.size() > 1)
-			{
-				face->data().mParams[af_Cat2] = i->second;
-				face->data().mParams[af_Cat2Rat] = (float) i->first / (float) count;
-				++i;
+	int zone = PickZoningRule(
+					face->data().mTerrainType,
+					mfam,
+					num_sides,
+					max_slope,
+					total_urban/(float)count,total_forest/(float)count,total_park/(float)count,
+					max_height,
+					min_angle,
+					max_angle,
+					face->data().mParams[af_Cat1],
+					face->data().mParams[af_Cat1Rat],
+					face->data().mParams[af_Cat2],
+					face->data().mParams[af_Cat1Rat] + face->data().mParams[af_Cat2Rat],	// Really?  Yes.  This is the "high water mark" of BOTH cat 1 + cat 2.  That way
+					has_water,																// We can say "80% industrial, 90% urban, and we cover 80I+10U and 90I+0U.  In other
+					has_train,																// words when we can accept a mix, this lets the DOMINANT type crowd out the secondary.
+					has_local,
+					has_holes,
+					has_prim,
 
-				if(histo2.size() > 2)
-				{
-					face->data().mParams[af_Cat3] = i->second;
-					face->data().mParams[af_Cat3Rat] = (float) i->first / (float) count;
-					++i;
-				}
-			}
-		}
+					max_err,
 
-		//--------------------------------------------------------------------------------------------------------------------------------
-		// LET US MAKE A FREAKING DECISION!!!
-		//--------------------------------------------------------------------------------------------------------------------------------
+					short_side,
+					long_side,
 
-		int zone = PickZoningRule(
-						face->data().mTerrainType,
-						mfam,
-						num_sides,
-						max_slope,
-						total_urban/(float)count,total_forest/(float)count,total_park/(float)count,
-						max_height,
-						min_angle,
-						max_angle,
-						face->data().mParams[af_Cat1],
-						face->data().mParams[af_Cat1Rat],
-						face->data().mParams[af_Cat2],
-						face->data().mParams[af_Cat1Rat] + face->data().mParams[af_Cat2Rat],	// Really?  Yes.  This is the "high water mark" of BOTH cat 1 + cat 2.  That way
-						has_water,																// We can say "80% industrial, 90% urban, and we cover 80I+10U and 90I+0U.  In other
-						has_train,																// words when we can accept a mix, this lets the DOMINANT type crowd out the secondary.
-						has_local,
-						has_holes,
-						has_prim,
+					long_axis_length,
+					short_axis_length,
 
-						max_err,
+					my_pt_features);
 
-						short_side,
-						long_side,
+	if(zone != NO_VALUE)
+	{
+		face->data().SetZoning(zone);
+		int wanted_terrain = gZoningInfo[zone].terrain_type;
+		if(wanted_terrain != NO_VALUE)
+			face->data().mTerrainType = wanted_terrain;
+	}
+	face->data().mParams[af_HeightObjs] = max_height;
 
-						long_axis_length,
-						short_axis_length,
-
-						my_pt_features);
-
-		if(zone != NO_VALUE)
-		{
-			face->data().SetZoning(zone);
-			int wanted_terrain = gZoningInfo[zone].terrain_type;
-			if(wanted_terrain != NO_VALUE)
-				face->data().mTerrainType = wanted_terrain;
-#if ZONING_METRICS
-			double slope_d = acos(1.0 - max_slope) * RAD_TO_DEG;
-			int slope_id = 3.0 * ceil(slope_d / 3.0);
-
-			slope_zoning[zone][slope_id]++;
-#endif
-
-		}
-		face->data().mParams[af_HeightObjs] = max_height;
-
-		face->data().mParams[af_UrbanAverage] = total_urban / (float) count;
-		face->data().mParams[af_ForestAverage] = total_forest / (float) count;
-		face->data().mParams[af_ParkAverage] = total_park / (float) count;
-		face->data().mParams[af_SlopeMax] = max_slope;
-		face->data().mParams[af_AreaMeters] = mfam;
+	face->data().mParams[af_UrbanAverage] = total_urban / (float) count;
+	face->data().mParams[af_ForestAverage] = total_forest / (float) count;
+	face->data().mParams[af_ParkAverage] = total_park / (float) count;
+	face->data().mParams[af_SlopeMax] = max_slope;
+	face->data().mParams[af_AreaMeters] = mfam;
 
 
-		face->data().mParams[af_ShortestSide]		= short_side;
-		face->data().mParams[af_LongestSide]		= long_side;
-		face->data().mParams[af_ShortAxisLength]	= short_axis_length;
-		face->data().mParams[af_LongAxisLength]		= long_axis_length;
-		face->data().mParams[af_BlockErr]			= max_err;
+	face->data().mParams[af_ShortestSide]		= short_side;
+	face->data().mParams[af_LongestSide]		= long_side;
+	face->data().mParams[af_ShortAxisLength]	= short_axis_length;
+	face->data().mParams[af_LongAxisLength]		= long_axis_length;
+	face->data().mParams[af_BlockErr]			= max_err;
 
-		face->data().mParams[af_MinAngle]			= min_angle;
-		face->data().mParams[af_MaxAngle]			= max_angle;
+	face->data().mParams[af_MinAngle]			= min_angle;
+	face->data().mParams[af_MaxAngle]			= max_angle;
 
-		face->data().mParams[af_WaterEdge]	=	has_water;
-		face->data().mParams[af_RoadEdge]	=	has_local;
-		face->data().mParams[af_RailEdge]	=	has_train;
-		face->data().mParams[af_PrimaryEdge]=	has_prim;
+	face->data().mParams[af_WaterEdge]	=	has_water;
+	face->data().mParams[af_RoadEdge]	=	has_local;
+	face->data().mParams[af_RailEdge]	=	has_train;
+	face->data().mParams[af_PrimaryEdge]=	has_prim;
 
-		face->data().mParams[af_LocalPercent] = len_local / len_total;
-		face->data().mParams[af_RailPercent] = len_train / len_total;
+	face->data().mParams[af_LocalPercent] = len_local / len_total;
+	face->data().mParams[af_RailPercent] = len_train / len_total;
 
-		// FEATURE ASSIGNMENT - first go and assign any features we might have.
-		face->data().mTemp1 = NO_VALUE;
-		face->data().mTemp2 = 0;
+	// FEATURE ASSIGNMENT - first go and assign any features we might have.
+	face->data().mTemp1 = NO_VALUE;
+	face->data().mTemp2 = 0;
 
 
-		if(((len_local / len_total) < 0.1 && mfam < 10000.0) ||
-			short_axis_length < 20.0 ||
-			mfam < 900.0)
-		{
-			face->data().mParams[af_Median] = 2;
-		}
+	if(((len_local / len_total) < 0.1 && mfam < 10000.0) ||
+		(short_axis_length > 0.0 && short_axis_length < 20.0) ||
+		mfam < 900.0)
+	{
+		face->data().mParams[af_Median] = 2;
+	}
 
-#if ZONING_HISTO
-		zone_count[zone]++;
-		zone_area[zone] += (mfam / (1000.0 * 1000.0));
-#endif
+}
 
+
+void	ZoneManMadeAreas(
+				Pmwx& 				ioMap,
+				const DEMGeo& 		inLanduse,
+				const DEMGeo&		inForest,
+				const DEMGeo&		inPark,
+				const DEMGeo& 		inSlope,
+				const AptVector&	inApts,
+				Pmwx::Face_handle	inDebug,
+				ProgressFunc		inProg)
+{
+		Pmwx::Face_iterator face;
+
+	PROGRESS_START(inProg, 0, 3, "Zoning terrain...")
+
+	int total = ioMap.number_of_faces() * 2;
+	int check = total / 100;
+	int ctr = 0;
+
+	/*****************************************************************************
+	 * PRE-COMP - DERIVE SOME LANDUSE INFO
+	 *****************************************************************************/
+	DEMGeo	urban_density_from_lu(inLanduse);
+	for(DEMGeo::iterator i = urban_density_from_lu.begin(); i != urban_density_from_lu.end(); ++i)
+	{
+		LandClassInfoTable::iterator lu = gLandClassInfo.find(*i);
+		if(lu == gLandClassInfo.end())
+			*i = 0;
+		else
+			*i = lu->second.urban_density;
+	}
+
+	GaussianBlurDEM(urban_density_from_lu, 1.0);
+
+//	gDem[dem_Wizard] = urban_density_from_lu;
+
+	/*****************************************************************************
+	 * PASS 1 - ZONING ASSIGNMENT VIA LAD USE DATA + FEATURES
+	 *****************************************************************************/
+	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
+	if (!face->is_unbounded())
+	if(!face->data().IsWater())
+	if(inDebug == Pmwx::Face_handle() || face == inDebug)
+	{
+		PROGRESS_CHECK(inProg, 0, 3, "Zoning terrain...", ctr, total, check)
+		ZoneOneFace(
+					ioMap,
+					inLanduse,
+					inForest,
+					inPark,
+					inSlope,
+					inApts,
+					urban_density_from_lu,
+		
+			face);
 	}
 
 #define HEIGHT_SPREAD_FACTOR 0.5
@@ -1310,93 +1262,6 @@ void	ZoneManMadeAreas(
 	//--------------------------------------------------------------------------------------------------------------------------------
 	// ZONING DEBUG OUTPUT, HISTOGRAMS, ALL THAT GOOD STUFF.
 	//--------------------------------------------------------------------------------------------------------------------------------
-
-#if ZONING_METRICS
-
-	map<int,map<int, int> >		histo;
-
-	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
-	if (!face->is_unbounded())
-	{
-		int z = face->data().GetZoning();
-		if (z != NO_VALUE)
-		{
-			Pmwx::Ccb_halfedge_circulator circ, stop;
-			circ = stop = face->outer_ccb();
-			int c = 0;
-			do {
-				++c;
-			} while(++circ != stop);
-			if(c == 4)
-			{
-				circ = stop = face->outer_ccb();
-				do
-				{
-					double m = LonLatDistMeters(
-									CGAL::to_double(circ->source()->point().x()),
-									CGAL::to_double(circ->source()->point().y()),
-									CGAL::to_double(circ->target()->point().x()),
-									CGAL::to_double(circ->target()->point().y()));
-					int mi = round(m / 5.0) * 5.0;
-					histo[z][mi]++;
-				} while(++circ != stop);
-			}
-		}
-	}
-	for(map<int,map<int, int> >::iterator z = histo.begin(); z != histo.end(); ++z)
-	{
-		printf("%s:\n", FetchTokenString(z->first));
-		map<int,int>::iterator h;
-		int t = 0;
-		for(h = z->second.begin(); h != z->second.end(); ++h)
-			t += h->second;
-		for(h = z->second.begin(); h != z->second.end(); ++h)
-		if((100.0 * (float) h->second / (float) t) >= 5.0)
-			printf("%d: %.0f%%\n", h->first, 100.0 * (float) h->second / (float) t);
-	}
-
-	printf("---slope---\n");
-	for(map<int,map<int, int> >::iterator z = slope_zoning.begin(); z != slope_zoning.end(); ++z)
-	{
-		printf("%s:\n", FetchTokenString(z->first));
-		map<int,int>::iterator h;
-		int t = 0;
-		for(h = z->second.begin(); h != z->second.end(); ++h)
-			t += h->second;
-		for(h = z->second.begin(); h != z->second.end(); ++h)
-		if((100.0 * (float) h->second / (float) t) >= 5.0)
-			printf("%d: %.0f%%\n", h->first, 100.0 * (float) h->second / (float) t);
-	}
-#endif
-
-#if ZONING_HISTO
-	multimap<int,int>		rshort, rlong;
-
-	int ts = reverse_histo(short_axis_count, rshort);
-	int tl = reverse_histo(long_axis_count, rlong);
-
-	printf("Short axes: out of %d blocks.\n", ts);
-	for(multimap<int,int>::iterator i = rshort.begin(); i != rshort.end(); ++i)
-		printf("%d (%lf): %d\n", i->first, (double) i->first/(double)ts,i->second);
-
-	printf("Long axes: out of %d blocks.\n", tl);
-	for(multimap<int,int>::iterator i = rlong.begin(); i != rlong.end(); ++i)
-		printf("%d (%lf): %d\n", i->first, (double) i->first/(double)tl,i->second);
-
-	multimap<int,int>		zcr;
-	multimap<double,int>	zar;
-	int tc = reverse_histo(zone_count,zcr);
-	double ta = reverse_histo(zone_area,zar);
-
-	printf("Zoning by count (%d total).\n",tc);
-	for(multimap<int,int>::iterator i = zcr.begin(); i != zcr.end(); ++i)
-		printf("%d (%lf): %s\n", i->first,(double) i->first / (double) tc, FetchTokenString(i->second));
-
-	printf("Zoning by area (%lf total).\n",ta);
-	for(multimap<double,int>::iterator i = zar.begin(); i != zar.end(); ++i)
-		printf("%lf (%lf): %s\n", i->first, i->first / ta, FetchTokenString(i->second));
-
-#endif
 
 	NT west(inLanduse.mWest);
 	NT east(inLanduse.mEast);

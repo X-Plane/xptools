@@ -30,6 +30,8 @@
 #include "CompGeomUtils.h"
 #include "GISUtils.h"
 
+#define PTS_LIM 30UL
+
 class check_block_visitor {
 public:
 	typedef std::pair<Block_2::Halfedge_handle, bool>            Result;
@@ -315,7 +317,8 @@ void clean_block(Block_2& block)
 	for(Block_2::Edge_iterator eig = block.edges_begin(); eig != block.edges_end(); ++eig)
 		if(eig->face()->data().usage == eig->twin()->face()->data().usage &&
 		   eig->face()->data().feature == eig->twin()->face()->data().feature &&
-		   eig->face()->data().can_simplify && eig->twin()->face()->data().can_simplify)
+		   eig->face()->data().simplify_id >= 0 &&
+		   eig->face()->data().simplify_id == eig->twin()->face()->data().simplify_id)
 	{
 			kill.push_back(eig);
 	}
@@ -375,7 +378,13 @@ void simplify_block(Block_2& io_block, double max_err)
 }
 
 
-
+// This routine tries to find the 'grain' of a block by a weighting of dot 
+// products relative to all sides.  A few notes:
+// 1. It tries to first run wiht a handy-cap to take only street-level roads.
+//    It then tries again if the filter is too harsh.
+// 2. It does an intentionally bad job when there are a huge number of sides
+//    since such high-count polygons aren't sane AGB candidates.
+// 3. It ALWAYS returns some answer, no matter how goofy the polygon.
 void find_major_axis(vector<block_pt>&	pts,
 				Segment2 *			out_segment,
 				Vector2 *			out_major,
@@ -405,7 +414,8 @@ void find_major_axis(vector<block_pt>&	pts,
 		Vector2 v_b(v_a.perpendicular_ccw());
 		
 		double total = 0.0;
-		for(int k = 0; k < pts.size(); ++k)
+		int max_k = min(pts.size(),PTS_LIM);
+		for(int k = 0; k < max_k; ++k)
 		{
 			int l = (k + 1) % pts.size();
 			Vector2	s(pts[k].loc,pts[l].loc);
@@ -581,6 +591,7 @@ bool	build_convex_polygon(
 						trans.Forward(cgal2ben(sides[i].first->source()->point())),
 						trans.Forward(cgal2ben(sides[i].second->target()->point()))));						
 	}	
+	vector<Segment2>	debug(msides);
 	for(i = 0; i < sides.size(); ++i)
 	{
 		j = (i + 1) % sides.size();		
@@ -648,6 +659,8 @@ int	pick_major_axis(
 				Vector2&														v_x,
 				Vector2&														v_y)
 {
+	// special case: if we find a block with exactly ONE right angle, the longer of the two
+	// sides going into the right angle is hte major axis, full stop, we're done.
 	int right_angle = -1;
 	for(int i = 0; i < sides.size(); ++i)
 	{
@@ -663,7 +676,7 @@ int	pick_major_axis(
 			if(right_angle == -1)
 				right_angle = j;
 			else
-				right_angle = -2;
+				right_angle = -2;		// "more than one right angle" flag - causes us to NOT try this algo.
 		}
 	}
 	if(right_angle >= 0)
@@ -683,6 +696,11 @@ int	pick_major_axis(
 		return right_angle;
 	}
 
+	// THIS is the algo we shipped with - it tries to minimize the short side axis of the block.  This works
+	// okay but tends to make the diagonal of diagonal cuts (like Broadway) the main axis since (by the pythag
+	// theorem) that slightly reduces the block depth.
+
+#if 0
 	int shortest = -1;
 	double	thinnest_so_far = 0.0;
 	for(int i = 0; i < sides.size(); ++i)
@@ -724,12 +742,12 @@ int	pick_major_axis(
 	
 	DebugAssert(shortest >= 0);
 	return shortest;
-	
+#endif
 
-#if 0
+#if 1
 
-	#error This algo works 95% of the time, but 5% of the time it picks a slashed short end as the
-	#error long axis, which gives a long thin block a wrong axis alignment and a huge AABB.  Bad!
+//	#error This algo works 95% of the time, but 5% of the time it picks a slashed short end as the
+//	#error long axis, which gives a long thin block a wrong axis alignment and a huge AABB.  Bad!
 
 
 	// The basic idea: we want to pick the grid axis MOST aligned with the block such that
@@ -737,34 +755,68 @@ int	pick_major_axis(
 
 	double best_corr = 0;
 	double best = -1;
+	Vector2	best_vec;
 
-	int i, j;
-	for(i = 0; i < sides.size(); ++i)
+	bool elev_ok = false;
+
+	int i, j, tries;
+	for(tries = 0; tries < 2; ++tries)	
 	{
-		double score = 0.0;
-		Vector2 si = Vector2(bounds.side(i).p1,bounds.side(i).p2);
-		double il = si.normalize();
-		
-		//printf("Side %d: %lf,%lf for %lf\n", i, si.dx,si.dy,il);
-		for(int j = 0; j < sides.size(); ++j)
-		if(i != j)
+		for(i = 0; i < sides.size(); ++i)
+		if(elev_ok || ground_road_access_for_he(sides[i].first))	
 		{
-			Vector2	sj(bounds.side(j).p1,bounds.side(j).p2);
-			double jl = sj.normalize();
+			double score = 0.0;
+			Vector2 si = Vector2(bounds.side(i).p1,bounds.side(i).p2);
+			si.normalize();
+			Vector2 si_n = si.perpendicular_ccw();
+			
+			for(int j = 0; j < sides.size(); ++j)
+			if(elev_ok || ground_road_access_for_he(sides[j].first))	
+			{
+				Vector2	sj(bounds.side(j).p1,bounds.side(j).p2);
+				double my_corr = fltmax2(fabs(si.dot(sj)),fabs(si_n.dot(sj)));
 
-			double my_corr = jl * fltmax2(fabs(si.dot(sj)),fabs(si.dot(sj.perpendicular_ccw())));
-			score += my_corr;
-			//printf("  Side %d: %lf,%lf for %lf\n, corr = %lf", j, sj.dx,sj.dy,jl, my_corr);
-		}
+				score += my_corr;
+			}
 
-		//printf("Total score for %d: %lf\n", i, score);
-		if(score > best_corr){
-			best = i;
-			best_corr = score;
+			if(score > best_corr){
+				best = i;
+				best_corr = score;
+				best_vec = si;
+			}
 		}
 		
+		if(best >= 0)
+			break;
+		elev_ok = true;
 	}
-	
+
+	if(best >= 0)
+	{
+		Vector2	best_vec_n = best_vec.perpendicular_ccw();
+		
+		int longest = -1;
+		double corr_len = -1;
+		for(int i = 0; i < sides.size(); ++i)
+		if(elev_ok || ground_road_access_for_he(sides[i].first))
+		{
+			Vector2 this_side(bounds.side(i).p1,bounds.side(i).p2);
+			double len = this_side.normalize();
+			double my_corr = fltmax2(fabs(best_vec.dot(this_side)), fabs(best_vec_n.dot(this_side)));
+			if(my_corr > 0.996194698091746)
+			{
+				my_corr *= len;
+				if(my_corr > corr_len)
+				{
+					longest = i;
+					corr_len = my_corr;
+				}			
+			}
+		}
+		if(longest >= 0)
+			best = longest;
+	}
+		
 	v_x = Vector2(bounds.side(best).p1,bounds.side(best).p2);
 	v_x.normalize();
 	v_y = v_x.perpendicular_ccw();
@@ -794,24 +846,24 @@ int	pick_major_axis(
 		//printf("Must rotate, the winner was a SHORT side.\n");
 	}
 
-	best = 0;
-	double best_dot = 0;
-	for(i = 0; i < sides.size(); ++i)
-	if(ground_road_access_for_he(sides[i].first))
-	{
-		Vector2	side_vec(bounds.side(i).p1,bounds.side(i).p2);
-		double slen = side_vec.normalize();
-		double corr = fabs(v_x.dot(side_vec));
-		if(corr > best_dot)
-		{
-			best = i;
-			corr = best_dot;
-		}
-	}
-	DebugAssert(best >= 0.0);
-	v_x = Vector2(bounds.side(best).p1,bounds.side(best).p2);
-	v_x.normalize();
-	v_y = v_x.perpendicular_ccw();
+//	best = 0;
+//	double best_dot = 0;
+//	for(i = 0; i < sides.size(); ++i)
+//	if(ground_road_access_for_he(sides[i].first))
+//	{
+//		Vector2	side_vec(bounds.side(i).p1,bounds.side(i).p2);
+//		double slen = side_vec.normalize();
+//		double corr = fabs(v_x.dot(side_vec));
+//		if(corr > best_dot)
+//		{
+//			best = i;
+//			corr = best_dot;
+//		}
+//	}
+//	DebugAssert(best >= 0.0);
+//	v_x = Vector2(bounds.side(best).p1,bounds.side(best).p2);
+//	v_x.normalize();
+//	v_y = v_x.perpendicular_ccw();
 	return best;
 #endif	
 }

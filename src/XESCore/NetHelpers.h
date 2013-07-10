@@ -62,7 +62,7 @@ inline bool he_has_any_roads(Pmwx::Halfedge_handle he);
 inline Pmwx::Halfedge_handle get_he_with_roads(Pmwx::Halfedge_handle he);
 // Setting the height of a road in terms of an explicit vertex.
 inline double get_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v);
-inline double set_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v, double h);
+inline void set_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v, double h);
 // Approximate normalized lat-lon vector direction of the road on the edge.
 inline Vector2 get_he_road_dir(Pmwx::Halfedge_handle he);
 // Approximate dot product of two roads.
@@ -170,7 +170,7 @@ inline double get_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v)
 	}
 }
 
-inline double set_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v, double h)
+inline void set_he_level_at(Pmwx::Halfedge_handle he, Pmwx::Vertex_handle v, double h)
 {
 	DebugAssert(he->data().mSegments.size() + he->twin()->data().mSegments.size() == 1);
 	DebugAssert(he->source() == v || he->target() == v);
