@@ -62,6 +62,24 @@ int		GetFilePathFromUser(
 		ofn.lpstrTitle = inPrompt;
 		result = (inType == getFile_Open) ? GetOpenFileName(&ofn) : GetSaveFileName(&ofn);
 		return (result) ? 1 : 0;
+	case getFile_OpenImages:
+		ofn.lStructSize = sizeof(ofn);
+		/*string geoTiff = "GeoTiff (*.tif)\0*.tif\0";
+		string png = "PNG (*.png)\0*.png\0";
+		string jpeg = "JPEG (*.jpeg)\0*.jpeg;*.jpg\0";
+		string bmp = "BMP (*.bmp)\0*.bmp\0";
+		string dds = "DDS (*.dds)\0*.dds\0";
+		string total = geoTiff + png + jpeg + bmp + dds + "\0\0";*/
+		ofn.lpstrFilter = "GeoTiff (*.tif)\0*.tif\0PNG (*.png)\0*.png\0JPEG (*.jpg, *.jpeg)\0*.jpg;*.jpeg\0BMP (*.bmp)\0*.bmp\0DDS (*.dds)\0*.dds\0\0\0";
+		ofn.nFilterIndex = 1;	// Start with .acf files
+		ofn.lpstrFile = outFileName;
+		if (inType != getFile_Save)
+			outFileName[0] = 0;		// No initialization for open.
+		ofn.nMaxFile = inBufSize;		// Guess string length?
+		ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
+		ofn.lpstrTitle = inPrompt;
+		result = (inType == getFile_OpenImages) ? GetOpenFileName(&ofn) : GetSaveFileName(&ofn);
+		return (result) ? 1 : 0;
 	case getFile_PickFolder:
 		bif.hwndOwner = NULL;
 		bif.pidlRoot = NULL;

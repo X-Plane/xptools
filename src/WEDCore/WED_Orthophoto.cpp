@@ -16,6 +16,7 @@
 #include "WED_TextureNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ResourceMgr.h"
+#include "PlatformUtils.h"
 
 #if 0
 
@@ -135,6 +136,15 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 
 void	WED_MakeOrthos(IResolver * in_resolver)
 {
+	char path[1024];
+	/*int		GetFilePathFromUser(
+					int					inType,
+					const char * 		inPrompt,
+					const char *		inAction,
+					int					inID,
+					char * 				outFileName,
+					int					inBufSize)*/
+	GetFilePathFromUser(getFile_OpenImages,"Import Orthophoto...", "Import", 0, path, sizeof(path));
 /*
 	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
 	ISelection * sel = WED_GetSelect(in_resolver);

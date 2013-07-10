@@ -63,7 +63,8 @@ const char * GetApplicationPath(char * pathBuf, int pathLen);
 enum {
 	getFile_Open,
 	getFile_Save,
-	getFile_PickFolder
+	getFile_PickFolder,
+	getFile_OpenImages
 };
 int		GetFilePathFromUser(
 					int					inType,

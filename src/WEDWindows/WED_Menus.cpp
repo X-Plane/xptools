@@ -48,6 +48,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"-",					0,		0,								0,	0					},
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+{	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if ROBIN_IMPORT_FEATURES
 {	"Import from Global Airports",0,0,								0,	wed_ImportRobin		},
 #endif

@@ -42,6 +42,7 @@ enum {
 	wed_ExportPack,
 	wed_ExportToRobin,
 	wed_ImportDSF,
+	wed_ImportOrtho,
 #if ROBIN_IMPORT_FEATURES	
 	wed_ImportRobin,
 #endif	
