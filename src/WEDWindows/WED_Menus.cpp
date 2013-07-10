@@ -94,7 +94,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rever&se",				'R',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Reverse		},
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
-{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
+//{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 #if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
 #endif
@@ -119,7 +119,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
 {	"&Object Density",			0,	0,										0,	0					},
 {	"-",						0,	0,										0,	0					},
-{	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
+//{	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
 {	"Toggle Previe&w",			0,	0,										0,	wed_TogglePreview	},

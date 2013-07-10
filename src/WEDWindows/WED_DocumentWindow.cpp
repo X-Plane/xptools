@@ -394,7 +394,11 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ExportToRobin:		WED_DoExportRobin(mDocument); return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
-	case wed_ImportOrtho:	WED_MakeOrthos(mDocument); return 1;
+	case wed_ImportOrtho:
+		//WED_DoMakeNewOverlay(mDocuemnt,Zommer);
+		//WED_MakeOrthos(mDocument);
+		return mMapPane->Map_HandleCommand(command);
+		return 1;
 #if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
 #endif	

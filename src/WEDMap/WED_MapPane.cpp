@@ -352,6 +352,7 @@ int		WED_MapPane::Map_HandleCommand(int command)
 {
 	Bbox2 box;
 	switch(command) {
+	case wed_ImportOrtho:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 //	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
