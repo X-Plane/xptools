@@ -2283,10 +2283,10 @@ bool	init_block(
 		{
 //			printf("Small side elim: %s\n", FetchTokenString(f1->data().feature));
 			splits_we_do_not_want.push_back(e);
-			debug_mesh_line(
-						translator.Reverse(cgal2ben(e->source()->point())),
-						translator.Reverse(cgal2ben(e->target()->point())),
-						1,0,0,1,0,0);
+//			debug_mesh_line(
+//						translator.Reverse(cgal2ben(e->source()->point())),
+//						translator.Reverse(cgal2ben(e->target()->point())),
+//						1,0,0,1,0,0);
 		}
 	}
 	for(list<Block_2::Halfedge_handle>::iterator k =	splits_we_do_not_want.begin(); k != splits_we_do_not_want.end(); ++k)
