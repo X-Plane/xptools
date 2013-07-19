@@ -48,7 +48,7 @@
 #include "MapPolygon.h"
 #include "GISUtils.h"
 #include "NetTables.h"
-#include "Zoning.h"
+#include "Zoning.h" 
 #include "MeshDefs.h"
 #include "DEMTables.h"
 #include "MathUtils.h"
@@ -602,6 +602,9 @@ bool block_pts_from_ccb(
 	return true;
 }
 
+// Given a range along the A axis and the path of one of the top or bottom edges of our block,
+// This routine returns the length of how much the block drifts up or down along the interval.
+// It is a measure of how much slop we'd need to put an AGB along 'range'.
 double find_b_interval(time_region::interval& range, const vector<Segment2>& segs, double b_range[4])
 {
 	double minv = b_range[3];
@@ -752,6 +755,18 @@ static int	init_subdivisions(
 							vector<BLOCK_face_data>& parts, 
 							vector<Block_2::X_monotone_curve_2>& curves)
 {
+	/***********************************************************************************************
+	 * OVERVIEW
+	 ***********************************************************************************************/
+	 
+	//	This function creates the curves to fill a block with a mix of facades and possibly an AGB
+	//	to cover its interior.
+	//
+	//	We are going to work in a local coordinate system aligned to the major axis of the block.
+	//	The "A" axis runs along this axis, and the "B" axis is CCW perpendicular to it.  If our
+	//	block is longer east-west than north-south (think NYC) then the A axis would run eastward
+	//	along the south side and the B axis would run northward along the west side.
+
 	DebugAssert(info->fac_id != NO_VALUE || info->agb_id != NO_VALUE);
 
 	vector<pair<Pmwx::Halfedge_handle,Pmwx::Halfedge_handle> >	sides;
@@ -763,6 +778,10 @@ static int	init_subdivisions(
 	Vector2	va, vb;
 	int mj = pick_major_axis(sides,mbounds,va,vb);
 	DebugAssert(mj >= 0);
+	
+	// Bounds is our axis-aligned bounding box.  Note that while the origin of the block might
+	// be the start of the side defining the major axis, the axis-aligned lower left could be 
+	// well into negative space.  Bottom line is, we don't ever assume the origin has meaning.
 	
 	double bounds[4];
 
@@ -780,25 +799,43 @@ static int	init_subdivisions(
 
 	TRACE_SUBDIVIDE("Block is from %lf,%lf to %lf,%lf\n", bounds[0],bounds[1],bounds[2],bounds[3]);
 	
-	time_region		agb_friendly(bounds[0],bounds[2]);
+	/***********************************************************************************************
+	 * AGB VS FACADE ISOLATION
+	 ***********************************************************************************************/
+	 
+	// We are going to isolate the region along the a axis that can have an AGB on it.  Since the
+	// building splits run 'along' the A axis we can think of regions along the A axis that will have
+	// either facades or AGBs; the cuts between them are always perpendicular ot A.
 	
-	double fac_extra_len = info->fac_extra;
-	for(int i = 0; i < outer_ccb_pts.size(); ++i)
-	{
-		if(outer_ccb_pts[i].edge_type.first != NO_VALUE)
+	time_region		agb_friendly(bounds[0],bounds[2]);		// Start with the entire block.
+	
+	double fac_extra_len = info->fac_extra;					// This is the worst-case width of the widest
+	for(int i = 0; i < outer_ccb_pts.size(); ++i)			// road in the block.  It is used as a fudge 
+	{														// factor on fac width so that the road eating
+		if(outer_ccb_pts[i].edge_type.first != NO_VALUE)	// into the fac doens't cause the fac to be too small.
 			fac_extra_len = dobmax2(fac_extra_len,gNetReps[outer_ccb_pts[i].edge_type.first].width());
 	}
 	TRACE_SUBDIVIDE("Facade overhang is: %lf\n",fac_extra_len);
 
-	double real_min_agb = fac_extra_len * 2.0 + info->agb_min_width;
-	TRACE_SUBDIVIDE("Min Size For AGB: %lf\n",real_min_agb);
+//	double real_min_agb = fac_extra_len * 2.0 + info->agb_min_width;
+//	TRACE_SUBDIVIDE("Min Size For AGB: %lf\n",real_min_agb);
 	
 	// facade depth splits!
 	int fds = info->fac_depth_split;
 	
 	DebugAssert(outer_ccb_pts.size() >= 3);
 
+	// These are segments that form the bottoms and tops of the AGBs, respectively, all resorted to go alogn the
+	// positive A axis (west to east in our example).  They give us some idea of how much the major axis 'drifts'
+	// for a given range.
 	vector<Segment2>	top_agbs, bot_agbs;
+	
+	// We now walk the polygon - for each segment, we consider its projection onto the A axis and what effect on
+	// AGB friendliness it might have.
+	
+//	#if !DEV
+//		#error WHY ARE WE USING OUTER CCBS HERE AND NOT MBOUNDS?!?
+//	#endif
 	
 	for(int i = 0; i < outer_ccb_pts.size(); ++i)
 	{
@@ -811,18 +848,18 @@ static int	init_subdivisions(
 		v_side.dx = fabs(v_side.dx);
 		v_side.dy = fabs(v_side.dy);
 		DebugAssert(info->agb_min_width > 0.0);
-		double max_facade_subdivs = dobmax2(1,floor(v_side.dx / info->agb_min_width));
+		double max_agb_subdivs = dobmax2(1,floor(v_side.dx / info->agb_min_width));
 		
-		TRACE_SUBDIVIDE("Side from %lf,%lf to %lf,%lf (vector %lf, %lf, max subdivide is %lf)\n", pi.x(),pi.y(),pj.x(),pj.y(), v_side.dx,v_side.dy,max_facade_subdivs);
+		TRACE_SUBDIVIDE("Side from %lf,%lf to %lf,%lf (vector %lf, %lf, max subdivide is %lf)\n", pi.x(),pi.y(),pj.x(),pj.y(), v_side.dx,v_side.dy,max_agb_subdivs);
 		
 		// Test for too much north-south travel is tempered by the distance - basically we can subdivide
 		// horizontally to fit AGBs in with some block drift.
-		if(v_side.dy > (info->agb_slop_depth * max_facade_subdivs))
+		if(v_side.dy > (info->agb_slop_depth * max_agb_subdivs))
 		{		
 			// This side is sloping too much north-south to be an AGB.  But it MIGHT be the west or easet side
 			// of the block.
 			
-			// Since we don't subdivide vertically, we measure for absolute error on the easet and west side.
+			// Since we don't subdivide vertically, we measure for absolute error on the east and west side.
 			if(v_side.dx > info->agb_slop_width)
 			{
 				// okay - we have a slanty side - mark this east-west interval as NOT an AGB!
@@ -830,11 +867,18 @@ static int	init_subdivisions(
 				agb_friendly -= time_region::interval(min(pi.x(),pj.x()),max(pi.x(),pj.x()));
 				TRACE_SUBDIVIDE("Region from %lf to %lf is not friendly - side slop %lf\n", min(pi.x(),pj.x()),max(pi.x(),pj.x()),v_side.dx);
 			}
+			
+			// (If we get here and haven't subdivided it means we have a side that is both highly vertical and within the slop tolerance of the AGB.
+			
+//			#if !DEV			
+//			#error THIS IS BUGGY!  The X slop on the sides must be applied cumulatively; if we have a large number of small sides going north-south the absolute
+//			#error dx is not a good measure.
+//			#endif
 		} 
 		else
 		{
 			v_side.normalize();
-			if(v_side.dy > v_side.dx)
+			if(v_side.dy > v_side.dx)			//AND WTF IS THIS?
 			{
 				// This is an AGB - because it's the top or bottom - save its path for later use in subdividing AGbB.
 				if(top)
@@ -851,6 +895,9 @@ static int	init_subdivisions(
 		}
 	}
 	
+	// If we don't have the option of making facades at all, exit if we already can tell that our time region isn't
+	// goin to hit the AGB-only case.
+	
 	if(info->fac_min_width == 0.0)
 	{
 		if(!agb_friendly.is_simple() ||					// Hrm...AGB block has a facade hole in the middle
@@ -861,6 +908,10 @@ static int	init_subdivisions(
 			
 			return 0;
 	}
+	
+	// This goes in and erodes the AGB friendly regions to ensure that at a minimum a fac-min length chunk of
+	// major road side is covered by the facade.  This ensures that, no matter how totally fubar the sloppy ends
+	// might be, we have a place to put the store front of the facade.
 	
 	time_region		must_be_fac_too;
 	for(time_region::const_iterator agbs = agb_friendly.begin(); agbs != agb_friendly.end(); ++agbs)
@@ -896,6 +947,14 @@ static int	init_subdivisions(
 	agb_friendly -= must_be_fac_too;
 
 //	agb_friendly ^= time_region::interval(bounds[0],bounds[2]);
+
+	/***********************************************************************************************
+	 * SLICE AND DICE
+	 ***********************************************************************************************/
+
+	// Now we have enough information to slice up our area.  We're going to wal the positive and 
+	// negative space of the AGB region and produce a series of cut intervals and primitive types.
+	// When we hit a facade region, we'll use a formula to subdivide it - it might be quite large.
 
 	vector<pair<double, bool> >	a_cuts;
 	vector<pair<int, float>	>	a_features, b_features;
@@ -948,6 +1007,8 @@ static int	init_subdivisions(
 		}
 		if(agb.first != agb.second)
 		{
+			// This calculation figures out how much the roads in the major axis direction
+			// are drifting, and subdivides the AGB to 'stair step' as needed.		
 			double top_span = find_b_interval(agb,top_agbs, bounds);
 			TRACE_SUBDIVIDE("top span: %lf\n", top_span);
 			double bot_span = find_b_interval(agb,bot_agbs, bounds);
@@ -977,6 +1038,12 @@ static int	init_subdivisions(
 	a_features.push_back(pair<int,float>(NO_VALUE,0.0));
 	b_features.push_back(pair<int,float>(NO_VALUE,0.0));
 	a_cuts.front().first -= 1.0;
+
+	/***********************************************************************************************
+	 * GEOMETRY GENERATION
+	 ***********************************************************************************************/
+
+	//	Finally, given the cuts, we can make the polygon curve shapes and stash them.
 
 	int part_base = parts.size();
 	DebugAssert(a_cuts.size() >= 2);

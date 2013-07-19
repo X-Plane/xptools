@@ -398,65 +398,81 @@ void find_major_axis(vector<block_pt>&	pts,
 	if(out_major == NULL) out_major = &temp_a;
 	if(out_minor == NULL) out_minor = &temp_b;
 	if(bounds == NULL) bounds = bounds_temp;
-	
-	for(int i = 0; i < pts.size(); ++i)
-	{
-		NetRepInfoTable::iterator r = gNetReps.find(pts[i].edge_type.first);
-		if(r != gNetReps.end() && r->second.use_mode != use_Street)
-			continue;
-		DebugAssert(pts[i].orig != Pmwx::Halfedge_handle());		
-		if(pts[i].orig->data().HasBridgeRoads())
-			continue;
+
+	bool elev_ok = false;
 		
-		int j = (i + 1) % pts.size();
-		Vector2	v_a(pts[i].loc,pts[j].loc);
-		v_a.normalize();
-		Vector2 v_b(v_a.perpendicular_ccw());
+	for(int tries = 0; tries < 2; ++tries)
+	{	
 		
-		double total = 0.0;
-		int max_k = min(pts.size(),PTS_LIM);
-		for(int k = 0; k < max_k; ++k)
+		for(int i = 0; i < pts.size(); ++i)
+		if(elev_ok || ground_road_access_for_he(pts[i].orig))
 		{
-			int l = (k + 1) % pts.size();
-			Vector2	s(pts[k].loc,pts[l].loc);
+			int j = (i + 1) % pts.size();
+			Vector2	v_a(pts[i].loc,pts[j].loc);
+			v_a.normalize();
+			Vector2 v_b(v_a.perpendicular_ccw());
 			
-			total += max(fabs(v_a.dot(s)),fabs(v_b.dot(s)));			
+			double total = 0.0;
+			int max_k = min(pts.size(),PTS_LIM);
+			for(int k = 0; k < max_k; ++k)
+			{
+				int l = (k + 1) % pts.size();
+				Vector2	s(pts[k].loc,pts[l].loc);
+				
+				total += max(fabs(v_a.dot(s)),fabs(v_b.dot(s)));			
+			}
+			
+			if(total >= best_v)
+			{
+				best_v = total;
+				if(out_segment) *out_segment = Segment2(pts[i].loc,pts[j].loc);
+				*out_major = v_a;
+				*out_minor = v_b;			
+			}	
 		}
 		
-		if(total >= best_v)
+		if(best_v != -1)
+			break;
+		elev_ok = true;
+	}
+	
+	
+	{
+		int longest = -1;
+		double corr_len = -1;
+		for(int i = 0; i < pts.size(); ++i)
+		if(elev_ok || ground_road_access_for_he(pts[i].orig))
 		{
-			best_v = total;
+			int j = (i + 1) % pts.size();
+			Vector2 this_side(pts[i].loc,pts[j].loc);
+			double len = this_side.normalize();
+			double my_corr = fltmax2(fabs(this_side.dot(*out_major)), fabs(this_side.dot(*out_minor)));
+			if(my_corr > 0.996194698091746)
+			{
+				my_corr *= len;
+				if(my_corr > corr_len)
+				{
+					longest = i;
+					corr_len = my_corr;
+				}			
+			}
+		}
+		if(longest >= 0)
+		{
+			int i = longest;
+			int j = (longest + 1) % pts.size();
+			Vector2	v_a(pts[i].loc,pts[j].loc);
+			v_a.normalize();
+			Vector2 v_b(v_a.perpendicular_ccw());
+
 			if(out_segment) *out_segment = Segment2(pts[i].loc,pts[j].loc);
 			*out_major = v_a;
 			*out_minor = v_b;			
-		}	
+		}
 	}
 	
-	if(best_v == -1)
-	for(int i = 0; i < pts.size(); ++i)
-	{
-		int j = (i + 1) % pts.size();
-		Vector2	v_a(pts[i].loc,pts[j].loc);
-		v_a.normalize();
-		Vector2 v_b(v_a.perpendicular_ccw());
-		
-		double total = 0.0;
-		for(int k = 0; k < pts.size(); ++k)
-		{
-			int l = (k + 1) % pts.size();
-			Vector2	s(pts[k].loc,pts[l].loc);
-			
-			total += max(fabs(v_a.dot(s)),fabs(v_b.dot(s)));			
-		}
-		
-		if(total >= best_v)
-		{
-			best_v = total;
-			if(out_segment) *out_segment = Segment2(pts[i].loc,pts[j].loc);
-			*out_major = v_a;
-			*out_minor = v_b;			
-		}	
-	}
+	
+	
 	
 	bounds[2] = bounds[0] = out_major->dot(Vector2(pts[0].loc));
 	bounds[3] = bounds[1] = out_minor->dot(Vector2(pts[0].loc));
