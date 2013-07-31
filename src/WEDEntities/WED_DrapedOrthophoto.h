@@ -49,7 +49,8 @@ public:
 
 			void		GetResource(	  string& r) const;
 			void		SetResource(const string& r);
-
+			//Checks if the draped orthophoto being used is the old .pol system or the new .someimagetype
+			bool		IsOldOrNew();
 	virtual const char *	HumanReadableType(void) const { return "Draped Orthophoto"; }
 
 protected:

@@ -18,6 +18,8 @@
 #include "WED_ResourceMgr.h"
 #include "PlatformUtils.h"
 
+#include "WED_Thing.h"
+#include "WED_PropertyHelper.h"
 #if 0
 
 #define USE_CGAL_POLYGONS 1
@@ -135,17 +137,70 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 #endif
 
 void	WED_MakeOrthos(IResolver * in_resolver)
-{
-	char path[1024];
-	/*int		GetFilePathFromUser(
-					int					inType,
-					const char * 		inPrompt,
-					const char *		inAction,
-					int					inID,
-					char * 				outFileName,
-					int					inBufSize)*/
-	GetFilePathFromUser(getFile_OpenImages,"Import Orthophoto...", "Import", 0, path, sizeof(path));
+{		
+	char buf[256];
+
+	//WED_PropStringText				mResourcem(1, "Resource", SQL_Name("",""),XML_Name("",""), "");
+	string mResource;
+	int idx;
+	WED_Thing * host = WED_GetCreateHost(in_resolver, 0, idx);
+	if (host == NULL) return;
+	WED_Thing *			outer_ring;
+	ISelection *	sel = WED_GetSelect(GetResolver());
+	outer_ring			  = WED_Ring::CreateTyped(outer_ring->GetArchive());
+	//host->get
+	//= GetHost(idx);
+	
+	WED_DrapedOrthophoto * dpol;
+	dpol = WED_DrapedOrthophoto::CreateTyped(dpol->GetArchive());
+	outer_ring->SetParent(dpol,0);
+			
+			dpol->SetParent(host,idx);
+			//sprintf(buf,"Orthophoto %d",n);
+	string n(r);
+	string::size_type p = n.find_last_of("/\\:");
+	if(p != n.npos) n.erase(0,p+1);
+			dpol->SetName(stripped_resource(mResource.value));
+			//sprintf(buf,"Polygon %d outer ring",n);
+			outer_ring->SetName(buf);
+			sel->Select(dpol);
+			dpol->SetResource(mResource.value);
+
 /*
+	int idx;
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);;
+	if (host == NULL) return;
+
+	string cname = string("Create ") + kCreateCmds[mType];
+
+	GetArchive()->StartCommand(cname.c_str());
+
+	ISelection *	sel = WED_GetSelect(GetResolver());
+	if (mType != create_Hole)
+	sel->Clear();
+
+	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
+	int is_texed = 1;
+	
+	WED_Thing *	outer_ring = WED_Ring::CreateTyped(GetArchive());
+
+	static int n = 0;
+	++n;
+
+		if(is_texed)
+		{
+			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
+			outer_ring->SetParent(dpol,0);
+			dpol->SetParent(host,idx);
+			sprintf(buf,"Orthophoto %d",n);
+			dpol->SetName(stripped_resource(mResource.value));
+			sprintf(buf,"Polygon %d outer ring",n);
+			outer_ring->SetName(buf);
+			sel->Select(dpol);
+			dpol->SetResource(mResource.value);
+		}
+
+	/*
 	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
 	ISelection * sel = WED_GetSelect(in_resolver);
 	
@@ -155,17 +210,18 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 
 	bool	skip = false;
 	bool	any = false;
-	Polygon_set_2 all, ent;
+//	Polygon_set_2 all;
+	//Polygon_set_2 ent;
 	for(vector<IGISEntity *>::iterator e = entities.begin(); e != entities.end(); ++e)
 	{
-		if (!WED_PolygonSetForEntity(*e, ent))
+		/*if (!WED_PolygonSetForEntity(*e, ent))
 			skip = true;
 		else
 			any = true;
 		all.join(ent);
 	}
 	
-	if (!all.is_empty())
+	if (/*!all.is_empty()true)
 	{
 		wrl->StartCommand("Make orthophotos");
 		// Ben says: if the user has selected an overlay image itself, we are going to start our hierarchy traversal at THAT IMAGE,
@@ -178,7 +234,7 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 		WED_OverlayImage * sel_over = NULL;
 		if(entities.size() == 1)
 			sel_over = SAFE_CAST(WED_OverlayImage,entities[0]);
-		int num_made = cut_for_image(sel_over ? sel_over : wrl, all, wrl, WED_GetResourceMgr(in_resolver));
+		//int num_made = cut_for_image(sel_over ? sel_over : wrl, 100, wrl, WED_GetResourceMgr(in_resolver));
 		if(num_made == 0)
 		{
 			wrl->AbortCommand();
@@ -187,10 +243,10 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 		else
 		{
 			wrl->CommitCommand();
-			if(skip) 
-				DoUserAlert("Some selected polygons were ignored because they contain bezier curves - you can only cut non-curved orthophotos.");
-		}
+			//if(skip) 
+/*				DoUserAlert("Some selected polygons were ignored because they contain bezier curves - you can only cut non-curved orthophotos.");
+		//}
 	} else 
-		DoUserAlert("No orthophotos were created because the selection contains no non-curved polygons.");
-*/		
+		DoUserAlert("No orthophotos were created because the selection contains no non-curved polygons.");		*/
+	//}
 }

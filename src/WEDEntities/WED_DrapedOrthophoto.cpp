@@ -46,3 +46,14 @@ void		WED_DrapedOrthophoto::SetResource(const string& r)
 	resource = r;
 }
 
+bool WED_DrapedOrthophoto::IsOldOrNew()
+{
+	string testString = resource;
+	
+	/* Find the end string
+ 	* if it 
+	*
+	*
+	*/
+	return true;
+}

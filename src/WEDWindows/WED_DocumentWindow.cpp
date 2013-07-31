@@ -397,7 +397,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportOrtho:
 		//WED_DoMakeNewOverlay(mDocuemnt,Zommer);
 		//WED_MakeOrthos(mDocument);
-		return mMapPane->Map_HandleCommand(command);
+		mMapPane->Map_HandleCommand(command);
+		WED_MakeOrthos(mDocument);
 		return 1;
 #if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
@@ -488,7 +489,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportToRobin:	return 1;
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
-	case wed_ImportOrtho:	return WED_CanImportApt(mDocument);
+	case wed_ImportOrtho:	return 1;
 #if ROBIN_IMPORT_FEATURES
 	case wed_ImportRobin:	return 1;
 #endif	
