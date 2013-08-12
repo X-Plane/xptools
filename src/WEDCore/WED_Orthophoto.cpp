@@ -146,7 +146,7 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 	WED_Thing * host = WED_GetCreateHost(in_resolver, 0, idx);
 	if (host == NULL) return;
 	WED_Thing *			outer_ring;
-	ISelection *	sel = WED_GetSelect(GetResolver());
+	//ISelection *	sel = WED_GetSelect(GetResolver());
 	outer_ring			  = WED_Ring::CreateTyped(outer_ring->GetArchive());
 	//host->get
 	//= GetHost(idx);
@@ -155,9 +155,9 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 	dpol = WED_DrapedOrthophoto::CreateTyped(dpol->GetArchive());
 	outer_ring->SetParent(dpol,0);
 			
-			dpol->SetParent(host,idx);
+	dpol->SetParent(host,idx);
 			//sprintf(buf,"Orthophoto %d",n);
-	string n(r);
+	/*string n(r);
 	string::size_type p = n.find_last_of("/\\:");
 	if(p != n.npos) n.erase(0,p+1);
 			dpol->SetName(stripped_resource(mResource.value));
@@ -165,7 +165,8 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 			outer_ring->SetName(buf);
 			sel->Select(dpol);
 			dpol->SetResource(mResource.value);
-
+			dpol->IsOldOrNew();
+			*/
 /*
 	int idx;
 	WED_Thing * host = WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);;

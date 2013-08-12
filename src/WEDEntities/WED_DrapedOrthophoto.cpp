@@ -46,14 +46,25 @@ void		WED_DrapedOrthophoto::SetResource(const string& r)
 	resource = r;
 }
 
+
 bool WED_DrapedOrthophoto::IsOldOrNew()
 {
-	string testString = resource;
+	//Find position
+	int pos = resource.value.find_last_of('.',resource.value.size());
 	
-	/* Find the end string
- 	* if it 
-	*
-	*
-	*/
-	return true;
+	//get the ending extension
+	string testString = resource.value.substr(pos);
+	
+	//If it is not .pol
+	
+	if(testString != ".pol")
+	{
+		//it is new, therefore true
+		return true;
+	}
+	else
+	{
+		//It is an old .pol file, therefore false
+		return false;
+	}
 }

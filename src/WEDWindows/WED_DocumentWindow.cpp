@@ -396,7 +396,6 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
 		//WED_DoMakeNewOverlay(mDocuemnt,Zommer);
-		//WED_MakeOrthos(mDocument);
 		mMapPane->Map_HandleCommand(command);
 		WED_MakeOrthos(mDocument);
 		return 1;
