@@ -136,12 +136,12 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 
 #endif
 
-void	WED_MakeOrthos(IResolver * in_resolver)
+void	WED_MakeOrthos(IResolver * in_resolver, string reasource)
 {		
 	char buf[256];
 
 	//WED_PropStringText				mResourcem(1, "Resource", SQL_Name("",""),XML_Name("",""), "");
-	string mResource;
+
 	int idx;
 	WED_Thing * host = WED_GetCreateHost(in_resolver, 0, idx);
 	if (host == NULL) return;
@@ -157,16 +157,30 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 			
 	dpol->SetParent(host,idx);
 			//sprintf(buf,"Orthophoto %d",n);
-	/*string n(r);
+
+	//stripped_resource---------------------
+	/*string strippped(mResource.value);
 	string::size_type p = n.find_last_of("/\\:");
-	if(p != n.npos) n.erase(0,p+1);
-			dpol->SetName(stripped_resource(mResource.value));
-			//sprintf(buf,"Polygon %d outer ring",n);
-			outer_ring->SetName(buf);
-			sel->Select(dpol);
-			dpol->SetResource(mResource.value);
-			dpol->IsOldOrNew();
-			*/
+
+	if(p != n.npos)
+	{
+		n.erase(0,p+1);
+	}
+	//             --------------------------
+
+	dpol->SetName(stripped);
+	//sprintf(buf,"Polygon %d outer ring",n);
+	outer_ring->SetName(buf);
+	sel->Select(dpol);
+	dpol->SetResource(mResource.value);
+	dpol->IsOldOrNew();*/
+			
+
+
+
+
+
+
 /*
 	int idx;
 	WED_Thing * host = WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);;
@@ -201,7 +215,7 @@ void	WED_MakeOrthos(IResolver * in_resolver)
 			dpol->SetResource(mResource.value);
 		}
 
-	/*
+	/* really old code
 	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
 	ISelection * sel = WED_GetSelect(in_resolver);
 	
