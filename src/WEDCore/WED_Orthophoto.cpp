@@ -147,7 +147,7 @@ void	WED_MakeOrthos(IResolver * in_resolver, string reasource)
 	if (host == NULL) return;
 	WED_Thing *			outer_ring;
 	//ISelection *	sel = WED_GetSelect(GetResolver());
-	outer_ring			  = WED_Ring::CreateTyped(outer_ring->GetArchive());
+	//outer_ring			  = WED_Ring::CreateTyped(outer_ring->GetArchive());
 	//host->get
 	//= GetHost(idx);
 	

@@ -12,7 +12,7 @@
 
 class IResolver;
 
-void	WED_MakeOrthos(IResolver * in_resolver, string reasource);
-
+void	WED_MakeOrthos(IResolver * in_resolver, string resource);
+//char*	mResource;
 
 #endif /* WED_Orthophoto_h */

@@ -48,12 +48,11 @@
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
-
+#include "WED_Orthophoto.h"
 #include "WED_Routing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
 
-#include "WED_Orthophoto.h"
 #if WITHNWLINK
 #include "WED_Server.h"
 #endif
@@ -325,6 +324,11 @@ int	WED_DocumentWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags in
 int	WED_DocumentWindow::HandleCommand(int command)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
+	//char prePreBuf[1024];
+	//char* preBuf=&prePreBuf;
+	//char **buf= preBuf;
+	string preStrRef="test";
+	string *strRef = &preStrRef;
 	switch(command) {
 	case wed_RestorePanes:
 		{
@@ -346,7 +350,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Crop:		WED_DoCrop(mDocument); return 1;
-	case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
+	//case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
 #if AIRPORT_ROUTING
 //	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
 	case wed_Merge:		WED_DoMerge(mDocument); return 1;
@@ -395,9 +399,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
-		//WED_DoMakeNewOverlay(mDocuemnt,Zommer);
-		mMapPane->Map_HandleCommand(command);
-		WED_MakeOrthos(mDocument);
+		mMapPane->Map_HandleCommand(command,strRef);
+		WED_MakeOrthos(mDocument,*strRef);
 		return 1;
 #if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
@@ -424,7 +427,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		}
 		return 1;
 #endif
-	default: return mMapPane->Map_HandleCommand(command);	break;
+	default: return mMapPane->Map_HandleCommand(command,strRef);	break;
 	}
 	return 0;
 }

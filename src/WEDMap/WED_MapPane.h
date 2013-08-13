@@ -79,7 +79,7 @@ public:
 			GUI_Pane *	GetTopBar(void);
 
 			int				Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)	 	;
-			int				Map_HandleCommand(int command) 									;
+			int				Map_HandleCommand(int command, string* buf) 									;
 			int				Map_CanHandleCommand(int command, string& ioName, int& ioCheck) ;
 
 			void			FromPrefs(IDocPrefs * prefs);

@@ -166,7 +166,7 @@ void	WED_DoUngroup(IResolver * inResolver)
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
+void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer, string * outBuf)
 {
 	char buf[1024];
 	if (GetFilePathFromUser(getFile_OpenImages, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
@@ -278,9 +278,9 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			p4->SetLocation(gis_UV,Point2(1,0));
 
 			wrl->CommitOperation();
-
 		}
 	}
+	outBuf->replace(0,outBuf->length(),buf);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------

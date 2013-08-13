@@ -348,12 +348,13 @@ int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 	return 0;
 }
 
-int		WED_MapPane::Map_HandleCommand(int command)
+int		WED_MapPane::Map_HandleCommand(int command, string* buf)
 {
 	Bbox2 box;
+	
 	switch(command) {
-	case wed_ImportOrtho:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
-	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
+	case wed_ImportOrtho:	WED_DoMakeNewOverlay(mResolver, mMap, buf); return 1;
+	//case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap,); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 //	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }
 #if WANT_TERRASEVER
