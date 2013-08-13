@@ -400,7 +400,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command,strRef);
-		WED_MakeOrthos(mDocument,*strRef);
+		WED_MakeOrthos(mDocument,*strRef, mDocument->GetArchive());
 		return 1;
 #if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;

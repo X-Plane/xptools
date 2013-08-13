@@ -10,9 +10,10 @@
 #ifndef WED_Orthophoto_h
 #define WED_Orthophoto_h
 
+#include "WED_Archive.h"
+
 class IResolver;
 
-void	WED_MakeOrthos(IResolver * in_resolver, string resource);
-//char*	mResource;
+void	WED_MakeOrthos(IResolver * in_resolver, string resource, WED_Archive * archive);
 
 #endif /* WED_Orthophoto_h */
