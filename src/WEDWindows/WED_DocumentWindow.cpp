@@ -48,7 +48,7 @@
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
-#include "WED_Orthophoto.h"
+//#include "WED_Orthophoto.h"
 #include "WED_Routing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
@@ -399,8 +399,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
-		mMapPane->Map_HandleCommand(command,strRef);
-		WED_MakeOrthos(mDocument,*strRef, mDocument->GetArchive());
+		mMapPane->Map_HandleCommand(command/*,mDocument->GetArchive()*/);
 		return 1;
 #if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
@@ -427,7 +426,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		}
 		return 1;
 #endif
-	default: return mMapPane->Map_HandleCommand(command,strRef);	break;
+	default: return mMapPane->Map_HandleCommand(command/*,mDocument->GetArchive()*/);	break;
 	}
 	return 0;
 }

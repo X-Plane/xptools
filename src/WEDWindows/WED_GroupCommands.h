@@ -33,7 +33,7 @@ int		WED_CanUngroup(IResolver * inResolver);
 void	WED_DoGroup(IResolver * inResolver);
 void	WED_DoUngroup(IResolver * inResolver);
 
-void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer, string* buf);
+void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer);
 
 int		WED_CanMakeNewAirport(IResolver * inResolver);
 void	WED_DoMakeNewAirport(IResolver * inResolver);

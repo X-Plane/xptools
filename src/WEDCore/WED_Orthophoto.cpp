@@ -17,9 +17,14 @@
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ResourceMgr.h"
 #include "PlatformUtils.h"
-
+#include "BitmapUtils.h"
 #include "WED_Thing.h"
 #include "WED_PropertyHelper.h"
+#include "WED_MapZoomerNew.h"
+#include "WED_UIDefs.h"
+#include "ILibrarian.h"
+#include "GISUtils.h"
+#include "DEMIO.h"
 #if 0
 
 #define USE_CGAL_POLYGONS 1
@@ -136,18 +141,9 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 
 #endif
 
-void	WED_MakeOrthos(IResolver * in_resolver, string resource, WED_Archive * archive)
+void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Archive * archive*/)
 {		
-/*
-	WED_Thing *			outer_ring;*/
-	//ISelection *	sel = WED_GetSelect(GetResolver());
-	//outer_ring			  = WED_Ring::CreateTyped(outer_ring->GetArchive());
-	//host->get
-	//= GetHost(idx);
-		/* really old code, important to think about here
-	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
-	ISelection * sel = WED_GetSelect(in_resolver);*/
-
+	/* From CreatePolyGone
 	char buf[256];
 
 	int idx;
@@ -161,18 +157,15 @@ void	WED_MakeOrthos(IResolver * in_resolver, string resource, WED_Archive * arch
 
 	ISelection * sel = WED_GetSelect(in_resolver);
 	sel->Clear();
-
-	int is_poly = 1;
-	int is_texed = 1;
 	
-	WED_Thing *	outer_ring;
+	//WED_Thing *	outer_ring;
 
-	outer_ring = WED_Ring::CreateTyped(archive);
+	//outer_ring = WED_Ring::CreateTyped(archive);
 
-	static int n = 0;
-	++n;
+	//static int n = 0;
+	//++n;
 
-	WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(archive);
+	//WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(archive);
 	
 	outer_ring->SetParent(dpol,0);
 		
@@ -188,155 +181,132 @@ void	WED_MakeOrthos(IResolver * in_resolver, string resource, WED_Archive * arch
 	{
 		stripped.erase(0,p+1);
 	}
-	//             --------------------------
 
 	dpol->SetName(stripped);
 	//sprintf(buf,"Polygon %d outer ring",n);
 	outer_ring->SetName(buf);
 	sel->Select(dpol);
 	dpol->SetResource(stripped);
-	dpol->IsOldOrNew();
-	
-	//--V NOT NEEDED? V--
-	/*	double	lonmax=-9.9e9;
-	double	latmax=-9.9e9;
-	double	lonmin= 9.9e9;
-	double	latmin= 9.9e9;
-	bool	has_any_dirs = false;
-	for(int n = 0; n < pts.size(); ++n)
-	{
-		lonmax=max(lonmax,pts[n].x());
-		lonmin=min(lonmin,pts[n].x());
-		latmax=max(latmax,pts[n].y());
-		latmin=min(latmin,pts[n].y());
-		if(has_dirs[n])
-		{
-			has_any_dirs=true;
-
-			lonmax=max(lonmax,dirs_hi[n].x());
-			lonmin=min(lonmin,dirs_hi[n].x());
-			latmax=max(latmax,dirs_hi[n].y());
-			latmin=min(latmin,dirs_hi[n].y());
-
-			lonmax=max(lonmax,dirs_lo[n].x());
-			lonmin=min(lonmin,dirs_lo[n].x());
-			latmax=max(latmax,dirs_lo[n].y());
-			latmin=min(latmin,dirs_lo[n].y());
-		}
-	}
-
-	const float hard_coded_s[4] = { 0.0, 1.0, 1.0, 0.0 };
-	const float hard_coded_t[4] = { 0.0, 0.0, 1.0, 1.0 };
-
-	for(int n = 0; n < pts.size(); ++n)
-	{
-		int idx = is_ccw ? n : pts.size()-n-1;
-		
-		WED_AirportNode *		anode=NULL;
-		WED_GISPoint_Bezier *	bnode=NULL;
-		WED_GISPoint *			node=NULL;
-		WED_TextureNode *		tnode=NULL;
-		WED_TextureBezierNode *	tbnode=NULL;
-
-		else if (is_texed)					node = tnode = WED_TextureNode::CreateTyped(GetArchive());
-		else								node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
-
-		node->SetLocation(gis_Geo,pts[idx]);
-		Point2 st(			interp(lonmin,0.0,lonmax,1.0,pts[idx].x()),
-							interp(latmin,0.0,latmax,1.0,pts[idx].y()));
-		if(pts.size() == 4 && !has_any_dirs)	{st.x_ = hard_coded_s[n];
-												 st.y_ = hard_coded_t[n];}
-							
-		if(tnode)			tnode->SetLocation(gis_UV,st);
-		if(tbnode)			tbnode->SetLocation(gis_UV,st);
-
-		if(bnode)
-		{
-			if (!has_dirs[idx])
-			{
-				bnode->DeleteHandleHi();
-				bnode->DeleteHandleLo();
-				if(tbnode)
-				{
-					tbnode->SetControlHandleLo(gis_UV,st);
-					tbnode->SetControlHandleHi(gis_UV,st);
-				}
-			}
-			else
-			{
-				bnode->SetSplit(has_split[idx]);
-				if (is_ccw)
-				{
-					bnode->SetControlHandleHi(gis_Geo,dirs_hi[idx]);
-					bnode->SetControlHandleLo(gis_Geo,dirs_lo[idx]);
-					if(tbnode)
-					{
-						tbnode->SetControlHandleHi(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
-						tbnode->SetControlHandleLo(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
-					}
-				} else {
-					bnode->SetControlHandleHi(gis_Geo,dirs_lo[idx]);
-					bnode->SetControlHandleLo(gis_Geo,dirs_hi[idx]);
-					if(tbnode)
-					{
-						tbnode->SetControlHandleHi(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
-						tbnode->SetControlHandleLo(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
-					}
-				}
-			}
-		}
-		node->SetParent(outer_ring, n);
-		if(anode)
-			anode->SetAttributes(mMarkings.value);
-		sprintf(buf,"Node %d",n+1);
-		node->SetName(buf);
-	}
-
+	dpol->IsNew();
 	*/
-	//--^NOT NEEDED?^----
 
-	archive->CommitCommand();
-/*
-	int idx;
-	WED_Thing * host = WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);;
-	if (host == NULL) return;
+	//From GroupCommands
+	char buf[1024];
+	if (GetFilePathFromUser(getFile_OpenImages, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
+	{
 
-	string cname = string("Create ") + kCreateCmds[mType];
+		Point2	coords[4];
+		double c[8];
 
-	GetArchive()->StartCommand(cname.c_str());
-
-	ISelection *	sel = WED_GetSelect(GetResolver());
-	if (mType != create_Hole)
-	sel->Clear();
-
-	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
-	int is_texed = 1;
-	
-	WED_Thing *	outer_ring = WED_Ring::CreateTyped(GetArchive());
-
-	static int n = 0;
-	++n;
-
-		if(is_texed)
 		{
-			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
-			outer_ring->SetParent(dpol,0);
-			dpol->SetParent(host,idx);
-			sprintf(buf,"Orthophoto %d",n);
-			dpol->SetName(stripped_resource(mResource.value));
-			sprintf(buf,"Polygon %d outer ring",n);
-			outer_ring->SetName(buf);
+			ImageInfo	inf;
+			int tif_ok=-1;
+
+			if (CreateBitmapFromDDS(buf,&inf) != 0)
+			if (CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB) != 0)
+#if USE_JPEG
+			if (CreateBitmapFromJPEG(buf,&inf) != 0)
+#endif
+#if USE_TIF
+			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
+#endif
+			if (CreateBitmapFromFile(buf,&inf) != 0)
+			{
+				#if ERROR_CHECK
+				better reporting
+				#endif
+				DoUserAlert("Unable to open image file.");
+				return;
+			}
+
+			double	nn,ss,ee,ww;
+			zoomer->GetPixelBounds(ww,ss,ee,nn);
+
+			Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+
+			double grow_x = 0.5*(ee-ww)/((double) inf.width);
+			double grow_y = 0.5*(nn-ss)/((double) inf.height);
+
+			double pix_w, pix_h;
+
+			if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+			else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+
+			coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+			coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+			coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+			coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+
+			DestroyBitmap(&inf);
+			//uncomment when dem_want_Area and FetchTIFF are fixing
+			int align = dem_want_Area;
+			if (tif_ok==0)
+			if (FetchTIFFCorners(buf, c, align))
+			{
+			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+			coords[3].x_ = c[0];
+			coords[3].y_ = c[1];
+			coords[0].x_ = c[2];
+			coords[0].y_ = c[3];
+			coords[2].x_ = c[4];
+			coords[2].y_ = c[5];
+			coords[1].x_ = c[6];
+			coords[1].y_ = c[7];
+			}
+			
+			WED_Thing * wrl = WED_GetWorld(in_Resolver);
+			ISelection * sel = WED_GetSelect(in_Resolver);
+
+			wrl->StartOperation("Create Tortho Image");
+			sel->Clear();
+			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
+			WED_OverlayImage * img = WED_OverlayImage::CreateTyped(wrl->GetArchive());
+			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+
+			p1->SetParent(rng,0);
+			p2->SetParent(rng,1);
+			p3->SetParent(rng,2);
+			p4->SetParent(rng,3);
+			rng->SetParent(dpol,0);
+			dpol->SetParent(wrl,0);
 			sel->Select(dpol);
-			dpol->SetResource(mResource.value);
+
+			p1->SetLocation(gis_Geo,coords[3]);
+			p2->SetLocation(gis_Geo,coords[2]);
+			p3->SetLocation(gis_Geo,coords[1]);
+			p4->SetLocation(gis_Geo,coords[0]);
+
+
+			string img_path(buf);
+			WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
+
+			dpol->SetResource(img_path);
+			
+			//img->SetImage(img_path);
+
+			p1->SetName("Corner 1");
+			p1->SetName("Corner 2");
+			p1->SetName("Corner 3");
+			p1->SetName("Corner 4");
+			rng->SetName("Image Boundary");
+			const char * p = buf;
+			const char * n = buf;
+			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+			
+			dpol->SetName(n);
+
+			p1->SetLocation(gis_UV,Point2(0,0));
+			p2->SetLocation(gis_UV,Point2(0,1));
+			p3->SetLocation(gis_UV,Point2(1,1));
+			p4->SetLocation(gis_UV,Point2(1,0));
+
+			wrl->CommitOperation();
 		}
+	}
 
 	/* really old code
 	WED_Thing	*	wrl = WED_GetWorld(in_resolver);

@@ -47,7 +47,7 @@ void		WED_DrapedOrthophoto::SetResource(const string& r)
 }
 
 
-bool WED_DrapedOrthophoto::IsOldOrNew()
+bool WED_DrapedOrthophoto::IsNew()
 {
 	//Find position
 	int pos = resource.value.find_last_of('.',resource.value.size());

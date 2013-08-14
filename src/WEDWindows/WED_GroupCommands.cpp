@@ -166,7 +166,7 @@ void	WED_DoUngroup(IResolver * inResolver)
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer, string * outBuf)
+void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 {
 	char buf[1024];
 	if (GetFilePathFromUser(getFile_OpenImages, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
@@ -269,7 +269,20 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer, str
 			rng->SetName("Image Boundary");
 			const char * p = buf;
 			const char * n = buf;
-			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+
+			//While p is not the null pointer (not the end of the of the char*)
+			while(*p)
+			{ 
+				//If the letter is special
+				if (*p == '/' || *p == ':' || *p == '\\')
+				{
+					//Advance n's pointer
+					n = p+1;
+				}
+				//Advance regardless
+				++p; 
+			}
+			//n is now just the file name
 			img->SetName(n);
 
 			p1->SetLocation(gis_UV,Point2(0,0));
@@ -280,7 +293,6 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer, str
 			wrl->CommitOperation();
 		}
 	}
-	outBuf->replace(0,outBuf->length(),buf);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------

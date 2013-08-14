@@ -288,7 +288,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			outer_ring->SetName(buf);
 			sel->Select(dpol);
 			dpol->SetResource(mResource.value);
-			dpol->IsOldOrNew();
 		}
 		else
 		{

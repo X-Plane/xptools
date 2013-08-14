@@ -13,7 +13,8 @@
 #include "WED_Archive.h"
 
 class IResolver;
+class WED_MapZoomerNew;
 
-void	WED_MakeOrthos(IResolver * in_resolver, string resource, WED_Archive * archive);
+void	WED_MakeOrthos(IResolver * in_resolver, WED_MapZoomerNew * zoomer/*, WED_Archive * archive*/);
 
 #endif /* WED_Orthophoto_h */

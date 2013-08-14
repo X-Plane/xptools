@@ -885,7 +885,10 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
 	
 	if(pol)		mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
-	if(orth)	mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
+	if(orth)	
+	{
+		mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
+	}
 	if(fac)		if(fac->GetShowLevel() <= mObjDensity) mPreviewItems.push_back(new preview_facade(fac,group_Objects));
 	if(forst)	
 #if AIRPORT_ROUTING

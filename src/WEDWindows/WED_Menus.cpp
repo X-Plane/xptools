@@ -119,7 +119,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
 {	"&Object Density",			0,	0,										0,	0					},
 {	"-",						0,	0,										0,	0					},
-//{	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
+{	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
 {	"Toggle Previe&w",			0,	0,										0,	wed_TogglePreview	},
