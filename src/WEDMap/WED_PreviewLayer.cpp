@@ -609,23 +609,120 @@ struct	preview_ortho : public preview_polygon {
 	preview_ortho(WED_DrapedOrthophoto * o, int l, IResolver * r) : preview_polygon(o,l,true), orth(o), resolver(r) { }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
+		glDisable(GL_CULL_FACE);
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
 		string vpath;
 		pol_info_t	pol_info;
-	
-		orth->GetResource(vpath);
-		if(rmgr->GetPol(vpath,pol_info))
+		
+		//If this ortho is new
+		if(orth->IsNew() == true)
 		{
-			Bbox2	bounds;
-			orth->GetBounds(gis_Geo,bounds);
-			Point2 centroid = Point2(
-				(bounds.xmin()+bounds.xmax())*0.5,
-				(bounds.ymin()+bounds.ymax())*0.5);
-			setup_pol_texture(tman, pol_info, 0.0, true, centroid, g, zoomer, mPavementAlpha);
+			g->SetState(false,0,false,false,false,false,false);
+//			glDisable(GL_CULL
+			/*GISLayer_t layer = gis_UV;
+			Bbox2 * box = new Bbox2();
+			Point2 * p1 = new Point2();
+			Point2 * p2 = new Point2();*/
+			vector<Point2> pts;
+			vector<int> is_hole_start;
+			PointSequenceToVector(orth->GetOuterRing(), zoomer, pts, has_uv, is_hole_start, 0);
+
+			/*IGISPointSequence * tempPointSq = orth->GetOuterRing();
+			tempPointSq->GetNthPoint(0)->GetLocation(layer,*p1);
+			tempPointSq->GetNthPoint(2)->GetLocation(layer,*p2);
+			
+			*p1 = zoomer->LLToPixel(*p1);
+			*p2 = zoomer->LLToPixel(*p2);
+			double bLX = p1->x();
+			double bRX = p2->x();
+			double tLX = p1->x();
+			double tRX = p2->x();
+
+			double bLY = p1->y();
+			double bRY = p1->y();
+			double tLY = p2->y();
+			double tRY = p2->y();
+
+			is_hole_start.push_back(0);
+			is_hole_start.push_back(0);
+			is_hole_start.push_back(0);
+			is_hole_start.push_back(0);
+			pts.push_back(*p2);
+			pts.push_back(*p1);*/
+			
+			
+			//glPolygon2(&*pts.begin(), has_uv,&*is_hole_start.begin(), pts.size() / (has_uv ? 2 : 1));
+			
+			glColor3f(1,1,0);
+			glLineWidth(100);
+			//glBegin(GL_POLYGON);
+			glFrontFace(GL_CCW);
+			glBegin(GL_POLYGON);
+				glVertex2f(pts.at(0).x(),pts.at(0).y());
+				glVertex2f(pts.at(2).x(),pts.at(2).y());
+				glVertex2f(pts.at(4).x(),pts.at(4).y());
+				glVertex2f(pts.at(6).x(),pts.at(6).y());
+			glEnd();
+			glFrontFace(GL_CW);
+			/*
+				glVertex2f(float(bLX),float(bLY));
+				glVertex2f(float(bRX),float(bRY));
+				//glVertex2f(800,800);
+				glVertex2f(float(tRX),float(tRY));
+				glVertex2f(float(tLX),float(tLY));
+			*/	
+			//glEnd();
+			//glLineWidth(1);
+			/*delete box;
+			delete p1;
+			delete p2;*/
+			
+			/*
+			string tempResource = "";
+			orth->GetResource(tempResource);
+			TexRef ref = tman->LookupTexture(tempResource.c_str(),false,tex_Linear|tex_Mipmap|tex_Rescale);
+			if(ref == NULL) 
+			{
+				return;
+			}
+			
+			int tex_id = tman->GetTexID(ref);
+
+			if (tex_id == 0)
+			{
+				g->SetState(false,0,false,true,true,false,false);
+				glColor3f(0.5,0.5,0.5);
+			}
+
+			g->SetState(false,1,false,false,false,false,false);
+			glColor3f(1,1,1);
+			g->BindTex(tex_id,0);
+
+			if(true)
+			{
+				glDisable(GL_TEXTURE_GEN_S);
+				glDisable(GL_TEXTURE_GEN_T);
+			}
 			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
-			kill_pol_texture();
-		}	
+			/*glDisable(GL_TEXTURE_GEN_S);
+			glDisable(GL_TEXTURE_GEN_T);*/
+		}
+		else
+		{
+			orth->GetResource(vpath);
+			if(rmgr->GetPol(vpath,pol_info))
+			{
+				Bbox2	bounds;
+				orth->GetBounds(gis_Geo,bounds);
+				Point2 centroid = Point2(
+					(bounds.xmin()+bounds.xmax())*0.5,
+					(bounds.ymin()+bounds.ymax())*0.5);
+				setup_pol_texture(tman, pol_info, 0.0, true, centroid, g, zoomer, mPavementAlpha);
+				preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+				kill_pol_texture();
+			}
+		}
 	}
 };
 

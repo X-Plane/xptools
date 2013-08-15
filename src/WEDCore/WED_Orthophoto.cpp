@@ -244,14 +244,14 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Ar
 			if (FetchTIFFCorners(buf, c, align))
 			{
 			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-			coords[3].x_ = c[0];
-			coords[3].y_ = c[1];
-			coords[0].x_ = c[2];
-			coords[0].y_ = c[3];
-			coords[2].x_ = c[4];
-			coords[2].y_ = c[5];
-			coords[1].x_ = c[6];
-			coords[1].y_ = c[7];
+				coords[3].x_ = c[0];
+				coords[3].y_ = c[1];
+				coords[0].x_ = c[2];
+				coords[0].y_ = c[3];
+				coords[2].x_ = c[4];
+				coords[2].y_ = c[5];
+				coords[1].x_ = c[6];
+				coords[1].y_ = c[7];
 			}
 			
 			WED_Thing * wrl = WED_GetWorld(in_Resolver);
@@ -260,7 +260,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Ar
 			wrl->StartOperation("Create Tortho Image");
 			sel->Clear();
 			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
-			WED_OverlayImage * img = WED_OverlayImage::CreateTyped(wrl->GetArchive());
+
 			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
@@ -285,8 +285,6 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Ar
 			WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
 
 			dpol->SetResource(img_path);
-			
-			//img->SetImage(img_path);
 
 			p1->SetName("Corner 1");
 			p1->SetName("Corner 2");
@@ -307,54 +305,4 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Ar
 			wrl->CommitOperation();
 		}
 	}
-
-	/* really old code
-	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
-	ISelection * sel = WED_GetSelect(in_resolver);
-	
-	vector<IGISEntity *>	entities;	
-	sel->IterateSelectionOr(Iterate_CollectEntities,&entities);
-	if(entities.empty()) return;
-
-	bool	skip = false;
-	bool	any = false;
-//	Polygon_set_2 all;
-	//Polygon_set_2 ent;
-	for(vector<IGISEntity *>::iterator e = entities.begin(); e != entities.end(); ++e)
-	{
-		/*if (!WED_PolygonSetForEntity(*e, ent))
-			skip = true;
-		else
-			any = true;
-		all.join(ent);
-	}
-	
-	if (/*!all.is_empty()true)
-	{
-		wrl->StartCommand("Make orthophotos");
-		// Ben says: if the user has selected an overlay image itself, we are going to start our hierarchy traversal at THAT IMAGE,
-		// ensuring that we only spit out one draped polygon for that overlay.  
-		// This prevents the problem where, when two overlays are overlapped, WED creates the unnecessary overlap fragments of both.
-		// In the overlap case we have to assume that if the user is selecting images one at a time then he or she wants overlapping square
-		// draped polygons.
-		// If the selection isn't exactly one overlay image, then start the traversal at the entire world, so that we pick up ANY overlay
-		// that coincides with the area the user has selected.
-		WED_OverlayImage * sel_over = NULL;
-		if(entities.size() == 1)
-			sel_over = SAFE_CAST(WED_OverlayImage,entities[0]);
-		//int num_made = cut_for_image(sel_over ? sel_over : wrl, 100, wrl, WED_GetResourceMgr(in_resolver));
-		if(num_made == 0)
-		{
-			wrl->AbortCommand();
-			DoUserAlert("None of the selected polygons overlap orthophotos.");
-		}
-		else
-		{
-			wrl->CommitCommand();
-			//if(skip) 
-/*				DoUserAlert("Some selected polygons were ignored because they contain bezier curves - you can only cut non-curved orthophotos.");
-		//}
-	} else 
-		DoUserAlert("No orthophotos were created because the selection contains no non-curved polygons.");		*/
-	
 }
