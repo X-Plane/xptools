@@ -23,6 +23,9 @@
 
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
 #if IBM
 #include "GUI_Unicode.h"
 #endif
@@ -225,3 +228,40 @@ int FILE_make_dir_exist(const char * in_dir)
 	return result;
 }
 
+int FILE_date_cmpr(const char * first, const char * second)
+{
+//Inspired by http://msdn.microsoft.com/en-us/library/14h5k7ff.aspx
+#if IBM 
+	struct _stat firstFile;
+	struct _stat secondFile;
+	int error1;
+	int error2;
+	char buf[26];
+
+	error1 = _stat(first,&firstFile);
+	error2 = _stat(second,&secondFile);
+
+	if(error1 != 0)
+	{
+		return error;
+	}
+	else
+	{
+		//If first is newer
+		if(firstFile.st_mtime > secondFile.st_mtime || error2 !=0)
+		{
+			return firstIsNew;
+		}
+		if(firstFile.st_mtime < secondFile.st_mtime)
+		{
+			return secondIsNew;
+		}
+		if(firstFile.st_mtime == secondFile.st_mtime)
+		{
+			return same;
+		}
+		return error;
+	}
+
+#endif
+}

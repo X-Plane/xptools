@@ -37,6 +37,13 @@ private:
 	FILE_case_correct_path& operator=(const FILE_case_correct_path& rhs);
 };
 
+enum
+{
+	firstIsNew = -1,
+	secondIsNew = 1,
+	same = 0,
+	error = -2
+};
 //Returns true if the file exists, returns false if it doesn't
 bool FILE_exists(const char * path);
 int FILE_delete_file(const char * nuke_path, int is_dir);
@@ -45,6 +52,13 @@ int FILE_make_dir(const char * in_dir);
 
 int FILE_make_dir_exist(const char * in_dir);
 
+/* Pass in a file path for the first and second file
+* Return 1: The second file is more updated that the first
+* Return 0: Both files have the same timestamp
+* Return -1: The first file is more current than the second or the second does not exist
+* Return -2: There's been an error
+*/
+int FILE_date_cmpr(const char * first, const char * second);
 int FILE_case_correct(char * buf);
 
 #endif

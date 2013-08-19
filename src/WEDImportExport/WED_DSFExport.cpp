@@ -1251,7 +1251,8 @@ static int	DSF_ExportTileRecursive(
 		//-----------------
 		string absPathPOL = absPathIMG;
 		absPathPOL.replace(absPathPOL.length()-3,3,"pol");
-		
+
+		int date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 		//-----------------
 		/* How to export a Torthoptho
 		* Create a Bitmap from whatever file format is being used
@@ -1266,7 +1267,7 @@ static int	DSF_ExportTileRecursive(
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			ImageInfo imgInfo;
 
-			if(strcasecmp(resrcEnd.c_str(),".tif")==0)
+			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == firstIsNew)
 			{
 				if(!CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo))
 				{
@@ -1294,19 +1295,19 @@ static int	DSF_ExportTileRecursive(
 				}
 			}
 			//------------------For when this gets implemented, other images to repeat the above process^
-			else if(strcasecmp(resrcEnd.c_str(),".png")==0)
+			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == firstIsNew)
 			{
 				CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
 			}
-			else if(strcasecmp(resrcEnd.c_str(),".jpeg")==0 || strcasecmp(resrcEnd.c_str(),".jpg")==0)
+			else if((strcasecmp(resrcEnd.c_str(),".jpeg")==0 || strcasecmp(resrcEnd.c_str(),".jpg")==0) && date_cmpr_res == firstIsNew)
 			{
 				CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
 			}
-			else if(strcasecmp(resrcEnd.c_str(),".bmp")==0)
+			else if(strcasecmp(resrcEnd.c_str(),".bmp")==0 && date_cmpr_res == firstIsNew)
 			{
 				CreateBitmapFromFile(absPathIMG.c_str(),&imgInfo);
 			}
-			else if(strcasecmp(resrcEnd.c_str(),".dds")==0)
+			else if(strcasecmp(resrcEnd.c_str(),".dds")==0 && date_cmpr_res == firstIsNew)
 			{
 				//CreateBitmapFromDDS(absPath.c_str(),&imgInfo);
 			}
