@@ -266,11 +266,12 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Ar
 			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-
-			p1->SetParent(rng,0);
-			p2->SetParent(rng,1);
-			p3->SetParent(rng,2);
-			p4->SetParent(rng,3);
+			
+			p4->SetParent(rng,0);
+			p3->SetParent(rng,1);
+			p2->SetParent(rng,2);
+			p1->SetParent(rng,3);
+			
 			rng->SetParent(dpol,0);
 			dpol->SetParent(wrl,0);
 			sel->Select(dpol);

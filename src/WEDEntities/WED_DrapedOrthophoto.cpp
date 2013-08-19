@@ -47,7 +47,7 @@ void		WED_DrapedOrthophoto::SetResource(const string& r)
 }
 
 
-bool WED_DrapedOrthophoto::IsNew()
+bool WED_DrapedOrthophoto::IsNew(string * out_suffix) 
 {
 	//Find position
 	int pos = resource.value.find_last_of('.',resource.value.size());
@@ -59,6 +59,11 @@ bool WED_DrapedOrthophoto::IsNew()
 	
 	if(testString != ".pol")
 	{
+		
+		if(out_suffix != NULL)
+		{
+			*out_suffix = testString;
+		}
 		//it is new, therefore true
 		return true;
 	}

@@ -29,7 +29,8 @@ class	IResolver;
 class	ILibrarian;
 class	WED_Thing;
 
-void DSF_Export(WED_Group * base, ILibrarian * in_package, set<WED_Thing *>& problem_items);
+//You will need the IResolver in case you're handling a Torthophoto
+void DSF_Export(WED_Group * base, ILibrarian * in_package, IResolver * resolver, set<WED_Thing *>& problem_items);
 
 int		WED_CanExportPack(IResolver * resolver);
 void	WED_DoExportPack(IResolver * resolver);

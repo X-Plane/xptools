@@ -52,7 +52,7 @@ class	WED_LibraryMgr;
 struct	XObj8;
 
 struct	pol_info_t {
-	string		base_tex;
+	string		base_tex; //Relative path
 	float		proj_s;
 	float		proj_t;
 	bool		kill_alpha;
@@ -93,7 +93,9 @@ public:
 
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
-			void	MakePol(const string& path, const pol_info_t& out_info);
+
+			//path is a RELATIVE PATH
+			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
 			bool	GetObj(const string& path, XObj8 *& obj);
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING
