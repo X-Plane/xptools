@@ -1235,7 +1235,7 @@ static int	DSF_ExportTileRecursive(
 		//Get the relative path
 		orth->GetResource(r);
 
-		//Various Strings
+		//Various Strings, it may be a lot but it ensures one never get confused
 		//-----------------
 		string relativePathDDS = r;
 		relativePathDDS.replace(relativePathDDS.length()-3,3,"dds");
@@ -1251,6 +1251,7 @@ static int	DSF_ExportTileRecursive(
 		//-----------------
 		string absPathPOL = absPathIMG;
 		absPathPOL.replace(absPathPOL.length()-3,3,"pol");
+		
 		//-----------------
 		/* How to export a Torthoptho
 		* Create a Bitmap from whatever file format is being used
@@ -1258,7 +1259,7 @@ static int	DSF_ExportTileRecursive(
 		* Create the .pol with the file format in mind
 		* Enjoy your new Torthophoto
 		*/
-
+		//File extenstion
 		string resrcEnd = "";
 		if(orth->IsNew(&resrcEnd) == true)
 		{
@@ -1285,7 +1286,6 @@ static int	DSF_ExportTileRecursive(
 						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
      
 						MakeMipmapStack(&smaller);
-						//absPath.replace(absPath.length()-3,3,"dds");
 						WriteBitmapToDDS(smaller, 5, absPathDDS.c_str(), 1);
 						DestroyBitmap(&smaller);
 					}
@@ -1293,6 +1293,7 @@ static int	DSF_ExportTileRecursive(
 					DestroyBitmap(&imgInfo);
 				}
 			}
+			//------------------For when this gets implemented, other images to repeat the above process^
 			else if(strcasecmp(resrcEnd.c_str(),".png")==0)
 			{
 				CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
@@ -1309,6 +1310,7 @@ static int	DSF_ExportTileRecursive(
 			{
 				//CreateBitmapFromDDS(absPath.c_str(),&imgInfo);
 			}
+			//-------------------
 
 			//Find most reduced path
 			const char * p = relativePathDDS.c_str();

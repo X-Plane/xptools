@@ -618,19 +618,25 @@ struct	preview_ortho : public preview_polygon {
 		//If this ortho is new
 		if(orth->IsNew() == true)
 		{
+			//Set the graph state to default
 			g->SetState(false,0,false,false,false,false,false);
+			//Get the ring's points
 			vector<Point2> pts;
 			vector<int> is_hole_start;
 			PointSequenceToVector(orth->GetOuterRing(), zoomer, pts, has_uv, is_hole_start, 0);
 
+			//Get the resource string and look it up
 			string tempResource = "";
 			orth->GetResource(tempResource);
 			TexRef ref = tman->LookupTexture(tempResource.c_str(),false,tex_Linear|tex_Mipmap|tex_Rescale);
+			
+			//If there is no texture exit early
 			if(ref == NULL) 
 			{
 				return;
 			}
 			
+			//Get the tex_id
 			int tex_id = tman->GetTexID(ref);
 
 			if (tex_id == 0)
@@ -640,6 +646,7 @@ struct	preview_ortho : public preview_polygon {
 			}
 			else
 			{
+				//Set up the texture
 				g->SetState(false,1,false,true,true,false,false);
 				glColor3f(1,1,1);
 				g->BindTex(tex_id,0);
@@ -654,6 +661,7 @@ struct	preview_ortho : public preview_polygon {
 		}
 		else
 		{
+			//Code for use with current polygon tool creation style
 			orth->GetResource(vpath);
 			if(rmgr->GetPol(vpath,pol_info))
 			{

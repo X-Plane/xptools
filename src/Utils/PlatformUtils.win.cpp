@@ -64,13 +64,6 @@ int		GetFilePathFromUser(
 		return (result) ? 1 : 0;
 	case getFile_OpenImages:
 		ofn.lStructSize = sizeof(ofn);
-		/*An easier to use workspace than trying to work on the filter all in one line
-		string geoTiff = "GeoTiff (*.tif)\0*.tif\0";
-		string png = "PNG (*.png)\0*.png\0";
-		string jpeg = "JPEG (*.jpeg)\0*.jpeg;*.jpg\0";
-		string bmp = "BMP (*.bmp)\0*.bmp\0";
-		string dds = "DDS (*.dds)\0*.dds\0";
-		*/
 		ofn.lpstrFilter = "GeoTiff (*.tif)\0*.tif\0PNG (*.png)\0*.png\0JPEG (*.jpg, *.jpeg)\0*.jpg;*.jpeg\0BMP (*.bmp)\0*.bmp\0DDS (*.dds)\0*.dds\0\0\0";
 		ofn.nFilterIndex = 1;	// Start with .acf files
 		ofn.lpstrFile = outFileName;

@@ -141,56 +141,9 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 
 #endif
 
-void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Archive * archive*/)
+void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 {		
-	/* From CreatePolyGone
-	char buf[256];
-
-	int idx;
-	WED_Thing * host = WED_GetCreateHost(in_resolver, 0, idx);
-	if (host == NULL) return;
-
-	string cname = string("Create Torthophoto");
-
-	//danger breaks it all! 
-	archive->StartCommand(cname.c_str());
-
-	ISelection * sel = WED_GetSelect(in_resolver);
-	sel->Clear();
-	
-	//WED_Thing *	outer_ring;
-
-	//outer_ring = WED_Ring::CreateTyped(archive);
-
-	//static int n = 0;
-	//++n;
-
-	//WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(archive);
-	
-	outer_ring->SetParent(dpol,0);
-		
-	dpol->SetParent(host,idx);
-	
-	sprintf(buf,"Orthophoto %d",n);
-		
-	//stripped_resource---------------------
-	string stripped(resource);
-	string::size_type p = stripped.find_last_of("/\\:");
-
-	if(p != stripped.npos)
-	{
-		stripped.erase(0,p+1);
-	}
-
-	dpol->SetName(stripped);
-	//sprintf(buf,"Polygon %d outer ring",n);
-	outer_ring->SetName(buf);
-	sel->Select(dpol);
-	dpol->SetResource(stripped);
-	dpol->IsNew();
-	*/
-
-	//From GroupCommands
+	//From GroupCommands-WED_DoMakeNewOverlay(...)
 	char buf[1024];
 	if (GetFilePathFromUser(getFile_OpenImages, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
 	{
@@ -257,7 +210,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer/*, WED_Ar
 			WED_Thing * wrl = WED_GetWorld(in_Resolver);
 			ISelection * sel = WED_GetSelect(in_Resolver);
 
-			wrl->StartOperation("Create Tortho Image");
+			wrl->StartOperation("Create Ortho Image");
 			sel->Clear();
 			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
 

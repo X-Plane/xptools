@@ -324,11 +324,7 @@ int	WED_DocumentWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags in
 int	WED_DocumentWindow::HandleCommand(int command)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
-	//char prePreBuf[1024];
-	//char* preBuf=&prePreBuf;
-	//char **buf= preBuf;
-	string preStrRef="test";
-	string *strRef = &preStrRef;
+
 	switch(command) {
 	case wed_RestorePanes:
 		{
@@ -399,7 +395,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
-		mMapPane->Map_HandleCommand(command/*,mDocument->GetArchive()*/);
+		mMapPane->Map_HandleCommand(command);
 		return 1;
 #if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
@@ -426,7 +422,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		}
 		return 1;
 #endif
-	default: return mMapPane->Map_HandleCommand(command/*,mDocument->GetArchive()*/);	break;
+	default: return mMapPane->Map_HandleCommand(command);	break;
 	}
 	return 0;
 }

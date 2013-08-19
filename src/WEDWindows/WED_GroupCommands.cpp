@@ -171,7 +171,6 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 	char buf[1024];
 	if (GetFilePathFromUser(getFile_OpenImages, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
 	{
-
 		Point2	coords[4];
 		double c[8];
 

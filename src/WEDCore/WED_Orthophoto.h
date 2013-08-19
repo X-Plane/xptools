@@ -15,6 +15,6 @@
 class IResolver;
 class WED_MapZoomerNew;
 
-void	WED_MakeOrthos(IResolver * in_resolver, WED_MapZoomerNew * zoomer/*, WED_Archive * archive*/);
+void	WED_MakeOrthos(IResolver * in_resolver, WED_MapZoomerNew * zoomer);
 
 #endif /* WED_Orthophoto_h */
