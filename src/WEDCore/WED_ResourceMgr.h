@@ -59,6 +59,10 @@ struct	pol_info_t {
 	bool		wrap;
 	string		group;
 	int			group_offset;
+	float		latitude;
+	float		longitude;
+	double		height_Meters;
+	int			ddsHeight_Pxls;
 };
 
 struct	fac_info_t {

@@ -56,7 +56,7 @@
 #include "IResolver.h"
 #include "WED_ResourceMgr.h"
 #include "BitMapUtils.H"
-
+#include "GISUtils.h"
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
 // a full 0.5 degrees of 'extra'.  But...that's a LOT more than we
@@ -84,11 +84,11 @@ int zip_printf(void * fi, const char * fmt, ...)
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 // stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
-inline int	latlon_bucket(int p)
+/*inline int	latlon_bucket(int p)
 {
 	if (p > 0) return (p / 10) * 10;
 	else return ((-p + 9) / 10) * -10;
-}
+}*/
 
 
 template <class __Iterator>
@@ -1269,14 +1269,16 @@ static int	DSF_ExportTileRecursive(
 
 			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == firstIsNew)
 			{
+				int inWidth = 1;
+				int inHeight = 1;
+				
 				if(!CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo))
 				{
 					ImageInfo smaller;
 
-					int inWidth = 1;
 					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
 						
-					int inHeight = 1;
+					
 					while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
 
 					if (!CreateNewBitmap(inWidth,inHeight, 4, &smaller))
@@ -1293,6 +1295,26 @@ static int	DSF_ExportTileRecursive(
 
 					DestroyBitmap(&imgInfo);
 				}
+
+								//-------------------
+				//-------------------Information for the .pol
+				//Find most reduced path
+				const char * p = relativePathDDS.c_str();
+				const char * n = relativePathDDS.c_str();
+				while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+
+			
+				Point2 p1;
+				Point2 p2;
+				orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
+				orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
+			
+				float centerLat = (p2.y() + p1.y())/2;
+				float centerLon = (p2.x() + p1.x())/2;
+				//-------------------------------------------
+				pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
+					/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
+				rmgr->MakePol(relativePathPOL.c_str(),out_info);
 			}
 			//------------------For when this gets implemented, other images to repeat the above process^
 			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == firstIsNew)
@@ -1311,14 +1333,7 @@ static int	DSF_ExportTileRecursive(
 			{
 				//CreateBitmapFromDDS(absPath.c_str(),&imgInfo);
 			}
-			//-------------------
 
-			//Find most reduced path
-			const char * p = relativePathDDS.c_str();
-			const char * n = relativePathDDS.c_str();
-			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
-			pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0};
-			rmgr->MakePol(relativePathPOL.c_str(),out_info);
 		}
 
 		idx = io_table.accum_pol(relativePathPOL,show_level);
