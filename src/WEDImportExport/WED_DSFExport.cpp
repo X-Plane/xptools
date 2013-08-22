@@ -1296,7 +1296,6 @@ static int	DSF_ExportTileRecursive(
 					DestroyBitmap(&imgInfo);
 				}
 
-								//-------------------
 				//-------------------Information for the .pol
 				//Find most reduced path
 				const char * p = relativePathDDS.c_str();

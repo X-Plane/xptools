@@ -64,7 +64,7 @@ enum {
 	getFile_Open,
 	getFile_Save,
 	getFile_PickFolder,
-	getFile_OpenImages //Only allows supported image types to be chosen
+	getFile_OpenImages //Only allows supported image types to be chosen, windows only
 };
 int		GetFilePathFromUser(
 					int					inType,
