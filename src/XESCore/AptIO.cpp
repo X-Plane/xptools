@@ -1109,7 +1109,7 @@ static void OGL_push_quad(AptInfo_t *		io_airport, float r, float g, float b, co
 static void CalcPavementBezier(AptInfo_t * io_airport, AptPolygon_t * poly, float r, float  g, float b, float simp)
 {
 	vector<vector<Bezier2> >	windings;
-	AptPolygonToBezier(*poly, windings);
+	AptPolygonToBezier(*poly, windings,true);
 
 	for(vector<vector<Bezier2> >::iterator w = windings.begin(); w != windings.end(); ++w)
 	{
@@ -1218,7 +1218,7 @@ void	GenerateOGL(AptInfo_t * a)
 		CalcPavementBezier(&*a, &t->area,0.5,0.5,1.0,0.0);
 
 	for(AptBoundaryVector::iterator b = a->boundaries.begin(); b != a->boundaries.end(); ++b)
-		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,0.0);
+		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,1.0);
 
 	for(AptRunwayVector::iterator r = a->runways.begin(); r != a->runways.end(); ++r)
 		CalcPavementOGL(a, r->ends,
