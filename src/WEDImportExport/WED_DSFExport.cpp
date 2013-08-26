@@ -1401,7 +1401,8 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 	if(who->GetClass() == WED_Airport::sClass)
 	{
 		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-
+		if(apt->GetHidden())
+			return 1;
 
 		//----------------------------------------------------------------------------------------------------
 
@@ -1500,6 +1501,10 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 	}
 	else if(who->GetClass() == WED_Group::sClass)
 	{
+		WED_Group * g = dynamic_cast<WED_Group *>(who);
+		if(g && g->GetHidden())
+			return 1;
+			
 		int n = who->CountChildren();
 		for(int i = 0; i < n; ++i)
 		{

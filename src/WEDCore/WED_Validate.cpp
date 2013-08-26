@@ -99,6 +99,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	int i;
 	who->GetName(name);
 	string msg;
+	
+	// Don't validate hidden stuff - we won't export it!
+	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
+	if(ee && ee->GetHidden())
+		return NULL;
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR GENERAL APT.DAT BOGUSNESS
