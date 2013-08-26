@@ -389,7 +389,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 							GetZoomer()->XPixelToLon(inX),
 							GetZoomer()->YPixelToLat(inY));
 
-			ProcessSelectionRecursive(ent_base, bounds, sel_set);
+			ProcessSelectionRecursive(ent_base, bounds, sel_set, true);
 			if(op) op->StartOperation("Change Selection");
 
 			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
@@ -425,7 +425,8 @@ doc and clean this
 int		WED_HandleToolBase::ProcessSelectionRecursive(
 									IGISEntity *		entity,
 									const Bbox2&		bounds,
-									set<IGISEntity *>&	result)
+									set<IGISEntity *>&	result,
+									bool				is_root)
 {
 	int pt_sel = bounds.is_point();
 	Point2	psel = bounds.p1;
@@ -475,42 +476,43 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 		{
 			int count = com->GetNumEntities();
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
+				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result,false) && pt_sel) return 1;
 		}
 		else if (seq)
 		{
 			int count = seq->GetNumPoints();
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
+				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result,false) && pt_sel) return 1;
 		}
 		else if(poly)
 		{
 			int count = poly->GetNumHoles();
-			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
+			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result,false) && pt_sel) return 1;
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
+				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result,false) && pt_sel) return 1;
 		}
 		break;
 	case ent_AtomicOrContainer:
-		if (!pt_sel && entity->WithinBox(gis_Geo,bounds)) result.insert(entity);
+		if (!pt_sel && entity->WithinBox(gis_Geo,bounds) && !is_root)	// Do NOT select a folder if it is the world!
+			result.insert(entity);
 		else if (com)
 		{
 			int count = com->GetNumEntities();
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result) && pt_sel) return 1;
+				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result,false) && pt_sel) return 1;
 		}
 		else if (seq)
 		{
 			int count = seq->GetNumPoints();
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result) && pt_sel) return 1;
+				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result,false) && pt_sel) return 1;
 		}
 		else if (poly)
 		{
 			int count = poly->GetNumHoles();
-			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result) && pt_sel) return 1;
+			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result,false) && pt_sel) return 1;
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result) && pt_sel) return 1;
+				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result,false) && pt_sel) return 1;
 		}
 		if (pt_sel && entity->PtWithin(gis_Geo,psel))				{ result.insert(entity); return 1; }
 		if (pt_sel && entity->PtOnFrame(gis_Geo,psel, frame_dist))  { result.insert(entity); return 1; }
@@ -578,7 +580,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 								GetZoomer()->XPixelToLon(inX),
 								GetZoomer()->YPixelToLat(inY));
 
-				ProcessSelectionRecursive(ent_base, bounds, sel_set);
+				ProcessSelectionRecursive(ent_base, bounds, sel_set,true);
 
 				sel->Clear();
 				for (vector<ISelectable *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
