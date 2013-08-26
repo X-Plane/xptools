@@ -1252,7 +1252,7 @@ static int	DSF_ExportTileRecursive(
 		string absPathPOL = absPathIMG;
 		absPathPOL.replace(absPathPOL.length()-3,3,"pol");
 
-		int date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
+		date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 		//-----------------
 		/* How to export a Torthoptho
 		* Create a Bitmap from whatever file format is being used
@@ -1267,7 +1267,7 @@ static int	DSF_ExportTileRecursive(
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			ImageInfo imgInfo;
 
-			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == firstIsNew)
+			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == dcr_firstIsNew)
 			{
 				int inWidth = 1;
 				int inHeight = 1;
@@ -1316,19 +1316,19 @@ static int	DSF_ExportTileRecursive(
 				rmgr->MakePol(relativePathPOL.c_str(),out_info);
 			}
 			//------------------For when this gets implemented, other images to repeat the above process^
-			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == firstIsNew)
+			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == dcr_firstIsNew)
 			{
 				CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
 			}
-			else if((strcasecmp(resrcEnd.c_str(),".jpeg")==0 || strcasecmp(resrcEnd.c_str(),".jpg")==0) && date_cmpr_res == firstIsNew)
+			else if((strcasecmp(resrcEnd.c_str(),".jpeg")==0 || strcasecmp(resrcEnd.c_str(),".jpg")==0) && date_cmpr_res == dcr_firstIsNew)
 			{
 				CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
 			}
-			else if(strcasecmp(resrcEnd.c_str(),".bmp")==0 && date_cmpr_res == firstIsNew)
+			else if(strcasecmp(resrcEnd.c_str(),".bmp")==0 && date_cmpr_res == dcr_firstIsNew)
 			{
 				CreateBitmapFromFile(absPathIMG.c_str(),&imgInfo);
 			}
-			else if(strcasecmp(resrcEnd.c_str(),".dds")==0 && date_cmpr_res == firstIsNew)
+			else if(strcasecmp(resrcEnd.c_str(),".dds")==0 && date_cmpr_res == dcr_firstIsNew)
 			{
 				//CreateBitmapFromDDS(absPath.c_str(),&imgInfo);
 			}

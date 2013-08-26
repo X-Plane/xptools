@@ -37,12 +37,12 @@ private:
 	FILE_case_correct_path& operator=(const FILE_case_correct_path& rhs);
 };
 
-enum
+enum date_cmpr_result_t
 {
-	firstIsNew = -1,
-	secondIsNew = 1,
-	same = 0,
-	error = -2
+	dcr_firstIsNew = -1,
+	dcr_secondIsNew = 1,
+	dcr_same = 0,
+	dcr_error = -2
 };
 //Returns true if the file exists, returns false if it doesn't
 bool FILE_exists(const char * path);
@@ -58,7 +58,7 @@ int FILE_make_dir_exist(const char * in_dir);
 * Return -1: The first file is more current than the second or the second does not exist
 * Return -2: There's been an error
 */
-int FILE_date_cmpr(const char * first, const char * second);
+date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second);
 int FILE_case_correct(char * buf);
 
 #endif

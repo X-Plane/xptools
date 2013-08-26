@@ -228,7 +228,7 @@ int FILE_make_dir_exist(const char * in_dir)
 	return result;
 }
 
-int FILE_date_cmpr(const char * first, const char * second)
+date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second)
 {
 //Inspired by http://msdn.microsoft.com/en-us/library/14h5k7ff.aspx
 #if IBM 
@@ -236,31 +236,60 @@ int FILE_date_cmpr(const char * first, const char * second)
 	struct _stat secondFile;
 	int error1;
 	int error2;
-	char buf[26];
 
 	error1 = _stat(first,&firstFile);
 	error2 = _stat(second,&secondFile);
 
 	if(error1 != 0)
 	{
-		return error;
+		return dcr_error;
 	}
 	else
 	{
 		//If first is newer
 		if(firstFile.st_mtime > secondFile.st_mtime || error2 !=0)
 		{
-			return firstIsNew;
+			return dcr_firstIsNew;
 		}
 		if(firstFile.st_mtime < secondFile.st_mtime)
 		{
-			return secondIsNew;
+			return dcr_secondIsNew;
 		}
 		if(firstFile.st_mtime == secondFile.st_mtime)
 		{
-			return same;
+			return dcr_same;
 		}
-		return error;
+		return dcr_error;
+	}
+#else
+	struct stat firstFile;
+	struct stat secondFile;
+	int error1;
+	int error2;
+
+	error1 = stat(first,&firstFile);
+	error2 = stat(second,&secondFile);
+
+	if(error1 != 0)
+	{
+		return dcr_error;
+	}
+	else
+	{
+		//If first is newer
+		if(firstFile.st_mtime > secondFile.st_mtime || error2 !=0)
+		{
+			return dcr_firstIsNew;
+		}
+		if(firstFile.st_mtime < secondFile.st_mtime)
+		{
+			return dcr_secondIsNew;
+		}
+		if(firstFile.st_mtime == secondFile.st_mtime)
+		{
+			return dcr_same;
+		}
+		return dcr_error;
 	}
 
 #endif
