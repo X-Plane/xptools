@@ -1423,6 +1423,7 @@ int		RF_MapView::MouseDown(int x, int y, int button)
 
 	mOldX = x;
 	mOldY = y;
+	return 0;
 }
 
 void	RF_MapView::MouseDrag(int x, int y, int button)

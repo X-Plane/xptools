@@ -481,10 +481,21 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 
 		double l1 = LonLatDistMeters(GetZoomer()->XPixelToLon(xMin), GetZoomer()->YPixelToLat(yMin), GetZoomer()->XPixelToLon(xMax), GetZoomer()->YPixelToLat(yMin));
 		double l2 = LonLatDistMeters(GetZoomer()->XPixelToLon(xMin), GetZoomer()->YPixelToLat(yMin), GetZoomer()->XPixelToLon(xMin), GetZoomer()->YPixelToLat(yMax));
-		double d = LonLatDistMeters(GetZoomer()->XPixelToLon(mMouseStartX), GetZoomer()->YPixelToLat(mMouseStartY), GetZoomer()->XPixelToLon(mMouseX), GetZoomer()->YPixelToLat(mMouseY));
 		double a = l1 * l2;
+		
+		double h, d;
+		Point2	ends[2] = {
+			Point2(
+				GetZoomer()->XPixelToLon(mMouseStartX), 
+				GetZoomer()->YPixelToLat(mMouseStartY)),
+			Point2(
+				GetZoomer()->XPixelToLon(mMouseX), 
+				GetZoomer()->YPixelToLat(mMouseY)) 
+		};
+		Point2 ctr;
+		Quad_2to1(ends, ctr, h, d);
 
-		n += sprintf(buf+n, "%dm %dmx%dm=%d sq m ", (int) d, (int) l1, (int) l2, (int) a);
+		n += sprintf(buf+n, "%dm (%d) %dmx%dm=%d sq m ", (int) d, (int) h, (int) l1, (int) l2, (int) a);
 
 		if (gDem.count(dem_Elevation) != 0)
 		{

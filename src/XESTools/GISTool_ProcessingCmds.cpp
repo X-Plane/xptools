@@ -53,8 +53,23 @@
 #include "MapHelpers.h"
 #include "ForestTables.h"
 
+// Hack to avoid forest pre-processing - to be used to speed up --instobjs for testing AG algos when
+// we don't NEED good forest fill.
+#define DEBUG_FAST_SKIP_FORESTS 0
+
+// Experimental code to homogenize forests - leave off!
 #define NO_FOREST_TYPES 0
+
+// Debug visualization of forest polygons...
 #define DEBUG_SHOW_FOREST_POLYS 0
+
+#if !DEV
+#if DEBUG_FAST_SKIP_FORESTS || NO_FOREST_TYPES || DEBUG_SHOW_FOREST_POLYS
+	#error debug options were left on in a release build ... not good!
+#endif
+#endif
+
+
 
 bool pred_want_ag(CDT::Face_handle f)
 {
@@ -263,13 +278,16 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	const DEMGeo& forests(gDem[dem_ForestType]);
 #endif	
 
+	ForestIndex								forest_index;
+
+#if !DEBUG_FAST_SKIP_FORESTS
+
 	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, 2, NO_VALUE, forest_stands,NULL,false);
 	SimplifyMap(gMap, false, gProgress);
 
 	arrangement_simplifier<Pmwx> simplifier;
 	simplifier.simplify(forest_stands, 0.003, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
 
-	ForestIndex								forest_index;
 	vector<ForestIndex::item_type>			forest_faces;
 	forest_faces.reserve(forest_stands.number_of_faces());
 	
@@ -289,6 +307,7 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	forest_index.insert(forest_faces.begin(),forest_faces.end());
 	forest_faces.clear();
 	trim(forest_faces);
+#endif	
 	
 	#if DEBUG_SHOW_FOREST_POLYS
 	for(Pmwx::Edge_iterator e = forest_stands.edges_begin(); e != forest_stands.edges_end(); ++e)

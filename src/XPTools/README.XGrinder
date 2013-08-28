@@ -8,6 +8,8 @@
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
+Version 1.1
+	- Files grind even if the file suffix is uppercase.
 Version 1.0r1 2/18/12
 Version 1.0b1 3/11/08
 	- Initial Release

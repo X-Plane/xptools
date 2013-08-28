@@ -218,10 +218,10 @@ void XWin::Update(XContext ctx)
 
 void XWin::SetTitle(const char * inTitle)
 {
-	setWindowTitle(inTitle);
+	setWindowTitle(QString::fromUtf8(inTitle));
 }
 
-void			XWin::SetFilePath(const char * inPath,bool modified)
+void XWin::SetFilePath(const char * inPath,bool modified)
 {
 }
 

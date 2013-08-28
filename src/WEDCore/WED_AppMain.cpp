@@ -201,6 +201,15 @@ int main(int argc, char * argv[])
 
 	start->ShowMessage(string());
 	setlocale(LC_ALL,"C");
+	#if LIN
+	//TODO:mroe: maybe we can set this to LC_ALL for all other OS's .
+	//In the case of linux we must , since standard C locale is not utf-8	
+	setlocale(LC_CTYPE,"en_US.UTF-8");
+	//mroe: for now , every CString holding a filepath must be wrapped by QString::fromUtf8() to convert to QString.	
+	//(mainly in the dialogs and the window caption to show it to the user)
+	//Setting this global for the app could be the better solution.
+	//QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+	#endif
 	app.Run();
     // we're out of eventloop here, deleting windows on linux implies sending messages to them,
     // so this would fail.

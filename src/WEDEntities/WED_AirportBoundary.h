@@ -41,7 +41,7 @@ public:
 
 protected:
 
-	virtual	bool		IsInteriorFilled(void) const { return true; }
+	virtual	bool		IsInteriorFilled(void) const { return false; }
 
 };
 

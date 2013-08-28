@@ -56,6 +56,16 @@ void			WED_GISComposite::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 	bounds = (l == gis_UV) ? mCacheBoundsUV : mCacheBounds;
 }
 
+// This fixes a nasty WED quirk: GIS composites "accumulate" their children's space, even if the children
+// are locked.  So we hack our point testers - if we can find a WED entity, check its lock status.  Gross but
+// necessary.
+static bool IsWEDLocked(IGISEntity * g)
+{
+	WED_Entity * e = dynamic_cast<WED_Entity *>(g);
+	if(!e) return false;
+	return e->GetLocked() || e->GetHidden();
+}
+
 bool			WED_GISComposite::IntersectsBox	(GISLayer_t l, const Bbox2&  bounds) const
 {
 	Bbox2	me;
@@ -64,7 +74,9 @@ bool			WED_GISComposite::IntersectsBox	(GISLayer_t l, const Bbox2&  bounds) cons
 
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
-		if (GetNthEntity(i)->IntersectsBox(l,bounds)) return true;
+		if (GetNthEntity(i)->IntersectsBox(l,bounds)) 
+		if(!IsWEDLocked(GetNthEntity(i)))		
+			return true;
 	return false;
 }
 
@@ -88,7 +100,9 @@ bool			WED_GISComposite::PtWithin		(GISLayer_t l, const Point2& p	 ) const
 
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
-		if (GetNthEntity(i)->PtWithin(l, p)) return true;
+		if (GetNthEntity(i)->PtWithin(l, p)) 
+		if(!IsWEDLocked(GetNthEntity(i)))				
+			return true;
 	return false;
 }
 
@@ -102,7 +116,9 @@ bool			WED_GISComposite::PtOnFrame		(GISLayer_t l, const Point2& p, double d) co
 
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
-		if (GetNthEntity(i)->PtOnFrame(l, p, d)) return true;
+		if (GetNthEntity(i)->PtOnFrame(l, p, d)) 
+		if(!IsWEDLocked(GetNthEntity(i)))		
+			return true;
 	return false;
 }
 

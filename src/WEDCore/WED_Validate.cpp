@@ -99,6 +99,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	int i;
 	who->GetName(name);
 	string msg;
+	
+	// Don't validate hidden stuff - we won't export it!
+	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
+	if(ee && ee->GetHidden())
+		return NULL;
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR GENERAL APT.DAT BOGUSNESS
@@ -420,12 +425,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		
 		}
 
-	
+		#if !ROBIN_IMPORT_FEATURES
 		if(who->GetClass() == WED_AirportBoundary::sClass)
 		{
 			if(WED_HasBezierPol(dynamic_cast<WED_AirportBoundary*>(who)))
 				msg = "Do not use bezier curves in airport boundaries.";
 		}
+		#endif
 
 		if(who->GetClass() == WED_DrapedOrthophoto::sClass)
 			msg = "Draped orthophotos are not allowed in the global airport database.";

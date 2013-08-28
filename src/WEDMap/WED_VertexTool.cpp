@@ -354,9 +354,10 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 					*p = GetZoomer()->PixelToLL(*p);
 					if (dir) *dir = Vector2(orig, *p);
 					if (con_type) *con_type = handle_Rotate;
-				} else
+				} else {
 					if (con_type) *con_type = handle_Icon;
 					if (radius) *radius = GetFurnitureIconRadius();
+				}
 			}
 			return;
 		}

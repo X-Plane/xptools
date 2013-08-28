@@ -623,7 +623,6 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	#endif
 	#if LIN
 		this->setMenuBar(gApplication->getqmenu());
-		popup_temp = new QMenu(this);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
@@ -1188,7 +1187,6 @@ void		GUI_Window::GetMouseLocNow(int * out_x, int * out_y)
 	if (out_y) *out_y = Client2OGL_Y(y, mWindow);;
 }
 
-
 void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
 {
 	TrackPopupCommands((xmenu) menu,OGL2Client_X(x, mWindow),OGL2Client_Y(y,mWindow),button, -1);
@@ -1196,47 +1194,15 @@ void		GUI_Window::PopupMenu(GUI_Menu menu, int x, int y, int button)
 
 int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, int button, int current)
 {
- #if !LIN
-
 	static GUI_Menu popup_temp = NULL;
 
 	DebugAssert(gApplication);
 
-	if (popup_temp)				 gApplication->RebuildMenu(popup_temp, items);
-    else			popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
+	if  (popup_temp)  gApplication->RebuildMenu(popup_temp, items);
+	else popup_temp = gApplication->CreateMenu("popup temp", items, gApplication->GetPopupContainer(),0);
 		
-#else
-
-	popup_temp->clear();
-	int n = 0;
-	while (items[n].name)
-	{
-		if (!strcmp(items[n].name, "-"))
-			popup_temp->addSeparator();
-		else
-		{
-		if(items[n].name[0] == ';')
-		{
-			QAction * aact =  popup_temp->addAction(items[n].name+1);
-			aact->setCheckable(items[n].checked);
-			aact->setChecked(items[n].checked);
-			aact->setEnabled(false);
-		}
-		else
-		{
-			QAction * aact =  popup_temp->addAction(items[n].name);
-			aact->setCheckable(items[n].checked);
-			aact->setChecked(items[n].checked);
-		}
-        }
-        ++n;
-    }
- 
-#endif
-	
 	int ret = TrackPopupCommands((xmenu) popup_temp,OGL2Client_X(x,mWindow), OGL2Client_Y(y,mWindow), button, current);
 	return ret;	
-	
 }
 
 
