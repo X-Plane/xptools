@@ -42,6 +42,7 @@ enum {
 	wed_ExportPack,
 	wed_ExportToRobin,
 	wed_ImportDSF,
+	wed_ImportOrtho,
 #if ROBIN_IMPORT_FEATURES	
 	wed_ImportRobin,
 #endif	
@@ -55,9 +56,6 @@ enum {
 	wed_Ungroup,
 	wed_Crop,
 	wed_Overlay,
-#if !NO_CGAL_BEZIER
-	wed_CheckPolys,
-#endif	
 #if AIRPORT_ROUTING
 //	wed_MakeRouting,
 #endif

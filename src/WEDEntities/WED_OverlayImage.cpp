@@ -50,6 +50,7 @@ double		WED_OverlayImage::GetAlpha(void) const
 
 void		WED_OverlayImage::SetImage(const string& image_file)
 {
+	int x = 1;
 	mImageFile = image_file;
 }
 

@@ -23,13 +23,18 @@
 
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <time.h>
 #if IBM
 #include "GUI_Unicode.h"
 #endif
 
 #include <errno.h>
-#include <sys/stat.h>
+#if LIN || APL
 #include <dirent.h>
+#include <sys/stat.h>
+#endif
 
 #define LOG_CASE_DESENS 0
 
@@ -39,23 +44,26 @@
 	#define	LOG_MSG(fmt,...)
 #endif
 
-
+#if LIN
 static int desens_partial(DIR * dir, char * io_file)
 {
-	struct dirent* de;
-	while (de = readdir(dir))
-	{
-		if (!strcasecmp(io_file, de->d_name))
-		{
-			strcpy(io_file, de->d_name);
-			return 1;
-		}
-	}
-	return 0;
+ struct dirent* de;
+ while (de = readdir(dir))
+ {
+  if (!strcasecmp(io_file, de->d_name))
+  {
+   strcpy(io_file, de->d_name);
+   return 1;
+  }
+ }
+ return 0;
 }
+#endif
+
 
 int FILE_case_correct(char * buf)
 {
+	#if LIN
 	LOG_MSG("Case desens for: '%s'\n", buf);
 
 	// Fast match?  Try that first - MOST content in x-plane is case-correct, and any file path derived from dir scanning will be.
@@ -118,31 +126,33 @@ int FILE_case_correct(char * buf)
 		}		
 	}
 	return 0;	// we hit here if our file name was empty.
+#else 
+	return 1;
+#endif
 }
 
-
-	FILE_case_correct_path::FILE_case_correct_path(const char * in_path) : path(strdup(in_path)) { FILE_case_correct(path); }
-	FILE_case_correct_path::~FILE_case_correct_path() { free(path); }
+FILE_case_correct_path::FILE_case_correct_path(const char * in_path) : path(strdup(in_path)) { FILE_case_correct(path); }
+FILE_case_correct_path::~FILE_case_correct_path() { free(path); }
 	
-	FILE_case_correct_path::operator const char * (void) const { return path; }
+FILE_case_correct_path::operator const char * (void) const { return path; }
 	
 
 
 
 
-int FILE_exists(const char * path)
+bool FILE_exists(const char * path)
 {
 #if IBM
 	struct _stat ss;
 	string input(path);
 	string_utf16 output;
 	string_utf_8_to_16(input, output);
-	if (_wstat((const wchar_t*)output.c_str(),&ss) < 0) return 0;
+	if (_wstat((const wchar_t*)output.c_str(),&ss) < 0) return false;
 #else
 	struct stat ss;
 	if (stat(path,&ss) < 0) return 0;
 #endif
-	return 1;
+	return true;
 //	return (S_ISDIR(ss.st_mode))? 1 : 0;
 }
 
@@ -218,3 +228,69 @@ int FILE_make_dir_exist(const char * in_dir)
 	return result;
 }
 
+date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second)
+{
+//Inspired by http://msdn.microsoft.com/en-us/library/14h5k7ff.aspx
+#if IBM 
+	struct _stat firstFile;
+	struct _stat secondFile;
+	int error1;
+	int error2;
+
+	error1 = _stat(first,&firstFile);
+	error2 = _stat(second,&secondFile);
+
+	if(error1 != 0)
+	{
+		return dcr_error;
+	}
+	else
+	{
+		//If first is newer
+		if(firstFile.st_mtime > secondFile.st_mtime || error2 !=0)
+		{
+			return dcr_firstIsNew;
+		}
+		if(firstFile.st_mtime < secondFile.st_mtime)
+		{
+			return dcr_secondIsNew;
+		}
+		if(firstFile.st_mtime == secondFile.st_mtime)
+		{
+			return dcr_same;
+		}
+		return dcr_error;
+	}
+#else
+	struct stat firstFile;
+	struct stat secondFile;
+	int error1;
+	int error2;
+
+	error1 = stat(first,&firstFile);
+	error2 = stat(second,&secondFile);
+
+	if(error1 != 0)
+	{
+		return dcr_error;
+	}
+	else
+	{
+		//If first is newer
+		if(firstFile.st_mtime > secondFile.st_mtime || error2 !=0)
+		{
+			return dcr_firstIsNew;
+		}
+		if(firstFile.st_mtime < secondFile.st_mtime)
+		{
+			return dcr_secondIsNew;
+		}
+		if(firstFile.st_mtime == secondFile.st_mtime)
+		{
+			return dcr_same;
+		}
+		return dcr_error;
+	}
+
+#endif
+}

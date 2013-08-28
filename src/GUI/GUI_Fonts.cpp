@@ -125,8 +125,8 @@ static void		ProcessBitmapSection(
 	unsigned char kTable[256];
 	for(int n = 0; n < 256; ++n)
 	{
-		float r = (float) n / 255.0;
-		kTable[n] = pow(r,FONT_GAMMA) * 255.0;
+		float r = (float) n / 255.0f;
+		kTable[n] = powf(r,FONT_GAMMA) * 255.0f;
 	}
 	long n = inSrcWidth * inSrcHeight;
 	while(n--)

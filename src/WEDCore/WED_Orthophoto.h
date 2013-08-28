@@ -10,12 +10,11 @@
 #ifndef WED_Orthophoto_h
 #define WED_Orthophoto_h
 
+#include "WED_Archive.h"
+
 class IResolver;
+class WED_MapZoomerNew;
 
-#if !NO_CGAL_BEZIER
-void	WED_CheckPolys(IResolver * in_resolver);
-#endif
-void	WED_MakeOrthos(IResolver * in_resolver);
-
+void	WED_MakeOrthos(IResolver * in_resolver, WED_MapZoomerNew * zoomer);
 
 #endif /* WED_Orthophoto_h */

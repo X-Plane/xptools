@@ -76,7 +76,7 @@ int		WED_Application::HandleCommand(int command)
 //			{
 //				GUI_LaunchURL(path.c_str());
 //			}
-		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_12_manual.html");
+			GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_12_manual.html");
 		}
 		return 1;
 	default:

@@ -63,7 +63,7 @@ WED_AptImportDialog::WED_AptImportDialog(
 	mInvertSort(1)	
 {
 	resolver->AddListener(this);
-	
+
 	swap(mApts,apts);
 
 	int bounds[4];
@@ -74,9 +74,8 @@ WED_AptImportDialog::WED_AptImportDialog(
 	GUI_Pane::GetBounds(bounds);
 	packer->SetBounds(bounds);
 	packer->SetBkgkndImage ("gradient.png");
-	
 
-	mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Filter:","");
+	mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Filter:","",NULL,false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(packer);

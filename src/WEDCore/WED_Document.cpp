@@ -176,7 +176,7 @@ void	WED_Document::Save(void)
 {
 	BroadcastMessage(msg_DocWillSave, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 
-/*
+/*Old SQL version
 	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
 	mArchive.SaveToDB(mDB.get());
 	ENUM_write(mDB.get());
@@ -202,20 +202,126 @@ void	WED_Document::Save(void)
 
 	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
 */
+
+	/* Annnoymous enum and Stage: Used for switch statements throughout this method
+	* none: For when there is no earth.wed.xml (a brand new document is created)
+	* nobackup: For when the .bak file hasn't been created yet
+	* both: for when the .bak and regular files are in place
+	*/
+	enum {none,nobackup,both};
+	int stage;
+
+	//Create the strings path..earth.wed.xml,earth.wed.bak.xml,earth.wed.bak.bak.xml
+	//All or some of these are used through out
+	
 	string xml = mFilePath;
 	xml += ".xml";
-#if IBM
+	
+	string bakXML = xml;	
+	bakXML = bakXML.insert((bakXML.length()-4),".bak");
+	
+	string tempBakBak = bakXML;
+	tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
+
+
 	string_utf16 wname;
 	string_utf_8_to_16(xml,wname);
+
+	//If there is no earth.wed.xml file
+	if(FILE_exists(xml.c_str()) == false){
+		stage = none;
+	}
+	//If there is no back up and there is an earth.wed.xml
+	else if(FILE_exists(bakXML.c_str()) == false && FILE_exists(xml.c_str()) == true){
+		stage = nobackup;
+	}
+	//If there is a back up and an earth.wed.xml
+	else if(FILE_exists(xml.c_str()) == true && FILE_exists(bakXML.c_str()) == true){
+		stage = both;
+	}
+
+	//This is the renaming switch
+	switch(stage)
+	{
+	case none:
+		break;
+	case nobackup:
+		//Rename the current earth.wed.xml to earth.wed.bak.xml
+		FILE_rename_file(xml.c_str(),bakXML.c_str());
+		break;
+	case both:
+		//next rename the current earth.wed.bak.xml to earth.wed.bak.bak.xml
+		FILE_rename_file(bakXML.c_str(),tempBakBak.c_str());
+		
+		//Rename the current earth.wed.xml to earth.wed.bak.xml
+		FILE_rename_file(xml.c_str(),bakXML.c_str());
+		break;
+	}
+	
+	//Create the file
+	#if IBM
+	//Create an xml file by opening the file located on the hard drive (windows)
+	//open a file for writing creating/nukeing if necissary
+		
+	//A File
 	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
-#else
+	#else
 	FILE * xml_file = fopen(xml.c_str(),"w");
-#endif
-	if(xml_file)
+	#endif
+	
+	if(xml_file == NULL)
+	{
+		DoUserAlert("Please check file path for errors or missing parts");
+		return;
+	}
+
+	int ferrorErr = ferror(xml_file);
+		//If everything else has worked
+	if(ferrorErr == 0)
 	{
 		WriteXML(xml_file);
-		fclose(xml_file);
+	}
+	int fcloseErr = fclose(xml_file);
+	if(ferrorErr != 0 || fcloseErr != 0)
+	{
+		//This is the error handling switch
+		switch(stage)
+		{
+			case none:
+				FILE_delete_file(xml.c_str(),0);
+				DoUserAlert("Please check file path for errors or missing parts");
+				break;
+			case nobackup:
+				//Delete's the bad save
+				FILE_delete_file(xml.c_str(),0);
+				//un-renames the old one
+				FILE_rename_file(bakXML.c_str(),xml.c_str());
+				DoUserAlert("Please check file path for errors or missing parts");
+				break;
+			case both:
+				//delete incomplete file
+				FILE_delete_file(xml.c_str(),0);
+
+				//un-rename earth.wed.bak.xml to earth.wed.xml
+				FILE_rename_file(bakXML.c_str(),xml.c_str());
+
+				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
+				FILE_rename_file(tempBakBak.c_str(),bakXML.c_str());
+				DoUserAlert("Please check file path for errors or missing parts");
+				break;
+		}
+	}	
+	else
+	{
+		// This is the save-was-okay case.
 		mOnDisk=true;
+	}
+	
+	//if the second backup still exists after the error handling
+	if(FILE_exists(tempBakBak.c_str()) == true)
+	{
+		//Delete it
+		FILE_delete_file(tempBakBak.c_str(),0);
 	}
 }
 
@@ -242,6 +348,7 @@ void	WED_Document::Revert(void)
 		// First: try to IO the XML file.
 		bool xml_exists;
 		string result = reader.ReadFile(fname.c_str(),&xml_exists);
+
 		if(xml_exists && !result.empty())
 			WED_ThrowPrintf("Unable to open XML file: %s",result.c_str());
 
@@ -641,6 +748,7 @@ void WED_Document::Panic(void)
 
 void		WED_Document::WriteXML(FILE * xml_file)
 {
+	//print to file the xml file passed in with the following encoding
 	fprintf(xml_file,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	{
 		WED_XMLElement	top_level("doc",0,xml_file);

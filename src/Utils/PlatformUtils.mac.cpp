@@ -248,46 +248,6 @@ void	DoUserAlert(const char * inMsg)
 	StandardAlert(kAlertStopAlert, (const unsigned char*)p1, (const unsigned char*)"", NULL, NULL);
 }
 
-void	ShowProgressMessage(const char * inMsg, float * progress)
-{
-	static WindowRef	wind = NULL;
-	Rect		windBounds = { 0, 0, 250, 500 };
-	if (wind == NULL)
-	{
-		if (CreateNewWindow(kMovableAlertWindowClass, kWindowStandardHandlerAttribute, &windBounds, &wind) != noErr) return;
-		if (wind == NULL) return;
-		RepositionWindow(wind, NULL,kWindowCenterOnMainScreen);
-		ShowWindow(wind);
-	}
-
-	SetPortWindowPort(wind);
-	CFStringRef ref = CFStringCreateWithCString(NULL, inMsg, kCFStringEncodingMacRoman);
-	EraseRect(&windBounds);
-	InsetRect(&windBounds, 20, 15);
-	DrawThemeTextBox(ref, kThemeSystemFont, kThemeStateActive, true, &windBounds, teJustLeft, NULL);
-	CFRelease(ref);
-
-	if (progress)
-	{
-		float p = *progress;
-		ThemeTrackDrawInfo	info;
-		info.kind = (p >= 0.0) ? kThemeMediumProgressBar : kThemeMediumIndeterminateBar;
-		SetRect(&info.bounds, 20, 210, 480, 230);
-		info.min = 0;
-		info.max = (p >= 0.0) ? 1000.0 : 0.0;
-		info.value = (p >= 0.0) ? (p * 1000.0) : 0;
-		info.reserved = 0;
-		info.attributes = kThemeTrackHorizontal;
-		info.enableState = kThemeTrackActive;
-		info.filler1 = 0;
-		static UInt8 nPhase = 0;
-		info.trackInfo.progress.phase = nPhase;
-		nPhase++;
-		DrawThemeTrack(&info, NULL, NULL, 0);
-	}
-	QDFlushPortBuffer(GetWindowPort(wind), NULL);
-}
-
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
 	Str255					pStr, proStr, clcStr;

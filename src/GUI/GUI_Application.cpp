@@ -26,6 +26,9 @@
 #include "GUI_Menus.h"
 #include "XWin.h"
 #include "GUI_Window.h"
+#if IBM
+#include <commctrl.h>
+#endif
 #define __DEBUGGING__
 
 GUI_Application *	gApplication = NULL;
@@ -455,7 +458,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #endif
 
 #if IBM
-
+	//Makes the standard windows ui bar at the top
 	HMENU	new_menu;
 
 	if (parent == GetPopupContainer())	new_menu = CreatePopupMenu();

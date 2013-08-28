@@ -158,6 +158,10 @@ WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin
 
 	gPackageMgr->AddListener(this);				// We listen to package mgr to know when x-system folder changed - hide whole list if needed.
 	mTextTable->FocusChain(false);
+
+	//#if DEV
+	//	PrintDebugInfo(0);
+	//#endif
 }
 
 WED_StartWindow::~WED_StartWindow()
@@ -288,6 +292,22 @@ int		WED_StartWindow::MouseMove(int x, int y)
 
 int			WED_StartWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
+#if IBM && DEV
+	//Press C to show to maximize the debug console
+	if(inVK == GUI_VK_C)
+	{
+		//Minimizes the console, uncomment the next line to restore it for use
+		ShowWindow( GetConsoleWindow(), SW_SHOWNOACTIVATE );
+
+		return 1;
+	}
+	//Press H to minimize
+	if(inVK = GUI_VK_H)
+	{
+		ShowWindow( GetConsoleWindow(), SW_SHOWMINNOACTIVE );
+		return 1;
+	}
+#endif
 	return 0;
 }
 
@@ -308,12 +328,13 @@ int			WED_StartWindow::HandleCommand(int command)
 		mTable->RevealRow(0);
 		return 1;
 	case wed_OpenPackage:
+		//if(HasSystemFolder == false) is another way of saying this.
 		if (!gPackageMgr->HasSystemFolder()) return 1;
 		if (mPackageList->HasSelection())
 		{
 			string name;
 			int n = mPackageList->GetSelection(&name);
-//			gPackageMgr->GetNthCustomPackagePath(n,path);
+			//gPackageMgr->GetNthCustomPackagePath(n,path);
 
 			for(int i = 0; i < sDocs.size(); ++i)
 			if (sDocs[i].n == name)

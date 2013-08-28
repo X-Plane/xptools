@@ -37,6 +37,7 @@ enum GUI_ButtonType {
 
 class	GUI_Button : public GUI_Control {
 public:
+						 //reasource name, GUI_ButtonType, off_regular, off_hilite, on_regular, on_hilite
 						 GUI_Button(
 								const char *		in_res_name,
 								GUI_ButtonType		behavior,

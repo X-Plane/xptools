@@ -102,14 +102,9 @@
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
 
-// This kills off usage of CGAL's Bezier_2...for WED, since this code seems to be exploding periodically, we can turn it off for now.
-#define NO_CGAL_BEZIER 1
-
-
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 
 #include "MemUtils.h"
-
 
 /************************************************************************************************************************************************************************
  * STL AND OTHER GLOBAL INCLUDES THAT WE LIKE ENOUGH TO HAVE EVERYWHERE
@@ -121,6 +116,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <algorithm>
 
 #if SAFE_VECTORS && DEV
 
@@ -158,7 +154,9 @@ using namespace std;
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(_MSC_VER)
 #include <unistd.h>
+#endif
 #include <stddef.h>
 #include <stdint.h>
 
@@ -258,6 +256,7 @@ using namespace std;
 #endif
 
 #if IBM
+#define WINDOWS_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <windows.h>
 #endif

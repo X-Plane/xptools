@@ -40,10 +40,12 @@ enum {
 };
 
 // "Virtual" package numbers...package mgr IDs packages as 0-based index.  These meta-constants are used for filtering in special ways.
+// They can be passed to GetResourceChildren.  Non-negative inputs mean take the Nth pack.
 enum {
-	pack_Local		= -1,
-	pack_Library	= -2,
-	pack_All		= -3
+	pack_Local		= -1,			// Return only files in the users's currently open pack.
+	pack_Library	= -2,			// Return only library items.
+	pack_All		= -3,			// Return local files and the entire library.
+	pack_Default	= -4			// Return only library items that come from the default scenery packs that x-plane ships with.
 };
 
 class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
@@ -57,6 +59,7 @@ public:
 	int			GetResourceType(const string& r);
 	string		GetResourcePath(const string& r);
 	
+				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
 	bool		IsResourceDefault(const string& r);
 	
 	string		CreateLocalResourcePath(const string& r);
@@ -65,6 +68,9 @@ public:
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
+
+				// This returns true if the package number 'package_number' adds at least one item to the library.
+	bool		DoesPackHaveLibraryItems(int package_number);
 
 private:
 

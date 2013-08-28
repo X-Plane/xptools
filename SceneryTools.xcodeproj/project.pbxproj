@@ -326,10 +326,7 @@
 		D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
 		D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */; };
 		D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */; };
-		D653D6861054371B00A502FF /* WED_Routing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D653D6851054371B00A502FF /* WED_Routing.cpp */; };
 		D653D6D41054552100A502FF /* WED_DebugLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D653D6D31054552100A502FF /* WED_DebugLayer.cpp */; };
-		D653D6F610545A1C00A502FF /* MapPolygon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1F0EAE30AF0002C4C1 /* MapPolygon.cpp */; };
-		D653D6F710545A2400A502FF /* MapTopology.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BB228F0EC13287006499D7 /* MapTopology.cpp */; };
 		D656B0D90B517546003FF84F /* ObjConvert.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E10AB22C84003949C5 /* ObjConvert.cpp */; };
 		D656B0DA0B51754E003FF84F /* ObjPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E50AB22C84003949C5 /* ObjPointPool.cpp */; };
 		D656B0DB0B517552003FF84F /* XObjDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36EE0AB22C84003949C5 /* XObjDefs.cpp */; };
@@ -349,7 +346,6 @@
 		D656B2290B518193003FF84F /* hl_types.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38AE0AB22C85003949C5 /* hl_types.cpp */; };
 		D656B2320B5181C8003FF84F /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D656B2790B51883C003FF84F /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
-		D6580A88113D8E17004C7C23 /* Bezier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6580A87113D8E17004C7C23 /* Bezier.cpp */; };
 		D659755F0BEA6D18001FC7C3 /* GUI_ChangeView.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */; };
 		D659758F0BEA6F2A001FC7C3 /* GUI_TabPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */; };
 		D65E4B250B65427C004D7887 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
@@ -713,12 +709,10 @@
 		D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6D4082C1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */ = {isa = PBXBuildFile; fileRef = D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */; };
-		D6DBA1E210572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
 		D6DBA1E310572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
 		D6DBA1E410572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
 		D6DBA25310573941004E1089 /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
 		D6DBA2A210574180004E1089 /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
-		D6DEB3461055994000C378BE /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
 		D6DEB6491056F6A100C378BE /* WED_GISEdge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB6481056F6A100C378BE /* WED_GISEdge.cpp */; };
 		D6DEB67B1056FF0300C378BE /* WED_TaxiRoute.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB67A1056FF0300C378BE /* WED_TaxiRoute.cpp */; };
 		D6DF67C2107E8A060004F643 /* WED_ATCFlow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DF67BE107E8A060004F643 /* WED_ATCFlow.cpp */; };
@@ -822,7 +816,6 @@
 		D6ED40450B6AD47300D5484E /* WED_UndoMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */; };
 		D6ED41400B6ADE6300D5484E /* WED_Entity.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED413F0B6ADE6300D5484E /* WED_Entity.cpp */; };
 		D6F00F800CCD7F6A00A3F1B0 /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
-		D6F13F13124BCF3F001F2DFF /* MapBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1A0EAE30A00002C4C1 /* MapBuffer.cpp */; };
 		D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F25F910C185F8000C26DC4 /* WED_WorldMapLayer.cpp */; };
 		D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */; };
 		D6F31E9A105DDE3900F8AAB5 /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
@@ -1213,8 +1206,6 @@
 		D656B12D0B51778F003FF84F /* XResources.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XResources.h; sourceTree = "<group>"; };
 		D656B12E0B51778F003FF84F /* XResources.mac.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = XResources.mac.cpp; sourceTree = "<group>"; };
 		D656B2780B51883C003FF84F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = ../../usr/lib/libz.dylib; sourceTree = "<group>"; };
-		D6580A86113D8E17004C7C23 /* Bezier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Bezier.h; sourceTree = "<group>"; };
-		D6580A87113D8E17004C7C23 /* Bezier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Bezier.cpp; sourceTree = "<group>"; };
 		D659755D0BEA6D18001FC7C3 /* GUI_ChangeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_ChangeView.h; sourceTree = "<group>"; };
 		D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ChangeView.cpp; sourceTree = "<group>"; };
 		D659758D0BEA6F2A001FC7C3 /* GUI_TabPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TabPane.h; sourceTree = "<group>"; };
@@ -3182,8 +3173,6 @@
 				D6DBA1E110572F33004E1089 /* AptRouting.cpp */,
 				D6BC38350AB22C85003949C5 /* Beaches.cpp */,
 				D6BC38360AB22C85003949C5 /* Beaches.h */,
-				D6580A86113D8E17004C7C23 /* Bezier.h */,
-				D6580A87113D8E17004C7C23 /* Bezier.cpp */,
 				D63F7255117FAB3500AB7C1F /* BlockDefs.h */,
 				D63F725A117FB60900AB7C1F /* BlockAlgs.h */,
 				D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */,
@@ -4678,22 +4667,15 @@
 				D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */,
 				D60B0ECD0FCC886A001E8DD3 /* WED_Orthophoto.cpp in Sources */,
 				D680AA1E0FCD85B400712B5B /* WED_GISUtils.cpp in Sources */,
-				D653D6861054371B00A502FF /* WED_Routing.cpp in Sources */,
 				D653D6D41054552100A502FF /* WED_DebugLayer.cpp in Sources */,
-				D653D6F610545A1C00A502FF /* MapPolygon.cpp in Sources */,
-				D653D6F710545A2400A502FF /* MapTopology.cpp in Sources */,
-				D6DEB3461055994000C378BE /* AptAlgs.cpp in Sources */,
 				D6DEB6491056F6A100C378BE /* WED_GISEdge.cpp in Sources */,
 				D6DEB67B1056FF0300C378BE /* WED_TaxiRoute.cpp in Sources */,
 				D6E528831057041400D0D162 /* WED_CreateEdgeTool.cpp in Sources */,
-				D6DBA1E210572F33004E1089 /* AptRouting.cpp in Sources */,
 				D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */,
 				D6DF67C2107E8A060004F643 /* WED_ATCFlow.cpp in Sources */,
 				D6DF67C3107E8A060004F643 /* WED_ATCRunwayUse.cpp in Sources */,
-				D6580A88113D8E17004C7C23 /* Bezier.cpp in Sources */,
 				D660F8E5116FADA6005B8E14 /* WED_TCEDebugLayer.cpp in Sources */,
 				D6EAA00F11A19ECA004ADCCC /* WED_RoadEdge.cpp in Sources */,
-				D6F13F13124BCF3F001F2DFF /* MapBuffer.cpp in Sources */,
 				D63A13B2132ABBC400D36061 /* WED_FacadeNode.cpp in Sources */,
 				D63A13B3132ABBC400D36061 /* WED_FacadeRing.cpp in Sources */,
 				D63A13B4132ABBC400D36061 /* WED_ForestRing.cpp in Sources */,
@@ -5077,6 +5059,7 @@
 					"OPENGL_MAP=0",
 					"WED=1",
 					"$(inherited)",
+					"NO_CGAL=1",
 				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
@@ -5550,16 +5533,12 @@
 					"OPENGL_MAP=0",
 					"WED=1",
 					"$(inherited)",
+					"NO_CGAL=1",
 				);
 				INFOPLIST_FILE = src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libmpfr.a,
-					libs/local/lib/libgmp.a,
-					libs/local/lib/libCGAL_Core.a,
-					libs/local/lib/libboost_thread.a,
-					libs/local/lib/libCGAL.a,
 					libs/local/lib/libexpat.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5584,6 +5563,7 @@
 					"OPENGL_MAP=0",
 					"WED=1",
 					"$(inherited)",
+					"NO_CGAL=1",
 				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
@@ -5694,6 +5674,7 @@
 					"OPENGL_MAP=0",
 					"WED=1",
 					"$(inherited)",
+					"NO_CGAL=1",
 				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;

@@ -48,11 +48,11 @@
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
+//#include "WED_Orthophoto.h"
 #include "WED_Routing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
 
-#include "WED_Orthophoto.h"
 #if WITHNWLINK
 #include "WED_Server.h"
 #endif
@@ -99,6 +99,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	****************************************************************************************************************************************************************/
 
 //	int		splitter_b[4];
+	//BEWARE! HORIZONTAL IS VERTICAL AND VERTICAL IS HORIZONTAL!
 	mMainSplitter  = new GUI_Splitter(gui_Split_Horizontal);
 	mMainSplitter2 = new GUI_Splitter(gui_Split_Horizontal);
 	if (WED_UIMeasurement("one_big_gradient"))		mMainSplitter->SetImage ("gradient.png");
@@ -133,7 +134,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	lib->SetParent(mLibSplitter);
 	lib->Show();
 	lib->SetSticky(1,1,1,1);
-	
+
 	/****************************************************************************************************************************************************************
 	 * DA MAP
 	****************************************************************************************************************************************************************/
@@ -302,7 +303,10 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mPropPane->FromPrefs(inDocument,0);
 	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
-
+	
+	//#if DEV
+	//	PrintDebugInfo(0);
+	//#endif
 }
 
 WED_DocumentWindow::~WED_DocumentWindow()
@@ -320,6 +324,7 @@ int	WED_DocumentWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags in
 int	WED_DocumentWindow::HandleCommand(int command)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
+
 	switch(command) {
 	case wed_RestorePanes:
 		{
@@ -341,10 +346,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Redo:	if (um->HasRedo()) { um->Redo(); return 1; }	break;
 	case gui_Clear:		WED_DoClear(mDocument); return 1;
 	case wed_Crop:		WED_DoCrop(mDocument); return 1;
-	case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
-#if !NO_CGAL_BEZIER	
-	case wed_CheckPolys:WED_CheckPolys(mDocument); return 1;
-#endif	
+	//case wed_Overlay:	WED_MakeOrthos(mDocument); return 1;
 #if AIRPORT_ROUTING
 //	case wed_MakeRouting:WED_MakeRouting(mDocument); return 1;
 	case wed_Merge:		WED_DoMerge(mDocument); return 1;
@@ -370,7 +372,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
-	case gui_Save:		mDocument->Save();	return 1;
+	case gui_Save:		mDocument->Save(); return 1;
+
 	case gui_Revert:	mDocument->Revert();	return 1;
 
 	case gui_SelectAll:		WED_DoSelectAll(mDocument);		return 1;
@@ -391,7 +394,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ExportToRobin:		WED_DoExportRobin(mDocument); return 1;
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
-	
+	case wed_ImportOrtho:
+		mMapPane->Map_HandleCommand(command);
+		return 1;
 #if ROBIN_IMPORT_FEATURES	
 	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
 #endif	
@@ -437,9 +442,6 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 //	case wed_MakeRouting:
 	case wed_Merge:		return WED_CanMerge(mDocument);
 #endif
-#if !NO_CGAL_BEZIER
-	case wed_CheckPolys:
-#endif	
 	case wed_Overlay:														return 1;
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
@@ -484,6 +486,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ExportToRobin:	return 1;
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
+	case wed_ImportOrtho:	return 1;
 #if ROBIN_IMPORT_FEATURES
 	case wed_ImportRobin:	return 1;
 #endif	

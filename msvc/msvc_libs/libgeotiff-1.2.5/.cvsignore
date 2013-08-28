@@ -1,0 +1,13 @@
+config.log
+geo_config.h
+config.cache
+config.status
+Makefile
+*.lib
+*.ilk
+*.pdb
+*.exp
+*.dll
+libgeotiff-*.so
+libgeotiff.so*
+

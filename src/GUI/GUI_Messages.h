@@ -34,7 +34,6 @@ enum {
 	GUI_TABLE_SHAPE_RESIZED,						// Column sizes have changed (sent by geometry)
 	GUI_TABLE_CONTENT_RESIZED,						// Number of rows changed (sent by content - note - geometry MUST "know" the new size BEFORE this is sent!
 	GUI_TABLE_CONTENT_CHANGED,						// Content of table changed but geometry the same (sent by content)
-
 	GUI_APP_MESSAGES = 2000
 
 };

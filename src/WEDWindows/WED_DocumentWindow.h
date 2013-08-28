@@ -72,7 +72,7 @@ private:
 	GUI_Splitter *				mMainSplitter2;
 	GUI_Splitter *				mPropSplitter;
 	GUI_Splitter *				mLibSplitter;
-
+	GUI_Splitter *				mFiltSplitter;
 //	WED_PropertyTable *			mTestTable;
 //	WED_PropertyTableHeader *	mTestTableHeader;
 

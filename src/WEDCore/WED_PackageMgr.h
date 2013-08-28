@@ -43,6 +43,8 @@ public:
 
 	int			CountPackages(void) const;
 	void		GetNthPackageName(int n, string& package) const;
+	/*Get the a package's path by passing in a number and the name of said package,
+	changes the string passed in into the real physical filepath.*/
 	void		GetNthPackagePath(int n, string& package) const;
 	
 	bool		IsPackageDefault(int n) const;

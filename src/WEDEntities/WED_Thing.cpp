@@ -637,4 +637,3 @@ bool		WED_TypeField::WantsAttribute(const char * ele, const char * att_name, con
 {
 	return false;
 }
-	

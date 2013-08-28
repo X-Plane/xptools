@@ -685,7 +685,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	if(f->data().IsWater())
 	{
 		wet_area += GetMapFaceAreaMeters(f,NULL);
-	}×
+	}
 	printf("AFTER: %lf sq meters.\n", wet_area);
 	
 
