@@ -547,19 +547,12 @@ string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool noPrefix)
 		}
 		return path;
 	}
-}
-
-#if DEV
-//Prints the contents of mOpen
-void WED_LibraryListAdapter::PrintMOpen(string path)
-{
-	hash_map<string,int>::iterator mOpItr; 
-	printf("\n ---------- \n %s \n ~~ \n", path);
-	for(mOpItr = mOpen.begin(); mOpItr != mOpen.end(); mOpItr++)
+	else
 	{
-		printf("Path: %s", mOpItr->first.c_str());
-		printf(", Open? %d \n", mOpItr->second);
+		// This is just to shut the compiler up - 
+		// mCatLocInd is the LAST item in the array since the cache is
+		// upside down.  So if we fall out here, our index is bad.
+		DebugAssert(!"Out of bounds index.");
+		return path;
 	}
-	printf("----------");
 }
-#endif

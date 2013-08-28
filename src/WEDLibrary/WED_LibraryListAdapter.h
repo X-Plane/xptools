@@ -219,9 +219,6 @@ private:
 		void	SetSel(const string& s, const string& noPrefix);
 		string GetNthCacheIndex (int index, bool noPrefix);
 
-		#if DEV
-		void PrintMOpen(string path="");
-		#endif
 		//A hash map of open folders in the heirarchy,
 		//Uses the prefix system!
 		hash_map<string,int>	mOpen;
