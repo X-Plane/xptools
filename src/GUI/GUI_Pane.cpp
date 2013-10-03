@@ -112,6 +112,9 @@ void		GUI_Pane::TrapFocus(void)
 */
 
 #if DEV
+#if LIN
+#include <typeinfo>
+#endif
 void GUI_Pane::PrintDebugInfo(int indentLevel)
 {	
 	//Creates a temporary string
@@ -216,7 +219,11 @@ void GUI_Pane::DrawWireFrame(int realBounds[4], bool prinf)
 {
 	if (prinf==true)
 	{
+#if LIN
+		printf("Name=%s left=%d bottom=%d right=%d top=%d \n",
+#else
 		std::printf("Name=%s left=%d bottom=%d right=%d top=%d \n",
+#endif
 			typeid(*this).name(),
 			realBounds[0],
 			realBounds[1],

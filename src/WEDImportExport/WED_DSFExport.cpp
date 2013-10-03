@@ -55,7 +55,7 @@
 #include <stdarg.h>
 #include "IResolver.h"
 #include "WED_ResourceMgr.h"
-#include "BitMapUtils.H"
+#include "BitmapUtils.h"
 #include "GISUtils.h"
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
