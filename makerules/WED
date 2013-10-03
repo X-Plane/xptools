@@ -107,7 +107,7 @@ endif #PLAT_MINGW
 ifdef PLAT_LINUX
 SOURCES += ./src/linuxinit/initializer.cpp
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
-#SOURCES += ./src/Network/PCSBSocket.lin.cpp
+SOURCES += ./src/Network/PCSBSocket.lin.cpp
 #SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
@@ -242,10 +242,10 @@ SOURCES += ./src/WEDMap/WED_VertexTool.cpp
 SOURCES += ./src/WEDMap/WED_WorldMapLayer.cpp
 SOURCES += ./src/WEDMap/WED_DrawUtils.cpp
 SOURCES += ./src/WEDMap/WED_PreviewLayer.cpp
-#SOURCES += ./src/WEDNetwork/WED_Connection.cpp
-#SOURCES += ./src/WEDNetwork/WED_NWInfoLayer.cpp
-#SOURCES += ./src/WEDNetwork/WED_NWLinkAdapter.cpp
-#SOURCES += ./src/WEDNetwork/WED_Server.cpp
+SOURCES += ./src/WEDNetwork/WED_Connection.cpp
+SOURCES += ./src/WEDNetwork/WED_NWInfoLayer.cpp
+SOURCES += ./src/WEDNetwork/WED_NWLinkAdapter.cpp
+SOURCES += ./src/WEDNetwork/WED_Server.cpp
 SOURCES += ./src/WEDTCE/WED_TCE.cpp
 SOURCES += ./src/WEDCore/WED_TCEDebugLayer.cpp
 SOURCES += ./src/WEDTCE/WED_TCELayer.cpp
