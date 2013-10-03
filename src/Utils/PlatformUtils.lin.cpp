@@ -47,8 +47,7 @@ int		GetFilePathFromUser(
 	{
 		case getFile_Open:
 		{
-			QString fileName = QFileDialog::getOpenFileName(0,
-			QString::fromUtf8(inPrompt), "/");
+			QString fileName = QFileDialog::getOpenFileName(0,QString::fromUtf8(inPrompt));
 			if (!fileName.length())
 				return 0;
 			else {
@@ -58,8 +57,7 @@ int		GetFilePathFromUser(
 		}
 		case getFile_Save:
 		{
-			QString fileName = QFileDialog::getSaveFileName(0,
-			QString::fromUtf8(inPrompt), "/");
+			QString fileName = QFileDialog::getSaveFileName(0,QString::fromUtf8(inPrompt));
 			if (!fileName.length())
 				return 0;
 			else {
@@ -69,8 +67,8 @@ int		GetFilePathFromUser(
 		}
 		case getFile_PickFolder:
 		{
-			QString dir = QFileDialog::getExistingDirectory
-			(0, QString::fromUtf8(inPrompt), "/", QFileDialog::ShowDirsOnly);
+			QString dir = QFileDialog::getExistingDirectory(0, QString::fromUtf8(inPrompt),
+			                                                "", QFileDialog::ShowDirsOnly);
 			if (!dir.length())
 				return 0;
 			else {
@@ -91,7 +89,7 @@ char *	GetMultiFilePathFromUser(
 					int					inID)
 {	
 	
-	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt), "/");
+	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt));
 	
 	vector<string> outFiles;	
 	if (fileNames.empty()) return NULL;	
