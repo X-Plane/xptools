@@ -49,6 +49,7 @@
 #include "WED_FacadeNode.h"
 #include "DSF2Text.h"
 #include "WED_GISUtils.h"
+#include "STLUtils.h"
 
 static void debug_it(const vector<BezierPoint2>& pts)
 {

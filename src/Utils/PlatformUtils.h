@@ -63,7 +63,8 @@ const char * GetApplicationPath(char * pathBuf, int pathLen);
 enum {
 	getFile_Open,
 	getFile_Save,
-	getFile_PickFolder
+	getFile_PickFolder,
+	getFile_OpenImages //Only allows supported image types to be chosen, windows only
 };
 int		GetFilePathFromUser(
 					int					inType,
@@ -84,13 +85,6 @@ char *	GetMultiFilePathFromUser(
  *
  */
 void	DoUserAlert(const char * inMsg);
-
-/*
- * ShowProgressMessage puts up a dialog box with a progress message.  Calling it
- * repeatedly changes the progress message.
- *
- */
-void	ShowProgressMessage(const char * inMsg, float * progress);
 
 /*
  * ConfirmMessage puts up a dialog box with a message and two buttons.  The proceed

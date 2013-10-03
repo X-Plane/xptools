@@ -323,6 +323,8 @@ void	grind_file(const char * inFileName)
 	if (p != fname.npos)
 	{
 		string suffix(fname.substr(p));
+		for(int i = 0; i < suffix.size(); ++i)
+			suffix[i] = tolower(suffix[i]);
 		string root(fname.substr(0,p));
 
 		if (selected_conversions.find(suffix) == selected_conversions.end())

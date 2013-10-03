@@ -40,6 +40,9 @@ bool	WriteAptFile(const char * inFileName, const AptVector& outApts, int version
 bool	WriteAptFileOpen(FILE * inFile, const AptVector& outApts, int version);
 bool	WriteAptFileProcs(int (* print_func)(void *, const char *, ...), void * ref, const AptVector& outApts, int version);
 
+// Convert 810 to 850 layout
+void	ConvertForward(AptInfo_t& io_apt);
+
 #if OPENGL_MAP
 void	GenerateOGL(AptInfo_t * apt);
 #endif

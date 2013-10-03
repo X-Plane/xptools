@@ -290,7 +290,7 @@ static int DoScreenShot(const vector<const char *>& args)
 		WriteBitmapToPNG(&cap, args[0], NULL, 0, GAMMA_SRGB);
 		DestroyBitmap(&cap);
 	}
-
+	return 0;
 }
 #endif
 

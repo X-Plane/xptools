@@ -44,6 +44,10 @@
 #include "GISTool_Globals.h"
 #endif
 
+// Maximum error for bezier from seg to panic!
+#define MAX_ERR_APT_BEZ_CHECK 0.0
+#define OKAY_WITH_BEZ_BORDERS true
+
 #define KILL_IF_APT_LEAK 1
 
 #define DEBUG_FLATTENING 0
@@ -221,11 +225,11 @@ void BurnInAirport(
 		for (AptBoundaryVector::const_iterator b = inAirport->boundaries.begin(); b != inAirport->boundaries.end(); ++b)
 		{
 			vector<vector<Bezier2> >	bez_poly;
-			AptPolygonToBezier(b->area, bez_poly);
+			AptPolygonToBezier(b->area, bez_poly, OKAY_WITH_BEZ_BORDERS);
 			for (vector<vector<Bezier2> >::iterator w = bez_poly.begin(); w != bez_poly.end(); ++w)
 			{
 				Polygon_2	winding;
-				BezierToSegments(*w, winding,10.0);				
+				BezierToSegments(*w, winding,MAX_ERR_APT_BEZ_CHECK);				
 				if(w==bez_poly.begin())
 				{
 					if(!winding.is_counterclockwise_oriented())
@@ -306,7 +310,7 @@ void BurnInAirport(
 		{
 			vector<vector<Bezier2> >	bez_poly;
 			Polygon_2					winding;
-			AptPolygonToBezier(b->area, bez_poly);
+			AptPolygonToBezier(b->area, bez_poly, true);
 			BezierToSegments(bez_poly.front(), winding,0.0);
 			Polygon_2					convex_hull;
 			
@@ -359,11 +363,11 @@ void BurnInAirport(
 		for (AptBoundaryVector::const_iterator b = inAirport->boundaries.begin(); b != inAirport->boundaries.end(); ++b)
 		{
 			vector<vector<Bezier2> >	bez_poly;
-			AptPolygonToBezier(b->area, bez_poly);
+			AptPolygonToBezier(b->area, bez_poly, OKAY_WITH_BEZ_BORDERS);
 			for (vector<vector<Bezier2> >::iterator w = bez_poly.begin(); w != bez_poly.end(); ++w)
 			{
 				Polygon_2	winding;
-				BezierToSegments(*w, winding,10.0);				
+				BezierToSegments(*w, winding,MAX_ERR_APT_BEZ_CHECK);				
 				if(w==bez_poly.begin())
 				{
 					if(!winding.is_counterclockwise_oriented())
@@ -479,6 +483,15 @@ static void mask_with(DEMGeo& dst, const DEMGeo& src)
 
 void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMGeo& transport, bool crop, bool dems, bool kill_rivers, ProgressFunc prog)
 {
+	double wet_area = 0;
+	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().IsWater())
+	{
+		wet_area += GetMapFaceAreaMeters(f,NULL);
+	}
+	printf("BEFORE: %lf sq meters.\n", wet_area);
+
 	int x1, x2, x, y1, y2, y;
 	Point_2 p1, p2;
 	if (crop)
@@ -663,6 +676,18 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		CropMap(ioMap, CGAL::to_double(p1.x()), CGAL::to_double(p1.y()), CGAL::to_double(p2.x()), CGAL::to_double(p2.y()), false, prog);
 		SimplifyMap(ioMap, kill_rivers, prog);
 	}
+	
+	
+	
+	wet_area = 0;
+	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	if(f->data().IsWater())
+	{
+		wet_area += GetMapFaceAreaMeters(f,NULL);
+	}
+	printf("AFTER: %lf sq meters.\n", wet_area);
+	
 
 }
 void	GenBoundary(
@@ -698,13 +723,18 @@ void	GenBoundary(
 inline Point2	ctrl_for_pt(const AptLinearSegment_t * lin)
 {
 	if(lin->code == apt_rng_crv || lin->code == apt_lin_crv || lin->code == apt_end_crv)
-	return lin->ctrl; else return lin->pt;
+	{
+		return lin->ctrl; 
+	}
+	else 
+		return lin->pt;
 }
 
 
 void	AptPolygonToBezier(
 				const AptPolygon_t&			inPoly,
-				vector<vector<Bezier2> >&	outPoly)
+				vector<vector<Bezier2> >&	outPoly,
+				bool						bez_ok)
 {
 	outPoly.clear();
 	DebugAssert(!inPoly.empty());
@@ -715,6 +745,10 @@ void	AptPolygonToBezier(
 	Point2	fp, fc, lp, lc;
 	for (AptPolygon_t::const_iterator pt = inPoly.begin(); pt != inPoly.end(); ++pt)
 	{
+		if(!bez_ok)
+		if(pt->code == apt_rng_crv || pt->code == apt_lin_crv || pt->code == apt_end_crv)
+			throw "No curves!";
+		
 		if (!has_first)
 		{
 			has_first = true;
@@ -772,12 +806,27 @@ void	BezierToSegments(
 		}
 		else
 		{
+			Segment2	s(b->p1,b->p2);
 			int tess = bz_tess(*b);
 			for (int n = 0; n < tess; ++n)
 			{
+				Point2 bpb(b->midpoint((float)n / (float)tess));
 				Point_2 bp(ben2cgal<Point_2>(b->midpoint((float)n / (float)tess)));
 				if(outWinding.is_empty() || outWinding[outWinding.size()-1] != bp)
+				{
+					if(inSimplify)
+					{
+						if(sqrt(s.squared_distance_supporting_line(bpb)) > inSimplify * MTR_TO_DEG_LAT)
+						{
+							#if OPENGL_MAP
+								debug_mesh_line(bpb,s.projection(bpb),1,0,0,1,0,0);
+							#else
+								throw "too curvy curve!";
+							#endif
+						}
+					}
 					outWinding.push_back(bp);
+				}
 			}
 		}
 	}

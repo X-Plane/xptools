@@ -27,6 +27,7 @@
 #include "GUI_Table.h"
 #include "GUI_TextTable.h"
 #include "GUI_SimpleTableGeometry.h"
+#include "WED_LibraryMgr.h"
 
 class	WED_FilterBar : public GUI_Table, public GUI_TextTableProvider, public GUI_SimpleTableGeometry {
 public:
@@ -36,10 +37,13 @@ public:
 			intptr_t		in_msg, 
 			intptr_t		in_param, 
 			const string&	in_label, 
-			const string&	in_def);
+			const string&	in_def,
+			WED_LibraryMgr *mLibrary,
+			bool			havePacks);
 
 			string		GetText(void) { return mText; }
-
+			string		GetCurPak(void) {return mCurPak;}
+			int			GetPakVal(void) {return mCurPakVal;}
 	// GUI_SimpleTableGeometry
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);
@@ -52,7 +56,7 @@ public:
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
-						GUI_EnumDictionary&			out_dictionary) { }
+						GUI_EnumDictionary&			out_dictionary);
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
@@ -140,18 +144,22 @@ public:
 											GUI_DragData *				drag,
 											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
-
-	
 	
 
 private:
-
+	//current pack one that is selected (used for GetCellContents)
+	//Data from AcceptEdit
+	string				mCurPak;
+	int					mCurPakVal;
+	//Decides if it should have packs
+	bool				mHavePacks;
 	string				mLabel;
 	string				mText;
 	intptr_t			mMsg;
 	intptr_t			mParam;
 	GUI_TextTable		mTextTable;
 
+	WED_LibraryMgr		*mLibrary;
 };						
 
 #endif

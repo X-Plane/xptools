@@ -181,39 +181,59 @@ void		GUI_TextTable::SetProvider(GUI_TextTableProvider * content)
 
 void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState			  )
 {
+	//--This section draws?
 	if (mImage.empty())
 	{
+		//Change the instage so it is completely deactivated
 		inState->SetState(false, false, false,	false, false, false, false);
+		//sets the color
 		glColor4fv(mColorGridlines);
+		//draws the border of where the image should be.
 		glBegin(GL_LINE_STRIP);
 		glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
 		glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
 		glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
 		glEnd();
 	}
-
+	//---------
+	
+	//Cell Type, intacts with GUI_CellContentType enums
 	int cell_type = 0;
 
+	//Cell Content
 	GUI_CellContent	c;
+
+	//If there is content
 	if (mContent)
 	{
+		//Get the Cell content bassed on the x,y positions and c
 		mContent->GetCellContent(cell_x,cell_y,c);
+		//If there is an image
 		if (!mImage.empty())
-		if (c.can_edit)
-		if (c.content_type != gui_Cell_None) cell_type = 1;
+			//And it can be edited
+			if (c.can_edit)
+				//and the content type is not none, the cell type is 1 (aka Disclose)
+				if (c.content_type != gui_Cell_None) cell_type = 1;
 	}
 
+	//If there is an image
 	if (!mImage.empty())
 	{
+		//Set the color equal to white
 		glColor3f(1,1,1);
+		//Set the sprite sheet selector
 		int tile[4] = { 0, cell_type, 1, 2 };
+		//Draw it
 		GUI_DrawHorizontalStretch(inState, mImage.c_str(), cell_bounds, tile);
 	}
 
+	//If there is no longer content, exit
 	if (!mContent) return;
-
+	
+	//--Draw "selected" highlights
 	if (c.is_selected)
 	{
+		//highlight the selected place
 		glColor4fv(mColorSelect);
 		glBegin(GL_QUADS);
 		glVertex2i(cell_bounds[0]  ,cell_bounds[1]+1);
@@ -221,35 +241,55 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		glVertex2i(cell_bounds[2]-1,cell_bounds[3]  );
 		glVertex2i(cell_bounds[2]-1,cell_bounds[1]+1);
 		glEnd();
+		//Reset the color
 		glColor4fv(mColorGridlines);
 	}
+	//-----------------------------------------------------
 
+	//advance the left side of the cell bounds by the indent level * the pixels of an indent
 	cell_bounds[0] += (c.indent_level * mCellIndent);
 
+	//Buffer of charecters, apperently unused.
 	char buf[50];
+	
+	//Switch on the content type
 	switch(c.content_type) {
+	//If the Cell is disclosed
 	case gui_Cell_Disclose:
+		//clear the content's text value
 		c.text_val.clear();
 		break;
+	//If it is a check box, also clear the text value
 	case gui_Cell_CheckBox:
 		c.text_val = "";
 		break;
 	}
-
+	
+	
 	if(c.is_disclosed || c.can_disclose)
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
 
-		int tile[4] = { c.is_disclosed ? 1 : 0,
+		/*-----2x2 grid-
+		| A    | B  |
+		|  >  |  V  |
+		|_____|_____|
+		| C   | D   |
+		|_____|_____|*/
+			
+		int tile[4] = { 
+			//If discolosed V, else >
+			c.is_disclosed ? 1 : 0,
+			//If Everything is in its right place 1, else 0 (C or D)
 			(cell_x == mClickCellX && cell_y == mClickCellY && mEditInfo.content_type == gui_Cell_Disclose && mInBounds) ? 1 : 0,
 			2, 2 };
-
+			
 		glColor3f(1,1,1);
 		GUI_DrawCentered(inState, "disclose.png", cell_bounds, -1, 0, tile, NULL, NULL);
 
 		cell_bounds[0] += mDiscloseIndent;
 	}
-
+	
 	float	cell_h = cell_bounds[3] - cell_bounds[1];
 	float	line_h = GUI_GetLineHeight(mFont);
 	int		descent = GUI_GetLineDescent(mFont);
@@ -291,19 +331,24 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		else
 		{
 			GUI_TruncateText(c.text_val, mFont, trunc_width);
+			
+			//Draws normal text
 			GUI_FontDraw(inState, mFont,
 				(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
 				cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());
 		}
 	}
 
+	//--Draws all enums
 	if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
 	{
 		int tile[4] = { 0, 0, 1, 1 };
 		glColor4fv((c.is_selected||cell_type) ? mColorTextSelect : mColorText);
 		GUI_DrawCentered(inState, "arrows.png", cell_bounds, 1, 0, tile, NULL, NULL);
 	}
+	//---------------------------------------------------------------------------
 
+	//--This section draws all Checkbox related items
 	if (c.content_type == gui_Cell_CheckBox)
 	{
 		int selector[4] = {
@@ -323,8 +368,10 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		case gui_Bool_Visible:		GUI_DrawCentered(inState, "eye.png", cell_bounds, 0, 0, selector, NULL, NULL);		break;
 		}
 	}
+	//---------------------------------------------------------------
 
 	inState->SetState(false, false, false,	true, true, false, false);
+	//----This switch draws highlights and effects for a dragging event
 	switch(mDragDest) {
 	case gui_Table_Row:
 	case gui_Table_Column:
@@ -374,7 +421,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		break;
 	}
 	glColor4fv(mColorGridlines);
-
+	//-----------------------------------------------------------------
 }
 
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
@@ -579,13 +626,22 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].key = 0;
 					items[i].flags = 0;
 					items[i].cmd = 0;
-					if (mEditInfo.int_val == it->first) cur = i;
+					if (mEditInfo.int_val == it->first)
+					{
+						cur = i;
+						
+						//Saves the selected enum's text value to mEditInfo
+						//So the value can be used in whatever calls Accept Edit
+						mEditInfo.text_val = it->second.first.c_str();
+					}
 					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
 				}
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
+				
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
+
 					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
 				}
 			}

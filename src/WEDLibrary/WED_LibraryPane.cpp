@@ -42,7 +42,9 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 	mScroller->Show();
 	mScroller->SetSticky(1,1,1,1);
 
+	//Library Pane's TextTable's provider is set to be the Library List Adapter
 	mTextTable.SetProvider(&mLibraryList);
+	
 	mTextTable.SetGeometry(&mLibraryList);
 
 	mTextTable.SetColors(
@@ -93,7 +95,7 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
-	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Filter:", "");
+	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Filter:", "", mgr,true);
 	mFilter->Show();
 	mFilter->SetParent(this);
 	mFilter->AddListener(this);
@@ -104,6 +106,10 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					this->PackPane(mScroller, gui_Pack_Center);
 
 					mScroller->PositionHeaderPane(mHeader);
+					
+					#if DEV
+					//PrintDebugInfo();
+					#endif
 }
 
 WED_LibraryPane::~WED_LibraryPane()
@@ -116,5 +122,5 @@ void	WED_LibraryPane::ReceiveMessage(
 							intptr_t				inParam)
 {
 	if(inMsg == GUI_FILTER_FIELD_CHANGED)
-		mLibraryList.SetFilter(mFilter->GetText());
+		mLibraryList.SetFilter(mFilter->GetText(),mFilter->GetPakVal());
 }

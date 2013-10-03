@@ -48,6 +48,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"-",					0,		0,								0,	0					},
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
+{	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if ROBIN_IMPORT_FEATURES
 {	"Import from Global Airports",0,0,								0,	wed_ImportRobin		},
 #endif
@@ -93,10 +94,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rever&se",				'R',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Reverse		},
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
-{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
-#if !NO_CGAL_BEZIER
-{	"Error-Check Polygons",	0,		0,								0,	wed_CheckPolys	},
-#endif
+//{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 #if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
 #endif
@@ -229,7 +227,6 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 
 void WED_MakeMenus(GUI_Application * inApp)
 {
-
 	GUI_Menu file_menu = inApp->CreateMenu(
 		"&File", kFileMenu, inApp->GetMenuBar(), 0);
 

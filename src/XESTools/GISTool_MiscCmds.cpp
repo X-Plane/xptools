@@ -531,6 +531,7 @@ static int DoClear(const vector<const char *>& args)
 		(*i)->data().mObjs.clear();
 		(*i)->data().mPolyObjs.clear();
 	}
+	return 0;
 }
 #endif
 

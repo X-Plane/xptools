@@ -58,6 +58,7 @@
 #include "WED_LibraryListAdapter.h"
 #include "WED_LibraryMgr.h"
 #include "IDocPrefs.h"
+#include "WED_Orthophoto.h"
 #if WITHNWLINK
 #include "WED_Document.h"
 #include "WED_Server.h"
@@ -351,7 +352,9 @@ int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 int		WED_MapPane::Map_HandleCommand(int command)
 {
 	Bbox2 box;
+	
 	switch(command) {
+	case wed_ImportOrtho:	WED_MakeOrthos(mResolver, mMap); return 1;
 	case wed_PickOverlay:	WED_DoMakeNewOverlay(mResolver, mMap); return 1;
 	case wed_ToggleWorldMap:mWorldMap->ToggleVisible(); return 1;
 //	case wed_ToggleOverlay:	if (mImageOverlay->CanShow()) { mImageOverlay->ToggleVisible(); return 1; }

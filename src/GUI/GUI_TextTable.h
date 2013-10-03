@@ -56,7 +56,7 @@ enum GUI_CellContentType {
 	gui_Cell_CheckBox,			// int val				int val
 	gui_Cell_Integer,			// string&int val		int val
 	gui_Cell_Double,			// string&double val	double val
-	gui_Cell_Enum,				// string&int			int
+	gui_Cell_Enum,				// string&int			string&int
 	gui_Cell_EnumSet			// string val&int set	int set, int
 };
 
@@ -84,6 +84,67 @@ struct	GUI_CellContent {
 	GUI_BoolIcon			bool_val;		// for get only - to pick check type!
 	int						bool_partial;	// for checks - if we are on but our parent is off...
 	int						string_is_resource;
+
+	//Prints a cell's information to the console window, by default it prints only important stuff
+	void printCellInfo(
+		//Boolean flags to turn on/off drawing
+		bool pcontType =true,
+		bool pcan_edit =true,
+		bool pcan_disclose =true,
+		bool pcan_select =true,
+		bool pcan_drag =false,
+
+		bool pis_disclosed =true,
+		bool pis_selected =true,
+		bool pindent_level =true,
+
+		bool ptext_val =true,
+		bool pint_val =false,
+		bool pdouble_val =false,
+		bool pbool_val =false,
+		bool pbool_partial =false,
+		bool pstring_is_resource = true
+		)
+	{
+	//if(flag is on) printf(stuff new line)
+	printf("\n ------------------------------- \n");
+	if(pcontType)
+	{
+		switch(content_type)
+		{
+			case gui_Cell_None: printf("*content_type: gui_Cell_None \n"); break;
+			case gui_Cell_Disclose: printf("*content_type: gui_Cell_Disclose \n"); break;
+			case gui_Cell_EditText: printf("*content_type: gui_Cell_EditText \n"); break;
+			case gui_Cell_FileText: printf("*content_type: gui_Cell_FileText \n"); break;
+			case gui_Cell_CheckBox: printf("*content_type: gui_Cell_CheckBox \n"); break;
+			case gui_Cell_Integer: printf("*content_type: gui_Cell_Integer \n"); break;
+			case gui_Cell_Double: printf("*content_type: gui_Cell_Double \n"); break;
+			case gui_Cell_Enum: printf("*content_type: gui_Cell_Enum \n"); break;
+			case gui_Cell_EnumSet: printf("*content_type: gui_Cell_EnumSet \n"); break;
+			//for(set<int>::iterator iter=int_set_val.begin();iter != int_set_val.end(); ++iter)
+			//{
+				
+			//}
+			default: printf("*content_type: %d \n", content_type); break;
+		}
+	}	
+	if(pcan_edit) printf("*can_edit: %d \n", can_edit);
+	if(pcan_disclose) printf("*can_disclose: %d \n", can_disclose);
+	if(pcan_select) printf("*can_select: %d \n", can_select);
+	if(pcan_drag) printf("can_drag: %d \n", can_drag);
+
+	if(pis_disclosed) printf("*is_disclosed: %d \n", is_disclosed);
+	if(pis_selected) printf("*is_selected: %d \n", is_selected);
+	if(pindent_level) printf("*indent_level: %d \n", indent_level);
+
+	if(ptext_val) printf("*text_val: %s \n", text_val.c_str());
+	if(pint_val) printf("int_val: %d \n", int_val);
+	if(pdouble_val) printf("double_val: %lf \n", double_val);
+	if(pbool_val) printf("bool_val: %d \n", bool_val);
+	if(pbool_partial) printf("bool_partial: %d \n", bool_partial);
+	if(pstring_is_resource) printf("string_is_resource: %d \n", string_is_resource);
+	}
+
 };
 
 struct GUI_HeaderContent {
@@ -212,7 +273,7 @@ public:
 
 // A text table is table content - that is, the drawing brains of a table.
 // It in turn queries the "provider" for the actual content.  It allows you to specify a table as strings (easy)
-// instead of drawing calls (PITA).
+// instead of drawing calls (PITA)
 
 class	GUI_TextTable : public GUI_TableContent, public GUI_Broadcaster, public GUI_Commander, public GUI_Listener {
 public:
@@ -239,6 +300,7 @@ public:
 								float bkgnd_color[4],
 								float box_color[4]);
 
+	//Cell Drawing Method, takes the bounds of the cell, the x and y positions of the cell and the graph state
 	virtual	void		CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_GraphState * inState);
 	virtual	int			CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock);
 	virtual	void		CellMouseDrag(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button									  );

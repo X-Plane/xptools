@@ -88,7 +88,7 @@ void		WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	mThe = mTheOrig - dy * 0.5;
 	
 	mThe = fltlim(mThe,-90,90);
-	mPsi - fltwrap(mPsi,-180,180);
+	mPsi = fltwrap(mPsi,-180,180);
 	Refresh();
 }
 void		WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)

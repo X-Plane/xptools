@@ -248,6 +248,7 @@ void	CreateTranslatorForPolygon(
 	trans.mDstMax.y_ = (trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT;
 }
 
+#if !NO_CGAL
 void	CreateTranslatorForBounds(
 					const Point_2&		inSrcMin,
 					const Point_2&		inSrcMax,
@@ -261,6 +262,7 @@ void	CreateTranslatorForBounds(
 					(trans.mSrcMax.x() - trans.mSrcMin.x()) * DEG_TO_MTR_LAT * cos(to_double((trans.mSrcMin.y() + trans.mSrcMax.y())) * 0.5 * DEG_TO_RAD),
 					(trans.mSrcMax.y() - trans.mSrcMin.y()) * DEG_TO_MTR_LAT);
 }
+#endif
 
 void	CreateTranslatorForBounds(
 					const Bbox2&		inBounds,

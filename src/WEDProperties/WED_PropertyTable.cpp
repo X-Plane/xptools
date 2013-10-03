@@ -201,7 +201,9 @@ void	WED_PropertyTable::GetCellContent(
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
 //	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
-
+	#if DEV
+		//the_content.printCellInfo(true,true,false,true,false,false,true,false,true,false,false,false,false,false);
+	#endif
 }
 
 void	WED_PropertyTable::GetEnumDictionary(

@@ -436,11 +436,11 @@ void			MapMergePolygonSet(Pmwx& io_dst, const Polygon_set_2& src, set<Face_handl
 
 Face_handle		MapOverlayPolygon(Pmwx& io_dst, const Polygon_2& src, Locator * loc)
 {
-	MapOverlayPolygonAny(io_dst,src,loc);
+	return MapOverlayPolygonAny(io_dst,src,loc);
 }
 Face_handle		MapOverlayPolygonWithHoles(Pmwx& io_dst, const Polygon_with_holes_2& src, Locator * loc)
 {
-	MapOverlayPolygonAny(io_dst,src,loc);
+	return MapOverlayPolygonAny(io_dst,src,loc);
 }
 
 void			MapOverlayPolygonSet(Pmwx& io_dst, const Polygon_set_2& src, Locator * loc, set<Face_handle> * faces)

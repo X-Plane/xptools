@@ -22,6 +22,10 @@
  */
 
  #define __DEBUGGING__
+#if DEV
+//Adds the abilty to bring up a console for debuging
+#include <stdio.h>
+#endif
 
 #include "WED_AboutBox.h"
 // Stuff we need to init
@@ -32,7 +36,6 @@
 #include "WED_AboutBox.h"
 #include "WED_StartWindow.h"
 //#include "ObjTables.h"
-#include <CGAL/assertions_behaviour.h>
 #include "GUI_Clipboard.h"
 #include "WED_Package.h"
 #include "GUI_Resources.h"
@@ -114,32 +117,6 @@ HINSTANCE gInstance = NULL;
 #endif
 
 
-CGAL::Failure_function	gFailure = NULL;
-void	cgal_failure(const char* a, const char* b, const char* c, int d, const char* e)
-{
-#if IBM
-	char str[65536];
-	snprintf(str, 65536, "%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
-	MessageBox(0, str, "CGAL error", MB_OK);
-#else
-	printf("%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
-#endif
-	if (gFailure)
-		(*gFailure)(a, b, c, d, e);
-	throw a;
-}
-
-void	cgal_warning(const char* a, const char* b, const char* c, int d, const char* e)
-{
-#if IBM
-	char str[65536];
-	snprintf(str, 65536, "%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
-	MessageBox(0, str, "CGAL warning", MB_OK);
-#else
-	printf("%s: %s\n(%s: %d)\n%s\n",a,b,c,d,e);
-#endif
-}
-
 #if IBM
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 #else
@@ -160,6 +137,17 @@ int main(int argc, char * argv[])
 #endif
 	WED_PackageMgr	pMgr(NULL);
 
+	#if IBM && DEV
+		//Creates a console window to use as a debuging place and starts it minimized
+		if(AllocConsole())
+		{
+				freopen("CONOUT$", "w",stdout);
+				SetConsoleTitle("Debug Window");
+				ShowWindowAsync(GetConsoleWindow(),SW_SHOWNORMAL);
+				ShowWindowAsync(GetConsoleWindow(),SW_SHOWMINNOACTIVE);
+		}
+	#endif
+
 	// Ben says: the about box is actually integral to WED's operation.  WED uses a series of shared OGL contexts to hold
 	// our textures, and WED cannot handle the textures being thrown away and needing a reload.  So logically we must have
 	// at least one shared context so that the textures are not purged.
@@ -171,11 +159,6 @@ int main(int argc, char * argv[])
 	WED_StartWindow * start = new WED_StartWindow(&app);
 
 	start->Show();
-
-	gFailure = CGAL::set_error_handler(cgal_failure);
-#if DEV
-	CGAL::set_warning_handler(cgal_warning);
-#endif
 
 	start->ShowMessage("Initializing...");
 //	XESInit();

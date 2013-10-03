@@ -38,9 +38,19 @@ WED_LibraryListAdapter::WED_LibraryListAdapter(WED_LibraryMgr * who) :
 		GUI_SimpleTableGeometry(1,kDefCols,20),
 	mCacheValid(false), mLibrary(who),
 	mMap(NULL),
-	mPreview(NULL)
+	mPreview(NULL),
+	//Set to diffrent numbers so as not to cause conflicts
+	//in GetNthCacheIndex
+	mCatLocInd(-1234),
+	mCatLibInd(-5678),
+	mCurPakVal(pack_Library)
 {
 	mLibrary->AddListener(this);
+
+	this->mLocalStr = "Local/";
+	this->mLibraryStr = "Library/";
+	mOpen[mLocalStr] = 0;
+	mOpen[mLibraryStr] = 0;
 }
 
 
@@ -54,9 +64,13 @@ void	WED_LibraryListAdapter::SetMap(WED_MapPane * amap, WED_LibraryPreviewPane *
 	mPreview = apreview;
 }
 
-void	WED_LibraryListAdapter::SetFilter(const string& f)
+void	WED_LibraryListAdapter::SetFilter(const string& f, int int_val)
 {
 	mFilter.clear();
+	mCurPakVal = int_val;
+	//Ensures that even with no library heirarchy things
+	//Can still be searched for
+
 	tokenize_string_func(f.begin(),f.end(),back_inserter(mFilter),::isspace);
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
@@ -71,22 +85,69 @@ void	WED_LibraryListAdapter::GetCellContent(
 			int							cell_y,
 			GUI_CellContent&			c)
 {
+	/*How this works
+	* 1.) Rebuild the cache
+	* 2.) Get the path from mCache (with the prefixes)
+	* 3.) Set Flags
+	* 4.) Cut and draw (see more below)
+	*/
 	RebuildCache();
+
+	string pPath = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,true) : "";
+
+	string path = cell_y < mCache.size() ? GetNthCacheIndex(cell_y,false) : "";
+	
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
+	
+	//Defaults 0, makes !special or !normal
 	c.can_edit = false;
-	string r = cell_y < mCache.size() ? mCache[cell_y] : "";
-	c.can_disclose = mLibrary->GetResourceType(r) == res_Directory;
+	c.can_disclose = 0; //Default no.
+	
 	c.can_select = true;
 	c.can_drag = false;
-	if(c.can_disclose)	c.is_disclosed = IsOpen(r);
-	else				c.is_disclosed = false;
-	c.is_selected = r == mSel;
-	int cut = -1;
 	c.indent_level = 0;
-	for(int n = 1; n < r.size(); ++n)
-		if(r[n] == '/') cut = n, ++c.indent_level;
-	c.text_val = r.substr(cut+1);
-	c.string_is_resource = false;
+	c.is_disclosed = IsOpen(path);
+	c.is_selected = path == mSel;
+	c.string_is_resource = 0;
+	c.text_val = path;
+
+	//If the fourth to last charecter in the path is a . then it must be a file
+	if( c.text_val.find_last_of('.',c.text_val.size()) == c.text_val.size()-4)
+	{
+		c.can_disclose = 0;
+	}
+	else
+	{
+		c.can_disclose = 1;
+	}
+	
+	if(cell_y == mCatLocInd || cell_y == mCatLibInd )
+	{
+		c.text_val = pPath;
+		return;
+	}
+	else
+	{
+		c.text_val = path;
+	}
+
+	//Go through the string and increase the indent everytime one see's a /
+	int cut = 0;
+	for(int i = 0; i < c.text_val.size(); ++i)
+	{
+		if(c.text_val[i] == '/' && c.text_val != pPath)
+		{
+			//Update where to cut
+			cut = i;
+			++c.indent_level;
+		}
+	}
+
+	//Cut here
+	c.text_val = c.text_val.substr(cut+1);
+#if DEV
+	//c.printCellInfo(true,true,true,true,false,true,true,false,true,0,0,0,0,1);
+#endif
 }
 
 void	WED_LibraryListAdapter::GetEnumDictionary(
@@ -108,11 +169,13 @@ void	WED_LibraryListAdapter::ToggleDisclose(
 			int							cell_x,
 			int							cell_y)
 {
+
 	RebuildCache();
+	string r = GetNthCacheIndex(cell_y,false);
 	if(cell_y < mCache.size())
 	{
-		string r(mCache[cell_y]);
 		SetOpen(r,1-IsOpen(r));
+
 		mCacheValid = false;
 		BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 	}
@@ -131,7 +194,7 @@ void	WED_LibraryListAdapter::SelectionStart(
 			int							clear)
 {
 	if(clear)
-		SetSel("");
+		SetSel("","");
 }
 
 int		WED_LibraryListAdapter::SelectGetExtent(
@@ -143,10 +206,12 @@ int		WED_LibraryListAdapter::SelectGetExtent(
 	RebuildCache();
 	low_x = high_x = 0;
 	for(int n = 0; n < mCache.size(); ++n)
-	if(mCache[n] == mSel)
 	{
-		low_y = high_y = n;
-		return true;
+		if(GetNthCacheIndex(n,false) == mSel)
+		{
+			low_y = high_y = n;
+			return true;
+		}
 	}
 	return false;
 }
@@ -171,9 +236,17 @@ void	WED_LibraryListAdapter::SelectRange(
 			int							is_toggle)
 {
 	RebuildCache();
-	string r = mCache[start_y];
-	if(is_toggle && r == mSel)	SetSel("");
-	else						SetSel(r);
+	string r = GetNthCacheIndex(start_y,false);
+	string noPrefix = GetNthCacheIndex(start_y,true);
+
+	if(is_toggle && r == mSel)
+	{
+		SetSel("",noPrefix);
+	}
+	else
+	{
+		SetSel(r,noPrefix);
+	}
 
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 }
@@ -186,7 +259,25 @@ int		WED_LibraryListAdapter::SelectDisclose(
 			int							open_it,
 			int							all)
 {
-	if (!mSel.empty() && mLibrary->GetResourceType(mSel) == res_Directory)
+	/* Find the mSel, remove the prefix (correctly)
+	* Test if the current selection is not a file
+	* If it is not a file, do what it needs to do
+	* Else return nothing
+	*/
+	vector<string>::iterator itr = find(mCache.begin(),mCache.end(),mSel);
+	string tempMSel = "";
+	
+	if(*itr == mLocalStr || *itr == mLibraryStr)
+	{
+		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),false);
+	}
+	else
+	{
+		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),true);
+	}
+	
+	if (!mSel.empty() && mLibrary->GetResourceType(tempMSel) == res_Directory ||
+		mSel == mLocalStr || mSel == mLibraryStr)
 	{
 		SetOpen(mSel, open_it);
 		mCacheValid = false;
@@ -231,7 +322,7 @@ void	WED_LibraryListAdapter::GetHeaderContent(
 						int							cell_x,
 						GUI_HeaderContent&			c)
 {
-	c.title = "Library";
+	c.title = "Library Pane";
 	c.is_selected=false;
 	c.can_resize=false;
 	c.can_select=false;
@@ -250,6 +341,57 @@ void	WED_LibraryListAdapter::ReceiveMessage(
 	}
 }
 
+void WED_LibraryListAdapter::DoFilter()
+{
+	//If there is something in the filte
+	if(!mFilter.empty())
+	{
+		//A collection strings to keep
+		vector<string>	keepers;
+		int last = -1;
+
+		//For all the strings in the cache
+		for(int i = 0; i < mCache.size(); ++i)
+		{
+			//If the current string in mCache matches whats in the filter
+			if(filter_match(mCache[i],mFilter.begin(),mFilter.end()))
+			{
+
+				for(int p = last+1; p < i; ++p)
+				{
+					if(mCache[p].size() < mCache[i].size() &&
+						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
+					{
+						keepers.push_back(mCache[p]);					
+					}
+				}
+				//Add the string to keepers
+				keepers.push_back(mCache[i]);
+				last = i;
+			}
+		}
+
+		//Swap keepers and mCache so mCache only has the strings to keep
+		std::swap(keepers,mCache);
+	}
+
+	//Reverse the order.
+	reverse(mCache.begin(),mCache.end());
+
+	//Set the locations of mCatLocInd and mCatLibInd
+	for(vector<string>::iterator itr = mCache.begin(); itr != mCache.end(); ++itr)
+	{
+		if(*itr == mLocalStr)
+		{
+			mCatLocInd = distance(mCache.begin(),itr);
+		}
+		if(*itr == mLibraryStr)
+		{
+			mCatLibInd = distance(mCache.begin(),itr);
+		}
+	}
+}
+
 int		WED_LibraryListAdapter::IsOpen(const string& r)
 {
 	hash_map<string,int>::iterator i = mOpen.find(r);
@@ -264,56 +406,75 @@ void	WED_LibraryListAdapter::SetOpen(const string& r, int open)
 
 void	WED_LibraryListAdapter::RebuildCache()
 {
-	if(mCacheValid) return;
+	//If the cache is valid, exit early because it doesn't need to rebuild
+	if(mCacheValid) 
+	{
+		return;
+	}
+
+	//A collection of root paths, formerly known as seeds
+	vector<string> rootItems;
+
+	//Set the cache to be valid
 	mCacheValid = true;
+	
+	//Clear out all strings inside
 	mCache.clear();
+	
+	mCache.push_back(mLocalStr);
+	mCatLocInd = mCache.size()-1;
 
-	vector<string> seeds;
-	mLibrary->GetResourceChildren("",pack_Local,seeds);
-	for(vector<string>::iterator s = seeds.begin(); s != seeds.end(); ++s)
-		RebuildCacheRecursive(*s);
-
-	mLibrary->GetResourceChildren("",pack_Library,seeds);
-	for(vector<string>::iterator s = seeds.begin(); s != seeds.end(); ++s)
-		RebuildCacheRecursive(*s);
-
-	if(!mFilter.empty())
+	if(IsOpen(GetNthCacheIndex(mCatLocInd,false)) || !mFilter.empty()) //Will build if there is something in the filter bar
 	{
-		vector<string>	keepers;
-		int last = -1;
-		for(int i = 0; i < mCache.size(); ++i)
+		//Goes to the data model and gets all of the root items that are local
+		mLibrary->GetResourceChildren("",pack_Local,rootItems);
+
+		//For all the root items
+		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
 		{
-			if(filter_match(mCache[i],mFilter.begin(),mFilter.end()))
-			{
-				for(int p = last+1; p < i; ++p)
-					if(mCache[p].size() < mCache[i].size() &&
-						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
-				{
-					keepers.push_back(mCache[p]);					
-				}
-				keepers.push_back(mCache[i]);
-				last = i;
-			}
+			//Add the prefix
+			//s->insert(0,mLocalStr);
+			//Try to find their children
+			RebuildCacheRecursive(*s,pack_Local,mLocalStr);
 		}
-		swap(keepers,mCache);
 	}
 
-	reverse(mCache.begin(),mCache.end());
-}
+	mCache.push_back(mLibraryStr);
+	mCatLibInd = mCache.size()-1;
 
-void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r)
-{
-	mCache.push_back(r);
-	if(IsOpen(r) || !mFilter.empty())
+	if(IsOpen(GetNthCacheIndex(mCatLibInd,false)) || !mFilter.empty())
 	{
+		//Goes to the data model and gets all of the root items that are in the library
+		mLibrary->GetResourceChildren("",mCurPakVal,rootItems);
+	
+		//For all root items
+		for(vector<string>::iterator s = rootItems.begin(); s != rootItems.end(); ++s)
+		{
+			//Try to find their children
+			RebuildCacheRecursive(*s,mCurPakVal,mLibraryStr);
+		}
+	}
+
+	DoFilter();
+}
+
+void	WED_LibraryListAdapter::RebuildCacheRecursive(const string& r, int packType, const string& prefix)
+{
+	//Add the string to the cache.
+	mCache.push_back(prefix+r);
+
+	//If the item is open or the filter has something in it
+	if(IsOpen(mCache.back()) || !mFilter.empty())
+	{
+		//Recuse again
 		vector<string> kids;
-		mLibrary->GetResourceChildren(r,pack_All,kids);
+		mLibrary->GetResourceChildren(r,packType,kids);
 		for(vector<string>::iterator k = kids.begin(); k != kids.end(); ++k)
-			RebuildCacheRecursive(*k);
+			RebuildCacheRecursive(*k, packType, prefix);
 	}
 }
 
-void WED_LibraryListAdapter::SetSel(const string& s)
+void WED_LibraryListAdapter::SetSel(const string& s,const string& noPrefix)
 {
 	if(s != mSel)
 	{
@@ -325,11 +486,73 @@ void WED_LibraryListAdapter::SetSel(const string& s)
 		else
 		{
 			if(mPreview)
-				mPreview->SetResource(s, mLibrary->GetResourceType(s));
+			{
+
+				int type =  mLibrary->GetResourceType(noPrefix);
+				mPreview->SetResource(noPrefix,type);
+			}
 			if(mMap)
-				mMap->SetResource(s, mLibrary->GetResourceType(s));
+				mMap->SetResource(noPrefix, mLibrary->GetResourceType(noPrefix));
 		}
 		
 		mSel = s;
+	}
+}
+
+string WED_LibraryListAdapter::GetNthCacheIndex (int index, bool noPrefix)
+{
+	string path = mCache[index];
+	/*mCache by this point will look something like 
+	* index 0
+	* ...
+	* index mCatLibInd
+	* ...
+	* index mCatLocInd
+	* Therefore anything between 0 and mCatLibInd is underneath Library
+	* and anything mCatLibInd+1 and mCatLocInd is underneath Local
+	*/
+	if(index < mCatLibInd)
+	{
+		if(noPrefix)
+		{
+			return path.erase(0,mLibraryStr.length());
+		}
+		return path;
+	}
+	else if(index > mCatLibInd && index < mCatLocInd)
+	{
+		if(noPrefix)
+		{
+			return path.erase(0,mLocalStr.length());
+		}
+		return path;
+	}
+	/*
+	* Because none of the ranges of checking are <= or >=
+	* We'll handle those cases here.
+	*/
+	else if(index == mCatLibInd)
+	{
+		if(noPrefix)
+		{
+			return path.erase(path.size()-1);
+		}
+		return path;
+	}
+	else if(index == mCatLocInd)
+	{
+		if(noPrefix)
+		{
+			return path.erase(path.size()-1);
+		}
+		return path;
+	}
+	else
+	{
+		// This is just to shut the compiler up - 
+		// mCatLocInd is the LAST item in the array since the cache is
+		// upside down.  So if we fall out here, our index is bad.
+		DebugAssert(!"Out of bounds index.");
+		return path;
 	}
 }

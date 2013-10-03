@@ -37,6 +37,7 @@ inline CDT::Vertex_handle CDT_Recover_Handle(CDT::Vertex *the_vert)
 			return v;
 	}
 	DebugAssert(!"Should not be here.");
+	return CDT::Vertex_handle();
 }
 
 MeshSimplify::MeshSimplify(CDT& in_mesh, mesh_error_f in_err) : mesh(in_mesh), err_f(in_err)

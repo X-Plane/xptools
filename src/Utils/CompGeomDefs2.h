@@ -41,9 +41,9 @@ struct	Bbox2;
 struct  Line2;
 struct Bezier2;
 
-
-#if IBM
-//	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
+//This code is only for MSVC
+#if defined(_MSC_VER)
+	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
 #endif
 
 enum {
@@ -1844,7 +1844,7 @@ double signed_area_pt(__Iterator begin, __Iterator end)
 // to the curve is less than "err".  Note that the LAST point is NOT emitted!!!  Why?  So that you
 // can chain a sequence or ring of these guys together.
 template <class __output_iterator>
-void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator output, double t_start=0.0, double t_middle=0.5, double t_end=1.0)
+void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator output, double t_start, double t_middle, double t_end)
 {
 	if(t_middle <= t_start || t_middle >= t_end) return;	// No "space"?  Probably too much recursion, just bail.
 	
@@ -1867,7 +1867,7 @@ void approximate_bezier_epsi(const Bezier2& b, double err, __output_iterator out
 }
 
 template <class __output_iterator>
-void approximate_bezier_epsi_2(const Bezier2& b, const Bezier2& b2, double err, __output_iterator output, __output_iterator output2, double t_start=0.0, double t_middle=0.5, double t_end=1.0)
+void approximate_bezier_epsi_2(const Bezier2& b, const Bezier2& b2, double err, __output_iterator output, __output_iterator output2, double t_start, double t_middle, double t_end)
 {
 	if(t_middle <= t_start || t_middle >= t_end) return;	// No "space"?  Probably too much recursion, just bail.
 	

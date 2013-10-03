@@ -107,7 +107,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 							const vector<int>		has_split,
 							int						closed)
 {
-		char buf[256];
+	char buf[256];
 
 	int idx;
 	WED_Thing * host = GetHost(idx);

@@ -53,7 +53,8 @@ void	GenBoundary(
 
 void	AptPolygonToBezier(
 				const AptPolygon_t&			inPoly,
-				vector<vector<Bezier2> >&	outPoly);
+				vector<vector<Bezier2> >&	outPoly,
+				bool						bez_ok);
 
 void	BezierToSegments(
 				const vector<Bezier2>&		inWinding,

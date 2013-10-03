@@ -3,7 +3,6 @@
  *
  */
 
-#include "hl_types.h"
 #include "WED_TCEVertexTool.h"
 #include "ISelection.h"
 #include "IOperation.h"

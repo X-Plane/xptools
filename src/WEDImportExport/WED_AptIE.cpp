@@ -21,6 +21,7 @@
  *
  */
 
+#include "WED_AptImportDialog.h"
 #include "WED_AptIE.h"
 #include "WED_Airport.h"
 #include "WED_AirportBeacon.h"
@@ -45,17 +46,16 @@
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
-#include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
 
 #include "AptIO.h"
-#include "AptAlgs.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
-#include "PlatformUtils.h"
 
+#include "PlatformUtils.h"
 #include <stdarg.h>
+
 
 #if ERROR_CHECK
 error checking here and in apt-io
@@ -665,19 +665,49 @@ int		WED_CanImportApt(IResolver * resolver)
 
 void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane)
 {
-	char path[1024];
-	strcpy(path,"");
-	if (GetFilePathFromUser(getFile_Open,"Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT, path, sizeof(path)))
+	vector<string>	fnames;
+	
+	#if ROBIN_IMPORT_FEATURES
+	
+		char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
+		if(!path)
+			return;
+		
+		char * free_me = path;
+		
+		while(*path)
+		{
+			fnames.push_back(path);
+			path += (strlen(path)+1);
+		}
+		
+		free(free_me);
+	
+	#else
+		char path[1024];
+		strcpy(path,"");	
+		if (GetFilePathFromUser(getFile_Open,"Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT, path, sizeof(path)))
+		fnames.push_back(path);
+	#endif
+	
+	if(fnames.empty())
+		return;
+		
+	AptVector	apts, one_apt;
+	
+	for(vector<string>::iterator f = fnames.begin(); f != fnames.end(); ++f)
 	{
-		AptVector	apts;
-		string result = ReadAptFile(path, apts);
+		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{
 			string msg = string("Unable to read apt.dat file '") + path + string("': ") + result;
 			DoUserAlert(msg.c_str());
 			return;
 		}
-	
-		WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive, pane);
+		
+		apts.insert(apts.end(),one_apt.begin(),one_apt.end());
 	}
+	
+	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive, pane);
 }
+

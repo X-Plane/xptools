@@ -68,6 +68,7 @@ static int is_direct_parent(const string& parent, const string& child)
 																	return true;
 }
 
+//Library manager constructor
 WED_LibraryMgr::WED_LibraryMgr(const string& ilocal_package) : local_package(ilocal_package)
 {
 	DebugAssert(gPackageMgr != NULL);
@@ -106,12 +107,19 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 			switch(filter_package) {
 			case pack_Library:		want_it = me->second.packages.size() > 1 || !me->second.packages.count(pack_Local);	// Lib if we are in two packs or we are NOT in local.  (We are always SOMEWHERE)
 			case pack_All:			break;
-			case pack_Local:
+			case pack_Default:		want_it = me->second.is_default;	break;
+			case pack_Local:		// Since "local" is a virtal index, the search for Nth pack works for local too.
 			default:				want_it = me->second.packages.count(filter_package);
 			}
 			if(want_it)
 			{
 				children.push_back(me->first);
+				#if DEV
+					//Gets the last thing added to the vector
+					//string temp = children.back();
+
+					//printf("GetResource:%s \n", temp.c_str());
+				#endif
 			}
 		}
 		++me;
@@ -147,6 +155,14 @@ bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 	return me->second.is_default;	
 }
 
+bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
+{
+	for(res_map_t::iterator i = res_table.begin(); i != res_table.end(); ++i)
+	if(i->second.packages.count(package))
+		return true;
+	return false;
+}
+
 
 string		WED_LibraryMgr::CreateLocalResourcePath(const string& r)
 {
@@ -173,26 +189,45 @@ struct local_scan_t {
 
 void		WED_LibraryMgr::Rescan()
 {
+	//Clear the reasource table
 	res_table.clear();
 
+	//Number of packages?
 	int np = gPackageMgr->CountPackages();
+
+	//For the number of packages
 	for(int p = 0; p < np; ++p)
 	{
+		//the physical directory of the scenery pack
 		string pack_base;
+		//Get the pack's physical location
 		gPackageMgr->GetNthPackagePath(p,pack_base);
+		
+		//concatinate string
 		pack_base += DIR_STR "Library.txt";
 
+		//
 		bool is_default_pack = gPackageMgr->IsPackageDefault(p);
 
+		//Connects the physical Library.txt to the virual Memory File system? (95% sure) -Ted
 		MFMemFile * lib = MemFile_Open(pack_base.c_str());
+
+		//If there is a lib file
 		if(lib)
 		{
+			//Get the package again
 			gPackageMgr->GetNthPackagePath(p,pack_base);
 			
+			//Create a memory scanner
 			MFScanner	s;
+
+			//Initialize the Memory File System
 			MFS_init(&s, lib);
 
+			//Set the library version
 			int lib_version[] = { 800, 0 };
+
+			
 			if(MFS_xplane_header(&s,lib_version,"LIBRARY",NULL))
 			while(!MFS_done(&s))
 			{

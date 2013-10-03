@@ -10,10 +10,6 @@
 #ifndef WED_GISUTILS_H
 #define WED_GISUTILS_H
 
-#if USE_CGAL_POLYGONS
-#include "MapDefs.h"
-#endif
-
 #include "CompGeomDefs2.h"
 
 class IGISPointSequence;
@@ -21,10 +17,6 @@ class IGISEntity;
 class IGISQuad;
 class IGISPolygon;
 class WED_Thing;
-
-#if !NO_CGAL_BEZIER
-#include "Bezier.h"
-#endif
 
 struct Segment2p : public Segment2 {
 	int		param;
@@ -123,59 +115,23 @@ int WED_HasBezierPol(IGISPolygon * pol);
 
 bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2>& out_pol);			
 bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2p>& out_pol);			
-#if USE_CGAL_POLYGONS
-bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment_2>& out_pol);			
-#endif
 
 bool	WED_PolygonForPointSequence(IGISPointSequence * in_seq, Polygon2& out_pol, int orientation);
 bool	WED_PolygonForPointSequence(IGISPointSequence * in_seq, Polygon2p& out_pol, int orientation);
-#if USE_CGAL_POLYGONS
-bool	WED_PolygonForPointSequence(IGISPointSequence * in_seq, Polygon_2& out_pol, CGAL::Orientation);
-#endif
 
 bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2>& out_pol);
 bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2p>& out_pol);
-#if USE_CGAL_POLYGONS
-bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2& out_pol);
-#endif
-
-#if USE_CGAL_POLYGONS
-bool	WED_PolygonSetForEntity(IGISEntity * in_entity, Polygon_set_2& out_pgs);
-#endif
-
-// These routines create approximate polygons/polygon sets for GIS points/polygons.  Note that (1) we might have self intersections
-// if the GIS data is junk.  And...we use an "epsi" to approximate this.  The intention of these routines is to get an _approximate_
-// polygon that we can use for a UV map.  If the user has made a non-affine UV map, put it on a bezier, and clipped it, fer
-// crying out loud, we are _not_ goin to get exact results, and we almost certainly don't care.
-#if USE_CGAL_POLYGONS
-void	WED_ApproxPolygonForPointSequence(IGISPointSequence * in_seq, Polygon_2& out_pol, Polygon_2 * out_uv, double epsi);
-void	WED_ApproxPolygonWithHolesForPolygon(IGISPolygon * in_poly, Polygon_with_holes_2& out_pol, Polygon_with_holes_2 * out_uv, double epsi);
-#endif
-
-
 
 // These routines return bezier polygons for the given point sequence.  Since we never have to worry about "oh we got a curve"
 // and we do not check orientation, no return codes are needed.
 void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2>& out_pol);			
 void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2p>& out_pol);			
-#if !NO_CGAL_BEZIER
-void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier_curve_2>& out_pol);			
-#endif
-
 
 void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, BezierPolygon2& out_pol, int orientation);				// requires closed ring
 void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, BezierPolygon2p& out_pol, int orientation);				// requires closed ring
-#if !NO_CGAL_BEZIER
-bool	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, Bezier_polygon_2& out_pol, CGAL::Orientation);				// requires closed ring
-#endif
-
 
 void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2>& out_pol);
 void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2p>& out_pol);
-#if !NO_CGAL_BEZIER
-boovoid	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, Bezier_polygon_with_holes_2& out_pol);
-#endif
-
 
 template<typename __BezierSeqIter, class __NodeType>
 void	WED_SetSequenceForIterator(__BezierSeqIter start, __BezierSeqIter end, WED_Thing * parent, bool is_ring);
@@ -186,15 +142,8 @@ void	WED_SetSequenceForIterator(__BezierSeqIter start, __BezierSeqIter end, WED_
 
 typedef vector<Triangle2>		UVMap_t;
 
-#if USE_CGAL_POLYGONS
-void	WED_MakeUVMap(
-						const vector<Point_2>&	uv_map_ll,
-						const vector<Point2>&	uv_map_uv,
-						UVMap_t&				out_map);
-#endif						
-
-void	WED_MakeUVMap(
-						IGISEntity *			in_quad,
+bool	WED_MakeUVMap(
+						IGISPolygon *			in_poly,
 						UVMap_t&				out_map);
 
 

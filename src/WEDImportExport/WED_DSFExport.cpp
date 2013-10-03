@@ -53,7 +53,10 @@
 #include "WED_Clipping.h"
 #include "zip.h"
 #include <stdarg.h>
-
+#include "IResolver.h"
+#include "WED_ResourceMgr.h"
+#include "BitmapUtils.h"
+#include "GISUtils.h"
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
 // a full 0.5 degrees of 'extra'.  But...that's a LOT more than we
@@ -62,12 +65,6 @@
 // something on the ragged edge.
 #define DSF_EXTRA_1021 0.25
 
-
-#if !NO_CGAL_BEZIER
-#include "Bezier.h"
-#endif
-//#include <CGAL/Boolean_set_operations_2.h>
-//#include "GISTool_Globals.h"
 
 //---------------------------------------------------------------------------------------------------------------------------------------
 
@@ -87,11 +84,11 @@ int zip_printf(void * fi, const char * fmt, ...)
 //---------------------------------------------------------------------------------------------------------------------------------------
 
 // stolen from GISUtils - I got annoyed with having to grab all of CGAL for a modulo function.
-inline int	latlon_bucket(int p)
+/*inline int	latlon_bucket(int p)
 {
 	if (p > 0) return (p / 10) * 10;
 	else return ((-p + 9) / 10) * -10;
-}
+}*/
 
 
 template <class __Iterator>
@@ -660,7 +657,8 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 }
 
 static int	DSF_ExportTileRecursive(
-						WED_Thing *					what, 
+						WED_Thing *					what,
+						IResolver *					resolver,
 						ILibrarian *				pkg, 
 						const Bbox2&				cull_bounds,		// This is the area for which we are TRYING to get scenery.
 						const Bbox2&				safe_bounds,		// This is the 'safe' area into which we CAN write scenery without exploding.
@@ -1234,8 +1232,110 @@ static int	DSF_ExportTileRecursive(
 	if((orth = dynamic_cast<WED_DrapedOrthophoto *>(what)) != NULL)
 	if(show_level == 6)
 	{
+		//Get the relative path
 		orth->GetResource(r);
-		idx = io_table.accum_pol(r,show_level);
+
+		//Various Strings, it may be a lot but it ensures one never get confused
+		//-----------------
+		string relativePathDDS = r;
+		relativePathDDS.replace(relativePathDDS.length()-3,3,"dds");
+		//-----------------
+		string relativePathPOL = r;
+		relativePathPOL.replace(relativePathDDS.length()-3,3,"pol");
+		//-----------------
+		string absPathIMG = r;
+		pkg->LookupPath(absPathIMG);
+		//-----------------
+		string absPathDDS = absPathIMG;
+		absPathDDS.replace(absPathDDS.length()-3,3,"dds");
+		//-----------------
+		string absPathPOL = absPathIMG;
+		absPathPOL.replace(absPathPOL.length()-3,3,"pol");
+
+		date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
+		//-----------------
+		/* How to export a Torthoptho
+		* Create a Bitmap from whatever file format is being used
+		* Create a DDS from that file format
+		* Create the .pol with the file format in mind
+		* Enjoy your new Torthophoto
+		*/
+		//File extenstion
+		string resrcEnd = "";
+		if(orth->IsNew(&resrcEnd) == true)
+		{
+			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+			ImageInfo imgInfo;
+
+			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == dcr_firstIsNew)
+			{
+				int inWidth = 1;
+				int inHeight = 1;
+				
+				if(!CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo))
+				{
+					ImageInfo smaller;
+
+					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
+						
+					
+					while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
+
+					if (!CreateNewBitmap(inWidth,inHeight, 4, &smaller))
+					{
+						int isize = 2048;
+						isize = max(smaller.width,smaller.height);
+
+						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
+     
+						MakeMipmapStack(&smaller);
+						WriteBitmapToDDS(smaller, 5, absPathDDS.c_str(), 1);
+						DestroyBitmap(&smaller);
+					}
+
+					DestroyBitmap(&imgInfo);
+				}
+
+				//-------------------Information for the .pol
+				//Find most reduced path
+				const char * p = relativePathDDS.c_str();
+				const char * n = relativePathDDS.c_str();
+				while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+
+			
+				Point2 p1;
+				Point2 p2;
+				orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
+				orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
+			
+				float centerLat = (p2.y() + p1.y())/2;
+				float centerLon = (p2.x() + p1.x())/2;
+				//-------------------------------------------
+				pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
+					/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
+				rmgr->MakePol(relativePathPOL.c_str(),out_info);
+			}
+			//------------------For when this gets implemented, other images to repeat the above process^
+			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == dcr_firstIsNew)
+			{
+				CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
+			}
+			else if((strcasecmp(resrcEnd.c_str(),".jpeg")==0 || strcasecmp(resrcEnd.c_str(),".jpg")==0) && date_cmpr_res == dcr_firstIsNew)
+			{
+				CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
+			}
+			else if(strcasecmp(resrcEnd.c_str(),".bmp")==0 && date_cmpr_res == dcr_firstIsNew)
+			{
+				CreateBitmapFromFile(absPathIMG.c_str(),&imgInfo);
+			}
+			else if(strcasecmp(resrcEnd.c_str(),".dds")==0 && date_cmpr_res == dcr_firstIsNew)
+			{
+				//CreateBitmapFromDDS(absPath.c_str(),&imgInfo);
+			}
+
+		}
+
+		idx = io_table.accum_pol(relativePathPOL,show_level);
 		bool bez = WED_HasBezierPol(orth);
 
 		UVMap_t	uv;
@@ -1291,11 +1391,11 @@ static int	DSF_ExportTileRecursive(
 
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
-		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children,show_level);
+		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children,show_level);
 	return real_thingies;	
 }
 
-static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set <WED_Thing *>& problem_children)
+static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * pkg, int x, int y, set <WED_Thing *>& problem_children)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
@@ -1335,7 +1435,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	
 	int entities = 0;
 	for(int show_level = 6; show_level >= 1; --show_level)	
-		entities += DSF_ExportTileRecursive(base, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+		entities += DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
 	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
 		cbs.AcceptObjectDef_f(s->c_str(), writer);
@@ -1376,7 +1476,7 @@ static void DSF_ExportTile(WED_Group * base, ILibrarian * pkg, int x, int y, set
 	DSFDestroyWriter(writer);
 }
 
-void DSF_Export(WED_Group * base, ILibrarian * package, set<WED_Thing *>& problem_children)
+void DSF_Export(WED_Group * base, IResolver * resolver, ILibrarian * package, set<WED_Thing *>& problem_children)
 {
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
@@ -1389,7 +1489,7 @@ void DSF_Export(WED_Group * base, ILibrarian * package, set<WED_Thing *>& proble
 	for (int y = tile_south; y < tile_north; ++y)
 	for (int x = tile_west ; x < tile_east ; ++x)
 	{
-		DSF_ExportTile(base, package, x, y, problem_children);
+		DSF_ExportTile(base, resolver, package, x, y, problem_children);
 	}
 
 	if(g_dropped_pts)
@@ -1401,6 +1501,10 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 	if(who->GetClass() == WED_Airport::sClass)
 	{
 		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+		if(apt->GetHidden())
+			return 1;
+
+		//----------------------------------------------------------------------------------------------------
 
 		ILibrarian * pkg = WED_GetLibrarian(resolver);
 		string icao;
@@ -1444,7 +1548,7 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 		
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)	
-			entities += DSF_ExportTileRecursive(who, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+			entities += DSF_ExportTileRecursive(who, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
 		for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
 			cbs.AcceptObjectDef_f(s->c_str(), writer);
@@ -1470,10 +1574,37 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 	
 		zipCloseFileInZip(archive);
 
+		//-------------------------------------------------------------------
+
+		apt->GetICAO(icao);
+
+		icao += ".dat";
+		
+		if(zipOpenNewFileInZip (archive, icao.c_str(),
+						NULL,		// mod dates, etc??
+						NULL,0,
+						NULL,0,
+						NULL,		// comment
+						Z_DEFLATED,
+						Z_DEFAULT_COMPRESSION) != 0)
+		{
+			string msg = string("Unable to write to zip file.");
+			return 0;
+		}
+		
+		WED_AptExport(apt, zip_printf, archive);
+		zipCloseFileInZip(archive);
+		
+
+
 		return 1;
 	}
 	else if(who->GetClass() == WED_Group::sClass)
 	{
+		WED_Group * g = dynamic_cast<WED_Group *>(who);
+		if(g && g->GetHidden())
+			return 1;
+			
 		int n = who->CountChildren();
 		for(int i = 0; i < n; ++i)
 		{
@@ -1510,7 +1641,7 @@ void	WED_DoExportPack(IResolver * resolver)
 	ILibrarian * l = WED_GetLibrarian(resolver);
 	WED_Thing * w = WED_GetWorld(resolver);
 	set<WED_Thing *>	problem_children;
-	DSF_Export(dynamic_cast<WED_Group *>(w), l,problem_children);
+	DSF_Export(dynamic_cast<WED_Group *>(w), resolver, l,problem_children);
 
 	string	apt = "Earth nav data" DIR_STR "apt.dat";
 	string	apt_dir = "Earth nav data";
@@ -1559,24 +1690,9 @@ void	WED_DoExportRobin(IResolver * resolver)
 	
 		if(DSF_ExportOneAirportOverlayRecursive(resolver, w, archive, problem_children))
 		{
-			if(zipOpenNewFileInZip (archive, "apt.dat",
-							NULL,		// mod dates, etc??
-							NULL,0,
-							NULL,0,
-							NULL,		// comment
-							Z_DEFLATED,
-							Z_DEFAULT_COMPRESSION) != 0)
-			{
-				string msg = string("Unable to write to zip file.");
-				gExportTarget = old_target;
-				return;
-			}
-
-			
-			WED_AptExport(w, zip_printf, archive);
-			zipCloseFileInZip(archive);
-			zipClose(archive, NULL);
+			// success.
 		}
+		zipClose(archive, NULL);
 
 		if(!problem_children.empty())
 		{

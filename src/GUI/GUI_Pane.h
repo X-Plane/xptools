@@ -115,7 +115,7 @@
 */
 
 #include "GUI_Defs.h"
-
+#include <stdio.h>
 class	GUI_GraphState;
 class	GUI_DragData;
 
@@ -135,10 +135,12 @@ public:
 
 			void		GetBounds(int outBounds[4]);		// Our extend in OGL/win coords
 			void		GetVisibleBounds(int outBounds[4]);	// the subset of our extent that is not clipped by parents!
+
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
 			void		GetSticky(float outSticky[4]);
 			void		SetSticky(float inSticky[4]);
+						//Left, Bottom, Right, Top
 			void		SetSticky(float x1, float y1, float x2, float y2);
 
 			int			GetID(void) const;
@@ -185,9 +187,22 @@ public:
 			float			GetTimeNow(void);
 
 			void			TrapFocus(void);
-
+	
+	#if DEV
+	// int identLevel indicates how much to indent
+	// To use paste the following into any GUI Pane and uncomment
+		/*#if DEV
+			PrintDebugInfo(0);
+		#endif*/
+	//The default value is 0 so feel free not to use it
+	//Uses printf to print out pane information and all its children, may be over ridden to provide more information
+	virtual void            PrintDebugInfo(int indentLevel=0);
+	virtual void			FPrintDebugInfo(FILE * pFile, int indentLevel=0);
+	virtual void			DrawWireFrame(int realBounds[4], bool printf=false);
+	#endif
+	
 	/* TEMPLATE METHODS - Override these to customize a pane. */
-
+	
 	virtual	void		Draw(GUI_GraphState * state) { }
 
 	virtual	int			MouseMove(int x, int y			  ) { return 0; }
@@ -230,6 +245,7 @@ private:
 
 		int					mBounds[4];
 		float				mSticky[4];
+		
 		GUI_Pane *			mParent;
 		vector<GUI_Pane *>	mChildren;
 		int					mID;

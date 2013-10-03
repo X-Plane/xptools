@@ -16,6 +16,16 @@
 #include "WED_TextureNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ResourceMgr.h"
+#include "PlatformUtils.h"
+#include "BitmapUtils.h"
+#include "WED_Thing.h"
+#include "WED_PropertyHelper.h"
+#include "WED_MapZoomerNew.h"
+#include "WED_UIDefs.h"
+#include "ILibrarian.h"
+#include "GISUtils.h"
+#include "DEMIO.h"
+#if 0
 
 #define USE_CGAL_POLYGONS 1
 #include "WED_GISUtils.h"
@@ -129,86 +139,124 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 	return c;
 }
 
-#if !NO_CGAL_BEZIER
-void	WED_CheckPolys(IResolver * in_resolver)
-{
-	WED_Thing	*	wrl = 	WED_GetWorld(in_resolver);
-	ISelection * sel =		WED_GetSelect(in_resolver);
-	vector<IGISEntity *>	entities;	
-	vector<Point2>			fail_pts;
-	sel->IterateSelectionOr(Iterate_CollectEntities,&entities);
-	for(vector<IGISEntity *>::iterator e = entities.begin(); e != entities.end(); ++e)
-	{
-		IGISPolygon * poly = dynamic_cast<IGISPolygon *>(*e);
-		if(poly)
-		{
-			vector<Point2>	bad;
-			IsBezierPolyScrewed(poly, &bad);
-			fail_pts.insert(fail_pts.end(),bad.begin(),bad.end());
-		}
-	}
-	if(!fail_pts.empty())
-	{
-		wrl->StartOperation("Adding error pins.");
-
-		for(vector<Point2>::iterator b = fail_pts.begin(); b != fail_pts.end(); ++b)
-		{
-			WED_ObjPlacement * pin = WED_ObjPlacement::CreateTyped(wrl->GetArchive());
-			pin->SetLocation(gis_Geo,*b);
-			pin->SetParent(wrl,0);
-			pin->SetName("Error:Self-Crossing Polygon");
-		}
-		wrl->CommitOperation();
-	}
-}
 #endif
 
-void	WED_MakeOrthos(IResolver * in_resolver)
-{
-	WED_Thing	*	wrl = WED_GetWorld(in_resolver);
-	ISelection * sel = WED_GetSelect(in_resolver);
-	
-	vector<IGISEntity *>	entities;	
-	sel->IterateSelectionOr(Iterate_CollectEntities,&entities);
-	if(entities.empty()) return;
+void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
+{		
+	//From GroupCommands-WED_DoMakeNewOverlay(...)
+	char buf[1024];
+	if (GetFilePathFromUser(getFile_Open, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
+	{
 
-	bool	skip = false;
-	bool	any = false;
-	Polygon_set_2 all, ent;
-	for(vector<IGISEntity *>::iterator e = entities.begin(); e != entities.end(); ++e)
-	{
-		if (!WED_PolygonSetForEntity(*e, ent))
-			skip = true;
-		else
-			any = true;
-		all.join(ent);
+		Point2	coords[4];
+		double c[8];
+
+		{
+			ImageInfo	inf;
+			int tif_ok=-1;
+
+			if (CreateBitmapFromDDS(buf,&inf) != 0)
+			if (CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB) != 0)
+#if USE_JPEG
+			if (CreateBitmapFromJPEG(buf,&inf) != 0)
+#endif
+#if USE_TIF
+			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
+#endif
+			if (CreateBitmapFromFile(buf,&inf) != 0)
+			{
+				#if ERROR_CHECK
+				better reporting
+				#endif
+				DoUserAlert("Unable to open image file.");
+				return;
+			}
+
+			double	nn,ss,ee,ww;
+			zoomer->GetPixelBounds(ww,ss,ee,nn);
+
+			Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+
+			double grow_x = 0.5*(ee-ww)/((double) inf.width);
+			double grow_y = 0.5*(nn-ss)/((double) inf.height);
+
+			double pix_w, pix_h;
+
+			if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+			else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+
+			coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+			coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+			coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+			coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+
+			DestroyBitmap(&inf);
+			//uncomment when dem_want_Area and FetchTIFF are fixing
+			int align = dem_want_Area;
+			if (tif_ok==0)
+			if (FetchTIFFCorners(buf, c, align))
+			{
+			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+				coords[3].x_ = c[0];
+				coords[3].y_ = c[1];
+				coords[0].x_ = c[2];
+				coords[0].y_ = c[3];
+				coords[2].x_ = c[4];
+				coords[2].y_ = c[5];
+				coords[1].x_ = c[6];
+				coords[1].y_ = c[7];
+			}
+			
+			WED_Thing * wrl = WED_GetWorld(in_Resolver);
+			ISelection * sel = WED_GetSelect(in_Resolver);
+
+			wrl->StartOperation("Create Ortho Image");
+			sel->Clear();
+			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
+
+			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			
+			p4->SetParent(rng,0);
+			p3->SetParent(rng,1);
+			p2->SetParent(rng,2);
+			p1->SetParent(rng,3);
+			
+			rng->SetParent(dpol,0);
+			dpol->SetParent(wrl,0);
+			sel->Select(dpol);
+
+			p1->SetLocation(gis_Geo,coords[3]);
+			p2->SetLocation(gis_Geo,coords[2]);
+			p3->SetLocation(gis_Geo,coords[1]);
+			p4->SetLocation(gis_Geo,coords[0]);
+
+
+			string img_path(buf);
+			WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
+
+			dpol->SetResource(img_path);
+
+			p1->SetName("Corner 1");
+			p1->SetName("Corner 2");
+			p1->SetName("Corner 3");
+			p1->SetName("Corner 4");
+			rng->SetName("Image Boundary");
+			const char * p = buf;
+			const char * n = buf;
+			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+			
+			dpol->SetName(n);
+
+			p1->SetLocation(gis_UV,Point2(0,0));
+			p2->SetLocation(gis_UV,Point2(0,1));
+			p3->SetLocation(gis_UV,Point2(1,1));
+			p4->SetLocation(gis_UV,Point2(1,0));
+
+			wrl->CommitOperation();
+		}
 	}
-	
-	if (!all.is_empty())
-	{
-		wrl->StartCommand("Make orthophotos");
-		// Ben says: if the user has selected an overlay image itself, we are going to start our hierarchy traversal at THAT IMAGE,
-		// ensuring that we only spit out one draped polygon for that overlay.  
-		// This prevents the problem where, when two overlays are overlapped, WED creates the unnecessary overlap fragments of both.
-		// In the overlap case we have to assume that if the user is selecting images one at a time then he or she wants overlapping square
-		// draped polygons.
-		// If the selection isn't exactly one overlay image, then start the traversal at the entire world, so that we pick up ANY overlay
-		// that coincides with the area the user has selected.
-		WED_OverlayImage * sel_over = NULL;
-		if(entities.size() == 1)
-			sel_over = SAFE_CAST(WED_OverlayImage,entities[0]);
-		int num_made = cut_for_image(sel_over ? sel_over : wrl, all, wrl, WED_GetResourceMgr(in_resolver));
-		if(num_made == 0)
-		{
-			wrl->AbortCommand();
-			DoUserAlert("None of the selected polygons overlap orthophotos.");
-		}
-		else
-		{
-			wrl->CommitCommand();
-			if(skip) 
-				DoUserAlert("Some selected polygons were ignored because they contain bezier curves - you can only cut non-curved orthophotos.");
-		}
-	} else 
-		DoUserAlert("No orthophotos were created because the selection contains no non-curved polygons.");
 }

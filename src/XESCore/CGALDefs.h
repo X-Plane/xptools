@@ -24,6 +24,14 @@
 #ifndef CGALDefs_H
 #define CGALDefs_H
 
+#ifndef XDEFS_H
+#error PCH missing
+#endif
+
+#if NO_CGAL_EVER
+#error this build should be without CGAL
+#endif
+
 #include "CompGeomDefs2.h"
 
 

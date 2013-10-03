@@ -613,19 +613,67 @@ struct	preview_ortho : public preview_polygon {
 		ITexMgr *	tman = WED_GetTexMgr(resolver);
 		string vpath;
 		pol_info_t	pol_info;
-	
-		orth->GetResource(vpath);
-		if(rmgr->GetPol(vpath,pol_info))
+		
+		//If this ortho is new
+		if(orth->IsNew() == true)
 		{
-			Bbox2	bounds;
-			orth->GetBounds(gis_Geo,bounds);
-			Point2 centroid = Point2(
-				(bounds.xmin()+bounds.xmax())*0.5,
-				(bounds.ymin()+bounds.ymax())*0.5);
-			setup_pol_texture(tman, pol_info, 0.0, true, centroid, g, zoomer, mPavementAlpha);
+			//Set the graph state to default
+			g->SetState(false,0,false,false,false,false,false);
+			//Get the ring's points
+			vector<Point2> pts;
+			vector<int> is_hole_start;
+			PointSequenceToVector(orth->GetOuterRing(), zoomer, pts, has_uv, is_hole_start, 0);
+
+			//Get the resource string and look it up
+			string tempResource = "";
+			orth->GetResource(tempResource);
+			TexRef ref = tman->LookupTexture(tempResource.c_str(),false,tex_Linear|tex_Mipmap|tex_Rescale);
+			
+			//If there is no texture exit early
+			if(ref == NULL) 
+			{
+				return;
+			}
+			
+			//Get the tex_id
+			int tex_id = tman->GetTexID(ref);
+
+			if (tex_id == 0)
+			{
+				g->SetState(false,0,false,true,true,false,false);
+				glColor3f(0.5,0.5,0.5);
+			}
+			else
+			{
+				//Set up the texture
+				g->SetState(false,1,false,true,true,false,false);
+				glColor3f(1,1,1);
+				g->BindTex(tex_id,0);
+			}
+
+			if(true)
+			{
+				glDisable(GL_TEXTURE_GEN_S);
+				glDisable(GL_TEXTURE_GEN_T);
+			}
 			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
-			kill_pol_texture();
-		}	
+		}
+		else
+		{
+			//Code for use with current polygon tool creation style
+			orth->GetResource(vpath);
+			if(rmgr->GetPol(vpath,pol_info))
+			{
+				Bbox2	bounds;
+				orth->GetBounds(gis_Geo,bounds);
+				Point2 centroid = Point2(
+					(bounds.xmin()+bounds.xmax())*0.5,
+					(bounds.ymin()+bounds.ymax())*0.5);
+				setup_pol_texture(tman, pol_info, 0.0, true, centroid, g, zoomer, mPavementAlpha);
+				preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+				kill_pol_texture();
+			}
+		}
 	}
 };
 
@@ -885,7 +933,10 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		lg = layer_group_for_string(pol_info.group.c_str(),pol_info.group_offset, lg);
 	
 	if(pol)		mPreviewItems.push_back(new preview_pol(pol,lg, GetResolver()));
-	if(orth)	mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
+	if(orth)	
+	{
+		mPreviewItems.push_back(new preview_ortho(orth,lg, GetResolver()));
+	}
 	if(fac)		if(fac->GetShowLevel() <= mObjDensity) mPreviewItems.push_back(new preview_facade(fac,group_Objects));
 	if(forst)	
 #if AIRPORT_ROUTING

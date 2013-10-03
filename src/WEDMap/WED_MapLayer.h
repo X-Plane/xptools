@@ -68,6 +68,13 @@ protected:
 	inline	IResolver *			GetResolver(void) const { return mResolver; }
 	inline	GUI_Pane *			GetHost(void) const { return mHost; }
 
+	// WED defines two types of icons: furniture icons for all the stuff in an airport (VASI/PAPI, signs, windsocks) and airport
+	// icons for the iconic representation of an entire airport at far view.  In both cases we have two vars:
+	//
+	// The scale is how many pixels per meter the icon is rendered at.  Thus the icons have 'physical' size.
+	// The icon radius is the current size of the icon in pixels at the current zoom - it is based on measuring one canonical icon
+	// resource to know its size.  Note that this means that all icons in a family (airports, furnitures) must be close to the same size
+	// for click testing to work.
 			double				GetFurnitureIconScale(void) const;
 			double				GetFurnitureIconRadius(void) const;
 			double				GetAirportIconScale(void) const;

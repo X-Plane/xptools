@@ -62,15 +62,24 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 	FILE * fi = _wfopen((const wchar_t*) wname.c_str(),L"rb");
 #else
 	FILE * fi = fopen(filename,"rb");
-#endif	
-	if(exists) *exists = (fi != NULL);
+#endif
+	//If it does exist
+	if(exists)
+	{
+		//Something like it the file pointer
+		*exists = (fi != NULL);
+	}
+	//If the file does not exist
 	if(!fi)
+	{
 		return string("Unable to open file:") + string(filename);
-
+	}
 	char buf[1024];
 
+	//While there is something left to read
 	while(!feof(fi))
 	{
+		//len is the amount of read in this loop
 		int len = fread(buf,1,sizeof(buf),fi);
 		if(len > 0)
 		if(XML_Parse(parser, buf, len, 0) == XML_STATUS_ERROR)
@@ -81,8 +90,17 @@ string	WED_XMLReader::ReadFile(const char * filename, bool * exists)
 			printf("%s At: %zd,%zd\n", err.c_str(), XML_GetCurrentLineNumber(parser), XML_GetCurrentColumnNumber(parser));
 			break;
 		}
+		//if total read == 0
 	}
+	//It reads it again so it can finish off any last pieces remaining
 	XML_Parse(parser, buf, 0, 1);
+	XML_Error result = XML_GetErrorCode(parser);
+	 
+	//If the err string is empty and there is some kind of error
+	if(err.empty() &&  result != XML_ERROR_NONE)
+	{
+		err = XML_ErrorString(result);
+	}
 	fclose(fi);
 
 	return err;
