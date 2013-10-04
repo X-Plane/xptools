@@ -143,7 +143,7 @@ static bool ReadFacadeRule(const vector<string>& tokens, void * ref)
 	{
 		string fac_front, fac_back;
 		FacadeChoice_t c;
-		if(TokenizeLine(tokens," ffffss",&c.width, &c.height_min, &c.height_max, &c.depth, &fac_front, &fac_back) != 7)
+		if(TokenizeLine(tokens," ffffss",&c.width, &c.height_min, &c.height_max, &c.depth_unused, &fac_front, &fac_back) != 7)
 			return false;
 		c.fac_id_front =  RegisterAGResource(fac_front);
 		c.fac_id_back =  RegisterAGResource(fac_back);
@@ -170,27 +170,29 @@ static void		pick_n(vector<float>& choices, int count, vector<float>& picks)
 static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
-	string agb, fac, ags;
+	string agb, fac, ags, fil;
 	if(TokenizeLine(tokens, " eii"
 							"fffff"
 							"ffffff"
 							"fffif"
-							"sss",
+							"ssss",
 			&r.zoning,			&r.road,			&r.variant,
 			&r.min_height,&r.max_height,			&r.min_side_len, &r.max_side_len,			&r.block_err_max,
 			&r.min_side_major,&r.max_side_major,	&r.min_side_minor,&r.max_side_minor,		&r.ang_min,&r.ang_max,
 
-			&r.agb_min_width,			&r.agb_slop_width,			&r.fac_min_width,			&r.fac_depth_split,			&r.fac_extra,
+			&r.agb_min_width,			&r.agb_slop_width,			&r.fac_min_width_unused,	&r.fac_depth_split,			&r.fac_extra,
 
-			&agb,			&fac,			&ags) != 23)
+			&agb,			&fac,			&ags, &fil) != 24)
 			return false;
 
 	r.agb_slop_depth = r.agb_slop_width;
 
+	
 
 	r.agb_id = RegisterAGResource(agb);
 	r.ags_id = RegisterAGResource(ags);
 	r.fac_id = RegisterAGResource(fac);
+	r.fil_id = RegisterAGResource(fil);
 
 //	if((r.fac_min_width == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
 //	{
@@ -643,7 +645,10 @@ static void ZoneOneFace(
 			{
 				float e = inLanduse.get(x,y);
 				float f = inForest.get(x,y);
-				float p = inPark.get(x,y);
+//				float p = inPark.get(x,y);
+				float p = inPark.get(
+					inPark.map_x_from(inLanduse, x),
+					inPark.map_y_from(inLanduse,y));
 				float d = urban_density_from_lu.get(x,y);
 				count++;
 
@@ -1956,7 +1961,7 @@ PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f)
 	return NULL;
 }
 
-FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth)
+FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth_one_fac)
 {
 	vector<FacadeSpelling_t *>	possible;
 	FacadeSpelling_t * emerg = NULL;
@@ -1965,7 +1970,7 @@ FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len,
 	if(r->zoning == NO_VALUE || r->zoning == zoning)
 	if(r->variant == -1 || r->variant == variant)
 	if(r->height_min == r->height_max || (r->height_min <= height && height <= r->height_max))
-	if(r->depth_min == r->depth_max || (r->depth_min <= depth && depth <= r->depth_max))
+	if(r->depth_min == r->depth_max || (r->depth_min <= depth_one_fac && depth_one_fac <= r->depth_max))
 	{
 		{
 			double dist_to_this = 0;

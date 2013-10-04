@@ -147,15 +147,16 @@ struct FillRule_t {
 	float		agb_slop_width;							// 
 	float		agb_slop_depth;
 	
-	float		fac_min_width;							// Range of width and steps for facade art assets..
+	float		fac_min_width_unused;					// Range of width and steps for facade art assets..
 //	float		fac_max_width;
 //	float		fac_step;
-	int			fac_depth_split;						// How much to split the depth of facades.
+	int			fac_depth_split;						// How much to split the depth of facades.  0 for no facade
 	float		fac_extra;
 	
 	int			agb_id;
 	int			fac_id;									// Only used for whole-facade case
 	int			ags_id;
+	int			fil_id;									// Facade for fill-use only.
 	
 //	float		bldg_min,		bldg_max;
 //
@@ -171,7 +172,7 @@ struct FacadeChoice_t {
 	float		width;
 	float		height_min;
 	float		height_max;
-	float		depth;
+	float		depth_unused;							// This is the MAX depth of the particular building, which also names the art asset.
 };
 
 struct FacadeSpelling_t {
@@ -260,6 +261,6 @@ FillRule_t * GetFillRuleForBlock(Pmwx::Face_handle f);
 
 PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f);
 
-FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth);
+FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth_one_fac);
 
 #endif /* ZONING_H */

@@ -288,6 +288,267 @@ void ring_simplify_polygon(Polygon2& io_poly, double err)
 	io_poly.swap(reduced);
 }
 
+inline void push_block_curve(vector<Block_2::X_monotone_curve_2>& curves, const Point2& p1, const Point2& p2, int idx1)
+{
+	DebugAssert(idx1 >= 0);
+	DebugAssert(p1 != p2);
+	curves.push_back(Block_2::X_monotone_curve_2(BSegment_2(ben2cgal<BPoint_2>(p1),ben2cgal<BPoint_2>(p2)),idx1));
+}
+
+inline void push_block_curve(vector<Block_2::X_monotone_curve_2>& curves, const Point2& p1, const Point2& p2, int idx1, int idx2)
+{
+	DebugAssert(idx1 >= 0);
+	DebugAssert(idx2 >= 0);
+//	push_block_curve(curves,p1,p2,idx1);
+//	push_block_curve(curves,p1,p2,idx2);
+//	return;
+	DebugAssert(idx1 != idx2);
+	EdgeKey_container	keys;
+	keys.insert(idx1);
+	keys.insert(idx2);
+	DebugAssert(p1 != p2);
+	curves.push_back(Block_2::X_monotone_curve_2(BSegment_2(ben2cgal<BPoint_2>(p1),ben2cgal<BPoint_2>(p2)),keys));
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+// CANDY BAR BLOCK CONSOLIDATOR UTILITY
+//------------------------------------------------------------------------------------------------------------------------------------------------
+//
+//	Block generation is dominated by the integration of curves into the block map - that is, more lines = more slow.  So anything we can do to
+//	reduce the number of lines we throw into the soup is a win.
+//
+//	The candy_bar class is a utility that is sort of like a hershey bar with squares of chocolate.  Client code specifies a grid and which grid
+//	squares belong to which blocks; the candy bar then generates only the minimum cut lines to ensure block separation.  There are two 
+//	optimizations:
+//
+//		Interior cuts within a block that would not help us are totally elimaanted.
+//		Colinear sequential lines that separate the same faces are merged (removing vertices).
+//
+//
+//	Since the facade subdivisions run at different 'schedules' for the top and bottom of the block, this kind of consolidation is really important!
+//
+
+class candy_bar {
+public:
+
+				candy_bar(int b_divs, double b_cuts[], double a_min, double a_max);
+
+		int		insert_a_divide(double a);		// returns a-idx of block starting at a		
+		void	insert_block(const BLOCK_face_data& d, int b_start, int b_end, double a_start, double a_end);	
+		int		build_curves(vector<BLOCK_face_data>& parts, const Vector2& va, const Vector2& vb, vector<Block_2::X_monotone_curve_2>& curves);	// returns block count
+
+		void	dump();
+
+private:
+
+		pair<int,int>	get_lr(int a, int b);
+		pair<int,int>	get_bt(int a, int b);
+		
+		void			emit_pair(vector<Block_2::X_monotone_curve_2>& curves, const Vector2& va, const Vector2& vb, int a1, int b1, int a2, int b2, int c1, int c2);
+
+	vector<int>				m_part_idx;
+	vector<BLOCK_face_data>	m_parts;
+	int						m_a_divs;
+	int						m_b_divs;
+	vector<double>			m_a_cuts;
+	vector<double>			m_b_cuts;
+	
+};	
+
+candy_bar::candy_bar(int b_divs, double b_cuts[], double a_min, double a_max)
+{
+	m_a_divs = 1;
+	m_b_divs = b_divs;
+	m_part_idx.resize(m_a_divs * m_b_divs,-1);
+	
+	m_a_cuts.push_back(a_min);
+	m_a_cuts.push_back(a_max);
+	for(int i = 0; i <= b_divs; ++i)
+		m_b_cuts.push_back(b_cuts[i]);
+}
+
+int	candy_bar::insert_a_divide(double a)
+{
+	DebugAssert(a >= m_a_cuts.front());		// Make sure the block really is being subdivided and 
+	DebugAssert(a <= m_a_cuts.back());		// not GROWN - we do not support the GROW case.
+	vector<double>::iterator ip = lower_bound(m_a_cuts.begin(),m_a_cuts.end(),a);
+	if(ip == m_a_cuts.end() || *ip != a)
+	{
+		DebugAssert(ip != m_a_cuts.end());		// Off the end would mean growing the end
+		DebugAssert(ip != m_a_cuts.begin());	// Having begin would mean growing the beginning if *ip != a
+		
+		// IP is ptr to the start of the NEXT block - find our actual index, and dupe the block.
+		int split_block_idx = distance(m_a_cuts.begin(),ip)-1;
+		
+		// increment rows first - so that PAST rows get calced right.
+		++m_a_divs;
+		
+		for(int b = 0; b < m_b_divs; ++b)
+		{
+			// Find our effective address and dupe it
+			int bid = b * m_a_divs + split_block_idx;
+			m_part_idx.insert(m_part_idx.begin()+bid,m_part_idx[bid]);
+		}
+		
+		m_a_cuts.insert(ip,a);
+		
+		return split_block_idx+1;
+	}
+	else
+	{
+		DebugAssert(ip != m_a_cuts.end());
+		// We are right on the nose of a cut - thus its index IS where the cut is.
+		return distance(m_a_cuts.begin(),ip);
+	}
+}
+
+void	candy_bar::insert_block(const BLOCK_face_data& d, int b_start, int b_end, double a_start, double a_end)
+{
+	DebugAssert(a_end > a_start);
+	int sidx = insert_a_divide(a_start);
+	int eidx = insert_a_divide(a_end);
+	
+	for(int b = b_start; b < b_end; ++b)
+	for(int a = sidx; a < eidx; ++a)
+		m_part_idx[a + b * m_a_divs] = m_parts.size();
+	
+	m_parts.push_back(d);
+	
+}
+
+int	candy_bar::build_curves(vector<BLOCK_face_data>& parts, const Vector2& va, const Vector2& vb, vector<Block_2::X_monotone_curve_2>& curves)
+{
+	int base = parts.size();
+	parts.insert(parts.end(),m_parts.begin(),m_parts.end());
+	
+	int a, b, aa, bb;
+	
+	// HORIZONTAL LINES
+	for(b = 0; b <= m_b_divs; ++b)
+	{
+		a = 0;
+		while(a < m_a_divs)
+		{
+			pair<int,int> bp(get_bt(a,b));
+			
+			aa = a + 1;
+			while(aa < m_a_divs && get_bt(aa,b) == bp)
+				++aa;
+				
+			emit_pair(curves,va,vb,a,b,aa,b,bp.first,bp.second);
+			
+			a = aa;
+		}
+	}
+	// VERTICAL LINES
+	for(a = 0; a <= m_a_divs; ++a)
+	{
+		b = 0;
+		while(b < m_b_divs)
+		{
+			pair<int,int> bp(get_lr(a,b));
+			
+			bb = b + 1;
+			while(bb < m_b_divs && get_lr(a,bb) == bp)
+				++bb;
+				
+			emit_pair(curves,va,vb,a,b,a,bb,bp.first,bp.second);
+			
+			b = bb;
+		}
+	}
+	
+	return m_parts.size();
+	
+}
+
+void	candy_bar::dump()
+{
+	for(int b = m_b_divs - 1; b >= 0; --b)
+	{
+		for(int a = 0; a < m_a_divs; ++a)
+		{
+			printf("%d\t",m_part_idx[a + m_a_divs * b]);
+		}
+		printf("\n");
+	}
+}
+
+
+void			candy_bar::emit_pair(vector<Block_2::X_monotone_curve_2>& curves, const Vector2& va, const Vector2& vb, int a1, int b1, int a2, int b2, int c1, int c2)
+{	
+	if(c1 != c2)
+//	{
+//		if (c1 != -1)
+//			push_block_curve(curves,Point2() + va * m_a_cuts[a1] + vb * m_b_cuts[b1],Point2() + va * m_a_cuts[a2] + vb * m_b_cuts[b2],c1);
+//	}
+//	else
+	{
+		//printf("    %dx%d -> %dx%d  (%d/%d)\n", a1,b1,a2,b2,c1,c2);
+	
+		// Ensure that cuts were not stacked backward.
+		DebugAssert(c1 != -1);
+		if(c2 != -1)
+		{
+			push_block_curve(curves,Point2() + va * (m_a_cuts[a1]) + vb * m_b_cuts[b1],Point2() + va * (m_a_cuts[a2]) + vb * m_b_cuts[b2],c1,c2);
+
+//			push_block_curve(curves,Point2() + va * m_a_cuts[a1] + vb * m_b_cuts[b1],Point2() + va * m_a_cuts[a2] + vb * m_b_cuts[b2],c1);
+//			push_block_curve(curves,Point2() + va * m_a_cuts[a2] + vb * m_b_cuts[b2],Point2() + va * m_a_cuts[a1] + vb * m_b_cuts[b1],c2);
+		}
+		else
+			push_block_curve(curves,Point2() + va * (m_a_cuts[a1]) + vb * m_b_cuts[b1],Point2() + va * (m_a_cuts[a2]) + vb * m_b_cuts[b2],c1);
+	}
+}
+
+pair<int,int>	candy_bar::get_lr(int a, int b)
+{
+	DebugAssert(a >= 0);
+	DebugAssert(a <= m_a_divs);
+	DebugAssert(b >= 0);
+	DebugAssert(b < m_b_divs);
+	int l, r;
+	if(a == 0)
+		l = -1;
+	else
+		l = m_part_idx[a + b * m_a_divs - 1];
+	
+	if(a == m_a_divs)
+		r = -1;
+	else
+		r = m_part_idx[a + b * m_a_divs    ];
+		
+	if(l != r && l == -1)
+		swap(l,r);
+	return make_pair(l,r);			
+}
+
+pair<int,int>	candy_bar::get_bt(int a, int b)
+{
+	DebugAssert(b >= 0);
+	DebugAssert(b <= m_b_divs);
+	DebugAssert(a >= 0);
+	DebugAssert(a < m_a_divs);
+	int bot, top;
+	if(b == 0)
+		bot = -1;
+	else
+		bot = m_part_idx[a + (b-1) * m_a_divs];
+	
+	if(b == m_b_divs)
+		top = -1;
+	else
+		top = m_part_idx[a + b * m_a_divs    ];
+		
+	if(bot != top && bot == -1)
+		swap(bot,top);
+	return make_pair(bot,top);
+}
+
+	
+
+//------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 #if OPENGL_MAP && DEV
 static void	debug_show_block(Block_2& io_block, CoordTranslator2& t)
 {
@@ -420,28 +681,6 @@ static bool against_road(Block_2::Halfedge_const_handle h)
 {
 	return h->twin()->face()->data().usage == usage_Road &&
 		   gNetReps[h->twin()->face()->data().feature].use_mode == use_Street;
-}
-
-inline void push_block_curve(vector<Block_2::X_monotone_curve_2>& curves, const Point2& p1, const Point2& p2, int idx1)
-{
-	DebugAssert(idx1 >= 0);
-	DebugAssert(p1 != p2);
-	curves.push_back(Block_2::X_monotone_curve_2(BSegment_2(ben2cgal<BPoint_2>(p1),ben2cgal<BPoint_2>(p2)),idx1));
-}
-
-inline void push_block_curve(vector<Block_2::X_monotone_curve_2>& curves, const Point2& p1, const Point2& p2, int idx1, int idx2)
-{
-	DebugAssert(idx1 >= 0);
-	DebugAssert(idx2 >= 0);
-//	push_block_curve(curves,p1,p2,idx1);
-//	push_block_curve(curves,p1,p2,idx2);
-//	return;
-	DebugAssert(idx1 != idx2);
-	EdgeKey_container	keys;
-	keys.insert(idx1);
-	keys.insert(idx2);
-	DebugAssert(p1 != p2);
-	curves.push_back(Block_2::X_monotone_curve_2(BSegment_2(ben2cgal<BPoint_2>(p1),ben2cgal<BPoint_2>(p2)),keys));
 }
 
 int find_most_locked_pt(vector<block_pt>& pts, bool skip_first)
@@ -748,6 +987,128 @@ static void make_fac_subdiv_spelling(const FillRule_t * info, double width, vect
 }
 */
 
+
+/*
+	This routine creates the subdivision lines for AGBs and subdivided facades; it is applied
+	when we have an AGB fill rule on the block.  The routine analyzes the block shape and decides
+	where to cut up the block, etc.
+ */
+ 
+inline bool segment_crosses_y_within(const Segment2& s, double y, double x_min, double x_max)
+{
+	if((s.p1.y() > y && s.p2.y() < y) || (s.p1.y() < y && s.p2.y() > y))
+	{
+		double x = s.x_at_y(y);
+		return x > x_min && x < x_max;
+	}
+	else
+		return false;
+}
+
+	enum {
+		reg_TERM = 0,
+		reg_none,
+		reg_junk,		// parking lots and other random junk.
+		reg_slop,		// When the 'front' side is actually to the side, we just glom it on to our friend...as a side wall there aren't a lot of rules about its metrics.
+		reg_fac,
+		reg_agb,
+	};
+
+	#if DEV
+		const char * reg_debug_str[] = { "term", "none", "junk", "slop", "fac", "agb" };
+	#endif
+	
+	#define SLOPE_TO_SIDE 1.0		// walls sloping more than 45 degrees are deemed side-facing - this is the tangent of the angle from front.
+	
+	struct reg_info_t {
+		int		bot_type;
+		int		top_type;
+		int		top_side;
+		int		bot_side;
+		double	top_slope;	// b over a - CANNOT be NaN because time range must have a-time > 0
+		double	bot_slope;	// b over a - CANNOT be NaN because time range must have a-time > 0
+		int		block_dir;	// Which way we have to go to widen.  If the block widens to the right, 1, to the left, 0, or -1 otherwise.
+		
+		bool	is_split;
+		double	a_time;
+	};
+		
+	
+inline int find_first_bot_type(const vector<reg_info_t>& r, int t)
+{
+	for(int i = 0; i < r.size(); ++i)
+	if(r[i].bot_type == t)
+		return i;
+	return -1;
+}
+
+inline int find_last_bot_type(const vector<reg_info_t>& r, int t)
+{
+	if(r.empty()) return -1;
+	for(int i = r.size()-1; i >= 0; --i)
+	if(r[i].bot_type == t)
+		return i;
+	return -1;
+}
+
+template <typename P>	void set_first(P& p, typename P::first_type v) {	p.first = v; }
+template <typename P>	void set_second(P& p, typename P::second_type v){ p.second = v;}
+
+typedef void (* pair_set_f)(pair<double, double>& p, double v);
+
+const double UNDEF = -8192.0;
+
+template <pair_set_f func>
+void add_one_split(double x, double y, map<double,pair<double,double> >& times)
+{	
+	pair<map<double,pair<double,double> >::iterator,bool> it = times.insert(make_pair(x,make_pair(UNDEF, UNDEF)));
+	func(it.first->second, y);
+}
+
+
+template <pair_set_f func>
+void split_segment(const Segment2& s, double a_start, double a_stop, map<double,pair<double, double> >& times, const double * split_lines, int split_count)
+{
+	if(s.p1.x() >= a_start && s.p1.x() <= a_stop)
+		add_one_split<func>(s.p1.x(),s.p1.y(),times);
+
+	if(s.p2.x() >= a_start && s.p2.x() <= a_stop)
+		add_one_split<func>(s.p2.x(),s.p2.y(),times);
+		
+	if((s.p1.x() < a_start && s.p2.x() > a_start) ||
+	   (s.p2.x() < a_start && s.p1.x() > a_start))
+	{	
+		add_one_split<func>(a_start,s.y_at_x(a_start), times);		
+	}
+
+	if((s.p1.x() < a_stop && s.p2.x() > a_stop) ||
+	   (s.p2.x() < a_stop && s.p1.x() > a_stop))
+	{	
+		add_one_split<func>(a_stop,s.y_at_x(a_stop), times);		
+	}
+	
+	while(split_count-- > 0)
+	{
+		double ys = *split_lines++;
+		if((s.p1.y() < ys && s.p2.y() > ys) ||
+		   (s.p2.y() < ys && s.p1.y() > ys))
+		{
+			double xs = s.x_at_y(ys);
+			if(xs > a_start && xs < a_stop)
+				add_one_split<func>(xs,ys, times);
+		}
+	}		
+}
+
+struct dupe_bot_reg_type {
+	bool operator()(const reg_info_t& lhs, const reg_info_t& rhs) const { 
+		if(lhs.bot_type == reg_fac && lhs.bot_side != rhs.bot_side)
+			return false;
+		return lhs.bot_type == rhs.bot_type; 
+	}
+};
+
+ 
 static int	init_subdivisions(
 							Pmwx::Face_handle f,
 							const FillRule_t * info, CoordTranslator2& translator, 
@@ -755,6 +1116,7 @@ static int	init_subdivisions(
 							vector<BLOCK_face_data>& parts, 
 							vector<Block_2::X_monotone_curve_2>& curves)
 {
+	int i;
 	/***********************************************************************************************
 	 * OVERVIEW
 	 ***********************************************************************************************/
@@ -770,7 +1132,8 @@ static int	init_subdivisions(
 	DebugAssert(info->fac_id != NO_VALUE || info->agb_id != NO_VALUE);
 
 	vector<pair<Pmwx::Halfedge_handle,Pmwx::Halfedge_handle> >	sides;
-	Polygon2													mbounds;
+	Polygon2													mbounds;		// The block in metric bounds
+	Polygon2													abounds;		// The block in axis-aligned bounds
 	
 	if(!build_convex_polygon(f->outer_ccb(),sides,translator,mbounds, 2.0, 2.0))
 		return 0;
@@ -783,128 +1146,687 @@ static int	init_subdivisions(
 	// be the start of the side defining the major axis, the axis-aligned lower left could be 
 	// well into negative space.  Bottom line is, we don't ever assume the origin has meaning.
 	
-	double bounds[4];
+	double bounds[4];			// bounds in AB space.
 
 	bounds[0] = bounds[2] = va.dot(Vector2(mbounds[0]));
 	bounds[1] = bounds[3] = vb.dot(Vector2(mbounds[0]));
-	for(int i = 1; i < mbounds.size(); ++i)
+	
+	int left = 0, right = 0;					// Index number of extreme left & right points in A axis.
+	
+	for(i = 0; i < mbounds.size(); ++i)
 	{
 		double ca = va.dot(Vector2(mbounds[i]));
 		double cb = vb.dot(Vector2(mbounds[i]));
+		
+		abounds.push_back(Point2(ca,cb));
+		
+		if(ca < abounds[left].x())
+			left = i;
+
+		if(ca > abounds[right].x())
+			right = i;
+		
 		bounds[0] = min(bounds[0],ca);
 		bounds[1] = min(bounds[1],cb);
 		bounds[2] = max(bounds[2],ca);
 		bounds[3] = max(bounds[3],cb);	
 	}
+	DebugAssert(left != right);
+	
+	double sbounds[4] = {		// bounds inset in slop, AB space.
+		bounds[0] + info->agb_slop_width,
+		bounds[1] + info->agb_slop_depth,
+		bounds[2] - info->agb_slop_width,
+		bounds[3] - info->agb_slop_depth };
+	
+	DebugAssert(bounds[1] > UNDEF);	// 8 km south of the block should be a safe flag.
 
 	TRACE_SUBDIVIDE("Block is from %lf,%lf to %lf,%lf\n", bounds[0],bounds[1],bounds[2],bounds[3]);
 	
 	/***********************************************************************************************
-	 * AGB VS FACADE ISOLATION
+	 * BASIC TIME REGION DIAGNOSTICS
 	 ***********************************************************************************************/
+
+	
+//
+//	 
+//	 
+//	todo - we need a subdivision algo that can find 'zones' of autogen broken at interesting times,
+//	like when we go from these depths vertically:
+//	
+//	- scrap (too thin for 1 row)
+//	- half-size (1 row of buildings)
+//	- full size (2 rows of buildings)
+//	- AGB safe (2 rows and within the slop.)
+//	
+//	we need to synthesize the regions to not have any be too small, sometimes, 
 	 
 	// We are going to isolate the region along the a axis that can have an AGB on it.  Since the
 	// building splits run 'along' the A axis we can think of regions along the A axis that will have
 	// either facades or AGBs; the cuts between them are always perpendicular ot A.
 	
-	time_region		agb_friendly(bounds[0],bounds[2]);		// Start with the entire block.
-	
-	double fac_extra_len = info->fac_extra;					// This is the worst-case width of the widest
-	for(int i = 0; i < outer_ccb_pts.size(); ++i)			// road in the block.  It is used as a fudge 
-	{														// factor on fac width so that the road eating
-		if(outer_ccb_pts[i].edge_type.first != NO_VALUE)	// into the fac doens't cause the fac to be too small.
-			fac_extra_len = dobmax2(fac_extra_len,gNetReps[outer_ccb_pts[i].edge_type.first].width());
-	}
-	TRACE_SUBDIVIDE("Facade overhang is: %lf\n",fac_extra_len);
+//	time_region		agb_friendly(bounds[0],bounds[2]);		// Start with the entire block.
 
-//	double real_min_agb = fac_extra_len * 2.0 + info->agb_min_width;
-//	TRACE_SUBDIVIDE("Min Size For AGB: %lf\n",real_min_agb);
+	double fac_extra_len = info->fac_extra;					// This is the worst-case width of the widest
+//	for(int i = 0; i < outer_ccb_pts.size(); ++i)			// road in the block.  It is used as a fudge 
+//	{														// factor on fac width so that the road eating
+//		if(outer_ccb_pts[i].edge_type.first != NO_VALUE)	// into the fac doens't cause the fac to be too small.
+//			fac_extra_len = dobmax2(fac_extra_len,gNetReps[outer_ccb_pts[i].edge_type.first].width());
+//	}
+//	TRACE_SUBDIVIDE("Facade overhang is: %lf\n",fac_extra_len);
 	
 	// facade depth splits!
 	int fds = info->fac_depth_split;
 	
 	DebugAssert(outer_ccb_pts.size() >= 3);
 
-	// These are segments that form the bottoms and tops of the AGBs, respectively, all resorted to go alogn the
-	// positive A axis (west to east in our example).  They give us some idea of how much the major axis 'drifts'
-	// for a given range.
-	vector<Segment2>	top_agbs, bot_agbs;
+	// These are the corners of the subset of the polygon that runs along the true top and bottom of the
+	// polygon.  For degenerate cases like trapezoids, one edge will be pulled AAAAAALL the way to the other!
+
+	// If we are a 30-60 block with 2 subdivisions and 30max facades, then: fac-depth max is 30, fac depth min is 15, and at worst
+	// we need two maxed out facades to cover our area.
+	// As we step the block depth, we notice that:
+	// - If BOTH edges are inside the 'safe' zone then by definition a single facade can cross.
+	// - If at least ONE edge is out side the safe zone, then we can always subdivide (because we have 
+	//   1.5x max, which means two facades at 75% of max, which is totally legit.
 	
-	// We now walk the polygon - for each segment, we consider its projection onto the A axis and what effect on
-	// AGB friendliness it might have.
+	double fac_depth_max = info->max_side_minor / (float) fds;
+	double fac_depth_min = fac_depth_max * 0.5;
 	
-//	#if !DEV
-//		#error WHY ARE WE USING OUTER CCBS HERE AND NOT MBOUNDS?!?
-//	#endif
+	int prev_bottom = left, prev_top = left;
+	int bottom = abounds.next(prev_bottom);
+	int top = abounds.prev(prev_top);
+	DebugAssert(bottom != right || top != right);
 	
-	for(int i = 0; i < outer_ccb_pts.size(); ++i)
+	double b_split = (bounds[1] + bounds[3]) * 0.5;		// This is where we will split a 2-layer block.
+	double top_safe = b_split + fac_depth_min;			// This is how far PAST the line the region must be go to safely
+	double bot_safe = b_split - fac_depth_min;			// spawn top or bottom...
+
+	double all_splits[] = { b_split, top_safe, bot_safe };
+	const int num_splits = sizeof(all_splits) / sizeof(all_splits[0]);
+
+//	if(fds > 1)
+//		printf("Splits are: %lf, %lf, %lf\n", bot_safe, b_split, top_safe);
+//	printf("Safe bounds are: %lf, %lf, %lf, %lf\n", sbounds[0],sbounds[1],sbounds[2],sbounds[3]);
+	
+//	printf("Block trace from %lf to %lf\n",bounds[0],bounds[2]);
+//	debug_mesh_line(
+//			translator.Reverse(Point2() + va * bounds[0] + vb * bot_safe),
+//			translator.Reverse(Point2() + va * bounds[2] + vb * bot_safe),
+//			0,1,0,0,1,0);
+
+//	debug_mesh_line(
+//			translator.Reverse(Point2() + va * bounds[0] + vb * top_safe),
+//			translator.Reverse(Point2() + va * bounds[2] + vb * top_safe),
+//			0,0,1,0,0,1);
+
+	vector<reg_info_t>	regions;
+
+	while(1)
 	{
-		int j = (i + 1) % outer_ccb_pts.size();
+		// EMIT BLOCK
+		double a_start = max(abounds[prev_bottom].x(),abounds[prev_top].x());
+		double a_stop = min(abounds[bottom].x(),abounds[top].x());
+		DebugAssert(a_start < a_stop);
 		
-		Point2	pi(va.dot(Vector2(outer_ccb_pts[i].loc)),vb.dot(Vector2(outer_ccb_pts[i].loc)));
-		Point2	pj(va.dot(Vector2(outer_ccb_pts[j].loc)),vb.dot(Vector2(outer_ccb_pts[j].loc)));
-		Vector2	v_side(pi,pj);
-		bool top = v_side.dx < 0.0;
-		v_side.dx = fabs(v_side.dx);
-		v_side.dy = fabs(v_side.dy);
-		DebugAssert(info->agb_min_width > 0.0);
-		double max_agb_subdivs = dobmax2(1,floor(v_side.dx / info->agb_min_width));
+		Segment2	bottom_seg = abounds.side(prev_bottom);
+		Segment2	top_seg = abounds.side(top);
 		
-		TRACE_SUBDIVIDE("Side from %lf,%lf to %lf,%lf (vector %lf, %lf, max subdivide is %lf)\n", pi.x(),pi.y(),pj.x(),pj.y(), v_side.dx,v_side.dy,max_agb_subdivs);
+		// If we have to consider whether a block 'transitions' the safety zones on the top or bottom...
+		// and subdivide accordingly.
 		
-		// Test for too much north-south travel is tempered by the distance - basically we can subdivide
-		// horizontally to fit AGBs in with some block drift.
-		if(v_side.dy > (info->agb_slop_depth * max_agb_subdivs))
-		{		
-			// This side is sloping too much north-south to be an AGB.  But it MIGHT be the west or easet side
-			// of the block.
-			
-			// Since we don't subdivide vertically, we measure for absolute error on the east and west side.
-			if(v_side.dx > info->agb_slop_width)
-			{
-				// okay - we have a slanty side - mark this east-west interval as NOT an AGB!
-				DebugAssert(pi.x() != pj.x());
-				agb_friendly -= time_region::interval(min(pi.x(),pj.x()),max(pi.x(),pj.x()));
-				TRACE_SUBDIVIDE("Region from %lf to %lf is not friendly - side slop %lf\n", min(pi.x(),pj.x()),max(pi.x(),pj.x()),v_side.dx);
-			}
-			
-			// (If we get here and haven't subdivided it means we have a side that is both highly vertical and within the slop tolerance of the AGB.
-			
-//			#if !DEV			
-//			#error THIS IS BUGGY!  The X slop on the sides must be applied cumulatively; if we have a large number of small sides going north-south the absolute
-//			#error dx is not a good measure.
-//			#endif
-		} 
-		else
+		map<double, pair<double, double> >	bound_times;
+		
+		split_segment<set_first>(bottom_seg, a_start, a_stop, bound_times, all_splits, num_splits);
+		split_segment<set_second>(top_seg, a_start, a_stop, bound_times, all_splits, num_splits);
+		
+		for(map<double,pair<double,double> >::iterator i = bound_times.begin(); i != bound_times.end(); ++i)
 		{
-			v_side.normalize();
-			if(v_side.dy > v_side.dx)			//AND WTF IS THIS?
+			if(i->second.first == UNDEF)
+				i->second.first = bottom_seg.y_at_x(i->first);
+
+			if(i->second.second == UNDEF)
+				i->second.second = top_seg.y_at_x(i->first);
+		}
+		
+		DebugAssert(a_start != a_stop);
+		DebugAssert(bound_times.size() > 1);
+		DebugAssert(bound_times.begin()->first == a_start);
+		DebugAssert(nth_from(bound_times.end(),-1)->first == a_stop);
+		
+		map<double,pair<double,double> >::iterator p1,p2;
+		p1 = bound_times.begin();
+		p2 = p1;
+		++p2;
+		
+		while(p2 != bound_times.end())
+		{	
+			double b1 = p1->second.first;
+			double b2 = p2->second.first;
+			double t1 = p1->second.second;
+			double t2 = p2->second.second;
+			
+			double min_depth = min(t1-b1,t2-b2);
+									
+			
+			reg_info_t reg;
+			
+			reg.top_slope = fabs(t2-t1) / (p2->first - p1->first);
+			reg.bot_slope = fabs(b2-b1) / (p2->first - p1->first);
+			reg.top_side = top;
+			reg.bot_side = prev_bottom;			
+			
+			if(reg.top_slope > reg.bot_slope)
+				reg.block_dir = (t2 == t1) ? 0 : (t1 < t2 ? 1 : -1);
+			else			
+				reg.block_dir = (b2 == b1) ? 0 : (b2 < b1 ? 1 : -1);			
+			
+			reg.a_time = p1->first;
+			if(b1 <= sbounds[1] && b2 <= sbounds[1] &&
+			   t1 >= sbounds[3] && t2 >= sbounds[3])
 			{
-				// This is an AGB - because it's the top or bottom - save its path for later use in subdividing AGbB.
-				if(top)
+				reg.bot_type = reg_agb;
+				reg.top_type = reg_agb;
+			}
+			else if(fds > 1)
+			{
+				reg.is_split = true;
+				
+				// double split calculations -- calculate bottom
+				if(b1 >= b_split && b2 >= b_split)
 				{
-					DebugAssert(pj.x() < pi.x());
-					top_agbs.push_back(Segment2(pj,pi));
+					// Bottom is empty
+					reg.bot_type = reg_none;
+					if(reg.bot_slope > SLOPE_TO_SIDE || reg.top_slope > SLOPE_TO_SIDE)
+						reg.top_type = reg_slop;
+					else
+						reg.top_type = ((t1 >= top_safe && t2 >= top_safe) &&		// This logic controls the case where the block comes to a sharpened
+										 (b1 <= b_split || b2 <= b_split))			// point.  The bottom has nothing and the top is very sharp.  The top
+										 ? reg_fac : reg_junk;						// condition makes sure the top edge is not tapering down and the bottom 
+				}																	// condition controls how wide we must be to go from parking lot to bldg.
+				else if(t1 <= b_split && t2 <= b_split)								// Change the || to && to force parking lot all the way to the subdivision point.
+				{
+					// top is empty
+					reg.top_type = reg_none;
+					if(reg.bot_slope > SLOPE_TO_SIDE || reg.top_slope > SLOPE_TO_SIDE)
+						reg.bot_type = reg_slop;
+					else
+						reg.bot_type = 
+								((b1 <= bot_safe && b2 <= bot_safe) &&
+								 (t1 >= b_split || t2 >= b_split))
+								   ? reg_fac : reg_junk;
 				}
 				else
 				{
-					DebugAssert(pi.x() < pj.x());
-					bot_agbs.push_back(Segment2(pi,pj));
+					DebugAssert(b1 <= b_split);
+					DebugAssert(b2 <= b_split);
+					DebugAssert(t1 >= b_split);
+					DebugAssert(t2 >= b_split);
+					
+					// truly split
+					
+					if(reg.top_slope > SLOPE_TO_SIDE)
+						reg.top_type = reg_slop;
+					else
+						reg.top_type = (t1 >= top_safe && t2 >= top_safe) ? reg_fac : reg_junk;
+					
+					if(reg.bot_slope > SLOPE_TO_SIDE)
+						reg.bot_type = reg_slop;
+					else
+						reg.bot_type = (b1 <= bot_safe && b2 <= bot_safe) ? reg_fac : reg_junk;
 				}
+			}
+			else 
+			{
+				if(reg.top_slope > SLOPE_TO_SIDE || reg.bot_slope > SLOPE_TO_SIDE)
+					reg.bot_type = reg_slop;
+				else
+					reg.bot_type = (min_depth >= fac_depth_min) ? reg_fac : reg_junk;
+				reg.top_type = reg_none;
+				reg.is_split = false;
+			}
+
+//			printf("Region from: %lf (%lf,%lf) to %lf (%lf,%lf) / %lf,%lf d=%d [min: %lf max: %lf]\n",
+//				p1->first,p1->second.first,p1->second.second,
+//				p2->first,p2->second.first,p2->second.second,
+//				reg.bot_slope,reg.top_slope,
+//				reg.block_dir,
+//				p1->second.second - p1->second.first,
+//				p2->second.second - p2->second.first);
+
+			regions.push_back(reg);
+			
+			++p1;
+			++p2;
+		}
+		
+	
+		if(bottom == right && top == right)
+			break;
+	
+		// This phase of the loop tries to walk _one_ segment forward to find the next 'region'
+		// of the block in A-space.
+	
+		if(bottom != right && top != right)
+		{
+			if(abounds[bottom].x() == abounds[top].x())
+			{
+				prev_bottom = bottom;
+				bottom = abounds.next(bottom);		
+				prev_top = top;
+				top = abounds.prev(top);						
+			}
+			else if(abounds[bottom].x() < abounds[top].x())
+			{
+				prev_bottom = bottom;
+				bottom = abounds.next(bottom);		
+			}
+			else
+			{
+				prev_top = top;
+				top = abounds.prev(top);						
+			}
+		} 
+		else if(bottom != right)
+		{
+			prev_bottom = bottom;
+			bottom = abounds.next(bottom);		
+		}
+		else
+		{
+			prev_top = top;
+			top = abounds.prev(top);						
+		}
+	
+	}	
+
+	reg_info_t cap;
+	cap.bot_type =reg_TERM;
+	cap.top_type =reg_TERM;
+	cap.bot_slope=0.0;
+	cap.top_slope=0.0;
+	cap.bot_side=-1;
+	cap.top_side=-1;
+	cap.block_dir=0;
+	cap.is_split = 1;	// so that the top term is copied ot the bottom in the zipper code.
+	cap.a_time = bounds[2];
+	regions.push_back(cap);
+	
+//	printf("---- pre consolidation ---\n");
+//	for(i = 0; i < regions.size(); ++i)
+//	if(regions[i].is_split)
+//		printf("   %d(%d/%d): %f (%s/%s) @ %lf/%lf\n", i, regions[i].bot_side, regions[i].top_side, regions[i].a_time, reg_debug_str[regions[i].bot_type], reg_debug_str[regions[i].top_type], regions[i].bot_slope,regions[i].top_slope);
+//	else
+//		printf("   %d(%d): %f (%s) @ %lf/%lf\n", i, regions[i].bot_side, regions[i].a_time, reg_debug_str[regions[i].bot_type], regions[i].bot_slope,regions[i].top_slope);
+	
+	// 
+	/***********************************************************************************************
+	 * REGION GROUPING AND CONSOLIDATION
+	 ***********************************************************************************************/
+	
+	// Rule 1: up to X meters of slop to the left and right of an AGB get merged into an AGB
+	{
+		int first_agb = find_first_bot_type(regions,reg_agb);
+		if(first_agb != -1)
+		{
+			if(regions[first_agb].a_time <= sbounds[0])
+			{
+				regions[first_agb].a_time = bounds[0];
+				if(first_agb > 0)
+					regions.erase(regions.begin(),regions.begin() + first_agb);
+			}
+		}
+		
+		int last_agb = find_last_bot_type(regions,reg_agb);
+		if(last_agb != -1)
+		{
+			if(regions[last_agb+1].a_time >= sbounds[2])
+			{	
+				// Confirm we can leave our AGB and the terminator and still delete at least one
+				// region
+//				if(last_agb + 1 < regions.size() - 1)
+				if(last_agb + 2 < regions.size())		// avoid size() - x which can sign wrap
+					regions.erase(regions.begin()+last_agb+1,regions.end()-1);
+			}
+		}		
+	}
+	
+	// Rule 2: merge any adjacent AGBs (if there are any) to ensure correct book keeping.
+	i = 0;
+	while(i < regions.size())
+	{
+		if(regions[i].bot_type == reg_agb &&
+			regions[i+1].bot_type == reg_agb)		// safe because we ALWAYS have a 'term' end!
+		{
+			// Important: take the FLATTEST AGB of the two - that way the single region representing
+			// The AGB will contain sides that are a good proxy for the AGB.  We are often consolidating
+			// smal amounts of 'slop' and if we get the junk's side, our AGB will be based on a side of
+			// the block and not top/bottom.  
+			
+			// (If a side slop makes it ALL the way from the TOP of the block to the BOTTOM in a single side
+			// then its top/bottom will meet the AGB extrema rules - we'll carve off a facade later when
+			// we discover that the AGB is not square enough on its ends.)
+			
+			// To get facades to merge with their neighbors properly, it is key that the AGB be represented
+			// by the flat sides that dominate it.
+
+			double slope_i   = max(regions[i  ].bot_slope,regions[i  ].top_slope);
+			double slope_ipp = max(regions[i+1].bot_slope,regions[i+1].top_slope);
+		
+			if(slope_i > slope_ipp)
+				regions.erase(regions.begin()+i  );			
+			else		
+				regions.erase(regions.begin()+i+1);			
+		}
+		else
+			++i;			
+	}
+	
+	// Rule 3: if there is any remaining, um, anything next to the AGB that is below min-fac-width, borrow
+	// some AGB-space to widen it.  Otherwise some slant blocks will be nothing but a 5m wide slop slice that
+	// just barely didn't make the AGB
+	
+	if(info->fac_depth_split > 0.0)
+	for(i = 0; i < regions.size(); ++i)
+	{
+		if(regions[i].bot_type == reg_agb)
+		{
+			// TWO reasons why we might need to chew a little AGB:
+			// 1. Our next 'thing is' really short or
+			// 2. Our next thing is really sloped to the side (and is thus slop - it needs to join SOMETHING.
+			
+			if(i > 0)
+			if(((regions[i].a_time - regions[i-1].a_time) < info->fac_extra) ||
+				regions[i-1].bot_slope > SLOPE_TO_SIDE || 
+				regions[i-1].top_slope > SLOPE_TO_SIDE)
+			{
+				regions.insert(regions.begin()+i,regions[i]);				
+				regions[i].top_type = reg_fac;
+				regions[i].bot_type = reg_fac;
+				regions[i+1].a_time += info->fac_extra;
+				++i;
+			}		
+			
+			if(regions[i+1].bot_type != reg_TERM)
+			if(((regions[i+2].a_time - regions[i+1].a_time) < info->fac_extra) ||
+				regions[i+1].bot_slope > SLOPE_TO_SIDE ||
+				regions[i+1].top_slope > SLOPE_TO_SIDE)
+			{
+				regions.insert(regions.begin()+i,regions[i]);
+				regions[i+1].a_time   = regions[i+2].a_time - info->fac_extra;
+				regions[i+1].top_type = reg_fac;
+				regions[i+1].bot_type = reg_fac;				
+				++i;
 			}
 		}
 	}
 	
+	// Rule 4: If the AGBs are too small to be, like, AGBs, we facade-ize them.
+	for(i = 0; i < regions.size(); ++i)
+	if(regions[i].bot_type == reg_agb)
+	if((regions[i+1].a_time-regions[i].a_time) < info->agb_min_width)
+	{
+		if(fds > 1)
+		{
+			regions[i].bot_type = reg_fac;
+			regions[i].top_type = reg_fac;
+			regions[i].is_split = true;
+		}
+		else
+		{
+			regions[i].bot_type = reg_fac;
+			regions[i].top_type = reg_none;
+			regions[i].is_split = false;
+		}
+	}
+	
+	// Rule 5: AGB-only blocks with no AGBs are a fail - early exit.
+
+	if(info->fac_depth_split == 0.0)
+	{
+		DebugAssert(regions.size() > 1);
+		for(i = 1; i < regions.size(); ++i)
+		if(regions[-1].bot_type != reg_agb)
+			return 0;		
+	}
+	
+	// Rule 6: we split the top and bottom.
+
+	vector<reg_info_t>	regions_top(regions), regions_bot;
+	regions.swap(regions_bot);
+	
+	vector<reg_info_t> * regions_all[2] = { &regions_bot, &regions_top };
+	
+	for(i = 0; i < regions_top.size(); ++i)
+	{
+		if(regions_top[i].is_split)
+		{
+			regions_top[i].bot_type = regions_top[i].top_type;
+			regions_top[i].bot_side = regions_top[i].top_side;
+		} else {
+			regions_top[i].bot_type = reg_none;			
+		}
+	}
+
+	// Rule 7: merge same type areas - sometimes we have to break at a side change.
+	for(i = 0; i < 2; ++i)
+		regions_all[i]->erase(unique(regions_all[i]->begin(),regions_all[i]->end(),dupe_bot_reg_type()),regions_all[i]->end());
+	
+//	printf("---- post consolidation ---\n");
+//	for(i = 0; i < regions_bot.size()-1; ++i)
+//		printf("   %d: %f (%s %d) %.1lfm\n", i, regions_bot[i].a_time, reg_debug_str[regions_bot[i].bot_type],regions_bot[i].bot_side,regions_bot[i+1].a_time-regions_bot[i].a_time);
+//	printf("          -----   \n");
+//	for(i = 0; i < regions_top.size()-1; ++i)
+//		printf("   %d: %f (%s %d) %.1lfm\n", i, regions_top[i].a_time, reg_debug_str[regions_top[i].bot_type],regions_top[i].bot_side,regions_top[i+1].a_time-regions_top[i].a_time);
+	
+	// Rule 8: time used for junk and slop become part of the adjacent wider/deeper block.
+	
+	for(i = 0; i < 2; ++i)
+	{
+		vector<reg_info_t>::iterator r = regions_all[i]->begin(); 
+		while(r != regions_all[i]->end())
+		{
+			if(r->bot_type == reg_none || r->bot_type == reg_slop)
+			{
+				if(r->block_dir < 0)
+				{
+					r = regions_all[i]->erase(r);
+				}
+				else				
+				{
+					vector<reg_info_t>::iterator n(r);
+					++n;
+					n->a_time = r->a_time;
+					r = regions_all[i]->erase(r);
+				}
+			}
+			else
+				++r;
+		}
+	}
+	
+//	printf("---- with slop removal ---\n");
+//	for(i = 0; i < regions_bot.size()-1; ++i)
+//		printf("   %d: %f (%s %d) %.1lfm\n", i, regions_bot[i].a_time, reg_debug_str[regions_bot[i].bot_type],regions_bot[i].bot_side,regions_bot[i+1].a_time-regions_bot[i].a_time);
+//	printf("          -----   \n");
+//	for(i = 0; i < regions_top.size()-1; ++i)
+//		printf("   %d: %f (%s %d) %.1lfm\n", i, regions_top[i].a_time, reg_debug_str[regions_top[i].bot_type],regions_top[i].bot_side,regions_top[i+1].a_time-regions_top[i].a_time);
+	
+	int part_base = parts.size();
+
+	for(i = 0; i < (fds > 1 ? 2 : 1); ++i)
+	{
+		regions_all[i]->front().a_time -= 1.0;
+		regions_all[i]->back().a_time += 1.0;
+	}
+	
+	double	unified[2] = { bounds[1] - 1.0, bounds[3] + 1.0 };
+	double	divided[3] = { bounds[1] - 1.0, b_split, bounds[3] + 1.0 };
+	
+	candy_bar	snickers(fds > 1 ? 2 : 1, fds > 1 ? divided : unified, regions_bot.front().a_time, regions_bot.back().a_time);
+	
+	int ctr = part_base;
+	for(i = 0; i < (fds > 1 ? 2 : 1); ++i)
+	{
+		double b_bot = (fds > 1 && i == 1) ? b_split : bounds[1]-1.0;
+		double b_top = (fds > 1 && i == 0) ? b_split : bounds[3]+1.0;
+	
+		for(vector<reg_info_t>::iterator r = regions_all[i]->begin(); r != regions_all[i]->end(); ++r)
+		if(r->bot_type != reg_TERM)
+		{
+			vector<reg_info_t>::iterator n(r);
+			++n;
+			
+			double rgb[3] = { 0 };
+			switch(r->bot_type) {
+			case reg_agb:		rgb[0] = 1; break;
+			case reg_fac:		rgb[2] = 1; break;
+			case reg_junk:		rgb[0] = 1; rgb[1] = 1; break;
+			}
+			
+			if(r->bot_type == reg_agb && i == 1)
+				continue;
+			
+			int b1 = i;
+			int b2 = i+1;
+			if(fds > 1 && r->bot_type == reg_agb) b2 = 2;
+							
+			if(r->bot_type == reg_agb)
+			{
+				b_bot = bounds[1]-1.0;
+				b_top = bounds[3]+1.0;
+			
+				BLOCK_face_data bd(usage_Polygonal_Feature, info->agb_id);
+				bd.major_axis = va;
+				bd.height = 0;
+				bd.simplify_id = ctr++;
+				
+				snickers.insert_block(bd, b1, b2, r->a_time,n->a_time);
+			}
+			else if(r->bot_type == reg_junk)
+			{
+				BLOCK_face_data bd(usage_Polygonal_Feature, info->fil_id);
+				bd.major_axis = va;
+				bd.height = 0;
+				bd.simplify_id = ctr++;				
+				snickers.insert_block(bd, b1, b2, r->a_time,n->a_time);
+			}
+			else
+			{
+				double width = n->a_time - r->a_time;				
+				FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, f->data().GetParam(af_HeightObjs,0.0), (bounds[3]-bounds[1]) / fds);
+				if(fac_rule == NULL)
+				{
+					DebugAssert(!"Fac fail!!?!?");
+					return 0;
+				}
+				//printf("Tried to fill %.1lf, got %.1f (%.1lf - %.1lf)\n",width,fac_rule->width_real, fac_rule->width_min, fac_rule->width_max);
+
+				double accum = 0.0;
+				for(int fn = 0; fn < fac_rule->facs.size(); ++fn)
+				{
+					//printf("     %s (%.1f\n", FetchTokenString(fac_rule->facs[fn].fac_id_front), fac_rule->facs[fn].width);
+					BLOCK_face_data bf(usage_Polygonal_Feature,fac_rule->facs[fn].fac_id_front);
+					bf.major_axis = va;
+					bf.height = RandRange(fac_rule->facs[fn].height_min,fac_rule->facs[fn].height_max);
+					bf.simplify_id = ctr++;
+					
+					double a_start = double_interp(0,r->a_time,fac_rule->width_real,n->a_time,accum);
+					if(fn == 0) a_start = r->a_time;
+					accum += fac_rule->facs[fn].width;
+					double a_end = double_interp(0,r->a_time,fac_rule->width_real,n->a_time,accum);
+					if(fn == (fac_rule->facs.size()-1))
+						a_end = n->a_time;
+					
+					snickers.insert_block(bf,b1,b2,a_start,a_end);
+				}		
+			
+			}
+
+//			Point2 p1 = Point2() + va * r->a_time + vb * b_bot;
+//			Point2 p2 = Point2() + va * r->a_time + vb * b_top;
+//			Point2 p3 = Point2() + va * n->a_time + vb * b_top;
+//			Point2 p4 = Point2() + va * n->a_time + vb * b_bot;
+			
+//			push_block_curve(curves,p1,p2,parts.size());
+//			push_block_curve(curves,p2,p3,parts.size());
+//			push_block_curve(curves,p3,p4,parts.size());
+//			push_block_curve(curves,p4,p1,parts.size());
+//						
+//			parts.push_back(BLOCK_face_data());
+//			
+//			parts.back().usage = usage_Polygonal_Feature;
+//			parts.back().feature = info->agb_id;
+//			parts.back().height = 0.0;
+//			parts.back().major_axis = va;
+//			parts.back().simplify_id = parts.size()-1;
+			
+//			debug_mesh_line(translator.Reverse(p1),translator.Reverse(p2),rgb[0],rgb[1],rgb[2],rgb[0],rgb[1],rgb[2]);
+//			debug_mesh_line(translator.Reverse(p2),translator.Reverse(p3),rgb[0],rgb[1],rgb[2],rgb[0],rgb[1],rgb[2]);
+//			debug_mesh_line(translator.Reverse(p3),translator.Reverse(p4),rgb[0],rgb[1],rgb[2],rgb[0],rgb[1],rgb[2]);
+//			debug_mesh_line(translator.Reverse(p4),translator.Reverse(p1),rgb[0],rgb[1],rgb[2],rgb[0],rgb[1],rgb[2]);
+		}
+	}
+	
+	snickers.build_curves(parts, va, vb, curves);
+	
+/*	
+	int left_top = left, right_top = right, left_bottom = left, right_bottom = right;
+	
+	while(left_top != right && abounds[left_top].y() < sbounds[3])
+		left_top = abounds.prev(left_top);
+
+	while(left_bottom != right && abounds[left_bottom].y() > sbounds[1])
+		left_bottom = abounds.next(left_bottom);
+		
+	while(right_top != left && abounds[right_top].y() < sbounds[3])
+		right_top = abounds.next(right_top);
+
+	while(right_bottom != left && abounds[right_bottom].y() > sbounds[1])
+		right_bottom = abounds.prev(right_bottom);
+		
+		
+	// Now we can see: if the edges of our 'flat top' zones are too far from the edge they SHOULD be at, then
+	// we have a corner cut off, or a crazy-angled side or some other such nuttiness, and we need to NOT have
+	// an AGB there!
+	
+	if(abounds[left_top].x() > sbounds[0])
+		agb_friendly -= time_region::interval(bounds[0],abounds[left_top].x());
+		
+	if(abounds[left_bottom].x() > sbounds[0])
+		agb_friendly -= time_region::interval(bounds[0],abounds[left_bottom].x());
+		
+	if(abounds[right_top].x() < sbounds[2])
+		agb_friendly -= time_region::interval(abounds[right_top].x(),bounds[2]);
+		
+	if(abounds[right_bottom].x() < sbounds[2])
+		agb_friendly -= time_region::interval(abounds[right_bottom].x(),bounds[2]);
+		
+	
+	// One last sanity check: for now we assume that whomever the hell called us doesn't have "divets" cut out
+	// of our top and bottom.  
+
+	// If this code blows up, we can find and black-list these angular regions from the AGB.
+	
+	#if DEV
+	for(i = right_top; i != left_top; i = abounds.next(i))
+		DebugAssert(abounds[i].y() >= sbounds[3]);
+
+
+	for(i = left_bottom; i != right_bottom; i = abounds.next(i))
+		DebugAssert(abounds[i].y() <= sbounds[1]);
+	#endif
+
 	// If we don't have the option of making facades at all, exit if we already can tell that our time region isn't
 	// goin to hit the AGB-only case.
 	
-	if(info->fac_min_width == 0.0)
+	if(info->fac_depth_split == 0.0)
 	{
-		if(!agb_friendly.is_simple() ||					// Hrm...AGB block has a facade hole in the middle
-			agb_friendly.empty() ||						// Whole area is facade
-			agb_friendly.get_min() > bounds[0] ||		// Block starts with facade
-			agb_friendly.get_max() < bounds[2] ||		// Block ends with facade
-			(bounds[2] - bounds[0]) < info->agb_min_width)		// Block is TOO SMALL - will become a facade!!
+		if(!agb_friendly.is_simple() ||						// Hrm...AGB block has a facade hole in the middle
+			agb_friendly.empty() ||							// Whole area is facade
+			agb_friendly.get_min() > bounds[0] ||			// Block starts with facade
+			agb_friendly.get_max() < bounds[2] ||			// Block ends with facade
+			(bounds[2] - bounds[0]) < info->agb_min_width)	// Block is TOO SMALL - will become a facade!!
 			
 			return 0;
 	}
@@ -942,12 +1864,12 @@ static int	init_subdivisions(
 		}		
 	}
 
-	DebugAssert(must_be_fac_too.empty() || info->fac_min_width);
+	DebugAssert(must_be_fac_too.empty() || info->fac_depth_split);
 
 	agb_friendly -= must_be_fac_too;
 
 //	agb_friendly ^= time_region::interval(bounds[0],bounds[2]);
-
+*/
 	/***********************************************************************************************
 	 * SLICE AND DICE
 	 ***********************************************************************************************/
@@ -955,7 +1877,7 @@ static int	init_subdivisions(
 	// Now we have enough information to slice up our area.  We're going to wal the positive and 
 	// negative space of the AGB region and produce a series of cut intervals and primitive types.
 	// When we hit a facade region, we'll use a formula to subdivide it - it might be quite large.
-
+/*
 	vector<pair<double, bool> >	a_cuts;
 	vector<pair<int, float>	>	a_features, b_features;
 
@@ -987,7 +1909,11 @@ static int	init_subdivisions(
 		{
 			double width = fac.second - fac.first;
 			
-			FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, f->data().GetParam(af_HeightObjs,0.0), info->min_side_minor);
+			#if !DEV
+				#error THIS IS BUGGY.   Make sure we consider the role of the division on the width.
+			#endif
+			
+			FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, f->data().GetParam(af_HeightObjs,0.0), (bounds[3]-bounds[1]) / fds);
 			if(fac_rule == NULL)
 				return 0;
 
@@ -1009,14 +1935,16 @@ static int	init_subdivisions(
 		{
 			// This calculation figures out how much the roads in the major axis direction
 			// are drifting, and subdivides the AGB to 'stair step' as needed.		
-			double top_span = find_b_interval(agb,top_agbs, bounds);
-			TRACE_SUBDIVIDE("top span: %lf\n", top_span);
-			double bot_span = find_b_interval(agb,bot_agbs, bounds);
-			TRACE_SUBDIVIDE("bot span: %lf\n", bot_span);
-			double worst_span = max(top_span,bot_span);
-			double subdiv = dobmax2(1.0,floor(worst_span / info->agb_slop_depth));
-			TRACE_SUBDIVIDE("worst span: %lf\n", worst_span);
-			TRACE_SUBDIVIDE("Subdiving agb from %lf to %lf ito %lf pieces.\n", agb.first,agb.second,subdiv);
+//			double top_span = find_b_interval(agb,top_agbs, bounds);
+//			TRACE_SUBDIVIDE("top span: %lf\n", top_span);
+//			double bot_span = find_b_interval(agb,bot_agbs, bounds);
+//			TRACE_SUBDIVIDE("bot span: %lf\n", bot_span);
+//			double worst_span = max(top_span,bot_span);
+//			double subdiv = dobmax2(1.0,floor(worst_span / info->agb_slop_depth));
+//			TRACE_SUBDIVIDE("worst span: %lf\n", worst_span);
+//			TRACE_SUBDIVIDE("Subdiving agb from %lf to %lf ito %lf pieces.\n", agb.first,agb.second,subdiv);
+			
+			double subdiv = 1.0;
 			
 			for(double s = 0.0; s < subdiv; s += 1.0)
 			{
@@ -1038,13 +1966,14 @@ static int	init_subdivisions(
 	a_features.push_back(pair<int,float>(NO_VALUE,0.0));
 	b_features.push_back(pair<int,float>(NO_VALUE,0.0));
 	a_cuts.front().first -= 1.0;
-
+*/
 	/***********************************************************************************************
 	 * GEOMETRY GENERATION
 	 ***********************************************************************************************/
 
-	//	Finally, given the cuts, we can make the polygon curve shapes and stash them.
 
+#if 0
+	//	Finally, given the cuts, we can make the polygon curve shapes and stash them.
 	int part_base = parts.size();
 	DebugAssert(a_cuts.size() >= 2);
 	int a_blocks = a_cuts.size()-1;
@@ -1175,7 +2104,13 @@ static int	init_subdivisions(
 
 		}
 	}
+
+#endif
+
 	
+	// This puts down the outer roadways and boundaries. Because AGB filling and edge filling are NOT used together,
+	// the edge-based road fill will not otherwise run!
+
 	int ring_base = parts.size();
 	
 	for(int n = 0; n < mbounds.size(); ++n)
@@ -2326,11 +3261,13 @@ bool	init_block(
 //		printf("%d: %d %s\n", n, parts[n].usage, FetchTokenString(parts[n].feature));
 	create_block(out_block,parts, curves, oob_idx);	// First "parts" block is outside of CCB, marked as "out of bounds", so trapped areas are not marked empty.
 	num_line_integ += curves.size();
-	//debug_show_block(out_block,translator);
+//	debug_show_block(out_block,translator);
 	clean_block(out_block);
+//	debug_show_block(out_block,translator);
 	
 	/* Funky post processing step... */
-	
+
+/*	
 	list<Block_2::Halfedge_handle>	splits_we_do_not_want;
 	for(Block_2::Edge_iterator e = out_block.edges_begin(); e != out_block.edges_end(); ++e)
 	if(!e->face()->is_unbounded() && !e->twin()->face()->is_unbounded())
@@ -2360,6 +3297,7 @@ bool	init_block(
 		out_block.remove_edge(*k);
 	if(!splits_we_do_not_want.empty())
 		clean_block(out_block);
+*/	
 		
 	return true;
 }					
@@ -2543,21 +3481,37 @@ bool	apply_fill_rules(
 	return did_promote;
 }
 
-Block_2::Halfedge_handle best_side_for_facade(Block_2::Ccb_halfedge_circulator circ)
+Block_2::Halfedge_handle best_side_for_facade(Block_2::Ccb_halfedge_circulator circ, const Vector2& major)
 {
+	Block_2::Halfedge_handle good = Block_2::Halfedge_handle();
 	Block_2::Halfedge_handle best = Block_2::Halfedge_handle();
+	
 	Block_2::Ccb_halfedge_circulator stop(circ);
 	do {
 		if(against_road(circ))
 		{
-			if(best == Block_2::Halfedge_handle() || 
+			if(good == Block_2::Halfedge_handle() || 
 				CGAL::squared_distance(circ->source()->point(),circ->target()->point()) > 
-				CGAL::squared_distance(best->source()->point(),best->target()->point()))
-				best = circ;			
+				CGAL::squared_distance(good->source()->point(),good->target()->point()))
+				good = circ;			
+				
+			Vector2	this_side(cgal2ben(circ->source()->point()),cgal2ben(circ->target()->point()));
+			this_side.normalize();
+			double my_dot = fabs(this_side.dot(major));
+			if(my_dot > 0.9)
+			{
+				if(best == Block_2::Halfedge_handle() || 
+					CGAL::squared_distance(circ->source()->point(),circ->target()->point()) > 
+					CGAL::squared_distance(best->source()->point(),best->target()->point()))
+					best = circ;			
+			}
 		}
 	} while(++circ != stop);
-	
-	return best;	
+
+	if(best != Block_2::Halfedge_handle())
+		return best;
+	else
+		return good;
 }
 
 Block_2::Halfedge_handle best_side_for_agb(Block_2::Ccb_halfedge_circulator circ, const Vector2& major, unsigned short& param)
@@ -2879,7 +3833,7 @@ void	extract_features(
 				}
 				else if(strstr(FetchTokenString(o.mRepType),".fac"))
 				{		
-					Block_2::Halfedge_handle start = best_side_for_facade(f->outer_ccb());
+					Block_2::Halfedge_handle start = best_side_for_facade(f->outer_ccb(), f->data().major_axis);
 					bool fail_start = start == Block_2::Halfedge_handle();
 					if(fail_start)
 						start = f->outer_ccb();

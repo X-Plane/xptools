@@ -5,9 +5,9 @@
 #include <string.h>
 
 
-//#				zoning				road	variant	height	sidelen	err		major	minor	angle		agb		agb		fac		fac		fac			agb					fac					ags
+//#				zoning				road	variant	height	sidelen	err		major	minor	angle		agb		agb		fac		fac		fac			agb					fac					ags				fil
 //#													min	max	min	max			min	max	min	max	min	max		min		slop	width	depth	extra
-// FILL_RULE	ind_high_solid		2		-1		0	0	0	0	0		0	0	0	0	0	0		56		2		15		30		7.5			ind_high.agb		ind_high.fac		NO_VALUE
+// FILL_RULE	ind_high_solid		2		-1		0	0	0	0	0		0	0	0	0	0	0		56		2		15		30		7.5			ind_high.agb		ind_high.fac		NO_VALUE		parking.fac
 
 
 float block_widths[8]	=	{	7.5,	15,		22.5, 	30,		45,		60,		75,		90 };		
@@ -97,51 +97,79 @@ const char * road_suffix[] = { "_f", "_h", NULL };
 
 int is_lib = 0;
 
-int depth_residential [] =  { 30, 60, 120, 0 };
-int depth_industrial [] =  { 30, 60, 90, 240, 0 };
+struct depth_info_t {
+	int		block_min;
+	int		block_max;
+	int		sub_div;
+	int		agb;
+	int		fac;
+	float	min_div;
+};
+
+struct depth_info_t depth_residential [] =  {
+	30,	45,	1,	30,	60,	10.0,
+	45,	60,	2,	30,	30,	7.5,
+	60,	120,2,	60,	60,	15.0,
+	0,	0,	0,	0,	0,	0.0
+};
+
+struct depth_info_t depth_industrial [] = { 
+	30, 45,		1,	30,	60,	10.0,
+	45, 60,		2,	30,	30,	7.5,
+	60, 90,		2,	60,	60,	15.0,
+	90, 180,	2,	90,	90,	22.5,
+	0,	0,		0,	0,	0,	0.0
+};
 
 int facade_schedule[] = { 25, 30, 35, 40, 45, 50, 80, 9999, 0 };
 
-void output_one_rule(int h, int r, int v, int d1, int d2, const char * zoning)
+void output_one_rule(int h, int r, int v, const struct depth_info_t * ds, const char * zoning)
 {
 	int w, fac_height, s;
+	int d1 = ds->block_min;
+	int d2 = ds->block_max;
+	int splits = ds->sub_div;
+	int df1 = ds->fac / 2;
+	int df2 = ds->fac;
+
+	
 	if(!is_lib)
 	{
 		printf("FILL_RULE\t%s\t",zoning);																		// Fill rule and zoning
 		printf("%d\t%d\t%d\t%d\t0\t0\t0\t\t",road_codes[r],v,height_max[h+1],		height_max[h  ]);			// road code, variant code, height codes, sidelen, block err, 
-		printf("%d\t9999\t%d\t%d\t0\t0\t\t",d1,d1,d2);															// range for major, minor, angle
-		printf("%d\t2\t%d\t\%d\t7.5\t\t",d1, 30,d1 > 30 ? 2 : 1);													// AGB params: width, slop,fac min, fac_split, fac_extra
+		printf("%d\t9999\t%d\t%d\t0\t0\t\t",ds->agb,d1,d2);															// range for major, minor, angle
+		printf("%d\t2\t%d\t\%d\t%.1f\t\t",ds->agb,30,splits,ds->min_div);											// AGB params: width, slop,fac min unused, fac_split, fac_extra
 	}
 	
 	if(is_lib)
 	{
 		if(height_max[h] == height_max[h+1])
 		{
-			printf("EXPORT lib/g10/autogen/%s%s_%d_v%d.agb\t\t\tfoo.agb\n",zoning, road_suffix[r], d1, v);
+			printf("EXPORT lib/g10/autogen/%s%s_%d_v%d.agb\t\t\tfoo.agb\n",zoning, road_suffix[r], ds->agb, v);
 		} else {
-			printf("EXPORT lib/g10/autogen/%s%s_%dx%d_v%d.agbt\t\tfoo.agb\n",zoning, road_suffix[r], d1, height_max[h], v);
+			printf("EXPORT lib/g10/autogen/%s%s_%dx%d_v%d.agbt\t\tfoo.agb\n",zoning, road_suffix[r], ds->agb, height_max[h], v);
 		}
 	}
 	else 
 	{
 		if(height_max[h] == height_max[h+1])
 		{
-			printf("%s%s_%d_v%d.agb\t",zoning, road_suffix[r], d1, v);
-//			printf("%s%s_%d_v%d.fac\t",zoning, road_suffix[r], d1, v);	
+			printf("%s%s_%d_v%d.agb\t",zoning, road_suffix[r], ds->agb, v);
+//			printf("%s%s_%d_v%d.fac\t",zoning, road_suffix[r], ds->fac, v);	
 			printf("NO_VALUE\t");				
-			printf("NO_VALUE\n");				
+			printf("NO_VALUE	%s_parking.fac\n",zoning);				
 		} else {
-			printf("%s%s_%dx%d_v%d.agb\t",zoning, road_suffix[r], d1, height_max[h], v);
-//			printf("%s%s_%dx%d_v%d.fac\t",zoning, road_suffix[r], d1, height_max[h], v);
+			printf("%s%s_%dx%d_v%d.agb\t",zoning, road_suffix[r], ds->agb, height_max[h], v);
+//			printf("%s%s_%dx%d_v%d.fac\t",zoning, road_suffix[r], ds->fac, height_max[h], v);
 			printf("NO_VALUE\t");
-			printf("NO_VALUE\n");
+			printf("NO_VALUE	%s_parking.fac\n",zoning);
 		}
 	}
 
 	fac_height = 7 - h;
 	if(height_max[h] == height_max[h+1]) fac_height = 0;
 
-	if(r == 1)
+	if(r == 1 && splits > 1)
 	{
 		int bh_bottom = (height_max[h] == height_max[h+1] || fac_height == 0) ? 0 : block_heights[fac_height-1];
 		int bh_top = (height_max[h] == height_max[h+1]						) ? 0 : block_heights[fac_height  ];
@@ -156,7 +184,7 @@ void output_one_rule(int h, int r, int v, int d1, int d2, const char * zoning)
 			{
 		
 				printf("FACADE_SPELLING\t%s\t%d\t\t%d\t%d\t%d\t%d\n",
-					zoning,v,bh_bottom, bh_top,d1,d2);
+					zoning,v,bh_bottom, bh_top,df1,df2);
 		//		printf("%s %f %d\n", zoning, block_heights[fac_height], d1);
 				for(s = 0; s < tiles; ++s)
 				{
@@ -164,30 +192,30 @@ void output_one_rule(int h, int r, int v, int d1, int d2, const char * zoning)
 					int ah = arch_heights[fac_height];
 					int pick;
 					float width;
-					if(d1 > 30)		pick = pick_histo(block_chance_30 + 8 * fac_height);
+					if(df2 > 30)	pick = pick_histo(block_chance_30 + 8 * fac_height);
 					else			pick = pick_histo(block_chance_60 + 8 * fac_height);
 					if(tiles == 1) pick = tries - 1;
 					width =  block_widths[pick];
 					
 					
 					printf("FACADE_TILE\t%f\t%f\t%f\t%d\t\t",
-							width, fh ? block_heights[fh-1] : 8.0f, block_heights[fh], d1);
+							width, fh ? block_heights[fh-1] : 8.0f, block_heights[fh], df2);
 
 					if(height_max[h] != height_max[h+1])
 					{
 						printf("%s_%d_%dx%dx%d%c.fac\t",
-								zoning, ah, (int) width, (int) block_heights[fh], d1, s % 2 ? 'b' : 'a');
+								zoning, ah, (int) width, (int) block_heights[fh], df2, s % 2 ? 'b' : 'a');
 						
 						printf("%s_%d_%dx%dx%d%c.fac\n",
-								zoning, ah, (int) width, (int) block_heights[fh], d1, s % 2 ? 'a' : 'b');
+								zoning, ah, (int) width, (int) block_heights[fh], df2, s % 2 ? 'a' : 'b');
 					}
 					else
 					{
 						printf("%s_%dx%d%c.fac\t",
-								zoning, (int) width, d1, s % 2 ? 'b' : 'a');
+								zoning, (int) width, df2, s % 2 ? 'b' : 'a');
 						
 						printf("%s_%dx%d%c.fac\n",
-								zoning, (int) width, d1, s % 2 ? 'a' : 'b');
+								zoning, (int) width, df2, s % 2 ? 'a' : 'b');
 					}
 				}
 			}
@@ -196,28 +224,28 @@ void output_one_rule(int h, int r, int v, int d1, int d2, const char * zoning)
 }
 
 
-void output_rule_with_height(const char * zoning, const int * depth_schedule)
+void output_rule_with_height(const char * zoning, const struct depth_info_t * depth_schedule)
 {
 	int h , r, v, d;
 	for(h = 0; height_max[h]; ++h)
 	for(r = 0; road_suffix[r]; ++r)
-	for(d = 0; depth_schedule[d+1]; ++d)
+	for(d = 0; depth_schedule[d].block_min; ++d)
 	for(v = 0; v < 4; ++v)
 	{
-		output_one_rule(h,r,v,depth_schedule[d], depth_schedule[d+1], zoning);
+		output_one_rule(h,r,v,depth_schedule+d, zoning);
 	}
 }
 
-void output_rule_basic(const char * zoning, const int * depth_schedule)
+void output_rule_basic(const char * zoning, const struct depth_info_t * depth_schedule)
 {
 	int h , r, v, d;
 	for(h = 0; height_max[h]; ++h) { }
 	
 	for(r = 0; road_suffix[r]; ++r)
-	for(d = 0; depth_schedule[d+1]; ++d)
+	for(d = 0; depth_schedule[d].block_min; ++d)
 	for(v = 0; v < 4; ++v)
 	{
-		output_one_rule(h,r,v, depth_schedule[d], depth_schedule[d+1], zoning);
+		output_one_rule(h,r,v, depth_schedule+d, zoning);
 	}
 }
 
