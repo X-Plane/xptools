@@ -441,7 +441,7 @@ void find_major_axis(vector<block_pt>&	pts,
 		int longest = -1;
 		double corr_len = -1;
 		for(int i = 0; i < pts.size(); ++i)
-		if(elev_ok || ground_road_access_for_he(pts[i].orig))
+		if(/*elev_ok ||*/ ground_road_access_for_he(pts[i].orig))
 		{
 			int j = (i + 1) % pts.size();
 			Vector2 this_side(pts[i].loc,pts[j].loc);
@@ -814,7 +814,7 @@ int	pick_major_axis(
 		int longest = -1;
 		double corr_len = -1;
 		for(int i = 0; i < sides.size(); ++i)
-		if(elev_ok || ground_road_access_for_he(sides[i].first))
+		if(/*elev_ok ||*/ ground_road_access_for_he(sides[i].first))
 		{
 			Vector2 this_side(bounds.side(i).p1,bounds.side(i).p2);
 			double len = this_side.normalize();
@@ -855,6 +855,7 @@ int	pick_major_axis(
 	
 	//printf("Our bbox is %lf,%lf to %lf,%lf\n", bbox[0],bbox[1],bbox[2],bbox[3]);
 
+	if(0)
 	if((bbox[2] - bbox[0]) < (bbox[3] - bbox[1]))
 	{
 		v_x = v_x.perpendicular_ccw();
