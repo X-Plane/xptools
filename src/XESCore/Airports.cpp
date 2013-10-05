@@ -829,7 +829,7 @@ void	BezierToSegments(
 					{
 						if(sqrt(s.squared_distance_supporting_line(bpb)) > inSimplify * MTR_TO_DEG_LAT)
 						{
-							#if OPENGL_MAP
+							#if OPENGL_MAP && DEV
 								debug_mesh_line(bpb,s.projection(bpb),1,0,0,1,0,0);
 							#else
 								throw "too curvy curve!";
