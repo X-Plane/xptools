@@ -101,6 +101,8 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 	{
 		if(me->first.size() < r.size())								break;
 		if(strncasecmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
+		// Ben says: in WED 1.3 we'll get more clever about this and optionally show library innards.  But for now, just hide our privates.
+		if(me->second.status == status_Public)
 		if(is_direct_parent(r,me->first))
 		{
 			bool want_it = true;
@@ -224,6 +226,8 @@ void		WED_LibraryMgr::Rescan()
 			//Initialize the Memory File System
 			MFS_init(&s, lib);
 
+			int cur_status = status_Public;
+
 			//Set the library version
 			int lib_version[] = { 800, 0 };
 
@@ -233,6 +237,10 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 
+				if(MFS_string_match(&s,"PUBLIC",true))		cur_status = status_Public;
+				if(MFS_string_match(&s,"PRIVATE",true))		cur_status = status_Private;
+				if(MFS_string_match(&s,"DEPRECATED",true))	cur_status = status_Deprecated;
+
 				if(MFS_string_match(&s,"EXPORT",false))
 				{
 					MFS_string(&s,&vpath);
@@ -240,7 +248,7 @@ void		WED_LibraryMgr::Rescan()
 					clean_vpath(vpath);
 					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack);
+					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_EXTEND",false))
@@ -250,7 +258,7 @@ void		WED_LibraryMgr::Rescan()
 					clean_vpath(vpath);
 					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack);
+					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_EXCLUDE",false))
@@ -260,7 +268,7 @@ void		WED_LibraryMgr::Rescan()
 					clean_vpath(vpath);
 					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack);
+					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_BACKUP",false))
@@ -270,7 +278,7 @@ void		WED_LibraryMgr::Rescan()
 					clean_vpath(vpath);
 					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,true,is_default_pack);
+					AccumResource(vpath, p, rpath,true,is_default_pack, cur_status);
 				}
 
 				if(MFS_string_match(&s,"EXPORT_RATIO",false))
@@ -281,7 +289,7 @@ void		WED_LibraryMgr::Rescan()
 					clean_vpath(vpath);
 					clean_rpath(rpath);
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack);
+					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
 				MFS_string_eol(&s,NULL);
 			}
@@ -305,7 +313,7 @@ void		WED_LibraryMgr::Rescan()
 	BroadcastMessage(msg_LibraryChanged,0);
 }
 
-void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default)
+void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default, int status)
 {
 	int								rt = res_None;
 	if(HasExtNoCase(path, ".obj"))	rt = res_Object;
@@ -326,6 +334,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		if(i == res_table.end())
 		{
 			res_info_t new_info;
+			new_info.status = status;
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
 			new_info.real_path = rpath;
@@ -337,6 +346,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 		{
 			DebugAssert(i->second.res_type == rt);
 			i->second.packages.insert(package);
+			i->second.status = max(i->second.status, status);	// upgrade status if we just found a public version!
 			if(i->second.is_backup && !is_backup)
 			{
 				i->second.is_backup = false;
@@ -373,7 +383,7 @@ bool WED_LibraryMgr::AccumLocalFile(const char * filename, bool is_dir, void * r
 		string r = info->partial + "/" + filename;
 		string f = info->full + DIR_STR + filename;
 		r.erase(0,1);
-		info->who->AccumResource(r, pack_Local, f,false,false);
+		info->who->AccumResource(r, pack_Local, f,false,false, status_Public);
 	}
 	return false;
 }

@@ -620,9 +620,19 @@ void DSF_AccumPolygonWithHoles(
 	cbs->EndPolygonWinding_f(writer);
 }
 
-static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, double& out_msl_max)
+static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, double& out_msl_max, const Bbox2& bounds)
 {
 	WED_ObjPlacement * obj;
+	IGISEntity * ent;
+	if((ent = dynamic_cast<IGISEntity *>(what)) != NULL)
+	{
+		Bbox2	cbounds;
+		ent->GetBounds(gis_Geo, cbounds);
+		if(!cbounds.overlap(bounds))
+			return 0;
+	}
+	
+	
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
 #if AIRPORT_ROUTING	
@@ -638,7 +648,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 	for(int n = 0; n < nn; ++n)
 	{
 		double msl_min, msl_max;
-		if (DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max))
+		if (DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds))
 		{
 			if(found)
 			{
@@ -1402,7 +1412,10 @@ static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * 
 	char	prop_buf[256];
 
 	double msl_min, msl_max;
-	if(DSF_HeightRangeRecursive(base,msl_min,msl_max))
+	
+	Bbox2	cull(x-1,y-1,x+2,y+2);
+	
+	if(DSF_HeightRangeRecursive(base,msl_min,msl_max, cull))
 	{
 		msl_min = floor(msl_min);
 		msl_max = ceil(msl_max);
@@ -1511,9 +1524,27 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 		apt->GetICAO(icao);
 
 		icao += ".txt";
+			
+		zip_fileinfo	fi = { 0 };
+		//http://unix.stackexchange.com/questions/14705/the-zip-formats-external-file-attribute
+		fi.external_fa = 0100777 << 16;
+
+		time_t		t;			
+		time(&t);
+		struct tm * our_time = localtime(&t);
 		
+		if(our_time)
+		{
+			fi.tmz_date.tm_sec  = our_time->tm_sec ;
+			fi.tmz_date.tm_min  = our_time->tm_min ;
+			fi.tmz_date.tm_hour = our_time->tm_hour;
+			fi.tmz_date.tm_mday = our_time->tm_mday;
+			fi.tmz_date.tm_mon  = our_time->tm_mon ;
+			fi.tmz_date.tm_year = our_time->tm_year + 1900;
+		}
+			
 		if(zipOpenNewFileInZip (archive,icao.c_str(),
-						NULL,		// mod dates, etc??
+						&fi,		// mod dates, etc??
 						NULL,0,
 						NULL,0,
 						NULL,		// comment
@@ -1579,9 +1610,9 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 		apt->GetICAO(icao);
 
 		icao += ".dat";
-		
+
 		if(zipOpenNewFileInZip (archive, icao.c_str(),
-						NULL,		// mod dates, etc??
+						&fi,		// mod dates, etc??
 						NULL,0,
 						NULL,0,
 						NULL,		// comment
@@ -1677,6 +1708,9 @@ void	WED_DoExportRobin(IResolver * resolver)
 	strcpy(path,"");
 	if (GetFilePathFromUser(getFile_Save,"Save for Global Airports...", "Export...", FILE_DIALOG_EXPORT_ROBIN, path, sizeof(path)))
 	{	
+		if(strlen(path) < 4 ||
+			strcmp(path+strlen(path)-4,".zip") != 0)
+			strncat(path,".zip",sizeof(path)-strlen(path)-1);
 		WED_Thing * w = WED_GetWorld(resolver);
 		set<WED_Thing *>	problem_children;
 		
