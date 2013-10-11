@@ -46,6 +46,12 @@ enum {
 	pack_All		= -3
 };
 
+enum {
+	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
+	status_Deprecated	= 1,
+	status_Public		= 2
+};
+
 class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
 
@@ -69,7 +75,7 @@ public:
 private:
 
 	void			Rescan();
-	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default);
+	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default, int status);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
 	struct	res_info_t {
@@ -78,6 +84,7 @@ private:
 		string		real_path;
 		bool		is_backup;
 		bool		is_default;
+		int			status;
 	};
 
 	struct compare_str_no_case {
