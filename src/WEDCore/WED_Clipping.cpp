@@ -1367,10 +1367,13 @@ bool clip_pwh(const vector<GP>& pwh, vector<vector<GP> >& out_pwh_list, const cl
 		
 	for(typename vector<GP>::iterator i = outer_ccbs.begin(); i != outer_ccbs.end(); ++i)
 	{
-		DebugAssert(is_ccw_polygon_seg(i->begin(),i->end()));
+		DebugAssert(i->size() == 2 || (i->size() > 2 && is_ccw_polygon_seg(i->begin(),i->end())));
 		
-		out_pwh_list.push_back(vector<GP>());
-		out_pwh_list.back().push_back(*i);
+		if(i->size() > 2)
+		{
+			out_pwh_list.push_back(vector<GP>());
+			out_pwh_list.back().push_back(*i);
+		}
 	}
 	
 	// Hole bucketing - we are now going to go through all of our fully retained holes and use one
