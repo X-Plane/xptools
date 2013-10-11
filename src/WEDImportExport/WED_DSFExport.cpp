@@ -53,6 +53,7 @@
 #include "WED_Clipping.h"
 #include "zip.h"
 #include <stdarg.h>
+#include <time.h>
 
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
