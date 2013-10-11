@@ -710,3 +710,24 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 	
 	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive, pane);
 }
+
+void	WED_ImportOneAptFile(
+				const string&			in_path,
+				WED_Thing *				in_parent)
+{
+	AptVector		apts;
+	string result = ReadAptFile(in_path.c_str(), apts);
+	if(!result.empty())
+	{
+		string msg = string("Unable to read apt.dat file '") + in_path + string("': ") + result;
+		DoUserAlert(msg.c_str());
+		return;
+	}
+
+	WED_AptImport(
+			in_parent->GetArchive(),
+			in_parent,
+			in_path.c_str(),
+			apts,
+			NULL);
+}

@@ -62,4 +62,9 @@ void	WED_DoExportApt(IResolver * resolver);
 int		WED_CanImportApt(IResolver * resolver);
 void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);
 
+// Given a WED_thing, put airports at file path into it - must be called inside an undo operation!
+void	WED_ImportOneAptFile(
+				const string&			in_path,
+				WED_Thing *				in_parent);
+
 #endif /* WED_AptIE_H */

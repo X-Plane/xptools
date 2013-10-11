@@ -49,12 +49,12 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 #if ROBIN_IMPORT_FEATURES
-{	"Import from Global Airports",0,0,								0,	wed_ImportRobin		},
+{	"Import from Global Airports...",0,0,								0,	wed_ImportRobin		},
 #endif
 {	"-",					0,		0,								0,	0					},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
-{	"Export for Global Airports",	0,	0,							0,	wed_ExportToRobin	},
+{	"Export for Global Airports...",0,	0,							0,	wed_ExportToRobin	},
 #if IBM || LIN
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},
