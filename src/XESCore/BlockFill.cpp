@@ -63,6 +63,14 @@
 
 #define	IGNORE_SHORT_AXIS	1
 
+// If the particular cut lines on the top half and bottom half of a block are too close, they can be below the 
+// floating point threshold and the block generation ends up with zero length segments.
+// So: find any cuts closer than 0.1 meters nad merge them.  
+// IF for some insane reason we intentiaanlly put a 0.1 meter feature into the block, we're going to blow up, 
+// but if we have a 0.1 meter feature, we've gone really far off the reservation - it would imply the block 
+// selected for zoning was grossly inappropriate AND the facade was made of tiny fragments.
+#define SMALL_CUT 0.1
+
 int num_block_processed = 0;
 int num_blocks_with_split = 0;
 int num_forest_split = 0;
@@ -335,6 +343,9 @@ public:
 
 		int		insert_a_divide(double a);		// returns a-idx of block starting at a		
 		void	insert_block(const BLOCK_face_data& d, int b_start, int b_end, double a_start, double a_end);	
+
+		void	snap_round();
+
 		int		build_curves(vector<BLOCK_face_data>& parts, const Vector2& va, const Vector2& vb, vector<Block_2::X_monotone_curve_2>& curves);	// returns block count
 
 		void	dump();
@@ -416,6 +427,22 @@ void	candy_bar::insert_block(const BLOCK_face_data& d, int b_start, int b_end, d
 	
 }
 
+void	candy_bar::snap_round()
+{
+	int i;
+	for(i = 1; i < m_a_cuts.size(); ++i)
+	{
+		if(m_a_cuts[i] - m_a_cuts[i-1] < SMALL_CUT)
+			m_a_cuts[i] = m_a_cuts[i-1];
+	}
+
+	for(i = 1; i < m_b_cuts.size(); ++i)
+	{
+		if(m_b_cuts[i] - m_b_cuts[i-1] < SMALL_CUT)
+			m_b_cuts[i] = m_b_cuts[i-1];
+	}
+}
+
 int	candy_bar::build_curves(vector<BLOCK_face_data>& parts, const Vector2& va, const Vector2& vb, vector<Block_2::X_monotone_curve_2>& curves)
 {
 	int base = parts.size();
@@ -477,6 +504,21 @@ void	candy_bar::dump()
 
 void			candy_bar::emit_pair(vector<Block_2::X_monotone_curve_2>& curves, const Vector2& va, const Vector2& vb, int a1, int b1, int a2, int b2, int c1, int c2)
 {	
+	DebugAssert(a1 != a2 || b1 != b2);
+	DebugAssert(a1 == a2 || b1 == b2);
+	
+	if(a1 == a2)
+	{
+		if(m_b_cuts[b1] == m_b_cuts[b2])	
+			return;
+	}
+
+	if(b1 == b2)
+	{
+		if(m_a_cuts[a1] == m_a_cuts[a2])	
+			return;
+	}
+	
 	if(c1 != c2)
 //	{
 //		if (c1 != -1)
@@ -1768,6 +1810,7 @@ static int	init_subdivisions(
 		}
 	}
 	
+	snickers.snap_round();
 	snickers.build_curves(parts, va, vb, curves);
 	
 /*	
