@@ -49,6 +49,7 @@
 #include "WED_FacadeNode.h"
 #include "DSF2Text.h"
 #include "WED_GISUtils.h"
+#include "WED_AptIE.h"
 
 static void debug_it(const vector<BezierPoint2>& pts)
 {
@@ -634,9 +635,9 @@ public:
 
 		int ok = Text2DSFWithWriter(file_name, &cb, this);
 
-		int res = DSFReadFile(file_name, &cb, NULL, this);
-		if(res != 0)
-			printf("DSF Error: %d\n", res);
+//		int res = DSFReadFile(file_name, &cb, NULL, this);
+//		if(res != 0)
+//			printf("DSF Error: %d\n", res);
 	}
 
 
@@ -684,14 +685,24 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		wrl->StartOperation("Import DSF");
 		
 		while(*paths)
-		{		
-			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
-			g->SetName(paths);
-			g->SetParent(wrl,wrl->CountChildren());
-	//		DSF_Import(path,g);
-			DSF_Importer importer;
-			importer.do_import_txt(paths, g);
+		{
+			if(strstr(paths,".dat"))
+			{
+				WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
+				g->SetName(paths);
+				g->SetParent(wrl,wrl->CountChildren());
 			
+				WED_ImportOneAptFile(paths,g);
+			}
+			else
+			{
+				WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
+				g->SetName(paths);
+				g->SetParent(wrl,wrl->CountChildren());
+		//		DSF_Import(path,g);
+				DSF_Importer importer;
+				importer.do_import_txt(paths, g);
+			}	
 			paths = paths + strlen(paths) + 1;
 		}
 
