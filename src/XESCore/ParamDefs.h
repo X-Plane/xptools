@@ -182,6 +182,8 @@
 	TOKEN(road_Start_LocalRoad)
 		TOKEN(road_Local)
 		TOKEN(road_LocalOneway)
+		TOKEN(service_Road)
+		TOKEN(service_RoadOneway)
 	TOKEN(road_End_LocalRoad)
 
 	TOKEN(road_Start_Access)
