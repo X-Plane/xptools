@@ -94,14 +94,38 @@ static int DoObsImport(const vector<const char *>& args)
 	return 0;
 }
 
+struct icao_matcher {
+	set<string>	icao;
+	bool operator()(const AptInfo_t& x) const { if(icao.count(x.icao) > 0) { if(gVerbose) printf("Found: %s\n", x.icao.c_str()); return true; } return false; }
+};
+
 static int DoAptImport(const vector<const char *>& args)
 {
 	gApts.clear();
 	gAptIndex.clear();
+	
 	for(int n = 0; n < args.size(); ++n)
 	{
+		if(gVerbose)
+			printf("Loading %s\n", args[n]);
 		AptVector a;
 		string err = ReadAptFile(args[n], a);
+		
+		if(!gApts.empty())
+		{
+			icao_matcher match;
+			for(AptVector::iterator na = a.begin(); na != a.end(); ++na)
+				match.icao.insert(na->icao);
+			
+			size_t os = gApts.size();
+			gApts.erase(remove_if(gApts.begin(),gApts.end(),match),gApts.end());
+			if(gVerbose)
+			if(gApts.size() < os)
+				printf("Removed %zd duplicate airports.\n", os-gApts.size());
+					
+		}
+		
+		
 		gApts.insert(gApts.end(),a.begin(),a.end());
 		if (!err.empty()) {fprintf(stderr,"Error importing %s: %s\n", args[n],err.c_str()); return 1;}
 	}
