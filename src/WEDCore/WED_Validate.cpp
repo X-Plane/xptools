@@ -48,6 +48,7 @@
 #include "WED_ATCRunwayUse.h"
 #include "WED_ATCWindRule.h"
 #include "WED_EnumSystem.h"
+#include "WED_Taxiway.h"
 
 
 #include "AptDefs.h"
@@ -108,6 +109,22 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR GENERAL APT.DAT BOGUSNESS
 	//------------------------------------------------------------------------------------			
+	
+	if(who->GetClass() == WED_Taxiway::sClass)
+	{
+		WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
+		IGISPointSequence * ps;
+		ps = twy->GetOuterRing();
+		if(!ps->IsClosed() || ps->GetNumSides() < 3)
+			msg = "Outer boundary of taxiway is not at least 3 sided.";
+		else
+		for(int h = 0; h < twy->GetNumHoles(); ++h)
+		{
+			ps = twy->GetNthHole(h);
+			if(!ps->IsClosed() || ps->GetNumSides() < 3)
+				msg = "Hole of taxiway is not at least 3 sided.";
+		}
+	}
 	
 	if (who->GetClass() == WED_Runway::sClass || who->GetClass() == WED_Sealane::sClass)
 	{
