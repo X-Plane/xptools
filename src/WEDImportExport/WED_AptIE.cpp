@@ -45,6 +45,7 @@
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
 #include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
@@ -631,10 +632,10 @@ void	WED_AptImport(
 			}
 		}
 		
-		map<int,WED_AirportNode *>	nodes;
+		map<int,WED_TaxiRouteNode *>	nodes;
 		for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
 		{
-			WED_AirportNode * new_n = WED_AirportNode::CreateTyped(archive);
+			WED_TaxiRouteNode * new_n = WED_TaxiRouteNode::CreateTyped(archive);
 			new_n->SetParent(new_apt,new_apt->CountChildren());
 			new_n->SetName(n->name);
 			new_n->SetLocation(gis_Geo,n->location);
