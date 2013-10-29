@@ -1309,139 +1309,154 @@ static int	init_subdivisions(
 		// EMIT BLOCK
 		double a_start = max(abounds[prev_bottom].x(),abounds[prev_top].x());
 		double a_stop = min(abounds[bottom].x(),abounds[top].x());
-		DebugAssert(a_start < a_stop);
+		DebugAssert(a_start <= a_stop);
 		
-		Segment2	bottom_seg = abounds.side(prev_bottom);
-		Segment2	top_seg = abounds.side(top);
-		
-		// If we have to consider whether a block 'transitions' the safety zones on the top or bottom...
-		// and subdivide accordingly.
-		
-		map<double, pair<double, double> >	bound_times;
-		
-		split_segment<set_first>(bottom_seg, a_start, a_stop, bound_times, all_splits, num_splits);
-		split_segment<set_second>(top_seg, a_start, a_stop, bound_times, all_splits, num_splits);
-		
-		for(map<double,pair<double,double> >::iterator i = bound_times.begin(); i != bound_times.end(); ++i)
+		// Sanity check...a_start == a_stop when we have VERTICAL sides...
+		if(a_start < a_stop)
 		{
-			if(i->second.first == UNDEF)
-				i->second.first = bottom_seg.y_at_x(i->first);
-
-			if(i->second.second == UNDEF)
-				i->second.second = top_seg.y_at_x(i->first);
-		}
 		
-		DebugAssert(a_start != a_stop);
-		DebugAssert(bound_times.size() > 1);
-		DebugAssert(bound_times.begin()->first == a_start);
-		DebugAssert(nth_from(bound_times.end(),-1)->first == a_stop);
-		
-		map<double,pair<double,double> >::iterator p1,p2;
-		p1 = bound_times.begin();
-		p2 = p1;
-		++p2;
-		
-		while(p2 != bound_times.end())
-		{	
-			double b1 = p1->second.first;
-			double b2 = p2->second.first;
-			double t1 = p1->second.second;
-			double t2 = p2->second.second;
+			Segment2	bottom_seg = abounds.side(prev_bottom);
+			Segment2	top_seg = abounds.side(top);
 			
-			double min_depth = min(t1-b1,t2-b2);
-									
+			// If we have to consider whether a block 'transitions' the safety zones on the top or bottom...
+			// and subdivide accordingly.
 			
-			reg_info_t reg;
+			map<double, pair<double, double> >	bound_times;
 			
-			reg.top_slope = fabs(t2-t1) / (p2->first - p1->first);
-			reg.bot_slope = fabs(b2-b1) / (p2->first - p1->first);
-			reg.top_side = top;
-			reg.bot_side = prev_bottom;			
+			split_segment<set_first>(bottom_seg, a_start, a_stop, bound_times, all_splits, num_splits);
+			split_segment<set_second>(top_seg, a_start, a_stop, bound_times, all_splits, num_splits);
 			
-			if(reg.top_slope > reg.bot_slope)
-				reg.block_dir = (t2 == t1) ? 0 : (t1 < t2 ? 1 : -1);
-			else			
-				reg.block_dir = (b2 == b1) ? 0 : (b2 < b1 ? 1 : -1);			
-			
-			reg.a_time = p1->first;
-			if(b1 <= sbounds[1] && b2 <= sbounds[1] &&
-			   t1 >= sbounds[3] && t2 >= sbounds[3])
+			for(map<double,pair<double,double> >::iterator i = bound_times.begin(); i != bound_times.end(); ++i)
 			{
-				reg.bot_type = reg_agb;
-				reg.top_type = reg_agb;
-			}
-			else if(fds > 1)
-			{
-				reg.is_split = true;
-				
-				// double split calculations -- calculate bottom
-				if(b1 >= b_split && b2 >= b_split)
-				{
-					// Bottom is empty
-					reg.bot_type = reg_none;
-					if(reg.bot_slope > SLOPE_TO_SIDE || reg.top_slope > SLOPE_TO_SIDE)
-						reg.top_type = reg_slop;
-					else
-						reg.top_type = ((t1 >= top_safe && t2 >= top_safe) &&		// This logic controls the case where the block comes to a sharpened
-										 (b1 <= b_split || b2 <= b_split))			// point.  The bottom has nothing and the top is very sharp.  The top
-										 ? reg_fac : reg_junk;						// condition makes sure the top edge is not tapering down and the bottom 
-				}																	// condition controls how wide we must be to go from parking lot to bldg.
-				else if(t1 <= b_split && t2 <= b_split)								// Change the || to && to force parking lot all the way to the subdivision point.
-				{
-					// top is empty
-					reg.top_type = reg_none;
-					if(reg.bot_slope > SLOPE_TO_SIDE || reg.top_slope > SLOPE_TO_SIDE)
-						reg.bot_type = reg_slop;
-					else
-						reg.bot_type = 
-								((b1 <= bot_safe && b2 <= bot_safe) &&
-								 (t1 >= b_split || t2 >= b_split))
-								   ? reg_fac : reg_junk;
-				}
-				else
-				{
-					DebugAssert(b1 <= b_split);
-					DebugAssert(b2 <= b_split);
-					DebugAssert(t1 >= b_split);
-					DebugAssert(t2 >= b_split);
-					
-					// truly split
-					
-					if(reg.top_slope > SLOPE_TO_SIDE)
-						reg.top_type = reg_slop;
-					else
-						reg.top_type = (t1 >= top_safe && t2 >= top_safe) ? reg_fac : reg_junk;
-					
-					if(reg.bot_slope > SLOPE_TO_SIDE)
-						reg.bot_type = reg_slop;
-					else
-						reg.bot_type = (b1 <= bot_safe && b2 <= bot_safe) ? reg_fac : reg_junk;
-				}
-			}
-			else 
-			{
-				if(reg.top_slope > SLOPE_TO_SIDE || reg.bot_slope > SLOPE_TO_SIDE)
-					reg.bot_type = reg_slop;
-				else
-					reg.bot_type = (min_depth >= fac_depth_min) ? reg_fac : reg_junk;
-				reg.top_type = reg_none;
-				reg.is_split = false;
-			}
+				if(i->second.first == UNDEF)
+					i->second.first = bottom_seg.y_at_x(i->first);
 
-//			printf("Region from: %lf (%lf,%lf) to %lf (%lf,%lf) / %lf,%lf d=%d [min: %lf max: %lf]\n",
-//				p1->first,p1->second.first,p1->second.second,
-//				p2->first,p2->second.first,p2->second.second,
-//				reg.bot_slope,reg.top_slope,
-//				reg.block_dir,
-//				p1->second.second - p1->second.first,
-//				p2->second.second - p2->second.first);
-
-			regions.push_back(reg);
+				if(i->second.second == UNDEF)
+					i->second.second = top_seg.y_at_x(i->first);
+			}
 			
-			++p1;
+			DebugAssert(a_start != a_stop);
+			DebugAssert(bound_times.size() > 1);
+			DebugAssert(bound_times.begin()->first == a_start);
+			DebugAssert(nth_from(bound_times.end(),-1)->first == a_stop);
+			
+			map<double,pair<double,double> >::iterator p1,p2;
+			p1 = bound_times.begin();
+			p2 = p1;
 			++p2;
+			
+			while(p2 != bound_times.end())
+			{	
+				double b1 = p1->second.first;
+				double b2 = p2->second.first;
+				double t1 = p1->second.second;
+				double t2 = p2->second.second;
+				
+				double min_depth = min(t1-b1,t2-b2);
+										
+				
+				reg_info_t reg;
+				
+				reg.top_slope = fabs(t2-t1) / (p2->first - p1->first);
+				reg.bot_slope = fabs(b2-b1) / (p2->first - p1->first);
+				reg.top_side = top;
+				reg.bot_side = prev_bottom;			
+				
+				if(reg.top_slope > reg.bot_slope)
+					reg.block_dir = (t2 == t1) ? 0 : (t1 < t2 ? 1 : -1);
+				else			
+					reg.block_dir = (b2 == b1) ? 0 : (b2 < b1 ? 1 : -1);			
+				
+				reg.a_time = p1->first;
+				if(b1 <= sbounds[1] && b2 <= sbounds[1] &&
+				   t1 >= sbounds[3] && t2 >= sbounds[3])
+				{
+					reg.bot_type = reg_agb;
+					reg.top_type = reg_agb;
+				}
+				else if(fds > 1)
+				{
+					reg.is_split = true;
+					
+					// double split calculations -- calculate bottom
+					if(b1 >= b_split && b2 >= b_split)
+					{
+						// Bottom is empty
+						reg.bot_type = reg_none;
+						if(reg.bot_slope > SLOPE_TO_SIDE || reg.top_slope > SLOPE_TO_SIDE)
+							reg.top_type = reg_slop;
+						else
+							reg.top_type = ((t1 >= top_safe && t2 >= top_safe) &&		// This logic controls the case where the block comes to a sharpened
+											 (b1 <= b_split || b2 <= b_split))			// point.  The bottom has nothing and the top is very sharp.  The top
+											 ? reg_fac : reg_junk;						// condition makes sure the top edge is not tapering down and the bottom 
+					}																	// condition controls how wide we must be to go from parking lot to bldg.
+					else if(t1 <= b_split && t2 <= b_split)								// Change the || to && to force parking lot all the way to the subdivision point.
+					{
+						// top is empty
+						reg.top_type = reg_none;
+						if(reg.bot_slope > SLOPE_TO_SIDE || reg.top_slope > SLOPE_TO_SIDE)
+							reg.bot_type = reg_slop;
+						else
+							reg.bot_type = 
+									((b1 <= bot_safe && b2 <= bot_safe) &&
+									 (t1 >= b_split || t2 >= b_split))
+									   ? reg_fac : reg_junk;
+					}
+					else
+					{
+						DebugAssert(b1 <= b_split);
+						DebugAssert(b2 <= b_split);
+						DebugAssert(t1 >= b_split);
+						DebugAssert(t2 >= b_split);
+						
+						// truly split
+						
+						if(reg.top_slope > SLOPE_TO_SIDE)
+							reg.top_type = reg_slop;
+						else
+							reg.top_type = (t1 >= top_safe && t2 >= top_safe) ? reg_fac : reg_junk;
+						
+						if(reg.bot_slope > SLOPE_TO_SIDE)
+							reg.bot_type = reg_slop;
+						else
+							reg.bot_type = (b1 <= bot_safe && b2 <= bot_safe) ? reg_fac : reg_junk;
+					}
+				}
+				else 
+				{
+					if(reg.top_slope > SLOPE_TO_SIDE || reg.bot_slope > SLOPE_TO_SIDE)
+						reg.bot_type = reg_slop;
+					else
+						reg.bot_type = (min_depth >= fac_depth_min) ? reg_fac : reg_junk;
+					reg.top_type = reg_none;
+					reg.is_split = false;
+				}
+
+	//			printf("Region from: %lf (%lf,%lf) to %lf (%lf,%lf) / %lf,%lf d=%d [min: %lf max: %lf]\n",
+	//				p1->first,p1->second.first,p1->second.second,
+	//				p2->first,p2->second.first,p2->second.second,
+	//				reg.bot_slope,reg.top_slope,
+	//				reg.block_dir,
+	//				p1->second.second - p1->second.first,
+	//				p2->second.second - p2->second.first);
+
+				regions.push_back(reg);
+				
+				++p1;
+				++p2;
+			}
+			
+		} // safety check for VERTICAL sides.
+		else
+		{
+			// just some debug checking that we failed for the reason we thought we would....
+			
+			Segment2	bottom_seg = abounds.side(prev_bottom);
+			Segment2	top_seg = abounds.side(top);
+			
+			DebugAssert(bottom_seg.is_vertical() || top_seg.is_vertical());
+			
 		}
-		
 	
 		if(bottom == right && top == right)
 			break;
@@ -1705,7 +1720,15 @@ static int	init_subdivisions(
 	double	unified[2] = { bounds[1] - 1.0, bounds[3] + 1.0 };
 	double	divided[3] = { bounds[1] - 1.0, b_split, bounds[3] + 1.0 };
 	
-	candy_bar	snickers(fds > 1 ? 2 : 1, fds > 1 ? divided : unified, regions_bot.front().a_time, regions_bot.back().a_time);
+	double snickers_front = regions_bot.front().a_time;
+	double snickers_back = regions_bot.back().a_time;
+	if(fds > 1)
+	{
+		snickers_front = min(snickers_front, regions_top.front().a_time);
+		snickers_back = max(snickers_back,regions_top.back().a_time);
+	}
+	
+	candy_bar	snickers(fds > 1 ? 2 : 1, fds > 1 ? divided : unified, snickers_front, snickers_back);
 	
 	int ctr = part_base;
 	for(i = 0; i < (fds > 1 ? 2 : 1); ++i)
