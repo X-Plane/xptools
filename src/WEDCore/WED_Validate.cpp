@@ -122,7 +122,17 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		{
 			ps = twy->GetNthHole(h);
 			if(!ps->IsClosed() || ps->GetNumSides() < 3)
+			{
+				// Ben says: two-point holes are INSANELY hard to find.  So we do the rare thing and intentionally
+				// hilite the hole so that the user can nuke it.				
 				msg = "Hole of taxiway is not at least 3 sided.";
+				WED_Thing * h = dynamic_cast<WED_Thing *>(ps);
+				if(h) 
+				{
+					DoUserAlert(msg.c_str());
+					return h;
+				}
+			}
 		}
 	}
 	
