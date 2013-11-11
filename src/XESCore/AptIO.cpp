@@ -1013,14 +1013,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				sock->lit, sock->name.c_str());
 		}
 
+		for (AptATCFreqVector::const_iterator atc = apt->atc.begin(); atc != apt->atc.end(); ++atc)
+		{
+			fprintf(fi, "%2d %d %s" CRLF, atc->atc_type,
+					atc->freq, atc->name.c_str());
+		}
+
 		if(has_atc)
 		{
-			for (AptATCFreqVector::const_iterator atc = apt->atc.begin(); atc != apt->atc.end(); ++atc)
-			{
-				fprintf(fi, "%2d %d %s" CRLF, atc->atc_type,
-						atc->freq, atc->name.c_str());
-			}
-
 			for(AptFlowVector::const_iterator flow = apt->flows.begin(); flow != apt->flows.end(); ++flow)
 			{
 				fprintf(fi,"%2d %s" CRLF, apt_flow_def, flow->name.c_str());

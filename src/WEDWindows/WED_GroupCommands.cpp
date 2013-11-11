@@ -481,6 +481,8 @@ static bool WED_NoLongerViable(WED_Thing * t)
 		WED_Thing * parent = t->GetParent();
 		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
 			min_children = 4;
+		if (parent && dynamic_cast<WED_GISPolygon *>(parent))
+			min_children = 3;			
 
 		if(t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
 		if(t->CountSources() == 2 && t->GetNthSource(1) == NULL) return true;
