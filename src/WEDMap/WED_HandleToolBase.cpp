@@ -468,7 +468,7 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 	//printf("Recursive traverse on %s: com=%p seq=%p, poly=%p, choice=%d\n", n.c_str(), com,seq,poly,choice);
 	switch(choice) {
 	case ent_Atomic:
-		if (pt_sel)	{ if (entity->PtWithin(gis_Geo,psel) || entity->PtOnFrame(gis_Geo,psel, frame_dist))	result.insert(entity); return 1;	}
+		if (pt_sel)	{ if (entity->PtWithin(gis_Geo,psel) || entity->PtOnFrame(gis_Geo,psel, frame_dist))	{ result.insert(entity); return 1; }	}
 		else		{ if (entity->WithinBox(gis_Geo,bounds))										result.insert(entity);	}
 		break;
 	case ent_Container:
