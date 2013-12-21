@@ -82,6 +82,10 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 
 #endif
 
+#if USE_GEOJPEG2K
+int CreateBitmapFromGeoJPEG2K(const char * inFilePath, struct ImageInfo * outImageInfo);
+
+#endif
 
 
 

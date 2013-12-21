@@ -31,7 +31,7 @@
 #include "Interpolation.h"
 #include <squish.h>
 #include <zlib.h>
-
+#include <jasper/jasper.h>
 
 /*
 	WARNING: Struct alignment must be "68K" (e.g. 2-byte alignment) for these
@@ -1323,6 +1323,81 @@ bail:
 	return -1;
 }
 
+#endif
+
+#if USE_GEOJPEG2K
+int CreateBitmapFromGeoJPEG2K(const char * inFilePath, struct ImageInfo * outImageInfo)
+{
+	//Clean out the image info
+	outImageInfo->data = NULL;
+	
+	//Initialize JasPerGEO
+	jas_init();
+
+
+	FILE * fi = fopen(inFilePath, "rb");
+	if (!fi)
+	{
+		return errno;
+	}
+	
+	//try {
+
+	/*		struct jpeg_decompress_struct cinfo;
+			setjmp_err_mgr		  jerr;
+
+		if(setjmp(jerr.buf))
+		{
+			fclose(fi);
+			return 1;
+		}
+
+		cinfo.err = jpeg_throw_error(&jerr);
+		jpeg_create_decompress(&cinfo);
+
+		jpeg_stdio_src(&cinfo, fi);
+
+		jpeg_read_header(&cinfo, TRUE);
+
+		jpeg_start_decompress(&cinfo);
+
+		outImageInfo->width = cinfo.output_width;
+		outImageInfo->height = cinfo.output_height;
+		outImageInfo->pad = 0;
+		outImageInfo->channels = 3;
+		outImageInfo->data = (unsigned char *) malloc(outImageInfo->width * outImageInfo->height * outImageInfo->channels);
+
+		int linesize = outImageInfo->width * outImageInfo->channels;
+		int linecount = outImageInfo->height;
+		unsigned char * p = outImageInfo->data + (linecount - 1) * linesize;
+		while (linecount--)
+		{
+			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)
+				break;
+
+			for (int n = cinfo.output_width - 1; n >= 0; --n)
+			{
+				if (cinfo.output_components == 1)
+					p[n*3+2] = p[n*3+1] = p[n*3] = p[n];
+				else
+					swap(p[n*3+2],p[n*3]);
+			}
+			p -= linesize;
+		}
+
+		jpeg_finish_decompress(&cinfo);
+
+		jpeg_destroy_decompress(&cinfo);
+		fclose(fi);
+		return 0;
+	} catch (...) {
+		// If we ever get an exception, it's because we got a fatal JPEG error.  Our
+		// error handler deallocates the jpeg struct, so all we have to do is close the
+		// file and bail.
+		fclose(fi);
+		return 1;
+	}*/
+}
 #endif
 
 static void	in_place_scaleXY(int x, int y, unsigned char * src, unsigned char * dst, int channels)

@@ -1,0 +1,335 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <ProjectGuid>{60466044-BDA4-4BC8-A8B5-51C57FAE6219}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v100</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Win32_Debug\</OutDir>
+    <IntDir>.\libjasper___Win32_Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Win32_Release\</OutDir>
+    <IntDir>.\libjasper___Win32_Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\libjasper\include;..\libjpeg;..\libtiff;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_LIB;JAS_WIN_MSVC_BUILD;HAVE_JASPER_UUID;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\libjasper___Win32_Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\libjasper___Win32_Debug\libjasper.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\libjasper___Win32_Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\libjasper___Win32_Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Debug\libjasper.bsc</OutputFile>
+    </Bscmake>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Debug\libjasper.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\libjasper\include;..\libjpeg;..\libtiff;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;JAS_WIN_MSVC_BUILD;HAVE_JASPER_UUID;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\libjasper___Win32_Release\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\libjasper___Win32_Release\libjasper.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\libjasper___Win32_Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\libjasper___Win32_Release\</ProgramDataBaseFileName>
+      <AdditionalOptions> /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Release\libjasper.bsc</OutputFile>
+    </Bscmake>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Release\libjasper.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\libjasper\bmp\bmp_cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\bmp\bmp_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\bmp\bmp_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\tiff\geotiff_buffer.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_cm.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_debug.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_getopt.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_icc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_iccdata.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_image.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_init.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_malloc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_seq.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_stream.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_string.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_tvp.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\base\jas_version.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jp2\jp2_cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jp2\jp2_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jp2\jp2_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_bs.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_cs.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_math.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_mct.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_mqcod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_mqdec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_mqenc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_qmfb.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_t1cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_t1dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_t1enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_t2cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_t2dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_t2enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_tagtree.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_tsfb.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpc\jpc_util.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpg\jpg_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpg\jpg_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\jpg\jpg_val.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\mif\mif_cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\pgx\pgx_cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\pgx\pgx_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\pgx\pgx_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\pnm\pnm_cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\pnm\pnm_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\pnm\pnm_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\ras\ras_cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\ras\ras_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\ras\ras_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\tiff\tif_memio.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\tiff\tiff_cod.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\tiff\tiff_dec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjasper\tiff\tiff_enc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\libjasper\bmp\bmp_cod.h" />
+    <ClInclude Include="..\libjasper\include\jasper\jas_cm.h" />
+    <ClInclude Include="..\libjasper\include\jasper\jas_icc.h" />
+    <ClInclude Include="..\libjasper\include\jasper\jas_version.h" />
+    <ClInclude Include="..\libjasper\jp2\jp2_cod.h" />
+    <ClInclude Include="..\libjasper\jp2\jp2_dec.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_bs.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_cod.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_cs.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_dec.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_enc.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_fix.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_flt.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_math.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_mct.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_mqcod.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_mqdec.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_mqenc.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_qmfb.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_t1cod.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_t1dec.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_t1enc.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_t2cod.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_t2dec.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_t2enc.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_tagtree.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_tsfb.h" />
+    <ClInclude Include="..\libjasper\jpc\jpc_util.h" />
+    <ClInclude Include="..\libjasper\jpg\jpg_cod.h" />
+    <ClInclude Include="..\libjasper\mif\mif_cod.h" />
+    <ClInclude Include="..\libjasper\pgx\pgx_cod.h" />
+    <ClInclude Include="..\libjasper\pnm\pnm_cod.h" />
+    <ClInclude Include="..\libjasper\ras\ras_cod.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

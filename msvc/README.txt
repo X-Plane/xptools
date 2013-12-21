@@ -1,5 +1,5 @@
 ==============================================================
-	                                 Microsoft Visual Studio Project
+				Microsoft Visual Studio Project
 ==============================================================
 [Chapter.Section.Subsection] Title: Content is shown here in sentances. The
 bracket system makes for very easy searching. Try it out!
@@ -40,10 +40,10 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 	* MSVC Studio 2010 has not been fully tested though it appears to be compatable
 * The latest version of Git
 
-[1.3.0] Terms
+[1.3.0] Terms: Follow all licenses and restrictions of their owners
 ==============================================================*/
  
- /*
+/*
  
  
 /*==[3.0.0] Working With this Project==================================
@@ -76,28 +76,31 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 		[4.X.0] Liberary Issues
 			[4.1.0] How to get the libraries prepared for MSVC
 			
-				 expat
+				expat
 					 files taken from the the latest expat 2.1.0 installer
 					 just build with the included vsproject file <-all linker errors gone
 					 make sure that a preprocessor called XML_STATIC is put in there.
 				 
-				 zlib  
+				zlib  
 					you need to have xtools_wed to NOT have ZLIB_WINAPI
 				 
-				 squish
+				squish
 					copied all the C++ files, had to replace std::min,std::max with min and max because windows
 				 
-				 commctrl.h
+				commctrl.h
 					Just make sure its from windows SDK
 				 
-				 sqlite3
+				sqlite3
 					added the source and headers directly to the project, add these preprocessor directives
 
-				 freetype
+				freetype
 					in the msvc project Property Pages-> C/C++->Code Generation-> Change the Runtime Library to MT
 					/GS to /GS- to try and remove remote_rangecheckerror security buffer check
-
-				 jpeg 
+				jasper-1.701.0.GEO
+					This contains Jasper and the extention for Geo data. From the msvc folder open geojasper.dsw. Visual Studio 2010/2012 will convert these projects to the latest new form. Build the whole solution. Make sure that the toolset matches the Visual Studio project! (This uses 2010 currently) You must also have the following preprocessor definition: JAS_WIN_MSVC_BUILD
+					
+					Due to the fact of weird Enable Intrinsic Functions that can be diffrent for Debug and Release, it could run into area's of weirdness if very intense floating point operations is required - 12/20/2013
+				jpeg 
 					for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
 					use the following command
 					nmake -f set
@@ -174,9 +177,11 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 | IBM=1 | WED | Platform defined for Windows                                                  |
 | USE_JPEG=1 | WED | ImgUtils will support libjpeg                                             |
 | USE_TIF=1 | WED | ImgUtils will support libtiff                                                |
+| USE_GEOJPEG2K=1 | WED| ImgUtils will supportGEOJPEG2K|
 | WED=1 | WED | Declares that one is building WED and WED only                        |
 | LIL=1 | WED | For x86 CPU Arcatecture                                                         |
 | BIG=0 | WED | Depricated from supporting PowerPC                                         |
+|JAS_WIN_MSVC_BUILD| GeoJasper | Makes GeoJasper compile, part of its configuration
 | XML_STATIC | EXPAT | Stops missing .DLL error, see line 57 in expat_external.h   |
 | WIN32 | MSVC | Used in Windows SDK                                                          |
 | NDEBUG | MSVC | Activates assert.h functionality                                           |
@@ -205,6 +210,8 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 	* Platform Toolset: Visual Studio 2010 (v100)
  *  C/C++
 	* Additional Include Directories:
+	..\..\msvc_libs\
+	..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include
 	..\..\msvc_libs\sqlite-3.6.21;
 	..\..\msvc_libs\tiff-4.0.0beta5\libtiff;
 	..\..\msvc_libs\libgeotiff-1.2.5;
@@ -256,6 +263,7 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 		Ws2_32.lib;
 		opengl32.lib;
 		glu32.lib;
+		..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;
 		..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;
 		..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;
 		..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;

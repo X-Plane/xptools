@@ -1,0 +1,10 @@
+[1.1.0]
+XXX 1) use three separate tiffs to create one RGB output
+XXX 2) read tiled tiffs
+
+[1.2.0]
+XXX 1) Add TFW support
+XXX 2) correct few things in tiff reader
+
+[1.2.1]
+XXX 3) file name copy bug

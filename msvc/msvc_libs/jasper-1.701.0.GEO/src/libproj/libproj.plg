@@ -1,0 +1,635 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: libproj - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\fedorov\LOCALS~1\Temp\RSP730.tmp" with contents
+[
+/nologo /ML /W3 /GX /O2 /I "./" /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /D "BSDTYPES" /FR"Release/" /Fp"Release/libproj.pch" /YX /Fo"Release/" /Fd"Release/" /FD /c 
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\vector1.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\aasincos.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\adjlon.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\bch2bps.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\bchgen.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\biveval.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\dmstor.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\emess.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\gen_cheb.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\geocent.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\geod_for.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\geod_inv.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\geod_set.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\jniproj.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\mk_cheby.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\nad_cvt.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\nad_init.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\nad_intr.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\p_series.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_aea.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_aeqd.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_airy.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_aitoff.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_apply_gridshift.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_august.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_auth.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_bacon.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_bipc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_boggs.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_bonne.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_cass.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_cc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_cea.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_chamb.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_collg.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_crast.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_datum_set.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_datums.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_denoy.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_deriv.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_eck1.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_eck2.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_eck3.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_eck4.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_eck5.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_ell_set.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_ellps.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_eqc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_eqdc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_errno.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_factors.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_fahey.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_fouc_s.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_fwd.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_gall.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gauss.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_geocent.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_geos.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_gins8.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_gn_sinu.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_gnom.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_goode.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridinfo.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridlist.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_hammer.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_hatano.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_imw_p.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_init.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_inv.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_labrd.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_laea.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_lagrng.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_larr.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_lask.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_latlong.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_lcc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_lcca.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_list.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_loxim.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_lsat.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_malloc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_mbt_fps.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_mbtfpp.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_mbtfpq.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_merc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_mill.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_mlfn.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_mod_ster.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_moll.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_mpoly.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_msfn.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_nell.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_nell_h.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_nocol.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_nsper.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_nzmg.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_ob_tran.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_ocea.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_oea.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_omerc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_open_lib.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_ortho.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_param.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_phi2.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_poly.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_pr_list.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_putp2.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_putp3.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_putp4p.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_putp5.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_putp6.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_qsfn.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_release.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_rpoly.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_sconics.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_somerc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_stere.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_sterea.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_strerrno.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_sts.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_tcc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_tcea.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_tmerc.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_tpeqd.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_transform.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_tsfn.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_units.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_urm5.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_urmfps.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_utils.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_vandg2.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_vandg4.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_vandg.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_wag2.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_wag3.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_wag7.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_wink1.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_wink2.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_zpoly1.c"
+"G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\rtodms.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\fedorov\LOCALS~1\Temp\RSP730.tmp" 
+Creating temporary file "C:\DOCUME~1\fedorov\LOCALS~1\Temp\RSP731.tmp" with contents
+[
+/nologo /out:"Release\libproj.lib" 
+".\Release\vector1.obj"
+".\Release\aasincos.obj"
+".\Release\adjlon.obj"
+".\Release\bch2bps.obj"
+".\Release\bchgen.obj"
+".\Release\biveval.obj"
+".\Release\dmstor.obj"
+".\Release\emess.obj"
+".\Release\gen_cheb.obj"
+".\Release\geocent.obj"
+".\Release\geod_for.obj"
+".\Release\geod_inv.obj"
+".\Release\geod_set.obj"
+".\Release\jniproj.obj"
+".\Release\mk_cheby.obj"
+".\Release\nad_cvt.obj"
+".\Release\nad_init.obj"
+".\Release\nad_intr.obj"
+".\Release\p_series.obj"
+".\Release\PJ_aea.obj"
+".\Release\PJ_aeqd.obj"
+".\Release\PJ_airy.obj"
+".\Release\PJ_aitoff.obj"
+".\Release\pj_apply_gridshift.obj"
+".\Release\PJ_august.obj"
+".\Release\pj_auth.obj"
+".\Release\PJ_bacon.obj"
+".\Release\PJ_bipc.obj"
+".\Release\PJ_boggs.obj"
+".\Release\PJ_bonne.obj"
+".\Release\PJ_cass.obj"
+".\Release\PJ_cc.obj"
+".\Release\PJ_cea.obj"
+".\Release\PJ_chamb.obj"
+".\Release\PJ_collg.obj"
+".\Release\PJ_crast.obj"
+".\Release\pj_datum_set.obj"
+".\Release\pj_datums.obj"
+".\Release\PJ_denoy.obj"
+".\Release\pj_deriv.obj"
+".\Release\PJ_eck1.obj"
+".\Release\PJ_eck2.obj"
+".\Release\PJ_eck3.obj"
+".\Release\PJ_eck4.obj"
+".\Release\PJ_eck5.obj"
+".\Release\pj_ell_set.obj"
+".\Release\pj_ellps.obj"
+".\Release\PJ_eqc.obj"
+".\Release\PJ_eqdc.obj"
+".\Release\pj_errno.obj"
+".\Release\pj_factors.obj"
+".\Release\PJ_fahey.obj"
+".\Release\PJ_fouc_s.obj"
+".\Release\pj_fwd.obj"
+".\Release\PJ_gall.obj"
+".\Release\pj_gauss.obj"
+".\Release\pj_geocent.obj"
+".\Release\PJ_geos.obj"
+".\Release\PJ_gins8.obj"
+".\Release\PJ_gn_sinu.obj"
+".\Release\PJ_gnom.obj"
+".\Release\PJ_goode.obj"
+".\Release\pj_gridinfo.obj"
+".\Release\pj_gridlist.obj"
+".\Release\PJ_hammer.obj"
+".\Release\PJ_hatano.obj"
+".\Release\PJ_imw_p.obj"
+".\Release\pj_init.obj"
+".\Release\pj_inv.obj"
+".\Release\PJ_krovak.obj"
+".\Release\PJ_labrd.obj"
+".\Release\PJ_laea.obj"
+".\Release\PJ_lagrng.obj"
+".\Release\PJ_larr.obj"
+".\Release\PJ_lask.obj"
+".\Release\pj_latlong.obj"
+".\Release\PJ_lcc.obj"
+".\Release\PJ_lcca.obj"
+".\Release\pj_list.obj"
+".\Release\PJ_loxim.obj"
+".\Release\PJ_lsat.obj"
+".\Release\pj_malloc.obj"
+".\Release\PJ_mbt_fps.obj"
+".\Release\PJ_mbtfpp.obj"
+".\Release\PJ_mbtfpq.obj"
+".\Release\PJ_merc.obj"
+".\Release\PJ_mill.obj"
+".\Release\pj_mlfn.obj"
+".\Release\PJ_mod_ster.obj"
+".\Release\PJ_moll.obj"
+".\Release\PJ_mpoly.obj"
+".\Release\pj_msfn.obj"
+".\Release\PJ_nell.obj"
+".\Release\PJ_nell_h.obj"
+".\Release\PJ_nocol.obj"
+".\Release\PJ_nsper.obj"
+".\Release\PJ_nzmg.obj"
+".\Release\PJ_ob_tran.obj"
+".\Release\PJ_ocea.obj"
+".\Release\PJ_oea.obj"
+".\Release\PJ_omerc.obj"
+".\Release\pj_open_lib.obj"
+".\Release\PJ_ortho.obj"
+".\Release\pj_param.obj"
+".\Release\pj_phi2.obj"
+".\Release\PJ_poly.obj"
+".\Release\pj_pr_list.obj"
+".\Release\PJ_putp2.obj"
+".\Release\PJ_putp3.obj"
+".\Release\PJ_putp4p.obj"
+".\Release\PJ_putp5.obj"
+".\Release\PJ_putp6.obj"
+".\Release\pj_qsfn.obj"
+".\Release\pj_release.obj"
+".\Release\PJ_robin.obj"
+".\Release\PJ_rpoly.obj"
+".\Release\PJ_sconics.obj"
+".\Release\PJ_somerc.obj"
+".\Release\PJ_stere.obj"
+".\Release\PJ_sterea.obj"
+".\Release\pj_strerrno.obj"
+".\Release\PJ_sts.obj"
+".\Release\PJ_tcc.obj"
+".\Release\PJ_tcea.obj"
+".\Release\PJ_tmerc.obj"
+".\Release\PJ_tpeqd.obj"
+".\Release\pj_transform.obj"
+".\Release\pj_tsfn.obj"
+".\Release\pj_units.obj"
+".\Release\PJ_urm5.obj"
+".\Release\PJ_urmfps.obj"
+".\Release\pj_utils.obj"
+".\Release\PJ_vandg2.obj"
+".\Release\PJ_vandg4.obj"
+".\Release\PJ_vandg.obj"
+".\Release\PJ_wag2.obj"
+".\Release\PJ_wag3.obj"
+".\Release\PJ_wag7.obj"
+".\Release\PJ_wink1.obj"
+".\Release\PJ_wink2.obj"
+".\Release\pj_zpoly1.obj"
+".\Release\rtodms.obj"
+]
+Creating command line "link.exe -lib @C:\DOCUME~1\fedorov\LOCALS~1\Temp\RSP731.tmp"
+<h3>Output Window</h3>
+Compiling...
+vector1.c
+aasincos.c
+adjlon.c
+bch2bps.c
+bchgen.c
+biveval.c
+dmstor.c
+emess.c
+gen_cheb.c
+geocent.c
+geod_for.c
+geod_inv.c
+geod_set.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\geod_set.c(68) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+jniproj.c
+mk_cheby.c
+nad_cvt.c
+nad_init.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\nad_init.c(76) : warning C4018: '!=' : signed/unsigned mismatch
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\nad_init.c(138) : warning C4101: 'header' : unreferenced local variable
+nad_intr.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\nad_intr.c(16) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\nad_intr.c(17) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+p_series.c
+PJ_aea.c
+PJ_aeqd.c
+PJ_airy.c
+PJ_aitoff.c
+pj_apply_gridshift.c
+PJ_august.c
+pj_auth.c
+PJ_bacon.c
+PJ_bipc.c
+PJ_boggs.c
+PJ_bonne.c
+PJ_cass.c
+PJ_cc.c
+PJ_cea.c
+PJ_chamb.c
+PJ_collg.c
+PJ_crast.c
+pj_datum_set.c
+pj_datums.c
+PJ_denoy.c
+pj_deriv.c
+PJ_eck1.c
+PJ_eck2.c
+PJ_eck3.c
+PJ_eck4.c
+PJ_eck5.c
+pj_ell_set.c
+pj_ellps.c
+PJ_eqc.c
+PJ_eqdc.c
+pj_errno.c
+pj_factors.c
+PJ_fahey.c
+PJ_fouc_s.c
+pj_fwd.c
+PJ_gall.c
+pj_gauss.c
+pj_geocent.c
+PJ_geos.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_geos.c(79) : warning C4101: 'c' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_geos.c(100) : warning C4101: 'c' : unreferenced local variable
+PJ_gins8.c
+PJ_gn_sinu.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_gn_sinu.c(58) : warning C4101: 's' : unreferenced local variable
+PJ_gnom.c
+PJ_goode.c
+pj_gridinfo.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridinfo.c(198) : warning C4018: '!=' : signed/unsigned mismatch
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridinfo.c(217) : warning C4244: '=' : conversion from 'double ' to 'float ', possible loss of data
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridinfo.c(218) : warning C4244: '=' : conversion from 'double ' to 'float ', possible loss of data
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridinfo.c(272) : warning C4018: '!=' : signed/unsigned mismatch
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridinfo.c(293) : warning C4244: '=' : conversion from 'double ' to 'float ', possible loss of data
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridinfo.c(294) : warning C4244: '=' : conversion from 'double ' to 'float ', possible loss of data
+pj_gridlist.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_gridlist.c(100) : warning C4101: 'i' : unreferenced local variable
+PJ_hammer.c
+PJ_hatano.c
+PJ_imw_p.c
+pj_init.c
+pj_inv.c
+PJ_krovak.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c(84) : warning C4101: 'errmess' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c(85) : warning C4101: 'tmp' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c(89) : warning C4101: 'lamdd' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c(89) : warning C4101: 'lon17' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c(163) : warning C4101: 'l24' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c(163) : warning C4101: 'lamdd' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_krovak.c(163) : warning C4101: 'lon17' : unreferenced local variable
+PJ_labrd.c
+PJ_laea.c
+PJ_lagrng.c
+PJ_larr.c
+PJ_lask.c
+pj_latlong.c
+PJ_lcc.c
+PJ_lcca.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_lcca.c(29) : warning C4101: 'S3' : unreferenced local variable
+pj_list.c
+PJ_loxim.c
+PJ_lsat.c
+pj_malloc.c
+PJ_mbt_fps.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_mbt_fps.c(33) : warning C4101: 's' : unreferenced local variable
+PJ_mbtfpp.c
+PJ_mbtfpq.c
+PJ_merc.c
+PJ_mill.c
+pj_mlfn.c
+PJ_mod_ster.c
+PJ_moll.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_moll.c(33) : warning C4101: 's' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_moll.c(33) : warning C4101: 'th' : unreferenced local variable
+PJ_mpoly.c
+pj_msfn.c
+PJ_nell.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_nell.c(27) : warning C4101: 's' : unreferenced local variable
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_nell.c(27) : warning C4101: 'th' : unreferenced local variable
+PJ_nell_h.c
+PJ_nocol.c
+PJ_nsper.c
+PJ_nzmg.c
+PJ_ob_tran.c
+PJ_ocea.c
+PJ_oea.c
+PJ_omerc.c
+pj_open_lib.c
+PJ_ortho.c
+pj_param.c
+pj_phi2.c
+PJ_poly.c
+pj_pr_list.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_pr_list.c(77) : warning C4018: '>' : signed/unsigned mismatch
+PJ_putp2.c
+PJ_putp3.c
+PJ_putp4p.c
+PJ_putp5.c
+PJ_putp6.c
+pj_qsfn.c
+pj_release.c
+PJ_robin.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(13) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(13) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(13) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(14) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(14) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(14) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(14) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(15) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(15) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(15) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(15) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(16) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(16) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(16) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(16) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(17) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(17) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(17) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(17) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(18) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(18) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(18) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(18) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(19) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(19) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(19) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(19) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(20) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(20) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(20) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(20) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(21) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(21) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(21) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(21) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(22) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(22) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(22) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(22) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(23) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(23) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(23) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(23) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(24) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(24) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(24) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(24) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(25) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(25) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(25) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(25) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(26) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(26) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(26) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(26) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(27) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(27) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(27) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(27) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(28) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(28) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(28) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(28) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(29) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(29) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(29) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(29) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(30) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(30) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(30) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(30) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(31) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(33) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(33) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(33) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(34) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(34) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(34) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(34) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(35) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(35) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(35) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(35) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(36) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(36) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(36) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(36) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(37) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(37) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(37) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(37) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(38) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(38) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(38) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(38) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(39) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(39) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(39) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(39) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(40) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(40) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(40) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(40) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(41) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(41) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(41) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(41) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(42) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(42) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(42) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(42) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(43) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(43) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(43) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(43) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(44) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(44) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(44) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(44) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(45) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(45) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(45) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(45) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(46) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(46) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(46) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(46) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(47) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(47) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(47) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(47) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(48) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(48) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(48) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(48) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(49) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(49) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(49) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(49) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(50) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(50) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(50) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(50) : warning C4305: 'initializing' : truncation from 'const double ' to 'float '
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(63) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(86) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_robin.c(95) : warning C4244: '-=' : conversion from 'double ' to 'float ', possible loss of data
+PJ_rpoly.c
+PJ_sconics.c
+PJ_somerc.c
+PJ_stere.c
+PJ_sterea.c
+pj_strerrno.c
+PJ_sts.c
+PJ_tcc.c
+PJ_tcea.c
+PJ_tmerc.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\PJ_tmerc.c(141) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+PJ_tpeqd.c
+pj_transform.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\pj_transform.c(140) : warning C4101: 'need_datum_shift' : unreferenced local variable
+pj_tsfn.c
+pj_units.c
+PJ_urm5.c
+PJ_urmfps.c
+pj_utils.c
+PJ_vandg2.c
+PJ_vandg4.c
+PJ_vandg.c
+PJ_wag2.c
+PJ_wag3.c
+PJ_wag7.c
+PJ_wink1.c
+PJ_wink2.c
+pj_zpoly1.c
+rtodms.c
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\rtodms.c(55) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+G:\dima\develop\JASPER\jasper-1.701.0.GEO\src\libproj\rtodms.c(56) : warning C4244: '=' : conversion from 'double ' to 'int ', possible loss of data
+Creating library...
+xilib: executing 'C:\PROGRA~1\MICROS~4\VC98\Bin\lib.exe'
+
+
+
+<h3>Results</h3>
+libproj.lib - 0 error(s), 179 warning(s)
+</pre>
+</body>
+</html>
