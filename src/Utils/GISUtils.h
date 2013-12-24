@@ -43,7 +43,11 @@ typedef	struct tiff TIFF;
 // these are going to seem to be a bit small for a tile!
 bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos);
 bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos);
-
+#if USE_GEOJPEG2K
+//retrives the geotiff information from a GeoJP2K, requires JasPer.
+//Returns true if it was able to, false if not.
+bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& post_pos);
+#endif
 // This routine converts UTM to lat/lon coordinates.  X and Y should be
 // in meters.  Zone should be positive 1-60 for north or -1-60 for south.
 // The pts to outLon and outLat can point to the same storage as x and y;
