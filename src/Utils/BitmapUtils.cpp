@@ -32,6 +32,7 @@
 #include <squish.h>
 #include <zlib.h>
 #include <jasper/jasper.h>
+#include "AssertUtils.h"
 
 /*
 	WARNING: Struct alignment must be "68K" (e.g. 2-byte alignment) for these
@@ -276,6 +277,11 @@ int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath
 		struct	BMPHeader		header;
 		struct	BMPImageDesc	imageDesc;
 		int						err = 0;
+	
+		//If the file has the wrong kind of channels or will not work with the padding required
+		//Fail imidiantly.
+		Assert(((inImage->width * inImage->channels + inImage->pad) % 4) == 0);
+		Assert(inImage->channels == 3);
 
 	/* First set up the appropriate header structures to match our bitmap. */
 
@@ -1326,77 +1332,98 @@ bail:
 #endif
 
 #if USE_GEOJPEG2K
-int CreateBitmapFromGeoJPEG2K(const char * inFilePath, struct ImageInfo * outImageInfo)
+int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
 	//Clean out the image info
 	outImageInfo->data = NULL;
 	
 	//Initialize JasPerGEO
-	jas_init();
-
-
-	FILE * fi = fopen(inFilePath, "rb");
-	if (!fi)
+	if(jas_init() != 0 )
 	{
-		return errno;
+		//If it failed then return error
+		return -1;
+	}
+
+	//Create the data stream
+	jas_stream_t * inStream;
+	
+	//If the data stream cannot be created
+	if((inStream = jas_stream_fopen(inFilePath,"rb"))==false)
+	{
+		return -1;
+	}
+
+	//Get the format ID
+	int formatId;
+
+	//If there are any errors in getting the format
+	if((formatId = jas_image_getfmt(inStream)) < 0)
+	{
+		//It is an invalid format
+		return -2;
 	}
 	
-	//try {
+	
+	//Create an image from the stream
+	jas_image_t * image;
 
-	/*		struct jpeg_decompress_struct cinfo;
-			setjmp_err_mgr		  jerr;
+	//If the image cannot be decoded
+	if((image = jas_image_decode(inStream, formatId, 0)) == false)
+	{
+		//Return an error
+		return -3;
+	}
+	
+	//Set the properties of the outImageInfo that we can
+	outImageInfo->width = jas_image_width(image);
+	outImageInfo->height = jas_image_height(image);
+	outImageInfo->pad = 0;
+	outImageInfo->channels = image->cmprof_->numchans;
 
-		if(setjmp(jerr.buf))
+	//Allocate a place in memory equal to the width*height*channels, aka just right
+	unsigned char * bitmapData = (unsigned char*) malloc(outImageInfo->width*outImageInfo->height*outImageInfo->channels);
+
+	//Get the red green and blue of each image
+    int r = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R);
+    int g = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_G);
+    int b = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B);
+	//If the precision is more than 8 create shift values
+    int shift_red = max(jas_image_cmptprec(image, r) - 8, 0);
+    int shift_green = max(jas_image_cmptprec(image, g) - 8, 0);
+    int shift_blue = max(jas_image_cmptprec(image, b) - 8, 0);
+	
+	//Save the original pointer
+	unsigned char * oPos = bitmapData;
+
+	//For the width and height of the image
+	for (int j = 0; j < outImageInfo->height; j++) 
+	{
+        for (int i = 0; i < outImageInfo->width; i++) 
 		{
-			fclose(fi);
-			return 1;
-		}
+			//read the pixel and potentially shift it
+			int px1 = jas_image_readcmptsample(image, r, i, j) >> shift_red;
+            //Assaign it
+			*bitmapData = px1;
 
-		cinfo.err = jpeg_throw_error(&jerr);
-		jpeg_create_decompress(&cinfo);
+			//Advance the pointer
+			bitmapData++;
+			
+			int px2 = jas_image_readcmptsample(image, g, i, j) >> shift_green;
+            *bitmapData = px2;
+			bitmapData++;
+			
+			int px3 = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
+			*bitmapData = px3;
+			bitmapData++;
+        }      
+    }
+	//Save the data to our ImageInfo
+	outImageInfo->data=oPos;
 
-		jpeg_stdio_src(&cinfo, fi);
-
-		jpeg_read_header(&cinfo, TRUE);
-
-		jpeg_start_decompress(&cinfo);
-
-		outImageInfo->width = cinfo.output_width;
-		outImageInfo->height = cinfo.output_height;
-		outImageInfo->pad = 0;
-		outImageInfo->channels = 3;
-		outImageInfo->data = (unsigned char *) malloc(outImageInfo->width * outImageInfo->height * outImageInfo->channels);
-
-		int linesize = outImageInfo->width * outImageInfo->channels;
-		int linecount = outImageInfo->height;
-		unsigned char * p = outImageInfo->data + (linecount - 1) * linesize;
-		while (linecount--)
-		{
-			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)
-				break;
-
-			for (int n = cinfo.output_width - 1; n >= 0; --n)
-			{
-				if (cinfo.output_components == 1)
-					p[n*3+2] = p[n*3+1] = p[n*3] = p[n];
-				else
-					swap(p[n*3+2],p[n*3]);
-			}
-			p -= linesize;
-		}
-
-		jpeg_finish_decompress(&cinfo);
-
-		jpeg_destroy_decompress(&cinfo);
-		fclose(fi);
-		return 0;
-	} catch (...) {
-		// If we ever get an exception, it's because we got a fatal JPEG error.  Our
-		// error handler deallocates the jpeg struct, so all we have to do is close the
-		// file and bail.
-		fclose(fi);
-		return 1;
-	}*/
+	//Clean up jas_stuff. Since we havea working image 
+	jas_cleanup();
+	
+	return 0;
 }
 #endif
 
