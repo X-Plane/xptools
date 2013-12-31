@@ -31,9 +31,10 @@ struct DEMGeo;
 enum {
 		shp_None			= 0,
 		shp_Mode_Landuse	= 1,			// Polygon shape file, params go into the land use fields.
-		shp_Mode_Feature	= 2,			// Polygon shape file, params go into the featuer field
+		shp_Mode_Feature	= 2,			// Polygon shape file, params go into the feature field
 		shp_Mode_Coastline	= 3,			// Line shape file, right-side of vectors become param
 		shp_Mode_Road		= 4,			// Line shape file, lines become roads
+
 		shp_Mode_Simple		= 8,			// Use a simple feature desc for features.
 		shp_Mode_Map		= 16,			// Use a map file for features.
 		shp_Use_Crop		= 32,			// Add the crop-box to the import on the fly.
@@ -63,6 +64,12 @@ bool	RasterShapeFile(
 			DEMGeo&					outRaster,
 			shp_Flags				mode,
 			const char *			feature_desc,
+			ProgressFunc			inFunc);
+
+bool	WriteShapefile(
+			const char *			in_file,
+			Pmwx&					in_map,
+			int						terrain_type,
 			ProgressFunc			inFunc);
 
 #endif /* ShapeIO_H */
