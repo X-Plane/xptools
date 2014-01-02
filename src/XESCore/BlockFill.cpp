@@ -1150,6 +1150,35 @@ struct dupe_bot_reg_type {
 	}
 };
 
+/*	There's a nasty edge case in the code: if a segment is VERY close but not quite veritcal, the division code wants to intersect the rising section with
+ *	the various cut lines (center, top safe, bottom safe) to then break the line into horizontal regions, which would then become slop, building, slop 
+*	over building, etc.  
+*
+*	Buuuuuuut....the math is done in raw double, so if the dx of the segment is REALLY tiny, the intersections of the horizointal lines with the segment will
+*	erroneously be calculated outside the horizontal span of the segment, and the 'slicer' code will throw them out.  
+*
+*	Once we don't have valid intersections at the division line, the block processing algo goes haywire and we die.
+*
+*	Buuuuuuuut....this case is silly - the line is almost vertical and produces no useful effect by being horizontal.  At best we will consolidate its length
+*	into the next region, at worst we screw up and make a sliver.
+*
+*	So, we simply 'square' the block, moving the corners to make the side truly vertical, and go home happy.
+*/
+static void fix_near_vertical(Polygon2& p)
+{
+	for(int i = 0; i < p.size(); ++i)
+	{
+		Segment2 s(p.side(i));
+		double dx = fabs(s.p1.x()-s.p2.x());
+		double dy = fabs(s.p1.y()-s.p2.y());
+		
+		if(dx < 0.01)
+		{
+			DebugAssert(dy > 1.0);
+			p[i].x_ = s.p2.x();
+		}		
+	}
+}
  
 static int	init_subdivisions(
 							Pmwx::Face_handle f,
@@ -1201,6 +1230,14 @@ static int	init_subdivisions(
 		double cb = vb.dot(Vector2(mbounds[i]));
 		
 		abounds.push_back(Point2(ca,cb));
+	}
+	
+	fix_near_vertical(abounds);
+	
+	for(i = 0; i < abounds.size(); ++i)
+	{
+		double ca = abounds[i].x();
+		double cb = abounds[i].y();
 		
 		if(ca < abounds[left].x())
 			left = i;
