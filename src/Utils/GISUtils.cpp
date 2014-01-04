@@ -48,7 +48,7 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
         return false;
-
+	
     if( defn->Model == ModelTypeGeographic )
     {
     	outLon = x;
@@ -86,7 +86,7 @@ static int pm(char * s, void * v)
 	return 0;
 }
 
-bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
+bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)
 {
 	bool retVal = false;
 	GTIF * gtif = GTIFNew(tiffFile);
@@ -98,14 +98,25 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
         if( GTIFGetDefn( gtif, &defn ) )
         {
         	int xs, ys;
+			double xsize,ysize;
             TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xs );
             TIFFGetField( tiffFile, TIFFTAG_IMAGELENGTH, &ys );
 
 			uint16 pixel_type;
 			double dx=0.0;
 			double dy=0.0;
-			double xsize=xs;
-			double ysize=ys;
+
+			//If there is the optional width and height
+			if(width > 0 && height > 0)
+			{
+				xsize=width;
+				ysize=height;
+			}
+			else
+			{
+				xsize=xs;
+				ysize=ys;
+			}
 
 			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
 				pixel_type=RasterPixelIsArea;
@@ -271,14 +282,28 @@ bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& p
 		return -1;
 	}
 
-	//Open the image from the stream
-	inStream = jas_stream_fopen(inFileName, "rb");
-	
-	//Get the format
-	 int formatId = jas_image_getfmt(inStream);
+		//If the data stream cannot be created
+	if((inStream = jas_stream_fopen(inFileName,"rb"))==false)
+	{
+		return false;
+	}
 
-	//Decode the image from the stream
-	image = jas_image_decode(inStream, formatId, 0);
+	//Get the format ID
+	int formatId;
+
+	//If there are any errors in getting the format
+	if((formatId = jas_image_getfmt(inStream)) < 0)
+	{
+		//It is an invalid format
+		return false;
+	}
+
+	//If the image cannot be decoded
+	if((image = jas_image_decode(inStream, formatId, 0)) == false)
+	{
+		//Return an error
+		return false;
+	}
 
 	//Create the handle to be used in XTIFFClientOpen
 	MemJASGeoFile jasHandle(&image->aux_buf);
@@ -287,14 +312,17 @@ bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& p
 	    MemJASGeoSeek, MemJASGeoClose,
 	    MemJASGeoSize,
  	    MemJASGeoMapFile, MemJASGeoUnmapFile);
+
 	int postType = dem_want_Area;
-	FetchTIFFCornersWithTIFF(tif,corners,postType);
+	//Pass in our TIF handle, post type, width, and height
+	FetchTIFFCornersWithTIFF(tif,corners,postType,(image->brx_-image->tlx_),(image->bry_-image->tly_));
 	//Shut downthe stream
 	jas_stream_close(inStream);
 
 	//Unintialize jasper
 	jas_cleanup();
-	return false;
+	//It all worked!
+	return true;
 }
 #endif
 
