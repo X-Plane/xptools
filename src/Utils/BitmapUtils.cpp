@@ -1378,7 +1378,10 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	outImageInfo->width = jas_image_width(image);
 	outImageInfo->height = jas_image_height(image);
 	outImageInfo->pad = 0;
-	outImageInfo->channels = image->cmprof_->numchans;
+	//This allows for correct DDS files which require 4 channels
+	//The last channel is filled up with 255
+	outImageInfo->channels = 4;
+
 
 	//Allocate a place in memory equal to the width*height*channels, aka just right
 	unsigned char * bitmapData = (unsigned char*) malloc(outImageInfo->width*outImageInfo->height*outImageInfo->channels);
@@ -1396,26 +1399,32 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	unsigned char * oPos = bitmapData;
 
 	//For the width and height of the image
-	for (int j = 0; j < outImageInfo->height; j++) 
+	//(This way makes sure the image is of the correct orientation
+	for (int j = outImageInfo->height - 1; j >= 0; j--) 
 	{
         for (int i = 0; i < outImageInfo->width; i++) 
 		{
-			//read the pixel and potentially shift it
-			int px1 = jas_image_readcmptsample(image, r, i, j) >> shift_red;
-            //Assaign it
-			*bitmapData = px1;
+			if(j < outImageInfo->height - 1)
+			{
+				//read the pixel and potentially shift it
+				int pxR = jas_image_readcmptsample(image, r, i, j) >> shift_red;
+				int pxG = jas_image_readcmptsample(image, g, i, j) >> shift_green;
+				int pxB = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
+				//Fill the alpha channel with being completely opaque
+				int pxA = 255;
 
-			//Advance the pointer
-			bitmapData++;
-			
-			int px2 = jas_image_readcmptsample(image, g, i, j) >> shift_green;
-            *bitmapData = px2;
-			bitmapData++;
-			
-			int px3 = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
-			*bitmapData = px3;
-			bitmapData++;
-        }      
+				//Assaign RED
+				*bitmapData = pxR;
+				//Advance the pointer
+				bitmapData++;
+				*bitmapData = pxG;
+				bitmapData++;			
+				*bitmapData = pxB;
+				bitmapData++;
+				*bitmapData = pxA;
+				bitmapData++;
+			}
+        }
     }
 	//Save the data to our ImageInfo
 	outImageInfo->data=oPos;

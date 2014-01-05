@@ -1271,6 +1271,10 @@ static int	DSF_ExportTileRecursive(
 		* Create a DDS from that file format
 		* Create the .pol with the file format in mind
 		* Enjoy your new Torthophoto
+		*
+		* Currently supported image file types
+		* JPEG2000 (.jp2)
+		* TIFF (.tif)
 		*/
 		//File extenstion
 		string resrcEnd = "";
@@ -1278,6 +1282,55 @@ static int	DSF_ExportTileRecursive(
 		{
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			ImageInfo imgInfo;
+			if(strcasecmp(resrcEnd.c_str(),".jp2")==0 && date_cmpr_res == dcr_firstIsNew)
+			{
+				int inWidth = 1;
+				int inHeight = 1;
+				
+				if(!CreateBitmapFromJP2K(absPathIMG.c_str(),&imgInfo))
+				{
+					ImageInfo smaller;
+
+					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
+						
+					
+					while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
+
+					if (!CreateNewBitmap(inWidth,inHeight, 4, &smaller))
+					{
+						int isize = 2048;
+						isize = max(smaller.width,smaller.height);
+
+						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
+     
+						MakeMipmapStack(&smaller);
+						WriteBitmapToDDS(smaller, 5, absPathDDS.c_str(), 1);
+						DestroyBitmap(&smaller);
+					}
+
+					DestroyBitmap(&imgInfo);
+				}
+
+				//-------------------Information for the .pol
+				//Find most reduced path
+				const char * p = relativePathDDS.c_str();
+				const char * n = relativePathDDS.c_str();
+				while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+
+			
+				Point2 p1;
+				Point2 p2;
+				orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
+				orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
+			
+				float centerLat = (p2.y() + p1.y())/2;
+				float centerLon = (p2.x() + p1.x())/2;
+				//-------------------------------------------
+				pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
+					/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
+				rmgr->MakePol(relativePathPOL.c_str(),out_info);
+
+			}
 
 			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == dcr_firstIsNew)
 			{

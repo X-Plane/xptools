@@ -106,6 +106,9 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 #if USE_TIF
 	if (CreateBitmapFromTIF(fpath.c_str(), &im) != 0)
 #endif
+#if USE_GEOJPEG2K
+	if (CreateBitmapFromJP2K(fpath.c_str(), &im) != 0)
+#endif
 	{
 		return NULL;
 	}

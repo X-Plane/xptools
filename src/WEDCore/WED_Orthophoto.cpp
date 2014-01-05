@@ -163,6 +163,10 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 #if USE_TIF
 			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
 #endif
+#if USE_GEOJPEG2K
+			//If it is a .jp2 tif_ok will equal 1
+			if((tif_ok = CreateBitmapFromJP2K(buf,&inf)+1) != 1)	
+#endif
 			if (CreateBitmapFromFile(buf,&inf) != 0)
 			{
 				#if ERROR_CHECK
@@ -193,20 +197,39 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			DestroyBitmap(&inf);
 			//uncomment when dem_want_Area and FetchTIFF are fixing
 			int align = dem_want_Area;
-			if (tif_ok==0)
-			if (FetchTIFFCorners(buf, c, align))
+			switch(tif_ok)
 			{
-			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-				coords[3].x_ = c[0];
-				coords[3].y_ = c[1];
-				coords[0].x_ = c[2];
-				coords[0].y_ = c[3];
-				coords[2].x_ = c[4];
-				coords[2].y_ = c[5];
-				coords[1].x_ = c[6];
-				coords[1].y_ = c[7];
+				case 0://Regular .tif
+					if (FetchTIFFCorners(buf, c, align))
+					{
+					// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+						coords[3].x_ = c[0];
+						coords[3].y_ = c[1];
+						coords[0].x_ = c[2];
+						coords[0].y_ = c[3];
+						coords[2].x_ = c[4];
+						coords[2].y_ = c[5];
+						coords[1].x_ = c[6];
+						coords[1].y_ = c[7];
+					}
+				break;
+
+				case 1://.jp2
+					//Do the other kind of fetch
+					if(FetchTIFFCornersWithJP2K(buf,c,align))
+					{
+						coords[3].x_ = c[0];
+						coords[3].y_ = c[1];
+						coords[0].x_ = c[2];
+						coords[0].y_ = c[3];
+						coords[2].x_ = c[4];
+						coords[2].y_ = c[5];
+						coords[1].x_ = c[6];
+						coords[1].y_ = c[7];
+					}
+				break;
 			}
-			
+
 			WED_Thing * wrl = WED_GetWorld(in_Resolver);
 			ISelection * sel = WED_GetSelect(in_Resolver);
 
