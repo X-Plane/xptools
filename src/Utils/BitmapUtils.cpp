@@ -379,9 +379,11 @@ void	CopyBitmapSection(
 			long				inDstRight,
 			long				inDstBottom)
 {
+	//If the number of channels is not equal to 4 fail now.
+	DebugAssert(inSrc->channels == 4);
+
 	/*  This routine copies a subsection of one bitmap onto a subsection of another, using bicubic interpolation
 		for scaling. */
-
 	double	srcLeft = inSrcLeft, srcRight = inSrcRight, srcTop = inSrcTop, srcBottom = inSrcBottom;
 	double	dstLeft = inDstLeft, dstRight = inDstRight, dstTop = inDstTop, dstBottom = inDstBottom;
 
