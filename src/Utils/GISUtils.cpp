@@ -304,7 +304,12 @@ bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& p
 		//Return an error
 		return false;
 	}
-
+	
+	//If it turns out the .jp2 never had any geological data exit
+	if(image->aux_buf.size == 0)
+	{
+		return false;
+	}
 	//Create the handle to be used in XTIFFClientOpen
 	MemJASGeoFile jasHandle(&image->aux_buf);
 	//Create a TIFF handle
