@@ -1375,13 +1375,13 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 		//Return an error
 		return -3;
 	}
-	
+
 	//Set the properties of the outImageInfo that we can
 	outImageInfo->width = jas_image_width(image);
 	outImageInfo->height = jas_image_height(image);
 	outImageInfo->pad = 0;
 	//This allows for correct DDS files which require 4 channels
-	//The last channel is filled up with 255
+	//The last channel is filled up with 255 or a valid alpha value
 	outImageInfo->channels = 4;
 
 
@@ -1389,9 +1389,10 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	unsigned char * bitmapData = (unsigned char*) malloc(outImageInfo->width*outImageInfo->height*outImageInfo->channels);
 
 	//Get the red green and blue of each image
-    int r = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R);
+	int r = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R);
     int g = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_G);
     int b = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B);
+		
 	//If the precision is more than 8 create shift values
     int shift_red = max(jas_image_cmptprec(image, r) - 8, 0);
     int shift_green = max(jas_image_cmptprec(image, g) - 8, 0);
@@ -1406,26 +1407,32 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	{
         for (int i = 0; i < outImageInfo->width; i++) 
 		{
-			if(j < outImageInfo->height - 1)
-			{
 				//read the pixel and potentially shift it
 				int pxR = jas_image_readcmptsample(image, r, i, j) >> shift_red;
 				int pxG = jas_image_readcmptsample(image, g, i, j) >> shift_green;
 				int pxB = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
 				//Fill the alpha channel with being completely opaque
 				int pxA = 255;
-
-				//Assaign RED
-				*bitmapData = pxR;
+				
+				//If there is an alpha channel (id #3)
+				if(jas_image_getcmptbytype(image,3) > -1)
+				{
+					//Assaign it to the alpha value
+					pxA = jas_image_readcmptsample(image,3,i,j);
+				}
+				
+				//Assaign colors in the order of BGRA!!!!!!!!!
+				
+				//Assaign color
+				*bitmapData = pxB;
 				//Advance the pointer
 				bitmapData++;
 				*bitmapData = pxG;
-				bitmapData++;			
-				*bitmapData = pxB;
+				bitmapData++;		
+				*bitmapData = pxR;
 				bitmapData++;
 				*bitmapData = pxA;
 				bitmapData++;
-			}
         }
     }
 	//Save the data to our ImageInfo
