@@ -164,8 +164,8 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
 #endif
 #if USE_GEOJPEG2K
-			//If it is a .jp2 tif_ok will equal 1
-			if((tif_ok = CreateBitmapFromJP2K(buf,&inf)+1) != 1)	
+			//If it is a .jp2 tif_ok will equal 3 or 4
+			if((tif_ok = CreateBitmapFromJP2K(buf,&inf)) >= 3)	
 #endif
 			if (CreateBitmapFromFile(buf,&inf) != 0)
 			{
@@ -214,7 +214,8 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 					}
 				break;
 
-				case 1://.jp2
+				case 3:
+				case 4://.jp2
 					//Do the other kind of fetch
 					if(FetchTIFFCornersWithJP2K(buf,c,align))
 					{

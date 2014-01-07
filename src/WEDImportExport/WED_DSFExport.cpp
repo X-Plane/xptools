@@ -1286,11 +1286,22 @@ static int	DSF_ExportTileRecursive(
 			{
 				int inWidth = 1;
 				int inHeight = 1;
-				
-				if(!CreateBitmapFromJP2K(absPathIMG.c_str(),&imgInfo))
+				int numChannel = 0;
+				if((numChannel = CreateBitmapFromJP2K(absPathIMG.c_str(),&imgInfo))>=3)
 				{
 					ImageInfo smaller;
 
+					int DXTMethod = 0;
+					//If only RGB
+					if(numChannel == 3)
+					{
+						ConvertBitmapToAlpha(&imgInfo,false);
+						DXTMethod = 1;
+					}
+					else
+					{
+						DXTMethod = 5;
+					}
 					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
 						
 					
@@ -1304,7 +1315,7 @@ static int	DSF_ExportTileRecursive(
 						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
      
 						MakeMipmapStack(&smaller);
-						WriteBitmapToDDS(smaller, 5, absPathDDS.c_str(), 1);
+						WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
 						DestroyBitmap(&smaller);
 					}
 

@@ -1336,6 +1336,7 @@ bail:
 #if USE_GEOJPEG2K
 int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
+	printf(inFilePath);
 	//Clean out the image info
 	outImageInfo->data = NULL;
 	
@@ -1380,9 +1381,8 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	outImageInfo->width = jas_image_width(image);
 	outImageInfo->height = jas_image_height(image);
 	outImageInfo->pad = 0;
-	//This allows for correct DDS files which require 4 channels
-	//The last channel is filled up with 255 or a valid alpha value
-	outImageInfo->channels = 4;
+	//If it has 3 channels it will later be filled in the DSF export, else it is filled in with it's values
+	outImageInfo->channels = clamp(image->numcmpts_,3,4);
 
 
 	//Allocate a place in memory equal to the width*height*channels, aka just right
@@ -1413,16 +1413,7 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 				int pxB = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
 				//Fill the alpha channel with being completely opaque
 				int pxA = 255;
-				
-				//If there is an alpha channel (id #3)
-				if(jas_image_getcmptbytype(image,3) > -1)
-				{
-					//Assaign it to the alpha value
-					pxA = jas_image_readcmptsample(image,3,i,j);
-				}
-				
 				//Assaign colors in the order of BGRA!!!!!!!!!
-				
 				//Assaign color
 				*bitmapData = pxB;
 				//Advance the pointer
@@ -1431,8 +1422,14 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 				bitmapData++;		
 				*bitmapData = pxR;
 				bitmapData++;
-				*bitmapData = pxA;
-				bitmapData++;
+				//If there is an alpha channel (id #3)
+				if(jas_image_getcmptbytype(image,3) > -1)
+				{
+					//Assaign it to the alpha value
+					pxA = jas_image_readcmptsample(image,3,i,j);
+					*bitmapData = pxA;
+					bitmapData++;
+				}
         }
     }
 	//Save the data to our ImageInfo
@@ -1441,7 +1438,7 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	//Clean up jas_stuff. Since we havea working image 
 	jas_cleanup();
 	
-	return 0;
+	return outImageInfo->channels;
 }
 #endif
 
@@ -1596,6 +1593,7 @@ static void swap_bgra_y(struct ImageInfo& i)
 // Compressed DDS.
 int	WriteBitmapToDDS(struct ImageInfo& ioImage, int dxt, const char * file_name, int use_win_gamma)
 {
+	Assert(ioImage.channels == 4);//Your number of channels better equal 4 or else
 	FILE * fi = fopen(file_name,"wb");
 	if (fi == NULL) return -1;
 	vector<unsigned char>	src_v, dst_v;

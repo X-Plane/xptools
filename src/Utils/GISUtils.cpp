@@ -320,10 +320,13 @@ bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& p
 
 	int postType = dem_want_Area;
 	//Pass in our TIF handle, post type, width, and height
-	FetchTIFFCornersWithTIFF(tif,corners,postType,(image->brx_-image->tlx_),(image->bry_-image->tly_));
+	if(FetchTIFFCornersWithTIFF(tif,corners,postType,(image->brx_-image->tlx_),(image->bry_-image->tly_))==false)
+	{
+		return false;
+	}
 	//Shut downthe stream
 	jas_stream_close(inStream);
-
+	
 	//Unintialize jasper
 	jas_cleanup();
 	//It all worked!

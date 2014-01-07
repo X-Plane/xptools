@@ -84,7 +84,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 
 #if USE_GEOJPEG2K
 //Creates a bit map from a GeoJPEG2K, requires GeoJASPER
-//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 0 means everything is okay
+//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 3 and 4 are good, relates to #channels
 int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #endif
