@@ -42,6 +42,15 @@
 	scanline must start on a 4-byte boundary!
 */
 
+//Supported image types	//CreateBitmapFromX       WriteBitmapToX
+enum SupportedTypes{
+	WED_BMP,			//NewBitmap,FromFile            X
+	WED_DDS,			//X								X
+	WED_JP2K,			//X
+	WED_JPEG,			//FromJPEG,FromJPEGData
+	WED_PNG,			//X								X
+	WED_TIF				//X
+};
 struct	ImageInfo {
 	unsigned char *	data;
 	long			width;
@@ -78,6 +87,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 #if USE_TIF
 
 /* Create an image from a TIF file  requires libTIFF. */
+//returns -1 if there was an error, 3 or 4 if good (related to # channels)
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #endif
@@ -115,7 +125,9 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, in
  * CreateNewBitmap. */
 void	DestroyBitmap(const struct ImageInfo * inImageInfo);
 
-
+//Put in a file path the image name at the end and get back -1 for error or a
+//supported image code (see the enum SupportedTypes
+int GetSupportedType(char * path);
 
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where

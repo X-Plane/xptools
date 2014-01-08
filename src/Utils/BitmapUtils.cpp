@@ -355,6 +355,32 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 		return ENOMEM;
 	return 0;
 }
+int GetSupportedType(char * path)
+{
+	char * uPos = path;
+	//Find the last .
+	char * dotPos = strrchr(path,'.');
+	
+	//Loop through until you're at it
+	while(uPos != dotPos)
+	{
+		//Increase the pointer
+		uPos++;
+	}
+	//now that you're at .xyz go once more to get to just the letters
+	uPos++;
+	//compare the string and if it is perfectly the same return that code
+	if(!strcmp(uPos,"bmp")) return WED_BMP;
+	if(!strcmp(uPos,"dds")) return WED_DDS;
+	if(!strcmp(uPos,"jp2")) return WED_JP2K;
+	//jpeg or jpg is supported
+	if((!strcmp(uPos,"jpeg"))||(!strcmp(uPos,"jpg"))) return WED_JPEG;
+	if(!strcmp(uPos,"png")) return WED_PNG;
+	if(!strcmp(uPos,"tif")) return WED_TIF;
+	
+	//Otherwise return the error
+	return -1;
+}
 
 void	FillBitmap(const struct ImageInfo * inImageInfo, char c)
 {
@@ -379,9 +405,6 @@ void	CopyBitmapSection(
 			long				inDstRight,
 			long				inDstBottom)
 {
-	//If the number of channels is not equal to 4 fail now.
-	DebugAssert(inSrc->channels == 4);
-
 	/*  This routine copies a subsection of one bitmap onto a subsection of another, using bicubic interpolation
 		for scaling. */
 	double	srcLeft = inSrcLeft, srcRight = inSrcRight, srcTop = inSrcTop, srcBottom = inSrcBottom;
@@ -1284,10 +1307,11 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 	size_t npixels;
 	uint32* raster;
 
-
+	
 	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
 	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
 	TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &cc);
+
 	npixels = w * h;
 	raster = (uint32*) _TIFFmalloc(npixels * sizeof (uint32));
 	if (raster != NULL) {
@@ -1296,7 +1320,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 			outImageInfo->data = (unsigned char *) malloc(npixels * 4);
 			outImageInfo->width = w;
 			outImageInfo->height = h;
-			outImageInfo->channels = 4;
+			outImageInfo->channels = cc;
 			outImageInfo->pad = 0;
 			int	count = outImageInfo->width * outImageInfo->height;
 			unsigned char * d = outImageInfo->data;
@@ -1319,7 +1343,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 				s += 4;
 				d += 4;
 			}
-			result = 0;
+			result = cc;
 	    }
 	    _TIFFfree(raster);
 	}

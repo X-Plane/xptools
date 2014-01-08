@@ -667,7 +667,29 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 	}
 	return found;
 }
+//A wrapper around MakePol to reduce the amount of repetition that goes on.
+//Takes the relative DDS string, the relative POL path string, an orthophoto, a height, and the resourcemanager
+static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_DrapedOrthophoto * orth, int inHeight, WED_ResourceMgr * rmgr)
+{
+	//-------------------Information for the .pol
+	//Find most reduced path
+	const char * p = relativeDDSP;
+	const char * n = relativeDDSP;
+	while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
 
+			
+	Point2 p1;
+	Point2 p2;
+	orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
+	orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
+			
+	float centerLat = (p2.y() + p1.y())/2;
+	float centerLon = (p2.x() + p1.x())/2;
+	//-------------------------------------------
+	pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
+		/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
+	rmgr->MakePol(relativePOLP,out_info);
+}
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what,
 						IResolver *					resolver,
@@ -1272,7 +1294,7 @@ static int	DSF_ExportTileRecursive(
 		* Create the .pol with the file format in mind
 		* Enjoy your new Torthophoto
 		*
-		* Currently supported image file types
+		* Currently supported image file types (including # channel based compression)
 		* JPEG2000 (.jp2)
 		* TIFF (.tif)
 		*/
@@ -1321,26 +1343,7 @@ static int	DSF_ExportTileRecursive(
 
 					DestroyBitmap(&imgInfo);
 				}
-
-				//-------------------Information for the .pol
-				//Find most reduced path
-				const char * p = relativePathDDS.c_str();
-				const char * n = relativePathDDS.c_str();
-				while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
-
-			
-				Point2 p1;
-				Point2 p2;
-				orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
-				orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
-			
-				float centerLat = (p2.y() + p1.y())/2;
-				float centerLon = (p2.x() + p1.x())/2;
-				//-------------------------------------------
-				pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
-					/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
-				rmgr->MakePol(relativePathPOL.c_str(),out_info);
-
+				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
 			}
 
 			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == dcr_firstIsNew)
@@ -1348,10 +1351,21 @@ static int	DSF_ExportTileRecursive(
 				int inWidth = 1;
 				int inHeight = 1;
 				
-				if(!CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo))
+				int numChannel = 0;
+				if((numChannel = CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo))>=3)
 				{
 					ImageInfo smaller;
-
+					int DXTMethod = 0;
+					//If only RGB
+					if(numChannel == 3)
+					{
+						ConvertBitmapToAlpha(&imgInfo,false);
+						DXTMethod = 1;
+					}
+					else
+					{
+						DXTMethod = 5;
+					}
 					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
 						
 					
@@ -1365,31 +1379,13 @@ static int	DSF_ExportTileRecursive(
 						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
      
 						MakeMipmapStack(&smaller);
-						WriteBitmapToDDS(smaller, 5, absPathDDS.c_str(), 1);
+						WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
 						DestroyBitmap(&smaller);
 					}
 
 					DestroyBitmap(&imgInfo);
 				}
-
-				//-------------------Information for the .pol
-				//Find most reduced path
-				const char * p = relativePathDDS.c_str();
-				const char * n = relativePathDDS.c_str();
-				while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
-
-			
-				Point2 p1;
-				Point2 p2;
-				orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
-				orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
-			
-				float centerLat = (p2.y() + p1.y())/2;
-				float centerLon = (p2.x() + p1.x())/2;
-				//-------------------------------------------
-				pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
-					/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
-				rmgr->MakePol(relativePathPOL.c_str(),out_info);
+				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
 			}
 			//------------------For when this gets implemented, other images to repeat the above process^
 			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == dcr_firstIsNew)

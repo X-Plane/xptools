@@ -104,7 +104,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 	if (CreateBitmapFromJPEG(fpath.c_str(), &im) != 0)
 #endif
 #if USE_TIF
-	if (CreateBitmapFromTIF(fpath.c_str(), &im) != 0)
+	if (CreateBitmapFromTIF(fpath.c_str(), &im) < 3)
 #endif
 #if USE_GEOJPEG2K
 	if (CreateBitmapFromJP2K(fpath.c_str(), &im) < 3)//3,4 are good. Lower is bad
