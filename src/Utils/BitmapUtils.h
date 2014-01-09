@@ -42,14 +42,14 @@
 	scanline must start on a 4-byte boundary!
 */
 
-//Supported image types	//CreateBitmapFromX       WriteBitmapToX
+//Supported image types	//CreateBitmapFromX       WriteBitmapToX	Alpha?
 enum SupportedTypes{
-	WED_BMP,			//NewBitmap,FromFile            X
-	WED_DDS,			//X								X
-	WED_JP2K,			//X
+	WED_BMP,			//NewBitmap,FromFile            X			
+	WED_DDS,			//X								X				X
+	WED_JP2K,			//X												X
 	WED_JPEG,			//FromJPEG,FromJPEGData
-	WED_PNG,			//X								X
-	WED_TIF				//X
+	WED_PNG,			//X								X				X
+	WED_TIF				//X												X
 };
 struct	ImageInfo {
 	unsigned char *	data;
@@ -58,6 +58,8 @@ struct	ImageInfo {
 	long			pad;
 	short			channels;
 };
+
+/* STANDARDS FOR CreateNewBitmapFromX: Returns -1 for error, 3 or 4 (depending on the channel)*/
 
 /* This routine creates a new bitmap and fills in an uninitialized imageInfo structure.
  * The contents of the bitmap are undetermined and must be 'cleared' by you. */
@@ -127,7 +129,7 @@ void	DestroyBitmap(const struct ImageInfo * inImageInfo);
 
 //Put in a file path the image name at the end and get back -1 for error or a
 //supported image code (see the enum SupportedTypes
-int GetSupportedType(char * path);
+int GetSupportedType(const char * path);
 
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where

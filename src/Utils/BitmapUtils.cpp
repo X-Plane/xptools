@@ -258,7 +258,7 @@ int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageIn
 		goto bail;
 
 	fclose(fi);
-	return 0;
+	return outImageInfo->channels;
 
 bail:
 	err = errno;
@@ -353,13 +353,13 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 	outImageInfo->data = (unsigned char *) malloc(inHeight * ((inWidth * inChannels) + outImageInfo->pad));
 	if (outImageInfo->data == NULL)
 		return ENOMEM;
-	return 0;
+	return outImageInfo->channels;
 }
-int GetSupportedType(char * path)
+int GetSupportedType(const char * path)
 {
-	char * uPos = path;
+	const char * uPos = path;
 	//Find the last .
-	char * dotPos = strrchr(path,'.');
+	const char * dotPos = strrchr(path,'.');
 	
 	//Loop through until you're at it
 	while(uPos != dotPos)
@@ -983,7 +983,7 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 
 		jpeg_destroy_decompress(&cinfo);
 		fclose(fi);
-		return 0;
+		return outImageInfo->channels;
 	} catch (...) {
 		// If we ever get an exception, it's because we got a fatal JPEG error.  Our
 		// error handler deallocates the jpeg struct, so all we have to do is close the
@@ -1053,7 +1053,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 		jpeg_finish_decompress(&cinfo);
 
 		jpeg_destroy_decompress(&cinfo);
-		return 0;
+		return outImageInfo->channels;
 	} catch (...) {
 		// If we get an exceptoin, cinfo is already cleaned up; just bail.
 		return 1;
@@ -1200,7 +1200,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 
 	png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);
 
-	return 0;
+	return outImageInfo->channels;
 bail:
 
 	if (pngPtr && infoPtr)		png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);

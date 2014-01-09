@@ -97,21 +97,29 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 		MemFile_Close(dds_file);
 	}
 */
-	if (CreateBitmapFromPNG(fpath.c_str(), &im, false, GAMMA_SRGB) != 0)
-	if (CreateBitmapFromDDS(fpath.c_str(), &im) != 0)
-	if (CreateBitmapFromFile(fpath.c_str(), &im) != 0)
-#if USE_JPEG
-	if (CreateBitmapFromJPEG(fpath.c_str(), &im) != 0)
-#endif
-#if USE_TIF
-	if (CreateBitmapFromTIF(fpath.c_str(), &im) < 3)
-#endif
-#if USE_GEOJPEG2K
-	if (CreateBitmapFromJP2K(fpath.c_str(), &im) < 3)//3,4 are good. Lower is bad
-#endif
-	{
-		return NULL;
-	}
+		switch(GetSupportedType(fpath.c_str()))
+		{
+		case WED_BMP:
+			CreateBitmapFromFile(fpath.c_str(),&im);
+			break;
+		case WED_DDS:
+			CreateBitmapFromDDS(fpath.c_str(),&im);
+			break;
+		case WED_JP2K:
+			CreateBitmapFromJP2K(fpath.c_str(),&im);
+			break;
+		case WED_JPEG:
+			CreateBitmapFromJPEG(fpath.c_str(),&im);
+			break;
+		case WED_PNG:
+			CreateBitmapFromPNG(fpath.c_str(),&im,false, GAMMA_SRGB);
+			break;
+		case WED_TIF:
+			CreateBitmapFromTIF(fpath.c_str(),&im);
+			break;
+		default:
+			return NULL;//No good images or a broken file path
+		}
 
 	GLuint tn;
 	glGenTextures(1,&tn);

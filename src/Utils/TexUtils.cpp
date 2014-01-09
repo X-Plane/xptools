@@ -186,7 +186,7 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	ImageInfo	rescaleBits;
 	if (resize)
 	{
-		if (CreateNewBitmap(res_x, res_y, im.channels, &rescaleBits) != 0)
+		if (CreateNewBitmap(res_x, res_y, im.channels, &rescaleBits) < 3)
 		{
 			return false;
 		}

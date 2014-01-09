@@ -1289,7 +1289,9 @@ static int	DSF_ExportTileRecursive(
 		date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 		//-----------------
 		/* How to export a Torthoptho
-		* Create a Bitmap from whatever file format is being used
+		* If it is a torthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
+		* Create a Bitmap from whatever file format is being used.
+		* Use the number of channels to decide the compression level
 		* Create a DDS from that file format
 		* Create the .pol with the file format in mind
 		* Enjoy your new Torthophoto
@@ -1300,111 +1302,66 @@ static int	DSF_ExportTileRecursive(
 		*/
 		//File extenstion
 		string resrcEnd = "";
-		if(orth->IsNew(&resrcEnd) == true)
+		if(orth->IsNew(&resrcEnd) == true && (date_cmpr_res == dcr_firstIsNew ||date_cmpr_res == dcr_same))
 		{
 			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 			ImageInfo imgInfo;
-			if(strcasecmp(resrcEnd.c_str(),".jp2")==0 && date_cmpr_res == dcr_firstIsNew)
+			ImageInfo smaller;
+			int inWidth = 1;
+			int inHeight = 1;	
+			int numChannel = 0;
+			int DXTMethod = 0;
+
+			switch(GetSupportedType(resrcEnd.c_str()))
+			{		
+				case WED_BMP:
+					numChannel = CreateBitmapFromFile(absPathIMG.c_str(),&imgInfo);
+					break;
+				case WED_DDS:
+					numChannel = CreateBitmapFromDDS(absPathIMG.c_str(),&imgInfo);
+					break;
+				case WED_JP2K:
+					numChannel = CreateBitmapFromJP2K(absPathIMG.c_str(),&imgInfo);
+					break;
+				case WED_JPEG:
+					numChannel = CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
+					break;
+				case WED_PNG:
+					numChannel = CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
+					break;
+				case WED_TIF:
+					numChannel = CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo);
+					break;
+				default:
+					return NULL;//No good images or a broken file path, danger!
+			}
+			//If only RGB
+			if(numChannel == 3)
 			{
-				int inWidth = 1;
-				int inHeight = 1;
-				int numChannel = 0;
-				if((numChannel = CreateBitmapFromJP2K(absPathIMG.c_str(),&imgInfo))>=3)
-				{
-					ImageInfo smaller;
+				ConvertBitmapToAlpha(&imgInfo,false);
+				DXTMethod = 1;
+			}
+			else
+			{
+				DXTMethod = 5;
+			}
+			while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
+			
+			while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
 
-					int DXTMethod = 0;
-					//If only RGB
-					if(numChannel == 3)
-					{
-						ConvertBitmapToAlpha(&imgInfo,false);
-						DXTMethod = 1;
-					}
-					else
-					{
-						DXTMethod = 5;
-					}
-					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
-						
-					
-					while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
+			if (CreateNewBitmap(inWidth,inHeight, 4, &smaller) >=3)
+			{
+				int isize = 2048;
+				isize = max(smaller.width,smaller.height);
 
-					if (!CreateNewBitmap(inWidth,inHeight, 4, &smaller))
-					{
-						int isize = 2048;
-						isize = max(smaller.width,smaller.height);
-
-						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
+				CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
      
-						MakeMipmapStack(&smaller);
-						WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
-						DestroyBitmap(&smaller);
-					}
-
-					DestroyBitmap(&imgInfo);
-				}
-				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
+				MakeMipmapStack(&smaller);
+				WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
+				DestroyBitmap(&smaller);
 			}
-
-			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == dcr_firstIsNew)
-			{
-				int inWidth = 1;
-				int inHeight = 1;
-				
-				int numChannel = 0;
-				if((numChannel = CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo))>=3)
-				{
-					ImageInfo smaller;
-					int DXTMethod = 0;
-					//If only RGB
-					if(numChannel == 3)
-					{
-						ConvertBitmapToAlpha(&imgInfo,false);
-						DXTMethod = 1;
-					}
-					else
-					{
-						DXTMethod = 5;
-					}
-					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
-						
-					
-					while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
-
-					if (!CreateNewBitmap(inWidth,inHeight, 4, &smaller))
-					{
-						int isize = 2048;
-						isize = max(smaller.width,smaller.height);
-
-						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
-     
-						MakeMipmapStack(&smaller);
-						WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
-						DestroyBitmap(&smaller);
-					}
-
-					DestroyBitmap(&imgInfo);
-				}
-				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
-			}
-			//------------------For when this gets implemented, other images to repeat the above process^
-			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == dcr_firstIsNew)
-			{
-				CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
-			}
-			else if((strcasecmp(resrcEnd.c_str(),".jpeg")==0 || strcasecmp(resrcEnd.c_str(),".jpg")==0) && date_cmpr_res == dcr_firstIsNew)
-			{
-				CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
-			}
-			else if(strcasecmp(resrcEnd.c_str(),".bmp")==0 && date_cmpr_res == dcr_firstIsNew)
-			{
-				CreateBitmapFromFile(absPathIMG.c_str(),&imgInfo);
-			}
-			else if(strcasecmp(resrcEnd.c_str(),".dds")==0 && date_cmpr_res == dcr_firstIsNew)
-			{
-				//CreateBitmapFromDDS(absPath.c_str(),&imgInfo);
-			}
-
+			DestroyBitmap(&imgInfo);
+			ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
 		}
 
 		idx = io_table.accum_pol(relativePathPOL,show_level);
