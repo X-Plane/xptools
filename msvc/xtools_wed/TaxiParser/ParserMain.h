@@ -6,11 +6,11 @@
 enum FSM
 {
 	//The inside curly braces portion, starts with I_
-	I_IDLE,//For when we're not sure what will happen
+	I_COMMA,//We just hit a comma and are now expecting single
+	//or multiglyphs
 	I_INCUR,//For when we hit {
 	I_ACCUM_GLPHYS,//For collectings glpyhs
 	I_ANY_CONTROL,//When it hits a @
-	I_DOUBLE_CONTROL,//For when it hits a second @
 	I_WAITING_SEPERATOR,//For when it is waiting for a , or }
 
 	//The outside curlybraces portion, starts with O_
@@ -79,57 +79,118 @@ struct InString
 
 struct OutString
 {
-	//Front buffer
-	char oFBuf[1024];
+	//Front Sign results
+	char fRes[1024];
 
-	//Back buffer
-	char oBBuf[1024];
+	//Back sign results
+	char bRes[1024];
 
 	//Place count (front/back)
 	int fCount;
 	int bCount;
 
+	//The temporary buffer to fill up
+	char curlyBuf[8];
+	int curBufCNT;
+
+	//Write to the front buffer
+	bool writeToF;
+
+	//The current color
+	char curColor;
+
 	OutString::OutString()
 	{
 		fCount = 0;
 		bCount = 0;
+		ClearBuf();
+		writeToF = true;
+		curColor = 'X';//An obviously fake choice
 	}
 	
 	OutString::~OutString()
 	{
 
 	}
-
-	//a letter to appened, front mode = 0, back mode = 1
-	void AppendLetter(char inLetter, int mode=0)
+	void SwitchFrontBack()
 	{
-		if(mode==0)
+		if(writeToF)
+			writeToF = false;
+	}
+
+	//True for all good, false for buffer overflow
+	bool AccumBuffer(char inLet)
+	{
+		if(curBufCNT < 8)
 		{
-			oFBuf[fCount] = inLetter;
-			fCount++;
-		}
-		else if(mode == 1)
-		{
-			oBBuf[bCount] = inLetter;
-			bCount++;
+			curlyBuf[curBufCNT] = inLet;
+			curBufCNT++;
+			return true;
 		}
 		else
 		{
-			printf("You have put in a bad mode!");
+			printf("Longer than anyknown glyph!");//Semantic
+			return false;
+		}
+	}
+
+	//wipe the contents and reset the counter
+	void ClearBuf()
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			curlyBuf[i]='\0';
+		}
+			
+		curBufCNT = 0;
+	}
+	//a letter to appened, front mode = 0, back mode = 1
+	void AppendLetter(char * inLetters, int count)
+	{
+		/* 1.) Choose the front or back
+		* 2.) Add /(Y,R,L,B)
+		* 3.) Add the letters
+		*/
+		if(writeToF)
+		{
+			fRes[fCount] = '/';
+			fCount++;
+			fRes[fCount] = curColor;
+			fCount++;
+			for (int i = 0; i < count; i++)
+			{
+				fRes[fCount] = *(inLetters+i);
+				fCount++;
+			}
+		}
+		else
+		{
+			bRes[bCount] = '/';
+			bCount++;
+			bRes[bCount] = curColor;
+			bCount++;
+			for (int i = 0; i < count; i++)
+			{
+				bRes[bCount] = *(inLetters+i);
+				bCount++;
+			}
 		}
 	}
 
 	void PrintString()
 	{
-		for (int i = 0; i <= fCount; i++)
+		for (int i = 0; i < fCount; i++)
 		{
-			printf("%c",oFBuf[fCount]);
+			printf("%c",fRes[i]);
 		}
-
-		printf("\n");
-		for (int i = 0; i <= bCount; i++)
+		//if there is a back side
+		if(writeToF == false)
 		{
-			printf("%c",oFBuf[fCount]);
+			printf("\n");
+			for (int i = 0; i < bCount; i++)
+			{
+				printf("%c",bRes[i]);
+			}
 		}
 	}
 };

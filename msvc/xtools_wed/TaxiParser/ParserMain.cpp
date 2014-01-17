@@ -52,7 +52,8 @@ static bool ValidateBasics(InString * inStr)
 	}
 	//-------------------------------------------------------
 	inStr->ResetNPos();
-		
+	
+	const char * curStart = inStr->nPos;
 	//end of the } brace pair, starts as the end of the string for safety
 	const char * curEnd = inStr->endPos;
 		
@@ -61,110 +62,133 @@ static bool ValidateBasics(InString * inStr)
 	char LFGoodMode = '{';//Used later for nesting nesting
 
 	//--Validate some basic curly brace rules
-	//1.) Must have atleast 1 pair
-	//2.) All { have a }
-	//3.) No pair may be empyt nest
-	//4.) No pair may nest
+	//While there are still
+	//while(true)
+	//{
+	//	//Find the next
+	//	while(*curStart != '{')
+	//	{
+	//		curStart++;
+	//	}
+		//1.) Must have atleast 1 pair
+		//2.) All { have a }
+		//3.) No pair may be empyt nest
+		//4.) No pair may nest
 
-	//--Find if and where the end of the pair is-----
-	//Run until it breaks on 1.)Finding }
-	//or reaching the end of the string
-	while(true)
-	{
-		//If you've found the other pair
-		if(*inStr->nPos == '}')
+		//--Find if and where the end of the pair is-----
+		//Run until it breaks on 1.)Finding }
+		//or reaching the end of the string
+		while(true)
 		{
-			curEnd=inStr->nPos;
-			break;
+			//If you've found the other pair
+			if(*inStr->nPos == '}')
+			{
+				curEnd=inStr->nPos;
+				break;
+			}
+			if(inStr->nPos == inStr->endPos)
+			{
+				printf("You have no end to this pair starting from %d",inStr->count);
+				return true;
+			}
+			inStr->nPos++;
 		}
-		if(inStr->nPos == inStr->endPos)
+		//---------------------------------------------
+
+		//Now that you are at done finding the bounds, reset
+		inStr->ResetNPos();
+
+		//--Next, find if it is actually empty---------
+		if(*(inStr->nPos+1) == '}')
 		{
-			printf("You have no end to this pair starting from %d",inStr->count);
+			printf("Empty curly braces detected!\n");
 			return true;
 		}
-		inStr->nPos++;
-	}
-	//---------------------------------------------
-
-	//Now that you are at done finding the bounds, reset
-	inStr->ResetNPos();
-
-	//--Next, find if it is actually empty---------
-	if(*(inStr->nPos+1) == '}')
-	{
-		printf("Empty curly braces detected!\n");
-		return true;
-	}
-	//---------------------------------------------
+		//---------------------------------------------
 			
-	//--Finally see if there is nesting------------
+		//--Finally see if there is nesting------------
 
-	while(inStr->nPos != curEnd)
-	{
-		/* 1.)Decide whats good or bad
-		*		The first curly brace should be open
-		*		The second curly brace should be close
-		*		It should change never
-		* 2.)Test to see if it good or bad
-		*/
-
-		//If we are at a { or }
-		if((int)*inStr->nPos == '{' || (int) *inStr->nPos == '}')
+		while(inStr->nPos != curEnd)
 		{
-			//Is it the good mode?
-			if((int)*inStr->nPos == LFGoodMode)
-			{
-				//If so toggle what you are looking for
-				LFGoodMode = (*inStr->nPos == '{') ? '}' : '{';					
-			}
-			else
-			{
-				error = true;
-				printf("Char %c at location %d is invalid \n", *inStr->nPos,inStr->count);
-			}
-		}
-		inStr->count++;
-		inStr->nPos++;
-	}
-	//---------------------------------------------
-	inStr->ResetNPos();
+			/* 1.)Decide whats good or bad
+			*		The first curly brace should be open
+			*		The second curly brace should be close
+			*		It should change never
+			* 2.)Test to see if it good or bad
+			*/
 
+			//If we are at a { or }
+			if((int)*inStr->nPos == '{' || (int) *inStr->nPos == '}')
+			{
+				//Is it the good mode?
+				if((int)*inStr->nPos == LFGoodMode)
+				{
+					//If so toggle what you are looking for
+					LFGoodMode = (*inStr->nPos == '{') ? '}' : '{';					
+				}
+				else
+				{
+					error = true;
+					printf("Char %c at location %d is invalid \n", *inStr->nPos,inStr->count);
+				}
+			}
+			inStr->count++;
+			inStr->nPos++;
+		}
+		//---------------------------------------------
+		inStr->ResetNPos();
+	//}
 	return error;
 }
-
-static bool FireAction(ACTIONS todo, char * optional=0)
+static char * EnumToString(FSM in)
 {
-	switch(todo)
+	switch(in)
 	{
-		case APPEND_ACCUMED:
-			break;
-		case CHANGE_COLOR:
-			break;
-		case TOGGLE_SIDE:
-			break;
-		case PRINT_MESSAGE:
-			break;
-		case THROW_ERROR:
-			break;
-		default:
-			return false;
+	case I_COMMA:
+		return "I_COMMA";
+	case I_INCUR:
+		return "I_INCUR";
+	case I_ACCUM_GLPHYS:	
+		return "I_ACCUM_GLPHYS";
+	case I_ANY_CONTROL:
+		return "I_ANYCONTROL";
+	case I_WAITING_SEPERATOR:	
+		return "I_WAITING_SEPERATOR";
+	case O_ACCUM_GLYPHS:
+		return "O_ACCUM_GLYPHS";
+	case O_END:	
+		return "O_END";
 	}
+	return "NOT REAL STATE";
 }
-
 //Take in the current (and soon to be past) state  and the current letter being processed
-static FSM LookUpTable(FSM curState, char curChar)
+static FSM LookUpTable(FSM curState, char curChar, OutString * str)
 {
+	printf("%c",curChar);
+
 	//If you have reached a \0 FOR ANY REASON exit now
 	if(curChar == '\0')
 	{
 		//FireAction(
 		return O_END;
 	}
-	switch(curState)
+ 	switch(curState)
 	{
-	case I_IDLE:
+	case I_COMMA:
 		switch(curChar)
 		{
+		//You will always enter IDLE from a place where a seperator is
+		//not allowed
+		case '}':
+		case ','://since comma's always go into idle you have hit ,,
+			//FireAction(throw error)
+			return LOOKUP_ERR;
+		case '@':
+			return I_ANY_CONTROL;
+		default:
+			//otherwise accumulate the glyphs
+			str->AccumBuffer(curChar);
+			return I_ACCUM_GLPHYS;
 		}
 		break;
 	case I_INCUR:
@@ -173,14 +197,29 @@ static FSM LookUpTable(FSM curState, char curChar)
 		case '@':
 			//FireAction(
 			return I_ANY_CONTROL;
-			break;
+		default:
+			//otherwise accumulate the glyphs
+			str->AccumBuffer(curChar);
+			return I_ACCUM_GLPHYS;
 		}
 		break;
 	case I_ACCUM_GLPHYS:	
 		switch(curChar)
 		{
+		//Cases to make it stop accumulating
+		case '}':
+			str->AppendLetter(str->curlyBuf,str->curBufCNT);
+			str->ClearBuf();
+			return O_ACCUM_GLYPHS;
+		case ',':
+			str->AppendLetter(str->curlyBuf,str->curBufCNT);
+			str->ClearBuf();
+			return I_COMMA;
+		default:
+			//otherwise accumulate the glyphs
+			str->AccumBuffer(curChar);
+			return I_ACCUM_GLPHYS;
 		}
-
 		break;
 	case I_ANY_CONTROL:	
 		switch(curChar)
@@ -189,24 +228,26 @@ static FSM LookUpTable(FSM curState, char curChar)
 		case 'L':
 		case 'R':
 		case 'B':
-			//FireAction(Change color
+			
+			//Do action, change color
+			str->curColor = curChar;
 			return I_WAITING_SEPERATOR;
 			
 		case '@':
-			//FireAction(Change sides
+			str->SwitchFrontBack();
 			return I_WAITING_SEPERATOR;
 		}
-		break;
-	case I_DOUBLE_CONTROL:	//This one may not be necissary
-		switch(curChar)
-		{
-
-		}
-
 		break;
 	case I_WAITING_SEPERATOR:	
 		switch(curChar)
 		{
+		case ',':
+			return I_COMMA;
+		case '}':
+			return O_ACCUM_GLYPHS;
+		default:
+			printf("\nWas expecting , or }, got %c",curChar);//No way you should end up with something like @YX or {@@X
+			return LOOKUP_ERR;
 		}
 		break;
 	case O_ACCUM_GLYPHS:	
@@ -215,15 +256,20 @@ static FSM LookUpTable(FSM curState, char curChar)
 		case '{':
 			return I_INCUR;
 			break;
+		default:
+			str->AppendLetter(&curChar,1);
+			return O_ACCUM_GLYPHS;
+			break;
 		}
 		break;
 	case O_END:	
 		switch(curChar)
 		{
+			
 		}
 		break;
 	}
-	return I_IDLE;
+	return LOOKUP_ERR;
 }
 
 int main(int argc, const char* argv[])
@@ -236,25 +282,23 @@ int main(int argc, const char* argv[])
 	InString inStr(buf);
 
 	//Make the front and back outStrings
-	OutString outStr();
+	OutString outStr;
 
 	//Validate if there is any whitesapce or non printable ASCII charecters (33-126)
-	if(1)
+	if(ValidateBasics(&inStr) == true)
 	{
-		if(ValidateBasics(&inStr) == true)
-		{
-			printf("\n String not basically valid \n");
-			system("pause");
-			return 0;
-		}
-		system("cls");
+		printf("\nString not basically valid \n");
+		system("pause");
+		return 0;
 	}
+	system("pause");
+	system("cls");
+	
 	FSM FSM_MODE = O_ACCUM_GLYPHS;
-
 	while(FSM_MODE != O_END)
 	{
 		//Look up the transition
-		FSM transition = LookUpTable(FSM_MODE,*(inStr.nPos));
+		FSM transition = LookUpTable(FSM_MODE,*(inStr.nPos), &outStr);
 		if(transition != LOOKUP_ERR)
 		{
 			FSM_MODE = transition;
@@ -262,17 +306,13 @@ int main(int argc, const char* argv[])
 		}
 		else
 		{
-			printf("Fatal lookup error! State: %d, Char: %c, Location: %d\n",(int)FSM_MODE,*(inStr.nPos),inStr.count);
+			printf("\nFatal lookup error! State: %s, Char: %c, Location: %d\n",EnumToString(FSM_MODE),*(inStr.nPos),inStr.nPos-inStr.oPos);
 			break;
 		}
-
 	}
+	printf("\n");
+	outStr.PrintString();
+	printf("\n");
 	system("pause");
 	return 0;
 }
-#if 0
-//Return if there was an error or not, validates only a set of them
-static bool ValidateCurlyBraces(InString * inStr)
-{
-}
-#endif
