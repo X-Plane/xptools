@@ -9,6 +9,86 @@ ParserMain::ParserMain(void)
 ParserMain::~ParserMain(void)
 {
 }
+//Takes in the place where a '{' is as the start
+//Returns true if there was an error
+static bool ValidateCurly(InString * inStr)
+{
+	//Local oPos,nPos,and end
+	const char * lOPos = inStr->nPos;
+	const char * lNPos = inStr->nPos;
+	
+	const char * lEndPos = NULL;
+		
+	//What is currently considered good, a { a }
+	//We start by saying that we are looking for a {
+	char LFGoodMode = '{';//Used later for nesting nesting
+
+	//1.) All { have a }
+	//2.) No pair may be empyt nest
+	//3.) No pair may nest
+
+	//--Find if and where the end of the pair is-----
+	//Run until it breaks on 1.)Finding }
+	//or reaching the end of the string
+	while(true)
+	{
+		//If you've found the other pair
+		if(*lNPos == '}')
+		{
+			lEndPos=lNPos;
+			break;
+		}
+		if(lNPos == inStr->endPos)
+		{
+			printf("You have no end to this pair starting from %d",(lOPos - inStr->oPos));
+			return true;
+		}
+		lNPos++;
+	}
+	//---------------------------------------------
+	
+	//Reset the nPos
+	lNPos = lOPos;
+
+	//--Next, find if it is actually empty---------
+	if(*(lNPos+1) == '}')
+	{
+		printf("Empty curly braces detected!\n");
+		return true;
+	}
+	//---------------------------------------------
+	
+	//--Finally see if there is nesting------------
+
+	while(lNPos != lEndPos)
+	{
+		/* 1.)Decide whats good or bad
+		*		The first curly brace should be open
+		*		The second curly brace should be close
+		*		It should change never
+		* 2.)Test to see if it good or bad
+		*/
+
+		//If we are at a { or }
+		if((int)*lNPos == '{' || (int) *lNPos == '}')
+		{
+			//Is it the good mode?
+			if((int)*lNPos == LFGoodMode)
+			{
+				//If so toggle what you are looking for
+				LFGoodMode = (*lNPos == '{') ? '}' : '{';					
+			}
+			else
+			{
+				printf("Char %c at location %d is invalid \n", *lNPos,(lOPos - inStr->oPos));
+				return true;
+			}
+		}
+		lNPos++;
+	}
+	//---------------------------------------------
+	return false;
+}
 
 //Return if there was an error or not
 static bool ValidateBasics(InString * inStr)
@@ -53,91 +133,41 @@ static bool ValidateBasics(InString * inStr)
 	//-------------------------------------------------------
 	inStr->ResetNPos();
 	
-	const char * curStart = inStr->nPos;
-	//end of the } brace pair, starts as the end of the string for safety
-	const char * curEnd = inStr->endPos;
-		
-	//What is currently considered good, a { a }
-	//We start by saying that we are looking for a {
-	char LFGoodMode = '{';//Used later for nesting nesting
-
-	//--Validate some basic curly brace rules
-	//While there are still
-	//while(true)
-	//{
-	//	//Find the next
-	//	while(*curStart != '{')
-	//	{
-	//		curStart++;
-	//	}
-		//1.) Must have atleast 1 pair
-		//2.) All { have a }
-		//3.) No pair may be empyt nest
-		//4.) No pair may nest
-
-		//--Find if and where the end of the pair is-----
-		//Run until it breaks on 1.)Finding }
-		//or reaching the end of the string
-		while(true)
+	//--Starts with valid instruction {@(Y/R/L/B)
+	if(*(inStr->oPos) == '{' && *(inStr->oPos+1) == '@')
+	{
+		switch(*(inStr->oPos+2))
 		{
-			//If you've found the other pair
-			if(*inStr->nPos == '}')
-			{
-				curEnd=inStr->nPos;
-				break;
-			}
-			if(inStr->nPos == inStr->endPos)
-			{
-				printf("You have no end to this pair starting from %d",inStr->count);
-				return true;
-			}
-			inStr->nPos++;
-		}
-		//---------------------------------------------
-
-		//Now that you are at done finding the bounds, reset
-		inStr->ResetNPos();
-
-		//--Next, find if it is actually empty---------
-		if(*(inStr->nPos+1) == '}')
-		{
-			printf("Empty curly braces detected!\n");
+		case 'Y':
+		case 'R':
+		case 'L':
+		case 'B':
+			error = false;
+			break;
+		default:
+			printf("Doesn't start with valid instruction\n");
+			printf("%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
 			return true;
 		}
-		//---------------------------------------------
-			
-		//--Finally see if there is nesting------------
+	}
+	else
+	{
+		printf("Doesn't start with valid instruction\n");
+		printf("%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
+		return true;
+	}
 
-		while(inStr->nPos != curEnd)
+	//Validate all curly brace rules
+	while(inStr->nPos != inStr->endPos)
+	{
+		if(*inStr->nPos == '{')
 		{
-			/* 1.)Decide whats good or bad
-			*		The first curly brace should be open
-			*		The second curly brace should be close
-			*		It should change never
-			* 2.)Test to see if it good or bad
-			*/
-
-			//If we are at a { or }
-			if((int)*inStr->nPos == '{' || (int) *inStr->nPos == '}')
-			{
-				//Is it the good mode?
-				if((int)*inStr->nPos == LFGoodMode)
-				{
-					//If so toggle what you are looking for
-					LFGoodMode = (*inStr->nPos == '{') ? '}' : '{';					
-				}
-				else
-				{
-					error = true;
-					printf("Char %c at location %d is invalid \n", *inStr->nPos,inStr->count);
-				}
-			}
-			inStr->count++;
-			inStr->nPos++;
+			error = ValidateCurly(inStr);
+			if(error) return error;
 		}
-		//---------------------------------------------
-		inStr->ResetNPos();
-	//}
+		inStr->nPos++;
+	}
+	inStr->ResetNPos();
 	return error;
 }
 static char * EnumToString(FSM in)
@@ -306,7 +336,8 @@ int main(int argc, const char* argv[])
 		}
 		else
 		{
-			printf("\nFatal lookup error! State: %s, Char: %c, Location: %d\n",EnumToString(FSM_MODE),*(inStr.nPos),inStr.nPos-inStr.oPos);
+																							//1 based for users who wouldn't expect something to be 0 based
+			printf("\nFatal lookup error! State: %s, Char: %c, Location: %d\n",EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos)+1);
 			break;
 		}
 	}
@@ -314,5 +345,6 @@ int main(int argc, const char* argv[])
 	outStr.PrintString();
 	printf("\n");
 	system("pause");
+
 	return 0;
 }
