@@ -1816,7 +1816,8 @@ static int	init_subdivisions(
 			else
 			{
 				double width = n->a_time - r->a_time;				
-				FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, f->data().GetParam(af_HeightObjs,0.0), (bounds[3]-bounds[1]) / fds);
+				float max_height = f->data().GetParam(af_HeightObjs,0.0);
+				FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, max_height, (bounds[3]-bounds[1]) / fds);
 				if(fac_rule == NULL)
 				{
 					DebugAssert(!"Fac fail!!?!?");
@@ -1830,7 +1831,19 @@ static int	init_subdivisions(
 					//printf("     %s (%.1f\n", FetchTokenString(fac_rule->facs[fn].fac_id_front), fac_rule->facs[fn].width);
 					BLOCK_face_data bf(usage_Polygonal_Feature,fac_rule->facs[fn].fac_id_front);
 					bf.major_axis = va;
-					bf.height = RandRange(fac_rule->facs[fn].height_min,fac_rule->facs[fn].height_max);
+					if(max_height > 0 && max_height < fac_rule->facs[fn].height_min)
+					{
+						printf("ERROR: block height: %f, zone %f..%f\n", max_height,fac_rule->height_min,fac_rule->height_max);
+						for(int k = 0; k < fac_rule->facs.size(); ++k)
+							printf("%d:  %f..%f  %s/%s\n", k, fac_rule->facs[k].height_min,fac_rule->facs[k].height_max,
+								FetchTokenString(fac_rule->facs[k].fac_id_front),
+								FetchTokenString(fac_rule->facs[k].fac_id_back));
+					}
+					Assert(max_height == 0.0f || max_height >= fac_rule->facs[fn].height_min);
+					if(max_height > 0.0)
+						bf.height = RandRange(fac_rule->facs[fn].height_min,fltmin2(fac_rule->facs[fn].height_max,max_height));
+					else
+						bf.height = RandRange(fac_rule->facs[fn].height_min,fac_rule->facs[fn].height_max);
 					bf.simplify_id = ctr++;
 					
 					double a_start = double_interp(0,r->a_time,fac_rule->width_real,n->a_time,accum);
