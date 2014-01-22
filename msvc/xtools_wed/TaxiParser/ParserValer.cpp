@@ -122,19 +122,7 @@ bool ParserValer::ValidateBasics(InString * inStr)
 			return true;
 		}
 		//Check if it is a non supported char (aka NOT A-Z,0-9,.,* etc
-		if(! ((*inStr->nPos >= 65 && *inStr->nPos <= 90) || //A-Z
-			(*inStr->nPos >= 48 && *inStr->nPos <= 57)  || //0-9
-			*inStr->nPos == '.'||
-			*inStr->nPos == '*'||
-			*inStr->nPos == '-'||
-			*inStr->nPos == '{'||
-			*inStr->nPos == '}'||
-			*inStr->nPos == '@'||
-			*inStr->nPos == ','||
-			*inStr->nPos == '^'||
-			*inStr->nPos == '/'||
-			*inStr->nPos == 'r')
-			)
+		if(!IsSupportedChar(*inStr->nPos))
 		{
 			printf("Char %c at location %d is not supported. \n", *inStr->nPos, inStr->count);
 			return true;
@@ -181,6 +169,72 @@ bool ParserValer::ValidateBasics(InString * inStr)
 	}
 	inStr->ResetNPos();
 	return error;
+}
+
+bool ParserValer::IsSupportedChar(char inChar,bool onlyLower)
+{
+	/*Check all the supported lower case
+	*		If onlyLower is true then exit now
+	* Otherwise check the special punctuation now
+	*/
+	bool isSupport = false;
+		if( inChar == 'a'||
+			inChar == 'c'||
+			inChar == 'd'||
+			inChar == 'e'||
+			inChar == 'f'||
+			inChar == 'h'||
+			inChar == 'i'||
+			inChar == 'l'||
+			inChar == 'm'||
+			inChar == 'n'||
+			inChar == 'o'||
+			inChar == 'r'||
+			inChar == 's'||
+			inChar == 't'||
+			inChar == 'u'||
+			inChar == 'y'||
+			inChar == 'z')
+	{
+		isSupport = true;
+		if(onlyLower) return isSupport;
+	}
+	if((inChar >= 65 && inChar <= 90) || //A-Z
+			(inChar >= 48 && inChar <= 57)  || //0-9
+			inChar == '.'||//These take care of specials and
+			inChar == '*'||//parts of multiletter glyphs
+			inChar == ','||
+			inChar == '-'||
+			inChar == '.'||
+			inChar == '_'||
+			inChar == '|'||
+			inChar == '/'||
+			inChar == '@'||
+			inChar == '^'||
+			inChar == 'a'||
+			inChar == 'c'||
+			inChar == 'd'||
+			inChar == 'e'||
+			inChar == 'f'||
+			inChar == 'h'||
+			inChar == 'i'||
+			inChar == 'l'||
+			inChar == 'm'||
+			inChar == 'n'||
+			inChar == 'o'||
+			inChar == 'r'||
+			inChar == 's'||
+			inChar == 't'||
+			inChar == 'u'||
+			inChar == 'y'||
+			inChar == 'z'||
+			inChar == '{'||
+			inChar == '}'
+			)
+	{
+		return true;
+	}
+	return isSupport;
 }
 char * ParserValer::EnumToString(FSM in)
 {
@@ -299,9 +353,18 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 			return I_INCUR;
 			break;
 		default:
-			str->AppendLetter(&curChar,1);
-			return O_ACCUM_GLYPHS;
-			break;
+			//Takes care of any supported lower case
+			//Outside of curly braces. Ex: {@Y}acdefhilmnorstuyz
+			if(!IsSupportedChar(curChar,true))
+			{
+				str->AppendLetter(&curChar,1);
+				return O_ACCUM_GLYPHS;
+			}
+			else
+			{
+				printf("Char %c is not allowed outside curly braces",curChar);
+				return LOOKUP_ERR;
+			}
 		}
 		break;
 	case O_END:	
@@ -312,4 +375,50 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 		break;
 	}
 	return LOOKUP_ERR;
+}
+
+int ParserValer::MainLoop(void)
+{
+	printf("Welcome to the Taxi Sign Parser. \nPlease input the string now \n");
+	
+	//Take input and create and input string from it
+	char buf[1024];
+	scanf("%[^\n]",buf);
+	InString inStr(buf);
+
+	//Make the front and back outStrings
+	OutString outStr;
+	//Validate if there is any whitesapce or non printable ASCII charecters (33-126)
+	if(ParserValer::ValidateBasics(&inStr) == true)
+	{
+		printf("\nString not basically valid \n");
+		system("pause");
+		return 0;
+	}
+	system("pause");
+	system("cls");
+	
+	FSM FSM_MODE = O_ACCUM_GLYPHS;
+	while(FSM_MODE != O_END)
+	{
+		//Look up the transition
+		FSM transition = ParserValer::LookUpTable(FSM_MODE,*(inStr.nPos), &outStr);
+		if(transition != LOOKUP_ERR)
+		{
+			FSM_MODE = transition;
+			inStr.nPos++;
+		}
+		else
+		{
+																							//1 based for users who wouldn't expect something to be 0 based
+			printf("\nFatal lookup error! State: %s, Char: %c, Location: %d\n",ParserValer::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos)+1);
+			break;
+		}
+	}
+	printf("\n");
+	outStr.PrintString();
+	printf("\n");
+	system("pause");
+
+	return 0;
 }

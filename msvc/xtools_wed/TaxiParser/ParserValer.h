@@ -88,16 +88,15 @@ struct OutString
 	int fCount;
 	int bCount;
 
-	//The temporary buffer to fill up
-	char curlyBuf[8];
+	//The temporary buffer to fill up, make 8 chars + \0
+	char curlyBuf[9];
 	int curBufCNT;
-
 	//Write to the front buffer
 	bool writeToF;
 
 	//The current color
 	char curColor;
-
+	
 	OutString::OutString()
 	{
 		fCount = 0;
@@ -136,7 +135,7 @@ struct OutString
 	//wipe the contents and reset the counter
 	void ClearBuf()
 	{
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 9; i++)
 		{
 			curlyBuf[i]='\0';
 		}
@@ -174,7 +173,8 @@ struct OutString
 	{
 		//Assume there is something wrong until otherwise noted
 		bool semError = true;
-		
+		int c = 0;
+		int d = 0;
 		//Based on the letter, preform a bunch of string compares
 		//if it is a perfect match for any of the real multiletter glyphs
 		switch(*(inLetters))
@@ -193,8 +193,10 @@ struct OutString
 			}
 			break;
 		case 'c':
-			if(strcmp("critical",inLetters) == 0||
-				strcmp("comma",inLetters) == 0)
+			c = strcmp("critical",inLetters);
+			d = strcmp("comma",inLetters);
+			//if( strcmp("critical",inLetters) == 0||
+			//	strcmp("comma",inLetters) == 0)
 			{
 				semError = false;
 			}
@@ -305,7 +307,10 @@ public:
 	~ParserValer(void);
 	static bool ValidateCurly(InString * inStr);
 	static bool ValidateBasics(InString * inStr);
+	//takes in the char and an optional boolean to say wheather to only do lowercase
+	static bool IsSupportedChar(char inChar,bool onlyLower=false);
 	static char * EnumToString(FSM in);
 	static FSM LookUpTable(FSM curState, char curChar, OutString * str);
+	static int MainLoop(void);
 };
 
