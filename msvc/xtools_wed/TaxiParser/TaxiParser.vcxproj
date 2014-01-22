@@ -73,9 +73,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ParserMain.h" />
+    <ClInclude Include="ParserValer.h" />
+    <ClInclude Include="UnitTester.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ParserMain.cpp" />
+    <ClCompile Include="ParserValer.cpp" />
+    <ClCompile Include="UnitTester.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

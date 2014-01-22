@@ -18,9 +18,21 @@
     <ClInclude Include="ParserMain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UnitTester.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParserValer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ParserMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParserValer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
