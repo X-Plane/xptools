@@ -49,7 +49,8 @@ struct InString
 		nPos = oPos;
 
 		//End of the string (\0)
-		endPos = strlen(inString) * sizeof(char) + oPos;
+		//endPos = strlen(inString) * sizeof(char) + oPos;
+		endPos = nPos;
 		count = 0;
 	}
 	InString::~InString()
@@ -97,7 +98,9 @@ struct OutString
 	//The current color
 	char curColor;
 	
-	OutString::OutString()
+	//Error codes in generating the outstring
+	int error;
+	OutString::OutString(char * front=NULL,char * back=NULL)
 	{
 		fCount = 0;
 		bCount = 0;
@@ -113,7 +116,9 @@ struct OutString
 	void SwitchFrontBack()
 	{
 		if(writeToF)
+		{
 			writeToF = false;
+		}
 	}
 
 	//True for all good, false for buffer overflow
@@ -127,7 +132,7 @@ struct OutString
 		}
 		else
 		{
-			printf("Longer than anyknown glyph!");//Semantic
+			printf("\nLonger than anyknown glyph!");//Semantic
 			return false;
 		}
 	}
@@ -238,11 +243,28 @@ struct OutString
 		}
 	}
 
+	//Returns true if it does, false if not
+	bool ContainsLower(char * inLetters, int count)
+	{
+		for (int i = 0; i < count; i++)
+		{
+			if(inLetters[i] >=97 && inLetters[i] <= 122)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 	//a letter to appened, front mode = 0, back mode = 1
 	void AppendLetter(char * inLetters, int count)
 	{
 		//Before actually appending them see if they're
 		//correct semantically
+
+		if(ContainsLower(inLetters,count) == true && count == 1)
+		{
+			printf("\n%c is not allowed here\n",*inLetters);
+		}
 
 		//Meaning we are in multiglyph mode
 		if(count > 1)
@@ -307,10 +329,12 @@ public:
 	~ParserValer(void);
 	static bool ValidateCurly(InString * inStr);
 	static bool ValidateBasics(InString * inStr);
+	static bool IsSupportedLowChar(char inChar);
 	//takes in the char and an optional boolean to say wheather to only do lowercase
-	static bool IsSupportedChar(char inChar,bool onlyLower=false);
+	static bool IsSupportedChar(char inChar);
 	static char * EnumToString(FSM in);
 	static FSM LookUpTable(FSM curState, char curChar, OutString * str);
-	static int MainLoop(void);
+	//The main loop plus and optional InString
+	static OutString MainLoop(InString * opInStr=NULL);
 };
 

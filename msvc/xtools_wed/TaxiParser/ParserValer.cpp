@@ -40,7 +40,7 @@ bool ParserValer::ValidateCurly(InString * inStr)
 		}
 		if(lNPos == inStr->endPos)
 		{
-			printf("You have no end to this pair starting from %d",(lOPos - inStr->oPos));
+			printf("\nYou have no end to this pair starting from %d",(lOPos - inStr->oPos));
 			return true;
 		}
 		lNPos++;
@@ -53,7 +53,7 @@ bool ParserValer::ValidateCurly(InString * inStr)
 	//--Next, find if it is actually empty---------
 	if(*(lNPos+1) == '}')
 	{
-		printf("Empty curly braces detected!\n");
+		printf("\nEmpty curly braces detected!\n");
 		return true;
 	}
 	//---------------------------------------------
@@ -80,7 +80,7 @@ bool ParserValer::ValidateCurly(InString * inStr)
 			}
 			else
 			{
-				printf("Char %c at location %d is invalid \n", *lNPos,(lOPos - inStr->oPos));
+				printf("\nChar %c at location %d is invalid \n", *lNPos,(lOPos - inStr->oPos));
 				return true;
 			}
 		}
@@ -101,7 +101,7 @@ bool ParserValer::ValidateBasics(InString * inStr)
 		//If the current charecter is white space
 		if(isspace(*inStr->nPos))
 		{
-			printf("Char %d is whitespace.\n", inStr->count);
+			printf("\nChar %d is whitespace.\n", inStr->count);
 			return true;
 		}
 		//Increase the pointer and counter
@@ -118,13 +118,13 @@ bool ParserValer::ValidateBasics(InString * inStr)
 	{	
 		if( ((int) *inStr->nPos < 33 ) || ((int) *inStr->nPos > 126))
 		{
-			printf("Char %c at location %d is not valid ASCII. \n", *inStr->nPos, inStr->count);
+			printf("\nChar %c at location %d is not valid ASCII. \n", *inStr->nPos, inStr->count);
 			return true;
 		}
 		//Check if it is a non supported char (aka NOT A-Z,0-9,.,* etc
 		if(!IsSupportedChar(*inStr->nPos))
 		{
-			printf("Char %c at location %d is not supported. \n", *inStr->nPos, inStr->count);
+			printf("\nChar %c at location %d is not supported. \n", *inStr->nPos, inStr->count);
 			return true;
 		}
 		inStr->nPos++;
@@ -145,14 +145,14 @@ bool ParserValer::ValidateBasics(InString * inStr)
 			error = false;
 			break;
 		default:
-			printf("Doesn't start with valid instruction\n");
+			printf("\nDoesn't start with valid instruction\n");
 			printf("%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
 			return true;
 		}
 	}
 	else
 	{
-		printf("Doesn't start with valid instruction\n");
+		printf("\nDoesn't start with valid instruction\n");
 		printf("%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
 		return true;
 	}
@@ -171,34 +171,8 @@ bool ParserValer::ValidateBasics(InString * inStr)
 	return error;
 }
 
-bool ParserValer::IsSupportedChar(char inChar,bool onlyLower)
+bool ParserValer::IsSupportedChar(char inChar)
 {
-	/*Check all the supported lower case
-	*		If onlyLower is true then exit now
-	* Otherwise check the special punctuation now
-	*/
-	bool isSupport = false;
-		if( inChar == 'a'||
-			inChar == 'c'||
-			inChar == 'd'||
-			inChar == 'e'||
-			inChar == 'f'||
-			inChar == 'h'||
-			inChar == 'i'||
-			inChar == 'l'||
-			inChar == 'm'||
-			inChar == 'n'||
-			inChar == 'o'||
-			inChar == 'r'||
-			inChar == 's'||
-			inChar == 't'||
-			inChar == 'u'||
-			inChar == 'y'||
-			inChar == 'z')
-	{
-		isSupport = true;
-		if(onlyLower) return isSupport;
-	}
 	if((inChar >= 65 && inChar <= 90) || //A-Z
 			(inChar >= 48 && inChar <= 57)  || //0-9
 			inChar == '.'||//These take care of specials and
@@ -234,7 +208,7 @@ bool ParserValer::IsSupportedChar(char inChar,bool onlyLower)
 	{
 		return true;
 	}
-	return isSupport;
+	return false;
 }
 char * ParserValer::EnumToString(FSM in)
 {
@@ -355,14 +329,14 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 		default:
 			//Takes care of any supported lower case
 			//Outside of curly braces. Ex: {@Y}acdefhilmnorstuyz
-			if(!IsSupportedChar(curChar,true))
+			if(!(curChar>=97 && curChar <= 122))
 			{
 				str->AppendLetter(&curChar,1);
 				return O_ACCUM_GLYPHS;
 			}
 			else
 			{
-				printf("Char %c is not allowed outside curly braces",curChar);
+				printf("\nChar %c is not allowed outside curly braces",curChar);
 				return LOOKUP_ERR;
 			}
 		}
@@ -377,23 +351,43 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 	return LOOKUP_ERR;
 }
 
-int ParserValer::MainLoop(void)
+OutString ParserValer::MainLoop(InString * opInStr)
 {
-	printf("Welcome to the Taxi Sign Parser. \nPlease input the string now \n");
-	
-	//Take input and create and input string from it
-	char buf[1024];
-	scanf("%[^\n]",buf);
+	printf("Welcome to the Taxi Sign Parser.\n");
+	#define BUFLEN 1024
+	char buf[BUFLEN];
 	InString inStr(buf);
-
+		
 	//Make the front and back outStrings
 	OutString outStr;
+
+	if(opInStr != NULL)
+	{
+		inStr = *opInStr;
+	}
+	else
+	{
+		printf("\nPlease input the string now \n");
+		//Take input and create and input string from it
+		scanf("%[^\n]",buf);
+	}
+	
+	//If it is equal to 
+	if(strlen(inStr.oPos) >= BUFLEN)
+	{
+		printf("\nBlank String entered!");
+		return outStr;
+	}
+
+	//Set the endPos to something valid
+	inStr.endPos = strlen(inStr.oPos) * sizeof(char) + inStr.oPos;
+
 	//Validate if there is any whitesapce or non printable ASCII charecters (33-126)
 	if(ParserValer::ValidateBasics(&inStr) == true)
 	{
 		printf("\nString not basically valid \n");
 		system("pause");
-		return 0;
+		return outStr;
 	}
 	system("pause");
 	system("cls");
@@ -417,8 +411,9 @@ int ParserValer::MainLoop(void)
 	}
 	printf("\n");
 	outStr.PrintString();
+	outStr.AppendLetter("\0",1);
 	printf("\n");
 	system("pause");
 
-	return 0;
+	return outStr;
 }
