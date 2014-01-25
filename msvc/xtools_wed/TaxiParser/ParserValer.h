@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <string>
 #include <conio.h>
+#define BUFLEN 256 //controls how long the out string (fRes,bRes) can be
+#define PAUSE 0 
+
 enum FSM
 {
 	//The inside curly braces portion, starts with I_
@@ -11,23 +14,11 @@ enum FSM
 	I_ACCUM_GLPHYS,//For collectings glpyhs
 	I_ANY_CONTROL,//When it hits a @
 	I_WAITING_SEPERATOR,//For when it is waiting for a , or }
-
 	//The outside curlybraces portion, starts with O_
 	O_ACCUM_GLYPHS,
 	O_END,//For when the string ends
 	LOOKUP_ERR//Return code for any errors in the lookup table
 	
-};
-
-//Enum for actions to take
-enum ACTIONS
-{
-	APPEND_ACCUMED,
-	PREP_CHANGE_COLOR,
-	CHANGE_COLOR,
-	TOGGLE_SIDE,
-	PRINT_MESSAGE,
-	THROW_ERROR
 };
 
 struct InString
@@ -38,8 +29,7 @@ struct InString
 	const char * nPos;
 	//The end of string, strlen*char+oPos;
 	const char * endPos;
-	//Place count
-	int count;
+
 	InString::InString(const char * inString)
 	{
 		//Original position
@@ -51,7 +41,6 @@ struct InString
 		//End of the string (\0)
 		//endPos = strlen(inString) * sizeof(char) + oPos;
 		endPos = nPos;
-		count = 0;
 	}
 	InString::~InString()
 	{
@@ -73,25 +62,19 @@ struct InString
 			nPos = oPos;//Otherwise put the nPos back to the
 			//original
 		}
-		count=0;
 	}
 };
 
 struct OutString
 {
 	//Front Sign results
-	char fRes[1024];
+	char fRes[BUFLEN];
 
 	//Back sign results
-	char bRes[1024];
-
-	//Place count (front/back)
-	int fCount;
-	int bCount;
+	char bRes[BUFLEN];
 
 	//The temporary buffer to fill up, make 8 chars + \0
 	char curlyBuf[9];
-	int curBufCNT;
 	//Write to the front buffer
 	bool writeToF;
 
@@ -102,8 +85,14 @@ struct OutString
 	int error;
 	OutString::OutString(char * front=NULL,char * back=NULL)
 	{
-		fCount = 0;
-		bCount = 0;
+		if(front != NULL)
+		{
+			strcpy(fRes,front);
+		}
+		if(back != NULL)
+		{
+			strcpy(bRes,back);
+		}
 		ClearBuf();
 		writeToF = true;
 		curColor = 'X';//An obviously fake choice
@@ -113,21 +102,13 @@ struct OutString
 	{
 
 	}
-	void SwitchFrontBack()
-	{
-		if(writeToF)
-		{
-			writeToF = false;
-		}
-	}
 
 	//True for all good, false for buffer overflow
 	bool AccumBuffer(char inLet)
 	{
-		if(curBufCNT < 8)
+		if(strlen(curlyBuf) < 8)
 		{
-			curlyBuf[curBufCNT] = inLet;
-			curBufCNT++;
+			curlyBuf[strlen(curlyBuf)] = inLet;
 			return true;
 		}
 		else
@@ -144,8 +125,6 @@ struct OutString
 		{
 			curlyBuf[i]='\0';
 		}
-			
-		curBufCNT = 0;
 	}
 
 	void SemCheckColor(char inLetter)
@@ -178,8 +157,7 @@ struct OutString
 	{
 		//Assume there is something wrong until otherwise noted
 		bool semError = true;
-		int c = 0;
-		int d = 0;
+
 		//Based on the letter, preform a bunch of string compares
 		//if it is a perfect match for any of the real multiletter glyphs
 		switch(*(inLetters))
@@ -198,10 +176,8 @@ struct OutString
 			}
 			break;
 		case 'c':
-			c = strcmp("critical",inLetters);
-			d = strcmp("comma",inLetters);
-			//if( strcmp("critical",inLetters) == 0||
-			//	strcmp("comma",inLetters) == 0)
+			if( strcmp("critical",inLetters) == 0||
+				strcmp("comma",inLetters) == 0)
 			{
 				semError = false;
 			}
@@ -261,11 +237,6 @@ struct OutString
 		//Before actually appending them see if they're
 		//correct semantically
 
-		if(ContainsLower(inLetters,count) == true && count == 1)
-		{
-			printf("\n%c is not allowed here\n",*inLetters);
-		}
-
 		//Meaning we are in multiglyph mode
 		if(count > 1)
 		{
@@ -279,35 +250,29 @@ struct OutString
 		*/
 		if(writeToF)
 		{
-			fRes[fCount] = '/';
-			fCount++;
-			fRes[fCount] = curColor;
-			fCount++;
+			fRes[strlen(fRes)] = '/';
+			fRes[strlen(fRes)] = curColor;
 			for (int i = 0; i < count; i++)
 			{
 				SemCheckColor(*(inLetters+i));
-				fRes[fCount] = *(inLetters+i);
-				fCount++;
+				fRes[strlen(fRes)] = *(inLetters+i);
 			}
 		}
 		else
 		{
-			bRes[bCount] = '/';
-			bCount++;
-			bRes[bCount] = curColor;
-			bCount++;
+			bRes[strlen(bRes)] = '/';
+			bRes[strlen(bRes)] = curColor;
 			for (int i = 0; i < count; i++)
 			{
 				SemCheckColor(*(inLetters+i));
-				bRes[bCount] = *(inLetters+i);
-				bCount++;
+				bRes[strlen(bRes)] = *(inLetters+i);
 			}
 		}
 	}
 
 	void PrintString()
 	{
-		for (int i = 0; i < fCount; i++)
+		for (int i = 0; i < strlen(fRes); i++)
 		{
 			printf("%c",fRes[i]);
 		}
@@ -315,7 +280,7 @@ struct OutString
 		if(writeToF == false)
 		{
 			printf("\n");
-			for (int i = 0; i < bCount; i++)
+			for (int i = 0; i < strlen(bRes); i++)
 			{
 				printf("%c",bRes[i]);
 			}
@@ -329,7 +294,6 @@ public:
 	~ParserValer(void);
 	static bool ValidateCurly(InString * inStr);
 	static bool ValidateBasics(InString * inStr);
-	static bool IsSupportedLowChar(char inChar);
 	//takes in the char and an optional boolean to say wheather to only do lowercase
 	static bool IsSupportedChar(char inChar);
 	static char * EnumToString(FSM in);

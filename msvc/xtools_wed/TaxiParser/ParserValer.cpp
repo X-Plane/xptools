@@ -9,6 +9,45 @@ ParserValer::ParserValer(void)
 ParserValer::~ParserValer(void)
 {
 }
+bool ParserValer::IsSupportedChar(char inChar)
+{
+	if((inChar >= 65 && inChar <= 90) || //A-Z
+			(inChar >= 48 && inChar <= 57)  || //0-9
+			inChar == '.'||//These take care of specials and
+			inChar == '*'||//parts of multiletter glyphs
+			inChar == ','||
+			inChar == '-'||
+			inChar == '.'||
+			inChar == '_'||
+			inChar == '|'||
+			inChar == '/'||
+			inChar == '@'||
+			inChar == '^'||
+			inChar == 'a'||
+			inChar == 'c'||
+			inChar == 'd'||
+			inChar == 'e'||
+			inChar == 'f'||
+			inChar == 'h'||
+			inChar == 'i'||
+			inChar == 'l'||
+			inChar == 'm'||
+			inChar == 'n'||
+			inChar == 'o'||
+			inChar == 'r'||
+			inChar == 's'||
+			inChar == 't'||
+			inChar == 'u'||
+			inChar == 'y'||
+			inChar == 'z'||
+			inChar == '{'||
+			inChar == '}'
+			)
+	{
+		return true;
+	}
+	return false;
+}
 //Takes in the place where a '{' is as the start
 //Returns true if there was an error
 bool ParserValer::ValidateCurly(InString * inStr)
@@ -101,12 +140,11 @@ bool ParserValer::ValidateBasics(InString * inStr)
 		//If the current charecter is white space
 		if(isspace(*inStr->nPos))
 		{
-			printf("\nChar %d is whitespace.\n", inStr->count);
+			printf("\nChar %d is whitespace.\n",(inStr->nPos-inStr->oPos));
 			return true;
 		}
 		//Increase the pointer and counter
 		inStr->nPos++;
-		inStr->count++;
 	}
 	//-------------------------------------------------------
 
@@ -118,17 +156,16 @@ bool ParserValer::ValidateBasics(InString * inStr)
 	{	
 		if( ((int) *inStr->nPos < 33 ) || ((int) *inStr->nPos > 126))
 		{
-			printf("\nChar %c at location %d is not valid ASCII. \n", *inStr->nPos, inStr->count);
+			printf("\nChar %c at location %d is not valid ASCII. \n", *inStr->nPos, (inStr->nPos-inStr->oPos));
 			return true;
 		}
 		//Check if it is a non supported char (aka NOT A-Z,0-9,.,* etc
 		if(!IsSupportedChar(*inStr->nPos))
 		{
-			printf("\nChar %c at location %d is not supported. \n", *inStr->nPos, inStr->count);
+			printf("\nChar %c at location %d is not supported. \n", *inStr->nPos, (inStr->nPos-inStr->oPos));
 			return true;
 		}
 		inStr->nPos++;
-		inStr->count++;
 	}
 	//-------------------------------------------------------
 	inStr->ResetNPos();
@@ -171,45 +208,7 @@ bool ParserValer::ValidateBasics(InString * inStr)
 	return error;
 }
 
-bool ParserValer::IsSupportedChar(char inChar)
-{
-	if((inChar >= 65 && inChar <= 90) || //A-Z
-			(inChar >= 48 && inChar <= 57)  || //0-9
-			inChar == '.'||//These take care of specials and
-			inChar == '*'||//parts of multiletter glyphs
-			inChar == ','||
-			inChar == '-'||
-			inChar == '.'||
-			inChar == '_'||
-			inChar == '|'||
-			inChar == '/'||
-			inChar == '@'||
-			inChar == '^'||
-			inChar == 'a'||
-			inChar == 'c'||
-			inChar == 'd'||
-			inChar == 'e'||
-			inChar == 'f'||
-			inChar == 'h'||
-			inChar == 'i'||
-			inChar == 'l'||
-			inChar == 'm'||
-			inChar == 'n'||
-			inChar == 'o'||
-			inChar == 'r'||
-			inChar == 's'||
-			inChar == 't'||
-			inChar == 'u'||
-			inChar == 'y'||
-			inChar == 'z'||
-			inChar == '{'||
-			inChar == '}'
-			)
-	{
-		return true;
-	}
-	return false;
-}
+
 char * ParserValer::EnumToString(FSM in)
 {
 	switch(in)
@@ -231,7 +230,9 @@ char * ParserValer::EnumToString(FSM in)
 	}
 	return "NOT REAL STATE";
 }
+
 //Take in the current (and soon to be past) state  and the current letter being processed
+//The heart of all this
 FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 {
 	printf("%c",curChar);
@@ -265,7 +266,6 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 		switch(curChar)
 		{
 		case '@':
-			//FireAction(
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
@@ -278,11 +278,11 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 		{
 		//Cases to make it stop accumulating
 		case '}':
-			str->AppendLetter(str->curlyBuf,str->curBufCNT);
+			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf));
 			str->ClearBuf();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			str->AppendLetter(str->curlyBuf,str->curBufCNT);
+			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf));
 			str->ClearBuf();
 			return I_COMMA;
 		default:
@@ -298,13 +298,12 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 		case 'L':
 		case 'R':
 		case 'B':
-			
 			//Do action, change color
 			str->curColor = curChar;
 			return I_WAITING_SEPERATOR;
 			
 		case '@':
-			str->SwitchFrontBack();
+			str->writeToF = false;
 			return I_WAITING_SEPERATOR;
 		}
 		break;
@@ -329,7 +328,8 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 		default:
 			//Takes care of any supported lower case
 			//Outside of curly braces. Ex: {@Y}acdefhilmnorstuyz
-			if(!(curChar>=97 && curChar <= 122))
+			
+			if(!(curChar>=97 && curChar <= 122) || IsSupportedChar(curChar) == true)
 			{
 				str->AppendLetter(&curChar,1);
 				return O_ACCUM_GLYPHS;
@@ -353,8 +353,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 
 OutString ParserValer::MainLoop(InString * opInStr)
 {
-	printf("Welcome to the Taxi Sign Parser.\n");
-	#define BUFLEN 1024
+	bool pause = true; //If true the program will pause, not recommended for unit testing
 	char buf[BUFLEN];
 	InString inStr(buf);
 		
@@ -367,7 +366,7 @@ OutString ParserValer::MainLoop(InString * opInStr)
 	}
 	else
 	{
-		printf("\nPlease input the string now \n");
+		printf("Please input the string now \n");
 		//Take input and create and input string from it
 		scanf("%[^\n]",buf);
 	}
@@ -376,7 +375,18 @@ OutString ParserValer::MainLoop(InString * opInStr)
 	if(strlen(inStr.oPos) >= BUFLEN)
 	{
 		printf("\nBlank String entered!");
+		if(pause == true)
+		{
+			system("pause");
+		}
 		return outStr;
+	}
+
+	//Wipe out the contents of outStr
+	for (int i = 0; i < BUFLEN; i++)
+	{
+		outStr.fRes[i]='\0';
+		outStr.bRes[i]='\0';
 	}
 
 	//Set the endPos to something valid
@@ -386,10 +396,16 @@ OutString ParserValer::MainLoop(InString * opInStr)
 	if(ParserValer::ValidateBasics(&inStr) == true)
 	{
 		printf("\nString not basically valid \n");
-		system("pause");
+		if(pause == true)
+		{
+			system("pause");
+		}
 		return outStr;
 	}
-	system("pause");
+	if(pause == true)
+	{
+		system("pause");
+	}
 	system("cls");
 	
 	FSM FSM_MODE = O_ACCUM_GLYPHS;
@@ -404,16 +420,16 @@ OutString ParserValer::MainLoop(InString * opInStr)
 		}
 		else
 		{
-																							//1 based for users who wouldn't expect something to be 0 based
-			printf("\nFatal lookup error! State: %s, Char: %c, Location: %d\n",ParserValer::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos)+1);
+			printf("\nFatal lookup error! State: %s, Char: %c, Location: %d\n",ParserValer::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos));
 			break;
 		}
 	}
 	printf("\n");
 	outStr.PrintString();
-	outStr.AppendLetter("\0",1);
 	printf("\n");
-	system("pause");
-
+	if(pause == true)
+	{
+		system("pause");
+	}
 	return outStr;
 }
