@@ -29,9 +29,6 @@
     <ClCompile Include="ParserMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UnitTester.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ParserValer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

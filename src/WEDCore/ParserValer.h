@@ -3,7 +3,6 @@
 #include <string>
 #include <conio.h>
 #define BUFLEN 256 //controls how long the out string (fRes,bRes) can be
-#define PAUSE 0 
 
 enum FSM
 {
@@ -102,7 +101,7 @@ struct OutString
 		}
 		else
 		{
-			printf("\nLonger than anyknown glyph!");//Semantic
+			printf("Longer than anyknown glyph!");//Semantic
 			return false;
 		}
 	}
@@ -128,14 +127,14 @@ struct OutString
 			if(!((inLetter >= 65 && inLetter <= 90) ||
 				(inLetter >= 48 && inLetter <= 57)))
 			{
-				printf("\n%c cannot belong to color type %c",inLetter,curColor);
+				printf("%c cannot belong to color type %c",inLetter,curColor);
 			}
 			break;
 		case 'B':
 			//B can only support 0-9 (ASCII letters 48 through 57)
 			if(!(inLetter >= 48 && inLetter <= 57))
 			{
-				printf("\n%c cannot belong to color type %c",inLetter,curColor);
+				printf("%c cannot belong to color type %c",inLetter,curColor);
 			}
 			break;
 		default:
@@ -206,7 +205,7 @@ struct OutString
 		}
 		if(semError == true)
 		{
-			printf("\n%s is not a real multiglyph!\n",inLetters);
+			printf("%s is not a real multiglyph!",inLetters);
 		}
 	}
 
@@ -258,7 +257,7 @@ struct OutString
 		//if there is a back side
 		if(writeToF == false)
 		{
-			printf("\n");
+			printf("");
 			for (int i = 0; i < strlen(bRes); i++)
 			{
 				printf("%c",bRes[i]);
@@ -271,13 +270,13 @@ class ParserValer
 public:
 	ParserValer(void);
 	~ParserValer(void);
-	static bool ValidateCurly(InString * inStr);
-	static bool ValidateBasics(InString * inStr);
+	static bool ValidateCurly(InString * inStr, char * msgBuf);
+	static bool ValidateBasics(InString * inStr, char * msgBuf);
 	//takes in the char and an optional boolean to say wheather to only do lowercase
 	static bool IsSupportedChar(char inChar);
 	static char * EnumToString(FSM in);
-	static FSM LookUpTable(FSM curState, char curChar, OutString * str);
+	static FSM LookUpTable(FSM curState, char curChar, OutString * str, char * msgBuf);
 	//The main loop plus and optional InString
-	static OutString MainLoop(InString * opInStr=NULL);
+	static OutString MainLoop(InString * opInStr, string * msg);
 };
 

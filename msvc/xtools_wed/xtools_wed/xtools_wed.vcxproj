@@ -85,6 +85,7 @@
     <ClCompile Include="..\..\..\src\Utils\XChunkyFileUtils.cpp" />
     <ClCompile Include="..\..\..\src\Utils\XUtils.cpp" />
     <ClCompile Include="..\..\..\src\Utils\zip.c" />
+    <ClCompile Include="..\..\..\src\WEDCore\ParserValer.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_Application.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_AppMain.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_Archive.cpp" />
@@ -329,6 +330,7 @@
     <ClInclude Include="..\..\..\src\Utils\XChunkyFileUtils.h" />
     <ClInclude Include="..\..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\..\src\Utils\zip.h" />
+    <ClInclude Include="..\..\..\src\WEDCore\ParserValer.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_Archive.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_Assert.h" />

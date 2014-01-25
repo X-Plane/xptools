@@ -28,9 +28,19 @@ int main(int argc, const char* argv[])
 	int counter = 0;
 
 	//To Add a test create the following
+	//testString,expectedResults,printToConsole?,printToFile?
 	//tests[counter] = Test(&InString("text"),&OutString("front","optional back"),true,true); counter++;
-	tests[counter] = Test(&InString("{@Y}CAT{@@}safety"),&OutString("/YC/YA/YT","/Ys/Ya/Yf/Ye/Yt/Yy"),true,true); counter++;
-	tests[counter] = Test(&InString("{@Y,q}CAT{@@}comma"),&OutString("/Yq/YCAT","/Ycomma"),true,true); counter++;
+	tests[counter] = Test(&InString("{@Y,comma}{critical}{hazard}{no-entry}{safety}"),&OutString("/Ycomma/Ycritical/Yhazard/Yno-entry/Ysafety"),false,true); counter++;
+	tests[counter] = Test(&InString("{@Y}{comma}{@@}{critical}{hazard}{no-entry}{safety}"),&OutString("/Ycomma","/Ycritical/Yhazard/Yno-entry/Ysafety"),false,true); counter++;
+	tests[counter] = Test(&InString("{@Y}comma{@@}{critical}{hazard}{no-entry}{safety}"),&OutString("/Ycomma","/Ycritical/Yhazard/Yno-entry/Ysafety"),false,true); counter++;
+	tests[counter] = Test(&InString("{@Y"),&OutString("",""),false,true); counter++;
+	tests[counter] = Test(&InString("{@Y,c,a,z"),&OutString("",""),false,true); counter++;
+	tests[counter] = Test(&InString("{@Y}CAT{@L,D,O,G}"),&OutString("",""),false,true); counter++;
+	tests[counter] = Test(&InString("{@Y}{@L}{@R}{@B}"),&OutString("",""),false,true); counter++;
+	tests[counter] = Test(&InString("{@Y}CAT{@@}BUG"),&OutString("/YC/YA/YT","/YB/YU/YG"),false,true); counter++;
+	//tests[counter] = Test(&InString("{@Y"),&OutString("",""),false,true); counter++;
+	//tests[counter] = Test(&InString("{@Y}CAT{@@}safety"),&OutString("/YC/YA/YT","/Ys/Ya/Yf/Ye/Yt/Yy"),true,true); counter++;
+	//tests[counter] = Test(&InString("{@Y,q}CAT{@@}comma"),&OutString("/Yq/YCAT","/Ycomma"),true,true); counter++;
 	
 	//For all the tests
 	for (int i = 0; i < counter; i++)
@@ -43,9 +53,9 @@ int main(int argc, const char* argv[])
 		//Create the file path
 		sprintf(temp,"C:\\Users\\Ted\\Desktop\\Logs\\%s%s%s","log_",number,".txt");
 		
-		tests[i].RunTest(&tests[i],temp);
+		UnitTester::RunTest(&tests[i],temp);
 	}
-
-	//UnitTester::RunTest(NULL);
+	
+	//tests[0].RunTest(NULL,"");
 	system("pause");
 }

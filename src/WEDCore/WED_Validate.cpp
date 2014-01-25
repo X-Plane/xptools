@@ -24,11 +24,12 @@
 #include "WED_Validate.h"
 
 #include "WED_Globals.h"
-
+#include "ParserValer.h"
 #include "WED_Runway.h"
 #include "WED_Sealane.h"
 #include "WED_Helipad.h"
 #include "WED_Airport.h"
+#include "WED_AirportSign.h"
 #include "WED_ToolUtils.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
@@ -105,6 +106,16 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
 	if(ee && ee->GetHidden())
 		return NULL;
+
+	if(who->GetClass() == WED_AirportSign::sClass)
+	{
+		WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
+		string signName;
+		airSign->GetName(signName);
+		InString in(signName.c_str());
+		ParserValer::MainLoop(&in,&msg);
+		//ParserValer
+	}
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR GENERAL APT.DAT BOGUSNESS

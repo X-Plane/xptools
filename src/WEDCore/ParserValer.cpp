@@ -50,7 +50,7 @@ bool ParserValer::IsSupportedChar(char inChar)
 }
 //Takes in the place where a '{' is as the start
 //Returns true if there was an error
-bool ParserValer::ValidateCurly(InString * inStr)
+bool ParserValer::ValidateCurly(InString * inStr, char * msgBuf)
 {
 	//Local oPos,nPos,and end
 	const char * lOPos = inStr->nPos;
@@ -79,7 +79,7 @@ bool ParserValer::ValidateCurly(InString * inStr)
 		}
 		if(lNPos == inStr->endPos)
 		{
-			printf("\nYou have no end to this pair starting from %d",(lOPos - inStr->oPos));
+			sprintf(msgBuf,"You have no end to this pair starting from %d",(lOPos - inStr->oPos));
 			return true;
 		}
 		lNPos++;
@@ -92,7 +92,7 @@ bool ParserValer::ValidateCurly(InString * inStr)
 	//--Next, find if it is actually empty---------
 	if(*(lNPos+1) == '}')
 	{
-		printf("\nEmpty curly braces detected!\n");
+		sprintf(msgBuf,"Empty curly braces detected!");
 		return true;
 	}
 	//---------------------------------------------
@@ -119,7 +119,7 @@ bool ParserValer::ValidateCurly(InString * inStr)
 			}
 			else
 			{
-				printf("\nChar %c at location %d is invalid \n", *lNPos,(lOPos - inStr->oPos));
+				sprintf(msgBuf,"Char %c at location %d is invalid ", *lNPos,(lOPos - inStr->oPos));
 				return true;
 			}
 		}
@@ -130,7 +130,7 @@ bool ParserValer::ValidateCurly(InString * inStr)
 }
 
 //Return if there was an error or not
-bool ParserValer::ValidateBasics(InString * inStr)
+bool ParserValer::ValidateBasics(InString * inStr, char * msgBuf)
 {
 	bool error = false;
 
@@ -140,7 +140,7 @@ bool ParserValer::ValidateBasics(InString * inStr)
 		//If the current charecter is white space
 		if(isspace(*inStr->nPos))
 		{
-			printf("\nChar %d is whitespace.\n",(inStr->nPos-inStr->oPos));
+			sprintf(msgBuf,"Char %d is whitespace.",(inStr->nPos-inStr->oPos));
 			return true;
 		}
 		//Increase the pointer and counter
@@ -156,13 +156,13 @@ bool ParserValer::ValidateBasics(InString * inStr)
 	{	
 		if( ((int) *inStr->nPos < 33 ) || ((int) *inStr->nPos > 126))
 		{
-			printf("\nChar %c at location %d is not valid ASCII. \n", *inStr->nPos, (inStr->nPos-inStr->oPos));
+			sprintf(msgBuf,"nChar %c at location %d is not valid ASCII. ", *inStr->nPos, (inStr->nPos-inStr->oPos));
 			return true;
 		}
 		//Check if it is a non supported char (aka NOT A-Z,0-9,.,* etc
 		if(!IsSupportedChar(*inStr->nPos))
 		{
-			printf("\nChar %c at location %d is not supported. \n", *inStr->nPos, (inStr->nPos-inStr->oPos));
+			sprintf(msgBuf,"Char %c at location %d is not supported. ", *inStr->nPos, (inStr->nPos-inStr->oPos));
 			return true;
 		}
 		inStr->nPos++;
@@ -182,15 +182,13 @@ bool ParserValer::ValidateBasics(InString * inStr)
 			error = false;
 			break;
 		default:
-			printf("\nDoesn't start with valid instruction\n");
-			printf("%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
+			sprintf(msgBuf,"%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
 			return true;
 		}
 	}
 	else
 	{
-		printf("\nDoesn't start with valid instruction\n");
-		printf("%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
+		sprintf(msgBuf,"%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
 		return true;
 	}
 
@@ -199,7 +197,7 @@ bool ParserValer::ValidateBasics(InString * inStr)
 	{
 		if(*inStr->nPos == '{')
 		{
-			error = ValidateCurly(inStr);
+			error = ValidateCurly(inStr,msgBuf);
 			if(error) return error;
 		}
 		inStr->nPos++;
@@ -233,7 +231,7 @@ char * ParserValer::EnumToString(FSM in)
 
 //Take in the current (and soon to be past) state  and the current letter being processed
 //The heart of all this
-FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
+FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char * msgBuf)
 {
 	printf("%c",curChar);
 
@@ -315,7 +313,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 		case '}':
 			return O_ACCUM_GLYPHS;
 		default:
-			printf("\nWas expecting , or }, got %c",curChar);//No way you should end up with something like @YX or {@@X
+			sprintf(msgBuf,"Was expecting , or }, got %c",curChar);//No way you should end up with something like @YX or {@@X
 			return LOOKUP_ERR;
 		}
 		break;
@@ -335,7 +333,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 			}
 			else
 			{
-				printf("\nChar %c is not allowed outside curly braces",curChar);
+				sprintf(msgBuf,"Char %c is not allowed outside curly braces",curChar);
 				return LOOKUP_ERR;
 			}
 		}
@@ -350,44 +348,21 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str)
 	return LOOKUP_ERR;
 }
 
-OutString ParserValer::MainLoop(InString * opInStr)
+OutString ParserValer::MainLoop(InString * opInStr, string * msg)
 {
-	bool pause = true; //If true the program will pause, not recommended for unit testing
-	char buf[BUFLEN];
-	InString inStr(buf);
-		
+	char msgBuf[256];
+	
+	InString inStr(*opInStr);
 	//Make the front and back outStrings
 	OutString outStr;
-
-	if(opInStr != NULL)
-	{
-		inStr = *opInStr;
-	}
-	else
-	{
-		printf("Please input the string now \n");
-		//Take input and create and input string from it
-		scanf("%[^\n]",buf);
-	}
-	
-	//If it is equal to 
-	if(strlen(inStr.oPos) >= BUFLEN)
-	{
-		printf("\nBlank String entered!");
-		if(pause == true)
-		{
-			system("pause");
-		}
-		return outStr;
-	}
 
 	//Set the endPos to something valid
 	inStr.endPos = strlen(inStr.oPos) * sizeof(char) + inStr.oPos;
 
 	//Validate if there is any whitesapce or non printable ASCII charecters (33-126)
-	if(ParserValer::ValidateBasics(&inStr) == true)
+	if(ParserValer::ValidateBasics(&inStr,msgBuf) == true)
 	{
-		printf("String doesn't follow basic rules!");
+		sprintf(msgBuf,"String doesn't follow basic rules!");
 		return outStr;
 	}
 	system("cls");
@@ -396,7 +371,7 @@ OutString ParserValer::MainLoop(InString * opInStr)
 	while(FSM_MODE != O_END)
 	{
 		//Look up the transition
-		FSM transition = ParserValer::LookUpTable(FSM_MODE,*(inStr.nPos), &outStr);
+		FSM transition = ParserValer::LookUpTable(FSM_MODE,*(inStr.nPos), &outStr,msgBuf);
 		if(transition != LOOKUP_ERR)
 		{
 			FSM_MODE = transition;
@@ -404,16 +379,10 @@ OutString ParserValer::MainLoop(InString * opInStr)
 		}
 		else
 		{
-			printf("\nFatal lookup error! State: %s, Char: %c, Location: %d\n",ParserValer::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos));
+			sprintf(msgBuf,"Fatal lookup error! State: %s, Char: %c, Location: %d",ParserValer::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos));
 			break;
 		}
 	}
-	printf("\n");
-	outStr.PrintString();
-	printf("\n");
-	if(pause == true)
-	{
-		system("pause");
-	}
+	*msg=string(msgBuf);
 	return outStr;
 }

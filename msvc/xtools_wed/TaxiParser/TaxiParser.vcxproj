@@ -79,7 +79,6 @@
   <ItemGroup>
     <ClCompile Include="ParserMain.cpp" />
     <ClCompile Include="ParserValer.cpp" />
-    <ClCompile Include="UnitTester.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
