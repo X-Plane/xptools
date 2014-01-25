@@ -233,12 +233,12 @@ char * ParserValer::EnumToString(FSM in)
 //The heart of all this
 FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char * msgBuf)
 {
+	#if DEV
 	printf("%c",curChar);
-
+	#endif
 	//If you have reached a \0 FOR ANY REASON exit now
 	if(curChar == '\0')
 	{
-		//FireAction(
 		return O_END;
 	}
  	switch(curState)
@@ -256,7 +256,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			str->AccumBuffer(curChar);
+			if(str->AccumBuffer(curChar,msgBuf);
 			return I_ACCUM_GLPHYS;
 		}
 		break;

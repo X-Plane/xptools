@@ -482,9 +482,6 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		}
 	}
 
-
-
-
 	//------------------------------------------------------------------------------------
 
 	if (!msg.empty())

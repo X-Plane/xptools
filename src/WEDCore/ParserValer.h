@@ -92,7 +92,7 @@ struct OutString
 	}
 
 	//True for all good, false for buffer overflow
-	bool AccumBuffer(char inLet)
+	bool AccumBuffer(char inLet,char * msgBuf)
 	{
 		if(strlen(curlyBuf) < 8)
 		{
@@ -101,7 +101,7 @@ struct OutString
 		}
 		else
 		{
-			printf("Longer than anyknown glyph!");//Semantic
+			msgBuf = "Longer than anyknown glyph!";//Semantic
 			return false;
 		}
 	}
@@ -116,7 +116,7 @@ struct OutString
 	}
 	
 	//Check the color
-	void SemCheckColor(char inLetter)
+	void SemCheckColor(char inLetter, char * msgBuf)
 	{
 		//Go in as far as it can go
 		switch(curColor)
@@ -127,14 +127,14 @@ struct OutString
 			if(!((inLetter >= 65 && inLetter <= 90) ||
 				(inLetter >= 48 && inLetter <= 57)))
 			{
-				printf("%c cannot belong to color type %c",inLetter,curColor);
+				sprintf(msgBuf,"%c cannot belong to color type %c",inLetter,curColor);
 			}
 			break;
 		case 'B':
 			//B can only support 0-9 (ASCII letters 48 through 57)
 			if(!(inLetter >= 48 && inLetter <= 57))
 			{
-				printf("%c cannot belong to color type %c",inLetter,curColor);
+				sprintf(msgBuf,"%c cannot belong to color type %c",inLetter,curColor);
 			}
 			break;
 		default:
@@ -143,7 +143,7 @@ struct OutString
 	}
 
 	//Check a multi glyph
-	void SemCheckMultiGlyph(char * inLetters)
+	void SemCheckMultiGlyph(char * inLetters, char * msgBuf)
 	{
 		//Assume there is something wrong until otherwise noted
 		bool semError = true;
@@ -205,12 +205,12 @@ struct OutString
 		}
 		if(semError == true)
 		{
-			printf("%s is not a real multiglyph!",inLetters);
+			sprintf(msgBuf,"%s is not a real multiglyph!",inLetters);
 		}
 	}
 
 	//a letter to appened, front mode = 0, back mode = 1
-	void AppendLetter(char * inLetters, int count)
+	void AppendLetter(char * inLetters, int count, char * msgBuf)
 	{
 		//Before actually appending them see if they're
 		//correct semantically
@@ -218,7 +218,7 @@ struct OutString
 		//Meaning we are in multiglyph mode
 		if(count > 1)
 		{
-			SemCheckMultiGlyph(inLetters);
+			SemCheckMultiGlyph(inLetters,msgBuf);
 		}
 		
 		//Check to see if the letter is supported by the 
@@ -232,7 +232,7 @@ struct OutString
 			fRes[strlen(fRes)] = curColor;
 			for (int i = 0; i < count; i++)
 			{
-				SemCheckColor(*(inLetters+i));
+				SemCheckColor(*(inLetters+i),msgBuf);
 				fRes[strlen(fRes)] = *(inLetters+i);
 			}
 		}
@@ -242,12 +242,13 @@ struct OutString
 			bRes[strlen(bRes)] = curColor;
 			for (int i = 0; i < count; i++)
 			{
-				SemCheckColor(*(inLetters+i));
+				SemCheckColor(*(inLetters+i),msgBuf);
 				bRes[strlen(bRes)] = *(inLetters+i);
 			}
 		}
 	}
 
+#if DEV
 	void PrintString()
 	{
 		for (int i = 0; i < strlen(fRes); i++)
@@ -264,6 +265,7 @@ struct OutString
 			}
 		}
 	}
+#endif
 };
 class ParserValer
 {
