@@ -363,6 +363,7 @@ OutString ParserValer::MainLoop(InString * opInStr, string * msg)
 	if(ParserValer::ValidateBasics(&inStr,msgBuf) == true)
 	{
 		sprintf(msgBuf,"String doesn't follow basic rules!");
+		*msg=string(msgBuf);
 		return outStr;
 	}
 	system("cls");
