@@ -256,7 +256,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			if(str->AccumBuffer(curChar,msgBuf);
+			if(str->AccumBuffer(curChar,msgBuf));
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -267,7 +267,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			str->AccumBuffer(curChar);
+			str->AccumBuffer(curChar,msgBuf);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -276,16 +276,16 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 		{
 		//Cases to make it stop accumulating
 		case '}':
-			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf));
+			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf),msgBuf);
 			str->ClearBuf();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf));
+			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf),msgBuf);
 			str->ClearBuf();
 			return I_COMMA;
 		default:
 			//otherwise accumulate the glyphs
-			str->AccumBuffer(curChar);
+			str->AccumBuffer(curChar,msgBuf);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -328,7 +328,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 			//Outside of curly braces. Ex: {@Y}acdefhilmnorstuyz
 			if(!(curChar>=97 && curChar <= 122))
 			{
-				str->AppendLetter(&curChar,1);
+				str->AppendLetter(&curChar,1,msgBuf);
 				return O_ACCUM_GLYPHS;
 			}
 			else
