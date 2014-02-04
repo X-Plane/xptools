@@ -1,7 +1,9 @@
 #pragma once
 #include <stdio.h>
 #include <string>
+#if IBM
 #include <conio.h>
+#endif
 #define BUFLEN 256 //controls how long the out string (fRes,bRes) can be
 
 enum FSM
@@ -29,7 +31,7 @@ struct InString
 	//The end of string, strlen*char+oPos;
 	const char * endPos;
 
-	InString::InString(const char * inString)
+	InString(const char * inString)
 	{
 		//Original position
 		oPos = inString;
@@ -41,7 +43,7 @@ struct InString
 		//endPos = strlen(inString) * sizeof(char) + oPos;
 		endPos = nPos;
 	}
-	InString::~InString()
+	~InString()
 	{
 
 	}
@@ -65,7 +67,7 @@ struct OutString
 	
 	//Error codes in generating the outstring
 	int error;
-	OutString::OutString(char * front=NULL,char * back=NULL)
+	OutString(char * front=NULL,char * back=NULL)
 	{
 		//Wipe out the contents of outStr
 		for (int i = 0; i < BUFLEN; i++)
@@ -86,7 +88,7 @@ struct OutString
 		curColor = 'X';//An obviously fake choice
 	}
 	
-	OutString::~OutString()
+	~OutString()
 	{
 
 	}
@@ -101,7 +103,7 @@ struct OutString
 		}
 		else
 		{
-			msgBuf = "Longer than anyknown glyph!";//Semantic
+			strcpy(msgBuf,"Longer than anyknown glyph!");//Semantic
 			return false;
 		}
 	}
@@ -276,7 +278,7 @@ public:
 	static bool ValidateBasics(InString * inStr, char * msgBuf);
 	//takes in the char and an optional boolean to say wheather to only do lowercase
 	static bool IsSupportedChar(char inChar);
-	static char * EnumToString(FSM in);
+	static const char * EnumToString(FSM in);
 	static FSM LookUpTable(FSM curState, char curChar, OutString * str, char * msgBuf);
 	//The main loop plus and optional InString
 	static OutString MainLoop(InString * opInStr, string * msg);

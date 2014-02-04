@@ -207,7 +207,7 @@ bool ParserValer::ValidateBasics(InString * inStr, char * msgBuf)
 }
 
 
-char * ParserValer::EnumToString(FSM in)
+const char * ParserValer::EnumToString(FSM in)
 {
 	switch(in)
 	{
@@ -350,7 +350,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 
 OutString ParserValer::MainLoop(InString * opInStr, string * msg)
 {
-	char msgBuf[256];
+	char msgBuf[256] = { 0 };
 	
 	InString inStr(*opInStr);
 	//Make the front and back outStrings
@@ -366,7 +366,7 @@ OutString ParserValer::MainLoop(InString * opInStr, string * msg)
 		*msg=string(msgBuf);
 		return outStr;
 	}
-	system("cls");
+//	system("cls");
 	
 	FSM FSM_MODE = O_ACCUM_GLYPHS;
 	while(FSM_MODE != O_END)

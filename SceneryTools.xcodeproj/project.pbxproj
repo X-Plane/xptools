@@ -821,6 +821,7 @@
 		D6F31E9A105DDE3900F8AAB5 /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
 		D6F3214D0F864156008E211B /* MeshTool_Create.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3214C0F864156008E211B /* MeshTool_Create.cpp */; };
 		D6F322050F865E90008E211B /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
+		D6F72EB018A1489700DB1193 /* ParserValer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F72EAF18A1489700DB1193 /* ParserValer.cpp */; };
 		D6F762E210891CC6003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E310891CCC003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E510891CD7003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
@@ -1990,6 +1991,7 @@
 		D6F262EF0C18904E00C26DC4 /* WED_ATCFrequency.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCFrequency.cpp; sourceTree = "<group>"; };
 		D6F3214B0F864156008E211B /* MeshTool_Create.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MeshTool_Create.h; sourceTree = "<group>"; };
 		D6F3214C0F864156008E211B /* MeshTool_Create.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshTool_Create.cpp; sourceTree = "<group>"; };
+		D6F72EAF18A1489700DB1193 /* ParserValer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParserValer.cpp; sourceTree = "<group>"; };
 		D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_OverlayImage.cpp; sourceTree = "<group>"; };
 		D6F8E4B60C3C861C007A2EA7 /* WED_OverlayImage.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_OverlayImage.h; sourceTree = "<group>"; };
 		D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TextureNode.cpp; sourceTree = "<group>"; };
@@ -3011,6 +3013,7 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6F72EAF18A1489700DB1193 /* ParserValer.cpp */,
 				D6424EFD115948CD0031370E /* WED_DataModel2.sql */,
 				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
 				D6956ED10F82E91100F6718E /* WED_Assert.h */,
@@ -4695,6 +4698,7 @@
 				D687D5C6170E16E7007300E2 /* DSF2Text.cpp in Sources */,
 				D6304C43171CE83500FC4F2F /* CompGeomUtils.cpp in Sources */,
 				D6917EBA172578270027AFBB /* WED_TaxiRouteNode.cpp in Sources */,
+				D6F72EB018A1489700DB1193 /* ParserValer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
