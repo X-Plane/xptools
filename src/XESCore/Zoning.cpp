@@ -914,9 +914,8 @@ static void ZoneOneFace(
 			if(major != -1)
 			{
 				// This shows the AG final major axis in green.
-//				Segment2 real_major = mbounds.side(major);
-//				debug_mesh_line(trans.Reverse(real_major.p1 + v_y),trans.Reverse(real_major.p2 + v_y),0,1,0,0,1,0);
-
+				Segment2 real_major = mbounds.side(major);
+//				debug_mesh_line(trans.Reverse(real_major.p1/* + v_y*/),trans.Reverse(real_major.p2/* + v_y*/),0,1,0,0,1,0);
 				
 				bounds[0] = bounds[2] = v_x.dot(Vector2(mbounds[0]));
 				bounds[1] = bounds[3] = v_y.dot(Vector2(mbounds[0]));	
@@ -929,8 +928,30 @@ static void ZoneOneFace(
 					bounds[2] = max(bounds[2],x);
 					bounds[3] = max(bounds[3],y);
 				}
-				short_axis_length = fabs(bounds[3] - bounds[1]);
-				long_axis_length = fabs(bounds[2] - bounds[0]);
+
+				double worst_l[4] = { 0 };
+
+				for(int n = 0; n < mbounds.size(); ++n)
+				{
+					double x = v_x.dot(Vector2(mbounds[n]));
+					double y = v_y.dot(Vector2(mbounds[n]));
+
+					double dif[4] = {
+						x-bounds[0],
+						bounds[2]-x,
+						y-bounds[1],
+						bounds[3]-y };
+					
+					for(int s = 0; s < 4; ++s)
+					{																									
+						DebugAssert(dif[s] >= 0.0f);
+						if(dif[s] < 2.0f)
+							worst_l[s] = max(worst_l[s],dif[s]);
+					}
+				}
+				
+				short_axis_length = fabs(bounds[3] - bounds[1]) - worst_l[0] - worst_l[2];
+				long_axis_length = fabs(bounds[2] - bounds[0]) - worst_l[1] - worst_l[3];
 
 			}
 
