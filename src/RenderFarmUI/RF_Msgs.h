@@ -77,6 +77,7 @@ enum {
 	viewCmd_ColorMapTerr,
 	viewCmd_ColorMapZone,
 	viewCmd_ColorMapSupr,
+	viewCmd_ColorMapAppr,
 
 	viewCmd_VecMap,
 	viewCmd_Airports,

@@ -36,6 +36,7 @@
 #include "XESConstants.h"
 #include "ObjTables.h"
 #include "GISUtils.h"
+#include "MathUtils.h"
 
 // Set this to 1 to not render faces...we can save a lot of memory this way for a huge XES that won't otherwise fit into RAM.
 #define NO_FACE_RENDER 0
@@ -49,6 +50,7 @@
 int g_color_face_with_terr = 1;
 int g_color_face_with_zone = 0;
 int g_color_face_with_supr = 0;
+int g_color_face_with_appr = 0;
 int g_color_face_use_supr_tint = 0;
 
 void	IndexPmwx(Pmwx& pmwx, PmwxIndex_t& index)
@@ -338,7 +340,18 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, GLubyte outColor[4])
 	if(our_prop == NO_VALUE && f->data().IsWater())
 		our_prop = terrain_Water;
 
-	if(our_prop != NO_VALUE)
+	if(g_color_face_with_appr && our_prop != terrain_Water)
+	{
+		outColor[0] = outColor[1] = outColor[2] = outColor[3] = 0;
+		if(f->data().mParams.count(af_HeightApproach))
+		{
+			float h = f->data().mParams.find(af_HeightApproach)->second;
+			outColor[0] = interp(500,255,1000,0,h);
+			outColor[1] = h > 500 ? interp(500,255,1000,0,h) : interp(500,255,0,0,h);
+			outColor[3] = 128;
+		}
+	}
+	else if(our_prop != NO_VALUE)
 	{
 		RGBColor_t& rgbc = gEnumColors[our_prop];
 
@@ -358,7 +371,6 @@ static	void	SetColorForFace(Pmwx::Face_const_handle f, GLubyte outColor[4])
 		default:outColor[0] =   0;	outColor[1] = 255;	outColor[2] = 255;		break;
 		}
 	}
-
 	if(g_color_face_use_supr_tint && variant >= 0)
 	{
 		outColor[3] -= (variant * 24);
