@@ -123,15 +123,14 @@ XWin::XWin(
 		InsetRect(&bounds, 20, 20);
 	}
 
-	OSStatus	err = CreateNewWindow(
-						(inAttributes & xwin_style_movable) ?			kDocumentWindowClass:
-						((inAttributes & xwin_style_resizable)  ?		kDocumentWindowClass :
-																		kPlainWindowClass),
-						(inAttributes & xwin_style_movable) ?			(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute) :
-						((inAttributes & xwin_style_resizable) ?		(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute | kWindowFullZoomAttribute | kWindowCollapseBoxAttribute | kWindowResizableAttribute | kWindowLiveResizeAttribute) :
-																		kWindowStandardHandlerAttribute),
-						&bounds,
-						&mWindow);
+	static WindowClass        windowClass[4] = { kPlainWindowClass, kDocumentWindowClass, kDocumentWindowClass, kMovableModalWindowClass };
+	static WindowAttributes   attributes[4] = { 
+									kWindowStandardHandlerAttribute, 
+									(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute),
+									(kWindowStandardHandlerAttribute | kWindowCloseBoxAttribute | kWindowFullZoomAttribute | kWindowCollapseBoxAttribute | kWindowResizableAttribute | kWindowLiveResizeAttribute),
+									kWindowStandardHandlerAttribute };
+
+	OSStatus	err = CreateNewWindow(windowClass[inAttributes & 3], attributes[inAttributes & 3], &bounds, &mWindow);
 	if (err != noErr) throw err;
 
 		EventTypeSpec	events[] = {

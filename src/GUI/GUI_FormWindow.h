@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2012, Laminar Research.
+ * Copyright (c) 2014, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,45 +21,35 @@
  *
  */
 
-#ifndef WED_AptImportDialog_H
-#define WED_AptImportDialog_H
-
-
-class	GUI_ScrollerPane;
-class	GUI_Table;
-class	GUI_Header;
-class	GUI_Packer;
-
-class	GUI_TextTable;
-class	GUI_TextTableHeader;
-
-class	WED_Document;
-class	IResolver;
-class	WED_Archive;
-class	WED_FilterBar;
-class	WED_MapPane;
+#ifndef GUI_FormWindow_H
+#define GUI_FormWindow_H
 
 #include "GUI_Window.h"
-#include "GUI_TextTable.h"
-#include "GUI_SimpleTableGeometry.h"
-#include "GUI_Broadcaster.h"
 #include "GUI_Listener.h"
 #include "GUI_Destroyable.h"
-#include "WED_AptTable.h"
+#include "GUI_Broadcaster.h"
 
-#include "AptDefs.h"
-
-class WED_AptImportDialog : public GUI_Window, public GUI_Listener, public GUI_Destroyable {
-		
+class GUI_FormWindow : public GUI_Window, public GUI_Listener, public GUI_Destroyable {
 public:
 
-						 WED_AptImportDialog(GUI_Commander * cmdr, AptVector& apts, const char * file_path, WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);
-	virtual				~WED_AptImportDialog();
-	
-	virtual	bool		Closed(void);
+						 GUI_FormWindow(
+								GUI_Commander *			cmdr,
+								const string&			title,
+								const string&			ok_label,
+								const string&			cancel_label,
+								void (*					submit_func)(GUI_FormWindow *, void *),
+								void *					submit_ref);
+	virtual				~GUI_FormWindow();
 
-			void		DoIt(void);
+			void		AddField(
+								int						id,
+								const string&			label,
+								const string&			default_text);
 
+			string		GetField(
+								int						id);
+
+	virtual	bool		Closed(void) { return true; }
 	virtual	void		ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t    			inMsg,
@@ -67,24 +57,12 @@ public:
 
 private:
 
-	WED_MapPane *			mMapPane;
+		int					mInsertBottom;
 
-	WED_FilterBar *			mFilter;
+		void (*				mSubmitFunc)(GUI_FormWindow *, void * ref);
+		void *				mSubmitRef;
 
-	GUI_ScrollerPane *		mScroller;
-	GUI_Table *				mTable;
-	GUI_Header *			mHeader;
-
-	GUI_TextTable			mTextTable;
-	GUI_TextTableHeader		mTextTableHeader;
-
-	AptVector				mApts;
-	
-	WED_AptTable			mAptTable;
-
-	WED_Document *	mResolver;
-	WED_Archive *	mArchive;
-	string			mPath;
 };
+
 
 #endif
