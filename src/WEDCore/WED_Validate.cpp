@@ -502,14 +502,14 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	return NULL;
 }
 
-bool	WED_ValidateApt(IResolver * resolver)
+bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 {
 	s_used_hel.clear();
 	s_used_rwy.clear();
 	s_flow_names.clear();
 	s_legal_rwy_oneway.clear();
 	s_icao.clear();
-	WED_Thing * wrl = WED_GetWorld(resolver);
+	if(wrl == NULL) wrl = WED_GetWorld(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	
 	WED_LibraryMgr * lib_mgr = 	SAFE_CAST(WED_LibraryMgr,resolver->Resolver_Find("libmgr"));

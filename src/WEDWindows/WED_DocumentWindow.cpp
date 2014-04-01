@@ -43,7 +43,8 @@
 #include "WED_Colors.h"
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
-#include "WED_DSFExport.h"
+#include "WED_SceneryPackExport.h"
+#include "WED_GatewayExport.h"
 #include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
@@ -483,7 +484,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ExportPack:	return WED_CanExportPack(mDocument);
-	case wed_ExportToRobin:	return 1;
+	case wed_ExportToRobin:	return WED_CanExportRobin(mDocument);
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_ImportOrtho:	return 1;

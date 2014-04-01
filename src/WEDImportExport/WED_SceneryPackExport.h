@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013, Laminar Research.
+ * Copyright (c) 2014, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,12 +21,21 @@
  *
  */
 
-#ifndef WED_Validate_h
-#define EWD_Validate_h
+#ifndef WED_SceneryPackExport_H
+#define WED_SceneryPackExport_H
 
-class	IResolver;
 class	WED_Thing;
+class	WED_Group;
+class	IResolver;
 
-bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
+void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children);
 
-#endif
+
+
+
+
+// Top level commands for WED.
+int		WED_CanExportPack(IResolver * resolver);
+void	WED_DoExportPack(IResolver * resolver);
+
+#endif /* WED_SceneryPackExport_H */

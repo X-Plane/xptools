@@ -836,6 +836,8 @@
 		D6FEC58B0BE0E231006A99CC /* WED_CreatePointTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC58A0BE0E231006A99CC /* WED_CreatePointTool.cpp */; };
 		D6FEC6EF0BE0F019006A99CC /* WED_CreateLineTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */; };
 		D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */; };
+		D6FEF21A18E9C4360035421F /* WED_GatewayExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEF21918E9C4360035421F /* WED_GatewayExport.cpp */; };
+		D6FEF21D18E9C4440035421F /* WED_SceneryPackExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FEF21C18E9C4440035421F /* WED_SceneryPackExport.cpp */; };
 		D6FF274E0B6E38D100960D5E /* WED_ObjPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF274D0B6E38D100960D5E /* WED_ObjPlacement.cpp */; };
 		D6FF28620B6E4A3600960D5E /* WED_PropertyHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF28610B6E4A3600960D5E /* WED_PropertyHelper.cpp */; };
 		D6FF2AFA0B6E908600960D5E /* WED_Thing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6FF2AF90B6E908600960D5E /* WED_Thing.cpp */; };
@@ -2014,6 +2016,10 @@
 		D6FEC6EE0BE0F019006A99CC /* WED_CreateLineTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_CreateLineTool.cpp; sourceTree = "<group>"; };
 		D6FEC7370BE0F280006A99CC /* WED_RunwayNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RunwayNode.h; sourceTree = "<group>"; };
 		D6FEC7380BE0F280006A99CC /* WED_RunwayNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RunwayNode.cpp; sourceTree = "<group>"; };
+		D6FEF21818E9C4360035421F /* WED_GatewayExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GatewayExport.h; sourceTree = "<group>"; };
+		D6FEF21918E9C4360035421F /* WED_GatewayExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GatewayExport.cpp; sourceTree = "<group>"; };
+		D6FEF21B18E9C4440035421F /* WED_SceneryPackExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_SceneryPackExport.h; sourceTree = "<group>"; };
+		D6FEF21C18E9C4440035421F /* WED_SceneryPackExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_SceneryPackExport.cpp; sourceTree = "<group>"; };
 		D6FF274C0B6E38D100960D5E /* WED_ObjPlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ObjPlacement.h; sourceTree = "<group>"; };
 		D6FF274D0B6E38D100960D5E /* WED_ObjPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ObjPlacement.cpp; sourceTree = "<group>"; };
 		D6FF28570B6E434C00960D5E /* IPropertyObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPropertyObject.h; sourceTree = "<group>"; };
@@ -2231,6 +2237,10 @@
 				D6FD4D790F1EC297005D8C93 /* WED_DSFImport.cpp */,
 				D60800A915461164001BE1A9 /* WED_AptImportDialog.h */,
 				D60800AA15461164001BE1A9 /* WED_AptImportDialog.cpp */,
+				D6FEF21818E9C4360035421F /* WED_GatewayExport.h */,
+				D6FEF21918E9C4360035421F /* WED_GatewayExport.cpp */,
+				D6FEF21B18E9C4440035421F /* WED_SceneryPackExport.h */,
+				D6FEF21C18E9C4440035421F /* WED_SceneryPackExport.cpp */,
 			);
 			path = WEDImportExport;
 			sourceTree = "<group>";
@@ -4695,6 +4705,8 @@
 				D687D5C6170E16E7007300E2 /* DSF2Text.cpp in Sources */,
 				D6304C43171CE83500FC4F2F /* CompGeomUtils.cpp in Sources */,
 				D6917EBA172578270027AFBB /* WED_TaxiRouteNode.cpp in Sources */,
+				D6FEF21A18E9C4360035421F /* WED_GatewayExport.cpp in Sources */,
+				D6FEF21D18E9C4440035421F /* WED_SceneryPackExport.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

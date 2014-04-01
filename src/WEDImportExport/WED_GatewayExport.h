@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2013, Laminar Research.
+ * Copyright (c) 2014, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef WED_Validate_h
-#define EWD_Validate_h
+#ifndef WED_GatewayExport_H
+#define WED_GatewayExport_H
 
 class	IResolver;
-class	WED_Thing;
 
-bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
+int		WED_CanExportRobin(IResolver * resolver);
+void	WED_DoExportRobin(IResolver * resolver);
 
 #endif
