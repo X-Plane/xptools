@@ -43,8 +43,22 @@
 #include "WED_ObjPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
+#include <curl/curl.h>
+#include <json/json.h>
+#include "curl_http.h"
+
+
+
 /*
-	todo: field types for password, no edit, multi-line
+	todo:	field types for password, no edit, multi-line comments
+			make the form nicer
+			error checking on upload
+			progress and cancel on upload
+			port to windows
+			port to linux
+			rename "robin" in all cases to gateway
+			
+			download from gateway?
  */
 
 static int gateway_bounds_default[4] = { 0, 0, 500, 500 };
@@ -53,7 +67,8 @@ enum {
 	gw_icao = 1,
 	gw_username,
 	gw_password,
-	gw_comments
+	gw_comments,
+	gw_parent_id
 };
 
 static bool is_of_class(WED_Thing * who, const char ** classes)
@@ -167,11 +182,20 @@ void	WED_DoExportRobin(IResolver * resolver)
 	apt->GetICAO(icao);
 	apt->GetName(name);	
 
+	char par_id[32];
+	sprintf(par_id,"%d", apt->GetSceneryID());
+	
+
 	GUI_FormWindow * frm = new GUI_FormWindow(gApplication, "Gateway", "Upload","Cancel", DoGatewaySubmit, resolver);
 	frm->AddField(gw_icao,icao,name);
 	frm->AddField(gw_username,"User Name","ben");
 	frm->AddField(gw_password,"Password","wedGuru");
 	frm->AddField(gw_comments,"Comments","This is an airport.");
+	if(apt->GetSceneryID() >= 0)
+		frm->AddField(gw_parent_id, "Scenery ID",par_id);
+	else
+		frm->AddField(gw_parent_id, "Scenery ID","");
+	
 	frm->Show();
 }
 
@@ -193,6 +217,7 @@ static void DoGatewaySubmit(GUI_FormWindow * form, void * ref)
 	string comment = form->GetField(gw_comments);
 	string uname = form->GetField(gw_username);
 	string pwd = form->GetField(gw_password);	
+	string parid = form->GetField(gw_parent_id);
 	
 	string icao;
 	apt->GetICAO(icao);
@@ -276,18 +301,72 @@ static void DoGatewaySubmit(GUI_FormWindow * form, void * ref)
 	string uu64;
 	file_to_uu64(targ_folder_zip, uu64);
 	
-	FILE * json = fopen("/Users/bsupnik/Desktop/json.txt","w");
+	Json::Value		scenery;
 	
-	fprintf(json,"{\"scenery\":\n");
-	fprintf(json,"{\"userId\":\"%s\"\n", uname.c_str());
-	fprintf(json,",\"password\":\"%s\"\n", pwd.c_str());
-	fprintf(json,",\"icao\":\"%s\"\n", icao.c_str());
-	fprintf(json,",\"type\":\"%s\"\n", tag_3d ? "3D" : "2D");
-	fprintf(json,",\"artistComments\":\"%s\"\n", comment.c_str());
-	fprintf(json,",\"features\":\"%s\"\n", tag_atc ? "2" : "");
-	fprintf(json,",\"masterZipBlob\":\"%s\"\n}\n}\n", uu64.c_str());
+	Json::Value features;
+	if(tag_atc)
+		features[0] = 1;
 	
-	fclose(json);
+	scenery["userId"] = uname;
+	scenery["password"] = pwd;
+	if(parid.empty())
+		scenery["parentId"] = Json::Value();
+	else
+		scenery["parentId"] = parid;
+	scenery["icao"] = icao;
+	scenery["type"] = tag_3d ? "3D" : "2D";
+	scenery["artistComments"] = comment;
+	scenery["features"] = features;
+	scenery["masterZipBlob"] = uu64;
+		
+	Json::Value req;
+	req["scenery"] = scenery;
+	
+	string reqstr=req.toStyledString();
+	vector<char>	response;
+
+	curl_http_get_file * auth_req = new curl_http_get_file
+		("http://XXXXXXXXXXXXXXXX/scenery",NULL,&reqstr,&response);
+	
+	while(!auth_req->is_done())
+	{
+		sleep(1);
+	}
+	
+	if(auth_req->is_ok())
+	{
+		char * start = &response[0];
+		char * end = start + response.size();
+
+		Json::Reader reader;	
+		Json::Value response;
+	
+		if(reader.parse(start, end, response))
+		{
+			if(response.isMember("sceneryId"))
+			{		
+				int new_id = response["sceneryId"].asInt();
+				printf("SUCCSS: NEW ID: %d\n",new_id);
+				apt->StartOperation("Successful submition to gateway.");
+				apt->SetSceneryID(new_id);
+				apt->CommitOperation();
+			}
+		}
+		
+	}
+	else
+	{
+		printf("FAILED WITH ERROR: %d\n", auth_req->get_error());
+	}
+	
+	delete auth_req;
+	
+	
+	
+	
+//	FILE * json = fopen("/Users/bsupnik/Desktop/json.txt","w");
+//	fprintf(json,"%s",reqstr.c_str());	
+//	fclose(json);
 	
 
 	if(!problem_children.empty())
