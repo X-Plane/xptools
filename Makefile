@@ -52,6 +52,9 @@ VER_LIBGMP	:= 4.3.1
 # http://www.mpfr.org/
 # http://www.mpfr.org/mpfr-current/#download
 VER_LIBMPFR	:= 2.4.2
+# http://curl.haxx.se/
+# http://curl.haxx.se/download.html
+VER_LIBCURL := 7.36.0
 
 
 
@@ -301,6 +304,16 @@ LDFLAGS_LIBSHP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBSHP		:= AR="$(CROSSPREFIX)ar" CC="$(CROSSPREFIX)gcc"
 CONF_LIBSHP		+= cross=$(M32_SWITCH)
 
+# libcurl
+ARCHIVE_LIBCURL		:= curl-$(VER_LIBCURL).tar.gz
+CFLAGS_LIBCURL		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
+LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+CONF_LIBCURL		:= --prefix=$(DEFAULT_PREFIX)
+CONF_LIBCURL		+= --enable-shared=no
+CONF_LIBCURL		+= --without-ssl --without-libidn --disable-ldap --disable-dependency-tracking
+
+
+
 
 # platform specific tweaks
 ifeq ($(PLATFORM), Darwin)
@@ -316,12 +329,12 @@ endif
 # targets
 .PHONY: all clean boost mesa_headers zlib libpng libfreetype libjpeg \
 libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
-libexpat libgmp libmpfr
+libexpat libgmp libmpfr libcurl
 
 all: ./local$(MULTI_SUFFIX)/.xpt_libs
 ./local$(MULTI_SUFFIX)/.xpt_libs: boost mesa_headers zlib libpng \
 libfreetype libjpeg libtiff libproj libgeotiff libsqlite lib3ds libcgal \
-libsquish libdime libshp libexpat libgmp libmpfr
+libsquish libdime libshp libexpat libgmp libmpfr libcurl
 	@touch ./local$(MULTI_SUFFIX)/.xpt_libs
 
 clean:
@@ -694,4 +707,17 @@ libshp: ./local$(MULTI_SUFFIX)/lib/.xpt_libshp
 	@cp -Lp shapelib-$(VER_LIBSHP)/*.h ./local$(MULTI_SUFFIX)/include
 	@cp shapelib-$(VER_LIBSHP)/.libs/libshp.a ./local$(MULTI_SUFFIX)/lib
 	@-rm -rf shapelib-$(VER_LIBSHP)
+	@touch $@
+
+libcurl: ./local$(MULTI_SUFFIX)/lib/.xpt_libcurl
+./local$(MULTI_SUFFIX)/lib/.xpt_libcurl:
+	@echo "building libcurl..."
+	@tar -xzf "./archives/$(ARCHIVE_LIBCURL)"
+	@cd "curl-$(VER_LIBCURL)" && \
+	chmod +x configure && \
+	CFLAGS=$(CFLAGS_LIBCURL) LDFLAGS=$(LDFLAGS_LIBCURL) \
+	./configure $(CONF_LIBCURL) $(BE_QUIET)
+	@$(MAKE) -C "curl-$(VER_LIBCURL)" $(BE_QUIET)
+	@$(MAKE) -C "curl-$(VER_LIBCURL)" install $(BE_QUIET)
+	@-rm -rf curl-$(VER_LIBCURL)
 	@touch $@
