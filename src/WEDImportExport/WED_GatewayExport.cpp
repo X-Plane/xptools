@@ -278,7 +278,7 @@ static void DoGatewaySubmit(GUI_FormWindow * form, void * ref)
 	
 	FILE * json = fopen("/Users/bsupnik/Desktop/json.txt","w");
 	
-	fprintf(json,"{\"Scenery\":\n");
+	fprintf(json,"{\"scenery\":\n");
 	fprintf(json,"{\"userId\":\"%s\"\n", uname.c_str());
 	fprintf(json,",\"password\":\"%s\"\n", pwd.c_str());
 	fprintf(json,",\"icao\":\"%s\"\n", icao.c_str());
