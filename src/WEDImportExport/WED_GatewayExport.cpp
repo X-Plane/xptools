@@ -48,6 +48,7 @@
 #include "WED_ObjPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
+#include <errno.h>
 
 #include <curl/curl.h>
 #include <json/json.h>
