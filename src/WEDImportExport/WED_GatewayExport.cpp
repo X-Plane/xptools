@@ -22,10 +22,16 @@
  */
 
 #include "WED_GatewayExport.h"
+
+// MSVC insanity: XWin must come in before ANY part of the IOperation interface or Ben's stupid #define to get file/line numbers on ops hoses the MS headers!
+#include "GUI_FormWindow.h"
+
+#include "PlatformUtils.h"
+#include "FileUtils.h"
+#include "curl_http.h"
+
 #include "WED_DSFExport.h"
 #include "WED_Globals.h"
-#include "FileUtils.h"
-#include "PlatformUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
@@ -36,18 +42,18 @@
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "GUI_Application.h"
-#include "GUI_FormWindow.h"
 #include "WED_Messages.h"
 #include "WED_ATCFlow.h"
 #include "WED_TaxiRoute.h"
 #include "WED_ObjPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
+
 #include <curl/curl.h>
 #include <json/json.h>
-#include "curl_http.h"
-
-
+#if IBM
+#include <io.h>
+#endif
 
 /*
 	todo:	field types for password, no edit, multi-line comments
@@ -236,14 +242,18 @@ static void DoGatewaySubmit(GUI_FormWindow * form, void * ref)
 	string temp_folder("tempXXXXXX");
 	lib->LookupPath(temp_folder);
 	vector<char> temp_chars(temp_folder.begin(),temp_folder.end());
+	temp_chars.push_back(0);
 
 	if(!mktemp(&temp_chars[0]))
 	{
 		gExportTarget = old_target;
 		return;
 	}
+	temp_chars.pop_back();
 	string targ_folder(temp_chars.begin(),temp_chars.end());
 	targ_folder += DIR_STR;
+
+	printf("Dest: %s\n", targ_folder.c_str());
 
 	string targ_folder_zip = icao + "_gateway_upload.zip";
 	lib->LookupPath(targ_folder_zip);
@@ -266,7 +276,7 @@ static void DoGatewaySubmit(GUI_FormWindow * form, void * ref)
 	string apt_path = targ_folder + icao + ".dat";
 	WED_AptExport(apt, apt_path.c_str());
 
-	string preview_folder = targ_folder + icao + "_Scenery_Pack/";
+	string preview_folder = targ_folder + icao + "_Scenery_Pack" + DIR_STR;
 	string preview_zip = targ_folder + icao + "_Scenery_Pack.zip";
 
 	gExportTarget = wet_xplane_1021;
@@ -326,11 +336,13 @@ static void DoGatewaySubmit(GUI_FormWindow * form, void * ref)
 	vector<char>	response;
 
 	curl_http_get_file * auth_req = new curl_http_get_file
-		("http://XXXXXXXXXXXXXXXX/scenery",NULL,&reqstr,&response);
+		("http://XXXXXXXXXXXXXX/scenery",NULL,&reqstr,&response);
 	
 	while(!auth_req->is_done())
 	{
+	#if !IBM
 		sleep(1);
+	#endif
 	}
 	
 	if(auth_req->is_ok())

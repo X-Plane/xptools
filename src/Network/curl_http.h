@@ -6,6 +6,10 @@
 #ifndef curl_http_H
 #define curl_http_H
 
+#if !IBM
+#include <pthread.h>
+#endif
+
 /*
  * curl_http_get_file
  *
@@ -60,12 +64,21 @@ private:
 		volatile	int			m_halt;
 		volatile	int			m_errcode;
 		
+		#if IBM
+		HANDLE					m_thread;
+		#else
 		pthread_t				m_thread;
+		#endif
 		
 		static	size_t		write_cb(void *contents, size_t size, size_t nmemb, void *userp);
 		static	size_t		read_cb(void *contents, size_t size, size_t nmemb, void *userp);
 		static	int			progress_cb(void* ptr, double TotalToDownload, double NowDownloaded, double TotalToUpload, double NowUploaded);
+
+		#if IBM
+		static	DWORD WINAPI	thread_proc(void * param);
+		#else
 		static	void *		thread_proc(void * param);
+		#endif
 	
 		vector<char>			m_dl_buffer;
 		vector<char>*			m_dest_buffer;

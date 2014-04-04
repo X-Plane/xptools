@@ -10,7 +10,9 @@
 #include "curl_http.h"
 #include "curl/curl.h"
 #include "AssertUtils.h"
+#if !IBM
 #include <pthread.h>
+#endif
 #include <errno.h>
 
 int atomic_load(volatile int * a) { return *a; }
@@ -46,7 +48,11 @@ curl_http_get_file::curl_http_get_file(
 	DebugAssert(inURL.size() > 7);
 	DebugAssert(strncmp(inURL.c_str(),"http://",7) == 0);
 	
+	#if IBM
+	m_thread = CreateThread(NULL,0,thread_proc,this,0,NULL);
+	#else
 	pthread_create(&m_thread, NULL, thread_proc, this);
+	#endif
 
 }
 				
@@ -68,15 +74,25 @@ curl_http_get_file::curl_http_get_file(
 	DebugAssert(inURL.size() > 7);
 	DebugAssert(strncmp(inURL.c_str(),"http://",7) == 0);
 	 
+	#if IBM
+	m_thread = CreateThread(NULL,0,thread_proc,this,0,NULL);
+	#else
 	pthread_create(&m_thread, NULL, thread_proc, this);
+	#endif
 }
 
 				
 curl_http_get_file::~curl_http_get_file()
 {
 	atomic_store(&m_halt,1);
+
+	#if IBM
+	WaitForSingleObject(m_thread,INFINITE);
+	CloseHandle(m_thread);
+	#else
 	void * ret;
 	pthread_join(m_thread, &ret);
+	#endif
 }
 	
 float		curl_http_get_file::get_progress(void)
@@ -171,7 +187,12 @@ int			curl_http_get_file::progress_cb(void* ptr, double TotalToDownload, double 
 	return 0;
 }
 
-void *		curl_http_get_file::thread_proc(void * param)
+#if IBM
+DWORD WINAPI
+#else
+void *
+#endif
+curl_http_get_file::thread_proc(void * param)
 {
 	curl_http_get_file * me = (curl_http_get_file *) param;
 

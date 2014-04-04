@@ -315,6 +315,12 @@ int FILE_get_directory(
 
 	do {
 
+		if(strcmp(findData.cFileName,".") == 0 ||
+			strcmp(findData.cFileName,"..") == 0)
+		{
+			continue;
+		}
+
 		if(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			if(out_dirs)
