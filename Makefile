@@ -310,9 +310,8 @@ CFLAGS_LIBCURL		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
 LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBCURL		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBCURL		+= --enable-shared=no
-CONF_LIBCURL		+= --without-ssl --without-libidn --disable-ldap --disable-dependency-tracking
-
-
+CONF_LIBCURL		+= --without-ssl --without-libidn --disable-ldap 
+CONF_LIBCURL		+= --disable-dependency-tracking
 
 
 # platform specific tweaks
@@ -713,6 +712,9 @@ libcurl: ./local$(MULTI_SUFFIX)/lib/.xpt_libcurl
 ./local$(MULTI_SUFFIX)/lib/.xpt_libcurl:
 	@echo "building libcurl..."
 	@tar -xzf "./archives/$(ARCHIVE_LIBCURL)"
+ifdef PLAT_MINGW
+	@cd "curl-$(VER_LIBCURL)" && rm src/tool_hugehelp.c
+endif
 	@cd "curl-$(VER_LIBCURL)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBCURL) LDFLAGS=$(LDFLAGS_LIBCURL) \
