@@ -55,8 +55,9 @@ VER_LIBMPFR	:= 2.4.2
 # http://curl.haxx.se/
 # http://curl.haxx.se/download.html
 VER_LIBCURL := 7.36.0
-
-
+# http://http://www.openssl.org/
+# https://www.openssl.org/source/
+VER_LIBSSL := 1.0.1g
 
 ARCHITECTURE	:= $(shell uname -m)
 PLATFORM	:= $(shell uname)
@@ -101,7 +102,7 @@ DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN := Yes
 	# Ben removed ppc and x86_64 to fix libgmp compilation
-	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.5.sdk -mmacosx-version-min=10.5 -arch i386
+	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6 -arch i386
 	VIS	:= -fvisibility=hidden
 endif
 ifeq ($(PLATFORM), Linux)
@@ -304,13 +305,26 @@ LDFLAGS_LIBSHP		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBSHP		:= AR="$(CROSSPREFIX)ar" CC="$(CROSSPREFIX)gcc"
 CONF_LIBSHP		+= cross=$(M32_SWITCH)
 
+# libssl
+ARCHIVE_LIBSSL		:= openssl-$(VER_LIBSSL).tar.gz
+CONF_LIBSSL			:= --openssldir=$(DEFAULT_PREFIX)
+ifdef PLAT_DARWIN
+CONF_LIBSSL			+= darwin-i386-cc
+endif
+ifdef PLAT_MINGW
+CONF_LIBSSL			+= mingw
+endif
+ifdef PLAT_LINUX
+CONF_LIBSSL			+= linux-x86_64 
+endif
+
 # libcurl
 ARCHIVE_LIBCURL		:= curl-$(VER_LIBCURL).tar.gz
 CFLAGS_LIBCURL		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
-LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH) -Wl,-search_paths_first"
 CONF_LIBCURL		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBCURL		+= --enable-shared=no
-CONF_LIBCURL		+= --without-ssl --without-libidn --disable-ldap 
+CONF_LIBCURL		+= --with-ssl=$(DEFAULT_PREFIX) --without-libidn --disable-ldap 
 CONF_LIBCURL		+= --disable-dependency-tracking
 
 
@@ -328,12 +342,12 @@ endif
 # targets
 .PHONY: all clean boost mesa_headers zlib libpng libfreetype libjpeg \
 libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
-libexpat libgmp libmpfr libcurl
+libexpat libgmp libmpfr libssl libcurl
 
 all: ./local$(MULTI_SUFFIX)/.xpt_libs
 ./local$(MULTI_SUFFIX)/.xpt_libs: boost mesa_headers zlib libpng \
 libfreetype libjpeg libtiff libproj libgeotiff libsqlite lib3ds libcgal \
-libsquish libdime libshp libexpat libgmp libmpfr libcurl
+libsquish libdime libshp libexpat libgmp libmpfr libssl libcurl
 	@touch ./local$(MULTI_SUFFIX)/.xpt_libs
 
 clean:
@@ -610,10 +624,10 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	#patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
-	export MACOSX_DEPLOYMENT_TARGET=10.5 && CXXFLAGS="-fvisibility=hidden" cmake \
+	export MACOSX_DEPLOYMENT_TARGET=10.6 && CXXFLAGS="-fvisibility=hidden" cmake \
 	-DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=FALSE \
-	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.5.sdk -arch i386 -I$(DEFAULT_INCDIR)" \
+	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -I$(DEFAULT_INCDIR)" \
 	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
@@ -708,6 +722,17 @@ libshp: ./local$(MULTI_SUFFIX)/lib/.xpt_libshp
 	@-rm -rf shapelib-$(VER_LIBSHP)
 	@touch $@
 
+libssl: ./local$(MULTI_SUFFIX)/lib/.xpt_libssl
+./local$(MULTI_SUFFIX)/lib/.xpt_libssl:
+	@echo "buliding libssl"
+	tar -xzf "./archives/$(ARCHIVE_LIBSSL)"
+	cd "openssl-$(VER_LIBSSL)" && \
+	chmod +x Configure && \
+	./Configure $(CONF_LIBSSL)
+	cd "openssl-$(VER_LIBSSL)" && make install
+	@-rm -rf "openssl-$(VER_LIBSSL)"
+	@touch $@
+
 libcurl: ./local$(MULTI_SUFFIX)/lib/.xpt_libcurl
 ./local$(MULTI_SUFFIX)/lib/.xpt_libcurl:
 	@echo "building libcurl..."
@@ -715,7 +740,7 @@ libcurl: ./local$(MULTI_SUFFIX)/lib/.xpt_libcurl
 ifdef PLAT_MINGW
 	@cd "curl-$(VER_LIBCURL)" && rm src/tool_hugehelp.c
 endif
-	@cd "curl-$(VER_LIBCURL)" && \
+	cd "curl-$(VER_LIBCURL)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBCURL) LDFLAGS=$(LDFLAGS_LIBCURL) \
 	./configure $(CONF_LIBCURL) $(BE_QUIET)
