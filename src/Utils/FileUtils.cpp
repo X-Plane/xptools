@@ -495,7 +495,7 @@ static int compress_recursive(zipFile archive, const string& dir, const string& 
 	for(vector<string>::iterator d = dirs.begin(); d != dirs.end(); ++d)
 	{
 		string sd = dir + *d + DIR_STR;
-		string dd = prefix + *d + DIR_STR;
+		string dd = prefix + *d + "/";			// FORCE unix / or Mac loses its mind on decompress.
 		r = compress_recursive(archive, sd, dd);
 		if (r != 0)
 			return r;

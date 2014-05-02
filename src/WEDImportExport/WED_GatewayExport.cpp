@@ -48,7 +48,9 @@
 #include "WED_ObjPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
+#include "GUI_Timer.h"
 #include <errno.h>
+#include <sstream>
 
 #include <curl/curl.h>
 #include <json/json.h>
@@ -57,6 +59,12 @@
 #endif
 
 /*
+
+		progress bar
+		multi-line text?
+		
+
+
 	todo:	field types for password, no edit, multi-line comments
 			make the form nicer
 			error checking on upload
@@ -176,7 +184,26 @@ int	WED_CanExportRobin(IResolver * resolver)
 	return WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass) != NULL;
 }
 
-static void DoGatewaySubmit(GUI_FormWindow * form, void * ref);
+class	WED_GatewayExportDialog : public GUI_FormWindow, public GUI_Timer {
+public:
+
+	WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver);
+	virtual void Submit();
+	virtual void Cancel();
+	virtual	void TimerFired(void);
+	
+private:
+
+	int						mPhase;
+	IResolver *				mResolver;	
+	curl_http_get_file *	mCurl;
+	vector<char>			mResponse;
+	WED_Airport *			mApt;
+	set<WED_Thing *>		mProblemChildren;
+
+};
+
+
 
 void	WED_DoExportRobin(IResolver * resolver)
 {
@@ -185,6 +212,18 @@ void	WED_DoExportRobin(IResolver * resolver)
 	if(!apt)
 		return;
 		
+	new WED_GatewayExportDialog(apt, resolver);
+}
+
+WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver) : 
+	GUI_FormWindow(gApplication, "Gateway", 500, 400),
+	mResolver(resolver),
+	mPhase(0),
+	mCurl(NULL),
+	mApt(apt)	
+{	
+	this->Reset("Upload", "Cancel");
+				
 	string icao, name;
 	apt->GetICAO(icao);
 	apt->GetName(name);	
@@ -192,208 +231,283 @@ void	WED_DoExportRobin(IResolver * resolver)
 	char par_id[32];
 	sprintf(par_id,"%d", apt->GetSceneryID());
 	
-
-	GUI_FormWindow * frm = new GUI_FormWindow(gApplication, "Gateway", "Upload","Cancel", DoGatewaySubmit, resolver);
-	frm->AddField(gw_icao,icao,name);
-	frm->AddField(gw_username,"User Name","ben");
-	frm->AddField(gw_password,"Password","wedGuru");
-	frm->AddField(gw_comments,"Comments","This is an airport.");
+	this->AddField(gw_icao,icao,name);
+	this->AddField(gw_username,"User Name","ben");
+	this->AddField(gw_password,"Password","wedGuru");
+	this->AddField(gw_comments,"Comments","This is an airport.");
 	if(apt->GetSceneryID() >= 0)
-		frm->AddField(gw_parent_id, "Scenery ID",par_id);
+		this->AddField(gw_parent_id, "Scenery ID",par_id);
 	else
-		frm->AddField(gw_parent_id, "Scenery ID","");
+		this->AddField(gw_parent_id, "Scenery ID","");
 	
-	frm->Show();
+	this->Show();
 }
 
-static void DoGatewaySubmit(GUI_FormWindow * form, void * ref)
+void WED_GatewayExportDialog::Cancel()
 {
-	IResolver * resolver = (IResolver *) ref;
-	
-	WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
-	if(!apt) return;
-	
-	int tag_atc = has_atc(apt);
-	int tag_3d = has_3d(apt);
-	
-	string apt_name = form->GetField(gw_icao);
-	string act_name;
-	apt->GetName(act_name);
-	DebugAssert(act_name == apt_name);
-	
-	string comment = form->GetField(gw_comments);
-	string uname = form->GetField(gw_username);
-	string pwd = form->GetField(gw_password);	
-	string parid = form->GetField(gw_parent_id);
-	
-	string icao;
-	apt->GetICAO(icao);
-	
-	WED_Export_Target old_target = gExportTarget;
-	gExportTarget = wet_robin;
+	this->AsyncDestroy();
+}
 
-	if(!WED_ValidateApt(resolver, apt))
+
+void WED_GatewayExportDialog::Submit()
+{
+	if(mPhase == 0)
 	{
-		gExportTarget = old_target;
-		return;
-	}
-
-	ILibrarian * lib = WED_GetLibrarian(resolver);
-
-	string temp_folder("tempXXXXXX");
-	lib->LookupPath(temp_folder);
-	vector<char> temp_chars(temp_folder.begin(),temp_folder.end());
-	temp_chars.push_back(0);
-
-	if(!mktemp(&temp_chars[0]))
-	{
-		gExportTarget = old_target;
-		return;
-	}
-	temp_chars.pop_back();
-	string targ_folder(temp_chars.begin(),temp_chars.end());
-	targ_folder += DIR_STR;
-
-	printf("Dest: %s\n", targ_folder.c_str());
-
-	string targ_folder_zip = icao + "_gateway_upload.zip";
-	lib->LookupPath(targ_folder_zip);
-	if(FILE_exists(targ_folder_zip.c_str()))
-	{
-		FILE_delete_file(targ_folder_zip.c_str(), 0);
-	}
-
-	DebugAssert(!FILE_exists(targ_folder.c_str()));
-
-	FILE_make_dir_exist(targ_folder.c_str());
-
-	set<WED_Thing *> problem_children;
-
-	if(DSF_ExportAirportOverlay(resolver, apt, targ_folder, problem_children))
-	{
-		// success.	
-	}
-	
-	string apt_path = targ_folder + icao + ".dat";
-	WED_AptExport(apt, apt_path.c_str());
-
-	string preview_folder = targ_folder + icao + "_Scenery_Pack" + DIR_STR;
-	string preview_zip = targ_folder + icao + "_Scenery_Pack.zip";
-
-	gExportTarget = wet_xplane_1021;
-
-
-	WED_ExportPackToPath(apt, resolver, preview_folder, problem_children);
-	
-	FILE * readme = fopen((preview_folder+"README.txt").c_str(),"w");
-	if(readme)
-	{
-		fprintf(readme,"-------------------------------------------------------------------------------\n");
-		fprintf(readme, "%s (%s)\n", apt_name.c_str(), icao.c_str());
-		fprintf(readme,"-------------------------------------------------------------------------------\n\n");
-		fprintf(readme,"Airport: %s (%s)\n\nUploaded by: %s.\n\n", apt_name.c_str(), icao.c_str(), uname.c_str());
-		fprintf(readme,"Authors Comments:\n\n%s\n\n", comment.c_str());
-		fprintf(readme,"Installation Instructions:\n\n");
-		fprintf(readme,"To install this scenery, drag this entire folder into X-Plane's Custom Scenery\n");
-		fprintf(readme,"folder.");
-		fclose(readme);
-	}
-	
-	
-	
-	FILE_compress_dir(preview_folder, preview_zip, icao + "_Scenery_Pack/");
-	
-	FILE_delete_dir_recursive(preview_folder);
-
-	FILE_compress_dir(targ_folder, targ_folder_zip, string());
-
-	int r = FILE_delete_dir_recursive(targ_folder);
-	
-	string uu64;
-	file_to_uu64(targ_folder_zip, uu64);
-	
-	Json::Value		scenery;
-	
-	Json::Value features;
-	if(tag_atc)
-		features[0] = 1;
-	
-	scenery["userId"] = uname;
-	scenery["password"] = pwd;
-	if(parid.empty())
-		scenery["parentId"] = Json::Value();
-	else
-		scenery["parentId"] = parid;
-	scenery["icao"] = icao;
-	scenery["type"] = tag_3d ? "3D" : "2D";
-	scenery["artistComments"] = comment;
-	scenery["features"] = features;
-	scenery["masterZipBlob"] = uu64;
+		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(mResolver, WED_Airport::sClass));
+		if(!apt) return;
 		
-	Json::Value req;
-	req["scenery"] = scenery;
-	
-	string reqstr=req.toStyledString();
-	vector<char>	response;
+		int tag_atc = has_atc(apt);
+		int tag_3d = has_3d(apt);
+		
+		string apt_name = this->GetField(gw_icao);
+		string act_name;
+		apt->GetName(act_name);
+		DebugAssert(act_name == apt_name);
+		
+		string comment = this->GetField(gw_comments);
+		string uname = this->GetField(gw_username);
+		string pwd = this->GetField(gw_password);	
+		string parid = this->GetField(gw_parent_id);
+		
+		string icao;
+		apt->GetICAO(icao);
+		
+		WED_Export_Target old_target = gExportTarget;
+		gExportTarget = wet_robin;
 
-	curl_http_get_file * auth_req = new curl_http_get_file
-		("http://XXXXXXXXXXXXXX/scenery",NULL,&reqstr,&response);
-	
-	while(!auth_req->is_done())
-	{
-	#if !IBM
-		sleep(1);
-	#endif
-	}
-	
-	if(auth_req->is_ok())
-	{
-		char * start = &response[0];
-		char * end = start + response.size();
-
-		Json::Reader reader;	
-		Json::Value response;
-	
-		if(reader.parse(start, end, response))
+		if(!WED_ValidateApt(mResolver, apt))
 		{
-			if(response.isMember("sceneryId"))
-			{		
-				int new_id = response["sceneryId"].asInt();
-				printf("SUCCSS: NEW ID: %d\n",new_id);
-				apt->StartOperation("Successful submition to gateway.");
-				apt->SetSceneryID(new_id);
-				apt->CommitOperation();
-			}
+			gExportTarget = old_target;
+			return;
+		}
+
+		ILibrarian * lib = WED_GetLibrarian(mResolver);
+
+		string temp_folder("tempXXXXXX");
+		lib->LookupPath(temp_folder);
+		vector<char> temp_chars(temp_folder.begin(),temp_folder.end());
+		temp_chars.push_back(0);
+
+		if(!mktemp(&temp_chars[0]))
+		{
+			gExportTarget = old_target;
+			return;
+		}
+		temp_chars.pop_back();
+		string targ_folder(temp_chars.begin(),temp_chars.end());
+		targ_folder += DIR_STR;
+
+		printf("Dest: %s\n", targ_folder.c_str());
+
+		string targ_folder_zip = icao + "_gateway_upload.zip";
+		lib->LookupPath(targ_folder_zip);
+		if(FILE_exists(targ_folder_zip.c_str()))
+		{
+			FILE_delete_file(targ_folder_zip.c_str(), 0);
+		}
+
+		DebugAssert(!FILE_exists(targ_folder.c_str()));
+
+		FILE_make_dir_exist(targ_folder.c_str());
+
+		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
+		{
+			// success.	
 		}
 		
-	}
-	else
-	{
-		printf("FAILED WITH ERROR: %d\n", auth_req->get_error());
-	}
-	
-	delete auth_req;
-	
-	
-	
-	
-//	FILE * json = fopen("/Users/bsupnik/Desktop/json.txt","w");
-//	fprintf(json,"%s",reqstr.c_str());	
-//	fclose(json);
-	
+		string apt_path = targ_folder + icao + ".dat";
+		WED_AptExport(apt, apt_path.c_str());
 
-	if(!problem_children.empty())
-	{
-		DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
-		ISelection * sel = WED_GetSelect(resolver);
-		(*problem_children.begin())->StartOperation("Select broken items.");
-		sel->Clear();
-		for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
-			sel->Insert(*p);
-		(*problem_children.begin())->CommitOperation();		
-	}
+		string preview_folder = targ_folder + icao + "_Scenery_Pack" + DIR_STR;
+		string preview_zip = targ_folder + icao + "_Scenery_Pack.zip";
 
-	gExportTarget = old_target;
+		gExportTarget = wet_xplane_1021;
+
+
+		WED_ExportPackToPath(apt, mResolver, preview_folder, mProblemChildren);
+		
+		FILE * readme = fopen((preview_folder+"README.txt").c_str(),"w");
+		if(readme)
+		{
+			fprintf(readme,"-------------------------------------------------------------------------------\n");
+			fprintf(readme, "%s (%s)\n", apt_name.c_str(), icao.c_str());
+			fprintf(readme,"-------------------------------------------------------------------------------\n\n");
+			fprintf(readme,"Airport: %s (%s)\n\nUploaded by: %s.\n\n", apt_name.c_str(), icao.c_str(), uname.c_str());
+			fprintf(readme,"Authors Comments:\n\n%s\n\n", comment.c_str());
+			fprintf(readme,"Installation Instructions:\n\n");
+			fprintf(readme,"To install this scenery, drag this entire folder into X-Plane's Custom Scenery\n");
+			fprintf(readme,"folder.");
+			fclose(readme);
+		}
+		
+		
+		
+		FILE_compress_dir(preview_folder, preview_zip, icao + "_Scenery_Pack/");
+		
+		FILE_delete_dir_recursive(preview_folder);
+
+		FILE_compress_dir(targ_folder, targ_folder_zip, string());
+
+		int r = FILE_delete_dir_recursive(targ_folder);
+		
+		string uu64;
+		file_to_uu64(targ_folder_zip, uu64);
+		
+		Json::Value		scenery;
+		
+		Json::Value features;
+		if(tag_atc)
+			features[0] = 1;
+		
+		scenery["userId"] = uname;
+		scenery["password"] = pwd;
+		if(parid.empty())
+			scenery["parentId"] = Json::Value();
+		else
+			scenery["parentId"] = parid;
+		scenery["icao"] = icao;
+		scenery["type"] = tag_3d ? "3D" : "2D";
+		scenery["artistComments"] = comment;
+		scenery["features"] = features;
+		scenery["masterZipBlob"] = uu64;
+			
+		Json::Value req;
+		req["scenery"] = scenery;
+		
+		string reqstr=req.toStyledString();
+
+		curl_http_get_file * auth_req = new curl_http_get_file
+			("http://XXXXXXXXXXXX/scenery",NULL,&reqstr,&mResponse);
+
+	
+		mCurl = auth_req;
+		
+		mPhase = 1;
+		
+		this->Reset("", "");
+		this->AddLabel("Uploading airport to Gateway.");
+		this->AddLabel("This could take up to one minute.");
+
+		gExportTarget = old_target;
+		
+		Start(1.0);
+	}
+	
+	if(mPhase == 2)
+	{
+		this->AsyncDestroy();
+	}
+}
+
+void WED_GatewayExportDialog::TimerFired()
+{
+	if(mCurl->is_done())
+	{
+		Stop();
+		
+		string good_msg, bad_msg;
+		
+		mPhase = 2;
+		if(mCurl->is_ok())
+		{
+			char * start = &mResponse[0];
+			char * end = start + mResponse.size();
+
+			Json::Reader reader;	
+			Json::Value response;
+		
+			if(reader.parse(start, end, response))
+			{
+				if(response.isMember("sceneryId"))
+				{		
+					int new_id = response["sceneryId"].asInt();
+					mApt->StartOperation("Successful submition to gateway.");
+					mApt->SetSceneryID(new_id);
+					mApt->CommitOperation();
+					
+					good_msg = "Your airport has been successfully uploaded.";					
+				}
+				else
+				{
+					bad_msg = "I was not able to confirm that your scenery was uploaded.\n(No scenery ID was returned.)";
+				}				
+			}
+			else
+				bad_msg = "I was not able to confirm that your scenery was uploaded.\n(JSON was malformed.)";
+		}
+		else
+		{
+			int err = mCurl->get_error();
+			bool bad_net = mCurl->is_net_fail();
+
+			stringstream ss;
+			
+			if(err <= CURL_LAST)
+			{
+				string msg = curl_easy_strerror((CURLcode) err);
+				ss << "Upload failed: " << msg << ". (" << err << ")";
+				
+				if(bad_net) ss << "\n(Please check your internet connectivity.)";					
+			}
+			else if(err >= 100)
+			{
+				ss << "Upload failed.  The server returned error " << err << ".";
+				
+				vector<char>	errdat;
+				mCurl->get_error_data(errdat);
+				bool is_ok = !errdat.empty();
+				for(vector<char>::iterator i = errdat.begin(); i != errdat.end(); ++i)
+				if(!isprint(*i))
+				{
+					is_ok = false;
+					break;
+				}
+				
+				if(is_ok)
+				{
+					string errmsg = string(errdat.begin(),errdat.end());
+					ss << "\n" << errmsg;
+				}
+			}
+			else
+				ss << "Upload failed due to unknown error: " << err << ".";
+
+			bad_msg = ss.str();			
+			
+		}
+		
+		if(!good_msg.empty())
+		{
+			this->Reset("OK","");
+			this->AddLabel(good_msg);
+		}
+		else
+		{
+			this->Reset("","Cancel");
+			this->AddLabel(bad_msg);			
+		}
+		
+		delete mCurl;
+		mCurl = NULL;
+		
+		
+	//	FILE * json = fopen("/Users/bsupnik/Desktop/json.txt","w");
+	//	fprintf(json,"%s",reqstr.c_str());	
+	//	fclose(json);
+		
+
+		if(!mProblemChildren.empty())
+		{
+			DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
+			ISelection * sel = WED_GetSelect(mResolver);
+			(*mProblemChildren.begin())->StartOperation("Select broken items.");
+			sel->Clear();
+			for(set<WED_Thing*>::iterator p = mProblemChildren.begin(); p != mProblemChildren.end(); ++p)
+				sel->Insert(*p);
+			(*mProblemChildren.begin())->CommitOperation();		
+		}
+
+	}
 
 }
 

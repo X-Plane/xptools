@@ -35,19 +35,26 @@ public:
 						 GUI_FormWindow(
 								GUI_Commander *			cmdr,
 								const string&			title,
-								const string&			ok_label,
-								const string&			cancel_label,
-								void (*					submit_func)(GUI_FormWindow *, void *),
-								void *					submit_ref);
+								int						width,
+								int						height);
 	virtual				~GUI_FormWindow();
 
-			void		AddField(
+			void		Reset(
+								const string&			ok_label,
+								const string&			cancel_label);
+
+			void		AddLabel(const string&			msg);
+
+			void		AddField(			
 								int						id,
 								const string&			label,
 								const string&			default_text);
 
 			string		GetField(
 								int						id);
+								
+	virtual	void		Submit()=0;
+	virtual	void		Cancel()=0;
 
 	virtual	bool		Closed(void) { return true; }
 	virtual	void		ReceiveMessage(
@@ -57,10 +64,13 @@ public:
 
 private:
 
-		int					mInsertBottom;
+		int					mInsertY;
+		
+		vector<GUI_Pane *>	mParts;
+		GUI_Pane *			mOK;
+		GUI_Pane *			mCancel;
 
-		void (*				mSubmitFunc)(GUI_FormWindow *, void * ref);
-		void *				mSubmitRef;
+		int					mFormBounds[4];
 
 };
 

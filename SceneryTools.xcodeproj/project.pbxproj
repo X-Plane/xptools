@@ -601,6 +601,8 @@
 		D69FD7540B6CF883008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D69FD75A0B6CF8B5008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D69FD75B0B6CF8B7008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D6A11F2118FE419400FA2F8D /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
+		D6A11F2218FE419500FA2F8D /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D6A17E1A0BA5994900BBCD0C /* WED_EnumSystem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17E190BA5994900BBCD0C /* WED_EnumSystem.cpp */; };
 		D6A17F9C0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A17F9B0BA5E2A200BBCD0C /* WED_AirportBeacon.cpp */; };
 		D6A180200BA5F73700BBCD0C /* WED_ToolUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A1801F0BA5F73700BBCD0C /* WED_ToolUtils.cpp */; };
@@ -4602,6 +4604,8 @@
 				D6951EC40EE18C6800A04BAD /* EndianUtils.c in Sources */,
 				D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */,
 				D63099F0114BF9BA00882D66 /* FileUtils.cpp in Sources */,
+				D6A11F2118FE419400FA2F8D /* zip.c in Sources */,
+				D6A11F2218FE419500FA2F8D /* unzip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4973,7 +4977,7 @@
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.0.0",
+					"/usr/include/c++/4.2.1",
 					/usr/local/include,
 					"$(inherited)",
 					SDK/nedmalloc,
@@ -4987,7 +4991,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Debug;
@@ -5018,7 +5022,7 @@
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.0.0",
+					"/usr/include/c++/4.2.1",
 					/usr/local/include,
 					"$(inherited)",
 					SDK/nedmalloc,
@@ -5032,7 +5036,7 @@
 				OTHER_CFLAGS = "-frounding-math";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Release;
@@ -5125,7 +5129,7 @@
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.0.0",
+					"/usr/include/c++/4.2.1",
 					/usr/local/include,
 					"$(inherited)",
 					SDK/nedmalloc,
@@ -5139,7 +5143,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = Phone;
@@ -5204,6 +5208,15 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					"/usr/include/c++/4.2.1",
+					/usr/local/include,
+					"$(inherited)",
+					SDK/nedmalloc,
+					src/lib_json/include,
+				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
@@ -5219,6 +5232,8 @@
 					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
+					libs/local/lib/libcrypto.a,
+					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
 				);
 			};
@@ -5674,6 +5689,15 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					"/usr/include/c++/4.2.1",
+					/usr/local/include,
+					"$(inherited)",
+					SDK/nedmalloc,
+					src/lib_json/include,
+				);
 				INFOPLIST_FILE = src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
@@ -5689,6 +5713,8 @@
 					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
+					libs/local/lib/libcrypto.a,
+					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
 				);
 			};
@@ -5705,6 +5731,15 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					"/usr/include/c++/4.2.1",
+					/usr/local/include,
+					"$(inherited)",
+					SDK/nedmalloc,
+					src/lib_json/include,
+				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
@@ -5720,6 +5755,8 @@
 					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
+					libs/local/lib/libcrypto.a,
+					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
 				);
 			};
@@ -5812,6 +5849,15 @@
 					"$(inherited)",
 					"NO_CGAL=1",
 				);
+				HEADER_SEARCH_PATHS = (
+					libs/local/include,
+					libs/local/include/freetype2,
+					"/usr/include/c++/4.2.1",
+					/usr/local/include,
+					"$(inherited)",
+					SDK/nedmalloc,
+					src/lib_json/include,
+				);
 				INFOPLIST_FILE = Src/WEDResources/WED_Info.plist;
 				INFOPLIST_PREFIX_HEADER = src/WEDCore/WED_Version.h;
 				INFOPLIST_PREPROCESS = YES;
@@ -5827,6 +5873,8 @@
 					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
+					libs/local/lib/libcrypto.a,
+					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
 				);
 			};
@@ -5900,7 +5948,7 @@
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
-					"/usr/include/c++/4.0.0",
+					"/usr/include/c++/4.2.1",
 					/usr/local/include,
 					"$(inherited)",
 					SDK/nedmalloc,
@@ -5914,7 +5962,7 @@
 				OTHER_LDFLAGS = "";
 				PREBINDING = NO;
 				PRODUCT_NAME = "${TARGET_NAME}";
-				SDKROOT = /Developer/SDKs/MacOSX10.5.sdk;
+				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 				WARNING_CFLAGS = "-Wreturn-type";
 			};
 			name = DebugOpt;

@@ -56,6 +56,7 @@ public:
 
 	float		get_progress(void);		// if nt done, progress, percent, e.g 53.4f;
 	int			get_error(void);		// If done and not ok, what is error
+	void		get_error_data(vector<char>& out_data);	// If an error, any stuff the server sent -- might be text, HTML, who knows!
 	
 private:
 

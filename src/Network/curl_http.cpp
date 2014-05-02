@@ -123,6 +123,13 @@ int	curl_http_get_file::get_error(void)
 	return m_errcode;
 }
 
+void	curl_http_get_file::get_error_data(vector<char>& out_data)
+{
+	DebugAssert(m_status == done_error);
+	swap(out_data, m_dl_buffer);
+}
+
+
 	
 size_t		curl_http_get_file::read_cb(void *contents, size_t size, size_t nmemb, void *userp)
 {

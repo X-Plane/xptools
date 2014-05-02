@@ -30,6 +30,7 @@
 #include "GUI_Messages.h"
 #include "AssertUtils.h"
 #include "WED_Colors.h"		// This should not be here but we need some theming stuff, not build into GUI itself..maybe move this whole thing into WED?
+#include "STLUtils.h"
 /* 
 
 	TODO:
@@ -42,6 +43,15 @@
 
  */
 
+static const int * calc_form_bounds(int b[4], int w, int h)
+{
+	b[0] = 0;
+	b[1] = 0;
+	b[2] = w;
+	b[3] = h;
+	return b;
+}
+
 static int form_bounds_default[4] = { 0, 0, 500, 50 };
 
 enum { 
@@ -53,13 +63,9 @@ enum {
 GUI_FormWindow::GUI_FormWindow(
 								GUI_Commander *			cmdr,
 								const string&			title,
-								const string&			ok_label,
-								const string&			cancel_label,
-								void (*					submit_func)(GUI_FormWindow *, void *),
-								void *					submit_ref) :
-	GUI_Window(title.c_str(), xwin_style_centered|xwin_style_movable|xwin_style_modal, form_bounds_default, cmdr),
-	mSubmitFunc(submit_func),
-	mSubmitRef(submit_ref)
+								int						width,
+								int						height) :
+	GUI_Window(title.c_str(), xwin_style_centered|xwin_style_movable|xwin_style_modal, calc_form_bounds(mFormBounds, width, height), cmdr)
 {
 	int bounds[4];
 	GUI_Packer * packer = new GUI_Packer;
@@ -74,18 +80,20 @@ GUI_FormWindow::GUI_FormWindow(
 	int k_hil[4] = { 0, 1, 1, 3 };
 	
 	GUI_Button * okay_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+	mOK = okay_btn;
 	okay_btn->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
 	okay_btn->Show();
 	okay_btn->SetSticky(0,1,1,0);
-	okay_btn->SetDescriptor(ok_label);
+	okay_btn->SetDescriptor("OK");
 	okay_btn->SetMsg(gui_form_ok,0);
 
 	GUI_Button * cncl_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 	cncl_btn->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
 	cncl_btn->Show();
 	cncl_btn->SetSticky(1,1,0,0);
-	cncl_btn->SetDescriptor(cancel_label);
+	cncl_btn->SetDescriptor("Cancel");
 	cncl_btn->SetMsg(gui_form_cancel,0);
+	mCancel = cncl_btn;
 	
 	GUI_Pane * holder = new GUI_Pane;
 	holder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
@@ -103,14 +111,76 @@ GUI_FormWindow::GUI_FormWindow(
 	packer->PackPane(holder,gui_Pack_Bottom);
 	
 	int final_ok_bounds[4];
-	okay_btn->GetBounds(final_ok_bounds);
-	
-	mInsertBottom = final_ok_bounds[3];
+	okay_btn->GetBounds(final_ok_bounds);	
 }
 
 GUI_FormWindow::~GUI_FormWindow()
 {
 }
+
+void		GUI_FormWindow::Reset(
+								const string&			ok_label,
+								const string&			cancel_label)
+{
+	while(!mParts.empty())
+	{
+		delete mParts.back();
+		mParts.pop_back();
+	}
+	
+	if(ok_label.empty())
+	{
+		mOK->Hide();
+	}
+	else
+	{
+		mOK->Show();
+		mOK->SetDescriptor(ok_label);
+	}
+
+	if(cancel_label.empty())
+	{
+		mCancel->Hide();
+	}
+	else
+	{
+		mCancel->Show();
+		mCancel->SetDescriptor(cancel_label);
+	}
+
+	mInsertY = mFormBounds[3] - 10;
+}
+
+void		GUI_FormWindow::AddLabel(const string&			msg)
+{
+	vector<string>	lines;
+	tokenize_string(msg.begin(),msg.end(),back_inserter(lines), '\n');
+	
+	for(vector<string>::iterator l = lines.begin(); l != lines.end(); ++l)
+	{
+
+		GUI_Label * label = new GUI_Label();
+		label->SetDescriptor(*l);
+
+		int wbounds[4];
+		this->GUI_Pane::GetBounds(wbounds);
+		
+		label->SetBounds(wbounds[0] + 10, mInsertY - 20, wbounds[2] - 10, mInsertY);
+		
+		mInsertY -= 30;
+		
+		label->SetColors(WED_Color_RGBA(wed_Table_Text));
+		
+		label->SetParent(this);
+		label->SetSticky(1,0,1,1);
+		label->Show();
+		
+		mParts.push_back(label);
+	}
+
+}
+
+
 
 void		GUI_FormWindow::AddField(
 								int						id,
@@ -129,8 +199,10 @@ void		GUI_FormWindow::AddField(
 	
 	int split = (wbounds[0] + wbounds[2]) / 5;
 	
-	label->SetBounds(wbounds[0] + 10, mInsertBottom, split - 5, mInsertBottom + 20);
-	text->SetBounds(split + 5, mInsertBottom, wbounds[2] - 10, mInsertBottom + 20);
+	label->SetBounds(wbounds[0] + 10, mInsertY - 20, split - 5, mInsertY);
+	text->SetBounds(split + 5, mInsertY - 20, wbounds[2] - 10, mInsertY);
+	
+	mInsertY -= 30;
 	
 	label->SetColors(WED_Color_RGBA(wed_Table_Text));
 	text->SetColors(
@@ -146,7 +218,8 @@ void		GUI_FormWindow::AddField(
 	label->Show();
 	text->Show();
 	
-	this->Resize(wbounds[2],wbounds[3] + 30);
+	mParts.push_back(label);
+	mParts.push_back(text);
 	
 }
 
@@ -157,9 +230,9 @@ void		GUI_FormWindow::ReceiveMessage(
 							intptr_t				inParam)
 {
 	if(inMsg == gui_form_ok)
-		mSubmitFunc(this,mSubmitRef);
-	
-	this->AsyncDestroy();
+		this->Submit();
+	else
+		this->Cancel();
 }
 
 string		GUI_FormWindow::GetField(
