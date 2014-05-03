@@ -16,13 +16,38 @@ XWin::XWin(
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 	SetTitle(inTitle);
-
+	
+	QRect ScreenBounds = QApplication::desktop()->availableGeometry(-1);
+	int screen_w = ScreenBounds.width();
+	int screen_h = ScreenBounds.height();
+	
 	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
 	int y = (inAttributes & xwin_style_fullscreen) ? 0 : inY;
 	int w = (inAttributes & xwin_style_fullscreen) ? 1024 : inWidth;
-	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;
+	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;	 
+   
+	if( inAttributes & xwin_style_centered )
+	{
+		x = (screen_w - w) / 2;
+		y = (screen_h - h) / 2;
+	}
+	
 	MoveTo(x, y);
 	Resize(w, h);
+	
+	bool isModalWindow = (( inAttributes & 3 ) == xwin_style_modal) ;
+	
+	if(isModalWindow)
+	{
+		this->setWindowFlags(windowFlags()| Qt::Dialog);
+		this->setWindowModality(Qt::ApplicationModal);
+	}
+	
+	if( (!(inAttributes & xwin_style_resizable)) || isModalWindow )
+	{
+		this->setFixedSize(this->size());
+	}
+		
 	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
 	if (default_dnd)
@@ -227,12 +252,16 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 
 void XWin::MoveTo(int inX, int inY)
 {
-	move(inX, inY);
+	this->move(inX, inY);
 }
 
 void XWin::Resize(int inWidth, int inHeight)
 {
-	resize(inWidth, inHeight);
+	//mroe:   to resize a non-resizable window
+	if( (this->minimumSize() == this->size()) && (this->maximumSize() == this->size()) )
+		this->setFixedSize(inWidth,inHeight);
+	else
+		this->resize(inWidth, inHeight);
 }
 
 void XWin::ForceRefresh(void)
