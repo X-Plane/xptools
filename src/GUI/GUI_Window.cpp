@@ -733,8 +733,8 @@ void		GUI_Window::ClickMove(int inX, int inY)
 	#if LIN
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 		switch(cursor) {
-		case gui_Cursor_Resize_H:	this->setCursor(Qt::SplitHCursor);	break;
-		case gui_Cursor_Resize_V:	this->setCursor(Qt::SplitVCursor);	break;
+		case gui_Cursor_Resize_H:	this->setCursor(Qt::SizeHorCursor);	break;
+		case gui_Cursor_Resize_V:	this->setCursor(Qt::SizeVerCursor);	break;
 		case gui_Cursor_None:
 		case gui_Cursor_Arrow:
 		default:					this->setCursor(Qt::ArrowCursor);	break;

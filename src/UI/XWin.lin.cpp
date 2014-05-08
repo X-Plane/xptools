@@ -47,7 +47,17 @@ XWin::XWin(
 	{
 		this->setFixedSize(this->size());
 	}
-		
+	// TODO:mroe: 
+	// Some KDE-Style's want to use all 'empty' areas of a window to move it .
+	// They try to detect them when the mouse-events comes through to the Mainwindow, and grab the mouse.  
+	// It's clearly a mess , doing such stuff from outside.
+	// Since XWin is our mainwindow and handles all events , that is not that good for us.
+	// The preferred way would be :  the gl-window should have his own event-funcs. 
+	// But what comes next?
+	// Anyway, since many have this problem, 'Oxygen' has a property introduced what is now also accepted by qt-curve. 
+	// Perhaps it becomes a standard.
+	setProperty( "_kde_no_window_grab", true ); 
+	
 	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
 	if (default_dnd)
@@ -64,6 +74,7 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(fals
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 	
+	setProperty( "_kde_no_window_grab", true ); 
 	setMouseTracking(true);
 	setFocusPolicy(Qt::StrongFocus);
 	if (default_dnd)
