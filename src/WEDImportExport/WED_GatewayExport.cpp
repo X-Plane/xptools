@@ -58,6 +58,12 @@
 #include <io.h>
 #endif
 
+// set this to one to leave the master zip blobs on disk for later examination
+#define KEEP_UPLOAD_MASTER_ZIP 0
+
+// set this to 1 to write JSONs for multiple exports - use this to prep large batches for upload.
+#define SPLAT_CURL_IO 0
+
 /*
 
 		progress bar
@@ -181,7 +187,13 @@ static int file_to_uu64(const string& path, string& enc)
 
 int	WED_CanExportRobin(IResolver * resolver)
 {
+	#if SPLAT_CURL_IO
+	ISelection * sel = WED_GetSelect(resolver);	
+	return sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass);
+
+	#else
 	return WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass) != NULL;
+	#endif	
 }
 
 class	WED_GatewayExportDialog : public GUI_FormWindow, public GUI_Timer {
@@ -204,15 +216,40 @@ private:
 };
 
 
+int	Iterate_JSON_One_Airport(ISelectable * what, void * ref)
+{
+	IResolver * resolver = (IResolver *) ref;	
+	WED_Airport * apt = SAFE_CAST(WED_Airport,what);
+	if(!apt)
+		return 0;			
+	WED_GatewayExportDialog * dlg = new WED_GatewayExportDialog(apt, resolver);
+	dlg->Submit();
+	dlg->Hide();
+	return 1;
+}
 
 void	WED_DoExportRobin(IResolver * resolver)
 {
+	#if SPLAT_CURL_IO
+
+		ISelection * sel = WED_GetSelect(resolver);	
+		if(!sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass))
+		{
+			DoUserAlert("Please select only airports to do a bulk JSON export.");
+			return;
+		}
+		sel->IterateSelectionAnd(Iterate_JSON_One_Airport, resolver);
+
+	#else
+		
 	WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
 
 	if(!apt)
 		return;
 		
 	new WED_GatewayExportDialog(apt, resolver);
+
+	#endif
 }
 
 WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver) : 
@@ -253,8 +290,8 @@ void WED_GatewayExportDialog::Submit()
 {
 	if(mPhase == 0)
 	{
-		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(mResolver, WED_Airport::sClass));
-		if(!apt) return;
+		DebugAssert(mApt);
+		WED_Airport * apt = mApt;
 		
 		int tag_atc = has_atc(apt);
 		int tag_3d = has_3d(apt);
@@ -352,6 +389,9 @@ void WED_GatewayExportDialog::Submit()
 		
 		string uu64;
 		file_to_uu64(targ_folder_zip, uu64);
+		#if !KEEP_UPLOAD_MASTER_ZIP
+		FILE_delete_file(targ_folder_zip.c_str(),0);
+		#endif
 		
 		Json::Value		scenery;
 		
@@ -375,6 +415,20 @@ void WED_GatewayExportDialog::Submit()
 		req["scenery"] = scenery;
 		
 		string reqstr=req.toStyledString();
+
+		#if SPLAT_CURL_IO
+			// This code exists to service the initial upload of the gateway...
+			// it dumps out a JSON upload object for each airport.
+			string p = icao;
+			p + icao;
+			p += ".json";
+			lib->LookupPath(p);		
+			FILE * fi = fopen(p.c_str(),"wb");
+			fprintf(fi,"%s", reqstr.c_str());
+			fclose(fi);
+			this->AsyncDestroy();
+			return;
+		#endif
 
 		curl_http_get_file * auth_req = new curl_http_get_file
 			("http://XXXXXXXXXXXX/scenery",NULL,&reqstr,&mResponse);
