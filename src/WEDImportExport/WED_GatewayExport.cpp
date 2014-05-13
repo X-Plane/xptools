@@ -48,6 +48,11 @@
 #include "WED_ObjPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
+#include "WED_LinePlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_ExclusionZone.h"
+#include "WED_StringPlacement.h"
 #include "GUI_Timer.h"
 #include <errno.h>
 #include <sstream>
@@ -133,7 +138,21 @@ const char * k_3d_classes[] = {
 	0
 };
 
+const char * k_dsf_classes[] = {
+	WED_ObjPlacement::sClass,
+	WED_FacadePlacement::sClass,
+	WED_ForestPlacement::sClass,
+	WED_ExclusionZone::sClass,
+	WED_DrapedOrthophoto::sClass,
+	WED_LinePlacement::sClass,
+	WED_StringPlacement::sClass,
+	WED_PolygonPlacement::sClass,
+	0
+};
+
 static bool has_3d(WED_Airport * who) { return has_any_of_class(who, k_3d_classes); }
+
+static bool has_dsf(WED_Airport * who) { return has_any_of_class(who, k_dsf_classes); }
 
 //------------------------------------------------------------------------------------------------------------
 #pragma mark -
@@ -347,6 +366,7 @@ void WED_GatewayExportDialog::Submit()
 
 		FILE_make_dir_exist(targ_folder.c_str());
 
+		if(has_dsf(apt))
 		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
 		{
 			// success.	
