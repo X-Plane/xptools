@@ -66,7 +66,10 @@
 // set this to one to leave the master zip blobs on disk for later examination
 #define KEEP_UPLOAD_MASTER_ZIP 0
 
-// set this to 1 to write JSONs for multiple exports - use this to prep large batches for upload.
+// write out lots of airports as .json files on disk - allows multi-select, no user interaction, for bulk import.
+#define BULK_SPLAT_IO 0
+
+// set this to 1 to write JSONs for multiple exports - for later examination
 #define SPLAT_CURL_IO 0
 
 /*
@@ -206,7 +209,7 @@ static int file_to_uu64(const string& path, string& enc)
 
 int	WED_CanExportRobin(IResolver * resolver)
 {
-	#if SPLAT_CURL_IO
+	#if BULK_SPLAT_IO
 	ISelection * sel = WED_GetSelect(resolver);	
 	return sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass);
 
@@ -249,7 +252,7 @@ int	Iterate_JSON_One_Airport(ISelectable * what, void * ref)
 
 void	WED_DoExportRobin(IResolver * resolver)
 {
-	#if SPLAT_CURL_IO
+	#if BULK_SPLAT_IO
 
 		ISelection * sel = WED_GetSelect(resolver);	
 		if(!sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass))
@@ -415,9 +418,13 @@ void WED_GatewayExportDialog::Submit()
 		
 		Json::Value		scenery;
 		
-		Json::Value features;
+		string features;
 		if(tag_atc)
-			features[0] = 1;
+			features += ",1";
+		if(tag_3d)
+			features += ",2";
+		if(!features.empty())
+			features.erase(features.begin());
 		
 		scenery["userId"] = uname;
 		scenery["password"] = pwd;
@@ -436,7 +443,9 @@ void WED_GatewayExportDialog::Submit()
 		
 		string reqstr=req.toStyledString();
 
-		#if SPLAT_CURL_IO
+		printf("%s\n",reqstr.c_str());
+		
+		#if BULK_SPLAT_IO || SPLAT_CURL_IO
 			// This code exists to service the initial upload of the gateway...
 			// it dumps out a JSON upload object for each airport.
 			string p = icao;
@@ -446,6 +455,8 @@ void WED_GatewayExportDialog::Submit()
 			FILE * fi = fopen(p.c_str(),"wb");
 			fprintf(fi,"%s", reqstr.c_str());
 			fclose(fi);
+		#endif
+		#if BULK_SPLAT_IO
 			this->AsyncDestroy();
 			return;
 		#endif
