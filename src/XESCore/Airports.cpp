@@ -417,7 +417,11 @@ void	SimplifyAirportAreasAndSplat(Pmwx& inDstMap, Polygon_set_2& in_area, bool d
 		}
 		#endif
 	}
-	if (inFillWater == fill_dirt2apt || (inFillWater != fill_nukeroads && !do_simplify))
+	if (inFillWater == fill_dirt2apt 
+		#if WANT_NEW_BORDER_RULES
+		|| (inFillWater != fill_nukeroads && !do_simplify)
+		#endif
+	)
 	{
 		// Merge in airports, leaving roads, etc.
 		MapMergePolygonSet(inDstMap, area, &outDstFaces, loc);
