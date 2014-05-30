@@ -329,7 +329,11 @@ int			GUI_FormWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFl
 	if(inVK == GUI_VK_TAB && !mFocusRing.empty())
 	{
 		GUI_Commander * now = this->GetFocusForCommander();
+#if LIN
+		vector<GUI_Commander*>::iterator i = std::find(mFocusRing.begin(),mFocusRing.end(),now);
+#else
 		vector<GUI_Commander*>::iterator i = find(mFocusRing.begin(),mFocusRing.end(),now);
+#endif	
 		int idx = distance(mFocusRing.begin(),i);
 		
 		int advance = (inFlags & gui_ShiftFlag) ? -1 : 1;
