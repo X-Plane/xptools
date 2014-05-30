@@ -1133,6 +1133,9 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	  {
 		case Qt::Key_Enter:
 		case Qt::Key_Return:	virtualCode = GUI_VK_RETURN;	break;
+		case Qt::Key_Escape:	virtualCode = GUI_VK_ESCAPE;	break;
+		case Qt::Key_Tab:
+		case Qt::Key_Backtab:	virtualCode = GUI_VK_TAB;	break;						
 		case Qt::Key_PageUp:	virtualCode = GUI_VK_PRIOR;	break;
 		case Qt::Key_PageDown:	virtualCode = GUI_VK_NEXT;	break;
 		case Qt::Key_End:	virtualCode = GUI_VK_END;	break;
