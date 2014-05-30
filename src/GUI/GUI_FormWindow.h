@@ -48,7 +48,13 @@ public:
 			void		AddField(			
 								int						id,
 								const string&			label,
-								const string&			default_text);
+								const string&			default_text,
+								bool					is_password=false);
+
+			void		AddFieldNoEdit(			
+								int						id,
+								const string&			label,
+								const string&			text);
 
 			string		GetField(
 								int						id);
@@ -62,11 +68,14 @@ public:
 							intptr_t    			inMsg,
 							intptr_t				inParam);
 
+	virtual	int			HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
+
 private:
 
 		int					mInsertY;
 		
 		vector<GUI_Pane *>	mParts;
+		vector<GUI_Commander *> mFocusRing;
 		GUI_Pane *			mOK;
 		GUI_Pane *			mCancel;
 

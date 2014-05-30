@@ -28,6 +28,7 @@
 #include "GUI_TextField.h"
 #include "GUI_Label.h"
 #include "GUI_Messages.h"
+#include "GUI_Fonts.h"
 #include "AssertUtils.h"
 #include "WED_Colors.h"		// This should not be here but we need some theming stuff, not build into GUI itself..maybe move this whole thing into WED?
 #include "STLUtils.h"
@@ -128,6 +129,8 @@ void		GUI_FormWindow::Reset(
 		mParts.pop_back();
 	}
 	
+	mFocusRing.clear();
+	
 	if(ok_label.empty())
 	{
 		mOK->Hide();
@@ -185,11 +188,14 @@ void		GUI_FormWindow::AddLabel(const string&			msg)
 void		GUI_FormWindow::AddField(
 								int						id,
 								const string&			label_text,
-								const string&			default_text)
+								const string&			default_text,
+								bool					is_password)
 {
 	DebugAssert(id > 0);
 	GUI_Label * label = new GUI_Label();
 	GUI_TextField * text = new GUI_TextField(false, this);
+	if(is_password)
+		text->SetPasswordChar('*');
 	text->SetID(id);
 	label->SetDescriptor(label_text);
 	text->SetDescriptor(default_text);
@@ -201,6 +207,33 @@ void		GUI_FormWindow::AddField(
 	
 	label->SetBounds(wbounds[0] + 10, mInsertY - 20, split - 5, mInsertY);
 	text->SetBounds(split + 5, mInsertY - 20, wbounds[2] - 10, mInsertY);
+	
+	for(int i = 0; i <256;++i)
+		text->SetKeyAllowed(i,isprint(i));
+		
+	text->SetKeyAllowed(GUI_KEY_BACK, true);
+	text->SetKeyAllowed(GUI_KEY_DELETE, true);
+	text->SetKeyAllowed(GUI_KEY_LEFT, true);
+	text->SetKeyAllowed(GUI_KEY_RIGHT, true);
+	text->SetKeyAllowed(GUI_KEY_UP, true);
+	text->SetKeyAllowed(GUI_KEY_DOWN, true);
+
+	text->SetVKAllowed(GUI_VK_RETURN, false);
+	text->SetVKAllowed(GUI_VK_ESCAPE, false);
+	text->SetVKAllowed(GUI_VK_ENTER, false);
+	
+	float	cell_h = 20;
+	float	line_h = GUI_GetLineHeight(font_UI_Basic);
+	int		descent = GUI_GetLineDescent(font_UI_Basic);
+	float	cell2line = (cell_h - line_h + descent) * 0.5f;
+
+	float pad_bottom = cell2line - descent;
+	float pad_top = cell_h - line_h - pad_bottom;
+
+	text->SetMargins(3,pad_bottom,3,pad_top);
+
+
+	
 	
 	mInsertY -= 30;
 	
@@ -220,9 +253,46 @@ void		GUI_FormWindow::AddField(
 	
 	mParts.push_back(label);
 	mParts.push_back(text);
+	mFocusRing.push_back(text);
 	
 }
 
+void		GUI_FormWindow::AddFieldNoEdit(
+								int						id,
+								const string&			label_text,
+								const string&			default_text)
+{
+	DebugAssert(id > 0);
+	GUI_Label * label = new GUI_Label();
+	GUI_Label * text = new GUI_Label();
+	text->SetID(id);
+	label->SetDescriptor(label_text);
+	text->SetDescriptor(default_text);
+
+	int wbounds[4];
+	this->GUI_Pane::GetBounds(wbounds);
+	
+	int split = (wbounds[0] + wbounds[2]) / 5;
+	
+	label->SetBounds(wbounds[0] + 10, mInsertY - 20, split - 5, mInsertY);
+	text->SetBounds(split + 5, mInsertY - 20, wbounds[2] - 10, mInsertY);
+	
+	mInsertY -= 30;
+	
+	label->SetColors(WED_Color_RGBA(wed_Table_Text));
+	text->SetColors(WED_Color_RGBA(wed_Table_Text));
+	
+	label->SetParent(this);
+	text->SetParent(this);
+	label->SetSticky(1,0,0,1);
+	text->SetSticky(0,0,1,1);
+	label->Show();
+	text->Show();
+	
+	mParts.push_back(label);
+	mParts.push_back(text);
+	
+}
 
 void		GUI_FormWindow::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -242,4 +312,31 @@ string		GUI_FormWindow::GetField(
 	string ret;
 	if(who) who->GetDescriptor(ret);
 	return ret;
+}
+
+int			GUI_FormWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
+{
+	if(inVK == GUI_VK_RETURN)
+	{
+		this->Submit();
+		return 1;
+	}
+	if(inVK == GUI_VK_ESCAPE)
+	{
+		this->Cancel();
+		return 1;
+	}
+	if(inVK == GUI_VK_TAB && !mFocusRing.empty())
+	{
+		GUI_Commander * now = this->GetFocusForCommander();
+		vector<GUI_Commander*>::iterator i = find(mFocusRing.begin(),mFocusRing.end(),now);
+		int idx = distance(mFocusRing.begin(),i);
+		
+		int advance = (inFlags & gui_ShiftFlag) ? -1 : 1;
+		idx += advance;
+		if(idx < 0) idx += mFocusRing.size();
+		idx = idx % mFocusRing.size();
+		mFocusRing[idx]->TakeFocus();
+	}
+	return 0;
 }

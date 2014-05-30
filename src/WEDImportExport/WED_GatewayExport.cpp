@@ -54,6 +54,7 @@
 #include "WED_ExclusionZone.h"
 #include "WED_StringPlacement.h"
 #include "GUI_Timer.h"
+#include "GUI_Resources.h"
 #include <errno.h>
 #include <sstream>
 
@@ -92,12 +93,15 @@
 
 static int gateway_bounds_default[4] = { 0, 0, 500, 500 };
 
+static string saved_uname;
+static string saved_passwd;
+static string saved_comment;
+
 enum {
 	gw_icao = 1,
 	gw_username,
 	gw_password,
-	gw_comments,
-	gw_parent_id
+	gw_comments
 };
 
 static bool is_of_class(WED_Thing * who, const char ** classes)
@@ -234,6 +238,7 @@ private:
 	vector<char>			mResponse;
 	WED_Airport *			mApt;
 	set<WED_Thing *>		mProblemChildren;
+	string					mParID;
 
 };
 
@@ -264,12 +269,12 @@ void	WED_DoExportRobin(IResolver * resolver)
 
 	#else
 		
-	WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
+		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
 
-	if(!apt)
-		return;
-		
-	new WED_GatewayExportDialog(apt, resolver);
+		if(!apt)
+			return;
+			
+		new WED_GatewayExportDialog(apt, resolver);
 
 	#endif
 }
@@ -290,14 +295,16 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 	char par_id[32];
 	sprintf(par_id,"%d", apt->GetSceneryID());
 	
-	this->AddField(gw_icao,icao,name);
-	this->AddField(gw_username,"User Name","ben");
-	this->AddField(gw_password,"Password","wedGuru");
-	this->AddField(gw_comments,"Comments","This is an airport.");
+	
+	
+	this->AddFieldNoEdit(gw_icao,icao,name);
+	this->AddField(gw_username,"User Name",saved_uname);
+	this->AddField(gw_password,"Password",saved_passwd,true);
+	this->AddField(gw_comments,"Comments",saved_comment);
 	if(apt->GetSceneryID() >= 0)
-		this->AddField(gw_parent_id, "Scenery ID",par_id);
+		mParID = par_id;
 	else
-		this->AddField(gw_parent_id, "Scenery ID","");
+		mParID = "";
 	
 	this->Show();
 }
@@ -324,9 +331,12 @@ void WED_GatewayExportDialog::Submit()
 		DebugAssert(act_name == apt_name);
 		
 		string comment = this->GetField(gw_comments);
+		saved_comment = comment;
 		string uname = this->GetField(gw_username);
+		saved_uname = uname;
 		string pwd = this->GetField(gw_password);	
-		string parid = this->GetField(gw_parent_id);
+		saved_passwd = pwd;
+		string parid = mParID;
 		
 		string icao;
 		apt->GetICAO(icao);
@@ -421,8 +431,6 @@ void WED_GatewayExportDialog::Submit()
 		string features;
 		if(tag_atc)
 			features += ",1";
-		if(tag_3d)
-			features += ",2";
 		if(!features.empty())
 			features.erase(features.begin());
 		
@@ -442,7 +450,7 @@ void WED_GatewayExportDialog::Submit()
 		req["scenery"] = scenery;
 		
 		string reqstr=req.toStyledString();
-
+		
 		printf("%s\n",reqstr.c_str());
 		
 		#if BULK_SPLAT_IO || SPLAT_CURL_IO
@@ -461,9 +469,18 @@ void WED_GatewayExportDialog::Submit()
 			return;
 		#endif
 
-		curl_http_get_file * auth_req = new curl_http_get_file
-			("http://XXXXXXXXXXXX/scenery",NULL,&reqstr,&mResponse);
+		string cert;
 
+		string prefix = "http://";
+
+		if(GUI_GetTempResourcePath("gateway.crt", cert))
+			prefix = "https://";
+
+		string url = prefix + "gatewayapi.x-plane.com:3001/apiv1/scenery";
+
+		curl_http_get_file * auth_req = new curl_http_get_file(
+			url.c_str(),
+			NULL,&reqstr,&mResponse,cert);
 	
 		mCurl = auth_req;
 		
