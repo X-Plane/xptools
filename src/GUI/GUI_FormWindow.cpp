@@ -189,12 +189,12 @@ void		GUI_FormWindow::AddField(
 								int						id,
 								const string&			label_text,
 								const string&			default_text,
-								bool					is_password)
+								field_type				ft)
 {
 	DebugAssert(id > 0);
 	GUI_Label * label = new GUI_Label();
 	GUI_TextField * text = new GUI_TextField(false, this);
-	if(is_password)
+	if(ft == ft_password)
 		text->SetPasswordChar('*');
 	text->SetID(id);
 	label->SetDescriptor(label_text);
@@ -205,8 +205,10 @@ void		GUI_FormWindow::AddField(
 	
 	int split = (wbounds[0] + wbounds[2]) / 5;
 	
+	int fh = (ft == ft_multi_line || ft == ft_big) ? 100 : 20;
+	
 	label->SetBounds(wbounds[0] + 10, mInsertY - 20, split - 5, mInsertY);
-	text->SetBounds(split + 5, mInsertY - 20, wbounds[2] - 10, mInsertY);
+	text->SetBounds(split + 5, mInsertY - fh, wbounds[2] - 10, mInsertY);
 	
 	for(int i = 0; i <256;++i)
 		text->SetKeyAllowed(i,isprint(i));
@@ -217,8 +219,9 @@ void		GUI_FormWindow::AddField(
 	text->SetKeyAllowed(GUI_KEY_RIGHT, true);
 	text->SetKeyAllowed(GUI_KEY_UP, true);
 	text->SetKeyAllowed(GUI_KEY_DOWN, true);
+	text->SetKeyAllowed(GUI_KEY_RETURN, ft == ft_multi_line);
 
-	text->SetVKAllowed(GUI_VK_RETURN, false);
+	text->SetVKAllowed(GUI_VK_RETURN, ft == ft_multi_line);
 	text->SetVKAllowed(GUI_VK_ESCAPE, false);
 	text->SetVKAllowed(GUI_VK_ENTER, false);
 	
@@ -235,7 +238,7 @@ void		GUI_FormWindow::AddField(
 
 	
 	
-	mInsertY -= 30;
+	mInsertY -= (10+fh);
 	
 	label->SetColors(WED_Color_RGBA(wed_Table_Text));
 	text->SetColors(

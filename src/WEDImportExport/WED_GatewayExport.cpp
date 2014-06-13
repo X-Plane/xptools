@@ -86,7 +86,6 @@
 			progress and cancel on upload
 			port to windows
 			port to linux
-			rename "robin" in all cases to gateway
 			
 			download from gateway?
  */
@@ -211,7 +210,7 @@ static int file_to_uu64(const string& path, string& enc)
 //------------------------------------------------------------------------------------------------------------
 
 
-int	WED_CanExportRobin(IResolver * resolver)
+int	WED_CanExportToGateway(IResolver * resolver)
 {
 	#if BULK_SPLAT_IO
 	ISelection * sel = WED_GetSelect(resolver);	
@@ -255,7 +254,7 @@ int	Iterate_JSON_One_Airport(ISelectable * what, void * ref)
 	return 1;
 }
 
-void	WED_DoExportRobin(IResolver * resolver)
+void	WED_DoExportToGateway(IResolver * resolver)
 {
 	#if BULK_SPLAT_IO
 
@@ -265,8 +264,21 @@ void	WED_DoExportRobin(IResolver * resolver)
 			DoUserAlert("Please select only airports to do a bulk JSON export.");
 			return;
 		}
-		sel->IterateSelectionAnd(Iterate_JSON_One_Airport, resolver);
+		
+		if(WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass))
+		{
+			WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
 
+			if(!apt)
+				return;
+				
+			new WED_GatewayExportDialog(apt, resolver);
+		}
+		else
+		{
+			sel->IterateSelectionAnd(Iterate_JSON_One_Airport, resolver);
+		}
+		
 	#else
 		
 		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
@@ -280,7 +292,7 @@ void	WED_DoExportRobin(IResolver * resolver)
 }
 
 WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver) : 
-	GUI_FormWindow(gApplication, "Gateway", 500, 400),
+	GUI_FormWindow(gApplication, "Airport Scenery Gateway", 500, 400),
 	mResolver(resolver),
 	mPhase(0),
 	mCurl(NULL),
@@ -299,8 +311,8 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 	
 	this->AddFieldNoEdit(gw_icao,icao,name);
 	this->AddField(gw_username,"User Name",saved_uname);
-	this->AddField(gw_password,"Password",saved_passwd,true);
-	this->AddField(gw_comments,"Comments",saved_comment);
+	this->AddField(gw_password,"Password",saved_passwd,ft_password);
+	this->AddField(gw_comments,"Comments",saved_comment,ft_big);
 	if(apt->GetSceneryID() >= 0)
 		mParID = par_id;
 	else
@@ -331,6 +343,14 @@ void WED_GatewayExportDialog::Submit()
 		DebugAssert(act_name == apt_name);
 		
 		string comment = this->GetField(gw_comments);
+		
+//		string::size_type p = 0;
+//		while((p=comment.find("\r", p)) != comment.npos)
+//		{
+//			comment.insert(p+1,"\n");
+//			p += 2;
+//		}
+					
 		saved_comment = comment;
 		string uname = this->GetField(gw_username);
 		saved_uname = uname;
@@ -342,7 +362,7 @@ void WED_GatewayExportDialog::Submit()
 		apt->GetICAO(icao);
 		
 		WED_Export_Target old_target = gExportTarget;
-		gExportTarget = wet_robin;
+		gExportTarget = wet_gateway;
 
 		if(!WED_ValidateApt(mResolver, apt))
 		{
@@ -406,7 +426,7 @@ void WED_GatewayExportDialog::Submit()
 			fprintf(readme,"Authors Comments:\n\n%s\n\n", comment.c_str());
 			fprintf(readme,"Installation Instructions:\n\n");
 			fprintf(readme,"To install this scenery, drag this entire folder into X-Plane's Custom Scenery\n");
-			fprintf(readme,"folder.");
+			fprintf(readme,"folder and re-start X-Plane.\n");
 			fclose(readme);
 		}
 		

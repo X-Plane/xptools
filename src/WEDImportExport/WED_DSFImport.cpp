@@ -700,7 +700,7 @@ static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing 
 	return NULL;
 }
 
-#if ROBIN_IMPORT_FEATURES
+#if GATEWAY_IMPORT_FEATURES
 void	WED_DoImportDSFText(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);

@@ -669,7 +669,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 {
 	vector<string>	fnames;
 	
-	#if ROBIN_IMPORT_FEATURES
+	#if GATEWAY_IMPORT_FEATURES
 	
 		char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
 		if(!path)

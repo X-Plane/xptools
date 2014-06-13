@@ -49,13 +49,13 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&Import apt.dat...",	'I',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ImportApt		},
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
-#if ROBIN_IMPORT_FEATURES
-{	"Import from Global Airports...",0,0,								0,	wed_ImportRobin		},
+#if GATEWAY_IMPORT_FEATURES
+{	"Import Airport Scenery Gateway Master Files...",0,0,								0,	wed_ImportGateway		},
 #endif
 {	"-",					0,		0,								0,	0					},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
 {	"Export Scenery Pac&k",	'B',	gui_ControlFlag,				0,	wed_ExportPack		},
-{	"Export for Global Airports...",0,	0,							0,	wed_ExportToRobin	},
+{	"Export to Airport Scenery Gateway...",0,	0,							0,	wed_ExportToGateway	},
 #if IBM || LIN
 {	"-",					0,		0,								0,	0					},
 {	"&Preferences...",		0,		0,								0,	gui_Prefs			},
@@ -69,7 +69,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 9.70",			0,		0,								0,	wed_Export900		},
 {	"X-Plane 10.00",		0,		0,								0,	wed_Export1000		},
 {	"X-Plane 10.21",		0,		0,								0,	wed_Export1021,		},
-{	"Global Airport Database",0,	0,								0,	wed_ExportRobin		},
+{	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
 

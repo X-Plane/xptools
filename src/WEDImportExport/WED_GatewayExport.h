@@ -26,7 +26,7 @@
 
 class	IResolver;
 
-int		WED_CanExportRobin(IResolver * resolver);
-void	WED_DoExportRobin(IResolver * resolver);
+int		WED_CanExportToGateway(IResolver * resolver);
+void	WED_DoExportToGateway(IResolver * resolver);
 
 #endif

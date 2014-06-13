@@ -56,8 +56,8 @@
 
 #include "PlatformUtils.h"
 
-#define MAX_LON_SPAN_ROBIN 0.2
-#define MAX_LAT_SPAN_ROBIN 0.2
+#define MAX_LON_SPAN_GATEWAY 0.2
+#define MAX_LAT_SPAN_GATEWAY 0.2
 
 
 static set<string>	s_used_rwy;
@@ -430,29 +430,29 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	}
 	
 	//------------------------------------------------------------------------------------
-	// CHECKS FOR SUBMISSION TO ROBIN
+	// CHECKS FOR SUBMISSION TO GATEWAY
 	//------------------------------------------------------------------------------------
 
-	if(gExportTarget == wet_robin)
+	if(gExportTarget == wet_gateway)
 	{
 		if(who->GetClass() != WED_Group::sClass)
 		if(WED_GetParentAirport(who) == NULL)
-			msg = "You cannot export airport overlays to Robin if overlay elements are outside airports in the hierarchy.";
+			msg = "You cannot export airport overlays to the X-Plane Airport Gateway if overlay elements are outside airports in the hierarchy.";
 
 		if(who->GetClass() == WED_Airport::sClass)
 		{
 			WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
 			Bbox2 bounds;
 			apt->GetBounds(gis_Geo, bounds);
-			if(bounds.xspan() > MAX_LON_SPAN_ROBIN ||
-			   bounds.yspan() > MAX_LAT_SPAN_ROBIN)
+			if(bounds.xspan() > MAX_LON_SPAN_GATEWAY ||
+			   bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
 			{
 				msg = "This airport is too big.  Perhaps a random part of the airport has been dragged to another part of the world?";
 			}
 		
 		}
 
-		#if !ROBIN_IMPORT_FEATURES
+		#if !GATEWAY_IMPORT_FEATURES
 		if(who->GetClass() == WED_AirportBoundary::sClass)
 		{
 			if(WED_HasBezierPol(dynamic_cast<WED_AirportBoundary*>(who)))

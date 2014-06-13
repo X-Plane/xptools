@@ -40,17 +40,17 @@ enum {
 	wed_ImportApt,
 	wed_ExportApt,
 	wed_ExportPack,
-	wed_ExportToRobin,
+	wed_ExportToGateway,
 	wed_ImportDSF,
 	wed_ImportOrtho,
-#if ROBIN_IMPORT_FEATURES	
-	wed_ImportRobin,
+#if GATEWAY_IMPORT_FEATURES	
+	wed_ImportGateway,
 #endif	
 	// Export Target Submenu
 	wed_Export900,
 	wed_Export1000,
 	wed_Export1021,
-	wed_ExportRobin,
+	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
 	wed_Ungroup,

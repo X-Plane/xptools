@@ -32,6 +32,13 @@
 class GUI_FormWindow : public GUI_Window, public GUI_Listener, public GUI_Destroyable {
 public:
 
+	enum field_type {
+		ft_single_line,
+		ft_multi_line,
+		ft_big,
+		ft_password 
+	};
+
 						 GUI_FormWindow(
 								GUI_Commander *			cmdr,
 								const string&			title,
@@ -49,7 +56,7 @@ public:
 								int						id,
 								const string&			label,
 								const string&			default_text,
-								bool					is_password=false);
+								field_type				ft=ft_single_line);
 
 			void		AddFieldNoEdit(			
 								int						id,
