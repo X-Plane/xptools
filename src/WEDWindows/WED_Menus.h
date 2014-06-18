@@ -111,6 +111,11 @@ enum {
 	wed_SelectDoubles,
 	wed_SelectCrossing,
 #endif
+	wed_SelectLocalObjects,
+	wed_SelectLibraryObjects,
+	wed_SelectDefaultObjects,
+	wed_SelectThirdPartyObjects,
+	wed_SelectMissingObjects,
 	// Airport Menu
 	wed_CreateApt,
 	wed_EditApt,

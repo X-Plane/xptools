@@ -512,7 +512,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	if(wrl == NULL) wrl = WED_GetWorld(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	
-	WED_LibraryMgr * lib_mgr = 	SAFE_CAST(WED_LibraryMgr,resolver->Resolver_Find("libmgr"));
+	WED_LibraryMgr * lib_mgr = 	WED_GetLibraryMgr(resolver);
 	
 	WED_Thing * bad_guy = ValidateRecursive(wrl, lib_mgr);
 	if (bad_guy)

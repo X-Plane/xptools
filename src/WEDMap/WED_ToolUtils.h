@@ -32,6 +32,7 @@ class	GUI_Pane;
 class	ISelectable;
 class	ITexMgr;
 class	WED_ResourceMgr;
+class	WED_LibraryMgr;
 class	WED_Airport;
 class	WED_Thing;
 class	ISelection;
@@ -59,6 +60,7 @@ WED_Thing	*	WED_GetWorld(IResolver * resolver);
 ILibrarian *	WED_GetLibrarian(IResolver * resolver);
 ITexMgr *		WED_GetTexMgr(IResolver * resolver);
 WED_ResourceMgr*WED_GetResourceMgr(IResolver * resolver);
+WED_LibraryMgr*	WED_GetLibraryMgr(IResolver * resolver);
 
 bool			WED_IsIconic(IGISEntity * what);
 
@@ -118,7 +120,8 @@ int Iterate_CollectEntitiesUV(ISelectable * what, void * ref);			// ref is a ptr
 
 bool IsGraphNode(WED_Thing * what);
 bool IsGraphEdge(WED_Thing * what);
-void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *), vector<WED_Thing *>& items);
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *			  ),			 vector<WED_Thing *>& items);
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *, void * ref), void * ref, vector<WED_Thing *>& items);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // DRAG & DROP

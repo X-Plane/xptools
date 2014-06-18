@@ -162,12 +162,18 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select P&olygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
 {	"Select &Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
 #if AIRPORT_ROUTING
-{	"-",				0,				0,								0,	0					},
-{	"Select Degenerate Edges",	0,		0,								0,	wed_SelectZeroLength },
-{	"Select Double Nodes",	0,			0,								0,	wed_SelectDoubles	},
-{	"Select Crossing Edges",	0,		0,								0,	wed_SelectCrossing	},
+{	"-",						0,			0,							0,	0					},
+{	"Select Degenerate Edges",	0,			0,							0,	wed_SelectZeroLength },
+{	"Select Double Nodes",		0,			0,							0,	wed_SelectDoubles	},
+{	"Select Crossing Edges",	0,			0,							0,	wed_SelectCrossing	},
 #endif
-{	NULL,				0,				0,								0,	0					},
+{	"-",						0,			0,							0,	0					},
+{	"Select Local Objects",		0,			0,							0,	wed_SelectLocalObjects },
+{	"Select Library Objects",	0,			0,							0,	wed_SelectLibraryObjects },
+{	"Select Laminar Library Objects",0,		0,							0,	wed_SelectDefaultObjects },
+{	"Select Third Party Library Objects",0,	0,							0,	wed_SelectThirdPartyObjects },
+{	"Select Missing Objects",	0,			0,							0,	wed_SelectMissingObjects },
+{	NULL,						0,			0,							0,	0					},
 };
 
 static const GUI_MenuItem_t kAirportMenu[] = {

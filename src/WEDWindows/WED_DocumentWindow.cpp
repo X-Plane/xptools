@@ -388,6 +388,12 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectZeroLength:	WED_DoSelectZeroLength(mDocument);	return 1;
 	case wed_SelectDoubles:		WED_DoSelectDoubles(mDocument);		return 1;
 	case wed_SelectCrossing:	WED_DoSelectCrossing(mDocument);	return 1;
+	
+	case wed_SelectLocalObjects:		WED_DoSelectLocalObjects(mDocument); return 1;
+	case wed_SelectLibraryObjects:		WED_DoSelectLibraryObjects(mDocument); return 1;
+	case wed_SelectDefaultObjects:		WED_DoSelectDefaultObjects(mDocument); return 1;
+	case wed_SelectThirdPartyObjects:	WED_DoSelectThirdPartyObjects(mDocument); return 1;
+	case wed_SelectMissingObjects:		WED_DoSelectMissingObjects(mDocument); return 1;
 #endif
 
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
@@ -479,7 +485,12 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:
 	case wed_SelectDoubles:
-	case wed_SelectCrossing:	return 1;
+	case wed_SelectCrossing:	
+	case wed_SelectLocalObjects:
+	case wed_SelectLibraryObjects:
+	case wed_SelectDefaultObjects:
+	case wed_SelectThirdPartyObjects:
+	case wed_SelectMissingObjects:	return 1;
 #endif
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);

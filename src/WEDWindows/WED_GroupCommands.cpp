@@ -48,6 +48,8 @@
 #include "WED_Airport.h"
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_ObjPlacement.h"
+#include "WED_LibraryMgr.h"
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -1076,6 +1078,115 @@ void WED_DoSelectCrossing(IResolver * resolver)
 	}
 	op->CommitOperation();
 }
+
+static bool get_any_resource_for_thing(WED_Thing * thing, string& r)
+{
+	if(thing->GetClass() == WED_ObjPlacement::sClass)
+	{
+		WED_ObjPlacement * o = dynamic_cast<WED_ObjPlacement *>(thing);
+		o->GetResource(r);
+		return true;
+	}
+	return false;
+}
+
+bool HasMissingResource(WED_Thing * t, void * ref)
+{
+	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	string r;
+	if(!get_any_resource_for_thing(t,r))
+		return false;
+	
+	return mgr->GetResourceType(r) == res_None;	
+}
+
+bool HasLocalResource(WED_Thing * t, void * ref)
+{
+	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	string r;
+	if(!get_any_resource_for_thing(t,r))
+		return false;
+	
+	return mgr->IsResourceLocal(r);
+}
+
+bool HasLibraryResource(WED_Thing * t, void * ref)
+{
+	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	string r;
+	if(!get_any_resource_for_thing(t,r))
+		return false;
+	
+	return mgr->IsResourceLibrary(r);
+}
+
+bool HasDefaultResource(WED_Thing * t, void * ref)
+{
+	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	string r;
+	if(!get_any_resource_for_thing(t,r))
+		return false;
+	
+	return mgr->IsResourceDefault(r);
+}
+
+bool HasThirdPartyResource(WED_Thing * t, void * ref)
+{
+	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	string r;
+	if(!get_any_resource_for_thing(t,r))
+		return false;
+	
+	return !mgr->IsResourceDefault(r) && mgr->IsResourceLibrary(r);
+}
+
+
+static void DoSelectWithFilter(const char * op_name, bool (* filter)(WED_Thing * t, void * ref), IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation(op_name);
+	sel->Clear();
+
+	WED_LibraryMgr * mgr = WED_GetLibraryMgr(resolver);
+
+	vector<WED_Thing *> who;
+	CollectRecursive(WED_GetWorld(resolver), filter, mgr, who);
+	
+	for(vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
+	{
+		sel->Insert(*w);
+	}
+	
+	op->CommitOperation();
+}
+
+void	WED_DoSelectMissingObjects(IResolver * resolver)
+{
+	DoSelectWithFilter("Select Missing Art Assets", HasMissingResource, resolver);
+}
+
+void	WED_DoSelectLocalObjects(IResolver * resolver)
+{
+	DoSelectWithFilter("Select Local Art Assets", HasLocalResource, resolver);
+}
+
+void	WED_DoSelectLibraryObjects(IResolver * resolver)
+{
+	DoSelectWithFilter("Select Library Art Assets", HasLibraryResource, resolver);
+}
+
+void	WED_DoSelectDefaultObjects(IResolver * resolver)
+{
+	DoSelectWithFilter("Select Default Art Assets", HasDefaultResource, resolver);
+}
+
+void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
+{
+	DoSelectWithFilter("Select Third Party Art Assets", HasThirdPartyResource, resolver);
+}
+
+
 
 static int	unsplittable(ISelectable * base, void * ref)
 {
