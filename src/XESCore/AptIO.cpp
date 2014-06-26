@@ -54,6 +54,13 @@ void divide_heading(int * lo, int * hi)
 	*lo = (*lo / 1000);
 }
 
+// To test this, use the following (should print 1, 2, 4, 8, 16)
+// printf("Bitfields:\n");
+// printf("\t %d: heavy\n", scan_bitfields("foo heavy bar", equip_strings, atc_traffic_all));
+// printf("\t %d: jets\n", scan_bitfields("foo jets bar", equip_strings, atc_traffic_all));
+// printf("\t %d: turboprops\n", scan_bitfields("foo turboprops bar", equip_strings, atc_traffic_all));
+// printf("\t %d: props\n", scan_bitfields("foo props bar", equip_strings, atc_traffic_all));
+// printf("\t %d: helos\n", scan_bitfields("foo helos bar", equip_strings, atc_traffic_all));
 int scan_bitfields(const char * str, const char * bits[], int all_value)
 {
 	if(all_value && strcmp(str,"all") == 0)
@@ -64,7 +71,11 @@ int scan_bitfields(const char * str, const char * bits[], int all_value)
 	int b = 1;
 	while(bits[n])
 	{
-		if(strstr(str, bits[n]))
+		// Beware "props" as a substring of "turboprops"
+		int not_a_false_positive = (!strstr(str, "turbo") || (strstr(str, "turbo") && strstr(bits[n], "turbo")) );
+		// Note: it *may* be safe to just check for an exact match between the strings, but
+		//       Tyler can't be sure, so he's leaving this cludgy substring thing.
+		if(strstr(str, bits[n]) && not_a_false_positive)
 			r |= b;
 		++n;
 		b <<= 1;
