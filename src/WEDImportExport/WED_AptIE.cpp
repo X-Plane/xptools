@@ -133,56 +133,66 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 }
 
 #if AIRPORT_ROUTING
-static void CollectTaxiNodesAndEdges(WED_Thing * root, vector<WED_Thing *> & nodes_and_edges)
+/**
+ * Recursively walks the root tree to collect all elements of the specified type.
+ * 
+ * For instance, you might use this to collect all WED_TaxiRouteNode objects
+ * within an airport (and store them in the order the same relative order that they
+ * were listed in the editor).
+ */
+template<class T>
+static void CollectAllElementsOfType(WED_Thing * root, vector<T *> & elements)
 {
-	WED_TaxiRoute * r = dynamic_cast<WED_TaxiRoute*>(root);
+	T * r = dynamic_cast<T*>(root);
 	if(r)
 	{
-		nodes_and_edges.push_back(r);
+		elements.push_back(r);
 	}
-	else
-	{
-		WED_TaxiRouteNode * r = dynamic_cast<WED_TaxiRouteNode*>(root);
-		if(r) nodes_and_edges.push_back(r);
-	}
-
+	
 	int nn = root->CountChildren();
 	for(int n = 0; n < nn; ++n)
 	{
-		CollectTaxiNodesAndEdges(root->GetNthChild(n), nodes_and_edges);
+		CollectAllElementsOfType<T>(root->GetNthChild(n), elements);
 	}
 }
 
 /**
- * Walks the list of nodes and edges to build the airport network (nodes connected to edges)
+ * "Exports" the list of nodes into the airport network
  */
-static void MakeRoutingInOrder(vector<WED_Thing *>& nodes_and_edges, AptNetwork_t& net)
+static void MakeNodeRouting(vector<WED_TaxiRouteNode *>& nodes, AptNetwork_t& net)
 {
-	for(vector<WED_Thing *>::iterator i = nodes_and_edges.begin(); i != nodes_and_edges.end(); ++i)
+	for(vector<WED_TaxiRouteNode *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
 	{
-		WED_TaxiRoute * e = dynamic_cast<WED_TaxiRoute*>(*i);
-		if(e)
-		{
-			AptRouteEdge_t ne;
-			e->Export(ne);
-			
-			ne.src = e->GetNthSource(0)->GetID();
-			ne.dst = e->GetNthSource(1)->GetID();
+		AptRouteNode_t nd;
+		// Node's ID is its index in file order
+		nd.id = std::distance(nodes.begin(), n);
+		(*n)->GetName(nd.name);
+		
+		IGISPoint * p = dynamic_cast<IGISPoint*>(*n);
+		p->GetLocation(gis_Geo, nd.location);
+		net.nodes.push_back(nd);	
+	}
+}
 
-			net.edges.push_back(ne);
-		}
-		else 
-		{
-			WED_TaxiRouteNode * n = dynamic_cast<WED_TaxiRouteNode *>(*i);
-			AptRouteNode_t nd;
-			nd.id = n->GetID();
-			n->GetName(nd.name);
-			
-			IGISPoint * p = dynamic_cast<IGISPoint*>(n);
-			p->GetLocation(gis_Geo, nd.location);
-			net.nodes.push_back(nd);
-		}
-
+/**
+ * "Exports" the list of edges into the airport network
+ * @param nodes The list of all taxi route nodes in the airport (required to get accurate IDs for the nodes)
+ */
+static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, vector<WED_TaxiRouteNode *> * nodes)
+{
+	for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+	{
+		AptRouteEdge_t ne;
+		(*e)->Export(ne);
+		
+		// Node's ID is its index in file order
+		vector<WED_TaxiRouteNode *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthSource(0));
+		ne.src = std::distance(nodes->begin(), pos_src);
+		
+		vector<WED_TaxiRouteNode *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthSource(1));
+		ne.dst = std::distance(nodes->begin(), pos_dst);;
+		
+		net.edges.push_back(ne);
 	}
 }
 #endif
@@ -227,9 +237,13 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apt->Export(apts.back());
 		
 #if AIRPORT_ROUTING
-		vector<WED_Thing *> nodes_and_edges;
-		CollectTaxiNodesAndEdges(apt, nodes_and_edges);
-		MakeRoutingInOrder(nodes_and_edges, apts.back().taxi_route);
+		vector<WED_TaxiRouteNode *> nodes;
+		CollectAllElementsOfType<WED_TaxiRouteNode>(apt, nodes);
+		MakeNodeRouting(nodes, apts.back().taxi_route);
+		
+		vector<WED_TaxiRoute *> edges;
+		CollectAllElementsOfType<WED_TaxiRoute>(apt, edges);
+		MakeEdgeRouting(edges, apts.back().taxi_route, &nodes);
 #endif
 	}
 	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
@@ -654,6 +668,7 @@ void	WED_AptImport(
 			new_n->SetName(n->name);
 			new_n->SetLocation(gis_Geo,n->location);
 			nodes[n->id] = new_n;
+			printf("Found node %s\n", n->name.c_str());
 		}
 		for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
 		{
