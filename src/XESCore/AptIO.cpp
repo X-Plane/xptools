@@ -54,15 +54,20 @@ void divide_heading(int * lo, int * hi)
 	*lo = (*lo / 1000);
 }
 
-// To test this, use the following (should print 1, 2, 4, 8, 16)
-// printf("Bitfields:\n");
-// printf("\t %d: heavy\n", scan_bitfields("foo heavy bar", equip_strings, atc_traffic_all));
-// printf("\t %d: jets\n", scan_bitfields("foo jets bar", equip_strings, atc_traffic_all));
-// printf("\t %d: turboprops\n", scan_bitfields("foo turboprops bar", equip_strings, atc_traffic_all));
-// printf("\t %d: props\n", scan_bitfields("foo props bar", equip_strings, atc_traffic_all));
-// printf("\t %d: helos\n", scan_bitfields("foo helos bar", equip_strings, atc_traffic_all));
-int scan_bitfields(const char * str, const char * bits[], int all_value)
+// "Unit test" like this:
+// if( !( (scan_bitfields("turboprops|props", equip_strings, atc_traffic_all, '|') == 12) &&
+//		(scan_bitfields("props", equip_strings, atc_traffic_all, '|') == 8) &&
+//		(scan_bitfields("turboprops", equip_strings, atc_traffic_all) == 4) &&
+//		(scan_bitfields("turboprops|helos|jets", equip_strings, atc_traffic_all) == 22)) )
+// {
+// 	printf("Failed test\n"); exit(1);
+// }
+int scan_bitfields(const char * str, const char * bits[], int all_value, char separator='|')
 {
+	std::string string_version(str);
+	std::vector<std::string> tokenized;
+	tokenize_string(string_version.begin(), string_version.end(), back_inserter(tokenized), separator);
+	
 	if(all_value && strcmp(str,"all") == 0)
 		return all_value;
 		
@@ -71,12 +76,13 @@ int scan_bitfields(const char * str, const char * bits[], int all_value)
 	int b = 1;
 	while(bits[n])
 	{
-		// Beware "props" as a substring of "turboprops"
-		int not_a_false_positive = (!strstr(str, "turbo") || (strstr(str, "turbo") && strstr(bits[n], "turbo")) );
-		// Note: it *may* be safe to just check for an exact match between the strings, but
-		//       Tyler can't be sure, so he's leaving this cludgy substring thing.
-		if(strstr(str, bits[n]) && not_a_false_positive)
-			r |= b;
+		for(std::vector<std::string>::iterator token = tokenized.begin(); token != tokenized.end(); ++token)
+		{
+			if( *token == std::string(bits[n]) )
+			{
+				r |= b;
+			}
+		}
 		++n;
 		b <<= 1;
 	}
@@ -255,7 +261,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	bool			hit_prob = false;
 	AptPolygon_t *	open_poly = NULL;
 	Point2			pt,ctrl;
-
+	
 	bool forceDone = false;
 	while (ok.empty() && !TextScanner_IsDone(s) && !forceDone)
 	{
