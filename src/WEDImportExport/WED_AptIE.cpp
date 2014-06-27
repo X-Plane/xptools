@@ -133,43 +133,56 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 }
 
 #if AIRPORT_ROUTING
-
-static void CollectTaxiEdges(WED_Thing * root, set<WED_TaxiRoute *> & all_edges)
+static void CollectTaxiNodesAndEdges(WED_Thing * root, vector<WED_Thing *> & nodes_and_edges)
 {
 	WED_TaxiRoute * r = dynamic_cast<WED_TaxiRoute*>(root);
-	if(r) all_edges.insert(r);
+	if(r)
+	{
+		nodes_and_edges.push_back(r);
+	}
+	else
+	{
+		WED_TaxiRouteNode * r = dynamic_cast<WED_TaxiRouteNode*>(root);
+		if(r) nodes_and_edges.push_back(r);
+	}
+
 	int nn = root->CountChildren();
 	for(int n = 0; n < nn; ++n)
-		CollectTaxiEdges(root->GetNthChild(n), all_edges);
+	{
+		CollectTaxiNodesAndEdges(root->GetNthChild(n), nodes_and_edges);
+	}
 }
 
-static void MakeRouting(set<WED_TaxiRoute *>& edges, AptNetwork_t& net)
+/**
+ * Walks the list of nodes and edges to build the airport network (nodes connected to edges)
+ */
+static void MakeRoutingInOrder(vector<WED_Thing *>& nodes_and_edges, AptNetwork_t& net)
 {
-	set<WED_Thing *>	nodes;
-	for(set<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+	for(vector<WED_Thing *>::iterator i = nodes_and_edges.begin(); i != nodes_and_edges.end(); ++i)
 	{
-		AptRouteEdge_t ne;
+		WED_TaxiRoute * e = dynamic_cast<WED_TaxiRoute*>(*i);
+		if(e)
+		{
+			AptRouteEdge_t ne;
+			e->Export(ne);
+			
+			ne.src = e->GetNthSource(0)->GetID();
+			ne.dst = e->GetNthSource(1)->GetID();
 
-		(*e)->Export(ne);
-		
-		ne.src = (*e)->GetNthSource(0)->GetID();
-		ne.dst = (*e)->GetNthSource(1)->GetID();
-		
-		nodes.insert((*e)->GetNthSource(0));
-		nodes.insert((*e)->GetNthSource(1));
-		
-		net.edges.push_back(ne);
-	}	
+			net.edges.push_back(ne);
+		}
+		else 
+		{
+			WED_TaxiRouteNode * n = dynamic_cast<WED_TaxiRouteNode *>(*i);
+			AptRouteNode_t nd;
+			nd.id = n->GetID();
+			n->GetName(nd.name);
+			
+			IGISPoint * p = dynamic_cast<IGISPoint*>(n);
+			p->GetLocation(gis_Geo, nd.location);
+			net.nodes.push_back(nd);
+		}
 
-	for(set<WED_Thing *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
-	{
-		AptRouteNode_t nd;
-		nd.id = (*n)->GetID();
-		(*n)->GetName(nd.name);
-		
-		IGISPoint * p = dynamic_cast<IGISPoint*>(*n);
-		p->GetLocation(gis_Geo, nd.location);
-		net.nodes.push_back(nd);
 	}
 }
 #endif
@@ -214,9 +227,9 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apt->Export(apts.back());
 		
 #if AIRPORT_ROUTING
-		set<WED_TaxiRoute *> edges;
-		CollectTaxiEdges(apt, edges);
-		MakeRouting(edges, apts.back().taxi_route);		
+		vector<WED_Thing *> nodes_and_edges;
+		CollectTaxiNodesAndEdges(apt, nodes_and_edges);
+		MakeRoutingInOrder(nodes_and_edges, apts.back().taxi_route);
 #endif
 	}
 	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
