@@ -73,6 +73,18 @@
 // set this to 1 to write JSONs for multiple exports - for later examination
 #define SPLAT_CURL_IO 0
 
+#define ATC_FLOW_TAG       1
+#define ATC_TAXI_ROUTE_TAG 2
+
+// Curse C++98 for not having this.
+template<typename T>
+static std::string to_string(const T& value)
+{
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
 /*
 
 		progress bar
@@ -127,13 +139,13 @@ static bool has_any_of_class(WED_Thing * who, const char ** classes)
 
 // ATC classes - the entire flow hierarchy sits below WED_ATCFlow, so we only need that.  
 // Nodes are auxilary to WED_TaxiRoute, so the taxi route covers all edges.
-const char * k_atc_classes[] = {
-	WED_ATCFlow::sClass,
-	WED_TaxiRoute::sClass,
-	0
-};
+const char * k_atc_flow_class[] = { WED_ATCFlow::sClass, 0 };
+const char * k_atc_taxi_route_class[] = { WED_TaxiRoute::sClass, 0 };
 
-static bool has_atc(WED_Airport * who) { return has_any_of_class(who, k_atc_classes); }
+// In apt.dat, taxi route lines are 1200 through 1204
+static bool has_atc_taxi_route(WED_Airport * who) { return has_any_of_class(who, k_atc_taxi_route_class); }
+// In apt.dat, flow lines are 1100 and 1101
+static bool has_atc_flow(WED_Airport * who)       { return has_any_of_class(who, k_atc_flow_class); }
 
 // We are intentionally IGNORING lin/pol/str and exclusion zones...this is 3-d in the 'user' sense
 // of the term, like, do things stick up.
@@ -334,9 +346,6 @@ void WED_GatewayExportDialog::Submit()
 		DebugAssert(mApt);
 		WED_Airport * apt = mApt;
 		
-		int tag_atc = has_atc(apt);
-		int tag_3d = has_3d(apt);
-		
 		string apt_name = this->GetField(gw_icao);
 		string act_name;
 		apt->GetName(act_name);
@@ -449,8 +458,10 @@ void WED_GatewayExportDialog::Submit()
 		Json::Value		scenery;
 		
 		string features;
-		if(tag_atc)
-			features += ",1";
+		if(has_atc_flow(apt))
+			features += "," + to_string(ATC_FLOW_TAG);
+		if(has_atc_taxi_route(apt))
+			features += "," + to_string(ATC_TAXI_ROUTE_TAG);
 		if(!features.empty())
 			features.erase(features.begin());
 		
@@ -461,7 +472,7 @@ void WED_GatewayExportDialog::Submit()
 		else
 			scenery["parentId"] = parid;
 		scenery["icao"] = icao;
-		scenery["type"] = tag_3d ? "3D" : "2D";
+		scenery["type"] = has_3d(apt) ? "3D" : "2D";
 		scenery["artistComments"] = comment;
 		scenery["features"] = features;
 		scenery["masterZipBlob"] = uu64;
