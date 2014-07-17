@@ -58,10 +58,30 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	GUI_Pane::GetBounds(bounds);
 	GUI_DrawCentered(state, "about.png", bounds, 0, 0, tile_sel, NULL, NULL);
 
-	char buf[1024];
-
 	float f = GUI_GetLineHeight(font_UI_Basic);
 	float color[4] = { 1.0, 1.0, 1.0, 0.7 };
+
+	const char * main_text[] = {
+		"WorldEditor 1.3",
+		"©Copyright 2007-2014, Laminar Research.",
+		"",
+		"This software is available under an open license.",
+		"Visit http://developer.x-plane.com/code/ for more info.",
+		"",
+		"Code by Ted Greene, Ben Supnik and Tyler Young.",
+		"Original graphics by Christiano Maggi.",
+		0
+		
+	};
+	
+	int n = 0;
+	while(main_text[n])
+	{
+		GUI_FontDraw(state, font_UI_Basic, color, bounds[0] * 0.65 + bounds[2] * 0.35, bounds[3] - 30 - f * n, main_text[n]);
+		++n;
+	}
+
+	char buf[1024];
 
 	sprintf(buf,"WorldEditor " WED_VERSION_STRING ", compiled on "__DATE__" "__TIME__);
 
@@ -79,7 +99,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 		"Thanks to Janos Laube, Mathias Roedel, Theodore \"Ted\" Greene and everyone else",
 		"who has contributed to WorldEditor's development.",
 		0 };
-	int n = 0;
+	 n = 0;
 	while(credits[n])
 	{
 		GUI_FontDrawScaled(
