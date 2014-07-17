@@ -95,9 +95,9 @@
 // Really we need a better tile service.
 #define WANT_TERRASEVER 0
 
-// These turn on the features ot import the global apt databaes for the purpose of collecting - they're really only intended
-// for Robin Peel to use, and they are currently mac ony.
-#define ROBIN_IMPORT_FEATURES 0
+// These turn on the features to import the global apt databaes for the purpose of building a final scenery pack
+// from the gateway
+#define GATEWAY_IMPORT_FEATURES 0
 
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0

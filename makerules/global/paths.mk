@@ -7,6 +7,7 @@ LIBPATHS += -L./libs/local$(MULTI_SUFFIX)/lib
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include
 INCLUDEPATHS += -I./libs/local$(MULTI_SUFFIX)/include/freetype2
 INCLUDEPATHS += -I./src
+INCLUDEPATHS += -I./src/lib_json/include
 INCLUDEPATHS += -I./src/linuxinit
 INCLUDEPATHS += -I./src/WEDTCE
 INCLUDEPATHS += -I./src/Env

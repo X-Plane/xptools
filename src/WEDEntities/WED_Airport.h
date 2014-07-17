@@ -36,7 +36,9 @@ public:
 
 	void		GetICAO(string& icao) const;
 	int			GetAirportType(void) const;
+	int			GetSceneryID(void) const;
 
+	void		SetSceneryID(int new_id);
 	void		SetAirportType(int airport_type);
 	void		SetElevation(double elev);
 	void		SetHasATC(int has_atc);
@@ -53,6 +55,7 @@ private:
 	WED_PropDoubleTextMeters	elevation;
 	WED_PropBoolText			has_atc;
 	WED_PropStringText			icao;
+	WED_PropIntText				scenery_id;
 
 };
 

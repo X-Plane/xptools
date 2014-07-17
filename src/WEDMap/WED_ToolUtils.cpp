@@ -60,6 +60,7 @@
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_LibraryMgr.h"
 
 using std::list;
 
@@ -199,6 +200,11 @@ ITexMgr *		WED_GetTexMgr(IResolver * resolver)
 WED_ResourceMgr*WED_GetResourceMgr(IResolver * resolver)
 {
 	return SAFE_CAST(WED_ResourceMgr,resolver->Resolver_Find("resmgr"));
+}
+
+WED_LibraryMgr*WED_GetLibraryMgr(IResolver * resolver)
+{
+	return SAFE_CAST(WED_LibraryMgr,resolver->Resolver_Find("libmgr"));
 }
 
 WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx)
@@ -719,4 +725,12 @@ void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *), vector<WED_
 	int nn = root->CountChildren();
 	for(int n = 0; n < nn; ++n)
 		CollectRecursive(root->GetNthChild(n), filter, items);
+}
+
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *, void * ref), void * ref, vector<WED_Thing *>& items)
+{
+	if(filter(root,ref)) items.push_back(root);
+	int nn = root->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		CollectRecursive(root->GetNthChild(n), filter, ref, items);
 }

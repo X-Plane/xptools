@@ -16,13 +16,48 @@ XWin::XWin(
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 	SetTitle(inTitle);
-
+	
+	QRect ScreenBounds = QApplication::desktop()->availableGeometry(-1);
+	int screen_w = ScreenBounds.width();
+	int screen_h = ScreenBounds.height();
+	
 	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
 	int y = (inAttributes & xwin_style_fullscreen) ? 0 : inY;
 	int w = (inAttributes & xwin_style_fullscreen) ? 1024 : inWidth;
-	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;
+	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;	 
+   
+	if( inAttributes & xwin_style_centered )
+	{
+		x = (screen_w - w) / 2;
+		y = (screen_h - h) / 2;
+	}
+	
 	MoveTo(x, y);
 	Resize(w, h);
+	
+	bool isModalWindow = (( inAttributes & 3 ) == xwin_style_modal) ;
+	
+	if(isModalWindow)
+	{
+		this->setWindowFlags(windowFlags()| Qt::Dialog);
+		this->setWindowModality(Qt::ApplicationModal);
+	}
+	
+	if( (!(inAttributes & xwin_style_resizable)) || isModalWindow )
+	{
+		this->setFixedSize(this->size());
+	}
+	// TODO:mroe: 
+	// Some KDE-Style's want to use all 'empty' areas of a window to move it .
+	// They try to detect them when the mouse-events comes through to the Mainwindow, and grab the mouse.  
+	// It's clearly a mess , doing such stuff from outside.
+	// Since XWin is our mainwindow and handles all events , that is not that good for us.
+	// The preferred way would be :  the gl-window should have his own event-funcs. 
+	// But what comes next?
+	// Anyway, since many have this problem, 'Oxygen' has a property introduced what is now also accepted by qt-curve. 
+	// Perhaps it becomes a standard.
+	setProperty( "_kde_no_window_grab", true ); 
+	
 	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
 	if (default_dnd)
@@ -39,6 +74,7 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(fals
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 	
+	setProperty( "_kde_no_window_grab", true ); 
 	setMouseTracking(true);
 	setFocusPolicy(Qt::StrongFocus);
 	if (default_dnd)
@@ -227,12 +263,16 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 
 void XWin::MoveTo(int inX, int inY)
 {
-	move(inX, inY);
+	this->move(inX, inY);
 }
 
 void XWin::Resize(int inWidth, int inHeight)
 {
-	resize(inWidth, inHeight);
+	//mroe:   to resize a non-resizable window
+	if( (this->minimumSize() == this->size()) && (this->maximumSize() == this->size()) )
+		this->setFixedSize(inWidth,inHeight);
+	else
+		this->resize(inWidth, inHeight);
 }
 
 void XWin::ForceRefresh(void)

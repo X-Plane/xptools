@@ -133,43 +133,66 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 }
 
 #if AIRPORT_ROUTING
-
-static void CollectTaxiEdges(WED_Thing * root, set<WED_TaxiRoute *> & all_edges)
+/**
+ * Recursively walks the root tree to collect all elements of the specified type.
+ * 
+ * For instance, you might use this to collect all WED_TaxiRouteNode objects
+ * within an airport (and store them in the order the same relative order that they
+ * were listed in the editor).
+ */
+template<class T>
+static void CollectAllElementsOfType(WED_Thing * root, vector<T *> & elements)
 {
-	WED_TaxiRoute * r = dynamic_cast<WED_TaxiRoute*>(root);
-	if(r) all_edges.insert(r);
+	T * r = dynamic_cast<T*>(root);
+	if(r)
+	{
+		elements.push_back(r);
+	}
+	
 	int nn = root->CountChildren();
 	for(int n = 0; n < nn; ++n)
-		CollectTaxiEdges(root->GetNthChild(n), all_edges);
+	{
+		CollectAllElementsOfType<T>(root->GetNthChild(n), elements);
+	}
 }
 
-static void MakeRouting(set<WED_TaxiRoute *>& edges, AptNetwork_t& net)
+/**
+ * "Exports" the list of nodes into the airport network
+ */
+static void MakeNodeRouting(vector<WED_TaxiRouteNode *>& nodes, AptNetwork_t& net)
 {
-	set<WED_Thing *>	nodes;
-	for(set<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
-	{
-		AptRouteEdge_t ne;
-
-		(*e)->Export(ne);
-		
-		ne.src = (*e)->GetNthSource(0)->GetID();
-		ne.dst = (*e)->GetNthSource(1)->GetID();
-		
-		nodes.insert((*e)->GetNthSource(0));
-		nodes.insert((*e)->GetNthSource(1));
-		
-		net.edges.push_back(ne);
-	}	
-
-	for(set<WED_Thing *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
+	for(vector<WED_TaxiRouteNode *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
 	{
 		AptRouteNode_t nd;
-		nd.id = (*n)->GetID();
+		// Node's ID is its index in file order
+		nd.id = std::distance(nodes.begin(), n);
 		(*n)->GetName(nd.name);
 		
 		IGISPoint * p = dynamic_cast<IGISPoint*>(*n);
 		p->GetLocation(gis_Geo, nd.location);
-		net.nodes.push_back(nd);
+		net.nodes.push_back(nd);	
+	}
+}
+
+/**
+ * "Exports" the list of edges into the airport network
+ * @param nodes The list of all taxi route nodes in the airport (required to get accurate IDs for the nodes)
+ */
+static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, vector<WED_TaxiRouteNode *> * nodes)
+{
+	for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+	{
+		AptRouteEdge_t ne;
+		(*e)->Export(ne);
+		
+		// Node's ID is its index in file order
+		vector<WED_TaxiRouteNode *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthSource(0));
+		ne.src = std::distance(nodes->begin(), pos_src);
+		
+		vector<WED_TaxiRouteNode *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthSource(1));
+		ne.dst = std::distance(nodes->begin(), pos_dst);;
+		
+		net.edges.push_back(ne);
 	}
 }
 #endif
@@ -214,9 +237,13 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apt->Export(apts.back());
 		
 #if AIRPORT_ROUTING
-		set<WED_TaxiRoute *> edges;
-		CollectTaxiEdges(apt, edges);
-		MakeRouting(edges, apts.back().taxi_route);		
+		vector<WED_TaxiRouteNode *> nodes;
+		CollectAllElementsOfType<WED_TaxiRouteNode>(apt, nodes);
+		MakeNodeRouting(nodes, apts.back().taxi_route);
+		
+		vector<WED_TaxiRoute *> edges;
+		CollectAllElementsOfType<WED_TaxiRoute>(apt, edges);
+		MakeEdgeRouting(edges, apts.back().taxi_route, &nodes);
 #endif
 	}
 	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
@@ -641,6 +668,7 @@ void	WED_AptImport(
 			new_n->SetName(n->name);
 			new_n->SetLocation(gis_Geo,n->location);
 			nodes[n->id] = new_n;
+			printf("Found node %s\n", n->name.c_str());
 		}
 		for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
 		{
@@ -669,7 +697,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 {
 	vector<string>	fnames;
 	
-	#if ROBIN_IMPORT_FEATURES
+	#if GATEWAY_IMPORT_FEATURES
 	
 		char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
 		if(!path)

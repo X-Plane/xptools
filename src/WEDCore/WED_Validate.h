@@ -25,7 +25,8 @@
 #define EWD_Validate_h
 
 class	IResolver;
+class	WED_Thing;
 
-bool	WED_ValidateApt(IResolver * resolver);
+bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
 
 #endif
