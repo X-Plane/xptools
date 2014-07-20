@@ -1820,6 +1820,9 @@ static int	init_subdivisions(
 				FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, max_height, (bounds[3]-bounds[1]) / fds);
 				if(fac_rule == NULL)
 				{
+					#if DEV && OPENGL_MAP
+					gFaceSelection.insert(f);
+					#endif
 					DebugAssert(!"Fac fail!!?!?");
 					return 0;
 				}
@@ -1833,15 +1836,27 @@ static int	init_subdivisions(
 					bf.major_axis = va;
 					if(max_height > 0 && max_height < fac_rule->facs[fn].height_min)
 					{
+						// We hit this case when for some reason, the block's max height is less than the SHORTEST the facades can be.
+						// This is sort of bad - it means that either the block is going to look too tall (to preserve the sanity of
+						// facade art) or we're going to crush the facades and they'll look silly to prevent height issues.
 						printf("ERROR: block height: %f, zone %f..%f\n", max_height,fac_rule->height_min,fac_rule->height_max);
 						for(int k = 0; k < fac_rule->facs.size(); ++k)
 							printf("%d:  %f..%f  %s/%s\n", k, fac_rule->facs[k].height_min,fac_rule->facs[k].height_max,
 								FetchTokenString(fac_rule->facs[k].fac_id_front),
 								FetchTokenString(fac_rule->facs[k].fac_id_back));
+						// If the facade's min height is short enough, this is probably junk data - e.g. unzoned short buildings with a
+						// "stupidly short" height restriction.  But if the height min is tall enough it means the facades are REALLY tall - let's
+						// in that case panic and re-examine the data. (The one known case of this is a Japanese building 3m tall in a commercial zone.)
+						Assert(fac_rule->facs[fn].height_min <= 12.5f);
 					}
-					Assert(max_height == 0.0f || max_height >= fac_rule->facs[fn].height_min);
 					if(max_height > 0.0)
-						bf.height = RandRange(fac_rule->facs[fn].height_min,fltmin2(fac_rule->facs[fn].height_max,max_height));
+					{
+						// If the facades have flexibility within height range use it; otherwise just clamp to min.
+						if(max_height >= fac_rule->facs[fn].height_min)
+							bf.height = RandRange(fac_rule->facs[fn].height_min,fltmin2(fac_rule->facs[fn].height_max,max_height));
+						else
+							bf.height = fac_rule->facs[fn].height_min;
+					}
 					else
 						bf.height = RandRange(fac_rule->facs[fn].height_min,fac_rule->facs[fn].height_max);
 					bf.simplify_id = ctr++;
