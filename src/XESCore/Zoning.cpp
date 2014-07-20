@@ -2056,7 +2056,7 @@ FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len,
 	}
 
 	#if DEV
-		printf("WARNING: no facade rule for %s v%d at %lf x %lf\n", FetchTokenString(zoning), variant, front_wall_len,height);
+		printf("WARNING: no facade rule for %s v%d at %lf x %lf x %lf (height %s zero.)\n", FetchTokenString(zoning), variant, front_wall_len,height,depth_one_fac, height==0.0 ? "is" : "is not");
 	#endif
 	return NULL;
 }
