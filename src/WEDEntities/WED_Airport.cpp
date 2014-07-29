@@ -33,7 +33,8 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
 	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
 	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
-	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx")
+	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
+	scenery_id		(this, DEV ? "Scenery ID" : ".Scenery ID",		SQL_Name("", ""),	XML_Name("WED_airport", "scenery_id"), -1, 8)
 {
 }
 
@@ -51,10 +52,17 @@ int		WED_Airport::GetAirportType(void) const
 	return airport_type.value;
 }
 
+int		WED_Airport::GetSceneryID(void) const
+{
+	return scenery_id.value;
+}
+
 void		WED_Airport::SetAirportType(int x) { airport_type = x; }
 void		WED_Airport::SetElevation(double x) { elevation = x; }
 void		WED_Airport::SetHasATC(int x) { has_atc= x; }
 void		WED_Airport::SetICAO(const string& x) { icao = x; }
+void		WED_Airport::SetSceneryID(int x) { scenery_id = x; }
+
 
 
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)

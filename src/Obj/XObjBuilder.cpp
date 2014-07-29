@@ -451,6 +451,7 @@ void	XObjBuilder::AccumLightNamed(float xyz[3], const char * name)
 	lod->cmds.back().params[1] = xyz[1];
 	lod->cmds.back().params[2] = xyz[2]	;
 	lod->cmds.back().name = name;
+	lod->cmds.back().idx_count = 0;
 }
 
 void	XObjBuilder::AccumLightCustom(float xyz[3], float params[9], const char * dataref)

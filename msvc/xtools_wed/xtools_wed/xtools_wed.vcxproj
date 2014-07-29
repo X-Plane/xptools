@@ -29,8 +29,10 @@
     <ClCompile Include="..\..\..\src\GUI\GUI_Destroyable.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_DrawUtils.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Fonts.cpp" />
+    <ClCompile Include="..\..\..\src\GUI\GUI_FormWindow.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_GraphState.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Help.cpp" />
+    <ClCompile Include="..\..\..\src\GUI\GUI_Label.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Listener.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_MemoryHog.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Packer.cpp" />
@@ -52,7 +54,11 @@
     <ClCompile Include="..\..\..\src\GUI\GUI_ToolBar.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Unicode.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Window.cpp" />
+    <ClCompile Include="..\..\..\src\lib_json\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\..\..\src\lib_json\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\..\..\src\lib_json\src\lib_json\json_writer.cpp" />
     <ClCompile Include="..\..\..\src\Network\b64.c" />
+    <ClCompile Include="..\..\..\src\Network\curl_http.cpp" />
     <ClCompile Include="..\..\..\src\Network\HTTPClient.cpp" />
     <ClCompile Include="..\..\..\src\Network\PCSBSocket.win.cpp" />
     <ClCompile Include="..\..\..\src\Network\PCSBSocketUDP.win.cpp" />
@@ -85,7 +91,7 @@
     <ClCompile Include="..\..\..\src\Utils\XChunkyFileUtils.cpp" />
     <ClCompile Include="..\..\..\src\Utils\XUtils.cpp" />
     <ClCompile Include="..\..\..\src\Utils\zip.c" />
-    <ClCompile Include="..\..\..\src\WEDCore\ParserValer.cpp" />
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Sign_Parser.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_Application.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_AppMain.cpp" />
     <ClCompile Include="..\..\..\src\WEDCore\WED_Archive.cpp" />
@@ -172,8 +178,11 @@
     <ClCompile Include="..\..\..\src\WEDEntities\WED_Windsock.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_AptIE.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.cpp" />
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_AptTable.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFExport.cpp" />
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_DSFImport.cpp" />
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_GatewayExport.cpp" />
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_SceneryPackExport.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
     <ClCompile Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
@@ -261,8 +270,10 @@
     <ClInclude Include="..\..\..\src\GUI\GUI_Destroyable.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_DrawUtils.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Fonts.h" />
+    <ClInclude Include="..\..\..\src\GUI\GUI_FormWindow.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_GraphState.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Help.h" />
+    <ClInclude Include="..\..\..\src\GUI\GUI_Label.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Laftfont.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Listener.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_MemoryHog.h" />
@@ -299,6 +310,7 @@
     <ClInclude Include="..\..\..\src\Interfaces\IResolver.h" />
     <ClInclude Include="..\..\..\src\Interfaces\ISelection.h" />
     <ClInclude Include="..\..\..\src\Interfaces\ITexMgr.h" />
+    <ClInclude Include="..\..\..\src\Network\curl_http.h" />
     <ClInclude Include="..\..\..\src\Network\HTTPClient.h" />
     <ClInclude Include="..\..\..\src\Network\PCSBSocket.h" />
     <ClInclude Include="..\..\..\src\Network\PCSBSocketUDP.h" />
@@ -330,7 +342,7 @@
     <ClInclude Include="..\..\..\src\Utils\XChunkyFileUtils.h" />
     <ClInclude Include="..\..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\..\src\Utils\zip.h" />
-    <ClInclude Include="..\..\..\src\WEDCore\ParserValer.h" />
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Sign_Parser.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_Archive.h" />
     <ClInclude Include="..\..\..\src\WEDCore\WED_Assert.h" />
@@ -420,8 +432,11 @@
     <ClInclude Include="..\..\..\src\WEDEntities\WED_Windsock.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_AptIE.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_AptImportDialog.h" />
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_AptTable.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFExport.h" />
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_DSFImport.h" />
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_GatewayExport.h" />
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_SceneryPackExport.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPane.h" />
     <ClInclude Include="..\..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
@@ -584,8 +599,8 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>XML_STATIC;WIN32;NDEBUG;NO_CGAL=1;MSC=1;APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\curl-7.36.0\include;..\..\..\src\lib_json\include;..\..\msvc_libs\OpenGL;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>XML_STATIC;CURL_STATICLIB;WIN32;NDEBUG;NO_CGAL=1;MSC=1;APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
@@ -593,7 +608,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -607,9 +622,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\curl-7.36.0\include;..\..\..\src\lib_json\include;..\..\msvc_libs\OpenGL;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
-      <PreprocessorDefinitions>XML_STATIC;WIN32;_LIB;NDEBUG;NO_CGAL=1;MSC=1;APL=0;IBM=1;DEV=0;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PreprocessorDefinitions>XML_STATIC;WIN32;_LIB;NDEBUG;NO_CGAL=1;CURL_STATICLIB;MSC=1;APL=0;IBM=1;DEV=0;USE_JPEG=1;USE_TIF=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -617,7 +632,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>

@@ -1150,6 +1150,35 @@ struct dupe_bot_reg_type {
 	}
 };
 
+/*	There's a nasty edge case in the code: if a segment is VERY close but not quite veritcal, the division code wants to intersect the rising section with
+ *	the various cut lines (center, top safe, bottom safe) to then break the line into horizontal regions, which would then become slop, building, slop 
+*	over building, etc.  
+*
+*	Buuuuuuut....the math is done in raw double, so if the dx of the segment is REALLY tiny, the intersections of the horizointal lines with the segment will
+*	erroneously be calculated outside the horizontal span of the segment, and the 'slicer' code will throw them out.  
+*
+*	Once we don't have valid intersections at the division line, the block processing algo goes haywire and we die.
+*
+*	Buuuuuuuut....this case is silly - the line is almost vertical and produces no useful effect by being horizontal.  At best we will consolidate its length
+*	into the next region, at worst we screw up and make a sliver.
+*
+*	So, we simply 'square' the block, moving the corners to make the side truly vertical, and go home happy.
+*/
+static void fix_near_vertical(Polygon2& p)
+{
+	for(int i = 0; i < p.size(); ++i)
+	{
+		Segment2 s(p.side(i));
+		double dx = fabs(s.p1.x()-s.p2.x());
+		double dy = fabs(s.p1.y()-s.p2.y());
+		
+		if(dx < 0.01)
+		{
+			DebugAssert(dy > 1.0);
+			p[i].x_ = s.p2.x();
+		}		
+	}
+}
  
 static int	init_subdivisions(
 							Pmwx::Face_handle f,
@@ -1201,6 +1230,14 @@ static int	init_subdivisions(
 		double cb = vb.dot(Vector2(mbounds[i]));
 		
 		abounds.push_back(Point2(ca,cb));
+	}
+	
+	fix_near_vertical(abounds);
+	
+	for(i = 0; i < abounds.size(); ++i)
+	{
+		double ca = abounds[i].x();
+		double cb = abounds[i].y();
 		
 		if(ca < abounds[left].x())
 			left = i;
@@ -1779,9 +1816,13 @@ static int	init_subdivisions(
 			else
 			{
 				double width = n->a_time - r->a_time;				
-				FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, f->data().GetParam(af_HeightObjs,0.0), (bounds[3]-bounds[1]) / fds);
+				float max_height = f->data().GetParam(af_HeightObjs,0.0);
+				FacadeSpelling_t * fac_rule = GetFacadeRule(info->zoning, info->variant, width, max_height, (bounds[3]-bounds[1]) / fds);
 				if(fac_rule == NULL)
 				{
+					#if DEV && OPENGL_MAP
+					gFaceSelection.insert(f);
+					#endif
 					DebugAssert(!"Fac fail!!?!?");
 					return 0;
 				}
@@ -1793,7 +1834,31 @@ static int	init_subdivisions(
 					//printf("     %s (%.1f\n", FetchTokenString(fac_rule->facs[fn].fac_id_front), fac_rule->facs[fn].width);
 					BLOCK_face_data bf(usage_Polygonal_Feature,fac_rule->facs[fn].fac_id_front);
 					bf.major_axis = va;
-					bf.height = RandRange(fac_rule->facs[fn].height_min,fac_rule->facs[fn].height_max);
+					if(max_height > 0 && max_height < fac_rule->facs[fn].height_min)
+					{
+						// We hit this case when for some reason, the block's max height is less than the SHORTEST the facades can be.
+						// This is sort of bad - it means that either the block is going to look too tall (to preserve the sanity of
+						// facade art) or we're going to crush the facades and they'll look silly to prevent height issues.
+						printf("ERROR: block height: %f, zone %f..%f\n", max_height,fac_rule->height_min,fac_rule->height_max);
+						for(int k = 0; k < fac_rule->facs.size(); ++k)
+							printf("%d:  %f..%f  %s/%s\n", k, fac_rule->facs[k].height_min,fac_rule->facs[k].height_max,
+								FetchTokenString(fac_rule->facs[k].fac_id_front),
+								FetchTokenString(fac_rule->facs[k].fac_id_back));
+						// If the facade's min height is short enough, this is probably junk data - e.g. unzoned short buildings with a
+						// "stupidly short" height restriction.  But if the height min is tall enough it means the facades are REALLY tall - let's
+						// in that case panic and re-examine the data. (The one known case of this is a Japanese building 3m tall in a commercial zone.)
+						Assert(fac_rule->facs[fn].height_min <= 12.5f);
+					}
+					if(max_height > 0.0)
+					{
+						// If the facades have flexibility within height range use it; otherwise just clamp to min.
+						if(max_height >= fac_rule->facs[fn].height_min)
+							bf.height = RandRange(fac_rule->facs[fn].height_min,fltmin2(fac_rule->facs[fn].height_max,max_height));
+						else
+							bf.height = fac_rule->facs[fn].height_min;
+					}
+					else
+						bf.height = RandRange(fac_rule->facs[fn].height_min,fac_rule->facs[fn].height_max);
 					bf.simplify_id = ctr++;
 					
 					double a_start = double_interp(0,r->a_time,fac_rule->width_real,n->a_time,accum);

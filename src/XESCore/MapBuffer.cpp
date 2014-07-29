@@ -266,29 +266,52 @@ static void	BuildPointSequence(
 				out_curves.push_back(PROCESS(p));
 			else
 			{
-				++count_angle;
-				// If the angle is less than 90 degrees, the lack of intersection of the segments with "extra end cap" can mean that
-				// connecting them arbitrarily will cause a CCW ring, which is bad - it adds positive space to the boundary, causing
-				// art artifacts.  So only join the "extended" segments if we have an acute angle.
+				Point2	p1(cgal2ben(input_seq[prev])),
+						p2(cgal2ben(input_seq[n   ])),
+						p3(cgal2ben(input_seq[next]));
+				Vector2	v1(p1,p2);
+				Vector2	v2(p2,p3);
+				v1.normalize();
+				v2.normalize();
 
-				// Why does this work?  Well, the BAD case happens when we have introduced a LEFT turn in our ring, which creates the POTENTIAL for a CCW
-				// winding (positive space).  This happens if another line in just the right direction cuts off and isolates our left turn.
-
-				// But that left turn (from the end of the outgoing to the start of the incoming, to the next segment) can only happen if the reflex angle
-				// is obtuse - in the obtuse case, the extension of the outgoing and incoming segments are going approximately in OPPOSITE directions, which
-				// can cause this tight left turn.
-
-				// Frankly in the case of an obtuse reflex angle where we do NOT have ends meeting, we probably should NOT be trying to add end caps...just
-				// connecting the two is fine.
-				if(CGAL::angle(input_seq[prev],input_seq[n], input_seq[next]) == CGAL::ACUTE)
+				bool got_tight_corner = false;
+				if(v1.dot(v2) < 0.01)
 				{
-					out_curves.push_back(PROCESS(s1.target()));
-					out_curves.push_back(PROCESS(s2.source()));
+					Line_2 l1(s1);
+					Line_2 l2(s2);
+					r = CGAL::intersection(l1,l2);
+					if(CGAL::assign(p,r))
+					{
+						out_curves.push_back(PROCESS(p));
+						got_tight_corner = true;	
+					}
 				}
-				else
+				if(!got_tight_corner)
 				{
-					out_curves.push_back(PROCESS(segments[outgoing].target()));
-					out_curves.push_back(PROCESS(segments[incoming].source()));
+					++count_angle;
+					// If the angle is less than 90 degrees, the lack of intersection of the segments with "extra end cap" can mean that
+					// connecting them arbitrarily will cause a CCW ring, which is bad - it adds positive space to the boundary, causing
+					// art artifacts.  So only join the "extended" segments if we have an acute angle.
+
+					// Why does this work?  Well, the BAD case happens when we have introduced a LEFT turn in our ring, which creates the POTENTIAL for a CCW
+					// winding (positive space).  This happens if another line in just the right direction cuts off and isolates our left turn.
+
+					// But that left turn (from the end of the outgoing to the start of the incoming, to the next segment) can only happen if the reflex angle
+					// is obtuse - in the obtuse case, the extension of the outgoing and incoming segments are going approximately in OPPOSITE directions, which
+					// can cause this tight left turn.
+
+					// Frankly in the case of an obtuse reflex angle where we do NOT have ends meeting, we probably should NOT be trying to add end caps...just
+					// connecting the two is fine.
+					if(CGAL::angle(input_seq[prev],input_seq[n], input_seq[next]) == CGAL::ACUTE)
+					{
+						out_curves.push_back(PROCESS(s1.target()));
+						out_curves.push_back(PROCESS(s2.source()));
+					}
+					else
+					{
+						out_curves.push_back(PROCESS(segments[outgoing].target()));
+						out_curves.push_back(PROCESS(segments[incoming].source()));
+					}
 				}
 			}
 		}

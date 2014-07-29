@@ -42,7 +42,8 @@ GUI_TextField::GUI_TextField(int scrollH, GUI_Commander * parent) :
 	mScrollH(scrollH),
 	mCaret(0),
 	mFont(font_UI_Basic),
-	mMsg(0), mParam(0)
+	mMsg(0), mParam(0),
+	mPasswordChar(0)
 {
 	mColorText[0] = 0.0;	mColorText[1] = 0.0;	mColorText[2] = 0.0;	mColorText[3] = 1.0;
 	mColorHilite[0] = 1.0;	mColorHilite[1] = 1.0;	mColorHilite[2] = 0.0;	mColorHilite[3] = 1.0;
@@ -116,6 +117,10 @@ void		GUI_TextField::SetWidth(float width)
 	Refresh();
 }
 
+void		GUI_TextField::SetPasswordChar(char c)
+{
+	mPasswordChar = c;
+}
 
 void		GUI_TextField::Draw(GUI_GraphState * state)
 {
@@ -280,6 +285,7 @@ int			GUI_TextField::AcceptTakeFocus(void)
 {
 	mCaret = 1;
 	Start(0.25);
+	SetSelection(0,mText.size());
 	return 1;
 }
 
@@ -411,6 +417,10 @@ float			GUI_TextField::MeasureString(
 						const char * 	tStart,
 						const char * 	tEnd)
 {
+	if(mPasswordChar)
+	{
+		return (tEnd - tStart) * GUI_MeasureRange(mFont, &mPasswordChar, &mPasswordChar+1);
+	}
 	return GUI_MeasureRange(mFont, tStart, tEnd);
 }
 
@@ -437,8 +447,20 @@ void			GUI_TextField::DrawString(
 						float			x,
 						float			y)
 {
+	if(tStart == tEnd) return;
+	
 	int yy = y;
-	GUI_FontDrawScaled(mState, mFont, mColorText,
+	if(mPasswordChar)
+	{
+		vector<char> c(tEnd-tStart,mPasswordChar);
+		char * c_ptr = &c[0];
+		GUI_FontDrawScaled(mState, mFont, mColorText,
+						x, yy, x + 10000, yy + GUI_GetLineHeight(mFont),
+						c_ptr, c_ptr + c.size(), align_Left);
+
+	}
+	else
+		GUI_FontDrawScaled(mState, mFont, mColorText,
 						x, yy, x + 10000, yy + GUI_GetLineHeight(mFont),
 						tStart, tEnd, align_Left);
 }
@@ -446,24 +468,27 @@ void			GUI_TextField::DrawString(
 void			GUI_TextField::DrawSelection(
 								float			bounds[4])
 {
-	mState->SetState(false, 0, false, false, false, false, false);
-	if (bounds[0] == bounds[2])
+	if(IsActiveNow() && IsFocused())
 	{
-		glColor4fv(mColorText);
-		glBegin(GL_LINES);
-		glVertex2f(bounds[0], bounds[1]);
-		glVertex2f(bounds[0], bounds[3]);
-		glEnd();
-	}
-	else
-	{
-		glColor4fv(mColorHilite);
-		glBegin(GL_QUADS);
-		glVertex2f(bounds[0], bounds[1]);
-		glVertex2f(bounds[0], bounds[3]);
-		glVertex2f(bounds[2], bounds[3]);
-		glVertex2f(bounds[2], bounds[1]);
-		glEnd();
+		mState->SetState(false, 0, false, false, false, false, false);
+		if (bounds[0] == bounds[2])
+		{
+			glColor4fv(mColorText);
+			glBegin(GL_LINES);
+			glVertex2f(bounds[0], bounds[1]);
+			glVertex2f(bounds[0], bounds[3]);
+			glEnd();
+		}
+		else
+		{
+			glColor4fv(mColorHilite);
+			glBegin(GL_QUADS);
+			glVertex2f(bounds[0], bounds[1]);
+			glVertex2f(bounds[0], bounds[3]);
+			glVertex2f(bounds[2], bounds[3]);
+			glVertex2f(bounds[2], bounds[1]);
+			glEnd();
+		}
 	}
 }
 

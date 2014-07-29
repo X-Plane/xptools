@@ -24,7 +24,7 @@
 #include "WED_Validate.h"
 
 #include "WED_Globals.h"
-#include "ParserValer.h"
+#include "WED_Sign_Parser.h"
 #include "WED_Runway.h"
 #include "WED_Sealane.h"
 #include "WED_Helipad.h"
@@ -57,8 +57,8 @@
 
 #include "PlatformUtils.h"
 
-#define MAX_LON_SPAN_ROBIN 0.2
-#define MAX_LAT_SPAN_ROBIN 0.2
+#define MAX_LON_SPAN_GATEWAY 0.2
+#define MAX_LAT_SPAN_GATEWAY 0.2
 
 
 static set<string>	s_used_rwy;
@@ -441,29 +441,29 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	}
 	
 	//------------------------------------------------------------------------------------
-	// CHECKS FOR SUBMISSION TO ROBIN
+	// CHECKS FOR SUBMISSION TO GATEWAY
 	//------------------------------------------------------------------------------------
 
-	if(gExportTarget == wet_robin)
+	if(gExportTarget == wet_gateway)
 	{
 		if(who->GetClass() != WED_Group::sClass)
 		if(WED_GetParentAirport(who) == NULL)
-			msg = "You cannot export airport overlays to Robin if overlay elements are outside airports in the hierarchy.";
+			msg = "You cannot export airport overlays to the X-Plane Airport Gateway if overlay elements are outside airports in the hierarchy.";
 
 		if(who->GetClass() == WED_Airport::sClass)
 		{
 			WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
 			Bbox2 bounds;
 			apt->GetBounds(gis_Geo, bounds);
-			if(bounds.xspan() > MAX_LON_SPAN_ROBIN ||
-			   bounds.yspan() > MAX_LAT_SPAN_ROBIN)
+			if(bounds.xspan() > MAX_LON_SPAN_GATEWAY ||
+			   bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
 			{
 				msg = "This airport is too big.  Perhaps a random part of the airport has been dragged to another part of the world?";
 			}
 		
 		}
 
-		#if !ROBIN_IMPORT_FEATURES
+		#if !GATEWAY_IMPORT_FEATURES
 		if(who->GetClass() == WED_AirportBoundary::sClass)
 		{
 			if(WED_HasBezierPol(dynamic_cast<WED_AirportBoundary*>(who)))
@@ -510,17 +510,17 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	return NULL;
 }
 
-bool	WED_ValidateApt(IResolver * resolver)
+bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 {
 	s_used_hel.clear();
 	s_used_rwy.clear();
 	s_flow_names.clear();
 	s_legal_rwy_oneway.clear();
 	s_icao.clear();
-	WED_Thing * wrl = WED_GetWorld(resolver);
+	if(wrl == NULL) wrl = WED_GetWorld(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
 	
-	WED_LibraryMgr * lib_mgr = 	SAFE_CAST(WED_LibraryMgr,resolver->Resolver_Find("libmgr"));
+	WED_LibraryMgr * lib_mgr = 	WED_GetLibraryMgr(resolver);
 	
 	WED_Thing * bad_guy = ValidateRecursive(wrl, lib_mgr);
 	if (bad_guy)

@@ -69,7 +69,7 @@ static vector<open_doc_t>	sDocs;
 
 static int kDefaultBounds[4] = { 50, 50, 850, 650 };
 
-WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_centered, kDefaultBounds, cmder)
+WED_StartWindow::WED_StartWindow(GUI_Commander * cmder) : GUI_Window("WED", xwin_style_centered|xwin_style_resizable, kDefaultBounds, cmder)
 {
 	int btns[2];
 //	GUI_GetImageResourceSize("startup_bkgnd.png", bkgnd);
@@ -210,7 +210,33 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 	GUI_DrawStretched(state,"gradient.png", me, kTileAll);
 
 	if (!mScroller->IsVisible())
+	{
 		GUI_DrawCentered(state,"startup_bkgnd.png", me, 0, 1, kTileAll, NULL, NULL);
+
+		float f = GUI_GetLineHeight(font_UI_Basic);
+		float color[4] = { 1.0, 1.0, 1.0, 0.7 };
+
+		const char * main_text[] = {
+			"WorldEditor 1.3",
+			"©Copyright 2007-2014, Laminar Research.",
+			"",
+			"This software is available under an open license.",
+			"Visit http://developer.x-plane.com/code/ for more info.",
+			"",
+			"Code by Ted Greene, Ben Supnik and Tyler Young.",
+			"Original graphics by Christiano Maggi.",
+			0
+			
+		};
+		
+		int n = 0;
+		while(main_text[n])
+		{
+			GUI_FontDraw(state, font_UI_Basic, color, me[0] * 0.5 + me[2] * 0.5, me[3] - 30 - f * n, main_text[n]);
+			++n;
+		}
+
+	}
 
 	if (mCaption.empty())
 	{

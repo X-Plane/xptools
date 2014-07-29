@@ -67,6 +67,8 @@ public:
 	
 				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
 	bool		IsResourceDefault(const string& r);
+	bool		IsResourceLocal(const string& r);
+	bool		IsResourceLibrary(const string& r);
 	
 	string		CreateLocalResourcePath(const string& r);
 

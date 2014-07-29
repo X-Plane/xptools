@@ -51,6 +51,7 @@
 #include "WED_GISUtils.h"
 #include "STLUtils.h"
 #include "WED_AptIE.h"
+#include "WED_Airport.h"
 
 static void debug_it(const vector<BezierPoint2>& pts)
 {
@@ -89,7 +90,7 @@ public:
 	vector<string>		obj_table;
 	vector<string>		pol_table;
 
-	WED_Group *			parent;
+	WED_Thing *			parent;
 	WED_Archive *		archive;
 
 	vector<BezierPoint2>pts,uvs;
@@ -607,7 +608,7 @@ public:
 	}
 
 
-	void do_import_dsf(const char * file_name, WED_Group * base)
+	void do_import_dsf(const char * file_name, WED_Thing * base)
 	{
 		parent = base;
 		archive = parent->GetArchive();
@@ -623,7 +624,7 @@ public:
 			printf("DSF Error: %d\n", res);
 	}
 
-	void do_import_txt(const char * file_name, WED_Group * base)
+	void do_import_txt(const char * file_name, WED_Thing * base)
 	{
 		parent = base;
 		archive = parent->GetArchive();
@@ -673,7 +674,33 @@ void	WED_DoImportDSF(IResolver * resolver)
 
 }
 
-#if ROBIN_IMPORT_FEATURES
+static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
+{
+	if(WED_Airport::sClass == who->GetClass())
+	{
+		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+		DebugAssert(apt);
+		string aicao;
+		apt->GetICAO(aicao);
+		
+		if(aicao == icao)
+			return apt;
+		else
+			return NULL;
+	}
+	else
+	{
+		int n, nn = who->CountChildren();
+		for(n = 0; n < nn; ++n)
+		{
+			WED_Thing * found_it = find_airport_by_icao_recursive(icao, who->GetNthChild(n));
+			if(found_it) return found_it;
+		}
+	}
+	return NULL;
+}
+
+#if GATEWAY_IMPORT_FEATURES
 void	WED_DoImportDSFText(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -688,25 +715,40 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		while(*paths)
 		{
 			if(strstr(paths,".dat"))
-			{
-				WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
-				g->SetName(paths);
-				g->SetParent(wrl,wrl->CountChildren());
-			
-				WED_ImportOneAptFile(paths,g);
+			{			
+				WED_ImportOneAptFile(paths,wrl);
 			}
-			else
+			paths = paths + strlen(paths) + 1;
+		}
+		
+		paths = free_me;
+
+		while(*paths)
+		{
+			if(!strstr(paths,".dat"))
 			{
-				WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
-				g->SetName(paths);
-				g->SetParent(wrl,wrl->CountChildren());
+				string tname(paths);
+				string::size_type p = tname.find_last_of("\\/");
+				if(p != tname.npos)
+					tname = tname.substr(p+1);
+				p = tname.find_last_of(".");
+				if(p != tname.npos)
+					tname = tname.substr(0,p);
+				
+				WED_Thing * g = find_airport_by_icao_recursive(tname,wrl);
+				if(g == NULL)
+				{
+					g = WED_Group::CreateTyped(wrl->GetArchive());
+					g->SetName(paths);
+					g->SetParent(wrl,wrl->CountChildren());
+				}
 		//		DSF_Import(path,g);
 				DSF_Importer importer;
 				importer.do_import_txt(paths, g);
 			}	
 			paths = paths + strlen(paths) + 1;
 		}
-
+		
 		wrl->CommitOperation();
 		free(free_me);
 	}

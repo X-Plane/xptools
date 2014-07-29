@@ -1314,3 +1314,78 @@ bool	RasterShapeFile(
 
 	return true;
 }
+
+static int accum_ccb(
+					Pmwx::Ccb_halfedge_circulator	circ,
+					vector<double>&					x,
+					vector<double>&					y)
+{
+	int ret = x.size();
+	Pmwx::Ccb_halfedge_circulator stop = circ;
+	do {
+
+		Point2	p = cgal2ben(circ->source()->point());
+		
+		x.push_back(p.x());
+		y.push_back(p.y());
+		
+	} while(--circ != stop);
+	return ret;
+}
+
+bool	WriteShapefile(
+			const char *			in_file,
+			Pmwx&					in_map,
+			int						terrain_type,
+			ProgressFunc			inFunc)
+{
+	SHPHandle file = SHPCreate(in_file, SHPT_POLYGON);
+	if(!file)
+		return false;
+
+	PROGRESS_START(inFunc, 0, 1, "Writing shape file...")
+
+	
+	int entity_count = in_map.number_of_faces();
+	int step = entity_count ? (entity_count / 150) : 2;
+	int n = 0;
+	int sid = 0;
+
+	for(Pmwx::Face_handle f = in_map.faces_begin(); f != in_map.faces_end(); ++f, ++n)
+	{
+		PROGRESS_CHECK(inFunc, 0, 1, "Writing shape file...", n, entity_count, step)
+
+		if(!f->is_unbounded())
+		if(f->data().mTerrainType == terrain_type)
+		{
+			vector<double>	v_x, v_y;
+			vector<int>		offsets;
+
+			int s = accum_ccb(f->outer_ccb(), v_x,v_y);
+			offsets.push_back(s);
+			
+			for(Pmwx::Hole_iterator h = f->holes_begin(); h != f->holes_end(); ++h)
+			{
+				int s = accum_ccb(*h, v_x,v_y);
+				offsets.push_back(s);
+			}		
+		
+			SHPObject * sobj = 
+				 SHPCreateObject( 
+						SHPT_POLYGON, sid++, 
+						offsets.size(),
+						&offsets[0],
+						NULL,
+						v_x.size(), &v_x[0], &v_y[0], NULL, NULL);
+
+			SHPWriteObject(file,-1,sobj);
+			SHPDestroyObject(sobj);
+		}
+	}
+	
+	PROGRESS_DONE(inFunc, 0, 1, "Writing shape file...")
+	
+
+	SHPClose(file);
+	return true;
+}

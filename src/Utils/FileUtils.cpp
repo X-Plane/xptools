@@ -35,6 +35,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #endif
+#include "zip.h"
 
 #define LOG_CASE_DESENS 0
 
@@ -293,4 +294,225 @@ date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second)
 	}
 
 #endif
+}
+
+int FILE_get_directory(
+		const string&		path,
+		vector<string> *	out_files,
+		vector<string> *	out_dirs)
+{
+#if IBM
+
+	string				searchPath(path);
+	WIN32_FIND_DATA		findData;
+	HANDLE				hFind;
+	int					total = 0;
+
+	searchPath += string("\\*.*");
+
+	hFind = FindFirstFile(searchPath.c_str(),&findData);
+	if (hFind == INVALID_HANDLE_VALUE) return -1;
+
+	do {
+
+		if(strcmp(findData.cFileName,".") == 0 ||
+			strcmp(findData.cFileName,"..") == 0)
+		{
+			continue;
+		}
+
+		if(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if(out_dirs)
+				out_dirs->push_back(findData.cFileName);
+		}
+		else
+		{
+			if(out_files)
+				out_files->push_back(findData.cFileName);
+		}
+		
+		++total;
+
+	} while(FindNextFile(hFind,&findData) != 0);
+
+
+	FindClose(hFind);
+	return total;
+
+#elif LIN || APL
+
+	int total=0;
+	DIR* dir = opendir ( path.c_str() );
+	if ( !dir ) return -1;
+	struct dirent* ent;
+
+	while ( ( ent = readdir ( dir ) ) )
+	{
+		struct stat ss;
+		if ( ( strcmp ( ent->d_name, "." ) ==0 ) ||
+		        ( strcmp ( ent->d_name, ".." ) ==0 ) )
+			continue;
+
+		string	fullPath ( path );
+		fullPath += DIR_CHAR;
+		fullPath += ent->d_name;
+
+		if ( stat ( fullPath.c_str(), &ss ) < 0 )
+			continue;
+		total++;
+		
+		if(S_ISDIR ( ss.st_mode ))
+		{
+			if(out_dirs)
+				out_dirs->push_back(ent->d_name);
+		}
+		else
+		{
+			if(out_files)
+				out_files->push_back(ent->d_name);
+		}
+	}
+	closedir ( dir );
+
+	return total;
+
+#else
+#error not implemented
+#endif
+}
+
+int FILE_delete_dir_recursive(const string& path)
+{
+	vector<string>	files, dirs;
+
+	int r = FILE_get_directory(path, &files, &dirs);
+	
+	if(r < 0)
+		return r;
+		
+	for(vector<string>::iterator f = files.begin(); f != files.end(); ++f)
+	{
+		string fp(path);
+		fp += *f;
+		r = FILE_delete_file(fp.c_str(), false);
+		if(r != 0)
+			return r;
+	}
+	
+	for(vector<string>::iterator d = dirs.begin(); d != dirs.end(); ++d)
+	{
+		string dp(path);
+		dp += *d;
+		dp += DIR_STR;
+		int r = FILE_delete_dir_recursive(dp);
+		if(r != 0)
+			return r;
+	}
+	
+	r = FILE_delete_file(path.c_str(),true);
+	return r;
+}
+	
+static int compress_one_file(zipFile archive, const string& src, const string& dst)
+{
+	FILE * srcf = fopen(src.c_str(),"rb");
+	if(!srcf)
+		return errno;
+
+	zip_fileinfo	fi = { 0 };
+	//http://unix.stackexchange.com/questions/14705/the-zip-formats-external-file-attribute
+	fi.external_fa = 0100777 << 16;
+
+	time_t		t;			
+	time(&t);
+	struct tm * our_time = localtime(&t);
+
+	if(our_time)
+	{
+		fi.tmz_date.tm_sec  = our_time->tm_sec ;
+		fi.tmz_date.tm_min  = our_time->tm_min ;
+		fi.tmz_date.tm_hour = our_time->tm_hour;
+		fi.tmz_date.tm_mday = our_time->tm_mday;
+		fi.tmz_date.tm_mon  = our_time->tm_mon ;
+		fi.tmz_date.tm_year = our_time->tm_year + 1900;
+	}
+
+	int r = zipOpenNewFileInZip (archive,dst.c_str(),
+		&fi,		// mod dates, etc??
+		NULL,0,
+		NULL,0,
+		NULL,		// comment
+		Z_DEFLATED,
+		Z_DEFAULT_COMPRESSION);
+		
+	if(r != 0) 
+	{
+		fclose(srcf);
+		return r;
+	}
+	
+	char buf[1024];
+	while(!feof(srcf))
+	{
+		int rd = fread(buf,1,sizeof(buf),srcf);
+
+		if(rd)
+		{
+			r = zipWriteInFileInZip(archive,buf,rd);
+			if(r != 0)
+			{
+				fclose(srcf);
+				return r;
+			}
+		}
+		else
+			break;
+	}
+	
+	fclose(srcf);
+	
+
+	r = zipCloseFileInZip(archive);
+	return r;
+}
+				
+static int compress_recursive(zipFile archive, const string& dir, const string& prefix)
+{	
+	vector<string> files ,dirs;
+	int r = FILE_get_directory(dir, &files,&dirs);
+	if(r < 0) return r;
+	
+	for(vector<string>::iterator f = files.begin(); f != files.end(); ++f)
+	{
+		string sf = dir + *f;
+		string df = prefix + *f;
+		r = compress_one_file(archive, sf, df);
+		if (r != 0)
+			return r;
+	}
+	
+	for(vector<string>::iterator d = dirs.begin(); d != dirs.end(); ++d)
+	{
+		string sd = dir + *d + DIR_STR;
+		string dd = prefix + *d + "/";			// FORCE unix / or Mac loses its mind on decompress.
+		r = compress_recursive(archive, sd, dd);
+		if (r != 0)
+			return r;
+	}
+	return 0;
+}
+
+int FILE_compress_dir(const string& src_path, const string& dst_path, const string& prefix)
+{
+	zipFile archive = zipOpen(dst_path.c_str(), 0);
+	if(archive == NULL)
+		return -1;
+
+	int r = compress_recursive(archive, src_path,prefix);
+	
+	zipClose(archive, NULL);
+	
+	return r;
+	
 }

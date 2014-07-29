@@ -466,6 +466,12 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 		fracMax.push_back(1.0);
 		objectPool.AddPool(fracMin, fracMax);
 		objectPool.AddPool(fracMin, fracMax);
+		objectPool.AddPool(fracMin, fracMax);
+		objectPool.AddPool(fracMin, fracMax);
+		objectPool.AddPool(fracMin, fracMax);
+		objectPool.AddPool(fracMin, fracMax);
+		objectPool.AddPool(fracMin, fracMax);
+		objectPool.AddPool(fracMin, fracMax);
 	}
 	
 	objRangeMin.push_back(mElevMin);
@@ -484,6 +490,8 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 		fracMax.push_back((double) (j+1) / double (divisions));
 		fracMax.push_back(1.0);
 		fracMax.push_back(1.0);
+		objectPool3d.AddPool(fracMin, fracMax);
+		objectPool3d.AddPool(fracMin, fracMax);
 		objectPool3d.AddPool(fracMin, fracMax);
 		objectPool3d.AddPool(fracMin, fracMax);
 	}	

@@ -54,8 +54,20 @@ void divide_heading(int * lo, int * hi)
 	*lo = (*lo / 1000);
 }
 
-int scan_bitfields(const char * str, const char * bits[], int all_value)
+// "Unit test" like this:
+// if( !( (scan_bitfields("turboprops|props", equip_strings, atc_traffic_all, '|') == 12) &&
+//		(scan_bitfields("props", equip_strings, atc_traffic_all, '|') == 8) &&
+//		(scan_bitfields("turboprops", equip_strings, atc_traffic_all) == 4) &&
+//		(scan_bitfields("turboprops|helos|jets", equip_strings, atc_traffic_all) == 22)) )
+// {
+// 	printf("Failed test\n"); exit(1);
+// }
+int scan_bitfields(const char * str, const char * bits[], int all_value, char separator='|')
 {
+	std::string string_version(str);
+	std::vector<std::string> tokenized;
+	tokenize_string(string_version.begin(), string_version.end(), back_inserter(tokenized), separator);
+	
 	if(all_value && strcmp(str,"all") == 0)
 		return all_value;
 		
@@ -64,8 +76,13 @@ int scan_bitfields(const char * str, const char * bits[], int all_value)
 	int b = 1;
 	while(bits[n])
 	{
-		if(strstr(str, bits[n]))
-			r |= b;
+		for(std::vector<std::string>::iterator token = tokenized.begin(); token != tokenized.end(); ++token)
+		{
+			if( *token == std::string(bits[n]) )
+			{
+				r |= b;
+			}
+		}
 		++n;
 		b <<= 1;
 	}
@@ -244,7 +261,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	bool			hit_prob = false;
 	AptPolygon_t *	open_poly = NULL;
 	Point2			pt,ctrl;
-
+	
 	bool forceDone = false;
 	while (ok.empty() && !TextScanner_IsDone(s) && !forceDone)
 	{
