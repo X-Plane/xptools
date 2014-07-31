@@ -265,7 +265,7 @@ const string &WED_Sign_Parser::EnumToString(FSM in)
 
 //Take in the current (and soon to be past) state  and the current letter being processed
 //The heart of all this
-FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutString & str, vector<string> & msgBuf)
+FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutInfo & str, vector<string> & msgBuf)
 {
 	stringstream ss;
 	//If you have reached a \0 FOR ANY REASON exit now
@@ -289,7 +289,7 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutSt
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			if(str.AccumBuffer(curChar,msgBuf));
+			if(str.AccumGlyphBuf(curChar,msgBuf));
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -300,7 +300,7 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutSt
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			str.AccumBuffer(curChar,msgBuf);
+			str.AccumGlyphBuf(curChar,msgBuf);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -309,16 +309,16 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutSt
 		{
 		//Cases to make it stop accumulating
 		case '}':
-			str.AppendLetter(str.curlyBuf,strlen(str.curlyBuf),msgBuf);
+			str.AccumOutputString(str.GetGlyphBuf(),str.GetGlyphBuf().length(),msgBuf);
 			str.ClearBuf();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			str.AppendLetter(str.curlyBuf,strlen(str.curlyBuf),msgBuf);
+			str.AccumOutputString(str.GetGlyphBuf(),str.GetGlyphBuf().length(),msgBuf);
 			str.ClearBuf();
 			return I_COMMA;
 		default:
 			//otherwise accumulate the glyphs
-			str.AccumBuffer(curChar,msgBuf);
+			str.AccumGlyphBuf(curChar,msgBuf);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -330,11 +330,11 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutSt
 		case 'R':
 		case 'B':
 			//Do action, change color
-			str.curColor = curChar;
+			str.SetCurColor(curChar);
 			return I_WAITING_SEPERATOR;
 			
 		case '@':
-			str.writeToF = false;
+			str.SetWriteMode(false);
 			return I_WAITING_SEPERATOR;
 		}
 		break;
@@ -362,7 +362,7 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutSt
 			//Outside of curly braces. Ex: {@Y}acdefhilmnorstuyz
 			if(!(curChar>=97 && curChar <= 122))
 			{
-				str.AppendLetter(&curChar,1,msgBuf);
+				str.AccumOutputString(&curChar,1,msgBuf);
 				return O_ACCUM_GLYPHS;
 			}
 			else
@@ -383,12 +383,10 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutSt
 	return LOOKUP_ERR;
 }
 
-OutString WED_Sign_Parser::MainLoop(const InString & inStr, vector<string> & msgBuf)
+OutInfo WED_Sign_Parser::MainLoop(const InString & inStr, vector<string> & msgBuf)
 {
 	//Make the front and back outStrings
-	string front;
-	string back;
-	OutString outStr(front,back);
+	OutInfo outStr;
 		
 	//Validate if there is any whitesapce or non printable ASCII charecters (33-126)
 	if(WED_Sign_Parser::ValidateBasics(inStr,msgBuf) == true)

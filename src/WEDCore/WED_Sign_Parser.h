@@ -2,8 +2,21 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
-#define BUFLEN 256 //controls how long the out string (fRes,bRes) can be
 
+/* Theory of Operation - The sign parser takes in a taxiway sign and analyzes it for any errors (syntactic or semantic.)
+
+There are two outputs for this, for 2 different groups of clients. 
+The error message collection (vector<string> & msgBuf) collects human readable errors to be shown to the user.
+
+The OutInfo struct that is generated contains a version of of the sign that tags every glyph with its color.
+Ex: InString: {@Y}CAT{@@}{@L,D,O,G}
+	OutString: fRes = "/YC/YA/YT"
+			   bRes = "/LD/LO/LG"
+
+This could be used for some drawing utility or anything that would like to know the color of every glyph.
+
+The other part of OutInfo is information about about errors it has collected
+*/
 enum FSM
 {
 	//The inside curly braces portion, starts with I_
@@ -17,8 +30,13 @@ enum FSM
 	O_ACCUM_GLYPHS,
 	O_END,//For when the string ends
 	LOOKUP_ERR//Return code for any errors in the lookup table
-	
 };
+
+enum parser_error_code_t
+{
+
+};
+
 
 struct InString
 {
@@ -36,19 +54,19 @@ struct InString
 	}
 };
 
-struct OutString
+class OutInfo
 {
+private:
 	//Front Sign results
-	char fRes[BUFLEN];
+	string fRes;
+	string bRes;
 
-	//Back sign results
-	char bRes[BUFLEN];
-
-	//The temporary buffer to fill up, make 8 chars + \0
-	char curlyBuf[9];
+	//Glyph Buffer, stores a glyph that is form
+	//{c->{co->{com->{comm->{comma
+	string glyphBuf;//TODO - Replace all these inLetters stuff
 
 	//Write to the front buffer
-	bool writeToF;
+	bool writeMode;
 
 	//The current color
 	char curColor;
@@ -56,51 +74,6 @@ struct OutString
 	//Error codes in generating the outstring
 	int error;
 
-	OutString(string & front, string & back)
-	{
-		//Wipe out the contents of outStr
-		for (int i = 0; i < BUFLEN; i++)
-		{
-			fRes[i]='\0';
-			bRes[i]='\0';
-		}
-		
-		ClearBuf();
-		writeToF = true;
-		curColor = 'X';//An obviously fake choice
-	}
-	
-	~OutString()
-	{
-
-	}
-
-	//True for all good, false for buffer overflow
-	bool AccumBuffer(char inLet, vector<string> & msgBuf)
-	{
-		if(strlen(curlyBuf) < 8)
-		{
-			curlyBuf[strlen(curlyBuf)] = inLet;
-			return true;
-		}
-		else
-		{
-			stringstream ss;
-			ss << "Longer than anyknown glyph!";//Semantic
-			msgBuf.push_back(ss.str());
-			return false;
-		}
-	}
-
-	//wipe the contents and reset the counter
-	void ClearBuf()
-	{
-		for (int i = 0; i < 9; i++)
-		{
-			curlyBuf[i]='\0';
-		}
-	}
-	
 	//Check the color, inLetter:the Letter to check, position: the positoin in the array of chars, msgBuf: the message buffer
 	void SemCheckColor(char inLetter, int position, vector<string> & msgBuf)
 	{
@@ -201,16 +174,28 @@ struct OutString
 		}
 	}
 
-	//a letter to appened, front mode = 0, back mode = 1
-	void AppendLetter(const string & inLetters, int count, vector<string> & msgBuf)
+public:
+	OutInfo()
+	{
+		writeMode = true;
+		curColor = 'X';//An obviously fake choice
+	}
+	
+	~OutInfo()
+	{
+
+	}
+
+	//Attempts to add a collection of letters
+	void AccumOutputString(const string & inLetters, int count, vector<string> & msgBuf)
 	{
 		//Before actually appending them see if they're
 		//correct semantically
 
 		//Meaning we are in multiglyph mode
-		if(count > 1)
+		if(inLetters.length() > 1)
 		{
-			SemCheckMultiGlyph(inLetters,count,msgBuf);
+			SemCheckMultiGlyph(inLetters,inLetters.length(),msgBuf);
 		}
 		
 		//Check to see if the letter is supported by the 
@@ -218,29 +203,67 @@ struct OutString
 		* 2.) Add /(Y,R,L,B)
 		* 3.) Add the letters
 		*/
-		if(writeToF)
+		if(writeMode)
 		{
-			fRes[strlen(fRes)] = '/';
-			fRes[strlen(fRes)] = curColor;
+			fRes += '/';
+			fRes += curColor;
 			for (int i = 0; i < count; i++)
 			{
 				SemCheckColor(inLetters[i],i,msgBuf);
-				fRes[strlen(fRes)] = inLetters[i];
+				fRes += inLetters[i];
 			}
 		}
 		else
 		{
-			bRes[strlen(bRes)] = '/';
-			bRes[strlen(bRes)] = curColor;
+			bRes += '/';
+			bRes += curColor;
 			for (int i = 0; i < count; i++)
 			{
 				SemCheckColor(inLetters[i],i,msgBuf);
-				bRes[strlen(bRes)] = inLetters[i];
+				bRes += inLetters[i];
 			}
 		}
 	}
 
-#if DEV
+	//Attempts to add letters to the glyph buffer
+	bool AccumGlyphBuf(char inLetter, vector<string> & msgBuf)
+	{
+		if(glyphBuf.length() < 8)
+		{
+			glyphBuf += inLetter;
+			return true;
+		}
+		else
+		{
+			stringstream ss;
+			ss << "Glyph " << glyphBuf + inLetter << "... is longer than anyknown glyph";//Semantic
+			msgBuf.push_back(ss.str());
+			return false;
+		}
+	}	
+
+	void ClearBuf()
+	{
+		glyphBuf.clear();
+	}
+
+	string GetGlyphBuf()
+	{
+		return glyphBuf;
+	}
+
+	void SetWriteMode(bool mode)
+	{
+		writeMode = mode;
+	}
+
+	void SetCurColor(char in)
+	{
+		curColor = in;
+	}
+};
+
+/*#if DEV
 	void PrintString()
 	{
 		for (int i = 0; i < strlen(fRes); i++)
@@ -257,8 +280,8 @@ struct OutString
 			}
 		}
 	}
-#endif
-};
+#endif*/
+
 class WED_Sign_Parser
 {
 public:
@@ -269,8 +292,8 @@ public:
 	//takes in the char and an optional boolean to say wheather to only do lowercase
 	static bool IsSupportedChar(char inChar);
 	static const string & EnumToString(FSM in);
-	static FSM LookUpTable(FSM curState, char curChar, int position, OutString & str, vector<string> & msgBuf);
+	static FSM LookUpTable(FSM curState, char curChar, int position, OutInfo & str, vector<string> & msgBuf);
 	//The main loop plus and optional InString
-	static OutString MainLoop(const InString & opInStr, vector<string> & msgBuf);
+	static OutInfo MainLoop(const InString & opInStr, vector<string> & msgBuf);
 };
 
