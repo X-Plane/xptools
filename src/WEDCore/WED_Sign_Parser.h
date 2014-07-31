@@ -1,9 +1,7 @@
 #pragma once
 #include <stdio.h>
 #include <string>
-#if IBM
-#include <conio.h>
-#endif
+#include <sstream>
 #define BUFLEN 256 //controls how long the out string (fRes,bRes) can be
 
 enum FSM
@@ -24,25 +22,14 @@ enum FSM
 
 struct InString
 {
-	//The original position
-	const char * oPos;
-	//The moving positino used to parse
-	const char * nPos;
-	//The end of string, strlen*char+oPos;
-	const char * endPos;
-
-	InString(const char * inString)
+	//The input for the FSM, with the text from the sign
+	const string & input;
+	
+	InString(const string & signText):input(signText)
 	{
-		//Original position
-		oPos = inString;
-
-		//Moveable position
-		nPos = oPos;
-
-		//End of the string (\0)
-		//endPos = strlen(inString) * sizeof(char) + oPos;
-		endPos = nPos;
+		
 	}
+
 	~InString()
 	{
 
@@ -59,6 +46,7 @@ struct OutString
 
 	//The temporary buffer to fill up, make 8 chars + \0
 	char curlyBuf[9];
+
 	//Write to the front buffer
 	bool writeToF;
 
@@ -67,7 +55,8 @@ struct OutString
 	
 	//Error codes in generating the outstring
 	int error;
-	OutString(char * front=NULL,char * back=NULL)
+
+	OutString(string & front, string & back)
 	{
 		//Wipe out the contents of outStr
 		for (int i = 0; i < BUFLEN; i++)
@@ -75,14 +64,7 @@ struct OutString
 			fRes[i]='\0';
 			bRes[i]='\0';
 		}
-		if(front != NULL)
-		{
-			strcpy(fRes,front);
-		}
-		if(back != NULL)
-		{
-			strcpy(bRes,back);
-		}
+		
 		ClearBuf();
 		writeToF = true;
 		curColor = 'X';//An obviously fake choice
@@ -94,7 +76,7 @@ struct OutString
 	}
 
 	//True for all good, false for buffer overflow
-	bool AccumBuffer(char inLet,char * msgBuf)
+	bool AccumBuffer(char inLet, vector<string> & msgBuf)
 	{
 		if(strlen(curlyBuf) < 8)
 		{
@@ -103,7 +85,9 @@ struct OutString
 		}
 		else
 		{
-			strcpy(msgBuf,"Longer than anyknown glyph!");//Semantic
+			stringstream ss;
+			ss << "Longer than anyknown glyph!";//Semantic
+			msgBuf.push_back(ss.str());
 			return false;
 		}
 	}
@@ -117,8 +101,8 @@ struct OutString
 		}
 	}
 	
-	//Check the color
-	void SemCheckColor(char inLetter, char * msgBuf)
+	//Check the color, inLetter:the Letter to check, position: the positoin in the array of chars, msgBuf: the message buffer
+	void SemCheckColor(char inLetter, int position, vector<string> & msgBuf)
 	{
 		//Go in as far as it can go
 		switch(curColor)
@@ -129,14 +113,18 @@ struct OutString
 			if(!((inLetter >= 65 && inLetter <= 90) ||
 				(inLetter >= 48 && inLetter <= 57)))
 			{
-				sprintf(msgBuf,"%c cannot belong to color type %c",inLetter,curColor);
+				stringstream ss;
+				ss << "Charecter " << position + 1 << ": " << inLetter << " cannot belong to color type " << curColor;
+				msgBuf.push_back(ss.str());
 			}
 			break;
 		case 'B':
 			//B can only support 0-9 (ASCII letters 48 through 57)
 			if(!(inLetter >= 48 && inLetter <= 57))
 			{
-				sprintf(msgBuf,"%c cannot belong to color type %c",inLetter,curColor);
+				stringstream ss;
+				ss << "Charecter " << position + 1 << ": " << inLetter << " cannot belong to color type " << curColor;
+				msgBuf.push_back(ss.str());
 			}
 			break;
 		default:
@@ -145,57 +133,57 @@ struct OutString
 	}
 
 	//Check a multi glyph
-	void SemCheckMultiGlyph(char * inLetters, char * msgBuf)
+	void SemCheckMultiGlyph(const string & inLetters, int position, vector<string> & msgBuf)
 	{
 		//Assume there is something wrong until otherwise noted
 		bool semError = true;
 
 		//Based on the letter, preform a bunch of string compares
 		//if it is a perfect match for any of the real multiletter glyphs
-		switch(*(inLetters))
+		switch(inLetters[0])
 		{
 		case '^':
-			if(strcmp("^u",inLetters) == 0 ||
-				strcmp("^d",inLetters) == 0 ||
-				strcmp("^r",inLetters) == 0 ||
-				strcmp("^l",inLetters) == 0||
-				strcmp("^lu",inLetters) == 0 ||
-				strcmp("^ru",inLetters) == 0 ||
-				strcmp("^ld",inLetters) == 0 ||
-				strcmp("^rd",inLetters) == 0)
+			if(("^u" == inLetters) == 0 ||
+				("^d" == inLetters) == 0 ||
+				("^r" == inLetters) == 0 ||
+				("^l" == inLetters) == 0||
+				("^lu" == inLetters) == 0 ||
+				("^ru" == inLetters) == 0 ||
+				("^ld" == inLetters) == 0 ||
+				("^rd" == inLetters) == 0)
 			{
 				semError = false;
 			}
 			break;
 		case 'c':
-			if( strcmp("critical",inLetters) == 0||
-				strcmp("comma",inLetters) == 0)
+			if( ("critical" == inLetters) == 0||
+				("comma" == inLetters) == 0)
 			{
 				semError = false;
 			}
 			break;
 		case 'h':
-			if(strcmp("hazard",inLetters) == 0)
+			if(("hazard" == inLetters) == 0)
 			{
 				semError = false;
 			}
 			break;
 		case 'n':
-			if(strcmp("no-entry",inLetters) == 0)
+			if(("no-entry" == inLetters) == 0)
 			{
 				semError = false;
 			}
 			break;
 		case 'r':
-			if(strcmp("r1",inLetters) == 0||
-				strcmp("r2",inLetters) == 0||
-				strcmp("r3",inLetters) == 0)
+			if(("r1" == inLetters) == 0||
+				("r2" == inLetters) == 0||
+				("r3" == inLetters) == 0)
 			{
 				semError = false;
 			}
 			break;
 		case 's':
-			if(strcmp("safety",inLetters) == 0)
+			if(("safety" == inLetters) == 0)
 			{
 				semError = false;
 			}
@@ -207,12 +195,14 @@ struct OutString
 		}
 		if(semError == true)
 		{
-			sprintf(msgBuf,"%s is not a real multiglyph!",inLetters);
+			stringstream ss;
+			ss << "Character " << inLetters.length() - position + 1 << "-" << position + 1 << ": " << inLetters << " is not a real multiglyph";
+			msgBuf.push_back(ss.str());
 		}
 	}
 
 	//a letter to appened, front mode = 0, back mode = 1
-	void AppendLetter(char * inLetters, int count, char * msgBuf)
+	void AppendLetter(const string & inLetters, int count, vector<string> & msgBuf)
 	{
 		//Before actually appending them see if they're
 		//correct semantically
@@ -220,7 +210,7 @@ struct OutString
 		//Meaning we are in multiglyph mode
 		if(count > 1)
 		{
-			SemCheckMultiGlyph(inLetters,msgBuf);
+			SemCheckMultiGlyph(inLetters,count,msgBuf);
 		}
 		
 		//Check to see if the letter is supported by the 
@@ -234,8 +224,8 @@ struct OutString
 			fRes[strlen(fRes)] = curColor;
 			for (int i = 0; i < count; i++)
 			{
-				SemCheckColor(*(inLetters+i),msgBuf);
-				fRes[strlen(fRes)] = *(inLetters+i);
+				SemCheckColor(inLetters[i],i,msgBuf);
+				fRes[strlen(fRes)] = inLetters[i];
 			}
 		}
 		else
@@ -244,8 +234,8 @@ struct OutString
 			bRes[strlen(bRes)] = curColor;
 			for (int i = 0; i < count; i++)
 			{
-				SemCheckColor(*(inLetters+i),msgBuf);
-				bRes[strlen(bRes)] = *(inLetters+i);
+				SemCheckColor(inLetters[i],i,msgBuf);
+				bRes[strlen(bRes)] = inLetters[i];
 			}
 		}
 	}
@@ -269,18 +259,18 @@ struct OutString
 	}
 #endif
 };
-class ParserValer
+class WED_Sign_Parser
 {
 public:
-	ParserValer(void);
-	~ParserValer(void);
-	static bool ValidateCurly(InString * inStr, char * msgBuf);
-	static bool ValidateBasics(InString * inStr, char * msgBuf);
+	WED_Sign_Parser(void);
+	~WED_Sign_Parser(void);
+	static bool ValidateCurly(const InString & inStr, int position, vector<string> & msgBuf);
+	static bool ValidateBasics(const InString & inStr, vector<string> & msgBuf);
 	//takes in the char and an optional boolean to say wheather to only do lowercase
 	static bool IsSupportedChar(char inChar);
-	static const char * EnumToString(FSM in);
-	static FSM LookUpTable(FSM curState, char curChar, OutString * str, char * msgBuf);
+	static const string & EnumToString(FSM in);
+	static FSM LookUpTable(FSM curState, char curChar, int position, OutString & str, vector<string> & msgBuf);
 	//The main loop plus and optional InString
-	static OutString MainLoop(InString * opInStr, string * msg);
+	static OutString MainLoop(const InString & opInStr, vector<string> & msgBuf);
 };
 

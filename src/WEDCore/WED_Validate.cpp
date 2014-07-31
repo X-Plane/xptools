@@ -112,9 +112,17 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
 		string signName;
 		airSign->GetName(signName);
-		InString in(signName.c_str());
-		ParserValer::MainLoop(&in,&msg);
-		//ParserValer
+
+		InString in(signName);
+		vector<string> errorMsgs;
+		WED_Sign_Parser::MainLoop(in,errorMsgs);
+
+		int MAX_ERRORS = 6;//TODO - Is this good?
+		for (int i = 0; i < MAX_ERRORS && i < errorMsgs.size(); i++)
+		{
+			msg += errorMsgs[i];
+		}
+		//WED_Sign_Parser
 	}
 
 	//------------------------------------------------------------------------------------

@@ -1,15 +1,15 @@
 #include "WED_Sign_Parser.h"
 
 
-ParserValer::ParserValer(void)
+WED_Sign_Parser::WED_Sign_Parser(void)
 {
 }
 
 
-ParserValer::~ParserValer(void)
+WED_Sign_Parser::~WED_Sign_Parser(void)
 {
 }
-bool ParserValer::IsSupportedChar(char inChar)
+bool WED_Sign_Parser::IsSupportedChar(char inChar)
 {
 	if((inChar >= 65 && inChar <= 90) || //A-Z
 			(inChar >= 48 && inChar <= 57)  || //0-9
@@ -50,18 +50,18 @@ bool ParserValer::IsSupportedChar(char inChar)
 }
 //Takes in the place where a '{' is as the start
 //Returns true if there was an error
-bool ParserValer::ValidateCurly(InString * inStr, char * msgBuf)
+bool WED_Sign_Parser::ValidateCurly(const InString & inStr, int position, vector<string> & msgBuf)
 {
 	//Local oPos,nPos,and end
-	const char * lOPos = inStr->nPos;
+	/*string::const_iterator lOPos = inStr.input.->nPos;
 	const char * lNPos = inStr->nPos;
 	
-	const char * lEndPos = NULL;
+	const char * lEndPos = NULL;*/
 		
 	//What is currently considered good, a { a }
 	//We start by saying that we are looking for a {
 	char LFGoodMode = '{';//Used later for nesting nesting
-
+	int rCurlyIndex = 0;//Index where the matching } is found, 0 means not found
 	//1.) All { have a }
 	//2.) No pair may be empyt nest
 	//3.) No pair may nest
@@ -69,37 +69,42 @@ bool ParserValer::ValidateCurly(InString * inStr, char * msgBuf)
 	//--Find if and where the end of the pair is-----
 	//Run until it breaks on 1.)Finding }
 	//or reaching the end of the string
+	int i = 0;
 	while(true)
 	{
 		//If you've found the other pair
-		if(*lNPos == '}')
+		if(inStr.input[i] == '}')
 		{
-			lEndPos=lNPos;
+			rCurlyIndex = i;
 			break;
 		}
-		if(lNPos == inStr->endPos)
+		if(i == inStr.input.length())
 		{
-			sprintf(msgBuf,"You have no end to this pair starting from %d",(lOPos - inStr->oPos));
+			stringstream ss;
+			ss << "Curly brace pair starting at " << position << " is missing its end brace";
+			msgBuf.push_back(ss.str());
 			return true;
 		}
-		lNPos++;
+		i++;
 	}
 	//---------------------------------------------
 	
 	//Reset the nPos
-	lNPos = lOPos;
+	i = 0;
 
 	//--Next, find if it is actually empty---------
-	if(*(lNPos+1) == '}')
+	if(inStr.input[i+1] == '}')
 	{
-		sprintf(msgBuf,"Empty curly braces detected!");
+		stringstream ss;
+		ss << "Empty curly braces detected!";
+		msgBuf.push_back(ss.str());
 		return true;
 	}
 	//---------------------------------------------
 	
 	//--Finally see if there is nesting------------
 
-	while(lNPos != lEndPos)
+	while(i < inStr.input.length())
 	{
 		/* 1.)Decide whats good or bad
 		*		The first curly brace should be open
@@ -109,71 +114,93 @@ bool ParserValer::ValidateCurly(InString * inStr, char * msgBuf)
 		*/
 
 		//If we are at a { or }
-		if((int)*lNPos == '{' || (int) *lNPos == '}')
+		if(inStr.input[i] == '{' || inStr.input[i] == '}')
 		{
 			//Is it the good mode?
-			if((int)*lNPos == LFGoodMode)
+			if(inStr.input[i] == LFGoodMode)
 			{
 				//If so toggle what you are looking for
-				LFGoodMode = (*lNPos == '{') ? '}' : '{';					
+				LFGoodMode = (inStr.input[i] == '{') ? '}' : '{';					
 			}
 			else
 			{
-				sprintf(msgBuf,"Char %c at location %d is invalid ", *lNPos,(lOPos - inStr->oPos));
+				stringstream ss;
+				ss << "Charecter " << position << ": Brace " << inStr.input[i] << " is invalid in this situation";
+				msgBuf.push_back(ss.str());
 				return true;
 			}
 		}
-		lNPos++;
+		i++;
 	}
 	//---------------------------------------------
+	i = 0;
 	return false;
 }
 
 //Return if there was an error or not
-bool ParserValer::ValidateBasics(InString * inStr, char * msgBuf)
+bool WED_Sign_Parser::ValidateBasics(const InString & inStr, vector<string> & msgBuf)
 {
 	bool error = false;
 
+	//--Too long---------------------------------------------
+	//TODO - Find out if there is a max length
+
+	//-------------------------------------------------------
+
+	int i = 0;
 	//---White Space-----------------------------------------
-	while(inStr->nPos != inStr->endPos)//Loop for the whole string
+	while(i < inStr.input.length())//Loop for the whole string
 	{
+		char c = inStr.input[i];
 		//If the current charecter is white space
-		if(isspace(*inStr->nPos))
+		//(isspace blows up on a non ascii charecter, this is our implenetation)
+		if( c == ' '  ||
+			c == '\t' ||
+			c == '\n' ||
+			c == '\v' ||
+			c == '\f' ||
+			c == '\r')
 		{
-			sprintf(msgBuf,"Char %d is whitespace.",(inStr->nPos-inStr->oPos));
+			stringstream ss;
+			ss << "Charecter " << c << ": Found whitespace",i+1;
+			msgBuf.push_back(ss.str());
 			return true;
 		}
 		//Increase the pointer and counter
-		inStr->nPos++;
+		i++;
 	}
 	//-------------------------------------------------------
 
 	//Reset variable
-	inStr->nPos = inStr->oPos;
+	i = 0;
 
 	//--ASCII or supported char------------------------------------------------
-	while(inStr->nPos != inStr->endPos)
+	while(i < inStr.input.length())
 	{	
-		if( ((int) *inStr->nPos < 33 ) || ((int) *inStr->nPos > 126))
+		if( ((int) inStr.input[i] < 33 ) || ((int) inStr.input[i] > 126))
 		{
-			sprintf(msgBuf,"nChar %c at location %d is not valid ASCII. ", *inStr->nPos, (inStr->nPos-inStr->oPos));
+			stringstream ss;
+			ss << "Charecter " << i + 1 << ": Charecter is not valid ASCII";
+			msgBuf.push_back(ss.str());
 			return true;
 		}
 		//Check if it is a non supported char (aka NOT A-Z,0-9,.,* etc
-		if(!IsSupportedChar(*inStr->nPos))
+		if(!IsSupportedChar(inStr.input[i]))
 		{
-			sprintf(msgBuf,"Char %c at location %d is not supported. ", *inStr->nPos, (inStr->nPos-inStr->oPos));
+			stringstream ss;
+			ss << "Charecter " << i + 1 << ": " << inStr.input[i] << " is not supported";
+			msgBuf.push_back(ss.str());
 			return true;
 		}
-		inStr->nPos++;
+		i++;
 	}
 	//-------------------------------------------------------
-	inStr->nPos = inStr->oPos;
+	i = 0;
 	
 	//--Starts with valid instruction {@(Y/R/L/B)
-	if(*(inStr->oPos) == '{' && *(inStr->oPos+1) == '@')
+	if(inStr.input[0] == '{' && inStr.input[1] == '@')
 	{
-		switch(*(inStr->oPos+2))
+		switch(inStr.input[2])
 		{
 		case 'Y':
 		case 'R':
@@ -182,32 +209,39 @@ bool ParserValer::ValidateBasics(InString * inStr, char * msgBuf)
 			error = false;
 			break;
 		default:
-			sprintf(msgBuf,"%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
+			stringstream ss;
+			ss << "Chacters 1-3: " << inStr.input[0] << inStr.input[1] << inStr.input[2] << " is not a valid instruction";
+			msgBuf.push_back(ss.str());
 			return true;
 		}
 	}
 	else
 	{
-		sprintf(msgBuf,"%c%c%c is not a valid instruction",*(inStr->oPos),*(inStr->oPos+1),*(inStr->oPos+2));
+		stringstream ss;
+		ss << "Chacters 1-3: " << inStr.input[0] << inStr.input[1] << inStr.input[2] << " is not a valid instruction";
+		msgBuf.push_back(ss.str());
 		return true;
 	}
 
 	//Validate all curly brace rules
-	while(inStr->nPos != inStr->endPos)
+	while(i < inStr.input.length())
 	{
-		if(*inStr->nPos == '{')
+		if(inStr.input[i] == '{')
 		{
-			error = ValidateCurly(inStr,msgBuf);
-			if(error) return error;
+			error = ValidateCurly(inStr,i,msgBuf);
+			if(error)
+			{
+				return error;
+			}
 		}
-		inStr->nPos++;
+		i++;
 	}
-	inStr->nPos = inStr->oPos;
+	i = 0;
 	return error;
 }
 
 
-const char * ParserValer::EnumToString(FSM in)
+const string &WED_Sign_Parser::EnumToString(FSM in)
 {
 	switch(in)
 	{
@@ -231,11 +265,9 @@ const char * ParserValer::EnumToString(FSM in)
 
 //Take in the current (and soon to be past) state  and the current letter being processed
 //The heart of all this
-FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char * msgBuf)
+FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutString & str, vector<string> & msgBuf)
 {
-	#if DEV
-	printf("%c",curChar);
-	#endif
+	stringstream ss;
 	//If you have reached a \0 FOR ANY REASON exit now
 	if(curChar == '\0')
 	{
@@ -250,13 +282,14 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 		//not allowed
 		case '}':
 		case ','://since comma's always go into idle you have hit ,,
-			//FireAction(throw error)
+			ss << "Character " << position << ": " << curChar << " is not allowed there";
+			msgBuf.push_back(ss.str());
 			return LOOKUP_ERR;
 		case '@':
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			if(str->AccumBuffer(curChar,msgBuf));
+			if(str.AccumBuffer(curChar,msgBuf));
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -267,7 +300,7 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			str->AccumBuffer(curChar,msgBuf);
+			str.AccumBuffer(curChar,msgBuf);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -276,16 +309,16 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 		{
 		//Cases to make it stop accumulating
 		case '}':
-			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf),msgBuf);
-			str->ClearBuf();
+			str.AppendLetter(str.curlyBuf,strlen(str.curlyBuf),msgBuf);
+			str.ClearBuf();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			str->AppendLetter(str->curlyBuf,strlen(str->curlyBuf),msgBuf);
-			str->ClearBuf();
+			str.AppendLetter(str.curlyBuf,strlen(str.curlyBuf),msgBuf);
+			str.ClearBuf();
 			return I_COMMA;
 		default:
 			//otherwise accumulate the glyphs
-			str->AccumBuffer(curChar,msgBuf);
+			str.AccumBuffer(curChar,msgBuf);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -297,11 +330,11 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 		case 'R':
 		case 'B':
 			//Do action, change color
-			str->curColor = curChar;
+			str.curColor = curChar;
 			return I_WAITING_SEPERATOR;
 			
 		case '@':
-			str->writeToF = false;
+			str.writeToF = false;
 			return I_WAITING_SEPERATOR;
 		}
 		break;
@@ -313,7 +346,8 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 		case '}':
 			return O_ACCUM_GLYPHS;
 		default:
-			sprintf(msgBuf,"Was expecting , or }, got %c",curChar);//No way you should end up with something like @YX or {@@X
+			ss << "Character " << position << ": Was expecting , or }, got " << curChar;//No way you should end up with something like @YX or {@@X
+			msgBuf.push_back(ss.str());
 			return LOOKUP_ERR;
 		}
 		break;
@@ -328,12 +362,13 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 			//Outside of curly braces. Ex: {@Y}acdefhilmnorstuyz
 			if(!(curChar>=97 && curChar <= 122))
 			{
-				str->AppendLetter(&curChar,1,msgBuf);
+				str.AppendLetter(&curChar,1,msgBuf);
 				return O_ACCUM_GLYPHS;
 			}
 			else
 			{
-				sprintf(msgBuf,"Char %c is not allowed outside curly braces",curChar);
+				ss << "Character " << position << ": %c is not allowed outside curly braces",curChar;
+				msgBuf.push_back(ss.str());
 				return LOOKUP_ERR;
 			}
 		}
@@ -348,42 +383,40 @@ FSM ParserValer::LookUpTable(FSM curState, char curChar, OutString * str, char *
 	return LOOKUP_ERR;
 }
 
-OutString ParserValer::MainLoop(InString * opInStr, string * msg)
+OutString WED_Sign_Parser::MainLoop(const InString & inStr, vector<string> & msgBuf)
 {
-	char msgBuf[256] = { 0 };
-	
-	InString inStr(*opInStr);
 	//Make the front and back outStrings
-	OutString outStr;
-
-	//Set the endPos to something valid
-	inStr.endPos = strlen(inStr.oPos) * sizeof(char) + inStr.oPos;
-
+	string front;
+	string back;
+	OutString outStr(front,back);
+		
 	//Validate if there is any whitesapce or non printable ASCII charecters (33-126)
-	if(ParserValer::ValidateBasics(&inStr,msgBuf) == true)
+	if(WED_Sign_Parser::ValidateBasics(inStr,msgBuf) == true)
 	{
-		sprintf(msgBuf,"String doesn't follow basic rules!");
-		*msg=string(msgBuf);
+		//sprintf(msgBuf,"String doesn't follow basic rules!");
+		//msg=string(msgBuf);
 		return outStr;
 	}
-//	system("cls");
 	
 	FSM FSM_MODE = O_ACCUM_GLYPHS;
+	int i = 0;
 	while(FSM_MODE != O_END)
 	{
 		//Look up the transition
-		FSM transition = ParserValer::LookUpTable(FSM_MODE,*(inStr.nPos), &outStr,msgBuf);
+		FSM transition = WED_Sign_Parser::LookUpTable(FSM_MODE,inStr.input[i], i, outStr, msgBuf);
 		if(transition != LOOKUP_ERR)
 		{
 			FSM_MODE = transition;
-			inStr.nPos++;
+			i++;
 		}
 		else
 		{
-			sprintf(msgBuf,"Fatal lookup error! State: %s, Char: %c, Location: %d",ParserValer::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos));
+			//stringstream ss
+			//ss << "Fatal lookup error! State: %s, Char: %c, Location: %d",WED_Sign_Parser::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos));
+			//msgBuf.push_back(ss.str());
 			break;
 		}
 	}
-	*msg=string(msgBuf);
+	
 	return outStr;
 }
