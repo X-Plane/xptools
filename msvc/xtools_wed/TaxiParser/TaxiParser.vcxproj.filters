@@ -21,7 +21,7 @@
     <ClInclude Include="UnitTester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ParserValer.h">
+    <ClInclude Include="WED_Sign_Parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClCompile Include="ParserMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ParserValer.cpp">
+    <ClCompile Include="WED_Sign_Parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
