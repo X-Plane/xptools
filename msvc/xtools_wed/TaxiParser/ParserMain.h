@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string>
 #include <conio.h>
-#include "WED_Sign_Parser.h"
+#include "..\..\..\src\WEDCore\WED_Sign_Parser.h"
 #include "UnitTester.h"
 
 class ParserMain

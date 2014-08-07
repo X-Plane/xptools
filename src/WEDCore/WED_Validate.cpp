@@ -109,10 +109,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 
 	if(who->GetClass() == WED_AirportSign::sClass)
 	{
+		
 		WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
 		string signName;
 		airSign->GetName(signName);
-
+		
 		InString in(signName);
 		vector<string> errorMsgs;
 		WED_Sign_Parser::MainLoop(in,errorMsgs);
@@ -121,6 +122,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		for (int i = 0; i < MAX_ERRORS && i < errorMsgs.size(); i++)
 		{
 			msg += errorMsgs[i];
+			msg += '\n';
 		}
 		//WED_Sign_Parser
 	}

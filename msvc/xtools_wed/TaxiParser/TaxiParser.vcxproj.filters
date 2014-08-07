@@ -21,7 +21,7 @@
     <ClInclude Include="UnitTester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WED_Sign_Parser.h">
+    <ClInclude Include="..\..\..\src\WEDCore\WED_Sign_Parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClCompile Include="ParserMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WED_Sign_Parser.cpp">
+    <ClCompile Include="..\..\..\src\WEDCore\WED_Sign_Parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

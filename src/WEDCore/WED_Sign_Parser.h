@@ -2,16 +2,18 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+#include <vector>
+using namespace std;
 
-/* Theory of Operation - The sign parser takes in a taxiway sign and analyzes it for any errors (syntactic or semantic.)
+/* Theory of Operation - The sign parser takes in a taxiway sign and analyses it for any errors (syntactic or semantic.)
 
 There are two outputs for this, for 2 different groups of clients. 
 The error message collection (vector<string> & msgBuf) collects human readable errors to be shown to the user.
 
 The OutInfo struct that is generated contains a version of of the sign that tags every glyph with its color.
 Ex: InString: {@Y}CAT{@@}{@L,D,O,G}
-	OutString: fRes = "/YC/YA/YT"
-			   bRes = "/LD/LO/LG"
+	OutInfo: fRes = "/YC/YA/YT"
+			 bRes = "/LD/LO/LG"
 
 This could be used for some drawing utility or anything that would like to know the color of every glyph.
 
@@ -23,10 +25,10 @@ enum FSM
 	I_COMMA,//We just hit a comma and are now expecting single
 	//or multiglyphs
 	I_INCUR,//For when we hit {
-	I_ACCUM_GLPHYS,//For collectings glpyhs
+	I_ACCUM_GLPHYS,//For collecting glpyhs
 	I_ANY_CONTROL,//When it hits a @
 	I_WAITING_SEPERATOR,//For when it is waiting for a , or }
-	//The outside curlybraces portion, starts with O_
+	//The outside curly braces portion, starts with O_
 	O_ACCUM_GLYPHS,
 	O_END,//For when the string ends
 	LOOKUP_ERR//Return code for any errors in the lookup table
@@ -43,19 +45,13 @@ struct InString
 	//The input for the FSM, with the text from the sign
 	const string & input;
 	
-	InString(const string & signText):input(signText)
-	{
-		
-	}
-
-	~InString()
-	{
-
-	}
+	InString(const string & signText):input(signText){}
+	~InString()	{}
 };
 
 class OutInfo
 {
+friend class UnitTester;
 private:
 	//Front Sign results
 	string fRes;
@@ -74,39 +70,38 @@ private:
 	//Error codes in generating the outstring
 	int error;
 
-	//Check the color, inLetter:the Letter to check, position: the positoin in the array of chars, msgBuf: the message buffer
-	void SemCheckColor(char inLetter, int position, vector<string> & msgBuf)
+	//Check the color, inLetter:the Letter to check, position: the position in the array of chars, msgBuf: the message buffer
+	//Returns true if there was an error
+	bool SemCheckColor(char inLetter)
 	{
 		//Go in as far as it can go
 		switch(curColor)
 		{
-		//Y and R allow for all charecters
+		//Y and R allow for all characters
 		case 'L':
 			//L can only support A-Z and 0-9, the bellow checks the relevant
 			if(!((inLetter >= 65 && inLetter <= 90) ||
 				(inLetter >= 48 && inLetter <= 57)))
 			{
-				stringstream ss;
-				ss << "Charecter " << position + 1 << ": " << inLetter << " cannot belong to color type " << curColor;
-				msgBuf.push_back(ss.str());
+				return true;
 			}
 			break;
 		case 'B':
 			//B can only support 0-9 (ASCII letters 48 through 57)
 			if(!(inLetter >= 48 && inLetter <= 57))
 			{
-				stringstream ss;
-				ss << "Charecter " << position + 1 << ": " << inLetter << " cannot belong to color type " << curColor;
-				msgBuf.push_back(ss.str());
+				return true;
 			}
 			break;
 		default:
 			break;
 		}
+		return false;
 	}
 
 	//Check a multi glyph
-	void SemCheckMultiGlyph(const string & inLetters, int position, vector<string> & msgBuf)
+	//Returns true if there was an error
+	bool SemCheckMultiGlyph(const string & inLetters)
 	{
 		//Assume there is something wrong until otherwise noted
 		bool semError = true;
@@ -116,47 +111,47 @@ private:
 		switch(inLetters[0])
 		{
 		case '^':
-			if(("^u" == inLetters) == 0 ||
-				("^d" == inLetters) == 0 ||
-				("^r" == inLetters) == 0 ||
-				("^l" == inLetters) == 0||
-				("^lu" == inLetters) == 0 ||
-				("^ru" == inLetters) == 0 ||
-				("^ld" == inLetters) == 0 ||
-				("^rd" == inLetters) == 0)
+			if((inLetters == "^u") == true ||
+				(inLetters == "^d") == true ||
+				(inLetters == "^r") == true ||
+				(inLetters == "^l") == true||
+				(inLetters == "^lu") == true ||
+				(inLetters == "^ru") == true ||
+				(inLetters == "^ld") == true ||
+				(inLetters == "^rd") == true)
 			{
 				semError = false;
 			}
 			break;
 		case 'c':
-			if( ("critical" == inLetters) == 0||
-				("comma" == inLetters) == 0)
+			if( (inLetters == "critical") == true||
+				(inLetters == "comma") == true)
 			{
 				semError = false;
 			}
 			break;
 		case 'h':
-			if(("hazard" == inLetters) == 0)
+			if((inLetters == "hazard") == true)
 			{
 				semError = false;
 			}
 			break;
 		case 'n':
-			if(("no-entry" == inLetters) == 0)
+			if((inLetters == "no-entry") == true)
 			{
 				semError = false;
 			}
 			break;
 		case 'r':
-			if(("r1" == inLetters) == 0||
-				("r2" == inLetters) == 0||
-				("r3" == inLetters) == 0)
+			if((inLetters == "r1") == true||
+				(inLetters == "r2") == true||
+				(inLetters == "r3") == true)
 			{
 				semError = false;
 			}
 			break;
 		case 's':
-			if(("safety" == inLetters) == 0)
+			if((inLetters == "safety") == true)
 			{
 				semError = false;
 			}
@@ -166,12 +161,7 @@ private:
 			semError = true;//It will next print the error warning
 			break;
 		}
-		if(semError == true)
-		{
-			stringstream ss;
-			ss << "Character " << inLetters.length() - position + 1 << "-" << position + 1 << ": " << inLetters << " is not a real multiglyph";
-			msgBuf.push_back(ss.str());
-		}
+		return semError;
 	}
 
 public:
@@ -187,7 +177,7 @@ public:
 	}
 
 	//Attempts to add a collection of letters
-	void AccumOutputString(const string & inLetters, int count, vector<string> & msgBuf)
+	void AccumOutputString(const string & inLetters, int position, vector<string> & msgBuf)
 	{
 		//Before actually appending them see if they're
 		//correct semantically
@@ -195,9 +185,23 @@ public:
 		//Meaning we are in multiglyph mode
 		if(inLetters.length() > 1)
 		{
-			SemCheckMultiGlyph(inLetters,inLetters.length(),msgBuf);
+			bool checkResult = SemCheckMultiGlyph(inLetters);
+			if(checkResult == true)
+			{
+				stringstream ss;
+				ss << "Character " << position - inLetters.length() + 1 << "-" << position << ": " << inLetters << " is not a real multiglyph";
+				msgBuf.push_back(ss.str());
+			}
 		}
 		
+		bool disableSemChecks = false;
+		if( inLetters == "critical" ||
+			inLetters == "no-entry" ||
+			inLetters == "safety"   ||
+			inLetters == "hazard"   )
+		{
+			disableSemChecks = true;
+		}
 		//Check to see if the letter is supported by the 
 		/* 1.) Choose the front or back
 		* 2.) Add /(Y,R,L,B)
@@ -207,9 +211,18 @@ public:
 		{
 			fRes += '/';
 			fRes += curColor;
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < inLetters.length(); i++)
 			{
-				SemCheckColor(inLetters[i],i,msgBuf);
+				if(disableSemChecks == false)
+				{
+					bool checkResult = SemCheckColor(inLetters[i]);
+					if(checkResult == true)
+					{
+						stringstream ss;
+						ss << "Character " << position + 1 << ": " << inLetters[i] << " cannot belong to color type " << curColor;
+						msgBuf.push_back(ss.str());
+					}
+				}
 				fRes += inLetters[i];
 			}
 		}
@@ -217,27 +230,35 @@ public:
 		{
 			bRes += '/';
 			bRes += curColor;
-			for (int i = 0; i < count; i++)
+			for (int i = 0; i < inLetters.length(); i++)
 			{
-				SemCheckColor(inLetters[i],i,msgBuf);
+				if(disableSemChecks == false)
+				{
+					bool checkResult = SemCheckColor(inLetters[i]);
+					if(checkResult == true)
+					{
+						stringstream ss;
+						ss << "Character " << position + 1 << ": " << inLetters[i] << " cannot belong to color type " << curColor;
+						msgBuf.push_back(ss.str());
+					}
+				}
 				bRes += inLetters[i];
 			}
 		}
 	}
 
 	//Attempts to add letters to the glyph buffer
-	bool AccumGlyphBuf(char inLetter, vector<string> & msgBuf)
+	//TODO - Seems true or false doesn't matter because glyph size is semantic
+	//not syntactic
+	bool AccumGlyphBuf(char inLetter)
 	{
-		if(glyphBuf.length() < 8)
+		if(true)//if(glyphBuf.length() < 8)
 		{
 			glyphBuf += inLetter;
 			return true;
 		}
 		else
 		{
-			stringstream ss;
-			ss << "Glyph " << glyphBuf + inLetter << "... is longer than anyknown glyph";//Semantic
-			msgBuf.push_back(ss.str());
 			return false;
 		}
 	}	
@@ -257,30 +278,16 @@ public:
 		writeMode = mode;
 	}
 
+	char GetCurColor()
+	{
+		return curColor;
+	}
+
 	void SetCurColor(char in)
 	{
 		curColor = in;
 	}
 };
-
-/*#if DEV
-	void PrintString()
-	{
-		for (int i = 0; i < strlen(fRes); i++)
-		{
-			printf("%c",fRes[i]);
-		}
-		//if there is a back side
-		if(writeToF == false)
-		{
-			printf("");
-			for (int i = 0; i < strlen(bRes); i++)
-			{
-				printf("%c",bRes[i]);
-			}
-		}
-	}
-#endif*/
 
 class WED_Sign_Parser
 {

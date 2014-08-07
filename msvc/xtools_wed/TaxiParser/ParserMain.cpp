@@ -81,66 +81,69 @@ int main(int argc, const char* argv[])
 	string s12 = "{@Y,tooloooooonnn}";
 	InString i12 = InString(s12);
 	
-	string s13 = "{@Y}TEST{@V}CASE{@K}BAD";
+	//string s13 = "{@Y}TEST{@V}CASE{@K}BAD";
+	string s13 = "{criticl}";
 	InString i13 = InString(s13);
 
+
 	OutInfo o0; 
-	o0.fRes = "";
-	o0.bRes = "";
+//o0.fRes = "";
+//o0.bRes = "";
+//
+OutInfo o1; 
+//o1.fRes = "";
+//o1.bRes = "";
+//
+OutInfo o2; 
+//o2.fRes = "";
+//o2.bRes = "";
+//
+OutInfo o3; 
+//o3.fRes = "";
+//o3.bRes = "";
+//
+OutInfo o4; 
+//o4.fRes = "";
+//o4.bRes = "";
+//
+OutInfo o5; 
+//o5.fRes = "";
+//o5.bRes = "";
+//
+OutInfo o6; 
+//o6.fRes = "";
+//o6.bRes = "";
+//
+OutInfo o7; 
+//o7.fRes = "";
+//o7.bRes = "";
+//
+OutInfo o8; 
+//o8.fRes = "";
+//o8.bRes = "";
+//
+OutInfo o9; 
+//o9.fRes = "";
+//o9.bRes = "";
+//
+OutInfo o10; 
+//o10.fRes = "";
+//o10.bRes = "";
+//
+OutInfo o11; 
+//o11.fRes = "";
+//o11.bRes = "";
+//
+OutInfo o12; 
+//o12.fRes = "";
+//o12.bRes = "";
+//
+OutInfo o13; 
+//o13.fRes = "";
+//o13.bRes = "";
+
 	
-	OutInfo o1; 
-	o1.fRes = "";
-	o1.bRes = "";
-
-	OutInfo o2; 
-	o2.fRes = "";
-	o2.bRes = "";
-
-	OutInfo o3; 
-	o3.fRes = "";
-	o3.bRes = "";
-
-	OutInfo o4; 
-	o4.fRes = "";
-	o4.bRes = "";
-
-	OutInfo o5; 
-	o5.fRes = "";
-	o5.bRes = "";
-
-	OutInfo o6; 
-	o6.fRes = "";
-	o6.bRes = "";
-
-	OutInfo o7; 
-	o7.fRes = "";
-	o7.bRes = "";
-
-	OutInfo o8; 
-	o8.fRes = "";
-	o8.bRes = "";
-
-	OutInfo o9; 
-	o9.fRes = "";
-	o9.bRes = "";
-
-	OutInfo o10; 
-	o10.fRes = "";
-	o10.bRes = "";
-
-	OutInfo o11; 
-	o11.fRes = "";
-	o11.bRes = "";
-
-	OutInfo o12; 
-	o12.fRes = "";
-	o12.bRes = "";
-
-	OutInfo o13; 
-	o13.fRes = "";
-	o13.bRes = "";
-
-	tests[counter] = Test(&i00,o0,false,true); counter++;
+	/*tests[counter] = Test(&i00,o0,false,true); counter++;
 	tests[counter] = Test(&i01,o0,false,true); counter++;
 	tests[counter] = Test(&i02,o0,false,true); counter++;
 	tests[counter] = Test(&i03,o0,false,true); counter++;
@@ -152,9 +155,9 @@ int main(int argc, const char* argv[])
 	tests[counter] = Test(&i09,o0,false,true); counter++;
 	tests[counter] = Test(&i10,o0,false,true); counter++;
 	tests[counter] = Test(&i11,o0,false,true); counter++;
-	tests[counter] = Test(&i12,o0,false,true); counter++;
+	tests[counter] = Test(&i12,o0,false,true); counter++;*/
 	tests[counter] = Test(&i13,o0,false,true); counter++;
-
+	
 	vector<string> msgBuf;
 	//For all the tests
 	for (int i = counter-1; i >= 0; i--)

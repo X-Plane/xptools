@@ -1,8 +1,9 @@
 #pragma once
+#include "..\..\..\src\WEDCore\WED_Sign_Parser.h"
 #include <stdio.h>
-#include "WED_Sign_Parser.h"
 #include <vector>
 #include <iterator>
+
 
 enum Errors
 {
