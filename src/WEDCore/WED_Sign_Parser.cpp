@@ -172,13 +172,6 @@ bool WED_Sign_Parser::ValidateBasics(const InString & inStr, vector<string> & ms
 	//--ASCII or supported char------------------------------------------------
 	while(i < inStr.input.length())
 	{	
-		if( ((int) inStr.input[i] < 33 ) || ((int) inStr.input[i] > 126))
-		{
-			stringstream ss;
-			ss << "Character " << i + 1 << ": Character is not valid ASCII";
-			msgBuf.push_back(ss.str());
-			return true;
-		}
 		//Check if it is a non supported char (aka NOT A-Z,0-9,.,* etc
 		if(!IsSupportedChar(inStr.input[i]))
 		{
