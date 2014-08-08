@@ -12,50 +12,86 @@ The error message collection (vector<string> & msgBuf) collects human readable e
 
 The OutInfo struct that is generated contains a version of of the sign that tags every glyph with its color.
 Ex: InString: {@Y}CAT{@@}{@L,D,O,G}
-	OutInfo: fRes = "/YC/YA/YT"
-			 bRes = "/LD/LO/LG"
+	OutInfo: out_sign.front = "/YC/YA/YT"
+			 out_sign.back = "/LD/LO/LG"
 
 This could be used for some drawing utility or anything that would like to know the color of every glyph.
 
 The other part of OutInfo is information about about errors it has collected
 */
-enum FSM
+
+
+//Contains all the possible error types that the par can generate
+enum error_t
 {
-	//The inside curly braces portion, starts with I_
-	I_COMMA,//We just hit a comma and are now expecting single
-	//or multiglyphs
-	I_INCUR,//For when we hit {
-	I_ACCUM_GLPHYS,//For collecting glpyhs
-	I_ANY_CONTROL,//When it hits a @
-	I_WAITING_SEPERATOR,//For when it is waiting for a , or }
-	//The outside curly braces portion, starts with O_
-	O_ACCUM_GLYPHS,
-	O_END,//For when the string ends
-	LOOKUP_ERR//Return code for any errors in the lookup table
-};
-
-enum parser_error_code_t
-{
-
-};
-
-
-struct InString
-{
-	//The input for the FSM, with the text from the sign
-	const string & input;
+	sem_glyph_color_mismatch,
+	sem_not_real_instruction,//Found under I_ANY_CONTROL
+	sem_not_real_multiglyph,
 	
-	InString(const string & signText):input(signText){}
-	~InString()	{}
+	syn_found_lowercase_outside_curly,//Found under O_ACCUM_GLYPHS
+	syn_expected_seperator,//Found under I_Waiting_Seperator
+	syn_expected_non_comma_after_incur,//Found under I_INCUR
+	syn_expected_non_seperator_after_comma,//Found under I_COMMA
+	
+	//These are found under validate basic
+	syn_nonsupported_char,
+	syn_whitespace_found,
+	//These are found under ValidateCurly
+	syn_curly_pair_missing,
+	syn_curly_pair_empty,
+	syn_curly_pair_nested
+};
+
+struct error {
+	string msg;//The human readable version of the error
+	error_t err_code;
+	int position;//The position in the string the error starts at
+
+	//How many characters the error lasts for. Ex syn_nonsupported_char would be 1
+	//while syn_not_real_multiglyph would be 3
+	int length;
+};
+
+typedef char color_t;
+typedef string glyph_t;
+
+//Represents the information about a single or multi glyphs
+struct glyph_info
+{
+	color_t glyph_color;
+	glyph_t glyph_name;
+
+	glyph_info(color_t color, glyph_t name)
+	{
+		glyph_color = color;
+		glyph_name = name;
+	}
+};
+
+//Represents a sign that has been fully encoded with glyph information
+//Instead of simply being the input string version
+struct finished_sign
+{
+	vector<glyph_info> front;
+	vector<glyph_info> back;
+
+	string toString(const vector<glyph_info> & side)
+	{
+		string tmp;
+		for (int i = 0; i < side.size(); i++)
+		{
+			glyph_info curGlyph = side[i];
+			tmp += '/' + (curGlyph.glyph_color + curGlyph.glyph_name);
+		}
+		return tmp;
+	}
 };
 
 class OutInfo
 {
 friend class UnitTester;
 private:
-	//Front Sign results
-	string fRes;
-	string bRes;
+	finished_sign out_sign;
 
 	//Glyph Buffer, stores a glyph that is form
 	//{c->{co->{com->{comm->{comma
@@ -65,10 +101,10 @@ private:
 	bool writeMode;
 
 	//The current color
-	char curColor;
+	color_t curColor;
 	
 	//Error codes in generating the outstring
-	int error;
+	vector<error_t> errors;
 
 	//Check the color, inLetter:the Letter to check, position: the position in the array of chars, msgBuf: the message buffer
 	//Returns true if there was an error
@@ -191,6 +227,7 @@ public:
 			bool checkResult = SemCheckMultiGlyph(inLetters);
 			if(checkResult == true)
 			{
+
 				stringstream ss;
 				ss << "Character " << position - inLetters.length() + 1 << "-" << position << ": " << inLetters << " is not a real multiglyph";
 				msgBuf.push_back(ss.str());
@@ -212,8 +249,6 @@ public:
 		*/
 		if(writeMode)
 		{
-			fRes += '/';
-			fRes += curColor;
 			for (int i = 0; i < inLetters.length(); i++)
 			{
 				if(disableSemChecks == false)
@@ -226,13 +261,11 @@ public:
 						msgBuf.push_back(ss.str());
 					}
 				}
-				fRes += inLetters[i];
 			}
+			out_sign.front.push_back(glyph_info(curColor, inLetters));
 		}
 		else
 		{
-			bRes += '/';
-			bRes += curColor;
 			for (int i = 0; i < inLetters.length(); i++)
 			{
 				if(disableSemChecks == false)
@@ -245,8 +278,8 @@ public:
 						msgBuf.push_back(ss.str());
 					}
 				}
-				bRes += inLetters[i];
 			}
+			out_sign.back.push_back(glyph_info(curColor, inLetters));
 		}
 	}
 
@@ -292,8 +325,33 @@ public:
 	}
 };
 
+struct InString
+{
+	//The input for the FSM, with the text from the sign
+	const string & input;
+	
+	InString(const string & signText):input(signText){}
+	~InString()	{}
+};
+
 class WED_Sign_Parser
 {
+private:
+	enum FSM
+	{
+		//The inside curly braces portion, starts with I_
+		I_COMMA,//We just hit a comma and are now expecting single
+		//or multiglyphs
+		I_INCUR,//For when we hit {
+		I_ACCUM_GLPHYS,//For collecting glpyhs
+		I_ANY_CONTROL,//When it hits a @
+		I_WAITING_SEPERATOR,//For when it is waiting for a , or }
+		//The outside curly braces portion, starts with O_
+		O_ACCUM_GLYPHS,
+		O_END,//For when the string ends
+		LOOKUP_ERR//Return code for any errors in the lookup table
+	};
+
 public:
 	WED_Sign_Parser(void);
 	~WED_Sign_Parser(void);

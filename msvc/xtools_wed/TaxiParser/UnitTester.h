@@ -59,7 +59,12 @@ public:
 		*/
 		outStr = WED_Sign_Parser::MainLoop(*t->tInStr,msgBuf);
 		
-		
+		string outSignFront = outStr.out_sign.toString(outStr.out_sign.front);
+		string outSignBack = outStr.out_sign.toString(outStr.out_sign.back);
+
+		string exptSignFront = t->expctRes.out_sign.toString(t->expctRes.out_sign.front);
+		string exptSignBack = t->expctRes.out_sign.toString(t->expctRes.out_sign.back);
+
 		//X is default and cannot exists after a succesful parse
 		if(outStr.GetCurColor() == 'X')
 		{
@@ -68,31 +73,40 @@ public:
 		}
 		
 		//Compare the front to the expected front
-		if(outStr.fRes != t->expctRes.fRes)
+		if(outSignFront != exptSignFront)
 		{
 			t->error = no_front_match;
 		}
-		//If the back exists and it's the same
-		if(outStr.bRes != t->expctRes.bRes && outStr.bRes.length() > 0)
+
+		//If the back exists and it's the not same
+		if(outSignBack.size() > 0 && (outSignBack != exptSignBack))
 		{
 			t->error = no_back_match;
 		}
-		//system("cls");
-		
+
 		if(t->printToCon)
 		{
-			printf("InString: %s",t->tInStr->input.c_str());
-			printf("\nOutInfo (Expected): (Front) %s ",t->expctRes.fRes);
+			//Print the original input
+			printf("InString: %s\n",t->tInStr->input.c_str());
+
+			//Print the expected Front and Back, if the back exists
+			printf("OutInfo (Expected):\t(Front)%s\n",exptSignFront.c_str());
 				
-			if(t->expctRes.bRes.size() > 0) 
-				printf("(Back) %s",t->expctRes.bRes.c_str());
+			if(exptSignBack.c_str() > 0) 
+			{
+				printf("\t\t\t\t\t(Back) %s\n",exptSignBack.c_str());
+			}
+
+			//Print the actual Front and Back, if the back exists
+			printf("OutInfo (Actual):\t(Front)%s\n",outSignFront.c_str());
 				
-			printf("\nOutInfo (Final): (Front) %s ",outStr.fRes);
-				
-			if(outStr.bRes.size() > 0)
-				printf("(Back) %s",outStr.bRes.c_str());
-				
-			printf("\nErrors: ");
+			if(outSignBack.c_str() > 0) 
+			{
+				printf("\t\t\t\t\t(Back) %s\n",outSignBack.c_str());
+			}
+			
+			//Print out the errors that the test generated
+			printf("Test Errors: \n");
 				
 			switch(t->error)
 			{
@@ -100,37 +114,49 @@ public:
 				printf("None");
 				break;
 			case no_front_match:
-				printf("Front does not match, expected %s",t->expctRes.fRes);
+				printf("Front does not match, expected %s\n",exptSignFront.c_str());
 				break;
 			case no_back_match:
-				printf("Back does not match, expected %s",t->expctRes.bRes);
+				printf("Back does not match, expected %s\n",exptSignBack.c_str());
 				break;
 			case exit_early:
-				printf("The test exited early");
+				printf("The test exited early\n");
 			}
-			printf("MsgBuf:\n");
+
+			//Print out all the errors that were generated during parsing
+			printf("Parsing Errors:\n");
 			for (int i = 0; i < msgBuf.size(); i++)
 			{
 				printf("%s\n",msgBuf[i].c_str());
 			}
 		}
+
 		if(t->printToFile)
 		{
 			FILE * fi = fopen(filePath,"w");
 			if(fi != NULL)
 			{
-				fprintf(fi,"InString: %s",t->tInStr->input.c_str());
-				fprintf(fi,"\nOutInfo (Expected): (Front) %s ",t->expctRes.fRes);
+				//Print the original input
+				fprintf(fi,"InString: %s\n",t->tInStr->input.c_str());
+
+				//Print the expected Front and Back, if the back exists
+				fprintf(fi,"OutInfo (Expected):\t(Front)%s\n",exptSignFront.c_str());
 				
-				if(t->expctRes.bRes.size() > 0) 
-					fprintf(fi,"(Back) %s",t->expctRes.bRes.c_str());
+				if(exptSignBack.length() > 0) 
+				{
+					fprintf(fi,"\t\t\t\t\t(Back) %s\n",exptSignBack.c_str());
+				}
+
+				//Print the actual Front and Back, if the back exists
+				fprintf(fi,"OutInfo (Actual):\t(Front)%s\n",outSignFront.c_str());
 				
-				fprintf(fi,"\nOutInfo (Final): (Front) %s ",outStr.fRes);
-				
-				if(outStr.bRes.size() > 0)
-					fprintf(fi,"(Back) %s",outStr.bRes.c_str());
-				
-				fprintf(fi,"\nErrors: ");
+				if(outSignBack.length() > 0) 
+				{
+					fprintf(fi,"\t\t\t\t\t(Back) %s\n",outSignBack.c_str());
+				}
+			
+				//Print out the errors that the test generated
+				fprintf(fi,"Test Errors: \n");
 				
 				switch(t->error)
 				{
@@ -138,16 +164,17 @@ public:
 					fprintf(fi,"None");
 					break;
 				case no_front_match:
-					fprintf(fi,"Front does not match, expected %s",t->expctRes.fRes);
+					fprintf(fi,"Front does not match, expected %s\n",exptSignFront.c_str());
 					break;
 				case no_back_match:
-					fprintf(fi,"Back does not match, expected %s",t->expctRes.bRes);
+					fprintf(fi,"Back does not match, expected %s\n",exptSignBack.c_str());
 					break;
 				case exit_early:
-					fprintf(fi,"The test exited early");
+					fprintf(fi,"The test exited early\n");
 				}
-				fprintf(fi,"\n");
-				fprintf(fi,"MsgBuf:\n");
+
+				//Print out all the errors that were generated during parsing
+				fprintf(fi,"Parsing Errors:\n");
 				for (int i = 0; i < msgBuf.size(); i++)
 				{
 					fprintf(fi,"%s\n",msgBuf[i].c_str());

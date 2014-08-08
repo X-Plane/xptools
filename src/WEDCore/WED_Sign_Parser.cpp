@@ -1,14 +1,5 @@
 #include "WED_Sign_Parser.h"
 
-
-WED_Sign_Parser::WED_Sign_Parser(void)
-{
-}
-
-
-WED_Sign_Parser::~WED_Sign_Parser(void)
-{
-}
 bool WED_Sign_Parser::IsMandatoryGlyph(string inLetters)
 {
 	if( inLetters == "critical" ||
@@ -60,6 +51,7 @@ bool WED_Sign_Parser::IsSupportedChar(char inChar)
 	}
 	return false;
 }
+
 //Takes in the place where a '{' is as the start
 //Returns true if there was an error
 bool WED_Sign_Parser::ValidateCurly(const InString & inStr, int position, vector<string> & msgBuf)
@@ -240,7 +232,7 @@ const string & WED_Sign_Parser::EnumToString(FSM in)
 //The heart of all this
 //Takes in the current state of the FSM, the current character being processes
 //The position, Outstr, and msgBuf are all part of reporting errors and are not integral to the FSM
-FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutInfo & str, vector<string> & msgBuf)
+WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutInfo & str, vector<string> & msgBuf)
 {
 	stringstream ss;
 	//If you have reached a \0 FOR ANY REASON exit now
