@@ -11,7 +11,7 @@ There are two outputs for this, for 2 different groups of clients.
 The error message collection (vector<string> & msgBuf) collects human readable errors to be shown to the user.
 
 The OutInfo struct that is generated contains a version of of the sign that tags every glyph with its color.
-Ex: InString: {@Y}CAT{@@}{@L,D,O,G}
+Ex: InInfo: {@Y}CAT{@@}{@L,D,O,G}
 	OutInfo: out_sign.front = "/YC/YA/YT"
 			 out_sign.back = "/LD/LO/LG"
 
@@ -29,7 +29,7 @@ enum error_t
 	sem_not_real_multiglyph,
 	
 	syn_found_lowercase_outside_curly,//Found under O_ACCUM_GLYPHS
-	syn_expected_seperator,//Found under I_Waiting_Seperator
+	syn_expected_seperator,//Found under I_WAITING_SEPERATOR
 	syn_expected_non_comma_after_incur,//Found under I_INCUR
 	syn_expected_non_seperator_after_comma,//Found under I_COMMA
 	
@@ -42,7 +42,7 @@ enum error_t
 	syn_curly_pair_nested
 };
 
-struct error {
+struct error_info {
 	string msg;//The human readable version of the error
 	error_t err_code;
 	int position;//The position in the string the error starts at
@@ -91,6 +91,12 @@ class OutInfo
 {
 friend class UnitTester;
 private:
+	//The current color
+	color_t curColor;
+
+	//Error codes in generating the outstring
+	vector<error_info> errors;
+
 	finished_sign out_sign;
 
 	//Glyph Buffer, stores a glyph that is form
@@ -99,12 +105,6 @@ private:
 
 	//Write to the front buffer
 	bool writeMode;
-
-	//The current color
-	color_t curColor;
-	
-	//Error codes in generating the outstring
-	vector<error_t> errors;
 
 	//Check the color, inLetter:the Letter to check, position: the position in the array of chars, msgBuf: the message buffer
 	//Returns true if there was an error
@@ -215,8 +215,13 @@ public:
 
 	}
 
+	void AddError(string message, error_t error_code, int position, int length)
+	{
+		error_info e = {message,error_code,position,length};
+		errors.push_back(e);
+	}
 	//Attempts to add a collection of letters
-	void AccumOutputString(const string & inLetters, int position, vector<string> & msgBuf)
+	void AccumOutputString(const string & inLetters, int position)
 	{
 		//Before actually appending them see if they're
 		//correct semantically
@@ -230,7 +235,8 @@ public:
 
 				stringstream ss;
 				ss << "Character " << position - inLetters.length() + 1 << "-" << position << ": " << inLetters << " is not a real multiglyph";
-				msgBuf.push_back(ss.str());
+				error_info e = {ss.str(),sem_not_real_multiglyph,position, position - position - inLetters.length()};
+				errors.push_back(e);
 			}
 		}
 		
@@ -258,7 +264,8 @@ public:
 					{
 						stringstream ss;
 						ss << "Character " << position << ": " << inLetters[i] << " cannot belong to color type " << curColor;
-						msgBuf.push_back(ss.str());
+						error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
+						errors.push_back(e);
 					}
 				}
 			}
@@ -275,7 +282,8 @@ public:
 					{
 						stringstream ss;
 						ss << "Character " << position + 1 << ": " << inLetters[i] << " cannot belong to color type " << curColor;
-						msgBuf.push_back(ss.str());
+						error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
+						errors.push_back(e);
 					}
 				}
 			}
@@ -304,6 +312,11 @@ public:
 		glyphBuf.clear();
 	}
 
+	const vector<error_info> & getErrorList()
+	{
+		return errors;
+	}
+
 	string GetGlyphBuf()
 	{
 		return glyphBuf;
@@ -325,13 +338,13 @@ public:
 	}
 };
 
-struct InString
+struct InInfo
 {
 	//The input for the FSM, with the text from the sign
 	const string & input;
-	
-	InString(const string & signText):input(signText){}
-	~InString()	{}
+	//int position;//TODO - store the current parsing position here?
+	InInfo(const string & signText):input(signText)/*,position(0)*/{}
+	~InInfo()	{}
 };
 
 class WED_Sign_Parser
@@ -352,20 +365,21 @@ private:
 		LOOKUP_ERR//Return code for any errors in the lookup table
 	};
 
-public:
-	WED_Sign_Parser(void);
-	~WED_Sign_Parser(void);
-	static bool ValidateCurly(const InString & inStr, int position, vector<string> & msgBuf);
-	static bool ValidateBasics(const InString & inStr, vector<string> & msgBuf);
+	bool ValidateCurly(const InInfo & inStr, int position, OutInfo & output);
+	bool ValidateBasics(const InInfo & inStr, OutInfo & output);
 
 	//Askes if the glyph is currently one of the special independant glyphs
 	//"hazard","safety","critical","no-entry"
-	static bool IsMandatoryGlyph(string inLetters);
+	bool IsMandatoryGlyph(string inLetters);
 	//takes in the char and an optional boolean to say wheather to only do lowercase
-	static bool IsSupportedChar(char inChar);
-	static const string & EnumToString(FSM in);
-	static FSM LookUpTable(FSM curState, char curChar, int position, OutInfo & str, vector<string> & msgBuf);
-	//The main loop plus and optional InString
-	static OutInfo MainLoop(const InString & opInStr, vector<string> & msgBuf);
+	bool IsSupportedChar(char inChar);
+	const string & EnumToString(FSM in);
+	FSM LookUpTable(FSM curState, char curChar, int position, OutInfo & output);
+
+public:
+	WED_Sign_Parser(void);
+	~WED_Sign_Parser(void);
+	
+	void MainLoop(const InInfo & inStr, OutInfo & output);
 };
 

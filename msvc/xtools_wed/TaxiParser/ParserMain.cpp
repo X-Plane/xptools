@@ -22,10 +22,10 @@ int main(int argc, const char* argv[])
 	/*How the unit testing works
 	1.) Add a string to test by adding a line such as 
 	ADD_TEST("{@Y}STUFF")
-	2.) An array of InStrings are automatically created from the test strings
-	3.) An array of tests are automatically created from the InStringArray
+	2.) An array of InInfos are automatically created from the test strings
+	3.) An array of tests are automatically created from the InInfoArray
 	4.) All of the tests are run with the log files being created
-	5.) Clean up is done on the allocated InString array
+	5.) Clean up is done on the allocated InInfo array
 	*/
 	//To Add a test add a line like this
 	
@@ -73,13 +73,13 @@ int main(int argc, const char* argv[])
 	ADD_TEST("{@B}{N,O,T,A,L,L,O,W,E,D}{@@}{@Y}TIMETOBREAK{,}")
 	//---------------------------------------------------------
 
-	//--InString array-----------------------------------------
-	//An array of InStrings
-	vector<InString> inStringArr;
+	//--InInfo array-----------------------------------------
+	//An array of InInfos
+	vector<InInfo> inStringArr;
 	
 	for (int i = 0; i < testCount; i++)
 	{
-		inStringArr.push_back(InString(testStrings[i]));
+		inStringArr.push_back(InInfo(testStrings[i]));
 	}
 	//---------------------------------------------------------
 
@@ -90,13 +90,12 @@ int main(int argc, const char* argv[])
 	//For all spaces in the array fill it with blanks
 	for (int i = 0; i < testCount; i++)
 	{
-		OutInfo out;//If we implement something else we'll need to do something similar to the string arr/InString arr
+		OutInfo out;//If we implement something else we'll need to do something similar to the string arr/InInfo arr
 		tests[i]=Test(&inStringArr[i],out,false,true);
 	}
 	//---------------------------------------------------------
 
 	//--Run All Tests------------------------------------------
-	vector<string> msgBuf;
 	//For all the tests
 	for (int i = testCount-1; i >= 0; i--)
 	{
@@ -108,8 +107,7 @@ int main(int argc, const char* argv[])
 		//Create the file path
 		sprintf(temp,LOG_FLD_PATH,"log_",number,".txt");
 		
-		UnitTester::RunTest(&tests[i],msgBuf,temp);
-		msgBuf.clear();
+		UnitTester::RunTest(&tests[i],temp);
 	}
 	//---------------------------------------------------------
 }

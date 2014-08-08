@@ -1,5 +1,14 @@
 #include "WED_Sign_Parser.h"
 
+WED_Sign_Parser::WED_Sign_Parser(void)
+{
+
+}
+
+WED_Sign_Parser::~WED_Sign_Parser()
+{
+}
+
 bool WED_Sign_Parser::IsMandatoryGlyph(string inLetters)
 {
 	if( inLetters == "critical" ||
@@ -54,7 +63,7 @@ bool WED_Sign_Parser::IsSupportedChar(char inChar)
 
 //Takes in the place where a '{' is as the start
 //Returns true if there was an error
-bool WED_Sign_Parser::ValidateCurly(const InString & inStr, int position, vector<string> & msgBuf)
+bool WED_Sign_Parser::ValidateCurly(const InInfo & inStr, int position, OutInfo & output)
 {		
 	//What is currently considered good, a { a }
 	//We start by saying that we are looking for a {
@@ -80,7 +89,7 @@ bool WED_Sign_Parser::ValidateCurly(const InString & inStr, int position, vector
 		{
 			stringstream ss;
 			ss << "Curly brace pair starting at " << position + 1 << " is missing its end brace";
-			msgBuf.push_back(ss.str());
+			output.AddError(ss.str(),syn_curly_pair_missing,position,inStr.input.length()-i);
 			return true;
 		}
 		i++;
@@ -96,7 +105,7 @@ bool WED_Sign_Parser::ValidateCurly(const InString & inStr, int position, vector
 		stringstream ss;
 							//This i+1 is for the user, not refering to the next char
 		ss << "Empty curly braces detected starting at character " << i+1;
-		msgBuf.push_back(ss.str());
+		output.AddError(ss.str(),syn_curly_pair_empty,i,2);
 		return true;
 	}
 	//---------------------------------------------
@@ -125,7 +134,7 @@ bool WED_Sign_Parser::ValidateCurly(const InString & inStr, int position, vector
 			{
 				stringstream ss;
 				ss << "Character " << i + 1 << ": Brace " << inStr.input[i] << " is invalid in this situation, causes nesting";
-				msgBuf.push_back(ss.str());
+				output.AddError(ss.str(),syn_curly_pair_nested,i,1);
 				return true;
 			}
 		}
@@ -137,7 +146,7 @@ bool WED_Sign_Parser::ValidateCurly(const InString & inStr, int position, vector
 }
 
 //Return if there was an error or not
-bool WED_Sign_Parser::ValidateBasics(const InString & inStr, vector<string> & msgBuf)
+bool WED_Sign_Parser::ValidateBasics(const InInfo & inStr, OutInfo & output)
 {
 	bool error = false;
 
@@ -162,7 +171,7 @@ bool WED_Sign_Parser::ValidateBasics(const InString & inStr, vector<string> & ms
 		{
 			stringstream ss;
 			ss << "Character " << i + 1 << ": Found whitespace";
-			msgBuf.push_back(ss.str());
+			output.AddError(ss.str(),syn_whitespace_found,i,1);
 			return true;
 		}
 		//Increase the pointer and counter
@@ -181,7 +190,7 @@ bool WED_Sign_Parser::ValidateBasics(const InString & inStr, vector<string> & ms
 		{
 			stringstream ss;
 			ss << "Character " << i + 1 << ": " << inStr.input[i] << " is not supported";
-			msgBuf.push_back(ss.str());
+			output.AddError(ss.str(),syn_nonsupported_char,i,1);
 			return true;
 		}
 		i++;
@@ -194,7 +203,7 @@ bool WED_Sign_Parser::ValidateBasics(const InString & inStr, vector<string> & ms
 	{
 		if(inStr.input[i] == '{' || i == 0)
 		{
-			error = ValidateCurly(inStr,i,msgBuf);
+			error = ValidateCurly(inStr,i,output);
 			if(error)
 			{
 				return error;
@@ -232,7 +241,7 @@ const string & WED_Sign_Parser::EnumToString(FSM in)
 //The heart of all this
 //Takes in the current state of the FSM, the current character being processes
 //The position, Outstr, and msgBuf are all part of reporting errors and are not integral to the FSM
-WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutInfo & str, vector<string> & msgBuf)
+WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutInfo & output)
 {
 	stringstream ss;
 	//If you have reached a \0 FOR ANY REASON exit now
@@ -249,14 +258,16 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		//not allowed
 		case '}':
 		case ','://since comma's always go into idle you have hit ,,
+			{
 			ss << "Character " << position + 1 << ": " << curChar << " is not allowed there, expected @ or a glyph";
-			msgBuf.push_back(ss.str());
+			output.AddError(ss.str(),syn_expected_non_seperator_after_comma,position,1);
+			}
 			return LOOKUP_ERR;
 		case '@':
 			return I_ANY_CONTROL;
 		default:
 			//if it was able to accumulate the the glyph
-			str.AccumGlyphBuf(curChar);
+			output.AccumGlyphBuf(curChar);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -265,13 +276,13 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		{
 		case ',':
 			ss << "Charecter " << position + 1 << ": " << curChar << " is not allowed here, expected glyphs or an instruction";
-			msgBuf.push_back(ss.str());
+			output.AddError(ss.str(),syn_expected_non_seperator_after_comma,position,1);
 			return LOOKUP_ERR;
 		case '@':
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			str.AccumGlyphBuf(curChar);
+			output.AccumGlyphBuf(curChar);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -280,16 +291,16 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		{
 		//Cases to make it stop accumulating
 		case '}':
-			str.AccumOutputString(str.GetGlyphBuf(),position,msgBuf);
-			str.ClearBuf();
+			output.AccumOutputString(output.GetGlyphBuf(),position);
+			output.ClearBuf();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			str.AccumOutputString(str.GetGlyphBuf(),position,msgBuf);
-			str.ClearBuf();
+			output.AccumOutputString(output.GetGlyphBuf(),position);
+			output.ClearBuf();
 			return I_COMMA;
 		default:
 			//otherwise accumulate the glyphs
-			str.AccumGlyphBuf(curChar);
+			output.AccumGlyphBuf(curChar);
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -301,15 +312,15 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		case 'R':
 		case 'B':
 			//Do action, change color
-			str.SetCurColor(curChar);
+			output.SetCurColor(curChar);
 			return I_WAITING_SEPERATOR;
 			
 		case '@':
-			str.SetWriteMode(false);
+			output.SetWriteMode(false);
 			return I_WAITING_SEPERATOR;
 		default:
 			ss << "Character " << position + 1 << ": {@" << curChar << " is not a real instruction. Use {@Y,{@R,{@L, or {@B";
-			msgBuf.push_back(ss.str());
+			output.AddError(ss.str(),sem_not_real_instruction,position,1);
 		}
 		break;
 	case I_WAITING_SEPERATOR:	
@@ -321,7 +332,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			return O_ACCUM_GLYPHS;
 		default:
 			ss << "Character " << position + 1 << ": Was expecting , or }, got " << curChar;//No way you should end up with something like @YX or {@@X
-			msgBuf.push_back(ss.str());
+			output.AddError(ss.str(),syn_expected_seperator,position,1);
 			return LOOKUP_ERR;
 		}
 		break;
@@ -335,13 +346,13 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			//If the current letter is NOT lower-case(part of something like critical or hazard)
 			if(!(curChar>=97 && curChar <= 122))
 			{
-				str.AccumOutputString(&curChar,position,msgBuf);
+				output.AccumOutputString(&curChar,position);
 				return O_ACCUM_GLYPHS;
 			}
 			else
 			{
 				ss << "Character " << position + 1 << ": " << curChar << " is not allowed outside curly braces";//This may be impossible to get to
-				msgBuf.push_back(ss.str());
+				output.AddError(ss.str(),syn_found_lowercase_outside_curly,position,1);
 				return LOOKUP_ERR;
 			}
 		}
@@ -356,17 +367,12 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 	return LOOKUP_ERR;
 }
 
-OutInfo WED_Sign_Parser::MainLoop(const InString & inStr, vector<string> & msgBuf)
+void WED_Sign_Parser::MainLoop(const InInfo & inStr, OutInfo & output)
 {
-	//Make the front and back outStrings
-	OutInfo outStr;
-		
 	//Validate if there is any whitesapce or non printable ASCII characters (33-126)
-	if(WED_Sign_Parser::ValidateBasics(inStr,msgBuf) == true)
+	if(WED_Sign_Parser::ValidateBasics(inStr,output) == true)
 	{
-		//sprintf(msgBuf,"String doesn't follow basic rules!");
-		//msg=string(msgBuf);
-		return outStr;
+		return;
 	}
 	
 	FSM FSM_MODE = O_ACCUM_GLYPHS;
@@ -374,7 +380,7 @@ OutInfo WED_Sign_Parser::MainLoop(const InString & inStr, vector<string> & msgBu
 	while(FSM_MODE != O_END)
 	{
 		//Look up the transition
-		FSM transition = WED_Sign_Parser::LookUpTable(FSM_MODE,inStr.input[i], i, outStr, msgBuf);
+		FSM transition = WED_Sign_Parser::LookUpTable(FSM_MODE,inStr.input[i], i, output);
 		if(transition != LOOKUP_ERR)
 		{
 			FSM_MODE = transition;
@@ -388,6 +394,4 @@ OutInfo WED_Sign_Parser::MainLoop(const InString & inStr, vector<string> & msgBu
 			break;
 		}
 	}
-	
-	return outStr;
 }
