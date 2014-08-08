@@ -1,7 +1,10 @@
 ﻿#include "ParserMain.h"
 #include "UnitTester.h"
 #define _CRT_SECURE_NO_WARNINGS
+
 #define LOG_FLD_PATH "C:\\Users\\Ted\\Desktop\\Logs\\%s%s%s"
+#define ADD_TEST(in) testStrings[testCount] = string(in); testCount++;
+
 ParserMain::ParserMain(void)
 {
 }
@@ -18,7 +21,7 @@ int main(int argc, const char* argv[])
 	const int MAX_TESTS=256;
 	/*How the unit testing works
 	1.) Add a string to test by adding a line such as 
-	testStrings[tStringArrPos] = "{@Y}"; tStringArrPos++;
+	ADD_TEST("{@Y}STUFF")
 	2.) An array of InStrings are automatically created from the test strings
 	3.) An array of tests are automatically created from the InStringArray
 	4.) All of the tests are run with the log files being created
@@ -49,20 +52,25 @@ int main(int argc, const char* argv[])
 	//--TestString creation section----------------------------
 	string testStrings[MAX_TESTS] = { string() };
 	int testCount = 0;
-	testStrings[testCount] = "{@Y}TES T"; testCount++;
-	testStrings[testCount] = "{@Y}"; testCount++;//Types the sentance {@Y}¾
-	testStrings[testCount] = "{@Y}~"; testCount++;
-	testStrings[testCount] = "{@NOTAVALIDINSTRUCTION}"; testCount++;
-	testStrings[testCount] = "{@Y}CASE{hazard"; testCount++;
-	testStrings[testCount] = "{@Y}TEST{}"; testCount++;
-	testStrings[testCount] = "{@Y}TEST{@L}}"; testCount++;
-	testStrings[testCount] = "{@R,T,E,S,,T}"; testCount++;
-	testStrings[testCount] = "{@Y}critical{@@}hzrd"; testCount++;//spelled wrong but supporting characters
-	testStrings[testCount] = "{@L,critical}"; testCount++;
-	testStrings[testCount] = "{@B}D"; testCount++;
-	testStrings[testCount] = "{@Y,not-real}"; testCount++;
-	testStrings[testCount] = "{@Y,tooloooooonnn}"; testCount++;
-	testStrings[testCount] = "{criticl}"; testCount++;
+	ADD_TEST("{@Y}TES T")
+	ADD_TEST("{@Y}~")
+	ADD_TEST("{@NOTAVALIDINSTRUCTION}")
+	ADD_TEST("{@Y}CASE{hazard")
+	ADD_TEST("{@Y}TEST{}")
+	ADD_TEST("{@Y}TEST{@L}}")
+	ADD_TEST("{@R,T,E,S,,T}")
+	ADD_TEST("{@Y}critical{@@}hzrd")//spelled wrong but supporting characters
+	ADD_TEST("{@L,critical}")
+	ADD_TEST("{@B}D")
+	ADD_TEST("{@Y,not-real}")
+	ADD_TEST("{@Y,tooloooooonnn}")
+
+	//--Mandatory Glyph Testing--------------------------------
+	//ADD_TEST("{critical}")
+	//ADD_TEST("{@B}{hazard}")
+	ADD_TEST("{L}")
+	ADD_TEST("L}")
+	ADD_TEST("{@B}{N,O,T,A,L,L,O,W,E,D}{@@}{@Y}TIMETOBREAK{,}")
 	//---------------------------------------------------------
 
 	//--InString array-----------------------------------------

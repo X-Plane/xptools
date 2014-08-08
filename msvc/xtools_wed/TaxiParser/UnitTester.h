@@ -30,8 +30,8 @@ struct Test
 	{
 		tInStr = NULL;
 		expctRes = OutInfo();
-		printToCon = true;
-		printToFile = false;
+		printToCon = false;
+		printToFile = true;
 		error = none;
 	}
 	Test(InString * in, OutInfo out, bool toCon, bool toFile)
