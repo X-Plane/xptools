@@ -93,6 +93,9 @@ private:
 				return true;
 			}
 			break;
+		case 'X'://No color has been selected
+			return true;
+			break;
 		default:
 			break;
 		}
@@ -219,7 +222,7 @@ public:
 					if(checkResult == true)
 					{
 						stringstream ss;
-						ss << "Character " << position + 1 << ": " << inLetters[i] << " cannot belong to color type " << curColor;
+						ss << "Character " << position << ": " << inLetters[i] << " cannot belong to color type " << curColor;
 						msgBuf.push_back(ss.str());
 					}
 				}
@@ -296,6 +299,10 @@ public:
 	~WED_Sign_Parser(void);
 	static bool ValidateCurly(const InString & inStr, int position, vector<string> & msgBuf);
 	static bool ValidateBasics(const InString & inStr, vector<string> & msgBuf);
+
+	//Askes if the glyph is currently one of the special independant glyphs
+	//"hazard","safety","critical","no-entry"
+	static bool IsMandatoryGlyph(string inLetters);
 	//takes in the char and an optional boolean to say wheather to only do lowercase
 	static bool IsSupportedChar(char inChar);
 	static const string & EnumToString(FSM in);

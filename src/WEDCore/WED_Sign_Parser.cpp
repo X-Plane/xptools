@@ -9,6 +9,18 @@ WED_Sign_Parser::WED_Sign_Parser(void)
 WED_Sign_Parser::~WED_Sign_Parser(void)
 {
 }
+bool WED_Sign_Parser::IsMandatoryGlyph(string inLetters)
+{
+	if( inLetters == "critical" ||
+		inLetters == "no-entry" ||
+		inLetters == "safety"   ||
+		inLetters == "hazard"   )
+	{
+		return true;
+	}
+	return false;
+
+}
 bool WED_Sign_Parser::IsSupportedChar(char inChar)
 {
 	if((inChar >= 65 && inChar <= 90) || //A-Z
@@ -188,7 +200,7 @@ bool WED_Sign_Parser::ValidateBasics(const InString & inStr, vector<string> & ms
 	//Validate all curly brace rules
 	while(i < inStr.input.length())
 	{
-		if(inStr.input[i] == '{')
+		if(inStr.input[i] == '{' || i == 0)
 		{
 			error = ValidateCurly(inStr,i,msgBuf);
 			if(error)
@@ -259,6 +271,10 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutIn
 	case I_INCUR:
 		switch(curChar)
 		{
+		case ',':
+			ss << "Charecter " << position + 1 << ": " << curChar << " is not allowed here, expected glyphs or an instruction";
+			msgBuf.push_back(ss.str());
+			return LOOKUP_ERR;
 		case '@':
 			return I_ANY_CONTROL;
 		default:
@@ -327,7 +343,7 @@ FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutIn
 			//If the current letter is NOT lower-case(part of something like critical or hazard)
 			if(!(curChar>=97 && curChar <= 122))
 			{
-				str.AccumOutputString(&curChar,1,msgBuf);
+				str.AccumOutputString(&curChar,position,msgBuf);
 				return O_ACCUM_GLYPHS;
 			}
 			else
