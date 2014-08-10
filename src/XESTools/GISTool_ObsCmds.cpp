@@ -145,7 +145,7 @@ static int DoAptBulkExport(const vector<const char *>& args)
 	if (gProgress)		gProgress(0, 1, "Indexing apt.dat", 0.0);
 	for (int y = -90; y < 90; ++y)
 	{
-		for (int x = -180; x < 179; ++x)
+		for (int x = -180; x < 180; ++x)
 		{
 			Bbox2	bounds(x, y, x+1,y+1);
 			set<int>	apts;
