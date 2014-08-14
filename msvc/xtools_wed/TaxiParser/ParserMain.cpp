@@ -40,31 +40,86 @@ int main(int argc, const char* argv[])
 	* Find Nesting
 	--Syntactic--
 	* , or } after a comma
+	* , after {
+	* I_WAITING_SEPERATOR 
 	* A lowercase letter that is outside a pair { }
 	--Semantic--
 	* Color-L has non A-Z,0-9
 	* Color-B has non 0-9
 	* MultiGlyph-not real
-	* MultiGlyph-longer than any known (atleast 8)
 	* Only valid instructions
+	* Only one side switch per sign
+	* Has glyphs
+	--Semantic Pipe--
+	* Has Sign instruction on left side
+	* Has Sign instruction on right side
+	* Has Sign instruction on both sides
+	* Has Adjecent pipebars
+	* Non matching colors (independent)
+	* Non matching colors (dependant)
+	* Sign starts with pipe
+	* sign ends with pipe
 	*/
 
 	//--TestString creation section----------------------------
 	string testStrings[MAX_TESTS] = { string() };
 	int testCount = 0;
-	ADD_TEST("{@L}A|B");
-	ADD_TEST("{@Y}TES T")
-	ADD_TEST("{@Y}~")
-	ADD_TEST("{@NOTAVALIDINSTRUCTION}")
+	
+	//Basics
+	ADD_TEST("{@Y}WHITESPACE TEST")
+	ADD_TEST("{@Y}NONSUPPORT~")
+	
+	//CurlyBraces
+	ADD_TEST("{@Y}{MISSINGPAIR")
+	ADD_TEST("{@Y}EMPTYPAIR{}")
+	ADD_TEST("{@Y}NESTING{@L}}")
+
+	//Syntactic
+	ADD_TEST("{@Y}SEP_AFTER_COMMA{A,,}")
+	ADD_TEST("{@Y}COMMA_AFTER_CUR{,}")
+	ADD_TEST("{@YWAITINGSEPERATOR}")
+	ADD_TEST("{@Y}hazard")
+
+	//Semantic Color
+	ADD_TEST("{@Y}L_HAS_NON_A_Z_O_0_9{@L}NOT{^lu}GOOD")
+	ADD_TEST("{@Y}B_HAS_NON_A_Z_O_0_9{@B}1234NOWBAD5678")
+
+	//Semantic Multyglpyhs
+	ADD_TEST("{@Y}{not-real}")
+	ADD_TEST("{@Y}REAL{@N}FAKE{@R}REAL")
+
+	//Semantic Sign Flips
+	ADD_TEST("{@Y}FRONT{@@}BACK{@@}TOOMANY")
+
+	//Has glyphs
+	ADD_TEST("{@Y}")
+
+	//Pipe tests
+	ADD_TEST("{@Y}LEFT{@@}|ONWARDS")
+	ADD_TEST("{@Y}BEFORE|{@@}ONWARDS")
+	ADD_TEST("{@Y}LEFT{@@}|{@@}RIGHT")
+
+	ADD_TEST("{@Y}A||BC|D||E")
+	ADD_TEST("{critical}|{@Y,B}")
+	ADD_TEST("{@Y,A}{@@}BACK|{@R,B}")
+
+	ADD_TEST("|{@Y}FRONT")
+	ADD_TEST("{@Y}BACK|")
+
+
+
+
+
+
+	/*
+	//Old Tests
 	ADD_TEST("{@Y}CASE{hazard")
 	ADD_TEST("{@Y}TEST{}")
-	ADD_TEST("{@Y}TEST{@L}}")
 	ADD_TEST("{@R,T,E,S,,T}")
 	ADD_TEST("{@Y}critical{@@}hzrd")//spelled wrong but supporting characters
 	ADD_TEST("{@L,critical}")
 	ADD_TEST("{@B}D")
-	ADD_TEST("{@Y,not-real}")
-	ADD_TEST("{@Y,tooloooooonnn}")
+	
 	
 	//--Mandatory Glyph Testing--------------------------------
 	//ADD_TEST("{critical}")
@@ -73,6 +128,7 @@ int main(int argc, const char* argv[])
 	ADD_TEST("L}")
 	ADD_TEST("{@B}{N,O,T,A,L,L,O,W,E,D}{@@}{@Y}TIMETOBREAK{,}")
 	ADD_TEST("{@R}SHOULD{^lu}PASS{@@}{@L,F,I,N,E}{@B}100{critical}200")
+	ADD_TEST("{@@}|{@@}F|F")*/
 	//---------------------------------------------------------
 
 	//--in_info array-----------------------------------------

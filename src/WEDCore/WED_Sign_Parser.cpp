@@ -10,15 +10,194 @@ WED_Sign_Parser::~WED_Sign_Parser()
 {
 }
 
-bool WED_Sign_Parser::preform_semantic_checks(const in_info & inGlyph, int position, out_info & output)
+bool WED_Sign_Parser::preform_final_semantic_checks(const in_info & inStr, out_info & output)
 {
+	/*Final Checks
+	* Did we have some actual glyph in the whole sign?
+	* Pipe Bar Rules
+		* A Pipe must have a non-pipe,non-sign-flip, on both sides of it now known as A and B
+		** A and B must be of the same color
+		*** Sign cannot begin or end with a pipe bar
+	*/
+	stringstream ss;
+	bool foundError = false;
+	int glyphCountF = 0;
+	for (int i = 0; i < output.out_sign.front.size(); i++)
+	{
+		if( output.out_sign.front[i].glyph_color == 'Y' ||
+			output.out_sign.front[i].glyph_color == 'R' ||
+			output.out_sign.front[i].glyph_color == 'L' ||
+			output.out_sign.front[i].glyph_color == 'B' ||
+			output.out_sign.front[i].glyph_color == 'I')
+		{
+			glyphCountF++;
+		}
+	}
+	
+	int glyphCountB = 0;
+	for (int i = 0; i < output.out_sign.back.size(); i++)
+	{
+		if( output.out_sign.back[i].glyph_color == 'Y' ||
+			output.out_sign.back[i].glyph_color == 'R' ||
+			output.out_sign.back[i].glyph_color == 'L' ||
+			output.out_sign.back[i].glyph_color == 'B' ||
+			output.out_sign.back[i].glyph_color == 'I')
+		{
+			glyphCountB++;
+		}
+	}
+	
+	//If neither side has a count
+	if(glyphCountF == 0 && glyphCountB == 0)
+	{
+		ss << inStr.input << " contains no glyphs!";
+		output.AddError(ss.str(),sem_no_glyphs,0,inStr.input.length()-1);
+		ss.str("");
+		ss.clear();
+		foundError = true;
+	}
+	
+	
+	//Pipebar rules
+	bool followsPipeJuxRules = false;
 
-	return true;
+	//Start at at place where you could have a {@@}
+	for (int i = 4; i < inStr.input.size(); i++)
+	{
+		if(inStr.input[i] == '|')
+		{
+			string threeBefore = inStr.input.substr(i-3,3);
+			//Try to catch ..@@}|
+			if(threeBefore == "@@}")
+			{
+				followsPipeJuxRules = false;
+
+				ss << "Charecter " << i + 1 << ": Pipe bar has sign face flip instruction directly to its left";
+				output.AddError(ss.str(),sem_pipe_l_sign_flip_juxed,i,3);
+				ss.str("");
+				ss.clear();
+				foundError = true;
+			}
+						
+			//If there is space for a {@@
+			if(i + 3 < inStr.input.size())
+			{
+				string threeAfter = inStr.input.substr(i+1,3);
+				
+				//Try to catch any |{@@...
+				if(threeAfter == "{@@")
+				{
+					followsPipeJuxRules = false;
+
+					ss << "Charecter " << i + 1 << ": Pipe bar has sign face flip instruction directly to its right";
+					output.AddError(ss.str(),sem_pipe_r_sign_flip_juxed,i,3);
+					
+					ss.str("");
+					ss.clear();
+					foundError = true;
+				}
+			}
+		}
+	}//End for loop
+
+	//Now check for adjacent pipebars
+	for (int i = 0; i < inStr.input.size(); i++)
+	{
+		if(inStr.input[i] == '|' && (i + 1 < inStr.input.size()))
+		{
+			if(inStr.input[i + 1] == '|')
+			{
+				followsPipeJuxRules = false;
+
+				ss << "Charecter " << i + 1 << ": Pipebar has pipebar to its right";
+				output.AddError(ss.str(),sem_pipe_double_juxed,i,1);
+				ss.str("");
+				ss.clear();
+				foundError = true;
+			}
+		}
+	}
+
+	//Now we check that if there is a pipebar that on either side is a glyph of the same color
+	//Start it in a place where we could ~reasonably have a glyph, the shortest independant
+	int fSize = output.out_sign.front.size();
+	for (int i = 1; i < fSize; i++)
+	{
+		if(output.out_sign.front[i].glyph_color == 'P' && (i + 1 < fSize))
+		{
+			//A|B
+			glyph_info A = output.out_sign.front[i-1];
+			glyph_info B = output.out_sign.front[i+1];
+
+			//If A is not equal to B and (A is not 'P' and B is not 'P')
+			if(A.glyph_color != B.glyph_color)
+			{
+				followsPipeJuxRules = false;
+				ss << "Charcter " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
+																					<< A.glyph_color << A.glyph_name 
+																					<< ", /" << B.glyph_color << B.glyph_name;
+				output.AddError(ss.str(),sem_pipe_color_mismatch,i,3);
+				ss.str("");
+				ss.clear();
+				foundError = true;
+			}
+		}
+	}
+
+	//Now do the same for the back
+	int bSize = output.out_sign.back.size();
+	for (int i = 1; i < bSize; i++)
+	{
+		if(output.out_sign.back[i].glyph_color == 'P' && (i + 1 < bSize))
+		{
+			//A|B
+			glyph_info A = output.out_sign.back[i-1];
+			glyph_info B = output.out_sign.back[i+1];
+
+			if(A.glyph_color != B.glyph_color)
+			{
+				followsPipeJuxRules = false;
+				ss << "Charcter " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
+																					<< A.glyph_color << A.glyph_name 
+																					<< ", /" << B.glyph_color << B.glyph_name;
+				output.AddError(ss.str(),sem_pipe_color_mismatch,i,3);
+				ss.str("");
+				ss.clear();
+				foundError = true;
+			}
+		}
+	}
+	
+	//TODO - roll these tests into the above some how
+	//Finally test if the sign begins or ends with a pipe bar
+	if(inStr.input[0] == '|')
+	{
+		ss << "Sign cannot begin with a pipe bar";
+		output.AddError(ss.str(),sem_pipe_begins_sign,0,1);
+		ss.str("");
+		ss.clear();
+		foundError = true;
+	}
+	
+	
+	if(inStr.input[inStr.input.length()-1] == '|')
+	{
+		ss << "Sign cannot end with a pipe bar";
+		output.AddError(ss.str(),sem_pipe_ends_sign,inStr.input.length()-1,1);
+		ss.str("");
+		ss.clear();
+		foundError = true;
+	}
+	return foundError;
 }
 
 //Returns true if there was an error
 bool WED_Sign_Parser::check_color(const string & inGlyph, int position, out_info & output)
 {
+	//This test assumes that if curColor is a certain color then it is that certain color
+	//for a reason, aka it is safe to make some assumptions about the state of the parser based
+	//off that information
+
 	//Go in as far as it can go
 	switch(curColor)
 	{
@@ -62,14 +241,8 @@ bool WED_Sign_Parser::check_color(const string & inGlyph, int position, out_info
 		}
 	case 'I':
 		return false;//If I was chosen it can support it self
-		/*if(IsIndependentGlyph(inGlyph) == true)
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}//TODO - This is good?*/
+	case 'P'://No test need
+		return false;
 	case 'X'://No color has been selected
 		return false;
 	default:
@@ -150,6 +323,18 @@ bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, ou
 	return semError;
 }
 
+bool WED_Sign_Parser::IsIndependentGlyph(const string & inLetters)
+{
+	if( inLetters == "critical" ||
+		inLetters == "no-entry" ||
+		inLetters == "safety"   ||
+		inLetters == "hazard"   )
+	{
+		return true;
+	}
+	return false;
+}
+
 //Attempts to add a collection of letters
 void WED_Sign_Parser::append_out_info(const string & inGlyph, int position, out_info & output)
 {
@@ -169,15 +354,26 @@ void WED_Sign_Parser::append_out_info(const string & inGlyph, int position, out_
 		//Make it the color 'I' for this session
 		curColor = 'I';
 	}
+	
+	if(inGlyph.length() == 1 && inGlyph[0] == '|')
+	{
+		curColor = 'P';
+	}
 
 	bool invalid_for_color = check_color(inGlyph,position,output);
+
+	if(invalid_for_color == true)
+	{
+		curColor = 'X';
+	}
+
 	bool invalid_multi_glyph = true;
 	if(inGlyph.length() > 1)
 	{
 		invalid_multi_glyph = check_multi_glyph(inGlyph,position,output);
 	}
 	
-	if(on_front)
+	if(on_front == true)
 	{
 		output.out_sign.front.push_back(glyph_info(curColor, inGlyph));
 	}
@@ -190,19 +386,7 @@ void WED_Sign_Parser::append_out_info(const string & inGlyph, int position, out_
 	curColor = realColor;
 }
 
-//TODO is this needed?
-bool WED_Sign_Parser::IsIndependentGlyph(string inLetters)
-{
-	if( inLetters == "critical" ||
-		inLetters == "no-entry" ||
-		inLetters == "safety"   ||
-		inLetters == "hazard"   )
-	{
-		return true;
-	}
-	return false;
-}
-
+//--Syntax Checking functions------------------------------
 bool WED_Sign_Parser::IsSupportedChar(char inChar)
 {
 	if((inChar >= 65 && inChar <= 90) || //A-Z
@@ -396,7 +580,9 @@ bool WED_Sign_Parser::ValidateBasics(const in_info & inStr, out_info & output)
 	i = 0;
 	return error;
 }
+//---------------------------------------------------------
 
+//--FSM functions------------------------------------------
 const string & WED_Sign_Parser::EnumToString(FSM in)
 {
 	switch(in)
@@ -500,11 +686,13 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		case '@':
 			if(on_front == true)
 			{
-				on_front == false;
+				on_front = false;
 			}
 			else
 			{
 				//Sementic error found extra @@
+				ss << "Charecter " << position + 1 << ": Cannot switch sign sides more than once";
+				output.AddError(ss.str(),sem_mutiple_side_switches,position,1);
 			}
 			return I_WAITING_SEPERATOR;
 		default:
@@ -557,11 +745,12 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 	}
 	return LOOKUP_ERR;
 }
+//---------------------------------------------------------
 
-void WED_Sign_Parser::MainLoop(const in_info & inStr, out_info & output)
+void WED_Sign_Parser::MainLoop(const in_info & input, out_info & output)
 {
 	//Validate if there is any whitesapce or non printable ASCII characters (33-126)
-	if(WED_Sign_Parser::ValidateBasics(inStr,output) == true)
+	if(WED_Sign_Parser::ValidateBasics(input,output) == true)
 	{
 		return;
 	}
@@ -571,7 +760,7 @@ void WED_Sign_Parser::MainLoop(const in_info & inStr, out_info & output)
 	while(FSM_MODE != O_END)
 	{
 		//Look up the transition
-		FSM transition = WED_Sign_Parser::LookUpTable(FSM_MODE,inStr.input[i], i, output);
+		FSM transition = WED_Sign_Parser::LookUpTable(FSM_MODE,input.input[i], i, output);
 		if(transition != LOOKUP_ERR)
 		{
 			FSM_MODE = transition;
@@ -585,4 +774,6 @@ void WED_Sign_Parser::MainLoop(const in_info & inStr, out_info & output)
 			break;
 		}
 	}
+
+	bool foundError = preform_final_semantic_checks(input,output);
 }

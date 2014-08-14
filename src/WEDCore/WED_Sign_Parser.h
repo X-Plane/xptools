@@ -24,9 +24,19 @@ The other part of out_info is information about about errors it has collected
 //Contains all the possible error types that the par can generate
 enum error_t
 {
-	sem_glyph_color_mismatch,
+	sem_glyph_color_mismatch,//Found under check_color
+	sem_no_glyphs,//Found under preform_final_semantic_checks
 	sem_not_real_instruction,//Found under I_ANY_CONTROL
-	sem_not_real_multiglyph,
+	sem_not_real_multiglyph,//Found under check_multi_glyph
+	sem_mutiple_side_switches,//Found under I_ANY_CONTROL:case '@':
+	
+	//Found in preform final semantic checks
+	sem_pipe_begins_sign,
+	sem_pipe_color_mismatch,///YF|//RD from {@Y,F}|{@R,D}
+	sem_pipe_double_juxed, //||
+	sem_pipe_ends_sign,
+	sem_pipe_l_sign_flip_juxed,//Juxed = juxtapositioned
+	sem_pipe_r_sign_flip_juxed,
 	
 	syn_found_lowercase_outside_curly,//Found under O_ACCUM_GLYPHS
 	syn_expected_seperator,//Found under I_WAITING_SEPERATOR
@@ -129,9 +139,10 @@ private:
 	};
 	
 	//--Semantic checking and handling-------------------------
-	//A calls all necissary semantic checks for a glyph and makes changes to the output
-
-	bool preform_semantic_checks(const in_info & inStr, int position, out_info & output);
+	
+	//Preforms any last semantic checking that is inconvient to do during the FSM, mostly | stuff
+	//Returns true if error was found
+	bool preform_final_semantic_checks(const in_info & inStr, out_info & output);
 
 	//Checks to see if a current multi-glyph or single glyph is allowed with a certain color
 	//Returns true if there was an error
@@ -139,18 +150,16 @@ private:
 
 	//Checks to see if a certain multi_glyph is a valid glyph
 	bool check_multi_glyph(const string & inGlyph, int position, out_info & output);
+
+	//Askes if the glyph is currently one of the special independant glyphs
+	//"hazard","safety","critical","no-entry"
+	bool IsIndependentGlyph(const string & inGlyph);//may be a secret duplicate of check_multi_glyph
 	//---------------------------------------------------------
 	
 	//--out_info modifying code--------------------------------
 	void append_out_info(const string & inGlyph, int position, out_info & output);
 	//---------------------------------------------------------
 
-
-	//Askes if the glyph is currently one of the special independant glyphs
-	//"hazard","safety","critical","no-entry"
-	bool IsIndependentGlyph(string inLetters);//may be a secret duplicate of check_multi_glyph
-
-	
 
 	//--Syntax Checking functions------------------------------
 	//takes in the char and an optional boolean to say wheather to only do lowercase
@@ -169,7 +178,7 @@ private:
 	//---------------------------------------------------------
 
 	//--FSM data members---------------------------------------
-	//The current color, allowed values are Y,R,L,B,I(for the magic independant glyphs), and X for invalid
+	//The current color, allowed values are Y,R,L,B,I(for the magic independant glyphs),P for pipe, and X for invalid
 	color_t curColor;
 	
 	//If we are still on the front
@@ -183,6 +192,6 @@ public:
 	WED_Sign_Parser(void);
 	~WED_Sign_Parser(void);
 	
-	void MainLoop(const in_info & inStr, out_info & output);
+	void MainLoop(const in_info & input, out_info & output);
 };
 
