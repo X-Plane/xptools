@@ -115,19 +115,15 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		airSign->GetName(signName);
 		
 		//Create the necisary parts for a parsing operation
-		InInfo in(signName);
-		OutInfo out;
+		in_info in(signName);
+		out_info out;
 		WED_Sign_Parser parser;
 		parser.MainLoop(in,out);
 
-		int MAX_ERRORS = 6;//TODO - Is this good?
-		for (int i = 0; i < MAX_ERRORS && i < out.getErrorList().size(); i++)
+		int MAX_ERRORS = 8;//TODO - Is this good?
+		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
 		{
-			/*TODO - A good idea? 
-			char buf[512] = { 0 };
-			sprintf(buf,"%d",who->GetMyPosition() + 1);
-			msg += "Sign " + string(buf) + ": ";*/
-			msg += out.getErrorList()[i].msg;
+			msg += out.errors[i].msg;
 			msg += '\n';
 		}
 	}

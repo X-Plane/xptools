@@ -22,10 +22,10 @@ int main(int argc, const char* argv[])
 	/*How the unit testing works
 	1.) Add a string to test by adding a line such as 
 	ADD_TEST("{@Y}STUFF")
-	2.) An array of InInfos are automatically created from the test strings
-	3.) An array of tests are automatically created from the InInfoArray
+	2.) An array of in_infos are automatically created from the test strings
+	3.) An array of tests are automatically created from the in_infoArray
 	4.) All of the tests are run with the log files being created
-	5.) Clean up is done on the allocated InInfo array
+	5.) Clean up is done on the allocated in_info array
 	*/
 	//To Add a test add a line like this
 	
@@ -52,6 +52,7 @@ int main(int argc, const char* argv[])
 	//--TestString creation section----------------------------
 	string testStrings[MAX_TESTS] = { string() };
 	int testCount = 0;
+	ADD_TEST("{@L}A|B");
 	ADD_TEST("{@Y}TES T")
 	ADD_TEST("{@Y}~")
 	ADD_TEST("{@NOTAVALIDINSTRUCTION}")
@@ -64,22 +65,23 @@ int main(int argc, const char* argv[])
 	ADD_TEST("{@B}D")
 	ADD_TEST("{@Y,not-real}")
 	ADD_TEST("{@Y,tooloooooonnn}")
-
+	
 	//--Mandatory Glyph Testing--------------------------------
 	//ADD_TEST("{critical}")
 	//ADD_TEST("{@B}{hazard}")
 	ADD_TEST("{L}")
 	ADD_TEST("L}")
 	ADD_TEST("{@B}{N,O,T,A,L,L,O,W,E,D}{@@}{@Y}TIMETOBREAK{,}")
+	ADD_TEST("{@R}SHOULD{^lu}PASS{@@}{@L,F,I,N,E}{@B}100{critical}200")
 	//---------------------------------------------------------
 
-	//--InInfo array-----------------------------------------
-	//An array of InInfos
-	vector<InInfo> inStringArr;
+	//--in_info array-----------------------------------------
+	//An array of in_infos
+	vector<in_info> inStringArr;
 	
 	for (int i = 0; i < testCount; i++)
 	{
-		inStringArr.push_back(InInfo(testStrings[i]));
+		inStringArr.push_back(in_info(testStrings[i]));
 	}
 	//---------------------------------------------------------
 
@@ -90,7 +92,7 @@ int main(int argc, const char* argv[])
 	//For all spaces in the array fill it with blanks
 	for (int i = 0; i < testCount; i++)
 	{
-		OutInfo out;//If we implement something else we'll need to do something similar to the string arr/InInfo arr
+		out_info out;//If we implement something else we'll need to do something similar to the string arr/in_info arr
 		tests[i]=Test(&inStringArr[i],out,false,true);
 	}
 	//---------------------------------------------------------

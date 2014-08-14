@@ -2,14 +2,196 @@
 
 WED_Sign_Parser::WED_Sign_Parser(void)
 {
-
+	curColor = 'X';
+	on_front = true;
 }
 
 WED_Sign_Parser::~WED_Sign_Parser()
 {
 }
 
-bool WED_Sign_Parser::IsMandatoryGlyph(string inLetters)
+bool WED_Sign_Parser::preform_semantic_checks(const in_info & inGlyph, int position, out_info & output)
+{
+
+	return true;
+}
+
+//Returns true if there was an error
+bool WED_Sign_Parser::check_color(const string & inGlyph, int position, out_info & output)
+{
+	//Go in as far as it can go
+	switch(curColor)
+	{
+	case 'Y':
+	case 'R':
+		return false;//Y and R allow for all characters
+	case 'L':
+		{
+			bool foundError = false;
+			for (int i = 0; i < inGlyph.length(); i++)
+			{
+				//L can only support A-Z and 0-9, the bellow checks the relevant
+				if(!((inGlyph[i] >= 65 && inGlyph[i] <= 90) ||
+					(inGlyph[i] >= 48 && inGlyph[i] <= 57)))
+				{
+					stringstream ss;
+					ss << "Character " << position + 1 << ": " << inGlyph[i] << " cannot belong to color type " << curColor;
+					error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
+					output.errors.push_back(e);
+					foundError = true;
+				}
+			}
+			return foundError;
+		}
+	case 'B':
+		{
+			bool foundError = false;
+			for (int i = 0; i < inGlyph.length(); i++)
+			{
+				//B can only support 0-9 (ASCII letters 48 through 57)
+				if(!(inGlyph[i] >= 48 && inGlyph[i] <= 57))
+				{
+					stringstream ss;
+					ss << "Character " << position + 1 << ": " << inGlyph[i] << " cannot belong to color type " << curColor;
+					error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
+					output.errors.push_back(e);
+					foundError = true;
+				}
+			}
+			return foundError;
+		}
+	case 'I':
+		return false;//If I was chosen it can support it self
+		/*if(IsIndependentGlyph(inGlyph) == true)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}//TODO - This is good?*/
+	case 'X'://No color has been selected
+		return false;
+	default:
+		break;
+	}
+	return false;
+}
+
+//Check a multi glyph
+//Returns true if there was an error
+bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, out_info & output)
+{
+	//Assume there is something wrong until otherwise noted
+	bool semError = true;
+
+	//Based on the letter, preform a bunch of string compares
+	//if it is a perfect match for any of the real multiletter glyphs
+	switch(inGlyph[0])
+	{
+	case '^':
+		if((inGlyph == "^u") == true ||
+			(inGlyph == "^d") == true ||
+			(inGlyph == "^r") == true ||
+			(inGlyph == "^l") == true||
+			(inGlyph == "^lu") == true ||
+			(inGlyph == "^ru") == true ||
+			(inGlyph == "^ld") == true ||
+			(inGlyph == "^rd") == true)
+		{
+			semError = false;
+		}
+		break;
+	case 'c':
+		if( (inGlyph == "critical") == true||
+			(inGlyph == "comma") == true)
+		{
+			semError = false;
+		}
+		break;
+	case 'h':
+		if((inGlyph == "hazard") == true)
+		{
+			semError = false;
+		}
+		break;
+	case 'n':
+		if((inGlyph == "no-entry") == true)
+		{
+			semError = false;
+		}
+		break;
+	case 'r':
+		if((inGlyph == "r1") == true||
+			(inGlyph == "r2") == true||
+			(inGlyph == "r3") == true)
+		{
+			semError = false;
+		}
+		break;
+	case 's':
+		if((inGlyph == "safety") == true)
+		{
+			semError = false;
+		}
+		break;
+	//For all other letters
+	default:
+		semError = true;//It will next print the error warning
+		break;
+	}
+	if(semError == true)
+	{
+		stringstream ss;
+		ss << "Character " << position - inGlyph.length() + 1 << "-" << position << ": " << inGlyph << " is not a real multiglyph";
+		error_info e = {ss.str(),sem_not_real_multiglyph,position, position - position - inGlyph.length()};
+		output.errors.push_back(e);
+	}
+	return semError;
+}
+
+//Attempts to add a collection of letters
+void WED_Sign_Parser::append_out_info(const string & inGlyph, int position, out_info & output)
+{
+	//Before actually appending them see if they're
+	//correct semantically
+	/* 
+	1.) Findout if we the glyph can be supported in the current color
+	2.) Write the results to the correct finished sign
+	*/
+
+	//Save the real current color
+	char realColor = curColor;
+	
+	//If the glyph buffer is one of the independants
+	if(IsIndependentGlyph(inGlyph) == true)
+	{
+		//Make it the color 'I' for this session
+		curColor = 'I';
+	}
+
+	bool invalid_for_color = check_color(inGlyph,position,output);
+	bool invalid_multi_glyph = true;
+	if(inGlyph.length() > 1)
+	{
+		invalid_multi_glyph = check_multi_glyph(inGlyph,position,output);
+	}
+	
+	if(on_front)
+	{
+		output.out_sign.front.push_back(glyph_info(curColor, inGlyph));
+	}
+	else
+	{
+		output.out_sign.back.push_back(glyph_info(curColor, inGlyph));
+	}
+	
+	//Reset it back to the original color, regardless if it had to be set to I or not
+	curColor = realColor;
+}
+
+//TODO is this needed?
+bool WED_Sign_Parser::IsIndependentGlyph(string inLetters)
 {
 	if( inLetters == "critical" ||
 		inLetters == "no-entry" ||
@@ -19,8 +201,8 @@ bool WED_Sign_Parser::IsMandatoryGlyph(string inLetters)
 		return true;
 	}
 	return false;
-
 }
+
 bool WED_Sign_Parser::IsSupportedChar(char inChar)
 {
 	if((inChar >= 65 && inChar <= 90) || //A-Z
@@ -31,7 +213,7 @@ bool WED_Sign_Parser::IsSupportedChar(char inChar)
 			inChar == '-'||
 			inChar == '.'||
 			inChar == '_'||
-			inChar == '|'||
+			inChar == '|'||//Pipe bar
 			inChar == '/'||
 			inChar == '@'||
 			inChar == '^'||
@@ -63,7 +245,7 @@ bool WED_Sign_Parser::IsSupportedChar(char inChar)
 
 //Takes in the place where a '{' is as the start
 //Returns true if there was an error
-bool WED_Sign_Parser::ValidateCurly(const InInfo & inStr, int position, OutInfo & output)
+bool WED_Sign_Parser::ValidateCurly(const in_info & inStr, int position, out_info & output)
 {		
 	//What is currently considered good, a { a }
 	//We start by saying that we are looking for a {
@@ -146,7 +328,7 @@ bool WED_Sign_Parser::ValidateCurly(const InInfo & inStr, int position, OutInfo 
 }
 
 //Return if there was an error or not
-bool WED_Sign_Parser::ValidateBasics(const InInfo & inStr, OutInfo & output)
+bool WED_Sign_Parser::ValidateBasics(const in_info & inStr, out_info & output)
 {
 	bool error = false;
 
@@ -241,7 +423,7 @@ const string & WED_Sign_Parser::EnumToString(FSM in)
 //The heart of all this
 //Takes in the current state of the FSM, the current character being processes
 //The position, Outstr, and msgBuf are all part of reporting errors and are not integral to the FSM
-WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, OutInfo & output)
+WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, out_info & output)
 {
 	stringstream ss;
 	//If you have reached a \0 FOR ANY REASON exit now
@@ -267,7 +449,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			return I_ANY_CONTROL;
 		default:
 			//if it was able to accumulate the the glyph
-			output.AccumGlyphBuf(curChar);
+			glyphBuf += curChar;
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -282,7 +464,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			return I_ANY_CONTROL;
 		default:
 			//otherwise accumulate the glyphs
-			output.AccumGlyphBuf(curChar);
+			glyphBuf += curChar;
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -291,16 +473,16 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		{
 		//Cases to make it stop accumulating
 		case '}':
-			output.AccumOutputString(output.GetGlyphBuf(),position);
-			output.ClearBuf();
+			append_out_info(glyphBuf,position,output);
+			glyphBuf.clear();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			output.AccumOutputString(output.GetGlyphBuf(),position);
-			output.ClearBuf();
+			append_out_info(glyphBuf,position,output);
+			glyphBuf.clear();
 			return I_COMMA;
 		default:
 			//otherwise accumulate the glyphs
-			output.AccumGlyphBuf(curChar);
+			glyphBuf += curChar;
 			return I_ACCUM_GLPHYS;
 		}
 		break;
@@ -312,11 +494,18 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		case 'R':
 		case 'B':
 			//Do action, change color
-			output.SetCurColor(curChar);
+			curColor = curChar;
 			return I_WAITING_SEPERATOR;
 			
 		case '@':
-			output.SetWriteMode(false);
+			if(on_front == true)
+			{
+				on_front == false;
+			}
+			else
+			{
+				//Sementic error found extra @@
+			}
 			return I_WAITING_SEPERATOR;
 		default:
 			ss << "Character " << position + 1 << ": {@" << curChar << " is not a real instruction. Use {@Y,{@R,{@L, or {@B";
@@ -346,7 +535,9 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			//If the current letter is NOT lower-case(part of something like critical or hazard)
 			if(!(curChar>=97 && curChar <= 122))
 			{
-				output.AccumOutputString(&curChar,position);
+				string c;
+				c += curChar;
+				append_out_info(c,position,output);
 				return O_ACCUM_GLYPHS;
 			}
 			else
@@ -367,7 +558,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 	return LOOKUP_ERR;
 }
 
-void WED_Sign_Parser::MainLoop(const InInfo & inStr, OutInfo & output)
+void WED_Sign_Parser::MainLoop(const in_info & inStr, out_info & output)
 {
 	//Validate if there is any whitesapce or non printable ASCII characters (33-126)
 	if(WED_Sign_Parser::ValidateBasics(inStr,output) == true)

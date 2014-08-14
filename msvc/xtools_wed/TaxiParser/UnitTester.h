@@ -15,8 +15,8 @@ enum Errors
 
 struct Test
 {
-	InInfo * tInStr;
-	OutInfo expctRes;
+	in_info * tInStr;
+	out_info expctRes;
 	
 	//Prints to console
 	bool  printToCon;
@@ -29,12 +29,12 @@ struct Test
 	Test(void)
 	{
 		tInStr = NULL;
-		expctRes = OutInfo();
+		expctRes = out_info();
 		printToCon = false;
 		printToFile = true;
 		error = none;
 	}
-	Test(InInfo * in, OutInfo out, bool toCon, bool toFile)
+	Test(in_info * in, out_info out, bool toCon, bool toFile)
 	{
 		tInStr = in;
 		expctRes = out;
@@ -52,7 +52,7 @@ public:
 	~UnitTester(void);
 	static int RunTest(Test * t, char * filePath)
 	{
-		OutInfo outStr;
+		out_info outStr;
 		/*1.) Run the main loop from a test string or user input
 		* 2.) Examine the the results of the output and assaign an error
 		* 3.) If there is an option to print, do so
@@ -67,7 +67,7 @@ public:
 		string exptSignBack = t->expctRes.out_sign.toString(t->expctRes.out_sign.back);
 
 		//X is default and cannot exists after a succesful parse
-		if(outStr.GetCurColor() == 'X')
+		/*if(outStr.GetCurColor() == 'X')
 		{
 			t->error = exit_early;
 		}
@@ -82,15 +82,15 @@ public:
 		if(outSignBack.size() > 0 && (outSignBack != exptSignBack))
 		{
 			t->error = no_back_match;
-		}
+		}*/
 
 		if(t->printToCon)
 		{
 			//Print the original input
-			printf("InInfo: %s\n",t->tInStr->input.c_str());
+			printf("in_info: %s\n",t->tInStr->input.c_str());
 
 			//Print the expected Front and Back, if the back exists
-			printf("OutInfo (Expected):\t(Front)%s\n",exptSignFront.c_str());
+			printf("out_info (Expected):(Front)%s\n",exptSignFront.c_str());
 			printf("\t\t\t\t\t(Back) ");
 			if(exptSignBack.c_str() > 0) 
 			{
@@ -101,7 +101,7 @@ public:
 				printf("\n");
 			}
 			//Print the actual Front and Back, if the back exists
-			printf("OutInfo (Actual):\t(Front)%s\n",outSignFront.c_str());
+			printf("out_info (Actual):\t(Front)%s\n",outSignFront.c_str());
 			printf("\t\t\t\t\t(Back) ");
 			if(outSignBack.c_str() > 0) 
 			{
@@ -143,10 +143,10 @@ public:
 			if(fi != NULL)
 			{
 				//Print the original input
-				fprintf(fi,"InInfo: %s\n",t->tInStr->input.c_str());
+				fprintf(fi,"in_info: %s\n",t->tInStr->input.c_str());
 
 				//Print the expected Front and Back, if the back exists
-				fprintf(fi,"OutInfo (Expected):\t(Front)%s\n",exptSignFront.c_str());
+				fprintf(fi,"out_info (Expected):(Front)%s\n",exptSignFront.c_str());
 				fprintf(fi,"\t\t\t\t\t(Back) ");
 				if(exptSignBack.length() > 0) 
 				{
@@ -157,7 +157,7 @@ public:
 					fprintf(fi,"\n");
 				}
 				//Print the actual Front and Back, if the back exists
-				fprintf(fi,"OutInfo (Actual):\t(Front)%s\n",outSignFront.c_str());
+				fprintf(fi,"out_info (Actual):\t(Front)%s\n",outSignFront.c_str());
 				fprintf(fi,"\t\t\t\t\t(Back) ");
 				if(outSignBack.length() > 0) 
 				{
