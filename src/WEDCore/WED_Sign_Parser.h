@@ -7,17 +7,15 @@ using namespace std;
 
 /* Theory of Operation - The sign parser takes in a taxiway sign and analyses it for any errors (syntactic or semantic.)
 
-There are two outputs for this, for 2 different groups of clients. 
-The error message collection (vector<string> & msgBuf) collects human readable errors to be shown to the user.
+There are (currently) two outputs for this, for 2 different groups of clients. These are stored in parser_out_info
 
-The out_info struct that is generated contains a version of of the sign that tags every glyph with its color.
+vector<parser_error_info> errors contains a vector of error_infos which store an error code and human readable form
+parser_finished_sign out_sign is a version of of the sign that tags every glyph with its color.
 Ex: in_info: {@Y}CAT{@@}{@L,D,O,G}
 	out_info: out_sign.front = "/YC/YA/YT"
-			 out_sign.back = "/LD/LO/LG"
+			  out_sign.back = "/LD/LO/LG"
 
 This could be used for some drawing utility or anything that would like to know the color of every glyph.
-
-The other part of out_info is information about about errors it has collected
 */
 
 
@@ -62,7 +60,18 @@ struct parser_error_info {
 	int length;
 };
 
+/* Possible values
+	'Y'ellow
+	'R'ed
+	'L'ocation
+	'B'lack
+	'P'ipe
+	'I'ndependent
+	'X'invalid
+*/
 typedef char parser_color_t;
+
+//The text component of a single or multi letter glyph
 typedef string parser_glyph_t;
 
 //Represents the information about a single or multi glyphs
@@ -97,11 +106,13 @@ struct parser_finished_sign
 	}
 };
 
+//A struct containing the collected information durring the parse
 struct parser_out_info
 {
-	//Error codes in generating the outstring
+	//Errors collected during the process
 	vector<parser_error_info> errors;
 
+	//A "per-glyph" version of the input sign string with a front and a back
 	parser_finished_sign out_sign;
 
 	void AddError(string message, parser_error_t error_code, int position, int length)

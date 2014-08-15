@@ -87,6 +87,7 @@ WED_Sign_Parser::~WED_Sign_Parser()
 {
 }
 
+//--Semantic checking and handling-------------------------
 bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr, parser_out_info & output)
 {
 	/*Final Checks
@@ -412,6 +413,7 @@ bool WED_Sign_Parser::IsIndependentGlyph(const string & inLetters)
 	return false;
 }
 
+//--parser_out_info modifying code-------------------------
 //Attempts to add a collection of letters
 void WED_Sign_Parser::append_parser_out_info(const string & inGlyph, int position, parser_out_info & output)
 {
@@ -462,6 +464,7 @@ void WED_Sign_Parser::append_parser_out_info(const string & inGlyph, int positio
 	//Reset it back to the original color, regardless if it had to be set to I or not
 	curColor = realColor;
 }
+//---------------------------------------------------------
 
 //--Syntax Checking functions------------------------------
 bool WED_Sign_Parser::IsSupportedChar(char inChar)
@@ -854,6 +857,7 @@ void WED_Sign_Parser::MainLoop(const parser_in_info & input, parser_out_info & o
 
 	bool foundError = preform_final_semantic_checks(input,output);
 }
+//---------------------------------------------------------
 
 void ParserTaxiSign(const parser_in_info & input, parser_out_info & output)
 {
