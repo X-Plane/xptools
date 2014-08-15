@@ -1,5 +1,82 @@
+#pragma once
 #include "WED_Sign_Parser.h"
 
+//--WED_Sign_Parser class decleration--------------------------
+class WED_Sign_Parser
+{
+private:
+	enum FSM
+	{
+		//The inside curly braces portion, starts with I_
+		I_COMMA,//We just hit a comma and are now expecting single
+		//or multiglyphs
+		I_INCUR,//For when we hit {
+		I_ACCUM_GLPHYS,//For collecting glpyhs
+		I_ANY_CONTROL,//When it hits a @
+		I_WAITING_SEPERATOR,//For when it is waiting for a , or }
+		//The outside curly braces portion, starts with O_
+		O_ACCUM_GLYPHS,
+		O_END,//For when the string ends
+		LOOKUP_ERR//Return code for any errors in the lookup table
+	};
+	
+	//--Semantic checking and handling-------------------------
+	
+	//Preforms any last semantic checking that is inconvient to do during the FSM, mostly | stuff
+	//Returns true if error was found
+	bool preform_final_semantic_checks(const parser_in_info & inStr, parser_out_info & output);
+
+	//Checks to see if a current multi-glyph or single glyph is allowed with a certain color
+	//Returns true if there was an error
+	bool check_color(const string & inGlyph, int position,parser_out_info & output);
+
+	//Checks to see if a certain multi_glyph is a valid glyph
+	bool check_multi_glyph(const string & inGlyph, int position, parser_out_info & output);
+
+	//Askes if the glyph is currently one of the special independant glyphs
+	//"hazard","safety","critical","no-entry"
+	bool IsIndependentGlyph(const string & inGlyph);//may be a secret duplicate of check_multi_glyph
+	//---------------------------------------------------------
+	
+	//--parser_out_info modifying code--------------------------------
+	void append_parser_out_info(const string & inGlyph, int position, parser_out_info & output);
+	//---------------------------------------------------------
+
+
+	//--Syntax Checking functions------------------------------
+	//takes in the char and an optional boolean to say wheather to only do lowercase
+	bool IsSupportedChar(char inChar);
+
+	bool ValidateCurly(const parser_in_info & inStr, int position, parser_out_info & output);
+	bool ValidateBasics(const parser_in_info & inStr, parser_out_info & output);
+	//---------------------------------------------------------
+
+	//--FSM functions------------------------------------------
+	//A state-to-string conversion function, it is simply for generating messages
+	const string & EnumToString(FSM in);
+
+	//The heart of the parser, the FSM look up table. Position and output are simply for error messages
+	FSM LookUpTable(FSM curState, char curChar, int position, parser_out_info & output);
+	//---------------------------------------------------------
+
+	//--FSM data members---------------------------------------
+	//The current color, allowed values are Y,R,L,B,I(for the magic independant glyphs),P for pipe, and X for invalid
+	parser_color_t curColor;
+	
+	//If we are still on the front
+	bool on_front;
+
+	//Glyph Buffer, stores a glyph that is form
+	//{c->{co->{com->{comm->{comma
+	string glyphBuf;
+	//---------------------------------------------------------
+public:
+	WED_Sign_Parser(void);
+	~WED_Sign_Parser(void);
+	
+	void MainLoop(const parser_in_info & input, parser_out_info & output);
+};
+//------------------------------------------------------------------------
 WED_Sign_Parser::WED_Sign_Parser(void)
 {
 	curColor = 'X';
@@ -10,7 +87,7 @@ WED_Sign_Parser::~WED_Sign_Parser()
 {
 }
 
-bool WED_Sign_Parser::preform_final_semantic_checks(const in_info & inStr, out_info & output)
+bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr, parser_out_info & output)
 {
 	/*Final Checks
 	* Did we have some actual glyph in the whole sign?
@@ -126,8 +203,8 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const in_info & inStr, out_i
 		if(output.out_sign.front[i].glyph_color == 'P' && (i + 1 < fSize))
 		{
 			//A|B
-			glyph_info A = output.out_sign.front[i-1];
-			glyph_info B = output.out_sign.front[i+1];
+			parser_glyph_info A = output.out_sign.front[i-1];
+			parser_glyph_info B = output.out_sign.front[i+1];
 
 			//If A is not equal to B and (A is not 'P' and B is not 'P')
 			if(A.glyph_color != B.glyph_color)
@@ -151,8 +228,8 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const in_info & inStr, out_i
 		if(output.out_sign.back[i].glyph_color == 'P' && (i + 1 < bSize))
 		{
 			//A|B
-			glyph_info A = output.out_sign.back[i-1];
-			glyph_info B = output.out_sign.back[i+1];
+			parser_glyph_info A = output.out_sign.back[i-1];
+			parser_glyph_info B = output.out_sign.back[i+1];
 
 			if(A.glyph_color != B.glyph_color)
 			{
@@ -192,7 +269,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const in_info & inStr, out_i
 }
 
 //Returns true if there was an error
-bool WED_Sign_Parser::check_color(const string & inGlyph, int position, out_info & output)
+bool WED_Sign_Parser::check_color(const string & inGlyph, int position, parser_out_info & output)
 {
 	//This test assumes that if curColor is a certain color then it is that certain color
 	//for a reason, aka it is safe to make some assumptions about the state of the parser based
@@ -215,7 +292,7 @@ bool WED_Sign_Parser::check_color(const string & inGlyph, int position, out_info
 				{
 					stringstream ss;
 					ss << "Character " << position + 1 << ": " << inGlyph[i] << " cannot belong to color type " << curColor;
-					error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
+					parser_error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
 					output.errors.push_back(e);
 					foundError = true;
 				}
@@ -232,7 +309,7 @@ bool WED_Sign_Parser::check_color(const string & inGlyph, int position, out_info
 				{
 					stringstream ss;
 					ss << "Character " << position + 1 << ": " << inGlyph[i] << " cannot belong to color type " << curColor;
-					error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
+					parser_error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
 					output.errors.push_back(e);
 					foundError = true;
 				}
@@ -253,7 +330,7 @@ bool WED_Sign_Parser::check_color(const string & inGlyph, int position, out_info
 
 //Check a multi glyph
 //Returns true if there was an error
-bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, out_info & output)
+bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, parser_out_info & output)
 {
 	//Assume there is something wrong until otherwise noted
 	bool semError = true;
@@ -317,7 +394,7 @@ bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, ou
 	{
 		stringstream ss;
 		ss << "Character " << position - inGlyph.length() + 1 << "-" << position << ": " << inGlyph << " is not a real multiglyph";
-		error_info e = {ss.str(),sem_not_real_multiglyph,position, position - position - inGlyph.length()};
+		parser_error_info e = {ss.str(),sem_not_real_multiglyph,position, position - position - inGlyph.length()};
 		output.errors.push_back(e);
 	}
 	return semError;
@@ -336,7 +413,7 @@ bool WED_Sign_Parser::IsIndependentGlyph(const string & inLetters)
 }
 
 //Attempts to add a collection of letters
-void WED_Sign_Parser::append_out_info(const string & inGlyph, int position, out_info & output)
+void WED_Sign_Parser::append_parser_out_info(const string & inGlyph, int position, parser_out_info & output)
 {
 	//Before actually appending them see if they're
 	//correct semantically
@@ -375,11 +452,11 @@ void WED_Sign_Parser::append_out_info(const string & inGlyph, int position, out_
 	
 	if(on_front == true)
 	{
-		output.out_sign.front.push_back(glyph_info(curColor, inGlyph));
+		output.out_sign.front.push_back(parser_glyph_info(curColor, inGlyph));
 	}
 	else
 	{
-		output.out_sign.back.push_back(glyph_info(curColor, inGlyph));
+		output.out_sign.back.push_back(parser_glyph_info(curColor, inGlyph));
 	}
 	
 	//Reset it back to the original color, regardless if it had to be set to I or not
@@ -429,7 +506,7 @@ bool WED_Sign_Parser::IsSupportedChar(char inChar)
 
 //Takes in the place where a '{' is as the start
 //Returns true if there was an error
-bool WED_Sign_Parser::ValidateCurly(const in_info & inStr, int position, out_info & output)
+bool WED_Sign_Parser::ValidateCurly(const parser_in_info & inStr, int position, parser_out_info & output)
 {		
 	//What is currently considered good, a { a }
 	//We start by saying that we are looking for a {
@@ -512,7 +589,7 @@ bool WED_Sign_Parser::ValidateCurly(const in_info & inStr, int position, out_inf
 }
 
 //Return if there was an error or not
-bool WED_Sign_Parser::ValidateBasics(const in_info & inStr, out_info & output)
+bool WED_Sign_Parser::ValidateBasics(const parser_in_info & inStr, parser_out_info & output)
 {
 	bool error = false;
 
@@ -609,7 +686,7 @@ const string & WED_Sign_Parser::EnumToString(FSM in)
 //The heart of all this
 //Takes in the current state of the FSM, the current character being processes
 //The position, Outstr, and msgBuf are all part of reporting errors and are not integral to the FSM
-WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, out_info & output)
+WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, parser_out_info & output)
 {
 	stringstream ss;
 	//If you have reached a \0 FOR ANY REASON exit now
@@ -659,11 +736,11 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		{
 		//Cases to make it stop accumulating
 		case '}':
-			append_out_info(glyphBuf,position,output);
+			append_parser_out_info(glyphBuf,position,output);
 			glyphBuf.clear();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			append_out_info(glyphBuf,position,output);
+			append_parser_out_info(glyphBuf,position,output);
 			glyphBuf.clear();
 			return I_COMMA;
 		default:
@@ -725,7 +802,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			{
 				string c;
 				c += curChar;
-				append_out_info(c,position,output);
+				append_parser_out_info(c,position,output);
 				return O_ACCUM_GLYPHS;
 			}
 			else
@@ -747,7 +824,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 }
 //---------------------------------------------------------
 
-void WED_Sign_Parser::MainLoop(const in_info & input, out_info & output)
+void WED_Sign_Parser::MainLoop(const parser_in_info & input, parser_out_info & output)
 {
 	//Validate if there is any whitesapce or non printable ASCII characters (33-126)
 	if(WED_Sign_Parser::ValidateBasics(input,output) == true)
@@ -776,4 +853,10 @@ void WED_Sign_Parser::MainLoop(const in_info & input, out_info & output)
 	}
 
 	bool foundError = preform_final_semantic_checks(input,output);
+}
+
+void ParserTaxiSign(const parser_in_info & input, parser_out_info & output)
+{
+	WED_Sign_Parser parser;
+	parser.MainLoop(input,output);
 }

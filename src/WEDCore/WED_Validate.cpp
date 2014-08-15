@@ -107,6 +107,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	if(ee && ee->GetHidden())
 		return NULL;
 
+	//--Taxi Sign Validation-----------------------------------
 	if(who->GetClass() == WED_AirportSign::sClass)
 	{
 		
@@ -115,18 +116,18 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		airSign->GetName(signName);
 		
 		//Create the necisary parts for a parsing operation
-		in_info in(signName);
-		out_info out;
-		WED_Sign_Parser parser;
-		parser.MainLoop(in,out);
-
-		int MAX_ERRORS = 8;//TODO - Is this good?
+		parser_in_info in(signName);
+		parser_out_info out;
+		
+		ParserTaxiSign(in,out);
+		int MAX_ERRORS = 12;//TODO - Is this good?
 		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
 		{
 			msg += out.errors[i].msg;
 			msg += '\n';
 		}
 	}
+	//---------------------------------------------------------
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR GENERAL APT.DAT BOGUSNESS

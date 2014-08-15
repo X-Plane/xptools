@@ -18,9 +18,6 @@
     <ClInclude Include="ParserMain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UnitTester.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\WEDCore\WED_Sign_Parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>

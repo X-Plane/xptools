@@ -22,7 +22,7 @@ The other part of out_info is information about about errors it has collected
 
 
 //Contains all the possible error types that the par can generate
-enum error_t
+enum parser_error_t
 {
 	sem_glyph_color_mismatch,//Found under check_color
 	sem_no_glyphs,//Found under preform_final_semantic_checks
@@ -52,9 +52,9 @@ enum error_t
 	syn_curly_pair_nested
 };
 
-struct error_info {
+struct parser_error_info {
 	string msg;//The human readable version of the error
-	error_t err_code;
+	parser_error_t err_code;
 	int position;//The position in the string the error starts at
 
 	//How many characters the error lasts for. Ex syn_nonsupported_char would be 1
@@ -62,16 +62,16 @@ struct error_info {
 	int length;
 };
 
-typedef char color_t;
-typedef string glyph_t;
+typedef char parser_color_t;
+typedef string parser_glyph_t;
 
 //Represents the information about a single or multi glyphs
-struct glyph_info
+struct parser_glyph_info
 {
-	color_t glyph_color;
-	glyph_t glyph_name;
+	parser_color_t glyph_color;
+	parser_glyph_t glyph_name;
 
-	glyph_info(color_t color, glyph_t name)
+	parser_glyph_info(parser_color_t color, parser_glyph_t name)
 	{
 		glyph_color = color;
 		glyph_name = name;
@@ -80,118 +80,45 @@ struct glyph_info
 
 //Represents a sign that has been fully encoded with glyph information
 //Instead of simply being the input string version
-struct finished_sign
+struct parser_finished_sign
 {
-	vector<glyph_info> front;
-	vector<glyph_info> back;
+	vector<parser_glyph_info> front;
+	vector<parser_glyph_info> back;
 
-	string toString(const vector<glyph_info> & side)
+	string toString(const vector<parser_glyph_info> & side)
 	{
 		string tmp;
 		for (int i = 0; i < side.size(); i++)
 		{
-			glyph_info curGlyph = side[i];
+			parser_glyph_info curGlyph = side[i];
 			tmp += '/' + (curGlyph.glyph_color + curGlyph.glyph_name);
 		}
 		return tmp;
 	}
 };
 
-struct out_info
+struct parser_out_info
 {
 	//Error codes in generating the outstring
-	vector<error_info> errors;
+	vector<parser_error_info> errors;
 
-	finished_sign out_sign;
+	parser_finished_sign out_sign;
 
-	void AddError(string message, error_t error_code, int position, int length)
+	void AddError(string message, parser_error_t error_code, int position, int length)
 	{
-		error_info e = {message,error_code,position,length};
+		parser_error_info e = {message,error_code,position,length};
 		errors.push_back(e);
 	}
 };
 
-struct in_info
+struct parser_in_info
 {
 	//The input for the FSM, with the text from the sign
 	const string & input;
 	//int position;//TODO - store the current parsing position here?
-	in_info(const string & signText):input(signText)/*,position(0)*/{}
-	~in_info()	{}
+	parser_in_info(const string & signText):input(signText)/*,position(0)*/{}
+	~parser_in_info(){}
 };
 
-class WED_Sign_Parser
-{
-private:
-	enum FSM
-	{
-		//The inside curly braces portion, starts with I_
-		I_COMMA,//We just hit a comma and are now expecting single
-		//or multiglyphs
-		I_INCUR,//For when we hit {
-		I_ACCUM_GLPHYS,//For collecting glpyhs
-		I_ANY_CONTROL,//When it hits a @
-		I_WAITING_SEPERATOR,//For when it is waiting for a , or }
-		//The outside curly braces portion, starts with O_
-		O_ACCUM_GLYPHS,
-		O_END,//For when the string ends
-		LOOKUP_ERR//Return code for any errors in the lookup table
-	};
-	
-	//--Semantic checking and handling-------------------------
-	
-	//Preforms any last semantic checking that is inconvient to do during the FSM, mostly | stuff
-	//Returns true if error was found
-	bool preform_final_semantic_checks(const in_info & inStr, out_info & output);
-
-	//Checks to see if a current multi-glyph or single glyph is allowed with a certain color
-	//Returns true if there was an error
-	bool check_color(const string & inGlyph, int position,out_info & output);
-
-	//Checks to see if a certain multi_glyph is a valid glyph
-	bool check_multi_glyph(const string & inGlyph, int position, out_info & output);
-
-	//Askes if the glyph is currently one of the special independant glyphs
-	//"hazard","safety","critical","no-entry"
-	bool IsIndependentGlyph(const string & inGlyph);//may be a secret duplicate of check_multi_glyph
-	//---------------------------------------------------------
-	
-	//--out_info modifying code--------------------------------
-	void append_out_info(const string & inGlyph, int position, out_info & output);
-	//---------------------------------------------------------
-
-
-	//--Syntax Checking functions------------------------------
-	//takes in the char and an optional boolean to say wheather to only do lowercase
-	bool IsSupportedChar(char inChar);
-
-	bool ValidateCurly(const in_info & inStr, int position, out_info & output);
-	bool ValidateBasics(const in_info & inStr, out_info & output);
-	//---------------------------------------------------------
-
-	//--FSM functions------------------------------------------
-	//A state-to-string conversion function, it is simply for generating messages
-	const string & EnumToString(FSM in);
-
-	//The heart of the parser, the FSM look up table. Position and output are simply for error messages
-	FSM LookUpTable(FSM curState, char curChar, int position, out_info & output);
-	//---------------------------------------------------------
-
-	//--FSM data members---------------------------------------
-	//The current color, allowed values are Y,R,L,B,I(for the magic independant glyphs),P for pipe, and X for invalid
-	color_t curColor;
-	
-	//If we are still on the front
-	bool on_front;
-
-	//Glyph Buffer, stores a glyph that is form
-	//{c->{co->{com->{comm->{comma
-	string glyphBuf;
-	//---------------------------------------------------------
-public:
-	WED_Sign_Parser(void);
-	~WED_Sign_Parser(void);
-	
-	void MainLoop(const in_info & input, out_info & output);
-};
-
+//All you need to do to parse a sign is pass in an input and a blank output
+void ParserTaxiSign(const parser_in_info & input, parser_out_info & output);
