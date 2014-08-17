@@ -99,6 +99,9 @@
 // changes, we don't need to overdo basic subdivision - this produces acceptable triangles.
 #define REDUCE_SUBDIVIDE 2
 
+// This is how far to match a border point from the neighboring file.  If this is too huge and water doesn't match
+// across tiles (which can happen on recuts) we get sort of silly border matching. 
+#define MAX_BORDER_MATCH 0.001
 
 // Andras: define max slope for non flattened water edges and the number of iterations
 #define MAX_WATER_SLOPE 0.2
@@ -545,6 +548,7 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 			{
 				double myDist = (side_num == 0 || side_num == 2) ? (CGAL::to_double(pts->loc.y() - sl->second->point().y())) : (CGAL::to_double(pts->loc.x() - sl->second->point().x()));
 				if (myDist < 0.0) myDist = -myDist;
+				if(myDist < MAX_BORDER_MATCH)
 				nearest.insert(multimap<double, pair<double, mesh_match_vertex_t *> >::value_type(myDist, pair<double, mesh_match_vertex_t *>(sl->first, &*pts)));
 			}
 		}
