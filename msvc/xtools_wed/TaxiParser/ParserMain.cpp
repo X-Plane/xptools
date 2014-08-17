@@ -295,6 +295,9 @@ int main(int argc, const char* argv[])
 	ADD_TEST("|{@Y}FRONT")
 	ADD_TEST("{@Y}BACK|")
 	
+	ADD_TEST("10R-28L")
+	ADD_TEST("ALL{^r}1234{@@}BAD{comma}{@Y}UNTILNOW{hazard}")
+	//ADD_TEST("{@Y}ALL{@R}VALID{@L}UNTIL{@Y}@{N,O,W}")
 	/*
 	//Old Tests
 	ADD_TEST("{@Y}CASE{hazard")

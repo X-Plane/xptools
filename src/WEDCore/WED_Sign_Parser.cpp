@@ -79,8 +79,8 @@ public:
 //------------------------------------------------------------------------
 WED_Sign_Parser::WED_Sign_Parser(void)
 {
-	curColor = 'X';
-	on_front = true;
+	curColor = 'X';//Must start as X and no other color because further code makes assumptions about it being X (preform_final_sem_checks)!
+	on_front = true;//Also must start as writing to the front
 }
 
 WED_Sign_Parser::~WED_Sign_Parser()
@@ -99,43 +99,34 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 	*/
 	stringstream ss;
 	bool foundError = false;
-	int glyphCountF = 0;
-	for (int i = 0; i < output.out_sign.front.size(); i++)
+
+	
+	//glyphCount is a persistent counter so when the sign flips over the counter doesn't get lost
+
+	int glyphCount = 0;
+	for (int i = 0; i < output.out_sign.front.size(); i++, glyphCount++)
 	{
-		if( output.out_sign.front[i].glyph_color == 'Y' ||
-			output.out_sign.front[i].glyph_color == 'R' ||
-			output.out_sign.front[i].glyph_color == 'L' ||
-			output.out_sign.front[i].glyph_color == 'B' ||
-			output.out_sign.front[i].glyph_color == 'I')
+		if(output.out_sign.front[i].glyph_color == 'X')
 		{
-			glyphCountF++;
+			ss << "Glyph " << glyphCount + 1 << ": Glyph " << output.out_sign.front[i].glyph_name << " has no color, must declare color instruction before it";
+			output.AddError(ss.str(),sem_no_color,i,output.out_sign.front[i].glyph_name.size());
+			ss.str("");
+			ss.clear();
+			
 		}
 	}
 	
-	int glyphCountB = 0;
-	for (int i = 0; i < output.out_sign.back.size(); i++)
+	for (int i = 0; i < output.out_sign.back.size(); i++, glyphCount++)
 	{
-		if( output.out_sign.back[i].glyph_color == 'Y' ||
-			output.out_sign.back[i].glyph_color == 'R' ||
-			output.out_sign.back[i].glyph_color == 'L' ||
-			output.out_sign.back[i].glyph_color == 'B' ||
-			output.out_sign.back[i].glyph_color == 'I')
+		if(output.out_sign.back[i].glyph_color == 'X')
 		{
-			glyphCountB++;
+			ss << "Glyph " << glyphCount + 1 << ": Glyph "  << output.out_sign.back[i].glyph_name << " has no color, must declare color instruction before it";
+			output.AddError(ss.str(),sem_no_color,i,output.out_sign.back[i].glyph_name.size());
+			ss.str("");
+			ss.clear();
 		}
 	}
-	
-	//If neither side has a count
-	if(glyphCountF == 0 && glyphCountB == 0)
-	{
-		ss << inStr.input << " contains no glyphs!";
-		output.AddError(ss.str(),sem_no_glyphs,0,inStr.input.length()-1);
-		ss.str("");
-		ss.clear();
-		foundError = true;
-	}
-	
-	
+		
 	//Pipebar rules
 	bool followsPipeJuxRules = false;
 
@@ -246,7 +237,6 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 		}
 	}
 	
-	//TODO - roll these tests into the above some how
 	//Finally test if the sign begins or ends with a pipe bar
 	if(inStr.input[0] == '|')
 	{
@@ -647,7 +637,7 @@ bool WED_Sign_Parser::ValidateBasics(const parser_in_info & inStr, parser_out_in
 	//Validate all curly brace rules
 	while(i < inStr.input.length())
 	{
-		if(inStr.input[i] == '{' || i == 0)
+		if(inStr.input[i] == '{')
 		{
 			error = ValidateCurly(inStr,i,output);
 			if(error)
@@ -799,6 +789,10 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		case '{':
 			return I_INCUR;
 			break;
+		case '@':
+			ss << "Character " << position + 1 << ": " << curChar << " is not allowed outside curly braces";
+			output.AddError(ss.str(),syn_found_at_symbol_outside_curly,position,1);
+			return LOOKUP_ERR;
 		default:
 			//If the current letter is NOT lower-case(part of something like critical or hazard)
 			if(!(curChar>=97 && curChar <= 122))

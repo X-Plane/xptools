@@ -23,7 +23,7 @@ This could be used for some drawing utility or anything that would like to know 
 enum parser_error_t
 {
 	sem_glyph_color_mismatch,//Found under check_color
-	sem_no_glyphs,//Found under preform_final_semantic_checks
+	sem_no_color,//Found under preform_final_semantic_checks
 	sem_not_real_instruction,//Found under I_ANY_CONTROL
 	sem_not_real_multiglyph,//Found under check_multi_glyph
 	sem_mutiple_side_switches,//Found under I_ANY_CONTROL:case '@':
@@ -36,6 +36,7 @@ enum parser_error_t
 	sem_pipe_l_sign_flip_juxed,//Juxed = juxtapositioned
 	sem_pipe_r_sign_flip_juxed,
 	
+	syn_found_at_symbol_outside_curly,//Found under O_ACCUM_GLYPHS
 	syn_found_lowercase_outside_curly,//Found under O_ACCUM_GLYPHS
 	syn_expected_seperator,//Found under I_WAITING_SEPERATOR
 	syn_expected_non_comma_after_incur,//Found under I_INCUR
@@ -51,7 +52,7 @@ enum parser_error_t
 };
 
 struct parser_error_info {
-	string msg;//The human readable version of the error
+	string msg;//The human readable version of the error, DOES NOT end with a \n. The client decides if they want one
 	parser_error_t err_code;
 	int position;//The position in the string the error starts at
 
