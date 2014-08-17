@@ -24,11 +24,12 @@
 #include "WED_Validate.h"
 
 #include "WED_Globals.h"
-
+#include "WED_Sign_Parser.h"
 #include "WED_Runway.h"
 #include "WED_Sealane.h"
 #include "WED_Helipad.h"
 #include "WED_Airport.h"
+#include "WED_AirportSign.h"
 #include "WED_ToolUtils.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
@@ -106,6 +107,28 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
 	if(ee && ee->GetHidden())
 		return NULL;
+
+	//--Taxi Sign Validation-----------------------------------
+	if(who->GetClass() == WED_AirportSign::sClass)
+	{
+		
+		WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
+		string signName;
+		airSign->GetName(signName);
+		
+		//Create the necisary parts for a parsing operation
+		parser_in_info in(signName);
+		parser_out_info out;
+		
+		ParserTaxiSign(in,out);
+		int MAX_ERRORS = 12;//TODO - Is this good?
+		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+		{
+			msg += out.errors[i].msg;
+			msg += '\n';
+		}
+	}
+	//---------------------------------------------------------
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR DANGLING PARTS - THIS SHOULD NOT HAPPEN BUT EVERY NOW AND THEN IT DOES
@@ -484,9 +507,6 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 				msg = "The library path '" + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.";
 		}
 	}
-
-
-
 
 	//------------------------------------------------------------------------------------
 
