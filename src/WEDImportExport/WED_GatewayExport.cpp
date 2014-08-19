@@ -55,6 +55,8 @@
 #include "WED_StringPlacement.h"
 #include "GUI_Timer.h"
 #include "GUI_Resources.h"
+#include "WED_Version.h"
+#include "WED_Url.h"
 #include <errno.h>
 #include <sstream>
 
@@ -476,6 +478,7 @@ void WED_GatewayExportDialog::Submit()
 		scenery["artistComments"] = comment;
 		scenery["features"] = features;
 		scenery["masterZipBlob"] = uu64;
+		scenery["clientVersion"] = WED_VERSION_NUMERIC;
 			
 		Json::Value req;
 		req["scenery"] = scenery;
@@ -502,12 +505,13 @@ void WED_GatewayExportDialog::Submit()
 
 		string cert;
 
-		string prefix = "http://";
-
-		if(GUI_GetTempResourcePath("gateway.crt", cert))
-			prefix = "https://";
-
-		string url = prefix + "gatewayapi.x-plane.com:3001/apiv1/scenery";
+		if(!GUI_GetTempResourcePath("gateway.crt", cert))
+		{
+			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+			this->AsyncDestroy();
+			return;
+		}
+		string url = WED_URL_GATEWAY_API "scenery";
 
 		curl_http_get_file * auth_req = new curl_http_get_file(
 			url.c_str(),
