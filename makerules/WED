@@ -27,7 +27,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
+#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
 LIBS		+= -lQtCore
 LIBS		+= -lQtGui
 LIBS		+= -lQtOpenGL
@@ -35,6 +35,7 @@ LIBS		+= -lGL
 LIBS		+= -lGLU
 LIBS		+= -ldl
 LIBS		+= -lpthread
+LIBS		+= -lcurl
 endif #PLAT_LINUX
 
 
@@ -149,6 +150,7 @@ SOURCES += ./src/WEDCore/WED_UndoMgr.cpp
 SOURCES += ./src/WEDCore/WED_Assert.cpp
 SOURCES += ./src/WEDCore/WED_ResourceMgr.cpp
 #SOURCES += ./src/WEDCore/WED_Routing.cpp
+SOURCES += ./src/WEDCore/WED_Sign_Parser.cpp
 SOURCES += ./src/WEDCore/WED_GISUtils.cpp
 SOURCES += ./src/WEDCore/WED_Orthophoto.cpp
 SOURCES += ./src/WEDCore/WED_Validate.cpp
@@ -218,7 +220,6 @@ SOURCES += ./src/WEDImportExport/WED_DSFExport.cpp
 SOURCES += ./src/WEDImportExport/WED_DSFImport.cpp
 SOURCES += ./src/WEDImportExport/WED_GatewayExport.cpp
 SOURCES += ./src/WEDImportExport/WED_SceneryPackExport.cpp
-#SOURCES += ./src/WEDLibrary/WED_AdvancedFilterPane.cpp
 SOURCES += ./src/WEDLibrary/WED_LibraryListAdapter.cpp
 SOURCES += ./src/WEDLibrary/WED_LibraryPreviewPane.cpp
 SOURCES += ./src/WEDLibrary/WED_LibraryPane.cpp
