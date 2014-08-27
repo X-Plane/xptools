@@ -275,7 +275,7 @@ static void	BuildPointSequence(
 				v2.normalize();
 
 				bool got_tight_corner = false;
-				if(v1.dot(v2) < 0.01)
+				if(v1.dot(v2) > -0.35)		// < 70 degrees or greater turn?  Just take a straight intersection IF we can.  Frankly I'm not sure why the assign() would fail but just be paranoid.
 				{
 					Line_2 l1(s1);
 					Line_2 l2(s2);
