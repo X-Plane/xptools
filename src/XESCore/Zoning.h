@@ -249,6 +249,7 @@ void	LoadZoningRules(void);
  */
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
+				const DEMGeo&		inElev,
 				const DEMGeo& 		inLanduse,
 				const DEMGeo&		inForest,
 				const DEMGeo&		inPark,

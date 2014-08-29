@@ -36,7 +36,7 @@ class	GUI_Window_DND;
 class	GUI_Window : public XWinGL, public GUI_Pane, public GUI_Commander {
 public:
 
-							GUI_Window(const char * inTitle, int inAttributes, int inBounds[4],GUI_Commander * inCommander);
+							GUI_Window(const char * inTitle, int inAttributes, const int inBounds[4],GUI_Commander * inCommander);
 	virtual					~GUI_Window();
 
 			void			SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float inClearColor[4]);

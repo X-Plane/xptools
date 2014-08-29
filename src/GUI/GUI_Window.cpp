@@ -566,7 +566,7 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 }
 #endif
 
-GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
+GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
 	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
@@ -622,7 +622,12 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 
 	#endif
 	#if LIN
-		this->setMenuBar(gApplication->getqmenu());
+		// mroe: ->  Ben said :
+		//    ... if the window is modal, it should not have a menu bar, 
+		//    which would let the user try to dispatch commands to another target ...
+		if ( (inAttributes & 3) != xwin_style_modal )
+			this->setMenuBar(gApplication->getqmenu());
+			
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
@@ -728,8 +733,8 @@ void		GUI_Window::ClickMove(int inX, int inY)
 	#if LIN
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 		switch(cursor) {
-		case gui_Cursor_Resize_H:	this->setCursor(Qt::SplitHCursor);	break;
-		case gui_Cursor_Resize_V:	this->setCursor(Qt::SplitVCursor);	break;
+		case gui_Cursor_Resize_H:	this->setCursor(Qt::SizeHorCursor);	break;
+		case gui_Cursor_Resize_V:	this->setCursor(Qt::SizeVerCursor);	break;
 		case gui_Cursor_None:
 		case gui_Cursor_Arrow:
 		default:					this->setCursor(Qt::ArrowCursor);	break;
@@ -1128,6 +1133,9 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	  {
 		case Qt::Key_Enter:
 		case Qt::Key_Return:	virtualCode = GUI_VK_RETURN;	break;
+		case Qt::Key_Escape:	virtualCode = GUI_VK_ESCAPE;	break;
+		case Qt::Key_Tab:
+		case Qt::Key_Backtab:	virtualCode = GUI_VK_TAB;	break;						
 		case Qt::Key_PageUp:	virtualCode = GUI_VK_PRIOR;	break;
 		case Qt::Key_PageDown:	virtualCode = GUI_VK_NEXT;	break;
 		case Qt::Key_End:	virtualCode = GUI_VK_END;	break;

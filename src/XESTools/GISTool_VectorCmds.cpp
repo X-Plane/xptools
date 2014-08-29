@@ -555,7 +555,7 @@ static int DoTigerBounds(const vector<const char *>& args)
 	return 0;
 }
 */
-#define HELP_SHAPE \
+#define HELP_SHAPE_IMPORT \
 "-shapefile <mode> <feature> <err> <grid> <filename> [...<filename]\n" \
 "Import a shape file.  Mode letters (similar to tar syntax are):\n" \
 "r - roads - attempt to import arcs as roads.\n" \
@@ -613,6 +613,28 @@ static int DoShapeImport(const vector<const char *>& args)
 #endif
 	return 0;
 }
+
+#define HELP_SHAPE_EXPORT \
+"-shapefile_write <flags> <terain_type> <filename>\n" \
+"Export a shape file.  Mode letters (similar to tar syntax are):\n" \
+"  l     filter by terrain type\n"
+static int DoShapeExport(const vector<const char *>& args)
+{
+	int tt = LookupToken(args[1]);
+	if(tt == -1)
+	{
+		fprintf(stderr,"Unknown token type %s\n", args[1]);
+		return 1;
+	}
+	bool ok = WriteShapefile(args[2], gMap, tt, gProgress);
+	if(!ok)
+	{
+		if(gVerbose) printf("Failed to save shape file %s\n", args[2]);
+		return 1;
+	}
+	return 0;
+}
+
 
 //"-shapefile_raster <mode> <feature> <filename> <layer>n" 
 static int DoShapeRaster(const vector<const char *>& inArgs)
@@ -835,6 +857,33 @@ int DoRemoveWetAntennas(const vector<const char *>& args)
 	return 0;	
 }
 
+
+int DoCleanToTerrain(const vector<const char *>& args)
+{
+	int token = LookupToken(args[0]);
+	if(token == -1)
+	{
+		fprintf(stderr,"Unknown terrain type %s\n", args[0]);
+		return 1;
+	}
+	
+	for(Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	if(!f->is_unbounded())
+	{	
+		if(f->data().mTerrainType != token)
+			f->data().mTerrainType = NO_VALUE;
+		
+		f->data().mParams.clear();
+	}
+	
+	for(Pmwx::Halfedge_iterator e = gMap.halfedges_begin(); e != gMap.halfedges_end(); ++e)
+	{
+		e->data().mSegments.clear();
+	}
+	
+	return 0;
+}
+
 int DoBufferWater(const vector<const char *>& args)
 {
 	double inset = atof(args[0]);
@@ -879,12 +928,14 @@ static	GISTool_RegCmd_t		sVectorCmds[] = {
 //{ "-tigerbounds", 	1, 1, 	DoTigerBounds, 			"Show all tiger files for a given location.", "" },
 //{ "-vpf", 			4, 6, 	DoVPFImport, 			"Import VPF coverage <path> <coverages> <lon> <lat> [<sublon> <sublat>]", "" },
 { "-gshhs", 		1, 1, 	DoGSHHSImport, 			"Import GSHHS shorelines.", "" },
-{ "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE },
+{ "-shapefile", 	5, -1, 	DoShapeImport, 			"Import ESRI Shape File.", HELP_SHAPE_IMPORT },
+{ "-shapefile_write", 3, 3, 	DoShapeExport, 		"Export ESRI Shape File.", HELP_SHAPE_EXPORT },
 { "-shapefile_raster", 4, 4, DoShapeRaster,			"Raster shapefile.", "" },
 { "-reduce_vectors", 1, 1,	DoReduceVectors,		"Simplify vector map by a certain error distance.", HELP_REDUCE_VECTORS },
 { "-remove_outsets", 2, 2, DoRemoveOutsets,			"Remove square outset piers from water areas.", HELP_REMOVE_OUTSETS },
 { "-remove_islands", 1, 1, DoRemoveIslands,			"Remove square outset piers from water areas.", HELP_REMOVE_ISLANDS },
 { "-remove_wet_antennas", 2, 2, DoRemoveWetAntennas,	"Remove roads that hang out into the water.", HELP_REMOVE_WET_ANTENNAS },	
+{ "-clean_to_terrain", 1, 1, DoCleanToTerrain,		"Remove all features except for one terrain type.", "" },
 { "-buffer_water", 1, 1, DoBufferWater,				"Buffer water by a certain amonut.", "" },
 { "-desliver",		1, 1, DoDesliver,				"Remove slivered polygons.", HELP_DESLIVER },
 { "-kill_sliver_water",1,1,DoKillSliverWater,		"Remove slivers of water",HELP_KILL_SLIVER_WATER },

@@ -92,6 +92,12 @@ void	WED_DoSelectZeroLength(IResolver * resolver);
 void	WED_DoSelectDoubles(IResolver * resolver);
 void	WED_DoSelectCrossing(IResolver * resolver);
 
+void	WED_DoSelectMissingObjects(IResolver * resolver);
+void	WED_DoSelectLocalObjects(IResolver * resolver);
+void	WED_DoSelectLibraryObjects(IResolver * resolver);
+void	WED_DoSelectDefaultObjects(IResolver * resolver);
+void	WED_DoSelectThirdPartyObjects(IResolver * resolver);
+
 
 // This isn't really a command...rather, it's used by drag & drop code.  But...trying to keep all of the grouping logic in one place.
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);

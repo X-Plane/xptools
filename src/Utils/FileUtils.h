@@ -44,13 +44,34 @@ enum date_cmpr_result_t
 	dcr_same = 0,
 	dcr_error = -2
 };
-//Returns true if the file exists, returns false if it doesn't
-bool FILE_exists(const char * path);
+
+bool FILE_exists(const char * path);									//Returns true if the file exists, returns false if it doesn't
+
+// WARNING: these do not take trailing / for directories!
 int FILE_delete_file(const char * nuke_path, int is_dir);
+
+// Path should end in a /
+int FILE_delete_dir_recursive(const string& path);
+
 int FILE_rename_file(const char * old_name, const char * new_name);
+
+// Create in_dir in its parent directory
 int FILE_make_dir(const char * in_dir);
 
+
+// Recursively create all dirs needed for in_dir to exist - handles trailing / ok.
 int FILE_make_dir_exist(const char * in_dir);
+
+int FILE_delete_dir_recursive(const string& path);
+
+// Get a directory listing.  Returns number of files found, or -1 on error.
+int FILE_get_directory(
+		const string&		path,
+		vector<string> *	out_files,	// Both arrays are optional.
+		vector<string> *	out_dirs);
+
+int FILE_compress_dir(const string& src_path, const string& dst_path, const string& prefix);
+
 
 /* Pass in a file path for the first and second file
 * Return 1: The second file is more updated that the first

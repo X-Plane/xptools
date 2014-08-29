@@ -60,6 +60,7 @@ public:
 			void		SetKeyAllowed(char key, bool allowed);
 			void		SetVKAllowed(int vk, bool allowed);
 			void		SetMargins(float l, float b, float r, float t);
+			void		SetPasswordChar(char c);
 
 	// GUI_Pane
 	virtual	void		Draw(GUI_GraphState * state);
@@ -141,6 +142,7 @@ private:
 		int					mFont;
 		int					mCaret;
 		int					mScrollH;
+		char				mPasswordChar;
 		float				mLogicalBounds[4];
 		GUI_GraphState * 	mState;
 		string				mText;

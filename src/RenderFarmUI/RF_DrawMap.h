@@ -31,6 +31,7 @@
 extern int g_color_face_with_terr;
 extern int g_color_face_with_zone;
 extern int g_color_face_with_supr;
+extern int g_color_face_with_appr;
 extern int g_color_face_use_supr_tint;
 
 class	GUI_GraphState;

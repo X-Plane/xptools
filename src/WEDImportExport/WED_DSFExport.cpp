@@ -23,7 +23,6 @@
 
 #include "WED_DSFExport.h"
 #include "WED_UIDefs.h"
-#include "WED_AptIE.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "WED_Entity.h"
@@ -693,7 +692,7 @@ static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what,
 						IResolver *					resolver,
-						ILibrarian *				pkg, 
+						const string&				pkg, 
 						const Bbox2&				cull_bounds,		// This is the area for which we are TRYING to get scenery.
 						const Bbox2&				safe_bounds,		// This is the 'safe' area into which we CAN write scenery without exploding.
 						DSF_ResourceTable&			io_table, 
@@ -1277,8 +1276,7 @@ static int	DSF_ExportTileRecursive(
 		string relativePathPOL = r;
 		relativePathPOL.replace(relativePathDDS.length()-3,3,"pol");
 		//-----------------
-		string absPathIMG = r;
-		pkg->LookupPath(absPathIMG);
+		string absPathIMG = pkg + r;
 		//-----------------
 		string absPathDDS = absPathIMG;
 		absPathDDS.replace(absPathDDS.length()-3,3,"dds");
@@ -1426,7 +1424,7 @@ static int	DSF_ExportTileRecursive(
 	return real_thingies;	
 }
 
-static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * pkg, int x, int y, set <WED_Thing *>& problem_children)
+static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
@@ -1498,10 +1496,8 @@ static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * 
 	string full_dir, full_path;
 	sprintf(rel_dir ,"Earth nav data" DIR_STR "%+03d%+04d",							  latlon_bucket(y), latlon_bucket(x)	  );
 	sprintf(rel_path,"Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf",  latlon_bucket(y), latlon_bucket(x), y, x);
-	full_path = rel_path;
-	full_dir  = rel_dir ;
-	pkg->LookupPath(full_dir );
-	pkg->LookupPath(full_path);
+	full_path = pkg + rel_path;
+	full_dir  = pkg + rel_dir ;
 	if(entities)	// empty DSF?  Don't write a empty file, makes a mess!
 	{
 		FILE_make_dir_exist(full_dir.c_str());
@@ -1510,11 +1506,17 @@ static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * 
 	DSFDestroyWriter(writer);
 }
 
-void DSF_Export(WED_Group * base, IResolver * resolver, ILibrarian * package, set<WED_Thing *>& problem_children)
+void DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
-	base->GetBounds(gis_Geo,wrl_bounds);
+	
+	IGISEntity * ent = dynamic_cast<IGISEntity *>(base);
+	DebugAssert(ent);
+	if(!ent) 
+		return;
+	
+	ent->GetBounds(gis_Geo,wrl_bounds);
 	int tile_west  = floor(wrl_bounds.p1.x());
 	int tile_east  = ceil (wrl_bounds.p2.x());
 	int tile_south = floor(wrl_bounds.p1.y());
@@ -1530,57 +1532,27 @@ void DSF_Export(WED_Group * base, IResolver * resolver, ILibrarian * package, se
 		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");		
 }
 
-int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who, zipFile archive, set<WED_Thing *>& problem_children)
+int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const string& package, set<WED_Thing *>& problem_children)
 {
-	if(who->GetClass() == WED_Airport::sClass)
+	if(apt->GetHidden())
+		return 1;
+
+	//----------------------------------------------------------------------------------------------------
+
+	string icao;
+	apt->GetICAO(icao);
+
+	string dsf_path = package + icao + ".txt";
+	
+	FILE * dsf = fopen(dsf_path.c_str(),"w");
+	if(dsf)
 	{
-		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-		if(apt->GetHidden())
-			return 1;
-
-		//----------------------------------------------------------------------------------------------------
-
-		ILibrarian * pkg = WED_GetLibrarian(resolver);
-		string icao;
-		apt->GetICAO(icao);
-
-		icao += ".txt";
-			
-		zip_fileinfo	fi = { 0 };
-		//http://unix.stackexchange.com/questions/14705/the-zip-formats-external-file-attribute
-		fi.external_fa = 0100777 << 16;
-
-		time_t		t;			
-		time(&t);
-		struct tm * our_time = localtime(&t);
-		
-		if(our_time)
-		{
-			fi.tmz_date.tm_sec  = our_time->tm_sec ;
-			fi.tmz_date.tm_min  = our_time->tm_min ;
-			fi.tmz_date.tm_hour = our_time->tm_hour;
-			fi.tmz_date.tm_mday = our_time->tm_mday;
-			fi.tmz_date.tm_mon  = our_time->tm_mon ;
-			fi.tmz_date.tm_year = our_time->tm_year + 1900;
-		}
-			
-		if(zipOpenNewFileInZip (archive,icao.c_str(),
-						&fi,		// mod dates, etc??
-						NULL,0,
-						NULL,0,
-						NULL,		// comment
-						Z_DEFLATED,
-						Z_DEFAULT_COMPRESSION) != 0)
-		{
-			string msg = string("Unable to write to zip file.");
-			return 0;
-		}
-		
+				
 		DSFCallbacks_t	cbs;
 		DSF2Text_CreateWriterCallbacks(&cbs);
 		print_funcs_s pf;
-		pf.print_func = (int (*)(void *,const char *,...)) zip_printf;
-		pf.ref = archive;
+		pf.print_func = (int (*)(void *, const char *, ...)) fprintf;
+		pf.ref = dsf;
 		
 		void * writer = &pf;
 		
@@ -1600,7 +1572,7 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 		
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)	
-			entities += DSF_ExportTileRecursive(who, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
 		for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
 			cbs.AcceptObjectDef_f(s->c_str(), writer);
@@ -1623,144 +1595,11 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
 			}
 		}		
-	
-		zipCloseFileInZip(archive);
-
-		//-------------------------------------------------------------------
-
-		apt->GetICAO(icao);
-
-		icao += ".dat";
-
-		if(zipOpenNewFileInZip (archive, icao.c_str(),
-						&fi,		// mod dates, etc??
-						NULL,0,
-						NULL,0,
-						NULL,		// comment
-						Z_DEFLATED,
-						Z_DEFAULT_COMPRESSION) != 0)
-		{
-			string msg = string("Unable to write to zip file.");
-			return 0;
-		}
-		
-		WED_AptExport(apt, zip_printf, archive);
-		zipCloseFileInZip(archive);
-		
-
-
+		fclose(dsf);
 		return 1;
 	}
-	else if(who->GetClass() == WED_Group::sClass)
-	{
-		WED_Group * g = dynamic_cast<WED_Group *>(who);
-		if(g && g->GetHidden())
-			return 1;
-			
-		int n = who->CountChildren();
-		for(int i = 0; i < n; ++i)
-		{
-			WED_Thing * child = who->GetNthChild(i);
-			if(DSF_ExportOneAirportOverlayRecursive(resolver, child, archive,problem_children) == 0)
-			{
-				// err on export?  bail out of recursion.
-				return 0;
-			}
-		}
-		return 1;
-	} 
 	else
-	{
-		problem_children.insert(who);
-		DoUserAlert("You cannot export this scenery pack for Robin because some DSF overlay elements are not inside an airport.");
 		return 0;
-	}
 }
 
-
-
-int		WED_CanExportPack(IResolver * resolver)
-{
-	return 1;
-}
-
-void	WED_DoExportPack(IResolver * resolver)
-{
-	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	if(!WED_ValidateApt(resolver))
-		return;
-
-	ILibrarian * l = WED_GetLibrarian(resolver);
-	WED_Thing * w = WED_GetWorld(resolver);
-	set<WED_Thing *>	problem_children;
-	DSF_Export(dynamic_cast<WED_Group *>(w), resolver, l,problem_children);
-
-	string	apt = "Earth nav data" DIR_STR "apt.dat";
-	string	apt_dir = "Earth nav data";
-	l->LookupPath(apt);
-	l->LookupPath(apt_dir);
-
-	FILE_make_dir_exist(apt_dir.c_str());
-	WED_AptExport(w, apt.c_str());
-	if(!problem_children.empty())
-	{
-		DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
-		ISelection * sel = WED_GetSelect(resolver);
-		(*problem_children.begin())->StartOperation("Select broken items.");
-		sel->Clear();
-		for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
-			sel->Insert(*p);
-		(*problem_children.begin())->CommitOperation();		
-	}
-}
-
-void	WED_DoExportRobin(IResolver * resolver)
-{
-	WED_Export_Target old_target = gExportTarget;
-	gExportTarget = wet_robin;
-
-	if(!WED_ValidateApt(resolver))
-	{
-		gExportTarget = old_target;
-		return;
-	}
-
-	char path[1024];
-	strcpy(path,"");
-	if (GetFilePathFromUser(getFile_Save,"Save for Global Airports...", "Export...", FILE_DIALOG_EXPORT_ROBIN, path, sizeof(path)))
-	{	
-		if(strlen(path) < 4 ||
-			strcmp(path+strlen(path)-4,".zip") != 0)
-			strncat(path,".zip",sizeof(path)-strlen(path)-1);
-		WED_Thing * w = WED_GetWorld(resolver);
-		set<WED_Thing *>	problem_children;
-		
-		zipFile archive = zipOpen(path, 0);
-		if(archive == NULL)
-		{
-			DoUserAlert("Unable to open zip archive.");
-			gExportTarget = old_target;
-			return;
-		}
-	
-		if(DSF_ExportOneAirportOverlayRecursive(resolver, w, archive, problem_children))
-		{
-			// success.
-		}
-		zipClose(archive, NULL);
-
-		if(!problem_children.empty())
-		{
-			DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
-			ISelection * sel = WED_GetSelect(resolver);
-			(*problem_children.begin())->StartOperation("Select broken items.");
-			sel->Clear();
-			for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
-				sel->Insert(*p);
-			(*problem_children.begin())->CommitOperation();		
-		}
-	}
-	gExportTarget = old_target;
-
-}
 

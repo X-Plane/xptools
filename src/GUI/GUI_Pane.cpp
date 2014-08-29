@@ -41,11 +41,13 @@
 
 #include <time.h>
 #include <algorithm>
+#include <typeinfo>
 using std::find;
 
 #if LIN
 #include <QtGui/QApplication>
 #endif
+
 
 
 GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
@@ -222,7 +224,7 @@ void GUI_Pane::DrawWireFrame(int realBounds[4], bool prinf)
 #if LIN
 		printf("Name=%s left=%d bottom=%d right=%d top=%d \n",
 #else
-		std::printf("Name=%s left=%d bottom=%d right=%d top=%d \n",
+		printf("Name=%s left=%d bottom=%d right=%d top=%d \n",
 #endif
 			typeid(*this).name(),
 			realBounds[0],

@@ -157,6 +157,28 @@ bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 	return me->second.is_default;	
 }
 
+bool	WED_LibraryMgr::IsResourceLocal(const string& r)
+{
+	string fixed(r);
+	for(string::size_type p = 0; p < fixed.size(); ++p)
+	if(fixed[p] == ':' || fixed[p] == '\\')
+		fixed[p] = '/';
+	res_map_t::const_iterator me = res_table.find(fixed);
+	if (me==res_table.end()) return false;
+	return me->second.packages.count(pack_Local) && me->second.packages.size() == 1;
+}
+
+bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
+{
+	string fixed(r);
+	for(string::size_type p = 0; p < fixed.size(); ++p)
+	if(fixed[p] == ':' || fixed[p] == '\\')
+		fixed[p] = '/';
+	res_map_t::const_iterator me = res_table.find(fixed);
+	if (me==res_table.end()) return false;
+	return !me->second.packages.count(pack_Local) || me->second.packages.size() > 1;
+}
+
 bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 {
 	for(res_map_t::iterator i = res_table.begin(); i != res_table.end(); ++i)

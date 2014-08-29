@@ -39,6 +39,7 @@ void	WED_AptImport(
 				AptVector&				apts,
 				vector<WED_Thing *> *	out_airports);
 				
+// Main apt export AIP - we can write to a file path or to a stream via a print func.
 
 void	WED_AptExport(
 				WED_Thing *		container,
@@ -52,6 +53,7 @@ void	WED_AptExport(
 // Given a "WED_thing", add it to the apts as needed.
 // A little bit dangerous but this can be a good way
 // to convert a selection into an aptdefs.h construct.
+// This is really an internal utility.
 void	AptExportRecursive(WED_Thing * what, 
 				AptVector& apts);
 

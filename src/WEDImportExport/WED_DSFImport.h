@@ -32,7 +32,7 @@ void DSF_Import(const char * file, WED_Group * base);
 
 int		WED_CanImportDSF(IResolver * resolver);
 void	WED_DoImportDSF(IResolver * resolver);
-#if ROBIN_IMPORT_FEATURES
+#if GATEWAY_IMPORT_FEATURES
 void	WED_DoImportDSFText(IResolver * resolver);
 #endif
 

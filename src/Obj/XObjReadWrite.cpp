@@ -26,7 +26,7 @@
 
 #include "XObjReadWrite.h"
 #include "XObjDefs.h"
-
+#include "AssertUtils.h"
 #include <math.h>
 
 #ifndef CRLF
@@ -94,6 +94,13 @@ inline void TXT_MAP_str_scan_space(xbyt*& c,const xbyt* c_max,string* input)
 	xbyt* c2=c;
 
 	if(input)*input=string(c1,c2);
+}
+
+inline xint TXT_MAP_has_word(xbyt*& c,const xbyt* c_max)
+{
+	while(c<c_max && TXT_MAP_space(c)) ++c;
+	if(c==c_max) return xfals;
+	return !TXT_MAP_eoln(c);
 }
 
 inline xint TXT_MAP_str_match_space(xbyt*& c,const xbyt* c_max,const char* input, bool eol_ok)
@@ -765,7 +772,25 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
 			for (n = 0; n < 3; ++n)
 				cmd.params[n] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
-			outObj.lods.back().cmds.push_back(cmd);
+			cmd.idx_count = 0;
+			outObj.lods.back().cmds.push_back(cmd);			
+		}
+		// LIGHT_PARAM <name> <x> <y> <z>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"LIGHT_PARAM", xfals))
+		{
+			cmd.cmd = obj8_LightNamed;
+			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&cmd.name);
+			for (n = 0; n < 3; ++n)
+				cmd.params[n] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			cmd.idx_count = 0;
+			
+			while(TXT_MAP_has_word(cur_ptr,end_ptr))
+			{
+				Assert(cmd.idx_count < 9);
+				cmd.params[cmd.idx_count+3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);				
+				++cmd.idx_count;
+			}
+			outObj.lods.back().cmds.push_back(cmd);			
 		}
 		// ATTR_layer_group <group name> <offset>
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_layer_group", xfals))
@@ -1235,8 +1260,17 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					cmd->params[9], cmd->params[10], cmd->params[11], cmd->name.c_str());
 				break;
 			case obj8_LightNamed:
-				fprintf(fi,"LIGHT_NAMED %s %f %f %f" CRLF, cmd->name.c_str(),
-					cmd->params[0], cmd->params[1 ], cmd->params[2 ]);
+				if(cmd->idx_count == 0)
+					fprintf(fi,"LIGHT_NAMED %s %f %f %f" CRLF, cmd->name.c_str(),
+						cmd->params[0], cmd->params[1 ], cmd->params[2 ]);
+				else
+				{
+					fprintf(fi,"LIGHT_PARAM %s %f %f %f", cmd->name.c_str(),
+						cmd->params[0], cmd->params[1 ], cmd->params[2 ]);
+					for(int p = 0; p < cmd->idx_count; ++p)
+						fprintf(fi," %.2f",cmd->params[3+p]);
+					fprintf(fi,CRLF);
+				}
 				break;
 			case attr_Layer_Group:
 				fprintf(fi,"ATTR_layer_group %s %d" CRLF, cmd->name.c_str(), (int) cmd->params[0]);
