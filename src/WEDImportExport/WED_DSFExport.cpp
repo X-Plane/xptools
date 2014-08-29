@@ -1320,9 +1320,11 @@ static int	DSF_ExportTileRecursive(
 				case WED_DDS:
 					numChannel = CreateBitmapFromDDS(absPathIMG.c_str(),&imgInfo);
 					break;
+				#if USE_GEOJPEG2K
 				case WED_JP2K:
 					numChannel = CreateBitmapFromJP2K(absPathIMG.c_str(),&imgInfo);
 					break;
+				#endif
 				case WED_JPEG:
 					numChannel = CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
 					break;

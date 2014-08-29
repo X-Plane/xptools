@@ -105,9 +105,11 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 		case WED_DDS:
 			CreateBitmapFromDDS(fpath.c_str(),&im);
 			break;
+		#if USE_GEOJPEG2K
 		case WED_JP2K:
 			CreateBitmapFromJP2K(fpath.c_str(),&im);
 			break;
+		#endif
 		case WED_JPEG:
 			CreateBitmapFromJPEG(fpath.c_str(),&im);
 			break;

@@ -46,7 +46,9 @@
 enum SupportedTypes{
 	WED_BMP,			//NewBitmap,FromFile            X			
 	WED_DDS,			//X								X				X
+	#if USE_GEOJPEG2K
 	WED_JP2K,			//X												X
+	#endif
 	WED_JPEG,			//FromJPEG,FromJPEGData
 	WED_PNG,			//X								X				X
 	WED_TIF				//X												X

@@ -124,7 +124,9 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 
 				geotiff
 					change makefile.vc
-					resave the geo_config.h.vc as geo_config.h
+					
+					
+					
 					FROM
 					TIFF_DIR = ..\libtiff\libtiff
 
@@ -148,8 +150,22 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 					PREFIX =	c:\usr
 					TO
 					PREFIX = .
-
-					Copied geotiff.lib to msvc_compiled_libs
+					
+					add
+					/* Added to force LIB_PROJ compilation */
+					#define HAVE_LIBPROJ 1
+					#define HAVE_PROJECTS_H 1
+					#define PROJECTS_DIR "..\proj-4.7.0\src\projects.h"
+					to geo_config.h.vc
+					
+					in geotiff_proj4.c commment out line 1402,add this to line 1403
+					#include PROJECTS_DIR
+					
+					run nmake /f makefile.vc all
+					
+					You will get linker errors but they will be solved when linking together WED
+					
+					Copy geotiff.lib to msvc_compiled_libs
 						openGL<-put in manually (if not already in)
 					
 ==============================================================*/
@@ -170,35 +186,35 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  [5.1.1] General: These preprocessor definitions work for all build configurations.
 
  -------------------------------------------------------------------------------
-| CODE | ORIGIN | PURPOSE                                                                          |
-| NO_CGAL=1 | WED | Turns off CGAL from being used, avoids remaing CGAL errors |
-| MSC=1 | WED | Have Visual C compiler, could be replaced by ifdef _MSC_VER      |
-| APL=0 | WED | Platform defined for Apple                                                      |
-| IBM=1 | WED | Platform defined for Windows                                                  |
-| USE_JPEG=1 | WED | ImgUtils will support libjpeg                                             |
-| USE_TIF=1 | WED | ImgUtils will support libtiff                                                |
-| USE_GEOJPEG2K=1 | WED| ImgUtils will supportGEOJPEG2K|
-| WED=1 | WED | Declares that one is building WED and WED only                        |
-| LIL=1 | WED | For x86 CPU Arcatecture                                                         |
-| BIG=0 | WED | Depricated from supporting PowerPC                                         |
-|JAS_WIN_MSVC_BUILD| GeoJasper | Makes GeoJasper compile, part of its configuration
-| XML_STATIC | EXPAT | Stops missing .DLL error, see line 57 in expat_external.h   |
-| WIN32 | MSVC | Used in Windows SDK                                                          |
-| NDEBUG | MSVC | Activates assert.h functionality                                           |
-| _LIB | MSVC | Appears to be neither used nor detramental                                |
-| %(PreprocessorDefinitions) | MSVC | Puts in other hidden Preprocessor Definitions |
-| _CRT_SECURE_NO_WARNINGS | MSVC | Stops unneccassary Error C4496             |			
+| CODE | ORIGIN | PURPOSE																|
+| NO_CGAL=1 | WED | Turns off CGAL from being used, avoids remaing CGAL errors			|
+| MSC=1 | WED | Have Visual C compiler, could be replaced by ifdef _MSC_VER				|
+| APL=0 | WED | Platform defined for Apple												|
+| IBM=1 | WED | Platform defined for Windows											|
+| USE_JPEG=1 | WED | ImgUtils will support libjpeg										|
+| USE_TIF=1 | WED | ImgUtils will support libtiff										|
+| USE_GEOJPEG2K=1 | WED| ImgUtils will supportGEOJPEG2K									|
+| WED=1 | WED | Declares that one is building WED and WED only							|
+| LIL=1 | WED | For x86 CPU Arcatecture													|
+| BIG=0 | WED | Depricated from supporting PowerPC										|
+|JAS_WIN_MSVC_BUILD| GeoJasper | Makes GeoJasper compile, part of its configuration		|
+| XML_STATIC | EXPAT | Stops missing .DLL error, see line 57 in expat_external.h		|
+| WIN32 | MSVC | Used in Windows SDK													|
+| NDEBUG | MSVC | Activates assert.h functionality										|
+| _LIB | MSVC | Appears to be neither used nor detramental								|
+| %(PreprocessorDefinitions) | MSVC | Puts in other hidden Preprocessor Definitions		|
+| _CRT_SECURE_NO_WARNINGS | MSVC | Stops unneccassary Error C4496             			|
  --------------------------------------------------------------------------------
 
  [5.1.2] Debug (x86): These definitions only appear in debug configurations.
   -------------------------------------------------------------------------------
-| CODE | ORIGIN | PURPOSE                                                                          |
+| CODE | ORIGIN | PURPOSE                                                              |
 | DEV=1 | WED | Activates debug checks inside WED code                                 |
   -------------------------------------------------------------------------------
 
  [5.1.3] Release (x86): These definitions only appear in debug configurations.
   -------------------------------------------------------------------------------
-| CODE | ORIGIN | PURPOSE                                                                          |
+| CODE | ORIGIN | PURPOSE                                                              |
 | DEV=0 | WED | Activates debug checks inside WED code                                 |
   -------------------------------------------------------------------------------
 

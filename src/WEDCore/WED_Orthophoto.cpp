@@ -162,6 +162,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 		case WED_DDS:
 			CreateBitmapFromDDS(buf,&inf);
 			break;
+		#if USE_GEOJPEG2K
 		case WED_JP2K:
 			if((CreateBitmapFromJP2K(buf,&inf)) >= 3)	
 			{
@@ -178,6 +179,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 				}
 			}
 			break;
+		#endif
 		case WED_JPEG:
 			CreateBitmapFromJPEG(buf,&inf);
 			break;

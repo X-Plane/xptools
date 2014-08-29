@@ -372,7 +372,9 @@ int GetSupportedType(const char * path)
 	//compare the string and if it is perfectly the same return that code
 	if(!strcmp(uPos,"bmp")) return WED_BMP;
 	if(!strcmp(uPos,"dds")) return WED_DDS;
+	#if USE_GEOJPEG2K
 	if(!strcmp(uPos,"jp2")) return WED_JP2K;
+	#endif
 	//jpeg or jpg is supported
 	if((!strcmp(uPos,"jpeg"))||(!strcmp(uPos,"jpg"))) return WED_JPEG;
 	if(!strcmp(uPos,"png")) return WED_PNG;
@@ -1431,29 +1433,29 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	{
         for (int i = 0; i < outImageInfo->width; i++) 
 		{
-				//read the pixel and potentially shift it
-				int pxR = jas_image_readcmptsample(image, r, i, j) >> shift_red;
-				int pxG = jas_image_readcmptsample(image, g, i, j) >> shift_green;
-				int pxB = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
-				//Fill the alpha channel with being completely opaque
-				int pxA = 255;
-				//Assaign colors in the order of BGRA!!!!!!!!!
-				//Assaign color
-				*bitmapData = pxB;
-				//Advance the pointer
+			//read the pixel and potentially shift it
+			int pxR = jas_image_readcmptsample(image, r, i, j) >> shift_red;
+			int pxG = jas_image_readcmptsample(image, g, i, j) >> shift_green;
+			int pxB = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
+			//Fill the alpha channel with being completely opaque
+			int pxA = 255;
+			//Assaign colors in the order of BGRA!!!!!!!!!
+			//Assaign color
+			*bitmapData = pxB;
+			//Advance the pointer
+			bitmapData++;
+			*bitmapData = pxG;
+			bitmapData++;		
+			*bitmapData = pxR;
+			bitmapData++;
+			//If there is an alpha channel (id #3)
+			if(jas_image_getcmptbytype(image,3) > -1)
+			{
+				//Assaign it to the alpha value
+				pxA = jas_image_readcmptsample(image,3,i,j);
+				*bitmapData = pxA;
 				bitmapData++;
-				*bitmapData = pxG;
-				bitmapData++;		
-				*bitmapData = pxR;
-				bitmapData++;
-				//If there is an alpha channel (id #3)
-				if(jas_image_getcmptbytype(image,3) > -1)
-				{
-					//Assaign it to the alpha value
-					pxA = jas_image_readcmptsample(image,3,i,j);
-					*bitmapData = pxA;
-					bitmapData++;
-				}
+			}
         }
     }
 	//Save the data to our ImageInfo
