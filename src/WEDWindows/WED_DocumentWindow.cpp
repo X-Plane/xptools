@@ -44,7 +44,10 @@
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
 #include "WED_SceneryPackExport.h"
+
 #include "WED_GatewayExport.h"
+#include "WED_GatewayImport.h"
+
 #include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
@@ -53,6 +56,7 @@
 #include "WED_Routing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
+
 
 #if WITHNWLINK
 #include "WED_Server.h"
@@ -404,8 +408,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
-#if GATEWAY_IMPORT_FEATURES	
-	case wed_ImportGateway:	WED_DoImportDSFText(mDocument); return 1;
+#if GATEWAY_IMPORT_FEATURES || 1	
+	case wed_ImportGateway:	/*WED_DoImportDSFText(mDocument);*/ WED_DoImportFromGateway(mDocument); return 1;
 #endif	
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
@@ -499,8 +503,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_ImportOrtho:	return 1;
-#if GATEWAY_IMPORT_FEATURES
-	case wed_ImportGateway:	return 1;
+#if GATEWAY_IMPORT_FEATURES || 1
+	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
 #endif	
 	case wed_Validate:		return 1;
 
