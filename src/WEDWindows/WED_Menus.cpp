@@ -50,7 +50,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if GATEWAY_IMPORT_FEATURES || 1
-{	"Import Airport Scenery Gateway Master Files...",0,0,								0,	wed_ImportGateway		},
+{	"Import from Airport Scenery Gateway...",0,0,								0,	wed_ImportGateway		},
 #endif
 {	"-",					0,		0,								0,	0					},
 {	"&Export apt.dat...",	'S',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_ExportApt		},
