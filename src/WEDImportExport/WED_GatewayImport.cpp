@@ -33,9 +33,7 @@
 int	WED_CanImportFromGateway(IResolver * resolver)
 {
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
-	//string url = WED_URL_GATEWAY_API "airports";
-
-	vector<char> response;
+	string url = WED_URL_GATEWAY_API "airports";
 
 	string cert;
 
@@ -44,25 +42,25 @@ int	WED_CanImportFromGateway(IResolver * resolver)
 		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 		return 0;
 	}
-	return 1;
-	//Contact the server
-	/*curl_http_get_file * auth_req = new curl_http_get_file(WED_URL_GATEWAY_API "airports",NULL,NULL,&response,cert);
-	
-	while(auth_req->is_done() == false)
-	{
-		int doNothing = 0;
-	}
 
-	//If the contact happens, we are able to
-	if(auth_req->get_error() == false)
+	//Contacts the server and pings the url to see if it exists
+	CURL * curl = curl_easy_init();
+	CURLcode code1 = curl_easy_setopt(curl,CURLOPT_URL,url);
+	CURLcode code2 = curl_easy_setopt(curl,CURLOPT_FOLLOWLOCATION,1L);
+	CURLcode code3 = curl_easy_setopt(curl, CURLOPT_CAINFO, cert.c_str());
+
+	CURLcode res = curl_easy_perform(curl);
+	curl_easy_cleanup(curl);
+
+	//If the url connects then return 1, else 0
+	if(res != CURLE_OK)
 	{
-		return 1;
+		return 0;
 	}
 	else
 	{
-		DoUserAlert("Could not connect to airport server");
-		return 0;
-	}*/
+		return 1;
+	}
 }
 
 void WED_DoImportFromGateway(IResolver * resolver)
