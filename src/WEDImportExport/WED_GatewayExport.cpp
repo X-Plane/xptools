@@ -42,6 +42,7 @@
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "GUI_Application.h"
+#include "GUI_Help.h"
 #include "WED_Messages.h"
 #include "WED_ATCFlow.h"
 #include "WED_TaxiRoute.h"
@@ -337,6 +338,9 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 
 void WED_GatewayExportDialog::Cancel()
 {
+	if(mPhase == 2)
+		GUI_LaunchURL(WED_URL_UPLOAD_OK);
+		
 	this->AsyncDestroy();
 }
 
@@ -562,7 +566,7 @@ void WED_GatewayExportDialog::TimerFired()
 					mApt->SetSceneryID(new_id);
 					mApt->CommitOperation();
 					
-					good_msg = "Your airport has been successfully uploaded.";					
+					good_msg = "Your airport has been successfully uploaded and will be visible to all users on the gateway once a moderator approves it.";
 				}
 				else
 				{
@@ -615,7 +619,7 @@ void WED_GatewayExportDialog::TimerFired()
 		
 		if(!good_msg.empty())
 		{
-			this->Reset("OK","");
+			this->Reset("OK","Learn More...");
 			this->AddLabel(good_msg);
 		}
 		else

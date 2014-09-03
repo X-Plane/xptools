@@ -27,6 +27,7 @@
 
 #define WED_URL_MANUAL	"http://www.x-plane.com/_lookup_10_/wed_13_manual.html"
 #define WED_URL_HELP_SCENERY "http://www.x-plane.com/_lookup_10_/wed_13_scenery.html"
+#define WED_URL_UPLOAD_OK "http://www.x-plane.com/_lookup_10_/wed_13_upload_ok.html"
 
 #define WED_URL_GATEWAY_API "https://gatewayapi.x-plane.com:3001/apiv1/"
 
