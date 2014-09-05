@@ -43,6 +43,10 @@ public:
 							const string&			outDestFile,
 							const string&			inCert=string());
 
+				curl_http_get_file(
+							const string&			inURL,
+							vector<char>*		outDestBuffer,
+							const string&			inCert);
 
 				curl_http_get_file(
 							const string&			inURL,
@@ -95,6 +99,13 @@ private:
 		
 		double					m_last_dl_amount;
 		time_t					m_last_data_time;
+
+#if !DEV
+		//You should never be able to copy this object, but it is useful in debugging mode
+		curl_http_get_file operator=(const curl_http_get_file & rhs);
+		curl_http_get_file (const curl_http_get_file & copy);
+#endif
+
 };
 
 bool	UTL_http_is_error_bad_net(int err);

@@ -59,7 +59,34 @@ curl_http_get_file::curl_http_get_file(
 	#endif
 
 }
-				
+
+curl_http_get_file::curl_http_get_file(
+							const string&			inURL,
+							vector<char>*		outDestBuffer,
+							const string&			inCert) :
+	m_progress(-1),
+	m_status(in_progress),
+	m_halt(0),
+	m_url(inURL),
+	m_dest_buffer(outDestBuffer),
+	m_errcode(0),
+	m_last_dl_amount(0.0),
+	m_cert(inCert)
+{
+	UTL_http_encode_url(m_url);
+
+	DebugAssert(inURL.size() > 7);
+	DebugAssert(
+		strncmp(inURL.c_str(),"http://",7) == 0 ||
+		strncmp(inURL.c_str(),"https://",8) == 0);
+	
+	#if IBM
+	m_thread = CreateThread(NULL,0,thread_proc,this,0,NULL);
+	#else
+	pthread_create(&m_thread, NULL, thread_proc, this);
+	#endif
+
+}
 curl_http_get_file::curl_http_get_file(
 							const string&			inURL,
 							const string *			post_data,
