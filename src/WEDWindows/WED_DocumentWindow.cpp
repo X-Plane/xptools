@@ -409,7 +409,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		mMapPane->Map_HandleCommand(command);
 		return 1;
 #if GATEWAY_IMPORT_FEATURES || 1	
-	case wed_ImportGateway:	/*WED_DoImportDSFText(mDocument);*/ WED_DoImportFromGateway(mDocument); return 1;
+	case wed_ImportGateway: WED_DoImportFromGateway(mDocument); return 1;
 #endif	
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
