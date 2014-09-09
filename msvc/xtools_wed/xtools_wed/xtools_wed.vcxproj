@@ -28,6 +28,7 @@
     <ClCompile Include="..\..\..\src\GUI\GUI_Control.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Destroyable.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_DrawUtils.cpp" />
+    <ClCompile Include="..\..\..\src\GUI\GUI_DropDownList.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_Fonts.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_FormWindow.cpp" />
     <ClCompile Include="..\..\..\src\GUI\GUI_GraphState.cpp" />
@@ -270,6 +271,7 @@
     <ClInclude Include="..\..\..\src\GUI\GUI_Defs.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Destroyable.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_DrawUtils.h" />
+    <ClInclude Include="..\..\..\src\GUI\GUI_DropDownList.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_Fonts.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_FormWindow.h" />
     <ClInclude Include="..\..\..\src\GUI\GUI_GraphState.h" />

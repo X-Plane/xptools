@@ -792,6 +792,9 @@
     <ClCompile Include="..\..\..\src\WEDImportExport\WED_GatewayImport.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\GUI\GUI_DropDownList.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h">
@@ -1576,6 +1579,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\WEDImportExport\WED_GatewayImport.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\GUI\GUI_DropDownList.h">
+      <Filter>GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
