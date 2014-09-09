@@ -31,12 +31,14 @@
 
 #include <json/json.h>
 
+
+#include "GUI_Application.h"
+#include "GUI_DropDownList.h"
 #include "GUI_FormWindow.h"
-#include "GUI_Timer.h"
-#include "WED_FilterBar.h"
 #include "GUI_Table.h"
 #include "GUI_TextTable.h"
-#include "GUI_Application.h"
+#include "GUI_Timer.h"
+
 
 //Decides where you want to test getting the JSON info from
 //Recomend using test from local for speed
@@ -56,6 +58,29 @@ imp_dialog_get_versions,
 imp_dialog_finish
 };
 
+//--Thanks Stack Overflow!---------------------------------
+
+//An enum collection of all the traits we can sub-filter by
+//!NOTE! always add before trait_has_3D OR change what TRAIT_COUNT = to!!
+enum trait_list
+{
+	trait_user_name,
+	trait_date_submited,
+	trait_has_3D,
+
+
+	//ALWAYS ADD ABOVE THIS LINE
+	ADD_ONE,
+	TRAIT_COUNT = ADD_ONE
+};
+
+//The strings that the user will see
+const char * trait_list_strings [TRAIT_COUNT] = {
+	"User Name",
+	"Date Submitted",
+	"Has 3D objects"};
+
+//-------------------------------------------------------//
 
 //Our private class for the import dialog
 class WED_GatewayImportDialog : public GUI_FormWindow, public GUI_Timer
@@ -90,7 +115,7 @@ private:
 	Json::Value				mSceneryGET;
 
 	//GUI dialog box memebers
-	WED_FilterBar *			mFilter;
+	GUI_DropDownList *		mDropDown;
 
 	GUI_ScrollerPane *		mScroller;
 	GUI_Table *				mTable;
@@ -109,7 +134,19 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(IResolver * resolver) :
 	mPhase(imp_dialog_start),
 	mCurl(NULL)
 {
-	/*mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Filter:","",NULL,false);
+	GUI_EnumDictionary dict;
+
+	for (int i = 0; i < TRAIT_COUNT; i++)
+	{
+		dict.insert(GUI_EnumDictionary::value_type(i,make_pair(trait_list_strings[i],true)));
+	}
+	
+	mDropDown = new GUI_DropDownList(this,"Choose Trait:",dict);
+	mDropDown->SetParent(this);
+	mDropDown->Show();
+	mDropDown->AddListener(this);
+
+	/*mFilter = new WED_FilterBar(this,,0,"Filter:","",NULL,false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(packer);
