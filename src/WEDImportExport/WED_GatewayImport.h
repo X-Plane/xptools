@@ -25,8 +25,9 @@
 #define WED_GatewayImport_H
 
 class	IResolver;
+class   WED_Document;
 
 int		WED_CanImportFromGateway(IResolver * resolver);
-void	WED_DoImportFromGateway(IResolver * resolver);
+void	WED_DoImportFromGateway(WED_Document * resolver);
 
 #endif
