@@ -41,6 +41,7 @@
 #include "GUI_Timer.h"
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
+#include "WED_Messages.h"
 
 //--Table Code------------
 #include "GUI_Table.h"
@@ -51,6 +52,7 @@
 	#include "WED_AptTable.h"
 	//------------------------//
 	//--Version Table---------
+	//#include "WED_VerTable.h"
 	//------------------------//
 
 //------------------------//
@@ -68,10 +70,16 @@
 enum import_dialog_stages
 {
 imp_dialog_choose_ICAO,
-imp_dialog_choose_version,
+imp_dialog_choose_versions,
 imp_dialog_finish
 };
 
+enum imp_dialog_msg
+{
+	filter_changed,
+	click_next,
+	click_back
+};
 
 //Our private class for the import dialog
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
@@ -117,33 +125,47 @@ private:
 	//--For the whole dialog box
 	WED_FilterBar	 *		mFilter;
 	GUI_ScrollerPane *		mScroller;
-
-	//The only thing that will change is the providers
-	GUI_Table *				mTable;
-	GUI_Header *			mHeader;
-
-	GUI_TextTable			mTextTable;
-	GUI_TextTableHeader		mTextTableHeader;
+	GUI_Packer *			mPacker;//TODO-rename
 	
 	GUI_Pane *				mButtonHolder;
 	GUI_Button *			mNextButton;
 	GUI_Button *			mBackButton;
 
-	static int import_bounds_default[4];
-		
+	static int				import_bounds_default[4];
+
+	//--ICAO Table
+	GUI_Table *				mICAO_Table;
+	GUI_Header *			mICAO_Header;
+
+	GUI_TextTable			mICAO_TextTable;
+	GUI_TextTableHeader		mICAO_TextTableHeader;
+	
 		//--ICAO Table Provider/Geometry
-		WED_AptTable			mAptProvider;
-		AptVector				mApts;
+		WED_AptTable			mICAO_AptProvider;
+		AptVector				mICAO_Apts;
 
 		//Extracts the Code from the constructor
 		void MakeICAOTable(int bounds[4]);
 		//----------------------//
-
-		//--Versions Table Provider/Geometry
-
-		//---------------------//
-
 	//----------------------//
+	//--Versions Table----------
+
+		/*//--Versions Table Provider/Geometry
+		GUI_Table *				mVersions_Table;
+		GUI_Header *			mVersions_Header;
+
+		GUI_TextTable			mVersions_TextTable;
+		GUI_TextTableHeader		mVersions_TextTableHeader;
+	
+		//--ICAO Table Provider/Geometry
+		WED_VerTable			mVersions_VerProvider;
+		VerVector				mVersions_Vers;
+
+		//Extracts the Code from the constructor
+		void MakeVersionsTable(int bounds[4]);*/
+		//---------------------//
+	//--------------------------//
+		
 //----------------------//
 	
 };
@@ -155,211 +177,69 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mResolver(resolver),
 	mPhase(imp_dialog_choose_ICAO),
 	mCurl(NULL),
-	mAptProvider(&mApts),
-	mTextTable(this,100,0)
+	mICAO_AptProvider(&mICAO_Apts),
+	mICAO_TextTable(this,100,0)
 {
 	DownloadJSON(imp_dialog_choose_ICAO);
 
+	if(resolver)
 	resolver->AddListener(this);
 
-	//Packer
+	//mPacker
 	int bounds[4];
-	GUI_Packer * packer = new GUI_Packer;
-	packer->SetParent(this);
-	packer->SetSticky(1,1,1,1);
-	packer->Show();
+	mPacker = new GUI_Packer;
+	mPacker->SetParent(this);
+	mPacker->SetSticky(1,1,1,1);
+	mPacker->Show();
 	GUI_Pane::GetBounds(bounds);
-	packer->SetBounds(bounds);
-	packer->SetBkgkndImage ("gradient.png");
+	mPacker->SetBounds(bounds);
+	mPacker->SetBkgkndImage ("gradient.png");
 
 	//Filter
-	mFilter = new WED_FilterBar(this,3008,0,"Filter:","",NULL,false);//TODO - kMsg_filterchanged
+	mFilter = new WED_FilterBar(this,filter_changed,0,"Filter:","",NULL,false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
-	mFilter->SetParent(packer);
+	mFilter->SetParent(mPacker);
 	mFilter->AddListener(this);
 
-	mAptProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
 	
-	mScroller = new GUI_ScrollerPane(0,1);
-	mScroller->SetParent(this);
-	mScroller->Show();
-	mScroller->SetSticky(1,1,1,1);
-
-	mTextTable.SetProvider(&mAptProvider);
-	mTextTable.SetGeometry(&mAptProvider);
-
+	MakeICAOTable(bounds);
 	
-	mTextTable.SetColors(
-				WED_Color_RGBA(wed_Table_Gridlines),
-				WED_Color_RGBA(wed_Table_Select),
-				WED_Color_RGBA(wed_Table_Text),
-				WED_Color_RGBA(wed_Table_SelectText),
-				WED_Color_RGBA(wed_Table_Drag_Insert),
-				WED_Color_RGBA(wed_Table_Drag_Into));
-	mTextTable.SetTextFieldColors(
-				WED_Color_RGBA(wed_TextField_Text),
-				WED_Color_RGBA(wed_TextField_Hilite),
-				WED_Color_RGBA(wed_TextField_Bkgnd),
-				WED_Color_RGBA(wed_TextField_FocusRing));
-
-	mTable = new GUI_Table(true);
-	mTable->SetGeometry(&mAptProvider);
-	mTable->SetContent(&mTextTable);
-	mTable->SetParent(mScroller);
-	mTable->SetSticky(1,1,1,1);
-	mTable->Show();	
-	mScroller->PositionInContentArea(mTable);
-	mScroller->SetContent(mTable);
-	mTextTable.SetParentTable(mTable);
-
-	mTextTableHeader.SetProvider(&mAptProvider);
-	mTextTableHeader.SetGeometry(&mAptProvider);
-
-	mTextTableHeader.SetImage("header.png");
-	mTextTableHeader.SetColors(
-			WED_Color_RGBA(wed_Table_Gridlines),
-				WED_Color_RGBA(wed_Header_Text));
-
-	mHeader = new GUI_Header(true);
-
-	bounds[1] = 0;
-	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
-	mHeader->SetBounds(bounds);
-	mHeader->SetGeometry(&mAptProvider);
-	mHeader->SetHeader(&mTextTableHeader);
-	mHeader->SetParent(this);
-	mHeader->Show();
-	mHeader->SetSticky(1,0,1,1);
-	mHeader->SetTable(mTable);
-
-
-					mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
-					mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
-					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
-					mAptProvider.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
-
-	packer->PackPane(mFilter,gui_Pack_Top);
-	packer->PackPane(mHeader,gui_Pack_Top);
-	
+	//--Button Setup
 	int k_reg[4] = { 0, 0, 1, 3 };
 	int k_hil[4] = { 0, 1, 1, 3 };
 	
-	GUI_Button * okay_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	okay_btn->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
-	okay_btn->Show();
-	okay_btn->SetSticky(0,1,1,0);
-	okay_btn->SetDescriptor("Import");
-	okay_btn->SetMsg(0,0);
+	mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+	mNextButton->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+	mNextButton->Show();
+	mNextButton->SetSticky(0,1,1,0);
+	mNextButton->SetDescriptor("Next");
+	mNextButton->SetMsg(click_next,0);
 
-	GUI_Button * cncl_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	cncl_btn->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
-	cncl_btn->Show();
-	cncl_btn->SetSticky(1,1,0,0);
-	cncl_btn->SetDescriptor("Cancel");
-	cncl_btn->SetMsg(0,0);
+	mBackButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+	mBackButton->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+	mBackButton->Show();
+	mBackButton->SetSticky(1,1,0,0);
+	mBackButton->SetDescriptor("Cancel");
+	mBackButton->SetMsg(click_back,0);
 	
-	GUI_Pane * holder = new GUI_Pane;
-	holder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
+	mButtonHolder = new GUI_Pane;
+	mButtonHolder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
+
+	mNextButton->SetParent(mButtonHolder);
+	mNextButton->AddListener(this);
+	mBackButton->SetParent(mButtonHolder);
+	mBackButton->AddListener(this);
 	
-	
-	okay_btn->SetParent(holder);
-	okay_btn->AddListener(this);
-	cncl_btn->SetParent(holder);
-	cncl_btn->AddListener(this);
-	
-	holder->SetParent(packer);
-	holder->Show();
-	holder->SetSticky(1,1,1,0);
-	
-	packer->PackPane(holder,gui_Pack_Bottom);
+	mButtonHolder->SetParent(mPacker);
+	mButtonHolder->Show();
+	mButtonHolder->SetSticky(1,1,1,0);
+	mPacker->PackPane(mButtonHolder,gui_Pack_Bottom);
+	//--------------------------------//
 
-	
-	packer->PackPane(mScroller,gui_Pack_Center);
+	mPacker->PackPane(mScroller,gui_Pack_Center);
 
-	mScroller->PositionHeaderPane(mHeader);
-
-	/*
-	
-	mScroller = new GUI_ScrollerPane(0,1);
-	mScroller->SetParent(this);
-	mScroller->Show();
-	mScroller->SetSticky(1,1,1,1);
-
-	mTextTable.SetProvider(&mAptTable);
-	mTextTable.SetGeometry(&mAptTable);
-
-	mTextTable.SetColors(
-				WED_Color_RGBA(wed_Table_Gridlines),
-				WED_Color_RGBA(wed_Table_Select),
-				WED_Color_RGBA(wed_Table_Text),
-				WED_Color_RGBA(wed_Table_SelectText),
-				WED_Color_RGBA(wed_Table_Drag_Insert),
-				WED_Color_RGBA(wed_Table_Drag_Into));
-	mTextTable.SetTextFieldColors(
-				WED_Color_RGBA(wed_TextField_Text),
-				WED_Color_RGBA(wed_TextField_Hilite),
-				WED_Color_RGBA(wed_TextField_Bkgnd),
-				WED_Color_RGBA(wed_TextField_FocusRing));
-
-	mTable = new GUI_Table(true);
-	mTable->SetGeometry(&mAptTable);
-	mTable->SetContent(&mTextTable);
-	mTable->SetParent(mScroller);
-	mTable->SetSticky(1,1,1,1);
-	mTable->Show();	
-	mScroller->PositionInContentArea(mTable);
-	mScroller->SetContent(mTable);
-	mTextTable.SetParentTable(mTable);
-
-	mTextTableHeader.SetProvider(&mAptTable);
-	mTextTableHeader.SetGeometry(&mAptTable);
-
-	mTextTableHeader.SetImage("header.png");
-	mTextTableHeader.SetColors(
-			WED_Color_RGBA(wed_Table_Gridlines),
-				WED_Color_RGBA(wed_Header_Text));
-
-	mHeader = new GUI_Header(true);
-
-	bounds[1] = 0;
-	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
-	mHeader->SetBounds(bounds);
-	mHeader->SetGeometry(&mAptTable);
-	mHeader->SetHeader(&mTextTableHeader);
-	mHeader->SetParent(this);
-	mHeader->Show();
-	mHeader->SetSticky(1,0,1,1);
-	mHeader->SetTable(mTable);
-
-
-					mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
-					mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
-					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
-					mAptTable.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
-
-	packer->PackPane(mFilter,gui_Pack_Top);
-	packer->PackPane(mHeader,gui_Pack_Top);
-	
-	int k_reg[4] = { 0, 0, 1, 3 };
-	int k_hil[4] = { 0, 1, 1, 3 };
-	
-	
-	GUI_Pane * holder = new GUI_Pane;
-	holder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
-	
-	
-	holder->SetParent(packer);
-	holder->Show();
-	holder->SetSticky(1,1,1,0);
-	
-	packer->PackPane(holder,gui_Pack_Bottom);
-
-	
-	packer->PackPane(mScroller,gui_Pack_Center);
-
-	mScroller->PositionHeaderPane(mHeader);
-	*/
+	mScroller->PositionHeaderPane(mICAO_Header);
 }
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
@@ -368,14 +248,42 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 
 void WED_GatewayImportDialog::Next()
 {
-	//if(
+	/*From imp_choose_ICAO to imp_choose_versions (in no particular order
+	* SetDescriptor for back button
+	* Start Timer for downloading the VersionJSON for the ICAO selection
+	* change mPhase
+	* hide ICAOTable stuff
+	* show VersionsTable stuff
+	*/
+	switch(mPhase)
+	{
+	case imp_dialog_choose_ICAO:
+		break;
+	case imp_dialog_choose_versions:
+		this->AsyncDestroy();//?
+		break;
+	case imp_dialog_finish:
+		this->AsyncDestroy();//?
+		break;
+	}
 	mPhase++;
 	return;
 }
 
 void WED_GatewayImportDialog::Back()
 {
+	switch(mPhase)
+	{
+	case imp_dialog_choose_ICAO:
+		this->AsyncDestroy();
+		break;
+	case imp_dialog_choose_versions:
+		break;
+	case imp_dialog_finish:
 
+		break;
+	}
+	mPhase--;
 }
 
 void WED_GatewayImportDialog::TimerFired()
@@ -388,20 +296,21 @@ void WED_GatewayImportDialog::ReceiveMessage(
 							intptr_t    			inMsg,
 							intptr_t				inParam)
 {
-	/*
-	switch(inMsg) {
-	case kMsg_FilterChanged:	
-		mAptTable.SetFilter(mFilter->GetText());
+	switch(inMsg) 
+	{
+	case filter_changed:	
+		mICAO_AptProvider.SetFilter(mFilter->GetText());
 		break;
-	case kMsgImport:
-		DoIt();
-		this->AsyncDestroy();
+	case click_next:
+		Next();
 		break;
 	case msg_DocumentDestroyed:
-	case kMsgCancel:
 		this->AsyncDestroy();
 		break;
-	}*/
+	case click_back:
+		Back();
+		break;
+	}
 }
 
 void WED_GatewayImportDialog::DownloadJSON(import_dialog_stages stage)
@@ -416,14 +325,14 @@ void WED_GatewayImportDialog::DownloadJSON(import_dialog_stages stage)
 		return;
 	}
 
-	if(stage == import_dialog_stages::imp_dialog_choose_ICAO && mAirportsGET.size() == 0)
+	if(stage == import_dialog_stages::imp_dialog_choose_ICAO)
 	{
 		//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
 		 url += "airports";
 
 	#if TEST_FROM_SERVER
 		//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-		vector<char> rawJSONBuf = vector<char>(GUESS_AIRPORT_SIZE);
+		vector<char> rawJSONBuf = vector<char>(8000000);
 	
 		//Get it from the server
 		curl_http_get_file file = curl_http_get_file(url,&rawJSONBuf,cert);
@@ -433,7 +342,7 @@ void WED_GatewayImportDialog::DownloadJSON(import_dialog_stages stage)
 		while(file.is_done() == false);
 
 		//create a string from the vector of chars
-		string rawJSONString = string(rawJSONBuf->begin(),rawJSONBuf->end());
+		string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
 	#else
 		std::ifstream is(LOCAL_JSON);     // open file
 
@@ -481,87 +390,80 @@ void WED_GatewayImportDialog::DownloadJSON(import_dialog_stages stage)
 			cur_airport.name = tmp["AirportName"].asString();
 
 			//Add the current scenery object's airport code
-			mApts.push_back(cur_airport);
+			mICAO_Apts.push_back(cur_airport);
 
 			//Optionally print it out
 		}
 	}
 }
-/*
+
 void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 {
-	//The text table chain is done in reverse order starting with the leaf and working back up
-
-
-	//Text table provider
-	mAptTable = WED_AptTable(&mApts);
-	mAptTable.SetFilter(mFilter->GetText());
+	mICAO_AptProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
 	
-	//Text table
-	mTextTable.SetProvider(&mAptTable);
-	mTextTable.SetGeometry(&mAptTable);
+	mScroller = new GUI_ScrollerPane(0,1);
+	mScroller->SetParent(this);
+	mScroller->Show();
+	mScroller->SetSticky(1,1,1,1);
+
+	mICAO_TextTable.SetProvider(&mICAO_AptProvider);
+	mICAO_TextTable.SetGeometry(&mICAO_AptProvider);
+
 	
-	mTextTable.SetColors(
+	mICAO_TextTable.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Table_Select),
 				WED_Color_RGBA(wed_Table_Text),
 				WED_Color_RGBA(wed_Table_SelectText),
 				WED_Color_RGBA(wed_Table_Drag_Insert),
 				WED_Color_RGBA(wed_Table_Drag_Into));
-	mTextTable.SetTextFieldColors(
+	mICAO_TextTable.SetTextFieldColors(
 				WED_Color_RGBA(wed_TextField_Text),
 				WED_Color_RGBA(wed_TextField_Hilite),
 				WED_Color_RGBA(wed_TextField_Bkgnd),
 				WED_Color_RGBA(wed_TextField_FocusRing));
 
-	mTable = new GUI_Table(true);
-	
-	mTable->SetSticky(1,1,1,1);
-	mTable->Show();
+	mICAO_Table = new GUI_Table(true);
+	mICAO_Table->SetGeometry(&mICAO_AptProvider);
+	mICAO_Table->SetContent(&mICAO_TextTable);
+	mICAO_Table->SetParent(mScroller);
+	mICAO_Table->SetSticky(1,1,1,1);
+	mICAO_Table->Show();	
+	mScroller->PositionInContentArea(mICAO_Table);
+	mScroller->SetContent(mICAO_Table);
+	mICAO_TextTable.SetParentTable(mICAO_Table);
 
-	mTable->SetGeometry(&mAptTable);
-	mTable->SetContent(&mTextTable);
+	mICAO_TextTableHeader.SetProvider(&mICAO_AptProvider);
+	mICAO_TextTableHeader.SetGeometry(&mICAO_AptProvider);
 
-	mScroller = new GUI_ScrollerPane(0,1);
-	
-	mScroller->SetSticky(1,1,1,1);
-	mScroller->Show();
-
-	mScroller->PositionInContentArea(mTable);
-	mScroller->SetContent(mTable);
-	
-	mTable->SetParent(mScroller);
-	mTextTable.SetParentTable(mTable);
-	mScroller->SetParent(this);
-	//TextTableHeader has a default constructor
-	mTextTableHeader.SetProvider(&mAptTable);
-	mTextTableHeader.SetGeometry(&mAptTable);
-
-	mTextTableHeader.SetImage("header.png");
-	mTextTableHeader.SetColors(
+	mICAO_TextTableHeader.SetImage("header.png");
+	mICAO_TextTableHeader.SetColors(
 			WED_Color_RGBA(wed_Table_Gridlines),
 				WED_Color_RGBA(wed_Header_Text));
 
-	mHeader = new GUI_Header(true);
+	mICAO_Header = new GUI_Header(true);
 
 	bounds[1] = 0;
 	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
-	mHeader->SetBounds(bounds);
-	mHeader->SetGeometry(&mAptTable);
-	mHeader->SetHeader(&mTextTableHeader);
-	mHeader->SetParent(this);
-	mHeader->Show();
-	mHeader->SetSticky(1,0,1,1);
-	mHeader->SetTable(mTable);
+	mICAO_Header->SetBounds(bounds);
+	mICAO_Header->SetGeometry(&mICAO_AptProvider);
+	mICAO_Header->SetHeader(&mICAO_TextTableHeader);
+	mICAO_Header->SetParent(this);
+	mICAO_Header->Show();
+	mICAO_Header->SetSticky(1,0,1,1);
+	mICAO_Header->SetTable(mICAO_Table);
 
 
-	mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
-	mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
-	mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
-	mAptTable.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
+					mICAO_TextTableHeader.AddListener(mICAO_Header);		// Header listens to text table to know when to refresh on col resize
+					mICAO_TextTableHeader.AddListener(mICAO_Table);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
+					mICAO_TextTable.AddListener(mICAO_Table);				// Table listens to text table to know when content changes in a resizing way
+					mICAO_AptProvider.AddListener(mICAO_Table);			// Table listens to actual property content to know when data itself changes
+
+	mPacker->PackPane(mFilter,gui_Pack_Top);
+	mPacker->PackPane(mICAO_Header,gui_Pack_Top);
 }
 //-------------------------------------------------------------
-*/
+
 int	WED_CanImportFromGateway(IResolver * resolver)
 {
 	return 1;
