@@ -37,8 +37,13 @@ GUI_DropDownList::GUI_DropDownList(
 			GUI_SimpleTableGeometry(2, cols, GUI_GetImageResourceHeight("property_bar.png") / 2),
 			mTextTable(cmdr,0,1),
 			mLabel(in_label),
-			mEnumList(in_enums)
+			mEnumList(in_enums),
+			mSelectionIndex(0)
 {
+	string s = mEnumList.begin()->second.first;
+	mSelectionText = s;
+
+	//mEnumList[mSelectionIndex]->second->first);
 	this->SetGeometry(this);
 	this->SetContent(&mTextTable);
 	mTextTable.SetProvider(this);

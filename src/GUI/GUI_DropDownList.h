@@ -62,6 +62,8 @@ public:
 						int							cell_y,
 						const GUI_CellContent&		the_content,
 						int							apply_all);
+
+	//These are not of our concern
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y) { }
