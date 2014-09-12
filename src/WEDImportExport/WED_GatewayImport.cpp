@@ -52,7 +52,7 @@
 	#include "WED_AptTable.h"
 	//------------------------//
 	//--Version Table---------
-	//#include "WED_VerTable.h"
+	#include "WED_VerTable.h"
 	//------------------------//
 
 //------------------------//
@@ -101,9 +101,8 @@ public:
 							intptr_t    			inMsg,
 							intptr_t				inParam);
 private:
-
-	//Downloads the json file specified by current stage of the program
-	void DownloadJSON(import_dialog_stages stage);
+	friend class WED_AppMain;
+	
 
 	int mPhase;//Our simple stage counter for our simple fsm
 
@@ -124,7 +123,6 @@ private:
 	
 	//--For the whole dialog box
 	WED_FilterBar	 *		mFilter;
-	GUI_ScrollerPane *		mScroller;
 	GUI_Packer *			mPacker;//TODO-rename
 	
 	GUI_Pane *				mButtonHolder;
@@ -134,6 +132,7 @@ private:
 	static int				import_bounds_default[4];
 
 	//--ICAO Table
+	GUI_ScrollerPane *		mICAO_Scroller;
 	GUI_Table *				mICAO_Table;
 	GUI_Header *			mICAO_Header;
 
@@ -146,23 +145,30 @@ private:
 
 		//Extracts the Code from the constructor
 		void MakeICAOTable(int bounds[4]);
+		
+		//Downloads the json file specified by current stage of the program
+		void DownloadICAOJSON();
 		//----------------------//
 	//----------------------//
+
 	//--Versions Table----------
 
-		/*//--Versions Table Provider/Geometry
-		GUI_Table *				mVersions_Table;
-		GUI_Header *			mVersions_Header;
+	GUI_ScrollerPane *		mVersions_Scroller;
+	GUI_Table *				mVersions_Table;
+	GUI_Header *			mVersions_Header;
 
-		GUI_TextTable			mVersions_TextTable;
-		GUI_TextTableHeader		mVersions_TextTableHeader;
+	GUI_TextTable			mVersions_TextTable;
+	GUI_TextTableHeader		mVersions_TextTableHeader;
 	
-		//--ICAO Table Provider/Geometry
+		//--Versions Table Provider/Geometry
 		WED_VerTable			mVersions_VerProvider;
 		VerVector				mVersions_Vers;
 
 		//Extracts the Code from the constructor
-		void MakeVersionsTable(int bounds[4]);*/
+		void MakeVersionsTable(int bounds[4]);
+
+		//Downloads the json file specified by current stage of the program
+		void DownloadVersionsJSON();
 		//---------------------//
 	//--------------------------//
 		
@@ -178,9 +184,11 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mPhase(imp_dialog_choose_ICAO),
 	mCurl(NULL),
 	mICAO_AptProvider(&mICAO_Apts),
-	mICAO_TextTable(this,100,0)
+	mICAO_TextTable(this,100,0),
+	mVersions_VerProvider(&mVersions_Vers),
+	mVersions_TextTable(this,100,0)
 {
-	DownloadJSON(imp_dialog_choose_ICAO);
+	DownloadICAOJSON();
 
 	if(resolver)
 	resolver->AddListener(this);
@@ -237,9 +245,9 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mPacker->PackPane(mButtonHolder,gui_Pack_Bottom);
 	//--------------------------------//
 
-	mPacker->PackPane(mScroller,gui_Pack_Center);
+	mPacker->PackPane(mICAO_Scroller,gui_Pack_Center);
 
-	mScroller->PositionHeaderPane(mICAO_Header);
+	mICAO_Scroller->PositionHeaderPane(mICAO_Header);
 }
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
@@ -258,6 +266,8 @@ void WED_GatewayImportDialog::Next()
 	switch(mPhase)
 	{
 	case imp_dialog_choose_ICAO:
+		//Going to show versions
+		DownloadVersionsJSON();
 		break;
 	case imp_dialog_choose_versions:
 		this->AsyncDestroy();//?
@@ -313,98 +323,15 @@ void WED_GatewayImportDialog::ReceiveMessage(
 	}
 }
 
-void WED_GatewayImportDialog::DownloadJSON(import_dialog_stages stage)
-{
-	string url = WED_URL_GATEWAY_API;
-	
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-
-	if(stage == import_dialog_stages::imp_dialog_choose_ICAO)
-	{
-		//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
-		 url += "airports";
-
-	#if TEST_FROM_SERVER
-		//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-		vector<char> rawJSONBuf = vector<char>(8000000);
-	
-		//Get it from the server
-		curl_http_get_file file = curl_http_get_file(url,&rawJSONBuf,cert);
-	
-	
-		//Lock up everything until the file is finished
-		while(file.is_done() == false);
-
-		//create a string from the vector of chars
-		string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
-	#else
-		std::ifstream is(LOCAL_JSON);     // open file
-
-		string rawJSONString;
-		while (is.good())          // loop while extraction from file is possible
-		{
-			char c = is.get();       // get character from file
-			if (is.good())
-			{
-				rawJSONString += c;
-			}
-		}
-		is.close();
-	#endif
-
-		//Now that we have our rawJSONString we'll be turning it into a JSON object
-		Json::Value root(Json::objectValue);
-	
-		Json::Reader reader;
-		bool success = reader.parse(rawJSONString,root);
-	
-		//Check for errors
-		if(success == false)
-		{
-			DoUserAlert("Airports list is invalid data, ending dialog box");
-			this->AsyncDestroy();
-			return;
-		}
-
-		//Our array of all the airports
-		Json::Value mAirportsGET(Json::arrayValue);
-
-		//Devrived from the root's "airports" value
-		mAirportsGET = root["airports"];
-
-		//loop through the whole array
-		for (int i = 0; i < mAirportsGET.size(); i++)
-		{
-			//Get the current scenery object
-			Json::Value tmp(Json::objectValue);
-			tmp = mAirportsGET.operator[](i);
-
-			AptInfo_t cur_airport;
-			cur_airport.icao = tmp["AirportCode"].asString();
-			cur_airport.name = tmp["AirportName"].asString();
-
-			//Add the current scenery object's airport code
-			mICAO_Apts.push_back(cur_airport);
-
-			//Optionally print it out
-		}
-	}
-}
 
 void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 {
 	mICAO_AptProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
 	
-	mScroller = new GUI_ScrollerPane(0,1);
-	mScroller->SetParent(this);
-	mScroller->Show();
-	mScroller->SetSticky(1,1,1,1);
+	mICAO_Scroller = new GUI_ScrollerPane(0,1);
+	mICAO_Scroller->SetParent(this);
+	mICAO_Scroller->Show();
+	mICAO_Scroller->SetSticky(1,1,1,1);
 
 	mICAO_TextTable.SetProvider(&mICAO_AptProvider);
 	mICAO_TextTable.SetGeometry(&mICAO_AptProvider);
@@ -426,11 +353,11 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 	mICAO_Table = new GUI_Table(true);
 	mICAO_Table->SetGeometry(&mICAO_AptProvider);
 	mICAO_Table->SetContent(&mICAO_TextTable);
-	mICAO_Table->SetParent(mScroller);
+	mICAO_Table->SetParent(mICAO_Scroller);
 	mICAO_Table->SetSticky(1,1,1,1);
 	mICAO_Table->Show();	
-	mScroller->PositionInContentArea(mICAO_Table);
-	mScroller->SetContent(mICAO_Table);
+	mICAO_Scroller->PositionInContentArea(mICAO_Table);
+	mICAO_Scroller->SetContent(mICAO_Table);
 	mICAO_TextTable.SetParentTable(mICAO_Table);
 
 	mICAO_TextTableHeader.SetProvider(&mICAO_AptProvider);
@@ -461,6 +388,266 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 
 	mPacker->PackPane(mFilter,gui_Pack_Top);
 	mPacker->PackPane(mICAO_Header,gui_Pack_Top);
+}
+
+void WED_GatewayImportDialog::DownloadICAOJSON()
+{
+	string url = WED_URL_GATEWAY_API;
+	
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return;
+	}
+
+	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+		url += "airports";
+
+#if TEST_FROM_SERVER
+	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+	vector<char> rawJSONBuf = vector<char>(8000000);
+	
+	//Get it from the server
+	curl_http_get_file file = curl_http_get_file(url,&rawJSONBuf,cert);
+	
+	
+	//Lock up everything until the file is finished
+	while(file.is_done() == false);
+
+	//create a string from the vector of chars
+	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+#else
+	std::ifstream is(LOCAL_JSON);     // open file
+	
+	string rawJSONString;
+	while (is.good())          // loop while extraction from file is possible
+	{
+		char c = is.get();       // get character from file
+		if (is.good())
+		{
+			rawJSONString += c;
+		}
+	}
+	is.close();
+#endif
+
+	//Now that we have our rawJSONString we'll be turning it into a JSON object
+	Json::Value root(Json::objectValue);
+	
+	Json::Reader reader;
+	bool success = reader.parse(rawJSONString,root);
+	
+	//Check for errors
+	if(success == false)
+	{
+		DoUserAlert("Airports list is invalid data, ending dialog box");
+		this->AsyncDestroy();
+		return;
+	}
+
+	//Our array of all the airports
+	mAirportsGET = Json::Value(Json::arrayValue);
+
+	//Devrived from the root's "airports" value
+	mAirportsGET = root["airports"];
+
+	//loop through the whole array
+	for (int i = 0; i < mAirportsGET.size(); i++)
+	{
+		//Get the current scenery object
+		Json::Value tmp(Json::objectValue);
+		tmp = mAirportsGET.operator[](i);
+
+		AptInfo_t cur_airport;
+		cur_airport.icao = tmp["AirportCode"].asString();
+		cur_airport.name = tmp["AirportName"].asString();
+
+		//Add the current scenery object's airport code
+		mICAO_Apts.push_back(cur_airport);
+
+		//Optionally print it out
+	}
+}
+
+//Extracts the Code from the constructor
+void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
+{
+	mVersions_VerProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
+	
+	mVersions_Scroller = new GUI_ScrollerPane(1,1);
+	mVersions_Scroller->SetParent(this);
+	mVersions_Scroller->Hide();
+	mVersions_Scroller->SetSticky(1,1,1,1);
+
+	mVersions_TextTable.SetProvider(&mVersions_VerProvider);
+	mVersions_TextTable.SetGeometry(&mVersions_VerProvider);
+
+	
+	mVersions_TextTable.SetColors(
+				WED_Color_RGBA(wed_Table_Gridlines),
+				WED_Color_RGBA(wed_Table_Select),
+				WED_Color_RGBA(wed_Table_Text),
+				WED_Color_RGBA(wed_Table_SelectText),
+				WED_Color_RGBA(wed_Table_Drag_Insert),
+				WED_Color_RGBA(wed_Table_Drag_Into));
+	mVersions_TextTable.SetTextFieldColors(
+				WED_Color_RGBA(wed_TextField_Text),
+				WED_Color_RGBA(wed_TextField_Hilite),
+				WED_Color_RGBA(wed_TextField_Bkgnd),
+				WED_Color_RGBA(wed_TextField_FocusRing));
+
+	mVersions_Table = new GUI_Table(true);
+	mVersions_Table->SetGeometry(&mVersions_VerProvider);
+	mVersions_Table->SetContent(&mVersions_TextTable);
+	mVersions_Table->SetParent(mVersions_Scroller);
+	mVersions_Table->SetSticky(1,1,1,1);
+	mVersions_Table->Show();	
+	mVersions_Scroller->PositionInContentArea(mVersions_Table);
+	mVersions_Scroller->SetContent(mVersions_Table);
+	mVersions_TextTable.SetParentTable(mVersions_Table);
+
+	mVersions_TextTableHeader.SetProvider(&mVersions_VerProvider);
+	mVersions_TextTableHeader.SetGeometry(&mVersions_VerProvider);
+
+	mVersions_TextTableHeader.SetImage("header.png");
+	mVersions_TextTableHeader.SetColors(
+			WED_Color_RGBA(wed_Table_Gridlines),
+				WED_Color_RGBA(wed_Header_Text));
+
+	mVersions_Header = new GUI_Header(true);
+
+	bounds[1] = 0;
+	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
+	mVersions_Header->SetBounds(bounds);
+	mVersions_Header->SetGeometry(&mVersions_VerProvider);
+	mVersions_Header->SetHeader(&mVersions_TextTableHeader);
+	mVersions_Header->SetParent(this);
+	mVersions_Header->Show();
+	mVersions_Header->SetSticky(1,0,1,1);
+	mVersions_Header->SetTable(mVersions_Table);
+
+
+					mVersions_TextTableHeader.AddListener(mVersions_Header);		// Header listens to text table to know when to refresh on col resize
+					mVersions_TextTableHeader.AddListener(mVersions_Table);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
+					mVersions_TextTable.AddListener(mVersions_Table);				// Table listens to text table to know when content changes in a resizing way
+					mVersions_VerProvider.AddListener(mVersions_Table);			// Table listens to actual property content to know when data itself changes
+
+	mPacker->PackPane(mFilter,gui_Pack_Top);
+	mPacker->PackPane(mVersions_Header,gui_Pack_Top);
+}
+
+//Downloads the json file specified by current stage of the program
+void WED_GatewayImportDialog::DownloadVersionsJSON()
+{
+	//Two steps,
+	//1.Get the airport from the current selection, then get its sceneryid from mAirportsGET
+	//2.pull from the sever with https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX
+	
+	//index of the current selection
+	set<int> out_selection;
+	mICAO_AptProvider.GetSelection(out_selection);
+	
+	//Current airport selected
+	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
+	
+	string ICAOid;
+	ICAOid = current_apt.icao;
+	
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return;
+	}
+	string url = WED_URL_GATEWAY_API;
+	
+	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
+	url += "airport/" + ICAOid;
+
+	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+	vector<char> rawJSONBuf = vector<char>();
+	
+	//Get it from the server
+	curl_http_get_file file = curl_http_get_file(url,&rawJSONBuf,cert);
+	
+	
+	//Lock up everything until the file is finished
+	while(file.is_done() == false);
+
+	//create a string from the vector of chars
+	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+
+	//Now that we have our rawJSONString we'll be turning it into a JSON object
+	Json::Value root(Json::objectValue);
+	
+	Json::Reader reader;
+	bool success = reader.parse(rawJSONString,root);
+	
+	//Check for errors
+	if(success == false)
+	{
+		DoUserAlert("Airports list is invalid data, ending dialog box");
+		this->AsyncDestroy();
+		return;
+	}
+	Json::Value airport = root["airport"];
+	Json::Value sceneryArray = Json::Value(Json::arrayValue);
+	sceneryArray = airport["scenery"];
+
+	Json::Value v = *(sceneryArray.begin());
+	Json::Value v2 = v["sceneryId"];
+	
+	string sceneryId = v2.toStyledString();
+	cout << sceneryId << endl;
+	int stophere = 0;
+	/*
+
+	string sceneryID = current_apt.get("Scenery
+
+#if TEST_FROM_SERVER
+	
+#else
+	std::ifstream is(LOCAL_JSON);     // open file
+
+	string rawJSONString;
+	while (is.good())          // loop while extraction from file is possible
+	{
+		char c = is.get();       // get character from file
+		if (is.good())
+		{
+			rawJSONString += c;
+		}
+	}
+	is.close();
+#endif
+
+	
+
+	//Our array of all the airports
+	Json::Value mAirportsGET(Json::arrayValue);
+
+	//Devrived from the root's "airports" value
+	mAirportsGET = root["airports"];
+
+	//loop through the whole array
+	for (int i = 0; i < mAirportsGET.size(); i++)
+	{
+		//Get the current scenery object
+		Json::Value tmp(Json::objectValue);
+		tmp = mAirportsGET.operator[](i);
+
+		AptInfo_t cur_airport;
+		cur_airport.icao = tmp["AirportCode"].asString();
+		cur_airport.name = tmp["AirportName"].asString();
+
+		//Add the current scenery object's airport code
+		mICAO_Apts.push_back(cur_airport);
+
+		//Optionally print it out
+	}*/
 }
 //-------------------------------------------------------------
 

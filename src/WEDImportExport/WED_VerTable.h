@@ -40,7 +40,7 @@ class	WED_VerTable :	public GUI_TextTableProvider,
 						public GUI_TextTableHeaderProvider,
 						public GUI_Broadcaster 
 {
-	
+public:
 	// Note: you must call set-filter once after the dust settles to get the 
 	// table synced!
 					 WED_VerTable(
