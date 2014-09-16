@@ -547,6 +547,12 @@ void	WED_AptImport(
 
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
+		bool apt_ok = CheckATCRouting(*apt);
+		if(!apt_ok)
+		{
+			LazyPrintf(&log,"Airport %s (%s) had a problem with its taxi routes.\n", apt->name.c_str(), apt->icao.c_str());
+		}
+
 		ConvertForward(*apt);
 
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
@@ -693,23 +699,25 @@ void	WED_AptImport(
 			}
 		}
 		
-		map<int,WED_TaxiRouteNode *>	nodes;
-		for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+		if(apt_ok)
 		{
-			WED_TaxiRouteNode * new_n = WED_TaxiRouteNode::CreateTyped(archive);
-			new_n->SetParent(new_apt,new_apt->CountChildren());
-			new_n->SetName(n->name);
-			new_n->SetLocation(gis_Geo,n->location);
-			nodes[n->id] = new_n;
-			printf("Found node %s\n", n->name.c_str());
-		}
-		for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
-		{
-			WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
-			new_e->AddSource(nodes[e->src], 0);
-			new_e->AddSource(nodes[e->dst], 1);
-			new_e->SetParent(new_apt,new_apt->CountChildren());
-			new_e->Import(*e,LazyPrintf, &log);
+			map<int,WED_TaxiRouteNode *>	nodes;
+			for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+			{
+				WED_TaxiRouteNode * new_n = WED_TaxiRouteNode::CreateTyped(archive);
+				new_n->SetParent(new_apt,new_apt->CountChildren());
+				new_n->SetName(n->name);
+				new_n->SetLocation(gis_Geo,n->location);
+				nodes[n->id] = new_n;
+			}
+			for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
+			{
+				WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
+				new_e->AddSource(nodes[e->src], 0);
+				new_e->AddSource(nodes[e->dst], 1);
+				new_e->SetParent(new_apt,new_apt->CountChildren());
+				new_e->Import(*e,LazyPrintf, &log);
+			}
 		}
 #endif		
 	}
