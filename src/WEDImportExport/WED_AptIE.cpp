@@ -156,20 +156,43 @@ static void CollectAllElementsOfType(WED_Thing * root, vector<T *> & elements)
 	}
 }
 
+// Just like above, but limits to a specific subset of nodes.  WHY not just copy keepers to elements?  
+// The resulting vector is IN HIERARCHY ORDER but only contains keepers.
+
+template<class T>
+static void CollectAllElementsOfTypeInSet(WED_Thing * root, vector<T *> & elements, const set<T *>& keepers)
+{
+	T * r = dynamic_cast<T*>(root);
+	if(r)
+	if(keepers.count(r))
+	{
+		elements.push_back(r);
+	}
+	
+	int nn = root->CountChildren();
+	for(int n = 0; n < nn; ++n)
+	{
+		CollectAllElementsOfTypeInSet<T>(root->GetNthChild(n), elements, keepers);
+	}
+}
+
+
+
 /**
  * "Exports" the list of nodes into the airport network
  */
-static void MakeNodeRouting(vector<WED_TaxiRouteNode *>& nodes, AptNetwork_t& net)
+static void MakeNodeRouting(vector<IGISPoint *>& nodes, AptNetwork_t& net)
 {
-	for(vector<WED_TaxiRouteNode *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
+	for(vector<IGISPoint *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
 	{
 		AptRouteNode_t nd;
-		// Node's ID is its index in file order
+		// Node's ID is its index in file order	
 		nd.id = std::distance(nodes.begin(), n);
-		(*n)->GetName(nd.name);
+		WED_Thing * t = dynamic_cast<WED_Thing *>(*n);
+		if(t)
+			t->GetName(nd.name);
 		
-		IGISPoint * p = dynamic_cast<IGISPoint*>(*n);
-		p->GetLocation(gis_Geo, nd.location);
+		(*n)->GetLocation(gis_Geo, nd.location);
 		net.nodes.push_back(nd);	
 	}
 }
@@ -178,7 +201,7 @@ static void MakeNodeRouting(vector<WED_TaxiRouteNode *>& nodes, AptNetwork_t& ne
  * "Exports" the list of edges into the airport network
  * @param nodes The list of all taxi route nodes in the airport (required to get accurate IDs for the nodes)
  */
-static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, vector<WED_TaxiRouteNode *> * nodes)
+static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, vector<IGISPoint *> * nodes)
 {
 	for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
 	{
@@ -186,10 +209,10 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 		(*e)->Export(ne);
 		
 		// Node's ID is its index in file order
-		vector<WED_TaxiRouteNode *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthSource(0));
+		vector<IGISPoint *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(0));
 		ne.src = std::distance(nodes->begin(), pos_src);
 		
-		vector<WED_TaxiRouteNode *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthSource(1));
+		vector<IGISPoint *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(1));
 		ne.dst = std::distance(nodes->begin(), pos_dst);;
 		
 		net.edges.push_back(ne);
@@ -237,13 +260,23 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apt->Export(apts.back());
 		
 #if AIRPORT_ROUTING
-		vector<WED_TaxiRouteNode *> nodes;
-		CollectAllElementsOfType<WED_TaxiRouteNode>(apt, nodes);
-		MakeNodeRouting(nodes, apts.back().taxi_route);
-		
-		vector<WED_TaxiRoute *> edges;
+		vector<WED_TaxiRoute *> edges;			// These are in
+		vector<IGISPoint *>		nodes;			// hierarchy order for stability!
+		set<IGISPoint *>		wanted_nodes;
+
 		CollectAllElementsOfType<WED_TaxiRoute>(apt, edges);
+
+		for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+		{
+			wanted_nodes.insert((*e)->GetNthPoint(0));
+			wanted_nodes.insert((*e)->GetNthPoint(1));
+		}
+		
+		CollectAllElementsOfTypeInSet<IGISPoint>(apt, nodes, wanted_nodes);
+
+		MakeNodeRouting(nodes, apts.back().taxi_route);
 		MakeEdgeRouting(edges, apts.back().taxi_route, &nodes);
+		
 #endif
 	}
 	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
