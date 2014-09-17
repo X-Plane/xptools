@@ -115,7 +115,7 @@ private:
 	//The JSON values are saved so we don't have to redownload them everytime
 
 	//The large airport json file, cached so when we go back we don't need to redownload
-	Json::Value				mAirportsGET;
+	static Json::Value		mAirportsGET;
 
 	//The smaller scenery json file, obtained after hitting next
 	Json::Value				mSceneryGET;
@@ -177,6 +177,7 @@ private:
 	
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
+Json::Value WED_GatewayImportDialog::mAirportsGET = Json::Value(Json::arrayValue);
 
 //TODO put as member
 	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
@@ -305,13 +306,26 @@ void WED_GatewayImportDialog::Back()
 
 void WED_GatewayImportDialog::TimerFired()
 {
-	if(mCurl->is_done() || !TEST_FROM_SERVER)
+
+	if(
+#if TEST_FROM_SERVER
+		mCurl->is_done()
+#else
+		true
+#endif
+		)
 	{
 		Stop();
 		
 		string good_msg, bad_msg;
 		
-		if(mCurl->is_ok())
+		if(
+#if TEST_FROM_SERVER
+		mCurl->is_done()
+#else
+		true
+#endif
+		)
 		{
 			//create a string from the vector of chars
 			string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
@@ -330,11 +344,8 @@ void WED_GatewayImportDialog::TimerFired()
 				is.close();
 			#endif
 			
-			//Now that we have our rawJSONString we'll be turning it into a JSON object
-			Json::Value root(Json::objectValue);
-	
 			Json::Reader reader;
-			bool success = reader.parse(rawJSONString,root);
+			bool success = reader.parse(rawJSONString,mAirportsGET);
 	
 			//Check for errors
 			if(success == false)
@@ -344,18 +355,15 @@ void WED_GatewayImportDialog::TimerFired()
 				return;
 			}
 
-			//Our array of all the airports
-			mAirportsGET = Json::Value(Json::arrayValue);
-
 			//Devrived from the root's "airports" value
-			mAirportsGET = root["airports"];
+			mAirportsGET = mAirportsGET["airports"];
 
 			//loop through the whole array
 			for (int i = 0; i < mAirportsGET.size(); i++)
 			{
 				//Get the current scenery object
 				Json::Value tmp(Json::objectValue);
-				tmp = mAirportsGET.operator[](i);
+				tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form, yes it's dumb
 
 				AptInfo_t cur_airport;
 				cur_airport.icao = tmp["AirportCode"].asString();
@@ -363,8 +371,6 @@ void WED_GatewayImportDialog::TimerFired()
 
 				//Add the current scenery object's airport code
 				mICAO_Apts.push_back(cur_airport);
-
-				//Optionally print it out
 			}
 
 			mICAO_AptProvider.AptVectorChanged();
@@ -463,23 +469,46 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 
 void WED_GatewayImportDialog::DownloadICAOJSON()
 {
-	string url = WED_URL_GATEWAY_API;
-	
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	if(mAirportsGET.size() == 0)
 	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
+		string url = WED_URL_GATEWAY_API;
+	
+		//Get Certification
+		string cert;
+		if(!GUI_GetTempResourcePath("gateway.crt", cert))
+		{
+			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+			return;
+		}
+
+		//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+		url += "airports";
+
+	#if TEST_FROM_SERVER
+		//Get it from the server
+		mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
+	#endif
 	}
+	else
+	{
+		for (int i = 0; i < mAirportsGET.size(); i++)
+		{
+			//Get the current scenery object
+			Json::Value tmp(Json::objectValue);
+			tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form, yes it's dumb
 
-	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
-	url += "airports";
+			AptInfo_t cur_airport;
+			cur_airport.icao = tmp["AirportCode"].asString();
+			cur_airport.name = tmp["AirportName"].asString();
 
-#if TEST_FROM_SERVER
-	//Get it from the server
-	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
-#endif
+			//Add the current scenery object's airport code
+			mICAO_Apts.push_back(cur_airport);
+
+			//Optionally print it out
+		}
+
+		mICAO_AptProvider.AptVectorChanged();
+	}
 }
 
 //Extracts the Code from the constructor
