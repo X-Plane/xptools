@@ -179,10 +179,13 @@ private:
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 Json::Value WED_GatewayImportDialog::mAirportsGET = Json::Value(Json::arrayValue);
 
-//TODO put as member
-	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-	vector<char> rawJSONBuf = vector<char>(8000000);
-	
+//TODO, put these in better places
+
+//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+vector<char> rawJSONBuf = vector<char>(8000000);
+string url = WED_URL_GATEWAY_API;
+string ICAOid;
+
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered,import_bounds_default,cmdr),
@@ -276,6 +279,7 @@ void WED_GatewayImportDialog::Next()
 	case imp_dialog_choose_ICAO:
 		//Going to show versions
 		DownloadVersionsJSON();
+		Start(1.0);
 		break;
 	case imp_dialog_choose_versions:
 		this->AsyncDestroy();//?
@@ -285,7 +289,6 @@ void WED_GatewayImportDialog::Next()
 		break;
 	}
 	mPhase++;
-	return;
 }
 
 void WED_GatewayImportDialog::Back()
@@ -298,82 +301,167 @@ void WED_GatewayImportDialog::Back()
 	case imp_dialog_choose_versions:
 		break;
 	case imp_dialog_finish:
-
 		break;
 	}
 	mPhase--;
 }
 
+extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
-
+	//despite the crazy ness this is really just
+	//if(mCurl->is_done())
+	//	if(mCurl->is_good())
 	if(
 #if TEST_FROM_SERVER
 		mCurl->is_done()
 #else
 		true
 #endif
-		)
+		|| mAirportsGET.size() > 0)
 	{
 		Stop();
 		
+
 		string good_msg, bad_msg;
 		
 		if(
 #if TEST_FROM_SERVER
-		mCurl->is_done()
+			mCurl->is_ok()
 #else
 		true
 #endif
 		)
 		{
-			//create a string from the vector of chars
-			string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+			if(mPhase == imp_dialog_choose_ICAO)
+			{
+				//create a string from the vector of chars
+				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
 			
-			#if !TEST_FROM_SERVER
-				std::ifstream is(LOCAL_JSON);     // open file
+				#if !TEST_FROM_SERVER
+					std::ifstream is(LOCAL_JSON);     // open file
 	
-				while (is.good())          // loop while extraction from file is possible
-				{
-					char c = is.get();       // get character from file
-					if (is.good())
+					while (is.good())          // loop while extraction from file is possible
 					{
-						rawJSONString += c;
+						char c = is.get();       // get character from file
+						if (is.good())
+						{
+							rawJSONString += c;
+						}
 					}
-				}
-				is.close();
-			#endif
-			
-			Json::Reader reader;
-			bool success = reader.parse(rawJSONString,mAirportsGET);
+					is.close();
+				#endif
+				Json::Value root;
+				Json::Reader reader;
+				bool success = reader.parse(rawJSONString,root);
 	
-			//Check for errors
-			if(success == false)
-			{
-				DoUserAlert("Airports list is invalid data, ending dialog box");
-				this->AsyncDestroy();
-				return;
+				//Check for errors
+				if(success == false)
+				{
+					DoUserAlert("Airports list is invalid data, ending dialog box");
+					this->AsyncDestroy();
+					return;
+				}
+
+				mAirportsGET.swap(root["airports"]);
+
+				//loop through the whole array
+				for (int i = 0; i < mAirportsGET.size(); i++)
+				{
+					//Get the current scenery object
+					Json::Value tmp(Json::objectValue);
+					tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form, yes it's dumb
+
+					AptInfo_t cur_airport;
+					cur_airport.icao = tmp["AirportCode"].asString();
+					cur_airport.name = tmp["AirportName"].asString();
+
+					//Add the current scenery object's airport code
+					mICAO_Apts.push_back(cur_airport);
+				}
+
+				mICAO_AptProvider.AptVectorChanged();
 			}
-
-			//Devrived from the root's "airports" value
-			mAirportsGET = mAirportsGET["airports"];
-
-			//loop through the whole array
-			for (int i = 0; i < mAirportsGET.size(); i++)
+			else if(mPhase == imp_dialog_choose_versions)
 			{
-				//Get the current scenery object
-				Json::Value tmp(Json::objectValue);
-				tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form, yes it's dumb
+				//create a string from the vector of chars
+				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
 
-				AptInfo_t cur_airport;
-				cur_airport.icao = tmp["AirportCode"].asString();
-				cur_airport.name = tmp["AirportName"].asString();
+				//Now that we have our rawJSONString we'll be turning it into a JSON object
+				Json::Value root(Json::objectValue);
+	
+				Json::Reader reader;
+				bool success = reader.parse(rawJSONString,root);
+	
+				//Check for errors
+				if(success == false)
+				{
+					DoUserAlert("Airports list is invalid data, ending dialog box");
+					this->AsyncDestroy();
+					return;
+				}
+				Json::Value airport = root["airport"];
+				Json::Value sceneryArray = Json::Value(Json::arrayValue);
+				sceneryArray = airport["scenery"];
 
-				//Add the current scenery object's airport code
-				mICAO_Apts.push_back(cur_airport);
+				//TODO - Needs to work for n number of scenery packs
+				Json::Value arrValue1 = *(sceneryArray.begin());
+				Json::Value v2 = arrValue1["sceneryId"];
+	
+				string sceneryId = v2.toStyledString();
+				cout << sceneryId << endl;
+	
+				//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX"
+				url.clear();
+				url = WED_URL_GATEWAY_API;
+				url += "scenery/" + sceneryId;
+
+				//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+				rawJSONBuf.clear();
+	
+				//Get Certification
+				string cert;
+				if(!GUI_GetTempResourcePath("gateway.crt", cert))
+				{
+					DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+					return;
+				}
+
+#if DEV
+				//Get it from the server
+				curl_http_get_file file2 = curl_http_get_file(url,&rawJSONBuf,cert);
+
+				//Lock up everything until the file is finished
+				while(file2.is_done() == false);
+#endif
+				//create a string from the vector of chars
+				rawJSONString.clear();
+				rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+
+				//Now that we have our rawJSONString we'll be turning it into a JSON object
+				root.clear();
+				root = Json::Value(Json::objectValue);
+	
+				bool was_success = reader.parse(rawJSONString,root);
+
+				string zipString = root["scenery"]["masterZipBlob"].asString();
+				vector<char> outString = vector<char>(zipString.length());
+
+				
+				char * outP;
+				decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
+				//base64_decode(zipBlob,outString);
+	
+				string filePath = "C:\\Users\\Ted\\Desktop\\" + ICAOid + ".zip";
+				FILE * f = fopen(filePath.c_str(),"wb");
+				for (int i = 0; i < outString.size(); i++)
+				{
+					char c = outString[i];
+					fprintf(f,"%c",c);
+				}
+
+				fclose(f);
 			}
-
-			mICAO_AptProvider.AptVectorChanged();
 		}
 	}
 }
@@ -469,6 +557,7 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 
 void WED_GatewayImportDialog::DownloadICAOJSON()
 {
+	rawJSONBuf.clear();
 	if(mAirportsGET.size() == 0)
 	{
 		string url = WED_URL_GATEWAY_API;
@@ -578,11 +667,11 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mPacker->PackPane(mVersions_Header,gui_Pack_Top);
 }
 
-extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 
 //Downloads the json file specified by current stage of the program
 void WED_GatewayImportDialog::DownloadVersionsJSON()
 {
+	rawJSONBuf.clear();
 	//Two steps,
 	//1.Get the airport from the current selection, then get its sceneryid from mAirportsGET
 	//2.pull from the sever with https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX
@@ -594,7 +683,7 @@ void WED_GatewayImportDialog::DownloadVersionsJSON()
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
 	
-	string ICAOid;
+	
 	ICAOid = current_apt.icao;
 	
 	//Get Certification
@@ -604,94 +693,13 @@ void WED_GatewayImportDialog::DownloadVersionsJSON()
 		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 		return;
 	}
-	string url = WED_URL_GATEWAY_API;
+	
 	
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
 	url += "airport/" + ICAOid;
 
-	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-	vector<char> rawJSONBuf = vector<char>();
-	
 	//Get it from the server
-	curl_http_get_file file = curl_http_get_file(url,&rawJSONBuf,cert);
-
-	//Lock up everything until the file is finished
-	while(file.is_done() == false);
-
-	//create a string from the vector of chars
-	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
-
-	//Now that we have our rawJSONString we'll be turning it into a JSON object
-	Json::Value root(Json::objectValue);
-	
-	Json::Reader reader;
-	bool success = reader.parse(rawJSONString,root);
-	
-	//Check for errors
-	if(success == false)
-	{
-		DoUserAlert("Airports list is invalid data, ending dialog box");
-		this->AsyncDestroy();
-		return;
-	}
-	Json::Value airport = root["airport"];
-	Json::Value sceneryArray = Json::Value(Json::arrayValue);
-	sceneryArray = airport["scenery"];
-
-	//TODO - Needs to work for n number of scenery packs
-	Json::Value arrValue1 = *(sceneryArray.begin());
-	Json::Value v2 = arrValue1["sceneryId"];
-	
-	string sceneryId = v2.toStyledString();
-	cout << sceneryId << endl;
-	
-	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX"
-	url.clear();
-	url = WED_URL_GATEWAY_API;
-	url += "scenery/" + sceneryId;
-
-	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-	rawJSONBuf.clear();
-	
-	//Get it from the server
-	curl_http_get_file file2 = curl_http_get_file(url,&rawJSONBuf,cert);
-
-	//Lock up everything until the file is finished
-	while(file2.is_done() == false);
-
-	//create a string from the vector of chars
-	rawJSONString.clear();
-	rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
-
-	//Now that we have our rawJSONString we'll be turning it into a JSON object
-	root.clear();
-	root = Json::Value(Json::objectValue);
-	
-	bool was_success = reader.parse(rawJSONString,root);
-
-	string zipString = root["scenery"]["masterZipBlob"].asString();
-	vector<char> outString = vector<char>(zipString.length());
-
-	/*string	b64;
-		result->GetContents(b64);
-		vector<char>	abuf;
-		abuf.resize(b64.length());		// Post-B64 decoding is always at least smaller than in b64.
-		char * inp = &*abuf.begin();
-		char *	outP;*/
-		//decode(&*b64.begin(), &*b64.end(), inp, &outP);
-	char * outP;
-	decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
-	//base64_decode(zipBlob,outString);
-	
-	string filePath = "C:\\Users\\Ted\\Desktop\\" + ICAOid + ".zip";
-	FILE * f = fopen(filePath.c_str(),"wb");
-	for (int i = 0; i < outString.size(); i++)
-	{
-		char c = outString[i];
-		fprintf(f,"%c",c);
-	}
-
-	fclose(f);
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);	
 }
 //-------------------------------------------------------------
 
@@ -704,6 +712,4 @@ void WED_DoImportFromGateway(WED_Document * resolver)
 {
 	new WED_GatewayImportDialog(resolver,gApplication);
 	return;
-
-	
 }
