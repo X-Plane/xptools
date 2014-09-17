@@ -42,6 +42,7 @@
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
+#include "base64.h"
 
 //--Table Code------------
 #include "GUI_Table.h"
@@ -59,7 +60,7 @@
 
 //Decides where you want to test getting the JSON info from
 //Recomend using test from local for speed
-#define TEST_FROM_SERVER 0
+#define TEST_FROM_SERVER 1
 #define LOCAL_JSON "C:\\airports.txt"
 #define GUESS_AIRPORTS_SIZE 34151
 
@@ -113,7 +114,7 @@ private:
 
 	//The JSON values are saved so we don't have to redownload them everytime
 
-	//The large airport json file, obtained during construction, TODO - bad idea
+	//The large airport json file, cached so when we go back we don't need to redownload
 	Json::Value				mAirportsGET;
 
 	//The smaller scenery json file, obtained after hitting next
@@ -123,7 +124,7 @@ private:
 	
 	//--For the whole dialog box
 	WED_FilterBar	 *		mFilter;
-	GUI_Packer *			mPacker;//TODO-rename
+	GUI_Packer *			mPacker;
 	
 	GUI_Pane *				mButtonHolder;
 	GUI_Button *			mNextButton;
@@ -177,6 +178,10 @@ private:
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 
+//TODO put as member
+	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+	vector<char> rawJSONBuf = vector<char>(8000000);
+	
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered,import_bounds_default,cmdr),
@@ -188,8 +193,6 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mVersions_VerProvider(&mVersions_Vers),
 	mVersions_TextTable(this,100,0)
 {
-	DownloadICAOJSON();
-
 	if(resolver)
 	resolver->AddListener(this);
 
@@ -214,40 +217,44 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	MakeICAOTable(bounds);
 	
 	//--Button Setup
-	int k_reg[4] = { 0, 0, 1, 3 };
-	int k_hil[4] = { 0, 1, 1, 3 };
+		int k_reg[4] = { 0, 0, 1, 3 };
+		int k_hil[4] = { 0, 1, 1, 3 };
 	
-	mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	mNextButton->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
-	mNextButton->Show();
-	mNextButton->SetSticky(0,1,1,0);
-	mNextButton->SetDescriptor("Next");
-	mNextButton->SetMsg(click_next,0);
+		mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+		mNextButton->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+		mNextButton->Show();
+		mNextButton->SetSticky(0,1,1,0);
+		mNextButton->SetDescriptor("Next");
+		mNextButton->SetMsg(click_next,0);
 
-	mBackButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	mBackButton->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
-	mBackButton->Show();
-	mBackButton->SetSticky(1,1,0,0);
-	mBackButton->SetDescriptor("Cancel");
-	mBackButton->SetMsg(click_back,0);
+		mBackButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+		mBackButton->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+		mBackButton->Show();
+		mBackButton->SetSticky(1,1,0,0);
+		mBackButton->SetDescriptor("Cancel");
+		mBackButton->SetMsg(click_back,0);
 	
-	mButtonHolder = new GUI_Pane;
-	mButtonHolder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
+		mButtonHolder = new GUI_Pane;
+		mButtonHolder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
 
-	mNextButton->SetParent(mButtonHolder);
-	mNextButton->AddListener(this);
-	mBackButton->SetParent(mButtonHolder);
-	mBackButton->AddListener(this);
+		mNextButton->SetParent(mButtonHolder);
+		mNextButton->AddListener(this);
+		mBackButton->SetParent(mButtonHolder);
+		mBackButton->AddListener(this);
 	
-	mButtonHolder->SetParent(mPacker);
-	mButtonHolder->Show();
-	mButtonHolder->SetSticky(1,1,1,0);
-	mPacker->PackPane(mButtonHolder,gui_Pack_Bottom);
+		mButtonHolder->SetParent(mPacker);
+		mButtonHolder->Show();
+		mButtonHolder->SetSticky(1,1,1,0);
+		mPacker->PackPane(mButtonHolder,gui_Pack_Bottom);
 	//--------------------------------//
 
 	mPacker->PackPane(mICAO_Scroller,gui_Pack_Center);
 
 	mICAO_Scroller->PositionHeaderPane(mICAO_Header);
+
+
+	DownloadICAOJSON();
+	Start(1.0);
 }
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
@@ -298,7 +305,71 @@ void WED_GatewayImportDialog::Back()
 
 void WED_GatewayImportDialog::TimerFired()
 {
+	if(mCurl->is_done() || !TEST_FROM_SERVER)
+	{
+		Stop();
+		
+		string good_msg, bad_msg;
+		
+		if(mCurl->is_ok())
+		{
+			//create a string from the vector of chars
+			string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+			
+			#if !TEST_FROM_SERVER
+				std::ifstream is(LOCAL_JSON);     // open file
+	
+				while (is.good())          // loop while extraction from file is possible
+				{
+					char c = is.get();       // get character from file
+					if (is.good())
+					{
+						rawJSONString += c;
+					}
+				}
+				is.close();
+			#endif
+			
+			//Now that we have our rawJSONString we'll be turning it into a JSON object
+			Json::Value root(Json::objectValue);
+	
+			Json::Reader reader;
+			bool success = reader.parse(rawJSONString,root);
+	
+			//Check for errors
+			if(success == false)
+			{
+				DoUserAlert("Airports list is invalid data, ending dialog box");
+				this->AsyncDestroy();
+				return;
+			}
 
+			//Our array of all the airports
+			mAirportsGET = Json::Value(Json::arrayValue);
+
+			//Devrived from the root's "airports" value
+			mAirportsGET = root["airports"];
+
+			//loop through the whole array
+			for (int i = 0; i < mAirportsGET.size(); i++)
+			{
+				//Get the current scenery object
+				Json::Value tmp(Json::objectValue);
+				tmp = mAirportsGET.operator[](i);
+
+				AptInfo_t cur_airport;
+				cur_airport.icao = tmp["AirportCode"].asString();
+				cur_airport.name = tmp["AirportName"].asString();
+
+				//Add the current scenery object's airport code
+				mICAO_Apts.push_back(cur_airport);
+
+				//Optionally print it out
+			}
+
+			mICAO_AptProvider.AptVectorChanged();
+		}
+	}
 }
 
 void WED_GatewayImportDialog::ReceiveMessage(
@@ -403,72 +474,12 @@ void WED_GatewayImportDialog::DownloadICAOJSON()
 	}
 
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
-		url += "airports";
+	url += "airports";
 
 #if TEST_FROM_SERVER
-	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-	vector<char> rawJSONBuf = vector<char>(8000000);
-	
 	//Get it from the server
-	curl_http_get_file file = curl_http_get_file(url,&rawJSONBuf,cert);
-	
-	
-	//Lock up everything until the file is finished
-	while(file.is_done() == false);
-
-	//create a string from the vector of chars
-	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
-#else
-	std::ifstream is(LOCAL_JSON);     // open file
-	
-	string rawJSONString;
-	while (is.good())          // loop while extraction from file is possible
-	{
-		char c = is.get();       // get character from file
-		if (is.good())
-		{
-			rawJSONString += c;
-		}
-	}
-	is.close();
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
 #endif
-
-	//Now that we have our rawJSONString we'll be turning it into a JSON object
-	Json::Value root(Json::objectValue);
-	
-	Json::Reader reader;
-	bool success = reader.parse(rawJSONString,root);
-	
-	//Check for errors
-	if(success == false)
-	{
-		DoUserAlert("Airports list is invalid data, ending dialog box");
-		this->AsyncDestroy();
-		return;
-	}
-
-	//Our array of all the airports
-	mAirportsGET = Json::Value(Json::arrayValue);
-
-	//Devrived from the root's "airports" value
-	mAirportsGET = root["airports"];
-
-	//loop through the whole array
-	for (int i = 0; i < mAirportsGET.size(); i++)
-	{
-		//Get the current scenery object
-		Json::Value tmp(Json::objectValue);
-		tmp = mAirportsGET.operator[](i);
-
-		AptInfo_t cur_airport;
-		cur_airport.icao = tmp["AirportCode"].asString();
-		cur_airport.name = tmp["AirportName"].asString();
-
-		//Add the current scenery object's airport code
-		mICAO_Apts.push_back(cur_airport);
-
-		//Optionally print it out
-	}
 }
 
 //Extracts the Code from the constructor
@@ -538,6 +549,8 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mPacker->PackPane(mVersions_Header,gui_Pack_Top);
 }
 
+extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
+
 //Downloads the json file specified by current stage of the program
 void WED_GatewayImportDialog::DownloadVersionsJSON()
 {
@@ -572,8 +585,7 @@ void WED_GatewayImportDialog::DownloadVersionsJSON()
 	
 	//Get it from the server
 	curl_http_get_file file = curl_http_get_file(url,&rawJSONBuf,cert);
-	
-	
+
 	//Lock up everything until the file is finished
 	while(file.is_done() == false);
 
@@ -597,57 +609,60 @@ void WED_GatewayImportDialog::DownloadVersionsJSON()
 	Json::Value sceneryArray = Json::Value(Json::arrayValue);
 	sceneryArray = airport["scenery"];
 
-	Json::Value v = *(sceneryArray.begin());
-	Json::Value v2 = v["sceneryId"];
+	//TODO - Needs to work for n number of scenery packs
+	Json::Value arrValue1 = *(sceneryArray.begin());
+	Json::Value v2 = arrValue1["sceneryId"];
 	
 	string sceneryId = v2.toStyledString();
 	cout << sceneryId << endl;
-	int stophere = 0;
-	/*
-
-	string sceneryID = current_apt.get("Scenery
-
-#if TEST_FROM_SERVER
 	
-#else
-	std::ifstream is(LOCAL_JSON);     // open file
+	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX"
+	url.clear();
+	url = WED_URL_GATEWAY_API;
+	url += "scenery/" + sceneryId;
 
-	string rawJSONString;
-	while (is.good())          // loop while extraction from file is possible
+	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+	rawJSONBuf.clear();
+	
+	//Get it from the server
+	curl_http_get_file file2 = curl_http_get_file(url,&rawJSONBuf,cert);
+
+	//Lock up everything until the file is finished
+	while(file2.is_done() == false);
+
+	//create a string from the vector of chars
+	rawJSONString.clear();
+	rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+
+	//Now that we have our rawJSONString we'll be turning it into a JSON object
+	root.clear();
+	root = Json::Value(Json::objectValue);
+	
+	bool was_success = reader.parse(rawJSONString,root);
+
+	string zipString = root["scenery"]["masterZipBlob"].asString();
+	vector<char> outString = vector<char>(zipString.length());
+
+	/*string	b64;
+		result->GetContents(b64);
+		vector<char>	abuf;
+		abuf.resize(b64.length());		// Post-B64 decoding is always at least smaller than in b64.
+		char * inp = &*abuf.begin();
+		char *	outP;*/
+		//decode(&*b64.begin(), &*b64.end(), inp, &outP);
+	char * outP;
+	decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
+	//base64_decode(zipBlob,outString);
+	
+	string filePath = "C:\\Users\\Ted\\Desktop\\" + ICAOid + ".zip";
+	FILE * f = fopen(filePath.c_str(),"wb");
+	for (int i = 0; i < outString.size(); i++)
 	{
-		char c = is.get();       // get character from file
-		if (is.good())
-		{
-			rawJSONString += c;
-		}
+		char c = outString[i];
+		fprintf(f,"%c",c);
 	}
-	is.close();
-#endif
 
-	
-
-	//Our array of all the airports
-	Json::Value mAirportsGET(Json::arrayValue);
-
-	//Devrived from the root's "airports" value
-	mAirportsGET = root["airports"];
-
-	//loop through the whole array
-	for (int i = 0; i < mAirportsGET.size(); i++)
-	{
-		//Get the current scenery object
-		Json::Value tmp(Json::objectValue);
-		tmp = mAirportsGET.operator[](i);
-
-		AptInfo_t cur_airport;
-		cur_airport.icao = tmp["AirportCode"].asString();
-		cur_airport.name = tmp["AirportName"].asString();
-
-		//Add the current scenery object's airport code
-		mICAO_Apts.push_back(cur_airport);
-
-		//Optionally print it out
-	}*/
+	fclose(f);
 }
 //-------------------------------------------------------------
 
