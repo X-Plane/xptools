@@ -1407,60 +1407,57 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	outImageInfo->width = jas_image_width(image);
 	outImageInfo->height = jas_image_height(image);
 	outImageInfo->pad = 0;
+
+	//Get the red green and blue of each image
+	int channels[4] = {	
+		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R),
+		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_G),
+		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B), 
+		jas_image_getcmptbytype(image, JAS_IMAGE_CT_OPACITY) };
+
+	if(image->numcmpts_ > 3 && channels[3] == -1)
+		channels[3] = 3;
+
+
 	//If it has 3 channels it will later be filled in the DSF export, else it is filled in with it's values
-	outImageInfo->channels = clamp(image->numcmpts_,3,4);
+	outImageInfo->channels = channels[3] != -1 ? 4 : 3;
 
 
 	//Allocate a place in memory equal to the width*height*channels, aka just right
-	unsigned char * bitmapData = (unsigned char*) malloc(outImageInfo->width*outImageInfo->height*outImageInfo->channels);
+	outImageInfo->data = (unsigned char*) malloc(outImageInfo->width*outImageInfo->height*outImageInfo->channels);
 
-	//Get the red green and blue of each image
-	int r = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R);
-    int g = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_G);
-    int b = jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B);
 		
 	//If the precision is more than 8 create shift values
-    int shift_red = max(jas_image_cmptprec(image, r) - 8, 0);
-    int shift_green = max(jas_image_cmptprec(image, g) - 8, 0);
-    int shift_blue = max(jas_image_cmptprec(image, b) - 8, 0);
 	
-	//Save the original pointer
-	unsigned char * oPos = bitmapData;
-
-	//For the width and height of the image
-	//(This way makes sure the image is of the correct orientation
-	for (int j = outImageInfo->height - 1; j >= 0; j--) 
+	for(int chan_idx = 0; chan_idx < outImageInfo->channels; ++ chan_idx)
 	{
-        for (int i = 0; i < outImageInfo->width; i++) 
-		{
-			//read the pixel and potentially shift it
-			int pxR = jas_image_readcmptsample(image, r, i, j) >> shift_red;
-			int pxG = jas_image_readcmptsample(image, g, i, j) >> shift_green;
-			int pxB = jas_image_readcmptsample(image, b, i, j) >> shift_blue;
-			//Fill the alpha channel with being completely opaque
-			int pxA = 255;
-			//Assaign colors in the order of BGRA!!!!!!!!!
-			//Assaign color
-			*bitmapData = pxB;
-			//Advance the pointer
-			bitmapData++;
-			*bitmapData = pxG;
-			bitmapData++;		
-			*bitmapData = pxR;
-			bitmapData++;
-			//If there is an alpha channel (id #3)
-			if(jas_image_getcmptbytype(image,3) > -1)
-			{
-				//Assaign it to the alpha value
-				pxA = jas_image_readcmptsample(image,3,i,j);
-				*bitmapData = pxA;
-				bitmapData++;
-			}
-        }
-    }
-	//Save the data to our ImageInfo
-	outImageInfo->data=oPos;
+		int chan_id = channels[chan_idx];
+		int chan_shift = max(jas_image_cmptprec(image, chan_id) - 8, 0);
 
+		jas_matrix_t * comp = jas_matrix_create(outImageInfo->height, outImageInfo->width);
+
+		jas_image_readcmpt(image, chan_id, 0, 0, outImageInfo->width, outImageInfo->height, comp);
+	
+		//Save the original pointer
+		unsigned char * p = outImageInfo->data + chan_idx;
+
+		//For the width and height of the image
+		//(This way makes sure the image is of the correct orientation
+		for (int j = outImageInfo->height - 1; j >= 0; j--) 
+		{
+			for (int i = 0; i < outImageInfo->width; i++) 
+			{
+				int px = jas_matrix_get(comp, j, i) >> chan_shift;
+				
+				*p = px;
+				p += outImageInfo->channels;				
+			}
+		}
+		//Save the data to our ImageInfo
+		
+		jas_matrix_destroy(comp);
+		
+	}
 	//Clean up jas_stuff. Since we havea working image 
 	jas_cleanup();
 	
