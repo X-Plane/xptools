@@ -626,9 +626,6 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
-	#@cp patches/0001-libcgal-3.4-various-fixes.patch \
-	#"CGAL-$(VER_CGAL)" && cd "CGAL-$(VER_CGAL)" && \
-	#patch -p1 < ./0001-libcgal-3.4-various-fixes.patch $(BE_QUIET)
 ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
 	export MACOSX_DEPLOYMENT_TARGET=10.6 && CXXFLAGS="-fvisibility=hidden" cmake \
@@ -732,11 +729,11 @@ libshp: ./local$(MULTI_SUFFIX)/lib/.xpt_libshp
 libssl: ./local$(MULTI_SUFFIX)/lib/.xpt_libssl
 ./local$(MULTI_SUFFIX)/lib/.xpt_libssl:
 	@echo "buliding libssl"
-	tar -xzf "./archives/$(ARCHIVE_LIBSSL)"
-	cd "openssl-$(VER_LIBSSL)" && \
+	@tar -xzf "./archives/$(ARCHIVE_LIBSSL)"
+	@cd "openssl-$(VER_LIBSSL)" && \
 	chmod +x Configure && \
-	./Configure $(CONF_LIBSSL)
-	cd "openssl-$(VER_LIBSSL)" && make install
+	./Configure $(CONF_LIBSSL) $(BE_QUIET)
+	@cd "openssl-$(VER_LIBSSL)" && make install $(BE_QUIET)
 	@-rm -rf "openssl-$(VER_LIBSSL)"
 	@touch $@
 
@@ -747,7 +744,7 @@ libcurl: ./local$(MULTI_SUFFIX)/lib/.xpt_libcurl
 ifdef PLAT_MINGW
 	@cd "curl-$(VER_LIBCURL)" && rm src/tool_hugehelp.c
 endif
-	cd "curl-$(VER_LIBCURL)" && \
+	@cd "curl-$(VER_LIBCURL)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBCURL) LDFLAGS=$(LDFLAGS_LIBCURL) \
 	./configure $(CONF_LIBCURL) $(BE_QUIET)
