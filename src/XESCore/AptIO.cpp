@@ -1415,3 +1415,24 @@ void	ConvertForward(AptInfo_t& io_apt)
 	}
 	io_apt.pavements.clear();
 }
+
+bool	CheckATCRouting(const AptInfo_t& io_apt)
+{
+	set<int>	valid_ids;
+	for(vector<AptRouteNode_t>::const_iterator n = io_apt.taxi_route.nodes.begin(); n != io_apt.taxi_route.nodes.end(); ++n)
+	{
+		if(valid_ids.count(n->id))
+			return false;		// dupe ID
+		valid_ids.insert(n->id);
+	}
+	
+	for(vector<AptRouteEdge_t>::const_iterator e = io_apt.taxi_route.edges.begin(); e != io_apt.taxi_route.edges.end(); ++e)
+	{
+		if(valid_ids.count(e->src) == 0)			// Invalid node IDs
+			return false;
+		if(valid_ids.count(e->dst) == 0)
+			return false;
+	}
+	
+	return true;
+}
