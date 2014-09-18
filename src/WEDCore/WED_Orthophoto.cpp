@@ -152,6 +152,8 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 		double c[8];
 		int align = dem_want_Area;
 		
+		int has_geo = 0;
+		
 		ImageInfo	inf;
 
 		switch(GetSupportedType(buf))
@@ -176,6 +178,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 					coords[2].y_ = c[5];
 					coords[1].x_ = c[6];
 					coords[1].y_ = c[7];
+					has_geo = 1;
 				}
 			}
 			break;
@@ -200,6 +203,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 					coords[2].y_ = c[5];
 					coords[1].x_ = c[6];
 					coords[1].y_ = c[7];
+					has_geo = 1;
 				}
 			}
 			break;
@@ -208,24 +212,28 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			return;//No good images or a broken file path
 		}
 
-			double	nn,ss,ee,ww;
-			zoomer->GetPixelBounds(ww,ss,ee,nn);
+			if (!has_geo)
+			{
 
-			Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+				double	nn,ss,ee,ww;
+				zoomer->GetPixelBounds(ww,ss,ee,nn);
 
-			double grow_x = 0.5*(ee-ww)/((double) inf.width);
-			double grow_y = 0.5*(nn-ss)/((double) inf.height);
+				Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
 
-			double pix_w, pix_h;
+				double grow_x = 0.5*(ee-ww)/((double) inf.width);
+				double grow_y = 0.5*(nn-ss)/((double) inf.height);
 
-			if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-			else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+				double pix_w, pix_h;
 
-			coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-			coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-			coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-			coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+				if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+				else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
 
+				coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+				coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+			}
+			
 			DestroyBitmap(&inf);
 
 			WED_Thing * wrl = WED_GetWorld(in_Resolver);
