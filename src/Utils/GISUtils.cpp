@@ -23,11 +23,6 @@
 #include "GISUtils.h"
 #include <geotiffio.h>
 #include <geo_normalize.h>
-#if defined(__MWERKS__)
-#include <libxtiff/xtiffio.h>
-#else
-#include <libxtiff/xtiffio.h>
-#endif
 #define PVALUE LIBPROJ_PVALUE
 #include <projects.h>
 #include <cpl_serv.h>
@@ -36,6 +31,8 @@
 #include "DEMIO.h"
 #include "PlatformUtils.h"
 #include <jasper/jasper.h>
+#include <tiffio.h>
+#include <xtiffio.h>
 
 void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
 {
