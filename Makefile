@@ -58,6 +58,8 @@ VER_LIBCURL := 7.36.0
 # http://http://www.openssl.org/
 # https://www.openssl.org/source/
 VER_LIBSSL := 1.0.1g
+# http://www.dimin.net/software/geojasper/
+VER_GEOJASPER := 1.701.0.GEO
 
 ARCHITECTURE	:= $(shell uname -m)
 PLATFORM	:= $(shell uname)
@@ -327,6 +329,11 @@ CONF_LIBCURL		+= --enable-shared=no
 CONF_LIBCURL		+= --with-ssl=$(DEFAULT_PREFIX) --without-libidn --disable-ldap 
 CONF_LIBCURL		+= --disable-dependency-tracking
 
+# geojasper
+ARCHIVE_LIBJASPER	:= jasper-$(VER_GEOJASPER).tar.gz
+CFLAGS_LIBJASPER	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
+LDFLAGS_LIBJASPER	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH) -Wl,-search_paths_first"
+CONF_LIBJASPER		:= --prefix=$(DEFAULT_PREFIX)
 
 # platform specific tweaks
 ifeq ($(PLATFORM), Darwin)
@@ -347,7 +354,7 @@ libexpat libgmp libmpfr libssl libcurl
 all: ./local$(MULTI_SUFFIX)/.xpt_libs
 ./local$(MULTI_SUFFIX)/.xpt_libs: boost mesa_headers zlib libpng \
 libfreetype libjpeg libtiff libproj libgeotiff libsqlite lib3ds libcgal \
-libsquish libdime libshp libexpat libgmp libmpfr libssl libcurl
+libsquish libdime libshp libexpat libgmp libmpfr libssl libcurl libjasper
 	@touch ./local$(MULTI_SUFFIX)/.xpt_libs
 
 clean:
@@ -747,4 +754,17 @@ endif
 	@$(MAKE) -C "curl-$(VER_LIBCURL)" $(BE_QUIET)
 	@$(MAKE) -C "curl-$(VER_LIBCURL)" install $(BE_QUIET)
 	@-rm -rf curl-$(VER_LIBCURL)
+	@touch $@
+
+libjasper: ./local$(MULTI_SUFFIX)/lib/.xpt_libjasper
+./local$(MULTI_SUFFIX)/lib/.xpt_libjasper: ./local$(MULTI_SUFFIX)/lib/.xpt_libjpeg
+	@echo "building libjasper..."
+	@tar -xzf "./archives/$(ARCHIVE_LIBJASPER)"
+	@cd "jasper-$(VER_GEOJASPER)" && \
+	chmod u+x configure && \
+	CFLAGS=$(CFLAGS_LIBJASPER) LDFLAGS=$(LDFLAGS_LIBJASPER) \
+	./configure $(CONF_LIBJASPER) $(BE_QUIET)
+	@$(MAKE) -C "jasper-$(VER_GEOJASPER)" $(BE_QUIET)
+	@$(MAKE) -C "jasper-$(VER_GEOJASPER)" install $(BE_QUIET)
+	@rm -rf "jasper-$(VER_GEOJASPER)"
 	@touch $@
