@@ -75,6 +75,7 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 		
 		[4.X.0] Liberary Issues
 			[4.1.0] How to get the libraries prepared for MSVC
+				Please note that you MUST make sure that you are using the VS2010 tools or you will most likely have a REALLY BAD TIME
 			
 				expat
 					 files taken from the the latest expat 2.1.0 installer
@@ -201,7 +202,7 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 | XML_STATIC | EXPAT | Stops missing .DLL error, see line 57 in expat_external.h		|
 | WIN32 | MSVC | Used in Windows SDK													|
 | NDEBUG | MSVC | Activates assert.h functionality										|
-| _LIB | MSVC | Appears to be neither used nor detramental								|
+| _LIB | MSVC | Appears to be neither used nor detrimental								|
 | %(PreprocessorDefinitions) | MSVC | Puts in other hidden Preprocessor Definitions		|
 | _CRT_SECURE_NO_WARNINGS | MSVC | Stops unneccassary Error C4496             			|
  --------------------------------------------------------------------------------
@@ -227,7 +228,7 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  *  C/C++
 	* Additional Include Directories:
 	..\..\msvc_libs\
-	..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include
+	..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;
 	..\..\msvc_libs\sqlite-3.6.21;
 	..\..\msvc_libs\tiff-4.0.0beta5\libtiff;
 	..\..\msvc_libs\libgeotiff-1.2.5;
@@ -237,7 +238,8 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 	..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;
 	..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;
 	..\..\msvc_libs\freetype-2.2.1\include;
-	..\..\msvc_libs\libpng_zlib_BFOLDER\zlib; ..\..\msvc_libs\Expat2.1.0\Source\lib;
+	..\..\msvc_libs\libpng_zlib_BFOLDER\zlib; 
+	..\..\msvc_libs\Expat2.1.0\Source\lib;
 	..\..\..\src\XPCompat\;
 	..\..\..\src\Interfaces;
 	..\..\..\src\WEDXPlugin;

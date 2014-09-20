@@ -1362,7 +1362,6 @@ bail:
 #if USE_GEOJPEG2K
 int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo)
 {
-	printf(inFilePath);
 	//Clean out the image info
 	outImageInfo->data = NULL;
 	
@@ -1460,7 +1459,7 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 	}
 	//Clean up jas_stuff. Since we havea working image 
 	jas_cleanup();
-	
+
 	return outImageInfo->channels;
 }
 #endif
