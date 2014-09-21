@@ -61,7 +61,7 @@ struct	ImageInfo {
 	short			channels;
 };
 
-/* STANDARDS FOR CreateNewBitmapFromX: Returns -1 for error, 3 or 4 (depending on the channel)*/
+/* STANDARDS FOR CreateNewBitmapFromX: Returns -1 for error, 0 for all good*/
 
 /* This routine creates a new bitmap and fills in an uninitialized imageInfo structure.
  * The contents of the bitmap are undetermined and must be 'cleared' by you. */
@@ -91,14 +91,13 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 #if USE_TIF
 
 /* Create an image from a TIF file  requires libTIFF. */
-//returns -1 if there was an error, 3 or 4 if good (related to # channels)
 int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #endif
 
 #if USE_GEOJPEG2K
 //Creates a bit map from a GeoJPEG2K, requires GeoJASPER
-//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 3 and 4 are good, relates to #channels
+//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 0 means good, relates to #channels
 int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo);
 
 #endif

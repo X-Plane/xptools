@@ -258,7 +258,7 @@ int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageIn
 		goto bail;
 
 	fclose(fi);
-	return outImageInfo->channels;
+	return 0;
 
 bail:
 	err = errno;
@@ -353,7 +353,7 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 	outImageInfo->data = (unsigned char *) malloc(inHeight * ((inWidth * inChannels) + outImageInfo->pad));
 	if (outImageInfo->data == NULL)
 		return ENOMEM;
-	return outImageInfo->channels;
+	return 0;
 }
 int GetSupportedType(const char * path)
 {
@@ -985,7 +985,7 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 
 		jpeg_destroy_decompress(&cinfo);
 		fclose(fi);
-		return outImageInfo->channels;
+		return 0;
 	} catch (...) {
 		// If we ever get an exception, it's because we got a fatal JPEG error.  Our
 		// error handler deallocates the jpeg struct, so all we have to do is close the
@@ -1055,7 +1055,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 		jpeg_finish_decompress(&cinfo);
 
 		jpeg_destroy_decompress(&cinfo);
-		return outImageInfo->channels;
+		return 0;
 	} catch (...) {
 		// If we get an exceptoin, cinfo is already cleaned up; just bail.
 		return 1;
@@ -1202,7 +1202,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 
 	png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);
 
-	return outImageInfo->channels;
+	return 0;
 bail:
 
 	if (pngPtr && infoPtr)		png_destroy_read_struct(&pngPtr,(png_infopp)&infoPtr,(png_infopp)NULL);
@@ -1322,7 +1322,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 			outImageInfo->data = (unsigned char *) malloc(npixels * 4);
 			outImageInfo->width = w;
 			outImageInfo->height = h;
-			outImageInfo->channels = cc;
+			outImageInfo->channels = 4;
 			outImageInfo->pad = 0;
 			int	count = outImageInfo->width * outImageInfo->height;
 			unsigned char * d = outImageInfo->data;
@@ -1345,7 +1345,7 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 				s += 4;
 				d += 4;
 			}
-			result = cc;
+			result = 0;
 	    }
 	    _TIFFfree(raster);
 	}
@@ -1409,9 +1409,9 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 
 	//Get the red green and blue of each image
 	int channels[4] = {	
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R),
+		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B),
 		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_G),
-		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_B), 
+		jas_image_getcmptbytype(image, JAS_IMAGE_CT_RGB_R), 
 		jas_image_getcmptbytype(image, JAS_IMAGE_CT_OPACITY) };
 
 	if(image->numcmpts_ > 3 && channels[3] == -1)
@@ -1452,15 +1452,13 @@ int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInf
 				p += outImageInfo->channels;				
 			}
 		}
-		//Save the data to our ImageInfo
-		
 		jas_matrix_destroy(comp);
 		
 	}
 	//Clean up jas_stuff. Since we havea working image 
 	jas_cleanup();
 
-	return outImageInfo->channels;
+	return 0;
 }
 #endif
 

@@ -1307,7 +1307,7 @@ static int	DSF_ExportTileRecursive(
 			ImageInfo smaller;
 			int inWidth = 1;
 			int inHeight = 1;	
-			int numChannel = 0;
+			int numChannel = -1;//Guilty until proven innocent
 			int DXTMethod = 0;
 
 			switch(GetSupportedType(resrcEnd.c_str()))
@@ -1335,8 +1335,13 @@ static int	DSF_ExportTileRecursive(
 				default:
 					return NULL;//No good images or a broken file path, danger!
 			}
+			//
+			if(numChannel != 0)
+			{
+				return NULL;
+			}
 			//If only RGB
-			if(numChannel == 3)
+			if(imgInfo.channels == 3)
 			{
 				ConvertBitmapToAlpha(&imgInfo,false);
 				DXTMethod = 1;

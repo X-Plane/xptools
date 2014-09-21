@@ -190,7 +190,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 				break;
 			#if USE_GEOJPEG2K
 			case WED_JP2K:
-				if((CreateBitmapFromJP2K(buf,&inf)) >= 3)	
+				if(CreateBitmapFromJP2K(buf,&inf) == 0)	
 				{
 					if(FetchTIFFCornersWithJP2K(buf,c,align))
 					{
@@ -214,7 +214,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 				CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB);
 				break;
 			case WED_TIF:
-				if ((CreateBitmapFromTIF(buf,&inf)) >= 3)
+				if (CreateBitmapFromTIF(buf,&inf) == 0)
 				{
 					if (FetchTIFFCorners(buf, c, align))
 					{
