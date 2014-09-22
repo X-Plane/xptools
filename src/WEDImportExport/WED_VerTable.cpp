@@ -33,7 +33,7 @@ WED_VerTable::WED_VerTable(
 	GUI_SimpleTableGeometry(2,kDefCols,20),	
 	mVers(apts),
 	mSortColumn(1),
-	mInvertSort(1)
+	mInvertSort(true)//TODO - Should be true?
 {
 }	
 
@@ -69,7 +69,7 @@ void	WED_VerTable::SelectHeaderCell(
 	else
 	{
 		mSortColumn = cell_x;
-		mInvertSort = 1;
+		mInvertSort = true;//TODO- should be true?
 	}
 	resort();
 }
@@ -81,12 +81,14 @@ void	WED_VerTable::GetHeaderContent(
 	the_content.is_selected = (cell_x == mSortColumn);
 	the_content.can_resize = 1;
 	the_content.can_select = 1;
+
+	//For all the cells
 	switch(cell_x) {
 	case 0:
-		the_content.title = "ICAO";
+		the_content.title = "User Name";
 		break;
 	case 1:
-		the_content.title = "Name";
+		the_content.title = "Date Accepted";
 		break;
 	}		
 }
@@ -113,19 +115,19 @@ void	WED_VerTable::GetCellContent(
 	the_content.can_select = 1;
 	the_content.can_drag = 0;
 
-	int apt_id = mSorted[cell_y];
+	int ver_id = mSorted[cell_y];
 
 	the_content.is_disclosed = 0;
-	the_content.is_selected = mSelected.count(apt_id);
+	the_content.is_selected = mSelected.count(ver_id);
 	the_content.indent_level = 0;
 
 
 	switch(cell_x) {
 	case 0:		
-		//the_content.text_val = mVers->at(apt_id).icao; TODO
+		the_content.text_val = mVers->at(ver_id).userName;
 		break;
 	case 1:		
-		//the_content.text_val = mVers->at(apt_id).name; TODO
+		the_content.text_val = mVers->at(ver_id).dateAccepted;
 		break;
 	}
 	the_content.string_is_resource = 0;
@@ -221,25 +223,20 @@ int		WED_VerTable::DoubleClickCell(
 {
 	return 0;
 }
-	
 
-
-
-
-/*void toupper(string& io_string)
-{
-	for(int i = 0; i < io_string.size(); ++i)
-		io_string[i] = toupper(io_string[i]);
-}*/
-
-struct sort_by_apt {
-	sort_by_apt(const VerVector * apts, int sort_column, int invert_sort) : apts_(apts), sort_column_(sort_column), invert_sort_(invert_sort) { }
+struct sort_by_ver {
+	sort_by_ver(const VerVector * vers, int sort_column, int invert_sort) : vers_(vers), sort_column_(sort_column), invert_sort_(invert_sort) { }
 
 	bool operator()(int x, int y) const {
-		string xs;//(sort_column_ ? apts_->at(x).name : apts_->at(x).icao); TODO
-		string ys;//(sort_column_ ? apts_->at(y).name : apts_->at(y).icao); TODO
-		//toupper(xs);
-		//toupper(ys);
+		string xs(sort_column_ ? vers_->at(x).userName : vers_->at(x).dateAccepted);
+		string ys(sort_column_ ? vers_->at(y).userName : vers_->at(y).dateAccepted);
+
+		for(int i = 0; i < xs.size(); ++i)
+			xs[i] = toupper(xs[i]);
+
+		for(int i = 0; i < ys.size(); ++i)
+			ys[i] = toupper(ys[i]);
+	
 		if(invert_sort_)
 			return ys < xs;
 		else
@@ -248,7 +245,7 @@ struct sort_by_apt {
 
 	int sort_column_;
 	int invert_sort_;
-	const VerVector * apts_;
+	const VerVector * vers_;
 };
 
 
@@ -260,14 +257,11 @@ void		WED_VerTable::resort(void)
 	mSorted.clear();
 	for(int i = 0; i < mVers->size(); ++i)
 	{
-		if (filters.empty() //||
-			//filter_match(mVers->at(i).icao, filters.begin(),filters.end()) TODO
-			//filter_match(mVers->at(i).name, filters.begin(),filters.end()) TODO
-				)
+		if (filters.empty() )//|| //(filter_match(mVers->at(i).userName, filters.begin(),filters.end()),filter_match(mVers->at(i).dateAccepted, filters.begin(),filters.end())))
 		{
 			mSorted.push_back(i);
 		}
 	}
-	sort(mSorted.begin(),mSorted.end(), sort_by_apt(mVers, mSortColumn,mInvertSort));
+	sort(mSorted.begin(),mSorted.end(), sort_by_ver(mVers, mSortColumn,mInvertSort));
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
 }

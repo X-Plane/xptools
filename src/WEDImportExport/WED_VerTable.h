@@ -30,7 +30,24 @@
 
 struct VerInfo_t
 {
+	int sceneryId;
+	int parentId;
+	string icao;
+	int userId;
+	string userName;
+	//Dates will appear as ISO8601: https://en.wikipedia.org/wiki/ISO_8601
+	//For example 2014-07-31T14:34:47.000Z
+	string dateUploaded;
+	string dateAccepted;
+	string dateApproved;
+	string dateDeclined;
 
+	//2 for 2D; 3 for 3D
+	string type;
+	//vector<int> features;?
+	string artistComments;
+	string moderatorComments;
+	vector<char> masterBlobzip;
 };
 
 typedef vector<VerInfo_t> VerVector;

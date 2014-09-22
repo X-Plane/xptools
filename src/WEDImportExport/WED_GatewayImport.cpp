@@ -42,7 +42,6 @@
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
-#include "base64.h"
 
 //--Table Code------------
 #include "GUI_Table.h"
@@ -72,6 +71,7 @@ enum import_dialog_stages
 {
 imp_dialog_choose_ICAO,
 imp_dialog_choose_versions,
+imp_dialog_download_versions,
 imp_dialog_finish
 };
 
@@ -102,8 +102,9 @@ public:
 							intptr_t    			inMsg,
 							intptr_t				inParam);
 private:
+#if DEV
 	friend class WED_AppMain;
-	
+#endif
 
 	int mPhase;//Our simple stage counter for our simple fsm
 
@@ -219,7 +220,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 
 	
 	MakeICAOTable(bounds);
-	
+	MakeVersionsTable(bounds);
 	//--Button Setup
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
@@ -253,7 +254,6 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	//--------------------------------//
 
 	mPacker->PackPane(mICAO_Scroller,gui_Pack_Center);
-
 	mICAO_Scroller->PositionHeaderPane(mICAO_Header);
 
 
@@ -279,6 +279,10 @@ void WED_GatewayImportDialog::Next()
 	case imp_dialog_choose_ICAO:
 		//Going to show versions
 		DownloadVersionsJSON();
+		mICAO_Scroller->Hide();
+		mICAO_Header->Hide();
+		mVersions_Scroller->Show();
+		mVersions_Header->Show();
 		Start(1.0);
 		break;
 	case imp_dialog_choose_versions:
@@ -299,6 +303,10 @@ void WED_GatewayImportDialog::Back()
 		this->AsyncDestroy();
 		break;
 	case imp_dialog_choose_versions:
+		mICAO_Scroller->Show();
+		mICAO_Header->Show();
+		mVersions_Scroller->Hide();
+		mVersions_Header->Hide();
 		break;
 	case imp_dialog_finish:
 		break;
@@ -318,7 +326,7 @@ void WED_GatewayImportDialog::TimerFired()
 #else
 		true
 #endif
-		|| mAirportsGET.size() > 0)
+		|| (mAirportsGET.size() > 0 && mPhase == imp_dialog_choose_ICAO))
 	{
 		Stop();
 		
@@ -403,9 +411,36 @@ void WED_GatewayImportDialog::TimerFired()
 				Json::Value airport = root["airport"];
 				Json::Value sceneryArray = Json::Value(Json::arrayValue);
 				sceneryArray = airport["scenery"];
+				mSceneryGET = sceneryArray;
 
-				//TODO - Needs to work for n number of scenery packs
-				Json::Value arrValue1 = *(sceneryArray.begin());
+				//Build up the table
+				for (Json::ValueIterator itr = mSceneryGET.begin(); itr != mSceneryGET.end(); itr++)
+				{
+					//TODO - actually access the scenery pack, you are currently accessing the array of scenery packs
+					Json::Value curScenery = *itr;
+					VerInfo_t tmp;
+					
+					tmp.sceneryId = curScenery.operator[]("sceneryId").asInt();
+					tmp.parentId = curScenery.operator[]("parentId").asInt();
+					tmp.userId = curScenery.operator[]("userId").asInt();
+					tmp.userName = curScenery.operator[]("userName").asString();
+					//Dates will appear as ISO8601: https://en.wikipedia.org/wiki/ISO_8601
+					//For example 2014-07-31T14:34:47.000Z
+					tmp.dateUploaded = curScenery.operator[]("dateUpload").asString();
+					tmp.dateAccepted = curScenery.operator[]("dateAccepted").asString();
+					tmp.dateApproved = curScenery.operator[]("dateApproved").asString();
+					//2 for 2D =  3 for 3D
+					tmp.type = curScenery.operator[]("type").asString();
+					//TODO-tmp.features = curScenery.operator[]("features").asString();
+					tmp.artistComments = curScenery.operator[]("artistComments").asString();
+					tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString();
+					
+					mVersions_Vers.push_back(tmp);
+				}
+				mVersions_VerProvider.VerVectorChanged();
+				return;
+
+				/*Json::Value arrValue1 = *(sceneryArray.begin());
 				Json::Value v2 = arrValue1["sceneryId"];
 	
 				string sceneryId = v2.toStyledString();
@@ -414,11 +449,13 @@ void WED_GatewayImportDialog::TimerFired()
 				//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX"
 				url.clear();
 				url = WED_URL_GATEWAY_API;
-				url += "scenery/" + sceneryId;
-
+				url += "scenery/" + sceneryId;*/
+			}
+			else if(mPhase == import_dialog_stages::imp_dialog_download_versions)
+			{
 				//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
 				rawJSONBuf.clear();
-	
+
 				//Get Certification
 				string cert;
 				if(!GUI_GetTempResourcePath("gateway.crt", cert))
@@ -426,7 +463,6 @@ void WED_GatewayImportDialog::TimerFired()
 					DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 					return;
 				}
-
 #if DEV
 				//Get it from the server
 				curl_http_get_file file2 = curl_http_get_file(url,&rawJSONBuf,cert);
@@ -435,13 +471,13 @@ void WED_GatewayImportDialog::TimerFired()
 				while(file2.is_done() == false);
 #endif
 				//create a string from the vector of chars
-				rawJSONString.clear();
-				rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+				
+				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
 
 				//Now that we have our rawJSONString we'll be turning it into a JSON object
-				root.clear();
-				root = Json::Value(Json::objectValue);
-	
+				
+				Json::Value root = Json::Value(Json::objectValue);
+				Json::Reader reader;
 				bool was_success = reader.parse(rawJSONString,root);
 
 				string zipString = root["scenery"]["masterZipBlob"].asString();
@@ -450,8 +486,7 @@ void WED_GatewayImportDialog::TimerFired()
 				
 				char * outP;
 				decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
-				//base64_decode(zipBlob,outString);
-	
+
 				string filePath = "C:\\Users\\Ted\\Desktop\\" + ICAOid + ".zip";
 				FILE * f = fopen(filePath.c_str(),"wb");
 				for (int i = 0; i < outString.size(); i++)
@@ -607,7 +642,11 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	
 	mVersions_Scroller = new GUI_ScrollerPane(1,1);
 	mVersions_Scroller->SetParent(this);
+	
+	//--IMPORTANT! This will be set to Show when the user clicks next!--
 	mVersions_Scroller->Hide();
+	//------------------------------------------------------------------//
+
 	mVersions_Scroller->SetSticky(1,1,1,1);
 
 	mVersions_TextTable.SetProvider(&mVersions_VerProvider);
@@ -653,7 +692,11 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mVersions_Header->SetGeometry(&mVersions_VerProvider);
 	mVersions_Header->SetHeader(&mVersions_TextTableHeader);
 	mVersions_Header->SetParent(this);
-	mVersions_Header->Show();
+	
+	//--IMPORTANT, gets shown with back and next---
+	mVersions_Header->Hide();
+	//---------------------------------------------//
+
 	mVersions_Header->SetSticky(1,0,1,1);
 	mVersions_Header->SetTable(mVersions_Table);
 
@@ -663,8 +706,9 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 					mVersions_TextTable.AddListener(mVersions_Table);				// Table listens to text table to know when content changes in a resizing way
 					mVersions_VerProvider.AddListener(mVersions_Table);			// Table listens to actual property content to know when data itself changes
 
-	mPacker->PackPane(mFilter,gui_Pack_Top);
 	mPacker->PackPane(mVersions_Header,gui_Pack_Top);
+	mPacker->PackPane(mVersions_Scroller,gui_Pack_Center);
+	mVersions_Scroller->PositionHeaderPane(mVersions_Header);
 }
 
 
@@ -694,7 +738,8 @@ void WED_GatewayImportDialog::DownloadVersionsJSON()
 		return;
 	}
 	
-	
+	url.clear();
+	url += WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
 	url += "airport/" + ICAOid;
 
