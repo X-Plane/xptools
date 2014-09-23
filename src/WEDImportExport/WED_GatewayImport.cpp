@@ -36,7 +36,7 @@
 
 #include "GUI_Application.h"
 #include "GUI_Window.h"
-
+#include "GUI_ChangeView.h"
 #include "GUI_Packer.h"
 #include "GUI_Timer.h"
 #include "WED_FilterBar.h"
@@ -61,18 +61,17 @@
 //Recomend using test from local for speed
 #define TEST_FROM_SERVER 1
 #define LOCAL_JSON "C:\\airports.txt"
-#define GUESS_AIRPORTS_SIZE 34151
 
 #if !TEST_FROM_SERVER
 #include <fstream>
 #endif
 
-enum import_dialog_stages
+enum imp_dialog_stages
 {
-imp_dialog_choose_ICAO,
-imp_dialog_choose_versions,
-imp_dialog_download_versions,
-imp_dialog_finish
+imp_dialog_choose_ICAO,//if !GET airports list, GET. Let user pick ICAO from ICAO table
+imp_dialog_choose_versions,//GET airport:scenery pack array. Let user pick scenery pack(s) to download
+imp_dialog_download_versions,//Download scenery packs, save the contents in the right place, import to WED
+imp_dialog_finish//Clean up any processes left
 };
 
 enum imp_dialog_msg
@@ -126,7 +125,7 @@ private:
 	//--For the whole dialog box
 	WED_FilterBar	 *		mFilter;
 	GUI_Packer *			mPacker;
-	
+
 	GUI_Pane *				mButtonHolder;
 	GUI_Button *			mNextButton;
 	GUI_Button *			mBackButton;
@@ -134,6 +133,7 @@ private:
 	static int				import_bounds_default[4];
 
 	//--ICAO Table
+	GUI_Packer *			mICAO_Packer;
 	GUI_ScrollerPane *		mICAO_Scroller;
 	GUI_Table *				mICAO_Table;
 	GUI_Header *			mICAO_Header;
@@ -154,7 +154,7 @@ private:
 	//----------------------//
 
 	//--Versions Table----------
-
+	GUI_Packer *			mVersions_Packer;
 	GUI_ScrollerPane *		mVersions_Scroller;
 	GUI_Table *				mVersions_Table;
 	GUI_Header *			mVersions_Header;
@@ -211,16 +211,17 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mPacker->SetBounds(bounds);
 	mPacker->SetBkgkndImage ("gradient.png");
 
+	
+
 	//Filter
 	mFilter = new WED_FilterBar(this,filter_changed,0,"Filter:","",NULL,false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(mPacker);
 	mFilter->AddListener(this);
+	mPacker->PackPane(mFilter,gui_Pack_Top);
 
 	
-	MakeICAOTable(bounds);
-	MakeVersionsTable(bounds);
 	//--Button Setup
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
@@ -253,10 +254,30 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 		mPacker->PackPane(mButtonHolder,gui_Pack_Bottom);
 	//--------------------------------//
 
-	mPacker->PackPane(mICAO_Scroller,gui_Pack_Center);
-	mICAO_Scroller->PositionHeaderPane(mICAO_Header);
+		GUI_Pane * tableHolder = new GUI_Pane();
+		tableHolder->SetBounds(0,0,0,0);//Because we are packing in the center these will be completely overriden
+		tableHolder->SetParent(mPacker);
+		tableHolder->Show();
+		tableHolder->SetSticky(1,1,1,0);
+		mPacker->PackPane(tableHolder,gui_Pack_Center);
+		
+		mICAO_Packer = new GUI_Packer;
+		mICAO_Packer->SetParent(tableHolder);
+		mICAO_Packer->SetSticky(1,1,1,1);
+		mICAO_Packer->Show();
+		tableHolder->GetBounds(bounds);
+		mICAO_Packer->SetBounds(bounds);
+		mICAO_Packer->SetBkgkndImage ("gradient.png");
 
-
+		mVersions_Packer = new GUI_Packer;
+		mVersions_Packer->SetParent(tableHolder);
+		mVersions_Packer->SetSticky(1,1,1,1);
+		mVersions_Packer->Hide();
+		tableHolder->GetBounds(bounds);
+		mVersions_Packer->SetBounds(bounds);
+		mVersions_Packer->SetBkgkndImage ("gradient.png");
+		MakeICAOTable(bounds);
+		MakeVersionsTable(bounds);
 	DownloadICAOJSON();
 	Start(1.0);
 }
@@ -279,10 +300,13 @@ void WED_GatewayImportDialog::Next()
 	case imp_dialog_choose_ICAO:
 		//Going to show versions
 		DownloadVersionsJSON();
+		mICAO_Packer->Hide();
+		mVersions_Packer->Show();
+		/*
 		mICAO_Scroller->Hide();
 		mICAO_Header->Hide();
 		mVersions_Scroller->Show();
-		mVersions_Header->Show();
+		mVersions_Header->Show();*/
 		Start(1.0);
 		break;
 	case imp_dialog_choose_versions:
@@ -303,10 +327,13 @@ void WED_GatewayImportDialog::Back()
 		this->AsyncDestroy();
 		break;
 	case imp_dialog_choose_versions:
+		mICAO_Packer->Show();
+		mVersions_Packer->Hide();
+		/*
 		mICAO_Scroller->Show();
 		mICAO_Header->Show();
 		mVersions_Scroller->Hide();
-		mVersions_Header->Hide();
+		mVersions_Header->Hide();*/
 		break;
 	case imp_dialog_finish:
 		break;
@@ -439,19 +466,8 @@ void WED_GatewayImportDialog::TimerFired()
 				}
 				mVersions_VerProvider.VerVectorChanged();
 				return;
-
-				/*Json::Value arrValue1 = *(sceneryArray.begin());
-				Json::Value v2 = arrValue1["sceneryId"];
-	
-				string sceneryId = v2.toStyledString();
-				cout << sceneryId << endl;
-	
-				//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX"
-				url.clear();
-				url = WED_URL_GATEWAY_API;
-				url += "scenery/" + sceneryId;*/
 			}
-			else if(mPhase == import_dialog_stages::imp_dialog_download_versions)
+			else if(mPhase == imp_dialog_stages::imp_dialog_download_versions)
 			{
 				//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
 				rawJSONBuf.clear();
@@ -501,6 +517,17 @@ void WED_GatewayImportDialog::TimerFired()
 	}
 }
 
+/*Json::Value arrValue1 = *(sceneryArray.begin());
+				Json::Value v2 = arrValue1["sceneryId"];
+	
+				string sceneryId = v2.toStyledString();
+				cout << sceneryId << endl;
+	
+				//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX"
+				url.clear();
+				url = WED_URL_GATEWAY_API;
+				url += "scenery/" + sceneryId;*/
+
 void WED_GatewayImportDialog::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t    			inMsg,
@@ -529,7 +556,7 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 	mICAO_AptProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
 	
 	mICAO_Scroller = new GUI_ScrollerPane(0,1);
-	mICAO_Scroller->SetParent(this);
+	mICAO_Scroller->SetParent(mICAO_Packer);
 	mICAO_Scroller->Show();
 	mICAO_Scroller->SetSticky(1,1,1,1);
 
@@ -575,7 +602,7 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 	mICAO_Header->SetBounds(bounds);
 	mICAO_Header->SetGeometry(&mICAO_AptProvider);
 	mICAO_Header->SetHeader(&mICAO_TextTableHeader);
-	mICAO_Header->SetParent(this);
+	mICAO_Header->SetParent(mICAO_Packer);
 	mICAO_Header->Show();
 	mICAO_Header->SetSticky(1,0,1,1);
 	mICAO_Header->SetTable(mICAO_Table);
@@ -586,8 +613,11 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 					mICAO_TextTable.AddListener(mICAO_Table);				// Table listens to text table to know when content changes in a resizing way
 					mICAO_AptProvider.AddListener(mICAO_Table);			// Table listens to actual property content to know when data itself changes
 
-	mPacker->PackPane(mFilter,gui_Pack_Top);
-	mPacker->PackPane(mICAO_Header,gui_Pack_Top);
+	//mICAO_Packer->PackPane(mFilter,gui_Pack_Top);
+	mICAO_Packer->PackPane(mICAO_Header,gui_Pack_Top);
+
+	mICAO_Packer->PackPane(mICAO_Scroller,gui_Pack_Center);
+	mICAO_Scroller->PositionHeaderPane(mICAO_Header);
 }
 
 void WED_GatewayImportDialog::DownloadICAOJSON()
@@ -638,15 +668,13 @@ void WED_GatewayImportDialog::DownloadICAOJSON()
 //Extracts the Code from the constructor
 void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 {
-	mVersions_VerProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
+	mVersions_VerProvider.SetFilter(mFilter->GetText());//This requires mVers to be full?
 	
 	mVersions_Scroller = new GUI_ScrollerPane(1,1);
-	mVersions_Scroller->SetParent(this);
+	mVersions_Scroller->SetParent(mVersions_Packer);
 	
-	//--IMPORTANT! This will be set to Show when the user clicks next!--
-	mVersions_Scroller->Hide();
-	//------------------------------------------------------------------//
-
+	mVersions_Scroller->Show();
+	
 	mVersions_Scroller->SetSticky(1,1,1,1);
 
 	mVersions_TextTable.SetProvider(&mVersions_VerProvider);
@@ -691,10 +719,10 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mVersions_Header->SetBounds(bounds);
 	mVersions_Header->SetGeometry(&mVersions_VerProvider);
 	mVersions_Header->SetHeader(&mVersions_TextTableHeader);
-	mVersions_Header->SetParent(this);
+	mVersions_Header->SetParent(mVersions_Packer);
 	
 	//--IMPORTANT, gets shown with back and next---
-	mVersions_Header->Hide();
+	mVersions_Header->Show();
 	//---------------------------------------------//
 
 	mVersions_Header->SetSticky(1,0,1,1);
@@ -718,8 +746,7 @@ void WED_GatewayImportDialog::DownloadVersionsJSON()
 	rawJSONBuf.clear();
 	//Two steps,
 	//1.Get the airport from the current selection, then get its sceneryid from mAirportsGET
-	//2.pull from the sever with https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX
-	
+
 	//index of the current selection
 	set<int> out_selection;
 	mICAO_AptProvider.GetSelection(out_selection);

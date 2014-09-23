@@ -28,12 +28,29 @@
 
 static int kDefCols[] = { 100, 100 };
 
+/* Columns for table (in order of left to right)
+User Name - people will want to find their own fast
+
+[Status] - Uploaded, Accepted, Approved, Declined. Determined by which every of the dateX has the most recent date
+[Date] - When that dateX was. Presented in the much more reasonable 2014-07-31, 14:34:47 instead of 2014-07-31T14:34:47.000Z
+(Developer Mode has all of the date columns)
+
+artistComments - limit to 40 chars, afterwhich is "...". A tool tip will show the full window.
+moderatorComments - limit to 40 chars, afterwhich is "...". A tool tip will show the full window.
+
+Relavent code sections:
+GetHeaderContent
+GetColCount
+GetCellContent
+sort_by_ver::operator()
+*/
+
 WED_VerTable::WED_VerTable(
 						const VerVector *			apts) :
 	GUI_SimpleTableGeometry(2,kDefCols,20),	
 	mVers(apts),
 	mSortColumn(1),
-	mInvertSort(true)//TODO - Should be true?
+	mInvertSort(true)
 {
 }	
 
@@ -69,7 +86,7 @@ void	WED_VerTable::SelectHeaderCell(
 	else
 	{
 		mSortColumn = cell_x;
-		mInvertSort = true;//TODO- should be true?
+		mInvertSort = true;
 	}
 	resort();
 }
@@ -95,7 +112,10 @@ void	WED_VerTable::GetHeaderContent(
 
 int		WED_VerTable::GetColCount(void)
 {
-	return 2;
+/*#if DEV TODO - The developer menu shows every single field
+	return 11;//Derived from HTTP Get for airport
+#endif*/
+	return 5;//Derived from the catagories USERS will care about
 }
 
 int		WED_VerTable::GetRowCount(void)
