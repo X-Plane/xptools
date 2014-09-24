@@ -33,15 +33,16 @@
 
 
 #include "WED_Document.h"
+#include "WED_PackageMgr.h"
 
 #include "GUI_Application.h"
 #include "GUI_Window.h"
-#include "GUI_ChangeView.h"
 #include "GUI_Packer.h"
 #include "GUI_Timer.h"
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
+
 
 //--Table Code------------
 #include "GUI_Table.h"
@@ -57,20 +58,17 @@
 
 //------------------------//
 
-//Decides where you want to test getting the JSON info from
-//Recomend using test from local for speed
-#define TEST_FROM_SERVER 1
-#define LOCAL_JSON "C:\\airports.txt"
-
-#if !TEST_FROM_SERVER
-#include <fstream>
-#endif
+//Heuristics for how big to initialize the rawJSONbuf, since it is faster to make a big chunk than make it constantly resize itself
+//These should probably change as the gateway gets bigger and the downloads get longer in average charecter length
+#define AIRPORTS_GET_SIZE_GUESS 9000000
+#define VERSIONS_GET_SIZE_GUESS 4000
+#define VERSION_GET_SIZE_GUESS  6000
 
 enum imp_dialog_stages
 {
 imp_dialog_choose_ICAO,//if !GET airports list, GET. Let user pick ICAO from ICAO table
 imp_dialog_choose_versions,//GET airport:scenery pack array. Let user pick scenery pack(s) to download
-imp_dialog_download_versions,//Download scenery packs, save the contents in the right place, import to WED
+imp_dialog_download_version,//Download scenery pack, save the contents in the right place, import to WED
 imp_dialog_finish//Clean up any processes left
 };
 
@@ -107,18 +105,10 @@ private:
 
 	int mPhase;//Our simple stage counter for our simple fsm
 
-	IResolver *			 mResolver;
+	WED_Document *			 mResolver;
 	
 	//Our curl handle we'll be using to get the json files, note the s
 	curl_http_get_file * mCurl;
-
-	//The JSON values are saved so we don't have to redownload them everytime
-
-	//The large airport json file, cached so when we go back we don't need to redownload
-	static Json::Value		mAirportsGET;
-
-	//The smaller scenery json file, obtained after hitting next
-	Json::Value				mSceneryGET;
 
 //--GUI parts
 	
@@ -148,8 +138,8 @@ private:
 		//Extracts the Code from the constructor
 		void MakeICAOTable(int bounds[4]);
 		
-		//Downloads the json file specified by current stage of the program
-		void DownloadICAOJSON();
+		//Starts too much downloads the json file specified by current stage of the program
+		void StartICAODownload();
 		//----------------------//
 	//----------------------//
 
@@ -170,7 +160,8 @@ private:
 		void MakeVersionsTable(int bounds[4]);
 
 		//Downloads the json file specified by current stage of the program
-		void DownloadVersionsJSON();
+		void StartVersionsDownload();
+		void StartVersionDownload(int id);
 		//---------------------//
 	//--------------------------//
 		
@@ -178,13 +169,12 @@ private:
 	
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
-Json::Value WED_GatewayImportDialog::mAirportsGET = Json::Value(Json::arrayValue);
 
 //TODO, put these in better places
 
 //a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-vector<char> rawJSONBuf = vector<char>(8000000);
-string url = WED_URL_GATEWAY_API;
+vector<char> rawJSONBuf;
+
 string ICAOid;
 
 //--Implemation of WED_GateWayImportDialog class---------------
@@ -198,7 +188,6 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mVersions_VerProvider(&mVersions_Vers),
 	mVersions_TextTable(this,100,0)
 {
-	if(resolver)
 	resolver->AddListener(this);
 
 	//mPacker
@@ -221,7 +210,6 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mFilter->AddListener(this);
 	mPacker->PackPane(mFilter,gui_Pack_Top);
 
-	
 	//--Button Setup
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
@@ -276,10 +264,10 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 		tableHolder->GetBounds(bounds);
 		mVersions_Packer->SetBounds(bounds);
 		mVersions_Packer->SetBkgkndImage ("gradient.png");
+
 		MakeICAOTable(bounds);
 		MakeVersionsTable(bounds);
-	DownloadICAOJSON();
-	Start(1.0);
+	StartICAODownload();
 }
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
@@ -299,7 +287,7 @@ void WED_GatewayImportDialog::Next()
 	{
 	case imp_dialog_choose_ICAO:
 		//Going to show versions
-		DownloadVersionsJSON();
+		StartVersionsDownload();
 		mICAO_Packer->Hide();
 		mVersions_Packer->Show();
 		/*
@@ -307,10 +295,13 @@ void WED_GatewayImportDialog::Next()
 		mICAO_Header->Hide();
 		mVersions_Scroller->Show();
 		mVersions_Header->Show();*/
-		Start(1.0);
 		break;
+	
 	case imp_dialog_choose_versions:
-		this->AsyncDestroy();//?
+		StartVersionDownload(mVersions_Vers[0].sceneryId);
+
+		break;
+	case imp_dialog_download_version:
 		break;
 	case imp_dialog_finish:
 		this->AsyncDestroy();//?
@@ -344,48 +335,17 @@ void WED_GatewayImportDialog::Back()
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
-	//despite the crazy ness this is really just
-	//if(mCurl->is_done())
-	//	if(mCurl->is_good())
-	if(
-#if TEST_FROM_SERVER
-		mCurl->is_done()
-#else
-		true
-#endif
-		|| (mAirportsGET.size() > 0 && mPhase == imp_dialog_choose_ICAO))
+	if(mCurl->is_done())
 	{
 		Stop();
-		
 
-		string good_msg, bad_msg;
-		
-		if(
-#if TEST_FROM_SERVER
-			mCurl->is_ok()
-#else
-		true
-#endif
-		)
+		if(mCurl->is_ok())
 		{
 			if(mPhase == imp_dialog_choose_ICAO)
 			{
 				//create a string from the vector of chars
 				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
-			
-				#if !TEST_FROM_SERVER
-					std::ifstream is(LOCAL_JSON);     // open file
-	
-					while (is.good())          // loop while extraction from file is possible
-					{
-						char c = is.get();       // get character from file
-						if (is.good())
-						{
-							rawJSONString += c;
-						}
-					}
-					is.close();
-				#endif
+
 				Json::Value root;
 				Json::Reader reader;
 				bool success = reader.parse(rawJSONString,root);
@@ -398,6 +358,7 @@ void WED_GatewayImportDialog::TimerFired()
 					return;
 				}
 
+				Json::Value mAirportsGET = Json::Value(Json::arrayValue);
 				mAirportsGET.swap(root["airports"]);
 
 				//loop through the whole array
@@ -414,7 +375,6 @@ void WED_GatewayImportDialog::TimerFired()
 					//Add the current scenery object's airport code
 					mICAO_Apts.push_back(cur_airport);
 				}
-
 				mICAO_AptProvider.AptVectorChanged();
 			}
 			else if(mPhase == imp_dialog_choose_versions)
@@ -438,10 +398,9 @@ void WED_GatewayImportDialog::TimerFired()
 				Json::Value airport = root["airport"];
 				Json::Value sceneryArray = Json::Value(Json::arrayValue);
 				sceneryArray = airport["scenery"];
-				mSceneryGET = sceneryArray;
 
 				//Build up the table
-				for (Json::ValueIterator itr = mSceneryGET.begin(); itr != mSceneryGET.end(); itr++)
+				for (Json::ValueIterator itr = sceneryArray.begin(); itr != sceneryArray.end(); itr++)
 				{
 					//TODO - actually access the scenery pack, you are currently accessing the array of scenery packs
 					Json::Value curScenery = *itr;
@@ -464,28 +423,11 @@ void WED_GatewayImportDialog::TimerFired()
 					
 					mVersions_Vers.push_back(tmp);
 				}
-				mVersions_VerProvider.VerVectorChanged();
+				mVersions_VerProvider.VerVectorChanged();				
 				return;
 			}
-			else if(mPhase == imp_dialog_stages::imp_dialog_download_versions)
+			else if(mPhase == imp_dialog_download_version)
 			{
-				//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-				rawJSONBuf.clear();
-
-				//Get Certification
-				string cert;
-				if(!GUI_GetTempResourcePath("gateway.crt", cert))
-				{
-					DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-					return;
-				}
-#if DEV
-				//Get it from the server
-				curl_http_get_file file2 = curl_http_get_file(url,&rawJSONBuf,cert);
-
-				//Lock up everything until the file is finished
-				while(file2.is_done() == false);
-#endif
 				//create a string from the vector of chars
 				
 				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
@@ -503,7 +445,18 @@ void WED_GatewayImportDialog::TimerFired()
 				char * outP;
 				decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
 
-				string filePath = "C:\\Users\\Ted\\Desktop\\" + ICAOid + ".zip";
+				
+				/*string filePath;// = "C:\\Users\\Ted\\Desktop\\" + ICAOid + ".zip";
+				gPackageMgr->GetXPlaneFolder(filePath);
+				filePath += "\\Custom Scenery";
+				*/
+				//YES I KNOW THIS IS SO BAD BUT I CAN'T FIGURE IT OUT OTHERWISE!
+				string filePath = mResolver->GetFilePath();
+
+				//earth.wed.xml = 13
+				filePath.erase(filePath.size()-13-1);
+				filePath += "\\"+ ICAOid + ".zip";
+
 				FILE * f = fopen(filePath.c_str(),"wb");
 				for (int i = 0; i < outString.size(); i++)
 				{
@@ -512,21 +465,11 @@ void WED_GatewayImportDialog::TimerFired()
 				}
 
 				fclose(f);
+			//}
 			}
 		}
 	}
 }
-
-/*Json::Value arrValue1 = *(sceneryArray.begin());
-				Json::Value v2 = arrValue1["sceneryId"];
-	
-				string sceneryId = v2.toStyledString();
-				cout << sceneryId << endl;
-	
-				//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/scenery/XXXX"
-				url.clear();
-				url = WED_URL_GATEWAY_API;
-				url += "scenery/" + sceneryId;*/
 
 void WED_GatewayImportDialog::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -537,6 +480,7 @@ void WED_GatewayImportDialog::ReceiveMessage(
 	{
 	case filter_changed:	
 		mICAO_AptProvider.SetFilter(mFilter->GetText());
+		mVersions_VerProvider.SetFilter(mFilter->GetText());
 		break;
 	case click_next:
 		Next();
@@ -550,7 +494,84 @@ void WED_GatewayImportDialog::ReceiveMessage(
 	}
 }
 
+void WED_GatewayImportDialog::StartICAODownload()
+{
+	rawJSONBuf = vector<char>(AIRPORTS_GET_SIZE_GUESS);
+	string url = WED_URL_GATEWAY_API;
+	
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return;
+	}
 
+	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+	url += "airports";
+
+	//Get it from the server
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
+	Start(1.0);
+}
+
+//Starts the download process
+void WED_GatewayImportDialog::StartVersionsDownload()
+{
+	rawJSONBuf = vector<char>(VERSIONS_GET_SIZE_GUESS);
+	//Two steps,
+	//1.Get the airport from the current selection, then get its sceneryid from mAirportsGET
+
+	//index of the current selection
+	set<int> out_selection;
+	mICAO_AptProvider.GetSelection(out_selection);
+	
+	//Current airport selected
+	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
+	
+	
+	ICAOid = current_apt.icao;
+	
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return;
+	}
+	
+	string url = WED_URL_GATEWAY_API;
+	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
+	url += "airport/" + ICAOid;
+
+	//Get it from the server
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
+	Start(1.0);
+}
+
+void WED_GatewayImportDialog::StartVersionDownload(int id)
+{
+	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+	rawJSONBuf = vector<char>(VERSION_GET_SIZE_GUESS);
+
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return;
+	}
+
+	string url = WED_URL_GATEWAY_API;
+
+	//This can store up to INT_MAX
+	char idStr[5] = {0};
+	itoa(id,idStr,10);
+	url += "scenery/" + string(idStr);
+	//Get it from the server
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
+	Start(1.0);
+}
 void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 {
 	mICAO_AptProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
@@ -618,51 +639,6 @@ void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 
 	mICAO_Packer->PackPane(mICAO_Scroller,gui_Pack_Center);
 	mICAO_Scroller->PositionHeaderPane(mICAO_Header);
-}
-
-void WED_GatewayImportDialog::DownloadICAOJSON()
-{
-	rawJSONBuf.clear();
-	if(mAirportsGET.size() == 0)
-	{
-		string url = WED_URL_GATEWAY_API;
-	
-		//Get Certification
-		string cert;
-		if(!GUI_GetTempResourcePath("gateway.crt", cert))
-		{
-			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-			return;
-		}
-
-		//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
-		url += "airports";
-
-	#if TEST_FROM_SERVER
-		//Get it from the server
-		mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
-	#endif
-	}
-	else
-	{
-		for (int i = 0; i < mAirportsGET.size(); i++)
-		{
-			//Get the current scenery object
-			Json::Value tmp(Json::objectValue);
-			tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form, yes it's dumb
-
-			AptInfo_t cur_airport;
-			cur_airport.icao = tmp["AirportCode"].asString();
-			cur_airport.name = tmp["AirportName"].asString();
-
-			//Add the current scenery object's airport code
-			mICAO_Apts.push_back(cur_airport);
-
-			//Optionally print it out
-		}
-
-		mICAO_AptProvider.AptVectorChanged();
-	}
 }
 
 //Extracts the Code from the constructor
@@ -737,41 +713,6 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mPacker->PackPane(mVersions_Header,gui_Pack_Top);
 	mPacker->PackPane(mVersions_Scroller,gui_Pack_Center);
 	mVersions_Scroller->PositionHeaderPane(mVersions_Header);
-}
-
-
-//Downloads the json file specified by current stage of the program
-void WED_GatewayImportDialog::DownloadVersionsJSON()
-{
-	rawJSONBuf.clear();
-	//Two steps,
-	//1.Get the airport from the current selection, then get its sceneryid from mAirportsGET
-
-	//index of the current selection
-	set<int> out_selection;
-	mICAO_AptProvider.GetSelection(out_selection);
-	
-	//Current airport selected
-	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
-	
-	
-	ICAOid = current_apt.icao;
-	
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-	
-	url.clear();
-	url += WED_URL_GATEWAY_API;
-	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-	url += "airport/" + ICAOid;
-
-	//Get it from the server
-	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);	
 }
 //-------------------------------------------------------------
 

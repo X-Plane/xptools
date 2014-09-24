@@ -40,11 +40,10 @@ struct VerInfo_t
 	string dateUploaded;
 	string dateAccepted;
 	string dateApproved;
-	string dateDeclined;
 
 	//2 for 2D; 3 for 3D
 	string type;
-	//vector<int> features;?
+	vector<char> features;//Currently there is a bug where the chars representing the letters turns them into their ASCII numbers '2'->50, this is a TODO
 	string artistComments;
 	string moderatorComments;
 	vector<char> masterBlobzip;

@@ -277,7 +277,9 @@ void		WED_VerTable::resort(void)
 	mSorted.clear();
 	for(int i = 0; i < mVers->size(); ++i)
 	{
-		if (filters.empty() )//|| //(filter_match(mVers->at(i).userName, filters.begin(),filters.end()),filter_match(mVers->at(i).dateAccepted, filters.begin(),filters.end())))
+		if (true)/*filters.empty() || 
+			(filter_match(mVers->at(i).userName, filters.begin(),filters.end()),
+			filter_match(mVers->at(i).dateAccepted, filters.begin(),filters.end())))*/
 		{
 			mSorted.push_back(i);
 		}
