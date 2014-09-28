@@ -342,6 +342,10 @@ bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, pa
 		{
 			semError = false;
 		}
+		else if(inGlyph == "^")
+		{
+			semError = true;
+		}
 		break;
 	case 'c':
 		if( (inGlyph == "critical") == true||
@@ -790,6 +794,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			return I_INCUR;
 			break;
 		case '@':
+		case '^':
 			ss << "Character " << position + 1 << ": " << curChar << " is not allowed outside curly braces";
 			output.AddError(ss.str(),syn_found_at_symbol_outside_curly,position,1);
 			return LOOKUP_ERR;
