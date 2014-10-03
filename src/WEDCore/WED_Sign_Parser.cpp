@@ -198,6 +198,26 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			parser_glyph_info A = output.out_sign.front[i-1];
 			parser_glyph_info B = output.out_sign.front[i+1];
 
+			//If A or B is an independant glyph
+			if(A.glyph_color == 'I')
+			{
+				followsPipeJuxRules = false;
+				ss << "Glyph " << i-1 << " " << A.glyph_name << " cannot be used with a pipebar";
+
+				output.AddError(ss.str(),sem_glyph_color_mismatch,i-1,A.glyph_name.size());
+				ss.str("");
+				ss.clear();
+				foundError = true;
+			}
+			if(B.glyph_color == 'I')
+			{
+				followsPipeJuxRules = false;
+				ss << "Glyph " << i+1 << " " << B.glyph_name << " cannot be used with a pipebar";
+				output.AddError(ss.str(),sem_glyph_color_mismatch,i+1,B.glyph_name.size());
+				ss.str("");
+				ss.clear();
+				foundError = true;
+			}
 			//If A is not equal to B and (A is not 'P' and B is not 'P')
 			if(A.glyph_color != B.glyph_color)
 			{
