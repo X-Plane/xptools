@@ -43,6 +43,13 @@
 #include "GUI_Button.h"
 #include "WED_Messages.h"
 
+//--DSF/AptImport
+#include "WED_AptIE.h"
+#include "WED_ToolUtils.h"
+
+#include "WED_DSFImport.h"
+#include "WED_Group.h"
+//---------------
 
 //--Table Code------------
 #include "GUI_Table.h"
@@ -110,6 +117,7 @@ private:
 	//Our curl handle we'll be using to get the json files, note the s
 	curl_http_get_file * mCurl;
 
+	void DoAirportImport(string filePath);
 //--GUI parts
 	
 	//--For the whole dialog box
@@ -274,6 +282,11 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 {
 }
 
+void WED_GatewayImportDialog::DoAirportImport(string filePath)
+{
+
+}
+
 void WED_GatewayImportDialog::Next()
 {
 	/*From imp_choose_ICAO to imp_choose_versions (in no particular order
@@ -299,11 +312,11 @@ void WED_GatewayImportDialog::Next()
 	
 	case imp_dialog_choose_versions:
 		StartVersionDownload(mVersions_Vers[0].sceneryId);
-
 		break;
 	case imp_dialog_download_version:
 		break;
 	case imp_dialog_finish:
+
 		this->AsyncDestroy();//?
 		break;
 	}
@@ -465,11 +478,32 @@ void WED_GatewayImportDialog::TimerFired()
 				}
 
 				fclose(f);
-			//}
-			}
-		}
-	}
-}
+
+				int breakhereandmanuallyunzip = 0;
+				
+				WED_Thing * wrl = WED_GetWorld(mResolver);
+
+				//char * paths = //GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+				//Change ICAO.zip to ICAO.dat
+				string aptDOTdat_path = filePath.substr(0,filePath.size()-4) + ".dat";
+		
+				wrl->StartOperation("Import DSF");
+				WED_ImportOneAptFile(aptDOTdat_path,wrl);
+
+				WED_Thing * //= NULL;// = find_airport_by_icao_recursive(ICAOid,wrl);
+				//if(g == NULL)
+				//{
+					g = WED_Group::CreateTyped(wrl->GetArchive());
+					g->SetName(aptDOTdat_path);
+					g->SetParent(wrl,wrl->CountChildren());
+				//}
+				string dsf_txt_path = filePath.substr(0,filePath.size()-4) + ".txt";
+				DSF_Import(dsf_txt_path.c_str(), (WED_Group *) g);
+				wrl->CommitOperation();
+			}//end if(mPhase == imp_dialog_download_version
+		}//end if(mCurl->is_ok())
+	}//end if(mCurl->is_done())
+}//end WED_GatewayImportDialog::TimerFired()
 
 void WED_GatewayImportDialog::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -714,6 +748,8 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mPacker->PackPane(mVersions_Scroller,gui_Pack_Center);
 	mVersions_Scroller->PositionHeaderPane(mVersions_Header);
 }
+
+
 //-------------------------------------------------------------
 
 int	WED_CanImportFromGateway(IResolver * resolver)
