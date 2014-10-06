@@ -509,7 +509,9 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 	Json::Value airport = root["airport"];
 	Json::Value sceneryArray = Json::Value(Json::arrayValue);
 	sceneryArray = airport["scenery"];
-
+	
+	//Clear the previous list no matter what
+	mVersions_Vers.clear();
 	//Build up the table
 	for (Json::ValueIterator itr = sceneryArray.begin(); itr != sceneryArray.end(); itr++)
 	{
