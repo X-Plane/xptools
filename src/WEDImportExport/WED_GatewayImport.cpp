@@ -42,6 +42,7 @@
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
+#include <stack>
 
 //--DSF/AptImport
 #include "WED_AptIE.h"
@@ -115,10 +116,13 @@ private:
 
 	WED_Document *			 mResolver;
 	
+	//To be used with getting one or more Specific Versions of an airport
+	stack<curl_http_get_file *> mSpecificVersionGETs;
+
 	//Our curl handle we'll be using to get the json files, note the s
 	curl_http_get_file * mCurl;
 
-	void DoAirportImport(string filePath);
+	//void DoAirportImport(string filePath);
 //--GUI parts
 	
 	//--For the whole dialog box
@@ -291,10 +295,14 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 	}
 }
 
-void WED_GatewayImportDialog::DoAirportImport(string filePath)
+//void WED_GatewayImportDialog::BuildGETStack()
+//{
+
+//}
+/*void WED_GatewayImportDialog::DoAirportImport(string filePath)
 {
 
-}
+}*/
 
 void WED_GatewayImportDialog::Next()
 {
@@ -362,6 +370,9 @@ void WED_GatewayImportDialog::TimerFired()
 
 		if(mCurl->is_ok())
 		{
+			delete mCurl;
+			mCurl = NULL;
+
 			if(mPhase == imp_dialog_choose_ICAO)
 			{
 				FillICAOFromJSON();
@@ -396,19 +407,14 @@ void WED_GatewayImportDialog::TimerFired()
 				char * outP;
 				decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
 
+				ILibrarian * lib = WED_GetLibrarian(mResolver);
+
+                string filePath("");
+                lib->LookupPath(filePath);
 				
-				/*string filePath;// = "C:\\Users\\Ted\\Desktop\\" + ICAOid + ".zip";
-				gPackageMgr->GetXPlaneFolder(filePath);
-				filePath += "\\Custom Scenery";
-				*/
-				//YES I KNOW THIS IS SO BAD BUT I CAN'T FIGURE IT OUT OTHERWISE!
-				string filePath = mResolver->GetFilePath();
-
-				//earth.wed.xml = 13
-				filePath.erase(filePath.size()-13-1);
-				filePath += "\\"+ ICAOid + ".zip";
-
-				FILE * f = fopen(filePath.c_str(),"wb");
+				string zipPath = filePath + ICAOid + ".zip";
+				
+				FILE * f = fopen(zipPath.c_str(),"wb");
 				for (int i = 0; i < outString.size(); i++)
 				{
 					char c = outString[i];
@@ -422,22 +428,18 @@ void WED_GatewayImportDialog::TimerFired()
 				
 				WED_Thing * wrl = WED_GetWorld(mResolver);
 
-				//char * paths = //GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
 				//Change ICAO.zip to ICAO.dat
-				string aptDOTdat_path = filePath.substr(0,filePath.size()-4) + ".dat";
-		
-				wrl->StartOperation("Import DSF");
-				WED_ImportOneAptFile(aptDOTdat_path,wrl);
+				string aptdat_path = filePath + ICAOid + ".dat";
 
-				WED_Thing * //= NULL;// = find_airport_by_icao_recursive(ICAOid,wrl);
-				//if(g == NULL)
-				//{
-					g = WED_Group::CreateTyped(wrl->GetArchive());
-					g->SetName(aptDOTdat_path);
-					g->SetParent(wrl,wrl->CountChildren());
-				//}
-				string dsf_txt_path = filePath.substr(0,filePath.size()-4) + ".txt";
-				DSF_Import(dsf_txt_path.c_str(), (WED_Group *) g);
+				wrl->StartOperation("Import Scenery Pack");
+				WED_ImportOneAptFile(aptdat_path,wrl);
+
+				WED_Thing * g = WED_Group::CreateTyped(wrl->GetArchive());
+				g->SetName(aptdat_path);
+				g->SetParent(wrl,wrl->CountChildren());
+				
+				string dsf_txt_path = filePath + ICAOid + ".txt";
+				WED_DoImportText(dsf_txt_path.c_str(), (WED_Group *) g);
 				wrl->CommitOperation();
 				
 				//Set it back so we can download another
@@ -628,7 +630,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 		return;
 	}
-
+	
 	string url = WED_URL_GATEWAY_API;
 
 	//This can store up to INT_MAX

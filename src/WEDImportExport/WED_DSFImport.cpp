@@ -700,7 +700,15 @@ static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing 
 	return NULL;
 }
 
+void WED_DoImportText(const char * path, WED_Group * base)
+{
+	DSF_Importer importer;
+	importer.do_import_txt(path, base);
+}
+
+
 #if GATEWAY_IMPORT_FEATURES
+//This is from an older method of importing things which involved manually getting the files from the hard drive
 void	WED_DoImportDSFText(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);

@@ -32,6 +32,7 @@ void DSF_Import(const char * file, WED_Group * base);
 
 int		WED_CanImportDSF(IResolver * resolver);
 void	WED_DoImportDSF(IResolver * resolver);
+void	WED_DoImportText(const char * path, WED_Group * base);
 #if GATEWAY_IMPORT_FEATURES
 void	WED_DoImportDSFText(IResolver * resolver);
 #endif
