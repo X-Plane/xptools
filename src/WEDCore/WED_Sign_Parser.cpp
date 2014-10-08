@@ -141,7 +141,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			{
 				followsPipeJuxRules = false;
 
-				ss << "Charecter " << i + 1 << ": Pipe bar has sign face flip instruction directly to its left";
+				ss << "Character " << i + 1 << ": Pipe bar has sign face flip instruction directly to its left";
 				output.AddError(ss.str(),sem_pipe_l_sign_flip_juxed,i,3);
 				ss.str("");
 				ss.clear();
@@ -158,7 +158,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 				{
 					followsPipeJuxRules = false;
 
-					ss << "Charecter " << i + 1 << ": Pipe bar has sign face flip instruction directly to its right";
+					ss << "Character " << i + 1 << ": Pipe bar has sign face flip instruction directly to its right";
 					output.AddError(ss.str(),sem_pipe_r_sign_flip_juxed,i,3);
 					
 					ss.str("");
@@ -178,7 +178,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			{
 				followsPipeJuxRules = false;
 
-				ss << "Charecter " << i + 1 << ": Pipebar has pipebar to its right";
+				ss << "Character " << i + 1 << ": Pipebar has pipebar to its right";
 				output.AddError(ss.str(),sem_pipe_double_juxed,i,1);
 				ss.str("");
 				ss.clear();
@@ -222,7 +222,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			if(A.glyph_color != B.glyph_color)
 			{
 				followsPipeJuxRules = false;
-				ss << "Charcter " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
+				ss << "Character " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
 																					<< A.glyph_color << A.glyph_name 
 																					<< ", /" << B.glyph_color << B.glyph_name;
 				output.AddError(ss.str(),sem_pipe_color_mismatch,i,3);
@@ -246,7 +246,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			if(A.glyph_color != B.glyph_color)
 			{
 				followsPipeJuxRules = false;
-				ss << "Charcter " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
+				ss << "Character " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
 																					<< A.glyph_color << A.glyph_name 
 																					<< ", /" << B.glyph_color << B.glyph_name;
 				output.AddError(ss.str(),sem_pipe_color_mismatch,i,3);
@@ -737,7 +737,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 		switch(curChar)
 		{
 		case ',':
-			ss << "Charecter " << position + 1 << ": " << curChar << " is not allowed here, expected glyphs or an instruction";
+			ss << "Character " << position + 1 << ": " << curChar << " is not allowed here, expected glyphs or an instruction";
 			output.AddError(ss.str(),syn_expected_non_seperator_after_comma,position,1);
 			return LOOKUP_ERR;
 		case '@':
@@ -785,7 +785,7 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 			else
 			{
 				//Sementic error found extra @@
-				ss << "Charecter " << position + 1 << ": Cannot switch sign sides more than once";
+				ss << "Character " << position + 1 << ": Cannot switch sign sides more than once";
 				output.AddError(ss.str(),sem_mutiple_side_switches,position,1);
 			}
 			return I_WAITING_SEPERATOR;
