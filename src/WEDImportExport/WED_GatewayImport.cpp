@@ -42,6 +42,8 @@
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
+#include "MemFileUtils.h"
+
 #include <stack>
 
 //--DSF/AptImport
@@ -414,39 +416,87 @@ void WED_GatewayImportDialog::TimerFired()
 				
 				string zipPath = filePath + ICAOid + ".zip";
 				
-				FILE * f = fopen(zipPath.c_str(),"wb");
-				for (int i = 0; i < outString.size(); i++)
+				if(!outString.empty())
 				{
-					char c = outString[i];
-					fprintf(f,"%c",c);
+					FILE * f = fopen(zipPath.c_str(),"wb");
+					size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f);
+					
+					//TODO - Error Message
+					if(write_result != outString.size())
+					{
+						int stophere = 0;
+					}
+					fclose(f);
 				}
 
-				fclose(f);
+				const char * edit_me = zipPath.c_str();
+				//A representation of the zipfile
+				MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
+								
+				int fileCount = FileSet_Count(zipRep) - 1;
 
-				//--This is where the MemFilesAPI will head into
-				int breakhereandmanuallyunzip = 0;
-				
+				bool has_dsf = false;
+				/* For all the files
+				*  Get the current file inside the memory mapped zip
+				*  Get the filename,
+				*		if it is "ICAO.txt", mark has_dsf to true
+				*  build the file path
+				*  Write the file to the harddrive
+				*/
+				while(fileCount >= 0)
+				{
+					MFMemFile * currentFile = FileSet_OpenNth(zipRep,fileCount);
+					const char * fileName = FileSet_GetNth(zipRep,fileCount);
+					
+					string toHardDrive = filePath + fileName;
+					
+					FILE * f = NULL;
+					if(strcmp(fileName,string(ICAOid + ".txt").c_str()) == 0)
+					{
+						has_dsf = true;
+						f = fopen(toHardDrive.c_str(),"w");
+					}
+					else
+					{
+						f = fopen(toHardDrive.c_str(),"wb");
+					}
+					
+					if(f != NULL)
+					{
+						fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f);
+						fclose(f);
+					}
+					else
+					{
+						//TODO - Error Handling
+						fclose(f);
+					}
+					fileCount--;
+				}
+
 				WED_Thing * wrl = WED_GetWorld(mResolver);
-
-				//Change ICAO.zip to ICAO.dat
-				string aptdat_path = filePath + ICAOid + ".dat";
-
 				wrl->StartOperation("Import Scenery Pack");
-				WED_ImportOneAptFile(aptdat_path,wrl);
+
+				string aptdatPath = filePath + ICAOid + ".dat";
+				WED_ImportOneAptFile(aptdatPath,wrl);
 
 				WED_Thing * g = WED_Group::CreateTyped(wrl->GetArchive());
-				g->SetName(aptdat_path);
+				g->SetName(ICAOid);
 				g->SetParent(wrl,wrl->CountChildren());
-				
-				string dsf_txt_path = filePath + ICAOid + ".txt";
-				WED_DoImportText(dsf_txt_path.c_str(), (WED_Group *) g);
+								
+				if(has_dsf)
+				{
+					
+					string dsfTextPath = filePath + ICAOid + ".txt";
+					WED_DoImportText(dsfTextPath.c_str(), (WED_Group *) g);
+				}
 				wrl->CommitOperation();
 				
-				//Set it back so we can download another
-				mPhase = imp_dialog_choose_versions;
+				//clean up our files ICAOid.dat and potentially ICAOid.txt
+
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl->is_ok())
-		else if(mCurl->get_error() <= CURL_LAST)//start our error checking process
+		else if(mCurl->get_error() <= CURL_LAST)//TODO - ERROR HANDLING
 		{
 			
 		}
@@ -480,12 +530,15 @@ void WED_GatewayImportDialog::FillICAOFromJSON()
 		Json::Value tmp(Json::objectValue);
 		tmp = mAirportsGET.operator[](i);//Yes, you need the verbose operator[] form. Yes it's dumb
 
-		AptInfo_t cur_airport;
-		cur_airport.icao = tmp["AirportCode"].asString();
-		cur_airport.name = tmp["AirportName"].asString();
+		if(tmp["AcceptedSceneryCount"].asInt() > 0)
+		{
+			AptInfo_t cur_airport;
+			cur_airport.icao = tmp["AirportCode"].asString();
+			cur_airport.name = tmp["AirportName"].asString();
 
-		//Add the current scenery object's airport code
-		mICAO_Apts.push_back(cur_airport);
+			//Add the current scenery object's airport code
+			mICAO_Apts.push_back(cur_airport);
+		}
 	}
 	mICAO_AptProvider.AptVectorChanged();
 }
@@ -785,6 +838,9 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 }
 //-------------------------------------------------------------
 
+//--Mem File Utils code for virtually handling the downloaded zip file--
+//void Create
+//----------------------------------------------------------------------
 int	WED_CanImportFromGateway(IResolver * resolver)
 {
 	return 1;
