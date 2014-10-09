@@ -74,6 +74,9 @@
 #define VERSIONS_GET_SIZE_GUESS 4000
 #define VERSION_GET_SIZE_GUESS  6000
 
+#if DEV
+#define SAVE_TO_HDD 0
+#endif
 enum imp_dialog_stages
 {
 imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
@@ -429,49 +432,63 @@ void WED_GatewayImportDialog::TimerFired()
 					fclose(f);
 				}
 
+#if DEV
 				const char * edit_me = zipPath.c_str();
-				//A representation of the zipfile
-				MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
-								
-				int fileCount = FileSet_Count(zipRep) - 1;
+#endif
 
 				bool has_dsf = false;
-				/* For all the files
-				*  Get the current file inside the memory mapped zip
-				*  Get the filename,
-				*		if it is "ICAO.txt", mark has_dsf to true
-				*  build the file path
-				*  Write the file to the harddrive
-				*/
-				while(fileCount >= 0)
+
 				{
-					MFMemFile * currentFile = FileSet_OpenNth(zipRep,fileCount);
-					const char * fileName = FileSet_GetNth(zipRep,fileCount);
+					//A representation of the zipfile
+					MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
+								
+					int fileCount = FileSet_Count(zipRep) - 1;
+					/* For all the files
+					*  Get the current file inside the memory mapped zip
+					*  Get the filename,
+					*		if it is "ICAO.txt", mark has_dsf to true
+					*  build the file path
+					*  Write the file to the harddrive
+					*/
+					while(fileCount >= 0)
+					{
+						MFMemFile * currentFile = FileSet_OpenNth(zipRep,fileCount);
+						const char * fileName = FileSet_GetNth(zipRep,fileCount);
 					
-					string toHardDrive = filePath + fileName;
+						if(fileName == (ICAOid + "_Scenery_Pack" + ".zip"))
+						{
+							MemFile_Close(currentFile);
+							fileCount--;
+							continue;
+						}
+						string toHardDrive = filePath + fileName;
 					
-					FILE * f = NULL;
-					if(strcmp(fileName,string(ICAOid + ".txt").c_str()) == 0)
-					{
-						has_dsf = true;
-						f = fopen(toHardDrive.c_str(),"w");
-					}
-					else
-					{
-						f = fopen(toHardDrive.c_str(),"wb");
-					}
+						FILE * f = NULL;
+						if(fileName == (ICAOid + ".txt"))
+						{
+							has_dsf = true;
+							f = fopen(toHardDrive.c_str(),"w");
+						}
+						else
+						{
+							f = fopen(toHardDrive.c_str(),"wb");
+						}
 					
-					if(f != NULL)
-					{
-						fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f);
-						fclose(f);
+						if(f != NULL)
+						{
+							fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f);
+							fclose(f);
+							MemFile_Close(currentFile);
+						}
+						else
+						{
+							//TODO - Error Handling
+							fclose(f);
+							MemFile_Close(currentFile);
+						}
+						fileCount--;
 					}
-					else
-					{
-						//TODO - Error Handling
-						fclose(f);
-					}
-					fileCount--;
+					FileSet_Close(zipRep);
 				}
 
 				WED_Thing * wrl = WED_GetWorld(mResolver);
@@ -483,17 +500,32 @@ void WED_GatewayImportDialog::TimerFired()
 				WED_Thing * g = WED_Group::CreateTyped(wrl->GetArchive());
 				g->SetName(ICAOid);
 				g->SetParent(wrl,wrl->CountChildren());
-								
+					
+				string dsfTextPath = filePath + ICAOid + ".txt";
 				if(has_dsf)
 				{
-					
-					string dsfTextPath = filePath + ICAOid + ".txt";
 					WED_DoImportText(dsfTextPath.c_str(), (WED_Group *) g);
 				}
 				wrl->CommitOperation();
 				
+#if !SAVE_TO_HDD
 				//clean up our files ICAOid.dat and potentially ICAOid.txt
+				if(has_dsf)
+				{
+					if(remove(dsfTextPath.c_str()) != 0)
+					{
+						//TODO - Error Handling
+					}
+				}
+				if(remove(aptdatPath.c_str()) != 0)
+				{
+					//TODO - Error Handling
+				}
+				if(remove(zipPath.c_str()) != 0)
+				{
 
+				}
+#endif
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl->is_ok())
 		else if(mCurl->get_error() <= CURL_LAST)//TODO - ERROR HANDLING
