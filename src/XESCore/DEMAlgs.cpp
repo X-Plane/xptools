@@ -344,13 +344,17 @@ void ResampleDEM(const DEMGeo& inSrc, DEMGeo& inDst)
 
 void ResampleDEMmedian(const DEMGeo& inSrc, DEMGeo& inDst, int radius)
 {
+	double xstep = (inDst.mEast - inDst.mWest) / inDst.x_res();
+	double ystep = (inDst.mNorth - inDst.mSouth) / inDst.y_res();
+
+
 	for(int y = 0; y < inDst.mHeight; ++y)
 	for(int x = 0; x < inDst.mWidth; ++x)
 	{
 		double lon = inDst.x_to_lon(x);
 		double lat = inDst.y_to_lat(y);
 
-		double e = inSrc.get_median(lon, lat, radius);
+		double e = inSrc.get_median(lon, lat, xstep, ystep, radius);
 		inDst(x,y) = e;
 	}
 }
@@ -2328,20 +2332,21 @@ void VerifySheds(const DEMGeo& ws, vector<DEMGeo::address>& seeds)
 }
 
 
-void ResampleDEMmedian(const DEMGeo& inSrc, DEMGeo& inDst, int radius)
+void	NeighborHisto(const DEMGeo& input, DEMGeo& output, int semi)
 {
-	double xstep = (inDst.mEast - inDst.mWest) / inDst.x_res();
-	double ystep = (inDst.mNorth - inDst.mSouth) / inDst.y_res();
-
+	output.clear_from(input);
 	
-	for(int y = 0; y < inDst.mHeight; ++y)
-	for(int x = 0; x < inDst.mWidth; ++x)
+	for(int y = 0; y < input.mHeight; ++y)
+	for(int x = 0; x < input.mWidth; ++x)
 	{
-		double lon = inDst.x_to_lon(x);
-		double lat = inDst.y_to_lat(y);
+		float v = input.get(x,y);
+		int c = 0;
+		for(int dy = y-semi; dy <= y+semi; ++dy)
+		for(int dx = x-semi; dx <= x+semi; ++dx)
+		if(input.get(dx,dy) != v)
+			++c;
 
-		double e = inSrc.get_median(lon, lat, xstep, ystep, radius);
-		inDst(x,y) = e;
+		output(x,y) = c;
 	}
 }
 
