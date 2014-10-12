@@ -75,6 +75,7 @@
 #define VERSION_GET_SIZE_GUESS  6000
 
 #if DEV
+//If you want to have the zip,dsf.txt, and apt.dat stay on the HDD instead of being deleted instantly
 #define SAVE_TO_HDD 0
 #endif
 enum imp_dialog_stages
@@ -91,7 +92,39 @@ enum imp_dialog_msg
 	click_next,
 	click_back
 };
+class RAII_file 
+{
+public:
 
+ RAII_file(const char * fname, const char * mode) :
+  mFile(fopen(fname,mode))
+ {
+ }
+
+ ~RAII_file()
+ {
+	if(mFile)
+	{
+		fclose(mFile);
+	}
+ }
+
+ int close() 
+ { 
+	 if(mFile) 
+	 { 
+		 int retVal = fclose(mFile); 
+		 mFile = NULL;
+		 return retVal;
+	 }
+ }
+
+ operator bool() const { return mFile != NULL; }
+ FILE * operator()() { return mFile; }
+
+private:
+ FILE * mFile;
+};
 //Our private class for the import dialog
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
 {
@@ -325,11 +358,6 @@ void WED_GatewayImportDialog::Next()
 		StartVersionsDownload();
 		mICAO_Packer->Hide();
 		mVersions_Packer->Show();
-		/*
-		mICAO_Scroller->Hide();
-		mICAO_Header->Hide();
-		mVersions_Scroller->Show();
-		mVersions_Header->Show();*/
 		break;
 	case imp_dialog_choose_versions:
 		StartSpecificVersionDownload(mVersions_Vers[0].sceneryId);
@@ -354,11 +382,6 @@ void WED_GatewayImportDialog::Back()
 	case imp_dialog_choose_versions:
 		mICAO_Packer->Show();
 		mVersions_Packer->Hide();
-		/*
-		mICAO_Scroller->Show();
-		mICAO_Header->Show();
-		mVersions_Scroller->Hide();
-		mVersions_Header->Hide();*/
 		break;
 	case imp_dialog_finish:
 		break;
@@ -389,7 +412,6 @@ void WED_GatewayImportDialog::TimerFired()
 			else if(mPhase == imp_dialog_download_specific_version)
 			{
 				//create a string from the vector of chars
-				
 				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
 
 				//Now that we have our rawJSONString we'll be turning it into a JSON object
@@ -421,27 +443,52 @@ void WED_GatewayImportDialog::TimerFired()
 				
 				if(!outString.empty())
 				{
-					FILE * f = fopen(zipPath.c_str(),"wb");
-					size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f);
-					
-					//TODO - Error Message
-					if(write_result != outString.size())
+					RAII_file f(zipPath.c_str(),"wb");
+					if(f != NULL)
 					{
-						int stophere = 0;
+						size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f());
+
+						if(write_result != outString.size())
+						{
+							DoUserAlert(string("Could not fully create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
+							mPhase--;//Roll us back a step so we can download again
+							
+							int removeVal = remove(zipPath.c_str());
+							if(removeVal != 0)
+							{
+								DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+							}
+							this->AsyncDestroy();
+							return;//Exit before we can continue
+						}
 					}
-					fclose(f);
+					else
+					{
+						DoUserAlert(string("Could not create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
+						this->AsyncDestroy();
+						return;
+					}
 				}
 
 #if DEV
+				//This line makes it easier to edit the zip path in the memory editor
+				//DO NOT USE edit_me
 				const char * edit_me = zipPath.c_str();
 #endif
 
 				bool has_dsf = false;
 
+				//Scope to ensure all the MemFile stuff stays inside here
 				{
 					//A representation of the zipfile
 					MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
-								
+					if(zipRep == NULL)
+					{
+						//Error handling here
+						DoUserAlert(string("Could not create memory mapped version of " + zipPath + ". Check if the file exists or if you have sufficient permissions").c_str());
+						this->AsyncDestroy();
+						return;
+					}
 					int fileCount = FileSet_Count(zipRep) - 1;
 					/* For all the files
 					*  Get the current file inside the memory mapped zip
@@ -455,41 +502,52 @@ void WED_GatewayImportDialog::TimerFired()
 						MFMemFile * currentFile = FileSet_OpenNth(zipRep,fileCount);
 						const char * fileName = FileSet_GetNth(zipRep,fileCount);
 					
+#if !SAVE_TO_HDD//Because, remember we DON'T want this file normally
 						if(fileName == (ICAOid + "_Scenery_Pack" + ".zip"))
 						{
 							MemFile_Close(currentFile);
 							fileCount--;
 							continue;
 						}
-						string toHardDrive = filePath + fileName;
-					
-						FILE * f = NULL;
+#endif
+						string writeMode;
 						if(fileName == (ICAOid + ".txt"))
 						{
 							has_dsf = true;
-							f = fopen(toHardDrive.c_str(),"w");
+							writeMode = "w";
 						}
 						else
 						{
-							f = fopen(toHardDrive.c_str(),"wb");
+							writeMode = "wb";
 						}
-					
+						
+						RAII_file f(string(filePath + fileName).c_str(),writeMode.c_str());
+
 						if(f != NULL)
 						{
-							fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f);
-							fclose(f);
+							size_t write_result = fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f());
+							f.close();
+
+							if(write_result != MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile))
+							{
+								MemFile_Close(currentFile);
+								DoUserAlert(string("Could not fully create file at " + string(filePath + fileName) + ", please ensure you have sufficient hard drive space and permissions").c_str());
+								this->AsyncDestroy();
+								return;
+							}
 							MemFile_Close(currentFile);
 						}
 						else
 						{
-							//TODO - Error Handling
-							fclose(f);
+							DoUserAlert(string("Could not create file at " + filePath + fileName + ", please ensure you have sufficient hard drive space and permissions").c_str());
 							MemFile_Close(currentFile);
+							this->AsyncDestroy();
+							return;
 						}
 						fileCount--;
 					}
 					FileSet_Close(zipRep);
-				}
+				}//end MemFile stuff
 
 				WED_Thing * wrl = WED_GetWorld(mResolver);
 				wrl->StartOperation("Import Scenery Pack");
@@ -514,16 +572,16 @@ void WED_GatewayImportDialog::TimerFired()
 				{
 					if(remove(dsfTextPath.c_str()) != 0)
 					{
-						//TODO - Error Handling
+						DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 					}
 				}
 				if(remove(aptdatPath.c_str()) != 0)
 				{
-					//TODO - Error Handling
+					DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 				}
 				if(remove(zipPath.c_str()) != 0)
 				{
-
+					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 				}
 #endif
 			}//end if(mPhase == imp_dialog_download_specific_version
@@ -602,7 +660,6 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 	//Build up the table
 	for (Json::ValueIterator itr = sceneryArray.begin(); itr != sceneryArray.end(); itr++)
 	{
-		//TODO - actually access the scenery pack, you are currently accessing the array of scenery packs
 		Json::Value curScenery = *itr;
 		VerInfo_t tmp;
 					
@@ -617,7 +674,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 		tmp.dateApproved = curScenery.operator[]("dateApproved").asString();
 		//2 for 2D =  3 for 3D
 		tmp.type = curScenery.operator[]("type").asString();
-		//TODO-tmp.features = curScenery.operator[]("features").asString();
+		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
 		tmp.artistComments = curScenery.operator[]("artistComments").asString();
 		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString();
 					
