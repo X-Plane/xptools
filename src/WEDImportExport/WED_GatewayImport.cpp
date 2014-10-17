@@ -580,6 +580,7 @@ void WED_GatewayImportDialog::TimerFired()
 				}
 				wrl->CommitOperation();
 
+#if !SAVE_ON_HDD
 				//clean up our files ICAOid.dat and potentially ICAOid.txt
 				if(has_dsf)
 				{
@@ -596,7 +597,7 @@ void WED_GatewayImportDialog::TimerFired()
 				{
 					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 				}
-
+#endif
 				NextVersionsDownload();
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl->is_ok())
