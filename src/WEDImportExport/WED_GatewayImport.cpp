@@ -73,10 +73,14 @@
 #define VERSION_GET_SIZE_GUESS  6000
 
 #if DEV
-//If you want to have the zip,dsf.txt, and apt.dat stay on the HDD instead of being deleted instantl
+//If you want to start testing right away, only useful for testing networking and dialog box parts. Document not avaible (obviously)
+#define TEST_AT_START 1
+
+#if !TEST_AT_START
+//If you want to have the zip,dsf.txt, and apt.dat stay on the HDD instead of being deleted instantly
+//Cannot be concievably used during TEST_AT_START mode
 #define SAVE_ON_HDD 0
-//If you want to start testing right away
-#define TEST_AT_START 0
+#endif
 #endif
 enum imp_dialog_stages
 {
@@ -150,7 +154,7 @@ private:
 
 #if TEST_AT_START
 	//So we can start testing stuff as soon as the program opens
-	//Warning! Librarian is required for getting the folder for saving files. This part will break
+	//Allows for testing of the network and the GUI
 	friend class WED_AppMain;
 #endif
 
@@ -249,8 +253,9 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	mVersions_VerProvider(&mVersions_Vers),
 	mVersions_TextTable(this,100,0)
 {
+#if !TEST_AT_START
 	mResolver->AddListener(this);
-
+#endif
 	//mPacker
 	int bounds[4];
 	mPacker = new GUI_Packer;
@@ -411,7 +416,6 @@ void WED_GatewayImportDialog::TimerFired()
 				//TODO - Move all of this out of here!
 							
 				//create a string from the vector of chars
-				
 				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
 
 				//Now that we have our rawJSONString we'll be turning it into a JSON object
@@ -437,14 +441,17 @@ void WED_GatewayImportDialog::TimerFired()
 				//Fixes the terrible vector padding bug by shrinking it back down to precisely the correct size
 				outString.resize(outP - &*outString.begin());
 
+				string filePath("");
 #if !TEST_AT_START //Testing before the librarian is ready will really mess things up
 				ILibrarian * lib = WED_GetLibrarian(mResolver);
 
-                string filePath("");
+                
                 lib->LookupPath(filePath);
 #else
-				//Save to this known location first
-				string filePath("C:\\");
+				//Anything beyond cannot be tested at the start or wouldn't be useful.
+				//We'll just test more network stuff
+				NextVersionsDownload();
+				return;
 #endif
 				string zipPath = filePath + ICAOid + ".zip";
 
@@ -572,8 +579,7 @@ void WED_GatewayImportDialog::TimerFired()
 					WED_DoImportText(dsfTextPath.c_str(), (WED_Group *) g);
 				}
 				wrl->CommitOperation();
-				
-#if !SAVE_ON_HDD
+
 				//clean up our files ICAOid.dat and potentially ICAOid.txt
 				if(has_dsf)
 				{
@@ -590,7 +596,7 @@ void WED_GatewayImportDialog::TimerFired()
 				{
 					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 				}
-#endif
+
 				NextVersionsDownload();
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl->is_ok())

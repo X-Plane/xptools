@@ -25,6 +25,9 @@
 #if DEV
 //Adds the abilty to bring up a console for debuging
 #include <stdio.h>
+
+//Adds the ability to test the airport import dialog box
+#include "WED_GatewayImport.h"
 #endif
 
 #include "WED_AboutBox.h"
@@ -201,6 +204,10 @@ int main(int argc, char * argv[])
 
 	start->ShowMessage(string());
 	setlocale(LC_ALL,"C");
+
+#if DEV && 1//Set to 0 for regular mode
+	WED_DoImportFromGateway(NULL);
+#endif
 	#if LIN
 	//TODO:mroe: maybe we can set this to LC_ALL for all other OS's .
 	//In the case of linux we must , since standard C locale is not utf-8	
