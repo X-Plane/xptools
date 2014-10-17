@@ -28,10 +28,9 @@
 #include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
-#include <sstream>
-#include <vector>
 
 #include <json/json.h>
+
 
 #include "WED_Document.h"
 #include "WED_PackageMgr.h"
@@ -74,8 +73,10 @@
 #define VERSION_GET_SIZE_GUESS  6000
 
 #if DEV
-//If you want to have the zip,dsf.txt, and apt.dat stay on the HDD instead of being deleted instantly
-#define SAVE_TO_HDD 0
+//If you want to have the zip,dsf.txt, and apt.dat stay on the HDD instead of being deleted instantl
+#define SAVE_ON_HDD 0
+//If you want to start testing right away
+#define TEST_AT_START 0
 #endif
 enum imp_dialog_stages
 {
@@ -116,6 +117,7 @@ public:
 		 mFile = NULL;
 		 return retVal;
 	 }
+	 return 0;//TODO - if mFile doesn't exist, calling close is harmless so it should return 0 OR calling close is unexpected and client should know?
  }
 
  operator bool() const { return mFile != NULL; }
@@ -123,17 +125,6 @@ public:
 
 private:
  FILE * mFile;
-};
-
-//Links a rawJSON Buffer with a cURL object for easier use of multiple downloading
-struct buffer_cURL_link
-{
-	vector<char> rawJSONBuf;
-	curl_http_get_file * mCurl;
-	buffer_cURL_link()
-	{
-		mCurl = NULL;
-	}
 };
 
 //Our private class for the import dialog
@@ -157,13 +148,18 @@ private:
 							intptr_t    			inMsg,
 							intptr_t				inParam);
 
-#if DEV
+#if TEST_AT_START
+	//So we can start testing stuff as soon as the program opens
+	//Warning! Librarian is required for getting the folder for saving files. This part will break
 	friend class WED_AppMain;
 #endif
 
 	int mPhase;//Our simple stage counter for our simple fsm
 
 	WED_Document *			 mResolver;
+
+	//Our curl handle we'll be using to get the json files, note the s
+	curl_http_get_file * mCurl;
 
 	//void DoAirportImport(string filePath);
 //--GUI parts
@@ -190,7 +186,7 @@ private:
 	//Starts the download of the json file containing the airports list
 	void StartICAODownload();
 	//From the downloaded JSON, fill the ICAO table
-	void FillICAOFromJSON(const vector<char> & rawJSONBuf);
+	void FillICAOFromJSON();
 		//--ICAO Table Provider/Geometry
 		WED_AptTable			mICAO_AptProvider;
 		AptVector				mICAO_Apts;
@@ -203,10 +199,10 @@ private:
 	//--Versions Table----------
 	GUI_Packer *			mVersions_Packer;
 	GUI_ScrollerPane *		mVersions_Scroller;
-	GUI_Table *				mVersions_Table;
+	GUI_Table *			mVersions_Table;
 	GUI_Header *			mVersions_Header;
 	//index of the current selection
-	set<int>				mVersions_VersionsSelected;
+	set<int>			mVersions_VersionsSelected;
 	GUI_TextTable			mVersions_TextTable;
 	GUI_TextTableHeader		mVersions_TextTableHeader;
 	
@@ -214,8 +210,7 @@ private:
 	void StartVersionsDownload();
 
 	//From the downloaded JSON, fill the versions table
-	void FillVersionsFromJSON(const vector<char> & rawJSONBuf);
-	
+	void FillVersionsFromJSON();
 	//Starts the download of the specific version, aiming to get the masterZipBlob contained
 	void StartSpecificVersionDownload(int id);
 	
@@ -235,7 +230,12 @@ private:
 	
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
-vector<buffer_cURL_link> gDownload_links;
+
+//TODO, put these in better places
+
+//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+vector<char> rawJSONBuf;
+
 string ICAOid;
 
 //--Implemation of WED_GateWayImportDialog class---------------
@@ -243,6 +243,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mPhase(imp_dialog_choose_ICAO),
+	mCurl(NULL),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
 	mVersions_VerProvider(&mVersions_Vers),
@@ -330,14 +331,11 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
 {
-	for (int i = 0; i < gDownload_links.size(); i++)
+	if(mCurl != NULL)
 	{
-		if(gDownload_links[i].mCurl != NULL)
-		{
-			delete gDownload_links[i].mCurl;
-			gDownload_links[i].mCurl = NULL;
-		}
-	}	
+		delete mCurl;
+		mCurl = NULL;
+	}
 }
 
 void WED_GatewayImportDialog::Next()
@@ -391,39 +389,31 @@ void WED_GatewayImportDialog::Back()
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
-	for(vector<buffer_cURL_link>::iterator itr = gDownload_links.begin(); itr != gDownload_links.end(); itr++)
-	{
-#if DEV
-		curl_http_get_file * current_info = itr->mCurl;
-#endif
-		
-	if(itr->mCurl->is_done())
+	if(mCurl->is_done())
 	{
 		Stop();
-		if(itr->mCurl->is_ok())
+
+		if(mCurl->is_ok())
 		{
-			delete (*itr).mCurl;
-			(*itr).mCurl = NULL;
-			
+			delete mCurl;
+			mCurl = NULL;
+
 			if(mPhase == imp_dialog_choose_ICAO)
 			{
-				FillICAOFromJSON(itr->rawJSONBuf);
-				gDownload_links.clear();
-				Stop();
+				FillICAOFromJSON();
 			}		
 			else if(mPhase == imp_dialog_choose_versions)
 			{
-				FillVersionsFromJSON(itr->rawJSONBuf);
-				gDownload_links.clear();
-				Stop();
+				FillVersionsFromJSON();
 			}
 			else if(mPhase == imp_dialog_download_specific_version)
 			{
 				//TODO - Move all of this out of here!
 							
 				//create a string from the vector of chars
-				string rawJSONString = string(itr->rawJSONBuf.begin(),itr->rawJSONBuf.end());
 				
+				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+
 				//Now that we have our rawJSONString we'll be turning it into a JSON object
 				
 				Json::Value root = Json::Value(Json::objectValue);
@@ -447,13 +437,17 @@ void WED_GatewayImportDialog::TimerFired()
 				//Fixes the terrible vector padding bug by shrinking it back down to precisely the correct size
 				outString.resize(outP - &*outString.begin());
 
+#if !TEST_AT_START //Testing before the librarian is ready will really mess things up
 				ILibrarian * lib = WED_GetLibrarian(mResolver);
 
                 string filePath("");
                 lib->LookupPath(filePath);
-				
+#else
+				//Save to this known location first
+				string filePath("C:\\");
+#endif
 				string zipPath = filePath + ICAOid + ".zip";
-				
+
 				if(!outString.empty())
 				{
 					RAII_file f(zipPath.c_str(),"wb");
@@ -515,7 +509,7 @@ void WED_GatewayImportDialog::TimerFired()
 						MFMemFile * currentFile = FileSet_OpenNth(zipRep,fileCount);
 						const char * fileName = FileSet_GetNth(zipRep,fileCount);
 					
-#if !SAVE_TO_HDD//Because, remember we DON'T want this file normally
+#if !SAVE_ON_HDD//Because, remember we DON'T want this file normally
 						if(fileName == (ICAOid + "_Scenery_Pack" + ".zip"))
 						{
 							MemFile_Close(currentFile);
@@ -579,7 +573,7 @@ void WED_GatewayImportDialog::TimerFired()
 				}
 				wrl->CommitOperation();
 				
-#if !SAVE_TO_HDD
+#if !SAVE_ON_HDD
 				//clean up our files ICAOid.dat and potentially ICAOid.txt
 				if(has_dsf)
 				{
@@ -597,7 +591,6 @@ void WED_GatewayImportDialog::TimerFired()
 					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 				}
 #endif
-				gDownload_links.erase(itr);
 				NextVersionsDownload();
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl->is_ok())
@@ -653,10 +646,9 @@ void WED_GatewayImportDialog::TimerFired()
 			}*/
 		}
 	}//end if(mCurl->is_done())
-	}//end for loop
 }//end WED_GatewayImportDialog::TimerFired()
 
-void WED_GatewayImportDialog::FillICAOFromJSON(const vector<char> & rawJSONBuf)
+void WED_GatewayImportDialog::FillICAOFromJSON()
 {
 	//create a string from the vector of chars
 	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
@@ -696,7 +688,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const vector<char> & rawJSONBuf)
 	mICAO_AptProvider.AptVectorChanged();
 }
 
-void WED_GatewayImportDialog::FillVersionsFromJSON(const vector<char> & rawJSONBuf)
+void WED_GatewayImportDialog::FillVersionsFromJSON()
 {
 	//create a string from the vector of chars
 	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
@@ -771,8 +763,7 @@ void WED_GatewayImportDialog::ReceiveMessage(
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	gDownload_links.push_back(buffer_cURL_link());
-	gDownload_links.back().rawJSONBuf = vector<char>(AIRPORTS_GET_SIZE_GUESS);
+	rawJSONBuf = vector<char>(AIRPORTS_GET_SIZE_GUESS);
 	string url = WED_URL_GATEWAY_API;
 	
 	//Get Certification
@@ -785,19 +776,18 @@ void WED_GatewayImportDialog::StartICAODownload()
 
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
 	url += "airports";
-	
+
 	//Get it from the server
-	gDownload_links.back().mCurl = new curl_http_get_file(url,&gDownload_links.back().rawJSONBuf,cert);
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
 	Start(1.0);
 }
 
 //Starts the download process
 void WED_GatewayImportDialog::StartVersionsDownload()
 {
-	gDownload_links.push_back(buffer_cURL_link());
-	gDownload_links.back().rawJSONBuf = vector<char>(VERSIONS_GET_SIZE_GUESS);
+	rawJSONBuf = vector<char>(VERSIONS_GET_SIZE_GUESS);
 	//Two steps,
-	//1.Get the airport from the current selection, then get its sceneryid from mAirportsGET
+	//1.Get the airport from the current selection, then get its sceneryid from mICAO_Apts
 
 	//index of the current selection
 	set<int> out_selection;
@@ -820,17 +810,17 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
 	url += "airport/" + ICAOid;
-	
-	gDownload_links.back().mCurl = new curl_http_get_file(url,&gDownload_links.back().rawJSONBuf,cert);
-	
+
+	//Get it from the server
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
 	Start(1.0);
 }
 
 void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 {
-	gDownload_links.push_back(buffer_cURL_link());
-	gDownload_links.back().rawJSONBuf = vector<char>(VERSION_GET_SIZE_GUESS);
-	
+	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+	rawJSONBuf = vector<char>(VERSION_GET_SIZE_GUESS);
+
 	//Get Certification
 	string cert;
 	if(!GUI_GetTempResourcePath("gateway.crt", cert))
@@ -846,7 +836,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	itoa(id,idStr,10);
 	url += "scenery/" + string(idStr);
 	//Get it from the server
-	gDownload_links.back().mCurl = new curl_http_get_file(url,&gDownload_links.back().rawJSONBuf,cert);
+	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
 	Start(1.0);
 }
 
