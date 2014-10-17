@@ -73,8 +73,6 @@
 #define VERSION_GET_SIZE_GUESS  6000
 
 #if DEV
-//If you want to start testing right away, only useful for testing networking and dialog box parts. Document not avaible (obviously)
-#define TEST_AT_START 1
 
 #if !TEST_AT_START
 //If you want to have the zip,dsf.txt, and apt.dat stay on the HDD instead of being deleted instantly
@@ -82,6 +80,7 @@
 #define SAVE_ON_HDD 0
 #endif
 #endif
+
 enum imp_dialog_stages
 {
 imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
@@ -96,6 +95,8 @@ enum imp_dialog_msg
 	click_next,
 	click_back
 };
+
+
 class RAII_file 
 {
 public:
@@ -130,6 +131,79 @@ public:
 private:
  FILE * mFile;
 };
+
+//--Mem File Utils code for virtually handling the downloaded zip file--
+//Returns 0 if everything went well, 1 if not
+int MemFileHandling(const string & zipPath, const string & filePath, const string & ICAO, bool & has_dsf)
+//Scope to ensure all the MemFile stuff stays inside here
+{
+	//A representation of the zipfile
+	MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
+	if(zipRep == NULL)
+	{
+		//Error handling here
+		DoUserAlert(string("Could not create memory mapped version of " + zipPath + ". Check if the file exists or if you have sufficient permissions").c_str());
+		return -1;
+	}
+	int fileCount = FileSet_Count(zipRep) - 1;
+	/* For all the files
+	*  Get the current file inside the memory mapped zip
+	*  Get the filename,
+	*		if it is "ICAO.txt", mark has_dsf to true
+	*  build the file path
+	*  Write the file to the harddrive
+	*/
+	while(fileCount >= 0)
+	{
+		MFMemFile * currentFile = FileSet_OpenNth(zipRep,fileCount);
+		const char * fileName = FileSet_GetNth(zipRep,fileCount);
+					
+#if !SAVE_ON_HDD//Because, remember we DON'T want this file normally
+		if(fileName == (ICAO + "_Scenery_Pack" + ".zip"))
+		{
+			MemFile_Close(currentFile);
+			fileCount--;
+			continue;
+		}
+#endif
+		string writeMode;
+		if(fileName == (ICAO + ".txt"))
+		{
+			has_dsf = true;
+			writeMode = "w";
+		}
+		else
+		{
+			writeMode = "wb";
+		}
+						
+		RAII_file f(string(filePath + fileName).c_str(),writeMode.c_str());
+
+		if(f != NULL)
+		{
+			size_t write_result = fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f());
+			f.close();
+
+			if(write_result != MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile))
+			{
+				MemFile_Close(currentFile);
+				DoUserAlert(string("Could not fully create file at " + string(filePath + fileName) + ", please ensure you have sufficient hard drive space and permissions").c_str());
+				return -1;
+			}
+			MemFile_Close(currentFile);
+		}
+		else
+		{
+			DoUserAlert(string("Could not create file at " + filePath + fileName + ", please ensure you have sufficient hard drive space and permissions").c_str());
+			MemFile_Close(currentFile);
+			return errno;
+		}
+		fileCount--;
+	}
+	FileSet_Close(zipRep);
+	return 0;
+}//end MemFile stuff
+//-------------------------------------------------------------
 
 //Our private class for the import dialog
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
@@ -217,7 +291,10 @@ private:
 	void FillVersionsFromJSON();
 	//Starts the download of the specific version, aiming to get the masterZipBlob contained
 	void StartSpecificVersionDownload(int id);
-	
+
+	//Once a specific version is downloaded this method decodes and imports it into the document
+	void HandleSpecificVersion();
+
 	//Keeps the versions downloading until they have all been (atleast attempted to download)
 	//returns false if there is nothing left in the queue
 	bool NextVersionsDownload();
@@ -413,191 +490,9 @@ void WED_GatewayImportDialog::TimerFired()
 			}
 			else if(mPhase == imp_dialog_download_specific_version)
 			{
-				//TODO - Move all of this out of here!
-							
-				//create a string from the vector of chars
-				string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
-
-				//Now that we have our rawJSONString we'll be turning it into a JSON object
+				//If it fails anywhere inside it will soon be destroyed
+				HandleSpecificVersion();
 				
-				Json::Value root = Json::Value(Json::objectValue);
-				Json::Reader reader;
-				bool success = reader.parse(rawJSONString,root);
-
-				//Check for errors
-				if(success == false)
-				{
-					DoUserAlert("Airports list is invalid data, ending dialog box");
-					this->AsyncDestroy();
-					return;
-				}
-
-				string zipString = root["scenery"]["masterZipBlob"].asString();
-				vector<char> outString = vector<char>(zipString.length());
-
-				char * outP;
-				decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
-				
-				//Fixes the terrible vector padding bug by shrinking it back down to precisely the correct size
-				outString.resize(outP - &*outString.begin());
-
-				string filePath("");
-#if !TEST_AT_START //Testing before the librarian is ready will really mess things up
-				ILibrarian * lib = WED_GetLibrarian(mResolver);
-
-                
-                lib->LookupPath(filePath);
-#else
-				//Anything beyond cannot be tested at the start or wouldn't be useful.
-				//We'll just test more network stuff
-				NextVersionsDownload();
-				return;
-#endif
-				string zipPath = filePath + ICAOid + ".zip";
-
-				if(!outString.empty())
-				{
-					RAII_file f(zipPath.c_str(),"wb");
-					if(f != NULL)
-					{
-						size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f());
-
-						if(write_result != outString.size())
-						{
-							DoUserAlert(string("Could not fully create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
-							mPhase--;//Roll us back a step so we can download again
-							
-							int removeVal = remove(zipPath.c_str());
-							if(removeVal != 0)
-							{
-								DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
-							}
-							this->AsyncDestroy();
-							return;//Exit before we can continue
-						}
-					}
-					else
-					{
-						DoUserAlert(string("Could not create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
-						this->AsyncDestroy();
-						return;
-					}
-				}
-
-#if DEV
-				//This line makes it easier to edit the zip path in the memory editor
-				//DO NOT USE edit_me
-				const char * edit_me = zipPath.c_str();
-#endif
-
-				bool has_dsf = false;
-
-				//Scope to ensure all the MemFile stuff stays inside here
-				{
-					//A representation of the zipfile
-					MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
-					if(zipRep == NULL)
-					{
-						//Error handling here
-						DoUserAlert(string("Could not create memory mapped version of " + zipPath + ". Check if the file exists or if you have sufficient permissions").c_str());
-						this->AsyncDestroy();
-						return;
-					}
-					int fileCount = FileSet_Count(zipRep) - 1;
-					/* For all the files
-					*  Get the current file inside the memory mapped zip
-					*  Get the filename,
-					*		if it is "ICAO.txt", mark has_dsf to true
-					*  build the file path
-					*  Write the file to the harddrive
-					*/
-					while(fileCount >= 0)
-					{
-						MFMemFile * currentFile = FileSet_OpenNth(zipRep,fileCount);
-						const char * fileName = FileSet_GetNth(zipRep,fileCount);
-					
-#if !SAVE_ON_HDD//Because, remember we DON'T want this file normally
-						if(fileName == (ICAOid + "_Scenery_Pack" + ".zip"))
-						{
-							MemFile_Close(currentFile);
-							fileCount--;
-							continue;
-						}
-#endif
-						string writeMode;
-						if(fileName == (ICAOid + ".txt"))
-						{
-							has_dsf = true;
-							writeMode = "w";
-						}
-						else
-						{
-							writeMode = "wb";
-						}
-						
-						RAII_file f(string(filePath + fileName).c_str(),writeMode.c_str());
-
-						if(f != NULL)
-						{
-							size_t write_result = fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f());
-							f.close();
-
-							if(write_result != MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile))
-							{
-								MemFile_Close(currentFile);
-								DoUserAlert(string("Could not fully create file at " + string(filePath + fileName) + ", please ensure you have sufficient hard drive space and permissions").c_str());
-								this->AsyncDestroy();
-								return;
-							}
-							MemFile_Close(currentFile);
-						}
-						else
-						{
-							DoUserAlert(string("Could not create file at " + filePath + fileName + ", please ensure you have sufficient hard drive space and permissions").c_str());
-							MemFile_Close(currentFile);
-							this->AsyncDestroy();
-							return;
-						}
-						fileCount--;
-					}
-					FileSet_Close(zipRep);
-				}//end MemFile stuff
-
-				WED_Thing * wrl = WED_GetWorld(mResolver);
-				wrl->StartOperation("Import Scenery Pack");
-
-				string aptdatPath = filePath + ICAOid + ".dat";
-				WED_ImportOneAptFile(aptdatPath,wrl);
-
-				WED_Thing * g = WED_Group::CreateTyped(wrl->GetArchive());
-				g->SetName(ICAOid);
-				g->SetParent(wrl,wrl->CountChildren());
-					
-				string dsfTextPath = filePath + ICAOid + ".txt";
-				if(has_dsf)
-				{
-					WED_DoImportText(dsfTextPath.c_str(), (WED_Group *) g);
-				}
-				wrl->CommitOperation();
-
-#if !SAVE_ON_HDD
-				//clean up our files ICAOid.dat and potentially ICAOid.txt
-				if(has_dsf)
-				{
-					if(remove(dsfTextPath.c_str()) != 0)
-					{
-						DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
-					}
-				}
-				if(remove(aptdatPath.c_str()) != 0)
-				{
-					DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
-				}
-				if(remove(zipPath.c_str()) != 0)
-				{
-					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
-				}
-#endif
 				NextVersionsDownload();
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl->is_ok())
@@ -864,6 +759,124 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	mVersions_VersionsSelected.erase(mVersions_VersionsSelected.begin());
 }
 
+void WED_GatewayImportDialog::HandleSpecificVersion()
+{
+	//create a string from the vector of chars
+	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+
+	//Now that we have our rawJSONString we'll be turning it into a JSON object
+	Json::Value root = Json::Value(Json::objectValue);
+	Json::Reader reader;
+	bool success = reader.parse(rawJSONString,root);
+
+	//Check for errors
+	if(success == false)
+	{
+		DoUserAlert("Airports list is invalid data, ending dialog box");
+		this->AsyncDestroy();
+		return;
+	}
+
+	string zipString = root["scenery"]["masterZipBlob"].asString();
+	vector<char> outString = vector<char>(zipString.length());
+
+	char * outP;
+	decode(&*zipString.begin(),&*zipString.end(),&*outString.begin(),&outP);
+				
+	//Fixes the terrible vector padding bug by shrinking it back down to precisely the correct size
+	outString.resize(outP - &*outString.begin());
+
+	string filePath("");
+#if !TEST_AT_START //Testing before the librarian is ready will really mess things up
+	ILibrarian * lib = WED_GetLibrarian(mResolver);
+    lib->LookupPath(filePath);
+#else
+	//Anything beyond cannot be tested at the start or wouldn't be useful.
+	return;
+#endif
+	string zipPath = filePath + ICAOid + ".zip";
+
+	if(!outString.empty())
+	{
+		RAII_file f(zipPath.c_str(),"wb");
+		if(f != NULL)
+		{
+			size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f());
+
+			if(write_result != outString.size())
+			{
+				DoUserAlert(string("Could not fully create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
+				mPhase--;//Roll us back a step so we can download again
+							
+				int removeVal = remove(zipPath.c_str());
+				if(removeVal != 0)
+				{
+					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+				}
+				this->AsyncDestroy();
+				return;//Exit before we can continue
+			}
+		}
+		else
+		{
+			DoUserAlert(string("Could not create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
+			this->AsyncDestroy();
+			return;
+		}
+	}
+
+#if DEV
+	//This line makes it easier to edit the zip path in the memory editor
+	//DO NOT USE edit_me
+	const char * edit_me = zipPath.c_str();
+#endif
+
+	bool has_dsf = false;
+
+	int res = MemFileHandling(zipPath,filePath,ICAOid,has_dsf);
+
+	if(res != 0)
+	{
+		this->AsyncDestroy();
+		return;
+	}
+
+	WED_Thing * wrl = WED_GetWorld(mResolver);
+	wrl->StartOperation("Import Scenery Pack");
+
+	string aptdatPath = filePath + ICAOid + ".dat";
+	WED_ImportOneAptFile(aptdatPath,wrl);
+
+	WED_Thing * g = WED_Group::CreateTyped(wrl->GetArchive());
+	g->SetName(ICAOid);
+	g->SetParent(wrl,wrl->CountChildren());
+					
+	string dsfTextPath = filePath + ICAOid + ".txt";
+	if(has_dsf)
+	{
+		WED_DoImportText(dsfTextPath.c_str(), (WED_Group *) g);
+	}
+	wrl->CommitOperation();
+
+#if !SAVE_ON_HDD
+	//clean up our files ICAOid.dat and potentially ICAOid.txt
+	if(has_dsf)
+	{
+		if(remove(dsfTextPath.c_str()) != 0)
+		{
+			DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+		}
+	}
+	if(remove(aptdatPath.c_str()) != 0)
+	{
+		DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+	}
+	if(remove(zipPath.c_str()) != 0)
+	{
+		DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+	}
+#endif
+}
 void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 {
 	mICAO_AptProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
@@ -1007,8 +1020,7 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 }
 //-------------------------------------------------------------
 
-//--Mem File Utils code for virtually handling the downloaded zip file--
-//void Create
+
 //----------------------------------------------------------------------
 int	WED_CanImportFromGateway(IResolver * resolver)
 {

@@ -205,7 +205,7 @@ int main(int argc, char * argv[])
 	start->ShowMessage(string());
 	setlocale(LC_ALL,"C");
 
-#if DEV && 1//Set to 0 for regular mode
+#if DEV && TEST_AT_START
 	WED_DoImportFromGateway(NULL);
 #endif
 	#if LIN

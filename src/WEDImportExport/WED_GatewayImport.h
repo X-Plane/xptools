@@ -24,6 +24,9 @@
 #ifndef WED_GatewayImport_H
 #define WED_GatewayImport_H
 
+//If you want to start testing right away, only useful for testing networking and dialog box parts
+#define TEST_AT_START 0
+
 class	IResolver;
 class   WED_Document;
 
