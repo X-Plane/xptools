@@ -28,6 +28,7 @@
 #include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
+#include <sstream>
 
 #include <json/json.h>
 
@@ -204,7 +205,57 @@ int MemFileHandling(const string & zipPath, const string & filePath, const strin
 	return 0;
 }//end MemFile stuff
 //-------------------------------------------------------------
+void HandleNetworkError(curl_http_get_file * mCurl)
+{
+	int err = mCurl->get_error();
+	bool bad_net = mCurl->is_net_fail();
 
+	stringstream ss;
+			
+	if(err <= CURL_LAST)
+	{
+		string msg = curl_easy_strerror((CURLcode) err);
+		ss << "Download failed: " << msg << ". (" << err << ")";
+				
+		if(bad_net) ss << "\n(Please check your internet connectivity.)";
+	}
+	else if(err >= 100)
+	{
+		//Get the string of error data
+		vector<char>	errdat;
+		mCurl->get_error_data(errdat);
+				
+		bool is_ok = !errdat.empty();
+		for(vector<char>::iterator i = errdat.begin(); i != errdat.end(); ++i)
+		{
+			//If the charecter is not printable
+			if(!isprint(*i))
+			{
+				is_ok = false;
+				break;
+			}
+		}
+
+		if(is_ok)
+		{
+			string errmsg = string(errdat.begin(),errdat.end());
+			ss << "\n" << errmsg;
+		}
+		else
+		{
+			//Couldn't get a useful error message, displaying this instead
+			ss << "Download failed due to unknown error: " << err << ".";
+		}
+	}
+	else
+	{
+		ss << "Download failed due to unknown error: " << err << ".";
+	}
+	if(ss.str().size() > 0)
+	{
+		DoUserAlert(ss.str().c_str());
+	}
+}
 //Our private class for the import dialog
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
 {
@@ -498,54 +549,7 @@ void WED_GatewayImportDialog::TimerFired()
 		}//end if(mCurl->is_ok())
 		else
 		{
-			/*int err = (*itr)->get_error();
-			bool bad_net = (*itr)->is_net_fail();
-
-			stringstream ss;
-			
-			if(err <= CURL_LAST)
-			{
-				string msg = curl_easy_strerror((CURLcode) err);
-				ss << "Download failed: " << msg << ". (" << err << ")";
-				
-				if(bad_net) ss << "\n(Please check your internet connectivity.)";
-			}
-			else if(err >= 100)
-			{
-				//Get the string of error data
-				vector<char>	errdat;
-				(*itr)->get_error_data(errdat);
-				
-				bool is_ok = !errdat.empty();
-				for(vector<char>::iterator i = errdat.begin(); i != errdat.end(); ++i)
-				{
-					//If the charecter is not printable
-					if(!isprint(*i))
-					{
-						is_ok = false;
-						break;
-					}
-				}
-
-				if(is_ok)
-				{
-					string errmsg = string(errdat.begin(),errdat.end());
-					ss << "\n" << errmsg;
-				}
-				else
-				{
-					//Couldn't get a useful error message, displaying this instead
-					ss << "Download failed due to unknown error: " << err << ".";
-				}
-			}
-			else
-			{
-				ss << "Download failed due to unknown error: " << err << ".";
-			}
-			if(ss.str().size() > 0)
-			{
-				DoUserAlert(ss.str().c_str());
-			}*/
+			HandleNetworkError(mCurl);
 		}
 	}//end if(mCurl->is_done())
 }//end WED_GatewayImportDialog::TimerFired()
@@ -786,14 +790,15 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	//Fixes the terrible vector padding bug by shrinking it back down to precisely the correct size
 	outString.resize(outP - &*outString.begin());
 
-	string filePath("");
-#if !TEST_AT_START //Testing before the librarian is ready will really mess things up
-	ILibrarian * lib = WED_GetLibrarian(mResolver);
-    lib->LookupPath(filePath);
-#else
+#if TEST_AT_START
 	//Anything beyond cannot be tested at the start or wouldn't be useful.
 	return;
 #endif
+	string filePath("");
+
+	ILibrarian * lib = WED_GetLibrarian(mResolver);
+    lib->LookupPath(filePath);
+
 	string zipPath = filePath + ICAOid + ".zip";
 
 	if(!outString.empty())
