@@ -735,14 +735,10 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 		return;
 	}
 	
-	string url = WED_URL_GATEWAY_API;
-
-	//This can store up to INT_MAX
-	char idStr[5] = {0};
-	itoa(id,idStr,10);
-	url += "scenery/" + string(idStr);
-	//Get it from the server
-	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
+	stringstream url; 
+	
+	url << WED_URL_GATEWAY_API << "scenery/" << id;	
+	mCurl = new curl_http_get_file(url.str(),&rawJSONBuf,cert);
 	Start(1.0);
 }
 
