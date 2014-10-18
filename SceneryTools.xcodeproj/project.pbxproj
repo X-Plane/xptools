@@ -651,6 +651,8 @@
 		D6A2670C0F992BD000E1E754 /* XPlaneSupportMac.p in CopyFiles */ = {isa = PBXBuildFile; fileRef = D6A2665E0F99266D00E1E754 /* XPlaneSupportMac.p */; };
 		D6A88BE611820B05000EBFBF /* MemUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A88BE511820B05000EBFBF /* MemUtils.cpp */; };
 		D6A88BE711820B05000EBFBF /* MemUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A88BE511820B05000EBFBF /* MemUtils.cpp */; };
+		D6ABE9E319F1F8CC00684AC1 /* WED_GatewayImport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ABE9DF19F1F8CC00684AC1 /* WED_GatewayImport.cpp */; };
+		D6ABE9E419F1F8CC00684AC1 /* WED_VerTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ABE9E119F1F8CC00684AC1 /* WED_VerTable.cpp */; };
 		D6AC143E0F126C930006E096 /* WED_TCE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143A0F126C930006E096 /* WED_TCE.cpp */; };
 		D6AC143F0F126C930006E096 /* WED_TCEPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */; };
 		D6AC14510F126EC10006E096 /* WED_TCELayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14500F126EC10006E096 /* WED_TCELayer.cpp */; };
@@ -1476,6 +1478,10 @@
 		D6A266940F99274300E1E754 /* XPlaneSupport.tcl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = XPlaneSupport.tcl; sourceTree = "<group>"; };
 		D6A88BE411820B05000EBFBF /* MemUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MemUtils.h; sourceTree = "<group>"; };
 		D6A88BE511820B05000EBFBF /* MemUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MemUtils.cpp; sourceTree = "<group>"; };
+		D6ABE9DF19F1F8CC00684AC1 /* WED_GatewayImport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GatewayImport.cpp; sourceTree = "<group>"; };
+		D6ABE9E019F1F8CC00684AC1 /* WED_GatewayImport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GatewayImport.h; sourceTree = "<group>"; };
+		D6ABE9E119F1F8CC00684AC1 /* WED_VerTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_VerTable.cpp; sourceTree = "<group>"; };
+		D6ABE9E219F1F8CC00684AC1 /* WED_VerTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_VerTable.h; sourceTree = "<group>"; };
 		D6AC143A0F126C930006E096 /* WED_TCE.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCE.cpp; sourceTree = "<group>"; };
 		D6AC143B0F126C930006E096 /* WED_TCE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TCE.h; sourceTree = "<group>"; };
 		D6AC143C0F126C930006E096 /* WED_TCEPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TCEPane.cpp; sourceTree = "<group>"; };
@@ -2275,6 +2281,10 @@
 		D60B0BD00C0658E600AD5EB7 /* WEDImportExport */ = {
 			isa = PBXGroup;
 			children = (
+				D6ABE9DF19F1F8CC00684AC1 /* WED_GatewayImport.cpp */,
+				D6ABE9E019F1F8CC00684AC1 /* WED_GatewayImport.h */,
+				D6ABE9E119F1F8CC00684AC1 /* WED_VerTable.cpp */,
+				D6ABE9E219F1F8CC00684AC1 /* WED_VerTable.h */,
 				D60B10200C075B3700AD5EB7 /* WED_AptIE.h */,
 				D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */,
 				D66864230C4F783C00DB3056 /* WED_DSFExport.h */,
@@ -4849,6 +4859,8 @@
 				D6E4C95718EC91DE000D98B8 /* json_writer.cpp in Sources */,
 				D6E4C9CF18ECA18D000D98B8 /* curl_http.cpp in Sources */,
 				D6B8043A198A7DD00005C1FF /* WED_Sign_Parser.cpp in Sources */,
+				D6ABE9E319F1F8CC00684AC1 /* WED_GatewayImport.cpp in Sources */,
+				D6ABE9E419F1F8CC00684AC1 /* WED_VerTable.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
