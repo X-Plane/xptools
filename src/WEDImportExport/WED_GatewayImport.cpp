@@ -180,7 +180,7 @@ int MemFileHandling(const string & zipPath, const string & filePath, const strin
 						
 		RAII_file f(string(filePath + fileName).c_str(),writeMode.c_str());
 
-		if(f != NULL)
+		if(f)
 		{
 			size_t write_result = fwrite(MemFile_GetBegin(currentFile),sizeof(char),MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile),f());
 			f.close();
@@ -761,6 +761,7 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 
 	//Erase that one off the queue
 	mVersions_VersionsSelected.erase(mVersions_VersionsSelected.begin());
+	return true;
 }
 
 void WED_GatewayImportDialog::HandleSpecificVersion()
@@ -804,7 +805,7 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	if(!outString.empty())
 	{
 		RAII_file f(zipPath.c_str(),"wb");
-		if(f != NULL)
+		if(f)
 		{
 			size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f());
 
