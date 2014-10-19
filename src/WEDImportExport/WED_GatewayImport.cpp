@@ -44,7 +44,7 @@
 #include "GUI_Button.h"
 #include "WED_Messages.h"
 #include "MemFileUtils.h"
-
+#include "FileUtils.h"
 //--DSF/AptImport
 #include "WED_AptIE.h"
 #include "WED_ToolUtils.h"
@@ -810,7 +810,7 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 				DoUserAlert(string("Could not fully create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
 				mPhase--;//Roll us back a step so we can download again
 							
-				int removeVal = remove(zipPath.c_str());
+				int removeVal = FILE_delete_file(zipPath.c_str(),0);
 				if(removeVal != 0)
 				{
 					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
@@ -864,16 +864,16 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	//clean up our files ICAOid.dat and potentially ICAOid.txt
 	if(has_dsf)
 	{
-		if(remove(dsfTextPath.c_str()) != 0)
+		if(FILE_delete_file(dsfTextPath.c_str(),0) != 0)
 		{
 			DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 		}
 	}
-	if(remove(aptdatPath.c_str()) != 0)
+	if(FILE_delete_file(aptdatPath.c_str(),0) != 0)
 	{
 		DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 	}
-	if(remove(zipPath.c_str()) != 0)
+	if(FILE_delete_file(zipPath.c_str(),0) != 0)
 	{
 		DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 	}
