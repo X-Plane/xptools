@@ -257,6 +257,7 @@ struct	DEMGeo {
 	inline float	xy_nearest_raw(double lon, double lat            ) const;	// Get nearest-neighbor value void ok
 	inline float	xy_nearest_raw(double lon, double lat, int& x, int& y) const;	// Get nearest-neighbor value void ok
 	inline float	search_nearest(double lon, double lat) const;				// Get nearest-neighbor value, search indefinitely
+	inline float	get_median(double lon, double lat, double xstep, double ystep, int r) const;				// Get median value in given radius
 
 	/****************************************************************************
 	 * GEOCODING FUNCTIONS
@@ -940,6 +941,67 @@ inline float	DEMGeo::search_nearest(double lon, double lat) const
 	}
 	return DEM_NO_DATA;
 }
+
+inline float	DEMGeo::get_median(double lon, double lat, double xstep, double ystep, int r) const
+{
+	if (lon < mWest || lon > mEast || lat < mSouth || lat > mNorth) return DEM_NO_DATA;
+
+	double x_fract;
+	double y_fract;
+	int x;
+	int y;
+	int cnt = 0;
+	int mid;
+	float e;
+
+	double lons = lon - (r * xstep);
+	double lats = lat - (r * ystep);
+	double lono = lons;
+	double lato = lats;
+
+	int rx, ry;
+
+	vector<float>	es;
+	//printf("--------------------- lon:%f,lat:%f,xstep:%f,ystep:%f\n",lon,lat,xstep,ystep);
+	es.reserve(((r*2)+1)*((r*2)+1));
+	for (ry = 0; ry < ((r*2)+1); ry++)
+	{
+		for (rx = 0; rx < ((r*2)+1); rx++)
+		{
+			if (lono >= mWest || lono <= mEast || lato >= mSouth || lato <= mNorth)
+			{
+				// translate the dst coordinates (with new resolution) back to src pixel positions
+				x_fract = (lono - mWest) / (mEast - mWest);
+				y_fract = (lato - mSouth) / (mNorth - mSouth);
+				x_fract *= (double) (mWidth-mPost);
+				y_fract *= (double) (mHeight-mPost);
+				x_fract -= pixel_offset();
+				y_fract -= pixel_offset();
+				x = x_fract;
+				y = y_fract;
+
+				e = get(x,y);
+				//printf("---- cnt:%d,rx:%d,ry:%d,lono:%f,lato:%f,e:%f.\n", cnt, rx, ry, lono, lato, e);
+				if (e != DEM_NO_DATA)
+				{
+					es.push_back(e);
+					cnt++;
+				}
+			}
+			lono = lono + xstep;
+		}
+		lono = lons;
+		lato = lato + ystep;
+	}
+
+	if (es.empty()) return DEM_NO_DATA;
+	sort(es.begin(), es.end());
+
+	mid = (cnt + 1) / 2;
+	//printf("-- mid:%d,es[mid]:%f.\n", mid,es[mid]);
+	return es[mid];
+}
+
 
 inline double	DEMGeo::x_to_lon(int inX) const
 {
