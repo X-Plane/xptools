@@ -40,6 +40,10 @@
 #include "GUI_Window.h"
 #include "GUI_Packer.h"
 #include "GUI_Timer.h"
+
+#include "GUI_Label.h"
+
+
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
@@ -84,10 +88,11 @@
 
 enum imp_dialog_stages
 {
+imp_dialog_download_ICAO,
 imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
+imp_dialog_download_versions,
 imp_dialog_choose_versions,//Let user pick scenery pack(s) to download. The required GET is done before hand
 imp_dialog_download_specific_version,//Download scenery pack, save the contents in the right place, import to WED
-imp_dialog_finish//Clean up any processes left
 };
 
 enum imp_dialog_msg
@@ -292,7 +297,9 @@ private:
 
 	//void DoAirportImport(string filePath);
 //--GUI parts
-	
+
+	//Changes the decoration of the GUI window's title, buttons, etc, based on the stage
+	void DecorateGUIWindow(imp_dialog_stages stage);
 	//--For the whole dialog box
 	WED_FilterBar	 *		mFilter;
 	GUI_Packer *			mPacker;
@@ -300,6 +307,7 @@ private:
 	GUI_Pane *				mButtonHolder;
 	GUI_Button *			mNextButton;
 	GUI_Button *			mBackButton;
+	GUI_Label *				mLabel;
 
 	static int				import_bounds_default[4];
 
@@ -363,8 +371,6 @@ private:
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 
-//TODO, put these in better places
-
 //a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
 vector<char> rawJSONBuf;
 
@@ -374,7 +380,7 @@ string ICAOid;
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered,import_bounds_default,cmdr),
 	mResolver(resolver),
-	mPhase(imp_dialog_choose_ICAO),
+	mPhase(imp_dialog_download_ICAO),
 	mCurl(NULL),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
@@ -459,6 +465,18 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 
 		MakeICAOTable(bounds);
 		MakeVersionsTable(bounds);
+
+		mLabel = new GUI_Label();
+		mLabel->SetParent(this);
+		mLabel->SetDescriptor("Download in Progress, Please Wait");
+
+		int labelBounds[4] = {100,260,400,300};
+		mLabel->SetBounds(labelBounds);
+		
+		
+		mLabel->SetColors(WED_Color_RGBA(wed_Table_Text));
+		
+		mLabel->SetSticky(1,0,1,1);		
 	StartICAODownload();
 }
 
@@ -487,17 +505,14 @@ void WED_GatewayImportDialog::Next()
 		StartVersionsDownload();
 		mICAO_Packer->Hide();
 		mVersions_Packer->Show();
+		DecorateGUIWindow((imp_dialog_stages) mPhase);
 		break;
+		
 	case imp_dialog_choose_versions:
 		mVersions_VerProvider.GetSelection(mVersions_VersionsSelected);
 		NextVersionsDownload();
-		break;
-	case imp_dialog_download_specific_version:
-		break;
-	case imp_dialog_finish:
-
-		this->AsyncDestroy();//?
-		break;
+		DecorateGUIWindow((imp_dialog_stages) mPhase);
+		break;	
 	}
 	mPhase++;
 }
@@ -512,8 +527,7 @@ void WED_GatewayImportDialog::Back()
 	case imp_dialog_choose_versions:
 		mICAO_Packer->Show();
 		mVersions_Packer->Hide();
-		break;
-	case imp_dialog_finish:
+		DecorateGUIWindow((imp_dialog_stages) (mPhase-1));
 		break;
 	}
 	mPhase--;
@@ -522,29 +536,46 @@ void WED_GatewayImportDialog::Back()
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
+	/*if(	mPhase == imp_dialog_download_ICAO ||
+		mPhase == imp_dialog_download_versions ||
+		mPhase == imp_dialog_download_specific_version)
+	{
+		stringstream ss;
+		ss << "Download in Progress: " << mCurl->get_progress() << "% Done";
+		mLabel->SetDescriptor(ss.str());
+	}*/
+
 	if(mCurl->is_done())
 	{
 		Stop();
-
+		mPhase++;
+		mLabel->Hide();
 		if(mCurl->is_ok())
 		{
 			delete mCurl;
 			mCurl = NULL;
 
-			if(mPhase == imp_dialog_choose_ICAO)
+			if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
 			{
 				FillICAOFromJSON();
 			}		
-			else if(mPhase == imp_dialog_choose_versions)
+			else if(mPhase == imp_dialog_choose_versions)//
 			{
 				FillVersionsFromJSON();
 			}
-			else if(mPhase == imp_dialog_download_specific_version)
+			else if(mPhase == imp_dialog_download_specific_version - 1)
 			{
 				//If it fails anywhere inside it will soon be destroyed
 				HandleSpecificVersion();
 				
-				NextVersionsDownload();
+				bool result = NextVersionsDownload();
+				
+				//We're all done with everything!
+				if(result = true)
+				{
+					this->AsyncDestroy();
+					return;
+				}
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl->is_ok())
 		else
@@ -686,6 +717,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 	//Get it from the server
 	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
 	Start(1.0);
+	mLabel->Show();
 }
 
 //Starts the download process
@@ -720,6 +752,7 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	//Get it from the server
 	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
 	Start(1.0);
+	mLabel->Show();
 }
 
 void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
@@ -740,6 +773,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	url << WED_URL_GATEWAY_API << "scenery/" << id;	
 	mCurl = new curl_http_get_file(url.str(),&rawJSONBuf,cert);
 	Start(1.0);
+	mLabel->Show();
 }
 
 bool WED_GatewayImportDialog::NextVersionsDownload()
@@ -879,6 +913,26 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	}
 #endif
 }
+
+void WED_GatewayImportDialog::DecorateGUIWindow(imp_dialog_stages stage)
+{
+	switch(stage)
+	{
+		case imp_dialog_choose_ICAO:
+			mBackButton->SetDescriptor("Cancel");
+			mNextButton->SetDescriptor("Search");
+			break;
+		case imp_dialog_choose_versions:
+			mBackButton->SetDescriptor("Back");
+			mNextButton->SetDescriptor("Import Pack(s)");
+			break;
+		case imp_dialog_download_specific_version:
+			mBackButton->Hide();
+			mNextButton->Hide();
+			break;
+	}
+}
+
 void WED_GatewayImportDialog::MakeICAOTable(int bounds[4])
 {
 	mICAO_AptProvider.SetFilter(mFilter->GetText());//This requires mApts to be full
