@@ -55,6 +55,7 @@ void	UpsampleDEM(const DEMGeo& inDem, DEMGeo& outSmaller, int ratio);
 // Resample a DEM, changing anything - size, location, postings...does linear interp resample.
 // This will alias if src res is more than 2x dst res.
 void	ResampleDEM(const DEMGeo& inSrc, DEMGeo& inDst);
+void 	ResampleDEMmedian(const DEMGeo& inSrc, DEMGeo& inDst, int radius);
 
 void	InterpDoubleDEM(const DEMGeo& inDEM, DEMGeo& outBigger);
 void	ReduceToBorder(const DEMGeo& inDEM, DEMGeo& outDEM);

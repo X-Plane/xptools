@@ -1399,7 +1399,8 @@ int GTIFProj4FromLatLong( GTIFDefn * psDefn, int nPoints,
 }
 #else
 
-#include "projects.h"
+//#include "projects.h"
+#include PROJECTS_DIR
 
 #ifdef USE_PROJUV
 #  define UV projUV
