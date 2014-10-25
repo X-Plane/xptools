@@ -38,7 +38,7 @@ public:
 			void		SetColors(float text_color[4]);
 
 			void		SetMargins(float l, float b, float r, float t);
-
+	virtual	void		SetDescriptor(const string& inDesc);
 	virtual	void		Draw(GUI_GraphState * state);
 	
 private:

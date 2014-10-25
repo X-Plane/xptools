@@ -57,6 +57,12 @@ void		GUI_Label::SetMargins(float l, float b, float r, float t)
 	mMargins[3] = t;
 }
 
+void		GUI_Label::SetDescriptor(const string& inDesc)
+{
+	GUI_Pane::SetDescriptor(inDesc);
+	GUI_Pane::Refresh();
+}
+
 void		GUI_Label::Draw(GUI_GraphState * state)
 {
 	string txt;

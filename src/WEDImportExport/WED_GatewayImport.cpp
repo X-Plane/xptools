@@ -88,11 +88,13 @@
 
 enum imp_dialog_stages
 {
+imp_dialog_error,//for file and network errors
 imp_dialog_download_ICAO,
 imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
 imp_dialog_download_versions,
 imp_dialog_choose_versions,//Let user pick scenery pack(s) to download. The required GET is done before hand
-imp_dialog_download_specific_version,//Download scenery pack, save the contents in the right place, import to WED
+imp_dialog_download_specific_version//Download scenery pack, save the contents in the right place, import to WED
+
 };
 
 enum imp_dialog_msg
@@ -139,17 +141,15 @@ private:
 };
 
 //--Mem File Utils code for virtually handling the downloaded zip file--
-//Returns 0 if everything went well, 1 if not
-int MemFileHandling(const string & zipPath, const string & filePath, const string & ICAO, bool & has_dsf)
+//Returns an empty string if everything went well, the error message if not
+string MemFileHandling(const string & zipPath, const string & filePath, const string & ICAO, bool & has_dsf)
 //Scope to ensure all the MemFile stuff stays inside here
 {
 	//A representation of the zipfile
 	MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
 	if(zipRep == NULL)
 	{
-		//Error handling here
-		DoUserAlert(string("Could not create memory mapped version of " + zipPath + ". Check if the file exists or if you have sufficient permissions").c_str());
-		return -1;
+		return string("Could not create memory mapped version of " + zipPath + ". Check if the file exists or if you have sufficient permissions");
 	}
 	int fileCount = FileSet_Count(zipRep) - 1;
 	/* For all the files
@@ -193,30 +193,30 @@ int MemFileHandling(const string & zipPath, const string & filePath, const strin
 			if(write_result != MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile))
 			{
 				MemFile_Close(currentFile);
-				DoUserAlert(string("Could not fully create file at " + string(filePath + fileName) + ", please ensure you have sufficient hard drive space and permissions").c_str());
-				return -1;
+				return string("Could not fully create file at " + string(filePath + fileName) + ", please ensure you have sufficient hard drive space and permissions");
 			}
 			MemFile_Close(currentFile);
 		}
 		else
 		{
-			DoUserAlert(string("Could not create file at " + filePath + fileName + ", please ensure you have sufficient hard drive space and permissions").c_str());
 			MemFile_Close(currentFile);
-			return errno;
+			return string("Could not create file at " + filePath + fileName + ", please ensure you have sufficient hard drive space and permissions");
 		}
 		fileCount--;
 	}
 	FileSet_Close(zipRep);
-	return 0;
+	return string();
 }//end MemFile stuff
 //-------------------------------------------------------------
-void HandleNetworkError(curl_http_get_file * mCurl)
+
+//returns an error string if there is one
+string HandleNetworkError(curl_http_get_file * mCurl)
 {
 	int err = mCurl->get_error();
 	bool bad_net = mCurl->is_net_fail();
 
 	stringstream ss;
-			
+	ss.str() = "";
 	if(err <= CURL_LAST)
 	{
 		string msg = curl_easy_strerror((CURLcode) err);
@@ -256,11 +256,11 @@ void HandleNetworkError(curl_http_get_file * mCurl)
 	{
 		ss << "Download failed due to unknown error: " << err << ".";
 	}
-	if(ss.str().size() > 0)
-	{
-		DoUserAlert(ss.str().c_str());
-	}
+
+	return ss.str();	
 }
+
+
 //Our private class for the import dialog
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
 {
@@ -299,7 +299,7 @@ private:
 //--GUI parts
 
 	//Changes the decoration of the GUI window's title, buttons, etc, based on the stage
-	void DecorateGUIWindow(imp_dialog_stages stage);
+	void DecorateGUIWindow(string labelDesc="");
 	//--For the whole dialog box
 	WED_FilterBar	 *		mFilter;
 	GUI_Packer *			mPacker;
@@ -336,10 +336,10 @@ private:
 	//--Versions Table----------
 	GUI_Packer *			mVersions_Packer;
 	GUI_ScrollerPane *		mVersions_Scroller;
-	GUI_Table *			mVersions_Table;
+	GUI_Table *				mVersions_Table;
 	GUI_Header *			mVersions_Header;
 	//index of the current selection
-	set<int>			mVersions_VersionsSelected;
+	set<int>				mVersions_VersionsSelected;
 	GUI_TextTable			mVersions_TextTable;
 	GUI_TextTableHeader		mVersions_TextTableHeader;
 	
@@ -476,7 +476,8 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 		
 		mLabel->SetColors(WED_Color_RGBA(wed_Table_Text));
 		
-		mLabel->SetSticky(1,0,1,1);		
+		mLabel->SetSticky(1,0,1,1);
+		DecorateGUIWindow();
 	StartICAODownload();
 }
 
@@ -503,15 +504,22 @@ void WED_GatewayImportDialog::Next()
 	case imp_dialog_choose_ICAO:
 		//Going to show versions
 		StartVersionsDownload();
-		mICAO_Packer->Hide();
-		mVersions_Packer->Show();
-		DecorateGUIWindow((imp_dialog_stages) mPhase);
+		
+		DecorateGUIWindow();
 		break;
 		
 	case imp_dialog_choose_versions:
 		mVersions_VerProvider.GetSelection(mVersions_VersionsSelected);
-		NextVersionsDownload();
-		DecorateGUIWindow((imp_dialog_stages) mPhase);
+		
+		//Were we able to in the first place?
+		bool able_to_start = NextVersionsDownload();
+		if(able_to_start == false)
+		{
+			DoUserAlert("You must select atleast one item in the list");
+			return;//
+		}
+
+		DecorateGUIWindow();
 		break;	
 	}
 	mPhase++;
@@ -527,7 +535,7 @@ void WED_GatewayImportDialog::Back()
 	case imp_dialog_choose_versions:
 		mICAO_Packer->Show();
 		mVersions_Packer->Hide();
-		DecorateGUIWindow((imp_dialog_stages) (mPhase-1));
+		DecorateGUIWindow();
 		break;
 	}
 	mPhase--;
@@ -536,20 +544,26 @@ void WED_GatewayImportDialog::Back()
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
-	/*if(	mPhase == imp_dialog_download_ICAO ||
+	if(	mPhase == imp_dialog_download_ICAO ||
 		mPhase == imp_dialog_download_versions ||
-		mPhase == imp_dialog_download_specific_version)
+		mPhase >= imp_dialog_download_specific_version)
 	{
+		//To avoid user confusion with a potential progress of -1, we'll just call it 0
+		int progress = mCurl->get_progress();
+		if(progress < 0)
+		{
+			progress = 0;
+		}
 		stringstream ss;
-		ss << "Download in Progress: " << mCurl->get_progress() << "% Done";
-		mLabel->SetDescriptor(ss.str());
-	}*/
+		ss << "Download in Progress: " << progress << "% Done";
+		DecorateGUIWindow(ss.str());
+	}
 
 	if(mCurl->is_done())
 	{
 		Stop();
 		mPhase++;
-		mLabel->Hide();
+		DecorateGUIWindow();
 		if(mCurl->is_ok())
 		{
 			delete mCurl;
@@ -563,15 +577,15 @@ void WED_GatewayImportDialog::TimerFired()
 			{
 				FillVersionsFromJSON();
 			}
-			else if(mPhase == imp_dialog_download_specific_version - 1)
+			else if(mPhase - 1 >= imp_dialog_download_specific_version) // -1 to counter act the mPhase++, >= for the fact we have multiple downloads
 			{
 				//If it fails anywhere inside it will soon be destroyed
 				HandleSpecificVersion();
 				
-				bool result = NextVersionsDownload();
+				bool has_versions_left = NextVersionsDownload();
 				
 				//We're all done with everything!
-				if(result = true)
+				if(has_versions_left == false)
 				{
 					this->AsyncDestroy();
 					return;
@@ -580,7 +594,11 @@ void WED_GatewayImportDialog::TimerFired()
 		}//end if(mCurl->is_ok())
 		else
 		{
-			HandleNetworkError(mCurl);
+			string res = HandleNetworkError(mCurl);
+			if(res != "")
+			{
+				mLabel->SetDescriptor(res);
+			}
 		}
 	}//end if(mCurl->is_done())
 }//end WED_GatewayImportDialog::TimerFired()
@@ -869,9 +887,9 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 
 	bool has_dsf = false;
 
-	int res = MemFileHandling(zipPath,filePath,ICAOid,has_dsf);
+	string res = MemFileHandling(zipPath,filePath,ICAOid,has_dsf);
 
-	if(res != 0)
+	if(res.size() != 0)
 	{
 		this->AsyncDestroy();
 		return;
@@ -914,22 +932,91 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 #endif
 }
 
-void WED_GatewayImportDialog::DecorateGUIWindow(imp_dialog_stages stage)
+void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 {
-	switch(stage)
+	/* Template for copy and pasting
+	mBackButton->
+	mBackButton->SetDescriptor("");
+
+	mNextButton->
+	mNextButton->SetDescriptor("");
+
+	mLabel->
+	mLabel->SetDescriptor("");
+	*/
+	switch(mPhase)
 	{
-		case imp_dialog_choose_ICAO:
-			mBackButton->SetDescriptor("Cancel");
-			mNextButton->SetDescriptor("Search");
-			break;
-		case imp_dialog_choose_versions:
-			mBackButton->SetDescriptor("Back");
-			mNextButton->SetDescriptor("Import Pack(s)");
-			break;
-		case imp_dialog_download_specific_version:
-			mBackButton->Hide();
-			mNextButton->Hide();
-			break;
+	case imp_dialog_download_ICAO:
+		mBackButton->Show();
+		mBackButton->SetDescriptor("Cancel");
+
+		mNextButton->Hide();
+		mNextButton->SetDescriptor("");
+			
+		mLabel->Show();
+		mLabel->SetDescriptor(labelDesc);
+		break;
+	case imp_dialog_choose_ICAO:
+		mBackButton->Show();
+		mBackButton->SetDescriptor("Cancel");
+
+		mNextButton->Show();
+		mNextButton->SetDescriptor("Search");
+
+		mLabel->Hide();
+		mLabel->SetDescriptor(labelDesc);
+
+		mICAO_Packer->Show();
+		mVersions_Packer->Hide();
+		break;
+	case imp_dialog_download_versions:
+		mBackButton->Show();
+		mBackButton->SetDescriptor("Cancel");
+
+		mNextButton->Hide();
+		mNextButton->SetDescriptor("");
+
+		mLabel->Show();
+		mLabel->SetDescriptor(labelDesc);
+		break;
+	case imp_dialog_choose_versions:
+		mBackButton->Show();
+		mBackButton->SetDescriptor("Back");
+			
+		mNextButton->Show();
+		mNextButton->SetDescriptor("Import Pack(s)");
+
+		mLabel->Hide();
+		mLabel->SetDescriptor(labelDesc);
+			
+		mICAO_Packer->Hide();
+		mVersions_Packer->Show();
+		break;
+		
+	case imp_dialog_error:
+		mBackButton->Hide();
+		mBackButton->SetDescriptor("");
+
+		mNextButton->Show();
+		mNextButton->SetDescriptor("Exit");
+
+		mLabel->Show();
+		mLabel->SetDescriptor(labelDesc);
+		break;
+	case imp_dialog_download_specific_version:
+	default:
+		mBackButton->Hide();
+		mBackButton->SetDescriptor("");
+
+		mNextButton->Hide();
+		mNextButton->SetDescriptor("");
+
+		mLabel->Show();
+		mLabel->SetDescriptor(labelDesc);
+			
+		mICAO_Packer->Hide();
+		mVersions_Packer->Hide();
+		break;
 	}
 }
 
