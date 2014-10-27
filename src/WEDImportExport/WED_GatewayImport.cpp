@@ -25,6 +25,7 @@
 
 #include "PlatformUtils.h"
 #include "GUI_Resources.h"
+#include "WED_Airport.h"
 #include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
@@ -928,10 +929,11 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	
 	//The one out_apt will be the WED_Thing we'll be putting the rest of our
 	//Operation inside of
-	vector<WED_Thing *> out_apt;
+	vector<WED_Airport *> out_apt;
 	WED_ImportOneAptFile(aptdatPath,wrl,&out_apt);
 
-	WED_Thing * g = out_apt[0];
+	WED_Airport * g = out_apt[0];
+	g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
 					
 	string dsfTextPath = filePath + ICAOid + ".txt";
 	if(has_dsf)

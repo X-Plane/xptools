@@ -31,13 +31,14 @@ class	WED_Archive;
 class	IResolver;
 class	WED_Document;
 class	WED_MapPane;
+class	WED_Airport;
 
 void	WED_AptImport(
 				WED_Archive *			archive,
 				WED_Thing *				container,
 				const char *			file_path,
 				AptVector&				apts,
-				vector<WED_Thing *> *	out_airports);
+				vector<WED_Airport *> *	out_airports);
 				
 // Main apt export AIP - we can write to a file path or to a stream via a print func.
 
@@ -68,6 +69,6 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 void	WED_ImportOneAptFile(
 				const string&			in_path,
 				WED_Thing *				in_parent,
-				vector<WED_Thing *> *	out_apts);
+				vector<WED_Airport *> *	out_apts);
 
 #endif /* WED_AptIE_H */

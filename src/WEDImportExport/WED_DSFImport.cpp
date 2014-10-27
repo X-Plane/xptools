@@ -700,7 +700,7 @@ static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing 
 	return NULL;
 }
 
-void WED_DoImportText(const char * path, WED_Group * base)
+void WED_DoImportText(const char * path, WED_Thing * base)
 {
 	DSF_Importer importer;
 	importer.do_import_txt(path, base);

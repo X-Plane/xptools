@@ -35,6 +35,7 @@
 #include "WED_Messages.h"
 #include "WED_Document.h"
 #include "WED_MapPane.h"
+#include "WED_Airport.h"
 
 static int import_bounds_default[4] = { 0, 0, 500, 500 };
 
@@ -203,7 +204,7 @@ void WED_AptImportDialog::DoIt(void)
 	if(!apts.empty())
 	{
 		wrl->StartOperation("Import apt.dat");
-		vector<WED_Thing *>	new_apts;
+		vector<WED_Airport *>	new_apts;
 		WED_AptImport(mArchive, wrl, mPath.c_str(), apts, &new_apts);
 		WED_SetAnyAirport(mResolver);
 

@@ -537,7 +537,7 @@ void	WED_AptImport(
 				WED_Thing *				container,
 				const char *			file_path,
 				AptVector&				apts,
-				vector<WED_Thing *> *	out_airports)
+				vector<WED_Airport *> *	out_airports)
 {
 	char path[1024];
 	strcpy(path,file_path);
@@ -785,7 +785,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 void	WED_ImportOneAptFile(
 				const string&			in_path,
 				WED_Thing *				in_parent,
-				vector<WED_Thing *> *	out_apts)
+				vector<WED_Airport *> *	out_apts)
 {
 	AptVector		apts;
 	string result = ReadAptFile(in_path.c_str(), apts);
