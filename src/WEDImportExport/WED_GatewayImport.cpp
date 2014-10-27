@@ -527,22 +527,21 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 
 void WED_GatewayImportDialog::Next()
 {
-	/*From imp_choose_ICAO to imp_choose_versions (in no particular order
-	* SetDescriptor for back button
-	* Start Timer for downloading the VersionJSON for the ICAO selection
-	* change mPhase
-	* hide ICAOTable stuff
-	* show VersionsTable stuff
-	*/
+	DecorateGUIWindow();
 	switch(mPhase)
 	{
+	case imp_dialog_error:
+		this->AsyncDestroy();
+		break;
+	//case imp_dialog_download_ICAO:
+		//break; no next button here
 	case imp_dialog_choose_ICAO:
 		//Going to show versions
 		StartVersionsDownload();
-		
-		DecorateGUIWindow();
+		mPhase = imp_dialog_download_versions;
 		break;
-		
+	//case imp_dialog_download_versions:
+		//break; no next button here
 	case imp_dialog_choose_versions:
 		mVersions_VerProvider.GetSelection(mVersions_VersionsSelected);
 		
@@ -553,27 +552,31 @@ void WED_GatewayImportDialog::Next()
 			DoUserAlert("You must select atleast one item in the list");
 			return;//
 		}
-
-		DecorateGUIWindow();
-		break;	
+		mPhase = imp_dialog_download_specific_version;
+		break;
+	//case imp_dialog_download_specific_version:
+		//break; no button here
 	}
-	mPhase++;
 }
 
 void WED_GatewayImportDialog::Back()
 {
 	switch(mPhase)
 	{
+	case imp_dialog_error:
+		break;
+	case imp_dialog_download_ICAO:
 	case imp_dialog_choose_ICAO:
 		this->AsyncDestroy();
 		break;
+	case imp_dialog_download_versions:
 	case imp_dialog_choose_versions:
-		mICAO_Packer->Show();
-		mVersions_Packer->Hide();
-		DecorateGUIWindow();
+		mPhase = imp_dialog_choose_ICAO;
+		break;
+	case imp_dialog_download_specific_version:
 		break;
 	}
-	mPhase--;
+	DecorateGUIWindow();//Decorate once we're in the correct place
 }
 
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
