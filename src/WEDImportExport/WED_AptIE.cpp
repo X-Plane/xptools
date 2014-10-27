@@ -784,7 +784,8 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 
 void	WED_ImportOneAptFile(
 				const string&			in_path,
-				WED_Thing *				in_parent)
+				WED_Thing *				in_parent,
+				vector<WED_Thing *> *	out_apts)
 {
 	AptVector		apts;
 	string result = ReadAptFile(in_path.c_str(), apts);
@@ -794,11 +795,11 @@ void	WED_ImportOneAptFile(
 		DoUserAlert(msg.c_str());
 		return;
 	}
-
+	
 	WED_AptImport(
 			in_parent->GetArchive(),
 			in_parent,
 			in_path.c_str(),
 			apts,
-			NULL);
+			out_apts);
 }

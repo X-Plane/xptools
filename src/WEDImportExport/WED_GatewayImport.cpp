@@ -411,10 +411,7 @@ private:
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 
-
 string ICAOid;
-
-
 
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr) :
@@ -890,8 +887,7 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 			if(write_result != outString.size())
 			{
 				DoUserAlert(string("Could not fully create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
-				mPhase--;//Roll us back a step so we can download again
-							
+											
 				int removeVal = FILE_delete_file(zipPath.c_str(),0);
 				if(removeVal != 0)
 				{
@@ -929,11 +925,13 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	wrl->StartOperation("Import Scenery Pack");
 
 	string aptdatPath = filePath + ICAOid + ".dat";
-	WED_ImportOneAptFile(aptdatPath,wrl);
+	
+	//The one out_apt will be the WED_Thing we'll be putting the rest of our
+	//Operation inside of
+	vector<WED_Thing *> out_apt;
+	WED_ImportOneAptFile(aptdatPath,wrl,&out_apt);
 
-	WED_Thing * g = WED_Group::CreateTyped(wrl->GetArchive());
-	g->SetName(ICAOid);
-	g->SetParent(wrl,wrl->CountChildren());
+	WED_Thing * g = out_apt[0];
 					
 	string dsfTextPath = filePath + ICAOid + ".txt";
 	if(has_dsf)
