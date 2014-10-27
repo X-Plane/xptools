@@ -104,6 +104,46 @@ enum imp_dialog_msg
 	click_back
 };
 
+//starting a new one clears off the old one
+class RAII_CURL_HNDL
+{
+public:
+	RAII_CURL_HNDL():
+		curl_handle(NULL){}
+
+	void RAII_CURL_HNDL::create_HNDL( const string& inURL,
+					const string& inCert,
+					int			  bufferReserveSize)
+					
+	{
+		if(curl_handle != NULL)
+		{
+			delete curl_handle;
+			curl_handle = NULL;
+		}
+
+		rawJSONBuf = vector<char>(bufferReserveSize);
+		curl_handle = new curl_http_get_file(inURL,&rawJSONBuf,inCert);
+	}
+
+	~RAII_CURL_HNDL()
+	{
+		delete curl_handle;
+		curl_handle = NULL;
+	}
+	curl_http_get_file * const get_curl_handle() { return curl_handle; }
+	const vector<char> & get_JSON_BUF() { return rawJSONBuf; }
+	
+	
+private:
+	RAII_CURL_HNDL::RAII_CURL_HNDL(const RAII_CURL_HNDL & copy);
+	RAII_CURL_HNDL & RAII_CURL_HNDL::operator= (const RAII_CURL_HNDL & rhs);
+
+	curl_http_get_file * curl_handle;
+	
+	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
+	vector<char> rawJSONBuf;
+};
 
 class RAII_file 
 {
@@ -293,7 +333,7 @@ private:
 	WED_Document *			 mResolver;
 
 	//Our curl handle we'll be using to get the json files, note the s
-	curl_http_get_file * mCurl;
+	RAII_CURL_HNDL mCurl;
 
 	//void DoAirportImport(string filePath);
 //--GUI parts
@@ -371,17 +411,16 @@ private:
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 
-//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-vector<char> rawJSONBuf;
 
 string ICAOid;
+
+
 
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mPhase(imp_dialog_download_ICAO),
-	mCurl(NULL),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
 	mVersions_VerProvider(&mVersions_Vers),
@@ -483,11 +522,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
 {
-	if(mCurl != NULL)
-	{
-		delete mCurl;
-		mCurl = NULL;
-	}
+
 }
 
 void WED_GatewayImportDialog::Next()
@@ -549,7 +584,7 @@ void WED_GatewayImportDialog::TimerFired()
 		mPhase >= imp_dialog_download_specific_version)
 	{
 		//To avoid user confusion with a potential progress of -1, we'll just call it 0
-		int progress = mCurl->get_progress();
+		int progress = mCurl.get_curl_handle()->get_progress();
 		if(progress < 0)
 		{
 			progress = 0;
@@ -559,16 +594,13 @@ void WED_GatewayImportDialog::TimerFired()
 		DecorateGUIWindow(ss.str());
 	}
 
-	if(mCurl->is_done())
+	if(mCurl.get_curl_handle()->is_done())
 	{
 		Stop();
 		mPhase++;
 		DecorateGUIWindow();
-		if(mCurl->is_ok())
+		if(mCurl.get_curl_handle()->is_ok())
 		{
-			delete mCurl;
-			mCurl = NULL;
-
 			if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
 			{
 				FillICAOFromJSON();
@@ -591,22 +623,22 @@ void WED_GatewayImportDialog::TimerFired()
 					return;
 				}
 			}//end if(mPhase == imp_dialog_download_specific_version
-		}//end if(mCurl->is_ok())
+		}//end if(mCurl.get_curl_handle()->is_ok())
 		else
 		{
-			string res = HandleNetworkError(mCurl);
+			string res = HandleNetworkError(mCurl.get_curl_handle());
 			if(res != "")
 			{
 				mLabel->SetDescriptor(res);
 			}
 		}
-	}//end if(mCurl->is_done())
+	}//end if(mCurl.get_curl_handle()->is_done())
 }//end WED_GatewayImportDialog::TimerFired()
 
 void WED_GatewayImportDialog::FillICAOFromJSON()
 {
 	//create a string from the vector of chars
-	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
 
 	Json::Value root;
 	Json::Reader reader;
@@ -646,7 +678,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON()
 void WED_GatewayImportDialog::FillVersionsFromJSON()
 {
 	//create a string from the vector of chars
-	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
 
 	//Now that we have our rawJSONString we'll be turning it into a JSON object
 	Json::Value root(Json::objectValue);
@@ -718,7 +750,6 @@ void WED_GatewayImportDialog::ReceiveMessage(
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	rawJSONBuf = vector<char>(AIRPORTS_GET_SIZE_GUESS);
 	string url = WED_URL_GATEWAY_API;
 	
 	//Get Certification
@@ -733,7 +764,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 	url += "airports";
 
 	//Get it from the server
-	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
+	mCurl.create_HNDL(url,cert,AIRPORTS_GET_SIZE_GUESS);
 	Start(1.0);
 	mLabel->Show();
 }
@@ -741,7 +772,6 @@ void WED_GatewayImportDialog::StartICAODownload()
 //Starts the download process
 void WED_GatewayImportDialog::StartVersionsDownload()
 {
-	rawJSONBuf = vector<char>(VERSIONS_GET_SIZE_GUESS);
 	//Two steps,
 	//1.Get the airport from the current selection, then get its sceneryid from mICAO_Apts
 
@@ -768,16 +798,13 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	url += "airport/" + ICAOid;
 
 	//Get it from the server
-	mCurl = new curl_http_get_file(url,&rawJSONBuf,cert);
+	mCurl.create_HNDL(url,cert,VERSIONS_GET_SIZE_GUESS);
 	Start(1.0);
 	mLabel->Show();
 }
 
 void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 {
-	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-	rawJSONBuf = vector<char>(VERSION_GET_SIZE_GUESS);
-
 	//Get Certification
 	string cert;
 	if(!GUI_GetTempResourcePath("gateway.crt", cert))
@@ -788,8 +815,8 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	
 	stringstream url; 
 	
-	url << WED_URL_GATEWAY_API << "scenery/" << id;	
-	mCurl = new curl_http_get_file(url.str(),&rawJSONBuf,cert);
+	url << WED_URL_GATEWAY_API << "scenery/" << id;
+	mCurl.create_HNDL(url.str(),cert,VERSION_GET_SIZE_GUESS);
 	Start(1.0);
 	mLabel->Show();
 }
@@ -815,7 +842,7 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 void WED_GatewayImportDialog::HandleSpecificVersion()
 {
 	//create a string from the vector of chars
-	string rawJSONString = string(rawJSONBuf.begin(),rawJSONBuf.end());
+	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
 
 	//Now that we have our rawJSONString we'll be turning it into a JSON object
 	Json::Value root = Json::Value(Json::objectValue);
