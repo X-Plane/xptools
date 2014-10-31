@@ -300,6 +300,7 @@ string HandleNetworkError(curl_http_get_file * mCurl)
 	return ss.str();	
 }
 
+typedef vector<char> JSON_BUF;
 
 //Our private class for the import dialog
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
@@ -335,6 +336,8 @@ private:
 	//Our curl handle we'll be using to get the json files, note the s
 	RAII_CURL_HNDL mCurl;
 
+	//The buffers of the specific packs downloaded at the end
+	vector<JSON_BUF> mSpecificBufs;
 	//void DoAirportImport(string filePath);
 //--GUI parts
 
@@ -388,11 +391,13 @@ private:
 
 	//From the downloaded JSON, fill the versions table
 	void FillVersionsFromJSON();
-	//Starts the download of the specific version, aiming to get the masterZipBlob contained
+	
+	//Attempts to download all the specific versions downloaded
 	void StartSpecificVersionDownload(int id);
 
 	//Once a specific version is downloaded this method decodes and imports it into the document
-	void HandleSpecificVersion();
+	//Returns a pointer to the last imported airport
+	WED_Airport * ImportSpecificVersion(JSON_BUF version_json_buf);
 
 	//Keeps the versions downloading until they have all been (atleast attempted to download)
 	//returns false if there is nothing left in the queue
@@ -611,14 +616,30 @@ void WED_GatewayImportDialog::TimerFired()
 			}
 			else if(mPhase - 1 >= imp_dialog_download_specific_version) // -1 to counter act the mPhase++, >= for the fact we have multiple downloads
 			{
-				//If it fails anywhere inside it will soon be destroyed
-				HandleSpecificVersion();
 				
+				//Push back the latest buffer
+				mSpecificBufs.push_back(mCurl.get_JSON_BUF());
+				
+				//Try to start the next download
 				bool has_versions_left = NextVersionsDownload();
 				
 				//We're all done with everything!
 				if(has_versions_left == false)
 				{
+					WED_Thing * wrl = WED_GetWorld(mResolver);
+					wrl->StartOperation("Import Scenery Pack");
+					
+					WED_Airport * last_imported = NULL;
+					//If it fails anywhere inside it will soon be destroyed
+					for (int i = 0; i < mSpecificBufs.size(); i++)
+					{
+						last_imported = ImportSpecificVersion(mSpecificBufs[i]);
+					}
+					
+					
+					WED_SetCurrentAirport(mResolver,last_imported);
+					wrl->CommitOperation();
+
 					this->AsyncDestroy();
 					return;
 				}
@@ -840,10 +861,10 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	return true;
 }
 
-void WED_GatewayImportDialog::HandleSpecificVersion()
+WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_json_buf)
 {
 	//create a string from the vector of chars
-	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
+	string rawJSONString = string(version_json_buf.begin(),version_json_buf.end());
 
 	//Now that we have our rawJSONString we'll be turning it into a JSON object
 	Json::Value root = Json::Value(Json::objectValue);
@@ -855,7 +876,7 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	{
 		DoUserAlert("Airports list is invalid data, ending dialog box");
 		this->AsyncDestroy();
-		return;
+		return NULL;
 	}
 
 	string zipString = root["scenery"]["masterZipBlob"].asString();
@@ -895,14 +916,14 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 				}
 				this->AsyncDestroy();
-				return;//Exit before we can continue
+				return NULL;//Exit before we can continue
 			}
 		}
 		else
 		{
 			DoUserAlert(string("Could not create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
 			this->AsyncDestroy();
-			return;
+			return NULL;
 		}
 	}
 
@@ -919,14 +940,11 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 	if(res.size() != 0)
 	{
 		this->AsyncDestroy();
-		return;
+		return NULL;
 	}
 
-	
-	
 	WED_Thing * wrl = WED_GetWorld(mResolver);
-	wrl->StartOperation("Import Scenery Pack");
-
+	
 	string aptdatPath = filePath + ICAOid + ".dat";
 	
 	//The one out_apt will be the WED_Thing we'll be putting the rest of our
@@ -943,7 +961,6 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
 	
-	wrl->CommitOperation();
 #if !SAVE_ON_HDD
 	//clean up our files ICAOid.dat and potentially ICAOid.txt
 	if(has_dsf)
@@ -962,6 +979,7 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 		DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 	}
 #endif
+	return g;
 }
 
 void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
