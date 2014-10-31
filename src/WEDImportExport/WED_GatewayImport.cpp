@@ -25,7 +25,6 @@
 
 #include "PlatformUtils.h"
 #include "GUI_Resources.h"
-#include "WED_Airport.h"
 #include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
@@ -53,7 +52,7 @@
 //--DSF/AptImport
 #include "WED_AptIE.h"
 #include "WED_ToolUtils.h"
-
+#include "WED_Airport.h"
 #include "WED_DSFImport.h"
 #include "WED_Group.h"
 //---------------
@@ -112,7 +111,7 @@ public:
 	RAII_CURL_HNDL():
 		curl_handle(NULL){}
 
-	void create_HNDL( const string& inURL,
+	void RAII_CURL_HNDL::create_HNDL( const string& inURL,
 					const string& inCert,
 					int			  bufferReserveSize)
 					
@@ -137,8 +136,8 @@ public:
 	
 	
 private:
-	RAII_CURL_HNDL(const RAII_CURL_HNDL & copy);
-	RAII_CURL_HNDL & operator= (const RAII_CURL_HNDL & rhs);
+	RAII_CURL_HNDL::RAII_CURL_HNDL(const RAII_CURL_HNDL & copy);
+	RAII_CURL_HNDL & RAII_CURL_HNDL::operator= (const RAII_CURL_HNDL & rhs);
 
 	curl_http_get_file * curl_handle;
 	
@@ -542,7 +541,7 @@ void WED_GatewayImportDialog::Next()
 		//break; no next button here
 	case imp_dialog_choose_versions:
 		mVersions_VerProvider.GetSelection(mVersions_VersionsSelected);
-		
+
 		//Were we able to in the first place?
 		bool able_to_start = NextVersionsDownload();
 		if(able_to_start == false)
@@ -623,6 +622,7 @@ void WED_GatewayImportDialog::TimerFired()
 					this->AsyncDestroy();
 					return;
 				}
+				
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl.get_curl_handle()->is_ok())
 		else
@@ -922,6 +922,8 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 		return;
 	}
 
+	
+	
 	WED_Thing * wrl = WED_GetWorld(mResolver);
 	wrl->StartOperation("Import Scenery Pack");
 
@@ -934,14 +936,14 @@ void WED_GatewayImportDialog::HandleSpecificVersion()
 
 	WED_Airport * g = out_apt[0];
 	g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
-					
+
 	string dsfTextPath = filePath + ICAOid + ".txt";
 	if(has_dsf)
 	{
-		WED_DoImportText(dsfTextPath.c_str(), (WED_Group *) g);
+		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
+	
 	wrl->CommitOperation();
-
 #if !SAVE_ON_HDD
 	//clean up our files ICAOid.dat and potentially ICAOid.txt
 	if(has_dsf)
