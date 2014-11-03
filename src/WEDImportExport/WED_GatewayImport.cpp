@@ -551,7 +551,8 @@ void WED_GatewayImportDialog::Next()
 		bool able_to_start = NextVersionsDownload();
 		if(able_to_start == false)
 		{
-			DoUserAlert("You must select atleast one item in the list");
+			//This one stays as a user alert because we don't want to leave this window yet.
+			DoUserAlert("You must select at least one item in the list");
 			return;//
 		}
 		mPhase = imp_dialog_download_specific_version;
@@ -651,7 +652,8 @@ void WED_GatewayImportDialog::TimerFired()
 			string res = HandleNetworkError(mCurl.get_curl_handle());
 			if(res != "")
 			{
-				mLabel->SetDescriptor(res);
+				mPhase = imp_dialog_error;
+				DecorateGUIWindow(res);
 			}
 		}
 	}//end if(mCurl.get_curl_handle()->is_done())
@@ -669,8 +671,13 @@ void WED_GatewayImportDialog::FillICAOFromJSON()
 	//Check for errors
 	if(success == false)
 	{
-		DoUserAlert("Airports list is invalid data, ending dialog box");
-		this->AsyncDestroy();
+		mPhase = imp_dialog_error;
+
+	#if DEV
+		DecorateGUIWindow("Airports list is invalid data");
+	#else
+		DecorateGUIWindow("The download was corrupted, please try again");
+	#endif
 		return;
 	}
 
@@ -711,8 +718,13 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 	//Check for errors
 	if(success == false)
 	{
-		DoUserAlert("Scenery list is invalid data, ending dialog box");
-		this->AsyncDestroy();
+		mPhase = imp_dialog_error;
+		
+	#if DEV
+		DecorateGUIWindow("Scenery list is invalid data");
+	#else
+		DecorateGUIWindow("The download was corrupted, please try again");
+	#endif
 		return;
 	}
 	Json::Value airport = root["airport"];
@@ -778,7 +790,8 @@ void WED_GatewayImportDialog::StartICAODownload()
 	string cert;
 	if(!GUI_GetTempResourcePath("gateway.crt", cert))
 	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		mPhase = imp_dialog_error;
+		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 		return;
 	}
 
@@ -811,7 +824,8 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	string cert;
 	if(!GUI_GetTempResourcePath("gateway.crt", cert))
 	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		mPhase = imp_dialog_error;
+		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 		return;
 	}
 	
@@ -831,7 +845,8 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	string cert;
 	if(!GUI_GetTempResourcePath("gateway.crt", cert))
 	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		mPhase = imp_dialog_error;
+		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 		return;
 	}
 	
@@ -874,7 +889,12 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	//Check for errors
 	if(success == false)
 	{
-		DoUserAlert("Airports list is invalid data, ending dialog box");
+		mPhase = imp_dialog_error;
+#if DEV
+		DecorateGUIWindow("Downloaded JSON is invalid");
+#else
+		DecorateGUIWindow("The download was corrupted, please try again");//User facing
+#endif
 		this->AsyncDestroy();
 		return NULL;
 	}
@@ -908,21 +928,24 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 
 			if(write_result != outString.size())
 			{
-				DoUserAlert(string("Could not fully create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
-											
+				mPhase = imp_dialog_error;
+#if DEV
+				DecorateGUIWindow("Could not create file at " + zipPath + ", write_result: " + stringstream(write_result).str() + "outstring.size(): " + stringstream(outString.size()).str());
+#else
+				DecorateGUIWindow("Could not create file at " + zipPath + ", please ensure you have enough space and sufficient permissions");
+#endif
 				int removeVal = FILE_delete_file(zipPath.c_str(),0);
 				if(removeVal != 0)
 				{
-					DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+					//DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 				}
-				this->AsyncDestroy();
 				return NULL;//Exit before we can continue
 			}
 		}
 		else
 		{
-			DoUserAlert(string("Could not create file at " + zipPath + ", please ensure you have sufficient hard drive space and permissions").c_str());
-			this->AsyncDestroy();
+			mPhase = imp_dialog_error;
+			DecorateGUIWindow("Could not create file at " + zipPath + ", please ensure you have enough space and sufficient permissions");
 			return NULL;
 		}
 	}
@@ -939,7 +962,8 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 
 	if(res.size() != 0)
 	{
-		this->AsyncDestroy();
+		mPhase = imp_dialog_error;
+		DecorateGUIWindow(res);
 		return NULL;
 	}
 
@@ -967,16 +991,16 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	{
 		if(FILE_delete_file(dsfTextPath.c_str(),0) != 0)
 		{
-			DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+			//DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 		}
 	}
 	if(FILE_delete_file(aptdatPath.c_str(),0) != 0)
 	{
-		DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+		//DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 	}
 	if(FILE_delete_file(zipPath.c_str(),0) != 0)
 	{
-		DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+		//DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 	}
 #endif
 	return g;
