@@ -31,7 +31,7 @@ bracket system makes for very easy searching. Try it out!
 [1.2.0] Requirments: To use this software have the following tools
 
 * Microsoft Visual Studio Express 2012 for Desktop
-	* MSVC Studio 2010 has not been fully tested though it appears to be compatable
+	* MSVC Studio 2010 has not been fully tested though it appears to be compatible
 * The latest version of Git
 * Windows
 

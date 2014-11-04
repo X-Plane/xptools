@@ -202,7 +202,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			if(A.glyph_color == 'I')
 			{
 				followsPipeJuxRules = false;
-				ss << "Glyph " << i-1 << " " << A.glyph_name << " cannot be used with a pipebar";
+				ss << "Glyph " << i-1 << ": " << A.glyph_name << " cannot be used with a pipebar";
 
 				output.AddError(ss.str(),sem_glyph_color_mismatch,i-1,A.glyph_name.size());
 				ss.str("");
@@ -212,7 +212,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			if(B.glyph_color == 'I')
 			{
 				followsPipeJuxRules = false;
-				ss << "Glyph " << i+1 << " " << B.glyph_name << " cannot be used with a pipebar";
+				ss << "Glyph " << i+1 << ": " << B.glyph_name << " cannot be used with a pipebar";
 				output.AddError(ss.str(),sem_glyph_color_mismatch,i+1,B.glyph_name.size());
 				ss.str("");
 				ss.clear();

@@ -239,6 +239,7 @@ int main(int argc, const char* argv[])
 	* Only valid instructions
 	* Only one side switch per sign
 	* Has glyphs
+	* Has caret by itself, {@Y,^} or {@Y}^
 	--Semantic Pipe--
 	* Has Sign instruction on left side
 	* Has Sign instruction on right side
@@ -248,6 +249,7 @@ int main(int argc, const char* argv[])
 	* Non matching colors (dependant)
 	* Sign starts with pipe
 	* sign ends with pipe
+	* Pipebar is inbetween two independant glyphs
 	*/
 
 	//--TestString creation section----------------------------
@@ -283,6 +285,10 @@ int main(int argc, const char* argv[])
 	//Has glyphs
 	ADD_TEST("{@Y}")
 
+	//Caret Tests
+	ADD_TEST("{@Y,^}")
+	ADD_TEST("{@Y}^")
+
 	//Pipe tests
 	ADD_TEST("{@Y}LEFT{@@}|ONWARDS")
 	ADD_TEST("{@Y}BEFORE|{@@}ONWARDS")
@@ -294,7 +300,7 @@ int main(int argc, const char* argv[])
 
 	ADD_TEST("|{@Y}FRONT")
 	ADD_TEST("{@Y}BACK|")
-	
+	ADD_TEST("{critical}|{no-entry}")
 	ADD_TEST("10R-28L")
 	ADD_TEST("ALL{^r}1234{@@}BAD{comma}{@Y}UNTILNOW{hazard}")
 	//ADD_TEST("{@Y}ALL{@R}VALID{@L}UNTIL{@Y}@{N,O,W}")
