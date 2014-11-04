@@ -50,6 +50,7 @@
 #include "WED_ATCWindRule.h"
 #include "WED_EnumSystem.h"
 #include "WED_Taxiway.h"
+#include "IGIS.h"
 
 
 #include "AptDefs.h"
@@ -128,6 +129,19 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		}
 	}
 	//---------------------------------------------------------
+
+	//------------------------------------------------------------------------------------
+	// CHECKS FOR DANGLING PARTS - THIS SHOULD NOT HAPPEN BUT EVERY NOW AND THEN IT DOES
+	//------------------------------------------------------------------------------------			
+	
+	IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(who);
+	if(ps)
+	{
+		if(ps->GetNumSides() < 1)
+		{
+			msg = "Linear feature needs at least two points.";
+		}
+	}
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR GENERAL APT.DAT BOGUSNESS

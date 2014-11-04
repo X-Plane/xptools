@@ -1,5 +1,5 @@
 ==============================================================
-				Microsoft Visual Studio Project
+	                                 Microsoft Visual Studio Project
 ==============================================================
 [Chapter.Section.Subsection] Title: Content is shown here in sentances. The
 bracket system makes for very easy searching. Try it out!

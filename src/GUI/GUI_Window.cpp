@@ -622,12 +622,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 
 	#endif
 	#if LIN
-		// mroe: ->  Ben said :
-		//    ... if the window is modal, it should not have a menu bar, 
-		//    which would let the user try to dispatch commands to another target ...
-		if ( (inAttributes & 3) != xwin_style_modal )
-			this->setMenuBar(gApplication->getqmenu());
-			
+		this->setMenuBar(gApplication->getqmenu());
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);

@@ -1490,6 +1490,7 @@
 		D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ResourceMgr.h; sourceTree = "<group>"; };
 		D6AC154B0F12866E0006E096 /* WED_DrawUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DrawUtils.h; sourceTree = "<group>"; };
 		D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DrawUtils.cpp; sourceTree = "<group>"; };
+		D6B80CD019A24B220005C1FF /* WED_Url.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Url.h; sourceTree = "<group>"; };
 		D6BB228E0EC13287006499D7 /* MapTopology.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapTopology.h; sourceTree = "<group>"; };
 		D6BB228F0EC13287006499D7 /* MapTopology.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapTopology.cpp; sourceTree = "<group>"; };
 		D6BC020B146CC17800A941C6 /* Hydro2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Hydro2.cpp; sourceTree = "<group>"; };
@@ -3118,6 +3119,7 @@
 				D691EDF81709F4DC00AD6E4C /* WED_Validate.cpp */,
 				D691EE73170A1DAD00AD6E4C /* WED_Clipping.h */,
 				D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */,
+				D6B80CD019A24B220005C1FF /* WED_Url.h */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";

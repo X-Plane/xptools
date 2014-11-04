@@ -25,6 +25,7 @@
 #include "obj_model.h"
 #include "obj_editor.h"
 #include "Undoable.h"
+#include <assert.h>
 //#include "CompGeomDefs3.h"
 #include "ac_plugin.h"
 #include <ac_plugin.h>
@@ -311,8 +312,10 @@ void bake_static_transitions(ACObject * object)
 	Point3	diff = { 0.0, 0.0, 0.0 };
 	List * p;
 	List * kids = ac_object_get_childrenlist(object);
+	int kid_count = 0;
     for (p = kids; p != NULL; p = p->next)
     {
+		kid_count++;
     	ACObject * child = (ACObject *)p->data;
 		if (OBJ_get_anim_type(child) == anim_static)
 		{
@@ -331,10 +334,21 @@ void bake_static_transitions(ACObject * object)
 			translate_object(child, &diff);
 		}
 	}
-
-	for (set<ACObject *>::iterator kill = kill_set.begin(); kill != kill_set.end(); ++kill)
-		object_delete(*kill);
-
+	
+	if(kid_count > kill_set.size())
+	{
+		// stupid: if the imported file contains this:
+		// ANIM_begin
+		//   ANIM_trans <static stuff>
+		// ANIM_end
+		// we end up deleting our only child here and ac3d kills US too, which causes recursive
+		// baking to be f--ed.  This is a really stupid edge case - the above 3 lines of OBJ do
+		// nothing but waste CPU cycles.  So don't bother to optimize - we're just avoiding a 
+		// crash here.
+		for (set<ACObject *>::iterator kill = kill_set.begin(); kill != kill_set.end(); ++kill)
+			object_delete(*kill);
+	}
+	
 	kids = ac_object_get_childrenlist(object);
     for (p = kids; p != NULL; p = p->next)
 		bake_static_transitions((ACObject *)p->data);

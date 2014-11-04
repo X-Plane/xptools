@@ -61,7 +61,7 @@ struct	SnowLineInfo_t {
 /*
 http://www-das.uwyo.edu/~geerts/cwx/notes/chap10/snowline.html
 units in meters
-Table 1. Effects of hemisphere, latitude and climatic dryness on the average snowlineÕs elevation, in metres (1). SH = southern hemisphere; NH = northern hemisphere. The figures for South America are from (2).
+Table 1. Effects of hemisphere, latitude and climatic dryness on the average snowlineï¿½s elevation, in metres (1). SH = southern hemisphere; NH = northern hemisphere. The figures for South America are from (2).
 */
 static const SnowLineInfo_t kSnowLineInfo[] = {
 //	Lati	SHdry	SHmoist	NHdry	NHmoist
@@ -338,6 +338,23 @@ void ResampleDEM(const DEMGeo& inSrc, DEMGeo& inDst)
 		double lat = inDst.y_to_lat(y);
 		
 		double e = inSrc.value_linear(lon, lat);
+		inDst(x,y) = e;
+	}
+}
+
+void ResampleDEMmedian(const DEMGeo& inSrc, DEMGeo& inDst, int radius)
+{
+	double xstep = (inDst.mEast - inDst.mWest) / inDst.x_res();
+	double ystep = (inDst.mNorth - inDst.mSouth) / inDst.y_res();
+
+
+	for(int y = 0; y < inDst.mHeight; ++y)
+	for(int x = 0; x < inDst.mWidth; ++x)
+	{
+		double lon = inDst.x_to_lon(x);
+		double lat = inDst.y_to_lat(y);
+
+		double e = inSrc.get_median(lon, lat, xstep, ystep, radius);
 		inDst(x,y) = e;
 	}
 }
@@ -2328,7 +2345,7 @@ void	NeighborHisto(const DEMGeo& input, DEMGeo& output, int semi)
 		for(int dx = x-semi; dx <= x+semi; ++dx)
 		if(input.get(dx,dy) != v)
 			++c;
-		
+
 		output(x,y) = c;
 	}
 }

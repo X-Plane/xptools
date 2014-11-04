@@ -5,11 +5,18 @@
 TYPE			:= EXECUTABLE
 CFLAGS			+= -include ./src/Obj/XDefs.h
 CXXFLAGS		+= -include ./src/Obj/XDefs.h
-DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -DNO_CGAL=1 -DCURL_STATICLIB
+DEFINES			+= -DUSE_JPEG=1 -DUSE_TIF=1 -DWED=1 -DNO_CGAL=1
 FORCEREBUILD_SUFFIX	:= _wed
 
 ifdef PLAT_LINUX
+
+CURL_FEATURES := $(shell curl-config --features)
+ifeq (, $(findstring SSL, $(CURL_FEATURES)))
+$(error no curl or not features SSL )
+endif
+
 LDFLAGS		+= -rdynamic
+LDFLAGS		+= -Wl,--exclude-libs,libpng.a
 #LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 #LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 #LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
@@ -27,7 +34,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
 LIBS		+= -lQtCore
 LIBS		+= -lQtGui
 LIBS		+= -lQtOpenGL
@@ -35,13 +41,14 @@ LIBS		+= -lGL
 LIBS		+= -lGLU
 LIBS		+= -ldl
 LIBS		+= -lpthread
+LIBS		+= -Wl,-Bdynamic -lcurl
 endif #PLAT_LINUX
-
 
 ifdef PLAT_MINGW
 WIN_RESOURCES	+= ./src/WEDResources/WED.rc
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
+DEFINES		+= -DCURL_STATICLIB
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
@@ -71,7 +78,7 @@ LIBS		+= -lboost_thread
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-DEFINES		+= -DMAKE_BUILD
+DEFINES		+= -DMAKE_BUILD  -DCURL_STATICLIB 
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
@@ -149,6 +156,7 @@ SOURCES += ./src/WEDCore/WED_UndoMgr.cpp
 SOURCES += ./src/WEDCore/WED_Assert.cpp
 SOURCES += ./src/WEDCore/WED_ResourceMgr.cpp
 #SOURCES += ./src/WEDCore/WED_Routing.cpp
+SOURCES += ./src/WEDCore/WED_Sign_Parser.cpp
 SOURCES += ./src/WEDCore/WED_GISUtils.cpp
 SOURCES += ./src/WEDCore/WED_Orthophoto.cpp
 SOURCES += ./src/WEDCore/WED_Validate.cpp
@@ -218,7 +226,6 @@ SOURCES += ./src/WEDImportExport/WED_DSFExport.cpp
 SOURCES += ./src/WEDImportExport/WED_DSFImport.cpp
 SOURCES += ./src/WEDImportExport/WED_GatewayExport.cpp
 SOURCES += ./src/WEDImportExport/WED_SceneryPackExport.cpp
-#SOURCES += ./src/WEDLibrary/WED_AdvancedFilterPane.cpp
 SOURCES += ./src/WEDLibrary/WED_LibraryListAdapter.cpp
 SOURCES += ./src/WEDLibrary/WED_LibraryPreviewPane.cpp
 SOURCES += ./src/WEDLibrary/WED_LibraryPane.cpp
