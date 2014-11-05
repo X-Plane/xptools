@@ -910,7 +910,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 
 #if TEST_AT_START
 	//Anything beyond cannot be tested at the start or wouldn't be useful.
-	return;
+	return NULL;
 #endif
 	string filePath("");
 

@@ -100,12 +100,22 @@ void	WED_VerTable::GetHeaderContent(
 	the_content.can_select = 1;
 
 	//For all the cells
-	switch(cell_x) {
+	switch(cell_x) 
+	{
 	case 0:
 		the_content.title = "User Name";
 		break;
 	case 1:
-		the_content.title = "Date Accepted";
+		the_content.title = "Status";
+		break;
+	case 2:
+		the_content.title = "Date";
+		break;
+	case 3:
+		the_content.title = "Artist Comments";
+		break;
+	case 4:
+		the_content.title = "Moderator Comments";
 		break;
 	}		
 }
@@ -147,7 +157,16 @@ void	WED_VerTable::GetCellContent(
 		the_content.text_val = mVers->at(ver_id).userName;
 		break;
 	case 1:		
-		the_content.text_val = mVers->at(ver_id).dateAccepted;
+		the_content.text_val = "Accepted/Approved";//TODO  = ChooseStatus
+		break;
+	case 2:
+		the_content.text_val = mVers->at(ver_id).dateAccepted; //TODO = ChooseDate
+		break;
+	case 3:
+		the_content.text_val = mVers->at(ver_id).artistComments;
+		break;
+	case 4:
+		the_content.text_val = mVers->at(ver_id).moderatorComments;
 		break;
 	}
 	the_content.string_is_resource = 0;
@@ -248,9 +267,35 @@ struct sort_by_ver {
 	sort_by_ver(const VerVector * vers, int sort_column, int invert_sort) : vers_(vers), sort_column_(sort_column), invert_sort_(invert_sort) { }
 
 	bool operator()(int x, int y) const {
-		string xs(sort_column_ ? vers_->at(x).userName : vers_->at(x).dateAccepted);
-		string ys(sort_column_ ? vers_->at(y).userName : vers_->at(y).dateAccepted);
+		
+		string xs;
+		string ys;
+		//Select the strings to compare based on the sort column chosen
+		switch(sort_column_)
+		{
+		case 0:
+			xs = vers_->at(x).userName;
+			ys = vers_->at(y).userName;
+			break;
+		case 1:
+			xs = "Accepted/Approved";//vers_->at(x). //Status one day
+			ys = "Accepted/Approved";//vers_->at(y).
+			break;
+		case 2:
+			xs = vers_->at(x).dateAccepted;
+			ys = vers_->at(y).dateAccepted;
+			break;
+		case 3:
+			xs = vers_->at(x).artistComments;
+			ys = vers_->at(y).artistComments;
+			break;
+		case 4:
+			xs = vers_->at(x).moderatorComments;
+			ys = vers_->at(y).moderatorComments;
+			break;
+		}
 
+		//Make them all uper case
 		for(int i = 0; i < xs.size(); ++i)
 			xs[i] = toupper(xs[i]);
 
@@ -277,9 +322,15 @@ void		WED_VerTable::resort(void)
 	mSorted.clear();
 	for(int i = 0; i < mVers->size(); ++i)
 	{
-		if (true)/*filters.empty() || 
-			(filter_match(mVers->at(i).userName, filters.begin(),filters.end()),
-			filter_match(mVers->at(i).dateAccepted, filters.begin(),filters.end())))*/
+		if (filters.empty() || 
+			(
+				filter_match(mVers->at(i).userName, filters.begin(),filters.end()),
+				//filter_match(/*TODO = ChooseStatus*/"Accepted/Approved", filters.begin(),filters.end()),
+				filter_match(/*TODO = ChooseDate*/mVers->at(i).dateAccepted,filters.begin(),filters.end()),
+				filter_match(mVers->at(i).artistComments,filters.begin(),filters.end()),
+				filter_match(mVers->at(i).moderatorComments,filters.begin(),filters.end())
+			)
+		)
 		{
 			mSorted.push_back(i);
 		}
