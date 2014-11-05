@@ -1054,6 +1054,10 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mLabel->SetDescriptor(labelDesc);
 		break;
 	case imp_dialog_choose_versions:
+		{
+		GUI_CellContent c;
+		c.text_val = "";
+		mFilter->AcceptEdit(1,1,c,1);
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Back");
 			
@@ -1066,6 +1070,7 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mICAO_Packer->Hide();
 		mVersions_Packer->Show();
 		break;
+		}
 		
 	case imp_dialog_error:
 		mBackButton->Hide();

@@ -35,8 +35,8 @@ User Name - people will want to find their own fast
 [Date] - When that dateX was. Presented in the much more reasonable 2014-07-31, 14:34:47 instead of 2014-07-31T14:34:47.000Z
 (Developer Mode has all of the date columns)
 
-artistComments - limit to 40 chars, afterwhich is "...". A tool tip will show the full window.
-moderatorComments - limit to 40 chars, afterwhich is "...". A tool tip will show the full window.
+artistComments
+moderatorComments
 
 Relavent code sections:
 GetHeaderContent
@@ -45,6 +45,36 @@ GetCellContent
 sort_by_ver::operator()
 */
 
+string ChooseStatus(const VerInfo_t & info)
+{
+	
+	if(info.dateAccepted > info.dateApproved)
+	{
+		return "Accepted";
+	}
+	else
+	{
+		return "Approved";
+	}
+}
+
+string ChooseDate(const VerInfo_t & info)
+{	
+	if(info.dateAccepted > info.dateApproved)
+	{
+		//Dates come in the format YYYY-MM-DDTHH:MM:SS.000Z, which we'll be shortening to YY-MM-DD HH:MM:SS
+		//The total length is 24
+		string s = info.dateAccepted.substr(2,info.dateAccepted.size()-7);//cut of the .000Z
+		s[8] = ' ';//Cut out the T
+		return s;
+	}
+	else
+	{
+		string s = info.dateApproved.substr(2,info.dateApproved.size()-7);//cut of the .000Z
+		s[8] = ' ';//Cut out the T
+		return s;
+	}
+}
 WED_VerTable::WED_VerTable(
 						const VerVector *			apts) :
 	GUI_SimpleTableGeometry(2,kDefCols,20),	
@@ -157,10 +187,10 @@ void	WED_VerTable::GetCellContent(
 		the_content.text_val = mVers->at(ver_id).userName;
 		break;
 	case 1:		
-		the_content.text_val = "Accepted/Approved";//TODO  = ChooseStatus
+		the_content.text_val = ChooseStatus(mVers->at(ver_id));
 		break;
 	case 2:
-		the_content.text_val = mVers->at(ver_id).dateAccepted; //TODO = ChooseDate
+		the_content.text_val = ChooseDate(mVers->at(ver_id));
 		break;
 	case 3:
 		the_content.text_val = mVers->at(ver_id).artistComments;
@@ -278,12 +308,12 @@ struct sort_by_ver {
 			ys = vers_->at(y).userName;
 			break;
 		case 1:
-			xs = "Accepted/Approved";//vers_->at(x). //Status one day
-			ys = "Accepted/Approved";//vers_->at(y).
+			xs = ChooseStatus(vers_->at(x));
+			ys = ChooseStatus(vers_->at(y));
 			break;
 		case 2:
-			xs = vers_->at(x).dateAccepted;
-			ys = vers_->at(y).dateAccepted;
+			xs = ChooseDate(vers_->at(x));
+			ys = ChooseDate(vers_->at(y));
 			break;
 		case 3:
 			xs = vers_->at(x).artistComments;
