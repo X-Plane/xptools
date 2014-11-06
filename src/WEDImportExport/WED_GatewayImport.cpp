@@ -284,7 +284,7 @@ string HandleNetworkError(curl_http_get_file * mCurl)
 		if(is_ok)
 		{
 			string errmsg = string(errdat.begin(),errdat.end());
-			ss << "\n" << errmsg;
+			ss << "Error Code " << err << ": " << errmsg;
 		}
 		else
 		{

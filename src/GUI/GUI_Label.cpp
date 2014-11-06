@@ -67,21 +67,74 @@ void		GUI_Label::Draw(GUI_GraphState * state)
 {
 	string txt;
 	GetDescriptor(txt);
+
+	vector<string> lines;
 	
-	const char * tStart = txt.c_str();
-	const char * tEnd = tStart + txt.size();
+	/*
+	while(string has text to parse)
+		Find the position of a new line,
+		if position cannot be found,
+			break
+
+		cut the substring from the main string and add it too the lines
+	*/
 	
-	int b[4];
-	GetBounds(b);
-	b[0] += mMargins[0];
-	b[1] += mMargins[1];
-	b[2] -= mMargins[2];
-	b[3] -= mMargins[3];
+	while(txt.size() > 0)
+	{
+		int pos = txt.find_first_of('\n');
+
+		//Cases
+		//1:\n as position 1
+		//2:\n found
+		//3:\n not found
+
+		string excerpt;
+						
+		//Case 1
+		if(txt[0] == '\n')
+		{
+			txt = txt.substr(1);
+			continue;
+			/*
+			excerpt = 'N';//Because drawing new lines causes issues
+			lines.push_back(excerpt);
+			//Take the substring afterwards
+			txt = txt.substr(1);
+			*/
+		}
+		else if(pos == txt.npos)//Case 3
+		{
+			string excerpt = txt.substr(0);
+			lines.push_back(excerpt);
+			break;
+		}
+		else //Case 2
+		{
+			excerpt = txt.substr(0,pos);
+			lines.push_back(excerpt);
+			txt = txt.substr(pos);
+		}
+	}
 	
-	int x = b[0];
-	int yy = b[1];
+	for (int i = 0; i < lines.size(); i++)
+	{
+		const char * tStart = lines[i].c_str();
+		const char * tEnd = tStart + lines[i].size();
+
+		/*
+		*/
+		int b[4];
+		GetBounds(b);
+		b[0] += mMargins[0];
+		b[1] += mMargins[1];
+		b[2] -= mMargins[2];
+		b[3] -= mMargins[3];
 	
-	GUI_FontDrawScaled(state, mFont, mColorText,
-						x, yy, x + 10000, yy + GUI_GetLineHeight(mFont),
-						tStart, tEnd, align_Left);
+		int x = b[0];
+		int yy = b[1] + (i * GUI_GetLineHeight(mFont));
+	
+		GUI_FontDrawScaled(state, mFont, mColorText,
+							x, yy, x + 10000, yy + GUI_GetLineHeight(mFont),
+							tStart, tEnd, align_Left);
+	}
 }
