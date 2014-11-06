@@ -262,7 +262,7 @@ string HandleNetworkError(curl_http_get_file * mCurl)
 		string msg = curl_easy_strerror((CURLcode) err);
 		ss << "Download failed: " << msg << ". (" << err << ")";
 				
-		if(bad_net) ss << "\n(Please check your internet connectivity.)";
+		if(bad_net) ss << "(Please check your internet connectivity.)";
 	}
 	else if(err >= 100)
 	{
@@ -510,8 +510,8 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 		mLabel = new GUI_Label();
 		mLabel->SetParent(this);
 		mLabel->SetDescriptor("Download in Progress, Please Wait");
-
-		int labelBounds[4] = {100,260,400,300};
+		mLabel->SetImplicitMultiline(true);
+		int labelBounds[4] = {70,230,480,270};
 		mLabel->SetBounds(labelBounds);
 		
 		

@@ -34,6 +34,13 @@ public:
 						 GUI_Label();
 	virtual				~GUI_Label();
 
+			/* GUI_Label supports two kinds of multiline behavior,
+			one is explict. Explicit (always on) means
+			descriptor text with \n's in them will make a new line.
+			Implicit means that if the text is about to go beyond it's boundries
+			a newline is automatically inserted.
+			*/
+			void		SetImplicitMultiline(bool isImplicitMultiline);
 			void		SetFont(int font);
 			void		SetColors(float text_color[4]);
 
@@ -42,7 +49,7 @@ public:
 	virtual	void		Draw(GUI_GraphState * state);
 	
 private:
-
+		bool				mIsImplicitMulti;
 		int					mFont;
 		float				mMargins[4];
 		float				mColorText[4];
