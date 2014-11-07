@@ -189,7 +189,11 @@ string MemFileHandling(const string & zipPath, const string & filePath, const st
 	MFFileSet * zipRep = FileSet_Open(zipPath.c_str());
 	if(zipRep == NULL)
 	{
+#if DEV
 		return string("Could not create memory mapped version of " + zipPath + ". Check if the file exists or if you have sufficient permissions");
+#else
+		return string("Could not open " + zipPath + ". Check if the file exists or if you have sufficient permissions");
+#endif
 	}
 	int fileCount = FileSet_Count(zipRep) - 1;
 	/* For all the files
@@ -233,7 +237,7 @@ string MemFileHandling(const string & zipPath, const string & filePath, const st
 			if(write_result != MemFile_GetEnd(currentFile)-MemFile_GetBegin(currentFile))
 			{
 				MemFile_Close(currentFile);
-				return string("Could not fully create file at " + string(filePath + fileName) + ", please ensure you have sufficient hard drive space and permissions");
+				return string("Could not create file at " + string(filePath + fileName) + ", please ensure you have enough hard drive space and permissions");
 			}
 			MemFile_Close(currentFile);
 		}
@@ -631,17 +635,24 @@ void WED_GatewayImportDialog::TimerFired()
 					wrl->StartOperation("Import Scenery Pack");
 					
 					WED_Airport * last_imported = NULL;
+					
 					//If it fails anywhere inside it will soon be destroyed
 					for (int i = 0; i < mSpecificBufs.size(); i++)
 					{
 						last_imported = ImportSpecificVersion(mSpecificBufs[i]);
+						
+						//We completely abort if _anything_ goes wrong
+						if(last_imported == NULL)
+						{
+							wrl->AbortOperation();
+							return;
+						}
 					}
-					
 					
 					WED_SetCurrentAirport(mResolver,last_imported);
 					wrl->CommitOperation();
 
-					this->AsyncDestroy();
+					this->AsyncDestroy();//All done!
 					return;
 				}
 				
@@ -742,19 +753,26 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 		tmp.sceneryId = curScenery.operator[]("sceneryId").asInt();
 		tmp.parentId = curScenery.operator[]("parentId").asInt();
 		tmp.userId = curScenery.operator[]("userId").asInt();
-		tmp.userName = curScenery.operator[]("userName").asString();
+		tmp.userName = curScenery.operator[]("userName").asString() != "" ? curScenery.operator[]("userName").asString() : "N/A";
 		//Dates will appear as ISO8601: https://en.wikipedia.org/wiki/ISO_8601
 		//For example 2014-07-31T14:34:47.000Z
-		tmp.dateUploaded = curScenery.operator[]("dateUpload").asString();
-		tmp.dateAccepted = curScenery.operator[]("dateAccepted").asString();
-		tmp.dateApproved = curScenery.operator[]("dateApproved").asString();
-		//2 for 2D =  3 for 3D
-		tmp.type = curScenery.operator[]("type").asString();
+																			//If the date string exists go with the date string, else go with a default
+		tmp.dateUploaded = curScenery.operator[]("dateUpload").asString() != "" ? curScenery.operator[]("dateUpload").asString() : "0000-00-00T00:00:00.000Z";
+		tmp.dateAccepted = curScenery.operator[]("dateAccepted").asString() != "" ? curScenery.operator[]("dateAccepted").asString() : "0000-00-00T00:00:00.000Z";
+		tmp.dateApproved = curScenery.operator[]("dateApproved").asString() != "" ? curScenery.operator[]("dateApproved").asString() : "0000-00-00T00:00:00.000Z";
+
+		
+
+		tmp.type = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
 		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
-		tmp.artistComments = curScenery.operator[]("artistComments").asString();
-		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString();
-					
-		mVersions_Vers.push_back(tmp);
+		tmp.artistComments = curScenery.operator[]("artistComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
+		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
+		
+		//Catches cases where acceptedSceneryCount > 0 && some pack only has uploadeded status
+		if(!(tmp.dateAccepted == "0000-00-00T00:00:00.000Z" && tmp.dateApproved == "0000-00-00T00:00:00.000Z"))
+		{
+			mVersions_Vers.push_back(tmp);
+		}
 	}
 	mVersions_VerProvider.VerVectorChanged();
 }
@@ -925,12 +943,19 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 		if(f)
 		{
 			size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f());
-
+			
 			if(write_result != outString.size())
 			{
 				mPhase = imp_dialog_error;
 #if DEV
-				DecorateGUIWindow("Could not create file at " + zipPath + ", write_result: " + stringstream(write_result).str() + "outstring.size(): " + stringstream(outString.size()).str());
+				stringstream ss;
+				ss << write_result;
+				
+				string wr = ss.str();
+				ss.str() = "";
+				ss << outString.size();
+				string out_s = ss.str();
+				DecorateGUIWindow("Could not create file at " + zipPath + ", write_result: " + wr + ", outstring.size(): " + out_s);
 #else
 				DecorateGUIWindow("Could not create file at " + zipPath + ", please ensure you have enough space and sufficient permissions");
 #endif
@@ -1020,6 +1045,19 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 	*/
 	switch(mPhase)
 	{
+	case imp_dialog_error:
+		mBackButton->Hide();
+		mBackButton->SetDescriptor("");
+
+		mNextButton->Show();
+		mNextButton->SetDescriptor("Exit");
+
+		mLabel->Show();
+		mLabel->SetDescriptor(labelDesc);
+		
+		mICAO_Packer->Hide();
+		mVersions_Packer->Hide();
+		break;
 	case imp_dialog_download_ICAO:
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Cancel");
@@ -1029,6 +1067,8 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 			
 		mLabel->Show();
 		mLabel->SetDescriptor(labelDesc);
+		mICAO_Packer->Hide();
+		mVersions_Packer->Hide();
 		break;
 	case imp_dialog_choose_ICAO:
 		mBackButton->Show();
@@ -1052,6 +1092,9 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 
 		mLabel->Show();
 		mLabel->SetDescriptor(labelDesc);
+		
+		mICAO_Packer->Hide();
+		mVersions_Packer->Hide();
 		break;
 	case imp_dialog_choose_versions:
 		{
@@ -1069,18 +1112,7 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 			
 		mICAO_Packer->Hide();
 		mVersions_Packer->Show();
-		break;
 		}
-		
-	case imp_dialog_error:
-		mBackButton->Hide();
-		mBackButton->SetDescriptor("");
-
-		mNextButton->Show();
-		mNextButton->SetDescriptor("Exit");
-
-		mLabel->Show();
-		mLabel->SetDescriptor(labelDesc);
 		break;
 	case imp_dialog_download_specific_version:
 	default:
