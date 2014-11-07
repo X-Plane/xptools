@@ -47,8 +47,11 @@ sort_by_ver::operator()
 
 string ChooseStatus(const VerInfo_t & info)
 {
-	
-	if(info.dateAccepted > info.dateApproved)
+	if(info.isRecommended == true)
+	{
+		return "Recommended";
+	}
+	else if(info.dateAccepted > info.dateApproved)
 	{
 		return "Accepted";
 	}

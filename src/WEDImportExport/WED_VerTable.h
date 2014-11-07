@@ -47,6 +47,8 @@ struct VerInfo_t
 	string artistComments;
 	string moderatorComments;
 	vector<char> masterBlobzip;
+
+	bool isRecommended;
 };
 
 typedef vector<VerInfo_t> VerVector;

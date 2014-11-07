@@ -333,16 +333,17 @@ private:
 	friend class WED_AppMain;
 #endif
 
-	int mPhase;//Our simple stage counter for our simple fsm
+	int					mPhase;//Our simple stage counter for our simple fsm
 
-	WED_Document *			 mResolver;
+	WED_Document *		mResolver;
 
 	//Our curl handle we'll be using to get the json files, note the s
-	RAII_CURL_HNDL mCurl;
+	RAII_CURL_HNDL		mCurl;
 
 	//The buffers of the specific packs downloaded at the end
-	vector<JSON_BUF> mSpecificBufs;
-	//void DoAirportImport(string filePath);
+	vector<JSON_BUF>	mSpecificBufs;
+	
+	string				mICAOid;
 //--GUI parts
 
 	//Changes the decoration of the GUI window's title, buttons, etc, based on the stage
@@ -419,8 +420,6 @@ private:
 	
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
-
-string ICAOid;
 
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr) :
@@ -655,7 +654,6 @@ void WED_GatewayImportDialog::TimerFired()
 					this->AsyncDestroy();//All done!
 					return;
 				}
-				
 			}//end if(mPhase == imp_dialog_download_specific_version
 		}//end if(mCurl.get_curl_handle()->is_ok())
 		else
@@ -739,6 +737,8 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 		return;
 	}
 	Json::Value airport = root["airport"];
+	
+	
 	Json::Value sceneryArray = Json::Value(Json::arrayValue);
 	sceneryArray = airport["scenery"];
 	
@@ -751,6 +751,8 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 		VerInfo_t tmp;
 					
 		tmp.sceneryId = curScenery.operator[]("sceneryId").asInt();
+		tmp.isRecommended = tmp.sceneryId == airport.operator[]("recommendedSceneryId").asInt();
+		
 		tmp.parentId = curScenery.operator[]("parentId").asInt();
 		tmp.userId = curScenery.operator[]("userId").asInt();
 		tmp.userName = curScenery.operator[]("userName").asString() != "" ? curScenery.operator[]("userName").asString() : "N/A";
@@ -760,9 +762,6 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 		tmp.dateUploaded = curScenery.operator[]("dateUpload").asString() != "" ? curScenery.operator[]("dateUpload").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.dateAccepted = curScenery.operator[]("dateAccepted").asString() != "" ? curScenery.operator[]("dateAccepted").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.dateApproved = curScenery.operator[]("dateApproved").asString() != "" ? curScenery.operator[]("dateApproved").asString() : "0000-00-00T00:00:00.000Z";
-
-		
-
 		tmp.type = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
 		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
 		tmp.artistComments = curScenery.operator[]("artistComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
@@ -834,9 +833,8 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
-	
-	
-	ICAOid = current_apt.icao;
+
+	mICAOid = current_apt.icao;
 	
 	//Get Certification
 	string cert;
@@ -849,7 +847,7 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	
 	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-	url += "airport/" + ICAOid;
+	url += "airport/" + mICAOid;
 
 	//Get it from the server
 	mCurl.create_HNDL(url,cert,VERSIONS_GET_SIZE_GUESS);
@@ -935,7 +933,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	ILibrarian * lib = WED_GetLibrarian(mResolver);
     lib->LookupPath(filePath);
 
-	string zipPath = filePath + ICAOid + ".zip";
+	string zipPath = filePath + mICAOid + ".zip";
 
 	if(!outString.empty())
 	{
@@ -983,7 +981,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 
 	bool has_dsf = false;
 
-	string res = MemFileHandling(zipPath,filePath,ICAOid,has_dsf);
+	string res = MemFileHandling(zipPath,filePath,mICAOid,has_dsf);
 
 	if(res.size() != 0)
 	{
@@ -994,7 +992,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 
 	WED_Thing * wrl = WED_GetWorld(mResolver);
 	
-	string aptdatPath = filePath + ICAOid + ".dat";
+	string aptdatPath = filePath + mICAOid + ".dat";
 	
 	//The one out_apt will be the WED_Thing we'll be putting the rest of our
 	//Operation inside of
@@ -1004,7 +1002,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	WED_Airport * g = out_apt[0];
 	g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
 
-	string dsfTextPath = filePath + ICAOid + ".txt";
+	string dsfTextPath = filePath + mICAOid + ".txt";
 	if(has_dsf)
 	{
 		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
@@ -1071,6 +1069,10 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mVersions_Packer->Hide();
 		break;
 	case imp_dialog_choose_ICAO:
+		GUI_CellContent c;
+		c.text_val = "";
+		mFilter->AcceptEdit(1,1,c,1);
+
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Cancel");
 
