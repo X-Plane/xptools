@@ -1070,11 +1070,8 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mVersions_Packer->Hide();
 		break;
 	case imp_dialog_choose_ICAO:
-		{
-		GUI_CellContent c;
-		c.text_val = "";
-		mFilter->AcceptEdit(1,1,c,1);
-		}
+		mFilter->ClearFilter();
+		
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Cancel");
 
@@ -1101,11 +1098,8 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mVersions_Packer->Hide();
 		break;
 	case imp_dialog_choose_versions:
-		{
-		GUI_CellContent c;
-		c.text_val = "";
-		mFilter->AcceptEdit(1,1,c,1);
-		}
+		mFilter->ClearFilter();
+
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Back");
 			

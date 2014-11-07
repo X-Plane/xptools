@@ -194,6 +194,12 @@ void	WED_FilterBar::GetEnumDictionary(
 	}
 
 }
+void	WED_FilterBar::ClearFilter()
+{
+	GUI_CellContent c;
+	c.text_val = "";
+	AcceptEdit(1,1,c,1);
+}
 
 void	WED_FilterBar::AcceptEdit(
 						int							cell_x,

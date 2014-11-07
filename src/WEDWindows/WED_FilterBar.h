@@ -145,7 +145,7 @@ public:
 											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 	
-
+	void							ClearFilter();
 private:
 	//current pack one that is selected (used for GetCellContents)
 	//Data from AcceptEdit
