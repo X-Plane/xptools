@@ -532,7 +532,7 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 
 void WED_GatewayImportDialog::Next()
 {
-	DecorateGUIWindow();
+	
 	switch(mPhase)
 	{
 	case imp_dialog_error:
@@ -563,6 +563,7 @@ void WED_GatewayImportDialog::Next()
 	//case imp_dialog_download_specific_version:
 		//break; no button here
 	}
+	DecorateGUIWindow();
 }
 
 void WED_GatewayImportDialog::Back()
@@ -1069,10 +1070,11 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mVersions_Packer->Hide();
 		break;
 	case imp_dialog_choose_ICAO:
+		{
 		GUI_CellContent c;
 		c.text_val = "";
 		mFilter->AcceptEdit(1,1,c,1);
-
+		}
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Cancel");
 
@@ -1103,6 +1105,7 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		GUI_CellContent c;
 		c.text_val = "";
 		mFilter->AcceptEdit(1,1,c,1);
+		}
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Back");
 			
@@ -1114,7 +1117,7 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 			
 		mICAO_Packer->Hide();
 		mVersions_Packer->Show();
-		}
+		
 		break;
 	case imp_dialog_download_specific_version:
 	default:
