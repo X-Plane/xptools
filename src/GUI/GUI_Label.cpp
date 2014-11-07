@@ -95,7 +95,7 @@ void		GUI_Label::Draw(GUI_GraphState * state)
 		{			
 			for(int i = 1; i * numCharsPerB_Width < txt.size(); i++)
 			{
-										//numCharsPerB_Width * i + i to make up for the fact we are mutating as we go
+										//numCharsPerB_Width * i - i to make up for the fact we are mutating as we go
 				txt.insert(txt.begin() + (numCharsPerB_Width * i) - i, 1, '\n');
 			}
 		}

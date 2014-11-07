@@ -75,12 +75,14 @@ string ChooseDate(const VerInfo_t & info)
 		return s;
 	}
 }
+
+
 WED_VerTable::WED_VerTable(
 						const VerVector *			apts) :
 	GUI_SimpleTableGeometry(2,kDefCols,20),	
 	mVers(apts),
-	mSortColumn(1),
-	mInvertSort(true)
+	mSortColumn(2),//Start with sorting by the date
+	mInvertSort(false)
 {
 }	
 
@@ -353,13 +355,11 @@ void		WED_VerTable::resort(void)
 	for(int i = 0; i < mVers->size(); ++i)
 	{
 		if (filters.empty() || 
-			(
-				filter_match(mVers->at(i).userName, filters.begin(),filters.end()),
-				//filter_match(/*TODO = ChooseStatus*/"Accepted/Approved", filters.begin(),filters.end()),
-				filter_match(/*TODO = ChooseDate*/mVers->at(i).dateAccepted,filters.begin(),filters.end()),
-				filter_match(mVers->at(i).artistComments,filters.begin(),filters.end()),
+				filter_match(mVers->at(i).userName, filters.begin(),filters.end())		||
+				filter_match(ChooseStatus(mVers->at(i)), filters.begin(),filters.end()) ||
+				filter_match(ChooseDate(mVers->at(i)),filters.begin(),filters.end())	||
+				filter_match(mVers->at(i).artistComments,filters.begin(),filters.end())	||
 				filter_match(mVers->at(i).moderatorComments,filters.begin(),filters.end())
-			)
 		)
 		{
 			mSorted.push_back(i);
