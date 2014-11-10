@@ -488,7 +488,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Co
 		tableHolder->SetBounds(0,0,0,0);//Because we are packing in the center these will be completely overriden
 		tableHolder->SetParent(mPacker);
 		tableHolder->Show();
-		tableHolder->SetSticky(1,1,1,0);
+		tableHolder->SetSticky(1,1,1,1);
 		mPacker->PackPane(tableHolder,gui_Pack_Center);
 		
 		mICAO_Packer = new GUI_Packer;
