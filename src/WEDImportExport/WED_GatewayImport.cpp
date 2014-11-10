@@ -111,7 +111,7 @@ public:
 	RAII_CURL_HNDL():
 		curl_handle(NULL){}
 
-	void RAII_CURL_HNDL::create_HNDL( const string& inURL,
+	void create_HNDL( const string& inURL,
 					const string& inCert,
 					int			  bufferReserveSize)
 					
@@ -136,8 +136,8 @@ public:
 	
 	
 private:
-	RAII_CURL_HNDL::RAII_CURL_HNDL(const RAII_CURL_HNDL & copy);
-	RAII_CURL_HNDL & RAII_CURL_HNDL::operator= (const RAII_CURL_HNDL & rhs);
+	RAII_CURL_HNDL(const RAII_CURL_HNDL & copy);
+	RAII_CURL_HNDL & operator= (const RAII_CURL_HNDL & rhs);
 
 	curl_http_get_file * curl_handle;
 	
