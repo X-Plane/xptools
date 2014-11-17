@@ -789,6 +789,12 @@
     <ClCompile Include="..\..\..\src\WEDCore\WED_Sign_Parser.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_GatewayImport.cpp">
+      <Filter>WEDImportExport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\WEDImportExport\WED_VerTable.cpp">
+      <Filter>WEDImportExport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\WEDCore\WED_Application.h">
@@ -1570,6 +1576,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\WEDCore\WED_Sign_Parser.h">
       <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_GatewayImport.h">
+      <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\WEDImportExport\WED_VerTable.h">
+      <Filter>WEDImportExport</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

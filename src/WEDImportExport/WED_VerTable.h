@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2012, Laminar Research.
+ * Copyright (c) 2014, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,33 +21,70 @@
  *
  */
 
-#ifndef WED_FilterBar_H
-#define WED_FilterBar_H
+#ifndef WED_VerTable_H
+#define WED_VerTable_H
 
-#include "GUI_Table.h"
 #include "GUI_TextTable.h"
+#include "GUI_Broadcaster.h"
 #include "GUI_SimpleTableGeometry.h"
-#include "WED_LibraryMgr.h"
 
-class	WED_FilterBar : public GUI_Table, public GUI_TextTableProvider, public GUI_SimpleTableGeometry {
+struct VerInfo_t
+{
+	int sceneryId;
+	int parentId;
+	string icao;
+	int userId;
+	string userName;
+	//Dates will appear as ISO8601: https://en.wikipedia.org/wiki/ISO_8601
+	//For example 2014-07-31T14:34:47.000Z
+	string dateUploaded;
+	string dateAccepted;
+	string dateApproved;
+
+	//2 for 2D; 3 for 3D
+	string type;
+	vector<char> features;//Currently there is a bug where the chars representing the letters turns them into their ASCII numbers '2'->50, this is a TODO
+	string artistComments;
+	string moderatorComments;
+	vector<char> masterBlobzip;
+
+	bool isRecommended;
+};
+
+typedef vector<VerInfo_t> VerVector;
+
+class	WED_VerTable :	public GUI_TextTableProvider, 
+						public GUI_SimpleTableGeometry, 
+						public GUI_TextTableHeaderProvider,
+						public GUI_Broadcaster 
+{
 public:
-
-	WED_FilterBar(
-			GUI_Commander *	cmdr,
-			intptr_t		in_msg, 
-			intptr_t		in_param, 
-			const string&	in_label, 
-			const string&	in_def,
-			WED_LibraryMgr *mLibrary,
-			bool			havePacks);
-
-			string		GetText(void) { return mText; }
-			string		GetCurPak(void) {return mCurPak;}
-			int			GetPakVal(void) {return mCurPakVal;}
-	// GUI_SimpleTableGeometry
-	virtual	int			GetColCount(void);
-	virtual	int			GetRowCount(void);
+	// Note: you must call set-filter once after the dust settles to get the 
+	// table synced!
+					 WED_VerTable(
+						const VerVector *			apts);
+	virtual			~WED_VerTable();
 	
+	
+	// Call this to push a new filter string.
+			void	SetFilter(
+						const string&				new_filter);
+			
+	// Call this any time you change the contents of your apt vector - call
+	// IMMEDIATELY, before letting the UI do anything!
+			void	VerVectorChanged(void);
+			
+	// Call this to get the current selected indicies of your apt vector.
+			void	GetSelection(
+						set<int>&					out_selection);
+
+	// GUI_TextTableHeaderProvider
+	virtual	void	GetHeaderContent(
+						int							cell_x,
+						GUI_HeaderContent&			the_content);
+	virtual	void	SelectHeaderCell(
+						int							cell_x);
+
 	// GUI_TextTableProvider
 	virtual void	GetCellContent(
 						int							cell_x,
@@ -56,12 +93,12 @@ public:
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
-						GUI_EnumDictionary&			out_dictionary);
+						GUI_EnumDictionary&			out_dictionary) { }
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
 						const GUI_CellContent&		the_content,
-						int							apply_all);
+						int							apply_all) { }
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y) { }
@@ -71,38 +108,37 @@ public:
 						int							mouse_y,
 						int							button,
 						int							bounds[4]) { }
-
 	virtual void	SelectionStart(
-						int							clear) { }
+						int							clear);
 	virtual	int		SelectGetExtent(
 						int&						low_x,
 						int&						low_y,
 						int&						high_x,
-						int&						high_y){ return 0; }
+						int&						high_y);
 	virtual	int		SelectGetLimits(
 						int&						low_x,
 						int&						low_y,
 						int&						high_x,
-						int&						high_y) { return 0; }
+						int&						high_y);
 	virtual	void	SelectRange(
 						int							start_x,
 						int							start_y,
 						int							end_x,
 						int							end_y,
-						int							is_toggle) { }
-	virtual	void	SelectionEnd(void) { }
+						int							is_toggle);
+	virtual	void	SelectionEnd(void);
 	virtual	int		SelectDisclose(
 						int							open_it,
-						int							all) { return 0; }
+						int							all);
 
 	virtual	int		TabAdvance(
 						int&						io_x,
 						int&						io_y,
-						int							dir,
-						GUI_CellContent&			the_content) { return 0; }
+						int							reverse,
+						GUI_CellContent&			the_content);
 	virtual	int		DoubleClickCell(
 						int							cell_x,
-						int							cell_y) { return 0; }
+						int							cell_y);
 
 	virtual	void					GetLegalDropOperations(
 											int&						allow_between_col,
@@ -144,22 +180,21 @@ public:
 											GUI_DragData *				drag,
 											GUI_DragOperation			allowed,
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
+
+	// GUI_[Simple]TableGeometry
+	virtual	int						GetColCount(void);
+	virtual	int						GetRowCount(void);
 	
-	void							ClearFilter();
 private:
-	//current pack one that is selected (used for GetCellContents)
-	//Data from AcceptEdit
-	string				mCurPak;
-	int					mCurPakVal;
-	//Decides if it should have packs
-	bool				mHavePacks;
-	string				mLabel;
-	string				mText;
-	intptr_t			mMsg;
-	intptr_t			mParam;
-	GUI_TextTable		mTextTable;
 
-	WED_LibraryMgr		*mLibrary;
-};						
+	void					resort();
 
+	const VerVector *	mVers;
+	vector<int>			mSorted;
+	set<int>			mSelected;
+	set<int>			mSelectedOrig;
+	int					mSortColumn;
+	int					mInvertSort;
+	string				mFilter;
+};
 #endif

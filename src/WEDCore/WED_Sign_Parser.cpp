@@ -1,4 +1,3 @@
-#pragma once
 #include "WED_Sign_Parser.h"
 
 //--WED_Sign_Parser class decleration--------------------------
@@ -53,7 +52,7 @@ private:
 
 	//--FSM functions------------------------------------------
 	//A state-to-string conversion function, it is simply for generating messages
-	const string & EnumToString(FSM in);
+	string EnumToString(FSM in);
 
 	//The heart of the parser, the FSM look up table. Position and output are simply for error messages
 	FSM LookUpTable(FSM curState, char curChar, int position, parser_out_info & output);
@@ -653,7 +652,7 @@ bool WED_Sign_Parser::ValidateBasics(const parser_in_info & inStr, parser_out_in
 //---------------------------------------------------------
 
 //--FSM functions------------------------------------------
-const string & WED_Sign_Parser::EnumToString(FSM in)
+string WED_Sign_Parser::EnumToString(FSM in)
 {
 	switch(in)
 	{

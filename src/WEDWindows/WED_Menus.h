@@ -43,7 +43,7 @@ enum {
 	wed_ExportToGateway,
 	wed_ImportDSF,
 	wed_ImportOrtho,
-#if GATEWAY_IMPORT_FEATURES	
+#if GATEWAY_IMPORT_FEATURES	|| 1
 	wed_ImportGateway,
 #endif	
 	// Export Target Submenu

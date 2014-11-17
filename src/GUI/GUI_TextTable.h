@@ -85,6 +85,7 @@ struct	GUI_CellContent {
 	int						bool_partial;	// for checks - if we are on but our parent is off...
 	int						string_is_resource;
 
+#if DEV
 	//Prints a cell's information to the console window, by default it prints only important stuff
 	void printCellInfo(
 		//Boolean flags to turn on/off drawing
@@ -144,7 +145,7 @@ struct	GUI_CellContent {
 	if(pbool_partial) printf("bool_partial: %d \n", bool_partial);
 	if(pstring_is_resource) printf("string_is_resource: %d \n", string_is_resource);
 	}
-
+#endif
 };
 
 struct GUI_HeaderContent {
