@@ -42,6 +42,17 @@
 	scanline must start on a 4-byte boundary!
 */
 
+//Supported image types	//CreateBitmapFromX       WriteBitmapToX	Alpha?
+enum SupportedTypes{
+	WED_BMP,			//NewBitmap,FromFile            X			
+	WED_DDS,			//X								X				X
+	#if USE_GEOJPEG2K
+	WED_JP2K,			//X												X
+	#endif
+	WED_JPEG,			//FromJPEG,FromJPEGData
+	WED_PNG,			//X								X				X
+	WED_TIF				//X												X
+};
 struct	ImageInfo {
 	unsigned char *	data;
 	long			width;
@@ -49,6 +60,8 @@ struct	ImageInfo {
 	long			pad;
 	short			channels;
 };
+
+/* STANDARDS FOR CreateNewBitmapFromX: Returns -1 for error, 0 for all good*/
 
 /* This routine creates a new bitmap and fills in an uninitialized imageInfo structure.
  * The contents of the bitmap are undetermined and must be 'cleared' by you. */
@@ -82,11 +95,20 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 
 #endif
 
+#if USE_GEOJPEG2K
+//Creates a bit map from a GeoJPEG2K, requires GeoJASPER
+//-1 means bad jas_init(), -2 means bad format ID, -3 means bad image. 0 means good, relates to #channels
+int CreateBitmapFromJP2K(const char * inFilePath, struct ImageInfo * outImageInfo);
+
+#endif
 
 
 
 /* Given an imageInfo structure, this routine writes it to disk as a .bmp file.
- * Note that only 3-channel bitmaps may be written as .bmp files!! */
+ * Note that only 3-channel bitmaps may be written as .bmp files!! 
+ *
+ * Beware! Trying to use more than 3 channels or an image that has the wrong padding
+ * Will fail! The following must be true ((width * channels + pad) % 4) == 0 and channels must be 3*/
 int		WriteBitmapToFile(const struct ImageInfo * inImage, const char * inFilePath);
 
 /* Given an imageInfo structure, this routine writes it to disk as a .png file.  Image is tagged with gamma, or 0.0f to leave untagged. */
@@ -106,7 +128,9 @@ int	WriteUncompressedToDDS(struct ImageInfo& ioImage, const char * file_name, in
  * CreateNewBitmap. */
 void	DestroyBitmap(const struct ImageInfo * inImageInfo);
 
-
+//Put in a file path the image name at the end and get back -1 for error or a
+//supported image code (see the enum SupportedTypes
+int GetSupportedType(const char * path);
 
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where

@@ -42,8 +42,14 @@ typedef	struct tiff TIFF;
 // of the CORNERS of the image go?  If the image is an area pixel WITHIN a tile,
 // these are going to seem to be a bit small for a tile!
 bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos);
-bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos);
-
+//The the special default parameters at the end are used for when a GeoTIFF passed in does not have the correct width and height
+//For instance, a 1x1 GeoTiff inside a JPEG2000 where it has not scaled the projection correctly and you must use the JPEG2000's data
+bool	FetchTIFFCornersWithTIFF(TIFF * inTiff, double corners[8], int& post_pos, int width=0, int height=0);
+#if USE_GEOJPEG2K
+//retrives the geotiff information from a GeoJP2K, requires JasPer.
+//Returns true if it was able to, false if not.
+bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& post_pos);
+#endif
 // This routine converts UTM to lat/lon coordinates.  X and Y should be
 // in meters.  Zone should be positive 1-60 for north or -1-60 for south.
 // The pts to outLon and outLat can point to the same storage as x and y;

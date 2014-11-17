@@ -1,5 +1,5 @@
 ==============================================================
-	                                 Microsoft Visual Studio Project
+				Microsoft Visual Studio Project
 ==============================================================
 [Chapter.Section.Subsection] Title: Content is shown here in sentances. The
 bracket system makes for very easy searching. Try it out!
@@ -40,10 +40,10 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 	* MSVC Studio 2010 has not been fully tested though it appears to be compatable
 * The latest version of Git
 
-[1.3.0] Terms
+[1.3.0] Terms: Follow all licenses and restrictions of their owners
 ==============================================================*/
  
- /*
+/*
  
  
 /*==[3.0.0] Working With this Project==================================
@@ -75,29 +75,33 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 		
 		[4.X.0] Liberary Issues
 			[4.1.0] How to get the libraries prepared for MSVC
+				Please note that you MUST make sure that you are using the VS2010 tools or you will most likely have a REALLY BAD TIME
 			
-				 expat
+				expat
 					 files taken from the the latest expat 2.1.0 installer
 					 just build with the included vsproject file <-all linker errors gone
 					 make sure that a preprocessor called XML_STATIC is put in there.
 				 
-				 zlib  
+				zlib  
 					you need to have xtools_wed to NOT have ZLIB_WINAPI
 				 
-				 squish
+				squish
 					copied all the C++ files, had to replace std::min,std::max with min and max because windows
 				 
-				 commctrl.h
+				commctrl.h
 					Just make sure its from windows SDK
 				 
-				 sqlite3
+				sqlite3
 					added the source and headers directly to the project, add these preprocessor directives
 
-				 freetype
+				freetype
 					in the msvc project Property Pages-> C/C++->Code Generation-> Change the Runtime Library to MT
 					/GS to /GS- to try and remove remote_rangecheckerror security buffer check
-
-				 jpeg 
+				jasper-1.701.0.GEO
+					This contains Jasper and the extention for Geo data. From the msvc folder open geojasper.dsw. Visual Studio 2010/2012 will convert these projects to the latest new form. Build the whole solution. Make sure that the toolset matches the Visual Studio project! (This uses 2010 currently) You must also have the following preprocessor definition: JAS_WIN_MSVC_BUILD
+					
+					Due to the fact of weird Enable Intrinsic Functions that can be diffrent for Debug and Release, it could run into area's of weirdness if very intense floating point operations is required - 12/20/2013
+				jpeg 
 					for now use Visual Studio 2010's Command Promt tool and cd to your jpeg9 directory
 					use the following command
 					nmake -f set
@@ -121,7 +125,9 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 
 				geotiff
 					change makefile.vc
-					resave the geo_config.h.vc as geo_config.h
+					
+					
+					
 					FROM
 					TIFF_DIR = ..\libtiff\libtiff
 
@@ -145,8 +151,22 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 					PREFIX =	c:\usr
 					TO
 					PREFIX = .
-
-					Copied geotiff.lib to msvc_compiled_libs
+					
+					add
+					/* Added to force LIB_PROJ compilation */
+					#define HAVE_LIBPROJ 1
+					#define HAVE_PROJECTS_H 1
+					#define PROJECTS_DIR "..\proj-4.7.0\src\projects.h"
+					to geo_config.h.vc
+					
+					in geotiff_proj4.c commment out line 1402,add this to line 1403
+					#include PROJECTS_DIR
+					
+					run nmake /f makefile.vc all
+					
+					You will get linker errors but they will be solved when linking together WED
+					
+					Copy geotiff.lib to msvc_compiled_libs
 						openGL<-put in manually (if not already in)
 					
 ==============================================================*/
@@ -167,33 +187,35 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
  [5.1.1] General: These preprocessor definitions work for all build configurations.
 
  -------------------------------------------------------------------------------
-| CODE | ORIGIN | PURPOSE                                                                          |
-| NO_CGAL=1 | WED | Turns off CGAL from being used, avoids remaing CGAL errors |
-| MSC=1 | WED | Have Visual C compiler, could be replaced by ifdef _MSC_VER      |
-| APL=0 | WED | Platform defined for Apple                                                      |
-| IBM=1 | WED | Platform defined for Windows                                                  |
-| USE_JPEG=1 | WED | ImgUtils will support libjpeg                                             |
-| USE_TIF=1 | WED | ImgUtils will support libtiff                                                |
-| WED=1 | WED | Declares that one is building WED and WED only                        |
-| LIL=1 | WED | For x86 CPU Arcatecture                                                         |
-| BIG=0 | WED | Depricated from supporting PowerPC                                         |
-| XML_STATIC | EXPAT | Stops missing .DLL error, see line 57 in expat_external.h   |
-| WIN32 | MSVC | Used in Windows SDK                                                          |
-| NDEBUG | MSVC | Activates assert.h functionality                                           |
-| _LIB | MSVC | Appears to be neither used nor detramental                                |
-| %(PreprocessorDefinitions) | MSVC | Puts in other hidden Preprocessor Definitions |
-| _CRT_SECURE_NO_WARNINGS | MSVC | Stops unneccassary Error C4496             |			
+| CODE | ORIGIN | PURPOSE																|
+| NO_CGAL=1 | WED | Turns off CGAL from being used, avoids remaing CGAL errors			|
+| MSC=1 | WED | Have Visual C compiler, could be replaced by ifdef _MSC_VER				|
+| APL=0 | WED | Platform defined for Apple												|
+| IBM=1 | WED | Platform defined for Windows											|
+| USE_JPEG=1 | WED | ImgUtils will support libjpeg										|
+| USE_TIF=1 | WED | ImgUtils will support libtiff										|
+| USE_GEOJPEG2K=1 | WED| ImgUtils will supportGEOJPEG2K									|
+| WED=1 | WED | Declares that one is building WED and WED only							|
+| LIL=1 | WED | For x86 CPU Arcatecture													|
+| BIG=0 | WED | Depricated from supporting PowerPC										|
+|JAS_WIN_MSVC_BUILD| GeoJasper | Makes GeoJasper compile, part of its configuration		|
+| XML_STATIC | EXPAT | Stops missing .DLL error, see line 57 in expat_external.h		|
+| WIN32 | MSVC | Used in Windows SDK													|
+| NDEBUG | MSVC | Activates assert.h functionality										|
+| _LIB | MSVC | Appears to be neither used nor detrimental								|
+| %(PreprocessorDefinitions) | MSVC | Puts in other hidden Preprocessor Definitions		|
+| _CRT_SECURE_NO_WARNINGS | MSVC | Stops unneccassary Error C4496             			|
  --------------------------------------------------------------------------------
 
  [5.1.2] Debug (x86): These definitions only appear in debug configurations.
   -------------------------------------------------------------------------------
-| CODE | ORIGIN | PURPOSE                                                                          |
+| CODE | ORIGIN | PURPOSE                                                              |
 | DEV=1 | WED | Activates debug checks inside WED code                                 |
   -------------------------------------------------------------------------------
 
  [5.1.3] Release (x86): These definitions only appear in debug configurations.
   -------------------------------------------------------------------------------
-| CODE | ORIGIN | PURPOSE                                                                          |
+| CODE | ORIGIN | PURPOSE                                                              |
 | DEV=0 | WED | Activates debug checks inside WED code                                 |
   -------------------------------------------------------------------------------
 
@@ -205,6 +227,8 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 	* Platform Toolset: Visual Studio 2010 (v100)
  *  C/C++
 	* Additional Include Directories:
+	..\..\msvc_libs\
+	..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;
 	..\..\msvc_libs\sqlite-3.6.21;
 	..\..\msvc_libs\tiff-4.0.0beta5\libtiff;
 	..\..\msvc_libs\libgeotiff-1.2.5;
@@ -214,7 +238,8 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 	..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;
 	..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;
 	..\..\msvc_libs\freetype-2.2.1\include;
-	..\..\msvc_libs\libpng_zlib_BFOLDER\zlib; ..\..\msvc_libs\Expat2.1.0\Source\lib;
+	..\..\msvc_libs\libpng_zlib_BFOLDER\zlib; 
+	..\..\msvc_libs\Expat2.1.0\Source\lib;
 	..\..\..\src\XPCompat\;
 	..\..\..\src\Interfaces;
 	..\..\..\src\WEDXPlugin;
@@ -256,6 +281,7 @@ Ben Supnik (bsupnik at xsquawkbox dot net).
 		Ws2_32.lib;
 		opengl32.lib;
 		glu32.lib;
+		..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;
 		..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;
 		..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;
 		..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;

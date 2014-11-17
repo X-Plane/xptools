@@ -1,0 +1,432 @@
+GeoJasPer 1.3.1 (GeoTiff <-> GeoJP2(tm) GeoJPEG2000 )
+
+GeoJasper is a Geo supporting transcoder based on enhanced jasper library 
+(i.e., it converts image data from one format to another) 
+correctly transferring geo information between GeoTiff and GeoJP2(tm).
+
+It supports striped as well as tiled TIFF images. Moreover it may combine
+three 1 band TIFFs into one RGB image. If TIFF file is accompanied by TFW 
+(The World File), with the same name and .tfw extension, then it's 
+geographical information will be used instead of the embedded GeoTiff one.
+GeoJasper can handle images with more than 3  channels and 8/16 bits  per 
+channel, also it can create tiled TIFF images as well as convert  striped 
+TIFF into tiled TIFF.
+
+*****************************************************************************
+How to use: 
+
+There are batch files supplied within the distribution to simplify command
+line execution:
+jp2tif     - converts jp2 into TIFF, ex: jp2tif geo.jp2 geo.tif
+tif2jp2    - converts TIFF into jp2, ex: tif2jp2 geo.tif geo.jp2
+tif2jp2_5t - converts TIFF into jp2 with 5 times compression, 
+             ex: tif2jp2 geo.tif geo.jp2 
+tif2jp2_LS - converts TIFF into jp2 with lossless compression, 
+             ex: tif2jp2 geo.tif geo.jp2
+tif3f2jp2  - converts 3 TIFF 1 channel images into RGB jp2 (5 times compr), 
+             ex: tif2jp2 geo1.tif geo2.tif geo3.tif geo.jp2
+tif2geotif - converts TIFF image plus world file into GeoTIFF 
+             (must have: img.tif img.tfw) 
+             ex: tif2geotif img.tif img
+             
+listgeojp2 - prints Geo information contained in the file without
+             actually decoding it,
+             ex: listgeojp2 geo.jp2
+             
+jp2tif4tiles - converts JPEG2000 into tiled TIFF with tile size 256x256
+               ex: jp2tif geo.jp2 geo.tif
+               
+jp2tif4tiles64 - converts JPEG2000 into tiled TIFF with tile size 64x64
+                 ex: jp2tif geo.jp2 geo.tif
+
+             
+Simple command line options:
+-f : input file name
+-F : output file name
+-T : output type
+
+Specific GeoTIFF arguments: 
+
+input passed by -o command line argument:
+  
+  -o listgeo : print Geo information to stdout
+  -f infile1 -o filename2 -o filename3 : combine three gray images into one RGB
+  -f infile1.ext with existing infile1.tfw
+  
+output passed by -O command line argument:  
+  -O tiles : generate tiled TIFF using default tile size of 256x256 pixels
+  -O tilewidth=n : generate tiled TIFF using tile width equal to n
+  -O tileheight=n : generate tiled TIFF using tile height equal to n
+
+***************************************************************************** 
+Examples:
+
+1) To simply convert one image:
+  geojasper -f infile -F outfile -T type
+  Here "type" could be: tif, jp2, bmp ...
+  
+2) To convert one image into JPEG-2000 using 10 times compression:
+  geojasper -f infile -F outfile -T jp2 -O rate=0.1
+  
+2) To convert three GRAY images into RGB JPEG-2000:
+  geojasper -f infile1 -o infile2 -o infile3 -F outfile -T jp2
+
+3) To print Geo information without decoding the file:
+  geojasper -f infile1 -T tif -o listgeo
+  
+*****************************************************************************
+What's new:
+
+[1.3.1] by Dmitry
+FIX: TIFF writing: support for images of arbitrary bit rates 
+     (>1  and <=8  goes to 8  bits per plane)
+     (>8  and <=16 goes to 16 bits per plane)
+     (>16 and <=32 goes to 32 bits per plane)
+FIX: Memory leak in jpeg encoder indicated by GYache team 
+     <http://gyachi.sourceforge.net/download.shtml>   
+
+[1.3.0] by Dmitry (beta testing by: Greg Coats and Dirk Hildebrandt)
+NEW: Support to read/write 16bit images preserving the bit rate. 
+     i.e. 16 bit TIFF will produce 16 bit JPEG2000 and vice versa;
+NEW: Support to write tiled tiffs and updated support for reading tiled TIFFs;
+NEW: Read/write support for images with more than 3 channels for JPEG2000 and TIFF;
+FIX: Errors reading tiled JPEG2000 images produced by Photoshop CS2 and kdu_compress.
+Updated libraries:
+  libtiff:    3.8.2
+  libgeotiff: 1.2.3
+  libproj:    4.4.9
+
+[1.2.9] by Dmitry (beta testing by: Greg Coats)
+NEW: Added functionality for -listgeo argument. It now prints projection names
+and tie-points (corners) are also shown in Lat/Long. 
+To make this happen the library was extended adding Proj.4 library and compiling
+into the code projection database from libgeotiff.
+
+[1.2.8] Assembled by Greg Coats
+IMPROVED: Decoding/Encoding speed is dramatically improved by changes in QMFB code
+by Kaspar Daugaard and Greg Coats.
+Here we do have some considerations regarding the buffer size, 
+even though the selected size of 128 should perform perfectly the better
+result can be achieved on specific platforms. e.g. on p4 machine
+with intel compiler the block of size 256 performed better.
+The appropriate change can be made in the file:
+./src/libjasper/jpc/jpc_qmfb.c
+changing the size of #define JPC_BATCH_SIZE 128 
+
+[1.2.6]
+FIX: Corrected wrong decoding RGB tiled TIFF images. Bug in the height of 
+the last tile if it's less then tile size. Thanks to Greg Coats for 
+identifying the problem!
+
+[1.2.5]
+FIX: Corrected listgeo option to print the exact copy of 1.2.2 listgeo
+
+[1.2.4]
+NEW: Option to list Geo information contained in the file without
+     actually decoding it: "listgeo"
+
+[1.2.3]
+UPDATE: Now used latest libraries and redesigned source release: 
+  jasper: 1.701.0
+  libtiff: 3.6.1
+  libgeotiff: 1.2.1  
+
+[1.2.1-1.2.2]
+FIX: Fixed incorrect file retrieval resulted in incorrect world file
+     for long file names or core dumping.
+
+[1.2.0]
+NEW: Support for reading The World File
+FIX: small fixes in tiff reader
+
+[1.1.0]
+NEW: Support for images separated bands in different tiffs
+IMPROVED: Tiff reader improved to support Tiled and other tiffs
+
+*****************************************************************************
+Directory structure additional to original Jasper distribution
+*****************************************************************************
+
+/macosx - advanced scripts to build geojasper and jiv with OpenGL under macosx
+
+/src/libproj - included library Proj.4, automatically built with geojasper make
+
+/src/libjpeg - included for convenience libjpeg 
+
+/src/libjasper/tiff - coder/decoder jasper code to support TIFF
+
+/src/libjasper/tiffgeo - libtiff and libgeotiff needed by TIFF coder/decoder
+
+/src/libjasper/jpc - updated code to support GeoJPEG2000
+
+*****************************************************************************
+Copyrights
+*****************************************************************************
+
+GeoJasper:
+Copyright (c) 2003-2006 Dmitry V. Fedorov - DIMIN SOFTWARE
+  <www.dimin.net> <dima@dimin.net>
+  All rights reserved
+
+GeoJasper up to version 1.2.2:
+Copyright (c) 2003 DPI, INPE <www.dpi.inpe.br>
+Copyright (c) 2003 Dmitry V. Fedorov - DIMIN SOFTWARE <www.dimin.net>
+  All rights reserved
+
+Original Japser library:
+Copyright (c) 2001-2002 Michael David Adams.
+  All rights reserved.  
+  
+During development were used other libraries following their copyrights:
+libtiff, libjpeg, libgeotiff, gdal
+
+*****************************************************************************
+Formats
+*****************************************************************************
+
+1.1 Accepted image formats
+bmp - Windows BMP
+jp2 - JPEG-2000 JP2, GeoJp2(TM)
+jpc - JPEG-2000 Code Stream
+jpg - JPEG
+pgx - PGX
+pnm - PNM/PGM/PPM
+mif - My Image Format
+ras - Sun Rasterfile
+tif - Tagged Image File Format, GeoTIFF
+
+*****************************************************************************
+Jasper options as stated in Japser manual.
+*****************************************************************************
+*do not forget to exchange jasper for geojasper while reading examples.
+
+1.2 Command line
+
+The jasper command converts image data from one format to another. In other words, this command functions
+as a general-purpose transcoder. Since the JPEG-2000 format is supported by this software, it can be used as
+a JPEG-2000 encoder and/or decoder.
+
+Options
+The jasper program accepts the following options:
+
+--help
+Print usage information and exit.
+
+--version
+Print the version and exit.
+
+--input file
+-f file
+Read the input image from the file named file. By default, the input image is read from standard input.
+
+--input-format format
+-t format
+Specify the format of the input image as format. In most circumstances, this option should not be
+needed, as the format is normally autodetected by examining the image data directly or deduced from
+the input file name extension if an input file is specified (via the --input option).
+
+--input-option option
+-o option
+Provide the option option to the decoder. The valid values for the argument option are determined by
+the input image format. See below for more details.
+
+--output file
+-F file
+Write the encoded image to the file named file. By default, the encoded image is written to standard
+output.
+
+--output-format format
+-T format
+Produce the output image in the format indicated by format. The output format must be specified if
+an output file is not given (via the ”–output” option). If an output file is given and no output format is
+specified, an attempt will be made to deduce the correct format from the output file name extension.
+
+--output-option option
+-O option
+Provide the option option to the encoder. The valid values for the argument option are determined by
+the output format. See below for more details.
+
+--verbose
+Enable verbose mode.
+
+--force-srgb
+Force the image to be converted to the sRGB color space before encoding. As a side effect, the image
+will also be homogenously sampled (i.e., all components are sampled at the same points on the
+reference grid).
+
+The argument format must have one of the following values:
+Value Description
+bmp - Windows BMP
+jp2 - JPEG-2000 JP2, GeoJp2(TM)
+jpc - JPEG-2000 Code Stream
+jpg - JPEG
+pgx - PGX
+pnm - PNM/PGM/PPM
+mif - My Image Format
+ras - Sun Rasterfile
+tif - Tagged Image File Format, GeoTIFF
+
+*****************************************************************************
+Examples
+*****************************************************************************
+
+1. Suppose that we have an image stored in the PNM/PPM format in a file called lena.ppm. To encode
+this image (losslessly) in the JPEG-2000 JP2 format, and store the result in a file called lena.jp2,
+type:
+jasper --input lena.ppm --output lena.jp2 --output-format jp2
+Or, alternately (using short option names), type:
+jasper -f lena.ppm -F lena.jp2 -T jp2
+
+2. Suppose that we have a RGB color image stored in the JPEG-2000 JP2 format in a file called lena.jp2.
+To encode this image in the PNM/PPM format, and store the result in a file called lena.ppm, type:
+jasper --input lena.jp2 --output lena.ppm --output-format pnm
+Or, alternately (using short option names), type:
+jasper -f lena.jp2 -F lena.ppm -T pnm
+
+3. Suppose that we have an image stored in the BMP format in a file called lena.bmp. To encode this
+image in a lossy manner at 100:1 compression in the JPEG-2000 (code stream) format, and store the
+result in a file called lena_lossy.jpc, type:
+jasper -f lena.bmp -F lena_lossy.jpc -T jpc -O rate=0.01
+
+4. Suppose that we have an image stored in a file called sachie.pnm in the PNM/PPM format, and we
+want to encode the image in the JPEG-2000 (code stream) format and store the result in a file named
+sachie_new.jpc. Further, suppose that we want the JPEG-2000 format to employ the following
+parameters:
+* code blocks are 64 samples in width and 32 samples in height
+* no multicomponent transform is to be employed
+* 4 resolution levels should be employed for each component
+* the compression is lossy at 64:1
+In order to accomplish the above, type:
+jasper -f sachie.pnm -F sachie_new.jpc -T jpc -O cblkwidth=64 -O cblkheight=32
+-O nomct -O numrlvls=4 -O rate=0.015625
+
+*****************************************************************************
+JPEG2000 encoder/decoder options
+*****************************************************************************
+
+JP2 Codec
+One of the two image formats specified in the JPEG-2000 Part-1 standard (i.e., ISO/IEC 15444-1 [8]) is the
+so called “JP2” format.
+
+Encoder Options
+The encoder supports all of the same options as the JPC encoder.
+Decoder Options
+The decoder supports all of the same options as the JPC decoder.
+
+JPC Codec
+
+One of the two image formats specified in the JPEG-2000 Part-1 standard (i.e., ISO/IEC 15444-1 [8]) is the
+so called JPEG-2000 code stream format. The JPC codec in JasPer implements this format.
+The design of the JPEG-2000 codec implementation was driven by several key concerns: execution speed,
+memory usage, robustness, portability, modularity, maintainability, and extensibility. In some cases, however,
+during the design process, modularity, portability, and understandability of the code were weighed more
+heavily than execution speed and memory usage. Code understandability and portability were critical considerations
+since this software was intended to be used as a reference implementation of the JPEG-2000 Part-1
+codec in the JPEG-2000 Part-5 standard [10].
+Since the JPEG-2000 standard does not specify any means for encoding color space information in a
+JPEG-2000 code stream, the decoder must make certain assupmtions about the color space of an image. If
+accurate color representation is important, the JPEG-2000 code stream format should not be employed. The
+JPEG-2000 JP2 format should be used instead.
+
+-------------------
+Encoder Options
+-------------------
+
+The following options are supported by the encoder:
+
+imgareatlx=x
+Set the x-coordinate of the top-left corner of the image area to x.
+
+imgareatly=y
+Set the y-coordinate of the top-left corner of the image area to y.
+
+tilegrdtlx=x
+Set the x-coordinate of the top-left corner of the tiling grid to x.
+
+tilegrdtly=y
+Set the y-coordinate of the top-left corner of the tiling grid to y.
+
+tilewidth=w
+Set the nominal tile width to w.
+
+tileheight=h
+Set the nominal tile height to h.
+
+prcwidth=w
+Set the precinct width to w. The argument w must be an integer power of two. The default value is
+32768.
+
+prcheight=h
+Set the precinct height to h. The argument h must be an integer power of two. The default value is
+32768.
+
+cblkwidth=w
+Set the nominal code block width to w. The argument w must be an integer power of two. The default
+value is 64.
+
+cblkheight=h
+Set the nominal code block height to h. The argument h must be an integer power of two. The default
+value is 64.
+
+mode=m
+Set the coding mode to m. The argument m must have one of the following values:
+Value Description: 
+  int - integer mode
+  real - real mode
+
+If lossless coding is desired, the integer mode must be used. By default, the integer mode is employed.
+The choice of mode also determines which multicomponent and wavelet transforms (if any) are employed.
+
+rate=r
+Specify the target rate. The argument r is a positive real number. Since a rate of one corresponds to no
+compression, one should never need to explicitly specify a rate greater than one. By default, the target
+rate is considered to be infinite.
+ilyrrates=r0[,r1,. . . ,rN
+
+vcausal
+Use vertically stripe causal contexts.
+
+pterm
+Use predictable termination.
+
+resetprob
+Reset the probability models after each coding pass.
+
+numgbits=n
+Set the number of guard bits to n.
+
+
+-------------------
+Decoder Options
+-------------------
+
+The decoder does not support any special options.
+
+Rate Specification
+All rates are specified in terms of compression factors (i.e., as reciprocals of compression ratio) and not as
+actual bit rates! Although image coding folks frequently use the number of bits per pixel to specify rate,
+this quantity is often inconvenient to use when dealing with images that have differing sample precisions.
+Furthermore, the number of bits per pixel is not well defined for multicomponent images with distinct subsampling
+factors. The compression factor, however, is independent of sample precision and well defined for
+all types of images. For these reasons, JasPer uses the compression factor and not the number of bits per pixel
+to specify rates.
+
+-------------------
+JPG Codec
+-------------------
+
+For lossy coding, one of the most popular image formats is specified in the JPEG standard (i.e., ISO/IEC
+10918-1 [2]). In JasPer, the JPG codec implements this format.
+The JPEG support in JasPer requires the JPEG library from the Independent JPEG Group (IJG). For legal
+reasons, the IJG JPEG library source code is not included with JasPer. The source code for this library can
+be downloaded from the IJG web site (i.e., http://www.ijg.org).
+
+Encoder Options
+The following options are supported by the encoder:
+
+quality=q
+Set the quality factor to q. This is used in order to indirectly control the bit rate for lossy coding.
+
+Decoder Options
+The decoder does not support any special options.
+

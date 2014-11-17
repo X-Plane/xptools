@@ -5245,6 +5245,7 @@
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5726,6 +5727,7 @@
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5768,6 +5770,7 @@
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5886,6 +5889,7 @@
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;

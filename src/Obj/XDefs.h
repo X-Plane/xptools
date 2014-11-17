@@ -102,6 +102,9 @@
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
 
+// This enables jpeg 2k support for image import.
+#define USE_GEOJPEG2K 1
+
 #define XUTILS_EXCLUDE_MAC_CRAP 1
 
 #include "MemUtils.h"

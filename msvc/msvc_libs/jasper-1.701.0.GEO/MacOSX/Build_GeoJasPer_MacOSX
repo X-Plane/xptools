@@ -1,0 +1,90 @@
+#! /bin/bash
+# A script to build GeoJasPer under Mac OS X 10.4, with gcc 4, on an Apple G5 CPU, by Greg Coats (gregcoats@mac.com)
+# Please note that the name of parent directory of the top level GeoJasPer directory jasper-1.701.0.GEO must NOT have a space in it
+echo "A script to build GeoJasPer under Mac OS X 10.4"
+
+# Before proceeding, check to ensure that /usr/local/lib/libjpeg.a has already been built
+if [ ! -s /usr/local/lib/libjpeg.a ]
+then
+	echo "GeoJasPer requires that /usr/local/lib/libjpeg.a exist before proceeding"
+	echo "/usr/local/lib/libjpeg.a does not exist"
+	echo " Here is a suggested sequence for creating /usr/local/lib/libjpeg.a "
+	echo " open -a Safari http://www.ijg.org"
+	echo " open -a Safari ftp://ftp.uu.net/graphics/jpeg/"
+	echo " if [ ! -e ijg ]"
+	echo " then"
+	echo " mkdir ijgdir"
+	echo " fi"
+	echo " cd    ijgdir"
+	echo " drag     jpegsrc.v6b.tar.gz into the ijgdir directory"
+	echo " gunzip   jpegsrc.v6b.tar.gz"
+	echo " tar -xvf jpegsrc.v6b.tar"
+	echo " cd jpeg-6b"
+	echo " ./configure"
+	echo " make"
+	echo " if [ ! -e  /usr/local ]"
+	echo " then"
+	echo " sudo mkdir /usr/local"
+	echo " fi"
+	echo " if [ ! -e  /usr/local/bin ]"
+	echo " then"
+	echo " sudo mkdir /usr/local/bin"
+	echo " fi"
+	echo " if [ ! -e  /usr/local/man ]"
+	echo " then"
+	echo " sudo mkdir /usr/local/man ]"
+	echo " fi"
+	echo " if [ ! -e  /usr/local/man/man1 ]"
+	echo " then"
+	echo " sudo mkdir /usr/local/man/man1"
+	echo " fi"
+	echo " if [ ! -e  /usr/local/include ]"
+	echo " then"
+	echo " sudo mkdir /usr/local/include"
+	echo " fi"
+	echo " if [ ! -e  /usr/local/lib ]"
+	echo " then"
+	echo " sudo mkdir /usr/local/lib"
+	echo " fi"	
+	echo " sudo make install"
+	echo " sudo make install-lib"
+	echo " sudo ranlib /usr/local/lib/libjpeg.a"
+	echo " ls -l       /usr/local/lib/libjpeg.a"
+	exit
+fi
+
+if [ -e ../configure.bak ]
+	then
+	echo "../configure.bak exists, so ../configure has already been edited, can not proceed, exiting"
+	exit
+fi
+./ped_glut_MacOSX ../configure
+chmod +x          ../configure
+
+if [ -e ../src/appl/jiv.c.bak ]
+	then
+	echo "../src/appl/jiv.c.bak exists, so ../src/appl/jiv.c has already been edited, can not proceed, exiting"
+	exit
+fi
+./ped_glut_MacOSX ../src/appl/jiv.c
+export CFLAGS="-O3 -framework GLUT -framework OpenGL"
+cd ../
+gcc -v
+time ./configure
+echo " "
+time make
+cd src/appl
+
+# Only proceed if geojasper has a > zero size
+if [ -s geojasper ]
+then
+	make jiv
+	mkdir geoapps
+	cp -p geojasper geoapps/geojasper
+	cp -p imgcmp    geoapps/geoimgcmp
+	cp -p imginfo   geoapps/geoimginfo
+	cp -p jiv       geoapps/geojiv
+	ls -l geoapps/*
+	echo "geoapps/geojasper --version"
+	      geoapps/geojasper --version
+fi

@@ -178,59 +178,86 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 
 		{
 			ImageInfo	inf;
-			int tif_ok=-1;
-
-			if (CreateBitmapFromDDS(buf,&inf) != 0)
-			if (CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB) != 0)
-#if USE_JPEG
-			if (CreateBitmapFromJPEG(buf,&inf) != 0)
-#endif
-#if USE_TIF
-			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
-#endif
-			if (CreateBitmapFromFile(buf,&inf) != 0)
-			{
-				#if ERROR_CHECK
-				better reporting
-				#endif
-				DoUserAlert("Unable to open image file.");
-				return;
-			}
-
-			double	nn,ss,ee,ww;
-			zoomer->GetPixelBounds(ww,ss,ee,nn);
-
-			Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
-
-			double grow_x = 0.5*(ee-ww)/((double) inf.width);
-			double grow_y = 0.5*(nn-ss)/((double) inf.height);
-
-			double pix_w, pix_h;
-
-			if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-			else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
-
-			coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-			coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-			coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-			coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
-
-			DestroyBitmap(&inf);
-
+			int has_geo = 0;
 			int align = dem_want_Area;
-			if (tif_ok==0)
-			if (FetchTIFFCorners(buf, c, align))
+			switch(GetSupportedType(buf))
 			{
-			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-			coords[3].x_ = c[0];
-			coords[3].y_ = c[1];
-			coords[0].x_ = c[2];
-			coords[0].y_ = c[3];
-			coords[2].x_ = c[4];
-			coords[2].y_ = c[5];
-			coords[1].x_ = c[6];
-			coords[1].y_ = c[7];
+			case WED_BMP:
+				CreateBitmapFromFile(buf,&inf);
+				break;
+			case WED_DDS:
+				CreateBitmapFromDDS(buf,&inf);
+				break;
+			#if USE_GEOJPEG2K
+			case WED_JP2K:
+				if(CreateBitmapFromJP2K(buf,&inf) == 0)	
+				{
+					if(FetchTIFFCornersWithJP2K(buf,c,align))
+					{
+						coords[3].x_ = c[0];
+						coords[3].y_ = c[1];
+						coords[0].x_ = c[2];
+						coords[0].y_ = c[3];
+						coords[2].x_ = c[4];
+						coords[2].y_ = c[5];
+						coords[1].x_ = c[6];
+						coords[1].y_ = c[7];
+						has_geo=1;
+					}
+				}
+				break;
+			#endif
+			case WED_JPEG:
+				CreateBitmapFromJPEG(buf,&inf);
+				break;
+			case WED_PNG:
+				CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB);
+				break;
+			case WED_TIF:
+				if (CreateBitmapFromTIF(buf,&inf) == 0)
+				{
+					if (FetchTIFFCorners(buf, c, align))
+					{
+						// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+						coords[3].x_ = c[0];
+						coords[3].y_ = c[1];
+						coords[0].x_ = c[2];
+						coords[0].y_ = c[3];
+						coords[2].x_ = c[4];
+						coords[2].y_ = c[5];
+						coords[1].x_ = c[6];
+						coords[1].y_ = c[7];
+						has_geo=1;
+					}
+				}
+				break;
+			default:
+				DoUserAlert("Unable to open image file.");
+				return;//No good images or a broken file path
 			}
+
+			if(!has_geo)
+			{
+				double	nn,ss,ee,ww;
+				zoomer->GetPixelBounds(ww,ss,ee,nn);
+
+				Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+
+				double grow_x = 0.5*(ee-ww)/((double) inf.width);
+				double grow_y = 0.5*(nn-ss)/((double) inf.height);
+
+				double pix_w, pix_h;
+
+				if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+				else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+
+				coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+				coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+			}
+			
+			DestroyBitmap(&inf);
 
 			WED_Thing * wrl = WED_GetWorld(inResolver);
 			ISelection * sel = WED_GetSelect(inResolver);

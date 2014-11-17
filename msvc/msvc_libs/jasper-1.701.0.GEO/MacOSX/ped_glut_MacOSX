@@ -1,0 +1,126 @@
+#! /usr/bin/perl
+# ====================================================================
+# @(#)  Make a series of changes to a group of files
+# ====================================================================
+# $What: <@(#) ped> $
+#
+#    written by David Boldt                               Oct 28, 1998
+#   Revisions:
+# better error handling                                   Jun  5, 2001
+# --------------------------------------------------------------------
+
+$BAK = '.bak';  # suffix for backup files
+
+$USAGE = "USAGE:  $0 file ...
+
+    Apply a series of edits to one or more files.
+    If the file ends up different, save the orignal
+    with a $BAK suffix.
+
+    The changes to be applied are listed at the bottom 
+    of this program, and can easily be modified
+\n";
+
+
+die $USAGE  if ($#ARGV == -1); 	# exit if no files given
+
+while (<DATA>) {
+    next if /^#/;     # skip comments
+    next if /^\s*$/;  # skip empty lines
+    chop  if /\n$/;   # pull off EOL
+    if (/^\^/) {      # if a line starts with ^, use that as delimiter
+	s/^\^//;      # remove leading ^
+	s/\^\s*$//;   # remove trailing ^
+	s/\\\^/\0/g;  # handle escaped ^ chars by translating to nulls
+	s/\\n/\n/g;   # newlines
+	($old,$new) = split(/\^/);
+	$old =~ s/\0/^/g;   # turn nulls back to ^
+	$new =~ s/\0/^/g;
+    }
+    else {
+        ($old,$new) = split(/\s+/,$_,2);  # if > 2 words, new gets them
+    }
+    push(@changes, "$old\n$new");
+}
+
+foreach $file (@ARGV) {	 # for each file on command/line...
+
+    # make sure file exists
+    unless (-f $file) {
+	warn "file '$file' does not exist.\n";
+	next;
+    }
+    if (-l $file) {
+	warn "skipping link '$file'.\n";
+	next;
+    }
+
+    # two levels of backup
+    rename ("${file}$BAK", "${file}$BAK$BAK")  if (-f "${file}$BAK");
+
+    # link the file to the name of backup file
+    link ($file, "${file}$BAK")
+	|| die "unable to link file '$file' to '${file}$BAK'\n";
+
+    if ($file =~ m%/%) {
+	($temp = $file) =~ s%([^/]+)$%.-$1%;
+    }
+    else {
+	$temp = ".-$file";
+    }
+
+    open (FILE,"<$file"); 
+    open (NEW,">$temp")         
+	|| die "unable to create new file '$temp'/n";
+
+    # make the changes on the curent file
+    $modifications = 0;
+    while (<FILE>) {		# for each line in file ...
+	foreach $change (@changes) {
+	    ($old, $new) = split("\n", $change);
+            $modifications += s/$old/$new/ig;
+        }
+	print NEW;  # print whatever we have at this point to new file
+    }
+    close(FILE);
+    close(NEW);
+
+    if ($modifications == 0) {  # if no changes, delete link and temp file
+	unlink ("${file}$BAK", $temp);
+	warn "file '$file' unmodified.\n";
+    }
+    else {  # if changes were made, clone the permissions and ownership
+	&dupemod("${file}$BAK", $temp);
+	rename($temp, $file);
+	$s = 's'  if ($modifications != 1);  # english plurals
+	warn "file '$file' updated ($modifications change$s).\n";
+    }
+}
+
+# --------------------------------------------------------------------
+# -- duplicate the owner, group and permissions of a file
+sub dupemod
+{
+    local($fromfile, $tofile) = @_;
+    local($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,
+          $mtime,$ctime,$blksize,$blocks);
+
+    ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,
+     $mtime,$ctime,$blksize,$blocks) = stat($fromfile);
+
+    chown $uid, $gid, $tofile;
+    chmod $mode, $tofile;
+    #utime $atime, $mtime, $tofile;  # we could reset timestamp too!
+}
+# --------------------------------------------------------------------
+
+# --------------------------------------------------------------------
+# Edit changes go after the END line (case-insensitve) ...
+#  ex:  old new
+#       ^old text^new text^
+#       # comments
+__END__
+#^Office of Information^Office of Water Information^
+#
+^GL/glut.h^GLUT/glut.h
+#

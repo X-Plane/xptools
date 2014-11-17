@@ -23,11 +23,6 @@
 #include "GISUtils.h"
 #include <geotiffio.h>
 #include <geo_normalize.h>
-#if defined(__MWERKS__)
-#include <libxtiff/xtiffio.h>
-#else
-#include <xtiffio.h>
-#endif
 #define PVALUE LIBPROJ_PVALUE
 #include <projects.h>
 #include <cpl_serv.h>
@@ -35,7 +30,13 @@
 #include "CompGeomUtils.h"
 #include "DEMIO.h"
 #include "PlatformUtils.h"
+#include <jasper/jasper.h>
 
+#if defined(_MSC_VER)
+	#include <libxtiff/xtiffio.h>
+#else
+	#include <xtiffio.h>
+#endif
 void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
 {
 	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
@@ -47,7 +48,7 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
         return false;
-
+	
     if( defn->Model == ModelTypeGeographic )
     {
     	outLon = x;
@@ -75,6 +76,7 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners, post_pos);
 		XTIFFClose(tiffFile);
 	}
+	
 	return retVal;
 }
 
@@ -84,7 +86,7 @@ static int pm(char * s, void * v)
 	return 0;
 }
 
-bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
+bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)
 {
 	bool retVal = false;
 	GTIF * gtif = GTIFNew(tiffFile);
@@ -96,14 +98,25 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
         if( GTIFGetDefn( gtif, &defn ) )
         {
         	int xs, ys;
+			double xsize,ysize;
             TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xs );
             TIFFGetField( tiffFile, TIFFTAG_IMAGELENGTH, &ys );
 
 			uint16 pixel_type;
 			double dx=0.0;
 			double dy=0.0;
-			double xsize=xs;
-			double ysize=ys;
+
+			//If there is the optional width and height
+			if(width > 0 && height > 0)
+			{
+				xsize=width;
+				ysize=height;
+			}
+			else
+			{
+				xsize=xs;
+				ysize=ys;
+			}
 
 			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
 				pixel_type=RasterPixelIsArea;
@@ -162,6 +175,164 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 	}
 	return retVal;
 }
+#if USE_GEOJPEG2K
+
+//Represents a jas_aux_buffer_t + the offset of bytes read.
+struct	MemJASGeoFile {
+	MemJASGeoFile(jas_aux_buffer_t * aux_buf_t) 
+	{
+		file = aux_buf_t;
+		offset = 0; 
+	}
+	~MemJASGeoFile() { }
+
+	//The jas_aux_buffer_t (containing the GeoTiff [in the form of aux_buf], and the length of said buffer)
+	jas_aux_buffer_t *		file;
+	//Number of bytes read
+	int				offset;
+
+	//Get's the end pointer of the file
+	unsigned char * GetEnd()
+	{
+		//End = address of start + number of charecters * 8
+		return 	(unsigned char *)(file->buf + (file->size * 8));
+	}
+};
+
+
+static tsize_t	MemJASGeoRead(thandle_t handle, tdata_t data, tsize_t len)
+{
+	//Cast a the handle back to a MemJASGeoFile
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+
+	//Get the remaining bytes
+	//Start is pointer
+	//End = address of start + number of charecters * 8
+
+	//int remain = End-Start-Offset
+	
+	int remain = f->GetEnd() - (f->file->buf) - (f->offset);
+	
+	if (len > remain) 
+		len = remain;
+	if (len < 0) 
+		len = 0;
+	//If length is greater than 0, copy the data
+	//Copy from the pointer + the offset
+	if (len > 0)
+		memcpy(data,f->file->buf+f->offset,len);
+
+	f->offset += len;
+	return len;
+}
+
+static tsize_t MemJASGeoWrite(thandle_t handle, tdata_t data, tsize_t len)
+{
+	return 0;
+}
+
+static toff_t 	MemJASGeoSeek(thandle_t handle, toff_t pos, int mode)
+{
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+	switch(mode) {
+	case SEEK_SET:
+	default:
+		f->offset = pos;
+		return f->offset;
+	case SEEK_CUR:
+		f->offset += pos;
+		return f->offset;
+	case SEEK_END:
+		f->offset = f->GetEnd()-f->file->buf - pos;
+		return f->offset;
+	}
+}
+
+static int 		MemJASGeoClose(thandle_t)
+{
+	return 0;
+}
+
+static toff_t 	MemJASGeoSize(thandle_t handle)
+{
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+	return f->GetEnd()-f->file->buf;
+}
+
+static int 		MemJASGeoMapFile(thandle_t handle, tdata_t* dp, toff_t* len)
+{
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+	*dp = (tdata_t) f->file->buf;
+	*len = f->GetEnd() - (f->file->buf);
+	return 1;
+}
+
+static void 	MemJASGeoUnmapFile(thandle_t, tdata_t, toff_t)
+{
+}
+
+bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& post_pos)
+{
+	jas_stream_t *inStream;
+	jas_image_t *image;
+
+	if(jas_init() != 0 )
+	{
+		//If it failed then return error
+		return -1;
+	}
+
+		//If the data stream cannot be created
+	if((inStream = jas_stream_fopen(inFileName,"rb"))==false)
+	{
+		return false;
+	}
+
+	//Get the format ID
+	int formatId;
+
+	//If there are any errors in getting the format
+	if((formatId = jas_image_getfmt(inStream)) < 0)
+	{
+		//It is an invalid format
+		return false;
+	}
+
+	//If the image cannot be decoded
+	if((image = jas_image_decode(inStream, formatId, 0)) == false)
+	{
+		//Return an error
+		return false;
+	}
+	
+	//If it turns out the .jp2 never had any geological data exit
+	if(image->aux_buf.size == 0)
+	{
+		return false;
+	}
+	//Create the handle to be used in XTIFFClientOpen
+	MemJASGeoFile jasHandle(&image->aux_buf);
+	//Create a TIFF handle
+	TIFF * tif = XTIFFClientOpen(inFileName,"r",&jasHandle,MemJASGeoRead, MemJASGeoWrite,
+	    MemJASGeoSeek, MemJASGeoClose,
+	    MemJASGeoSize,
+ 	    MemJASGeoMapFile, MemJASGeoUnmapFile);
+
+	int postType = dem_want_Area;
+	//Pass in our TIF handle, post type, width, and height
+	if(FetchTIFFCornersWithTIFF(tif,corners,postType,(image->brx_-image->tlx_),(image->bry_-image->tly_))==false)
+	{
+		return false;
+	}
+	//Shut downthe stream
+	jas_stream_close(inStream);
+	
+	//Unintialize jasper
+	jas_cleanup();
+	//It all worked!
+	return true;
+}
+#endif
 
 hash_map<int, projPJ>	sUTMProj;
 struct CTABLE *		sNADGrid = NULL;

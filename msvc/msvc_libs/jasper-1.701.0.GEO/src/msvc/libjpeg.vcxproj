@@ -1,0 +1,326 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <ProjectGuid>{AF6C57B4-736E-4BE7-92EC-87991391C1F2}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v100</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Win32_Debug\</OutDir>
+    <IntDir>.\libjpeg___Win32_Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Win32_Release\</OutDir>
+    <IntDir>.\libjpeg___Win32_Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;BSDTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\libjpeg___Win32_Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\libjpeg___Win32_Debug\libjpeg.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\libjpeg___Win32_Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\libjpeg___Win32_Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Debug\libjpeg.bsc</OutputFile>
+    </Bscmake>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Debug\libjpeg.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;BSDTYPES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\libjpeg___Win32_Release\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\libjpeg___Win32_Release\libjpeg.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\libjpeg___Win32_Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\libjpeg___Win32_Release\</ProgramDataBaseFileName>
+      <AdditionalOptions> /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Release\libjpeg.bsc</OutputFile>
+    </Bscmake>
+    <Lib>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Win32_Release\libjpeg.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\libjpeg\cdjpeg.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcapimin.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcapistd.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jccoefct.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jccolor.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcdctmgr.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jchuff.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcinit.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcmainct.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcmarker.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcmaster.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcomapi.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcparam.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcphuff.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcprepct.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jcsample.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jctrans.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdapimin.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdapistd.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdatadst.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdatasrc.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdcoefct.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdcolor.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jddctmgr.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdhuff.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdinput.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdmainct.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdmarker.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdmaster.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdmerge.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdphuff.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdpostct.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdsample.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jdtrans.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jerror.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jfdctflt.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jfdctfst.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jfdctint.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jidctflt.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jidctfst.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jidctint.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jidctred.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jmemansi.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jmemmgr.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jquant1.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jquant2.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\jutils.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\rdbmp.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\rdcolmap.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\rdgif.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\rdppm.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\rdrle.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\rdswitch.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\rdtarga.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\transupp.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\wrbmp.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\wrgif.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\wrppm.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\wrrle.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\libjpeg\wrtarga.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /O3 -O3 /QaxW -QaxW   /O3 -O3 /QaxW -QaxW </AdditionalOptions>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\libjpeg\cderror.h" />
+    <ClInclude Include="..\libjpeg\cdjpeg.h" />
+    <ClInclude Include="..\libjpeg\jchuff.h" />
+    <ClInclude Include="..\libjpeg\jconfig.h" />
+    <ClInclude Include="..\libjpeg\jdct.h" />
+    <ClInclude Include="..\libjpeg\jdhuff.h" />
+    <ClInclude Include="..\libjpeg\jerror.h" />
+    <ClInclude Include="..\libjpeg\jinclude.h" />
+    <ClInclude Include="..\libjpeg\jmemsys.h" />
+    <ClInclude Include="..\libjpeg\jmorecfg.h" />
+    <ClInclude Include="..\libjpeg\jpegint.h" />
+    <ClInclude Include="..\libjpeg\jpeglib.h" />
+    <ClInclude Include="..\libjpeg\jversion.h" />
+    <ClInclude Include="..\libjpeg\transupp.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

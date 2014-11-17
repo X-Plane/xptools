@@ -36,7 +36,7 @@ Uninstall/
 x64/
 build/
 [Bb]in/
-[Oo]bj/
+*.obj
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -172,3 +172,7 @@ $RECYCLE.BIN/
 msvc/xtools_wed/xtools_wed/xtools_wed.vcxproj.orig
 
 Uninstall/
+msvc/msvc_libs/jasper-1.701.0.GEO/src/msvc/*___Win32_Debug/
+msvc/msvc_libs/jasper-1.701.0.GEO/src/msvc/Win32_Debug/
+*.tlog
+*elease
