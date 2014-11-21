@@ -180,60 +180,47 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			ImageInfo	inf;
 			int has_geo = 0;
 			int align = dem_want_Area;
+			
+			int res = MakeSupportedType(buf, &inf);
+			if(res != 0)
+			{
+				DoUserAlert("Unable to open image file.");
+				return;//No good images or a broken file path
+			}
+
 			switch(GetSupportedType(buf))
 			{
-			case WED_BMP:
-				CreateBitmapFromFile(buf,&inf);
-				break;
-			case WED_DDS:
-				CreateBitmapFromDDS(buf,&inf);
-				break;
 			#if USE_GEOJPEG2K
 			case WED_JP2K:
-				if(CreateBitmapFromJP2K(buf,&inf) == 0)	
+				if(FetchTIFFCornersWithJP2K(buf,c,align))
 				{
-					if(FetchTIFFCornersWithJP2K(buf,c,align))
-					{
-						coords[3].x_ = c[0];
-						coords[3].y_ = c[1];
-						coords[0].x_ = c[2];
-						coords[0].y_ = c[3];
-						coords[2].x_ = c[4];
-						coords[2].y_ = c[5];
-						coords[1].x_ = c[6];
-						coords[1].y_ = c[7];
-						has_geo=1;
-					}
+					coords[3].x_ = c[0];
+					coords[3].y_ = c[1];
+					coords[0].x_ = c[2];
+					coords[0].y_ = c[3];
+					coords[2].x_ = c[4];
+					coords[2].y_ = c[5];
+					coords[1].x_ = c[6];
+					coords[1].y_ = c[7];
+					has_geo=1;
 				}
 				break;
 			#endif
-			case WED_JPEG:
-				CreateBitmapFromJPEG(buf,&inf);
-				break;
-			case WED_PNG:
-				CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB);
-				break;
 			case WED_TIF:
-				if (CreateBitmapFromTIF(buf,&inf) == 0)
+				if (FetchTIFFCorners(buf, c, align))
 				{
-					if (FetchTIFFCorners(buf, c, align))
-					{
-						// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-						coords[3].x_ = c[0];
-						coords[3].y_ = c[1];
-						coords[0].x_ = c[2];
-						coords[0].y_ = c[3];
-						coords[2].x_ = c[4];
-						coords[2].y_ = c[5];
-						coords[1].x_ = c[6];
-						coords[1].y_ = c[7];
-						has_geo=1;
-					}
+					// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+					coords[3].x_ = c[0];
+					coords[3].y_ = c[1];
+					coords[0].x_ = c[2];
+					coords[0].y_ = c[3];
+					coords[2].x_ = c[4];
+					coords[2].y_ = c[5];
+					coords[1].x_ = c[6];
+					coords[1].y_ = c[7];
+					has_geo=1;
 				}
 				break;
-			default:
-				DoUserAlert("Unable to open image file.");
-				return;//No good images or a broken file path
 			}
 
 			if(!has_geo)

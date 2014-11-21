@@ -61,7 +61,8 @@ struct	ImageInfo {
 	short			channels;
 };
 
-/* STANDARDS FOR CreateNewBitmapFromX: Returns -1 for error, 0 for all good*/
+/* STANDARDS FOR CreateNewBitmapFromX: Returns 0 for all good, else each has its
+ * own error codes we all wish were documented and standardized*/
 
 /* This routine creates a new bitmap and fills in an uninitialized imageInfo structure.
  * The contents of the bitmap are undetermined and must be 'cleared' by you. */
@@ -132,6 +133,9 @@ void	DestroyBitmap(const struct ImageInfo * inImageInfo);
 //supported image code (see the enum SupportedTypes
 int GetSupportedType(const char * path);
 
+//Attempts to make a supported image type using GetSupportedType and the various CreateBitmapFromX utils
+//Error codes are passed back up and returned by the method
+int MakeSupportedType(const char * path, ImageInfo * inImage);
 
 /* Given a bitmap, this routine fills the whole bitmap in with a gray level of c, where
  * c = 0 means black and c = 255 means white. */

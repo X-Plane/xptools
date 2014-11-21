@@ -155,136 +155,121 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 		int has_geo = 0;
 		
 		ImageInfo	inf;
-
-		switch(GetSupportedType(buf))
+		int res = MakeSupportedType(buf, &inf);
+		if(res != 0)
 		{
-		case WED_BMP:
-			CreateBitmapFromFile(buf,&inf);
-			break;
-		case WED_DDS:
-			CreateBitmapFromDDS(buf,&inf);
-			break;
-		#if USE_GEOJPEG2K
-		case WED_JP2K:
-			if(CreateBitmapFromJP2K(buf,&inf) == 0)	
-			{
-				if(FetchTIFFCornersWithJP2K(buf,c,align))
-				{
-					coords[3].x_ = c[0];
-					coords[3].y_ = c[1];
-					coords[0].x_ = c[2];
-					coords[0].y_ = c[3];
-					coords[2].x_ = c[4];
-					coords[2].y_ = c[5];
-					coords[1].x_ = c[6];
-					coords[1].y_ = c[7];
-					has_geo = 1;
-				}
-			}
-			break;
-		#endif
-		case WED_JPEG:
-			CreateBitmapFromJPEG(buf,&inf);
-			break;
-		case WED_PNG:
-			CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB);
-			break;
-		case WED_TIF:
-			if (CreateBitmapFromTIF(buf,&inf) == 0)
-			{
-				if (FetchTIFFCorners(buf, c, align))
-				{
-					// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-					coords[3].x_ = c[0];
-					coords[3].y_ = c[1];
-					coords[0].x_ = c[2];
-					coords[0].y_ = c[3];
-					coords[2].x_ = c[4];
-					coords[2].y_ = c[5];
-					coords[1].x_ = c[6];
-					coords[1].y_ = c[7];
-					has_geo = 1;
-				}
-			}
-			break;
-		default:
 			DoUserAlert("Unable to open image file.");
 			return;//No good images or a broken file path
 		}
 
-			if (!has_geo)
+		switch(GetSupportedType(buf))
+		{
+		#if USE_GEOJPEG2K
+		case WED_JP2K:
+			if(FetchTIFFCornersWithJP2K(buf,c,align))
 			{
-
-				double	nn,ss,ee,ww;
-				zoomer->GetPixelBounds(ww,ss,ee,nn);
-
-				Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
-
-				double grow_x = 0.5*(ee-ww)/((double) inf.width);
-				double grow_y = 0.5*(nn-ss)/((double) inf.height);
-
-				double pix_w, pix_h;
-
-				if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-				else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
-
-				coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-				coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+				coords[3].x_ = c[0];
+				coords[3].y_ = c[1];
+				coords[0].x_ = c[2];
+				coords[0].y_ = c[3];
+				coords[2].x_ = c[4];
+				coords[2].y_ = c[5];
+				coords[1].x_ = c[6];
+				coords[1].y_ = c[7];
+				has_geo = 1;
 			}
-			
-			DestroyBitmap(&inf);
-
-			WED_Thing * wrl = WED_GetWorld(in_Resolver);
-			ISelection * sel = WED_GetSelect(in_Resolver);
-
-			wrl->StartOperation("Create Ortho Image");
-			sel->Clear();
-			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
-
-			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			
-			p4->SetParent(rng,0);
-			p3->SetParent(rng,1);
-			p2->SetParent(rng,2);
-			p1->SetParent(rng,3);
-			
-			rng->SetParent(dpol,0);
-			dpol->SetParent(wrl,0);
-			sel->Select(dpol);
-
-			p1->SetLocation(gis_Geo,coords[3]);
-			p2->SetLocation(gis_Geo,coords[2]);
-			p3->SetLocation(gis_Geo,coords[1]);
-			p4->SetLocation(gis_Geo,coords[0]);
-
-
-			string img_path(buf);
-			WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
-
-			dpol->SetResource(img_path);
-
-			p1->SetName("Corner 1");
-			p1->SetName("Corner 2");
-			p1->SetName("Corner 3");
-			p1->SetName("Corner 4");
-			rng->SetName("Image Boundary");
-			const char * p = buf;
-			const char * n = buf;
-			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
-			
-			dpol->SetName(n);
-
-			p1->SetLocation(gis_UV,Point2(0,0));
-			p2->SetLocation(gis_UV,Point2(0,1));
-			p3->SetLocation(gis_UV,Point2(1,1));
-			p4->SetLocation(gis_UV,Point2(1,0));
-
-			wrl->CommitOperation();
+			break;
+		#endif
+		case WED_TIF:
+			if (FetchTIFFCorners(buf, c, align))
+			{
+				// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+				coords[3].x_ = c[0];
+				coords[3].y_ = c[1];
+				coords[0].x_ = c[2];
+				coords[0].y_ = c[3];
+				coords[2].x_ = c[4];
+				coords[2].y_ = c[5];
+				coords[1].x_ = c[6];
+				coords[1].y_ = c[7];
+				has_geo = 1;
+			}
+			break;
 		}
+
+		if (!has_geo)
+		{
+
+			double	nn,ss,ee,ww;
+			zoomer->GetPixelBounds(ww,ss,ee,nn);
+
+			Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+
+			double grow_x = 0.5*(ee-ww)/((double) inf.width);
+			double grow_y = 0.5*(nn-ss)/((double) inf.height);
+
+			double pix_w, pix_h;
+
+			if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+			else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+
+			coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+			coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+			coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+			coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+		}
+			
+		DestroyBitmap(&inf);
+
+		WED_Thing * wrl = WED_GetWorld(in_Resolver);
+		ISelection * sel = WED_GetSelect(in_Resolver);
+
+		wrl->StartOperation("Create Ortho Image");
+		sel->Clear();
+		WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
+
+		WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
+		WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+		WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+		WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+		WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
+			
+		p4->SetParent(rng,0);
+		p3->SetParent(rng,1);
+		p2->SetParent(rng,2);
+		p1->SetParent(rng,3);
+			
+		rng->SetParent(dpol,0);
+		dpol->SetParent(wrl,0);
+		sel->Select(dpol);
+
+		p1->SetLocation(gis_Geo,coords[3]);
+		p2->SetLocation(gis_Geo,coords[2]);
+		p3->SetLocation(gis_Geo,coords[1]);
+		p4->SetLocation(gis_Geo,coords[0]);
+
+
+		string img_path(buf);
+		WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
+
+		dpol->SetResource(img_path);
+
+		p1->SetName("Corner 1");
+		p1->SetName("Corner 2");
+		p1->SetName("Corner 3");
+		p1->SetName("Corner 4");
+		rng->SetName("Image Boundary");
+		const char * p = buf;
+		const char * n = buf;
+		while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+			
+		dpol->SetName(n);
+
+		p1->SetLocation(gis_UV,Point2(0,0));
+		p2->SetLocation(gis_UV,Point2(0,1));
+		p3->SetLocation(gis_UV,Point2(1,1));
+		p4->SetLocation(gis_UV,Point2(1,0));
+
+		wrl->CommitOperation();
 	}
+}

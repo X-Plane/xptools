@@ -357,31 +357,65 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 }
 int GetSupportedType(const char * path)
 {
-	const char * uPos = path;
-	//Find the last .
-	const char * dotPos = strrchr(path,'.');
-	
-	//Loop through until you're at it
-	while(uPos != dotPos)
+	string extension(path);
+	//Takes care of cases like .PNG and .JPG
+	extension = extension.substr(extension.find_last_of('.')+1);
+
+	if(extension.length() == 3)
 	{
-		//Increase the pointer
-		uPos++;
+		extension[0] = tolower(extension[0]);
+		extension[1] = tolower(extension[1]);
+		extension[2] = tolower(extension[2]);
 	}
-	//now that you're at .xyz go once more to get to just the letters
-	uPos++;
+	else
+	{
+		return -1;
+	}
+
 	//compare the string and if it is perfectly the same return that code
-	if(!strcmp(uPos,"bmp")) return WED_BMP;
-	if(!strcmp(uPos,"dds")) return WED_DDS;
+	if(extension == "bmp") return WED_BMP;
+	if(extension == "dds") return WED_DDS;
 	#if USE_GEOJPEG2K
-	if(!strcmp(uPos,"jp2")) return WED_JP2K;
+	if(extension == "jp2") return WED_JP2K;
 	#endif
 	//jpeg or jpg is supported
-	if((!strcmp(uPos,"jpeg"))||(!strcmp(uPos,"jpg"))) return WED_JPEG;
-	if(!strcmp(uPos,"png")) return WED_PNG;
-	if(!strcmp(uPos,"tif")) return WED_TIF;
+	if((extension == "jpeg")||(extension == "jpg")) return WED_JPEG;
+	if(extension == "png") return WED_PNG;
+	if(extension == "tif") return WED_TIF;
 	
 	//Otherwise return the error
 	return -1;
+}
+
+int MakeSupportedType(const char * path, ImageInfo * inImage)
+{
+	int error = -1;//Guilty until proven innocent
+	switch(GetSupportedType(path))
+	{
+	case WED_BMP:
+		error = CreateBitmapFromFile(path,inImage);
+		break;
+	case WED_DDS:
+		error = CreateBitmapFromDDS(path,inImage);
+		break;
+	#if USE_GEOJPEG2K
+	case WED_JP2K:
+		error = CreateBitmapFromJP2K(path,inImage);
+		break;
+	#endif
+	case WED_JPEG:
+		error = CreateBitmapFromJPEG(path,inImage);
+		break;
+	case WED_PNG:
+		error = CreateBitmapFromPNG(path,inImage,false, GAMMA_SRGB);
+		break;
+	case WED_TIF:
+		error = CreateBitmapFromTIF(path,inImage);
+		break;
+	default:
+		return error;//No good images or a broken file path
+	}
+	return error;
 }
 
 void	FillBitmap(const struct ImageInfo * inImageInfo, char c)

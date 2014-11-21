@@ -1307,39 +1307,15 @@ static int	DSF_ExportTileRecursive(
 			ImageInfo smaller;
 			int inWidth = 1;
 			int inHeight = 1;	
-			int numChannel = -1;//Guilty until proven innocent
+			
 			int DXTMethod = 0;
-
-			switch(GetSupportedType(resrcEnd.c_str()))
-			{		
-				case WED_BMP:
-					numChannel = CreateBitmapFromFile(absPathIMG.c_str(),&imgInfo);
-					break;
-				case WED_DDS:
-					numChannel = CreateBitmapFromDDS(absPathIMG.c_str(),&imgInfo);
-					break;
-				#if USE_GEOJPEG2K
-				case WED_JP2K:
-					numChannel = CreateBitmapFromJP2K(absPathIMG.c_str(),&imgInfo);
-					break;
-				#endif
-				case WED_JPEG:
-					numChannel = CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
-					break;
-				case WED_PNG:
-					numChannel = CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
-					break;
-				case WED_TIF:
-					numChannel = CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo);
-					break;
-				default:
-					return NULL;//No good images or a broken file path, danger!
-			}
-			//
-			if(numChannel != 0)
+			
+			int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
+			if(res != 0)
 			{
 				return NULL;
 			}
+			
 			//If only RGB
 			if(imgInfo.channels == 3)
 			{
