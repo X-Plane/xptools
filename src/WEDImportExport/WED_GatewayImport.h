@@ -30,8 +30,9 @@
 #endif
 class	IResolver;
 class   WED_Document;
+class   WED_MapPane;
 
 int		WED_CanImportFromGateway(IResolver * resolver);
-void	WED_DoImportFromGateway(WED_Document * resolver);
+void	WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane);
 
 #endif

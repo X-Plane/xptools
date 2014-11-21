@@ -35,6 +35,7 @@
 
 #include "WED_Document.h"
 #include "WED_PackageMgr.h"
+#include "WED_MapPane.h"
 
 #include "GUI_Application.h"
 #include "GUI_Window.h"
@@ -310,7 +311,7 @@ typedef vector<char> JSON_BUF;
 class WED_GatewayImportDialog : public GUI_Window, public GUI_Listener, public GUI_Timer, public GUI_Destroyable
 {
 public:
-	WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr);
+	WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr);
 	~WED_GatewayImportDialog();
 
 private:
@@ -336,7 +337,7 @@ private:
 	int					mPhase;//Our simple stage counter for our simple fsm
 
 	WED_Document *		mResolver;
-
+	WED_MapPane *		mMapPane;
 	//Our curl handle we'll be using to get the json files, note the s
 	RAII_CURL_HNDL		mCurl;
 
@@ -422,9 +423,10 @@ private:
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 
 //--Implemation of WED_GateWayImportDialog class---------------
-WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, GUI_Commander * cmdr) :
+WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered,import_bounds_default,cmdr),
 	mResolver(resolver),
+	mMapPane(pane),
 	mPhase(imp_dialog_download_ICAO),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
@@ -649,9 +651,18 @@ void WED_GatewayImportDialog::TimerFired()
 						}
 					}
 					
+					//Set the current airport in the sense of "WED's current airport"
 					WED_SetCurrentAirport(mResolver,last_imported);
-					wrl->CommitOperation();
 
+					//Select the current airport in the sense of selecting something on the map pane
+					ISelection * sel = WED_GetSelect(mResolver);
+					sel->Clear();
+					sel->Insert(last_imported);
+
+					//Zoom to the airport
+					mMapPane->ZoomShowSel();
+
+					wrl->CommitOperation();
 					this->AsyncDestroy();//All done!
 					return;
 				}
@@ -1076,7 +1087,7 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mBackButton->SetDescriptor("Cancel");
 
 		mNextButton->Show();
-		mNextButton->SetDescriptor("Search");
+		mNextButton->SetDescriptor("Next");
 
 		mLabel->Hide();
 		mLabel->SetDescriptor(labelDesc);
@@ -1280,8 +1291,8 @@ int	WED_CanImportFromGateway(IResolver * resolver)
 	return 1;
 }
 
-void WED_DoImportFromGateway(WED_Document * resolver)
+void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
 {
-	new WED_GatewayImportDialog(resolver,gApplication);
+	new WED_GatewayImportDialog(resolver, pane,gApplication);
 	return;
 }
