@@ -546,6 +546,7 @@ void WED_GatewayImportDialog::Next()
 		//Going to show versions
 		StartVersionsDownload();
 		mPhase = imp_dialog_download_versions;
+		mICAO_AptProvider.SelectionStart(1);
 		break;
 	//case imp_dialog_download_versions:
 		//break; no next button here
@@ -581,6 +582,7 @@ void WED_GatewayImportDialog::Back()
 	case imp_dialog_download_versions:
 	case imp_dialog_choose_versions:
 		mPhase = imp_dialog_choose_ICAO;
+		mVersions_VerProvider.SelectionStart(1);
 		break;
 	case imp_dialog_download_specific_version:
 		break;
