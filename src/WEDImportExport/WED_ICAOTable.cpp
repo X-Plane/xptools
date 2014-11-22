@@ -21,13 +21,13 @@
  *
  */
 
-#include "WED_AptTable.h"
+#include "WED_ICAOTable.h"
 #include "GUI_Messages.h"
 #include "STLUtils.h"
 
 static int kDefCols[] = { 100, 100 };
 
-WED_AptTable::WED_AptTable(
+WED_ICAOTable::WED_ICAOTable(
 						const AptVector *			apts) :
 	GUI_SimpleTableGeometry(2,kDefCols,20),	
 	mApts(apts),
@@ -37,30 +37,30 @@ WED_AptTable::WED_AptTable(
 }	
 
 
-WED_AptTable::~WED_AptTable()
+WED_ICAOTable::~WED_ICAOTable()
 {
 }
 
 	
-void	WED_AptTable::SetFilter(
+void	WED_ICAOTable::SetFilter(
 						const string&				new_filter)
 {
 	mFilter = new_filter;
 	resort();
 }
 			
-void	WED_AptTable::AptVectorChanged(void)
+void	WED_ICAOTable::AptVectorChanged(void)
 {
 	resort();
 }
 			
-void	WED_AptTable::GetSelection(
+void	WED_ICAOTable::GetSelection(
 						set<int>&					out_selection)
 {
 	out_selection = mSelected;
 }
 
-void	WED_AptTable::SelectHeaderCell(
+void	WED_ICAOTable::SelectHeaderCell(
 						int							cell_x)
 {
 	if(cell_x == mSortColumn)
@@ -73,7 +73,7 @@ void	WED_AptTable::SelectHeaderCell(
 	resort();
 }
 
-void	WED_AptTable::GetHeaderContent(
+void	WED_ICAOTable::GetHeaderContent(
 						int							cell_x,
 						GUI_HeaderContent&			the_content)
 {
@@ -90,18 +90,18 @@ void	WED_AptTable::GetHeaderContent(
 	}		
 }
 
-int		WED_AptTable::GetColCount(void)
+int		WED_ICAOTable::GetColCount(void)
 {
 	return 2;
 }
 
-int		WED_AptTable::GetRowCount(void)
+int		WED_ICAOTable::GetRowCount(void)
 {
 	return mSorted.size();
 }
 
 
-void	WED_AptTable::GetCellContent(
+void	WED_ICAOTable::GetCellContent(
 					int							cell_x,
 					int							cell_y,
 					GUI_CellContent&			the_content)
@@ -130,15 +130,14 @@ void	WED_AptTable::GetCellContent(
 	the_content.string_is_resource = 0;
 }
 
-void	WED_AptTable::SelectionStart(
+void	WED_ICAOTable::SelectionStart(
 					int							clear)
 {
 	if(clear)
 		mSelected.clear();
-	mSelectedOrig = mSelected;
 }
 
-int		WED_AptTable::SelectGetExtent(
+int		WED_ICAOTable::SelectGetExtent(
 					int&						low_x,
 					int&						low_y,
 					int&						high_x,
@@ -162,7 +161,7 @@ int		WED_AptTable::SelectGetExtent(
 		return 0;
 }
 
-int		WED_AptTable::SelectGetLimits(
+int		WED_ICAOTable::SelectGetLimits(
 					int&						low_x,
 					int&						low_y,
 					int&						high_x,
@@ -176,36 +175,33 @@ int		WED_AptTable::SelectGetLimits(
 	return 1;
 }
 
-void	WED_AptTable::SelectRange(
+void	WED_ICAOTable::SelectRange(
 					int							start_x,
 					int							start_y,
 					int							end_x,
 					int							end_y,
 					int							is_toggle)
 {
-	mSelected = mSelectedOrig;
+	mSelected.clear();
 
-	for(int x = start_y; x <= end_y; ++x)
-	{
-		int apt_id = mSorted[x];
-		if(is_toggle && mSelected.count(apt_id))		mSelected.erase (apt_id);
-		else											mSelected.insert(apt_id);		
-	}
+	int apt_id = mSorted[start_y];
+	mSelected.insert(apt_id);
+	
 	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 }
 
-void	WED_AptTable::SelectionEnd(void)
+void	WED_ICAOTable::SelectionEnd(void)
 {
 }
 
-int		WED_AptTable::SelectDisclose(
+int		WED_ICAOTable::SelectDisclose(
 					int							open_it,
 					int							all)
 {
 	return 0;
 }
 
-int		WED_AptTable::TabAdvance(
+int		WED_ICAOTable::TabAdvance(
 					int&						io_x,
 					int&						io_y,
 					int							reverse,
@@ -214,13 +210,13 @@ int		WED_AptTable::TabAdvance(
 	return 0;
 }
 
-int		WED_AptTable::DoubleClickCell(
+int		WED_ICAOTable::DoubleClickCell(
 					int							cell_x,
 					int							cell_y)
 {
 	return 0;
 }
-
+	
 inline void toupper(string& io_string)
 {
 	for(int i = 0; i < io_string.size(); ++i)
@@ -247,7 +243,7 @@ struct sort_by_apt {
 };
 
 
-void		WED_AptTable::resort(void)
+void		WED_ICAOTable::resort(void)
 {
 	vector<string>	filters;
 	tokenize_string_func(mFilter.begin(),mFilter.end(),back_inserter(filters),::isspace);
