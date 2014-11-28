@@ -34,7 +34,7 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
 	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
 	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
-	scenery_id		(this, DEV ? "Scenery ID" : ".Scenery ID",		SQL_Name("", ""),	XML_Name("WED_airport", "scenery_id"), -1, 8)
+	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8)
 {
 }
 
