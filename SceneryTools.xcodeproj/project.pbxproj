@@ -286,6 +286,7 @@
 		D62FD75D110E14E900C5D48E /* QuiltUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */; };
 		D6304C43171CE83500FC4F2F /* CompGeomUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37750AB22C85003949C5 /* CompGeomUtils.cpp */; };
 		D63099F0114BF9BA00882D66 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D63112CA1A240A6300524526 /* WED_ICAOTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63112C91A240A6300524526 /* WED_ICAOTable.cpp */; };
 		D6332F0413648B960055E382 /* obj8_export.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A2666E0F99274300E1E754 /* obj8_export.cpp */; };
 		D63390B21358D71300C524FD /* DEMGrid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63390B11358D71300C524FD /* DEMGrid.cpp */; };
 		D63390B31358D71300C524FD /* DEMGrid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63390B11358D71300C524FD /* DEMGrid.cpp */; };
@@ -1157,6 +1158,8 @@
 		D62FD0D80BD55AE000ED6CF8 /* WED_AirportBoundary.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AirportBoundary.cpp; sourceTree = "<group>"; };
 		D62FD75B110E14E900C5D48E /* QuiltUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QuiltUtils.cpp; sourceTree = "<group>"; };
 		D62FD75C110E14E900C5D48E /* QuiltUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuiltUtils.h; sourceTree = "<group>"; };
+		D63112C81A240A6300524526 /* WED_ICAOTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ICAOTable.h; sourceTree = "<group>"; };
+		D63112C91A240A6300524526 /* WED_ICAOTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ICAOTable.cpp; sourceTree = "<group>"; };
 		D63390B01358D71300C524FD /* DEMGrid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DEMGrid.h; sourceTree = "<group>"; };
 		D63390B11358D71300C524FD /* DEMGrid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DEMGrid.cpp; sourceTree = "<group>"; };
 		D633FA6B0E12DF7400A3913F /* PCSBSocket.lin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PCSBSocket.lin.cpp; path = Network/PCSBSocket.lin.cpp; sourceTree = "<group>"; };
@@ -2281,6 +2284,8 @@
 		D60B0BD00C0658E600AD5EB7 /* WEDImportExport */ = {
 			isa = PBXGroup;
 			children = (
+				D63112C81A240A6300524526 /* WED_ICAOTable.h */,
+				D63112C91A240A6300524526 /* WED_ICAOTable.cpp */,
 				D6ABE9DF19F1F8CC00684AC1 /* WED_GatewayImport.cpp */,
 				D6ABE9E019F1F8CC00684AC1 /* WED_GatewayImport.h */,
 				D6ABE9E119F1F8CC00684AC1 /* WED_VerTable.cpp */,
@@ -4861,6 +4866,7 @@
 				D6B8043A198A7DD00005C1FF /* WED_Sign_Parser.cpp in Sources */,
 				D6ABE9E319F1F8CC00684AC1 /* WED_GatewayImport.cpp in Sources */,
 				D6ABE9E419F1F8CC00684AC1 /* WED_VerTable.cpp in Sources */,
+				D63112CA1A240A6300524526 /* WED_ICAOTable.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
