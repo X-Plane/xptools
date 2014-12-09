@@ -1330,7 +1330,7 @@ static int	DSF_ExportTileRecursive(
 			
 			while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
 
-			if (CreateNewBitmap(inWidth,inHeight, 4, &smaller) >=3)
+			if (CreateNewBitmap(inWidth,inHeight, 4, &smaller) == 0)
 			{
 				int isize = 2048;
 				isize = max(smaller.width,smaller.height);
