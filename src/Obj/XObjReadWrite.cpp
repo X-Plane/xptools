@@ -783,10 +783,11 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			for (n = 0; n < 3; ++n)
 				cmd.params[n] = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
 			cmd.idx_count = 0;
-			
-			while(TXT_MAP_has_word(cur_ptr,end_ptr))
+
+			// Ben says: some objs have comment on the param light line - x-plane ignores anything past the
+			// known param count since it has the lights.txt file. For now, simply ignore anything past the end.
+			while(TXT_MAP_has_word(cur_ptr,end_ptr) && cmd.idx_count < 9)
 			{
-				Assert(cmd.idx_count < 9);
 				cmd.params[cmd.idx_count+3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);				
 				++cmd.idx_count;
 			}
