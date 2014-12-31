@@ -69,6 +69,6 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 void	WED_ImportOneAptFile(
 				const string&			in_path,
 				WED_Thing *				in_parent,
-				vector<WED_Airport *> *	out_apts);
+				vector<WED_Airport *> *	out_apts);	// optional, can be NULL
 
 #endif /* WED_AptIE_H */

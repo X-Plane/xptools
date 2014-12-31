@@ -724,7 +724,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		{
 			if(strstr(paths,".dat"))
 			{			
-				WED_ImportOneAptFile(paths,wrl);
+				WED_ImportOneAptFile(paths,wrl,NULL);
 			}
 			paths = paths + strlen(paths) + 1;
 		}

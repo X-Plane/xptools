@@ -408,8 +408,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
-#if GATEWAY_IMPORT_FEATURES || 1	
 	case wed_ImportGateway: WED_DoImportFromGateway(mDocument,mMapPane); return 1;
+#if GATEWAY_IMPORT_FEATURES
+	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
 #endif	
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
@@ -503,8 +504,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_ImportOrtho:	return 1;
-#if GATEWAY_IMPORT_FEATURES || 1
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
+#if GATEWAY_IMPORT_FEATURES
+	case wed_ImportGatewayExtract: return 1;
 #endif	
 	case wed_Validate:		return 1;
 
