@@ -83,7 +83,7 @@ void		WED_TCEToolAdapter::GetCaps(bool& draw_ent_v, bool& draw_ent_s)
 	brains->GetCaps(draw_ent_v, draw_ent_s,want_sel, click);
 }
 
-int			WED_TCEToolAdapter::FindProperty(const char * in_prop)
+int			WED_TCEToolAdapter::FindProperty(const char * in_prop) const
 {
 	return brains->FindProperty(in_prop);
 }
@@ -93,17 +93,17 @@ int			WED_TCEToolAdapter::CountProperties(void) const
 	return brains->CountProperties();
 }
 
-void		WED_TCEToolAdapter::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+void		WED_TCEToolAdapter::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	brains->GetNthPropertyInfo(n, info);
 }
 
-void		WED_TCEToolAdapter::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void		WED_TCEToolAdapter::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	brains->GetNthPropertyDict(n,dict);
 }
 
-void		WED_TCEToolAdapter::GetNthPropertyDictItem(int n, int e, string& item)
+void		WED_TCEToolAdapter::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	brains->GetNthPropertyDictItem(n,e,item);
 }

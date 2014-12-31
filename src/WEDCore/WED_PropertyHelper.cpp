@@ -41,7 +41,7 @@ inline int remap(const map<int,int>& m, int v)
 	return i->second;
 }
 
-int		WED_PropertyHelper::FindProperty(const char * in_prop)
+int		WED_PropertyHelper::FindProperty(const char * in_prop) const
 {
 	for (int n = 0; n < mItems.size(); ++n)
 		if (strcmp(mItems[n]->mTitle, in_prop)==0) return n;
@@ -53,17 +53,17 @@ int		WED_PropertyHelper::CountProperties(void) const
 	return mItems.size();
 }
 
-void		WED_PropertyHelper::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+void		WED_PropertyHelper::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	mItems[n]->GetPropertyInfo(info);
 }
 
-void		WED_PropertyHelper::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void		WED_PropertyHelper::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	mItems[n]->GetPropertyDict(dict);
 }
 
-void		WED_PropertyHelper::GetNthPropertyDictItem(int n, int e, string& item)
+void		WED_PropertyHelper::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	mItems[n]->GetPropertyDictItem(e, item);
 }
@@ -191,6 +191,7 @@ void		WED_PropIntText::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_kind = prop_Int;
 	info.prop_name = mTitle;
 	info.digits = mDigits;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntText::GetPropertyDict(PropertyDict_t& dict)
@@ -283,6 +284,7 @@ void		WED_PropBoolText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_Bool;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropBoolText::GetPropertyDict(PropertyDict_t& dict)
@@ -376,6 +378,7 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_name = mTitle;
 	info.digits = mDigits;
 	info.decimals = mDecimals;
+	info.synthetic = 0;
 }
 
 void		WED_PropDoubleText::GetPropertyDict(PropertyDict_t& dict)
@@ -481,6 +484,7 @@ void		WED_PropStringText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_String;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropStringText::GetPropertyDict(PropertyDict_t& dict)
@@ -574,6 +578,7 @@ void		WED_PropFileText::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_FilePath;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropFileText::GetPropertyDict(PropertyDict_t& dict)
@@ -668,6 +673,7 @@ void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 1;
 	info.prop_kind = prop_Enum;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntEnum::GetPropertyDict(PropertyDict_t& dict)
@@ -769,6 +775,7 @@ void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
 	info.exclusive = this->exclusive;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntEnumSet::GetPropertyDict(PropertyDict_t& dict)
@@ -935,6 +942,7 @@ void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
 	info.exclusive = false;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntEnumBitfield::GetPropertyDict(PropertyDict_t& dict)
@@ -1048,6 +1056,7 @@ void		WED_PropIntEnumSetFilter::GetPropertyInfo(PropertyInfo_t& info)
 	mParent->GetNthPropertyInfo(me, info);
 	info.prop_name = mTitle;
 	info.exclusive = exclusive;
+	info.synthetic = 1;
 }
 
 void		WED_PropIntEnumSetFilter::GetPropertyDict(PropertyDict_t& dict)
@@ -1134,6 +1143,7 @@ void		WED_PropIntEnumSetUnion::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_kind = prop_EnumSet;
 	info.can_edit = 1;
 	info.exclusive = this->exclusive;
+	info.synthetic = 1;
 }
 
 void		WED_PropIntEnumSetUnion::GetPropertyDict(PropertyDict_t& dict)

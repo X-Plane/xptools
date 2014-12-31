@@ -66,7 +66,7 @@ const char * kRwyPropNames[rwy_prop_count] = {
 	"Longitude 2"
 };
 
-int			WED_GISLine_Width::FindProperty(const char * in_prop)
+int			WED_GISLine_Width::FindProperty(const char * in_prop) const
 {
 	for (int n = 0; n < rwy_prop_count; ++n)
 	{
@@ -82,13 +82,14 @@ int			WED_GISLine_Width::CountProperties(void) const
 	return WED_GISLine::CountProperties() + rwy_prop_count;
 }
 
-void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	if (n < rwy_prop_count)
 	{
 		info.can_edit = true;
 		info.prop_name = kRwyPropNames[n];
 		info.prop_kind = prop_Double;
+		info.synthetic = true;
 	}
 
 	switch(n) {
@@ -104,12 +105,12 @@ void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info)
 	}
 }
 
-void		WED_GISLine_Width::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void		WED_GISLine_Width::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	WED_GISLine::GetNthPropertyDict(n-rwy_prop_count, dict);
 }
 
-void		WED_GISLine_Width::GetNthPropertyDictItem(int n, int e, string& item)
+void		WED_GISLine_Width::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	WED_GISLine::GetNthPropertyDictItem(n-rwy_prop_count, e, item);
 }

@@ -65,9 +65,14 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 	int pc = rhs->CountProperties();
 	for (int p = 0; p < pc; ++p)
 	{
+		PropertyInfo_t i;
 		PropertyVal_t v;
-		rhs->GetNthProperty(p, v);
-		this->SetNthProperty(p, v);
+		rhs->GetNthPropertyInfo(p, i);
+		if(i.can_edit && !i.synthetic)
+		{
+			rhs->GetNthProperty(p, v);
+			this->SetNthProperty(p, v);
+		}
 	}
 }
 
@@ -589,6 +594,7 @@ void		WED_TypeField::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_edit = 0;
 	info.prop_kind = prop_String;
 	info.prop_name = "Class";
+	info.synthetic = 0;
 }
 
 void		WED_TypeField::GetPropertyDict(PropertyDict_t& dict)
