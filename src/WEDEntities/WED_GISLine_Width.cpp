@@ -31,7 +31,7 @@ TRIVIAL_COPY(WED_GISLine_Width, WED_GISLine)
 
 WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) :
 	WED_GISLine(parent, id),
-	width(this,"width",SQL_Name("GIS_lines_heading", "width"), XML_Name("line","width"),50.0,6,2)
+	width(this,"Width",SQL_Name("GIS_lines_heading", "width"), XML_Name("line","width"),50.0,6,2)
 {
 }
 
