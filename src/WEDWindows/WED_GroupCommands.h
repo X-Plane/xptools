@@ -103,4 +103,6 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver);
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
 void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
 
+int		WED_Repair(IResolver * resolver);
+
 #endif /* WED_GroupCommands_H */

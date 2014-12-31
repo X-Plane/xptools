@@ -519,63 +519,14 @@ static bool WED_NoLongerViable(WED_Thing * t)
 	return false;
 }
 
-int		WED_CanClear(IResolver * resolver)
+static void WED_RecursiveDelete(set<WED_Thing *>& who)
 {
-	ISelection * s = WED_GetSelect(resolver);
-	return s->GetSelectionCount() > 0;
-}
-
-void	WED_DoClear(IResolver * resolver)
-{
-	ISelection * sel = WED_GetSelect(resolver);
-	IOperation * op = dynamic_cast<IOperation *> (sel);
-
-	set<WED_Thing *>	who;		// Who - objs to be nuked!
-	set<WED_Thing *>	chain;		// Chain - dependents who _might_ need to be nuked!
-
-	WED_GetSelectionRecursive(resolver, who);
-	if (who.empty()) return;
-
-	op->StartOperation("Clear");
-
-	sel->Clear();
-
-	set<WED_AirportNode *>	common_nodes;
-	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
-	{
-		WED_AirportNode * n = dynamic_cast<WED_AirportNode*>(*i);
-		if(n && n->CountViewers() == 2)
-			common_nodes.insert(n);
-	}
-	for(set<WED_AirportNode *>::iterator n = common_nodes.begin(); n != common_nodes.end(); ++n)
-	{
-		set<WED_Thing *> viewers;
-		(*n)->GetAllViewers(viewers);
-		DebugAssert(viewers.size() == 2);
-		set<WED_Thing *>::iterator v =viewers.begin();
-		WED_Thing * e1 = *v;
-		++v;
-		WED_Thing * e2 = *v;
-		
-		// We are goin to find E2's destination - that's where E1 will point.
-		WED_Thing *				other_node = e2->GetNthSource(0);
-		if(other_node == *n)	other_node = e2->GetNthSource(1);
-		DebugAssert(other_node != *n);
-		
-		// Adjust E1 to span to E2's other node.
-		e1->ReplaceSource(*n, other_node);
-		
-		// Now nuke E2 and ourselves.
-		
-		e2->RemoveSource(*n);
-		e2->RemoveSource(other_node);
-		who.insert(e2);
-	}
-
 	// This is sort of a scary mess.  We are going to delete everyone in 'who'.  But this might have
 	// some reprecussions on other objects.
 	while(!who.empty())
 	{
+		set<WED_Thing *>	chain;		// Chain - dependents who _might_ need to be nuked!
+	
 		for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
 		{
 			// Children get detached...just in case.  They should be fully 
@@ -619,9 +570,62 @@ void	WED_DoClear(IResolver * resolver)
 			if (WED_NoLongerViable(*i))
 				who.insert(*i);
 		}
-
-		chain.clear();
 	}
+}
+
+int		WED_CanClear(IResolver * resolver)
+{
+	ISelection * s = WED_GetSelect(resolver);
+	return s->GetSelectionCount() > 0;
+}
+
+void	WED_DoClear(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *> (sel);
+
+	set<WED_Thing *>	who;		// Who - objs to be nuked!
+
+	WED_GetSelectionRecursive(resolver, who);
+	if (who.empty()) return;
+
+	op->StartOperation("Clear");
+
+	sel->Clear();
+
+	set<WED_AirportNode *>	common_nodes;
+	for (set<WED_Thing *>::iterator i = who.begin(); i != who.end(); ++i)
+	{
+		WED_AirportNode * n = dynamic_cast<WED_AirportNode*>(*i);
+		if(n && n->CountViewers() == 2)
+			common_nodes.insert(n);
+	}
+	for(set<WED_AirportNode *>::iterator n = common_nodes.begin(); n != common_nodes.end(); ++n)
+	{
+		set<WED_Thing *> viewers;
+		(*n)->GetAllViewers(viewers);
+		DebugAssert(viewers.size() == 2);
+		set<WED_Thing *>::iterator v =viewers.begin();
+		WED_Thing * e1 = *v;
+		++v;
+		WED_Thing * e2 = *v;
+		
+		// We are goin to find E2's destination - that's where E1 will point.
+		WED_Thing *				other_node = e2->GetNthSource(0);
+		if(other_node == *n)	other_node = e2->GetNthSource(1);
+		DebugAssert(other_node != *n);
+		
+		// Adjust E1 to span to E2's other node.
+		e1->ReplaceSource(*n, other_node);
+		
+		// Now nuke E2 and ourselves.
+		
+		e2->RemoveSource(*n);
+		e2->RemoveSource(other_node);
+		who.insert(e2);
+	}
+
+	WED_RecursiveDelete(who);
 
 	WED_SetAnyAirport(resolver);
 
@@ -1544,4 +1548,28 @@ void	WED_DoDuplicate(IResolver * resolver, bool wrap_in_cmd)
 	}
 
 	if (wrap_in_cmd)		wrl->CommitOperation();
+}
+
+static void accum_unviable_recursive(WED_Thing * who, set<WED_Thing *>& unviable)
+{
+	if(WED_NoLongerViable(who))
+		unviable.insert(who);
+	
+	int nn = who->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		accum_unviable_recursive(who->GetNthChild(n), unviable);
+}
+
+int		WED_Repair(IResolver * resolver)
+{
+	WED_Thing * root = WED_GetWorld(resolver);
+	set<WED_Thing *> unviable;
+	accum_unviable_recursive(root,unviable);
+	if(unviable.empty())
+		return false;
+	root->StartOperation("Repair");
+	WED_RecursiveDelete(unviable);
+	WED_SetAnyAirport(resolver);
+	root->CommitOperation();
+	return 1;
 }

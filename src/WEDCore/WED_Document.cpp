@@ -50,6 +50,7 @@
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
+#include "WED_GroupCommands.h"
 #include "GUI_Unicode.h"
 // TODO:
 // migrate all old stuff
@@ -427,6 +428,14 @@ void	WED_Document::Revert(void)
 		throw;
 	}
 	mUndo.CommitCommand();
+
+	if(WED_Repair(this))
+	{
+		string msg = string("Warning: the package '") + mPackage + string("' has some corrupt contents."
+					"They have been deleted so that the document can be opened.  If you have a better backup of the project, do not save these changes.");
+		DoUserAlert(msg.c_str());
+		mUndo.PurgeUndo();
+	}
 
 	BroadcastMessage(msg_DocLoaded, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 }
