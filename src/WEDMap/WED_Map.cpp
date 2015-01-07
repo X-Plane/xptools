@@ -183,7 +183,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		if (mIsDownExtraCount)
 		{
 			has_d = 1;	dist = LonLatDistMeters(o.x(),o.y(),n.x(),n.y());
-			has_h = 1;	head = VectorMeters2NorthHeading(o, o, Vector2(o,n));
+			has_h = 1;	head = VectorDegs2NorthHeading(o, o, Vector2(o,n));
 			has_a1 = 1; anchor1 = o;
 			has_a2 = 1; anchor2 = n;
 		}
