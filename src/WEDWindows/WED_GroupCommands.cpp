@@ -488,7 +488,7 @@ void	WED_DoSetCurrentAirport(IResolver * inResolver)
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-static bool WED_NoLongerViable(WED_Thing * t)
+static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 {
 	IGISPointSequence * sq = dynamic_cast<IGISPointSequence *>(t);
 	if (sq)
@@ -497,8 +497,8 @@ static bool WED_NoLongerViable(WED_Thing * t)
 		WED_Thing * parent = t->GetParent();
 		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
 			min_children = 4;
-		if (parent && dynamic_cast<WED_GISPolygon *>(parent))
-			min_children = 3;			
+		if (parent && dynamic_cast<WED_GISPolygon *>(parent))			// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
+			min_children = strict ? 3 : 2;								// Loose requirements for repair require 2 - matches minimum apt.dat spec.
 
 		if(t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
 		if(t->CountSources() == 2 && t->GetNthSource(1) == NULL) return true;
@@ -567,8 +567,8 @@ static void WED_RecursiveDelete(set<WED_Thing *>& who)
 		who.clear();
 		for(set<WED_Thing *>::iterator i = chain.begin(); i != chain.end(); ++i)
 		{
-			if (WED_NoLongerViable(*i))
-				who.insert(*i);
+			if (WED_NoLongerViable(*i, true))		// Strict viability for delete key - be aggressive about not making junk data DURING editing.
+				who.insert(*i);						// User can alwys hit undo.
 		}
 	}
 }
@@ -697,7 +697,7 @@ void	WED_DoCrop(IResolver * resolver)
 		nuke_em.clear();
 		for(set<WED_Thing *>::iterator i = chain.begin(); i != chain.end(); ++i)
 		{
-			if (WED_NoLongerViable(*i))
+			if (WED_NoLongerViable(*i, true))
 				nuke_em.insert(*i);
 		}
 
@@ -1552,7 +1552,7 @@ void	WED_DoDuplicate(IResolver * resolver, bool wrap_in_cmd)
 
 static void accum_unviable_recursive(WED_Thing * who, set<WED_Thing *>& unviable)
 {
-	if(WED_NoLongerViable(who))
+	if(WED_NoLongerViable(who, false))		// LOOSE viability for file repair - only freak out when the alternative is seg fault.
 		unviable.insert(who);
 	
 	int nn = who->CountChildren();
