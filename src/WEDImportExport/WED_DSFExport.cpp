@@ -1427,7 +1427,6 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 
 	double msl_min, msl_max;
 	
-//	Bbox2	cull(x-1,y-1,x+2,y+2);
 	Bbox2	cull(x,y,x+1,y+1);
 	
 	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
@@ -1505,20 +1504,18 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 		DSFWriteToFile(full_path.c_str(), writer);
 	}
 	
+	/* 
+	// test code to make sure culling works - asserts if we false-cull.
 	if(cull_code == -1)	
 	{
 		if(entities > 0)
 		{
-			int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
-			
+			int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);			
 		}
 		Assert(entities == 0);
 	}
+	*/
 
-// This happens when the tile only has apt.dat features.	
-//	if(entities == 0 && cull_code >= 0)
-//		printf("Cull code %d with no entities at: %d,%d\n", cull_code, x, y);
-	
 	DSFDestroyWriter(writer);
 }
 
