@@ -39,6 +39,17 @@
 #include "GUI_Fonts.h"
 #include <time.h>
 
+// This is the size that a GIS composite must be to cause us to skip iterating down into it, in pixels.
+// The idea is that when we are zoomed way out and we have a bunch of global airports, we don't want to 
+// iterate into each airport just to realize that all details are too small to draw.  
+//
+// So we measure the container to make a judgment.  
+//
+// Because we have to add the object hang-over slop to our cull decision, the size of cull in screen space 
+// is surprisingly big.  In other words, we might pick 20 pixels as the cutoff because we have 1 pixel of
+// airport and 19 pixels of slop.
+#define TOO_SMALL_TO_GO_IN 20.0
+
 int	gDMS = 0;
 
 #if APL
@@ -250,9 +261,18 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if (layer->DrawEntityVisualization(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
-		int t = c->GetNumEntities();
-		for (int n = t-1; n >= 0; --n)
-			DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+		Bbox2	on_screen;
+		what->GetBounds(gis_Geo, on_screen);
+		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+		Point2 p1 = this->LLToPixel(on_screen.p1);
+		Point2 p2 = this->LLToPixel(on_screen.p2);
+		Vector2 span(p1,p2);
+		if(min(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2))		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if it contains one thing
+		{																	// then we might as well ALWAYS draw it - it's relatively cheap!
+			int t = c->GetNumEntities();
+			for (int n = t-1; n >= 0; --n)
+				DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+		}
 	}
 }
 
@@ -267,9 +287,19 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
-		int t = c->GetNumEntities();
-		for (int n = t-1; n >= 0; --n)
-			DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+		Bbox2	on_screen;
+		what->GetBounds(gis_Geo, on_screen);
+		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+		
+		Point2 p1 = this->LLToPixel(on_screen.p1);
+		Point2 p2 = this->LLToPixel(on_screen.p2);
+		Vector2 span(p1,p2);
+		if(min(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2))
+		{
+			int t = c->GetNumEntities();
+			for (int n = t-1; n >= 0; --n)
+				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+		}
 	}
 }
 

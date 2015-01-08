@@ -124,6 +124,13 @@ bool			WED_GISComposite::PtOnFrame		(GISLayer_t l, const Point2& p, double d) co
 
 bool WED_GISComposite::Cull(const Bbox2& b) const
 {
+	Bbox2 me;
+	this->GetBounds(gis_Geo, me);
+	me.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+
+	if(!b.overlap(me))
+		return false;
+	
 	int n = GetNumEntities();
 	for (int i = 0; i < n; ++i)
 		if(GetNthEntity(i)->Cull(b))

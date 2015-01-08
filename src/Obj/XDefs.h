@@ -75,13 +75,7 @@
 // #ifs out code that depends on the module.
 #define	CGAL_BETA_SIMPLIFIER 0
 
-// This define controls the inclusion of experimental next-gen features for ATC.  I have added them as I need to generate experimental data.
-// READ MY LIPS: DO NOT SET THIS TO 1.
-// The file formats for ATC are not even REMOTELY close to being finished...if you set this to 1 and compile WED, you will create a WED that will make:
-// - Bogus output apt.dat files.
-// - Bogus earth.wed files that won't work with either future WEDs or the current WED.
-
-// So...you will end up wasting a lot of time and lose all your data.  DO NOT SET THIS TO 1.  CONSIDER YOURSELF WARNED!
+// ATC features from WED 1.2.  This used to have ae big "DO NOT USE THIS" warning but we, like, shipped it, so this should be on.
 #define AIRPORT_ROUTING 1
 
 // Road-grid editor - NOT even remotely done yet, leave this off, dude.
@@ -96,16 +90,34 @@
 #define WANT_TERRASEVER 0
 
 // These turn on the features to import the global apt databaes for the purpose of building a final scenery pack
-// from the gateway
+// from the gateway.  You don't need this.
 #define GATEWAY_IMPORT_FEATURES 0
 
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
 
-// This enables jpeg 2k support for image import.
+// This enables jpeg 2k support for image import.  Can be turned off (for now) if you don't have the libs.
 #define USE_GEOJPEG2K 1
 
+// XUtils is a cluster of random junk that someday needs to all get factored away.  It contains some really old Mac-specific junk.
+// This #define kills the Mac-specific junk so that we can be cross-platform.
 #define XUTILS_EXCLUDE_MAC_CRAP 1
+
+
+
+// This is a big hack.  WED objects have culling "built-in" based on a bounding rect - it's part of the IGIS interface.
+// But this is kind of a design flaw; the actual culling depends on the -visualization-, which is applied via a map layer.
+// Only the map visualization knows how big things are.
+//
+// The result of this deisgn flaw is that objects disappear when their origin point goes off-screen - they are culled as a point.
+//
+// To get aronud this, we simply declare a slop factor when culling (1) objects/AGPs and (2) groups/airports/composites (which can contain
+// them).  All of these cull as "on screen" if they are near the edge but fully off screen.
+//
+// This factor is in degrees lat/lon, so it's somewhere between 5 and 10 km of slop.  If your object is so big that this isn't enough
+// (E.g. your object is more than 10 km from its origin) then YOU ARE DOING IT WRONG.  Break up your object or use another art asset;
+// X-Plane actually contains slight math errors in OBJ placement on a round world and will not handle this well.
+#define GLOBAL_WED_ART_ASSET_FUDGE_FACTOR 0.1
 
 #include "MemUtils.h"
 
