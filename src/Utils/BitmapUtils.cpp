@@ -403,9 +403,11 @@ int MakeSupportedType(const char * path, ImageInfo * inImage)
 		error = CreateBitmapFromJP2K(path,inImage);
 		break;
 	#endif
+	#if USE_JPEG
 	case WED_JPEG:
 		error = CreateBitmapFromJPEG(path,inImage);
 		break;
+	#endif	
 	case WED_PNG:
 		error = CreateBitmapFromPNG(path,inImage,false, GAMMA_SRGB);
 		break;

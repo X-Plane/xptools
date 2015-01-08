@@ -5088,6 +5088,7 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5111,6 +5112,7 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;
@@ -5134,6 +5136,7 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5214,6 +5217,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5298,6 +5302,7 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5342,6 +5347,7 @@
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5415,6 +5421,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5444,6 +5451,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5472,6 +5480,7 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5500,6 +5509,7 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5831,6 +5841,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;
@@ -5936,6 +5947,7 @@
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;
