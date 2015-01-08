@@ -95,12 +95,12 @@ void	WED_ATCFlow::Export(		 AptFlow_t& info) const
 	info.pattern_runway = ENUM_Desc(pattern_rwy.value);
 }
 
-void	WED_ATCFlow::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void	WED_ATCFlow::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
 	if(n == PropertyItemNumber(&pattern_rwy))
 	{
-		WED_Airport * airport = WED_GetParentAirport(this);
+		const WED_Airport * airport = WED_GetParentAirport(this);
 		if(airport)
 		{
 			PropertyDict_t full;

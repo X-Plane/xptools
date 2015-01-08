@@ -405,7 +405,7 @@ void	WED_DoMakeNewATCFlow(IResolver * inResolver)
 	f->SetParent(now_sel,now_sel->CountChildren());
 	f->SetName("Unnamed ATC Flow");
 	
-	WED_Airport * airport = WED_GetParentAirport(f);
+	const WED_Airport * airport = WED_GetParentAirport(f);
 	if(airport)
 	{
 		set<int> legal;
@@ -426,7 +426,7 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	f->SetParent(now_sel,now_sel->CountChildren());
 	f->SetName("Unnamed Runway Use");
 	
-	WED_Airport * airport = WED_GetParentAirport(f);
+	const WED_Airport * airport = WED_GetParentAirport(f);
 	if(airport)
 	{
 		set<int> legal;

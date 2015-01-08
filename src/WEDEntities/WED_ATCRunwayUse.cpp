@@ -86,12 +86,12 @@ void	WED_ATCRunwayUse::Export(		 AptRunwayRule_t& info) const
 	info.ini_heading_hi = vec_heading_max;
 }
 
-void	WED_ATCRunwayUse::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void	WED_ATCRunwayUse::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
 	if(n == PropertyItemNumber(&rwy))
 	{
-		WED_Airport * airport = WED_GetParentAirport(this);
+		const WED_Airport * airport = WED_GetParentAirport(this);
 		if(airport)
 		{
 			PropertyDict_t full;

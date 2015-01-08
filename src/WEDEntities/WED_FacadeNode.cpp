@@ -43,7 +43,7 @@ WED_FacadeNode::~WED_FacadeNode()
 
 #if AIRPORT_ROUTING
 
-void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
 	if(n == PropertyItemNumber(&wall_type))
@@ -75,7 +75,7 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict)
 	WED_Thing::GetNthPropertyDict(n,dict);			
 }
 
-void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item)
+void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	if(n == PropertyItemNumber(&wall_type))
 	{

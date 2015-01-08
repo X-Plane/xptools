@@ -40,8 +40,8 @@ public:
 	virtual	bool	GetControlHandleLo (GISLayer_t l,       Point2& p) const;
 	virtual	bool	GetControlHandleHi (GISLayer_t l,       Point2& p) const;
 
-	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict);
-	virtual	void	GetNthPropertyDictItem(int n, int e, string& item);
+	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void	GetNthPropertyDictItem(int n, int e, string& item) const;
 #endif
 			int		GetWallType(void) const;
 #if AIRPORT_ROUTING

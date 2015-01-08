@@ -40,7 +40,7 @@ public:
 
 			void	SetRunway(int rwy);
 
-	virtual	void	GetNthPropertyDict(int n, PropertyDict_t& dict);
+	virtual	void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Runway Use"; }
 

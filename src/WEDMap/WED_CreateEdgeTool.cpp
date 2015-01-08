@@ -544,7 +544,7 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const ch
 	}
 }
 
-void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
 	if(n == PropertyItemNumber(&mRunway))

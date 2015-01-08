@@ -138,11 +138,11 @@ void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport)
 	keys->Directory_Edit("airport", airport);
 }
 
-WED_Airport * WED_GetParentAirport(WED_Thing * who)
+const WED_Airport * WED_GetParentAirport(const WED_Thing * who)
 {
 	while(who)
 	{
-		WED_Airport * a = dynamic_cast<WED_Airport *>(who);
+		const WED_Airport * a = dynamic_cast<const WED_Airport *>(who);
 		if(a) return a;
 		who = who->GetParent();
 	}
@@ -359,9 +359,9 @@ const char *	WED_GetParentForClass(const char * in_class)
 	return NULL;
 }
 
-static void WED_LookupRunwayRecursive(WED_Thing * thing, set<int>& runways, int domain)
+static void WED_LookupRunwayRecursive(const WED_Thing * thing, set<int>& runways, int domain)
 {
-	WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<WED_Runway *>(thing) : NULL;
+	const WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<const WED_Runway *>(thing) : NULL;
 	if(rwy)
 	{
 		string name;
@@ -389,13 +389,13 @@ static void WED_LookupRunwayRecursive(WED_Thing * thing, set<int>& runways, int 
 	}
 }
 
-void			WED_GetAllRunwaysOneway(WED_Airport * airport, set<int>& runways)
+void			WED_GetAllRunwaysOneway(const WED_Airport * airport, set<int>& runways)
 {
 	runways.clear();
 	WED_LookupRunwayRecursive(airport,runways, ATCRunwayOneway);
 }
 
-void			WED_GetAllRunwaysTwoway(WED_Airport * airport, set<int>& runways)
+void			WED_GetAllRunwaysTwoway(const WED_Airport * airport, set<int>& runways)
 {
 	runways.clear();
 	WED_LookupRunwayRecursive(airport,runways, ATCRunwayTwoway);

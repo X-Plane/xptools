@@ -58,7 +58,7 @@ public:
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
 
-	virtual void				GetNthPropertyDict(int n, PropertyDict_t& dict);
+	virtual void				GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 private:
 

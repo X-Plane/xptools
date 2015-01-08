@@ -41,7 +41,7 @@ public:
 	int		GetPatternRunway(void) const;		// Return WED ENUM!!!
 	void	SetPatternRunway(int r);
 
-	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict);
+	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 	virtual const char *	HumanReadableType(void) const { return "ATC Flow"; }
 

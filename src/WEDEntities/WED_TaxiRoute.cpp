@@ -171,12 +171,12 @@ void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
 
 }
 
-void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
 	if(n == PropertyItemNumber(&runway))
 	{
-		WED_Airport * airport = WED_GetParentAirport(this);
+		const WED_Airport * airport = WED_GetParentAirport(this);
 		if(airport)
 		{
 			PropertyDict_t full;
@@ -195,7 +195,7 @@ void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict)
 			 n == PropertyItemNumber(&hot_arrive) ||
 			 n == PropertyItemNumber(&hot_ils))
 	{
-		WED_Airport * airport = WED_GetParentAirport(this);
+		const WED_Airport * airport = WED_GetParentAirport(this);
 		if(airport)
 		{
 			set<int>	runway_parts;
@@ -220,7 +220,7 @@ void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict)
 		WED_GISEdge::GetNthPropertyDict(n,dict);			
 }
 
-void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	WED_GISEdge::GetNthPropertyInfo(n, info);
 	if(runway.value != atc_rwy_None)
