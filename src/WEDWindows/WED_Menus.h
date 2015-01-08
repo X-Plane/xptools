@@ -40,10 +40,14 @@ enum {
 	wed_ImportApt,
 	wed_ExportApt,
 	wed_ExportPack,
+#if HAS_GATEWAY	
 	wed_ExportToGateway,
+#endif	
 	wed_ImportDSF,
 	wed_ImportOrtho,
+#if HAS_GATEWAY	
 	wed_ImportGateway,
+#endif	
 #if GATEWAY_IMPORT_FEATURES
 	wed_ImportGatewayExtract,
 #endif	

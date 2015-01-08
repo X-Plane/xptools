@@ -24,6 +24,8 @@
 #ifndef WED_GatewayImport_H
 #define WED_GatewayImport_H
 
+#if HAS_GATEWAY
+
 #if DEV
 //If you want to start testing right away, only useful for testing networking and dialog box parts
 #define TEST_AT_START 0
@@ -34,5 +36,7 @@ class   WED_MapPane;
 
 int		WED_CanImportFromGateway(IResolver * resolver);
 void	WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane);
+
+#endif /* HAS_GATEWAY */
 
 #endif

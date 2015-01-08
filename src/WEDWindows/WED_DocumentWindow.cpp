@@ -401,14 +401,17 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
-	case wed_ExportPack:		WED_DoExportPack(mDocument);	return 1;
+#if HAS_GATEWAY	
 	case wed_ExportToGateway:		WED_DoExportToGateway(mDocument); return 1;
+#endif	
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
+#if HAS_GATEWAY		
 	case wed_ImportGateway: WED_DoImportFromGateway(mDocument,mMapPane); return 1;
+#endif	
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
 #endif	
@@ -500,11 +503,15 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ExportPack:	return WED_CanExportPack(mDocument);
+#if HAS_GATEWAY	
 	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
+#endif	
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_ImportOrtho:	return 1;
+#if HAS_GATEWAY
 	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
+#endif	
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract: return 1;
 #endif	

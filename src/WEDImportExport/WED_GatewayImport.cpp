@@ -21,7 +21,10 @@
  *
  */
 
+#include "XDefs.h"
 #include "WED_GatewayImport.h"
+
+#if HAS_GATEWAY
 
 #include "PlatformUtils.h"
 #include "GUI_Resources.h"
@@ -1298,3 +1301,5 @@ void WED_DoImportFromGateway(WED_Document * resolver, WED_MapPane * pane)
 	new WED_GatewayImportDialog(resolver, pane,gApplication);
 	return;
 }
+
+#endif /* HAS_GATEWAY */

@@ -6,6 +6,8 @@
 #ifndef curl_http_H
 #define curl_http_H
 
+#if HAS_GATEWAY
+
 #if !IBM
 #include <pthread.h>
 #endif
@@ -110,5 +112,6 @@ private:
 
 bool	UTL_http_is_error_bad_net(int err);
 
+#endif /* HAS_GATEWAY */
 
 #endif /* UTL_http_H */

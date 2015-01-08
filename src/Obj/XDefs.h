@@ -99,11 +99,12 @@
 // This enables jpeg 2k support for image import.  Can be turned off (for now) if you don't have the libs.
 #define USE_GEOJPEG2K 1
 
+// This enables gateway communication.  You can turn this off if you don't have a working CURL/SSL.
+#define HAS_GATEWAY 1
+
 // XUtils is a cluster of random junk that someday needs to all get factored away.  It contains some really old Mac-specific junk.
 // This #define kills the Mac-specific junk so that we can be cross-platform.
 #define XUTILS_EXCLUDE_MAC_CRAP 1
-
-
 
 // This is a big hack.  WED objects have culling "built-in" based on a bounding rect - it's part of the IGIS interface.
 // But this is kind of a design flaw; the actual culling depends on the -visualization-, which is applied via a map layer.

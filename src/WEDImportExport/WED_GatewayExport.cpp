@@ -21,7 +21,10 @@
  *
  */
 
+#include "XDefs.h"
 #include "WED_GatewayExport.h"
+
+#if HAS_GATEWAY
 
 // MSVC insanity: XWin must come in before ANY part of the IOperation interface or Ben's stupid #define to get file/line numbers on ops hoses the MS headers!
 #include "GUI_FormWindow.h"
@@ -652,3 +655,4 @@ void WED_GatewayExportDialog::TimerFired()
 
 }
 
+#endif /* HAS_GATEWAY */

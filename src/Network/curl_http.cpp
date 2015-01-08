@@ -7,7 +7,11 @@
  *
  */
 
+#include "XDefs.h"
 #include "curl_http.h"
+
+#if HAS_GATEWAY
+
 #include "curl/curl.h"
 #include "AssertUtils.h"
 #if !IBM
@@ -350,3 +354,5 @@ bool	UTL_http_is_error_bad_net(int err)
 	if(err == CURLE_COULDNT_CONNECT)		return true;
 											return false;
 }
+
+#endif /* HAS_GATEWAY */

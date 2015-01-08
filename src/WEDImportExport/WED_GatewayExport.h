@@ -24,9 +24,12 @@
 #ifndef WED_GatewayExport_H
 #define WED_GatewayExport_H
 
+#if HAS_GATEWAY
 class	IResolver;
 
 int		WED_CanExportToGateway(IResolver * resolver);
 void	WED_DoExportToGateway(IResolver * resolver);
+
+#endif
 
 #endif
