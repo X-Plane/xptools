@@ -57,6 +57,7 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include <time.h>
+#include "PerfUtils.h"
 
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
@@ -318,23 +319,23 @@ static void	DSF_AccumChainBezier(
 			vector<BezierPoint2p>	pts,pts_triple;
 			BezierToBezierPointSeq(n,e,back_inserter(pts));
 			
-			printf("Original pts:\n");
-			for(vector<BezierPoint2p>::iterator i = pts.begin(); i != pts.end(); ++i)
-				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
-						i->lo.x(), i->lo.y(),
-						i->pt.x(), i->pt.y(),
-						i->hi.x(), i->hi.y(),
-						i->param);
+//			printf("Original pts:\n");
+//			for(vector<BezierPoint2p>::iterator i = pts.begin(); i != pts.end(); ++i)
+//				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
+//						i->lo.x(), i->lo.y(),
+//						i->pt.x(), i->pt.y(),
+//						i->hi.x(), i->hi.y(),
+//						i->param);
 			
 			BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts_triple));
 
-			printf("Triple pts:\n");
-			for(vector<BezierPoint2p>::iterator i = pts_triple.begin(); i != pts_triple.end(); ++i)
-				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
-						i->lo.x(), i->lo.y(),
-						i->pt.x(), i->pt.y(),
-						i->hi.x(), i->hi.y(),
-						i->param);
+//			printf("Triple pts:\n");
+//			for(vector<BezierPoint2p>::iterator i = pts_triple.begin(); i != pts_triple.end(); ++i)
+//				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
+//						i->lo.x(), i->lo.y(),
+//						i->pt.x(), i->pt.y(),
+//						i->hi.x(), i->hi.y(),
+//						i->param);
 			
 			for(int i = 0; i < pts_triple.size(); ++i)
 			{
@@ -343,7 +344,7 @@ static void	DSF_AccumChainBezier(
 						pts_triple[i].param,
 						&pts_triple[i].hi, 
 						bounds);
-				printf("bezier: %f %f %f   %f %f\n", c[0],c[1],c[2],c[3],c[4]);
+//				printf("bezier: %f %f %f   %f %f\n", c[0],c[1],c[2],c[3],c[4]);
 				if(!auto_closed || i != (pts_triple.size()-1))
 				{
 //					debug_mesh_line(pts_triple[i].pt,pts_triple[i].hi,1,1,1,0,1,0);
@@ -621,6 +622,9 @@ void DSF_AccumPolygonWithHoles(
 	cbs->EndPolygonWinding_f(writer);
 }
 
+// 1 = got at least 1 min/max height entity
+// 0 = got entities, none affected by height
+// -1 = cull
 static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, double& out_msl_max, const Bbox2& bounds)
 {
 	WED_ObjPlacement * obj;
@@ -630,7 +634,7 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 		Bbox2	cbounds;
 		ent->GetBounds(gis_Geo, cbounds);
 		if(!cbounds.overlap(bounds))
-			return 0;
+			return -1;
 	}
 	
 	
@@ -644,13 +648,17 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 		}
 #endif		
 	}
-	int found = 0;
+	
+	int found = 0;		// true if we found at least 1 min/max
+	int any_inside = 0;	// true if we found ANYTHING inside at all?
 	int nn = what->CountChildren();
 	for(int n = 0; n < nn; ++n)
 	{
 		double msl_min, msl_max;
-		if (DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds))
+		int child_cull = DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds);
+		if (child_cull == 1)
 		{
+			any_inside = 1;
 			if(found)
 			{
 				out_msl_min=min(out_msl_min,msl_min);
@@ -663,8 +671,14 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 				found=1;
 			}
 		}
+		else if(child_cull == 0)
+			any_inside = 1;
 	}
-	return found;
+
+	if(!any_inside && ent && ent->GetGISClass() != gis_Composite)
+		return 0;
+	
+	return found ? 1 : (any_inside ? 0 : -1);
 }
 //A wrapper around MakePol to reduce the amount of repetition that goes on.
 //Takes the relative DDS string, the relative POL path string, an orthophoto, a height, and the resourcemanager
@@ -1413,9 +1427,15 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 
 	double msl_min, msl_max;
 	
-	Bbox2	cull(x-1,y-1,x+2,y+2);
+//	Bbox2	cull(x-1,y-1,x+2,y+2);
+	Bbox2	cull(x,y,x+1,y+1);
 	
-	if(DSF_HeightRangeRecursive(base,msl_min,msl_max, cull))
+	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
+	
+	if(cull_code < 0)
+		return;
+	
+	if(cull_code > 0)
 	{
 		msl_min = floor(msl_min);
 		msl_max = ceil(msl_max);
@@ -1484,11 +1504,28 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 		FILE_make_dir_exist(full_dir.c_str());
 		DSFWriteToFile(full_path.c_str(), writer);
 	}
+	
+	if(cull_code == -1)	
+	{
+		if(entities > 0)
+		{
+			int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
+			
+		}
+		Assert(entities == 0);
+	}
+
+// This happens when the tile only has apt.dat features.	
+//	if(entities == 0 && cull_code >= 0)
+//		printf("Cull code %d with no entities at: %d,%d\n", cull_code, x, y);
+	
 	DSFDestroyWriter(writer);
 }
 
 void DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
+	StElapsedTime	etime("Export time");
+
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
 	

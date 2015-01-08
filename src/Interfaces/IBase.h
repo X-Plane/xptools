@@ -68,4 +68,6 @@ inline T * __SAFE_CAST(IBase * inf)
 
 #define SAFE_CAST(__Class,__Var) __SAFE_CAST<__Class>(__Var)
 
+#define STATIC_CAST(__Class,__Var)	static_cast<__Class*>(__Var)
+
 #endif
