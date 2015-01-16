@@ -268,7 +268,9 @@ int	Iterate_JSON_One_Airport(ISelectable * what, void * ref)
 		return 0;			
 	WED_GatewayExportDialog * dlg = new WED_GatewayExportDialog(apt, resolver);
 	dlg->Submit();
+	#if !BULK_SPLAT_IO
 	dlg->Hide();
+	#endif
 	return 1;
 }
 
@@ -506,7 +508,7 @@ void WED_GatewayExportDialog::Submit()
 			fclose(fi);
 		#endif
 		#if BULK_SPLAT_IO
-			this->AsyncDestroy();
+			delete this;
 			return;
 		#endif
 
