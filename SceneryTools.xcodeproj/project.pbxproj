@@ -591,6 +591,7 @@
 		D695CD7F0EE08808009C5F2E /* WED_ExclusionZone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CD7E0EE08808009C5F2E /* WED_ExclusionZone.cpp */; };
 		D695CDA10EE089E5009C5F2E /* WED_CreateBoxTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CDA00EE089E5009C5F2E /* WED_CreateBoxTool.cpp */; };
 		D695CE010EE09F19009C5F2E /* WED_TextureBezierNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D695CE000EE09F19009C5F2E /* WED_TextureBezierNode.cpp */; };
+		D69886A91A6959E1008B3060 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D69FD7470B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
 		D69FD7480B6CF765008E3AEC /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D69FD7490B6CF765008E3AEC /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7430B6CF765008E3AEC /* unzip.c */; };
@@ -4629,6 +4630,7 @@
 				D63099F0114BF9BA00882D66 /* FileUtils.cpp in Sources */,
 				D6A11F2118FE419400FA2F8D /* zip.c in Sources */,
 				D6A11F2218FE419500FA2F8D /* unzip.c in Sources */,
+				D69886A91A6959E1008B3060 /* AssertUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4969,6 +4971,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -4982,6 +4985,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5187,6 +5191,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5323,6 +5328,9 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
 				);
 			};
 			name = Phone;
@@ -5579,6 +5587,8 @@
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libjpeg.a,
 					"$(inherited)",
 				);
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5608,6 +5618,8 @@
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libjpeg.a,
 					"$(inherited)",
 				);
 				PREBINDING = NO;
@@ -5638,6 +5650,8 @@
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libjpeg.a,
 					"$(inherited)",
 				);
 				PREBINDING = NO;
@@ -5666,6 +5680,8 @@
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libz.a,
 					libs/local/lib/libpng.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libjpeg.a,
 					"$(inherited)",
 				);
 				PREBINDING = NO;
@@ -5679,6 +5695,9 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
 				);
 			};
 			name = Debug;
@@ -5689,6 +5708,9 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
 				);
 			};
 			name = Release;
@@ -5811,6 +5833,7 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;
@@ -5857,6 +5880,9 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libpng.a,
 					libs/local/lib/libsquish.a,
+					libs/local/lib/libjasper.a,
+					libs/local/lib/libtiff.a,
+					libs/local/lib/libjpeg.a,
 				);
 			};
 			name = DebugOpt;
