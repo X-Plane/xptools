@@ -427,7 +427,7 @@ int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
-	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered,import_bounds_default,cmdr),
+	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
 	mPhase(imp_dialog_download_ICAO),
@@ -780,6 +780,8 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 		tmp.dateAccepted = curScenery.operator[]("dateAccepted").asString() != "" ? curScenery.operator[]("dateAccepted").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.dateApproved = curScenery.operator[]("dateApproved").asString() != "" ? curScenery.operator[]("dateApproved").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.type = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
+		tmp.status = curScenery["Status"].asString();
+		
 		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
 		tmp.artistComments = curScenery.operator[]("artistComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
 		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";

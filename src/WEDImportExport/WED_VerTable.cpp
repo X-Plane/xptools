@@ -25,6 +25,7 @@
 #include "WED_VerTable.h"
 #include "GUI_Messages.h"
 #include "STLUtils.h"
+#include <sstream>
 
 static int kDefCols[] = { 100, 100 };
 
@@ -51,14 +52,7 @@ string ChooseStatus(const VerInfo_t & info)
 	{
 		return "Recommended";
 	}
-	else if(info.dateAccepted > info.dateApproved)
-	{
-		return "Accepted";
-	}
-	else
-	{
-		return "Approved";
-	}
+	else return info.status;
 }
 
 string ChooseDate(const VerInfo_t & info)
@@ -138,18 +132,20 @@ void	WED_VerTable::GetHeaderContent(
 	switch(cell_x) 
 	{
 	case 0:
+		the_content.title = "Scenery ID";
+	case 1:
 		the_content.title = "User Name";
 		break;
-	case 1:
+	case 2:
 		the_content.title = "Status";
 		break;
-	case 2:
-		the_content.title = "Date";
-		break;
 	case 3:
-		the_content.title = "Artist Comments";
+		the_content.title = "Date Uploaded";
 		break;
 	case 4:
+		the_content.title = "Artist Comments";
+		break;
+	case 5:
 		the_content.title = "Moderator Comments";
 		break;
 	}		
@@ -160,7 +156,7 @@ int		WED_VerTable::GetColCount(void)
 /*#if DEV TODO - The developer menu shows every single field
 	return 11;//Derived from HTTP Get for airport
 #endif*/
-	return 5;//Derived from the catagories USERS will care about
+	return 6;//Derived from the catagories USERS will care about
 }
 
 int		WED_VerTable::GetRowCount(void)
@@ -188,19 +184,26 @@ void	WED_VerTable::GetCellContent(
 
 
 	switch(cell_x) {
-	case 0:		
-		the_content.text_val = mVers->at(ver_id).userName;
+	case 0:
+		{
+			stringstream ss;
+			ss << mVers->at(ver_id).sceneryId;
+			the_content.text_val = ss.str();
+		}
 		break;
 	case 1:		
+		the_content.text_val = mVers->at(ver_id).userName;
+		break;
+	case 2:		
 		the_content.text_val = ChooseStatus(mVers->at(ver_id));
 		break;
-	case 2:
+	case 3:
 		the_content.text_val = ChooseDate(mVers->at(ver_id));
 		break;
-	case 3:
+	case 4:
 		the_content.text_val = mVers->at(ver_id).artistComments;
 		break;
-	case 4:
+	case 5:
 		the_content.text_val = mVers->at(ver_id).moderatorComments;
 		break;
 	}
@@ -309,22 +312,24 @@ struct sort_by_ver {
 		switch(sort_column_)
 		{
 		case 0:
+			return (invert_sort_) ? (vers_->at(y).sceneryId < vers_->at(x).sceneryId) : (vers_->at(x).sceneryId < vers_->at(y).sceneryId);
+		case 1:
 			xs = vers_->at(x).userName;
 			ys = vers_->at(y).userName;
 			break;
-		case 1:
+		case 2:
 			xs = ChooseStatus(vers_->at(x));
 			ys = ChooseStatus(vers_->at(y));
 			break;
-		case 2:
+		case 3:
 			xs = ChooseDate(vers_->at(x));
 			ys = ChooseDate(vers_->at(y));
 			break;
-		case 3:
+		case 4:
 			xs = vers_->at(x).artistComments;
 			ys = vers_->at(y).artistComments;
 			break;
-		case 4:
+		case 5:
 			xs = vers_->at(x).moderatorComments;
 			ys = vers_->at(y).moderatorComments;
 			break;
@@ -357,7 +362,12 @@ void		WED_VerTable::resort(void)
 	mSorted.clear();
 	for(int i = 0; i < mVers->size(); ++i)
 	{
+		stringstream ss;
+		ss << mVers->at(i).sceneryId;
+		string idStr = ss.str();
+	
 		if (filters.empty() || 
+				filter_match(idStr, filters.begin(),filters.end())		||
 				filter_match(mVers->at(i).userName, filters.begin(),filters.end())		||
 				filter_match(ChooseStatus(mVers->at(i)), filters.begin(),filters.end()) ||
 				filter_match(ChooseDate(mVers->at(i)),filters.begin(),filters.end())	||

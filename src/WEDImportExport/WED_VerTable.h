@@ -40,6 +40,7 @@ struct VerInfo_t
 	string dateUploaded;
 	string dateAccepted;
 	string dateApproved;
+	string status;			// Now provided by the server.
 
 	//2 for 2D; 3 for 3D
 	string type;
