@@ -1195,7 +1195,7 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	{
 		if(  png_get_gAMA (pngPtr,infoPtr     ,&lcl_gamma))		// Perhaps the file has its gamma recorded, for example by photoshop. Just tell png to callibrate for our hw platform.
 			 png_set_gamma(pngPtr,target_gamma, lcl_gamma);
-		else png_set_gamma(pngPtr,target_gamma, 1.0/1.8  );		// If the file doesn't have gamma, assume it was drawn on a Mac - true for really old stuff.
+		else png_set_gamma(pngPtr,target_gamma, 1.0/GAMMA_SRGB);// Ben says: starting with WED 1.4, assume PC gamma for untagged files.  We haven't had Mac gamma since 10.5, so better to make sure that untagged files are interpretted as sRGB.
 	}
 
 	if(color_type==PNG_COLOR_TYPE_PALETTE && bit_depth<= 8)if (!leaveIndexed)	png_set_expand	  (pngPtr);
