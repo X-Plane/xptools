@@ -401,6 +401,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
+	case wed_ExportPack:	WED_DoExportPack(mDocument); return 1;
 #if HAS_GATEWAY	
 	case wed_ExportToGateway:		WED_DoExportToGateway(mDocument); return 1;
 #endif	
