@@ -488,7 +488,8 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		o->y -= anchor_y;
 		do_rotate(rotation,o->x,o->y);
 	}
-
+	
+	MemFile_Close(agp);
 
 	mAGP[path] = out_info;
 	return true;
