@@ -1233,7 +1233,7 @@ struct sort_cdt_face_by_lowest_height {
 	}
 };
 
-#define NEW_ALG 0
+#define NEW_ALG 1
 // this is faster - by going in order from bottom to top we avoid a crapload of retries on neighboring verts.
 // going by MESH FACE is not so good - mesh face is at THREE alts at once..in theory at least.  or something.
 void FlattenWater(CDT& ioMesh)
@@ -1244,22 +1244,27 @@ void FlattenWater(CDT& ioMesh)
 	for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
 	{
 		if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
-		if(!IsNoFlattenVertex(ioMes,v))
+		if(!IsNoFlattenVertex(ioMesh,v))
 			to_do.insert(v);
 	}
 	//printf("Q: %zd vertices.\n", to_do.size());
 	
-	double hwm = (*to_do.begin())->info().height;
+	double hwm = 0.0;
 	
-	set<CDT::Vertex_handle, sort_cdt_face_by_lowest_height>::iterator i,p;
-	p = i = to_do.begin();
-	++i;
-	while(i != to_do.end())
-	{
-		//printf("   %p: %lf\n", &**i,(*i)->info().height);
-		DebugAssert((*i)->info().height >= (*p)->info().height);
-		p = i;
+	if(!to_do.empty())
+	{	
+		hwm = (*to_do.begin())->info().height;
+		
+		set<CDT::Vertex_handle, sort_cdt_face_by_lowest_height>::iterator i,p;
+		p = i = to_do.begin();
 		++i;
+		while(i != to_do.end())
+		{
+			//printf("   %p: %lf\n", &**i,(*i)->info().height);
+			DebugAssert((*i)->info().height >= (*p)->info().height);
+			p = i;
+			++i;
+		}
 	}
 	
 	while(!to_do.empty())
