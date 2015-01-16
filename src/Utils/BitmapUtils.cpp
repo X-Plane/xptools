@@ -31,7 +31,9 @@
 #include "Interpolation.h"
 #include <squish.h>
 #include <zlib.h>
+#if USE_GEOJPEG2K
 #include <jasper/jasper.h>
+#endif
 #include "AssertUtils.h"
 
 /*
@@ -411,9 +413,11 @@ int MakeSupportedType(const char * path, ImageInfo * inImage)
 	case WED_PNG:
 		error = CreateBitmapFromPNG(path,inImage,false, GAMMA_SRGB);
 		break;
+	#if USE_TIF	
 	case WED_TIF:
 		error = CreateBitmapFromTIF(path,inImage);
 		break;
+	#endif
 	default:
 		return error;//No good images or a broken file path
 	}
