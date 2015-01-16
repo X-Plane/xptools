@@ -193,7 +193,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			int suffix = n1[n1.length()-1];
 			if (suffix < '0' || suffix > '9')
 			{
-				if (suffix == 'L' || suffix == 'R' || suffix == 'C') suf1 = suffix;
+				if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf1 = suffix;
 				else msg = "The runway/sealane '" + name + "' has an illegal suffix for the low-end runway.";
 				n1.erase(n1.length()-1);
 			}
@@ -222,7 +222,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 				int suffix = n2[n2.length()-1];
 				if (suffix < '0' || suffix > '9')
 				{
-					if (suffix == 'L' || suffix == 'R' || suffix == 'C') suf2 = suffix;
+					if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf2 = suffix;
 					else msg = "The runway/sealane '" + name + "' has an illegal suffix for the high-end runway.";
 					n2.erase(n2.length()-1);
 				}
@@ -249,8 +249,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		{
 			if ((suf1 == 'L' && suf2 != 'R') ||
 				(suf1 == 'R' && suf2 != 'L') ||
-				(suf1 == 'C' && suf2 != 'C'))
+				(suf1 == 'C' && suf2 != 'C') ||
+				(suf1 == 'S' && suf2 != 'S'))
 					msg = "The runway/sealane '" + name + "' has mismatched suffixes - check L vs R, etc.";
+		}
+		else if((suf1 == 0) != (suf2 == 0))
+		{
+			msg = "The runway/sealane '" + name + "' has a suffix on only one end.";
 		}
 		if (num1 != -1 && num2 != -1)
 		{
@@ -263,6 +268,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		if (msg.empty())
 		{
 			WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
+			Assert(lw);			
 			if (lw->GetWidth() < 1.0) msg = "The runway/sealane '" + name + "' must be at least one meter wide.";
 
 			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
@@ -270,6 +276,19 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			{
 				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced threshholds.";
 			}
+			
+			
+			Segment2 ends;
+			lw->GetNthPoint(0)->GetLocation(gis_Geo,ends.p1);
+			lw->GetNthPoint(1)->GetLocation(gis_Geo,ends.p2);
+			Bbox2	runway_extent(ends.p1,ends.p2);
+			if (runway_extent.xmin() < -180.0 ||
+				runway_extent.xmax() >  180.0 ||
+				runway_extent.ymin() <  -90.0 ||
+				runway_extent.ymax() >   90.0)
+			{
+				msg = "The runway/sealane '" + name + "' has an end outside the World Map.";
+			}	
 		}
 	}
 	if (who->GetClass() == WED_Helipad::sClass)
