@@ -32,6 +32,9 @@ private:
 	//Checks to see if a certain multi_glyph is a valid glyph
 	bool check_multi_glyph(const string & inGlyph, int position, parser_out_info & output);
 
+	//Checks to see if a certain glyph is valid
+	bool check_single_glyph(char inGlyph, int position, parser_out_info & output);
+
 	//Askes if the glyph is currently one of the special independant glyphs
 	//"hazard","safety","critical","no-entry"
 	bool IsIndependentGlyph(const string & inGlyph);//may be a secret duplicate of check_multi_glyph
@@ -390,6 +393,35 @@ bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, pa
 	return semError;
 }
 
+bool WED_Sign_Parser::check_single_glyph(const char inGlyph, int position, parser_out_info & output)
+{
+	const char * valid_single_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-*./_|";
+	
+	const char * f = valid_single_chars;	
+	
+	bool semError= true;
+	
+	while(*f)
+	{
+		if(*f == inGlyph)
+		{	
+			semError = false;
+			break;
+		}
+		++f;
+	}
+		
+	if(semError == true)
+	{
+		stringstream ss;
+		ss << "Character " << position << "-" << position << ": " << inGlyph << " is not a real single character glyph";
+		parser_error_info e = {ss.str(),sem_not_real_multiglyph,position, position - position - 1};
+		output.errors.push_back(e);
+	}
+	return semError;
+}
+
+
 bool WED_Sign_Parser::IsIndependentGlyph(const string & inLetters)
 {
 	if( inLetters == "critical" ||
@@ -435,11 +467,14 @@ void WED_Sign_Parser::append_parser_out_info(const string & inGlyph, int positio
 		curColor = 'X';
 	}
 
-	bool invalid_multi_glyph = true;
 	if(inGlyph.length() > 1)
 	{
-		invalid_multi_glyph = check_multi_glyph(inGlyph,position,output);
+		check_multi_glyph(inGlyph,position,output);
 	}
+	else {
+		check_single_glyph(inGlyph[0],position,output);
+	}
+
 	
 	if(on_front == true)
 	{

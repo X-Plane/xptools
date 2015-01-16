@@ -26,6 +26,7 @@ enum parser_error_t
 	sem_no_color,//Found under preform_final_semantic_checks
 	sem_not_real_instruction,//Found under I_ANY_CONTROL
 	sem_not_real_multiglyph,//Found under check_multi_glyph
+	sem_not_real_singleglyph,//Foudn nder check_single_glyph
 	sem_mutiple_side_switches,//Found under I_ANY_CONTROL:case '@':
 	
 	//Found in preform final semantic checks
