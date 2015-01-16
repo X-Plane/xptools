@@ -3741,9 +3741,8 @@
 				D6FDBB4D15112F4D009DB5EF /* WED_Server.cpp */,
 				D6FDBB4E15112F4D009DB5EF /* WED_Server.h */,
 			);
-			name = WEDNetwork;
-			path = ../xptools/src/WEDNetwork;
-			sourceTree = SOURCE_ROOT;
+			path = WEDNetwork;
+			sourceTree = "<group>";
 		};
 		D6FF28500B6E42B000960D5E /* Interfaces */ = {
 			isa = PBXGroup;
