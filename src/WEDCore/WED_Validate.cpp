@@ -61,6 +61,9 @@
 #define MAX_LON_SPAN_GATEWAY 0.2
 #define MAX_LAT_SPAN_GATEWAY 0.2
 
+// For now this is a debug mode - we printf all airport ICAOs with problems and don't interrupt validate.
+#define FIND_BAD_AIRPORTS 0
+
 
 static set<string>	s_used_rwy;
 static set<string>	s_used_hel;
@@ -529,17 +532,27 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 
 	//------------------------------------------------------------------------------------
 
+
+	#if !FIND_BAD_AIRPORTS
+
 	if (!msg.empty())
 	{
 		DoUserAlert(msg.c_str());
 		return who;
 	}
 
+	#endif
+
 	int nn = who->CountChildren();
 	for (int n = 0; n < nn; ++n)
 	{
 		WED_Thing * fail = ValidateRecursive(who->GetNthChild(n), lib_mgr);
-		if (fail) return fail;
+		#if FIND_BAD_AIRPORTS
+			if(fail)
+				msg = "Child has a bad part.";
+		#else
+			if (fail) return fail;
+		#endif
 	}
 	
 	if(who->GetClass() == WED_Airport::sClass)
@@ -547,10 +560,33 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		if(s_used_hel.empty() && s_used_rwy.empty())
 		{
 			msg = "The airport '" + name + "' contains no runways, sea lanes, or helipads.";
+			#if !FIND_BAD_AIRPORTS
 			DoUserAlert(msg.c_str());
 			return who;
+			#endif
 		}
+		
+		#if FIND_BAD_AIRPORTS
+		if(!msg.empty())
+		{
+			WED_Airport * apt = dynamic_cast<WED_Airport *>(who);			
+			string icao;
+			apt->GetICAO(icao);
+			printf("Airport '%s' invalid: %s\n", icao.c_str(), msg.c_str());
+		}
+		return NULL;
+		#endif
 	}
+	
+	#if FIND_BAD_AIRPORTS
+		if(!msg.empty())
+		{
+			printf("     %s\n", msg.c_str());
+		}
+		return msg.empty() ? NULL : who;
+	#else
+		DebugAssert(msg.empty());
+	#endif
 	
 	return NULL;
 }
