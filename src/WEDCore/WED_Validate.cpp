@@ -437,10 +437,10 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		if(gExportTarget == wet_xplane_900)
 		if(g.equipment != 0)
 		if(g.type != atc_ramp_misc || g.equipment != atc_traffic_all)
-			msg = "Gates with specific traffic and types are only suported in X-Plane 10 and newer.";
+			msg = "Ramp starts with specific traffic and types are only suported in X-Plane 10 and newer.";
 			
 		if(g.equipment == 0)
-			msg = "Gates must have at least one valid type of equipment selected.";
+			msg = "Ramp starts must have at least one valid type of equipment selected.";
 	}
 
 	if(gExportTarget == wet_xplane_900)
