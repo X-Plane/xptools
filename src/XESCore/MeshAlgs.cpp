@@ -1380,7 +1380,7 @@ void FlattenWater(CDT& ioMesh)
 		}
 	}
 	//printf("processed: %d\n", c);
-
+#endif
 	/////////////////////////////////////////////
 	//Andras: Water smoothing for rivers etc.
 	/////////////////////////////////////////////
@@ -1463,7 +1463,6 @@ void FlattenWater(CDT& ioMesh)
 		}
 		printf("Water smoothing iteration %d , water vertices: %d , changed vertices: %d .\n", it_n, water_vertices, changed_vertices);
 	}
-#endif	
 }
 
 /*
