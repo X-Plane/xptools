@@ -170,29 +170,41 @@ void	WED_DoUngroup(IResolver * inResolver)
 
 void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 {
-	char buf[1024];
-	if (GetFilePathFromUser(getFile_Open, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
+	char * path = GetMultiFilePathFromUser("Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
+	if(path)
 	{
 		Point2	coords[4];
 		double c[8];
+		
+		WED_Thing * wrl = WED_GetWorld(inResolver);
+		ISelection * sel = WED_GetSelect(inResolver);
 
+		wrl->StartOperation("Add Overlay Image");
+		sel->Clear();
+		
+		char * free_me = path;
+		
+		while(*path)
 		{
 			ImageInfo	inf;
 			int has_geo = 0;
 			int align = dem_want_Area;
 			
-			int res = MakeSupportedType(buf, &inf);
+			int res = MakeSupportedType(path, &inf);
 			if(res != 0)
 			{
-				DoUserAlert("Unable to open image file.");
-				return;//No good images or a broken file path
+				string msg = "Unable to open image file: ";
+				msg += path;
+				DoUserAlert(msg.c_str());
+				path = path + strlen(path)+1;
+				continue;
 			}
 
-			switch(GetSupportedType(buf))
+			switch(GetSupportedType(path))
 			{
 			#if USE_GEOJPEG2K
 			case WED_JP2K:
-				if(FetchTIFFCornersWithJP2K(buf,c,align))
+				if(FetchTIFFCornersWithJP2K(path,c,align))
 				{
 					coords[3].x_ = c[0];
 					coords[3].y_ = c[1];
@@ -207,7 +219,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 				break;
 			#endif
 			case WED_TIF:
-				if (FetchTIFFCorners(buf, c, align))
+				if (FetchTIFFCorners(path, c, align))
 				{
 					// SW, SE, NW, NE from tiff, but SE NE NW SW internally
 					coords[3].x_ = c[0];
@@ -246,12 +258,6 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			
 			DestroyBitmap(&inf);
 
-			WED_Thing * wrl = WED_GetWorld(inResolver);
-			ISelection * sel = WED_GetSelect(inResolver);
-
-			wrl->StartOperation("Add Overlay Image");
-			sel->Clear();
-
 			WED_OverlayImage * img = WED_OverlayImage::CreateTyped(wrl->GetArchive());
 			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
@@ -273,7 +279,7 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			p4->SetLocation(gis_Geo,coords[0]);
 
 
-			string img_path(buf);
+			string img_path(path);
 			WED_GetLibrarian(inResolver)->ReducePath(img_path);
 			img->SetImage(img_path);
 
@@ -282,8 +288,8 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			p1->SetName("Corner 3");
 			p1->SetName("Corner 4");
 			rng->SetName("Image Boundary");
-			const char * p = buf;
-			const char * n = buf;
+			const char * p = path;
+			const char * n = path;
 
 			//While p is not the null pointer (not the end of the of the char*)
 			while(*p)
@@ -305,8 +311,14 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 			p3->SetLocation(gis_UV,Point2(1,1));
 			p4->SetLocation(gis_UV,Point2(1,0));
 
-			wrl->CommitOperation();
+			path = path + strlen(path)+1;
 		}
+		
+		if(sel->GetSelectionCount() == 0)
+			wrl->AbortOperation();
+		else
+			wrl->CommitOperation();
+		free(free_me);
 	}
 }
 

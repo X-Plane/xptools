@@ -660,18 +660,25 @@ int		WED_CanImportDSF(IResolver * resolver)
 void	WED_DoImportDSF(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
-	char path[1024];
-	strcpy(path,"");
-	if (GetFilePathFromUser(getFile_Open,"Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF, path, sizeof(path)))
-	{
-		wrl->StartOperation("Import DSF");
-		WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
-		g->SetName(path);
-		g->SetParent(wrl,wrl->CountChildren());
-		DSF_Import(path,g);
-		wrl->CommitOperation();
-	}
 
+	char * path = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
+	if(path)
+	{
+		char * free_me = path;
+		
+		wrl->StartOperation("Import DSF");
+		
+		while(*path)
+		{
+			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
+			g->SetName(path);
+			g->SetParent(wrl,wrl->CountChildren());
+			DSF_Import(path,g);
+			path = path + strlen(path) + 1;
+		}
+		wrl->CommitOperation();
+		free(free_me);
+	}
 }
 
 static WED_Thing * find_airport_by_icao_recursive(const string& icao, WED_Thing * who)
