@@ -101,6 +101,61 @@ int		GetFilePathFromUser(
 	return 0;
 }
 
+
+char *	GetMultiFilePathFromUser(
+					const char * 		inPrompt,
+					const char *		inAction,
+					int					inID)
+{
+	OPENFILENAME	ofn = { 0 };
+	BOOL result;
+	char buf[4096];
+
+	ofn.lStructSize = sizeof(ofn);
+	ofn.lpstrFilter = "All Files\000*.*\000";
+	ofn.nFilterIndex = 1;	// Start with .acf files
+	ofn.lpstrFile = buf;
+	buf[0] = 0;		// No initialization for open.
+	ofn.nMaxFile = sizeof(buf);		// Guess string length?
+	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
+	ofn.lpstrTitle = inPrompt;
+	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+
+	result = GetOpenFileName(&ofn);
+	if(result)
+	{
+		vector<string>	files;
+		string path(buf);
+		char * fptr = buf+path.size()+1;
+		while(*fptr)
+		{
+			files.push_back(path + "\\" + fptr);
+			fptr += (strlen(fptr) + 1);
+		}
+
+		int buf_size = 1;
+		for(int i = 0; i < files.size(); ++i)
+			buf_size += (files[i].size() + 1);
+	
+		char * ret = (char *) malloc(buf_size);
+		char * p = ret;
+
+		for(int i = 0; i < files.size(); ++i)
+		{
+			strcpy(p, files[i].c_str());
+			p += (files[i].size() + 1);
+		}
+		*p = 0;
+	
+		return ret;
+	}
+	else
+		return NULL;
+}
+
+
+
+
 void	DoUserAlert(const char * inMsg)
 {
 	MessageBox(NULL, inMsg, "Alert", MB_OK + MB_ICONWARNING);

@@ -737,30 +737,21 @@ int		WED_CanImportApt(IResolver * resolver)
 void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane)
 {
 	vector<string>	fnames;
-	
-	#if GATEWAY_IMPORT_FEATURES
-	
-		char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
-		if(!path)
-			return;
 		
-		char * free_me = path;
+	char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
+	if(!path)
+		return;
 		
-		while(*path)
-		{
-			fnames.push_back(path);
-			path += (strlen(path)+1);
-		}
+	char * free_me = path;
 		
-		free(free_me);
-	
-	#else
-		char path[1024];
-		strcpy(path,"");	
-		if (GetFilePathFromUser(getFile_Open,"Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT, path, sizeof(path)))
+	while(*path)
+	{
 		fnames.push_back(path);
-	#endif
-	
+		path += (strlen(path)+1);
+	}
+		
+	free(free_me);
+		
 	if(fnames.empty())
 		return;
 		
