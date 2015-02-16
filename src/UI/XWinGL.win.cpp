@@ -22,7 +22,6 @@
  */
 #include "XWinGL.h"
 #include <gl/gl.h>
-#include <gl/glext.h>
 
 PFNGLMULTITEXCOORD2FARBPROC  		glMultiTexCoord2fARB	;
 PFNGLMULTITEXCOORD2FVARBPROC 		glMultiTexCoord2fvARB;
