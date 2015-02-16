@@ -127,6 +127,14 @@ char *	GetMultiFilePathFromUser(
 		vector<string>	files;
 		string path(buf);
 		char * fptr = buf+path.size()+1;
+
+		// One-file case: we get one complete fully qualified file path, full stop.
+		if(*fptr == 0)
+		{
+			files.push_back(path);
+		}
+		else
+		// Multi-file path - we got the dir once in "path" and now we get the null-terminated list of file names.
 		while(*fptr)
 		{
 			files.push_back(path + "\\" + fptr);
