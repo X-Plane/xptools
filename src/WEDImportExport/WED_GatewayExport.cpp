@@ -483,6 +483,7 @@ void WED_GatewayExportDialog::Submit()
 		else
 			scenery["parentId"] = parid;
 		scenery["icao"] = icao;
+		scenery["aptName"] = apt_name;
 		scenery["type"] = has_3d(apt) ? "3D" : "2D";
 		scenery["artistComments"] = comment;
 		scenery["features"] = features;
