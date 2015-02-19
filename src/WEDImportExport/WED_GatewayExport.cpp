@@ -572,7 +572,7 @@ void WED_GatewayExportDialog::TimerFired()
 					mApt->SetSceneryID(new_id);
 					mApt->CommitOperation();
 					
-					good_msg = "Your airport has been successfully uploaded and will be visible to all users on the gateway once a moderator approves it.";
+					good_msg = "Your airport has been successfully uploaded and will be visible to all users on\nthe gateway once a moderator approves it.";
 				}
 				else
 				{

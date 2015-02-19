@@ -24,6 +24,7 @@
 #include "GUI_Label.h"
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
+#include <math.h>
 
 GUI_Label::GUI_Label() : GUI_Pane(),
 	mFont(font_UI_Basic),
@@ -158,7 +159,16 @@ void		GUI_Label::Draw(GUI_GraphState * state)
 		b[3] -= mMargins[3];
 	
 		int x = b[0];
-		int yy = b[1] + (i * GUI_GetLineHeight(mFont));
+		// 1.0 pixel fudge factor?  WTF?
+		// Sigh...WED uses a very old version of the ogl->font code, and it does NOT handle fractional font sizes very well.
+		// The text box MUST be float (so that, to get 1.0 scale you can get EXACTLY top-bottom = line height.  Ignoring how
+		// stupid of an idea that is, the problem is that you pass in a bottom, it gets turned into a line height, FLOORED, then
+		// turned back into a floor.  The result is a round DOWN.
+		//
+		// If we are drawing at the BOTTOM of our clipping box, the result is a LOST pixel!  So we add one.  There is much
+		// newer code to do this in X-Plane that has been carefully debugged to be pixel perfect; we should "take this code open"
+		// and use it in WED.
+		int yy = b[1] + (i * GUI_GetLineHeight(mFont)) + 1.0f;
 	
 		GUI_FontDrawScaled(state, mFont, mColorText,
 							x, yy, x + 10000, yy + GUI_GetLineHeight(mFont),
