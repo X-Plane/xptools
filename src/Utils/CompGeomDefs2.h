@@ -30,6 +30,9 @@
 #include <math.h>
 #include <vector>
 #include <algorithm>
+
+#include "AssertUtils.h"
+
 using std::vector;
 using std::swap;
 using std::min;
@@ -1166,6 +1169,10 @@ inline Vector2 Bezier2::derivative(double t) const
 
 inline void	Bezier2::subcurve(Bezier2& sub, double t1, double t2) const
 {
+	DebugAssert(t1 >= 0.0);
+	DebugAssert(t2 <= 1.0);
+	DebugAssert(t1 < t2);
+	
 	Bezier2 dummy, sub1;
 	if(t1 <= 0.0 && t2 >= 1.0)
 		sub = *this;
@@ -1508,6 +1515,14 @@ bool in_order(T& lhs, T& rhs)	// Assure lhs <= rhs
 
 inline int	Bezier2::t_at_x(double x, double t[3]) const
 {
+	// If the intercept is out of the bounding box, early exit.
+	// For hugely "off curve" values of X, the cubic formula runs out of internal
+	// precision and returns bogus T values.
+	if(x < p1.x_ && x < p2.x_ && x < c1.x_ && x < c2.x_)
+		return 0;
+	if(x > p1.x_ && x > p2.x_ && x > c1.x_ && x > c2.x_)
+		return 0;
+
 	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
 	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
 	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
@@ -1528,11 +1543,23 @@ inline int	Bezier2::t_at_x(double x, double t[3]) const
 	if(r > 2) if(in_order(t[1], t[2]))		// Now since we know 1 is bigger than 0, if 2 is OOTO this makes 2 right
 					in_order(t[0], t[1]);	// If we moved 1 up to 2, maybe the old 2 needs to go all the wy down to zero?
 
+	#if DEV
+		if(r > 1)
+			DebugAssert(t[0] < t[1]);
+		if(r > 2)
+			DebugAssert(t[1] < t[2]);
+	#endif
+
 	return r;
 }
 
 inline int	Bezier2::t_at_y(double y, double t[3]) const
 {
+	if(y < p1.y_ && y < p2.y_ && y < c1.y_ && y < c2.y_)
+		return 0;
+	if(y > p1.y_ && y > p2.y_ && y > c1.y_ && y > c2.y_)
+		return 0;
+
 	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
 	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
 	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
@@ -1552,6 +1579,14 @@ inline int	Bezier2::t_at_y(double y, double t[3]) const
 	if(r > 1) in_order(t[0], t[1]);			// Assure bottom 2 are in order
 	if(r > 2) if(in_order(t[1], t[2]))		// Now since we know 1 is bigger than 0, if 2 is OOTO this makes 2 right
 					in_order(t[0], t[1]);	// If we moved 1 up to 2, maybe the old 2 needs to go all the wy down to zero?
+
+
+	#if DEV
+		if(r > 1)
+			DebugAssert(t[0] < t[1]);
+		if(r > 2)
+			DebugAssert(t[1] < t[2]);
+	#endif
 
 	return r;
 }

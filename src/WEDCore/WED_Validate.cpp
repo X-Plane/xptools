@@ -64,6 +64,8 @@
 // For now this is a debug mode - we printf all airport ICAOs with problems and don't interrupt validate.
 #define FIND_BAD_AIRPORTS 0
 
+#define CHECK_ZERO_LENGTH 0
+
 
 static set<string>	s_used_rwy;
 static set<string>	s_used_hel;
@@ -140,10 +142,35 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(who);
 	if(ps)
 	{
-		if(ps->GetNumSides() < 1)
+		int nn = ps->GetNumSides();
+		if(nn < 1)
 		{
 			msg = "Linear feature needs at least two points.";
 		}
+		
+		for(int n = 0; n < nn; ++n)
+		{
+			Bezier2 b; Segment2 s;
+			bool bez = ps->GetSide(gis_Geo,n,s,b);
+			if(bez) {s.p1 = b.p1; s.p2 = b.p2; }
+			
+			if(s.p1 == s.p2)
+			{
+				WED_Thing * parent = who->GetParent();
+				if(parent)
+				{
+					if (parent->GetClass() == WED_ForestPlacement::sClass ||
+						parent->GetClass() == WED_FacadePlacement::sClass ||
+						parent->GetClass() == WED_DrapedOrthophoto::sClass ||
+						parent->GetClass() == WED_PolygonPlacement::sClass)
+					{
+					#if CHECK_ZERO_LENGTH
+						msg = string("Zero length side on line or polygon, parent is a '") + parent->GetClass() + "'.";
+					#endif
+					}
+				}
+			}
+		}		
 	}
 
 	//------------------------------------------------------------------------------------
@@ -441,6 +468,16 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			if(s_legal_rwy_twoway.count(taxi->GetRunway()) == 0)
 			{
 				msg = "The taxi route '" + name + "' is set to a ruwnay not present at the airport.";
+			}
+			
+			Point2	start, end;
+			taxi->GetNthPoint(0)->GetLocation(gis_Geo, start);
+			taxi->GetNthPoint(1)->GetLocation(gis_Geo, end);
+			if(start == end)
+			{
+				#if CHECK_ZERO_LENGTH			
+					msg = "The taxi route '" + name + "' is zero length.";
+				#endif
 			}
 		}		
 	}
