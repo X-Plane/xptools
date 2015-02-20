@@ -43,9 +43,15 @@ TokenReverseMap	gReverse;
 
 static bool ConfirmNotNumber(const char * t)
 {
-	if(*t == 0 || isdigit(*t))
+	if(*t == 0) 
 		return false;
-	return true;
+	while(*t)
+	{
+		if(!isdigit(*t))
+			return true;
+		++t;
+	}
+	return false;
 }
 
 void InitEnumSystem()
