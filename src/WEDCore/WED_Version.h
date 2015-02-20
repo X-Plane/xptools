@@ -28,9 +28,9 @@
 // so you can't go using const int and other fancy-pants C++ stuff!
 
 // These versions are used in about boxes, resources, info boxes, etc.
-#define	WED_VERSION			 1.4.0a2
-#define	WED_VERSION_STRING	"1.4.0a2"
-#define	WED_VERSION_RES		"1.4.0a2"
+#define	WED_VERSION			 1.4.0b1
+#define	WED_VERSION_STRING	"1.4.0b1"
+#define	WED_VERSION_RES		"1.4.0b1"
 #define	WED_VERSION_BIN		1,4,0,0
 
 // This numeric is used by the gateway to understand if our WED is up-to-date.
