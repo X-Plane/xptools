@@ -367,6 +367,11 @@ static void WED_LookupRunwayRecursive(const WED_Thing * thing, set<int>& runways
 		string name;
 		rwy->GetName(name);
 		int e1 = ENUM_LookupDesc(domain,name.c_str());
+		if(e1 == -1)
+		{
+			name.insert(0,"0");
+			e1 = ENUM_LookupDesc(domain,name.c_str());
+		}
 		if(ENUM_Domain(e1) == domain)
 			runways.insert(e1);
 		vector<string> parts;
@@ -374,6 +379,11 @@ static void WED_LookupRunwayRecursive(const WED_Thing * thing, set<int>& runways
 		for(vector<string>::iterator p = parts.begin(); p != parts.end(); ++p)
 		{
 			int e2 = ENUM_LookupDesc(domain,p->c_str());
+			if(e2 == -1)
+			{
+				p->insert(0,"0");
+				e2 = ENUM_LookupDesc(domain,p->c_str());
+			}
 			if(ENUM_Domain(e2) == domain)
 				runways.insert(e2);
 		}
