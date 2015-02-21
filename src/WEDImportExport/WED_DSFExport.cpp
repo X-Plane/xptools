@@ -1314,49 +1314,60 @@ static int	DSF_ExportTileRecursive(
 		*/
 		//File extenstion
 		string resrcEnd = "";
-		if(orth->IsNew(&resrcEnd) == true && (date_cmpr_res == dcr_firstIsNew ||date_cmpr_res == dcr_same))
+		if(orth->IsNew(&resrcEnd) == true)
 		{
-			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-			ImageInfo imgInfo;
-			ImageInfo smaller;
-			int inWidth = 1;
-			int inHeight = 1;	
-			
-			int DXTMethod = 0;
-			
-			int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
-			if(res != 0)
+			if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 			{
-				return NULL;
-			}
-			
-			//If only RGB
-			if(imgInfo.channels == 3)
-			{
-				ConvertBitmapToAlpha(&imgInfo,false);
-				DXTMethod = 1;
-			}
-			else
-			{
-				DXTMethod = 5;
-			}
-			while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
-			
-			while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
+				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+				ImageInfo imgInfo;
+				ImageInfo smaller;
+				int inWidth = 1;
+				int inHeight = 1;	
+				
+				int DXTMethod = 0;
+				
+				int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
+				if(res != 0)
+				{
+					string msg = string("Unable to convert the image file '") + absPathIMG + string("'to a DDS file.");
+					DoUserAlert(msg.c_str());
+					return 0;
+				}
+				
+				//If only RGB
+				if(imgInfo.channels == 3)
+				{
+					ConvertBitmapToAlpha(&imgInfo,false);
+					DXTMethod = 1;
+				}
+				else
+				{
+					DXTMethod = 5;
+				}
+				while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
+				
+				while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
 
-			if (CreateNewBitmap(inWidth,inHeight, 4, &smaller) == 0)
-			{
-				int isize = 2048;
-				isize = max(smaller.width,smaller.height);
+				if (CreateNewBitmap(inWidth,inHeight, 4, &smaller) == 0)
+				{
+					int isize = 2048;
+					isize = max(smaller.width,smaller.height);
 
-				CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
-     
-				MakeMipmapStack(&smaller);
-				WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
-				DestroyBitmap(&smaller);
+					CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
+		 
+					MakeMipmapStack(&smaller);
+					WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
+					DestroyBitmap(&smaller);
+				}
+				DestroyBitmap(&imgInfo);
+				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
 			}
-			DestroyBitmap(&imgInfo);
-			ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
+			else if(date_cmpr_res == dcr_error)
+			{
+				string msg = string("The file '") + absPathIMG + string("' is missing.");
+				DoUserAlert(msg.c_str());
+				return 0;
+			}
 		}
 
 		idx = io_table.accum_pol(relativePathPOL,show_level);
