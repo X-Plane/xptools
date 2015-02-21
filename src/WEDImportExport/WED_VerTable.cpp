@@ -133,6 +133,7 @@ void	WED_VerTable::GetHeaderContent(
 	{
 	case 0:
 		the_content.title = "Scenery ID";
+		break;
 	case 1:
 		the_content.title = "User Name";
 		break;

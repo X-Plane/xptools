@@ -784,7 +784,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 		
 		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
 		tmp.artistComments = curScenery.operator[]("artistComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
-		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
+		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("moderatorComments").asString() : "N/A";
 		
 		//Catches cases where acceptedSceneryCount > 0 && some pack only has uploadeded status
 		if(!(tmp.dateAccepted == "0000-00-00T00:00:00.000Z" && tmp.dateApproved == "0000-00-00T00:00:00.000Z"))
