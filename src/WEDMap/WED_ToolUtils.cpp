@@ -371,6 +371,8 @@ static void WED_LookupRunwayRecursive(const WED_Thing * thing, set<int>& runways
 		{
 			name.insert(0,"0");
 			e1 = ENUM_LookupDesc(domain,name.c_str());
+			if(e1 == -1)
+				name.erase(0,1);
 		}
 		if(ENUM_Domain(e1) == domain)
 			runways.insert(e1);
