@@ -309,6 +309,7 @@
 		D63A13B2132ABBC400D36061 /* WED_FacadeNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63A13AC132ABBC400D36061 /* WED_FacadeNode.cpp */; };
 		D63A13B3132ABBC400D36061 /* WED_FacadeRing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63A13AE132ABBC400D36061 /* WED_FacadeRing.cpp */; };
 		D63A13B4132ABBC400D36061 /* WED_ForestRing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63A13B0132ABBC400D36061 /* WED_ForestRing.cpp */; };
+		D63A80201A997EB5008D218D /* COPYING in Resources */ = {isa = PBXBuildFile; fileRef = D63A801F1A997EB5008D218D /* COPYING */; };
 		D63B0C481189FC06002F58BB /* RF_SpecialCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F070F82E96900F6718E /* RF_SpecialCommands.cpp */; };
 		D63CC9F713E85B8B00468132 /* WED_XMLWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */; };
 		D63D3A33192FA28F0004534A /* gateway.crt in Resources */ = {isa = PBXBuildFile; fileRef = D63D3A32192FA28F0004534A /* gateway.crt */; };
@@ -1196,6 +1197,7 @@
 		D63A13AF132ABBC400D36061 /* WED_FacadeRing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FacadeRing.h; sourceTree = "<group>"; };
 		D63A13B0132ABBC400D36061 /* WED_ForestRing.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ForestRing.cpp; sourceTree = "<group>"; };
 		D63A13B1132ABBC400D36061 /* WED_ForestRing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ForestRing.h; sourceTree = "<group>"; };
+		D63A801F1A997EB5008D218D /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		D63CC9F513E85B8B00468132 /* WED_XMLWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_XMLWriter.h; sourceTree = "<group>"; };
 		D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_XMLWriter.cpp; sourceTree = "<group>"; };
 		D63D3A32192FA28F0004534A /* gateway.crt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gateway.crt; sourceTree = "<group>"; };
@@ -3563,6 +3565,7 @@
 		D6ED3E1E0B6A636C00D5484E /* WEDResources */ = {
 			isa = PBXGroup;
 			children = (
+				D63A801F1A997EB5008D218D /* COPYING */,
 				D63D3A32192FA28F0004534A /* gateway.crt */,
 				D6080504154659A7001BE1A9 /* push_buttons.png */,
 				D6E30556105F8EE7009E6E7F /* tce_tools.png */,
@@ -4104,6 +4107,7 @@
 				D6E4C95618EC91DE000D98B8 /* json_valueiterator.inl in Resources */,
 				D6E4C95818EC91DE000D98B8 /* sconscript in Resources */,
 				D63D3A33192FA28F0004534A /* gateway.crt in Resources */,
+				D63A80201A997EB5008D218D /* COPYING in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

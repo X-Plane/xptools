@@ -442,12 +442,40 @@ void WED_GatewayExportDialog::Submit()
 			fprintf(readme,"-------------------------------------------------------------------------------\n");
 			fprintf(readme, "%s (%s)\n", apt_name.c_str(), icao.c_str());
 			fprintf(readme,"-------------------------------------------------------------------------------\n\n");
-			fprintf(readme,"Airport: %s (%s)\n\nUploaded by: %s.\n\n", apt_name.c_str(), icao.c_str(), uname.c_str());
+			fprintf(readme,"This scenery pack was downloaded from the X-Plane Scenery Gateway: \n");
+			fprintf(readme,"\n");
+			fprintf(readme,"    http://gateway.x-plane.com/\n");
+			fprintf(readme,"\n");
+			fprintf(readme,"Airport: %s (%s)\n\nUploaded by: %s.\n", apt_name.c_str(), icao.c_str(), uname.c_str());
+			fprintf(readme,"\n");
 			fprintf(readme,"Authors Comments:\n\n%s\n\n", comment.c_str());
-			fprintf(readme,"Installation Instructions:\n\n");
+			fprintf(readme,"Installation Instructions:\n");
+			fprintf(readme,"\n");
 			fprintf(readme,"To install this scenery, drag this entire folder into X-Plane's Custom Scenery\n");
 			fprintf(readme,"folder and re-start X-Plane.\n");
+			fprintf(readme,"\n");
+			fprintf(readme,"The scenery packs shared via the X-Plane Scenery Gateway are free software; you\n");
+			fprintf(readme,"can redistribute it and/or modify it under the terms of the GNU General Public\n");
+			fprintf(readme,"License as published by the Free Software Foundation; either version 2 of the\n");
+			fprintf(readme,"License, or (at your option) any later version.  See the included COPYING file\n");
+			fprintf(readme,"for complete terms.\n");
 			fclose(readme);
+		}
+		
+		FILE * gpl = fopen((preview_folder+"COPYING").c_str(),"w");
+		if(gpl)
+		{
+			GUI_Resource gpl_res = GUI_LoadResource("COPYING");
+			if(gpl_res)
+			{
+				const char * b = GUI_GetResourceBegin(gpl_res);
+				const char * e = GUI_GetResourceEnd(gpl_res);
+
+				fwrite(b,1,e-b,gpl);
+
+				GUI_UnloadResource(gpl_res);
+				fclose(gpl);
+			}
 		}
 		
 		

@@ -381,6 +381,7 @@ RESOURCES += ./src/WEDResources/scroll_btn_v.png
 RESOURCES += ./src/WEDResources/scrollbar_corner.png
 RESOURCES += ./src/WEDResources/about.png
 RESOURCES += ./src/WEDResources/gateway.crt
+RESOURCES += ./src/WEDResources/COPYING
 RESOURCES += ./src/WEDResources/colors.png
 RESOURCES += ./src/WEDResources/ui_measurements.txt
 RESOURCES += ./src/WEDResources/map_tools.png
