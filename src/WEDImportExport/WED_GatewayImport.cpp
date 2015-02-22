@@ -396,7 +396,7 @@ private:
 	GUI_TextTableHeader		mVersions_TextTableHeader;
 	
 	//Starts the download of the json file to populate the versions table
-	void StartVersionsDownload();
+	bool StartVersionsDownload();
 
 	//From the downloaded JSON, fill the versions table
 	void FillVersionsFromJSON();
@@ -427,7 +427,7 @@ int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
 
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
-	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable,import_bounds_default,cmdr),
+	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
 	mPhase(imp_dialog_download_ICAO),
@@ -547,9 +547,14 @@ void WED_GatewayImportDialog::Next()
 		//break; no next button here
 	case imp_dialog_choose_ICAO:
 		//Going to show versions
-		StartVersionsDownload();
-		mPhase = imp_dialog_download_versions;
-		mICAO_AptProvider.SelectionStart(1);
+		if(StartVersionsDownload())
+		{
+			mPhase = imp_dialog_download_versions;
+			mICAO_AptProvider.SelectionStart(1);
+		}
+		else {
+			DoUserAlert("Pick an airport to import.");
+		}
 		break;
 	//case imp_dialog_download_versions:
 		//break; no next button here
@@ -583,9 +588,12 @@ void WED_GatewayImportDialog::Back()
 		this->AsyncDestroy();
 		break;
 	case imp_dialog_download_versions:
+		Stop();
+		/* intentional, really! */
 	case imp_dialog_choose_versions:
+		mFilter->ClearFilter();				// Filter from choose version not appropriate for airports?
 		mPhase = imp_dialog_choose_ICAO;
-		mVersions_VerProvider.SelectionStart(1);
+//		mVersions_VerProvider.SelectionStart(1);
 		break;
 	case imp_dialog_download_specific_version:
 		break;
@@ -841,7 +849,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 }
 
 //Starts the download process
-void WED_GatewayImportDialog::StartVersionsDownload()
+bool WED_GatewayImportDialog::StartVersionsDownload()
 {
 	//Two steps,
 	//1.Get the airport from the current selection, then get its sceneryid from mICAO_Apts
@@ -849,6 +857,8 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	//index of the current selection
 	set<int> out_selection;
 	mICAO_AptProvider.GetSelection(out_selection);
+	if(out_selection.empty())
+		return false;
 	
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
@@ -861,7 +871,7 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	{
 		mPhase = imp_dialog_error;
 		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
+		return false;
 	}
 	
 	string url = WED_URL_GATEWAY_API;
@@ -872,6 +882,7 @@ void WED_GatewayImportDialog::StartVersionsDownload()
 	mCurl.create_HNDL(url,cert,VERSIONS_GET_SIZE_GUESS);
 	Start(1.0);
 	mLabel->Show();
+	return true;
 }
 
 void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
@@ -1088,8 +1099,6 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		mVersions_Packer->Hide();
 		break;
 	case imp_dialog_choose_ICAO:
-		mFilter->ClearFilter();
-		
 		mBackButton->Show();
 		mBackButton->SetDescriptor("Cancel");
 
@@ -1104,7 +1113,7 @@ void WED_GatewayImportDialog::DecorateGUIWindow(string labelDesc)
 		break;
 	case imp_dialog_download_versions:
 		mBackButton->Show();
-		mBackButton->SetDescriptor("Cancel");
+		mBackButton->SetDescriptor("Back");
 
 		mNextButton->Hide();
 		mNextButton->SetDescriptor("");

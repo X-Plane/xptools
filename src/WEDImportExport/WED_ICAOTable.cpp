@@ -245,6 +245,8 @@ struct sort_by_apt {
 
 void		WED_ICAOTable::resort(void)
 {
+	set<int>	old_sorted;
+	swap(old_sorted,mSelected);
 	vector<string>	filters;
 	tokenize_string_func(mFilter.begin(),mFilter.end(),back_inserter(filters),::isspace);
 
@@ -255,6 +257,8 @@ void		WED_ICAOTable::resort(void)
 			filter_match(mApts->at(i).icao, filters.begin(),filters.end()) ||
 			filter_match(mApts->at(i).name, filters.begin(),filters.end()))
 		{
+			if(old_sorted.count(i))
+				mSelected.insert(i);
 			mSorted.push_back(i);
 		}
 	}
