@@ -58,6 +58,7 @@
 #include "GISUtils.h"
 #include <time.h>
 #include "PerfUtils.h"
+#include "STLUtils.h"
 
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
@@ -143,6 +144,37 @@ bool bad_match(const T& s1, const T& s2)
 {
 	return s1.p1 != s2.p2;
 }
+
+static bool is_dir_sep(char c) { return c == '/' || c == ':' || c == '\\'; }
+
+static bool is_backout_path(const string& p)
+{
+	vector<string> comps;
+	tokenize_string_func(p.begin(), p.end(), back_inserter(comps), is_dir_sep);
+	
+	comps.erase(remove(comps.begin(),comps.end(),string(".")),comps.end());	
+	
+	bool did_work = false;
+	do {
+		did_work = false;
+		for(int i = 1; i < comps.size(); ++i)
+		if(comps[i] == string(".."))
+		if(comps[i-1] != string(".."))
+		{
+			comps.erase(comps.begin()+i-1,comps.begin()+i+1);
+			did_work = true;
+			break;
+		}	
+	} while(did_work);
+	
+	for(int i = 0; i < comps.size(); ++i)
+	{
+		if(comps[i] == string(".."))
+			return true;
+	}
+	return false;
+}
+
 /************************************************************************************************************************************************
  * DSF EXPORT UTILS
  ************************************************************************************************************************************************/
@@ -1282,40 +1314,55 @@ static int	DSF_ExportTileRecursive(
 		//Get the relative path
 		orth->GetResource(r);
 
-		//Various Strings, it may be a lot but it ensures one never get confused
-		//-----------------
-		string relativePathDDS = r;
-		relativePathDDS.replace(relativePathDDS.length()-3,3,"dds");
-		//-----------------
-		string relativePathPOL = r;
-		relativePathPOL.replace(relativePathDDS.length()-3,3,"pol");
-		//-----------------
-		string absPathIMG = pkg + r;
-		//-----------------
-		string absPathDDS = absPathIMG;
-		absPathDDS.replace(absPathDDS.length()-3,3,"dds");
-		//-----------------
-		string absPathPOL = absPathIMG;
-		absPathPOL.replace(absPathPOL.length()-3,3,"pol");
-
-		date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
-		//-----------------
-		/* How to export a Torthoptho
-		* If it is a torthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
-		* Create a Bitmap from whatever file format is being used.
-		* Use the number of channels to decide the compression level
-		* Create a DDS from that file format
-		* Create the .pol with the file format in mind
-		* Enjoy your new Torthophoto
-		*
-		* Currently supported image file types (including # channel based compression)
-		* JPEG2000 (.jp2)
-		* TIFF (.tif)
-		*/
-		//File extenstion
-		string resrcEnd = "";
+		string resrcEnd;
 		if(orth->IsNew(&resrcEnd) == true)
 		{
+			if(GetSupportedType(r.c_str()) == -1)
+			{
+				string msg = string("The polygon '") + r + string("' cannot be converted to an orthophoto.");
+				DoUserAlert(msg.c_str());
+				return 0;
+			}
+				
+			//Various Strings, it may be a lot but it ensures one never get confused
+			//-----------------
+			string relativePathDDS = r;
+			relativePathDDS.replace(relativePathDDS.length()-3,3,"dds");
+			//-----------------
+			string relativePathPOL = r;
+			relativePathPOL.replace(relativePathDDS.length()-3,3,"pol");
+			if(is_backout_path(relativePathPOL))
+			{
+				string msg = string("The path '") + relativePathPOL + string("' is illegal because it backs out of your scenery pack.");
+				DoUserAlert(msg.c_str());
+				return 0;
+			}
+
+			//-----------------
+			string absPathIMG = pkg + r;
+			//-----------------
+			string absPathDDS = absPathIMG;
+			absPathDDS.replace(absPathDDS.length()-3,3,"dds");
+			//-----------------
+			string absPathPOL = absPathIMG;
+			absPathPOL.replace(absPathPOL.length()-3,3,"pol");
+
+			date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
+			//-----------------
+			/* How to export a Torthoptho
+			* If it is a torthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
+			* Create a Bitmap from whatever file format is being used.
+			* Use the number of channels to decide the compression level
+			* Create a DDS from that file format
+			* Create the .pol with the file format in mind
+			* Enjoy your new Torthophoto
+			*
+			* Currently supported image file types (including # channel based compression)
+			* JPEG2000 (.jp2)
+			* TIFF (.tif)
+			*/
+			//File extenstion
+
 			if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
 			{
 				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
@@ -1361,6 +1408,7 @@ static int	DSF_ExportTileRecursive(
 				}
 				DestroyBitmap(&imgInfo);
 				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
+				r = relativePathPOL;
 			}
 			else if(date_cmpr_res == dcr_error)
 			{
@@ -1370,7 +1418,7 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 
-		idx = io_table.accum_pol(relativePathPOL,show_level);
+		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierPol(orth);
 
 		UVMap_t	uv;

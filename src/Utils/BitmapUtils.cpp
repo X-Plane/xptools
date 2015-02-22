@@ -361,7 +361,11 @@ int GetSupportedType(const char * path)
 {
 	string extension(path);
 	//Takes care of cases like .PNG and .JPG
-	extension = extension.substr(extension.find_last_of('.')+1);
+	string::size_type sep = extension.find_last_of('.');
+	if(sep == extension.npos)
+		return -1;
+		
+	extension = extension.substr(sep+1);
 
 	if(extension.length() == 3)
 	{
