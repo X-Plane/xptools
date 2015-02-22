@@ -171,6 +171,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			{
 				DoUserAlert("Unable to open image file.");
 				wrl->AbortOperation();
+				free(free_me);
 				return;//No good images or a broken file path
 			}
 
@@ -261,9 +262,9 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 
 			dpol->SetResource(img_path);
 
-			p1->SetName("Corner 1");
-			p1->SetName("Corner 2");
-			p1->SetName("Corner 3");
+			p4->SetName("Corner 1");
+			p3->SetName("Corner 2");
+			p2->SetName("Corner 3");
 			p1->SetName("Corner 4");
 			rng->SetName("Image Boundary");
 			const char * p = path;
