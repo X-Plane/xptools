@@ -170,6 +170,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			if(res != 0)
 			{
 				DoUserAlert("Unable to open image file.");
+				wrl->AbortOperation();
 				return;//No good images or a broken file path
 			}
 
