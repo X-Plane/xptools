@@ -38,8 +38,8 @@ VER_LIBSHP	:= 1.2.10
 VER_LIBSQUISH	:= 1.10
 # http://www.boost.org/
 # http://sourceforge.net/projects/boost/files/
-VER_BOOST	:= 1_43_0
-BOOST_SHORTVER	:= 1_43
+VER_BOOST	:= 1_57_0
+BOOST_SHORTVER	:= 1_57
 # http://www.mesa3d.org/
 # http://sourceforge.net/projects/mesa3d/files/
 VER_MESA	:= 7.5
@@ -57,7 +57,7 @@ VER_LIBMPFR	:= 2.4.2
 VER_LIBCURL := 7.36.0
 # http://http://www.openssl.org/
 # https://www.openssl.org/source/
-VER_LIBSSL := 1.0.1g
+VER_LIBSSL := 1.0.1l
 # http://www.dimin.net/software/geojasper/
 VER_GEOJASPER := 1.701.0.GEO
 
@@ -317,23 +317,36 @@ ifdef PLAT_MINGW
 CONF_LIBSSL			+= mingw
 endif
 ifdef PLAT_LINUX
-CONF_LIBSSL			+= linux-x86_64 
+CONF_LIBSSL			+= linux-x86_64
 endif
 
 # libcurl
 ARCHIVE_LIBCURL		:= curl-$(VER_LIBCURL).tar.gz
-CFLAGS_LIBCURL		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
+CFLAGS_LIBCURL		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+ifdef PLAT_LINUX
+LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+else
 LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH) -Wl,-search_paths_first"
+endif
 CONF_LIBCURL		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBCURL		+= --enable-shared=no
-CONF_LIBCURL		+= --with-ssl=$(DEFAULT_PREFIX) --without-libidn --disable-ldap 
+CONF_LIBCURL		+= --with-ssl=$(DEFAULT_PREFIX) --without-libidn --disable-ldap
 CONF_LIBCURL		+= --disable-dependency-tracking
+CONF_LIBCURL		+= --without-librtmp --without-ca-path --enable-hidden-symbols
+CONF_LIBCURL		+= "LIBS=-ldl"
 
 # geojasper
 ARCHIVE_LIBJASPER	:= jasper-$(VER_GEOJASPER).tar.gz
-CFLAGS_LIBJASPER	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH)"
+CFLAGS_LIBJASPER	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+ifdef PLAT_LINUX
+LDFLAGS_LIBJASPER	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
+else
 LDFLAGS_LIBJASPER	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH) -Wl,-search_paths_first"
-CONF_LIBJASPER		:= --prefix=$(DEFAULT_PREFIX)
+endif
+CONF_LIBJASPER		:= --prefix=$(DEFAULT_PREFIX) 
+CONF_LIBJASPER		+= --disable-libjpeg 
+#since jpeg is not compiled in libjasper we have to provide a lib for geojasper-bin 
+CONF_LIBJASPER		+= "LIBS=-ljpeg" 
 
 # platform specific tweaks
 ifeq ($(PLATFORM), Darwin)
@@ -349,14 +362,14 @@ endif
 # targets
 .PHONY: all clean boost mesa_headers zlib libpng libfreetype libjpeg \
 libtiff libproj libgeotiff libsqlite lib3ds libcgal libsquish libdime libshp \
-libexpat libgmp libmpfr libssl libcurl
+libexpat libgmp libmpfr libssl libcurl libjasper
 
 all: ./local$(MULTI_SUFFIX)/.xpt_libs
 ./local$(MULTI_SUFFIX)/.xpt_libs: boost mesa_headers zlib libpng \
 libfreetype libjpeg libtiff libproj libgeotiff libsqlite lib3ds libcgal \
 libsquish libdime libshp libexpat libgmp libmpfr libssl libcurl libjasper
 	@touch ./local$(MULTI_SUFFIX)/.xpt_libs
-
+	
 clean:
 	@echo "cleaning 3rd-party libraries, removing `pwd`/local"
 	@-rm -rf ./local
@@ -728,7 +741,7 @@ libshp: ./local$(MULTI_SUFFIX)/lib/.xpt_libshp
 
 libssl: ./local$(MULTI_SUFFIX)/lib/.xpt_libssl
 ./local$(MULTI_SUFFIX)/lib/.xpt_libssl:
-	@echo "buliding libssl"
+	@echo "building libssl"
 	@tar -xzf "./archives/$(ARCHIVE_LIBSSL)"
 	@cd "openssl-$(VER_LIBSSL)" && \
 	chmod +x Configure && \
