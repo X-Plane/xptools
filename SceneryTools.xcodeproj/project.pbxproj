@@ -5084,6 +5084,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5108,6 +5109,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5132,6 +5134,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5213,6 +5216,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
@@ -5297,11 +5301,12 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
-					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
+					libs/local/lib/libfreetype.a,
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
@@ -5347,6 +5352,7 @@
 					"USE_TIF=1",
 				);
 				OTHER_LDFLAGS = (
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
@@ -5420,6 +5426,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
@@ -5450,6 +5457,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
@@ -5478,11 +5486,12 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
-					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
+					libs/local/lib/libfreetype.a,
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
@@ -5507,11 +5516,12 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
-					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
+					libs/local/lib/libfreetype.a,
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
@@ -5855,6 +5865,7 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libexpat.a,
@@ -5963,11 +5974,12 @@
 				OTHER_LDFLAGS = (
 					libs/local/lib/libmpfr.a,
 					libs/local/lib/libgmp.a,
+					libs/local/lib/libboost_system.a,
 					libs/local/lib/libboost_thread.a,
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
-					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
+					libs/local/lib/libfreetype.a,
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
