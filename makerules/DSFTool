@@ -40,5 +40,7 @@ SOURCES += ./src/Utils/EndianUtils.c
 SOURCES += ./src/Utils/FileUtils.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/Utils/md5.c
+SOURCES += ./src/Utils/zip.c
+SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/Utils/XChunkyFileUtils.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp

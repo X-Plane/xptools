@@ -15,6 +15,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -23,6 +24,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LDFLAGS		+= -framework Carbon
 endif #PLAT_DARWIN
 
@@ -34,6 +36,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 
 ifeq ($(conf), phone)
 LIBS		+= ./libs/local/lib/ATI_Compress_1_7_DLL.lib
@@ -49,6 +52,8 @@ endif #PLAT_MINGW
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/XPTools/DDSTool.cpp
 SOURCES += ./src/Utils/EndianUtils.c
+SOURCES += ./src/Utils/zip.c
+SOURCES += ./src/Utils/unzip.c
 SOURCES += ./src/Utils/BitmapUtils.cpp
 SOURCES += ./src/Utils/QuiltUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
