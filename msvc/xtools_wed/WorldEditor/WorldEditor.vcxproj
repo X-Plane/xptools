@@ -567,6 +567,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}</ProjectGuid>
     <RootNamespace>xtools_wed</RootNamespace>
+    <ProjectName>WorldEditor</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -611,6 +612,8 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
       <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -633,6 +636,7 @@
       <PreprocessorDefinitions>JAS_WIN_MSVC_BUILD;XML_STATIC;WIN32;_LIB;NDEBUG;NO_CGAL=1;CURL_STATICLIB;MSC=1;APL=0;IBM=1;DEV=0;USE_JPEG=1;USE_TIF=1;USE_GEOJPEG2K=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
