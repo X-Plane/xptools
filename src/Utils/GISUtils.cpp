@@ -30,7 +30,9 @@
 #include "CompGeomUtils.h"
 #include "DEMIO.h"
 #include "PlatformUtils.h"
+#if USE_GEOJPEG2K
 #include <jasper/jasper.h>
+#endif
 
 #if defined(_MSC_VER)
 	#include <libxtiff/xtiffio.h>
