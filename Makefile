@@ -2,7 +2,7 @@ BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
 # http://gforge.inria.fr/frs/?group_id=52
-VER_CGAL	:= 3.9
+VER_CGAL	:= 4.5.2
 # http://www.freetype.org/
 # http://sourceforge.net/projects/freetype/files/
 VER_FREETYPE	:= 2.3.11
@@ -29,7 +29,7 @@ VER_LIBPNG	:= 1.2.41
 VER_ZLIB	:= 1.2.3
 # http://www.libtiff.org/
 # ftp://ftp.remotesensing.org/pub/libtiff
-VER_LIBTIFF	:= 4.0.0beta5
+VER_LIBTIFF	:= 4.0.3
 # http://shapelib.maptools.org/
 # http://dl.maptools.org/dl/shapelib/
 VER_LIBSHP	:= 1.2.10
@@ -207,8 +207,12 @@ endif
 
 # libtiff
 ARCHIVE_LIBTIFF		:= tiff-$(VER_LIBTIFF).tar.gz
-CFLAGS_LIBTIFF		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
 CXXFLAGS_LIBTIFF	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+ifdef PLAT_DARWIN
+CFLAGS_LIBTIFF		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) -DHAVE_APPLE_OPENGL_FRAMEWORK=1 $(VIS)"
+else
+CFLAGS_LIBTIFF		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(VIS)"
+endif
 LDFLAGS_LIBTIFF		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 CONF_LIBTIFF		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBTIFF		+= --enable-shared=no
@@ -531,10 +535,6 @@ libtiff: ./local$(MULTI_SUFFIX)/lib/.xpt_libtiff
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
 	@tar -xzf "./archives/$(ARCHIVE_LIBTIFF)"
-	@cp patches/0001-libtiff-fix-types.patch \
-	"tiff-$(VER_LIBTIFF)" && cd "tiff-$(VER_LIBTIFF)" && \
-	patch -p1 < ./0001-libtiff-fix-types.patch \
-	$(BE_QUIET)
 	@cd "tiff-$(VER_LIBTIFF)" && \
 	chmod +x configure && \
 	CFLAGS=$(CFLAGS_LIBTIFF) CXXFLAGS=$(CXXFLAGS_LIBTIFF) LDFLAGS=$(LDFLAGS_LIBTIFF) \
