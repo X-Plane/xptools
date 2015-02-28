@@ -45,17 +45,49 @@ inline void 	offset_cuts(vector<int>& cuts, int d)
 		*i += d;
 }
 
-template <typename Pixel>
-void rotate_inplace(
-					Pixel * s,int	dx1,int dy1,
-					int width, int height,
-					int dx, int dy)
+inline unsigned long error_func(const unsigned long * c1, const unsigned long * c2)
 {
-	vector<Pixel>	storage;
-	storage.insert(storage.end(), s, s + (width * height));
-	copy_rotate(&*storage.begin(), 1, width, s, dx1, dy1, width, height, dx, dy);
+	int r1 = (*c1 & 0xFF000000) >> 24 ;
+	int g1 = (*c1 & 0x00FF0000) >> 16 ;
+	int b1 = (*c1 & 0x0000FF00) >>  8 ;
+	int a1 = (*c1 & 0x000000FF)		  ;
+	
+	int r2 = (*c2 & 0xFF000000) >> 24 ;
+	int g2 = (*c2 & 0x00FF0000) >> 16 ;
+	int b2 = (*c2 & 0x0000FF00) >>  8 ;
+	int a2 = (*c2 & 0x000000FF)       ;
+	
+	return  (r1 - r2) * (r1 - r2) +
+	(g1 - g2) * (g1 - g2) +
+	(b1 - b2) * (b1 - b2) +
+	(a1 - a2) * (a1 - a2);
 }
 
+inline unsigned long blend_func(const unsigned long * c1, const unsigned long * c2)
+{
+#if 0
+	return 0xFF0000FF;					// Just return a solid color...makes it easy to see the cut.
+#endif
+	int r1 = (*c1 & 0xFF000000) >> 24;
+	int g1 = (*c1 & 0x00FF0000) >> 16;
+	int b1 = (*c1 & 0x0000FF00) >>  8;
+	int a1 = (*c1 & 0x000000FF)		;
+	
+	int r2 = (*c2 & 0xFF000000) >> 24;
+	int g2 = (*c2 & 0x00FF0000) >> 16;
+	int b2 = (*c2 & 0x0000FF00) >>  8;
+	int a2 = (*c2 & 0x000000FF)		 ;
+	
+	int r = ((r1 + r2) >> 1);
+	int g = ((g1 + g2) >> 1);
+	int b = ((b1 + b2) >> 1);
+	int a = ((a1 + a2) >> 1);
+	
+	return ((r & 0xFF) << 24) |
+	((g & 0xFF) << 16) |
+	((b & 0xFF) <<  8) |
+	(a & 0xFF);
+}
 
 template <typename Pixel>
 void copy_rotate(
@@ -80,6 +112,16 @@ void copy_rotate(
 	#undef PIXEL2
 }
 
+template <typename Pixel>
+void rotate_inplace(
+					Pixel * s,int	dx1,int dy1,
+					int width, int height,
+					int dx, int dy)
+{
+	vector<Pixel>	storage;
+	storage.insert(storage.end(), s, s + (width * height));
+	copy_rotate(&*storage.begin(), 1, width, s, dx1, dy1, width, height, dx, dy);
+}
 
 template <typename Pixel>
 void copy_cut_vertical(
