@@ -14,11 +14,11 @@ LDFLAGS		+= -nodefaultlibs -rdynamic
 LIBS		+= -Wl,--as-needed
 LIBS		+= -Wl,-Bstatic -Wl,--start-group
 LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
-LIBS		+= -lCGAL -lCGAL_Core -lproj -lfreetype -ltiff -ljpeg -lpng -lz
+LIBS		+= -lCGAL -lCGAL_Core -lproj -lfreetype -ltiff -ljpeg -lpng -lz -ljasper
 LIBS		+= -lgmp -lmpfr -lstdc++ -lm -lgcc -lgcc_eh
 LIBS		+= -Wl,--end-group -Wl,-Bdynamic
 LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc
-LIBS		+= -lboost_thread -lpthread
+LIBS		+= -lboost_thread -lboost_system -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
@@ -26,11 +26,13 @@ LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
 LIBS		:= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libCGAL_Core.a
 LIBS		+= ./libs/local/lib/libboost_thread.a
+LIBS		+= ./libs/local/lib/libboost_system.a
 LIBS		+= ./libs/local/lib/libgmp.a
 LIBS		+= ./libs/local/lib/libgmpxx.a
 LIBS		+= ./libs/local/lib/libsquish.a
 LIBS		+= ./libs/local/lib/libgeotiff.a
 LIBS		+= ./libs/local/lib/libshp.a
+LIBS		+= ./libs/local/lib/libjasper.a
 LIBS		+= ./libs/local/lib/libproj.a
 LIBS		+= ./libs/local/lib/libtiff.a
 LIBS		+= ./libs/local/lib/libjpeg.a

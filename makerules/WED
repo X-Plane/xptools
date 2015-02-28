@@ -35,7 +35,10 @@ LIBS		+= -lGL
 LIBS		+= -lGLU
 LIBS		+= -ldl
 LIBS		+= -lpthread
-LIBS		+= -Wl,-Bdynamic -lcurl
+LIBS		+= -lcurl
+LIBS		+= -lssl
+LIBS		+= -lcrypto
+LIBS		+= -Wl,-Bdynamic
 endif #PLAT_LINUX
 
 ifdef PLAT_MINGW
