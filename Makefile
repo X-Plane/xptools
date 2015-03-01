@@ -48,10 +48,10 @@ VER_MESA	:= 7.5
 VER_LIBEXPAT	:= 2.0.1
 # http://gmplib.org/
 # http://gmplib.org/#DOWNLOAD
-VER_LIBGMP	:= 4.3.1
+VER_LIBGMP	:= 5.1.3
 # http://www.mpfr.org/
 # http://www.mpfr.org/mpfr-current/#download
-VER_LIBMPFR	:= 2.4.2
+VER_LIBMPFR	:= 3.1.2
 # http://curl.haxx.se/
 # http://curl.haxx.se/download.html
 VER_LIBCURL := 7.36.0
