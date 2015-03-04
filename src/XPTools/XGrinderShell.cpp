@@ -418,23 +418,27 @@ void	XGrindInit(string& t)
 //	file_cb("ObjConverter");
 */
 	char	base[2048];
+	char      me[2048];
 	GetApplicationPath(base,sizeof(base));
 
 	char * last_sep = base;
 	char * p = base;
+
 	while(*p)
 	{
 		if(*p == '/' || *p == '\\') last_sep = p;
 		++p;
 	}
 	*last_sep++=0;
-	g_me=last_sep;
+	strcpy(me,last_sep);
+	g_me = me;
 
 	/* search binaries under ./tools */
 	#if (!LIN && DEV) || (DEV && PHONE)
-		sprintf(base, "%s", base);				// Ben says: fuuuugly special case.  If we are a developer build on Mac, just use OUR dir as the tools dir.  Makes it possible
-	#else										// to grind using the x-code build dir.  Of course, in release build we do NOT ship like this.  Same deal with phone.
-		sprintf(base, "%s/tools", base);
+		// Ben says: fuuuugly special case.  If we are a developer build on Mac, just use OUR dir as the tools dir.  Makes it possible
+		// to grind using the x-code build dir.  Of course, in release build we do NOT ship like this.  Same deal with phone.
+	#else
+		strcat(base,"/tools");
 	#endif
 	MF_GetDirectoryBulk(base, file_cb, base);
 

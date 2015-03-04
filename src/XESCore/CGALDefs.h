@@ -105,12 +105,18 @@ typedef CGAL::Polygon_2<FastKernel>						Polygon_2;					// Ben says: this only w
 typedef CGAL::Polygon_with_holes_2<FastKernel>			Polygon_with_holes_2;		// true, we could use these definitons from our GPS segment traits.  This allows us to have polygons
 																					// Without GPS polygons!
 
+#if CGAL_VERSION_NR < 1040521000
 
+// CGAL 4.5.2 has this natively.  3.9 does not.  If we ever figure out exactly when it was added, we can tune it;
+// if we leave this in by accident we get this:
+// http://hacksoflife.blogspot.com/2015/02/the-ambiguously-overloaded-operator.html
 inline CGAL::Bbox_2& operator+=(Bbox_2& lhs, const Bbox_2& rhs)
 {
 	lhs = lhs + rhs;
 	return lhs;
 }
+
+#endif
 
 struct	CoordTranslator_2 {
 	Point_2	mSrcMin;
