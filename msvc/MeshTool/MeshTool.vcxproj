@@ -92,6 +92,7 @@
       <AdditionalDependencies>LIBCMT.lib;LIBCPMT.lib;libboost_system-vc100-mt-s-1_57.lib;libboost_thread-vc100-mt-s-1_57.lib;libCGAL-vc100-mt-s-4.5.2.lib;libCGAL_Core-vc100-mt-s-4.5.2.lib;libpng.lib;geotiff.lib;libtiff.lib;zlibstat.lib;libjasper.lib;jpeg.lib;proj.lib;libexpatMT.lib;squish.lib;oldnames.lib;libgmp-10.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalLibraryDirectories>..\..\msvc_libs\msvc_compiled_libs;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>2097152</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
