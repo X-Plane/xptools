@@ -1333,8 +1333,8 @@ void MakeDirectRules(void)
 		rule.rain_min = rule.rain_max = 0.0;
 		rule.near_water = 0;
 		rule.slope_heading_min = rule.slope_heading_max = 0.0;
-		rule.rel_elev_min = rule.rel_elev_max;
-		rule.elev_range_min = rule.elev_range_max;
+		rule.rel_elev_min = rule.rel_elev_max = 0.0;
+		rule.elev_range_min = rule.elev_range_max = 0.0;
 
 		rule.urban_density_min= 0.0;
 		rule.urban_density_max= 0.0;
