@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -238,16 +238,16 @@
     <ClCompile Include="..\..\..\src\WEDWindows\WED_StartWindow.cpp" />
     <ClCompile Include="..\..\..\src\XESCore\AptIO.cpp" />
     <ClCompile Include="..\..\..\src\XPCompat\hl_types.cpp" />
-    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\alpha.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\clusterfit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourblock.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourfit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourset.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\maths.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\rangefit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\singlecolourfit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\squish.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\sqlite-3.6.21\sqlite3.c" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\alpha.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\clusterfit.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\colourblock.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\colourfit.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\colourset.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\maths.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\rangefit.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\singlecolourfit.cpp" />
+    <ClCompile Include="..\..\..\msvc_libs\squish-1.10\squish.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\DSFTools\DSF2Text.h" />
@@ -497,22 +497,22 @@
     <ClInclude Include="..\..\..\src\WEDWindows\WED_UIDefs.h" />
     <ClInclude Include="..\..\..\src\XESCore\AptIO.h" />
     <ClInclude Include="..\..\..\src\XPCompat\hl_types.h" />
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h" />
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\alpha.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\clusterfit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourblock.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourfit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourset.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\config.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\maths.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\rangefit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_float.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_sse.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_ve.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\singlecolourfit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\squish.h" />
+    <ClInclude Include="..\..\..\msvc_libs\sqlite-3.6.21\sqlite3.h" />
+    <ClInclude Include="..\..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\alpha.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\clusterfit.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\colourblock.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\colourfit.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\colourset.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\config.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\maths.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\rangefit.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\simd.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\simd_float.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\simd_sse.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\simd_ve.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\singlecolourfit.h" />
+    <ClInclude Include="..\..\..\msvc_libs\squish-1.10\squish.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\src\WEDResources\ui_measurements.txt" />
@@ -556,7 +556,7 @@
     <None Include="..\..\..\src\WEDResources\WED.icns" />
     <None Include="..\..\..\src\WEDResources\WEDManual.pdf" />
     <None Include="..\..\..\src\WEDResources\WED_Info.plist" />
-    <None Include="..\..\msvc_libs\squish-1.10\singlecolourlookup.inl" />
+    <None Include="..\..\..\msvc_libs\squish-1.10\singlecolourlookup.inl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\src\WEDResources\WED.rc" />
@@ -606,7 +606,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\curl-7.36.0\include;..\..\..\src\lib_json\include;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\..\msvc_libs\sqlite-3.6.21;..\..\..\msvc_libs\tiff-4.0.3\libtiff;..\..\..\msvc_libs\libgeotiff-1.2.5;..\..\..\msvc_libs\jpeg-8c;..\..\..\msvc_libs\squish-1.10;..\..\..\msvc_libs\proj-4.7.0\src;..\..\..\msvc_libs\tiff-4.0.3\contrib\tags;..\..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\..\msvc_libs\freetype-2.2.1\include;..\..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\..\msvc_libs\curl-7.36.0\include;..\..\..\src\lib_json\include;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>JAS_WIN_MSVC_BUILD;XML_STATIC;CURL_STATICLIB;WIN32;NDEBUG;NO_CGAL=1;MSC=1;APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;USE_GEOJPEG2K=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -617,7 +617,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;..\..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -631,7 +631,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.0beta5\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.0beta5\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\curl-7.36.0\include;..\..\..\src\lib_json\include;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\..\msvc_libs\sqlite-3.6.21;..\..\..\msvc_libs\tiff-4.0.3\libtiff;..\..\..\msvc_libs\libgeotiff-1.2.5;..\..\..\msvc_libs\jpeg-8c;..\..\..\msvc_libs\squish-1.10;..\..\..\msvc_libs\proj-4.7.0\src;..\..\..\msvc_libs\tiff-4.0.3\contrib\tags;..\..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\..\msvc_libs\freetype-2.2.1\include;..\..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\..\msvc_libs\curl-7.36.0\include;..\..\..\src\lib_json\include;..\..\..\src\XPCompat\;..\..\..\src\Interfaces;..\..\..\src\WEDXPlugin;..\..\..\src\WEDWindows;..\..\..\src\WEDTCE;..\..\..\src\WEDResources;..\..\..\src\WEDProperties;..\..\..\src\WEDNetwork;..\..\..\src\WEDMap;..\..\..\src\WEDLibrary;..\..\..\src\XESCore;..\..\..\src\WEDImportExport;..\..\..\src\Utils;..\..\..\src\UI;..\..\..\src\OGLE;..\..\..\src\Obj;..\..\..\src\WEDCore;..\..\..\src\Network;..\..\..\src\GUI;..\..\..\src\Env;..\..\..\src\DSFTools;..\..\..\src\DSF\tri_stripper_101;..\..\..\src\DSF;..\..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <PreprocessorDefinitions>JAS_WIN_MSVC_BUILD;XML_STATIC;WIN32;_LIB;NDEBUG;NO_CGAL=1;CURL_STATICLIB;MSC=1;APL=0;IBM=1;DEV=0;USE_JPEG=1;USE_TIF=1;USE_GEOJPEG2K=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
@@ -642,7 +642,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;..\..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
