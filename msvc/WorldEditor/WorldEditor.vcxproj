@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp" />
+    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFLib.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFLibWrite.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFPointPool.cpp" />
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
+    <ClCompile Include="..\..\src\Env\EnvParser.c" />
+    <ClCompile Include="..\..\src\Env\Persistence.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Application.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Broadcaster.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Button.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_ChangeView.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Clipboard.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Commander.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Control.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Destroyable.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_DrawUtils.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Fonts.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_FormWindow.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_GraphState.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Help.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Label.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Listener.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_MemoryHog.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Packer.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Pane.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_PopupButton.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Prefs.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Resources.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_ScrollBar.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_ScrollerPane.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_SimpleScroller.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_SimpleTableGeometry.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Splitter.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_TabControl.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Table.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_TabPane.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_TextField.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_TextTable.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Timer.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_ToolBar.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Window.cpp" />
+    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\..\src\lib_json\src\lib_json\json_writer.cpp" />
+    <ClCompile Include="..\..\src\Network\b64.c" />
+    <ClCompile Include="..\..\src\Network\curl_http.cpp" />
+    <ClCompile Include="..\..\src\Network\HTTPClient.cpp" />
+    <ClCompile Include="..\..\src\Network\PCSBSocket.win.cpp" />
+    <ClCompile Include="..\..\src\Network\PCSBSocketUDP.win.cpp" />
+    <ClCompile Include="..\..\src\Network\Terraserver.cpp" />
+    <ClCompile Include="..\..\src\Network\XMLObject.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjWriteEmbedded.cpp" />
+    <ClCompile Include="..\..\src\OGLE\ogle.cpp" />
+    <ClCompile Include="..\..\src\UI\XWin.win.cpp" />
+    <ClCompile Include="..\..\src\UI\XWin32DND.cpp" />
+    <ClCompile Include="..\..\src\UI\XWinGL.win.cpp" />
+    <ClCompile Include="..\..\src\Utils\AssertUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\BitmapUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
+    <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\GISUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\md5.c" />
+    <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp" />
+    <ClCompile Include="..\..\src\Utils\SQLUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\TexUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\unzip.c" />
+    <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\XUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\zip.c" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Sign_Parser.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Application.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_AppMain.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Archive.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Assert.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Buffer.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Clipping.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Document.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_EnumSystem.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Errors.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_FastBuffer.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_GISUtils.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Globals.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_LibraryMgr.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Orthophoto.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Package.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_PackageMgr.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Persistent.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Properties.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_PropertyHelper.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_ResourceMgr.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_TCEDebugLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_TexMgr.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_UndoLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_UndoMgr.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_Validate.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_XMLReader.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_XMLWriter.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Airport.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_AirportBeacon.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_AirportBoundary.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_AirportChain.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_AirportNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_AirportSign.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ATCFlow.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ATCFrequency.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ATCRunwayUse.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ATCTimeRule.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ATCWindRule.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Entity.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_FacadeNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_FacadePlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_FacadeRing.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ForestPlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ForestRing.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISBoundingBox.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISChain.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISComposite.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISEdge.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISLine.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISLine_Width.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISPoint.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISPoint_Bezier.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISPoint_Heading.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISPoint_HeadingWidthLength.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_GISPolygon.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Group.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Helipad.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_KeyObjects.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_LightFixture.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_LinePlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_ObjPlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_OverlayImage.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_PolygonPlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_RampPosition.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Ring.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_RoadEdge.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Root.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Runway.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_RunwayNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Sealane.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Select.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_SimpleBezierBoundaryNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_SimpleBoundaryNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_StringPlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TaxiRoute.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TaxiRouteNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Taxiway.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TextureBezierNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TextureNode.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Thing.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TowerViewpoint.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_Windsock.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_AptIE.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_AptImportDialog.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_AptTable.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_DSFExport.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_DSFImport.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_GatewayExport.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_GatewayImport.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_ICAOTable.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_VerTable.cpp" />
+    <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
+    <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
+    <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_Colors.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_CreateBoxTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_CreateEdgeTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_CreateLineTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_CreatePointTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_CreatePolygonTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_CreateToolBase.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_DebugLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_DrawUtils.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_HandleToolBase.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_Map.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_MapBkgnd.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_MapLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_MapPane.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_MapToolNew.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_MapZoomerNew.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_MarqueeTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_PreviewLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_TerraserverLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_ToolUtils.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_WorldMapLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDNetwork\WED_Connection.cpp" />
+    <ClCompile Include="..\..\src\WEDNetwork\WED_NWInfoLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.cpp" />
+    <ClCompile Include="..\..\src\WEDNetwork\WED_Server.cpp" />
+    <ClCompile Include="..\..\src\WEDProperties\WED_PropertyPane.cpp" />
+    <ClCompile Include="..\..\src\WEDProperties\WED_PropertyTable.cpp" />
+    <ClCompile Include="..\..\src\WEDTCE\WED_TCE.cpp" />
+    <ClCompile Include="..\..\src\WEDTCE\WED_TCELayer.cpp" />
+    <ClCompile Include="..\..\src\WEDTCE\WED_TCEMarqueeTool.cpp" />
+    <ClCompile Include="..\..\src\WEDTCE\WED_TCEPane.cpp" />
+    <ClCompile Include="..\..\src\WEDTCE\WED_TCEToolAdapter.cpp" />
+    <ClCompile Include="..\..\src\WEDTCE\WED_TCEToolNew.cpp" />
+    <ClCompile Include="..\..\src\WEDTCE\WED_TCEVertexTool.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_FilterBar.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_PackageWindow.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp" />
+    <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
+    <ClCompile Include="..\..\src\XPCompat\hl_types.cpp" />
+    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\alpha.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\clusterfit.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourblock.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourfit.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourset.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\maths.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\rangefit.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\singlecolourfit.cpp" />
+    <ClCompile Include="..\..\msvc_libs\squish-1.10\squish.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
+    <ClInclude Include="..\..\src\DSFTools\DSFToolsPrefix.h" />
+    <ClInclude Include="..\..\src\DSF\DSFDefs.h" />
+    <ClInclude Include="..\..\src\DSF\DSFLib.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\cache_simulator.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\graph_array.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\heap_array.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\stdafx.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
+    <ClInclude Include="..\..\src\Env\EnvDefs.h" />
+    <ClInclude Include="..\..\src\Env\EnvParser.h" />
+    <ClInclude Include="..\..\src\Env\Persistence.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Application.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Broadcaster.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Button.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_ChangeView.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Clipboard.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Commander.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Control.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Defs.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Destroyable.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_DrawUtils.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Fonts.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_FormWindow.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_GraphState.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Help.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Label.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Laftfont.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Listener.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_MemoryHog.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Menus.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Messages.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Packer.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Pane.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_PopupButton.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Prefs.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Resources.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_ScrollBar.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_ScrollerPane.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_SimpleScroller.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_SimpleTableGeometry.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Splitter.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_TabControl.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Table.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_TabPane.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_TextField.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_TextTable.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Timer.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_ToolBar.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Unicode.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Window.h" />
+    <ClInclude Include="..\..\src\Interfaces\IArray.h" />
+    <ClInclude Include="..\..\src\Interfaces\IBase.h" />
+    <ClInclude Include="..\..\src\Interfaces\IControlHandles.h" />
+    <ClInclude Include="..\..\src\Interfaces\IDirectory.h" />
+    <ClInclude Include="..\..\src\Interfaces\IDocPrefs.h" />
+    <ClInclude Include="..\..\src\Interfaces\IGIS.h" />
+    <ClInclude Include="..\..\src\Interfaces\ILibrarian.h" />
+    <ClInclude Include="..\..\src\Interfaces\IOperation.h" />
+    <ClInclude Include="..\..\src\Interfaces\IPropertyObject.h" />
+    <ClInclude Include="..\..\src\Interfaces\IResolver.h" />
+    <ClInclude Include="..\..\src\Interfaces\ISelection.h" />
+    <ClInclude Include="..\..\src\Interfaces\ITexMgr.h" />
+    <ClInclude Include="..\..\src\Network\curl_http.h" />
+    <ClInclude Include="..\..\src\Network\HTTPClient.h" />
+    <ClInclude Include="..\..\src\Network\PCSBSocket.h" />
+    <ClInclude Include="..\..\src\Network\PCSBSocketUDP.h" />
+    <ClInclude Include="..\..\src\Network\TerraServer.h" />
+    <ClInclude Include="..\..\src\Network\XMLObject.h" />
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
+    <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
+    <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
+    <ClInclude Include="..\..\src\Obj\XDefs.h" />
+    <ClInclude Include="..\..\src\Obj\XObjBuilder.h" />
+    <ClInclude Include="..\..\src\Obj\XObjDefs.h" />
+    <ClInclude Include="..\..\src\Obj\XObjReadWrite.h" />
+    <ClInclude Include="..\..\src\Obj\XObjWriteEmbedded.h" />
+    <ClInclude Include="..\..\src\OGLE\ogle.h" />
+    <ClInclude Include="..\..\src\UI\XWin.h" />
+    <ClInclude Include="..\..\src\UI\XWin32DND.h" />
+    <ClInclude Include="..\..\src\UI\XWinGL.h" />
+    <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
+    <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
+    <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
+    <ClInclude Include="..\..\src\Utils\FileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\GISUtils.h" />
+    <ClInclude Include="..\..\src\Utils\md5.h" />
+    <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\PlatformUtils.h" />
+    <ClInclude Include="..\..\src\Utils\SQLUtils.h" />
+    <ClInclude Include="..\..\src\Utils\TexUtils.h" />
+    <ClInclude Include="..\..\src\Utils\unzip.h" />
+    <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\XUtils.h" />
+    <ClInclude Include="..\..\src\Utils\zip.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Sign_Parser.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Application.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Archive.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Assert.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Buffer.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Clipping.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Document.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Enums.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_EnumSystem.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Errors.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_FastBuffer.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_GISUtils.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Globals.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_LibraryMgr.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Messages.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Orthophoto.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Package.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_PackageMgr.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Persistent.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Properties.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_PropertyHelper.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_ResourceMgr.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_TCEDebugLayer.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_TexMgr.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_UndoLayer.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_UndoMgr.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Validate.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_Version.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_XMLReader.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_XMLWriter.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Airport.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_AirportBeacon.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_AirportBoundary.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_AirportChain.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_AirportNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_AirportSign.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ATCFlow.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ATCFrequency.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ATCRunwayUse.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ATCTimeRule.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ATCWindRule.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ExclusionZone.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_FacadeNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_FacadePlacement.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_FacadeRing.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ForestPlacement.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ForestRing.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISBoundingBox.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISChain.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISComposite.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISEdge.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISLine.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISLine_Width.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISPoint.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISPoint_Bezier.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISPoint_Heading.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISPoint_HeadingWidthLength.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_GISPolygon.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Group.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Helipad.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_KeyObjects.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_LightFixture.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_LinePlacement.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_ObjPlacement.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_OverlayImage.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_PolygonPlacement.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_RampPosition.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Ring.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_RoadEdge.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Root.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Runway.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_RunwayNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Sealane.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Select.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_SimpleBezierBoundaryNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_SimpleBoundaryNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_StringPlacement.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TaxiRoute.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TaxiRouteNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Taxiway.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TextureBezierNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TextureNode.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Thing.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TowerViewpoint.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_Windsock.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_AptIE.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_AptImportDialog.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_AptTable.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_DSFExport.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_DSFImport.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_GatewayExport.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_GatewayImport.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_ICAOTable.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_SceneryPackExport.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_VerTable.h" />
+    <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />
+    <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPane.h" />
+    <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_Colors.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_CreateBoxTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_CreateEdgeTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_CreateLineTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_CreatePointTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_CreatePolygonTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_CreateToolBase.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_DebugLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_DrawUtils.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_HandleToolBase.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_Map.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_MapBkgnd.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_MapLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_MapPane.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_MapToolNew.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_MapZoomerNew.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_MarqueeTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_PreviewLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_TerraserverLayer.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_ToolUtils.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_WorldMapLayer.h" />
+    <ClInclude Include="..\..\src\WEDNetwork\WED_Connection.h" />
+    <ClInclude Include="..\..\src\WEDNetwork\WED_NWDefs.h" />
+    <ClInclude Include="..\..\src\WEDNetwork\WED_NWInfoLayer.h" />
+    <ClInclude Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.h" />
+    <ClInclude Include="..\..\src\WEDNetwork\WED_Server.h" />
+    <ClInclude Include="..\..\src\WEDProperties\WED_PropertyPane.h" />
+    <ClInclude Include="..\..\src\WEDProperties\WED_PropertyTable.h" />
+    <ClInclude Include="..\..\src\WEDTCE\WED_TCE.h" />
+    <ClInclude Include="..\..\src\WEDTCE\WED_TCELayer.h" />
+    <ClInclude Include="..\..\src\WEDTCE\WED_TCEMarqueeTool.h" />
+    <ClInclude Include="..\..\src\WEDTCE\WED_TCEPane.h" />
+    <ClInclude Include="..\..\src\WEDTCE\WED_TCEToolAdapter.h" />
+    <ClInclude Include="..\..\src\WEDTCE\WED_TCEToolNew.h" />
+    <ClInclude Include="..\..\src\WEDTCE\WED_TCEVertexTool.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_FilterBar.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_PackageWindow.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\AptIO.h" />
+    <ClInclude Include="..\..\src\XPCompat\hl_types.h" />
+    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h" />
+    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\alpha.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\clusterfit.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourblock.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourfit.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourset.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\config.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\maths.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\rangefit.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_float.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_sse.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_ve.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\singlecolourfit.h" />
+    <ClInclude Include="..\..\msvc_libs\squish-1.10\squish.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\src\WEDResources\ui_measurements.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\src\WEDResources\about.png" />
+    <Image Include="..\..\src\WEDResources\checkbutton.png" />
+    <Image Include="..\..\src\WEDResources\colors.png" />
+    <Image Include="..\..\src\WEDResources\map_tools.png" />
+    <Image Include="..\..\src\WEDResources\map_tools2_blank.png" />
+    <Image Include="..\..\src\WEDResources\map_tools_blank.png" />
+    <Image Include="..\..\src\WEDResources\pushbutton.png" />
+    <Image Include="..\..\src\WEDResources\push_buttons.png" />
+    <Image Include="..\..\src\WEDResources\radiobutton.png" />
+    <Image Include="..\..\src\WEDResources\scrollbar_corner.png" />
+    <Image Include="..\..\src\WEDResources\scrollbar_h.png" />
+    <Image Include="..\..\src\WEDResources\scrollbar_v.png" />
+    <Image Include="..\..\src\WEDResources\scroll_btn_h.png" />
+    <Image Include="..\..\src\WEDResources\scroll_btn_v.png" />
+    <Image Include="..\..\src\WEDResources\splitter_h.png" />
+    <Image Include="..\..\src\WEDResources\splitter_v.png" />
+    <Image Include="..\..\src\WEDResources\startup_bar.png" />
+    <Image Include="..\..\src\WEDResources\startup_bkgnd.png" />
+    <Image Include="..\..\src\WEDResources\startup_btns.png" />
+    <Image Include="..\..\src\WEDResources\tabs.png" />
+    <Image Include="..\..\src\WEDResources\tce_tools.png" />
+    <Image Include="..\..\src\WEDResources\tce_tools_blank.png" />
+    <Image Include="..\..\src\WEDResources\WED.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\WEDResources\map_tools.psd" />
+    <None Include="..\..\src\WEDResources\tables\arrows.png" />
+    <None Include="..\..\src\WEDResources\tables\check.png" />
+    <None Include="..\..\src\WEDResources\tables\disclose.png" />
+    <None Include="..\..\src\WEDResources\tables\eye.png" />
+    <None Include="..\..\src\WEDResources\tables\gradient.png" />
+    <None Include="..\..\src\WEDResources\tables\header.png" />
+    <None Include="..\..\src\WEDResources\tables\lock.png" />
+    <None Include="..\..\src\WEDResources\tables\property_bar.png" />
+    <None Include="..\..\src\WEDResources\tables\sider.png" />
+    <None Include="..\..\src\WEDResources\WED.icns" />
+    <None Include="..\..\src\WEDResources\WEDManual.pdf" />
+    <None Include="..\..\src\WEDResources\WED_Info.plist" />
+    <None Include="..\..\msvc_libs\squish-1.10\singlecolourlookup.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\src\WEDResources\WED.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\..\src\WEDResources\sans.ttf" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{59A94211-31F6-4A03-9E1D-CCA5B1EF8DAA}</ProjectGuid>
+    <RootNamespace>xtools_wed</RootNamespace>
+    <ProjectName>WorldEditor</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v100</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v100</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IntDir>$(Configuration)\tmp\</IntDir>
+    <OutDir>$(Configuration)\bin\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(Configuration)\bin\</OutDir>
+    <IntDir>$(Configuration)\tmp\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.3\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.3\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\curl-7.36.0\include;..\..\src\lib_json\include;..\..\src\XPCompat\;..\..\src\Interfaces;..\..\src\WEDXPlugin;..\..\src\WEDWindows;..\..\src\WEDTCE;..\..\src\WEDResources;..\..\src\WEDProperties;..\..\src\WEDNetwork;..\..\src\WEDMap;..\..\src\WEDLibrary;..\..\src\XESCore;..\..\src\WEDImportExport;..\..\src\Utils;..\..\src\UI;..\..\src\OGLE;..\..\src\Obj;..\..\src\WEDCore;..\..\src\Network;..\..\src\GUI;..\..\src\Env;..\..\src\DSFTools;..\..\src\DSF\tri_stripper_101;..\..\src\DSF;..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>JAS_WIN_MSVC_BUILD;XML_STATIC;CURL_STATICLIB;WIN32;NDEBUG;NO_CGAL=1;MSC=1;APL=0;IBM=1;DEV=1;USE_JPEG=1;USE_TIF=1;USE_GEOJPEG2K=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
+      <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\tiff-4.0.3\libtiff;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\jpeg-8c;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\tiff-4.0.3\contrib\tags;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\curl-7.36.0\include;..\..\src\lib_json\include;..\..\src\XPCompat\;..\..\src\Interfaces;..\..\src\WEDXPlugin;..\..\src\WEDWindows;..\..\src\WEDTCE;..\..\src\WEDResources;..\..\src\WEDProperties;..\..\src\WEDNetwork;..\..\src\WEDMap;..\..\src\WEDLibrary;..\..\src\XESCore;..\..\src\WEDImportExport;..\..\src\Utils;..\..\src\UI;..\..\src\OGLE;..\..\src\Obj;..\..\src\WEDCore;..\..\src\Network;..\..\src\GUI;..\..\src\Env;..\..\src\DSFTools;..\..\src\DSF\tri_stripper_101;..\..\src\DSF;..\..\src\WEDEntities;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>..\..\src\Obj\XDefs.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PreprocessorDefinitions>JAS_WIN_MSVC_BUILD;XML_STATIC;WIN32;_LIB;NDEBUG;NO_CGAL=1;CURL_STATICLIB;MSC=1;APL=0;IBM=1;DEV=0;USE_JPEG=1;USE_TIF=1;USE_GEOJPEG2K=1;WED=1;LIL=1;BIG=0;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;..\..\msvc_libs\msvc_compiled_libs\libexpatMT.lib;..\..\msvc_libs\msvc_compiled_libs\zlibstat.lib;..\..\msvc_libs\msvc_compiled_libs\freetype221.lib;..\..\msvc_libs\msvc_compiled_libs\jpeg.lib;..\..\msvc_libs\msvc_compiled_libs\libpng.lib;..\..\msvc_libs\msvc_compiled_libs\libtiff.lib;..\..\msvc_libs\msvc_compiled_libs\proj.lib;..\..\msvc_libs\msvc_compiled_libs\geotiff.lib;..\..\msvc_libs\msvc_compiled_libs\libcurl.lib;..\..\msvc_libs\msvc_compiled_libs\libjasper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
