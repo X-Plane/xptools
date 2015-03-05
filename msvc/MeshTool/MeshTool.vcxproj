@@ -57,13 +57,14 @@
       <DisableSpecificWarnings>4068;4305;4996;4503;4018;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <AdditionalDependencies>LIBCMT.lib;LIBCPMT.lib;libboost_system-vc100-mt-s-1_57.lib;libboost_thread-vc100-mt-s-1_57.lib;libCGAL-vc100-mt-s-4.5.2.lib;libCGAL_Core-vc100-mt-s-4.5.2.lib;libpng.lib;geotiff.lib;libtiff.lib;zlibstat.lib;libjasper.lib;jpeg.lib;proj.lib;libexpatMT.lib;squish.lib;oldnames.lib;libgmp-10.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\msvc_libs\CGAL-4.5.2\build\lib\Release;..\..\msvc_libs\msvc_compiled_libs;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\msvc_libs\msvc_compiled_libs;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>2097152</StackReserveSize>
     </Link>
     <ProjectReference />
@@ -81,6 +82,7 @@
       <AdditionalIncludeDirectories>..\..\src\DSF;..\..\src\DSF\tri_stripper_101;..\..\src\GUI;..\..\src\Interfaces;..\..\src\Obj;..\..\src\RenderFarmUI;..\..\src\RawImport;..\..\src\Utils;..\..\src\WEDCore;..\..\src\XESCore;..\..\src\XESTools;..\..\src\XPCompat;..\..\msvc_libs\boost_1_57_0;..\..\msvc_libs\CGAL-4.5.2\include;..\..\msvc_libs\CGAL-4.5.2\build\include;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\include;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\libgeotiff-1.2.5\libxtiff;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\tiff-4.0.3\libtiff;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\squish-1.10;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\shapelib-1.3.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4068;4305;4996;4503;4018;4244;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -89,7 +91,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>LIBCMT.lib;LIBCPMT.lib;libboost_system-vc100-mt-s-1_57.lib;libboost_thread-vc100-mt-s-1_57.lib;libCGAL-vc100-mt-s-4.5.2.lib;libCGAL_Core-vc100-mt-s-4.5.2.lib;libpng.lib;geotiff.lib;libtiff.lib;zlibstat.lib;libjasper.lib;jpeg.lib;proj.lib;libexpatMT.lib;squish.lib;oldnames.lib;libgmp-10.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <AdditionalLibraryDirectories>..\..\msvc_libs\CGAL-4.5.2\build\lib\Release;..\..\msvc_libs\msvc_compiled_libs;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\msvc_libs\msvc_compiled_libs;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
