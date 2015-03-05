@@ -264,8 +264,11 @@ using namespace std;
 	#define __func__ __FUNCTION__
 
 	#define ENOERR 0
-	#define round(X) floor(X + 0.5f)
 	#define snprintf _snprintf
+
+#if __cplusplus
+	static __inline double round(double v) { return floor(v+0.5); }
+#endif
 
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 

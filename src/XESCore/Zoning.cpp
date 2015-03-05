@@ -1380,7 +1380,7 @@ void	ZoneManMadeAreas(
 
 		Pmwx::Ccb_halfedge_circulator circ, stop;
 		DebugAssert(ioMap.unbounded_face()->number_of_holes() == 1);
-		circ = stop = *ioMap.unbounded_face()->holes_begin();//->outer_ccb();
+		circ = stop = Pmwx::Halfedge_iterator(*ioMap.unbounded_face()->holes_begin());//->outer_ccb();
 		do
 		{
 			if(must_burn_v(circ->target()))

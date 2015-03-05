@@ -118,7 +118,7 @@ void	CleanFace(
 
 	while (inFace->holes_begin() != inFace->holes_end())
 	{
-		inMap.remove_edge(*inFace->holes_begin());
+		inMap.remove_edge(Pmwx::Halfedge_iterator(*inFace->holes_begin()));
 	}
 }
 

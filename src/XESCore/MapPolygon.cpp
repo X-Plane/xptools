@@ -322,7 +322,7 @@ void	SafeMakeMoreConvex(Polygon_set_2& ioPolygon, double max_area)
 		did_work = false;
 
 		Pmwx::Ccb_halfedge_circulator stop, iter, next, third;
-		stop = iter = *(pmwx.unbounded_face()->holes_begin());
+		stop = iter = Pmwx::Halfedge_iterator(*(pmwx.unbounded_face()->holes_begin()));
 		do {
 			next = iter;
 			++next;
