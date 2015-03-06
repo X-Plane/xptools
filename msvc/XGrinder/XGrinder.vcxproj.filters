@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{50aa802a-0038-4811-9c5f-e11cf1cce613}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{f68940d0-818c-4890-9094-0c3e6ee6aded}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{115588da-ff58-4bfb-b205-2e88457f9fe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XPTools">
+      <UniqueIdentifier>{f3569a37-cd9b-41c3-a8a4-2f9290764143}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\UI\XGrinderApp.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\AssertUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\EndianUtils.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\FileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\unzip.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\XUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\zip.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\XPTools\XGrinderShell.cpp">
+      <Filter>XPTools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\XWin.win.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\XWin32DND.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\UI\XGrinderApp.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\AssertUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\EndianUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\FileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\MemFileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\unzip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\XUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\zip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\XPTools\XGrinderShell.h">
+      <Filter>XPTools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\GUI\GUI_Unicode.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\PlatformUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\XWin.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\XWin32DND.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeshTool", "MeshTool\MeshTo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DDSTool", "DDSTool\DDSTool.vcxproj", "{5534D70E-106B-4605-8854-59C83C780B80}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XGrinder", "XGrinder\XGrinder.vcxproj", "{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -33,6 +35,12 @@ Global
 		{5534D70E-106B-4605-8854-59C83C780B80}.Release|Win32.ActiveCfg = Release|Win32
 		{5534D70E-106B-4605-8854-59C83C780B80}.Release|Win32.Build.0 = Release|Win32
 		{5534D70E-106B-4605-8854-59C83C780B80}.Release|x64.ActiveCfg = Release|Win32
+		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Debug|Win32.Build.0 = Debug|Win32
+		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Debug|x64.ActiveCfg = Debug|Win32
+		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Release|Win32.ActiveCfg = Release|Win32
+		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Release|Win32.Build.0 = Release|Win32
+		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

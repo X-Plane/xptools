@@ -46,6 +46,7 @@
 
 #if IBM
 #include <fcntl.h>
+#include <io.h>
 #define popen xpt_popen
 #define pclose xpt_pclose
 
@@ -450,7 +451,7 @@ void	XGrindInit(string& t)
 		vector<conversion_info *>::iterator n = c;
 		++n;
 		if (n != conversions.end() && *c != NULL && *n != NULL && (*n)->input_extension != (*c)->input_extension)
-			c = conversions.insert(n, NULL);
+			c = conversions.insert(n, (conversion_info *)NULL);
 	}
 
 	// build conversion menu
