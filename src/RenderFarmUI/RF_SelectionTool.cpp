@@ -85,7 +85,6 @@
 #include "BitmapUtils.h"
 //#include "TensorRoads.h"
 
-#include "ObjPlacement.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -377,6 +376,7 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 		break;
 	case 2:
 	case 4:
+#if 0
 		 {
 			if (n == 4)
 				++gStopPt;
@@ -444,6 +444,8 @@ void	RF_SelectionTool::NthButtonPressed(int n)
 				gFaceSelection.clear();
 			return;
 		}
+#endif
+		return;
 	case 3:
 		for (set<Face_handle>::iterator fsel = gFaceSelection.begin(); fsel != gFaceSelection.end(); ++fsel)
 			(*fsel)->data().mPolyObjs.clear();

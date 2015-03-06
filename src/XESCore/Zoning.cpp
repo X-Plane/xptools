@@ -34,7 +34,6 @@
 #include "NetHelpers.h"
 #include "PolyRasterUtils.h"
 #include "AptDefs.h"
-#include "ObjPlacement2.h"
 #include "ConfigSystem.h"
 #include "MapTopology.h"
 #include "GISTool_Globals.h"

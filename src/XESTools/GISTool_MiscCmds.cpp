@@ -32,7 +32,6 @@
 #include "SceneryPackages.h"
 #include "DEMTables.h"
 #include "ForestTables.h"
-#include "ObjPlacement.h"
 #include "MapBuffer.h"
 #include <md5.h>
 #include "Zoning.h"
@@ -535,67 +534,6 @@ static int DoClear(const vector<const char *>& args)
 }
 #endif
 
-static int DoHack(const vector<const char *>& args)
-{
-		set<Pmwx::Face_handle>	fail;
-
-	gMeshLines.clear();
-	gMeshPoints.clear();
-
-		Locator						loc(gMap);
-
-	int ctr = 0;
-	PROGRESS_START(gProgress,0,1,"Insetting")
-	for (Pmwx::Face_iterator f = gMap.faces_begin(); f != gMap.faces_end(); ++f, ++ctr)
-	if(!f->is_unbounded())
-#if OPENGL_MAP
-	if(gFaceSelection.empty() || gFaceSelection.count(f))
-#endif	
-	{
-		PROGRESS_SHOW(gProgress,0,1,"Insetting",ctr,gMap.number_of_faces())
-		Polygon_with_holes_2		bounds;
-		PolyInset_t					lims;
-		PolygonFromFace(f, bounds, &lims, GetInsetForEdgeDegs, NULL);
-		Polygon_set_2				bs;
-
-		try {
-
-			BufferPolygonWithHoles(bounds, &lims, 1.0 , bs);
-
-			ValidateBuffer(gMap,f, loc, bs);
-		} catch (...) {
-			fail.insert(f);
-			#if DEV
-				debug_mesh_point(cgal2ben(f->outer_ccb()->source()->point()),1,1,0);
-			#endif
-		}
-
-		vector<Polygon_with_holes_2>	all;
-
-		bs.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(all));
-
-		for(vector<Polygon_with_holes_2>::iterator a = all.begin(); a != all.end(); ++a)
-		{
-			GISPolyObjPlacement_t	res;
-			cgal2ben(*a, res.mShape);
-			res.mRepType = 1;
-			res.mParam = 20;
-			res.mDerived = true;
-			(f)->data().mPolyObjs.push_back(res);
-		}
-	}
-	PROGRESS_DONE(gProgress,0,1,"Insetting")
-	if (!fail.empty())
-	{
-#if OPENGL_MAP
-		printf("%llu out of %llu failed.\n", (unsigned long long)fail.size(), (unsigned long long)gFaceSelection.size());
-		gEdgeSelection.clear();
-		gFaceSelection = fail;
-		gVertexSelection.clear();
-#endif		
-	}
-	return 1;
-}
 
 static int DoHackTestrasterizer(const vector<const char *>& args)
 {
@@ -700,7 +638,6 @@ static	GISTool_RegCmd_t		sMiscCmds[] = {
 { "-make_terrain_package", 1, 1, DoMakeTerrainPackage, "Create or update a terrain package based on the spreadsheets.", make_terrain_package_HELP },
 { "-test_terrain_package", 1, 1, DoTestTerrainPackage, "Check a terrain package based on the spreadsheets.", test_terrain_package_HELP },
 { "-mesh_err_stats", 0, 0, DoMeshErrStats,			"Print statistics about mesh error.", "" },
-{ "-hack",				   1, 1, DoHack, "", "" },
 #if OPENGL_MAP
 { "-clear_block",		   0, 0, DoClear, "", "" },
 #endif

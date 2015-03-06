@@ -31,13 +31,11 @@
 #include "Airports.h"
 #include "NetAlgs.h"
 #include "DSFBuilder.h"
-#include "ObjPlacement.h"
 #include "SceneryPackages.h"
 #include "CompGeomUtils.h"
 //#include "TensorRoads.h"
 #include "MapPolygon.h"
 #include "Hydro2.h"
-#include "Forests.h"
 #include "Zoning.h"
 #include "DEMDefs.h"
 #include "ObjTables.h"
@@ -52,6 +50,7 @@
 #include "MapRaster.h"
 #include "MapHelpers.h"
 #include "ForestTables.h"
+#include "GISUtils.h"
 
 // Hack to avoid forest pre-processing - to be used to speed up --instobjs for testing AG algos when
 // we don't NEED good forest fill.
@@ -125,6 +124,90 @@ void	RasterizerFill(PolyRasterizer<double>& rasterizer, DEMGeo& ag_ok, float v)
 		if (y >= ag_ok.mHeight) break;
 		rasterizer.AdvanceScanline(y);
 	}
+}
+
+static bool	LowerPriorityFeature(GISPointFeature_t& lhs, GISPointFeature_t& rhs)
+{
+	if (Feature_IsAirportFurniture(lhs.mFeatType) && Feature_IsAirportFurniture(rhs.mFeatType))
+		return lhs.mFeatType < rhs.mFeatType;
+
+	if (Feature_IsAirportFurniture(lhs.mFeatType)) return false;
+	if (Feature_IsAirportFurniture(rhs.mFeatType)) return true;
+
+	bool	left_has_height = lhs.mParams.find(pf_Height) != lhs.mParams.end();
+	bool	right_has_height = rhs.mParams.find(pf_Height) != rhs.mParams.end();
+	if (left_has_height && right_has_height) return lhs.mParams[pf_Height] < rhs.mParams[pf_Height];
+	if (left_has_height) return false;
+	if (right_has_height) return true;
+
+	return lhs.mFeatType < rhs.mFeatType;
+}
+
+
+#define	OVERLAP_MIN	10
+
+void	RemoveDuplicates(Pmwx::Face_iterator inFace)
+{
+	int i, j;
+	for (i = 0; i < inFace->data().mPointFeatures.size(); ++i)
+	{
+		for (j = i + 1; j < inFace->data().mPointFeatures.size(); ++j)
+		{
+			double dist = LonLatDistMeters(
+						    CGAL::to_double(inFace->data().mPointFeatures[i].mLocation.x()),
+							CGAL::to_double(inFace->data().mPointFeatures[i].mLocation.y()),
+							CGAL::to_double(inFace->data().mPointFeatures[j].mLocation.x()),
+							CGAL::to_double(inFace->data().mPointFeatures[j].mLocation.y()));
+			if (dist < OVERLAP_MIN)
+			{
+#if LOG_REMOVE_FEATURES
+				FILE * f = fopen("removed_features.txt", "a");
+#endif
+				if (LowerPriorityFeature(inFace->data().mPointFeatures[i],inFace->data().mPointFeatures[j]))
+				{
+#if LOG_REMOVE_FEATURES
+					if(f) fprintf(f, "Removing %d:%s (%d) for %d:%s (%d) - dist was %lf\n",
+											i,FetchTokenString(inFace->mPointFeatures[i].mFeatType),
+											GetPossibleFeatureHeight(inFace->mPointFeatures[i]),
+											j,FetchTokenString(inFace->mPointFeatures[j].mFeatType),
+											GetPossibleFeatureHeight(inFace->mPointFeatures[j]), dist);
+#endif
+					inFace->data().mPointFeatures.erase(inFace->data().mPointFeatures.begin()+i);
+					// Start this row over again because index i is now differnet.
+					// j will be i+1
+					j = i;
+				} else {
+#if LOG_REMOVE_FEATURES
+					if(f) fprintf(f, "Removing %d:%s (%d) for %d:%s (%d) - dist was %lf\n",
+											i,FetchTokenString(inFace->mPointFeatures[j].mFeatType),
+											GetPossibleFeatureHeight(inFace->mPointFeatures[j]),
+											j,FetchTokenString(inFace->mPointFeatures[i].mFeatType),
+											GetPossibleFeatureHeight(inFace->mPointFeatures[i]), dist);
+#endif
+					inFace->data().mPointFeatures.erase(inFace->data().mPointFeatures.begin()+j);
+					--j;
+				}
+#if LOG_REMOVE_FEATURES
+				if (f) fclose(f);
+#endif
+			}
+		}
+	}
+}
+
+void	RemoveDuplicatesAll(
+							Pmwx&				ioMap,
+							ProgressFunc		inProg)
+{
+	int ctr = 0;
+	PROGRESS_START(inProg, 0, 1, "Removing duplicate objects...")
+	for (Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f, ++ctr)
+	if (!f->data().IsWater() && !f->is_unbounded())
+	{
+		PROGRESS_CHECK(inProg, 0, 1, "Removing duplicate objects...", ctr, ioMap.number_of_faces(), 1000)
+		RemoveDuplicates(f);
+	}
+	PROGRESS_DONE(inProg, 0, 1, "Removing duplicate objects...")
 }
 
 
@@ -428,65 +511,6 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 
 }
 
-static int DoInstantiateForests(const vector<const char *>& args)
-{
-	if (gVerbose) printf("Instantiating forests...\n");
-
-
-	vector<PreinsetFace>	insets;
-	set<int>				the_types;
-//	GetAllForestLUs(the_types);
-	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-	GenerateInsets(gMap, gTriangulationHi, lim, the_types, false, insets, gProgress);
-	GenerateForests(gMap, insets, gTriangulationHi, gProgress);
-	return 0;
-}
-
-
-
-
-
-
-static int DoInstantiateObjsForests(const vector<const char *>& args)
-{
-	if (gVerbose)	printf("Instantiating objects...\n");
-	vector<PreinsetFace>	insets;
-
-	set<int>				the_types;
-	GetObjTerrainTypes		(the_types);
-//	GetAllForestLUs			(the_types);
-
-	Bbox2	lim(gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth);
-
-	{
-		StElapsedTime	time_inset("insets");
-		GenerateInsets(gMap, gTriangulationHi, lim, the_types, true, insets, gProgress);
-	}
-	
-	{
-		StElapsedTime	time_gt_poly("Place objs");
-		InstantiateGTPolygonAll(insets, gDem, gTriangulationHi, gProgress);
-	}
-	DumpPlacementCounts();
-	
-	{
-		StElapsedTime	time_gt_poly("remove placed objs");
-		for(vector<PreinsetFace>::iterator pif = insets.begin(); pif != insets.end(); ++pif)
-		{
-			SubtractPlaced(*pif);
-			SimplifyPolygonMaxMove(pif->second, 0.0001);
-		}
-	}
-	
-	{		
-		GenerateForests(gMap, insets, gTriangulationHi, gProgress);
-	}
-	
-	return 0;
-
-}
-
-
 static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
@@ -544,8 +568,6 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-derivedems", 	1, 1, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },
 { "-instobjs", 		0, 0, DoInstantiateObjs, "Instantiate Objects.", 			  "" },
-{ "-forests", 		0, 0, DoInstantiateForests, "Build 3-d Forests.",	 		  "" },
-{ "-instobjsforests",0, 0, DoInstantiateObjsForests, "Instantiate Objects And Forests.", 			  "" },
 { "-buildroads", 	0, 0, DoBuildRoads, 	"Pick Road Types.", 	  			"" },
 { "-assignterrain", 1, 1, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
 { "-exportdsf", 	2, 2, DoBuildDSF, 		"Build DSF file.", 					  "" },

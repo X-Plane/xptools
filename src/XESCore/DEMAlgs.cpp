@@ -23,7 +23,6 @@
 #include "DEMAlgs.h"
 #include "ParamDefs.h"
 #include "PolyRasterUtils.h"
-#include "ObjTables.h"
 #include "NetTables.h"
 #include "AssertUtils.h"
 #include "DEMTables.h"
@@ -687,20 +686,6 @@ static float	GetRoadDensity(Pmwx::Halfedge_const_handle	he)
 	return best;
 }
 
-static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point_2& where)
-{
-	if (gFeatures.find(feature) == gFeatures.end()) return;
-	float p = gFeatures[feature].property_value;
-
-	int x, y;
-	float h = ioValues.xy_nearest(CGAL::to_double(where.x()),CGAL::to_double(where.y()),x,y);
-	if (h != DEM_NO_DATA)
-//		ioValues(x,y) = p;
-//	else
-		ioValues(x,y) = 0.5 * h + 0.5 * p;
-}
-
-
 // We are passed in a rough urban density calculation, basically a ballpark esetimate.  We then
 // make it more detailed via roads.
 //
@@ -781,59 +766,6 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 	}
 }
 
-
-
-// Input: the land uses - output property values, normalized of course
-static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx& ioMap)
-{
-	fprintf(stderr, "\nCalcPropertyValues ");
-	int x, y;
-	for(x = 0; x < ioDem.mWidth ; ++x)
-	for(y = 0; y < ioDem.mHeight;++y)
-	{
-		int v = ioDem(x,y);
-//		if (gLandUseInfo.find(v) != gLandUseInfo.end())
-//			ioDem(x,y) = gLandUseInfo[v].prop_value_percent;
-//		else
-			ioDem(x,y) = 0.5;
-	}
-
-	float	filter[7*7], filter2[3*3];
-	CalculateFilter(7, filter, demFilter_Spread, true);		// Take basic prop values and splat them all over the place
-	CalculateFilter(3, filter2, demFilter_Spread, true);	// slight diffusion of feature values just for niceness.
-
-
-	ioDem.filter_self(7, filter);
-
-	for (Pmwx::Face_const_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
-	{
-		if (face->is_unbounded()) continue;
-
-		for (GISPointFeatureVector::const_iterator f = face->data().mPointFeatures.begin(); f != face->data().mPointFeatures.end(); ++f)
-			ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mLocation);
-
-
-		for (GISPolygonFeatureVector::const_iterator f = face->data().mPolygonFeatures.begin(); f != face->data().mPolygonFeatures.end(); ++f)
-		{
-			//ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());
-		}
-
-		/*
-		if (face->data().mAreaFeature.begin()->mFeatType != NO_VALUE)
-		{
-			Pmwx::Ccb_halfedge_const_circulator i, s;
-			i = s = face->outer_ccb();
-			do {
-				ApplyFeatureAtPoint(ioDem, face->data().mAreaFeature.begin()->mFeatType, i->source()->point());
-				++i;
-			} while (i != s);
-		}
-		 */
-	}
-
-	ioDem.filter_self(3, filter2);
-
-}
 
 #if 0
 /*
