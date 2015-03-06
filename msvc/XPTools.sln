@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DDSTool", "DDSTool\DDSTool.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XGrinder", "XGrinder\XGrinder.vcxproj", "{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DSFTool", "DSFTool\DSFTool.vcxproj", "{508A48EB-4E1E-4667-939A-7496F8848F0C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -41,6 +43,12 @@ Global
 		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Release|Win32.ActiveCfg = Release|Win32
 		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Release|Win32.Build.0 = Release|Win32
 		{C64D4A8F-203C-4FBF-B65D-322BFB02F2D9}.Release|x64.ActiveCfg = Release|Win32
+		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Debug|Win32.Build.0 = Debug|Win32
+		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Debug|x64.ActiveCfg = Debug|Win32
+		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Release|Win32.ActiveCfg = Release|Win32
+		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Release|Win32.Build.0 = Release|Win32
+		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
