@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WorldEditor", "WorldEditor\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MeshTool", "MeshTool\MeshTool.vcxproj", "{1FE791E1-B248-40C2-8408-77A7FB90835F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DDSTool", "DDSTool\DDSTool.vcxproj", "{5534D70E-106B-4605-8854-59C83C780B80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -25,6 +27,12 @@ Global
 		{1FE791E1-B248-40C2-8408-77A7FB90835F}.Release|Win32.ActiveCfg = Release|Win32
 		{1FE791E1-B248-40C2-8408-77A7FB90835F}.Release|Win32.Build.0 = Release|Win32
 		{1FE791E1-B248-40C2-8408-77A7FB90835F}.Release|x64.ActiveCfg = Release|Win32
+		{5534D70E-106B-4605-8854-59C83C780B80}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5534D70E-106B-4605-8854-59C83C780B80}.Debug|Win32.Build.0 = Debug|Win32
+		{5534D70E-106B-4605-8854-59C83C780B80}.Debug|x64.ActiveCfg = Debug|Win32
+		{5534D70E-106B-4605-8854-59C83C780B80}.Release|Win32.ActiveCfg = Release|Win32
+		{5534D70E-106B-4605-8854-59C83C780B80}.Release|Win32.Build.0 = Release|Win32
+		{5534D70E-106B-4605-8854-59C83C780B80}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

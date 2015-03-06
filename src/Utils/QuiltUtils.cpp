@@ -25,7 +25,7 @@
 #include "QuiltUtils.h"
 #include "BitmapUtils.h"
 
-#if MINGW_BUILD
+#if IBM
 #define random rand
 #endif
 
