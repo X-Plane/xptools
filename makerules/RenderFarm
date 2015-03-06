@@ -35,6 +35,7 @@ LDFLAGS		+= -framework Carbon
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
@@ -46,6 +47,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_DARWIN
 
 

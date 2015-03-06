@@ -45,6 +45,7 @@ ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
