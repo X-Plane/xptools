@@ -248,8 +248,6 @@
 		D62436020AE403F4004F00E3 /* MeshIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38600AB22C85003949C5 /* MeshIO.cpp */; };
 		D62436040AE403F4004F00E3 /* NetPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38630AB22C85003949C5 /* NetPlacement.cpp */; };
 		D62436050AE403F4004F00E3 /* NetTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38650AB22C85003949C5 /* NetTables.cpp */; };
-		D62436060AE403F4004F00E3 /* ObjPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38670AB22C85003949C5 /* ObjPlacement.cpp */; };
-		D62436070AE403F4004F00E3 /* ObjTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38690AB22C85003949C5 /* ObjTables.cpp */; };
 		D62436080AE403F4004F00E3 /* ParamDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */; };
 		D62436090AE403F4004F00E3 /* SceneryPackages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386D0AB22C85003949C5 /* SceneryPackages.cpp */; };
 		D624360A0AE403F4004F00E3 /* SimpleIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386F0AB22C85003949C5 /* SimpleIO.cpp */; };
@@ -310,6 +308,7 @@
 		D63A13B3132ABBC400D36061 /* WED_FacadeRing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63A13AE132ABBC400D36061 /* WED_FacadeRing.cpp */; };
 		D63A13B4132ABBC400D36061 /* WED_ForestRing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63A13B0132ABBC400D36061 /* WED_ForestRing.cpp */; };
 		D63A80201A997EB5008D218D /* COPYING in Resources */ = {isa = PBXBuildFile; fileRef = D63A801F1A997EB5008D218D /* COPYING */; };
+		D63A82E21A9F9E37008D218D /* ObjTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38690AB22C85003949C5 /* ObjTables.cpp */; };
 		D63B0C481189FC06002F58BB /* RF_SpecialCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F070F82E96900F6718E /* RF_SpecialCommands.cpp */; };
 		D63CC9F713E85B8B00468132 /* WED_XMLWriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63CC9F613E85B8B00468132 /* WED_XMLWriter.cpp */; };
 		D63D3A33192FA28F0004534A /* gateway.crt in Resources */ = {isa = PBXBuildFile; fileRef = D63D3A32192FA28F0004534A /* gateway.crt */; };
@@ -324,9 +323,6 @@
 		D64A08AF127AFDEA000D58A7 /* NetHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */; };
 		D64A08B0127AFDEA000D58A7 /* NetHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */; };
 		D64A08B1127AFDEA000D58A7 /* NetHelpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */; };
-		D64A0E85110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
-		D64A0E86110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
-		D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */; };
 		D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */; };
 		D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6536E9B0C3D7F3100005385 /* WED_TexMgr.cpp */; };
 		D653D6D41054552100A502FF /* WED_DebugLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D653D6D31054552100A502FF /* WED_DebugLayer.cpp */; };
@@ -384,7 +380,6 @@
 		D65E4B9D0B654542004D7887 /* Zoning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387C0AB22C85003949C5 /* Zoning.cpp */; };
 		D65E4B9E0B654543004D7887 /* XESIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387A0AB22C85003949C5 /* XESIO.cpp */; };
 		D65E4B9F0B654545004D7887 /* ObjTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38690AB22C85003949C5 /* ObjTables.cpp */; };
-		D65E4BA00B654547004D7887 /* ObjPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38670AB22C85003949C5 /* ObjPlacement.cpp */; };
 		D65E4BA10B654547004D7887 /* NetTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38650AB22C85003949C5 /* NetTables.cpp */; };
 		D65E4BA20B654549004D7887 /* NetPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38630AB22C85003949C5 /* NetPlacement.cpp */; };
 		D65E4BA30B65454A004D7887 /* MeshIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38600AB22C85003949C5 /* MeshIO.cpp */; };
@@ -557,8 +552,6 @@
 		D68ABC840F1E5B5F002892AD /* WED_TCEVertexTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68ABC830F1E5B5F002892AD /* WED_TCEVertexTool.cpp */; };
 		D68E28830EBF5D3A0015648F /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
 		D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D68E28820EBF5D3A0015648F /* ShapeIO.cpp */; };
-		D68E2A130EBF9D000015648F /* Forests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC384E0AB22C85003949C5 /* Forests.cpp */; };
-		D68E2A890EBFC7F20015648F /* Forests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC384E0AB22C85003949C5 /* Forests.cpp */; };
 		D68E2A8C0EBFC8270015648F /* MapBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734D1A0EAE30A00002C4C1 /* MapBuffer.cpp */; };
 		D68E2A8D0EBFC8280015648F /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
 		D68E2A8E0EBFC82C0015648F /* MapOverlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734BA40EACFCEE0002C4C1 /* MapOverlay.cpp */; };
@@ -663,7 +656,6 @@
 		D6AC14D70F1279EB0006E096 /* WED_PreviewLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14D60F1279EB0006E096 /* WED_PreviewLayer.cpp */; };
 		D6AC14E90F127AFE0006E096 /* WED_ResourceMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */; };
 		D6AC154D0F12866E0006E096 /* WED_DrawUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */; };
-		D6B0DCD30E155AF400DDBD89 /* ObjPlacement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38670AB22C85003949C5 /* ObjPlacement.cpp */; };
 		D6B0DD080E155D6A00DDBD89 /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
 		D6B0DD0C0E155D8300DDBD89 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D6B0DD0F0E155D8E00DDBD89 /* Skeleton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC379F0AB22C85003949C5 /* Skeleton.cpp */; };
@@ -718,8 +710,6 @@
 		D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6D4082C1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */ = {isa = PBXBuildFile; fileRef = D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */; };
-		D6DBA1E310572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
-		D6DBA1E410572F33004E1089 /* AptRouting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DBA1E110572F33004E1089 /* AptRouting.cpp */; };
 		D6DBA25310573941004E1089 /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
 		D6DBA2A210574180004E1089 /* AptAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB3451055994000C378BE /* AptAlgs.cpp */; };
 		D6DEB6491056F6A100C378BE /* WED_GISEdge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6DEB6481056F6A100C378BE /* WED_GISEdge.cpp */; };
@@ -4208,7 +4198,6 @@
 				D60734E20D197D1500E08F61 /* XObjBuilder.cpp in Sources */,
 				D60734E30D197D1900E08F61 /* ObjPointPool.cpp in Sources */,
 				D607357C0D19832500E08F61 /* Zoning.cpp in Sources */,
-				D6B0DCD30E155AF400DDBD89 /* ObjPlacement.cpp in Sources */,
 				D6B0DD080E155D6A00DDBD89 /* BWImage.cpp in Sources */,
 				D6B0DD0C0E155D8300DDBD89 /* XUtils.cpp in Sources */,
 				D6B0DD0F0E155D8E00DDBD89 /* Skeleton.cpp in Sources */,
@@ -4226,7 +4215,6 @@
 				D6F31E9A105DDE3900F8AAB5 /* AptAlgs.cpp in Sources */,
 				D6E941E010DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941E110DC717300192A02 /* MapRaster.cpp in Sources */,
-				D64A0E87110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
 				D64A08AC127AFDC1000D58A7 /* NetAlgs.cpp in Sources */,
 				D64A08B1127AFDEA000D58A7 /* NetHelpers.cpp in Sources */,
 				D63390B41358D71300C524FD /* DEMGrid.cpp in Sources */,
@@ -4278,8 +4266,6 @@
 				D62436020AE403F4004F00E3 /* MeshIO.cpp in Sources */,
 				D62436040AE403F4004F00E3 /* NetPlacement.cpp in Sources */,
 				D62436050AE403F4004F00E3 /* NetTables.cpp in Sources */,
-				D62436060AE403F4004F00E3 /* ObjPlacement.cpp in Sources */,
-				D62436070AE403F4004F00E3 /* ObjTables.cpp in Sources */,
 				D62436080AE403F4004F00E3 /* ParamDefs.cpp in Sources */,
 				D62436090AE403F4004F00E3 /* SceneryPackages.cpp in Sources */,
 				D624360A0AE403F4004F00E3 /* SimpleIO.cpp in Sources */,
@@ -4330,7 +4316,6 @@
 				D6734D1C0EAE30A00002C4C1 /* MapBuffer.cpp in Sources */,
 				D6734D210EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */,
 				D68E28830EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
-				D68E2A130EBF9D000015648F /* Forests.cpp in Sources */,
 				D6BB22900EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AE0EC1EBE0006499D7 /* CompGeomUtils.cpp in Sources */,
 				D678ADF20F7952B700F72139 /* tri_stripper.cpp in Sources */,
@@ -4386,11 +4371,9 @@
 				D6151EAD0FB46BBC008A355F /* GUI_Window.cpp in Sources */,
 				D6151EC20FB478FB008A355F /* RF_Progress.cpp in Sources */,
 				D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */,
-				D6DBA1E310572F33004E1089 /* AptRouting.cpp in Sources */,
 				D6DBA2A210574180004E1089 /* AptAlgs.cpp in Sources */,
 				D6E941DC10DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941DD10DC717300192A02 /* MapRaster.cpp in Sources */,
-				D64A0E85110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
 				D63F725C117FB60900AB7C1F /* BlockAlgs.cpp in Sources */,
 				D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */,
 				D6A88BE711820B05000EBFBF /* MemUtils.cpp in Sources */,
@@ -4404,6 +4387,7 @@
 				D6E4C95D18EC91FF000D98B8 /* json_writer.cpp in Sources */,
 				D6E4C95E18EC9200000D98B8 /* json_value.cpp in Sources */,
 				D6E4C95F18EC9201000D98B8 /* json_reader.cpp in Sources */,
+				D63A82E21A9F9E37008D218D /* ObjTables.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4442,7 +4426,6 @@
 				D65E4B9D0B654542004D7887 /* Zoning.cpp in Sources */,
 				D65E4B9E0B654543004D7887 /* XESIO.cpp in Sources */,
 				D65E4B9F0B654545004D7887 /* ObjTables.cpp in Sources */,
-				D65E4BA00B654547004D7887 /* ObjPlacement.cpp in Sources */,
 				D65E4BA10B654547004D7887 /* NetTables.cpp in Sources */,
 				D65E4BA20B654549004D7887 /* NetPlacement.cpp in Sources */,
 				D65E4BA30B65454A004D7887 /* MeshIO.cpp in Sources */,
@@ -4490,16 +4473,13 @@
 				D6734D1B0EAE30A00002C4C1 /* MapBuffer.cpp in Sources */,
 				D6734D200EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */,
 				D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
-				D68E2A890EBFC7F20015648F /* Forests.cpp in Sources */,
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
 				D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */,
 				D6956ECC0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
-				D6DBA1E410572F33004E1089 /* AptRouting.cpp in Sources */,
 				D6DBA25310573941004E1089 /* AptAlgs.cpp in Sources */,
 				D6E941DE10DC717300192A02 /* ForestTables.cpp in Sources */,
 				D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */,
-				D64A0E86110F820A006172C3 /* ObjPlacement2.cpp in Sources */,
 				D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */,
 				D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */,
 				D6A88BE611820B05000EBFBF /* MemUtils.cpp in Sources */,

@@ -160,7 +160,6 @@
     <ClCompile Include="..\..\src\XESCore\NetHelpers.cpp" />
     <ClCompile Include="..\..\src\XESCore\NetPlacement.cpp" />
     <ClCompile Include="..\..\src\XESCore\NetTables.cpp" />
-    <ClCompile Include="..\..\src\XESCore\ObjPlacement2.cpp" />
     <ClCompile Include="..\..\src\XESCore\ObjTables.cpp" />
     <ClCompile Include="..\..\src\XESCore\ParamDefs.cpp" />
     <ClCompile Include="..\..\src\XESCore\SceneryPackages.cpp" />
@@ -242,7 +241,6 @@
     <ClInclude Include="..\..\src\XESCore\NetHelpers.h" />
     <ClInclude Include="..\..\src\XESCore\NetPlacement.h" />
     <ClInclude Include="..\..\src\XESCore\NetTables.h" />
-    <ClInclude Include="..\..\src\XESCore\ObjPlacement2.h" />
     <ClInclude Include="..\..\src\XESCore\ObjTables.h" />
     <ClInclude Include="..\..\src\XESCore\ParamDefs.h" />
     <ClInclude Include="..\..\src\XESCore\SceneryPackages.h" />

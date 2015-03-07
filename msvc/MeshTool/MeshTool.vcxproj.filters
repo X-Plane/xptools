@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\src\MeshTool\MeshTool.cpp">
@@ -116,9 +116,6 @@
       <Filter>XESCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\XESCore\NetTables.cpp">
-      <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\XESCore\ObjPlacement2.cpp">
       <Filter>XESCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\XESCore\ObjTables.cpp">
@@ -390,9 +387,6 @@
       <Filter>XESCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\XESCore\NetTables.h">
-      <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\XESCore\ObjPlacement2.h">
       <Filter>XESCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\XESCore\ObjTables.h">

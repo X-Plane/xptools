@@ -22,7 +22,6 @@
  */
  #define check CHECK
 #include "RF_MapView.h"
-#include "Forests.h"
 
 #include "GUI_Application.h"
 
