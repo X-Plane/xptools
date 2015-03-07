@@ -139,7 +139,7 @@ void		MeshSimplify::update_q(CDT::Vertex_handle q)
 {
 	bool	want_q = false;
 	double	err = max_err;
-	double	is_queued = q->info().self != queue.end();
+	bool	is_queued = q->info().self != queue.end();
 	double	old_err = is_queued ? q->info().self->first : max_err;
 	CDT::Vertex_handle p, r;
 	

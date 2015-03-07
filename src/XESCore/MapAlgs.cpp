@@ -2802,7 +2802,7 @@ int LandFillStrandedRoads(Pmwx& io_map, double dist_lo, double dist_hi)
 		Pmwx::Ccb_halfedge_circulator circ, stop, next;
 		circ=stop=f->outer_ccb();
 		double strand_len = 0;
-		int sides;
+		int sides=0;
 		int change = 0;		
 		do {
 			++sides;
