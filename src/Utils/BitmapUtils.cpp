@@ -387,7 +387,7 @@ int GetSupportedType(const char * path)
 	//jpeg or jpg is supported
 	if((extension == "jpeg")||(extension == "jpg")) return WED_JPEG;
 	if(extension == "png") return WED_PNG;
-	if(extension == "tif") return WED_TIF;
+	if(extension == "tif" || extension == "tiff") return WED_TIF;
 	
 	//Otherwise return the error
 	return -1;
