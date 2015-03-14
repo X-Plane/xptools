@@ -34,6 +34,9 @@
 #include <jasper/jasper.h>
 #endif
 
+// set to 1 to save geotiff inside geojp2 to disk
+#define DUMP_GTIF 0
+
 #if defined(_MSC_VER)
 	#include <libxtiff/xtiffio.h>
 #else
@@ -57,13 +60,48 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
     	outLat = y;
     	return true;
     }
-    else
-    {
+    else    
+	{
         if( GTIFProj4ToLatLong( defn, 1, &x, &y ) )
         {
 			outLon = x;
 			outLat = y;
 			return true;
+		}
+
+		int size = 0;
+		tagtype_t type = TYPE_UNKNOWN;
+		int key_count = GTIFKeyInfo(gtif, GTCitationGeoKey, &size, &type);
+		
+		if(key_count > 0 && key_count < 1024 && type == TYPE_ASCII && size == 1)
+		{
+			vector<char>	ascii(key_count);
+			int r = GTIFKeyGet(gtif, GTCitationGeoKey, &ascii[0], 0, key_count);
+			if(r == key_count)
+			{
+				DebugAssert(ascii.back() == 0);
+				string citation = string(&ascii[0]);
+				if(citation == "PCS Name = WGS_1984_Web_Mercator_Auxiliary_Sphere")
+				{
+					char ** args = CSLTokenizeStringComplex("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", " +", TRUE, FALSE);
+					PJ * psPJ = pj_init( CSLCount(args), args );
+					CSLDestroy(args);
+					if(psPJ)
+					{
+						projUV	sUV;
+
+						sUV.u = x;
+						sUV.v = y;
+
+						sUV = pj_inv( sUV, psPJ );
+
+						outLon = sUV.u * RAD_TO_DEG;
+						outLat = sUV.v * RAD_TO_DEG;
+						pj_free(psPJ);
+						return true;
+					}
+				}
+			}
 		}
 	}
 	return false;
@@ -312,6 +350,17 @@ bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& p
 	{
 		return false;
 	}
+	
+	
+	#if DUMP_GTIF
+	FILE * foo = fopen("temp.tiff","wb");
+	if(foo)
+	{
+		fwrite(image->aux_buf.buf, 1, image->aux_buf.size, foo);
+		fclose(foo);
+	}
+	#endif
+	
 	//Create the handle to be used in XTIFFClientOpen
 	MemJASGeoFile jasHandle(&image->aux_buf);
 	//Create a TIFF handle
