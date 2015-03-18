@@ -24,11 +24,14 @@
 #ifndef WED_Url_H
 #define WED_Url_H
 
+// These are redirect addresses for WED documentation - the URL just has a 302
+// pointing to the real online resources.  This gives us flexibility to
+// reorg the doc site in the future without borking WED.
+#define WED_URL_MANUAL	"http://lookup.x-plane.com/_lookup_10_/wed_14_manual.html"
+#define WED_URL_HELP_SCENERY "http://lookup.x-plane.com/_lookup_10_/wed_14_scenery.html"
+#define WED_URL_UPLOAD_OK "http://lookup.x-plane.com/_lookup_10_/wed_14_upload_ok.html"
 
-#define WED_URL_MANUAL	"http://www.x-plane.com/_lookup_10_/wed_13_manual.html"
-#define WED_URL_HELP_SCENERY "http://www.x-plane.com/_lookup_10_/wed_13_scenery.html"
-#define WED_URL_UPLOAD_OK "http://www.x-plane.com/_lookup_10_/wed_13_upload_ok.html"
-
+// This is the canonical service base URL for the gateway.
 #define WED_URL_GATEWAY_API "https://gatewayapi.x-plane.com:3001/apiv1/"
 
 

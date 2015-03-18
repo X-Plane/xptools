@@ -97,7 +97,8 @@
 #define SAFE_VECTORS 0
 
 // This enables jpeg 2k support for image import.  Can be turned off (for now) if you don't have the libs.
-#define USE_GEOJPEG2K 1
+// (As of WED 1.4b1 this is off due to stability problems.
+#define USE_GEOJPEG2K 0
 
 // This enables gateway communication.  You can turn this off if you don't have a working CURL/SSL.
 #define HAS_GATEWAY 1
