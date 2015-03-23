@@ -1347,6 +1347,8 @@ static int	DSF_ExportTileRecursive(
 			string absPathPOL = absPathIMG;
 			absPathPOL.replace(absPathPOL.length()-3,3,"pol");
 
+			r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
+
 			date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 			//-----------------
 			/* How to export a Torthoptho
@@ -1408,7 +1410,6 @@ static int	DSF_ExportTileRecursive(
 				}
 				DestroyBitmap(&imgInfo);
 				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
-				r = relativePathPOL;
 			}
 			else if(date_cmpr_res == dcr_error)
 			{
