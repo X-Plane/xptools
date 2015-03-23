@@ -42,6 +42,7 @@ struct  gl_info_t {
 	int		gl_minor_version;
 	bool	has_tex_compression;
 	bool	has_edge_clamp;
+	bool	has_non_pots;
 	int		max_tex_size;
 };
 
@@ -64,6 +65,7 @@ static void init_gl_info(gl_info_t * i)
 	
 	i->has_edge_clamp = true;		// If a user runs WED on a machine with less than GL 1.2, I will find that user and punch him directly in the throat.
 	i->has_tex_compression = (glv >= 130) || strstr(ext_str,"GL_ARB_texture_compression") != NULL;
+	i->has_non_pots = (glv >= 200) || strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
 	if(i->max_tex_size > 8192)
 		i->max_tex_size = 8192;
@@ -174,8 +176,8 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (im.pad != 0)
  		UnpadImage(&im);
 
-	int		res_x = NextPowerOf2(im.width);
-	int		res_y = NextPowerOf2(im.height);
+	int		res_x = gl_info.has_non_pots ? im.width : NextPowerOf2(im.width);
+	int		res_y = gl_info.has_non_pots ? im.height : NextPowerOf2(im.height);
 	bool	resize = (res_x != im.width || res_y != im.height);
 	bool	rescale = resize && (inFlags & tex_Rescale);
 	if (resize && (im.width > res_x || im.height > res_y))	// Always rescale if the image is too big for the max tex!!
