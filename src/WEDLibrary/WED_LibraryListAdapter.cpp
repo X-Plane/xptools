@@ -362,7 +362,7 @@ void WED_LibraryListAdapter::DoFilter()
 					if(mCache[p].size() < mCache[i].size() &&
 						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
 					{
-						keepers.push_back(mCache[p]);					
+						keepers.push_back(mCache[p]);			
 					}
 				}
 				//Add the string to keepers
@@ -379,14 +379,17 @@ void WED_LibraryListAdapter::DoFilter()
 	reverse(mCache.begin(),mCache.end());
 
 	//Set the locations of mCatLocInd and mCatLibInd
+	mCatLibInd = -1 ;
+	mCatLocInd = -1 ;	
+	
 	for(vector<string>::iterator itr = mCache.begin(); itr != mCache.end(); ++itr)
 	{
 		if(*itr == mLocalStr)
 		{
-			mCatLocInd = distance(mCache.begin(),itr);
+			mCatLocInd = distance(mCache.begin(),itr);	
 		}
 		if(*itr == mLibraryStr)
-		{
+		{	
 			mCatLibInd = distance(mCache.begin(),itr);
 		}
 	}
