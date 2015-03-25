@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="WEDCore">
@@ -69,9 +69,6 @@
     </Filter>
     <Filter Include="XESCore">
       <UniqueIdentifier>{288927bc-9dc2-46ee-a91d-3c451344b887}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="squish-1.1.0">
-      <UniqueIdentifier>{6b22005d-c732-4b01-b535-074395d668d9}</UniqueIdentifier>
     </Filter>
     <Filter Include="SQLite">
       <UniqueIdentifier>{81bee108-7857-464e-a673-c18b4b57b1fd}</UniqueIdentifier>
@@ -728,33 +725,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp">
       <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\alpha.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\clusterfit.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourblock.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourfit.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourset.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\maths.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\rangefit.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\singlecolourfit.cpp">
-      <Filter>squish-1.1.0</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\squish.cpp">
-      <Filter>squish-1.1.0</Filter>
     </ClCompile>
     <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c">
       <Filter>SQLite</Filter>
@@ -1475,48 +1445,6 @@
     <ClInclude Include="..\..\src\XESCore\AptIO.h">
       <Filter>XESCore</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\alpha.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\clusterfit.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourblock.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourfit.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourset.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\config.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\maths.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\rangefit.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_float.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_sse.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_ve.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\singlecolourfit.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\squish.h">
-      <Filter>squish-1.1.0</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h">
       <Filter>SQLite</Filter>
     </ClInclude>
@@ -1678,9 +1606,6 @@
     </None>
     <None Include="..\..\src\WEDResources\WEDManual.pdf">
       <Filter>WEDResources</Filter>
-    </None>
-    <None Include="..\..\msvc_libs\squish-1.10\singlecolourlookup.inl">
-      <Filter>squish-1.1.0</Filter>
     </None>
     <None Include="..\..\src\WEDResources\tables\arrows.png">
       <Filter>WEDResources\table</Filter>

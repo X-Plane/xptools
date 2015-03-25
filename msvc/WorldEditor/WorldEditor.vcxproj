@@ -239,15 +239,6 @@
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
     <ClCompile Include="..\..\src\XPCompat\hl_types.cpp" />
     <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\alpha.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\clusterfit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourblock.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourfit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\colourset.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\maths.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\rangefit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\singlecolourfit.cpp" />
-    <ClCompile Include="..\..\msvc_libs\squish-1.10\squish.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
@@ -499,20 +490,6 @@
     <ClInclude Include="..\..\src\XPCompat\hl_types.h" />
     <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h" />
     <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\alpha.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\clusterfit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourblock.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourfit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\colourset.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\config.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\maths.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\rangefit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_float.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_sse.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\simd_ve.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\singlecolourfit.h" />
-    <ClInclude Include="..\..\msvc_libs\squish-1.10\squish.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\src\WEDResources\ui_measurements.txt" />
@@ -556,7 +533,6 @@
     <None Include="..\..\src\WEDResources\WED.icns" />
     <None Include="..\..\src\WEDResources\WEDManual.pdf" />
     <None Include="..\..\src\WEDResources\WED_Info.plist" />
-    <None Include="..\..\msvc_libs\squish-1.10\singlecolourlookup.inl" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\WEDResources\WED.rc" />
@@ -609,7 +585,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
@@ -623,7 +599,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
