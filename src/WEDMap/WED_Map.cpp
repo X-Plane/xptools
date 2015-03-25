@@ -114,7 +114,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
-		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
+		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawVisualization(cur == *l, state);
 	}
 
@@ -122,7 +122,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
-		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
+		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawStructure(cur == *l, state);
 	}
 
@@ -250,7 +250,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 }
 
-void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
+void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth)
 {
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
@@ -267,16 +267,16 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
 		Vector2 span(p1,p2);
-		if(min(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2))		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if it contains one thing
-		{																	// then we might as well ALWAYS draw it - it's relatively cheap!
-			int t = c->GetNumEntities();
+		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if it contains one thing
+		{																				// then we might as well ALWAYS draw it - it's relatively cheap!
+			int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
 			for (int n = t-1; n >= 0; --n)
-				DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+				DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);
 		}
 	}
 }
 
-void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
+void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth)
 {
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
@@ -294,11 +294,11 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 		Point2 p1 = this->LLToPixel(on_screen.p1);
 		Point2 p2 = this->LLToPixel(on_screen.p2);
 		Vector2 span(p1,p2);
-		if(min(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2))
+		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)
 		{
 			int t = c->GetNumEntities();
 			for (int n = t-1; n >= 0; --n)
-				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);
 		}
 	}
 }
