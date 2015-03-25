@@ -311,6 +311,7 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
 	if(et && et->GetHidden()) return;
+	if(et && et->GetLocked()) return;
 	if(e && t)
 	{
 		Point2	l;
@@ -368,6 +369,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
 	if(et && et->GetHidden()) return;
+	if(et && et->GetLocked()) return;
 	if(e && t)
 	{
 		Point2	l;
@@ -432,6 +434,7 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const c
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
 	if(et && et->GetHidden()) return;
+	if(et && et->GetLocked()) return;
 	if(e && t)
 	{
 		Point2	l;
@@ -492,6 +495,7 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const ch
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
 	if(et && et->GetHidden()) return;
+	if(et && et->GetLocked()) return;
 	if(e && t)
 	{
 		Point2	l;
