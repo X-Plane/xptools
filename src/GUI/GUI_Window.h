@@ -119,6 +119,9 @@ private:
 		static DragTrackingHandlerUPP	sTrackingHandlerUPP;
 		static DragReceiveHandlerUPP	sReceiveHandlerUPP;
 		static HMWindowContentUPP		sTooltipUPP;
+		
+		static	GUI_Window *	GetTopWindow();
+		
 #endif
 
 	GUI_GraphState	mState;

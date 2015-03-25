@@ -672,6 +672,11 @@ GUI_Window::~GUI_Window()
 		RemoveReceiveHandler (sReceiveHandlerUPP , mWindow);
 	#endif
 	sWindows.erase(this);
+	#if APL
+		// Mac-only; arm the app to 'wake up' ASAP once we're closed and figure out who
+		// the new top window is - see GUI_Application::TimerFired for details.
+		gApplication->Start(0.0f);
+	#endif
 }
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
@@ -1547,5 +1552,19 @@ void GUI_Window::EnableMenusWin(void)
 }
 
 
+
+#endif
+
+#if APL
+GUI_Window *	GUI_Window::GetTopWindow()
+{
+	WindowRef top = FrontNonFloatingWindow();
+	for(set<GUI_Window *>::iterator w = sWindows.begin(); w != sWindows.end(); ++w)
+	{
+		if(top == (*w)->mWindow)
+			return *w;
+	}
+	return NULL;
+}
 
 #endif

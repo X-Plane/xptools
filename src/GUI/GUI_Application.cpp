@@ -678,3 +678,23 @@ int			GUI_Application::CanHandleCommand(int command, string& ioName, int& ioChec
 	default: return 0;
 	}
 }
+
+void		GUI_Application::TimerFired(void)
+{
+	// This is a hack for OSX.  For some reason, OSX isn't sending us an activate message
+	// for the window -under- the top window when a window is closed.  To hack around this,
+	// we get armed as a timer by the closing window.  When we get our event (post-window 
+	// closing) we can go find the new front window and activate it if it's not part of WED's
+	// focus chain.
+	// When we re-implement GUI on Cocoa hopefully this work-around can go away.
+	#if APL
+		GUI_Window * top = GUI_Window::GetTopWindow();
+		if(top)
+		{
+			if(!top->IsFocusedChain())
+				top->FocusChain(1);
+		}
+		
+		this->Stop();
+	#endif
+}

@@ -35,7 +35,7 @@
 #endif
 
 #include "GUI_Commander.h"
-
+#include "GUI_Timer.h"
 
 class GUI_QtMenu;
 
@@ -51,7 +51,7 @@ class GUI_QtMenu;
 
 */
 
-class	GUI_Application : public GUI_Commander {
+class	GUI_Application : public GUI_Commander, public GUI_Timer {
 public:
 #if LIN
 	GUI_Application(int& argc, char* argv[]);
@@ -84,6 +84,8 @@ public:
     QMenuBar* getqmenu();
 #endif
 private:
+
+	virtual	void		TimerFired(void);
 
 #if APL
 
