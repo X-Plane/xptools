@@ -176,8 +176,10 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (im.pad != 0)
  		UnpadImage(&im);
 
-	int		res_x = gl_info.has_non_pots ? im.width : NextPowerOf2(im.width);
-	int		res_y = gl_info.has_non_pots ? im.height : NextPowerOf2(im.height);
+	int non_pots = ((inFlags & tex_Always_Pad) == 0) && gl_info.has_non_pots;
+
+	int		res_x = non_pots ? im.width : NextPowerOf2(im.width);
+	int		res_y = non_pots ? im.height : NextPowerOf2(im.height);
 	bool	resize = (res_x != im.width || res_y != im.height);
 	bool	rescale = resize && (inFlags & tex_Rescale);
 	if (resize && (im.width > res_x || im.height > res_y))	// Always rescale if the image is too big for the max tex!!
@@ -262,14 +264,16 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 		// BAS note: for some reason on my WinXP system with GF-FX, if
 		// I do not set these explicitly to linear, I get no drawing at all.
 		// Who knows what default state the card is in. :-(
-		if(inFlags & tex_Nearest)
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		} else if (inFlags & tex_Linear) {
+//		if(inFlags & tex_Nearest)
+//		{
+//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//		} else 
+		if (inFlags & tex_Linear) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
 		} else {
+			// If we have nearest-neighboring and we are down-sampling WITHOUT a mip-map we STILL use linear in an attempt to keep this thing from looking TOTALY blitzed, I guess?
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 		}

@@ -34,7 +34,10 @@
 #endif
 
 // for ui - no mipmap, no linear interp, no magenta filter, no wrapping
-#define	UI_TEX_FLAGS	0
+// But we DO need to pad up to a power of 2; we do a lot of math on exact weird-number
+// integer pixel addresses within the texture.  The math is -not- precise enough to cope with
+// an odd-size denominator - see WED-426.
+#define	UI_TEX_FLAGS	tex_Always_Pad
 
 void	GUI_PositionRect(
 				int							in_bounds[4],
