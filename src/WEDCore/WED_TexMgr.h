@@ -29,7 +29,8 @@
 class WED_TexMgr : public virtual ITexMgr {
 public:
 
-						WED_TexMgr(const string& package);
+						 WED_TexMgr(const string& package);
+	virtual				~WED_TexMgr();
 
 	virtual	TexRef		LookupTexture(const char * path, bool is_absolute, int flags);
 
