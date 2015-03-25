@@ -69,6 +69,7 @@ public:
 	bool		IsResourceDefault(const string& r);
 	bool		IsResourceLocal(const string& r);
 	bool		IsResourceLibrary(const string& r);
+	bool		IsResourceDeprecatedOrPrivate(const string& r);
 	
 	string		CreateLocalResourcePath(const string& r);
 

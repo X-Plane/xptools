@@ -564,6 +564,8 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		{
 			if(!lib_mgr->IsResourceDefault(res))
 				msg = "The library path '" + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.";
+			if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
+				msg = "The library path '" + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.";				
 		}
 	}
 
