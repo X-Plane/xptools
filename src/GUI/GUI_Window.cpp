@@ -757,6 +757,11 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 					ti.rect.right= cl.right;
 					SendMessage(mToolTip, TTM_NEWTOOLRECT, 0, (LPARAM) &ti);
 
+	// Windoze: avoid shrinking and changing side-bar position when minimized.
+	// If there's a better test for this we should change it!
+	if(inWidth == 0 && inHeight == 0)
+		return;
+
 #endif
 
 	int oldBounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] };
