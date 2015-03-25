@@ -32,7 +32,7 @@ class	ILibrarian;
 // like WED_Group or WED_Airport; however this API lets you specify any base and hopes
 // you know what you're doing. This is because WED_GISComposite is sort of an implementation
 // intermediate and thus kind of weird to have in a public API.
-void DSF_Import(const char * file, WED_Thing * base);
+int DSF_Import(const char * file, WED_Thing * base);
 
 int		WED_CanImportDSF(IResolver * resolver);
 void	WED_DoImportDSF(IResolver * resolver);

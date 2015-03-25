@@ -608,7 +608,7 @@ public:
 	}
 
 
-	void do_import_dsf(const char * file_name, WED_Thing * base)
+	int do_import_dsf(const char * file_name, WED_Thing * base)
 	{
 		parent = base;
 		archive = parent->GetArchive();
@@ -620,8 +620,7 @@ public:
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData };
 
 		int res = DSFReadFile(file_name, &cb, NULL, this);
-		if(res != 0)
-			printf("DSF Error: %d\n", res);
+		return res;
 	}
 
 	void do_import_txt(const char * file_name, WED_Thing * base)
@@ -646,10 +645,10 @@ public:
 };
 
 
-void DSF_Import(const char * path, WED_Group * base)
+int DSF_Import(const char * path, WED_Group * base)
 {
 	DSF_Importer importer;
-	importer.do_import_dsf(path, base);
+	return importer.do_import_dsf(path, base);
 }
 
 int		WED_CanImportDSF(IResolver * resolver)
@@ -673,7 +672,17 @@ void	WED_DoImportDSF(IResolver * resolver)
 			WED_Group * g = WED_Group::CreateTyped(wrl->GetArchive());
 			g->SetName(path);
 			g->SetParent(wrl,wrl->CountChildren());
-			DSF_Import(path,g);
+			int result = DSF_Import(path,g);
+			if(result != dsf_ErrOK)
+			{
+				string msg = string("The file '") + path + string("' could not be imported as a DSF:\n")
+							+ dsfErrorMessages[result];
+				DoUserAlert(msg.c_str());
+				wrl->AbortOperation();
+				free(free_me);
+				return;
+			}
+			
 			path = path + strlen(path) + 1;
 		}
 		wrl->CommitOperation();
