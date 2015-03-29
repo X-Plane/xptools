@@ -45,8 +45,7 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default
 	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
 	mGlWidget->updateGL();
-	XWin::show();
-	XWin::activateWindow();
+	XWin::SetVisible(true);
 	XWinGL::mInited = true;
 }
 
@@ -58,8 +57,7 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	setCentralWidget(mGlWidget);
 	mGlWidget->updateGL();
 	if (inAttributes & xwin_style_visible) {
-		XWin::show();
-		XWin::activateWindow();
+		XWin::SetVisible(true);
 	}
 	XWinGL::mInited = true;
 }
