@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>ObjView</string>
 	<key>CFBundleGetInfoString</key>
-	<string>ObjView 3.1 Copyright 2008, Laminar Research</string>
+	<string>ObjView 3.1 Copyright 2015, Laminar Research</string>
 	<key>CFBundleIconFile</key>
 	<string>ObjView_icons.icns</string>
 	<key>CFBundleIdentifier</key>

@@ -15,9 +15,9 @@ BEGIN
 		BEGIN
 			VALUE "CompanyName",		"Laminar Research"
 			VALUE "FileDescription",	"XGrinder"
-			VALUE "FileVersion",		"1.0b1"
-			VALUE "ProductVersion",		"1.0.0.1"
-			VALUE "LegalCopyright",		"Copyright 2009, Laminar Research"
+			VALUE "FileVersion",		"1.1r1"
+			VALUE "ProductVersion",		"1.1.0.1"
+			VALUE "LegalCopyright",		"Copyright 2015, Laminar Research"
 			VALUE "ProductName",		"XGrinder"
 		END
 	END

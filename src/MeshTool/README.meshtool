@@ -1,8 +1,26 @@
 MeshTool Instructions and Release Notes
 
 Version History
-	4/8/11	2.1d1
-		.bil files now require the .hdr file to be in the same folder.
+	3/30/15 3.0 b1
+		New build supporst X-Plane 10-style DSFs with new X-Plane 10 climate/land class data files.
+	5/5/13  2.1 r1
+		Turned off snapping to fix Windows numerics.
+	3/20/13 2.1 b1
+		SHAPEFILE_CONTOUR introduced.
+		Fixed bug where shapefile masks can cause MT to fail.
+		Fixed nasty stretched textures where orthophotos sit on (but do not span) a DSF border.
+		Added tiny snapping of shapefiles to help with improperly cut shapefiles.
+	6/4/11 2.0 r6
+		Fixed TIFF loader to work with tiled TIFFs.
+		Improved error reporting when orthophoto spans a DSF boundary.
+	5/8/11 2.0 r5
+		Fixed snap rounding on GeoTIFF images
+		Fixed incorrect creation of DDS files
+	4/20/11 2.0 r4
+		Fixed failure to export with .bil files
+	3/31/11 2.0 r3
+		Fixed crash on quit in Windows
+		Fixed SHAPEFILE_MASK command.
 	9/23/10 2.0 r2
 		Fixed export with wet-dry masks
 		GEOTIFF command makes DDS using DXT5.
