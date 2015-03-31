@@ -291,6 +291,8 @@ void XWin::SetVisible(bool visible)
 		setWindowState(windowState() | Qt::WindowActive);
 
 	setVisible(visible);
+
+	if(visible) this->raise();
 }
 
 bool XWin::GetVisible(void) const
