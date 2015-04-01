@@ -454,6 +454,11 @@ void	XObjBuilder::AccumLightNamed(float xyz[3], const char * name)
 	lod->cmds.back().idx_count = 0;
 }
 
+void	XObjBuilder::AddParam(float p)
+{
+	lod->cmds.back().params[3+lod->cmds.back().idx_count++] = p;
+}
+
 void	XObjBuilder::AccumLightCustom(float xyz[3], float params[9], const char * dataref)
 {
 	AssureLOD();

@@ -58,6 +58,7 @@ using std::string;
  	// X Y Z R G B
  	void	AccumLight(float inPoint[6]);
 	void	AccumLightNamed(float xyz[3], const char * name);
+	void	AddParam(float p);
 	void	AccumLightCustom(float xyz[3], float params[9], const char * dataref);
 	void	AccumSmoke(int cmd, float xyz[3], float size);
 

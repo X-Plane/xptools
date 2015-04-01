@@ -248,6 +248,13 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 	}
 }
 
+static void strip_whitespace(string& s)
+{
+	while(!s.empty() && s[0] == ' ')	s.erase(0);
+	
+	while(!s.empty() && s[s.size()-1] == ' ' )	s.erase(s.size()-1);
+}
+
 static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 {
 	Point3	xyz;
@@ -292,7 +299,26 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 	}
 	else
 	{
+		string p[9];
+		char buf[256];
+		p[0] = OBJ_get_light_p1(obj, buf);
+		p[1] = OBJ_get_light_p2(obj, buf);
+		p[2] = OBJ_get_light_p3(obj, buf);
+		p[3] = OBJ_get_light_p4(obj, buf);
+		p[4] = OBJ_get_light_p5(obj, buf);
+		p[5] = OBJ_get_light_p6(obj, buf);
+		p[6] = OBJ_get_light_p7(obj, buf);
+		p[7] = OBJ_get_light_p8(obj, buf);
+		p[8] = OBJ_get_light_p9(obj, buf);
+	
 		builder->AccumLightNamed(pos, lname);
+		
+		for(int i = 0; i < 9; ++i)
+		{
+			strip_whitespace(p[i]);	
+			if(!p[i].empty())	
+				builder->AddParam(atof(p[i].c_str()));
+		}
 	}
 }
 

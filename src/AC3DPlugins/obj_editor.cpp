@@ -147,7 +147,16 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_FLT(light_s2,get_sel_single_light,OBJ_set_light_s2,OBJ_get_light_s2) \
 	SIMPLE_PROPERTY_FLT(light_t1,get_sel_single_light,OBJ_set_light_t1,OBJ_get_light_t1) \
 	SIMPLE_PROPERTY_FLT(light_t2,get_sel_single_light,OBJ_set_light_t2,OBJ_get_light_t2) \
-	SIMPLE_PROPERTY_FLT(light_smoke_size,get_sel_single_light,OBJ_set_light_smoke_size,OBJ_get_light_smoke_size)
+	SIMPLE_PROPERTY_FLT(light_smoke_size,get_sel_single_light,OBJ_set_light_smoke_size,OBJ_get_light_smoke_size) \
+	SIMPLE_PROPERTY_STR(light_p1,get_sel_single_light,OBJ_set_light_p1,OBJ_get_light_p1,"","") \
+	SIMPLE_PROPERTY_STR(light_p2,get_sel_single_light,OBJ_set_light_p2,OBJ_get_light_p2,"","") \
+	SIMPLE_PROPERTY_STR(light_p3,get_sel_single_light,OBJ_set_light_p3,OBJ_get_light_p3,"","") \
+	SIMPLE_PROPERTY_STR(light_p4,get_sel_single_light,OBJ_set_light_p4,OBJ_get_light_p4,"","") \
+	SIMPLE_PROPERTY_STR(light_p5,get_sel_single_light,OBJ_set_light_p5,OBJ_get_light_p5,"","") \
+	SIMPLE_PROPERTY_STR(light_p6,get_sel_single_light,OBJ_set_light_p6,OBJ_get_light_p6,"","") \
+	SIMPLE_PROPERTY_STR(light_p7,get_sel_single_light,OBJ_set_light_p7,OBJ_get_light_p7,"","") \
+	SIMPLE_PROPERTY_STR(light_p8,get_sel_single_light,OBJ_set_light_p8,OBJ_get_light_p8,"","") \
+	SIMPLE_PROPERTY_STR(light_p9,get_sel_single_light,OBJ_set_light_p9,OBJ_get_light_p9,"","")
 
 
 #define APPLY_SET_ONE_OR_MANY(_GET_ONE, _APPLY_FUNC) \

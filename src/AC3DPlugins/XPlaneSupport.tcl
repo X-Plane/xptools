@@ -559,11 +559,13 @@ proc xplane_light_sync { x container } {
 	pack forget $container.light.dataref
 	pack forget $container.light.smoke_black
 	pack forget $container.light.smoke_white
+	pack forget $container.light.param
 	
-	if { [set xplane_light_type$x] == "rgb"}		 { pack $container.light.rgb }
-	if { [set xplane_light_type$x] == "custom"}		 { pack $container.light.dataref }
-	if { [set xplane_light_type$x] == "black smoke"} { pack $container.light.smoke_black }
-	if { [set xplane_light_type$x] == "white smoke"} { pack $container.light.smoke_white }
+	if { [set xplane_light_type$x] == "rgb"}		      { pack $container.light.rgb } \
+	elseif { [set xplane_light_type$x] == "custom"}	  { pack $container.light.dataref } \
+	elseif { [set xplane_light_type$x] == "black smoke"} { pack $container.light.smoke_black } \
+	elseif { [set xplane_light_type$x] == "white smoke"} { pack $container.light.smoke_white } \
+	else										{ pack $container.light.param }
 }
 
 proc xplane_light_sync_all {} {
@@ -858,6 +860,18 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.light.smoke_white "Puff size:" xplane_light_smoke_size$idx 10
 			pack $container.light.smoke_white
 
+			labelframe $container.light.param -text "Params:"
+				make_labeled_entry $container.light.param "1:" xplane_light_p1$idx 10
+				make_labeled_entry $container.light.param "2:" xplane_light_p2$idx 10
+				make_labeled_entry $container.light.param "3:" xplane_light_p3$idx 10
+				make_labeled_entry $container.light.param "4:" xplane_light_p4$idx 10
+				make_labeled_entry $container.light.param "5:" xplane_light_p5$idx 10
+				make_labeled_entry $container.light.param "6:" xplane_light_p6$idx 10
+				make_labeled_entry $container.light.param "7:" xplane_light_p7$idx 10
+				make_labeled_entry $container.light.param "8:" xplane_light_p8$idx 10
+				make_labeled_entry $container.light.param "9:" xplane_light_p9$idx 10
+			pack $container.light.param
+
 			#-------------------------------------- OBJECTS --------------------------------------
 			
 			label $container.obj.name_label -text "Name:"
@@ -1079,7 +1093,7 @@ if {$IPHONE} {
 		airplane_landing airplane_nav_l airplane_nav_r airplane_nav_t airplane_strobe airplane_beacon ]
 
 } else {
-	set xplane_light_options [list none "black smoke" "white smoke" rgb custom \
+	set xplane_light_options [list none "black smoke" "white smoke" rgb custom param \
 		headlight taillight \
 		airplane_landing airplane_taxi airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
 		ship_nav_left ship_nav_right ship_mast_obs ship_mast_grn ship_nav_tail ship_mast_powered \
