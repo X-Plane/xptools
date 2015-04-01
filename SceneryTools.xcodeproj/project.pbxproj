@@ -1939,6 +1939,7 @@
 		D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XObjWriteEmbedded.cpp; sourceTree = "<group>"; };
 		D6D408271406C6A20061EBF9 /* BezierApprox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BezierApprox.cpp; sourceTree = "<group>"; };
 		D6D408281406C6A20061EBF9 /* BezierApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierApprox.h; sourceTree = "<group>"; };
+		D6DA657F1ACC593D007B6A75 /* README.WorldEditor */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.WorldEditor; sourceTree = "<group>"; };
 		D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_rotatehead.png; sourceTree = "<group>"; };
 		D6DBA1E010572F33004E1089 /* AptRouting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AptRouting.h; sourceTree = "<group>"; };
 		D6DBA1E110572F33004E1089 /* AptRouting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AptRouting.cpp; sourceTree = "<group>"; };
@@ -3128,6 +3129,7 @@
 				D691EE73170A1DAD00AD6E4C /* WED_Clipping.h */,
 				D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */,
 				D6B80CD019A24B220005C1FF /* WED_Url.h */,
+				D6DA657F1ACC593D007B6A75 /* README.WorldEditor */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";

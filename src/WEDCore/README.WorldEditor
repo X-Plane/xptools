@@ -1,0 +1,47 @@
+-------------------------------------------------------------------------------
+                         WorldEditor Release Notes
+-------------------------------------------------------------------------------
+
+WorldEditor is Laminar Research's free, open source airport and overlay scenery
+editor for X-Plane.  You can download the latest version of WorldEditor, as 
+well as past stable releases here:
+
+http://developer.x-plane.com/tools/worldeditor/
+
+WorldEditor's user's manual is online; pick "WED User's Guide" from the help
+menu to view it online.
+
+CHANGE HISTORY
+
+
+WED 1.4b2 3/31/15
+
+    Bugs fixed in beta 2:
+
+    WED-429: Bring new windows to front on Ubuntu14.04-default
+
+    WED-426: use non-power-of-2 textures for scenery (but not UI) to save 
+             memory
+
+    WED-423: disabled snapping of taxi lines to locked objects
+
+    WED-411: we don't hide airport icons when zoomed out
+
+    WED-393: fixed error handling on bad DSF or APT.dat import.
+
+    WED-402: disallow use of private and deprecated library resources when 
+             uploading to the gaetway
+
+    WED-395: fixed menu bar being disabled after closing a Window on OSX
+
+    WED-412: fixed side bars closing when project is minimized on Windows.
+
+    WED-424: fixed unselectable items in filtered resource list
+
+             fixed texture memory leak when closing and re-opening project
+
+             fixed corrupt DSF export when re-exporting new-style orhtophotos
+
+WED 1.4b1 3/18/15
+
+    Initial Release of WED 1.4.
