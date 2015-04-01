@@ -626,9 +626,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
-		raise();
 		setFocus();
-		activateWindow();
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
