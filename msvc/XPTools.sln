@@ -11,6 +11,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XGrinder", "XGrinder\XGrind
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DSFTool", "DSFTool\DSFTool.vcxproj", "{508A48EB-4E1E-4667-939A-7496F8848F0C}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjConverter", "ObjConverter\ObjConverter.vcxproj", "{D2348836-D7E5-44F8-8F41-55C9878210F8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ObjView", "ObjView\ObjView.vcxproj", "{899D8E57-07F9-4656-A5DD-3F6A1718CD54}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -49,6 +53,18 @@ Global
 		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Release|Win32.ActiveCfg = Release|Win32
 		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Release|Win32.Build.0 = Release|Win32
 		{508A48EB-4E1E-4667-939A-7496F8848F0C}.Release|x64.ActiveCfg = Release|Win32
+		{D2348836-D7E5-44F8-8F41-55C9878210F8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D2348836-D7E5-44F8-8F41-55C9878210F8}.Debug|Win32.Build.0 = Debug|Win32
+		{D2348836-D7E5-44F8-8F41-55C9878210F8}.Debug|x64.ActiveCfg = Debug|Win32
+		{D2348836-D7E5-44F8-8F41-55C9878210F8}.Release|Win32.ActiveCfg = Release|Win32
+		{D2348836-D7E5-44F8-8F41-55C9878210F8}.Release|Win32.Build.0 = Release|Win32
+		{D2348836-D7E5-44F8-8F41-55C9878210F8}.Release|x64.ActiveCfg = Release|Win32
+		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Debug|Win32.ActiveCfg = Debug|Win32
+		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Debug|Win32.Build.0 = Debug|Win32
+		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Debug|x64.ActiveCfg = Debug|Win32
+		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Release|Win32.ActiveCfg = Release|Win32
+		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Release|Win32.Build.0 = Release|Win32
+		{899D8E57-07F9-4656-A5DD-3F6A1718CD54}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
