@@ -44,6 +44,8 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default
 	mGlWidget->setMouseTracking(true);
 	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
+	layout()->update();
+	layout()->activate();
 	mGlWidget->updateGL();
 	XWin::SetVisible(true);
 	XWinGL::mInited = true;
@@ -55,6 +57,8 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	mGlWidget->setMouseTracking(true);
 	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
+	layout()->update();
+	layout()->activate();
 	mGlWidget->updateGL();
 	if (inAttributes & xwin_style_visible) {
 		XWin::SetVisible(true);

@@ -16,7 +16,7 @@ XWin::XWin(
 	mMouse.x     = 0;
 	mMouse.y     = 0;
 	SetTitle(inTitle);
-	
+
 	QRect ScreenBounds = QApplication::desktop()->availableGeometry(-1);
 	int screen_w = ScreenBounds.width();
 	int screen_h = ScreenBounds.height();
@@ -73,7 +73,7 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(fals
 	mBlockEvents = 0;
 	mMouse.x     = 0;
 	mMouse.y     = 0;
-	
+
 	setProperty( "_kde_no_window_grab", true ); 
 	setMouseTracking(true);
 	setFocusPolicy(Qt::StrongFocus);
@@ -109,11 +109,12 @@ void XWin::mousePressEvent(QMouseEvent* e)
 	for (;(rbtn!=0)&&(btn<BUTTON_DIM);rbtn>>=1,btn++);
 	if (btn==0 || btn > 3)  return;
 	btn--;
+
 	mMouse.x = e->x();
 	mMouse.y = e->y();
 
 	if(mBlockEvents) return;
-	
+
 	if(mDragging == -1)
 	{
 		mDragging = btn;
@@ -138,7 +139,7 @@ void XWin::mouseReleaseEvent(QMouseEvent* e)
 	btn--;
 	mMouse.x = e->x();
 	mMouse.y = e->y();
-	
+
 	if(mBlockEvents) return;
 
 	if(mDragging == btn)
@@ -152,7 +153,7 @@ void XWin::mouseMoveEvent(QMouseEvent* e)
 {
 	mMouse.x = e->x();
 	mMouse.y = e->y();
-	
+
 	//mroe: We need the above calls , 
 	// also to get the event proceeded for the dragdetect in GUI_Windows::IsDrag.
 	// Seems the event is droped if the function does nothing.
@@ -181,6 +182,7 @@ void XWin::wheelEvent(QWheelEvent* e)
 {
 	mMouse.x = e->x();
 	mMouse.y = e->y();
+
 	MouseWheel(mMouse.x, mMouse.y, (e->delta() < 0) ? -1 : 1, 0);
 }
 
@@ -263,16 +265,18 @@ void XWin::SetFilePath(const char * inPath,bool modified)
 
 void XWin::MoveTo(int inX, int inY)
 {
-	this->move(inX, inY);
+	setGeometry(inX, inY - GetMenuBarHeight(), width(),height());
 }
 
 void XWin::Resize(int inWidth, int inHeight)
 {
+	int w = inWidth;
+	int h = inHeight + GetMenuBarHeight();
 	//mroe:   to resize a non-resizable window
 	if( (this->minimumSize() == this->size()) && (this->maximumSize() == this->size()) )
-		this->setFixedSize(inWidth,inHeight);
+		this->setFixedSize(w, h);
 	else
-		this->resize(inWidth, inHeight);
+		this->resize(w, h);
 }
 
 void XWin::ForceRefresh(void)
@@ -326,15 +330,16 @@ void XWin::SetTimerInterval(double seconds)
 
 void XWin::GetBounds(int * outX, int * outY)
 {
-	if (outX) *outX = size().width();
-	if (outY) *outY = size().height();
+	if (outX) *outX = this->size().width();
+	if (outY) *outY = this->size().height() - GetMenuBarHeight();
 }
 
 void XWin::GetWindowLoc(int * outX, int * outY)
 {
-	if (outX) *outX = x();
-	if (outY) *outY = y();
+	if (outX) *outX = geometry().x();
+	if (outY) *outY = geometry().y() + GetMenuBarHeight();
 }
+
 void XWin::GetMouseLoc(int * outX, int * outY)
 {
 	if (outX) *outX = mMouse.x;
@@ -357,6 +362,14 @@ xmenu XWin::GetMenuBar(void)
 {
 	QMenu* amenu = (QMenu*) this->menuBar();
 	return (QMenu*) this->menuBar();
+}
+
+int XWin::GetMenuBarHeight(void)
+{
+	int mb_height = 0;
+	QWidget* mb = layout()->menuBar();
+	if(mb) mb_height = mb->sizeHint().height();
+	return mb_height;
 }
 
 xmenu XWin::CreateMenu(xmenu parent, int item, const char * inTitle)

@@ -58,32 +58,11 @@ static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSour
 
 #define mWindow 0
 
+inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
+inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->size().height() - y ); }
+inline int GUI_Window::OGL2Client_X(int x, void* w) { return x; }
+inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->size().height() - y ); }
 
-inline int GUI_Window::Client2OGL_X(int x, void* w)
-{
-	return x;
-}
-
-inline int GUI_Window::Client2OGL_Y(int y, void* w)
-{
-	int ry;
-	int rx;
-	XWin::GetBounds(&rx, &ry);
-	return (ry-y);
-}
-
-inline int GUI_Window::OGL2Client_X(int x, void* w)
-{
-	return x;
-}
-
-inline int GUI_Window::OGL2Client_Y(int y, void* w)
-{
-	int ry;
-	int rx;
-	XWin::GetBounds(&rx, &ry);
-	return (ry-y);
-}
 //---------------------------------------------------------------------------------------------------------------------------------------
 // LIN DND
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -623,6 +602,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	#endif
 	#if LIN
 		this->setMenuBar(gApplication->getqmenu());
+		this->Resize(inBounds[2]-inBounds[0],inBounds[3]-inBounds[1]);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
@@ -638,7 +618,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	mClearColorRGBA[1] = 1.0;
 	mClearColorRGBA[2] = 1.0;
 	mClearColorRGBA[3] = 1.0;
-	mClearDepth = false;;
+	mClearDepth = false;
 	mClearColor = true;
 	mDesc = inTitle;
 	mState.Init();

@@ -156,6 +156,10 @@ int main(int argc, char * argv[])
 
 	WED_AboutBox * about = new WED_AboutBox(&app);
 	WED_MakeMenus(&app);
+	#if LIN
+	//mroe: resize after update the menubar
+	about->Resize(about->centralWidget()->width(),about->centralWidget()->height());
+	#endif
 	WED_StartWindow * start = new WED_StartWindow(&app);
 
 	start->Show();

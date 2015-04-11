@@ -212,6 +212,7 @@ public:
 	int		mTimer;
 	POINT	mMouse;
 public:
+	int GetMenuBarHeight(void);
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
 	bool mInited;
 private slots:
