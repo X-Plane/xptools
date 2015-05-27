@@ -50,6 +50,9 @@ XWinGL::XWinGL(int default_dnd, XWinGL * inShare) :
 	if(!aglSetCurrentContext(mContext)) throw "can't set context";
 
 	aglDestroyPixelFormat(aglpixformat);
+	
+   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);	
 }
 
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare) :
@@ -75,6 +78,10 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	if(!aglSetCurrentContext(mContext)) throw "can't set context";
 
 	aglDestroyPixelFormat(aglpixformat);
+	
+   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
+	
 }
 
 XWinGL::~XWinGL()
