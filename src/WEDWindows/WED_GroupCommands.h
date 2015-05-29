@@ -88,9 +88,9 @@ void	WED_DoSelectVertices(IResolver * resolver);
 int		WED_CanSelectPolygon(IResolver * resolver);
 void	WED_DoSelectPolygon(IResolver * resolver);
 
-void	WED_DoSelectZeroLength(IResolver * resolver);
-void	WED_DoSelectDoubles(IResolver * resolver);
-void	WED_DoSelectCrossing(IResolver * resolver);
+bool	WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree=NULL);			// These return true if they did an operation to change selection due to there being work to do.
+bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
+bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
 
 void	WED_DoSelectMissingObjects(IResolver * resolver);
 void	WED_DoSelectLocalObjects(IResolver * resolver);

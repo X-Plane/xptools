@@ -1013,17 +1013,27 @@ void select_zero_recursive(WED_Thing * t, ISelection * s)
 		select_zero_recursive(t->GetNthChild(n), s);
 }
 
-void WED_DoSelectZeroLength(IResolver * resolver)
+bool WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Select Zero-Length Edges");
 	sel->Clear();
-	select_zero_recursive(WED_GetWorld(resolver), sel);
-	op->CommitOperation();
+	select_zero_recursive(sub_tree ? sub_tree : WED_GetWorld(resolver), sel);
+	
+	if(sel->GetSelectionCount() == 0)
+	{
+		op->AbortOperation();
+		return false;
+	}
+	else
+	{
+		op->CommitOperation();
+		return true;
+	}
 }
 
-void WED_DoSelectDoubles(IResolver * resolver)
+bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
@@ -1031,7 +1041,7 @@ void WED_DoSelectDoubles(IResolver * resolver)
 	sel->Clear();
 
 	vector<WED_Thing *> pts;
-	CollectRecursive(WED_GetWorld(resolver), IsGraphNode, pts);
+	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphNode, pts);
 	
 	// Ben says: yes this totally sucks - replace it someday?
 	for(int i = 0; i < pts.size(); ++i)
@@ -1055,11 +1065,20 @@ void WED_DoSelectDoubles(IResolver * resolver)
 			}			
 		}
 	}
-	op->CommitOperation();
-	
+
+	if(sel->GetSelectionCount() == 0)
+	{
+		op->AbortOperation();
+		return false;
+	}
+	else
+	{
+		op->CommitOperation();
+		return true;
+	}	
 }
 
-void WED_DoSelectCrossing(IResolver * resolver)
+bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
@@ -1067,7 +1086,7 @@ void WED_DoSelectCrossing(IResolver * resolver)
 	sel->Clear();
 
 	vector<WED_Thing *> pts;
-	CollectRecursive(WED_GetWorld(resolver), IsGraphEdge, pts);
+	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphEdge, pts);
 	
 	// Ben says: yes this totally sucks - replace it someday?
 	for(int i = 0; i < pts.size(); ++i)
@@ -1106,7 +1125,16 @@ void WED_DoSelectCrossing(IResolver * resolver)
 			}			
 		}
 	}
-	op->CommitOperation();
+	if(sel->GetSelectionCount() == 0)
+	{
+		op->AbortOperation();
+		return false;
+	}
+	else
+	{
+		op->CommitOperation();
+		return true;
+	}
 }
 
 static bool get_any_resource_for_thing(WED_Thing * thing, string& r)

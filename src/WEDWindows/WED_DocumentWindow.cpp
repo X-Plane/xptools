@@ -389,9 +389,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
 
 #if AIRPORT_ROUTING
-	case wed_SelectZeroLength:	WED_DoSelectZeroLength(mDocument);	return 1;
-	case wed_SelectDoubles:		WED_DoSelectDoubles(mDocument);		return 1;
-	case wed_SelectCrossing:	WED_DoSelectCrossing(mDocument);	return 1;
+	case wed_SelectZeroLength:	if(!WED_DoSelectZeroLength(mDocument))		DoUserAlert("Your project has no zero-length ATC routing lines.");	return 1;
+	case wed_SelectDoubles:		if(!WED_DoSelectDoubles(mDocument))			DoUserAlert("Your project has no doubled ATC routing nodes.");	return 1;
+	case wed_SelectCrossing:	if(!WED_DoSelectCrossing(mDocument))		DoUserAlert("Your project has no crossed ATC routing lines.");	return 1;
 	
 	case wed_SelectLocalObjects:		WED_DoSelectLocalObjects(mDocument); return 1;
 	case wed_SelectLibraryObjects:		WED_DoSelectLibraryObjects(mDocument); return 1;

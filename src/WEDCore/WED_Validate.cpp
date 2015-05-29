@@ -50,6 +50,7 @@
 #include "WED_ATCWindRule.h"
 #include "WED_EnumSystem.h"
 #include "WED_Taxiway.h"
+#include "WED_GroupCommands.h"
 #include "IGIS.h"
 
 
@@ -632,6 +633,24 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 {
+	if(WED_DoSelectZeroLength(resolver))
+	{
+		DoUserAlert("Your airport contains zero-length ATC routing lines. These should be deleted.");
+		return false;
+	}
+	
+	if(WED_DoSelectDoubles(resolver))
+	{
+		DoUserAlert("Your airport contains doubled ATC routing nodes. These should be merged.");
+		return false;
+	}
+	
+	if(WED_DoSelectCrossing(resolver))	
+	{
+		DoUserAlert("Your airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.");
+		return false;
+	}
+
 	s_used_hel.clear();
 	s_used_rwy.clear();
 	s_flow_names.clear();
