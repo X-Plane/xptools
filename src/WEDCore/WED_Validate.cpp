@@ -633,6 +633,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 {
+#if !GATEWAY_IMPORT_FEATURES
 	if(WED_DoSelectZeroLength(resolver))
 	{
 		DoUserAlert("Your airport contains zero-length ATC routing lines. These should be deleted.");
@@ -650,7 +651,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		DoUserAlert("Your airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.");
 		return false;
 	}
-
+#endif
 	s_used_hel.clear();
 	s_used_rwy.clear();
 	s_flow_names.clear();
