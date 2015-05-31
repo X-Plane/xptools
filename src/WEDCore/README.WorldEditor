@@ -13,6 +13,20 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.4r1 5/30/15
+
+	Bugs fixed for release candidate 1
+
+	WED-383: ATC layout validations are run as part of main validations
+
+	WED-433: fixed alignment of art assets that are not powers of tow.
+
+	WED-434: fixed skewed RGB jpegs on Mac/Linux
+
+	WED-428: fixed misaligned text when uploading to gateway on Linux
+
+			 Updated SSL certificate to match new X-Plane scenery gateway 
+			 certificate.
 
 WED 1.4b2 3/31/15
 
