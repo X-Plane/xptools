@@ -1102,9 +1102,11 @@ static int	DSF_ExportTileRecursive(
 				
 					WED_VectorForPointSequence(seq,chain);
 					clip_segments(chain, cull_bounds);
-
-					++real_thingies;
-					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, param, 0);
+					if(!chain.empty())
+					{
+						++real_thingies;
+						DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, param, 0);
+					}
 				}
 			}
 			break;
@@ -1189,31 +1191,33 @@ static int	DSF_ExportTileRecursive(
 			WED_BezierVectorForPointSequence(lin,chain);
 
 			clip_segments(chain, cull_bounds);
-
-			int closed = 0;
-			if(one_winding(chain))
+			if(!chain.empty())
 			{
-				if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+				int closed = 0;
+				if(one_winding(chain))
 				{
-					closed = 1;
+					if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+					{
+						closed = 1;
+					}
 				}
-			}
-			else
-			{
-				while(chain.front().p1 == chain.back().p2)
+				else
 				{
-					chain.insert(chain.begin(),chain.back());
-					chain.pop_back();
+					while(chain.front().p1 == chain.back().p2)
+					{
+						chain.insert(chain.begin(),chain.back());
+						chain.pop_back();
+					}
 				}
+				++real_thingies;
+				if(closed && bad_match(chain.front(),chain.back()))
+				{
+					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
+					problem_children.insert(what);
+				}
+				else
+					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 			}
-			++real_thingies;
-			if(closed && bad_match(chain.front(),chain.back()))
-			{
-				DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
-				problem_children.insert(what);
-			}
-			else
-				DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 		}
 		else
 		{		
@@ -1221,31 +1225,33 @@ static int	DSF_ExportTileRecursive(
 		
 			WED_VectorForPointSequence(lin,chain);
 			clip_segments(chain, cull_bounds);
-
-			int closed = 0;
-			if(one_winding(chain))
+			if(!chain.empty())
 			{
-				if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+				int closed = 0;
+				if(one_winding(chain))
 				{
-					closed = 1;
+					if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+					{
+						closed = 1;
+					}
 				}
-			}
-			else
-			{
-				while(chain.front().p1 == chain.back().p2)
+				else
 				{
-					chain.insert(chain.begin(),chain.back());
-					chain.pop_back();
+					while(chain.front().p1 == chain.back().p2)
+					{
+						chain.insert(chain.begin(),chain.back());
+						chain.pop_back();
+					}
 				}
+				++real_thingies;					
+				if(closed && bad_match(chain.front(),chain.back()))
+				{
+					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");			
+					problem_children.insert(what);
+				}
+				else
+					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 			}
-			++real_thingies;					
-			if(closed && bad_match(chain.front(),chain.back()))
-			{
-				DebugAssert(!"We should not get here - it's a logic error, not a precision error!");			
-				problem_children.insert(what);
-			}
-			else
-				DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 		}
 	}
 

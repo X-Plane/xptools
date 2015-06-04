@@ -257,7 +257,9 @@ curl_http_get_file::thread_proc(void * param)
 	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progress_cb);	
 	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, param);
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+#if DEV	
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+#endif	
 //	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 0);
 	curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 60.0);
 

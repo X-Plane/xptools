@@ -13,6 +13,18 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.4r2 6/3/15
+	Bugs fixed for release candidate 2
+	
+			 Fixed crash when exporting line features that surround an 
+			 entire DSF tile.
+			 
+			 Turned off verbose CURL logging.
+			 
+			 Added parent ID to gateway version import table.
+			 
+			 Improved responsiveness of airport list download slightly.
+			 
 WED 1.4r1 5/30/15
 
 	Bugs fixed for release candidate 1

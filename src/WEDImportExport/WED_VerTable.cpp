@@ -149,6 +149,8 @@ void	WED_VerTable::GetHeaderContent(
 	case 5:
 		the_content.title = "Moderator Comments";
 		break;
+	case 6: 
+		the_content.title = "Parent ID";
 	}		
 }
 
@@ -157,7 +159,7 @@ int		WED_VerTable::GetColCount(void)
 /*#if DEV TODO - The developer menu shows every single field
 	return 11;//Derived from HTTP Get for airport
 #endif*/
-	return 6;//Derived from the catagories USERS will care about
+	return 7;//Derived from the catagories USERS will care about
 }
 
 int		WED_VerTable::GetRowCount(void)
@@ -207,6 +209,14 @@ void	WED_VerTable::GetCellContent(
 	case 5:
 		the_content.text_val = mVers->at(ver_id).moderatorComments;
 		break;
+	case 6:
+		{
+			stringstream ss;
+			ss << mVers->at(ver_id).parentId;
+			the_content.text_val = ss.str();
+		}
+		break;
+	
 	}
 	the_content.string_is_resource = 0;
 }
@@ -334,6 +344,9 @@ struct sort_by_ver {
 			xs = vers_->at(x).moderatorComments;
 			ys = vers_->at(y).moderatorComments;
 			break;
+		case 6:
+			return (invert_sort_) ? (vers_->at(y).parentId < vers_->at(x).parentId) : (vers_->at(x).parentId < vers_->at(y).parentId);
+
 		}
 
 		//Make them all uper case
@@ -366,9 +379,14 @@ void		WED_VerTable::resort(void)
 		stringstream ss;
 		ss << mVers->at(i).sceneryId;
 		string idStr = ss.str();
+
+		stringstream ss2;
+		ss2 << mVers->at(i).parentId;
+		string parentIdStr = ss2.str();
 	
 		if (filters.empty() || 
 				filter_match(idStr, filters.begin(),filters.end())		||
+				filter_match(parentIdStr, filters.begin(),filters.end())		||
 				filter_match(mVers->at(i).userName, filters.begin(),filters.end())		||
 				filter_match(ChooseStatus(mVers->at(i)), filters.begin(),filters.end()) ||
 				filter_match(ChooseDate(mVers->at(i)),filters.begin(),filters.end())	||

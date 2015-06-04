@@ -423,7 +423,7 @@ private:
 //----------------------//
 	
 };
-int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 500, 500 };
+int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
 
 //--Implemation of WED_GateWayImportDialog class---------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
@@ -844,7 +844,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 
 	//Get it from the server
 	mCurl.create_HNDL(url,cert,AIRPORTS_GET_SIZE_GUESS);
-	Start(1.0);
+	Start(0.1);
 	mLabel->Show();
 }
 
@@ -880,7 +880,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 
 	//Get it from the server
 	mCurl.create_HNDL(url,cert,VERSIONS_GET_SIZE_GUESS);
-	Start(1.0);
+	Start(0.1);
 	mLabel->Show();
 	return true;
 }
@@ -900,7 +900,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
 	mCurl.create_HNDL(url.str(),cert,VERSION_GET_SIZE_GUESS);
-	Start(1.0);
+	Start(0.1);
 	mLabel->Show();
 }
 
