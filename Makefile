@@ -104,7 +104,7 @@ DEFAULT_INCDIR		:= "$(DEFAULT_PREFIX)/include"
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN := Yes
 	# Ben removed ppc and x86_64 to fix libgmp compilation
-	DEFAULT_MACARGS	:= -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.6 -arch i386
+	DEFAULT_MACARGS	:= -mmacosx-version-min=10.6 -arch x86_64
 	VIS	:= -fvisibility=hidden
 endif
 ifeq ($(PLATFORM), Linux)
@@ -315,7 +315,7 @@ CONF_LIBSHP		+= cross=$(M32_SWITCH)
 ARCHIVE_LIBSSL		:= openssl-$(VER_LIBSSL).tar.gz
 CONF_LIBSSL			:= --openssldir=$(DEFAULT_PREFIX)
 ifdef PLAT_DARWIN
-CONF_LIBSSL			+= darwin-i386-cc
+CONF_LIBSSL			+= darwin64-x86_64-cc
 endif
 ifdef PLAT_MINGW
 CONF_LIBSSL			+= mingw
@@ -330,7 +330,7 @@ CFLAGS_LIBCURL		:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(V
 ifdef PLAT_LINUX
 LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 else
-LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH) -Wl,-search_paths_first"
+LDFLAGS_LIBCURL		:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 endif
 CONF_LIBCURL		:= --prefix=$(DEFAULT_PREFIX)
 CONF_LIBCURL		+= --enable-shared=no
@@ -345,7 +345,7 @@ CFLAGS_LIBJASPER	:= "$(DEFAULT_MACARGS) -I$(DEFAULT_INCDIR) -O2 $(M32_SWITCH) $(
 ifdef PLAT_LINUX
 LDFLAGS_LIBJASPER	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 else
-LDFLAGS_LIBJASPER	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH) -Wl,-search_paths_first"
+LDFLAGS_LIBJASPER	:= "-L$(DEFAULT_LIBDIR) $(M32_SWITCH)"
 endif
 CONF_LIBJASPER		:= --prefix=$(DEFAULT_PREFIX) 
 CONF_LIBJASPER		+= --disable-libjpeg 
@@ -356,7 +356,6 @@ CONF_LIBJASPER		+= "LIBS=-ljpeg"
 ifeq ($(PLATFORM), Darwin)
 	AR_ZLIB			:= "libtool -static -o"
 	CONF_LIBTIFF		+= --with-apple-opengl-framework
-	LDFLAGS_GEOTIFF     	+= -Z
 endif
 ifeq ($(PLATFORM), Mingw)
 endif
@@ -388,8 +387,8 @@ ifdef PLAT_DARWIN
 	@cd "boost_$(VER_BOOST)" && \
 	chmod +x bootstrap.sh && \
 	./bootstrap.sh --prefix=$(DEFAULT_PREFIX) --with-libraries=thread \
-	--libdir=$(DEFAULT_PREFIX)/lib $(BE_QUIET) && \
-	./bjam cxxflags="$(VIS) $(DEFAULT_MACARGS)" $(BE_QUIET) && \
+	--libdir=$(DEFAULT_PREFIX)/lib cxxflags="$(VIS) $(DEFAULT_MACARGS)" $(BE_QUIET) && \
+	./bjam link=static cxxflags="$(VIS) $(DEFAULT_MACARGS)" $(BE_QUIET) && \
 	./bjam install $(BE_QUIET)
 	@cd local/lib && \
 	rm -f *.dylib*
@@ -644,7 +643,7 @@ ifdef PLAT_DARWIN
 	export MACOSX_DEPLOYMENT_TARGET=10.6 && CXXFLAGS="-fvisibility=hidden" cmake \
 	-DCMAKE_INSTALL_PREFIX=$(DEFAULT_PREFIX) -DCMAKE_BUILD_TYPE=Release \
 	-DBUILD_SHARED_LIBS=FALSE \
-	-DCGAL_CXX_FLAGS="-isysroot /Developer/SDKs/MacOSX10.6.sdk -arch i386 -I$(DEFAULT_INCDIR)" \
+	-DCGAL_CXX_FLAGS="-arch x86_64 -I$(DEFAULT_INCDIR)" \
 	-DCGAL_MODULE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_SHARED_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
 	-DCGAL_EXE_LINKER_FLAGS="-L$(DEFAULT_LIBDIR)" \
