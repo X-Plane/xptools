@@ -57,7 +57,9 @@
 #include "AptDefs.h"
 #include "IResolver.h"
 
+#include "GISUtils.h"
 #include "PlatformUtils.h"
+#include "MathUtils.h"
 
 #define MAX_LON_SPAN_GATEWAY 0.2
 #define MAX_LAT_SPAN_GATEWAY 0.2
@@ -309,10 +311,10 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			}
 			
 			
-			Segment2 ends;
-			lw->GetNthPoint(0)->GetLocation(gis_Geo,ends.p1);
-			lw->GetNthPoint(1)->GetLocation(gis_Geo,ends.p2);
-			Bbox2	runway_extent(ends.p1,ends.p2);
+			Point2 ends[2];
+			lw->GetNthPoint(0)->GetLocation(gis_Geo,ends[0]);
+			lw->GetNthPoint(1)->GetLocation(gis_Geo,ends[1]);
+			Bbox2	runway_extent(ends[0],ends[1]);
 			if (runway_extent.xmin() < -180.0 ||
 				runway_extent.xmax() >  180.0 ||
 				runway_extent.ymin() <  -90.0 ||
@@ -320,6 +322,19 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			{
 				msg = "The runway/sealane '" + name + "' has an end outside the World Map.";
 			}	
+			else
+			{
+				double heading, len;
+				Point2 ctr;
+				Quad_2to1(ends, ctr, heading, len);
+				double approx_heading = num1 * 10.0;
+				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
+				if(heading_delta > 135.0)
+					msg = "The runway/sealane '" + name + "' needs to be reversed to match its name.";
+				else if(heading_delta > 45.0)
+					msg = "The runway/sealane '" + name + "' is misaligned with its runway name.";				
+			}
+			
 		}
 	}
 	if (who->GetClass() == WED_Helipad::sClass)

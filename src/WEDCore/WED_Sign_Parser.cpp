@@ -102,7 +102,6 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 	stringstream ss;
 	bool foundError = false;
 
-	
 	//glyphCount is a persistent counter so when the sign flips over the counter doesn't get lost
 
 	int glyphCount = 0;
@@ -128,135 +127,65 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 			ss.clear();
 		}
 	}
+
+	for(int side = 0; side < 2; ++side)
+	{
+		vector<parser_glyph_info>& side_text(side ? output.out_sign.back : output.out_sign.front);
 		
-	//Pipebar rules
-	bool followsPipeJuxRules = false;
-
-	//Start at at place where you could have a {@@}
-	for (int i = 4; i < inStr.input.size(); i++)
-	{
-		if(inStr.input[i] == '|')
+		if(side_text.size() == 1)
 		{
-			string threeBefore = inStr.input.substr(i-3,3);
-			//Try to catch ..@@}|
-			if(threeBefore == "@@}")
+			if(side_text.front().glyph_color == 'P')
 			{
-				followsPipeJuxRules = false;
-
-				ss << "Charecter " << i + 1 << ": Pipe bar has sign face flip instruction directly to its left";
-				output.AddError(ss.str(),sem_pipe_l_sign_flip_juxed,i,3);
-				ss.str("");
-				ss.clear();
-				foundError = true;
-			}
-						
-			//If there is space for a {@@
-			if(i + 3 < inStr.input.size())
-			{
-				string threeAfter = inStr.input.substr(i+1,3);
-				
-				//Try to catch any |{@@...
-				if(threeAfter == "{@@")
-				{
-					followsPipeJuxRules = false;
-
-					ss << "Charecter " << i + 1 << ": Pipe bar has sign face flip instruction directly to its right";
-					output.AddError(ss.str(),sem_pipe_r_sign_flip_juxed,i,3);
-					
-					ss.str("");
-					ss.clear();
-					foundError = true;
-				}
-			}
-		}
-	}//End for loop
-
-	//Now check for adjacent pipebars
-	for (int i = 0; i < inStr.input.size(); i++)
-	{
-		if(inStr.input[i] == '|' && (i + 1 < inStr.input.size()))
-		{
-			if(inStr.input[i + 1] == '|')
-			{
-				followsPipeJuxRules = false;
-
-				ss << "Charecter " << i + 1 << ": Pipebar has pipebar to its right";
-				output.AddError(ss.str(),sem_pipe_double_juxed,i,1);
+				// sole pipe bug
+				ss << "Sign side consists only of a pipe.";
+				output.AddError(ss.str(),sem_pipe_begins_sign,0,3);
 				ss.str("");
 				ss.clear();
 				foundError = true;
 			}
 		}
-	}
-
-	//Now we check that if there is a pipebar that on either side is a glyph of the same color
-	//Start it in a place where we could ~reasonably have a glyph, the shortest independant
-	int fSize = output.out_sign.front.size();
-	for (int i = 1; i < fSize; i++)
-	{
-		if(output.out_sign.front[i].glyph_color == 'P' && (i + 1 < fSize))
+		else if(side_text.size() > 1)
 		{
-			//A|B
-			parser_glyph_info A = output.out_sign.front[i-1];
-			parser_glyph_info B = output.out_sign.front[i+1];
-
-			//If A is not equal to B and (A is not 'P' and B is not 'P')
-			if(A.glyph_color != B.glyph_color)
-			{
-				followsPipeJuxRules = false;
-				ss << "Charcter " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
-																					<< A.glyph_color << A.glyph_name 
-																					<< ", /" << B.glyph_color << B.glyph_name;
-				output.AddError(ss.str(),sem_pipe_color_mismatch,i,3);
+			if(side_text.front().glyph_color == 'P')
+			{	
+				// start pipe bug
+				ss << "Sign side starts with a pipe.";
+				output.AddError(ss.str(),sem_pipe_begins_sign,0,3);
 				ss.str("");
 				ss.clear();
 				foundError = true;
 			}
-		}
-	}
-
-	//Now do the same for the back
-	int bSize = output.out_sign.back.size();
-	for (int i = 1; i < bSize; i++)
-	{
-		if(output.out_sign.back[i].glyph_color == 'P' && (i + 1 < bSize))
-		{
-			//A|B
-			parser_glyph_info A = output.out_sign.back[i-1];
-			parser_glyph_info B = output.out_sign.back[i+1];
-
-			if(A.glyph_color != B.glyph_color)
+			if(side_text.back().glyph_color == 'P')
 			{
-				followsPipeJuxRules = false;
-				ss << "Charcter " << i + 1 << ": Pipebar is not surrounded with glyphs of matching types: /" 
-																					<< A.glyph_color << A.glyph_name 
-																					<< ", /" << B.glyph_color << B.glyph_name;
-				output.AddError(ss.str(),sem_pipe_color_mismatch,i,3);
+				// end pipe bug
+				ss << "Sign side ends with a pipe.";
+				output.AddError(ss.str(),sem_pipe_ends_sign,0,3);
+				ss.str("");
+				ss.clear();
+				foundError = true;
+			}			
+			for(int i = 1; i < side_text.size(); ++i)
+			if(side_text[i-1].glyph_color == 'P' && side_text[i].glyph_color == 'P')
+			{
+				// adjacent bug
+				ss << "Sign side has two adjacent pipes.";
+				output.AddError(ss.str(),sem_pipe_double_juxed,0,3);
 				ss.str("");
 				ss.clear();
 				foundError = true;
 			}
+			for(int i = 2; i < side_text.size(); ++i)
+			if(side_text[i-1].glyph_color == 'P' && side_text[i-2].glyph_color != side_text[i].glyph_color)
+			if(side_text[i-2].glyph_color != 'P' && side_text[i].glyph_color != 'P')
+			{
+				ss << "Sign side has pipe surrounded by different colors.";
+				output.AddError(ss.str(),sem_pipe_color_mismatch,0,3);
+				ss.str("");
+				ss.clear();
+				foundError = true;				
+			}
+
 		}
-	}
-	
-	//Finally test if the sign begins or ends with a pipe bar
-	if(inStr.input[0] == '|')
-	{
-		ss << "Sign cannot begin with a pipe bar";
-		output.AddError(ss.str(),sem_pipe_begins_sign,0,1);
-		ss.str("");
-		ss.clear();
-		foundError = true;
-	}
-	
-	
-	if(inStr.input[inStr.input.length()-1] == '|')
-	{
-		ss << "Sign cannot end with a pipe bar";
-		output.AddError(ss.str(),sem_pipe_ends_sign,inStr.input.length()-1,1);
-		ss.str("");
-		ss.clear();
-		foundError = true;
 	}
 	return foundError;
 }

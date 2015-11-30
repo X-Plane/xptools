@@ -34,8 +34,6 @@ enum parser_error_t
 	sem_pipe_color_mismatch,///YF|//RD from {@Y,F}|{@R,D}
 	sem_pipe_double_juxed, //||
 	sem_pipe_ends_sign,
-	sem_pipe_l_sign_flip_juxed,//Juxed = juxtapositioned
-	sem_pipe_r_sign_flip_juxed,
 	
 	syn_found_at_symbol_outside_curly,//Found under O_ACCUM_GLYPHS
 	syn_found_lowercase_outside_curly,//Found under O_ACCUM_GLYPHS
