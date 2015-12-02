@@ -46,6 +46,7 @@ public:
 	bool		GetCornersDisp1(Point2 corners[4]) const;
 	bool		GetCornersDisp2(Point2 corners[4]) const;
 	bool		GetCornersShoulders(Point2 corners[8]) const;
+	double		GetRoughness(void) const;
 
 	void		SetSurface(int);
 	void		SetShoulder(int);

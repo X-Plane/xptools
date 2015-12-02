@@ -27,6 +27,7 @@
 #include "IODefs.h"
 #include "STLUtils.h"
 #include "SQLUtils.h"
+#include "MathUtils.h"
 #include "XESConstants.h"
 #include "WED_EnumSystem.h"
 #include <algorithm>
@@ -299,7 +300,7 @@ void		WED_PropBoolText::GetPropertyDictItem(int e, string& item)
 
 void		WED_PropBoolText::GetProperty(PropertyVal_t& val) const
 {
-	val.int_val = value;
+	val.int_val = intlim(value,0,1);
 	val.prop_kind = prop_Bool;
 }
 

@@ -26,6 +26,7 @@
 #include "GISUtils.h"
 #include "XESConstants.h"
 #include "AptDefs.h"
+#include "MathUtils.h"
 
 DEFINE_PERSISTENT(WED_Runway)
 TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
@@ -269,6 +270,7 @@ double		WED_Runway::GetDisp1(void) const { return disp1.value; }
 double		WED_Runway::GetDisp2(void) const { return disp2.value; }
 double		WED_Runway::GetBlas1(void) const { return blas1.value; }
 double		WED_Runway::GetBlas2(void) const { return blas2.value; }
+double		WED_Runway::GetRoughness(void) const { return roughness.value; }
 
 
 	void		WED_Runway::SetSurface(int x) { surface = x; }
@@ -295,7 +297,7 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 
 	surface			= ENUM_Import(Surface_Type,		x.surf_code				);
 	shoulder		= ENUM_Import(Shoulder_Type,	x.shoulder_code			);
-	roughness		=								x.roughness_ratio		 ;
+	roughness		= fltlim(						x.roughness_ratio,0.0f,1.0f);
 	center_lites	=								x.has_centerline		 ;
 	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code		);
 	remaining_signs =								x.has_distance_remaining ;
@@ -376,7 +378,7 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 
 	x.surf_code				 = ENUM_Export(surface.value   );
 	x.shoulder_code			 = ENUM_Export(shoulder.value  );
-	x.roughness_ratio		 =			   roughness		;
+	x.roughness_ratio		 = fltlim     (roughness,0.0f,1.0f);
 	x.has_centerline		 =			   center_lites		;
 	x.edge_light_code		 = ENUM_Export(edge_lites.value);
 	x.has_distance_remaining =			   remaining_signs	;

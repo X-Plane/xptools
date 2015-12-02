@@ -308,8 +308,12 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			if (rwy)
 			{
 				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced threshholds.";
+				
+				#if !GATEWAY_IMPORT_FEATURES
+					if(rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0) msg = "The runway '" + name + "' has an illegal surface roughness. It should be in the range 0 to 1.";
+				#endif
+				
 			}
-			
 			
 			Point2 ends[2];
 			lw->GetNthPoint(0)->GetLocation(gis_Geo,ends[0]);
@@ -324,15 +328,17 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			}	
 			else
 			{
-				double heading, len;
-				Point2 ctr;
-				Quad_2to1(ends, ctr, heading, len);
-				double approx_heading = num1 * 10.0;
-				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
-				if(heading_delta > 135.0)
-					msg = "The runway/sealane '" + name + "' needs to be reversed to match its name.";
-				else if(heading_delta > 45.0)
-					msg = "The runway/sealane '" + name + "' is misaligned with its runway name.";				
+				#if !GATEWAY_IMPORT_FEATURES			
+					double heading, len;
+					Point2 ctr;
+					Quad_2to1(ends, ctr, heading, len);
+					double approx_heading = num1 * 10.0;
+					double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
+					if(heading_delta > 135.0)
+						msg = "The runway/sealane '" + name + "' needs to be reversed to match its name.";
+					else if(heading_delta > 45.0)
+						msg = "The runway/sealane '" + name + "' is misaligned with its runway name.";				
+				#endif
 			}
 			
 		}

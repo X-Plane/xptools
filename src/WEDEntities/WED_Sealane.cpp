@@ -23,6 +23,7 @@
 
 #include "WED_Sealane.h"
 #include "AptDefs.h"
+#include "MathUtils.h"
 
 DEFINE_PERSISTENT(WED_Sealane)
 TRIVIAL_COPY(WED_Sealane, WED_GISLine_Width)
@@ -48,7 +49,7 @@ void	WED_Sealane::Import(const AptSealane_t& x, void (* print_func)(void *, cons
 				 SetWidth	(x.width_mtr);
 	string	full = x.id[0] + string("/") + x.id[1];
 	SetName(full);
-	buoys = x.has_buoys;
+	buoys = intlim(x.has_buoys,0,1);
 }
 
 
@@ -71,5 +72,5 @@ void	WED_Sealane::Export(		 AptSealane_t& x) const
 		x.id[0] = full.substr(0,p);
 		x.id[1] = full.substr(p+1);
 	}
-	x.has_buoys = buoys;
+	x.has_buoys = intlim(buoys,0,1);
 }

@@ -35,6 +35,7 @@ DECLARE_PERSISTENT(WED_Sealane)
 public:
 
 	void		SetBuoys(int);
+	int			GetBuoys(void) const { return buoys.value; }
 
 	void		Import(const AptSealane_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptSealane_t& x) const;
