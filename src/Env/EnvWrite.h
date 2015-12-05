@@ -23,6 +23,10 @@
 #ifndef _EnvWrite_h_
 #define _EnvWrite_h_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define	WRITE_ERR		1002
 
 int		EnvWrite(const char * inFileName);
@@ -88,5 +92,10 @@ int		GetNthRiverSegment(
 int		GetNthTexture(
 					long		inNth,
 					char *		outName);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

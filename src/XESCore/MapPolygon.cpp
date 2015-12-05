@@ -3,7 +3,6 @@
  *
  */
 
-#include "hl_types.h"
 #include "MapPolygon.h"
 #include "MapBuffer.h"
 #include "STLUtils.h"

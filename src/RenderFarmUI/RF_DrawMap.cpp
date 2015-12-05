@@ -886,7 +886,7 @@ void	DrawMapBucketed(
 			double radius = arc / acos(-d);
 			bisector *= radius;
 			
-			bisector.dx / r;
+			bisector.dx /= r;
 			
 			glVertex2f(p2.x(),p2.y());
 			glVertex2f(p2.x() + bisector.dx,p2.y() + bisector.dy);			

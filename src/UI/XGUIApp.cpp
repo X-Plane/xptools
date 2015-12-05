@@ -24,15 +24,12 @@
 #include "XWin.h"
 #include "XUtils.h"
 #include "PlatformUtils.h"
+#include "ObjCUtils.h"
 
 class	XGrinderWin;
 
 #if IBM
 HINSTANCE	gInstance = NULL;
-#endif
-
-#if APL
-static pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon);
 #endif
 
 void	XGrinder_Quit(void)
@@ -43,10 +40,7 @@ void	XGrinder_Quit(void)
 #if APL
 int		main(int argc, char ** argv)
 {
-	SetMenuBar(GetNewMBar(128));
-
-	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
-		NewAEEventHandlerUPP(HandleOpenDoc), 0, FALSE);
+	init_ns_stuff();
 
 	XGrindInit();
 
@@ -57,7 +51,7 @@ int		main(int argc, char ** argv)
 	if(!files.empty())
 		XGrindFiles(files);
 
-	RunApplicationEventLoop();
+	run_app();
 	return 0;
 }
 #endif
@@ -96,47 +90,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
 #pragma mark -
 
-#if APL
-pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
-{
-	vector<string>	files;
-
-
-	AEDescList	inDocList = { 0 };
-	OSErr err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &inDocList);
-	if (err) return err;
-
-	SInt32		numDocs;
-	err = ::AECountItems(&inDocList, &numDocs);
-	if (err) goto puke;
-
-		// Loop through all items in the list
-			// Extract descriptor for the document
-			// Coerce descriptor data into a FSSpec
-			// Tell Program object to open or print document
-
-
-	for (SInt32 i = 1; i <= numDocs; i++) {
-		AEKeyword	theKey;
-		DescType	theType;
-		FSRef		theFileSpec;
-		Size		theSize;
-		err = ::AEGetNthPtr(&inDocList, i, typeFSRef, &theKey, &theType,
-							(Ptr) &theFileSpec, sizeof(FSRef), &theSize);
-		if (err) goto puke;
-
-		UInt8 buf[2048];
-
-		if(FSRefMakePath(&theFileSpec, buf, sizeof(buf)) == noErr)
-		files.push_back((const char *) buf);
-	}
-	XGrindFiles(files);
-
-puke:
-	AEDisposeDesc(&inDocList);
-	return noErr;
-}
-#endif
 
 #if LIN
 int main(int argc, char* argv[])

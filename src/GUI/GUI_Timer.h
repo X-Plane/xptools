@@ -25,12 +25,9 @@
 #define GUI_TIMER_H
 
 #if APL
-	#if defined(__MWERKS__)
-		#include <Carbon.h>
-	#else
-		#include <Carbon/Carbon.h>
-	#endif
+#include <CoreFoundation/CoreFoundation.h>
 #endif
+
 #if LIN
 #if 0
 #include <pthread.h>
@@ -75,11 +72,10 @@ public slots:
 private:
 
 	#if APL
+	
+		CFRunLoopTimerRef					mTimer;
 
-				EventLoopTimerRef	mTimer;
-		static	EventLoopTimerUPP	sTimerCB;
-
-	static pascal void TimerCB(EventLoopTimerRef inTimer, void *inUserData);
+		static void				TimerCB(CFRunLoopTimerRef timer, void * data);
 
 	#elif IBM
 		static void CALLBACK	TimerCB(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);

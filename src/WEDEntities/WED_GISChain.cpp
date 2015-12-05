@@ -312,14 +312,16 @@ void WED_GISChain::RebuildCache(int flags) const
 			}
 
 			if(mHasUV)
-			if (GetSide(gis_UV, i,s,b))
 			{
-				Bbox2	bb;
-				b.bounds(bb);
-				mCacheBoundsUV += bb;
-			} else {
-				mCacheBoundsUV += s.p1;
-				mCacheBoundsUV += s.p2;
+				if (GetSide(gis_UV, i,s,b))
+				{
+					Bbox2	bb;
+					b.bounds(bb);
+					mCacheBoundsUV += bb;
+				} else {
+					mCacheBoundsUV += s.p1;
+					mCacheBoundsUV += s.p2;
+				}
 			}
 		}
 	

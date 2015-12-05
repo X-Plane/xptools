@@ -216,7 +216,7 @@ static int DoPreCheckWaterConform(const vector<const char *>& args)
 			fprintf(stderr,"Could not open %s\n", args[2]);
 			return 1;
 		}
-		fputc(255.0 * fabsf(wet_vec - wet_lu),im);
+		fputc(255.0 * fabs(wet_vec - wet_lu),im);
 		fclose(im);
 	}
 	return 0;

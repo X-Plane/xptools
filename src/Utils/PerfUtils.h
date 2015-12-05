@@ -39,29 +39,74 @@ struct StProfileInit {
 
 #endif
 
+
 #if APL
-	#if __MACH__
-		#define __DEBUGGING__
-		#include <Carbon/Carbon.h>
-	#else
-		#include <Timer.h>
-	#endif
-	#include <time.h>
-#elif IBM
-	#include <time.h>
+#include <mach/mach_time.h>
 #elif LIN
-//	not implemented. ask janos if you want this :-)
+#include <time.h>
+#elif IBM
+	// XDEFs should have gotten windows.
 #else
-	#error PLATFORM NOT DEFINED
+	#error platform not defined
 #endif
+
+
+
+
+inline unsigned long long query_hpc()
+{
+	#if APL
+		return mach_absolute_time();
+	#elif IBM
+		LARGE_INTEGER cntr;
+		QueryPerformanceCounter  (&cntr);
+		return cntr.QuadPart;		
+	#elif LIN
+		struct timespec tp;
+		xint ret = clock_gettime(CLOCK_MONOTONIC, &tp);
+		dev_assert(!ret);
+		if(ret != 0) return 0;
+		unsigned long long usecs = (unsigned long long)tp.tv_sec * 1000000ULL + (unsigned long long)tp.tv_nsec / 1000ULL;
+		return usecs;
+	#else
+		#error not implemented
+	#endif
+}
+
+inline double hpc_to_microseconds(unsigned long long in_hpc_delta)
+{
+	#if APL
+		mach_timebase_info_data_t	 ifo;
+		mach_timebase_info(&ifo);
+
+		double delta = in_hpc_delta;
+		double num = ifo.numer;
+		double denom = ifo.denom;
+		return delta * num / (denom * 1000.0);
+	#elif IBM
+		LARGE_INTEGER freq;
+		QueryPerformanceFrequency(&freq);	
+
+		double delta = in_hpc_delta;
+		double denom = freq.QuadPart;
+		return (delta * 1000000.0 /denom );
+	#elif LIN
+		return in_hpc_delta;
+	#else
+		#error not implemented
+	#endif
+}
+
+
+
+
+
+
+
 
 class	PerfTimer {
 
-#if APL && 0
 	unsigned long long	mStart;
-#else
-	clock_t				mStart;
-#endif
 	double				mTime;
 	unsigned long		mCalls;
 	const char *		mName;
@@ -85,58 +130,32 @@ public:
 
 	inline	void Start(void)
 	{
-#if APL
-		::Microseconds((UnsignedWide *) &mStart);
-#else
-		mStart = clock();
-#endif
+		mStart = query_hpc();
 	}
 
 	inline	void Stop(void)
 	{
-#if APL	&& 0
-		unsigned long long stopTime;
-		::Microseconds((UnsignedWide *) &stopTime);
+		unsigned long long stopTime = query_hpc();
 		unsigned long long delta = stopTime - mStart;
-		mTime += (double) delta / 1000000.0;
-#else
-		clock_t stopTime = clock();
-		clock_t delta = stopTime - mStart;
-		mTime += ((double) delta) / ((double) CLOCKS_PER_SEC);
-#endif
+		mTime += hpc_to_microseconds(delta);
 		++mCalls;
 	}
 
 };
 
 class	StElapsedTime {
-#if APL && 0
 	unsigned long long 	mStartTime;
-#else
-	clock_t				mStartTime;
-#endif
 	const char *		mName;
 public:
 	StElapsedTime(const char * inName): mName(inName)
 	{
-#if APL	 && 0
-		::Microseconds((UnsignedWide *) &mStartTime);
-#else
-		mStartTime = clock();
-#endif
+		mStartTime = query_hpc();
 	}
 	~StElapsedTime()
 	{
-#if APL	&& 0
-		unsigned long long stopTime;
-		::Microseconds((UnsignedWide *) &stopTime);
+		unsigned long long stopTime = query_hpc();
 		unsigned long long delta = stopTime - mStartTime;
-		printf("%s - %lf seconds.\n", mName, (double) delta / 1000000.0);
-#else
-		clock_t stopTime = clock();
-		printf("%s - %lf seconds.\n", mName, (double) (stopTime - mStartTime) / (double) CLOCKS_PER_SEC);
-
-#endif
+		printf("%s - %lf seconds.\n", mName, hpc_to_microseconds(delta) / 1000000.0);
 	}
 };
 

@@ -23,10 +23,6 @@
 
 #include "GUI_Timer.h"
 
-#if APL
-EventLoopTimerUPP GUI_Timer::sTimerCB = NewEventLoopTimerUPP(GUI_Timer::TimerCB);
-#endif
-
 #if IBM
 typedef map<UINT_PTR,GUI_Timer *>	TimerMap;
 static TimerMap						sTimerMap;
@@ -168,7 +164,7 @@ GUI_Timer::~GUI_Timer(void)
 {
 	#if APL
 		if (mTimer != NULL)
-			RemoveEventLoopTimer(mTimer);
+			CFRunLoopTimerInvalidate(mTimer);
 	#endif
 #if IBM
 		if (mID != 0)
@@ -189,14 +185,14 @@ void GUI_Timer::Start(float seconds)
 {
 	#if APL
 		if (mTimer != NULL)
-			RemoveEventLoopTimer(mTimer);
-		InstallEventLoopTimer(
-				GetMainEventLoop(),
-				seconds,
-				seconds,
-				sTimerCB,
-				reinterpret_cast<void*>(this),
-				&mTimer);
+			CFRunLoopTimerInvalidate(mTimer);
+
+		CFRunLoopTimerContext ctx = { 0, this, NULL, NULL, NULL };
+	
+		mTimer = CFRunLoopTimerCreate(
+						kCFAllocatorDefault, seconds, seconds, 0, 0, TimerCB, &ctx);
+		CFRunLoopAddTimer(CFRunLoopGetCurrent(), mTimer, kCFRunLoopCommonModes);
+
 	#endif
 	#if IBM
 		if (mID)
@@ -245,7 +241,7 @@ void GUI_Timer::Stop(void)
 	#if APL
 		if (mTimer != NULL)
 		{
-			RemoveEventLoopTimer(mTimer);
+			CFRunLoopTimerInvalidate(mTimer);
 			mTimer = NULL;
 		}
 	#endif
@@ -287,7 +283,7 @@ void GUI_Timer::Stop(void)
 }
 
 #if APL
-pascal void GUI_Timer::TimerCB(EventLoopTimerRef inTimer, void *inUserData)
+pascal void GUI_Timer::TimerCB(CFRunLoopTimerRef inTimer, void *inUserData)
 {
 	GUI_Timer * me = reinterpret_cast<GUI_Timer *>(inUserData);
 	me->TimerFired();

@@ -61,10 +61,6 @@
 #include "MapTopology.h"
 #include "MapAlgs.h"
 
-#if APL && defined(__MWERKS__)
-#include "SIOUX.h"
-#endif
-
 
 // This stuff is only needed for the hack open .elv code.
 #include "AptElev.h"
@@ -428,13 +424,7 @@ void	XGrindInit(void)
 		fifo=open("wed_cmds",O_RDONLY | O_NONBLOCK, 0);
 	}
 #endif
-#if APL && defined(__MWERKS__)
-//	SIOUXSettings.stubmode = true;
-	SIOUXSettings.standalone = false;
-	SIOUXSettings.setupmenus = false;
-	SIOUXSettings.autocloseonquit = false;
-	SIOUXSettings.asktosaveonclose = false;
-#endif
+
 	gFailure = CGAL::set_error_handler(cgal_failure);
 #if DEV
 	CGAL::set_warning_handler(cgal_warning);

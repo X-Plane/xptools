@@ -26,10 +26,10 @@
 #include "GUI_Menus.h"
 #include "XWin.h"
 #include "GUI_Window.h"
+#include "ObjCUtils.h"
 #if IBM
 #include <commctrl.h>
 #endif
-#define __DEBUGGING__
 
 GUI_Application *	gApplication = NULL;
 
@@ -60,145 +60,47 @@ HACCEL			gAccel = NULL;
 vector<ACCEL>	gAccelTable;
 #endif
 
-#if APL
-	#if defined(__MWERKS__)
-		#include <Carbon.h>
-	#else
-		#include <Carbon/Carbon.h>
-	#endif
 #include "XUtils.h"
 
-pascal OSErr GUI_Application::HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
+#if APL
+
+void GUI_Application::MenuCommandCB(void * ref, int cmd)
 {
-	GUI_Application * me = reinterpret_cast<GUI_Application *>(handlerRefcon);
+	GUI_Application * me = reinterpret_cast<GUI_Application *>(ref);
 
-	string	fpath;
-	vector<string>	files;
-
-
-	AEDescList	inDocList = { 0 };
-	OSErr err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &inDocList);
-	if (err) return err;
-
-	SInt32		numDocs;
-	err = ::AECountItems(&inDocList, &numDocs);
-	if (err) goto puke;
-
-		// Loop through all items in the list
-			// Extract descriptor for the document
-			// Coerce descriptor data into a FSSpec
-			// Tell Program object to open or print document
-
-
-	for (SInt32 i = 1; i <= numDocs; i++) {
-		AEKeyword	theKey;
-		DescType	theType;
-		FSRef		theFileSpec;
-		Size		theSize;
-
-		err = ::AEGetNthPtr(&inDocList, i, typeFSRef, &theKey, &theType,
-							(Ptr) &theFileSpec, sizeof(FSRef), &theSize);
-		if (err) goto puke;
-		UInt8 buf[2048];
-		if(FSRefMakePath(&theFileSpec, buf, sizeof(buf)) == noErr)
-		files.push_back((const char *) buf);
-	}
-	me->OpenFiles(files);
-
-puke:
-	AEDisposeDesc(&inDocList);
-	return noErr;
+	if(cmd)
+		me->DispatchHandleCommand(cmd);
 }
 
 
-pascal OSStatus GUI_Application::MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData)
+void GUI_Application::MenuUpdateCB(void * ref, int cmd, char * io_name, int * io_check, int * io_enable)
 {
-	GUI_Application * me = reinterpret_cast<GUI_Application *>(inUserData);
+	GUI_Application * me = reinterpret_cast<GUI_Application *>(ref);
 
-	HICommand 	cmd;
-	OSStatus	status;
-	MenuRef		amenu;
-
-	UInt32	clss = ::GetEventClass(inEvent);
-	UInt32	kind = ::GetEventKind(inEvent);
-	switch(clss) {
-	case kEventClassCommand:
-		switch(kind) {
-		case kEventCommandProcess:
-			{
-				status = GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand, NULL, sizeof(cmd), NULL, &cmd);
-				if (status != noErr) return status;
-
-				switch(cmd.commandID) {
-				case kHICommandQuit:
-					if (me->DispatchHandleCommand(gui_Quit))			return noErr;
-					else												return eventNotHandledErr;
-				case kHICommandAbout:
-					if (me->DispatchHandleCommand(gui_About))			return noErr;
-					else												return eventNotHandledErr;
-				case kHICommandPreferences:
-					if (me->DispatchHandleCommand(gui_Prefs))			return noErr;
-					else												return eventNotHandledErr;
-				default:
-					if(cmd.commandID)
-					if (me->DispatchHandleCommand(cmd.commandID))		return noErr;
-					else												return eventNotHandledErr;
-				}
-			}
-		default:
-			return eventNotHandledErr;
-		}
-	case kEventClassMenu:
-		switch(kind) {
-		case kEventMenuEnableItems:
-			{
-				status = GetEventParameter(inEvent, kEventParamDirectObject, typeMenuRef, NULL, sizeof(amenu), NULL, &amenu);
-				if (status != noErr) return status;
-
-				if (me->mMenus.count(amenu) == 0)
-					return eventNotHandledErr;
-
-				int item_count = ::CountMenuItems(amenu);
-
-				for (int n = 1; n <= item_count; ++n)
-				{
-					MenuCommand	id;
-					GetMenuItemCommandID(amenu, n, &id);
-
-					if (id == kHICommandQuit)			id = gui_Quit;
-					if (id == kHICommandAbout)			id = gui_About;
-					if (id == kHICommandPreferences)	id = gui_Prefs;
-
-					if (id != 0)
-					{
-						string	ioName;
-						int		ioCheck = 0;
-						if (me->DispatchCanHandleCommand(id, ioName, ioCheck))
-							EnableMenuItem(amenu, n);
-						else
-							DisableMenuItem(amenu, n);
-
-						if (!ioName.empty())
-						{
-							NukeAmpersand(ioName);
-							CFStringRef	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, ioName.c_str(), kCFStringEncodingMacRoman);
-							SetMenuItemTextWithCFString(amenu, n, cfstr);
-							CFRelease(cfstr);
-						}
-
-						::CheckMenuItem(amenu, n, ioCheck > 0);
-					}
-				}
-
-				return noErr;
-			}
-		default:
-			return eventNotHandledErr;
-		}
-	default:
-		return eventNotHandledErr;
+	if(cmd == 0) return;
+	
+	string name(io_name);
+	
+	if (me->DispatchCanHandleCommand(cmd, name, *io_check))
+	{
+		NukeAmpersand(name);
+		strcpy(io_name,name.c_str());
+		*io_enable = 1;
+	}
+	else
+	{
+		NukeAmpersand(name);
+		strcpy(io_name,name.c_str());
+		*io_enable = 0;
 	}
 }
+
+int GUI_Application::CanQuitCB(void * ref)
+{
+	GUI_Application * me = reinterpret_cast<GUI_Application *>(ref);
+	return me->CanQuit();
+}
+
 
 #endif
 #if LIN
@@ -297,34 +199,24 @@ static	void		BuildAccels(void)
 #endif
 
 #if LIN
-GUI_Application::GUI_Application(int& argc, char* argv[]) : GUI_Commander(NULL)
+GUI_Application::GUI_Application(int& argc, char* argv[])
+#elif APL
+GUI_Application::GUI_Application(const char * menu_nib)
 #else
-GUI_Application::GUI_Application() : GUI_Commander(NULL)
+GUI_Application::GUI_Application()
 #endif
+ : GUI_Commander(NULL)
 {
 	DebugAssert(gApplication == NULL);
 	gApplication = this;
 	mDone = false;
 #if APL
 
-		IBNibRef	nib = NULL;
-	OSStatus err = CreateNibReference(CFSTR("GUI"), &nib);
-	if (err == 0)
-		err = SetMenuBarFromNib(nib, CFSTR("MenuBar"));
-	EnableMenuCommand(NULL, kHICommandAbout);
-	EnableMenuCommand(NULL, kHICommandPreferences);
+	app_callbacks cb = { this, MenuCommandCB, MenuUpdateCB, CanQuitCB };
+	
+	set_delegate(&cb, menu_nib);
 
-
-	mMacEventHandlerUPP = NewEventHandlerUPP(MacEventHandler);
-	mHandleOpenDocUPP = NewAEEventHandlerUPP(HandleOpenDoc);
-
-	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments, mHandleOpenDocUPP, reinterpret_cast<long>(this), FALSE);
-
-	EventTypeSpec menu_events[] = {
-		kEventClassCommand,			kEventCommandProcess,
-		kEventClassMenu,			kEventMenuEnableItems };
-
-	InstallEventHandler(GetApplicationEventTarget(), mMacEventHandlerUPP, GetEventTypeCount(menu_events), menu_events, reinterpret_cast<void *>(this), &mMacEventHandlerRef);
+	void * mbar = get_menu_bar();
 
 #endif
 #if IBM
@@ -359,7 +251,7 @@ GUI_Application::~GUI_Application()
 void			GUI_Application::Run(void)
 {
 #if APL
-	RunApplicationEventLoop();
+	run_app();
 #endif
 #if IBM
 
@@ -385,7 +277,7 @@ void			GUI_Application::Quit(void)
 {
 	mDone = true;
 #if APL
-	QuitApplicationEventLoop();
+	quit_app();
 #endif
 #if LIN
 	qapp->quit();
@@ -395,7 +287,7 @@ void			GUI_Application::Quit(void)
 GUI_Menu		GUI_Application::GetMenuBar(void)
 {
 	#if APL
-		return NULL;
+		return get_menu_bar();
 	#elif IBM
 		HWND hwnd = GUI_Window::AnyHWND();
 		if (hwnd == NULL) return NULL;
@@ -418,7 +310,7 @@ GUI_Menu		GUI_Application::GetMenuBar(void)
 GUI_Menu		GUI_Application::GetPopupContainer(void)
 {
 	#if APL
-	return (GUI_Menu) -1;
+	return NULL;
 	#elif IBM
 	return NULL;
 	#else
@@ -429,9 +321,6 @@ GUI_Menu		GUI_Application::GetPopupContainer(void)
 GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t items[], GUI_Menu	parent, int parentItem)
 {
 
-#if APL
-	static MenuID	gIDs = 1000;
-#endif
 #if IBM
 	static int		gIDs = 1000;
 #endif
@@ -440,21 +329,9 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 #endif
 
 #if APL
-	MenuRef	new_menu;
-	::CreateNewMenu(gIDs++, kMenuAttrAutoDisable, &new_menu);
-	if (parent != GetPopupContainer())
-		::MacInsertMenu(new_menu, (parent == NULL) ? 0 : kInsertHierarchicalMenu);
-
-	string	title(inTitle);
+	string title(inTitle);
 	NukeAmpersand(title);
-	CFStringRef	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, title.c_str(), kCFStringEncodingMacRoman);
-	::SetMenuTitleWithCFString(new_menu, cfstr);
-	CFRelease(cfstr);
-
-	if (new_menu && parent != GetPopupContainer())
-	{
-		::SetMenuItemHierarchicalID((MenuRef) parent, parentItem + 1, ::GetMenuID(new_menu));
-	}
+	void * new_menu = create_menu(title.c_str(), parent, parentItem);
 #endif
 
 #if IBM
@@ -520,36 +397,23 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[])
 {
 	#if APL
-		if (CountMenuItems((MenuRef) new_menu) > 0)
-			DeleteMenuItems((MenuRef) new_menu,1,CountMenuItems((MenuRef) new_menu));
-
+		clear_menu(new_menu);
+	
 		int n = 0;
 		while (items[n].name)
 		{
 			string	itemname(items[n].name);
 			NukeAmpersand(itemname);
 			bool is_disable = IsDisabledString(itemname);
-			CFStringRef cfstr = CFStringCreateWithCString(kCFAllocatorDefault, itemname.c_str(), kCFStringEncodingMacRoman);
-			::AppendMenuItemTextWithCFString((MenuRef) new_menu, cfstr, (itemname=="-" ? kMenuItemAttrSeparator : 0), items[n].cmd, NULL );
-			CFRelease(cfstr);
-
-			switch(items[n].key) {
-			case GUI_KEY_UP:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuUpArrowGlyph);		break;
-			case GUI_KEY_DOWN:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDownArrowGlyph);	break;
-			case GUI_KEY_RIGHT:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuRightArrowGlyph);	break;
-			case GUI_KEY_LEFT:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuLeftArrowGlyph);	break;
-			case GUI_KEY_BACK:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuDeleteLeftGlyph);	break;
-			case GUI_KEY_RETURN:	SetMenuItemKeyGlyph((MenuRef) new_menu,n+1, kMenuReturnGlyph);		break;
-			default:				::SetItemCmd((MenuRef) new_menu, n+1, items[n].key);	break;
-			}
-
-			::SetMenuItemModifiers((MenuRef) new_menu, n+1,
-					((items[n].flags & gui_ShiftFlag) ? kMenuShiftModifier : 0) +
-					((items[n].flags & gui_OptionAltFlag) ? kMenuOptionModifier : 0) +
-					((items[n].flags & gui_ControlFlag) ? 0 : kMenuNoCommandModifier));
-
-			::CheckMenuItem((MenuRef) new_menu,n+1,items[n].checked);
-			if(is_disable) ::DisableMenuItem((MenuRef) new_menu,n+1);
+			
+			char shortcut[4] = { 0 };
+			if(items[n].key != 0)
+				shortcut[0] = tolower(items[n].key);
+			
+			if(itemname=="-")
+			add_separator(new_menu);
+			else
+			add_menu_item(new_menu, itemname.c_str(), items[n].cmd, items[n].checked, is_disable ? 0 : 1, shortcut, items[n].flags);
 
 			++n;
 		}
@@ -679,22 +543,3 @@ int			GUI_Application::CanHandleCommand(int command, string& ioName, int& ioChec
 	}
 }
 
-void		GUI_Application::TimerFired(void)
-{
-	// This is a hack for OSX.  For some reason, OSX isn't sending us an activate message
-	// for the window -under- the top window when a window is closed.  To hack around this,
-	// we get armed as a timer by the closing window.  When we get our event (post-window 
-	// closing) we can go find the new front window and activate it if it's not part of WED's
-	// focus chain.
-	// When we re-implement GUI on Cocoa hopefully this work-around can go away.
-	#if APL
-		GUI_Window * top = GUI_Window::GetTopWindow();
-		if(top)
-		{
-			if(!top->IsFocusedChain())
-				top->FocusChain(1);
-		}
-		
-		this->Stop();
-	#endif
-}

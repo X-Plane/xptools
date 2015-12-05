@@ -27,12 +27,6 @@
  */
 
 
- // BENTODO - sort out interdependence with hl_types.h
-
-//#if !defined(APL) && !defined(IBM) && !defined(LIN)
-//#include "hl_types.h"
-//#endif
-
 #include "DSFLib.h"
 #include "XChunkyFileUtils.h"
 #include <stdio.h>
@@ -65,15 +59,9 @@ const char *	dsfErrorMessages[] = {
 // These debug macros are used to swap the headers around.
 #if BIG
 	#if APL
-		#if defined(__MACH__)
-			#include <libkern/OSByteOrder.h>
-			#define SWAP32(x) (OSSwapConstInt32(x))
-			#define SWAP16(x) (OSSwapConstInt16(x))
-		#else
-			#include <Endian.h>
-			#define SWAP32(x) (Endian32_Swap(x))
-			#define SWAP16(x) (Endian16_Swap(x))
-		#endif
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
+		#define SWAP16(x) (OSSwapConstInt16(x))
 	#else
 		#error we do not have big endian support on non-Mac platforms
 	#endif

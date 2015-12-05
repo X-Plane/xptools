@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 #include <sys/stat.h>
+#include <errno.h>
 
 #if LIN
 #include <errno.h>

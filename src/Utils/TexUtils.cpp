@@ -160,6 +160,7 @@ bool LoadTextureFromFile(
  *****************************************************************************************/
 bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWidth, int * outHeight, float * outS, float * outT)
 {
+	
 	INIT_GL_INFO
 	
 	long				count = 0;
@@ -294,13 +295,8 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 #if BIG
 	#if APL
-		#if defined(__MACH__)
-			#include <libkern/OSByteOrder.h>
-			#define SWAP32(x) (OSSwapConstInt32(x))
-		#else
-			#include <Endian.h>
-			#define SWAP32(x) (Endian32_Swap(x))
-		#endif
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
 	#else
 		#error we do not have big endian support on non-Mac platforms
 	#endif

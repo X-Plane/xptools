@@ -58,6 +58,7 @@ enum {
 struct	WED_PreviewItem {
 	int			layer;
 	WED_PreviewItem(int l) : layer(l) { }
+	virtual ~WED_PreviewItem() { }
 	virtual	int	 get_layer(void) { return layer; }
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float pavement_alpha)=0;
 };

@@ -30,10 +30,6 @@
 using std::list;
 
 #include "PlatformUtils.h"
-#if APL && !defined(__MACH__)
-#define __DEBUGGING__
-#include "XUtils.h"
-#endif
 
 typedef pair<ProcessConfigString_f, void *>			HandlerEntry;
 typedef hash_map<string, HandlerEntry>				HandlerMap;
@@ -106,15 +102,6 @@ bool	RegisterLineHandler(
 string	FindConfigFile(const char * inFilename)
 {
 	string	partial_path = string("config" DIR_STR) + inFilename;
-#if APL && !defined(__MACH__)
-	string	appP;
-	AppPath(appP);
-	string::size_type b = appP.rfind(':');
-	appP.erase(b+1);
-	partial_path = appP + partial_path;
-	if (!strncmp(inFilename, appP.c_str(), appP.size()))
-		partial_path = inFilename;
-#endif
 	return partial_path;
 }
 

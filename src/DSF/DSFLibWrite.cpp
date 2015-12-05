@@ -40,15 +40,9 @@
 
 #if BIG
 	#if APL
-		#if defined(__MACH__)
-			#include <libkern/OSByteOrder.h>
-			#define SWAP32(x) (OSSwapConstInt32(x))
-			#define SWAP16(x) (OSSwapConstInt16(x))
-		#else
-			#include <Endian.h>
-			#define SWAP32(x) (Endian32_Swap(x))
-			#define SWAP16(x) (Endian16_Swap(x))
-		#endif
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
+		#define SWAP16(x) (OSSwapConstInt16(x))
 	#else
 		#error we do not have big endian support on non-Mac platforms
 	#endif

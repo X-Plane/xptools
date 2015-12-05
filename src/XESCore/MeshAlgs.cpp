@@ -43,10 +43,6 @@
 #include "MeshSimplify.h"
 #include "NetHelpers.h"
 #include "Zoning.h"	// for urban cheat table.
-#if APL && !defined(__MACH__)
-#define __DEBUGGING__
-#include "XUtils.h"
-#endif
 #if OPENGL_MAP
 #include "GISTool_Globals.h"
 #endif
@@ -1079,7 +1075,7 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 	{
 		ffi->info().terrain = terrain_Natural;
 		ffi->info().feature = NO_VALUE;
-		ffi->info().orig_face == Face_handle();
+		ffi->info().orig_face = Face_handle();
 
 		for(int n = 0; n < 3; ++n)
 		if(ffi->is_constrained(n))
@@ -1586,13 +1582,6 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		char	fname_top[512];
 
 		string border_loc = mesh_folder;
-#if APL && !defined(__MACH__)
-		string	appP;
-		AppPath(appP);
-		string::size_type b = appP.rfind(':');
-		appP.erase(b+1);
-		border_loc = appP + border_loc;
-#endif
 
 		make_cache_file_path(border_loc.c_str(),deriv.mWest-1, deriv.mSouth,"border",fname_lef);
 		make_cache_file_path(border_loc.c_str(),deriv.mWest+1, deriv.mSouth,"border",fname_rgt);
@@ -2592,13 +2581,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		char	fname[512];
 
 		string border_loc = mesh_folder;
-#if APL && !defined(__MACH__)
-		string	appP;
-		AppPath(appP);
-		string::size_type b = appP.rfind(':');
-		appP.erase(b+1);
-		border_loc = appP + border_loc;
-#endif
 
 		make_cache_file_path(border_loc.c_str(),west, south,"border",fname);
 

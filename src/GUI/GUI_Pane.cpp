@@ -24,11 +24,7 @@
 #include "GUI_Pane.h"
 #include "GUI_Clipboard.h"
 #if APL
-	#if defined(__MWERKS__)
-		#include <Carbon.h>
-	#else
-		#include <Carbon/Carbon.h>
-	#endif
+	#include "ObjCUtils.h"
 #elif IBM
 	#include <Windows.h>
 #endif
@@ -53,16 +49,14 @@ using std::find;
 GUI_KeyFlags GUI_Pane::GetModifiersNow(void)
 {
 #if APL
-	// http://developer.apple.com/documentation/Carbon/Reference/Carbon_Event_Manager_Ref/Reference/reference.html#//apple_ref/doc/uid/TP30000135-CH1g-DontLinkElementID_16
-	UInt32	mods = GetCurrentEventKeyModifiers();
 
 	GUI_KeyFlags	flags = 0;
 
-	if (mods & shiftKey)
+	if (has_shiftkey())
 		flags |= gui_ShiftFlag;
-	if (mods & cmdKey)
+	if (has_controlkey())
 		flags |= gui_ControlFlag;
-	if (mods & optionKey)
+	if (has_optionkey())
 		flags |= gui_OptionAltFlag;
 	return flags;
 #elif IBM

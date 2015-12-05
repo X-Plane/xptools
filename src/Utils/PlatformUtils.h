@@ -39,12 +39,9 @@
 #if	IBM
 	#define DIR_CHAR	'\\'
 	#define DIR_STR		"\\"
-#elif (APL && __MACH__) || LIN
+#elif APL || LIN
 		#define	DIR_CHAR	'/'
 		#define DIR_STR		"/"
-#elif APL
-		#define	DIR_CHAR	':'
-		#define DIR_STR		":"
 #else
 	#error PLATFORM NOT DEFINED
 #endif
@@ -104,5 +101,6 @@ enum {
  *
  */
 int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2);
+
 
 #endif

@@ -215,7 +215,7 @@ void	WED_FilterBar::AcceptEdit(
 
 		BroadcastMessage(mMsg, mParam);
 	}
-	if(cell_x == 1 && cell_y == 1 || mHavePacks == false)
+	if((cell_x == 1 && cell_y == 1) || mHavePacks == false)
 	{
 		if(mText != the_content.text_val)
 		{

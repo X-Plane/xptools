@@ -24,11 +24,6 @@
 #ifndef GUI_APPLICATION_H
 #define GUI_APPLICATION_H
 
-#if APL
-#define __DEBUGGING__
-#include <Carbon/Carbon.h>
-#endif
-
 #if LIN
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
@@ -51,10 +46,12 @@ class GUI_QtMenu;
 
 */
 
-class	GUI_Application : public GUI_Commander, public GUI_Timer {
+class	GUI_Application : public GUI_Commander {
 public:
 #if LIN
 	GUI_Application(int& argc, char* argv[]);
+#elif APL
+					 GUI_Application(const char * menu_nib);	// A NIB with an app and Windows menu is passed in.
 #else
 					 GUI_Application();
 #endif
@@ -80,27 +77,19 @@ public:
 	virtual	int				AcceptTakeFocus(void) 	{ return 1; }
 	virtual	int				HandleCommand(int command);
 	virtual	int				CanHandleCommand(int command, string& ioName, int& ioCheck);
+
+
+#if APL
+	static void MenuCommandCB(void * ref, int cmd);
+	static void MenuUpdateCB(void * ref, int cmd, char * io_name, int * io_check, int * io_enable);
+	static int  CanQuitCB(void * ref);
+#endif
+
 #if LIN
     QMenuBar* getqmenu();
 #endif
 private:
 
-	virtual	void		TimerFired(void);
-
-#if APL
-
-	EventHandlerUPP		mMacEventHandlerUPP;
-	EventHandlerUPP		mSiouxSnifferUPP;
-	EventHandlerRef		mMacEventHandlerRef;
-	EventHandlerRef		mSiouxSnifferRef;
-	AEEventHandlerUPP	mHandleOpenDocUPP;
-
-	static pascal OSStatus	MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	static pascal OSStatus 	SiouxSniffer(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-	static pascal OSErr 	HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon);
-
-
-#endif
 #if !LIN
 	set<GUI_Menu>		mMenus;
 #endif

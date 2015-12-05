@@ -33,11 +33,13 @@
 #include "WED_Url.h"
 
 #if LIN
-WED_Application::WED_Application(int& argc, char* argv[])
-: GUI_Application(argc, argv), mAboutBox(NULL)
+WED_Application::WED_Application(int& argc, char* argv[]) : GUI_Application(argc, argv),
+#elif APL
+WED_Application::WED_Application() : GUI_Application("WEDMainMenu"),
 #else
-WED_Application::WED_Application() : mAboutBox(NULL)
+	WED_Application::WED_Application() :
 #endif
+		mAboutBox(NULL)
 {
 }
 

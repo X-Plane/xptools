@@ -62,9 +62,9 @@ void	BuildOneFakeObject(const char * dir, const char * fname, double width, doub
 	cmd.cmdID = obj_Quad;
 	cmd.st.resize(4);
 	cmd.st[0].st[0] = 0.0;	cmd.st[0].st[1] = 0.0;
-	cmd.st[0].st[1] = 0.0;	cmd.st[1].st[1] = 0.0;
-	cmd.st[0].st[2] = 0.0;	cmd.st[2].st[1] = 0.0;
-	cmd.st[0].st[3] = 0.0;	cmd.st[3].st[1] = 0.0;
+	cmd.st[1].st[0] = 0.0;	cmd.st[1].st[1] = 0.0;
+	cmd.st[2].st[0] = 0.0;	cmd.st[2].st[1] = 0.0;
+	cmd.st[3].st[0] = 0.0;	cmd.st[3].st[1] = 0.0;
 	// FRONT
 	cmd.st[0].v[0] = -w;	cmd.st[0].v[1] = 0; cmd.st[0].v[2] = d;
 	cmd.st[1].v[0] = -w;	cmd.st[1].v[1] = h; cmd.st[1].v[2] = d;

@@ -38,6 +38,12 @@ build/
 [Bb]in/
 *.obj
 
+*.pbxuser
+*.mode1v3
+xcuserdata/
+contents.xcworkspacedata
+*.xccheckout
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

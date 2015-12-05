@@ -23,6 +23,9 @@
 
 #include "WED_Menus.h"
 #include "GUI_Application.h"
+#if APL
+#include "ObjCUtils.h"
+#endif
 
 GUI_Menu	test1 = 0;
 GUI_Menu	sub1 = 0;
@@ -262,19 +265,6 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu	airport_menu = inApp->CreateMenu(
 		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);
 
-	GUI_Menu	help_menu;
-#if APL
-	MenuRef	win_menu;
-	if (CreateStandardWindowMenu(kWindowMenuIncludeRotate,&win_menu)==noErr)
-		InsertMenu(win_menu,0);
-
-	MenuRef hp = 0;
-	MenuItemIndex ind = 0;
-	OSStatus err = HMGetHelpMenu(&hp,&ind);
-
-	inApp->RebuildMenu(hp, kHelpMenu);
-#else
-	help_menu = inApp->CreateMenu("&Help", kHelpMenu, inApp->GetMenuBar(), 0);
-#endif
-
+	GUI_Menu	help_menu = inApp->CreateMenu(
+		"&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 }

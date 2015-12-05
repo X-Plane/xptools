@@ -252,6 +252,7 @@ inline float	key_extrap(float input, const vector<XObjKey>& table, int n)
 
 void	ObjDraw8(const XObj8& obj, float dist, ObjDrawFuncs10_t * funcs, void * ref)
 {
+	CHECK_GL_ERR
 	if (funcs == NULL) funcs = &sDefault;
 	int 	drawMode = drawMode_Non;
 	int		arrayMode = arrayMode_Non;

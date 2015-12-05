@@ -232,7 +232,7 @@ struct split_at_line_h {
 	int operator()(const Segment2& in_seg, Segment2 out_segs[2])
 	{
 		if((in_seg.p1.y() <= y && in_seg.p2.y() <= y) ||
-			in_seg.p1.y() >= y && in_seg.p2.y() >= y)
+			(in_seg.p1.y() >= y && in_seg.p2.y() >= y))
 		{
 			out_segs[0] = in_seg;
 			DebugAssert(!side_is_degenerate(out_segs[0]));
@@ -250,7 +250,7 @@ struct split_at_line_h {
 	int operator()(const Segment2p& in_seg, Segment2p out_segs[2])
 	{
 		if((in_seg.p1.y() <= y && in_seg.p2.y() <= y) ||
-			in_seg.p1.y() >= y && in_seg.p2.y() >= y)
+			(in_seg.p1.y() >= y && in_seg.p2.y() >= y))
 		{
 			out_segs[0] = in_seg;
 			DebugAssert(!side_is_degenerate(out_segs[0]));
@@ -395,7 +395,7 @@ struct split_at_line_v {
 	int operator()(const Segment2& in_seg, Segment2 out_segs[2])
 	{
 		if((in_seg.p1.x() <= x && in_seg.p2.x() <= x) ||
-			in_seg.p1.x() >= x && in_seg.p2.x() >= x)
+			(in_seg.p1.x() >= x && in_seg.p2.x() >= x))
 		{
 			out_segs[0] = in_seg;
 			DebugAssert(!side_is_degenerate(out_segs[0]));
@@ -413,7 +413,7 @@ struct split_at_line_v {
 	int operator()(const Segment2p& in_seg, Segment2p out_segs[2])
 	{
 		if((in_seg.p1.x() <= x && in_seg.p2.x() <= x) ||
-			in_seg.p1.x() >= x && in_seg.p2.x() >= x)
+			(in_seg.p1.x() >= x && in_seg.p2.x() >= x))
 		{
 			out_segs[0] = in_seg;
 			DebugAssert(!side_is_degenerate(out_segs[0]));

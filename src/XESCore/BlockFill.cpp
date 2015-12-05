@@ -2714,7 +2714,7 @@ static void	init_road_ccb(int zoning, int variant,float height,  Pmwx::Ccb_halfe
 					push_block_curve(curves, pts[j].offset_reflex1[0],pts[j].offset_reflex1[1], cur_base + span, cur_base);
 				if(pts[j].offset_reflex1[1] != pts[j].offset_reflex1[2])
 					push_block_curve(curves, pts[j].offset_reflex1[1],pts[j].offset_reflex1[2], cur_base + span, cur_base);
-				if(curves, pts[j].offset_reflex1[2] != pts[j].offset_next1)
+				if(pts[j].offset_reflex1[2] != pts[j].offset_next1)
 					push_block_curve(curves, pts[j].offset_reflex1[2], pts[j].offset_next1, cur_base + span, cur_base);
 
 				if(pts[j].offset_next1 != pts[j].offset_prev1 || pts[j].offset_next2 != pts[j].offset_prev2)

@@ -21,7 +21,6 @@
  *
  */
 #include "ObjUtils.h"
-#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "XObjReadWrite.h"
 #include "CompGeomUtils.h"

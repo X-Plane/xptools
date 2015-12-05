@@ -276,7 +276,7 @@ int		WED_LibraryListAdapter::SelectDisclose(
 		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),true);
 	}
 	
-	if (!mSel.empty() && mLibrary->GetResourceType(tempMSel) == res_Directory ||
+	if ((!mSel.empty() && mLibrary->GetResourceType(tempMSel) == res_Directory) ||
 		mSel == mLocalStr || mSel == mLibraryStr)
 	{
 		SetOpen(mSel, open_it);

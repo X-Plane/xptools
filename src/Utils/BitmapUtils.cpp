@@ -1612,13 +1612,8 @@ static void copy_mip_with_filter(const ImageInfo& src, ImageInfo& dst,int level,
 
 #if BIG
 	#if APL
-		#if defined(__MACH__)
-			#include <libkern/OSByteOrder.h>
-			#define SWAP32(x) (OSSwapConstInt32(x))
-		#else
-			#include <Endian.h>
-			#define SWAP32(x) (Endian32_Swap(x))
-		#endif
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
 	#else
 		#error we do not have big endian support on non-Mac platforms
 	#endif

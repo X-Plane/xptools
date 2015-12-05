@@ -658,7 +658,7 @@ int Iterate_CollectRequiredParents(ISelectable * what, void * ref)
 // DRAG & DROP
 //---------------------------------------------------------------------------------------------------------------------------------
 
-static	GUI_ClipType	sSelectionType;
+static	GUI_ClipType	sSelectionType = gui_ClipType_Invalid;
 
 void				WED_RegisterDND(void)
 {
@@ -672,6 +672,8 @@ GUI_DragOperation	WED_DoDragSelection(
 								int						button,
 								int						where[4])
 {
+	if(sSelectionType == gui_ClipType_Invalid) WED_RegisterDND();
+	
 	void * dummy = NULL;
 	const void *	ptrs[1] = { &dummy };
 	int		sizes[1] = { sizeof(dummy) };
@@ -687,6 +689,8 @@ GUI_DragOperation	WED_DoDragSelection(
 bool				WED_IsDragSelection(
 								GUI_DragData *			drag)
 {
+	if(sSelectionType == gui_ClipType_Invalid) WED_RegisterDND();
+
 	if (drag->CountItems() != 1) return false;
 	return drag->NthItemHasClipType(0, sSelectionType);
 }

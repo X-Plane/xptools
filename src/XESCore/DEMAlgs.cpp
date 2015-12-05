@@ -30,7 +30,6 @@
 #include "PolyRasterUtils.h"
 #include "WED_Document.h"
 #include "XESConstants.h"
-#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "DEMAlgs.h"
 #include "WED_Globals.h"

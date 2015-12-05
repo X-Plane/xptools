@@ -22,7 +22,7 @@
  */
 
 #ifndef WED_Validate_h
-#define EWD_Validate_h
+#define WED_Validate_h
 
 class	IResolver;
 class	WED_Thing;

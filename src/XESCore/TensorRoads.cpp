@@ -36,9 +36,6 @@
 #include "PerfUtils.h"
 #include "MapCreate.h"
 
-#if !defined(XUTILS_EXCLUDE_MAC_CRAP)
-#define XUTILS_EXCLUDE_MAC_CRAP
-#endif
 #include "XUtils.h"
 
 #define	ADVANCE_RATIO 0.0005

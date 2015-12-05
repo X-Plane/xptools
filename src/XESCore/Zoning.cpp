@@ -340,7 +340,7 @@ void LoadZoningRules(void)
 template <typename T>
 inline bool	check_rule(T minv, T maxv, T actv)
 {
-	return ((minv == maxv) && (minv == 0) || (actv >= minv && actv <= maxv));
+	return ((minv == maxv && minv == 0) || (actv >= minv && actv <= maxv));
 }
 
 inline bool any_match(const set<int>& lhs, const set<int>& rhs)
@@ -763,7 +763,7 @@ static void ZoneOneFace(
 		if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater())
 			has_water = 1;
 		else
-			has_non_water;
+			has_non_water = 1;
 	} while (++circ != stop);
 
 	if(has_water && !has_non_water) has_water = 2;

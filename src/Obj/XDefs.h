@@ -27,21 +27,6 @@
  * PLATFORM AND COMPILER CONTROL
  ************************************************************************************************************************************************************************/
 
-
-#if __MWERKS__
-	#if __MACH__
-		#pragma c99 on
-
-		#define _MSL_USING_MW_C_HEADERS 1
-
-		#define __dest_os __mac_os_x
-	#elif APL
-		#define __dest_os __mac_os
-	#endif
-
-	#define __MSL_LONGLONG_SUPPORT__
-#endif
-
 #if APL || LIN
 	#define CRLF "\n"
 #else
@@ -102,10 +87,6 @@
 
 // This enables gateway communication.  You can turn this off if you don't have a working CURL/SSL.
 #define HAS_GATEWAY 1
-
-// XUtils is a cluster of random junk that someday needs to all get factored away.  It contains some really old Mac-specific junk.
-// This #define kills the Mac-specific junk so that we can be cross-platform.
-#define XUTILS_EXCLUDE_MAC_CRAP 1
 
 // This is a big hack.  WED objects have culling "built-in" based on a bounding rect - it's part of the IGIS interface.
 // But this is kind of a design flaw; the actual culling depends on the -visualization-, which is applied via a map layer.
@@ -181,16 +162,7 @@ using namespace std;
 
 #ifdef __cplusplus
 
-#if __MWERKS__							// metrowerks compiler
-	#include <hash_map>
-	using namespace std;				// DEC THIS TO GET THE NEW IOS FUNCTIONS IN fstream, iomanip, and string, which are all new, unlike the old fstream.h, iomanip.h, and string.h
-	using Metrowerks::hash_map;			// Pull hash map into the global domain too!
-	using Metrowerks::hash_multimap;
-	#define HASH_MAP_NAMESPACE_START namespace Metrowerks {
-	#define HASH_MAP_NAMESPACE_END }
 
-	#define HASH_PARENT(x,y) : std::unary_function<x,y>
-#endif
 #if __GNUC__							// gnuc is the x-code compiler
 
 	// Some code bases like CGAL think __powerpc__ is lower case - for some reason gcc has upper, so...
@@ -244,7 +216,7 @@ using namespace std;
 
 #endif /* __cplusplus */
 
-#if defined(_MSC_VER) && !defined(__MWERKS__)
+#if defined(_MSC_VER)
 
 	#ifdef __cplusplus
 
@@ -303,6 +275,5 @@ using namespace std;
 #define SEGMENT2			Segment2
 #define VECTOR2				Vector2
 #define CGAL_midpoint(a,b)	Segment2(a,b).midpoint()
-
 
 #endif

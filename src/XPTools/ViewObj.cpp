@@ -23,8 +23,6 @@
 
 #define FACADES 0
 
-#include <time.h>
-#include "hl_types.h"
 #include "XObjDefs.h"
 #include "ObjDraw.h"
 #include "ObjUtils.h"
@@ -39,6 +37,7 @@
 #include <set>
 #include "PlatformUtils.h"
 #include "OE_Zoomer3d.h"
+#include <time.h>
 
 #if FACADES
 	#include "FacadeObj.h"
@@ -744,7 +743,11 @@ void	XGrindFiles(const vector<string>& files)
 
 void	XGrindInit(void)
 {
-	(new XObjWin(NULL))->ForceRefresh();
+	XObjWin * win = new XObjWin(NULL);
+	
+	win->GetMenuBar();
+	win->ForceRefresh();
+	
 
 	const char * ext = (const char *) glGetString(GL_EXTENSIONS);
 	int	major=0, minor=0, revision=0;

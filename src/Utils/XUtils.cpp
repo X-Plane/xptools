@@ -20,7 +20,7 @@
  * THE SOFTWARE.
  *
  */
-#include "hl_types.h"
+//#include "hl_types.h"
 #include "XUtils.h"
 #include <stdio.h>
 #include <ctype.h>
@@ -28,10 +28,6 @@
 #include <stdlib.h>
 #include "PlatformUtils.h"
 //#include <time.h>
-
-//#if !defined(XUTILS_EXCLUDE_MAC_CRAP) && defined(__MACH__)
-//#define XUTILS_EXCLUDE_MAC_CRAP 1
-//#endif
 
 #if APL || IBM
 //using namespace Metrowerks;
@@ -51,13 +47,14 @@ static char * my_fgets(char * s, int n, FILE * file)
 			c = fgetc(file);
 
 			if (c == EOF)
+			{
 				if (/*feof(file) &&*/ p != s)
 					break;
 				else
 				{
 					return(NULL);
 				}
-
+			}
 			*p++ = c;
 		}
 		while (c != '\n' && c != '\r' && --n);
@@ -247,84 +244,6 @@ void		ExtractPath(string& ioPath)
 		ioPath = ioPath.substr(0, sep);
 }
 
-#if APL
-
-#if !defined(XUTILS_EXCLUDE_MAC_CRAP)
-
-#define _STDINT_H_
-#if __MWERKS__
-#include <Carbon.h>
-#else
-#include <Carbon/Carbon.h>
-#endif
-
-OSErr	FindSuperFolder(const FSSpec& inItem, FSSpec& outFolder)
-{
-		CInfoPBRec	paramBlock;
-		OSErr		err;
-
-	paramBlock.dirInfo.ioCompletion = 	NULL;
-	paramBlock.dirInfo.ioNamePtr =		(StringPtr) (&(outFolder.name));
-	paramBlock.dirInfo.ioVRefNum = 		inItem.vRefNum;
-	paramBlock.dirInfo.ioFDirIndex = 	-1;
-	paramBlock.dirInfo.ioDrDirID = 		inItem.parID;
-
-	err = ::PBGetCatInfoSync(&paramBlock);
-	if (err != noErr)
-		return err;
-
-	outFolder.vRefNum = paramBlock.dirInfo.ioVRefNum;
-	outFolder.parID= paramBlock.dirInfo.ioDrParID;
-	return noErr;
-}
-
-void	AppPath(string& outString)
-{
-	ProcessSerialNumber	psn = { 0, kCurrentProcess };
-	ProcessInfoRec info = { 0 };
-	FSSpec	spec;
-	Str255	name;
-	info.processInfoLength = sizeof(info);
-	info.processAppSpec = &spec;
-	info.processName = name;
-	GetProcessInformation(&psn, &info);
-	FSSpec_2_String(spec, outString);
-}
-
-void	FSSpec_2_String(const FSSpec& inSpec, string& outString)
-{
-	outString.clear();
-#if defined(__MACH__)
-
-		FSRef	fsref;
-	if (FSpMakeFSRef(&inSpec, &fsref) == noErr)
-	{
-		char	path[1024];
-		if (FSRefMakePath(&fsref, (UInt8*) path, sizeof(path))==noErr)
-		{
-			outString = path;
-		}
-	}
-
-#else
-	FSSpec	foo(inSpec);
-	FSSpec	foo2;
-
-	while (1)
-	{
-		if (outString.empty())
-			outString = std::string(foo.name+1, foo.name+foo.name[0]+1);
-		else
-			outString = std::string(foo.name+1, foo.name+foo.name[0]+1) + std::string(":") + outString;
-		if (FindSuperFolder(foo, foo2) != noErr)
-			break;
-		foo = foo2;
-	}
-#endif
-}
-
-#endif
-#endif
 
 void	ExtractFixedRecordString(
 				const string&		inLine,

@@ -25,10 +25,6 @@
 #include <vector>
 #include <string.h>
 
-// BENTODO - resolve hl_types dependency!!
-//#if !defined(APL) && !defined(IBM)
-//#include "hl_types.h"
-//#endif
 
 using std::vector;
 

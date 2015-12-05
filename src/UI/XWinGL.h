@@ -24,12 +24,11 @@
 #define XWINGL_H
 
 #if APL
-	// hack for conflict with DebugAssert!
-	#define __DEBUGGING__
-	#if __MWERKS__
-		#include <AGL.h>
+	#include <OpenGL/gl.h>
+	#if __OBJC__
+		#import <AppKit/AppKit.h>
 	#else
-		#include <AGL/agl.h>
+		typedef void NSOpenGLView;
 	#endif
 #endif
 #include "XWin.h"
@@ -125,6 +124,7 @@ private:
 
 #endif
 
+
 class	XWinGL : public XWin
 {
 #if LIN
@@ -161,7 +161,7 @@ public:
 private:
 
 #if APL
-		AGLContext		mContext;
+		NSOpenGLView *		mContext;
 #endif
 
 #if IBM

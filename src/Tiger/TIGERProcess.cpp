@@ -22,7 +22,6 @@
  */
 #include "TIGERProcess.h"
 #include "TIGERTypes.h"
-#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 
 // For maps, the hash key for an env is lat * 360 + lon.

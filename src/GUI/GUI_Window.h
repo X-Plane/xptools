@@ -112,16 +112,14 @@ private:
 #endif
 
 #if APL
-		static pascal OSErr		TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
-		static pascal OSErr		ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
-		static pascal OSStatus	TooltipCB(WindowRef inWindow, Point inGlobalMouse, HMContentRequest inRequest, HMContentProvidedType *outContentProvided, HMHelpContentPtr ioHelpContent);
-
-		static DragTrackingHandlerUPP	sTrackingHandlerUPP;
-		static DragReceiveHandlerUPP	sReceiveHandlerUPP;
-		static HMWindowContentUPP		sTooltipUPP;
-		
-		static	GUI_Window *	GetTopWindow();
-		
+	
+	// For OS SX, we get a bunch of call-backs from XWin because we can't run ObjC code directly in GUI_window.cpp.
+	virtual int					CalcHelpTip(int x, int y, int bounds[4], string& msg);
+	virtual	int					AdvancedDragEntered(void * ns_dragging_info);
+	virtual	int					AdvancedDragUpdated(void * ns_dragging_info);
+	virtual	void				AdvancedDragExited(void * ns_dragging_info);
+	virtual	int					AdvancedPerformDrop(void * ns_dragging_info);
+	
 #endif
 
 	GUI_GraphState	mState;
