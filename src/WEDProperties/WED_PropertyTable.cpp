@@ -181,7 +181,7 @@ void	WED_PropertyTable::GetCellContent(
 			}
 			the_content.text_val += label;
 		}
-		if (the_content.text_val.empty())	the_content.text_val="none";
+		if (the_content.text_val.empty())	the_content.text_val="None";
 		if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
 		break;
 	}

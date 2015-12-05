@@ -670,7 +670,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].flags = 0;
 					items[i].cmd = 0;
 					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
-					if (mEditInfo.int_val == it->first && cur == -1) cur = i;
+					if (items[i].checked && cur == -1) cur = i;
 				}
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 				if (choice >= 0 && choice < enum_vals.size())
