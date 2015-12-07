@@ -337,8 +337,6 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 		mParID = par_id;
 	else
 		mParID = "";
-	
-	this->Show();
 }
 
 void WED_GatewayExportDialog::Cancel()

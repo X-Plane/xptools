@@ -203,6 +203,7 @@ public:
 
 
 		int						mInDrag;			// Button being dragged or -1 if none.  This ensures we send only one down/drag/up sequence.
+		int						mInMouseHandler;	// Detector for re-entrancy in mouse handlers
 		int						mWantFakeUp;		// True if the down or drag handler should fake an up click and end the gesture.
 		int						mIsControlClick;	// Flag if control key down on the mInDrag down click - control + button 0 = button 1
 		int						mLastX;				// Last known mouse event for when we have to fake an event.

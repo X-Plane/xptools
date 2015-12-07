@@ -280,7 +280,9 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner)
+	// This kind of protection protects not only against our owner being destroyed while NS is alive by ref count,
+	// but also against getting mouse events leaking through the modal drag loop, which happnes rarely but not never.
+	if(mOwner && !mOwner->mInDragOp)
 	mOwner->EventButtonDown(x,y,0, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -289,7 +291,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner)
+	if(mOwner && !mOwner->mInDragOp)
 	mOwner->EventButtonDown(x,y,1, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -298,7 +300,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner)
+	if(mOwner && !mOwner->mInDragOp)
 	mOwner->EventButtonDown(x,y,2, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -334,7 +336,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner)
+	if(mOwner && !mOwner->mInDragOp)
 	mOwner->EventButtonUp(x,y,0);
 }
 
@@ -343,7 +345,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner)
+	if(mOwner && !mOwner->mInDragOp)
 	mOwner->EventButtonUp(x,y,1);
 }
 
@@ -352,7 +354,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner)
+	if(mOwner && !mOwner->mInDragOp)
 	mOwner->EventButtonUp(x,y,2);
 }
 
@@ -499,6 +501,7 @@
 void	XWin::initCommon(int dnd, const char * title, int attributes, int x, int y, int dx, int dy)
 {
 	mInDragOp = 0;
+	mInMouseHandler = 0;
 	mCurrentDragOps = 0;
 	mLastX = mLastY = 0;
 	mToolTipMem = NULL;
@@ -783,6 +786,9 @@ void		XWin::GetMouseLoc(int * outX, int * outY)
 
 void		XWin::EventButtonDown(int x, int y, int button, int has_control_key)
 {
+	DebugAssert(mInMouseHandler == 0);
+	++mInMouseHandler;
+	
 	mLastX = x;
 	mLastY = y;
 	ManageToolTipForMouse(x,y);
@@ -816,10 +822,13 @@ void		XWin::EventButtonDown(int x, int y, int button, int has_control_key)
 			mWantFakeUp = 0;
 		}
 	}
+	--mInMouseHandler;
 }
 
 void		XWin::EventButtonUp  (int x, int y, int button					 )
 {
+	DebugAssert(mInMouseHandler==0);
+	++mInMouseHandler;
 	mLastX = x;
 	mLastY = y;
 	ManageToolTipForMouse(x,y);
@@ -831,6 +840,7 @@ void		XWin::EventButtonUp  (int x, int y, int button					 )
 		mInDrag = -1;
 		this->ClickUp(x, y, mIsControlClick ? 1 : button);
 	}
+	--mInMouseHandler;
 }
 
 void		XWin::EventButtonMove(int x, int y								 )
@@ -847,9 +857,12 @@ void		XWin::EventButtonMove(int x, int y								 )
 		this->ClickDrag(x, y, mIsControlClick ? 1 : mInDrag);
 		if(mWantFakeUp)
 		{
+			DebugAssert(mInMouseHandler==0);
+			++mInMouseHandler;
 			this->ClickUp(x, y, mIsControlClick ? 1 : mInDrag);
 			mInDrag = -1;
 			mWantFakeUp = 0;
+			--mInMouseHandler;
 		}
 	}
 	else
@@ -1045,6 +1058,8 @@ int	XWin::TrackPopupCommands(xmenu in_menu, int mouse_x, int mouse_y, int button
 	NSPoint pop_pt;
 	pop_pt.x = mouse_x;
 	pop_pt.y = [[mWindow contentView] frame].size.height - mouse_y;
+
+	if(current == -1) current = 0;	// We need this in case we pop up a meun like equipment type where legitimately no one can be selected, but 'none' is not a choice.
 
 	BOOL result = [menu popUpMenuPositioningItem:[[menu itemArray] objectAtIndex:current] atLocation:pop_pt inView:[mWindow contentView]];
 

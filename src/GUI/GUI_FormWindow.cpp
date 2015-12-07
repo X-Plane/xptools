@@ -66,7 +66,7 @@ GUI_FormWindow::GUI_FormWindow(
 								const string&			title,
 								int						width,
 								int						height) :
-	GUI_Window(title.c_str(), xwin_style_centered|xwin_style_movable|xwin_style_modal, calc_form_bounds(mFormBounds, width, height), cmdr)
+	GUI_Window(title.c_str(), xwin_style_centered|xwin_style_movable|xwin_style_modal|xwin_style_visible, calc_form_bounds(mFormBounds, width, height), cmdr)
 {
 	int bounds[4];
 	GUI_Packer * packer = new GUI_Packer;
