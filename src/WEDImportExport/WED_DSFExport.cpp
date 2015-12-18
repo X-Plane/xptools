@@ -175,6 +175,12 @@ static bool is_backout_path(const string& p)
 	return false;
 }
 
+struct kill_zero_length_segment {
+
+	bool operator()(const Segment2& s) const { return s.p1 == s.p2; }
+
+};
+
 /************************************************************************************************************************************************
  * DSF EXPORT UTILS
  ************************************************************************************************************************************************/
@@ -1077,6 +1083,10 @@ static int	DSF_ExportTileRecursive(
 				vector<Polygon2>	fst_area;
 				Assert(WED_PolygonWithHolesForPolygon(fst,fst_area));
 
+				// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+				for(vector<Polygon2>::iterator f = fst_area.begin(); f != fst_area.end(); ++f)
+					f->erase(unique(f->begin(),f->end()),f->end());
+
 				vector<vector<Polygon2> >	fst_clipped;
 				if (!clip_polygon(fst_area, fst_clipped,cull_bounds))
 				{
@@ -1101,6 +1111,9 @@ static int	DSF_ExportTileRecursive(
 					vector<Segment2>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					chain.erase(remove_if(chain.begin(),chain.end(),kill_zero_length_segment()),chain.end());
+				
 					clip_segments(chain, cull_bounds);
 					if(!chain.empty())
 					{

@@ -13,6 +13,18 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.4.1r1 12/17/15
+
+	Validation Checks:
+	- Zero length segments are caught and rejected
+	- Wrong-direction runways are checked
+	- Runway roughness out of 0..1 range
+	- Incorrect use of | in taxi signs
+
+	Bug fixes:
+	WED-506: Line and light types accessible on airport boundaries
+	XSG-1219: WED will fix airports where the buoy flag contains junk
+
 WED 1.4r2 6/3/15
 	Bugs fixed for release candidate 2
 	

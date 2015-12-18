@@ -217,7 +217,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 		float color[4] = { 1.0, 1.0, 1.0, 0.7 };
 
 		const char * main_text[] = {
-			"WorldEditor 1.4",
+			"WorldEditor 1.4.1",
 			"©Copyright 2007-2015, Laminar Research.",
 			"",
 			"This software is available under an open license.",
