@@ -201,6 +201,7 @@ SOURCES += ./src/WEDEntities/WED_PolygonPlacement.cpp
 SOURCES += ./src/WEDEntities/WED_RampPosition.cpp
 SOURCES += ./src/WEDEntities/WED_Ring.cpp
 SOURCES += ./src/WEDEntities/WED_RoadEdge.cpp
+SOURCES += ./src/WEDEntities/WED_RoadNode.cpp
 SOURCES += ./src/WEDEntities/WED_Root.cpp
 SOURCES += ./src/WEDEntities/WED_Runway.cpp
 SOURCES += ./src/WEDEntities/WED_RunwayNode.cpp

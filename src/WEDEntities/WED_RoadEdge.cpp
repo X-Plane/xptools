@@ -24,7 +24,7 @@
 #include "WED_RoadEdge.h"
 #include "WED_EnumSystem.h"
 #include "WED_ResourceMgr.h"
-#include "WED_ToolUTils.h"
+#include "WED_ToolUtils.h"
 #include <sstream>
 
 /*
