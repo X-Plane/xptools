@@ -160,6 +160,7 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_RampPosition.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Ring.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_RoadEdge.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_RoadNode.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Root.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Runway.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_RunwayNode.cpp" />
@@ -407,6 +408,7 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_RampPosition.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Ring.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_RoadEdge.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_RoadNode.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Root.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Runway.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_RunwayNode.h" />
