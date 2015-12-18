@@ -110,10 +110,12 @@ GUI_ClipType	GUI_GetTextClipType(void)
 	return gui_Clip_Text;
 }
 
+#if APL
 void GUI_GetMacNativeDragTypeList(vector<string>& out_types)
 {
 	out_types = sCITs;
 }
+#endif
 
 //---------------------------------------------------------------------------------------------------------
 // DATA MANAGEMENT
