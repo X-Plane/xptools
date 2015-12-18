@@ -72,7 +72,8 @@ private:
 	WED_PropIntText			mSlop;
 	
 	WED_PropIntText			mLayer;
-	WED_PropIntEnum			mSubtype;
+	WED_PropIntText			mSubtype;
+	WED_PropStringText		mResource;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

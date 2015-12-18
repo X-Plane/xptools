@@ -358,6 +358,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 	if(HasExtNoCase(path, ".lin"))	rt = res_Line;
 	if(HasExtNoCase(path, ".pol"))	rt = res_Polygon;
 	if(HasExtNoCase(path, ".agb"))	rt = res_Polygon;
+	if(HasExtNoCase(path, ".net"))	rt = res_Road;
 	if(rt == res_None) return;
 
 	string p(path);

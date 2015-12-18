@@ -24,6 +24,7 @@
 #include "WED_CreateEdgeTool.h"
 #include "WED_ToolUtils.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_RoadNode.h"
 #include "WED_TaxiRoute.h"
 #include "WED_RoadEdge.h"
 #include "WED_SimpleBoundaryNode.h"
@@ -34,8 +35,8 @@
 
 #if AIRPORT_ROUTING
 
-static const char * kCreateCmds[] = { "Taxiway Route Line" };
-static const int kIsAirport[] = { 1 };
+static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
+static const int kIsAirport[] = { 1, 0 };
 
 WED_CreateEdgeTool::WED_CreateEdgeTool(
 					const char *		tool_name,
@@ -47,7 +48,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	WED_CreateToolBase(tool_name, host, zoomer, resolver, archive,
 	2,						// min pts,
 	99999999,				// max pts - yes, I am a hack.
-	0,						// curve allowed?					// Ben says: when we go road grids, we'll have to make this dynamic!
+	tool == create_Road,	// curve allowed?					// Ben says: when we go road grids, we'll have to make this dynamic!
 	0,						// curve required?
 	1,						// close allowed?
 	0),						// close required
@@ -60,7 +61,8 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 
 	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
-	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), RoadSubType, road_Highway),
+	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), 1, 3),
+	mResource(tool == create_Road ? this : NULL, "Resource",SQL_Name("",""),XML_Name("",""), "lib/g10/roads.net"),
 	
 	mSlop(this, "Slop", SQL_Name("",""),XML_Name("",""), 10, 2)
 {
@@ -222,7 +224,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
-		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_SimpleBoundaryNode::CreateTyped(GetArchive());
+		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_RoadNode::CreateTyped(GetArchive());
 		src->SetParent(host,idx);
 		src->SetName(mName.value + "_start");
 		c->SetLocation(gis_Geo,pts[0]);
@@ -246,6 +248,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			er->SetSubtype(mSubtype.value);
 			er->SetLayer(mLayer.value);
 			er->SetName(mName);
+			er->SetResource(mResource.value);
 			break;
 		}
 	
@@ -261,7 +264,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 				dst = c = WED_TaxiRouteNode::CreateTyped(GetArchive());
 				break;
 			case create_Road:
-				dst = c = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
+				dst = c = WED_RoadNode::CreateTyped(GetArchive());
 				break;
 			}
 			dst->SetParent(host,idx);
@@ -269,7 +272,31 @@ void		WED_CreateEdgeTool::AcceptPath(
 			c->SetLocation(gis_Geo,pts[p % pts.size()]);
 		}		
 		new_edge->AddSource(dst,1);
-
+		
+		if(has_dirs[p-1])
+		{
+			if(has_dirs[p])
+			{
+				new_edge->SetSideBezier(gis_Geo,
+								Bezier2(in_pts[p-1],dirs_hi[p-1],
+								dirs_lo[p], in_pts[p]));
+			}
+			else
+			{
+				new_edge->SetSideBezier(gis_Geo,
+								Bezier2(in_pts[p-1],dirs_hi[p-1],
+								in_pts[p], in_pts[p]));
+			}
+		}
+		else
+		{
+			if(has_dirs[p])
+			{
+				new_edge->SetSideBezier(gis_Geo,
+								Bezier2(in_pts[p-1],in_pts[p-1],
+								dirs_lo[p], in_pts[p]));
+			}
+		}
 		// Do this last - half-built edge inserted the world destabilizes accessors.
 		new_edge->SetParent(host,idx);
 		sel->Insert(new_edge);	

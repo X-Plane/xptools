@@ -48,6 +48,7 @@
 #include "WED_Airport.h"
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_RoadNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
 
@@ -520,6 +521,11 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 	}
 
 	if(SAFE_CAST(WED_TaxiRouteNode,t) &&
+		SAFE_CAST(IGISComposite,t->GetParent()) &&
+		t->CountViewers() == 0)
+		return true;
+
+	if(SAFE_CAST(WED_RoadNode,t) &&
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;

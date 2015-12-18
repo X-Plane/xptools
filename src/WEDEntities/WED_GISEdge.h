@@ -84,8 +84,6 @@ private:
 		WED_PropDoubleText		ctrl_lat_hi;
 		WED_PropDoubleText		ctrl_lon_hi;
 
-		WED_PropBoolText		is_split;
-
 /*
 		WED_PropDoubleText			mScL;
 		WED_PropDoubleText			mTcL;

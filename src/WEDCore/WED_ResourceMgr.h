@@ -72,6 +72,10 @@ struct	fac_info_t {
 	vector<string>	walls;
 };
 
+struct	road_info_t {
+	map<int, string>	vroad_types;
+};
+
 #if AIRPORT_ROUTING
 struct agp_t {
 	struct obj {
@@ -104,6 +108,7 @@ public:
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING
 			bool	GetAGP(const string& path, agp_t& out_info);
+			bool	GetRoad(const string& path, road_info_t& out_info);
 #endif			
 
 	virtual	void	ReceiveMessage(
@@ -118,6 +123,7 @@ private:
 	map<string,XObj8 *>			mObj;
 #if AIRPORT_ROUTING	
 	map<string,agp_t>			mAGP;
+	map<string,road_info_t>		mRoad;
 #endif	
 	WED_LibraryMgr *			mLibrary;
 };

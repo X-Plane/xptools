@@ -60,6 +60,7 @@
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_RoadNode.h"
 #include "WED_LibraryMgr.h"
 
 using std::list;
@@ -705,7 +706,8 @@ bool			WED_IsIconic(IGISEntity * what)
 		return what->GetGISSubtype() != WED_RunwayNode::sClass &&			// Runways have a special node type.  Special type avoids wed-airportnode with taxiway lines and bezier caps
 			   what->GetGISSubtype() != WED_TextureNode::sClass &&			// This is for non-bezier scenery UV mapped stuff
 			   what->GetGISSubtype() != WED_SimpleBoundaryNode::sClass &&	// This is for non-bezier scenery non-UV mapped stuff.
-			   what->GetGISSubtype() != WED_TaxiRouteNode::sClass;
+			   what->GetGISSubtype() != WED_TaxiRouteNode::sClass &&
+			   what->GetGISSubtype() != WED_RoadNode::sClass;
 
 	default:
 		return false;

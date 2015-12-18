@@ -494,6 +494,53 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 	mAGP[path] = out_info;
 	return true;
 }
+
+bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
+{
+	map<string,road_info_t>::iterator i = mRoad.find(path);
+	if(i != mRoad.end())
+	{
+		out_info = i->second;
+		return true;
+	}
 	
+	string p = mLibrary->GetResourcePath(path);
+	MFMemFile * road = MemFile_Open(p.c_str());
+	if(!road) return false;
+
+	MFScanner	s;
+	MFS_init(&s, road);
+
+	int versions[] = { 800, 0 };
+	int v;
+	if((v=MFS_xplane_header(&s,versions,"ROADS",NULL)) == 0)
+	{
+		MemFile_Close(road);
+		return false;
+	}
+	
+	string last_name;
+	
+	while(!MFS_done(&s))
+	{
+		if(MFS_string_match(&s,"#VROAD",false))
+		{
+			MFS_string(&s,&last_name);
+		}
+		if(MFS_string_match(&s, "ROAD_DRAPED", 0))
+		{
+			MFS_int(&s);		// draping mode
+			int id = MFS_int(&s);
+			out_info.vroad_types[id] = last_name;
+		}
+		MFS_string_eol(&s, NULL);
+	}
+	
+	MemFile_Close(road);
+	mRoad[path] = out_info;
+	return true;
+}
+
+
 	
 #endif

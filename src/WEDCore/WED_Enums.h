@@ -559,10 +559,6 @@ ENUM_DOMAIN(ATCRunwayTwoway,"Runway Name")
 	ENUM(atc_rwy_18C_36C,				"18C/36C",		542)
 	ENUM(atc_rwy_18R_36L,				"18R/36L",		543)
 
-ENUM_DOMAIN(RoadSubType, "Road Type")
-	ENUM(road_Highway,				"Highway",			1)
-	ENUM(road_Local_,				"Local",			2)
-
 ENUM_DOMAIN(ForestFill, "Fill Mode")
 	ENUM(forest_Fill,				"Area",				0)
 	ENUM(forest_Lines,				"Linear",			1)

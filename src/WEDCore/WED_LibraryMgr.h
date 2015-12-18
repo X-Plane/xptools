@@ -36,7 +36,8 @@ enum {
 	res_Forest,
 	res_String,
 	res_Line,
-	res_Polygon
+	res_Polygon,
+	res_Road
 };
 
 // "Virtual" package numbers...package mgr IDs packages as 0-based index.  These meta-constants are used for filtering in special ways.

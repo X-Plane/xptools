@@ -56,6 +56,7 @@
 #include "GUI_DrawUtils.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_RoadNode.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -289,7 +290,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					// So we will special-case taxi routes for now.  When we get road grids in 
 					// we may need a better heuristic for this case than the actual obj type.
 								
-					if (sub_class == WED_TaxiRouteNode::sClass)
+					if (sub_class == WED_TaxiRouteNode::sClass || sub_class == WED_RoadNode::sClass)
 					{
 						if(mVertices)
 						{
