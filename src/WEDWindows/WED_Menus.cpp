@@ -134,6 +134,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 #if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
 #endif
+{	"&Toggle OSM",				0,	0,										0,	wed_ToggleOSM },
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif

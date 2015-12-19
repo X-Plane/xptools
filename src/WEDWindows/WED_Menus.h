@@ -101,6 +101,7 @@ enum {
 #if WANT_TERRASEVER	
 	wed_ToggleTerraserver,
 #endif	
+	wed_ToggleOSM,
 #if WITHNWLINK
 	wed_ToggleLiveView,
 #endif
