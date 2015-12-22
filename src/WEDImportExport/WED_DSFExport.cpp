@@ -838,20 +838,21 @@ static int	DSF_ExportTileRecursive(
 		obj->GetLocation(gis_Geo,p);
 		if(cull_bounds.contains(p))
 		{
-			double xy[3] = { p.x(), p.y(), 0.0 };
+			double xyrz[4] = { p.x(), p.y(), 0.0 };
 			float heading = obj->GetHeading();
 			while(heading < 0) heading += 360.0;
 			while(heading >= 360.0) heading -= 360.0;
 			++real_thingies;
+			xyrz[2] = heading;
 			#if AIRPORT_ROUTING
 			if(obj->HasCustomMSL())
 			{
-				xy[2] = obj->GetCustomMSL();
-				cbs->AddObjectAbsolute_f(idx, xy, heading, writer);
+				xyrz[3] = obj->GetCustomMSL();
+				cbs->AddObject_f(idx, xyrz, 4, writer);
 			}
 			else
 			#endif
-				cbs->AddObject_f(idx, xy, heading, writer);
+				cbs->AddObject_f(idx, xyrz, 3, writer);
 		}
 	}
 	

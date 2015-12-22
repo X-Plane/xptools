@@ -962,6 +962,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		int		cur_id = 0, tri, tris_this_patch;
 		double	coords3[3];
+		double	coords4[4];
 		double	coords2[2];
 		//double	coords6[6];
 		double	coords8[8];
@@ -1859,11 +1860,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			for (ci = chains.begin(); ci != chains.end(); ++ci)
 			{
-				coords3[0] = (*ci)->start_junction->location.x();
-				coords3[1] = (*ci)->start_junction->location.y();
-				coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
+				coords4[0] = (*ci)->start_junction->location.x();
+				coords4[1] = (*ci)->start_junction->location.y();
+				coords4[2] = (*ci)->start_junction->GetLayerForChain(*ci);
+				coords4[3] = (*ci)->start_junction->index;
 
-				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
+				if (coords4[0] < inElevation.mWest  || coords4[0] > inElevation.mEast || coords4[1] < inElevation.mSouth || coords4[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
 				DebugAssert(junctions.count((*ci)->start_junction));
@@ -1876,8 +1878,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				cbs.BeginSegment_f(
 								0,
 								(*ci)->export_type,
-								(*ci)->start_junction->index,
-								coords3,
+								coords4,
 								false,
 								writer2);
 				++total_chains;
@@ -1970,18 +1971,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					//debug_mesh_point(Point2(coords3[0],coords3[1]),1,1,coords3[2]);
 				}
 
-				coords3[0] = (*ci)->end_junction->location.x();
-				coords3[1] = (*ci)->end_junction->location.y();
-				coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
+				coords4[0] = (*ci)->end_junction->location.x();
+				coords4[1] = (*ci)->end_junction->location.y();
+				coords4[2] = (*ci)->end_junction->GetLayerForChain(*ci);
+				coords4[3] = (*ci)->end_junction->index;
 
-				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
+				if (coords4[0] < inElevation.mWest  || coords4[0] > inElevation.mEast || coords4[1] < inElevation.mSouth || coords4[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
-				checker.check(coords3,'E');
+				checker.check(coords4,'E');
 
 				cbs.EndSegment_f(
-						(*ci)->end_junction->index,
-						coords3,
+						coords4,
 						false,
 						writer2);
 				//debug_mesh_point(Point2(coords3[0],coords3[1]),0,1,0);

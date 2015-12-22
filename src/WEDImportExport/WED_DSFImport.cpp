@@ -174,28 +174,33 @@ public:
 		return true;
 	}
 
-	static void	AcceptTerrainDef(const char * inPartialPath, void * inRef)
+	static int	AcceptTerrainDef(const char * inPartialPath, void * inRef)
 	{
+		return 1;
 	}
 
-	static void	AcceptObjectDef(const char * inPartialPath, void * inRef)
+	static int	AcceptObjectDef(const char * inPartialPath, void * inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->obj_table.push_back(inPartialPath);
+		return 1;
 	}
 
-	static void	AcceptPolygonDef(const char * inPartialPath, void * inRef)
+	static int	AcceptPolygonDef(const char * inPartialPath, void * inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		me->pol_table.push_back(inPartialPath);
+		return 1;
 	}
 
-	static void	AcceptNetworkDef(const char * inPartialPath, void * inRef)
+	static int	AcceptNetworkDef(const char * inPartialPath, void * inRef)
 	{
+		return 1;
 	}
 	
-	static void AcceptRasterDef(const char * inPartalPath, void * inRef)
+	static int AcceptRasterDef(const char * inPartalPath, void * inRef)
 	{
+		return 1;
 	}
 
 	static void	AcceptProperty(const char * inProp, const char * inValue, void * inRef)
@@ -250,8 +255,8 @@ public:
 
 	static void	AddObject(
 					unsigned int	inObjectType,
-					double			inCoordinates[2],
-					double			inRotation,
+					double			inCoordinates[4],
+					int				inCoordDepth,
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
@@ -259,36 +264,19 @@ public:
 		obj->SetResource(me->obj_table[inObjectType]);
 		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
 		#if AIRPORT_ROUTING
+		if(inCoordDepth == 4)
+			obj->SetCustomMSL(inCoordinates[3]);
+		else
 		obj->SetDefaultMSL();
-		#endif
-		obj->SetHeading(inRotation);
+			#endif
+		obj->SetHeading(inCoordinates[2]);
 		obj->SetName(me->obj_table[inObjectType]);
 		obj->SetParent(me->parent,me->parent->CountChildren());
 		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
 	}
-	static void	AddObjectMSL(
-					unsigned int	inObjectType,
-					double			inCoordinates[3],
-					double			inRotation,
-					void *			inRef)
-	{
-		DSF_Importer * me = (DSF_Importer *) inRef;
-		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
-		obj->SetResource(me->obj_table[inObjectType]);
-		obj->SetLocation(gis_Geo,Point2(inCoordinates[0],inCoordinates[1]));
-		#if AIRPORT_ROUTING
-		obj->SetCustomMSL(inCoordinates[2]);
-		#endif
-		obj->SetHeading(inRotation);
-		obj->SetName(me->obj_table[inObjectType]);
-		obj->SetParent(me->parent,me->parent->CountChildren());
-		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
-	}
-
 	static void	BeginSegment(
 					unsigned int	inNetworkType,
 					unsigned int	inNetworkSubtype,
-					unsigned int	inStartNodeID,
 					double			inCoordinates[],
 					bool			inCurved,
 					void *			inRef)
@@ -303,7 +291,6 @@ public:
 	}
 
 	static void	EndSegment(
-					unsigned int	inEndNodeID,
 					double			inCoordinates[],
 					bool			inCurved,
 					void *			inRef)
@@ -615,11 +602,11 @@ public:
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,AddObjectMSL,
+								AddObject,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData };
 
-		int res = DSFReadFile(file_name, &cb, NULL, this);
+		int res = DSFReadFile(file_name, malloc, free, &cb, NULL, this);
 		return res;
 	}
 
@@ -630,7 +617,7 @@ public:
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
-								AddObject,AddObjectMSL,
+								AddObject,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData };
 

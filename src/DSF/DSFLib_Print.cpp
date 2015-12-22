@@ -71,14 +71,15 @@ bool DSFPrint_NextPass(int pass, void * ref)
 	return 1;
 }
 
-void DSFPrint_AcceptTerrainDef(const char * inPartialPath, void * inRef)
+int DSFPrint_AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Terrain Def: %s\n", inPartialPath);
 #endif
+	return 1;
 }
 
-void DSFPrint_AcceptObjectDef(const char * inPartialPath, void * inRef)
+int DSFPrint_AcceptObjectDef(const char * inPartialPath, void * inRef)
 {
 #if OBJ_HISTO
 obj_names.push_back(inPartialPath);
@@ -88,20 +89,23 @@ obj_usages.push_back(0);
 #if PRINT_IT_DEF
 	fprintf(REF, "Object Def: %s\n", inPartialPath);
 #endif
+	return 1;
 }
 
-void DSFPrint_AcceptPolygonDef(const char * inPartialPath, void * inRef)
+int DSFPrint_AcceptPolygonDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Polygon Def: %s\n", inPartialPath);
 #endif
+	return 1;
 }
 
-void DSFPrint_AcceptNetworkDef(const char * inPartialPath, void * inRef)
+int DSFPrint_AcceptNetworkDef(const char * inPartialPath, void * inRef)
 {
 #if PRINT_IT_DEF
 	fprintf(REF, "Network Def: %s\n", inPartialPath);
 #endif
+	return 1;
 }
 
 void DSFPrint_AcceptProperty(const char * inProp, const char * inValue, void * inRef)
@@ -261,8 +265,8 @@ void DSFPrint_EndPatch(
 
 void DSFPrint_AddObject(
 				unsigned int	inObjectType,
-				double			inCoordinates[2],
-				double			inRotation,
+				double			inCoordinates[],
+				int				inCoordinateDepth,
 				void *			inRef)
 {
 #if OBJ_HISTO
@@ -278,7 +282,7 @@ void DSFPrint_AddObject(
 
 #if PRINT_IT
 	fprintf(REF, "Got object type %d, loc %lf,%lf rotate %lf\n",
-		inObjectType, inCoordinates[0],inCoordinates[1],inRotation);
+		inObjectType, inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 #endif
 	++sDSF_Objs;
 }
@@ -286,8 +290,7 @@ void DSFPrint_AddObject(
 void DSFPrint_BeginSegment(
 				unsigned int	inNetworkType,
 				unsigned int	inNetworkSubtype,
-				unsigned int	inStartNodeID,
-				double			inCoordinates[6],
+				double			inCoordinates[7],
 				bool			inCurved,
 				void *			inRef)
 {
@@ -300,9 +303,9 @@ void DSFPrint_BeginSegment(
 	++sDSF_Chains;
 #if PRINT_IT
 	fprintf(REF,"Start segment type=%d,subtype=%d, from %d ",
-		inNetworkType, inNetworkSubtype, inStartNodeID);
+		inNetworkType, inNetworkSubtype, inCoordinates[3]);
 	if (inCurved)
-		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
+		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[4],inCoordinates[5],inCoordinates[6]);
 	else
 		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 #endif
@@ -329,8 +332,7 @@ void DSFPrint_AddSegmentShapePoint(
 }
 
 void DSFPrint_EndSegment(
-				unsigned int	inEndNodeID,
-				double			inCoordinates[6],
+				double			inCoordinates[],
 				bool			inCurved,
 				void *			inRef)
 {
@@ -341,9 +343,9 @@ void DSFPrint_EndSegment(
 		sBad = true;
 	}
 #if PRINT_IT
-	fprintf(REF,"   End segment to %d ",inEndNodeID);
+	fprintf(REF,"   End segment to %d ",inCoordinates[3]);
 	if (inCurved)
-		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[3],inCoordinates[4],inCoordinates[5]);
+		fprintf(REF,"%f,%f,%f (%f,%f,%f)\n",inCoordinates[0],inCoordinates[1],inCoordinates[2],inCoordinates[4],inCoordinates[5],inCoordinates[6]);
 	else
 		fprintf(REF,"%f,%f,%f\n",inCoordinates[0],inCoordinates[1],inCoordinates[2]);
 #endif
