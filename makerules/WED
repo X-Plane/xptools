@@ -16,7 +16,7 @@ $(error no curl or not features SSL )
 endif
 
 LDFLAGS		+= -rdynamic
-LDFLAGS		+= -Wl,--exclude-libs,libpng.a
+LDFLAGS		+= -Wl,--exclude-libs,ALL
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a

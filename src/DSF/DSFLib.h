@@ -47,7 +47,8 @@ enum {
 	dsf_ErrBadCommand,					/* An unknown command index was encountered.  (Usually do to a corrupt command sequence.)   */
 	dsf_ErrUserCancel,					/* The NextPass_f callback returned false to cancel reading the next pass.					*/
 	dsf_ErrPoolOutOfRange,				/* A bad DSF point pool was selected.  (Usually a semantically corrupt file.)				*/
-	dsf_ErrBadChecksum					/* MD5 signature is bad - indicates poorly made DSF?										*/
+	dsf_ErrBadChecksum,					/* MD5 signature is bad - indicates poorly made DSF?										*/
+	dsf_ErrCanceled						/* Client code aborted in definitions CB */
 };
 
 /*
@@ -68,8 +69,9 @@ enum {
 	dsf_CmdVectors = 0x08,	/* Return vector types							*/
 	dsf_CmdPolys   = 0x10,	/* Return polygons (facades, etc.)				*/
 	dsf_CmdObjects = 0x20,	/* Return objects								*/
-	dsf_CmdRaster  = 0x40,	/* Raster data									*/
-	dsf_CmdAll	   = 0x7F	/* Return everything at once.					*/
+	dsf_CmdSign	   = 0x40,	/* Do MD5 signature of data						*/
+	dsf_CmdRaster	=0x80,	/* Raster data									*/
+	dsf_CmdAll	   = 0xFF	/* Return everything at once.					*/
 };
 
 
@@ -94,12 +96,12 @@ struct	DSFCallbacks_t {
 	/* This is called when the lib completes before it goes on to the next pass. */
 	bool (* NextPass_f)(int finished_pass_index, void * inRef);
 
-	/* These functions accept our various definitions. */
-	void (*	AcceptTerrainDef_f)(const char * inPartialPath, void * inRef);
-	void (*	AcceptObjectDef_f )(const char * inPartialPath, void * inRef);
-	void (*	AcceptPolygonDef_f)(const char * inPartialPath, void * inRef);
-	void (*	AcceptNetworkDef_f)(const char * inPartialPath, void * inRef);
-	void (* AcceptRasterDef_f)(const char * inPartialPath, void * inRef);
+	/* These functions accept our various definitions.  Return 1 to proceed, 0 to cancel */
+	int (*	AcceptTerrainDef_f)(const char * inPartialPath, void * inRef);
+	int (*	AcceptObjectDef_f )(const char * inPartialPath, void * inRef);
+	int (*	AcceptPolygonDef_f)(const char * inPartialPath, void * inRef);
+	int (*	AcceptNetworkDef_f)(const char * inPartialPath, void * inRef);
+	int (* AcceptRasterDef_f)(const char * inPartialPath, void * inRef);
 
 	/* This function accepts properties from the file. */
 	void (* AcceptProperty_f)(const char * inProp, const char * inValue, void * inRef);
@@ -130,14 +132,8 @@ struct	DSFCallbacks_t {
 	 * two coordinates. */
 	void (*	AddObject_f)(
 					unsigned int	inObjectType,
-					double			inCoordinates[2],
-					double			inRotation,
-					void *			inRef);
-	/* Same as above, but OBJ also has an MSL */
-	void (*	AddObjectAbsolute_f)(
-					unsigned int	inObjectType,
-					double			inCoordinates[3],
-					double			inRotation,
+					double			inCoordinates[4],	// Lon Lat Rot [MSL]
+					int				inCoordCount,		// So we can tell if we, like, HAVE MSL.
 					void *			inRef);
 
 	/* This function adds a complete chain.  All chains
@@ -146,8 +142,7 @@ struct	DSFCallbacks_t {
 	void (* BeginSegment_f)(
 					unsigned int	inNetworkType,
 					unsigned int	inNetworkSubtype,
-					unsigned int	inStartNodeID,
-					double			inCoordinates[],
+					double			inCoordinates[],	// lon lat el, start node ID, shape lon lat el
 					bool			inCurved,
 					void *			inRef);
 	void (*	AddSegmentShapePoint_f)(
@@ -155,7 +150,6 @@ struct	DSFCallbacks_t {
 					bool			inCurved,
 					void *			inRef);
 	void (* EndSegment_f)(
-					unsigned int	inEndNodeID,
 					double			inCoordinates[],
 					bool			inCurved,
 					void *			inRef);
@@ -214,7 +208,7 @@ struct	DSFCallbacks_t {
  */
 
 /* Returns true if successful, false if not. */
-int		DSFReadFile(const char * inPath, DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
+int		DSFReadFile(const char * inPath, void * (* malloc_func)(size_t s), void (* free_func)(void * ptr), DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
 int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef);
 int		DSFCheckSignature(const char * inPath);
 /************************************************************

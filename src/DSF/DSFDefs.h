@@ -23,15 +23,17 @@
 #ifndef DSFDEFS_H
 #define DSFDEFS_H
 
+#include <stdint.h>
+
 /* Use chunky file utils because they define some aspects of chunky files! */
 #include "XChunkyFileUtils.h"
 
-#if APL
-#pragma pack(2)
-#endif
-#if IBM
-#pragma pack(push, 2)
-#endif
+//#if APL
+//#pragma options align=mac68k
+//#endif
+//#if IBM
+//#pragma pack(push, 2)
+//#endif
 
 /***********************************************************************
  * DSF FUNDAMENTAL FILE COMPONENTS
@@ -96,6 +98,7 @@ enum {															// BPP must be...
 	dsf_Raster_Format_Int						= 1,			//	1,2,4
 	dsf_Raster_Format_Unsigned_Int				= 2,			//	1,2,4
 	dsf_Raster_Format_Unsigned_Int_Normalized	= 3,			//	1,2,4
+	dsf_Raster_Format_Mask						= 3,
 
 	dsf_Raster_Post								= 4,
 	dsf_Raster_Area								= 0,
@@ -169,12 +172,12 @@ enum {
 
 };
 
-#if APL || LIN
-#pragma options align=reset
-#endif
-#if IBM
-#pragma pack(pop)
-#endif
+//#if APL
+//#pragma options align=reset
+//#endif
+//#if IBM
+//#pragma pack(pop)
+//#endif
 
 
 #endif

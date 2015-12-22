@@ -176,6 +176,12 @@ static bool is_backout_path(const string& p)
 	return false;
 }
 
+struct kill_zero_length_segment {
+
+	bool operator()(const Segment2& s) const { return s.p1 == s.p2; }
+
+};
+
 /************************************************************************************************************************************************
  * ROAD PROCESSOR
  ************************************************************************************************************************************************/
@@ -364,7 +370,7 @@ void dsf_road_grid_helper::export_to_dsf(
 	remove_dupes();
 	assign_ids();
 
-				double coords[3];
+				double coords[4];
 
 	for(vector<edge>::iterator e = m_edges.begin(); e != m_edges.end(); ++e)
 	if(!e->path.empty())
@@ -377,11 +383,10 @@ void dsf_road_grid_helper::export_to_dsf(
 			if(b == e->path.begin())
 			{
 				coords[2] = e->level;
-
+				coords[3] = m_nodes[e->start_node].id;
 				cbs->BeginSegment_f(
 								net_type,
 								e->subtype,
-								m_nodes[e->start_node].id,
 								coords,
 								false,
 								writer);
@@ -407,8 +412,8 @@ void dsf_road_grid_helper::export_to_dsf(
 		coords[2] = e->level;
 		coords[0] = e->path.back().p2.x();
 		coords[1] = e->path.back().p2.y();
-
-		cbs->EndSegment_f(m_nodes[e->end_node].id, coords, false, writer);
+		coords[3] = m_nodes[e->end_node].id;
+		cbs->EndSegment_f(coords, false, writer);
 	}
 }
 
@@ -1097,20 +1102,21 @@ static int	DSF_ExportTileRecursive(
 		obj->GetLocation(gis_Geo,p);
 		if(cull_bounds.contains(p))
 		{
-			double xy[3] = { p.x(), p.y(), 0.0 };
+			double xyrz[4] = { p.x(), p.y(), 0.0 };
 			float heading = obj->GetHeading();
 			while(heading < 0) heading += 360.0;
 			while(heading >= 360.0) heading -= 360.0;
 			++real_thingies;
+			xyrz[2] = heading;
 			#if AIRPORT_ROUTING
 			if(obj->HasCustomMSL())
 			{
-				xy[2] = obj->GetCustomMSL();
-				cbs->AddObjectAbsolute_f(idx, xy, heading, writer);
+				xyrz[3] = obj->GetCustomMSL();
+				cbs->AddObject_f(idx, xyrz, 4, writer);
 			}
 			else
 			#endif
-				cbs->AddObject_f(idx, xy, heading, writer);
+				cbs->AddObject_f(idx, xyrz, 3, writer);
 		}
 	}
 	
@@ -1342,6 +1348,10 @@ static int	DSF_ExportTileRecursive(
 				vector<Polygon2>	fst_area;
 				Assert(WED_PolygonWithHolesForPolygon(fst,fst_area));
 
+				// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+				for(vector<Polygon2>::iterator f = fst_area.begin(); f != fst_area.end(); ++f)
+					f->erase(unique(f->begin(),f->end()),f->end());
+
 				vector<vector<Polygon2> >	fst_clipped;
 				if (!clip_polygon(fst_area, fst_clipped,cull_bounds))
 				{
@@ -1366,6 +1376,9 @@ static int	DSF_ExportTileRecursive(
 					vector<Segment2>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					chain.erase(remove_if(chain.begin(),chain.end(),kill_zero_length_segment()),chain.end());
+				
 					clip_segments(chain, cull_bounds);
 					if(!chain.empty())
 					{

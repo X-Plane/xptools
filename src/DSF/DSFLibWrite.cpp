@@ -284,12 +284,12 @@ public:
 
 	// DATA ACCUMULATORS
 
-	static void	AcceptTerrainDef(const char * inPartialPath, void * inRef);
-	static void	AcceptObjectDef(const char * inPartialPath, void * inRef);
-	static void	AcceptPolygonDef(const char * inPartialPath, void * inRef);
-	static void	AcceptNetworkDef(const char * inPartialPath, void * inRef);
-	static void AcceptRasterDef(const char * inPartialPath, void * inRef);
-	static void AcceptProperty(const char * inProp, const char * inValue, void * inRef);
+	static int	AcceptTerrainDef(const char * inPartialPath, void * inRef);
+	static int	AcceptObjectDef(const char * inPartialPath, void * inRef);
+	static int	AcceptPolygonDef(const char * inPartialPath, void * inRef);
+	static int	AcceptNetworkDef(const char * inPartialPath, void * inRef);
+	static int  AcceptRasterDef(const char * inPartialPath, void * inRef);
+	static void	AcceptProperty(const char * inProp, const char * inValue, void * inRef);
 
 	static void BeginPatch(
 					unsigned int	inTerrainType,
@@ -311,29 +311,21 @@ public:
 
 	static void	AddObject(
 					unsigned int	inObjectType,
-					double			inCoordinates[2],
-					double			inRotation,
+					double			inCoordinates[4],
+					int				inCoordinateDepth,
 					void *			inRef);
-	static void	AddObjectAbsolute(
-					unsigned int	inObjectType,
-					double			inCoordinates[3],
-					double			inRotation,
-					void *			inRef);
-
 	static void BeginSegment(
 					unsigned int	inNetworkType,
 					unsigned int	inNetworkSubtype,
-					unsigned int	inStartNodeID,
-					double			inCoordinates[3],
+					double			inCoordinates[],
 					bool			inCurved,			// Must be false!
 					void *			inRef);
 	static void	AddSegmentShapePoint(
-					double			inCoordinates[3],
+					double			inCoordinates[],
 					bool			inCurved,			// Must be false!
 					void *			inRef);
 	static void EndSegment(
-					unsigned int	inEndNodeID,
-					double			inCoordinates[3],
+					double			inCoordinates[],
 					bool			inCurved,			// Must be false!
 					void *			inRef);
 
@@ -389,7 +381,6 @@ void	DSFGetWriterCallbacks(DSFCallbacks_t * ioCallbacks)
 	ioCallbacks->EndPrimitive_f = DSFFileWriterImp::EndPrimitive;
 	ioCallbacks->EndPatch_f = DSFFileWriterImp::EndPatch;
 	ioCallbacks->AddObject_f = DSFFileWriterImp::AddObject;
-	ioCallbacks->AddObjectAbsolute_f = DSFFileWriterImp::AddObjectAbsolute;
 	ioCallbacks->BeginSegment_f = DSFFileWriterImp::BeginSegment;
 	ioCallbacks->AddSegmentShapePoint_f = DSFFileWriterImp::AddSegmentShapePoint;
 	ioCallbacks->EndSegment_f = DSFFileWriterImp::EndSegment;
@@ -1280,28 +1271,35 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 #pragma mark -
 
 
-void	DSFFileWriterImp::AcceptTerrainDef(const char * inPartialPath, void * inRef)
+int	DSFFileWriterImp::AcceptTerrainDef(const char * inPartialPath, void * inRef)
 {
 	REF(inRef)->terrainDefs.push_back(inPartialPath);
+	return 1;
 }
-void	DSFFileWriterImp::AcceptObjectDef(const char * inPartialPath, void * inRef)
+
+int	DSFFileWriterImp::AcceptObjectDef(const char * inPartialPath, void * inRef)
 {
 	REF(inRef)->objectDefs.push_back(inPartialPath);
+	return 1;
 }
-void	DSFFileWriterImp::AcceptPolygonDef(const char * inPartialPath, void * inRef)
+
+int	DSFFileWriterImp::AcceptPolygonDef(const char * inPartialPath, void * inRef)
 {
 	REF(inRef)->polygonDefs.push_back(inPartialPath);
+	return 1;
 }
-void	DSFFileWriterImp::AcceptNetworkDef(const char * inPartialPath, void * inRef)
+
+int	DSFFileWriterImp::AcceptNetworkDef(const char * inPartialPath, void * inRef)
 {
 	REF(inRef)->networkDefs.push_back(inPartialPath);
+	return 1;
 }
 
-void	DSFFileWriterImp::AcceptRasterDef(const char * inPartialPath, void * inRef)
+int	DSFFileWriterImp::AcceptRasterDef(const char * inPartialPath, void * inRef)
 {
 	REF(inRef)->rasterDefs.push_back(inPartialPath);
+	return 1;
 }
-
 
 void	DSFFileWriterImp::AcceptProperty(const char * inProp, const char * inValue, void * inRef)
 {
@@ -1431,35 +1429,16 @@ void	DSFFileWriterImp::EndPatch(
 
 void	DSFFileWriterImp::AddObject(
 				unsigned int	inObjectType,
-				double			inCoordinates[2],
-				double			inRotation,
+				double			inCoordinates[4],
+				int				inCoordDepth,
 				void *			inRef)
 {
-	DSFTuple	p(inCoordinates,2);
-	p.push_back(inRotation);
-	DSFPointPoolLoc loc = REF(inRef)->objectPool.AccumulatePoint(p);
-	if (loc.first == -1 || loc.second == -1) {
-		printf("ERROR: could not place object %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
-		Assert(!"ERROR: could not place object.\n");
-	} else {
-		ObjectSpec o;
-		o.type = inObjectType;
-		o.pool = loc.first;
-		o.location = loc.second;
-		REF(inRef)->objects.push_back(o);
-	}
-}
-
-void	DSFFileWriterImp::AddObjectAbsolute(
-				unsigned int	inObjectType,
-				double			inCoordinates[3],
-				double			inRotation,
-				void *			inRef)
-{
-	DSFTuple	p(inCoordinates,2);
-	p.push_back(inRotation);
-	p.push_back(inCoordinates[2]);
-	DSFPointPoolLoc loc = REF(inRef)->objectPool3d.AccumulatePoint(p);
+	DSFTuple	p(inCoordinates,inCoordDepth);
+	Assert(inCoordDepth == 3 || inCoordDepth == 4);
+	
+	DSFPointPoolLoc loc = inCoordDepth == 4 ?
+		REF(inRef)->objectPool3d.AccumulatePoint(p) :
+		REF(inRef)->objectPool.AccumulatePoint(p);
 	if (loc.first == -1 || loc.second == -1) {
 		printf("ERROR: could not place object %lf, %lf, %lf\n", inCoordinates[0], inCoordinates[1], inCoordinates[2]);
 		Assert(!"ERROR: could not place object.\n");
@@ -1468,15 +1447,17 @@ void	DSFFileWriterImp::AddObjectAbsolute(
 		o.type = inObjectType;
 		o.pool = loc.first;
 		o.location = loc.second;
-		REF(inRef)->objects3d.push_back(o);
+		if(inCoordDepth == 4)
+			REF(inRef)->objects3d.push_back(o);
+		else
+			REF(inRef)->objects.push_back(o);
 	}
 }
 
 void 	DSFFileWriterImp::BeginSegment(
 				unsigned int	inNetworkType,
 				unsigned int	inNetworkSubtype,
-				unsigned int	inStartNodeID,
-				double			inCoordinates[6],
+				double			inCoordinates[7],
 				bool			inCurved,
 				void *			inRef)
 {
@@ -1486,15 +1467,14 @@ void 	DSFFileWriterImp::BeginSegment(
 	REF(inRef)->chainSpecs.back().subType = inNetworkSubtype;
 	REF(inRef)->chainSpecs.back().curved = inCurved;
 	REF(inRef)->chainSpecs.back().contiguous = false;
-	REF(inRef)->chainSpecs.back().startNode = inStartNodeID;
-	DSFTuple	tuple(inCoordinates, inCurved ? 6 : 3);
-	tuple.insert(tuple.begin()+3,inStartNodeID);
+	REF(inRef)->chainSpecs.back().startNode = inCoordinates[3];
+	DSFTuple	tuple(inCoordinates, inCurved ? 7 : 4);
 	REF(inRef)->chainSpecs.back().path.push_back(tuple);
 	REF(inRef)->accum_chain = &REF(inRef)->chainSpecs.back();
 }
 
 void	DSFFileWriterImp::AddSegmentShapePoint(
-				double			inCoordinates[6],
+				double			inCoordinates[],
 				bool			inCurved,
 				void *			inRef)
 {
@@ -1505,16 +1485,14 @@ void	DSFFileWriterImp::AddSegmentShapePoint(
 }
 
 void 	DSFFileWriterImp::EndSegment(
-				unsigned int	inEndNodeID,
-				double			inCoordinates[6],
+				double			inCoordinates[],
 				bool			inCurved,
 				void *			inRef)
 {
 	Assert(!inCurved);
-	DSFTuple	tuple(inCoordinates, inCurved ? 6 : 3);
-	tuple.insert(tuple.begin()+3,inEndNodeID);
+	DSFTuple	tuple(inCoordinates, inCurved ? 7 : 4);
 	REF(inRef)->accum_chain->path.push_back(tuple);
-	REF(inRef)->accum_chain->endNode = inEndNodeID;
+	REF(inRef)->accum_chain->endNode = inCoordinates[3];
 }
 
 void 	DSFFileWriterImp::BeginPolygon(
