@@ -1086,14 +1086,47 @@ someday check footer when in sloooow mode
 		 **************************************************************************************************************/
 		case dsf_Cmd_Comment8					:
 			commentLen = cmdsAtom.ReadUInt8();
+			if(commentLen > 1)
+			{
+				uint16_t ctype = cmdsAtom.ReadUInt16();
+				commentLen -= sizeof(ctype);
+				if(ctype == dsf_Comment_Filter && commentLen == sizeof(int32_t))
+				{
+					int32_t filter_idx = cmdsAtom.ReadSInt32();
+					commentLen -= sizeof(filter_idx);
+					inCallbacks->SetFilter_f(filter_idx, ref);
+				}
+			}
 			cmdsAtom.Advance(commentLen);
 			break;
 		case dsf_Cmd_Comment16					:
 			commentLen = cmdsAtom.ReadUInt16();
+			if(commentLen > 1)
+			{
+				uint16_t ctype = cmdsAtom.ReadUInt16();
+				commentLen -= sizeof(ctype);
+				if(ctype == dsf_Comment_Filter && commentLen == sizeof(int32_t))
+				{
+					int32_t filter_idx = cmdsAtom.ReadSInt32();
+					commentLen -= sizeof(filter_idx);
+					inCallbacks->SetFilter_f(filter_idx, ref);
+				}
+			}
 			cmdsAtom.Advance(commentLen);
 			break;
 		case dsf_Cmd_Comment32					:
 			commentLen = cmdsAtom.ReadUInt32();
+			if(commentLen > 1)
+			{
+				uint16_t ctype = cmdsAtom.ReadUInt16();
+				commentLen -= sizeof(ctype);
+				if(ctype == dsf_Comment_Filter && commentLen == sizeof(int32_t))
+				{
+					int32_t filter_idx = cmdsAtom.ReadSInt32();
+					commentLen -= sizeof(filter_idx);
+					inCallbacks->SetFilter_f(filter_idx, ref);
+				}
+			}
 			cmdsAtom.Advance(commentLen);
 			break;
 		default:

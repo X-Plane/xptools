@@ -28,13 +28,6 @@
 /* Use chunky file utils because they define some aspects of chunky files! */
 #include "XChunkyFileUtils.h"
 
-//#if APL
-//#pragma options align=mac68k
-//#endif
-//#if IBM
-//#pragma pack(push, 2)
-//#endif
-
 /***********************************************************************
  * DSF FUNDAMENTAL FILE COMPONENTS
  ***********************************************************************/
@@ -172,12 +165,8 @@ enum {
 
 };
 
-//#if APL
-//#pragma options align=reset
-//#endif
-//#if IBM
-//#pragma pack(pop)
-//#endif
-
+enum {
+	dsf_Comment_Filter					= 1
+};
 
 #endif

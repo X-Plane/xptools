@@ -101,7 +101,7 @@ struct	DSFCallbacks_t {
 	int (*	AcceptObjectDef_f )(const char * inPartialPath, void * inRef);
 	int (*	AcceptPolygonDef_f)(const char * inPartialPath, void * inRef);
 	int (*	AcceptNetworkDef_f)(const char * inPartialPath, void * inRef);
-	int (* AcceptRasterDef_f)(const char * inPartialPath, void * inRef);
+	int (*	AcceptRasterDef_f )(const char * inPartialPath, void * inRef);
 
 	/* This function accepts properties from the file. */
 	void (* AcceptProperty_f)(const char * inProp, const char * inValue, void * inRef);
@@ -175,6 +175,10 @@ struct	DSFCallbacks_t {
 	void (* AddRasterData_f)(
 					DSFRasterHeader_t *	header,
 					void *				data,
+					void *				inRef);
+
+	void (* SetFilter_f)(
+					int					inFilterIndex,
 					void *				inRef);
 
 };

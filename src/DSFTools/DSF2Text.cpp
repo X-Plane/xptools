@@ -200,6 +200,12 @@ bool DSF2Text_NextPass(int pass, void * ref)
 	return true;
 }
 
+void DSF2Text_SetFilter(int filter, void * ref)
+{
+	print_funcs_s * p = (print_funcs_s *) ref;
+	p->print_func(p->ref, "FILTER %d\n", filter);
+}
+
 void DSF2Text_BeginPolygon(
 	unsigned int	inPolygonType,
 	unsigned short	inParam,
@@ -285,17 +291,18 @@ void DSF2Text_CreateWriterCallbacks(DSFCallbacks_t * cbs)
 	cbs->AddPatchVertex_f			=DSF2Text_AddPatchVertex			;
 	cbs->EndPrimitive_f				=DSF2Text_EndPrimitive				;
 	cbs->EndPatch_f					=DSF2Text_EndPatch					;
-	cbs->AddObject_f					=DSF2Text_AddObject					;
+	cbs->AddObject_f				=DSF2Text_AddObject					;
 	cbs->BeginSegment_f				=DSF2Text_BeginSegment				;
 	cbs->AddSegmentShapePoint_f		=DSF2Text_AddSegmentShapePoint		;
 	cbs->EndSegment_f				=DSF2Text_EndSegment				;
 	cbs->BeginPolygon_f				=DSF2Text_BeginPolygon				;
 	cbs->BeginPolygonWinding_f		=DSF2Text_BeginPolygonWinding		;
 	cbs->AddPolygonPoint_f			=DSF2Text_AddPolygonPoint			;
-	cbs->EndPolygonWinding_f			=DSF2Text_EndPolygonWinding			;
+	cbs->EndPolygonWinding_f		=DSF2Text_EndPolygonWinding			;
 	cbs->EndPolygon_f				=DSF2Text_EndPolygon				;
-	cbs->AddRasterData_f				=DSF2Text_AddRaterData				;
+	cbs->AddRasterData_f			=DSF2Text_AddRaterData				;
 	cbs->NextPass_f					=DSF2Text_NextPass					;
+	cbs->SetFilter_f				=DSF2Text_SetFilter					;
 }
 
 
@@ -443,7 +450,7 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 	for (int p = 0; p < properties.size(); ++p)
 		cbs.AcceptProperty_f(properties[p].first.c_str(), properties[p].second.c_str(), writer);
 
-	int		ptype, subtype, flags, depth = 99, param;
+	int		ptype, subtype, flags, depth = 99, param, filter;
 	double	lod_near, lod_far;
 
 	double	coords[10];
@@ -501,6 +508,8 @@ static bool Text2DSFWithWriterAny(const char * inFileName, const char * inDSF, D
 		else if (sscanf(ptr,"BEGIN_SEGMENT_CURVED %d %d %lf %lf %lf %lf %lf %lf %lf", &ptype, &subtype, &coords[3], &coords[0],&coords[1],&coords[2],&coords[4],&coords[5],&coords[6]) == 9) cbs.BeginSegment_f(ptype, subtype, coords, true, writer);
 		else if (sscanf(ptr,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf", &coords[0], &coords[1], &coords[2], &coords[3], &coords[4], &coords[5])== 6) cbs.AddSegmentShapePoint_f(coords, true, writer);
 		else if (sscanf(ptr,"SHAPE_POINT_CURVED %lf %lf %lf %lf %lf %lf %lf ", &coords[3], &coords[0], &coords[1], &coords[2], &coords[4], &coords[5], &coords[6])== 7) cbs.EndSegment_f(coords, true, writer);
+
+		else if (sscanf(ptr,"FILTER %d", &filter) == 1) cbs.SetFilter_f(filter, writer);
 
 		else if (sscanf(ptr,"RASTER_DATA version=%hhu bpp=%hhu flags=%hu width=%u height=%u scale=%f offset=%f %[^\r\n]",
 							&rheader.version,&rheader.bytes_per_pixel,&rheader.flags,&rheader.width,&rheader.height,&rheader.scale,&rheader.offset,prop_id) == 8)

@@ -199,6 +199,9 @@ struct	DSF_ResourceTable {
 	vector<string>				pol_defs;
 	map<pair<string, int>, int>	pol_defs_idx;
 
+	vector<string>				filters;
+	map<string, int>			filter_idx;
+	
 	int show_level_obj[7];
 	int show_level_pol[7];
 
@@ -222,6 +225,15 @@ struct	DSF_ResourceTable {
 		DebugAssert(show_level_pol[show_level] <= pol_defs.size());
 		pol_defs.push_back(f);
 		return				  pol_defs.size()-1;
+	}
+	
+	int accum_filter(const string& icao_filter)
+	{
+		map<string,int>::iterator i = filter_idx.find(icao_filter);
+		if(i != filter_idx.end()) return i->second;
+		filter_idx[icao_filter] = filters.size();
+		filters.push_back(icao_filter);
+		return filters.size()-1;
 	}
 };
 
@@ -763,6 +775,7 @@ static int	DSF_ExportTileRecursive(
 	WED_PolygonPlacement * pol;
 	WED_DrapedOrthophoto * orth;
 	WED_ExclusionZone * xcl;
+	WED_Airport * apt;
 
 	int idx;
 	string r;
@@ -789,6 +802,15 @@ static int	DSF_ExportTileRecursive(
 		centroid_ob = true;
 	}
 
+	if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
+	{
+		string id;
+		apt->GetICAO(id);
+		
+		int filter_idx = io_table.accum_filter(id.c_str());
+		
+		cbs->SetFilter_f(filter_idx,writer);
+	}
 
 	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
 	if(show_level == 6)
@@ -1496,7 +1518,13 @@ static int	DSF_ExportTileRecursive(
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
 		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children,show_level);
-	return real_thingies;	
+	
+	if(apt)
+	{
+		cbs->SetFilter_f(-1,writer);
+	}
+
+	return real_thingies;
 }
 
 static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
@@ -1554,7 +1582,11 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 
 	for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
 		cbs.AcceptPolygonDef_f(s->c_str(), writer);
-		
+
+	for(vector<string>::iterator s = rsrc.filters.begin(); s != rsrc.filters.end(); ++s)
+		cbs.AcceptProperty_f("sim/filter/aptid",s->c_str(),writer);
+
+	
 	for(int i = 1; i <= 6; ++i)
 	{
 		char buf[20];
@@ -1674,7 +1706,10 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 
 		for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
 			cbs.AcceptPolygonDef_f(s->c_str(), writer);
-			
+
+		for(vector<string>::iterator s = rsrc.filters.begin(); s != rsrc.filters.end(); ++s)
+			cbs.AcceptProperty_f("sim/filter/aptid",s->c_str(),writer);
+		
 		for(int i = 1; i <= 6; ++i)
 		{
 			char buf[20];
