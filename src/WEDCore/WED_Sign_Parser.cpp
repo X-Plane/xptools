@@ -1,5 +1,7 @@
 #include "WED_Sign_Parser.h"
 
+const string k_glyph_pipe = string("|");
+
 //--WED_Sign_Parser class decleration--------------------------
 class WED_Sign_Parser
 {
@@ -81,7 +83,7 @@ public:
 //------------------------------------------------------------------------
 WED_Sign_Parser::WED_Sign_Parser(void)
 {
-	curColor = 'X';//Must start as X and no other color because further code makes assumptions about it being X (preform_final_sem_checks)!
+	curColor = sign_color_invalid;//Must start as X and no other color because further code makes assumptions about it being X (preform_final_sem_checks)!
 	on_front = true;//Also must start as writing to the front
 }
 
@@ -134,7 +136,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 		
 		if(side_text.size() == 1)
 		{
-			if(side_text.front().glyph_color == 'P')
+			if(side_text.front().glyph_name == k_glyph_pipe)
 			{
 				// sole pipe bug
 				ss << "Sign side consists only of a pipe.";
@@ -146,7 +148,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 		}
 		else if(side_text.size() > 1)
 		{
-			if(side_text.front().glyph_color == 'P')
+			if(side_text.front().glyph_name == k_glyph_pipe)
 			{	
 				// start pipe bug
 				ss << "Sign side starts with a pipe.";
@@ -155,7 +157,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 				ss.clear();
 				foundError = true;
 			}
-			if(side_text.back().glyph_color == 'P')
+			if(side_text.back().glyph_name == k_glyph_pipe)
 			{
 				// end pipe bug
 				ss << "Sign side ends with a pipe.";
@@ -165,7 +167,7 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 				foundError = true;
 			}			
 			for(int i = 1; i < side_text.size(); ++i)
-			if(side_text[i-1].glyph_color == 'P' && side_text[i].glyph_color == 'P')
+			if(side_text[i-1].glyph_name == k_glyph_pipe && side_text[i].glyph_name == k_glyph_pipe)
 			{
 				// adjacent bug
 				ss << "Sign side has two adjacent pipes.";
@@ -175,8 +177,9 @@ bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr
 				foundError = true;
 			}
 			for(int i = 2; i < side_text.size(); ++i)
-			if(side_text[i-1].glyph_color == 'P' && side_text[i-2].glyph_color != side_text[i].glyph_color)
-			if(side_text[i-2].glyph_color != 'P' && side_text[i].glyph_color != 'P')
+			if(side_text[i-1].glyph_name == k_glyph_pipe)
+			if(side_text[i-2].glyph_color != side_text[i-1].glyph_color ||
+			   side_text[i  ].glyph_color != side_text[i-1].glyph_color)
 			{
 				ss << "Sign side has pipe surrounded by different colors.";
 				output.AddError(ss.str(),sem_pipe_color_mismatch,0,3);
@@ -200,17 +203,18 @@ bool WED_Sign_Parser::check_color(const string & inGlyph, int position, parser_o
 	//Go in as far as it can go
 	switch(curColor)
 	{
-	case 'Y':
-	case 'R':
+	case sign_color_yellow:
+	case sign_color_red:
 		return false;//Y and R allow for all characters
-	case 'L':
+	case sign_color_location:
 		{
 			bool foundError = false;
 			for (int i = 0; i < inGlyph.length(); i++)
 			{
 				//L can only support A-Z and 0-9, the bellow checks the relevant
 				if(!((inGlyph[i] >= 65 && inGlyph[i] <= 90) ||
-					(inGlyph[i] >= 48 && inGlyph[i] <= 57)))
+					(inGlyph[i] >= 48 && inGlyph[i] <= 57) ||
+					(inGlyph[i] == '|')))
 				{
 					stringstream ss;
 					ss << "Character " << position + 1 << ": " << inGlyph[i] << " cannot belong to color type " << curColor;
@@ -221,7 +225,7 @@ bool WED_Sign_Parser::check_color(const string & inGlyph, int position, parser_o
 			}
 			return foundError;
 		}
-	case 'B':
+	case sign_color_black:
 		{
 			bool foundError = false;
 			for (int i = 0; i < inGlyph.length(); i++)
@@ -238,11 +242,9 @@ bool WED_Sign_Parser::check_color(const string & inGlyph, int position, parser_o
 			}
 			return foundError;
 		}
-	case 'I':
+	case sign_color_independent:
 		return false;//If I was chosen it can support it self
-	case 'P'://No test need
-		return false;
-	case 'X'://No color has been selected
+	case sign_color_invalid://No color has been selected
 		return false;
 	default:
 		break;
@@ -375,25 +377,20 @@ void WED_Sign_Parser::append_parser_out_info(const string & inGlyph, int positio
 	*/
 
 	//Save the real current color
-	char realColor = curColor;
+	parser_color_t realColor = curColor;
 	
 	//If the glyph buffer is one of the independants
 	if(IsIndependentGlyph(inGlyph) == true)
 	{
 		//Make it the color 'I' for this session
-		curColor = 'I';
+		curColor = sign_color_independent;
 	}
 	
-	if(inGlyph.length() == 1 && inGlyph[0] == '|')
-	{
-		curColor = 'P';
-	}
-
 	bool invalid_for_color = check_color(inGlyph,position,output);
 
 	if(invalid_for_color == true)
 	{
-		curColor = 'X';
+		curColor = sign_color_invalid;
 	}
 
 	if(inGlyph.length() > 1)
@@ -708,14 +705,19 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, in
 	case I_ANY_CONTROL:	
 		switch(curChar)
 		{
-		case 'Y':
-		case 'L':
-		case 'R':
-		case 'B':
 			//Do action, change color
-			curColor = curChar;
-			return I_WAITING_SEPERATOR;
-			
+		case 'Y':
+			curColor = sign_color_yellow;
+			return I_WAITING_SEPERATOR;			
+		case 'L':
+			curColor = sign_color_location;
+			return I_WAITING_SEPERATOR;			
+		case 'R':
+			curColor = sign_color_red;
+			return I_WAITING_SEPERATOR;			
+		case 'B':
+			curColor = sign_color_black;
+			return I_WAITING_SEPERATOR;			
 		case '@':
 			if(on_front == true)
 			{

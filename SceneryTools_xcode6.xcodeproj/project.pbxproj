@@ -1072,6 +1072,7 @@
 		D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_vertexsharp.png; sourceTree = "<group>"; };
 		D60C07E00C2328B700783179 /* WED_FastBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FastBuffer.h; sourceTree = "<group>"; };
 		D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FastBuffer.cpp; sourceTree = "<group>"; };
+		D6110F981C32136000A37784 /* WED_Sign_Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Parser.h; sourceTree = "<group>"; };
 		D6139E1E0BD5793500D50803 /* WED_StructureLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StructureLayer.h; sourceTree = "<group>"; };
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
@@ -2953,6 +2954,7 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
 				D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */,
 				D6424EFD115948CD0031370E /* WED_DataModel2.sql */,
 				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,

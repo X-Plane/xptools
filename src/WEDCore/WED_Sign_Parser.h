@@ -1,4 +1,6 @@
-#pragma once
+#ifndef WED_Sign_Parser_H
+#define WED_Sign_Parser_H
+
 #include <stdio.h>
 #include <string>
 #include <sstream>
@@ -65,11 +67,17 @@ struct parser_error_info {
 	'R'ed
 	'L'ocation
 	'B'lack
-	'P'ipe
 	'I'ndependent
 	'X'invalid
 */
-typedef char parser_color_t;
+enum parser_color_t{
+	sign_color_yellow = 'Y',
+	sign_color_red = 'R',
+	sign_color_location = 'L', 
+	sign_color_black = 'B',
+	sign_color_independent = 'I',
+	sign_color_invalid = 'X'
+};
 
 //The text component of a single or multi letter glyph
 typedef string parser_glyph_t;
@@ -100,7 +108,7 @@ struct parser_finished_sign
 		for (int i = 0; i < side.size(); i++)
 		{
 			parser_glyph_info curGlyph = side[i];
-			tmp += '/' + (curGlyph.glyph_color + curGlyph.glyph_name);
+			tmp += '/' + ((char)curGlyph.glyph_color + curGlyph.glyph_name);
 		}
 		return tmp;
 	}
@@ -133,3 +141,5 @@ struct parser_in_info
 
 //All you need to do to parse a sign is pass in an input and a blank output
 void ParserTaxiSign(const parser_in_info & input, parser_out_info & output);
+
+#endif
