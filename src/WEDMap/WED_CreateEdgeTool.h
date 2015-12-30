@@ -67,6 +67,7 @@ private:
 	WED_PropIntEnumSet		mHotDepart;
 	WED_PropIntEnumSet		mHotArrive;
 	WED_PropIntEnumSet		mHotILS;		
+	WED_PropIntEnum			mWidth;
 	
 	WED_PropStringText		mName;
 	WED_PropIntText			mSlop;

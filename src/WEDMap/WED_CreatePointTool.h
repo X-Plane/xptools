@@ -75,6 +75,8 @@ protected:
 		WED_PropBoolText		sign_clipboard;
 		WED_PropIntEnum			ramp_type;
 		WED_PropIntEnumBitfield	equip_type;
+		WED_PropIntEnum			width;
+		WED_PropStringText		airlines;
 		
 
 	virtual	void		AcceptPath(

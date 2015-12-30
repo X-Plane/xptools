@@ -60,7 +60,8 @@ WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
 	runway(this,"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
 	hot_depart(this,"Departures",		SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
 	hot_arrive(this,"Arrivals",			SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
-	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false)
+	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
+	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"), ATCIcaoWidth, width_F)
 {
 }
 
@@ -93,6 +94,11 @@ void		WED_TaxiRoute::SetHotILS(const set<int>& rwys)
 	hot_ils = rwys;
 }
 
+void WED_TaxiRoute::SetWidth(int w)
+{
+	width= w;
+}
+
 void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
@@ -107,10 +113,18 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 		} else
 			runway = r;
 		
+		width = width_F;
+		
 	}
 	else
 	{
 		runway = atc_rwy_None;
+		width = ENUM_Import(ATCIcaoWidth, info.width);
+		if(width == -1)
+		{
+			print_func(ref,"Illegal width: %d\n", info.width);
+			width = width_F;
+		}
 	}
 
 	for(set<string>::iterator h = info.hot_depart.begin(); h != info.hot_depart.end(); ++h)
@@ -159,6 +173,7 @@ void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
 	info.hot_depart.clear();
 	info.hot_arrive.clear();
 	info.hot_ils.clear();
+	info.width = ENUM_Export(width.value);
 	
 	set<int>::iterator h;
 	for (h = hot_depart.value.begin(); h != hot_depart.value.end(); ++h)

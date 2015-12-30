@@ -55,6 +55,7 @@ enum {
 	wed_Export900,
 	wed_Export1000,
 	wed_Export1021,
+	wed_Export1050,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,

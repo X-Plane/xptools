@@ -30,8 +30,9 @@ TRIVIAL_COPY(WED_RampPosition, WED_GISPoint_Heading)
 
 WED_RampPosition::WED_RampPosition(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
 	ramp_type	(this, "Ramp Start Type",	SQL_Name("",""),	XML_Name("ramp_start","type"   ), ATCRampType, atc_Ramp_Misc),
-	equip_type  (this, "Equipment Type",		SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType, 0)
-
+	equip_type  (this, "Equipment Type",		SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType, 0),
+	width		(this, "Size",				SQL_Name("",""), XML_Name("ramp_start","width"), ATCIcaoWidth, width_F),
+	airlines(this,"Airlines",					SQL_Name("",""), XML_Name("ramp_start","airlines"),"")
 {
 }
 
@@ -44,12 +45,19 @@ void	WED_RampPosition::Import(const AptGate_t& x, void (* print_func)(void *, co
 	SetLocation(gis_Geo,x.location);
 	SetHeading(x.heading);
 	SetName(x.name);
+	SetAirlines(x.airlines);
 	
 	ramp_type			= ENUM_Import(ATCRampType,		x.type	);
 	if(ramp_type == -1)
 	{
 		print_func(ref,"Illegal ramp type: %d\n",x.type);
 		ramp_type = atc_Ramp_Misc;
+	}
+	width = ENUM_Import(ATCIcaoWidth, x.width);
+	if(width == -1)
+	{
+		print_func(ref,"Illegal ramp size: %d\n",x.type);
+		ramp_type = width_F;
 	}
 	ENUM_ImportSet(equip_type.domain,x.equipment,equip_type.value);
 }
@@ -61,6 +69,8 @@ void	WED_RampPosition::Export(		 AptGate_t& x) const
 	GetName(x.name);
 	x.type = ENUM_Export(ramp_type.value);
 	x.equipment = ENUM_ExportSet(equip_type.value);
+	x.width = ENUM_Export(width.value);
+	x.airlines = airlines.value;
 
 }
 
@@ -72,4 +82,14 @@ void	WED_RampPosition::SetType(int	rt)
 void	WED_RampPosition::SetEquipment(const set<int>&	et)
 {
 	equip_type = et;
+}
+
+void	WED_RampPosition::SetWidth(int		w)
+{
+	width = w;
+}
+
+void	WED_RampPosition::SetAirlines(const string &a)
+{
+	airlines = a;
 }

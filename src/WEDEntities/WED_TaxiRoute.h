@@ -50,6 +50,7 @@ public:
 				void		SetHotDepart(const set<int>& rwys);
 				void		SetHotArrive(const set<int>& rwys);
 				void		SetHotILS(const set<int>& rwys);
+				void		SetWidth(int width);
 				
 				bool		HasInvalidHotZones(const set<int>& legal_rwys) const;
 				int			GetRunway(void) const;	// returns two-way enum!
@@ -65,6 +66,7 @@ private:
 
 		WED_PropBoolText		oneway;
 		WED_PropIntEnum			runway;
+		WED_PropIntEnum			width;
 		WED_PropIntEnumSet		hot_depart;
 		WED_PropIntEnumSet		hot_arrive;
 		WED_PropIntEnumSet		hot_ils;		

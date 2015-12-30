@@ -80,6 +80,7 @@ enum {
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
 
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
+	apt_startup_loc_airlines = 1301,		// 1301 airline list
 
 
 	// Surface codes
@@ -228,8 +229,9 @@ enum {
 	atc_traffic_turbos = 4,
 	atc_traffic_props = 8,
 	atc_traffic_helis = 16,
+	atc_traffic_fighters = 32,
 	
-	atc_traffic_all = (atc_traffic_heavies|atc_traffic_jets|atc_traffic_turbos|atc_traffic_props|atc_traffic_helis),
+	atc_traffic_all = (atc_traffic_heavies|atc_traffic_jets|atc_traffic_turbos|atc_traffic_props|atc_traffic_helis|atc_traffic_fighters),
 	
 	atc_op_arrivals = 1,
 	atc_op_departures = 2,
@@ -238,7 +240,17 @@ enum {
 	atc_ramp_misc = 0,
 	atc_ramp_gate = 1,
 	atc_ramp_tie_down = 2,
-	atc_ramp_hangar = 3
+	atc_ramp_hangar = 3,
+	atc_ramp_cargo = 4,
+	atc_ramp_military = 5,
+	atc_ramp_refueling = 6,
+	
+	atc_width_A = 0,
+	atc_width_B = 1,
+	atc_width_C = 2,
+	atc_width_D = 3,
+	atc_width_E = 4,
+	atc_width_F = 5
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -351,7 +363,9 @@ struct	AptGate_t {
 	float		heading;
 	int			type;
 	int			equipment;
+	int			width;			// icao width code
 	string		name;
+	string		airlines;
 };
 typedef vector<AptGate_t>		AptGateVector;
 
@@ -456,6 +470,7 @@ struct AptRouteEdge_t {
 	int							dst;
 	int							oneway;
 	int							runway;
+	int							width;	// icao width code
 	set<string>					hot_depart;
 	set<string>					hot_arrive;
 	set<string>					hot_ils;
