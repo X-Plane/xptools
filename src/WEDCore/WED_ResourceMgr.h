@@ -80,6 +80,7 @@ struct agp_t {
 		string	name;
 	};
 	string			base_tex;
+	string			mesh_tex;
 	int				hide_tiles;
 	vector<double>	tile;	// the base tile in x,y,s,t quads.
 	vector<obj>		objs;
