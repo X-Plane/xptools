@@ -67,7 +67,7 @@
 // For now this is a debug mode - we printf all airport ICAOs with problems and don't interrupt validate.
 #define FIND_BAD_AIRPORTS 0
 
-#define CHECK_ZERO_LENGTH 0
+#define CHECK_ZERO_LENGTH 1
 
 
 static set<string>	s_used_rwy;
