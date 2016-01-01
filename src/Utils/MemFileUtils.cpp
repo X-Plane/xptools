@@ -446,6 +446,10 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 	void *		addr = NULL;		// Not that you should be doing that
 	int			len = 0;	// anyway.
 #endif
+#if IBM
+	string input(path);
+	string_utf16 output;
+#endif
 
 	obj = new MFMemFile;
 	if (!obj) goto bail;
@@ -514,8 +518,6 @@ cleanmmap:
 	HANDLE			winFile = NULL;
 	HANDLE			winFileMapping = NULL;
 	char *			winAddr = NULL;
-	string input(path);
-	string_utf16 output;
 	string_utf_8_to_16(input, output);
 
 	winFile = CreateFileW((const wchar_t*)output.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);

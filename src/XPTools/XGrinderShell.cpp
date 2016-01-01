@@ -41,10 +41,6 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#if LIN
-#include <errno.h>
-#endif
-
 #if IBM
 #include <fcntl.h>
 #include <io.h>

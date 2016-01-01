@@ -1071,8 +1071,7 @@ void		GUI_Window::Timer(void)
 	for(int btn=0;btn<BUTTON_DIM;++btn)
 	if (mMouseFocusPane[btn])
 	{
-		x = mLastX;
-		y = mLastY;
+		XWinGL::GetMouseLoc(&x,&y);
 		mMouseFocusPane[btn]->MouseDrag(Client2OGL_X(x, mWindow), Client2OGL_Y(y, mWindow), btn);
 	}
 

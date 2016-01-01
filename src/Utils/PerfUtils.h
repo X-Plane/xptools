@@ -63,8 +63,7 @@ inline unsigned long long query_hpc()
 		return cntr.QuadPart;		
 	#elif LIN
 		struct timespec tp;
-		xint ret = clock_gettime(CLOCK_MONOTONIC, &tp);
-		dev_assert(!ret);
+		int ret = clock_gettime(CLOCK_MONOTONIC, &tp);
 		if(ret != 0) return 0;
 		unsigned long long usecs = (unsigned long long)tp.tv_sec * 1000000ULL + (unsigned long long)tp.tv_nsec / 1000ULL;
 		return usecs;
