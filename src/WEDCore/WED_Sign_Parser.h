@@ -22,34 +22,35 @@ This could be used for some drawing utility or anything that would like to know 
 
 
 //Contains all the possible error types that the par can generate
-enum parser_error_t
-{
-	sem_glyph_color_mismatch,//Found under check_color
-	sem_no_color,//Found under preform_final_semantic_checks
-	sem_not_real_instruction,//Found under I_ANY_CONTROL
-	sem_not_real_multiglyph,//Found under check_multi_glyph
-	sem_not_real_singleglyph,//Foudn nder check_single_glyph
-	sem_mutiple_side_switches,//Found under I_ANY_CONTROL:case '@':
+enum parser_error_t {
+	// Syntax errors.  When these happen we -may- get cascading error hell.
+	// Error recovery varies based on what the user intended and how screwed up
+	// the sign is.
+
+	syn_not_real_instruction,			// @ command with an illegal code.
+	syn_not_real_multiglyph,			// Bad glyph name inside {}
+	syn_not_real_singleglyph,			// BAd glyph name outside {}
+
+	syn_found_at_symbol_outside_curly,	// @ command outside {}
+	syn_expected_seperator,				// After an @ command there's more junk before a } or ,
+	syn_empty_multiglyph,				// The multi-glyph is empty, e.g. {,B}
+
+	syn_curly_pair_missing,				// when we get { and the glyph ends
+	syn_curly_pair_nested,				// When we get {{
+	syn_curly_unbalanced,				// When we get a } without a {
+
+	// Semantic errors.  When these happen, the parse is unambiguous,
+	// it's just that something illegal has been requested.
 	
-	//Found in preform final semantic checks
-	sem_pipe_begins_sign,
-	sem_pipe_color_mismatch,///YF|//RD from {@Y,F}|{@R,D}
-	sem_pipe_double_juxed, //||
-	sem_pipe_ends_sign,
+	sem_pipe_begins_sign,				// {@Y}|FOO
+	sem_pipe_color_mismatch,			// {@Y}FOO{@L}|{@Y}BAR
+	sem_pipe_double_juxed,				// {@Y}FOO||BAR
+	sem_pipe_ends_sign,					// {@Y}BAR|
+
+	sem_glyph_color_mismatch,			// Glyph has illegal color
+	sem_mutiple_side_switches,			// More than one @@ command.
 	
-	syn_found_at_symbol_outside_curly,//Found under O_ACCUM_GLYPHS
-	syn_found_lowercase_outside_curly,//Found under O_ACCUM_GLYPHS
-	syn_expected_seperator,//Found under I_WAITING_SEPERATOR
-	syn_expected_non_comma_after_incur,//Found under I_INCUR
-	syn_expected_non_seperator_after_comma,//Found under I_COMMA
-	
-	//These are found under validate basic
-	syn_nonsupported_char,
-	syn_whitespace_found,
-	//These are found under ValidateCurly
-	syn_curly_pair_missing,
-	syn_curly_pair_empty,
-	syn_curly_pair_nested
+	parser_error_count
 };
 
 struct parser_error_info {
@@ -62,25 +63,86 @@ struct parser_error_info {
 	int length;
 };
 
-/* Possible values
-	'Y'ellow
-	'R'ed
-	'L'ocation
-	'B'lack
-	'I'ndependent
-	'X'invalid
-*/
 enum parser_color_t{
-	sign_color_yellow = 'Y',
-	sign_color_red = 'R',
-	sign_color_location = 'L', 
-	sign_color_black = 'B',
-	sign_color_independent = 'I',
-	sign_color_invalid = 'X'
+	sign_color_yellow		= 'Y',	// Yellow (with black text)
+	sign_color_red			= 'R',	// Red (with white text)
+	sign_color_location		= 'L',	// Location (black with yellow text and border)
+	sign_color_black		= 'B',	// Black (with white text for distance remaining)
+	sign_color_independent	= 'I',	// Independent
+	sign_color_invalid		= 'X'	// Invalid
 };
 
-//The text component of a single or multi letter glyph
-typedef string parser_glyph_t;
+enum parser_glyph_t {
+	glyph_Invalid = -1,
+	glyph_A = 0,			// Letters
+	glyph_B,
+	glyph_C,
+	glyph_D,
+	glyph_E,
+	glyph_F,
+	glyph_G,
+	glyph_H,
+	glyph_I,
+	glyph_J,
+	glyph_K,
+	glyph_L,
+	glyph_M,
+	glyph_N,
+	glyph_O,
+	glyph_P,
+	glyph_Q,
+	glyph_R,
+	glyph_S,
+	glyph_T,
+	glyph_U,
+	glyph_V,
+	glyph_W,
+	glyph_X,
+	glyph_Y,
+	glyph_Z,
+	glyph_0,
+	glyph_1,				// Numbers
+	glyph_2,
+	glyph_3,
+	glyph_4,
+	glyph_5,
+	glyph_6,
+	glyph_7,
+	glyph_8,
+	glyph_9,
+	glyph_dash,				// Hyphen -
+	glyph_dot,				// dot is * in sign code
+	glyph_period,
+	glyph_slash,
+	glyph_space,			// space is _ in sign code
+	glyph_separator,		// pipe | separator
+	glyph_comma,			// , outside braces or comma inside
+	
+	glyph_up,				// 8 direction arrows
+	glyph_down,
+	glyph_left,
+	glyph_right,
+	glyph_leftup,
+	glyph_rightup,
+	glyph_leftdown,
+	glyph_rightdown,
+	glyph_critical,			// "ladder" - ILS critical area
+	glyph_hazard,			// diagonal yellow/black slashes - hazardous
+	glyph_no_entry,			// Do not enter - white sign and slash on red background
+	glyph_safety,			// hold short for safety - solid and dashed lines
+	glyph_r1,				// roman numeral cat I, II, III
+	glyph_r2,
+	glyph_r3
+};
+
+//#error TODO
+/*
+	create a glyph table off of the glyph IDs with valid colors, in and out of bracket spellings, etc.
+*/
+
+string	parser_name_for_glyph(parser_glyph_t glyph);
+bool	parser_is_color_legal(parser_glyph_t, parser_color_t);
+
 
 //Represents the information about a single or multi glyphs
 struct parser_glyph_info
@@ -102,13 +164,13 @@ struct parser_finished_sign
 	vector<parser_glyph_info> front;
 	vector<parser_glyph_info> back;
 
-	string toString(const vector<parser_glyph_info> & side)
+	string toDebugString(const vector<parser_glyph_info> & side)
 	{
 		string tmp;
 		for (int i = 0; i < side.size(); i++)
 		{
 			parser_glyph_info curGlyph = side[i];
-			tmp += '/' + ((char)curGlyph.glyph_color + curGlyph.glyph_name);
+			tmp += '/' + ((char)curGlyph.glyph_color + parser_name_for_glyph(curGlyph.glyph_name));
 		}
 		return tmp;
 	}

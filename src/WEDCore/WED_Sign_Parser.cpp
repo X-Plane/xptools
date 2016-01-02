@@ -1,825 +1,535 @@
 #include "WED_Sign_Parser.h"
+#include <assert.h>
 
-const string k_glyph_pipe = string("|");
+struct glyph_info_t {
+	parser_glyph_t		glyph;
+	const char *		inside_name;
+	const char *		outside_name;	// NULL if not legal outside {}
+	int					yellow_ok;
+	int					red_ok;
+	int					location_ok;
+	int					black_ok;
+	int					independent_ok;
+};
+
+static const glyph_info_t	k_glyph_metadata[] = {
+/*	glyph			inside name	outside name	Y	R	L	B	I	*/
+	glyph_A,		"A",		"A",			1,	1,	1,	0,	0,
+	glyph_B,		"B",		"B",			1,	1,	1,	0,	0,
+	glyph_C,		"C",		"C",			1,	1,	1,	0,	0,
+	glyph_D,		"D",		"D",			1,	1,	1,	0,	0,
+	glyph_E,		"E",		"E",			1,	1,	1,	0,	0,
+	glyph_F,		"F",		"F",			1,	1,	1,	0,	0,
+	glyph_G,		"G",		"G",			1,	1,	1,	0,	0,
+	glyph_H,		"H",		"H",			1,	1,	1,	0,	0,
+	glyph_I,		"I",		"I",			1,	1,	1,	0,	0,
+	glyph_J,		"J",		"K",			1,	1,	1,	0,	0,
+	glyph_K,		"K",		"K",			1,	1,	1,	0,	0,
+	glyph_L,		"L",		"L",			1,	1,	1,	0,	0,
+	glyph_M,		"M",		"M",			1,	1,	1,	0,	0,
+	glyph_N,		"N",		"N",			1,	1,	1,	0,	0,
+	glyph_O,		"O",		"O",			1,	1,	1,	0,	0,
+	glyph_P,		"P",		"P",			1,	1,	1,	0,	0,
+	glyph_Q,		"Q",		"Q",			1,	1,	1,	0,	0,
+	glyph_R,		"R",		"R",			1,	1,	1,	0,	0,
+	glyph_S,		"S",		"S",			1,	1,	1,	0,	0,
+	glyph_T,		"T",		"T",			1,	1,	1,	0,	0,
+	glyph_U,		"U",		"U",			1,	1,	1,	0,	0,
+	glyph_V,		"V",		"V",			1,	1,	1,	0,	0,
+	glyph_W,		"W",		"W",			1,	1,	1,	0,	0,
+	glyph_X,		"X",		"X",			1,	1,	1,	0,	0,
+	glyph_Y,		"Y",		"Y",			1,	1,	1,	0,	0,
+	glyph_Z,		"Z",		"Z",			1,	1,	1,	0,	0,
+
+	glyph_0,		"0",		"0",			1,	1,	1,	1,	0,
+	glyph_1,		"1",		"1",			1,	1,	1,	1,	0,
+	glyph_2,		"2",		"2",			1,	1,	1,	1,	0,
+	glyph_3,		"3",		"3",			1,	1,	1,	1,	0,
+	glyph_4,		"4",		"4",			1,	1,	1,	1,	0,
+	glyph_5,		"5",		"5",			1,	1,	1,	1,	0,
+	glyph_6,		"6",		"6",			1,	1,	1,	1,	0,
+	glyph_7,		"7",		"7",			1,	1,	1,	1,	0,
+	glyph_8,		"8",		"8",			1,	1,	1,	1,	0,
+	glyph_9,		"9",		"9",			1,	1,	1,	1,	0,
+
+	glyph_dash,		"-",		"-",			1,	1,	0,	0,	0,
+	glyph_dot,		"*",		"*",			1,	1,	0,	0,	0,
+	glyph_period,	".",		".",			1,	1,	0,	0,	0,
+	glyph_slash,	"/",		"/",			1,	1,	0,	0,	0,
+	glyph_space,	"_",		"_",			1,	1,	0,	0,	0,
+	glyph_separator,"|",		"|",			1,	1,	1,	0,	0,
+	glyph_comma,	"comma",	",",			1,	1,	0,	0,	0,
+	
+	glyph_up,		"^u",		NULL,			1,	1,	0,	0,	0,
+	glyph_down,		"^d",		NULL,			1,	1,	0,	0,	0,
+	glyph_left,		"^l",		NULL,			1,	1,	0,	0,	0,
+	glyph_right,	"^r",		NULL,			1,	1,	0,	0,	0,
+	glyph_leftup,	"^lu",		NULL,			1,	1,	0,	0,	0,
+	glyph_rightup,	"^ru",		NULL,			1,	1,	0,	0,	0,
+	glyph_leftdown,	"^ld",		NULL,			1,	1,	0,	0,	0,
+	glyph_rightdown,"^rd",		NULL,			1,	1,	0,	0,	0,
+	
+	glyph_critical,	"critical",	NULL,			0,	0,	0,	0,	1,
+	glyph_hazard,	"hazard",	NULL,			0,	0,	0,	0,	1,
+	glyph_no_entry,	"no-entry",	NULL,			0,	0,	0,	0,	1,
+	glyph_safety,	"safety",	NULL,			0,	0,	0,	0,	1,
+	glyph_r1,		"r1",		NULL,			1,	1,	0,	0,	0,
+	glyph_r2,		"r2",		NULL,			1,	1,	0,	0,	0,
+	glyph_r3,		"r3",		NULL,			1,	1,	0,	0,	0
+};
+
+static const char * k_err_msgs[parser_error_count] = {
+	"Invalid @ instruction",
+	"Not a real glyph",
+	"Not a single-character real glyph",
+
+	"@ outside of {}",
+	"Expected } or ,",
+	"Empty glyph",
+
+	"Missing { at end of sign",
+	"Nested {",
+	"} is not after }",
+
+	"Sign side begins with a separator",
+	"Color mismatch around separator",
+	"Double separator",
+	"Sign ends with separator",
+
+	"Illegal color for glyph",
+	"Too many side switches"
+};
+
+static const int k_glyph_info_count = sizeof(k_glyph_metadata) / sizeof(k_glyph_metadata[0]);
+
+static const glyph_info_t * get_glyph_info(parser_glyph_t glyph)
+{
+	for(int i = 0; i < k_glyph_info_count; ++i)
+	if(k_glyph_metadata[i].glyph == glyph)
+		return k_glyph_metadata+i;
+	return NULL;
+}
+
+string	parser_name_for_glyph(parser_glyph_t glyph)
+{
+	const glyph_info_t * i = get_glyph_info(glyph);
+	return i ? i->inside_name : "";
+}
+
+bool	parser_is_color_legal(parser_glyph_t glyph, parser_color_t c)
+{
+	const glyph_info_t * i = get_glyph_info(glyph);
+	if(!i) return false;
+	switch(c) {
+	case sign_color_yellow: return i->yellow_ok;
+	case sign_color_red:	return i->red_ok;
+	case sign_color_location: return i->location_ok;
+	case sign_color_black:	return i->black_ok;
+	case sign_color_independent: return i->independent_ok;
+	default: return false;
+	}
+}
+
+
 
 //--WED_Sign_Parser class decleration--------------------------
-class WED_Sign_Parser
-{
+class WED_Sign_Parser {
+public:
+	WED_Sign_Parser(const parser_in_info & input, parser_out_info & output);
+	~WED_Sign_Parser(void);
+	
+	void MainLoop();
+
 private:
-	enum FSM
-	{
+
+	// An important note on glyph buffer handling:
+	// If the parser is in state I_ACCUM_GLYPHS, all output is dumped into the glyph buffer until we're ready to flush it.
+	// In all other states, the glyph buffer is empty.
+	// Therefore at any given time when we need to accumulate an error, either:
+	//
+	// (a) we are working on the glyph buffer, which is non-emtpy, and the current position is at the NEXT character after the glyph
+	// buf's characters.  We thus know where in the source string the glyph buffer came from and we can attribute the error to the
+	// glyph buffer or
+	//
+	// (b) we are parsing a single character at mPosition.
+	//
+	// Code that does both (e.g. if we hit a { inside a {} expression with the glyph buf non-emtpy in I_ACCUM_GLYPHS) makes sure to
+	// (1) first flush the glyph buf, attributing any errors to that buffer, e.g. if the glyph name is silly or the color is wrong
+	// and (2) then clears the glyph buf and copes with additional errors (e.g. nested braces), attributing that to the separatolr.
+
+
+	enum FSM {
 		//The inside curly braces portion, starts with I_
-		I_COMMA,//We just hit a comma and are now expecting single
-		//or multiglyphs
-		I_INCUR,//For when we hit {
-		I_ACCUM_GLPHYS,//For collecting glpyhs
-		I_ANY_CONTROL,//When it hits a @
-		I_WAITING_SEPERATOR,//For when it is waiting for a , or }
+		I_COMMA,		//	We just hit a comma inside braces and are now expecting some kind of multi-glyph or command token
+		I_INCUR,		//	We are inside curly braces - we can accept a } or a token
+		I_ACCUM_GLYPHS,	//	We have at least one char and are possibly collecting more for multi-char glyphs in {}
+		I_ANY_CONTROL,	//	We parsed  @ and are waiting for the control letter
+		I_WAITING_SEPERATOR,//For when it is waiting for a , or } after finishing a known control, e.g. @@
 		//The outside curly braces portion, starts with O_
-		O_ACCUM_GLYPHS,
-		O_END,//For when the string ends
-		LOOKUP_ERR//Return code for any errors in the lookup table
+		O_ACCUM_GLYPHS,	//	We are consuming single-char glyphs - we don't have any yet.
+						//	(Since they are single char, each scanned char is immediately turned into a glyph and we
+						//	fall back into this state.  This is different from inside {} where I_ACCUM_GLYPHS is only
+						//	when we are mid-glyph)
 	};
+
+	// Appends an error code for the current parse.  If the glyph buf is not empty, we attribute the buf to
+	// the error; otherwise we attribute the single char at the current position.
+	void			append_error(parser_error_t code);
 	
-	//--Semantic checking and handling-------------------------
-	
-	//Preforms any last semantic checking that is inconvient to do during the FSM, mostly | stuff
-	//Returns true if error was found
-	bool preform_final_semantic_checks(const parser_in_info & inStr, parser_out_info & output);
+	// These check a glyph, and either accumulate errors _or_ return the valid glyph.
+	parser_glyph_t	check_multi_glyph(const string & inGlyph);
+	parser_glyph_t	check_single_glyph(char inGlyph);
 
-	//Checks to see if a current multi-glyph or single glyph is allowed with a certain color
-	//Returns true if there was an error
-	bool check_color(const string & inGlyph, int position,parser_out_info & output);
+	// Given a valid glyph in the current glyph buf _or_ position (if glyph buf empty),
+	// accumulate it, and add any semantic errors that we hit along the way
+	void			append_parser_out_info(parser_glyph_t glyph);
 
-	//Checks to see if a certain multi_glyph is a valid glyph
-	bool check_multi_glyph(const string & inGlyph, int position, parser_out_info & output);
-
-	//Checks to see if a certain glyph is valid
-	bool check_single_glyph(char inGlyph, int position, parser_out_info & output);
-
-	//Askes if the glyph is currently one of the special independant glyphs
-	//"hazard","safety","critical","no-entry"
-	bool IsIndependentGlyph(const string & inGlyph);//may be a secret duplicate of check_multi_glyph
-	//---------------------------------------------------------
-	
-	//--parser_out_info modifying code--------------------------------
-	void append_parser_out_info(const string & inGlyph, int position, parser_out_info & output);
-	//---------------------------------------------------------
-
-
-	//--Syntax Checking functions------------------------------
-	//takes in the char and an optional boolean to say wheather to only do lowercase
-	bool IsSupportedChar(char inChar);
-
-	bool ValidateCurly(const parser_in_info & inStr, int position, parser_out_info & output);
-	bool ValidateBasics(const parser_in_info & inStr, parser_out_info & output);
-	//---------------------------------------------------------
-
-	//--FSM functions------------------------------------------
-	//A state-to-string conversion function, it is simply for generating messages
-	string EnumToString(FSM in);
-
-	//The heart of the parser, the FSM look up table. Position and output are simply for error messages
-	FSM LookUpTable(FSM curState, char curChar, int position, parser_out_info & output);
+	// Given the current state, consume the current character and return the new state, taking all actions needed.
+	FSM				LookUpTable(FSM curState);
 	//---------------------------------------------------------
 
 	//--FSM data members---------------------------------------
-	//The current color, allowed values are Y,R,L,B,I(for the magic independant glyphs),P for pipe, and X for invalid
-	parser_color_t curColor;
+	parser_color_t			mCurColor;		// Current color as we parse
+	bool					mOnFront;		// True if in sign front, false if in sign back
+	string					mGlyphBuf;		// Accumulated chars for multi-char glyph
+	int						mPosition;		// Index into input string
 	
-	//If we are still on the front
-	bool on_front;
-
-	//Glyph Buffer, stores a glyph that is form
-	//{c->{co->{com->{comm->{comma
-	string glyphBuf;
-	//---------------------------------------------------------
-public:
-	WED_Sign_Parser(void);
-	~WED_Sign_Parser(void);
-	
-	void MainLoop(const parser_in_info & input, parser_out_info & output);
+	const parser_in_info&	mInput;
+	parser_out_info&		mOutput;
 };
 //------------------------------------------------------------------------
-WED_Sign_Parser::WED_Sign_Parser(void)
+WED_Sign_Parser::WED_Sign_Parser(const parser_in_info & input, parser_out_info & output) :
+	mCurColor(sign_color_invalid),
+	mOnFront(true),
+	mPosition(0),
+	mInput(input),
+	mOutput(output)
 {
-	curColor = sign_color_invalid;//Must start as X and no other color because further code makes assumptions about it being X (preform_final_sem_checks)!
-	on_front = true;//Also must start as writing to the front
 }
 
 WED_Sign_Parser::~WED_Sign_Parser()
 {
 }
 
-//--Semantic checking and handling-------------------------
-bool WED_Sign_Parser::preform_final_semantic_checks(const parser_in_info & inStr, parser_out_info & output)
+void WED_Sign_Parser::append_error(parser_error_t code)
 {
-	/*Final Checks
-	* Did we have some actual glyph in the whole sign?
-	* Pipe Bar Rules
-		* A Pipe must have a non-pipe,non-sign-flip, on both sides of it now known as A and B
-		** A and B must be of the same color
-		*** Sign cannot begin or end with a pipe bar
-	*/
-	stringstream ss;
-	bool foundError = false;
-
-	//glyphCount is a persistent counter so when the sign flips over the counter doesn't get lost
-
-	int glyphCount = 0;
-	for (int i = 0; i < output.out_sign.front.size(); i++, glyphCount++)
-	{
-		if(output.out_sign.front[i].glyph_color == 'X')
-		{
-			ss << "Glyph " << glyphCount + 1 << ": Glyph " << output.out_sign.front[i].glyph_name << " has no color, must declare color instruction before it";
-			output.AddError(ss.str(),sem_no_color,i,output.out_sign.front[i].glyph_name.size());
-			ss.str("");
-			ss.clear();
-			
-		}
-	}
+	#if !DEV
+		#error TODO - human readable msg?
+	#endif
+	parser_error_info e;
 	
-	for (int i = 0; i < output.out_sign.back.size(); i++, glyphCount++)
+	e.err_code = code;
+	if(mGlyphBuf.empty())
 	{
-		if(output.out_sign.back[i].glyph_color == 'X')
-		{
-			ss << "Glyph " << glyphCount + 1 << ": Glyph "  << output.out_sign.back[i].glyph_name << " has no color, must declare color instruction before it";
-			output.AddError(ss.str(),sem_no_color,i,output.out_sign.back[i].glyph_name.size());
-			ss.str("");
-			ss.clear();
-		}
-	}
-
-	for(int side = 0; side < 2; ++side)
-	{
-		vector<parser_glyph_info>& side_text(side ? output.out_sign.back : output.out_sign.front);
-		
-		if(side_text.size() == 1)
-		{
-			if(side_text.front().glyph_name == k_glyph_pipe)
-			{
-				// sole pipe bug
-				ss << "Sign side consists only of a pipe.";
-				output.AddError(ss.str(),sem_pipe_begins_sign,0,3);
-				ss.str("");
-				ss.clear();
-				foundError = true;
-			}
-		}
-		else if(side_text.size() > 1)
-		{
-			if(side_text.front().glyph_name == k_glyph_pipe)
-			{	
-				// start pipe bug
-				ss << "Sign side starts with a pipe.";
-				output.AddError(ss.str(),sem_pipe_begins_sign,0,3);
-				ss.str("");
-				ss.clear();
-				foundError = true;
-			}
-			if(side_text.back().glyph_name == k_glyph_pipe)
-			{
-				// end pipe bug
-				ss << "Sign side ends with a pipe.";
-				output.AddError(ss.str(),sem_pipe_ends_sign,0,3);
-				ss.str("");
-				ss.clear();
-				foundError = true;
-			}			
-			for(int i = 1; i < side_text.size(); ++i)
-			if(side_text[i-1].glyph_name == k_glyph_pipe && side_text[i].glyph_name == k_glyph_pipe)
-			{
-				// adjacent bug
-				ss << "Sign side has two adjacent pipes.";
-				output.AddError(ss.str(),sem_pipe_double_juxed,0,3);
-				ss.str("");
-				ss.clear();
-				foundError = true;
-			}
-			for(int i = 2; i < side_text.size(); ++i)
-			if(side_text[i-1].glyph_name == k_glyph_pipe)
-			if(side_text[i-2].glyph_color != side_text[i-1].glyph_color ||
-			   side_text[i  ].glyph_color != side_text[i-1].glyph_color)
-			{
-				ss << "Sign side has pipe surrounded by different colors.";
-				output.AddError(ss.str(),sem_pipe_color_mismatch,0,3);
-				ss.str("");
-				ss.clear();
-				foundError = true;				
-			}
-
-		}
-	}
-	return foundError;
-}
-
-//Returns true if there was an error
-bool WED_Sign_Parser::check_color(const string & inGlyph, int position, parser_out_info & output)
-{
-	//This test assumes that if curColor is a certain color then it is that certain color
-	//for a reason, aka it is safe to make some assumptions about the state of the parser based
-	//off that information
-
-	//Go in as far as it can go
-	switch(curColor)
-	{
-	case sign_color_yellow:
-	case sign_color_red:
-		return false;//Y and R allow for all characters
-	case sign_color_location:
-		{
-			bool foundError = false;
-			for (int i = 0; i < inGlyph.length(); i++)
-			{
-				//L can only support A-Z and 0-9, the bellow checks the relevant
-				if(!((inGlyph[i] >= 65 && inGlyph[i] <= 90) ||
-					(inGlyph[i] >= 48 && inGlyph[i] <= 57) ||
-					(inGlyph[i] == '|')))
-				{
-					stringstream ss;
-					ss << "Character " << position + 1 << ": " << inGlyph[i] << " cannot belong to color type " << curColor;
-					parser_error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
-					output.errors.push_back(e);
-					foundError = true;
-				}
-			}
-			return foundError;
-		}
-	case sign_color_black:
-		{
-			bool foundError = false;
-			for (int i = 0; i < inGlyph.length(); i++)
-			{
-				//B can only support 0-9 (ASCII letters 48 through 57)
-				if(!(inGlyph[i] >= 48 && inGlyph[i] <= 57))
-				{
-					stringstream ss;
-					ss << "Character " << position + 1 << ": " << inGlyph[i] << " cannot belong to color type " << curColor;
-					parser_error_info e = {ss.str(),sem_glyph_color_mismatch,position,1};
-					output.errors.push_back(e);
-					foundError = true;
-				}
-			}
-			return foundError;
-		}
-	case sign_color_independent:
-		return false;//If I was chosen it can support it self
-	case sign_color_invalid://No color has been selected
-		return false;
-	default:
-		break;
-	}
-	return false;
-}
-
-//Check a multi glyph
-//Returns true if there was an error
-bool WED_Sign_Parser::check_multi_glyph(const string & inGlyph, int position, parser_out_info & output)
-{
-	//Assume there is something wrong until otherwise noted
-	bool semError = true;
-
-	//Based on the letter, preform a bunch of string compares
-	//if it is a perfect match for any of the real multiletter glyphs
-	switch(inGlyph[0])
-	{
-	case '^':
-		if((inGlyph == "^u") == true ||
-			(inGlyph == "^d") == true ||
-			(inGlyph == "^r") == true ||
-			(inGlyph == "^l") == true||
-			(inGlyph == "^lu") == true ||
-			(inGlyph == "^ru") == true ||
-			(inGlyph == "^ld") == true ||
-			(inGlyph == "^rd") == true)
-		{
-			semError = false;
-		}
-		break;
-	case 'c':
-		if( (inGlyph == "critical") == true||
-			(inGlyph == "comma") == true)
-		{
-			semError = false;
-		}
-		break;
-	case 'h':
-		if((inGlyph == "hazard") == true)
-		{
-			semError = false;
-		}
-		break;
-	case 'n':
-		if((inGlyph == "no-entry") == true)
-		{
-			semError = false;
-		}
-		break;
-	case 'r':
-		if((inGlyph == "r1") == true||
-			(inGlyph == "r2") == true||
-			(inGlyph == "r3") == true)
-		{
-			semError = false;
-		}
-		break;
-	case 's':
-		if((inGlyph == "safety") == true)
-		{
-			semError = false;
-		}
-		break;
-	//For all other letters
-	default:
-		semError = true;//It will next print the error warning
-		break;
-	}
-	if(semError == true)
-	{
-		stringstream ss;
-		ss << "Character " << position - inGlyph.length() + 1 << "-" << position << ": " << inGlyph << " is not a real multiglyph";
-		parser_error_info e = {ss.str(),sem_not_real_multiglyph,position, position - position - inGlyph.length()};
-		output.errors.push_back(e);
-	}
-	return semError;
-}
-
-bool WED_Sign_Parser::check_single_glyph(const char inGlyph, int position, parser_out_info & output)
-{
-	const char * valid_single_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-*./_|";
-	
-	const char * f = valid_single_chars;	
-	
-	bool semError= true;
-	
-	while(*f)
-	{
-		if(*f == inGlyph)
-		{	
-			semError = false;
-			break;
-		}
-		++f;
-	}
-		
-	if(semError == true)
-	{
-		stringstream ss;
-		ss << "Character " << position << "-" << position << ": " << inGlyph << " is not a real single character glyph";
-		parser_error_info e = {ss.str(),sem_not_real_multiglyph,position, position - position - 1};
-		output.errors.push_back(e);
-	}
-	return semError;
-}
-
-
-bool WED_Sign_Parser::IsIndependentGlyph(const string & inLetters)
-{
-	if( inLetters == "critical" ||
-		inLetters == "no-entry" ||
-		inLetters == "safety"   ||
-		inLetters == "hazard"   )
-	{
-		return true;
-	}
-	return false;
-}
-
-//--parser_out_info modifying code-------------------------
-//Attempts to add a collection of letters
-void WED_Sign_Parser::append_parser_out_info(const string & inGlyph, int position, parser_out_info & output)
-{
-	//Before actually appending them see if they're
-	//correct semantically
-	/* 
-	1.) Findout if we the glyph can be supported in the current color
-	2.) Write the results to the correct finished sign
-	*/
-
-	//Save the real current color
-	parser_color_t realColor = curColor;
-	
-	//If the glyph buffer is one of the independants
-	if(IsIndependentGlyph(inGlyph) == true)
-	{
-		//Make it the color 'I' for this session
-		curColor = sign_color_independent;
-	}
-	
-	bool invalid_for_color = check_color(inGlyph,position,output);
-
-	if(invalid_for_color == true)
-	{
-		curColor = sign_color_invalid;
-	}
-
-	if(inGlyph.length() > 1)
-	{
-		check_multi_glyph(inGlyph,position,output);
-	}
-	else {
-		check_single_glyph(inGlyph[0],position,output);
-	}
-
-	
-	if(on_front == true)
-	{
-		output.out_sign.front.push_back(parser_glyph_info(curColor, inGlyph));
+		e.position = mPosition;
+		e.length = 1;
 	}
 	else
 	{
-		output.out_sign.back.push_back(parser_glyph_info(curColor, inGlyph));
+		// When the glyph buf is in-tact, it's the post-glyph-buf terminating character that provkes us.
+		// so if we have:
+		//  01234567
+		//  {@Y,FOO,
+		// position is 7, the cur char is , and we get called with FOO in our buffer and detemrine that 4-7
+		// is the bad glyph.
+		// If the code wants us to push an err on 7, it'll clear out the glyph buf first.
+		e.position = mPosition - mGlyphBuf.size();
+		e.length = mGlyphBuf.size();
 	}
-	
-	//Reset it back to the original color, regardless if it had to be set to I or not
-	curColor = realColor;
-}
-//---------------------------------------------------------
 
-//--Syntax Checking functions------------------------------
-bool WED_Sign_Parser::IsSupportedChar(char inChar)
-{
-	if((inChar >= 65 && inChar <= 90) || //A-Z
-			(inChar >= 48 && inChar <= 57)  || //0-9
-			inChar == '.'||//These take care of specials and
-			inChar == '*'||//parts of multiletter glyphs
-			inChar == ','||
-			inChar == '-'||
-			inChar == '.'||
-			inChar == '_'||
-			inChar == '|'||//Pipe bar
-			inChar == '/'||
-			inChar == '@'||
-			inChar == '^'||
-			inChar == 'a'||
-			inChar == 'c'||
-			inChar == 'd'||
-			inChar == 'e'||
-			inChar == 'f'||
-			inChar == 'h'||
-			inChar == 'i'||
-			inChar == 'l'||
-			inChar == 'm'||
-			inChar == 'n'||
-			inChar == 'o'||
-			inChar == 'r'||
-			inChar == 's'||
-			inChar == 't'||
-			inChar == 'u'||
-			inChar == 'y'||
-			inChar == 'z'||
-			inChar == '{'||
-			inChar == '}'
-			)
-	{
-		return true;
-	}
-	return false;
+	stringstream str;
+	str << "Chars " << e.position << " to " << e.position + e.length - 1 << ": " << k_err_msgs[code] << " " << mInput.input.substr(e.position,e.length);
+	e.msg = str.str();
+
+	mOutput.errors.push_back(e);
 }
 
-//Takes in the place where a '{' is as the start
+
+//Check a multi glyph
 //Returns true if there was an error
-bool WED_Sign_Parser::ValidateCurly(const parser_in_info & inStr, int position, parser_out_info & output)
-{		
-	//What is currently considered good, a { a }
-	//We start by saying that we are looking for a {
-	char LFGoodMode = '{';//Used later for nesting nesting
-	int rCurlyIndex = 0;//Index where the matching } is found, 0 means not found
-	//1.) All { have a }
-	//2.) No pair may be empty nest
-	//3.) No pair may nest
-
-	//--Find if and where the end of the pair is-----
-	//Run until it breaks on 1.)Finding }
-	//or reaching the end of the string
-	int i = position;
-	while(true)
+parser_glyph_t WED_Sign_Parser::check_multi_glyph(const string & inGlyph)
+{
+	for(int i = 0; i < k_glyph_info_count; ++i)
+	if(k_glyph_metadata[i].inside_name)
+	if(inGlyph == k_glyph_metadata[i].inside_name)
 	{
-		//If you've found the other pair
-		if(inStr.input[i] == '}')
-		{
-			rCurlyIndex = i;
-			break;
-		}
-		if(i == inStr.input.length())
-		{
-			stringstream ss;
-			ss << "Curly brace pair starting at " << position + 1 << " is missing its end brace";
-			output.AddError(ss.str(),syn_curly_pair_missing,position,inStr.input.length()-i);
-			return true;
-		}
-		i++;
+		return k_glyph_metadata[i].glyph;
 	}
-	//---------------------------------------------
 	
-	//Reset the nPos
-	i = position;
-
-	//--Next, find if it is actually empty---------
-	if(inStr.input[i+1] == '}')
-	{
-		stringstream ss;
-							//This i+1 is for the user, not refering to the next char
-		ss << "Empty curly braces detected starting at character " << i+1;
-		output.AddError(ss.str(),syn_curly_pair_empty,i,2);
-		return true;
-	}
-	//---------------------------------------------
-	
-	//--Finally see if there is nesting------------
-
-	while(i < inStr.input.length())
-	{
-		/* 1.)Decide whats good or bad
-		*		The first curly brace should be open
-		*		The second curly brace should be close
-		*		It should change never
-		* 2.)Test to see if it good or bad
-		*/
-
-		//If we are at a { or }
-		if(inStr.input[i] == '{' || inStr.input[i] == '}')
-		{
-			//Is it the good mode?
-			if(inStr.input[i] == LFGoodMode)
-			{
-				//If so toggle what you are looking for
-				LFGoodMode = (inStr.input[i] == '{') ? '}' : '{';					
-			}
-			else
-			{
-				stringstream ss;
-				ss << "Character " << i + 1 << ": Brace " << inStr.input[i] << " is invalid in this situation, causes nesting";
-				output.AddError(ss.str(),syn_curly_pair_nested,i,1);
-				return true;
-			}
-		}
-		i++;
-	}
-	//---------------------------------------------
-	i = position;
-	return false;
+	append_error(syn_not_real_multiglyph);
+	return glyph_Invalid;
 }
 
-//Return if there was an error or not
-bool WED_Sign_Parser::ValidateBasics(const parser_in_info & inStr, parser_out_info & output)
+parser_glyph_t WED_Sign_Parser::check_single_glyph(const char inGlyph)
 {
-	bool error = false;
-
-	//--Too long---------------------------------------------
-	//TODO - Find out if there is a max length
-
-	//-------------------------------------------------------
-
-	int i = 0;
-	//---White Space-----------------------------------------
-	while(i < inStr.input.length())//Loop for the whole string
+	for(int i = 0; i < k_glyph_info_count; ++i)
+	if(k_glyph_metadata[i].outside_name)
+	if(k_glyph_metadata[i].outside_name[0] == inGlyph)
 	{
-		char c = inStr.input[i];
-		//If the current character is white space
-		//(isspace blows up on a non ascii character, this is our implenetation)
-		if( c == ' '  ||
-			c == '\t' ||
-			c == '\n' ||
-			c == '\v' ||
-			c == '\f' ||
-			c == '\r')
-		{
-			stringstream ss;
-			ss << "Character " << i + 1 << ": Found whitespace";
-			output.AddError(ss.str(),syn_whitespace_found,i,1);
-			return true;
-		}
-		//Increase the pointer and counter
-		i++;
+		return k_glyph_metadata[i].glyph;
 	}
-	//-------------------------------------------------------
-
-	//Reset variable
-	i = 0;
-
-	//--ASCII or supported char------------------------------------------------
-	while(i < inStr.input.length())
-	{	
-		//Check if it is a non supported char (aka NOT A-Z,0-9,.,* etc
-		if(!IsSupportedChar(inStr.input[i]))
-		{
-			stringstream ss;
-			ss << "Character " << i + 1 << ": " << inStr.input[i] << " is not supported";
-			output.AddError(ss.str(),syn_nonsupported_char,i,1);
-			return true;
-		}
-		i++;
-	}
-	//-------------------------------------------------------
-	i = 0;
-
-	//Validate all curly brace rules
-	while(i < inStr.input.length())
-	{
-		if(inStr.input[i] == '{')
-		{
-			error = ValidateCurly(inStr,i,output);
-			if(error)
-			{
-				return error;
-			}
-		}
-		i++;
-	}
-	i = 0;
-	return error;
+	
+	append_error(syn_not_real_singleglyph);
+	return glyph_Invalid;
 }
-//---------------------------------------------------------
 
-//--FSM functions------------------------------------------
-string WED_Sign_Parser::EnumToString(FSM in)
+//Attempts to add a collection of letters
+void WED_Sign_Parser::append_parser_out_info(parser_glyph_t glyph)
 {
-	switch(in)
+	//Before actually appending them see if they're
+	parser_color_t glyphColor = mCurColor;
+	
+	if(parser_is_color_legal(glyph, sign_color_independent))
+		glyphColor = sign_color_independent;
+	
+	if(!parser_is_color_legal(glyph, glyphColor))
 	{
-	case I_COMMA:
-		return "I_COMMA";
-	case I_INCUR:
-		return "I_INCUR";
-	case I_ACCUM_GLPHYS:	
-		return "I_ACCUM_GLPHYS";
-	case I_ANY_CONTROL:
-		return "I_ANYCONTROL";
-	case I_WAITING_SEPERATOR:	
-		return "I_WAITING_SEPERATOR";
-	case O_ACCUM_GLYPHS:
-		return "O_ACCUM_GLYPHS";
-	case O_END:	
-		return "O_END";
+		append_error(sem_glyph_color_mismatch);
+		glyphColor = sign_color_invalid;
 	}
-	return "NOT REAL STATE";
+
+	vector<parser_glyph_info>& side(mOnFront ? mOutput.out_sign.front : mOutput.out_sign.back);
+
+	if(side.empty())
+	{
+		// For the first char in a side, do the start-with-pipe check.
+		if(glyph == glyph_separator)
+			append_error(sem_pipe_begins_sign);
+	}
+	else
+	{
+		// For all others do adjaceny checks.
+		if(side.back().glyph_name == glyph_separator && glyph == glyph_separator)
+			append_error(sem_pipe_double_juxed);
+		
+		if(side.back().glyph_name == glyph_separator || glyph == glyph_separator)
+		if(side.back().glyph_color != glyphColor)
+			append_error(sem_pipe_color_mismatch);
+	}
+	
+	side.push_back(parser_glyph_info(glyphColor, glyph));
+
 }
 
 //Take in the current (and soon to be past) state  and the current letter being processed
 //The heart of all this
 //Takes in the current state of the FSM, the current character being processes
 //The position, Outstr, and msgBuf are all part of reporting errors and are not integral to the FSM
-WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState, char curChar, int position, parser_out_info & output)
+WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState)
 {
+	char curChar = mInput.input[mPosition];
 	stringstream ss;
-	//If you have reached a \0 FOR ANY REASON exit now
-	if(curChar == '\0')
-	{
-		return O_END;
-	}
- 	switch(curState)
-	{
+	parser_glyph_t glyph;
+	
+	// Important: we should not have gotten out of I_ACCUM_GLYPHS without flushing the glyph buf,
+	// and we should not have added to the glyph buf without going into I_ACCUM_GLYPHS.
+	assert(mGlyphBuf.empty() || curState == I_ACCUM_GLYPHS);
+	
+ 	switch(curState) {
 	case I_COMMA:
-		switch(curChar)
-		{
-		//You will always enter IDLE from a place where a seperator is
-		//not allowed
+		switch(curChar) {
+		case '{':
+			append_error(syn_curly_pair_nested);
+			return I_COMMA;
 		case '}':
-		case ','://since comma's always go into idle you have hit ,,
-			{
-			ss << "Character " << position + 1 << ": " << curChar << " is not allowed there, expected @ or a glyph";
-			output.AddError(ss.str(),syn_expected_non_seperator_after_comma,position,1);
-			}
-			return LOOKUP_ERR;
+			append_error(syn_empty_multiglyph);
+			return O_ACCUM_GLYPHS;
+		case ',':
+			append_error(syn_empty_multiglyph);
+			return I_COMMA;
 		case '@':
 			return I_ANY_CONTROL;
 		default:
 			//if it was able to accumulate the the glyph
-			glyphBuf += curChar;
-			return I_ACCUM_GLPHYS;
+			mGlyphBuf += curChar;
+			return I_ACCUM_GLYPHS;
 		}
 		break;
 	case I_INCUR:
-		switch(curChar)
-		{
+		switch(curChar) {
+		case '{':
+			append_error(syn_curly_pair_nested);
+			return I_INCUR;
+		case '}':
+			return O_ACCUM_GLYPHS;
 		case ',':
-			ss << "Charecter " << position + 1 << ": " << curChar << " is not allowed here, expected glyphs or an instruction";
-			output.AddError(ss.str(),syn_expected_non_seperator_after_comma,position,1);
-			return LOOKUP_ERR;
+			append_error(syn_empty_multiglyph);
+			return I_COMMA;
 		case '@':
 			return I_ANY_CONTROL;
 		default:
-			//otherwise accumulate the glyphs
-			glyphBuf += curChar;
-			return I_ACCUM_GLPHYS;
+			mGlyphBuf += curChar;
+			return I_ACCUM_GLYPHS;
 		}
 		break;
-	case I_ACCUM_GLPHYS:	
-		switch(curChar)
-		{
-		//Cases to make it stop accumulating
+	case I_ACCUM_GLYPHS:
+		switch(curChar)	{
+		case '{':
+			glyph = check_multi_glyph(mGlyphBuf);
+			if(glyph != glyph_Invalid)
+				append_parser_out_info(glyph);
+			mGlyphBuf.clear();
+
+			append_error(syn_curly_pair_nested);
+
+			return I_ACCUM_GLYPHS;
 		case '}':
-			append_parser_out_info(glyphBuf,position,output);
-			glyphBuf.clear();
+			glyph = check_multi_glyph(mGlyphBuf);
+			if(glyph != glyph_Invalid)
+				append_parser_out_info(glyph);
+			mGlyphBuf.clear();
 			return O_ACCUM_GLYPHS;
 		case ',':
-			append_parser_out_info(glyphBuf,position,output);
-			glyphBuf.clear();
+			glyph = check_multi_glyph(mGlyphBuf);
+			if(glyph != glyph_Invalid)
+				append_parser_out_info(glyph);
+			mGlyphBuf.clear();
 			return I_COMMA;
+		case '@':
 		default:
-			//otherwise accumulate the glyphs
-			glyphBuf += curChar;
-			return I_ACCUM_GLPHYS;
+			mGlyphBuf += curChar;
+			return I_ACCUM_GLYPHS;
 		}
 		break;
 	case I_ANY_CONTROL:	
-		switch(curChar)
-		{
-			//Do action, change color
-		case 'Y':
-			curColor = sign_color_yellow;
-			return I_WAITING_SEPERATOR;			
-		case 'L':
-			curColor = sign_color_location;
-			return I_WAITING_SEPERATOR;			
-		case 'R':
-			curColor = sign_color_red;
-			return I_WAITING_SEPERATOR;			
-		case 'B':
-			curColor = sign_color_black;
-			return I_WAITING_SEPERATOR;			
+		switch(curChar)	{
+		case '{':
+			append_error(syn_curly_pair_nested);
+			return I_ANY_CONTROL;
+		case '}':
+			append_error(syn_not_real_instruction);
+			return O_ACCUM_GLYPHS;
+		case ',':
+			append_error(syn_not_real_instruction);
+			return I_COMMA;
 		case '@':
-			if(on_front == true)
+			if(mOnFront == true)
 			{
-				on_front = false;
+				if(!mOutput.out_sign.front.empty())
+				if(mOutput.out_sign.front.back().glyph_name == glyph_separator)
+					append_error(sem_pipe_ends_sign);
+				mOnFront = false;
 			}
 			else
-			{
-				//Sementic error found extra @@
-				ss << "Charecter " << position + 1 << ": Cannot switch sign sides more than once";
-				output.AddError(ss.str(),sem_mutiple_side_switches,position,1);
-			}
+				append_error(sem_mutiple_side_switches);
 			return I_WAITING_SEPERATOR;
+		case 'Y':
+			mCurColor = sign_color_yellow;
+			return I_WAITING_SEPERATOR;			
+		case 'L':
+			mCurColor = sign_color_location;
+			return I_WAITING_SEPERATOR;			
+		case 'R':
+			mCurColor = sign_color_red;
+			return I_WAITING_SEPERATOR;			
+		case 'B':
+			mCurColor = sign_color_black;
+			return I_WAITING_SEPERATOR;			
 		default:
-			ss << "Character " << position + 1 << ": {@" << curChar << " is not a real instruction. Use {@Y,{@R,{@L, or {@B";
-			output.AddError(ss.str(),sem_not_real_instruction,position,1);
+			append_error(syn_not_real_instruction);
+			return I_WAITING_SEPERATOR;
 		}
 		break;
 	case I_WAITING_SEPERATOR:	
-		switch(curChar)
-		{
-		case ',':
-			return I_COMMA;
+		switch(curChar) {
+		case '{':
+			append_error(syn_curly_pair_nested);
+			return I_INCUR;
 		case '}':
 			return O_ACCUM_GLYPHS;
+		case ',':
+			return I_COMMA;
+		case '@':
+			append_error(syn_expected_seperator);
+			return I_WAITING_SEPERATOR;
 		default:
-			ss << "Character " << position + 1 << ": Was expecting , or }, got " << curChar;//No way you should end up with something like @YX or {@@X
-			output.AddError(ss.str(),syn_expected_seperator,position,1);
-			return LOOKUP_ERR;
+			append_error(syn_expected_seperator);
+			return I_WAITING_SEPERATOR;
 		}
 		break;
 	case O_ACCUM_GLYPHS:	
-		switch(curChar)
-		{
+		switch(curChar) {
 		case '{':
 			return I_INCUR;
-			break;
+		case '}':
+			append_error(syn_curly_unbalanced);
+			return O_ACCUM_GLYPHS;
 		case '@':
-			ss << "Character " << position + 1 << ": " << curChar << " is not allowed outside curly braces";
-			output.AddError(ss.str(),syn_found_at_symbol_outside_curly,position,1);
-			return LOOKUP_ERR;
+			append_error(syn_found_at_symbol_outside_curly);
+			return O_ACCUM_GLYPHS;
+		case ',':
 		default:
-			//If the current letter is NOT lower-case(part of something like critical or hazard)
-			if(!(curChar>=97 && curChar <= 122))
+			glyph = check_single_glyph(curChar);
+			if(glyph != glyph_Invalid)
 			{
-				string c;
-				c += curChar;
-				append_parser_out_info(c,position,output);
-				return O_ACCUM_GLYPHS;
+				append_parser_out_info(glyph);
 			}
-			else
-			{
-				ss << "Character " << position + 1 << ": " << curChar << " is not allowed outside curly braces";//This may be impossible to get to
-				output.AddError(ss.str(),syn_found_lowercase_outside_curly,position,1);
-				return LOOKUP_ERR;
-			}
-		}
-		break;
-	case O_END:	
-		switch(curChar)
-		{
-			
+			return O_ACCUM_GLYPHS;
 		}
 		break;
 	}
-	return LOOKUP_ERR;
 }
 //---------------------------------------------------------
 
-void WED_Sign_Parser::MainLoop(const parser_in_info & input, parser_out_info & output)
+void WED_Sign_Parser::MainLoop()
 {
-	//Validate if there is any whitesapce or non printable ASCII characters (33-126)
-	if(WED_Sign_Parser::ValidateBasics(input,output) == true)
-	{
-		return;
-	}
+//	//Validate if there is any whitesapce or non printable ASCII characters (33-126)
+//	if(WED_Sign_Parser::ValidateBasics(input,output) == true)
+//	{
+//		return;
+//	}
 	
 	FSM FSM_MODE = O_ACCUM_GLYPHS;
-	int i = 0;
-	while(FSM_MODE != O_END)
+	mPosition = 0;
+	while(mPosition < mInput.input.size())
 	{
 		//Look up the transition
-		FSM transition = WED_Sign_Parser::LookUpTable(FSM_MODE,input.input[i], i, output);
-		if(transition != LOOKUP_ERR)
-		{
-			FSM_MODE = transition;
-			i++;
-		}
-		else
-		{
-			//stringstream ss
-			//ss << "Fatal lookup error! State: %s, Char: %c, Location: %d",WED_Sign_Parser::EnumToString(FSM_MODE),*(inStr.nPos),(inStr.nPos-inStr.oPos));
-			//msgBuf.push_back(ss.str());
-			break;
-		}
+		FSM transition = WED_Sign_Parser::LookUpTable(FSM_MODE);
+		FSM_MODE = transition;
+		++mPosition;
 	}
 
-	bool foundError = preform_final_semantic_checks(input,output);
+	// When we hit end of text, if we are accumulating glyphs,
+	// use the EOF as a hint to flush the glyph buffer if needed.
+	// That way if the user writes {hazard
+	// we flush hazard as a valid sign, and clear the glyph buf.
+	
+	if(FSM_MODE == I_ACCUM_GLYPHS)
+	{
+		assert(!mGlyphBuf.empty());
+		parser_glyph_t glyph = check_multi_glyph(mGlyphBuf);
+		if(glyph != glyph_Invalid)
+			append_parser_out_info(glyph);
+		mGlyphBuf.clear();
+	}
+	
+	// Now with the glyph buf if we haven't sealed off a { sequence,
+	// the glyph buf is empty and we can squawk that our end position is fubar.
+
+	if(FSM_MODE != O_ACCUM_GLYPHS)
+	{
+		append_error(syn_curly_pair_missing);
+	}
+	
+	if(mOnFront)
+	{
+		if(!mOutput.out_sign.front.empty())
+		if(mOutput.out_sign.front.back().glyph_name == glyph_separator)
+			append_error(sem_pipe_ends_sign);
+	}
+	else
+	{
+		if(!mOutput.out_sign.back.empty())
+		if(mOutput.out_sign.back.back().glyph_name == glyph_separator)
+			append_error(sem_pipe_ends_sign);
+	}
+
+//	bool foundError = preform_final_semantic_checks();
 }
 //---------------------------------------------------------
 
 void ParserTaxiSign(const parser_in_info & input, parser_out_info & output)
 {
-	WED_Sign_Parser parser;
-	parser.MainLoop(input,output);
+	WED_Sign_Parser parser(input,output);
+	parser.MainLoop();
 }
