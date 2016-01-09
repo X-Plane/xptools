@@ -48,7 +48,9 @@ const char *	dsfErrorMessages[] = {
 	"dsf_ErrMisformattedScalingAtom",
 	"dsf_ErrBadCommand",
 	"dsf_ErrUserCancel",
-	"dsf_ErrPoolOutOfRange"
+	"dsf_ErrPoolOutOfRange",
+	"dsf_ErrBadChecksum",
+	"dsf_ErrCanceled"
 };
 
 // Define this to 1 to have the reader print atoms sizes as it reads for diagnostics
@@ -72,43 +74,55 @@ const char *	dsfErrorMessages[] = {
 	#error BIG or LIL are not defined - what endian are we?
 #endif
 
-inline	double	DECODE_SCALED(
+const double recip_65535 = 1.0 / 65535.0;
+const double recip_4294967295 = 1.0 / 4294967295.0;
+
+
+/*double	R_DECODE_SCALED(
 						unsigned int index, unsigned int pool, unsigned int plane,
-						const vector<vector<uint16_t> >& points, const vector<int>& depths,
+						const vector<vector<unsigned short> >& points, const vector<int>& depths,
 						const vector<vector<float> >& scale, const vector<vector<float> >& delta)
 {
 	double sc = scale[pool][plane];
 	double dl = delta[pool][plane];
 	double	lon_raw = points[pool][index * depths[pool] + plane];
-//	printf("     %lf  ->", lon_raw);
 	if (sc)
-		lon_raw = lon_raw * sc / 65535.0 + dl;
-//	printf("     %lf\n", lon_raw);
+		lon_raw = lon_raw * sc * recip_65535 + dl;
 	return lon_raw;
 }
 
-inline	double	DECODE_SCALED32(
+double	R_DECODE_SCALED32(
 						unsigned int index, unsigned int pool, unsigned int plane,
-						const vector<vector<uint32_t> >& points, const vector<int>& depths,
+						const vector<vector<unsigned int> >& points, const vector<int>& depths,
 						const vector<vector<float> >& scale, const vector<vector<float> >& delta)
 {
 	double sc = scale[pool][plane];
 	double dl = delta[pool][plane];
 	double	lon_raw = points[pool][index * depths[pool] + plane];
-//	printf("     %lf  ->", lon_raw);
 	if (sc)
-		lon_raw = lon_raw * sc / 4294967295.0 + dl;
-//	printf("     %lf\n", lon_raw);
+		lon_raw = lon_raw * sc * recip_4294967295 + dl;
 	return lon_raw;
-}
+}*/
+
+#define	DECODE_SCALED(__index, __pool, __points, __depths) 	((&*__points[__pool].begin())+__index * __depths[__pool])
+
+#define	DECODE_SCALED_CURRENT(__index) 									(currentPoolPtr+__index * currentDepth)
+
+#define	DECODE_SCALED32_CURRENT(__index)					 			(currentPoolPtr32 +__index * currentDepth32)
 
 
-int		DSFReadFile(const char * inPath, DSFCallbacks_t * inCallbacks, const int * inPasses, void * inRef)
+int		DSFReadFile(
+			const char *		inPath,  
+			void * (*			malloc_func)(size_t s), 
+			void (*				free_func)(void * ptr), 
+			DSFCallbacks_t *	inCallbacks, 
+			const int *			inPasses, 
+			void *				inRef)
 {
 	FILE *			fi = NULL;
 	char *			mem = NULL;
 	unsigned int	file_size = 0;
-	int				result = dsf_ErrOK;
+	bool			result = dsf_ErrOK;
 
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
@@ -117,7 +131,7 @@ int		DSFReadFile(const char * inPath, DSFCallbacks_t * inCallbacks, const int * 
 	file_size = ftell(fi);
 	fseek(fi, 0L, SEEK_SET);
 
-	mem = (char *) malloc(file_size);
+	mem = (char *) malloc_func(file_size);
 	if (!mem) { result = dsf_ErrOutOfMemory; goto bail; }
 
 	if (fread(mem, 1, file_size, fi) != file_size)
@@ -127,7 +141,7 @@ int		DSFReadFile(const char * inPath, DSFCallbacks_t * inCallbacks, const int * 
 
 bail:
 	if (fi) fclose(fi);
-	if (mem) free(mem);
+	if (mem) free_func(mem);	
 	return result;
 }
 
@@ -135,9 +149,9 @@ int		DSFCheckSignature(const char * inPath)
 {
 	FILE *			fi = NULL;
 	char *			mem = NULL;
+	char * d, * s; 
 	unsigned int	file_size = 0;
 	int				result = dsf_ErrOK;
-	char * s, *d;
 
 	fi = fopen(inPath, "rb");
 	if (!fi) { result = dsf_ErrCouldNotOpenFile; goto bail; }
@@ -175,15 +189,40 @@ bail:
 	return result;
 }
 
-
 int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCallbacks, const int * inPasses, void * ref)
 {
+	/* MD5 checksum...*/
+	if(inPasses && (inPasses[0] & dsf_CmdSign))
+	{
+		if((inStop - inStart) < 16)
+			return dsf_ErrNoAtoms;
+			
+		MD5_CTX ctx;
+		MD5Init(&ctx);
+		
+		const char *	s = inStart;
+		const char *	d = inStop - 16;
+		
+		while(s < d)
+		{
+			int l = d - s;
+			if (l > 1024) l = 1024;
+			MD5Update(&ctx, (unsigned char *) s, l);
+			s += l;
+		}
+		MD5Final(&ctx);
+		if(memcmp(ctx.digest, d, 16) != 0) return dsf_ErrBadChecksum;
+	}
+
 	/* Do basic file analysis and check all headers and other basic requirements. */
 	const DSFHeader_t * header = (const DSFHeader_t *) inStart;
-	const DSFFooter_t * footer = (const DSFFooter_t *) (inStop - sizeof(DSFFooter_t));
+//	const DSFFooter_t * footer = (const DSFFooter_t *) (inStop - sizeof(DSFFooter_t));
+#if BENTODO
+someday check footer when in sloooow mode
+#endif
 	XAtomContainer		dsf_container;
 	dsf_container.begin = (char *) (inStart + sizeof(DSFHeader_t));
-	dsf_container.end = (char *) (inStop + sizeof(DSFFooter_t));
+	dsf_container.end = (char *) (inStop - sizeof(DSFFooter_t));
 	if ((inStart - inStop) < (sizeof(DSFHeader_t) + sizeof(DSFFooter_t)))
 	{
 #if DEBUG_MESSAGES
@@ -303,59 +342,27 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 
 	/* Read raw geodata. */
 
-	int n;
-	vector<vector<uint16_t> >		planarData;		// Per plane array of 16-bit data
+	int n;	//,i,p;
+//	vector<vector<unsigned short> >	planarDataRaw;	// Per plane array of shorts
+	vector<vector<double> 		>	planarData;		// Per plane array of doubles
 	vector<int>						planeDepths;	// Per plane plane count
 	vector<int>						planeSizes;		// Per plane length of plane
-	vector<vector<float> >			planeScales;	// Per plane scaling factor
-	vector<vector<float> >			planeOffsets;	// Per plane offset
+	vector<vector<double> >			planeScales;	// Per plane scaling factor
+	vector<vector<double> >			planeOffsets;	// Per plane offset
 
-	vector<vector<uint32_t> >		planarData32;	// Per plane array of 32-bit data
+//	vector<vector<unsigned int> >	planarData32Raw;// Per plane array of shorts
+	vector<vector<double> >			planarData32;	// Per plane array of shorts
 	vector<int>						planeDepths32;	// Per plane plane count
 	vector<int>						planeSizes32;	// Per plane length of plane
-	vector<vector<float> >			planeScales32;	// Per plane scaling factor
-	vector<vector<float> >			planeOffsets32;	// Per plane offset
-
-	n = 0;
-	while (geodContainer.GetNthAtomOfID(def_PointPoolAtom, n++, poolAtom))
-	{
-		int aSize = poolAtom.GetArraySize();
-		int pCount = poolAtom.GetPlaneCount();
-		planeDepths.push_back(pCount);
-		planeSizes.push_back(aSize);
-		planarData.push_back(vector<uint16_t>());
-		planarData.back().resize(aSize * pCount);
-		if(aSize)
-			poolAtom.DecompressShort(pCount, aSize, 1, (int16_t *) &*planarData.back().begin());
-//		printf("[%0d] point pool depth %d, count %d\n", n, pCount, aSize);
-//		for (int n = 0; n < planarData.back().size(); ++n)
-//			printf("  %04X", planarData.back()[n]);
-//		printf("\n");
-	}
-
-	n = 0;
-	while (geodContainer.GetNthAtomOfID(def_PointPool32Atom, n++, poolAtom))
-	{
-		int aSize = poolAtom.GetArraySize();
-		int pCount = poolAtom.GetPlaneCount();
-		planeDepths32.push_back(pCount);
-		planeSizes32.push_back(aSize);
-		planarData32.push_back(vector<uint32_t>());
-		planarData32.back().resize(aSize * pCount);
-		if(aSize)
-			poolAtom.DecompressInt(pCount, aSize, 1, (int *) &*planarData32.back().begin());
-//		printf("[%0d] point pool 32 depth %d, count %d\n", n, pCount, aSize);
-//		for (int n = 0; n < planarData.back().size(); ++n)
-//			printf("  %04X", planarData.back()[n]);
-//		printf("\n");
-	}
+	vector<vector<double> >			planeScales32;	// Per plane scaling factor
+	vector<vector<double> >			planeOffsets32;	// Per plane offset
 
 
 	n = 0;
 	while (geodContainer.GetNthAtomOfID(def_PointScaleAtom, n++, scalAtom))
 	{
-		planeScales.push_back(vector<float>());
-		planeOffsets.push_back(vector<float>());
+		planeScales.push_back(vector<double>());
+		planeOffsets.push_back(vector<double>());
 		scalAtom.Reset();
 		while (!scalAtom.Done())
 		{
@@ -374,8 +381,8 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 	n = 0;
 	while (geodContainer.GetNthAtomOfID(def_PointScale32Atom, n++, scalAtom))
 	{
-		planeScales32.push_back(vector<float>());
-		planeOffsets32.push_back(vector<float>());
+		planeScales32.push_back(vector<double>());
+		planeOffsets32.push_back(vector<double>());
 		scalAtom.Reset();
 		while (!scalAtom.Done())
 		{
@@ -391,6 +398,116 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		}
 	}
 
+
+
+
+	
+	n = 0;
+	while (geodContainer.GetNthAtomOfID(def_PointPoolAtom, n, poolAtom))
+	{
+		int aSize = poolAtom.GetArraySize();
+		int pCount = poolAtom.GetPlaneCount();
+		planeDepths.push_back(pCount);
+		planeSizes.push_back(aSize);
+//		planarDataRaw.push_back(vector<unsigned short>());
+//		planarDataRaw.back().resize(aSize * pCount);
+		planarData.push_back(vector<double>());
+		planarData.back().resize(aSize * pCount);
+//		poolAtom.DecompressShort(pCount, aSize, 1, (short *) &*planarDataRaw.back().begin());
+		poolAtom.DecompressShortToDoubleInterleaved(pCount, aSize, &*planarData.back().begin(),
+					&*planeScales[n].begin(),
+					recip_65535,
+					&*planeOffsets[n].begin());
+		++n;
+	}
+
+	n = 0;
+	while (geodContainer.GetNthAtomOfID(def_PointPool32Atom, n, poolAtom))
+	{
+		int aSize = poolAtom.GetArraySize();
+		int pCount = poolAtom.GetPlaneCount();
+		planeDepths32.push_back(pCount);
+		planeSizes32.push_back(aSize);
+//		planarData32Raw.push_back(vector<unsigned int>());
+//		planarData32Raw.back().resize(aSize * pCount);
+		planarData32.push_back(vector<double>());
+		planarData32.back().resize(aSize * pCount);
+//		poolAtom.DecompressInt(pCount, aSize, 1, (int *) &*planarData32Raw.back().begin());
+
+		poolAtom.DecompressIntToDoubleInterleaved(pCount, aSize, &*planarData32.back().begin(),
+					&*planeScales32[n].begin(),
+					recip_4294967295,
+					&*planeOffsets32[n].begin());
+
+
+		++n;
+	}	
+	
+	
+
+/*
+
+	for (n = 0; n < planarData.size(); ++n)
+	for (p = 0; p < planeDepths[n]; ++p)
+	{
+		int skip = planeDepths[n];		
+		double * dst = &*planarData[n].begin() + p;
+		unsigned short * src = &*planarDataRaw[n].begin() + p;
+		double sc = planeScales[n][p];
+		double dl = planeOffsets[n][p];
+		i = planeSizes[n];
+		if (sc)
+		{
+			while (i--)
+			{
+				*dst = (((double) *src) * sc * recip_65535) + dl;
+				dst += skip;
+				src += skip;
+			}
+		} else {
+			while (i--)
+			{
+				*dst = *src;
+				dst += skip;
+				src += skip;
+			}
+		}
+	}
+*/			
+/*
+	for (n = 0; n < planarData32.size(); ++n)
+	for (p = 0; p < planeDepths32[n]; ++p)
+	{
+		int skip = planeDepths32[n];		
+		double * dst = &*planarData32[n].begin() + p;
+		unsigned int * src = &*planarData32Raw[n].begin() + p;
+		double sc = planeScales32[n][p];
+		double dl = planeOffsets32[n][p];
+		i = planeSizes32[n];
+		if (sc)
+		{
+			while (i--)
+			{
+				*dst = (((double) *src) * sc * recip_4294967295) + dl;
+				dst += skip;
+				src += skip;
+			}
+		} else {
+			while (i--)
+			{
+				*dst = *src;
+				dst += skip;
+				src += skip;
+			}
+		}
+	}
+	*/
+//	planarData32Raw.clear();
+//	planarDataRaw.clear();
+
+
+	
+		
 	const char * str;
 	int	pass_number = 0;
 	if (inPasses == NULL)
@@ -426,47 +543,98 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			/* Send definitions. */
 
 			for (str = tertAtom.GetFirstString(); str != NULL; str = tertAtom.GetNextString(str))
-				inCallbacks->AcceptTerrainDef_f(str, ref);
+				if(!inCallbacks->AcceptTerrainDef_f(str, ref))
+					return dsf_ErrCanceled;
+
 			for (str = objtAtom.GetFirstString(); str != NULL; str = objtAtom.GetNextString(str))
-				inCallbacks->AcceptObjectDef_f(str, ref);
+				if(!inCallbacks->AcceptObjectDef_f(str, ref))
+					return dsf_ErrCanceled;				
+
 			for (str = polyAtom.GetFirstString(); str != NULL; str = polyAtom.GetNextString(str))
-				inCallbacks->AcceptPolygonDef_f(str, ref);
+				if(!inCallbacks->AcceptPolygonDef_f(str, ref))
+					return dsf_ErrCanceled;				
+
 			for (str = netwAtom.GetFirstString(); str != NULL; str = netwAtom.GetNextString(str))
-				inCallbacks->AcceptNetworkDef_f(str, ref);
+				if(!inCallbacks->AcceptNetworkDef_f(str, ref))
+					return dsf_ErrCanceled;				
+
 			if(has_demn)
 			for (str = demnAtom.GetFirstString(); str != NULL; str = demnAtom.GetNextString(str))
-				inCallbacks->AcceptRasterDef_f(str, ref);
+				if(!inCallbacks->AcceptRasterDef_f(str, ref))
+				return dsf_ErrCanceled;
 			
 		}
+
+		if(flags & dsf_CmdRaster)
+		{
+			if(dsf_container.GetNthAtomOfID(dsf_RasterContainerAtom, 0, demsAtom))
+			{
+				demsAtom.GetContents(demsContainer);
+				XAtom				raster_data;
+				XSpan				the_data;
+				XAtomPackedData		raster_header;
+				
+				int r = 0;
+				while (demsContainer.GetNthAtomOfID(dsf_RasterInfoAtom, r, raster_header) &&
+					   demsContainer.GetNthAtomOfID(dsf_RasterDataAtom, r, raster_data))
+				{
+					raster_data.GetContents(the_data);
+					DSFRasterHeader_t	h;
+					
+					raster_header.Reset();
+					h.version			= raster_header.ReadUInt8  ();
+					h.bytes_per_pixel	= raster_header.ReadUInt8  ();
+					h.flags				= raster_header.ReadUInt16 ();
+					h.width				= raster_header.ReadUInt32 ();
+					h.height			= raster_header.ReadUInt32 ();
+					h.scale				= raster_header.ReadFloat32();
+					h.offset			= raster_header.ReadFloat32();
+					
+					inCallbacks->AddRasterData_f(&h, the_data.begin, ref);
+					
+					++r;
+				}
+				
+			}
+		}
+
+	
+	
+	
 
 	/* Now we're ready to do the commands. */
 
 		unsigned int		currentDefinition = 0xFFFFFFFF;
 		unsigned int		roadSubtype = 0xFFFFFFFF;
-		uint16_t		currentPool = 0xFFFF;
+		unsigned short		currentPool = 0xFFFF;
 		unsigned int		junctionOffset = 0xFFFFFFFF;
 		double				patchLODNear = -1.0;
 		double				patchLODFar = -1.0;
 		unsigned char		patchFlags = 0xFF;
 		bool				patchOpen = false;
+		double *			currentPoolPtr = NULL;
+		double *			currentPoolPtr32 = NULL;
+		int					currentDepth = -1;
+		int					currentDepth32 = -1;
+
 
 	cmdsAtom.Reset();
 	while (!cmdsAtom.Done())
 	{
 		unsigned int	commentLen;
 		unsigned int	index, index1, index2;
-		unsigned int	count, counter, dim;
+		unsigned int	count, counter;
 
-		double			objCoord3[3], objRotation;
+//		double			objCoord3[3];
 
-		double			segCoord6[6];
-		unsigned int	segID;
+		double*			segCoord;
 		bool			hasCurve;
 
-		uint16_t		polyParam;
+		unsigned short	polyParam;
 
-		vector<double>	triCoord;
-		uint16_t		pool;
+//		vector<double>	triCoord;
+		int				triCoordDim;
+		unsigned short	pool;
 
 		unsigned char	cmdID = cmdsAtom.ReadUInt8();
 		switch(cmdID) {
@@ -485,11 +653,14 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			if (currentPool >= planarData.size() && currentPool >= planarData32.size())
 			{
 #if DEBUG_MESSAGES
-				printf("DSF ERROR: Pool out of range at pool select.  Desired = %d.  Normal pools = %llu.  32-bit pools = %llu.\n",
-						currentPool, (unsigned long long)planarData.size(),  (unsigned long long)planarData32.size());
+				printf("DSF ERROR: Pool out of range at pool select.  Desired = %d.  Normal pools = %zd.  32-bit pools = %zd.\n", 
+						currentPool, planarData.size(), planarData32.size());
 #endif
 				return dsf_ErrPoolOutOfRange;
 			}
+			
+			if (currentPool < planarData.size())	{ currentPoolPtr   = &*planarData  [currentPool].begin(); currentDepth   = planeDepths  [currentPool]; } else currentPoolPtr = NULL;
+			if (currentPool < planarData32.size())	{ currentPoolPtr32 = &*planarData32[currentPool].begin(); currentDepth32 = planeDepths32[currentPool]; } else currentPoolPtr32 = NULL;
 			break;
 		case dsf_Cmd_JunctionOffsetSelect		:
 			junctionOffset = cmdsAtom.ReadUInt32();
@@ -517,17 +688,11 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			index = cmdsAtom.ReadUInt16();
 				if (flags & dsf_CmdObjects)
 				{
-					objCoord3[0] = DECODE_SCALED(index, currentPool, 0, planarData, planeDepths, planeScales, planeOffsets);
-					objCoord3[1] = DECODE_SCALED(index, currentPool, 1, planarData, planeDepths, planeScales, planeOffsets);
-					objRotation =  DECODE_SCALED(index, currentPool, 2, planarData, planeDepths, planeScales, planeOffsets);
-					if(planeDepths[currentPool] > 3)
-					{
-						objCoord3[2] = DECODE_SCALED(index, currentPool, 3, planarData, planeDepths, planeScales, planeOffsets);
-						inCallbacks->AddObjectAbsolute_f(currentDefinition, objCoord3, objRotation, ref);
+//				objCoord3[0] = DECODE_SCALED_CURRENT(index)[0];
+//				objCoord3[1] = DECODE_SCALED_CURRENT(index)[1];
+//				objCoord3[2] = DECODE_SCALED_CURRENT(index)[2];
+				inCallbacks->AddObject_f(currentDefinition, DECODE_SCALED_CURRENT(index), planeDepths[currentPool], ref);
 					}
-					else
-						inCallbacks->AddObject_f(currentDefinition, objCoord3, objRotation, ref);
-				}
 			break;
 		case dsf_Cmd_ObjectRange				:
 			index1 = cmdsAtom.ReadUInt16();
@@ -535,17 +700,11 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (flags & dsf_CmdObjects)
 			for (index = index1; index < index2; ++index)
 			{
-				objCoord3[0] = DECODE_SCALED(index, currentPool, 0, planarData, planeDepths, planeScales, planeOffsets);
-				objCoord3[1] = DECODE_SCALED(index, currentPool, 1, planarData, planeDepths, planeScales, planeOffsets);
-				objRotation =  DECODE_SCALED(index, currentPool, 2, planarData, planeDepths, planeScales, planeOffsets);
-				if(planeDepths[currentPool] > 3)
-				{
-					objCoord3[2] = DECODE_SCALED(index, currentPool, 3, planarData, planeDepths, planeScales, planeOffsets);
-					inCallbacks->AddObjectAbsolute_f(currentDefinition, objCoord3, objRotation, ref);
+//				objCoord3[0] = DECODE_SCALED_CURRENT(index)[0];
+//				objCoord3[1] = DECODE_SCALED_CURRENT(index)[1];
+//				objCoord3[2] = DECODE_SCALED_CURRENT(index)[2];
+				inCallbacks->AddObject_f(currentDefinition, DECODE_SCALED_CURRENT(index), planeDepths[currentPool], ref);
 				}
-				else
-					inCallbacks->AddObject_f(currentDefinition, objCoord3, objRotation, ref);
-			}
 			break;
 
 
@@ -561,24 +720,22 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				index = junctionOffset + cmdsAtom.ReadUInt16();
 					if (flags & dsf_CmdVectors)
 					{
-				segCoord6[0] = DECODE_SCALED32(index, currentPool, 0, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segCoord6[1] = DECODE_SCALED32(index, currentPool, 1, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segCoord6[2] = DECODE_SCALED32(index, currentPool, 2, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segID = 	   DECODE_SCALED32(index, currentPool, 3, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				if (hasCurve) {
-					segCoord6[3] = DECODE_SCALED32(index, currentPool, 4, planarData32, planeDepths32, planeScales32, planeOffsets32);
-					segCoord6[4] = DECODE_SCALED32(index, currentPool, 5, planarData32, planeDepths32, planeScales32, planeOffsets32);
-					segCoord6[5] = DECODE_SCALED32(index, currentPool, 6, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				}
-				if (segID) {
+					segCoord = DECODE_SCALED32_CURRENT(index);
+					if (segCoord[3]) {
 					if (counter > 0)
-						inCallbacks->EndSegment_f(segID, segCoord6, hasCurve, ref);
+							inCallbacks->EndSegment_f(segCoord, hasCurve, ref);
 					if (counter < (count-1))
-						inCallbacks->BeginSegment_f(currentDefinition, roadSubtype, segID, segCoord6, hasCurve, ref);
-				} else
-					inCallbacks->AddSegmentShapePoint_f(segCoord6, hasCurve, ref);
+							inCallbacks->BeginSegment_f(currentDefinition, roadSubtype, segCoord, hasCurve, ref);
+					} else {
+#if DEBUG_MESSAGES
+						if(counter == 0 || counter == count-1)
+							printf("DSF ERROR: Road contains a shape point for one of it's ends.\n");
+#endif			
+
+						inCallbacks->AddSegmentShapePoint_f(segCoord, hasCurve, ref);
 			}
 				}
+			}			
 			break;
 		case dsf_Cmd_NetworkChainRange			:
 			index1 = junctionOffset + cmdsAtom.ReadUInt16();
@@ -587,23 +744,15 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (flags & dsf_CmdVectors)
 			for (index = index1; index < index2; ++index)
 			{
-				segCoord6[0] = DECODE_SCALED32(index, currentPool, 0, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segCoord6[1] = DECODE_SCALED32(index, currentPool, 1, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segCoord6[2] = DECODE_SCALED32(index, currentPool, 2, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segID = 	   DECODE_SCALED32(index, currentPool, 3, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				if (hasCurve) {
-					segCoord6[3] = DECODE_SCALED32(index, currentPool, 4, planarData32, planeDepths32, planeScales32, planeOffsets32);
-					segCoord6[4] = DECODE_SCALED32(index, currentPool, 5, planarData32, planeDepths32, planeScales32, planeOffsets32);
-					segCoord6[5] = DECODE_SCALED32(index, currentPool, 6, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				}
-				if (segID)
+				segCoord = DECODE_SCALED32_CURRENT(index);
+				if (segCoord[3])
 				{
 					if (index != index1)
-						inCallbacks->EndSegment_f(segID, segCoord6, hasCurve, ref);
+						inCallbacks->EndSegment_f(segCoord, hasCurve, ref);
 					if (index != (index2-1))
-						inCallbacks->BeginSegment_f(currentDefinition, roadSubtype, segID, segCoord6, hasCurve, ref);
+						inCallbacks->BeginSegment_f(currentDefinition, roadSubtype, segCoord, hasCurve, ref);					
 				} else
-					inCallbacks->AddSegmentShapePoint_f(segCoord6, hasCurve, ref);
+					inCallbacks->AddSegmentShapePoint_f(segCoord, hasCurve, ref);
 			}
 			break;
 		case dsf_Cmd_NetworkChain32		:
@@ -614,22 +763,14 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				index = cmdsAtom.ReadUInt32();
 					if (flags & dsf_CmdVectors)
 					{
-				segCoord6[0] = DECODE_SCALED32(index, currentPool, 0, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segCoord6[1] = DECODE_SCALED32(index, currentPool, 1, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segCoord6[2] = DECODE_SCALED32(index, currentPool, 2, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				segID = 	   DECODE_SCALED32(index, currentPool, 3, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				if (hasCurve) {
-					segCoord6[3] = DECODE_SCALED32(index, currentPool, 4, planarData32, planeDepths32, planeScales32, planeOffsets32);
-					segCoord6[4] = DECODE_SCALED32(index, currentPool, 5, planarData32, planeDepths32, planeScales32, planeOffsets32);
-					segCoord6[5] = DECODE_SCALED32(index, currentPool, 6, planarData32, planeDepths32, planeScales32, planeOffsets32);
-				}
-				if (segID) {
+					segCoord = DECODE_SCALED32_CURRENT(index);
+					if (segCoord[3]) {
 					if (counter > 0)
-						inCallbacks->EndSegment_f(segID, segCoord6, hasCurve, ref);
+							inCallbacks->EndSegment_f(segCoord, hasCurve, ref);
 					if (counter < (count-1))
-						inCallbacks->BeginSegment_f(currentDefinition, roadSubtype, segID, segCoord6, hasCurve, ref);
+							inCallbacks->BeginSegment_f(currentDefinition, roadSubtype, segCoord, hasCurve, ref);
 				} else
-					inCallbacks->AddSegmentShapePoint_f(segCoord6, hasCurve, ref);
+						inCallbacks->AddSegmentShapePoint_f(segCoord, hasCurve, ref);
 			}
 				}
 			break;
@@ -647,16 +788,14 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			{
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
 				inCallbacks->BeginPolygonWinding_f(ref);
-				triCoord.resize(planeDepths[currentPool]);
+				triCoordDim = planeDepths[currentPool];
 			}
 			while(count--)
 			{
 				index = cmdsAtom.ReadUInt16();
 				if (dsf_CmdPolys)
 				{
-					for (dim = 0; dim < triCoord.size(); ++dim)
-						triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-					inCallbacks->AddPolygonPoint_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPolygonPoint_f(DECODE_SCALED_CURRENT(index), ref);
 				}
 			}
 			if (flags & dsf_CmdPolys)
@@ -674,12 +813,10 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			{
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
 				inCallbacks->BeginPolygonWinding_f(ref);
-				triCoord.resize(planeDepths[currentPool]);
+				triCoordDim = planeDepths[currentPool];
 				for (index = index1; index < index2; ++index)
 				{
-					for (dim = 0; dim < triCoord.size(); ++dim)
-						triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-					inCallbacks->AddPolygonPoint_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPolygonPoint_f(DECODE_SCALED_CURRENT(index), ref);
 				}
 				inCallbacks->EndPolygonWinding_f(ref);
 				inCallbacks->EndPolygon_f(ref);
@@ -691,7 +828,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			count = cmdsAtom.ReadUInt8();
 			if (flags & dsf_CmdPolys)
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
-			triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 			while(count--)
 			{
 				if (flags & dsf_CmdPolys)
@@ -702,9 +839,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 					index = cmdsAtom.ReadUInt16();
 					if (flags & dsf_CmdPolys)
 					{
-						for (dim = 0; dim < triCoord.size(); ++dim)
-							triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-					inCallbacks->AddPolygonPoint_f(&*triCoord.begin(), ref);
+						inCallbacks->AddPolygonPoint_f(DECODE_SCALED_CURRENT(index), ref);
 					}
 				}
 				if (flags & dsf_CmdPolys)
@@ -720,21 +855,20 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 			index1 = cmdsAtom.ReadUInt16();
 			if (flags & dsf_CmdPolys)
 				inCallbacks->BeginPolygon_f(currentDefinition, polyParam, planeDepths[currentPool], ref);
-			triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 			while(count--)
 			{
 				if (flags & dsf_CmdPolys)
 					inCallbacks->BeginPolygonWinding_f(ref);
 				index2 = cmdsAtom.ReadUInt16();
 				if (flags & dsf_CmdPolys)
+				{
 					for (index = index1; index < index2; ++index)
 					{
-						for (dim = 0; dim < triCoord.size(); ++dim)
-							triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-						inCallbacks->AddPolygonPoint_f(&*triCoord.begin(), ref);
+						inCallbacks->AddPolygonPoint_f(DECODE_SCALED_CURRENT(index), ref);
 					}
-				if (flags & dsf_CmdPolys)
 					inCallbacks->EndPolygonWinding_f(ref);
+				}
 				index1 = index2;
 			}
 			if (flags & dsf_CmdPolys)
@@ -778,16 +912,14 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		case dsf_Cmd_Triangle					:
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPrimitive_f(dsf_Tri, ref);
-			triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 			count = cmdsAtom.ReadUInt8();
 			for (counter = 0; counter < count; ++counter)
 			{
 				index = cmdsAtom.ReadUInt16();
 					if (flags & dsf_CmdPatches)
 					{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
 				}
 				if (flags & dsf_CmdPatches)
@@ -796,7 +928,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		case dsf_Cmd_TriangleCrossPool:
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPrimitive_f(dsf_Tri, ref);
-			triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 			count = cmdsAtom.ReadUInt8();
 			for (counter = 0; counter < count; ++counter)
 			{
@@ -804,16 +936,14 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange cross-pool.  Desired = %d.  Normal pools = %llu.\n", pool, (unsigned long long)planarData.size());
+					printf("DSF ERROR: Pool out of range at triange cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
 				index = cmdsAtom.ReadUInt16();
 					if (flags & dsf_CmdPatches)
 					{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, pool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED(index, pool, planarData, planeDepths), ref);
 			}
 				}
 				if (flags & dsf_CmdPatches)
@@ -823,21 +953,19 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		case dsf_Cmd_TriangleRange				:
 			index1 = cmdsAtom.ReadUInt16();
 			index2 = cmdsAtom.ReadUInt16();
-				triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 				if (flags & dsf_CmdPatches)
 				{
 			inCallbacks->BeginPrimitive_f(dsf_Tri, ref);
 			for (index = index1; index < index2; ++index)
 			{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
 			inCallbacks->EndPrimitive_f(ref);
 				}
 			break;
 		case dsf_Cmd_TriangleStrip					:
-				triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPrimitive_f(dsf_TriStrip, ref);
 			count = cmdsAtom.ReadUInt8();
@@ -846,9 +974,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				index = cmdsAtom.ReadUInt16();
 					if (flags & dsf_CmdPatches)
 					{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
 				}
 				if (flags & dsf_CmdPatches)
@@ -857,7 +983,7 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		case dsf_Cmd_TriangleStripCrossPool:
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPrimitive_f(dsf_TriStrip, ref);
-			triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 			count = cmdsAtom.ReadUInt8();
 			for (counter = 0; counter < count; ++counter)
 			{
@@ -865,16 +991,14 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange strip cross-pool.  Desired = %d.  Normal pools = %llu.\n", pool, (unsigned long long)planarData.size());
+					printf("DSF ERROR: Pool out of range at triange strip cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
 				index = cmdsAtom.ReadUInt16();
 					if (flags & dsf_CmdPatches)
 					{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, pool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED(index, pool, planarData, planeDepths), ref);
 			}
 				}
 				if (flags & dsf_CmdPatches)
@@ -884,15 +1008,13 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		case dsf_Cmd_TriangleStripRange				:
 			index1 = cmdsAtom.ReadUInt16();
 			index2 = cmdsAtom.ReadUInt16();
-				triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 				if (flags & dsf_CmdPatches)
 				{
 			inCallbacks->BeginPrimitive_f(dsf_TriStrip, ref);
 			for (index = index1; index < index2; ++index)
 			{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
 			inCallbacks->EndPrimitive_f(ref);
 				}
@@ -900,16 +1022,15 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		case dsf_Cmd_TriangleFan					:
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPrimitive_f(dsf_TriFan, ref);
-			triCoord.resize(planeDepths[currentPool]);
+
+			triCoordDim = planeDepths[currentPool];
 			count = cmdsAtom.ReadUInt8();
 			for (counter = 0; counter < count; ++counter)
 			{
 				index = cmdsAtom.ReadUInt16();
 					if (flags & dsf_CmdPatches)
 					{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
 				}
 				if (flags & dsf_CmdPatches)
@@ -918,42 +1039,41 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		case dsf_Cmd_TriangleFanCrossPool:
 				if (flags & dsf_CmdPatches)
 			inCallbacks->BeginPrimitive_f(dsf_TriFan, ref);
-			triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 			count = cmdsAtom.ReadUInt8();
+			
 			for (counter = 0; counter < count; ++counter)
 			{
 				pool = cmdsAtom.ReadUInt16();
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange fan cross-pool.  Desired = %d.  Normal pools = %llu.\n", pool, (unsigned long long)planarData.size());
+					printf("DSF ERROR: Pool out of range at triange fan cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
 				index = cmdsAtom.ReadUInt16();
+
 					if (flags & dsf_CmdPatches)
 					{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, pool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED(index, pool, planarData, planeDepths), ref);
 			}
 				}
 				if (flags & dsf_CmdPatches)
 			inCallbacks->EndPrimitive_f(ref);
+			
 			break;
 
 		case dsf_Cmd_TriangleFanRange				:
 			index1 = cmdsAtom.ReadUInt16();
 			index2 = cmdsAtom.ReadUInt16();
-				triCoord.resize(planeDepths[currentPool]);
+			triCoordDim = planeDepths[currentPool];
 				if (flags & dsf_CmdPatches)
 				{
 			inCallbacks->BeginPrimitive_f(dsf_TriFan, ref);
 			for (index = index1; index < index2; ++index)
 			{
-				for (dim = 0; dim < triCoord.size(); ++dim)
-					triCoord[dim] = DECODE_SCALED(index, currentPool, dim, planarData, planeDepths, planeScales, planeOffsets);
-				inCallbacks->AddPatchVertex_f(&*triCoord.begin(), ref);
+					inCallbacks->AddPatchVertex_f(DECODE_SCALED_CURRENT(index), ref);
 			}
 			inCallbacks->EndPrimitive_f(ref);
 				}
@@ -966,14 +1086,47 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		 **************************************************************************************************************/
 		case dsf_Cmd_Comment8					:
 			commentLen = cmdsAtom.ReadUInt8();
+			if(commentLen > 1)
+			{
+				uint16_t ctype = cmdsAtom.ReadUInt16();
+				commentLen -= sizeof(ctype);
+				if(ctype == dsf_Comment_Filter && commentLen == sizeof(int32_t))
+				{
+					int32_t filter_idx = cmdsAtom.ReadSInt32();
+					commentLen -= sizeof(filter_idx);
+					inCallbacks->SetFilter_f(filter_idx, ref);
+				}
+			}
 			cmdsAtom.Advance(commentLen);
 			break;
 		case dsf_Cmd_Comment16					:
 			commentLen = cmdsAtom.ReadUInt16();
+			if(commentLen > 1)
+			{
+				uint16_t ctype = cmdsAtom.ReadUInt16();
+				commentLen -= sizeof(ctype);
+				if(ctype == dsf_Comment_Filter && commentLen == sizeof(int32_t))
+				{
+					int32_t filter_idx = cmdsAtom.ReadSInt32();
+					commentLen -= sizeof(filter_idx);
+					inCallbacks->SetFilter_f(filter_idx, ref);
+				}
+			}
 			cmdsAtom.Advance(commentLen);
 			break;
 		case dsf_Cmd_Comment32					:
 			commentLen = cmdsAtom.ReadUInt32();
+			if(commentLen > 1)
+			{
+				uint16_t ctype = cmdsAtom.ReadUInt16();
+				commentLen -= sizeof(ctype);
+				if(ctype == dsf_Comment_Filter && commentLen == sizeof(int32_t))
+				{
+					int32_t filter_idx = cmdsAtom.ReadSInt32();
+					commentLen -= sizeof(filter_idx);
+					inCallbacks->SetFilter_f(filter_idx, ref);
+				}
+			}
 			cmdsAtom.Advance(commentLen);
 			break;
 		default:
@@ -993,44 +1146,11 @@ int		DSFReadMem(const char * inStart, const char * inStop, DSFCallbacks_t * inCa
 		return dsf_ErrMisformattedCommandAtom;
 		}
 
-		if(flags & dsf_CmdRaster)
-		{
-			if(dsf_container.GetNthAtomOfID(dsf_RasterContainerAtom, 0, demsAtom))
-			{
-				demsAtom.GetContents(demsContainer);
-				XAtom				raster_data;
-				XSpan				the_data;
-				XAtomPackedData		raster_header;
-				
-				int r = 0;
-				while (demsContainer.GetNthAtomOfID(dsf_RasterInfoAtom, r, raster_header) &&
-					   demsContainer.GetNthAtomOfID(dsf_RasterDataAtom, r, raster_data))
-				{
-					raster_data.GetContents(the_data);
-					DSFRasterHeader_t	h;
-					
-					raster_header.Reset();
-					h.version			= raster_header.ReadUInt8  ();
-					h.bytes_per_pixel	= raster_header.ReadUInt8  ();
-					h.flags				= raster_header.ReadUInt16 ();
-					h.width				= raster_header.ReadUInt32 ();
-					h.height			= raster_header.ReadUInt32 ();
-					h.scale				= raster_header.ReadFloat32();
-					h.offset			= raster_header.ReadFloat32();
-					
-					inCallbacks->AddRasterData_f(&h, the_data.begin, ref);
-					
-					++r;
-				}
-				
-			}
-		}
-
-
 		if (!inCallbacks->NextPass_f(pass_number, ref))
 			return dsf_ErrUserCancel;
 
 		++pass_number;
+
 	}
 
 	return dsf_ErrOK;
