@@ -128,6 +128,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 	sel->Clear();
 	double frame_dist = fabs(GetZoomer()->YPixelToLat(mSlop.value)-GetZoomer()->YPixelToLat(0));
 
+	const char * edge_class = WED_TaxiRoute::sClass;
+	if(mType == create_Road)
+		edge_class = WED_RoadEdge::sClass;
+
 	/************************************************************************************************
 	 * FIRST SNAPPING PASS - NODE TO NODE
 	 ************************************************************************************************/
@@ -139,7 +143,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double	dist=frame_dist*frame_dist;
 		WED_Thing * who = NULL;
-		FindNear(host, NULL, WED_TaxiRoute::sClass, pts[p],who,dist);
+		FindNear(host, NULL, edge_class, pts[p],who,dist);
 		if (who != NULL)
 		{
 			IGISPoint * pp = dynamic_cast<IGISPoint *>(who);
@@ -157,7 +161,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double dist=frame_dist*frame_dist;
 		IGISPointSequence * seq = NULL;
-		FindNearP2S(host, NULL, WED_TaxiRoute::sClass,pts[p], seq, dist);
+		FindNearP2S(host, NULL, edge_class,pts[p], seq, dist);
 		if(seq)
 			seq->SplitSide(pts[p], 0.001);		
 	}
@@ -168,7 +172,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<Point2>	splits;
-		SplitByPts(host, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
+		SplitByPts(host, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
 //		printf("At index %d, got %d splits from pts.\n", p, splits.size());
 		SortSplits(Segment2(pts[p-1],pts[p]), splits);
 
@@ -190,7 +194,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<pair<IGISPointSequence *, Point2> >	splits;
-		SplitByLine(host, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits);
+		SplitByLine(host, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
 		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
 			s->first->SplitSide(s->second,0.001);
 //		printf("At index %d, got %d splits.\n", p, splits.size());
@@ -221,7 +225,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	
-		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[start % pts.size()],src,dist);
+		FindNear(host, NULL, edge_class,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
 		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_RoadNode::CreateTyped(GetArchive());
@@ -246,7 +250,8 @@ void		WED_CreateEdgeTool::AcceptPath(
 		case create_Road:
 			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());
 			er->SetSubtype(mSubtype.value);
-			er->SetLayer(mLayer.value);
+			er->SetStartLayer(mLayer.value);
+			er->SetEndLayer(mLayer.value);
 			er->SetName(mName);
 			er->SetResource(mResource.value);
 			break;
@@ -256,7 +261,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		dst = NULL;
 		
 		dist=frame_dist*frame_dist;
-		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[p % pts.size()],dst,dist);
+		FindNear(host, NULL, edge_class,pts[p % pts.size()],dst,dist);
 		if(dst == NULL)
 		{
 			switch(mType) {

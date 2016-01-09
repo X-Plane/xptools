@@ -375,7 +375,8 @@ public:
 
 		DebugAssert(me->accum_road.size() > 1);
 		
-		int level = me->accum_road[0].second;
+		int start_level = me->accum_road[0].second;
+		int end_level = inCoordinates[2];
 		me->accum_road.front().second = 0;
 		me->accum_road.back().second = 0;
 		
@@ -395,7 +396,8 @@ public:
 			edge->SetParent(me->parent, me->parent->CountChildren());
 			edge->SetResource(me->net_table[me->accum_road_type.first]);
 			edge->SetSubtype(me->accum_road_type.second);
-			edge->SetLayer(level);
+			edge->SetStartLayer(start_level);
+			edge->SetEndLayer(end_level);
 			edge->AddSource(last_node, 0);
 			if(n == last)
 			{

@@ -36,8 +36,10 @@ DECLARE_PERSISTENT(WED_RoadEdge)
 
 public:
 
-			int				GetLayer(void) const { return layer.value; }
-			void			SetLayer(int l) { layer = l; }
+			int				GetStartLayer(void) const { return start_layer.value; }
+			void			SetStartLayer(int l) { start_layer = l; }
+			int				GetEndLayer(void) const { return end_layer.value; }
+			void			SetEndLayer(int l) { end_layer = l; }
 			int				GetSubtype(void) const { return subtype.value; }
 			void			SetSubtype(int s) { subtype = s; }
 			void			GetResource(string& r) const { r = resource.value; }
@@ -58,7 +60,8 @@ private:
 			bool			get_valid_road_info(road_info_t * optional_info) const;
 
 	WED_PropStringText		resource;
-	WED_PropIntText			layer;
+	WED_PropIntText			start_layer;
+	WED_PropIntText			end_layer;
 	WED_PropIntText			subtype;
 
 };

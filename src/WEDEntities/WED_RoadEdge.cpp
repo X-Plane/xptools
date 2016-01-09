@@ -33,6 +33,10 @@
 		can't add/remove bezier handles
 		merge commands broken, need rewrite		
 		show road types in CREATE TOOL
+		
+**		can't duplicate roads
+ 
+		validate crossing is probably borked
  
 */
 
@@ -43,7 +47,8 @@ TRIVIAL_COPY(WED_RoadEdge, WED_GISEdge)
 
 
 WED_RoadEdge::WED_RoadEdge(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	layer(this,"Layer",SQL_Name("WED_roadedge", "layer"),XML_Name("road_edge","layer"),0,2),
+	start_layer(this,"Start Layer",SQL_Name("WED_roadedge", "layer"),XML_Name("road_edge","layer"),0,2),
+	end_layer(this,"End Layer",SQL_Name("WED_roadedge", "layer"),XML_Name("road_edge","end_layer"),0,2),
 	subtype(this,"Type",SQL_Name("WED_roadedge", "subtype"),XML_Name("road_edge","sub_type"), 1, 3),
 	resource(this,"Resource",SQL_Name("",""), XML_Name("road_edge","resource"),"")
 {
@@ -55,7 +60,7 @@ WED_RoadEdge::~WED_RoadEdge()
 
 bool			WED_RoadEdge::IsOneway(void) const
 {
-	return false;
+	return true;
 }
 
 void		WED_RoadEdge::GetNthPropertyInfo(int n, PropertyInfo_t& info) const

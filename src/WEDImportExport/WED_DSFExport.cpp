@@ -196,9 +196,18 @@ public:
 	struct edge {
 		int start_node;
 		int	end_node;
-		int level;
+		int start_level;
+		int end_level;
 		int subtype;
 		vector<Bezier2>	path;
+		
+		bool level_is_uniform() { return start_level == end_level; }
+		int level_for_node(int n)
+		{
+			DebugAssert(n == start_node || n == end_node);
+			if (n == start_node)return start_level;
+			else				return end_level;
+		}
 	};
 
 	typedef map<IGISPoint *, int>	node_index;
@@ -227,7 +236,8 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
 	node_index::iterator ei = m_node_index.find(end);
 	
 	edge new_edge;
-	new_edge.level = e->GetLayer();
+	new_edge.start_level = e->GetStartLayer();
+	new_edge.end_level = e->GetEndLayer();
 	new_edge.subtype = e->GetSubtype();
 	if(si == m_node_index.end())
 	{
@@ -297,7 +307,8 @@ void dsf_road_grid_helper::remove_dupes()
 				edge * ee1 = &m_edges[e1];
 				edge * ee2 = &m_edges[e2];
 				
-				if(ee1->level == ee2->level && ee1->subtype == ee2->subtype)	// Only merge if level and subtype matches
+				if(ee1->level_is_uniform() && ee2->level_is_uniform())
+				if(ee1->level_for_node(n) == ee2->level_for_node(n) && ee1->subtype == ee2->subtype)	// Only merge if level and subtype matches
 				{
 					DebugAssert(ee1->start_node == n || ee1->end_node == n);
 					DebugAssert(ee2->start_node == n || ee2->end_node == n);
@@ -334,6 +345,7 @@ void dsf_road_grid_helper::remove_dupes()
 						
 						ee1->path.insert(ee1->path.end(),ee2->path.begin(), ee2->path.end());
 						ee1->end_node = ee2->end_node;
+						ee1->end_level = ee2->end_level;
 
 						// Mark ee2 as unused - path is clear, no connectivity
 						ee2->start_node = -1;
@@ -382,7 +394,7 @@ void dsf_road_grid_helper::export_to_dsf(
 
 			if(b == e->path.begin())
 			{
-				coords[2] = e->level;
+				coords[2] = e->start_level;
 				coords[3] = m_nodes[e->start_node].id;
 				cbs->BeginSegment_f(
 								net_type,
@@ -409,7 +421,7 @@ void dsf_road_grid_helper::export_to_dsf(
 			}
 		}
 		
-		coords[2] = e->level;
+		coords[2] = e->end_level;
 		coords[0] = e->path.back().p2.x();
 		coords[1] = e->path.back().p2.y();
 		coords[3] = m_nodes[e->end_node].id;
