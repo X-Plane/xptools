@@ -107,10 +107,20 @@ static void	WriteStringTable(FILE * fi, const vector<string>& v)
 	}
 }
 
-static void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, int& curPool);
-static void	UpdatePoolState(FILE * fi, int newType, int newPool, int& curType, int& curPool)
+static void	UpdatePoolState(FILE * fi, int newType, int newPool, int newFilter, int& curType, int& curPool, int& curFilter);
+static void	UpdatePoolState(FILE * fi, int newType, int newPool, int newFilter, int& curType, int& curPool, int& curFilter)
 {
 	Assert(newPool >= 0 && newPool < 10000);
+	
+	if(newFilter != curFilter)
+	{
+		WriteUInt8(fi, dsf_Cmd_Comment8);
+		WriteUInt8(fi, 6);							// Filter comment: 2-byte comment type, 4-byte filter ID
+		WriteUInt16(fi, dsf_Comment_Filter);
+		WriteSInt32(fi, newFilter);
+		curFilter = newFilter;
+	}
+	
 	if (newType != curType)
 	{
 		curType = newType;
@@ -157,6 +167,8 @@ public:
 	double	mWest;
 	double	mElevMin;
 	double	mElevMax;
+	
+	int					mCurrentFilter;
 
 	vector<string>		terrainDefs;
 	vector<string>		objectDefs;
@@ -173,7 +185,9 @@ public:
 		int						type;
 		int						pool;
 		int						location;
+		int						filter;
 		bool	operator<(const ObjectSpec& rhs) const {
+			if (filter < rhs.filter) return true;	if (filter > rhs.filter) return false;
 			if (type < rhs.type) return true; 		if (type > rhs.type) return false;
 			if (pool < rhs.pool) return true; 		if (pool > rhs.pool) return false;
 			return location < rhs.location; }
@@ -192,8 +206,10 @@ public:
 		int					param;
 		int					depth;
 		int					hash_depth;
+		int					filter;
 		vector<int>			intervals;	// All but first are inclusive ends of ranges.
 		bool	operator<(const PolygonSpec& rhs) const {
+			if (filter < rhs.filter) return true;	if (filter > rhs.filter) return false;
 			if (hash_depth < rhs.hash_depth) return true;		if (hash_depth > rhs.hash_depth) return false;
 			if (depth < rhs.depth) return true;		if (depth > rhs.depth) return false;
 			if (type < rhs.type) return true;		if (type > rhs.type) return false;
@@ -257,7 +273,9 @@ public:
 		DSFPointPoolLocVector	indices;
 		int						lowest_index;
 		int						highest_index;
+		int						filter;
 		bool operator<(const ChainSpec& rhs) const {
+			if (filter < rhs.filter) return true;	if (filter > rhs.filter) return false;
 			if (curved != rhs.curved)	return curved;
 			if (type < rhs.type) return true;					if (type > rhs.type) return false;
 			if (subType < rhs.subType) return true;				if (subType > rhs.subType) return false;
@@ -346,7 +364,10 @@ public:
 	static void AddRasterData(
 					DSFRasterHeader_t *	header,
 					void *				data,
-					void *				inRef);					
+					void *				inRef);
+	static void SetFilter(
+					int				filterId,
+					void *			inRef);
 
 };
 
@@ -390,6 +411,7 @@ void	DSFGetWriterCallbacks(DSFCallbacks_t * ioCallbacks)
 	ioCallbacks->EndPolygonWinding_f = DSFFileWriterImp::EndPolygonWinding;
 	ioCallbacks->EndPolygon_f = DSFFileWriterImp::EndPolygon;
 	ioCallbacks->AddRasterData_f = DSFFileWriterImp::AddRasterData;
+	ioCallbacks->SetFilter_f = DSFFileWriterImp::SetFilter;
 }
 
 void	DSFWriteToFile(const char * inPath, void * inRef)
@@ -406,6 +428,7 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 	mWest = inWest;
 	mElevMin = inElevMin;
 	mElevMax = inElevMax;
+	mCurrentFilter = -1;
 
 	// BUILD VECTOR POOLS
 	DSFTuple	vecRangeMin, vecRangeMax;
@@ -945,6 +968,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	int	curPool = -1;
 	int	juncOff = 0;
 	int curDef = -1;
+	int curFilter = -1;
 	int	curSubDef = -1;
 	double	lastLODNear = -1.0;
 	double	lastLODFar = -1.0;
@@ -963,7 +987,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			while (objSpecNext != objects.end() && objSpec->pool == objSpecNext->pool && objSpec->type == objSpecNext->type)
 				last_loc = objSpecNext->location, ++objSpecNext;
 
-			UpdatePoolState(fi, objSpec->type, objSpec->pool, curDef, curPool);
+			UpdatePoolState(fi, objSpec->type, objSpec->pool, objSpec->filter, curDef, curPool, curFilter);
 			if (first_loc != last_loc)
 			{
 				WriteUInt8(fi, dsf_Cmd_Object);
@@ -985,7 +1009,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			while (objSpecNext != objects3d.end() && objSpec->pool == objSpecNext->pool && objSpec->type == objSpecNext->type)
 				last_loc = objSpecNext->location, ++objSpecNext;
 
-			UpdatePoolState(fi, objSpec->type, objSpec->pool + offset_to_3d_objs, curDef, curPool);
+			UpdatePoolState(fi, objSpec->type, objSpec->pool + offset_to_3d_objs, objSpec->filter, curDef, curPool, curFilter);
 			if (first_loc != last_loc)
 			{
 				WriteUInt8(fi, dsf_Cmd_Object);
@@ -1005,7 +1029,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	/************************************************************************************************************/
 		for (polySpec = polygons.begin(); polySpec != polygons.end(); ++polySpec)
 		{
-			UpdatePoolState(fi, polySpec->type, polySpec->pool + offset_to_poly_pool_of_depth[polySpec->hash_depth], curDef, curPool);
+			UpdatePoolState(fi, polySpec->type, polySpec->pool + offset_to_poly_pool_of_depth[polySpec->hash_depth], polySpec->filter, curDef, curPool, curFilter);
 			if (polySpec->intervals.size() < 2) Assert(!"ERROR: only one range in polygon primitive.\n");
 			if (polySpec->param < 0    )		Assert(!"ERROR: polygon param < 0.\n");
 			if (polySpec->param > 65535)		Assert(!"ERROR: polygon param > 65535.\n");
@@ -1070,7 +1094,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			// to make nine passes through the data looking for primitives that do what we want.
 
 			// Update the polygon type and start the patch.
-			UpdatePoolState(fi, patchSpec->type, patchSpec->primitives.front().indices[0].first + offset_to_terrain_pool_of_depth[patchSpec->depth], curDef, curPool);
+			UpdatePoolState(fi, patchSpec->type, patchSpec->primitives.front().indices[0].first + offset_to_terrain_pool_of_depth[patchSpec->depth], curFilter, curDef, curPool, curFilter);
 
 			if (lastLODNear != patchSpec->nearLOD || lastLODFar != patchSpec->farLOD)
 			{
@@ -1095,7 +1119,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 			if (!primIter->is_cross_pool &&
 				primIter->indices[0].first == *apool)
 			{
-				UpdatePoolState(fi, patchSpec->type, (*apool) + offset_to_terrain_pool_of_depth[patchSpec->depth], curDef, curPool);
+				UpdatePoolState(fi, patchSpec->type, (*apool) + offset_to_terrain_pool_of_depth[patchSpec->depth], curFilter, curDef, curPool, curFilter);
 				if (primIter->is_range)
 				{
 #if ENCODING_STATS
@@ -1172,7 +1196,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		for (ChainSpecVector::iterator chain = chainSpecs.begin(); chain != chainSpecs.end(); ++chain)
 		if (!chain->path.empty())
 		{
-			UpdatePoolState(fi, chain->type, chain->curved ? 1 : 0, curDef, curPool);
+			UpdatePoolState(fi, chain->type, chain->curved ? 1 : 0, chain->filter, curDef, curPool, curFilter);
 			if (chain->subType != curSubDef)
 			{
 				curSubDef = chain->subType;
@@ -1444,6 +1468,7 @@ void	DSFFileWriterImp::AddObject(
 		Assert(!"ERROR: could not place object.\n");
 	} else {
 		ObjectSpec o;
+		o.filter = REF(inRef)->mCurrentFilter;
 		o.type = inObjectType;
 		o.pool = loc.first;
 		o.location = loc.second;
@@ -1464,6 +1489,7 @@ void 	DSFFileWriterImp::BeginSegment(
 	Assert(!inCurved);
 	REF(inRef)->chainSpecs.push_back(ChainSpec());
 	REF(inRef)->chainSpecs.back().type = inNetworkType;
+	REF(inRef)->chainSpecs.back().filter = REF(inRef)->mCurrentFilter;
 	REF(inRef)->chainSpecs.back().subType = inNetworkSubtype;
 	REF(inRef)->chainSpecs.back().curved = inCurved;
 	REF(inRef)->chainSpecs.back().contiguous = false;
@@ -1508,6 +1534,7 @@ void 	DSFFileWriterImp::BeginPolygon(
 	REF(inRef)->polygons.push_back(PolygonSpec());
 	REF(inRef)->accum_poly = &(REF(inRef)->polygons.back());
 	REF(inRef)->accum_poly_winding.clear();
+	REF(inRef)->accum_poly->filter = REF(inRef)->mCurrentFilter;
 	REF(inRef)->accum_poly->type = inPolygonType;
 	REF(inRef)->accum_poly->depth = inDepth;
 	REF(inRef)->accum_poly->hash_depth = hash_depth;
@@ -1721,3 +1748,7 @@ void DSFFileWriterImp::AddRasterData(
 	REF(inRef)->raster_data.push_back(data);
 }
 
+void DSFFileWriterImp::SetFilter(int filter, void * ref)
+{
+	REF(ref)->mCurrentFilter = filter;
+}

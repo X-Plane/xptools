@@ -759,7 +759,10 @@ public:
 					void *				inRef)
 	{
 	}
-
+	
+	static void SetFilter(int filterId, void * inRef)
+	{
+	}
 
 	int do_import_dsf(const char * file_name, WED_Thing * base)
 	{
@@ -770,7 +773,7 @@ public:
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
 								AddObject,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
-								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData };
+								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
 		int res = DSFReadFile(file_name, malloc, free, &cb, NULL, this);
 		return res;
@@ -785,7 +788,7 @@ public:
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
 								AddObject,
 								BeginSegment, AddSegmentShapePoint, EndSegment,
-								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData };
+								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
 		int ok = Text2DSFWithWriter(file_name, &cb, this);
 
