@@ -47,6 +47,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */; };
 		D604AE9E1C0D5D8F006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
 		D604AEA31C0DF420006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
 		D604AEA61C0E0355006DC1F0 /* ObjCUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */; };
@@ -1003,6 +1004,8 @@
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCLayer.cpp; sourceTree = "<group>"; };
+		D60075371C56A30E0096D4D9 /* WED_ATCLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCLayer.h; sourceTree = "<group>"; };
 		D60418960D86E15200AF6E16 /* README.meshtool */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.meshtool; sourceTree = "<group>"; };
 		D604189C0D86E22100AF6E16 /* README.DDSTool */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.DDSTool; sourceTree = "<group>"; };
 		D604189D0D86E22100AF6E16 /* README.XGrinder */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.XGrinder; sourceTree = "<group>"; };
@@ -3071,6 +3074,8 @@
 				D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */,
 				D653D6D21054552100A502FF /* WED_DebugLayer.h */,
 				D653D6D31054552100A502FF /* WED_DebugLayer.cpp */,
+				D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */,
+				D60075371C56A30E0096D4D9 /* WED_ATCLayer.h */,
 			);
 			path = WEDMap;
 			sourceTree = "<group>";
@@ -4549,6 +4554,7 @@
 				D63681930B8AC94200091AFC /* WED_GISLine_Width.cpp in Sources */,
 				D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */,
 				D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */,
+				D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */,
 				D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */,
 				D629FA830B95CB5600A2FB57 /* WED_MapLayer.cpp in Sources */,
 				D629FA9B0B95CDF000A2FB57 /* WED_MapToolNew.cpp in Sources */,

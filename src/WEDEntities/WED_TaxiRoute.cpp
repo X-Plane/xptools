@@ -317,5 +317,10 @@ int		WED_TaxiRoute::GetRunway(void) const
 	return runway.value;
 }
 
+int		WED_TaxiRoute::GetWidth(void) const
+{
+	return width.value;
+}
+
 
 #endif

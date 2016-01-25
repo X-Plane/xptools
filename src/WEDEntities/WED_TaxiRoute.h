@@ -44,6 +44,7 @@ public:
 				bool	HasHotArrival(void) const;
 				bool	HasHotDepart(void) const;
 				bool	HasHotILS(void) const;
+				int		GetWidth(void) const;
 	
 				void		SetOneway(int p);
 				void		SetRunway(int r);

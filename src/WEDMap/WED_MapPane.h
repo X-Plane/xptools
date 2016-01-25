@@ -42,6 +42,7 @@ class WED_ToolInfoAdapter;
 class	WED_TerraserverLayer;
 #endif
 class	WED_StructureLayer;
+class	WED_ATCLayer;
 class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
 //class	WED_TileServerLayer;
@@ -102,6 +103,7 @@ private:
 #endif	
 //	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
+	WED_ATCLayer *			mATCLayer;
 	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
 #if WITHNWLINK

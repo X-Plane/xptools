@@ -38,6 +38,7 @@ public:
 	void	SetEquipment(const set<int>&	et);
 	void	SetWidth(int		width);
 	void	SetAirlines(const string& airlines);
+	int		GetWidth() const;
 
 	void	Import(const AptGate_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptGate_t& x) const;

@@ -97,6 +97,7 @@ enum {
 	wed_ToggleLines,
 	wed_ToggleVertices,
 	wed_PickOverlay,
+	wed_ToggleATC,
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 #if WANT_TERRASEVER	

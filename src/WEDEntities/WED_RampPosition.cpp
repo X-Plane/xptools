@@ -93,3 +93,8 @@ void	WED_RampPosition::SetAirlines(const string &a)
 {
 	airlines = a;
 }
+
+int	WED_RampPosition::GetWidth() const
+{
+	return width.value;
+}
