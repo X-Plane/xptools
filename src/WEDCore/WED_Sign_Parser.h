@@ -141,8 +141,10 @@ enum parser_glyph_t {
 */
 
 string	parser_name_for_glyph(parser_glyph_t glyph);
-bool	parser_is_color_legal(parser_glyph_t, parser_color_t);
+string	short_name_for_glyph(parser_glyph_t glyph); // returns empty string if no short name
+bool		parser_is_color_legal(parser_glyph_t, parser_color_t);
 
+parser_glyph_t	glyph_for_short_name(const string& s);
 
 //Represents the information about a single or multi glyphs
 struct parser_glyph_info

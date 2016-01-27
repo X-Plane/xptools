@@ -23,7 +23,7 @@ static const glyph_info_t	k_glyph_metadata[] = {
 	glyph_G,		"G",		"G",			1,	1,	1,	0,	0,
 	glyph_H,		"H",		"H",			1,	1,	1,	0,	0,
 	glyph_I,		"I",		"I",			1,	1,	1,	0,	0,
-	glyph_J,		"J",		"K",			1,	1,	1,	0,	0,
+	glyph_J,		"J",		"J",			1,	1,	1,	0,	0,
 	glyph_K,		"K",		"K",			1,	1,	1,	0,	0,
 	glyph_L,		"L",		"L",			1,	1,	1,	0,	0,
 	glyph_M,		"M",		"M",			1,	1,	1,	0,	0,
@@ -116,6 +116,18 @@ string	parser_name_for_glyph(parser_glyph_t glyph)
 	return i ? i->inside_name : "";
 }
 
+string	short_name_for_glyph(parser_glyph_t glyph)
+{
+	const glyph_info_t * i = get_glyph_info(glyph);
+	if(!i)
+		return string();
+	
+	if(i->outside_name == NULL)
+		return string();
+	
+	return i->outside_name;
+}
+
 bool	parser_is_color_legal(parser_glyph_t glyph, parser_color_t c)
 {
 	const glyph_info_t * i = get_glyph_info(glyph);
@@ -129,6 +141,15 @@ bool	parser_is_color_legal(parser_glyph_t glyph, parser_color_t c)
 	default: return false;
 	}
 }
+
+parser_glyph_t	glyph_for_short_name(const string& s)
+{
+	for(int i = 0; i < k_glyph_info_count; ++i)
+	if(k_glyph_metadata[i].inside_name && s == k_glyph_metadata[i].inside_name)
+		return k_glyph_metadata[i].glyph;
+	return glyph_Invalid;
+}
+
 
 
 

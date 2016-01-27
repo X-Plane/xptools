@@ -40,7 +40,7 @@ enum {
 void	GUI_FontDraw(
 				GUI_GraphState *				inState,
 				int 							inFontID,
-				float							color[4],	//	4-part color, featuring alpha.
+				const float						color[4],	//	4-part color, featuring alpha.
 				float							inX,
 				float							inY,
 				const char *					inString);
@@ -48,7 +48,7 @@ void	GUI_FontDraw(
 void	GUI_FontDrawScaled(
 				GUI_GraphState *				inState,
 				int 							inFontID,
-				float							color[4],	//	4-part color, featuring alpha.
+				const float						color[4],	//	4-part color, featuring alpha.
 				float							inLeft,
 				float							inBottom,
 				float							inRight,
