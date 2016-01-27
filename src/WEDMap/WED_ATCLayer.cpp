@@ -16,6 +16,8 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_DrawUtils.h"
 #include "WED_RampPosition.h"
+#include "GUI_Resources.h"
+#include "TexUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -45,30 +47,46 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		Point2 nose_wheel;
 		int icao_width = pos->GetWidth();
 		float mtr = 5;
+		float offset = 0;
+		
+		int id = 0;
 		
 		pos->GetLocation(gis_Geo, nose_wheel);
 		switch(icao_width) {
-		case width_A:	mtr = 15.0;	break;
-		case width_B:	mtr = 24.0;	break;
-		case width_C:	mtr = 36.0;	break;
-		case width_D:	mtr = 52.0;	break;
-		case width_E:	mtr = 65.0;	break;
-		case width_F:	mtr = 80.0;	break;
+		case width_A:	mtr = 15.0;	offset = 1.85f;	id = GUI_GetTextureResource("ClassA.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_B:	mtr = 27.0;	offset = 2.75f; id = GUI_GetTextureResource("ClassB.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_C:	mtr = 41.0;	offset = 4.70f; id = GUI_GetTextureResource("ClassC.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_D:	mtr = 56.0;	offset = 9.50f; id = GUI_GetTextureResource("ClassD.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_E:	mtr = 72.0;	offset = 8.20f; id = GUI_GetTextureResource("ClassE.png",tex_Linear|tex_Mipmap,NULL);	break;
+		case width_F:	mtr = 80.0;	offset = 8.80f; id = GUI_GetTextureResource("ClassF.png",tex_Linear|tex_Mipmap,NULL);	break;
 		}
 		
 		Point2	c[4];
-		Quad_1to4(nose_wheel, pos->GetHeading(), mtr*2.0, mtr, c);
+		Quad_1to4(nose_wheel, pos->GetHeading(), mtr, mtr, c);
 		
-		g->SetState(0, 0, 0, 0, 1, 0, 0);
+		g->SetState(0, id ? 1 : 0, 0, 0, 1, 0, 0);
+		
 		glColor4f(1,1,0,0.5);
+		if(id)
+			g->BindTex(id, 0);
 		
 		GetZoomer()->LLToPixelv(c,c,4);
 		
-		c[1] += Vector2(c[1],c[0]) * 0.5f;
-		c[2] += Vector2(c[2],c[3]) * 0.5f;
+		Vector2	v_left (c[1],c[0]);
+		Vector2 v_right(c[2],c[3]);
+		
+		float relative_slip = (mtr * 0.5f - offset) / mtr;
+		
+		c[0] += v_left * relative_slip;
+		c[1] += v_left * relative_slip;
+		c[2] += v_right* relative_slip;
+		c[3] += v_right* relative_slip;
 		
 		glBegin(GL_QUADS);
-		glVertex2v(c,4);
+		glTexCoord2f(0,0);	glVertex2(c[0]);
+		glTexCoord2f(0,1);	glVertex2(c[1]);
+		glTexCoord2f(1,1);	glVertex2(c[2]);
+		glTexCoord2f(1,0);	glVertex2(c[3]);
 		glEnd();
 			
 	}
