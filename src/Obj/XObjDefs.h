@@ -200,6 +200,7 @@ struct XObjKey {
 struct	XObjAnim8 {
 	string					dataref;
 	float					axis[3];	// Used for rotations
+	float					loop;		// If not 0, modulo factor
 	vector<XObjKey>			keyframes;
 };
 

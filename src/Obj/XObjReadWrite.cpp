@@ -710,6 +710,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			animation.keyframes.clear();
 			cmd.cmd = anim_Rotate;
 			cmd.idx_offset = outObj.animation.size();
+			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.keyframes.push_back(XObjKey());
 			animation.keyframes.push_back(XObjKey());
@@ -729,6 +730,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			animation.keyframes.clear();
 			cmd.cmd = anim_Translate;
 			cmd.idx_offset = outObj.animation.size();
+			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.keyframes.push_back(XObjKey());
 			animation.keyframes.push_back(XObjKey());
@@ -831,6 +833,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			animation.keyframes.clear();
 			cmd.cmd = anim_Hide;
 			cmd.idx_offset = outObj.animation.size();
+			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.keyframes.push_back(XObjKey());
 			animation.keyframes.push_back(XObjKey());
@@ -845,6 +848,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			animation.keyframes.clear();
 			cmd.cmd = anim_Show;
 			cmd.idx_offset = outObj.animation.size();
+			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.keyframes.push_back(XObjKey());
 			animation.keyframes.push_back(XObjKey());
@@ -860,6 +864,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			animation.keyframes.clear();
 			cmd.cmd = anim_Rotate;
 			cmd.idx_offset = outObj.animation.size();
+			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
 			animation.axis[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			animation.axis[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
@@ -873,6 +878,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			animation.keyframes.clear();
 			cmd.cmd = anim_Translate;
 			cmd.idx_offset = outObj.animation.size();
+			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &animation.dataref);
 			outObj.animation.push_back(animation);
@@ -900,6 +906,11 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// ANIM_trans_end
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_trans_end", xtrue))
 		{
+		}
+		// ANIM_keyframe_loop <loop>
+		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_keyframe_loop", xfals))
+		{
+			outObj.animation.back().loop = TXT_MAP_flt_scan(cur_ptr,end_ptr, xfals);
 		}
 /******************************************************************************************************************************/
 		// COCKPIT_REGION
@@ -1217,6 +1228,8 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 							outObj.animation[cmd->idx_offset].keyframes[n].v[0]);
 					fprintf(fi, "ANIM_rotate_end" CRLF);
 				}
+				if(outObj.animation[cmd->idx_offset].loop)
+					fprintf(fi,"ANIM_keyframe_loop %f" CRLF, outObj.animation[cmd->idx_offset].loop);
 				break;
 			case anim_Translate:
 				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)
@@ -1242,6 +1255,8 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 							outObj.animation[cmd->idx_offset].keyframes[n].v[2]);
 					fprintf(fi, "ANIM_trans_end" CRLF);
 				}
+				if(outObj.animation[cmd->idx_offset].loop)
+					fprintf(fi,"ANIM_keyframe_loop %f" CRLF, outObj.animation[cmd->idx_offset].loop);
 				break;
 			case obj8_Tris:
 				fprintf(fi, "TRIS %d %d" CRLF, cmd->idx_offset, cmd->idx_count);
@@ -1282,6 +1297,8 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.animation[cmd->idx_offset].keyframes[0].key,
 						outObj.animation[cmd->idx_offset].keyframes[1].key,
 						outObj.animation[cmd->idx_offset].dataref.c_str());
+				if(outObj.animation[cmd->idx_offset].loop)
+					fprintf(fi,"ANIM_keyframe_loop %f" CRLF, outObj.animation[cmd->idx_offset].loop);
 				break;
 			case anim_Show:
 				if (outObj.animation[cmd->idx_offset].keyframes.size() == 2)
@@ -1289,6 +1306,8 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.animation[cmd->idx_offset].keyframes[0].key,
 						outObj.animation[cmd->idx_offset].keyframes[1].key,
 						outObj.animation[cmd->idx_offset].dataref.c_str());
+				if(outObj.animation[cmd->idx_offset].loop)
+					fprintf(fi,"ANIM_keyframe_loop %f" CRLF, outObj.animation[cmd->idx_offset].loop);
 				break;
 			case attr_Hard:
 				if (cmd->name == "object")
