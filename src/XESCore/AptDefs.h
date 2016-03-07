@@ -80,8 +80,7 @@ enum {
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
 
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
-	apt_startup_loc_airlines = 1301,		// 1301 airline list
-
+	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list
 
 	// Surface codes
 	apt_surf_none		= 0,
@@ -365,6 +364,7 @@ struct	AptGate_t {
 	int			equipment;
 	int			width;			// icao width code
 	string		name;
+	int			ai_op_type;     // ai operations type
 	string		airlines;
 };
 typedef vector<AptGate_t>		AptGateVector;

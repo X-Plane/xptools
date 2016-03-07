@@ -1,4 +1,4 @@
-/*
+ /*
  * Copyright (c) 2007, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -43,7 +43,8 @@
 void	GenerateOGL(AptInfo_t * a);
 #endif
 
-const char * ramp_type_strings[] = { "misc","gate","tie_down","hangar","cargo","military","refueling",0 };
+const char * ramp_type_strings[] = { "misc","gate","tie_down","hangar","refueling",0 };
+const char * ramp_ai_operation_type[] = { "none", "general_aviation", "cargo", "airline", "military", 0 };
 const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
@@ -667,8 +668,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					}
 				}
 			}
-			break;			
-		case apt_startup_loc_airlines:
+			break;
+		case apt_startup_loc_extended:
 			if(vers < ATC_VERS2) ok = "Error: no extended ATC data in older apt.dat files.";
 			else {
 				if(outApts.empty()) ok = "Error: airline information outside airport.";
@@ -676,7 +677,9 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					if(outApts.back().gates.empty()) ok = "Error: airline information without a gate.";
 					else if (!outApts.back().gates.back().airlines.empty()) ok = "Error: repeateded airline information for a gate.";
 					else {
-						if(TextScanner_FormatScan(s,"iT|",&rec_code,
+						//Attempt to scan 1301 size [A-F] ramp_ai_operation_type airport strings
+						if(TextScanner_FormatScan(s,"iT|",
+							&rec_code,
 							&outApts.back().gates.back().airlines) != 2)
 								ok = "Error: bad gate airline record.";
 					}
@@ -1063,18 +1066,45 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		for (AptGateVector::const_iterator gate = apt->gates.begin(); gate != apt->gates.end(); ++gate)
 		{
 			if((gate->type == atc_ramp_misc && gate->equipment == atc_traffic_all) || gate->equipment == 0 || !has_atc)
+			{
 				fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s" CRLF, apt_startup_loc,
 					CGAL2DOUBLE(gate->location.y()), CGAL2DOUBLE(gate->location.x()), gate->heading, gate->name.c_str());
+			}
 			else
 			{
-				fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s ",apt_startup_loc_new, CGAL2DOUBLE(gate->location.y()), CGAL2DOUBLE(gate->location.x()), gate->heading, ramp_type_strings[gate->type]);
+				//--1300 lat lon heading misc|gate|tie_down|hangar traffic name
+				fprintf(fi, "%2d % 012.8lf % 013.8lf %6.2f %s ", 
+					apt_startup_loc_new, //1300
+					CGAL2DOUBLE(gate->location.y()),//lat
+					CGAL2DOUBLE(gate->location.x()),//lon
+					gate->heading,//heading
+					ramp_type_strings[gate->type]//human readable ramp type name
+				);
 				print_bitfields(fprintf,fi,gate->equipment, equip_strings);
+			
+				fprintf(fi, " %s", gate->name.c_str());//name
+				fprintf(fi, "%s", CRLF);//Row is done
+				//-------------------------------------------------------------
+
 				if(has_atc2)
-					fprintf(fi,"|%c", 'A' + gate->width);
-				fprintf(fi," %s" CRLF, gate->name.c_str());
+				{
+					//--1301 size ai_operation_type airlines-------------------
+					//Ex:1301 E 3 air del chl <- made up space seperated lines
+					fprintf(fi, "%2d %c %s ",
+						apt_startup_loc_extended,//1301
+						'A' + gate->width,//size
+						ramp_ai_operation_type[gate->ai_op_type]//human readable ai_operation_type
+					);
 				
-				if(!gate->airlines.empty())
-					fprintf(fi,"%2d %s" CRLF, apt_startup_loc_airlines, gate->airlines.c_str());
+					//Print all airlines, should be space seperated groups of letters
+					if(gate->airlines.empty() == false)
+					{
+						fprintf(fi,"%s", gate->airlines.c_str());
+					}
+				
+					fprintf(fi,"%s", CRLF);//Row is over
+					//---------------------------------------------------------
+				}
 			}
 		}
 

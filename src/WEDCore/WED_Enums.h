@@ -571,6 +571,13 @@ ENUM_DOMAIN(ATCIcaoWidth,"Width")
 	ENUM(width_E,					"E",				atc_width_E)
 	ENUM(width_F,					"F",				atc_width_F)
 
+ENUM_DOMAIN(ATCAIOperationType,			"AI Operation Type")
+	ENUM(ai_operation_None,				"None", 0)
+	ENUM(ai_operation_GeneralAviation,	"General Aviation", 1)
+	ENUM(ai_operation_Cargo,			"Cargo", 2)
+	ENUM(ai_operation_Airline,			"Airline", 3)
+	ENUM(ai_operation_Military,			"Military", 4)
+			
 ENUM_DOMAIN(RoadSubType, "Road Type")
 	ENUM(road_Highway,				"Highway",			1)
 	ENUM(road_Local_,				"Local",			2)

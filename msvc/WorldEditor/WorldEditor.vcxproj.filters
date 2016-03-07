@@ -1514,6 +1514,9 @@
     <ClInclude Include="..\..\src\WEDMap\WED_ATCLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\XESCore\AptDefs.h">
+      <Filter>XESCore</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\src\WEDResources\ui_measurements.txt">
