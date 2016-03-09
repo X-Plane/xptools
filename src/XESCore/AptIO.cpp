@@ -46,9 +46,9 @@ void	GenerateOGL(AptInfo_t * a);
 #define NUM_RAMP_TYPES 4
 const char * ramp_type_strings[] = { "misc", "gate", "tie_down","hangar", 0 };
 
-#define NUM_RAMP_AI_OP_TYPES 6
+#define NUM_RAMP_OP_TYPES 6
 //The human readable types that will get saved 
-const char * ramp_ai_operation_type[] = { "none", "general_aviation", "airline", "cargo", "military", "refueling", 0 };
+const char * ramp_operation_type_strings[] = { "none", "general_aviation", "airline", "cargo", "military", 0 };
 
 const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
@@ -58,8 +58,8 @@ const char * op_strings[] = { "arrivals", "departures", 0 };
 /*
 Validates an airlines string to ensure its to the 1301 spec.
 
-@param airlines_str The airlines string to validate.
-@returns An error string or "" if there was no error.
+\param airlines_str The airlines string to validate.
+\returns An error string or "" if there was no error.
 */
 string is_airline_string_valid(const string & airlines_str)
 {
@@ -736,16 +736,16 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					else {
 						AptGate_t & tmp_gate = outApts.back().gates.back();
 						string size_char = "\0";
-						string ai_op_type_human_string;
+						string ramp_op_type_human_string;
 						
 						//Attempt to scan 1301 size [A-F] ramp_ai_operation_type airport strings
 						if(TextScanner_FormatScan(s,"iTTT|",
 							&rec_code,
 							&size_char,
-							&ai_op_type_human_string,
-							&tmp_gate.airlines) == 0)
+							&ramp_op_type_human_string,
+							&tmp_gate.airlines) < 3)
 						{
-							ok = "Error: bad gate airline record.";
+							ok = "Error: bad ramp start record.";
 						}
 
 						//Break out your ASCII mindset
@@ -758,26 +758,31 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 						
 						//Loop through every string in ramp_air_operation_type
 						//including the end of the array (a null terminator)
-						for (int i = 0; i <= NUM_RAMP_AI_OP_TYPES; i++)
+						for (int i = 0; i <= NUM_RAMP_OP_TYPES && ok == ""; i++)
 						{
 							//If we've loop through the whole array of ramp_ai_opperation_types
 							//we have a problem
-							if(ramp_ai_operation_type[i] == '\0')
+							if(ramp_operation_type_strings[i] == '\0')
 							{
-								ok = string("Error: ") + ai_op_type_human_string + "is not a real AI Operation Type";
+								ok = string("Error: ") + ramp_op_type_human_string + "is not a real Ramp Operation Type";
 								break;
 							}
 							
 							//If the human readable matches what we pulled from
-							//the apt.dat, we've found our ai_op_type
-							if(ramp_ai_operation_type[i] == ai_op_type_human_string)
+							//the apt.dat, we've found our ramp_op_type
+							if(ramp_operation_type_strings[i] == ramp_op_type_human_string)
 							{
-								tmp_gate.ai_op_type = i;
+								tmp_gate.ramp_op_type = i;
 								break;
 							}
 						}
 						
-						ok = is_airline_string_valid(tmp_gate.airlines);
+						//Only potentially override collected error messages
+						//if we have none
+						if(ok == "")
+						{
+							ok = is_airline_string_valid(tmp_gate.airlines);
+						}
 					}
 				}
 			}
@@ -1184,12 +1189,12 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 				if(has_atc2)
 				{
-					//--1301 size ai_operation_type airlines-------------------
+					//--1301 size ramp_operation_type airlines-------------------
 					//Ex:1301 E 3 air del chl <- made up space seperated lines
 					fprintf(fi, "%2d %c %s ",
 						apt_startup_loc_extended,//1301
 						'A' + gate->width,//size
-						ramp_ai_operation_type[gate->ai_op_type]//human readable ai_operation_type
+						ramp_operation_type_strings[gate->ramp_op_type]//human readable ramp_operation_type
 					);
 				
 					//Export only valid airline strings

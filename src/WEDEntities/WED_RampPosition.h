@@ -37,7 +37,7 @@ public:
 	void	SetType(int		ramp_type);
 	void	SetEquipment(const set<int>&	et);
 	void	SetWidth(int		width);
-	void	SetAIOperationType(int ait);
+	void	SetRampOperationType(int ait);
 	void	SetAirlines(const string& airlines);
 	int		GetWidth() const;
 
@@ -51,7 +51,7 @@ private:
 	WED_PropIntEnum			ramp_type;
 	WED_PropIntEnumBitfield	equip_type;
 	WED_PropIntEnum			width;
-	WED_PropIntEnum			ai_op_type;
+	WED_PropIntEnum			ramp_op_type;
 	WED_PropStringText		airlines;
 
 };

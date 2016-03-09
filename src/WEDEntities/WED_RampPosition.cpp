@@ -29,11 +29,11 @@ DEFINE_PERSISTENT(WED_RampPosition)
 TRIVIAL_COPY(WED_RampPosition, WED_GISPoint_Heading)
 
 WED_RampPosition::WED_RampPosition(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
-	ramp_type	(this, "Ramp Start Type",	SQL_Name("",""),	XML_Name("ramp_start","type"   ), ATCRampType, atc_Ramp_Misc),
-	equip_type  (this, "Equipment Type",	SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType, 0),
-	width		(this, "Size",				SQL_Name("",""), XML_Name("ramp_start","width"), ATCIcaoWidth, width_F),
-	ai_op_type  (this, "AI Operation Type", SQL_Name("",""), XML_Name("ramp_start","ai_op_type"), ATCAIOperationType, ai_operation_None), 
-	airlines	(this, "Airlines",			SQL_Name("",""), XML_Name("ramp_start","airlines"),"")
+	ramp_type	 (this, "Ramp Start Type",	SQL_Name("",""),	XML_Name("ramp_start","type"   ), ATCRampType, atc_Ramp_Misc),
+	equip_type	 (this, "Equipment Type",	SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType, 0),
+	width		 (this, "Size",				SQL_Name("",""),	XML_Name("ramp_start","width"), ATCIcaoWidth, width_C),
+	ramp_op_type (this, "Ramp Operation Type", SQL_Name("",""), XML_Name("ramp_start","ramp_op_type"), RampOperationType, ramp_operation_None),
+	airlines	 (this, "Airlines",			SQL_Name("",""),	XML_Name("ramp_start","airlines"),"")
 {
 }
 
@@ -46,7 +46,7 @@ void	WED_RampPosition::Import(const AptGate_t& x, void (* print_func)(void *, co
 	SetLocation(gis_Geo,x.location);
 	SetHeading(x.heading);
 	SetName(x.name);
-	SetAIOperationType(x.ai_op_type);
+	SetRampOperationType(x.ramp_op_type);
 	SetAirlines(x.airlines);
 	
 	ramp_type			= ENUM_Import(ATCRampType,		x.type	);
@@ -72,7 +72,7 @@ void	WED_RampPosition::Export(		 AptGate_t& x) const
 	x.type = ENUM_Export(ramp_type.value);
 	x.equipment = ENUM_ExportSet(equip_type.value);
 	x.width = ENUM_Export(width.value);
-	x.ai_op_type = ENUM_Export(ai_op_type.value);
+	x.ramp_op_type = ENUM_Export(ramp_op_type.value);
 	x.airlines = airlines.value;
 }
 
@@ -91,9 +91,9 @@ void	WED_RampPosition::SetWidth(int		w)
 	width = w;
 }
 
-void	WED_RampPosition::SetAIOperationType(int ait)
+void	WED_RampPosition::SetRampOperationType(int ait)
 {
-	ai_op_type = ait;
+	ramp_op_type = ait;
 }
 
 void	WED_RampPosition::SetAirlines(const string &a)

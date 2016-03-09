@@ -87,7 +87,7 @@ WED_CreatePointTool::WED_CreatePointTool(
 		ramp_type		(tool==create_RampStart		?this:NULL,"Ramp Start Type",SQL_Name("",""),XML_Name("",""   ), ATCRampType, atc_Ramp_Misc),
 		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType, 0),
 		width			(tool==create_RampStart		?this:NULL,"Size",	SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_F),
-		ai_op_type		(tool==create_RampStart		?this:NULL,"AI Operation Type",	SQL_Name("",""),XML_Name("",""), ATCAIOperationType, ai_operation_None),
+		ramp_op_type	(tool==create_RampStart		?this:NULL,"Ramp Operation Type",	SQL_Name("",""),XML_Name("",""), RampOperationType, ramp_operation_None),
 		airlines		(tool==create_RampStart		?this:NULL,"Airlines",SQL_Name("",""),XML_Name("",""), "")
 {
 }
@@ -160,7 +160,7 @@ void	WED_CreatePointTool::AcceptPath(
 		ramp->SetType(ramp_type.value);
 		ramp->SetEquipment(equip_type.value);
 		ramp->SetWidth(width.value);
-		ramp->SetAIOperationType(ai_op_type.value);
+		ramp->SetRampOperationType(ramp_op_type.value);
 		ramp->SetAirlines(airlines.value);
 		break;
 	case create_TowerViewpoint:

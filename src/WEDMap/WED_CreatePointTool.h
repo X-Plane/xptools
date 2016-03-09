@@ -76,7 +76,7 @@ protected:
 		WED_PropIntEnum			ramp_type;
 		WED_PropIntEnumBitfield	equip_type;
 		WED_PropIntEnum			width;
-		WED_PropIntEnum			ai_op_type;
+		WED_PropIntEnum			ramp_op_type;
 		WED_PropStringText		airlines;
 		
 

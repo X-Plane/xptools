@@ -248,12 +248,11 @@ enum {
 	atc_width_E = 4,
 	atc_width_F = 5,
 
-	atc_ai_operation_none = 0,
-	atc_ai_operation_general_aviation = 1,
-	atc_ai_operation_airline = 2,
-	atc_ai_operation_cargo = 3,
-	atc_ai_operation_military = 4,
-	atc_ai_operation_refueling = 5
+	ramp_operation_none = 0,
+	ramp_operation_general_aviation = 1,
+	ramp_operation_airline = 2,
+	ramp_operation_cargo = 3,
+	ramp_operation_military = 4
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -368,7 +367,7 @@ struct	AptGate_t {
 	int			equipment;
 	int			width;			// icao width code
 	string		name;
-	int			ai_op_type;     // ai operations type
+	int			ramp_op_type;     // ramp operations type
 	string		airlines;
 };
 typedef vector<AptGate_t>		AptGateVector;
