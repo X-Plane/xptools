@@ -240,16 +240,20 @@ enum {
 	atc_ramp_gate = 1,
 	atc_ramp_tie_down = 2,
 	atc_ramp_hangar = 3,
-	atc_ramp_cargo = 4,
-	atc_ramp_military = 5,
-	atc_ramp_refueling = 6,
 	
 	atc_width_A = 0,
 	atc_width_B = 1,
 	atc_width_C = 2,
 	atc_width_D = 3,
 	atc_width_E = 4,
-	atc_width_F = 5
+	atc_width_F = 5,
+
+	atc_ai_operation_none = 0,
+	atc_ai_operation_general_aviation = 1,
+	atc_ai_operation_airline = 2,
+	atc_ai_operation_cargo = 3,
+	atc_ai_operation_military = 4,
+	atc_ai_operation_refueling = 5
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }

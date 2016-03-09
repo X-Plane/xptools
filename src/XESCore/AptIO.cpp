@@ -43,13 +43,98 @@
 void	GenerateOGL(AptInfo_t * a);
 #endif
 
-const char * ramp_type_strings[] = { "misc","gate","tie_down","hangar","refueling",0 };
-const char * ramp_ai_operation_type[] = { "none", "general_aviation", "cargo", "airline", "military", 0 };
+#define NUM_RAMP_TYPES 4
+const char * ramp_type_strings[] = { "misc", "gate", "tie_down","hangar", 0 };
+
+#define NUM_RAMP_AI_OP_TYPES 6
+//The human readable types that will get saved 
+const char * ramp_ai_operation_type[] = { "none", "general_aviation", "airline", "cargo", "military", "refueling", 0 };
+
 const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
 
+/*
+Validates an airlines string to ensure its to the 1301 spec.
+
+@param airlines_str The airlines string to validate.
+@returns An error string or "" if there was no error.
+*/
+string is_airline_string_valid(const string & airlines_str)
+{
+	//Because empty airline strings are okay too
+	if(airlines_str == "")
+	{
+		return "";
+	}
+	if(airlines_str.length() < 3)
+	{
+		return "Error: airlines string is less than three characters";
+	}
+
+	
+	int valid_ascii_counter = 0;
+	//If you're expecting another part or the start of
+	//a airline code
+	bool expecting_non_space = true;
+
+	int i = 0;
+	while(i < airlines_str.length())
+	{
+		char c = airlines_str[i];
+
+		//Parser reset
+		if(valid_ascii_counter == 3)
+		{
+			expecting_non_space = false;
+			valid_ascii_counter = 0;
+		}
+		
+		if(c == ' ')
+		{
+			//Expecting part of code or we've discovered whitespace beyond
+			//the last code
+			if(expecting_non_space == true || i == airlines_str.length())
+			{
+				return "Error: extra whitespace in airlines string";
+			}
+			else
+			{
+				expecting_non_space = true;
+			}
+		}
+		else 
+		{
+			if(!
+					(c >= 'A' && c <= 'Z') ||
+					(c >= 'a' && c <= 'z') ||
+					(c >= '0' && c <= '9')
+			  )
+			{
+				return string("Error: " + c) + string(" inside of airline string " + airlines_str) + "is not a printable ASCII letter or number";
+			}
+			else
+			{
+				//If we have a code like ABCD
+				if(expecting_non_space == false)
+				{
+					return "Error: code in airlines string poorly formed";
+				}
+				else
+				{
+					//We've finally hit a valid ascii char
+					//If we had just previously (or not) been on a space
+					//toggle the flag
+					valid_ascii_counter++;
+				}
+			}
+		}
+		i++;
+	}
+
+	return "";
+}
 // LLLHHH
 void divide_heading(int * lo, int * hi)
 {
@@ -628,44 +713,16 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&gate.name) < 4)
 					ok = "Illegal startup loc";
 				else		
-				{					
+				{			
 					gate.type = scan_enum(ramp_type.c_str(), ramp_type_strings);
 					if(gate.type == -1)
-						ok = "Illegal ramp type";
-					else 
 					{
-						gate.equipment = scan_bitfields(equip.c_str(), equip_strings_gate, atc_traffic_all);
-						int all_flag = gate.equipment & 0x40;
-						int width = (gate.equipment & 0x1F80) >> 7;
-						gate.equipment = gate.equipment & 0x3F;	// 1-32 = equip bits.
-						if(all_flag)
-							gate.equipment = atc_traffic_all;
-						gate.width = -1;
-						
-						if(vers < ATC_VERS2 && width)
-							ok = "Illegal sized parking spot in old Apt.dat file";
-						else
-						{
-							for(int w = atc_width_A; w <= atc_width_F; ++w)
-							if((1<<w) == width)
-							{
-								if(gate.width == -1)
-								{
-									gate.width = w;
-									width &= ~(1<<w);
-								}
-							}
-							if(gate.width == -1)
-								gate.width = atc_width_F;
-							if (width != 0)
-								ok = "Too many width codes for ramp spot.";
-							else
-							{	
-								gate.location = POINT2(p1x, p1y);
-								outApts.back().gates.push_back(gate);
-							}
-						}
+						ok = "Illegal ramp type";
 					}
+
+					gate.equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
+					gate.location = POINT2(p1x, p1y);
+					outApts.back().gates.push_back(gate);
 				}
 			}
 			break;
@@ -677,11 +734,50 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					if(outApts.back().gates.empty()) ok = "Error: airline information without a gate.";
 					else if (!outApts.back().gates.back().airlines.empty()) ok = "Error: repeateded airline information for a gate.";
 					else {
+						AptGate_t & tmp_gate = outApts.back().gates.back();
+						string size_char = "\0";
+						string ai_op_type_human_string;
+						
 						//Attempt to scan 1301 size [A-F] ramp_ai_operation_type airport strings
-						if(TextScanner_FormatScan(s,"iT|",
+						if(TextScanner_FormatScan(s,"iTTT|",
 							&rec_code,
-							&outApts.back().gates.back().airlines) != 2)
-								ok = "Error: bad gate airline record.";
+							&size_char,
+							&ai_op_type_human_string,
+							&tmp_gate.airlines) == 0)
+						{
+							ok = "Error: bad gate airline record.";
+						}
+
+						//Break out your ASCII mindset
+						tmp_gate.width = static_cast<int>(size_char[0] - 'A');
+						
+						if(tmp_gate.width < 0 || tmp_gate.width > 5)
+						{
+							ok = string("Error: ") + size_char[0] + " is not a valid gate size";
+						}
+						
+						//Loop through every string in ramp_air_operation_type
+						//including the end of the array (a null terminator)
+						for (int i = 0; i <= NUM_RAMP_AI_OP_TYPES; i++)
+						{
+							//If we've loop through the whole array of ramp_ai_opperation_types
+							//we have a problem
+							if(ramp_ai_operation_type[i] == '\0')
+							{
+								ok = string("Error: ") + ai_op_type_human_string + "is not a real AI Operation Type";
+								break;
+							}
+							
+							//If the human readable matches what we pulled from
+							//the apt.dat, we've found our ai_op_type
+							if(ramp_ai_operation_type[i] == ai_op_type_human_string)
+							{
+								tmp_gate.ai_op_type = i;
+								break;
+							}
+						}
+						
+						ok = is_airline_string_valid(tmp_gate.airlines);
 					}
 				}
 			}
@@ -1096,8 +1192,8 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						ramp_ai_operation_type[gate->ai_op_type]//human readable ai_operation_type
 					);
 				
-					//Print all airlines, should be space seperated groups of letters
-					if(gate->airlines.empty() == false)
+					//Export only valid airline strings
+					if(is_airline_string_valid(gate->airlines) == "")
 					{
 						fprintf(fi,"%s", gate->airlines.c_str());
 					}
