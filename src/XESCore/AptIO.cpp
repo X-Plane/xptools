@@ -55,86 +55,6 @@ const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos"
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
 
-/*
-Validates an airlines string to ensure its to the 1301 spec.
-
-\param airlines_str The airlines string to validate.
-\returns An error string or "" if there was no error.
-*/
-string is_airline_string_valid(const string & airlines_str)
-{
-	//Because empty airline strings are okay too
-	if(airlines_str == "")
-	{
-		return "";
-	}
-	if(airlines_str.length() < 3)
-	{
-		return "Error: airlines string is less than three characters";
-	}
-
-	
-	int valid_ascii_counter = 0;
-	//If you're expecting another part or the start of
-	//a airline code
-	bool expecting_non_space = true;
-
-	int i = 0;
-	while(i < airlines_str.length())
-	{
-		char c = airlines_str[i];
-
-		//Parser reset
-		if(valid_ascii_counter == 3)
-		{
-			expecting_non_space = false;
-			valid_ascii_counter = 0;
-		}
-		
-		if(c == ' ')
-		{
-			//Expecting part of code or we've discovered whitespace beyond
-			//the last code
-			if(expecting_non_space == true || i == airlines_str.length())
-			{
-				return "Error: extra whitespace in airlines string";
-			}
-			else
-			{
-				expecting_non_space = true;
-			}
-		}
-		else 
-		{
-			if(!
-					(c >= 'A' && c <= 'Z') ||
-					(c >= 'a' && c <= 'z') ||
-					(c >= '0' && c <= '9')
-			  )
-			{
-				return string("Error: " + c) + string(" inside of airline string " + airlines_str) + "is not a printable ASCII letter or number";
-			}
-			else
-			{
-				//If we have a code like ABCD
-				if(expecting_non_space == false)
-				{
-					return "Error: code in airlines string poorly formed";
-				}
-				else
-				{
-					//We've finally hit a valid ascii char
-					//If we had just previously (or not) been on a space
-					//toggle the flag
-					valid_ascii_counter++;
-				}
-			}
-		}
-		i++;
-	}
-
-	return "";
-}
 // LLLHHH
 void divide_heading(int * lo, int * hi)
 {
@@ -776,13 +696,6 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 								break;
 							}
 						}
-						
-						//Only potentially override collected error messages
-						//if we have none
-						if(ok == "")
-						{
-							ok = is_airline_string_valid(tmp_gate.airlines);
-						}
 					}
 				}
 			}
@@ -1196,9 +1109,8 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						'A' + gate->width,//size
 						ramp_operation_type_strings[gate->ramp_op_type]//human readable ramp_operation_type
 					);
-				
-					//Export only valid airline strings
-					if(is_airline_string_valid(gate->airlines) == "")
+
+					if(gate->airlines.empty() == false)
 					{
 						fprintf(fi,"%s", gate->airlines.c_str());
 					}

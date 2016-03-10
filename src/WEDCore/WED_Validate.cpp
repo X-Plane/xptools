@@ -522,6 +522,60 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			
 		if(g.equipment == 0)
 			msg = "Ramp starts must have at least one valid type of equipment selected.";
+		
+		if(gExportTarget == wet_xplane_1050)
+		{
+			//Our flag to keep going until we find an error
+			bool found_err = false;
+			if(g.airlines == "" && !found_err)
+			{
+				//Error:"not really an error, we're just done here"
+				found_err = true;
+			}
+			else if(g.airlines.length() < 3 && !found_err)
+			{
+				msg = "Ramp start airlines string " + g.airlines + " is not a group of three letters.";
+				found_err = true;
+			}
+			
+			//The number of spaces 
+			int num_spaces = 0;
+			
+			if(!found_err)
+			for(string::iterator itr = g.airlines.begin(); itr != g.airlines.end(); itr++)
+			{
+				char c = *itr;
+				if(c == ' ')
+				{
+					num_spaces++;
+				}
+				else 
+				{
+					if(c < 'A' || c > 'Z')
+					{
+						msg = "Ramp start airlines string " + g.airlines + " contains non-uppercase letters.";
+						found_err = true;
+					}
+				}
+			}
+
+			//The length of the string
+			int wo_spaces_len = (g.airlines.length() - num_spaces);
+			if(wo_spaces_len % 3 != 0 && !found_err)
+			{
+				msg = string("Ramp start airlines string " + g.airlines + " is not in groups of three letters.");
+				found_err = true;
+			}
+
+			//ABC, num_spaces = 0 = ("ABC".length()/3) - 1
+			//ABC DEF GHI, num_spaces = 2 = "ABCDEFGHI".length()/3 - 1
+			//ABC DEF GHI JKL MNO PQR, num_spaces = 5 = "...".length()/3 - 1 
+			if(num_spaces != (wo_spaces_len/3) - 1 && !found_err)
+			{
+				msg = string("Ramp start airlines string " + g.airlines + " is not spaced correctly.");
+				found_err = true;
+			}
+		}
 	}
 
 	if(gExportTarget == wet_xplane_900)
