@@ -25,6 +25,7 @@
 #define WED_AIRPORT_H
 
 #include "WED_GISComposite.h"
+#include <map>
 
 struct	AptInfo_t;
 
@@ -47,6 +48,23 @@ public:
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
 
+	//WED_Persistant, for Undo/Redo
+	virtual	void 			ReadFrom(IOReader * reader);
+	virtual	void 			WriteTo(IOWriter * writer);
+	//virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
+	//virtual void			ToDB(sqlite3 * db);
+
+	virtual void			AddExtraXML(WED_XMLElement * obj);
+	
+
+	//IOperation
+	/*virtual void		StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts);
+	virtual	void		EndElement(void);
+	virtual	void		PopHandler(void);*/
+
 	virtual const char *	HumanReadableType(void) const { return "Airport"; }
 
 private:
@@ -56,7 +74,7 @@ private:
 	WED_PropBoolText			has_atc;
 	WED_PropStringText			icao;
 	WED_PropIntText				scenery_id;
-
+	map<string,string> meta_data_hashmap;
 };
 
 

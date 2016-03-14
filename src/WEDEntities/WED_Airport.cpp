@@ -25,6 +25,7 @@
 #include "WED_EnumSystem.h"
 #include "AptDefs.h"
 #include "XESConstants.h"
+#include "WED_XMLWriter.h"
 
 DEFINE_PERSISTENT(WED_Airport)
 TRIVIAL_COPY(WED_Airport, WED_GISComposite)
@@ -34,8 +35,34 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
 	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
 	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
-	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8)
+	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8),
+	meta_data_hashmap ()
 {
+	meta_data_hashmap.insert(std::pair<string,string>("name_ru","ROYJNKLKY"));
+	meta_data_hashmap.insert(std::pair<string,string>("name_ch","JEMBLES"));
+	meta_data_hashmap.insert(std::pair<string,string>("ICAO","DNG"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCR"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCS"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCU"));
+	/*meta_data_hashmap.insert(std::pair<string,string>("FAA","BCV"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCW"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCZ"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDC"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDD"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDF"));
+	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDG"));*/
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","HABC"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","HABU"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","HLLQ"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","KBCT"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","KBDE"));
+	/*meta_data_hashmap.insert(std::pair<string,string>("IACO","LEMS"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","LEUL"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","OIBL"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","PABV"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","TXKF"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","UWUB"));
+	meta_data_hashmap.insert(std::pair<string,string>("IACO","YBUD"));*/
 }
 
 WED_Airport::~WED_Airport()
@@ -62,8 +89,6 @@ void		WED_Airport::SetElevation(double x) { elevation = x; }
 void		WED_Airport::SetHasATC(int x) { has_atc= x; }
 void		WED_Airport::SetICAO(const string& x) { icao = x; }
 void		WED_Airport::SetSceneryID(int x) { scenery_id = x; }
-
-
 
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
@@ -97,3 +122,32 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	info.beacon.color_code = apt_beacon_none;
 }
 
+void 			WED_Airport::ReadFrom(IOReader * reader)
+{
+	WED_Thing::ReadFrom(reader);
+}
+
+void 			WED_Airport::WriteTo(IOWriter * writer)
+{
+	WED_Thing::WriteTo(writer);
+}
+
+void			WED_Airport::AddExtraXML(WED_XMLElement * obj)
+{
+	WED_XMLElement * xml = obj->add_sub_element("keys");
+	for(map<string,string>::iterator i = meta_data_hashmap.begin(); i != meta_data_hashmap.end(); ++i)
+	{
+		WED_XMLElement * c = xml->add_sub_element("key");
+		c->add_attr_stl_str(i->first.c_str(), i->first);
+		c->add_attr_stl_str(i->second.c_str(), i->second);
+	}
+}
+
+/*
+void			WED_Airport::FromDB(sqlite3 * db, const map<int,int>& mapping)
+{
+}
+
+void			WED_Airport::ToDB(sqlite3 * db)
+{
+}*/
