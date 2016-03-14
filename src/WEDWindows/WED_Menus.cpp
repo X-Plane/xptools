@@ -77,6 +77,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 9.70",			0,		0,								0,	wed_Export900		},
 {	"X-Plane 10.00",		0,		0,								0,	wed_Export1000		},
 {	"X-Plane 10.21",		0,		0,								0,	wed_Export1021,		},
+{	"X-Plane 10.50",		0,		0,								0,	wed_Export1050,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
@@ -130,7 +131,8 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
-{	"Toggle Previe&w",			0,	0,										0,	wed_TogglePreview	},
+{	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
+{	"Toggle &ATC Data",			0,	0,										0,	wed_ToggleATC		},
 #if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
 #endif

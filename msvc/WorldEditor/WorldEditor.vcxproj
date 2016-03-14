@@ -189,6 +189,7 @@
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_ATCLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_Colors.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_CreateBoxTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_CreateEdgeTool.cpp" />
@@ -436,6 +437,7 @@
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPane.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_ATCLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_Colors.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_CreateBoxTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_CreateEdgeTool.h" />
@@ -485,6 +487,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\AptDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptIO.h" />
     <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h" />
     <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h" />

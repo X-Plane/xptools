@@ -55,6 +55,7 @@ enum {
 	wed_Export900,
 	wed_Export1000,
 	wed_Export1021,
+	wed_Export1050,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
@@ -96,6 +97,7 @@ enum {
 	wed_ToggleLines,
 	wed_ToggleVertices,
 	wed_PickOverlay,
+	wed_ToggleATC,
 //	wed_ToggleOverlay,
 	wed_ToggleWorldMap,
 #if WANT_TERRASEVER	

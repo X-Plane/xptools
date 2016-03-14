@@ -319,7 +319,7 @@ int GUI_GetImageResource(
         ret = 1;
     #endif
 	} else
-		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0, GAMMA_SRGB);
+		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 1, GAMMA_SRGB);
 	GUI_UnloadResource(res);
 	//Because createbitmapfromX now return the channels instead of -1,0,or 1 this is so we do not need to update everything else that calls this.
 	//The GUI does not care about the channels, only if it is real or not
