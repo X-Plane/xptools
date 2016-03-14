@@ -58,11 +58,11 @@ public:
 	
 
 	//IOperation
-	/*virtual void		StartElement(
+	virtual void		StartElement(
 								WED_XMLReader * reader,
 								const XML_Char *	name,
 								const XML_Char **	atts);
-	virtual	void		EndElement(void);
+	/*virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);*/
 
 	virtual const char *	HumanReadableType(void) const { return "Airport"; }
@@ -74,7 +74,10 @@ private:
 	WED_PropBoolText			has_atc;
 	WED_PropStringText			icao;
 	WED_PropIntText				scenery_id;
-	map<string,string> meta_data_hashmap;
+	
+	//A hashmap of meta data. Due to the way it is stored in XML
+	//Keys are not allowed to contain commas
+	map<string,string>			meta_data_hashmap;
 };
 
 

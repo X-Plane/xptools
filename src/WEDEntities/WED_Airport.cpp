@@ -134,12 +134,44 @@ void 			WED_Airport::WriteTo(IOWriter * writer)
 
 void			WED_Airport::AddExtraXML(WED_XMLElement * obj)
 {
-	WED_XMLElement * xml = obj->add_sub_element("keys");
+	WED_XMLElement * xml = obj->add_sub_element("meta_data");
 	for(map<string,string>::iterator i = meta_data_hashmap.begin(); i != meta_data_hashmap.end(); ++i)
 	{
-		WED_XMLElement * c = xml->add_sub_element("key");
-		c->add_attr_stl_str(i->first.c_str(), i->first);
-		c->add_attr_stl_str(i->second.c_str(), i->second);
+		
+		WED_XMLElement * c = xml->add_sub_element("meta_data_entry");
+		
+		//Due to the fact we don't know what meta_data key we're going to have
+		//We have to save it as "pair","FAA,BDL". Sadly, its not a one to one mapping
+		//of Data Structure and Data Format, and is a bit redundant
+		c->add_attr_stl_str("pair", i->first + "," + i->second);
+	}
+}
+
+void			WED_Airport::StartElement(
+								WED_XMLReader * reader,
+								const XML_Char *	name,
+								const XML_Char **	atts)
+{
+	if(strcasecmp(name,"meta_data_entry") == 0)
+	{
+		const XML_Char * entry_value = get_att("pair",atts);
+		if(entry_value != NULL)
+		{
+			//Will be something like "name_es, Talavera la Real Badajoz Airport"
+			const string entry_string = string(entry_value);
+
+			const string key = entry_string.substr( 0, entry_string.find_first_of(','));
+			const string value = entry_string.substr(entry_string.find_first_of(',') + 1);
+			meta_data_hashmap.insert(std::pair<string,string>( key, value));
+		}
+		else
+		{
+			reader->FailWithError("Attribute pair is missing from meta_data_entry element");
+		}
+	}
+	else
+	{
+		WED_GISComposite::StartElement(reader, name, atts);
 	}
 }
 
