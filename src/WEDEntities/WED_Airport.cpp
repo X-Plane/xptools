@@ -22,6 +22,7 @@
  */
 
 #include "WED_Airport.h"
+#include "IODefs.h"
 #include "WED_EnumSystem.h"
 #include "AptDefs.h"
 #include "XESConstants.h"
@@ -125,14 +126,52 @@ void		WED_Airport::Export(AptInfo_t& info) const
 void 			WED_Airport::ReadFrom(IOReader * reader)
 {
 	WED_Thing::ReadFrom(reader);
+	
+	meta_data_hashmap.clear();
+
+	//Loop counter to fill the hashmap back up
+	int i;
+	reader->ReadInt(i);
+	
+	while (i--)
+	{
+		//Read the key string length, then string
+		int key_len;
+		reader->ReadInt(key_len);
+		
+		string key(key_len,'\0');
+		reader->ReadBulk(&(*key.begin()), key_len, false);
+		
+		//Read the value string length, then string
+		int value_len;
+		reader->ReadInt(value_len);
+
+		string val (value_len, '\0');
+		reader->ReadBulk (&(*val.begin()), value_len, false);
+		
+		meta_data_hashmap.insert(meta_data_entry(key,val));
+	}
 }
 
 void 			WED_Airport::WriteTo(IOWriter * writer)
 {
 	WED_Thing::WriteTo(writer);
+	
+	//Write the hashmap size
+	writer->WriteInt(meta_data_hashmap.size());
+	for (map<string,string>::iterator it = meta_data_hashmap.begin(); it != meta_data_hashmap.end(); ++it)
+	{
+		//Write the key string length and c-string
+		writer->WriteInt(it->first.size());
+		writer->WriteBulk(it->first.c_str(), it->first.length(), false);
+
+		//Write the value string length and c-string
+		writer->WriteInt(it->second.size());
+		writer->WriteBulk(it->second.c_str(), it->second.length(), false);
+	}
 }
 
-void			WED_Airport::AddExtraXML(WED_XMLElement * obj)
+void 			WED_Airport::AddExtraXML(WED_XMLElement * obj)
 {
 	WED_XMLElement * xml = obj->add_sub_element("meta_data");
 	for(map<string,string>::iterator i = meta_data_hashmap.begin(); i != meta_data_hashmap.end(); ++i)

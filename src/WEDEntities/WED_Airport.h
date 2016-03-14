@@ -77,7 +77,8 @@ private:
 	
 	//A hashmap of meta data. Due to the way it is stored in XML
 	//Keys are not allowed to contain commas
-	map<string,string>			meta_data_hashmap;
+	std::map<string,string>		meta_data_hashmap;
+	typedef std::pair<string,string> meta_data_entry;
 };
 
 
