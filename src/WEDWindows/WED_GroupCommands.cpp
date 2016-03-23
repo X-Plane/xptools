@@ -50,6 +50,7 @@
 #include "WED_TaxiRouteNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
+#include <iterator>
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -999,6 +1000,49 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 		if (keeper) sel->Insert(keeper);
 	}
 
+	op->CommitOperation();
+}
+
+int		WED_CanSelectConnected(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	return 1;
+}
+
+void	WED_DoSelectConnected(IResolver * resolver)
+{
+	vector<WED_Thing *>	things;
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelectionOr(Iterate_CollectThings,&things);
+	if (things.empty()) return;
+	op->StartOperation("Select Connected");
+	set<WED_Thing *>	visited, to_visit;
+	std::copy(things.begin(),things.end(), inserter(to_visit,to_visit.end()));
+	
+	while(!to_visit.empty())
+	{
+		WED_Thing * i = *to_visit.begin();
+		to_visit.erase(to_visit.begin());
+		visited.insert(i);
+		
+		int s = i->CountSources();
+		for(int ss = 0; ss < s; ++ss)
+		{
+			WED_Thing * src = i->GetNthSource(ss);
+			if(visited.count(src) == 0)
+				to_visit.insert(src);
+		}
+		set<WED_Thing *>	viewers;
+		i->GetAllViewers(viewers);
+		set_difference(viewers.begin(), viewers.end(), visited.begin(), visited.end(), inserter(to_visit, to_visit.end()));
+	}
+	
+	for(set<WED_Thing *>::iterator v = visited.begin(); v != visited.end(); ++v)
+	{
+		sel->Insert(*v);
+	}
 	op->CommitOperation();
 }
 

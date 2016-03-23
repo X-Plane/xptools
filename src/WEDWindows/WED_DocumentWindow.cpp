@@ -387,6 +387,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectChild:	WED_DoSelectChildren(mDocument);	return 1;
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
+	case wed_SelectConnected:WED_DoSelectConnected(mDocument);	return 1;
 
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:	if(!WED_DoSelectZeroLength(mDocument))		DoUserAlert("Your project has no zero-length ATC routing lines.");	return 1;
@@ -491,6 +492,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectChild:	return WED_CanSelectChildren(mDocument);
 	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
+	case wed_SelectConnected:	return WED_CanSelectConnected(mDocument);
 
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:
