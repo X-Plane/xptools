@@ -36,6 +36,11 @@
 		
 **		can't duplicate roads
  
+ BUGS:
+		option-split won't split beziers?!
+		can't pull out bezier handles as needed
+		cmd-E won't split edgs?
+ 
 		validate crossing is probably borked
  
 */
