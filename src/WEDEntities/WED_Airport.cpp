@@ -28,8 +28,36 @@
 #include "XESConstants.h"
 #include "WED_XMLWriter.h"
 
+#if DEV
+#include <random>
+#include <iostream>
+#endif
+
 DEFINE_PERSISTENT(WED_Airport)
 TRIVIAL_COPY(WED_Airport, WED_GISComposite)
+
+
+enum wed_airport_props
+{
+	airport_prop_airport_type,
+	airport_prop_field_elevation,
+	airport_prop_has_atc,
+	airport_prop_icao_id,
+	airport_prop_scenery_id,
+	airport_prop_meta_data, //For our c_str purposes, this is slot 5. For the properties purposes
+							//Meta Data appears at the end
+	airport_prop_count
+};
+
+const char * airport_props_strs[airport_prop_count] =
+{
+	"Type",			
+	"Field Elevation",
+	"Has ATC",
+	"ICAO Identifier",
+	"Scenery ID",
+	"Meta Data"
+};
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
@@ -39,31 +67,6 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8),
 	meta_data_hashmap ()
 {
-	meta_data_hashmap.insert(std::pair<string,string>("name_ru","ROYJNKLKY"));
-	meta_data_hashmap.insert(std::pair<string,string>("name_ch","JEMBLES"));
-	meta_data_hashmap.insert(std::pair<string,string>("ICAO","DNG"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCR"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCS"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCU"));
-	/*meta_data_hashmap.insert(std::pair<string,string>("FAA","BCV"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCW"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BCZ"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDC"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDD"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDF"));
-	meta_data_hashmap.insert(std::pair<string,string>("FAA","BDG"));*/
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","HABC"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","HABU"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","HLLQ"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","KBCT"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","KBDE"));
-	/*meta_data_hashmap.insert(std::pair<string,string>("IACO","LEMS"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","LEUL"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","OIBL"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","PABV"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","TXKF"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","UWUB"));
-	meta_data_hashmap.insert(std::pair<string,string>("IACO","YBUD"));*/
 }
 
 WED_Airport::~WED_Airport()
@@ -123,9 +126,109 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	info.beacon.color_code = apt_beacon_none;
 }
 
+// IPropertyObject
+int			WED_Airport::FindProperty(const char * in_prop) const
+{
+	//Test if the property name is one of the property strings
+	if (strcmp(in_prop, airport_props_strs[airport_prop_meta_data])==0)
+	{
+		return WED_Airport::CountProperties() - 1;
+	}
+	else
+	{
+		//If it wasn't found before, try it's parent, WED_GISComposite.
+		return WED_Airport::WED_GISComposite::FindProperty(in_prop);
+	}
+}
+
+int			WED_Airport::CountProperties(void) const
+{
+#if DEV && 0
+	std::cout << "Number of properties" << endl;
+	std::cout << WED_GISComposite::CountProperties() + 1 << endl
+	//+1 for the 1 synthetic value
+#endif
+	return WED_GISComposite::CountProperties() + 1;
+}
+
+void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+#if 0
+	cout << "GetNthPropertyInfo:" << n << endl;
+#endif
+	//Meta Data is the last slot
+	if (n == WED_Airport::CountProperties() - 1)
+	{
+		info.can_edit = true;
+		info.prop_name = airport_props_strs[airport_prop_meta_data];
+		info.prop_kind = prop_String;
+		info.synthetic = true;
+	}
+	else
+	{
+		WED_GISComposite::GetNthPropertyInfo(n, info);
+	}
+}
+
+//WED_Airport contains no WED_PropItems that requires it
+void		WED_Airport::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_GISComposite::GetNthPropertyDict(n, dict);
+}
+
+void		WED_Airport::GetNthPropertyDictItem(int n, int e, string& item) const
+{
+	WED_GISComposite::GetNthPropertyDictItem(n, e, item);
+}
+
+void		WED_Airport::GetNthProperty(int n, PropertyVal_t& val) const
+{
+#if 0
+	cout << "GetNthProperty:" << n << endl;
+#endif
+	//Meta Data is the last slot
+	if (n == WED_Airport::CountProperties() - 1)
+	{
+		for(map<string,string>::const_iterator itr = meta_data_hashmap.begin(); itr != meta_data_hashmap.end(); ++itr)
+		{
+#if DEV
+			cout << val.string_val << endl;
+			val.string_val += itr->first + ", " + itr->second + "|";
+			cout << val.string_val << endl;
+#endif
+		}
+	}
+	else
+	{
+		WED_GISComposite::GetNthProperty(n, val);
+	}
+}
+
+void		WED_Airport::SetNthProperty(int n, const PropertyVal_t& val)
+{
+	cout << "SetNthProperty: " << n << endl;
+	//This SetNthProperty is just asking about wed_airport_props
+	if(n == WED_Airport::CountProperties() - 1)
+	{
+#if DEV
+		char rand_key[12];
+		itoa(rand(),rand_key,10);
+
+		char rand_val[12];
+		itoa(rand(),rand_val,10);
+		//For now, whenever you try and change it you insert random_int, val.string_val
+		meta_data_hashmap.insert(meta_data_entry(rand_key, rand_val));
+#endif
+	}
+	else
+	{
+		WED_GISComposite::SetNthProperty(n, val);
+	}
+}
+
 void 			WED_Airport::ReadFrom(IOReader * reader)
 {
-	WED_Thing::ReadFrom(reader);
+	WED_GISComposite::ReadFrom(reader);
 	
 	meta_data_hashmap.clear();
 
@@ -173,6 +276,8 @@ void 			WED_Airport::WriteTo(IOWriter * writer)
 
 void 			WED_Airport::AddExtraXML(WED_XMLElement * obj)
 {
+	WED_GISComposite::AddExtraXML(obj);
+
 	WED_XMLElement * xml = obj->add_sub_element("meta_data");
 	for(map<string,string>::iterator i = meta_data_hashmap.begin(); i != meta_data_hashmap.end(); ++i)
 	{
@@ -191,6 +296,7 @@ void			WED_Airport::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
+	WED_GISComposite::StartElement(reader, name, atts);
 	if(strcasecmp(name,"meta_data_entry") == 0)
 	{
 		const XML_Char * entry_value = get_att("pair",atts);

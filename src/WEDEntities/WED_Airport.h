@@ -48,15 +48,25 @@ public:
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
 
+	// IPropertyObject
+	int			FindProperty(const char * in_prop) const;
+	int			CountProperties(void) const;
+	void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
+	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	void		GetNthPropertyDictItem(int n, int e, string& item) const;
+	
+	void		GetNthProperty(int n, PropertyVal_t& val) const;
+	void		SetNthProperty(int n, const PropertyVal_t& val);
+	
 	//WED_Persistant, for Undo/Redo
 	virtual	void 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
-	//virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
-	//virtual void			ToDB(sqlite3 * db);
+	/*virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
+	virtual void			ToDB(sqlite3 * db);*/
 
 	virtual void			AddExtraXML(WED_XMLElement * obj);
 	
-
 	//IOperation
 	virtual void		StartElement(
 								WED_XMLReader * reader,
