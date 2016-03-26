@@ -36,14 +36,9 @@
 DEFINE_PERSISTENT(WED_Airport)
 TRIVIAL_COPY(WED_Airport, WED_GISComposite)
 
-
+//Our enum of fake airport properties
 enum wed_airport_props
 {
-	airport_prop_airport_type,
-	airport_prop_field_elevation,
-	airport_prop_has_atc,
-	airport_prop_icao_id,
-	airport_prop_scenery_id,
 	airport_prop_meta_data, //For our c_str purposes, this is slot 5. For the properties purposes
 							//Meta Data appears at the end
 	airport_prop_count
@@ -51,11 +46,6 @@ enum wed_airport_props
 
 const char * airport_props_strs[airport_prop_count] =
 {
-	"Type",			
-	"Field Elevation",
-	"Has ATC",
-	"ICAO Identifier",
-	"Scenery ID",
 	"Meta Data"
 };
 
@@ -210,12 +200,14 @@ void		WED_Airport::SetNthProperty(int n, const PropertyVal_t& val)
 	//This SetNthProperty is just asking about wed_airport_props
 	if(n == WED_Airport::CountProperties() - 1)
 	{
+		WED_Thing::StateChanged();
 #if DEV
 		char rand_key[12];
 		itoa(rand(),rand_key,10);
 
 		char rand_val[12];
 		itoa(rand(),rand_val,10);
+		
 		//For now, whenever you try and change it you insert random_int, val.string_val
 		meta_data_hashmap.insert(meta_data_entry(rand_key, rand_val));
 #endif
