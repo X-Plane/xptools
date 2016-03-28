@@ -397,6 +397,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				outApts.back().gates.back().type = atc_ramp_misc;
 				outApts.back().gates.back().width = atc_width_F;
 				outApts.back().gates.back().equipment = atc_traffic_all;
+				outApts.back().gates.back().ramp_op_type = ramp_operation_none;
+
 			break;
 		case apt_beacon:
 			if (TextScanner_FormatScan(s, "iddiT|",
@@ -642,6 +644,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 					gate.equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
 					gate.location = POINT2(p1x, p1y);
+					gate.ramp_op_type = ramp_operation_none;
 					outApts.back().gates.push_back(gate);
 				}
 			}
