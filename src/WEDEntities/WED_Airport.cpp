@@ -36,18 +36,39 @@
 DEFINE_PERSISTENT(WED_Airport)
 TRIVIAL_COPY(WED_Airport, WED_GISComposite)
 
-//Our enum of fake airport properties
-enum wed_airport_props
-{
-	airport_prop_meta_data, //For our c_str purposes, this is slot 5. For the properties purposes
-							//Meta Data appears at the end
-	airport_prop_count
-};
+/*
+Property number space (where each NS_ starts from 0)
+- NS_ALL
+  [0] Name
+R [1] Class
+E [2] Locked
+A [3] Hidden
+L   - NS_AIRPORT
+-	  [4-8] Type, Field Elevation, Has ATC, ICAO Id, Scenery ID
+-		- NS_META_DATA
+F		  [9] Meta Data Title row (WED_Airport last_index + 1 )
+A		- NS_META_DATA_ROWS
+K			[n] Meta Data Rows
+E
+-
+*/
 
-const char * airport_props_strs[airport_prop_count] =
-{
-	"Meta Data"
-};
+//NS_AREA where it starts on the number line
+#define NS_ALL 0
+
+//Just WED_Airport and its GISComposite Inherited Values
+//No "Name, Class, Locked, Hidden"
+#define NS_AIRPORT 4 
+
+#define NS_META_DATA (WED_GISComposite::CountProperties())
+#define NS_META_DATA_ROWS NS_META_DATA + 1
+
+#define NUM_REAL (WED_GISComposite::CountProperties())
+#define NUM_FAKE (meta_data_vec_map.size())
+
+//Due to the way different systems
+//this method translates an a given index into something for the meta_data_vec_map to actually use.
+//It takes in an index and the number space it is coming from and returns an int for the meta_data_vec_map.
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
@@ -55,8 +76,12 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
 	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
 	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8),
-	meta_data_hashmap ()
+	meta_data_vec_map ()
 {
+	meta_data_vec_map.push_back(meta_data_entry("Meta Data",""));
+	/*meta_data_vec_map.push_back(meta_data_entry("ICAO","KABC"));
+	meta_data_vec_map.push_back(meta_data_entry("FAA","ABC"));
+	meta_data_vec_map.push_back(meta_data_entry("CAA","DEF"));*/
 }
 
 WED_Airport::~WED_Airport()
@@ -117,40 +142,46 @@ void		WED_Airport::Export(AptInfo_t& info) const
 }
 
 // IPropertyObject
+//Returns in NS_ALL space
 int			WED_Airport::FindProperty(const char * in_prop) const
 {
 	//Test if the property name is one of the property strings
-	if (strcmp(in_prop, airport_props_strs[airport_prop_meta_data])==0)
+	for(int i = 0; i < meta_data_vec_map.size(); ++i)
 	{
-		return WED_Airport::CountProperties() - 1;
+		//i is in NS_META_DATA space
+		if(strcmp(in_prop, meta_data_vec_map.at(i).first.c_str())==0)
+		{
+			//NS_META_DATA + the offset
+			return NS_META_DATA + i;
+		}
 	}
-	else
-	{
-		//If it wasn't found before, try it's parent, WED_GISComposite.
-		return WED_Airport::WED_GISComposite::FindProperty(in_prop);
-	}
+	
+	//If it wasn't found before, try it's parent, WED_GISComposite.
+	return WED_GISComposite::FindProperty(in_prop);
 }
 
 int			WED_Airport::CountProperties(void) const
 {
 #if DEV && 0
-	std::cout << "Number of properties" << endl;
-	std::cout << WED_GISComposite::CountProperties() + 1 << endl
-	//+1 for the 1 synthetic value
+	std::cout << "Number of properties: " << NS_ALL << endl;
 #endif
-	return WED_GISComposite::CountProperties() + 1;
+
+	return NUM_REAL + NUM_FAKE;
 }
 
 void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
-#if 0
+#if DEV && 0
 	cout << "GetNthPropertyInfo:" << n << endl;
 #endif
-	//Meta Data is the last slot
-	if (n == WED_Airport::CountProperties() - 1)
+
+	//n is of NS_ALL
+	if (n >= NS_META_DATA)
 	{
+		//Translate NS_ALL to NS_META_DATA
+		int index = n - NS_META_DATA;
 		info.can_edit = true;
-		info.prop_name = airport_props_strs[airport_prop_meta_data];
+		info.prop_name = meta_data_vec_map.at(index).first;
 		info.prop_kind = prop_String;
 		info.synthetic = true;
 	}
@@ -173,21 +204,23 @@ void		WED_Airport::GetNthPropertyDictItem(int n, int e, string& item) const
 
 void		WED_Airport::GetNthProperty(int n, PropertyVal_t& val) const
 {
-#if 0
-	cout << "GetNthProperty:" << n << endl;
+#if DEV && 0
+	cout << "GetNthProperty: " << n << endl;
 #endif
 	//Meta Data is the last slot
-	if (n == WED_Airport::CountProperties() - 1)
+	if (n >= NS_META_DATA)
 	{
-		for(map<string,string>::const_iterator itr = meta_data_hashmap.begin(); itr != meta_data_hashmap.end(); ++itr)
-		{
-#if DEV
-			cout << val.string_val << endl;
-			val.string_val += itr->first + ", " + itr->second + "|";
-			cout << val.string_val << endl;
-#endif
-		}
+		int index = n - NS_META_DATA;
+		val.string_val = meta_data_vec_map.at(index).second;
 	}
+#if DEV && 0
+	//for(vector<meta_data_entry>::const_iterator itr = meta_data_vec_map.begin(); itr != meta_data_vec_map.end(); ++itr)
+	//{
+		cout << val.string_val << endl;
+		val.string_val += /*itr->first + ", " + */itr->second;// + "|";
+		cout << val.string_val << endl;
+	//}
+#endif
 	else
 	{
 		WED_GISComposite::GetNthProperty(n, val);
@@ -196,20 +229,20 @@ void		WED_Airport::GetNthProperty(int n, PropertyVal_t& val) const
 
 void		WED_Airport::SetNthProperty(int n, const PropertyVal_t& val)
 {
-	cout << "SetNthProperty: " << n << endl;
+	//cout << "SetNthProperty: " << n << endl;
 	//This SetNthProperty is just asking about wed_airport_props
-	if(n == WED_Airport::CountProperties() - 1)
+	if(n >= NS_META_DATA)
 	{
 		WED_Thing::StateChanged();
 #if DEV
 		char rand_key[12];
 		itoa(rand(),rand_key,10);
 
-		char rand_val[12];
-		itoa(rand(),rand_val,10);
+		//char rand_val[12];
+		//itoa(rand(),rand_val,10);
 		
 		//For now, whenever you try and change it you insert random_int, val.string_val
-		meta_data_hashmap.insert(meta_data_entry(rand_key, rand_val));
+		meta_data_vec_map.push_back(meta_data_entry(rand_key, val.string_val));
 #endif
 	}
 	else
@@ -222,7 +255,7 @@ void 			WED_Airport::ReadFrom(IOReader * reader)
 {
 	WED_GISComposite::ReadFrom(reader);
 	
-	meta_data_hashmap.clear();
+	meta_data_vec_map.clear();
 
 	//Loop counter to fill the hashmap back up
 	int i;
@@ -244,7 +277,7 @@ void 			WED_Airport::ReadFrom(IOReader * reader)
 		string val (value_len, '\0');
 		reader->ReadBulk (&(*val.begin()), value_len, false);
 		
-		meta_data_hashmap.insert(meta_data_entry(key,val));
+		meta_data_vec_map.push_back(meta_data_entry(key,val));
 	}
 }
 
@@ -253,8 +286,8 @@ void 			WED_Airport::WriteTo(IOWriter * writer)
 	WED_Thing::WriteTo(writer);
 	
 	//Write the hashmap size
-	writer->WriteInt(meta_data_hashmap.size());
-	for (map<string,string>::iterator it = meta_data_hashmap.begin(); it != meta_data_hashmap.end(); ++it)
+	writer->WriteInt(meta_data_vec_map.size());
+	for (vector<meta_data_entry>::iterator it = meta_data_vec_map.begin(); it != meta_data_vec_map.end(); ++it)
 	{
 		//Write the key string length and c-string
 		writer->WriteInt(it->first.size());
@@ -271,7 +304,7 @@ void 			WED_Airport::AddExtraXML(WED_XMLElement * obj)
 	WED_GISComposite::AddExtraXML(obj);
 
 	WED_XMLElement * xml = obj->add_sub_element("meta_data");
-	for(map<string,string>::iterator i = meta_data_hashmap.begin(); i != meta_data_hashmap.end(); ++i)
+	for(vector<meta_data_entry>::iterator i = meta_data_vec_map.begin(); i != meta_data_vec_map.end(); ++i)
 	{
 		
 		WED_XMLElement * c = xml->add_sub_element("meta_data_entry");
@@ -299,7 +332,7 @@ void			WED_Airport::StartElement(
 
 			const string key = entry_string.substr( 0, entry_string.find_first_of(','));
 			const string value = entry_string.substr(entry_string.find_first_of(',') + 1);
-			meta_data_hashmap.insert(std::pair<string,string>( key, value));
+			meta_data_vec_map.push_back(meta_data_entry(key, value));
 		}
 		else
 		{

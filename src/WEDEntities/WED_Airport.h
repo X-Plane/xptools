@@ -25,7 +25,7 @@
 #define WED_AIRPORT_H
 
 #include "WED_GISComposite.h"
-#include <map>
+#include <vector>
 
 struct	AptInfo_t;
 
@@ -65,6 +65,7 @@ public:
 	/*virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
 	virtual void			ToDB(sqlite3 * db);*/
 
+	//WED_Thing
 	virtual void			AddExtraXML(WED_XMLElement * obj);
 	
 	//IOperation
@@ -85,10 +86,12 @@ private:
 	WED_PropStringText			icao;
 	WED_PropIntText				scenery_id;
 	
-	//A hashmap of meta data. Due to the way it is stored in XML
-	//Keys are not allowed to contain commas
-	std::map<string,string>		meta_data_hashmap;
 	typedef std::pair<string,string> meta_data_entry;
+
+	//A vector of key value pairs of meta data, chosen due to GetNthProperty being called the most.
+	//Due to the way it is stored in XML, keys are not allowed to contain commas
+	vector<meta_data_entry>	meta_data_vec_map;
+	
 };
 
 
