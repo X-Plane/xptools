@@ -136,6 +136,21 @@ enum {
 	// 1000 commands
 	attr_Draped,
 	attr_NoDraped,
+	/* LIGHT_SPILL_CUSTOM */
+	/* ATTR_shadow_blend */
+	/* ATTR_no_shadow */
+	/* ATTR_shadow */
+
+	attr_Manip_Drag_Axis_Pix,
+	
+	// 1050 commands
+	attr_Manip_Command_Knob,
+	attr_Manip_Command_Switch_Up_Down,
+	attr_Manip_Command_Switch_Left_Right,
+	attr_Manip_Axis_Knob,
+	attr_Manip_Axis_Switch_Up_Down,
+	attr_Manip_Axis_Switch_Left_Right,
+	
 	attr_Max
 };
 
@@ -212,6 +227,7 @@ struct XObjManip8 {
 	float					v2_min, v2_max;
 	string					cursor;
 	string					tooltip;
+	float					mouse_wheel_delta;
 };
 
 struct	XObjCmd8 {
