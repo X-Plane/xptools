@@ -54,6 +54,9 @@ void	WED_DoMakeNewATCTimeRule(IResolver * inResolver);
 int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name);
 void	WED_DoSetCurrentAirport(IResolver * inResolver);
 
+bool	WED_CanAddMetaData(IResolver * inResolver);
+void	WED_DoAddMetaData(IResolver * inResolver, const string& key);
+
 int		WED_CanReorder(IResolver * resolver, int direction, int to_end);
 void	WED_DoReorder (IResolver * resolver, int direction, int to_end);
 

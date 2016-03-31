@@ -357,7 +357,7 @@ int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name)
 	if (want_sel == NULL) return 0;
 
 	WED_Airport * now_sel = WED_GetCurrentAirport(inResolver);
-
+	
 	string n;
 	want_sel->GetName(n);
 	if (want_sel != now_sel)
@@ -368,6 +368,50 @@ int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name)
 	return want_sel != now_sel;
 }
 
+bool	WED_CanAddMetaData(IResolver * inResolver)
+{
+	ISelection * sel = WED_GetSelect(inResolver);
+	if (sel->GetSelectionCount() != 1) return 0;
+
+	WED_Airport * sel_airport = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
+	if (sel_airport == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+void WED_DoAddMetaData(IResolver * inResolver, const string& key)
+{
+#if DEV && 0
+	//char rand_key[12];
+	//itoa(rand(),rand_key,10);
+	
+	char rand_val[12];
+	itoa(rand(),rand_val,10);
+	//For now, whenever you try and change it you insert random_int, val.string_val
+	//DoUserAlert(key.c_str());
+	//DoUserAlert(rand_val);
+	ISelection * sel = WED_GetSelect(inResolver);
+	if (sel->GetSelectionCount() != 1) return;
+
+	WED_Airport * want_sel = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
+	if (want_sel == NULL) return;
+
+	want_sel->AddMetaDataKey(key, rand_val);
+#endif
+
+	ISelection * sel = WED_GetSelect(inResolver);
+	if (sel->GetSelectionCount() != 1) return;
+
+	WED_Airport * want_sel = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
+	if (want_sel == NULL) return;
+
+	want_sel->AddMetaDataKey(key, "");
+}
 
 int		WED_CanMakeNewATCFreq(IResolver * inResolver)
 {

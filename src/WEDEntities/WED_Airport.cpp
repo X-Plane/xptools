@@ -45,12 +45,8 @@ E [2] Locked
 A [3] Hidden
 L   - NS_AIRPORT
 -	  [4-8] Type, Field Elevation, Has ATC, ICAO Id, Scenery ID
--		- NS_META_DATA
-F		  [9] Meta Data Title row (WED_Airport last_index + 1 )
-A		- NS_META_DATA_ROWS
-K			[n] Meta Data Rows
-E
--
+	- NS_META_DATA
+	  [9-n] Meta Data Rows
 */
 
 //NS_AREA where it starts on the number line
@@ -61,14 +57,9 @@ E
 #define NS_AIRPORT 4 
 
 #define NS_META_DATA (WED_GISComposite::CountProperties())
-#define NS_META_DATA_ROWS NS_META_DATA + 1
 
 #define NUM_REAL (WED_GISComposite::CountProperties())
 #define NUM_FAKE (meta_data_vec_map.size())
-
-//Due to the way different systems
-//this method translates an a given index into something for the meta_data_vec_map to actually use.
-//It takes in an index and the number space it is coming from and returns an int for the meta_data_vec_map.
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
@@ -78,7 +69,7 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8),
 	meta_data_vec_map ()
 {
-	meta_data_vec_map.push_back(meta_data_entry("Meta Data",""));
+	/*meta_data_vec_map.push_back(meta_data_entry("Meta Data",""));*/
 	/*meta_data_vec_map.push_back(meta_data_entry("ICAO","KABC"));
 	meta_data_vec_map.push_back(meta_data_entry("FAA","ABC"));
 	meta_data_vec_map.push_back(meta_data_entry("CAA","DEF"));*/
@@ -108,6 +99,32 @@ void		WED_Airport::SetElevation(double x) { elevation = x; }
 void		WED_Airport::SetHasATC(int x) { has_atc= x; }
 void		WED_Airport::SetICAO(const string& x) { icao = x; }
 void		WED_Airport::SetSceneryID(int x) { scenery_id = x; }
+
+//Adds a Meta Data Key. TODO - In the case of a collision... what should happen?
+void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
+{
+	WED_Thing * thing = NULL;
+	this->StartOperation(string("Add Meta Data Key " + key).c_str());
+
+	StateChanged();
+
+	meta_data_vec_map.push_back(meta_data_entry(key,value));
+
+	this->CommitOperation();
+	return;
+}
+
+//Edits a given Meta Data key's value
+void		WED_Airport::EditMetaDataKey(const string& key, const string& value)
+{
+//	StateChanged();
+}
+
+//Removes a key/value pair
+void		WED_Airport::RemoveMetaDataKey(const string& key)
+{
+//	StateChanged();
+}
 
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
@@ -180,9 +197,10 @@ void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		//Translate NS_ALL to NS_META_DATA
 		int index = n - NS_META_DATA;
+
 		info.can_edit = true;
-		info.prop_name = meta_data_vec_map.at(index).first;
 		info.prop_kind = prop_String;
+		info.prop_name = meta_data_vec_map.at(index).first;
 		info.synthetic = true;
 	}
 	else
@@ -230,20 +248,12 @@ void		WED_Airport::GetNthProperty(int n, PropertyVal_t& val) const
 void		WED_Airport::SetNthProperty(int n, const PropertyVal_t& val)
 {
 	//cout << "SetNthProperty: " << n << endl;
-	//This SetNthProperty is just asking about wed_airport_props
 	if(n >= NS_META_DATA)
 	{
 		WED_Thing::StateChanged();
-#if DEV
-		char rand_key[12];
-		itoa(rand(),rand_key,10);
 
-		//char rand_val[12];
-		//itoa(rand(),rand_val,10);
-		
-		//For now, whenever you try and change it you insert random_int, val.string_val
-		meta_data_vec_map.push_back(meta_data_entry(rand_key, val.string_val));
-#endif
+		int index = n - NS_META_DATA;
+		meta_data_vec_map.at(index).second = val.string_val;
 	}
 	else
 	{

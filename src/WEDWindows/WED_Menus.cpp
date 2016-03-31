@@ -194,10 +194,20 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Create Runway Use",		0,		0,										0, wed_AddATCRunwayUse },
 {	"Create Runway Time Rule",	0,		0,										0, wed_AddATCTimeRule },
 {	"Create Runway Wind rule",	0,		0,										0, wed_AddATCWindRule },
-
 #endif
+{	"Add &Meta Data",			0,		0,										0, 0 },
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	NULL,						0,		0,										0, 0,				}
+};
+
+static const GUI_MenuItem_t kAddMetaDataMenu[] = {
+{	"FAA  Code",		0,	0,	0, wed_AddMetaDataFAA		},
+{	"IATA Code",		0,	0,	0, wed_AddMetaDataIATA		},
+{	"ICAO Code",		0,	0,	0, wed_AddMetaDataICAO		},
+{	"City/Locality",	0,	0,	0, wed_AddMetaDataCity		},
+{	"State/Province",	0,	0,	0, wed_AddMetaDataState		},
+{	"Country",			0,	0,	0, wed_AddMetaDataCountry	},
+{	NULL,				0,	0,	0, 0						}
 };
 
 static const GUI_MenuItem_t kHelpMenu[] = {
@@ -254,7 +264,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
-
+	
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
 		
@@ -265,8 +275,11 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	airport_menu = inApp->CreateMenu(
-		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);
-
+		"&Airport", kAirportMenu, inApp->GetMenuBar(), 0);
+	
+	GUI_Menu	airport_add_meta_data_menu = inApp->CreateMenu(
+		"Add &Meta Data", kAddMetaDataMenu, airport_menu, 6);//This hardcoded 6 is a reference to
+															 //kAirportMenu[6]
 	GUI_Menu	help_menu = inApp->CreateMenu(
 		"&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 }

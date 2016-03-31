@@ -45,6 +45,16 @@ public:
 	void		SetHasATC(int has_atc);
 	void		SetICAO(const string& icao);
 
+	//Meta Data API
+	//Adds a Meta Data Key. In the case of a collision... what should happen?
+	void		AddMetaDataKey(const string& key, const string& value);
+	
+	//Edits a given Meta Data key's value
+	void		EditMetaDataKey(const string& key, const string& value);
+	
+	//Removes a key/value pair
+	void		RemoveMetaDataKey(const string& key);
+	
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
 
