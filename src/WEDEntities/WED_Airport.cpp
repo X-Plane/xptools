@@ -108,7 +108,33 @@ void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 
 	StateChanged();
 
-	meta_data_vec_map.push_back(meta_data_entry(key,value));
+	//Insert in alphabetical order
+	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
+	
+	if(meta_data_vec_map.size() == 0)//Case 1: This is first element
+	{
+		meta_data_vec_map.push_back(meta_data_entry(key,value));
+	}
+	else if(key < meta_data_vec_map.begin()->first)//Case 2: Key is above entry[1]
+	{
+		meta_data_vec_map.insert(itr,meta_data_entry(key,value));
+	}
+	else 
+	{
+		//Move to the iterator to position
+		while(key > itr->first)
+		{
+			itr++;
+			
+			//Case 4: We're supposed to add at the very end
+			if(itr == meta_data_vec_map.end())
+			{
+				break;
+			}
+		}
+		//Case 3: Insert inbetween two places
+		meta_data_vec_map.insert(itr,meta_data_entry(key,value));
+	}
 
 	this->CommitOperation();
 	return;
