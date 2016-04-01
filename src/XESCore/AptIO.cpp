@@ -350,7 +350,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				ok = "Illegal old runway";
 				center_loc = POINT2(p1x, p1y);
 			if (sscanf(dis.c_str(),"%d.%d", &rwy->disp1_ft,&rwy->disp2_ft) != 2)
-				ok = string("Illegal displaced threshholds in old runway") + dis;
+				ok = string("Illegal displaced thresholds in old runway") + dis;
 			if (sscanf(blas.c_str(),"%d.%d", &rwy->blast1_ft,&rwy->blast2_ft) != 2)
 				ok = string("Illegal blast-pads in old runway: ") + blas;
 

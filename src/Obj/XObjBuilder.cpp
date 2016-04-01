@@ -121,6 +121,9 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 {
 	if (attr != rhs.attr) return false;
 	switch(attr) {
+	case attr_Manip_Noop:
+		return	data.dataref1 == rhs.data.dataref1 &&
+				data.tooltip == rhs.data.tooltip;
 	case attr_Manip_Drag_2d:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.dataref2 == rhs.data.dataref2 &&
@@ -133,6 +136,7 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.cursor == rhs.data.cursor &&
 				data.tooltip == rhs.data.tooltip;
 	case attr_Manip_Drag_Axis:
+	case attr_Manip_Drag_Axis_Pix:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.axis[0] == rhs.data.axis[0] &&
 				data.axis[1] == rhs.data.axis[1] &&
@@ -140,7 +144,8 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.v1_min == rhs.data.v1_min &&
 				data.v1_max == rhs.data.v1_max &&
 				data.cursor == rhs.data.cursor &&
-				data.tooltip == rhs.data.tooltip;
+				data.tooltip == rhs.data.tooltip &&
+				data.mouse_wheel_delta == rhs.data.mouse_wheel_delta;
 	case attr_Manip_Command:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.cursor == rhs.data.cursor &&
@@ -159,12 +164,14 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.v1_min == rhs.data.v1_min &&
 				data.v1_max == rhs.data.v1_max &&
 				data.cursor == rhs.data.cursor &&
-				data.tooltip == rhs.data.tooltip;
+				data.tooltip == rhs.data.tooltip &&
+				data.mouse_wheel_delta == rhs.data.mouse_wheel_delta;
 	case attr_Manip_Radio:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.v1_max == rhs.data.v1_max &&
 				data.cursor == rhs.data.cursor &&
-				data.tooltip == rhs.data.tooltip;
+				data.tooltip == rhs.data.tooltip &&
+				data.mouse_wheel_delta == rhs.data.mouse_wheel_delta;				
 	case attr_Manip_Delta:
 	case attr_Manip_Wrap:
 		return	data.dataref1 == rhs.data.dataref1 &&
@@ -172,6 +179,24 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.v1_max == rhs.data.v1_max &&
 				data.v2_min == rhs.data.v2_min &&
 				data.v2_max == rhs.data.v2_max &&
+				data.cursor == rhs.data.cursor &&
+				data.tooltip == rhs.data.tooltip &&
+				data.mouse_wheel_delta == rhs.data.mouse_wheel_delta;
+	case attr_Manip_Command_Knob:
+	case attr_Manip_Command_Switch_Left_Right:
+	case attr_Manip_Command_Switch_Up_Down:
+		return	data.dataref1 == rhs.data.dataref1 &&
+				data.dataref2 == rhs.data.dataref2 &&
+				data.cursor == rhs.data.cursor &&
+				data.tooltip == rhs.data.tooltip;
+	case attr_Manip_Axis_Knob:
+	case attr_Manip_Axis_Switch_Left_Right:
+	case attr_Manip_Axis_Switch_Up_Down:
+		return	data.dataref1 == rhs.data.dataref1 &&
+				data.axis[0] == rhs.data.axis[0] &&
+				data.axis[1] == rhs.data.axis[1] &&
+				data.v1_min == rhs.data.v1_min &&
+				data.v1_max == rhs.data.v1_max &&
 				data.cursor == rhs.data.cursor &&
 				data.tooltip == rhs.data.tooltip;
 	default:
@@ -504,7 +529,7 @@ void	XObjBuilder::AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v
 		xyz1[0] == 0.0 && xyz2[0] == 0.0 &&
 		xyz1[1] == 0.0 && xyz2[1] == 0.0 &&
 		xyz1[2] == 0.0 && xyz2[2] == 0.0) return;
-	AccumTranslateBegin(ref);
+	AccumTranslateBegin(ref,0);
 	AccumTranslateKey(v1, xyz1);
 	AccumTranslateKey(v2, xyz2);
 	AccumTranslateEnd();
@@ -512,17 +537,18 @@ void	XObjBuilder::AccumTranslate(float xyz1[3], float xyz2[3], float v1, float v
 
 void	XObjBuilder::AccumRotate(float axis[3], float r1, float r2, float v1, float v2, const char * ref)
 {
-	AccumRotateBegin(axis, ref);
+	AccumRotateBegin(axis, ref,0);
 	AccumRotateKey(v1, r1);
 	AccumRotateKey(v2, r2);
 	AccumRotateEnd();
 }
 
-void	XObjBuilder::AccumTranslateBegin(const char * ref)
+void	XObjBuilder::AccumTranslateBegin(const char * ref, float loop)
 {
 	AssureLOD();
 	XObjAnim8 anim;
 	anim.dataref = ref;
+	anim.loop = loop;
 	obj->animation.push_back(anim);
 	lod->cmds.push_back(XObjCmd8());
 	lod->cmds.back().cmd = anim_Translate;
@@ -548,10 +574,11 @@ void	XObjBuilder::AccumTranslateEnd(void)
 	}
 }
 
-void	XObjBuilder::AccumRotateBegin(float axis[3], const char * ref)
+void	XObjBuilder::AccumRotateBegin(float axis[3], const char * ref, float loop)
 {
 	AssureLOD();
 	XObjAnim8 anim;
+	anim.loop = loop;
 	anim.dataref = ref;
 	anim.axis[0] = axis[0];
 	anim.axis[1] = axis[1];
@@ -589,7 +616,8 @@ void	XObjBuilder::AccumShow(float v1, float v2, const char * ref)
 	AssureLOD();
 	XObjAnim8 anim;
 	anim.dataref = ref;
-
+	anim.loop = 0;
+	
 	anim.keyframes.push_back(XObjKey());
 	anim.keyframes.back().key = v1;
 	anim.keyframes.push_back(XObjKey());
@@ -606,6 +634,7 @@ void	XObjBuilder::AccumHide(float v1, float v2, const char * ref)
 	AssureLOD();
 	XObjAnim8 anim;
 	anim.dataref = ref;
+	anim.loop = 0;
 
 	anim.keyframes.push_back(XObjKey());
 	anim.keyframes.back().key = v1;

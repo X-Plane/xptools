@@ -272,6 +272,7 @@ INT_PROP(layer_group_offset,layer_group_offset)
 
 INT_PROP(animation_group,animated)
 STR_PROP(anim_dataref,dataref)
+FLT_PROP(anim_loop,anim_loop)
 
 INT_PROP(anim_keyframe_count,anim_keyframe_count)
 INT_PROP(anim_keyframe_root,anim_keyframe_root)
@@ -289,6 +290,7 @@ STR_PROP(manip_dref1,manip_dref1)
 STR_PROP(manip_dref2,manip_dref2)
 STR_PROP(manip_tooltip,manip_tooltip)
 STR_PROP(manip_cursor,manip_cursor)
+FLT_PROP(manip_wheel,manip_wheel)
 
 
 INT_PROP(has_panel_regions,has_panel_regions)
