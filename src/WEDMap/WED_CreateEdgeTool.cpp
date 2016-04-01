@@ -29,9 +29,11 @@
 #include "WED_RoadEdge.h"
 #include "WED_SimpleBoundaryNode.h"
 #include "WED_MapZoomerNew.h"
+#include "WED_ResourceMgr.h"
 #include "WED_GISUtils.h"
 #include "WED_EnumSystem.h"
 #include "STLUtils.h"
+#include <sstream>
 
 #if AIRPORT_ROUTING
 
@@ -583,7 +585,19 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const ch
 void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
-	if(n == PropertyItemNumber(&mRunway))
+	if(n == PropertyItemNumber(&mSubtype))
+	{
+		road_info_t r;
+		if(get_valid_road_info(&r))
+		{
+			for(map<int,string>::iterator i = r.vroad_types.begin(); i != r.vroad_types.end(); ++i)
+			{
+				dict[i->first] = make_pair(i->second, true);
+			}
+			return;
+		}
+	}
+	else if(n == PropertyItemNumber(&mRunway))
 	{
 		WED_Airport * airport = WED_GetCurrentAirport(GetResolver());
 		if(airport)
@@ -624,6 +638,92 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 	else
 		WED_CreateToolBase::GetNthPropertyDict(n,dict);			
 }
+
+void		WED_CreateEdgeTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	WED_CreateToolBase::GetNthPropertyInfo(n, info);
+	if(n == PropertyItemNumber(&mSubtype))
+	{
+		if(get_valid_road_info(NULL))
+		{
+			info.prop_kind = prop_Enum;
+			return;
+		}
+	}
+}
+
+void		WED_CreateEdgeTool::GetNthProperty(int n, PropertyVal_t& val) const
+{
+	WED_CreateToolBase::GetNthProperty(n, val);
+	if(n == PropertyItemNumber(&mSubtype))
+	{
+		if(get_valid_road_info(NULL))
+		{
+			val.prop_kind = prop_Enum;
+		}
+	}
+}
+
+void		WED_CreateEdgeTool::SetNthProperty(int n, const PropertyVal_t& val)
+{
+	if(n == PropertyItemNumber(&mSubtype))
+	{
+		if(get_valid_road_info(NULL))
+		{
+			PropertyVal_t v(val);
+			v.prop_kind = prop_Int;
+			WED_CreateToolBase::SetNthProperty(n, v);
+			return;
+		}
+	}
+	WED_CreateToolBase::SetNthProperty(n, val);
+}
+
+
+void		WED_CreateEdgeTool::GetNthPropertyDictItem(int n, int e, string& item) const
+{
+	if(n == PropertyItemNumber(&mSubtype))
+	{
+		road_info_t r;
+		if(get_valid_road_info(&r))
+		{
+			map<int,string>::iterator i = r.vroad_types.find(mSubtype.value);
+			if (i != r.vroad_types.end())
+			{
+				item = i->second;
+				return;
+			}
+			else
+			{
+				stringstream ss;
+				ss << mSubtype.value;
+				item = ss.str();
+				return;
+			}
+		}
+	}
+	WED_CreateToolBase::GetNthPropertyDictItem(n, e, item);
+}
+
+
+
+bool		WED_CreateEdgeTool::get_valid_road_info(road_info_t * optional_info) const
+{
+	road_info_t temp;
+	road_info_t * i = optional_info ? optional_info : &temp;
+	
+	IResolver * resolver;
+	WED_ResourceMgr * mgr;
+	if((mgr = WED_GetResourceMgr(GetResolver())) != NULL)
+	{
+		road_info_t r;
+		if(mgr->GetRoad(mResource.value, *i))
+		if(i->vroad_types.size() > 0)
+			return true;
+	}
+	return false;
+}
+
 
 
 #endif

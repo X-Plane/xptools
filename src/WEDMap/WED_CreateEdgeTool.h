@@ -41,6 +41,8 @@ enum CreateEdge_t {
 class	WED_Thing;
 class	IGISEntity;
 class	IGISPointSequence;
+struct	road_info_t;
+
 
 class WED_CreateEdgeTool : public WED_CreateToolBase {
 public:
@@ -58,7 +60,11 @@ public:
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
 
-	virtual void				GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void			GetNthProperty(int n, PropertyVal_t& val) const;
+	virtual	void			SetNthProperty(int n, const PropertyVal_t& val);
+	virtual	void			GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void			GetNthPropertyDictItem(int n, int e, string& item) const;
+	virtual	void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
 
 private:
 
@@ -91,6 +97,8 @@ private:
 			void		SplitByLine(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& s, vector<pair<IGISPointSequence *, Point2> >& out_splits);
 			void		SplitByPts(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& s, vector<Point2>& out_splits, double dsq);
 			WED_Thing *	GetHost(int& idx);
+
+	bool		get_valid_road_info(road_info_t * optional_info) const;
 
 		CreateEdge_t	mType;
 

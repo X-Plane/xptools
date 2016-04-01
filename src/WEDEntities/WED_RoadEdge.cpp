@@ -28,20 +28,25 @@
 #include <sstream>
 
 /*
+√		merge commands broken, need rewrite		
+√		show road types in CREATE TOOL
+√		option-split won't split beziers?!
+√		fixed edge duplicate command
+
 	road todos:
 		exporter does not clip
-		can't add/remove bezier handles
-		merge commands broken, need rewrite		
-		show road types in CREATE TOOL
-		
-**		can't duplicate roads
- 
- BUGS:
-		option-split won't split beziers?!
-		can't pull out bezier handles as needed
-		cmd-E won't split edgs?
- 
-		validate crossing is probably borked
+	create tool
+		intersect beziers
+		self-overlapping doesn't work
+		multi-overlaps causes @#$@ chaos
+	split command
+		needs to split selected edges
+		needs to slit crossing edges
+	vertex tool
+		no way to get AT bezier curves when we don't ALREADY have handles
+		(all of the handle ops from bezier vertices just don't work)
+	validation
+		crossing roads triggers validation fail labeled as 'atc'
  
 */
 
