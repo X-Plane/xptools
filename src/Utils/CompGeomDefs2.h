@@ -533,9 +533,10 @@ struct	Bezier2 {
 	double	y_at_x(double x) const;
 	double	x_at_y(double y) const;
 	
-	int		t_at_x(double x, double t[4]) const;
-	int		t_at_y(double y, double t[4]) const;
-
+	int		t_at_x(double x, double t[3]) const;
+	int		t_at_y(double y, double t[3]) const;
+	double	approx_t_for_xy(double x, double y) const;
+	
 	Point2	p1;
 	Point2	p2;
 	Point2	c1;
@@ -1589,6 +1590,48 @@ inline int	Bezier2::t_at_y(double y, double t[3]) const
 	#endif
 
 	return r;
+}
+
+inline double	Bezier2::approx_t_for_xy(double x, double y) const
+{
+	// There isn't a really good way to do this - so we use sort of a bad way.
+	// Basically an X or Y probe may return up to 3 hits if it's "over" the airspace
+	// of the curve and we have an S curve.  So when we hit one root in either direction,
+	// we take it.  if we hit more than one root in both, we compare each pair of roots
+	// and take the X root for which there exists the smallest root-pair distance.
+	// For points ON the curve, this difference should be rounding error.
+	//
+	// For points off the curve...YMMV.
+	double x_roots[3], y_roots[3];
+	int xc = t_at_x(x,x_roots);
+	int yc = t_at_y(y,y_roots);
+	
+	if(yc == 0 && xc == 0)	return 0.5;
+	if(xc == 0) return y_roots[0];
+	if(yc == 0) return x_roots[0];
+	
+	int idx = -1;
+	double d = 9.9e9;
+	for(int ix = 0; ix < xc; ++ix)
+	{
+		double xd = 9.9e9;
+		for(int iy = 0; iy < yc; ++iy)
+		{
+			double rel = fabs(x_roots[ix] - y_roots[iy]);
+			if(rel < xd)
+				xd = rel;
+		}
+		if(xd < d)
+		{
+			 d = xd;
+			 idx = ix;
+		}
+	}
+	if(idx >= 0)
+		return x_roots[idx];
+	
+	DebugAssert(!"How did we get here?");
+	return 0.5;
 }
 
 

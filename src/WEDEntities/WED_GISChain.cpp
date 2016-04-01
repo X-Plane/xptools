@@ -143,12 +143,15 @@ void			WED_GISChain::Rescale			(GISLayer_t l,const Bbox2& old_bounds,const Bbox2
 	}
 }
 
+
 IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 {
 	int s = GetNumSides();
 	int best = -1;
 	double d = dist*dist;
 	Segment2	best_p;
+	Bezier2		best_b;
+	bool		is_b = false;
 	for(int n = 0; n < s; ++n)
 	{
 		Segment2 s;
@@ -161,26 +164,60 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 				d = dd;
 				best = n;
 				best_p = s;
+				is_b = false;
+			}
+		}
+		else if(!HasLayer(gis_UV))
+		{
+			if(b.is_near(p, dist))
+			{
+				best = n;
+				best_b = b;
+				is_b = true;
 			}
 		}
 	}
 	if(best != -1)
 	{
 		WED_Thing * np = dynamic_cast<WED_Thing*>(GetNthChild(best)->Clone());
-		IGISPoint * npp = dynamic_cast<IGISPoint *>(np);		
-		Point2	bpp_proj = best_p.projection(p);
-		npp->SetLocation(gis_Geo, bpp_proj);
+		IGISPoint * npp = dynamic_cast<IGISPoint *>(np);
+		IGISPoint_Bezier * nppb = dynamic_cast<IGISPoint_Bezier*>(np);
 		
-		if(HasLayer(gis_UV))
+		if(is_b)
 		{
-			double t = sqrt(best_p.p1.squared_distance(bpp_proj)) /
-					   sqrt(best_p.squared_length());
-			Segment2 uvs;
-			Bezier2  uvb;
-			if(GetSide(gis_UV, best, uvs, uvb))
-				npp->SetLocation(gis_UV, uvb.midpoint(t));
-			else
-				npp->SetLocation(gis_UV, uvs.midpoint(t));
+			DebugAssert(nppb);
+			double t = best_b.approx_t_for_xy(p.x(),p.y());
+			Bezier2 b1, b2;
+			best_b.partition(b1,b2,t);
+			IGISPoint_Bezier * prev = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(best));
+			IGISPoint_Bezier * next = dynamic_cast<IGISPoint_Bezier *>(GetNthPoint(best+1));
+			DebugAssert(prev);
+			DebugAssert(next);
+			prev->SetSplit(true);
+			prev->SetControlHandleHi(gis_Geo,b1.c1);
+			next->SetSplit(true);
+			next->SetControlHandleLo(gis_Geo,b2.c2);
+			nppb->SetLocation(gis_Geo, b1.p2);
+			nppb->SetSplit(true);
+			nppb->SetControlHandleLo(gis_Geo,b1.c2);
+			nppb->SetControlHandleHi(gis_Geo,b2.c1);
+		}
+		else
+		{
+			Point2	bpp_proj = best_p.projection(p);
+			npp->SetLocation(gis_Geo, bpp_proj);
+			
+			if(HasLayer(gis_UV))
+			{
+				double t = sqrt(best_p.p1.squared_distance(bpp_proj)) /
+						   sqrt(best_p.squared_length());
+				Segment2 uvs;
+				Bezier2  uvb;
+				if(GetSide(gis_UV, best, uvs, uvb))
+					npp->SetLocation(gis_UV, uvb.midpoint(t));
+				else
+					npp->SetLocation(gis_UV, uvs.midpoint(t));
+			}
 		}
 		// Why wait?  Cuz...Getside on old side will USE this as soon as we are its parent!
 		np->SetParent(this, best+1);

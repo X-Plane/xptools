@@ -37,7 +37,8 @@ void anim_add_translate(
 				int							add_head,
 				const vector<XObjKey>&		key_table,
 				const char *				dataref,
-				const char *				name);
+				const char *				name,
+				float						loop);
 
 
 void anim_add_rotate(
@@ -47,7 +48,8 @@ void anim_add_rotate(
 				float						axis[3],
 				const vector<XObjKey>&		key_table,
 				const char *				dataref,
-				const char *				name);
+				const char *				name,
+				float						loop);
 
 void anim_add_static(
 				ACObject *					obj,
@@ -61,7 +63,7 @@ void anim_add_show(
 				int							add_head,
 				const vector<XObjKey>&		key_table,
 				const char *				dataref,
-				const char *				name);
+				const char *				name);				
 
 void anim_add_hide(
 				ACObject *					obj,
