@@ -134,12 +134,12 @@ enum {
 	wed_AddATCWindRule,
 #endif
 	//Add Meta Data Keys Menu
+	wed_AddMetaDataCity,// or Locality
+	wed_AddMetaDataCountry,
 	wed_AddMetaDataFAA,
 	wed_AddMetaDataIATA,
 	wed_AddMetaDataICAO,
-	wed_AddMetaDataCity,// or Locality
 	wed_AddMetaDataState,// or Province
-	wed_AddMetaDataCountry,
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery

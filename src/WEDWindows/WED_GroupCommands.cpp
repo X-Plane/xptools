@@ -50,6 +50,7 @@
 #include "WED_TaxiRouteNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
+#include "WED_Menus.h"
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -368,7 +369,7 @@ int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name)
 	return want_sel != now_sel;
 }
 
-bool	WED_CanAddMetaData(IResolver * inResolver)
+bool	WED_CanAddMetaData(IResolver * inResolver, int command)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
 	if (sel->GetSelectionCount() != 1) return 0;
@@ -380,30 +381,21 @@ bool	WED_CanAddMetaData(IResolver * inResolver)
 	}
 	else
 	{
-		return 1;
+		switch(command)
+		{			
+			case wed_AddMetaDataCity:    return !sel_airport->ContainsMetaDataKey("City/Locality");
+			case wed_AddMetaDataCountry: return !sel_airport->ContainsMetaDataKey("Country");
+			case wed_AddMetaDataFAA:     return !sel_airport->ContainsMetaDataKey("FAA Code");
+			case wed_AddMetaDataIATA:    return !sel_airport->ContainsMetaDataKey("IATA Code");
+			case wed_AddMetaDataICAO:    return !sel_airport->ContainsMetaDataKey("ICAO Code");
+			case wed_AddMetaDataState:   return !sel_airport->ContainsMetaDataKey("State/Province");
+			default: return 0;
+		}
 	}
 }
 
 void WED_DoAddMetaData(IResolver * inResolver, const string& key)
 {
-#if DEV && 0
-	//char rand_key[12];
-	//itoa(rand(),rand_key,10);
-	
-	char rand_val[12];
-	itoa(rand(),rand_val,10);
-	//For now, whenever you try and change it you insert random_int, val.string_val
-	//DoUserAlert(key.c_str());
-	//DoUserAlert(rand_val);
-	ISelection * sel = WED_GetSelect(inResolver);
-	if (sel->GetSelectionCount() != 1) return;
-
-	WED_Airport * want_sel = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
-	if (want_sel == NULL) return;
-
-	want_sel->AddMetaDataKey(key, rand_val);
-#endif
-
 	ISelection * sel = WED_GetSelect(inResolver);
 	if (sel->GetSelectionCount() != 1) return;
 

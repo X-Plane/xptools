@@ -38,7 +38,7 @@ public:
 	void		GetICAO(string& icao) const;
 	int			GetAirportType(void) const;
 	int			GetSceneryID(void) const;
-
+	
 	void		SetSceneryID(int new_id);
 	void		SetAirportType(int airport_type);
 	void		SetElevation(double elev);
@@ -55,6 +55,9 @@ public:
 	//Removes a key/value pair
 	void		RemoveMetaDataKey(const string& key);
 	
+	//Returns true if meta_data_vec_map contains the key
+	bool		ContainsMetaDataKey(const string& key);
+
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
 

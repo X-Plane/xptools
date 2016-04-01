@@ -201,12 +201,12 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 };
 
 static const GUI_MenuItem_t kAddMetaDataMenu[] = {
+{	"City/Locality",	0,	0,	0, wed_AddMetaDataCity		},
+{	"Country",			0,	0,	0, wed_AddMetaDataCountry	},
 {	"FAA  Code",		0,	0,	0, wed_AddMetaDataFAA		},
 {	"IATA Code",		0,	0,	0, wed_AddMetaDataIATA		},
 {	"ICAO Code",		0,	0,	0, wed_AddMetaDataICAO		},
-{	"City/Locality",	0,	0,	0, wed_AddMetaDataCity		},
 {	"State/Province",	0,	0,	0, wed_AddMetaDataState		},
-{	"Country",			0,	0,	0, wed_AddMetaDataCountry	},
 {	NULL,				0,	0,	0, 0						}
 };
 

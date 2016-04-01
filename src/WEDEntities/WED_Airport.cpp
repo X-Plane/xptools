@@ -152,6 +152,22 @@ void		WED_Airport::RemoveMetaDataKey(const string& key)
 //	StateChanged();
 }
 
+bool		WED_Airport::ContainsMetaDataKey(const string& key)
+{
+	for(vector<meta_data_entry>::const_iterator itr = meta_data_vec_map.cbegin();
+		itr != meta_data_vec_map.cend();
+		++itr)
+
+	{
+		if(itr->first == key)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	airport_type = ENUM_Import(Airport_Type, info.kind_code);
