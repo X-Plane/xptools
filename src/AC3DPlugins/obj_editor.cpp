@@ -101,6 +101,7 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_INT(is_deck,get_sel_single_obj,OBJ_set_deck,OBJ_get_deck) \
 	SIMPLE_PROPERTY_FLT(poly_os,get_sel_single_obj,OBJ_set_poly_os,OBJ_get_poly_os) \
 	SIMPLE_PROPERTY_STR(anim_dataref,get_sel_single_obj,OBJ_set_anim_dataref,OBJ_get_anim_dataref,"","") \
+	SIMPLE_PROPERTY_FLT(anim_loop,get_sel_single_obj,OBJ_set_anim_loop, OBJ_get_anim_loop) \
 	SIMPLE_PROPERTY_INT(anim_keyframe_count, get_sel_single_obj,OBJ_set_anim_keyframe_count,OBJ_get_anim_keyframe_count) \
 	SIMPLE_PROPERTY_INT(use_materials,get_sel_single_obj,OBJ_set_use_materials,OBJ_get_use_materials) \
 	SIMPLE_PROPERTY_STR(lit_dataref,get_sel_single_obj,OBJ_set_lit_dataref, OBJ_get_lit_dataref,"","") \
@@ -123,7 +124,8 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_STR(manip_cmnd1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \
 	SIMPLE_PROPERTY_STR(manip_cmnd2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
 	SIMPLE_PROPERTY_STR(manip_tooltip,get_sel_single_obj,OBJ_set_manip_tooltip,OBJ_get_manip_tooltip,"", "") \
-	SIMPLE_PROPERTY_STR(manip_cursor,get_sel_single_obj,OBJ_set_manip_cursor,OBJ_get_manip_cursor,"", "")
+	SIMPLE_PROPERTY_STR(manip_cursor,get_sel_single_obj,OBJ_set_manip_cursor,OBJ_get_manip_cursor,"", "") \
+	SIMPLE_PROPERTY_FLT(manip_wheel,get_sel_single_obj,OBJ_set_manip_wheel,OBJ_get_manip_wheel)
 //	SIMPLE_PROPERTY_FLT(anim_low_value,get_sel_single_obj,OBJ_set_anim_low_value,OBJ_get_anim_low_value) \
 //	SIMPLE_PROPERTY_FLT(anim_low_angle,get_sel_single_obj,OBJ_set_anim_low_angle,OBJ_get_anim_low_angle) \
 //	SIMPLE_PROPERTY_FLT(anim_high_value,get_sel_single_obj,OBJ_set_anim_high_value,OBJ_get_anim_high_value) \

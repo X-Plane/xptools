@@ -192,15 +192,29 @@ struct kill_zero_length_segment {
 static bool g_dropped_pts = false;
 
 struct	DSF_ResourceTable {
-	DSF_ResourceTable() { for(int i = 0; i < 7; ++i) show_level_obj[i] = show_level_pol[i] = -1; }
+	DSF_ResourceTable() { for(int i = 0; i < 7; ++i) show_level_obj[i] = show_level_pol[i] = -1; cur_filter = -1;}
 	vector<string>				obj_defs;
 	map<pair<string,int>, int>	obj_defs_idx;
 
 	vector<string>				pol_defs;
 	map<pair<string, int>, int>	pol_defs_idx;
 
+	vector<string>				filters;
+	map<string, int>			filter_idx;
+	
+	map<int, vector<pair<string, string> > > exclusions;
+	
+	int							cur_filter;
+	
 	int show_level_obj[7];
 	int show_level_pol[7];
+
+	void set_filter(int x) { cur_filter = x; }
+
+	void accum_exclusion(const string& key, const string& value)
+	{
+		exclusions[cur_filter].push_back(make_pair(key,value));
+	}
 
 	int accum_obj(const string& f, int show_level)
 	{
@@ -222,6 +236,52 @@ struct	DSF_ResourceTable {
 		DebugAssert(show_level_pol[show_level] <= pol_defs.size());
 		pol_defs.push_back(f);
 		return				  pol_defs.size()-1;
+	}
+	
+	int accum_filter(const string& icao_filter)
+	{
+		map<string,int>::iterator i = filter_idx.find(icao_filter);
+		if(i != filter_idx.end()) return i->second;
+		filter_idx[icao_filter] = filters.size();
+		filters.push_back(icao_filter);
+		return filters.size()-1;
+	}
+	
+	void write_tables(DSFCallbacks_t& cbs, void * writer)
+	{
+		for(vector<string>::iterator s = obj_defs.begin(); s != obj_defs.end(); ++s)
+			cbs.AcceptObjectDef_f(s->c_str(), writer);
+
+		for(vector<string>::iterator s = pol_defs.begin(); s != pol_defs.end(); ++s)
+			cbs.AcceptPolygonDef_f(s->c_str(), writer);
+
+		for(vector<pair<string,string> >::iterator e = exclusions[-1].begin(); e != exclusions[-1].end(); ++e)
+			cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
+
+		int idx = 0;
+		for(vector<string>::iterator s = filters.begin(); s != filters.end(); ++s, ++idx)
+		{
+			cbs.AcceptProperty_f("sim/filter/aptid",s->c_str(),writer);
+
+			for(vector<pair<string,string> >::iterator e = exclusions[idx].begin(); e != exclusions[idx].end(); ++e)
+				cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
+		}
+		for(int i = 1; i <= 6; ++i)
+		{
+			char buf[20];
+			if(show_level_obj[i] != -1)
+			{
+				sprintf(buf,"%d/%d",i,show_level_obj[i]);
+				cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
+				cbs.AcceptProperty_f("sim/require_object", buf, writer);
+			}
+			if(show_level_pol[i] != -1)
+			{
+				sprintf(buf,"%d/%d",i,show_level_pol[i]);
+				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
+			}
+		}		
+
 	}
 };
 
@@ -763,6 +823,7 @@ static int	DSF_ExportTileRecursive(
 	WED_PolygonPlacement * pol;
 	WED_DrapedOrthophoto * orth;
 	WED_ExclusionZone * xcl;
+	WED_Airport * apt;
 
 	int idx;
 	string r;
@@ -789,6 +850,16 @@ static int	DSF_ExportTileRecursive(
 		centroid_ob = true;
 	}
 
+	if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
+	{
+		string id;
+		apt->GetICAO(id);
+		
+		int filter_idx = io_table.accum_filter(id.c_str());
+		
+		cbs->SetFilter_f(filter_idx,writer);
+		io_table.set_filter(filter_idx);
+	}
 
 	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
 	if(show_level == 6)
@@ -821,7 +892,7 @@ static int	DSF_ExportTileRecursive(
 				char valbuf[512];
 				sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
 				++real_thingies;
-				cbs->AcceptProperty_f(pname, valbuf, writer);
+				io_table.accum_exclusion(pname, valbuf);
 			}
 		}
 	}
@@ -838,20 +909,21 @@ static int	DSF_ExportTileRecursive(
 		obj->GetLocation(gis_Geo,p);
 		if(cull_bounds.contains(p))
 		{
-			double xy[3] = { p.x(), p.y(), 0.0 };
+			double xyrz[4] = { p.x(), p.y(), 0.0 };
 			float heading = obj->GetHeading();
 			while(heading < 0) heading += 360.0;
 			while(heading >= 360.0) heading -= 360.0;
 			++real_thingies;
+			xyrz[2] = heading;
 			#if AIRPORT_ROUTING
 			if(obj->HasCustomMSL())
 			{
-				xy[2] = obj->GetCustomMSL();
-				cbs->AddObjectAbsolute_f(idx, xy, heading, writer);
+				xyrz[3] = obj->GetCustomMSL();
+				cbs->AddObject_f(idx, xyrz, 4, writer);
 			}
 			else
 			#endif
-				cbs->AddObject_f(idx, xy, heading, writer);
+				cbs->AddObject_f(idx, xyrz, 3, writer);
 		}
 	}
 	
@@ -1495,7 +1567,14 @@ static int	DSF_ExportTileRecursive(
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
 		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children,show_level);
-	return real_thingies;	
+	
+	if(apt)
+	{
+		cbs->SetFilter_f(-1,writer);
+		io_table.set_filter(-1);		
+	}
+
+	return real_thingies;
 }
 
 static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
@@ -1548,27 +1627,7 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 	for(int show_level = 6; show_level >= 1; --show_level)	
 		entities += DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
-	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
-		cbs.AcceptObjectDef_f(s->c_str(), writer);
-
-	for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
-		cbs.AcceptPolygonDef_f(s->c_str(), writer);
-		
-	for(int i = 1; i <= 6; ++i)
-	{
-		char buf[20];
-		if(rsrc.show_level_obj[i] != -1)
-		{
-			sprintf(buf,"%d/%d",i,rsrc.show_level_obj[i]);
-			cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
-			cbs.AcceptProperty_f("sim/require_object", buf, writer);
-		}
-		if(rsrc.show_level_pol[i] != -1)
-		{
-			sprintf(buf,"%d/%d",i,rsrc.show_level_pol[i]);
-			cbs.AcceptProperty_f("sim/require_facade", buf, writer);
-		}
-	}		
+	rsrc.write_tables(cbs,writer);
 
 	char	rel_dir [512];
 	char	rel_path[512];
@@ -1668,27 +1727,8 @@ int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const str
 		for(int show_level = 6; show_level >= 1; --show_level)	
 			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
-		for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
-			cbs.AcceptObjectDef_f(s->c_str(), writer);
+		rsrc.write_tables(cbs,writer);
 
-		for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
-			cbs.AcceptPolygonDef_f(s->c_str(), writer);
-			
-		for(int i = 1; i <= 6; ++i)
-		{
-			char buf[20];
-			if(rsrc.show_level_obj[i] != -1)
-			{
-				sprintf(buf,"%d/%d",i,rsrc.show_level_obj[i]);
-				cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
-				cbs.AcceptProperty_f("sim/require_object", buf, writer);
-			}
-			if(rsrc.show_level_pol[i] != -1)
-			{
-				sprintf(buf,"%d/%d",i,rsrc.show_level_pol[i]);
-				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
-			}
-		}		
 		fclose(dsf);
 		return 1;
 	}
