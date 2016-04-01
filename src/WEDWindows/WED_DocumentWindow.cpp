@@ -217,8 +217,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- RUNWAYS ---------------
 
-	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2",
-									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1",
+	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshold 2",
+									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshold 1",
 									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
 	static		 int	rwy_w[] = { 150, 150, 150, 150, 150, 150,
 									150, 150, 150, 150, 150, 150,

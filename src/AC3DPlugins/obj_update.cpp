@@ -278,8 +278,8 @@ void obj8_update_object(ACObject * obj, ACObject * root)
 											keys[1].v[0] = i->xyz2[1];keys[1].v[1] = i->xyz2[1];keys[1].v[2] = i->xyz2[2];}
 				if(i->op==update_rotate) {	keys[0].v[0] = i->r1; keys[1].v[0] = i->r2; }
 				switch(i->op) {
-				case update_trans:			anim_add_translate	(obj, 1, keys, i->dataref.c_str(), i->dataref.empty() ? "translate" : i->dataref.c_str());		break;
-				case update_rotate:			anim_add_rotate		(obj, 1, i->xyz1, i->xyz2, keys, i->dataref.c_str(), i->dataref.empty() ? "rotate" : i->dataref.c_str());		break;
+				case update_trans:			anim_add_translate	(obj, 1, keys, i->dataref.c_str(), i->dataref.empty() ? "translate" : i->dataref.c_str(),0);		break;
+				case update_rotate:			anim_add_rotate		(obj, 1, i->xyz1, i->xyz2, keys, i->dataref.c_str(), i->dataref.empty() ? "rotate" : i->dataref.c_str(),0);		break;
 				case update_static_trans:	anim_add_static		(obj, 1, i->xyz1, "none", "static translate");		break;
 				}
 			}
