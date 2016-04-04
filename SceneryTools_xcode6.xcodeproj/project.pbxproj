@@ -720,6 +720,7 @@
 		D6CB54740CEC9DB0000E4393 /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6CD435C0E68A61F0071A622 /* XObjWriteEmbedded.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */; };
 		D6CD43DC0E68C03F0071A622 /* MatrixUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37860AB22C85003949C5 /* MatrixUtils.cpp */; };
+		D6D0F77F1CB336AA0051AABC /* delete.png in Resources */ = {isa = PBXBuildFile; fileRef = D6D0F77D1CB336A20051AABC /* delete.png */; };
 		D6D408291406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6D4082A1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
 		D6D4082C1406C6A20061EBF9 /* BezierApprox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6D408271406C6A20061EBF9 /* BezierApprox.cpp */; };
@@ -1903,6 +1904,7 @@
 		D6C690370BF0B91100C9F880 /* WED_GroupCommands.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_GroupCommands.cpp; sourceTree = "<group>"; };
 		D6CD435A0E68A61F0071A622 /* XObjWriteEmbedded.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XObjWriteEmbedded.h; sourceTree = "<group>"; };
 		D6CD435B0E68A61F0071A622 /* XObjWriteEmbedded.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XObjWriteEmbedded.cpp; sourceTree = "<group>"; };
+		D6D0F77D1CB336A20051AABC /* delete.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = delete.png; sourceTree = "<group>"; };
 		D6D408271406C6A20061EBF9 /* BezierApprox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BezierApprox.cpp; sourceTree = "<group>"; };
 		D6D408281406C6A20061EBF9 /* BezierApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierApprox.h; sourceTree = "<group>"; };
 		D6DA657F1ACC593D007B6A75 /* README.WorldEditor */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.WorldEditor; sourceTree = "<group>"; };
@@ -2229,6 +2231,7 @@
 		D607B7950C0B831400992876 /* tables */ = {
 			isa = PBXGroup;
 			children = (
+				D6D0F77D1CB336A20051AABC /* delete.png */,
 				D682E9790C17124A00BBE1A0 /* sider.png */,
 				D682E4830C162C9100BBE1A0 /* arrows.png */,
 				D682E4160C1627F700BBE1A0 /* property_bar.png */,
@@ -3918,6 +3921,7 @@
 				D67B21480C5536A300A21ABC /* asphalt.png in Resources */,
 				D67B21490C5536A300A21ABC /* concrete.png in Resources */,
 				D67B214A0C5536A300A21ABC /* dirt.png in Resources */,
+				D6D0F77F1CB336AA0051AABC /* delete.png in Resources */,
 				D67B214B0C5536A300A21ABC /* grass.png in Resources */,
 				D67B214C0C5536A300A21ABC /* gravel.png in Resources */,
 				D67B214D0C5536A300A21ABC /* lake.png in Resources */,

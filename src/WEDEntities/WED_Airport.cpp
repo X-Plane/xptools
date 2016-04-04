@@ -29,7 +29,6 @@
 #include "WED_XMLWriter.h"
 
 #if DEV
-#include <random>
 #include <iostream>
 #endif
 
@@ -154,8 +153,8 @@ void		WED_Airport::RemoveMetaDataKey(const string& key)
 
 bool		WED_Airport::ContainsMetaDataKey(const string& key)
 {
-	for(vector<meta_data_entry>::const_iterator itr = meta_data_vec_map.cbegin();
-		itr != meta_data_vec_map.cend();
+	for(vector<meta_data_entry>::const_iterator itr = meta_data_vec_map.begin();
+		itr != meta_data_vec_map.end();
 		++itr)
 
 	{
