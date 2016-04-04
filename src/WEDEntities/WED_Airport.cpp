@@ -49,6 +49,9 @@ L   - NS_AIRPORT
 	  [9-n] Meta Data Rows
 */
 
+#define NUM_REAL (WED_GISComposite::CountProperties())
+#define NUM_FAKE (meta_data_vec_map.size())
+
 //NS_AREA where it starts on the number line
 #define NS_ALL 0
 
@@ -56,10 +59,7 @@ L   - NS_AIRPORT
 //No "Name, Class, Locked, Hidden"
 #define NS_AIRPORT 4 
 
-#define NS_META_DATA (WED_GISComposite::CountProperties())
-
-#define NUM_REAL (WED_GISComposite::CountProperties())
-#define NUM_FAKE (meta_data_vec_map.size())
+#define NS_META_DATA (NUM_REAL)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
@@ -103,7 +103,6 @@ void		WED_Airport::SetSceneryID(int x) { scenery_id = x; }
 //Adds a Meta Data Key. TODO - In the case of a collision... what should happen?
 void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 {
-	WED_Thing * thing = NULL;
 	this->StartOperation(string("Add Meta Data Key " + key).c_str());
 
 	StateChanged();
@@ -149,7 +148,8 @@ void		WED_Airport::EditMetaDataKey(const string& key, const string& value)
 //Removes a key/value pair
 void		WED_Airport::RemoveMetaDataKey(const string& key)
 {
-//	StateChanged();
+	StateChanged();
+
 }
 
 bool		WED_Airport::ContainsMetaDataKey(const string& key)
@@ -166,6 +166,11 @@ bool		WED_Airport::ContainsMetaDataKey(const string& key)
 	}
 
 	return false;
+}
+
+int			WED_Airport::CountMetaDataKeys()
+{
+	return meta_data_vec_map.size();
 }
 
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
@@ -200,7 +205,7 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	info.beacon.color_code = apt_beacon_none;
 }
 
-// IPropertyObject
+//--IPropertyObject------------------------------------------------------------
 //Returns in NS_ALL space
 int			WED_Airport::FindProperty(const char * in_prop) const
 {
@@ -240,6 +245,7 @@ void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		//Translate NS_ALL to NS_META_DATA
 		int index = n - NS_META_DATA;
 
+		info.can_delete = true;
 		info.can_edit = true;
 		info.prop_kind = prop_String;
 		info.prop_name = meta_data_vec_map.at(index).first;
@@ -273,14 +279,6 @@ void		WED_Airport::GetNthProperty(int n, PropertyVal_t& val) const
 		int index = n - NS_META_DATA;
 		val.string_val = meta_data_vec_map.at(index).second;
 	}
-#if DEV && 0
-	//for(vector<meta_data_entry>::const_iterator itr = meta_data_vec_map.begin(); itr != meta_data_vec_map.end(); ++itr)
-	//{
-		cout << val.string_val << endl;
-		val.string_val += /*itr->first + ", " + */itr->second;// + "|";
-		cout << val.string_val << endl;
-	//}
-#endif
 	else
 	{
 		WED_GISComposite::GetNthProperty(n, val);
@@ -303,6 +301,21 @@ void		WED_Airport::SetNthProperty(int n, const PropertyVal_t& val)
 	}
 }
 
+void		WED_Airport::DeleteNthProperty(int n)
+{
+	if(n >= NS_META_DATA)
+	{
+		WED_Thing::StateChanged();
+
+		int index = n - NS_META_DATA;
+		meta_data_vec_map.erase(meta_data_vec_map.begin()+index);
+	}
+	else
+	{
+		WED_GISComposite::DeleteNthProperty(n);
+	}
+}
+//-----------------------------------------------------------------------------
 void 			WED_Airport::ReadFrom(IOReader * reader)
 {
 	WED_GISComposite::ReadFrom(reader);

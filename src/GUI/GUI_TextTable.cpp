@@ -265,7 +265,15 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		break;
 	}
 	
-	
+	if(c.can_delete)
+	{
+					  //x, y, num_x tiles, num_y tiles
+		int tile[4] = { 0, 0, 1, 1};
+
+		glColor3f(1,1,1);
+		GUI_DrawCentered(inState, "delete.png", cell_bounds, -1,0, tile, NULL, NULL);
+	}
+
 	if(c.is_disclosed || c.can_disclose)
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
@@ -490,6 +498,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		return 1;
 	}
 
+	//Fill mEditInfo so we can make decisions based on the cell's
+	//Abilities, Status, and Content
 	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
 
 	mClickCellX = -1;
@@ -499,15 +509,38 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 //	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 
+	if (mEditInfo.can_delete == true)
+	{
+		mTrackLeft = cell_bounds[0];
+		mTrackRight = cell_bounds[0] + GUI_GetImageResourceWidth("delete.png");
+		if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
+		{
+			//Set the TextTable to be thinking about this disclose handle
+			mContent->DoDeleteCell(cell_x, cell_y);
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
+			mInBounds = 1;
+			
+			return 1;
+		}
+	}
+
 	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
+		//Regardless of state, if it is able to we're going to toggle
+		//the button
 		if (mEditInfo.can_disclose)
 		{
+			//Find the horizontal dimensions
+			//(vertical is implied correct by this point)
 			mTrackLeft = cell_bounds[0];
 			mTrackRight = cell_bounds[0] + mDiscloseIndent;
 
+			//If the mouse is within those dimensions
 			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
 			{
+				//Set the TextTable to be thinking about this disclose handle
+				//we just clicked on
 				mEditInfo.content_type = gui_Cell_Disclose;
 				mClickCellX = cell_x;
 				mClickCellY = cell_y;
@@ -564,6 +597,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	}
 
 	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
+
+	
 
 	if (!mEditInfo.can_edit)	return 1;
 

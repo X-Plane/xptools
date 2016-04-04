@@ -29,6 +29,10 @@
 #include "IGIS.h"
 #include "ILibrarian.h"
 #include "WED_Entity.h"
+
+#include "WED_GISComposite.h"
+#include "WED_Airport.h"
+
 #include "WED_Messages.h"
 #include "PlatformUtils.h"
 #include "WED_UIDefs.h"
@@ -97,8 +101,15 @@ void	WED_PropertyTable::GetCellContent(
 {
 	char buf[100], fmt[10];
 
+	// By the end of this we need to have filled the_content out with
+	//  1. Abilities - can_edit, can_disclose, can_drag, etc...
+	//  2. State - is_disclosed, is_selected, indent_level
+	//  3. Content - content_type, its corrisponding value filled in
+	
+	//Our default assumptions
 	the_content.content_type = gui_Cell_None;
 	the_content.string_is_resource = 0;
+	the_content.can_delete = false;
 	the_content.can_edit = 0;
 	the_content.can_disclose = 0;
 	the_content.can_select = 0;
@@ -107,12 +118,16 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_drag = 1;
 	the_content.indent_level = 0;
 
+	//Find the row or column we're dealing with
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
 	if (t == NULL) return;
 
 	ISelection * s = WED_GetSelect(mResolver);
 
+	//Find the property index in said row or column based on the name
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
+	
+	//If there has been one found, use the_content as it is and exit
 	if (idx == -1) return;
 
 	WED_Thing * my_parent = t->GetParent();
@@ -120,6 +135,7 @@ void	WED_PropertyTable::GetCellContent(
 	if(!WED_IsFolder(my_parent))
 		the_content.can_drag = 0;
 
+	//With the property index, get the property's value and info
 	PropertyInfo_t	inf;
 	PropertyVal_t	val;
 	t->GetNthPropertyInfo(idx,inf);
@@ -128,6 +144,8 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_select = mSelOnly ? 0 : 1;
 	the_content.is_selected = s->IsSelected(t);
 
+	//Based on type turn PropertyVal_t into GUI_CellContent,
+	//taking care of "3. Content"
 	switch(inf.prop_kind) {
 	case prop_Int:
 		the_content.content_type = gui_Cell_Integer;
@@ -190,10 +208,13 @@ void	WED_PropertyTable::GetCellContent(
 	if (!mVertical && !mSelOnly)
 	if (mColNames[mVertical ? cell_y : cell_x] == "Name")
 	{
+		//Fill in more about abilities and state, see method for more comments
 		GetFilterStatus(t, s, unused_vis, unused_kids, the_content.can_disclose,the_content.is_disclosed);
 		the_content.indent_level = GetThingDepth(t);	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
 	}
 
+
+	the_content.can_delete = inf.can_delete;
 	the_content.can_edit = inf.can_edit;
 	if (the_content.can_edit)
 	if (WED_GetWorld(mResolver) == t)	the_content.can_edit = 0;
@@ -332,6 +353,21 @@ void	WED_PropertyTable::ToggleDisclose(
 		ToggleOpen(t->GetID());
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+}
+
+void	WED_PropertyTable::DoDeleteCell(
+						int							cell_x,
+						int							cell_y)
+{
+	//Get the airport
+	WED_Airport * airport = static_cast<WED_Airport * >(FetchNth(0));
+	
+	//To be in uniform with other IPropertyMethods we'll transform cell_y->NS_META_DATA
+	int ns_meta_data = (airport->WED_GISComposite::CountProperties());
+	airport->DeleteNthProperty(ns_meta_data + airport->CountMetaDataKeys() - cell_y - 1);
+	
+	//TODO - Is this needed?
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
 }
 
 void	WED_PropertyTable::DoDrag(
@@ -947,7 +983,6 @@ void WED_PropertyTable::SetOpen(int id, int o)
 // - It makes sure that filtered items are inherently open (since we can't disclose them).
 // - Right now it is programmed not to iterate on the children of not-truly-composite GIS entities
 //  (Thus it hides the guts of a polygon).
-
 void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 									int&	visible,
 									int&	recurse_children,

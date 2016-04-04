@@ -56,6 +56,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 
 	the_content.string_is_resource = 0;
 	the_content.content_type = gui_Cell_None;
+	the_content.can_delete = false;
 	the_content.can_disclose = 0;
 	the_content.can_select = 0;
 	the_content.is_disclosed = 0;
@@ -127,6 +128,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 	{
 		mTool->GetNthPropertyInfo(cell_x / 2, inf);
 		the_content.content_type = gui_Cell_EditText;
+		the_content.can_delete = false;
 		the_content.can_edit = 0;
 		the_content.text_val = inf.prop_name;
 		the_content.indent_level = 1;

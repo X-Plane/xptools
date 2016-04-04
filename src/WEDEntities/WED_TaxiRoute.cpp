@@ -241,6 +241,7 @@ void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	if(runway.value != atc_rwy_None)
 	if(n == PropertyItemNumber(&name))
 	{
+		info.can_delete = false;
 		info.can_edit = false;
 	}
 }
