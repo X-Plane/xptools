@@ -362,10 +362,12 @@ void	WED_PropertyTable::DoDeleteCell(
 	//Get the airport
 	WED_Airport * airport = static_cast<WED_Airport * >(FetchNth(0));
 	
+	airport->StartCommand("Delete Meta Data Key");
 	//To be in uniform with other IPropertyMethods we'll transform cell_y->NS_META_DATA
 	int ns_meta_data = (airport->WED_GISComposite::CountProperties());
 	airport->DeleteNthProperty(ns_meta_data + airport->CountMetaDataKeys() - cell_y - 1);
-	
+	airport->CommitCommand();
+
 	//TODO - Is this needed?
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
 }
