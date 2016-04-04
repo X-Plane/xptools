@@ -188,6 +188,7 @@ int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItem * item) cons
 
 void		WED_PropIntText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Int;
 	info.prop_name = mTitle;
@@ -282,6 +283,7 @@ void		WED_PropIntText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropBoolText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Bool;
 	info.prop_name = mTitle;
@@ -374,6 +376,7 @@ void		WED_PropBoolText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Double;
 	info.prop_name = mTitle;
@@ -482,6 +485,7 @@ void		WED_PropDoubleTextMeters::SetProperty(const PropertyVal_t& val, WED_Proper
 
 void		WED_PropStringText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_String;
 	info.prop_name = mTitle;
@@ -576,6 +580,7 @@ void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropFileText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_FilePath;
 	info.prop_name = mTitle;
@@ -671,6 +676,7 @@ void		WED_PropFileText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Enum;
 	info.prop_name = mTitle;
@@ -772,6 +778,7 @@ void		WED_PropIntEnum::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
@@ -939,6 +946,7 @@ void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
@@ -1142,6 +1150,7 @@ void		WED_PropIntEnumSetUnion::GetPropertyInfo(PropertyInfo_t& info)
 {
 	info.prop_name = host;
 	info.prop_kind = prop_EnumSet;
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.exclusive = this->exclusive;
 	info.synthetic = 1;

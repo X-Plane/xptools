@@ -58,6 +58,9 @@ public:
 	//Returns true if meta_data_vec_map contains the key
 	bool		ContainsMetaDataKey(const string& key);
 
+	//Gets the size of the Meta Data Vector
+	int			CountMetaDataKeys();
+
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
 
@@ -71,7 +74,8 @@ public:
 	
 	void		GetNthProperty(int n, PropertyVal_t& val) const;
 	void		SetNthProperty(int n, const PropertyVal_t& val);
-	
+	void		DeleteNthProperty(int n);
+
 	//WED_Persistant, for Undo/Redo
 	virtual	void 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);

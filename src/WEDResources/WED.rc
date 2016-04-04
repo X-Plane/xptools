@@ -59,6 +59,7 @@ eye.png					GUI_RES		tables\eye.png
 lock.png				GUI_RES		tables\lock.png
 check.png				GUI_RES		tables\check.png
 gradient.png			GUI_RES		tables\gradient.png
+delete.png				GUI_RES		tables\delete.png
 disclose.png			GUI_RES		tables\disclose.png
 header.png				GUI_RES		tables\header.png
 sider.png				GUI_RES		tables\sider.png

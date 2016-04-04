@@ -95,6 +95,7 @@ public:
 	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const;
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+	virtual void		DeleteNthProperty(int n) { };
 
 	virtual	void				PropEditCallback(int before)=0;
 	virtual	int					CountSubs(void)=0;
