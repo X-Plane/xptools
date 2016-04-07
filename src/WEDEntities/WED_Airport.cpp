@@ -68,10 +68,6 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8),
 	meta_data_vec_map ()
 {
-	/*meta_data_vec_map.push_back(meta_data_entry("Meta Data",""));*/
-	/*meta_data_vec_map.push_back(meta_data_entry("ICAO","KABC"));
-	meta_data_vec_map.push_back(meta_data_entry("FAA","ABC"));
-	meta_data_vec_map.push_back(meta_data_entry("CAA","DEF"));*/
 }
 
 WED_Airport::~WED_Airport()
@@ -139,9 +135,24 @@ void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 }
 
 //Edits a given Meta Data key's value
-void		WED_Airport::EditMetaDataKey(const string& key, const string& value)
+void	WED_Airport::EditMetaDataKey(const string& key, const string& value)
 {
-//	StateChanged();
+	StateChanged();
+
+	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
+	//Search through vector looking for the key to edit
+	for( ; itr != meta_data_vec_map.end(); ++itr)
+	{
+		if(itr->first == key)
+		{
+			itr->second == value;
+			return;
+		}
+	}
+
+	//TODO - Alert or something else? Where will this API be used?
+	AssertPrintf("Cannot edit key %s, key could not found.", itr->first);
+	return;
 }
 
 //Removes a key/value pair
@@ -149,6 +160,21 @@ void		WED_Airport::RemoveMetaDataKey(const string& key)
 {
 	StateChanged();
 
+	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
+	
+	//Search through vector looking for the key to remove
+	for( ; itr != meta_data_vec_map.end(); ++itr)
+	{
+		if(itr->first == key)
+		{
+			meta_data_vec_map.erase(itr);
+			return;
+		}
+	}
+
+	//TODO - Alert or something else? Where will this API be used?
+	AssertPrintf("Cannot remove key %s, key could not found.", itr->first);
+	return;
 }
 
 bool		WED_Airport::ContainsMetaDataKey(const string& key)
@@ -185,6 +211,7 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 	has_atc = info.has_atc_twr;
 	icao = info.icao;
 	SetName(info.name);
+	meta_data_vec_map = info.meta_data;
 }
 
 void		WED_Airport::Export(AptInfo_t& info) const
@@ -202,6 +229,7 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	info.tower.draw_obj = -1;
 	info.tower.height_ft = 50.0;
 	info.beacon.color_code = apt_beacon_none;
+	info.meta_data = meta_data_vec_map;
 }
 
 //--IPropertyObject------------------------------------------------------------
@@ -385,7 +413,6 @@ void			WED_Airport::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	WED_GISComposite::StartElement(reader, name, atts);
 	if(strcasecmp(name,"meta_data_entry") == 0)
 	{
 		const XML_Char * entry_value = get_att("pair",atts);

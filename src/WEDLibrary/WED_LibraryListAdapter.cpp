@@ -100,6 +100,8 @@ void	WED_LibraryListAdapter::GetCellContent(
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
 	
 	//Defaults 0, makes !special or !normal
+	
+	c.can_delete = false;
 	c.can_edit = false;
 	c.can_disclose = 0; //Default no.
 	
@@ -146,7 +148,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 	//Cut here
 	c.text_val = c.text_val.substr(cut+1);
 #if DEV
-	//c.printCellInfo(true,true,true,true,false,true,true,false,true,0,0,0,0,1);
+	//c.printCellInfo(true,true,true,true,true,false,true,true,false,true,0,0,0,0,1);
 #endif
 }
 

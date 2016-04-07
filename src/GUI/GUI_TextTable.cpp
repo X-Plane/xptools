@@ -272,6 +272,8 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 
 		glColor3f(1,1,1);
 		GUI_DrawCentered(inState, "delete.png", cell_bounds, -1,0, tile, NULL, NULL);
+
+		cell_bounds[0] += GUI_GetImageResourceWidth("delete.png");
 	}
 
 	if(c.is_disclosed || c.can_disclose)

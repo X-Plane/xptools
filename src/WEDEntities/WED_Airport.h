@@ -108,7 +108,6 @@ private:
 	//A vector of key value pairs of meta data, chosen due to GetNthProperty being called the most.
 	//Due to the way it is stored in XML, keys are not allowed to contain commas
 	vector<meta_data_entry>	meta_data_vec_map;
-	
 };
 
 
