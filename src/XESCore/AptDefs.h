@@ -81,7 +81,7 @@ enum {
 
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
 	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list
-
+	apt_meta_data = 1302,				// 1302 <key> <value>
 	// Surface codes
 	apt_surf_none		= 0,
 	apt_surf_asphalt,
@@ -494,6 +494,7 @@ struct AptInfo_t {
 	int					elevation_ft;
 	int					has_atc_twr;
 	int					default_buildings;		// not used in 850
+	std::vector<std::pair<string,string>> meta_data;
 
 	AptRunwayVector		runways;				// 850 structures
 	AptSealaneVector	sealanes;

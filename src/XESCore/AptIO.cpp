@@ -700,6 +700,31 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 			}
 			break;
+		case apt_meta_data:
+			{
+				int tokens = TextScanner_FormatScan(s,"i|",
+					&rec_code);
+				if(tokens < 1)
+				{
+					ok = "Error: bad meta_data_entry.";
+				}
+
+				string full_entry_text(TextScanner_GetBegin(s) + 5,TextScanner_GetEnd(s));
+				string key = full_entry_text.substr(0, full_entry_text.find_first_of(" "));
+				
+				if(key == "city") key = "City/Locality";
+				else if(key == "country") key = "Country";
+				else if(key == "faa_code") key = "FAA  Code";
+				else if(key == "iata_code") key = "IATA Code";
+				else if(key == "icao_code") key = "ICAO Code";
+				else if(key == "state") key = "State/Province";
+				else ok = "Error: bad_meta_data_entry";
+
+				string value = full_entry_text.substr(full_entry_text.find_first_of(" ") + 1);
+
+				outApts.back().meta_data.push_back(std::pair<string,string>(key,value));
+				break;
+			}
 		case apt_flow_def:
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: flow outside an airport.";
@@ -991,7 +1016,21 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		fprintf(fi, "%d %6d %d %d %s %s" CRLF, apt->kind_code, apt->elevation_ft,
 				apt->has_atc_twr, apt->default_buildings,
 				apt->icao.c_str(), apt->name.c_str());
+		
+		for(int i = 0; i < apt->meta_data.size(); ++i)
+		{
+			string key = apt->meta_data.at(i).first;
+			string value = apt->meta_data.at(i).second;
 
+			if(key == "City/Locality") key = "city";
+			else if(key == "Country") key = "country";
+			else if(key == "FAA  Code") key = "faa_code";
+			else if(key == "IATA Code") key = "iata_code";
+			else if(key == "ICAO Code") key = "icao_code";
+			else if(key == "State/Province") key = "state";
+			fprintf(fi, "%d %s %s" CRLF, apt_meta_data, key.c_str(), value.c_str());
+		}
+		
 		for (AptRunwayVector::const_iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
 			fprintf(fi,"%d %4.2f %d %d %.2f %d %d %d "
