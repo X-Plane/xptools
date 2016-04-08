@@ -8,7 +8,7 @@
 
 #include "WED_Sign_Editor.h"
 #include "AssertUtils.h"
-#include "WED_sign_parser.h"
+#include "WED_Sign_Parser.h"
 #include "GUI_GraphState.h"
 #include "GUI_Resources.h"
 #include "GUI_Fonts.h"
