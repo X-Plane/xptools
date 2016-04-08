@@ -215,7 +215,7 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 	meta_data_vec_map = info.meta_data;
 	int want_flatten = 0;
 	vector<meta_data_entry>::iterator i = meta_data_vec_map.begin();
-	while(i != info.meta_data.end())
+	while(i != meta_data_vec_map.end())
 	{
 		if(i->first == "flatten")
 		{
@@ -225,6 +225,7 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 		else
 			++i;
 	}
+	always_flatten = want_flatten;
 }
 
 void		WED_Airport::Export(AptInfo_t& info) const

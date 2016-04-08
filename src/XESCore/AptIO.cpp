@@ -717,10 +717,11 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				
 				if(key == "city") key = "City/Locality";
 				else if(key == "country") key = "Country";
-				else if(key == "faa_code") key = "FAA  Code";
+				else if(key == "faa_code") key = "FAA Code";
 				else if(key == "iata_code") key = "IATA Code";
 				else if(key == "icao_code") key = "ICAO Code";
 				else if(key == "state") key = "State/Province";
+				else if(key == "flatten") key = "flatten";
 				else ok = "Error: bad_meta_data_entry";
 
 				string value = full_entry_text.substr(full_entry_text.find_first_of(" ") + 1);
@@ -1027,7 +1028,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 			if(key == "City/Locality") key = "city";
 			else if(key == "Country") key = "country";
-			else if(key == "FAA  Code") key = "faa_code";
+			else if(key == "FAA Code") key = "faa_code";
 			else if(key == "IATA Code") key = "iata_code";
 			else if(key == "ICAO Code") key = "icao_code";
 			else if(key == "State/Province") key = "state";
