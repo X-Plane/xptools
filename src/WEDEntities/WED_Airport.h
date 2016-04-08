@@ -101,6 +101,7 @@ private:
 	WED_PropDoubleTextMeters	elevation;
 	WED_PropBoolText			has_atc;
 	WED_PropStringText			icao;
+	WED_PropBoolText			always_flatten;
 	WED_PropIntText				scenery_id;
 	
 	typedef std::pair<string,string> meta_data_entry;

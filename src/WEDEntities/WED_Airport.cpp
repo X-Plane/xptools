@@ -65,6 +65,7 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
 	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
 	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
+	always_flatten	(this, "Always Flatten",	SQL_Name("",""),						XML_Name("airport", "always_flatten"), 0),
 	scenery_id		(this, "Scenery ID",		SQL_Name("WED_airport", "scenery_id"),	XML_Name("airport", "scenery_id"), -1, 8),
 	meta_data_vec_map ()
 {
@@ -212,6 +213,18 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 	icao = info.icao;
 	SetName(info.name);
 	meta_data_vec_map = info.meta_data;
+	int want_flatten = 0;
+	vector<meta_data_entry>::iterator i = meta_data_vec_map.begin();
+	while(i != info.meta_data.end())
+	{
+		if(i->first == "flatten")
+		{
+			want_flatten = 1;
+			i = meta_data_vec_map.erase(i);
+		}
+		else
+			++i;
+	}
 }
 
 void		WED_Airport::Export(AptInfo_t& info) const
@@ -230,6 +243,8 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	info.tower.height_ft = 50.0;
 	info.beacon.color_code = apt_beacon_none;
 	info.meta_data = meta_data_vec_map;
+	if(always_flatten.value)
+		info.meta_data.push_back(make_pair(string("flatten"),string("1")));
 }
 
 //--IPropertyObject------------------------------------------------------------
