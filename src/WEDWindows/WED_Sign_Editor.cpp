@@ -12,6 +12,8 @@
 #include "GUI_GraphState.h"
 #include "GUI_Resources.h"
 #include "GUI_Fonts.h"
+#include <iterator>
+
 /*
 	todo:
 	
