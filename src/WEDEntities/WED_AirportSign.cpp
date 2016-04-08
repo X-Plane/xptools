@@ -79,3 +79,36 @@ void		WED_AirportSign::Export(		 AptSign_t& x) const
 	x.size_code = ENUM_Export(height.value);
 	GetName(x.text);
 }
+
+void		WED_AirportSign::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	WED_GISPoint_Heading::GetNthPropertyInfo(n, info);
+	if(n == PropertyItemNumber(&name))
+	{
+		DebugAssert(info.prop_kind == prop_String);
+		info.prop_kind = prop_TaxiSign;
+	}	
+}
+
+void		WED_AirportSign::GetNthProperty(int n, PropertyVal_t& val) const
+{
+	WED_GISPoint_Heading::GetNthProperty(n, val);
+	if(n == PropertyItemNumber(&name))
+	{
+		DebugAssert(val.prop_kind == prop_String);
+		val.prop_kind = prop_TaxiSign;
+	}
+
+}
+
+void		WED_AirportSign::SetNthProperty(int n, const PropertyVal_t& val)
+{
+	PropertyVal_t v(val);
+	if(n == PropertyItemNumber(&name))
+	{
+		DebugAssert(v.prop_kind == prop_TaxiSign);
+		v.prop_kind = prop_String;
+	}
+	WED_GISPoint_Heading::SetNthProperty(n, v);
+}
+

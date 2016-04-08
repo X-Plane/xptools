@@ -165,6 +165,7 @@ private:
 	WED_PropStringText			name;
 	
 friend class WED_TaxiRoute;
+friend class WED_AirportSign;
 
 };
 

@@ -236,6 +236,7 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageWindow.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp" />
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
     <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c" />
@@ -485,6 +486,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageWindow.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_Sign_Editor.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptDefs.h" />
