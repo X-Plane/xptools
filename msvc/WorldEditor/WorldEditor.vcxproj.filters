@@ -762,6 +762,9 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_ICAOTable.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1507,6 +1510,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDImportExport\WED_ICAOTable.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_Sign_Editor.h">
+      <Filter>WEDWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
