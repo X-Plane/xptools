@@ -46,7 +46,12 @@ void	WED_RampPosition::Import(const AptGate_t& x, void (* print_func)(void *, co
 	SetLocation(gis_Geo,x.location);
 	SetHeading(x.heading);
 	SetName(x.name);
-	SetRampOperationType(x.ramp_op_type);
+	ramp_op_type = ENUM_Import(RampOperationType, x.ramp_op_type);
+	if(ramp_op_type == -1)
+	{
+		print_func(ref,"Illegal oerations tye: %d\n", x.ramp_op_type);
+		ramp_op_type = ramp_operation_None;
+	}
 	SetAirlines(x.airlines);
 	
 	ramp_type			= ENUM_Import(ATCRampType,		x.type	);

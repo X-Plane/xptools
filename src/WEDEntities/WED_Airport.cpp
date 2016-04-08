@@ -145,13 +145,13 @@ void	WED_Airport::EditMetaDataKey(const string& key, const string& value)
 	{
 		if(itr->first == key)
 		{
-			itr->second == value;
+			itr->second = value;
 			return;
 		}
 	}
 
 	//TODO - Alert or something else? Where will this API be used?
-	AssertPrintf("Cannot edit key %s, key could not found.", itr->first);
+	AssertPrintf("Cannot edit key %s, key could not found.", itr->first.c_str());
 	return;
 }
 
@@ -173,7 +173,7 @@ void		WED_Airport::RemoveMetaDataKey(const string& key)
 	}
 
 	//TODO - Alert or something else? Where will this API be used?
-	AssertPrintf("Cannot remove key %s, key could not found.", itr->first);
+	AssertPrintf("Cannot remove key %s, key could not found.", itr->first.c_str());
 	return;
 }
 

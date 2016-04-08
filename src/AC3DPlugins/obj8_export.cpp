@@ -368,7 +368,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			center_for_rotation(obj, xyz2),
 			0.0, 0.0, "none");
 		builder->AccumRotateBegin(axis_for_rotation(obj,xyz1),
-							OBJ_get_anim_dataref(obj, dref));
+							OBJ_get_anim_dataref(obj, dref), OBJ_get_anim_loop(obj));
 		for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
 			builder->AccumRotateKey(OBJ_get_anim_nth_value(obj, k),
 									OBJ_get_anim_nth_angle(obj, k));
@@ -380,7 +380,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		break;
 	case anim_trans:
 		{
-			builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref));
+			builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref),OBJ_get_anim_loop(obj));
 			for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
 				builder->AccumTranslateKey(OBJ_get_anim_nth_value(obj,k),
 											anim_trans_nth_relative(obj, k, xyz1));
@@ -510,6 +510,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			m.axis[0] = OBJ_get_manip_dx(obj);
 			m.axis[1] = OBJ_get_manip_dy(obj);
 			m.axis[2] = OBJ_get_manip_dz(obj);
+			m.mouse_wheel_delta = OBJ_get_manip_wheel(obj);
 
 			switch(OBJ_get_manip_type(obj)) {
 			case manip_panel:
@@ -556,6 +557,27 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				break;
 			case manip_dref_wrap:
 				builder->AccumManip(attr_Manip_Wrap,m);
+				break;
+			case manip_axis_pix:
+				builder->AccumManip(attr_Manip_Drag_Axis_Pix,m);
+				break;
+			case manip_command_knob:
+				builder->AccumManip(attr_Manip_Command_Knob,m);
+				break;
+			case manip_command_switch_lr:
+				builder->AccumManip(attr_Manip_Command_Switch_Left_Right,m);
+				break;
+			case manip_command_switch_ud:
+				builder->AccumManip(attr_Manip_Command_Switch_Up_Down,m);
+				break;
+			case manip_dref_knob:
+				builder->AccumManip(attr_Manip_Axis_Knob,m);
+				break;
+			case manip_dref_switch_ud:
+				builder->AccumManip(attr_Manip_Axis_Switch_Up_Down,m);
+				break;
+			case manip_dref_switch_lr:
+				builder->AccumManip(attr_Manip_Axis_Switch_Left_Right,m);
 				break;
 			}
 

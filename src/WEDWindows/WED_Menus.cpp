@@ -171,18 +171,19 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select &Children",	GUI_KEY_DOWN,	gui_ControlFlag,				0,	wed_SelectChild		},
 {	"Select P&olygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
 {	"Select &Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
+{	"Select Conn&ected",			0,			0,							0,	wed_SelectConnected },
 #if AIRPORT_ROUTING
 {	"-",						0,			0,							0,	0					},
-{	"Select Degenerate Edges",	0,			0,							0,	wed_SelectZeroLength },
-{	"Select Double Nodes",		0,			0,							0,	wed_SelectDoubles	},
-{	"Select Crossing Edges",	0,			0,							0,	wed_SelectCrossing	},
+{	"Select &Degenerate Edges",	0,			0,							0,	wed_SelectZeroLength },
+{	"Select Do&uble Nodes",		0,			0,							0,	wed_SelectDoubles	},
+{	"Select Crossing Ed&ges",	0,			0,							0,	wed_SelectCrossing	},
 #endif
 {	"-",						0,			0,							0,	0					},
-{	"Select Local Objects",		0,			0,							0,	wed_SelectLocalObjects },
-{	"Select Library Objects",	0,			0,							0,	wed_SelectLibraryObjects },
-{	"Select Laminar Library Objects",0,		0,							0,	wed_SelectDefaultObjects },
-{	"Select Third Party Library Objects",0,	0,							0,	wed_SelectThirdPartyObjects },
-{	"Select Missing Objects",	0,			0,							0,	wed_SelectMissingObjects },
+{	"Select Local Ob&jects",		0,			0,							0,	wed_SelectLocalObjects },
+{	"Select L&ibrary Objects",	0,			0,							0,	wed_SelectLibraryObjects },
+{	"Select &Laminar Library Objects",0,		0,							0,	wed_SelectDefaultObjects },
+{	"Select &Third Party Library Objects",0,	0,							0,	wed_SelectThirdPartyObjects },
+{	"Select &Missing Objects",	0,			0,							0,	wed_SelectMissingObjects },
 {	NULL,						0,			0,							0,	0					},
 };
 

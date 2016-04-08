@@ -307,7 +307,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 			if (rwy)
 			{
-				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced threshholds.";
+				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced thresholds.";
 				
 				#if !GATEWAY_IMPORT_FEATURES
 					if(rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0) msg = "The runway '" + name + "' has an illegal surface roughness. It should be in the range 0 to 1.";

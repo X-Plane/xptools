@@ -113,6 +113,7 @@ enum {
 	wed_SelectChild,
 	wed_SelectVertex,
 	wed_SelectPoly,
+	wed_SelectConnected,
 #if AIRPORT_ROUTING
 	wed_SelectZeroLength,
 	wed_SelectDoubles,

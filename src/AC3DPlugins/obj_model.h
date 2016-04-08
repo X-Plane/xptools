@@ -49,7 +49,14 @@ enum {
 	manip_dref_radio = 8,
 	manip_dref_toggle = 9,
 	manip_dref_delta = 10,
-	manip_dref_wrap = 11
+	manip_dref_wrap = 11,
+	manip_axis_pix = 12,
+	manip_command_knob = 13,
+	manip_command_switch_ud = 14,
+	manip_command_switch_lr = 15,
+	manip_dref_knob = 16,
+	manip_dref_switch_ud = 17,
+	manip_dref_switch_lr = 18
 };
 
 void		OBJ_set_name(ACObject * obj, const char * name);
@@ -97,6 +104,7 @@ void		OBJ_set_layer_group_offset(ACObject * obj, int offset);
 void		OBJ_set_animation_group(ACObject * obj, int is_group);
 void		OBJ_set_anim_type(ACObject * obj, int anim_type);
 void		OBJ_set_anim_dataref(ACObject * obj, const char * dataref);
+void		OBJ_set_anim_loop(ACObject * obj, float v);
 //void		OBJ_set_anim_low_value(ACObject * obj, float v1);
 //void		OBJ_set_anim_high_value(ACObject * obj, float v2);
 //void		OBJ_set_anim_low_angle(ACObject * obj, float a1);
@@ -119,6 +127,7 @@ void		OBJ_set_manip_dref1(ACObject * obj, const char * dref);
 void		OBJ_set_manip_dref2(ACObject * obj, const char * dref);
 void		OBJ_set_manip_tooltip(ACObject * obj, const char * dref);
 void		OBJ_set_manip_cursor(ACObject * obj, const char * cursor);
+void		OBJ_set_manip_wheel(ACObject * obj, float v);
 
 void		OBJ_set_has_panel_regions(ACObject * obj, int e);
 void		OBJ_set_num_panel_regions(ACObject * obj, int k);
@@ -175,6 +184,8 @@ int				OBJ_get_layer_group_offset(ACObject * obj);
 int				OBJ_get_animation_group(ACObject * obj);
 int				OBJ_get_anim_type(ACObject * obj);
 const char *	OBJ_get_anim_dataref(ACObject * obj, char * buf);
+float			OBJ_get_anim_loop(ACObject * obj);
+
 //float			OBJ_get_anim_low_value(ACObject * obj);
 //float			OBJ_get_anim_high_value(ACObject * obj);
 //float			OBJ_get_anim_low_angle(ACObject * obj);
@@ -197,6 +208,7 @@ const char *	OBJ_get_manip_dref1(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_dref2(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_tooltip(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_cursor(ACObject * obj, char * buf);
+float			OBJ_get_manip_wheel(ACObject * obj);
 
 int				OBJ_get_has_panel_regions(ACObject * obj);
 int				OBJ_get_num_panel_regions(ACObject * obj);

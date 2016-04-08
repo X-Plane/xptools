@@ -40,6 +40,7 @@ enum {
 	prop_Double,
 	prop_String,
 	prop_FilePath,
+	prop_TaxiSign,
 	prop_Bool,			// Returns as int
 	prop_Enum,			// Returns as int
 	prop_EnumSet

@@ -350,7 +350,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				ok = "Illegal old runway";
 				center_loc = POINT2(p1x, p1y);
 			if (sscanf(dis.c_str(),"%d.%d", &rwy->disp1_ft,&rwy->disp2_ft) != 2)
-				ok = string("Illegal displaced threshholds in old runway") + dis;
+				ok = string("Illegal displaced thresholds in old runway") + dis;
 			if (sscanf(blas.c_str(),"%d.%d", &rwy->blast1_ft,&rwy->blast2_ft) != 2)
 				ok = string("Illegal blast-pads in old runway: ") + blas;
 
@@ -397,6 +397,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				outApts.back().gates.back().type = atc_ramp_misc;
 				outApts.back().gates.back().width = atc_width_F;
 				outApts.back().gates.back().equipment = atc_traffic_all;
+				outApts.back().gates.back().ramp_op_type = ramp_operation_none;
+
 			break;
 		case apt_beacon:
 			if (TextScanner_FormatScan(s, "iddiT|",
@@ -642,6 +644,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 					gate.equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
 					gate.location = POINT2(p1x, p1y);
+					gate.ramp_op_type = ramp_operation_none;
 					outApts.back().gates.push_back(gate);
 				}
 			}

@@ -51,6 +51,7 @@
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
 #include "WED_Menus.h"
+#include <iterator>
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -1038,6 +1039,49 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 	op->CommitOperation();
 }
 
+int		WED_CanSelectConnected(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	return 1;
+}
+
+void	WED_DoSelectConnected(IResolver * resolver)
+{
+	vector<WED_Thing *>	things;
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelectionOr(Iterate_CollectThings,&things);
+	if (things.empty()) return;
+	op->StartOperation("Select Connected");
+	set<WED_Thing *>	visited, to_visit;
+	std::copy(things.begin(),things.end(), inserter(to_visit,to_visit.end()));
+	
+	while(!to_visit.empty())
+	{
+		WED_Thing * i = *to_visit.begin();
+		to_visit.erase(to_visit.begin());
+		visited.insert(i);
+		
+		int s = i->CountSources();
+		for(int ss = 0; ss < s; ++ss)
+		{
+			WED_Thing * src = i->GetNthSource(ss);
+			if(visited.count(src) == 0)
+				to_visit.insert(src);
+		}
+		set<WED_Thing *>	viewers;
+		i->GetAllViewers(viewers);
+		set_difference(viewers.begin(), viewers.end(), visited.begin(), visited.end(), inserter(to_visit, to_visit.end()));
+	}
+	
+	for(set<WED_Thing *>::iterator v = visited.begin(); v != visited.end(); ++v)
+	{
+		sel->Insert(*v);
+	}
+	op->CommitOperation();
+}
+
 void select_zero_recursive(WED_Thing * t, ISelection * s)
 {
 	IGISEdge * e = dynamic_cast<IGISEdge *>(t);
@@ -1440,37 +1484,137 @@ void	WED_DoSplit(IResolver * resolver)
 	op->CommitOperation();
 }
 
+typedef map<Point2, pair<const char *, vector<WED_Thing *> >,lesser_y_then_x>	merge_class_map;
+
+static const char * get_merge_tag_for_thing(IGISPoint * ething)
+{
+	// In order to merge, we haveto at least be a thing AND a point,
+	// and have a parent that is a thing and an entity.  (If that's
+	// not true, @#$ knows what is selected.)
+	if(ething == NULL)
+		return NULL;
+	WED_Thing * thing = dynamic_cast<WED_Thing *>(ething);
+	if(thing == NULL)
+		return NULL;
+
+	WED_Thing * parent = thing->GetParent();
+	if(parent == NULL)
+		return NULL;
+	IGISEntity * eparent = dynamic_cast<IGISEntity *>(parent);
+	if(eparent == NULL)
+		return NULL;
+	
+	if(eparent->GetGISClass() == gis_Composite)
+	{
+		// If our parent is a composite, we are a point or vertex.
+		// Merge nodes of edges, but not just raw points.  Don't let
+		// the user select two windsocks and, um, "merge" them.
+		if(thing->CountViewers() > 0)
+			return ething->GetGISSubtype();
+		else
+			return NULL;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+static int iterate_can_merge(ISelectable * who, void * ref)
+{
+	merge_class_map * sinks = (merge_class_map *) ref;
+	IGISPoint * p = dynamic_cast<IGISPoint *>(who);
+	if(p == NULL) return 0;
+	WED_Thing * t = dynamic_cast<WED_Thing *>(who);
+	const char * tag = get_merge_tag_for_thing(p);
+	if(tag == NULL) return 0;
+	if(t == NULL) return 0;
+	
+	Point2	loc;
+	p->GetLocation(gis_Geo, loc);
+	merge_class_map::iterator l = sinks->find(loc);
+	if(l == sinks->end())
+	{
+		sinks->insert(make_pair(loc,make_pair(tag,vector<WED_Thing*>(1,t))));
+		return 1;
+	}
+	else
+	{
+		if(l->second.first == tag)
+		{
+			l->second.second.push_back(t);
+			return 1;
+		}
+		return 0;
+	}
+}
+
+
 int	WED_CanMerge(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	if(sel->GetSelectionCount() < 2) return 0;		// can't merge 1 thing!
-	if(!sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_TaxiRouteNode::sClass)) return 0;
 	
-	if(sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
+	merge_class_map sinkmap;
+	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
+		return 0;
+	
+	bool has_overlap = false;
+	const char * has_loner = NULL;
+	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
+	{
+		if(m->second.second.size() == 1)
+		{
+			if(has_loner == NULL)
+				has_loner = m->second.first;
+			else if(has_loner != m->second.first)
+				return 0;
+		}
+		else
+			has_overlap = true;
+	}
+	
+	if(has_loner && has_overlap)
+		return 0;
 	
 	return 1;
 }
 
-static int iterate_do_merge(ISelectable * who, void * ref)
+static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
 {
-	vector<WED_Thing *> * nodes = (vector<WED_Thing *> *) ref;
+	DebugAssert(nodes.size() > 1);
+	WED_Thing * winner = nodes.front();
 	
-	WED_TaxiRouteNode * n = dynamic_cast<WED_TaxiRouteNode *>(who);
-	
-	if(n)
+	Point2	l(0.0,0.0);
+	for(int i = 0; i < nodes.size(); ++i)
 	{
-		if(!nodes->empty())
-		{
-			WED_Thing * rep = nodes->front();
-			set<WED_Thing *> viewers;
-			n->GetAllViewers(viewers);
-			for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
-				(*v)->ReplaceSource(n, rep);
-		}
-		nodes->push_back(n);
+		IGISPoint * p = dynamic_cast<IGISPoint *>(nodes[i]);
+		DebugAssert(p);
+		Point2 ll;
+		p->GetLocation(gis_Geo, ll);
+		l.x_ += ll.x_;
+		l.y_ += ll.y_;
 	}
+	double r = nodes.size();
+	r = 1.0f / r;
+	l.x_ *= r;
+	l.y_ *= r;
 	
-	return 0;
+	IGISPoint * w = dynamic_cast<IGISPoint *>(winner);
+	w->SetLocation(gis_Geo,l);
+	
+	for(int i = 1; i < nodes.size(); ++i)
+	{
+		WED_Thing * victim = nodes[i];
+		set<WED_Thing *> viewers;
+		victim->GetAllViewers(viewers);
+		for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
+			(*v)->ReplaceSource(victim, winner);
+		
+		victim->SetParent(NULL, 0);
+		victim->Delete();
+	}
+	return winner;
 }
 
 void WED_DoMerge(IResolver * resolver)
@@ -1479,26 +1623,41 @@ void WED_DoMerge(IResolver * resolver)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
-	vector<WED_Thing *>	nodes;
-	sel->IterateSelectionOr(iterate_do_merge,&nodes);
-		
-	for(int n = 1; n < nodes.size(); ++n)
+	DebugAssert(sel->GetSelectionCount() >= 2);
+	
+	merge_class_map sinkmap;
+	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
-		nodes[n]->SetParent(NULL,0);
-		nodes[n]->Delete();
+		DebugAssert(!"Merge was not legal");
+		op->AbortOperation();
+		return;
 	}
 	
-	if(nodes.empty())
-		sel->Clear();
-	else
+	vector<WED_Thing *>		remaining_nodes;
+	vector<WED_Thing *>	solos;
+	
+	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
+	{
+		if(m->second.second.size() == 1)
+			solos.push_back(m->second.second.front());
+		else
+			remaining_nodes.push_back(run_merge(m->second.second));
+	}
+	
+	if(!solos.empty())
+		remaining_nodes.push_back(run_merge(solos));
+
+	sel->Clear();
+	
+	for(vector<WED_Thing *>::iterator node = remaining_nodes.begin(); node != remaining_nodes.end(); ++node)
 	{
 		set<WED_Thing *>	viewers;
-		nodes[0]->GetAllViewers(viewers);
+		(*node)->GetAllViewers(viewers);
 		for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
 		{
 			if((*v)->GetNthSource(0) == (*v)->GetNthSource(1))
 			{
-				(*v)->RemoveSource(nodes[0]);
+				(*v)->RemoveSource((*node));
 				(*v)->SetParent(NULL,0);
 				(*v)->Delete();
 			}
@@ -1507,7 +1666,7 @@ void WED_DoMerge(IResolver * resolver)
 		// Ben says: DO NOT delete the "unviable" isolated vertex here..if the user merged this down, maybe the user will link to it next?
 		// User can clean this by hand - it is in the selection when we are done.
 				
-		sel->Select(nodes[0]);
+		sel->Insert((*node));
 	}
 	op->CommitOperation();
 }
@@ -1596,31 +1755,71 @@ void	WED_DoDuplicate(IResolver * resolver, bool wrap_in_cmd)
 	if ((t = dynamic_cast<WED_Thing *>(*s)) != NULL)
 	{
 		if (t == wrl) continue;
-		bool par_sel = false;
-		WED_Thing * p = t->GetParent();
-		while(p)
+		set<WED_Thing *> v;
+		t->GetAllViewers(v);
+		bool edge_sel = false;
+		for(set<WED_Thing *>::iterator vv = v.begin(); vv != v.end(); ++vv)
 		{
-			if (sel->IsSelected(p))
+			if(sel->IsSelected(*vv))
 			{
-				par_sel = true;
+				edge_sel = true;
 				break;
 			}
-			p = p->GetParent();
 		}
-		if (!par_sel) dupe_targs.push_back(t);
+		
+		if(!edge_sel)
+		{
+			bool par_sel = false;
+			WED_Thing * p = t->GetParent();
+			while(p)
+			{
+				if (sel->IsSelected(p))
+				{
+					par_sel = true;
+					break;
+				}
+				p = p->GetParent();
+			}
+			if (!par_sel) dupe_targs.push_back(t);
+		}
 	}
 
 	if (dupe_targs.empty()) return;
 	if (wrap_in_cmd)		wrl->StartOperation("Duplicate");
 
 	sel->Clear();
+	
+	map<WED_Thing *,WED_Thing *>	src_map;
+	vector<WED_Thing *>				new_things;
+	
 	for (vector<WED_Thing *>::iterator i = dupe_targs.begin(); i != dupe_targs.end(); ++i)
 	{
-		WED_Persistent * np = (*i)->Clone();
+		WED_Thing * orig = *i;
+		int ss = orig->CountSources();
+		for(int s = 0; s < ss; ++s)
+			src_map.insert(make_pair(orig->GetNthSource(s),(WED_Thing *)NULL));
+		WED_Persistent * np = orig->Clone();
 		t = dynamic_cast<WED_Thing *>(np);
 		DebugAssert(t);
-		t->SetParent((*i)->GetParent(), (*i)->GetMyPosition());
+		t->SetParent(orig->GetParent(), orig->GetMyPosition());
 		sel->Insert(t);
+		new_things.push_back(t);
+	}
+	
+	for(map<WED_Thing*,WED_Thing *>::iterator s = src_map.begin(); s != src_map.end(); ++s)
+	{
+		s->second = dynamic_cast<WED_Thing *>(s->first->Clone());
+		s->second->SetParent(s->first->GetParent(),s->first->GetMyPosition());
+	}
+	for(vector<WED_Thing*>::iterator nt = new_things.begin(); nt != new_things.end(); ++nt)
+	{
+		int ss = (*nt)->CountSources();
+		for(int s = 0; s < ss; ++s)
+		{
+			WED_Thing * orig = (*nt)->GetNthSource(s);
+			if(src_map.count(orig))
+				(*nt)->ReplaceSource(orig, src_map[orig]);
+		}
 	}
 
 	if (wrap_in_cmd)		wrl->CommitOperation();

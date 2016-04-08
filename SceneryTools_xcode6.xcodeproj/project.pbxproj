@@ -141,6 +141,7 @@
 		D608024715463380001BE1A9 /* WED_FilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608024615463380001BE1A9 /* WED_FilterBar.cpp */; };
 		D6080505154659A7001BE1A9 /* push_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = D6080504154659A7001BE1A9 /* push_buttons.png */; };
 		D60808821546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */; };
+		D60826581C3622AC001CC3CF /* WED_Sign_Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */; };
 		D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */; };
 		D60B0ECD0FCC886A001E8DD3 /* WED_Orthophoto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */; };
 		D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */; };
@@ -700,6 +701,7 @@
 		D6BC3B100AB231B8003949C5 /* TexUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37A10AB22C85003949C5 /* TexUtils.cpp */; };
 		D6BC3B110AB231C8003949C5 /* OE_Zoomer3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37230AB22C84003949C5 /* OE_Zoomer3d.cpp */; };
 		D6BF8B3D0F13FA84002AC0BE /* ObjDraw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36E30AB22C84003949C5 /* ObjDraw.cpp */; };
+		D6C21A3C1C41A5DB00EE5FB3 /* taxi_sign.png in Resources */ = {isa = PBXBuildFile; fileRef = D6C21A3B1C41A5DB00EE5FB3 /* taxi_sign.png */; };
 		D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C37B170C27920D0023B35C /* GUI_Help.cpp */; };
 		D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */; };
 		D6C390020FA0D93400EFA56C /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
@@ -1057,6 +1059,8 @@
 		D6080504154659A7001BE1A9 /* push_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = push_buttons.png; sourceTree = "<group>"; };
 		D60808801546E5F6001BE1A9 /* WED_LibraryPreviewPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_LibraryPreviewPane.h; sourceTree = "<group>"; };
 		D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryPreviewPane.cpp; sourceTree = "<group>"; };
+		D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Sign_Editor.cpp; sourceTree = "<group>"; };
+		D60826571C3622AC001CC3CF /* WED_Sign_Editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Editor.h; sourceTree = "<group>"; };
 		D60A99AC0B7A57E0002680BD /* GUI_Packer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Packer.h; sourceTree = "<group>"; };
 		D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Packer.cpp; sourceTree = "<group>"; };
 		D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Orthophoto.h; sourceTree = "<group>"; };
@@ -1082,6 +1086,7 @@
 		D60BFCDB0C03664F00AD5EB7 /* handle_vertexsharp.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_vertexsharp.png; sourceTree = "<group>"; };
 		D60C07E00C2328B700783179 /* WED_FastBuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FastBuffer.h; sourceTree = "<group>"; };
 		D60C07E10C2328B700783179 /* WED_FastBuffer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FastBuffer.cpp; sourceTree = "<group>"; };
+		D6110F981C32136000A37784 /* WED_Sign_Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Parser.h; sourceTree = "<group>"; };
 		D6139E1E0BD5793500D50803 /* WED_StructureLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_StructureLayer.h; sourceTree = "<group>"; };
 		D6139E1F0BD5793500D50803 /* WED_StructureLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_StructureLayer.cpp; sourceTree = "<group>"; };
 		D613A2DE0BD64C1800D50803 /* WED_TerraserverLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TerraserverLayer.h; sourceTree = "<group>"; };
@@ -1892,6 +1897,7 @@
 		D6BC38CB0AB22C85003949C5 /* ViewObj.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ViewObj.cpp; sourceTree = "<group>"; };
 		D6BC3A6D0AB22E5C003949C5 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = ../../System/Library/Frameworks/AGL.framework; sourceTree = "<group>"; };
 		D6BC3A710AB22E67003949C5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
+		D6C21A3B1C41A5DB00EE5FB3 /* taxi_sign.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = taxi_sign.png; sourceTree = "<group>"; };
 		D6C37B160C27920D0023B35C /* GUI_Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Help.h; sourceTree = "<group>"; };
 		D6C37B170C27920D0023B35C /* GUI_Help.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Help.cpp; sourceTree = "<group>"; };
 		D6C37B880C2796850023B35C /* WED_Version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Version.h; sourceTree = "<group>"; };
@@ -2984,6 +2990,7 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
 				D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */,
 				D6424EFD115948CD0031370E /* WED_DataModel2.sql */,
 				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
@@ -3130,6 +3137,8 @@
 				D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */,
 				D608024515463380001BE1A9 /* WED_FilterBar.h */,
 				D608024615463380001BE1A9 /* WED_FilterBar.cpp */,
+				D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */,
+				D60826571C3622AC001CC3CF /* WED_Sign_Editor.h */,
 			);
 			path = WEDWindows;
 			sourceTree = "<group>";
@@ -3415,6 +3424,7 @@
 			isa = PBXGroup;
 			children = (
 				D6B69CDE1C582B6A005C78C5 /* parking_spots */,
+				D6C21A3B1C41A5DB00EE5FB3 /* taxi_sign.png */,
 				D63A801F1A997EB5008D218D /* COPYING */,
 				D63D3A32192FA28F0004534A /* gateway.crt */,
 				D6080504154659A7001BE1A9 /* push_buttons.png */,
@@ -3960,6 +3970,7 @@
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
 				D6EA9CC711A0B2C8004ADCCC /* WED_DataModel2.sql in Resources */,
 				D63D8E6113F32E5500E353E8 /* map_missing_obj.png in Resources */,
+				D6C21A3C1C41A5DB00EE5FB3 /* taxi_sign.png in Resources */,
 				D6080505154659A7001BE1A9 /* push_buttons.png in Resources */,
 				D6FE7C81173EC49C007721F2 /* map_tree.png in Resources */,
 				D6B69CE51C582B6A005C78C5 /* ClassA.png in Resources */,
@@ -4523,6 +4534,7 @@
 				D6ED36B20B67964D00D5484E /* GUI_ScrollBar.cpp in Sources */,
 				D6ED36B30B67964D00D5484E /* GUI_ScrollerPane.cpp in Sources */,
 				D6ED36B40B67964D00D5484E /* GUI_SimpleScroller.cpp in Sources */,
+				D60826581C3622AC001CC3CF /* WED_Sign_Editor.cpp in Sources */,
 				D6ED36B50B67964D00D5484E /* GUI_Splitter.cpp in Sources */,
 				D6ED36B60B67964D00D5484E /* GUI_Table.cpp in Sources */,
 				D6ED36B70B67964D00D5484E /* GUI_TextField.cpp in Sources */,

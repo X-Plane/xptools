@@ -217,8 +217,8 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- RUNWAYS ---------------
 
-	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2",
-									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1",
+	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshold 2",
+									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshold 1",
 									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
 	static		 int	rwy_w[] = { 150, 150, 150, 150, 150, 150,
 									150, 150, 150, 150, 150, 150,
@@ -387,6 +387,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectChild:	WED_DoSelectChildren(mDocument);	return 1;
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
+	case wed_SelectConnected:WED_DoSelectConnected(mDocument);	return 1;
 
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:	if(!WED_DoSelectZeroLength(mDocument))		DoUserAlert("Your project has no zero-length ATC routing lines.");	return 1;
@@ -506,6 +507,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectChild:	return WED_CanSelectChildren(mDocument);
 	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
+	case wed_SelectConnected:	return WED_CanSelectConnected(mDocument);
 
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:
