@@ -147,6 +147,10 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.content_type = gui_Cell_EditText;
 		the_content.text_val = val.string_val;
 		break;
+	case prop_TaxiSign:
+		the_content.content_type = gui_Cell_TaxiText;
+		the_content.text_val = val.string_val;
+		break;
 	case prop_FilePath:
 		the_content.content_type = gui_Cell_FileText;
 		the_content.text_val = val.string_val;
@@ -275,6 +279,7 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Int		&& content.content_type != gui_Cell_Integer	)	continue;
 		if (inf.prop_kind == prop_Double	&& content.content_type != gui_Cell_Double	)	continue;
 		if (inf.prop_kind == prop_String	&& content.content_type != gui_Cell_EditText)	continue;
+		if (inf.prop_kind == prop_TaxiSign && content.content_type != gui_Cell_TaxiText) continue;
 		if (inf.prop_kind == prop_FilePath	&& content.content_type != gui_Cell_FileText)	continue;
 		if (inf.prop_kind == prop_Bool		&& content.content_type != gui_Cell_CheckBox)	continue;
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
@@ -291,6 +296,10 @@ void	WED_PropertyTable::AcceptEdit(
 			break;
 		case prop_String:
 			val.prop_kind = prop_String;
+			val.string_val = content.text_val;
+			break;
+		case prop_TaxiSign:
+			val.prop_kind = prop_TaxiSign;
 			val.string_val = content.text_val;
 			break;
 		case prop_FilePath:
@@ -533,6 +542,7 @@ int		WED_PropertyTable::TabAdvance(
 		GetCellContent(io_x, io_y, the_content);
 		if (the_content.can_edit && (
 			the_content.content_type == gui_Cell_EditText ||
+			the_content.content_type == gui_Cell_TaxiText ||
 			the_content.content_type == gui_Cell_Integer ||
 			the_content.content_type == gui_Cell_Double))
 		{
