@@ -384,12 +384,12 @@ bool	WED_CanAddMetaData(IResolver * inResolver, int command)
 	{
 		switch(command)
 		{			
-			case wed_AddMetaDataCity:    return !sel_airport->ContainsMetaDataKey("City/Locality");
-			case wed_AddMetaDataCountry: return !sel_airport->ContainsMetaDataKey("Country");
-			case wed_AddMetaDataFAA:     return !sel_airport->ContainsMetaDataKey("FAA Code");
-			case wed_AddMetaDataIATA:    return !sel_airport->ContainsMetaDataKey("IATA Code");
-			case wed_AddMetaDataICAO:    return !sel_airport->ContainsMetaDataKey("ICAO Code");
-			case wed_AddMetaDataState:   return !sel_airport->ContainsMetaDataKey("State/Province");
+			case wed_AddMetaDataCity:    return !sel_airport->ContainsMetaDataKey("city");
+			case wed_AddMetaDataCountry: return !sel_airport->ContainsMetaDataKey("country");
+			case wed_AddMetaDataFAA:     return !sel_airport->ContainsMetaDataKey("faa_code");
+			case wed_AddMetaDataIATA:    return !sel_airport->ContainsMetaDataKey("iata_code");
+			case wed_AddMetaDataICAO:    return !sel_airport->ContainsMetaDataKey("icao_code");
+			case wed_AddMetaDataState:   return !sel_airport->ContainsMetaDataKey("state");
 			default: return 0;
 		}
 	}

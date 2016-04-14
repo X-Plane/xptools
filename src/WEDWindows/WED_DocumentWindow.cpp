@@ -401,12 +401,12 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectMissingObjects:		WED_DoSelectMissingObjects(mDocument); return 1;
 #endif
 	//--Add Meta Data Sub Menu-----------------
-	case wed_AddMetaDataCity:	 WED_DoAddMetaData(mDocument, "City/Locality");  return 1;
-	case wed_AddMetaDataCountry: WED_DoAddMetaData(mDocument, "Country");        return 1;
-	case wed_AddMetaDataFAA:	 WED_DoAddMetaData(mDocument, "FAA Code");       return 1;
-	case wed_AddMetaDataIATA:	 WED_DoAddMetaData(mDocument, "IATA Code");      return 1;
-	case wed_AddMetaDataICAO:	 WED_DoAddMetaData(mDocument, "ICAO Code");      return 1;
-	case wed_AddMetaDataState:	 WED_DoAddMetaData(mDocument, "State/Province"); return 1;
+	case wed_AddMetaDataCity:	 WED_DoAddMetaData(mDocument, "city");      return 1;
+	case wed_AddMetaDataCountry: WED_DoAddMetaData(mDocument, "country");   return 1;
+	case wed_AddMetaDataFAA:	 WED_DoAddMetaData(mDocument, "faa_code");  return 1;
+	case wed_AddMetaDataIATA:	 WED_DoAddMetaData(mDocument, "iata_code"); return 1;
+	case wed_AddMetaDataICAO:	 WED_DoAddMetaData(mDocument, "icao_code"); return 1;
+	case wed_AddMetaDataState:	 WED_DoAddMetaData(mDocument, "state");     return 1;
 	//----------------------------------------
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ExportPack:	WED_DoExportPack(mDocument); return 1;

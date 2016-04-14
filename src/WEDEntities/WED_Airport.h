@@ -45,7 +45,9 @@ public:
 	void		SetHasATC(int has_atc);
 	void		SetICAO(const string& icao);
 
-	//Meta Data API
+	typedef std::pair<string,string> meta_data_entry;
+
+	//--Meta Data API-------------------------------
 	//Adds a Meta Data Key. In the case of a collision... what should happen?
 	void		AddMetaDataKey(const string& key, const string& value);
 	
@@ -60,6 +62,10 @@ public:
 
 	//Gets the size of the Meta Data Vector
 	int			CountMetaDataKeys();
+
+	//Gets the meta data entry at the given index
+	meta_data_entry	GetMetaDataEntryAt(int index);
+	//----------------------------------------------
 
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptInfo_t& info) const;
@@ -104,9 +110,7 @@ private:
 	WED_PropBoolText			always_flatten;
 	WED_PropIntText				scenery_id;
 	
-	typedef std::pair<string,string> meta_data_entry;
-
-	//A vector of key value pairs of meta data, chosen due to GetNthProperty being called the most.
+	//A vector of meta data key,value entrys, all synthetic properties
 	//Due to the way it is stored in XML, keys are not allowed to contain commas
 	vector<meta_data_entry>	meta_data_vec_map;
 };

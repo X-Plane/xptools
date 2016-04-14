@@ -494,7 +494,7 @@ struct AptInfo_t {
 	int					elevation_ft;
 	int					has_atc_twr;
 	int					default_buildings;		// not used in 850
-	std::vector<std::pair<string,string> > meta_data;
+	std::vector<std::pair<string,string> > meta_data; //Contains meta data for real and synthetic properties
 
 	AptRunwayVector		runways;				// 850 structures
 	AptSealaneVector	sealanes;

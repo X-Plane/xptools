@@ -194,6 +194,11 @@ bool		WED_Airport::ContainsMetaDataKey(const string& key)
 	return false;
 }
 
+WED_Airport::meta_data_entry		WED_Airport::GetMetaDataEntryAt(int index)
+{
+	return meta_data_vec_map[index];
+}
+
 int			WED_Airport::CountMetaDataKeys()
 {
 	return meta_data_vec_map.size();
@@ -214,6 +219,8 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 	SetName(info.name);
 	meta_data_vec_map = info.meta_data;
 	int want_flatten = 0;
+
+	//When importing from an apt.dat file, special non-sythetic entries are used and removed
 	vector<meta_data_entry>::iterator i = meta_data_vec_map.begin();
 	while(i != meta_data_vec_map.end())
 	{
@@ -255,8 +262,19 @@ int			WED_Airport::FindProperty(const char * in_prop) const
 	//Test if the property name is one of the property strings
 	for(int i = 0; i < meta_data_vec_map.size(); ++i)
 	{
+		string key = in_prop;
+
+		//Translate the human readable to data format
+		if     (key == "City/Locality")  key = "city";
+		else if(key == "Country")        key = "country";
+		else if(key == "FAA Code")		 key = "faa_code";
+		else if(key == "IATA Code")      key = "iata_code";
+		else if(key == "ICAO Code")      key = "icao_code";
+		else if(key == "State/Province") key = "state";
+		//else we're using the original
+
 		//i is in NS_META_DATA space
-		if(strcmp(in_prop, meta_data_vec_map.at(i).first.c_str())==0)
+		if(strcmp(key.c_str(), meta_data_vec_map.at(i).first.c_str())==0)
 		{
 			//NS_META_DATA + the offset
 			return NS_META_DATA + i;
@@ -291,7 +309,19 @@ void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		info.can_delete = true;
 		info.can_edit = true;
 		info.prop_kind = prop_String;
-		info.prop_name = meta_data_vec_map.at(index).first;
+
+		string key = meta_data_vec_map.at(index).first;
+		
+		//Translate the data to a pretty human readable format
+		if     (key == "city")      key = "City/Locality";
+		else if(key == "country")   key = "Country";
+		else if(key == "faa_code")  key = "FAA Code";
+		else if(key == "iata_code") key = "IATA Code";
+		else if(key == "icao_code") key = "ICAO Code";
+		else if(key == "state")     key = "State/Province";
+		//else we're using the original
+
+		info.prop_name = key;
 		info.synthetic = true;
 	}
 	else
