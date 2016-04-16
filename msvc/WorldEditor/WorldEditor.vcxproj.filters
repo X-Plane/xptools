@@ -768,6 +768,9 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.cpp">
+      <Filter>WEDImportExport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1522,6 +1525,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_Sign_Editor.h">
       <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.h">
+      <Filter>WEDImportExport</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

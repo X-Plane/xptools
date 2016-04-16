@@ -28,6 +28,7 @@
 
 // MSVC insanity: XWin must come in before ANY part of the IOperation interface or Ben's stupid #define to get file/line numbers on ops hoses the MS headers!
 #include "GUI_FormWindow.h"
+#include "WED_MetaDataDefaults.h"
 
 #include "PlatformUtils.h"
 #include "FileUtils.h"
@@ -102,8 +103,6 @@ static std::string to_string(const T& value)
 			make the form nicer
 			error checking on upload
 			progress and cancel on upload
-			port to windows
-			port to linux
 			
 			download from gateway?
  */
@@ -302,6 +301,7 @@ void	WED_DoExportToGateway(IResolver * resolver)
 	#else
 		
 		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
+		fill_in_meta_data_defaults(*apt);
 
 		if(!apt)
 			return;

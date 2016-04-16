@@ -25,6 +25,7 @@
 #include "WED_GatewayImport.h"
 
 #if HAS_GATEWAY
+#include "WED_MetaDataDefaults.h"
 
 #include "PlatformUtils.h"
 #include "GUI_Resources.h"
@@ -34,7 +35,6 @@
 #include <sstream>
 
 #include <json/json.h>
-
 
 #include "WED_Document.h"
 #include "WED_PackageMgr.h"
@@ -46,7 +46,6 @@
 #include "GUI_Timer.h"
 
 #include "GUI_Label.h"
-
 
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
@@ -826,6 +825,7 @@ void WED_GatewayImportDialog::ReceiveMessage(
 	}
 }
 
+
 void WED_GatewayImportDialog::StartICAODownload()
 {
 	string url = WED_URL_GATEWAY_API;
@@ -880,6 +880,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 
 	//Get it from the server
 	mCurl.create_HNDL(url,cert,VERSIONS_GET_SIZE_GUESS);
+	
 	Start(0.1);
 	mLabel->Show();
 	return true;
@@ -1028,6 +1029,10 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	//Operation inside of
 	vector<WED_Airport *> out_apt;
 	WED_ImportOneAptFile(aptdatPath,wrl,&out_apt);
+
+	//Fill in any meta_data gaps with defaults
+	fill_in_meta_data_defaults(*out_apt[0]);
+	out_apt[0]->StateChanged();
 
 	WED_Airport * g = out_apt[0];
 	g->SetSceneryID(root["scenery"]["sceneryId"].asInt());

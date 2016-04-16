@@ -48,14 +48,14 @@ public:
 	typedef std::pair<string,string> meta_data_entry;
 
 	//--Meta Data API-------------------------------
-	//Adds a Meta Data Key. In the case of a collision... what should happen?
+	//Adds a Meta Data Key. Collision is a no-op
 	void		AddMetaDataKey(const string& key, const string& value);
 	
-	//Edits a given Meta Data key's value
+	//Edits a given Meta Data key's value. Non-existant keys are ignored
 	void		EditMetaDataKey(const string& key, const string& value);
 	
 	//Removes a key/value pair
-	void		RemoveMetaDataKey(const string& key);
+	//void		RemoveMetaDataKey(const string& key);
 	
 	//Returns true if meta_data_vec_map contains the key
 	bool		ContainsMetaDataKey(const string& key);
@@ -63,8 +63,8 @@ public:
 	//Gets the size of the Meta Data Vector
 	int			CountMetaDataKeys();
 
-	//Gets the meta data entry at the given index
-	meta_data_entry	GetMetaDataEntryAt(int index);
+	//Returns the key's value
+	string		GetMetaDataValue(const string& key);
 	//----------------------------------------------
 
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);

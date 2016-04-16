@@ -99,10 +99,6 @@ void		WED_Airport::SetSceneryID(int x) { scenery_id = x; }
 //Adds a Meta Data Key. TODO - In the case of a collision... what should happen?
 void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 {
-	this->StartOperation(string("Add Meta Data Key " + key).c_str());
-
-	StateChanged();
-
 	//Insert in alphabetical order
 	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
 	
@@ -131,15 +127,12 @@ void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 		meta_data_vec_map.insert(itr,meta_data_entry(key,value));
 	}
 
-	this->CommitOperation();
 	return;
 }
 
 //Edits a given Meta Data key's value
 void	WED_Airport::EditMetaDataKey(const string& key, const string& value)
 {
-	StateChanged();
-
 	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
 	//Search through vector looking for the key to edit
 	for( ; itr != meta_data_vec_map.end(); ++itr)
@@ -151,32 +144,28 @@ void	WED_Airport::EditMetaDataKey(const string& key, const string& value)
 		}
 	}
 
-	//TODO - Alert or something else? Where will this API be used?
-	AssertPrintf("Cannot edit key %s, key could not found.", itr->first.c_str());
 	return;
 }
 
-//Removes a key/value pair
-void		WED_Airport::RemoveMetaDataKey(const string& key)
-{
-	StateChanged();
-
-	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
-	
-	//Search through vector looking for the key to remove
-	for( ; itr != meta_data_vec_map.end(); ++itr)
-	{
-		if(itr->first == key)
-		{
-			meta_data_vec_map.erase(itr);
-			return;
-		}
-	}
-
-	//TODO - Alert or something else? Where will this API be used?
-	AssertPrintf("Cannot remove key %s, key could not found.", itr->first.c_str());
-	return;
-}
+////Removes a key/value pair
+//void		WED_Airport::RemoveMetaDataKey(const string& key)
+//{
+//	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
+//	
+//	//Search through vector looking for the key to remove
+//	for( ; itr != meta_data_vec_map.end(); ++itr)
+//	{
+//		if(itr->first == key)
+//		{
+//			meta_data_vec_map.erase(itr);
+//			return;
+//		}
+//	}
+//
+//	//TODO - Alert or something else? Where will this API be used?
+//	AssertPrintf("Cannot remove key %s, key could not found.", itr->first.c_str());
+//	return;
+//}
 
 bool		WED_Airport::ContainsMetaDataKey(const string& key)
 {
@@ -194,9 +183,20 @@ bool		WED_Airport::ContainsMetaDataKey(const string& key)
 	return false;
 }
 
-WED_Airport::meta_data_entry		WED_Airport::GetMetaDataEntryAt(int index)
+string		WED_Airport::GetMetaDataValue(const string& key)
 {
-	return meta_data_vec_map[index];
+	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
+	//Search through vector looking for the key to edit
+	for( ; itr != meta_data_vec_map.end(); ++itr)
+	{
+		if(itr->first == key)
+		{
+			return itr->second;
+		}
+	}
+
+	AssertPrintf(string("Meta data key " + key + " was not found!").c_str());
+	return "";//Note that we shouldn't ever get to this point
 }
 
 int			WED_Airport::CountMetaDataKeys()
