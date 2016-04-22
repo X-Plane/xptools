@@ -1031,7 +1031,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	WED_ImportOneAptFile(aptdatPath,wrl,&out_apt);
 
 	//Fill in any meta_data gaps with defaults
-	fill_in_meta_data_defaults(*out_apt[0]);
+	//fill_in_meta_data_defaults(*out_apt[0]);
 	out_apt[0]->StateChanged();
 
 	WED_Airport * g = out_apt[0];

@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef GATEWAYCSVUTILS_H
-#define GATEWAYCSVUTILS_H
+#ifndef METADATADEFAULTS_H
+#define METADATADEFAULTS_H
 
 class WED_Airport;
 

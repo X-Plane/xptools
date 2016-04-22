@@ -771,6 +771,9 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utils\CSVParser.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1528,6 +1531,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\CSVParser.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

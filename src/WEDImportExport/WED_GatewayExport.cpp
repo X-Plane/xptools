@@ -301,7 +301,7 @@ void	WED_DoExportToGateway(IResolver * resolver)
 	#else
 		
 		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
-		fill_in_meta_data_defaults(*apt);
+		//fill_in_meta_data_defaults(*apt);
 
 		if(!apt)
 			return;
