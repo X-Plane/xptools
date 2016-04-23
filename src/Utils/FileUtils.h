@@ -37,32 +37,45 @@ private:
 	FILE_case_correct_path& operator=(const FILE_case_correct_path& rhs);
 };
 
-enum date_cmpr_result_t
-{
-	dcr_firstIsNew = -1,
-	dcr_secondIsNew = 1,
-	dcr_same = 0,
-	dcr_error = -2
-};
+//Tests for file/folder case correctness on LIN, returns 1/0, or always 1 on IBM or APL
+int FILE_case_correct(char * buf);
 
-bool FILE_exists(const char * path);									//Returns true if the file exists, returns false if it doesn't
+/* FILE API Overview
+	Method Name          |        Purpose                               | Trailing Seperator? | Returns (Sucess, fail)
+	exists               | Does file exist?                             | N/A                 | True/false
+	delete_file          | rm 1 file or folder                          | No                  | 0, last_error
+	delete_dir_recursive | rm folder and subcontents                    | Yes                 | 0, last_error
+	rename_file          | rename 1 file                                | N/A                 | 0, last_error
+	make_dir             | make directory, assumes parent folders exist | No                  | 0, last_error
+	make_dir_exist       | make directory, parent folders created on fly| No                  | 0, last_error
+	get_directory        | get dir's content's paths*                   | No                  | num files found, -1 or last_error
+	compress_dir         | zip compress folder, save zip to disk        | No                  | 0, not zero (see zlib)
+	date_cmpr            | compares which of two files is newer         | N/A                 | (1,0,-1), -2
+
+	*get_directory can do 1 to 4 things at the same time. It can implicitly tell you if the directory exists, how many files are contained in it,
+	and, optionally, the relative paths of file or folders non-rescursively
+*/
+
+//Returns true if the file exists, returns false if it doesn't
+bool FILE_exists(const char * path);
 
 // WARNING: these do not take trailing / for directories!
+// Returns 0 for success, else last_error
 int FILE_delete_file(const char * nuke_path, int is_dir);
 
 // Path should end in a /
+// Returns 0 for success, else -1 or last_error
 int FILE_delete_dir_recursive(const string& path);
 
+// Returns 0 for success, else last_error
 int FILE_rename_file(const char * old_name, const char * new_name);
 
 // Create in_dir in its parent directory
+// Returns 0 for success, else last_error
 int FILE_make_dir(const char * in_dir);
-
 
 // Recursively create all dirs needed for in_dir to exist - handles trailing / ok.
 int FILE_make_dir_exist(const char * in_dir);
-
-int FILE_delete_dir_recursive(const string& path);
 
 // Get a directory listing.  Returns number of files found, or -1 on error.
 int FILE_get_directory(
@@ -72,6 +85,13 @@ int FILE_get_directory(
 
 int FILE_compress_dir(const string& src_path, const string& dst_path, const string& prefix);
 
+enum date_cmpr_result_t
+{
+	dcr_firstIsNew = -1,
+	dcr_secondIsNew = 1,
+	dcr_same = 0,
+	dcr_error = -2
+};
 
 /* Pass in a file path for the first and second file
 * Return 1: The second file is more updated that the first
@@ -80,6 +100,4 @@ int FILE_compress_dir(const string& src_path, const string& dst_path, const stri
 * Return -2: There's been an error
 */
 date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second);
-int FILE_case_correct(char * buf);
-
 #endif
