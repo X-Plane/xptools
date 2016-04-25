@@ -493,6 +493,7 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 					break;
 				case prop_String:
 				case prop_FilePath:
+				case prop_TaxiSign:
 					val.string_val = v;
 					break;
 				case prop_EnumSet:
@@ -561,6 +562,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 				break;
 			case prop_String:
 			case prop_FilePath:
+			case prop_TaxiSign:
 				v = val.string_val;
 				break;
 			case prop_EnumSet:

@@ -92,6 +92,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 			break;
 		case prop_String:	the_content.content_type = gui_Cell_EditText;		the_content.text_val = val.string_val;		break;
 		case prop_FilePath:	the_content.content_type = gui_Cell_FileText;		the_content.text_val = val.string_val;		break;
+		case prop_TaxiSign:	the_content.content_type = gui_Cell_TaxiText;		the_content.text_val = val.string_val;		break;
 		case prop_Bool:		the_content.content_type = gui_Cell_CheckBox;		the_content.int_val = val.int_val;			break;
 		case prop_Enum:		the_content.content_type = gui_Cell_Enum;			the_content.int_val = val.int_val;			break;
 		case prop_EnumSet:	the_content.content_type = gui_Cell_EnumSet;		the_content.int_set_val = val.set_val;		break;
@@ -171,6 +172,10 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 		break;
 	case prop_String:
 		val.prop_kind = prop_String;
+		val.string_val = the_content.text_val;
+		break;
+	case prop_TaxiSign:
+		val.prop_kind = prop_TaxiSign;
 		val.string_val = the_content.text_val;
 		break;
 	case prop_FilePath:
@@ -325,6 +330,7 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	case prop_Bool:			return 30;
 	case prop_Enum:
 	case prop_EnumSet:		return 75;
+	case prop_TaxiSign:		return 150;
 //		mTool->GetNthPropertyDict(n / 2, dict);
 //		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
 //			w = max(w,(int) GUI_MeasureRange(OUR_FONT, &*d->second.begin(),&*d->second.end())+20);

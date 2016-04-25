@@ -53,12 +53,16 @@ public:
 
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
-//	virtual void *		QueryInterface(const char * class_id);
 
+	// From IPropertyObject to customize sign text
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
+	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+	
 protected:
 
-		WED_PropIntEnum			beacon_kind;
 		WED_PropStringText		sign_text;
+		WED_PropIntEnum			beacon_kind;
 		WED_PropIntEnum			sign_style;
 		WED_PropIntEnum			sign_height;
 		WED_PropIntEnum			heli_surface;
