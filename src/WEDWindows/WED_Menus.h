@@ -134,6 +134,7 @@ enum {
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
 #endif
+	wed_UpgradeRamps,
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery

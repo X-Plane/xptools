@@ -395,7 +395,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			ok = "Illegal startup loc";
 				outApts.back().gates.back().location = POINT2(p1x, p1y);
 				outApts.back().gates.back().type = atc_ramp_misc;
-				outApts.back().gates.back().width = atc_width_F;
+				outApts.back().gates.back().width = atc_width_E;
 				outApts.back().gates.back().equipment = atc_traffic_all;
 				outApts.back().gates.back().ramp_op_type = ramp_operation_none;
 
@@ -644,7 +644,14 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 
 					gate.equipment = scan_bitfields(equip.c_str(), equip_strings, atc_traffic_all);
 					gate.location = POINT2(p1x, p1y);
-					gate.ramp_op_type = ramp_operation_none;
+					gate.ramp_op_type = ramp_operation_none;					
+					gate.width = atc_width_B;					
+					if(gate.equipment & atc_traffic_turbos)
+						gate.width = atc_width_C;					
+					if(gate.equipment & atc_traffic_jets)
+						gate.width = atc_width_C;					
+					if(gate.equipment & atc_traffic_heavies)
+						gate.width = atc_width_E;					
 					outApts.back().gates.push_back(gate);
 				}
 			}
@@ -842,7 +849,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().taxi_route.edges.back().name) < 5) ok = "Error: illegal taxi layout edge.";
 				outApts.back().taxi_route.edges.back().oneway = oneway_flag == "oneway";
 				outApts.back().taxi_route.edges.back().runway = runway_flag == "runway";
-				outApts.back().taxi_route.edges.back().width = atc_width_F;
+				outApts.back().taxi_route.edges.back().width = atc_width_E;
 				if(runway_flag == "taxiway_A")	{ if(vers < ATC_VERS2) ok = "Illegal sized taxiway in older apt.dat format."; else outApts.back().taxi_route.edges.back().width = atc_width_A; }
 				if(runway_flag == "taxiway_B")	{ if(vers < ATC_VERS2) ok = "Illegal sized taxiway in older apt.dat format."; else outApts.back().taxi_route.edges.back().width = atc_width_B; }
 				if(runway_flag == "taxiway_C")	{ if(vers < ATC_VERS2) ok = "Illegal sized taxiway in older apt.dat format."; else outApts.back().taxi_route.edges.back().width = atc_width_C; }

@@ -39,7 +39,10 @@ public:
 	void	SetWidth(int		width);
 	void	SetRampOperationType(int ait);
 	void	SetAirlines(const string& airlines);
+
+	int		GetType() const;
 	int		GetWidth() const;
+	void		GetEquipment(set<int>& out_eq) const;
 
 	void	Import(const AptGate_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptGate_t& x) const;
