@@ -608,7 +608,7 @@ GUI_Pane *	GUI_Pane::InternalMouseMove(int x, int y)
 			y >= mBounds[1] && y <= mBounds[3])
 		{
 			GUI_Pane * target;
-			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			for (vector<GUI_Pane *>::reverse_iterator c = mChildren.rbegin(); c != mChildren.rend(); ++c)
 			{
 				target = (*c)->InternalMouseMove(x, y);
 				if (target) return target;
@@ -636,7 +636,7 @@ GUI_Pane *	GUI_Pane::InternalMouseDown(int x, int y, int button)
 			y >= mBounds[1] && y <= mBounds[3])
 		{
 			GUI_Pane * target;
-			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			for (vector<GUI_Pane *>::reverse_iterator c = mChildren.rbegin(); c != mChildren.rend(); ++c)
 			{
 				target = (*c)->InternalMouseDown(x, y, button);
 				if (target) return target;
@@ -656,7 +656,7 @@ int			GUI_Pane::InternalMouseWheel(int x, int y, int dist, int axis)
 		if (x >= mBounds[0] && x <= mBounds[2] &&
 			y >= mBounds[1] && y <= mBounds[3])
 		{
-			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			for (vector<GUI_Pane *>::reverse_iterator c = mChildren.rbegin(); c != mChildren.rend(); ++c)
 			{
 				if ((*c)->InternalMouseWheel(x, y, dist, axis)) return 1;
 			}
@@ -676,7 +676,7 @@ int			GUI_Pane::InternalGetCursor(int x, int y)
 		if (x >= mBounds[0] && x <= mBounds[2] &&
 			y >= mBounds[1] && y <= mBounds[3])
 		{
-			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			for (vector<GUI_Pane *>::reverse_iterator c = mChildren.rbegin(); c != mChildren.rend(); ++c)
 			{
 				ret = (*c)->InternalGetCursor(x, y);
 				if (ret != gui_Cursor_None) return ret;
@@ -695,7 +695,7 @@ int		GUI_Pane::InternalGetHelpTip(int x, int y, int tip_bounds[4], string& tip)
 		if (x >= mBounds[0] && x <= mBounds[2] &&
 			y >= mBounds[1] && y <= mBounds[3])
 		{
-			for (vector<GUI_Pane *>::iterator c = mChildren.begin(); c != mChildren.end(); ++c)
+			for (vector<GUI_Pane *>::reverse_iterator c = mChildren.rbegin(); c != mChildren.rend(); ++c)
 			{
 				if ((*c)->InternalGetHelpTip(x, y, tip_bounds, tip)) return 1;
 			}
