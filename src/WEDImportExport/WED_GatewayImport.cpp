@@ -32,6 +32,7 @@
 #include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
+#include "RAII_CURL_HNDL.h"
 #include <sstream>
 
 #include <json/json.h>
@@ -105,82 +106,6 @@ enum imp_dialog_msg
 	filter_changed,
 	click_next,
 	click_back
-};
-
-//starting a new one clears off the old one
-class RAII_CURL_HNDL
-{
-public:
-	RAII_CURL_HNDL():
-		curl_handle(NULL){}
-
-	void create_HNDL( const string& inURL,
-					const string& inCert,
-					int			  bufferReserveSize)
-					
-	{
-		if(curl_handle != NULL)
-		{
-			delete curl_handle;
-			curl_handle = NULL;
-		}
-
-		rawJSONBuf = vector<char>(bufferReserveSize);
-		curl_handle = new curl_http_get_file(inURL,&rawJSONBuf,inCert);
-	}
-
-	~RAII_CURL_HNDL()
-	{
-		delete curl_handle;
-		curl_handle = NULL;
-	}
-	curl_http_get_file * const get_curl_handle() { return curl_handle; }
-	const vector<char> & get_JSON_BUF() { return rawJSONBuf; }
-	
-	
-private:
-	RAII_CURL_HNDL(const RAII_CURL_HNDL & copy);
-	RAII_CURL_HNDL & operator= (const RAII_CURL_HNDL & rhs);
-
-	curl_http_get_file * curl_handle;
-	
-	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-	vector<char> rawJSONBuf;
-};
-
-class RAII_file 
-{
-public:
-
- RAII_file(const char * fname, const char * mode) :
-  mFile(fopen(fname,mode))
- {
- }
-
- ~RAII_file()
- {
-	if(mFile)
-	{
-		fclose(mFile);
-	}
- }
-
- int close() 
- { 
-	 if(mFile) 
-	 { 
-		 int retVal = fclose(mFile); 
-		 mFile = NULL;
-		 return retVal;
-	 }
-	 return 0;//TODO - if mFile doesn't exist, calling close is harmless so it should return 0 OR calling close is unexpected and client should know?
- }
-
- operator bool() const { return mFile != NULL; }
- FILE * operator()() { return mFile; }
-
-private:
- FILE * mFile;
 };
 
 //--Mem File Utils code for virtually handling the downloaded zip file--
@@ -446,7 +371,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mPacker->Show();
 	GUI_Pane::GetBounds(bounds);
 	mPacker->SetBounds(bounds);
-	mPacker->SetBkgkndImage ("gradient.png");
+	mPacker->SetBkgkndImage ("gradient.png"); 
 
 	//Filter
 	mFilter = new WED_FilterBar(this,filter_changed,0,"Filter:","",NULL,false);

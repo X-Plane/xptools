@@ -92,6 +92,7 @@
     <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\XUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\zip.c" />
+    <ClCompile Include="..\..\src\WEDCore\WED_FileCache.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Sign_Parser.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Application.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_AppMain.cpp" />
@@ -217,6 +218,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_WorldMapLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDNetwork\RAII_CURL_HNDL.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\WED_Connection.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\WED_NWInfoLayer.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.cpp" />
@@ -340,6 +342,7 @@
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\src\Utils\zip.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_FileCache.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Sign_Parser.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Archive.h" />
@@ -468,6 +471,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_WorldMapLayer.h" />
+    <ClInclude Include="..\..\src\WEDNetwork\RAII_CURL_HNDL.h" />
     <ClInclude Include="..\..\src\WEDNetwork\WED_Connection.h" />
     <ClInclude Include="..\..\src\WEDNetwork\WED_NWDefs.h" />
     <ClInclude Include="..\..\src\WEDNetwork\WED_NWInfoLayer.h" />
