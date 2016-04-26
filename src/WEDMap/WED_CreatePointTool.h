@@ -61,7 +61,6 @@ public:
 	
 protected:
 
-		WED_PropStringText		sign_text;
 		WED_PropIntEnum			beacon_kind;
 		WED_PropIntEnum			sign_style;
 		WED_PropIntEnum			sign_height;
@@ -79,6 +78,7 @@ protected:
 		WED_PropBoolText		sign_clipboard;
 		WED_PropIntEnum			ramp_type;
 		WED_PropIntEnumBitfield	equip_type;
+		WED_PropStringText		sign_text;
 		
 
 	virtual	void		AcceptPath(
