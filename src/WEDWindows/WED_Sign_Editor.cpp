@@ -472,6 +472,31 @@ void	sign_data::delete_range(int side, int start, int end)
 	recalc_borders();	
 }
 
+void plot_from_sign(int x, int y, float sign_x, float sign_y, float sign_dx, float sign_dy)
+{
+	int x1 = x;
+	int y1 = y;
+	int x2 = x + sign_dx * 32.0f;
+	int y2 = y + sign_dy * 32.0f;
+	
+	float s1 = sign_x * 32.0f;
+	float s2 = s1 + sign_dx * 32.0f;
+	float t1 = sign_y * 32.0f;
+	float t2 = t1 + sign_dy * 32.0f;
+	
+		s1 /= 512.0;
+		s2 /= 512.0;
+		t1 /= 512.0;
+		t2 /= 512.0;
+		
+		glBegin(GL_QUADS);
+		glTexCoord2f(s1,t1);	glVertex2i(x1,y1);
+		glTexCoord2f(s1,t2);	glVertex2i(x1,y2);
+		glTexCoord2f(s2,t2);	glVertex2i(x2,y2);
+		glTexCoord2f(s2,t1);	glVertex2i(x2,y1);
+		glEnd();
+}
+
 int plot_token(const sign_token& sign, int x, int y, float scale, GUI_GraphState * g)
 {
 	int x1 = x;
@@ -534,16 +559,32 @@ void	WED_Sign_Editor::Draw(GUI_GraphState * state)
 	glVertex2i(bounds[2],bounds[1]);
 	glEnd();
 	
-	int sel_x1 = 10 + mData.left_offset(mEditSide, mEditStart) + bounds[0];
-	int sel_x2 = 10 + mData.left_offset(mEditSide, mEditEnd) + bounds[0];
+	int sel_x1 = 16 + mData.left_offset(mEditSide, mEditStart) + bounds[0];
+	int sel_x2 = 16 + mData.left_offset(mEditSide, mEditEnd) + bounds[0];
 	if(sel_x1 > sel_x2)
 		swap(sel_x1, sel_x2);
 	
 	glColor3f(1,1,1);
+
+	state->SetState(0, 1, 0, 0, 1, 0, 0);
+	int tex = GUI_GetTextureResource("taxi_sign.png",0, NULL);
+	if(tex)
+		state->BindTex(tex,0);
+
+	plot_from_sign(bounds[0], bounds[3] - 42     , 2.0f, 5, 0.5, 1);
+	plot_from_sign(bounds[0], bounds[3] - 42 - 42, 2.5f, 5, 0.5, 1);
+
+	plot_from_sign(bounds[0] + 16, bounds[3] - 42 - 42 - 16 - 8, 3.0f, 5.0f, 2.0f, 0.5f);
+
+	for(int x = bounds[0] + 16; x < (bounds[2] - 16); x += 32)
+	{
+		plot_from_sign(x, bounds[3] - 42, 5, 5, 1, 1);
+		plot_from_sign(x, bounds[3] - 42 - 42, 5, 5, 1, 1);
+	}
 	
 	for(int s = 0; s < 2; ++s)
 	{
-		int x = bounds[0] + 10;
+		int x = bounds[0] + 16;
 		int y = bounds[3] - 42 * (s+1);
 		
 		vector<sign_token>& sign(s ? mData.back : mData.front);
@@ -601,7 +642,7 @@ void	WED_Sign_Editor::Draw(GUI_GraphState * state)
 
 	for(int r = 0; r < 8; ++r)
 	{
-		int x = bounds[0] + 10;
+		int x = bounds[0] + 16;
 		
 		int start = glyph_0;
 		int end = glyph_r3;
@@ -633,7 +674,7 @@ int		WED_Sign_Editor::MouseDown(int x, int y, int button)
 {
 	int bounds[4];
 	GetBounds(bounds);
-	x -= (bounds[0]+10);
+	x -= (bounds[0]+16);
 	
 	int top_front = bounds[3]-10;
 	int bot_front = top_front-32;
@@ -701,7 +742,7 @@ int		WED_Sign_Editor::MouseDown(int x, int y, int button)
 		y1 -= 21;
 	}
 
-	return 0;	
+	return 1;	
 }
 
 void	WED_Sign_Editor::MouseDrag(int x, int y, int button)
@@ -710,7 +751,7 @@ void	WED_Sign_Editor::MouseDrag(int x, int y, int button)
 		return;
 	int bounds[4];
 	GetBounds(bounds);
-	x -= (bounds[0]+10);
+	x -= (bounds[0]+16);
 
 	int pos = mData.insert_point(mEditSide, x);
 	
