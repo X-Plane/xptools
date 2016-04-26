@@ -212,13 +212,20 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		//Change the instage so it is completely deactivated
 		inState->SetState(false, false, false,	false, false, false, false);
 		//sets the color
+		
 		glColor4fv(mColorGridlines);
 		//draws the border of where the image should be.
 		glBegin(GL_LINE_STRIP);
-		glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
-		glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
-		glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
+		GLfloat x1 = cell_bounds[0];
+		GLfloat x2 = cell_bounds[2];
+		GLfloat y1 = cell_bounds[1];
+		GLfloat y2 = cell_bounds[3];
+		
+		glVertex2f(x1 + 0.5f, y1 + 0.5f);
+		glVertex2f(x2 - 0.5f, y1 + 0.5f);
+		glVertex2f(x2 - 0.5f, y2 - 0.5f);
 		glEnd();
+		
 	}
 	//---------
 	
