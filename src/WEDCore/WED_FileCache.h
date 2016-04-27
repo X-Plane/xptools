@@ -34,14 +34,22 @@
 	An example use: A UI box begins a download. A timer asks the cache "Where is my file "example.com/my_data.csv"?"
 	Responses 
 	We tell the client "Its at X on disk", In theory a timer in some UI component will interact with the cache on a timer, asking for its file path and being told would call the cache, check the error, and possibly advance the state machine.
+
+	TODO:
+    1. WED_file_cache_shutdown implemented
+    2. The bit about "We keep returning the same error"
+	3. Cooldown system in place
+	4. Thourough testing, done as of the commit after 1039227b7fade2
+	5. Choose a real location for the cache
+    6. Better theory of operation description
 */
 
 enum WED_file_cache_status {
-    file_available,   //File available on disk
-	file_not_started, //File not on disk or downloading
-    file_downloading, //File is currently download from the net
-    file_error,       //File has had some kind of error
-	file_cache_cooling//File cache is current cooling down after error
+    file_available,    //File available on disk
+	file_not_started,  //File not on disk or downloading
+    file_downloading,  //File is currently download from the net
+    file_error,        //File has had some kind of error
+	file_cache_cooling //File cache is current cooling down after error
 };
 
 //Initialize the file cache, called once at the start of the program

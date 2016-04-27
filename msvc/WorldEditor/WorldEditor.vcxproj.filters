@@ -774,6 +774,12 @@
     <ClCompile Include="..\..\src\Utils\CSVParser.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDCore\WED_FileCache.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDNetwork\RAII_CURL_HNDL.cpp">
+      <Filter>WEDNetwork</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1534,6 +1540,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\CSVParser.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDCore\WED_FileCache.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDNetwork\RAII_CURL_HNDL.h">
+      <Filter>WEDNetwork</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

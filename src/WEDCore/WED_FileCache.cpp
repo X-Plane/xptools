@@ -1,6 +1,4 @@
 #include "WED_FileCache.h"
-#include <queue>
-#include <deque>
 #include <sstream>
 #include <fstream>
 #include "FileUtils.h"
@@ -12,7 +10,6 @@
 #include "curl/curl.h"
 #include <time.h>
 
-//Our static-ish class-ish FileCache
 //The fully qualified path to the file cache folder
 string CACHE_folder;
 	
@@ -25,11 +22,10 @@ public:
 	string get_url()           const { return url; }
 	void   set_url(const string& new_url) { url = new_url; }
 
-	string get_file_name()     const { return url.substr(url.find_last_of("/") + 1); }
 	string get_disk_location() const { return disk_location; }
 	void   set_disk_location(const string& location) { disk_location = location; }
 
-	RAII_CURL_HNDL & get_curl_file() { return curl_file; }
+	RAII_CURL_HNDL& get_curl_file() { return curl_file; }
 	WED_file_cache_status get_status() const { return status; }
 	void                  set_status(WED_file_cache_status stat) { status = stat; }
 
@@ -43,24 +39,24 @@ private:
 	//The curl_http_get_file that is associated with this cache_object
 	//Info life span: Download start to download finish
 	RAII_CURL_HNDL curl_file;
-		
+
 	//The status of the file's progress
 	WED_file_cache_status status;
 
 	CACHE_CacheObject(const CACHE_CacheObject& copy);
 	CACHE_CacheObject & operator= (const CACHE_CacheObject& rhs);
 };
-	
-//Default num milliseconds
-static const int CACHE_COOLDOWN_START = 400;
 
-//Number of milliseconds to wait to before to server
+//Default number of milliseconds
+static const int CACHE_COOL_DOWN_START = 0;
+
+//Number of milliseconds to wait before we are allowed to contact server again
 int CACHE_cool_down_time;
 
-//Maps a URL with CacheObject
-vector<CACHE_CacheObject *> CACHE_file_cache;
+//Our vector of CacheObjects
+vector<CACHE_CacheObject* > CACHE_file_cache;
 
-//Files the file_cache with files in the cache folder
+//Fills the file_cache with initial physical files and defaults
 void WED_file_cache_init()
 {
 	static bool cache_initialized = false;
@@ -70,13 +66,15 @@ void WED_file_cache_init()
 	}
 	else
 	{
-		//Get the cache folder
+		//Get the cache folder path
 		{
+            //TODO: This is a dumb folder location. Perhaps in %APPDATA% or APL/LIN equivalent?
 			char    base[2048];
 			CACHE_folder = GetApplicationPath(base,sizeof(base));
 			CACHE_folder = CACHE_folder.erase(CACHE_folder.find(string("WorldEditor.exe"))) + "wed_file_cache";
 		}
-		CACHE_cool_down_time = 0.0;
+
+		CACHE_cool_down_time = 0;
 
 		//Attempt to get the folder, if non-existant make it
 		vector<string> files;
@@ -166,21 +164,26 @@ WED_file_cache_status WED_get_file_from_cache(
 {
 	out_error = "";
 	out_path = "";
+
 	if(CACHE_cool_down_time > 0)
 	{
 		--CACHE_cool_down_time;
+        out_error = "Cache must wait after error to retry server";
+        return WED_file_cache_status::file_cache_cooling;
 	}
+
 	/* 
 	-------------------------Method outline------------------------------------
 	1. Is it on disk?
 		- Set out_path, return file_available
-	2. Not on disk, is it in download queue?
+	2. Not on disk, is it in CACHE_file_cache with active cURL_handle?
 		- Yes it is. It's currently...
-			* Experiancing an error. Set out_error, return file_error
+            * Done! If okay, save to disk, set_disk_location
+            * Experiencing an error. Set out_error, activate cool_down, return file_error
 			* Downloading as normal. return file_downloading
-	3. Not on disk, not in download queue.
-		- Add file if we're not cooling down, return file_downloading.
-	4. Not on disk, not in download queue, not allowed to be downloaded yet
+	3. Not on disk, not in cache downloading, not in cool_down.
+		- Add file, return file_downloading
+	4. Not on disk, not in cache downloading, in cool_down
 		- Set out_error to error message, return file_cache_cooling
 	---------------------------------------------------------------------------
 	*/
@@ -188,12 +191,10 @@ WED_file_cache_status WED_get_file_from_cache(
 	//Search through the file_cache on disk looking to see if we've already got this url
 	for (int i = 0; i < CACHE_file_cache.size(); i++)
 	{
-		string file_name = in_url.substr(in_url.find_last_of('/') + 1);
+		string file_name = FILE_get_file_name(in_url);
 		if(CACHE_file_cache[i]->get_disk_location().find(file_name) != string::npos)
 		{
 			out_path = CACHE_file_cache[i]->get_disk_location();
-			
-			//While we're here fill out more information
 			return WED_file_cache_status::file_available;
 		}
 	}
@@ -205,6 +206,7 @@ WED_file_cache_status WED_get_file_from_cache(
 	{
 		if((*itr)->get_url() == in_url)
 		{
+            //Has this CacheObject even started a cURL handle?
 			curl_http_get_file * hndl = (*itr)->get_curl_file().get_curl_handle();
 			if(hndl != NULL)
 			{
@@ -215,7 +217,7 @@ WED_file_cache_status WED_get_file_from_cache(
 						//Yay! We're done!
 						const vector<char>& buf = (*itr)->get_curl_file().get_JSON_BUF();
 						string result(buf.begin(),buf.end());
-						out_path = CACHE_folder + "\\" + (*itr)->get_file_name();
+						out_path = CACHE_folder + "\\" + FILE_get_file_name(result);
 						(*itr)->set_disk_location(out_path);
 
 						ofstream ofs(out_path);
@@ -230,7 +232,7 @@ WED_file_cache_status WED_get_file_from_cache(
 						 //Activate cooldown if were not already counting down
 						 if(CACHE_cool_down_time == 0)
 						 {
-							CACHE_cool_down_time = CACHE_COOLDOWN_START;
+							CACHE_cool_down_time = CACHE_COOL_DOWN_START;
 							return WED_file_cache_status::file_cache_cooling;
 						 }
 						 else
@@ -284,37 +286,43 @@ void WED_file_cache_shutdown()
 void WED_file_cache_test()
 {
 	WED_file_cache_init();
+    //Note: You'll have to set up your environment accordingly
+    vector<string> test_files;
+
 	//Test finding files already on disk, not available online
-	vector<string> test_files;
-	//test_files.push_back(CACHE_folder + "\\ondisk1.txt");
+	test_files.push_back(CACHE_folder + "\\ondisk1.txt");
 
 	//Test finding files on disk, also available online
-	//The american flag on the front page
 	test_files.push_back("http://www.example.com/index.html");
-	
-	//Test finding files not on disk, not online
-	//test_files.push_back("http://www.x-plane.com/thisisnotreal.txt");
 
 	//Test finding files not on disk, online
-	//test_files.push_back("http://gateway.x-plane.com/airport_metadata.csv");
+	test_files.push_back("http://gateway.x-plane.com/airport_metadata.csv");
+
+    //test finding files not on disk, not online
+    test_files.push_back("http://www.x-plane.com/thisisnotreal.txt");
 
 	//Get Certification
 	string cert;
-	//GUI_GetTempResourcePath("gateway.crt", cert);
+	GUI_GetTempResourcePath("gateway.crt", cert);
 	
 	int i = 0;
 	while(i < test_files.size())
 	{
 		WED_file_cache_status status = WED_file_cache_status::file_not_started;
 
-		while(status != WED_file_cache_status::file_available)
+        int max_error = 100;
+        int error_count = 0;
+		while(status != WED_file_cache_status::file_available && error_count < max_error)
 		{
 			string in_path = test_files.at(i);
 			string out_path;
 			string error;
 			status = WED_get_file_from_cache(in_path, cert, out_path, error);
-
-			printf("out_path: %s error_path: %s\n", out_path.c_str(), error.c_str());
+			if(status == WED_file_cache_status::file_error || status == WED_file_cache_status::file_cache_cooling)
+            {
+                ++error_count;
+            }
+			printf("status: %d out_path: %s error_path: %s errors: %d \n", status, out_path.c_str(), error.c_str(), error_count);
 		}
 		++i;
 	}

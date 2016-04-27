@@ -157,6 +157,33 @@ bool FILE_exists(const char * path)
 //	return (S_ISDIR(ss.st_mode))? 1 : 0;
 }
 
+string FILE_get_file_name(const string& path)
+{
+	//If we can find a / we're using UNIX
+	size_t pos = path.find_first_of('/');
+
+	char separator = '\0';
+
+	if(pos != string::npos)
+	{
+		separator = '/';
+	}
+	else
+	{
+		separator = '\\';
+	}
+	size_t last_sep = path.find_last_of(separator);
+
+	if(last_sep == string::npos)
+	{
+		return "";
+	}
+	else
+	{
+		return path.substr(last_sep + 1);
+	}
+}
+
 int FILE_delete_file(const char * nuke_path, int is_dir)
 {
 	// NOTE: if the path is to a dir, it will end in a dir-char.

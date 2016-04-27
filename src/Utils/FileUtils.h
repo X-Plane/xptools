@@ -43,6 +43,7 @@ int FILE_case_correct(char * buf);
 /* FILE API Overview
 	Method Name          |        Purpose                               | Trailing Seperator? | Returns (Sucess, fail)
 	exists               | Does file exist?                             | N/A                 | True/false
+	get_file_name        | Get file name w/o directory, can use / or \  | N/A                 | non_empty, empty string
 	delete_file          | rm 1 file or folder                          | No                  | 0, last_error
 	delete_dir_recursive | rm folder and subcontents                    | Yes                 | 0, last_error
 	rename_file          | rename 1 file                                | N/A                 | 0, last_error
@@ -59,6 +60,7 @@ int FILE_case_correct(char * buf);
 //Returns true if the file exists, returns false if it doesn't
 bool FILE_exists(const char * path);
 
+string FILE_get_file_name(const string& path);
 // WARNING: these do not take trailing / for directories!
 // Returns 0 for success, else last_error
 int FILE_delete_file(const char * nuke_path, int is_dir);
