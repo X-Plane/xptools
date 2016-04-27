@@ -36,12 +36,12 @@
 	We tell the client "Its at X on disk", In theory a timer in some UI component will interact with the cache on a timer, asking for its file path and being told would call the cache, check the error, and possibly advance the state machine.
 
 	TODO:
-    1. WED_file_cache_shutdown implemented
-    2. The bit about "We keep returning the same error"
+	1. WED_file_cache_shutdown implemented
+	2. The bit about "We keep returning the same error"
 	3. Cooldown system in place
-	4. Thourough testing, done as of the commit after 1039227b7fade2
-	5. Choose a real location for the cache
-    6. Better theory of operation description
+	4. File catagories, lifespans, and per catagory cool down timers
+	5. Thourough testing, done as 48245211b2a977d
+	6. Better theory of operation description
 */
 
 enum WED_file_cache_status {

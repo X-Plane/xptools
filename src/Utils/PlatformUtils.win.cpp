@@ -34,6 +34,21 @@ const char * GetApplicationPath(char * pathBuf, int sz)
 		return NULL;
 }
 
+const char * GetTempFilesFolder(char temp_path[], int sz)
+{
+	if(sz > MAX_PATH)
+	{
+		return NULL;
+	}
+
+	int result = GetTempPath(sz, temp_path);
+	if (result > strlen(temp_path) || result == 0)
+	{
+		return NULL;
+	}
+	
+	return  temp_path;
+}
 
 int		GetFilePathFromUser(
 					int					inType,

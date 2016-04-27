@@ -11,7 +11,7 @@
 #include <time.h>
 
 //The fully qualified path to the file cache folder
-string CACHE_folder;
+static string CACHE_folder;
 	
 class CACHE_CacheObject
 {
@@ -51,10 +51,10 @@ private:
 static const int CACHE_COOL_DOWN_START = 0;
 
 //Number of milliseconds to wait before we are allowed to contact server again
-int CACHE_cool_down_time;
+static int CACHE_cool_down_time;
 
 //Our vector of CacheObjects
-vector<CACHE_CacheObject* > CACHE_file_cache;
+static vector<CACHE_CacheObject* > CACHE_file_cache;
 
 //Fills the file_cache with initial physical files and defaults
 void WED_file_cache_init()
@@ -68,10 +68,8 @@ void WED_file_cache_init()
 	{
 		//Get the cache folder path
 		{
-            //TODO: This is a dumb folder location. Perhaps in %APPDATA% or APL/LIN equivalent?
-			char    base[2048];
-			CACHE_folder = GetApplicationPath(base,sizeof(base));
-			CACHE_folder = CACHE_folder.erase(CACHE_folder.find(string("WorldEditor.exe"))) + "wed_file_cache";
+			char    base[TEMP_FILES_DIR_LEN];
+			CACHE_folder = GetTempFilesFolder(base, TEMP_FILES_DIR_LEN) + string("WED") + string("\\") + string("wed_file_cache");
 		}
 
 		CACHE_cool_down_time = 0;
@@ -81,7 +79,7 @@ void WED_file_cache_init()
 		int num_files = FILE_get_directory(CACHE_folder, &files, NULL);
 		if(num_files == -1)
 		{
-			int res = FILE_make_dir(CACHE_folder.c_str());
+			int res = FILE_make_dir_exist(CACHE_folder.c_str());
 			if(res != 0)
 			{
 				AssertPrintf("Could not find or make the file cache, please check if you have sufficient rights to use the folder %s", CACHE_folder.c_str());
@@ -219,7 +217,8 @@ WED_file_cache_status WED_get_file_from_cache(
 						string result(buf.begin(),buf.end());
 						out_path = CACHE_folder + "\\" + FILE_get_file_name(result);
 						(*itr)->set_disk_location(out_path);
-
+						//replace with RAII_file
+							//delete curl
 						ofstream ofs(out_path);
 						ofs << result << endl;
 						return WED_file_cache_status::file_available;
@@ -290,7 +289,7 @@ void WED_file_cache_test()
     vector<string> test_files;
 
 	//Test finding files already on disk, not available online
-	test_files.push_back(CACHE_folder + "\\ondisk1.txt");
+	//test_files.push_back("file://" + string(CACHE_folder + "\\ondisk1.txt"));
 
 	//Test finding files on disk, also available online
 	test_files.push_back("http://www.example.com/index.html");
@@ -298,8 +297,8 @@ void WED_file_cache_test()
 	//Test finding files not on disk, online
 	test_files.push_back("http://gateway.x-plane.com/airport_metadata.csv");
 
-    //test finding files not on disk, not online
-    test_files.push_back("http://www.x-plane.com/thisisnotreal.txt");
+	//test finding files not on disk, not online
+	//test_files.push_back("http://www.x-plane.com/thisisnotreal.txt");
 
 	//Get Certification
 	string cert;
@@ -322,7 +321,7 @@ void WED_file_cache_test()
             {
                 ++error_count;
             }
-			printf("status: %d out_path: %s error_path: %s errors: %d \n", status, out_path.c_str(), error.c_str(), error_count);
+			printf("in_path %s, status: %d out_path: %s error_path: %s errors: %d \n", in_path.c_str(), status, out_path.c_str(), error.c_str(), error_count);
 		}
 		++i;
 	}

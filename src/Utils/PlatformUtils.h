@@ -35,13 +35,14 @@
 
 /* The directory separator is a macro and should be cased by some kind of compiler
    #define or something. */
-
 #if	IBM
 	#define DIR_CHAR	'\\'
 	#define DIR_STR		"\\"
+	#define TEMP_FILES_DIR_LEN MAX_PATH
 #elif APL || LIN
 		#define	DIR_CHAR	'/'
 		#define DIR_STR		"/"
+		#define TEMP_FILES_DIR_LEN 255? For apple too?
 #else
 	#error PLATFORM NOT DEFINED
 #endif
@@ -51,6 +52,11 @@
  *
  */
 const char * GetApplicationPath(char * pathBuf, int pathLen);
+
+/*
+ * Returns the FQP to the OS' "Best practices" temporary files folder
+ */
+const char * GetTempFilesFolder(char * temp_path, int sz);
 
 /*
  * GetFilePathFromUser takes a prompting C-string and fills in the buffer with a path

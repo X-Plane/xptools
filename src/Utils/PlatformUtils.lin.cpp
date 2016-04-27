@@ -35,6 +35,22 @@ const char* GetApplicationPath(char* pathBuf, int sz)
 	return pathBuf;
 }
 
+/* Some linux developer make sure this is correct
+const char * GetTempFilesFolder(char * temp_path, int sz=MAX_PATH)
+{
+	char temp_path[255] = "/tmp/.wed_XXXXXX";
+	int fd = mkstemp(temp_path);
+	if (fd == -1)
+	{
+		return NULL;
+	}
+	else
+	{
+		return temp_path;
+	}
+}
+*/
+
 int		GetFilePathFromUser(
 					int					inType,
 					const char * 		inPrompt,
