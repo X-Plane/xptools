@@ -79,6 +79,9 @@
     <Filter Include="lib_json">
       <UniqueIdentifier>{d1214a20-9fae-4363-adf6-03121d30a6e6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="WEDFileCache">
+      <UniqueIdentifier>{402bfda5-9fe6-4337-960e-11e7be115962}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\WEDCore\WED_Application.cpp">
@@ -774,11 +777,14 @@
     <ClCompile Include="..\..\src\Utils\CSVParser.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDCore\WED_FileCache.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDNetwork\RAII_CURL_HNDL.cpp">
+    <ClCompile Include="..\..\src\WEDNetwork\RAII_Classes.cpp">
       <Filter>WEDNetwork</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDFileCache\WED_FileCache.cpp">
+      <Filter>WEDFileCache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDFileCache\WED_CacheObject.cpp">
+      <Filter>WEDFileCache</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1541,11 +1547,14 @@
     <ClInclude Include="..\..\src\Utils\CSVParser.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDCore\WED_FileCache.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDNetwork\RAII_CURL_HNDL.h">
+    <ClInclude Include="..\..\src\WEDNetwork\RAII_Classes.h">
       <Filter>WEDNetwork</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDFileCache\WED_FileCache.h">
+      <Filter>WEDFileCache</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDFileCache\WED_CacheObject.h">
+      <Filter>WEDFileCache</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

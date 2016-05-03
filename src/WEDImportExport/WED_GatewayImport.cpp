@@ -32,7 +32,8 @@
 #include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
-#include "RAII_CURL_HNDL.h"
+#include "RAII_Classes.h"
+
 #include <sstream>
 
 #include <json/json.h>
@@ -74,6 +75,8 @@
 	//------------------------//
 
 //------------------------//
+
+#include "WED_FileCache.h"
 
 //Heuristics for how big to initialize the rawJSONbuf, since it is faster to make a big chunk than make it constantly resize itself
 //These should probably change as the gateway gets bigger and the downloads get longer in average charecter length
@@ -155,7 +158,7 @@ string MemFileHandling(const string & zipPath, const string & filePath, const st
 			writeMode = "wb";
 		}
 						
-		RAII_file f(string(filePath + fileName).c_str(),writeMode.c_str());
+		RAII_File f(string(filePath + fileName).c_str(),writeMode.c_str());
 
 		if(f)
 		{
@@ -266,7 +269,7 @@ private:
 	WED_Document *		mResolver;
 	WED_MapPane *		mMapPane;
 	//Our curl handle we'll be using to get the json files, note the s
-	RAII_CURL_HNDL		mCurl;
+	RAII_CurlHandle		mCurl;
 
 	//The buffers of the specific packs downloaded at the end
 	vector<JSON_BUF>	mSpecificBufs;
@@ -562,7 +565,7 @@ void WED_GatewayImportDialog::TimerFired()
 			{
 				
 				//Push back the latest buffer
-				mSpecificBufs.push_back(mCurl.get_JSON_BUF());
+				mSpecificBufs.push_back(mCurl.get_dest_buffer());
 				
 				//Try to start the next download
 				bool has_versions_left = NextVersionsDownload();
@@ -620,7 +623,7 @@ void WED_GatewayImportDialog::TimerFired()
 void WED_GatewayImportDialog::FillICAOFromJSON()
 {
 	//create a string from the vector of chars
-	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
+	string rawJSONString = string(mCurl.get_dest_buffer().begin(),mCurl.get_dest_buffer().end());
 
 	Json::Value root;
 	Json::Reader reader;
@@ -665,7 +668,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON()
 void WED_GatewayImportDialog::FillVersionsFromJSON()
 {
 	//create a string from the vector of chars
-	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
+	string rawJSONString = string(mCurl.get_dest_buffer().begin(),mCurl.get_dest_buffer().end());
 
 	//Now that we have our rawJSONString we'll be turning it into a JSON object
 	Json::Value root(Json::objectValue);
@@ -753,6 +756,8 @@ void WED_GatewayImportDialog::ReceiveMessage(
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
+	
+	WED_file_cache_test();
 	string url = WED_URL_GATEWAY_API;
 	
 	//Get Certification
@@ -893,7 +898,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 
 	if(!outString.empty())
 	{
-		RAII_file f(zipPath.c_str(),"wb");
+		RAII_File f(zipPath.c_str(),"wb");
 		if(f)
 		{
 			size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f());
