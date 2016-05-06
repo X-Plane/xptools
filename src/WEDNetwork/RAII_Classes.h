@@ -29,21 +29,15 @@
 */
 #include "curl_http.h"
 
+//--RAII_CurlHandle----------------------------------------------------------
 //Can opens a cURL Handle to a specified URL, closes handle and clears buffer on destruction
 class RAII_CurlHandle
 {
 public:
-	RAII_CurlHandle();
-	~RAII_CurlHandle();
-
-	//Create the connection
-	void create_HNDL(const string& inURL, const string& inCert, int bufferReserveSize);
+	RAII_CurlHandle(const string& url, const string& cert, int buf_reserve_size);
 	
 	//Get curl_http_get_file handle
-	curl_http_get_file* const get_curl_handle();
-
-	//Closes handle and clears JSON buffer
-	void close_curl_handle();
+	curl_http_get_file& get_curl_handle();
 
 	//Gets the curl_http_get_file buffer
 	const vector<char>& get_dest_buffer() const;
@@ -52,19 +46,21 @@ private:
 	RAII_CurlHandle(const RAII_CurlHandle& copy);
 	RAII_CurlHandle& operator= (const RAII_CurlHandle& rhs);
 
-	curl_http_get_file* curl_handle;
+	curl_http_get_file m_curl_handle;
 	
 	//A buffer of chars to be filled
 	vector<char> m_dest_buffer;
 };
+//---------------------------------------------------------------------------//
 
+//--RAII_FileHandle----------------------------------------------------------
 //Opens a FILE* handle upon creation, closes file on dtor
-class RAII_File 
+class RAII_FileHandle
 {
 public:
 
-	RAII_File(const char* fname, const char* mode);
-	~RAII_File();
+	RAII_FileHandle(const char* fname, const char* mode);
+	~RAII_FileHandle();
 
 	int close();
 
@@ -74,4 +70,5 @@ public:
 private:
 	FILE* mFile;
 };
+//---------------------------------------------------------------------------//
 #endif

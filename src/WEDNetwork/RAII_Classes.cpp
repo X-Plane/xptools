@@ -1,51 +1,29 @@
 #include "RAII_Classes.h"
 
-RAII_CurlHandle::RAII_CurlHandle() : curl_handle(NULL)
+//--RAII_CurlHandle------------------------------------------------------------
+RAII_CurlHandle::RAII_CurlHandle(const string& url, const string& cert, int buf_reserve_size) :
+	m_dest_buffer(vector<char>(buf_reserve_size)),
+	m_curl_handle(curl_http_get_file(url, &m_dest_buffer, cert))
 {
 }
 
-RAII_CurlHandle::~RAII_CurlHandle()
+curl_http_get_file& RAII_CurlHandle::get_curl_handle()
 {
-	this->close_curl_handle();
-}
-
-void RAII_CurlHandle::create_HNDL(const string& inURL, const string& inCert, int bufferReserveSize)
-{
-	if(curl_handle != NULL)
-	{
-		delete curl_handle;
-		curl_handle = NULL;
-	}
-
-	m_dest_buffer = vector<char>(bufferReserveSize);
-	curl_handle = new curl_http_get_file(inURL,&m_dest_buffer,inCert);
-}
-
-curl_http_get_file * const RAII_CurlHandle::get_curl_handle()
-{
-	return curl_handle;
-}
-
-void RAII_CurlHandle::close_curl_handle()
-{
-	if(curl_handle != NULL)
-	{
-		delete curl_handle;
-		curl_handle = NULL;
-	}
-	m_dest_buffer.clear();
+	return m_curl_handle;
 }
 
 const vector<char>& RAII_CurlHandle::get_dest_buffer() const
 {
 	return m_dest_buffer;
 }
+//---------------------------------------------------------------------------//
 
-RAII_File::RAII_File(const char * fname, const char * mode) : mFile(fopen(fname,mode))
+//--RAII_File------------------------------------------------------------------
+RAII_FileHandle::RAII_FileHandle(const char * fname, const char * mode) : mFile(fopen(fname,mode))
 {
 }
 
-RAII_File::~RAII_File()
+RAII_FileHandle::~RAII_FileHandle()
 {
 	if(mFile)
 	{
@@ -54,7 +32,7 @@ RAII_File::~RAII_File()
 	}
 }
 
-int RAII_File::close()
+int RAII_FileHandle::close()
 {
 	if(mFile)
 	{
@@ -64,3 +42,4 @@ int RAII_File::close()
 	}
 	return 0;
 }
+//---------------------------------------------------------------------------//

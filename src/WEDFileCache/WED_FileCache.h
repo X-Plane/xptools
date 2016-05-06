@@ -41,42 +41,79 @@
 	3. File catagories, lifespans, and per catagory cool down timers
 	4. Thourough testing, done as 48245211b2a977d
 	5. Better theory of operation description
+	6. Client pfrefix folder "place all my cached objects in CACHE_FOLDER/myfolder/
 */
 
-enum WED_file_cache_status {
+enum CACHE_status
+{
 	file_available,    //File available on disk
 	file_not_started,  //File not on disk or downloading
 	file_downloading,  //File is currently download from the net
 	file_error,        //File has had some kind of error
-	file_cache_cooling //File cache is current cooling down after error
+	file_cooling       //File is current cooling down after error TODO: Does a client need to know about cooling mechanism?
 };
 
 //What type of cache error
-enum WED_file_cache_error {
+enum CACHE_error_type
+{
+	none,        //No error
 	server_side, //Error determined to be server's, likely HTTP 300 - 500's
 	client_side, //Error determined to be client's, TODO: currently all cURL errors are blindly taken as client
-	unknown      //Error origin could not be determined, probably WED's fault
+	unknown,     //Error origin could not be determined, probably WED's fault
 };
 
 //Content_type is used to determine the life span of a cached file
-enum WED_file_cache_content_type {
-		no_cache,  //Should not be cached
-		temporary, //Refreshed multiple times a session
-		content,   //Refreshed once per session or every few uses
-		stationary //Refreshed once every few weeks
+enum CACHE_content_type
+{
+	no_cache,   //Should not be cached
+	temporary,  //Refreshed multiple times a session
+	content,    //Refreshed once per session or every few uses
+	stationary, //Refreshed once every few weeks
+	initially_unknown     //NOT FOR CLIENTS! Only used internally during cache intialization
 };
 
 //Initialize the file cache, called once at the start of the program
 void WED_file_cache_init();
 
-//Attempts to get a file path for client to use, if a file is not present the cache will attempt to download it
-//providing feedback in the form of status, error codes, and status updates.
-//This method is meant to be called on a timer until a client gets what they want or enough errors to make them stop trying.
-WED_file_cache_status WED_get_file_from_cache(
-            const string& in_uri,
-			const string& in_cert,
-            string& out_path,
-            string& out_error);//- We get file_error if the URL returned some kind of error code (E.g 404).  Additional calls to the file cache should KEEP returning file_error In the case of an error, out_error can contain some kind of human-readable error message, so we can tell a 404 from a timeout.
+struct WED_file_cache_request
+{
+	//Our guess as to how big our download (in number of chars)
+	int    in_buf_reserve_size;
+	
+	//Our security certification
+	string in_cert;
+	
+	//Content type we are requesting
+	CACHE_content_type in_content_type;
+
+	//The URL to request
+	string in_url;
+
+	//The folder prefix to place this cached file in, usually the class name
+	//string in_folder_prefix
+};
+
+struct WED_file_cache_response
+{
+	//From a range from -1.0 (download not started), to 100.0
+	float out_download_progress;
+
+	//The type of error we just occured (who is to blame)
+	CACHE_error_type out_error_type;
+
+	//Human readable error string
+	string out_error_human;
+
+	//Path to load downloaded file from
+	string out_path;
+
+	//Status of the cache
+	CACHE_status out_status;
+};
+
+//Attempts give client a file path for file, downloading said file if need be. Feedback on progress and ability is given in the form status, error codes, and status updates.
+//This is intended to be called a timer until a client gets their file or sufficient indication they should stop trying.
+WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req);
 
 //Blocks until all previous cURL handles are finished or are forcibly stopped. Called once at the end of the program.
 void WED_file_cache_shutdown();

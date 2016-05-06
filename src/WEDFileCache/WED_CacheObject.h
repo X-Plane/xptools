@@ -1,73 +1,64 @@
 #include "WED_FileCache.h"
 #include "curl_http.h"
 #include "RAII_Classes.h"
+#include <time.h>
 
-//All time is is in seconds
-class CACHE_LifespanInfo
-{
-public:
-	CACHE_LifespanInfo(WED_file_cache_content_type type);
-#if DEV
-	CACHE_LifespanInfo(int cool_down_left, int life_left);
-#endif
-
-	~CACHE_LifespanInfo();
-
-	bool is_cooling_down();
-	int  cool_down_time_left();
-
-	//
-	bool needs_refresh();
-private:
-	int m_cooldown_left;
-	int m_life_left;
-};
-/*
-bool IsInCooldown
-int  TimeLeft
-CoolDown Activate
-Cool
-
-RAII like object, time is always "decreasing". When asked it'll quickly calculate time left. Anything negative is just counted as nothing
-
-
-Default constructor auto figures it out
-CACHE_LifeSpanInfo
-variables
-int resettime - manually configurable or instantly assaigned based on static vs dynamic type
-int timeleft
-*/
-
-	
 class CACHE_CacheObject
 {
 public:
-	CACHE_CacheObject() { status = WED_file_cache_status::file_not_started; }
+	CACHE_CacheObject(CACHE_content_type type);
+	~CACHE_CacheObject();
 
 	//Getters for all properties
-	string get_url()           const { return url; }
-	void   set_url(const string& new_url) { url = new_url; }
+	string get_url() const;
+	void   set_url(const string& new_url);
 
-	string get_disk_location() const { return disk_location; }
-	void   set_disk_location(const string& location) { disk_location = location; }
+	string get_disk_location() const;
+	void   set_disk_location(const string& location);
 
-	RAII_CurlHandle& get_curl_file() { return curl_file; }
-	WED_file_cache_status get_status() const { return status; }
-	void                  set_status(WED_file_cache_status stat) { status = stat; }
+	//Creates and opens a cURL handle to a given url, with a certificate and optional reserve size
+	void             create_RAII_curl_hndl(const string& url, const string& cert, int buf_reserve_size=0);
 
+	//Gets the current RAII_CurlHandle object
+	RAII_CurlHandle* const get_RAII_curl_hndl();
+
+	//Forces RAII_CurlHandle to close and be destroyed early
+	void             close_RAII_curl_hndl();
+
+	CACHE_status get_status() const;
+	void         set_status(CACHE_status stat);
+
+	//Trigger the cool down clock to reset and start counting down
+	void trigger_cool_down();
+
+	//Is the file cooling down
+	bool is_cooling_down() const;
+
+	//Does the Cache object need 
+	bool needs_refresh() const;
 private:
+#if DEV
+	int  cool_down_time_left() const;
+#endif
+
 	//The file url. Lives from first request to program end
-	string url;
+	string m_url;
 
 	//Real FQPN on disk, "" if non-existant. Lives from program start to program end
-	string disk_location;
+	string m_disk_location;
 
 	//The curl_http_get_file that is associated with this cache_object
-	//Info life span: Download start to download finish
-	RAII_CurlHandle curl_file;
+	//Info life span: Download start to download finish or cache shutdown
+	RAII_CurlHandle* m_RAII_curl_hndl;
 
 	//The status of the file's progress
-	WED_file_cache_status status;
+	CACHE_status m_status;
+
+	//The content of cache object
+	CACHE_content_type m_content_type;
+
+	//What timestamp the trigger
+	tm m_trigger_event;
 
 	CACHE_CacheObject(const CACHE_CacheObject& copy);
 	CACHE_CacheObject & operator= (const CACHE_CacheObject& rhs);

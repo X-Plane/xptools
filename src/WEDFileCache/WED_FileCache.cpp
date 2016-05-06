@@ -38,7 +38,7 @@ void WED_file_cache_init()
 		//Get the cache folder path
 		{
 			char    base[TEMP_FILES_DIR_LEN];
-			CACHE_folder = GetTempFilesFolder(base, TEMP_FILES_DIR_LEN) + string("WED") + string("\\") + string("wed_file_cache");
+			CACHE_folder = GetTempFilesFolder(base, TEMP_FILES_DIR_LEN) + string("WED\\wed_file_cache");
 		}
 
 		CACHE_cool_down_time = 0;
@@ -59,10 +59,10 @@ void WED_file_cache_init()
 			//Add each file in the folder to the cache
 			for (int i = 0; i < files.size(); ++i)
 			{
-				//We always delete during shut WED_file_cache_shutdown()
-				CACHE_CacheObject * obj = new CACHE_CacheObject();
+				//We always delete during shut WED_file_cacheshutdown()
+				CACHE_CacheObject * obj = new CACHE_CacheObject(CACHE_content_type::initially_unknown);
 				obj->set_disk_location(CACHE_folder + "\\" + files[i]);
-				obj->set_status(WED_file_cache_status::file_available);
+				obj->set_status(CACHE_status::file_available);
 				CACHE_file_cache.push_back(obj);
 			}
 		}
@@ -73,10 +73,10 @@ void WED_file_cache_init()
 }
 
 //returns an error string if there is one
-static string HandleNetworkError(curl_http_get_file * mCurl)
+static string HandleNetworkError(curl_http_get_file& mCurl)
 {
-	int err = mCurl->get_error();
-	bool bad_net = mCurl->is_net_fail();
+	int err = mCurl.get_error();
+	bool bad_net = mCurl.is_net_fail();
 
 	stringstream ss;
 	ss.str() = "";
@@ -91,7 +91,7 @@ static string HandleNetworkError(curl_http_get_file * mCurl)
 	{
 		//Get the string of error data
 		vector<char>    errdat;
-		mCurl->get_error_data(errdat);
+		mCurl.get_error_data(errdat);
 				
 		bool is_ok = !errdat.empty();
 		for(vector<char>::iterator i = errdat.begin(); i != errdat.end(); ++i)
@@ -123,122 +123,140 @@ static string HandleNetworkError(curl_http_get_file * mCurl)
 	return ss.str();    
 }
 
-WED_file_cache_status WED_get_file_from_cache(
-			const string& in_url,
-			const string& in_cert,
-			string& out_path,
-			string& out_error)
+WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 {
-	out_error = "";
-	out_path = "";
-
-	if(CACHE_cool_down_time > 0)
-	{
-		--CACHE_cool_down_time;
-        out_error = "Cache must wait after error to retry server";
-        return WED_file_cache_status::file_cache_cooling;
-	}
-
+	//The cache must be initialized!
+	DebugAssert(CACHE_folder != "");
 	/* 
 	-------------------------Method outline------------------------------------
 	1. Is it on disk?
 		- Set out_path, return file_available
-	2. Not on disk, is it in CACHE_file_cache with active cURL_handle?
+	2. Not on disk, has a cool down even been triggered?
+	3. Not on disk, is it in CACHE_file_cache with active cURL_handle?
 		- Yes it is. It's currently...
             * Done! If okay, save to disk, set_disk_location
             * Experiencing an error. Set out_error, activate cool_down, return file_error
 			* Downloading as normal. return file_downloading
-	3. Not on disk, not in cache downloading, not in cool_down.
+	4. Not on disk, not in cache downloading, not in cool_down.
 		- Add file, return file_downloading
-	4. Not on disk, not in cache downloading, in cool_down
+	5. Not on disk, not in cache downloading, in cool_down
 		- Set out_error to error message, return file_cache_cooling
 	---------------------------------------------------------------------------
 	*/
 
-	//Search through the file_cache on disk looking to see if we've already got this url
+	//Search through on disk cache
 	for (int i = 0; i < CACHE_file_cache.size(); i++)
 	{
-		string file_name = FILE_get_file_name(in_url);
+		string file_name = FILE_get_file_name(req.in_url);
 		if(CACHE_file_cache[i]->get_disk_location().find(file_name) != string::npos)
 		{
-			out_path = CACHE_file_cache[i]->get_disk_location();
-			return WED_file_cache_status::file_available;
+			WED_file_cache_response res;
+			res.out_download_progress = -1;
+			res.out_error_type = CACHE_error_type::none;
+			res.out_error_human = "";
+			res.out_path = CACHE_file_cache[i]->get_disk_location();
+			res.out_status = CACHE_status::file_available;
+			return res;
 		}
 	}
 
-	//If not on disk, see if it is in CACHE_file_cache, downloading or having an error
+	//Check if URL is cooling down, downloading, or having a problem
 	for (vector<CACHE_CacheObject* >::iterator itr = CACHE_file_cache.begin();
 		 itr != CACHE_file_cache.end();
 		 ++itr)
 	{
-		if((*itr)->get_url() == in_url)
+		if((*itr)->get_url() == req.in_url)
 		{
 			//Has this CacheObject even started a cURL handle?
-			curl_http_get_file * hndl = (*itr)->get_curl_file().get_curl_handle();
-			if(hndl != NULL)
+			if((*itr)->get_RAII_curl_hndl() != NULL)
 			{
-				if(hndl->is_done())
+				curl_http_get_file & hndl = (*itr)->get_RAII_curl_hndl()->get_curl_handle();
+				if(hndl.is_done())
 				{
-					if(hndl->is_ok())
+					if(hndl.is_ok())
 					{
 						//Yay! We're done!
-						const vector<char>& buf = (*itr)->get_curl_file().get_dest_buffer();
+						const vector<char>& buf = (*itr)->get_RAII_curl_hndl()->get_dest_buffer();
 						string result(buf.begin(),buf.end());
-						out_path = CACHE_folder + "\\" + FILE_get_file_name(result);
-						(*itr)->set_disk_location(out_path);
+
+						WED_file_cache_response res;
+						res.out_download_progress = hndl.get_progress();
+						res.out_error_type = CACHE_error_type::none;
+						res.out_error_human = "";
+						
+						string file_path = CACHE_folder + "\\" + FILE_get_file_name(req.in_url);
 						
 						//Save file to disk
-						RAII_File f(out_path.c_str(),"w");
+						RAII_FileHandle f(file_path.c_str(),"w");
+
+						//TODO: What if we can't open the file here?
+						//if(f() != NULL)
+						//{
 						for(string::iterator itr = result.begin(); itr != result.end(); ++itr)
 						{
 							fprintf(f(),"%c",*itr);
 						}
+						(*itr)->set_disk_location(file_path);
 						
+						res.out_path = file_path;
+						res.out_status = CACHE_status::file_available;
+
 						//Delete handle
-						(*itr)->get_curl_file().close_curl_handle();
-						
-						return WED_file_cache_status::file_available;
+						(*itr)->close_RAII_curl_hndl();
+
+						return res;
 					}
 					else
 					{
-						//Handle whatever error we're going to have
-						 out_error = HandleNetworkError(hndl);
-
-						 //Activate cooldown if were not already counting down
-						 if(CACHE_cool_down_time == 0)
-						 {
+						WED_file_cache_response res;
+						res.out_download_progress = hndl.get_progress();
+						res.out_error_type = CACHE_error_type::none;
+						res.out_error_human = HandleNetworkError(hndl);
+						res.out_path = "";
+						
+						//Activate cooldown if were not already counting down
+						//TODO:Remember we're changing CACHE_cooldowntime
+						if(CACHE_cool_down_time == 0)
+						{
 							CACHE_cool_down_time = CACHE_COOL_DOWN_START;
-							return WED_file_cache_status::file_cache_cooling;
-						 }
-						 else
-						 {
-							 return WED_file_cache_status::file_error;
-						 }
-					}//end if(hndl->is_ok())
+							res.out_status = CACHE_status::file_cooling;
+							return res;
+						}
+						else
+						{
+							res.out_status = CACHE_status::file_error;
+							return res;
+						}
+					}//end if(hndl.is_ok())
 				}
 				else
 				{
-					return WED_file_cache_status::file_downloading;
-				}//end if(hndl->is_done())
+					WED_file_cache_response res;
+					res.out_download_progress = hndl.get_progress();
+					res.out_error_type = CACHE_error_type::none;
+					res.out_error_human = "";
+					res.out_path = "";
+					res.out_status = CACHE_status::file_downloading;
+					return res;
+				}//end if(hndl.is_done())
 			}
 		}
 	}
 
-	//If it is not on disk, and not in the download_queue, and we haven't reached our download maximum
-	if(CACHE_cool_down_time <= 0)
-	{
-		CACHE_CacheObject * obj = new CACHE_CacheObject();
-		obj->get_curl_file().create_HNDL(in_url, in_cert, 0);
-		obj->set_url(in_url);
-		obj->set_status(WED_file_cache_status::file_downloading);
-		CACHE_file_cache.push_back(obj);
+	//If it is not on disk, not cooling down, and not in the download_queue, we finally get to download it
+	CACHE_CacheObject * obj = new CACHE_CacheObject(CACHE_content_type::initially_unknown);
+	obj->create_RAII_curl_hndl(req.in_url, req.in_cert, req.in_buf_reserve_size);
+	obj->set_url(req.in_url);
+	obj->set_status(CACHE_status::file_downloading);
+	CACHE_file_cache.push_back(obj);
 
-		return WED_file_cache_status::file_downloading;
-	}
-	else
-	{
-		return WED_file_cache_status::file_cache_cooling;
-	}
+	WED_file_cache_response res;
+	res.out_download_progress = obj->get_RAII_curl_hndl()->get_curl_handle().get_progress();
+	res.out_error_type = CACHE_error_type::none;
+	res.out_error_human = "";
+	res.out_path = "";
+	res.out_status = CACHE_status::file_downloading;
+	return res;
 }
 
 
@@ -280,17 +298,17 @@ void WED_file_cache_test()
 	int i = 0;
 	while(i < test_files.size())
 	{
-		WED_file_cache_status status = WED_file_cache_status::file_not_started;
+		CACHE_status status = CACHE_status::file_not_started;
 
         int max_error = 100;
         int error_count = 0;
-		//while(status != WED_file_cache_status::file_available && error_count < max_error)
+		//while(status != CACHE_status::file_available && error_count < max_error)
 		{
 			string in_path = test_files.at(i);
 			string out_path;
 			string error;
-			status = WED_get_file_from_cache(in_path, cert, out_path, error);
-			if(status == WED_file_cache_status::file_error || status == WED_file_cache_status::file_cache_cooling)
+//			status = WED_file_cache_request_file(in_path, cert, out_path, error);
+			if(status == CACHE_status::file_error || status == CACHE_status::file_cooling)
 			{
 				++error_count;
 			}
@@ -302,6 +320,6 @@ void WED_file_cache_test()
 		}
 		++i;
 	}
-	WED_file_cache_shutdown();
+	//WED_file_cache_shutdown();
 }
 #endif
