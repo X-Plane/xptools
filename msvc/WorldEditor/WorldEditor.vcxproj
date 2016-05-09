@@ -177,7 +177,7 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_Thing.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_TowerViewpoint.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Windsock.cpp" />
-    <ClCompile Include="..\..\src\WEDFileCache\WED_CacheObject.cpp" />
+    <ClCompile Include="..\..\src\WEDFileCache\CACHE_CacheObject.cpp" />
     <ClCompile Include="..\..\src\WEDFileCache\WED_FileCache.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptIE.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptImportDialog.cpp" />
@@ -431,7 +431,7 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_Thing.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_TowerViewpoint.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Windsock.h" />
-    <ClInclude Include="..\..\src\WEDFileCache\WED_CacheObject.h" />
+    <ClInclude Include="..\..\src\WEDFileCache\CACHE_CacheObject.h" />
     <ClInclude Include="..\..\src\WEDFileCache\WED_FileCache.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptIE.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptImportDialog.h" />
@@ -592,7 +592,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;4482;</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\src\WEDFileCache;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

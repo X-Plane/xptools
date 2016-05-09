@@ -496,15 +496,9 @@ void WED_GatewayImportDialog::TimerFired()
 		ss << "Download in Progress: " << progress << "% Done";
 		DecorateGUIWindow(ss.str());
 	}
-
-	if(res.out_status == CACHE_status::file_cooling)
-	{
-		//TODO deliberate more here
-	}
-
+	
 	//If we've reached a conclusion to this cache request
-	if( res.out_status != CACHE_status::file_downloading &&
-		res.out_status != CACHE_status::file_not_started)
+	if( res.out_status != CACHE_status::file_downloading)
 	{
 		Stop();
 		mPhase++;
@@ -562,7 +556,7 @@ void WED_GatewayImportDialog::TimerFired()
 						}
 					
 						//Set the current airport in the sense of "WED's current airport"
-						WED_SetCurrentAirport(mResolver,last_imported);
+						WED_SetCurrentAirport(mResolver, last_imported);
 
 						//Select the current airport in the sense of selecting something on the map pane
 						ISelection * sel = WED_GetSelect(mResolver);
@@ -669,7 +663,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		VerInfo_t tmp;
 		
 		//!!IMPORTANT!! Use of ".operator[]" because the author of jsoncpp didn't read Scott Meyer's "Item 26: Guard against potential ambiguity"!
-		tmp.sceneryId = curScenery.operator[]("sceneryId").asInt();
+		tmp.sceneryId     = curScenery.operator[]("sceneryId").asInt();
 		tmp.isRecommended = tmp.sceneryId == airport.operator[]("recommendedSceneryId").asInt();
 		
 		tmp.parentId = curScenery.operator[]("parentId").asInt();
@@ -677,15 +671,16 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		tmp.userName = curScenery.operator[]("userName").asString() != "" ? curScenery.operator[]("userName").asString() : "N/A";
 		//Dates will appear as ISO8601: https://en.wikipedia.org/wiki/ISO_8601
 		//For example 2014-07-31T14:34:47.000Z
-																			//If the date string exists go with the date string, else go with a default
+		
+		//If the date string exists go with the date string, else go with a default
 		tmp.dateUploaded = curScenery.operator[]("dateUpload").asString()   != "" ? curScenery.operator[]("dateUpload").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.dateAccepted = curScenery.operator[]("dateAccepted").asString() != "" ? curScenery.operator[]("dateAccepted").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.dateApproved = curScenery.operator[]("dateApproved").asString() != "" ? curScenery.operator[]("dateApproved").asString() : "0000-00-00T00:00:00.000Z";
-		tmp.type = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
+		tmp.type   = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
 		tmp.status = curScenery["Status"].asString();
 		
 		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
-		tmp.artistComments = curScenery.operator[]("artistComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
+		tmp.artistComments    = curScenery.operator[]("artistComments").asString()    != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
 		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("moderatorComments").asString() : "N/A";
 		
 		//Catches cases where acceptedSceneryCount > 0 && some pack only has uploadeded status
@@ -723,7 +718,6 @@ void WED_GatewayImportDialog::ReceiveMessage(
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	
 	//WED_file_cache_test();
 	string url = WED_URL_GATEWAY_API;
 	
@@ -780,9 +774,9 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	url += "airport/" + mICAOid;
 
 	//Get it from the server
-	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;
+	mCacheRequest.in_buf_reserve_size = VERSIONS_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type = CACHE_content_type::stationary;
+	mCacheRequest.in_content_type = CACHE_content_type::temporary;
 	mCacheRequest.in_url = url;
 
 	Start(0.1);
@@ -805,7 +799,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
 
-	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;
+	mCacheRequest.in_buf_reserve_size = VERSION_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_content_type = CACHE_content_type::stationary;
 	mCacheRequest.in_url = url.str();

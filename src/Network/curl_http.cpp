@@ -168,8 +168,11 @@ void	curl_http_get_file::get_error_data(vector<char>& out_data)
 	swap(out_data, m_dl_buffer);
 }
 
+const string&	curl_http_get_file::get_url() const
+{
+	return m_url;
+}
 
-	
 size_t		curl_http_get_file::read_cb(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	curl_http_get_file * me = (curl_http_get_file *) userp;

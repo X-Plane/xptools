@@ -59,14 +59,18 @@ public:
 				
 				~curl_http_get_file();
 	
+	// True if the cURL handle has finished downloading or deciding to fail. Next, check if hndl is_okay.
 	bool		is_done(void);
 	bool		is_ok(void);			// IF done, did the op finish without error?
-	bool		is_net_fail(void);		// IF we had an error, is it one that MIGHT be local (e.g. bad net connection)?
+	
+	//Checks if error code matches a hueristic list indicating a local (client) network problem
+	bool		is_net_fail(void);
 
 	float		get_progress(void);		// if nt done, progress, percent, e.g 53.4f;
 	int			get_error(void);		// If done and not ok, what is error
 	void		get_error_data(vector<char>& out_data);	// If an error, any stuff the server sent -- might be text, HTML, who knows!
-	
+	const string&	get_url() const; //The URL we are attempted to GET from
+
 private:
 
 		volatile	int			m_progress;		// Out of 100
@@ -110,6 +114,7 @@ private:
 
 };
 
+// Checks a short list of things that might indicate a net connectivity problem.
 bool	UTL_http_is_error_bad_net(int err);
 
 #endif /* HAS_GATEWAY */
