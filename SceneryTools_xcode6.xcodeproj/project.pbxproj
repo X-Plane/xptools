@@ -429,6 +429,8 @@
 		D65E4C370B6548FD004D7887 /* ObjUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378D0AB22C85003949C5 /* ObjUtils.cpp */; };
 		D65E4C380B654901004D7887 /* perlin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37920AB22C85003949C5 /* perlin.cpp */; };
 		D660F8E5116FADA6005B8E14 /* WED_TCEDebugLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D660F8E4116FADA6005B8E14 /* WED_TCEDebugLayer.cpp */; };
+		D66569BF1CE261FC00662E5C /* CACHE_CacheObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66569BB1CE261FC00662E5C /* CACHE_CacheObject.cpp */; };
+		D66569C01CE261FC00662E5C /* WED_FileCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66569BD1CE261FC00662E5C /* WED_FileCache.cpp */; };
 		D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */; };
 		D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083000C1A4DBA00F33E06 /* earth_11.jpg */; };
 		D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083010C1A4DBA00F33E06 /* earth_12.jpg */; };
@@ -1252,6 +1254,10 @@
 		D65E4B3A0B65427C004D7887 /* RenderFarm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RenderFarm; sourceTree = BUILT_PRODUCTS_DIR; };
 		D660F8E3116FADA6005B8E14 /* WED_TCEDebugLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = WED_TCEDebugLayer.h; path = ../WEDCore/WED_TCEDebugLayer.h; sourceTree = "<group>"; };
 		D660F8E4116FADA6005B8E14 /* WED_TCEDebugLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = WED_TCEDebugLayer.cpp; path = ../WEDCore/WED_TCEDebugLayer.cpp; sourceTree = "<group>"; };
+		D66569BB1CE261FC00662E5C /* CACHE_CacheObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_CacheObject.cpp; sourceTree = "<group>"; };
+		D66569BC1CE261FC00662E5C /* CACHE_CacheObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_CacheObject.h; sourceTree = "<group>"; };
+		D66569BD1CE261FC00662E5C /* WED_FileCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FileCache.cpp; sourceTree = "<group>"; };
+		D66569BE1CE261FC00662E5C /* WED_FileCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FileCache.h; sourceTree = "<group>"; };
 		D66864230C4F783C00DB3056 /* WED_DSFExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DSFExport.h; sourceTree = "<group>"; };
 		D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DSFExport.cpp; sourceTree = "<group>"; };
 		D67083000C1A4DBA00F33E06 /* earth_11.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_11.jpg; sourceTree = "<group>"; };
@@ -2325,6 +2331,17 @@
 			path = WEDLibrary;
 			sourceTree = "<group>";
 		};
+		D66569BA1CE261FC00662E5C /* WEDFileCache */ = {
+			isa = PBXGroup;
+			children = (
+				D66569BB1CE261FC00662E5C /* CACHE_CacheObject.cpp */,
+				D66569BC1CE261FC00662E5C /* CACHE_CacheObject.h */,
+				D66569BD1CE261FC00662E5C /* WED_FileCache.cpp */,
+				D66569BE1CE261FC00662E5C /* WED_FileCache.h */,
+			);
+			path = WEDFileCache;
+			sourceTree = "<group>";
+		};
 		D67082FF0C1A4DBA00F33E06 /* world */ = {
 			isa = PBXGroup;
 			children = (
@@ -2556,6 +2573,7 @@
 		D6BC361B0AB22C84003949C5 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				D66569BA1CE261FC00662E5C /* WEDFileCache */,
 				D6E4C9CC18ECA0FD000D98B8 /* Network */,
 				D6E4C92718EC9181000D98B8 /* lib_json */,
 				D6A266630F99274300E1E754 /* AC3DPlugins */,
@@ -4543,6 +4561,7 @@
 				D6ED36BA0B67964D00D5484E /* HTTPClient.cpp in Sources */,
 				D6ED36BE0B67964D00D5484E /* XMLObject.cpp in Sources */,
 				D6ED36C20B67964D00D5484E /* AptIO.cpp in Sources */,
+				D66569C01CE261FC00662E5C /* WED_FileCache.cpp in Sources */,
 				D6ED36FB0B67964D00D5484E /* WED_Application.cpp in Sources */,
 				D6ED36FC0B67964D00D5484E /* WED_Document.cpp in Sources */,
 				D6ED36FD0B67964D00D5484E /* WED_DocumentWindow.cpp in Sources */,
@@ -4570,6 +4589,7 @@
 				D6ED37350B67964D00D5484E /* GUI_Application.cpp in Sources */,
 				D6ED37360B67964D00D5484E /* GUI_Broadcaster.cpp in Sources */,
 				D6ED37370B67964D00D5484E /* GUI_Clipboard.cpp in Sources */,
+				D66569BF1CE261FC00662E5C /* CACHE_CacheObject.cpp in Sources */,
 				D6ED37380B67964D00D5484E /* WED_MapZoomerNew.cpp in Sources */,
 				D6ED37DF0B67AD9A00D5484E /* SQLUtils.cpp in Sources */,
 				D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */,

@@ -42,7 +42,7 @@
 #elif APL || LIN
 		#define	DIR_CHAR	'/'
 		#define DIR_STR		"/"
-		#define TEMP_FILES_DIR_LEN 255? For apple too?
+		#define TEMP_FILES_DIR_LEN 255
 #else
 	#error PLATFORM NOT DEFINED
 #endif
