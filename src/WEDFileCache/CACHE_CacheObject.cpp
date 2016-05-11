@@ -1,10 +1,10 @@
 #include "CACHE_CacheObject.h"
 #include "AssertUtils.h"
 #include <iostream>
+#include "FileUtils.h"
 
-CACHE_CacheObject::CACHE_CacheObject(CACHE_content_type type)
-	: m_content_type(type),
-	  m_cool_down_timestamp(0),
+CACHE_CacheObject::CACHE_CacheObject()
+	: m_cool_down_timestamp(0),
 	  m_disk_location(""),
 	  m_last_error_type(CACHE_error_type::none),
 	  m_last_url(""),
@@ -87,18 +87,6 @@ RAII_CurlHandle* const CACHE_CacheObject::get_RAII_curl_hndl()
 	return m_RAII_curl_hndl;
 }
 
-/*
-CACHE_status CACHE_CacheObject::get_status() const
-{
-	return m_status;
-}
-
-void CACHE_CacheObject::set_status(CACHE_status stat)
-{
-	m_status = stat;
-}
-*/
-
 //Trigger the cool down clock to reset and start counting down
 void CACHE_CacheObject::trigger_cool_down()
 {
@@ -123,8 +111,8 @@ int CACHE_CacheObject::cool_down_seconds_left() const
 	//For the catagory, has enough time passed? - NOTE: Edit the values in this switch statement to change cache behavior
 	switch(this->m_last_error_type)
 	{
-	case CACHE_error_type::none:        seconds_left = true; break;
 	case CACHE_error_type::disk_write:
+	case CACHE_error_type::none:        seconds_left = 0; break;
 	case CACHE_error_type::client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
 	case CACHE_error_type::server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
 	case CACHE_error_type::unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
@@ -146,8 +134,14 @@ int CACHE_CacheObject::cool_down_seconds_left() const
 }
 
 //Has cache object gone stale? 
-/*TODO: bool CACHE_CacheObject::needs_refresh() const
+bool CACHE_CacheObject::needs_refresh() const
 {
+	//TODO: Tighten this up
+	if(m_disk_location == "")
+	{
+		return true;
+	}
+
+	//FILE_get_date
 	return false;
 }
-*/

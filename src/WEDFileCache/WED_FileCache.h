@@ -54,7 +54,6 @@ enum CACHE_status
 	file_cooling,     //File currently in cool down mode after error
 	file_downloading, //File is currently download from the net
 	file_error        //File has had some kind of error, see CACHE_error_type
-	
 };
 
 //What type of cache error

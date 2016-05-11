@@ -3,20 +3,22 @@
 
 #if DEV
 #include <iostream>
+#define SAVE_TO_DISK 1
+#else
+#define SAVE_TO_DISK 1
 #endif
 
 #include <sstream>
 #include <fstream>
 #include "FileUtils.h"
-#include "GUI_Resources.h"
+#include "RAII_Classes.h"
+
 #include "PlatformUtils.h"
 #include "AssertUtils.h"
 
 #include "curl_http.h"
 #include "curl/curl.h"
 #include <time.h>
-
-#include "RAII_Classes.h"
 
 //--WED_file_cache_request---------------------------------------------------
 WED_file_cache_request::WED_file_cache_request()
@@ -29,9 +31,9 @@ WED_file_cache_request::WED_file_cache_request()
 
 WED_file_cache_request::WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string url)
 	: in_buf_reserve_size(buf_reserve_size),
-		  in_cert(cert),
-		  in_content_type(content_type),
-		  in_url(url)
+	  in_cert(cert),
+	  in_content_type(content_type),
+	  in_url(url)
 {
 }
 
@@ -120,7 +122,7 @@ void WED_file_cache_init()
 			for (int i = 0; i < files.size(); ++i)
 			{
 				//We always delete during shut WED_file_cache_shutdown()
-				CACHE_file_cache.push_back(new CACHE_CacheObject(CACHE_content_type::initially_unknown));
+				CACHE_file_cache.push_back(new CACHE_CacheObject());
 				CACHE_file_cache.back()->set_disk_location(CACHE_folder + "\\" + files[i]);
 			}
 		}
@@ -197,7 +199,7 @@ static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, 
 
 static WED_file_cache_response start_new_cache_object(WED_file_cache_request req)
 {
-	CACHE_file_cache.push_back(new CACHE_CacheObject(req.in_content_type));
+	CACHE_file_cache.push_back(new CACHE_CacheObject());
 	CACHE_CacheObject& co = *CACHE_file_cache.back();
 	
 	co.create_RAII_curl_hndl(req.in_url, req.in_cert, req.in_buf_reserve_size);
@@ -220,11 +222,10 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 	//The cache must be initialized!
 	DebugAssert(CACHE_folder != "");
 
-	//Check if URL is cooling down, downloading, or having a problem
 	vector<CACHE_CacheObject* >::iterator itr = CACHE_file_cache.begin();
 	for ( ; itr != CACHE_file_cache.end(); ++itr)
 	{
-		if((**itr).get_last_url() == req.in_url)
+		if(FILE_get_file_name((**itr).get_disk_location()) == FILE_get_file_name(req.in_url))
 		{
 			break;
 		}
@@ -233,7 +234,7 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 	/* 
 	-------------------------Method outline------------------------------------
 	
-	We ask s the URL....
+	We ask is the URL....
 
 	1. Not in CACHE_file_cache?
 		- Add new cache object, status is file_downloading
@@ -241,7 +242,7 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 		- cURL done?
 			* If okay, attempt to save to disk
 				o if save is success, set_disk_location to path, status is file_availible.
-				o TODO: else set_disk_location to "", out_error_human to "Bad disk write", set last_error_type to disk_write, status is file_error
+				o else set_disk_location to "", out_error_human to "Bad disk write", set last_error_type to disk_write, status is file_error
 			* Else, we're experiencing an error.
 			  get out_error_human message and last_error_type, activate cool_down, close hdnl, status is file_error
 		- cURL downloading as normal.
@@ -277,27 +278,34 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 			if(hndl.is_ok())
 			{
 				//Yay! We're done!
+				WED_file_cache_response res(hndl.get_progress(), "", CACHE_error_type::none, "", CACHE_status::file_available);
+#if SAVE_TO_DISK //Testing cooldown
+				string out_path = CACHE_folder + "\\" + FILE_get_file_name(req.in_url);
+				RAII_FileHandle f(out_path.c_str(),"w");
+
+				//TODO: content_type != CACHE_content_type::no_cache)?
+				//What if we can't open the file here?
 				const vector<char>& buf = co.get_RAII_curl_hndl()->get_dest_buffer();
-				string result(buf.begin(),buf.end());
-
-				WED_file_cache_response res(hndl.get_progress(), CACHE_folder + "\\" + FILE_get_file_name(req.in_url), CACHE_error_type::none, "", CACHE_status::file_available);
-
-#if 1 //Testing cooldown
-				//Save file to disk
-				RAII_FileHandle f(res.out_path.c_str(),"w");
-
-				 //TODO: content_type != CACHE_content_type::no_cache)?
-				//TODO: What if we can't open the file here?
-				//if(f() != NULL)
-				//{
-				for(string::iterator itr = result.begin(); itr != result.end(); ++itr)
+				if(f() != NULL)
 				{
-					fprintf(f(),"%c",*itr);
-				}
+					for(vector<char>::const_iterator itr = buf.begin(); itr != buf.end(); ++itr)
+					{
+						fprintf(f(),"%c",*itr);
+					}
 
-				co.set_disk_location(res.out_path);
+					res.out_path = out_path;
+					DebugAssert(co.get_last_error_type() == CACHE_error_type::none);
+				}
+				else
+				{
+					res.out_error_human = res.out_path + " could not be saved, check if the folder or file is in use or if you have sufficient privaleges";
+
+					res.out_path = "";
+					co.set_last_error_type(CACHE_error_type::disk_write);
+				}
 #endif
-				//Delete handle
+				res.out_error_type = co.get_last_error_type();
+				co.set_disk_location(res.out_path);
 				co.close_RAII_curl_hndl();
 
 				return res;

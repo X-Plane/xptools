@@ -32,7 +32,7 @@
 class CACHE_CacheObject
 {
 public:
-	CACHE_CacheObject(CACHE_content_type type);
+	CACHE_CacheObject();
 	~CACHE_CacheObject();
 
 	const time_t get_cool_down_time() const;
@@ -66,13 +66,9 @@ public:
 	int cool_down_seconds_left() const;
 
 	//Has the cache object grown stale over time?
-	//TODO: bool needs_refresh() const;
+	bool needs_refresh() const;
 
 private:
-	//The content of cache object, given by WED_file_cache_request
-	//TODO: Is this piece of state needed?
-	CACHE_content_type m_content_type;
-
 	//When the cool down was triggered. Reset when object is destroyed and recreated.
 	time_t m_cool_down_timestamp;
 
@@ -80,7 +76,6 @@ private:
 	string m_disk_location;
 
 	//The last error associated with this CACHE object. NOT given to WED_file_cache_response
-	//TODO: Is this piece of state needed?
 	CACHE_error_type m_last_error_type;
 
 	//The last HTTP url associated with this CACHE object, independent of a successful download. Given by WED_file_cache_request
@@ -91,7 +86,7 @@ private:
 	RAII_CurlHandle* m_RAII_curl_hndl;
 
 	CACHE_CacheObject(const CACHE_CacheObject& copy);
-	CACHE_CacheObject & operator= (const CACHE_CacheObject& rhs);
+	CACHE_CacheObject& operator= (const CACHE_CacheObject& rhs);
 	
 	//Note on state lifespan: m_cool_down_timestamp, m_last_url, and m_last_error_type are only "reset" when object is deleted and recreated
 };
