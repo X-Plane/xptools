@@ -221,21 +221,12 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 {
 	//The cache must be initialized!
 	DebugAssert(CACHE_folder != "");
-
-	vector<CACHE_CacheObject* >::iterator itr = CACHE_file_cache.begin();
-	for ( ; itr != CACHE_file_cache.end(); ++itr)
-	{
-		if(FILE_get_file_name((**itr).get_disk_location()) == FILE_get_file_name(req.in_url))
-		{
-			break;
-		}
-	}
-
+	
 	/* 
 	-------------------------Method outline------------------------------------
 	
 	We ask is the URL....
-
+	0. Search through cache searching for an existing existing active cache objects also on disk
 	1. Not in CACHE_file_cache?
 		- Add new cache object, status is file_downloading
 	2. In CACHE_file_cache with active cURL_handle?
@@ -259,8 +250,20 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 	---------------------------------------------------------------------------
 	*/
 	
-	//Case 1. Not in CACHE_file_cache
-	if(itr == CACHE_file_cache.end())
+	vector<CACHE_CacheObject* >::iterator itr = CACHE_file_cache.begin();
+	for ( ; itr != CACHE_file_cache.end(); ++itr)
+	{
+		if(FILE_get_file_name((**itr).get_disk_location()) == FILE_get_file_name(req.in_url))
+		{
+			break;
+		}
+		else if ((**itr).get_last_url() == req.in_url)
+		{
+			break;
+		}
+	}
+
+	if(itr == CACHE_file_cache.end()) //1. Not in CACHE_file_cache?
 	{
 		//If it is not on disk, not cooling down, and not in the download_queue, we finally get to download it
 		return start_new_cache_object(req);
@@ -278,10 +281,15 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 			if(hndl.is_ok())
 			{
 				//Yay! We're done!
-				WED_file_cache_response res(hndl.get_progress(), "", CACHE_error_type::none, "", CACHE_status::file_available);
+				WED_file_cache_response res(hndl.get_progress(),
+											"",
+											CACHE_error_type::none,
+											"",
+											CACHE_status::file_available);
+
 #if SAVE_TO_DISK //Testing cooldown
-				string out_path = CACHE_folder + "\\" + FILE_get_file_name(req.in_url);
-				RAII_FileHandle f(out_path.c_str(),"w");
+				res.out_path = CACHE_folder + "\\" + FILE_get_file_name(req.in_url);
+				RAII_FileHandle f(res.out_path.c_str(),"w");
 
 				//TODO: content_type != CACHE_content_type::no_cache)?
 				//What if we can't open the file here?
@@ -293,14 +301,11 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 						fprintf(f(),"%c",*itr);
 					}
 
-					res.out_path = out_path;
 					DebugAssert(co.get_last_error_type() == CACHE_error_type::none);
 				}
 				else
 				{
 					res.out_error_human = res.out_path + " could not be saved, check if the folder or file is in use or if you have sufficient privaleges";
-
-					res.out_path = "";
 					co.set_last_error_type(CACHE_error_type::disk_write);
 				}
 #endif
@@ -337,33 +342,17 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 			char buf[128] = { 0 };
 			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + string(itoa(seconds_left, buf, 10)) + " seconds...", CACHE_error_type::none, "", CACHE_status::file_cooling); //TODO: Is this really something to show the user?
 		}
+		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
+		{
+			//TODO: Is it stale?
+			DebugAssert((*itr)->get_disk_location() != "");
+			return WED_file_cache_response(100, "", CACHE_error_type::none, (*itr)->get_disk_location(), CACHE_status::file_available);
+		}
 		else
 		{
-			//Cooldown is NOT reset here to bugs where a CACHE_CacheObject reaches CACHE_status::file_cool_down more than once
-
-			//Search through on disk cache
-			for (vector<CACHE_CacheObject* >::iterator itr = CACHE_file_cache.begin(); itr != CACHE_file_cache.end(); ++itr)
-			{
-				string file_name = FILE_get_file_name(req.in_url);
-				if((*itr)->get_disk_location().find(file_name) != string::npos)
-				{
-					//TODO: Is it stale?
-					//We may have the file path in record, but is it truely still there?
-					if(FILE_exists((*itr)->get_disk_location().c_str()) == true)
-					{
-						DebugAssert((*itr)->get_disk_location() != "");
-						return WED_file_cache_response(-1, "", CACHE_error_type::none, (*itr)->get_disk_location(), CACHE_status::file_available);
-					}
-					else
-					{
-						break;
-					}
-				}
-			}
+			remove_cache_object(itr);
+			return start_new_cache_object(req);
 		}
-		
-		remove_cache_object(itr);
-		return start_new_cache_object(req);
 	}
 }
 

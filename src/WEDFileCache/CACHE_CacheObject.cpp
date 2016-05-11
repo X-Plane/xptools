@@ -90,6 +90,8 @@ RAII_CurlHandle* const CACHE_CacheObject::get_RAII_curl_hndl()
 //Trigger the cool down clock to reset and start counting down
 void CACHE_CacheObject::trigger_cool_down()
 {
+	//If we are triggering cool down twice we and not deleting and restarting objects after a cooldown is finished
+	DebugAssert(m_cool_down_timestamp == 0);
 	m_cool_down_timestamp = time(NULL);
 
 #if DEV
