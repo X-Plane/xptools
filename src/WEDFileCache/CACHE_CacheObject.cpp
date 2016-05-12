@@ -6,7 +6,7 @@
 CACHE_CacheObject::CACHE_CacheObject()
 	: m_cool_down_timestamp(0),
 	  m_disk_location(""),
-	  m_last_error_type(CACHE_error_type::none),
+	  m_last_error_type(CACHE_error_type::cache_error_type_none),
 	  m_last_url(""),
 	  m_RAII_curl_hndl(NULL)
 {
@@ -113,23 +113,23 @@ int CACHE_CacheObject::cool_down_seconds_left() const
 	//For the catagory, has enough time passed? - NOTE: Edit the values in this switch statement to change cache behavior
 	switch(this->m_last_error_type)
 	{
-	case CACHE_error_type::disk_write:
-	case CACHE_error_type::none:        seconds_left = 0; break;
-	case CACHE_error_type::client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
-	default: AssertPrintf("%d is an unknown CACHE_error_type", m_last_error_type);
+	case CACHE_error_type::cache_error_type_disk_write:
+	case CACHE_error_type::cache_error_type_none:        seconds_left = 0; break;
+	case CACHE_error_type::cache_error_type_client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
+	case CACHE_error_type::cache_error_type_server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
+	case CACHE_error_type::cache_error_type_unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
+	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error_type);
 	}
 	std::cout << "cool_down_seconds_left: " << seconds_left << endl;
 #else
-	switch(error_type)
+	switch(this->m_last_error)
 	{
-	case CACHE_error_type::none:        seconds_left = true; break;
-	case CACHE_error_type::disk_write:
-	case CACHE_error_type::client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
-	default: AssertPrintf("%d is an unknown CACHE_error_type", m_last_error_type);
+	case CACHE_error_type::cache_error_type_none:        seconds_left = true; break;
+	case CACHE_error_type::cache_error_type_disk_write:
+	case CACHE_error_type::cache_error_type_client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
+	case CACHE_error_type::cache_error_type_server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
+	case CACHE_error_type::cache_error_type_unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
+	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error);
 	}
 #endif
 	return seconds_left;
@@ -156,17 +156,15 @@ bool CACHE_CacheObject::needs_refresh(CACHE_content_type type) const
 		switch (type)
 		{
 #if DEV
-		case CACHE_content_type::initially_unknown:
-		case CACHE_content_type::no_cache:   return true;
-		case CACHE_content_type::temporary:  is_stale = time_diff > 180 ? true : false; break;
-		case CACHE_content_type::content:    is_stale = time_diff > 180 ? true : false; break;
-		case CACHE_content_type::stationary: is_stale = time_diff > 240 ? true : false; break;
+		//case CACHE_content_type::cache_content_type_no_cache:
+		case CACHE_content_type::cache_content_type_temporary:  is_stale = time_diff > 180 ? true : false; break;
+		case CACHE_content_type::cache_content_type_content:    is_stale = time_diff > 180 ? true : false; break;
+		case CACHE_content_type::cache_content_type_stationary: is_stale = time_diff > 240 ? true : false; break;
 #else
-		case CACHE_content_type::initially_unknown:
-		case CACHE_content_type::no_cache:   return true;
-		case CACHE_content_type::temporary:  is_stale = time_diff > (60 * 15)              ? true : false; break;
-		case CACHE_content_type::content:    is_stale = time_diff > (60 * 60 * 24 * 2)     ? true : false; break;
-		case CACHE_content_type::stationary: is_stale = time_diff > (60 * 60 * 24 * 7 * 2) ? true : false; break;
+		//case CACHE_content_type::cache_content_type_no_cache:   return true;
+		case CACHE_content_type::cache_content_type_temporary:  is_stale = time_diff > (60 * 15)              ? true : false; break;
+		case CACHE_content_type::cache_content_type_content:    is_stale = time_diff > (60 * 60 * 24 * 2)     ? true : false; break;
+		case CACHE_content_type::cache_content_type_stationary: is_stale = time_diff > (60 * 60 * 24 * 7 * 2) ? true : false; break;
 #endif
 		}
 	}

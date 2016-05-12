@@ -21,13 +21,6 @@
 #include <time.h>
 
 //--WED_file_cache_request---------------------------------------------------
-WED_file_cache_request::WED_file_cache_request()
-	: in_buf_reserve_size(0),
-	  in_cert(""),
-	  in_content_type(CACHE_content_type::initially_unknown),
-	  in_url("")
-{
-}
 
 WED_file_cache_request::WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string url)
 	: in_buf_reserve_size(buf_reserve_size),
@@ -57,8 +50,8 @@ bool WED_file_cache_request::operator!=(const WED_file_cache_request& rhs) const
 //--WED_file_cache_response--------------------------------------------------
 WED_file_cache_response::WED_file_cache_response(float download_progress, string error_human, CACHE_error_type error_type, string path, CACHE_status status)
 		: out_download_progress(download_progress),
-		  out_error_type(error_type),
 		  out_error_human(error_human),
+		  out_error_type(error_type),
 		  out_path(path),
 		  out_status(status)
 {
@@ -136,7 +129,7 @@ void WED_file_cache_init()
 static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, CACHE_error_type& out_error_type)
 {
 	out_error_human = "";
-	out_error_type = CACHE_error_type::unknown;
+	out_error_type = CACHE_error_type::cache_error_type_unknown;
 
 	int err = mCurl.get_error();
 	bool bad_net = mCurl.is_net_fail();
@@ -151,11 +144,11 @@ static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, 
 		if(bad_net)
 		{
 			ss << "(Please check your internet connectivity.)";
-			out_error_type = CACHE_error_type::client_side;
+			out_error_type = CACHE_error_type::cache_error_type_client_side;
 		}
 		else
 		{
-			out_error_type = CACHE_error_type::server_side;
+			out_error_type = CACHE_error_type::cache_error_type_server_side;
 		}
 	}
 	else if(err >= 100)
@@ -179,19 +172,19 @@ static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, 
 		{
 			string errmsg = string(errdat.begin(),errdat.end());
 			ss << "Error Code " << err << ": " << errmsg;
-			out_error_type = CACHE_error_type::server_side;
+			out_error_type = CACHE_error_type::cache_error_type_server_side;
 		}
 		else
 		{
 			//Couldn't get a useful error message, displaying this instead
 			ss << "Download failed due to unknown error: " << err << ".";
-			out_error_type = CACHE_error_type::unknown;
+			out_error_type = CACHE_error_type::cache_error_type_unknown;
 		}
 	}
 	else
 	{
 		ss << "Download failed due to unknown error: " << err << ".";
-		out_error_type = CACHE_error_type::unknown;
+		out_error_type = CACHE_error_type::cache_error_type_unknown;
 	}
 
 	out_error_human = ss.str();
@@ -208,7 +201,7 @@ static WED_file_cache_response start_new_cache_object(WED_file_cache_request req
 								   "",
 								   co.get_last_error_type(),
 								   co.get_disk_location(),
-								   CACHE_status::file_downloading);
+								   CACHE_status::cache_status_downloading);
 }
 
 static void remove_cache_object(vector<CACHE_CacheObject* >::iterator itr)
@@ -221,12 +214,12 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 {
 	//The cache must be initialized!
 	DebugAssert(CACHE_folder != "");
-	
+
 	/* 
 	-------------------------Method outline------------------------------------
 	
 	We ask is the URL....
-	0. Search through cache searching for an existing existing active cache objects also on disk
+	0. Search through cache searching for an matching cache object (on disk or not)
 	1. Not in CACHE_file_cache?
 		- Add new cache object, status is file_downloading
 	2. In CACHE_file_cache with active cURL_handle?
@@ -235,18 +228,17 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 				o if save is success, set_disk_location to path, status is file_availible.
 				o else set_disk_location to "", out_error_human to "Bad disk write", set last_error_type to disk_write, status is file_error
 			* Else, we're experiencing an error.
-			  get out_error_human message and last_error_type, activate cool_down, close hdnl, status is file_error
+				o get out_error_human message and last_error, activate cool_down, close hdnl, status is file_error
 		- cURL downloading as normal.
 			* status is file_downloading
 	3. In CACHE_file_cache without active cURL_handle?
 		- CO on cooling?
-			* Set out_error
+			* Set out_error_human/type, status is file_error
 		- CO on disk?
-			* TODO: If not stale, set out_path, return file_available
+			* If not stale, set out_path, return file_available
 			* Else delete old CO, retry with new CO start a new handle
-		- Time to try it again (or start a new one)
 
-	Note: out_error_human is for client, last_error_type is for cool down
+	Note: out_error_human is for client, last_error is for cool down
 	---------------------------------------------------------------------------
 	*/
 	
@@ -283,9 +275,9 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 				//Yay! We're done!
 				WED_file_cache_response res(hndl.get_progress(),
 											"",
-											CACHE_error_type::none,
+											CACHE_error_type::cache_error_type_none,
 											"",
-											CACHE_status::file_available);
+											CACHE_status::cache_status_available);
 
 #if SAVE_TO_DISK //Testing cooldown
 				res.out_path = CACHE_folder + "\\" + FILE_get_file_name(req.in_url);
@@ -301,12 +293,12 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 						fprintf(f(),"%c",*itr);
 					}
 
-					DebugAssert(co.get_last_error_type() == CACHE_error_type::none);
+					DebugAssert(co.get_last_error_type() == CACHE_error_type::cache_error_type_none);
 				}
 				else
 				{
 					res.out_error_human = res.out_path + " could not be saved, check if the folder or file is in use or if you have sufficient privaleges";
-					co.set_last_error_type(CACHE_error_type::disk_write);
+					co.set_last_error_type(CACHE_error_type::cache_error_type_disk_write);
 				}
 #endif
 				res.out_error_type = co.get_last_error_type();
@@ -317,7 +309,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 			}
 			else
 			{
-				WED_file_cache_response res(hndl.get_progress(), "", CACHE_error_type::unknown, "", CACHE_status::file_error);
+				WED_file_cache_response res(hndl.get_progress(), "", CACHE_error_type::cache_error_type_unknown, "", CACHE_status::cache_status_error);
 				interpret_error(hndl, res.out_error_human, res.out_error_type);
 
 				co.trigger_cool_down();
@@ -330,8 +322,8 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		}
 		else
 		{
-			DebugAssert(co.get_response_from_object_state(CACHE_status::file_downloading) == WED_file_cache_response(hndl.get_progress(), "", CACHE_error_type::none, "", CACHE_status::file_downloading));
-			return co.get_response_from_object_state(CACHE_status::file_downloading);
+			DebugAssert(co.get_response_from_object_state(CACHE_status::cache_status_downloading) == WED_file_cache_response(hndl.get_progress(), "", CACHE_error_type::cache_error_type_none, "", CACHE_status::cache_status_downloading));
+			return co.get_response_from_object_state(CACHE_status::cache_status_downloading);
 		}//end if(hndl.is_done())
 	}//end if((**itr).get_RAII_curl_hndl() != NULL)
 	else
@@ -340,14 +332,14 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		if(seconds_left > 0)
 		{
 			char buf[128] = { 0 };
-			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + string(itoa(seconds_left, buf, 10)) + " seconds...", CACHE_error_type::none, "", CACHE_status::file_cooling); //TODO: Is this really something to show the user?
+			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + string(itoa(seconds_left, buf, 10)) + " seconds...", CACHE_error_type::cache_error_type_none, "", CACHE_status::cache_status_cooling);
 		}
 		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
 		{
 			if(co.needs_refresh(req.in_content_type) == false)
 			{
 				DebugAssert((*itr)->get_disk_location() != "");
-				return WED_file_cache_response(100, "", CACHE_error_type::none, (*itr)->get_disk_location(), CACHE_status::file_available);
+				return WED_file_cache_response(100, "", CACHE_error_type::cache_error_type_none, (*itr)->get_disk_location(), CACHE_status::cache_status_available);
 			}
 			else
 			{
@@ -378,8 +370,8 @@ void WED_file_cache_shutdown()
 void WED_file_cache_test()
 {
 	WED_file_cache_init();
-    //Note: You'll have to set up your environment accordingly
-    vector<string> test_files;
+	//Note: You'll have to set up your environment accordingly
+	vector<string> test_files;
 
 	//Test finding files already on disk, not available online
 	//test_files.push_back("file://" + string(CACHE_folder + "\\ondisk1.txt"));
@@ -401,17 +393,17 @@ void WED_file_cache_test()
 	int i = 0;
 	while(i < test_files.size())
 	{
-		CACHE_status status = CACHE_status::file_downloading;
+		CACHE_status status = CACHE_status::cache_status_downloading;
 
         int max_error = 100;
         int error_count = 0;
-		//while(status != CACHE_status::file_available && error_count < max_error)
+		//while(status != CACHE_status::cache_status_available && error_count < max_error)
 		{
 			string in_path = test_files.at(i);
 			string out_path;
 			string error;
 //			status = WED_file_cache_request_file(in_path, cert, out_path, error);
-			if(status == CACHE_status::file_error)
+			if(status == CACHE_status::cache_status_error)
 			{
 				++error_count;
 			}

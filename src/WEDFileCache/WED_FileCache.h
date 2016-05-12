@@ -50,36 +50,33 @@
 
 enum CACHE_status
 {
-	file_available,   //File available on disk
-	file_cooling,     //File currently in cool down mode after error
-	file_downloading, //File is currently download from the net
-	file_error        //File has had some kind of error, see CACHE_error_type
+	cache_status_available,   //File available on disk
+	cache_status_cooling,     //File currently in cool down mode after error
+	cache_status_downloading, //File is currently download from the net
+	cache_status_error        //File has had some kind of error, see CACHE_error_type
 };
 
 //What type of cache error
 enum CACHE_error_type
 {
-	none,        //No error
-	client_side, //Error determined to be client's, see curl_http.h's UTL_http_is_error_bad_net
-	disk_write,  //Error saving file to disk
-	server_side, //Error determined to be server's, likely HTTP 300 - 500's
-	unknown,     //Error origin could not be determined, probably WED's fault
-	
+    cache_error_type_none,        //No error                                                                              
+    cache_error_type_client_side, //Error determined to be client's, see curl_http.h's UTL_http_is_error_bad_net         
+    cache_error_type_disk_write,  //Error saving file to disk                                                            
+    cache_error_type_server_side, //Error determined to be server's, likely HTTP 300 - 500's                             
+    cache_error_type_unknown,     //Error origin could not be determined, probably WED's fault                           
 };
 
 //Content_type is used to determine the life span of a cached file
 enum CACHE_content_type
 {
-	no_cache,   //Should not be cached, TODO: Why is this needed?
-	temporary,  //Refreshed multiple times a session
-	content,    //Refreshed once per session or every few uses
-	stationary, //Refreshed once every few weeks
-	initially_unknown //NOT FOR CLIENTS! Only used internally during cache intialization
+	//cache_content_type_no_cache, //Should not be cached, place into MemFile TODO: One day this might be a good feature
+	cache_content_type_temporary,  //Refreshed multiple times a session
+	cache_content_type_content,    //Refreshed once per session or every few uses
+	cache_content_type_stationary  //Refreshed once every few weeks
 };
 
 struct WED_file_cache_request
 {
-	WED_file_cache_request();
 	WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string url);
 
 	//Our guess as to how big our download (in number of chars)

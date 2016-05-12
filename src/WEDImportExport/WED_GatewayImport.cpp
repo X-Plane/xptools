@@ -307,6 +307,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
+	mCacheRequest(0, "", CACHE_content_type::cache_content_type_temporary, ""),
 	mPhase(imp_dialog_download_ICAO),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
@@ -482,7 +483,8 @@ extern "C" void decode( const char * startP, const char * endP, char * destP, ch
 void WED_GatewayImportDialog::TimerFired()
 {
 	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
-	if(	mPhase == imp_dialog_download_ICAO ||
+	
+	if( mPhase == imp_dialog_download_ICAO ||
 		mPhase == imp_dialog_download_versions ||
 		mPhase >= imp_dialog_download_specific_version)
 	{
@@ -498,13 +500,13 @@ void WED_GatewayImportDialog::TimerFired()
 	}
 	
 	//If we've reached a conclusion to this cache request
-	if( res.out_status != CACHE_status::file_downloading)
+	if( res.out_status != CACHE_status::cache_status_downloading)
 	{
 		Stop();
 		mPhase++;
 		DecorateGUIWindow();
 		
-		if(res.out_status == CACHE_status::file_available)
+		if(res.out_status == CACHE_status::cache_status_available)
 		{
 			//Attempt to open the file we just downloaded
 			RAII_FileHandle f(res.out_path.c_str(),"r");
@@ -573,9 +575,9 @@ void WED_GatewayImportDialog::TimerFired()
 				}//end if(mPhase == imp_dialog_download_specific_version
 			}
 		}//end if(mCurl.get_curl_handle()->is_ok())
-		else if(res.out_status = CACHE_status::file_error)
+		else if(res.out_status == CACHE_status::cache_status_error)
 		{
-			if(res.out_error_human != "")
+			if(res.out_error_human != "" || res.out_error_type != CACHE_error_type::cache_error_type_none)
 			{
 				mPhase = imp_dialog_error;
 				DecorateGUIWindow(res.out_error_human);
@@ -583,7 +585,7 @@ void WED_GatewayImportDialog::TimerFired()
 				//TODO: Use res.out_error_type to make a decision
 			}
 		}
-	}//end if res.out_status != CACHE_status::file_downloading && ... != CACHE_status::file_not_started
+	}//end if res.out_status != CACHE_status::cache_status_downloading && ... != CACHE_status::cache_status_not_started
 }//end WED_GatewayImportDialog::TimerFired()
 
 void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
@@ -736,7 +738,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 	//Get it from the server
 	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type = CACHE_content_type::stationary;
+	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_stationary;
 	mCacheRequest.in_url = url;
 
 	Start(0.1);
@@ -776,7 +778,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	//Get it from the server
 	mCacheRequest.in_buf_reserve_size = VERSIONS_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type = CACHE_content_type::temporary;
+	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_temporary;
 	mCacheRequest.in_url = url;
 
 	Start(0.1);
@@ -801,7 +803,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 
 	mCacheRequest.in_buf_reserve_size = VERSION_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type = CACHE_content_type::stationary;
+	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_stationary;
 	mCacheRequest.in_url = url.str();
 
 	Start(0.1);
