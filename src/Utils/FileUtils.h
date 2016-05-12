@@ -24,6 +24,8 @@
 #ifndef FILEUTILS_H
 #define FILEUTILS_H
 
+#include <sys/stat.h>
+
 class	FILE_case_correct_path {
 public: 
 	FILE_case_correct_path(const char * in_path);
@@ -41,8 +43,9 @@ private:
 int FILE_case_correct(char * buf);
 
 /* FILE API Overview
-	Method Name          |        Purpose                               | Trailing Seperator? | Returns (Sucess, fail)
+	Method Name          |                    Purpose                   | Trailing Seperator? | Returns (Sucess, fail)
 	exists               | Does file exist?                             | N/A                 | True/false
+	get_file_meta_data   | Get file info like creation time and date    | No                  | 0, -1
 	get_file_name        | Get file name w/o directory, can use / or \  | N/A                 | non_empty, empty string
 	delete_file          | rm 1 file or folder                          | No                  | 0, last_error
 	delete_dir_recursive | rm folder and subcontents                    | Yes                 | 0, last_error
@@ -59,6 +62,8 @@ int FILE_case_correct(char * buf);
 
 //Returns true if the file exists, returns false if it doesn't
 bool FILE_exists(const char * path);
+
+int FILE_get_file_meta_data(const string& path, struct stat& meta_data);
 
 string FILE_get_file_name(const string& path);
 // WARNING: these do not take trailing / for directories!

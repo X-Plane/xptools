@@ -66,7 +66,7 @@ public:
 	int cool_down_seconds_left() const;
 
 	//Has the cache object grown stale over time?
-	bool needs_refresh() const;
+	bool needs_refresh(CACHE_content_type type) const;
 
 private:
 	//When the cool down was triggered. Reset when object is destroyed and recreated.

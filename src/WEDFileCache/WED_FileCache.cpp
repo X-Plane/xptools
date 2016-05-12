@@ -205,7 +205,7 @@ static WED_file_cache_response start_new_cache_object(WED_file_cache_request req
 	co.create_RAII_curl_hndl(req.in_url, req.in_cert, req.in_buf_reserve_size);
 	
 	return WED_file_cache_response(co.get_RAII_curl_hndl()->get_curl_handle().get_progress(),
-								   co.get_last_url(),
+								   "",
 								   co.get_last_error_type(),
 								   co.get_disk_location(),
 								   CACHE_status::file_downloading);
@@ -217,7 +217,7 @@ static void remove_cache_object(vector<CACHE_CacheObject* >::iterator itr)
 	CACHE_file_cache.erase(itr);
 }
 
-WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
+WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request& req)
 {
 	//The cache must be initialized!
 	DebugAssert(CACHE_folder != "");
@@ -344,9 +344,16 @@ WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req)
 		}
 		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
 		{
-			//TODO: Is it stale?
-			DebugAssert((*itr)->get_disk_location() != "");
-			return WED_file_cache_response(100, "", CACHE_error_type::none, (*itr)->get_disk_location(), CACHE_status::file_available);
+			if(co.needs_refresh(req.in_content_type) == false)
+			{
+				DebugAssert((*itr)->get_disk_location() != "");
+				return WED_file_cache_response(100, "", CACHE_error_type::none, (*itr)->get_disk_location(), CACHE_status::file_available);
+			}
+			else
+			{
+				remove_cache_object(itr);
+				return start_new_cache_object(req);
+			}
 		}
 		else
 		{

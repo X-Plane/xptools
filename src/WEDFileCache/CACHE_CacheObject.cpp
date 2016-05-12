@@ -135,8 +135,8 @@ int CACHE_CacheObject::cool_down_seconds_left() const
 	return seconds_left;
 }
 
-//Has cache object gone stale? 
-bool CACHE_CacheObject::needs_refresh() const
+//Has cache object gone stale?
+bool CACHE_CacheObject::needs_refresh(CACHE_content_type type) const
 {
 	//TODO: Tighten this up
 	if(m_disk_location == "")
@@ -144,6 +144,31 @@ bool CACHE_CacheObject::needs_refresh() const
 		return true;
 	}
 
-	//FILE_get_date
-	return false;
+	struct stat meta_data;
+	
+	bool is_stale = false;
+
+	if(FILE_get_file_meta_data(m_disk_location, meta_data) == 0)
+	{
+		time_t now = time(NULL);
+		double time_diff = difftime(now, meta_data.st_mtime);
+
+		switch (type)
+		{
+#if DEV
+		case CACHE_content_type::initially_unknown:
+		case CACHE_content_type::no_cache:   return true;
+		case CACHE_content_type::temporary:  is_stale = time_diff > 180 ? true : false; break;
+		case CACHE_content_type::content:    is_stale = time_diff > 180 ? true : false; break;
+		case CACHE_content_type::stationary: is_stale = time_diff > 240 ? true : false; break;
+#else
+		case CACHE_content_type::initially_unknown:
+		case CACHE_content_type::no_cache:   return true;
+		case CACHE_content_type::temporary:  is_stale = time_diff > (60 * 15)              ? true : false; break;
+		case CACHE_content_type::content:    is_stale = time_diff > (60 * 60 * 24 * 2)     ? true : false; break;
+		case CACHE_content_type::stationary: is_stale = time_diff > (60 * 60 * 24 * 7 * 2) ? true : false; break;
+#endif
+		}
+	}
+	return is_stale;
 }

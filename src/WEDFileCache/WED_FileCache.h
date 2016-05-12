@@ -129,7 +129,7 @@ void WED_file_cache_init();
 
 //Attempts give client a file path for file, downloading said file if need be. Feedback on progress and ability is given in the form status, error codes, and status updates.
 //This is intended to be called a timer until a client gets their file or sufficient indication they should stop trying.
-WED_file_cache_response WED_file_cache_request_file(WED_file_cache_request& req);
+WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request& req);
 
 //Blocks until all previous cURL handles are finished or are forcibly stopped. Called once at the end of the program.
 void WED_file_cache_shutdown();

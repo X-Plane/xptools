@@ -24,7 +24,6 @@
 #include "FileUtils.h"
 #include "PlatformUtils.h"
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <time.h>
 #if IBM
 #include "GUI_Unicode.h"
@@ -134,12 +133,8 @@ int FILE_case_correct(char * buf)
 
 FILE_case_correct_path::FILE_case_correct_path(const char * in_path) : path(strdup(in_path)) { FILE_case_correct(path); }
 FILE_case_correct_path::~FILE_case_correct_path() { free(path); }
-	
+
 FILE_case_correct_path::operator const char * (void) const { return path; }
-	
-
-
-
 
 bool FILE_exists(const char * path)
 {
@@ -155,6 +150,11 @@ bool FILE_exists(const char * path)
 #endif
 	return true;
 //	return (S_ISDIR(ss.st_mode))? 1 : 0;
+}
+
+int FILE_get_file_meta_data(const string& path, struct stat& meta_data)
+{
+	return stat(path.c_str(), &meta_data);
 }
 
 string FILE_get_file_name(const string& path)
@@ -238,7 +238,6 @@ int FILE_make_dir(const char * in_dir)
 	#endif
 	return 0;
 }
-
 
 int FILE_make_dir_exist(const char * in_dir)
 {
