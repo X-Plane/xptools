@@ -96,12 +96,23 @@ void		WED_Airport::SetHasATC(int x) { has_atc= x; }
 void		WED_Airport::SetICAO(const string& x) { icao = x; }
 void		WED_Airport::SetSceneryID(int x) { scenery_id = x; }
 
-//Adds a Meta Data Key. TODO - In the case of a collision... what should happen?
+//Adds a Meta Data Key
 void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 {
 	//Insert in alphabetical order
-	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
+	vector<meta_data_entry>::iterator itr;
 	
+	for(itr = meta_data_vec_map.begin(); itr != meta_data_vec_map.end(); ++itr)
+	{
+		if(itr->first == key)
+		{
+			itr->second == key;//On collision replace value
+			return;
+		}
+	}
+
+	itr = meta_data_vec_map.begin();
+
 	if(meta_data_vec_map.size() == 0)//Case 1: This is first element
 	{
 		meta_data_vec_map.push_back(meta_data_entry(key,value));
@@ -221,6 +232,25 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 	int want_flatten = 0;
 
 	//When importing from an apt.dat file, special non-sythetic entries are used and removed
+	
+	//Disallow duplicate keys
+	for(vector<meta_data_entry>::iterator key = meta_data_vec_map.begin(); key != meta_data_vec_map.end(); ++key)
+	{
+		vector<meta_data_entry>::iterator compare_key = key + 1;
+		while(compare_key < meta_data_vec_map.end())
+		{
+			if(key->first == compare_key->first)
+			{
+				print_func(ref, "Error importing airport: duplicate meta_data_keys found! (%s,%s) and (%s,%s)\n",
+					key->first.c_str(),
+					key->second.c_str(),
+					compare_key->first.c_str(),
+					compare_key->second.c_str());
+			}
+			++compare_key;
+		}
+	}
+
 	vector<meta_data_entry>::iterator i = meta_data_vec_map.begin();
 	while(i != meta_data_vec_map.end())
 	{
@@ -267,7 +297,7 @@ int			WED_Airport::FindProperty(const char * in_prop) const
 		//Translate the human readable to data format
 		if     (key == "City/Locality")  key = "city";
 		else if(key == "Country")        key = "country";
-		else if(key == "FAA Code")		 key = "faa_code";
+		else if(key == "FAA Code")       key = "faa_code";
 		else if(key == "IATA Code")      key = "iata_code";
 		else if(key == "ICAO Code")      key = "icao_code";
 		else if(key == "State/Province") key = "state";
