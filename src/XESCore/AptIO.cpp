@@ -989,7 +989,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 
 		for (AptLightVector::const_iterator light = apt->lights.begin(); light != apt->lights.end(); ++light)
 		{
-			fprintf(fi,"%d % 012.8lf % 013.8lf %d %6.4lf %3.1f %s" CRLF,
+			fprintf(fi,"%d % 012.8lf % 013.8lf %d %6.4lf %3.2f %s" CRLF,
 					apt_papi, CGAL2DOUBLE(light->location.y()), CGAL2DOUBLE(light->location.x()), light->light_code,
 					light->heading, light->angle, light->name.c_str());
 		}
