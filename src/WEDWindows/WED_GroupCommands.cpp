@@ -1951,7 +1951,7 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 				
 				if(d < (o->approx_radius_m + rs))
 				{
-					debug_mesh_line(rp, o->loc_ll, 1,0,0,1,0,0);
+					//debug_mesh_line(rp, o->loc_ll, 1,0,0,1,0,0);
 					alive = false;
 					break;
 				}

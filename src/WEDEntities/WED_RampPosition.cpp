@@ -118,5 +118,5 @@ int		WED_RampPosition::GetType() const
 
 void		WED_RampPosition::GetEquipment(set<int>& out_eq) const
 {
-	return equip_type.value;
+	out_eq = equip_type.value;
 }
