@@ -87,6 +87,7 @@ GUI_FormWindow::GUI_FormWindow(
 	okay_btn->SetSticky(0,1,1,0);
 	okay_btn->SetDescriptor("OK");
 	okay_btn->SetMsg(gui_form_ok,0);
+	mReturnSubmit = true;
 
 	GUI_Button * cncl_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 	cncl_btn->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
@@ -121,8 +122,10 @@ GUI_FormWindow::~GUI_FormWindow()
 
 void		GUI_FormWindow::Reset(
 								const string&			ok_label,
-								const string&			cancel_label)
+								const string&			cancel_label,
+								bool					auto_return)
 {
+	mReturnSubmit = auto_return;
 	while(!mParts.empty())
 	{
 		delete mParts.back();
@@ -319,7 +322,7 @@ string		GUI_FormWindow::GetField(
 
 int			GUI_FormWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
-	if(inVK == GUI_VK_RETURN)
+	if(inVK == GUI_VK_RETURN && mReturnSubmit)
 	{
 		this->Submit();
 		return 1;
