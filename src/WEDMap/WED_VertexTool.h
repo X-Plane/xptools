@@ -89,9 +89,8 @@ private:
 			void		GetEntityInternal(void) const;
 			void		AddEntityRecursive(IGISEntity * e, const Bbox2& bounds) const;
 			void		AddSnapPointRecursive(IGISEntity * e, const Bbox2& bounds, ISelection * sel) const;
-			void		SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEntity * who);
+			void		SnapMovePoint(const Point2& ideal_track_pt, Point2& io_thing_pt, IGISEntity * who);
 
-		int						mSelVerts;
 		int						mInEdit;
 		int						mIsRotate;
 		int						mIsScale;
