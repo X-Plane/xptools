@@ -413,3 +413,13 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 
 }
 
+
+void	WED_Runway::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_GISLine_Width::GetNthPropertyDict(n, dict);
+	if(n == PropertyItemNumber(&surface) && surface.value != surf_Water)
+	{
+		dict.erase(surf_Water);
+	}
+}
+

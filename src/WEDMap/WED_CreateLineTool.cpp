@@ -171,3 +171,12 @@ bool		WED_CreateLineTool::CanCreateNow(void)
 	return WED_GetCurrentAirport(GetResolver()) != NULL;
 }
 
+void	WED_CreateLineTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_CreateToolBase::GetNthPropertyDict(n, dict);
+	if(n == PropertyItemNumber(&rwy_surface) && rwy_surface.value != surf_Water)
+	{
+		dict.erase(surf_Water);
+	}
+}
+

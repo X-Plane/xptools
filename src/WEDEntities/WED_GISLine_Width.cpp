@@ -419,3 +419,10 @@ double		WED_GISLine_Width::GetLength(void) const
 	return l;
 }
 
+
+int			WED_GISLine_Width::PropertyItemNumber(const WED_PropertyItem * item) const
+{
+	int r = WED_GISLine::PropertyItemNumber(item);
+	return r >= 0 ? r + rwy_prop_count : r;
+}
+

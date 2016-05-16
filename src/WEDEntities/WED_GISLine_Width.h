@@ -43,6 +43,9 @@ public:
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
 
+	// WED_PropertyHelper hack/override
+	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
+
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;
 
