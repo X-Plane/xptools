@@ -96,6 +96,7 @@
 enum imp_dialog_stages
 {
 	imp_dialog_error,//for file and network errors
+	imp_dialog_download_airport_defaults,
 	imp_dialog_download_ICAO,
 	imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
 	imp_dialog_download_versions,
@@ -251,6 +252,9 @@ private:
 	GUI_TextTable			mICAO_TextTable;
 	GUI_TextTableHeader		mICAO_TextTableHeader;
 	
+	//Starts the download of the airport defaults csv
+	void StartCSVDownload();
+
 	//Starts the download of the json file containing the airports list
 	void StartICAODownload();
 
@@ -311,7 +315,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mResolver(resolver),
 	mMapPane(pane),
 	mCacheRequest(0, "", CACHE_content_type::cache_content_type_temporary, "", ""),
-	mPhase(imp_dialog_download_ICAO),
+	mPhase(imp_dialog_download_airport_defaults),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
 	mVersions_VerProvider(&mVersions_Vers),
@@ -408,7 +412,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		
 		mLabel->SetSticky(1,0,1,1);
 		DecorateGUIWindow();
-	StartICAODownload();
+	StartCSVDownload();
 }
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
@@ -424,6 +428,8 @@ void WED_GatewayImportDialog::Next()
 	case imp_dialog_error:
 		this->AsyncDestroy();
 		break;
+	//case imp_dialog_download_airport_defaults:
+		//break; no next button here
 	//case imp_dialog_download_ICAO:
 		//break; no next button here
 	case imp_dialog_choose_ICAO:
@@ -464,6 +470,7 @@ void WED_GatewayImportDialog::Back()
 	{
 	case imp_dialog_error:
 		break;
+	case imp_dialog_download_airport_defaults:
 	case imp_dialog_download_ICAO:
 	case imp_dialog_choose_ICAO:
 		this->AsyncDestroy();
@@ -488,9 +495,10 @@ void WED_GatewayImportDialog::TimerFired()
 	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
 	++this->mRequestCount;
 
-	if( mPhase == imp_dialog_download_ICAO ||
-		mPhase == imp_dialog_download_versions ||
-		mPhase >= imp_dialog_download_specific_version)
+	if(mPhase == imp_dialog_download_airport_defaults ||
+	   mPhase == imp_dialog_download_ICAO ||
+	   mPhase == imp_dialog_download_versions ||
+	   mPhase >= imp_dialog_download_specific_version)
 	{
 		if(res.out_status == CACHE_status::cache_status_available && this->mRequestCount == 1)
 		{
@@ -514,7 +522,7 @@ void WED_GatewayImportDialog::TimerFired()
 	}
 	
 	//If we've reached a conclusion to this cache request
-	if( res.out_status != CACHE_status::cache_status_downloading)
+	if(res.out_status != CACHE_status::cache_status_downloading)
 	{
 		Stop();
 		mPhase++;
@@ -534,6 +542,10 @@ void WED_GatewayImportDialog::TimerFired()
 				fread(&json_string[0], sizeof(char), json_string.size(), f());
 				f.close();
 
+				if(mPhase == imp_dialog_download_airport_defaults)
+				{
+					StartICAODownload();
+				}
 				if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
 				{
 					FillICAOFromJSON(json_string);
@@ -570,7 +582,9 @@ void WED_GatewayImportDialog::TimerFired()
 								return;
 							}
 						}
-					
+						
+						fill_in_meta_data_defaults(*last_imported, res.out_path);
+
 						//Set the current airport in the sense of "WED's current airport"
 						WED_SetCurrentAirport(mResolver, last_imported);
 
@@ -596,7 +610,7 @@ void WED_GatewayImportDialog::TimerFired()
 				mPhase = imp_dialog_error;
 				DecorateGUIWindow(res.out_error_human);
 
-				//TODO: Use res.out_error_type to make a decision
+				//TODO: Use res.out_error_type to make a decision about whether or not to try again
 			}
 		}
 	}//end if res.out_status != CACHE_status::cache_status_downloading && ... != CACHE_status::cache_status_not_started
@@ -731,6 +745,28 @@ void WED_GatewayImportDialog::ReceiveMessage(
 	}
 }
 
+void WED_GatewayImportDialog::StartCSVDownload()
+{
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		mPhase = imp_dialog_error;
+		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return;
+	}
+
+	//Get it from the server
+	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;
+	mCacheRequest.in_cert = cert;
+	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
+	mCacheRequest.in_folder_prefix = "GatewayImport";
+	mCacheRequest.in_url = WED_URL_AIRPORT_DEFAULTS_CSV;
+	mRequestCount = 0;
+
+	Start(0.1);
+	mLabel->Show();
+}
 
 void WED_GatewayImportDialog::StartICAODownload()
 {

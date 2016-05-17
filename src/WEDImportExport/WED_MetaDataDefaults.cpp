@@ -1,27 +1,28 @@
 #include "WED_MetaDataDefaults.h"
 #include "WED_Airport.h"
 #include "CSVParser.h"
+#include <fstream>
 
 #if DEV
-#define FROM_DISK 1
+#define FROM_DISK 0
 	#if FROM_DISK
-	#define CSV_ON_DISK "C://airport_metadata.csv"
-	#include <fstream>
+	#define CSV_ON_DISK "C://airport_metadata.csv"	
 	#endif
 #endif
 
-
-void	fill_in_meta_data_defaults(WED_Airport & airport)
+void	fill_in_meta_data_defaults(WED_Airport & airport, const string& file_path)
 {
 #if DEV && FROM_DISK
 	std::ifstream t(CSV_ON_DISK);
+#else
+	std::ifstream t(file_path);
+#endif
 	std::string str((std::istreambuf_iterator<char>(t)),
 					std::istreambuf_iterator<char>());
 	
 	CSVParser::CSVTable table = CSVParser(',', str).ParseCSV();
 	
 	t.close();
-#endif
 	
 	CSVParser::CSVTable::CSVRow default_values;
 

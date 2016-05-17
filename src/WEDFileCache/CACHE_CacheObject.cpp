@@ -122,14 +122,14 @@ int CACHE_CacheObject::cool_down_seconds_left() const
 	}
 	std::cout << "cool_down_seconds_left: " << seconds_left << endl;
 #else
-	switch(this->m_last_error)
+	switch(this->m_last_error_type)
 	{
 	case CACHE_error_type::cache_error_type_none:        seconds_left = true; break;
 	case CACHE_error_type::cache_error_type_disk_write:
 	case CACHE_error_type::cache_error_type_client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
 	case CACHE_error_type::cache_error_type_server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
 	case CACHE_error_type::cache_error_type_unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
-	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error);
+	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error_type);
 	}
 #endif
 	return seconds_left;
