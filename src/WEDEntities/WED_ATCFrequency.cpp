@@ -55,7 +55,7 @@ void	WED_ATCFrequency::Import(const AptATCFreq_t& info, void (* print_func)(void
 void	WED_ATCFrequency::Export(		 AptATCFreq_t& info) const
 {
 	GetName(info.name);
-	info.freq = round(freq.value * 100.0);
+	info.freq = (int)(freq.value * 100.0);	// Intentional floor - 123.125 -> 12312.
 	info.atc_type = ENUM_Export(freq_type.value);
 }
 

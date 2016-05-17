@@ -320,6 +320,52 @@ static bool HandleScale(ImageInfo& info, bool up, bool down, bool half, bool squ
 	return false;
 }
 
+
+inline float to_srgb(float p)
+{
+	if(p <= 0.0031308f)
+		return 12.92f * p;
+	return 1.055f * pow(p,0.41666f) - 0.055f;
+}
+
+inline float from_srgb(float p)
+{
+	if(p <= 0.04045f)
+		return p / 12.92f;
+	else
+		return powf(p * (1.0/1.055f) + (0.055f/1.055f),2.4f);
+}
+
+unsigned char srgb_filter(unsigned char src[], int count, int channel, int level)
+{
+	if(channel == 3)	// alpha is not corrected
+	{
+		int total = 0;
+		for(int i = 0; i < count; ++i)
+			total += (int) src[i];
+		return min(255,total / count);
+	}
+	
+	float total = 0.f;
+	for(int i = 0; i < count; ++i)
+	{
+		float p = src[i];
+		p /= 255.0f;
+		p = from_srgb(p);
+		total += p;
+	}
+	
+	total /= ((float) count);
+	
+	total = to_srgb(total);
+	
+	total *= 255.0f;
+	
+	if(total <= 0.0f) return 0;
+	if (total >= 255.0f) return 255;
+	return roundf(total);
+}
+
 unsigned char night_filter(unsigned char src[], int count, int channel, int level)
 {
 	int total = 0;
@@ -695,7 +741,8 @@ int main(int argc, char * argv[])
 
 		ConvertBitmapToAlpha(&info,false);
 		switch(has_mips) {
-		case 0:			MakeMipmapStack(&info);							break;
+//		case 0:			MakeMipmapStack(&info);							break;
+		case 0:			MakeMipmapStackWithFilter(&info,srgb_filter);	break;
 		case 1:			MakeMipmapStackFromImage(&info);				break;
 		case 2:			MakeMipmapStackWithFilter(&info,night_filter);	break;
 		case 3:			MakeMipmapStackWithFilter(&info,fade_filter);	break;

@@ -48,7 +48,8 @@ public:
 
 			void		Reset(
 								const string&			ok_label,
-								const string&			cancel_label);
+								const string&			cancel_label,
+								bool					submit_with_return_key);
 
 			void		AddLabel(const string&			msg);
 
@@ -85,7 +86,7 @@ private:
 		vector<GUI_Commander *> mFocusRing;
 		GUI_Pane *			mOK;
 		GUI_Pane *			mCancel;
-
+		bool				mReturnSubmit;
 		int					mFormBounds[4];
 
 };

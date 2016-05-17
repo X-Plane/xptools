@@ -460,6 +460,20 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			}
 			else 
 				s_flow_names.insert(name);
+			
+			// Make sure we have at least one runway to use.  The exported flow does NOT have this - it only contains exports
+			// of properties of the apt flow rule itself!
+			int rwy_rule_count = 0;
+			int nn = who->CountChildren();
+			for(int n = 0; n < nn; ++n)
+			{
+				WED_Thing * c = who->GetNthChild(n);
+				if(c->GetClass() == WED_ATCRunwayUse::sClass)
+					++rwy_rule_count;
+			}
+			
+			if(rwy_rule_count == 0)
+				msg = "You have an airport flow with no runway use rules.  You need at least oneway use rule to create an active runway.";
 				
 			if(s_legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
 				msg = "The pattern runway " + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.";

@@ -81,6 +81,8 @@ public:
 
 	virtual const char *	HumanReadableType(void) const { return "Runway"; }
 
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;	
+
 private:
 
 	WED_PropIntEnum			surface;
