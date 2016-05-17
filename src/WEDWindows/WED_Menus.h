@@ -134,6 +134,7 @@ enum {
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
 #endif
+	wed_UpgradeRamps,
 	//Add Meta Data Keys Menu
 	wed_AddMetaDataCity,// or Locality
 	wed_AddMetaDataCountry,

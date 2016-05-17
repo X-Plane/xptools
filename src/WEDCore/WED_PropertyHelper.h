@@ -117,8 +117,8 @@ public:
 	virtual	void		PopHandler(void);
 
 
-
-			int			PropertyItemNumber(const WED_PropertyItem * item) const;
+	// This is virtual so remappers like WED_Runway can "fix" the results
+	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
 private:
 
 	friend class	WED_PropertyItem;

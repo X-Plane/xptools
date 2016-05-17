@@ -28,6 +28,7 @@
 
 class	GUI_Pane;
 class	GUI_TextField;
+class	GUI_MouseCatcher;
 class	WED_Sign_Editor;
 
 /*
@@ -373,6 +374,7 @@ private:
 	GUI_Table *				mParent;
 	GUI_TextField *			mTextField;
 	WED_Sign_Editor *		mSignField;
+	GUI_MouseCatcher *		mCatcher;
 	GUI_TableGeometry *		mGeometry;
 
 	int						mCellResize;

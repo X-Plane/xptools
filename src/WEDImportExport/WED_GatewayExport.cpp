@@ -318,7 +318,7 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 	mCurl(NULL),
 	mApt(apt)	
 {	
-	this->Reset("Upload", "Cancel");
+	this->Reset("Upload", "Cancel", false);
 				
 	string icao, name;
 	apt->GetICAO(icao);
@@ -557,7 +557,7 @@ void WED_GatewayExportDialog::Submit()
 		
 		mPhase = 1;
 		
-		this->Reset("", "");
+		this->Reset("", "", false);
 		this->AddLabel("Uploading airport to Gateway.");
 		this->AddLabel("This could take up to one minute.");
 
@@ -651,12 +651,12 @@ void WED_GatewayExportDialog::TimerFired()
 		
 		if(!good_msg.empty())
 		{
-			this->Reset("OK","Learn More...");
+			this->Reset("OK","Learn More...", true);
 			this->AddLabel(good_msg);
 		}
 		else
 		{
-			this->Reset("","Cancel");
+			this->Reset("","Cancel", true);
 			this->AddLabel(bad_msg);			
 		}
 		

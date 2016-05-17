@@ -330,7 +330,12 @@ void	WED_GISLine_Width::MoveCorner(GISLayer_t layer,  int corner, const Vector2&
 		double	h, l;
 		double	w = GetWidth();
 	Quad_diagto1(ends, w, ctr, h, l, swapped);
+	DebugAssert(h == h);						// These are NaN checks
+	DebugAssert(l == l);
+	DebugAssert(ctr.x_ == ctr.x_);
+	DebugAssert(ctr.y_ == ctr.y_);
 	Quad_1to2(ctr, h, l, ends);
+	DebugAssert(ends[0].x_ == ends[0].x_ && ends[0].y_ == ends[0].y_ && ends[1].x_ == ends[1].x_ && ends[1].y_ == ends[1].y_);
 
 	GetSource()->SetLocation(layer,ends[0]);
 	GetTarget()->SetLocation(layer,ends[1]);
@@ -413,5 +418,12 @@ double		WED_GISLine_Width::GetLength(void) const
 	GetTarget()->GetLocation(gis_Geo,ends[1]);
 	Quad_2to1(ends, ctr, h, l);
 	return l;
+}
+
+
+int			WED_GISLine_Width::PropertyItemNumber(const WED_PropertyItem * item) const
+{
+	int r = WED_GISLine::PropertyItemNumber(item);
+	return r >= 0 ? r + rwy_prop_count : r;
 }
 

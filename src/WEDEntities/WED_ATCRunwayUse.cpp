@@ -79,7 +79,7 @@ void	WED_ATCRunwayUse::Export(		 AptRunwayRule_t& info) const
 	info.runway = ENUM_Desc(rwy.value);
 	info.operations = ENUM_ExportSet(operations.value);
 	info.equipment = ENUM_ExportSet(traffic.value);
-	info.dep_freq = (int) (dep_frq * 100.0f + 0.5f);	// Sad - no roundf on MSVC - really.
+	info.dep_freq = (int) (dep_frq * 100.0f);	// Ben says: FLOOR behavior is INTENTIONAL!!  We want 123.125 to become 12312 - X-Plane expects 2 and 7 for 25 hz freqs.
 	info.dep_heading_lo = dep_heading_min;
 	info.dep_heading_hi = dep_heading_max;
 	info.ini_heading_lo = vec_heading_min;

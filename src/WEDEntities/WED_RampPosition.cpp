@@ -64,7 +64,7 @@ void	WED_RampPosition::Import(const AptGate_t& x, void (* print_func)(void *, co
 	if(width == -1)
 	{
 		print_func(ref,"Illegal ramp size: %d\n",x.type);
-		ramp_type = width_F;
+		ramp_type = width_E;
 	}
 	ENUM_ImportSet(equip_type.domain,x.equipment,equip_type.value);
 }
@@ -109,4 +109,14 @@ void	WED_RampPosition::SetAirlines(const string &a)
 int	WED_RampPosition::GetWidth() const
 {
 	return width.value;
+}
+
+int		WED_RampPosition::GetType() const
+{
+	return ramp_type.value;
+}
+
+void		WED_RampPosition::GetEquipment(set<int>& out_eq) const
+{
+	out_eq = equip_type.value;
 }
