@@ -220,6 +220,9 @@ private:
 	//Our curl handle we'll be using to get the json files, note the s
 	WED_file_cache_request	mCacheRequest;
 	
+	//The number of times we request a file, reset before each download
+	int                     mRequestCount;
+
 	//The buffers of the specific packs downloaded at the end
 	vector<string>	mSpecificBufs;
 	
@@ -302,7 +305,7 @@ private:
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
 
-//--Implemation of WED_GateWayImportDialog class---------------
+//--Implemation of WED_GateWayImportDialog class-------------------------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
@@ -483,20 +486,31 @@ extern "C" void decode( const char * startP, const char * endP, char * destP, ch
 void WED_GatewayImportDialog::TimerFired()
 {
 	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
-	
+	++this->mRequestCount;
+
 	if( mPhase == imp_dialog_download_ICAO ||
 		mPhase == imp_dialog_download_versions ||
 		mPhase >= imp_dialog_download_specific_version)
 	{
-		//To avoid user confusion with a potential progress of -1, we'll just call it 0
-		int progress = res.out_download_progress;
-		if(progress < 0)
+		if(res.out_status == CACHE_status::cache_status_available && this->mRequestCount == 1)
 		{
-			progress = 0;
+			stringstream ss;
+			ss << "Loading file from hard drive, please wait...";
+			DecorateGUIWindow(ss.str());
+			return;
 		}
-		stringstream ss;
-		ss << "Download in Progress: " << progress << "% Done";
-		DecorateGUIWindow(ss.str());
+		else
+		{
+			//To avoid user confusion with a potential progress of -1, we'll just call it 0
+			int progress = res.out_download_progress;
+			if(progress < 0)
+			{
+				progress = 0;
+			}
+			stringstream ss;
+			ss << "Download in Progress: " << progress << "% Done";
+			DecorateGUIWindow(ss.str());
+		}
 	}
 	
 	//If we've reached a conclusion to this cache request
@@ -741,6 +755,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
 	mCacheRequest.in_folder_prefix = "GatewayImport";
 	mCacheRequest.in_url = url;
+	mRequestCount = 0;
 
 	Start(0.1);
 	mLabel->Show();
@@ -782,6 +797,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_temporary;
 	mCacheRequest.in_folder_prefix = "GatewayImport\\" + mICAOid;
 	mCacheRequest.in_url = url;
+	mRequestCount = 0;
 
 	Start(0.1);
 	mLabel->Show();
@@ -808,6 +824,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_stationary;
 	mCacheRequest.in_folder_prefix = "GatewayImport\\" + mICAOid;
 	mCacheRequest.in_url = url.str();
+	mRequestCount = 0;
 
 	Start(0.1);
 	mLabel->Show();
