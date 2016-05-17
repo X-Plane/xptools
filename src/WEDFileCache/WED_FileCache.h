@@ -38,14 +38,12 @@
 	The cooldown length is decided by the content_type given in the request.
 	
 	TODO:
-	- The bit about "We keep returning the same error"
-	- File catagories, lifespans, and per catagory cool down timers
 	- Thourough testing, last done as of 48245211b2a977d
-	- Client pfrefix folder "place all my cached objects in CACHE_FOLDER/myfolder/
+	- Re-write test method and test
+	- Integrate with WED_GatewayImport, with CSV file
+	TO DECIDE ON:
 	- Implement no-cache?
-	- Re-write test method
-	- Decide on cool down lengths
-	- Integrate with WED_GatewayImport
+	- Decide on cool down and lifespan lengths
 */
 
 enum CACHE_status
@@ -59,11 +57,11 @@ enum CACHE_status
 //What type of cache error
 enum CACHE_error_type
 {
-    cache_error_type_none,        //No error                                                                              
-    cache_error_type_client_side, //Error determined to be client's, see curl_http.h's UTL_http_is_error_bad_net         
-    cache_error_type_disk_write,  //Error saving file to disk                                                            
-    cache_error_type_server_side, //Error determined to be server's, likely HTTP 300 - 500's                             
-    cache_error_type_unknown,     //Error origin could not be determined, probably WED's fault                           
+    cache_error_type_none,        //No error
+    cache_error_type_client_side, //Error de-termined to be client's, see curl_http.h's UTL_http_is_error_bad_net
+    cache_error_type_disk_write,  //Error saving file to disk
+    cache_error_type_server_side, //Error determined to be server's, likely HTTP 300 - 500's
+    cache_error_type_unknown,     //Error origin could not be determined, probably WED's fault
 };
 
 //Content_type is used to determine the life span of a cached file
@@ -77,7 +75,7 @@ enum CACHE_content_type
 
 struct WED_file_cache_request
 {
-	WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string url);
+	WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string folder_prefix, string url);
 
 	//Our guess as to how big our download (in number of chars)
 	int in_buf_reserve_size;
@@ -88,11 +86,11 @@ struct WED_file_cache_request
 	//Content type we are requesting, cached inside CACHE_CacheObject
 	CACHE_content_type in_content_type;
 
+	//A folder prefix to place this cached file in, no leading or trailing slash
+	string in_folder_prefix;
+
 	//The URL to request from, cached inside CACHE_CacheObject
 	string in_url;
-
-	//The folder prefix to place this cached file in, usually the class name
-	//string in_folder_prefix
 
 	bool operator==(const WED_file_cache_request& rhs) const;
 	bool operator!=(const WED_file_cache_request& rhs) const;

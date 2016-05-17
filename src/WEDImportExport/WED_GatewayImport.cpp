@@ -307,7 +307,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
-	mCacheRequest(0, "", CACHE_content_type::cache_content_type_temporary, ""),
+	mCacheRequest(0, "", CACHE_content_type::cache_content_type_temporary, "", ""),
 	mPhase(imp_dialog_download_ICAO),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
@@ -738,7 +738,8 @@ void WED_GatewayImportDialog::StartICAODownload()
 	//Get it from the server
 	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_stationary;
+	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
+	mCacheRequest.in_folder_prefix = "GatewayImport";
 	mCacheRequest.in_url = url;
 
 	Start(0.1);
@@ -779,6 +780,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	mCacheRequest.in_buf_reserve_size = VERSIONS_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_temporary;
+	mCacheRequest.in_folder_prefix = "GatewayImport\\" + mICAOid;
 	mCacheRequest.in_url = url;
 
 	Start(0.1);
@@ -804,6 +806,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	mCacheRequest.in_buf_reserve_size = VERSION_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_stationary;
+	mCacheRequest.in_folder_prefix = "GatewayImport\\" + mICAOid;
 	mCacheRequest.in_url = url.str();
 
 	Start(0.1);

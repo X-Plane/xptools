@@ -22,10 +22,11 @@
 
 //--WED_file_cache_request---------------------------------------------------
 
-WED_file_cache_request::WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string url)
+WED_file_cache_request::WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string folder_prefix, string url)
 	: in_buf_reserve_size(buf_reserve_size),
 	  in_cert(cert),
 	  in_content_type(content_type),
+	  in_folder_prefix(folder_prefix),
 	  in_url(url)
 {
 }
@@ -36,8 +37,9 @@ bool WED_file_cache_request::operator==(const WED_file_cache_request& rhs) const
 	result &= this->in_buf_reserve_size == rhs.in_buf_reserve_size ? true : false;
 	result &= this->in_cert             == rhs.in_cert             ? true : false;
 	result &= this->in_content_type     == rhs.in_content_type     ? true : false;
+	result &= this->in_folder_prefix    == rhs.in_folder_prefix    ? true : false;
 	result &= this->in_url              == rhs.in_url              ? true : false;
-
+	
 	return result;
 }
 
@@ -100,7 +102,8 @@ void WED_file_cache_init()
 
 		//Attempt to get the folder, if non-existant make it
 		vector<string> files;
-		int num_files = FILE_get_directory(CACHE_folder, &files, NULL);
+		vector<string> folders;
+		int num_files = FILE_get_directory_recursive(CACHE_folder, &files, &folders);
 		if(num_files == -1)
 		{
 			int res = FILE_make_dir_exist(CACHE_folder.c_str());
@@ -116,7 +119,7 @@ void WED_file_cache_init()
 			{
 				//We always delete during shut WED_file_cache_shutdown()
 				CACHE_file_cache.push_back(new CACHE_CacheObject());
-				CACHE_file_cache.back()->set_disk_location(CACHE_folder + "\\" + files[i]);
+				CACHE_file_cache.back()->set_disk_location(files[i]);
 			}
 		}
 		
@@ -280,10 +283,10 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 											CACHE_status::cache_status_available);
 
 #if SAVE_TO_DISK //Testing cooldown
-				res.out_path = CACHE_folder + "\\" + FILE_get_file_name(req.in_url);
+				res.out_path = CACHE_folder + "\\" + req.in_folder_prefix + "\\" + FILE_get_file_name(req.in_url);
+				FILE_make_dir_exist(string(CACHE_folder + "\\" + req.in_folder_prefix).c_str());
 				RAII_FileHandle f(res.out_path.c_str(),"w");
 
-				//TODO: content_type != CACHE_content_type::no_cache)?
 				//What if we can't open the file here?
 				const vector<char>& buf = co.get_RAII_curl_hndl()->get_dest_buffer();
 				if(f() != NULL)

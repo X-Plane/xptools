@@ -43,22 +43,27 @@ private:
 int FILE_case_correct(char * buf);
 
 /* FILE API Overview
-	Method Name          |                    Purpose                   | Trailing Seperator? | Returns (Sucess, fail)
-	exists               | Does file exist?                             | N/A                 | True/false
-	get_file_meta_data   | Get file info like creation time and date    | No                  | 0, -1
-	get_file_name        | Get file name w/o directory, can use / or \  | N/A                 | non_empty, empty string
-	delete_file          | rm 1 file or folder                          | No                  | 0, last_error
-	delete_dir_recursive | rm folder and subcontents                    | Yes                 | 0, last_error
-	rename_file          | rename 1 file                                | N/A                 | 0, last_error
-	make_dir             | make directory, assumes parent folders exist | No                  | 0, last_error
-	make_dir_exist       | make directory, parent folders created on fly| No                  | 0, last_error
-	get_directory        | get dir's content's paths*                   | No                  | num files found, -1 or last_error
-	compress_dir         | zip compress folder, save zip to disk        | No                  | 0, not zero (see zlib)
-	date_cmpr            | compares which of two files is newer         | N/A                 | (1,0,-1), -2
+	Method Name              |                    Purpose                   | Trailing Seperator? | Returns (Sucess, fail)
+	exists                   | Does file exist?                             | N/A                 | True/false
+	get_file_meta_data       | Get file info like creation time and date    | No                  | 0, -1
+	get_file_name            | Get file name w/o directory, can use / or \  | N/A                 | non_empty, empty string
+	delete_file              | rm 1 file or folder                          | No                  | 0, last_error
+	delete_dir_recursive     | rm folder and subcontents                    | Yes                 | 0, last_error
+	rename_file              | rename 1 file                                | N/A                 | 0, last_error
+	compress_dir             | zip compress folder, save zip to disk        | No                  | 0, not zero (see zlib)
+	get_directory            | get dir's content's paths*                   | No                  | num files found?**, -1 or last_error
+	get_directory_recursive  | get dir and sub dir's files and folders      | No                  | num files found?**, -1 or last_error 
+	make_dir                 | make directory, assumes parent folders exist | No                  | 0, last_error
+	make_dir_exist           | make directory, parent folders created on fly| No                  | 0, last_error
+	date_cmpr                | compares which of two files is newer         | N/A                 | (1,0,-1), -2
 
 	*get_directory can do 1 to 4 things at the same time. It can implicitly tell you if the directory exists, how many files are contained in it,
 	and, optionally, the relative paths of file or folders non-rescursively
-*/
+
+	get_directory's return value is possibly bugged or is not being interpreted correctly. Use out_files->size() for a better count. -2016/05/16
+
+	get_directory_recursive's vectors of strings contain fully qualified names, unlike get_directory.
+/*/
 
 //Returns true if the file exists, returns false if it doesn't
 bool FILE_exists(const char * path);
@@ -84,11 +89,11 @@ int FILE_make_dir(const char * in_dir);
 // Recursively create all dirs needed for in_dir to exist - handles trailing / ok.
 int FILE_make_dir_exist(const char * in_dir);
 
-// Get a directory listing.  Returns number of files found, or -1 on error.
-int FILE_get_directory(
-		const string&		path,
-		vector<string> *	out_files,	// Both arrays are optional.
-		vector<string> *	out_dirs);
+// Get a directory listing.  Returns number of files found, or -1 on error. Both arrays are optional.
+int FILE_get_directory(const string& path, vector<string> * out_files, vector<string> * out_dirs);
+
+// Gets a complete listing of every file and every folder under a given directory
+int FILE_get_directory_recursive(const string& path, vector<string>* out_files, vector<string>* out_dirs);
 
 int FILE_compress_dir(const string& src_path, const string& dst_path, const string& prefix);
 

@@ -60,7 +60,6 @@ static int desens_partial(DIR * dir, char * io_file)
 }
 #endif
 
-
 int FILE_case_correct(char * buf)
 {
 	#if LIN
@@ -225,6 +224,122 @@ int FILE_rename_file(const char * old_name, const char * new_name)
 	return 0;
 }
 
+int FILE_get_directory(const string& path, vector<string> * out_files, vector<string> * out_dirs)
+{
+#if IBM
+
+	string				searchPath(path);
+	WIN32_FIND_DATA		findData;
+	HANDLE				hFind;
+	int					total = 0;
+
+	searchPath += string("\\*.*");
+
+	hFind = FindFirstFile(searchPath.c_str(),&findData);
+	if (hFind == INVALID_HANDLE_VALUE) return -1;
+
+	do {
+
+		if(strcmp(findData.cFileName,".") == 0 ||
+			strcmp(findData.cFileName,"..") == 0)
+		{
+			continue;
+		}
+
+		if(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			if(out_dirs)
+				out_dirs->push_back(findData.cFileName);
+		}
+		else
+		{
+			if(out_files)
+				out_files->push_back(findData.cFileName);
+		}
+		
+		++total;
+
+	} while(FindNextFile(hFind,&findData) != 0);
+
+
+	FindClose(hFind);
+	return total;
+
+#elif LIN || APL
+
+	int total=0;
+	DIR* dir = opendir ( path.c_str() );
+	if ( !dir ) return -1;
+	struct dirent* ent;
+
+	while ( ( ent = readdir ( dir ) ) )
+	{
+		struct stat ss;
+		if ( ( strcmp ( ent->d_name, "." ) ==0 ) ||
+		        ( strcmp ( ent->d_name, ".." ) ==0 ) )
+			continue;
+
+		string	fullPath ( path );
+		fullPath += DIR_CHAR;
+		fullPath += ent->d_name;
+
+		if ( stat ( fullPath.c_str(), &ss ) < 0 )
+			continue;
+		total++;
+		
+		if(S_ISDIR ( ss.st_mode ))
+		{
+			if(out_dirs)
+				out_dirs->push_back(ent->d_name);
+		}
+		else
+		{
+			if(out_files)
+				out_files->push_back(ent->d_name);
+		}
+	}
+	closedir ( dir );
+
+	return total;
+
+#else
+#error not implemented
+#endif
+}
+
+int FILE_get_directory_recursive(const string& path, vector<string> * out_files, vector<string> * out_dirs)
+{
+	//Save the previous last positions before we potentially add more to files and dirs
+	int files_start_index = out_files->size();
+	int start_index = out_dirs->size();
+	
+	//Gets this level of the directory's information
+	int num_files = FILE_get_directory(path, out_files, out_dirs);
+	
+	//If we have accumulated new files, prepend the path onto them
+	if (out_files->size() > files_start_index)
+	{
+		for (int i = files_start_index; i < out_files->size(); i++)
+		{
+			out_files->at(i) = path + "\\" + out_files->at(i);
+		}
+	}
+
+	//For all the directories on this level, recurse into them
+	for (int i = start_index; i < out_dirs->size(); ++i)
+	{
+		num_files += FILE_get_directory_recursive(path + "\\" + out_dirs->at(i), out_files, out_dirs);
+	}
+	
+	//For all the directories on this level prepend the path onto them
+	for (int i = out_dirs->size() - 1; i >= start_index ; i--)
+	{
+		out_dirs->at(i) = path + "\\" + out_dirs->at(i);
+	}
+	
+	return num_files;
+}
+
 int FILE_make_dir(const char * in_dir)
 {
 	#if IBM
@@ -319,92 +434,6 @@ date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second)
 		return dcr_error;
 	}
 
-#endif
-}
-
-int FILE_get_directory(
-		const string&		path,
-		vector<string> *	out_files,
-		vector<string> *	out_dirs)
-{
-#if IBM
-
-	string				searchPath(path);
-	WIN32_FIND_DATA		findData;
-	HANDLE				hFind;
-	int					total = 0;
-
-	searchPath += string("\\*.*");
-
-	hFind = FindFirstFile(searchPath.c_str(),&findData);
-	if (hFind == INVALID_HANDLE_VALUE) return -1;
-
-	do {
-
-		if(strcmp(findData.cFileName,".") == 0 ||
-			strcmp(findData.cFileName,"..") == 0)
-		{
-			continue;
-		}
-
-		if(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-		{
-			if(out_dirs)
-				out_dirs->push_back(findData.cFileName);
-		}
-		else
-		{
-			if(out_files)
-				out_files->push_back(findData.cFileName);
-		}
-		
-		++total;
-
-	} while(FindNextFile(hFind,&findData) != 0);
-
-
-	FindClose(hFind);
-	return total;
-
-#elif LIN || APL
-
-	int total=0;
-	DIR* dir = opendir ( path.c_str() );
-	if ( !dir ) return -1;
-	struct dirent* ent;
-
-	while ( ( ent = readdir ( dir ) ) )
-	{
-		struct stat ss;
-		if ( ( strcmp ( ent->d_name, "." ) ==0 ) ||
-		        ( strcmp ( ent->d_name, ".." ) ==0 ) )
-			continue;
-
-		string	fullPath ( path );
-		fullPath += DIR_CHAR;
-		fullPath += ent->d_name;
-
-		if ( stat ( fullPath.c_str(), &ss ) < 0 )
-			continue;
-		total++;
-		
-		if(S_ISDIR ( ss.st_mode ))
-		{
-			if(out_dirs)
-				out_dirs->push_back(ent->d_name);
-		}
-		else
-		{
-			if(out_files)
-				out_files->push_back(ent->d_name);
-		}
-	}
-	closedir ( dir );
-
-	return total;
-
-#else
-#error not implemented
 #endif
 }
 
