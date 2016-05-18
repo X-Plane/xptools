@@ -149,7 +149,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 	}
 	
 	#if !DEV
-		#error TODO: cull small things?
+		//#error TODO: cull small things?
 	#endif
 	
 	return true;

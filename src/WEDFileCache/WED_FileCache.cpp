@@ -370,6 +370,7 @@ void WED_file_cache_shutdown()
 }
 
 #if DEV && 0
+#include "WED_Url.h"
 void WED_file_cache_test()
 {
 	WED_file_cache_init();
@@ -384,7 +385,7 @@ void WED_file_cache_test()
 	test_files.push_back("https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO");
 	test_files.push_back("https://gatewayapi.x-plane.com:3001/apiv1/secenery/3192");
 	//Test finding files not on disk, online
-	test_files.push_back("https://gateway.x-plane.com/airport_metadata.csv");
+	test_files.push_back(WED_URL_AIRPORT_METADATA_CSV);
 
 	//test finding files not on disk, not online
 	test_files.push_back("http://www.x-plane.com/thisisnotreal.txt");

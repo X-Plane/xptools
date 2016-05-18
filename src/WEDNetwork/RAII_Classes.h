@@ -46,10 +46,10 @@ private:
 	RAII_CurlHandle(const RAII_CurlHandle& copy);
 	RAII_CurlHandle& operator= (const RAII_CurlHandle& rhs);
 
-	curl_http_get_file m_curl_handle;
-	
 	//A buffer of chars to be filled
 	vector<char> m_dest_buffer;
+
+	curl_http_get_file m_curl_handle;
 };
 //---------------------------------------------------------------------------//
 

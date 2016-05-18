@@ -96,7 +96,7 @@
 enum imp_dialog_stages
 {
 	imp_dialog_error,//for file and network errors
-	imp_dialog_download_airport_defaults,
+	imp_dialog_download_airport_metadata,
 	imp_dialog_download_ICAO,
 	imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
 	imp_dialog_download_versions,
@@ -224,6 +224,9 @@ private:
 	//The number of times we request a file, reset before each download
 	int                     mRequestCount;
 
+	//Where the airport metadata csv file was ultimately downloaded to
+	string              mAirportMetadataCSVPath;
+
 	//The buffers of the specific packs downloaded at the end
 	vector<string>	mSpecificBufs;
 	
@@ -315,7 +318,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mResolver(resolver),
 	mMapPane(pane),
 	mCacheRequest(0, "", CACHE_content_type::cache_content_type_temporary, "", ""),
-	mPhase(imp_dialog_download_airport_defaults),
+	mPhase(imp_dialog_download_airport_metadata),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
 	mVersions_VerProvider(&mVersions_Vers),
@@ -404,7 +407,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		mLabel->SetParent(this);
 		mLabel->SetDescriptor("Download in Progress, Please Wait");
 		mLabel->SetImplicitMultiline(true);
-		int labelBounds[4] = {70,230,480,270};
+		int labelBounds[4] = {70,230,600,270};
 		mLabel->SetBounds(labelBounds);
 		
 		
@@ -422,13 +425,12 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 
 void WED_GatewayImportDialog::Next()
 {
-	
 	switch(mPhase)
 	{
 	case imp_dialog_error:
 		this->AsyncDestroy();
 		break;
-	//case imp_dialog_download_airport_defaults:
+	//case imp_dialog_download_airport_metadata:
 		//break; no next button here
 	//case imp_dialog_download_ICAO:
 		//break; no next button here
@@ -470,7 +472,7 @@ void WED_GatewayImportDialog::Back()
 	{
 	case imp_dialog_error:
 		break;
-	case imp_dialog_download_airport_defaults:
+	case imp_dialog_download_airport_metadata:
 	case imp_dialog_download_ICAO:
 	case imp_dialog_choose_ICAO:
 		this->AsyncDestroy();
@@ -495,17 +497,16 @@ void WED_GatewayImportDialog::TimerFired()
 	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
 	++this->mRequestCount;
 
-	if(mPhase == imp_dialog_download_airport_defaults ||
+	if(mPhase == imp_dialog_download_airport_metadata ||
 	   mPhase == imp_dialog_download_ICAO ||
 	   mPhase == imp_dialog_download_versions ||
 	   mPhase >= imp_dialog_download_specific_version)
 	{
-		if(res.out_status == CACHE_status::cache_status_available && this->mRequestCount == 1)
+		if(res.out_status == CACHE_status::cache_status_available && (this->mRequestCount == 1 || static_cast<int>(res.out_download_progress) == 100))
 		{
 			stringstream ss;
 			ss << "Loading file from hard drive, please wait...";
 			DecorateGUIWindow(ss.str());
-			return;
 		}
 		else
 		{
@@ -535,29 +536,30 @@ void WED_GatewayImportDialog::TimerFired()
 		
 			if(f() != NULL)
 			{
-				string json_string;
+				string file_contents;
 				fseek(f(), 0, SEEK_END);
-				json_string.resize(std::ftell(f()));
+				file_contents.resize(std::ftell(f()));
 				rewind(f());
-				fread(&json_string[0], sizeof(char), json_string.size(), f());
+				fread(&file_contents[0], sizeof(char), file_contents.size(), f());
 				f.close();
 
-				if(mPhase == imp_dialog_download_airport_defaults)
+				if(mPhase == imp_dialog_download_ICAO)
 				{
+					mAirportMetadataCSVPath = res.out_path;
 					StartICAODownload();
 				}
 				if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
 				{
-					FillICAOFromJSON(json_string);
+					FillICAOFromJSON(file_contents);
 				}		
 				else if(mPhase == imp_dialog_choose_versions)//
 				{
-					FillVersionsFromJSON(json_string);
+					FillVersionsFromJSON(file_contents);
 				}
 				else if(mPhase - 1 >= imp_dialog_download_specific_version) // -1 to counter act the mPhase++, >= for the fact we have multiple downloads
 				{
 					//Push back the latest buffer
-					mSpecificBufs.push_back(json_string);
+					mSpecificBufs.push_back(file_contents);
 				
 					//Try to start the next download
 					bool has_versions_left = NextVersionsDownload();
@@ -582,8 +584,6 @@ void WED_GatewayImportDialog::TimerFired()
 								return;
 							}
 						}
-						
-						fill_in_meta_data_defaults(*last_imported, res.out_path);
 
 						//Set the current airport in the sense of "WED's current airport"
 						WED_SetCurrentAirport(mResolver, last_imported);
@@ -757,11 +757,11 @@ void WED_GatewayImportDialog::StartCSVDownload()
 	}
 
 	//Get it from the server
-	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;
+	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;//TODO, change when we have a better idea of how big this will be
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
 	mCacheRequest.in_folder_prefix = "GatewayImport";
-	mCacheRequest.in_url = WED_URL_AIRPORT_DEFAULTS_CSV;
+	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 	mRequestCount = 0;
 
 	Start(0.1);
@@ -770,7 +770,6 @@ void WED_GatewayImportDialog::StartCSVDownload()
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	//WED_file_cache_test();
 	string url = WED_URL_GATEWAY_API;
 	
 	//Get Certification
@@ -987,9 +986,8 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	//Operation inside of
 	vector<WED_Airport *> out_apt;
 	WED_ImportOneAptFile(aptdatPath,wrl,&out_apt);
-
-	//Fill in any meta_data gaps with defaults
-	//fill_in_meta_data_defaults(*out_apt[0]);
+	
+	fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath);
 	out_apt[0]->StateChanged();
 
 	WED_Airport * g = out_apt[0];

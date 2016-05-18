@@ -10,13 +10,19 @@
 	#endif
 #endif
 
-void	fill_in_meta_data_defaults(WED_Airport & airport, const string& file_path)
+void	fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file_path)
 {
 #if DEV && FROM_DISK
 	std::ifstream t(CSV_ON_DISK);
 #else
 	std::ifstream t(file_path);
 #endif
+
+	if(t.bad() == true)
+	{
+		return;
+	}
+
 	std::string str((std::istreambuf_iterator<char>(t)),
 					std::istreambuf_iterator<char>());
 	

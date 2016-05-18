@@ -39,8 +39,7 @@
 	
 	TODO:
 	- Thourough testing, last done as of 48245211b2a977d
-	- Re-write test method and test
-	- Integrate with WED_GatewayImport, with CSV file
+	- Re-write test method and tests
 	TO DECIDE ON:
 	- Implement no-cache?
 	- Decide on cool down and lifespan lengths

@@ -28,6 +28,6 @@ class WED_Airport;
 
 //Fill in an airport's meta data's missing or blank entries with defaults
 //from the LR official meta data source
-void fill_in_meta_data_defaults(WED_Airport & airport, const string& file_path);
+void fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file_path);
 
 #endif

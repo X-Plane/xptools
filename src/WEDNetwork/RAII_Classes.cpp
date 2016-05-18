@@ -3,7 +3,9 @@
 //--RAII_CurlHandle------------------------------------------------------------
 RAII_CurlHandle::RAII_CurlHandle(const string& url, const string& cert, int buf_reserve_size) :
 	m_dest_buffer(vector<char>(buf_reserve_size)),
-	m_curl_handle(curl_http_get_file(url, &m_dest_buffer, cert))
+	m_curl_handle(url, &m_dest_buffer, cert)
+	
+	
 {
 }
 

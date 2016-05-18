@@ -33,6 +33,6 @@
 
 // This is the canonical service base URL for the gateway.
 #define WED_URL_GATEWAY_API "https://gatewayapi.x-plane.com:3001/apiv1/"
-#define WED_URL_AIRPORT_DEFAULTS_CSV "http://gateway.x-plane.com/airport_metadata.csv"
+#define WED_URL_AIRPORT_METADATA_CSV "https://gatewayapi.x-plane.com:3001/airport_metadata.csv"
 
 #endif /* WED_Url_H */
