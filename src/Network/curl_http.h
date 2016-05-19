@@ -47,7 +47,7 @@ public:
 
 				curl_http_get_file(
 							const string&			inURL,
-							vector<char>*		outDestBuffer,
+							vector<char>*			outDestBuffer,
 							const string&			inCert);
 
 				curl_http_get_file(

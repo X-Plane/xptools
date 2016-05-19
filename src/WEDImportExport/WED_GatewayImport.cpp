@@ -532,16 +532,12 @@ void WED_GatewayImportDialog::TimerFired()
 		if(res.out_status == CACHE_status::cache_status_available)
 		{
 			//Attempt to open the file we just downloaded
-			RAII_FileHandle f(res.out_path.c_str(),"r");
+			RAII_FileHandle file(res.out_path.c_str(),"r");
 		
-			if(f() != NULL)
+			string file_contents;
+			if(FILE_read_file_to_string(file(), file_contents) == 0)
 			{
-				string file_contents;
-				fseek(f(), 0, SEEK_END);
-				file_contents.resize(std::ftell(f()));
-				rewind(f());
-				fread(&file_contents[0], sizeof(char), file_contents.size(), f());
-				f.close();
+				file.close();
 
 				if(mPhase == imp_dialog_download_ICAO)
 				{
@@ -600,8 +596,10 @@ void WED_GatewayImportDialog::TimerFired()
 						this->AsyncDestroy();//All done!
 						return;
 					}
-				}//end if(mPhase == imp_dialog_download_specific_version
+				}//end if(mPhase == imp_dialog_download_specific_version)
+				return;
 			}
+			file.close();
 		}//end if(mCurl.get_curl_handle()->is_ok())
 		else if(res.out_status == CACHE_status::cache_status_error)
 		{
@@ -757,7 +755,7 @@ void WED_GatewayImportDialog::StartCSVDownload()
 	}
 
 	//Get it from the server
-	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;//TODO, change when we have a better idea of how big this will be
+	mCacheRequest.in_buf_reserve_size = AIRPORT_METADATA_GUESS_SIZE;//TODO, change when we have a better idea of how big this will be
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
 	mCacheRequest.in_folder_prefix = "GatewayImport";
@@ -1260,7 +1258,6 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mVersions_Scroller->PositionHeaderPane(mVersions_Header);
 }
 //-------------------------------------------------------------
-
 
 //----------------------------------------------------------------------
 int	WED_CanImportFromGateway(IResolver * resolver)

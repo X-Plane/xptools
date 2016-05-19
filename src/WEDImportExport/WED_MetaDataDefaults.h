@@ -24,6 +24,8 @@
 #ifndef METADATADEFAULTS_H
 #define METADATADEFAULTS_H
 
+#define AIRPORT_METADATA_GUESS_SIZE 1100000
+
 class WED_Airport;
 
 //Fill in an airport's meta data's missing or blank entries with defaults

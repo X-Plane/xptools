@@ -208,6 +208,28 @@ int FILE_delete_file(const char * nuke_path, int is_dir)
 	return 0;
 }
 
+int FILE_read_file_to_string(FILE* file, string& content)
+{
+	content = "";
+	if(file != NULL)
+	{
+#if LIN || APL
+		errno = 0;
+#else
+		SetLastError(0);
+#endif
+		fseek(file, 0, SEEK_END);
+		content.resize(std::ftell(file));
+		rewind(file);
+		fread(&content[0], sizeof(char), content.size(), file);
+	}
+#if LIN ||APL
+	return errno;
+#else
+	return GetLastError();
+#endif
+}
+
 int FILE_rename_file(const char * old_name, const char * new_name)
 {
 #if IBM

@@ -49,6 +49,7 @@ int FILE_case_correct(char * buf);
 	get_file_name            | Get file name w/o directory, can use / or \  | N/A                 | non_empty, empty string
 	delete_file              | rm 1 file or folder                          | No                  | 0, last_error
 	delete_dir_recursive     | rm folder and subcontents                    | Yes                 | 0, last_error
+	read_file_to_string      | read a (non-binary) file to a string         | N/A                 | 0, last_error
 	rename_file              | rename 1 file                                | N/A                 | 0, last_error
 	compress_dir             | zip compress folder, save zip to disk        | No                  | 0, not zero (see zlib)
 	get_directory            | get dir's content's paths*                   | No                  | num files found?**, -1 or last_error
@@ -78,6 +79,9 @@ int FILE_delete_file(const char * nuke_path, int is_dir);
 // Path should end in a /
 // Returns 0 for success, else -1 or last_error
 int FILE_delete_dir_recursive(const string& path);
+
+//Reads the contents of a non-binary file into a string, does not close the file handle for you
+int FILE_read_file_to_string(FILE* file, string& content);
 
 // Returns 0 for success, else last_error
 int FILE_rename_file(const char * old_name, const char * new_name);

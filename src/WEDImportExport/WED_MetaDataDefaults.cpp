@@ -20,6 +20,7 @@ void	fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file
 
 	if(t.bad() == true)
 	{
+		t.close();
 		return;
 	}
 
