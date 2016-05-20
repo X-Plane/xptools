@@ -225,6 +225,7 @@ static int file_to_uu64(const string& path, string& enc)
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------
 
+//--WED_GatewayExportDialog--------------------------------------------------
 enum expt_dialog_stage
 {
 	expt_dialog_download_airport_metadata,
@@ -235,8 +236,17 @@ enum expt_dialog_stage
 class	WED_GatewayExportDialog : public GUI_FormWindow, public GUI_Timer {
 public:
 	WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver);
+
+	//When pressed, opens up the developer blog post about the Gateway 
+	virtual void AuxiliaryAction();
+
+	//When pressed, attempts to submit current airport to the gateway
 	virtual void Submit();
+	
+	//When pressed, form window is closed
 	virtual void Cancel();
+
+	//Called each time WED's timer is fired, checks download progress
 	virtual	void TimerFired(void);
 
 	static const string& GetAirportMetadataCSVPath();
@@ -280,13 +290,13 @@ const string& WED_GatewayExportDialog::GetAirportMetadataCSVPath()
 
 int WED_CanExportToGateway(IResolver * resolver)
 {
-	#if BULK_SPLAT_IO
-	ISelection * sel = WED_GetSelect(resolver);	
-	return sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass);
+	return 1;	
+#if BULK_SPLAT_IO
+//	ISelection * sel = WED_GetSelect(resolver);	
+//	return sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass);
 
-	#else
-	return WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass) != NULL;
-	#endif	
+	//#else
+#endif	
 }
 
 void WED_DoExportToGateway(IResolver * resolver)
@@ -315,7 +325,12 @@ void WED_DoExportToGateway(IResolver * resolver)
 		}
 		
 	#else
-		
+		if(WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass) == NULL)
+		{
+			DoUserAlert("Please select an airport before continuing");
+			return;
+		}
+
 		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
 
 		if(!apt)
@@ -391,7 +406,7 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 	mPhase(expt_dialog_download_airport_metadata),
 	mResolver(resolver)
 {	
-	this->Reset("Upload", "Cancel", false);
+	this->Reset("Learn More", "Upload", "Cancel", false);
 				
 	string icao, name;
 	apt->GetICAO(icao);
@@ -433,10 +448,12 @@ void WED_GatewayExportDialog::StartCSVDownload()
 
 void WED_GatewayExportDialog::Cancel()
 {
-	if(mPhase == expt_dialog_done)
-		GUI_LaunchURL(WED_URL_UPLOAD_OK);
-		
 	this->AsyncDestroy();
+}
+
+void WED_GatewayExportDialog::AuxiliaryAction()
+{
+	GUI_LaunchURL(WED_URL_UPLOAD_OK);
 }
 
 void WED_GatewayExportDialog::Submit()
@@ -647,7 +664,7 @@ void WED_GatewayExportDialog::Submit()
 		
 		mPhase = expt_dialog_upload_to_gateway;
 		
-		this->Reset("", "", false);
+		this->Reset("", "", "", false);
 		this->AddLabel("Uploading airport to Gateway.");
 		this->AddLabel("This could take up to one minute.");
 
@@ -734,12 +751,12 @@ void WED_GatewayExportDialog::TimerFired()
 		
 			if(!good_msg.empty())
 			{
-				this->Reset("OK","Learn More...", true);
+				this->Reset("Learn More", "OK","", true);
 				this->AddLabel(good_msg);
 			}
 			else
 			{
-				this->Reset("","Cancel", true);
+				this->Reset("", "","Cancel", true);
 				this->AddLabel(bad_msg);			
 			}
 		
@@ -763,5 +780,5 @@ void WED_GatewayExportDialog::TimerFired()
 		}
 	}
 }
-
+//---------------------------------------------------------------------------//
 #endif /* HAS_GATEWAY */
