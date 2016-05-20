@@ -1252,6 +1252,39 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			outObj.manips.push_back(manip);
 		}
 /******************************************************************************************************************************/
+		// PARTICLE SYSTEM
+/******************************************************************************************************************************/
+		// PARTICLE_SYSTEM <def name>
+		else if(TXT_MAP_str_match_space(cur_ptr, end_ptr, "PARTICLE_SYSTEM",xfals))
+		{
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.particle_system);
+		}
+		// EMITTER name x y z psi the phi low high dref
+		else if(TXT_MAP_str_match_space(cur_ptr, end_ptr, "EMITTER",xfals))
+		{
+			cmd.cmd = attr_Emitter;
+			cmd.idx_offset = outObj.emitters.size();
+			outObj.lods.back().cmds.push_back(cmd);
+		
+			XObjEmitter8	em;
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &em.name);
+
+			em.x = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			em.y = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			em.z = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+
+			em.psi = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			em.the = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			em.phi = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+
+			em.v_min = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+			em.v_max = TXT_MAP_flt_scan(cur_ptr,end_ptr,xfals);
+
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &em.dataref);
+
+			outObj.emitters.push_back(em);
+		}
+/******************************************************************************************************************************/
 		// DEFAULT
 /******************************************************************************************************************************/
 		else
@@ -1300,6 +1333,9 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	// TEXTURES
 									fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
 	if (!outObj.texture_lit.empty())fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
+
+	if(!outObj.particle_system.empty())
+	fprintf(fi,"PARTICLE_SYSTEM %s" CRLF, outObj.particle_system.c_str());
 
 	// SUBREGIONS
 	for (int r = 0; r < outObj.regions.size(); ++r)
@@ -1653,6 +1689,19 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].axis[1],
 						outObj.manips[cmd->idx_offset].dataref1.c_str(),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
+					break;
+			case attr_Emitter:
+					fprintf(fi,"EMITTER %s %f %f %f %f %f %f %f %f %s" CRLF,
+						outObj.emitters[cmd->idx_offset].name.c_str(),
+						outObj.emitters[cmd->idx_offset].x,
+						outObj.emitters[cmd->idx_offset].y,
+						outObj.emitters[cmd->idx_offset].z,
+						outObj.emitters[cmd->idx_offset].psi,
+						outObj.emitters[cmd->idx_offset].the,
+						outObj.emitters[cmd->idx_offset].phi,
+						outObj.emitters[cmd->idx_offset].v_min,
+						outObj.emitters[cmd->idx_offset].v_max,
+						outObj.emitters[cmd->idx_offset].dataref.c_str());
 					break;
 			default:
 				{
