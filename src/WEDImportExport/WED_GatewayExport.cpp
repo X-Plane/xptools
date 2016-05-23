@@ -327,7 +327,7 @@ void WED_DoExportToGateway(IResolver * resolver)
 	#else
 		if(WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass) == NULL)
 		{
-			DoUserAlert("Please select an airport before continuing");
+			DoUserAlert("To export an airport to the X-Plane Scenery Gateway, please first select the airport in the hierarchy pane.");
 			return;
 		}
 
