@@ -178,6 +178,7 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_TowerViewpoint.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Windsock.cpp" />
     <ClCompile Include="..\..\src\WEDFileCache\CACHE_CacheObject.cpp" />
+    <ClCompile Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.cpp" />
     <ClCompile Include="..\..\src\WEDFileCache\WED_FileCache.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptIE.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptImportDialog.cpp" />
@@ -432,6 +433,7 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_TowerViewpoint.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Windsock.h" />
     <ClInclude Include="..\..\src\WEDFileCache\CACHE_CacheObject.h" />
+    <ClInclude Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.h" />
     <ClInclude Include="..\..\src\WEDFileCache\WED_FileCache.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptIE.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptImportDialog.h" />

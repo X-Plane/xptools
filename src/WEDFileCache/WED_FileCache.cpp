@@ -22,30 +22,12 @@
 
 //--WED_file_cache_request---------------------------------------------------
 
-WED_file_cache_request::WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string folder_prefix, string url)
-	: in_buf_reserve_size(buf_reserve_size),
-	  in_cert(cert),
-	  in_content_type(content_type),
-	  in_folder_prefix(folder_prefix),
-	  in_url(url)
+WED_file_cache_request::WED_file_cache_request()
+	: in_cert(""),
+	  in_domain_policy(GetDomainPolicy(CACHE_domain::cache_domain_none)),
+	  in_folder_prefix(""),
+	  in_url("")
 {
-}
-
-bool WED_file_cache_request::operator==(const WED_file_cache_request& rhs) const
-{
-	bool result = true;
-	result &= this->in_buf_reserve_size == rhs.in_buf_reserve_size ? true : false;
-	result &= this->in_cert             == rhs.in_cert             ? true : false;
-	result &= this->in_content_type     == rhs.in_content_type     ? true : false;
-	result &= this->in_folder_prefix    == rhs.in_folder_prefix    ? true : false;
-	result &= this->in_url              == rhs.in_url              ? true : false;
-	
-	return result;
-}
-
-bool WED_file_cache_request::operator!=(const WED_file_cache_request& rhs) const
-{
-	return !(*this == rhs);
 }
 //---------------------------------------------------------------------------//
 
@@ -198,7 +180,7 @@ static WED_file_cache_response start_new_cache_object(WED_file_cache_request req
 	CACHE_file_cache.push_back(new CACHE_CacheObject());
 	CACHE_CacheObject& co = *CACHE_file_cache.back();
 	
-	co.create_RAII_curl_hndl(req.in_url, req.in_cert, req.in_buf_reserve_size);
+	co.create_RAII_curl_hndl(req.in_url, req.in_cert, req.in_domain_policy.cache_domain_pol_buffer_reserve_size);
 	
 	return WED_file_cache_response(co.get_RAII_curl_hndl()->get_curl_handle().get_progress(),
 								   "",
@@ -331,7 +313,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 	}//end if((**itr).get_RAII_curl_hndl() != NULL)
 	else
 	{
-		int seconds_left = co.cool_down_seconds_left();
+		int seconds_left = co.cool_down_seconds_left(req.in_domain_policy);
 		if(seconds_left > 0)
 		{
 			char buf[128] = { 0 };
@@ -339,7 +321,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		}
 		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
 		{
-			if(co.needs_refresh(req.in_content_type) == false)
+			if(co.needs_refresh(req.in_domain_policy) == false)
 			{
 				DebugAssert((*itr)->get_disk_location() != "");
 				return WED_file_cache_response(100, "", CACHE_error_type::cache_error_type_none, (*itr)->get_disk_location(), CACHE_status::cache_status_available);

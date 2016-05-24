@@ -21,13 +21,27 @@
  *
  */
 
-#ifndef METADATADEFAULTS_H
-#define METADATADEFAULTS_H
+#ifndef CACHE_DOMAINPOLICY_H
+#define CACHE_DOMAINPOLICY_H
 
-class WED_Airport;
+enum CACHE_domain
+{
+	cache_domain_none,
+	cache_domain_airports_json,
+	cache_domain_airport_versions_json,
+	cache_domain_scenery_pack,
+	cache_domain_metadata_csv,
+	cache_domain_end //do not use!
+};
 
-//Fill in an airport's meta data's missing or blank entries with defaults
-//from the LR official meta data source
-void fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file_path);
+struct CACHE_domain_policy
+{
+	int                 cache_domain_pol_buffer_reserve_size; //The number of bytes the download will probably be
+	//int                 cache_domain_pol_max_KB_on_disk;
+	int                 cache_domain_pol_max_seconds_on_disk;
+	int                 cache_domain_pol_min_client_cool_down_snds;
+	int                 cache_domain_pol_min_server_cool_down_snds;
+};
 
+CACHE_domain_policy GetDomainPolicy(CACHE_domain domain);
 #endif

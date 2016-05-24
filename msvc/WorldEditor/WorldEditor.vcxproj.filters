@@ -786,6 +786,9 @@
     <ClCompile Include="..\..\src\WEDFileCache\CACHE_CacheObject.cpp">
       <Filter>WEDFileCache</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.cpp">
+      <Filter>WEDFileCache</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1554,6 +1557,9 @@
       <Filter>WEDFileCache</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDFileCache\CACHE_CacheObject.h">
+      <Filter>WEDFileCache</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.h">
       <Filter>WEDFileCache</Filter>
     </ClInclude>
   </ItemGroup>

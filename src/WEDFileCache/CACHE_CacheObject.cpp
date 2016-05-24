@@ -100,73 +100,47 @@ void CACHE_CacheObject::trigger_cool_down()
 }
 
 //Is the file cooling down
-int CACHE_CacheObject::cool_down_seconds_left() const
+int CACHE_CacheObject::cool_down_seconds_left(const CACHE_domain_policy& policy) const
 {
+	double time_delta = difftime(time(NULL), m_cool_down_timestamp);
+	int diff_seconds = policy.cache_domain_pol_min_client_cool_down_snds - time_delta;
+
 	int seconds_left = 0;
 
-	time_t now = time(NULL);
-	time_t t = m_cool_down_timestamp;
-	double time_delta = difftime(now,t);
-
-#if DEV
-	std::cout << "Time since last is_cooling_down: " << time_delta << endl;
-	//For the catagory, has enough time passed? - NOTE: Edit the values in this switch statement to change cache behavior
+	//For each error type, has enough time passed?
 	switch(this->m_last_error_type)
 	{
 	case CACHE_error_type::cache_error_type_disk_write:
 	case CACHE_error_type::cache_error_type_none:        seconds_left = 0; break;
-	case CACHE_error_type::cache_error_type_client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::cache_error_type_server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::cache_error_type_unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
+	case CACHE_error_type::cache_error_type_client_side: seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
+	case CACHE_error_type::cache_error_type_server_side: seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
+	case CACHE_error_type::cache_error_type_unknown:     seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
 	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error_type);
 	}
+#if DEV
+	std::cout << "Time since last is_cooling_down: " << time_delta << endl;
 	std::cout << "cool_down_seconds_left: " << seconds_left << endl;
-#else
-	switch(this->m_last_error_type)
-	{
-	case CACHE_error_type::cache_error_type_none:        seconds_left = true; break;
-	case CACHE_error_type::cache_error_type_disk_write:
-	case CACHE_error_type::cache_error_type_client_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::cache_error_type_server_side: seconds_left = time_delta > 60 ? 0 : 60 - time_delta; break;
-	case CACHE_error_type::cache_error_type_unknown:     seconds_left = time_delta > 10 ? 0 : 10 - time_delta; break;
-	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error_type);
-	}
 #endif
 	return seconds_left;
 }
 
 //Has cache object gone stale?
-bool CACHE_CacheObject::needs_refresh(CACHE_content_type type) const
+bool CACHE_CacheObject::needs_refresh(const CACHE_domain_policy& policy) const
 {
-	//TODO: Tighten this up
 	if(m_disk_location == "")
 	{
 		return true;
 	}
 
 	struct stat meta_data;
-	
+
 	bool is_stale = false;
 
 	if(FILE_get_file_meta_data(m_disk_location, meta_data) == 0)
 	{
 		time_t now = time(NULL);
 		double time_diff = difftime(now, meta_data.st_mtime);
-
-		switch (type)
-		{
-#if DEV
-		//case CACHE_content_type::cache_content_type_no_cache:
-		case CACHE_content_type::cache_content_type_temporary:  is_stale = time_diff > 180 ? true : false; break;
-		case CACHE_content_type::cache_content_type_content:    is_stale = time_diff > 180 ? true : false; break;
-		case CACHE_content_type::cache_content_type_stationary: is_stale = time_diff > 240 ? true : false; break;
-#else
-		//case CACHE_content_type::cache_content_type_no_cache:   return true;
-		case CACHE_content_type::cache_content_type_temporary:  is_stale = time_diff > (60 * 15)              ? true : false; break;
-		case CACHE_content_type::cache_content_type_content:    is_stale = time_diff > (60 * 60 * 24 * 2)     ? true : false; break;
-		case CACHE_content_type::cache_content_type_stationary: is_stale = time_diff > (60 * 60 * 24 * 7 * 2) ? true : false; break;
-#endif
-		}
+		is_stale = time_diff > policy.cache_domain_pol_max_seconds_on_disk ? true : false;
 	}
 	return is_stale;
 }

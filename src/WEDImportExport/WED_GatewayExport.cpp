@@ -401,7 +401,6 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 	GUI_FormWindow(gApplication, "Airport Scenery Gateway", 500, 400),
 	mAirportMetadataCURLHandle(NULL),
 	mApt(apt),
-	mCacheRequest(WED_file_cache_request(AIRPORT_METADATA_GUESS_SIZE,"",CACHE_content_type::cache_content_type_stationary,"GatewayImport",WED_URL_AIRPORT_METADATA_CSV)),
 	mCurl(NULL),
 	mPhase(expt_dialog_download_airport_metadata),
 	mResolver(resolver)
@@ -436,10 +435,8 @@ void WED_GatewayExportDialog::StartCSVDownload()
 		this->AsyncDestroy();
 	}
 
-	//Get it from the server
-	mCacheRequest.in_buf_reserve_size = AIRPORT_METADATA_GUESS_SIZE;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
+	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_metadata_csv);
 	mCacheRequest.in_folder_prefix = "GatewayImport";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 
@@ -699,11 +696,9 @@ void WED_GatewayExportDialog::TimerFired()
 			}
 			else if(res.out_status == CACHE_status::cache_status_error)
 			{
-				bad_msg = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());
 				mPhase = expt_dialog_done;
+				bad_msg = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());
 			}
-			//else if(res.out_status == CACHE_status::cache_cooling)
-			//TODO: use cooling information to make decisions
 		}
 		return;
 	}

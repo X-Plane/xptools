@@ -63,10 +63,10 @@ public:
 	void trigger_cool_down();
 
 	//Is the file cooling down
-	int cool_down_seconds_left() const;
+	int cool_down_seconds_left(const CACHE_domain_policy& policy) const;
 
 	//Has the cache object grown stale over time?
-	bool needs_refresh(CACHE_content_type type) const;
+	bool needs_refresh(const CACHE_domain_policy& policy) const;
 
 private:
 	//When the cool down was triggered. Reset when object is destroyed and recreated.

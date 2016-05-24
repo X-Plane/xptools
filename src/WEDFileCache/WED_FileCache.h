@@ -24,6 +24,8 @@
 #ifndef WED_FILECACHE_H
 #define WED_FILECACHE_H
 
+#include "CACHE_DomainPolicy.h"
+
 /*
 	WED_FileCache - THEORY OF OPERATION
 
@@ -37,11 +39,9 @@
 	After an error has occured a given URL will be placed on a cool down timer, preventing a client from repeatedly pinging the server.
 	The cooldown length is decided by the content_type given in the request.
 	
-	TODO:
 	- Thourough testing, last done as of 48245211b2a977d
 	- Re-write test method and tests
 	TO DECIDE ON:
-	- Implement no-cache?
 	- Decide on cool down and lifespan lengths
 */
 
@@ -63,36 +63,21 @@ enum CACHE_error_type
     cache_error_type_unknown,     //Error origin could not be determined, probably WED's fault
 };
 
-//Content_type is used to determine the life span of a cached file
-enum CACHE_content_type
-{
-	//cache_content_type_no_cache, //Should not be cached, place into MemFile TODO: One day this might be a good feature
-	cache_content_type_temporary,  //Refreshed multiple times a session
-	cache_content_type_content,    //Refreshed once per session or every few uses
-	cache_content_type_stationary  //Refreshed once every few weeks
-};
-
 struct WED_file_cache_request
 {
-	WED_file_cache_request(int buf_reserve_size, string cert, CACHE_content_type content_type, string folder_prefix, string url);
+	WED_file_cache_request();
 
-	//Our guess as to how big our download (in number of chars)
-	int in_buf_reserve_size;
-	
 	//Our security certification
 	string in_cert;
 	
-	//Content type we are requesting, cached inside CACHE_CacheObject
-	CACHE_content_type in_content_type;
+	//Domain policy for the file, stores information on how files should be downloaded and kept
+	CACHE_domain_policy in_domain_policy;
 
 	//A folder prefix to place this cached file in, no leading or trailing slash
 	string in_folder_prefix;
 
 	//The URL to request from, cached inside CACHE_CacheObject
 	string in_url;
-
-	bool operator==(const WED_file_cache_request& rhs) const;
-	bool operator!=(const WED_file_cache_request& rhs) const;
 };
 
 struct WED_file_cache_response

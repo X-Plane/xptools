@@ -80,9 +80,6 @@
 
 //Heuristics for how big to initialize the rawJSONbuf, since it is faster to make a big chunk than make it constantly resize itself
 //These should probably change as the gateway gets bigger and the downloads get longer in average charecter length
-#define AIRPORTS_GET_SIZE_GUESS 9000000
-#define VERSIONS_GET_SIZE_GUESS 4000
-#define VERSION_GET_SIZE_GUESS  6000
 
 #if DEV
 
@@ -317,7 +314,6 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
-	mCacheRequest(0, "", CACHE_content_type::cache_content_type_temporary, "", ""),
 	mPhase(imp_dialog_download_airport_metadata),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
@@ -607,8 +603,6 @@ void WED_GatewayImportDialog::TimerFired()
 			{
 				mPhase = imp_dialog_error;
 				DecorateGUIWindow(res.out_error_human);
-
-				//TODO: Use res.out_error_type to make a decision about whether or not to try again
 			}
 		}
 	}//end if res.out_status != CACHE_status::cache_status_downloading && ... != CACHE_status::cache_status_not_started
@@ -755,10 +749,13 @@ void WED_GatewayImportDialog::StartCSVDownload()
 	}
 
 	//Get it from the server
-	mCacheRequest.in_buf_reserve_size = AIRPORT_METADATA_GUESS_SIZE;//TODO, change when we have a better idea of how big this will be
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
-	mCacheRequest.in_folder_prefix = "GatewayImport";
+	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_airports_json);
+	
+	stringstream ss;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport";
+	mCacheRequest.in_folder_prefix = ss.str();
+
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 	mRequestCount = 0;
 
@@ -782,11 +779,12 @@ void WED_GatewayImportDialog::StartICAODownload()
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
 	url += "airports";
 
-	//Get it from the server
-	mCacheRequest.in_buf_reserve_size = AIRPORTS_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type  = CACHE_content_type::cache_content_type_stationary;
-	mCacheRequest.in_folder_prefix = "GatewayImport";
+	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_airports_json);
+	stringstream ss;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport";
+	mCacheRequest.in_folder_prefix = ss.str();
+
 	mCacheRequest.in_url = url;
 	mRequestCount = 0;
 
@@ -825,10 +823,13 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	url += "airport/" + mICAOid;
 
 	//Get it from the server
-	mCacheRequest.in_buf_reserve_size = VERSIONS_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_temporary;
-	mCacheRequest.in_folder_prefix = "GatewayImport\\" + mICAOid;
+	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_airport_versions_json);
+	
+	stringstream ss;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;	
+	mCacheRequest.in_folder_prefix = ss.str();
+
 	mCacheRequest.in_url = url;
 	mRequestCount = 0;
 
@@ -852,10 +853,13 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
 
-	mCacheRequest.in_buf_reserve_size = VERSION_GET_SIZE_GUESS;
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_content_type = CACHE_content_type::cache_content_type_stationary;
-	mCacheRequest.in_folder_prefix = "GatewayImport\\" + mICAOid;
+	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_scenery_pack);
+	
+	stringstream ss;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;
+	mCacheRequest.in_folder_prefix = ss.str();
+
 	mCacheRequest.in_url = url.str();
 	mRequestCount = 0;
 
