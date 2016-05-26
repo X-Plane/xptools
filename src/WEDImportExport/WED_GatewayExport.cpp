@@ -436,7 +436,7 @@ void WED_GatewayExportDialog::StartCSVDownload()
 	}
 
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_metadata_csv);
+	mCacheRequest.in_domain = CACHE_domain::cache_domain_metadata_csv;
 	mCacheRequest.in_folder_prefix = "GatewayImport";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 
@@ -515,7 +515,7 @@ void WED_GatewayExportDialog::Submit()
 		lib->LookupPath(targ_folder_zip);
 		if(FILE_exists(targ_folder_zip.c_str()))
 		{
-			FILE_delete_file(targ_folder_zip.c_str(), 0);
+			FILE_delete_file(targ_folder_zip.c_str(), false);
 		}
 
 		DebugAssert(!FILE_exists(targ_folder.c_str()));
@@ -592,7 +592,7 @@ void WED_GatewayExportDialog::Submit()
 		string uu64;
 		file_to_uu64(targ_folder_zip, uu64);
 		#if !KEEP_UPLOAD_MASTER_ZIP
-		FILE_delete_file(targ_folder_zip.c_str(),0);
+		FILE_delete_file(targ_folder_zip.c_str(), false);
 		#endif
 		
 		Json::Value		scenery;

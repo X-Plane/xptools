@@ -38,6 +38,8 @@ public:
 	const time_t get_cool_down_time() const;
 	void         reset_cool_down_time();
 
+	CACHE_domain get_domain() const;
+	
 	const string& get_disk_location() const;
 	void   set_disk_location(const string& location);
 
@@ -72,6 +74,8 @@ private:
 	//When the cool down was triggered. Reset when object is destroyed and recreated.
 	time_t m_cool_down_timestamp;
 
+	CACHE_domain m_domain;
+
 	//Real FQPN on disk, "" if non-existant. Given to WED_file_cache_response
 	string m_disk_location;
 
@@ -81,6 +85,9 @@ private:
 	//The last HTTP url associated with this CACHE object, independent of a successful download. Given by WED_file_cache_request
 	string m_last_url;
 	
+	//The last time the file was modified on disk
+	time_t m_last_time_modified;
+
 	//The curl_http_get_file that is associated with this cache_object
 	//Deleted on curl_http_get_file being done (error or not) and WED_file_cache_shutdown
 	RAII_CurlHandle* m_RAII_curl_hndl;
@@ -88,6 +95,7 @@ private:
 	CACHE_CacheObject(const CACHE_CacheObject& copy);
 	CACHE_CacheObject& operator= (const CACHE_CacheObject& rhs);
 	
+	friend CACHE_FileCacheInitializer;
 	//Note on state lifespan: m_cool_down_timestamp, m_last_url, and m_last_error_type are only "reset" when object is deleted and recreated
 };
 #endif

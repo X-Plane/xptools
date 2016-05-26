@@ -6,7 +6,9 @@
 CACHE_CacheObject::CACHE_CacheObject()
 	: m_cool_down_timestamp(0),
 	  m_disk_location(""),
+	  m_domain(CACHE_domain::cache_domain_none),
 	  m_last_error_type(CACHE_error_type::cache_error_type_none),
+	  m_last_time_modified(0),
 	  m_last_url(""),
 	  m_RAII_curl_hndl(NULL)
 {
@@ -39,6 +41,11 @@ const string& CACHE_CacheObject::get_disk_location() const
 void CACHE_CacheObject::set_disk_location(const string& location)
 {
 	m_disk_location = location;
+}
+
+CACHE_domain CACHE_CacheObject::get_domain() const
+{
+	return m_domain;
 }
 
 const string& CACHE_CacheObject::get_last_url() const
@@ -132,15 +139,7 @@ bool CACHE_CacheObject::needs_refresh(const CACHE_domain_policy& policy) const
 		return true;
 	}
 
-	struct stat meta_data;
+	double time_diff = difftime(time(NULL), m_last_time_modified);
 
-	bool is_stale = false;
-
-	if(FILE_get_file_meta_data(m_disk_location, meta_data) == 0)
-	{
-		time_t now = time(NULL);
-		double time_diff = difftime(now, meta_data.st_mtime);
-		is_stale = time_diff > policy.cache_domain_pol_max_seconds_on_disk ? true : false;
-	}
-	return is_stale;
+	return time_diff > policy.cache_domain_pol_max_seconds_on_disk ? true : false;
 }

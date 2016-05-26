@@ -41,6 +41,7 @@
 	
 	- Thourough testing, last done as of 48245211b2a977d
 	- Re-write test method and tests
+	- Cache timestamps and revert content type on load
 	TO DECIDE ON:
 	- Decide on cool down and lifespan lengths
 */
@@ -71,7 +72,7 @@ struct WED_file_cache_request
 	string in_cert;
 	
 	//Domain policy for the file, stores information on how files should be downloaded and kept
-	CACHE_domain_policy in_domain_policy;
+	CACHE_domain in_domain;
 
 	//A folder prefix to place this cached file in, no leading or trailing slash
 	string in_folder_prefix;
@@ -102,6 +103,8 @@ struct WED_file_cache_response
 	bool operator==(const WED_file_cache_response& rhs) const;
 	bool operator!=(const WED_file_cache_response& rhs) const;
 };
+
+class CACHE_FileCacheInitializer;
 
 //Initialize the file cache, called once at the start of the program
 void WED_file_cache_init();

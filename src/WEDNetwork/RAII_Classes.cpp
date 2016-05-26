@@ -21,7 +21,11 @@ const vector<char>& RAII_CurlHandle::get_dest_buffer() const
 //---------------------------------------------------------------------------//
 
 //--RAII_File------------------------------------------------------------------
-RAII_FileHandle::RAII_FileHandle(const char * fname, const char * mode) : mFile(fopen(fname,mode))
+RAII_FileHandle::RAII_FileHandle(const string& fname, const string& mode) : mFile(fopen(fname.c_str(),mode.c_str()))
+{
+}
+
+RAII_FileHandle::RAII_FileHandle(const char* fname, const char* mode) : mFile(fopen(fname,mode))
 {
 }
 
@@ -43,5 +47,10 @@ int RAII_FileHandle::close()
 		return retVal;
 	}
 	return 0;
+}
+
+const string& RAII_FileHandle::path()
+{
+	return mPath;
 }
 //---------------------------------------------------------------------------//

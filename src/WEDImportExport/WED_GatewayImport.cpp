@@ -155,7 +155,7 @@ string MemFileHandling(const string & zipPath, const string & filePath, const st
 			writeMode = "wb";
 		}
 						
-		RAII_FileHandle f(string(filePath + fileName).c_str(),writeMode.c_str());
+		RAII_FileHandle f(string(filePath + fileName), writeMode.c_str());
 
 		if(f)
 		{
@@ -750,7 +750,7 @@ void WED_GatewayImportDialog::StartCSVDownload()
 
 	//Get it from the server
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_airports_json);
+	mCacheRequest.in_domain = CACHE_domain::cache_domain_metadata_csv;
 	
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport";
@@ -780,7 +780,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 	url += "airports";
 
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_airports_json);
+	mCacheRequest.in_domain = CACHE_domain::cache_domain_airports_json;
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport";
 	mCacheRequest.in_folder_prefix = ss.str();
@@ -806,7 +806,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
-
+	
 	mICAOid = current_apt.icao;
 	
 	//Get Certification
@@ -824,8 +824,8 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 
 	//Get it from the server
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_airport_versions_json);
-	
+	mCacheRequest.in_domain = CACHE_domain::cache_domain_airport_versions_json;
+
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;	
 	mCacheRequest.in_folder_prefix = ss.str();
@@ -854,7 +854,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
 
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain_policy = GetDomainPolicy(CACHE_domain::cache_domain_scenery_pack);
+	mCacheRequest.in_domain = CACHE_domain::cache_domain_scenery_pack;
 	
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;
@@ -947,7 +947,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 #else
 				DecorateGUIWindow("Could not create file at " + zipPath + ", please ensure you have enough space and sufficient permissions");
 #endif
-				int removeVal = FILE_delete_file(zipPath.c_str(),0);
+				int removeVal = FILE_delete_file(zipPath.c_str(), false);
 				if(removeVal != 0)
 				{
 					//DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
@@ -1000,25 +1000,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	{
 		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
-	
-#if !SAVE_ON_HDD
-	//clean up our files ICAOid.dat and potentially ICAOid.txt
-	if(has_dsf)
-	{
-		if(FILE_delete_file(dsfTextPath.c_str(),0) != 0)
-		{
-			//DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
-		}
-	}
-	if(FILE_delete_file(aptdatPath.c_str(),0) != 0)
-	{
-		//DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
-	}
-	if(FILE_delete_file(zipPath.c_str(),0) != 0)
-	{
-		//DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
-	}
-#endif
+
 	return g;
 }
 

@@ -151,6 +151,21 @@ bool FILE_exists(const char * path)
 //	return (S_ISDIR(ss.st_mode))? 1 : 0;
 }
 
+string FILE_get_file_extension(const string& path)
+{
+	string name = FILE_get_file_name(path);
+	
+	size_t dot_start = name.find_last_of('.');
+	if(dot_start == string::npos)
+	{
+		return "";
+	}
+	else
+	{
+		return name.substr(dot_start);
+	}
+}
+
 int FILE_get_file_meta_data(const string& path, struct stat& meta_data)
 {
 	return stat(path.c_str(), &meta_data);
@@ -183,7 +198,20 @@ string FILE_get_file_name(const string& path)
 	}
 }
 
-int FILE_delete_file(const char * nuke_path, int is_dir)
+string FILE_get_file_name_wo_extension(const string& path)
+{
+	string name = FILE_get_file_name(path);
+	
+	size_t dot_pos = name.find_last_of('.');
+	if(dot_pos == path.npos || dot_pos == 0)
+	{
+		return name;
+	}
+	
+	return name.substr(0, dot_pos);
+}
+
+int FILE_delete_file(const char * nuke_path, bool is_dir)
 {
 	// NOTE: if the path is to a dir, it will end in a dir-char.
 	// We must clip off this char and also call the right routine on Windows.
@@ -228,6 +256,21 @@ int FILE_read_file_to_string(FILE* file, string& content)
 #else
 	return GetLastError();
 #endif
+}
+
+int FILE_read_file_to_string(const string& path, string& content)
+{
+	int res = -1;
+
+	FILE* file = fopen(path.c_str(),"r");
+	
+	if(file != NULL)
+	{
+		res = FILE_read_file_to_string(file, content);
+	}
+
+	fclose(file);
+	return res;
 }
 
 int FILE_rename_file(const char * old_name, const char * new_name)
@@ -329,34 +372,34 @@ int FILE_get_directory(const string& path, vector<string> * out_files, vector<st
 #endif
 }
 
-int FILE_get_directory_recursive(const string& path, vector<string> * out_files, vector<string> * out_dirs)
+int FILE_get_directory_recursive(const string& path, vector<string>& out_files, vector<string>& out_dirs)
 {
 	//Save the previous last positions before we potentially add more to files and dirs
-	int files_start_index = out_files->size();
-	int start_index = out_dirs->size();
+	int files_start_index = out_files.size();
+	int start_index = out_dirs.size();
 	
 	//Gets this level of the directory's information
-	int num_files = FILE_get_directory(path, out_files, out_dirs);
+	int num_files = FILE_get_directory(path, &out_files, &out_dirs);
 	
 	//If we have accumulated new files, prepend the path onto them
-	if (out_files->size() > files_start_index)
+	if (out_files.size() > files_start_index)
 	{
-		for (int i = files_start_index; i < out_files->size(); i++)
+		for (int i = files_start_index; i < out_files.size(); i++)
 		{
-			out_files->at(i) = path + "\\" + out_files->at(i);
+			out_files.at(i) = path + "\\" + out_files.at(i);
 		}
 	}
 
 	//For all the directories on this level, recurse into them
-	for (int i = start_index; i < out_dirs->size(); ++i)
+	for (int i = start_index; i < out_dirs.size(); ++i)
 	{
-		num_files += FILE_get_directory_recursive(path + "\\" + out_dirs->at(i), out_files, out_dirs);
+		num_files += FILE_get_directory_recursive(path + "\\" + out_dirs.at(i), out_files, out_dirs);
 	}
 	
 	//For all the directories on this level prepend the path onto them
-	for (int i = out_dirs->size() - 1; i >= start_index ; i--)
+	for (int i = out_dirs.size() - 1; i >= start_index ; i--)
 	{
-		out_dirs->at(i) = path + "\\" + out_dirs->at(i);
+		out_dirs.at(i) = path + "\\" + out_dirs.at(i);
 	}
 	
 	return num_files;

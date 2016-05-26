@@ -27,10 +27,12 @@
 enum CACHE_domain
 {
 	cache_domain_none,
+	//--Ordered by the stages of GatewayImport
+	cache_domain_metadata_csv,
 	cache_domain_airports_json,
 	cache_domain_airport_versions_json,
 	cache_domain_scenery_pack,
-	cache_domain_metadata_csv,
+	//----------------------------------------
 	cache_domain_end //do not use!
 };
 

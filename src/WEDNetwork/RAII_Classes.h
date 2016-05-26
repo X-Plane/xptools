@@ -58,17 +58,19 @@ private:
 class RAII_FileHandle
 {
 public:
-
+	RAII_FileHandle(const string& fname, const string& mode);
 	RAII_FileHandle(const char* fname, const char* mode);
 	~RAII_FileHandle();
 
 	int close();
+	const string& path();
 
 	operator bool() const { return mFile != NULL; }
 	FILE* operator()() { return mFile; }
 
 private:
 	FILE* mFile;
+	string mPath;
 };
 //---------------------------------------------------------------------------//
 #endif
