@@ -8,6 +8,8 @@
 #define SAVE_TO_DISK 1
 #endif
 
+#include <algorithm>
+
 #include <sstream>
 #include <fstream>
 #include "FileUtils.h"
@@ -90,6 +92,9 @@ void CACHE_FileCacheInitializer::init()
 	vector<string> dirs;
 	//Attempt to get the folder, if non-existant make it
 	int num_files = FILE_get_directory_recursive(CACHE_folder, files, dirs);
+	
+	sort(files.begin(), files.end(), less<string>());
+
 	if(num_files == -1)
 	{
 		int res = FILE_make_dir_exist(CACHE_folder.c_str());
@@ -119,27 +124,23 @@ void CACHE_FileCacheInitializer::init()
 				break;
 			}
 
-			string file_name_A = FILE_get_file_name_wo_extension(files[i]);
-			string file_name_B = FILE_get_file_name_wo_extension(files[i+1]);
+			//file_name_A should be "whatever" or "whatever.txt"
+			//file_name_B should always be file_name_A.append(CACHE_INFO_FILE_EXT)
+			string file_name_A = FILE_get_file_name(files[i]);
+			string actual_file_name_B = FILE_get_file_name(files[i+1]);
+			string required_file_name_B(file_name_A);
+			required_file_name_B.append(CACHE_INFO_FILE_EXT);
 
-			//Are A and B a pair, or merely next to each other?
-			if(!(file_name_A == file_name_B))
+			if(!(actual_file_name_B == required_file_name_B))
 			{
-				FILE_delete_file(file_name_A.c_str(), false);
+				FILE_delete_file(files[i].c_str(), false);
 				i += 1;
 				continue;
 			}
-
-			//Does B have .cache_file_info extension, or is it a copy of the same file, or perhaps, a different extension?
-			if(FILE_get_file_extension(files[i+1]) == CACHE_INFO_FILE_EXT)
-			{
-				paired_files.push_back(make_pair<string,string>(files[i], files[i+1]));
-				i += 2;
-			}
 			else
 			{
-				FILE_delete_file(file_name_A.c_str(), false);
-				i += 1;
+				paired_files.push_back(make_pair<string,string>(file_name_A, actual_file_name_B));
+				i += 2;
 			}
 		}
 
@@ -153,11 +154,12 @@ void CACHE_FileCacheInitializer::init()
 
 			string content;
 			int file_content_read = FILE_read_file_to_string(paired_files[i].second, content);
-			
+
 			if(file_content_read == 0)
 			{
 				Json::Value root;
 				Json::Reader reader;
+				
 				bool json_parse_result = reader.parse(content, root);
 					
 				if(json_parse_result == true)

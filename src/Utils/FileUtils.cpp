@@ -198,11 +198,11 @@ string FILE_get_file_name(const string& path)
 	}
 }
 
-string FILE_get_file_name_wo_extension(const string& path)
+string FILE_get_file_name_wo_extensions(const string& path)
 {
 	string name = FILE_get_file_name(path);
 	
-	size_t dot_pos = name.find_last_of('.');
+	size_t dot_pos = name.find_first_of('.');
 	if(dot_pos == path.npos || dot_pos == 0)
 	{
 		return name;

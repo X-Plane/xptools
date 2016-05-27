@@ -41,7 +41,6 @@
 	
 	- Thourough testing, last done as of 48245211b2a977d
 	- Re-write test method and tests
-	- Cache timestamps and revert content type on load
 	TO DECIDE ON:
 	- Decide on cool down and lifespan lengths
 */

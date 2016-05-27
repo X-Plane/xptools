@@ -48,7 +48,7 @@ int FILE_case_correct(char * buf);
 	get_file_extension          | Gets the chars from the last dot to the end   | N/A                 | non-empty, empty string
 	get_file_meta_data          | Get file info like creation time and date     | No                  | 0, -1
 	get_file_name               | Get file name w/o directory, can use / or \   | N/A                 | non-empty, empty string
-	get_file_name_wo_extension  | Get file name w/o directory or extension      | N/A                 | non-empty, empty string
+	get_file_name_wo_extensions | Get file name w/o directory or any extensions | N/A                 | non-empty, empty string
 	delete_file                 | rm 1 file or folder                           | No                  | 0, last_error
 	delete_dir_recursive        | rm folder and subcontents                     | Yes                 | 0, last_error
 	read_file_to_string         | read a (non-binary) file to a string          | N/A                 | 0, last_error
@@ -77,7 +77,7 @@ int FILE_get_file_meta_data(const string& path, struct stat& meta_data);
 
 string FILE_get_file_name(const string& path);
 
-string FILE_get_file_name_wo_extension(const string& path);
+string FILE_get_file_name_wo_extensions(const string& path);
 
 // WARNING: these do not take trailing / for directories!
 // Returns 0 for success, else last_error
