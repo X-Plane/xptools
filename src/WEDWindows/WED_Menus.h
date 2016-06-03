@@ -142,6 +142,7 @@ enum {
 	wed_AddMetaDataIATA,
 	wed_AddMetaDataICAO,
 	wed_AddMetaDataState,// or Province
+	wed_UpdateMetadata, //Open up dialogbox
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery

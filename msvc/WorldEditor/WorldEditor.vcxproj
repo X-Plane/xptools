@@ -185,10 +185,11 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptTable.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_DSFExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_DSFImport.cpp" />
-    <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_MetadataDefaults.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_GatewayExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_GatewayImport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_ICAOTable.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_MetadataUpdate.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_VerTable.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
@@ -440,10 +441,11 @@
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptTable.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_DSFExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_DSFImport.h" />
-    <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_MetadataDefaults.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_GatewayExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_GatewayImport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_ICAOTable.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_MetadataUpdate.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_SceneryPackExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_VerTable.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />

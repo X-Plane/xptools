@@ -73,7 +73,7 @@ public:
 			string		GetField(int					id);
 			
 	//The action preformed when the Aux button is pressed
-	virtual void        AuxiliaryAction()=0;
+	virtual void        AuxiliaryAction() { };
 
 	//The action preformed when the submit or "Ok" button is pressed
 	virtual	void		Submit()=0;

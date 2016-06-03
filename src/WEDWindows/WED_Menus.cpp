@@ -53,7 +53,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if HAS_GATEWAY
-{	"Import from Airport Scenery Gateway...",0,0,								0,	wed_ImportGateway		},
+{	"Import from Airport Scenery Gateway...",0,0,				0,	wed_ImportGateway	},
 #endif
 #if GATEWAY_IMPORT_FEATURES
 {	"Import Airport Scenery Gateway Extracts...",0,0,				0,	wed_ImportGatewayExtract },
@@ -196,10 +196,11 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Create Runway Time Rule",	0,		0,										0, wed_AddATCTimeRule },
 {	"Create Runway Wind rule",	0,		0,										0, wed_AddATCWindRule },
 #endif
-{	"Add &Meta Data",			0,		0,										0, 0 },
+{	"Add &Metadata",			0,		0,										0, 0 },
+{	"Update Metadata",			0,		0,										0, wed_UpdateMetadata},
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	"-",							0,		0,									0,	0			},
-{	"Upgrade Ramps",				0,		0,									0,	wed_UpgradeRamps		},
+{	"Upgrade Ramps",				0,		0,									0,	wed_UpgradeRamps},
 {	NULL,						0,		0,										0, 0,				}
 };
 

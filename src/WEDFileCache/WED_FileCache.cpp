@@ -92,7 +92,8 @@ void CACHE_FileCacheInitializer::init()
 	vector<string> dirs;
 	//Attempt to get the folder, if non-existant make it
 	int num_files = FILE_get_directory_recursive(CACHE_folder, files, dirs);
-	
+
+	time_t t = time(NULL);
 	sort(files.begin(), files.end(), less<string>());
 
 	if(num_files == -1)
@@ -139,7 +140,7 @@ void CACHE_FileCacheInitializer::init()
 			}
 			else
 			{
-				paired_files.push_back(make_pair<string,string>(file_name_A, actual_file_name_B));
+				paired_files.push_back(make_pair<string,string>(files[i], files[i+1]));
 				i += 2;
 			}
 		}
@@ -161,7 +162,7 @@ void CACHE_FileCacheInitializer::init()
 				Json::Reader reader;
 				
 				bool json_parse_result = reader.parse(content, root);
-					
+
 				if(json_parse_result == true)
 				{
 					CACHE_file_cache.back()->m_last_time_modified = root["last_time_modified"].asInt();
@@ -447,10 +448,11 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		}
 		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
 		{
-			if(co.needs_refresh(GetDomainPolicy(req.in_domain)) == false)
+			CACHE_domain_policy pol = GetDomainPolicy(CACHE_domain::cache_domain_metadata_csv);
+			if(co.needs_refresh(pol) == false)
 			{
 				DebugAssert((*itr)->get_disk_location() != "");
-				return WED_file_cache_response(100, "", CACHE_error_type::cache_error_type_none, (*itr)->get_disk_location(), CACHE_status::cache_status_available);
+				return WED_file_cache_response(-1, "", CACHE_error_type::cache_error_type_none, (*itr)->get_disk_location(), CACHE_status::cache_status_available);
 			}
 			else
 			{

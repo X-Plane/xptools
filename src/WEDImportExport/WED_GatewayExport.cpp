@@ -355,7 +355,7 @@ int Iterate_JSON_One_Airport(ISelectable * what, void * ref)
 	return 1;
 }
 
-string InterpretNetworkError(curl_http_get_file* curl)
+static string InterpretNetworkError(curl_http_get_file* curl)
 {
 	int err = curl->get_error();
 	bool bad_net = curl->is_net_fail();
@@ -437,7 +437,7 @@ void WED_GatewayExportDialog::StartCSVDownload()
 
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = CACHE_domain::cache_domain_metadata_csv;
-	mCacheRequest.in_folder_prefix = "GatewayImport";
+	mCacheRequest.in_folder_prefix = "/scenery_packs/GatewayImport";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 
 	Start(0.1);

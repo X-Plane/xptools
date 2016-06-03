@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2016, Laminar Research.
+ * Copyright (c) 2014, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,14 +21,15 @@
  *
  */
 
-#ifndef WED_METADATADEFAULTS_H
-#define WED_METADATADEFAULTS_H
+#ifndef WED_METADATAUPDATE_H
+#define WED_METADATAUPDATE_H
 
-class WED_Airport;
+#if HAS_GATEWAY
+class	IResolver;
 
-//Fill in an airport's meta data's missing or blank entries with defaults
-//from the LR official meta data source
-//Returns true if the fill was a success, false if not
-bool fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file_path);
+int		WED_CanUpdateMetadata(IResolver * resolver);
+void	WED_DoUpdateMetadata(IResolver * resolver);
+
+#endif
 
 #endif

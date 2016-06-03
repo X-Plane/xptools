@@ -491,20 +491,13 @@ extern "C" void decode( const char * startP, const char * endP, char * destP, ch
 void WED_GatewayImportDialog::TimerFired()
 {
 	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
-	++this->mRequestCount;
-
+	
 	if(mPhase == imp_dialog_download_airport_metadata ||
 	   mPhase == imp_dialog_download_ICAO ||
 	   mPhase == imp_dialog_download_versions ||
 	   mPhase >= imp_dialog_download_specific_version)
 	{
-		if(res.out_status == CACHE_status::cache_status_available && (this->mRequestCount == 1 || static_cast<int>(res.out_download_progress) == 100))
-		{
-			stringstream ss;
-			ss << "Loading file from hard drive, please wait...";
-			DecorateGUIWindow(ss.str());
-		}
-		else
+		if(res.out_status != CACHE_status::cache_status_available)
 		{
 			//To avoid user confusion with a potential progress of -1, we'll just call it 0
 			int progress = res.out_download_progress;
@@ -539,6 +532,10 @@ void WED_GatewayImportDialog::TimerFired()
 				{
 					mAirportMetadataCSVPath = res.out_path;
 					StartICAODownload();
+			
+					stringstream ss;
+					ss << "Loading file from hard drive, please wait...";
+					DecorateGUIWindow(ss.str());
 				}
 				if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
 				{

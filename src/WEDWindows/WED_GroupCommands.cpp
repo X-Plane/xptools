@@ -407,7 +407,7 @@ void WED_DoAddMetaData(IResolver * inResolver, const string& key)
 
 	WED_Airport * want_sel = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
 	if (want_sel == NULL) return;
-	want_sel->StartOperation(string("Add Meta Data Key " + key).c_str());
+	want_sel->StartOperation(string("Add Metadata Key " + key).c_str());
 	want_sel->AddMetaDataKey(key, "");
 	want_sel->StateChanged();
 	want_sel->CommitOperation();
