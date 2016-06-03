@@ -214,6 +214,7 @@ void WED_UpdateMetadataDialog::Submit()
 		mApt->GetICAO(icao);
 		
 		mApt->StartOperation((string("Update " + icao + "'s Metadata").c_str()));
+		mApt->StateChanged();
 		bool success = fill_in_airport_metadata_defaults(*mApt, mAirportMetadataCSVPath);
 		if(success == false)
 		{
@@ -223,7 +224,6 @@ void WED_UpdateMetadataDialog::Submit()
 		}
 		else
 		{
-			mApt->StateChanged();
 			mApt->CommitCommand();
 
 			this->Reset("","OK","",true);
