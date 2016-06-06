@@ -234,9 +234,6 @@ WED_Sign_Parser::~WED_Sign_Parser()
 
 void WED_Sign_Parser::append_error(parser_error_t code)
 {
-	#if !DEV
-		#error TODO - human readable msg?
-	#endif
 	parser_error_info e;
 	
 	e.err_code = code;
