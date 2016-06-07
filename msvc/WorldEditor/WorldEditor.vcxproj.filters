@@ -786,7 +786,7 @@
     <ClCompile Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.cpp">
       <Filter>WEDFileCache</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDImportExport\WED_MetadataDefaults.cpp">
+    <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetadataUpdate.cpp">
@@ -1562,7 +1562,7 @@
     <ClInclude Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.h">
       <Filter>WEDFileCache</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\WEDImportExport\WED_MetadataDefaults.h">
+    <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.h">
       <Filter>WEDImportExport</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetadataUpdate.h">

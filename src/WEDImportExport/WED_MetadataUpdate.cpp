@@ -34,7 +34,7 @@
 #include "PlatformUtils.h"
 #include "RAII_Classes.h"
 #include "WED_FileCache.h"
-#include "WED_MetadataDefaults.h"
+#include "WED_MetaDataDefaults.h"
 #include "WED_Url.h"
 #include "curl\curl.h"
 #include "WED_Airport.h"
