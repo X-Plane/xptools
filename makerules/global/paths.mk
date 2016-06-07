@@ -24,6 +24,7 @@ INCLUDEPATHS += -I./src/UI
 INCLUDEPATHS += -I./src/WEDCore
 INCLUDEPATHS += -I./src/WEDDocs
 INCLUDEPATHS += -I./src/WEDEntities
+INCLUDEPATHS += -I./src/WEDFileCache
 INCLUDEPATHS += -I./src/WEDImportExport
 INCLUDEPATHS += -I./src/WEDLayers
 INCLUDEPATHS += -I./src/WEDLibrary

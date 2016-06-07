@@ -23,10 +23,20 @@
 #include "curl/curl.h"
 #include <time.h>
 
+#include <sstream>
+
+string itoa_cpp98(int i) // C++98 doesn't have itoa(), so we have to do this... :(
+{
+	stringstream out;
+	out << i;
+	return out.str();
+}
+
+
 //--WED_file_cache_request---------------------------------------------------
 WED_file_cache_request::WED_file_cache_request()
 	: in_cert(""),
-	  in_domain(CACHE_domain::cache_domain_none),
+	  in_domain(cache_domain_none),
 	  in_folder_prefix(""),
 	  in_url("")
 {
@@ -107,7 +117,7 @@ void CACHE_FileCacheInitializer::init()
 	else
 	{
 		//Where pair is <file,file.cache_object_info>
-		vector<pair<string, string>> paired_files;
+		vector<pair<string, string> > paired_files;
 
 		int i = 0;
 		while(i < files.size())
@@ -205,7 +215,7 @@ void WED_file_cache_init()
 static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, CACHE_error_type& out_error_type)
 {
 	out_error_human = "";
-	out_error_type = CACHE_error_type::cache_error_type_unknown;
+	out_error_type = cache_error_type_unknown;
 
 	int err = mCurl.get_error();
 	bool bad_net = mCurl.is_net_fail();
@@ -220,11 +230,11 @@ static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, 
 		if(bad_net)
 		{
 			ss << "(Please check your internet connectivity.)";
-			out_error_type = CACHE_error_type::cache_error_type_client_side;
+			out_error_type = cache_error_type_client_side;
 		}
 		else
 		{
-			out_error_type = CACHE_error_type::cache_error_type_server_side;
+			out_error_type = cache_error_type_server_side;
 		}
 	}
 	else if(err >= 100)
@@ -248,19 +258,19 @@ static void interpret_error(curl_http_get_file& mCurl, string& out_error_human, 
 		{
 			string errmsg = string(errdat.begin(),errdat.end());
 			ss << "Error Code " << err << ": " << errmsg;
-			out_error_type = CACHE_error_type::cache_error_type_server_side;
+			out_error_type = cache_error_type_server_side;
 		}
 		else
 		{
 			//Couldn't get a useful error message, displaying this instead
 			ss << "Download failed due to unknown error: " << err << ".";
-			out_error_type = CACHE_error_type::cache_error_type_unknown;
+			out_error_type = cache_error_type_unknown;
 		}
 	}
 	else
 	{
 		ss << "Download failed due to unknown error: " << err << ".";
-		out_error_type = CACHE_error_type::cache_error_type_unknown;
+		out_error_type = cache_error_type_unknown;
 	}
 
 	out_error_human = ss.str();
@@ -277,7 +287,7 @@ static WED_file_cache_response start_new_cache_object(WED_file_cache_request req
 								   "",
 								   co.get_last_error_type(),
 								   co.get_disk_location(),
-								   CACHE_status::cache_status_downloading);
+								   cache_status_downloading);
 }
 
 static void remove_cache_object(vector<CACHE_CacheObject* >::iterator itr)
@@ -351,9 +361,9 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 				//Yay! We're done!
 				WED_file_cache_response res(hndl.get_progress(),
 											"",
-											CACHE_error_type::cache_error_type_none,
+											cache_error_type_none,
 											"",
-											CACHE_status::cache_status_available);
+											cache_status_available);
 
 #if SAVE_TO_DISK //Testing cooldown
 				/*
@@ -397,7 +407,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 					struct stat meta_data;
 					if(FILE_get_file_meta_data(res.out_path, meta_data) == 0)
 					{
-						root["last_time_modified"] = Json::Value(meta_data.st_mtime);
+						root["last_time_modified"] = Json::Value((Json::Value::Int64)meta_data.st_mtime);
 
 						fprintf(cache_object_info(),"%s", Json::FastWriter().write(root).c_str());
 
@@ -410,7 +420,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 					FILE_delete_file(f.path().c_str(), false);
 					FILE_delete_file(cache_object_info.path().c_str(), false);
 					res.out_error_human = res.out_path + " could not be saved, check if the folder or file is in use or if you have sufficient privaleges";
-					co.set_last_error_type(CACHE_error_type::cache_error_type_disk_write);
+					co.set_last_error_type(cache_error_type_disk_write);
 				}
 #endif
 				res.out_error_type = co.get_last_error_type();
@@ -421,7 +431,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 			}
 			else
 			{
-				WED_file_cache_response res(hndl.get_progress(), "", CACHE_error_type::cache_error_type_unknown, "", CACHE_status::cache_status_error);
+				WED_file_cache_response res(hndl.get_progress(), "", cache_error_type_unknown, "", cache_status_error);
 				interpret_error(hndl, res.out_error_human, res.out_error_type);
 
 				co.trigger_cool_down();
@@ -434,8 +444,8 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		}
 		else
 		{
-			DebugAssert(co.get_response_from_object_state(CACHE_status::cache_status_downloading) == WED_file_cache_response(hndl.get_progress(), "", CACHE_error_type::cache_error_type_none, "", CACHE_status::cache_status_downloading));
-			return co.get_response_from_object_state(CACHE_status::cache_status_downloading);
+			DebugAssert(co.get_response_from_object_state(cache_status_downloading) == WED_file_cache_response(hndl.get_progress(), "", cache_error_type_none, "", cache_status_downloading));
+			return co.get_response_from_object_state(cache_status_downloading);
 		}//end if(hndl.is_done())
 	}//end if((**itr).get_RAII_curl_hndl() != NULL)
 	else
@@ -443,16 +453,15 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		int seconds_left = co.cool_down_seconds_left(GetDomainPolicy(req.in_domain));
 		if(seconds_left > 0)
 		{
-			char buf[128] = { 0 };
-			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + string(itoa(seconds_left, buf, 10)) + " seconds...", CACHE_error_type::cache_error_type_none, "", CACHE_status::cache_status_cooling);
+			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + itoa_cpp98(seconds_left) + " seconds...", cache_error_type_none, "", cache_status_cooling);
 		}
 		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
 		{
-			CACHE_domain_policy pol = GetDomainPolicy(CACHE_domain::cache_domain_metadata_csv);
+			CACHE_domain_policy pol = GetDomainPolicy(cache_domain_metadata_csv);
 			if(co.needs_refresh(pol) == false)
 			{
 				DebugAssert((*itr)->get_disk_location() != "");
-				return WED_file_cache_response(-1, "", CACHE_error_type::cache_error_type_none, (*itr)->get_disk_location(), CACHE_status::cache_status_available);
+				return WED_file_cache_response(-1, "", cache_error_type_none, (*itr)->get_disk_location(), cache_status_available);
 			}
 			else
 			{
@@ -507,17 +516,17 @@ void WED_file_cache_test()
 	int i = 0;
 	while(i < test_files.size())
 	{
-		CACHE_status status = CACHE_status::cache_status_downloading;
+		CACHE_status status = cache_status_downloading;
 
         int max_error = 100;
         int error_count = 0;
-		//while(status != CACHE_status::cache_status_available && error_count < max_error)
+		//while(status != cache_status_available && error_count < max_error)
 		{
 			string in_path = test_files.at(i);
 			string out_path;
 			string error;
 //			status = WED_file_cache_request_file(in_path, cert, out_path, error);
-			if(status == CACHE_status::cache_status_error)
+			if(status == cache_status_error)
 			{
 				++error_count;
 			}

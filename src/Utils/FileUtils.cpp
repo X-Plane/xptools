@@ -247,7 +247,7 @@ int FILE_read_file_to_string(FILE* file, string& content)
 		SetLastError(0);
 #endif
 		fseek(file, 0, SEEK_END);
-		content.resize(std::ftell(file));
+		content.resize(ftell(file));
 		rewind(file);
 		fread(&content[0], sizeof(char), content.size(), file);
 	}

@@ -436,7 +436,7 @@ void WED_GatewayExportDialog::StartCSVDownload()
 	}
 
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain = CACHE_domain::cache_domain_metadata_csv;
+	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	mCacheRequest.in_folder_prefix = "/scenery_packs/GatewayImport";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 
@@ -684,17 +684,17 @@ void WED_GatewayExportDialog::TimerFired()
 	if(mPhase == expt_dialog_download_airport_metadata)
 	{
 		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
-		if(res.out_status != CACHE_status::cache_status_downloading)
+		if(res.out_status != cache_status_downloading)
 		{
 			Stop();
 
-			if(res.out_status == CACHE_status::cache_status_available)
+			if(res.out_status == cache_status_available)
 			{
 				WED_GatewayExportDialog::mAirportMetadataCSVPath = res.out_path;
 				mPhase = expt_dialog_upload_to_gateway;
 				good_msg = "Airport metadata defaults have been downloaded succesfully.";
 			}
-			else if(res.out_status == CACHE_status::cache_status_error)
+			else if(res.out_status == cache_status_error)
 			{
 				mPhase = expt_dialog_done;
 				bad_msg = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());

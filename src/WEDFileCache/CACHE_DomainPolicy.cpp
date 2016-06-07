@@ -29,6 +29,6 @@ const CACHE_domain_policy k_domain_policies[] = {
 
 CACHE_domain_policy GetDomainPolicy(CACHE_domain domain)
 {
-	DebugAssert(domain >= CACHE_domain::cache_domain_none && domain < CACHE_domain::cache_domain_end);
+	DebugAssert(domain >= cache_domain_none && domain < cache_domain_end);
 	return k_domain_policies[domain];
 }

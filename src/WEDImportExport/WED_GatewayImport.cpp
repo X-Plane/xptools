@@ -497,7 +497,7 @@ void WED_GatewayImportDialog::TimerFired()
 	   mPhase == imp_dialog_download_versions ||
 	   mPhase >= imp_dialog_download_specific_version)
 	{
-		if(res.out_status != CACHE_status::cache_status_available)
+		if(res.out_status != cache_status_available)
 		{
 			//To avoid user confusion with a potential progress of -1, we'll just call it 0
 			int progress = res.out_download_progress;
@@ -512,13 +512,13 @@ void WED_GatewayImportDialog::TimerFired()
 	}
 	
 	//If we've reached a conclusion to this cache request
-	if(res.out_status != CACHE_status::cache_status_downloading)
+	if(res.out_status != cache_status_downloading)
 	{
 		Stop();
 		mPhase++;
 		DecorateGUIWindow();
 		
-		if(res.out_status == CACHE_status::cache_status_available)
+		if(res.out_status == cache_status_available)
 		{
 			//Attempt to open the file we just downloaded
 			RAII_FileHandle file(res.out_path.c_str(),"r");
@@ -594,15 +594,15 @@ void WED_GatewayImportDialog::TimerFired()
 			}
 			file.close();
 		}//end if(mCurl.get_curl_handle()->is_ok())
-		else if(res.out_status == CACHE_status::cache_status_error)
+		else if(res.out_status == cache_status_error)
 		{
-			if(res.out_error_human != "" || res.out_error_type != CACHE_error_type::cache_error_type_none)
+			if(res.out_error_human != "" || res.out_error_type != cache_error_type_none)
 			{
 				mPhase = imp_dialog_error;
 				DecorateGUIWindow(res.out_error_human);
 			}
 		}
-	}//end if res.out_status != CACHE_status::cache_status_downloading && ... != CACHE_status::cache_status_not_started
+	}//end if res.out_status != cache_status_downloading && ... != cache_status_not_started
 }//end WED_GatewayImportDialog::TimerFired()
 
 void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
@@ -747,7 +747,7 @@ void WED_GatewayImportDialog::StartCSVDownload()
 
 	//Get it from the server
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain = CACHE_domain::cache_domain_metadata_csv;
+	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport";
@@ -777,7 +777,7 @@ void WED_GatewayImportDialog::StartICAODownload()
 	url += "airports";
 
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain = CACHE_domain::cache_domain_airports_json;
+	mCacheRequest.in_domain = cache_domain_airports_json;
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport";
 	mCacheRequest.in_folder_prefix = ss.str();
@@ -821,7 +821,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 
 	//Get it from the server
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain = CACHE_domain::cache_domain_airport_versions_json;
+	mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;	
@@ -851,7 +851,7 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
 
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain = CACHE_domain::cache_domain_scenery_pack;
+	mCacheRequest.in_domain = cache_domain_scenery_pack;
 	
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;

@@ -47,6 +47,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
 		D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */; };
 		D604AE9E1C0D5D8F006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
 		D604AEA31C0DF420006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
@@ -1012,6 +1013,8 @@
 
 /* Begin PBXFileReference section */
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
+		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2334,6 +2337,8 @@
 		D66569BA1CE261FC00662E5C /* WEDFileCache */ = {
 			isa = PBXGroup;
 			children = (
+				2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */,
+				2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */,
 				D66569BB1CE261FC00662E5C /* CACHE_CacheObject.cpp */,
 				D66569BC1CE261FC00662E5C /* CACHE_CacheObject.h */,
 				D66569BD1CE261FC00662E5C /* WED_FileCache.cpp */,
@@ -4680,6 +4685,7 @@
 				D6E023E70C39840400BD789F /* GUI_Prefs.cpp in Sources */,
 				D6E023EA0C39841200BD789F /* WED_PackageMgr.cpp in Sources */,
 				D6E023EE0C39842700BD789F /* WED_PackageListAdapter.cpp in Sources */,
+				2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */,
 				D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */,
 				D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */,
 				D6536E9C0C3D7F3100005385 /* WED_TexMgr.cpp in Sources */,

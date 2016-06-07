@@ -1,4 +1,5 @@
 #include "CACHE_CacheObject.h"
+#include "CACHE_DomainPolicy.h"
 #include "AssertUtils.h"
 #include <iostream>
 #include "FileUtils.h"
@@ -6,8 +7,8 @@
 CACHE_CacheObject::CACHE_CacheObject()
 	: m_cool_down_timestamp(0),
 	  m_disk_location(""),
-	  m_domain(CACHE_domain::cache_domain_none),
-	  m_last_error_type(CACHE_error_type::cache_error_type_none),
+	  m_domain(cache_domain_none),
+	  m_last_error_type(cache_error_type_none),
 	  m_last_time_modified(0),
 	  m_last_url(""),
 	  m_RAII_curl_hndl(NULL)
@@ -117,11 +118,11 @@ int CACHE_CacheObject::cool_down_seconds_left(const CACHE_domain_policy& policy)
 	//For each error type, has enough time passed?
 	switch(this->m_last_error_type)
 	{
-	case CACHE_error_type::cache_error_type_disk_write:
-	case CACHE_error_type::cache_error_type_none:        seconds_left = 0; break;
-	case CACHE_error_type::cache_error_type_client_side: seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
-	case CACHE_error_type::cache_error_type_server_side: seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
-	case CACHE_error_type::cache_error_type_unknown:     seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
+	case cache_error_type_disk_write:
+	case cache_error_type_none:        seconds_left = 0; break;
+	case cache_error_type_client_side: seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
+	case cache_error_type_server_side: seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
+	case cache_error_type_unknown:     seconds_left = time_delta > policy.cache_domain_pol_min_client_cool_down_snds ? 0 : diff_seconds; break;
 	default: AssertPrintf("%d is an unknown CACHE_error", m_last_error_type);
 	}
 #if DEV
