@@ -37,7 +37,6 @@
 #include "WED_MetaDataDefaults.h"
 #include "WED_Url.h"
 #include "curl/curl.h"
-
 #include "WED_Airport.h"
 #include "ILibrarian.h"
 #include "WED_ToolUtils.h"

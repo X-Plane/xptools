@@ -1,8 +1,5 @@
 #include "CSVParser.h"
-#if LIN
-#include "math.h"
-#endif
-
+#include <math.h>
 
 CSVParser::CSVParser(char delimiter, const string& input) : mDelimiter(delimiter),
 															mInput(input)
