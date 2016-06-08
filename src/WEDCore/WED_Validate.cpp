@@ -353,6 +353,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		else {
 			if (n1[0] != 'H')	msg = "The helipad '" + name + "' does not start with the letter H.";
 			else {
+				if(n1.length() > 3)
+				{
+					msg = "The helipad '" + name + "' is longer than the maximum 3 characters.";
+				}
+				
 				n1.erase(0,1);
 				for (int i = 0; i < n1.length(); ++i)
 				{
