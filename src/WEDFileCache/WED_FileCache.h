@@ -29,20 +29,14 @@
 /*
 	WED_FileCache - THEORY OF OPERATION
 
-	The file cache is a black box: clients call WED_file_cache_request_file repeatedly on a timer, passing in a request struct a response struct.
-	The request contains information about the URL to connect to and other data.
-	The response contains 0 to some error data and the file's disk path if and when on disk, after downloading at some point in life.
-
-	If the file is on disk and not too old, a download is not started.
+	The file cache is a black box: clients call WED_file_cache_request_file repeatedly on a timer, passing in a request struct, receiving a response struct.
 	
-	Clients should use the error information to decide whether or not to try again.
-	After an error has occured a given URL will be placed on a cool down timer, preventing a client from repeatedly pinging the server.
-	The cooldown length is decided by the content_type given in the request.
-	
-	- Thourough testing, last done as of 48245211b2a977d
-	- Re-write test method and tests
-	TO DECIDE ON:
-	- Decide on cool down and lifespan lengths
+	- The request contains information about the URL to connect to and other data
+	- The response contains error data, download progress, and (potentially) a path where the file successfully downloaded
+		* After an error a url is placed on a cool down timer, preventing WED DDOS'ing the server
+		* Clients can use the error information to decide whether or not to try again
+	- Cached files that are too old are re-downloaded
+	- A cache domain policy determines maximum age and minimum cool down periods
 */
 
 enum CACHE_status
@@ -114,9 +108,5 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 
 //Blocks until all previous cURL handles are finished or are forcibly stopped. Called once at the end of the program.
 void WED_file_cache_shutdown();
-
-#if DEV && 0 //TODO: Rewrite test
-void WED_file_cache_test();
-#endif
 
 #endif
