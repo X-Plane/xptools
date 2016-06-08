@@ -301,6 +301,11 @@ int			WED_Airport::FindProperty(const char * in_prop) const
 		else if(key == "IATA Code")      key = "iata_code";
 		else if(key == "ICAO Code")      key = "icao_code";
 		else if(key == "State/Province") key = "state";
+		else if(key == "Region Code")    key = "region_code";
+		else if(key == "Datum Latitude") key = "datum_lat";
+		else if(key == "Datum Longitude")key = "datum_lon";
+		else if(key == "Transition Altitude") key = "transition_alt";
+		else if(key == "Transition Level") key = "transition_level";
 		//else we're using the original
 
 		//i is in NS_META_DATA space
@@ -349,6 +354,11 @@ void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		else if(key == "iata_code") key = "IATA Code";
 		else if(key == "icao_code") key = "ICAO Code";
 		else if(key == "state")     key = "State/Province";
+		else if(key == "region_code") key = "Region Code";
+		else if(key == "datum_lat") key = "Datum Latitude";
+		else if(key == "datum_lon") key = "Datum Longitude";
+		else if(key == "transition_alt") key = "Transition Altitude";
+		else if(key == "transition_level") key = "Transition Level";
 		//else we're using the original
 
 		info.prop_name = key;
