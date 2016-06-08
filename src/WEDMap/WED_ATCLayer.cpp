@@ -147,11 +147,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		glEnd();
 		
 	}
-	
-	#if !DEV
-		//#error TODO: cull small things?
-	#endif
-	
+
 	return true;
 }
 

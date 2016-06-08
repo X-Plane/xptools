@@ -151,6 +151,9 @@ enum {
 	attr_Manip_Axis_Switch_Up_Down,
 	attr_Manip_Axis_Switch_Left_Right,
 	
+	// Future particle system...
+	attr_Emitter,
+	
 	attr_Max
 };
 
@@ -230,6 +233,14 @@ struct XObjManip8 {
 	float					mouse_wheel_delta;
 };
 
+struct XObjEmitter8 {
+	string					name;
+	string					dataref;
+	float					x, y, z;
+	float					psi, the, phi;
+	float					v_min, v_max;
+};
+
 struct	XObjCmd8 {
 	int						cmd;
 	float					params[12];
@@ -255,6 +266,7 @@ struct	XObj8 {
 	string 					texture;
 	string 					texture_lit;
 	string 					texture_draped;
+	string					particle_system;
 	vector<XObjPanelRegion8>regions;
 	vector<int>				indices;
 	ObjPointPool			geo_tri;
@@ -262,6 +274,7 @@ struct	XObj8 {
 	ObjPointPool			geo_lights;
 	vector<XObjAnim8>		animation;
 	vector<XObjManip8>		manips;
+	vector<XObjEmitter8>	emitters;
 	vector<XObjLOD8>		lods;
 
 	float					xyz_min[3];

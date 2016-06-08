@@ -1619,7 +1619,7 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 
 	Bbox2	cull_bounds(x,y,x+1,y+1);
 	Bbox2	safe_bounds(cull_bounds);
-	if(gExportTarget == wet_xplane_1021)
+	if(gExportTarget >= wet_xplane_1021)
 		safe_bounds.expand(DSF_EXTRA_1021);
 	
 	
