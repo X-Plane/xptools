@@ -24,6 +24,8 @@
 #include <QtGui/QtGui>
 #include "PlatformUtils.h"
 #include <stdio.h>
+#include <sys/stat.h>
+#include <pwd.h>
 #include <cstring>
 #include <string>
 
@@ -35,21 +37,57 @@ const char* GetApplicationPath(char* pathBuf, int sz)
 	return pathBuf;
 }
 
-/* Some linux developer make sure this is correct
-const char * GetTempFilesFolder(char * temp_path, int sz=MAX_PATH)
+//common practice to get the cache folder:
+//1. read env var 'XDG_CACHE_HOME'
+//2. ~/.cache if exists
+//3. fallback to default temp folder.
+const char * GetCacheFolder(char * temp_path, int sz)
 {
-	char temp_path[255] = "/tmp/.wed_XXXXXX";
-	int fd = mkstemp(temp_path);
-	if (fd == -1)
+	string path;
+	const char * cpath  = getenv("XDG_CACHE_HOME");
+	if(!cpath)
 	{
-		return NULL;
+		const char * hdir = getenv("HOME");
+		passwd *pw = getpwuid(getuid());
+		if (pw)
+		{
+			const char * pdir = pw->pw_dir;
+			if( strcmp(pdir,hdir) != 0)
+				return 0;
+		}
+		path = hdir;
+		path += "/.cache";
 	}
 	else
 	{
-		return temp_path;
+		path = cpath;
 	}
+
+	struct stat ss;
+	if (stat(path.c_str(),&ss) == 0)
+		if(sz > strlen(path.c_str()))
+			return strncpy(temp_path,path.c_str(),sz);
+
+	return 0;
 }
-*/
+
+const char * GetTempFilesFolder(char * temp_path, int sz)
+{
+	const char * tpath  = getenv("TMPDIR");
+	if(!tpath)
+		tpath = "/tmp";
+
+	int n = snprintf(temp_path,sz,"%s/xptools-%d",tpath,getuid());
+	if( n < 0 || n >= sz )
+		return 0;
+
+	struct stat ss;
+	if (stat(temp_path,&ss) < 0)
+		if(mkdir(temp_path,0700) !=0)
+			return 0;
+
+	return temp_path;
+}
 
 int		GetFilePathFromUser(
 					int					inType,
@@ -103,24 +141,24 @@ char *	GetMultiFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
 					int					inID)
-{	
-	
+{
+
 	QStringList fileNames = QFileDialog::getOpenFileNames(0,QString::fromUtf8(inPrompt));
-	
-	vector<string> outFiles;	
-	if (fileNames.empty()) return NULL;	
+
+	vector<string> outFiles;
+	if (fileNames.empty()) return NULL;
 	for(int i=0; i < fileNames.size(); ++i)
 	{
 		if(!fileNames.at(i).isEmpty())
 			outFiles.push_back(fileNames[i].toUtf8().constData());
 	}
-	
+
 	if(outFiles.size() < 1) return NULL;
 
 	int buf_size = 1;
 	for(int i = 0; i < outFiles.size(); ++i)
 		buf_size += (outFiles[i].size() + 1);
-	
+
 	char * ret = (char *) malloc(buf_size);
 	char * p = ret;
 
@@ -130,7 +168,7 @@ char *	GetMultiFilePathFromUser(
 		p += (outFiles[i].size() + 1);
 	}
 	*p = 0;
-	
+
 	return ret;
 }
 

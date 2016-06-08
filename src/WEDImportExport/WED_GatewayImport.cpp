@@ -750,7 +750,7 @@ void WED_GatewayImportDialog::StartCSVDownload()
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	
 	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport";
+	ss << "scenery_packs";
 	mCacheRequest.in_folder_prefix = ss.str();
 
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;

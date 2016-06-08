@@ -386,20 +386,20 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 	{
 		for (int i = files_start_index; i < out_files.size(); i++)
 		{
-			out_files.at(i) = path + "\\" + out_files.at(i);
+			out_files.at(i) = path + DIR_STR + out_files.at(i);
 		}
 	}
 
 	//For all the directories on this level, recurse into them
 	for (int i = start_index; i < out_dirs.size(); ++i)
 	{
-		num_files += FILE_get_directory_recursive(path + "\\" + out_dirs.at(i), out_files, out_dirs);
+		num_files += FILE_get_directory_recursive(path + DIR_STR + out_dirs.at(i), out_files, out_dirs);
 	}
 	
 	//For all the directories on this level prepend the path onto them
 	for (int i = out_dirs.size() - 1; i >= start_index ; i--)
 	{
-		out_dirs.at(i) = path + "\\" + out_dirs.at(i);
+		out_dirs.at(i) = path + DIR_STR + out_dirs.at(i);
 	}
 	
 	return num_files;

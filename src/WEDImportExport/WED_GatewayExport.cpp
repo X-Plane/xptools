@@ -437,7 +437,7 @@ void WED_GatewayExportDialog::StartCSVDownload()
 
 	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
-	mCacheRequest.in_folder_prefix = "/scenery_packs/GatewayImport";
+	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 
 	Start(0.1);

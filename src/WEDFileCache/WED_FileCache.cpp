@@ -95,7 +95,13 @@ void CACHE_FileCacheInitializer::init()
 	//Get the cache folder path
 	{
 		char    base[TEMP_FILES_DIR_LEN];
-		CACHE_folder = GetTempFilesFolder(base, TEMP_FILES_DIR_LEN) + string("WED\\wed_file_cache");
+		const char * cache_folder = GetCacheFolder(base, TEMP_FILES_DIR_LEN);
+		if(cache_folder == NULL)
+		{
+			AssertPrintf("Could not get OS cache folder");
+		}
+
+		CACHE_folder = string(cache_folder) + string(DIR_STR "wed_file_cache");
 	}
 
 	vector<string> files;
@@ -375,7 +381,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 				*/
 
 				res.out_path = CACHE_folder + DIR_STR + req.in_folder_prefix + DIR_STR + FILE_get_file_name(req.in_url);
-				FILE_make_dir_exist(string(CACHE_folder + "\\" + req.in_folder_prefix).c_str());
+				FILE_make_dir_exist(string(CACHE_folder + DIR_STR + req.in_folder_prefix).c_str());
 
 				//We test if file and cache_file_info file save PERFECECTLY, with NO issues
 				//If anything went wrong we call it an error

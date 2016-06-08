@@ -15,7 +15,7 @@ bool	fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file
 #if DEV && FROM_DISK
 	std::ifstream t(CSV_ON_DISK);
 #else
-	std::ifstream t(file_path);
+	std::ifstream t(file_path.c_str());
 #endif
 
 	if(t.bad() == true)

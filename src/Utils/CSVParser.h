@@ -53,13 +53,13 @@ public:
 	
 private:
 	enum FSM {
-		NORMAL,           //Hit anything but first " or delimiter, add char to token
-		QOUTE,            //Hit ", expecting ["delimiter]
-		WAITING_2ND_QOUTE,//Hit a [delimiter\r\n], waiting for closing qoute escape
-		DELIMITER,        //Hit [delimiter], waiting for anything
-		NEWLINE,          //Hit \r or \n. If \r, skip \n
-		END,              //Hit mInput::npos
-		INVALID           //Hit an invalid character or some other problem
+		FSM_NORMAL,           //Hit anything but first " or delimiter, add char to token
+		FSM_QOUTE,            //Hit ", expecting ["delimiter]
+		FSM_WAITING_2ND_QOUTE,//Hit a [delimiter\r\n], waiting for closing qoute escape
+		FSM_DELIMITER,        //Hit [delimiter], waiting for anything
+		FSM_NEWLINE,          //Hit \r or \n. If \r, skip \n
+		FSM_END,              //Hit mInput::npos
+		FSM_INVALID           //Hit an invalid character or some other problem
 	};
 
 	// Given the current state, consume the current character and return the new state, taking all actions needed.

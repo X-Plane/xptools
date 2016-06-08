@@ -1,4 +1,8 @@
 #include "CSVParser.h"
+#if LIN
+#include "math.h"
+#endif
+
 
 CSVParser::CSVParser(char delimiter, const string& input) : mDelimiter(delimiter),
 															mInput(input)
@@ -27,7 +31,7 @@ CSVParser::CSVTable CSVParser::ParseCSV()
 		
 		//Initial state of the parser
 		int pos = 0;
-		FSM mode = FSM::NORMAL;
+		FSM mode = FSM_NORMAL;
 		string current_token = "";
 
 		while(pos < mInput.size())
@@ -37,12 +41,12 @@ CSVParser::CSVTable CSVParser::ParseCSV()
 			++pos;
 
 			//Cases of reaching a comma or the end of file
-			if(transition == FSM::DELIMITER || pos == mInput.size())
+			if(transition == FSM_DELIMITER || pos == mInput.size())
 			{
 				rows.back().push_back(current_token);
 				current_token.clear();
 			}
-			else if(transition == FSM::NEWLINE)
+			else if(transition == FSM_NEWLINE)
 			{
 				rows.back().push_back(current_token);
 				current_token.clear();
@@ -54,7 +58,7 @@ CSVParser::CSVTable CSVParser::ParseCSV()
 				}
 				rows.push_back(CSVTable::CSVRow());
 			}
-			else if(transition == FSM::INVALID)
+			else if(transition == FSM_INVALID)
 			{
 				return invalid_table;
 			}
@@ -78,55 +82,55 @@ CSVParser::FSM CSVParser::LookupTable(FSM current_state, int pos, string & token
 	
 	switch(current_state)
 	{
-		case NORMAL:
-		case DELIMITER:
-		case NEWLINE:
+		case FSM_NORMAL:
+		case FSM_DELIMITER:
+		case FSM_NEWLINE:
 			if(c == '"')
 			{
-				return QOUTE;
+				return FSM_QOUTE;
 			}
 			else if(c == mDelimiter)
 			{
 				//End token
-				return DELIMITER;
+				return FSM_DELIMITER;
 			}
 			else if(c == '\n')
 			{
-				return NEWLINE;
+				return FSM_NEWLINE;
 			}
 			else
 			{
 				//Append to token
 				token += c;
-				return NORMAL;
+				return FSM_NORMAL;
 			}
-		case QOUTE:
+		case FSM_QOUTE:
 			if(c == mDelimiter || c == '\r' || c == '\t' || c == '\n')
 			{
 				//Add escaped delimiter
 				token += c;
-				return WAITING_2ND_QOUTE;
+				return FSM_WAITING_2ND_QOUTE;
 			}
 			else if(c == '"')
 			{
 				token += c;
-				return NORMAL;
+				return FSM_NORMAL;
 			}
 			else
 			{
-				return INVALID;
+				return FSM_INVALID;
 			}
-		case WAITING_2ND_QOUTE:
+		case FSM_WAITING_2ND_QOUTE:
 			if(c != '"')
 			{
-				return INVALID;
+				return FSM_INVALID;
 			}
 			else
 			{
-				return NORMAL;
+				return FSM_NORMAL;
 			}
 		default:
-			return INVALID;
+			return FSM_INVALID;
 	}
 }
 

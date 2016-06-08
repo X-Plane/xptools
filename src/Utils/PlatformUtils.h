@@ -54,6 +54,11 @@
 const char * GetApplicationPath(char * pathBuf, int pathLen);
 
 /*
+ * The FQP to the OS' semantically correct folder for caching files
+ */
+const char * GetCacheFolder(char * cache_path, int sz);
+
+/*
  * Returns the FQP to the OS' "Best practices" temporary files folder
  */
 const char * GetTempFilesFolder(char * temp_path, int sz);

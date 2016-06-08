@@ -36,7 +36,8 @@
 #include "WED_FileCache.h"
 #include "WED_MetaDataDefaults.h"
 #include "WED_Url.h"
-#include "curl\curl.h"
+#include "curl/curl.h"
+
 #include "WED_Airport.h"
 #include "ILibrarian.h"
 #include "WED_ToolUtils.h"
@@ -189,8 +190,8 @@ void WED_UpdateMetadataDialog::StartCSVDownload()
 	}
 
 	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain = CACHE_domain::cache_domain_metadata_csv;
-	mCacheRequest.in_folder_prefix = "/scenery_packs/GatewayImport";
+	mCacheRequest.in_domain = cache_domain_metadata_csv;
+	mCacheRequest.in_folder_prefix = "scenery_packs";
 	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
 
 	Start(0.1);
@@ -238,11 +239,11 @@ void WED_UpdateMetadataDialog::TimerFired()
 	if(mPhase == update_dialog_download_airport_metadata)
 	{
 		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
-		if(res.out_status != CACHE_status::cache_status_downloading)
+		if(res.out_status != cache_status_downloading)
 		{
 			Stop();
 			
-			if(res.out_status == CACHE_status::cache_status_available)
+			if(res.out_status == cache_status_available)
 			{
 				WED_UpdateMetadataDialog::mAirportMetadataCSVPath = res.out_path;
 				mPhase = update_dialog_waiting;
@@ -253,7 +254,7 @@ void WED_UpdateMetadataDialog::TimerFired()
 				this->AddLabel("Update metadata for the airport " + icao + "?");
 				this->AddLabel("(May add or overwrite existing metadata)");
 			}
-			else if(res.out_status == CACHE_status::cache_status_error)
+			else if(res.out_status == cache_status_error)
 			{
 				mPhase = update_dialog_done;
 				this->Reset("","","Exit",true);
