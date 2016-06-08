@@ -46,6 +46,8 @@ public:
 
 			void		SetTool(WED_MapToolNew * tool);
 			void		AddLayer(WED_MapLayer * layer);
+	
+			void		SetFilter(const string& name, const vector<const char *>& hide_filter, const vector<const char *>& lock_filter);
 
 	virtual void		SetBounds(int x1, int y1, int x2, int y2);
 	virtual void		SetBounds(int inBounds[4]);
@@ -77,6 +79,10 @@ private:
 	vector<WED_MapLayer *>			mLayers;
 	WED_MapToolNew *				mTool;
 	IResolver *						mResolver;
+
+	vector<const char *>					mHideFilter;
+	vector<const char *>					mLockFilter;
+	string									mFilterName;
 
 	WED_MapLayer *	mClickLayer;
 	int				mX;

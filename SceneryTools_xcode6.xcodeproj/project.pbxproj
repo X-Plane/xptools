@@ -4869,6 +4869,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_WARN_ASSIGN_ENUM = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
 				GCC_INPUT_FILETYPE = automatic;
@@ -4879,6 +4880,10 @@
 					"DEV=1",
 					"APL=1",
 				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
@@ -4896,7 +4901,12 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
-				WARNING_CFLAGS = "-Wreturn-type";
+				WARNING_CFLAGS = (
+					"-Werror=return-type",
+					"-Werror=format",
+					"-Werror=dynamic-class-memaccess",
+					"-Werror=delete-incomplete",
+				);
 			};
 			name = Debug;
 		};
@@ -4904,6 +4914,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_WARN_ASSIGN_ENUM = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_INPUT_FILETYPE = automatic;
@@ -4917,6 +4928,10 @@
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_UNROLL_LOOPS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
@@ -4933,7 +4948,12 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
-				WARNING_CFLAGS = "-Wreturn-type";
+				WARNING_CFLAGS = (
+					"-Werror=return-type",
+					"-Werror=format",
+					"-Werror=dynamic-class-memaccess",
+					"-Werror=delete-incomplete",
+				);
 			};
 			name = Release;
 		};
@@ -5019,6 +5039,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_WARN_ASSIGN_ENUM = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_INPUT_FILETYPE = automatic;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -5029,6 +5050,10 @@
 					"APL=1",
 					"PHONE=1",
 				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
@@ -5045,7 +5070,12 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
-				WARNING_CFLAGS = "-Wreturn-type";
+				WARNING_CFLAGS = (
+					"-Werror=return-type",
+					"-Werror=format",
+					"-Werror=dynamic-class-memaccess",
+					"-Werror=delete-incomplete",
+				);
 			};
 			name = Phone;
 		};
@@ -5944,6 +5974,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_WARN_ASSIGN_ENUM = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_TESTABILITY = YES;
 				GCC_INPUT_FILETYPE = automatic;
@@ -5954,6 +5985,10 @@
 					"DEV=1",
 					"APL=1",
 				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = NO;
+				GCC_WARN_MISSING_PARENTHESES = NO;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				HEADER_SEARCH_PATHS = (
 					libs/local/include,
 					libs/local/include/freetype2,
@@ -5971,7 +6006,12 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "${TARGET_NAME}";
 				SDKROOT = macosx;
-				WARNING_CFLAGS = "-Wreturn-type";
+				WARNING_CFLAGS = (
+					"-Werror=return-type",
+					"-Werror=format",
+					"-Werror=dynamic-class-memaccess",
+					"-Werror=delete-incomplete",
+				);
 			};
 			name = DebugOpt;
 		};

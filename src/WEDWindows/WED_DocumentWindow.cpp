@@ -187,6 +187,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	prop_tabs->Show();
 	prop_tabs->SetSticky(1,1,1,0.5);
 	prop_tabs->SetTextColor(WED_Color_RGBA(wed_Tabs_Text));
+	prop_tabs->AddListener(mMapPane);
 
 	// --------------- Selection ---------------
 

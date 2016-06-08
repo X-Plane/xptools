@@ -25,10 +25,13 @@
 #include "MathUtils.h"
 #include "GUI_Resources.h"
 #include "WED_UIMeasurements.h"
+#include "IGIS.h"
+#include "WED_Entity.h"
 
 #include "WED_MapZoomerNew.h"
 
-WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) : mZoomer(z), mResolver(i), mHost(h)
+WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
+	mZoomer(z), mResolver(i), mHost(h),mHideFilter(NULL), mLockFilter(NULL)
 {
 	int dims[2];
 
@@ -79,4 +82,74 @@ void		WED_MapLayer::ToggleVisible(void)
 	mVisible = !mVisible;
 	GetHost()->Refresh();
 }
+
+void		WED_MapLayer::SetFilter(const vector<const char *> * hide_filter_ptr, const vector<const char *> * lock_filter_ptr)
+{
+	mHideFilter = hide_filter_ptr;
+	mLockFilter = lock_filter_ptr;
+}
+
+bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
+{
+	if(mHideFilter)
+	{
+		const char * ent_class = ent->GetGISSubtype();
+		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
+			if(ent_class == *c)
+				return false;
+	}
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+		return false;
+	return !e->GetHidden();
+}
+
+bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
+{
+	if(mLockFilter)
+	{
+		const char * ent_class = ent->GetGISSubtype();
+		for(vector<const char *>::const_iterator c = mLockFilter->begin(); c != mLockFilter->end(); ++c)
+			if(ent_class == *c)
+				return true;
+	}
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+		return false;
+	return e->GetLocked();
+}
+
+
+
+
+bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
+{
+	if(mHideFilter)
+	{
+		const char * ent_class = ent->GetClass();
+		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
+			if(ent_class == *c)
+				return false;
+	}
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+		return false;
+	return !e->GetHidden();
+}
+
+bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
+{
+	if(mLockFilter)
+	{
+		const char * ent_class = ent->GetClass();
+		for(vector<const char *>::const_iterator c = mLockFilter->begin(); c != mLockFilter->end(); ++c)
+			if(ent_class == *c)
+				return true;
+	}
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+		return false;
+	return e->GetLocked();
+}
+
 

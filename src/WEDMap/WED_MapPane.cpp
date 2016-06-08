@@ -65,6 +65,10 @@
 #include "WED_Server.h"
 #include "WED_NWInfoLayer.h"
 #endif
+
+#include "WED_AirportSign.h"
+#include "WED_Runway.h"
+
 char	kToolKeys[] = {
 	0, 0, 0, 0,
 	0, 0, 0, 0,
@@ -435,12 +439,19 @@ void	WED_MapPane::ReceiveMessage(
 							intptr_t				inMsg,
 							intptr_t				inParam)
 {
-	int i = mToolbar->GetValue();
-	WED_MapToolNew * t = NULL;
-	if (i >= 0 && i < mTools.size())
-		t = mTools[i];
-	mMap->SetTool(t);
-	mInfoAdapter->SetTool(t);
+	if(inSrc == mToolbar)
+	{
+		int i = mToolbar->GetValue();
+		WED_MapToolNew * t = NULL;
+		if (i >= 0 && i < mTools.size())
+			t = mTools[i];
+		mMap->SetTool(t);
+		mInfoAdapter->SetTool(t);
+	}
+	else
+	{
+		SetTabFilterMode(inParam);
+	}
 }
 
 void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
@@ -587,3 +598,15 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	}
 }
 
+void		WED_MapPane::SetTabFilterMode(int mode)
+{
+	string title;
+	vector<const char *>		hide_list, lock_list;
+	if(mode == 1)
+	{
+		title = "Foo";
+		hide_list.push_back(WED_AirportSign::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+	}
+	mMap->SetFilter(title, hide_list, lock_list);
+}

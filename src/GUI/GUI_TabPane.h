@@ -27,11 +27,12 @@
 #include "GUI_Packer.h"
 #include "GUI_Commander.h"
 #include "GUI_Listener.h"
+#include "GUI_Broadcaster.h"
 
 class GUI_TabControl;
 class GUI_ChangeView;
 
-class GUI_TabPane : public GUI_Packer, public GUI_Commander, public GUI_Listener {
+class GUI_TabPane : public GUI_Packer, public GUI_Commander, public GUI_Listener, public GUI_Broadcaster {
 public:
 
 							 GUI_TabPane(GUI_Commander * parent);

@@ -81,8 +81,20 @@ void		WED_Map::SetTool(WED_MapToolNew * tool)
 
 void		WED_Map::AddLayer(WED_MapLayer * layer)
 {
+	layer->SetFilter(&mHideFilter, &mLockFilter);
 	mLayers.push_back(layer);
 }
+
+void		WED_Map::SetFilter(const string& filterName, const vector<const char *>& hide_filter, const vector<const char *>& lock_filter)
+{
+	mFilterName = filterName;
+	mHideFilter = hide_filter;
+	mLockFilter = lock_filter;
+
+	Refresh();
+	
+}
+
 
 void		WED_Map::SetBounds(int x1, int y1, int x2, int y2)
 {
@@ -161,8 +173,11 @@ void		WED_Map::Draw(GUI_GraphState * state)
 			apt->GetICAO(icao);
 			n = an + string("(") + icao + string(")");
 		}
-		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 30, n.c_str());
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 45, n.c_str());
 	}
+	
+	if(!mFilterName.empty())
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5, b[3] - 30, mFilterName.c_str());
 
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
@@ -255,8 +270,7 @@ void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
-	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
-	if (e && e->GetHidden()) return;
+	if(!layer->IsVisibleNow(what))	return;
 
 	if (layer->DrawEntityVisualization(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
@@ -281,8 +295,7 @@ void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
-	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
-	if (e && e->GetHidden()) return;
+	if(!layer->IsVisibleNow(what))	return;
 
 	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
