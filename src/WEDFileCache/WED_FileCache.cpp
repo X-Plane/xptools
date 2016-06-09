@@ -456,14 +456,14 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 	}//end if((**itr).get_RAII_curl_hndl() != NULL)
 	else
 	{
-		int seconds_left = co.cool_down_seconds_left(GetDomainPolicy(req.in_domain));
+		const CACHE_domain_policy pol = GetDomainPolicy(req.in_domain);
+		int seconds_left = co.cool_down_seconds_left(pol);
 		if(seconds_left > 0)
 		{
 			return WED_file_cache_response(-1, "Cache cooling after failed network attempt, please wait: " + itoa_cpp98(seconds_left) + " seconds...", cache_error_type_none, "", cache_status_cooling);
 		}
 		else if(FILE_exists((*itr)->get_disk_location().c_str()) == true) //Check if file was deleted between requests
 		{
-			CACHE_domain_policy pol = GetDomainPolicy(cache_domain_metadata_csv);
 			if(co.needs_refresh(pol) == false)
 			{
 				DebugAssert((*itr)->get_disk_location() != "");
