@@ -24,11 +24,17 @@
 #ifndef WED_METADATADEFAULTS_H
 #define WED_METADATADEFAULTS_H
 
+#include "CSVParser.h"
+
 class WED_Airport;
 
 //Fill in an airport's meta data's missing or blank entries with defaults
 //from the LR official meta data source
 //Returns true if the fill was a success, false if not
 bool fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file_path);
+
+// If you're trying to fill the metadata for a bajillion airports at a time,
+// you may want to read the CSV yourself, once, and never again have to hit the disk.
+bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::CSVTable &table);
 
 #endif

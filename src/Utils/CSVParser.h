@@ -41,8 +41,8 @@ public:
 		CSVTable(const CSVHeader& header, const vector<CSVRow>& rows) : mHeader(header), mRows(rows) { }
 		~CSVTable() { }
 
-		const CSVHeader& GetHeader() { return mHeader; }
-		const vector<CSVRow>& GetRows() { return mRows; }
+		const CSVHeader& GetHeader() const { return mHeader; }
+		const vector<CSVRow>& GetRows() const { return mRows; }
 	private:
 		CSVHeader      mHeader;
 		vector<CSVRow> mRows;

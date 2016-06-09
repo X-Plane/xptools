@@ -25,6 +25,7 @@
 #include "WED_GatewayExport.h"
 
 #include <sstream>
+#include <fstream>
 
 #include "FileUtils.h"
 #include "GUI_Application.h"
@@ -273,27 +274,41 @@ void WED_UpdateMetadataDialog::TimerFired()
 	}
 }
 //---------------------------------------------------------------------------//
+static CSVParser::CSVTable s_csv = CSVParser::CSVTable(CSVParser::CSVTable::CSVHeader(), vector<CSVParser::CSVTable::CSVRow>());
 void	WED_DoInvisibleUpdateMetadata(WED_Airport * apt)
 {
-	WED_file_cache_request  cache_request;
-	const bool cache_filled_successfully = fill_cache_request_for_metadata_csv(&cache_request);
-	if(cache_filled_successfully)
+	if(s_csv.GetRows().empty())
 	{
-		WED_file_cache_response res = WED_file_cache_request_file(cache_request);
-		while(res.out_status == cache_status_downloading)
+		WED_file_cache_request  cache_request;
+		const bool cache_filled_successfully = fill_cache_request_for_metadata_csv(&cache_request);
+		if(cache_filled_successfully)
 		{
-			// Synchronously download the file (or grab it from disk)
-			res = WED_file_cache_request_file(cache_request);
-		}
+			WED_file_cache_response res = WED_file_cache_request_file(cache_request);
+			while(res.out_status == cache_status_downloading)
+			{
+				// Synchronously download the file (or grab it from disk)
+				res = WED_file_cache_request_file(cache_request);
+			}
 
-		if(res.out_status == cache_status_available)
-		{
-			bool success = fill_in_airport_metadata_defaults(*apt, res.out_path);
+			if(res.out_status == cache_status_available)
+			{
+				std::ifstream t(res.out_path.c_str());
+				if(!t.bad())
+				{
+					s_csv = CSVParser(',', string((istreambuf_iterator<char>(t)), istreambuf_iterator<char>())).ParseCSV();
+					bool success = fill_in_airport_metadata_defaults(*apt, s_csv);
+				}
+				t.close();
+			}
+			else if(res.out_status == cache_status_error)
+			{
+				printf("Failed to auto-update airport metadata due to cache error\n");
+			}
 		}
-		else if(res.out_status == cache_status_error)
-		{
-			printf("Failed to auto-update airport metadata due to cache error\n");
-		}
+	}
+	else
+	{
+		bool success = fill_in_airport_metadata_defaults(*apt, s_csv);
 	}
 }
 

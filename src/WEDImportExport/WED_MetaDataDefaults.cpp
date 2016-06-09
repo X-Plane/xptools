@@ -30,7 +30,11 @@ bool	fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file
 	CSVParser::CSVTable table = CSVParser(',', str).ParseCSV();
 	
 	t.close();
-	
+	return fill_in_airport_metadata_defaults(airport, table);
+}
+
+bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::CSVTable &table)
+{
 	CSVParser::CSVTable::CSVRow default_values;
 
 	//Find the airport in the table match
