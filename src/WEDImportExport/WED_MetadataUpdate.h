@@ -28,7 +28,8 @@
 class	IResolver;
 
 int		WED_CanUpdateMetadata(IResolver * resolver);
-void	WED_DoUpdateMetadata(IResolver * resolver);
+void	WED_DoUpdateMetadata(IResolver * resolver);  // performs a metadata update on the single selected airport (if applicable)
+void	WED_DoInvisibleUpdateMetadata(WED_Airport * airport); // performs a metadata update on the airport, with no input from the user, and no option to undo
 
 #endif
 

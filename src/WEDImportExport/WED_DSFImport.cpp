@@ -52,6 +52,7 @@
 #include "STLUtils.h"
 #include "WED_AptIE.h"
 #include "WED_Airport.h"
+#include "WED_MetadataUpdate.h"
 
 static void debug_it(const vector<BezierPoint2>& pts)
 {
@@ -816,6 +817,8 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		//		DSF_Import(path,g);
 				DSF_Importer importer;
 				importer.do_import_txt(paths, g);
+
+				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, g));
 			}	
 			paths = paths + strlen(paths) + 1;
 		}

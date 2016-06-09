@@ -41,6 +41,25 @@
 #include "ILibrarian.h"
 #include "WED_ToolUtils.h"
 
+/**
+ * @return true if we succeeded; false if there was a catastrophic error about which we alerted the user
+ */
+static bool fill_cache_request_for_metadata_csv(WED_file_cache_request * out_cache_req)
+{
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return false;
+	}
+
+	out_cache_req->in_cert = cert;
+	out_cache_req->in_domain = cache_domain_metadata_csv;
+	out_cache_req->in_folder_prefix = "scenery_packs";
+	out_cache_req->in_url = WED_URL_AIRPORT_METADATA_CSV;
+	return true;
+}
+
 //--WED_UpdateMetadataDialog--------------------------------------------------
 static int update_bounds_default[4] = { 0, 0, 500, 500 };
 
@@ -180,19 +199,9 @@ WED_UpdateMetadataDialog::WED_UpdateMetadataDialog(WED_Airport * apt, IResolver 
 
 void WED_UpdateMetadataDialog::StartCSVDownload()
 {
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		this->AsyncDestroy();
-	}
-
-	mCacheRequest.in_cert = cert;
-	mCacheRequest.in_domain = cache_domain_metadata_csv;
-	mCacheRequest.in_folder_prefix = "scenery_packs";
-	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
-
+	const bool cache_filled_successfully = fill_cache_request_for_metadata_csv(&mCacheRequest);
+	if(!cache_filled_successfully)
+		AsyncDestroy();
 	Start(0.1);
 }
 
@@ -264,3 +273,27 @@ void WED_UpdateMetadataDialog::TimerFired()
 	}
 }
 //---------------------------------------------------------------------------//
+void	WED_DoInvisibleUpdateMetadata(WED_Airport * apt)
+{
+	WED_file_cache_request  cache_request;
+	const bool cache_filled_successfully = fill_cache_request_for_metadata_csv(&cache_request);
+	if(cache_filled_successfully)
+	{
+		WED_file_cache_response res = WED_file_cache_request_file(cache_request);
+		while(res.out_status == cache_status_downloading)
+		{
+			// Synchronously download the file (or grab it from disk)
+			res = WED_file_cache_request_file(cache_request);
+		}
+
+		if(res.out_status == cache_status_available)
+		{
+			bool success = fill_in_airport_metadata_defaults(*apt, res.out_path);
+		}
+		else if(res.out_status == cache_status_error)
+		{
+			printf("Failed to auto-update airport metadata due to cache error\n");
+		}
+	}
+}
+

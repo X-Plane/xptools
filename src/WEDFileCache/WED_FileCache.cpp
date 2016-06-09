@@ -15,6 +15,7 @@
 #include "FileUtils.h"
 #include "RAII_Classes.h"
 #include "json/json.h"
+#include "MathUtils.h"
 
 #include "PlatformUtils.h"
 #include "AssertUtils.h"
@@ -56,7 +57,7 @@ WED_file_cache_response::WED_file_cache_response(float download_progress, string
 bool WED_file_cache_response::operator==(const WED_file_cache_response& rhs) const
 {
 	bool result = true;
-	result &= this->out_download_progress == rhs.out_download_progress ? true : false;
+	result &= flt_abs(this->out_download_progress - rhs.out_download_progress) < 0.01 ? true : false; // NOTE: We don't want to check for strict equality of floats; we want to consider 0.999998 == 1.000001, for instance
 	result &= this->out_error_human == rhs.out_error_human             ? true : false;
 	result &= this->out_error_type  == rhs.out_error_type              ? true : false;
 	result &= this->out_path        == rhs.out_path                    ? true : false;
@@ -450,7 +451,10 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 		}
 		else
 		{
-			DebugAssert(co.get_response_from_object_state(cache_status_downloading) == WED_file_cache_response(hndl.get_progress(), "", cache_error_type_none, "", cache_status_downloading));
+			// Tyler says: This assert intermittently fails for me. It appears to do so because the hndl continues progressing asynchronously,
+			// so between the time we call co.get_response_from_object_state() and the time we call hndl.get_progress(), the progress has increased by, say, 1%.
+			// Thus, I'm turning it off, but leaving it commented out for the sake of posterity.
+			// DebugAssert(co.get_response_from_object_state(cache_status_downloading) == WED_file_cache_response(hndl.get_progress(), "", cache_error_type_none, "", cache_status_downloading));
 			return co.get_response_from_object_state(cache_status_downloading);
 		}//end if(hndl.is_done())
 	}//end if((**itr).get_RAII_curl_hndl() != NULL)
