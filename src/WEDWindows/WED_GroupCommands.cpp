@@ -52,6 +52,7 @@
 #include "WED_LibraryMgr.h"
 #include "WED_RampPosition.h"
 #include "WED_Menus.h"
+#include "WED_MetaDataKeys.h"
 #include "WED_ResourceMgr.h"
 #include "XObjDefs.h"
 #include "MathUtils.h"
@@ -387,29 +388,22 @@ bool	WED_CanAddMetaData(IResolver * inResolver, int command)
 	}
 	else
 	{
-		switch(command)
-		{			
-			case wed_AddMetaDataCity:    return !sel_airport->ContainsMetaDataKey("city");
-			case wed_AddMetaDataCountry: return !sel_airport->ContainsMetaDataKey("country");
-			case wed_AddMetaDataFAA:     return !sel_airport->ContainsMetaDataKey("faa_code");
-			case wed_AddMetaDataIATA:    return !sel_airport->ContainsMetaDataKey("iata_code");
-			case wed_AddMetaDataICAO:    return !sel_airport->ContainsMetaDataKey("icao_code");
-			case wed_AddMetaDataState:   return !sel_airport->ContainsMetaDataKey("state");
-			default: return 0;
-		}
+		return !sel_airport->ContainsMetaDataKey(META_KeyName(command));
 	}
 }
 
-void WED_DoAddMetaData(IResolver * inResolver, const string& key)
+void WED_DoAddMetaData(IResolver * inResolver, int command)
 {
 	ISelection * sel = WED_GetSelect(inResolver);
 	if (sel->GetSelectionCount() != 1) return;
 
 	WED_Airport * want_sel = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
 	if (want_sel == NULL) return;
-	want_sel->StartOperation(string("Add Metadata Key " + key).c_str());
+
+	MetaDataKey key_info = META_KeyInfo(command);
+	want_sel->StartOperation(string("Add Metadata Key " + key_info.display_text).c_str());
 	want_sel->StateChanged();
-	want_sel->AddMetaDataKey(key, "");
+	want_sel->AddMetaDataKey(key_info.name, "");
 	want_sel->CommitOperation();
 }
 

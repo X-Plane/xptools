@@ -22,6 +22,7 @@
  */
 
 #include "WED_Menus.h"
+#include "WED_MetaDataKeys.h"
 #include "GUI_Application.h"
 #if APL
 #include "ObjCUtils.h"
@@ -204,15 +205,7 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	NULL,						0,		0,										0, 0,				}
 };
 
-static const GUI_MenuItem_t kAddMetaDataMenu[] = {
-{	"City/Locality",	0,	0,	0, wed_AddMetaDataCity		},
-{	"Country",			0,	0,	0, wed_AddMetaDataCountry	},
-{	"FAA Code",			0,	0,	0, wed_AddMetaDataFAA		},
-{	"IATA Code",		0,	0,	0, wed_AddMetaDataIATA		},
-{	"ICAO Code",		0,	0,	0, wed_AddMetaDataICAO		},
-{	"State/Province",	0,	0,	0, wed_AddMetaDataState		},
-{	NULL,				0,	0,	0, 0						}
-};
+static GUI_MenuItem_t kAddMetaDataMenu[wed_AddMetaDataEnd-wed_AddMetaDataBegin-1] = { 0 };
 
 static const GUI_MenuItem_t kHelpMenu[] = {
 {	"&WED User's Guide",			0,	0,										0,	wed_HelpManual },
@@ -281,6 +274,13 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu	airport_menu = inApp->CreateMenu(
 		"&Airport", kAirportMenu, inApp->GetMenuBar(), 0);
 	
+	for (KeyEnum key_enum = wed_AddMetaDataBegin + 1; key_enum < wed_AddMetaDataEnd; ++key_enum)
+	{
+		int index = key_enum - wed_AddMetaDataBegin - 1;
+		GUI_MenuItem_t menu_item = { META_KeyDisplayText(key_enum).c_str(), 0, 0, 0, key_enum };
+		kAddMetaDataMenu[index] = menu_item;
+	}
+
 	GUI_Menu	airport_add_meta_data_menu = inApp->CreateMenu(
 		"Add &Meta Data", kAddMetaDataMenu, airport_menu, 6);//This hardcoded 6 is a reference to
 															 //kAirportMenu[6]

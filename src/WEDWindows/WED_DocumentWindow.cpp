@@ -331,6 +331,14 @@ int	WED_DocumentWindow::HandleCommand(int command)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
 
+	//--Add Meta Data Sub Menu-----------------
+	if(command > wed_AddMetaDataBegin && command < wed_AddMetaDataEnd)
+	{
+		WED_DoAddMetaData(mDocument, command);
+		return 1;
+	}
+	//------------------------------------------//
+
 	switch(command) {
 	case wed_RestorePanes:
 		{
@@ -402,14 +410,6 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectThirdPartyObjects:	WED_DoSelectThirdPartyObjects(mDocument); return 1;
 	case wed_SelectMissingObjects:		WED_DoSelectMissingObjects(mDocument); return 1;
 #endif
-	//--Add Meta Data Sub Menu-----------------
-	case wed_AddMetaDataCity:	 WED_DoAddMetaData(mDocument, "City/Locality"); return 1;
-	case wed_AddMetaDataCountry: WED_DoAddMetaData(mDocument, "Country"); return 1;
-	case wed_AddMetaDataFAA:	 WED_DoAddMetaData(mDocument, "FAA Code"); return 1;
-	case wed_AddMetaDataIATA:	 WED_DoAddMetaData(mDocument, "IATA Code"); return 1;
-	case wed_AddMetaDataICAO:	 WED_DoAddMetaData(mDocument, "ICAO Code"); return 1;
-	case wed_AddMetaDataState:	 WED_DoAddMetaData(mDocument, "State/Province"); return 1;
-	//----------------------------------------
 	case wed_UpdateMetadata:     WED_DoUpdateMetadata(mDocument); return 1;
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
 	case wed_ExportPack:	WED_DoExportPack(mDocument); return 1;
@@ -458,6 +458,14 @@ int	WED_DocumentWindow::HandleCommand(int command)
 int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
+	
+	//--Add Meta Data Sub Menu-----------------
+	if(command > wed_AddMetaDataBegin && command < wed_AddMetaDataEnd)
+	{
+		return WED_CanAddMetaData(mDocument, command);
+	}
+	//------------------------------------------//
+
 	switch(command) {
 	case wed_RestorePanes:	return 1;
 	case gui_Undo:		if (um->HasUndo())	{ ioName = um->GetUndoName();	return 1; }
@@ -489,14 +497,6 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
-	//--Add Meta Data Sub Menu-----------------
-	case wed_AddMetaDataCity:    return WED_CanAddMetaData(mDocument, command);
-	case wed_AddMetaDataCountry: return WED_CanAddMetaData(mDocument, command);
-	case wed_AddMetaDataFAA:     return WED_CanAddMetaData(mDocument, command);
-	case wed_AddMetaDataIATA:    return WED_CanAddMetaData(mDocument, command);
-	case wed_AddMetaDataICAO:    return WED_CanAddMetaData(mDocument, command);
-	case wed_AddMetaDataState:   return WED_CanAddMetaData(mDocument, command);
-	//----------------------------------------
 	case wed_UpdateMetadata:     return WED_CanUpdateMetadata(mDocument);
 	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);
 	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);

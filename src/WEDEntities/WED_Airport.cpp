@@ -27,6 +27,9 @@
 #include "AptDefs.h"
 #include "XESConstants.h"
 #include "WED_XMLWriter.h"
+#include "WED_Menus.h"
+#include "WED_MetaDataKeys.h"
+#include "AssertUtils.h"
 
 #if DEV
 #include <iostream>
@@ -289,35 +292,25 @@ void		WED_Airport::Export(AptInfo_t& info) const
 //Returns in NS_ALL space
 int			WED_Airport::FindProperty(const char * in_prop) const
 {
-	//Test if the property name is one of the property strings
-	for(int i = 0; i < meta_data_vec_map.size(); ++i)
+	KeyEnum key_enum = META_KeyEnumFromDisplayText(in_prop);
+	if(key_enum == wed_AddMetaDataEnd)
 	{
-		string key = in_prop;
-
-		//Translate the human readable to data format
-		if     (key == "City/Locality")  key = "city";
-		else if(key == "Country")        key = "country";
-		else if(key == "FAA Code")       key = "faa_code";
-		else if(key == "IATA Code")      key = "iata_code";
-		else if(key == "ICAO Code")      key = "icao_code";
-		else if(key == "State/Province") key = "state";
-		else if(key == "Region Code")    key = "region_code";
-		else if(key == "Datum Latitude") key = "datum_lat";
-		else if(key == "Datum Longitude")key = "datum_lon";
-		else if(key == "Transition Altitude") key = "transition_alt";
-		else if(key == "Transition Level") key = "transition_level";
-		//else we're using the original
-
-		//i is in NS_META_DATA space
-		if(strcmp(key.c_str(), meta_data_vec_map.at(i).first.c_str())==0)
+		//If it wasn't found before, try it's parent, WED_GISComposite.
+		return WED_GISComposite::FindProperty(in_prop);
+	}
+	else
+	{
+		//Test if the property name is one of the property strings
+		for(int i = 0; i < meta_data_vec_map.size(); ++i)
 		{
-			//NS_META_DATA + the offset
-			return NS_META_DATA + i;
+			//i is in NS_META_DATA space
+			if(strcmp(META_KeyName(key_enum).c_str(), meta_data_vec_map.at(i).first.c_str())==0)
+			{
+				//NS_META_DATA + the offset
+				return NS_META_DATA + i;
+			}
 		}
 	}
-	
-	//If it wasn't found before, try it's parent, WED_GISComposite.
-	return WED_GISComposite::FindProperty(in_prop);
 }
 
 int			WED_Airport::CountProperties(void) const
@@ -345,23 +338,11 @@ void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		info.can_edit = true;
 		info.prop_kind = prop_String;
 
-		string key = meta_data_vec_map.at(index).first;
-		
 		//Translate the data to a pretty human readable format
-		if     (key == "city")      key = "City/Locality";
-		else if(key == "country")   key = "Country";
-		else if(key == "faa_code")  key = "FAA Code";
-		else if(key == "iata_code") key = "IATA Code";
-		else if(key == "icao_code") key = "ICAO Code";
-		else if(key == "state")     key = "State/Province";
-		else if(key == "region_code") key = "Region Code";
-		else if(key == "datum_lat") key = "Datum Latitude";
-		else if(key == "datum_lon") key = "Datum Longitude";
-		else if(key == "transition_alt") key = "Transition Altitude";
-		else if(key == "transition_level") key = "Transition Level";
-		//else we're using the original
+		KeyEnum key_enum = META_KeyEnumFromName(meta_data_vec_map.at(index).first);
+		DebugAssert(key_enum != wed_AddMetaDataEnd);
 
-		info.prop_name = key;
+		info.prop_name =  META_KeyDisplayText(key_enum);
 		info.synthetic = true;
 	}
 	else
