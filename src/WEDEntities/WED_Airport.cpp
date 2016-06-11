@@ -181,7 +181,7 @@ void	WED_Airport::EditMetaDataKey(const string& key, const string& value)
 //	return;
 //}
 
-bool		WED_Airport::ContainsMetaDataKey(const string& key)
+bool		WED_Airport::ContainsMetaDataKey(const string& key) const
 {
 	for(vector<meta_data_entry>::const_iterator itr = meta_data_vec_map.begin();
 		itr != meta_data_vec_map.end();
@@ -197,9 +197,14 @@ bool		WED_Airport::ContainsMetaDataKey(const string& key)
 	return false;
 }
 
-string		WED_Airport::GetMetaDataValue(const string& key)
+int			WED_Airport::CountMetaDataKeys()
 {
-	vector<meta_data_entry>::iterator itr = meta_data_vec_map.begin();
+	return meta_data_vec_map.size();
+}
+
+string		WED_Airport::GetMetaDataValue(const string& key) const
+{
+	vector<meta_data_entry>::const_iterator itr = meta_data_vec_map.begin();
 	//Search through vector looking for the key to edit
 	for( ; itr != meta_data_vec_map.end(); ++itr)
 	{
@@ -213,10 +218,7 @@ string		WED_Airport::GetMetaDataValue(const string& key)
 	return "";//Note that we shouldn't ever get to this point
 }
 
-int			WED_Airport::CountMetaDataKeys()
-{
-	return meta_data_vec_map.size();
-}
+
 
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {

@@ -4,7 +4,7 @@
 
 // How to add a new Metadata Key:
 // Go into WED_Menus.h and add a entry (keep alphabetically organized)
-// Add the corrisponding entry in known_keys
+// Add the corresponding entry in known_keys
 // All display names and keys must be unique, key names must not include commas
 
 const MetaDataKey known_keys[] = {

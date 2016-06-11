@@ -59,7 +59,7 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 
 	//For every column (excluding airport_id), copy if missing key or key's value is ""
 	CSVParser::CSVTable::CSVHeader column_headers = table.GetHeader();
-	for (i = 0; i < default_values.size(); i++)
+	for (i = 1; i < default_values.size(); i++)
 	{
 		string key = column_headers[i];
 		string default_value = default_values[i];

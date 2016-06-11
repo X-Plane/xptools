@@ -58,13 +58,13 @@ public:
 	//void		RemoveMetaDataKey(const string& key);
 	
 	//Returns true if meta_data_vec_map contains the key
-	bool		ContainsMetaDataKey(const string& key);
+	bool		ContainsMetaDataKey(const string& key) const;
 
 	//Gets the size of the Meta Data Vector
 	int			CountMetaDataKeys();
 
-	//Returns the key's value
-	string		GetMetaDataValue(const string& key);
+	//Returns the key's value, key MUST be in the metadata vector already
+	string		GetMetaDataValue(const string& key) const;
 	//----------------------------------------------
 
 	void		Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref);
@@ -114,6 +114,5 @@ private:
 	//Due to the way it is stored in XML, keys are not allowed to contain commas
 	vector<meta_data_entry>	meta_data_vec_map;
 };
-
 
 #endif /* WED_AIRPORT_H */

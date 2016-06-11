@@ -23,12 +23,14 @@
 
 #include "XDefs.h"
 #include "WED_GatewayExport.h"
+#include "WED_MetaDataKeys.h"
 
 #if HAS_GATEWAY
 
 // MSVC insanity: XWin must come in before ANY part of the IOperation interface or Ben's stupid #define to get file/line numbers on ops hoses the MS headers!
 #include "GUI_FormWindow.h"
 #include "WED_MetaDataDefaults.h"
+#include "WED_Menus.h"
 
 #include "PlatformUtils.h"
 #include "FileUtils.h"
@@ -597,6 +599,19 @@ void WED_GatewayExportDialog::Submit()
 		
 		Json::Value		scenery;
 		
+		for(int key_enum = wed_AddMetaDataBegin + 1; key_enum < wed_AddMetaDataEnd; ++key_enum)
+		{
+			string key = META_KeyName(key_enum);
+			if(apt->ContainsMetaDataKey(key))
+			{
+				scenery["additionalMetadata"][key] = apt->GetMetaDataValue(key);
+			}
+		}
+
+		scenery["aptName"] = apt_name;
+		scenery["artistComments"] = comment;
+		scenery["clientVersion"] = WED_VERSION_NUMERIC;
+		
 		string features;
 		if(has_atc_flow(apt))
 			features += "," + to_string(ATC_FLOW_TAG);
@@ -604,9 +619,11 @@ void WED_GatewayExportDialog::Submit()
 			features += "," + to_string(ATC_TAXI_ROUTE_TAG);
 		if(!features.empty())
 			features.erase(features.begin());
+
+		scenery["features"] = features;
+		scenery["icao"] = icao;
+		scenery["masterZipBlob"] = uu64;
 		
-		scenery["userId"] = uname;
-		scenery["password"] = pwd;
 		if(parid.empty())
 		{
 			scenery["parentId"] = Json::Value();
@@ -616,13 +633,9 @@ void WED_GatewayExportDialog::Submit()
 			scenery["parentId"] = parid;
 		}
 
-		scenery["icao"] = icao;
-		scenery["aptName"] = apt_name;
+		scenery["password"] = pwd;
 		scenery["type"] = has_3d(apt) ? "3D" : "2D";
-		scenery["artistComments"] = comment;
-		scenery["features"] = features;
-		scenery["masterZipBlob"] = uu64;
-		scenery["clientVersion"] = WED_VERSION_NUMERIC;
+		scenery["userId"] = uname;
 
 		Json::Value req;
 		req["scenery"] = scenery;
