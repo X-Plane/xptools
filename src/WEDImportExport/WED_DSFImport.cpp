@@ -772,6 +772,23 @@ void WED_DoImportText(const char * path, WED_Thing * base)
 
 
 #if GATEWAY_IMPORT_FEATURES
+const string get_airport_id_from_gateway_file_path(const char * file_path)
+{
+	string tname(file_path);
+	string::size_type p = tname.find_last_of("\\/");
+	if(p != tname.npos)
+		tname = tname.substr(p+1);
+	p = tname.find_last_of(".");
+	if(p != tname.npos)
+		tname = tname.substr(0,p);
+	return tname;
+}
+WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
+{
+	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
+}
+
+
 //This is from an older method of importing things which involved manually getting the files from the hard drive
 void	WED_DoImportDSFText(IResolver * resolver)
 {
@@ -789,6 +806,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 			if(strstr(paths,".dat"))
 			{			
 				WED_ImportOneAptFile(paths,wrl,NULL);
+				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
 			}
 			paths = paths + strlen(paths) + 1;
 		}
@@ -799,15 +817,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		{
 			if(!strstr(paths,".dat"))
 			{
-				string tname(paths);
-				string::size_type p = tname.find_last_of("\\/");
-				if(p != tname.npos)
-					tname = tname.substr(p+1);
-				p = tname.find_last_of(".");
-				if(p != tname.npos)
-					tname = tname.substr(0,p);
-				
-				WED_Thing * g = find_airport_by_icao_recursive(tname,wrl);
+				WED_Thing * g = get_airport_from_gateway_file_path(paths, wrl);
 				if(g == NULL)
 				{
 					g = WED_Group::CreateTyped(wrl->GetArchive());
@@ -817,8 +827,6 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		//		DSF_Import(path,g);
 				DSF_Importer importer;
 				importer.do_import_txt(paths, g);
-
-				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, g));
 			}	
 			paths = paths + strlen(paths) + 1;
 		}
