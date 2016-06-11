@@ -228,6 +228,7 @@ SOURCES += ./src/WEDImportExport/WED_GatewayExport.cpp
 SOURCES += ./src/WEDImportExport/WED_GatewayImport.cpp
 SOURCES += ./src/WEDImportExport/WED_ICAOTable.cpp
 SOURCES += ./src/WEDImportExport/WED_MetaDataDefaults.cpp
+SOURCES += ./src/WEDImportExport/WED_MetaDataKeys.cpp
 SOURCES += ./src/WEDImportExport/WED_MetadataUpdate.cpp
 SOURCES += ./src/WEDImportExport/WED_SceneryPackExport.cpp
 SOURCES += ./src/WEDImportExport/WED_VerTable.cpp
