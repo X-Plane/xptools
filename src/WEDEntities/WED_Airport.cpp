@@ -313,6 +313,7 @@ int			WED_Airport::FindProperty(const char * in_prop) const
 			}
 		}
 	}
+	return -1;
 }
 
 int			WED_Airport::CountProperties(void) const
