@@ -343,10 +343,18 @@ void		WED_Airport::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 
 		//Translate the data to a pretty human readable format
 		KeyEnum key_enum = META_KeyEnumFromName(meta_data_vec_map.at(index).first);
-		DebugAssert(key_enum != wed_AddMetaDataEnd);
-
-		info.prop_name =  META_KeyDisplayText(key_enum);
-		info.synthetic = true;
+		// It *is* legal for an airport to have a metadata key we don't support (maybe it came from a newer version of WED?).
+		// *But*, in such cases, we don't want to support editing those unknown keys.
+		if(key_enum > wed_AddMetaDataBegin && key_enum < wed_AddMetaDataEnd)
+		{
+			info.prop_name = META_KeyDisplayText(key_enum);
+			info.synthetic = true;
+		}
+		else
+		{
+			info.prop_name = "";
+			info.synthetic = false;
+		}
 	}
 	else
 	{
