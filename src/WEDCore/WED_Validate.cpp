@@ -529,7 +529,8 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			{
 				AptATCFreq_t freq_info;
 				freq->Export(freq_info);
-				if(freq_info.atc_type == atc_Delivery || freq_info.atc_type == atc_Ground || freq_info.atc_type == atc_Tower)
+				const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
+				if(freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower)
 				{
 					int mhz = freq_info.freq / 100;
 					if(mhz < 118 || mhz > 136)
