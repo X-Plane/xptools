@@ -3,7 +3,7 @@
 
 #undef INFINITE
 
-const int INFINITE = -1;
+const int INFINITE = INT_MAX; //Don't worry, by 2038 an AI will have instantly rewritten WED in Haskell during a code interview.
 const int MINUTE = 60;
 const int HOUR = MINUTE * 60;
 const int DAY  = HOUR * 24;
@@ -23,7 +23,7 @@ const CACHE_domain_policy k_domain_policies[] = {
 	{ 1100000, (WEEK)    , (MINUTE), (MINUTE * 15) }, //metadata_csv
 	{ 9000000, (INFINITE), (MINUTE), (MINUTE * 15) }, //airports_json
 	{ 4000,    (WEEK * 2), (MINUTE), (MINUTE * 15) }, //airports_versions_json
-	{ 6000,    (WEEK * 2), (MINUTE), (MINUTE * 15) }  //scenery_pack
+	{ 6000,    (INFINITE), (MINUTE), (MINUTE * 15) }  //scenery_pack
 #endif
 };
 

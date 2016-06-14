@@ -64,6 +64,16 @@ void             CACHE_CacheObject::set_last_error_type(CACHE_error_type error_t
 	m_last_error_type = error_type;
 }
 
+time_t           CACHE_CacheObject::get_last_time_modified() const
+{
+	return m_last_time_modified;
+}
+
+void             CACHE_CacheObject::set_last_time_modified(time_t mtime)
+{
+	m_last_time_modified = mtime;
+}
+
 void CACHE_CacheObject::create_RAII_curl_hndl(const string& url, const string& cert, int buf_reserve_size)
 {
 	//Close off any previous handles to make way for this new one

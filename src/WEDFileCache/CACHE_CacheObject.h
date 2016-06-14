@@ -49,6 +49,9 @@ public:
 	CACHE_error_type get_last_error_type() const;
 	void             set_last_error_type(CACHE_error_type error_type);
 
+	time_t           get_last_time_modified() const;
+	void             set_last_time_modified(time_t mtime);
+
 	//Creates and opens a cURL handle to a given url, with a certificate and optional reserve size
 	void             create_RAII_curl_hndl(const string& url, const string& cert, int buf_reserve_size=0);
 

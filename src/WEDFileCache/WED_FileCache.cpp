@@ -415,6 +415,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 					if(FILE_get_file_meta_data(res.out_path, meta_data) == 0)
 					{
 						root["last_time_modified"] = Json::Value((Json::Value::Int64)meta_data.st_mtime);
+						co.set_last_time_modified(meta_data.st_mtime);
 
 						fprintf(cache_object_info(),"%s", Json::FastWriter().write(root).c_str());
 
