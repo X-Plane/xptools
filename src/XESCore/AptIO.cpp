@@ -725,6 +725,12 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				string key = full_entry_text.substr(0, full_entry_text.find_first_of(" "));
 				string value = full_entry_text.substr(full_entry_text.find_first_of(" ") + 1);
 
+				// Before the first public 10.50 beta, we were using "faa_id" as a key,
+				// but that obviously didn't fit with the "_code" suffix for the rest of the identifiers,
+				// so we changed it to match.
+				if(key == "faa_id")
+					key = "faa_code";
+
 				outApts.back().meta_data.push_back(std::pair<string,string>(key,value));
 				break;
 			}

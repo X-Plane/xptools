@@ -60,6 +60,7 @@
 #include "GISUtils.h"
 #include "PlatformUtils.h"
 #include "MathUtils.h"
+#include "WED_ATCFrequency.h"
 
 #define MAX_LON_SPAN_GATEWAY 0.2
 #define MAX_LAT_SPAN_GATEWAY 0.2
@@ -508,7 +509,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			if(taxi->IsRunway())
 			if(s_legal_rwy_twoway.count(taxi->GetRunway()) == 0)
 			{
-				msg = "The taxi route '" + name + "' is set to a ruwnay not present at the airport.";
+				msg = "The taxi route '" + name + "' is set to a runway not present at the airport.";
 			}
 			
 			Point2	start, end;
@@ -521,6 +522,24 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 				#endif
 			}
 		}		
+		if(who->GetClass() == WED_ATCFrequency::sClass)
+		{
+			const WED_ATCFrequency * freq = dynamic_cast<WED_ATCFrequency *>(who);
+			if(freq !=  NULL)
+			{
+				AptATCFreq_t freq_info;
+				freq->Export(freq_info);
+				const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
+				if(freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower)
+				{
+					int mhz = freq_info.freq / 100;
+					if(mhz < 118 || mhz > 136)
+					{
+						msg = "The ATC frequency " + name + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
+					}
+				}
+			}
+		}
 	}
 	
 	//------------------------------------------------------------------------------------

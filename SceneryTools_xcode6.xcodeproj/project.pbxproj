@@ -47,6 +47,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
 		D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */; };
 		D604AE9E1C0D5D8F006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
@@ -1017,6 +1018,8 @@
 
 /* Begin PBXFileReference section */
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
+		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
@@ -2275,6 +2278,8 @@
 		D60B0BD00C0658E600AD5EB7 /* WEDImportExport */ = {
 			isa = PBXGroup;
 			children = (
+				2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */,
+				2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */,
 				D6F3F0831D07294E00188B28 /* WED_MetaDataDefaults.cpp */,
 				D6F3F0841D07294E00188B28 /* WED_MetaDataDefaults.h */,
 				D6F3F0851D07294E00188B28 /* WED_MetadataUpdate.cpp */,
@@ -4578,6 +4583,7 @@
 				D6ED36B30B67964D00D5484E /* GUI_ScrollerPane.cpp in Sources */,
 				D6ED36B40B67964D00D5484E /* GUI_SimpleScroller.cpp in Sources */,
 				D60826581C3622AC001CC3CF /* WED_Sign_Editor.cpp in Sources */,
+				2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */,
 				D6ED36B50B67964D00D5484E /* GUI_Splitter.cpp in Sources */,
 				D6ED36B60B67964D00D5484E /* GUI_Table.cpp in Sources */,
 				D6ED36B70B67964D00D5484E /* GUI_TextField.cpp in Sources */,

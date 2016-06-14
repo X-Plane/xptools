@@ -1,5 +1,7 @@
 #include "WED_MetaDataDefaults.h"
 #include "WED_Airport.h"
+#include "WED_MetaDataKeys.h"
+#include "WED_Menus.h" // for wed_AddMetaDataBegin and wed_AddMetaDataEnd
 #include "CSVParser.h"
 #include <fstream>
 
@@ -63,19 +65,23 @@ bool fill_in_airport_metadata_defaults(WED_Airport & airport, const CSVParser::C
 	{
 		string key = column_headers[i];
 		string default_value = default_values[i];
-
-		//For every of our column do They (airport) have this?
-		bool has_key = airport.ContainsMetaDataKey(key);
-		if(has_key)
+		
+		const KeyEnum key_enum = META_KeyEnumFromName(key);
+		if(key_enum > wed_AddMetaDataBegin && key_enum < wed_AddMetaDataEnd) // We *only* want to insert keys we recognize
 		{
-			if(airport.GetMetaDataValue(key) == "")
+			//For every of our column do They (airport) have this?
+			bool has_key = airport.ContainsMetaDataKey(key);
+			if(has_key)
 			{
-				airport.EditMetaDataKey(key,default_value);
+				if(airport.GetMetaDataValue(key) == "")
+				{
+					airport.EditMetaDataKey(key,default_value);
+				}
 			}
-		}
-		else
-		{
-			airport.AddMetaDataKey(key, default_value);
+			else
+			{
+				airport.AddMetaDataKey(key, default_value);
+			}
 		}
 	}
 	return true;
