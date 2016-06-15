@@ -31,7 +31,7 @@
 #include "WED_MapZoomerNew.h"
 
 WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
-	mZoomer(z), mResolver(i), mHost(h),mHideFilter(NULL), mLockFilter(NULL)
+	mZoomer(z), mResolver(i), mHost(h), mHideFilter(NULL), mLockFilter(NULL)
 {
 	int dims[2];
 
@@ -95,8 +95,13 @@ bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
 	{
 		const char * ent_class = ent->GetGISSubtype();
 		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
+		{
 			if(ent_class == *c)
+			{
 				return false;
+			}
+		}
+		return true;
 	}
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
@@ -119,18 +124,21 @@ bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 	return e->GetLocked();
 }
 
-
-
-
 bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
 {
 	if(mHideFilter)
 	{
 		const char * ent_class = ent->GetClass();
 		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
+		{
 			if(ent_class == *c)
+			{
 				return false;
+			}
+		}
+		return true;
 	}
+
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
 		return false;
@@ -151,5 +159,3 @@ bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
 		return false;
 	return e->GetLocked();
 }
-
-

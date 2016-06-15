@@ -92,7 +92,6 @@ void		WED_Map::SetFilter(const string& filterName, const vector<const char *>& h
 	mLockFilter = lock_filter;
 
 	Refresh();
-	
 }
 
 

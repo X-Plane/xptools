@@ -109,9 +109,6 @@ private:
 	
 	const vector<const char *> *	mHideFilter;
 	const vector<const char *> *	mLockFilter;
-
-
-
 };
 
 

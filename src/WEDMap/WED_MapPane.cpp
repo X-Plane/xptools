@@ -66,9 +66,6 @@
 #include "WED_NWInfoLayer.h"
 #endif
 
-#include "WED_AirportSign.h"
-#include "WED_Runway.h"
-
 char	kToolKeys[] = {
 	0, 0, 0, 0,
 	0, 0, 0, 0,
@@ -598,15 +595,173 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	}
 }
 
+//--Tab Modes----------------------------------------------------------------
+#include "WED_AirportSign.h"
+#include "WED_AirportBeacon.h"
+#include "WED_AirportBoundary.h"
+#include "WED_AirportChain.h"
+#include "WED_Ring.h"
+#include "WED_AirportNode.h"
+#include "WED_AirportSign.h"
+#include "WED_Helipad.h"
+#include "WED_KeyObjects.h"
+#include "WED_LightFixture.h"
+#include "WED_ObjPlacement.h"
+#include "WED_RampPosition.h"
+#include "WED_Root.h"
+#include "WED_Runway.h"
+#include "WED_RunwayNode.h"
+#include "WED_Sealane.h"
+#include "WED_Select.h"
+#include "WED_Taxiway.h"
+#include "WED_TowerViewpoint.h"
+#include "WED_Windsock.h"
+#include "WED_ATCFrequency.h"
+#include "WED_TextureNode.h"
+#include "WED_TextureBezierNode.h"
+#include "WED_OverlayImage.h"
+#include "WED_SimpleBoundaryNode.h"
+#include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_LinePlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_ForestPlacement.h"
+#include "WED_FacadePlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_ExclusionZone.h"
+#include "WED_ForestRing.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
+#include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCTimeRule.h"
+#include "WED_ATCWindRule.h"
+#include "WED_ATCRunwayUse.h"
+#include "WED_RoadEdge.h"
+
+void hide_all_persistents(vector<const char*>& hide_list)
+{
+	hide_list.push_back(WED_AirportSign::sClass);
+	hide_list.push_back(WED_AirportBeacon::sClass);
+	hide_list.push_back(WED_AirportBoundary::sClass);
+	hide_list.push_back(WED_AirportChain::sClass);
+	hide_list.push_back(WED_Ring::sClass);
+	hide_list.push_back(WED_AirportNode::sClass);
+	hide_list.push_back(WED_Helipad::sClass);
+	hide_list.push_back(WED_KeyObjects::sClass);
+	hide_list.push_back(WED_LightFixture::sClass);
+	hide_list.push_back(WED_ObjPlacement::sClass);
+	hide_list.push_back(WED_RampPosition::sClass);
+	hide_list.push_back(WED_Root::sClass);
+	hide_list.push_back(WED_Runway::sClass);
+	hide_list.push_back(WED_RunwayNode::sClass);
+	hide_list.push_back(WED_Sealane::sClass);
+	hide_list.push_back(WED_Select::sClass);
+	hide_list.push_back(WED_Taxiway::sClass);
+	hide_list.push_back(WED_TowerViewpoint::sClass);
+	hide_list.push_back(WED_Windsock::sClass);
+	hide_list.push_back(WED_ATCFrequency::sClass);
+	hide_list.push_back(WED_TextureNode::sClass);
+	hide_list.push_back(WED_TextureBezierNode::sClass);
+	hide_list.push_back(WED_OverlayImage::sClass);
+	hide_list.push_back(WED_SimpleBoundaryNode::sClass);
+	hide_list.push_back(WED_SimpleBezierBoundaryNode::sClass);
+	hide_list.push_back(WED_LinePlacement::sClass);
+	hide_list.push_back(WED_StringPlacement::sClass);
+	hide_list.push_back(WED_ForestPlacement::sClass);
+	hide_list.push_back(WED_FacadePlacement::sClass);
+	hide_list.push_back(WED_PolygonPlacement::sClass);
+	hide_list.push_back(WED_DrapedOrthophoto::sClass);
+	hide_list.push_back(WED_ExclusionZone::sClass);
+	hide_list.push_back(WED_ForestRing::sClass);
+	hide_list.push_back(WED_FacadeRing::sClass);
+	hide_list.push_back(WED_FacadeNode::sClass);
+	hide_list.push_back(WED_TaxiRoute::sClass);
+	hide_list.push_back(WED_TaxiRouteNode::sClass);
+	hide_list.push_back(WED_ATCFlow::sClass);
+	hide_list.push_back(WED_ATCTimeRule::sClass);
+	hide_list.push_back(WED_ATCWindRule::sClass);
+	hide_list.push_back(WED_ATCRunwayUse::sClass);
+	hide_list.push_back(WED_RoadEdge::sClass);
+}
+
+void unhide_persistent(vector<const char*>& hide_list, const char* to_unhide)
+{
+	for(vector<const char*>::iterator hide_itr = hide_list.begin();
+		hide_itr != hide_list.end();
+		++hide_itr)
+	{
+		if(*hide_itr == to_unhide)
+		{
+			hide_list.erase(hide_itr);
+			break;
+		}
+	}
+}
+
+void unhide_persistents(vector<const char*>& hide_list, const vector<const char*>& to_unhide)
+{
+	for (vector<const char*>::const_iterator unhide_itr = to_unhide.begin();
+		 unhide_itr != to_unhide.end();
+		 ++unhide_itr)
+	{
+		for(vector<const char*>::iterator hide_itr = hide_list.begin();
+			hide_itr != hide_list.end();
+			++hide_itr)
+		{
+			if(*unhide_itr == *hide_itr)
+			{
+				hide_list.erase(hide_itr);
+				break;
+			}
+		}
+	}
+}
+
 void		WED_MapPane::SetTabFilterMode(int mode)
 {
 	string title;
-	vector<const char *>		hide_list, lock_list;
-	if(mode == 1)
+	vector<const char *> hide_list, lock_list;
+	
+	enum //Must be kept in sync with TabPane
 	{
-		title = "Foo";
-		hide_list.push_back(WED_AirportSign::sClass);
-		lock_list.push_back(WED_Runway::sClass);
+		tab_Selection,
+		tab_Airports,
+		tab_Signs,
+		tab_Runways,
+		tab_Taxiways,
+		tab_Helipads,
+		tab_Texture
+	};
+	
+	hide_all_persistents(hide_list);
+	
+	if( mode == tab_Selection ||
+		mode == tab_Airports  ||
+		mode == tab_Signs     ||
+		mode == tab_Runways   ||
+		mode == tab_Taxiways  ||
+		mode == tab_Helipads)
+	{
+		title = "";
+		hide_list.clear();
+		lock_list.clear();
 	}
+	else if(mode == tab_Texture)
+	{
+		title = "UV Texture Mode";
+		
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+		lock_list.push_back(WED_AirportSign::sClass);
+		hide_list.push_back(WED_AirportSign::sClass);
+		
+		unhide_persistents(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_DrapedOrthophoto::sClass);
+	}
+
 	mMap->SetFilter(title, hide_list, lock_list);
 }
+//---------------------------------------------------------------------------//
