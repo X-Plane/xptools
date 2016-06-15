@@ -1,5 +1,8 @@
 #include "CACHE_DomainPolicy.h"
 #include "AssertUtils.h"
+#if LIN
+#include <limits.h>
+#endif
 
 #undef INFINITE
 
