@@ -700,7 +700,7 @@ void unhide_persistent(vector<const char*>& hide_list, const char* to_unhide)
 	}
 }
 
-void unhide_persistents(vector<const char*>& hide_list, const vector<const char*>& to_unhide)
+void unhide_persistent(vector<const char*>& hide_list, const vector<const char*>& to_unhide)
 {
 	for (vector<const char*>::const_iterator unhide_itr = to_unhide.begin();
 		 unhide_itr != to_unhide.end();
@@ -732,7 +732,10 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		tab_Runways,
 		tab_Taxiways,
 		tab_Helipads,
-		tab_Texture
+		tab_Texture,
+		tab_Pavement,
+		//tab_ATC,
+		tab_Lights
 	};
 	
 	hide_all_persistents(hide_list);
@@ -748,17 +751,41 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		hide_list.clear();
 		lock_list.clear();
 	}
+	else if(mode == tab_Pavement)
+	{
+		title = "Pavement Mode";
+
+		unhide_persistent(hide_list, WED_DrapedOrthophoto::sClass);
+		unhide_persistent(hide_list, WED_PolygonPlacement::sClass);
+		unhide_persistent(hide_list, WED_Runway::sClass);
+		unhide_persistent(hide_list, WED_Taxiway::sClass);
+	}
+	else if(mode == tab_Lights)
+	{
+		title = "Lights and Markings";
+
+		lock_list.push_back(WED_LinePlacement::sClass);
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_StringPlacement::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
+		unhide_persistent(hide_list, WED_LightFixture::sClass);
+		unhide_persistent(hide_list, WED_Windsock::sClass);
+	}
 	else if(mode == tab_Texture)
 	{
 		title = "UV Texture Mode";
-		
+
+		lock_list.push_back(WED_AirportSign::sClass);
 		lock_list.push_back(WED_PolygonPlacement::sClass);
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
-		lock_list.push_back(WED_AirportSign::sClass);
-		hide_list.push_back(WED_AirportSign::sClass);
-		
-		unhide_persistents(hide_list, lock_list);
+
+		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_DrapedOrthophoto::sClass);
 	}
 

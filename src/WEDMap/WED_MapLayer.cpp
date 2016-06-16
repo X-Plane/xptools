@@ -95,14 +95,10 @@ bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
 	{
 		const char * ent_class = ent->GetGISSubtype();
 		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
-		{
 			if(ent_class == *c)
-			{
 				return false;
-			}
-		}
-		return true;
 	}
+
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
 		return false;
@@ -118,6 +114,7 @@ bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 			if(ent_class == *c)
 				return true;
 	}
+
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
 		return false;
@@ -130,13 +127,8 @@ bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
 	{
 		const char * ent_class = ent->GetClass();
 		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
-		{
 			if(ent_class == *c)
-			{
 				return false;
-			}
-		}
-		return true;
 	}
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
@@ -154,6 +146,7 @@ bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
 			if(ent_class == *c)
 				return true;
 	}
+
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
 		return false;

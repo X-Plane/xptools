@@ -251,6 +251,16 @@ WED_DocumentWindow::WED_DocumentWindow(
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
 	prop_tabs->AddPane(mTCEPane, "Texture");
 
+
+	// --------------- Pavement Tab Mode ---------------
+
+	WED_PropertyPane * prop_pane7 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane7, "Pavement");
+
+	// --------------- Lights and Markings ---------------
+
+	WED_PropertyPane * prop_pane8 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane8, "Lights and Markings");
 	// --------------- Hierarchy  View ---------------
 
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };
