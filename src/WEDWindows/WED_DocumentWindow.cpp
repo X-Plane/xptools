@@ -191,76 +191,41 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	// --------------- Selection ---------------
 
-
 	static const char * sel_t[] = { "Name", "Type", NULL };
 	static		 int	sel_w[] = { 100, 100 };
 
 	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
 	prop_tabs->AddPane(prop_pane1, "Selection");
 
-	// --------------- AIRPORT
+	// --------------- Pavement Tab Mode ---------------
 
-	static const char * air_t[] = { "Name", "Type", "Field Elevation", "Has ATC", "ICAO Identifier", "Frequency", NULL };
-	static		 int	air_w[] = { 200, 100, 100, 75, 100, 150  };
-	static const char * air_f[] = { "WED_Airport", "WED_ATCFrequency", NULL };
+	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane2, "Pavement");
 
-	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);
-	prop_tabs->AddPane(prop_pane2, "Airports");
+	// --------------- ATC Taxi + Flow ---------------
 
-	// --------------- LIGHTS, SIGNS, BEACONS ---------------
+	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane3, "ATC Taxi + Flow");
 
-	static const char * sin_t[] = { "Name", "Type", "Size", "Angle", 0 };
-	static		 int	sin_w[] = { 200, 100, 100, 100  };
-	static const char * sin_f[] = { "WED_Airport", "WED_LightFixture", "WED_AirportBeacon", "WED_AirportSign", "WED_Group", NULL };
+	// --------------- Lights and Markings ---------------
 
-	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);
-	prop_tabs->AddPane(prop_pane3, "Signs");
+	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane4, "Lights and Markings");
 
-	// --------------- RUNWAYS ---------------
+	// ---------------- 3D Mode ---------------------
 
-	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshold 2",
-									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshold 1",
-									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
-	static		 int	rwy_w[] = { 150, 150, 150, 150, 150, 150,
-									150, 150, 150, 150, 150, 150,
-									150, 150, 150, 150, 150, 150, 150 };
-	static const char * rwy_f[] = { "WED_Airport", "WED_Runway", NULL };
+	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane5, "3D Objects");
 
-	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);
-	prop_tabs->AddPane(prop_pane4, "Runways");
+	// ---------------- Exclusions ------------------
 
-	// --------------- TAXIWAYS ---------------
-
-	static const char * tax_t[] = { "Name", "Surface", "Roughness", "Texture Heading", 0 };
-	static		 int	tax_w[] = { 200, 150, 100, 150  };
-	static const char * tax_f[] = { "WED_Airport", "WED_Taxiway", "WED_Group", NULL };
-
-	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);
-	prop_tabs->AddPane(prop_pane5, "Taxiways");
-
-	// --------------- HELIPADS ---------------
-
-	static const char * hel_t[] = { "Name", "Surface", "Markings", "Shoulder", "Roughness", "Lights", 0 };
-	static		 int	hel_w[] = { 200, 130, 130, 130, 100, 130 };
-	static const char * hel_f[] = { "WED_Airport", "WED_Helipad", NULL };
-
-	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);
-	prop_tabs->AddPane(prop_pane6, "Helipads");
+	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane6, "Exclusions and Boundries");
 
 	// ---------------- TCE -------------
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
 	prop_tabs->AddPane(mTCEPane, "Texture");
 
-
-	// --------------- Pavement Tab Mode ---------------
-
-	WED_PropertyPane * prop_pane7 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane7, "Pavement");
-
-	// --------------- Lights and Markings ---------------
-
-	WED_PropertyPane * prop_pane8 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane8, "Lights and Markings");
 	// --------------- Hierarchy  View ---------------
 
 	static const char * titles[] =  { "Locked", "Hidden", "Name", 0 };

@@ -727,25 +727,17 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 	enum //Must be kept in sync with TabPane
 	{
 		tab_Selection,
-		tab_Airports,
-		tab_Signs,
-		tab_Runways,
-		tab_Taxiways,
-		tab_Helipads,
-		tab_Texture,
 		tab_Pavement,
-		//tab_ATC,
-		tab_Lights
+		tab_ATC,
+		tab_Lights,
+		tab_3D,
+		tab_Exclusions,
+		tab_Texture
 	};
 	
 	hide_all_persistents(hide_list);
 	
-	if( mode == tab_Selection ||
-		mode == tab_Airports  ||
-		mode == tab_Signs     ||
-		mode == tab_Runways   ||
-		mode == tab_Taxiways  ||
-		mode == tab_Helipads)
+	if(mode == tab_Selection)
 	{
 		title = "";
 		hide_list.clear();
@@ -760,12 +752,28 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, WED_Runway::sClass);
 		unhide_persistent(hide_list, WED_Taxiway::sClass);
 	}
+	else if(mode == tab_ATC)
+	{
+		title = "ATC Taxi + Flow Mode";
+
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_FacadeRing::sClass);
+		lock_list.push_back(WED_ForestPlacement::sClass);
+		lock_list.push_back(WED_ObjPlacement::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_RampPosition::sClass);
+		unhide_persistent(hide_list, WED_TaxiRoute::sClass);
+	}
 	else if(mode == tab_Lights)
 	{
 		title = "Lights and Markings";
 
-		lock_list.push_back(WED_LinePlacement::sClass);
 		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_LinePlacement::sClass);
 		lock_list.push_back(WED_PolygonPlacement::sClass);
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_StringPlacement::sClass);
@@ -775,6 +783,35 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
 		unhide_persistent(hide_list, WED_LightFixture::sClass);
 		unhide_persistent(hide_list, WED_Windsock::sClass);
+	}
+	else if(mode == tab_3D)
+	{
+		title = "3D Objects Mode";
+
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_FacadePlacement::sClass);
+		unhide_persistent(hide_list, WED_ForestPlacement::sClass);
+		unhide_persistent(hide_list, WED_ObjPlacement::sClass);
+	}
+	else if(mode == tab_Exclusions)
+	{
+		title = "Exclusions and Boundries";
+
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_FacadePlacement::sClass);
+		lock_list.push_back(WED_ForestPlacement::sClass);
+		lock_list.push_back(WED_ObjPlacement::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_ExclusionZone::sClass);
 	}
 	else if(mode == tab_Texture)
 	{
