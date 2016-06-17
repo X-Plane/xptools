@@ -183,6 +183,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	if(who->GetClass() == WED_Taxiway::sClass)
 	{
 		WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
+		if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+		{
+			msg = "Water is not a valid surface type for taxiways";
+			DoUserAlert(msg.c_str());
+			return who;
+		}
+
 		IGISPointSequence * ps;
 		ps = twy->GetOuterRing();
 		if(!ps->IsClosed() || ps->GetNumSides() < 3)
@@ -307,6 +314,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 			if (rwy)
 			{
+				if(rwy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+				{
+					msg = "Water is not a valid surface type for runways";
+					DoUserAlert(msg.c_str());
+					return who;
+				}
+		
 				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced thresholds.";
 				
 				#if !GATEWAY_IMPORT_FEATURES
