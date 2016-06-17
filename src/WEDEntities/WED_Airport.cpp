@@ -36,7 +36,6 @@
 #endif
 
 DEFINE_PERSISTENT(WED_Airport)
-TRIVIAL_COPY(WED_Airport, WED_GISComposite)
 
 /*
 Property number space (where each NS_ starts from 0)
@@ -421,6 +420,17 @@ void		WED_Airport::DeleteNthProperty(int n)
 	}
 }
 //-----------------------------------------------------------------------------
+
+//This is secretly declared with WED_Persistant's DECLARE_PERSISTENT macro
+void WED_Airport::CopyFrom(const WED_Airport* rhs)
+{
+	WED_GISComposite::CopyFrom(rhs);
+	
+	//Yes, called beforehand despite having the suffix -ed
+	StateChanged();
+	meta_data_vec_map = rhs->meta_data_vec_map;
+}
+
 void 			WED_Airport::ReadFrom(IOReader * reader)
 {
 	WED_GISComposite::ReadFrom(reader);
