@@ -186,8 +186,10 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
 		{
 			msg = "Water is not a valid surface type for taxiways";
+			#if !FIND_BAD_AIRPORTS
 			DoUserAlert(msg.c_str());
 			return who;
+			#endif
 		}
 
 		IGISPointSequence * ps;
@@ -206,8 +208,10 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 				WED_Thing * h = dynamic_cast<WED_Thing *>(ps);
 				if(h) 
 				{
+					#if !FIND_BAD_AIRPORTS
 					DoUserAlert(msg.c_str());
 					return h;
+					#endif
 				}
 			}
 		}
@@ -317,8 +321,10 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 				if(rwy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
 				{
 					msg = "Water is not a valid surface type for runways";
+					#if !FIND_BAD_AIRPORTS
 					DoUserAlert(msg.c_str());
 					return who;
+					#endif
 				}
 		
 				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced thresholds.";
@@ -529,7 +535,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 					msg = "The taxi route '" + name + "' is zero length.";
 				#endif
 			}
-		}		
+		}
 	}
 	
 	//------------------------------------------------------------------------------------
