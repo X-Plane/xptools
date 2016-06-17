@@ -591,6 +591,7 @@ WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", SQL_N
 
 void		WED_TypeField::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 0;
 	info.prop_kind = prop_String;
 	info.prop_name = "Class";

@@ -94,6 +94,7 @@ int			GUI_SimpleTableGeometry::ColForX(int n)
 
 int			GUI_SimpleTableGeometry::RowForY(int n)
 {
+	if(n < 0) return -1; //Fixes being able to click an imaginary last cell and select the real last cell
 	return n / mRowHeight;
 }
 
