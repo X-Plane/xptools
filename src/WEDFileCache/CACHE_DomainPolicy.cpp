@@ -13,7 +13,7 @@ const int DAY  = HOUR * 24;
 const int WEEK = DAY * 7;
 
 const CACHE_domain_policy k_domain_policies[] = {
-#if DEV
+#if DEV && 0 //Turn back on when trying to actually test the file cache
 	//  buffer size age       client,    server cooldown
 	{ 0,       0,            0,        0        }, //none
 	{ 1100000, (MINUTE * 2), (MINUTE), (MINUTE) }, //metadata_csv

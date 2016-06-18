@@ -66,7 +66,7 @@
 #define MAX_LAT_SPAN_GATEWAY 0.2
 
 // For now this is a debug mode - we printf all airport ICAOs with problems and don't interrupt validate.
-#define FIND_BAD_AIRPORTS 0
+#define FIND_BAD_AIRPORTS 1
 
 #define CHECK_ZERO_LENGTH 1
 
@@ -191,6 +191,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			DoUserAlert(msg.c_str());
 			return who;
 			#endif
+			printf("%s", msg.c_str());
 		}
 
 		IGISPointSequence * ps;
@@ -766,23 +767,65 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 {
+#if FIND_BAD_AIRPORTS
+	string exp_target_str;
+	switch(gExportTarget)
+	{
+		case wet_xplane_900:
+			exp_target_str = "wet_xplane_900";
+			break;
+		case wet_xplane_1000:
+			exp_target_str = "wet_xplane_1000";
+			break;
+		case wet_xplane_1021:
+			exp_target_str = "wet_xplane_1021";
+			break;
+		case wet_xplane_1050:
+			exp_target_str = "wet_xplane_1050";
+			break;
+		case wet_gateway:
+			exp_target_str = "wet_gateway";
+			break;
+		default: 
+			DebugAssert("Export target %s is unknown", exp_target_str.c_str());
+	}
+	
+	printf("Export Target: %s\n", exp_target_str.c_str());
+#endif
+
 #if !GATEWAY_IMPORT_FEATURES
+	string msg = "";
 	if(WED_DoSelectZeroLength(resolver))
 	{
-		DoUserAlert("Your airport contains zero-length ATC routing lines. These should be deleted.");
+		msg = "Your airport contains zero-length ATC routing lines. These should be deleted.";
+#if !FIND_BAD_AIRPORTS
+		DoUserAlert(msg.c_str());
 		return false;
+#else
+		printf("%s\n", msg.c_str());
+#endif
 	}
 	
 	if(WED_DoSelectDoubles(resolver))
 	{
-		DoUserAlert("Your airport contains doubled ATC routing nodes. These should be merged.");
+		msg = "Your airport contains doubled ATC routing nodes. These should be merged.";
+#if !FIND_BAD_AIRPORTS
+		DoUserAlert(msg.c_str());
 		return false;
+#else
+		printf("%s\n", msg.c_str());
+#endif
 	}
 	
 	if(WED_DoSelectCrossing(resolver))	
 	{
-		DoUserAlert("Your airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.");
+		msg = "Your airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.";
+#if !FIND_BAD_AIRPORTS
+		DoUserAlert(msg.c_str());
 		return false;
+#else
+		printf("%s\n", msg.c_str());
+#endif
 	}
 #endif
 	s_used_hel.clear();
