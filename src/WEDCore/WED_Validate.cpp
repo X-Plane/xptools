@@ -77,6 +77,9 @@ static set<string>	s_icao;
 static set<string>	s_flow_names;
 static set<int>		s_legal_rwy_oneway;
 static set<int>		s_legal_rwy_twoway;
+static string name;
+static string n1;
+static string n2;
 
 static bool GetThingResouce(WED_Thing * who, string& r)
 {
@@ -100,49 +103,412 @@ static bool GetThingResouce(WED_Thing * who, string& r)
 	CAST_WITH_CHECK(WED_PolygonPlacement,pol)
 	
 	return false;
+}
+
+static WED_Thing* ValidateOneTaxiSign(WED_Thing* who, string& msg)
+{
+	/*--Taxi Sign Validation Rules---------------------------------------------
+		See Taxi Sign spec and parser for detailed validation rules
+	 */
+
+		WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
+		string signName;
+		airSign->GetName(signName);
+
+		//Create the necessary parts for a parsing operation
+		parser_in_info in(signName);
+		parser_out_info out;
+
+		ParserTaxiSign(in,out);
+		if(out.errors.size() > 0)
+		{
+			int MAX_ERRORS = 12;//TODO - Is this good?
+			for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+			{
+				msg += out.errors[i].msg;
+				msg += '\n';
+			}
+			return who;
+		}
+
+	return NULL;
+}
+
+static WED_Thing* ValidateOneTaxiway(WED_Thing* who, string& msg)
+{
+	/*--Taxiway Validation Rules-----------------------------------------------
+		Water is not a valide surface type for taxiways
+		Outer boundry of taxiway is not at least 3 sided
+		Hole of taxiway is not at least 3 sided
+	 */
+
+	WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
+	if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+	{
+		msg = "Water is not a valid surface type for taxiways";
+#if !FIND_BAD_AIRPORTS
+		DoUserAlert(msg.c_str());
+		return who;
+#endif
+		printf("%s", msg.c_str());
+	}
+
+	IGISPointSequence * ps;
+	ps = twy->GetOuterRing();
+	if(!ps->IsClosed() || ps->GetNumSides() < 3)
+	{
+		msg = "Outer boundary of taxiway is not at least 3 sided.";
+	}
+	else
+	{
+		for(int h = 0; h < twy->GetNumHoles(); ++h)
+		{
+			ps = twy->GetNthHole(h);
+			if(!ps->IsClosed() || ps->GetNumSides() < 3)
+			{
+				// Ben says: two-point holes are INSANELY hard to find.  So we do the rare thing and intentionally
+				// hilite the hole so that the user can nuke it.				
+				msg = "Hole of taxiway is not at least 3 sided.";
+				WED_Thing * h = dynamic_cast<WED_Thing *>(ps);
+				if(h) 
+				{
+#if !FIND_BAD_AIRPORTS
+					DoUserAlert(msg.c_str());
+					return h;
+#endif			
+				}
+			}
+		}
+	}
+
+	return NULL;
+}
+
+static WED_Thing* ValidateOneRunwayOrSealane(WED_Thing* who, string& msg)
+{
+	/*--Runway/Sealane Validation Rules----------------------------------------
+		Duplicate Runway/Sealane Name
+		Low-end Name rules
+		  - Empty Low-end Name
+		  - Illegal suffix for low-end runway
+		  - Illegal characters in its low-end name
+		  - Illegal low-end number, must be between 1 and 36
+		High-end Name rules
+		  - Empty High-end Name
+		  - Illegal suffix for high-end runway
+		  - Illegal characters in its high-end name
+		  - Illegal high-end number, must be between 19 and 36
+		Other Suffix rules
+		  - Mismatched suffixes, L vs R etc
+		  - Suffix on only one end
+		Runway Numbers rules
+		  - Low number must be first
+		  - High end is not the reciprocal of the low end
+		Runway Other rules
+		  - Width must be atleast 1 meter wide
+		  - Water us bit a valid surface type (runway only)
+		  - Overlapping displaced thresholds
+		  - Illegal surface roughness, shuold be between 0 and 1, inclusive
+		  - Has end outside world map
+		  - Needs to be reversed to match its name
+		  - Misaligned with its runway name
+	 */
+
+	if (s_used_rwy.count(name))	msg = "The runway/sealane name '" + name + "' has already been used.";
+	s_used_rwy.insert(name);
+	string::size_type p = name.find("/");
+	if (p != name.npos)
+	{
+		n1 = name.substr(0,p);
+		n2 = name.substr(p+1);
+	} else
+		n1 = name;
+
+	int suf1 = 0, suf2 = 0;
+	int	num1 = -1, num2 = -1;
+
+	if (n1.empty())	msg = "The runway/sealane '" + name + "' has an empty low-end name.";
+	else {
+		int suffix = n1[n1.length()-1];
+		if (suffix < '0' || suffix > '9')
+		{
+			if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf1 = suffix;
+			else msg = "The runway/sealane '" + name + "' has an illegal suffix for the low-end runway.";
+			n1.erase(n1.length()-1);
+		}
+
+		int i;
+		for (i = 0; i < n1.length(); ++i)
+		if (n1[i] < '0' || n1[i] > '9')
+		{
+			msg = "The runway/sealane '" + name + "' has an illegal characters in its low-end name.";
+			break;
+		}
+		if (i == n1.length())
+		{
+			num1 = atoi(n1.c_str());
+		}
+		if (num1 < 1 || num1 > 36)
+		{
+			msg = "The runway/sealane '" + name + "' has an illegal low-end number, which must be between 1 and 36.";
+			num1 = -1;
+		}
+	}
+
+	if (p != name.npos)
+	{
+		if (n2.empty())	msg = "The runway/sealane '" + name + "' has an empty high-end name.";
+		else {
+			int suffix = n2[n2.length()-1];
+			if (suffix < '0' || suffix > '9')
+			{
+				if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf2 = suffix;
+				else msg = "The runway/sealane '" + name + "' has an illegal suffix for the high-end runway.";
+				n2.erase(n2.length()-1);
+			}
+
+			int i;
+			for (i = 0; i < n2.length(); ++i)
+			if (n2[i] < '0' || n2[i] > '9')
+			{
+				msg = "The runway/sealane '" + name + "' has an illegal characters in its high-end name.";
+				break;
+			}
+			if (i == n2.length())
+			{
+				num2 = atoi(n2.c_str());
+			}
+			if (num2 < 19 || num2 > 36)
+			{
+				msg = "The runway/sealane '" + name + "' has an illegal high-end number, which must be between 19 and 36.";
+				num2 = -1;
+			}
+		}
+	}
+
+	if (suf1 != 0 && suf2 != 0)
+	{
+		if ((suf1 == 'L' && suf2 != 'R') ||
+			(suf1 == 'R' && suf2 != 'L') ||
+			(suf1 == 'C' && suf2 != 'C') ||
+			(suf1 == 'S' && suf2 != 'S'))
+				msg = "The runway/sealane '" + name + "' has mismatched suffixes - check L vs R, etc.";
+	}
+	else if((suf1 == 0) != (suf2 == 0))
+	{
+		msg = "The runway/sealane '" + name + "' has a suffix on only one end.";
+	}
+	if (num1 != -1 && num2 != -1)
+	{
+		if (num2 < num1)
+			msg = "The runway/sealane '" + name + "' has mismatched runway numbers - the low number must be first.'";
+		else if (num2 != num1 + 18)
+			msg = "The runway/sealane '" + name + "' has mismatched runway numbers - high end is not the reciprocal of the low-end.";
+	}
+
+	if (msg.empty())
+	{
+		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
+		Assert(lw);			
+		if (lw->GetWidth() < 1.0) msg = "The runway/sealane '" + name + "' must be at least one meter wide.";
+
+		WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
+		if (rwy)
+		{
+			if(rwy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+			{
+				msg = "Water is not a valid surface type for runways";
+				#if !FIND_BAD_AIRPORTS
+				DoUserAlert(msg.c_str());
+				return who;
+				#endif
+			}
+
+			if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced thresholds.";
+			
+			#if !GATEWAY_IMPORT_FEATURES
+				if(rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0) msg = "The runway '" + name + "' has an illegal surface roughness. It should be in the range 0 to 1.";
+			#endif
+			
+		}
+		
+		Point2 ends[2];
+		lw->GetNthPoint(0)->GetLocation(gis_Geo,ends[0]);
+		lw->GetNthPoint(1)->GetLocation(gis_Geo,ends[1]);
+		Bbox2	runway_extent(ends[0],ends[1]);
+		if (runway_extent.xmin() < -180.0 ||
+			runway_extent.xmax() >  180.0 ||
+			runway_extent.ymin() <  -90.0 ||
+			runway_extent.ymax() >   90.0)
+		{
+			msg = "The runway/sealane '" + name + "' has an end outside the World Map.";
+		}	
+		else
+		{
+			#if !GATEWAY_IMPORT_FEATURES
+				double heading, len;
+				Point2 ctr;
+				Quad_2to1(ends, ctr, heading, len);
+				double approx_heading = num1 * 10.0;
+				double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
+				if(heading_delta > 135.0)
+					msg = "The runway/sealane '" + name + "' needs to be reversed to match its name.";
+				else if(heading_delta > 45.0)
+					msg = "The runway/sealane '" + name + "' is misaligned with its runway name.";				
+			#endif
+		}
+	}
+
+	return NULL;
+}
+
+static WED_Thing* ValidateOneHelipad(WED_Thing* who, string& msg)
+{
+	/*--Helipad Validation Rules-----------------------------------------------
+		Helipad Name rules
+		  - Name already used
+		  - The selected helipad has no name
+		  - Name does not start with letter H
+		  - Name is longer than 3 characters
+		  - Contains illegal characters, must be in the form of H<number>
+		Helipad Width rules
+		  - Helipad is less than one meter wide
+		  - Helipad is less than one meter long
+	 */
+	if (s_used_hel.count(name))	msg = "The helipad name '" + name + "' has already been used.";
+	s_used_hel.insert(name);
+
+	n1 = name;
+	if (n1.empty())
+	{
+		msg = "The selected helipad has no name.";
+	}
+	else
+	{
+		if (n1[0] != 'H')
+		{
+			msg = "The helipad '" + name + "' does not start with the letter H.";
+		}
+		else
+		{
+			if(n1.length() > 3)
+			{
+				msg = "The helipad '" + name + "' is longer than the maximum 3 characters.";
+			}
+
+			n1.erase(0,1);
+			for (int i = 0; i < n1.length(); ++i)
+			{
+				if (n1[i] < '0' || n1[i] > '9')
+				{
+					msg = "The helipad '" + name + "' conntains illegal characters in its name.  It must be in the form H<number>.";
+					break;
+				}
+			}
+		}
+	}
+	if (msg.empty())
+	{
+		WED_Helipad * heli = dynamic_cast<WED_Helipad *>(who);
+		if (heli->GetWidth() < 1.0) msg = "The helipad '" + name + "' is less than one meter wide.";
+		if (heli->GetLength() < 1.0) msg = "The helipad '" + name + "' is less than one meter long.";
+	}
+
+	return NULL;
+}
+
+static WED_Thing* ValidateOneAirport(WED_Thing* who, string& msg)
+{
+	/*--Validate Airport Rules-------------------------------------------------
+		Airport Name rules
+		  - Empty ICAO code
+		  - ICAO used twice in airport
+	 */
+
+	s_used_hel.clear();
+	s_used_rwy.clear();
+	s_flow_names.clear();
+	s_legal_rwy_oneway.clear();
+	s_legal_rwy_twoway.clear();
+
+	WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+	if(who)
+	{
+		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
+		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
+
+		string icao;
+		apt->GetICAO(icao);
+		if(icao.empty())
+		{
+			msg = "The airport '" + name + "' has an empty ICAO code.";
+		}
+		else
+		{
+			if(s_icao.count(icao))
+			{
+				msg = "The airport ICAO code '" + icao + "' is used twice in your WED project file.";
+			}
+			else
+			{
+				s_icao.insert(icao);
+			}
+		}
+	}
+
+	return NULL;
+}
+
+static WED_Thing* ValidateOneFacade(WED_Thing* who, string& msg)
+{
+	/*--Facade Validate Rules--------------------------------------------------
+		wet_xplane_900 rules
+		  - Custom facade wall choices are only in X-Plane 10 and newer
+		  - Curved facades are only supported in X-Plane 10 and newer
+		Other rules
+		  - Facades may not have holes in them
+	 */
+
+	WED_FacadePlacement * fac = dynamic_cast<WED_FacadePlacement*>(who);
+	DebugAssert(who);
+	if(gExportTarget == wet_xplane_900 && fac->HasCustomWalls())
+	{
+		msg = "Custom facade wall choices are only supported in X-Plane 10 and newer.";
+	}
 	
-	
+	if(fac->GetNumHoles() > 0)
+	{
+		msg = "Facades may not have holes in them.";
+	}
+
+	if(gExportTarget == wet_xplane_900 && WED_HasBezierPol(fac))
+		msg = "Curved facades are only supported in X-Plane 10 and newer.";
+
+	return NULL;
 }
 
 static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 {
-	string name, n1, n2;
-	string::size_type p;
 	int i;
 	who->GetName(name);
 	string msg;
-	
+
 	// Don't validate hidden stuff - we won't export it!
 	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
 	if(ee && ee->GetHidden())
 		return NULL;
 
-	//--Taxi Sign Validation-----------------------------------
+	WED_Thing * bad_thing = NULL;
 	if(who->GetClass() == WED_AirportSign::sClass)
 	{
-		
-		WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
-		string signName;
-		airSign->GetName(signName);
-		
-		//Create the necisary parts for a parsing operation
-		parser_in_info in(signName);
-		parser_out_info out;
-		
-		ParserTaxiSign(in,out);
-		int MAX_ERRORS = 12;//TODO - Is this good?
-		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
-		{
-			msg += out.errors[i].msg;
-			msg += '\n';
-		}
+		ValidateOneTaxiSign(who,msg);
+		//Caught at bottom
 	}
-	//---------------------------------------------------------
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR DANGLING PARTS - THIS SHOULD NOT HAPPEN BUT EVERY NOW AND THEN IT DOES
-	//------------------------------------------------------------------------------------			
-	
+	//------------------------------------------------------------------------------------
+
 	IGISPointSequence * ps = dynamic_cast<IGISPointSequence *>(who);
 	if(ps)
 	{
@@ -174,283 +540,47 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 					}
 				}
 			}
-		}		
+		}
 	}
 
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR GENERAL APT.DAT BOGUSNESS
-	//------------------------------------------------------------------------------------			
+	//------------------------------------------------------------------------------------
 	
 	if(who->GetClass() == WED_Taxiway::sClass)
 	{
-		WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
-		if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
-		{
-			msg = "Water is not a valid surface type for taxiways";
-			#if !FIND_BAD_AIRPORTS
-			DoUserAlert(msg.c_str());
-			return who;
-			#endif
-			printf("%s", msg.c_str());
-		}
-
-		IGISPointSequence * ps;
-		ps = twy->GetOuterRing();
-		if(!ps->IsClosed() || ps->GetNumSides() < 3)
-			msg = "Outer boundary of taxiway is not at least 3 sided.";
-		else
-		for(int h = 0; h < twy->GetNumHoles(); ++h)
-		{
-			ps = twy->GetNthHole(h);
-			if(!ps->IsClosed() || ps->GetNumSides() < 3)
-			{
-				// Ben says: two-point holes are INSANELY hard to find.  So we do the rare thing and intentionally
-				// hilite the hole so that the user can nuke it.				
-				msg = "Hole of taxiway is not at least 3 sided.";
-				WED_Thing * h = dynamic_cast<WED_Thing *>(ps);
-				if(h) 
-				{
-					#if !FIND_BAD_AIRPORTS
-					DoUserAlert(msg.c_str());
-					return h;
-					#endif
-				}
-			}
-		}
+		ValidateOneTaxiway(who,msg);
 	}
-	
+
 	if (who->GetClass() == WED_Runway::sClass || who->GetClass() == WED_Sealane::sClass)
 	{
-		if (s_used_rwy.count(name))	msg = "The runway/sealane name '" + name + "' has already been used.";
-		s_used_rwy.insert(name);
-		p = name.find("/");
-		if (p != name.npos)
+		bad_thing = ValidateOneRunwayOrSealane(who, msg);
+
+		#if FIND_BAD_AIRPORTS
+		if(bad_thing != NULL)
 		{
-			n1 = name.substr(0,p);
-			n2 = name.substr(p+1);
-		} else
-			n1 = name;
-
-		int suf1 = 0, suf2 = 0;
-		int	num1 = -1, num2 = -1;
-
-		if (n1.empty())	msg = "The runway/sealane '" + name + "' has an empty low-end name.";
-		else {
-			int suffix = n1[n1.length()-1];
-			if (suffix < '0' || suffix > '9')
-			{
-				if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf1 = suffix;
-				else msg = "The runway/sealane '" + name + "' has an illegal suffix for the low-end runway.";
-				n1.erase(n1.length()-1);
-			}
-
-			for (i = 0; i < n1.length(); ++i)
-			if (n1[i] < '0' || n1[i] > '9')
-			{
-				msg = "The runway/sealane '" + name + "' has an illegal characters in its low-end name.";
-				break;
-			}
-			if (i == n1.length())
-			{
-				num1 = atoi(n1.c_str());
-			}
-			if (num1 < 1 || num1 > 36)
-			{
-				msg = "The runway/sealane '" + name + "' has an illegal low-end number, which must be between 1 and 36.";
-				num1 = -1;
-			}
+			return bad_thing;
 		}
-
-		if (p != name.npos)
-		{
-			if (n2.empty())	msg = "The runway/sealane '" + name + "' has an empty high-end name.";
-			else {
-				int suffix = n2[n2.length()-1];
-				if (suffix < '0' || suffix > '9')
-				{
-					if (suffix == 'L' || suffix == 'R' || suffix == 'C' || suffix == 'S') suf2 = suffix;
-					else msg = "The runway/sealane '" + name + "' has an illegal suffix for the high-end runway.";
-					n2.erase(n2.length()-1);
-				}
-
-				for (i = 0; i < n2.length(); ++i)
-				if (n2[i] < '0' || n2[i] > '9')
-				{
-					msg = "The runway/sealane '" + name + "' has an illegal characters in its high-end name.";
-					break;
-				}
-				if (i == n2.length())
-				{
-					num2 = atoi(n2.c_str());
-				}
-				if (num2 < 19 || num2 > 36)
-				{
-					msg = "The runway/sealane '" + name + "' has an illegal high-end number, which must be between 19 and 36.";
-					num2 = -1;
-				}
-			}
-		}
-
-		if (suf1 != 0 && suf2 != 0)
-		{
-			if ((suf1 == 'L' && suf2 != 'R') ||
-				(suf1 == 'R' && suf2 != 'L') ||
-				(suf1 == 'C' && suf2 != 'C') ||
-				(suf1 == 'S' && suf2 != 'S'))
-					msg = "The runway/sealane '" + name + "' has mismatched suffixes - check L vs R, etc.";
-		}
-		else if((suf1 == 0) != (suf2 == 0))
-		{
-			msg = "The runway/sealane '" + name + "' has a suffix on only one end.";
-		}
-		if (num1 != -1 && num2 != -1)
-		{
-			if (num2 < num1)
-				msg = "The runway/sealane '" + name + "' has mismatched runway numbers - the low number must be first.'";
-			else if (num2 != num1 + 18)
-				msg = "The runway/sealane '" + name + "' has mismatched runway numbers - high end is not the reciprocal of the low-end.";
-		}
-
-		if (msg.empty())
-		{
-			WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
-			Assert(lw);			
-			if (lw->GetWidth() < 1.0) msg = "The runway/sealane '" + name + "' must be at least one meter wide.";
-
-			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
-			if (rwy)
-			{
-				if(rwy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
-				{
-					msg = "Water is not a valid surface type for runways";
-					#if !FIND_BAD_AIRPORTS
-					DoUserAlert(msg.c_str());
-					return who;
-					#endif
-				}
-		
-				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced thresholds.";
-				
-				#if !GATEWAY_IMPORT_FEATURES
-					if(rwy->GetRoughness() < 0.0 || rwy->GetRoughness() > 1.0) msg = "The runway '" + name + "' has an illegal surface roughness. It should be in the range 0 to 1.";
-				#endif
-				
-			}
-			
-			Point2 ends[2];
-			lw->GetNthPoint(0)->GetLocation(gis_Geo,ends[0]);
-			lw->GetNthPoint(1)->GetLocation(gis_Geo,ends[1]);
-			Bbox2	runway_extent(ends[0],ends[1]);
-			if (runway_extent.xmin() < -180.0 ||
-				runway_extent.xmax() >  180.0 ||
-				runway_extent.ymin() <  -90.0 ||
-				runway_extent.ymax() >   90.0)
-			{
-				msg = "The runway/sealane '" + name + "' has an end outside the World Map.";
-			}	
-			else
-			{
-				#if !GATEWAY_IMPORT_FEATURES			
-					double heading, len;
-					Point2 ctr;
-					Quad_2to1(ends, ctr, heading, len);
-					double approx_heading = num1 * 10.0;
-					double heading_delta = fabs(dobwrap(approx_heading - heading, -180.0, 180.0));
-					if(heading_delta > 135.0)
-						msg = "The runway/sealane '" + name + "' needs to be reversed to match its name.";
-					else if(heading_delta > 45.0)
-						msg = "The runway/sealane '" + name + "' is misaligned with its runway name.";				
-				#endif
-			}
-			
-		}
+		#endif
 	}
+
 	if (who->GetClass() == WED_Helipad::sClass)
 	{
-		if (s_used_hel.count(name))	msg = "The helipad name '" + name + "' has already been used.";
-		s_used_hel.insert(name);
-
-		n1 = name;
-		if (n1.empty())	msg = "The selected helipad has no name.";
-		else {
-			if (n1[0] != 'H')	msg = "The helipad '" + name + "' does not start with the letter H.";
-			else {
-				if(n1.length() > 3)
-				{
-					msg = "The helipad '" + name + "' is longer than the maximum 3 characters.";
-				}
-				
-				n1.erase(0,1);
-				for (int i = 0; i < n1.length(); ++i)
-				{
-					if (n1[i] < '0' || n1[i] > '9')
-					{
-						msg = "The helipad '" + name + "' conntains illegal characters in its name.  It must be in the form H<number>.";
-						break;
-					}
-				}
-			}
-		}
-		if (msg.empty())
-		{
-			WED_Helipad * heli = dynamic_cast<WED_Helipad *>(who);
-			if (heli->GetWidth() < 1.0) msg = "The helipad '" + name + "' is less than one meter wide.";
-			if (heli->GetLength() < 1.0) msg = "The helipad '" + name + "' is less than one meter long.";
-		}
+		ValidateOneHelipad(who, msg);
 	}
+
 	if(who->GetClass() == WED_Airport::sClass)
 	{
-		s_used_hel.clear();
-		s_used_rwy.clear();
-		s_flow_names.clear();
-		s_legal_rwy_oneway.clear();
-		s_legal_rwy_twoway.clear();
-		
-		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-		if(who)
-		{
-			WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
-			WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
-		
-			string icao;
-			apt->GetICAO(icao);
-			if(icao.empty())
-			{
-				msg = "The airport '" + name + "' has an empty ICAO code.";
-			}
-			else
-			{
-				if(s_icao.count(icao))
-				{
-					msg = "The airport ICAO code '" + icao + "' is used twice in your WED project file.";
-				}
-				else
-					s_icao.insert(icao);
-			}
-		}
+		ValidateOneAirport(who,msg);
 	}
-	
+
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR V10 DSF OVERLAY EXTENSIONS
-	//------------------------------------------------------------------------------------		
-	
+	//------------------------------------------------------------------------------------
+
 	if(who->GetClass() == WED_FacadePlacement::sClass)
 	{
-		WED_FacadePlacement * fac = dynamic_cast<WED_FacadePlacement*>(who);
-		DebugAssert(who);
-		if(gExportTarget == wet_xplane_900 && fac->HasCustomWalls())
-		{
-			msg = "Custom facade wall choices are only supported in X-Plane 10 and newer.";
-		}
-		
-		if(fac->GetNumHoles() > 0)
-		{
-			msg = "Facades may not have holes in them.";
-		}
-		
-		if(gExportTarget == wet_xplane_900 && WED_HasBezierPol(fac))
-			msg = "Curved facades are only supported in X-Plane 10 and newer.";
-
+		ValidateOneFacade(who, msg);
 	}
 	
 	if(who->GetClass() == WED_ForestPlacement::sClass)
