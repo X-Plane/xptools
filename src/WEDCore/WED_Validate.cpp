@@ -22,6 +22,7 @@
  */
 
 #include "WED_Validate.h"
+#include <iterator>
 
 #include "WED_Globals.h"
 #include "WED_Sign_Parser.h"
@@ -66,7 +67,7 @@
 #define MAX_LAT_SPAN_GATEWAY 0.2
 
 // For now this is a debug mode - we printf all airport ICAOs with problems and don't interrupt validate.
-#define FIND_BAD_AIRPORTS 1
+#define FIND_BAD_AIRPORTS 0
 
 #define CHECK_ZERO_LENGTH 1
 
@@ -75,11 +76,98 @@ static set<string>	s_used_rwy;
 static set<string>	s_used_hel;
 static set<string>	s_icao;
 static set<string>	s_flow_names;
+
+//A vector of pairs, where the pair is of the ATCFrequencyType and a vector of all ATCFrequencys of said type
+static vector<const WED_ATCFrequency*> s_frequencies;
 static set<int>		s_legal_rwy_oneway;
 static set<int>		s_legal_rwy_twoway;
+
+
 static string name;
 static string n1;
 static string n2;
+
+bool cmp_frequency_type(const WED_ATCFrequency* freq1, const WED_ATCFrequency* freq2)
+{
+	AptATCFreq_t freq_info1;
+	freq1->Export(freq_info1);
+	
+	AptATCFreq_t freq_info2;
+	freq2->Export(freq_info2);
+	
+	return freq_info1.atc_type > freq_info2.atc_type;
+}
+
+template <typename OutputIterator, typename Predicate>
+void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred)
+{
+	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
+	if(ent && ent->GetHidden())
+	{
+		return;
+	}
+	
+	typedef typename OutputIterator::container_type::value_type VT;
+	VT ct = dynamic_cast<VT>(thing);
+	if(ct && pred(ct))
+		oi = ct;
+	
+	int nc = thing->CountChildren();
+	for(int n = 0; n < nc; ++n)
+	{
+		CollectRecursive(thing->GetNthChild(n), oi, pred);
+	}
+}
+
+template <typename T> bool take_always(T v) { return true; }
+
+template <typename OutputIterator>
+void CollectRecursive(WED_Thing * t, OutputIterator oi)
+{
+	typedef typename OutputIterator::container_type::value_type VT;
+	CollectRecursive(t,oi,take_always<VT>);
+}
+
+vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who)
+{
+	s_frequencies.clear();
+	CollectRecursive<back_insert_iterator<vector<const WED_ATCFrequency*>>>(
+		who,
+		back_insert_iterator<vector<const WED_ATCFrequency*>>(s_frequencies)
+		);
+
+	std::sort(s_frequencies.begin(),s_frequencies.end(), cmp_frequency_type);
+	
+	vector<vector<const WED_ATCFrequency*>> sub_frequencies;
+
+	vector<const WED_ATCFrequency*>::iterator freq_itr = s_frequencies.begin();
+	while(freq_itr != s_frequencies.end())
+	{
+		sub_frequencies.push_back(vector<const WED_ATCFrequency*>());
+
+		AptATCFreq_t freq_info;
+		(*freq_itr)->Export(freq_info);
+
+		int old_type = freq_info.atc_type;
+
+		while(freq_itr != s_frequencies.end())
+		{
+			(*freq_itr)->Export(freq_info);
+			
+			if (freq_info.atc_type == old_type)
+			{
+				sub_frequencies.back().push_back(*freq_itr);
+				++freq_itr;
+				continue;
+			}
+			else
+			{
+				break;
+			}
+		}
+	}
+	return sub_frequencies;
+}
 
 static bool GetThingResouce(WED_Thing * who, string& r)
 {
@@ -105,83 +193,482 @@ static bool GetThingResouce(WED_Thing * who, string& r)
 	return false;
 }
 
-static WED_Thing* ValidateOneTaxiSign(WED_Thing* who, string& msg)
+/* Validate(One|.*)Thing(WED_Thing* who, string& msg)
+
+Validates one or more WED_Things. "who", the item to be validate, is not assumed to be dynamically cast.
+
+msg is the validation message, checked if non-empty at the end.
+
+The returned WED_Thing* is a pointer to the problem child, originally included
+to match the pre-refactor flow of FIND_BAD_AIRPORT. Though most functions return NULL it increases cohension.
+Thinking forward, it might be used more often, and in more meaningful ways.
+
+- Ted, 6/22/2016
+ */
+
+static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 {
-	/*--Taxi Sign Validation Rules---------------------------------------------
-		See Taxi Sign spec and parser for detailed validation rules
-	 */
+	//Collect all frequencies and group them by type into smaller vectors 
+	vector<vector<const WED_ATCFrequency*>> sub_freqs = CollectAirportFrequencies(who);
 
-		WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
-		string signName;
-		airSign->GetName(signName);
+	//For all groups see if each group has atleast one valid member (especially for Delivery, Ground, and Tower)
+	for(vector<vector<const WED_ATCFrequency*>>::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
+	{
+		bool found_one_valid = false;
 
-		//Create the necessary parts for a parsing operation
-		parser_in_info in(signName);
-		parser_out_info out;
-
-		ParserTaxiSign(in,out);
-		if(out.errors.size() > 0)
+		//Contains values like "128.80" or "0.25" or "999.13"
+		string freq_str;
+		AptATCFreq_t freq_info;
+		for(vector<const WED_ATCFrequency*>::iterator freq = itr->begin(); freq != itr->end(); ++freq)
 		{
-			int MAX_ERRORS = 12;//TODO - Is this good?
-			for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
-			{
-				msg += out.errors[i].msg;
-				msg += '\n';
-			}
-			return who;
-		}
+			(*freq)->Export(freq_info);
 
-	return NULL;
+			//Parse the 
+			stringstream ss;
+			ss << freq_info.freq;
+			freq_str = ss.str();
+			while(freq_str.size() < 3)
+			{
+				freq_str += "0";
+			}
+
+			string suffix_str =  freq_str.substr(freq_str.size() - 2);
+
+			string mhz_str = freq_str.substr(0, freq_str.size() - 2);
+			freq_str = mhz_str + "." + suffix_str;
+
+			int mhz = 0;
+			stringstream(mhz_str) >> mhz;
+
+			int suffix = 0;
+			stringstream(suffix_str) >> suffix;
+			
+			if(mhz < 0 || mhz > 1000)
+			{
+				msg = "Frequency " + freq_str + " is not between 0 and 1000 Mhz.";
+			}
+
+			bool in_civilian_band = mhz >= 118 && mhz <= 136;
+
+			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
+
+			//We only care about Delivery, Ground, and Tower frequencies
+			if(freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower)
+			{
+				if(in_civilian_band == false)
+				{
+					msg = "The ATC frequency " + name + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
+					continue;
+				}
+			
+				if((suffix_str.back() == '0' ||
+					suffix_str.back() == '2' ||
+					suffix_str.back() == '5' ||
+					suffix_str.back() == '7')
+					)
+				{
+					found_one_valid = true;
+				}
+			}
+			else
+			{
+				found_one_valid = true;
+			}
+		}
+		
+		if(found_one_valid == false)
+		{
+			stringstream ss;
+			ss  << "Could not find atleast one valid ATC Frequency for type " << ENUM_Name(freq_info.atc_type) << ". "
+				<< freq_info.name << ": " << freq_str <<" does not end in 0, 2, 5, or 7";;
+			msg = ss.str();
+		}
+	}
 }
 
-static WED_Thing* ValidateOneTaxiway(WED_Thing* who, string& msg)
+extern void ValidateOneATCRunwayUse(WED_Thing* who,string& msg);
+static void ValidateATC(WED_Thing* who, string& msg)
 {
-	/*--Taxiway Validation Rules-----------------------------------------------
-		Water is not a valide surface type for taxiways
-		Outer boundry of taxiway is not at least 3 sided
-		Hole of taxiway is not at least 3 sided
-	 */
+	WED_ATCFlow * flow;
+	WED_ATCWindRule * wind;
+	WED_TaxiRoute * taxi;
 
-	WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
-	if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+	if(who->GetClass() == WED_ATCFlow::sClass && ((flow = dynamic_cast<WED_ATCFlow *>(who)) != NULL))
 	{
-		msg = "Water is not a valid surface type for taxiways";
-#if !FIND_BAD_AIRPORTS
-		DoUserAlert(msg.c_str());
-		return who;
-#endif
-		printf("%s", msg.c_str());
+		AptFlow_t exp;
+		flow->Export(exp);
+		if(exp.icao.empty())
+			msg = "ATC Flow '" + name + "' has a blank ICAO code for its METAR source.";
+
+		if(name.empty())
+			msg = "An ATC flow has a blank name.  You must name every flow.";
+
+		if(s_flow_names.count(name) > 0)
+		{
+			msg = "You have two airport flows named '" + name + "'.  Every ATC flow name must be unique.";				
+		}
+		else 
+			s_flow_names.insert(name);
+
+		// Make sure we have at least one runway to use.  The exported flow does NOT have this - it only contains exports
+		// of properties of the apt flow rule itself!
+		int rwy_rule_count = 0;
+		int nn = who->CountChildren();
+		for(int n = 0; n < nn; ++n)
+		{
+			WED_Thing * c = who->GetNthChild(n);
+			if(c->GetClass() == WED_ATCRunwayUse::sClass)
+				++rwy_rule_count;
+		}
+
+		if(rwy_rule_count == 0)
+			msg = "You have an airport flow with no runway use rules.  You need at least oneway use rule to create an active runway.";
+
+		if(s_legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
+			msg = "The pattern runway " + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.";
 	}
 
-	IGISPointSequence * ps;
-	ps = twy->GetOuterRing();
-	if(!ps->IsClosed() || ps->GetNumSides() < 3)
+	if(who->GetClass() == WED_ATCWindRule::sClass && ((wind = dynamic_cast<WED_ATCWindRule *>(who)) != NULL))
 	{
-		msg = "Outer boundary of taxiway is not at least 3 sided.";
+		AptWindRule_t exp;
+		wind->Export(exp);
+		if(exp.icao.empty())
+			msg = "ATC wind rule '" + name + "' has a blank ICAO code for its METAR source.";
+	}
+
+	if(who->GetClass() == WED_TaxiRoute::sClass && ((taxi = dynamic_cast<WED_TaxiRoute *>(who)) != NULL))
+	{
+		// See bug http://dev.x-plane.com/bugbase/view.php?id=602 - blank names are okay!
+		//			if (name.empty() && !taxi->IsRunway())
+		//			{
+		//				msg = "This taxi route has no name.  All taxi routes must have a name so that ATC can give taxi instructions.";
+		//			}
+
+		if(taxi->HasInvalidHotZones(s_legal_rwy_oneway))
+		{
+			msg = "The taxi route '" + name + "' has hot zones for runways not present at its airport.";
+		}
+
+		if(taxi->IsRunway())
+			if(s_legal_rwy_twoway.count(taxi->GetRunway()) == 0)
+			{
+				msg = "The taxi route '" + name + "' is set to a runway not present at the airport.";
+			}
+
+		Point2	start, end;
+		taxi->GetNthPoint(0)->GetLocation(gis_Geo, start);
+		taxi->GetNthPoint(1)->GetLocation(gis_Geo, end);
+		if(start == end)
+		{
+#if CHECK_ZERO_LENGTH			
+			msg = "The taxi route '" + name + "' is zero length.";
+#endif
+		}
+	}
+
+	if(who->GetClass() == WED_ATCFrequency::sClass && s_frequencies.size() == 0)
+	{
+		
+	}
+
+	if(who->GetClass() == WED_ATCRunwayUse::sClass)
+	{
+		ValidateOneATCRunwayUse(who,msg);
+	}
+}
+
+extern void ValidateOneAirportBoundary(WED_Thing* who, string& msg);
+static void ValidateForGateway(WED_Thing* who, string& msg, WED_LibraryMgr* lib_mgr)
+{
+	if(who->GetClass() != WED_Group::sClass)
+		if(WED_GetParentAirport(who) == NULL)
+			msg = "You cannot export airport overlays to the X-Plane Airport Gateway if overlay elements are outside airports in the hierarchy.";
+
+	if(who->GetClass() == WED_Airport::sClass)
+	{
+		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+		Bbox2 bounds;
+		apt->GetBounds(gis_Geo, bounds);
+		if(bounds.xspan() > MAX_LON_SPAN_GATEWAY ||
+				bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
+		{
+			msg = "This airport is too big.  Perhaps a random part of the airport has been dragged to another part of the world?";
+		}
+
+	}
+
+#if !GATEWAY_IMPORT_FEATURES
+	if(who->GetClass() == WED_AirportBoundary::sClass)
+	{
+		ValidateOneAirportBoundary(who, msg);
+	}
+#endif
+
+	if(who->GetClass() == WED_DrapedOrthophoto::sClass)
+		msg = "Draped orthophotos are not allowed in the global airport database.";
+
+	string res;
+	if(GetThingResouce(who,res))
+	{
+		if(!lib_mgr->IsResourceDefault(res))
+			msg = "The library path '" + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.";
+		if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
+			msg = "The library path '" + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.";				
+	}
+}
+
+static void ValidateOneAirport(WED_Thing* who, string& msg)
+{
+	/*--Validate Airport Rules-------------------------------------------------
+		Airport Name rules
+		  - Empty ICAO code
+		  - ICAO used twice in airport
+	 */
+	
+	s_used_hel.clear();
+	s_used_rwy.clear();
+	s_flow_names.clear();
+	s_legal_rwy_oneway.clear();
+	s_legal_rwy_twoway.clear();
+	
+	ValidateAirportFrequencies(dynamic_cast<WED_Airport*>(who), msg);
+
+	WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
+	if(who)
+	{
+		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
+		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
+
+		string icao;
+		apt->GetICAO(icao);
+		if(icao.empty())
+		{
+			msg = "The airport '" + name + "' has an empty ICAO code.";
+		}
+		else
+		{
+			if(s_icao.count(icao))
+			{
+				msg = "The airport ICAO code '" + icao + "' is used twice in your WED project file.";
+			}
+			else
+			{
+				s_icao.insert(icao);
+			}
+		}
+	}
+}
+
+static void ValidateOneAirportBoundary(WED_Thing* who, string& msg)
+{
+	if(WED_HasBezierPol(dynamic_cast<WED_AirportBoundary*>(who)))
+		msg = "Do not use bezier curves in airport boundaries.";
+}
+
+static void ValidateOneATCRunwayUse(WED_Thing* who, string& msg)
+{
+	WED_ATCRunwayUse * use = dynamic_cast<WED_ATCRunwayUse *>(who);
+	AptRunwayRule_t urule;
+	use->Export(urule);
+	if(urule.operations == 0)
+		msg = "ATC runway use must support at least one operation type.";
+	else if(urule.equipment == 0)
+		msg = "ATC runway use must support at least one equipment type.";
+}
+
+static void ValidateOneFacadePlacement(WED_Thing* who, string& msg)
+{
+	/*--Facade Validate Rules--------------------------------------------------
+		wet_xplane_900 rules
+		  - Custom facade wall choices are only in X-Plane 10 and newer
+		  - Curved facades are only supported in X-Plane 10 and newer
+		Other rules
+		  - Facades may not have holes in them
+	 */
+
+	WED_FacadePlacement * fac = dynamic_cast<WED_FacadePlacement*>(who);
+	DebugAssert(who);
+	if(gExportTarget == wet_xplane_900 && fac->HasCustomWalls())
+	{
+		msg = "Custom facade wall choices are only supported in X-Plane 10 and newer.";
+	}
+	
+	if(fac->GetNumHoles() > 0)
+	{
+		msg = "Facades may not have holes in them.";
+	}
+
+	if(gExportTarget == wet_xplane_900 && WED_HasBezierPol(fac))
+		msg = "Curved facades are only supported in X-Plane 10 and newer.";
+}
+
+static void ValidateOneForestPlacement(WED_Thing* who, string& msg)
+{
+	/*--Forest Placement Rules
+		wet_xplane_900 rules
+			- Line and point are only supported in X-Plane 10 and newer
+		*/
+
+	WED_ForestPlacement * fst = dynamic_cast<WED_ForestPlacement *>(who);
+	DebugAssert(fst);
+	if(gExportTarget == wet_xplane_900 && fst->GetFillMode() != dsf_fill_area)
+		msg = "Line and point forests are only supported in X-Plane 10 and newer.";
+}
+
+static void ValidateOneHelipad(WED_Thing* who, string& msg)
+{
+	/*--Helipad Validation Rules-----------------------------------------------
+		Helipad Name rules
+		  - Name already used
+		  - The selected helipad has no name
+		  - Name does not start with letter H
+		  - Name is longer than 3 characters
+		  - Contains illegal characters, must be in the form of H<number>
+		Helipad Width rules
+		  - Helipad is less than one meter wide
+		  - Helipad is less than one meter long
+	 */
+	if (s_used_hel.count(name))	msg = "The helipad name '" + name + "' has already been used.";
+	s_used_hel.insert(name);
+
+	n1 = name;
+	if (n1.empty())
+	{
+		msg = "The selected helipad has no name.";
 	}
 	else
 	{
-		for(int h = 0; h < twy->GetNumHoles(); ++h)
+		if (n1[0] != 'H')
 		{
-			ps = twy->GetNthHole(h);
-			if(!ps->IsClosed() || ps->GetNumSides() < 3)
+			msg = "The helipad '" + name + "' does not start with the letter H.";
+		}
+		else
+		{
+			if(n1.length() > 3)
 			{
-				// Ben says: two-point holes are INSANELY hard to find.  So we do the rare thing and intentionally
-				// hilite the hole so that the user can nuke it.				
-				msg = "Hole of taxiway is not at least 3 sided.";
-				WED_Thing * h = dynamic_cast<WED_Thing *>(ps);
-				if(h) 
+				msg = "The helipad '" + name + "' is longer than the maximum 3 characters.";
+			}
+
+			n1.erase(0,1);
+			for (int i = 0; i < n1.length(); ++i)
+			{
+				if (n1[i] < '0' || n1[i] > '9')
 				{
-#if !FIND_BAD_AIRPORTS
-					DoUserAlert(msg.c_str());
-					return h;
-#endif			
+					msg = "The helipad '" + name + "' conntains illegal characters in its name.  It must be in the form H<number>.";
+					break;
 				}
 			}
 		}
 	}
+	if (msg.empty())
+	{
+		WED_Helipad * heli = dynamic_cast<WED_Helipad *>(who);
+		if (heli->GetWidth() < 1.0) msg = "The helipad '" + name + "' is less than one meter wide.";
+		if (heli->GetLength() < 1.0) msg = "The helipad '" + name + "' is less than one meter long.";
+	}
+}
 
-	return NULL;
+static void ValidateOnePointSequence(WED_Thing* who, string& msg, IGISPointSequence* ps)
+{
+	int nn = ps->GetNumSides();
+	if(nn < 1)
+	{
+		msg = "Linear feature needs at least two points.";
+	}
+	
+	for(int n = 0; n < nn; ++n)
+	{
+		Bezier2 b; Segment2 s;
+		bool bez = ps->GetSide(gis_Geo,n,s,b);
+		if(bez) {s.p1 = b.p1; s.p2 = b.p2; }
+		
+		if(s.p1 == s.p2)
+		{
+			WED_Thing * parent = who->GetParent();
+			if(parent)
+			{
+				if (parent->GetClass() == WED_ForestPlacement::sClass ||
+					parent->GetClass() == WED_FacadePlacement::sClass ||
+					parent->GetClass() == WED_DrapedOrthophoto::sClass ||
+					parent->GetClass() == WED_PolygonPlacement::sClass)
+				{
+				#if CHECK_ZERO_LENGTH
+					msg = string("Zero length side on line or polygon, parent is a '") + parent->GetClass() + "'.";
+				#endif
+				}
+			}
+		}
+	}
+}
+
+static void ValidateOneRampPosition(WED_Thing* who, string& msg)
+{
+	AptGate_t	g;
+	WED_RampPosition * ramp = dynamic_cast<WED_RampPosition*>(who);
+	DebugAssert(ramp);
+	ramp->Export(g);
+
+	if(gExportTarget == wet_xplane_900)
+		if(g.equipment != 0)
+			if(g.type != atc_ramp_misc || g.equipment != atc_traffic_all)
+				msg = "Ramp starts with specific traffic and types are only suported in X-Plane 10 and newer.";
+
+	if(g.equipment == 0)
+		msg = "Ramp starts must have at least one valid type of equipment selected.";
+
+	if(gExportTarget == wet_xplane_1050)
+	{
+		//Our flag to keep going until we find an error
+		bool found_err = false;
+		if(g.airlines == "" && !found_err)
+		{
+			//Error:"not really an error, we're just done here"
+			found_err = true;
+		}
+		else if(g.airlines.length() < 3 && !found_err)
+		{
+			msg = "Ramp start airlines string " + g.airlines + " is not a group of three letters.";
+			found_err = true;
+		}
+
+		//The number of spaces 
+		int num_spaces = 0;
+
+		if(!found_err)
+			for(string::iterator itr = g.airlines.begin(); itr != g.airlines.end(); itr++)
+			{
+				char c = *itr;
+				if(c == ' ')
+				{
+					num_spaces++;
+				}
+				else 
+				{
+					if(c < 'A' || c > 'Z')
+					{
+						msg = "Ramp start airlines string " + g.airlines + " contains non-uppercase letters.";
+						found_err = true;
+					}
+				}
+			}
+
+		//The length of the string
+		int wo_spaces_len = (g.airlines.length() - num_spaces);
+		if(wo_spaces_len % 3 != 0 && !found_err)
+		{
+			msg = string("Ramp start airlines string " + g.airlines + " is not in groups of three letters.");
+			found_err = true;
+		}
+
+		//ABC, num_spaces = 0 = ("ABC".length()/3) - 1
+		//ABC DEF GHI, num_spaces = 2 = "ABCDEFGHI".length()/3 - 1
+		//ABC DEF GHI JKL MNO PQR, num_spaces = 5 = "...".length()/3 - 1 
+		if(num_spaces != (wo_spaces_len/3) - 1 && !found_err)
+		{
+			msg = string("Ramp start airlines string " + g.airlines + " is not spaced correctly.");
+			found_err = true;
+		}
+	}
 }
 
 static WED_Thing* ValidateOneRunwayOrSealane(WED_Thing* who, string& msg)
@@ -362,417 +849,79 @@ static WED_Thing* ValidateOneRunwayOrSealane(WED_Thing* who, string& msg)
 	return NULL;
 }
 
-static WED_Thing* ValidateOneHelipad(WED_Thing* who, string& msg)
+static WED_Thing* ValidateOneTaxiSign(WED_Thing* who, string& msg)
 {
-	/*--Helipad Validation Rules-----------------------------------------------
-		Helipad Name rules
-		  - Name already used
-		  - The selected helipad has no name
-		  - Name does not start with letter H
-		  - Name is longer than 3 characters
-		  - Contains illegal characters, must be in the form of H<number>
-		Helipad Width rules
-		  - Helipad is less than one meter wide
-		  - Helipad is less than one meter long
+	/*--Taxi Sign Validation Rules---------------------------------------------
+		See Taxi Sign spec and parser for detailed validation rules
 	 */
-	if (s_used_hel.count(name))	msg = "The helipad name '" + name + "' has already been used.";
-	s_used_hel.insert(name);
 
-	n1 = name;
-	if (n1.empty())
+	WED_AirportSign * airSign = dynamic_cast<WED_AirportSign*>(who);
+	string signName;
+	airSign->GetName(signName);
+
+	//Create the necessary parts for a parsing operation
+	parser_in_info in(signName);
+	parser_out_info out;
+
+	ParserTaxiSign(in,out);
+	if(out.errors.size() > 0)
 	{
-		msg = "The selected helipad has no name.";
+		int MAX_ERRORS = 12;//TODO - Is this good?
+		for (int i = 0; i < MAX_ERRORS && i < out.errors.size(); i++)
+		{
+			msg += out.errors[i].msg;
+			msg += '\n';
+		}
+		return who;
+	}
+	return NULL;
+}
+
+static WED_Thing* ValidateOneTaxiway(WED_Thing* who, string& msg)
+{
+	/*--Taxiway Validation Rules-----------------------------------------------
+		Water is not a valide surface type for taxiways
+		Outer boundry of taxiway is not at least 3 sided
+		Hole of taxiway is not at least 3 sided
+	 */
+
+	WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
+	if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+	{
+		msg = "Water is not a valid surface type for taxiways";
+#if !FIND_BAD_AIRPORTS
+		DoUserAlert(msg.c_str());
+		return who;
+#endif
+		printf("%s", msg.c_str());
+	}
+
+	IGISPointSequence * ps;
+	ps = twy->GetOuterRing();
+	if(!ps->IsClosed() || ps->GetNumSides() < 3)
+	{
+		msg = "Outer boundary of taxiway is not at least 3 sided.";
 	}
 	else
 	{
-		if (n1[0] != 'H')
+		for(int h = 0; h < twy->GetNumHoles(); ++h)
 		{
-			msg = "The helipad '" + name + "' does not start with the letter H.";
-		}
-		else
-		{
-			if(n1.length() > 3)
+			ps = twy->GetNthHole(h);
+			if(!ps->IsClosed() || ps->GetNumSides() < 3)
 			{
-				msg = "The helipad '" + name + "' is longer than the maximum 3 characters.";
-			}
-
-			n1.erase(0,1);
-			for (int i = 0; i < n1.length(); ++i)
-			{
-				if (n1[i] < '0' || n1[i] > '9')
+				// Ben says: two-point holes are INSANELY hard to find.  So we do the rare thing and intentionally
+				// hilite the hole so that the user can nuke it.				
+				msg = "Hole of taxiway is not at least 3 sided.";
+				WED_Thing * h = dynamic_cast<WED_Thing *>(ps);
+				if(h) 
 				{
-					msg = "The helipad '" + name + "' conntains illegal characters in its name.  It must be in the form H<number>.";
-					break;
+#if !FIND_BAD_AIRPORTS
+					DoUserAlert(msg.c_str());
+					return h;
+#endif			
 				}
 			}
 		}
-	}
-	if (msg.empty())
-	{
-		WED_Helipad * heli = dynamic_cast<WED_Helipad *>(who);
-		if (heli->GetWidth() < 1.0) msg = "The helipad '" + name + "' is less than one meter wide.";
-		if (heli->GetLength() < 1.0) msg = "The helipad '" + name + "' is less than one meter long.";
-	}
-
-	return NULL;
-}
-
-
-extern WED_Thing* ValidateOneATCRunwayUse(WED_Thing* x,string& y);
-static WED_Thing* ValidateATC(WED_Thing* who, string& msg)
-{
-	WED_ATCFlow * flow;
-	WED_ATCWindRule * wind;
-	WED_TaxiRoute * taxi;
-
-	if(who->GetClass() == WED_ATCFlow::sClass && ((flow = dynamic_cast<WED_ATCFlow *>(who)) != NULL))
-	{
-		AptFlow_t exp;
-		flow->Export(exp);
-		if(exp.icao.empty())
-			msg = "ATC Flow '" + name + "' has a blank ICAO code for its METAR source.";
-
-		if(name.empty())
-			msg = "An ATC flow has a blank name.  You must name every flow.";
-
-		if(s_flow_names.count(name) > 0)
-		{
-			msg = "You have two airport flows named '" + name + "'.  Every ATC flow name must be unique.";				
-		}
-		else 
-			s_flow_names.insert(name);
-
-		// Make sure we have at least one runway to use.  The exported flow does NOT have this - it only contains exports
-		// of properties of the apt flow rule itself!
-		int rwy_rule_count = 0;
-		int nn = who->CountChildren();
-		for(int n = 0; n < nn; ++n)
-		{
-			WED_Thing * c = who->GetNthChild(n);
-			if(c->GetClass() == WED_ATCRunwayUse::sClass)
-				++rwy_rule_count;
-		}
-
-		if(rwy_rule_count == 0)
-			msg = "You have an airport flow with no runway use rules.  You need at least oneway use rule to create an active runway.";
-
-		if(s_legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
-			msg = "The pattern runway " + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.";
-	}
-
-	if(who->GetClass() == WED_ATCWindRule::sClass && ((wind = dynamic_cast<WED_ATCWindRule *>(who)) != NULL))
-	{
-		AptWindRule_t exp;
-		wind->Export(exp);
-		if(exp.icao.empty())
-			msg = "ATC wind rule '" + name + "' has a blank ICAO code for its METAR source.";
-	}
-
-	if(who->GetClass() == WED_TaxiRoute::sClass && ((taxi = dynamic_cast<WED_TaxiRoute *>(who)) != NULL))
-	{
-		// See bug http://dev.x-plane.com/bugbase/view.php?id=602 - blank names are okay!
-		//			if (name.empty() && !taxi->IsRunway())
-		//			{
-		//				msg = "This taxi route has no name.  All taxi routes must have a name so that ATC can give taxi instructions.";
-		//			}
-
-		if(taxi->HasInvalidHotZones(s_legal_rwy_oneway))
-		{
-			msg = "The taxi route '" + name + "' has hot zones for runways not present at its airport.";
-		}
-
-		if(taxi->IsRunway())
-			if(s_legal_rwy_twoway.count(taxi->GetRunway()) == 0)
-			{
-				msg = "The taxi route '" + name + "' is set to a runway not present at the airport.";
-			}
-
-		Point2	start, end;
-		taxi->GetNthPoint(0)->GetLocation(gis_Geo, start);
-		taxi->GetNthPoint(1)->GetLocation(gis_Geo, end);
-		if(start == end)
-		{
-#if CHECK_ZERO_LENGTH			
-			msg = "The taxi route '" + name + "' is zero length.";
-#endif
-		}
-	}
-	if(who->GetClass() == WED_ATCFrequency::sClass)
-	{
-		const WED_ATCFrequency * freq = dynamic_cast<WED_ATCFrequency *>(who);
-		if(freq !=  NULL)
-		{
-			AptATCFreq_t freq_info;
-			freq->Export(freq_info);
-			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
-			if(freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower)
-			{
-				int mhz = freq_info.freq / 100;
-				if(mhz < 118 || mhz > 136)
-				{
-					msg = "The ATC frequency " + name + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
-				}
-			}
-		}
-	}
-
-	if(who->GetClass() == WED_ATCRunwayUse::sClass)
-	{
-		ValidateOneATCRunwayUse(who,msg);
-	}
-
-	return NULL;
-}
-
-static WED_Thing* ValidateOneAirport(WED_Thing* who, string& msg)
-{
-	/*--Validate Airport Rules-------------------------------------------------
-		Airport Name rules
-		  - Empty ICAO code
-		  - ICAO used twice in airport
-	 */
-	
-	s_used_hel.clear();
-	s_used_rwy.clear();
-	s_flow_names.clear();
-	s_legal_rwy_oneway.clear();
-	s_legal_rwy_twoway.clear();
-
-	WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-	if(who)
-	{
-		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
-		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
-
-		string icao;
-		apt->GetICAO(icao);
-		if(icao.empty())
-		{
-			msg = "The airport '" + name + "' has an empty ICAO code.";
-		}
-		else
-		{
-			if(s_icao.count(icao))
-			{
-				msg = "The airport ICAO code '" + icao + "' is used twice in your WED project file.";
-			}
-			else
-			{
-				s_icao.insert(icao);
-			}
-		}
-	}
-
-	return NULL;
-}
-
-static WED_Thing* ValidateOneAirportBoundary(WED_Thing* who, string& msg)
-{
-	if(WED_HasBezierPol(dynamic_cast<WED_AirportBoundary*>(who)))
-		msg = "Do not use bezier curves in airport boundaries.";
-
-	return NULL;
-}
-
-static WED_Thing* ValidateOneATCRunwayUse(WED_Thing* who, string& msg)
-{
-	WED_ATCRunwayUse * use = dynamic_cast<WED_ATCRunwayUse *>(who);
-	AptRunwayRule_t urule;
-	use->Export(urule);
-	if(urule.operations == 0)
-		msg = "ATC runway use must support at least one operation type.";
-	else if(urule.equipment == 0)
-		msg = "ATC runway use must support at least one equipment type.";
-
-	return NULL;
-}
-
-static WED_Thing* ValidateOneFacadePlacement(WED_Thing* who, string& msg)
-{
-	/*--Facade Validate Rules--------------------------------------------------
-		wet_xplane_900 rules
-		  - Custom facade wall choices are only in X-Plane 10 and newer
-		  - Curved facades are only supported in X-Plane 10 and newer
-		Other rules
-		  - Facades may not have holes in them
-	 */
-
-	WED_FacadePlacement * fac = dynamic_cast<WED_FacadePlacement*>(who);
-	DebugAssert(who);
-	if(gExportTarget == wet_xplane_900 && fac->HasCustomWalls())
-	{
-		msg = "Custom facade wall choices are only supported in X-Plane 10 and newer.";
-	}
-	
-	if(fac->GetNumHoles() > 0)
-	{
-		msg = "Facades may not have holes in them.";
-	}
-
-	if(gExportTarget == wet_xplane_900 && WED_HasBezierPol(fac))
-		msg = "Curved facades are only supported in X-Plane 10 and newer.";
-
-	return NULL;
-}
-
-static WED_Thing* ValidateOneForestPlacement(WED_Thing* who, string& msg)
-{
-	/*--Forest Placement Rules
-		wet_xplane_900 rules
-			- Line and point are only supported in X-Plane 10 and newer
-		*/
-
-	WED_ForestPlacement * fst = dynamic_cast<WED_ForestPlacement *>(who);
-	DebugAssert(fst);
-	if(gExportTarget == wet_xplane_900 && fst->GetFillMode() != dsf_fill_area)
-		msg = "Line and point forests are only supported in X-Plane 10 and newer.";
-
-	return NULL;
-}
-
-static WED_Thing* ValidateOnePointSequence(WED_Thing* who, string& msg, IGISPointSequence* ps)
-{
-	int nn = ps->GetNumSides();
-	if(nn < 1)
-	{
-		msg = "Linear feature needs at least two points.";
-	}
-	
-	for(int n = 0; n < nn; ++n)
-	{
-		Bezier2 b; Segment2 s;
-		bool bez = ps->GetSide(gis_Geo,n,s,b);
-		if(bez) {s.p1 = b.p1; s.p2 = b.p2; }
-		
-		if(s.p1 == s.p2)
-		{
-			WED_Thing * parent = who->GetParent();
-			if(parent)
-			{
-				if (parent->GetClass() == WED_ForestPlacement::sClass ||
-					parent->GetClass() == WED_FacadePlacement::sClass ||
-					parent->GetClass() == WED_DrapedOrthophoto::sClass ||
-					parent->GetClass() == WED_PolygonPlacement::sClass)
-				{
-				#if CHECK_ZERO_LENGTH
-					msg = string("Zero length side on line or polygon, parent is a '") + parent->GetClass() + "'.";
-				#endif
-				}
-			}
-		}
-	}
-
-	return NULL;
-}
-
-static WED_Thing* ValidateOneRampPosition(WED_Thing* who, string& msg)
-{
-	AptGate_t	g;
-	WED_RampPosition * ramp = dynamic_cast<WED_RampPosition*>(who);
-	DebugAssert(ramp);
-	ramp->Export(g);
-
-	if(gExportTarget == wet_xplane_900)
-		if(g.equipment != 0)
-			if(g.type != atc_ramp_misc || g.equipment != atc_traffic_all)
-				msg = "Ramp starts with specific traffic and types are only suported in X-Plane 10 and newer.";
-
-	if(g.equipment == 0)
-		msg = "Ramp starts must have at least one valid type of equipment selected.";
-
-	if(gExportTarget == wet_xplane_1050)
-	{
-		//Our flag to keep going until we find an error
-		bool found_err = false;
-		if(g.airlines == "" && !found_err)
-		{
-			//Error:"not really an error, we're just done here"
-			found_err = true;
-		}
-		else if(g.airlines.length() < 3 && !found_err)
-		{
-			msg = "Ramp start airlines string " + g.airlines + " is not a group of three letters.";
-			found_err = true;
-		}
-
-		//The number of spaces 
-		int num_spaces = 0;
-
-		if(!found_err)
-			for(string::iterator itr = g.airlines.begin(); itr != g.airlines.end(); itr++)
-			{
-				char c = *itr;
-				if(c == ' ')
-				{
-					num_spaces++;
-				}
-				else 
-				{
-					if(c < 'A' || c > 'Z')
-					{
-						msg = "Ramp start airlines string " + g.airlines + " contains non-uppercase letters.";
-						found_err = true;
-					}
-				}
-			}
-
-		//The length of the string
-		int wo_spaces_len = (g.airlines.length() - num_spaces);
-		if(wo_spaces_len % 3 != 0 && !found_err)
-		{
-			msg = string("Ramp start airlines string " + g.airlines + " is not in groups of three letters.");
-			found_err = true;
-		}
-
-		//ABC, num_spaces = 0 = ("ABC".length()/3) - 1
-		//ABC DEF GHI, num_spaces = 2 = "ABCDEFGHI".length()/3 - 1
-		//ABC DEF GHI JKL MNO PQR, num_spaces = 5 = "...".length()/3 - 1 
-		if(num_spaces != (wo_spaces_len/3) - 1 && !found_err)
-		{
-			msg = string("Ramp start airlines string " + g.airlines + " is not spaced correctly.");
-			found_err = true;
-		}
-	}
-
-	return NULL;
-}
-
-static WED_Thing* ValidateForGateway(WED_Thing* who, string& msg, WED_LibraryMgr* lib_mgr)
-{
-	if(who->GetClass() != WED_Group::sClass)
-		if(WED_GetParentAirport(who) == NULL)
-			msg = "You cannot export airport overlays to the X-Plane Airport Gateway if overlay elements are outside airports in the hierarchy.";
-
-	if(who->GetClass() == WED_Airport::sClass)
-	{
-		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-		Bbox2 bounds;
-		apt->GetBounds(gis_Geo, bounds);
-		if(bounds.xspan() > MAX_LON_SPAN_GATEWAY ||
-				bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
-		{
-			msg = "This airport is too big.  Perhaps a random part of the airport has been dragged to another part of the world?";
-		}
-
-	}
-
-#if !GATEWAY_IMPORT_FEATURES
-	if(who->GetClass() == WED_AirportBoundary::sClass)
-	{
-		ValidateOneAirportBoundary(who, msg);
-	}
-#endif
-
-	if(who->GetClass() == WED_DrapedOrthophoto::sClass)
-		msg = "Draped orthophotos are not allowed in the global airport database.";
-
-	string res;
-	if(GetThingResouce(who,res))
-	{
-		if(!lib_mgr->IsResourceDefault(res))
-			msg = "The library path '" + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.";
-		if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
-			msg = "The library path '" + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.";				
 	}
 
 	return NULL;
@@ -791,7 +940,7 @@ static WED_Thing* ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 
 	if(who->GetClass() == WED_AirportSign::sClass)
 	{
-		ValidateOneTaxiSign(who,msg);
+		ValidateOneTaxiSign(who, msg);
 	}
 
 	//------------------------------------------------------------------------------------
@@ -809,7 +958,11 @@ static WED_Thing* ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	
 	if(who->GetClass() == WED_Taxiway::sClass)
 	{
-		ValidateOneTaxiway(who,msg);
+		WED_Thing* result = ValidateOneTaxiway(who,msg);
+		if(result != NULL)
+		{
+			who = result;
+		}
 	}
 
 	if (who->GetClass() == WED_Runway::sClass || who->GetClass() == WED_Sealane::sClass)
@@ -834,7 +987,7 @@ static WED_Thing* ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	{
 		ValidateOneAirport(who,msg);
 	}
-
+	
 	//------------------------------------------------------------------------------------
 	// CHECKS FOR V10 DSF OVERLAY EXTENSIONS
 	//------------------------------------------------------------------------------------
@@ -889,8 +1042,7 @@ static WED_Thing* ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	}
 
 	//------------------------------------------------------------------------------------
-
-
+	
 	#if !FIND_BAD_AIRPORTS
 
 	if (!msg.empty())
@@ -971,7 +1123,8 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 			exp_target_str = "wet_gateway";
 			break;
 		default: 
-			DebugAssert("Export target %s is unknown", exp_target_str.c_str());
+			AssertPrintf("Export target %s is unknown", exp_target_str.c_str());
+			break;
 	}
 	
 	printf("Export Target: %s\n", exp_target_str.c_str());
@@ -1017,7 +1170,10 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	s_flow_names.clear();
 	s_legal_rwy_oneway.clear();
 	s_icao.clear();
+	s_frequencies.clear();
+
 	if(wrl == NULL) wrl = WED_GetWorld(resolver);
+
 	ISelection * sel = WED_GetSelect(resolver);
 	
 	WED_LibraryMgr * lib_mgr = 	WED_GetLibraryMgr(resolver);
