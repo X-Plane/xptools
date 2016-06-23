@@ -245,7 +245,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 			
 			if(mhz < 0 || mhz > 1000)
 			{
-				msg = "Frequency " + freq_str + " is not between 0 and 1000 Mhz.";
+				msg = "Frequency " + freq_str + " not between 0 and 1000 Mhz.";
 			}
 
 			bool in_civilian_band = mhz >= 118 && mhz <= 136;
@@ -257,7 +257,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 			{
 				if(in_civilian_band == false)
 				{
-					msg = "The ATC frequency " + name + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
+					msg = "The ATC frequency " + freq_str + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
 					continue;
 				}
 			
@@ -279,8 +279,8 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 		if(found_one_valid == false)
 		{
 			stringstream ss;
-			ss  << "Could not find atleast one valid ATC Frequency for type " << ENUM_Name(freq_info.atc_type) << ". "
-				<< freq_info.name << ": " << freq_str <<" does not end in 0, 2, 5, or 7";;
+			ss  << "Could not find at least one valid ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
+			    << "Ensure all frequencies in this group end in 0, 2, 5, or 7";
 			msg = ss.str();
 		}
 	}
