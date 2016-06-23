@@ -77,8 +77,6 @@ static set<string>	s_used_hel;
 static set<string>	s_icao;
 static set<string>	s_flow_names;
 
-//A vector of pairs, where the pair is of the ATCFrequencyType and a vector of all ATCFrequencys of said type
-static vector<const WED_ATCFrequency*> s_frequencies;
 static set<int>		s_legal_rwy_oneway;
 static set<int>		s_legal_rwy_twoway;
 
@@ -130,18 +128,18 @@ void CollectRecursive(WED_Thing * t, OutputIterator oi)
 
 vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who)
 {
-	s_frequencies.clear();
+	vector<const WED_ATCFrequency*> frequencies;
 	CollectRecursive<back_insert_iterator<vector<const WED_ATCFrequency*>>>(
 		who,
-		back_insert_iterator<vector<const WED_ATCFrequency*>>(s_frequencies)
+		back_insert_iterator<vector<const WED_ATCFrequency*>>(frequencies)
 		);
 
-	std::sort(s_frequencies.begin(),s_frequencies.end(), cmp_frequency_type);
+	std::sort(frequencies.begin(),frequencies.end(), cmp_frequency_type);
 	
 	vector<vector<const WED_ATCFrequency*>> sub_frequencies;
 
-	vector<const WED_ATCFrequency*>::iterator freq_itr = s_frequencies.begin();
-	while(freq_itr != s_frequencies.end())
+	vector<const WED_ATCFrequency*>::iterator freq_itr = frequencies.begin();
+	while(freq_itr != frequencies.end())
 	{
 		sub_frequencies.push_back(vector<const WED_ATCFrequency*>());
 
@@ -150,7 +148,7 @@ vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who
 
 		int old_type = freq_info.atc_type;
 
-		while(freq_itr != s_frequencies.end())
+		while(freq_itr != frequencies.end())
 		{
 			(*freq_itr)->Export(freq_info);
 			
@@ -199,11 +197,7 @@ Validates one or more WED_Things. "who", the item to be validate, is not assumed
 
 msg is the validation message, checked if non-empty at the end.
 
-The returned WED_Thing* is a pointer to the problem child, originally included
-to match the pre-refactor flow of FIND_BAD_AIRPORT. Though most functions return NULL it increases cohension.
-Thinking forward, it might be used more often, and in more meaningful ways.
-
-- Ted, 6/22/2016
+The occasional returned WED_Thing* is a pointer to the problem child, included to mirror the original flow.
  */
 
 static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
@@ -215,7 +209,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 	for(vector<vector<const WED_ATCFrequency*>>::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
 	{
 		bool found_one_valid = false;
-
+		bool is_xplane_atc_related = false;
 		//Contains values like "128.80" or "0.25" or "999.13"
 		string freq_str;
 		AptATCFreq_t freq_info;
@@ -243,24 +237,26 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 			int suffix = 0;
 			stringstream(suffix_str) >> suffix;
 			
+			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
+			is_xplane_atc_related = freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower;
+
 			if(mhz < 0 || mhz > 1000)
 			{
 				msg = "Frequency " + freq_str + " not between 0 and 1000 Mhz.";
+				continue;
 			}
 
 			bool in_civilian_band = mhz >= 118 && mhz <= 136;
 
-			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
-
 			//We only care about Delivery, Ground, and Tower frequencies
-			if(freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower)
+			if(is_xplane_atc_related)
 			{
 				if(in_civilian_band == false)
 				{
 					msg = "The ATC frequency " + freq_str + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
 					continue;
 				}
-			
+
 				if((suffix_str.back() == '0' ||
 					suffix_str.back() == '2' ||
 					suffix_str.back() == '5' ||
@@ -275,8 +271,8 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 				found_one_valid = true;
 			}
 		}
-		
-		if(found_one_valid == false)
+
+		if(found_one_valid == false && is_xplane_atc_related)
 		{
 			stringstream ss;
 			ss  << "Could not find at least one valid ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
@@ -366,11 +362,6 @@ static void ValidateATC(WED_Thing* who, string& msg)
 		}
 	}
 
-	if(who->GetClass() == WED_ATCFrequency::sClass && s_frequencies.size() == 0)
-	{
-		
-	}
-
 	if(who->GetClass() == WED_ATCRunwayUse::sClass)
 	{
 		ValidateOneATCRunwayUse(who,msg);
@@ -430,12 +421,12 @@ static void ValidateOneAirport(WED_Thing* who, string& msg)
 	s_flow_names.clear();
 	s_legal_rwy_oneway.clear();
 	s_legal_rwy_twoway.clear();
-	
-	ValidateAirportFrequencies(dynamic_cast<WED_Airport*>(who), msg);
 
 	WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
 	if(who)
 	{
+		ValidateAirportFrequencies(apt, msg);
+
 		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
 		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
 
@@ -443,6 +434,7 @@ static void ValidateOneAirport(WED_Thing* who, string& msg)
 		apt->GetICAO(icao);
 		if(icao.empty())
 		{
+			apt->GetName(name);
 			msg = "The airport '" + name + "' has an empty ICAO code.";
 		}
 		else
@@ -1069,6 +1061,8 @@ static WED_Thing* ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	{
 		if(s_used_hel.empty() && s_used_rwy.empty())
 		{
+			dynamic_cast<WED_Airport*>(who)->GetICAO(name);
+			who->GetName(name);
 			msg = "The airport '" + name + "' contains no runways, sea lanes, or helipads.";
 			#if !FIND_BAD_AIRPORTS
 			DoUserAlert(msg.c_str());
@@ -1170,7 +1164,6 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	s_flow_names.clear();
 	s_legal_rwy_oneway.clear();
 	s_icao.clear();
-	s_frequencies.clear();
 
 	if(wrl == NULL) wrl = WED_GetWorld(resolver);
 
