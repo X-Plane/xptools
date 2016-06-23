@@ -660,6 +660,7 @@ void WED_GatewayImportDialog::TimerFired()
 						if(last_imported == NULL)
 						{
 							wrl->AbortOperation();
+							this->AsyncDestroy();//All done!
 							return;
 						}
 					}
@@ -1029,11 +1030,16 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	vector<WED_Airport *> out_apt;
 	WED_ImportOneAptFile(aptdatPath,wrl,&out_apt);
 
-	WED_Airport * g = out_apt[0];
-	g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
+	WED_Airport * g = NULL;
+
+	if(!out_apt.empty())
+	{
+		g = out_apt[0];
+		g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
+	}
 
 	string dsfTextPath = filePath + mICAOid + ".txt";
-	if(has_dsf)
+	if(has_dsf && g)
 	{
 		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
