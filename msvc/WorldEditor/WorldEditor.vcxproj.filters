@@ -762,6 +762,9 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_ICAOTable.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_ATCLayer.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
@@ -1510,6 +1513,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDImportExport\WED_ICAOTable.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_ATCLayer.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\XESCore\AptDefs.h">
+      <Filter>XESCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_Sign_Editor.h">
       <Filter>WEDWindows</Filter>

@@ -372,8 +372,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
 	case wed_AddATCRunwayUse:WED_DoMakeNewATCRunwayUse(mDocument); return 1;
 	case wed_AddATCTimeRule: WED_DoMakeNewATCTimeRule(mDocument); return 1;
-	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;
+	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;	
 #endif
+	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -387,6 +388,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectChild:	WED_DoSelectChildren(mDocument);	return 1;
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
+	case wed_SelectConnected:WED_DoSelectConnected(mDocument);	return 1;
 
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:	if(!WED_DoSelectZeroLength(mDocument))		DoUserAlert("Your project has no zero-length ATC routing lines.");	return 1;
@@ -424,6 +426,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
 	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
 	case wed_Export1021:gExportTarget = wet_xplane_1021;	Refresh(); return 1;
+	case wed_Export1050:gExportTarget = wet_xplane_1050;	Refresh(); return 1;
 	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;	
 	
 #if WITHNWLINK
@@ -472,6 +475,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_AddATCRunwayUse: return WED_CanMakeNewATCRunwayUse(mDocument);
 	case wed_AddATCTimeRule:return WED_CanMakeNewATCTimeRule(mDocument);
 	case wed_AddATCWindRule:return WED_CanMakeNewATCWindRule(mDocument);
+	case wed_UpgradeRamps:	return 1;
 
 #endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
@@ -490,6 +494,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectChild:	return WED_CanSelectChildren(mDocument);
 	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
+	case wed_SelectConnected:	return WED_CanSelectConnected(mDocument);
 
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:
@@ -524,6 +529,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
 	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
 	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
+	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 	
 #if WITHNWLINK

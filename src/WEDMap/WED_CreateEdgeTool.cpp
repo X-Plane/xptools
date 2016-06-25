@@ -58,6 +58,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
+	mWidth(tool == create_TaxiRoute ? this : NULL, "Size", SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
 
 	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
 	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), RoadSubType, road_Highway),
@@ -240,6 +241,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			tr->SetHotArrive(mHotArrive.value);
 			tr->SetHotILS(mHotILS.value);
 			tr->SetName(mName);
+			tr->SetWidth(mWidth.value);
 			break;
 		case create_Road:
 			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());

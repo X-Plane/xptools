@@ -78,6 +78,9 @@ protected:
 		WED_PropBoolText		sign_clipboard;
 		WED_PropIntEnum			ramp_type;
 		WED_PropIntEnumBitfield	equip_type;
+		WED_PropIntEnum			width;
+		WED_PropIntEnum			ramp_op_type;
+		WED_PropStringText		airlines;
 		WED_PropStringText		sign_text;
 		
 

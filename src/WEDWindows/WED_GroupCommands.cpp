@@ -50,6 +50,12 @@
 #include "WED_TaxiRouteNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
+#include "WED_RampPosition.h"
+#include "WED_ResourceMgr.h"
+#include "XObjDefs.h"
+#include "MathUtils.h"
+#include "WED_EnumSystem.h"
+#include <iterator>
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -1002,6 +1008,49 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 	op->CommitOperation();
 }
 
+int		WED_CanSelectConnected(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	return 1;
+}
+
+void	WED_DoSelectConnected(IResolver * resolver)
+{
+	vector<WED_Thing *>	things;
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelectionOr(Iterate_CollectThings,&things);
+	if (things.empty()) return;
+	op->StartOperation("Select Connected");
+	set<WED_Thing *>	visited, to_visit;
+	std::copy(things.begin(),things.end(), inserter(to_visit,to_visit.end()));
+	
+	while(!to_visit.empty())
+	{
+		WED_Thing * i = *to_visit.begin();
+		to_visit.erase(to_visit.begin());
+		visited.insert(i);
+		
+		int s = i->CountSources();
+		for(int ss = 0; ss < s; ++ss)
+		{
+			WED_Thing * src = i->GetNthSource(ss);
+			if(visited.count(src) == 0)
+				to_visit.insert(src);
+		}
+		set<WED_Thing *>	viewers;
+		i->GetAllViewers(viewers);
+		set_difference(viewers.begin(), viewers.end(), visited.begin(), visited.end(), inserter(to_visit, to_visit.end()));
+	}
+	
+	for(set<WED_Thing *>::iterator v = visited.begin(); v != visited.end(); ++v)
+	{
+		sel->Insert(*v);
+	}
+	op->CommitOperation();
+}
+
 void select_zero_recursive(WED_Thing * t, ISelection * s)
 {
 	IGISEdge * e = dynamic_cast<IGISEdge *>(t);
@@ -1767,4 +1816,174 @@ int		WED_Repair(IResolver * resolver)
 	WED_SetAnyAirport(resolver);
 	root->CommitOperation();
 	return 1;
+}
+
+//---------------------------------------------------------------------------------------------------
+#pragma mark -
+//---------------------------------------------------------------------------------------------------
+
+struct obj_conflict_info {
+	WED_ObjPlacement *		obj;
+	double					approx_radius_m;
+	Point2					loc_ll;
+};
+
+static void center_and_radius_for_ramp_start(WED_RampPosition * pos, Point2& out_ctr, double& out_rad)
+{
+	double mtr = 15;
+	float offset = 5;
+	Point2 nose_wheel;
+	int icao_width = pos->GetWidth();
+	
+	pos->GetLocation(gis_Geo, nose_wheel);
+	switch(icao_width) {
+	case width_A:	mtr = 15.0;	offset = 1.85f; break;
+	case width_B:	mtr = 27.0;	offset = 2.75f; break;
+	case width_C:	mtr = 41.0;	offset = 4.70f; break;
+	case width_D:	mtr = 56.0;	offset = 9.50f; break;
+	case width_E:	mtr = 72.0;	offset = 8.20f; break;
+	case width_F:	mtr = 80.0;	offset = 8.80f; break;
+	}
+
+	double slip = (mtr * 0.5) - offset;
+
+	Point2 e[2];
+	
+	Quad_1to2(nose_wheel, pos->GetHeading(), slip*2.0, e);
+	
+	out_ctr = e[0];
+	out_rad = mtr * 0.5;
+}
+
+static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>& out_ramps, vector<obj_conflict_info>& out_conflicting_objs, WED_ResourceMgr * rmgr)
+{
+	if(who->GetClass() == WED_RampPosition::sClass)
+	{
+		WED_RampPosition * ramp = dynamic_cast<WED_RampPosition *>(who);		
+		DebugAssert(ramp);
+		out_ramps.push_back(ramp);
+	} 
+	if(who->GetClass() == WED_ObjPlacement::sClass)
+	{
+		WED_ObjPlacement * obj = dynamic_cast<WED_ObjPlacement *>(who);
+		DebugAssert(obj);		
+		obj_conflict_info r;
+		string vpath;
+		obj->GetResource(vpath);
+		XObj8 * obj8;
+		
+		if(strstr(vpath.c_str(), "lib/airport/aircraft/") != NULL)
+		if(rmgr->GetObj(vpath, obj8))
+		{
+			float b[3] = {
+				obj8->xyz_max[0] - obj8->xyz_min[0],
+				obj8->xyz_max[1] - obj8->xyz_min[1],
+				obj8->xyz_max[2] - obj8->xyz_min[2] };
+
+			Vector2 arm(
+						(obj8->xyz_min[0] + obj8->xyz_max[0]) * 0.5,
+						(obj8->xyz_min[2] + obj8->xyz_max[2]) *-0.5);
+			double c = cos(obj->GetHeading() * DEG_TO_RAD);
+			double s = sin(obj->GetHeading() * DEG_TO_RAD);
+			
+			Vector2 arm_wrl(arm.dx * c + arm.dy * s,
+						    arm.dy * c - arm.dx * s);
+			
+			r.approx_radius_m = pythag(b[0], b[1], b[2]) * 0.5f;
+			
+			r.obj = obj;
+			obj->GetLocation(gis_Geo, r.loc_ll);
+			Vector2 arm_ll = VectorMetersToLL(r.loc_ll, arm_wrl);
+			r.loc_ll += arm_ll;
+					
+				
+			
+			out_conflicting_objs.push_back(r);
+		}
+	}
+	
+	int nn = who->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		collect_ramps_recursive(who->GetNthChild(n), out_ramps, out_conflicting_objs, rmgr);
+}
+
+static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmgr, ISelection * sel)
+{
+	int did_work = 0;
+	if(who->GetClass() == WED_Airport::sClass)
+	{
+		vector<WED_RampPosition *> ramps;
+		vector<obj_conflict_info> objs;
+		collect_ramps_recursive(who, ramps,objs,rmgr);
+		
+		for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
+		{
+			int rt = (*r)->GetType();
+			if(rt == atc_Ramp_Gate)
+			{
+				(*r)->SetRampOperationType(ramp_operation_Airline);
+				did_work = 1;
+			}
+			if(rt == atc_Ramp_TieDown)
+			{
+				did_work = 1;
+				
+				set<int> eq;
+				(*r)->GetEquipment(eq);
+				
+				if(eq.count(atc_Heavies))
+					(*r)->SetRampOperationType(ramp_operation_Airline);
+				else
+					(*r)->SetRampOperationType(ramp_operation_GeneralAviation);
+			}
+		}		
+		
+		for(vector<obj_conflict_info>::iterator o = objs.begin(); o != objs.end(); ++o)
+		{
+			bool alive = true;
+			for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
+			{				
+
+				Point2 rp; double rs;
+				center_and_radius_for_ramp_start(*r, rp, rs);
+
+				double d = LonLatDistMeters(rp.x(), rp.y(), o->loc_ll.x(), o->loc_ll.y());
+				
+				if(d < (o->approx_radius_m + rs))
+				{
+					//debug_mesh_line(rp, o->loc_ll, 1,0,0,1,0,0);
+					alive = false;
+					break;
+				}
+			}
+			if(!alive)
+			{	
+				sel->Erase(o->obj);
+				o->obj->SetParent(NULL, 0);
+				o->obj->Delete();
+				did_work = 1;				
+			}
+			
+		}
+	}
+	int nn = who->CountChildren();
+	for(int n = 0; n < nn; ++n)	
+		if(wed_upgrade_airports_recursive(who->GetNthChild(n), rmgr, sel))
+			did_work = 1;
+	return did_work;
+	
+}
+
+void WED_UpgradeRampStarts(IResolver * resolver)
+{
+	WED_Thing * root = WED_GetWorld(resolver);
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+	root->StartCommand("Upgrade Ramp Positions");
+	int did_work = wed_upgrade_airports_recursive(root, rmgr, sel);
+	if(did_work)
+		root->CommitOperation();
+	else
+		root->AbortOperation();
+	
 }

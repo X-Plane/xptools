@@ -64,6 +64,17 @@
 error checking here and in apt-io
 #endif
 
+static int get_apt_export_version()
+{
+	int version = 1000;
+	switch(gExportTarget) {
+	case wet_xplane_900:	version = 850; break;
+	case wet_xplane_1050:
+	case wet_gateway:	version = 1050; break;
+	}
+	return version;
+}
+
 inline Point2	recip(const Point2& pt, const Point2& ctrl) { return pt + Vector2(ctrl,pt); }
 inline	void	accum(AptPolygon_t& poly, int code, const Point2& pt, const Point2& ctrl, const set<int>& attrs)
 {
@@ -399,7 +410,7 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	AptExportRecursive(container, apts);
-	WriteAptFile(file_path,apts, gExportTarget == wet_xplane_900 ? 850 : 1000);
+	WriteAptFile(file_path,apts, get_apt_export_version());
 }
 
 void	WED_AptExport(
@@ -409,7 +420,7 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	AptExportRecursive(container, apts);
-	WriteAptFileProcs(print_func, ref, apts, gExportTarget == wet_xplane_900 ? 850 : 1000);
+	WriteAptFileProcs(print_func, ref, apts, get_apt_export_version());
 }
 
 

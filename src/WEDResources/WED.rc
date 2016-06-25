@@ -118,6 +118,14 @@ line_BOtherHold.png				GUI_RES		line_types/line_BOtherHold.png
 line_BWideBrokenSingle.png		GUI_RES		line_types/line_BWideBrokenSingle.png
 line_BILSCriticalCenter.png		GUI_RES		line_types/line_BILSCriticalCenter.png
 
+/* parking spots*/
+ClassA.png						GUI_RES		parking_spots/ClassA.png
+ClassB.png						GUI_RES		parking_spots/ClassB.png
+ClassC.png						GUI_RES		parking_spots/ClassC.png
+ClassD.png						GUI_RES		parking_spots/ClassD.png
+ClassE.png						GUI_RES		parking_spots/ClassE.png
+ClassF.png						GUI_RES		parking_spots/ClassF.png
+
 /*WEDManual.pdf					GUI_RES	WEDManual.pdf */
 
 /* Versioning info */
