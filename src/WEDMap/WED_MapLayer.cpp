@@ -94,13 +94,60 @@ void		WED_MapLayer::SetFilter(const vector<const char *> * hide_filter_ptr, cons
 	mLockFilter = lock_filter_ptr;
 }
 
+static pair<const char *, const char *>	get_type_for_entity(WED_Thing * ent)
+{
+	WED_Thing * p = ent->GetParent();
+	return make_pair(ent->GetClass(), p ? p->GetClass() : NULL);
+}
+
+
+static pair<const char *, const char *>	get_type_for_entity(IGISEntity * ent)
+{
+	return get_type_for_entity(dynamic_cast<WED_Thing *>(ent));
+}
+
+static bool matches_filter(const char * child_type, const char * parent_type, const char * filter)
+{
+	DebugAssert(child_type);
+	const char * c = child_type;
+	const char * f = filter;
+	while(*c && *f && *c == *f)
+		++f, ++c;
+	
+	if(*c) return false;
+	if(*f && *f != '/')
+		return false;
+	
+	if(!*f)
+		return true;
+	
+	DebugAssert(*f == '/');
+	++f;
+	
+	if((*f == 0) != (parent_type == NULL))
+		return false;
+	
+	if(parent_type == NULL)
+		return true;
+	
+	DebugAssert(*f);
+	
+	const char * p = parent_type;
+	
+	while(*p && *f && *p == *f)
+		++p, ++f;
+	
+	return *p == 0 && *f == 0;
+	
+}
+
 bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
 {
 	if(mHideFilter)
 	{
-		const char * ent_class = ent->GetGISSubtype();
+		pair<const char *, const char *> me_and_daddy_type = get_type_for_entity(ent);
 		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
-			if(ent_class == *c)
+			if(matches_filter(me_and_daddy_type.first, me_and_daddy_type.second, *c))
 				return false;
 	}
 
@@ -114,9 +161,9 @@ bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 {
 	if(mLockFilter)
 	{
-		const char * ent_class = ent->GetGISSubtype();
+		pair<const char *, const char *> me_and_daddy_type = get_type_for_entity(ent);
 		for(vector<const char *>::const_iterator c = mLockFilter->begin(); c != mLockFilter->end(); ++c)
-			if(ent_class == *c)
+			if(matches_filter(me_and_daddy_type.first, me_and_daddy_type.second, *c))
 				return true;
 	}
 
@@ -130,9 +177,9 @@ bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
 {
 	if(mHideFilter)
 	{
-		const char * ent_class = ent->GetClass();
+		pair<const char *, const char *> me_and_daddy_type = get_type_for_entity(ent);
 		for(vector<const char *>::const_iterator c = mHideFilter->begin(); c != mHideFilter->end(); ++c)
-			if(ent_class == *c)
+			if(matches_filter(me_and_daddy_type.first, me_and_daddy_type.second, *c))
 				return false;
 	}
 
@@ -146,9 +193,9 @@ bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
 {
 	if(mLockFilter)
 	{
-		const char * ent_class = ent->GetClass();
+		pair<const char *, const char *> me_and_daddy_type = get_type_for_entity(ent);
 		for(vector<const char *>::const_iterator c = mLockFilter->begin(); c != mLockFilter->end(); ++c)
-			if(ent_class == *c)
+			if(matches_filter(me_and_daddy_type.first, me_and_daddy_type.second, *c))
 				return true;
 	}
 

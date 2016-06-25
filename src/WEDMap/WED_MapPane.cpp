@@ -636,13 +636,17 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_ATCRunwayUse.h"
 #include "WED_RoadEdge.h"
 
+const char * k_free_chain1 = "WED_AirportChain/WED_Group";
+const char * k_free_chain2 = "WED_AirportChain/WED_Airport";
+
 void hide_all_persistents(vector<const char*>& hide_list)
 {
 	//Commented items are needed for vertex selection or other operations
 	hide_list.push_back(WED_AirportSign::sClass);
 	hide_list.push_back(WED_AirportBeacon::sClass);
 	hide_list.push_back(WED_AirportBoundary::sClass);
-	//hide_list.push_back(WED_AirportChain::sClass);
+	hide_list.push_back(k_free_chain1);
+	hide_list.push_back(k_free_chain2);
 	//hide_list.push_back(WED_Ring::sClass);
 	//hide_list.push_back(WED_AirportNode::sClass);
 	hide_list.push_back(WED_Helipad::sClass);
@@ -782,6 +786,9 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
 		unhide_persistent(hide_list, WED_LightFixture::sClass);
 		unhide_persistent(hide_list, WED_Windsock::sClass);
+
+		unhide_persistent(hide_list, k_free_chain1);
+		unhide_persistent(hide_list, k_free_chain2);
 	}
 	else if(mode == tab_3D)
 	{
