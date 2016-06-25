@@ -366,13 +366,12 @@ int		WED_MapPane::Map_HandleCommand(int command)
 #endif	
 //	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
 	case wed_TogglePreview:	mPreview->ToggleVisible(); return 1;
-	case wed_ToggleATC:		mATCLayer->ToggleVisible(); return 1;
 
-	case wed_Pavement0:		mPreview->SetPavementTransparency(0.0f);		return 1;
-	case wed_Pavement25:	mPreview->SetPavementTransparency(0.25f);	return 1;
-	case wed_Pavement50:	mPreview->SetPavementTransparency(0.5f);		return 1;
-	case wed_Pavement75:	mPreview->SetPavementTransparency(0.75f);	return 1;
-	case wed_Pavement100:	mPreview->SetPavementTransparency(1.0f);		return 1;
+	case wed_Pavement0:		mPreview->SetPavementTransparency(0.0f);  return 1;
+	case wed_Pavement25:	mPreview->SetPavementTransparency(0.25f); return 1;
+	case wed_Pavement50:	mPreview->SetPavementTransparency(0.5f);  return 1;
+	case wed_Pavement75:	mPreview->SetPavementTransparency(0.75f); return 1;
+	case wed_Pavement100:	mPreview->SetPavementTransparency(1.0f);  return 1;
 
 	case wed_ObjDensity1:	mPreview->SetObjDensity(1);	return 1;
 	case wed_ObjDensity2:	mPreview->SetObjDensity(2);	return 1;
@@ -405,7 +404,6 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 #endif	
 //	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
 	case wed_TogglePreview: ioCheck = mPreview->IsVisible();								return 1;
-	case wed_ToggleATC:		ioCheck = mATCLayer->IsVisible();								return 1;
 	case wed_Pavement0:		ioCheck = mPreview->GetPavementTransparency() == 0.0f;	return 1;
 	case wed_Pavement25:	ioCheck = mPreview->GetPavementTransparency() == 0.25f;	return 1;
 	case wed_Pavement50:	ioCheck = mPreview->GetPavementTransparency() == 0.5f;	return 1;
@@ -458,8 +456,6 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
 #endif	
 	if ((mPreview->IsVisible ()     ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"    ,mPreview->IsVisible()      ? 1 : 0))		mPreview->ToggleVisible();
-
-	if ((mATCLayer->IsVisible()		? 1 : 0) != prefs->ReadIntPref("map/atc_vis"		,mATCLayer->IsVisible()		? 1 : 0))		mATCLayer->ToggleVisible();
 
 	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);
 	mPreview->SetObjDensity(prefs->ReadIntPref("map/obj_density",mPreview->GetObjDensity()));
@@ -535,7 +531,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4);
 	prefs->WriteIntPref("map/obj_density",mPreview->GetObjDensity());
-	prefs->WriteIntPref("map/atc_vis", mATCLayer->IsVisible() ? 1 : 0);
+	//prefs->WriteIntPref("map/atc_vis", mATCLayer->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0);
 	prefs->WriteIntPref("map/vertices_vis",mStructureLayer->GetVerticesShowing() ? 1 : 0);
 
@@ -736,7 +732,8 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 	};
 	
 	hide_all_persistents(hide_list);
-	
+	mATCLayer->SetVisible(false);
+
 	if(mode == tab_Selection)
 	{
 		title = "";
@@ -763,7 +760,8 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_PolygonPlacement::sClass);
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
-
+		
+		mATCLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_RampPosition::sClass);
 		unhide_persistent(hide_list, WED_TaxiRoute::sClass);

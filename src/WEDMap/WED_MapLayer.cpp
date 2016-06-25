@@ -77,6 +77,11 @@ bool		WED_MapLayer::IsVisible(void) const
 	return mVisible;
 }
 
+void		WED_MapLayer::SetVisible(bool visibility)
+{
+	mVisible = visibility;
+}
+
 void		WED_MapLayer::ToggleVisible(void)
 {
 	mVisible = !mVisible;

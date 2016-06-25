@@ -54,6 +54,7 @@ public:
 	virtual	bool		DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { return false; }
 
 			bool		IsVisible(void) const;
+			void		SetVisible(bool visibility);
 	virtual	void		ToggleVisible(void);
 			void		SetFilter(const vector<const char *> * hide_filter_ptr, const vector<const char *> * lock_filter_ptr); // client MUST retain storage!!!
 
