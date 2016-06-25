@@ -56,6 +56,9 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y);
+	virtual void	DoDeleteCell(
+						int							cell_x,
+						int							cell_y) { }
 	virtual	void	DoDrag(
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,

@@ -135,6 +135,23 @@ enum {
 	wed_AddATCWindRule,
 #endif
 	wed_UpgradeRamps,
+	//-- Add Metadata Keys Menu--
+	//Organized by alphabetical order
+	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
+	wed_AddMetaDataCity,// or Locality
+	wed_AddMetaDataCountry,
+	wed_AddMetaDataDatumLat,
+	wed_AddMetaDataDatumLon,
+	wed_AddMetaDataFAA,
+	wed_AddMetaDataIATA,
+	wed_AddMetaDataICAO,
+	wed_AddMetaDataRegionCode,
+	wed_AddMetaDataState,// or Province
+	wed_AddMetaDataTransitionAlt,//Altitude
+	wed_AddMetaDataTransitionLevel,
+	wed_AddMetaDataEnd,//WARNING: DO NOT USE!
+	//---------------------------//
+	wed_UpdateMetadata, //Open up dialogbox
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery

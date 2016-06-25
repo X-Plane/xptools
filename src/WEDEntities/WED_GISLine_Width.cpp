@@ -86,6 +86,7 @@ void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	if (n < rwy_prop_count)
 	{
+		info.can_delete = false;
 		info.can_edit = true;
 		info.prop_name = kRwyPropNames[n];
 		info.prop_kind = prop_Double;

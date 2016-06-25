@@ -182,3 +182,8 @@ msvc/msvc_libs/jasper-1.701.0.GEO/src/msvc/*___Win32_Debug/
 msvc/msvc_libs/jasper-1.701.0.GEO/src/msvc/Win32_Debug/
 *.tlog
 *elease
+
+nohup.out
+*.swm
+*.swn
+*.swo

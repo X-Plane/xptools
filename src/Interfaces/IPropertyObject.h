@@ -49,8 +49,9 @@ enum {
 typedef	map<int,pair<string, bool> >	PropertyDict_t;		// Maps integer enum value to (string name and true if selectable in the UI)
 
 struct PropertyInfo_t {
+	bool			can_delete;
 	int				can_edit;
-	int				prop_kind;
+	int				prop_kind;	//See the anonymous enum at the top
 	string			prop_name;
 	int				digits;
 	int				decimals;
@@ -61,7 +62,7 @@ struct PropertyInfo_t {
 };
 
 struct	PropertyVal_t {
-	int			prop_kind;
+	int			prop_kind;	//See the anonymous enum at the top
 	int			int_val;
 	string		string_val;
 	double		double_val;
@@ -74,12 +75,12 @@ public:
 	virtual	int			FindProperty(const char * in_prop) const=0;
 	virtual int			CountProperties(void) const=0;
 	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const=0;
-	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const=0;			// Ben says: dictionary ops are broken out (and one vs all lookup are split too) for performance.
-	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const=0;		// It may be slow to get all enums, so give the UI code a way to say if it needs this info.
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const=0;	// Ben says: dictionary ops are broken out (and one vs all lookup are split too) for performance.
+	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const=0;	// It may be slow to get all enums, so give the UI code a way to say if it needs this info.
 
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const=0;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val)=0;
-
+	virtual void		DeleteNthProperty(int n)=0;
 };
 
 #endif /* IPROPERTYOBJECT_H */

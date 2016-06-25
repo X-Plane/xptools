@@ -710,6 +710,30 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 			}
 			break;
+		case apt_meta_data:
+			{
+				int tokens = TextScanner_FormatScan(s,"i|",
+					&rec_code);
+				if(tokens < 1)
+				{
+					ok = "Error: bad meta_data_entry.";
+				}
+
+				//Start after "1302 "
+				string full_entry_text(TextScanner_GetBegin(s) + 5,TextScanner_GetEnd(s));
+
+				string key = full_entry_text.substr(0, full_entry_text.find_first_of(" "));
+				string value = full_entry_text.substr(full_entry_text.find_first_of(" ") + 1);
+
+				// Before the first public 10.50 beta, we were using "faa_id" as a key,
+				// but that obviously didn't fit with the "_code" suffix for the rest of the identifiers,
+				// so we changed it to match.
+				if(key == "faa_id")
+					key = "faa_code";
+
+				outApts.back().meta_data.push_back(std::pair<string,string>(key,value));
+				break;
+			}
 		case apt_flow_def:
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: flow outside an airport.";
@@ -1001,6 +1025,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 		fprintf(fi, "%d %6d %d %d %s %s" CRLF, apt->kind_code, apt->elevation_ft,
 				apt->has_atc_twr, apt->default_buildings,
 				apt->icao.c_str(), apt->name.c_str());
+		
+		for(int i = 0; i < apt->meta_data.size(); ++i)
+		{
+			string key = apt->meta_data.at(i).first;
+			string value = apt->meta_data.at(i).second;
+			
+			fprintf(fi, "%d %s %s" CRLF, apt_meta_data, key.c_str(), value.c_str());
+		}
 
 		for (AptRunwayVector::const_iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{

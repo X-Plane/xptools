@@ -423,7 +423,7 @@ static	GISTool_RegCmd_t		sObsCmds[] = {
 			"asr    Import an FAA ASR file from the digital aero chart suplement (DAC) - pull out the asr data from asr.dat.\n"
 			"arsr   Import an FAA ARSR file from the digital aero chart suplement (DAC) - pull out the arsr data from asr.dat.\n" },
 { "-apt", 			1, -1, DoAptImport, 			"Import airport data.", "-apt <file>\nClear loaded airports and load from this file." },
-{ "-aptwrite", 		1, 1, DoAptExport, 			"Export airport data.", "-aptwrite <file>\nExports all loaded airports to one apt.adt file." },
+{ "-aptwrite", 		1, 1, DoAptExport, 			"Export airport data.", "-aptwrite <file>\nExports all loaded airports to one apt.dat file." },
 { "-aptindex", 		1, 1, DoAptBulkExport, 		"Export airport data.", "-aptindex <export_dir>/\nExport all loaded airports to a directory as individual tiled apt.dat files." },
 { "-apttest", 		0, 0, DoAptTest, 			"Test airport procesing code.", "-apttest\nThis command processes each loaded airport against an empty DSF to confirm that the polygon cutting logic works.  While this isn't a perfect proxy for the real render, it can identify airport boundaries that have sliver problems (since this is done before the airport is cut into the DSF." },
 { "-aptinfo", 		0, 0, DoAptInfo, 			"Test airport procesing code.", "-apttest\nThis command prints out diagnostics about all airports." },
