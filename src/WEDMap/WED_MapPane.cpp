@@ -638,12 +638,13 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 
 void hide_all_persistents(vector<const char*>& hide_list)
 {
+	//Commented items are needed for vertex selection or other operations
 	hide_list.push_back(WED_AirportSign::sClass);
 	hide_list.push_back(WED_AirportBeacon::sClass);
 	hide_list.push_back(WED_AirportBoundary::sClass);
-	hide_list.push_back(WED_AirportChain::sClass);
-	hide_list.push_back(WED_Ring::sClass);
-	hide_list.push_back(WED_AirportNode::sClass);
+	//hide_list.push_back(WED_AirportChain::sClass);
+	//hide_list.push_back(WED_Ring::sClass);
+	//hide_list.push_back(WED_AirportNode::sClass);
 	hide_list.push_back(WED_Helipad::sClass);
 	hide_list.push_back(WED_KeyObjects::sClass);
 	hide_list.push_back(WED_LightFixture::sClass);
@@ -651,18 +652,18 @@ void hide_all_persistents(vector<const char*>& hide_list)
 	hide_list.push_back(WED_RampPosition::sClass);
 	hide_list.push_back(WED_Root::sClass);
 	hide_list.push_back(WED_Runway::sClass);
-	hide_list.push_back(WED_RunwayNode::sClass);
+	//hide_list.push_back(WED_RunwayNode::sClass);
 	hide_list.push_back(WED_Sealane::sClass);
 	hide_list.push_back(WED_Select::sClass);
 	hide_list.push_back(WED_Taxiway::sClass);
 	hide_list.push_back(WED_TowerViewpoint::sClass);
 	hide_list.push_back(WED_Windsock::sClass);
 	hide_list.push_back(WED_ATCFrequency::sClass);
-	hide_list.push_back(WED_TextureNode::sClass);
-	hide_list.push_back(WED_TextureBezierNode::sClass);
+	//hide_list.push_back(WED_TextureNode::sClass);
+	//hide_list.push_back(WED_TextureBezierNode::sClass);
 	hide_list.push_back(WED_OverlayImage::sClass);
-	hide_list.push_back(WED_SimpleBoundaryNode::sClass);
-	hide_list.push_back(WED_SimpleBezierBoundaryNode::sClass);
+	//hide_list.push_back(WED_SimpleBoundaryNode::sClass);
+	//hide_list.push_back(WED_SimpleBezierBoundaryNode::sClass);
 	hide_list.push_back(WED_LinePlacement::sClass);
 	hide_list.push_back(WED_StringPlacement::sClass);
 	hide_list.push_back(WED_ForestPlacement::sClass);
@@ -670,11 +671,11 @@ void hide_all_persistents(vector<const char*>& hide_list)
 	hide_list.push_back(WED_PolygonPlacement::sClass);
 	hide_list.push_back(WED_DrapedOrthophoto::sClass);
 	hide_list.push_back(WED_ExclusionZone::sClass);
-	hide_list.push_back(WED_ForestRing::sClass);
-	hide_list.push_back(WED_FacadeRing::sClass);
-	hide_list.push_back(WED_FacadeNode::sClass);
+	//hide_list.push_back(WED_ForestRing::sClass);
+	//hide_list.push_back(WED_FacadeRing::sClass);
+	//hide_list.push_back(WED_FacadeNode::sClass);
 	hide_list.push_back(WED_TaxiRoute::sClass);
-	hide_list.push_back(WED_TaxiRouteNode::sClass);
+	//hide_list.push_back(WED_TaxiRouteNode::sClass);
 	hide_list.push_back(WED_ATCFlow::sClass);
 	hide_list.push_back(WED_ATCTimeRule::sClass);
 	hide_list.push_back(WED_ATCWindRule::sClass);
@@ -754,7 +755,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		title = "ATC Taxi + Flow Mode";
 
 		lock_list.push_back(WED_DrapedOrthophoto::sClass);
-		lock_list.push_back(WED_FacadeRing::sClass);
+		lock_list.push_back(WED_FacadePlacement::sClass);
 		lock_list.push_back(WED_ForestPlacement::sClass);
 		lock_list.push_back(WED_ObjPlacement::sClass);
 		lock_list.push_back(WED_PolygonPlacement::sClass);
