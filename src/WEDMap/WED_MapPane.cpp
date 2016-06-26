@@ -636,8 +636,12 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 #include "WED_ATCRunwayUse.h"
 #include "WED_RoadEdge.h"
 
-const char * k_free_chain1 = "WED_AirportChain/WED_Group";
-const char * k_free_chain2 = "WED_AirportChain/WED_Airport";
+//Note: Replace WED_Airport or WED_Group with WED_GISComposite or it won't work when nested underneath
+const char * k_show_taxiline_chain = "WED_AirportChain/WED_GISComposite";
+const char * k_show_taxiline_nodes = "WED_AirportNode/WED_AirportChain/WED_GISComposite";
+
+const char * k_show_boundary_chain = "WED_AirportChain/WED_AirportBoundary";
+const char * k_show_boundary_nodes = "WED_AirportNode/WED_AirportChain/WED_AirportBoundary";
 
 void hide_all_persistents(vector<const char*>& hide_list)
 {
@@ -645,8 +649,12 @@ void hide_all_persistents(vector<const char*>& hide_list)
 	hide_list.push_back(WED_AirportSign::sClass);
 	hide_list.push_back(WED_AirportBeacon::sClass);
 	hide_list.push_back(WED_AirportBoundary::sClass);
-	hide_list.push_back(k_free_chain1);
-	hide_list.push_back(k_free_chain2);
+	hide_list.push_back(k_show_taxiline_chain);
+	hide_list.push_back(k_show_taxiline_nodes);
+
+	hide_list.push_back(k_show_boundary_chain);
+	hide_list.push_back(k_show_boundary_nodes);
+	//hide_list.push_back(WED_AirportChain::sClass);
 	//hide_list.push_back(WED_Ring::sClass);
 	//hide_list.push_back(WED_AirportNode::sClass);
 	hide_list.push_back(WED_Helipad::sClass);
@@ -783,12 +791,10 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_Taxiway::sClass);
 
 		unhide_persistent(hide_list, lock_list);
-		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
 		unhide_persistent(hide_list, WED_LightFixture::sClass);
 		unhide_persistent(hide_list, WED_Windsock::sClass);
-
-		unhide_persistent(hide_list, k_free_chain1);
-		unhide_persistent(hide_list, k_free_chain2);
+		unhide_persistent(hide_list, k_show_taxiline_chain);
+		unhide_persistent(hide_list, k_show_taxiline_nodes);
 	}
 	else if(mode == tab_3D)
 	{
@@ -818,6 +824,9 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_ExclusionZone::sClass);
+		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
+		unhide_persistent(hide_list, k_show_boundary_chain);
+		unhide_persistent(hide_list, k_show_boundary_nodes);
 	}
 	else if(mode == tab_Texture)
 	{
