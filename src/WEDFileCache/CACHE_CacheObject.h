@@ -98,7 +98,7 @@ private:
 	CACHE_CacheObject(const CACHE_CacheObject& copy);
 	CACHE_CacheObject& operator= (const CACHE_CacheObject& rhs);
 	
-	friend CACHE_FileCacheInitializer;
+	friend class CACHE_FileCacheInitializer;
 	//Note on state lifespan: m_cool_down_timestamp, m_last_url, and m_last_error_type are only "reset" when object is deleted and recreated
 };
 #endif
