@@ -51,6 +51,8 @@
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
 #include "WED_RampPosition.h"
+#include "WED_Menus.h"
+#include "WED_MetaDataKeys.h"
 #include "WED_ResourceMgr.h"
 #include "XObjDefs.h"
 #include "MathUtils.h"
@@ -374,6 +376,36 @@ int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name)
 	return want_sel != now_sel;
 }
 
+bool	WED_CanAddMetaData(IResolver * inResolver, int command)
+{
+	ISelection * sel = WED_GetSelect(inResolver);
+	if (sel->GetSelectionCount() != 1) return 0;
+
+	WED_Airport * sel_airport = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
+	if (sel_airport == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		return !sel_airport->ContainsMetaDataKey(META_KeyName(command));
+	}
+}
+
+void WED_DoAddMetaData(IResolver * inResolver, int command)
+{
+	ISelection * sel = WED_GetSelect(inResolver);
+	if (sel->GetSelectionCount() != 1) return;
+
+	WED_Airport * want_sel = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
+	if (want_sel == NULL) return;
+
+	MetaDataKey key_info = META_KeyInfo(command);
+	want_sel->StartOperation(string("Add Metadata Key " + key_info.display_text).c_str());
+	want_sel->StateChanged();
+	want_sel->AddMetaDataKey(key_info.name, "");
+	want_sel->CommitOperation();
+}
 
 int		WED_CanMakeNewATCFreq(IResolver * inResolver)
 {

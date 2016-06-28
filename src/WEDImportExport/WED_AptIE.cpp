@@ -802,7 +802,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{
-			string msg = string("The apt.adt file '") + path + string("' could not be imported:\n") + result;
+			string msg = string("The apt.dat file '") + path + string("' could not be imported:\n") + result;
 			DoUserAlert(msg.c_str());
 			return;
 		}

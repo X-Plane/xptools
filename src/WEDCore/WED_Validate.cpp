@@ -60,6 +60,7 @@
 #include "GISUtils.h"
 #include "PlatformUtils.h"
 #include "MathUtils.h"
+#include "WED_ATCFrequency.h"
 
 #define MAX_LON_SPAN_GATEWAY 0.2
 #define MAX_LAT_SPAN_GATEWAY 0.2
@@ -183,6 +184,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	if(who->GetClass() == WED_Taxiway::sClass)
 	{
 		WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
+		if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+		{
+			msg = "Water is not a valid surface type for taxiways";
+			DoUserAlert(msg.c_str());
+			return who;
+		}
+
 		IGISPointSequence * ps;
 		ps = twy->GetOuterRing();
 		if(!ps->IsClosed() || ps->GetNumSides() < 3)
@@ -307,6 +315,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 			if (rwy)
 			{
+				if(rwy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+				{
+					msg = "Water is not a valid surface type for runways";
+					DoUserAlert(msg.c_str());
+					return who;
+				}
+		
 				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced thresholds.";
 				
 				#if !GATEWAY_IMPORT_FEATURES
@@ -353,6 +368,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		else {
 			if (n1[0] != 'H')	msg = "The helipad '" + name + "' does not start with the letter H.";
 			else {
+				if(n1.length() > 3)
+				{
+					msg = "The helipad '" + name + "' is longer than the maximum 3 characters.";
+				}
+				
 				n1.erase(0,1);
 				for (int i = 0; i < n1.length(); ++i)
 				{
@@ -503,7 +523,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			if(taxi->IsRunway())
 			if(s_legal_rwy_twoway.count(taxi->GetRunway()) == 0)
 			{
-				msg = "The taxi route '" + name + "' is set to a ruwnay not present at the airport.";
+				msg = "The taxi route '" + name + "' is set to a runway not present at the airport.";
 			}
 			
 			Point2	start, end;
@@ -516,6 +536,24 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 				#endif
 			}
 		}		
+		if(who->GetClass() == WED_ATCFrequency::sClass)
+		{
+			const WED_ATCFrequency * freq = dynamic_cast<WED_ATCFrequency *>(who);
+			if(freq !=  NULL)
+			{
+				AptATCFreq_t freq_info;
+				freq->Export(freq_info);
+				const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
+				if(freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower)
+				{
+					int mhz = freq_info.freq / 100;
+					if(mhz < 118 || mhz > 136)
+					{
+						msg = "The ATC frequency " + name + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
+					}
+				}
+			}
+		}
 	}
 	
 	//------------------------------------------------------------------------------------

@@ -100,6 +100,7 @@ void	WED_FilterBar::GetCellContent(
 	if(cell_y == 1 || mHavePacks == false)
 	{
 		the_content.content_type=gui_Cell_EditText;
+		the_content.can_delete = false;
 		the_content.can_edit=(cell_x==1);
 		the_content.can_disclose=0;
 		the_content.can_select=0;
@@ -122,6 +123,7 @@ void	WED_FilterBar::GetCellContent(
 		if(cell_x == 0)
 		{
 			the_content.content_type=gui_Cell_EditText;
+			the_content.can_delete=false;
 			the_content.can_edit=0;
 			the_content.can_disclose=0;
 			the_content.can_select=0;
@@ -138,6 +140,7 @@ void	WED_FilterBar::GetCellContent(
 		if(cell_x == 1)
 		{
 			the_content.content_type=gui_Cell_Enum;
+			the_content.can_delete=false;
 			the_content.can_edit=1;
 			the_content.can_disclose=0;
 			the_content.can_select=0;

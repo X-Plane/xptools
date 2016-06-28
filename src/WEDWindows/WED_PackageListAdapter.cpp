@@ -56,7 +56,7 @@ void	WED_PackageListAdapter::GetCellContent(
 	the_content.indent_level = 0;
 
 	gPackageMgr->GetNthCustomPackageName(gPackageMgr->CountCustomPackages() - cell_y - 1, the_content.text_val);
-
+	the_content.can_delete=false;
 	the_content.can_edit = mLock.count(the_content.text_val)==0;
 }
 
@@ -284,6 +284,7 @@ int			WED_PackageListAdapter::ColForX(int n)
 
 int			WED_PackageListAdapter::RowForY(int n)
 {
+	if(n < 0) return -1; //Fixes being able to click an imaginary last cell and select the real last cell
 	return n / HACK_HEIGHT;
 }
 
