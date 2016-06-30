@@ -34,7 +34,7 @@
 class RAII_CurlHandle
 {
 public:
-	RAII_CurlHandle(const string& url, const string& cert, int buf_reserve_size);
+	RAII_CurlHandle(const string& url, const string& cert, int buf_reserve_size=0);
 	
 	//Get curl_http_get_file handle
 	curl_http_get_file& get_curl_handle();

@@ -38,7 +38,6 @@ enum CACHE_domain
 
 struct CACHE_domain_policy
 {
-	int                 cache_domain_pol_buffer_reserve_size; //The number of bytes the download will probably be
 	//int                 cache_domain_pol_max_KB_on_disk;
 	int                 cache_domain_pol_max_seconds_on_disk;
 	int                 cache_domain_pol_min_client_cool_down_snds;
