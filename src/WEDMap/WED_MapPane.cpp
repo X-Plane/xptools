@@ -786,17 +786,17 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		title = "Lights and Markings";
 
 		lock_list.push_back(WED_DrapedOrthophoto::sClass);
-		lock_list.push_back(WED_LinePlacement::sClass);
 		lock_list.push_back(WED_PolygonPlacement::sClass);
 		lock_list.push_back(WED_Runway::sClass);
-		lock_list.push_back(WED_StringPlacement::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
 
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_LightFixture::sClass);
-		unhide_persistent(hide_list, WED_Windsock::sClass);
+		unhide_persistent(hide_list, WED_LinePlacement::sClass);
+		unhide_persistent(hide_list, WED_StringPlacement::sClass);
 		unhide_persistent(hide_list, k_show_taxiline_chain);
 		unhide_persistent(hide_list, k_show_taxiline_nodes);
+		unhide_persistent(hide_list, WED_Windsock::sClass);
 	}
 	else if(mode == tab_3D)
 	{
