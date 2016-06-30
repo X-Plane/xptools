@@ -759,6 +759,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 
 		unhide_persistent(hide_list, WED_DrapedOrthophoto::sClass);
 		unhide_persistent(hide_list, WED_PolygonPlacement::sClass);
+		unhide_persistent(hide_list, WED_Helipad::sClass);
 		unhide_persistent(hide_list, WED_Runway::sClass);
 		unhide_persistent(hide_list, WED_Taxiway::sClass);
 	}
@@ -773,7 +774,8 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		lock_list.push_back(WED_PolygonPlacement::sClass);
 		lock_list.push_back(WED_Runway::sClass);
 		lock_list.push_back(WED_Taxiway::sClass);
-		
+		lock_list.push_back(k_show_taxiline_chain);
+
 		mATCLayer->SetVisible(true);
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_RampPosition::sClass);
@@ -812,7 +814,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 	}
 	else if(mode == tab_Exclusions)
 	{
-		title = "Exclusions and Boundries";
+		title = "Exclusions and Boundaries";
 
 		lock_list.push_back(WED_DrapedOrthophoto::sClass);
 		lock_list.push_back(WED_FacadePlacement::sClass);
