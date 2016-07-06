@@ -645,7 +645,16 @@ const char * k_show_boundary_nodes = "WED_AirportNode/WED_AirportChain/WED_Airpo
 
 void hide_all_persistents(vector<const char*>& hide_list)
 {
-	//Commented items are needed for vertex selection or other operations
+	//Commenting an item here makes it "white listed", aka always shown.
+	//Most white listed items are vertex nodes, and
+	//persistents that compose more concrete persistents.
+
+	//If a pattern is here, it is hazy. Tread carefully, debug from the top-down or bottom-up.
+	//Minimizing the size of the hide_list will likely speed things up for you.
+
+	//See also WED_MapLayer::Is(Visible|Locked)Now and WED_MapLayer.cpp's ::matches_filter
+	//  -Ted 07/06/2016
+
 	hide_list.push_back(WED_AirportSign::sClass);
 	hide_list.push_back(WED_AirportBeacon::sClass);
 	hide_list.push_back(WED_AirportBoundary::sClass);
@@ -747,6 +756,9 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 	hide_all_persistents(hide_list);
 	mATCLayer->SetVisible(false);
 
+	//Add to lock_list for Map Dead
+	//unhide_persistent for Map Live
+	//All else will be hidden
 	if(mode == tab_Selection)
 	{
 		title = "";
