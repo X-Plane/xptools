@@ -22,7 +22,7 @@ extern "C" {
 		void *		info;
 		void (*		menu_item_pick)(void * info, int cmd);
 		void (*		menu_item_update)(void * info, int cmd, char * io_name, int * io_check, int * io_enable);
-		int  (*		can_quit)(void * info);				// Return 1 to allow quit, 0 to abort quitting.
+		void  (*	try_quit)(void * info);				// Return 1 to allow quit, 0 to abort quitting.
 	};
 	
 	// Call this first - it sets up a memory pool, etc.
@@ -33,6 +33,7 @@ extern "C" {
 
 	// Runs the app, returning at app quit.  Use in main()
 	void run_app();
+	void stop_app();
 
 	// Blocks until the mouse moves or is released.
 	int run_event_tracking_until_move_or_up();	// returns 1 if mouse still down
