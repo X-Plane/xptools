@@ -69,11 +69,18 @@ static NSString *		s_nib_file = NULL;
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-	if(g_callbacks.can_quit)
-		return g_callbacks.can_quit(g_callbacks.info) ? NSTerminateNow : NSTerminateCancel;
+	if(g_callbacks.try_quit)
+	{
+		// This is a little weird: other languages return to main() out of their main loop
+		// when the app quit; NS normally just calls exit().  So we are not going to use
+		// the regular terminate() chain.  Instead we cancel the terminate and let
+		// client code do the quitting - hence this is a "try quit" - the client succeeds
+		// if it WANTS to quit.
+		g_callbacks.try_quit(g_callbacks.info);
+		return NSTerminateCancel;
+	}
 	return NSTerminateNow;
 }
-
 
 @end
 
@@ -116,6 +123,12 @@ void run_app()
 {
 	NSApplication * me = [NSApplication sharedApplication];
 	[me run];
+}
+
+void stop_app()
+{
+	NSApplication * me = [NSApplication sharedApplication];
+	[me stop:nil];
 }
 
 int run_event_tracking_until_move_or_up()
