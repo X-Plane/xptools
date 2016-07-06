@@ -687,7 +687,7 @@ void hide_all_persistents(vector<const char*>& hide_list)
 	//hide_list.push_back(WED_FacadeRing::sClass);
 	//hide_list.push_back(WED_FacadeNode::sClass);
 	hide_list.push_back(WED_TaxiRoute::sClass);
-	//hide_list.push_back(WED_TaxiRouteNode::sClass);
+	hide_list.push_back(WED_TaxiRouteNode::sClass);
 	hide_list.push_back(WED_ATCFlow::sClass);
 	hide_list.push_back(WED_ATCTimeRule::sClass);
 	hide_list.push_back(WED_ATCWindRule::sClass);
@@ -780,6 +780,7 @@ void		WED_MapPane::SetTabFilterMode(int mode)
 		unhide_persistent(hide_list, lock_list);
 		unhide_persistent(hide_list, WED_RampPosition::sClass);
 		unhide_persistent(hide_list, WED_TaxiRoute::sClass);
+		unhide_persistent(hide_list, WED_TaxiRouteNode::sClass);
 	}
 	else if(mode == tab_Lights)
 	{
