@@ -133,7 +133,6 @@ static const GUI_MenuItem_t kViewMenu[] = {
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
 {	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
-{	"Toggle &ATC Data",			0,	0,										0,	wed_ToggleATC		},
 #if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
 #endif

@@ -29,6 +29,7 @@
 class	WED_MapZoomerNew;
 class	GUI_GraphState;
 class	IGISEntity;
+class	WED_Thing;
 class	IResolver;
 class	GUI_Pane;
 
@@ -53,7 +54,9 @@ public:
 	virtual	bool		DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected) { return false; }
 
 			bool		IsVisible(void) const;
+			void		SetVisible(bool visibility);
 	virtual	void		ToggleVisible(void);
+			void		SetFilter(const vector<const char *> * hide_filter_ptr, const vector<const char *> * lock_filter_ptr); // client MUST retain storage!!!
 
 	// Extra iterations over the entity hiearchy get very expensive.  This routine returns whether a layer wants
 	// per-entity drawing passes for either structure or visualization.  We can also say whether we need "seleted" to be
@@ -67,6 +70,11 @@ protected:
 	inline	WED_MapZoomerNew *	GetZoomer(void) const { return mZoomer; }
 	inline	IResolver *			GetResolver(void) const { return mResolver; }
 	inline	GUI_Pane *			GetHost(void) const { return mHost; }
+	
+			bool				IsVisibleNow(IGISEntity * ent) const;
+			bool				IsVisibleNow(WED_Thing * ent) const;
+			bool				IsLockedNow(IGISEntity * ent) const;
+			bool				IsLockedNow(WED_Thing * ent) const;
 
 	// WED defines two types of icons: furniture icons for all the stuff in an airport (VASI/PAPI, signs, windsocks) and airport
 	// icons for the iconic representation of an entire airport at far view.  In both cases we have two vars:
@@ -83,6 +91,8 @@ protected:
 
 private:
 
+	friend		class	WED_Map;		// for visible-now filter accessors
+
 						 WED_MapLayer();
 
 	bool					mVisible;
@@ -97,9 +107,9 @@ private:
 	double					mFurnitureFactor;
 
 	int						mAirportTransWidth;
-
-
-
+	
+	const vector<const char *> *	mHideFilter;
+	const vector<const char *> *	mLockFilter;
 };
 
 

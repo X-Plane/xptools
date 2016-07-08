@@ -66,7 +66,7 @@ class	WED_NWInfoLayer;
 
 */
 
-class	WED_MapPane : public GUI_Packer, GUI_Listener {
+class	WED_MapPane : public GUI_Packer, public GUI_Listener {
 public:
 
 						 WED_MapPane(GUI_Commander * cmdr, double log_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library);
@@ -92,6 +92,9 @@ public:
 							intptr_t				inParam);
 
 private:
+
+			void		SetTabFilterMode(int mode);
+
 
 	WED_Map *				mMap;
 
