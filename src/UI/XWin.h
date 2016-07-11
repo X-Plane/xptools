@@ -215,6 +215,10 @@ public:
 
 		int						mCurrentDragOps;	// Legal drag mask (in NS constants) for current drag op)
 		int						mInDragOp;			// Flag if we are in a drag and drop op - since the op is closed via a callback we have to keep a flag.
+													// 0 = we are NOT in the drag op.
+													// 1 = we are in the modal loop and the drag is happening
+													// 2 = we are in the modal loop but the drag is over.  This tells us that we SHOULD
+													//	   exit the loop but we haven't YET exited the loop.  See endedAtPoint in .mm
 	
 		// Mac common handlers for obj-C's 5 million event messages.
 		void					EventButtonDown(int x, int y, int button, int has_control_key);

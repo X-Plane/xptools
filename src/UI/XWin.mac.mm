@@ -200,7 +200,16 @@
 
 - (void)draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
 {
-	mOwner->mInDragOp = 0;
+	// This is a hack. When we are dragging we go into a modal loop to emulate the modal drag semantics of the other OSes and old UI
+	// kits.  We pump the event queue until we see that the drag is over, then we eject, and we skip up events while we do this.
+	// There's some kind of weird race - I've never seen it but we have seen the evidence in bug WED-566. Basically we end up with
+	// the drag session over but we are STILL inside "sendEvent" from inside the modal loop.  This was allowing for a re-dispach of
+	// a mouse down INSIDE a mouse down, resulting in double-click-counting.
+	//
+	// To prevent this, we use a tri-state flag..."2" means we are done with the drag (and thus we SHOULD exit the loop) but we have not
+	// YET exited the loop and unwound the stack, so we should not process down events.  Down events that hit this race window
+	// will now be dropped.
+	mOwner->mInDragOp = 2;
 }
 
 - (void)close
@@ -282,7 +291,7 @@
 	int y = [self frame].size.height - event_location.y;
 	// This kind of protection protects not only against our owner being destroyed while NS is alive by ref count,
 	// but also against getting mouse events leaking through the modal drag loop, which happnes rarely but not never.
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonDown(x,y,0, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -291,7 +300,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonDown(x,y,1, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -300,7 +309,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonDown(x,y,2, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -336,7 +345,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonUp(x,y,0);
 }
 
@@ -345,7 +354,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonUp(x,y,1);
 }
 
@@ -354,7 +363,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonUp(x,y,2);
 }
 
@@ -923,7 +932,7 @@ void	XWin::DoMacDragAndDrop(int item_count,
 	// This is a blocking while loop that will run th event queue modally until we pop out of the drag,
 	// since DnD is supposed to act synchronous.
 	
-	while(mInDragOp)
+	while(mInDragOp == 1)
 	{
 		NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
@@ -934,6 +943,7 @@ void	XWin::DoMacDragAndDrop(int item_count,
 		[[NSApplication sharedApplication] sendEvent:e];
 		[pool drain];
 	}
+	mInDragOp = 0;
 
 	// This will force an up click IMMEDIATELY after us, without a down click - needed to ensure the DND op doesn't
 	// play out as a drag on some other widget.

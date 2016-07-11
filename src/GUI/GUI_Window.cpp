@@ -1117,7 +1117,7 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 {
 	#if APL
 	
-		return run_event_tracking_until_move_or_up();
+		return run_event_tracking_until_move_or_up(button);
 
 	#elif IBM
 		POINT p;

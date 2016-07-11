@@ -36,7 +36,7 @@ extern "C" {
 	void stop_app();
 
 	// Blocks until the mouse moves or is released.
-	int run_event_tracking_until_move_or_up();	// returns 1 if mouse still down
+	int run_event_tracking_until_move_or_up(int button);	// returns 1 if mouse still down
 
 	// Force run_app to exit - call from a callback
 	void quit_app();
