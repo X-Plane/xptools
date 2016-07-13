@@ -62,8 +62,8 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	float color[4] = { 1.0, 1.0, 1.0, 0.7 };
 
 	const char * main_text[] = {
-		"WorldEditor 1.4.1",
-		"©Copyright 2007-2015, Laminar Research.",
+		"WorldEditor " WED_VERSION_STRING_SHORT,
+		"©Copyright 2007-2016, Laminar Research.",
 		"",
 		"This software is available under an open license.",
 		"Visit http://developer.x-plane.com/code/ for more info.",
@@ -96,7 +96,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	// here, submit a patch, or file a bug report.
 
 	const char * credits[] = {
-		"Thanks to Janos Laube, Mathias Roedel, Theodore \"Ted\" Greene and everyone else",
+		"Thanks to Janos Laube, Mathias Roedel, and everyone else",
 		"who has contributed to WorldEditor's development.",
 		0 };
 	 n = 0;
