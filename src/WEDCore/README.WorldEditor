@@ -13,6 +13,49 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5b1 7/13/16
+
+	Initial Release of WED 1.5
+
+	New features:
+	- 64-bit support
+	- AI Operation type 1301 record code
+	- File cache for Gateway Import/Metadata downloads
+	- Ground operation feature support
+	- Metadata fields (record code 1302)
+	- Select connected finds disjointed parts of ATC network
+	- Visualization of parking spots & ATC widths
+	- WYSIWYG taxi sign editor
+
+	Bug fixes:
+	- WED-544: Two decimal digits on PAPI export
+	- WED-538: Removed black line from 9 glyph
+	- WED-530: Validation code catches airport flow with no runways in use
+	- WED-521: Table gridlines
+	- WED-508: Windows start visible, per GUI's needs
+	- WED-507: NAN when diagonal-drag of runway corners is less than width
+	- WED-504: Tool preset drop downs available on all tools
+	- WED-502: Spelling errors fixed
+	- WED-475: Disabled enter key on form window for Gateway upload
+	- WED-472, WED-485: 25 kHz ATC freq rounding and departure rules
+	- WED-372: Importing apt and dxfs are grouped by type
+	- WED-323: Vertices getting "stuck" when dragging with snap
+	- WED-281, WED-554: Find and ban "water" type for all surface types
+	- WED-102: Validate co-located nodes or overlapping edges in ATC taxiways
+	- Fixed capitalization in none attributes
+
+	Improvements:
+	- Animation kf loop support in OBJ read/write code
+	- Disallow ATC frequencies outside the usable range
+	- Disallow helipad names longer than 3 characters
+	- GUI text "Filter:" is now replaced with "Search:" 
+	- Gateway Export dialog no longer opens instructions page after exporting an airport. Link is accessible through button
+	- ICAO filtering implemented in DSFs
+	- Merge command merges clusters of ATC nodes
+	- Option-click splits bezier as well as linear edges
+	- Support for AG-type mesh declarations in the gateway importer's search bar
+	- Gateway Import/Export dialog boxes show message that a file is loading from the hard drive instead of presenting a blank screen
+
 WED 1.4.1r1 12/17/15
 
 	Validation Checks:
