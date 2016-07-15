@@ -167,11 +167,17 @@ static vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thi
 	return sub_frequencies;
 }
 
+typedef vector<const WED_ATCRunwayUse*> ATCRunwayUseVec_t;
 typedef vector<const WED_ATCFlow*> FlowVec_t;
 typedef vector<const WED_Runway*> RunwayVec_t;
-typedef vector<const WED_ATCRunwayUse*> ATCRunwayUseVec_t;
+typedef vector<const WED_TaxiRoute*> TaxiRouteVec_t;
+
 static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
 {
+	//Find all potentially active runways:
+	//0 flows means treat all runways as potentially active
+	//>1 means find all runways mentioned, ignoring duplicates
+
 	RunwayVec_t potentially_active_runways;
 	WED_Airport* apt = dynamic_cast<WED_Airport*>(who);
 	FlowVec_t flows;
@@ -181,7 +187,7 @@ static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
 	RunwayVec_t all_runways;
 
 	CollectRecursive<back_insert_iterator<RunwayVec_t>>(apt,back_inserter<RunwayVec_t>(all_runways));
-	
+
 	if(flows.size() == 0)
 	{
 		potentially_active_runways = all_runways;
@@ -221,6 +227,35 @@ static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
 static WED_Thing* DoATCTaxiRouteRunwayChecks(WED_Thing* who, string& msg)
 {
 	RunwayVec_t potentially_active_runways = CollectPotentiallyActiveRunways(who);
+	TaxiRouteVec_t all_taxiroutes;
+	CollectRecursive<back_insert_iterator<TaxiRouteVec_t>>(who,back_inserter<TaxiRouteVec_t>(all_taxiroutes));
+	
+	//Pre-check
+	//- Does this active runway even have any taxi routes associated with it?
+	for(RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin();
+		runway_itr != potentially_active_runways.end();
+		++runway_itr)
+	{
+		string runway_name;
+		(*runway_itr)->GetName(runway_name);
+		bool found_matching_taxiroute = false;
+		for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+		{
+			string taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
+			if(runway_name == taxiroute_name)
+			{
+				found_matching_taxiroute = true;
+				break;
+			}
+		}
+
+		if(found_matching_taxiroute == false)
+		{
+			msg = runway_name + " is a potentially active runway but does not have an taxi route associated with it";
+			return NULL;
+		}
+	}
+
 	int stophere=0;
 	return NULL;
 }
