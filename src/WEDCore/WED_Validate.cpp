@@ -120,13 +120,13 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred)
 template <typename T> bool take_always(T v) { return true; }
 
 template <typename OutputIterator>
-void CollectRecursive(WED_Thing * t, OutputIterator oi)
+static void CollectRecursive(WED_Thing * t, OutputIterator oi)
 {
 	typedef typename OutputIterator::container_type::value_type VT;
 	CollectRecursive(t,oi,take_always<VT>);
 }
 
-vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who)
+static vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who)
 {
 	vector<const WED_ATCFrequency*> frequencies;
 	CollectRecursive<back_insert_iterator<vector<const WED_ATCFrequency*>>>(
@@ -135,7 +135,7 @@ vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who
 		);
 
 	std::sort(frequencies.begin(),frequencies.end(), cmp_frequency_type);
-	
+
 	vector<vector<const WED_ATCFrequency*>> sub_frequencies;
 
 	vector<const WED_ATCFrequency*>::iterator freq_itr = frequencies.begin();
@@ -165,6 +165,64 @@ vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who
 		}
 	}
 	return sub_frequencies;
+}
+
+typedef vector<const WED_ATCFlow*> FlowVec_t;
+typedef vector<const WED_Runway*> RunwayVec_t;
+typedef vector<const WED_ATCRunwayUse*> ATCRunwayUseVec_t;
+static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
+{
+	RunwayVec_t potentially_active_runways;
+	WED_Airport* apt = dynamic_cast<WED_Airport*>(who);
+	FlowVec_t flows;
+
+	CollectRecursive<back_insert_iterator<FlowVec_t>>(apt,back_inserter<FlowVec_t>(flows));
+
+	RunwayVec_t all_runways;
+
+	CollectRecursive<back_insert_iterator<RunwayVec_t>>(apt,back_inserter<RunwayVec_t>(all_runways));
+	
+	if(flows.size() == 0)
+	{
+		potentially_active_runways = all_runways;
+	}
+	else
+	{
+		ATCRunwayUseVec_t use_rules;
+
+		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t>>(apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
+
+		for (RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
+		{
+			for(ATCRunwayUseVec_t::const_iterator use_itr = use_rules.begin(); use_itr != use_rules.end(); ++use_itr)
+			{
+				AptRunwayRule_t runway_rule;
+				(*use_itr)->Export(runway_rule);
+
+				string runway_name;
+				(*runway_itr)->GetName(runway_name);
+
+				string runway_name_p1 = runway_name.substr(0,runway_name.find_first_of('/'));
+				string runway_name_p2 = runway_name.substr(runway_name.find_first_of('/')+1);
+
+				if( runway_rule.runway == runway_name_p1 ||
+					runway_rule.runway == runway_name_p2)
+				{
+					potentially_active_runways.insert(potentially_active_runways.begin(), *runway_itr);
+					break;
+				}
+			}
+		}
+	}
+
+	return potentially_active_runways;
+}
+
+static WED_Thing* DoATCTaxiRouteRunwayChecks(WED_Thing* who, string& msg)
+{
+	RunwayVec_t potentially_active_runways = CollectPotentiallyActiveRunways(who);
+	int stophere=0;
+	return NULL;
 }
 
 static bool GetThingResouce(WED_Thing * who, string& r)
@@ -426,6 +484,7 @@ static void ValidateOneAirport(WED_Thing* who, string& msg)
 	if(who)
 	{
 		ValidateAirportFrequencies(apt, msg);
+		DoATCTaxiRouteRunwayChecks(apt, msg);
 
 		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
 		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
