@@ -31,6 +31,8 @@ extern vector<pair<Point2,Point3> >		gMeshPoints;
 extern vector<pair<Point2,Point3> >		gMeshLines;
 extern vector<pair<Polygon2,Point3> >	gMeshPolygons;
 
+void	debug_mesh_bbox(const Bbox2& bb1, float r1, float g1, float b1, float r2, float g2, float b2);
+void	debug_mesh_segment(const Segment2& s1, float r1, float g1, float b1, float r2, float g2, float b2);
 void	debug_mesh_line(const Point2& p1, const Point2& p2, float r1, float g1, float b1, float r2, float g2, float b2);
 void	debug_mesh_point(const Point2& p1, float r1, float g1, float b1);
 void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);

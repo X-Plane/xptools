@@ -224,6 +224,93 @@ static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
 	return potentially_active_runways;
 }
 
+static WED_Thing* DoTaxiRouteRunwayTraversalChecks(WED_Thing* who,
+												   string& msg,
+												   const RunwayVec_t& potentially_active_runways,
+												   const TaxiRouteVec_t& all_taxiroutes)
+{
+	for(RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin();
+		runway_itr != potentially_active_runways.end();
+		++runway_itr)
+	{
+		Point2 bounds[4];
+		(*runway_itr)->GetCorners(gis_Geo,bounds);
+		
+		Polygon2 runway_bounds;
+		runway_bounds.push_back(bounds[0]);
+		runway_bounds.push_back(bounds[1]);
+		runway_bounds.push_back(bounds[2]);
+		runway_bounds.push_back(bounds[3]);
+#if DEV
+		debug_mesh_polygon(runway_bounds,1,0,0);
+#endif
+
+		Point2 ends[2];
+		(*runway_itr)->GetSource()->GetLocation(GISLayer_t::gis_Geo,ends[0]);
+		(*runway_itr)->GetTarget()->GetLocation(GISLayer_t::gis_Geo,ends[1]);
+
+		Segment2 runway_centerline(ends[0], ends[1]);
+#if DEV
+		debug_mesh_segment(runway_centerline,1,0,0,1,0,0);
+#endif
+
+		for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin();
+			taxiroute_itr != all_taxiroutes.end();
+			++taxiroute_itr)
+		{
+			Segment2 taxiroute_segment;
+			Bezier2 bez;
+			(*taxiroute_itr)->GetSide(GISLayer_t::gis_Geo, 0, taxiroute_segment, bez);
+#if DEV
+			debug_mesh_segment(taxiroute_segment,0,1,0,0,1,0);
+#endif
+			if( runway_bounds.inside(taxiroute_segment.p1) == true &&
+				runway_bounds.inside(taxiroute_segment.p2))
+			{
+				continue;
+			}
+			else
+			{
+				int intersected_sides = 0;
+
+				Segment2 left_side	 = Segment2(runway_bounds[2],runway_bounds[3]);
+				//debug_mesh_segment(left_side,0,0,1,0,0,1);
+				
+				Segment2 top_side = Segment2(runway_bounds[3],runway_bounds[0]);
+				//debug_mesh_segment(top_side,0,0,1,0,0,1);
+
+				Segment2 right_side   = Segment2(runway_bounds[0],runway_bounds[1]);
+				//debug_mesh_segment(right_side,0,0,1,0,0,1);
+				Segment2 bottom_side    = Segment2(runway_bounds[1],runway_bounds[2]);
+				//debug_mesh_segment(bottom_side,0,0,1,0,0,1);
+				
+				Point2 p;
+
+				intersected_sides = taxiroute_segment.intersect(left_side,p)   ? ++intersected_sides : intersected_sides;
+				intersected_sides = taxiroute_segment.intersect(top_side,p)    ? ++intersected_sides : intersected_sides;
+				intersected_sides = taxiroute_segment.intersect(right_side,p)  ? ++intersected_sides : intersected_sides;
+				intersected_sides = taxiroute_segment.intersect(bottom_side,p) ? ++intersected_sides : intersected_sides;
+
+				if(intersected_sides >= 2)
+				{
+					string runway_name;
+					(*runway_itr)->GetName(runway_name);
+
+					string taxiroute_name;
+					(*taxiroute_itr)->GetName(taxiroute_name);
+
+					msg = string("Error: Taxiroute segment " + taxiroute_name) + "crosses runway " + runway_name + " completely";
+					
+					//Make it selectable. Remember, the data this pointer is refering too was not const to begin with
+					who =  static_cast<WED_Thing*>(const_cast<WED_TaxiRoute*>(*taxiroute_itr));
+				}
+			}
+		}
+	}
+
+	return NULL;
+}
+
 static WED_Thing* DoATCTaxiRouteRunwayChecks(WED_Thing* who, string& msg)
 {
 	RunwayVec_t potentially_active_runways = CollectPotentiallyActiveRunways(who);
@@ -241,6 +328,7 @@ static WED_Thing* DoATCTaxiRouteRunwayChecks(WED_Thing* who, string& msg)
 		bool found_matching_taxiroute = false;
 		for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
 		{
+		//	(*taxiroute_itr)->
 			string taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
 			if(runway_name == taxiroute_name)
 			{
@@ -255,7 +343,7 @@ static WED_Thing* DoATCTaxiRouteRunwayChecks(WED_Thing* who, string& msg)
 			return NULL;
 		}
 	}
-
+	DoTaxiRouteRunwayTraversalChecks(who,msg,potentially_active_runways,all_taxiroutes);
 	int stophere=0;
 	return NULL;
 }
