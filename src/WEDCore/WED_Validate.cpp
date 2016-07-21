@@ -126,17 +126,17 @@ static void CollectRecursive(WED_Thing * t, OutputIterator oi)
 	CollectRecursive(t,oi,take_always<VT>);
 }
 
-static vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who)
+static vector<vector<const WED_ATCFrequency*> > CollectAirportFrequencies(WED_Thing* who)
 {
 	vector<const WED_ATCFrequency*> frequencies;
-	CollectRecursive<back_insert_iterator<vector<const WED_ATCFrequency*>>>(
+	CollectRecursive<back_insert_iterator<vector<const WED_ATCFrequency*> > >(
 		who,
-		back_insert_iterator<vector<const WED_ATCFrequency*>>(frequencies)
+		back_insert_iterator<vector<const WED_ATCFrequency*> >(frequencies)
 		);
 
 	std::sort(frequencies.begin(),frequencies.end(), cmp_frequency_type);
 
-	vector<vector<const WED_ATCFrequency*>> sub_frequencies;
+	vector<vector<const WED_ATCFrequency*> > sub_frequencies;
 
 	vector<const WED_ATCFrequency*>::iterator freq_itr = frequencies.begin();
 	while(freq_itr != frequencies.end())
@@ -182,11 +182,11 @@ static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
 	WED_Airport* apt = dynamic_cast<WED_Airport*>(who);
 	FlowVec_t flows;
 
-	CollectRecursive<back_insert_iterator<FlowVec_t>>(apt,back_inserter<FlowVec_t>(flows));
+	CollectRecursive<back_insert_iterator<FlowVec_t> >(apt,back_inserter<FlowVec_t>(flows));
 
 	RunwayVec_t all_runways;
 
-	CollectRecursive<back_insert_iterator<RunwayVec_t>>(apt,back_inserter<RunwayVec_t>(all_runways));
+	CollectRecursive<back_insert_iterator<RunwayVec_t> >(apt,back_inserter<RunwayVec_t>(all_runways));
 
 	if(flows.size() == 0)
 	{
@@ -196,7 +196,7 @@ static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
 	{
 		ATCRunwayUseVec_t use_rules;
 
-		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t>>(apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
+		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t> >(apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
 
 		for (RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
 		{
@@ -315,7 +315,7 @@ static WED_Thing* DoATCTaxiRouteRunwayChecks(WED_Thing* who, string& msg)
 {
 	RunwayVec_t potentially_active_runways = CollectPotentiallyActiveRunways(who);
 	TaxiRouteVec_t all_taxiroutes;
-	CollectRecursive<back_insert_iterator<TaxiRouteVec_t>>(who,back_inserter<TaxiRouteVec_t>(all_taxiroutes));
+	CollectRecursive<back_insert_iterator<TaxiRouteVec_t> >(who,back_inserter<TaxiRouteVec_t>(all_taxiroutes));
 	
 	//Pre-check
 	//- Does this active runway even have any taxi routes associated with it?
@@ -384,10 +384,10 @@ The occasional returned WED_Thing* is a pointer to the problem child, included t
 static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 {
 	//Collect all frequencies and group them by type into smaller vectors 
-	vector<vector<const WED_ATCFrequency*>> sub_freqs = CollectAirportFrequencies(who);
+	vector<vector<const WED_ATCFrequency*> > sub_freqs = CollectAirportFrequencies(who);
 
 	//For all groups see if each group has atleast one valid member (especially for Delivery, Ground, and Tower)
-	for(vector<vector<const WED_ATCFrequency*>>::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
+	for(vector<vector<const WED_ATCFrequency*> >::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
 	{
 		bool found_one_valid = false;
 		bool is_xplane_atc_related = false;
@@ -438,10 +438,11 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 					continue;
 				}
 
-				if((suffix_str.back() == '0' ||
-					suffix_str.back() == '2' ||
-					suffix_str.back() == '5' ||
-					suffix_str.back() == '7')
+				DebugAssert(!suffix_str.empty());
+				if((suffix_str[suffix_str.size()-1] == '0' ||
+					suffix_str[suffix_str.size()-1] == '2' ||
+					suffix_str[suffix_str.size()-1] == '5' ||
+					suffix_str[suffix_str.size()-1] == '7')
 					)
 				{
 					found_one_valid = true;
@@ -463,7 +464,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 	}
 }
 
-extern void ValidateOneATCRunwayUse(WED_Thing* who,string& msg);
+static void ValidateOneATCRunwayUse(WED_Thing* who,string& msg);
 static void ValidateATC(WED_Thing* who, string& msg)
 {
 	WED_ATCFlow * flow;
@@ -549,7 +550,7 @@ static void ValidateATC(WED_Thing* who, string& msg)
 	}
 }
 
-extern void ValidateOneAirportBoundary(WED_Thing* who, string& msg);
+static void ValidateOneAirportBoundary(WED_Thing* who, string& msg);
 static void ValidateForGateway(WED_Thing* who, string& msg, WED_LibraryMgr* lib_mgr)
 {
 	if(who->GetClass() != WED_Group::sClass)
