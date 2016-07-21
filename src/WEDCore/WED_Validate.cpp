@@ -795,6 +795,16 @@ static void ValidateOneRampPosition(WED_Thing* who, string& msg)
 	{
 		//Our flag to keep going until we find an error
 		bool found_err = false;
+		
+		if(g.type == atc_ramp_misc || g.type == atc_ramp_hangar)
+		{
+			if(!g.airlines.empty() || g.ramp_op_type != ramp_operation_none)
+			{
+				found_err = true;
+				msg = "Ramp operation types and airlines are only allowed at real ramp types, e.g. gates and tie-downs, not misc and hangars.";
+			}
+		}
+		
 		if(g.airlines == "" && !found_err)
 		{
 			//Error:"not really an error, we're just done here"
@@ -819,9 +829,9 @@ static void ValidateOneRampPosition(WED_Thing* who, string& msg)
 				}
 				else 
 				{
-					if(c < 'A' || c > 'Z')
+					if(c < 'a' || c > 'z')
 					{
-						msg = "Ramp start airlines string " + g.airlines + " contains non-uppercase letters.";
+						msg = "Ramp start airlines string " + g.airlines + " contains non-lowercase letters.";
 						found_err = true;
 					}
 				}
