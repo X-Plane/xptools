@@ -246,8 +246,8 @@ static WED_Thing* DoTaxiRouteRunwayTraversalChecks(WED_Thing* who,
 #endif
 
 		Point2 ends[2];
-		(*runway_itr)->GetSource()->GetLocation(GISLayer_t::gis_Geo,ends[0]);
-		(*runway_itr)->GetTarget()->GetLocation(GISLayer_t::gis_Geo,ends[1]);
+		(*runway_itr)->GetSource()->GetLocation(gis_Geo,ends[0]);
+		(*runway_itr)->GetTarget()->GetLocation(gis_Geo,ends[1]);
 
 		Segment2 runway_centerline(ends[0], ends[1]);
 #if DEV
@@ -260,7 +260,7 @@ static WED_Thing* DoTaxiRouteRunwayTraversalChecks(WED_Thing* who,
 		{
 			Segment2 taxiroute_segment;
 			Bezier2 bez;
-			(*taxiroute_itr)->GetSide(GISLayer_t::gis_Geo, 0, taxiroute_segment, bez);
+			(*taxiroute_itr)->GetSide(gis_Geo, 0, taxiroute_segment, bez);
 #if DEV
 			debug_mesh_segment(taxiroute_segment,0,1,0,0,1,0);
 #endif
