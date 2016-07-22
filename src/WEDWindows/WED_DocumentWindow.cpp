@@ -221,7 +221,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// ---------------- Exclusions ------------------
 
 	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane6, "Exclusions and Boundries");
+	prop_tabs->AddPane(prop_pane6, "Exclusions and Boundaries");
 
 	// ---------------- TCE -------------
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
