@@ -445,7 +445,20 @@
 		param2 |= NSCommandKeyMask;
 
 	if(mOwner)
-	mOwner->KeyPressed(uni_code, msg, param1, param2);
+	{
+		if(!mOwner->KeyPressed(uni_code, msg, param1, param2))
+		{
+			NSPoint event_location = [[self window] convertScreenToBase:[NSEvent mouseLocation]];
+		
+			int x = event_location.x;
+			int y = [self frame].size.height - event_location.y;
+		
+			if (char_code == '=')
+				mOwner->MouseWheel(x, y, 1, 0);
+			else if (char_code == '-')
+				mOwner->MouseWheel(x, y, -1, 0);
+		}
+	}
 }
 
 // This proc is called when we get a tool tip request in the 'global' tool tip catcher...that's our cue to
