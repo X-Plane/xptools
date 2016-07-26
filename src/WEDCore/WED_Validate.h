@@ -27,6 +27,36 @@
 class	IResolver;
 class	WED_Thing;
 
+template <typename OutputIterator, typename Predicate>
+void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred)
+{
+	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
+	if(ent && ent->GetHidden())
+	{
+		return;
+	}
+	
+	typedef typename OutputIterator::container_type::value_type VT;
+	VT ct = dynamic_cast<VT>(thing);
+	if(ct && pred(ct))
+		oi = ct;
+	
+	int nc = thing->CountChildren();
+	for(int n = 0; n < nc; ++n)
+	{
+		CollectRecursive(thing->GetNthChild(n), oi, pred);
+	}
+}
+
+template <typename T> bool take_always(T v) { return true; }
+
+template <typename OutputIterator>
+void CollectRecursive(WED_Thing * t, OutputIterator oi)
+{
+	typedef typename OutputIterator::container_type::value_type VT;
+	CollectRecursive(t,oi,take_always<VT>);
+}
+
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
 
 #endif

@@ -54,6 +54,7 @@
 #include "WED_GroupCommands.h"
 #include "IGIS.h"
 
+#include "WED_ValidateATCRunwayChecks.h"
 
 #include "AptDefs.h"
 #include "IResolver.h"
@@ -96,36 +97,6 @@ bool cmp_frequency_type(const WED_ATCFrequency* freq1, const WED_ATCFrequency* f
 	return freq_info1.atc_type > freq_info2.atc_type;
 }
 
-template <typename OutputIterator, typename Predicate>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred)
-{
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
-	if(ent && ent->GetHidden())
-	{
-		return;
-	}
-	
-	typedef typename OutputIterator::container_type::value_type VT;
-	VT ct = dynamic_cast<VT>(thing);
-	if(ct && pred(ct))
-		oi = ct;
-	
-	int nc = thing->CountChildren();
-	for(int n = 0; n < nc; ++n)
-	{
-		CollectRecursive(thing->GetNthChild(n), oi, pred);
-	}
-}
-
-template <typename T> bool take_always(T v) { return true; }
-
-template <typename OutputIterator>
-static void CollectRecursive(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>);
-}
-
 static vector<vector<const WED_ATCFrequency*> > CollectAirportFrequencies(WED_Thing* who)
 {
 	vector<const WED_ATCFrequency*> frequencies;
@@ -165,187 +136,6 @@ static vector<vector<const WED_ATCFrequency*> > CollectAirportFrequencies(WED_Th
 		}
 	}
 	return sub_frequencies;
-}
-
-typedef vector<const WED_ATCRunwayUse*> ATCRunwayUseVec_t;
-typedef vector<const WED_ATCFlow*> FlowVec_t;
-typedef vector<const WED_Runway*> RunwayVec_t;
-typedef vector<const WED_TaxiRoute*> TaxiRouteVec_t;
-
-static RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
-{
-	//Find all potentially active runways:
-	//0 flows means treat all runways as potentially active
-	//>1 means find all runways mentioned, ignoring duplicates
-
-	RunwayVec_t potentially_active_runways;
-	WED_Airport* apt = dynamic_cast<WED_Airport*>(who);
-	FlowVec_t flows;
-
-	CollectRecursive<back_insert_iterator<FlowVec_t> >(apt,back_inserter<FlowVec_t>(flows));
-
-	RunwayVec_t all_runways;
-
-	CollectRecursive<back_insert_iterator<RunwayVec_t> >(apt,back_inserter<RunwayVec_t>(all_runways));
-
-	if(flows.size() == 0)
-	{
-		potentially_active_runways = all_runways;
-	}
-	else
-	{
-		ATCRunwayUseVec_t use_rules;
-
-		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t> >(apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
-
-		for (RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
-		{
-			for(ATCRunwayUseVec_t::const_iterator use_itr = use_rules.begin(); use_itr != use_rules.end(); ++use_itr)
-			{
-				AptRunwayRule_t runway_rule;
-				(*use_itr)->Export(runway_rule);
-
-				string runway_name;
-				(*runway_itr)->GetName(runway_name);
-
-				string runway_name_p1 = runway_name.substr(0,runway_name.find_first_of('/'));
-				string runway_name_p2 = runway_name.substr(runway_name.find_first_of('/')+1);
-
-				if( runway_rule.runway == runway_name_p1 ||
-					runway_rule.runway == runway_name_p2)
-				{
-					potentially_active_runways.insert(potentially_active_runways.begin(), *runway_itr);
-					break;
-				}
-			}
-		}
-	}
-
-	return potentially_active_runways;
-}
-
-static WED_Thing* DoTaxiRouteRunwayTraversalChecks(WED_Thing* who,
-												   string& msg,
-												   const RunwayVec_t& potentially_active_runways,
-												   const TaxiRouteVec_t& all_taxiroutes)
-{
-	for(RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin();
-		runway_itr != potentially_active_runways.end();
-		++runway_itr)
-	{
-		Point2 bounds[4];
-		(*runway_itr)->GetCorners(gis_Geo,bounds);
-		
-		Polygon2 runway_bounds;
-		runway_bounds.push_back(bounds[0]);
-		runway_bounds.push_back(bounds[1]);
-		runway_bounds.push_back(bounds[2]);
-		runway_bounds.push_back(bounds[3]);
-#if DEV
-		debug_mesh_polygon(runway_bounds,1,0,0);
-#endif
-
-		Point2 ends[2];
-		(*runway_itr)->GetSource()->GetLocation(gis_Geo,ends[0]);
-		(*runway_itr)->GetTarget()->GetLocation(gis_Geo,ends[1]);
-
-		Segment2 runway_centerline(ends[0], ends[1]);
-#if DEV
-		debug_mesh_segment(runway_centerline,1,0,0,1,0,0);
-#endif
-
-		for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin();
-			taxiroute_itr != all_taxiroutes.end();
-			++taxiroute_itr)
-		{
-			Segment2 taxiroute_segment;
-			Bezier2 bez;
-			(*taxiroute_itr)->GetSide(gis_Geo, 0, taxiroute_segment, bez);
-#if DEV
-			debug_mesh_segment(taxiroute_segment,0,1,0,0,1,0);
-#endif
-			if( runway_bounds.inside(taxiroute_segment.p1) == true &&
-				runway_bounds.inside(taxiroute_segment.p2))
-			{
-				continue;
-			}
-			else
-			{
-				int intersected_sides = 0;
-
-				Segment2 left_side	 = Segment2(runway_bounds[2],runway_bounds[3]);
-				//debug_mesh_segment(left_side,0,0,1,0,0,1);
-				
-				Segment2 top_side = Segment2(runway_bounds[3],runway_bounds[0]);
-				//debug_mesh_segment(top_side,0,0,1,0,0,1);
-
-				Segment2 right_side   = Segment2(runway_bounds[0],runway_bounds[1]);
-				//debug_mesh_segment(right_side,0,0,1,0,0,1);
-				Segment2 bottom_side    = Segment2(runway_bounds[1],runway_bounds[2]);
-				//debug_mesh_segment(bottom_side,0,0,1,0,0,1);
-				
-				Point2 p;
-
-				intersected_sides = taxiroute_segment.intersect(left_side,p)   ? ++intersected_sides : intersected_sides;
-				intersected_sides = taxiroute_segment.intersect(top_side,p)    ? ++intersected_sides : intersected_sides;
-				intersected_sides = taxiroute_segment.intersect(right_side,p)  ? ++intersected_sides : intersected_sides;
-				intersected_sides = taxiroute_segment.intersect(bottom_side,p) ? ++intersected_sides : intersected_sides;
-
-				if(intersected_sides >= 2)
-				{
-					string runway_name;
-					(*runway_itr)->GetName(runway_name);
-
-					string taxiroute_name;
-					(*taxiroute_itr)->GetName(taxiroute_name);
-
-					msg = string("Error: Taxiroute segment " + taxiroute_name) + "crosses runway " + runway_name + " completely";
-					
-					//Make it selectable. Remember, the data this pointer is refering too was not const to begin with
-					who =  static_cast<WED_Thing*>(const_cast<WED_TaxiRoute*>(*taxiroute_itr));
-				}
-			}
-		}
-	}
-
-	return NULL;
-}
-
-static WED_Thing* DoATCTaxiRouteRunwayChecks(WED_Thing* who, string& msg)
-{
-	RunwayVec_t potentially_active_runways = CollectPotentiallyActiveRunways(who);
-	TaxiRouteVec_t all_taxiroutes;
-	CollectRecursive<back_insert_iterator<TaxiRouteVec_t> >(who,back_inserter<TaxiRouteVec_t>(all_taxiroutes));
-	
-	//Pre-check
-	//- Does this active runway even have any taxi routes associated with it?
-	for(RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin();
-		runway_itr != potentially_active_runways.end();
-		++runway_itr)
-	{
-		string runway_name;
-		(*runway_itr)->GetName(runway_name);
-		bool found_matching_taxiroute = false;
-		for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
-		{
-		//	(*taxiroute_itr)->
-			string taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
-			if(runway_name == taxiroute_name)
-			{
-				found_matching_taxiroute = true;
-				break;
-			}
-		}
-
-		if(found_matching_taxiroute == false)
-		{
-			msg = runway_name + " is a potentially active runway but does not have an taxi route associated with it";
-			return NULL;
-		}
-	}
-	DoTaxiRouteRunwayTraversalChecks(who,msg,potentially_active_runways,all_taxiroutes);
-	int stophere=0;
-	return NULL;
 }
 
 static bool GetThingResouce(WED_Thing * who, string& r)
@@ -605,10 +395,10 @@ static void ValidateOneAirport(WED_Thing* who, string& msg)
 	s_legal_rwy_twoway.clear();
 
 	WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-	if(who)
+	if(apt)
 	{
 		ValidateAirportFrequencies(apt, msg);
-		DoATCTaxiRouteRunwayChecks(apt, msg);
+		DoATCRunwayChecks(who,msg);
 
 		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
 		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);

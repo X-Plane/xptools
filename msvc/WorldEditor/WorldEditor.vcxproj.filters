@@ -795,6 +795,9 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataKeys.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1573,6 +1576,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataKeys.h">
       <Filter>WEDImportExport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.h">
+      <Filter>WEDCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
