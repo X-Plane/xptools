@@ -380,7 +380,7 @@ static void ValidateForGateway(WED_Thing* who, string& msg, WED_LibraryMgr* lib_
 	}
 }
 
-static void ValidateOneAirport(WED_Thing* who, string& msg)
+static void ValidateOneAirport(WED_Thing*& who, string& msg)
 {
 	/*--Validate Airport Rules-------------------------------------------------
 		Airport Name rules
@@ -398,7 +398,17 @@ static void ValidateOneAirport(WED_Thing* who, string& msg)
 	if(apt)
 	{
 		ValidateAirportFrequencies(apt, msg);
-		DoATCRunwayChecks(who,msg);
+		const WED_Thing* problem_thing = NULL;
+		DoATCRunwayChecks(static_cast<const WED_Airport&>(*who), &msg, problem_thing);
+
+		if(msg != "")
+		{
+			DebugAssert(problem_thing != NULL);
+			
+			//This "evil" const_cast is okay because the original data was not declared const
+			who = const_cast<WED_Thing*>(problem_thing);
+			return;
+		}
 
 		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
 		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
