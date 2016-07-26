@@ -28,9 +28,9 @@ class	IResolver;
 class	WED_Thing;
 
 template <typename OutputIterator, typename Predicate>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred)
+void CollectRecursive(const WED_Thing * thing, OutputIterator oi, Predicate pred)
 {
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
+	const WED_Entity * ent = dynamic_cast<const WED_Entity*>(thing);
 	if(ent && ent->GetHidden())
 	{
 		return;
@@ -51,7 +51,7 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred)
 template <typename T> bool take_always(T v) { return true; }
 
 template <typename OutputIterator>
-void CollectRecursive(WED_Thing * t, OutputIterator oi)
+void CollectRecursive(const WED_Thing * t, OutputIterator oi)
 {
 	typedef typename OutputIterator::container_type::value_type VT;
 	CollectRecursive(t,oi,take_always<VT>);

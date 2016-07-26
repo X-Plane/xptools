@@ -10,6 +10,7 @@
 #include "WED_ATCRunwayUse.h"
 #include "WED_Runway.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
 
 #include "AptDefs.h"
 
@@ -21,17 +22,18 @@ typedef vector<const WED_ATCRunwayUse*> ATCRunwayUseVec_t;
 typedef vector<const WED_ATCFlow*>   FlowVec_t;
 typedef vector<const WED_Runway*>    RunwayVec_t;
 typedef vector<const WED_TaxiRoute*> TaxiRouteVec_t;
+typedef vector<const WED_TaxiRouteNode*> TaxiRouteNodeVec_t;
 
 static CoordTranslator2 translator;
 
-RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
+RunwayVec_t CollectPotentiallyActiveRunways(const WED_Thing* who)
 {
 	//Find all potentially active runways:
 	//0 flows means treat all runways as potentially active
 	//>1 means find all runways mentioned, ignoring duplicates
 
 	RunwayVec_t potentially_active_runways;
-	WED_Airport* apt = dynamic_cast<WED_Airport*>(who);
+	const WED_Airport* apt = dynamic_cast<const WED_Airport*>(who);
 	FlowVec_t flows;
 	
 	CollectRecursive<back_insert_iterator<FlowVec_t>>(apt,back_inserter<FlowVec_t>(flows));
@@ -76,7 +78,7 @@ RunwayVec_t CollectPotentiallyActiveRunways(WED_Thing* who)
 	return potentially_active_runways;
 }
 
-static WED_Thing* DoRunwayHasMatchingTaxiRoute( WED_Thing* who,
+static WED_Thing* DoRunwayHasMatchingTaxiRoute( const WED_Thing* who,
 												string& msg,
 												const RunwayVec_t& potentially_active_runways,
 												const TaxiRouteVec_t& all_taxiroutes)
@@ -164,7 +166,7 @@ static WED_Thing* DoRunwayHasMatchingTaxiRoute( WED_Thing* who,
 	return NULL;
 }
 
-static WED_Thing* DoTaxiRouteRunwayTraversalCheck( WED_Thing* who,
+static WED_Thing* DoTaxiRouteRunwayTraversalCheck( const WED_Thing* who,
 												   string& msg,
 												   const RunwayVec_t& potentially_active_runways,
 												   const TaxiRouteVec_t& all_taxiroutes)
@@ -252,7 +254,7 @@ static WED_Thing* DoTaxiRouteRunwayTraversalCheck( WED_Thing* who,
 	return NULL;
 }
 
-static WED_Thing* DoTaxiRouteCenterlineCheck( WED_Thing* who,
+static WED_Thing* DoTaxiRouteCenterlineCheck( const WED_Thing* who,
 											  string& msg,
 											  const RunwayVec_t& potentially_active_runways,
 											  const TaxiRouteVec_t& all_taxiroutes)
@@ -299,18 +301,70 @@ static WED_Thing* DoTaxiRouteCenterlineCheck( WED_Thing* who,
 				taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
 			}
 
-			double METERS_TO_CENTER_THRESHOLD = 2.5;
+			double METERS_TO_CENTER_THRESHOLD = 5.0;
 			double p1_to_center_dist = sqrt(runway_centerline_m.squared_distance_supporting_line(taxiroute_segment_m.p1));
 			double p2_to_center_dist = sqrt(runway_centerline_m.squared_distance_supporting_line(taxiroute_segment_m.p2));
 
 			if( p1_to_center_dist > METERS_TO_CENTER_THRESHOLD ||
 				p2_to_center_dist > METERS_TO_CENTER_THRESHOLD)
 			{
-				msg = "Taxi route " + taxiroute_name + " is not on the center line of its runway";
+				taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
+				msg = "Taxi route segement for runway " + taxiroute_name + " is not on the center line";
 			}
 		}
 	}
 
+	return NULL;
+}
+
+static WED_Thing* DoAllTaxiRouteNodesInRunway( const WED_Thing* who,
+											   string& msg,
+											   const RunwayVec_t& potentially_active_runways,
+											   const TaxiRouteVec_t& all_taxiroutes)
+{
+	for(RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin();
+		runway_itr != potentially_active_runways.end();
+		++runway_itr)
+	{
+		const WED_Runway& runway = **runway_itr;
+		string runway_name;
+		runway.GetName(runway_name);
+		
+		Point2 bounds[4];
+		(*runway_itr)->GetCorners(gis_Geo,bounds);
+		
+		Polygon2 runway_bounds;
+		runway_bounds.push_back(bounds[0]);
+		runway_bounds.push_back(bounds[1]);
+		runway_bounds.push_back(bounds[2]);
+		runway_bounds.push_back(bounds[3]);
+
+		TaxiRouteVec_t matching_taxiroutes;
+		string taxiroute_name = "";
+		TaxiRouteNodeVec_t matching_taxiroute_nodes;
+		for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+		{
+			taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
+			if(runway_name == taxiroute_name)
+			{
+				matching_taxiroutes.push_back(*taxiroute_itr);
+				matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>((*taxiroute_itr)->GetNthSource(0)));
+				matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>((*taxiroute_itr)->GetNthSource(1)));
+			}
+		}
+
+		for(vector<const WED_TaxiRouteNode*>::const_iterator node_itr = matching_taxiroute_nodes.begin(); node_itr != matching_taxiroute_nodes.end(); ++node_itr)
+		{
+			Point2 node_location;
+			(*node_itr)->GetLocation(gis_Geo,node_location);
+			if(runway_bounds.inside(node_location) == false)
+			{
+				string node_name;
+				(*node_itr)->GetName(node_name);
+				msg = "Taxiroute node " + node_name + " is out of runway " + runway_name + "'s bounds";
+			}
+		}
+	}
 	return NULL;
 }
 
@@ -330,5 +384,6 @@ void DoATCRunwayChecks(WED_Thing* who, string& msg)
 	DoRunwayHasMatchingTaxiRoute (   who,msg,potentially_active_runways,all_taxiroutes);
 	DoTaxiRouteRunwayTraversalCheck( who,msg,potentially_active_runways,all_taxiroutes);
 	DoTaxiRouteCenterlineCheck(      who,msg,potentially_active_runways,all_taxiroutes);
+	DoAllTaxiRouteNodesInRunway(     who,msg,potentially_active_runways,all_taxiroutes);
 	return;
 }
