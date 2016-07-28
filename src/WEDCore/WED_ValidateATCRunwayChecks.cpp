@@ -75,9 +75,33 @@ struct RunwayInfo
 	Segment2 runway_centerline_m;
 };
 
-//typedef vector<RunwayInfo>    RunwayInfoVec_t;
+struct TaxiRouteInfo
+{
+	TaxiRouteInfo(const WED_TaxiRoute* taxiroute)
+	{
+		taxiroute_ptr = taxiroute;
+		
+		taxiroute_segment_geo;
+		Bezier2 bez;
+		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
+		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
+		node_0 = static_cast<const WED_TaxiRouteNode*>(taxiroute->GetNthSource(0));
+		node_1 = static_cast<const WED_TaxiRouteNode*>(taxiroute->GetNthSource(1));
+	}
+	
+	const WED_TaxiRoute* taxiroute_ptr;
 
-vector<RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airport& apt)
+	string taxiroute_name;
+
+	Segment2 taxiroute_segment_geo;
+
+	Segment2 taxiroute_segment_m;
+
+	const WED_TaxiRouteNode* node_0;
+	const WED_TaxiRouteNode* node_1;
+};
+
+static vector<const RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airport& apt)
 {
 	//Find all potentially active runways:
 	//0 flows means treat all runways as potentially active
@@ -125,7 +149,7 @@ vector<RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airport& apt)
 		}
 	}
 
-	vector<RunwayInfo> runway_info_vec;
+	vector<const RunwayInfo> runway_info_vec;
 	for(RunwayVec_t::const_iterator itr = potentially_active_runways.begin();
 		itr != potentially_active_runways.end();
 		++itr)
@@ -136,16 +160,16 @@ vector<RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airport& apt)
 	return runway_info_vec;
 }
 
-TaxiRouteVec_t FilterMatchingRunways(const RunwayInfo& runway_info, const TaxiRouteVec_t& all_taxiroutes)
+static vector<const TaxiRouteInfo> FilterMatchingRunways(const RunwayInfo& runway_info, vector<const TaxiRouteInfo>& all_taxiroutes)
 {
-	TaxiRouteVec_t matching_taxiroutes;
+	vector<const TaxiRouteInfo> matching_taxiroutes;
 	string taxiroute_name = "";
-	for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
 	{
-		taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
+		taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
 		if(runway_info.runway_name == taxiroute_name)
 		{
-			matching_taxiroutes.push_back(*taxiroute_itr);
+			matching_taxiroutes.push_back(TaxiRouteInfo(*taxiroute_itr));
 		}
 	}
 
@@ -153,19 +177,19 @@ TaxiRouteVec_t FilterMatchingRunways(const RunwayInfo& runway_info, const TaxiRo
 }
 
 static void AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
-									   const TaxiRouteVec_t& all_taxiroutes,
+									   const vector<const TaxiRouteInfo>& all_taxiroutes,
 									   string* msg,
 									   const WED_Thing*& problem_thing)
 {
 	string taxiroute_name = "";
 	TaxiRouteNodeVec_t matching_taxiroute_nodes;
-	for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
 	{
-		taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
+		taxiroute_name = ENUM_Desc(taxiroute_itr->taxiroute_ptr->GetRunway());
 		if(runway_info.runway_name == taxiroute_name)
 		{
-			matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>((*taxiroute_itr)->GetNthSource(0)));
-			matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>((*taxiroute_itr)->GetNthSource(1)));
+			matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(0)));
+			matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
 		}
 	}
 
@@ -183,58 +207,41 @@ static void AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	}
 }
 
-
 static void TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
-									  const TaxiRouteVec_t& all_taxiroutes,
+									  const vector<const TaxiRouteInfo>& matching_taxiroutes,
 									  string* msg,
 									  const WED_Thing*& problem_thing)
 {
-	TaxiRouteVec_t matching_taxiroutes = FilterMatchingRunways(runway_info, all_taxiroutes);
-
-	for(TaxiRouteVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
+	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
-		//m for meters
-		Segment2 taxiroute_segment_m;
-
-		//Enter new scope purely for organizational purposes
-		{
-			Segment2 taxiroute_segment_geo;
-			Bezier2 bez;
-			(*taxiroute_itr)->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
-			taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
-		}
-
 		double METERS_TO_CENTER_THRESHOLD = 5.0;
-		double p1_to_center_dist = sqrt(runway_info.runway_centerline_m.squared_distance_supporting_line(taxiroute_segment_m.p1));
-		double p2_to_center_dist = sqrt(runway_info.runway_centerline_m.squared_distance_supporting_line(taxiroute_segment_m.p2));
+		double p1_to_center_dist = sqrt(runway_info.runway_centerline_m.squared_distance_supporting_line(taxiroute_itr->taxiroute_segment_m.p1));
+		double p2_to_center_dist = sqrt(runway_info.runway_centerline_m.squared_distance_supporting_line(taxiroute_itr->taxiroute_segment_m.p2));
 
 		if( p1_to_center_dist > METERS_TO_CENTER_THRESHOLD ||
 			p2_to_center_dist > METERS_TO_CENTER_THRESHOLD)
 		{
-			string taxiroute_name = ENUM_Desc((*taxiroute_itr)->GetRunway());
+			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
 			*msg = "Taxi route segement for runway " + taxiroute_name + " is not on the center line";
-			problem_thing = (*taxiroute_itr);
+			problem_thing = taxiroute_itr->taxiroute_ptr;
 		}
 	}
 }
 
 static void TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
-										   const TaxiRouteVec_t& all_taxiroutes,
+										   const vector<const TaxiRouteInfo>& all_taxiroutes,
 										   string* msg,
 										   const WED_Thing*& problem_thing)
 {
-	for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin();
+	for (vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin();
 		taxiroute_itr != all_taxiroutes.end();
 		++taxiroute_itr)
 	{
-		Segment2 taxiroute_segment_geo;
-		Bezier2 bez;
-		(*taxiroute_itr)->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
 #if DEV
-		debug_mesh_segment(taxiroute_segment_geo,0,1,0,0,1,0);
+		debug_mesh_segment(taxiroute_itr->taxiroute_segment_geo,0,1,0,0,1,0);
 #endif
-		if( runway_info.runway_corners_geo.inside(taxiroute_segment_geo.p1) == true &&
-			runway_info.runway_corners_geo.inside(taxiroute_segment_geo.p2))
+		if( runway_info.runway_corners_geo.inside(taxiroute_itr->taxiroute_segment_geo.p1) == true &&
+			runway_info.runway_corners_geo.inside(taxiroute_itr->taxiroute_segment_geo.p2))
 		{
 			continue;
 		}
@@ -256,40 +263,48 @@ static void TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
 				
 			Point2 p;
 
-			intersected_sides = taxiroute_segment_geo.intersect(left_side,   p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_segment_geo.intersect(top_side,    p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_segment_geo.intersect(right_side,  p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_segment_geo.intersect(bottom_side, p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(left_side,   p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(top_side,    p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(right_side,  p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(bottom_side, p) ? intersected_sides + 1 : intersected_sides;
 
 			if(intersected_sides >= 2)
 			{
-				string taxiroute_name;
-				(*taxiroute_itr)->GetName(taxiroute_name);
-
-				*msg = string("Error: Taxiroute segment " + taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
-				problem_thing =  static_cast<const WED_Thing*>(*taxiroute_itr);
+				*msg = string("Error: Taxiroute segment " + taxiroute_itr->taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
+				problem_thing = static_cast<const WED_Thing*>(taxiroute_itr->taxiroute_ptr);
 			}
 		}
 	}
 }
 
+static void TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
+									 const vector<const TaxiRouteInfo>& matching_routes,
+									 string* msg,
+									 const WED_Thing*& problem_thing)
+{
+
+	for (vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_routes.begin(); taxiroute_itr != matching_routes.end(); ++taxiroute_itr)
+	{
+		TaxiRouteInfo taxiroute_info(*taxiroute_itr);
+	}
+
+}
+
 static void RunwayHasMatchingTaxiRoute( const RunwayInfo& runway_info,
-									    const TaxiRouteVec_t& all_taxiroutes,
+									    const vector<const TaxiRouteInfo>& all_taxiroutes,
 									    string* msg,
 									    const WED_Thing*& problem_thing)
 {
-	for(TaxiRouteVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin();
+	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin();
 		taxiroute_itr != all_taxiroutes.end();
 		++taxiroute_itr)
 	{
-		Segment2 taxiroute_segment_geo;
-		Bezier2 bez;
-		(*taxiroute_itr)->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
+		TaxiRouteInfo taxiroute_info(*taxiroute_itr);
 #if DEV
-		debug_mesh_segment(taxiroute_segment_geo,0,1,0,0,1,0);
+		debug_mesh_segment(taxiroute_info.taxiroute_segment_geo,0,1,0,0,1,0);
 #endif
-		if( runway_info.runway_corners_geo.inside(taxiroute_segment_geo.p1) == true &&
-			runway_info.runway_corners_geo.inside(taxiroute_segment_geo.p2))
+		if( runway_info.runway_corners_geo.inside(taxiroute_info.taxiroute_segment_geo.p1) == true &&
+			runway_info.runway_corners_geo.inside(taxiroute_info.taxiroute_segment_geo.p2))
 		{
 			continue;
 		}
@@ -311,42 +326,32 @@ static void RunwayHasMatchingTaxiRoute( const RunwayInfo& runway_info,
 
 			Point2 p;
 
-			intersected_sides = taxiroute_segment_geo.intersect(left_side,   p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_segment_geo.intersect(top_side,    p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_segment_geo.intersect(right_side,  p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_segment_geo.intersect(bottom_side, p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(left_side,   p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(top_side,    p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(right_side,  p) ? intersected_sides + 1 : intersected_sides;
+			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(bottom_side, p) ? intersected_sides + 1 : intersected_sides;
 
 			if(intersected_sides >= 2)
 			{
-				string taxiroute_name;
-				(*taxiroute_itr)->GetName(taxiroute_name);
-
-				*msg = string("Error: Taxiroute segment " + taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
-				problem_thing =  static_cast<const WED_Thing*>(*taxiroute_itr);
+				*msg = string("Error: Taxiroute segment " + taxiroute_itr->taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
+				problem_thing =  static_cast<const WED_Thing*>(taxiroute_itr->taxiroute_ptr);
 			}
 		}
 	}
 }
-#include <iostream>
+
 //This assumes that there are no Y splits and it is on the center line
 //without being in a Z pattern and all points are inside the runway
 static void RunwayHasTotalCoverage( const RunwayInfo& runway_info,
-									const TaxiRouteVec_t& all_taxiroutes,
+									const vector<const TaxiRouteInfo>& matching_taxiroutes,
 									string* msg,
 									const WED_Thing*& problem_thing)
 {
-	TaxiRouteVec_t matching_taxiroutes = FilterMatchingRunways(runway_info, all_taxiroutes);
 	double total_length_m = 0.0;
-	for(TaxiRouteVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
+	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
 		//Add up all the lengths of the runway, see if it is within the threshold of how much coverage there must be
-		Segment2 taxiroute_segment_geo;
-		Bezier2 bez;
-		(*taxiroute_itr)->GetSide(gis_Geo,0,taxiroute_segment_geo,bez);
-
-		Segment2 taxiroute_segment_m(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
-		std::cout << "taxiroute_segment's length "<< sqrt(taxiroute_segment_m.squared_length()) << endl;
-		total_length_m += sqrt(taxiroute_segment_m.squared_length());
+		total_length_m += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
 	}
 
 	double diff = abs(runway_info.runway_ptr->GetLength() - total_length_m);
@@ -364,13 +369,21 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 	apt.GetBounds(gis_Geo, box);
 	CreateTranslatorForBounds(box,translator);
 	
-	vector<RunwayInfo> potentially_active_runways = CollectPotentiallyActiveRunways(apt);
-	TaxiRouteVec_t all_taxiroutes;
-	CollectRecursive<back_insert_iterator<TaxiRouteVec_t>>(static_cast<const WED_Thing*>(&apt),back_inserter<TaxiRouteVec_t>(all_taxiroutes));
-	
+	vector<const RunwayInfo> potentially_active_runways = CollectPotentiallyActiveRunways(apt);
+	vector<const TaxiRouteInfo> all_taxiroutes;
+	vector<const TaxiRouteInfo> matching_taxiroutes;
+
+	TaxiRouteVec_t all_taxiroutes_plain;
+	CollectRecursive<back_insert_iterator<TaxiRouteVec_t>>(static_cast<const WED_Thing*>(&apt),back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
+
+	for (int i = 0; i < all_taxiroutes.size(); i++)
+	{
+		all_taxiroutes.push_back(all_taxiroutes[i].taxiroute_ptr);
+	}
+
 	//Pre-check
 	//- Does this active runway even have any taxi routes associated with it?
-	for(vector<RunwayInfo>::const_iterator runway_info_itr = potentially_active_runways.begin();
+	for(vector<const RunwayInfo>::const_iterator runway_info_itr = potentially_active_runways.begin();
 		runway_info_itr != potentially_active_runways.end();
 		++runway_info_itr)
 	{
@@ -379,11 +392,13 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 		debug_mesh_segment((*runway_info_itr).runway_centerline_geo,1,0,0,1,0,0);
 #endif
 
+		matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 		AllTaxiRouteNodesInRunway(     *runway_info_itr, all_taxiroutes, msg, problem_thing);
-		TaxiRouteCenterlineCheck(      *runway_info_itr, all_taxiroutes, msg, problem_thing);
+		TaxiRouteCenterlineCheck(      *runway_info_itr, matching_taxiroutes, msg, problem_thing);
 		TaxiRouteRunwayTraversalCheck( *runway_info_itr, all_taxiroutes, msg, problem_thing);
 		RunwayHasMatchingTaxiRoute(    *runway_info_itr, all_taxiroutes, msg, problem_thing);
-		RunwayHasTotalCoverage(        *runway_info_itr, all_taxiroutes, msg, problem_thing);
+		RunwayHasTotalCoverage(        *runway_info_itr, matching_taxiroutes, msg, problem_thing);
+		TaxiRouteSquishedZCheck(       *runway_info_itr, matching_taxiroutes, msg, problem_thing);
 	}
 	return;
 }
