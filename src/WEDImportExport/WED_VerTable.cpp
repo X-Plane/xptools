@@ -174,6 +174,7 @@ void	WED_VerTable::GetCellContent(
 					GUI_CellContent&			the_content)
 {
 	the_content.content_type = gui_Cell_EditText;
+	the_content.can_delete = false;
 	the_content.can_edit = 0;
 	the_content.can_disclose = 0;
 	the_content.can_select = 1;

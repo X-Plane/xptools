@@ -462,4 +462,12 @@ void		WED_CreatePolygonTool::SetResource(const string& r)
 	mResource.value = r;
 }
 
+void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_CreateToolBase::GetNthPropertyDict(n, dict);
+	if(n == PropertyItemNumber(&mPavement) && mPavement.value != surf_Water)
+	{
+		dict.erase(surf_Water);
+	}
+}
 

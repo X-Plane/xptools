@@ -34,6 +34,39 @@ const char * GetApplicationPath(char * pathBuf, int sz)
 		return NULL;
 }
 
+const char * GetCacheFolder(char cache_path[], int sz)
+{
+	if(sz != MAX_PATH)
+	{
+		return NULL;
+	}
+
+	HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, cache_path);
+	if (SUCCEEDED(res))
+	{
+		return cache_path;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+const char * GetTempFilesFolder(char temp_path[], int sz)
+{
+	if(sz > MAX_PATH)
+	{
+		return NULL;
+	}
+
+	int result = GetTempPath(sz, temp_path);
+	if (result > strlen(temp_path) || result == 0)
+	{
+		return NULL;
+	}
+	
+	return  temp_path;
+}
 
 int		GetFilePathFromUser(
 					int					inType,

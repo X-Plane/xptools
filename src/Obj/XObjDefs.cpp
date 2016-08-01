@@ -105,6 +105,8 @@ cmd_info	gCmds[] = {
 {	attr_Manip_Delta,		type_Attr,	"ATTR_manip_delta",			1,0,1},
 {	attr_Manip_Wrap,		type_Attr,	"ATTR_manip_wrap",			1,0,1},
 
+{	attr_Emitter,			type_Attr,	"EMITTER",					1,0,1},
+
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 
 };

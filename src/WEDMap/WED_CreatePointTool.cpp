@@ -85,8 +85,10 @@ WED_CreatePointTool::WED_CreatePointTool(
 		show_level		(tool==create_Object		?this:NULL,"Show with",		SQL_Name("",""),XML_Name("",""),ShowLevel,show_Level1),
 		sign_clipboard	(tool==create_Sign			?this:NULL,"Use Clipboard",	SQL_Name("",""),XML_Name("",""),0),
 		ramp_type		(tool==create_RampStart		?this:NULL,"Ramp Start Type",SQL_Name("",""),XML_Name("",""   ), ATCRampType, atc_Ramp_Misc),
-		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType, 0)
-
+		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType, 0),
+		width			(tool==create_RampStart		?this:NULL,"Size",	SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
+		ramp_op_type	(tool==create_RampStart		?this:NULL,"Ramp Operation Type",	SQL_Name("",""),XML_Name("",""), RampOperationType, ramp_operation_None),
+		airlines		(tool==create_RampStart		?this:NULL,"Airlines",SQL_Name("",""),XML_Name("",""), "")
 {
 }
 
@@ -157,6 +159,9 @@ void	WED_CreatePointTool::AcceptPath(
 		new_pt_obj = new_pt_h = ramp = WED_RampPosition::CreateTyped(GetArchive());
 		ramp->SetType(ramp_type.value);
 		ramp->SetEquipment(equip_type.value);
+		ramp->SetWidth(width.value);
+		ramp->SetRampOperationType(ramp_op_type.value);
+		ramp->SetAirlines(airlines.value);
 		break;
 	case create_TowerViewpoint:
 		new_pt_obj = tower = WED_TowerViewpoint::CreateTyped(GetArchive());
@@ -223,4 +228,33 @@ void		WED_CreatePointTool::SetResource(const string& r)
 	resource.value = r;
 }
 
+void		WED_CreatePointTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	WED_CreateToolBase::GetNthPropertyInfo(n, info);
+	if(n == PropertyItemNumber(&sign_text))
+	{
+		DebugAssert(info.prop_kind == prop_String);
+		info.prop_kind = prop_TaxiSign;
+	}	
+}
 
+void		WED_CreatePointTool::GetNthProperty(int n, PropertyVal_t& val) const
+{
+	WED_CreateToolBase::GetNthProperty(n, val);
+	if(n == PropertyItemNumber(&sign_text))
+	{
+		DebugAssert(val.prop_kind == prop_String);
+		val.prop_kind = prop_TaxiSign;
+	}
+}
+
+void		WED_CreatePointTool::SetNthProperty(int n, const PropertyVal_t& val)
+{
+	PropertyVal_t v(val);
+	if(n == PropertyItemNumber(&sign_text))
+	{
+		DebugAssert(v.prop_kind == prop_TaxiSign);
+		v.prop_kind = prop_String;
+	}
+	WED_CreateToolBase::SetNthProperty(n, v);
+}

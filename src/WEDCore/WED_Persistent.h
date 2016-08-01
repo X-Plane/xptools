@@ -186,6 +186,8 @@ public:
 	// This method is called by the derived-class whenever its internals are changed
 	// by an editing operation.  It is the convenient way to signal "we better start
 	// recording persistent stuff".
+	//
+	//IMPORTANT! Despite "Changed" being past tense, StateChanged MUST BE CALLED BEFORE changes to the object!
 			void 			StateChanged(int change_kind = wed_Change_Any);
 
 	// Methods provided by the base: all persistent objs must have an archive and

@@ -60,6 +60,7 @@
 #include "GISUtils.h"
 #include "PlatformUtils.h"
 #include "MathUtils.h"
+#include "WED_ATCFrequency.h"
 
 #define MAX_LON_SPAN_GATEWAY 0.2
 #define MAX_LAT_SPAN_GATEWAY 0.2
@@ -183,6 +184,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 	if(who->GetClass() == WED_Taxiway::sClass)
 	{
 		WED_Taxiway * twy = dynamic_cast<WED_Taxiway*>(who);
+		if(twy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+		{
+			msg = "Water is not a valid surface type for taxiways";
+			DoUserAlert(msg.c_str());
+			return who;
+		}
+
 		IGISPointSequence * ps;
 		ps = twy->GetOuterRing();
 		if(!ps->IsClosed() || ps->GetNumSides() < 3)
@@ -307,6 +315,13 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 			if (rwy)
 			{
+				if(rwy->GetSurface() == surf_Water && gExportTarget == wet_gateway)
+				{
+					msg = "Water is not a valid surface type for runways";
+					DoUserAlert(msg.c_str());
+					return who;
+				}
+		
 				if (rwy->GetDisp1() + rwy->GetDisp2() > rwy->GetLength()) msg = "The runway/sealane '" + name + "' has overlapping displaced thresholds.";
 				
 				#if !GATEWAY_IMPORT_FEATURES
@@ -353,6 +368,11 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 		else {
 			if (n1[0] != 'H')	msg = "The helipad '" + name + "' does not start with the letter H.";
 			else {
+				if(n1.length() > 3)
+				{
+					msg = "The helipad '" + name + "' is longer than the maximum 3 characters.";
+				}
+				
 				n1.erase(0,1);
 				for (int i = 0; i < n1.length(); ++i)
 				{
@@ -460,6 +480,20 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			}
 			else 
 				s_flow_names.insert(name);
+			
+			// Make sure we have at least one runway to use.  The exported flow does NOT have this - it only contains exports
+			// of properties of the apt flow rule itself!
+			int rwy_rule_count = 0;
+			int nn = who->CountChildren();
+			for(int n = 0; n < nn; ++n)
+			{
+				WED_Thing * c = who->GetNthChild(n);
+				if(c->GetClass() == WED_ATCRunwayUse::sClass)
+					++rwy_rule_count;
+			}
+			
+			if(rwy_rule_count == 0)
+				msg = "You have an airport flow with no runway use rules.  You need at least oneway use rule to create an active runway.";
 				
 			if(s_legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
 				msg = "The pattern runway " + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.";
@@ -489,7 +523,7 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			if(taxi->IsRunway())
 			if(s_legal_rwy_twoway.count(taxi->GetRunway()) == 0)
 			{
-				msg = "The taxi route '" + name + "' is set to a ruwnay not present at the airport.";
+				msg = "The taxi route '" + name + "' is set to a runway not present at the airport.";
 			}
 			
 			Point2	start, end;
@@ -502,6 +536,24 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 				#endif
 			}
 		}		
+		if(who->GetClass() == WED_ATCFrequency::sClass)
+		{
+			const WED_ATCFrequency * freq = dynamic_cast<WED_ATCFrequency *>(who);
+			if(freq !=  NULL)
+			{
+				AptATCFreq_t freq_info;
+				freq->Export(freq_info);
+				const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
+				if(freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower)
+				{
+					int mhz = freq_info.freq / 100;
+					if(mhz < 118 || mhz > 136)
+					{
+						msg = "The ATC frequency " + name + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
+					}
+				}
+			}
+		}
 	}
 	
 	//------------------------------------------------------------------------------------
@@ -522,6 +574,60 @@ static WED_Thing * ValidateRecursive(WED_Thing * who, WED_LibraryMgr * lib_mgr)
 			
 		if(g.equipment == 0)
 			msg = "Ramp starts must have at least one valid type of equipment selected.";
+		
+		if(gExportTarget == wet_xplane_1050)
+		{
+			//Our flag to keep going until we find an error
+			bool found_err = false;
+			if(g.airlines == "" && !found_err)
+			{
+				//Error:"not really an error, we're just done here"
+				found_err = true;
+			}
+			else if(g.airlines.length() < 3 && !found_err)
+			{
+				msg = "Ramp start airlines string " + g.airlines + " is not a group of three letters.";
+				found_err = true;
+			}
+			
+			//The number of spaces 
+			int num_spaces = 0;
+			
+			if(!found_err)
+			for(string::iterator itr = g.airlines.begin(); itr != g.airlines.end(); itr++)
+			{
+				char c = *itr;
+				if(c == ' ')
+				{
+					num_spaces++;
+				}
+				else 
+				{
+					if(c < 'A' || c > 'Z')
+					{
+						msg = "Ramp start airlines string " + g.airlines + " contains non-uppercase letters.";
+						found_err = true;
+					}
+				}
+			}
+
+			//The length of the string
+			int wo_spaces_len = (g.airlines.length() - num_spaces);
+			if(wo_spaces_len % 3 != 0 && !found_err)
+			{
+				msg = string("Ramp start airlines string " + g.airlines + " is not in groups of three letters.");
+				found_err = true;
+			}
+
+			//ABC, num_spaces = 0 = ("ABC".length()/3) - 1
+			//ABC DEF GHI, num_spaces = 2 = "ABCDEFGHI".length()/3 - 1
+			//ABC DEF GHI JKL MNO PQR, num_spaces = 5 = "...".length()/3 - 1 
+			if(num_spaces != (wo_spaces_len/3) - 1 && !found_err)
+			{
+				msg = string("Ramp start airlines string " + g.airlines + " is not spaced correctly.");
+				found_err = true;
+			}
+		}
 	}
 
 	if(gExportTarget == wet_xplane_900)

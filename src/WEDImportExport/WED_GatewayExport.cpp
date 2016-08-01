@@ -23,15 +23,21 @@
 
 #include "XDefs.h"
 #include "WED_GatewayExport.h"
+#include "WED_MetaDataKeys.h"
 
 #if HAS_GATEWAY
 
 // MSVC insanity: XWin must come in before ANY part of the IOperation interface or Ben's stupid #define to get file/line numbers on ops hoses the MS headers!
 #include "GUI_FormWindow.h"
+#include "WED_MetaDataDefaults.h"
+#include "WED_Menus.h"
 
 #include "PlatformUtils.h"
 #include "FileUtils.h"
 #include "curl_http.h"
+#include "RAII_Classes.h"
+#include "WED_FileCache.h"
+#include "WED_MetaDataDefaults.h"
 
 #include "WED_DSFExport.h"
 #include "WED_Globals.h"
@@ -102,8 +108,6 @@ static std::string to_string(const T& value)
 			make the form nicer
 			error checking on upload
 			progress and cancel on upload
-			port to windows
-			port to linux
 			
 			download from gateway?
  */
@@ -219,62 +223,85 @@ static int file_to_uu64(const string& path, string& enc)
 	return 0;
 }
 
-
-
-
-
 //------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------
 
-
-int	WED_CanExportToGateway(IResolver * resolver)
+//--WED_GatewayExportDialog--------------------------------------------------
+enum expt_dialog_stage
 {
-	#if BULK_SPLAT_IO
-	ISelection * sel = WED_GetSelect(resolver);	
-	return sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass);
-
-	#else
-	return WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass) != NULL;
-	#endif	
-}
+	expt_dialog_download_airport_metadata,
+	expt_dialog_upload_to_gateway,
+	expt_dialog_done //Error or not
+};
 
 class	WED_GatewayExportDialog : public GUI_FormWindow, public GUI_Timer {
 public:
-
 	WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver);
+
+	//When pressed, opens up the developer blog post about the Gateway 
+	virtual void AuxiliaryAction();
+
+	//When pressed, attempts to submit current airport to the gateway
 	virtual void Submit();
-	virtual void Cancel();
-	virtual	void TimerFired(void);
 	
+	//When pressed, form window is closed
+	virtual void Cancel();
+
+	//Called each time WED's timer is fired, checks download progress
+	virtual	void TimerFired(void);
+
+	static const string& GetAirportMetadataCSVPath();
+
 private:
 
-	int						mPhase;
-	IResolver *				mResolver;	
-	curl_http_get_file *	mCurl;
-	vector<char>			mResponse;
-	WED_Airport *			mApt;
-	set<WED_Thing *>		mProblemChildren;
-	string					mParID;
+	//Used for downloading the airport metadata defaults
+	RAII_CurlHandle*        mAirportMetadataCURLHandle;
+	
+	//The airport we are attempting to upload
+	WED_Airport*			mApt;
+	
+	//Where the airport metadata csv file was ultimately downloaded to
+	static string           mAirportMetadataCSVPath;
+	
+	//Cache request for requesting airport metadata csv
+	WED_file_cache_request  mCacheRequest;
+	
+	//The handle used to download the airport metadata csv
+	curl_http_get_file*     mCurl;
 
+	//The phase of the state in the dialog box
+	expt_dialog_stage	mPhase;
+	IResolver *				mResolver;
+
+	string					mParID;
+	set<WED_Thing *>		mProblemChildren;
+	
+	vector<char>			mResponse;
+
+	void StartCSVDownload();
 };
 
+//Static member definitions
+string WED_GatewayExportDialog::mAirportMetadataCSVPath = "";
 
-int	Iterate_JSON_One_Airport(ISelectable * what, void * ref)
+const string& WED_GatewayExportDialog::GetAirportMetadataCSVPath()
 {
-	IResolver * resolver = (IResolver *) ref;	
-	WED_Airport * apt = SAFE_CAST(WED_Airport,what);
-	if(!apt)
-		return 0;			
-	WED_GatewayExportDialog * dlg = new WED_GatewayExportDialog(apt, resolver);
-	dlg->Submit();
-	#if !BULK_SPLAT_IO
-	dlg->Hide();
-	#endif
-	return 1;
+	return mAirportMetadataCSVPath;
 }
 
-void	WED_DoExportToGateway(IResolver * resolver)
+int WED_CanExportToGateway(IResolver * resolver)
+{
+	return 1;	
+#if BULK_SPLAT_IO
+//	ISelection * sel = WED_GetSelect(resolver);	
+//	return sel->IterateSelectionAnd(Iterate_IsClass, (void *) WED_Airport::sClass);
+
+	//#else
+#endif	
+}
+
+void WED_DoExportToGateway(IResolver * resolver)
 {
 	#if BULK_SPLAT_IO
 
@@ -300,25 +327,87 @@ void	WED_DoExportToGateway(IResolver * resolver)
 		}
 		
 	#else
-		
+		if(WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass) == NULL)
+		{
+			DoUserAlert("To export an airport to the X-Plane Scenery Gateway, please first select the airport in the hierarchy pane.");
+			return;
+		}
+
 		WED_Airport * apt = SAFE_CAST(WED_Airport,WED_HasSingleSelectionOfType(resolver, WED_Airport::sClass));
 
 		if(!apt)
 			return;
-			
+
 		new WED_GatewayExportDialog(apt, resolver);
 
 	#endif
 }
 
+int Iterate_JSON_One_Airport(ISelectable * what, void * ref)
+{
+	IResolver * resolver = (IResolver *) ref;	
+	WED_Airport * apt = SAFE_CAST(WED_Airport,what);
+	if(!apt)
+		return 0;			
+	WED_GatewayExportDialog * dlg = new WED_GatewayExportDialog(apt, resolver);
+	dlg->Submit();
+	#if !BULK_SPLAT_IO
+	dlg->Hide();
+	#endif
+	return 1;
+}
+
+static string InterpretNetworkError(curl_http_get_file* curl)
+{
+	int err = curl->get_error();
+	bool bad_net = curl->is_net_fail();
+
+	stringstream ss;
+			
+	if(err <= CURL_LAST)
+	{
+		string msg = curl_easy_strerror((CURLcode) err);
+		ss << "Upload failed: " << msg << ". (" << err << ")";
+				
+		if(bad_net) ss << "\n(Please check your internet connectivity.)";					
+	}
+	else if(err >= 100)
+	{
+		ss << "Upload failed.  The server returned error " << err << ".";
+				
+		vector<char>	errdat;
+		curl->get_error_data(errdat);
+		bool is_ok = !errdat.empty();
+		for(vector<char>::iterator i = errdat.begin(); i != errdat.end(); ++i)
+		if(!isprint(*i))
+		{
+			is_ok = false;
+			break;
+		}
+				
+		if(is_ok)
+		{
+			string errmsg = string(errdat.begin(),errdat.end());
+			ss << "\n" << errmsg;
+		}
+	}
+	else
+	{
+		ss << "Upload failed due to unknown error: " << err << ".";
+	}
+
+	return ss.str();
+}
+
 WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver) : 
 	GUI_FormWindow(gApplication, "Airport Scenery Gateway", 500, 400),
-	mResolver(resolver),
-	mPhase(0),
+	mAirportMetadataCURLHandle(NULL),
+	mApt(apt),
 	mCurl(NULL),
-	mApt(apt)	
+	mPhase(expt_dialog_download_airport_metadata),
+	mResolver(resolver)
 {	
-	this->Reset("Upload", "Cancel");
+	this->Reset("Learn More", "Upload", "Cancel", false);
 				
 	string icao, name;
 	apt->GetICAO(icao);
@@ -326,9 +415,7 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 
 	char par_id[32];
 	sprintf(par_id,"%d", apt->GetSceneryID());
-	
-	
-	
+
 	this->AddFieldNoEdit(gw_icao,icao,name);
 	this->AddField(gw_username,"User Name",saved_uname);
 	this->AddField(gw_password,"Password",saved_passwd,ft_password);
@@ -337,24 +424,44 @@ WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * 
 		mParID = par_id;
 	else
 		mParID = "";
+	StartCSVDownload();
+}
+
+void WED_GatewayExportDialog::StartCSVDownload()
+{
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		this->AsyncDestroy();
+	}
+
+	mCacheRequest.in_cert = cert;
+	mCacheRequest.in_domain = cache_domain_metadata_csv;
+	mCacheRequest.in_folder_prefix = "scenery_packs";
+	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
+
+	Start(0.1);
 }
 
 void WED_GatewayExportDialog::Cancel()
 {
-	if(mPhase == 2)
-		GUI_LaunchURL(WED_URL_UPLOAD_OK);
-		
 	this->AsyncDestroy();
 }
 
+void WED_GatewayExportDialog::AuxiliaryAction()
+{
+	GUI_LaunchURL(WED_URL_UPLOAD_OK);
+}
 
 void WED_GatewayExportDialog::Submit()
 {
-	if(mPhase == 0)
+	if(mPhase == expt_dialog_upload_to_gateway)
 	{
 		DebugAssert(mApt);
 		WED_Airport * apt = mApt;
-		
+		fill_in_airport_metadata_defaults(*mApt, mAirportMetadataCSVPath);
 		string apt_name = this->GetField(gw_icao);
 		string act_name;
 		apt->GetName(act_name);
@@ -410,7 +517,7 @@ void WED_GatewayExportDialog::Submit()
 		lib->LookupPath(targ_folder_zip);
 		if(FILE_exists(targ_folder_zip.c_str()))
 		{
-			FILE_delete_file(targ_folder_zip.c_str(), 0);
+			FILE_delete_file(targ_folder_zip.c_str(), false);
 		}
 
 		DebugAssert(!FILE_exists(targ_folder.c_str()));
@@ -475,11 +582,9 @@ void WED_GatewayExportDialog::Submit()
 				fclose(gpl);
 			}
 		}
-		
-		
-		
+
 		FILE_compress_dir(preview_folder, preview_zip, icao + "_Scenery_Pack/");
-		
+
 		FILE_delete_dir_recursive(preview_folder);
 
 		FILE_compress_dir(targ_folder, targ_folder_zip, string());
@@ -489,10 +594,23 @@ void WED_GatewayExportDialog::Submit()
 		string uu64;
 		file_to_uu64(targ_folder_zip, uu64);
 		#if !KEEP_UPLOAD_MASTER_ZIP
-		FILE_delete_file(targ_folder_zip.c_str(),0);
+		FILE_delete_file(targ_folder_zip.c_str(), false);
 		#endif
 		
 		Json::Value		scenery;
+		
+		for(int key_enum = wed_AddMetaDataBegin + 1; key_enum < wed_AddMetaDataEnd; ++key_enum)
+		{
+			string key = META_KeyName(key_enum);
+			if(apt->ContainsMetaDataKey(key))
+			{
+				scenery["additionalMetadata"][key] = apt->GetMetaDataValue(key);
+			}
+		}
+
+		scenery["aptName"] = apt_name;
+		scenery["artistComments"] = comment;
+		scenery["clientVersion"] = WED_VERSION_NUMERIC;
 		
 		string features;
 		if(has_atc_flow(apt))
@@ -501,21 +619,24 @@ void WED_GatewayExportDialog::Submit()
 			features += "," + to_string(ATC_TAXI_ROUTE_TAG);
 		if(!features.empty())
 			features.erase(features.begin());
-		
-		scenery["userId"] = uname;
-		scenery["password"] = pwd;
-		if(parid.empty())
-			scenery["parentId"] = Json::Value();
-		else
-			scenery["parentId"] = parid;
-		scenery["icao"] = icao;
-		scenery["aptName"] = apt_name;
-		scenery["type"] = has_3d(apt) ? "3D" : "2D";
-		scenery["artistComments"] = comment;
+
 		scenery["features"] = features;
+		scenery["icao"] = icao;
 		scenery["masterZipBlob"] = uu64;
-		scenery["clientVersion"] = WED_VERSION_NUMERIC;
-			
+		
+		if(parid.empty())
+		{
+			scenery["parentId"] = Json::Value();
+		}
+		else
+		{
+			scenery["parentId"] = parid;
+		}
+
+		scenery["password"] = pwd;
+		scenery["type"] = has_3d(apt) ? "3D" : "2D";
+		scenery["userId"] = uname;
+
 		Json::Value req;
 		req["scenery"] = scenery;
 		
@@ -549,15 +670,11 @@ void WED_GatewayExportDialog::Submit()
 		}
 		string url = WED_URL_GATEWAY_API "scenery";
 
-		curl_http_get_file * auth_req = new curl_http_get_file(
-			url.c_str(),
-			NULL,&reqstr,&mResponse,cert);
-	
-		mCurl = auth_req;
+		mCurl = new curl_http_get_file(url.c_str(),NULL,&reqstr,&mResponse,cert);
 		
-		mPhase = 1;
+		mPhase = expt_dialog_upload_to_gateway;
 		
-		this->Reset("", "");
+		this->Reset("", "", "", false);
 		this->AddLabel("Uploading airport to Gateway.");
 		this->AddLabel("This could take up to one minute.");
 
@@ -565,8 +682,8 @@ void WED_GatewayExportDialog::Submit()
 		
 		Start(1.0);
 	}
-	
-	if(mPhase == 2)
+
+	if(mPhase == expt_dialog_done)
 	{
 		this->AsyncDestroy();
 	}
@@ -574,114 +691,102 @@ void WED_GatewayExportDialog::Submit()
 
 void WED_GatewayExportDialog::TimerFired()
 {
-	if(mCurl->is_done())
+	string good_msg = "";
+	string bad_msg = "";
+		
+	if(mPhase == expt_dialog_download_airport_metadata)
 	{
-		Stop();
-		
-		string good_msg, bad_msg;
-		
-		mPhase = 2;
-		if(mCurl->is_ok())
+		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+		if(res.out_status != cache_status_downloading)
 		{
-			char * start = &mResponse[0];
-			char * end = start + mResponse.size();
+			Stop();
 
-			Json::Reader reader;	
-			Json::Value response;
-		
-			if(reader.parse(start, end, response))
+			if(res.out_status == cache_status_available)
 			{
-				if(response.isMember("sceneryId"))
-				{		
-					int new_id = response["sceneryId"].asInt();
-					mApt->StartOperation("Successful submition to gateway.");
-					mApt->SetSceneryID(new_id);
-					mApt->CommitOperation();
+				WED_GatewayExportDialog::mAirportMetadataCSVPath = res.out_path;
+				mPhase = expt_dialog_upload_to_gateway;
+				good_msg = "Airport metadata defaults have been downloaded succesfully.";
+			}
+			else if(res.out_status == cache_status_error)
+			{
+				mPhase = expt_dialog_done;
+				bad_msg = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());
+			}
+		}
+		return;
+	}
+	
+	if(mCurl != NULL && mPhase == expt_dialog_upload_to_gateway)
+	{
+		if(mCurl->is_done())
+		{
+			Stop();
+		
+			mPhase = expt_dialog_done;
+			if(mCurl->is_ok())
+			{
+				char * start = &mResponse[0];
+				char * end = start + mResponse.size();
+
+				Json::Reader reader;	
+				Json::Value response;
+		
+				if(reader.parse(start, end, response))
+				{
+					if(response.isMember("sceneryId"))
+					{		
+						int new_id = response["sceneryId"].asInt();
+						mApt->StartOperation("Successful submition to gateway.");
+						mApt->SetSceneryID(new_id);
+						mApt->CommitOperation();
 					
-					good_msg = "Your airport has been successfully uploaded and will be visible to all users on\nthe gateway once a moderator approves it.";
+						good_msg = "Your airport has been successfully uploaded and will be visible to all users on\nthe gateway once a moderator approves it.";
+					}
+					else
+					{
+						bad_msg = "I was not able to confirm that your scenery was uploaded.\n(No scenery ID was returned.)";
+					}				
 				}
 				else
 				{
-					bad_msg = "I was not able to confirm that your scenery was uploaded.\n(No scenery ID was returned.)";
-				}				
-			}
-			else
-				bad_msg = "I was not able to confirm that your scenery was uploaded.\n(JSON was malformed.)";
-		}
-		else
-		{
-			int err = mCurl->get_error();
-			bool bad_net = mCurl->is_net_fail();
-
-			stringstream ss;
-			
-			if(err <= CURL_LAST)
-			{
-				string msg = curl_easy_strerror((CURLcode) err);
-				ss << "Upload failed: " << msg << ". (" << err << ")";
-				
-				if(bad_net) ss << "\n(Please check your internet connectivity.)";					
-			}
-			else if(err >= 100)
-			{
-				ss << "Upload failed.  The server returned error " << err << ".";
-				
-				vector<char>	errdat;
-				mCurl->get_error_data(errdat);
-				bool is_ok = !errdat.empty();
-				for(vector<char>::iterator i = errdat.begin(); i != errdat.end(); ++i)
-				if(!isprint(*i))
-				{
-					is_ok = false;
-					break;
-				}
-				
-				if(is_ok)
-				{
-					string errmsg = string(errdat.begin(),errdat.end());
-					ss << "\n" << errmsg;
+					bad_msg = "I was not able to confirm that your scenery was uploaded.\n(JSON was malformed.)";
 				}
 			}
 			else
-				ss << "Upload failed due to unknown error: " << err << ".";
+			{
+				bad_msg = InterpretNetworkError(mCurl);
+			}
+		
+			if(!good_msg.empty())
+			{
+				this->Reset("Learn More", "OK","", true);
+				this->AddLabel(good_msg);
+			}
+			else
+			{
+				this->Reset("", "","Cancel", true);
+				this->AddLabel(bad_msg);			
+			}
+		
+			delete mCurl;
+			mCurl = NULL;
 
-			bad_msg = ss.str();			
-			
-		}
-		
-		if(!good_msg.empty())
-		{
-			this->Reset("OK","Learn More...");
-			this->AddLabel(good_msg);
-		}
-		else
-		{
-			this->Reset("","Cancel");
-			this->AddLabel(bad_msg);			
-		}
-		
-		delete mCurl;
-		mCurl = NULL;
-		
-		
-	//	FILE * json = fopen("/Users/bsupnik/Desktop/json.txt","w");
-	//	fprintf(json,"%s",reqstr.c_str());	
-	//	fclose(json);
-		
+		//	FILE * json = fopen("/Users/bsupnik/Desktop/json.txt","w");
+		//	fprintf(json,"%s",reqstr.c_str());	
+		//	fclose(json);
 
-		if(!mProblemChildren.empty())
-		{
-			DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
-			ISelection * sel = WED_GetSelect(mResolver);
-			(*mProblemChildren.begin())->StartOperation("Select broken items.");
-			sel->Clear();
-			for(set<WED_Thing*>::iterator p = mProblemChildren.begin(); p != mProblemChildren.end(); ++p)
-				sel->Insert(*p);
-			(*mProblemChildren.begin())->CommitOperation();		
+			if(!mProblemChildren.empty())
+			{
+				DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
+				ISelection * sel = WED_GetSelect(mResolver);
+				(*mProblemChildren.begin())->StartOperation("Select broken items.");
+				sel->Clear();
+				for(set<WED_Thing*>::iterator p = mProblemChildren.begin(); p != mProblemChildren.end(); ++p)
+					sel->Insert(*p);
+				(*mProblemChildren.begin())->CommitOperation();		
+			}
 		}
-
 	}
-
 }
-
+//---------------------------------------------------------------------------//
 #endif /* HAS_GATEWAY */

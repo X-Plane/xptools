@@ -95,7 +95,6 @@ void			GUI_TabPane::AddPane(GUI_Pane * who, const char * title)
 	mTabs->SetDescriptor(desc);
 }
 
-
 void	GUI_TabPane::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
@@ -104,5 +103,7 @@ void	GUI_TabPane::ReceiveMessage(
 	if (inMsg == GUI_CONTROL_VALUE_CHANGED)
 	{
 		mChangeView->SetSubView(mTabs->GetValue());
+		BroadcastMessage(GUI_CONTROL_VALUE_CHANGED, mTabs->GetValue());
 	}
 }
+

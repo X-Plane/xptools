@@ -29,6 +29,7 @@ enum {
 	GUI_CONTROL_VALUE_CHANGED = 1000,
 	GUI_SCROLL_CONTENT_SIZE_CHANGED,				// Sent by scroll pane when number of pixels in the content has changed
 	GUI_TEXT_FIELD_TEXT_CHANGED,
+	GUI_MOUSE_OUTSIDE_BOUNDS,
 	GUI_FILTER_FIELD_CHANGED,
 
 	GUI_TABLE_SHAPE_RESIZED,						// Column sizes have changed (sent by geometry)

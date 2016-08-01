@@ -39,6 +39,7 @@
 #include "WED_UIDefs.h"
 #include "WED_Document.h"
 #include "WED_DocumentWindow.h"
+#include "WED_Version.h"
 
 static int *	SizeOfPng(const char * png)
 {
@@ -217,14 +218,11 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 		float color[4] = { 1.0, 1.0, 1.0, 0.7 };
 
 		const char * main_text[] = {
-			"WorldEditor 1.4.1",
-			"©Copyright 2007-2015, Laminar Research.",
+			"WorldEditor " WED_VERSION_STRING_SHORT,
+			"©Copyright 2007-2016, Laminar Research.",
 			"",
 			"This software is available under an open license.",
 			"Visit http://developer.x-plane.com/code/ for more info.",
-			"",
-			"Code by Ted Greene, Ben Supnik and Tyler Young.",
-			"Original graphics by Christiano Maggi.",
 			0
 			
 		};

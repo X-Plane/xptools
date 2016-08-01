@@ -45,6 +45,8 @@ public:
 
 	virtual const char *	HumanReadableType(void) const { return "Taxiway"; }
 
+	virtual		void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+
 protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return true; }

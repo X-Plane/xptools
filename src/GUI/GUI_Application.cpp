@@ -95,10 +95,12 @@ void GUI_Application::MenuUpdateCB(void * ref, int cmd, char * io_name, int * io
 	}
 }
 
-int GUI_Application::CanQuitCB(void * ref)
+void GUI_Application::TryQuitCB(void * ref)
 {
+	// If we can quit, we induce quit on ourselvse - [terminate] is not called.
 	GUI_Application * me = reinterpret_cast<GUI_Application *>(ref);
-	return me->CanQuit();
+	if (me->CanQuit())
+		me->Quit();
 }
 
 
@@ -212,7 +214,7 @@ GUI_Application::GUI_Application()
 	mDone = false;
 #if APL
 
-	app_callbacks cb = { this, MenuCommandCB, MenuUpdateCB, CanQuitCB };
+	app_callbacks cb = { this, MenuCommandCB, MenuUpdateCB, TryQuitCB };
 	
 	set_delegate(&cb, menu_nib);
 
@@ -277,7 +279,8 @@ void			GUI_Application::Quit(void)
 {
 	mDone = true;
 #if APL
-	quit_app();
+	// On quit, use NS to kill the runloop.
+	stop_app();
 #endif
 #if LIN
 	qapp->quit();

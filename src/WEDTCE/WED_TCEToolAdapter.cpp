@@ -117,4 +117,3 @@ void		WED_TCEToolAdapter::SetNthProperty(int n, const PropertyVal_t& val)
 {
 	brains->SetNthProperty(n,val);
 }
-

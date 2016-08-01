@@ -69,11 +69,18 @@ static NSString *		s_nib_file = NULL;
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-	if(g_callbacks.can_quit)
-		return g_callbacks.can_quit(g_callbacks.info) ? NSTerminateNow : NSTerminateCancel;
+	if(g_callbacks.try_quit)
+	{
+		// This is a little weird: other languages return to main() out of their main loop
+		// when the app quit; NS normally just calls exit().  So we are not going to use
+		// the regular terminate() chain.  Instead we cancel the terminate and let
+		// client code do the quitting - hence this is a "try quit" - the client succeeds
+		// if it WANTS to quit.
+		g_callbacks.try_quit(g_callbacks.info);
+		return NSTerminateCancel;
+	}
 	return NSTerminateNow;
 }
-
 
 @end
 
@@ -118,9 +125,20 @@ void run_app()
 	[me run];
 }
 
-int run_event_tracking_until_move_or_up()
+void stop_app()
+{
+	NSApplication * me = [NSApplication sharedApplication];
+	[me stop:nil];
+}
+
+int run_event_tracking_until_move_or_up(int button)
 {
 	bool done = false;
+	
+	int our_up = NSLeftMouseUp;
+	if(button == 1) our_up = NSRightMouseUp;
+	if(button == 2) our_up = NSOtherMouseUp;
+	
 	while(!done)
 	{
 		NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
@@ -136,7 +154,7 @@ int run_event_tracking_until_move_or_up()
 		if (t == NSOtherMouseDown || t == NSOtherMouseUp || t == NSOtherMouseDragged)
 			done = true;
 		
-		if(t == NSLeftMouseUp || t == NSRightMouseUp || t == NSOtherMouseUp)
+		if(t == our_up)
 		{
 			// If we found the up even that ends this, clients want to see it _after_ we return, so that they can NOT get an up from inside
 			// their down event handler (since we are typically below the call-out for down clicks on the stack.
@@ -147,7 +165,8 @@ int run_event_tracking_until_move_or_up()
 			return 0;
 		}
 		
-		[[NSApplication sharedApplication] sendEvent:e];
+		if(!done)
+			[[NSApplication sharedApplication] sendEvent:e];
 		[pool drain];
 	}
 	return 1;

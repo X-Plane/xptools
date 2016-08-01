@@ -35,6 +35,32 @@ const char * GetApplicationPath(char * pathBuf, int pathLen)
 	return pathBuf;
 }
 
+const char * GetCacheFolder(char * cache_path, int sz)
+{
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];	
+	NSFileManager * fmgr = [NSFileManager defaultManager];	
+	NSURL * dir = [fmgr URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:nil];
+
+	strncpy(cache_path, [[dir path] UTF8String], sz);
+
+	strncat(cache_path, DIR_STR, sz);
+
+	[pool release];
+	
+	return cache_path;
+
+
+/*		FSRef	ref;
+	OSErr	err = FSFindFolder(kOnAppropriateDisk,kCachedDataFolderType,TRUE, &ref);
+	if (err != noErr) return false;
+
+	char	buf[1024];
+	err = FSRefMakePath(&ref, (UInt8*) buf, sizeof(buf));
+	if (err != noErr) return false;
+	strncpy(temp_path,buf,sz);
+	return temp_path;
+*/	
+}
 
 int		GetFilePathFromUserInternal(
 					int					inType,

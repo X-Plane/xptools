@@ -95,6 +95,7 @@ public:
 	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const;
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+	virtual void		DeleteNthProperty(int n) { };
 
 	virtual	void				PropEditCallback(int before)=0;
 	virtual	int					CountSubs(void)=0;
@@ -116,8 +117,8 @@ public:
 	virtual	void		PopHandler(void);
 
 
-
-			int			PropertyItemNumber(const WED_PropertyItem * item) const;
+	// This is virtual so remappers like WED_Runway can "fix" the results
+	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
 private:
 
 	friend class	WED_PropertyItem;

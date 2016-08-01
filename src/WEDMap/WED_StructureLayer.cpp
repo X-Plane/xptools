@@ -143,7 +143,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	WED_Entity * thing = dynamic_cast<WED_Entity *>(entity);
 	while(thing)
 	{
-		if (thing->GetLocked()) { locked=1;break;}
+		if(IsLockedNow(thing))	{ locked=1;break;}
 		thing = dynamic_cast<WED_Entity *>(thing->GetParent());
 	}
 
@@ -558,7 +558,7 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 	WED_Entity * thing = dynamic_cast<WED_Entity *>(entity);
 	while(thing)
 	{
-		if (thing->GetLocked()) { locked=1;break;}
+		if(IsLockedNow(thing))	{ locked=1;break;}
 		thing = dynamic_cast<WED_Entity *>(thing->GetParent());
 	}
 

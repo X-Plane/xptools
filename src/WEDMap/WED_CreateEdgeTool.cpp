@@ -61,6 +61,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
+	mWidth(tool == create_TaxiRoute ? this : NULL, "Size", SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
 
 	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
 	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), 1, 3),
@@ -248,6 +249,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			tr->SetHotArrive(mHotArrive.value);
 			tr->SetHotILS(mHotILS.value);
 			tr->SetName(mName);
+			tr->SetWidth(mWidth.value);
 			break;
 		case create_Road:
 			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());
@@ -344,8 +346,8 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;
@@ -402,8 +404,8 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;
@@ -467,8 +469,8 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const c
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;
@@ -528,8 +530,8 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const ch
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;

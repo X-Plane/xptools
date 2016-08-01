@@ -182,6 +182,13 @@ struct kill_zero_length_segment {
 
 };
 
+// We normally reject zero length segments, but for the sake of grandfathered global airports, we'll instead simply remove them on export.
+template<class Segment>
+void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
+{
+	in_out_chain.erase(remove_if(in_out_chain.begin(), in_out_chain.end(), kill_zero_length_segment()), in_out_chain.end());
+}
+
 /************************************************************************************************************************************************
  * ROAD PROCESSOR
  ************************************************************************************************************************************************/
@@ -1358,6 +1365,8 @@ static int	DSF_ExportTileRecursive(
 					vector<Segment2p>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					remove_all_zero_length_segments(chain);
 					if(gExportTarget < wet_xplane_1021)
 						clip_segments(chain,cull_bounds);
 					else if(centroid_ob)
@@ -1404,6 +1413,8 @@ static int	DSF_ExportTileRecursive(
 					vector<Segment2>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					remove_all_zero_length_segments(chain);
 					if(gExportTarget < wet_xplane_1021)
 						clip_segments(chain,cull_bounds);
 					else if(centroid_ob)
@@ -1468,7 +1479,7 @@ static int	DSF_ExportTileRecursive(
 				
 					WED_VectorForPointSequence(seq,chain);
 					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
-					chain.erase(remove_if(chain.begin(),chain.end(),kill_zero_length_segment()),chain.end());
+					remove_all_zero_length_segments(chain);
 				
 					clip_segments(chain, cull_bounds);
 					if(!chain.empty())
@@ -1533,6 +1544,8 @@ static int	DSF_ExportTileRecursive(
 			vector<Segment2>	chain;
 		
 			WED_VectorForPointSequence(str,chain);
+			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+			remove_all_zero_length_segments(chain);
 			clip_segments(chain, cull_bounds);
 			if(!chain.empty())
 			{
@@ -1593,6 +1606,8 @@ static int	DSF_ExportTileRecursive(
 			vector<Segment2>	chain;
 		
 			WED_VectorForPointSequence(lin,chain);
+			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+			remove_all_zero_length_segments(chain);
 			clip_segments(chain, cull_bounds);
 			if(!chain.empty())
 			{
@@ -1913,7 +1928,7 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 
 	Bbox2	cull_bounds(x,y,x+1,y+1);
 	Bbox2	safe_bounds(cull_bounds);
-	if(gExportTarget == wet_xplane_1021)
+	if(gExportTarget >= wet_xplane_1021)
 		safe_bounds.expand(DSF_EXTRA_1021);
 	
 	

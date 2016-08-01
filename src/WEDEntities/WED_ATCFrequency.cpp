@@ -55,7 +55,14 @@ void	WED_ATCFrequency::Import(const AptATCFreq_t& info, void (* print_func)(void
 void	WED_ATCFrequency::Export(		 AptATCFreq_t& info) const
 {
 	GetName(info.name);
-	info.freq = round(freq.value * 100.0);
+	
+	// This is kind of a fuck-fest and some explanation is needed.  Unfortunately ATC frequencies are stored in decimal mhz
+	// in WED's internal data model, so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
+	// We want to TRUNCATE the 1's digit of the khz frequency, e.g.
+	// XP treats 123.125 and 123.12.  
+	
+	int freq_khz = round(freq.value * 1000.0);
+	info.freq = freq_khz / 10;	// Intentional floor - 123.125 -> 12312.
 	info.atc_type = ENUM_Export(freq_type.value);
 }
 
