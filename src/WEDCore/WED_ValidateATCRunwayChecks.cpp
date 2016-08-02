@@ -288,7 +288,75 @@ static bool TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
 
 	return true;
 }
+
+static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
+									 const vector<const TaxiRouteInfo>& all_taxiroutes,
+									 const vector<const TaxiRouteInfo>& matching_taxiroutes,
+									 string* msg,
+									 const WED_Thing*& problem_thing)
+{
+	TaxiRouteNodeVec_t all_nodes;
+	
+	for (int i = 0; i < all_taxiroutes.size(); ++i)
+	{
+		all_nodes.push_back(all_taxiroutes[i].node_0);
+		all_nodes.push_back(all_taxiroutes[i].node_1);
+	}
+
+	//Since we are storing pointers we can sort them numerically and see if any of them appear 3 or more times
+	sort(all_nodes.begin(),all_nodes.end());
+
+	DebugAssert(all_nodes.size() % 2 == 0 && all_nodes.size() > 0);
+
+	for (int i = 0; i < all_nodes.size() - 3 - 1; i++)
+	{
+		const WED_TaxiRouteNode* node_1 = all_nodes[i + 0];
+		const WED_TaxiRouteNode* node_2 = all_nodes[i + 1];
+		const WED_TaxiRouteNode* node_3 = all_nodes[i + 2];
+
+		int duplicate_count = 0;
+		
+		duplicate_count = node_1 == node_2 ? duplicate_count + 1 : duplicate_count + 0;
+		duplicate_count = node_2 == node_3 ? duplicate_count + 1 : duplicate_count + 0;
+		duplicate_count = node_3 == node_1 ? duplicate_count + 1 : duplicate_count + 0;
+		
+		if(duplicate_count == 3)
+		{
+			//We may have a duplicate but is it one we care about?
 			
+			set<WED_Thing*> node_viewers;
+			(node_1)->GetAllViewers(node_viewers);
+			
+			int relavent_runway_taxiroutes = 0;
+			for (set<WED_Thing*>::iterator viewer_itr = node_viewers.begin();
+				viewer_itr != node_viewers.end();
+				viewer_itr++)
+			{
+				WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*viewer_itr);
+				if(taxiroute)
+				{
+					string taxiroute_name;
+					taxiroute_name = ENUM_Desc(taxiroute->GetRunway());
+					if(runway_info.runway_name == taxiroute_name)
+					{
+						++relavent_runway_taxiroutes;
+					}
+				}
+			}
+
+			if(relavent_runway_taxiroutes >= 3)
+			{
+				string node_name;
+				(node_1)->GetName(node_name);
+				*msg = "Taxi route node " + node_name + " is used three or more times in a runway's taxiroute";
+				problem_thing = node_1;
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 									 const vector<const TaxiRouteInfo>& matching_routes,
 									 string* msg,
@@ -344,60 +412,7 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 
 	return true;
 }
-			
-static bool RunwayHasMatchingTaxiRoute( const RunwayInfo& runway_info,
-									    const vector<const TaxiRouteInfo>& all_taxiroutes,
-									    string* msg,
-									    const WED_Thing*& problem_thing)
-{
-	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin();
-		taxiroute_itr != all_taxiroutes.end();
-		++taxiroute_itr)
-	{
-		TaxiRouteInfo taxiroute_info(*taxiroute_itr);
-#if DEV
-		debug_mesh_segment(taxiroute_info.taxiroute_segment_geo,0,1,0,0,1,0);
-#endif
-		if( runway_info.runway_corners_geo.inside(taxiroute_info.taxiroute_segment_geo.p1) == true &&
-			runway_info.runway_corners_geo.inside(taxiroute_info.taxiroute_segment_geo.p2))
-		{
-			continue;
-		}
-		else
-		{
-			int intersected_sides = 0;
 
-			Segment2 left_side = runway_info.runway_corners_geo.side(2);
-			debug_mesh_segment(left_side,0,0,1,0,0,1);
-
-			Segment2 top_side = runway_info.runway_corners_geo.side(3);
-			debug_mesh_segment(top_side,0,0,1,0,0,1);
-
-			Segment2 right_side = runway_info.runway_corners_geo.side(0);
-			debug_mesh_segment(right_side,0,0,1,0,0,1);
-
-			Segment2 bottom_side = runway_info.runway_corners_geo.side(1);
-			debug_mesh_segment(bottom_side,0,0,1,0,0,1);
-
-			Point2 p;
-
-			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(left_side,   p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(top_side,    p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(right_side,  p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_info.taxiroute_segment_geo.intersect(bottom_side, p) ? intersected_sides + 1 : intersected_sides;
-
-			if(intersected_sides >= 2)
-			{
-				*msg = string("Error: Taxiroute segment " + taxiroute_itr->taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
-				problem_thing =  static_cast<const WED_Thing*>(taxiroute_itr->taxiroute_ptr);
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-			
 static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 									const vector<const TaxiRouteInfo>& matching_taxiroutes,
 									string* msg,
@@ -457,7 +472,7 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 
 		matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 		bool passes_centerline_checks = false;
-		if(RunwayHasMatchingTaxiRoute(*runway_info_itr, all_taxiroutes, msg, problem_thing))
+		if(TaxiRouteSplitPathCheck(*runway_info_itr, all_taxiroutes, matching_taxiroutes, msg, problem_thing))
 		{
 			if(TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msg, problem_thing))
 			{
