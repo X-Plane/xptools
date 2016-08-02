@@ -397,6 +397,9 @@ static void ValidateOneAirport(WED_Thing*& who, string& msg)
 	WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
 	if(apt)
 	{
+		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
+		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
+
 		ValidateAirportFrequencies(apt, msg);
 		const WED_Thing* problem_thing = NULL;
 		DoATCRunwayChecks(static_cast<const WED_Airport&>(*who), &msg, problem_thing);
@@ -409,9 +412,6 @@ static void ValidateOneAirport(WED_Thing*& who, string& msg)
 			who = const_cast<WED_Thing*>(problem_thing);
 			return;
 		}
-
-		WED_GetAllRunwaysOneway(apt,s_legal_rwy_oneway);
-		WED_GetAllRunwaysTwoway(apt,s_legal_rwy_twoway);
 
 		string icao;
 		apt->GetICAO(icao);

@@ -2,6 +2,10 @@
 
 #include <iterator>
 
+#if DEV
+#include <iostream>
+#endif
+
 #include "WED_EnumSystem.h"
 #include "WED_Validate.h"
 
@@ -176,7 +180,7 @@ static vector<const TaxiRouteInfo> FilterMatchingRunways(const RunwayInfo& runwa
 	return matching_taxiroutes;
 }
 
-static void AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
+static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 									   const vector<const TaxiRouteInfo>& all_taxiroutes,
 									   string* msg,
 									   const WED_Thing*& problem_thing)
@@ -203,14 +207,17 @@ static void AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 			(*node_itr)->GetName(node_name);
 			*msg = "Taxiroute node " + node_name + " is out of runway " + runway_info.runway_name + "'s bounds";
 			problem_thing = *node_itr;
+			return false;
 		}
 	}
+
+	return true;
 }
 
-static void TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
-									  const vector<const TaxiRouteInfo>& matching_taxiroutes,
-									  string* msg,
-									  const WED_Thing*& problem_thing)
+static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
+			 						  const vector<const TaxiRouteInfo>& matching_taxiroutes,
+			 						  string* msg,
+			 						  const WED_Thing*& problem_thing)
 {
 	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
@@ -224,11 +231,13 @@ static void TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
 			*msg = "Taxi route segement for runway " + taxiroute_name + " is not on the center line";
 			problem_thing = taxiroute_itr->taxiroute_ptr;
+			return false;
 		}
 	}
-}
 
-static void TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
+	return true;
+} 
+static bool TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
 										   const vector<const TaxiRouteInfo>& all_taxiroutes,
 										   string* msg,
 										   const WED_Thing*& problem_thing)
@@ -270,27 +279,73 @@ static void TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
 
 			if(intersected_sides >= 2)
 			{
-				*msg = string("Error: Taxiroute segment " + taxiroute_itr->taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
+				*msg = string("Taxi route segment " + taxiroute_itr->taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
 				problem_thing = static_cast<const WED_Thing*>(taxiroute_itr->taxiroute_ptr);
+				return false;
 			}
 		}
 	}
-}
 
-static void TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
+	return true;
+}
+			
+static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 									 const vector<const TaxiRouteInfo>& matching_routes,
 									 string* msg,
 									 const WED_Thing*& problem_thing)
 {
 
-	for (vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_routes.begin(); taxiroute_itr != matching_routes.end(); ++taxiroute_itr)
+	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_routes.begin();
+		taxiroute_itr != matching_routes.end();
+		++taxiroute_itr)
 	{
-		TaxiRouteInfo taxiroute_info(*taxiroute_itr);
+		Vector2 runway_centerline_vec = Vector2(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
+		Vector2 taxiroute_vec = Vector2(taxiroute_itr->taxiroute_segment_m.p1,taxiroute_itr->taxiroute_segment_m.p2);
+#if DEV
+		std::cout << "Runway Centerline (Lat/Lon): (" << runway_info.runway_centerline_geo.p1.x() << "," << runway_info.runway_centerline_geo.p1.y() << ")/(" <<
+													runway_info.runway_centerline_geo.p2.x() << "," << runway_info.runway_centerline_geo.p2.y() << ")" << std::endl;
+		std::cout << "Runway Centerline (Meters): (" <<  runway_info.runway_centerline_m.p1.x() <<   "," << runway_info.runway_centerline_m.p1.y() <<   ")/(" <<
+													runway_info.runway_centerline_m.p2.x() <<   "," << runway_info.runway_centerline_m.p2.y() <<   ")" << std::endl;
+		std::cout << "Runway Centerline (M->Vector): (" << runway_centerline_vec.x() << "," << runway_centerline_vec.y() << ")" << endl << endl;
+
+		std::cout << "TaxiRoute Segment (Lat/Lon): (" << taxiroute_itr->taxiroute_segment_geo.p1.x() << "," << taxiroute_itr->taxiroute_segment_geo.p1.y() << ")/(" <<
+													taxiroute_itr->taxiroute_segment_geo.p2.x() << "," << taxiroute_itr->taxiroute_segment_geo.p2.y() << ")" << std::endl;
+		std::cout << "TaxiRoute Segment (Meters): (" <<  taxiroute_itr->taxiroute_segment_m.p1.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p1.y() <<   ")/(" <<
+													taxiroute_itr->taxiroute_segment_m.p2.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p2.y() <<   ")" << std::endl;
+		std::cout << "TaxiRoute Segment (M->Vector): (" << taxiroute_vec.x() << "," << taxiroute_vec.y() << ")" << std::endl << std::endl << std::endl;
+#endif
+		runway_centerline_vec /= runway_centerline_vec.normalize();
+		taxiroute_vec /= taxiroute_vec.normalize();
+#if DEV
+		std::cout << "Runway Centerline Normalized (Lat/Lon): (" << runway_info.runway_centerline_geo.p1.x() << "," << runway_info.runway_centerline_geo.p1.y() << ")/(" <<
+															   runway_info.runway_centerline_geo.p2.x() << "," << runway_info.runway_centerline_geo.p2.y() << ")" << std::endl;
+		std::cout << "Runway Centerline Normalized (Meters): (" <<  runway_info.runway_centerline_m.p1.x() <<   "," << runway_info.runway_centerline_m.p1.y() <<   ")/(" <<
+															   runway_info.runway_centerline_m.p2.x() <<   "," << runway_info.runway_centerline_m.p2.y() <<   ")" << std::endl << std::endl;
+
+		std::cout << "TaxiRoute Segment Normalized (Lat/Lon): (" << taxiroute_itr->taxiroute_segment_geo.p1.x() << "," << taxiroute_itr->taxiroute_segment_geo.p1.y() << ")/(" <<
+															   taxiroute_itr->taxiroute_segment_geo.p2.x() << "," << taxiroute_itr->taxiroute_segment_geo.p2.y() << ")" << std::endl;
+		std::cout << "TaxiRoute Segment Normalized (Meters): (" <<  taxiroute_itr->taxiroute_segment_m.p1.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p1.y() <<   ")/(" <<
+															   taxiroute_itr->taxiroute_segment_m.p2.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p2.y() <<   ")" << std::endl << std::endl;
+#endif
+		double dot_product = runway_centerline_vec.dot(taxiroute_vec);
+#if DEV
+		std::cout << "runway_center_vec.dot(taxiroute_vec) = " << dot_product << std::endl;
+		std::cout << "-------------------------------------------------------" << std::endl;
+#endif
+		double ANGLE_THRESHOLD = 0.990;
+		dot_product = 1.0 - dot_product;
+		if((dot_product) < ANGLE_THRESHOLD || (dot_product) > 1.0)
+		{
+			*msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is too sharply bent";
+			problem_thing = static_cast<const WED_Thing*>(taxiroute_itr->taxiroute_ptr);
+			return false;
+		}
 	}
 
+	return true;
 }
-
-static void RunwayHasMatchingTaxiRoute( const RunwayInfo& runway_info,
+			
+static bool RunwayHasMatchingTaxiRoute( const RunwayInfo& runway_info,
 									    const vector<const TaxiRouteInfo>& all_taxiroutes,
 									    string* msg,
 									    const WED_Thing*& problem_thing)
@@ -335,14 +390,15 @@ static void RunwayHasMatchingTaxiRoute( const RunwayInfo& runway_info,
 			{
 				*msg = string("Error: Taxiroute segment " + taxiroute_itr->taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
 				problem_thing =  static_cast<const WED_Thing*>(taxiroute_itr->taxiroute_ptr);
+				return false;
 			}
 		}
 	}
-}
 
-//This assumes that there are no Y splits and it is on the center line
-//without being in a Z pattern and all points are inside the runway
-static void RunwayHasTotalCoverage( const RunwayInfo& runway_info,
+	return true;
+}
+			
+static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 									const vector<const TaxiRouteInfo>& matching_taxiroutes,
 									string* msg,
 									const WED_Thing*& problem_thing)
@@ -360,7 +416,10 @@ static void RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 	{
 		*msg = "Runway " + runway_info.runway_name + " is not sufficiently covered with taxi routes.";
 		problem_thing = runway_info.runway_ptr;
+		return false;
 	}
+
+	return true;
 }
 
 void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& problem_thing)
@@ -376,9 +435,9 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 	TaxiRouteVec_t all_taxiroutes_plain;
 	CollectRecursive<back_insert_iterator<TaxiRouteVec_t>>(static_cast<const WED_Thing*>(&apt),back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
 
-	for (int i = 0; i < all_taxiroutes.size(); i++)
+	for (int i = 0; i < all_taxiroutes_plain.size(); i++)
 	{
-		all_taxiroutes.push_back(all_taxiroutes[i].taxiroute_ptr);
+		all_taxiroutes.push_back(all_taxiroutes_plain[i]);
 	}
 
 	//Pre-check
@@ -391,14 +450,34 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 		debug_mesh_polygon((*runway_info_itr).runway_corners_geo,1,0,0);
 		debug_mesh_segment((*runway_info_itr).runway_centerline_geo,1,0,0,1,0,0);
 #endif
+		if(TaxiRouteRunwayTraversalCheck( *runway_info_itr, all_taxiroutes, msg, problem_thing) == false)
+		{
+			break;
+		}
 
 		matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
-		AllTaxiRouteNodesInRunway(     *runway_info_itr, all_taxiroutes, msg, problem_thing);
-		TaxiRouteCenterlineCheck(      *runway_info_itr, matching_taxiroutes, msg, problem_thing);
-		TaxiRouteRunwayTraversalCheck( *runway_info_itr, all_taxiroutes, msg, problem_thing);
-		RunwayHasMatchingTaxiRoute(    *runway_info_itr, all_taxiroutes, msg, problem_thing);
-		RunwayHasTotalCoverage(        *runway_info_itr, matching_taxiroutes, msg, problem_thing);
-		TaxiRouteSquishedZCheck(       *runway_info_itr, matching_taxiroutes, msg, problem_thing);
+		bool passes_centerline_checks = false;
+		if(RunwayHasMatchingTaxiRoute(*runway_info_itr, all_taxiroutes, msg, problem_thing))
+		{
+			if(TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msg, problem_thing))
+			{
+				if(AllTaxiRouteNodesInRunway(*runway_info_itr, all_taxiroutes, msg, problem_thing))
+				{
+					if(RunwayHasTotalCoverage(*runway_info_itr, matching_taxiroutes, msg, problem_thing))
+					{
+						if(TaxiRouteSquishedZCheck(*runway_info_itr, matching_taxiroutes, msg, problem_thing))
+						{
+							passes_centerline_checks = true;
+						}
+					}
+				}
+			}
+		}
+
+		if(passes_centerline_checks == false)
+		{
+			return;
+		}
 	}
 	return;
 }
