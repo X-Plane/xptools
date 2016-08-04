@@ -22,12 +22,6 @@
 #include "CompGeomUtils.h"
 #include "GISUtils.h"
 
-typedef vector<const WED_ATCRunwayUse*>  ATCRunwayUseVec_t;
-typedef vector<const WED_ATCFlow*>       FlowVec_t;
-typedef vector<const WED_Runway*>        RunwayVec_t;
-typedef vector<const WED_TaxiRoute*>     TaxiRouteVec_t;
-typedef vector<const WED_TaxiRouteNode*> TaxiRouteNodeVec_t;
-
 static CoordTranslator2 translator;
 
 //A special selection of info useful for these tests
@@ -93,32 +87,43 @@ struct TaxiRouteInfo
 		node_1 = static_cast<const WED_TaxiRouteNode*>(taxiroute->GetNthSource(1));
 	}
 	
+	//Pointer to the original WED_TaxiRoute in WED's datamodel
 	const WED_TaxiRoute* taxiroute_ptr;
 
+	//Name of the taxiroute
 	string taxiroute_name;
 
+	//Segment2 representing the taxiroute in lat/lon
 	Segment2 taxiroute_segment_geo;
 
+	//Segment2 representing the taxiroute in meters
 	Segment2 taxiroute_segment_m;
 
+	//Source node of the taxiroute
 	const WED_TaxiRouteNode* node_0;
+
+	//Target node of the taxiroute
 	const WED_TaxiRouteNode* node_1;
 };
 
-static vector<const RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airport& apt)
+typedef vector<const WED_ATCRunwayUse*>  ATCRunwayUseVec_t;
+typedef vector<const WED_ATCFlow*>       FlowVec_t;
+typedef vector<const WED_Runway*>        RunwayVec_t;
+typedef vector<const WED_TaxiRoute*>     TaxiRouteVec_t;
+typedef vector<const WED_TaxiRouteNode*> TaxiRouteNodeVec_t;
+typedef vector<const TaxiRouteInfo>      TaxiRouteInfoVec_t;
+
+static vector<const RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airport& apt, const TaxiRouteInfoVec_t all_taxiroutes)
 {
-	//Find all potentially active runways:
-	//0 flows means treat all runways as potentially active
-	//>1 means find all runways mentioned, ignoring duplicates
-
 	FlowVec_t flows;
-
 	CollectRecursive<back_insert_iterator<FlowVec_t>>(&apt,back_inserter<FlowVec_t>(flows));
 
 	RunwayVec_t all_runways;
-
 	CollectRecursive<back_insert_iterator<RunwayVec_t>>(&apt,back_inserter<RunwayVec_t>(all_runways));
 
+	//Find all potentially active runways:
+	//0 flows means treat all runways as potentially active
+	//>1 means find all runways mentioned, ignoring duplicates
 	RunwayVec_t potentially_active_runways;
 	if(flows.size() == 0)
 	{
@@ -127,19 +132,20 @@ static vector<const RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airpor
 	else
 	{
 		ATCRunwayUseVec_t use_rules;
-
 		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t>>(&apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
 
+		//For all runways in the airport
 		for (RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
 		{
+			//Search through all runway uses, testing if the runway has a match, and 1 to n taxiroutes are associated with it
 			for(ATCRunwayUseVec_t::const_iterator use_itr = use_rules.begin(); use_itr != use_rules.end(); ++use_itr)
 			{
 				AptRunwayRule_t runway_rule;
 				(*use_itr)->Export(runway_rule);
 
+				//Compare the name of the runway to the name of the 
 				string runway_name;
 				(*runway_itr)->GetName(runway_name);
-
 				string runway_name_p1 = runway_name.substr(0,runway_name.find_first_of('/'));
 				string runway_name_p2 = runway_name.substr(runway_name.find_first_of('/')+1);
 
@@ -154,23 +160,80 @@ static vector<const RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airpor
 	}
 
 	vector<const RunwayInfo> runway_info_vec;
-	for(RunwayVec_t::const_iterator itr = potentially_active_runways.begin();
-		itr != potentially_active_runways.end();
-		++itr)
+	//Filter out any runway that has no taxiroutes associated with it
+	for (RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin(); runway_itr != potentially_active_runways.end(); ++runway_itr)
 	{
-		runway_info_vec.push_back(*itr);
+		for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+		{
+			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
+			
+			string runway_name;
+			(*runway_itr)->GetName(runway_name);
+			if(runway_name == taxiroute_name)
+			{
+				runway_info_vec.push_back(*runway_itr);
+				//break now so we only add this once
+				break;
+			}
+		}
 	}
 
 	return runway_info_vec;
 }
 
-static vector<const TaxiRouteInfo> FilterMatchingRunways(const RunwayInfo& runway_info, vector<const TaxiRouteInfo>& all_taxiroutes)
+static bool IsTaxiRouteCloseToRunwayEdge( const RunwayInfo& runway_info,
+										  const TaxiRouteInfo& taxiroute_info)
 {
-	vector<const TaxiRouteInfo> matching_taxiroutes;
-	string taxiroute_name = "";
-	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+	//For all runways
+		//For runway side Left and Right
+			//for all taxiroutes
+				//if taxiroute's node_0 or node_1 is within X meters of the runway
+					//case on runTo do this we make a box off of the runway runway width and X meters long. If either node_0 or node_1 is inside it, we need to be hot if we need to be hot, a "hit_box"
+
+	//We add on an addtional threshold of 
+	int intersected_sides = 0;
+
+	Segment2 left_side = runway_info.runway_corners_m.side(2);
+	//debug_mesh_segment(left_side,0,0,1,0,0,1);
+
+	Segment2 top_side = runway_info.runway_corners_m.side(3);
+	//debug_mesh_segment(top_side,0,0,1,0,0,1);
+
+	Segment2 right_side = runway_info.runway_corners_m.side(0);
+	//debug_mesh_segment(right_side,0,0,1,0,0,1);
+
+	Segment2 bottom_side = runway_info.runway_corners_m.side(1);
+	//debug_mesh_segment(bottom_side,0,0,1,0,0,1);
+
+	Point2 node_0_geo;
+	Point2 node_1_geo;
+
+	taxiroute_info.node_0->GetLocation(gis_Geo, node_0_geo);
+	taxiroute_info.node_0->GetLocation(gis_Geo, node_1_geo);
+
+	double left_distance_0 = left_side.squared_distance(node_0_geo);
+	double top_distance_0 = top_side.squared_distance(node_0_geo);
+	double right_distance_0 = right_side.squared_distance(node_0_geo);
+	double bottom_distance_0 = bottom_side.squared_distance(node_0_geo);
+}
+
+static bool IsTaxiRouteHotForArrival( const RunwayInfo& runway_info,
+									  const TaxiRouteInfo& taxiroute)
+{
+	if(taxiroute.taxiroute_ptr->HasHotArrival())
 	{
-		taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
+		//	runway_info.runway_ptr->
+	}
+}
+
+//Returns a vector of TaxiRouteInfos whose name matches the given runway
+static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
+														  const TaxiRouteInfoVec_t& all_taxiroutes)
+{
+	TaxiRouteInfoVec_t matching_taxiroutes;
+	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+	{
+		string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
 		if(runway_info.runway_name == taxiroute_name)
 		{
 			matching_taxiroutes.push_back(TaxiRouteInfo(*taxiroute_itr));
@@ -181,20 +244,16 @@ static vector<const TaxiRouteInfo> FilterMatchingRunways(const RunwayInfo& runwa
 }
 
 static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
-									   const vector<const TaxiRouteInfo>& all_taxiroutes,
+									   const TaxiRouteInfoVec_t& matching_taxiroutes,
 									   string* msg,
 									   const WED_Thing*& problem_thing)
 {
 	string taxiroute_name = "";
 	TaxiRouteNodeVec_t matching_taxiroute_nodes;
-	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
-		taxiroute_name = ENUM_Desc(taxiroute_itr->taxiroute_ptr->GetRunway());
-		if(runway_info.runway_name == taxiroute_name)
-		{
-			matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(0)));
-			matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
-		}
+		matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(0)));
+		matching_taxiroute_nodes.push_back(static_cast<const WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
 	}
 
 	for(vector<const WED_TaxiRouteNode*>::const_iterator node_itr = matching_taxiroute_nodes.begin(); node_itr != matching_taxiroute_nodes.end(); ++node_itr)
@@ -214,12 +273,13 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	return true;
 }
 
+//--Centerline Checks----------------------------------------------------------
 static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
-			 						  const vector<const TaxiRouteInfo>& matching_taxiroutes,
+			 						  const TaxiRouteInfoVec_t& matching_taxiroutes,
 			 						  string* msg,
 			 						  const WED_Thing*& problem_thing)
 {
-	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
+	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
 		double METERS_TO_CENTER_THRESHOLD = 5.0;
 		double p1_to_center_dist = sqrt(runway_info.runway_centerline_m.squared_distance_supporting_line(taxiroute_itr->taxiroute_segment_m.p1));
@@ -236,13 +296,14 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 	}
 
 	return true;
-} 
+}
+
 static bool TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
-										   const vector<const TaxiRouteInfo>& all_taxiroutes,
+										   const TaxiRouteInfoVec_t& all_taxiroutes,
 										   string* msg,
 										   const WED_Thing*& problem_thing)
 {
-	for (vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin();
+	for (TaxiRouteInfoVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin();
 		taxiroute_itr != all_taxiroutes.end();
 		++taxiroute_itr)
 	{
@@ -259,17 +320,17 @@ static bool TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
 			int intersected_sides = 0;
 
 			Segment2 left_side = runway_info.runway_corners_geo.side(2);
-			debug_mesh_segment(left_side,0,0,1,0,0,1);
+			//debug_mesh_segment(left_side,0,0,1,0,0,1);
 
 			Segment2 top_side = runway_info.runway_corners_geo.side(3);
-			debug_mesh_segment(top_side,0,0,1,0,0,1);
+			//debug_mesh_segment(top_side,0,0,1,0,0,1);
 
 			Segment2 right_side = runway_info.runway_corners_geo.side(0);
-			debug_mesh_segment(right_side,0,0,1,0,0,1);
+			//debug_mesh_segment(right_side,0,0,1,0,0,1);
 
 			Segment2 bottom_side = runway_info.runway_corners_geo.side(1);
-			debug_mesh_segment(bottom_side,0,0,1,0,0,1);
-				
+			//debug_mesh_segment(bottom_side,0,0,1,0,0,1);
+
 			Point2 p;
 
 			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(left_side,   p) ? intersected_sides + 1 : intersected_sides;
@@ -290,8 +351,7 @@ static bool TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
 }
 
 static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
-									 const vector<const TaxiRouteInfo>& all_taxiroutes,
-									 const vector<const TaxiRouteInfo>& matching_taxiroutes,
+									 const TaxiRouteInfoVec_t& all_taxiroutes,
 									 string* msg,
 									 const WED_Thing*& problem_thing)
 {
@@ -316,9 +376,9 @@ static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
 
 		int duplicate_count = 0;
 		
-		duplicate_count = node_1 == node_2 ? duplicate_count + 1 : duplicate_count + 0;
-		duplicate_count = node_2 == node_3 ? duplicate_count + 1 : duplicate_count + 0;
-		duplicate_count = node_3 == node_1 ? duplicate_count + 1 : duplicate_count + 0;
+		duplicate_count = node_1 == node_2 ? duplicate_count + 1 : duplicate_count;
+		duplicate_count = node_2 == node_3 ? duplicate_count + 1 : duplicate_count;
+		duplicate_count = node_3 == node_1 ? duplicate_count + 1 : duplicate_count;
 		
 		if(duplicate_count == 3)
 		{
@@ -358,12 +418,12 @@ static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
 }
 
 static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
-									 const vector<const TaxiRouteInfo>& matching_routes,
+									 const TaxiRouteInfoVec_t& matching_routes,
 									 string* msg,
 									 const WED_Thing*& problem_thing)
 {
 
-	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_routes.begin();
+	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_routes.begin();
 		taxiroute_itr != matching_routes.end();
 		++taxiroute_itr)
 	{
@@ -413,13 +473,20 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 	return true;
 }
 
+static bool RunwayHasAnyMatchingTaxiRoute( const RunwayInfo& runway_info,
+										   const TaxiRouteInfoVec_t& all_taxiroutes,
+										   string* msg,
+										   const WED_Thing*& problem_thing)
+{
+}
+
 static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
-									const vector<const TaxiRouteInfo>& matching_taxiroutes,
+									const TaxiRouteInfoVec_t& matching_taxiroutes,
 									string* msg,
 									const WED_Thing*& problem_thing)
 {
 	double total_length_m = 0.0;
-	for(vector<const TaxiRouteInfo>::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
+	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
 		//Add up all the lengths of the runway, see if it is within the threshold of how much coverage there must be
 		total_length_m += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
@@ -436,6 +503,23 @@ static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 
 	return true;
 }
+//-----------------------------------------------------------------------------
+
+static void DoHotZoneChecks( const RunwayInfo& runway_info,
+							 const TaxiRouteInfoVec_t& all_taxiroutes,
+							 string* msg,
+							 const WED_Thing*& problem_thing)
+{
+	//For the left and right side of the runway
+	for (int i = 0; i < 2; i++)
+	{
+		AptRunway_t apt_runway;
+		runway_info.runway_ptr->Export(apt_runway);
+
+		//if id[0] < 18
+			//test if on or before (since the landing is south)
+	}
+}
 
 void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& problem_thing)
 {
@@ -443,17 +527,17 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 	apt.GetBounds(gis_Geo, box);
 	CreateTranslatorForBounds(box,translator);
 	
-	vector<const RunwayInfo> potentially_active_runways = CollectPotentiallyActiveRunways(apt);
-	vector<const TaxiRouteInfo> all_taxiroutes;
-	vector<const TaxiRouteInfo> matching_taxiroutes;
-
 	TaxiRouteVec_t all_taxiroutes_plain;
 	CollectRecursive<back_insert_iterator<TaxiRouteVec_t>>(static_cast<const WED_Thing*>(&apt),back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
-
+	
+	//
+	TaxiRouteInfoVec_t all_taxiroutes;
 	for (int i = 0; i < all_taxiroutes_plain.size(); i++)
 	{
 		all_taxiroutes.push_back(all_taxiroutes_plain[i]);
 	}
+
+	vector<const RunwayInfo> potentially_active_runways = CollectPotentiallyActiveRunways(apt,all_taxiroutes);
 
 	//Pre-check
 	//- Does this active runway even have any taxi routes associated with it?
@@ -470,13 +554,13 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 			break;
 		}
 
-		matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
+		TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 		bool passes_centerline_checks = false;
-		if(TaxiRouteSplitPathCheck(*runway_info_itr, all_taxiroutes, matching_taxiroutes, msg, problem_thing))
+		if(TaxiRouteSplitPathCheck(*runway_info_itr, all_taxiroutes, msg, problem_thing))
 		{
 			if(TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msg, problem_thing))
 			{
-				if(AllTaxiRouteNodesInRunway(*runway_info_itr, all_taxiroutes, msg, problem_thing))
+				if(AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msg, problem_thing))
 				{
 					if(RunwayHasTotalCoverage(*runway_info_itr, matching_taxiroutes, msg, problem_thing))
 					{
@@ -493,6 +577,11 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 		{
 			return;
 		}
+
+		bool passes_hotzone_checks = true;
+		
+		//For the left and right side
+		
 	}
 	return;
 }
