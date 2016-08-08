@@ -53,6 +53,7 @@
 #include "WED_Taxiway.h"
 #include "WED_GroupCommands.h"
 #include "IGIS.h"
+#include <iomanip>
 
 
 #include "AptDefs.h"
@@ -126,17 +127,17 @@ void CollectRecursive(WED_Thing * t, OutputIterator oi)
 	CollectRecursive(t,oi,take_always<VT>);
 }
 
-vector<vector<const WED_ATCFrequency*>> CollectAirportFrequencies(WED_Thing* who)
+vector<vector<const WED_ATCFrequency*> > CollectAirportFrequencies(WED_Thing* who)
 {
 	vector<const WED_ATCFrequency*> frequencies;
-	CollectRecursive<back_insert_iterator<vector<const WED_ATCFrequency*>>>(
+	CollectRecursive<back_insert_iterator<vector<const WED_ATCFrequency*> > >(
 		who,
-		back_insert_iterator<vector<const WED_ATCFrequency*>>(frequencies)
+		back_insert_iterator<vector<const WED_ATCFrequency*> >(frequencies)
 		);
 
 	std::sort(frequencies.begin(),frequencies.end(), cmp_frequency_type);
 	
-	vector<vector<const WED_ATCFrequency*>> sub_frequencies;
+	vector<vector<const WED_ATCFrequency*> > sub_frequencies;
 
 	vector<const WED_ATCFrequency*>::iterator freq_itr = frequencies.begin();
 	while(freq_itr != frequencies.end())
@@ -203,42 +204,47 @@ The occasional returned WED_Thing* is a pointer to the problem child, included t
 static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 {
 	//Collect all frequencies and group them by type into smaller vectors 
-	vector<vector<const WED_ATCFrequency*>> sub_freqs = CollectAirportFrequencies(who);
+	vector<vector<const WED_ATCFrequency*> > sub_freqs = CollectAirportFrequencies(who);
+
+	bool has_atc = false;
+	bool has_tower = false;
+
+	set<int>		all_freqs;
 
 	//For all groups see if each group has atleast one valid member (especially for Delivery, Ground, and Tower)
-	for(vector<vector<const WED_ATCFrequency*>>::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
+	for(vector<vector<const WED_ATCFrequency*> >::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
 	{
 		bool found_one_valid = false;
+		bool found_one_oob = false;		// found an out-of-band frequency for our use
 		bool is_xplane_atc_related = false;
 		//Contains values like "128.80" or "0.25" or "999.13"
-		string freq_str;
 		AptATCFreq_t freq_info;
+		
+		DebugAssert(!itr->empty());
+		
 		for(vector<const WED_ATCFrequency*>::iterator freq = itr->begin(); freq != itr->end(); ++freq)
 		{
 			(*freq)->Export(freq_info);
+			int mhz = freq_info.freq / 100;
+			int khz10 = (freq_info.freq % 100) * 10;
+			int last_digit = freq_info.freq % 10;
 
-			//Parse the 
 			stringstream ss;
-			ss << freq_info.freq;
-			freq_str = ss.str();
-			while(freq_str.size() < 3)
-			{
-				freq_str += "0";
-			}
-
-			string suffix_str =  freq_str.substr(freq_str.size() - 2);
-
-			string mhz_str = freq_str.substr(0, freq_str.size() - 2);
-			freq_str = mhz_str + "." + suffix_str;
-
-			int mhz = 0;
-			stringstream(mhz_str) >> mhz;
-
-			int suffix = 0;
-			stringstream(suffix_str) >> suffix;
+			ss << mhz << "." << std::setw(2) << std::setfill('0') << khz10;
+			string freq_str = ss.str();
 			
+			if(all_freqs.count(freq_info.freq))
+				msg = "The frequency " + freq_str + " is used more than once at this airport.";
+			
+			all_freqs.insert(freq_info.freq);
+
 			const int freq_type = ENUM_Import(ATCFrequency, freq_info.atc_type);
 			is_xplane_atc_related = freq_type == atc_Delivery || freq_type == atc_Ground || freq_type == atc_Tower;
+			
+			if(freq_type == atc_Tower)
+				has_tower = true;
+			if(is_xplane_atc_related)
+				has_atc = true;
 
 			if(mhz < 0 || mhz > 1000)
 			{
@@ -253,36 +259,37 @@ static void ValidateAirportFrequencies(WED_Airport* who, string& msg)
 			{
 				if(in_civilian_band == false)
 				{
-					msg = "The ATC frequency " + freq_str + " is illegal. (Clearance Delivery, Ground, and Tower frequencies must be between 118 and 136 MHz.)";
-					continue;
+					found_one_oob = true;
 				}
-
-				if((suffix_str.back() == '0' ||
-					suffix_str.back() == '2' ||
-					suffix_str.back() == '5' ||
-					suffix_str.back() == '7')
-					)
+				else
 				{
-					found_one_valid = true;
+					if(last_digit == 0 || last_digit == 2 || last_digit == 5 || last_digit == 7)
+					{
+						found_one_valid = true;
+					}
+					else
+					{
+						msg = "The ATC frequency " + freq_str + " is illegal. (Clearance Delivery, Ground, and Tower frequencies in the civilian band must be on 25 khz spacing.)";
+					}
 				}
-			}
-			else
-			{
-				found_one_valid = true;
 			}
 		}
 
 		if(found_one_valid == false && is_xplane_atc_related)
-		{
+		{		
 			stringstream ss;
 			ss  << "Could not find at least one valid ATC Frequency for group " << ENUM_Desc(ENUM_Import(ATCFrequency, freq_info.atc_type)) << ". "
-			    << "Ensure all frequencies in this group end in 0, 2, 5, or 7";
+			    << "Ensure all frequencies in this group end in 0, 2, 5, or 7.";				
 			msg = ss.str();
+		}
+		else if(has_atc && !has_tower)
+		{
+			msg = "This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.";
 		}
 	}
 }
 
-extern void ValidateOneATCRunwayUse(WED_Thing* who,string& msg);
+static void ValidateOneATCRunwayUse(WED_Thing* who,string& msg);
 static void ValidateATC(WED_Thing* who, string& msg)
 {
 	WED_ATCFlow * flow;
@@ -368,7 +375,7 @@ static void ValidateATC(WED_Thing* who, string& msg)
 	}
 }
 
-extern void ValidateOneAirportBoundary(WED_Thing* who, string& msg);
+static void ValidateOneAirportBoundary(WED_Thing* who, string& msg);
 static void ValidateForGateway(WED_Thing* who, string& msg, WED_LibraryMgr* lib_mgr)
 {
 	if(who->GetClass() != WED_Group::sClass)
