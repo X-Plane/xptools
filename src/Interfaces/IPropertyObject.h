@@ -39,8 +39,8 @@ enum {
 	prop_Int,
 	prop_Double,
 	prop_String,
-	prop_FilePath,
-	prop_TaxiSign,
+	prop_FilePath,		// Returns as string
+	prop_TaxiSign,		// Returns as string
 	prop_Bool,			// Returns as int
 	prop_Enum,			// Returns as int
 	prop_EnumSet
@@ -51,11 +51,14 @@ typedef	map<int,pair<string, bool> >	PropertyDict_t;		// Maps integer enum value
 struct PropertyInfo_t {
 	bool			can_delete;
 	int				can_edit;
+
 	int				prop_kind;	//See the anonymous enum at the top
 	string			prop_name;
 	int				digits;
-	int				decimals;
-	int				exclusive;
+	int				decimals;			// Used only for doubles
+	bool				round_down;			// If true, forces rounding down (truncation) - otherwise we use standard rounding
+	int				exclusive;			// The exclusive flag forces an enum set to edit exactly one item at a time (with a fake "none" value shown to the user
+										// if nothing is selected.  In other words, it makes an enum set act like an enum.
 	int				synthetic;			// A synthetic property is one built from other properties or other derived data.  It is not necessary
 										// to copy it to clone the object.  Examples: length of a runwy (specified by end points), airport node line markings
 										// (a sub-filter of all attributes) and taxiway lines (the union of all child line markings).
