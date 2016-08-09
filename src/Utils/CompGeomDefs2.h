@@ -246,6 +246,10 @@ struct	Segment2 {
 	Point2	projection(const Point2& pt) const;
 	double	squared_distance_supporting_line(const Point2& p) const;		// Squared distance to our supporting line.
 	double	squared_distance(const Point2& p) const;
+	
+	//Moves this segment by some vector to a new location, keeping the segments orientation
+	void	move_by_vector(const Vector2& v);
+
 	bool	collinear_has_on(const Point2& p) const;
 	bool	on_left_side(const Point2& p) const { return Vector2(p1, p2).left_turn(Vector2(p1, p)); }
 	bool	on_right_side(const Point2& p) const { return Vector2(p1, p2).right_turn(Vector2(p1, p)); }
@@ -719,6 +723,12 @@ inline double Segment2::squared_distance(const Point2& p) const
 	// Otherwise, just take the closer of the two end points.
 	if(collinear_has_on(p)) return squared_distance_supporting_line(p);
 	else					return min(p1.squared_distance(p), p2.squared_distance(p));
+}
+
+inline void	Segment2::move_by_vector(const Vector2& v)
+{
+	this->p1 += v;
+	this->p2 += v;
 }
 
 inline bool Segment2::could_intersect(const Segment2& rhs) const

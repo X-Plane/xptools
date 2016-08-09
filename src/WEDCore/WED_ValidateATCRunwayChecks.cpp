@@ -113,7 +113,8 @@ typedef vector<const WED_TaxiRoute*>     TaxiRouteVec_t;
 typedef vector<const WED_TaxiRouteNode*> TaxiRouteNodeVec_t;
 typedef vector<const TaxiRouteInfo>      TaxiRouteInfoVec_t;
 
-static vector<const RunwayInfo> CollectPotentiallyActiveRunways(const WED_Airport& apt, const TaxiRouteInfoVec_t all_taxiroutes)
+static vector<const RunwayInfo> CollectPotentiallyActiveRunways( const WED_Airport& apt,
+																 const TaxiRouteInfoVec_t all_taxiroutes)
 {
 	FlowVec_t flows;
 	CollectRecursive<back_insert_iterator<FlowVec_t>>(&apt,back_inserter<FlowVec_t>(flows));
@@ -228,7 +229,7 @@ static bool IsTaxiRouteHotForArrival( const RunwayInfo& runway_info,
 
 //Returns a vector of TaxiRouteInfos whose name matches the given runway
 static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
-														  const TaxiRouteInfoVec_t& all_taxiroutes)
+												 const TaxiRouteInfoVec_t& all_taxiroutes)
 {
 	TaxiRouteInfoVec_t matching_taxiroutes;
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
@@ -243,6 +244,7 @@ static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
 	return matching_taxiroutes;
 }
 
+//--Centerline Checks----------------------------------------------------------
 static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 									   const TaxiRouteInfoVec_t& matching_taxiroutes,
 									   string* msg,
@@ -273,7 +275,6 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	return true;
 }
 
-//--Centerline Checks----------------------------------------------------------
 static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 			 						  const TaxiRouteInfoVec_t& matching_taxiroutes,
 			 						  string* msg,
@@ -505,6 +506,106 @@ static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 }
 //-----------------------------------------------------------------------------
 
+//--Hot zone checks------------------------------------------------------------
+
+//Returns polygon in meters
+static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
+								   int runway_number,
+								   bool is_arriving)
+{
+	const double HITZONE_WIDTH_THRESHOLD_M = 10.00;
+	const double HITZONE_OVERFLY_THRESHOLD_M = 1500.00;
+
+	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
+	Point2& bottom_left  = runway_hit_box_m[0];
+	Point2& top_left     = runway_hit_box_m[1];
+	Point2& top_right    = runway_hit_box_m[2];
+	Point2& bottom_right = runway_hit_box_m[3];
+
+	/* 
+	l_extension  1   r_extension
+	<-------1_______2------->
+		   |         |
+		   |         |
+		0  |         | 2
+		   |         |
+		   0---------3
+		        3
+	*/
+
+	Segment2 left_side   = runway_info.runway_corners_m.side(0);
+	Segment2 top_side    = runway_info.runway_corners_m.side(1);
+	Segment2 right_side  = runway_info.runway_corners_m.side(2);
+	Segment2 bottom_side = runway_info.runway_corners_m.side(3);
+
+	Vector2 lb_extension_vec = Vector2(bottom_right, bottom_left);
+	lb_extension_vec.normalize();
+	lb_extension_vec *= HITZONE_WIDTH_THRESHOLD_M;
+	left_side.move_by_vector(lb_extension_vec);
+	top_left = left_side.p1;
+	bottom_left = left_side.p2;
+
+	Vector2 rb_extension_vec = lb_extension_vec * -1;
+	rb_extension_vec.normalize();
+	rb_extension_vec *= HITZONE_WIDTH_THRESHOLD_M;
+	right_side.move_by_vector(rb_extension_vec);
+	top_right = right_side.p2;
+	bottom_right = right_side.p1;
+	
+	Segment2 arrival_side;
+	Segment2 departure_side;
+	
+	if(runway_number < 18 && false)
+	{
+		if(is_arriving == true)
+		{
+			arrival_side = bottom_side;
+			//We won't be using departure side
+			//Extend the bottom side
+			Vector2 bottom_vec = Vector2(bottom_side.p1, bottom_side.p2);
+			
+			Vector2 rotated_bottom_vec = bottom_vec.perpendicular_cw();
+			rotated_bottom_vec.normalize();
+			rotated_bottom_vec *= HITZONE_OVERFLY_THRESHOLD_M;
+			
+			runway_hit_box_m[3] = Segment2(runway_hit_box_m[3],bottom_vec).p1;
+			runway_hit_box_m[0] = Segment2(runway_hit_box_m[3],bottom_vec).p2;			
+		}
+		else
+		{
+			departure_side = top_side;
+			//Make the 
+		}
+	}
+	else
+	{
+		if(is_arriving == true)
+		{
+			arrival_side = top_side;
+			//We won't be using departure side
+		}
+		else
+		{
+			departure_side = bottom_side;
+		}
+	}
+
+#if DEV
+	Polygon2 runway_hit_box_geo = runway_hit_box_m;
+
+	runway_hit_box_geo[0] = translator.Reverse(runway_hit_box_m[0]);
+	runway_hit_box_geo[1] = translator.Reverse(runway_hit_box_m[1]);
+	runway_hit_box_geo[2] = translator.Reverse(runway_hit_box_m[2]);
+	runway_hit_box_geo[3] = translator.Reverse(runway_hit_box_m[3]);
+
+	debug_mesh_segment(runway_hit_box_geo.side(0), 0, 0, 1,0,0,1);
+	debug_mesh_segment(runway_hit_box_geo.side(1), 0, 0, 1,0,0,1);
+	debug_mesh_segment(runway_hit_box_geo.side(2), 0, 0, 1,0,0,1);
+	debug_mesh_segment(runway_hit_box_geo.side(3), 0, 0, 1,0,0,1);
+#endif
+	return runway_hit_box_m;
+}
+
 static void DoHotZoneChecks( const RunwayInfo& runway_info,
 							 const TaxiRouteInfoVec_t& all_taxiroutes,
 							 string* msg,
@@ -518,9 +619,10 @@ static void DoHotZoneChecks( const RunwayInfo& runway_info,
 
 		//if id[0] < 18
 			//test if on or before (since the landing is south)
+		MakeHotZoneHitBox(runway_info,1,true);
 	}
 }
-
+//-----------------------------------------------------------------------------
 void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& problem_thing)
 {
 	Bbox2 box;
@@ -579,7 +681,7 @@ void DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*& pr
 		}
 
 		bool passes_hotzone_checks = true;
-		
+		DoHotZoneChecks(*runway_info_itr,all_taxiroutes,msg,problem_thing);
 		//For the left and right side
 		
 	}
