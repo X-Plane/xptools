@@ -65,6 +65,8 @@
 		mOwner->Timer();
 }
 
+// This is the command handler for menus created directly by XWin, e.g. for trivial apps like XGrinder/ObjView/RenderFarm.
+// Thus the command is simply dispatched to the owner by index.
 - (void) menuItemPicked:(id) sender
 {
 	NSMenuItem * item = sender;
@@ -76,6 +78,40 @@
 		mOwner->mPopupPick = idx;
 	else
 		mOwner->HandleMenuCmd(owner, idx);	// Otherwise pass to subclass
+}
+
+// MASSIVE HACK ALERT.  I don't normally hotwire things together like this, but in this case we gotta ship WED 1.5 and frankly this
+// is going to be gross no matter what.
+// Anyway: in order for menu items to be dispatched EVEN in a modal loop, menu items have to be sent to the first responder, and not
+// to the app delegate.  (For some reason, menu items do go down the responder chain to the key window in a modal loop, but they won't
+// go directly to the app delegate.)  We need this for cut/copy/paste to work in the gateway import dialog box.
+//
+// So...the nasty thing is that the ObjC window that GUI uses is secretly down inside XWin (mac edition).  But because ObjC uses squashy
+// dispatch-by-name on selectors, we can _by luck_ put into the base window class the particular method name that ObjCUtils is going to use.
+// We then tie it to a template method.
+//
+// GUI turns around and (1) uses ObjCUtils to build menu items targeting this secret path and (2) overrides the tmeplate method and finally
+// GUI has access to menu picks in all modal situations.
+//
+// Note that this only works because WED _always_ has a window up - if we could close all windows, the application itself doesn't have
+// a responder chain handler to match.  We can fix that someday (by explicitly subclassing the application I guess????) if we ever need it.
+//
+// It's worth noting that the command sent to GUI_Window is sent from the focus target up the _GUI_ command chain, regardless of what ObjC 
+// thinks is going on.  So it is possible (if GUI is f---ed up) to have a command in one window act on another due to GUI bugs - the NS idea
+// of key window is NOT enforced.
+//
+// Note that there are TWO menu implementations here but only one runs at a time:
+// - If ALL menus go through XWin, then XWin creates the menu item, points at its own menuItemPicked selector, and then calls its own
+//   public HandleMenuCmd handler.  This dispatches menus by indexand is frankly a pretty clean way to do menus.
+//
+// - If ALL menus go through GUI_Menus, then ObjCUtils is used to manually build the menu bar, targeting the hidden selector in XWin that
+//   is sent to GUI_Window and up the GUI command chain.
+
+- (void) menu_picked:(id) sender
+{
+	NSMenuItem * menu = sender;
+	int cmd_id = [menu tag];
+	mOwner->GotCommandHack(cmd_id);
 }
 
 - (NSDragOperation)draggingSession:(NSDraggingSession *)session sourceOperationMaskForDraggingContext:(NSDraggingContext)context

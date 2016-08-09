@@ -1396,6 +1396,12 @@ void GUI_Window::EnableMenusWin(void)
 
 #if APL
 
+void				GUI_Window::GotCommandHack(int command)
+{
+	this->DispatchHandleCommand(command);
+}
+
+
 int			GUI_Window::CalcHelpTip(int x, int y, int bounds[4], string& msg)
 {
 	x = Client2OGL_X(x, mWindow);

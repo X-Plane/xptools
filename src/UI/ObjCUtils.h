@@ -20,7 +20,6 @@ extern "C" {
 	// An app can sigin up to receive C callbacks from the NSApplication's delegate.  Info is a ptr passed to each one.
 	struct app_callbacks {
 		void *		info;
-		void (*		menu_item_pick)(void * info, int cmd);
 		void (*		menu_item_update)(void * info, int cmd, char * io_name, int * io_check, int * io_enable);
 		void  (*	try_quit)(void * info);				// Return 1 to allow quit, 0 to abort quitting.
 	};

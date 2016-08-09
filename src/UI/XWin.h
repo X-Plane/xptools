@@ -44,6 +44,7 @@
 	- (NSView *) view;
 	- (void) timerFired;
 	- (void) menuItemPicked:(id) sender;
+	- (void) menu_picked:(id) sender;	
 	@end
 
 #else
@@ -237,6 +238,8 @@ public:
 	virtual	int					AdvancedDragUpdated(void * ns_dragging_info) { return 0; }
 	virtual	void				AdvancedDragExited (void * ns_dragging_info) {			 }
 	virtual	int					AdvancedPerformDrop(void * ns_dragging_info) { return 0; }
+
+	virtual	void				GotCommandHack(int command) { }
 
 protected:
 		void		initCommon(int dnd, const char * title, int attributes, int x, int y, int dx, int dy);
