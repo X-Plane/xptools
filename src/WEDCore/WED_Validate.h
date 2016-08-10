@@ -57,6 +57,8 @@ struct	validation_error_t {
 
 };
 
+typedef vector<validation_error_t> validation_error_vector;
+
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
 
 template <typename OutputIterator, typename Predicate>

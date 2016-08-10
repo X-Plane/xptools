@@ -24,12 +24,10 @@
 #ifndef WED_VALIDATEATCRUNWAYCHECKS_H
 #define WED_VALIDATEATCRUNWAYCHECKS_H
 
-#include <string>
 class WED_Airport;
-class WED_Thing;
+struct validation_error_t;
 
 void WED_DoATCRunwayChecks(WED_Airport& apt,
-						   string* msg,
-						   WED_Thing*& problem_thing);
+						   vector<validation_error_t>& msgs);
 
 #endif

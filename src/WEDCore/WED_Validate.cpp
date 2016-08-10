@@ -75,8 +75,6 @@
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
 
-typedef vector<validation_error_t> validation_error_vector;
-
 // This table is used to find the matching opposite direction for a given runway
 // to detect head-on collisions.
 
@@ -1135,12 +1133,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.",apt,apt));
 	
-	WED_Thing* problem_thing = NULL;
-	string msg;
-	WED_DoATCRunwayChecks(*apt, &msg, problem_thing);
-	if(!msg.empty())
-		msgs.push_back(validation_error_t(msg, problem_thing, apt));		
-				
+	WED_DoATCRunwayChecks(*apt, msgs);
+
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
 	
 	ValidateAirportFrequencies(apt,msgs);	
