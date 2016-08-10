@@ -54,6 +54,21 @@ void	WED_ATCRunwayUse::SetRunway(int r)
 	rwy.value = r;
 }
 
+int WED_ATCRunwayUse::GetRunway(void) const
+{
+	return rwy.value;
+}
+
+bool	WED_ATCRunwayUse::HasArrivals(void) const
+{
+	return operations.value.count(atc_Arrivals);
+}
+
+bool	WED_ATCRunwayUse::HasDepartures(void) const
+{
+	return operations.value.count(atc_Departures);
+}
+
 void	WED_ATCRunwayUse::Import(const AptRunwayRule_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
