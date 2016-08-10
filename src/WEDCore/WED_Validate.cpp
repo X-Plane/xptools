@@ -1135,11 +1135,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.",apt,apt));
 	
-	const WED_Thing* problem_thing = NULL;
+	WED_Thing* problem_thing = NULL;
 	string msg;
 	WED_DoATCRunwayChecks(*apt, &msg, problem_thing);
 	if(!msg.empty())
-		msgs.push_back(validation_error_t(msg, const_cast<WED_Thing *>(problem_thing), apt));		
+		msgs.push_back(validation_error_t(msg, problem_thing, apt));		
 				
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
 	

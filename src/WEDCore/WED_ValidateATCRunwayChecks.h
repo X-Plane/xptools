@@ -28,8 +28,8 @@
 class WED_Airport;
 class WED_Thing;
 
-void WED_DoATCRunwayChecks(const WED_Airport& apt,
+void WED_DoATCRunwayChecks(WED_Airport& apt,
 						   string* msg,
-						   const WED_Thing*& problem_thing);
+						   WED_Thing*& problem_thing);
 
 #endif
