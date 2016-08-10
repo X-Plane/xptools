@@ -765,6 +765,14 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 
 	if(gExportTarget == wet_xplane_1050)
 	{
+		if(g.type == atc_ramp_misc || g.type == atc_ramp_hangar)
+		{
+			if(!g.airlines.empty() || g.ramp_op_type != ramp_operation_none)
+			{
+				msgs.push_back(validation_error_t("Ramp operation types and airlines are only allowed at real ramp types, e.g. gates and tie-downs, not misc and hangars.",ramp,apt));
+			}
+		}
+	
 		//Our flag to keep going until we find an error
 		bool found_err = false;
 		if(g.airlines == "" && !found_err)
@@ -791,9 +799,9 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 				}
 				else 
 				{
-					if(c < 'A' || c > 'Z')
+					if(c < 'a' || c > 'z')
 					{
-						msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " contains non-uppercase letters.",ramp,apt));
+						msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " contains non-lowercase letters.",ramp,apt));
 						found_err = true;
 					}
 				}
