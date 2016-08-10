@@ -262,6 +262,7 @@ protected:
 		POINT			mSizeMin;
 		int				mDragging;
 		int				mWantFakeUp;
+		int				mIsModal;
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

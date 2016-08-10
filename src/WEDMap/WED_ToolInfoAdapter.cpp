@@ -91,7 +91,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 			{
 				double int_part = floor(val.double_val);
 				double fract_part = val.double_val - int_part;
-				fract_part *= pow(10,inf.decimals);
+				fract_part *= powf(10,inf.decimals);
 				fract_part = floor(fract_part);
 				int int_size = inf.digits - inf.decimals - 1;
 				int dec_size = inf.decimals;
