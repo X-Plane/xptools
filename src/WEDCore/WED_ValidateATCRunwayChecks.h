@@ -28,8 +28,8 @@
 #include "WED_Airport.h"
 #include "WED_Thing.h"
 
-void DoATCRunwayChecks(const WED_Airport& apt,
-					   string* msg,
-					   const WED_Thing*& problem_thing);
+void WED_DoATCRunwayChecks(const WED_Airport& apt,
+						   string* msg,
+						   const WED_Thing*& problem_thing);
 
 #endif

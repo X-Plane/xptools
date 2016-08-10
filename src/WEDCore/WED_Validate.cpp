@@ -402,7 +402,7 @@ static void ValidateOneAirport(WED_Thing*& who, string& msg)
 
 		ValidateAirportFrequencies(apt, msg);
 		const WED_Thing* problem_thing = NULL;
-		DoATCRunwayChecks(static_cast<const WED_Airport&>(*who), &msg, problem_thing);
+		WED_DoATCRunwayChecks(static_cast<const WED_Airport&>(*who), &msg, problem_thing);
 
 		if(msg != "")
 		{
