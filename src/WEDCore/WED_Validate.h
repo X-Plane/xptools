@@ -24,6 +24,8 @@
 #ifndef WED_Validate_h
 #define WED_Validate_h
 
+#include "WED_Entity.h"
+
 class	IResolver;
 class	WED_Thing;
 

@@ -25,8 +25,8 @@
 #define WED_VALIDATEATCRUNWAYCHECKS_H
 
 #include <string>
-#include "WED_Airport.h"
-#include "WED_Thing.h"
+class WED_Airport;
+class WED_Thing;
 
 void WED_DoATCRunwayChecks(const WED_Airport& apt,
 						   string* msg,

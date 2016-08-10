@@ -45,8 +45,8 @@ struct RunwayInfo
 			//TODO: Something here in case it fails
 		}
 
-		iss = istringstream(apt_runway.id[1]);
-		if(!(iss >> runway_number_south))
+		istringstream iss2(apt_runway.id[1]);
+		if(!(iss2 >> runway_number_south))
 		{
 			//TODO: Something here in case it fails
 		}
@@ -164,10 +164,10 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const WED_Airport& apt,
 														const TaxiRouteInfoVec_t all_taxiroutes)
 {
 	FlowVec_t flows;
-	CollectRecursive<back_insert_iterator<FlowVec_t>>(&apt,back_inserter<FlowVec_t>(flows));
+	CollectRecursive<back_insert_iterator<FlowVec_t> >(&apt,back_inserter<FlowVec_t>(flows));
 
 	RunwayVec_t all_runways;
-	CollectRecursive<back_insert_iterator<RunwayVec_t>>(&apt,back_inserter<RunwayVec_t>(all_runways));
+	CollectRecursive<back_insert_iterator<RunwayVec_t> >(&apt,back_inserter<RunwayVec_t>(all_runways));
 
 	//Find all potentially active runways:
 	//0 flows means treat all runways as potentially active
@@ -180,7 +180,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const WED_Airport& apt,
 	else
 	{
 		ATCRunwayUseVec_t use_rules;
-		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t>>(&apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
+		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t> >(&apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
 
 		//For all runways in the airport
 		for (RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
@@ -550,7 +550,7 @@ static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 		total_length_m += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
 	}
 
-	double diff = abs(runway_info.runway_ptr->GetLength() - total_length_m);
+	double diff = fabs(runway_info.runway_ptr->GetLength() - total_length_m);
 	double COVERAGE_THRESHOLD = 1;//You should be at most 1 meter less coverage
 	if(diff > COVERAGE_THRESHOLD)
 	{
@@ -698,10 +698,10 @@ void WED_DoATCRunwayChecks(const WED_Airport& apt, string* msg, const WED_Thing*
 	CreateTranslatorForBounds(box,translator);
 	
 	ATCRunwayUseVec_t all_use_rules;
-	CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t>>(&apt,back_inserter<ATCRunwayUseVec_t>(all_use_rules));
+	CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t> >(&apt,back_inserter<ATCRunwayUseVec_t>(all_use_rules));
 
 	TaxiRouteVec_t all_taxiroutes_plain;
-	CollectRecursive<back_insert_iterator<TaxiRouteVec_t>>(static_cast<const WED_Thing*>(&apt),back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
+	CollectRecursive<back_insert_iterator<TaxiRouteVec_t> >(static_cast<const WED_Thing*>(&apt),back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
 	
 	//All taxiroutes within the airport that are visible
 	TaxiRouteInfoVec_t all_taxiroutes(all_taxiroutes_plain.begin(),all_taxiroutes_plain.end());
