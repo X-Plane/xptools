@@ -480,8 +480,8 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 		std::cout << "TaxiRoute Segment (M->Vector): (" << taxiroute_vec.x() << "," << taxiroute_vec.y() << ")" << std::endl << std::endl << std::endl;
 #endif
 		//TODO: is /= needed?
-		runway_centerline_vec /= runway_centerline_vec.normalize();
-		taxiroute_vec /= taxiroute_vec.normalize();
+		runway_centerline_vec.normalize();
+		taxiroute_vec.normalize();
 #if DEV
 		std::cout << "Runway Centerline Normalized (Lat/Lon): (" << runway_info.runway_centerline_geo.p1.x() << "," << runway_info.runway_centerline_geo.p1.y() << ")/(" <<
 															   runway_info.runway_centerline_geo.p2.x() << "," << runway_info.runway_centerline_geo.p2.y() << ")" << std::endl;
@@ -498,9 +498,8 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 		std::cout << "runway_center_vec.dot(taxiroute_vec) = " << dot_product << std::endl;
 		std::cout << "-------------------------------------------------------" << std::endl;
 #endif
-		double ANGLE_THRESHOLD = 0.990;
-		dot_product = 1.0 - dot_product;
-		if((dot_product) < ANGLE_THRESHOLD || (dot_product - (1.0 - ANGLE_THRESHOLD) >= 1.0))
+		double ANGLE_THRESHOLD = 0.995;
+		if(dot_product < ANGLE_THRESHOLD)
 		{
 			string msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is too sharply bent";
 			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
@@ -524,9 +523,12 @@ static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 		total_length_m += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
 	}
 
-	double diff = fabs(runway_info.runway_ptr->GetLength() - total_length_m);
-	double COVERAGE_THRESHOLD = 1;//You should be at most 1 meter less coverage
-	if(diff > COVERAGE_THRESHOLD)
+	double diff = fabs(total_length_m);
+	AptRunway_t apt_runway;
+	runway_info.runway_ptr->Export(apt_runway);
+	double COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength() - apt_runway.width_mtr * 2 ;//You should be at most 1 meter less coverage
+
+	if(diff < COVERAGE_THRESHOLD)
 	{
 		string msg = "Runway " + runway_info.runway_name + " is not sufficiently covered with taxi routes.";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
@@ -540,6 +542,59 @@ static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 //--Hot zone checks------------------------------------------------------------
 
 //Returns polygon in lat/lon
+
+static void FindIfMarked( const int runway_number,        //enum from ATCRunwayOneway
+						  const TaxiRouteInfo& taxiroute, //The taxiroute to check if it is marked properly
+						  const set<string>& hot_set,     //The set of hot_listed_runways
+						  const string& op_type,          //String for the description
+						  validation_error_vector& msgs,  //WED_Valiation messages
+						  WED_Airport* apt) //Airport to pass into msgs
+{
+	
+	bool found_marked = false;
+	for(set<string>::const_iterator hot_set_itr = hot_set.begin();
+		hot_set_itr != hot_set.end();
+		++hot_set_itr)
+	{
+		if(runway_number == ENUM_LookupDesc(ATCRunwayOneway,(*hot_set_itr).c_str()))
+		{
+			found_marked = true;
+		}
+	}
+
+	if(found_marked == false)
+	{
+		msgs.push_back(validation_error_t(
+			
+			string("Taxi route " + taxiroute.taxiroute_name + " is too close to runway ") + 
+			string(ENUM_Desc(runway_number)) + 
+			string(" and now must be marked active for runway ") +
+			string(ENUM_Desc(runway_number) + 
+			string(" " + op_type)),
+			
+			taxiroute.taxiroute_ptr,
+			apt));
+	}
+}
+
+static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
+{
+	set<WED_Thing*> node_viewers;
+	node->GetAllViewers(node_viewers);
+
+	TaxiRouteInfoVec_t matching_taxiroutes;
+	for(set<WED_Thing*>::iterator node_viewer_itr = node_viewers.begin(); node_viewer_itr != node_viewers.end(); ++node_viewer_itr)
+	{
+		WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*node_viewer_itr);
+		if(taxiroute != NULL)
+		{
+			matching_taxiroutes.push_back(taxiroute);
+		}
+	}
+
+	return matching_taxiroutes;
+}
+
 static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 								   int runway_number) //The relavent runway info's use
 {
@@ -646,58 +701,6 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	return runway_hit_box_geo;
 }
 
-static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
-{
-	set<WED_Thing*> node_viewers;
-	node->GetAllViewers(node_viewers);
-
-	TaxiRouteInfoVec_t matching_taxiroutes;
-	for(set<WED_Thing*>::iterator node_viewer_itr = node_viewers.begin(); node_viewer_itr != node_viewers.end(); ++node_viewer_itr)
-	{
-		WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*node_viewer_itr);
-		if(taxiroute != NULL)
-		{
-			matching_taxiroutes.push_back(taxiroute);
-		}
-	}
-
-	return matching_taxiroutes;
-}
-
-static void FindIfMarked( const int runway_number,        //enum from ATCRunwayOneway
-						  const TaxiRouteInfo& taxiroute, //The taxiroute to check if it is marked properly
-						  const set<string>& hot_set,     //The set of hot_listed_runways
-						  const string& op_type,          //String for the description
-						  validation_error_vector& msgs,  //WED_Valiation messages
-						  WED_Airport* apt) //Airport to pass into msgs
-{
-	
-	bool found_marked = false;
-	for(set<string>::const_iterator hot_set_itr = hot_set.begin();
-		hot_set_itr != hot_set.end();
-		++hot_set_itr)
-	{
-		if(runway_number == ENUM_LookupDesc(ATCRunwayOneway,(*hot_set_itr).c_str()))
-		{
-			found_marked = true;
-		}
-	}
-
-	if(found_marked == false)
-	{
-		msgs.push_back(validation_error_t(
-			
-			string("Taxi route " + taxiroute.taxiroute_name + " is too close to runway ") + 
-			string(ENUM_Desc(runway_number)) + 
-			string(" and now must be marked active for runway ") +
-			string(ENUM_Desc(runway_number) + 
-			string(" " + op_type)),
-			
-			taxiroute.taxiroute_ptr,
-			apt));
-	}
-}
-
 static void DoHotZoneChecks( const RunwayInfo& runway_info,
 							 const TaxiRouteInfoVec_t& all_taxiroutes,
 							 validation_error_vector& msgs,
@@ -710,11 +713,16 @@ static void DoHotZoneChecks( const RunwayInfo& runway_info,
 		all_nodes.push_back(all_taxiroutes[i].node_1);
 	}
 	
+	//runway side 0 is the lower side, 1 is the higher side
 	for (int runway_side = 0; runway_side < 2; ++runway_side)
 	{
 		//Make the hitbox baed on the runway and which side (low/high) you're currently on
 		Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_info.runway_numbers[runway_side]);
 
+		//For every node in the airport,
+		//- get its associated taxiroutes,
+		//- see if they intersect with our box
+		//- and if so, test if they are properly marked
 		for(TaxiRouteNodeVec_t::iterator node_itr = all_nodes.begin();
 			node_itr != all_nodes.end() && hit_box.size() > 0;
 			++node_itr)
