@@ -403,8 +403,13 @@ static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
 	sort(all_nodes.begin(),all_nodes.end());
 
 	DebugAssert(all_nodes.size() % 2 == 0 && all_nodes.size() > 0);
+	
+	//Early exit
+	if(all_nodes.size() <= 2)
+	{
+		return true;
+	}
 
-	//TODO: This breaks if number of nodes is less than 3
 	for (int i = 0; i < all_nodes.size() - 3 - 1; i++)
 	{
 		WED_TaxiRouteNode* node_1 = all_nodes[i + 0];
