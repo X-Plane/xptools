@@ -456,6 +456,9 @@ struct	Polygon2 : public vector<Point2> {
 	// Returns true if the point is inside the polygon.  Works on any polygon.
 	bool		inside(const Point2& inPoint) const;
 
+	// Returns true if the segment intersects any part of the polygon, very simple and not optimized
+	bool		intersects(const Segment2& inSegment) const;
+
 	int			prev(int index) const { return (index + size() - 1) % size(); }
 	int			next(int index) const { return (index + 1) % size(); }
 
@@ -1107,6 +1110,20 @@ inline bool		Polygon2::inside_convex(const Point2& inPoint) const
 inline bool		Polygon2::inside(const Point2& inPoint) const
 {
 	return inside_polygon_pt(begin(),end(),inPoint);
+}
+
+inline bool		Polygon2::intersects(const Segment2& inSegment) const
+{
+	Point2 p;
+	for (int i = 0; i < this->size(); i++)
+	{
+		if(inSegment.intersect(this->side(i),p))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 inline bool Polygon2::is_ccw(void) const

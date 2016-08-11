@@ -664,6 +664,40 @@ static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
 	return matching_taxiroutes;
 }
 
+static void FindIfMarked( const int runway_number,        //enum from ATCRunwayOneway
+						  const TaxiRouteInfo& taxiroute, //The taxiroute to check if it is marked properly
+						  const set<string>& hot_set,     //The set of hot_listed_runways
+						  const string& op_type,          //String for the description
+						  validation_error_vector& msgs,  //WED_Valiation messages
+						  WED_Airport* apt) //Airport to pass into msgs
+{
+	
+	bool found_marked = false;
+	for(set<string>::const_iterator hot_set_itr = hot_set.begin();
+		hot_set_itr != hot_set.end();
+		++hot_set_itr)
+	{
+		if(runway_number == ENUM_LookupDesc(ATCRunwayOneway,(*hot_set_itr).c_str()))
+		{
+			found_marked = true;
+		}
+	}
+
+	if(found_marked == false)
+	{
+		msgs.push_back(validation_error_t(
+			
+			string("Taxi route " + taxiroute.taxiroute_name + " is too close to runway ") + 
+			string(ENUM_Desc(runway_number)) + 
+			string(" and now must be marked active for runway ") +
+			string(ENUM_Desc(runway_number) + 
+			string(" " + op_type)),
+			
+			taxiroute.taxiroute_ptr,
+			apt));
+	}
+}
+
 static void DoHotZoneChecks( const RunwayInfo& runway_info,
 							 const TaxiRouteInfoVec_t& all_taxiroutes,
 							 validation_error_vector& msgs,
@@ -690,71 +724,16 @@ static void DoHotZoneChecks( const RunwayInfo& runway_info,
 			{
 				if(hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo))
 				{
-					//TODO: We could erase the taxiroute's node from the list, but that might actually increase the O size searching for which to erase
-					if(runway_info.runway_numbers[runway_side] <= atc_18R)
-					{
-						if(runway_info.IsHotForArrival(runway_info.runway_numbers[runway_side]) == true)
-						{
-							//arrival_side is bottom_side, all taxiroute must be marked for arrival
-							bool found_marked = false;
-							for(set<string>::const_iterator hot_arrivals_itr = (*taxiroute_itr).hot_arrivals.begin();
-								hot_arrivals_itr != (*taxiroute_itr).hot_arrivals.end();
-								++hot_arrivals_itr)
-							{
-								if(runway_info.runway_numbers[runway_side] == ENUM_LookupDesc(ATCRunwayOneway,(*hot_arrivals_itr).c_str()))
-								{
-									found_marked = true;
-								}
-							}
+					int runway_number = runway_info.runway_numbers[runway_side];
 
-							if(found_marked == false)
-							{
-								msgs.push_back(validation_error_t(
-									string(string("Taxi route " + taxiroute_itr->taxiroute_name + " is too close to runway ") + 
-									string(ENUM_Desc(runway_info.runway_numbers[runway_side])) + 
-									string(", marked active for arrivals, and now must also be marked active for said runway")),
-									taxiroute_itr->taxiroute_ptr,
-									apt));
-							}
-						}
-		
-						if(runway_info.IsHotForDeparture(runway_info.runway_numbers[runway_side]) == true)
-						{
-							//departure_side is top_side, taxiroute must be marked for depature
-						}
-					}
-				}
-				else
-				{
-					for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = taxiroutes.begin(); taxiroute_itr != taxiroutes.end(); ++taxiroute_itr)
+					if(runway_info.IsHotForArrival(runway_number) == true)
 					{
-						//if(runway_info.IsHotForArrival(runway_info.runway_numbers[i]) == true)
-						{
-							//arrival_side is bottom_side, all taxiroute must be marked for arrival
-							for (int i = 0; i < (*taxiroute_itr).hot_arrivals.size(); i++)
-							{
-								//runway_info.runway_name.find((*taxiroute_itr).hot_arrivals.begin()+i);
-							}
-						}
-		
-						if(runway_info.IsHotForDeparture(runway_info.runway_numbers[runway_side]) == true)
-						{
-							//departure_side is top_side, taxiroute must be marked for depature
-						}
+						FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_arrivals, "arrivals", msgs, apt);
 					}
 
-					if(runway_info.IsHotForArrival(runway_info.runway_numbers[runway_side]) == true)
+					if(runway_info.IsHotForDeparture(runway_number) == true)
 					{
-						//arrival_side is bottom_side, all taxiroute must be marked for arrival
-						for (int i = 0; i < (*taxiroute_itr).hot_arrivals.size(); i++)
-						{
-							//runway_info.runway_name.find((*taxiroute_itr).hot_arrivals.begin()+i);
-						}
-					}
-		
-					if(runway_info.IsHotForDeparture(runway_info.runway_numbers[runway_side]) == true)
-					{
-						//departure_side is top_side, taxiroute must be marked for depature
+						FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_departures, "departures", msgs, apt);
 					}
 				}
 			}
