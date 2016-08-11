@@ -1,5 +1,6 @@
 #include "WED_ValidateATCRunwayChecks.h"
 
+#include <algorithm>
 #include <iterator>
 #include <sstream>
 
@@ -30,26 +31,18 @@ struct RunwayInfo
 {
 	//All the information about the current runway future tests will want or need
 	RunwayInfo(WED_Runway* runway)
-		: runway_ptr(runway),
-		  runway_ops_north(0),
-		  runway_ops_south(0)
+		: runway_ptr(runway)
 	{
 		runway->GetName(runway_name);
 
 		AptRunway_t apt_runway;
 		runway_ptr->Export(apt_runway);
 
-		istringstream iss(apt_runway.id[0]);
-		if(!(iss >> runway_number_north))
-		{
-			//TODO: Something here in case it fails
-		}
+		runway_numbers[0] = runway_ptr->GetRunwayEnumsOneway().first;
+		runway_numbers[1] = runway_ptr->GetRunwayEnumsOneway().second;
 
-		istringstream iss2(apt_runway.id[1]);
-		if(!(iss2 >> runway_number_south))
-		{
-			//TODO: Something here in case it fails
-		}
+		runway_ops[0] = 0;
+        runway_ops[1] = 0;
 
 		Point2 bounds[4];
 		runway->GetCorners(gis_Geo,bounds);
@@ -77,11 +70,12 @@ struct RunwayInfo
 	//Name of current runway
 	string runway_name;
 
-	int runway_number_north;
-	int runway_number_south;
+	//Where [0] is north runway number and [1] is the south runway number
+	//The int is an enum from ATCRunwayOneway
+	int runway_numbers[2];
 
-	int runway_ops_north;
-	int runway_ops_south;
+	//Where [0] is north ops and [1] is south ops
+	int runway_ops[2];
 	
 	//The corners of the runway in lat/lon
 	Polygon2 runway_corners_geo;
@@ -89,33 +83,45 @@ struct RunwayInfo
 	//The corners of the runway in meters
 	Polygon2 runway_corners_m;
 	
-	//The center line of the runway in lat/lon
+	//The center line of the runway in lat/lon. p1 is source, p2 is target
 	Segment2 runway_centerline_geo;
 
-	//The center line of the runway in meters
+	//The center line of the runway in meters. p1 is source, p2 is target
 	Segment2 runway_centerline_m;
 
-	bool IsHotForArrival(int runway_number) const
+	void ChangeRunwayOps(int runway_number, int operations)
 	{
-		if(runway_number <= 18)
+		if(runway_number <= atc_18R)
 		{
-			return runway_ops_north & 0x01;
+			runway_ops[0] |= operations;
 		}
 		else
 		{
-			return runway_ops_south & 0x1;
+			runway_ops[1] |= operations;
+		}
+	}
+
+	bool IsHotForArrival(int runway_number) const
+	{
+		if(runway_number <= atc_18R)
+		{
+			return runway_ops[0] & 0x01;
+		}
+		else
+		{
+			return runway_ops[1] & 0x1;
 		}
 	}
 
 	bool IsHotForDeparture(int runway_number) const
 	{
-		if(runway_number <= 18)
+		if(runway_number <= atc_18R)
 		{
-			return runway_ops_north & 0x2;
+			return runway_ops[0] & 0x2;
 		}
 		else
 		{
-			return runway_ops_south & 0x2;
+			return runway_ops[1] & 0x2;
 		}
 	}
 };
@@ -127,7 +133,12 @@ struct TaxiRouteInfo
 		  node_0(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(0))),
 		  node_1(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(1)))
 	{
-		taxiroute_segment_geo;
+		AptRouteEdge_t apt_route;
+		taxiroute->Export(apt_route);
+		taxiroute_name = apt_route.name;
+		hot_arrivals   = apt_route.hot_arrive;
+		hot_departures = apt_route.hot_depart;
+
 		Bezier2 bez;
 		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
 		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
@@ -144,6 +155,9 @@ struct TaxiRouteInfo
 
 	//Segment2 representing the taxiroute in meters
 	Segment2 taxiroute_segment_m;
+
+	set<string> hot_arrivals;
+	set<string> hot_departures;
 
 	//Source node of the taxiroute
 	WED_TaxiRouteNode* node_0;
@@ -252,21 +266,14 @@ static void AssaignRunwayUse(const WED_Airport& apt, RunwayInfo& runway_info, co
 	{
 		AptRunwayRule_t apt_runway_rule;
 		(*use_itr)->Export(apt_runway_rule);
-		if(runway_info.runway_name.find(apt_runway_rule.runway) != string::npos)
+		
+		if(runway_info.runway_numbers[0] == ENUM_LookupDesc(ATCRunwayOneway, apt_runway_rule.runway.c_str()))
 		{
-			int runway_number = -1;
-			istringstream iss(apt_runway_rule.runway);
-			if(iss >> runway_number)
-			{
-				if(runway_number <= 18)
-				{
-					runway_info.runway_ops_north |= apt_runway_rule.operations;
-				}
-				else
-				{
-					runway_info.runway_ops_south |= apt_runway_rule.operations;
-				}
-			}
+			runway_info.ChangeRunwayOps(runway_info.runway_numbers[0],apt_runway_rule.operations);
+		}
+		else if(runway_info.runway_numbers[1] == ENUM_LookupDesc(ATCRunwayOneway, apt_runway_rule.runway.c_str()))
+		{
+			runway_info.ChangeRunwayOps(runway_info.runway_numbers[1],apt_runway_rule.operations);
 		}
 	}
 }
@@ -538,7 +545,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 {
 	if(!(runway_info.IsHotForArrival(runway_number) == true || runway_info.IsHotForDeparture(runway_number) == true))
 	{
-		return Polygon2(0);//TODO: Something better here
+		return Polygon2(0);//TODO: Something better here?
 	}
 
 	const double HITZONE_WIDTH_THRESHOLD_M   = 10.00;
@@ -576,24 +583,24 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	top_right    += side_extension_vec;
 	bottom_right += side_extension_vec;
 
-	Vector2 vertical_extension_vec = side_extension_vec.perpendicular_ccw();
-	vertical_extension_vec.normalize();
-	vertical_extension_vec *= HITZONE_OVERFLY_THRESHOLD_M;
+	Vector2 gis_line_direction(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
+	gis_line_direction.normalize();
+	gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 
-	if(runway_number <= 18)
+	if(runway_number <= atc_18R)
 	{
 		if(runway_info.IsHotForArrival(runway_number) == true)
 		{
 			//arrival_side is bottom_side;
-			bottom_left  -= vertical_extension_vec;
-			bottom_right -= vertical_extension_vec;
+			bottom_left  -= gis_line_direction;
+			bottom_right -= gis_line_direction;
 		}
 		
 		if(runway_info.IsHotForDeparture(runway_number) == true)
 		{
 			//departure_side is top_side;
-			top_left  += vertical_extension_vec;
-			top_right += vertical_extension_vec;
+			top_left  += gis_line_direction;
+			top_right += gis_line_direction;
 		}
 	}
 	else
@@ -601,31 +608,31 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 		if(runway_info.IsHotForArrival(runway_number) == true)
 		{
 			//arrival_side is top_side;
-			top_left  += vertical_extension_vec;
-			top_right += vertical_extension_vec;
+			top_left  += gis_line_direction;
+			top_right += gis_line_direction;
 		}
 		
 		if(runway_info.IsHotForDeparture(runway_number) == true)
 		{
 			//departure_side is bottom_side;
-			bottom_left  -= vertical_extension_vec;
-			bottom_right -= vertical_extension_vec;
+			bottom_left  -= gis_line_direction;
+			bottom_right -= gis_line_direction;
 		}
 	}
-#if DEV
-	//Extend out fully for testing purposes
-	//bottom_left  -= vertical_extension_vec;
-	//bottom_right -= vertical_extension_vec;
-	//
-	//departure_side is top_side;
-	//top_left  += vertical_extension_vec;
-	//top_right += vertical_extension_vec;
 
 	Polygon2 runway_hit_box_geo(4);
 	runway_hit_box_geo[0] = translator.Reverse(bottom_left);
 	runway_hit_box_geo[1] = translator.Reverse(top_left);
 	runway_hit_box_geo[2] = translator.Reverse(top_right);
 	runway_hit_box_geo[3] = translator.Reverse(bottom_right);
+#if DEV
+	//Extend out fully for testing purposes
+	//bottom_left  -= gis_line_direction;
+	//bottom_right -= gis_line_direction;
+	//
+	//departure_side is top_side;
+	//top_left  += gis_line_direction;
+	//top_right += gis_line_direction;
 
 	//debug_mesh_line(translator.Reverse(bottom_left),  translator.Reverse(top_left),     1, 0, 0, 1, 0, 0); //left side
 	//debug_mesh_line(translator.Reverse(top_left),     translator.Reverse(top_right),    0, 1, 0, 0, 1, 0); //top side
@@ -637,6 +644,24 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	debug_mesh_segment(runway_hit_box_geo.side(3), 1, 1, 1, 1, 1, 1); //bottom side
 #endif
 	return runway_hit_box_geo;
+}
+
+static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
+{
+	set<WED_Thing*> node_viewers;
+	node->GetAllViewers(node_viewers);
+
+	TaxiRouteInfoVec_t matching_taxiroutes;
+	for(set<WED_Thing*>::iterator node_viewer_itr = node_viewers.begin(); node_viewer_itr != node_viewers.end(); ++node_viewer_itr)
+	{
+		WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*node_viewer_itr);
+		if(taxiroute != NULL)
+		{
+			matching_taxiroutes.push_back(taxiroute);
+		}
+	}
+
+	return matching_taxiroutes;
 }
 
 static void DoHotZoneChecks( const RunwayInfo& runway_info,
@@ -651,72 +676,92 @@ static void DoHotZoneChecks( const RunwayInfo& runway_info,
 		all_nodes.push_back(all_taxiroutes[i].node_1);
 	}
 	
-	//do the left side first
-	Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_info.runway_number_north);
-	
-	Point2 p;
-	for(TaxiRouteNodeVec_t::const_iterator node_itr = all_nodes.begin();
-		node_itr != all_nodes.end() && hit_box.size() > 0;
-		++node_itr)
+	for (int runway_side = 0; runway_side < 2; ++runway_side)
 	{
-		(*node_itr)->GetLocation(gis_Geo,p);
-		if(hit_box.inside(p))
+		//Make the hitbox baed on the runway and which side (low/high) you're currently on
+		Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_info.runway_numbers[runway_side]);
+
+		for(TaxiRouteNodeVec_t::iterator node_itr = all_nodes.begin();
+			node_itr != all_nodes.end() && hit_box.size() > 0;
+			++node_itr)
 		{
-			if(runway_info.IsHotForArrival(runway_info.runway_number_north) == true)
+			TaxiRouteInfoVec_t taxiroutes = GetTaxiRoutesFromViewers(*node_itr);
+			for(TaxiRouteInfoVec_t::iterator taxiroute_itr = taxiroutes.begin(); taxiroute_itr != taxiroutes.end(); ++taxiroute_itr)
 			{
-				//arrival_side is bottom_side, taxiroute must be marked for arrival
-				set<WED_Thing*> node_viewers;
-				(*node_itr)->GetAllViewers(node_viewers);
-			
-				int relavent_runway_taxiroutes = 0;
-				for (set<WED_Thing*>::iterator viewer_itr = node_viewers.begin();
-					viewer_itr != node_viewers.end();
-					viewer_itr++)
+				if(hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo))
 				{
-					WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*viewer_itr);
-					if(taxiroute)
+					//TODO: We could erase the taxiroute's node from the list, but that might actually increase the O size searching for which to erase
+					if(runway_info.runway_numbers[runway_side] <= atc_18R)
 					{
-						if(taxiroute->HasHotArrival() == false)
+						if(runway_info.IsHotForArrival(runway_info.runway_numbers[runway_side]) == true)
 						{
-							string taxiroute_name;
-							taxiroute->GetName(taxiroute_name);
-							
-							string msg = "Taxi route " + taxiroute_name + " is close to or behind the runway " + runway_info.runway_name + " and is not marked hot for arrivals";
-							msgs.push_back(validation_error_t(msg, taxiroute,apt));
-							return;
+							//arrival_side is bottom_side, all taxiroute must be marked for arrival
+							bool found_marked = false;
+							for(set<string>::const_iterator hot_arrivals_itr = (*taxiroute_itr).hot_arrivals.begin();
+								hot_arrivals_itr != (*taxiroute_itr).hot_arrivals.end();
+								++hot_arrivals_itr)
+							{
+								if(runway_info.runway_numbers[runway_side] == ENUM_LookupDesc(ATCRunwayOneway,(*hot_arrivals_itr).c_str()))
+								{
+									found_marked = true;
+								}
+							}
+
+							if(found_marked == false)
+							{
+								msgs.push_back(validation_error_t(
+									string(string("Taxi route " + taxiroute_itr->taxiroute_name + " is too close to runway ") + 
+									string(ENUM_Desc(runway_info.runway_numbers[runway_side])) + 
+									string(", marked active for arrivals, and now must also be marked active for said runway")),
+									taxiroute_itr->taxiroute_ptr,
+									apt));
+							}
+						}
+		
+						if(runway_info.IsHotForDeparture(runway_info.runway_numbers[runway_side]) == true)
+						{
+							//departure_side is top_side, taxiroute must be marked for depature
 						}
 					}
 				}
-			}
+				else
+				{
+					for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = taxiroutes.begin(); taxiroute_itr != taxiroutes.end(); ++taxiroute_itr)
+					{
+						//if(runway_info.IsHotForArrival(runway_info.runway_numbers[i]) == true)
+						{
+							//arrival_side is bottom_side, all taxiroute must be marked for arrival
+							for (int i = 0; i < (*taxiroute_itr).hot_arrivals.size(); i++)
+							{
+								//runway_info.runway_name.find((*taxiroute_itr).hot_arrivals.begin()+i);
+							}
+						}
 		
-			if(runway_info.IsHotForDeparture(runway_info.runway_number_north) == true)
-			{
-				//departure_side is top_side, taxiroute must be marked for depature
-			}
-		}
-	}
+						if(runway_info.IsHotForDeparture(runway_info.runway_numbers[runway_side]) == true)
+						{
+							//departure_side is top_side, taxiroute must be marked for depature
+						}
+					}
 
-	hit_box = MakeHotZoneHitBox(runway_info,runway_info.runway_number_south);
-	//Point2 p;
-	for(TaxiRouteNodeVec_t::const_iterator node_itr = all_nodes.begin();
-		node_itr != all_nodes.end() && hit_box.size() > 0;
-		++node_itr)
-	{
-		(*node_itr)->GetLocation(gis_Geo,p);
-		if(hit_box.inside(p))
-		{
-			if(runway_info.IsHotForArrival(runway_info.runway_number_south) == true)
-			{
-				//arrival_side is top_side, taxiroute must be marked for arrival
-			}
+					if(runway_info.IsHotForArrival(runway_info.runway_numbers[runway_side]) == true)
+					{
+						//arrival_side is bottom_side, all taxiroute must be marked for arrival
+						for (int i = 0; i < (*taxiroute_itr).hot_arrivals.size(); i++)
+						{
+							//runway_info.runway_name.find((*taxiroute_itr).hot_arrivals.begin()+i);
+						}
+					}
 		
-			if(runway_info.IsHotForDeparture(runway_info.runway_number_south) == true)
-			{
-				//departure_side is bottom_side, taxiroute must be marked for departure
+					if(runway_info.IsHotForDeparture(runway_info.runway_numbers[runway_side]) == true)
+					{
+						//departure_side is top_side, taxiroute must be marked for depature
+					}
+				}
 			}
 		}
 	}
 }
+
 //-----------------------------------------------------------------------------
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 {
