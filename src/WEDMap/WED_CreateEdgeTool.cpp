@@ -58,6 +58,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mName(this, "Name", SQL_Name("",""),XML_Name("",""), "N"),
 	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", SQL_Name("",""),XML_Name("",""), 1),
 	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway", SQL_Name("",""),XML_Name("",""), ATCRunwayTwoway, atc_rwy_None),
+	mVehicleClass(tool == create_TaxiRoute ? this : NULL,"Allowed Vehicles",SQL_Name("",""),XML_Name("",""), ATCVehicleClass, atc_Vehicle_Aircraft),
 	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
@@ -245,6 +246,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
 			tr->SetOneway(mOneway.value);			
 			tr->SetRunway(mRunway.value);
+			tr->SetVehicleClass(mVehicleClass.value);
 			tr->SetHotDepart(mHotDepart.value);
 			tr->SetHotArrive(mHotArrive.value);
 			tr->SetHotILS(mHotILS.value);

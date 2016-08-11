@@ -103,6 +103,8 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		bool hot = seg->HasHotArrival() || seg->HasHotDepart();
 		bool ils = seg->HasHotILS();
 		bool rwy = seg->IsRunway();
+		bool road = seg->AllowTrucks() && !seg->AllowAircraft();
+		bool oneway = seg->IsOneway();
 		
 		int mtr1 = 5, mtr2 = 10;
 		switch(icao_width) {
@@ -113,6 +115,8 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		case width_E:	mtr1 = 14.0;	mtr2 = 65.0;	break;
 		case width_F:	mtr1 = 16.0;	mtr2 = 80.0;	break;
 		}
+		
+		if(road) { mtr1 = oneway ? 4.0 : 8.0; mtr2 = 0.0; }
 		
 		Point2	c[4], d[4];
 		Quad_2to4(ends, mtr1, c);
@@ -125,6 +129,8 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 			glColor4f(8,0.5,0,0.4);
 		else if(rwy)
 			glColor4f(0.0,0.2,0.6,0.4);
+		else if(road)
+			glColor4f(1,1,1,0.4);
 		else
 			glColor4f(1,1,0,0.4);
 		
@@ -136,6 +142,8 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 			glColor4f(8,0.5,0,0.2);
 		else if(rwy)
 			glColor4f(0.0,0.2,0.6,0.2);
+		else if(road)
+			glColor4f(1,1,1,0.4);
 		else
 			glColor4f(1,1,0,0.2);
 

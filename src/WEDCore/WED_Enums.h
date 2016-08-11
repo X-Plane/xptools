@@ -193,6 +193,10 @@ ENUM_DOMAIN(ATCRampType,"Ramp Start Type")
 	ENUM(atc_Ramp_TieDown,			"Tie-Down",							atc_ramp_tie_down)
 	ENUM(atc_Ramp_Hangar,			"Hangar",							atc_ramp_hangar)
 
+ENUM_DOMAIN(ATCVehicleClass,"Vehicle Class")
+	ENUM(atc_Vehicle_Aircraft,		"Aircraft",							0)
+	ENUM(atc_Vehicle_Ground_Trucks,	"Ground Trucks",					1)
+
 ENUM_DOMAIN(ATCRunwayOneway,"Runway Direction")
 	ENUM(atc_Runway_None,				"None",		0)
 	ENUM(atc_1,							"01",		10)

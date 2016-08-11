@@ -61,7 +61,8 @@ WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
 	hot_depart(this,"Departures",		SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
 	hot_arrive(this,"Arrivals",			SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
 	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
-	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"), ATCIcaoWidth, width_E)
+	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"),			ATCIcaoWidth, width_E),
+	vehicle_class(this,"Allowed Vehicles",SQL_Name("",""),								XML_Name("taxi_route","vehicle_class"),	ATCVehicleClass,atc_Vehicle_Aircraft)
 {
 }
 
@@ -99,9 +100,15 @@ void WED_TaxiRoute::SetWidth(int w)
 	width= w;
 }
 
+void	WED_TaxiRoute::SetVehicleClass(int in_class)
+{
+	vehicle_class = in_class;
+}
+
 void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
+	vehicle_class = atc_Vehicle_Aircraft;
 	oneway = info.oneway;
 	if(info.runway)
 	{
@@ -153,37 +160,52 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 		else
 			hot_ils += r;
 	}
-
 }
 
-void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
-{	
-	if(runway.value == atc_rwy_None)
+void	WED_TaxiRoute::Import(const AptServiceRoadEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref)
+{
+	SetName(info.name);
+	oneway = info.oneway;
+	runway = atc_rwy_None;
+	vehicle_class = atc_Vehicle_Ground_Trucks;
+}
+
+int	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const
+{
+	if(AllowTrucks())
 	{
-		this->GetName(info.name);
-		info.runway = 0;
+		info2.oneway = oneway.value;
+		this->GetName(info2.name);
+		return 1;
 	}
 	else
 	{
-		info.runway = 1;
-		info.name = ENUM_Desc(runway.value);
+		if(runway.value == atc_rwy_None)
+		{
+			this->GetName(info.name);
+			info.runway = 0;
+		}
+		else
+		{
+			info.runway = 1;
+			info.name = ENUM_Desc(runway.value);
+		}
+		info.hot_depart.clear();
+		info.hot_arrive.clear();
+		info.hot_ils.clear();
+		info.width = ENUM_Export(width.value);
+
+		set<int>::iterator h;
+		for (h = hot_depart.value.begin(); h != hot_depart.value.end(); ++h)
+			info.hot_depart.insert(ENUM_Desc(*h));
+		for (h = hot_arrive.value.begin(); h != hot_arrive.value.end(); ++h)
+			info.hot_arrive.insert(ENUM_Desc(*h));
+		for (h = hot_ils.value.begin(); h != hot_ils.value.end(); ++h)
+			info.hot_ils.insert(ENUM_Desc(*h));
+
+		info.oneway = oneway.value;
+		return 0;
 	}
-	
-	info.oneway = oneway.value;
-	info.hot_depart.clear();
-	info.hot_arrive.clear();
-	info.hot_ils.clear();
-	info.width = ENUM_Export(width.value);
-	
-	set<int>::iterator h;
-	for (h = hot_depart.value.begin(); h != hot_depart.value.end(); ++h)
-		info.hot_depart.insert(ENUM_Desc(*h));
-	for (h = hot_arrive.value.begin(); h != hot_arrive.value.end(); ++h)
-		info.hot_arrive.insert(ENUM_Desc(*h));
-	for (h = hot_ils.value.begin(); h != hot_ils.value.end(); ++h)
-		info.hot_ils.insert(ENUM_Desc(*h));
-
-
 }
 
 void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict) const
@@ -322,6 +344,17 @@ int		WED_TaxiRoute::GetWidth(void) const
 {
 	return width.value;
 }
+
+bool	WED_TaxiRoute::AllowAircraft(void) const
+{
+	return vehicle_class.value == atc_Vehicle_Aircraft;
+}
+
+bool	WED_TaxiRoute::AllowTrucks(void) const
+{
+	return vehicle_class.value == atc_Vehicle_Ground_Trucks;
+}
+
 
 
 #endif
