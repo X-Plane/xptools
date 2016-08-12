@@ -174,14 +174,16 @@ typedef vector<WED_TaxiRouteNode*> TaxiRouteNodeVec_t;
 typedef vector<RunwayInfo>         RunwayInfoVec_t;
 typedef vector<TaxiRouteInfo>      TaxiRouteInfoVec_t;
 
-static RunwayInfoVec_t CollectPotentiallyActiveRunways( WED_Airport& apt,
-														const TaxiRouteInfoVec_t all_taxiroutes)
+//Collects potentially active runways (or all of them if there are no flows) and checks that every 
+static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t& all_taxiroutes,
+														validation_error_vector& msgs,
+														WED_Airport* apt)
 {
 	FlowVec_t flows;
-	CollectRecursive(&apt,back_inserter<FlowVec_t>(flows));
+	CollectRecursive(apt,back_inserter<FlowVec_t>(flows));
 
 	RunwayVec_t all_runways;
-	CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways));
+	CollectRecursive(apt,back_inserter<RunwayVec_t>(all_runways));
 
 	//Find all potentially active runways:
 	//0 flows means treat all runways as potentially active
@@ -194,10 +196,10 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( WED_Airport& apt,
 	else
 	{
 		ATCRunwayUseVec_t use_rules;
-		CollectRecursive<back_insert_iterator<ATCRunwayUseVec_t> >(&apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
+		CollectRecursive(apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
 
 		//For all runways in the airport
-		for (RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
+		for(RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
 		{
 			//Search through all runway uses, testing if the runway has a match, and 1 to n taxiroutes are associated with it
 			for(ATCRunwayUseVec_t::const_iterator use_itr = use_rules.begin(); use_itr != use_rules.end(); ++use_itr)
@@ -222,9 +224,10 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( WED_Airport& apt,
 	}
 
 	RunwayInfoVec_t runway_info_vec;
-	//Filter out any runway that has no taxiroutes associated with it
+	//Error on any runway that has no taxiroutes associated with it
 	for (RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin(); runway_itr != potentially_active_runways.end(); ++runway_itr)
 	{
+		bool found_matching_taxiroute = false;
 		for(vector<TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
 		{
 			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
@@ -234,12 +237,18 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( WED_Airport& apt,
 			if(runway_name == taxiroute_name)
 			{
 				runway_info_vec.push_back(*runway_itr);
-				//break now so we only add this once
+				found_matching_taxiroute = true;
 				break;
 			}
 		}
-	}
 
+		if(found_matching_taxiroute == false)
+		{
+			string name;
+			(*runway_itr)->GetName(name);
+			msgs.push_back(validation_error_t("Could not find at least one matching taxiroute for runway " + name, (*runway_itr), apt));
+		}
+	}
 	return runway_info_vec;
 }
 
@@ -262,6 +271,15 @@ static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
 
 static void AssaignRunwayUse(const WED_Airport& apt, RunwayInfo& runway_info, const ATCRunwayUseVec_t& all_use_rules)
 {
+	if(all_use_rules.empty() == true)
+	{
+		runway_info.runway_ops[0] = 0x01 | 0x02; //Mark for arrivals and departures
+		runway_info.runway_ops[1] = 0x01 | 0x02;
+		return;
+	}
+
+	//The case of "This airport has no flows" gets implicitly taken care of here by the fact that use_rules will be 0,
+	//and the fact that we assaign this in 
 	for(ATCRunwayUseVec_t::const_iterator use_itr = all_use_rules.begin(); use_itr != all_use_rules.end(); ++use_itr)
 	{
 		AptRunwayRule_t apt_runway_rule;
@@ -603,7 +621,12 @@ static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
 static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 								   int runway_number) //The relavent runway info's use
 {
-	if(!(runway_info.IsHotForArrival(runway_number) == true || runway_info.IsHotForDeparture(runway_number) == true))
+	if( 
+		(runway_info.IsHotForArrival(runway_number) == false &&
+		runway_info.IsHotForDeparture(runway_number) == false)
+		||
+		runway_number == atc_Runway_None
+	  )
 	{
 		return Polygon2(0);//TODO: Something better here?
 	}
@@ -706,11 +729,12 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	return runway_hit_box_geo;
 }
 
-static void DoHotZoneChecks( const RunwayInfo& runway_info,
+static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 							 const TaxiRouteInfoVec_t& all_taxiroutes,
 							 validation_error_vector& msgs,
 							 WED_Airport* apt)
 {
+	int original_num_errors = msgs.size();
 	TaxiRouteNodeVec_t all_nodes;
 	for (int i = 0; i < all_taxiroutes.size(); ++i)
 	{
@@ -752,6 +776,7 @@ static void DoHotZoneChecks( const RunwayInfo& runway_info,
 			}
 		}
 	}
+	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
 //-----------------------------------------------------------------------------
@@ -773,7 +798,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	//All runways which match the following criteria
 	//- The runway is mentioned in an ATC Flow
 	//- The runway has a taxiroute associated with it
-	RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(apt,all_taxiroutes);
+	RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(all_taxiroutes, msgs, &apt);
 
 	//Pre-check
 	//- Does this active runway even have any taxi routes associated with it?
@@ -814,11 +839,9 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 			return;
 		}
 
-		bool passes_hotzone_checks = true;
 		AssaignRunwayUse(apt,*runway_info_itr, all_use_rules);
-		DoHotZoneChecks(*runway_info_itr, all_taxiroutes, msgs, &apt);
-		//For the left and right side
-		
+		bool passes_hotzone_checks = DoHotZoneChecks(*runway_info_itr, all_taxiroutes, msgs, &apt);
+		//Nothing to do here yet until we have more checks after this
 	}
 	return;
 }
