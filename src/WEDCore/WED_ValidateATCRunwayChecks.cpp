@@ -6,6 +6,8 @@
 
 #if DEV
 #include <iostream>
+//Visualizes some of the runway lines and the bounding box
+#define DEBUG_VIS_LINES 1
 #endif
 
 #include "WED_EnumSystem.h"
@@ -269,7 +271,8 @@ static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
 	return matching_taxiroutes;
 }
 
-static void AssaignRunwayUse(const WED_Airport& apt, RunwayInfo& runway_info, const ATCRunwayUseVec_t& all_use_rules)
+static void AssaignRunwayUse( RunwayInfo& runway_info,
+							  const ATCRunwayUseVec_t& all_use_rules)
 {
 	if(all_use_rules.empty() == true)
 	{
@@ -303,7 +306,7 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 									   WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
-	string taxiroute_name = "";
+	
 	TaxiRouteNodeVec_t matching_taxiroute_nodes;
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
@@ -311,11 +314,40 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 		matching_taxiroute_nodes.push_back(static_cast<WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
 	}
 
+	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
+
+	Point2& bottom_left  = runway_hit_box_m[0];
+	Point2& top_left     = runway_hit_box_m[1];
+	Point2& top_right    = runway_hit_box_m[2];
+	Point2& bottom_right = runway_hit_box_m[3];
+
+	Vector2 gis_line_direction(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
+	gis_line_direction.normalize();
+	gis_line_direction *= 2.0;
+
+	top_left  += gis_line_direction;
+	top_right += gis_line_direction;
+		
+	bottom_left  -= gis_line_direction;
+	bottom_right -= gis_line_direction;
+	
+	Polygon2 runway_hit_box_geo(4);
+	runway_hit_box_geo[0] = translator.Reverse(bottom_left);
+	runway_hit_box_geo[1] = translator.Reverse(top_left);
+	runway_hit_box_geo[2] = translator.Reverse(top_right);
+	runway_hit_box_geo[3] = translator.Reverse(bottom_right);
+
+#if DEBUG_VIS_LINES
+	debug_mesh_segment(runway_hit_box_geo.side(0), 0, 1, 0, 0, 0, 1); //left side
+	debug_mesh_segment(runway_hit_box_geo.side(1), 0, 1, 0, 0, 0, 1); //top side
+	debug_mesh_segment(runway_hit_box_geo.side(2), 0, 1, 0, 0, 0, 1); //right side
+	debug_mesh_segment(runway_hit_box_geo.side(3), 0, 1, 0, 0, 0, 1); //bottom side
+#endif
 	for(TaxiRouteNodeVec_t::const_iterator node_itr = matching_taxiroute_nodes.begin(); node_itr != matching_taxiroute_nodes.end(); ++node_itr)
 	{
 		Point2 node_location;
 		(*node_itr)->GetLocation(gis_Geo,node_location);
-		if(runway_info.runway_corners_geo.inside(node_location) == false)
+		if(runway_hit_box_geo.inside(node_location) == false)
 		{
 			string node_name;
 			(*node_itr)->GetName(node_name);
@@ -348,58 +380,6 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 		}
 	}
 
-	return msgs.size() - original_num_errors == 0 ? true : false;
-}
-
-static bool TaxiRouteRunwayTraversalCheck( const RunwayInfo& runway_info,
-										   const TaxiRouteInfoVec_t& all_taxiroutes,
-										   validation_error_vector& msgs,
-										   WED_Airport* apt)
-{
-	int original_num_errors = msgs.size();
-	for (TaxiRouteInfoVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin();
-		taxiroute_itr != all_taxiroutes.end();
-		++taxiroute_itr)
-	{
-#if DEV
-		debug_mesh_segment(taxiroute_itr->taxiroute_segment_geo,0,1,0,0,1,0);
-#endif
-		if( runway_info.runway_corners_geo.inside(taxiroute_itr->taxiroute_segment_geo.p1) == true &&
-			runway_info.runway_corners_geo.inside(taxiroute_itr->taxiroute_segment_geo.p2))
-		{
-			continue;
-		}
-		else
-		{
-			int intersected_sides = 0;
-
-			Segment2 left_side = runway_info.runway_corners_geo.side(2);
-			//debug_mesh_segment(left_side,0,0,1,0,0,1);
-
-			Segment2 top_side = runway_info.runway_corners_geo.side(3);
-			//debug_mesh_segment(top_side,0,0,1,0,0,1);
-
-			Segment2 right_side = runway_info.runway_corners_geo.side(0);
-			//debug_mesh_segment(right_side,0,0,1,0,0,1);
-
-			Segment2 bottom_side = runway_info.runway_corners_geo.side(1);
-			//debug_mesh_segment(bottom_side,0,0,1,0,0,1);
-
-			Point2 p;
-
-			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(left_side,   p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(top_side,    p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(right_side,  p) ? intersected_sides + 1 : intersected_sides;
-			intersected_sides = taxiroute_itr->taxiroute_segment_geo.intersect(bottom_side, p) ? intersected_sides + 1 : intersected_sides;
-
-			if(intersected_sides >= 2)
-			{
-				string msg = string("Taxi route segment " + taxiroute_itr->taxiroute_name) + " crosses runway " + runway_info.runway_name + " completely";
-				msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
-			}
-		}
-	}
-	
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
@@ -489,38 +469,11 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 	{
 		Vector2 runway_centerline_vec = Vector2(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
 		Vector2 taxiroute_vec = Vector2(taxiroute_itr->taxiroute_segment_m.p1,taxiroute_itr->taxiroute_segment_m.p2);
-#if DEV
-		std::cout << "Runway Centerline (Lat/Lon): (" << runway_info.runway_centerline_geo.p1.x() << "," << runway_info.runway_centerline_geo.p1.y() << ")/(" <<
-													runway_info.runway_centerline_geo.p2.x() << "," << runway_info.runway_centerline_geo.p2.y() << ")" << std::endl;
-		std::cout << "Runway Centerline (Meters): (" <<  runway_info.runway_centerline_m.p1.x() <<   "," << runway_info.runway_centerline_m.p1.y() <<   ")/(" <<
-													runway_info.runway_centerline_m.p2.x() <<   "," << runway_info.runway_centerline_m.p2.y() <<   ")" << std::endl;
-		std::cout << "Runway Centerline (M->Vector): (" << runway_centerline_vec.x() << "," << runway_centerline_vec.y() << ")" << endl << endl;
-
-		std::cout << "TaxiRoute Segment (Lat/Lon): (" << taxiroute_itr->taxiroute_segment_geo.p1.x() << "," << taxiroute_itr->taxiroute_segment_geo.p1.y() << ")/(" <<
-													taxiroute_itr->taxiroute_segment_geo.p2.x() << "," << taxiroute_itr->taxiroute_segment_geo.p2.y() << ")" << std::endl;
-		std::cout << "TaxiRoute Segment (Meters): (" <<  taxiroute_itr->taxiroute_segment_m.p1.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p1.y() <<   ")/(" <<
-													taxiroute_itr->taxiroute_segment_m.p2.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p2.y() <<   ")" << std::endl;
-		std::cout << "TaxiRoute Segment (M->Vector): (" << taxiroute_vec.x() << "," << taxiroute_vec.y() << ")" << std::endl << std::endl << std::endl;
-#endif
-		//TODO: is /= needed?
 		runway_centerline_vec.normalize();
 		taxiroute_vec.normalize();
-#if DEV
-		std::cout << "Runway Centerline Normalized (Lat/Lon): (" << runway_info.runway_centerline_geo.p1.x() << "," << runway_info.runway_centerline_geo.p1.y() << ")/(" <<
-															   runway_info.runway_centerline_geo.p2.x() << "," << runway_info.runway_centerline_geo.p2.y() << ")" << std::endl;
-		std::cout << "Runway Centerline Normalized (Meters): (" <<  runway_info.runway_centerline_m.p1.x() <<   "," << runway_info.runway_centerline_m.p1.y() <<   ")/(" <<
-															   runway_info.runway_centerline_m.p2.x() <<   "," << runway_info.runway_centerline_m.p2.y() <<   ")" << std::endl << std::endl;
 
-		std::cout << "TaxiRoute Segment Normalized (Lat/Lon): (" << taxiroute_itr->taxiroute_segment_geo.p1.x() << "," << taxiroute_itr->taxiroute_segment_geo.p1.y() << ")/(" <<
-															   taxiroute_itr->taxiroute_segment_geo.p2.x() << "," << taxiroute_itr->taxiroute_segment_geo.p2.y() << ")" << std::endl;
-		std::cout << "TaxiRoute Segment Normalized (Meters): (" <<  taxiroute_itr->taxiroute_segment_m.p1.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p1.y() <<   ")/(" <<
-															   taxiroute_itr->taxiroute_segment_m.p2.x() <<   "," << taxiroute_itr->taxiroute_segment_m.p2.y() <<   ")" << std::endl << std::endl;
-#endif
 		double dot_product = runway_centerline_vec.dot(taxiroute_vec);
-#if DEV
-		std::cout << "runway_center_vec.dot(taxiroute_vec) = " << dot_product << std::endl;
-		std::cout << "-------------------------------------------------------" << std::endl;
-#endif
+
 		double ANGLE_THRESHOLD = 0.995;
 		if(dot_product < ANGLE_THRESHOLD)
 		{
@@ -533,7 +486,7 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
+static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 									const TaxiRouteInfoVec_t& matching_taxiroutes,
 									validation_error_vector& msgs,
 									WED_Airport* apt)
@@ -546,25 +499,33 @@ static bool RunwayHasTotalCoverage( const RunwayInfo& runway_info,
 		total_length_m += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
 	}
 
-	double diff = fabs(total_length_m);
 	AptRunway_t apt_runway;
 	runway_info.runway_ptr->Export(apt_runway);
-	double COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength() - apt_runway.width_mtr * 2 ;//You should be at most 1 meter less coverage
+	double COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength();
+	if((apt_runway.width_mtr  * 2) < COVERAGE_THRESHOLD)
+	{
+		COVERAGE_THRESHOLD -= apt_runway.width_mtr * 2;
+	}
 
-	if(diff < COVERAGE_THRESHOLD)
+	if(total_length_m < COVERAGE_THRESHOLD)
 	{
 		string msg = "Runway " + runway_info.runway_name + " is not sufficiently covered with taxi routes.";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
 		return false;
 	}
 
+	double OVERSHOOT_THRESHOLD = 2.0 * 2; //You get two meteres of room for being off the runway
+	if(total_length_m > (runway_info.runway_ptr->GetLength() + OVERSHOOT_THRESHOLD))
+	{
+		string msg = "Taxi route " + matching_taxiroutes.begin()->taxiroute_name + "'s ends over extend past the edges of runway " + runway_info.runway_name;
+		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
+		return false;
+	}
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 //-----------------------------------------------------------------------------
 
 //--Hot zone checks------------------------------------------------------------
-
-//Returns polygon in lat/lon
 
 static void FindIfMarked( const int runway_number,        //enum from ATCRunwayOneway
 						  const TaxiRouteInfo& taxiroute, //The taxiroute to check if it is marked properly
@@ -618,6 +579,7 @@ static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
 	return matching_taxiroutes;
 }
 
+//Returns polygon in lat/lon
 static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 								   int runway_number) //The relavent runway info's use
 {
@@ -656,15 +618,6 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 		        0
 		      bottom
 	*/
-	Vector2 side_extension_vec = Vector2(bottom_left, bottom_right);
-	side_extension_vec.normalize();
-	side_extension_vec *= HITZONE_WIDTH_THRESHOLD_M;
-
-	top_left    -= side_extension_vec;
-	bottom_left -= side_extension_vec;
-
-	top_right    += side_extension_vec;
-	bottom_right += side_extension_vec;
 
 	Vector2 gis_line_direction(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
 	gis_line_direction.normalize();
@@ -708,7 +661,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	runway_hit_box_geo[1] = translator.Reverse(top_left);
 	runway_hit_box_geo[2] = translator.Reverse(top_right);
 	runway_hit_box_geo[3] = translator.Reverse(bottom_right);
-#if DEV
+#if DEBUG_VIS_LINES
 	//Extend out fully for testing purposes
 	//bottom_left  -= gis_line_direction;
 	//bottom_right -= gis_line_direction;
@@ -759,7 +712,16 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 			TaxiRouteInfoVec_t taxiroutes = GetTaxiRoutesFromViewers(*node_itr);
 			for(TaxiRouteInfoVec_t::iterator taxiroute_itr = taxiroutes.begin(); taxiroute_itr != taxiroutes.end(); ++taxiroute_itr)
 			{
-				if(hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo))
+				//Run two tests, intersection with the side, and if that fails, point inside the polygon
+				bool did_hit = hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo);
+				if(did_hit == false)
+				{
+					Point2 p;
+					(*node_itr)->GetLocation(gis_Geo,p);
+					did_hit = hit_box.inside(p);
+				}
+
+				if(did_hit)
 				{
 					int runway_number = runway_info.runway_numbers[runway_side];
 
@@ -782,6 +744,13 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 //-----------------------------------------------------------------------------
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 {
+#if DEBUG_VIS_LINES && 1
+	//Clear the previously drawn lines before every validation
+	gMeshPoints.clear();
+	gMeshLines.clear();
+	gMeshPolygons.clear();
+#endif
+
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
 	CreateTranslatorForBounds(box,translator);
@@ -806,16 +775,13 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 		runway_info_itr != potentially_active_runways.end();
 		++runway_info_itr)
 	{
-#if DEV
+#if DEBUG_VIS_LINES
 		debug_mesh_polygon((*runway_info_itr).runway_corners_geo,1,0,0);
 		debug_mesh_segment((*runway_info_itr).runway_centerline_geo,1,0,0,1,0,0);
 #endif
-		if(TaxiRouteRunwayTraversalCheck( *runway_info_itr, all_taxiroutes, msgs, &apt) == false)
-		{
-			break;
-		}
-
 		TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
+
+
 		bool passes_centerline_checks = false;
 		if(TaxiRouteSplitPathCheck(*runway_info_itr, all_taxiroutes, msgs, &apt))
 		{
@@ -823,7 +789,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 			{
 				if(AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 				{
-					if(RunwayHasTotalCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+					if(RunwayHasCorrectCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 					{
 						if(TaxiRouteSquishedZCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 						{
@@ -839,7 +805,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 			return;
 		}
 
-		AssaignRunwayUse(apt,*runway_info_itr, all_use_rules);
+		AssaignRunwayUse(*runway_info_itr, all_use_rules);
 		bool passes_hotzone_checks = DoHotZoneChecks(*runway_info_itr, all_taxiroutes, msgs, &apt);
 		//Nothing to do here yet until we have more checks after this
 	}
