@@ -39,6 +39,9 @@ public:
 	void	Export(		 AptRunwayRule_t& info) const;
 
 			void	SetRunway(int rwy);
+			int	GetRunway(void) const;
+			bool	HasArrivals(void) const;
+			bool	HasDepartures(void) const;
 
 	virtual	void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
