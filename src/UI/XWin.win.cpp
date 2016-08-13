@@ -72,6 +72,7 @@ XWin::XWin(int default_dnd)
 	mSizeMin.x = 0;
 	mSizeMin.y = 0;
 	sIniting = false;
+	mIsModal = 0;
 }
 
 XWin::XWin(
@@ -128,11 +129,32 @@ XWin::XWin(
 	mWantFakeUp=0;
 	mMouse.x = 0;
 	mMouse.y = 0;
+
+	mIsModal = 0;
+	if((inAttributes & xwin_style_modal) == xwin_style_modal)
+	{
+		mIsModal = 1;
+		for(map<HWND,XWin *>::iterator all = sWindows.begin(); all != sWindows.end(); ++all)
+		{
+				if(all->first != mWindow)
+					EnableWindow(all->first,FALSE);
+		}
+	}
+
 	sIniting = false;
 }
 
 XWin::~XWin()
 {
+	if(mIsModal)
+	{
+		for(map<HWND,XWin *>::iterator all = sWindows.begin(); all != sWindows.end(); ++all)
+		{
+				if(all->first != mWindow)
+					EnableWindow(all->first,TRUE);
+		}
+	}
+
 	if (mWindow)
 	{
 		sWindows.erase(mWindow);

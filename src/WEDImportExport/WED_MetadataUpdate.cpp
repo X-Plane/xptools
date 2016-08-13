@@ -261,7 +261,7 @@ void WED_UpdateMetadataDialog::TimerFired()
 				string icao;
 				mApt->GetICAO(icao);
 				this->AddLabel("Update metadata for the airport " + icao + "?");
-				this->AddLabel("(May add or overwrite existing metadata)");
+				this->AddLabel("(Adds new metadata if available, will not overwrite existing values)");
 			}
 			else if(res.out_status == cache_status_error)
 			{

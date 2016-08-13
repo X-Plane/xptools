@@ -44,6 +44,7 @@
 	- (NSView *) view;
 	- (void) timerFired;
 	- (void) menuItemPicked:(id) sender;
+	- (void) menu_picked:(id) sender;	
 	@end
 
 #else
@@ -215,6 +216,10 @@ public:
 
 		int						mCurrentDragOps;	// Legal drag mask (in NS constants) for current drag op)
 		int						mInDragOp;			// Flag if we are in a drag and drop op - since the op is closed via a callback we have to keep a flag.
+													// 0 = we are NOT in the drag op.
+													// 1 = we are in the modal loop and the drag is happening
+													// 2 = we are in the modal loop but the drag is over.  This tells us that we SHOULD
+													//	   exit the loop but we haven't YET exited the loop.  See endedAtPoint in .mm
 	
 		// Mac common handlers for obj-C's 5 million event messages.
 		void					EventButtonDown(int x, int y, int button, int has_control_key);
@@ -233,6 +238,8 @@ public:
 	virtual	int					AdvancedDragUpdated(void * ns_dragging_info) { return 0; }
 	virtual	void				AdvancedDragExited (void * ns_dragging_info) {			 }
 	virtual	int					AdvancedPerformDrop(void * ns_dragging_info) { return 0; }
+
+	virtual	void				GotCommandHack(int command) { }
 
 protected:
 		void		initCommon(int dnd, const char * title, int attributes, int x, int y, int dx, int dy);
@@ -255,6 +262,7 @@ protected:
 		POINT			mSizeMin;
 		int				mDragging;
 		int				mWantFakeUp;
+		int				mIsModal;
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 

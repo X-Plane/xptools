@@ -570,6 +570,7 @@ void WED_GatewayImportDialog::TimerFired()
 							if(last_imported == NULL)
 							{
 								wrl->AbortOperation();
+								this->AsyncDestroy();//All done!
 								return;
 							}
 						}
@@ -989,14 +990,38 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath);
 	out_apt[0]->StateChanged();
 
-	WED_Airport * g = out_apt[0];
-	g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
+	WED_Airport * g = NULL;
+
+	if(!out_apt.empty())
+	{
+		g = out_apt[0];
+		g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
+	}
 
 	string dsfTextPath = filePath + mICAOid + ".txt";
-	if(has_dsf)
+	if(has_dsf && g)
 	{
 		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
+
+#if !SAVE_ON_HDD
+	//clean up our files ICAOid.dat and potentially ICAOid.txt
+	if(has_dsf)
+	{
+		if(FILE_delete_file(dsfTextPath.c_str(),0) != 0)
+		{
+			//DoUserAlert(string("Could not remove temporary file " + dsfTextPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+		}
+	}
+	if(FILE_delete_file(aptdatPath.c_str(),0) != 0)
+	{
+		//DoUserAlert(string("Could not remove temporary file " + aptdatPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+	}
+	if(FILE_delete_file(zipPath.c_str(),0) != 0)
+	{
+		//DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
+	}
+#endif
 
 	return g;
 }

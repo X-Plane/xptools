@@ -478,8 +478,8 @@ bool	WED_MarqueeTool::GetTotalBounds(void) const
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
 		if (went)
 		{
-			if (went->GetLocked()) continue;
-			if (went->GetHidden()) continue;
+			if(IsLockedNow(went))		continue;
+			if(!IsVisibleNow(went))	continue;
 		}
 
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
@@ -510,8 +510,8 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
 		if (went)
 		{
-			if (went->GetLocked()) continue;
-			if (went->GetHidden()) continue;
+			if(IsLockedNow(went))		continue;
+			if(!IsVisibleNow(went))	continue;
 		}
 
 		// This is a mess.  GIS edge's violate the tree structure of the GIS class by 
@@ -558,8 +558,8 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
 		if (went)
 		{
-			if (went->GetLocked()) continue;
-			if (went->GetHidden()) continue;
+			if(IsLockedNow(went))		continue;
+			if(!IsVisibleNow(went))	continue;
 		}
 
 		if (ent)

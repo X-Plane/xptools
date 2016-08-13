@@ -288,7 +288,7 @@ static WED_file_cache_response start_new_cache_object(WED_file_cache_request req
 	CACHE_file_cache.push_back(new CACHE_CacheObject());
 	CACHE_CacheObject& co = *CACHE_file_cache.back();
 	
-	co.create_RAII_curl_hndl(req.in_url, req.in_cert, GetDomainPolicy(req.in_domain).cache_domain_pol_buffer_reserve_size);
+	co.create_RAII_curl_hndl(req.in_url, req.in_cert);
 	
 	return WED_file_cache_response(co.get_RAII_curl_hndl()->get_curl_handle().get_progress(),
 								   "",

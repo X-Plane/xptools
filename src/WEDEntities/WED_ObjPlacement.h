@@ -52,11 +52,11 @@ public:
 private:
 
 #if AIRPORT_ROUTING
-	WED_PropBoolText		has_msl;
-	WED_PropDoubleText		msl;	
+	WED_PropBoolText			has_msl;
+	WED_PropDoubleTextMeters	msl;	
 #endif
-	WED_PropStringText		resource;
-	WED_PropIntEnum			show_level;
+	WED_PropStringText			resource;
+	WED_PropIntEnum				show_level;
 
 };
 

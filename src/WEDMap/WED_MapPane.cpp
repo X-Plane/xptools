@@ -65,6 +65,7 @@
 #include "WED_Server.h"
 #include "WED_NWInfoLayer.h"
 #endif
+
 char	kToolKeys[] = {
 	0, 0, 0, 0,
 	0, 0, 0, 0,
@@ -286,6 +287,11 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// messages (secretly it's our document's GetArchive() member) and anyone who needs it (our map).
 
 	archive->AddListener(mMap);
+
+	// This is a band-aid.  We don't restore the current tab in the tab hierarchy (as of WED 1.5) so we don't get a tab changed message.  Instead we just
+	// are always in the selection tab.  So mostly that means the defaults for things like filters are fine, but for the ATC layer it needs to be off!
+	mATCLayer->ToggleVisible();
+
 }
 
 GUI_Pane *	WED_MapPane::GetTopBar(void)
@@ -365,13 +371,12 @@ int		WED_MapPane::Map_HandleCommand(int command)
 #endif	
 //	case wed_ToggleTileserver: mTileserver->ToggleVis(); return 1;
 	case wed_TogglePreview:	mPreview->ToggleVisible(); return 1;
-	case wed_ToggleATC:		mATCLayer->ToggleVisible(); return 1;
 
-	case wed_Pavement0:		mPreview->SetPavementTransparency(0.0f);		return 1;
-	case wed_Pavement25:	mPreview->SetPavementTransparency(0.25f);	return 1;
-	case wed_Pavement50:	mPreview->SetPavementTransparency(0.5f);		return 1;
-	case wed_Pavement75:	mPreview->SetPavementTransparency(0.75f);	return 1;
-	case wed_Pavement100:	mPreview->SetPavementTransparency(1.0f);		return 1;
+	case wed_Pavement0:		mPreview->SetPavementTransparency(0.0f);  return 1;
+	case wed_Pavement25:	mPreview->SetPavementTransparency(0.25f); return 1;
+	case wed_Pavement50:	mPreview->SetPavementTransparency(0.5f);  return 1;
+	case wed_Pavement75:	mPreview->SetPavementTransparency(0.75f); return 1;
+	case wed_Pavement100:	mPreview->SetPavementTransparency(1.0f);  return 1;
 
 	case wed_ObjDensity1:	mPreview->SetObjDensity(1);	return 1;
 	case wed_ObjDensity2:	mPreview->SetObjDensity(2);	return 1;
@@ -404,7 +409,6 @@ int		WED_MapPane::Map_CanHandleCommand(int command, string& ioName, int& ioCheck
 #endif	
 //	case wed_ToggleTileserver: ioCheck = mTileserver->IsVis();								return 1;
 	case wed_TogglePreview: ioCheck = mPreview->IsVisible();								return 1;
-	case wed_ToggleATC:		ioCheck = mATCLayer->IsVisible();								return 1;
 	case wed_Pavement0:		ioCheck = mPreview->GetPavementTransparency() == 0.0f;	return 1;
 	case wed_Pavement25:	ioCheck = mPreview->GetPavementTransparency() == 0.25f;	return 1;
 	case wed_Pavement50:	ioCheck = mPreview->GetPavementTransparency() == 0.5f;	return 1;
@@ -435,12 +439,19 @@ void	WED_MapPane::ReceiveMessage(
 							intptr_t				inMsg,
 							intptr_t				inParam)
 {
-	int i = mToolbar->GetValue();
-	WED_MapToolNew * t = NULL;
-	if (i >= 0 && i < mTools.size())
-		t = mTools[i];
-	mMap->SetTool(t);
-	mInfoAdapter->SetTool(t);
+	if(inSrc == mToolbar)
+	{
+		int i = mToolbar->GetValue();
+		WED_MapToolNew * t = NULL;
+		if (i >= 0 && i < mTools.size())
+			t = mTools[i];
+		mMap->SetTool(t);
+		mInfoAdapter->SetTool(t);
+	}
+	else
+	{
+		SetTabFilterMode(inParam);
+	}
 }
 
 void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
@@ -450,8 +461,6 @@ void			WED_MapPane::FromPrefs(IDocPrefs * prefs)
 	if ((mTerraserver->IsVisible () ? 1 : 0) != prefs->ReadIntPref("map/terraserver_vis",mTerraserver->IsVisible()  ? 1 : 0))		mTerraserver->ToggleVisible();
 #endif	
 	if ((mPreview->IsVisible ()     ? 1 : 0) != prefs->ReadIntPref("map/preview_vis"    ,mPreview->IsVisible()      ? 1 : 0))		mPreview->ToggleVisible();
-
-	if ((mATCLayer->IsVisible()		? 1 : 0) != prefs->ReadIntPref("map/atc_vis"		,mATCLayer->IsVisible()		? 1 : 0))		mATCLayer->ToggleVisible();
 
 	mPreview->SetPavementTransparency(prefs->ReadIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4) * 0.25f);
 	mPreview->SetObjDensity(prefs->ReadIntPref("map/obj_density",mPreview->GetObjDensity()));
@@ -527,7 +536,7 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	prefs->WriteIntPref("map/preview_vis",mPreview->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/pavement_alpha",mPreview->GetPavementTransparency()*4);
 	prefs->WriteIntPref("map/obj_density",mPreview->GetObjDensity());
-	prefs->WriteIntPref("map/atc_vis", mATCLayer->IsVisible() ? 1 : 0);
+	//prefs->WriteIntPref("map/atc_vis", mATCLayer->IsVisible() ? 1 : 0);
 	prefs->WriteIntPref("map/real_lines_vis",mStructureLayer->GetRealLinesShowing() ? 1 : 0);
 	prefs->WriteIntPref("map/vertices_vis",mStructureLayer->GetVerticesShowing() ? 1 : 0);
 
@@ -587,3 +596,271 @@ void			WED_MapPane::ToPrefs(IDocPrefs * prefs)
 	}
 }
 
+//--Tab Modes----------------------------------------------------------------
+#include "WED_AirportSign.h"
+#include "WED_AirportBeacon.h"
+#include "WED_AirportBoundary.h"
+#include "WED_AirportChain.h"
+#include "WED_Ring.h"
+#include "WED_AirportNode.h"
+#include "WED_AirportSign.h"
+#include "WED_Helipad.h"
+#include "WED_KeyObjects.h"
+#include "WED_LightFixture.h"
+#include "WED_ObjPlacement.h"
+#include "WED_RampPosition.h"
+#include "WED_Root.h"
+#include "WED_Runway.h"
+#include "WED_RunwayNode.h"
+#include "WED_Sealane.h"
+#include "WED_Select.h"
+#include "WED_Taxiway.h"
+#include "WED_TowerViewpoint.h"
+#include "WED_Windsock.h"
+#include "WED_ATCFrequency.h"
+#include "WED_TextureNode.h"
+#include "WED_TextureBezierNode.h"
+#include "WED_OverlayImage.h"
+#include "WED_SimpleBoundaryNode.h"
+#include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_LinePlacement.h"
+#include "WED_StringPlacement.h"
+#include "WED_ForestPlacement.h"
+#include "WED_FacadePlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_ExclusionZone.h"
+#include "WED_ForestRing.h"
+#include "WED_FacadeRing.h"
+#include "WED_FacadeNode.h"
+#include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCTimeRule.h"
+#include "WED_ATCWindRule.h"
+#include "WED_ATCRunwayUse.h"
+#include "WED_RoadEdge.h"
+
+//Note: Replace WED_Airport or WED_Group with WED_GISComposite or it won't work when nested underneath
+const char * k_show_taxiline_chain = "WED_AirportChain/WED_GISComposite";
+const char * k_show_taxiline_nodes = "WED_AirportNode/WED_AirportChain/WED_GISComposite";
+
+const char * k_show_boundary_chain = "WED_AirportChain/WED_AirportBoundary";
+const char * k_show_boundary_nodes = "WED_AirportNode/WED_AirportChain/WED_AirportBoundary";
+
+void hide_all_persistents(vector<const char*>& hide_list)
+{
+	//Commenting an item here makes it "white listed", aka always shown.
+	//Most white listed items are vertex nodes, and
+	//persistents that compose more concrete persistents.
+
+	//If a pattern is here, it is hazy. Tread carefully, debug from the top-down or bottom-up.
+	//Minimizing the size of the hide_list will likely speed things up for you.
+
+	//See also WED_MapLayer::Is(Visible|Locked)Now and WED_MapLayer.cpp's ::matches_filter
+	//  -Ted 07/06/2016
+
+	hide_list.push_back(WED_AirportSign::sClass);
+	hide_list.push_back(WED_AirportBeacon::sClass);
+	hide_list.push_back(WED_AirportBoundary::sClass);
+	hide_list.push_back(k_show_taxiline_chain);
+	hide_list.push_back(k_show_taxiline_nodes);
+
+	hide_list.push_back(k_show_boundary_chain);
+	hide_list.push_back(k_show_boundary_nodes);
+	//hide_list.push_back(WED_AirportChain::sClass);
+	//hide_list.push_back(WED_Ring::sClass);
+	//hide_list.push_back(WED_AirportNode::sClass);
+	hide_list.push_back(WED_Helipad::sClass);
+	hide_list.push_back(WED_KeyObjects::sClass);
+	hide_list.push_back(WED_LightFixture::sClass);
+	hide_list.push_back(WED_ObjPlacement::sClass);
+	hide_list.push_back(WED_RampPosition::sClass);
+	hide_list.push_back(WED_Root::sClass);
+	hide_list.push_back(WED_Runway::sClass);
+	//hide_list.push_back(WED_RunwayNode::sClass);
+	hide_list.push_back(WED_Sealane::sClass);
+	hide_list.push_back(WED_Select::sClass);
+	hide_list.push_back(WED_Taxiway::sClass);
+	hide_list.push_back(WED_TowerViewpoint::sClass);
+	hide_list.push_back(WED_Windsock::sClass);
+	hide_list.push_back(WED_ATCFrequency::sClass);
+	//hide_list.push_back(WED_TextureNode::sClass);
+	//hide_list.push_back(WED_TextureBezierNode::sClass);
+	hide_list.push_back(WED_OverlayImage::sClass);
+	//hide_list.push_back(WED_SimpleBoundaryNode::sClass);
+	//hide_list.push_back(WED_SimpleBezierBoundaryNode::sClass);
+	hide_list.push_back(WED_LinePlacement::sClass);
+	hide_list.push_back(WED_StringPlacement::sClass);
+	hide_list.push_back(WED_ForestPlacement::sClass);
+	hide_list.push_back(WED_FacadePlacement::sClass);
+	hide_list.push_back(WED_PolygonPlacement::sClass);
+	hide_list.push_back(WED_DrapedOrthophoto::sClass);
+	hide_list.push_back(WED_ExclusionZone::sClass);
+	//hide_list.push_back(WED_ForestRing::sClass);
+	//hide_list.push_back(WED_FacadeRing::sClass);
+	//hide_list.push_back(WED_FacadeNode::sClass);
+	hide_list.push_back(WED_TaxiRoute::sClass);
+	hide_list.push_back(WED_TaxiRouteNode::sClass);
+	hide_list.push_back(WED_ATCFlow::sClass);
+	hide_list.push_back(WED_ATCTimeRule::sClass);
+	hide_list.push_back(WED_ATCWindRule::sClass);
+	hide_list.push_back(WED_ATCRunwayUse::sClass);
+	hide_list.push_back(WED_RoadEdge::sClass);
+}
+
+void unhide_persistent(vector<const char*>& hide_list, const char* to_unhide)
+{
+	for(vector<const char*>::iterator hide_itr = hide_list.begin();
+		hide_itr != hide_list.end();
+		++hide_itr)
+	{
+		if(*hide_itr == to_unhide)
+		{
+			hide_list.erase(hide_itr);
+			break;
+		}
+	}
+}
+
+void unhide_persistent(vector<const char*>& hide_list, const vector<const char*>& to_unhide)
+{
+	for (vector<const char*>::const_iterator unhide_itr = to_unhide.begin();
+		 unhide_itr != to_unhide.end();
+		 ++unhide_itr)
+	{
+		for(vector<const char*>::iterator hide_itr = hide_list.begin();
+			hide_itr != hide_list.end();
+			++hide_itr)
+		{
+			if(*unhide_itr == *hide_itr)
+			{
+				hide_list.erase(hide_itr);
+				break;
+			}
+		}
+	}
+}
+
+void		WED_MapPane::SetTabFilterMode(int mode)
+{
+	string title;
+	vector<const char *> hide_list, lock_list;
+	
+	enum //Must be kept in sync with TabPane
+	{
+		tab_Selection,
+		tab_Pavement,
+		tab_ATC,
+		tab_Lights,
+		tab_3D,
+		tab_Exclusions,
+		tab_Texture
+	};
+	
+	hide_all_persistents(hide_list);
+	mATCLayer->SetVisible(false);
+
+	//Add to lock_list for Map Dead
+	//unhide_persistent for Map Live
+	//All else will be hidden
+	if(mode == tab_Selection)
+	{
+		title = "";
+		hide_list.clear();
+		lock_list.clear();
+	}
+	else if(mode == tab_Pavement)
+	{
+		title = "Pavement Mode";
+
+		unhide_persistent(hide_list, WED_DrapedOrthophoto::sClass);
+		unhide_persistent(hide_list, WED_PolygonPlacement::sClass);
+		unhide_persistent(hide_list, WED_Helipad::sClass);
+		unhide_persistent(hide_list, WED_Runway::sClass);
+		unhide_persistent(hide_list, WED_Taxiway::sClass);
+	}
+	else if(mode == tab_ATC)
+	{
+		title = "ATC Taxi + Flow Mode";
+
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_FacadePlacement::sClass);
+		lock_list.push_back(WED_ForestPlacement::sClass);
+		lock_list.push_back(WED_ObjPlacement::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+		lock_list.push_back(k_show_taxiline_chain);
+
+		mATCLayer->SetVisible(true);
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_RampPosition::sClass);
+		unhide_persistent(hide_list, WED_TaxiRoute::sClass);
+		unhide_persistent(hide_list, WED_TaxiRouteNode::sClass);
+	}
+	else if(mode == tab_Lights)
+	{
+		title = "Lights and Markings";
+
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_LightFixture::sClass);
+		unhide_persistent(hide_list, WED_LinePlacement::sClass);
+		unhide_persistent(hide_list, WED_StringPlacement::sClass);
+		unhide_persistent(hide_list, k_show_taxiline_chain);
+		unhide_persistent(hide_list, k_show_taxiline_nodes);
+		unhide_persistent(hide_list, WED_Windsock::sClass);
+	}
+	else if(mode == tab_3D)
+	{
+		title = "3D Objects Mode";
+
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_FacadePlacement::sClass);
+		unhide_persistent(hide_list, WED_ForestPlacement::sClass);
+		unhide_persistent(hide_list, WED_ObjPlacement::sClass);
+	}
+	else if(mode == tab_Exclusions)
+	{
+		title = "Exclusions and Boundaries";
+
+		lock_list.push_back(WED_DrapedOrthophoto::sClass);
+		lock_list.push_back(WED_FacadePlacement::sClass);
+		lock_list.push_back(WED_ForestPlacement::sClass);
+		lock_list.push_back(WED_ObjPlacement::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_ExclusionZone::sClass);
+		unhide_persistent(hide_list, WED_AirportBoundary::sClass);
+		unhide_persistent(hide_list, k_show_boundary_chain);
+		unhide_persistent(hide_list, k_show_boundary_nodes);
+	}
+	else if(mode == tab_Texture)
+	{
+		title = "UV Texture Mode";
+
+		lock_list.push_back(WED_AirportSign::sClass);
+		lock_list.push_back(WED_PolygonPlacement::sClass);
+		lock_list.push_back(WED_Runway::sClass);
+		lock_list.push_back(WED_Taxiway::sClass);
+
+		unhide_persistent(hide_list, lock_list);
+		unhide_persistent(hide_list, WED_DrapedOrthophoto::sClass);
+	}
+
+	mMap->SetFilter(title, hide_list, lock_list);
+}
+//---------------------------------------------------------------------------//

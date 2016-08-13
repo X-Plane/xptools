@@ -50,7 +50,7 @@ public:
 private:
 
 	WED_PropIntEnum			rwy;
-	WED_PropDoubleText		dep_frq;
+	WED_PropFrequencyText		dep_frq;
 	WED_PropIntEnumBitfield	traffic;
 	WED_PropIntEnumBitfield	operations;	
 	WED_PropIntText			dep_heading_min;		// This is the range of departure gates that we'd want to use this runway for.

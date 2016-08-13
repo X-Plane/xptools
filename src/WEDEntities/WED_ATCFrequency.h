@@ -42,7 +42,7 @@ public:
 private:
 
 	WED_PropIntEnum		freq_type;
-	WED_PropDoubleText	freq;
+	WED_PropFrequencyText	freq;
 
 };
 

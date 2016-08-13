@@ -420,8 +420,8 @@ bool	WED_TCEMarqueeTool::GetTotalBounds(void) const
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
 		if (went)
 		{
-			if (went->GetLocked()) continue;
-			if (went->GetHidden()) continue;
+			if(IsLockedNow(went))		continue;
+			if(!IsVisibleNow(went))	continue;
 		}
 
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
@@ -451,8 +451,8 @@ void	WED_TCEMarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
 		if (went)
 		{
-			if (went->GetLocked()) continue;
-			if (went->GetHidden()) continue;
+			if(IsLockedNow(went))		continue;
+			if(!IsVisibleNow(went))	continue;
 		}
 
 		if (ent)
@@ -477,8 +477,8 @@ void	WED_TCEMarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
 		if (went)
 		{
-			if (went->GetLocked()) continue;
-			if (went->GetHidden()) continue;
+			if(IsLockedNow(went))		continue;
+			if(!IsVisibleNow(went))	continue;
 		}
 
 		if (ent)

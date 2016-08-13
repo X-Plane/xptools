@@ -775,7 +775,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else if(outApts.back().flows.empty()) ok = "Error: vis rule outside of flow.";
 			else
 			{
-				if(TextScanner_FormatScan(s,"iTi",&rec_code,&outApts.back().flows.back().icao,&outApts.back().flows.back().visibility_sm) != 3)
+				if(TextScanner_FormatScan(s,"iTf",&rec_code,&outApts.back().flows.back().icao,&outApts.back().flows.back().visibility_sm) != 3)
 					ok = "ERROR: bad vis rule record.";
 			}
 			break;
@@ -1190,7 +1190,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				
 				fprintf(fi,"%2d %s %d" CRLF, apt_flow_ceil, flow->icao.c_str(), flow->ceiling_ft);
 				
-				fprintf(fi,"%2d %s %d" CRLF, apt_flow_vis, flow->icao.c_str(), flow->visibility_sm);
+				fprintf(fi,"%2d %s %.1f" CRLF, apt_flow_vis, flow->icao.c_str(), flow->visibility_sm);
 				
 				for(AptTimeRuleVector::const_iterator time = flow->time_rules.begin(); time != flow->time_rules.end(); ++time)
 					fprintf(fi,"%2d %04d %04d" CRLF, apt_flow_time, time->start_zulu, time->end_zulu);

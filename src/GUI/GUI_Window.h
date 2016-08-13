@@ -120,6 +120,9 @@ private:
 	virtual	void				AdvancedDragExited(void * ns_dragging_info);
 	virtual	int					AdvancedPerformDrop(void * ns_dragging_info);
 	
+	virtual	void				GotCommandHack(int command);
+	
+	
 #endif
 
 	GUI_GraphState	mState;

@@ -301,10 +301,8 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 				mSelManip.push_back(e);
 				if (!has_click)
 				{
-					WED_Entity * tt = SAFE_CAST(WED_Entity, t);
-					if (tt)
-					if (!tt->GetLocked())
-					if (!tt->GetHidden())
+					if(!IsLockedNow(t))
+					if(IsVisibleNow(t))
 					{
 						double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
 						double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(GetFurnitureIconRadius()));
@@ -450,11 +448,8 @@ int		WED_HandleToolBase::ProcessSelectionRecursive(
 	if (pt_sel) { if (!ent_bounds.contains(psel))				return 0;	}
 	else		{ if (!ent_bounds.overlap(bounds))				return 0;	}
 
-	WED_Entity * thang = dynamic_cast<WED_Entity *>(entity);
-	if (thang) {
-		if (thang->GetLocked()) return 0;
-		if (thang->GetHidden()) return 0;
-	}
+	if(!IsVisibleNow(entity))	return 0;
+	if(IsLockedNow(entity))		return 0;
 
 	EntityHandling_t choice = TraverseEntity(entity,pt_sel);
 	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
