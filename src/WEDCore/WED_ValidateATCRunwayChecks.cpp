@@ -136,7 +136,9 @@ struct TaxiRouteInfo
 		  node_1(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(1)))
 	{
 		AptRouteEdge_t apt_route;
-		taxiroute->Export(apt_route);
+		AptServiceRoadEdge_t dummy;
+		int w = taxiroute->Export(apt_route, dummy);
+		DebugAssert(w == 0);
 		taxiroute_name = apt_route.name;
 		hot_arrivals   = apt_route.hot_arrive;
 		hot_departures = apt_route.hot_depart;
@@ -571,6 +573,7 @@ static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
 	{
 		WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*node_viewer_itr);
 		if(taxiroute != NULL)
+		if(taxiroute->AllowAircraft())
 		{
 			matching_taxiroutes.push_back(taxiroute);
 		}
@@ -741,6 +744,11 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
+static bool is_aircraft_taxi_route(WED_TaxiRoute * r)
+{
+	return r->AllowAircraft();
+}
+
 //-----------------------------------------------------------------------------
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 {
@@ -759,7 +767,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	CollectRecursive(&apt,back_inserter<ATCRunwayUseVec_t>(all_use_rules));
 
 	TaxiRouteVec_t all_taxiroutes_plain;
-	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
+	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain), is_aircraft_taxi_route);
 	
 	//All taxiroutes within the airport that are visible
 	TaxiRouteInfoVec_t all_taxiroutes(all_taxiroutes_plain.begin(),all_taxiroutes_plain.end());
