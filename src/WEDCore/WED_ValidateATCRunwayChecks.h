@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2016, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -19,31 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */
+ */ 
 
-#ifndef WED_ATCFrequency_H
-#define WED_ATCFrequency_H
+#ifndef WED_VALIDATEATCRUNWAYCHECKS_H
+#define WED_VALIDATEATCRUNWAYCHECKS_H
 
-#include "WED_Thing.h"
+class WED_Airport;
+struct validation_error_t;
 
-struct	AptATCFreq_t;
+void WED_DoATCRunwayChecks(WED_Airport& apt,
+						   vector<validation_error_t>& msgs);
 
-class WED_ATCFrequency : public WED_Thing {
-
-DECLARE_PERSISTENT(WED_ATCFrequency)
-
-public:
-
-	void	Import(const AptATCFreq_t& info, void (* print_func)(void *, const char *, ...), void * ref);
-	void	Export(		 AptATCFreq_t& info) const;
-
-	virtual const char *	HumanReadableType(void) const { return "ATC Frequency"; }
-
-private:
-
-	WED_PropIntEnum		freq_type;
-	WED_PropFrequencyText	freq;
-
-};
-
-#endif /* WED_ATCFrequency_H */
+#endif

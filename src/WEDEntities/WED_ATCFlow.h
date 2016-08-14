@@ -50,7 +50,7 @@ private:
 	// Flow rules
 	WED_PropStringText			icao;
 	WED_PropDoubleText			cld_min_ft;
-	WED_PropIntText				vis_min_sm;
+	WED_PropDoubleText			vis_min_sm;
 
 	WED_PropIntEnum		pattern_rwy;
 	WED_PropIntEnum		traffic_dir;

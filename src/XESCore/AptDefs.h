@@ -454,7 +454,7 @@ struct AptFlow_t {
 
 	string						icao;
 	int							ceiling_ft;
-	int							visibility_sm;
+	float						visibility_sm;
 	AptTimeRuleVector			time_rules;
 	AptWindRuleVector			wind_rules;	
 	int							pattern_side;

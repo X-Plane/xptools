@@ -28,6 +28,19 @@ vector<pair<Point2,Point3> >		gMeshPoints;
 vector<pair<Point2,Point3> >		gMeshLines;
 vector<pair<Polygon2,Point3> >		gMeshPolygons;
 
+void	debug_mesh_bbox(const Bbox2& bb1, float r1, float g1, float b1, float r2, float g2, float b2)
+{
+	debug_mesh_segment(bb1.left_side(),   r1, g1, b1, r2, g2, b2);
+	debug_mesh_segment(bb1.top_side(),    r1, g1, b1, r2, g2, b2);
+	debug_mesh_segment(bb1.right_side(),  r1, g1, b1, r2, g2, b2);
+	debug_mesh_segment(bb1.bottom_side(), r1, g1, b1, r2, g2, b2);
+}
+
+void	debug_mesh_segment(const Segment2& s1, float r1, float g1, float b1, float r2, float g2, float b2)
+{
+	debug_mesh_line(s1.p1, s1.p2, r1, g1, b1, r2, g2, b2);
+}
+
 void	debug_mesh_line(const Point2& p1, const Point2& p2, float r1, float g1, float b1, float r2, float g2, float b2)
 {
 	gMeshLines.push_back(pair<Point2,Point3>(p1,Point3(r1,g1,b1)));

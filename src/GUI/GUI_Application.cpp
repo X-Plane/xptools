@@ -64,15 +64,6 @@ vector<ACCEL>	gAccelTable;
 
 #if APL
 
-void GUI_Application::MenuCommandCB(void * ref, int cmd)
-{
-	GUI_Application * me = reinterpret_cast<GUI_Application *>(ref);
-
-	if(cmd)
-		me->DispatchHandleCommand(cmd);
-}
-
-
 void GUI_Application::MenuUpdateCB(void * ref, int cmd, char * io_name, int * io_check, int * io_enable)
 {
 	GUI_Application * me = reinterpret_cast<GUI_Application *>(ref);
@@ -214,7 +205,7 @@ GUI_Application::GUI_Application()
 	mDone = false;
 #if APL
 
-	app_callbacks cb = { this, MenuCommandCB, MenuUpdateCB, TryQuitCB };
+	app_callbacks cb = { this, MenuUpdateCB, TryQuitCB };
 	
 	set_delegate(&cb, menu_nib);
 

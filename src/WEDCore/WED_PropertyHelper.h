@@ -214,12 +214,22 @@ public:
 
 };
 
+class	WED_PropFrequencyText : public WED_PropDoubleText {
+public:
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, sql_col,xml_col, initial, digits, decimals) { }
+
+	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+
+};
+
 // A double value edited as text.  Stored in meters, but displayed in feet or meters, depending on UI settings.
 class	WED_PropDoubleTextMeters : public WED_PropDoubleText {
 public:
 	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, sql_col,xml_col, initial, digits, decimals) { }
 
-	WED_PropDoubleText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
+	WED_PropDoubleTextMeters& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
 	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);

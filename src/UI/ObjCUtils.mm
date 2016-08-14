@@ -26,8 +26,6 @@ static NSString *		s_nib_file = NULL;
 
 @interface objc_delegate : NSObject <NSApplicationDelegate, NSMenuDelegate>
 
-- (void) menu_picked:(id) sender;
-
 @end
 
 @implementation objc_delegate
@@ -57,14 +55,6 @@ static NSString *		s_nib_file = NULL;
 		[item setEnabled:enable ? YES : NO];
 	}
 	return YES;
-}
-
-- (void) menu_picked:(id) sender
-{
-	NSMenuItem * menu = sender;
-	int cmd_id = [menu tag];
-	if(g_callbacks.menu_item_pick)
-		g_callbacks.menu_item_pick(g_callbacks.info, cmd_id);
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -581,9 +571,6 @@ void		add_menu_item(void * menu,
 	[item setTag:cmd];
 	[item setState: checked ? 1 : 0];
 	[item setEnabled:enabled ? YES : NO];
-	
-	
-	[item setTarget:s_delegate];
 }
 						
 void		add_separator(void * menu)
