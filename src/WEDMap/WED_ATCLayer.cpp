@@ -119,25 +119,18 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		Quad_2to4(ends, mtr2, d);
 		
 		g->SetState(0, 0, 0, 0, 1, 0, 0);
-		if(hot)
+		if(rwy && hot)
+			glColor4f(0.9,0.1,0.7,0.4);
+		else if(hot)
 			glColor4f(1,0,0,0.4);
 		else if(ils)
-			glColor4f(8,0.5,0,0.4);
+			glColor4f(0.8,0.5,0,0.4);
 		else if(rwy)
-			glColor4f(0.0,0.2,0.6,0.4);
+			glColor4f(0.3,0.6,0.9,0.4);
 		else
 			glColor4f(1,1,0,0.4);
 		
 		GetZoomer()->LLToPixelv(c,c,4);
-
-		if(hot)
-			glColor4f(1,0,0,0.2);
-		else if(ils)
-			glColor4f(8,0.5,0,0.2);
-		else if(rwy)
-			glColor4f(0.0,0.2,0.6,0.2);
-		else
-			glColor4f(1,1,0,0.2);
 
 		GetZoomer()->LLToPixelv(d,d,4);
 		

@@ -53,7 +53,6 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 }
 
 DEFINE_PERSISTENT(WED_TaxiRoute)
-TRIVIAL_COPY(WED_TaxiRoute, WED_GISEdge)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
 	oneway(this,"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
@@ -64,6 +63,23 @@ WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
 	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"), ATCIcaoWidth, width_E)
 {
 }
+
+void WED_TaxiRoute::CopyFrom(const WED_TaxiRoute * rhs)
+{
+	WED_GISEdge::CopyFrom(rhs);
+	// Why is this necessary?  All WED_Things attempt to copy their guts by usign the introspection
+	// interface of IPropertyObject.
+	//
+	// But WED_TaxiRoute LIES about its interface to make "virtual" hot zones when it is a runway -
+	// this keeps the UI matching x-plane.  But it results in a bug: when we copy the taxi route,
+	// those virtual hot zones are copied (via the property interface) and become real in the new object,
+	// which is bad.
+	// So we run the base class, then manually copy this stuff. 
+	hot_depart = rhs->hot_depart;
+	hot_arrive = rhs->hot_arrive;
+	hot_ils = rhs->hot_ils;
+}
+
 
 WED_TaxiRoute::~WED_TaxiRoute()
 {
@@ -279,19 +295,20 @@ bool	WED_TaxiRoute::IsRunway(void) const
 
 bool	WED_TaxiRoute::HasHotArrival(void) const
 {
-	// Ben says: since we auto-include ourselves in our flags if we are a runway, 
-	// set our status to match.  
-	return !hot_arrive.value.empty() || runway.value != atc_rwy_None;
+	// BEN SAYS: we used to treat being a runway as being hot.  But the UI needs to distinguish between
+	// "I am a runway and hot because I am a runway" and "Ia m a runway and hot for a CROSSING runway" -e.g.
+	// a LAHSO marking.  So only return TRUE hotness.
+	return !hot_arrive.value.empty();// || runway.value != atc_rwy_None;
 }
 
 bool	WED_TaxiRoute::HasHotDepart(void) const
 {
-	return !hot_depart.value.empty() || runway.value != atc_rwy_None;
+	return !hot_depart.value.empty();// || runway.value != atc_rwy_None;
 }
 
 bool	WED_TaxiRoute::HasHotILS(void) const
 {
-	return !hot_ils.value.empty() || runway.value != atc_rwy_None;
+	return !hot_ils.value.empty();// || runway.value != atc_rwy_None;
 }
 
 bool	WED_TaxiRoute::HasInvalidHotZones(const set<int>& legal_rwys) const
