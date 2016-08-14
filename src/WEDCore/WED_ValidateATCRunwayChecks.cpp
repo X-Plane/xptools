@@ -7,7 +7,7 @@
 #if DEV
 #include <iostream>
 //Visualizes some of the runway lines and the bounding box
-#define DEBUG_VIS_LINES 1
+#define DEBUG_VIS_LINES 0
 #endif
 
 #include "WED_EnumSystem.h"
