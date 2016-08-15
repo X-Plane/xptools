@@ -226,7 +226,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 	}
 
 	RunwayInfoVec_t runway_info_vec;
-	//Error on any runway that has no taxiroutes associated with it
+	//Runways without taxiroutes are implicitly not added
 	for (RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin(); runway_itr != potentially_active_runways.end(); ++runway_itr)
 	{
 		bool found_matching_taxiroute = false;
@@ -239,16 +239,8 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 			if(runway_name == taxiroute_name)
 			{
 				runway_info_vec.push_back(*runway_itr);
-				found_matching_taxiroute = true;
 				break;
 			}
-		}
-
-		if(found_matching_taxiroute == false)
-		{
-			string name;
-			(*runway_itr)->GetName(name);
-			msgs.push_back(validation_error_t("Could not find at least one matching taxiroute for runway " + name, (*runway_itr), apt));
 		}
 	}
 	return runway_info_vec;
