@@ -138,8 +138,8 @@ struct TaxiRouteInfo
 		AptRouteEdge_t apt_route;
 		taxiroute->Export(apt_route);
 		taxiroute_name = apt_route.name;
-		hot_arrivals   = apt_route.hot_arrive;
-		hot_departures = apt_route.hot_depart;
+		hot_arrivals   = set<string>(apt_route.hot_arrive);
+		hot_departures = set<string>(apt_route.hot_depart);
 
 		Bezier2 bez;
 		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
@@ -463,6 +463,9 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 									 WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
+	bool first_run = true;
+	double ANGLE_THRESHOLD = 0.0;
+	//The first matching taxiroute chooses the direction, the rest must match
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_routes.begin();
 		taxiroute_itr != matching_routes.end();
 		++taxiroute_itr)
@@ -474,8 +477,26 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 
 		double dot_product = runway_centerline_vec.dot(taxiroute_vec);
 
-		double ANGLE_THRESHOLD = 0.995;
-		if(dot_product < ANGLE_THRESHOLD)
+		if(first_run == true)
+		{
+			if(dot_product >= 0)
+			{
+				ANGLE_THRESHOLD = 0.995;
+			}
+			else
+			{
+				ANGLE_THRESHOLD = -0.995;
+			}
+			first_run = false;
+			continue;
+		}
+		else if((ANGLE_THRESHOLD >= 0) && dot_product < ANGLE_THRESHOLD)
+		{
+			string msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is too sharply bent";
+			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
+			return false;
+		}
+		else if((ANGLE_THRESHOLD < 0) && dot_product > ANGLE_THRESHOLD)
 		{
 			string msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is too sharply bent";
 			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
@@ -762,7 +783,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
 	
 	//All taxiroutes within the airport that are visible
-	TaxiRouteInfoVec_t all_taxiroutes(all_taxiroutes_plain.begin(),all_taxiroutes_plain.end());
+	TaxiRouteInfoVec_t all_taxiroutes = TaxiRouteInfoVec_t(all_taxiroutes_plain.begin(),all_taxiroutes_plain.end());
 	
 	//All runways which match the following criteria
 	//- The runway is mentioned in an ATC Flow
