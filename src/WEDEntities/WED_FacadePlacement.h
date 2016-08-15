@@ -68,12 +68,12 @@ protected:
 
 private:
 
-	WED_PropDoubleText		height;
-	WED_PropStringText		resource;
+	WED_PropDoubleTextMeters	height;
+	WED_PropStringText			resource;
 #if AIRPORT_ROUTING	
-	WED_PropBoolText		pick_walls;
+	WED_PropBoolText			pick_walls;
 #endif	
-	WED_PropIntEnum			show_level;
+	WED_PropIntEnum				show_level;
 
 };
 

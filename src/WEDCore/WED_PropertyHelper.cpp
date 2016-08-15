@@ -382,6 +382,7 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.prop_name = mTitle;
 	info.digits = mDigits;
 	info.decimals = mDecimals;
+	info.round_down = false;
 	info.synthetic = 0;
 }
 
@@ -464,6 +465,15 @@ void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 	sprintf(as_double,"%.10lf", value);
 	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_double));
 }
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
+{
+	WED_PropDoubleText::GetPropertyInfo(info);
+	info.round_down= true;
+}
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 

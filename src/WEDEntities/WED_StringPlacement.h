@@ -48,9 +48,9 @@ protected:
 
 private:
 
-	WED_PropStringText		resource;
-	WED_PropDoubleText		spacing;
-	WED_PropBoolText		closed;
+	WED_PropStringText			resource;
+	WED_PropDoubleTextMeters	spacing;
+	WED_PropBoolText			closed;
 
 };
 

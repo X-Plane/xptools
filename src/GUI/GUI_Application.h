@@ -80,7 +80,6 @@ public:
 
 
 #if APL
-	static void MenuCommandCB(void * ref, int cmd);
 	static void MenuUpdateCB(void * ref, int cmd, char * io_name, int * io_check, int * io_enable);
 	static void TryQuitCB(void * ref);
 #endif

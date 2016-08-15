@@ -287,6 +287,11 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 	// messages (secretly it's our document's GetArchive() member) and anyone who needs it (our map).
 
 	archive->AddListener(mMap);
+
+	// This is a band-aid.  We don't restore the current tab in the tab hierarchy (as of WED 1.5) so we don't get a tab changed message.  Instead we just
+	// are always in the selection tab.  So mostly that means the defaults for things like filters are fine, but for the ATC layer it needs to be off!
+	mATCLayer->ToggleVisible();
+
 }
 
 GUI_Pane *	WED_MapPane::GetTopBar(void)
