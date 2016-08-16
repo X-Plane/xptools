@@ -191,9 +191,12 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 	//0 flows means treat all runways as potentially active
 	//>1 means find all runways mentioned, ignoring duplicates
 	RunwayVec_t potentially_active_runways;
+	RunwayInfoVec_t runway_info_vec;
 	if(flows.size() == 0)
 	{
 		potentially_active_runways = all_runways;
+		runway_info_vec.insert(runway_info_vec.begin(),potentially_active_runways.begin(),potentially_active_runways.end());
+		return runway_info_vec;
 	}
 	else
 	{
@@ -218,28 +221,21 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 				if( runway_rule.runway == runway_name_p1 ||
 					runway_rule.runway == runway_name_p2)
 				{
-					potentially_active_runways.insert(potentially_active_runways.begin(), *runway_itr);
-					break;
-				}
-			}
-		}
-	}
-
-	RunwayInfoVec_t runway_info_vec;
-	//Runways without taxiroutes are implicitly not added, unless there are no flows. No flows means we add everything
-	for (RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin(); runway_itr != potentially_active_runways.end(); ++runway_itr)
-	{
-		bool found_matching_taxiroute = false;
-		for(vector<TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
-		{
-			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
+					bool found_matching_taxiroute = false;
+					for(vector<TaxiRouteInfo>::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
+					{
+						string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
 			
-			string runway_name;
-			(*runway_itr)->GetName(runway_name);
-			if(runway_name == taxiroute_name || flows.size() == 0)// size == 0 to ensure we collect everything when there are no flows
-			{
-				runway_info_vec.push_back(*runway_itr);
-				break;
+						string runway_name;
+						(*runway_itr)->GetName(runway_name);
+						if(runway_name == taxiroute_name)
+						{
+							runway_info_vec.push_back(*runway_itr);
+							break; //exit all_taxiroutes loop
+						}
+					}
+					break;//exit use_rules loop
+				}
 			}
 		}
 	}
@@ -392,10 +388,8 @@ static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
 	//Since we are storing pointers we can sort them numerically and see if any of them appear 3 or more times
 	sort(all_nodes.begin(),all_nodes.end());
 
-	DebugAssert(all_nodes.size() % 2 == 0 && all_nodes.size() > 0);
-	
 	//Early exit
-	if(all_nodes.size() <= 2)
+	if(all_nodes.size() % 2 != 0 || all_nodes.size() <=2)
 	{
 		return true;
 	}
@@ -505,6 +499,11 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 									WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
+	if(matching_taxiroutes.size() == 0)
+	{
+		return true;
+	}
+
 	double total_length_m = 0.0;
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
