@@ -226,7 +226,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 	}
 
 	RunwayInfoVec_t runway_info_vec;
-	//Runways without taxiroutes are implicitly not added
+	//Runways without taxiroutes are implicitly not added, unless there are no flows. No flows means we add everything
 	for (RunwayVec_t::const_iterator runway_itr = potentially_active_runways.begin(); runway_itr != potentially_active_runways.end(); ++runway_itr)
 	{
 		bool found_matching_taxiroute = false;
@@ -236,7 +236,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 			
 			string runway_name;
 			(*runway_itr)->GetName(runway_name);
-			if(runway_name == taxiroute_name)
+			if(runway_name == taxiroute_name || flows.size() == 0)// size == 0 to ensure we collect everything when there are no flows
 			{
 				runway_info_vec.push_back(*runway_itr);
 				break;
@@ -793,7 +793,6 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 		debug_mesh_segment((*runway_info_itr).runway_centerline_geo,1,0,0,1,0,0);
 #endif
 		TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
-
 
 		bool passes_centerline_checks = false;
 		if(TaxiRouteSplitPathCheck(*runway_info_itr, all_taxiroutes, msgs, &apt))
