@@ -287,6 +287,7 @@ static void AssaignRunwayUse( RunwayInfo& runway_info,
 	}
 }
 
+//!!IMPORTANT: These methods return true if they pass without error, false if there was an error!!
 //--Centerline Checks----------------------------------------------------------
 static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 									   const TaxiRouteInfoVec_t& matching_taxiroutes,
@@ -371,7 +372,8 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-static bool EnsureRunwayTaxirouteValences (const RunwayInfo& runway_info,
+//Checks that a Runway's taxi route has two nodes with a valence of one, and no nodes with a valence of > 2
+static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 										   const TaxiRouteNodeVec_t& all_matching_nodes, //All nodes from taxiroutes matching the runwa, these will come in sorted
 										   WED_TaxiRoute*& start_taxiroute,
 										   validation_error_vector& msgs,
@@ -388,13 +390,10 @@ static bool EnsureRunwayTaxirouteValences (const RunwayInfo& runway_info,
 		{
 			if(num_valence_of_1 < 2)
 			{
-				if(num_valence_of_1 == 0)
-				{
-					set<WED_Thing*> node_viewers;
-					(*node_itr)->GetAllViewers(node_viewers);
-					//DebugAssert(node_viewers.size() == 1);
-					start_taxiroute = dynamic_cast<WED_TaxiRoute*>(*node_viewers.begin());
-				}
+				set<WED_Thing*> node_viewers;
+				(*node_itr)->GetAllViewers(node_viewers);
+				start_taxiroute = static_cast<WED_TaxiRoute*>(*node_viewers.begin());
+				
 				++num_valence_of_1;
 			}
 			else
@@ -481,17 +480,10 @@ pair<int,int> get_taxiroute_relationship(const WED_TaxiRouteNode* current_node,
 
 
 static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
-									 const TaxiRouteInfoVec_t& matching_taxiroutes,
 									 const TaxiRouteInfo& start_taxiroute,//One of the ends of this chain of taxi routes
 									 validation_error_vector& msgs,
 									 WED_Airport* apt)
 {
-	int original_num_errors = msgs.size();
-	//if(matching_taxiroutes.size() < 2)
-	{
-		//return true;
-	}
-
 	//We know all the nodes are within threshold of the center and within bounds, the segments are parallel enough,
 	//the route is a complete chain with no 3+-way splits. Now: do any of the segments make a complete 180 unexpectedly?
 	WED_TaxiRouteNode* current_node = NULL;
@@ -573,22 +565,20 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 			TaxiRouteVec_t problem_children;
 			problem_children.push_back(current_taxiroute);
 			problem_children.push_back(next_taxiroute);
-			msgs.push_back(validation_error_t("Error",//Taxi routes " + /*matching_taxiroutes[i].taxiroute_name +*/ string(" and ") + matching_taxiroutes[i+1].taxiroute_name + " have too extreme an angle between them",
+
+			//This copying is just to save to save screen space
+			TaxiRouteInfoVec_t route_info_vec(problem_children.begin(),problem_children.end());
+
+			msgs.push_back(validation_error_t("Taxi routes " + route_info_vec[0].taxiroute_name + " and " + route_info_vec[1].taxiroute_name + " have too extreme an angle between them",
 											  problem_children,
 											  apt));
-			return false; //Future tests will just fail more
+			return false; //The next test will just be redundent so we'll end here
 		}
 
 		current_taxiroute = next_taxiroute;
 		current_node = next_node;
 	}
-	//Current Node equals start_taxiroute's node that has a valence of 2
-	
-	// determine the relationship between the next taxi route and the current one in the form of pair<bool is_source, bool is_source>
-	// Using that relationship determine which sign the two should be when their dot products are compared
-	// If there is no issue, current_node = next node
 
-	
 	return true;
 }
 
@@ -612,12 +602,17 @@ static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
 	sort(all_nodes.begin(),all_nodes.end());
 
 	WED_TaxiRoute* start_taxiroute = NULL;
-	if(EnsureRunwayTaxirouteValences(runway_info, all_nodes, start_taxiroute, msgs, apt))
+	if(RunwaysTaxiRouteValencesCheck(runway_info, all_nodes, start_taxiroute, msgs, apt))
 	{
-		if(TaxiRouteSquishedZCheck(runway_info, matching_taxiroutes, start_taxiroute, msgs, apt))
+		bool has_squished_z = false;
+
+		//The algorithm requires there to be atleast 2 taxiroutes
+		if(all_taxiroutes.size() >= 2)
 		{
-			//We're good
+			has_squished_z = TaxiRouteSquishedZCheck(runway_info, start_taxiroute, msgs, apt);
 		}
+
+		return has_squished_z;
 	}
 	
 
@@ -654,9 +649,9 @@ static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 }
 
 static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
-									const TaxiRouteInfoVec_t& matching_taxiroutes,
-									validation_error_vector& msgs,
-									WED_Airport* apt)
+									  const TaxiRouteInfoVec_t& matching_taxiroutes,
+									  validation_error_vector& msgs,
+									  WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
 	if(matching_taxiroutes.size() == 0)
