@@ -443,14 +443,13 @@ static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
+static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 									 const TaxiRouteInfoVec_t& matching_routes,
 									 validation_error_vector& msgs,
 									 WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
-	bool first_run = true;
-	double ANGLE_THRESHOLD = 0.0;
+
 	//The first matching taxiroute chooses the direction, the rest must match
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_routes.begin();
 		taxiroute_itr != matching_routes.end();
@@ -461,32 +460,12 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 		runway_centerline_vec.normalize();
 		taxiroute_vec.normalize();
 
-		double dot_product = runway_centerline_vec.dot(taxiroute_vec);
-
-		if(first_run == true)
+		double dot_product = abs(runway_centerline_vec.dot(taxiroute_vec));
+		double ANGLE_THRESHOLD = 0.995;
+		if(dot_product < ANGLE_THRESHOLD)
 		{
-			if(dot_product >= 0)
-			{
-				ANGLE_THRESHOLD = 0.995;
-			}
-			else
-			{
-				ANGLE_THRESHOLD = -0.995;
-			}
-			first_run = false;
-			continue;
-		}
-		else if((ANGLE_THRESHOLD >= 0) && dot_product < ANGLE_THRESHOLD)
-		{
-			string msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is too sharply bent";
+			string msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is not parallel to the runway's center line.";
 			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
-			return false;
-		}
-		else if((ANGLE_THRESHOLD < 0) && dot_product > ANGLE_THRESHOLD)
-		{
-			string msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is too sharply bent";
-			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
-			return false;
 		}
 	}
 
@@ -602,7 +581,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 		runway_number == atc_Runway_None
 	  )
 	{
-		return Polygon2(0);//TODO: Something better here?
+		return Polygon2(0);
 	}
 
 	const double HITZONE_WIDTH_THRESHOLD_M   = 10.00;
@@ -802,7 +781,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 				{
 					if(RunwayHasCorrectCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 					{
-						if(TaxiRouteSquishedZCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+						if(TaxiRouteParallelCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 						{
 							passes_centerline_checks = true;
 						}
