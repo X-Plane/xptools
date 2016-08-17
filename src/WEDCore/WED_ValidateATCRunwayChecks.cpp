@@ -371,74 +371,255 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-static bool TaxiRouteSplitPathCheck( const RunwayInfo& runway_info,
-									 const TaxiRouteInfoVec_t& all_taxiroutes,
+static bool EnsureRunwayTaxirouteValences (const RunwayInfo& runway_info,
+										   const TaxiRouteNodeVec_t& all_matching_nodes, //All nodes from taxiroutes matching the runwa, these will come in sorted
+										   WED_TaxiRoute*& start_taxiroute,
+										   validation_error_vector& msgs,
+										   WED_Airport* apt)
+{
+	int original_num_errors = msgs.size();
+	int num_valence_of_1 = 0; //Aka, the tips of the runway, should end up being 2
+
+	for(TaxiRouteNodeVec_t::const_iterator node_itr = all_matching_nodes.begin(); node_itr != all_matching_nodes.end(); ++node_itr)
+	{
+		int node_valence = std::count(all_matching_nodes.begin(), all_matching_nodes.end(), *node_itr);
+
+		if(node_valence == 1)
+		{
+			if(num_valence_of_1 < 2)
+			{
+				if(num_valence_of_1 == 0)
+				{
+					set<WED_Thing*> node_viewers;
+					(*node_itr)->GetAllViewers(node_viewers);
+					//DebugAssert(node_viewers.size() == 1);
+					start_taxiroute = dynamic_cast<WED_TaxiRoute*>(*node_viewers.begin());
+				}
+				++num_valence_of_1;
+			}
+			else
+			{
+				msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is not continuous",*node_itr,apt));
+			}
+		}
+		else if(node_valence >= 3)
+		{
+			ostringstream oss;
+			oss << node_valence;
+
+			string node_name;
+			(*node_itr)->GetName(node_name);
+
+			msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is split " + oss.str() + " ways at taxi route node " + node_name, *node_itr,apt));
+		}
+	}
+
+	return msgs.size() - original_num_errors == 0 ? true : false;
+}
+
+int get_node_valence(const WED_TaxiRouteNode* node)
+{
+	set<WED_Thing*> node_viewers;
+	node->GetAllViewers(node_viewers);
+	return node_viewers.size();
+}
+
+WED_TaxiRouteNode* get_next_node(const WED_TaxiRouteNode* current_node,
+								 const WED_TaxiRoute* next_taxiroute)
+{
+	WED_TaxiRouteNode* next = NULL;
+	if(next_taxiroute->GetNthSource(0) == current_node)
+	{
+		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(1));
+	}
+	else
+	{
+		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(0));
+	}
+
+	if(get_node_valence(next) == 1)
+	{
+		return NULL; //We don't want to travel there next, its time to end
+	}
+	else
+	{
+		return next;
+	}
+}
+
+WED_TaxiRoute* get_next_taxiroute(const WED_TaxiRouteNode* current_node,
+								  const WED_TaxiRoute* current_taxiroute)
+{
+	set<WED_Thing*> node_viewers;
+	current_node->GetAllViewers(node_viewers);
+
+	WED_TaxiRoute* taxiroute_1 = dynamic_cast<WED_TaxiRoute*>(*node_viewers.begin());
+	WED_TaxiRoute* taxiroute_2 = dynamic_cast<WED_TaxiRoute*>(*(node_viewers.begin().operator++()));
+
+	return current_taxiroute == taxiroute_1 ? taxiroute_2 : taxiroute_1;
+}
+
+//pair<is_target_of_current,is_target_of_next>
+pair<int,int> get_taxiroute_relationship(const WED_TaxiRouteNode* current_node,
+										   const WED_TaxiRoute* current_taxiroute,
+										   const WED_TaxiRoute* next_taxiroute)
+{
+	DebugAssert(next_taxiroute != NULL);
+	std::pair<bool,bool> taxiroute_relationship(0,0);
+	if(dynamic_cast<const WED_TaxiRouteNode*>(current_taxiroute->GetNthSource(1)) == current_node)
+	{
+		taxiroute_relationship.first = 1;
+	}
+
+	if(dynamic_cast<const WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(1)) == current_node)
+	{
+		taxiroute_relationship.second = 1;
+	}
+
+	return taxiroute_relationship;
+}
+
+
+static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
+									 const TaxiRouteInfoVec_t& matching_taxiroutes,
+									 const TaxiRouteInfo& start_taxiroute,//One of the ends of this chain of taxi routes
 									 validation_error_vector& msgs,
 									 WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
-	TaxiRouteNodeVec_t all_nodes;
+	//if(matching_taxiroutes.size() < 2)
+	{
+		//return true;
+	}
+
+	//We know all the nodes are within threshold of the center and within bounds, the segments are parallel enough,
+	//the route is a complete chain with no 3+-way splits. Now: do any of the segments make a complete 180 unexpectedly?
+	WED_TaxiRouteNode* current_node = NULL;
+	WED_TaxiRoute* current_taxiroute = start_taxiroute.taxiroute_ptr;
+
+	if(get_node_valence(start_taxiroute.node_0) == 2)
+	{
+		current_node = start_taxiroute.node_0;
+	}
+	else
+	{
+		current_node = start_taxiroute.node_1;
+	}
+
+	//while we have not run out of nodes to traverse
+	while(current_node != NULL)
+	{
+		WED_TaxiRoute* next_taxiroute = get_next_taxiroute(current_node,current_taxiroute);
+		pair<int,int> relationship = get_taxiroute_relationship(current_node,current_taxiroute,next_taxiroute);
+		WED_TaxiRouteNode* next_node = get_next_node(current_node,next_taxiroute);
+
+		Vector2 runway_vec = Vector2(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
+		runway_vec.normalize();
+
+		Point2 p1;
+		Point2 p2;
+
+		dynamic_cast<WED_TaxiRouteNode*>(current_taxiroute->GetNthSource(0))->GetLocation(gis_Geo,p1);
+		p1 = translator.Forward(p1);
+		
+		dynamic_cast<WED_TaxiRouteNode*>(current_taxiroute->GetNthSource(1))->GetLocation(gis_Geo,p2);
+		p2 = translator.Forward(p2);
+
+		Vector2 taxiroute_vec_1 = Vector2(p1,p2);
+		taxiroute_vec_1.normalize();
+		double dot_runway_route_1 = runway_vec.dot(taxiroute_vec_1);
+
+		dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(0))->GetLocation(gis_Geo,p1);
+		p1 = translator.Forward(p1);
+		
+		dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(1))->GetLocation(gis_Geo,p2);
+		p2 = translator.Forward(p2);
+		
+		Vector2 taxiroute_vec_2 = Vector2(p1,p2);
+		taxiroute_vec_2.normalize();
+
+		double dot_runway_route_2 = runway_vec.dot(taxiroute_vec_2);
+
+		// Given a runway [<--------------------] where this side is this source
+        //
+		//    r_1        | o is target        | o is source
+		//r_2            |--------------------------------------  |a|b
+		//o is target    |[--2-->o<--1--] = - |[--2-->o--1-->] = +|-+-
+		//o is source    |[<--2--o<--1--] = + |[<--2--o--1-->] = -|c|d
+		//
+		//The o represents the common, current, node
+		//Because by this point we've passed the ParallelCheck all we need to do is check positive or negative
+
+		int expected_sign = 0;
+
+		bool first_is_target = relationship.first;
+		bool second_is_target = relationship.second;
+		if((first_is_target == true && second_is_target == true) ||
+		   (first_is_target == false && second_is_target == false))
+		{
+			expected_sign = -1; //a and d
+		}
+		else
+		{
+			expected_sign = 1;//b and c
+		}
+
+		//Take the dot product between the two runway_routes
+		double dot_product = taxiroute_vec_1.dot(taxiroute_vec_2);
+
+		int real_sign = dot_product > 0 ? 1 : -1;
+		if( real_sign != expected_sign)
+		{
+			TaxiRouteVec_t problem_children;
+			problem_children.push_back(current_taxiroute);
+			problem_children.push_back(next_taxiroute);
+			msgs.push_back(validation_error_t("Error",//Taxi routes " + /*matching_taxiroutes[i].taxiroute_name +*/ string(" and ") + matching_taxiroutes[i+1].taxiroute_name + " have too extreme an angle between them",
+											  problem_children,
+											  apt));
+			return false; //Future tests will just fail more
+		}
+
+		current_taxiroute = next_taxiroute;
+		current_node = next_node;
+	}
+	//Current Node equals start_taxiroute's node that has a valence of 2
 	
+	// determine the relationship between the next taxi route and the current one in the form of pair<bool is_source, bool is_source>
+	// Using that relationship determine which sign the two should be when their dot products are compared
+	// If there is no issue, current_node = next node
+
+	
+	return true;
+}
+
+//All checks that require knowledge of taxiroute connectivity checks
+static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
+										   const TaxiRouteInfoVec_t& all_taxiroutes, //All the taxiroutes in the airport, for EnsureRunwayTaxirouteValences
+										   const TaxiRouteInfoVec_t& matching_taxiroutes, //Only the taxiroutes which match the runway in runway_info
+										   validation_error_vector& msgs,
+										   WED_Airport* apt)
+{
+	int original_num_errors = msgs.size();
+	
+	TaxiRouteNodeVec_t all_nodes;
 	for (int i = 0; i < all_taxiroutes.size(); ++i)
 	{
 		all_nodes.push_back(all_taxiroutes[i].node_0);
 		all_nodes.push_back(all_taxiroutes[i].node_1);
 	}
-
+	
 	//Since we are storing pointers we can sort them numerically and see if any of them appear 3 or more times
 	sort(all_nodes.begin(),all_nodes.end());
 
-	//Early exit
-	if(all_nodes.size() % 2 != 0 || all_nodes.size() <=2)
+	WED_TaxiRoute* start_taxiroute = NULL;
+	if(EnsureRunwayTaxirouteValences(runway_info, all_nodes, start_taxiroute, msgs, apt))
 	{
-		return true;
-	}
-
-	for (int i = 0; i < all_nodes.size() - 3 - 1; i++)
-	{
-		WED_TaxiRouteNode* node_1 = all_nodes[i + 0];
-		WED_TaxiRouteNode* node_2 = all_nodes[i + 1];
-		WED_TaxiRouteNode* node_3 = all_nodes[i + 2];
-
-		int duplicate_count = 0;
-		
-		duplicate_count = node_1 == node_2 ? duplicate_count + 1 : duplicate_count;
-		duplicate_count = node_2 == node_3 ? duplicate_count + 1 : duplicate_count;
-		duplicate_count = node_3 == node_1 ? duplicate_count + 1 : duplicate_count;
-		
-		if(duplicate_count == 3)
+		if(TaxiRouteSquishedZCheck(runway_info, matching_taxiroutes, start_taxiroute, msgs, apt))
 		{
-			//We may have a duplicate but is it one we care about?
-			
-			set<WED_Thing*> node_viewers;
-			(node_1)->GetAllViewers(node_viewers);
-			
-			int relavent_runway_taxiroutes = 0;
-			for (set<WED_Thing*>::iterator viewer_itr = node_viewers.begin();
-				viewer_itr != node_viewers.end();
-				viewer_itr++)
-			{
-				WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*viewer_itr);
-				if(taxiroute)
-				{
-					string taxiroute_name;
-					taxiroute_name = ENUM_Desc(taxiroute->GetRunway());
-					if(runway_info.runway_name == taxiroute_name)
-					{
-						++relavent_runway_taxiroutes;
-					}
-				}
-			}
-
-			if(relavent_runway_taxiroutes >= 3)
-			{
-				string node_name;
-				(node_1)->GetName(node_name);
-				string msg = "Taxi route node " + node_name + " is used three or more times in a runway's taxiroute";
-				msgs.push_back(validation_error_t(msg,node_1,apt));
-			}
+			//We're good
 		}
 	}
+	
 
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
@@ -773,15 +954,16 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 		TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 
 		bool passes_centerline_checks = false;
-		if(TaxiRouteSplitPathCheck(*runway_info_itr, all_taxiroutes, msgs, &apt))
+		
+		if(AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 		{
-			if(TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+			if(TaxiRouteParallelCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 			{
-				if(AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+				if(TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 				{
-					if(RunwayHasCorrectCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+					if(DoTaxiRouteConnectivityChecks(*runway_info_itr, all_taxiroutes, matching_taxiroutes, msgs, &apt))
 					{
-						if(TaxiRouteParallelCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+						if(RunwayHasCorrectCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 						{
 							passes_centerline_checks = true;
 						}
