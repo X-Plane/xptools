@@ -249,10 +249,13 @@ static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
 	TaxiRouteInfoVec_t matching_taxiroutes;
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = all_taxiroutes.begin(); taxiroute_itr != all_taxiroutes.end(); ++taxiroute_itr)
 	{
-		string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
-		if(runway_info.runway_name == taxiroute_name)
+		if((taxiroute_itr)->taxiroute_ptr->IsRunway())
 		{
-			matching_taxiroutes.push_back(TaxiRouteInfo(*taxiroute_itr));
+			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
+			if(runway_info.runway_name == taxiroute_name)
+			{
+				matching_taxiroutes.push_back(TaxiRouteInfo(*taxiroute_itr));
+			}
 		}
 	}
 
@@ -372,6 +375,29 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
+static vector<TaxiRouteInfo> filter_viewers_by_runway_name(const WED_TaxiRouteNode* node, const string& runway_name)
+{
+	vector<TaxiRouteInfo> matching_routes;
+
+	set<WED_Thing*> node_viewers;
+	node->GetAllViewers(node_viewers);
+
+	for(set<WED_Thing*>::iterator itr = node_viewers.begin(); itr != node_viewers.end(); ++itr)
+	{
+		WED_TaxiRoute* test_route = dynamic_cast<WED_TaxiRoute*>(*itr);
+		if(test_route != NULL)
+		{
+			TaxiRouteInfo taxiroute_info(test_route);
+			if(taxiroute_info.taxiroute_name == runway_name)
+			{
+				matching_routes.push_back(taxiroute_info);
+			}
+		}
+	}
+
+	return matching_routes;
+}
+
 //Checks that a Runway's taxi route has two nodes with a valence of one, and no nodes with a valence of > 2
 static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 										   const TaxiRouteNodeVec_t& all_matching_nodes, //All nodes from taxiroutes matching the runwa, these will come in sorted
@@ -381,6 +407,7 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 {
 	int original_num_errors = msgs.size();
 	int num_valence_of_1 = 0; //Aka, the tips of the runway, should end up being 2
+	start_taxiroute = NULL;
 
 	for(TaxiRouteNodeVec_t::const_iterator node_itr = all_matching_nodes.begin(); node_itr != all_matching_nodes.end(); ++node_itr)
 	{
@@ -390,10 +417,11 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 		{
 			if(num_valence_of_1 < 2)
 			{
-				set<WED_Thing*> node_viewers;
-				(*node_itr)->GetAllViewers(node_viewers);
-				start_taxiroute = static_cast<WED_TaxiRoute*>(*node_viewers.begin());
-				
+				if(start_taxiroute == NULL)
+				{
+					TaxiRouteInfoVec_t viewers = filter_viewers_by_runway_name(*node_itr,runway_info.runway_name);
+					start_taxiroute = viewers.front().taxiroute_ptr;
+				}
 				++num_valence_of_1;
 			}
 			else
@@ -424,21 +452,30 @@ int get_node_valence(const WED_TaxiRouteNode* node)
 }
 
 WED_TaxiRouteNode* get_next_node(const WED_TaxiRouteNode* current_node,
-								 const WED_TaxiRoute* next_taxiroute)
+								 const TaxiRouteInfo& next_taxiroute)
 {
 	WED_TaxiRouteNode* next = NULL;
-	if(next_taxiroute->GetNthSource(0) == current_node)
+	if(next_taxiroute.taxiroute_ptr->GetNthSource(0) == current_node)
 	{
-		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(1));
+		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute.taxiroute_ptr->GetNthSource(1)); //Going backwards choose next-1 | 0--next--1-->0--current--1-->
 	}
 	else
 	{
-		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(0));
+		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute.taxiroute_ptr->GetNthSource(0)); //Going forwards, choose next-0 | 0--current--1-->0--next--1-->
 	}
 
-	if(get_node_valence(next) == 1)
+	if(next == NULL)
+	{
+		return NULL;
+	}
+	else if(get_node_valence(next) == 1)
 	{
 		return NULL; //We don't want to travel there next, its time to end
+	}
+	//Will we have somewhere to go next?
+	else if(filter_viewers_by_runway_name(next, next_taxiroute.taxiroute_name).size() == 0)
+	{
+		return NULL;
 	}
 	else
 	{
@@ -447,15 +484,22 @@ WED_TaxiRouteNode* get_next_node(const WED_TaxiRouteNode* current_node,
 }
 
 WED_TaxiRoute* get_next_taxiroute(const WED_TaxiRouteNode* current_node,
-								  const WED_TaxiRoute* current_taxiroute)
+								  const TaxiRouteInfo& current_taxiroute)
 {
-	set<WED_Thing*> node_viewers;
-	current_node->GetAllViewers(node_viewers);
+	TaxiRouteInfoVec_t viewers = filter_viewers_by_runway_name(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
 
-	WED_TaxiRoute* taxiroute_1 = dynamic_cast<WED_TaxiRoute*>(*node_viewers.begin());
-	WED_TaxiRoute* taxiroute_2 = dynamic_cast<WED_TaxiRoute*>(*(node_viewers.begin().operator++()));
-
-	return current_taxiroute == taxiroute_1 ? taxiroute_2 : taxiroute_1;
+	if(viewers.size() == 2)
+	{
+		return current_taxiroute.taxiroute_ptr == viewers[0].taxiroute_ptr ? viewers[1].taxiroute_ptr : viewers[0].taxiroute_ptr;
+	}
+	else if(viewers.size() == 1)
+	{
+		return current_taxiroute.taxiroute_ptr == viewers[0].taxiroute_ptr ? NULL : viewers[0].taxiroute_ptr;
+	}
+	else
+	{
+		DebugAssert(viewers.size() == 1 || viewers.size() == 2);
+	}
 }
 
 //pair<is_target_of_current,is_target_of_next>
@@ -465,6 +509,8 @@ pair<int,int> get_taxiroute_relationship(const WED_TaxiRouteNode* current_node,
 {
 	DebugAssert(next_taxiroute != NULL);
 	std::pair<bool,bool> taxiroute_relationship(0,0);
+	
+	//TODO: Do taxi routes ever have sources besides nodes?
 	if(dynamic_cast<const WED_TaxiRouteNode*>(current_taxiroute->GetNthSource(1)) == current_node)
 	{
 		taxiroute_relationship.first = 1;
@@ -491,17 +537,22 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 
 	if(get_node_valence(start_taxiroute.node_0) == 2)
 	{
-		current_node = start_taxiroute.node_0;
+		current_node = start_taxiroute.node_0; //We'll be moving backwards through the route, <----0--------1-->
 	}
 	else
 	{
-		current_node = start_taxiroute.node_1;
+		current_node = start_taxiroute.node_1;//0---->1---->
 	}
 
 	//while we have not run out of nodes to traverse
 	while(current_node != NULL)
 	{
 		WED_TaxiRoute* next_taxiroute = get_next_taxiroute(current_node,current_taxiroute);
+		if(next_taxiroute == NULL)
+		{
+			break;
+		}
+
 		pair<int,int> relationship = get_taxiroute_relationship(current_node,current_taxiroute,next_taxiroute);
 		WED_TaxiRouteNode* next_node = get_next_node(current_node,next_taxiroute);
 
@@ -591,23 +642,22 @@ static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
 {
 	int original_num_errors = msgs.size();
 	
-	TaxiRouteNodeVec_t all_nodes;
-	for (int i = 0; i < all_taxiroutes.size(); ++i)
+	TaxiRouteNodeVec_t matching_nodes;
+	for (int i = 0; i < matching_taxiroutes.size(); ++i)
 	{
-		all_nodes.push_back(all_taxiroutes[i].node_0);
-		all_nodes.push_back(all_taxiroutes[i].node_1);
+		matching_nodes.push_back(matching_taxiroutes[i].node_0);
+		matching_nodes.push_back(matching_taxiroutes[i].node_1);
 	}
-	
-	//Since we are storing pointers we can sort them numerically and see if any of them appear 3 or more times
-	sort(all_nodes.begin(),all_nodes.end());
+
+	//sort(matching_nodes.begin(),matching_nodes.end());
 
 	WED_TaxiRoute* start_taxiroute = NULL;
-	if(RunwaysTaxiRouteValencesCheck(runway_info, all_nodes, start_taxiroute, msgs, apt))
+	if(RunwaysTaxiRouteValencesCheck(runway_info, matching_nodes, start_taxiroute, msgs, apt))
 	{
 		bool has_squished_z = false;
 
 		//The algorithm requires there to be atleast 2 taxiroutes
-		if(all_taxiroutes.size() >= 2)
+		if(all_taxiroutes.size() >= 2 && start_taxiroute != NULL)
 		{
 			has_squished_z = TaxiRouteSquishedZCheck(runway_info, start_taxiroute, msgs, apt);
 		}
