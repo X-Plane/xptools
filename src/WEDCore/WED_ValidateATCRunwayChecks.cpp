@@ -441,6 +441,10 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 		}
 	}
 
+	if(num_valence_of_1 == 0)
+	{
+		msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route forms a loop",runway_info.runway_ptr,apt));
+	}
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
@@ -649,7 +653,7 @@ static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
 		matching_nodes.push_back(matching_taxiroutes[i].node_1);
 	}
 
-	//sort(matching_nodes.begin(),matching_nodes.end());
+	sort(matching_nodes.begin(),matching_nodes.end());
 
 	WED_TaxiRoute* start_taxiroute = NULL;
 	if(RunwaysTaxiRouteValencesCheck(runway_info, matching_nodes, start_taxiroute, msgs, apt))
