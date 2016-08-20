@@ -441,7 +441,7 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 		}
 	}
 
-	if(num_valence_of_1 == 0)
+	if(num_valence_of_1 == 0 && all_matching_nodes.size() > 0)
 	{
 		msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route forms a loop",runway_info.runway_ptr,apt));
 	}
@@ -491,18 +491,15 @@ WED_TaxiRoute* get_next_taxiroute(const WED_TaxiRouteNode* current_node,
 								  const TaxiRouteInfo& current_taxiroute)
 {
 	TaxiRouteInfoVec_t viewers = filter_viewers_by_runway_name(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
-
+	DebugAssert(viewers.size() == 1 || viewers.size() == 2);
+	
 	if(viewers.size() == 2)
 	{
 		return current_taxiroute.taxiroute_ptr == viewers[0].taxiroute_ptr ? viewers[1].taxiroute_ptr : viewers[0].taxiroute_ptr;
 	}
-	else if(viewers.size() == 1)
-	{
-		return current_taxiroute.taxiroute_ptr == viewers[0].taxiroute_ptr ? NULL : viewers[0].taxiroute_ptr;
-	}
 	else
 	{
-		DebugAssert(viewers.size() == 1 || viewers.size() == 2);
+		return current_taxiroute.taxiroute_ptr == viewers[0].taxiroute_ptr ? NULL : viewers[0].taxiroute_ptr;
 	}
 }
 
