@@ -367,7 +367,7 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 			p2_to_center_dist > METERS_TO_CENTER_THRESHOLD)
 		{
 			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
-			string msg = "Taxi route segement for runway " + taxiroute_name + " is not on the center line";
+			string msg = "Taxi route segment for runway " + taxiroute_name + " is not on the center line";
 			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
 		}
 	}
@@ -691,7 +691,7 @@ static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 		double ANGLE_THRESHOLD = 0.995;
 		if(dot_product < ANGLE_THRESHOLD)
 		{
-			string msg = "Taxi route segement " + taxiroute_itr->taxiroute_name + " is not parallel to the runway's center line.";
+			string msg = "Taxi route segment " + taxiroute_itr->taxiroute_name + " is not parallel to the runway's center line.";
 			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
 		}
 	}
