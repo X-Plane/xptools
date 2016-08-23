@@ -70,6 +70,7 @@ attributes.
 #include "XObjBuilder.h"
 #include "prefs.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <list>
 #include <set>
 using std::list;
