@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <sstream>
+#include <iomanip>
 
 #if DEV
 #include <iostream>
@@ -722,20 +723,31 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	double COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength();
 	if((apt_runway.width_mtr  * 2) < COVERAGE_THRESHOLD)
 	{
-		COVERAGE_THRESHOLD -= apt_runway.width_mtr * 2;
+		COVERAGE_THRESHOLD -= abs((apt_runway.width_mtr * 2) - (runway_info.runway_ptr->GetDisp1() - runway_info.runway_ptr->GetDisp2()));
 	}
 
 	if(total_length_m < COVERAGE_THRESHOLD)
 	{
-		string msg = "Runway " + runway_info.runway_name + " is not sufficiently covered with taxi routes.";
+		ostringstream oss;
+		oss.precision(2);
+		oss << std::fixed << COVERAGE_THRESHOLD - total_length_m;
+		string msg = "Runway " + runway_info.runway_name + " is not sufficiently covered with taxi routes by " + oss.str() + " meters";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
 		return false;
 	}
 
+	//Given that the out of bounds box and the OVERSHOOT_THRESHOLD are the same value, you'll never actually reach this test.
+	//The code is still here and tested, in case the parameters of either of them need to be changed.
+	//- Ted, 08/23/2016
+
 	double OVERSHOOT_THRESHOLD = 2.0 * 2; //You get two meteres of room for being off the runway
 	if(total_length_m > (runway_info.runway_ptr->GetLength() + OVERSHOOT_THRESHOLD))
 	{
-		string msg = "Taxi route " + matching_taxiroutes.begin()->taxiroute_name + "'s ends over extend past the edges of runway " + runway_info.runway_name;
+		ostringstream oss;
+		oss.precision(2);
+		oss << std::fixed << total_length_m + OVERSHOOT_THRESHOLD;
+		
+		string msg = "Taxi route " + matching_taxiroutes.begin()->taxiroute_name + "'s ends over extend past the edges of runway " + runway_info.runway_name + " by " + oss.str() + " meters";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
 		return false;
 	}
