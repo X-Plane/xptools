@@ -1574,6 +1574,9 @@
     <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataKeys.h">
       <Filter>WEDImportExport</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Interfaces\IHasResource.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\src\WEDResources\ui_measurements.txt">

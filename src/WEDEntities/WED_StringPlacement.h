@@ -24,9 +24,10 @@
 #ifndef WED_StringPlacement_H
 #define WED_StringPlacement_H
 
+#include "IHasResource.h"
 #include "WED_GISChain.h"
 
-class WED_StringPlacement : public WED_GISChain {
+class WED_StringPlacement : public WED_GISChain, public IHasResource {
 
 DECLARE_PERSISTENT(WED_StringPlacement)
 
@@ -37,8 +38,8 @@ public:
 			double			GetSpacing	(void) const;
 			void			SetSpacing(double spacing);
 
-			void			GetResource(	  string& r) const;
-			void			SetResource(const string& r);
+	virtual void			GetResource(	  string& r) const;
+	virtual void			SetResource(const string& r);
 
 	virtual const char *	HumanReadableType(void) const { return "Object String"; }
 
