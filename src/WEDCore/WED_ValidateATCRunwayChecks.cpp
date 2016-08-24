@@ -717,9 +717,12 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
+		//Get taxiroute's points projected onto the centerline
 		Point2 p0;
 		taxiroute_itr->node_0->GetLocation(gis_Geo,p0);
 		Point2 projected_geo_0 = runway_info.runway_centerline_geo.projection(p0);
+
+		//Change their units so we can find the distance between them
 		Point2 projected_m_0 = translator.Forward(projected_geo_0);
 
 		Point2 p1;
@@ -754,7 +757,19 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 
 	//Plus 5 meters in slop zone
 	COVERAGE_THRESHOLD += 5;
-		
+	
+	//_________ overshoot thershold (currently same as out of bounds -08/24/2016)
+	//
+	// source
+	//---------
+	//          min_diff < COVERAGE_THRESHOLD
+	//   |
+	//   |
+	//   |
+	//          max_diff < COVERAGE_THRESHOLD
+	//---------
+	//_________
+	
 	double min_diff = sorted_vec.front();
 	bool min_is_in_range = min_diff < COVERAGE_THRESHOLD;
 
@@ -763,6 +778,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 
 	if(min_is_in_range == false || max_is_in_range == false)
 	{
+		//We have to figure out which side(s) to report as too short
 		double amount_not_covered = 0.0;
 		if(min_is_in_range == false)
 		{
