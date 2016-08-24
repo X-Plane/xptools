@@ -746,13 +746,13 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	double COVERAGE_THRESHOLD = 0.0;
 
 	//Clamp extremely small runways to the length
-	if((apt_runway.width_mtr  * 2) < COVERAGE_THRESHOLD)
+	if((apt_runway.width_mtr  * 4) < COVERAGE_THRESHOLD)
 	{
 		COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength();
 	}
 	else
 	{
-		COVERAGE_THRESHOLD = abs((apt_runway.width_mtr * 2));
+		COVERAGE_THRESHOLD = abs((apt_runway.width_mtr * 4));
 	}
 
 	//Plus 5 meters in slop zone
