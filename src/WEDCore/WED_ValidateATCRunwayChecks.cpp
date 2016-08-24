@@ -4,6 +4,8 @@
 #include <iterator>
 #include <sstream>
 #include <iomanip>
+#include <queue>
+#include <functional>
 
 #if DEV
 #include <iostream>
@@ -27,6 +29,7 @@
 #include "CompGeomUtils.h"
 #include "GISUtils.h"
 
+//Forward - m, Reverse - lat/lon
 static CoordTranslator2 translator;
 
 //A special selection of info useful for these tests
@@ -661,10 +664,8 @@ static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
 		//The algorithm requires there to be atleast 2 taxiroutes
 		if(all_taxiroutes.size() >= 2 && start_taxiroute != NULL)
 		{
-			has_squished_z = TaxiRouteSquishedZCheck(runway_info, start_taxiroute, msgs, apt);
+			TaxiRouteSquishedZCheck(runway_info, start_taxiroute, msgs, apt);
 		}
-
-		return has_squished_z;
 	}
 	
 
@@ -711,36 +712,81 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 		return true;
 	}
 
-	double total_length_m = 0.0;
+	//where [0] is the min (front) and [size-1] is max (back)
+	vector<double> sorted_vec;
+
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
-		//Add up all the lengths of the runway, see if it is within the threshold of how much coverage there must be
-		total_length_m += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
+		Point2 p0;
+		taxiroute_itr->node_0->GetLocation(gis_Geo,p0);
+		Point2 projected_geo_0 = runway_info.runway_centerline_geo.projection(p0);
+		Point2 projected_m_0 = translator.Forward(projected_geo_0);
+
+		Point2 p1;
+		taxiroute_itr->node_1->GetLocation(gis_Geo,p1);
+		Point2 projected_geo_1 = runway_info.runway_centerline_geo.projection(p1);
+		Point2 projected_m_1 = translator.Forward(projected_geo_1);
+		
+		double distance_from_runway_source_0 = sqrt(projected_m_0.squared_distance(runway_info.runway_centerline_m.source()));
+		double distance_from_runway_source_1 = sqrt(projected_m_1.squared_distance(runway_info.runway_centerline_m.source()));
+
+		sorted_vec.push_back(distance_from_runway_source_0);
+		sorted_vec.push_back(distance_from_runway_source_1);
 	}
+
+	std::sort(sorted_vec.begin(),sorted_vec.end(),std::less<double>());
 
 	AptRunway_t apt_runway;
 	runway_info.runway_ptr->Export(apt_runway);
-	double COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength();
+	
+	//How much gap on a side there could be
+	double COVERAGE_THRESHOLD = 0.0;
+
+	//Clamp extremely small runways to the length
 	if((apt_runway.width_mtr  * 2) < COVERAGE_THRESHOLD)
 	{
-		COVERAGE_THRESHOLD -= abs((apt_runway.width_mtr * 2) - (runway_info.runway_ptr->GetDisp1() - runway_info.runway_ptr->GetDisp2()));
+		COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength();
+	}
+	else
+	{
+		COVERAGE_THRESHOLD = abs((apt_runway.width_mtr * 2));
 	}
 
-	if(total_length_m < COVERAGE_THRESHOLD)
+	//Plus 5 meters in slop zone
+	COVERAGE_THRESHOLD += 5;
+		
+	double min_diff = sorted_vec.front();
+	bool min_is_in_range = min_diff < COVERAGE_THRESHOLD;
+
+	double max_diff = (runway_info.runway_ptr->GetLength() - (sorted_vec.back()));
+	bool max_is_in_range = max_diff < COVERAGE_THRESHOLD;
+
+	if(min_is_in_range == false || max_is_in_range == false)
 	{
+		double amount_not_covered = 0.0;
+		if(min_is_in_range == false)
+		{
+			amount_not_covered += min_diff;
+		}
+
+		if(max_is_in_range == false)
+		{
+			amount_not_covered += max_diff;
+		}
+
 		ostringstream oss;
 		oss.precision(2);
-		oss << std::fixed << COVERAGE_THRESHOLD - total_length_m;
+		oss << std::fixed << amount_not_covered;
 		string msg = "Runway " + runway_info.runway_name + " is not sufficiently covered with taxi routes by " + oss.str() + " meters";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
 		return false;
 	}
 
 	//Given that the out of bounds box and the OVERSHOOT_THRESHOLD are the same value, you'll never actually reach this test.
-	//The code is still here and tested, in case the parameters of either of them need to be changed.
+	//The code is still here, in case the parameters of either of them need to be changed.
 	//- Ted, 08/23/2016
 
-	double OVERSHOOT_THRESHOLD = 2.0 * 2; //You get two meteres of room for being off the runway
+	/* //You get two meteres of room for being off the runway
 	if(total_length_m > (runway_info.runway_ptr->GetLength() + OVERSHOOT_THRESHOLD))
 	{
 		ostringstream oss;
@@ -750,7 +796,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 		string msg = "Taxi route " + matching_taxiroutes.begin()->taxiroute_name + "'s ends over extend past the edges of runway " + runway_info.runway_name + " by " + oss.str() + " meters";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
 		return false;
-	}
+	}*/
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 //-----------------------------------------------------------------------------
