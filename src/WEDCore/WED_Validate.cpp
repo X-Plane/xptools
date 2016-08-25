@@ -490,13 +490,15 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 			msgs.push_back(validation_error_t("You cannot export airport overlays to the X-Plane Airport Gateway if overlay elements are outside airports in the hierarchy.",who,NULL));
 	}
 
-	//--Validate resources
+	//--Validate resources-----------------------------------------------------
 	IHasResource* resource_containing_who = dynamic_cast<IHasResource*>(who);
 
 	if(resource_containing_who != NULL)
 	{
 		string resource_str;
 		resource_containing_who->GetResource(resource_str);
+
+		//1. Is the resource entirely missing
 		string path = library_mgr->GetResourcePath(resource_str);
 		if(path == "")
 		{
@@ -505,8 +507,25 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + resource_str + " cannot be found", who, parent_apt));
 			}
 		}
-	}
 
+		//3. What happen if the user free types a real resource of the wrong type into the box?
+		bool matches = false;
+#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && resource_str.substr(resource_str.find_last_of(".")) == EXT) ? true : false;
+		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
+		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  ".for");
+		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    ".lin");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".obj");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".agp");
+		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  ".str");
+		
+		if(matches == false)
+		{
+			msgs.push_back(validation_error_t("Resource " + resource_str + " does not have the correct file type", who, parent_apt));
+		}
+	}
+	//-----------------------------------------------------------------------//
 	int nn = who->CountChildren();
 	for (int n = 0; n < nn; ++n)
 	{
