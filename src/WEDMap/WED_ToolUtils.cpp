@@ -392,58 +392,46 @@ const char *	WED_GetParentForClass(const char * in_class)
 	return NULL;
 }
 
-static void WED_LookupRunwayRecursive(const WED_Thing * thing, set<int>& runways, int domain)
+static void WED_LookupRunwayRecursiveOneway(const WED_Thing * thing, set<int>& runways)
 {
 	const WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<const WED_Runway *>(thing) : NULL;
 	if(rwy)
 	{
-		string name;
-		rwy->GetName(name);
-		int e1 = ENUM_LookupDesc(domain,name.c_str());
-		if(e1 == -1)
-		{
-			name.insert(0,"0");
-			e1 = ENUM_LookupDesc(domain,name.c_str());
-			if(e1 == -1)
-				name.erase(0,1);
-		}
-		if(ENUM_Domain(e1) == domain)
-			runways.insert(e1);
-		vector<string> parts;
-		tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
-		for(vector<string>::iterator p = parts.begin(); p != parts.end(); ++p)
-		{
-			int e2 = ENUM_LookupDesc(domain,p->c_str());
-			if(e2 == -1)
-			{
-				p->insert(0,"0");
-				e2 = ENUM_LookupDesc(domain,p->c_str());
-			}
-			if(ENUM_Domain(e2) == domain)
-				runways.insert(e2);
-		}
-		name += "/XXX";
-		int e3 = ENUM_LookupDesc(domain,name.c_str());
-		if(ENUM_Domain(e3) == domain)
-			runways.insert(e3);
-
+		pair<int,int> e = rwy->GetRunwayEnumsOneway();
+		if(e.first != atc_Runway_None) runways.insert(e.first);
+		if(e.second != atc_Runway_None) runways.insert(e.second);
 	}
 	for(int n = 0; n < thing->CountChildren(); ++n)
 	{
-		WED_LookupRunwayRecursive(thing->GetNthChild(n), runways, domain);
+		WED_LookupRunwayRecursiveOneway(thing->GetNthChild(n), runways);
+	}
+}
+
+static void WED_LookupRunwayRecursiveTwoway(const WED_Thing * thing, set<int>& runways)
+{
+	const WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<const WED_Runway *>(thing) : NULL;
+	if(rwy)
+	{
+		int e = rwy->GetRunwayEnumsTwoway();
+		if(e != atc_rwy_None)
+			runways.insert(e);
+	}
+	for(int n = 0; n < thing->CountChildren(); ++n)
+	{
+		WED_LookupRunwayRecursiveTwoway(thing->GetNthChild(n), runways);
 	}
 }
 
 void			WED_GetAllRunwaysOneway(const WED_Airport * airport, set<int>& runways)
 {
 	runways.clear();
-	WED_LookupRunwayRecursive(airport,runways, ATCRunwayOneway);
+	WED_LookupRunwayRecursiveOneway(airport,runways);
 }
 
 void			WED_GetAllRunwaysTwoway(const WED_Airport * airport, set<int>& runways)
 {
 	runways.clear();
-	WED_LookupRunwayRecursive(airport,runways, ATCRunwayTwoway);
+	WED_LookupRunwayRecursiveTwoway(airport,runways);
 }
 
 #pragma mark -

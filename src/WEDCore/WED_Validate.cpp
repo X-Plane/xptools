@@ -54,6 +54,7 @@
 #include "WED_GroupCommands.h"
 #include "IGIS.h"
 #include <iomanip>
+#include "WED_ValidateATCRunwayChecks.h"
 
 
 #include "AptDefs.h"
@@ -75,8 +76,6 @@
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
-
-typedef vector<validation_error_t> validation_error_vector;
 
 // This table is used to find the matching opposite direction for a given runway
 // to detect head-on collisions.
@@ -209,54 +208,6 @@ static string format_freq(int f)
 	stringstream ss;
 	ss << mhz << "." << std::setw(2) << std::setfill('0') << khz10;
 	return ss.str();
-}
-
-// Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-
-template <typename OutputIterator, typename Predicate>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred, bool nested_ok = true)
-{
-	// TODO: do fast WED type ptr check on sClass before any other casts?
-	// Factor out WED_Entity check to avoid second dynamic cast?
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
-	if(ent && ent->GetHidden())
-	{
-		return;
-	}
-	
-	typedef typename OutputIterator::container_type::value_type VT;
-	VT ct = dynamic_cast<VT>(thing);
-	bool took_it = false;
-	if(ct && pred(ct))
-	{	
-		oi = ct;
-		took_it = true;
-	}
-	
-	if(!took_it || nested_ok)
-	{
-		int nc = thing->CountChildren();
-		for(int n = 0; n < nc; ++n)
-		{
-			CollectRecursive(thing->GetNthChild(n), oi, pred);
-		}
-	}
-}
-
-template <typename T> bool take_always(T v) { return true; }
-
-template <typename OutputIterator>
-void CollectRecursive(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>);
-}
-
-template <typename OutputIterator>
-void CollectRecursiveNoNesting(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>, false);	// Nesting not allowed
 }
 
 vector<vector<WED_ATCFrequency*> > CollectAirportFrequencies(WED_Thing* who)
@@ -1216,7 +1167,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.",apt,apt));
-		
+	
+	WED_DoATCRunwayChecks(*apt, msgs);
+
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
 	
 	ValidateAirportFrequencies(apt,msgs);	
