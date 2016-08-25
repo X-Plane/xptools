@@ -85,7 +85,7 @@ void	WED_CreateLineTool::AcceptPath(
 	GetArchive()->StartCommand(buf);
 
 	int idx;
-	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, idx);
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, true, idx);
 
 	WED_GISLine_Width * obj = NULL;
 
