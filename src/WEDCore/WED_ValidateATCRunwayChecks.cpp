@@ -689,7 +689,7 @@ static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 		runway_centerline_vec.normalize();
 		taxiroute_vec.normalize();
 
-		double dot_product = abs(runway_centerline_vec.dot(taxiroute_vec));
+		double dot_product = fabs(runway_centerline_vec.dot(taxiroute_vec));
 		double ANGLE_THRESHOLD = 0.995;
 		if(dot_product < ANGLE_THRESHOLD)
 		{
@@ -752,7 +752,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	}
 	else
 	{
-		COVERAGE_THRESHOLD = abs((apt_runway.width_mtr * 4));
+		COVERAGE_THRESHOLD = fabs((apt_runway.width_mtr * 4));
 	}
 
 	//Plus 5 meters in slop zone
