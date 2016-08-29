@@ -24,6 +24,7 @@
 #ifndef WED_ForestPlacement_H
 #define WED_ForestPlacement_H
 
+#include "IHasResource.h"
 #include "WED_GISPolygon.h"
 
 enum {
@@ -32,7 +33,7 @@ enum {
 	dsf_fill_points = 2
 };
 
-class	WED_ForestPlacement : public WED_GISPolygon {
+class	WED_ForestPlacement : public WED_GISPolygon, public IHasResource {
 
 DECLARE_PERSISTENT(WED_ForestPlacement)
 
@@ -41,8 +42,8 @@ public:
 			double		GetDensity(void) const;
 			void		SetDensity(double h);
 
-			void		GetResource(	  string& r) const;
-			void		SetResource(const string& r);
+	virtual void		GetResource(	  string& r) const;
+	virtual void		SetResource(const string& r);
 
 			int			GetFillMode(void) const;
 #if AIRPORT_ROUTING			

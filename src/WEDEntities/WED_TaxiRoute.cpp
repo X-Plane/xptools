@@ -173,7 +173,13 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 }
 
 void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
-{	
+{
+	info.oneway = oneway.value;
+	info.hot_depart.clear();
+	info.hot_arrive.clear();
+	info.hot_ils.clear();
+	info.width = ENUM_Export(width.value);
+
 	if(runway.value == atc_rwy_None)
 	{
 		this->GetName(info.name);
@@ -183,14 +189,18 @@ void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
 	{
 		info.runway = 1;
 		info.name = ENUM_Desc(runway.value);
+
+		set<int>	runway_parts;
+		get_runway_parts(runway.value,runway_parts);
+
+		for(set<int>::iterator itr = runway_parts.begin(); itr != runway_parts.end(); ++itr)
+		{
+			info.hot_depart.insert(ENUM_Desc(*itr));
+			info.hot_arrive.insert(ENUM_Desc(*itr));
+			info.hot_ils.insert(ENUM_Desc(*itr));
+		}
 	}
-	
-	info.oneway = oneway.value;
-	info.hot_depart.clear();
-	info.hot_arrive.clear();
-	info.hot_ils.clear();
-	info.width = ENUM_Export(width.value);
-	
+
 	set<int>::iterator h;
 	for (h = hot_depart.value.begin(); h != hot_depart.value.end(); ++h)
 		info.hot_depart.insert(ENUM_Desc(*h));
@@ -198,8 +208,6 @@ void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
 		info.hot_arrive.insert(ENUM_Desc(*h));
 	for (h = hot_ils.value.begin(); h != hot_ils.value.end(); ++h)
 		info.hot_ils.insert(ENUM_Desc(*h));
-
-
 }
 
 void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict) const
@@ -298,12 +306,24 @@ bool	WED_TaxiRoute::HasHotArrival(void) const
 	// BEN SAYS: we used to treat being a runway as being hot.  But the UI needs to distinguish between
 	// "I am a runway and hot because I am a runway" and "Ia m a runway and hot for a CROSSING runway" -e.g.
 	// a LAHSO marking.  So only return TRUE hotness.
-	return !hot_arrive.value.empty();// || runway.value != atc_rwy_None;
+	set<int>	runway_parts;
+	get_runway_parts(runway.value,runway_parts);
+
+	for(set<int>::iterator i = hot_arrive.value.begin(); i != hot_arrive.value.end(); ++i)
+		if(runway_parts.count(*i) == 0)
+			return true;
+	return false;
 }
 
 bool	WED_TaxiRoute::HasHotDepart(void) const
 {
-	return !hot_depart.value.empty();// || runway.value != atc_rwy_None;
+	set<int>	runway_parts;
+	get_runway_parts(runway.value,runway_parts);
+
+	for(set<int>::iterator i = hot_depart.value.begin(); i != hot_depart.value.end(); ++i)
+		if(runway_parts.count(*i) == 0)
+			return true;
+	return false;
 }
 
 bool	WED_TaxiRoute::HasHotILS(void) const

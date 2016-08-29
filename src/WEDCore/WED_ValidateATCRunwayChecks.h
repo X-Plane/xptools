@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, Laminar Research.
+ * Copyright (c) 2016, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -19,39 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- */
+ */ 
 
-#ifndef WED_LinePlacement_H
-#define WED_LinePlacement_H
+#ifndef WED_VALIDATEATCRUNWAYCHECKS_H
+#define WED_VALIDATEATCRUNWAYCHECKS_H
 
-#include "IHasResource.h"
-#include "WED_GISChain.h"
+class WED_Airport;
+struct validation_error_t;
 
-class WED_LinePlacement : public WED_GISChain, public IHasResource {
+void WED_DoATCRunwayChecks(WED_Airport& apt,
+						   vector<validation_error_t>& msgs);
 
-DECLARE_PERSISTENT(WED_LinePlacement)
-
-public:
-
-	virtual	bool			IsClosed	(void	) const	;
-			void			SetClosed(int closure);
-
-	virtual void			GetResource(	  string& r) const;
-	virtual void			SetResource(const string& r);
-
-	virtual const char *	HumanReadableType(void) const { return "Line"; }
-
-protected:
-
-	virtual	bool			IsJustPoints(void) const { return false; }
-
-private:
-
-	WED_PropStringText		resource;
-	WED_PropBoolText		closed;
-
-};
-
-
-
-#endif /* WED_LinePlacement_H */
+#endif

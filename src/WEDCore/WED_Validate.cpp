@@ -54,10 +54,13 @@
 #include "WED_GroupCommands.h"
 #include "IGIS.h"
 #include <iomanip>
+#include "WED_ValidateATCRunwayChecks.h"
 
 
 #include "AptDefs.h"
 #include "IResolver.h"
+#include "ILibrarian.h"
+#include "WED_LibraryMgr.h"
 
 #include "GISUtils.h"
 #include "PlatformUtils.h"
@@ -73,8 +76,6 @@
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
-
-typedef vector<validation_error_t> validation_error_vector;
 
 // This table is used to find the matching opposite direction for a given runway
 // to detect head-on collisions.
@@ -207,54 +208,6 @@ static string format_freq(int f)
 	stringstream ss;
 	ss << mhz << "." << std::setw(2) << std::setfill('0') << khz10;
 	return ss.str();
-}
-
-// Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-
-template <typename OutputIterator, typename Predicate>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred, bool nested_ok = true)
-{
-	// TODO: do fast WED type ptr check on sClass before any other casts?
-	// Factor out WED_Entity check to avoid second dynamic cast?
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
-	if(ent && ent->GetHidden())
-	{
-		return;
-	}
-	
-	typedef typename OutputIterator::container_type::value_type VT;
-	VT ct = dynamic_cast<VT>(thing);
-	bool took_it = false;
-	if(ct && pred(ct))
-	{	
-		oi = ct;
-		took_it = true;
-	}
-	
-	if(!took_it || nested_ok)
-	{
-		int nc = thing->CountChildren();
-		for(int n = 0; n < nc; ++n)
-		{
-			CollectRecursive(thing->GetNthChild(n), oi, pred);
-		}
-	}
-}
-
-template <typename T> bool take_always(T v) { return true; }
-
-template <typename OutputIterator>
-void CollectRecursive(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>);
-}
-
-template <typename OutputIterator>
-void CollectRecursiveNoNesting(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>, false);	// Nesting not allowed
 }
 
 vector<vector<WED_ATCFrequency*> > CollectAirportFrequencies(WED_Thing* who)
@@ -464,7 +417,7 @@ static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& 
 		msgs.push_back(validation_error_t("Line and point forests are only supported in X-Plane 10 and newer.",who,apt));
 }
 
-static void ValidateDSFRecursive(WED_Thing * who, validation_error_vector& msgs, WED_Airport * parent_apt)
+static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, validation_error_vector& msgs, WED_Airport * parent_apt)
 {
 	// Don't validate hidden stuff - we won't export it!
 	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
@@ -488,12 +441,48 @@ static void ValidateDSFRecursive(WED_Thing * who, validation_error_vector& msgs,
 			msgs.push_back(validation_error_t("You cannot export airport overlays to the X-Plane Airport Gateway if overlay elements are outside airports in the hierarchy.",who,NULL));
 	}
 
+	//--Validate resources-----------------------------------------------------
+	IHasResource* resource_containing_who = dynamic_cast<IHasResource*>(who);
+
+	if(resource_containing_who != NULL)
+	{
+		string resource_str;
+		resource_containing_who->GetResource(resource_str);
+
+		//1. Is the resource entirely missing
+		string path = library_mgr->GetResourcePath(resource_str);
+		if(path == "")
+		{
+			if(parent_apt != NULL)
+			{
+				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + resource_str + " cannot be found", who, parent_apt));
+			}
+		}
+
+		//3. What happen if the user free types a real resource of the wrong type into the box?
+		bool matches = false;
+#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && resource_str.substr(resource_str.find_last_of(".")) == EXT) ? true : false;
+		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
+		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  ".for");
+		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    ".lin");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".obj");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".agp");
+		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  ".str");
+		
+		if(matches == false)
+		{
+			msgs.push_back(validation_error_t("Resource " + resource_str + " does not have the correct file type", who, parent_apt));
+		}
+	}
+	//-----------------------------------------------------------------------//
 	int nn = who->CountChildren();
 	for (int n = 0; n < nn; ++n)
 	{
 		WED_Thing * c = who->GetNthChild(n);
 		if(c->GetClass() != WED_Airport::sClass)
-			ValidateDSFRecursive(c, msgs, parent_apt);
+			ValidateDSFRecursive(c, library_mgr, msgs, parent_apt);
 	}	
 }
 
@@ -1052,9 +1041,6 @@ static void ValidateOneHelipad(WED_Helipad* who, validation_error_vector& msgs, 
 	}
 }
 
-
-
-
 static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vector& msgs, WED_Airport * apt)
 {
 	/*--Taxi Sign Validation Rules---------------------------------------------
@@ -1135,7 +1121,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		  - No runways or helipads or sealanes at all
 		  - Gateway: illegal use of third party library resources
 	 */
-
+	
 	vector<WED_Runway *>		runways;
 	vector<WED_Helipad *>		helipads;
 	vector<WED_Sealane *>		sealanes;
@@ -1181,7 +1167,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.",apt,apt));
-		
+	
+	WED_DoATCRunwayChecks(*apt, msgs);
+
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
 	
 	ValidateAirportFrequencies(apt,msgs);	
@@ -1255,7 +1243,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 
-	ValidateDSFRecursive(apt, msgs, apt);	
+	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);	
 }
 
 
@@ -1341,7 +1329,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		ValidateOneAirport(*a, msgs, lib_mgr);
 	}
 	ValidatePointSequencesRecursive(wrl, msgs,NULL);
-	ValidateDSFRecursive(wrl, msgs, NULL);
+	ValidateDSFRecursive(wrl, lib_mgr, msgs, NULL);
 	
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{

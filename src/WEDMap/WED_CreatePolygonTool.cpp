@@ -453,7 +453,7 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 			return NULL;
 		return igp;
 	} else
-		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);
+		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], true, idx);
 }
 
 

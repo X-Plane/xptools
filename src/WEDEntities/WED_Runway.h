@@ -40,6 +40,10 @@ public:
 	// they are clockwise, with the first point on the left side of the runway (looking from the low
 	// to high end) at the low end.
 
+	pair<int,int>	GetRunwayEnumsOneway() const;		// returns atc_Runway_None/atc_Runway_None if unparseable
+													// returns valid enum/atc_Runway_None if in the form 36L/XXX
+	int				GetRunwayEnumsTwoway() const;		// returns atc_rwy_None if unparsable
+
 	// These routines return false if these elements aren't there.
 	bool		GetCornersBlas1(Point2 corners[4]) const;
 	bool		GetCornersBlas2(Point2 corners[4]) const;
