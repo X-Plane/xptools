@@ -53,7 +53,7 @@ static const char * kCreateCmds[] = { "Taxiway", "Boundary", "Marking", "Hole", 
 
 static const int kIsAirport[] = { 1, 1, 1,  0,     0, 0,  0, 0, 0 };
 static const int kRequireClosed[] = { 1, 1, 0, 1,    1, 1, 0, 0, 1 };
-static const int kAllowCurved[] = { 1, 1, 1, 1,    1, 0,  1, 1, 1 };
+static const int kAllowCurved[] = { 1, 0, 1, 1,    1, 0,  1, 1, 1 };
 
 string stripped_resource(const string& r)
 {
@@ -121,7 +121,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	if (mType != create_Hole)
 	sel->Clear();
 
-	int is_bezier = mType != create_Forest;
+	int is_bezier = mType != create_Forest && mType != create_Boundary;
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
 	int is_texed = 0;
