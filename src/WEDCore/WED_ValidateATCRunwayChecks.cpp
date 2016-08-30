@@ -885,7 +885,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 	}
 
 	const double HITZONE_WIDTH_THRESHOLD_M   = 10.00;
-	const double HITZONE_OVERFLY_THRESHOLD_M = 1500.00;
+	const double HITZONE_OVERFLY_THRESHOLD_M = 500.00;
 
 	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
 
