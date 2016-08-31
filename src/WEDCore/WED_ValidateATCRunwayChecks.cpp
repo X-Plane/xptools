@@ -707,10 +707,6 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 									  WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
-	if(matching_taxiroutes.size() == 0)
-	{
-		return true;
-	}
 
 	//where [0] is the min (front) and [size-1] is max (back)
 	vector<double> sorted_vec;
@@ -778,6 +774,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 
 	if(min_is_in_range == false || max_is_in_range == false)
 	{
+#if DEV
 		//We have to figure out which side(s) to report as too short
 		double amount_not_covered = 0.0;
 		if(min_is_in_range == false)
@@ -793,7 +790,8 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 		ostringstream oss;
 		oss.precision(2);
 		oss << std::fixed << amount_not_covered;
-		string msg = "Runway " + runway_info.runway_name + " is not sufficiently covered with taxi routes by " + oss.str() + " meters";
+#endif
+		string msg = "Taxi route for runway " + runway_info.runway_name + " must span the entire runway";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
 		return false;
 	}
@@ -872,8 +870,9 @@ static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
 }
 
 //Returns polygon in lat/lon
-static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
-								   int runway_number) //The relavent runway info's use
+static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent runway info's use
+								   int runway_number, //The runway runway number we're doing
+								   bool make_arrival) //Makes sure we're only making the correct side of the box
 {
 	if( 
 		(runway_info.IsHotForArrival(runway_number) == false &&
@@ -886,7 +885,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	}
 
 	const double HITZONE_WIDTH_THRESHOLD_M   = 10.00;
-	const double HITZONE_OVERFLY_THRESHOLD_M = 1500.00;
+	double HITZONE_OVERFLY_THRESHOLD_M = 500.00;
 
 	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
 
@@ -913,19 +912,21 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 
 	Vector2 gis_line_direction(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
 	gis_line_direction.normalize();
-	gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
-
+	
 	if(runway_number <= atc_18R)
 	{
-		if(runway_info.IsHotForArrival(runway_number) == true)
+		if(runway_info.IsHotForArrival(runway_number) == true && make_arrival == true)
 		{
+			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp1(), 0.0);
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//arrival_side is bottom_side;
 			bottom_left  -= gis_line_direction;
 			bottom_right -= gis_line_direction;
 		}
 		
-		if(runway_info.IsHotForDeparture(runway_number) == true)
+		if(runway_info.IsHotForDeparture(runway_number) == true && make_arrival == false)
 		{
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//departure_side is top_side;
 			top_left  += gis_line_direction;
 			top_right += gis_line_direction;
@@ -933,15 +934,18 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	}
 	else
 	{
-		if(runway_info.IsHotForArrival(runway_number) == true)
+		if(runway_info.IsHotForArrival(runway_number) == true  && make_arrival == true)
 		{
+			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp2(), 0.0);
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//arrival_side is top_side;
 			top_left  += gis_line_direction;
 			top_right += gis_line_direction;
 		}
 		
-		if(runway_info.IsHotForDeparture(runway_number) == true)
+		if(runway_info.IsHotForDeparture(runway_number) == true  && make_arrival == false)
 		{
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//departure_side is bottom_side;
 			bottom_left  -= gis_line_direction;
 			bottom_right -= gis_line_direction;
@@ -966,10 +970,10 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info,
 	//debug_mesh_line(translator.Reverse(top_left),     translator.Reverse(top_right),    0, 1, 0, 0, 1, 0); //top side
 	//debug_mesh_line(translator.Reverse(top_right),    translator.Reverse(bottom_right), 0, 0, 1, 0, 0, 1); //right side
 	//debug_mesh_line(translator.Reverse(bottom_right), translator.Reverse(bottom_left),  1, 1, 1, 1, 1, 1); //bottom side
-	debug_mesh_segment(runway_hit_box_geo.side(0), 1, 0, 0, 1, 0, 0); //left side
-	debug_mesh_segment(runway_hit_box_geo.side(1), 0, 1, 0, 0, 1, 0); //top side
-	debug_mesh_segment(runway_hit_box_geo.side(2), 0, 0, 1, 0, 0, 1); //right side
-	debug_mesh_segment(runway_hit_box_geo.side(3), 1, 1, 1, 1, 1, 1); //bottom side
+	debug_mesh_segment(runway_hit_box_geo.side(0), 1, 0, 0, make_arrival, 0, 0); //left side
+	debug_mesh_segment(runway_hit_box_geo.side(1), 0, 1, 0, 0, make_arrival, 0); //top side
+	debug_mesh_segment(runway_hit_box_geo.side(2), 0, 0, 1, 0, 0, make_arrival); //right side
+	debug_mesh_segment(runway_hit_box_geo.side(3), 1, 1, 1, make_arrival, make_arrival, make_arrival); //bottom side
 #endif
 	return runway_hit_box_geo;
 }
@@ -990,41 +994,49 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 	//runway side 0 is the lower side, 1 is the higher side
 	for (int runway_side = 0; runway_side < 2; ++runway_side)
 	{
-		//Make the hitbox baed on the runway and which side (low/high) you're currently on
-		Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_info.runway_numbers[runway_side]);
-
 		//For every node in the airport,
 		//- get its associated taxiroutes,
 		//- see if they intersect with our box
 		//- and if so, test if they are properly marked
 		for(TaxiRouteNodeVec_t::iterator node_itr = all_nodes.begin();
-			node_itr != all_nodes.end() && hit_box.size() > 0;
+			node_itr != all_nodes.end();
 			++node_itr)
 		{
 			TaxiRouteInfoVec_t taxiroutes = GetTaxiRoutesFromViewers(*node_itr);
 			for(TaxiRouteInfoVec_t::iterator taxiroute_itr = taxiroutes.begin(); taxiroute_itr != taxiroutes.end(); ++taxiroute_itr)
 			{
-				//Run two tests, intersection with the side, and if that fails, point inside the polygon
-				bool did_hit = hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo);
-				if(did_hit == false)
-				{
-					Point2 p;
-					(*node_itr)->GetLocation(gis_Geo,p);
-					did_hit = hit_box.inside(p);
-				}
-
-				if(did_hit)
+				//First make the departures box, second make the arrivals box
+				for (int make_arrival = 0; make_arrival < 2; make_arrival++)
 				{
 					int runway_number = runway_info.runway_numbers[runway_side];
 
-					if(runway_info.IsHotForArrival(runway_number) == true)
+					//Make the hitbox baed on the runway and which side (low/high) you're currently on and if you need to be making arrival or departure
+					Polygon2 hit_box = MakeHotZoneHitBox(runway_info, runway_number, (bool)make_arrival);
+					if(hit_box.empty() == true)
 					{
-						FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_arrivals, "arrivals", msgs, apt);
+						continue;
 					}
 
-					if(runway_info.IsHotForDeparture(runway_number) == true)
+					//Run two tests, intersection with the side, and if that fails, point inside the polygon
+					bool did_hit = hit_box.intersects((*taxiroute_itr).taxiroute_segment_geo);
+					if(did_hit == false)
 					{
-						FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_departures, "departures", msgs, apt);
+						Point2 p;
+						(*node_itr)->GetLocation(gis_Geo,p);
+						did_hit = hit_box.inside(p);
+					}
+
+					if(did_hit)
+					{
+						if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
+						{
+							FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_arrivals, "arrivals", msgs, apt);
+						}
+
+						if(runway_info.IsHotForDeparture(runway_number) == true && static_cast<bool>(make_arrival) == false)
+						{
+							FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_departures, "departures", msgs, apt);
+						}
 					}
 				}
 			}
@@ -1053,8 +1065,14 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	TaxiRouteVec_t all_taxiroutes_plain;
 	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
 	
+	if(all_taxiroutes_plain.empty() == true)
+	{
+		return; //Nothing to do here
+	}
+
 	//All taxiroutes within the airport that are visible
 	TaxiRouteInfoVec_t all_taxiroutes = TaxiRouteInfoVec_t(all_taxiroutes_plain.begin(),all_taxiroutes_plain.end());
+	
 	
 	//All runways which match the following criteria
 	//- The runway is mentioned in an ATC Flow
@@ -1073,28 +1091,24 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 #endif
 		TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 
-		bool passes_centerline_checks = false;
-		
-		if(AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+		if (matching_taxiroutes.empty() == false)
 		{
-			if(TaxiRouteParallelCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+			if (AllTaxiRouteNodesInRunway(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 			{
-				if(TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+				if (TaxiRouteParallelCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 				{
-					if(DoTaxiRouteConnectivityChecks(*runway_info_itr, all_taxiroutes, matching_taxiroutes, msgs, &apt))
+					if (TaxiRouteCenterlineCheck(*runway_info_itr, matching_taxiroutes, msgs, &apt))
 					{
-						if(RunwayHasCorrectCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+						if (DoTaxiRouteConnectivityChecks(*runway_info_itr, all_taxiroutes, matching_taxiroutes, msgs, &apt))
 						{
-							passes_centerline_checks = true;
+							if (RunwayHasCorrectCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+							{
+								//Add additional checks as needed here
+							}
 						}
 					}
 				}
 			}
-		}
-
-		if(passes_centerline_checks == false)
-		{
-			return;
 		}
 
 		AssaignRunwayUse(*runway_info_itr, all_use_rules);
