@@ -328,7 +328,13 @@ bool	WED_TaxiRoute::HasHotDepart(void) const
 
 bool	WED_TaxiRoute::HasHotILS(void) const
 {
-	return !hot_ils.value.empty();// || runway.value != atc_rwy_None;
+	set<int>	runway_parts;
+	get_runway_parts(runway.value,runway_parts);
+
+	for(set<int>::iterator i = hot_ils.value.begin(); i != hot_ils.value.end(); ++i)
+		if(runway_parts.count(*i) == 0)
+			return true;
+	return false;
 }
 
 bool	WED_TaxiRoute::HasInvalidHotZones(const set<int>& legal_rwys) const
