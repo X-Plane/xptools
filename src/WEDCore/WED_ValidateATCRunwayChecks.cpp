@@ -885,7 +885,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 	}
 
 	const double HITZONE_WIDTH_THRESHOLD_M   = 10.00;
-	const double HITZONE_OVERFLY_THRESHOLD_M = 500.00;
+	double HITZONE_OVERFLY_THRESHOLD_M = 500.00;
 
 	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
 
@@ -912,12 +912,13 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 
 	Vector2 gis_line_direction(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
 	gis_line_direction.normalize();
-	gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
-
+	
 	if(runway_number <= atc_18R)
 	{
 		if(runway_info.IsHotForArrival(runway_number) == true && make_arrival == true)
 		{
+			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp1(), 0);
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//arrival_side is bottom_side;
 			bottom_left  -= gis_line_direction;
 			bottom_right -= gis_line_direction;
@@ -925,6 +926,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 		
 		if(runway_info.IsHotForDeparture(runway_number) == true && make_arrival == false)
 		{
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//departure_side is top_side;
 			top_left  += gis_line_direction;
 			top_right += gis_line_direction;
@@ -934,6 +936,8 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 	{
 		if(runway_info.IsHotForArrival(runway_number) == true  && make_arrival == true)
 		{
+			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp2(), 0);
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//arrival_side is top_side;
 			top_left  += gis_line_direction;
 			top_right += gis_line_direction;
@@ -941,6 +945,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 		
 		if(runway_info.IsHotForDeparture(runway_number) == true  && make_arrival == false)
 		{
+			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//departure_side is bottom_side;
 			bottom_left  -= gis_line_direction;
 			bottom_right -= gis_line_direction;
