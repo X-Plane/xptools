@@ -1328,8 +1328,13 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	{
 		ValidateOneAirport(*a, msgs, lib_mgr);
 	}
-	ValidatePointSequencesRecursive(wrl, msgs,NULL);
-	ValidateDSFRecursive(wrl, lib_mgr, msgs, NULL);
+	
+	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
+	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
+	// be an airport, we hvae to tell it "this is our credited airport."  Dynamic cast gives us the airport
+	// or null for 'free' stuff.
+	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
+	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 	
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{
