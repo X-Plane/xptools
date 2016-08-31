@@ -408,6 +408,7 @@ RESOURCES += ./src/WEDResources/handles/handle_cross.png
 RESOURCES += ./src/WEDResources/handles/handle_square.png
 RESOURCES += ./src/WEDResources/handles/handle_vertexround.png
 RESOURCES += ./src/WEDResources/handles/handle_arrowhead.png
+RESOURCES += ./src/WEDResources/handles/handle_arrowhead_lg.png
 RESOURCES += ./src/WEDResources/handles/handle_rotatehead.png
 RESOURCES += ./src/WEDResources/handles/handle_closeloop.png
 RESOURCES += ./src/WEDResources/handles/handle_control.png

@@ -205,6 +205,7 @@
 		D6151EC20FB478FB008A355F /* RF_Progress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956F010F82E96900F6718E /* RF_Progress.cpp */; };
 		D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE80F82E96900F6718E /* RF_FileCommands.cpp */; };
 		D6151ED80FB47A4D008A355F /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
+		D6183B961D766C7400E606E9 /* handle_arrowhead_lg.png in Resources */ = {isa = PBXBuildFile; fileRef = D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D61ECAE30C96DF0B00159B39 /* XGrinder_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */; };
 		D61ECAE40C96DF1600159B39 /* ObjView_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */; };
@@ -1106,6 +1107,7 @@
 		D613A2DF0BD64C1800D50803 /* WED_TerraserverLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TerraserverLayer.cpp; sourceTree = "<group>"; };
 		D6151DC30FB46008008A355F /* RF_Application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RF_Application.h; sourceTree = "<group>"; };
 		D6151DC40FB46008008A355F /* RF_Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RF_Application.cpp; sourceTree = "<group>"; };
+		D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_arrowhead_lg.png; sourceTree = "<group>"; };
 		D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ObjView_icons.icns; sourceTree = "<group>"; };
 		D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = XGrinder_icons.icns; sourceTree = "<group>"; };
 		D6226E380E4B7F32005BD1D7 /* WED_FacadePlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FacadePlacement.h; sourceTree = "<group>"; };
@@ -2334,6 +2336,7 @@
 		D60BFCD40C03664F00AD5EB7 /* handles */ = {
 			isa = PBXGroup;
 			children = (
+				D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */,
 				D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */,
 				D60BFCD50C03664F00AD5EB7 /* handle_arrowhead.png */,
 				D60BFCD60C03664F00AD5EB7 /* handle_closeloop.png */,
@@ -3952,6 +3955,7 @@
 				D607AC8B0C0385AA00992876 /* scrollbar_h.png in Resources */,
 				D607AC8C0C0385AA00992876 /* scrollbar_v.png in Resources */,
 				D607ADC50C039A5800992876 /* splitter_h.png in Resources */,
+				D6183B961D766C7400E606E9 /* handle_arrowhead_lg.png in Resources */,
 				D607ADC60C039A5800992876 /* splitter_v.png in Resources */,
 				D607AF5C0C03D4A300992876 /* colors.png in Resources */,
 				D607B64C0C0A3F8300992876 /* WED.icns in Resources */,

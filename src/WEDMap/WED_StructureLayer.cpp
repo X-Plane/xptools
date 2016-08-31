@@ -456,7 +456,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				if(one_way && pts.size() >= 2)
 				{
 					Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
-					GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);
+					GUI_PlotIcon(g,"handle_arrowhead_lg.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);
 				}
 			}
 
