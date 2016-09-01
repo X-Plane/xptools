@@ -42,6 +42,7 @@
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
 #include "WED_ATCFlow.h"
 #include "WED_LibraryMgr.h"
 #include "WED_AirportBoundary.h"
@@ -61,6 +62,9 @@
 #include "IResolver.h"
 #include "ILibrarian.h"
 #include "WED_LibraryMgr.h"
+
+#include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
 
 #include "GISUtils.h"
 #include "PlatformUtils.h"
@@ -444,6 +448,7 @@ static void ValidateGISGeometry(WED_Thing* who, validation_error_vector& msgs, W
 	ValidateAllOfType<WED_GISPoint_HeadingWidthLength>(apt, msgs, ValidateOneGISPointHeadingWidthLength);
 	ValidateAllOfType<WED_GISLine_Width>(apt, msgs, ValidateOneGISLineWidth);
 }
+
 //------------------------------------------------------------------------------------------------------------------------------------
 // DSF VALIDATIONS
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -562,15 +567,6 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 
-/* Validate(One|.*)Thing(WED_Thing* who, string& msg)
-
-Validates one or more WED_Things. "who", the item to be validate, is not assumed to be dynamically cast.
-
-msg is the validation message, checked if non-empty at the end.
-
-The occasional returned WED_Thing* is a pointer to the problem child, included to mirror the original flow.
- */
-
 static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector& msgs)
 {
 	//Collect all frequencies and group them by type into smaller vectors 
@@ -667,6 +663,123 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", use, apt));
 }
 
+struct TaxiRouteInfo
+{
+	TaxiRouteInfo(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
+		: taxiroute_ptr(taxiroute),
+		node_0(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(0))),
+		node_1(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(1)))
+	{
+		AptRouteEdge_t apt_route;
+		taxiroute->Export(apt_route);
+		taxiroute_name = apt_route.name;
+
+		Bezier2 bez;
+		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
+		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1), translator.Forward(taxiroute_segment_geo.p2));
+
+		nodes_m[0] = Point2();
+		nodes_m[1] = Point2();
+
+		node_0->GetLocation(gis_Geo, nodes_m[0]);
+		nodes_m[0] = translator.Forward(nodes_m[0]);
+
+		node_1->GetLocation(gis_Geo, nodes_m[1]);
+		nodes_m[1] = translator.Forward(nodes_m[1]);
+	}
+
+	//Pointer to the original WED_TaxiRoute in WED's data model
+	WED_TaxiRoute* taxiroute_ptr;
+
+	//Name of the taxiroute
+	string taxiroute_name;
+
+	//Segment2 representing the taxiroute in lat/lon
+	Segment2 taxiroute_segment_geo;
+
+	//Segment2 representing the taxiroute in meters
+	Segment2 taxiroute_segment_m;
+
+	//Source node of the taxiroute
+	WED_TaxiRouteNode* node_0;
+
+	//Target node of the taxiroute
+	WED_TaxiRouteNode* node_1;
+
+	//0 is node 0,
+	//1 is node 1
+	Point2 nodes_m[2];
+};
+
+static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_error_vector& msgs, WED_Airport * apt)
+{
+	static CoordTranslator2 translator;
+	Bbox2 box;
+	apt->GetBounds(gis_Geo, box);
+	CreateTranslatorForBounds(box,translator);
+
+	//fitr
+	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
+	{
+		for (vector<WED_TaxiRoute*>::iterator edge_b_itr = all_taxiroutes.begin(); edge_b_itr != all_taxiroutes.end(); ++edge_b_itr)
+		{
+			//Skip over the same ones
+			if (edge_a_itr == edge_b_itr)
+			{
+				continue;
+			}
+
+			TaxiRouteInfo edge_a(*edge_a_itr,translator);
+			TaxiRouteInfo edge_b(*edge_b_itr,translator);
+
+			//tmp doesn't matter to us
+			Point2 tmp;
+			if (edge_a.taxiroute_segment_m.intersect(edge_b.taxiroute_segment_m,tmp) == true)
+			{
+				//An intersection is different from a T junction
+				continue;
+			}
+			
+			for (int i = 0; i < 2; i++)
+			{
+				for (int j = 0; j < 2; j++)
+				{
+					if (edge_a.nodes_m[i] == edge_b.nodes_m[j])
+					{
+						//This is a duplicate of the doubled up vertex test
+						continue;
+					}
+				}
+			}
+
+			const double TJUNCTION_THRESHOLD = 5.00;
+			for (int i = 0; i < 2; i++)
+			{
+				double dist_a_to_b_node = sqrt(edge_a.taxiroute_segment_m.squared_distance(edge_b.nodes_m[i]));
+
+				if (dist_a_to_b_node < TJUNCTION_THRESHOLD)
+				{
+					vector<WED_TaxiRoute*> problem_children;
+					problem_children.push_back(*edge_a_itr);
+					problem_children.push_back(*edge_b_itr);
+					msgs.push_back(validation_error_t("Taxi routes " + edge_a.taxiroute_name + " and " + edge_b.taxiroute_name + " form a T junction, without actually being connected", problem_children, apt));
+				}
+			}
+		}
+	}
+
+	/*For each edge A
+		for each OTHER edge B
+			for each end B(B src and B dst)
+				if the distance between A and the end node you are testing is < M meters
+					
+					If A and B intersect, do not mark them as a T - the intersection test will pick this up and we don't want to have double errors on a single user problem.
+
+					else If A and B share a common vertex, do not mark them as a T junction - this is legal. (Do this by comparing the Point2, not the IGISPoint *.If A and B have separate exactly on top of each other nodes, the duplicate nodes check will find this, and again we don't want to squawk twice on one user error.
+					else validation failure - that node is too close to a taxiway route but isn't joined.
+					*/
+}
+
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
 {
 	string name;
@@ -736,31 +849,31 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	}
 }
 
-static void ValidateATC(WED_Airport* who, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
+static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
 {
 	vector<WED_ATCFlow *>		flows;
 	vector<WED_TaxiRoute *>	taxi_routes;
 	
-	CollectRecursive(who,back_inserter(flows));
-	CollectRecursive(who,back_inserter(taxi_routes));
+	CollectRecursive(apt,back_inserter(flows));
+	CollectRecursive(apt,back_inserter(taxi_routes));
 	
 	if(gExportTarget == wet_xplane_900)
 	{
 		if(!flows.empty())
-			msgs.push_back(validation_error_t("ATC flows are not legal in X-Plane 9.", flows, who));
+			msgs.push_back(validation_error_t("ATC flows are not legal in X-Plane 9.", flows, apt));
 		if(!taxi_routes.empty())
-			msgs.push_back(validation_error_t("ATC Taxi Routes are not legal in X-Plane 9.", flows, who));
+			msgs.push_back(validation_error_t("ATC Taxi Routes are not legal in X-Plane 9.", flows, apt));
 		return;
 	}
 	
-	if(CheckDuplicateNames(flows, msgs, who, "Two or more airport flows have the same name."))
+	if(CheckDuplicateNames(flows, msgs, apt, "Two or more airport flows have the same name."))
 	{
 		return;
 	}
 	
 	for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
 	{
-		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, who);
+		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt);
 	}
 	
 	for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
@@ -777,13 +890,13 @@ static void ValidateATC(WED_Airport* who, validation_error_vector& msgs, set<int
 		if(taxi->HasInvalidHotZones(legal_rwy_oneway))
 		{
 			msgs.push_back(validation_error_t(string("The taxi route '") + name + "' has hot zones for runways not present at its airport.",
-											taxi, who));
+											taxi, apt));
 		}
 
 		if(taxi->IsRunway())
 			if(legal_rwy_twoway.count(taxi->GetRunway()) == 0)
 			{
-				msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is set to a runway not present at the airport.", taxi, who));
+				msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is set to a runway not present at the airport.", taxi, apt));
 			}
 
 		Point2	start, end;
@@ -792,10 +905,12 @@ static void ValidateATC(WED_Airport* who, validation_error_vector& msgs, set<int
 		if(start == end)
 		{
 #if CHECK_ZERO_LENGTH	
-			msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is zero length.",taxi,who));
+			msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is zero length.",taxi,apt));
 #endif
 		}
 	}
+
+	TJunctionTest(taxi_routes, msgs, apt);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------
