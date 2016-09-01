@@ -718,7 +718,17 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 	apt->GetBounds(gis_Geo, box);
 	CreateTranslatorForBounds(box,translator);
 
-	//fitr
+	/*For each edge A
+		for each OTHER edge B
+		
+		If A and B intersect, do not mark them as a T - the intersection test will pick this up and we don't want to have double errors on a single user problem.
+		else If A and B share a common vertex, do not mark them as a T junction - this is legal. (Do this by comparing the Point2, not the IGISPoint *.If A and B have separate exactly on top of each other nodes, the duplicate nodes check will find this, and again we don't want to squawk twice on one user error.
+
+			for each end B(B src and B dst)
+				if the distance between A and the end node you are testing is < M meters
+					validation failure - that node is too close to a taxiway route but isn't joined.
+	*/
+
 	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
 	{
 		for (vector<WED_TaxiRoute*>::iterator edge_b_itr = all_taxiroutes.begin(); edge_b_itr != all_taxiroutes.end(); ++edge_b_itr)
@@ -759,25 +769,27 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 				if (dist_a_to_b_node < TJUNCTION_THRESHOLD)
 				{
-					vector<WED_TaxiRoute*> problem_children;
+					vector<WED_Thing*> problem_children;
 					problem_children.push_back(*edge_a_itr);
-					problem_children.push_back(*edge_b_itr);
-					msgs.push_back(validation_error_t("Taxi routes " + edge_a.taxiroute_name + " and " + edge_b.taxiroute_name + " form a T junction, without actually being connected", problem_children, apt));
+					
+					string problem_node_name;
+
+					if (i == 0)//src
+					{
+						problem_children.push_back((edge_b.node_0));
+						edge_b.node_0->GetName(problem_node_name);
+					}
+					else if(i == 1)
+					{
+						problem_children.push_back((edge_b.node_1));
+						edge_b.node_1->GetName(problem_node_name);
+					}
+
+					msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " and " + problem_node_name + " form a T junction, without being joined", problem_children, apt));
 				}
 			}
 		}
 	}
-
-	/*For each edge A
-		for each OTHER edge B
-			for each end B(B src and B dst)
-				if the distance between A and the end node you are testing is < M meters
-					
-					If A and B intersect, do not mark them as a T - the intersection test will pick this up and we don't want to have double errors on a single user problem.
-
-					else If A and B share a common vertex, do not mark them as a T junction - this is legal. (Do this by comparing the Point2, not the IGISPoint *.If A and B have separate exactly on top of each other nodes, the duplicate nodes check will find this, and again we don't want to squawk twice on one user error.
-					else validation failure - that node is too close to a taxiway route but isn't joined.
-					*/
 }
 
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
@@ -1474,7 +1486,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		printf("%s\n", msg.c_str());
 #endif
 	}
-	
+
 	if(WED_DoSelectDoubles(resolver))
 	{
 		msg = "Your airport contains doubled ATC routing nodes. These should be merged.";
@@ -1485,8 +1497,8 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		printf("%s\n", msg.c_str());
 #endif
 	}
-	
-	if(WED_DoSelectCrossing(resolver))	
+
+	if(WED_DoSelectCrossing(resolver))
 	{
 		msg = "Your airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.";
 #if !FIND_BAD_AIRPORTS
