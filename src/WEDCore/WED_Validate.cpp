@@ -376,78 +376,6 @@ static void ValidatePointSequencesRecursive(WED_Thing * who, validation_error_ve
 	}
 }
 
-//------------------------------------------------------------------------------------------------------------------------------------
-// GEOMETRY VALIDATIONS
-//------------------------------------------------------------------------------------------------------------------------------------
-
-#include <iostream>
-//WED_GISPoint's location
-static void ValidateOneGISPoint(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt) 
-{
-	if(dynamic_cast<WED_GISPoint*>(who) != NULL)
-	{
-		cout << "Hit Point" << endl;
-	}
-}
-
-//WED_GISPointBezier's location and control handle locations
-static void ValidateOneGISPointBezier(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt) 
-{
-	if(dynamic_cast<WED_GISPoint_Bezier*>(who) != NULL)
-	{
-		cout << "Hit Point Bez" << endl;
-	}
-}
-
-//WED_GISPointheading's location and heading
-static void ValidateOneGISPointHeading(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt) 
-{
-	if(dynamic_cast<WED_GISPoint_Heading*>(who) != NULL)
-	{
-		cout << "Hit point heading" << endl;
-	}
-}
-
-//WED_GISPoint_HeadingWidthLength's location heading width and length
-static void ValidateOneGISPointHeadingWidthLength(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt) 
-{
-	if(dynamic_cast<WED_GISPoint_HeadingWidthLength*>(who) != NULL)
-	{
-		cout << "Hit point heading width length" << endl;
-	}
-}
-
-//GISLineWidth's width
-static void ValidateOneGISLineWidth(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt) 
-{
-	if(dynamic_cast<WED_GISLine_Width*>(who) != NULL)
-	{
-		cout << "Hit line width" << endl;
-	}
-}
-
-typedef void(*validate_one_func)(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt);
-
-template<typename ThingType>
-static void ValidateAllOfType(WED_Airport* apt, validation_error_vector& msgs, validate_one_func func)
-{
-	vector<ThingType*> things;
-	CollectRecursive(apt, back_inserter(things));
-
-	for(vector<ThingType*>::iterator itr = things.begin(); itr != things.end(); ++itr)
-	{
-		func(*itr,msgs,apt);
-	}
-}
-
-static void ValidateGISGeometry(WED_Thing* who, validation_error_vector& msgs, WED_Airport * apt)
-{
-	ValidateAllOfType<WED_GISPoint>(apt, msgs, ValidateOneGISPoint);
-	ValidateAllOfType<WED_GISPoint_Bezier>(apt, msgs, ValidateOneGISPointBezier);
-	ValidateAllOfType<WED_GISPoint_Heading>(apt, msgs, ValidateOneGISPointHeading);
-	ValidateAllOfType<WED_GISPoint_HeadingWidthLength>(apt, msgs, ValidateOneGISPointHeadingWidthLength);
-	ValidateAllOfType<WED_GISLine_Width>(apt, msgs, ValidateOneGISLineWidth);
-}
 
 //------------------------------------------------------------------------------------------------------------------------------------
 // DSF VALIDATIONS
@@ -561,6 +489,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 			ValidateDSFRecursive(c, library_mgr, msgs, parent_apt);
 	}	
 }
+
 
 //------------------------------------------------------------------------------------------------------------------------------------
 // ATC VALIDATIONS
@@ -1438,10 +1367,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		}
 	}
 
-	ValidateGISGeometry(apt, msgs, apt);
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 
-	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
+	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);	
 }
 
 
