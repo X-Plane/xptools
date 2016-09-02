@@ -1171,7 +1171,6 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Select Zero-Length Edges");
 	sel->Clear();
-
 	vector<WED_Thing *> pts;
 	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphEdge, pts);
 	
@@ -1201,15 +1200,14 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 			
 			Point2 x;
 			if (s1.p1 != s2.p1 &&
-				s1.p2 != s2.p1 &&
+				s1.p2 != s2.p2 &&
 				s1.p1 != s2.p2 &&
-				s1.p2 != s2.p2)
+				s1.p2 != s2.p1)
 			if(s1.intersect(s2, x))			
 			{
 				sel->Insert(pts[i]);
 				sel->Insert(pts[j]);
-				break;
-			}			
+			}
 		}
 	}
 	if(sel->GetSelectionCount() == 0)
@@ -1331,12 +1329,56 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
 	DoSelectWithFilter("Select Third Party Art Assets", HasThirdPartyResource, resolver);
 }
 
-
+// Given a vector of nodes all in the same place, this routine merges them all, returning the one surviver,
+// and nukes the rest.  All incoming edges of all of them are merged.  Note that any edges liknking two nodes in
+// nodes are now zero length.
+static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
+{
+	DebugAssert(nodes.size() > 1);
+	WED_Thing * winner = nodes.front();
+	
+	// This takes the centroid of the nodes - if the user provides a cluster of nodes this function can snap them together.
+	Point2	l(0.0,0.0);
+	for(int i = 0; i < nodes.size(); ++i)
+	{
+		IGISPoint * p = dynamic_cast<IGISPoint *>(nodes[i]);
+		DebugAssert(p);
+		Point2 ll;
+		p->GetLocation(gis_Geo, ll);
+		l.x_ += ll.x_;
+		l.y_ += ll.y_;
+	}
+	double r = nodes.size();
+	r = 1.0f / r;
+	l.x_ *= r;
+	l.y_ *= r;
+	
+	IGISPoint * w = dynamic_cast<IGISPoint *>(winner);
+	w->SetLocation(gis_Geo,l);
+	
+	for(int i = 1; i < nodes.size(); ++i)
+	{
+		WED_Thing * victim = nodes[i];
+		set<WED_Thing *> viewers;
+		victim->GetAllViewers(viewers);
+		for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
+			(*v)->ReplaceSource(victim, winner);
+		
+		victim->SetParent(NULL, 0);
+		victim->Delete();
+	}
+	return winner;
+}
 
 static int	unsplittable(ISelectable * base, void * ref)
 {
 	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
 	if (!t) return 1;
+	
+	// Network edges are always splittable
+	if(dynamic_cast<IGISEdge *>(base))
+		return 0;
+	
 	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
 	if (!p) return 1;
 //	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
@@ -1402,6 +1444,40 @@ static int	collect_splits(ISelectable * base, void * ref)
 }
 
 
+// This functor sorts points radially from a point.  When the points are on a line segment this is a cheap way to
+// order them from the anchor to the other end.
+struct sort_by_distance {
+	Point2	anchor;
+	bool operator()(const Point2& lhs, const Point2& rhs) const {
+		return anchor.squared_distance(lhs) < anchor.squared_distance(rhs);
+	}
+	sort_by_distance(const Point2& a) : anchor(a) { }
+};
+
+// For a given edge, this stores the splits that we found - we later sort them once they are all found.
+struct split_edge_info_t {
+	IGISEdge *				edge;
+	vector<Point2>			splits;
+
+	split_edge_info_t(IGISEdge * e) : edge(e) { }
+
+	void sort_along_edge()
+	{
+		Point2 a;
+		edge->GetNthPoint(0)->GetLocation(gis_Geo, a);
+		sort(splits.begin(),splits.end(), sort_by_distance(a));
+	}
+};
+
+// Simple collector of all GIS Edges in the selection.
+static int collect_edges(ISelectable * base, void * ref)
+{
+	vector<split_edge_info_t> * edges = (vector<split_edge_info_t>*) ref;
+	IGISEdge * e = dynamic_cast<IGISEdge *>(base);
+	if(e)
+		edges->push_back(e);
+	return 0;
+}
 
 int		WED_CanSplit(IResolver * resolver)
 {
@@ -1422,9 +1498,18 @@ void	WED_DoSplit(IResolver * resolver)
 	info.second = &who;
 
 	sel->IterateSelectionOr(collect_splits, &info);
-	if (who.empty()) return;
+	
+	vector<split_edge_info_t> edges;
+	
+	sel->IterateSelectionOr(collect_edges, &edges);
+	
+	if (who.empty() && edges.empty()) return;
 
 	op->StartOperation("Split Segments.");
+
+	//
+	// This super-obtuse block splits pairs of points in a GIS Chain.
+	//
 
 	for (vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
@@ -1487,7 +1572,94 @@ void	WED_DoSplit(IResolver * resolver)
 
 		sel->Insert(new_w);
 	}
-
+	
+	//
+	// This block splits overlapping GIS edges anywhere they cross.
+	//
+	
+	// Step 1: run a nested for loop and find all intersections between all
+	// segments...if the intersection is in the interior, we accumulate it on
+	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
+	// data sets big enough to need it.
+	for(int i = 0; i < edges.size(); ++i)
+	{
+		Segment2 is;
+		
+		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
+		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
+		for(int j = 0; j < i; ++j)
+		{
+			Segment2 js;
+			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
+			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
+			
+			if(is.p1 != is.p2 &&
+			   js.p1 != js.p2 &&
+			   is.p1 != js.p1 &&
+			   is.p2 != js.p2 &&
+			   is.p1 != js.p2 &&
+			   is.p2 != js.p1)
+			{
+				Point2 x;
+				if(is.intersect(js, x))
+				{
+					edges[i].splits.push_back(x);
+					edges[j].splits.push_back(x);
+				}
+			}
+		}
+	}
+	
+	// This will be a collection of all the nodes we _create_ by splitting, bucketed by their split point.
+	// When A and B cross, we create two new nodes, Xa and Xb, in the middle of each...when done we have
+	// to merge Xa and Xb to cross-link A1, A2, B1 and B2.  So we bucket Xa and Xb at point X.
+	map<Point2, vector<WED_Thing *>, lesser_x_then_y >	splits;
+	
+	for(int i = 0; i < edges.size(); ++i)
+	{
+		// Sort in order from source to dest - we need to go in order to avoid making Z shapes
+		// when splitting more than once.
+		edges[i].sort_along_edge();
+		
+		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
+		if(edges[i].splits.empty())
+		{
+			Segment2 s;
+			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo,s.p1);
+			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo,s.p2);
+			edges[i].splits.push_back(s.midpoint());
+		}
+		
+		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
+		// on the "dst" side - so by breaking off the very LAST split first, we keep as "us" the part of
+		// the segment containing all other splits.  We work backward.
+		for(vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
+		{
+			// If we had a 'T' then in theory SplitSide could return NULL?
+			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
+			if(split)
+			{
+				// Bucket our new node for merging later
+				WED_Thing * t = dynamic_cast<WED_Thing *>(split);
+				DebugAssert(t);
+				splits[*r].push_back(t);
+				
+				// Select every incident segment - some already selected but that's okay.
+				set<WED_Thing *> incident;
+				t->GetAllViewers(incident);
+				for(set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
+					sel->Insert(*i);
+			}
+		}
+	}
+	
+	// Finally for each bucketed set of nodes, merge them down to get topology.
+	for(map<Point2, vector<WED_Thing *>, lesser_x_then_y>::iterator s = splits.begin(); s != splits.end(); ++s)
+	{
+		if(s->second.size() > 1)
+			run_merge(s->second);
+	}
+	
 	op->CommitOperation();
 }
 
@@ -1585,43 +1757,6 @@ int	WED_CanMerge(IResolver * resolver)
 		return 0;
 	
 	return 1;
-}
-
-static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
-{
-	DebugAssert(nodes.size() > 1);
-	WED_Thing * winner = nodes.front();
-	
-	Point2	l(0.0,0.0);
-	for(int i = 0; i < nodes.size(); ++i)
-	{
-		IGISPoint * p = dynamic_cast<IGISPoint *>(nodes[i]);
-		DebugAssert(p);
-		Point2 ll;
-		p->GetLocation(gis_Geo, ll);
-		l.x_ += ll.x_;
-		l.y_ += ll.y_;
-	}
-	double r = nodes.size();
-	r = 1.0f / r;
-	l.x_ *= r;
-	l.y_ *= r;
-	
-	IGISPoint * w = dynamic_cast<IGISPoint *>(winner);
-	w->SetLocation(gis_Geo,l);
-	
-	for(int i = 1; i < nodes.size(); ++i)
-	{
-		WED_Thing * victim = nodes[i];
-		set<WED_Thing *> viewers;
-		victim->GetAllViewers(viewers);
-		for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
-			(*v)->ReplaceSource(victim, winner);
-		
-		victim->SetParent(NULL, 0);
-		victim->Delete();
-	}
-	return winner;
 }
 
 void WED_DoMerge(IResolver * resolver)

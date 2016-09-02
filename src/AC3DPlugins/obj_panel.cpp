@@ -32,6 +32,11 @@
 
 #define PANEL_REGION_DIMS		4
 
+
+using std::min;
+using std::max;
+
+
 /*
 TCL_linked_variv * panel_sub_l		=NULL;
 TCL_linked_variv * panel_sub_r		=NULL;

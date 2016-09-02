@@ -121,8 +121,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 {
 	vector<Point2>	pts(in_pts);
 	int idx;
-	WED_Thing * host = GetHost(idx);
-	if (host == NULL) return;
+	WED_Thing * host_for_parent = GetHost(idx);
+	if (host_for_parent == NULL) return;
+	
+	WED_Thing * host_for_merging = WED_GetContainerForHost(GetResolver(), host_for_parent, kIsAirport[mType], idx);
 
 	string cname = string("Create ") + kCreateCmds[mType];
 
@@ -147,7 +149,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double	dist=frame_dist*frame_dist;
 		WED_Thing * who = NULL;
-		FindNear(host, NULL, edge_class, pts[p],who,dist);
+		FindNear(host_for_merging, NULL, edge_class, pts[p],who,dist);
 		if (who != NULL)
 		{
 			IGISPoint * pp = dynamic_cast<IGISPoint *>(who);
@@ -165,7 +167,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double dist=frame_dist*frame_dist;
 		IGISPointSequence * seq = NULL;
-		FindNearP2S(host, NULL, edge_class,pts[p], seq, dist);
+		FindNearP2S(host_for_merging, NULL, edge_class,pts[p], seq, dist);
 		if(seq)
 			seq->SplitSide(pts[p], 0.001);		
 	}
@@ -176,7 +178,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<Point2>	splits;
-		SplitByPts(host, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
+		SplitByPts(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
 //		printf("At index %d, got %d splits from pts.\n", p, splits.size());
 		SortSplits(Segment2(pts[p-1],pts[p]), splits);
 
@@ -198,7 +200,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<pair<IGISPointSequence *, Point2> >	splits;
-		SplitByLine(host, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
+		SplitByLine(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
 		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
 			s->first->SplitSide(s->second,0.001);
 //		printf("At index %d, got %d splits.\n", p, splits.size());
@@ -229,11 +231,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	
-		FindNear(host, NULL, edge_class,pts[start % pts.size()],src,dist);
+		FindNear(host_for_merging, NULL, edge_class,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
 		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_RoadNode::CreateTyped(GetArchive());
-		src->SetParent(host,idx);
+		src->SetParent(host_for_parent,idx);
 		src->SetName(mName.value + "_start");
 		c->SetLocation(gis_Geo,pts[0]);
 	}
@@ -267,7 +269,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		dst = NULL;
 		
 		dist=frame_dist*frame_dist;
-		FindNear(host, NULL, edge_class,pts[p % pts.size()],dst,dist);
+		FindNear(host_for_merging, NULL, edge_class,pts[p % pts.size()],dst,dist);
 		if(dst == NULL)
 		{
 			switch(mType) {
@@ -278,7 +280,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 				dst = c = WED_RoadNode::CreateTyped(GetArchive());
 				break;
 			}
-			dst->SetParent(host,idx);
+			dst->SetParent(host_for_parent,idx);
 			dst->SetName(mName.value+"_stop");
 			c->SetLocation(gis_Geo,pts[p % pts.size()]);
 		}		
@@ -309,7 +311,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			}
 		}
 		// Do this last - half-built edge inserted the world destabilizes accessors.
-		new_edge->SetParent(host,idx);
+		new_edge->SetParent(host_for_parent,idx);
 		sel->Insert(new_edge);	
 	
 //		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
@@ -328,7 +330,7 @@ bool		WED_CreateEdgeTool::CanCreateNow(void)
 
 WED_Thing *	WED_CreateEdgeTool::GetHost(int& idx)
 {
-		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);
+		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], true, idx);
 }
 
 const char *		WED_CreateEdgeTool::GetStatusText(void)

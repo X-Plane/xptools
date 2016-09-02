@@ -24,6 +24,7 @@
 #include "TclStubs.h"
 #if APL || LIN
 #include <dlfcn.h>
+#include <stdlib.h>
 #endif
 
 TCL_stubs tcl_stubs = { 0 };
@@ -32,8 +33,8 @@ const char * TCL_init_stubs(void)
 {
 	int lost = 0;
 #if IBM
-	HMODULE	hmod = GetModuleHandle("tcl85");
-	if(hmod == NULL) hmod = GetModuleHandle("tcl84");
+	HMODULE	hmod = GetModuleHandle(L"tcl85");
+	if(hmod == NULL) hmod = GetModuleHandle(L"tcl84");
 	if(hmod == NULL) return "Could not locate tcl84 or tcl85";
 #endif
 #if APL || LIN

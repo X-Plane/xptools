@@ -379,6 +379,7 @@
     <ClInclude Include="..\..\src\WEDCore\WED_Version.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_XMLReader.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_XMLWriter.h" />
+    <ClInclude Include="..\..\src\Interfaces\IHasResource.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Airport.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_AirportBeacon.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_AirportBoundary.h" />

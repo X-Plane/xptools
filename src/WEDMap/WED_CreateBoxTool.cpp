@@ -71,7 +71,7 @@ void	WED_CreateBoxTool::AcceptPath(
 	GetArchive()->StartCommand(buf);
 
 	int idx;
-	WED_Thing * host = WED_GetCreateHost(GetResolver(), false, idx);
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), false, true, idx);
 	WED_ExclusionZone * exc;
 	WED_GISBoundingBox * obj;
 

@@ -13,6 +13,31 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5b2 8/31/16
+
+	New features:
+	- New validation of taxi routes and flows
+	- Coloring of taxi routes in ATC tab layer
+	- New validation of ATC frequencies
+
+
+	Bug fixes:
+	- WED-620: Disallow curves in boundary tool
+	- WED-618: Large arrowhead for ATC one way
+	- WED-616: Fixed edge tool crash when ATC window is open and flow selected. Fixes merging lines within an airport with sub-groups and tools create map items outside ATC flows.
+	- WED-607: Fixed load of legacy packs
+	- WED-602: Flows allow decimals in minimum visibility field
+	- WED-594: Metric spacing in facades, strings and objects follows UI feet/meters display
+	- WED-584: Restored file-cleanup on gateway import
+	- WED-580: Leave ATC layer off when we start
+	- WED-575: Restored +/- zoom
+	- WED-517: Fixed cut-copy-paste in Gateway upload box
+	- WED-564: Fixed typo on tab title
+	- WED-493: Split function splits ATC edges that overlap
+	- WED-485, WED-595: Fixed frequency rounding in UI
+	- WED-392: Windows are modal on Windows OS
+	- Fixed preview of .agp files
+
 WED 1.5b1 7/13/16
 
 	Initial Release of WED 1.5

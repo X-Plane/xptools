@@ -24,9 +24,10 @@
 #ifndef WED_PolygonPlacement_H
 #define WED_PolygonPlacement_H
 
+#include "IHasResource.h"
 #include "WED_GISPolygon.h"
 
-class	WED_PolygonPlacement : public WED_GISPolygon {
+class	WED_PolygonPlacement : public WED_GISPolygon, public IHasResource {
 
 DECLARE_PERSISTENT(WED_PolygonPlacement)
 
@@ -35,8 +36,8 @@ public:
 			double		GetHeading(void) const;
 			void		SetHeading(double h);
 
-			void		GetResource(	  string& r) const;
-			void		SetResource(const string& r);
+	virtual void		GetResource(	  string& r) const;
+	virtual void		SetResource(const string& r);
 
 	virtual const char *	HumanReadableType(void) const { return "Draped Polygon"; }
 

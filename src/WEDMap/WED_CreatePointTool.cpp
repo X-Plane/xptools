@@ -111,7 +111,7 @@ void	WED_CreatePointTool::AcceptPath(
 	GetArchive()->StartCommand(buf);
 
 	int idx;
-	WED_Thing * host = WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), kIsAirport[mType], true, idx);
 
 	WED_GISPoint * new_pt_obj = NULL;
 	WED_GISPoint_Heading * new_pt_h = NULL;

@@ -150,6 +150,17 @@ const WED_Airport * WED_GetParentAirport(const WED_Thing * who)
 	return NULL;
 }
 
+WED_Airport * WED_GetParentAirport(WED_Thing * who)
+{
+	while(who)
+	{
+		WED_Airport * a = dynamic_cast<WED_Airport *>(who);
+		if(a) return a;
+		who = who->GetParent();
+	}
+	return NULL;
+}
+
 static WED_Airport *			FindAnyAirport(WED_Thing * who)
 {
 	if (who->GetClass() == WED_Airport::sClass)
@@ -208,7 +219,7 @@ WED_LibraryMgr*WED_GetLibraryMgr(IResolver * resolver)
 	return SAFE_CAST(WED_LibraryMgr,resolver->Resolver_Find("libmgr"));
 }
 
-WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx)
+WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, bool needs_spatial, int& idx)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -218,6 +229,7 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 		WED_Thing * obj = SAFE_CAST(WED_Thing, sel->GetNthSelection(0));
 		if (obj != wrl)
 		if (obj->GetParent())
+		if (!needs_spatial || dynamic_cast<IGISEntity *>(obj->GetParent()))
 		if (!Iterate_IsPartOfStructuredObject(obj,NULL))
 		if (!require_airport || Iterate_IsOrParentClass(obj->GetParent(), (void *) WED_Airport::sClass))
 		{
@@ -235,6 +247,9 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 	if (parent_of_sel && require_airport && !Iterate_IsOrParentClass(parent_of_sel, (void *) WED_Airport::sClass))
 		parent_of_sel = NULL;
 
+	if (parent_of_sel && needs_spatial && dynamic_cast<IGISEntity *>(parent_of_sel) == NULL)
+		parent_of_sel = NULL;
+
 	if (parent_of_sel == NULL)
 	{
 		if (require_airport)
@@ -245,6 +260,24 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 
 	if(parent_of_sel == wrl->GetParent()) parent_of_sel = wrl;
 	return parent_of_sel;
+}
+
+WED_Thing *		WED_GetContainerForHost(IResolver * resolver, WED_Thing * host, bool require_airport, int& idx)
+{
+	if(host->GetClass() == WED_Airport::sClass)	return host;
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	if(!require_airport && host == wrl)	return host;
+	
+	idx = 0;
+	
+	WED_Airport * apt = WED_GetParentAirport(host);
+	if(apt != NULL)
+		return apt;
+	
+	if(require_airport)
+		return WED_GetCurrentAirport(resolver);
+	else
+		return wrl;
 }
 
 static void	WED_GetSelectionInOrderRecursive(ISelection * sel, WED_Thing * who, vector<WED_Thing *>& out_sel)

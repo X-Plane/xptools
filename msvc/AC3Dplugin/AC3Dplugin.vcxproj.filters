@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Obj">
+      <UniqueIdentifier>{10134716-5941-4460-845c-518005220ff5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSF">
+      <UniqueIdentifier>{19db4789-0904-4c95-a9a5-4a417297d6b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSF\tri_stripper_101">
+      <UniqueIdentifier>{62d47f98-7523-4346-9e3a-8f976d3fdd51}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\AC3DPlugins\ac_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\bitmap_match.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_anim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_editor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_panel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_radius.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_tools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_update.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj8_export.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\obj8_import.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\prefs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\tcl_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\uv_mapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\xp_plugin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\XObjDefs.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AC3DPlugins\TclStubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\AC3DPlugins\ac_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\ac3d_prefix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\bitmap_match.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\dsf_export.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_anim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_editor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_panel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_radius.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_tools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_update.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj8_export.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\obj8_import.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\prefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\tcl_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\uv_mapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\ObjDraw.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\ObjPointPool.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XDefs.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XObjBuilder.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XObjDefs.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XObjReadWrite.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AC3DPlugins\TclStubs.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

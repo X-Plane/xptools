@@ -59,6 +59,8 @@
 
 #include "AptDefs.h"
 #include "IResolver.h"
+#include "ILibrarian.h"
+#include "WED_LibraryMgr.h"
 
 #include "GISUtils.h"
 #include "PlatformUtils.h"
@@ -415,7 +417,7 @@ static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& 
 		msgs.push_back(validation_error_t("Line and point forests are only supported in X-Plane 10 and newer.",who,apt));
 }
 
-static void ValidateDSFRecursive(WED_Thing * who, validation_error_vector& msgs, WED_Airport * parent_apt)
+static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, validation_error_vector& msgs, WED_Airport * parent_apt)
 {
 	// Don't validate hidden stuff - we won't export it!
 	WED_Entity * ee = dynamic_cast<WED_Entity *>(who);
@@ -439,12 +441,48 @@ static void ValidateDSFRecursive(WED_Thing * who, validation_error_vector& msgs,
 			msgs.push_back(validation_error_t("You cannot export airport overlays to the X-Plane Airport Gateway if overlay elements are outside airports in the hierarchy.",who,NULL));
 	}
 
+	//--Validate resources-----------------------------------------------------
+	IHasResource* resource_containing_who = dynamic_cast<IHasResource*>(who);
+
+	if(resource_containing_who != NULL)
+	{
+		string resource_str;
+		resource_containing_who->GetResource(resource_str);
+
+		//1. Is the resource entirely missing
+		string path = library_mgr->GetResourcePath(resource_str);
+		if(path == "")
+		{
+			if(parent_apt != NULL)
+			{
+				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + resource_str + " cannot be found", who, parent_apt));
+			}
+		}
+
+		//3. What happen if the user free types a real resource of the wrong type into the box?
+		bool matches = false;
+#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && resource_str.substr(resource_str.find_last_of(".")) == EXT) ? true : false;
+		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
+		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  ".for");
+		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    ".lin");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".obj");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".agp");
+		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  ".str");
+		
+		if(matches == false)
+		{
+			msgs.push_back(validation_error_t("Resource " + resource_str + " does not have the correct file type", who, parent_apt));
+		}
+	}
+	//-----------------------------------------------------------------------//
 	int nn = who->CountChildren();
 	for (int n = 0; n < nn; ++n)
 	{
 		WED_Thing * c = who->GetNthChild(n);
 		if(c->GetClass() != WED_Airport::sClass)
-			ValidateDSFRecursive(c, msgs, parent_apt);
+			ValidateDSFRecursive(c, library_mgr, msgs, parent_apt);
 	}	
 }
 
@@ -1003,9 +1041,6 @@ static void ValidateOneHelipad(WED_Helipad* who, validation_error_vector& msgs, 
 	}
 }
 
-
-
-
 static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vector& msgs, WED_Airport * apt)
 {
 	/*--Taxi Sign Validation Rules---------------------------------------------
@@ -1086,7 +1121,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		  - No runways or helipads or sealanes at all
 		  - Gateway: illegal use of third party library resources
 	 */
-
+	
 	vector<WED_Runway *>		runways;
 	vector<WED_Helipad *>		helipads;
 	vector<WED_Sealane *>		sealanes;
@@ -1208,7 +1243,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 
-	ValidateDSFRecursive(apt, msgs, apt);	
+	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);	
 }
 
 
@@ -1293,8 +1328,13 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	{
 		ValidateOneAirport(*a, msgs, lib_mgr);
 	}
-	ValidatePointSequencesRecursive(wrl, msgs,NULL);
-	ValidateDSFRecursive(wrl, msgs, NULL);
+	
+	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
+	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
+	// be an airport, we hvae to tell it "this is our credited airport."  Dynamic cast gives us the airport
+	// or null for 'free' stuff.
+	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
+	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 	
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{

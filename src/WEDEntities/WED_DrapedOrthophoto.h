@@ -24,6 +24,8 @@
 #ifndef WED_DrapedOrthophoto_H
 #define WED_DrapedOrthophoto_H
 
+#include "IHasResource.h"
+
 /*
 	WED_DrapedOrthophoto - THEORY OF OPERATION
 
@@ -41,14 +43,14 @@
 
 #include "WED_GISPolygon.h"
 
-class	WED_DrapedOrthophoto : public WED_GISPolygon {
+class	WED_DrapedOrthophoto : public WED_GISPolygon, public IHasResource {
 
 DECLARE_PERSISTENT(WED_DrapedOrthophoto)
 
 public:
 
-			void		GetResource(	  string& r) const;
-			void		SetResource(const string& r);
+		virtual void		GetResource(	  string& r) const;
+		virtual void		SetResource(const string& r);
 			//Checks if the draped orthophoto being used is the old .pol system or the new .someimagetype
 			//True if new, false if old, optional way to get the suffix
 			bool		IsNew( string* out_string=NULL);

@@ -334,7 +334,7 @@ inline void	do_rotate(int n, double& io_x, double& io_y)
 	Vector2 v(io_x,io_y);
 	while(n > 0)
 	{
-		v = v.perpendicular_ccw();
+		v = v.perpendicular_cw();
 		--n;
 	}
 	io_x = v.dx;
@@ -501,6 +501,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		o->x -= anchor_x;
 		o->y -= anchor_y;
 		do_rotate(rotation,o->x,o->y);
+		o->r += 90.0 * rotation;
 	}
 	
 	MemFile_Close(agp);
