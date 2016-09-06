@@ -589,11 +589,11 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			{
 				AptATCFreq_t apt_atc_freq;
 				(*itr)->Export(apt_atc_freq);
-				int freq_type = apt_atc_freq.atc_type;
-				if (freq_type == apt_freq_awos ||
-					freq_type == apt_freq_del  ||
-					freq_type == apt_freq_gnd  ||
-					freq_type == apt_freq_twr)
+				const int freq_type = ENUM_Import(ATCFrequency,apt_atc_freq.atc_type);
+				if (freq_type == atc_AWOS     ||
+					freq_type == atc_Delivery ||
+					freq_type == atc_Ground   ||
+					freq_type == atc_Tower)
 				{
 					problem_children.push_back(*itr);
 				}
