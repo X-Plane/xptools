@@ -709,7 +709,7 @@ static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 		runway_centerline_vec.normalize();
 		taxiroute_vec.normalize();
 
-		double dot_product = abs(runway_centerline_vec.dot(taxiroute_vec));
+		double dot_product = fabs(runway_centerline_vec.dot(taxiroute_vec));
 		double ANGLE_THRESHOLD = 0.995;
 		if(dot_product < ANGLE_THRESHOLD)
 		{
@@ -768,7 +768,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	}
 	else
 	{
-		COVERAGE_THRESHOLD = abs((apt_runway.width_mtr * 4));
+		COVERAGE_THRESHOLD = fabs((apt_runway.width_mtr * 4));
 	}
 
 	//Plus 5 meters in slop zone
@@ -937,7 +937,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 	{
 		if(runway_info.IsHotForArrival(runway_number) == true && make_arrival == true)
 		{
-			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp1(), 0);
+			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp1(), 0.0);
 			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//arrival_side is bottom_side;
 			bottom_left  -= gis_line_direction;
@@ -956,7 +956,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 	{
 		if(runway_info.IsHotForArrival(runway_number) == true  && make_arrival == true)
 		{
-			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp2(), 0);
+			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp2(), 0.0);
 			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
 			//arrival_side is top_side;
 			top_left  += gis_line_direction;
