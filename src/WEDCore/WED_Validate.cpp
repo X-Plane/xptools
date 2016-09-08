@@ -636,8 +636,8 @@ struct TaxiRouteInfo
 {
 	TaxiRouteInfo(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
 		: taxiroute_ptr(taxiroute),
-		node_0(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(0))),
-		node_1(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(1)))
+		node_0(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(0))),
+		node_1(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(1)))
 	{
 		AptRouteEdge_t apt_route;
 		taxiroute->Export(apt_route);
@@ -670,10 +670,10 @@ struct TaxiRouteInfo
 	Segment2 taxiroute_segment_m;
 
 	//Source node of the taxiroute
-	WED_TaxiRouteNode* node_0;
+	WED_GISPoint* node_0;
 
 	//Target node of the taxiroute
-	WED_TaxiRouteNode* node_1;
+	WED_GISPoint* node_1;
 
 	//0 is node 0,
 	//1 is node 1
