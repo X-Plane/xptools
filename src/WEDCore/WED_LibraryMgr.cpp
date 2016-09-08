@@ -80,6 +80,11 @@ WED_LibraryMgr::~WED_LibraryMgr()
 {
 }
 
+string WED_LibraryMgr::GetLocalPackage() const
+{
+	return local_package;
+}
+
 string		WED_LibraryMgr::GetResourceParent(const string& r)
 {
 	string p,f;

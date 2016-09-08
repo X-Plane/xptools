@@ -45,7 +45,7 @@ int FILE_case_correct(char * buf);
 /* FILE API Overview
 	Method Name                 |                    Purpose                    | Trailing Seperator? | Returns (Sucess, fail)
 	exists                      | Does file exist?                              | N/A                 | True/false
-	get_file_extension          | Gets the chars from the last dot to the end   | N/A                 | non-empty, empty string
+	get_file_extension          | Gets the chars from the last dot to the end   | N/A                 | non-empty (".txt",".jpeg". No case change), empty string
 	get_file_meta_data          | Get file info like creation time and date     | No                  | 0, -1
 	get_file_name               | Get file name w/o directory, can use / or \   | N/A                 | non-empty, empty string
 	get_file_name_wo_extensions | Get file name w/o directory or any extensions | N/A                 | non-empty, empty string

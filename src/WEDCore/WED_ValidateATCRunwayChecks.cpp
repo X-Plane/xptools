@@ -135,9 +135,7 @@ struct RunwayInfo
 struct TaxiRouteInfo
 {
 	TaxiRouteInfo(WED_TaxiRoute* taxiroute)
-		: taxiroute_ptr(taxiroute),
-		  node_0(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(0))),
-		  node_1(static_cast<WED_TaxiRouteNode*>(taxiroute->GetNthSource(1)))
+		: taxiroute_ptr(taxiroute)
 	{
 		AptRouteEdge_t apt_route;
 		taxiroute->Export(apt_route);
@@ -145,12 +143,24 @@ struct TaxiRouteInfo
 		hot_arrivals   = set<string>(apt_route.hot_arrive);
 		hot_departures = set<string>(apt_route.hot_depart);
 
+		//nodes
+		for (int i = 0; i < taxiroute_ptr->CountSources(); i++)
+		{
+			WED_GISPoint* point = dynamic_cast<WED_GISPoint*>(taxiroute_ptr->GetNthSource(i));
+
+			if (point != NULL)
+			{
+				nodes.push_back(point);
+			}
+		}
+
+		DebugAssert(nodes.size() >= 2);
 		Bezier2 bez;
 		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
 		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
 	}
 	
-	//Pointer to the original WED_TaxiRoute in WED's datamodel
+	//Pointer to the original WED_TaxiRoute in WED's data model
 	WED_TaxiRoute* taxiroute_ptr;
 
 	//Name of the taxiroute
@@ -165,18 +175,15 @@ struct TaxiRouteInfo
 	set<string> hot_arrivals;
 	set<string> hot_departures;
 
-	//Source node of the taxiroute
-	WED_TaxiRouteNode* node_0;
-
-	//Target node of the taxiroute
-	WED_TaxiRouteNode* node_1;
+	//Source nodes of the taxiroute. Usually TaxiRouteNodes but sometimes something else
+	vector<WED_GISPoint*> nodes;
 };
 
 typedef vector<WED_ATCRunwayUse*>  ATCRunwayUseVec_t;
 typedef vector<WED_ATCFlow*>       FlowVec_t;
 typedef vector<WED_Runway*>        RunwayVec_t;
 typedef vector<WED_TaxiRoute*>     TaxiRouteVec_t;
-typedef vector<WED_TaxiRouteNode*> TaxiRouteNodeVec_t;
+typedef vector<WED_GISPoint*>      TaxiRouteNodeVec_t;//We're just using WED_GISPoint because old WED and airports
 typedef vector<RunwayInfo>         RunwayInfoVec_t;
 typedef vector<TaxiRouteInfo>      TaxiRouteInfoVec_t;
 
@@ -306,8 +313,8 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	TaxiRouteNodeVec_t matching_taxiroute_nodes;
 	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
 	{
-		matching_taxiroute_nodes.push_back(static_cast<WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(0)));
-		matching_taxiroute_nodes.push_back(static_cast<WED_TaxiRouteNode*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
+		matching_taxiroute_nodes.push_back(dynamic_cast<WED_GISPoint*>(taxiroute_itr->taxiroute_ptr->GetNthSource(0)));
+		matching_taxiroute_nodes.push_back(dynamic_cast<WED_GISPoint*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
 	}
 
 	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
@@ -379,7 +386,7 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-static vector<TaxiRouteInfo> filter_viewers_by_runway_name(const WED_TaxiRouteNode* node, const string& runway_name)
+static vector<TaxiRouteInfo> filter_viewers_by_runway_name(const WED_GISPoint* node, const string& runway_name)
 {
 	vector<TaxiRouteInfo> matching_routes;
 
@@ -405,13 +412,13 @@ static vector<TaxiRouteInfo> filter_viewers_by_runway_name(const WED_TaxiRouteNo
 //Checks that a Runway's taxi route has two nodes with a valence of one, and no nodes with a valence of > 2
 static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 										   const TaxiRouteNodeVec_t& all_matching_nodes, //All nodes from taxiroutes matching the runwa, these will come in sorted
-										   WED_TaxiRoute*& start_taxiroute,
+										   WED_TaxiRoute*& out_start_taxiroute, //Out parameter, one of the ends of the taxiroute
 										   validation_error_vector& msgs,
 										   WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
 	int num_valence_of_1 = 0; //Aka, the tips of the runway, should end up being 2
-	start_taxiroute = NULL;
+	out_start_taxiroute = NULL;
 
 	for(TaxiRouteNodeVec_t::const_iterator node_itr = all_matching_nodes.begin(); node_itr != all_matching_nodes.end(); ++node_itr)
 	{
@@ -421,10 +428,10 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 		{
 			if(num_valence_of_1 < 2)
 			{
-				if(start_taxiroute == NULL)
+				if(out_start_taxiroute == NULL)
 				{
 					TaxiRouteInfoVec_t viewers = filter_viewers_by_runway_name(*node_itr,runway_info.runway_name);
-					start_taxiroute = viewers.front().taxiroute_ptr;
+					out_start_taxiroute = viewers.front().taxiroute_ptr;
 				}
 				++num_valence_of_1;
 			}
@@ -452,24 +459,24 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-int get_node_valence(const WED_TaxiRouteNode* node)
+int get_node_valence(const WED_GISPoint* node)
 {
 	set<WED_Thing*> node_viewers;
 	node->GetAllViewers(node_viewers);
 	return node_viewers.size();
 }
 
-WED_TaxiRouteNode* get_next_node(const WED_TaxiRouteNode* current_node,
-								 const TaxiRouteInfo& next_taxiroute)
+WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
+							const TaxiRouteInfo& next_taxiroute)
 {
-	WED_TaxiRouteNode* next = NULL;
-	if(next_taxiroute.taxiroute_ptr->GetNthSource(0) == current_node)
+	WED_GISPoint* next = NULL;
+	if(next_taxiroute.nodes[0] == current_node)
 	{
-		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute.taxiroute_ptr->GetNthSource(1)); //Going backwards choose next-1 | 0--next--1-->0--current--1-->
+		next = next_taxiroute.nodes[1]; //Going backwards choose next-1 | 0--next--1-->0--current--1-->
 	}
 	else
 	{
-		next = dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute.taxiroute_ptr->GetNthSource(0)); //Going forwards, choose next-0 | 0--current--1-->0--next--1-->
+		next = next_taxiroute.nodes[0]; //Going forwards, choose next-0 | 0--current--1-->0--next--1-->
 	}
 
 	if(next == NULL)
@@ -491,7 +498,7 @@ WED_TaxiRouteNode* get_next_node(const WED_TaxiRouteNode* current_node,
 	}
 }
 
-WED_TaxiRoute* get_next_taxiroute(const WED_TaxiRouteNode* current_node,
+WED_TaxiRoute* get_next_taxiroute(const WED_GISPoint* current_node,
 								  const TaxiRouteInfo& current_taxiroute)
 {
 	TaxiRouteInfoVec_t viewers = filter_viewers_by_runway_name(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
@@ -507,23 +514,31 @@ WED_TaxiRoute* get_next_taxiroute(const WED_TaxiRouteNode* current_node,
 	}
 }
 
-//pair<is_target_of_current,is_target_of_next>
-pair<int,int> get_taxiroute_relationship(const WED_TaxiRouteNode* current_node,
-										   const WED_TaxiRoute* current_taxiroute,
-										   const WED_TaxiRoute* next_taxiroute)
+//returns pair<is_target_of_current,is_target_of_next>
+pair<bool,bool> get_taxiroute_relationship(const WED_GISPoint* current_node,
+										   const TaxiRouteInfo& current_taxiroute,
+										   const TaxiRouteInfo& next_taxiroute)
 {
-	DebugAssert(next_taxiroute != NULL);
-	std::pair<bool,bool> taxiroute_relationship(0,0);
+	//pair<is_target_of_current,is_target_of_next>
+	std::pair<bool,bool> taxiroute_relationship(false,false);
 	
-	//TODO: Do taxi routes ever have sources besides nodes?
-	if(dynamic_cast<const WED_TaxiRouteNode*>(current_taxiroute->GetNthSource(1)) == current_node)
+	//See relationship chart in TaxiRouteSquishedZCheck
+	if(current_taxiroute.nodes[1] == current_node)
 	{
-		taxiroute_relationship.first = 1;
+		taxiroute_relationship.first = true;
+	}
+	else
+	{
+		taxiroute_relationship.first = false;
 	}
 
-	if(dynamic_cast<const WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(1)) == current_node)
+	if(next_taxiroute.nodes[1] == current_node)
 	{
-		taxiroute_relationship.second = 1;
+		taxiroute_relationship.second = true;
+	}
+	else
+	{
+		taxiroute_relationship.second = false;
 	}
 
 	return taxiroute_relationship;
@@ -537,55 +552,59 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 {
 	//We know all the nodes are within threshold of the center and within bounds, the segments are parallel enough,
 	//the route is a complete chain with no 3+-way splits. Now: do any of the segments make a complete 180 unexpectedly?
-	WED_TaxiRouteNode* current_node = NULL;
-	WED_TaxiRoute* current_taxiroute = start_taxiroute.taxiroute_ptr;
+	WED_GISPoint* current_node = NULL;
+	TaxiRouteInfo current_taxiroute(start_taxiroute.taxiroute_ptr);
 
-	if(get_node_valence(start_taxiroute.node_0) == 2)
+	if(get_node_valence(start_taxiroute.nodes[0]) == 2)
 	{
-		current_node = start_taxiroute.node_0; //We'll be moving backwards through the route, <----0--------1-->
+		current_node = start_taxiroute.nodes[0]; //We'll be moving backwards through the route, <----0--------1-->
 	}
 	else
 	{
-		current_node = start_taxiroute.node_1;//0---->1---->
+		current_node = start_taxiroute.nodes[1];//0---->1---->
 	}
 
 	//while we have not run out of nodes to traverse
 	while(current_node != NULL)
 	{
-		WED_TaxiRoute* next_taxiroute = get_next_taxiroute(current_node,current_taxiroute);
-		if(next_taxiroute == NULL)
+		WED_TaxiRoute* next_route = get_next_taxiroute(current_node,current_taxiroute);
+		if(next_route == NULL)
 		{
 			break;
 		}
 
-		pair<int,int> relationship = get_taxiroute_relationship(current_node,current_taxiroute,next_taxiroute);
-		WED_TaxiRouteNode* next_node = get_next_node(current_node,next_taxiroute);
+		TaxiRouteInfo next_taxiroute(next_route);
+
+		pair<bool,bool> relationship = get_taxiroute_relationship(current_node,current_taxiroute,next_taxiroute);
+		WED_GISPoint* next_node = get_next_node(current_node,next_taxiroute);
 
 		Vector2 runway_vec = Vector2(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
 		runway_vec.normalize();
 
-		Point2 p1;
-		Point2 p2;
+		Point2 current_p1;
+		Point2 current_p2;
 
-		dynamic_cast<WED_TaxiRouteNode*>(current_taxiroute->GetNthSource(0))->GetLocation(gis_Geo,p1);
-		p1 = translator.Forward(p1);
+		current_taxiroute.nodes[0]->GetLocation(gis_Geo, current_p1);
+		current_p1 = translator.Forward(current_p1);
 		
-		dynamic_cast<WED_TaxiRouteNode*>(current_taxiroute->GetNthSource(1))->GetLocation(gis_Geo,p2);
-		p2 = translator.Forward(p2);
+		current_taxiroute.nodes[1]->GetLocation(gis_Geo, current_p2);
+		current_p2 = translator.Forward(current_p2);
 
-		Vector2 taxiroute_vec_1 = Vector2(p1,p2);
+		Vector2 taxiroute_vec_1 = Vector2(current_p1, current_p2);
 		taxiroute_vec_1.normalize();
 		double dot_runway_route_1 = runway_vec.dot(taxiroute_vec_1);
 
-		dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(0))->GetLocation(gis_Geo,p1);
-		p1 = translator.Forward(p1);
-		
-		dynamic_cast<WED_TaxiRouteNode*>(next_taxiroute->GetNthSource(1))->GetLocation(gis_Geo,p2);
-		p2 = translator.Forward(p2);
-		
-		Vector2 taxiroute_vec_2 = Vector2(p1,p2);
-		taxiroute_vec_2.normalize();
+		Point2 next_p1;
+		Point2 next_p2;
 
+		next_taxiroute.nodes[0]->GetLocation(gis_Geo, next_p1);
+		next_p1 = translator.Forward(next_p1);
+
+		next_taxiroute.nodes[1]->GetLocation(gis_Geo, next_p2);
+		next_p2 = translator.Forward(next_p2);
+
+		Vector2 taxiroute_vec_2 = Vector2(next_p1, next_p2);
+		taxiroute_vec_2.normalize();
 		double dot_runway_route_2 = runway_vec.dot(taxiroute_vec_2);
 
 		// Given a runway [<--------------------] where this side is this source
@@ -600,9 +619,10 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 
 		int expected_sign = 0;
 
-		bool first_is_target = relationship.first;
+		bool first_is_target  = relationship.first;
 		bool second_is_target = relationship.second;
-		if((first_is_target == true && second_is_target == true) ||
+
+		if((first_is_target == true  && second_is_target == true) ||
 		   (first_is_target == false && second_is_target == false))
 		{
 			expected_sign = -1; //a and d
@@ -619,8 +639,8 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 		if( real_sign != expected_sign)
 		{
 			TaxiRouteVec_t problem_children;
-			problem_children.push_back(current_taxiroute);
-			problem_children.push_back(next_taxiroute);
+			problem_children.push_back(current_taxiroute.taxiroute_ptr);
+			problem_children.push_back(next_taxiroute.taxiroute_ptr);
 
 			//This copying is just to save to save screen space
 			TaxiRouteInfoVec_t route_info_vec(problem_children.begin(),problem_children.end());
@@ -650,21 +670,21 @@ static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
 	TaxiRouteNodeVec_t matching_nodes;
 	for (int i = 0; i < matching_taxiroutes.size(); ++i)
 	{
-		matching_nodes.push_back(matching_taxiroutes[i].node_0);
-		matching_nodes.push_back(matching_taxiroutes[i].node_1);
+		matching_nodes.push_back(matching_taxiroutes[i].nodes[0]);
+		matching_nodes.push_back(matching_taxiroutes[i].nodes[1]);
 	}
 
 	sort(matching_nodes.begin(),matching_nodes.end());
 
-	WED_TaxiRoute* start_taxiroute = NULL;
-	if(RunwaysTaxiRouteValencesCheck(runway_info, matching_nodes, start_taxiroute, msgs, apt))
+	WED_TaxiRoute* out_start_taxiroute = NULL;
+	if(RunwaysTaxiRouteValencesCheck(runway_info, matching_nodes, out_start_taxiroute, msgs, apt))
 	{
 		bool has_squished_z = false;
 
 		//The algorithm requires there to be atleast 2 taxiroutes
-		if(all_taxiroutes.size() >= 2 && start_taxiroute != NULL)
+		if(all_taxiroutes.size() >= 2 && out_start_taxiroute != NULL)
 		{
-			TaxiRouteSquishedZCheck(runway_info, start_taxiroute, msgs, apt);
+			TaxiRouteSquishedZCheck(runway_info, out_start_taxiroute, msgs, apt);
 		}
 	}
 	
@@ -673,9 +693,9 @@ static bool DoTaxiRouteConnectivityChecks( const RunwayInfo& runway_info,
 }
 
 static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
-									 const TaxiRouteInfoVec_t& matching_routes,
-									 validation_error_vector& msgs,
-									 WED_Airport* apt)
+								    const TaxiRouteInfoVec_t& matching_routes,
+								    validation_error_vector& msgs,
+								    WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
 
@@ -715,14 +735,14 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	{
 		//Get taxiroute's points projected onto the centerline
 		Point2 p0;
-		taxiroute_itr->node_0->GetLocation(gis_Geo,p0);
+		taxiroute_itr->nodes[0]->GetLocation(gis_Geo,p0);
 		Point2 projected_geo_0 = runway_info.runway_centerline_geo.projection(p0);
 
 		//Change their units so we can find the distance between them
 		Point2 projected_m_0 = translator.Forward(projected_geo_0);
 
 		Point2 p1;
-		taxiroute_itr->node_1->GetLocation(gis_Geo,p1);
+		taxiroute_itr->nodes[1]->GetLocation(gis_Geo,p1);
 		Point2 projected_geo_1 = runway_info.runway_centerline_geo.projection(p1);
 		Point2 projected_m_1 = translator.Forward(projected_geo_1);
 		
@@ -851,7 +871,7 @@ static void FindIfMarked( const int runway_number,        //enum from ATCRunwayO
 	}
 }
 
-static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_TaxiRouteNode* node)
+static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_GISPoint* node)
 {
 	set<WED_Thing*> node_viewers;
 	node->GetAllViewers(node_viewers);
@@ -987,8 +1007,7 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 	TaxiRouteNodeVec_t all_nodes;
 	for (int i = 0; i < all_taxiroutes.size(); ++i)
 	{
-		all_nodes.push_back(all_taxiroutes[i].node_0);
-		all_nodes.push_back(all_taxiroutes[i].node_1);
+		copy(all_taxiroutes[i].nodes.begin(), all_taxiroutes[i].nodes.end(), back_inserter(all_nodes));
 	}
 	
 	//runway side 0 is the lower side, 1 is the higher side
