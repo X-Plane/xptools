@@ -501,10 +501,12 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 	//Collect all frequencies and group them by type into smaller vectors 
 	vector<vector<WED_ATCFrequency*> > sub_freqs = CollectAirportFrequencies(who);
 
-	vector<WED_ATCFrequency *> has_atc;
+	vector<WED_ATCFrequency* > has_atc;
+
 	bool has_tower = false;
 
-	map<int, vector<WED_ATCFrequency*> >		all_freqs;
+	//Key=frequency like 12880 or 99913, Value is pointer to WED_ATCFrequency, part of the data model
+	map<int, vector<WED_ATCFrequency*> > all_freqs;
 
 	//For all groups see if each group has atleast one valid member (especially for Delivery, Ground, and Tower)
 	for(vector<vector<WED_ATCFrequency*> >::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
@@ -571,13 +573,37 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			    << "Ensure all frequencies in this group end in 0, 2, 5, or 7.";				
 			msgs.push_back(validation_error_t(ss.str(),*itr, who));
 		}
-		for(map<int,vector<WED_ATCFrequency *> >::iterator f = all_freqs.begin(); f != all_freqs.end(); ++f)
-		if(f->second.size() > 1)
-			msgs.push_back(validation_error_t(string("The frequency ") + format_freq(f->first) + " is used more than once at this airport.", f->second, who));		
 	}
+	
+	for (map<int, vector<WED_ATCFrequency *> >::iterator f = all_freqs.begin(); f != all_freqs.end(); ++f)
+	{
+		if (f->second.size() > 1)
+		{
+			vector<WED_Thing*> problem_children;
+			for (vector<WED_ATCFrequency*>::iterator itr = f->second.begin(); itr != f->second.end(); ++itr)
+			{
+				AptATCFreq_t apt_atc_freq;
+				(*itr)->Export(apt_atc_freq);
+				const int freq_type = ENUM_Import(ATCFrequency,apt_atc_freq.atc_type);
+				if (freq_type == atc_AWOS     ||
+					freq_type == atc_Delivery ||
+					freq_type == atc_Ground   ||
+					freq_type == atc_Tower)
+				{
+					problem_children.push_back(*itr);
+				}
+			}
+
+			if (problem_children.size() > 1)
+			{
+				msgs.push_back(validation_error_t(string("The frequency ") + format_freq(f->first) + " is used more than once at this airport.", problem_children, who));
+			}
+		}
+	}
+
 	if(!has_atc.empty() && !has_tower)
 	{
-		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.",has_atc,who));
+		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.", has_atc, who));
 	}
 	
 }
