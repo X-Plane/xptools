@@ -62,11 +62,14 @@
 #include "IResolver.h"
 #include "ILibrarian.h"
 #include "WED_LibraryMgr.h"
+#include "WED_PackageMgr.h"
 
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"
 
+#include "BitmapUtils.h"
 #include "GISUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "MathUtils.h"
 #include "WED_ATCFrequency.h"
@@ -454,19 +457,30 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 		resource_containing_who->GetResource(resource_str);
 
 		//1. Is the resource entirely missing
-		string path = library_mgr->GetResourcePath(resource_str);
-		if(path == "")
+		
+		string path;
+		if (GetSupportedType(resource_str.c_str()) != -1)
+		{
+			path = gPackageMgr->ComputePath(library_mgr->GetLocalPackage(), resource_str);
+		}
+		else
+		{
+			path = library_mgr->GetResourcePath(resource_str);
+		}
+		
+		if(FILE_exists(path.c_str()) == false)
 		{
 			if(parent_apt != NULL)
 			{
 				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + resource_str + " cannot be found", who, parent_apt));
 			}
 		}
-
+		
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
 #define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && resource_str.substr(resource_str.find_last_of(".")) == EXT) ? true : false;
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
 		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
 		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  ".for");
 		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    ".lin");
@@ -474,7 +488,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".agp");
 		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, ".pol");
 		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  ".str");
-		
+
 		if(matches == false)
 		{
 			msgs.push_back(validation_error_t("Resource " + resource_str + " does not have the correct file type", who, parent_apt));
