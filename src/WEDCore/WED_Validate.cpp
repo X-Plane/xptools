@@ -632,9 +632,9 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", use, apt));
 }
 
-struct TaxiRouteInfo
+struct TaxiRouteInfo2
 {
-	TaxiRouteInfo(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
+	TaxiRouteInfo2(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
 		: taxiroute_ptr(taxiroute),
 		node_0(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(0))),
 		node_1(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(1)))
@@ -708,8 +708,8 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 				continue;
 			}
 
-			TaxiRouteInfo edge_a(*edge_a_itr,translator);
-			TaxiRouteInfo edge_b(*edge_b_itr,translator);
+			TaxiRouteInfo2 edge_a(*edge_a_itr,translator);
+			TaxiRouteInfo2 edge_b(*edge_b_itr,translator);
 
 			//tmp doesn't matter to us
 			Point2 tmp;
