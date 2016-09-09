@@ -719,16 +719,23 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 				continue;
 			}
 			
-			for (int i = 0; i < 2; i++)
+			bool found_duplicate = false;
+			for (int i = 0; i < 2 && found_duplicate == false; i++)
 			{
-				for (int j = 0; j < 2; j++)
+				for (int j = 0; j < 2 && found_duplicate == false; j++)
 				{
 					if (edge_a.nodes_m[i] == edge_b.nodes_m[j])
 					{
 						//This is a duplicate of the doubled up vertex test
-						continue;
+						found_duplicate = true;
 					}
 				}
+			}
+
+			if (found_duplicate == true)
+			{
+				//Try another one
+				continue;
 			}
 
 			const double TJUNCTION_THRESHOLD = 5.00;
