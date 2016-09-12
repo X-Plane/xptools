@@ -634,9 +634,9 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 
 //TODO: Unify with WED_ValidateATCRunwayChecks
 
-struct TaxiRouteInfo
+struct TaxiRouteInfo2
 {
-	TaxiRouteInfo(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
+	TaxiRouteInfo2(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
 		: taxiroute_ptr(taxiroute),
 		node_0(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(0))),
 		node_1(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(1)))
@@ -711,8 +711,8 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 				continue;
 			}
 
-			TaxiRouteInfo edge_a(*edge_a_itr,translator);
-			TaxiRouteInfo edge_b(*edge_b_itr,translator);
+			TaxiRouteInfo2 edge_a(*edge_a_itr,translator);
+			TaxiRouteInfo2 edge_b(*edge_b_itr,translator);
 
 			//tmp doesn't matter to us
 			Point2 tmp;
@@ -817,6 +817,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		if(exp.icao.empty())
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", wrule, apt));
 	}
+	
+	#if !GATEWAY_IMPORT_FEATURES
 
 	map<int,vector<WED_ATCRunwayUse*> >		arrival_rwys;
 	map<int,vector<WED_ATCRunwayUse*> >		departure_rwys;
@@ -852,6 +854,7 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 			}
 		}
 	}
+	#endif
 }
 
 static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
@@ -1358,11 +1361,14 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.",apt,apt));
 	
+	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);
-
+	#endif
+	
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
 	
-	ValidateAirportFrequencies(apt,msgs);	
+	ValidateAirportFrequencies(apt,msgs);
+	
 	
 	for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
 	{
@@ -1424,9 +1430,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				if(!lib_mgr->IsResourceDefault(res))
 					msgs.push_back(validation_error_t(string("The library path '") + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.",
 						*ru, apt));
+				#if !GATEWAY_IMPORT_FEATURES
 				if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
 					msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
-						*ru, apt));							
+						*ru, apt));
+				#endif
 			}
 		}
 	}
