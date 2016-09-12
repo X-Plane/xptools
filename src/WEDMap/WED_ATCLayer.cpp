@@ -37,6 +37,31 @@ WED_ATCLayer::~WED_ATCLayer()
 {
 }
 
+static void make_arrow_line(Point2 p[5])
+{
+	// incoming:
+	// 0------------1
+	// S            D
+	// 3------------2
+	
+	// outgoing:
+	// 0-----------1
+	// S            2
+	// 4-----------3
+	
+	p[4] = p[3];
+	p[3] = p[2];
+	
+	Vector2 v1to3(p[1],p[3]);
+	
+	v1to3 *= 0.5;
+	p[2] = p[1] + v1to3;
+	
+	v1to3 = v1to3.perpendicular_cw();
+	p[1] += v1to3;
+	p[3] += v1to3;
+}
+
 bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, GUI_GraphState * g, int selected)
 {
 	if(entity->GetGISSubtype() == WED_RampPosition::sClass)
@@ -103,6 +128,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		bool hot = seg->HasHotArrival() || seg->HasHotDepart();
 		bool ils = seg->HasHotILS();
 		bool rwy = seg->IsRunway();
+		bool one_way = seg->IsOneway();
 		
 		int mtr1 = 5, mtr2 = 10;
 		switch(icao_width) {
@@ -114,7 +140,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		case width_F:	mtr1 = 16.0;	mtr2 = 80.0;	break;
 		}
 		
-		Point2	c[4], d[4];
+		Point2	c[5], d[5];
 		Quad_2to4(ends, mtr1, c);
 		Quad_2to4(ends, mtr2, d);
 		
@@ -134,9 +160,19 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 
 		GetZoomer()->LLToPixelv(d,d,4);
 		
-		glBegin(GL_QUADS);
-		glVertex2v(c,4);
-		glVertex2v(d,4);
+		int np = 4;
+		if(one_way)
+		{
+			make_arrow_line(c);
+			make_arrow_line(d);
+			np = 5;
+		}
+		
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex2v(c,np);
+		glEnd();
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex2v(d,np);
 		glEnd();
 		
 	}

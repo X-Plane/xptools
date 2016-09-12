@@ -1580,6 +1580,9 @@
     <ClInclude Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Interfaces\IHasResource.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\src\WEDResources\ui_measurements.txt">

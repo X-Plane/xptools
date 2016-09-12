@@ -24,9 +24,10 @@
 #ifndef WED_LinePlacement_H
 #define WED_LinePlacement_H
 
+#include "IHasResource.h"
 #include "WED_GISChain.h"
 
-class WED_LinePlacement : public WED_GISChain {
+class WED_LinePlacement : public WED_GISChain, public IHasResource {
 
 DECLARE_PERSISTENT(WED_LinePlacement)
 
@@ -35,8 +36,8 @@ public:
 	virtual	bool			IsClosed	(void	) const	;
 			void			SetClosed(int closure);
 
-			void			GetResource(	  string& r) const;
-			void			SetResource(const string& r);
+	virtual void			GetResource(	  string& r) const;
+	virtual void			SetResource(const string& r);
 
 	virtual const char *	HumanReadableType(void) const { return "Line"; }
 

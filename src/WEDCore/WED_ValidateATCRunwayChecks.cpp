@@ -160,7 +160,7 @@ struct TaxiRouteInfo
 		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
 	}
 	
-	//Pointer to the original WED_TaxiRoute in WED's datamodel
+	//Pointer to the original WED_TaxiRoute in WED's data model
 	WED_TaxiRoute* taxiroute_ptr;
 
 	//Name of the taxiroute

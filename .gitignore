@@ -19,6 +19,10 @@ Uninstall/
 
 #kDiff files
 *.orig
+*.ORIG
+*.BASE
+*.LOCAL
+*.REMOTE
 
 #https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 ## Ignore Visual Studio temporary files, build results, and
@@ -79,6 +83,7 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+*.VC.*
 
 # Visual Studio profiler
 *.psess
