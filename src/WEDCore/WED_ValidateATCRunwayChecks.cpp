@@ -362,6 +362,31 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
+//True for all hidden and all not WED_Entity
+static bool is_hidden(const WED_Thing* node)
+{
+	const WED_Entity* ent = dynamic_cast<const WED_Entity*>(node);
+	DebugAssert(ent != NULL);
+
+	if (ent != NULL)
+	{
+		return static_cast<bool>(ent->GetHidden());
+	}
+
+	return true;
+}
+
+static set<WED_Thing*> get_all_visible_viewers(const WED_GISPoint* node)
+{
+	set<WED_Thing*> node_viewers;
+	node->GetAllViewers(node_viewers);
+
+	vector<WED_Thing*> node_viewers_vec(node_viewers.begin(), node_viewers.end());
+	node_viewers_vec.erase(remove_if(node_viewers_vec.begin(), node_viewers_vec.end(), is_hidden),node_viewers_vec.end());
+
+	return set<WED_Thing*>(node_viewers_vec.begin(),node_viewers_vec.end());
+}
+
 static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 			 						  const TaxiRouteInfoVec_t& matching_taxiroutes,
 			 						  validation_error_vector& msgs,
@@ -390,8 +415,7 @@ static vector<TaxiRouteInfo> filter_viewers_by_is_runway(const WED_GISPoint* nod
 {
 	vector<TaxiRouteInfo> matching_routes;
 
-	set<WED_Thing*> node_viewers;
-	node->GetAllViewers(node_viewers);
+	set<WED_Thing*> node_viewers = get_all_visible_viewers(node);
 
 	for(set<WED_Thing*>::iterator itr = node_viewers.begin(); itr != node_viewers.end(); ++itr)
 	{
@@ -399,7 +423,7 @@ static vector<TaxiRouteInfo> filter_viewers_by_is_runway(const WED_GISPoint* nod
 		if(test_route != NULL)
 		{
 			TaxiRouteInfo taxiroute_info(test_route);
-			if(taxiroute_info.taxiroute_ptr->IsRunway())
+			if(taxiroute_info.taxiroute_ptr->IsRunway() && taxiroute_info.taxiroute_name == runway_name)
 			{
 				matching_routes.push_back(taxiroute_info);
 			}
@@ -411,7 +435,7 @@ static vector<TaxiRouteInfo> filter_viewers_by_is_runway(const WED_GISPoint* nod
 
 //Checks that a Runway's taxi route has two nodes with a valence of one, and no nodes with a valence of > 2
 static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
-										   const TaxiRouteNodeVec_t& all_matching_nodes, //All nodes from taxiroutes matching the runwa, these will come in sorted
+										   const TaxiRouteNodeVec_t& all_matching_nodes, //All nodes from taxiroutes matching the runway, these will come in sorted
 										   WED_TaxiRoute*& out_start_taxiroute, //Out parameter, one of the ends of the taxiroute
 										   validation_error_vector& msgs,
 										   WED_Airport* apt)
@@ -420,6 +444,7 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 	int num_valence_of_1 = 0; //Aka, the tips of the runway, should end up being 2
 	out_start_taxiroute = NULL;
 
+	//Valence allowed per runway enum = 2
 	for(TaxiRouteNodeVec_t::const_iterator node_itr = all_matching_nodes.begin(); node_itr != all_matching_nodes.end(); ++node_itr)
 	{
 		int node_valence = std::count(all_matching_nodes.begin(), all_matching_nodes.end(), *node_itr);
@@ -459,14 +484,12 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-int get_node_valence(const WED_GISPoint* node)
+static int get_node_valence(const WED_GISPoint* node)
 {
-	set<WED_Thing*> node_viewers;
-	node->GetAllViewers(node_viewers);
-	return node_viewers.size();
+	return get_all_visible_viewers(node).size();
 }
 
-WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
+static WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
 							const TaxiRouteInfo& next_taxiroute)
 {
 	WED_GISPoint* next = NULL;
@@ -498,7 +521,7 @@ WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
 	}
 }
 
-WED_TaxiRoute* get_next_taxiroute(const WED_GISPoint* current_node,
+static WED_TaxiRoute* get_next_taxiroute(const WED_GISPoint* current_node,
 								  const TaxiRouteInfo& current_taxiroute)
 {
 	TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
@@ -515,9 +538,9 @@ WED_TaxiRoute* get_next_taxiroute(const WED_GISPoint* current_node,
 }
 
 //returns pair<is_target_of_current,is_target_of_next>
-pair<bool,bool> get_taxiroute_relationship(const WED_GISPoint* current_node,
-										   const TaxiRouteInfo& current_taxiroute,
-										   const TaxiRouteInfo& next_taxiroute)
+static pair<bool,bool> get_taxiroute_relationship(const WED_GISPoint* current_node,
+												  const TaxiRouteInfo& current_taxiroute,
+												  const TaxiRouteInfo& next_taxiroute)
 {
 	//pair<is_target_of_current,is_target_of_next>
 	std::pair<bool,bool> taxiroute_relationship(false,false);
@@ -871,10 +894,9 @@ static void FindIfMarked( const int runway_number,        //enum from ATCRunwayO
 	}
 }
 
-static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(WED_GISPoint* node)
+static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(const WED_GISPoint* node)
 {
-	set<WED_Thing*> node_viewers;
-	node->GetAllViewers(node_viewers);
+	set<WED_Thing*> node_viewers = get_all_visible_viewers(node);
 
 	TaxiRouteInfoVec_t matching_taxiroutes;
 	for(set<WED_Thing*>::iterator node_viewer_itr = node_viewers.begin(); node_viewer_itr != node_viewers.end(); ++node_viewer_itr)
