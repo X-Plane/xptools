@@ -386,7 +386,7 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
-static vector<TaxiRouteInfo> filter_viewers_by_runway_name(const WED_GISPoint* node, const string& runway_name)
+static vector<TaxiRouteInfo> filter_viewers_by_is_runway(const WED_GISPoint* node, const string& runway_name)
 {
 	vector<TaxiRouteInfo> matching_routes;
 
@@ -399,7 +399,7 @@ static vector<TaxiRouteInfo> filter_viewers_by_runway_name(const WED_GISPoint* n
 		if(test_route != NULL)
 		{
 			TaxiRouteInfo taxiroute_info(test_route);
-			if(taxiroute_info.taxiroute_name == runway_name)
+			if(taxiroute_info.taxiroute_ptr->IsRunway())
 			{
 				matching_routes.push_back(taxiroute_info);
 			}
@@ -430,7 +430,7 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 			{
 				if(out_start_taxiroute == NULL)
 				{
-					TaxiRouteInfoVec_t viewers = filter_viewers_by_runway_name(*node_itr,runway_info.runway_name);
+					TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(*node_itr,runway_info.runway_name);
 					out_start_taxiroute = viewers.front().taxiroute_ptr;
 				}
 				++num_valence_of_1;
@@ -488,7 +488,7 @@ WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
 		return NULL; //We don't want to travel there next, its time to end
 	}
 	//Will we have somewhere to go next?
-	else if(filter_viewers_by_runway_name(next, next_taxiroute.taxiroute_name).size() == 0)
+	else if(filter_viewers_by_is_runway(next, next_taxiroute.taxiroute_name).size() == 0)
 	{
 		return NULL;
 	}
@@ -501,7 +501,7 @@ WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
 WED_TaxiRoute* get_next_taxiroute(const WED_GISPoint* current_node,
 								  const TaxiRouteInfo& current_taxiroute)
 {
-	TaxiRouteInfoVec_t viewers = filter_viewers_by_runway_name(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
+	TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
 	DebugAssert(viewers.size() == 1 || viewers.size() == 2);
 	
 	if(viewers.size() == 2)
