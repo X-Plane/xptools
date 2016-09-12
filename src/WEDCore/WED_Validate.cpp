@@ -632,6 +632,8 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", use, apt));
 }
 
+//TODO: Unify with WED_ValidateATCRunwayChecks
+
 struct TaxiRouteInfo
 {
 	TaxiRouteInfo(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
@@ -694,8 +696,9 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 		else If A and B share a common vertex, do not mark them as a T junction - this is legal. (Do this by comparing the Point2, not the IGISPoint *.If A and B have separate exactly on top of each other nodes, the duplicate nodes check will find this, and again we don't want to squawk twice on one user error.
 
 			for each end B(B src and B dst)
-				if the distance between A and the end node you are testing is < M meters
-					validation failure - that node is too close to a taxiway route but isn't joined.
+				if end has a valence of 1
+					if the distance between A and the end node you are testing is < M meters
+						validation failure - that node is too close to a taxiway route but isn't joined.
 	*/
 
 	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
@@ -741,27 +744,41 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 			const double TJUNCTION_THRESHOLD = 5.00;
 			for (int i = 0; i < 2; i++)
 			{
-				double dist_a_to_b_node = sqrt(edge_a.taxiroute_segment_m.squared_distance(edge_b.nodes_m[i]));
-
-				if (dist_a_to_b_node < TJUNCTION_THRESHOLD)
+				set<WED_Thing*> node_viewers;
+				if (i == 0)
 				{
-					vector<WED_Thing*> problem_children;
-					problem_children.push_back(*edge_a_itr);
-					
-					string problem_node_name;
+					edge_b.node_0->GetAllViewers(node_viewers);
+				}
+				else if (i == 1)
+				{
+					edge_b.node_1->GetAllViewers(node_viewers);
+				}
 
-					if (i == 0)//src
-					{
-						problem_children.push_back((edge_b.node_0));
-						edge_b.node_0->GetName(problem_node_name);
-					}
-					else if(i == 1)
-					{
-						problem_children.push_back((edge_b.node_1));
-						edge_b.node_1->GetName(problem_node_name);
-					}
+				int valence = node_viewers.size();
+				if (valence == 1)
+				{
+					double dist_b_node_to_a_edge = sqrt(edge_a.taxiroute_segment_m.squared_distance(edge_b.nodes_m[i]));
 
-					msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " and " + problem_node_name + " form a T junction, without being joined", problem_children, apt));
+					if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD)
+					{
+						vector<WED_Thing*> problem_children;
+						problem_children.push_back(*edge_a_itr);
+
+						string problem_node_name;
+
+						if (i == 0)//src
+						{
+							problem_children.push_back((edge_b.node_0));
+							edge_b.node_0->GetName(problem_node_name);
+						}
+						else if (i == 1)
+						{
+							problem_children.push_back((edge_b.node_1));
+							edge_b.node_1->GetName(problem_node_name);
+						}
+
+						msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " and " + problem_node_name + " form a T junction, without being joined", problem_children, apt));
+					}
 				}
 			}
 		}
