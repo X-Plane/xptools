@@ -221,6 +221,10 @@ public:
 	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		ToXML(WED_XMLElement * parent);
+	
+	int		GetAs10Khz(void) const;
+	void	AssignFrom10Khz(int freq_10khz);
 
 };
 

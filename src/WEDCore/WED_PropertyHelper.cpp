@@ -474,6 +474,30 @@ void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
 	info.round_down= true;
 }
 
+int		WED_PropFrequencyText::GetAs10Khz(void) const
+{
+	// This is kind of a fuck-fest and some explanation is needed.  Unfortunately ATC frequencies are stored in decimal mhz
+	// in WED's internal data model, so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
+	// We want to TRUNCATE the 1's digit of the khz frequency, e.g.
+	// XP treats 123.125 and 123.12.  
+	
+	int freq_khz = round(this->value * 1000.0);
+	return freq_khz / 10;	// Intentional floor - 123.125 -> 12312.
+}
+
+void	WED_PropFrequencyText::AssignFrom10Khz(int freq_10khz)
+{
+	double mhz = (double) freq_10khz / 100.0;
+	*this = mhz;
+}
+
+void		WED_PropFrequencyText::ToXML(WED_XMLElement * parent)
+{
+	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
+	xml->add_attr_double(mXMLColumn.second,value,mDecimals+1);
+}
+
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
