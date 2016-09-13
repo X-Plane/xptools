@@ -183,7 +183,9 @@ typedef vector<WED_ATCRunwayUse*>  ATCRunwayUseVec_t;
 typedef vector<WED_ATCFlow*>       FlowVec_t;
 typedef vector<WED_Runway*>        RunwayVec_t;
 typedef vector<WED_TaxiRoute*>     TaxiRouteVec_t;
-typedef vector<WED_GISPoint*>      TaxiRouteNodeVec_t;//We're just using WED_GISPoint because old WED and airports
+
+//We're just using WED_GISPoint because old WED and airports
+typedef vector<WED_GISPoint*>      TaxiRouteNodeVec_t;
 typedef vector<RunwayInfo>         RunwayInfoVec_t;
 typedef vector<TaxiRouteInfo>      TaxiRouteInfoVec_t;
 
@@ -522,7 +524,7 @@ static WED_GISPoint* get_next_node(const WED_GISPoint* current_node,
 }
 
 static WED_TaxiRoute* get_next_taxiroute(const WED_GISPoint* current_node,
-								  const TaxiRouteInfo& current_taxiroute)
+										 const TaxiRouteInfo& current_taxiroute)
 {
 	TaxiRouteInfoVec_t viewers = filter_viewers_by_is_runway(current_node, current_taxiroute.taxiroute_name);//The taxiroute name should equal to the runway name
 	DebugAssert(viewers.size() == 1 || viewers.size() == 2);
@@ -745,115 +747,101 @@ static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 }
 
 static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
-									  const TaxiRouteInfoVec_t& matching_taxiroutes,
+									  const TaxiRouteInfoVec_t& all_taxiroutes,
 									  validation_error_vector& msgs,
 									  WED_Airport* apt)
 {
 	int original_num_errors = msgs.size();
 
-	//where [0] is the min (front) and [size-1] is max (back)
-	vector<double> sorted_vec;
+	vector<WED_GISPoint*> on_pavement_nodes;
 
-	for(TaxiRouteInfoVec_t::const_iterator taxiroute_itr = matching_taxiroutes.begin(); taxiroute_itr != matching_taxiroutes.end(); ++taxiroute_itr)
+	//First pass, remove all points that are outside of the runway
+	for (TaxiRouteInfoVec_t::const_iterator itr = all_taxiroutes.begin(); itr != all_taxiroutes.end(); ++itr)
 	{
-		//Get taxiroute's points projected onto the centerline
-		Point2 p0;
-		taxiroute_itr->nodes[0]->GetLocation(gis_Geo,p0);
-		Point2 projected_geo_0 = runway_info.runway_centerline_geo.projection(p0);
+		for (vector<WED_GISPoint*>::const_iterator point_itr = itr->nodes.begin(); point_itr != itr->nodes.end(); ++point_itr)
+		{
+			Point2 node_geo;
+			(*point_itr)->GetLocation(gis_Geo, node_geo);
 
-		//Change their units so we can find the distance between them
-		Point2 projected_m_0 = translator.Forward(projected_geo_0);
+			Point2 node_m = translator.Forward(node_geo);
 
-		Point2 p1;
-		taxiroute_itr->nodes[1]->GetLocation(gis_Geo,p1);
-		Point2 projected_geo_1 = runway_info.runway_centerline_geo.projection(p1);
-		Point2 projected_m_1 = translator.Forward(projected_geo_1);
-		
-		double distance_from_runway_source_0 = sqrt(projected_m_0.squared_distance(runway_info.runway_centerline_m.source()));
-		double distance_from_runway_source_1 = sqrt(projected_m_1.squared_distance(runway_info.runway_centerline_m.source()));
-
-		sorted_vec.push_back(distance_from_runway_source_0);
-		sorted_vec.push_back(distance_from_runway_source_1);
+			//We don't want to collect the runway nodes, which are inside and are WED_GISPoints, but never something we care about
+			if (runway_info.runway_corners_m.inside(node_m) == true)
+			{
+				on_pavement_nodes.push_back(*point_itr);
+			}
+		}
 	}
 
-	std::sort(sorted_vec.begin(),sorted_vec.end(),std::less<double>());
+	//A set of relavent runway_routes, to accumulate their lengths later on
+	set<WED_TaxiRoute*> runway_routes;
+
+	//Second pass, does each node have a runway taxi route attached? Also, collect said matching taxiroutes
+	for (TaxiRouteNodeVec_t::iterator itr = on_pavement_nodes.begin(); itr != on_pavement_nodes.end(); ++itr)
+	{
+		int number_of_connected_routes = 0;
+
+		//Filter by visible viewers that are of WED_TaxiRoute* type and whose runway is the same as the runway we're testing
+		set<WED_Thing*> thing_viewers = get_all_visible_viewers(*itr);
+		for (set<WED_Thing*>::iterator thing_itr = thing_viewers.begin(); thing_itr != thing_viewers.end(); ++thing_itr)
+		{
+			WED_TaxiRoute* taxiroute = dynamic_cast<WED_TaxiRoute*>(*thing_itr);
+
+			if (taxiroute != NULL && taxiroute->GetRunway() == runway_info.runway_ptr->GetRunwayEnumsTwoway())
+			{
+				runway_routes.insert(taxiroute);
+				++number_of_connected_routes;
+			}
+		}
+
+		if (number_of_connected_routes == 0)
+		{
+			//Last minute check if this is not a dead end
+			if (get_node_valence(*itr) == 1)
+			{
+				string node_name;
+				(*itr)->GetName(node_name);
+				msgs.push_back(validation_error_t("Route node " + node_name + " is within the runway's bounds but is not connected to the runway's taxiroute", *itr, apt));
+			}
+		}
+	}
+
+	double length_accumulator = 0.0;
+	TaxiRouteInfoVec_t runway_routes_info_vec(runway_routes.begin(),runway_routes.end());
+	for (TaxiRouteInfoVec_t::const_iterator taxiroute_itr = runway_routes_info_vec.begin(); taxiroute_itr != runway_routes_info_vec.end(); ++taxiroute_itr)
+	{
+		length_accumulator += sqrt(taxiroute_itr->taxiroute_segment_m.squared_length());
+	}
+
+	//How much gap on a side there could be
+	double COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength() * 0.25;
 
 	AptRunway_t apt_runway;
 	runway_info.runway_ptr->Export(apt_runway);
-	
-	//How much gap on a side there could be
-	double COVERAGE_THRESHOLD = 0.0;
-
 	//Clamp extremely small runways to the length
-	if((apt_runway.width_mtr  * 4) < COVERAGE_THRESHOLD)
+	if((apt_runway.width_mtr  * 4) > COVERAGE_THRESHOLD)
 	{
-		COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength();
-	}
-	else
-	{
-		COVERAGE_THRESHOLD = fabs((apt_runway.width_mtr * 4));
+		COVERAGE_THRESHOLD = (apt_runway.width_mtr * 4);
 	}
 
 	//Plus 5 meters in slop zone
 	COVERAGE_THRESHOLD += 5;
 	
-	//_________ overshoot thershold (currently same as out of bounds -08/24/2016)
-	//
-	// source
-	//---------
-	//          min_diff < COVERAGE_THRESHOLD
-	//   |
-	//   |
-	//   |
-	//          max_diff < COVERAGE_THRESHOLD
-	//---------
-	//_________
-	
-	double min_diff = sorted_vec.front();
-	bool min_is_in_range = min_diff < COVERAGE_THRESHOLD;
-
-	double max_diff = (runway_info.runway_ptr->GetLength() - (sorted_vec.back()));
-	bool max_is_in_range = max_diff < COVERAGE_THRESHOLD;
-
-	if(min_is_in_range == false || max_is_in_range == false)
+	if (length_accumulator < COVERAGE_THRESHOLD)
 	{
 #if DEV
 		//We have to figure out which side(s) to report as too short
 		double amount_not_covered = 0.0;
-		if(min_is_in_range == false)
-		{
-			amount_not_covered += min_diff;
-		}
-
-		if(max_is_in_range == false)
-		{
-			amount_not_covered += max_diff;
-		}
-
+		
 		ostringstream oss;
 		oss.precision(2);
-		oss << std::fixed << amount_not_covered;
+		oss << std::fixed << COVERAGE_THRESHOLD - length_accumulator;
 #endif
-		string msg = "Taxi route for runway " + runway_info.runway_name + " must span the entire runway";
+		string msg = "Taxi route for runway " + runway_info.runway_name + " does not span enough runway";
 		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
 		return false;
 	}
 
-	//Given that the out of bounds box and the OVERSHOOT_THRESHOLD are the same value, you'll never actually reach this test.
-	//The code is still here, in case the parameters of either of them need to be changed.
-	//- Ted, 08/23/2016
-
-	/* //You get two meteres of room for being off the runway
-	if(total_length_m > (runway_info.runway_ptr->GetLength() + OVERSHOOT_THRESHOLD))
-	{
-		ostringstream oss;
-		oss.precision(2);
-		oss << std::fixed << total_length_m + OVERSHOOT_THRESHOLD;
-		
-		string msg = "Taxi route " + matching_taxiroutes.begin()->taxiroute_name + "'s ends over extend past the edges of runway " + runway_info.runway_name + " by " + oss.str() + " meters";
-		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
-		return false;
-	}*/
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 //-----------------------------------------------------------------------------
@@ -1142,7 +1130,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 					{
 						if (DoTaxiRouteConnectivityChecks(*runway_info_itr, all_taxiroutes, matching_taxiroutes, msgs, &apt))
 						{
-							if (RunwayHasCorrectCoverage(*runway_info_itr, matching_taxiroutes, msgs, &apt))
+							if (RunwayHasCorrectCoverage(*runway_info_itr, all_taxiroutes, msgs, &apt))
 							{
 								//Add additional checks as needed here
 							}
