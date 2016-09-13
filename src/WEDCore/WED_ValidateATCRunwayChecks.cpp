@@ -796,7 +796,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 
 		if (number_of_connected_routes == 0)
 		{
-			//Last minute check if this is not a dead end
+			//Last minute check if this is a dead end
 			if (get_node_valence(*itr) == 1)
 			{
 				string node_name;
