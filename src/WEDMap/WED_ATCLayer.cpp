@@ -132,7 +132,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		
 		int mtr1 = 5, mtr2 = 10;
 		switch(icao_width) {
-		case width_A:	mtr1 = 4.5;		mtr1 = 15.0;	break;
+		case width_A:	mtr1 = 4.5;		mtr2 = 15.0;	break;
 		case width_B:	mtr1 = 6.0;		mtr2 = 24.0;	break;
 		case width_C:	mtr1 = 9.0;		mtr2 = 36.0;	break;
 		case width_D:	mtr1 = 14.0;	mtr2 = 52.0;	break;
