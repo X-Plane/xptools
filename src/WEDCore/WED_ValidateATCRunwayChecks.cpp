@@ -10,7 +10,7 @@
 #if DEV
 #include <iostream>
 //Visualizes some of the runway lines and the bounding box
-#define DEBUG_VIS_LINES 0
+#define DEBUG_VIS_LINES 1
 #endif
 
 #include "WED_EnumSystem.h"
@@ -328,7 +328,7 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 
 	Vector2 gis_line_direction(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
 	gis_line_direction.normalize();
-	gis_line_direction *= 2.0;
+	gis_line_direction *= 2.0; // allow runway taxi lines to go 2m beyond runway ends
 
 	top_left  += gis_line_direction;
 	top_right += gis_line_direction;
@@ -914,8 +914,18 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 		return Polygon2(0);
 	}
 
-	const double HITZONE_WIDTH_THRESHOLD_M   = 10.00;
-	double HITZONE_OVERFLY_THRESHOLD_M = 500.00;
+	double HITZONE_WIDTH_THRESHOLD_M;         // Width of Runway Protection Zone beyond runway width, each side
+	double HITZONE_OVERFLY_THRESHOLD_M;      // Length of RPZ beyond runway end (departure end) or runway threshold (arrival end)
+	if (runway_info.runway_ptr->GetLength() < 1500.0)
+	{
+		HITZONE_OVERFLY_THRESHOLD_M = 305.0;    // per FAA advisory circular 150-5300-13A, size A/B aircraft runways: 1000'
+		HITZONE_WIDTH_THRESHOLD_M = 10.0;       // good guess, FAA advisory 150' from CL is impractically wide for many small airfields
+	}
+	else
+	{
+		HITZONE_OVERFLY_THRESHOLD_M = 518.0;    // per FAA, size C/D/E aircraft runways: 1700'
+		HITZONE_WIDTH_THRESHOLD_M = 30.0;       // good guess, again, FAA is too wishfull
+	}
 
 	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
 
@@ -928,21 +938,28 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 	           top
 	                 ^
 	                 |
-	                 vertical_extension_vec
+	                 gis_line_direction
 	            1    |
 	        1_______2!
-		   |         |
-		   |         |
-		0  |         | 3
-		   |         |
-		   0---------3---side_extension_vec--->
+		   |    |    |
+		   |    |    |
+		0  |    |    | 3
+		   |    |    |
+		   |    |    |
+		   0---------3
 		        0
 		      bottom
 	*/
 
 	Vector2 gis_line_direction(runway_info.runway_centerline_m.p1,runway_info.runway_centerline_m.p2);
 	gis_line_direction.normalize();
-	
+
+	Vector2 side_extension_vec = gis_line_direction.perpendicular_cw() * HITZONE_WIDTH_THRESHOLD_M; // Make RPZ wider than runway
+	bottom_left -= side_extension_vec;
+	bottom_right += side_extension_vec;
+	top_left -= side_extension_vec;
+	top_right += side_extension_vec;
+
 	if(runway_number <= atc_18R)
 	{
 		if(runway_info.IsHotForArrival(runway_number) == true && make_arrival == true)
