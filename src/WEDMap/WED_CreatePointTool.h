@@ -34,7 +34,9 @@ enum CreatePoint_t {
 	create_RampStart,
 	create_TowerViewpoint,
 	create_Windsock,
-	create_Object
+	create_Object,
+	create_TruckParking,
+	create_TruckDestination
 };
 
 class WED_CreatePointTool : public WED_CreateToolBase {
@@ -82,7 +84,12 @@ protected:
 		WED_PropIntEnum			ramp_op_type;
 		WED_PropStringText		airlines;
 		WED_PropStringText		sign_text;
-		
+		WED_PropIntEnum			truck_type;
+		WED_PropIntText			baggage_car_count;
+		WED_PropIntEnumSet		truck_types;
+#if !DEV
+	#error todo: hide baggage car count by type
+#endif
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

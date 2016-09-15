@@ -206,6 +206,8 @@
 		D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE80F82E96900F6718E /* RF_FileCommands.cpp */; };
 		D6151ED80FB47A4D008A355F /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
 		D6183B961D766C7400E606E9 /* handle_arrowhead_lg.png in Resources */ = {isa = PBXBuildFile; fileRef = D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */; };
+		D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */; };
+		D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D61ECAE30C96DF0B00159B39 /* XGrinder_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */; };
 		D61ECAE40C96DF1600159B39 /* ObjView_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */; };
@@ -1109,6 +1111,10 @@
 		D6151DC30FB46008008A355F /* RF_Application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RF_Application.h; sourceTree = "<group>"; };
 		D6151DC40FB46008008A355F /* RF_Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RF_Application.cpp; sourceTree = "<group>"; };
 		D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_arrowhead_lg.png; sourceTree = "<group>"; };
+		D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TruckParkingLocation.cpp; sourceTree = "<group>"; };
+		D6183B981D7CA28200E606E9 /* WED_TruckParkingLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TruckParkingLocation.h; sourceTree = "<group>"; };
+		D6183B9A1D7CAD8900E606E9 /* WED_TruckDestination.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TruckDestination.h; sourceTree = "<group>"; };
+		D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TruckDestination.cpp; sourceTree = "<group>"; };
 		D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ObjView_icons.icns; sourceTree = "<group>"; };
 		D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = XGrinder_icons.icns; sourceTree = "<group>"; };
 		D6226E380E4B7F32005BD1D7 /* WED_FacadePlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FacadePlacement.h; sourceTree = "<group>"; };
@@ -3648,6 +3654,10 @@
 				D6917EB9172578270027AFBB /* WED_TaxiRouteNode.cpp */,
 				D6F88E0C1C20A6BD00057F4D /* WED_RoadNode.cpp */,
 				D6F88E0D1C20A6BD00057F4D /* WED_RoadNode.h */,
+				D6183B9A1D7CAD8900E606E9 /* WED_TruckDestination.h */,
+				D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */,
+				D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */,
+				D6183B981D7CA28200E606E9 /* WED_TruckParkingLocation.h */,
 			);
 			path = WEDEntities;
 			sourceTree = "<group>";
@@ -4623,6 +4633,7 @@
 				D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */,
 				D6ED370B0B67964D00D5484E /* XChunkyFileUtils.cpp in Sources */,
 				D6ED370C0B67964D00D5484E /* md5.c in Sources */,
+				D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */,
 				D6ED370D0B67964D00D5484E /* ogle.cpp in Sources */,
 				D6ED37100B67964D00D5484E /* MemFileUtils.cpp in Sources */,
 				D6ED37110B67964D00D5484E /* PolyRasterUtils.cpp in Sources */,
@@ -4804,6 +4815,7 @@
 				D6917EBA172578270027AFBB /* WED_TaxiRouteNode.cpp in Sources */,
 				D6FEF21A18E9C4360035421F /* WED_GatewayExport.cpp in Sources */,
 				D6FEF21D18E9C4440035421F /* WED_SceneryPackExport.cpp in Sources */,
+				D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */,
 				D6FEF45918EB045C0035421F /* WED_AptTable.cpp in Sources */,
 				D6FEF50418EB176A0035421F /* GUI_FormWindow.cpp in Sources */,
 				D6FEF55C18EB23B40035421F /* GUI_Label.cpp in Sources */,

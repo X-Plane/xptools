@@ -84,6 +84,10 @@ enum {
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
 	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list
 	apt_meta_data = 1302,				// 1302 <key> <value>
+	
+	apt_truck_parking	= 1400,			// 1400 lat lon heading type cars name
+	apt_truck_destination = 1401,		// 1400 lat lon heading type|type|type name
+	
 	// Surface codes
 	apt_surf_none		= 0,
 	apt_surf_asphalt,
@@ -254,7 +258,20 @@ enum {
 	ramp_operation_general_aviation = 1,
 	ramp_operation_airline = 2,
 	ramp_operation_cargo = 3,
-	ramp_operation_military = 4
+	ramp_operation_military = 4,
+	
+	apt_truck_pushback = 0,
+	apt_truck_fuel_prop,
+	apt_truck_fuel_jet,
+	apt_truck_food,
+	apt_truck_baggage_loader,
+	apt_truck_baggage_train,
+	apt_truck_crew_car,
+	apt_truck_ground_power_unit,
+	
+	apt_truck_destination_fuel_farm = 0,
+	apt_truck_destination_baggage_hall
+	
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -499,6 +516,22 @@ struct AptNetwork_t {
 	vector<AptServiceRoadEdge_t>service_roads;
 };
 
+struct AptTruckParking_t {
+	string						name;
+	Point2						location;
+	float						heading;
+	int							parking_type;
+	int							train_car_count;
+};
+typedef vector<AptTruckParking_t> AptTruckParkingVector;
+
+struct AptTruckDestination_t {
+	string						name;
+	Point2						location;
+	float						heading;
+	set<int>					truck_types;
+};
+typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
 struct AptInfo_t {
 	int					kind_code;				// Enum
 	string				icao;
@@ -518,8 +551,11 @@ struct AptInfo_t {
 	AptSignVector		signs;
 
 	AptPavementVector	pavements;				// 810 structures
-
 	AptGateVector		gates;					// shared structures
+	
+	AptTruckParkingVector		truck_parking;
+	AptTruckDestinationVector	truck_destinations;
+	
 	AptTowerPt_t		tower;
 	AptBeacon_t			beacon;
 	AptWindsockVector	windsocks;

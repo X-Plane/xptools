@@ -101,7 +101,9 @@
 	_R(WED_ATCWindRule) \
 	_R(WED_ATCRunwayUse) \
 	_R(WED_RoadEdge) \
-	_R(WED_RoadNode)
+	_R(WED_RoadNode) \
+	_R(WED_TruckParkingLocation) \
+	_R(WED_TruckDestination)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST

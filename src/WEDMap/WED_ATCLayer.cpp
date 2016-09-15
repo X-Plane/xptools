@@ -176,7 +176,7 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		glBegin(GL_TRIANGLE_FAN);
 		glVertex2v(c,np);
 		glEnd();
-		glBegin(GL_TRIANGLE_FAN);		
+		glBegin(GL_TRIANGLE_FAN);
 		glVertex2v(d,np);
 		glEnd();
 		

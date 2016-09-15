@@ -51,6 +51,8 @@
 #include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_TruckDestination.h"
 
 #include "AptIO.h"
 #include "WED_ToolUtils.h"
@@ -269,6 +271,8 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	WED_ATCRunwayUse *		use;
 	WED_ATCTimeRule *		tim;
 	WED_ATCWindRule *		wnd;
+	WED_TruckDestination *	dst;
+	WED_TruckParkingLocation*trk;
 #endif
 	int holes, h;
 	
@@ -412,6 +416,18 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apts.back().flows.back().wind_rules.push_back(AptWindRule_t());
 		wnd->Export(apts.back().flows.back().wind_rules.back());
 	}
+	else if(trk = dynamic_cast<WED_TruckParkingLocation*>(what))
+	{
+		apts.back().truck_parking.push_back(AptTruckParking_t());
+		trk->Export(apts.back().truck_parking.back());
+	}
+	else if(dst = dynamic_cast<WED_TruckDestination*>(what))
+	{
+		apts.back().truck_destinations.push_back(AptTruckDestination_t());
+		dst->Export(apts.back().truck_destinations.back());
+	}
+	
+	
 #endif	
 
 	int cc = what->CountChildren();
@@ -722,6 +738,21 @@ void	WED_AptImport(
 		}
 		
 #if AIRPORT_ROUTING
+
+		for(AptTruckParkingVector::iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
+		{
+			WED_TruckParkingLocation * new_trk = WED_TruckParkingLocation::CreateTyped(archive);
+			add_to_bucket(new_trk,new_apt,"Ground Vehicles",buckets);
+			new_trk->Import(*trk, LazyPrintf, &log);
+		}
+
+		for(AptTruckDestinationVector::iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
+		{
+			WED_TruckDestination * new_dst = WED_TruckDestination::CreateTyped(archive);
+			add_to_bucket(new_dst,new_apt,"Ground Vehicles",buckets);
+			new_dst->Import(*dst, LazyPrintf, &log);
+		}
+
 		for(AptFlowVector::iterator flw = apt->flows.begin(); flw != apt->flows.end(); ++flw)
 		{
 			WED_ATCFlow * new_flw = WED_ATCFlow::CreateTyped(archive);

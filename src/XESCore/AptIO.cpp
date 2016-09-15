@@ -56,6 +56,8 @@ const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos"
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
 
+const char * truck_type_strings[] = { "pushback", "fuel_props", "fuel_jets","food","baggage_loader","baggage_train","crew_car","gpu", 0 };
+
 // LLLHHH
 void divide_heading(int * lo, int * hi)
 {
@@ -1301,6 +1303,32 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					
 					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
 						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
+				}
+				
+				if(has_atc3)
+				for(AptTruckParkingVector::const_iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
+				{
+					fprintf(fi,"%2d % 3.8lf % 3.8lf % 4.1f %s %d %s" CRLF,
+						apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
+						truck_type_strings[trk->parking_type], trk->train_car_count, trk->name.c_str());
+				}
+
+				if(has_atc3)
+				for(AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
+				{
+					fprintf(fi,"%2d % 3.8lf % 3.8lf % 4.1f ",
+						apt_truck_destination, dst->location.y_, dst->location.x_, dst->heading);
+				
+					for(set<int>::const_iterator tt = dst->truck_types.begin(); tt != dst->truck_types.end(); ++tt)
+					{
+						fprintf(fi,tt == dst->truck_types.begin() ? "%s" : "|%s",
+							truck_type_strings[*tt]);
+					}
+					fprintf(fi," %s" CRLF, dst->name.c_str());
+					#if !DEV
+						#error we need to have an importer for this.
+						#error we need to have a validator for this.
+					#endif
 				}
 
 			}
