@@ -96,7 +96,7 @@ void		WED_MapLayer::SetFilter(const vector<const char *> * hide_filter_ptr, cons
 
 static bool matches_filter(WED_Thing * thing ,const  vector<const char *> * filter )
 {
-	for(vector<const char *>::const_iterator filterit = filter->begin(); filterit < filter->end(); ++filterit)
+	for(vector<const char *>::const_iterator filterit = filter->begin(); filterit != filter->end(); ++filterit)
 	{
 		const char * p = *filterit;
 		int slash_count = 0;
