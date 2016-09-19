@@ -408,9 +408,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				rwy = tr->IsRunway();
 				ils = tr->HasHotILS();
 			}
-			if(hot)				struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
-			else if(ils)		struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
-			else if (rwy)		struct_color = selected ? wed_Runway_Selected : wed_Runway;
+			if(locked)
+				struct_color = wed_StructureLocked;
+			else
+			{
+				if(hot)                 struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
+				else if(ils)            struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
+				else if (rwy)           struct_color = selected ? wed_Runway_Selected : wed_Runway;
+			}
 			#endif
 			
 			int i, n = ps->GetNumSides();

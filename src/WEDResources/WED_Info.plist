@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>WED</string>
 	<key>CFBundleGetInfoString</key>
-	<string>WED WED_VERSION Copyright 2007, Laminar Research</string>
+	<string>WED WED_VERSION Copyright 2016, Laminar Research</string>
 	<key>CFBundleIconFile</key>
 	<string>WED.icns</string>
 	<key>CFBundleIdentifier</key>
