@@ -914,17 +914,19 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 		return Polygon2(0);
 	}
 
-	double HITZONE_WIDTH_THRESHOLD_M;         // Width of Runway Protection Zone beyond runway width, each side
-	double HITZONE_OVERFLY_THRESHOLD_M;      // Length of RPZ beyond runway end (departure end) or runway threshold (arrival end)
+	double HITZONE_WIDTH_THRESHOLD_M; // Width of Runway Protection Zone beyond runway width, each side
+	
+	//Unfortunatly due to the messy real world we must have unrealistically low thresholds to avoid edge case after edge case
+	//for every airport that doesn't play by the rules, was grandfathered in, or was built on Mt. Doom and needs to avoid the volcanic dust clouds. You know, the usual.
+	double HITZONE_OVERFLY_THRESHOLD_M = 100.00;
+
 	if (runway_info.runway_ptr->GetLength() < 1500.0)
 	{
-		HITZONE_OVERFLY_THRESHOLD_M = 305.0;    // per FAA advisory circular 150-5300-13A, size A/B aircraft runways: 1000'
-		HITZONE_WIDTH_THRESHOLD_M = 10.0;       // good guess, FAA advisory 150' from CL is impractically wide for many small airfields
+		HITZONE_WIDTH_THRESHOLD_M = 10.0; // good guess, FAA advisory 150' from CL is impractically wide for many small airfields
 	}
 	else
 	{
-		HITZONE_OVERFLY_THRESHOLD_M = 518.0;    // per FAA, size C/D/E aircraft runways: 1700'
-		HITZONE_WIDTH_THRESHOLD_M = 30.0;       // good guess, again, FAA is too wishfull
+		HITZONE_WIDTH_THRESHOLD_M = 30.0; // good guess, again, FAA is too wishfull
 	}
 
 	Polygon2 runway_hit_box_m = runway_info.runway_corners_m;
