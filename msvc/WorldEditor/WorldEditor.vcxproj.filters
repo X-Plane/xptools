@@ -801,6 +801,12 @@
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_TruckParkingLocation.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_TruckDestination.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1588,6 +1594,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Interfaces\IHasResource.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_TruckParkingLocation.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h">
+      <Filter>WEDEntities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
