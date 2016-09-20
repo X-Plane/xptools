@@ -197,7 +197,6 @@
 		D6151EA60FB46BB8008A355F /* GUI_Table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36960AB22C84003949C5 /* GUI_Table.cpp */; };
 		D6151EA70FB46BB8008A355F /* GUI_TabPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D659758E0BEA6F2A001FC7C3 /* GUI_TabPane.cpp */; };
 		D6151EA80FB46BB9008A355F /* GUI_TextField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36980AB22C84003949C5 /* GUI_TextField.cpp */; };
-		D6151EA90FB46BB9008A355F /* GUI_TextTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */; };
 		D6151EAA0FB46BBB008A355F /* GUI_Timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC369A0AB22C84003949C5 /* GUI_Timer.cpp */; };
 		D6151EAB0FB46BBB008A355F /* GUI_ToolBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */; };
 		D6151EAC0FB46BBC008A355F /* GUI_Unicode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6C38FDC0FA0D6E500EFA56C /* GUI_Unicode.cpp */; };
@@ -4308,7 +4307,6 @@
 				D6151EA60FB46BB8008A355F /* GUI_Table.cpp in Sources */,
 				D6151EA70FB46BB8008A355F /* GUI_TabPane.cpp in Sources */,
 				D6151EA80FB46BB9008A355F /* GUI_TextField.cpp in Sources */,
-				D6151EA90FB46BB9008A355F /* GUI_TextTable.cpp in Sources */,
 				D6151EAA0FB46BBB008A355F /* GUI_Timer.cpp in Sources */,
 				D6151EAB0FB46BBB008A355F /* GUI_ToolBar.cpp in Sources */,
 				D6151EAC0FB46BBC008A355F /* GUI_Unicode.cpp in Sources */,
