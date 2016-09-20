@@ -79,7 +79,11 @@
 
 // Until we get the taxi validation to create error lists, this 
 // turns off the early exit when ATC nodes are messed up.
+#if GATEWAY_IMPORT_FEATURES
+#define FIND_BAD_AIRPORTS 1
+#else
 #define FIND_BAD_AIRPORTS 0
+#endif
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
@@ -1520,7 +1524,6 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	
 	vector<WED_Airport *> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts));
-	CheckDuplicateNames(apts,msgs,NULL,"Duplicate airport name.");
 	
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
 	{
@@ -1533,14 +1536,22 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	// or null for 'free' stuff.
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
-	
+
+	FILE * fi = stdout;
+#if GATEWAY_IMPORT_FEATURES
+	fi = fopen("validation_report.txt","w");
+#endif
+
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{
 		string aname;
 		if(v->airport)
 			v->airport->GetICAO(aname);
-		printf("%s: %s\n", aname.c_str(), v->msg.c_str());
+		fprintf(fi,"%s: %s\n", aname.c_str(), v->msg.c_str());
 	}
+#if GATEWAY_IMPORT_FEATURES
+	fclose(fi);
+#endif
 	
 	if(!msgs.empty())
 	{
@@ -1551,7 +1562,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		for(vector<WED_Thing *>::iterator b = msgs.front().bad_objects.begin(); b != msgs.front().bad_objects.end(); ++b)
 			sel->Insert(*b);
 		wrl->CommitOperation();
-		return false;
+		return GATEWAY_IMPORT_FEATURES;
 	}
-	return msgs.empty();
+	return msgs.empty() || GATEWAY_IMPORT_FEATURES;
 }

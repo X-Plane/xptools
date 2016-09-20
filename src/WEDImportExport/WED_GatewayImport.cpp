@@ -1004,7 +1004,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
 
-#if !SAVE_ON_HDD
+#if !SAVE_ON_HDD && !GATEWAY_IMPORT_FEATURES
 	//clean up our files ICAOid.dat and potentially ICAOid.txt
 	if(has_dsf)
 	{
