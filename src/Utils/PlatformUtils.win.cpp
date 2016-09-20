@@ -142,14 +142,14 @@ char *	GetMultiFilePathFromUser(
 {
 	OPENFILENAME	ofn = { 0 };
 	BOOL result;
-	char buf[4096];
+	char * buf = (char *) malloc(1024 * 1024);
 
 	ofn.lStructSize = sizeof(ofn);
 	ofn.lpstrFilter = "All Files\000*.*\000";
 	ofn.nFilterIndex = 1;	// Start with .acf files
 	ofn.lpstrFile = buf;
 	buf[0] = 0;		// No initialization for open.
-	ofn.nMaxFile = sizeof(buf);		// Guess string length?
+	ofn.nMaxFile = 1024 * 1024;		// Guess string length?
 	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
 	ofn.lpstrTitle = inPrompt;
 	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER;
@@ -187,11 +187,14 @@ char *	GetMultiFilePathFromUser(
 			p += (files[i].size() + 1);
 		}
 		*p = 0;
-	
+		free(buf);
 		return ret;
 	}
 	else
+	{
+		free(buf);
 		return NULL;
+	}
 }
 
 
