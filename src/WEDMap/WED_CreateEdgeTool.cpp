@@ -113,13 +113,18 @@ static void SortSplits(const Segment2& s, vector<pair<IGISPointSequence *, Point
 
 void		WED_CreateEdgeTool::AcceptPath(
 			const vector<Point2>&	in_pts,
-			const vector<Point2>&	dirs_lo,
-			const vector<Point2>&	dirs_hi,
-			const vector<int>		has_dirs,
-			const vector<int>		has_split,
+			const vector<Point2>&	in_dirs_lo,
+			const vector<Point2>&	in_dirs_hi,
+			const vector<int>		in_has_dirs,
+			const vector<int>		in_has_split,
 			int						closed)
 {
 	vector<Point2>	pts(in_pts);
+	vector<Point2>	dirs_lo(in_dirs_lo);
+	vector<Point2>	dirs_hi(in_dirs_hi);
+	vector<int>		has_dirs(in_has_dirs);
+	vector<int>		has_split(in_has_split);
+	
 	int idx;
 	WED_Thing * host_for_parent = GetHost(idx);
 	if (host_for_parent == NULL) return;
@@ -183,6 +188,12 @@ void		WED_CreateEdgeTool::AcceptPath(
 		SortSplits(Segment2(pts[p-1],pts[p]), splits);
 
 		pts.insert(pts.begin()+p,splits.begin(), splits.end());
+		dirs_lo.insert(dirs_lo.begin()+p,splits.begin(), splits.end());
+		dirs_hi.insert(dirs_hi.begin()+p,splits.begin(), splits.end());
+		vector<int> flags(0,splits.size());
+		has_dirs.insert(has_dirs.begin()+p,flags.begin(),flags.end());
+		has_split.insert(has_split.begin()+p,flags.begin(),flags.end());
+		
 		p += splits.size();
 		
 //		printf("p = %d\n", p);
@@ -208,6 +219,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
 		{			
 			pts.insert(pts.begin()+p,s->second);
+			dirs_lo.insert(dirs_lo.begin()+p,s->second);
+			dirs_hi.insert(dirs_hi.begin()+p,s->second);
+			has_dirs.insert(has_dirs.begin()+p,0);
+			has_split.insert(has_split.begin()+p,0);
+			
 			++p;
 		}	
 		
@@ -433,7 +449,17 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 					Bezier2 b;
 					Segment2 s;
 					if(ps->GetSide(gis_Geo,n,s,b))
-					{						
+					{
+						if(loc != b.p1 && loc != b.p2)
+						{								
+//							double d = b.squared_distance(loc);
+//							if(d < out_dsq)
+//							{
+//								out_dsq = d;
+//								out_thing = ps;
+//							}
+						}
+					
 					}
 					else					
 					{

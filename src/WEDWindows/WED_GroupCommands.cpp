@@ -1186,16 +1186,28 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 			DebugAssert(jj);
 			Segment2 s1, s2;
 			Bezier2 b1, b2;
+			bool isb1, isb2;
 			
-			if(ii->GetSide(gis_Geo, 0, s1,b1))
+			if(isb1 = ii->GetSide(gis_Geo, 0, s1,b1))
 			{
 				s1.p1 = b1.p1;
 				s1.p2 = b1.p2;
 			}
-			if(jj->GetSide(gis_Geo, 0, s2,b2))
+			else
+			{
+				b1.c1 = b1.p1;
+				b1.c2 = b1.p2;
+			}
+			
+			if(isb2 = jj->GetSide(gis_Geo, 0, s2,b2))
 			{
 				s2.p1 = b2.p1;
 				s2.p2 = b2.p2;
+			}
+			else
+			{
+				b2.c1 = b2.p1;
+				b2.c2 = b2.p2;
 			}
 			
 			Point2 x;
@@ -1203,10 +1215,23 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				s1.p2 != s2.p2 &&
 				s1.p1 != s2.p2 &&
 				s1.p2 != s2.p1)
-			if(s1.intersect(s2, x))			
 			{
-				sel->Insert(pts[i]);
-				sel->Insert(pts[j]);
+				if(!isb1 && !isb2)
+				{
+					if(s1.intersect(s2, x))
+					{
+						sel->Insert(pts[i]);
+						sel->Insert(pts[j]);
+					}
+				}
+				else
+				{
+					if(b1.intersect(b2, 12))
+					{
+						sel->Insert(pts[i]);
+						sel->Insert(pts[j]);
+					}
+				}
 			}
 		}
 	}

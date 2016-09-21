@@ -646,7 +646,8 @@ struct TaxiRouteInfo2
 		node_1(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(1)))
 	{
 		AptRouteEdge_t apt_route;
-		taxiroute->Export(apt_route);
+		AptServiceRoadEdge_t dummy;
+		taxiroute->Export(apt_route, dummy);
 		taxiroute_name = apt_route.name;
 
 		Bezier2 bez;
