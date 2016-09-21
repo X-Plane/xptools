@@ -357,7 +357,7 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 			string node_name;
 			(*node_itr)->GetName(node_name);
 			string msg = "Taxiroute node " + node_name + " is out of runway " + runway_info.runway_name + "'s bounds";
-			msgs.push_back(validation_error_t(msg,*node_itr,apt));
+			msgs.push_back(validation_error_t(msg, err_atcrwy_taxi_route_node_out_of_bounds, *node_itr,apt));
 		}
 	}
 
@@ -406,7 +406,7 @@ static bool TaxiRouteCenterlineCheck( const RunwayInfo& runway_info,
 		{
 			string taxiroute_name = ENUM_Desc((taxiroute_itr)->taxiroute_ptr->GetRunway());
 			string msg = "Taxi route segment for runway " + taxiroute_name + " is not on the center line";
-			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
+			msgs.push_back(validation_error_t(msg, err_atcrwy_centerline_taxiroute_segment_off_center, taxiroute_itr->taxiroute_ptr,apt));
 		}
 	}
 
@@ -464,7 +464,7 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 			}
 			else
 			{
-				msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is not continuous",*node_itr,apt));
+				msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is not continuous", err_atcrwy_connectivity_not_continous, *node_itr,apt));
 			}
 		}
 		else if(node_valence >= 3)
@@ -475,13 +475,13 @@ static bool RunwaysTaxiRouteValencesCheck (const RunwayInfo& runway_info,
 			string node_name;
 			(*node_itr)->GetName(node_name);
 
-			msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is split " + oss.str() + " ways at taxi route node " + node_name, *node_itr,apt));
+			msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route is split " + oss.str() + " ways at taxi route node " + node_name, err_atcrwy_connectivity_n_split, *node_itr,apt));
 		}
 	}
 
 	if(num_valence_of_1 == 0 && all_matching_nodes.size() > 0)
 	{
-		msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route forms a loop",runway_info.runway_ptr,apt));
+		msgs.push_back(validation_error_t("Runway " + runway_info.runway_name + "'s taxi route forms a loop", err_atcrwy_connectivity_forms_loop, runway_info.runway_ptr,apt));
 	}
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
@@ -670,9 +670,11 @@ static bool TaxiRouteSquishedZCheck( const RunwayInfo& runway_info,
 			//This copying is just to save to save screen space
 			TaxiRouteInfoVec_t route_info_vec(problem_children.begin(),problem_children.end());
 
-			msgs.push_back(validation_error_t("Taxi routes " + route_info_vec[0].taxiroute_name + " and " + route_info_vec[1].taxiroute_name + " have too extreme an angle between them",
-											  problem_children,
-											  apt));
+			msgs.push_back(validation_error_t( "Taxi routes " + route_info_vec[0].taxiroute_name + " and " + route_info_vec[1].taxiroute_name + " are making a turn that is too tight for aircraft to follow.",
+											   err_atcrwy_centerline_too_sharp_turn,
+											   problem_children,
+											   apt));
+
 			return false; //The next test will just be redundent so we'll end here
 		}
 
@@ -738,8 +740,8 @@ static bool TaxiRouteParallelCheck( const RunwayInfo& runway_info,
 		double ANGLE_THRESHOLD = 0.995;
 		if(dot_product < ANGLE_THRESHOLD)
 		{
-			string msg = "Taxi route segment " + taxiroute_itr->taxiroute_name + " is not parallel to the runway's center line.";
-			msgs.push_back(validation_error_t(msg,taxiroute_itr->taxiroute_ptr,apt));
+			string msg = "Taxi route segment " + taxiroute_itr->taxiroute_name + " is not parallel to the runway's " + runway_info.runway_name + "'s center line.";
+			msgs.push_back(validation_error_t(msg, err_atcrwy_centerline_not_parallel_centerline, taxiroute_itr->taxiroute_ptr,apt));
 		}
 	}
 
@@ -801,7 +803,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 			{
 				string node_name;
 				(*itr)->GetName(node_name);
-				msgs.push_back(validation_error_t("Route node " + node_name + " is within the runway's bounds but is not connected to the runway's taxiroute", *itr, apt));
+				msgs.push_back(validation_error_t("Route node " + node_name + " is within the runway's bounds but is not connected to the runway's taxiroute", err_atcrwy_taxi_route_node_within_bounds_but_not_connected, *itr, apt));
 			}
 		}
 	}
@@ -838,7 +840,7 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 		oss << std::fixed << COVERAGE_THRESHOLD - length_accumulator;
 #endif
 		string msg = "Taxi route for runway " + runway_info.runway_name + " does not span enough runway";
-		msgs.push_back(validation_error_t(msg,runway_info.runway_ptr,apt));
+		msgs.push_back(validation_error_t(msg, err_atcrwy_taxi_route_does_not_span_enough_rwy,  runway_info.runway_ptr,apt));
 		return false;
 	}
 
@@ -869,14 +871,19 @@ static void FindIfMarked( const int runway_number,        //enum from ATCRunwayO
 
 	if(found_marked == false)
 	{
+		stringstream ss;
+		ss  << "Taxi route " 
+			<< taxiroute.taxiroute_name 
+			<< " is too close to runway " 
+			<< ENUM_Desc(runway_number)
+			<< " and now must be marked active for runway "
+			<< ENUM_Desc(runway_number)
+			<< " " 
+			<< op_type;
+
 		msgs.push_back(validation_error_t(
-			
-			string("Taxi route " + taxiroute.taxiroute_name + " is too close to runway ") + 
-			string(ENUM_Desc(runway_number)) + 
-			string(" and now must be marked active for runway ") +
-			string(ENUM_Desc(runway_number) + 
-			string(" " + op_type)),
-			
+			ss.str(),
+			err_atcrwy_hotzone_taxi_route_too_close,
 			taxiroute.taxiroute_ptr,
 			apt));
 	}
