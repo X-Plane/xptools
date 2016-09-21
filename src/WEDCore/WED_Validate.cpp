@@ -482,7 +482,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 		
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
-#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && resource_str.substr(resource_str.find_last_of(".")) == EXT) ? true : false;
+#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && FILE_get_file_extension(resource_str) == EXT) ? true : false;
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
 		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
