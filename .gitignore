@@ -83,6 +83,7 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+*.VC.*
 
 # Visual Studio profiler
 *.psess
@@ -191,4 +192,3 @@ nohup.out
 *.swm
 *.swn
 *.swo
-

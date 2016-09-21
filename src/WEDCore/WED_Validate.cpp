@@ -42,6 +42,7 @@
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
 #include "WED_ATCFlow.h"
 #include "WED_LibraryMgr.h"
 #include "WED_AirportBoundary.h"
@@ -61,8 +62,14 @@
 #include "IResolver.h"
 #include "ILibrarian.h"
 #include "WED_LibraryMgr.h"
+#include "WED_PackageMgr.h"
 
+#include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
+
+#include "BitmapUtils.h"
 #include "GISUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "MathUtils.h"
 #include "WED_ATCFrequency.h"
@@ -72,7 +79,11 @@
 
 // Until we get the taxi validation to create error lists, this 
 // turns off the early exit when ATC nodes are messed up.
+#if GATEWAY_IMPORT_FEATURES
+#define FIND_BAD_AIRPORTS 1
+#else
 #define FIND_BAD_AIRPORTS 0
+#endif
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
@@ -450,19 +461,30 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 		resource_containing_who->GetResource(resource_str);
 
 		//1. Is the resource entirely missing
-		string path = library_mgr->GetResourcePath(resource_str);
-		if(path == "")
+		
+		string path;
+		if (GetSupportedType(resource_str.c_str()) != -1)
+		{
+			path = gPackageMgr->ComputePath(library_mgr->GetLocalPackage(), resource_str);
+		}
+		else
+		{
+			path = library_mgr->GetResourcePath(resource_str);
+		}
+		
+		if(FILE_exists(path.c_str()) == false)
 		{
 			if(parent_apt != NULL)
 			{
 				msgs.push_back(validation_error_t(string(who->HumanReadableType()) + "'s resource " + resource_str + " cannot be found", who, parent_apt));
 			}
 		}
-
+		
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
 #define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && resource_str.substr(resource_str.find_last_of(".")) == EXT) ? true : false;
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
 		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
 		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  ".for");
 		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    ".lin");
@@ -470,7 +492,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".agp");
 		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, ".pol");
 		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  ".str");
-		
+
 		if(matches == false)
 		{
 			msgs.push_back(validation_error_t("Resource " + resource_str + " does not have the correct file type", who, parent_apt));
@@ -492,24 +514,17 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 
-/* Validate(One|.*)Thing(WED_Thing* who, string& msg)
-
-Validates one or more WED_Things. "who", the item to be validate, is not assumed to be dynamically cast.
-
-msg is the validation message, checked if non-empty at the end.
-
-The occasional returned WED_Thing* is a pointer to the problem child, included to mirror the original flow.
- */
-
 static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector& msgs)
 {
 	//Collect all frequencies and group them by type into smaller vectors 
 	vector<vector<WED_ATCFrequency*> > sub_freqs = CollectAirportFrequencies(who);
 
-	vector<WED_ATCFrequency *> has_atc;
+	vector<WED_ATCFrequency* > has_atc;
+
 	bool has_tower = false;
 
-	map<int, vector<WED_ATCFrequency*> >		all_freqs;
+	//Key=frequency like 12880 or 99913, Value is pointer to WED_ATCFrequency, part of the data model
+	map<int, vector<WED_ATCFrequency*> > all_freqs;
 
 	//For all groups see if each group has atleast one valid member (especially for Delivery, Ground, and Tower)
 	for(vector<vector<WED_ATCFrequency*> >::iterator itr = sub_freqs.begin(); itr != sub_freqs.end(); ++itr)
@@ -576,13 +591,37 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			    << "Ensure all frequencies in this group end in 0, 2, 5, or 7.";				
 			msgs.push_back(validation_error_t(ss.str(),*itr, who));
 		}
-		for(map<int,vector<WED_ATCFrequency *> >::iterator f = all_freqs.begin(); f != all_freqs.end(); ++f)
-		if(f->second.size() > 1)
-			msgs.push_back(validation_error_t(string("The frequency ") + format_freq(f->first) + " is used more than once at this airport.", f->second, who));		
 	}
+	
+	for (map<int, vector<WED_ATCFrequency *> >::iterator f = all_freqs.begin(); f != all_freqs.end(); ++f)
+	{
+		if (f->second.size() > 1)
+		{
+			vector<WED_Thing*> problem_children;
+			for (vector<WED_ATCFrequency*>::iterator itr = f->second.begin(); itr != f->second.end(); ++itr)
+			{
+				AptATCFreq_t apt_atc_freq;
+				(*itr)->Export(apt_atc_freq);
+				const int freq_type = ENUM_Import(ATCFrequency,apt_atc_freq.atc_type);
+				if (freq_type == atc_AWOS     ||
+					freq_type == atc_Delivery ||
+					freq_type == atc_Ground   ||
+					freq_type == atc_Tower)
+				{
+					problem_children.push_back(*itr);
+				}
+			}
+
+			if (problem_children.size() > 1)
+			{
+				msgs.push_back(validation_error_t(string("The frequency ") + format_freq(f->first) + " is used more than once at this airport.", problem_children, who));
+			}
+		}
+	}
+
 	if(!has_atc.empty() && !has_tower)
 	{
-		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.",has_atc,who));
+		msgs.push_back(validation_error_t("This airport has ground or delivery but no tower.  Add a control tower frequency or remove ground/delivery.", has_atc, who));
 	}
 	
 }
@@ -595,6 +634,159 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 		msgs.push_back(validation_error_t("ATC runway use must support at least one operation type.",use, apt));
 	else if(urule.equipment == 0)
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", use, apt));
+}
+
+//TODO: Unify with WED_ValidateATCRunwayChecks
+
+struct TaxiRouteInfo2
+{
+	TaxiRouteInfo2(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
+		: taxiroute_ptr(taxiroute),
+		node_0(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(0))),
+		node_1(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(1)))
+	{
+		AptRouteEdge_t apt_route;
+		taxiroute->Export(apt_route);
+		taxiroute_name = apt_route.name;
+
+		Bezier2 bez;
+		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
+		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1), translator.Forward(taxiroute_segment_geo.p2));
+
+		nodes_m[0] = Point2();
+		nodes_m[1] = Point2();
+
+		node_0->GetLocation(gis_Geo, nodes_m[0]);
+		nodes_m[0] = translator.Forward(nodes_m[0]);
+
+		node_1->GetLocation(gis_Geo, nodes_m[1]);
+		nodes_m[1] = translator.Forward(nodes_m[1]);
+	}
+
+	//Pointer to the original WED_TaxiRoute in WED's data model
+	WED_TaxiRoute* taxiroute_ptr;
+
+	//Name of the taxiroute
+	string taxiroute_name;
+
+	//Segment2 representing the taxiroute in lat/lon
+	Segment2 taxiroute_segment_geo;
+
+	//Segment2 representing the taxiroute in meters
+	Segment2 taxiroute_segment_m;
+
+	//Source node of the taxiroute
+	WED_GISPoint* node_0;
+
+	//Target node of the taxiroute
+	WED_GISPoint* node_1;
+
+	//0 is node 0,
+	//1 is node 1
+	Point2 nodes_m[2];
+};
+
+static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_error_vector& msgs, WED_Airport * apt)
+{
+	static CoordTranslator2 translator;
+	Bbox2 box;
+	apt->GetBounds(gis_Geo, box);
+	CreateTranslatorForBounds(box,translator);
+
+	/*For each edge A
+		for each OTHER edge B
+		
+		If A and B intersect, do not mark them as a T - the intersection test will pick this up and we don't want to have double errors on a single user problem.
+		else If A and B share a common vertex, do not mark them as a T junction - this is legal. (Do this by comparing the Point2, not the IGISPoint *.If A and B have separate exactly on top of each other nodes, the duplicate nodes check will find this, and again we don't want to squawk twice on one user error.
+
+			for each end B(B src and B dst)
+				if end has a valence of 1
+					if the distance between A and the end node you are testing is < M meters
+						validation failure - that node is too close to a taxiway route but isn't joined.
+	*/
+
+	for (vector<WED_TaxiRoute*>::iterator edge_a_itr = all_taxiroutes.begin(); edge_a_itr != all_taxiroutes.end(); ++edge_a_itr)
+	{
+		for (vector<WED_TaxiRoute*>::iterator edge_b_itr = all_taxiroutes.begin(); edge_b_itr != all_taxiroutes.end(); ++edge_b_itr)
+		{
+			//Skip over the same ones
+			if (edge_a_itr == edge_b_itr)
+			{
+				continue;
+			}
+
+			TaxiRouteInfo2 edge_a(*edge_a_itr,translator);
+			TaxiRouteInfo2 edge_b(*edge_b_itr,translator);
+
+			//tmp doesn't matter to us
+			Point2 tmp;
+			if (edge_a.taxiroute_segment_m.intersect(edge_b.taxiroute_segment_m,tmp) == true)
+			{
+				//An intersection is different from a T junction
+				continue;
+			}
+			
+			bool found_duplicate = false;
+			for (int i = 0; i < 2 && found_duplicate == false; i++)
+			{
+				for (int j = 0; j < 2 && found_duplicate == false; j++)
+				{
+					if (edge_a.nodes_m[i] == edge_b.nodes_m[j])
+					{
+						//This is a duplicate of the doubled up vertex test
+						found_duplicate = true;
+					}
+				}
+			}
+
+			if (found_duplicate == true)
+			{
+				//Try another one
+				continue;
+			}
+
+			const double TJUNCTION_THRESHOLD = 5.00;
+			for (int i = 0; i < 2; i++)
+			{
+				set<WED_Thing*> node_viewers;
+				if (i == 0)
+				{
+					edge_b.node_0->GetAllViewers(node_viewers);
+				}
+				else if (i == 1)
+				{
+					edge_b.node_1->GetAllViewers(node_viewers);
+				}
+
+				int valence = node_viewers.size();
+				if (valence == 1)
+				{
+					double dist_b_node_to_a_edge = sqrt(edge_a.taxiroute_segment_m.squared_distance(edge_b.nodes_m[i]));
+
+					if (dist_b_node_to_a_edge < TJUNCTION_THRESHOLD)
+					{
+						vector<WED_Thing*> problem_children;
+						problem_children.push_back(*edge_a_itr);
+
+						string problem_node_name;
+
+						if (i == 0)//src
+						{
+							problem_children.push_back((edge_b.node_0));
+							edge_b.node_0->GetName(problem_node_name);
+						}
+						else if (i == 1)
+						{
+							problem_children.push_back((edge_b.node_1));
+							edge_b.node_1->GetName(problem_node_name);
+						}
+
+						msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " and " + problem_node_name + " form a T junction, without being joined", problem_children, apt));
+					}
+				}
+			}
+		}
+	}
 }
 
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
@@ -629,6 +821,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		if(exp.icao.empty())
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", wrule, apt));
 	}
+	
+	#if !GATEWAY_IMPORT_FEATURES
 
 	map<int,vector<WED_ATCRunwayUse*> >		arrival_rwys;
 	map<int,vector<WED_ATCRunwayUse*> >		departure_rwys;
@@ -664,33 +858,34 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 			}
 		}
 	}
+	#endif
 }
 
-static void ValidateATC(WED_Airport* who, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
+static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)
 {
 	vector<WED_ATCFlow *>		flows;
 	vector<WED_TaxiRoute *>	taxi_routes;
 	
-	CollectRecursive(who,back_inserter(flows));
-	CollectRecursive(who,back_inserter(taxi_routes));
+	CollectRecursive(apt,back_inserter(flows));
+	CollectRecursive(apt,back_inserter(taxi_routes));
 	
 	if(gExportTarget == wet_xplane_900)
 	{
 		if(!flows.empty())
-			msgs.push_back(validation_error_t("ATC flows are not legal in X-Plane 9.", flows, who));
+			msgs.push_back(validation_error_t("ATC flows are not legal in X-Plane 9.", flows, apt));
 		if(!taxi_routes.empty())
-			msgs.push_back(validation_error_t("ATC Taxi Routes are not legal in X-Plane 9.", flows, who));
+			msgs.push_back(validation_error_t("ATC Taxi Routes are not legal in X-Plane 9.", flows, apt));
 		return;
 	}
 	
-	if(CheckDuplicateNames(flows, msgs, who, "Two or more airport flows have the same name."))
+	if(CheckDuplicateNames(flows, msgs, apt, "Two or more airport flows have the same name."))
 	{
 		return;
 	}
 	
 	for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
 	{
-		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, who);
+		ValidateOneATCFlow(*f, msgs, legal_rwy_oneway, apt);
 	}
 	
 	for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
@@ -707,13 +902,13 @@ static void ValidateATC(WED_Airport* who, validation_error_vector& msgs, set<int
 		if(taxi->HasInvalidHotZones(legal_rwy_oneway))
 		{
 			msgs.push_back(validation_error_t(string("The taxi route '") + name + "' has hot zones for runways not present at its airport.",
-											taxi, who));
+											taxi, apt));
 		}
 
 		if(taxi->IsRunway())
 			if(legal_rwy_twoway.count(taxi->GetRunway()) == 0)
 			{
-				msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is set to a runway not present at the airport.", taxi, who));
+				msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is set to a runway not present at the airport.", taxi, apt));
 			}
 
 		Point2	start, end;
@@ -722,10 +917,12 @@ static void ValidateATC(WED_Airport* who, validation_error_vector& msgs, set<int
 		if(start == end)
 		{
 #if CHECK_ZERO_LENGTH	
-			msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is zero length.",taxi,who));
+			msgs.push_back(validation_error_t(string("The taxi route '") + name + "' is zero length.",taxi,apt));
 #endif
 		}
 	}
+
+	TJunctionTest(taxi_routes, msgs, apt);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -1168,11 +1365,14 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.",apt,apt));
 	
+	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);
-
+	#endif
+	
 	ValidateATC(apt, msgs, legal_rwy_oneway, legal_rwy_twoway);
 	
-	ValidateAirportFrequencies(apt,msgs);	
+	ValidateAirportFrequencies(apt,msgs);
+	
 	
 	for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
 	{
@@ -1234,9 +1434,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				if(!lib_mgr->IsResourceDefault(res))
 					msgs.push_back(validation_error_t(string("The library path '") + res + "' is not part of X-Plane's default installation and cannot be submitted to the global airport database.",
 						*ru, apt));
+				#if !GATEWAY_IMPORT_FEATURES
 				if(lib_mgr->IsResourceDeprecatedOrPrivate(res))
 					msgs.push_back(validation_error_t(string("The library path '") + res + "' is a deprecated or private X-Plane resource and cannot be used in global airports.",
-						*ru, apt));							
+						*ru, apt));
+				#endif
 			}
 		}
 	}
@@ -1288,7 +1490,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		printf("%s\n", msg.c_str());
 #endif
 	}
-	
+
 	if(WED_DoSelectDoubles(resolver))
 	{
 		msg = "Your airport contains doubled ATC routing nodes. These should be merged.";
@@ -1299,8 +1501,8 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		printf("%s\n", msg.c_str());
 #endif
 	}
-	
-	if(WED_DoSelectCrossing(resolver))	
+
+	if(WED_DoSelectCrossing(resolver))
 	{
 		msg = "Your airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.";
 #if !FIND_BAD_AIRPORTS
@@ -1322,7 +1524,6 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	
 	vector<WED_Airport *> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts));
-	CheckDuplicateNames(apts,msgs,NULL,"Duplicate airport name.");
 	
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
 	{
@@ -1335,14 +1536,22 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	// or null for 'free' stuff.
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
-	
+
+	FILE * fi = stdout;
+#if GATEWAY_IMPORT_FEATURES
+	fi = fopen("validation_report.txt","w");
+#endif
+
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{
 		string aname;
 		if(v->airport)
 			v->airport->GetICAO(aname);
-		printf("%s: %s\n", aname.c_str(), v->msg.c_str());
+		fprintf(fi,"%s: %s\n", aname.c_str(), v->msg.c_str());
 	}
+#if GATEWAY_IMPORT_FEATURES
+	fclose(fi);
+#endif
 	
 	if(!msgs.empty())
 	{
@@ -1353,7 +1562,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		for(vector<WED_Thing *>::iterator b = msgs.front().bad_objects.begin(); b != msgs.front().bad_objects.end(); ++b)
 			sel->Insert(*b);
 		wrl->CommitOperation();
-		return false;
+		return GATEWAY_IMPORT_FEATURES;
 	}
-	return msgs.empty();
+	return msgs.empty() || GATEWAY_IMPORT_FEATURES;
 }

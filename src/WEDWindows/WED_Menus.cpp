@@ -205,7 +205,9 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	NULL,						0,		0,										0, 0,				}
 };
 
-static GUI_MenuItem_t kAddMetaDataMenu[wed_AddMetaDataEnd-wed_AddMetaDataBegin-1] = { 0 };
+// end-begin?  YES!  Since begin is before the beginnined and end is AFTER the end this gives us ONE extra slot.
+// We NEED that slot to be the null terminator for the menu list.
+static GUI_MenuItem_t kAddMetaDataMenu[wed_AddMetaDataEnd-wed_AddMetaDataBegin] = { 0 };
 
 static const GUI_MenuItem_t kHelpMenu[] = {
 {	"&WED User's Guide",			0,	0,										0,	wed_HelpManual },

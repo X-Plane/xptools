@@ -61,6 +61,8 @@ public:
 				 WED_LibraryMgr(const string& local_package);
 				~WED_LibraryMgr();
 
+	string		GetLocalPackage() const;
+
 	string		GetResourceParent(const string& r);
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);

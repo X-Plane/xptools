@@ -13,6 +13,25 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5b4 9/19/15
+
+	Bug fixes:
+	- WED-660: Fixes crash sub-dividing the final segment of a closed-loop line.
+	- WED-641: Fixed selected color on runway taxi-route segments when ATC tab is not being used.
+	- Lowered hot zone distance requirement off the end of runways - fixes cases like KSBP runway 25.
+
+WED 1.5b3 9/14/16
+
+	Bug fixes:
+	- WED-651: Fixes preview of size A taxi route segments
+	- WED-648, WED-645, WED-643: Nodes in taxi routes no longer incorrectly flagged as T-junctions
+	- WED-637, WED-640: Fixed crashes due to taxi route node types
+	- WED-636: Runway taxi route segments no longer have to cover the entire runway
+	- WED-632: Corrects ATC edge colors when locked
+	- WED-627: Fixes ATC frequency decimals
+	- WED-625: Fixes issues with orthophoto file types
+	- WED-621: Only frequency conflicts on tower, ground, delivery and ASOS are validated
+
 WED 1.5b2 8/31/16
 
 	New features:

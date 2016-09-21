@@ -616,6 +616,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -631,6 +632,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
