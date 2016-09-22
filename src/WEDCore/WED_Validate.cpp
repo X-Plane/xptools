@@ -480,6 +480,8 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 			}
 		}
 		
+		std::transform(resource_str.begin(), resource_str.end(), resource_str.begin(), ::tolower);
+
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
 #define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && FILE_get_file_extension(resource_str) == EXT) ? true : false;
