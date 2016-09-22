@@ -78,7 +78,7 @@ void	WED_RampPosition::Export(		 AptGate_t& x) const
 	x.equipment = ENUM_ExportSet(equip_type.value);
 	x.width = ENUM_Export(width.value);
 	x.ramp_op_type = ENUM_Export(ramp_op_type.value);
-	x.airlines = airlines.value;
+	x.airlines = WED_RampPosition::CorrectAirlinesString(airlines.value);
 }
 
 void	WED_RampPosition::SetType(int	rt)
@@ -99,6 +99,36 @@ void	WED_RampPosition::SetWidth(int		w)
 void	WED_RampPosition::SetRampOperationType(int ait)
 {
 	ramp_op_type = ait;
+}
+
+static bool two_adjacent_spaces(char lhs, char rhs)
+{
+	return (lhs == rhs) && (lhs == ' ');
+}
+
+string	WED_RampPosition::CorrectAirlinesString(const string &a)
+{
+	string cleaned_airlines_str = "";
+	for(string::const_iterator itr = a.begin(); itr != a.end(); ++itr)
+	{
+		//Make lowercase
+		cleaned_airlines_str += static_cast<char>(tolower(static_cast<unsigned char>(*itr)));
+	}
+
+	//Thanks Plamen for this concise trim http://stackoverflow.com/a/22711818
+	while(isspace(*cleaned_airlines_str.begin()))
+	{
+		cleaned_airlines_str.erase(cleaned_airlines_str.begin());
+	}
+
+	while(isspace(*cleaned_airlines_str.rbegin()))
+	{
+		cleaned_airlines_str.erase(cleaned_airlines_str.length()-1);
+	}
+	
+	cleaned_airlines_str.erase(std::unique(cleaned_airlines_str.begin(), cleaned_airlines_str.end(), two_adjacent_spaces), cleaned_airlines_str.end());   
+
+	return cleaned_airlines_str;
 }
 
 void	WED_RampPosition::SetAirlines(const string &a)

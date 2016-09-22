@@ -958,56 +958,59 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 				msgs.push_back(validation_error_t("Ramp operation types and airlines are only allowed at real ramp types, e.g. gates and tie-downs, not misc and hangars.",ramp,apt));
 			}
 		}
-	
+
+		string airlines_str = WED_RampPosition::CorrectAirlinesString(g.airlines);
+
 		//Our flag to keep going until we find an error
-		bool found_err = false;
-		if(g.airlines == "" && !found_err)
+		if(airlines_str == "")
 		{
 			//Error:"not really an error, we're just done here"
-			found_err = true;
+			return;
 		}
-		else if(g.airlines.length() < 3 && !found_err)
+
+		//Add another space on the end, so everything should be exactly "ABC " or "ABC DEF GHI ..."
+		airlines_str.insert(0,1,' ');
+
+		if(airlines_str.size() >= 4)
 		{
-			msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " is not a group of three letters.",ramp,apt));
-			found_err = true;
-		}
-
-		//The number of spaces 
-		int num_spaces = 0;
-
-		if(!found_err)
-			for(string::iterator itr = g.airlines.begin(); itr != g.airlines.end(); itr++)
+			if(airlines_str.size() % 4 != 0)
 			{
-				char c = *itr;
-				if(c == ' ')
+				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' is not in groups of three letters.", ramp, apt));
+				return;
+			}
+
+			for(int i = airlines_str.length() - 1; i > 0; i -= 4)
+			{
+				if(airlines_str[i - 3] != ' ')
 				{
-					num_spaces++;
+					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' must have a space bewteen every three letter airline code.", ramp, apt));
+					break;
 				}
-				else 
+
+				string s = airlines_str.substr(i - 2, 3);
+			
+				for(string::iterator itr = s.begin(); itr != s.end(); ++itr)
 				{
-					if(c < 'a' || c > 'z')
+					if(*itr < 'a' || *itr > 'z')
 					{
-						msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " contains non-lowercase letters.",ramp,apt));
-						found_err = true;
+						if(*itr == ' ')
+						{
+							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' is not in groups of three letters.", ramp, apt));
+							return;
+						}
+						else
+						{
+							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' contains non-lowercase letters.", ramp, apt));
+							break;
+						}
 					}
 				}
 			}
-
-		//The length of the string
-		int wo_spaces_len = (g.airlines.length() - num_spaces);
-		if(wo_spaces_len % 3 != 0 && !found_err)
-		{
-			msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " is not in groups of three letters.",ramp,apt));;
-			found_err = true;
 		}
-
-		//ABC, num_spaces = 0 = ("ABC".length()/3) - 1
-		//ABC DEF GHI, num_spaces = 2 = "ABCDEFGHI".length()/3 - 1
-		//ABC DEF GHI JKL MNO PQR, num_spaces = 5 = "...".length()/3 - 1 
-		if(num_spaces != (wo_spaces_len/3) - 1 && !found_err)
+		else
 		{
-			msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " is not spaced correctly.",ramp,apt));
-			found_err = true;
+			msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' does not contain at least one valid airline code", ramp, apt));
+			return;
 		}
 	}
 }
