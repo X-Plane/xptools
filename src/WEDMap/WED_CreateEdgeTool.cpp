@@ -190,7 +190,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		pts.insert(pts.begin()+p,splits.begin(), splits.end());
 		dirs_lo.insert(dirs_lo.begin()+p,splits.begin(), splits.end());
 		dirs_hi.insert(dirs_hi.begin()+p,splits.begin(), splits.end());
-		vector<int> flags(0,splits.size());
+		vector<int> flags(splits.size(),0);
 		has_dirs.insert(has_dirs.begin()+p,flags.begin(),flags.end());
 		has_split.insert(has_split.begin()+p,flags.begin(),flags.end());
 		
