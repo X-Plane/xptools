@@ -965,6 +965,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 		}
 
 		string airlines_str = WED_RampPosition::CorrectAirlinesString(g.airlines);
+		string orig_airlines_str = ramp->GetAirlines();
 
 		//Our flag to keep going until we find an error
 		if(airlines_str == "")
@@ -980,7 +981,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 		{
 			if(airlines_str.size() % 4 != 0)
 			{
-				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
+				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
 				return;
 			}
 
@@ -988,7 +989,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 			{
 				if(airlines_str[i - 3] != ' ')
 				{
-					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' must have a space bewteen every three letter airline code.", err_ramp_airlines_is_not_spaced_correctly, ramp, apt));
+					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' must have a space bewteen every three letter airline code.", err_ramp_airlines_is_not_spaced_correctly, ramp, apt));
 					break;
 				}
 
@@ -1000,12 +1001,12 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 					{
 						if(*itr == ' ')
 						{
-							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
+							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
 							return;
 						}
 						else
 						{
-							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' contains non-lowercase letters.", err_ramp_airlines_contains_non_lowercase_letters, ramp, apt));
+							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' contains non-lowercase letters.", err_ramp_airlines_contains_non_lowercase_letters, ramp, apt));
 							break;
 						}
 					}
@@ -1014,7 +1015,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 		}
 		else
 		{
-			msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' does not contain at least one valid airline code.", err_ramp_airlines_no_valid_airline_codes, ramp, apt));
+			msgs.push_back(validation_error_t(string("Ramp start airlines string '") + orig_airlines_str + "' does not contain at least one valid airline code.", err_ramp_airlines_no_valid_airline_codes, ramp, apt));
 			return;
 		}
 	}
