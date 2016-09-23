@@ -13,7 +13,21 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.5b4 9/19/15
+WED 1.5r1 9/23/16
+
+	New features:
+	- Clearer validation error messages
+	- Validation includes error codes
+	- Faster when using ATC tab
+
+	Bug fixes:
+	- WED-669: Resource suffixes no longer case sensitive
+	- WED-663: Fixed crash when resource string is empty
+	- WED-660: Fixed crash when adding vertex to a circle
+	- WED-653: Updated colors for taxi route segments
+	- WED-647: Changed T-junction error message
+
+WED 1.5b4 9/19/16
 
 	Bug fixes:
 	- WED-660: Fixes crash sub-dividing the final segment of a closed-loop line.
