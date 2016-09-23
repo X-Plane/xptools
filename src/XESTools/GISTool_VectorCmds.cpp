@@ -913,7 +913,7 @@ int DoBufferWater(const vector<const char *>& args)
 int DoRasterDEM(const vector<const char *>& args)
 {
 	DEMGeo& d(gDem[LookupToken(args[0])]);
-	MapFromDEM(d,0,0,d.mWidth,d.mHeight,1,0,gMap,NULL,false);
+	MapFromDEM(d,0,0,d.mWidth,d.mHeight,1,0,0,0,gMap,NULL,false);
 #if OPENGL_MAP
 	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_VectorChange, NULL);
 #endif

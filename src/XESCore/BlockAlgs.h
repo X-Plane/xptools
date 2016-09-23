@@ -55,7 +55,7 @@ void	create_block(
 //					const Polygon_2&				bounds,
 //					const BLOCK_face_data&			data);
 
-void clean_block(Block_2& block);
+void clean_block(Block_2& block, bool merge_faces=true, bool merge_colinear=true);
 
 void simplify_block(Block_2& io_block, double max_err);
 
