@@ -80,8 +80,9 @@ enum validate_error_t
 	err_heli_not_adequetely_wide,
 	err_ramp_airlines_contains_non_lowercase_letters,
 	err_ramp_airlines_is_not_in_groups_of_three,
-	err_ramp_airlines_is_not_spaced_correctly,//kill this one
+	err_ramp_airlines_is_not_spaced_correctly,
 	err_ramp_airlines_not_group_of_three_letters,
+	err_ramp_airlines_no_valid_airline_codes,
 	err_ramp_op_type_and_airlines_only_allowed_at_gates_and_tie_downs,
 	err_ramp_start_must_have_at_least_one_equip,
 	err_ramp_start_with_specific_traffic_and_types_only_for_gte_xp10,

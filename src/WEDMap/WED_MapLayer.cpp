@@ -94,84 +94,61 @@ void		WED_MapLayer::SetFilter(const vector<const char *> * hide_filter_ptr, cons
 	mLockFilter = lock_filter_ptr;
 }
 
-static pair<string, string>	get_type_for_entity(WED_Thing * ent, int slash_count)
+static bool matches_filter(WED_Thing * thing ,const  vector<const char *> * filter )
 {
-	WED_Thing * p = ent;
-	string parents = "";
-
-	int i = 0;
-	do
+	for(vector<const char *>::const_iterator filterit = filter->begin(); filterit != filter->end(); ++filterit)
 	{
-		p = p->GetParent();
-		if(p == NULL)
+		const char * p = *filterit;
+		int slash_count = 0;
+		while (*p != 0 )
 		{
-			break;
+			if (*p == '/') ++slash_count;
+			++p;
 		}
-		else
+
+		string type = thing->GetClass();
+		WED_Thing * parent = thing;
+		for (unsigned int i = 0 ; i < slash_count; ++i)
 		{
-			if(parents != "")
+			parent = parent->GetParent();
+			if(parent == NULL)
 			{
-				parents += '/';
+				return false;
 			}
-			string parent_type = p->GetClass();
-
-			//Handles nesting for CSS selection type filters
-			if((parent_type == "WED_Airport" || parent_type == "WED_Group") &&
-				slash_count > 0)
+			else
 			{
-				parent_type = "WED_GISComposite";
+				type += '/';
+				string parent_type = parent->GetClass();
+				//Handles nesting for CSS selection type filters
+				if( parent_type == "WED_Airport"  || parent_type == "WED_Group" )
+				{
+					parent_type = "WED_GISComposite";
+				}
+				type += parent_type;
 			}
-
-			parents += parent_type;
 		}
-		++i;
+
+		if(type.length() == strlen(*filterit))
+			if(type == *filterit)
+				return true;
 	}
-	while(i < slash_count);
 
-	return make_pair(ent->GetClass(), p ? parents : "");
-}
-
-static pair<string, string>	get_type_for_entity(IGISEntity * ent, int slash_count) //This is WED_GetParent(), not C++ parent
-{
-	return get_type_for_entity(dynamic_cast<WED_Thing *>(ent), slash_count);
-}
-
-static bool matches_filter(const string& child_type, const string& parent_type, const string& filter)
-{
-	DebugAssert(child_type != "");
-	DebugAssert(filter != "");
-
-	//If there is no / or no parent, just compare the child and filter
-	if(filter.find_first_of('/') == filter.npos || parent_type == "")
-	{
-		return child_type == filter;
-	}
-	else
-	{
-		return (child_type + '/' + parent_type) == filter;
-	}
+	return false;
 }
 
 bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
 {
 	if(mHideFilter)
 	{
-		for(vector<const char *>::const_iterator filter = mHideFilter->begin(); filter != mHideFilter->end(); ++filter)
-		{
-			string f(*filter);
-			int slash_count = count(f.begin(), f.end(), '/');
-			
-			pair<string, string> leaf_and_parent = get_type_for_entity(ent, slash_count);
-			if(matches_filter(leaf_and_parent.first, leaf_and_parent.second, *filter))
-			{
-				return false;
-			}
-		}
+		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mHideFilter ))
+			return false;
 	}
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
+	{
 		return false;
+	}
 	return !e->GetHidden();
 }
 
@@ -179,22 +156,15 @@ bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
 {
 	if(mLockFilter)
 	{
-		for(vector<const char *>::const_iterator filter = mLockFilter->begin(); filter != mLockFilter->end(); ++filter)
-		{
-			string f(*filter);
-			int slash_count = count(f.begin(), f.end(), '/');
-			
-			pair<string, string> leaf_and_parents = get_type_for_entity(ent, slash_count);
-			if(matches_filter(leaf_and_parents.first, leaf_and_parents.second, *filter))
-			{
-				return true;
-			}
-		}
+		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mLockFilter ))
+			return true;
 	}
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
+	{
 		return false;
+	}
 	return e->GetLocked();
 }
 
@@ -202,22 +172,15 @@ bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
 {
 	if(mHideFilter)
 	{
-		for(vector<const char *>::const_iterator filter = mHideFilter->begin(); filter != mHideFilter->end(); ++filter)
-		{
-			string f(*filter);
-			int slash_count = count(f.begin(), f.end(), '/');
-			
-			pair<string, string> leaf_and_parent = get_type_for_entity(ent, slash_count);
-			if(matches_filter(leaf_and_parent.first, leaf_and_parent.second, *filter))
-			{
-				return false;
-			}
-		}
+		if( matches_filter(ent, mHideFilter ))
+			return false;
 	}
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
+	{
 		return false;
+	}
 	return !e->GetHidden();
 }
 
@@ -225,21 +188,14 @@ bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
 {
 	if(mLockFilter)
 	{
-		for(vector<const char *>::const_iterator filter = mLockFilter->begin(); filter != mLockFilter->end(); ++filter)
-		{
-			string f(*filter);
-			int wed_parent_count = count(f.begin(), f.end(), '/');
-			
-			pair<string, string> leaf_and_parents = get_type_for_entity(ent, wed_parent_count);
-			if(matches_filter(leaf_and_parents.first, leaf_and_parents.second, *filter))
-			{
-				return true;
-			}
-		}
+		if( matches_filter(ent, mLockFilter ))
+			return true;
 	}
 
 	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
 	if(!e)
+	{
 		return false;
+	}
 	return e->GetLocked();
 }

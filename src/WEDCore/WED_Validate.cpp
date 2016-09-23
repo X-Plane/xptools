@@ -79,7 +79,11 @@
 
 // Until we get the taxi validation to create error lists, this 
 // turns off the early exit when ATC nodes are messed up.
+#if GATEWAY_IMPORT_FEATURES
+#define FIND_BAD_AIRPORTS 1
+#else
 #define FIND_BAD_AIRPORTS 0
+#endif
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
@@ -477,9 +481,11 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 			}
 		}
 		
+		std::transform(resource_str.begin(), resource_str.end(), resource_str.begin(), ::tolower);
+
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
-#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && resource_str.substr(resource_str.find_last_of(".")) == EXT) ? true : false;
+#define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && FILE_get_file_extension(resource_str) == EXT) ? true : false;
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
 		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
@@ -957,56 +963,59 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 				msgs.push_back(validation_error_t("Ramp operation types and airlines are only allowed at real ramp types, e.g. gates and tie-downs, not misc and hangars.", err_ramp_op_type_and_airlines_only_allowed_at_gates_and_tie_downs, ramp,apt));
 			}
 		}
-	
+
+		string airlines_str = WED_RampPosition::CorrectAirlinesString(g.airlines);
+
 		//Our flag to keep going until we find an error
-		bool found_err = false;
-		if(g.airlines == "" && !found_err)
+		if(airlines_str == "")
 		{
 			//Error:"not really an error, we're just done here"
-			found_err = true;
+			return;
 		}
-		else if(g.airlines.length() < 3 && !found_err)
+
+		//Add another space on the end, so everything should be exactly "ABC " or "ABC DEF GHI ..."
+		airlines_str.insert(0,1,' ');
+
+		if(airlines_str.size() >= 4)
 		{
-			msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " is not a group of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp,apt));
-			found_err = true;
-		}
-
-		//The number of spaces 
-		int num_spaces = 0;
-
-		if(!found_err)
-			for(string::iterator itr = g.airlines.begin(); itr != g.airlines.end(); itr++)
+			if(airlines_str.size() % 4 != 0)
 			{
-				char c = *itr;
-				if(c == ' ')
+				msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
+				return;
+			}
+
+			for(int i = airlines_str.length() - 1; i > 0; i -= 4)
+			{
+				if(airlines_str[i - 3] != ' ')
 				{
-					num_spaces++;
+					msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' must have a space bewteen every three letter airline code.", err_ramp_airlines_is_not_spaced_correctly, ramp, apt));
+					break;
 				}
-				else 
+
+				string s = airlines_str.substr(i - 2, 3);
+			
+				for(string::iterator itr = s.begin(); itr != s.end(); ++itr)
 				{
-					if(c < 'a' || c > 'z')
+					if(*itr < 'a' || *itr > 'z')
 					{
-						msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " contains non-lowercase letters.", err_ramp_airlines_contains_non_lowercase_letters, ramp,apt));
-						found_err = true;
+						if(*itr == ' ')
+						{
+							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp, apt));
+							return;
+						}
+						else
+						{
+							msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' contains non-lowercase letters.", err_ramp_airlines_contains_non_lowercase_letters, ramp, apt));
+							break;
+						}
 					}
 				}
 			}
-
-		//The length of the string
-		int wo_spaces_len = (g.airlines.length() - num_spaces);
-		if(wo_spaces_len % 3 != 0 && !found_err)
-		{
-			msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " is not in groups of three letters.", err_ramp_airlines_is_not_in_groups_of_three, ramp,apt));;
-			found_err = true;
 		}
-
-		//ABC, num_spaces = 0 = ("ABC".length()/3) - 1
-		//ABC DEF GHI, num_spaces = 2 = "ABCDEFGHI".length()/3 - 1
-		//ABC DEF GHI JKL MNO PQR, num_spaces = 5 = "...".length()/3 - 1 
-		if(num_spaces != (wo_spaces_len/3) - 1 && !found_err)
+		else
 		{
-			msgs.push_back(validation_error_t(string("Ramp start airlines string ") + g.airlines + " is not spaced correctly.", err_ramp_airlines_is_not_spaced_correctly, ramp,apt));
-			found_err = true;
+			msgs.push_back(validation_error_t(string("Ramp start airlines string '") + g.airlines + "' does not contain at least one valid airline code.", err_ramp_airlines_no_valid_airline_codes, ramp, apt));
+			return;
 		}
 	}
 }
@@ -1404,7 +1413,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if(bounds.xspan() > MAX_LON_SPAN_GATEWAY ||
 				bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
 		{
-			msgs.push_back(validation_error_t("This airport impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_airport_impossible_size, apt,apt));
+			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_airport_impossible_size, apt,apt));
 		}
 
 #if !GATEWAY_IMPORT_FEATURES
@@ -1524,7 +1533,6 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	
 	vector<WED_Airport *> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts));
-	CheckDuplicateNames(apts,msgs,NULL,"Duplicate airport name.");
 	
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
 	{
@@ -1537,14 +1545,22 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	// or null for 'free' stuff.
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
-	
+
+	FILE * fi = stdout;
+#if GATEWAY_IMPORT_FEATURES
+	fi = fopen("validation_report.txt","w");
+#endif
+
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{
 		string aname;
 		if(v->airport)
 			v->airport->GetICAO(aname);
-		printf("%s: %s\n", aname.c_str(), v->msg.c_str());
+		fprintf(fi,"%s: %s\n", aname.c_str(), v->msg.c_str());
 	}
+#if GATEWAY_IMPORT_FEATURES
+	fclose(fi);
+#endif
 	
 	if(!msgs.empty())
 	{
@@ -1555,7 +1571,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		for(vector<WED_Thing *>::iterator b = msgs.front().bad_objects.begin(); b != msgs.front().bad_objects.end(); ++b)
 			sel->Insert(*b);
 		wrl->CommitOperation();
-		return false;
+		return GATEWAY_IMPORT_FEATURES;
 	}
-	return msgs.empty();
+	return msgs.empty() || GATEWAY_IMPORT_FEATURES;
 }

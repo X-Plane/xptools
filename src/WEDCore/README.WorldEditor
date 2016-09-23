@@ -13,6 +13,13 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5b4 9/19/15
+
+	Bug fixes:
+	- WED-660: Fixes crash sub-dividing the final segment of a closed-loop line.
+	- WED-641: Fixed selected color on runway taxi-route segments when ATC tab is not being used.
+	- Lowered hot zone distance requirement off the end of runways - fixes cases like KSBP runway 25.
+
 WED 1.5b3 9/14/16
 
 	Bug fixes:
