@@ -116,12 +116,14 @@ string	WED_RampPosition::CorrectAirlinesString(const string &a)
 	}
 
 	//Thanks Plamen for this concise trim http://stackoverflow.com/a/22711818
-	while(isspace(*cleaned_airlines_str.begin()))
+	//Ben says: except - the stack overflow answer is WRONG - missing a check for
+	//the empty string case.
+	while(!cleaned_airlines_str.empty() && isspace(*cleaned_airlines_str.begin()))
 	{
 		cleaned_airlines_str.erase(cleaned_airlines_str.begin());
 	}
 
-	while(isspace(*cleaned_airlines_str.rbegin()))
+	while(!cleaned_airlines_str.empty() && isspace(*cleaned_airlines_str.rbegin()))
 	{
 		cleaned_airlines_str.erase(cleaned_airlines_str.length()-1);
 	}
