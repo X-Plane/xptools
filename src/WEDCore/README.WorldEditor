@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5r2 9/24/16
+	Bug fixes:
+	- WED-679: Crash validating ramp positions with no airlines on Windows
+
 WED 1.5r1 9/23/16
 
 	New features:
