@@ -1783,7 +1783,8 @@ static void DoMakeOrthogonal(IGISPointSequence * seq )
 	int numpoints = seq->GetNumPoints();
 	int maxpoints = numpoints;
 
-	if (seq->IsClosed())
+	bool is_closed = seq->IsClosed() ;
+	if (is_closed)
 	{
 		if(numpoints < 4) return;
 	}
@@ -1858,7 +1859,7 @@ static void DoMakeOrthogonal(IGISPointSequence * seq )
 			sum += prv_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
 		++node_cnt;
 
-		if( dir_change || pos < 2 )
+		if( dir_change || pos < 2 || (!is_closed && nxt == 0))
 		{
 			double avg;
 			if( pos == 0 )
