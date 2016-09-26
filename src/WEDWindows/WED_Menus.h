@@ -66,6 +66,8 @@ enum {
 //	wed_MakeRouting,
 #endif
 	wed_Split,
+	wed_Align,
+	wed_Square,
 #if AIRPORT_ROUTING
 	wed_Merge,
 #endif

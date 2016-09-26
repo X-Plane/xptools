@@ -98,6 +98,8 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"U&ngroup",				'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
+{	"A&lign",				'L',	gui_ControlFlag,				0,	wed_Align		},
+{	"S&quare",				'Q',	gui_ControlFlag,				0,	wed_Square  	},
 #if AIRPORT_ROUTING
 {	"Merge",				'M',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Merge		},
 #endif
