@@ -749,7 +749,7 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 				continue;
 			}
 
-			const double TJUNCTION_THRESHOLD = 5.00;
+			const double TJUNCTION_THRESHOLD = 1.00;
 			for (int i = 0; i < 2; i++)
 			{
 				set<WED_Thing*> node_viewers;
