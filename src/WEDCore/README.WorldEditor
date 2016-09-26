@@ -13,6 +13,12 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5r3 9/26/16
+	Bug fixes:
+	- WED-686: error margin for "Taxi route is not joined to a destination route" set to 1m
+	- WED-683: crash when clicking at extreme zoom levels
+	- WEd-685: taxi sign creation tool uses clipboard
+
 WED 1.5r2 9/24/16
 	Bug fixes:
 	- WED-679: Crash validating ramp positions with no airlines on Windows
