@@ -255,7 +255,8 @@ void	WED_MapZoomerNew::ZoomAround(
 
 	PanPixels(centerXPixel, centerYPixel, px,py);
 
-	mPixel2DegLat /= zoomFactor;
+	if (zoomFactor <= 1.0 || mPixel2DegLat > 1e-8) // limit manual zoom in to 1 mm/pixel (108,900 meter / deg lat)
+		mPixel2DegLat /= zoomFactor;
 	RecalcAspectRatio();
 
 	PanPixels(px,py, centerXPixel, centerYPixel);
