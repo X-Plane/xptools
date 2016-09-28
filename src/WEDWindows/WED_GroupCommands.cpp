@@ -43,11 +43,13 @@
 #include "ILibrarian.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_OverlayImage.h"
+#include "WED_ObjPlacement.h"
 #include "WED_AirportChain.h"
 #include "WED_TextureNode.h"
 #include "WED_Airport.h"
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_RoadNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
@@ -2014,6 +2016,212 @@ int		WED_Repair(IResolver * resolver)
 	WED_SetAnyAirport(resolver);
 	root->CommitOperation();
 	return 1;
+}
+
+bool FindRecursive(WED_Thing* thing)
+{
+	WED_ObjPlacement* obj_placement = dynamic_cast<WED_ObjPlacement*>(thing);
+	
+	if(obj_placement != NULL)
+	{
+		return true;
+	}
+	
+	int nc = thing->CountChildren();
+	for(int n = 0; n < nc; ++n)
+	{
+		bool answer = FindRecursive(thing->GetNthChild(n));
+		if(answer == true)
+		{
+			return true;
+		}
+		else
+		{
+			continue;
+		}
+	}
+	return false;
+}
+
+template <typename OutputIterator>
+void CollectRecursive(WED_Thing * thing, OutputIterator oi)
+{
+	// TODO: do fast WED type ptr check on sClass before any other casts?
+	// Factor out WED_Entity check to avoid second dynamic cast?
+	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
+	if(ent && ent->GetHidden())
+	{
+		return;
+	}
+	
+	typedef typename OutputIterator::container_type::value_type VT;
+	VT ct = dynamic_cast<VT>(thing);
+	bool took_it = false;
+	if(ct)
+	{	
+		oi = ct;
+		took_it = true;
+	}
+	
+	if(!took_it)
+	{
+		int nc = thing->CountChildren();
+		for(int n = 0; n < nc; ++n)
+		{
+			CollectRecursive(thing->GetNthChild(n), oi);
+		}
+	}
+}
+
+#include <iostream>
+#include <sstream>
+
+int		WED_CanReplaceObj(IResolver* resolver)
+{
+	//Returns true if there are any Obj files in the world.
+	WED_Thing * root = WED_GetWorld(resolver);
+	return FindRecursive(root);
+}
+
+void	WED_DoReplaceObj(IResolver* resolver)
+{
+	WED_Thing * root = WED_GetWorld(resolver);
+	vector<WED_ObjPlacement*> obj_placements;
+	CollectRecursive(root, back_inserter(obj_placements));
+
+	if(!obj_placements.empty())
+	{
+		int replace_count = 0;
+		root->StartOperation("Replace Objects");
+		for(vector<WED_ObjPlacement*>::iterator itr = obj_placements.begin(); itr != obj_placements.end(); ++itr)
+		{
+			string resource;
+			(*itr)->GetResource(resource);
+			if(
+				resource == "lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj"	||
+				resource == "lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj"	||
+				resource == "lib/airport/Ramp_Equipment/Belt_Loader.obj"				||
+				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj"				||
+				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj"				||
+				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj"				||
+				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight1.obj"		||
+				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight2.obj"		||
+				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight3.obj"		||
+				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight4.obj"		||
+				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight5.obj"		||
+				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj"		||
+				resource == "lib/airport/Ramp_Equipment/Luggage_Truck.obj"				||
+				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_2.obj"				||
+				resource == "lib/airport/Ramp_Equipment/Tug660_Dn_1.obj"				||
+				resource == "lib/airport/Ramp_Equipment/Tug660_Up_1.obj")
+			{
+				replace_count++;
+				
+				int idx;
+				WED_Thing * host = WED_GetCreateHost(resolver, true, true, idx);
+
+				WED_GISPoint * new_pt_obj = NULL;
+				WED_GISPoint_Heading * new_pt_h = NULL;
+
+				WED_TruckParkingLocation * parking_loc;
+				new_pt_obj = new_pt_h = parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
+			
+				Point2 p;
+				(*itr)->GetLocation(gis_Geo, p);
+				new_pt_obj->SetLocation(gis_Geo,p);
+				new_pt_h->SetHeading((*itr)->GetHeading());
+
+				static int n = 0;
+				static int h = 0;
+				new_pt_obj->SetParent(host, idx);
+				stringstream ss;
+				ss << "Truck Parking Location " << replace_count;
+				new_pt_obj->SetName(ss.str());
+
+
+				//WED_Thing* parent = WED_GetCreateHost(resolver, true, true, idx);
+
+				//WED_TruckParkingLocation* parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
+				//parking_loc->SetHeading((*itr)->GetHeading());
+			
+				//
+				//parking_loc->SetLocation(gis_Geo, p);
+
+				//parking_loc->SetParent(parent,idx);//(*itr)->GetMyPosition());
+			
+				if(resource == "lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj")
+				{
+					parking_loc->SetNumberOfCars(1);
+					parking_loc->SetTruckType(atc_ServiceTruck_FuelTruck_Prop);
+				}
+				else if(resource == "lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj")
+				{
+					parking_loc->SetNumberOfCars(1);
+					parking_loc->SetTruckType(atc_ServiceTruck_FuelTruck_Jet);
+				}
+				else if(resource == "lib/airport/Ramp_Equipment/Belt_Loader.obj")
+				{
+					parking_loc->SetNumberOfCars(1);
+					parking_loc->SetTruckType(atc_ServiceTruck_Baggage_Loader);
+				}
+				else if(resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj" ||
+						resource == "lib/airport/Ramp_Equipment/Tow_Tractor_2.obj")
+				{
+					parking_loc->SetNumberOfCars(resource[resource.find_first_of('.')-1]-'0');
+					parking_loc->SetTruckType(atc_ServiceTruck_Pushback);
+				}
+				else if(resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight1.obj" ||
+						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight2.obj" ||
+						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight3.obj" ||
+						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight4.obj" ||
+						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight5.obj" ||
+						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj"  ||
+						resource == "lib/airport/Ramp_Equipment/Luggage_Truck.obj")
+				{
+					parking_loc->SetNumberOfCars(resource[resource.find_first_of('.')-1]-'0');
+					parking_loc->SetTruckType(atc_ServiceTruck_Baggage_Train);
+				}
+				else if(resource == "lib/airport/Ramp_Equipment/Tug660_Dn_1.obj" ||
+						resource == "lib/airport/Ramp_Equipment/Tug660_Up_1.obj")
+				{
+					parking_loc->SetNumberOfCars(1);
+				}
+
+
+					//Ground truck
+					/*if(
+			ENUM_DOMAIN(ATCServiceTruckType,"Service Truck Type")
+				ENUM(atc_ServiceTruck_Pushback,				"Pushback",				apt_truck_pushback)
+				ENUM(atc_ServiceTruck_FuelTruck_Prop,		"Fuel Truck (Props)",	apt_truck_fuel_prop)
+				ENUM(atc_ServiceTruck_FuelTruck_Jet,		"Fuel Truck (Jets)",	apt_truck_fuel_jet)
+				ENUM(atc_ServiceTruck_Food,					"Catering Truck",		apt_truck_food)
+				ENUM(atc_ServiceTruck_Baggage_Train,		"Baggage Train",		apt_truck_baggage_train)
+				ENUM(atc_ServiceTruck_Baggage_Loader,		"Baggage Loader",		apt_truck_baggage_loader)
+				ENUM(atc_ServiceTruck_Crew_Car,				"Crew Car",				apt_truck_crew_car)
+				ENUM(atc_ServiceTruck_Ground_Power_Unit,	"Ground Power Unit",	apt_truck_ground_power_unit)
+				*/
+				set<WED_Thing*> delete_set;
+				delete_set.insert(*itr);
+				WED_RecursiveDelete(delete_set);
+			}
+		}
+
+		std::cout << "Replace count: " << replace_count << endl;
+		if(replace_count == 0)
+		{
+			DoUserAlert("Nothing to replace");
+			root->AbortOperation();
+		}
+		else
+		{
+			root->CommitOperation();
+		}
+	}
+	else
+	{
+		DoUserAlert("Nothing to replace");
+		//DebugAssert(true); //Can should only return 1 for if there are the right objects
+	}
 }
 
 //---------------------------------------------------------------------------------------------------

@@ -114,6 +114,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},
 {	"Move Do&wn",			']',	gui_ControlFlag,				0,	wed_MoveNext	},
 {	"Move &Last",			']',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveLast	},
+{	"Replace Vehicle Objects", 0,	0,								0,  wed_ReplaceObj	},
 {	NULL,					0,		0,								0,	0				},
 };
 
