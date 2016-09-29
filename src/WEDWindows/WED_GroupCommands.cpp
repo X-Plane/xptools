@@ -61,6 +61,11 @@
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
 #include <iterator>
+#include <sstream>
+
+#if DEV
+#include <iostream>
+#endif
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -2073,140 +2078,122 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 	}
 }
 
-#include <iostream>
-#include <sstream>
-
-int		WED_CanReplaceObj(IResolver* resolver)
+int		WED_CanReplaceVehicleObj(IResolver* resolver)
 {
 	//Returns true if there are any Obj files in the world.
 	WED_Thing * root = WED_GetWorld(resolver);
 	return FindRecursive(root);
 }
 
-void	WED_DoReplaceObj(IResolver* resolver)
+struct vehicle_replacement_info
+{
+	vehicle_replacement_info(/*const vector<string>& resource_strs,*/const int service_truck_type, const int number_of_cars)
+		:/*resource_strs(resource_strs),*/
+		 service_truck_type(service_truck_type),
+		 number_of_cars(number_of_cars)
+	{
+	}
+
+	//The resource strings that can represent this vehicle_replacement_info
+	//vector<string> resource_strs;
+
+	//A member of ATCServiceTruckType
+	int service_truck_type;
+
+	//The number of cars in the model
+	int number_of_cars;
+};
+
+static map<string,vehicle_replacement_info> build_replacement_table()
+{
+	map<string,vehicle_replacement_info> table;
+
+	//atc_ServiceTruck_Pushback,
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,1)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,2)));
+
+	//atc_ServiceTruck_FuelTruck_Prop,
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,1)));
+
+	//atc_ServiceTruck_FuelTruck_Jet,
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,1)));
+
+	//atc_ServiceTruck_Food,
+	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,1)));
+
+	//atc_ServiceTruck_Baggage_Train,
+	stringstream ss;
+	for(int i = 1; i <= 5; ++i)
+	{
+ 		ss << "lib/airport/Ramp_Equipment/Lugg_Train_Straight" << i << ".obj";
+		table.insert(make_pair(ss.str(), vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,i)));
+		ss.clear();
+		ss.str("");
+	}
+
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,1)));
+
+	//atc_ServiceTruck_Baggage_Loader,
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader,1)));
+
+	//atc_ServiceTruck_Crew_Car,
+	table.insert(make_pair("lib/airport/vehicles/servicing/crew_car.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Car,1)));
+
+	//atc_ServiceTruck_Ground_Power_Unit,
+	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,1)));
+
+	return table;
+}
+
+void	WED_DoReplaceVehicleObj(IResolver* resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
 	CollectRecursive(root, back_inserter(obj_placements));
 
+
 	if(!obj_placements.empty())
 	{
 		int replace_count = 0;
 		root->StartOperation("Replace Objects");
+		map<string,vehicle_replacement_info> table = build_replacement_table();
+		
+		ISelection * sel = WED_GetSelect(resolver);
+		sel->Clear();
+
 		for(vector<WED_ObjPlacement*>::iterator itr = obj_placements.begin(); itr != obj_placements.end(); ++itr)
 		{
 			string resource;
 			(*itr)->GetResource(resource);
-			if(
-				resource == "lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj"	||
-				resource == "lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj"	||
-				resource == "lib/airport/Ramp_Equipment/Belt_Loader.obj"				||
-				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj"				||
-				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj"				||
-				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj"				||
-				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight1.obj"		||
-				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight2.obj"		||
-				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight3.obj"		||
-				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight4.obj"		||
-				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight5.obj"		||
-				resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj"		||
-				resource == "lib/airport/Ramp_Equipment/Luggage_Truck.obj"				||
-				resource == "lib/airport/Ramp_Equipment/Tow_Tractor_2.obj"				||
-				resource == "lib/airport/Ramp_Equipment/Tug660_Dn_1.obj"				||
-				resource == "lib/airport/Ramp_Equipment/Tug660_Up_1.obj")
+			
+			map<string,vehicle_replacement_info>::iterator info_itr = table.find(resource);
+			if(info_itr != table.end())
 			{
 				replace_count++;
 				
-				int idx;
-				WED_Thing * host = WED_GetCreateHost(resolver, true, true, idx);
-
-				WED_GISPoint * new_pt_obj = NULL;
-				WED_GISPoint_Heading * new_pt_h = NULL;
-
-				WED_TruckParkingLocation * parking_loc;
-				new_pt_obj = new_pt_h = parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
-			
+				WED_TruckParkingLocation * parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
+				parking_loc->SetHeading((*itr)->GetHeading());
+				
 				Point2 p;
 				(*itr)->GetLocation(gis_Geo, p);
-				new_pt_obj->SetLocation(gis_Geo,p);
-				new_pt_h->SetHeading((*itr)->GetHeading());
+				parking_loc->SetLocation(gis_Geo,p);
 
-				static int n = 0;
-				static int h = 0;
-				new_pt_obj->SetParent(host, idx);
-				stringstream ss;
-				ss << "Truck Parking Location " << replace_count;
-				new_pt_obj->SetName(ss.str());
+				string name;
+				(*itr)->GetName(name);
+				parking_loc->SetName(name);
+				parking_loc->SetNumberOfCars(info_itr->second.number_of_cars);
+				parking_loc->SetParent((*itr)->GetParent(), (*itr)->GetMyPosition());
+				parking_loc->SetTruckType(info_itr->second.service_truck_type);
 
-
-				//WED_Thing* parent = WED_GetCreateHost(resolver, true, true, idx);
-
-				//WED_TruckParkingLocation* parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
-				//parking_loc->SetHeading((*itr)->GetHeading());
-			
-				//
-				//parking_loc->SetLocation(gis_Geo, p);
-
-				//parking_loc->SetParent(parent,idx);//(*itr)->GetMyPosition());
-			
-				if(resource == "lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj")
-				{
-					parking_loc->SetNumberOfCars(1);
-					parking_loc->SetTruckType(atc_ServiceTruck_FuelTruck_Prop);
-				}
-				else if(resource == "lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj")
-				{
-					parking_loc->SetNumberOfCars(1);
-					parking_loc->SetTruckType(atc_ServiceTruck_FuelTruck_Jet);
-				}
-				else if(resource == "lib/airport/Ramp_Equipment/Belt_Loader.obj")
-				{
-					parking_loc->SetNumberOfCars(1);
-					parking_loc->SetTruckType(atc_ServiceTruck_Baggage_Loader);
-				}
-				else if(resource == "lib/airport/Ramp_Equipment/Tow_Tractor_1.obj" ||
-						resource == "lib/airport/Ramp_Equipment/Tow_Tractor_2.obj")
-				{
-					parking_loc->SetNumberOfCars(resource[resource.find_first_of('.')-1]-'0');
-					parking_loc->SetTruckType(atc_ServiceTruck_Pushback);
-				}
-				else if(resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight1.obj" ||
-						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight2.obj" ||
-						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight3.obj" ||
-						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight4.obj" ||
-						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight5.obj" ||
-						resource == "lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj"  ||
-						resource == "lib/airport/Ramp_Equipment/Luggage_Truck.obj")
-				{
-					parking_loc->SetNumberOfCars(resource[resource.find_first_of('.')-1]-'0');
-					parking_loc->SetTruckType(atc_ServiceTruck_Baggage_Train);
-				}
-				else if(resource == "lib/airport/Ramp_Equipment/Tug660_Dn_1.obj" ||
-						resource == "lib/airport/Ramp_Equipment/Tug660_Up_1.obj")
-				{
-					parking_loc->SetNumberOfCars(1);
-				}
-
-
-					//Ground truck
-					/*if(
-			ENUM_DOMAIN(ATCServiceTruckType,"Service Truck Type")
-				ENUM(atc_ServiceTruck_Pushback,				"Pushback",				apt_truck_pushback)
-				ENUM(atc_ServiceTruck_FuelTruck_Prop,		"Fuel Truck (Props)",	apt_truck_fuel_prop)
-				ENUM(atc_ServiceTruck_FuelTruck_Jet,		"Fuel Truck (Jets)",	apt_truck_fuel_jet)
-				ENUM(atc_ServiceTruck_Food,					"Catering Truck",		apt_truck_food)
-				ENUM(atc_ServiceTruck_Baggage_Train,		"Baggage Train",		apt_truck_baggage_train)
-				ENUM(atc_ServiceTruck_Baggage_Loader,		"Baggage Loader",		apt_truck_baggage_loader)
-				ENUM(atc_ServiceTruck_Crew_Car,				"Crew Car",				apt_truck_crew_car)
-				ENUM(atc_ServiceTruck_Ground_Power_Unit,	"Ground Power Unit",	apt_truck_ground_power_unit)
-				*/
 				set<WED_Thing*> delete_set;
 				delete_set.insert(*itr);
 				WED_RecursiveDelete(delete_set);
 			}
 		}
 
+#if DEV
 		std::cout << "Replace count: " << replace_count << endl;
+#endif
 		if(replace_count == 0)
 		{
 			DoUserAlert("Nothing to replace");
@@ -2214,6 +2201,9 @@ void	WED_DoReplaceObj(IResolver* resolver)
 		}
 		else
 		{
+			stringstream ss;
+			ss << "Replaced " << replace_count << " objects";
+			DoUserAlert(ss.str().c_str());
 			root->CommitOperation();
 		}
 	}

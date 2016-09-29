@@ -110,8 +110,8 @@ void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot
 
 int		WED_Repair(IResolver * resolver);
 
-int		WED_CanReplaceObj(IResolver* resolver);
-void	WED_DoReplaceObj(IResolver* resolver);
+int		WED_CanReplaceVehicleObj(IResolver* resolver);
+void	WED_DoReplaceVehicleObj(IResolver* resolver);
 
 void WED_UpgradeRampStarts(IResolver * resolver);
 
