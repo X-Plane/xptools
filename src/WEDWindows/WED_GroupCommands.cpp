@@ -2112,11 +2112,11 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,1)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,2)));
 
-	//atc_ServiceTruck_FuelTruck_Prop,
-	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,1)));
-
 	//atc_ServiceTruck_FuelTruck_Jet,
-	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,1)));
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,1)));
+
+	//atc_ServiceTruck_FuelTruck_Prop, cause of the problem
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,1)));
 
 	//atc_ServiceTruck_Food,
 	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,1)));
@@ -2184,6 +2184,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 				parking_loc->SetNumberOfCars(info_itr->second.number_of_cars);
 				parking_loc->SetParent((*itr)->GetParent(), (*itr)->GetMyPosition());
 				parking_loc->SetTruckType(info_itr->second.service_truck_type);
+				sel->Insert(parking_loc);
 
 				set<WED_Thing*> delete_set;
 				delete_set.insert(*itr);
@@ -2197,6 +2198,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 		if(replace_count == 0)
 		{
 			DoUserAlert("Nothing to replace");
+			sel->Clear();
 			root->AbortOperation();
 		}
 		else
