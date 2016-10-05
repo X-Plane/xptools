@@ -2283,7 +2283,7 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
 
 	//atc_ServiceTruck_Baggage_Train,
-	table.insert(make_pair("lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,5)));
+	//table.insert(make_pair("lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,5)));
 
 	stringstream ss;
 	for(int i = 1; i <= 5; ++i)
@@ -2294,9 +2294,7 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 		ss.str("");
 	}
 	
-
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,1)));
-	table.insert(make_pair("lib/airport/Ramp_Equipment/Lugg_Train_3.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,3)));
 
 	//atc_ServiceTruck_Baggage_Loader,
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader,0)));
