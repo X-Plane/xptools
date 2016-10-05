@@ -37,6 +37,7 @@
 #include "WED_Group.h"
 #include "BitmapUtils.h"
 #include "GISUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "WED_Ring.h"
 #include "WED_UIDefs.h"
@@ -58,6 +59,9 @@
 #include "WED_MetaDataKeys.h"
 #include "WED_ResourceMgr.h"
 #include "XObjDefs.h"
+#include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
+#include "GISUtils.h"
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
 #include <iterator>
@@ -2023,11 +2027,18 @@ int		WED_Repair(IResolver * resolver)
 	return 1;
 }
 
-bool FindRecursive(WED_Thing* thing)
+//----------------------------------------------------------------------------
+// Obj and Agp Replacement
+//----------------------------------------------------------------------------
+
+//TODO: Should take visibility into account?
+//Also returns true if the thing is of type 
+template <typename T>
+static bool HasAnyChildOfTypeRecursive(WED_Thing* thing)
 {
-	WED_ObjPlacement* obj_placement = dynamic_cast<WED_ObjPlacement*>(thing);
+	T* test_thing = dynamic_cast<T*>(thing);
 	
-	if(obj_placement != NULL)
+	if(test_thing != NULL)
 	{
 		return true;
 	}
@@ -2035,8 +2046,8 @@ bool FindRecursive(WED_Thing* thing)
 	int nc = thing->CountChildren();
 	for(int n = 0; n < nc; ++n)
 	{
-		bool answer = FindRecursive(thing->GetNthChild(n));
-		if(answer == true)
+		bool result = HasAnyChildOfTypeRecursive<T>(thing->GetNthChild(n));
+		if(result != NULL)
 		{
 			return true;
 		}
@@ -2049,7 +2060,7 @@ bool FindRecursive(WED_Thing* thing)
 }
 
 template <typename OutputIterator>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi)
+static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 {
 	// TODO: do fast WED type ptr check on sClass before any other casts?
 	// Factor out WED_Entity check to avoid second dynamic cast?
@@ -2078,11 +2089,161 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 	}
 }
 
-int		WED_CanReplaceVehicleObj(IResolver* resolver)
+set<string> build_agp_list()
+{
+	set<string> agp_list;
+	agp_list.insert("lib/airport/Ramp_Equipment/250cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_2.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_3.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/500cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Medium.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Narrow.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Wide.agp");
+	return agp_list;
+}
+
+int		WED_CanBreakApartSpecialAgps(IResolver* resolver)
 {
 	//Returns true if there are any Obj files in the world.
 	WED_Thing * root = WED_GetWorld(resolver);
-	return FindRecursive(root);
+	return HasAnyChildOfTypeRecursive<WED_ObjPlacement>(root);
+}
+
+typedef WED_ObjPlacement WED_AgpPlacement;
+static bool ends_with_obj(WED_AgpPlacement*& agp)
+{
+	string resource_str;
+	agp->GetResource(resource_str);
+
+	if(FILE_get_file_extension(resource_str) == ".obj")
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
+{
+	//Collect all obj_placements from the world
+	WED_Thing* root = WED_GetWorld(resolver);
+
+	vector<WED_AgpPlacement*> all_agp_placements;
+	CollectRecursive(root, back_inserter(all_agp_placements));
+	
+	//Remove all .objs that snuck in with the collection
+	all_agp_placements.erase(remove_if(all_agp_placements.begin(),all_agp_placements.end(), ends_with_obj), all_agp_placements.end());
+
+	if(!all_agp_placements.empty())
+	{
+		int replace_count = 0;
+
+		//Set up the operation
+		root->StartOperation("Break Apart Special Agps");
+		
+		//We'll have at least one!
+		const WED_Airport * apt = WED_GetParentAirport(all_agp_placements[0]);
+		if(apt == NULL)
+		{
+			//TODO: Select problem Agp
+			root->AbortCommand();
+			DoUserAlert("Agp must be in an airport");
+			return;
+		}
+
+		ISelection * sel = WED_GetSelect(resolver);
+		sel->Clear();
+
+		//The list of agp files we've decided to be special "service truck related"
+		set<string> agp_list = build_agp_list();
+		
+		//To access agp files
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		
+		//To translate from lat/lon to meters
+		CoordTranslator2 translator;
+		Bbox2 box;
+		apt->GetBounds(gis_Geo, box);
+		CreateTranslatorForBounds(box,translator);
+		
+		//A set of all the agps that we're going to replace
+		set<WED_AgpPlacement*> replaced_agps;
+
+		//For all agps
+		for(vector<WED_AgpPlacement*>::iterator agp = all_agp_placements.begin(); agp != all_agp_placements.end(); ++agp)
+		{
+			string agp_resource;
+			(*agp)->GetResource(agp_resource);
+
+			//Is the agp found in the special agp list?
+			if(agp_list.find(agp_resource) != agp_list.end())
+			{
+				replace_count++;
+				
+				//Break it all up here
+				agp_t agp_data;
+				if(rmgr->GetAGP(agp_resource, agp_data))
+				{
+					replaced_agps.insert(*agp);
+
+					Point2 agp_origin_geo;
+					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
+					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
+					for(vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
+					{
+						//Create a new_point_m and immediantly 
+						Point2 new_point_geo = translator.Reverse(Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
+						
+						WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());
+						new_obj->SetLocation(gis_Geo,new_point_geo);
+
+						//Other data that is important to resetting up the object
+						new_obj->SetDefaultMSL();
+						new_obj->SetName(agp_obj->name);
+						new_obj->SetParent((*agp)->GetParent(),(*agp)->GetMyPosition());
+						new_obj->SetResource(agp_obj->name);
+						new_obj->SetHeading(agp_obj->r);
+						new_obj->SetShowLevel((*agp)->GetShowLevel());
+						
+						sel->Insert(new_obj);
+					}
+				}
+			}
+		}
+
+		if(replace_count == 0)
+		{
+			DoUserAlert("Nothing to replace");
+			sel->Clear();
+			root->AbortOperation();
+		}
+		else
+		{
+			stringstream ss;
+			ss << "Replaced " << replace_count << " Agp objects";
+			DoUserAlert(ss.str().c_str());
+			
+			//Delete the parent agps
+			WED_RecursiveDelete(set<WED_Thing*>(replaced_agps.begin(),replaced_agps.end()));
+			root->CommitOperation();
+		}
+
+	}
+	else
+	{
+		DoUserAlert("Nothing to replace");
+	}
+}
+
+int	WED_CanReplaceVehicleObj(IResolver* resolver)
+{
+	//Returns true if there are any Obj files in the world.
+	//TODO: This Aught to be the current airport
+	WED_Thing * root = WED_GetWorld(resolver);
+	return HasAnyChildOfTypeRecursive<WED_ObjPlacement>(root);
 }
 
 struct vehicle_replacement_info
@@ -2113,10 +2274,10 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,2)));
 
 	//atc_ServiceTruck_FuelTruck_Jet,
-	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,1)));
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,1)));
 
 	//atc_ServiceTruck_FuelTruck_Prop, cause of the problem
-	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,1)));
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,1)));
 
 	//atc_ServiceTruck_Food,
 	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,1)));
@@ -2150,7 +2311,6 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
 	CollectRecursive(root, back_inserter(obj_placements));
-
 
 	if(!obj_placements.empty())
 	{
@@ -2193,7 +2353,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 		}
 
 #if DEV
-		std::cout << "Replace count: " << replace_count << endl;
+		std::cout << "Obj replace count: " << replace_count << endl;
 #endif
 		if(replace_count == 0)
 		{
@@ -2212,9 +2372,9 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 	else
 	{
 		DoUserAlert("Nothing to replace");
-		//DebugAssert(true); //Can should only return 1 for if there are the right objects
 	}
 }
+//-----------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
 #pragma mark -

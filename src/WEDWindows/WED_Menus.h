@@ -76,7 +76,8 @@ enum {
 	wed_MovePrev,
 	wed_MoveNext,
 	wed_MoveLast,
-	wed_ReplaceObj,
+	wed_BreakApartSpecialAgps,
+	wed_ReplaceVehicleObj,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,

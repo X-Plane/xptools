@@ -110,6 +110,9 @@ void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot
 
 int		WED_Repair(IResolver * resolver);
 
+int		WED_CanBreakApartSpecialAgps(IResolver* resolver);
+void	WED_DoBreakApartSpecialAgps(IResolver* resolver);
+
 int		WED_CanReplaceVehicleObj(IResolver* resolver);
 void	WED_DoReplaceVehicleObj(IResolver* resolver);
 
