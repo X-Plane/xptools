@@ -2227,7 +2227,8 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 			DoUserAlert(ss.str().c_str());
 			
 			//Delete the parent agps
-			WED_RecursiveDelete(set<WED_Thing*>(replaced_agps.begin(),replaced_agps.end()));
+			set<WED_Thing*> nuke_me(replaced_agps.begin(),replaced_agps.end()); // this is needed because WED_RecursiveDelete takes non-const arg!
+			WED_RecursiveDelete(nuke_me);
 			root->CommitOperation();
 		}
 
