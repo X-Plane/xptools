@@ -26,6 +26,7 @@
 #include "AptDefs.h"
 #include "WED_ToolUtils.h"
 #include "STLUtils.h"
+#include "WED_TaxiRouteNode.h"
 
 #if AIRPORT_ROUTING
 
@@ -364,6 +365,11 @@ int		WED_TaxiRoute::GetRunway(void) const
 int		WED_TaxiRoute::GetWidth(void) const
 {
 	return width.value;
+}
+
+WED_Thing *		WED_TaxiRoute::CreateSplitNode()
+{
+	return WED_TaxiRouteNode::CreateTyped(GetArchive());
 }
 
 

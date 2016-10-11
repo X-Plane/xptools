@@ -62,6 +62,8 @@ public:
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Taxi Route"; }
+
+	virtual	WED_Thing *		CreateSplitNode();
 	
 private:	
 

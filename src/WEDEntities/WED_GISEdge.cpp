@@ -22,8 +22,6 @@
  */
 
 #include "WED_GISEdge.h"
-#include "WED_TaxiRoute.h"
-#include "WED_TaxiRouteNode.h"
 #include "GISUtils.h"
 
 TRIVIAL_COPY(WED_GISEdge, WED_Entity)
@@ -272,6 +270,14 @@ void WED_GISEdge::Shuffle(GISLayer_t l)
 	this->Reverse(l);
 }
 
+WED_Thing *		WED_GISEdge::CreateSplitNode()
+{
+	WED_Thing * p1 = GetNthSource(0);
+	WED_Thing * np = dynamic_cast<WED_Thing*>(p1->Clone());
+	return np;
+}
+
+
 
 IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 {
@@ -284,15 +290,7 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	WED_Thing * p1 = GetNthSource(0);
 	WED_Thing * p2 = GetNthSource(1);
 
-	WED_Thing * np;
-	if (this->GetClass() ==  WED_TaxiRoute::sClass)     // splitting a taxi edge should always create a regular taxi node
-	{
-		np = dynamic_cast<WED_Thing*>(WED_TaxiRouteNode::CreateTyped(GetArchive()));	
-	}
-	else
-	{
-		np = dynamic_cast<WED_Thing*>(dynamic_cast<WED_Thing*>(p1)->Clone());
-	}
+	WED_Thing * np = CreateSplitNode();
 	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
 	
 	string name;
