@@ -954,7 +954,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 	if(g.equipment == 0)
 		msgs.push_back(validation_error_t("Ramp starts must have at least one valid type of equipment selected.", err_ramp_start_must_have_at_least_one_equip, ramp,apt));
 
-	if(gExportTarget == wet_xplane_1050)
+	if(gExportTarget >= wet_xplane_1050)
 	{
 		if(g.type == atc_ramp_misc || g.type == atc_ramp_hangar)
 		{
