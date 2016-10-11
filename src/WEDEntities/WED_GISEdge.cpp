@@ -270,6 +270,14 @@ void WED_GISEdge::Shuffle(GISLayer_t l)
 	this->Reverse(l);
 }
 
+WED_Thing *		WED_GISEdge::CreateSplitNode()
+{
+	WED_Thing * p1 = GetNthSource(0);
+	WED_Thing * np = dynamic_cast<WED_Thing*>(p1->Clone());
+	return np;
+}
+
+
 
 IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 {
@@ -277,11 +285,12 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	Bezier2		b;
 	bool is_b = GetSide(gis_Geo,0,s,b);
 	if (s.p1 == p || s.p2 == p) return NULL;
+
 	
 	WED_Thing * p1 = GetNthSource(0);
 	WED_Thing * p2 = GetNthSource(1);
 
-	WED_Thing * np = dynamic_cast<WED_Thing*>(dynamic_cast<WED_Thing*>(p1)->Clone());	
+	WED_Thing * np = CreateSplitNode();
 	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
 	
 	string name;

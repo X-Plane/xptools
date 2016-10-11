@@ -216,6 +216,8 @@ SOURCES += ./src/XESTools/MiscFuncs.cpp
 SOURCES += ./src/XESTools/SelfTest.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
 SOURCES += ./src/OGLE/ogle.cpp
+SOURCES += ./src/WEDWindows/WED_Sign_Editor.cpp
+SOURCES += ./src/WEDCore/WED_Sign_Parser.cpp
 
 ##
 # resources
