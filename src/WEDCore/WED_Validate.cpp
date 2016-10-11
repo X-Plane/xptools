@@ -381,7 +381,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	}
 	if (problem_children.size() > 0)
 	{
-		string msg = "Zero length side(s) = duplicated nodes in '" + string(parent->HumanReadableType()) + "' feature.";
+		string msg = string(parent->HumanReadableType()) + string(" has overlapping duplicate vertices. Delete the selected vertices to fix this.");
  		msgs.push_back(validation_error_t(msg, err_gis_poly_zero_length_side, problem_children, apt));
 	}
 #endif
