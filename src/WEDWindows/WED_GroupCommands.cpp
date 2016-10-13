@@ -2259,8 +2259,6 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 			stringstream ss;
 			ss << "Replaced " << replace_count << " Agp objects with " << replace_count << " Obj files";
 			DoUserAlert(ss.str().c_str());
-			
-			//By now we have all the newly created objects
 			root->CommitOperation();
 		}
 	}
