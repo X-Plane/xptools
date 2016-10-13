@@ -68,6 +68,7 @@
 #include <sstream>
 
 #if DEV
+#include "WED_Globals.h"
 #include <iostream>
 #endif
 
@@ -2034,15 +2035,22 @@ int		WED_Repair(IResolver * resolver)
 //TODO: Should take visibility into account?
 //Also returns true if the thing is of type 
 template <typename T>
-static bool HasAnyChildOfTypeRecursive(WED_Thing* thing)
+static bool HasAnyChildOfTypeRecursive(WED_Thing* thing, bool will_test_visibility=true)
 {
 	T* test_thing = dynamic_cast<T*>(thing);
 	
 	if(test_thing != NULL)
 	{
-		return true;
+		if(test_thing->GetHidden() == true && will_test_visibility == true)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
-	
+
 	int nc = thing->CountChildren();
 	for(int n = 0; n < nc; ++n)
 	{
@@ -2092,6 +2100,10 @@ static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 set<string> build_agp_list()
 {
 	set<string> agp_list;
+	//-------------------------------------------------------------------------
+	//10/06/2016 - The code for breaking apart AGPs doesn't take into account if textures should be saved
+	//because these agps can have their textures thrown away. Additional AGPs will have to be analyzed
+	//and the code will possibly have to be made to be more robust
 	agp_list.insert("lib/airport/Ramp_Equipment/250cm_Jetway_Group.agp");
 	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_2.agp");
 	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_3.agp");
@@ -2100,17 +2112,18 @@ set<string> build_agp_list()
 	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Medium.agp");
 	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Narrow.agp");
 	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Wide.agp");
+	//-------------------------------------------------------------------------
 	return agp_list;
 }
 
+typedef WED_ObjPlacement WED_AgpPlacement;
 int		WED_CanBreakApartSpecialAgps(IResolver* resolver)
 {
 	//Returns true if there are any Obj files in the world.
 	WED_Thing * root = WED_GetWorld(resolver);
-	return HasAnyChildOfTypeRecursive<WED_ObjPlacement>(root);
+	return HasAnyChildOfTypeRecursive<WED_AgpPlacement>(root);
 }
 
-typedef WED_ObjPlacement WED_AgpPlacement;
 static bool ends_with_obj(WED_AgpPlacement*& agp)
 {
 	string resource_str;
@@ -2144,17 +2157,27 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		//Set up the operation
 		root->StartOperation("Break Apart Special Agps");
 		
+		ISelection * sel = WED_GetSelect(resolver);
+
 		//We'll have at least one!
-		const WED_Airport * apt = WED_GetParentAirport(all_agp_placements[0]);
+		WED_Airport * apt = WED_GetParentAirport(all_agp_placements[0]);
 		if(apt == NULL)
 		{
-			//TODO: Select problem Agp
+			//sel->Select(apt);
 			root->AbortCommand();
 			DoUserAlert("Agp must be in an airport");
 			return;
 		}
+		
+		if(apt->CountChildren() == 1)
+		{
+			//TODO: This isn't that great of a solution I think, but it might be the only solution
+			//sel->Select(apt);
+			root->AbortCommand();
+			DoUserAlert("Airport only contains one Agp, no translation can occur. Add something else to the airport first.");
+			return;
+		}
 
-		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
 
 		//The list of agp files we've decided to be special "service truck related"
@@ -2175,42 +2198,53 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		//For all agps
 		for(vector<WED_AgpPlacement*>::iterator agp = all_agp_placements.begin(); agp != all_agp_placements.end(); ++agp)
 		{
+			//Otherwise we have big problems
+			DebugAssert((*agp)->CountChildren() == 0);
+
 			string agp_resource;
 			(*agp)->GetResource(agp_resource);
 
 			//Is the agp found in the special agp list?
 			if(agp_list.find(agp_resource) != agp_list.end())
 			{
-				replace_count++;
-				
 				//Break it all up here
 				agp_t agp_data;
 				if(rmgr->GetAGP(agp_resource, agp_data))
 				{
-					replaced_agps.insert(*agp);
-
 					Point2 agp_origin_geo;
 					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
 					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
-					for(vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
+
+					for (vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
 					{
-						//Create a new_point_m and immediantly 
-						Point2 new_point_geo = translator.Reverse(Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
-						
+						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
+
+						//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
+						torotate.rotate_by_degrees((*agp)->GetHeading()*-1);
+						torotate *= -1;
+
+						Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
+						Point2 new_point_geo = translator.Reverse(new_point_m);
+
 						WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());
-						new_obj->SetLocation(gis_Geo,new_point_geo);
+						new_obj->SetLocation(gis_Geo, new_point_geo);
 
 						//Other data that is important to resetting up the object
 						new_obj->SetDefaultMSL();
+						new_obj->SetHeading(agp_obj->r + (*agp)->GetHeading());
 						new_obj->SetName(agp_obj->name);
-						new_obj->SetParent((*agp)->GetParent(),(*agp)->GetMyPosition());
+						new_obj->SetParent((*agp)->GetParent(), (*agp)->GetMyPosition());
 						new_obj->SetResource(agp_obj->name);
-						new_obj->SetHeading(agp_obj->r);
 						new_obj->SetShowLevel((*agp)->GetShowLevel());
-						
+
 						sel->Insert(new_obj);
 					}
 				}
+
+				++replace_count;
+				//Remove the agp placement
+				(*agp)->SetParent(NULL, 0);
+				(*agp)->Delete();
 			}
 		}
 
@@ -2223,14 +2257,12 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		else
 		{
 			stringstream ss;
-			ss << "Replaced " << replace_count << " Agp objects";
+			ss << "Replaced " << replace_count << " Agp objects with " << replace_count << " Obj files";
 			DoUserAlert(ss.str().c_str());
 			
-			//Delete the parent agps
-			WED_RecursiveDelete(set<WED_Thing*>(replaced_agps.begin(),replaced_agps.end()));
+			//By now we have all the newly created objects
 			root->CommitOperation();
 		}
-
 	}
 	else
 	{
@@ -2304,7 +2336,8 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 
 	//atc_ServiceTruck_Ground_Power_Unit,
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
-
+	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+	
 	return table;
 }
 
@@ -2331,7 +2364,6 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 			map<string,vehicle_replacement_info>::iterator info_itr = table.find(resource);
 			if(info_itr != table.end())
 			{
-				replace_count++;
 				
 				WED_TruckParkingLocation * parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
 				parking_loc->SetHeading((*itr)->GetHeading());
@@ -2346,12 +2378,13 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 				parking_loc->SetNumberOfCars(info_itr->second.number_of_cars);
 				parking_loc->SetParent((*itr)->GetParent(), (*itr)->GetMyPosition());
 				parking_loc->SetTruckType(info_itr->second.service_truck_type);
-				
+				parking_loc->StateChanged();
+
+				replace_count++;
 				sel->Insert(parking_loc);
 
-				set<WED_Thing*> delete_set;
-				delete_set.insert(*itr);
-				WED_RecursiveDelete(delete_set);
+				(*itr)->SetParent(NULL,0);
+				(*itr)->Delete();
 			}
 		}
 
