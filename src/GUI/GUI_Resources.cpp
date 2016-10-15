@@ -456,4 +456,38 @@ int	GUI_GetImageResourceSize(const char * in_resource, int bounds[2])
 float	GUI_Rescale_S(float s, GUI_TexPosition_t * metrics);
 float	GUI_Rescale_T(float t, GUI_TexPosition_t * metrics);
 
+// WordWrap a string by replacing spaces in it for \n.
+// If the string already has some \n in it, be clever as to not insert more than needed.
+// Also be clever about words longer than the allowed width, i.e. don't truncate those.
 
+std::string WordWrap( std::string str, size_t width )
+{
+	size_t maxPos = width;                         // latest position we can afford to have a CR in
+	std::string::size_type lastCR, spacePos = 0;   // position of last detected CR and space
+
+	while( maxPos < str.length() )
+    {
+    #if 1
+		lastCR = str.rfind('\n', maxPos);       // look if suitable CR already there
+		if (lastCR != std::string::npos && lastCR != spacePos)
+		{
+			maxPos = lastCR + width + 1;
+			spacePos = lastCR;
+		}
+		else
+	#endif
+		{
+			spacePos = str.rfind(' ', maxPos);     // look for a space just before the line gets too long
+			if( spacePos == std::string::npos || spacePos <= lastCR)   // no joy, i.e. a very long word
+			{
+				spacePos = str.find(' ', maxPos);  // so we look for a good place after that word,
+			}                                      // as we have no better choice here.
+			if( spacePos != std::string::npos )
+			{
+				str[spacePos] = '\n';
+				maxPos = spacePos + width + 1;
+			}
+		}
+	}
+	return str;
+}
