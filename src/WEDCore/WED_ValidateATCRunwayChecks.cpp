@@ -6,10 +6,14 @@
 #include <iomanip>
 #include <queue>
 #include <functional>
+#include <iostream>
+
+// Show the hitboxes used for hot zone tests
+// 0 = never, 1 = only those causing a violation, 2 = always show all, same as original debug-only implementation
+#define DEBUG_VIS_LINES 1
+#define DBG_LIN_COLOR 1,0,1,1,0,1
 
 #if DEV
-#include <iostream>
-//Visualizes some of the runway lines and the bounding box
 #define DEBUG_VIS_LINES 1
 #endif
 
@@ -342,12 +346,6 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 	runway_hit_box_geo[2] = translator.Reverse(top_right);
 	runway_hit_box_geo[3] = translator.Reverse(bottom_right);
 
-#if DEBUG_VIS_LINES
-	debug_mesh_segment(runway_hit_box_geo.side(0), 0, 1, 0, 0, 0, 1); //left side
-	debug_mesh_segment(runway_hit_box_geo.side(1), 0, 1, 0, 0, 0, 1); //top side
-	debug_mesh_segment(runway_hit_box_geo.side(2), 0, 1, 0, 0, 0, 1); //right side
-	debug_mesh_segment(runway_hit_box_geo.side(3), 0, 1, 0, 0, 0, 1); //bottom side
-#endif
 	for(TaxiRouteNodeVec_t::const_iterator node_itr = matching_taxiroute_nodes.begin(); node_itr != matching_taxiroute_nodes.end(); ++node_itr)
 	{
 		Point2 node_location;
@@ -361,6 +359,17 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 		}
 	}
 
+#if DEBUG_VIS_LINES
+#if DEBUG_VIS_LINES < 2
+    if (msgs.size() - original_num_errors != 0)
+#endif
+    {
+        debug_mesh_segment(runway_hit_box_geo.side(0), DBG_LIN_COLOR); //left side
+        debug_mesh_segment(runway_hit_box_geo.side(1), DBG_LIN_COLOR); //top side
+        debug_mesh_segment(runway_hit_box_geo.side(2), DBG_LIN_COLOR); //right side
+        debug_mesh_segment(runway_hit_box_geo.side(3), DBG_LIN_COLOR); //bottom side
+	}
+#endif
 	return msgs.size() - original_num_errors == 0 ? true : false;
 }
 
@@ -850,15 +859,15 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 
 //--Hot zone checks------------------------------------------------------------
 
-static void FindIfMarked( const int runway_number,        //enum from ATCRunwayOneway
+static bool FindIfMarked( const int runway_number,        //enum from ATCRunwayOneway
 						  const TaxiRouteInfo& taxiroute, //The taxiroute to check if it is marked properly
 						  const set<string>& hot_set,     //The set of hot_listed_runways
 						  const string& op_type,          //String for the description
 						  validation_error_vector& msgs,  //WED_Valiation messages
 						  WED_Airport* apt) //Airport to pass into msgs
 {
-	
-	bool found_marked = false;
+
+    bool found_marked = false;
 	for(set<string>::const_iterator hot_set_itr = hot_set.begin();
 		hot_set_itr != hot_set.end();
 		++hot_set_itr)
@@ -887,6 +896,7 @@ static void FindIfMarked( const int runway_number,        //enum from ATCRunwayO
 			taxiroute.taxiroute_ptr,
 			apt));
 	}
+	return !found_marked;
 }
 
 static TaxiRouteInfoVec_t GetTaxiRoutesFromViewers(const WED_GISPoint* node)
@@ -979,7 +989,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 			bottom_left  -= gis_line_direction;
 			bottom_right -= gis_line_direction;
 		}
-		
+
 		if(runway_info.IsHotForDeparture(runway_number) == true && make_arrival == false)
 		{
 			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
@@ -998,7 +1008,7 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 			top_left  += gis_line_direction;
 			top_right += gis_line_direction;
 		}
-		
+
 		if(runway_info.IsHotForDeparture(runway_number) == true  && make_arrival == false)
 		{
 			gis_line_direction *= HITZONE_OVERFLY_THRESHOLD_M;
@@ -1013,24 +1023,6 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, //The relavent
 	runway_hit_box_geo[1] = translator.Reverse(top_left);
 	runway_hit_box_geo[2] = translator.Reverse(top_right);
 	runway_hit_box_geo[3] = translator.Reverse(bottom_right);
-#if DEBUG_VIS_LINES
-	//Extend out fully for testing purposes
-	//bottom_left  -= gis_line_direction;
-	//bottom_right -= gis_line_direction;
-	//
-	//departure_side is top_side;
-	//top_left  += gis_line_direction;
-	//top_right += gis_line_direction;
-
-	//debug_mesh_line(translator.Reverse(bottom_left),  translator.Reverse(top_left),     1, 0, 0, 1, 0, 0); //left side
-	//debug_mesh_line(translator.Reverse(top_left),     translator.Reverse(top_right),    0, 1, 0, 0, 1, 0); //top side
-	//debug_mesh_line(translator.Reverse(top_right),    translator.Reverse(bottom_right), 0, 0, 1, 0, 0, 1); //right side
-	//debug_mesh_line(translator.Reverse(bottom_right), translator.Reverse(bottom_left),  1, 1, 1, 1, 1, 1); //bottom side
-	debug_mesh_segment(runway_hit_box_geo.side(0), 1, 0, 0, make_arrival, 0, 0); //left side
-	debug_mesh_segment(runway_hit_box_geo.side(1), 0, 1, 0, 0, make_arrival, 0); //top side
-	debug_mesh_segment(runway_hit_box_geo.side(2), 0, 0, 1, 0, 0, make_arrival); //right side
-	debug_mesh_segment(runway_hit_box_geo.side(3), 1, 1, 1, make_arrival, make_arrival, make_arrival); //bottom side
-#endif
 	return runway_hit_box_geo;
 }
 
@@ -1085,12 +1077,34 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 					{
 						if(runway_info.IsHotForArrival(runway_number) == true && static_cast<bool>(make_arrival) == true)
 						{
-							FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_arrivals, "arrivals", msgs, apt);
+                            bool hitbox_error = FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_arrivals, "arrivals", msgs, apt);
+#if DEBUG_VIS_LINES
+#if DEBUG_VIS_LINES < 2
+                            if (hitbox_error)
+#endif
+                            {
+                                debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+                                debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+                                debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+                                debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+                            }
+#endif
 						}
 
 						if(runway_info.IsHotForDeparture(runway_number) == true && static_cast<bool>(make_arrival) == false)
 						{
-							FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_departures, "departures", msgs, apt);
+							bool hitbox_error = FindIfMarked(runway_number, *taxiroute_itr, (*taxiroute_itr).hot_departures, "departures", msgs, apt);
+#if DEBUG_VIS_LINES
+#if DEBUG_VIS_LINES < 2
+                            if (hitbox_error)
+#endif
+                            {
+                                debug_mesh_segment(hit_box.side(0), DBG_LIN_COLOR); //left side
+                                debug_mesh_segment(hit_box.side(1), DBG_LIN_COLOR); //top side
+                                debug_mesh_segment(hit_box.side(2), DBG_LIN_COLOR); //right side
+                                debug_mesh_segment(hit_box.side(3), DBG_LIN_COLOR); //bottom side
+                            }
+#endif
 						}
 					}
 				}
@@ -1103,7 +1117,7 @@ static bool DoHotZoneChecks( const RunwayInfo& runway_info,
 //-----------------------------------------------------------------------------
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 {
-#if DEBUG_VIS_LINES && 1
+#if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
 	gMeshPoints.clear();
 	gMeshLines.clear();
@@ -1140,10 +1154,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 		runway_info_itr != potentially_active_runways.end();
 		++runway_info_itr)
 	{
-#if DEBUG_VIS_LINES
-		debug_mesh_polygon((*runway_info_itr).runway_corners_geo,1,0,0);
-		debug_mesh_segment((*runway_info_itr).runway_centerline_geo,1,0,0,1,0,0);
-#endif
+        int original_num_errors = msgs.size();
 		TaxiRouteInfoVec_t matching_taxiroutes = FilterMatchingRunways(*runway_info_itr, all_taxiroutes);
 
 		if (matching_taxiroutes.empty() == false)
@@ -1165,7 +1176,15 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 				}
 			}
 		}
-
+#if DEBUG_VIS_LINES
+#if DEBUG_VIS_LINES < 2
+        if (msgs.size() - original_num_errors != 0)
+#endif
+        {
+		debug_mesh_polygon((*runway_info_itr).runway_corners_geo,1,0,1);
+		debug_mesh_segment((*runway_info_itr).runway_centerline_geo,DBG_LIN_COLOR);
+		}
+#endif
 		AssaignRunwayUse(*runway_info_itr, all_use_rules);
 		bool passes_hotzone_checks = DoHotZoneChecks(*runway_info_itr, all_taxiroutes, msgs, &apt);
 		//Nothing to do here yet until we have more checks after this
