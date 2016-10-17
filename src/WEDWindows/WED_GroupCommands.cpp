@@ -2152,18 +2152,20 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 
 	if(!all_agp_placements.empty())
 	{
-		int replace_count = 0;
+		int agp_replace_count = 0;
+		int obj_replace_count = 0;
 
 		//Set up the operation
 		root->StartOperation("Break Apart Special Agps");
-		
+
 		ISelection * sel = WED_GetSelect(resolver);
+		sel->Clear();
 
 		//We'll have at least one!
 		WED_Airport * apt = WED_GetParentAirport(all_agp_placements[0]);
 		if(apt == NULL)
 		{
-			//sel->Select(apt);
+			sel->Select(apt);
 			root->AbortCommand();
 			DoUserAlert("Agp must be in an airport");
 			return;
@@ -2172,13 +2174,11 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		if(apt->CountChildren() == 1)
 		{
 			//TODO: This isn't that great of a solution I think, but it might be the only solution
-			//sel->Select(apt);
+			sel->Select(apt);
 			root->AbortCommand();
 			DoUserAlert("Airport only contains one Agp, no translation can occur. Add something else to the airport first.");
 			return;
 		}
-
-		sel->Clear();
 
 		//The list of agp files we've decided to be special "service truck related"
 		set<string> agp_list = build_agp_list();
@@ -2191,9 +2191,10 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		Bbox2 box;
 		apt->GetBounds(gis_Geo, box);
 		CreateTranslatorForBounds(box,translator);
-		
+
 		//A set of all the agps that we're going to replace
 		set<WED_AgpPlacement*> replaced_agps;
+		set<WED_ObjPlacement*> added_objs;
 
 		//For all agps
 		for(vector<WED_AgpPlacement*>::iterator agp = all_agp_placements.begin(); agp != all_agp_placements.end(); ++agp)
@@ -2237,29 +2238,40 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 						new_obj->SetResource(agp_obj->name);
 						new_obj->SetShowLevel((*agp)->GetShowLevel());
 
-						sel->Insert(new_obj);
+						added_objs.insert(new_obj);
 					}
 				}
 
-				++replace_count;
-				//Remove the agp placement
-				(*agp)->SetParent(NULL, 0);
-				(*agp)->Delete();
+				replaced_agps.insert(*agp);
 			}
 		}
 
-		if(replace_count == 0)
+		for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
 		{
-			DoUserAlert("Nothing to replace");
+			(*itr_agp)->SetParent(NULL, 0);
+			(*itr_agp)->Delete();
+		}
+
+		for (set<WED_ObjPlacement*>::iterator itr_obj = added_objs.begin(); itr_obj != added_objs.end(); ++itr_obj)
+		{
+			string obj_resource;
+			(*itr_obj)->GetResource(obj_resource);
+			sel->Insert(*itr_obj);
+		}
+
+		if(added_objs.size() == 0)
+		{
 			sel->Clear();
 			root->AbortOperation();
+			DoUserAlert("Nothing to replace"); //IMPORTANT: Do not call DoUserAlert during an operation!!!
 		}
 		else
 		{
-			stringstream ss;
-			ss << "Replaced " << replace_count << " Agp objects with " << replace_count << " Obj files";
-			DoUserAlert(ss.str().c_str());
 			root->CommitOperation();
+
+			stringstream ss;
+			ss << "Replaced " << replaced_agps.size() << " Agp objects with " << added_objs.size() << " Obj files";
+			DoUserAlert(ss.str().c_str());
 		}
 	}
 	else
@@ -2379,28 +2391,26 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 				parking_loc->StateChanged();
 
 				replace_count++;
-				sel->Insert(parking_loc);
-
-				(*itr)->SetParent(NULL,0);
+				(*itr)->SetParent(NULL, 0);
 				(*itr)->Delete();
+
+				sel->Insert(parking_loc);
 			}
 		}
 
-#if DEV
-		std::cout << "Obj replace count: " << replace_count << endl;
-#endif
 		if(replace_count == 0)
 		{
-			DoUserAlert("Nothing to replace");
 			sel->Clear();
 			root->AbortOperation();
+			DoUserAlert("Nothing to replace");
 		}
 		else
 		{
+			root->CommitOperation();
+
 			stringstream ss;
 			ss << "Replaced " << replace_count << " objects";
 			DoUserAlert(ss.str().c_str());
-			root->CommitOperation();
 		}
 	}
 	else
