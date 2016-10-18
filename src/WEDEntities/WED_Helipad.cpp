@@ -30,11 +30,11 @@ TRIVIAL_COPY(WED_Helipad, WED_GISPoint_HeadingWidthLength)
 
 WED_Helipad::WED_Helipad(WED_Archive * a, int i) : WED_GISPoint_HeadingWidthLength(a,i),
 
-	surface(this,"Surface",		SQL_Name("WED_helipad","surface"),	XML_Name("helipad","surface"),	Surface_Type,surf_Concrete),
-	markings(this,"Markings",	SQL_Name("WED_helipad","markings"),	XML_Name("helipad","markings"),	Helipad_Markings,heli_Mark_Default),
-	shoulder(this,"Shoulder",	SQL_Name("WED_helipad","shoulder"),	XML_Name("helipad","shoulder"),	Shoulder_Type,shoulder_None),
-	roughness(this,"Roughness",	SQL_Name("WED_helipad","roughness"),XML_Name("helipad","roughness"),0.25,4,2),
-	edgelights(this,"Lights",	SQL_Name("WED_helipad","lights"),	XML_Name("helipad","lights"),	Heli_Lights,heli_Yellow)
+	surface(this,"Surface",		XML_Name("helipad","surface"),	Surface_Type,surf_Concrete),
+	markings(this,"Markings",	XML_Name("helipad","markings"),	Helipad_Markings,heli_Mark_Default),
+	shoulder(this,"Shoulder",	XML_Name("helipad","shoulder"),	Shoulder_Type,shoulder_None),
+	roughness(this,"Roughness",	XML_Name("helipad","roughness"),0.25,4,2),
+	edgelights(this,"Lights",	XML_Name("helipad","lights"),	Heli_Lights,heli_Yellow)
 {
 }
 

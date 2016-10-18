@@ -30,7 +30,6 @@
 #include "ISelection.h"
 #include "WED_XMLReader.h"
 
-struct	sqlite3;
 class	IOReader;
 class	IOWriter;
 class	WED_XMLElement;
@@ -201,8 +200,6 @@ public:
 	virtual WED_Persistent*	Clone(void) const=0;
 	virtual	void 			ReadFrom(IOReader * reader)=0;
 	virtual	void 			WriteTo(IOWriter * writer)=0;
-	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping)=0;
-	virtual void			ToDB(sqlite3 * db)=0;
 	virtual	void			ToXML(WED_XMLElement * parent)=0;
 	virtual	void			FromXML(WED_XMLReader * reader, const XML_Char ** atts)=0;
 

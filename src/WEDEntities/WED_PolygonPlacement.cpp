@@ -27,8 +27,8 @@ DEFINE_PERSISTENT(WED_PolygonPlacement)
 TRIVIAL_COPY(WED_PolygonPlacement,WED_GISPolygon)
 
 WED_PolygonPlacement::WED_PolygonPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	heading(this,"Heading",SQL_Name("WED_dsf_polygon","param"),XML_Name("polygon_placement","heading"),10.0,3,1),
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("polygon_placement","resource"),"")
+	heading(this,"Heading",  XML_Name("polygon_placement","heading"),10.0,3,1),
+	resource(this,"Resource",XML_Name("polygon_placement","resource"),"")
 {
 }
 

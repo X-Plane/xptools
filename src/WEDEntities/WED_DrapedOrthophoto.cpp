@@ -27,7 +27,7 @@ DEFINE_PERSISTENT(WED_DrapedOrthophoto)
 TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
 
 WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"),XML_Name("draped_orthophoto","resource"), "")
+	resource(this,"Resource", XML_Name("draped_orthophoto","resource"), "")
 
 {
 }

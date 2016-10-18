@@ -23,13 +23,12 @@
 
 #include "WED_Entity.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_Errors.h"
 
 WED_Entity::WED_Entity(WED_Archive * parent, int id) :
 	WED_Thing(parent, id),
-	locked(this,"Locked",SQL_Name("WED_entities","locked"),XML_Name("hierarchy","locked"),0),
-	hidden(this,"Hidden",SQL_Name("WED_entities","hidden"),XML_Name("hierarchy","hidden"),0),
+	locked(this,"Locked", XML_Name("hierarchy","locked"),0),
+	hidden(this,"Hidden", XML_Name("hierarchy","hidden"),0),
 	cache_valid_(0)
 {
 }
@@ -61,12 +60,6 @@ void 	WED_Entity::ReadFrom(IOReader * reader)
 {
 	CacheInval(cache_All);
 	WED_Thing::ReadFrom(reader);
-}
-
-void	WED_Entity::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-	CacheInval(cache_All);
-	WED_Thing::FromDB(db,mapping);
 }
 
 void	WED_Entity::CacheInval(int flags)

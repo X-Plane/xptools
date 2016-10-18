@@ -114,7 +114,7 @@ public:
 			int		GetHidden(void) const;
 
 	virtual	void 	ReadFrom(IOReader * reader);
-	virtual void	FromDB(sqlite3 * db, const map<int,int>& mapping);
+//	virtual void	FromDB(sqlite3 * db, const map<int,int>& mapping);
 
 protected:
 

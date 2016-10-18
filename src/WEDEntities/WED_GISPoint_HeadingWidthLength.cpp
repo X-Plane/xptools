@@ -26,7 +26,6 @@
 #include "WED_ToolUtils.h"
 #include "IODefs.h"
 #include "GISUtils.h"
-#include "SQLUtils.h"
 #include "GISUtils.h"
 #include "WED_Errors.h"
 
@@ -34,8 +33,8 @@ TRIVIAL_COPY(WED_GISPoint_HeadingWidthLength, WED_GISPoint_Heading)
 
 WED_GISPoint_HeadingWidthLength::WED_GISPoint_HeadingWidthLength(WED_Archive * parent, int id) :
 	WED_GISPoint_Heading(parent, id),
-	width (this,"width", SQL_Name("GIS_points_headingwidthlength", "width" ),XML_Name("point","width"),1.0,5,1),
-	length(this,"length",SQL_Name("GIS_points_headingwidthlength", "length"),XML_Name("point","length"),1.0,5,1)
+	width (this,"width", XML_Name("point","width"),1.0,5,1),
+	length(this,"length",XML_Name("point","length"),1.0,5,1)
 {
 }
 

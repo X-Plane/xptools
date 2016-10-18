@@ -31,8 +31,8 @@ TRIVIAL_COPY(WED_RoadEdge, WED_GISEdge)
 
 
 WED_RoadEdge::WED_RoadEdge(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	layer(this,"Layer",SQL_Name("WED_roadedge", "layer"),XML_Name("road_edge","layer"),0,2),
-	subtype(this,"Type",SQL_Name("WED_roadedge", "subtype"),XML_Name("road_edge","sub_type"), RoadSubType, road_Highway)
+	layer(this,"Layer", XML_Name("road_edge","layer"),0,2),
+	subtype(this,"Type",XML_Name("road_edge","sub_type"), RoadSubType, road_Highway)
 {
 }
 

@@ -63,12 +63,12 @@ L   - NS_AIRPORT
 #define NS_META_DATA (NUM_REAL)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
-	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
-	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
-	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
-	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
-	always_flatten	(this, "Always Flatten",	SQL_Name("",""),						XML_Name("airport", "always_flatten"), 0),
-	scenery_id		(this, "Scenery ID",		SQL_Name("", ""),				XML_Name("airport", "scenery_id"), -1, 8),
+	airport_type	(this, "Type",				XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
+	elevation		(this, "Field Elevation",	XML_Name("airport",	"elevation"),	0,6,1),
+	has_atc			(this, "Has ATC",			XML_Name("airport",	"has_atc"),		1),
+	icao			(this, "ICAO Identifier",	XML_Name("airport",	"icao"),		"xxxx"),
+	always_flatten	(this, "Always Flatten",	XML_Name("airport", "always_flatten"), 0),
+	scenery_id		(this, "Scenery ID",		XML_Name("airport", "scenery_id"), -1, 8),
 	meta_data_vec_map ()
 {
 }

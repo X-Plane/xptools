@@ -17,17 +17,6 @@ endif
 
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= -lQtCore
 LIBS		+= -lQtGui
 LIBS		+= -lQtOpenGL
@@ -46,22 +35,6 @@ WIN_RESOURCES	+= ./src/WEDResources/WED.rc
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 DEFINES		+= -DCURL_STATICLIB
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
 LIBS		+= -lglu32
 LIBS		+= -lopengl32
@@ -77,16 +50,14 @@ endif #PLAT_MINGW
 ifdef PLAT_DARWIN
 DEFINES		+= -DMAKE_BUILD  -DCURL_STATICLIB 
 LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
+endif #PLAT_DARWIN
+
+#LIBS           := ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+#LIBS           += ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
@@ -94,7 +65,6 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-endif #PLAT_DARWIN
 
 
 ##
@@ -145,7 +115,6 @@ SOURCES += ./src/WEDCore/WED_FastBuffer.cpp
 SOURCES += ./src/WEDCore/WED_Globals.cpp
 SOURCES += ./src/WEDCore/WED_LibraryMgr.cpp
 SOURCES += ./src/WEDCore/WED_Persistent.cpp
-SOURCES += ./src/WEDCore/WED_Properties.cpp
 SOURCES += ./src/WEDCore/WED_PropertyHelper.cpp
 SOURCES += ./src/WEDCore/WED_TexMgr.cpp
 SOURCES += ./src/WEDCore/WED_UndoLayer.cpp
@@ -322,7 +291,6 @@ SOURCES += ./src/GUI/GUI_Help.cpp
 SOURCES += ./src/GUI/GUI_Clipboard.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/GUI/GUI_Application.cpp
-SOURCES += ./src/Utils/SQLUtils.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp

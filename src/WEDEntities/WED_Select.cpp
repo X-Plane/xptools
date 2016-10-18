@@ -23,7 +23,6 @@
 
 #include "WED_Select.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_XMLWriter.h"
 #include "WED_Errors.h"
 #include "WED_Messages.h"
@@ -68,49 +67,6 @@ void 			WED_Select::WriteTo(IOWriter * writer)
 	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		writer->WriteInt(*i);
 
-}
-
-void			WED_Select::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-	WED_Thing::FromDB(db, mapping);
-
-	mSelected.clear();
-	sql_command	cmd(db,"SELECT item FROM WED_selection WHERE id=@id;","@id");
-
-	sql_row1<int>				id(GetID());
-	sql_row1<int>				item;
-
-	int err;
-	cmd.set_params(id);
-	cmd.begin();
-
-	while ((err = cmd.get_row(item)) == SQLITE_ROW)
-	{
-		mSelected.insert(item.a);
-	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-}
-
-void			WED_Select::ToDB(sqlite3 * db)
-{
-	WED_Thing::ToDB(db);
-
-	int err;
-	sql_command	nuke_all(db,"DELETE FROM WED_selection where id=@id;","@id");
-	sql_row1<int>	me(GetID());
-	err = nuke_all.simple_exec(me);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-
-	if (!mSelected.empty())
-	{
-		sql_command write_ids(db,"INSERT INTO WED_selection(id,item) VALUES(@id,@item);","@id,@item");
-		for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
-		{
-			sql_row2<int, int>	id(GetID(),*i);
-			err = write_ids.simple_exec(id);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-		}
-	}
 }
 
 void		WED_Select::AddExtraXML(WED_XMLElement * obj)

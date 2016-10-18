@@ -27,8 +27,8 @@ DEFINE_PERSISTENT(WED_TextureNode)
 TRIVIAL_COPY(WED_TextureNode, WED_GISPoint)
 
 WED_TextureNode::WED_TextureNode(WED_Archive * a, int i) : WED_GISPoint(a,i),
-	mS(this,"S",SQL_Name("WED_texturenode","s"),XML_Name("texture_node","s"),0.0,5,4),
-	mT(this,"T",SQL_Name("WED_texturenode","t"),XML_Name("texture_node","t"),0.0,5,4)
+	mS(this,"S",XML_Name("texture_node","s"),0.0,5,4),
+	mT(this,"T",XML_Name("texture_node","t"),0.0,5,4)
 {
 }
 

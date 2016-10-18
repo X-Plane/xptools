@@ -27,9 +27,9 @@ DEFINE_PERSISTENT(WED_StringPlacement)
 TRIVIAL_COPY(WED_StringPlacement,WED_GISChain)
 
 WED_StringPlacement::WED_StringPlacement(WED_Archive * a, int i) : WED_GISChain(a,i),
-	closed(this,"Closed",SQL_Name("WED_dsf_polygon","closed"),XML_Name("string_placement","closed"),0),
-	spacing(this,"Spacing",SQL_Name("WED_dsf_polygon","param"),XML_Name("string_placement","spacing"),10.0,3,1),
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"),XML_Name("string_placement","resource"), "")
+	closed(this,"Closed",    XML_Name("string_placement","closed"),0),
+	spacing(this,"Spacing",  XML_Name("string_placement","spacing"),10.0,3,1),
+	resource(this,"Resource",XML_Name("string_placement","resource"), "")
 {
 }
 

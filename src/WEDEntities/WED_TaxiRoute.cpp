@@ -56,12 +56,12 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 DEFINE_PERSISTENT(WED_TaxiRoute)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	oneway(this,"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
-	runway(this,"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
-	hot_depart(this,"Departures",		SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
-	hot_arrive(this,"Arrivals",			SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
-	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
-	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"), ATCIcaoWidth, width_E)
+	oneway(this,"One-Way",				XML_Name("taxi_route","oneway"),		1),
+	runway(this,"Runway",				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
+	hot_depart(this,"Departures",		XML_Name("departures","runway"),		ATCRunwayOneway,false),
+	hot_arrive(this,"Arrivals",			XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
+	hot_ils(this,"ILS Precision Area",	XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
+	width(this,"Size",					XML_Name("taxi_route","width"), ATCIcaoWidth, width_E)
 {
 }
 

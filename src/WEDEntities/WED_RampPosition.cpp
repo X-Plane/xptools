@@ -29,11 +29,11 @@ DEFINE_PERSISTENT(WED_RampPosition)
 TRIVIAL_COPY(WED_RampPosition, WED_GISPoint_Heading)
 
 WED_RampPosition::WED_RampPosition(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
-	ramp_type	 (this, "Ramp Start Type",	SQL_Name("",""),	XML_Name("ramp_start","type"   ), ATCRampType, atc_Ramp_Misc),
-	equip_type	 (this, "Equipment Type",	SQL_Name("",""),	XML_Name("ramp_start","traffic"), ATCTrafficType, 0),
-	width		 (this, "Size",				SQL_Name("",""),	XML_Name("ramp_start","width"), ATCIcaoWidth, width_C),
-	ramp_op_type (this, "Ramp Operation Type", SQL_Name("",""), XML_Name("ramp_start","ramp_op_type"), RampOperationType, ramp_operation_None),
-	airlines	 (this, "Airlines",			SQL_Name("",""),	XML_Name("ramp_start","airlines"),"")
+	ramp_type	 (this, "Ramp Start Type",	XML_Name("ramp_start","type"   ), ATCRampType, atc_Ramp_Misc),
+	equip_type	 (this, "Equipment Type",	XML_Name("ramp_start","traffic"), ATCTrafficType, 0),
+	width		 (this, "Size",				XML_Name("ramp_start","width"), ATCIcaoWidth, width_C),
+	ramp_op_type (this, "Ramp Operation Type", XML_Name("ramp_start","ramp_op_type"), RampOperationType, ramp_operation_None),
+	airlines	 (this, "Airlines",			XML_Name("ramp_start","airlines"),"")
 {
 }
 

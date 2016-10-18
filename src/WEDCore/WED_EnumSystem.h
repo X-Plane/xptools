@@ -75,10 +75,6 @@ void				ENUM_Init(void);
 
 typedef	map<int,int>	enum_map_t;
 
-void				ENUM_write(sqlite3 * db);
-void				ENUM_read (sqlite3 * db, enum_map_t& out_map);
-
-
 #define ENUM_DOMAIN(D,H)	D,
 #define ENUM(V,H,E)	V,
 
