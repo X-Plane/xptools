@@ -2032,39 +2032,54 @@ int		WED_Repair(IResolver * resolver)
 // Obj and Agp Replacement
 //----------------------------------------------------------------------------
 
-//TODO: Should take visibility into account?
-//Also returns true if the thing is of type 
 template <typename T>
-static bool HasAnyChildOfTypeRecursive(WED_Thing* thing, bool will_test_visibility=true)
+static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible)
+{
+	int num_analyzed = 0;
+	return CountChildOfTypeRecursive<T>(thing, must_be_visible, 0, num_analyzed); //Needed to offset counting "thing" as a child if it matches type T
+}
+
+//Warning: Don't call this overload, call the wrapper version
+template <typename T>
+static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible, int accumulator, int& num_analyzed)
 {
 	T* test_thing = dynamic_cast<T*>(thing);
-	
+	++num_analyzed;
+
 	if(test_thing != NULL)
 	{
-		if(test_thing->GetHidden() == true && will_test_visibility == true)
+		WED_Entity* test_ent = dynamic_cast<WED_Entity*>(thing);
+		if (test_ent == NULL)
 		{
-			return false;
+			return accumulator;
+		}
+		else if(test_ent->GetHidden() == true && must_be_visible == true)
+		{
+			return accumulator;
 		}
 		else
 		{
-			return true;
+			if (num_analyzed > 1)
+			{
+				accumulator += 1;
+			}
 		}
 	}
 
 	int nc = thing->CountChildren();
 	for(int n = 0; n < nc; ++n)
 	{
-		bool result = HasAnyChildOfTypeRecursive<T>(thing->GetNthChild(n));
-		if(result != NULL)
+		int old_accum = accumulator;
+		int new_accum = CountChildOfTypeRecursive<T>(thing->GetNthChild(n), must_be_visible, accumulator, num_analyzed);
+
+		if(new_accum != old_accum)
 		{
-			return true;
-		}
-		else
-		{
+			accumulator = new_accum;
 			continue;
 		}
 	}
-	return false;
+
+	return accumulator;
 }
 
 template <typename OutputIterator>
@@ -2119,18 +2134,33 @@ set<string> build_agp_list()
 typedef WED_ObjPlacement WED_AgpPlacement;
 int		WED_CanBreakApartSpecialAgps(IResolver* resolver)
 {
-	//Returns true if there are any Obj files in the world.
-	WED_Thing * root = WED_GetWorld(resolver);
-	return HasAnyChildOfTypeRecursive<WED_AgpPlacement>(root);
-}
+	//Returns true if the selection
+	//- is not empty
+	//- only has .agp files (of all kinds)
+	ISelection* sel = WED_GetSelect(resolver);
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
 
-static bool ends_with_obj(WED_AgpPlacement*& agp)
-{
-	string resource_str;
-	agp->GetResource(resource_str);
-
-	if(FILE_get_file_extension(resource_str) == ".obj")
+	if (!selected.empty())
 	{
+		for (vector<ISelectable*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
+		{
+			WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(*itr);
+			if (agp != NULL)
+			{
+				string agp_resource;
+				agp->GetResource(agp_resource);
+				if(FILE_get_file_extension(agp_resource) != ".agp")
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+
 		return true;
 	}
 	else
@@ -2139,18 +2169,34 @@ static bool ends_with_obj(WED_AgpPlacement*& agp)
 	}
 }
 
+template <typename From, typename To>
+static To cast(From test)
+{
+	return dynamic_cast<To>(test);
+}
+
+template <typename T>
+static bool is_null(T test)
+{
+	return test == NULL;
+}
+
 void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 {
 	//Collect all obj_placements from the world
 	WED_Thing* root = WED_GetWorld(resolver);
 
-	vector<WED_AgpPlacement*> all_agp_placements;
-	CollectRecursive(root, back_inserter(all_agp_placements));
-	
-	//Remove all .objs that snuck in with the collection
-	all_agp_placements.erase(remove_if(all_agp_placements.begin(),all_agp_placements.end(), ends_with_obj), all_agp_placements.end());
+	ISelection * sel = WED_GetSelect(resolver);
 
-	if(!all_agp_placements.empty())
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+	DebugAssert(selected.empty() == false);
+
+	vector<WED_AgpPlacement*> agp_placements;
+	std::transform(selected.begin(), selected.end(), back_inserter(agp_placements), cast<ISelectable*, WED_AgpPlacement*>);
+	agp_placements.erase(std::remove_if(agp_placements.begin(), agp_placements.end(), is_null<WED_AgpPlacement*>), agp_placements.end());
+
+	if(!agp_placements.empty())
 	{
 		int agp_replace_count = 0;
 		int obj_replace_count = 0;
@@ -2158,25 +2204,22 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		//Set up the operation
 		root->StartOperation("Break Apart Special Agps");
 
-		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
 
 		//We'll have at least one!
-		WED_Airport * apt = WED_GetParentAirport(all_agp_placements[0]);
+		WED_Airport * apt = WED_GetParentAirport(agp_placements[0]);
 		if(apt == NULL)
 		{
-			sel->Select(apt);
 			root->AbortCommand();
-			DoUserAlert("Agp must be in an airport");
+			DoUserAlert("Agp(s) must be in an airport in the heirarchy");
 			return;
 		}
-		
-		if(apt->CountChildren() == 1)
+
+		if(CountChildOfTypeRecursive<IGISEntity>(apt, false) <= 1)
 		{
-			//TODO: This isn't that great of a solution I think, but it might be the only solution
 			sel->Select(apt);
 			root->AbortCommand();
-			DoUserAlert("Airport only contains one Agp, no translation can occur. Add something else to the airport first.");
+			DoUserAlert("Airport only contains one Agp: breaking apart cannot occur. Add something else to the airport first");
 			return;
 		}
 
@@ -2197,7 +2240,7 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		set<WED_ObjPlacement*> added_objs;
 
 		//For all agps
-		for(vector<WED_AgpPlacement*>::iterator agp = all_agp_placements.begin(); agp != all_agp_placements.end(); ++agp)
+		for(vector<WED_AgpPlacement*>::iterator agp = agp_placements.begin(); agp != agp_placements.end(); ++agp)
 		{
 			//Otherwise we have big problems
 			DebugAssert((*agp)->CountChildren() == 0);
@@ -2276,7 +2319,7 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 	}
 	else
 	{
-		DoUserAlert("Nothing to replace");
+		DoUserAlert("There are no relavent special Agps to break apart");
 	}
 }
 
@@ -2285,7 +2328,7 @@ int	WED_CanReplaceVehicleObj(IResolver* resolver)
 	//Returns true if there are any Obj files in the world.
 	//TODO: This Aught to be the current airport
 	WED_Thing * root = WED_GetWorld(resolver);
-	return HasAnyChildOfTypeRecursive<WED_ObjPlacement>(root);
+	return CountChildOfTypeRecursive<WED_ObjPlacement>(root,true);
 }
 
 struct vehicle_replacement_info
