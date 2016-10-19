@@ -980,9 +980,10 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				const char** str = truck_type_strings;
 				while(*str != '\0')
 				{
-					if (truck_type_str.c_str() == *str)
+					if (strcmp(truck_type_str.c_str(),*str)==0)
 					{
 						outApts.back().truck_parking.back().parking_type = (str - truck_type_strings) + apt_truck_pushback; //Aka + apt_truck_begining of enums
+						break;
 					}
 					++str;
 					if (*str == '\0')
