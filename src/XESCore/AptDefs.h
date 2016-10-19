@@ -260,6 +260,7 @@ enum {
 	ramp_operation_cargo = 3,
 	ramp_operation_military = 4,
 	
+	//First entry of the service truck types
 	apt_truck_pushback = 0,
 	apt_truck_fuel_prop,
 	apt_truck_fuel_jet,

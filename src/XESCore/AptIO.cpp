@@ -995,6 +995,52 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			break;
 		case apt_truck_destination:
 			// 1401 lat lon heading type|type|type... name
+			if (vers < ATC_VERS3) ok = "Error: no ATC truck destinations in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: truck destination outside an airport.";
+			else
+			{
+				double lat, lon, heading = 0.0;
+				string truck_types_for_dest;
+				string name;
+				if(TextScanner_FormatScan(s,"idddTT",
+											&rec_code,
+											&lat,
+											&lon,
+											&heading,
+											&truck_types_for_dest,
+											&name) != 6)
+				{ 
+					ok = "Error: Illegal truck destination";
+				}
+				
+				AptTruckDestination_t truck_dest;
+				truck_dest.location = Point2(lat, lon);
+				truck_dest.heading = heading;
+				truck_dest.name = name;
+
+				//TODO: One day create a multi_scan_bitfields if this case happens again?
+				std::vector<std::string> tokenized;
+				tokenize_string(truck_types_for_dest.begin(), truck_types_for_dest.end(), back_inserter(tokenized), '|');
+				for (vector<string>::iterator itr = tokenized.begin(); itr != tokenized.end(); ++itr)
+				{
+					const char** str = truck_type_strings;
+					while (*str != '\0')
+					{
+						if (strcmp(itr->c_str(), *str) == 0)
+						{
+							truck_dest.truck_types.insert((str - truck_type_strings) + apt_truck_pushback); //Aka + apt_truck_begining of enums
+							break;
+						}
+						++str;
+						if (*str == '\0')
+						{
+							ok = ("Error: Truck type " + *itr + " is not supported.");
+						}
+					}
+				}
+
+				outApts.back().truck_destinations.push_back(truck_dest);
+			}
 			break;
 		case apt_done:
 			forceDone = true;
