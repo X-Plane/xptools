@@ -205,6 +205,8 @@ ENUM_DOMAIN(ATCServiceTruckType,"Service Truck Type")
 	ENUM(atc_ServiceTruck_Baggage_Train,		"Baggage Train",		apt_truck_baggage_train)
 	ENUM(atc_ServiceTruck_Baggage_Loader,		"Baggage Loader",		apt_truck_baggage_loader)
 	ENUM(atc_ServiceTruck_Crew_Car,				"Crew Car",				apt_truck_crew_car)
+	ENUM(atc_ServiceTruck_Crew_Limo,			"Crew Limo",			apt_truck_crew_limo)
+	ENUM(atc_ServiceTruck_Crew_Ferrari,			"Crew Ferrari",			apt_truck_crew_ferrari)
 	ENUM(atc_ServiceTruck_Ground_Power_Unit,	"Ground Power Unit",	apt_truck_ground_power_unit)
 
 ENUM_DOMAIN(ATCRunwayOneway,"Runway Direction")

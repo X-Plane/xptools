@@ -56,7 +56,7 @@ const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos"
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
 
-const char * truck_type_strings[] = { "pushback", "fuel_props", "fuel_jets","food","baggage_loader","baggage_train","crew_car","gpu", 0 };
+const char * truck_type_strings[] = { "pushback", "fuel_props", "fuel_jets","food","baggage_loader","baggage_train","crew_car","crew_limo","crew_ferrari","gpu", 0 };
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)
@@ -947,7 +947,54 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				last_edge = &outApts.back().taxi_route.service_roads.back();
 			}
 			break;
+		case apt_truck_parking:
+			//1400 lat lon heading type cars name
+			if (vers < ATC_VERS3) ok = "Error: no ATC truck parking locations in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi parking location outside an airport.";
+			else
+			{
+				outApts.back().truck_parking.push_back(AptTruckParking_t());
+				AptTruckParking_t;
+				string truck_type_str;
+				double lat, lon;
+				if (TextScanner_FormatScan(s,
+					"idddTiT|",
+					&rec_code,
+					&lat,
+					&lon,
+					&outApts.back().truck_parking.back().heading,
+					&truck_type_str,
+					&outApts.back().truck_parking.back().train_car_count,
+					&outApts.back().truck_parking.back().name) != 7)
+				{
+					ok = "Error: Illegal truck parking.";
+				}
 
+				outApts.back().truck_parking.back().location = Point2(lon, lat);
+
+				if (truck_type_str == "\0")
+				{
+					ok = "Error: Truck type string cannot be null";
+				}
+
+				const char** str = truck_type_strings;
+				while(*str != '\0')
+				{
+					if (truck_type_str.c_str() == *str)
+					{
+						outApts.back().truck_parking.back().parking_type = (str - truck_type_strings) + apt_truck_pushback; //Aka + apt_truck_begining of enums
+					}
+					++str;
+					if (*str == '\0')
+					{
+						ok = ("Error: Truck type " + truck_type_str + " is not supported.");
+					}
+				}
+			}
+			break;
+		case apt_truck_destination:
+			// 1401 lat lon heading type|type|type... name
+			break;
 		case apt_done:
 			forceDone = true;
 			break;
@@ -1326,8 +1373,8 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					}
 					fprintf(fi," %s" CRLF, dst->name.c_str());
 					#if !DEV
-						#error we need to have an importer for this.
-						#error we need to have a validator for this.
+					//	#error we need to have an importer for this.
+					//	#error we need to have a validator for this.
 					#endif
 				}
 

@@ -86,7 +86,7 @@ enum {
 	apt_meta_data = 1302,				// 1302 <key> <value>
 	
 	apt_truck_parking	= 1400,			// 1400 lat lon heading type cars name
-	apt_truck_destination = 1401,		// 1400 lat lon heading type|type|type name
+	apt_truck_destination = 1401,		// 1401 lat lon heading type|type|type... name
 	
 	// Surface codes
 	apt_surf_none		= 0,
@@ -267,6 +267,8 @@ enum {
 	apt_truck_baggage_loader,
 	apt_truck_baggage_train,
 	apt_truck_crew_car,
+	apt_truck_crew_limo,
+	apt_truck_crew_ferrari,
 	apt_truck_ground_power_unit,
 	
 	apt_truck_destination_fuel_farm = 0,
