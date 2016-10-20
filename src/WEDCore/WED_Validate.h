@@ -58,6 +58,7 @@ enum validate_error_t
 	err_flow_has_opposite_arrivals,
 	err_flow_has_opposite_departures,
 	err_flow_pattern_runway_not_in_airport,
+	err_flow_visibility_negative,
 	err_freq_airport_has_gnd_or_del_but_no_tower,
 	err_freq_could_not_find_at_least_one_valid_freq_for_group,
 	err_freq_del_grnd_twr_in_civilian_band_must_be_on_25khz_spacing,
@@ -120,7 +121,10 @@ enum validate_error_t
 	err_taxiway_hole_does_not_have_at_least_3_sides,
 	err_taxiway_outer_boundary_does_not_have_at_least_3_sides,
 	err_taxiway_surface_water_not_valid_type,
-	err_wind_rule_blank_ICAO_for_METAR
+	err_wind_rule_blank_ICAO_for_METAR,
+	err_wind_rule_invalid_directions,
+	err_wind_rule_invalid_speed,
+	err_time_rule_invalid_times
 };
 
 // The validation error record stores a single validation problem for reporting.

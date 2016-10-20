@@ -50,6 +50,7 @@
 #include "WED_Group.h"
 #include "WED_ATCRunwayUse.h"
 #include "WED_ATCWindRule.h"
+#include "WED_ATCTimeRule.h"
 #include "WED_EnumSystem.h"
 #include "WED_Taxiway.h"
 #include "WED_GroupCommands.h"
@@ -819,20 +820,26 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
 {
+	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, has at least one runway use rule. Otherweise XP 10.51 will give an error.
+
 	string name;
 	flow->GetName(name);
 	AptFlow_t exp;
 	flow->Export(exp);
 	if(exp.icao.empty())
 		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' has a blank ICAO code for its visibility METAR source.", err_flow_blank_ICAO_for_METAR,  flow, apt));
+	if( (exp.visibility_sm < 0.0) ||  (exp.ceiling_ft < 0))
+		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' ceiling and visibility must be positive numbers.", err_flow_visibility_negative, flow, apt));
 
 	if(name.empty())
 		msgs.push_back(validation_error_t("An ATC Flow has a blank name. You must name every flow.", err_flow_blank_name, flow, apt));
 
 	vector<WED_ATCWindRule*>	wind;
+	vector<WED_ATCTimeRule*>	timeR;
 	vector<WED_ATCRunwayUse*>	ruse;
 
 	CollectRecursive(flow, back_inserter(wind));
+	CollectRecursive(flow, back_inserter(timeR));
 	CollectRecursive(flow, back_inserter(ruse));
 
 	if(ruse.empty())
@@ -841,6 +848,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	if(legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
 		msgs.push_back(validation_error_t(string("The pattern runway ") + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.", err_flow_pattern_runway_not_in_airport, flow, apt));
 
+	// Check ATC Wind rules having directions within 0 ..360 deg, speed from 1..99 knots.  Otherweise XP 10.51 will give an error.
+	
 	for(vector<WED_ATCWindRule*>::iterator w = wind.begin(); w != wind.end(); ++w)
 	{
 		WED_ATCWindRule * wrule = *w;
@@ -848,6 +857,25 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		wrule->Export(exp);
 		if(exp.icao.empty())
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_wind_rule_blank_ICAO_for_METAR, wrule, apt));
+
+		if((exp.dir_lo_degs_mag < 0) || (exp.dir_lo_degs_mag > 359) || (exp.dir_hi_degs_mag < 0) || (exp.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
+							|| (exp.dir_lo_degs_mag == exp.dir_hi_degs_mag))
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has invalid from and/or to directions.", err_wind_rule_invalid_directions, wrule, apt));
+
+		if((exp.max_speed_knots < 1) || (exp.max_speed_knots >999))
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_wind_rule_invalid_speed, wrule, apt));
+	}
+	
+	// Check ATC Time rules having times being within 00:00 .. 24:00 hrs, 0..59 minutes and start != end time. Otherweise XP will give an error.
+	
+	for(vector<WED_ATCTimeRule*>::iterator w = timeR.begin(); w != timeR.end(); ++w)
+	{
+		WED_ATCTimeRule * trule = *w;
+		AptTimeRule_t exp;
+		trule->Export(exp);
+		if((exp.start_zulu < 0) || (exp.start_zulu > 2359) || (exp.end_zulu < 0) || (exp.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
+							|| (exp.start_zulu == exp.end_zulu) || (exp.start_zulu % 100 > 59) || (exp.end_zulu % 100 > 59))
+			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_time_rule_invalid_times, trule, apt));
 	}
 
 	#if !GATEWAY_IMPORT_FEATURES
