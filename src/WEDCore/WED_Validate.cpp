@@ -382,7 +382,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	}
 	if (problem_children.size() > 0)
 	{
-		string msg = "Zero length side(s) = duplicated nodes in '" + string(parent->HumanReadableType()) + "' feature.";
+		string msg = string(parent->HumanReadableType()) + string(" has overlapping duplicate vertices. Delete the selected vertices to fix this.");
  		msgs.push_back(validation_error_t(msg, err_gis_poly_zero_length_side, problem_children, apt));
 	}
 #endif
@@ -1006,7 +1006,7 @@ static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vec
 	if(g.equipment == 0)
 		msgs.push_back(validation_error_t("Ramp starts must have at least one valid type of equipment selected.", err_ramp_start_must_have_at_least_one_equip, ramp,apt));
 
-	if(gExportTarget == wet_xplane_1050)
+	if(gExportTarget >= wet_xplane_1050)
 	{
 		if(g.type == atc_ramp_misc || g.type == atc_ramp_hangar)
 		{

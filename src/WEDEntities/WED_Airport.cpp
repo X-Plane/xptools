@@ -108,7 +108,7 @@ void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 	{
 		if(itr->first == key)
 		{
-			itr->second == key;//On collision replace value
+			itr->second = value;//On collision replace value
 			return;
 		}
 	}
