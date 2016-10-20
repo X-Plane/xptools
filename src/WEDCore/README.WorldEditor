@@ -13,11 +13,18 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5.1r1 10/11/16
+	Bug fixes:
+	- WED-698: Fixed import of apt.dat losing ramp operation type data
+	- WED-691: Text changed to “undo vertex modification”
+	- WED-690: Adding nodes to taxi routes added a ramp
+	- WED-586, 526: Validate selects vertices of zero length sides to be deleted
+
 WED 1.5r3 9/26/16
 	Bug fixes:
 	- WED-686: error margin for "Taxi route is not joined to a destination route" set to 1m
 	- WED-683: crash when clicking at extreme zoom levels
-	- WEd-685: taxi sign creation tool uses clipboard
+	- WED-685: taxi sign creation tool uses clipboard
 
 WED 1.5r2 9/24/16
 	Bug fixes:
