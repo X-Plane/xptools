@@ -78,6 +78,10 @@
 // from the gateway.  You don't need this.
 #define GATEWAY_IMPORT_FEATURES 0
 
+// After running ATC Runway Validation, show the hitboxes used for hot zone tests
+// 0 = never, 1 = only those causing a violation, 2 = always show all
+#define DEBUG_VIS_LINES 1
+
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
 
