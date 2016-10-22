@@ -124,7 +124,8 @@ enum validate_error_t
 	err_wind_rule_blank_ICAO_for_METAR,
 	err_wind_rule_invalid_directions,
 	err_wind_rule_invalid_speed,
-	err_time_rule_invalid_times
+	err_time_rule_invalid_times,
+	err_land_apt_no_boundary
 };
 
 // The validation error record stores a single validation problem for reporting.

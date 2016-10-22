@@ -1385,7 +1385,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_AirportSign *>	signs;
 	vector<WED_Taxiway *>		taxiways;
 	vector<WED_RampPosition*>	ramps;
-	vector<WED_Thing *>		runway_or_sealane;
+	vector<WED_Thing *>			runway_or_sealane;
+	vector<WED_AirportBoundary *> boundaries;
 
 	string name, icao;
 	apt->GetName(name);
@@ -1405,6 +1406,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	CollectRecursive(apt, back_inserter(signs));
 	CollectRecursive(apt, back_inserter(taxiways));
 	CollectRecursive(apt, back_inserter(ramps));
+	CollectRecursive(apt, back_inserter(boundaries));
 
 	copy(runways.begin(), runways.end(), back_inserter(runway_or_sealane));
 	copy(sealanes.begin(), sealanes.end(), back_inserter(runway_or_sealane));
@@ -1424,6 +1426,10 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+
+	// require any land airport (i.e. at least one runway) to have an airport boundary defined
+	if(!runways.empty() && boundaries.empty())
+		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains a runway but no airport boundary.", 	err_land_apt_no_boundary, apt,apt));
 
 	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);
