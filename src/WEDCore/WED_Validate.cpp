@@ -1322,8 +1322,10 @@ static bool air_org_code_valid(int min_char, int max_char, bool mix_letters_and_
 		}
 		else
 		{
-			ss << "between " << min_char << " and " << max_char << " characters long";
+			ss << "between " << min_char << " and " << max_char;
 		}
+
+		ss << " characters long";
 		error_content = ss.str();
 		return false;
 	}
@@ -1468,7 +1470,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string faa_code         = who->GetMetaDataValue(wed_AddMetaDataFAA);
 		string error_content;
 
-		if(air_org_code_valid(3,5, true, faa_code, error_content) == false && faa_code.empty() != false)
+		if(air_org_code_valid(3,5, true, faa_code, error_content) == false && faa_code.empty() == false)
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataFAA, faa_code, error_content, who, msgs, apt);
 		}
@@ -1480,7 +1482,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string iata_code        = who->GetMetaDataValue(wed_AddMetaDataIATA);
 		string error_content;
 
-		if(air_org_code_valid(3,3, false, iata_code, error_content) == false && iata_code.empty() != false)
+		if(air_org_code_valid(3,3, false, iata_code, error_content) == false && iata_code.empty() == false)
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataIATA, iata_code, error_content, who, msgs, apt);
 		}
@@ -1492,7 +1494,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string icao_code        = who->GetMetaDataValue(wed_AddMetaDataICAO);
 		string error_content;
 
-		if (air_org_code_valid(4,4, true, icao_code, error_content) == false && icao_code.empty() != false)
+		if (air_org_code_valid(4,4, true, icao_code, error_content) == false && icao_code.empty() == false)
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataICAO, icao_code, error_content, who, msgs, apt);
 		}
