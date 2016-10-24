@@ -1304,7 +1304,7 @@ static bool air_org_code_valid(int min_char, int max_char, bool mix_letters_and_
 	{
 		if (mix_letters_and_numbers == false && has_a_number(org_code))
 		{
-			error_content = org_code + " contains numbers when it shouldn't.";
+			error_content = org_code + " contains numbers when it shouldn't";
 			return false;
 		}
 		else
@@ -1324,7 +1324,7 @@ static bool air_org_code_valid(int min_char, int max_char, bool mix_letters_and_
 		{
 			ss << "between " << min_char << " and " << max_char << " characters long";
 		}
-
+		error_content = ss.str();
 		return false;
 	}
 }
@@ -1338,6 +1338,7 @@ static void add_formated_metadata_error(const string& error_template, int key_en
 
 static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& msgs, WED_Airport * apt)
 {
+	//Key Display Name: (value/error)
 	string error_template = "Metadata pair is invalid %s: (%s/%s)";
 
 	vector<string> all_keys;
@@ -1350,10 +1351,6 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			if (is_a_number(city) == true)
 			{
 				error_content = "City cannot be a number";
-			}
-			else if (std::isdigit(city[0]))
-			{
-				error_content = "City cannot start with a number";
 			}
 
 			if (error_content.empty() == false)
@@ -1387,6 +1384,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		all_keys.push_back(country);
 	}
 
+	int lat_lon_problems = 0;
 	bool valid_lat = false;
 	if(who->ContainsMetaDataKey(wed_AddMetaDataDatumLat))
 	{
@@ -1414,6 +1412,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 			if(error_content.empty() == false)
 			{
+				++lat_lon_problems;
 				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat, datum_lat, error_content, who, msgs, apt);
 			}
 			else
@@ -1449,6 +1448,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 			if(error_content.empty() == false)
 			{
+				++lat_lon_problems;
 				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon, datum_lon, error_content, who, msgs, apt);
 			}
 			else
@@ -1459,7 +1459,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		all_keys.push_back(datum_lon);
 	}
 
-	if(valid_lat == false || valid_lon == false)
+	if(lat_lon_problems > 0 (valid_lat == false || valid_lon == false))
 	{
 		msgs.push_back(validation_error_t(string("Metadata datum latitude and longitude must both be valid and come in a pair"), err_airport_metadata_invalid, who, apt)); 
 	}
@@ -1469,7 +1469,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string faa_code         = who->GetMetaDataValue(wed_AddMetaDataFAA);
 		string error_content;
 
-		if(air_org_code_valid(3,5, true, faa_code, error_content) == false)
+		if(air_org_code_valid(3,5, true, faa_code, error_content) == false && faa_code.empty() != false)
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataFAA, faa_code, error_content, who, msgs, apt);
 		}
@@ -1481,7 +1481,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string iata_code        = who->GetMetaDataValue(wed_AddMetaDataIATA);
 		string error_content;
 
-		if(air_org_code_valid(3,3, false, iata_code, error_content) == false)
+		if(air_org_code_valid(3,3, false, iata_code, error_content) == false && iata_code.empty() != false)
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataIATA, iata_code, error_content, who, msgs, apt);
 		}
@@ -1493,7 +1493,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string icao_code        = who->GetMetaDataValue(wed_AddMetaDataICAO);
 		string error_content;
 
-		if (air_org_code_valid(4,4, true, icao_code, error_content) == false)
+		if (air_org_code_valid(4,4, true, icao_code, error_content) == false && icao_code.empty() != false)
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataICAO, icao_code, error_content, who, msgs, apt);
 		}
@@ -1546,7 +1546,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		region_codes.insert(region_codes.end(), &legal_region_codes[0], &legal_region_codes[NUM_REGION_CODES]);
 		if (find(region_codes.begin(), region_codes.end(), region_code) == region_codes.end())
 		{
-			add_formated_metadata_error(error_template, wed_AddMetaDataRegionCode, region_code, "Region note found", who, msgs, apt);
+			add_formated_metadata_error(error_template, wed_AddMetaDataRegionCode, region_code, "Region not found", who, msgs, apt);
 		}
 	}
 
