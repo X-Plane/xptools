@@ -1338,8 +1338,7 @@ static void add_formated_metadata_error(const string& error_template, int key_en
 
 static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& msgs, WED_Airport * apt)
 {
-	//Key Display Name: (value/error)
-	string error_template = "Metadata pair is invalid %s: (%s/%s)";
+	string error_template = "Metadata pair (%s/%s) is invalid: %s"; //(Key Display Name/value) is invalid: error_content
 
 	vector<string> all_keys;
 	if(who->ContainsMetaDataKey(wed_AddMetaDataCity))
@@ -1400,7 +1399,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 				iss >> latitude;
 				if(latitude < -90.00 || latitude > 90.00)
 				{
-					error_content = "Datum latitude is out of range.";
+					error_content = "Datum latitude is out of range";
 					valid_lat = false;
 				}
 			}
@@ -1438,7 +1437,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 				iss >> longitude;
 				if(longitude < -180.00 || longitude > 180.00)
 				{
-					error_content = "Datum longitude is out of range.";
+					error_content = "Datum longitude is out of range";
 				}
 			}
 			else
@@ -1606,7 +1605,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	{
 		if(itr->find("http") != string::npos)
 		{
-			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is possibly a URL", err_airport_metadata_invalid, who, apt));
+			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
 		}
 	}
 }
