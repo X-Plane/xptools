@@ -1279,7 +1279,7 @@ static bool has_a_number(const string& s)
 {
 	if (!s.empty())
 	{
-		return s.find_first_not_of("0123456789") == std::string::npos;
+		return s.find_first_of("0123456789") != std::string::npos;
 	}
 	return false;
 }
@@ -1343,15 +1343,22 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	string error_template = "Metadata pair (%s/%s) is invalid: %s"; //(Key Display Name/value) is invalid: error_content
 
 	vector<string> all_keys;
+
 	if(who->ContainsMetaDataKey(wed_AddMetaDataCity))
 	{
 		string city = who->GetMetaDataValue(wed_AddMetaDataCity);
 		if (city.empty() == false)
 		{
 			string error_content;
-			if (is_a_number(city) == true)
+			
+			//This is included because of VTCN being located in Nan, Thailand. strtod turns this into IEEE NaN.
+			//Yes, thats a real name, and its probably filled with people named Mr. Null and Ms. Error and their son Bobby Tables
+			if (!(city == "Nan" &&  who->GetMetaDataValue(wed_AddMetaDataCountry) == "Thailand"))
 			{
-				error_content = "City cannot be a number";
+				if (is_a_number(city) == true)
+				{
+					error_content = "City cannot be a number";
+				}
 			}
 
 			if (error_content.empty() == false)
@@ -1440,11 +1447,13 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 				if(longitude < -180.00 || longitude > 180.00)
 				{
 					error_content = "Datum longitude is out of range";
+					valid_lon = false;
 				}
 			}
 			else
 			{
 				error_content = "Datum longitude must be a number";
+				valid_lon = false;
 			}
 
 			if(error_content.empty() == false)
@@ -1460,7 +1469,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		all_keys.push_back(datum_lon);
 	}
 
-	if(lat_lon_problems > 0 (valid_lat == false || valid_lon == false))
+	if(lat_lon_problems > 0 && (valid_lat == false || valid_lon == false))
 	{
 		msgs.push_back(validation_error_t(string("Metadata datum latitude and longitude must both be valid and come in a pair"), err_airport_metadata_invalid, who, apt)); 
 	}
@@ -1542,6 +1551,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 		string region_code      = who->GetMetaDataValue(wed_AddMetaDataRegionCode);
 		all_keys.push_back(region_code);
+		for_each(region_code.begin(), region_code.end(), (int(*)(int))toupper);
 
 		vector<string> region_codes = vector<string>(NUM_REGION_CODES);
 		region_codes.insert(region_codes.end(), &legal_region_codes[0], &legal_region_codes[NUM_REGION_CODES]);
@@ -1605,6 +1615,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 	for(vector<string>::iterator itr = all_keys.begin(); itr != all_keys.end(); ++itr)
 	{
+		for_each(itr->begin(), itr->end(), (int(*)(int))tolower);
 		if(itr->find("http") != string::npos)
 		{
 			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
