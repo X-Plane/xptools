@@ -1298,8 +1298,19 @@ static bool is_a_number(const string& s)
 	return false;
 }
 
+static bool is_all_alnum(const string& s)
+{
+	return count_if(s.begin(), s.end(), ::isalnum) == s.size();
+}
+
 static bool air_org_code_valid(int min_char, int max_char, bool mix_letters_and_numbers, const string& org_code, string& error_content)
 {
+	if (is_all_alnum(org_code) == false)
+	{
+		error_content = org_code + " contains non-ASCII alphanumeric characters. Use only the standard English alphabet";
+		return false;
+	}
+
 	if (org_code.size() >= min_char && org_code.size() <= max_char)
 	{
 		if (mix_letters_and_numbers == false && has_a_number(org_code))
@@ -1551,7 +1562,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 		string region_code      = who->GetMetaDataValue(wed_AddMetaDataRegionCode);
 		all_keys.push_back(region_code);
-		for_each(region_code.begin(), region_code.end(), (int(*)(int))toupper);
+		transform(region_code.begin(), region_code.end(), region_code.begin(), (int(*)(int))toupper);
 
 		vector<string> region_codes = vector<string>(NUM_REGION_CODES);
 		region_codes.insert(region_codes.end(), &legal_region_codes[0], &legal_region_codes[NUM_REGION_CODES]);
@@ -1615,7 +1626,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 	for(vector<string>::iterator itr = all_keys.begin(); itr != all_keys.end(); ++itr)
 	{
-		for_each(itr->begin(), itr->end(), (int(*)(int))tolower);
+		transform(itr->begin(), itr->end(), itr->begin(), (int(*)(int))tolower);
 		if(itr->find("http") != string::npos)
 		{
 			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
