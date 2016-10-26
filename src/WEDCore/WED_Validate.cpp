@@ -43,6 +43,8 @@
 #include "WED_RampPosition.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_ATCFlow.h"
 #include "WED_LibraryMgr.h"
 #include "WED_AirportBoundary.h"
@@ -1304,6 +1306,66 @@ static void ValidateOneTaxiway(WED_Taxiway* twy, validation_error_vector& msgs, 
 
 }
 
+static void ValidateOneTruckDestination(WED_TruckDestination* destination,validation_error_vector& msgs, WED_Airport* apt)
+{
+	string name;
+	destination->GetName(name);
+	set<int> truck_types;
+	destination->GetTruckTypes(truck_types);
+
+	if (truck_types.empty() == true)
+	{
+		msgs.push_back(validation_error_t("Truck destination " + name + " must have at least once truck type selected",destination,apt));
+	}
+}
+
+static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
+{
+	string name;
+	truck_parking->GetName(name);
+	int num_cars = truck_parking->GetNumberOfCars();
+
+	//A member of ATCServiceTruckType
+	int truck_type = truck_parking->GetTruckType();
+	if (truck_type != atc_ServiceTruck_Baggage_Train && truck_parking->GetNumberOfCars() > 0)
+	{
+		string cars_suffix = (num_cars > 2) ? "s" : "";
+		stringstream ss;
+		ss  << "Truck parking location "
+			<< name
+			<< " has "
+			<< truck_parking->GetNumberOfCars()
+			<< " baggage car"
+			<< cars_suffix
+			<< " but is not set to '"
+			<< ENUM_Desc(atc_ServiceTruck_Baggage_Train)
+			<< "'";
+
+		msgs.push_back(validation_error_t(ss.str(), truck_parking, apt));
+	}
+
+	if (num_cars < 0)
+	{
+		stringstream ss;
+		ss  << "Truck parking location "
+			<< name
+			<< " cannot have negative car count of "
+			<< num_cars;
+		msgs.push_back(validation_error_t(ss.str(), truck_parking, apt));
+	}
+
+	int MAX_CARS = 10;
+	if (truck_parking->GetNumberOfCars() > MAX_CARS)
+	{
+		stringstream ss;
+		ss  << "Truck parking location "
+			<< name
+			<< " has more than  "
+			<< MAX_CARS
+			<< " baggage cars";
+		msgs.push_back(validation_error_t(ss.str(), truck_parking, apt));
+	}
+}
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -1319,15 +1381,17 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		  - No runways or helipads or sealanes at all
 		  - Gateway: illegal use of third party library resources
 	 */
-	
+
 	vector<WED_Runway *>		runways;
 	vector<WED_Helipad *>		helipads;
 	vector<WED_Sealane *>		sealanes;
 	vector<WED_AirportSign *>	signs;
 	vector<WED_Taxiway *>		taxiways;
+	vector<WED_TruckDestination*>     truck_destinations;
+	vector<WED_TruckParkingLocation*> truck_parking_locs;
 	vector<WED_RampPosition*>	ramps;
 	vector<WED_Thing *>		runway_or_sealane;
-	
+
 	string name, icao;
 	apt->GetName(name);
 	apt->GetICAO(icao);
@@ -1345,6 +1409,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	CollectRecursive(apt, back_inserter(sealanes));
 	CollectRecursive(apt, back_inserter(signs));
 	CollectRecursive(apt, back_inserter(taxiways));
+	CollectRecursive(apt, back_inserter(truck_destinations));
+	CollectRecursive(apt, back_inserter(truck_parking_locs));
 	CollectRecursive(apt, back_inserter(ramps));
 	
 	copy(runways.begin(), runways.end(), back_inserter(runway_or_sealane));
@@ -1385,21 +1451,31 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ValidateOneTaxiway(*t,msgs,apt);
 	}
 
+	for (vector<WED_TruckDestination*>::iterator t_dest = truck_destinations.begin(); t_dest != truck_destinations.end(); ++t_dest)
+	{
+		ValidateOneTruckDestination(*t_dest, msgs, apt);
+	}
+
+	for(vector<WED_TruckParkingLocation*>::iterator t_park = truck_parking_locs.begin(); t_park != truck_parking_locs.end(); ++t_park)
+	{
+		ValidateOneTruckParking(*t_park,msgs,apt);
+	}
+
 	for(vector<WED_Thing *>::iterator r = runway_or_sealane.begin(); r != runway_or_sealane.end(); ++r)
 	{
 		ValidateOneRunwayOrSealane(*r, msgs,apt);
 	}
-	
+
 	for(vector<WED_Helipad *>::iterator h = helipads.begin(); h != helipads.end(); ++h)
 	{
 		ValidateOneHelipad(*h, msgs,apt);
 	}
-	
+
 	for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
 	{
 		ValidateOneRampPosition(*r,msgs,apt);
 	}
-	
+
 	if(gExportTarget == wet_gateway)
 	{
 		Bbox2 bounds;
