@@ -954,7 +954,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else
 			{
 				outApts.back().truck_parking.push_back(AptTruckParking_t());
-				AptTruckParking_t;
+
 				string truck_type_str;
 				double lat, lon;
 				if (TextScanner_FormatScan(s,
