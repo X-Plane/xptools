@@ -257,7 +257,17 @@ void		WED_CreatePointTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		DebugAssert(info.prop_kind == prop_String);
 		info.prop_kind = prop_TaxiSign;
-	}	
+	}
+	
+	//Disable the baggage car count text field if the type is not Baggage_Train
+	PropertyVal_t prop;
+	truck_type.GetProperty(prop);
+	if (prop.int_val != atc_ServiceTruck_Baggage_Train && n == PropertyItemNumber(&baggage_car_count))
+	{
+		info.prop_name = "."; //The special hardcoded "disable me" string, see IPropertyObject.h
+		info.can_edit = false;
+		info.can_delete = false;
+	}
 }
 
 void		WED_CreatePointTool::GetNthProperty(int n, PropertyVal_t& val) const

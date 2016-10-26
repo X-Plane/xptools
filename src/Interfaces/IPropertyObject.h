@@ -53,7 +53,7 @@ struct PropertyInfo_t {
 	int				can_edit;
 
 	int				prop_kind;	//See the anonymous enum at the top
-	string			prop_name;
+	string			prop_name;	//Having a prop_name of "." will make this make WED not use this property
 	int				digits;
 	int				decimals;			// Used only for doubles
 	bool				round_down;			// If true, forces rounding down (truncation) - otherwise we use standard rounding
