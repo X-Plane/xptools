@@ -1938,22 +1938,24 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	// or null for 'free' stuff.
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
-
+	
 	FILE * fi = stdout;
-#if GATEWAY_IMPORT_FEATURES
-	fi = fopen("validation_report.txt","w");
-#endif
+	string write_mode = "w";
+
+	fi = fopen(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt").c_str(), write_mode.c_str());
 
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{
 		string aname;
 		if(v->airport)
 			v->airport->GetICAO(aname);
-		fprintf(fi,"%s: %s\n", aname.c_str(), v->msg.c_str());
+		if (fi != NULL)
+		{
+			fprintf(fi, "%s: %s\n", aname.c_str(), v->msg.c_str());
+		}
+		fprintf(stdout, "%s: %s\n", aname.c_str(), v->msg.c_str());
 	}
-#if GATEWAY_IMPORT_FEATURES
 	fclose(fi);
-#endif
 
 	if(!msgs.empty())
 	{
@@ -1966,5 +1968,6 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		wrl->CommitOperation();
 		return GATEWAY_IMPORT_FEATURES;
 	}
+
 	return msgs.empty() || GATEWAY_IMPORT_FEATURES;
 }

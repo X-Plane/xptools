@@ -60,6 +60,9 @@ public:
 				 WED_LibraryMgr(const string& local_package);
 				~WED_LibraryMgr();
 
+				
+	//Returns "My Package" of .../Custom Scenery/My Package
+	//Combine with WED_PackageMgr::ComputePath to save a file in the package dir
 	string		GetLocalPackage() const;
 
 	string		GetResourceParent(const string& r);
