@@ -17,7 +17,7 @@ TRIVIAL_COPY(WED_TruckParkingLocation, WED_GISPoint_Heading)
 
 WED_TruckParkingLocation::WED_TruckParkingLocation(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
 	truck_type		(this, "Truck Type",		SQL_Name("",""),	XML_Name("truck_parking_spot","type"   ), ATCServiceTruckType, apt_truck_fuel_prop),
-	number_of_cars	(this, "Number of Cars",	SQL_Name("",""),	XML_Name("truck_parking_spot","number_of_cars"), 3, 1)
+	number_of_cars	(this, "Number of Baggage Cars",	SQL_Name("",""),	XML_Name("truck_parking_spot","number_of_cars"), 3, 1)
 {
 }
 
@@ -58,4 +58,17 @@ void	WED_TruckParkingLocation::Export(		 AptTruckParking_t& x) const
 	
 	x.parking_type = ENUM_Export(truck_type.value);
 	
+}
+
+
+void		WED_TruckParkingLocation::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	if (truck_type.value != atc_ServiceTruck_Baggage_Train && n == PropertyItemNumber(&number_of_cars))
+	{
+		info.prop_name = "."; //Hardcoded "Do not display" name
+	}
+	else
+	{
+		WED_GISPoint_Heading::GetNthPropertyInfo(n, info);
+	}
 }

@@ -30,6 +30,8 @@ public:
 
 	virtual const char *	HumanReadableType(void) const { return "Truck Parking Location"; }
 
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
 private:
 
 	WED_PropIntEnum			truck_type;

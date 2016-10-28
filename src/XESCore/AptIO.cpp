@@ -1402,9 +1402,12 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				if(has_atc3)
 				for(AptTruckParkingVector::const_iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
 				{
+					//Don't export car count unless our type is baggage_train
+					int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
+
 					fprintf(fi,"%2d % 3.8lf % 3.8lf % 4.1f %s %d %s" CRLF,
 						apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
-						truck_type_strings[trk->parking_type], trk->train_car_count, trk->name.c_str());
+						truck_type_strings[trk->parking_type], car_count, trk->name.c_str());
 				}
 
 				if(has_atc3)

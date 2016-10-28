@@ -1325,25 +1325,6 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 	truck_parking->GetName(name);
 	int num_cars = truck_parking->GetNumberOfCars();
 
-	//A member of ATCServiceTruckType
-	int truck_type = truck_parking->GetTruckType();
-	if (truck_type != atc_ServiceTruck_Baggage_Train && truck_parking->GetNumberOfCars() > 0)
-	{
-		string cars_suffix = (num_cars > 2) ? "s" : "";
-		stringstream ss;
-		ss  << "Truck parking location "
-			<< name
-			<< " has "
-			<< truck_parking->GetNumberOfCars()
-			<< " baggage car"
-			<< cars_suffix
-			<< " but is not set to '"
-			<< ENUM_Desc(atc_ServiceTruck_Baggage_Train)
-			<< "'";
-
-		msgs.push_back(validation_error_t(ss.str(), truck_parking, apt));
-	}
-
 	if (num_cars < 0)
 	{
 		stringstream ss;
