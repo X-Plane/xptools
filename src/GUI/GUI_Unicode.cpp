@@ -23,11 +23,56 @@
 
 #include "GUI_Unicode.h"
 
+string_utf8  convert_str_to_utf8(const string& str)
+{
+	return reinterpret_cast<const UTF8*>(str.c_str());
+}
+
+string_utf16 convert_str_to_utf16(const string& str)
+{
+	return convert_utf8_to_utf16(convert_str_to_utf8(str));
+}
+
+string       convert_utf8_to_str(const string_utf8& str_utf8)
+{
+	return reinterpret_cast<const char*>(str_utf8.c_str());
+}
+
+string_utf16 convert_utf8_to_utf16(const string_utf8&  str_utf8)
+{
+	string_utf16 str_utf16;
+	string_utf_8_to_16(str_utf8, str_utf16);
+	return str_utf16;
+}
+
+string       convert_utf16_to_str(const string_utf16& str_utf16)
+{
+	string_utf8 str_utf8;
+	string_utf_16_to_8(str_utf16, str_utf8);
+	return convert_utf8_to_str(str_utf8);
+}
+
+string_utf8 convert_utf16_to_utf8(const string_utf16&  str_utf16)
+{
+	string_utf8 str_utf8;
+	string_utf_16_to_8(str_utf16, str_utf8);
+	return str_utf8;
+}
+
+void         cpy_wbuf_to_buf(const UTF16* wbuf, int wsz, char* buf, int sz)
+{
+	assert(sz >= wsz);
+	if (sz >= wsz)
+	{
+		strcpy(buf, convert_utf16_to_str(string_utf16(wbuf)).c_str());
+	}
+}
+
 // These allocate memory - there is no point in inlining them as they will make a pile o function calls anyway.
-void	string_utf_8_to_16(const string& input, string_utf16& output)
+void	string_utf_8_to_16(const string_utf8& input, string_utf16& output)
 {
 	output.clear();
-	const UTF8 * p = (const UTF8 *) input.c_str();
+	const UTF8 * p = input.c_str();
 	const UTF8 * e = p + input.size();
 	while (p < e)
 	{
@@ -39,7 +84,14 @@ void	string_utf_8_to_16(const string& input, string_utf16& output)
 	}
 }
 
-void	string_utf_16_to_8(const string_utf16& input, string& output)
+void convert_utf_16_to_8(const string_utf16& input, string& output)
+{
+	string_utf8 output_utf8;
+	string_utf_16_to_8(input, output_utf8);
+	output = reinterpret_cast<const char*>(output_utf8.c_str());
+}
+
+void	string_utf_16_to_8(const string_utf16& input, string_utf8& output)
 {
 	output.clear();
 	const UTF16 * p = (const UTF16 *) input.c_str();

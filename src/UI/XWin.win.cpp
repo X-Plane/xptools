@@ -22,6 +22,10 @@
  */
 #include "XWin.h"
 
+#if IBM
+#include "GUI_Unicode.h"
+#endif
+
 #define 	IDT_TIMER1	0x01
 
 #if MINGW_BUILD
@@ -34,7 +38,7 @@ MenuMap	gMenuMap;
 
 static	bool	sIniting = false;
 
-static TCHAR sWindowClass[] = "XGrinderWindow";
+static WCHAR sWindowClass[] = L"XGrinderWindow";
 
 extern	HINSTANCE	gInstance;
 
@@ -43,7 +47,7 @@ map<HWND, XWin *>	sWindows;
 XWin::XWin(int default_dnd)
 {
 	sIniting = true;
-	mWindow = CreateWindow(sWindowClass, "FullScreen",
+	mWindow = CreateWindow(sWindowClass, L"FullScreen",
 		WS_OVERLAPPEDWINDOW,	// Style,
 		10, 10, 50, 50,
 		NULL,	// Parent
@@ -93,7 +97,7 @@ XWin::XWin(
 		(style |= WS_MINIMIZEBOX);
 
 	AdjustWindowRect(&bounds, style, true);
-	mWindow = CreateWindow(sWindowClass, inTitle, style,
+	mWindow = CreateWindow(sWindowClass, convert_str_to_utf16(inTitle).c_str(), style,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		bounds.right-bounds.left, bounds.bottom-bounds.top-1,
 		NULL,	// Parent
@@ -170,7 +174,7 @@ XWin::~XWin()
 
 void			XWin::SetTitle(const char * inTitle)
 {
-	SetWindowText(mWindow, inTitle);
+	SetWindowText(mWindow, convert_str_to_utf16(inTitle).c_str());
 }
 
 void			XWin::SetFilePath(const char * inPath,bool modified)
@@ -561,7 +565,7 @@ xmenu			XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 	mif.cbSize = sizeof(mif);
 	mif.hSubMenu = the_menu;
 	mif.fType = MFT_STRING;
-	mif.dwTypeData = const_cast<char *>(inTitle);
+	mif.dwTypeData = const_cast<wchar_t*>(convert_str_to_utf16(inTitle).c_str());
 	mif.fMask = (item >= 0) ? MIIM_SUBMENU : (MIIM_TYPE | MIIM_SUBMENU);
 
 	if (item == -1)
@@ -580,7 +584,7 @@ int				XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 	MENUITEMINFO	mif = { 0 };
 	mif.cbSize = sizeof(mif);
 	mif.fType = MFT_STRING;
-	mif.dwTypeData = const_cast<char *>(inTitle);
+	mif.dwTypeData = const_cast<UTF16*>(convert_str_to_utf16(inTitle).c_str());
 	mif.fMask = MIIM_TYPE | MIIM_ID;
 	mif.wID = gIDs;
 	::InsertMenuItem(menu, -1, true, &mif);

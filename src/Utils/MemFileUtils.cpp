@@ -446,10 +446,6 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 	void *		addr = NULL;		// Not that you should be doing that
 	int			len = 0;	// anyway.
 #endif
-#if IBM
-	string input(path);
-	string_utf16 output;
-#endif
 
 	obj = new MFMemFile;
 	if (!obj) goto bail;
@@ -518,9 +514,8 @@ cleanmmap:
 	HANDLE			winFile = NULL;
 	HANDLE			winFileMapping = NULL;
 	char *			winAddr = NULL;
-	string_utf_8_to_16(input, output);
 
-	winFile = CreateFileW((const wchar_t*)output.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	winFile = CreateFileW(convert_str_to_utf16(path.operator const char *()).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (!winFile) goto cleanupwin;
 
 	winFileMapping = CreateFileMapping(winFile, NULL, PAGE_READONLY, 0, 0, NULL);
@@ -868,11 +863,8 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	strcpy(SearchPath, dirPath);
 	strcpy(path, dirPath);
 	strcat(path, "\\*.*");
-	string input(path);
-	string_utf16 output;
-	string_utf_8_to_16(input, output);
 
-	hFind = FindFirstFileW((const wchar_t*)output.c_str(), &FindFileData);
+	hFind = FindFirstFileW(convert_str_to_utf16(path).c_str(), &FindFileData);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
@@ -880,13 +872,11 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	}
 	else
 	{
-		string_utf16 in((const unsigned short*)FindFileData.cFileName);
-		string out;
-		string_utf_16_to_8(in, out);
-
-		if ( !( (strcmp(out.c_str(), ".") == 0) || (strcmp(out.c_str(), "..") == 0) ) )
+		string_utf16 in(FindFileData.cFileName);
+		
+		if ( !( (in == L"." || in == L"..")) )
 		{
-			if (cbFunc(out.c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+			if (cbFunc(convert_utf16_to_str(in).c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 			{
 				FindClose(hFind);
 				return true;
@@ -895,11 +885,10 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 		while (FindNextFileW(hFind, &FindFileData) != 0)
 		{
-			in = (const unsigned short*)FindFileData.cFileName;
-			string_utf_16_to_8(in, out);
-			if ( !( (strcmp(out.c_str(), ".") == 0) || (strcmp(out.c_str(), "..") == 0) ) )
+			in = FindFileData.cFileName;
+			if ( !( (in == L"." || in == L"..") ))
 			{
-				if (cbFunc(out.c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+				if (cbFunc(convert_utf16_to_str(in).c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 				{
 					FindClose(hFind);
 					return true;
@@ -990,19 +979,19 @@ static int getoct(char *p,int width)
 int
 MF_GetDirectoryBulk(
 		const char *		path,
-		bool (* 			cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * refcon),
+		bool(*cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * refcon),
 		void *				refcon)
 {
 #if IBM
 
-	char				searchPath[MAX_PATH];
+	WCHAR				searchPath[MAX_PATH];
 	WIN32_FIND_DATA		findData;
 	HANDLE				hFind;
 	int					total = 0;
 	unsigned long long	when;
 
-	strcpy(searchPath,path);
-	strcat(searchPath,"\\*.*");
+	wcscpy(searchPath,(const WCHAR*)path);
+	wcscat(searchPath,L"\\*.*");
 
 	hFind = FindFirstFile(searchPath,&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return 0;
@@ -1010,13 +999,13 @@ MF_GetDirectoryBulk(
 	++total;
 	when = ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
 
-	if (cbFunc(findData.cFileName, findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon))
+	if (cbFunc(convert_utf16_to_str(findData.cFileName).c_str(), findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon))
 	{
 		while(FindNextFile(hFind,&findData) != 0)
 		{
 			++total;
 			when= ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
-			if (!cbFunc(findData.cFileName, findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
+			if (!cbFunc(convert_utf16_to_str(findData.cFileName).c_str(), findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
 		}
 	}
 

@@ -22,6 +22,9 @@
  */
 
 #include "GUI_Help.h"
+#if IBM
+#include "GUI_Unicode.h"
+#endif
 #if LIN
 #include <QtGui/QDesktopServices>
 #include <QtCore/QUrl>
@@ -36,7 +39,7 @@ void	GUI_LaunchURL(const char * url)
 		system(cmd.c_str());
 	#endif
 	#if IBM
-		ShellExecute(NULL,"open",url,NULL,NULL,SW_SHOWNORMAL);
+		ShellExecute(NULL,L"open",convert_str_to_utf16(url).c_str(),NULL,NULL,SW_SHOWNORMAL);
 	#endif
 	#if LIN
      	QDesktopServices::openUrl(QString::fromUtf8(url));

@@ -79,7 +79,7 @@ int		GetFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
 					int					inID,
-					char * 				outFileName,
+					char *				outFileName,
 					int					inBufSize);
 
 // 0-len-terminated list of paths, you must free!

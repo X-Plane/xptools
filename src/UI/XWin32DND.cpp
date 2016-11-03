@@ -22,6 +22,10 @@
  */
 #include "XWin32DND.h"
 
+#if IBM
+#include "GUI_Unicode.h"
+#endif
+
 /**************************************************************************
 
    CDropTarget::CDropTarget()
@@ -314,14 +318,14 @@ void CDropTarget::DisplayFileNames(HWND hwndOwner, HGLOBAL hgFiles)
 
 	nFiles = DragQueryFile((HDROP)hgFiles, 0xFFFFFFFF, NULL, 0);
 
-	TCHAR	path[MAX_PATH+1];
+	WCHAR	path[MAX_PATH+1];
 
 	vector<string>	fileList;
 
 	for(i = 0; i < nFiles; i++)
 	{
 		DragQueryFile((HDROP)hgFiles, i, path, MAX_PATH);
-		fileList.push_back(path);
+		fileList.push_back(convert_utf16_to_str(path));
 	}
 
 	if(m_ReceiverObj)

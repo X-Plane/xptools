@@ -60,6 +60,37 @@ static int desens_partial(DIR * dir, char * io_file)
 }
 #endif
 
+//--XDefs fopen trick----------------------------------------------------------
+#if IBM
+FILE * x_fopen(const char * _Filename, const char * _Mode)
+{	
+	return _wfopen(convert_str_to_utf16(_Filename).c_str(), convert_str_to_utf16(_Mode).c_str());
+}
+
+void x_ofstream::open(const char *_Filename, ios_base::openmode _Mode, int _Prot)
+{
+	if (_Filebuffer.open(convert_str_to_utf16(_Filename).c_str(), _Mode | ios_base::out, _Prot) == 0)
+		_Myios::setstate(ios_base::failbit);
+	else
+		_Myios::clear();
+}
+
+void x_ofstream::open(const wchar_t *_Filename, ios_base::openmode _Mode, int _Prot)
+{
+	if (_Filebuffer.open(_Filename, _Mode | ios_base::out, _Prot) == 0)
+		_Myios::setstate(ios_base::failbit);
+	else
+		_Myios::clear();	// added with C++0X
+}
+
+void x_ofstream::close()
+{
+	if (_Filebuffer.close() == 0)
+		_Myios::setstate(ios_base::failbit);
+}
+#endif
+//-----------------------------------------------------------------------------
+
 int FILE_case_correct(char * buf)
 {
 	#if LIN
@@ -139,10 +170,7 @@ bool FILE_exists(const char * path)
 {
 #if IBM
 	struct _stat ss;
-	string input(path);
-	string_utf16 output;
-	string_utf_8_to_16(input, output);
-	if (_wstat((const wchar_t*)output.c_str(),&ss) < 0) return false;
+	if (_wstat(convert_str_to_utf16(path).c_str(),&ss) < 0) return false;
 #else
 	struct stat ss;
 	if (stat(path,&ss) < 0) return 0;
@@ -178,7 +206,25 @@ string FILE_get_file_extension(const string& path)
 
 int FILE_get_file_meta_data(const string& path, struct stat& meta_data)
 {
-	return stat(path.c_str(), &meta_data);
+#if IBM
+	struct _stat64i32 wstat = { 0 };
+	int res = _wstat(convert_str_to_utf16(path).c_str(), &wstat);
+	meta_data.st_dev = wstat.st_dev;
+	meta_data.st_ino = wstat.st_ino;
+	meta_data.st_mode = wstat.st_mode;
+	meta_data.st_nlink = wstat.st_nlink;
+	meta_data.st_uid = wstat.st_uid;
+	meta_data.st_gid = wstat.st_gid;
+	meta_data.st_rdev = wstat.st_rdev;
+	meta_data.st_size = wstat.st_size;
+	meta_data.st_atime = wstat.st_atime;
+	meta_data.st_mtime = wstat.st_mtime;
+	meta_data.st_ctime = wstat.st_ctime;
+#else
+	int res = stat(path.c_str(), &meta_data);
+#endif
+	return res;
+
 }
 
 string FILE_get_file_name(const string& path)
@@ -226,13 +272,12 @@ int FILE_delete_file(const char * nuke_path, bool is_dir)
 	// NOTE: if the path is to a dir, it will end in a dir-char.
 	// We must clip off this char and also call the right routine on Windows.
 #if IBM
-	string input(nuke_path);
-	string_utf16 output;
-	string_utf_8_to_16(input, output);
+	string_utf16 output = convert_str_to_utf16(nuke_path);
+	
 	if (is_dir)	{
-		if (!RemoveDirectoryW((const wchar_t*)output.c_str()))	return GetLastError();
+		if (!RemoveDirectoryW(output.c_str()))	return GetLastError();
 	} else {
-		if (!DeleteFileW((const wchar_t*)output.c_str()))			return GetLastError();
+		if (!DeleteFileW(output.c_str()))		return GetLastError();
 	}
 #endif
 
@@ -286,12 +331,7 @@ int FILE_read_file_to_string(const string& path, string& content)
 int FILE_rename_file(const char * old_name, const char * new_name)
 {
 #if IBM
-	string oldn(old_name);
-	string newn(new_name);
-	string_utf16 old16, new16;
-	string_utf_8_to_16(oldn, old16);
-	string_utf_8_to_16(newn, new16);
-	if(!MoveFileW((const wchar_t*)old16.c_str(), (const wchar_t*)new16.c_str())) return GetLastError();
+	if(!MoveFileW(convert_str_to_utf16(old_name).c_str(), convert_str_to_utf16(new_name).c_str())) return GetLastError();
 #endif
 #if LIN || APL
 	if(rename(old_name,new_name)<0)	return errno;
@@ -302,21 +342,18 @@ int FILE_rename_file(const char * old_name, const char * new_name)
 int FILE_get_directory(const string& path, vector<string> * out_files, vector<string> * out_dirs)
 {
 #if IBM
-
-	string				searchPath(path);
+	string_utf16		searchPath = convert_str_to_utf16(path) + L"\\*.*";
 	WIN32_FIND_DATA		findData;
 	HANDLE				hFind;
 	int					total = 0;
 
-	searchPath += string("\\*.*");
-
-	hFind = FindFirstFile(searchPath.c_str(),&findData);
+	hFind = FindFirstFile((LPCWSTR)searchPath.c_str(),&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return -1;
 
 	do {
 
-		if(strcmp(findData.cFileName,".") == 0 ||
-			strcmp(findData.cFileName,"..") == 0)
+		if(wcscmp(findData.cFileName,L".") == 0 ||
+			wcscmp(findData.cFileName,L"..") == 0)
 		{
 			continue;
 		}
@@ -324,14 +361,14 @@ int FILE_get_directory(const string& path, vector<string> * out_files, vector<st
 		if(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			if(out_dirs)
-				out_dirs->push_back(findData.cFileName);
+				out_dirs->push_back(convert_utf16_to_str(findData.cFileName));
 		}
 		else
 		{
 			if(out_files)
-				out_files->push_back(findData.cFileName);
+				out_files->push_back(convert_utf16_to_str(findData.cFileName));
 		}
-		
+
 		++total;
 
 	} while(FindNextFile(hFind,&findData) != 0);
@@ -418,10 +455,7 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 int FILE_make_dir(const char * in_dir)
 {
 	#if IBM
-		string input(in_dir);
-		string_utf16 output;
-		string_utf_8_to_16(input, output);	
-		if (!CreateDirectoryW((const wchar_t*)output.c_str() ,NULL))	return GetLastError();
+		if (!CreateDirectoryW(convert_str_to_utf16(in_dir).c_str() ,NULL))	return GetLastError();
 	#endif
 	#if LIN || APL
 		if (mkdir(in_dir,0755) != 0)		return errno;
@@ -449,13 +483,13 @@ date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second)
 {
 //Inspired by http://msdn.microsoft.com/en-us/library/14h5k7ff.aspx
 #if IBM 
-	struct _stat firstFile;
-	struct _stat secondFile;
+	struct stat firstFile;
+	struct stat secondFile;
 	int error1;
 	int error2;
 
-	error1 = _stat(first,&firstFile);
-	error2 = _stat(second,&secondFile);
+	error1 = FILE_get_file_meta_data(first, firstFile);
+	error2 = FILE_get_file_meta_data(second, secondFile);
 
 	if(error1 != 0)
 	{

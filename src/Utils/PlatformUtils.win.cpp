@@ -22,28 +22,39 @@
  */
 #include <Windows.h>
 #include <Commdlg.h>
+#include "GUI_Unicode.h"
 #include "PlatformUtils.h"
 #include <shlobj.h>
 #include <stdio.h>
 
 const char * GetApplicationPath(char * pathBuf, int sz)
 {
-	if (GetModuleFileName(NULL, pathBuf, sz))
+	UTF16 utf16_path_buf[MAX_PATH];
+	if (GetModuleFileName(NULL, utf16_path_buf, sz))
+	{
+		cpy_wbuf_to_buf(utf16_path_buf, MAX_PATH, pathBuf, sz);
 		return pathBuf;
+	}
 	else
+	{
 		return NULL;
+	}
 }
 
 const char * GetCacheFolder(char cache_path[], int sz)
 {
+	assert(sz == MAX_PATH);
+
 	if(sz != MAX_PATH)
 	{
 		return NULL;
 	}
 
-	HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, cache_path);
+	WCHAR wc_cache_path[MAX_PATH];
+	HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, wc_cache_path);
 	if (SUCCEEDED(res))
 	{
+		cpy_wbuf_to_buf(wc_cache_path, MAX_PATH, cache_path, sz);
 		return cache_path;
 	}
 	else
@@ -54,17 +65,20 @@ const char * GetCacheFolder(char cache_path[], int sz)
 
 const char * GetTempFilesFolder(char temp_path[], int sz)
 {
+	assert(sz == MAX_PATH);
 	if(sz > MAX_PATH)
 	{
 		return NULL;
 	}
 
-	int result = GetTempPath(sz, temp_path);
-	if (result > strlen(temp_path) || result == 0)
+	WCHAR wc_temp_path[MAX_PATH];
+	int result = GetTempPath(sz, wc_temp_path);
+	if (result > wcslen(wc_temp_path) || result == 0)
 	{
 		return NULL;
 	}
-	
+
+	cpy_wbuf_to_buf(wc_temp_path, MAX_PATH, temp_path, sz);
 	return  temp_path;
 }
 
@@ -73,63 +87,78 @@ int		GetFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
 					int					inID,
-					char * 				outFileName,
+					char *				outFileName,
 					int					inBufSize)
 {
-		BROWSEINFO	bif = { 0 };
-		OPENFILENAME	ofn = { 0 };
+	BROWSEINFO	bif = { 0 };
+	OPENFILENAME	ofn = { 0 };
 
+	WCHAR file_name[MAX_PATH] = { 0 };
+	ofn.lpstrFile = file_name;
+
+	ofn.lpstrTitle = convert_str_to_utf16(inPrompt).c_str();
 
 	BOOL result;
 	switch(inType) {
 	case getFile_Open:
 	case getFile_Save:
+	{
 		ofn.lStructSize = sizeof(ofn);
-		ofn.lpstrFilter = "All Files\000*.*\000";
+		ofn.lpstrFilter = L"All Files\000*.*\000";
 		ofn.nFilterIndex = 1;	// Start with .acf files
-		ofn.lpstrFile = outFileName;
+		
+		
+		ofn.lpstrFile = file_name;
 		if (inType != getFile_Save)
 			outFileName[0] = 0;		// No initialization for open.
 		ofn.nMaxFile = inBufSize;		// Guess string length?
 		ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
-		ofn.lpstrTitle = inPrompt;
+
 		result = (inType == getFile_Open) ? GetOpenFileName(&ofn) : GetSaveFileName(&ofn);
+		
+		strcpy(outFileName, convert_utf16_to_str(file_name).c_str());
 		return (result) ? 1 : 0;
+	}
 	case getFile_OpenImages:
+	{
 		ofn.lStructSize = sizeof(ofn);
-		ofn.lpstrFilter = "GeoTiff (*.tif)\0*.tif\0PNG (*.png)\0*.png\0JPEG (*.jpg, *.jpeg)\0*.jpg;*.jpeg\0BMP (*.bmp)\0*.bmp\0DDS (*.dds)\0*.dds\0\0\0";
+		ofn.lpstrFilter = L"GeoTiff (*.tif)\0*.tif\0PNG (*.png)\0*.png\0JPEG (*.jpg, *.jpeg)\0*.jpg;*.jpeg\0BMP (*.bmp)\0*.bmp\0DDS (*.dds)\0*.dds\0\0\0";
 		ofn.nFilterIndex = 1;	// Start with .acf files
-		ofn.lpstrFile = outFileName;
+
 		if (inType != getFile_Save)
 			outFileName[0] = 0;		// No initialization for open.
 		ofn.nMaxFile = inBufSize;		// Guess string length?
 		ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
-		ofn.lpstrTitle = inPrompt;
+
 		result = (inType == getFile_OpenImages) ? GetOpenFileName(&ofn) : GetSaveFileName(&ofn);
 		return (result) ? 1 : 0;
+	}
 	case getFile_PickFolder:
+	{
 		bif.hwndOwner = NULL;
 		bif.pidlRoot = NULL;
 		bif.pszDisplayName = NULL;
-		bif.lpszTitle = inPrompt;
 		bif.ulFlags = 0;
 		bif.lpfn = NULL;
 		bif.lParam = NULL;
 		LPITEMIDLIST items = SHBrowseForFolder(&bif);
 		if (items == NULL) return 0;
 		result = 0;
-        if (SHGetPathFromIDList (items, outFileName))
-        {
-        	result = 1;
-//			strcat(outFileName, "\\");
+
+		if (SHGetPathFromIDList(items, file_name))
+		{
+			result = 1;
+			strcpy(outFileName, convert_utf16_to_str(file_name).c_str());
+			strcat(outFileName, "\\");
 		}
-        IMalloc * imalloc = 0;
-        if ( SUCCEEDED( SHGetMalloc ( &imalloc )) )
-        {
-            imalloc->Free ( items );
-            imalloc->Release ( );
-        }
-        return result ? 1 : 0;
+		IMalloc * imalloc = 0;
+		if (SUCCEEDED(SHGetMalloc(&imalloc)))
+		{
+			imalloc->Free(items);
+			imalloc->Release();
+		}
+		return result ? 1 : 0;
+	}
 	}
 	return 0;
 }
@@ -142,24 +171,24 @@ char *	GetMultiFilePathFromUser(
 {
 	OPENFILENAME	ofn = { 0 };
 	BOOL result;
-	char * buf = (char *) malloc(1024 * 1024);
+	WCHAR * buf = (WCHAR *) malloc(1024 * 1024);
 
 	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFilter = "All Files\000*.*\000";
+	ofn.lpstrFilter = L"All Files\000*.*\000";
 	ofn.nFilterIndex = 1;	// Start with .acf files
 	ofn.lpstrFile = buf;
 	buf[0] = 0;		// No initialization for open.
 	ofn.nMaxFile = 1024 * 1024;		// Guess string length?
 	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
-	ofn.lpstrTitle = inPrompt;
+	ofn.lpstrTitle = convert_str_to_utf16(inPrompt).c_str();
 	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER;
 
 	result = GetOpenFileName(&ofn);
 	if(result)
 	{
-		vector<string>	files;
-		string path(buf);
-		char * fptr = buf+path.size()+1;
+		vector<string_utf16>	files;
+		string_utf16 path(buf);
+		WCHAR* fptr = buf+path.size()+1;
 
 		// One-file case: we get one complete fully qualified file path, full stop.
 		if(*fptr == 0)
@@ -170,8 +199,8 @@ char *	GetMultiFilePathFromUser(
 		// Multi-file path - we got the dir once in "path" and now we get the null-terminated list of file names.
 		while(*fptr)
 		{
-			files.push_back(path + "\\" + fptr);
-			fptr += (strlen(fptr) + 1);
+			files.push_back(path + L"\\" + fptr);
+			fptr += (wcslen(fptr) + 1);
 		}
 
 		int buf_size = 1;
@@ -183,7 +212,7 @@ char *	GetMultiFilePathFromUser(
 
 		for(int i = 0; i < files.size(); ++i)
 		{
-			strcpy(p, files[i].c_str());
+			strcpy(p, convert_utf16_to_str(files[i]).c_str());
 			p += (files[i].size() + 1);
 		}
 		*p = 0;
@@ -202,15 +231,15 @@ char *	GetMultiFilePathFromUser(
 
 void	DoUserAlert(const char * inMsg)
 {
-	MessageBox(NULL, inMsg, "Alert", MB_OK + MB_ICONWARNING);
+	MessageBox(NULL, convert_str_to_utf16(inMsg).c_str(), L"Alert", MB_OK + MB_ICONWARNING);
 }
 
 int		ConfirmMessage(const char * inMsg, const char * proceedBtn, const char * cancelBtn)
 {
 	int result = MessageBox(
 						NULL,				// No Parent HWND
-						inMsg,
-						"X-Plane 8",			// Dialog caption
+						convert_str_to_utf16(inMsg).c_str(),
+						L"X-Plane 10",	// Dialog caption
 //						MB_OKCANCEL +
 						MB_YESNO +
 //						MB_ICONWARNING +
@@ -224,8 +253,8 @@ int DoSaveDiscardDialog(const char * inMessage1, const char * inMessage2)
 {
 	int result = MessageBox(
 			NULL,
-			inMessage2,
-			inMessage1,
+			convert_str_to_utf16(inMessage2).c_str(),
+			convert_str_to_utf16(inMessage1).c_str(),
 			MB_YESNOCANCEL +
 			MB_ICONEXCLAMATION);
 	switch(result) {
