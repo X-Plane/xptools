@@ -86,7 +86,7 @@ bool			GUI_GetPrefsDir(string& path)
 	#endif
 	#if IBM
 		WCHAR buf[MAX_PATH];
-		HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf);
+		HRESULT res = SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf);
 		if (!SUCCEEDED(res))
 			return false;
 

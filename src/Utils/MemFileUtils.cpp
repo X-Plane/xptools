@@ -23,10 +23,14 @@
 
 #include "MemFileUtils.h"
 #include "FileUtils.h"
-#include <stdio.h>
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <wchar.h>
+#include <stdio.h>
 
 /*
 	TODO - level two analysis
@@ -903,7 +907,6 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 #endif
 }
 
-
 MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 {
 	long long	file_size = -1;
@@ -925,9 +928,14 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 		return mf_Directory;
 	file_size = ss.st_size;
 */
-	struct stat ss;
-	if (stat(path, &ss) < 0)
+	struct _stat64 ss;
+	string_utf16 utf_path = convert_str_to_utf16(path);
+	const wchar_t* c_path = utf_path.c_str();
+	int ret = _wstat64(c_path, &ss);
+	if (ret < 0)
+	{
 		return mf_BadFile;
+	}
 	if (S_ISDIR(ss.st_mode) != 0) return mf_Directory;
 	file_size = ss.st_size;
 
@@ -985,7 +993,7 @@ MF_GetDirectoryBulk(
 #if IBM
 
 	WCHAR				searchPath[MAX_PATH];
-	WIN32_FIND_DATA		findData;
+	WIN32_FIND_DATAW	findData;
 	HANDLE				hFind;
 	int					total = 0;
 	unsigned long long	when;
@@ -993,7 +1001,7 @@ MF_GetDirectoryBulk(
 	wcscpy(searchPath,(const WCHAR*)path);
 	wcscat(searchPath,L"\\*.*");
 
-	hFind = FindFirstFile(searchPath,&findData);
+	hFind = FindFirstFileW(searchPath,&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return 0;
 
 	++total;
@@ -1001,7 +1009,7 @@ MF_GetDirectoryBulk(
 
 	if (cbFunc(convert_utf16_to_str(findData.cFileName).c_str(), findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon))
 	{
-		while(FindNextFile(hFind,&findData) != 0)
+		while(FindNextFileW(hFind,&findData) != 0)
 		{
 			++total;
 			when= ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);

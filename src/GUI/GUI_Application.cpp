@@ -22,10 +22,6 @@
  */
 
 #include "GUI_Application.h"
-#if IBM
-#include "GUI_Unicode.h"
-#endif
-
 #include "AssertUtils.h"
 #include "GUI_Menus.h"
 #include "XWin.h"
@@ -345,7 +341,7 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 		mif.cbSize = sizeof(mif);
 		mif.hSubMenu = (HMENU) new_menu;
 		mif.fType = MFT_STRING;
-		mif.dwTypeData = const_cast<WCHAR*>(convert_str_to_utf16(inTitle).c_str());
+		mif.dwTypeData = const_cast<char *>(inTitle);
 		mif.fMask = (parent == GetPopupContainer()) ? MIIM_TYPE : (MIIM_TYPE | MIIM_SUBMENU);
 
 		if (parent == GetMenuBar())
@@ -457,7 +453,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			if(is_disable) mif.fState |= MFS_DISABLED;
 			mif.wID = items[n].cmd;
 			mif.dwItemData = items[n].cmd;
-			mif.dwTypeData = const_cast<WCHAR*>(convert_str_to_utf16(itemname).c_str());
+			mif.dwTypeData = const_cast<char*>(itemname.c_str());
 			int err = InsertMenuItem((HMENU) new_menu, -1, true, &mif);
 
 			++n;

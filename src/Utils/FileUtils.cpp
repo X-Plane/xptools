@@ -343,11 +343,11 @@ int FILE_get_directory(const string& path, vector<string> * out_files, vector<st
 {
 #if IBM
 	string_utf16		searchPath = convert_str_to_utf16(path) + L"\\*.*";
-	WIN32_FIND_DATA		findData;
+	WIN32_FIND_DATAW	findData;
 	HANDLE				hFind;
 	int					total = 0;
 
-	hFind = FindFirstFile((LPCWSTR)searchPath.c_str(),&findData);
+	hFind = FindFirstFileW((LPCWSTR)searchPath.c_str(),&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return -1;
 
 	do {
@@ -371,7 +371,7 @@ int FILE_get_directory(const string& path, vector<string> * out_files, vector<st
 
 		++total;
 
-	} while(FindNextFile(hFind,&findData) != 0);
+	} while(FindNextFileW(hFind,&findData) != 0);
 
 
 	FindClose(hFind);

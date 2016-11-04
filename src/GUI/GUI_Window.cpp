@@ -26,10 +26,7 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
 #include "GUI_Clipboard.h"
-
-#if IBM
 #include "GUI_Unicode.h"
-#endif
 #include "ObjCUtils.h"
 
 #if APL
@@ -466,7 +463,7 @@ int		GUI_Window::AdvancedPerformDrop(void * ns_dragging_info)
 #if IBM
 void CopyMenusRecursive(HMENU src, HMENU dst)
 {
-	WCHAR buf[1024];
+	char buf[1024];
 	int num_items = ::GetMenuItemCount(src);
 	for (int i = 0; i < num_items; ++i)
 	{
@@ -1263,14 +1260,8 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 						Client2OGL_X(me->mMouse.x,hWnd),
 						Client2OGL_Y(me->mMouse.y,hWnd),
 						me->mTipBounds, tip);
-					if (tip.empty())
-					{
-						di->szText[0] = 0;
-					}
-					else
-					{
-						wcscpy_s(di->szText, 80, convert_str_to_utf16(tip).c_str());
-					}
+					if (tip.empty()) di->szText[0] = 0;
+					else			 strncpy_s(di->szText,80,tip.c_str(),_TRUNCATE);
 					return 0;
 				default:
 					return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
@@ -1335,7 +1326,7 @@ static void FindCmdsRecursive(HMENU menu, CmdMap_t& io_map)
 
 static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
 {
-	WCHAR buf[256];
+	char buf[256];
 	int ct = GetMenuItemCount(menu);
 	for (int n = 0; n < ct; ++n)
 	{
@@ -1348,10 +1339,10 @@ static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
 		string suffix;
 		if (mif.fType == MFT_STRING)
 		{
-			string_utf16 old_name(buf);
+			string old_name(buf);
 			string::size_type tab = old_name.find('\t');
 			if (tab != old_name.npos)
-				suffix = convert_utf16_to_str(old_name.substr(tab));
+				suffix = old_name.substr(tab);
 		}
 		if (mif.hSubMenu != NULL)
 			ApplyCmdsRecursive(mif.hSubMenu,io_map);
@@ -1366,7 +1357,7 @@ static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
 				if (!iter->second.new_name.empty())
 				{
 					total_name = iter->second.new_name + suffix;
-					mif.dwTypeData = (WCHAR *) total_name.c_str();
+					mif.dwTypeData = (char *) total_name.c_str();
 				}
 				mif.fState = (iter->second.enabled ? MFS_ENABLED : MFS_DISABLED) | (iter->second.checked ? MFS_CHECKED : MFS_UNCHECKED);
 				SetMenuItemInfo(menu, n, true, &mif);

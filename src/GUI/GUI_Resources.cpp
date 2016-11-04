@@ -171,7 +171,7 @@ GUI_Resource	GUI_LoadResource(const char * in_resource)
 	res_map::iterator i = sResMap.find(path);
 	if (i != sResMap.end()) return &(i->second);
 
-	HRSRC	res_info = FindResource(NULL, convert_str_to_utf16(in_resource).c_str(),L"GUI_RES");
+	HRSRC	res_info = FindResourceW(NULL, convert_str_to_utf16(in_resource).c_str(),L"GUI_RES");
 	if (res_info==NULL) return NULL;
 	HGLOBAL res = LoadResource(NULL, res_info);
 	if (res == NULL) return NULL;
@@ -209,10 +209,10 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 	WCHAR	temp_path[MAX_PATH];
 	WCHAR	temp_file[MAX_PATH];
      // Get the temp path.
-    int result = GetTempPath(sizeof(temp_path), temp_path);
+    int result = GetTempPathW(sizeof(temp_path), temp_path);
 	if (result > sizeof(temp_path) || result == 0) { GUI_UnloadResource(res); return false; }
 
-	result =  GetTempFileName(temp_path, convert_str_to_utf16(in_resource).c_str(), 0, temp_file);
+	result =  GetTempFileNameW(temp_path, convert_str_to_utf16(in_resource).c_str(), 0, temp_file);
 	if (result == 0) { GUI_UnloadResource(res); return false; }
 
 	wcscat(temp_file, convert_str_to_utf16(in_resource).c_str());
