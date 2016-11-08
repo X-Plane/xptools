@@ -56,7 +56,8 @@ struct PropertyInfo_t {
 	string			prop_name;
 	int				digits;
 	int				decimals;			// Used only for doubles
-	bool				round_down;			// If true, forces rounding down (truncation) - otherwise we use standard rounding
+	const char *	units;              // unit name to display with property value.
+	bool			round_down;			// If true, forces rounding down (truncation) - otherwise we use standard rounding
 	int				exclusive;			// The exclusive flag forces an enum set to edit exactly one item at a time (with a fake "none" value shown to the user
 										// if nothing is selected.  In other words, it makes an enum set act like an enum.
 	int				synthetic;			// A synthetic property is one built from other properties or other derived data.  It is not necessary
