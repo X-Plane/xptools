@@ -205,7 +205,7 @@ void trim_map(Pmwx& ioMap)
 }
 
 
-int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
+int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func, bool inMergeFaces)
 {
 //	return 0;
 
@@ -221,6 +221,7 @@ int SimplifyMap(Pmwx& ioMap, bool inKillRivers, ProgressFunc func)
 	int tot = ioMap.number_of_halfedges();
 	int check = tot / 100;
 
+	if(inMergeFaces)
 	for (Pmwx::Edge_iterator he = ioMap.edges_begin();
 		he != ioMap.edges_end(); ctr += 2)
 	{

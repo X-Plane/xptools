@@ -42,6 +42,8 @@ void	MapFromDEM(
 				int					x2,
 				int					y2,
 				int					splits,
+				int					cut_lines_x,
+				int					cut_lines_y,
 				float				null_post,
 				Pmwx&				out_map,
 				CoordTranslator2 *	translator,

@@ -196,6 +196,11 @@ bool		WED_Airport::ContainsMetaDataKey(const string& key) const
 	return false;
 }
 
+bool		WED_Airport::ContainsMetaDataKey(int meta_data_enum) const
+{
+	return ContainsMetaDataKey(META_KeyName(meta_data_enum));
+}
+
 int			WED_Airport::CountMetaDataKeys()
 {
 	return meta_data_vec_map.size();
@@ -217,7 +222,10 @@ string		WED_Airport::GetMetaDataValue(const string& key) const
 	return "";//Note that we shouldn't ever get to this point
 }
 
-
+string		WED_Airport::GetMetaDataValue(int meta_data_enum) const
+{
+	return WED_Airport::GetMetaDataValue(META_KeyName(meta_data_enum));
+}
 
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
