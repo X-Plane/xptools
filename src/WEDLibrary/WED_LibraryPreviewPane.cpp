@@ -33,6 +33,7 @@
 #include "ObjDraw.h"
 #include "GUI_GraphState.h"
 #include "WED_PreviewLayer.h"
+#include "CompGeomDefs2.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -72,14 +73,98 @@ int		WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 	return 1;
 }
 
-int			WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
+// proof-of concept level code for subTexture selectoin.
+// links WED_CreatePolygonTool::AcceptPath via this global variable
+
+Bbox2 mSelBox;
+
+#include <iostream>
+#include <fstream>
+#include <string>
+
+int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 {
 	mX = x;
 	mY = y;
 	mPsiOrig=mPsi;
 	mTheOrig=mThe;
+	
+	int b[4]; GetBounds(b);
+	
+	pol_info_t pol;
+
+    if (mType == res_Polygon)
+    {
+		mResMgr->GetPol(mRes,pol);
+		TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+		
+		float prev_space = min(b[2]-b[0],b[3]-b[1]);
+		float ds = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? 1.0 : (pol.proj_s / pol.proj_t));
+		float dt = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? (pol.proj_t / pol.proj_s) : 1.0);
+
+		float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
+		float y1 = 0.5* (b[3] + b[1] - dt);
+
+		Point2 st = Point2(( x-x1)/ds, (y-y1)/dt ); // texture coodinates where we clicked at
+
+		vector <Bbox2> box;
+		
+		ifstream polf ("/home/xplane/XP10/Custom Scenery/Untitled 3/test_nowrap.pol");
+//		ifstream polf (mRes.c_str());
+		if (polf.is_open())
+		{
+			string line;
+			while ( getline (polf,line) )
+			{
+				int pos = line.find("#subtex");
+				if  (pos == 0)
+				{
+					float s1,t1,s2,t2;
+					int i = sscanf(line.c_str()+7,"%f%f%f%f", &s1,&t1,&s2,&t2);
+					if (i == 4)
+						box.push_back(Bbox2(s1,t1,s2,t2));
+				}
+			}
+			polf.close();
+		}
+		
+		// now go through list of boxes and find if we clicked inside one
+		static int lastBox = -1;               // the box we clicked on the last time. Helps to cycle trough overlapping boxes
+		int        firstBox = 999;             // the first box that fits this click location
+		int n;
+		for (n=0; n < sizeof(box); ++n)
+		{
+			if (box[n].contains(st))
+			{
+				if (n < firstBox) firstBox = n; // memorize the first of all boxes that fits the click
+				if (n > lastBox)                // is it a new-to-us box ?
+				{
+					mSelBox=box[n];
+					lastBox=n;
+					break;
+				}
+			}
+		}
+		if (n >= sizeof(box)) 					// apparently there is no new-to-us box here
+		{
+			if (firstBox < 999)
+			{
+				mSelBox=box[firstBox];           // so we go with the first best box we found
+				lastBox=firstBox;
+			}
+			else
+			{
+				mSelBox = Bbox2();              // there is no box here at all
+				lastBox = -1;
+				
+			}
+		}
+	}
+	Refresh();
+	
 	return 1;
 }
+
 void		WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
@@ -149,6 +234,25 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						glTexCoord2f(1,0); glVertex2f(x2,y1);
 					}
 					glEnd();
+					
+					if (!mSelBox.is_null())                     // draw a box around the selected texture area
+					{
+						g->SetState(false, 0, false,    false, false,   false, false);
+						glColor4f(1.0, 1.0, 0.0, 1.0);			// orange selection box. Coded up on halloween night :)
+						glBegin(GL_LINES);
+						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p1.y());
+						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p1.y());
+
+						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p1.y());
+						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p2.y());
+
+						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p2.y());
+						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p2.y());
+						
+						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p2.y());
+						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p1.y());
+						glEnd();
+					}
 				}	
 			}
 		}

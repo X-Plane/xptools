@@ -42,12 +42,15 @@
 */
 
 #include "WED_GISPolygon.h"
+#include "WED_GISUtils.h"
 
 class	WED_DrapedOrthophoto : public WED_GISPolygon, public IHasResource {
 
 DECLARE_PERSISTENT(WED_DrapedOrthophoto)
 
 public:
+			double		GetHeading(void) const;
+			void		SetHeading(double h);
 
 		virtual void		GetResource(	  string& r) const;
 		virtual void		SetResource(const string& r);
@@ -55,6 +58,12 @@ public:
 			//True if new, false if old, optional way to get the suffix
 			bool		IsNew( string* out_string=NULL);
 	virtual const char *	HumanReadableType(void) const { return "Draped Orthophoto"; }
+	
+			// Re-calculate UV mapping to stretch out texture over full extend of polygon
+			void 		Redrape(bool calcHdg=1);
+			void		GetSubTexture(Bbox2& b);
+			void		SetSubTexture(const Bbox2& b);
+		virtual void	PropEditCallback(int before);
 
 protected:
 
@@ -62,7 +71,14 @@ protected:
 
 private:
 
+	WED_PropDoubleText		heading;
 	WED_PropStringText		resource;
+
+	// This specifies the part of a texture to be used for textureing.
+	WED_PropDoubleText		top;
+	WED_PropDoubleText		bottom;
+	WED_PropDoubleText		left;
+	WED_PropDoubleText		right;
 
 };
 

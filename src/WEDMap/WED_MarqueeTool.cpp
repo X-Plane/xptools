@@ -26,6 +26,7 @@
 #include "IResolver.h"
 #include "WED_ToolUtils.h"
 #include "WED_MapZoomerNew.h"
+#include "WED_DrapedOrthophoto.h"
 #include "WED_Entity.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
@@ -536,6 +537,9 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 			else
 				ent_set.insert(ent);
 		}
+		// dragging normally does not change uv mapping, but dragging a hole inside an ortho does
+		if (ent->GetGISClass() == gis_Ring && went->GetParent()->GetClass() == WED_DrapedOrthophoto::sClass) 
+			dynamic_cast <WED_DrapedOrthophoto *> (went->GetParent())->Redrape(0);
 	}
 	
 	for(set<IGISEntity *>::iterator e = ent_set.begin(); e != ent_set.end(); ++e)
@@ -556,6 +560,7 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 	{
 		IGISEntity * ent = SAFE_CAST(IGISEntity,*i);
 		WED_Entity * went = SAFE_CAST(WED_Entity,*i);
+
 		if (went)
 		{
 			if(IsLockedNow(went))		continue;
@@ -577,6 +582,19 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 			else
 				ent_set.insert(ent);
 		}
+#if 1                                    // orthophotos can have their texture heading rotated along with the polygon
+                                         // its just my user interface choice, not a necessity in any way:
+		if (went->GetClass() == WED_DrapedOrthophoto::sClass) 
+		{ 
+			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *> (went);
+			ortho->SetHeading(ortho->GetHeading() + angle);
+		}
+#else
+		if (went->GetClass() == WED_DrapedOrthophoto::sClass) 
+			dynamic_cast <WED_DrapedOrthophoto *> (went)->Redrape(1);
+#endif
+		if (ent->GetGISClass() == gis_Ring && went->GetParent()->GetClass() == WED_DrapedOrthophoto::sClass)   // rotating a hole inside ortho changes UV mapping
+			dynamic_cast <WED_DrapedOrthophoto *> (went->GetParent())->Redrape(0);
 	}
 	
 	for(set<IGISEntity *>::iterator e = ent_set.begin(); e != ent_set.end(); ++e)
