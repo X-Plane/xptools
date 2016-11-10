@@ -21,6 +21,7 @@
  *
  */
 #include "XWin.h"
+#include "GUI_Unicode.h"
 
 #define 	IDT_TIMER1	0x01
 
@@ -34,7 +35,7 @@ MenuMap	gMenuMap;
 
 static	bool	sIniting = false;
 
-static TCHAR sWindowClass[] = "XGrinderWindow";
+static TCHAR sWindowClass[] = L"XGrinderWindow";
 
 extern	HINSTANCE	gInstance;
 
@@ -43,7 +44,7 @@ map<HWND, XWin *>	sWindows;
 XWin::XWin(int default_dnd)
 {
 	sIniting = true;
-	mWindow = CreateWindow(sWindowClass, "FullScreen",
+	mWindow = CreateWindow(sWindowClass, L"FullScreen",
 		WS_OVERLAPPEDWINDOW,	// Style,
 		10, 10, 50, 50,
 		NULL,	// Parent
@@ -93,7 +94,7 @@ XWin::XWin(
 		(style |= WS_MINIMIZEBOX);
 
 	AdjustWindowRect(&bounds, style, true);
-	mWindow = CreateWindow(sWindowClass, inTitle, style,
+	mWindow = CreateWindow(sWindowClass, convert_str_to_utf16(inTitle).c_str(), style,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		bounds.right-bounds.left, bounds.bottom-bounds.top-1,
 		NULL,	// Parent
@@ -170,7 +171,7 @@ XWin::~XWin()
 
 void			XWin::SetTitle(const char * inTitle)
 {
-	SetWindowText(mWindow, inTitle);
+	SetWindowText(mWindow, convert_str_to_utf16(inTitle).c_str());
 }
 
 void			XWin::SetFilePath(const char * inPath,bool modified)
@@ -557,7 +558,7 @@ xmenu			XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 {
 	xmenu	the_menu = ::CreateMenu();
 
-	MENUITEMINFO	mif = { 0 };
+	MENUITEMINFOA	mif = { 0 };
 	mif.cbSize = sizeof(mif);
 	mif.hSubMenu = the_menu;
 	mif.fType = MFT_STRING;
@@ -566,9 +567,9 @@ xmenu			XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 
 	if (item == -1)
 	{
-		::InsertMenuItem(parent, -1, true, &mif);
+		::InsertMenuItemA(parent, -1, true, &mif);
 	} else {
-		::SetMenuItemInfo(parent, item, true, &mif);
+		::SetMenuItemInfoA(parent, item, true, &mif);
 
 	}
 	return the_menu;
@@ -577,13 +578,13 @@ xmenu			XWin::CreateMenu(xmenu parent, int item, const char * inTitle)
 int				XWin::AppendMenuItem(xmenu menu, const char * inTitle)
 {
 	static	int	gIDs = 1000;
-	MENUITEMINFO	mif = { 0 };
+	MENUITEMINFOA	mif = { 0 };
 	mif.cbSize = sizeof(mif);
 	mif.fType = MFT_STRING;
 	mif.dwTypeData = const_cast<char *>(inTitle);
 	mif.fMask = MIIM_TYPE | MIIM_ID;
 	mif.wID = gIDs;
-	::InsertMenuItem(menu, -1, true, &mif);
+	::InsertMenuItemA(menu, -1, true, &mif);
 	int	itemNum = GetMenuItemCount(menu) - 1;
 	gMenuMap.insert(MenuMap::value_type(gIDs, pair<xmenu,int>(menu, itemNum)));
 	++gIDs;

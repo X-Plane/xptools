@@ -199,18 +199,21 @@ const char *	GUI_GetResourceEnd(GUI_Resource res)
 		return ((res_struct*)res)->end_p;
 }
 
-bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
+bool			GUI_GetTempResourcePath(const char* in_resource, string& out_path)
 {
 	GUI_Resource res = GUI_LoadResource(in_resource);
 	if (res == NULL) return false;
 	const char * sp = GUI_GetResourceBegin(res);
 	const char * ep = GUI_GetResourceEnd(res);
 
-	WCHAR	temp_path[MAX_PATH];
-	WCHAR	temp_file[MAX_PATH];
+	WCHAR	temp_path[MAX_PATH] = { 0 };
+	WCHAR	temp_file[MAX_PATH] = { 0 };
      // Get the temp path.
-    int result = GetTempPathW(sizeof(temp_path), temp_path);
-	if (result > sizeof(temp_path) || result == 0) { GUI_UnloadResource(res); return false; }
+    int result = GetTempPathW(MAX_PATH, temp_path);
+	if (result > sizeof(temp_path) || result == 0)
+	{
+		GUI_UnloadResource(res); return false;
+	}
 
 	result =  GetTempFileNameW(temp_path, convert_str_to_utf16(in_resource).c_str(), 0, temp_file);
 	if (result == 0) { GUI_UnloadResource(res); return false; }
