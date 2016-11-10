@@ -35,6 +35,9 @@
 #include "WED_PreviewLayer.h"
 #include "GUI_Fonts.h"
 
+#include "WED_ToolUtils.h"
+#include "ISelection.h"
+
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -44,6 +47,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+
+// this ugly global variable is for now the link to WED_CreatePolygonTool, to deliver the UV bounding box there.
 
 Bbox2 mSelBox;
 
@@ -83,7 +88,7 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		}
 		
 		if (mSubBoxes.size() > 0)
-			mSelText = "Click to select area of texture to use";
+			mSelText = "Click to select texture area";
 		else
 			mSelText = "";
 
@@ -125,7 +130,6 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 	
 	int b[4]; GetBounds(b);
 	
-
     if (mType == res_Polygon)
     {
 		pol_info_t pol;
@@ -139,43 +143,52 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 		float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
 		float y1 = 0.5* (b[3] + b[1] - dt);
 
-		Point2 st = Point2(( x-x1)/ds, (y-y1)/dt ); // texture coodinates where we clicked at
+		Point2 st = Point2((x-x1)/ds, (y-y1)/dt );  // texture coodinates where we clicked at
 
-		
-		// now go through list of boxes and find if we clicked inside one
-		static int lastBox = -1;               // the box we clicked on the last time. Helps to cycle trough overlapping boxes
-		int        firstBox = 999;             // the first box that fits this click location
-		int n;
-		for (n=0; n < mSubBoxes.size(); ++n)
+		if (GetModifiersNow() == gui_OptionAltFlag)
 		{
-			if (mSubBoxes[n].contains(st))
+			// TODO: a feature to allow updating a WED_thing by ALT-Click in the preview pane
+			
+			// find current selection in map window
+			GUI_Pane * gp = GetParent();
+			// check if its one or more draped ortho's
+				// if so, trigger update of its Resources, incl. U/V coordinates
+		}
+		else
+		{
+			// go through list of subtexture boxes and find if we clicked inside one
+			static int lastBox = -1;                // the box we clicked on the last time. Helps to cycle trough overlapping boxes
+			int        firstBox = 999;              // the first box that fits this click location
+			int n;
+			for (n=0; n < mSubBoxes.size(); ++n)
 			{
-				if (n < firstBox) firstBox = n; // memorize the first of all boxes that fits the click
-				if (n > lastBox)                // is it a new-to-us box ?
+				if (mSubBoxes[n].contains(st))
 				{
-					mSelBox=mSubBoxes[n];
-					lastBox=n;
-					break;
+					if (n < firstBox) firstBox = n; // memorize the first of all boxes that fits the click
+					if (n > lastBox)                // is it a new-to-us box ?
+					{
+						mSelBox=mSubBoxes[n];
+						lastBox=n;
+						break;
+					}
 				}
 			}
-		}
-		if (n >= mSubBoxes.size()) 					// apparently there is no new-to-us box here
-		{
-			if (firstBox < 999)
+			if (n >= mSubBoxes.size())              // apparently there is no new-to-us box here
 			{
-				mSelBox=mSubBoxes[firstBox];           // so we go with the first best box we found
-				lastBox=firstBox;
-			}
-			else
-			{
-				mSelBox = Bbox2();              // there is no box here at all
-				lastBox = -1;
-				
+				if (firstBox < 999)
+				{
+					mSelBox=mSubBoxes[firstBox];    // so we go with the first best box we found
+					lastBox=firstBox;
+				}
+				else
+				{
+					mSelBox = Bbox2();              // there is no box here at all
+					lastBox = -1;
+				}
 			}
 		}
 	}
 	Refresh();
-	
 	return 1;
 }
 
@@ -248,27 +261,20 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						glTexCoord2f(1,0); glVertex2f(x2,y1);
 					}
 					glEnd();
-					
+
 					if (!mSelBox.is_null())                   // draw a box around the selected texture area
 					{
-						g->SetState(false, 0, false,    false, false,   false, false);
-						glColor4f(1.0, 0.7, 0.0, 1.0);
-						glBegin(GL_LINES);
+						g->Reset();
+						glColor3f(1.0, 0.7, 0.0);             // orange selection box. Coded this on halloween night :)
+						glBegin(GL_LINE_LOOP);
 						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p1.y());
 						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p1.y());
-
-						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p1.y());
-						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p2.y());
-
 						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p2.y());
 						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p2.y());
-						
-						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p2.y());
-						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p1.y());
 						glEnd();
 					}
-				
-					float orange[4] = { 1, 0.7, 0, 1 };     // orange selection box. Coded this on halloween night :)
+
+					float orange[4] = { 1, 0.7, 0, 1 };
 					GUI_FontDraw(g, font_UI_Basic, orange, b[0]+5,b[3] - 15, mSelText);
 				}	
 			}
@@ -326,7 +332,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				max_xy[1] = max(max_xy[1],agp.tile[n+1]);
 			}
 
-
 			float real_radius=pythag(
 								max_xy[0] - min_xy[0],
 								max_xy[1] - min_xy[1]);
@@ -357,45 +362,39 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						  0.0,
 						(max_xy[1]+min_xy[1]) * 0.5);
 
+			g->SetState(false,1,false,true,true,false,false);
+			TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
+			int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
+			if(id1)g->BindTex(id1,0);
 
-				g->SetState(false,1,false,true,true,false,false);
-				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
-				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
-				if(id1)g->BindTex(id1,0);
-
-				glColor3f(1,1,1);
-				if(!agp.tile.empty() && !agp.hide_tiles)
+			glColor3f(1,1,1);
+			if(!agp.tile.empty() && !agp.hide_tiles)
+			{
+				glDisable(GL_CULL_FACE);
+				glBegin(GL_TRIANGLE_FAN);
+				for(int n = 0; n < agp.tile.size(); n += 4)
 				{
-					glDisable(GL_CULL_FACE);
-					glBegin(GL_TRIANGLE_FAN);
-					for(int n = 0; n < agp.tile.size(); n += 4)
-					{
-						glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-						glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
-					}
-					glEnd();
-					glEnable(GL_CULL_FACE);
-				}	
-				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
-				{
-					XObj8 * oo;
-					if(mResMgr->GetObjRelative(o->name,mRes,oo))
-					{
-						draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
-					} 
+					glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
+					glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
 				}
+				glEnd();
+				glEnable(GL_CULL_FACE);
+			}	
+			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+			{
+				XObj8 * oo;
+				if(mResMgr->GetObjRelative(o->name,mRes,oo))
+				{
+					draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
+				} 
+			}
 				
-
-
-
 			glMatrixMode(GL_PROJECTION);
 			glPopMatrix();
 			glMatrixMode(GL_MODELVIEW);
 			glPopMatrix();
 			glPopAttrib();			
 
-			
-			
 		}
 		#endif
 		break;
