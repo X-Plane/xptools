@@ -33,13 +33,19 @@
 #include "ObjDraw.h"
 #include "GUI_GraphState.h"
 #include "WED_PreviewLayer.h"
-#include "CompGeomDefs2.h"
+#include "GUI_Fonts.h"
 
 #if APL
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
 #endif
+
+#include <iostream>
+#include <fstream>
+#include <string>
+
+Bbox2 mSelBox;
 
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(0.0f),mThe(0.0f)
 {
@@ -48,7 +54,41 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMg
 void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 {
 	mRes = r;
-	mType = res_type;		
+	mType = res_type;
+	mSubBoxes.clear();
+	mSelBox = Bbox2();
+	
+	if (mType == res_Polygon)
+	{
+		pol_info_t pol;
+		mResMgr->GetPol(mRes,pol);
+		pol.base_tex.erase(pol.base_tex.find_last_of("\\:/")+1);
+		pol.base_tex += mRes;
+
+		ifstream polf (pol.base_tex.c_str());
+		if (polf.is_open())
+		{
+			string line;
+			while ( getline (polf,line) )
+			{
+				if  (line.find("#subtex") == 0)
+				{
+					float s1,t1,s2,t2;
+					int i = sscanf(line.c_str()+7,"%f%f%f%f", &s1,&t1,&s2,&t2);
+					if (i == 4)
+						mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
+				}
+			}
+			polf.close();
+		}
+		
+		if (mSubBoxes.size() > 0)
+			mSelText = "Click to select area of texture to use";
+		else
+			mSelText = "";
+
+		Refresh();
+	}
 }
 
 void WED_LibraryPreviewPane::ClearResource(void)
@@ -76,12 +116,6 @@ int		WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 // proof-of concept level code for subTexture selectoin.
 // links WED_CreatePolygonTool::AcceptPath via this global variable
 
-Bbox2 mSelBox;
-
-#include <iostream>
-#include <fstream>
-#include <string>
-
 int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 {
 	mX = x;
@@ -91,10 +125,10 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 	
 	int b[4]; GetBounds(b);
 	
-	pol_info_t pol;
 
     if (mType == res_Polygon)
     {
+		pol_info_t pol;
 		mResMgr->GetPol(mRes,pol);
 		TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 		
@@ -107,49 +141,29 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 
 		Point2 st = Point2(( x-x1)/ds, (y-y1)/dt ); // texture coodinates where we clicked at
 
-		vector <Bbox2> box;
-		
-		ifstream polf ("/home/xplane/XP10/Custom Scenery/Untitled 3/test_nowrap.pol");
-//		ifstream polf (mRes.c_str());
-		if (polf.is_open())
-		{
-			string line;
-			while ( getline (polf,line) )
-			{
-				int pos = line.find("#subtex");
-				if  (pos == 0)
-				{
-					float s1,t1,s2,t2;
-					int i = sscanf(line.c_str()+7,"%f%f%f%f", &s1,&t1,&s2,&t2);
-					if (i == 4)
-						box.push_back(Bbox2(s1,t1,s2,t2));
-				}
-			}
-			polf.close();
-		}
 		
 		// now go through list of boxes and find if we clicked inside one
 		static int lastBox = -1;               // the box we clicked on the last time. Helps to cycle trough overlapping boxes
 		int        firstBox = 999;             // the first box that fits this click location
 		int n;
-		for (n=0; n < sizeof(box); ++n)
+		for (n=0; n < mSubBoxes.size(); ++n)
 		{
-			if (box[n].contains(st))
+			if (mSubBoxes[n].contains(st))
 			{
 				if (n < firstBox) firstBox = n; // memorize the first of all boxes that fits the click
 				if (n > lastBox)                // is it a new-to-us box ?
 				{
-					mSelBox=box[n];
+					mSelBox=mSubBoxes[n];
 					lastBox=n;
 					break;
 				}
 			}
 		}
-		if (n >= sizeof(box)) 					// apparently there is no new-to-us box here
+		if (n >= mSubBoxes.size()) 					// apparently there is no new-to-us box here
 		{
 			if (firstBox < 999)
 			{
-				mSelBox=box[firstBox];           // so we go with the first best box we found
+				mSelBox=mSubBoxes[firstBox];           // so we go with the first best box we found
 				lastBox=firstBox;
 			}
 			else
@@ -235,10 +249,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					}
 					glEnd();
 					
-					if (!mSelBox.is_null())                     // draw a box around the selected texture area
+					if (!mSelBox.is_null())                   // draw a box around the selected texture area
 					{
 						g->SetState(false, 0, false,    false, false,   false, false);
-						glColor4f(1.0, 1.0, 0.0, 1.0);			// orange selection box. Coded up on halloween night :)
+						glColor4f(1.0, 0.7, 0.0, 1.0);
 						glBegin(GL_LINES);
 						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p1.y());
 						glVertex2f(x1 + ds * mSelBox.p2.x(), y1 + dt * mSelBox.p1.y());
@@ -253,6 +267,9 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						glVertex2f(x1 + ds * mSelBox.p1.x(), y1 + dt * mSelBox.p1.y());
 						glEnd();
 					}
+				
+					float orange[4] = { 1, 0.7, 0, 1 };     // orange selection box. Coded this on halloween night :)
+					GUI_FontDraw(g, font_UI_Basic, orange, b[0]+5,b[3] - 15, mSelText);
 				}	
 			}
 		}
