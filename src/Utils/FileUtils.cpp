@@ -207,19 +207,19 @@ string FILE_get_file_extension(const string& path)
 int FILE_get_file_meta_data(const string& path, struct stat& meta_data)
 {
 #if IBM
-	struct _stat64i32 wstat = { 0 };
-	int res = _wstat(convert_str_to_utf16(path).c_str(), &wstat);
-	meta_data.st_dev = wstat.st_dev;
-	meta_data.st_ino = wstat.st_ino;
-	meta_data.st_mode = wstat.st_mode;
-	meta_data.st_nlink = wstat.st_nlink;
-	meta_data.st_uid = wstat.st_uid;
-	meta_data.st_gid = wstat.st_gid;
-	meta_data.st_rdev = wstat.st_rdev;
-	meta_data.st_size = wstat.st_size;
-	meta_data.st_atime = wstat.st_atime;
-	meta_data.st_mtime = wstat.st_mtime;
-	meta_data.st_ctime = wstat.st_ctime;
+	struct _stat my_stat = { 0 };
+	int res = _wstat(convert_str_to_utf16(path).c_str(), &my_stat);
+	meta_data.st_dev   = my_stat.st_dev;
+	meta_data.st_ino   = my_stat.st_ino;
+	meta_data.st_mode  = my_stat.st_mode;
+	meta_data.st_nlink = my_stat.st_nlink;
+	meta_data.st_uid   = my_stat.st_uid;
+	meta_data.st_gid   = my_stat.st_gid;
+	meta_data.st_rdev  = my_stat.st_rdev;
+	meta_data.st_size  = my_stat.st_size;
+	meta_data.st_atime = my_stat.st_atime;
+	meta_data.st_mtime = my_stat.st_mtime;
+	meta_data.st_ctime = my_stat.st_ctime;
 #else
 	int res = stat(path.c_str(), &meta_data);
 #endif
@@ -275,9 +275,9 @@ int FILE_delete_file(const char * nuke_path, bool is_dir)
 	string_utf16 output = convert_str_to_utf16(nuke_path);
 	
 	if (is_dir)	{
-		if (!RemoveDirectoryW(output.c_str()))	return GetLastError();
+		if (!RemoveDirectory(output.c_str()))	return GetLastError();
 	} else {
-		if (!DeleteFileW(output.c_str()))		return GetLastError();
+		if (!DeleteFile(output.c_str()))		return GetLastError();
 	}
 #endif
 
@@ -331,7 +331,7 @@ int FILE_read_file_to_string(const string& path, string& content)
 int FILE_rename_file(const char * old_name, const char * new_name)
 {
 #if IBM
-	if(!MoveFileW(convert_str_to_utf16(old_name).c_str(), convert_str_to_utf16(new_name).c_str())) return GetLastError();
+	if(!MoveFile(convert_str_to_utf16(old_name).c_str(), convert_str_to_utf16(new_name).c_str())) return GetLastError();
 #endif
 #if LIN || APL
 	if(rename(old_name,new_name)<0)	return errno;
@@ -455,7 +455,7 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 int FILE_make_dir(const char * in_dir)
 {
 	#if IBM
-		if (!CreateDirectoryW(convert_str_to_utf16(in_dir).c_str() ,NULL))	return GetLastError();
+		if (!CreateDirectory(convert_str_to_utf16(in_dir).c_str() ,NULL))	return GetLastError();
 	#endif
 	#if LIN || APL
 		if (mkdir(in_dir,0755) != 0)		return errno;

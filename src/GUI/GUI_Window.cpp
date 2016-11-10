@@ -26,7 +26,10 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
 #include "GUI_Clipboard.h"
+
+#if IBM
 #include "GUI_Unicode.h"
+#endif
 #include "ObjCUtils.h"
 
 #if APL
@@ -467,16 +470,16 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 	int num_items = ::GetMenuItemCount(src);
 	for (int i = 0; i < num_items; ++i)
 	{
-		MENUITEMINFO mif = { 0 };
+		MENUITEMINFOA mif = { 0 };
 		mif.cbSize = sizeof(mif);
 		mif.fMask = MIIM_TYPE | MIIM_SUBMENU | MIIM_STATE | MIIM_ID;
 		mif.cch = sizeof(buf);
 		mif.dwTypeData = buf;
-		GetMenuItemInfo(src, i, true, &mif);
+		GetMenuItemInfoA(src, i, true, &mif);
 		HMENU orig_submenu = mif.hSubMenu;
 		if (mif.hSubMenu != NULL)
 			mif.hSubMenu = CreateMenu();
-		InsertMenuItem(dst,-1,true,&mif);
+		InsertMenuItemA(dst,-1,true,&mif);
 		if (mif.hSubMenu)
 			CopyMenusRecursive(orig_submenu, mif.hSubMenu);
 	}
@@ -1260,8 +1263,14 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 						Client2OGL_X(me->mMouse.x,hWnd),
 						Client2OGL_Y(me->mMouse.y,hWnd),
 						me->mTipBounds, tip);
-					if (tip.empty()) di->szText[0] = 0;
-					else			 strncpy_s(di->szText,80,tip.c_str(),_TRUNCATE);
+					if (tip.empty())
+					{
+						di->szText[0] = 0;
+					}
+					else
+					{
+						wcscpy_s(di->szText, 80, convert_str_to_utf16(tip).c_str());
+					}
 					return 0;
 				default:
 					return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
@@ -1330,12 +1339,12 @@ static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
 	int ct = GetMenuItemCount(menu);
 	for (int n = 0; n < ct; ++n)
 	{
-		MENUITEMINFO mif = { 0 };
+		MENUITEMINFOA mif = { 0 };
 		mif.cbSize = sizeof(mif);
 		mif.fMask = MIIM_ID | MIIM_SUBMENU | MIIM_TYPE;
 		mif.cch = sizeof(buf);
 		mif.dwTypeData = buf;
-		GetMenuItemInfo(menu, n, true, &mif);
+		GetMenuItemInfoA(menu, n, true, &mif);
 		string suffix;
 		if (mif.fType == MFT_STRING)
 		{
@@ -1357,10 +1366,10 @@ static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
 				if (!iter->second.new_name.empty())
 				{
 					total_name = iter->second.new_name + suffix;
-					mif.dwTypeData = (char *) total_name.c_str();
+					mif.dwTypeData = const_cast<char*>(total_name.c_str());
 				}
 				mif.fState = (iter->second.enabled ? MFS_ENABLED : MFS_DISABLED) | (iter->second.checked ? MFS_CHECKED : MFS_UNCHECKED);
-				SetMenuItemInfo(menu, n, true, &mif);
+				SetMenuItemInfoA(menu, n, true, &mif);
 			}
 		}
 	}

@@ -149,7 +149,6 @@ int		GetFilePathFromUser(
 		{
 			result = 1;
 			strcpy(outFileName, convert_utf16_to_str(file_name).c_str());
-			strcat(outFileName, "\\");
 		}
 		IMalloc * imalloc = 0;
 		if (SUCCEEDED(SHGetMalloc(&imalloc)))
@@ -186,20 +185,20 @@ char *	GetMultiFilePathFromUser(
 	result = GetOpenFileName(&ofn);
 	if(result)
 	{
-		vector<string_utf16>	files;
+		vector<string>	files;
 		string_utf16 path(buf);
 		WCHAR* fptr = buf+path.size()+1;
 
 		// One-file case: we get one complete fully qualified file path, full stop.
 		if(*fptr == 0)
 		{
-			files.push_back(path);
+			files.push_back(convert_utf16_to_str(path));
 		}
 		else
 		// Multi-file path - we got the dir once in "path" and now we get the null-terminated list of file names.
 		while(*fptr)
 		{
-			files.push_back(path + L"\\" + fptr);
+			files.push_back(convert_utf16_to_str(path + L"\\" + fptr));
 			fptr += (wcslen(fptr) + 1);
 		}
 
@@ -212,7 +211,7 @@ char *	GetMultiFilePathFromUser(
 
 		for(int i = 0; i < files.size(); ++i)
 		{
-			strcpy(p, convert_utf16_to_str(files[i]).c_str());
+			strcpy(p, files[i].c_str());
 			p += (files[i].size() + 1);
 		}
 		*p = 0;
