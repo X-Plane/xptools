@@ -37,17 +37,20 @@
 #include "WED_Group.h"
 #include "BitmapUtils.h"
 #include "GISUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "WED_Ring.h"
 #include "WED_UIDefs.h"
 #include "ILibrarian.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_OverlayImage.h"
+#include "WED_ObjPlacement.h"
 #include "WED_AirportChain.h"
 #include "WED_TextureNode.h"
 #include "WED_Airport.h"
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_RoadNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
@@ -56,9 +59,18 @@
 #include "WED_MetaDataKeys.h"
 #include "WED_ResourceMgr.h"
 #include "XObjDefs.h"
+#include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
+#include "GISUtils.h"
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
 #include <iterator>
+#include <sstream>
+
+#if DEV
+#include "WED_Globals.h"
+#include <iostream>
+#endif
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -2015,6 +2027,441 @@ int		WED_Repair(IResolver * resolver)
 	root->CommitOperation();
 	return 1;
 }
+
+//----------------------------------------------------------------------------
+// Obj and Agp Replacement
+//----------------------------------------------------------------------------
+
+template <typename T>
+static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible)
+{
+	int num_analyzed = 0;
+	return CountChildOfTypeRecursive<T>(thing, must_be_visible, 0, num_analyzed); //Needed to offset counting "thing" as a child if it matches type T
+}
+
+//Warning: Don't call this overload, call the wrapper version
+template <typename T>
+static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible, int accumulator, int& num_analyzed)
+{
+	T* test_thing = dynamic_cast<T*>(thing);
+	++num_analyzed;
+
+	if(test_thing != NULL)
+	{
+		WED_Entity* test_ent = dynamic_cast<WED_Entity*>(thing);
+		if (test_ent == NULL)
+		{
+			return accumulator;
+		}
+		else if(test_ent->GetHidden() == true && must_be_visible == true)
+		{
+			return accumulator;
+		}
+		else
+		{
+			if (num_analyzed > 1)
+			{
+				accumulator += 1;
+			}
+		}
+	}
+
+	int nc = thing->CountChildren();
+	for(int n = 0; n < nc; ++n)
+	{
+		int old_accum = accumulator;
+		int new_accum = CountChildOfTypeRecursive<T>(thing->GetNthChild(n), must_be_visible, accumulator, num_analyzed);
+
+		if(new_accum != old_accum)
+		{
+			accumulator = new_accum;
+			continue;
+		}
+	}
+
+	return accumulator;
+}
+
+template <typename OutputIterator>
+static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
+{
+	// TODO: do fast WED type ptr check on sClass before any other casts?
+	// Factor out WED_Entity check to avoid second dynamic cast?
+	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
+	if(ent && ent->GetHidden())
+	{
+		return;
+	}
+	
+	typedef typename OutputIterator::container_type::value_type VT;
+	VT ct = dynamic_cast<VT>(thing);
+	bool took_it = false;
+	if(ct)
+	{	
+		oi = ct;
+		took_it = true;
+	}
+	
+	if(!took_it)
+	{
+		int nc = thing->CountChildren();
+		for(int n = 0; n < nc; ++n)
+		{
+			CollectRecursive(thing->GetNthChild(n), oi);
+		}
+	}
+}
+
+set<string> build_agp_list()
+{
+	set<string> agp_list;
+	//-------------------------------------------------------------------------
+	//10/06/2016 - The code for breaking apart AGPs doesn't take into account if textures should be saved
+	//because these agps can have their textures thrown away. Additional AGPs will have to be analyzed
+	//and the code will possibly have to be made to be more robust
+	agp_list.insert("lib/airport/Ramp_Equipment/250cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_2.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_3.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/500cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Medium.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Narrow.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Wide.agp");
+	//-------------------------------------------------------------------------
+	return agp_list;
+}
+
+typedef WED_ObjPlacement WED_AgpPlacement;
+int		WED_CanBreakApartSpecialAgps(IResolver* resolver)
+{
+	//Returns true if the selection
+	//- is not empty
+	//- only has .agp files (of all kinds)
+	ISelection* sel = WED_GetSelect(resolver);
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	if (!selected.empty())
+	{
+		for (vector<ISelectable*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
+		{
+			WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(*itr);
+			if (agp != NULL)
+			{
+				string agp_resource;
+				agp->GetResource(agp_resource);
+				if(FILE_get_file_extension(agp_resource) != ".agp")
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+template <typename From, typename To>
+static To cast(From test)
+{
+	return dynamic_cast<To>(test);
+}
+
+template <typename T>
+static bool is_null(T test)
+{
+	return test == NULL;
+}
+
+void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
+{
+	//Collect all obj_placements from the world
+	WED_Thing* root = WED_GetWorld(resolver);
+
+	ISelection * sel = WED_GetSelect(resolver);
+
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+	DebugAssert(selected.empty() == false);
+
+	vector<WED_AgpPlacement*> agp_placements;
+	std::transform(selected.begin(), selected.end(), back_inserter(agp_placements), cast<ISelectable*, WED_AgpPlacement*>);
+	agp_placements.erase(std::remove_if(agp_placements.begin(), agp_placements.end(), is_null<WED_AgpPlacement*>), agp_placements.end());
+
+	if(!agp_placements.empty())
+	{
+		int agp_replace_count = 0;
+		int obj_replace_count = 0;
+
+		//Set up the operation
+		root->StartOperation("Break Apart Special Agps");
+
+		sel->Clear();
+
+		//We'll have at least one!
+		WED_Airport * apt = WED_GetParentAirport(agp_placements[0]);
+		if(apt == NULL)
+		{
+			root->AbortCommand();
+			DoUserAlert("Agp(s) must be in an airport in the heirarchy");
+			return;
+		}
+
+		if(CountChildOfTypeRecursive<IGISEntity>(apt, false) <= 1)
+		{
+			sel->Select(apt);
+			root->AbortCommand();
+			DoUserAlert("Airport only contains one Agp: breaking apart cannot occur. Add something else to the airport first");
+			return;
+		}
+
+		//The list of agp files we've decided to be special "service truck related"
+		set<string> agp_list = build_agp_list();
+		
+		//To access agp files
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		
+		//To translate from lat/lon to meters
+		CoordTranslator2 translator;
+		Bbox2 box;
+		apt->GetBounds(gis_Geo, box);
+		CreateTranslatorForBounds(box,translator);
+
+		//A set of all the agps that we're going to replace
+		set<WED_AgpPlacement*> replaced_agps;
+		set<WED_ObjPlacement*> added_objs;
+
+		//For all agps
+		for(vector<WED_AgpPlacement*>::iterator agp = agp_placements.begin(); agp != agp_placements.end(); ++agp)
+		{
+			//Otherwise we have big problems
+			DebugAssert((*agp)->CountChildren() == 0);
+
+			string agp_resource;
+			(*agp)->GetResource(agp_resource);
+
+			//Is the agp found in the special agp list?
+			if(agp_list.find(agp_resource) != agp_list.end())
+			{
+				//Break it all up here
+				agp_t agp_data;
+				if(rmgr->GetAGP(agp_resource, agp_data))
+				{
+					Point2 agp_origin_geo;
+					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
+					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
+
+					for (vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
+					{
+						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
+
+						//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
+						torotate.rotate_by_degrees((*agp)->GetHeading()*-1);
+						torotate *= -1;
+
+						Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
+						Point2 new_point_geo = translator.Reverse(new_point_m);
+
+						WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());
+						new_obj->SetLocation(gis_Geo, new_point_geo);
+
+						//Other data that is important to resetting up the object
+						new_obj->SetDefaultMSL();
+						new_obj->SetHeading(agp_obj->r + (*agp)->GetHeading());
+						new_obj->SetName(agp_obj->name);
+						new_obj->SetParent((*agp)->GetParent(), (*agp)->GetMyPosition());
+						new_obj->SetResource(agp_obj->name);
+						new_obj->SetShowLevel((*agp)->GetShowLevel());
+
+						added_objs.insert(new_obj);
+					}
+				}
+
+				replaced_agps.insert(*agp);
+			}
+		}
+
+		for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
+		{
+			(*itr_agp)->SetParent(NULL, 0);
+			(*itr_agp)->Delete();
+		}
+
+		for (set<WED_ObjPlacement*>::iterator itr_obj = added_objs.begin(); itr_obj != added_objs.end(); ++itr_obj)
+		{
+			string obj_resource;
+			(*itr_obj)->GetResource(obj_resource);
+			sel->Insert(*itr_obj);
+		}
+
+		if(added_objs.size() == 0)
+		{
+			sel->Clear();
+			root->AbortOperation();
+			DoUserAlert("Nothing to replace"); //IMPORTANT: Do not call DoUserAlert during an operation!!!
+		}
+		else
+		{
+			root->CommitOperation();
+
+			stringstream ss;
+			ss << "Replaced " << replaced_agps.size() << " Agp objects with " << added_objs.size() << " Obj files";
+			DoUserAlert(ss.str().c_str());
+		}
+	}
+	else
+	{
+		DoUserAlert("There are no relavent special Agps to break apart");
+	}
+}
+
+int	WED_CanReplaceVehicleObj(IResolver* resolver)
+{
+	//Returns true if there are any Obj files in the world.
+	//TODO: This Aught to be the current airport
+	WED_Thing * root = WED_GetWorld(resolver);
+	return CountChildOfTypeRecursive<WED_ObjPlacement>(root,true);
+}
+
+struct vehicle_replacement_info
+{
+	vehicle_replacement_info(/*const vector<string>& resource_strs,*/const int service_truck_type, const int number_of_cars)
+		:/*resource_strs(resource_strs),*/
+		 service_truck_type(service_truck_type),
+		 number_of_cars(number_of_cars)
+	{
+	}
+
+	//The resource strings that can represent this vehicle_replacement_info
+	//vector<string> resource_strs;
+
+	//A member of ATCServiceTruckType
+	int service_truck_type;
+
+	//The number of cars in the model
+	int number_of_cars;
+};
+
+static map<string,vehicle_replacement_info> build_replacement_table()
+{
+	map<string,vehicle_replacement_info> table;
+
+	//atc_ServiceTruck_Pushback,
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
+
+	//atc_ServiceTruck_FuelTruck_Jet,
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
+
+	//atc_ServiceTruck_FuelTruck_Prop, cause of the problem
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
+
+	//atc_ServiceTruck_Food,
+	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
+
+	//atc_ServiceTruck_Baggage_Train,
+	//table.insert(make_pair("lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,5)));
+
+	stringstream ss;
+	for(int i = 1; i <= 5; ++i)
+	{
+ 		ss << "lib/airport/Ramp_Equipment/Lugg_Train_Straight" << i << ".obj";
+		table.insert(make_pair(ss.str(), vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,i)));
+		ss.clear();
+		ss.str("");
+	}
+	
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,1)));
+
+	//atc_ServiceTruck_Baggage_Loader,
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader,0)));
+
+	//atc_ServiceTruck_Crew_Car,
+	table.insert(make_pair("lib/airport/vehicles/servicing/crew_car.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Car,0)));
+
+	//atc_ServiceTruck_Ground_Power_Unit,
+	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+	
+	return table;
+}
+
+void	WED_DoReplaceVehicleObj(IResolver* resolver)
+{
+	WED_Thing * root = WED_GetWorld(resolver);
+	vector<WED_ObjPlacement*> obj_placements;
+	CollectRecursive(root, back_inserter(obj_placements));
+
+	if(!obj_placements.empty())
+	{
+		int replace_count = 0;
+		root->StartOperation("Replace Objects");
+		map<string,vehicle_replacement_info> table = build_replacement_table();
+		
+		ISelection * sel = WED_GetSelect(resolver);
+		sel->Clear();
+
+		for(vector<WED_ObjPlacement*>::iterator itr = obj_placements.begin(); itr != obj_placements.end(); ++itr)
+		{
+			string resource;
+			(*itr)->GetResource(resource);
+			
+			map<string,vehicle_replacement_info>::iterator info_itr = table.find(resource);
+			if(info_itr != table.end())
+			{
+				
+				WED_TruckParkingLocation * parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
+				parking_loc->SetHeading((*itr)->GetHeading());
+				
+				Point2 p;
+				(*itr)->GetLocation(gis_Geo, p);
+				parking_loc->SetLocation(gis_Geo,p);
+
+				string name;
+				(*itr)->GetName(name);
+				parking_loc->SetName(name);
+				parking_loc->SetNumberOfCars(info_itr->second.number_of_cars);
+				parking_loc->SetParent((*itr)->GetParent(), (*itr)->GetMyPosition());
+				parking_loc->SetTruckType(info_itr->second.service_truck_type);
+				parking_loc->StateChanged();
+
+				replace_count++;
+				(*itr)->SetParent(NULL, 0);
+				(*itr)->Delete();
+
+				sel->Insert(parking_loc);
+			}
+		}
+
+		if(replace_count == 0)
+		{
+			sel->Clear();
+			root->AbortOperation();
+			DoUserAlert("Nothing to replace");
+		}
+		else
+		{
+			root->CommitOperation();
+
+			stringstream ss;
+			ss << "Replaced " << replace_count << " objects";
+			DoUserAlert(ss.str().c_str());
+		}
+	}
+	else
+	{
+		DoUserAlert("Nothing to replace");
+	}
+}
+//-----------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
 #pragma mark -

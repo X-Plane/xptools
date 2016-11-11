@@ -173,24 +173,13 @@ int FILE_get_file_meta_data(const string& path, struct stat& meta_data)
 
 string FILE_get_file_name(const string& path)
 {
-	//If we can find a / we're using UNIX
-	size_t pos = path.find_first_of('/');
+	string unix_path = path;
+	replace(unix_path.begin(), unix_path.end(), '\\', '/');
 
-	char separator = '\0';
-
-	if(pos != string::npos)
-	{
-		separator = '/';
-	}
-	else
-	{
-		separator = '\\';
-	}
-	size_t last_sep = path.find_last_of(separator);
-
+	size_t last_sep = unix_path.find_last_of('/');
 	if(last_sep == string::npos)
 	{
-		return "";
+		return path; //Meaning we either have a empty string or a path without directory seperators
 	}
 	else
 	{

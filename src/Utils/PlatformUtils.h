@@ -90,7 +90,7 @@ char *	GetMultiFilePathFromUser(
 
 /*
  * DoUserAlert puts up an alert dialog box with the message and an OK button.
- *
+ * WARNING: Do not call during the middle of an operation!
  */
 void	DoUserAlert(const char * inMsg);
 
