@@ -79,6 +79,8 @@ public:
 
 private:
 
+	virtual	WED_Thing *			CreateSplitNode();
+
 		WED_PropDoubleText		ctrl_lat_lo;			// NOTE: THESE ARE STORED AS DELTAS!!!
 		WED_PropDoubleText		ctrl_lon_lo;
 		WED_PropDoubleText		ctrl_lat_hi;

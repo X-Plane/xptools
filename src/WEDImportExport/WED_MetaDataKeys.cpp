@@ -9,15 +9,15 @@
 
 const MetaDataKey known_keys[] = {
 // wed_AddMetaDataBegin
-{	"City/Locality",   "city"        }, // wed_AddMetaDataCity
-{	"Country",         "country"     }, // wed_AddMetaDataCountry
-{	"Datum Latitude",  "datum_lat"   }, // wed_AddMetaDataDatumLat
-{	"Datum Longitude", "datum_lon"   }, // wed_AddMetaDataDatumLon
-{	"FAA Code",        "faa_code"    }, // wed_AddMetaDataFAA
-{	"IATA Code",       "iata_code"   }, // wed_AddMetaDataIATA
-{	"ICAO Code",       "icao_code"   }, // wed_AddMetaDataICAO
-{	"Region Code",     "region_code" }, // wed_AddMetaDataRegionCode
-{	"State/Province",  "state"       }, // wed_AddMetaDataState
+{	"City/Locality",   "city"        },         // wed_AddMetaDataCity
+{	"Country",         "country"     },         // wed_AddMetaDataCountry
+{	"Datum Latitude",  "datum_lat"   },         // wed_AddMetaDataDatumLat
+{	"Datum Longitude", "datum_lon"   },         // wed_AddMetaDataDatumLon
+{	"FAA Code",        "faa_code"    },         // wed_AddMetaDataFAA
+{	"IATA Code",       "iata_code"   },         // wed_AddMetaDataIATA
+{	"ICAO Code",       "icao_code"   },         // wed_AddMetaDataICAO
+{	"Region Code",     "region_code" },         // wed_AddMetaDataRegionCode
+{	"State/Province",  "state"       },         // wed_AddMetaDataState
 {	"Transition Altitude", "transition_alt"  }, // wed_AddMetaDataTransitionAlt
 {	"Transition Level",    "transition_level"}  // wed_AddMetaDataTransitionLevel
 // wed_AddMetaDataEnd

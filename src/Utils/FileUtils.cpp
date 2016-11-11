@@ -153,7 +153,17 @@ bool FILE_exists(const char * path)
 
 string FILE_get_file_extension(const string& path)
 {
-	string name = FILE_get_file_name(path);
+	string name;
+
+	//If the path contains no path seperators at all, we have just the filename, extension, or an empty string
+	if(path.find('\\') == string::npos && path.find('/') == string::npos)
+	{
+		name = path;
+	}
+	else
+	{
+		name = FILE_get_file_name(path);
+	}
 	
 	size_t dot_start = name.find_last_of('.');
 	if(dot_start == string::npos)

@@ -536,8 +536,7 @@ void WED_GatewayExportDialog::Submit()
 		string preview_folder = targ_folder + icao + "_Scenery_Pack" + DIR_STR;
 		string preview_zip = targ_folder + icao + "_Scenery_Pack.zip";
 
-		gExportTarget = wet_xplane_1021;
-
+		gExportTarget = wet_latest_xplane;
 
 		WED_ExportPackToPath(apt, mResolver, preview_folder, mProblemChildren);
 		

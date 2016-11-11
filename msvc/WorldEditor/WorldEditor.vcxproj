@@ -629,7 +629,7 @@
       <AdditionalIncludeDirectories>..\..\src\WEDFileCache;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>Yes</GenerateDebugInformation>
       <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <LargeAddressAware>true</LargeAddressAware>

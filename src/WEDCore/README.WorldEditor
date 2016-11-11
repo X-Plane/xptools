@@ -13,7 +13,38 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.5b4 9/19/15
+WED 1.5.1r1 10/11/16
+	Bug fixes:
+	- WED-698: Fixed import of apt.dat losing ramp operation type data
+	- WED-691: Text changed to “undo vertex modification”
+	- WED-690: Adding nodes to taxi routes added a ramp
+	- WED-586, 526: Validate selects vertices of zero length sides to be deleted
+
+WED 1.5r3 9/26/16
+	Bug fixes:
+	- WED-686: error margin for "Taxi route is not joined to a destination route" set to 1m
+	- WED-683: crash when clicking at extreme zoom levels
+	- WED-685: taxi sign creation tool uses clipboard
+
+WED 1.5r2 9/24/16
+	Bug fixes:
+	- WED-679: Crash validating ramp positions with no airlines on Windows
+
+WED 1.5r1 9/23/16
+
+	New features:
+	- Clearer validation error messages
+	- Validation includes error codes
+	- Faster when using ATC tab
+
+	Bug fixes:
+	- WED-669: Resource suffixes no longer case sensitive
+	- WED-663: Fixed crash when resource string is empty
+	- WED-660: Fixed crash when adding vertex to a circle
+	- WED-653: Updated colors for taxi route segments
+	- WED-647: Changed T-junction error message
+
+WED 1.5b4 9/19/16
 
 	Bug fixes:
 	- WED-660: Fixes crash sub-dividing the final segment of a closed-loop line.

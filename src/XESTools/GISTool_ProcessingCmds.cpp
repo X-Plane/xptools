@@ -365,8 +365,8 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 
 #if !DEBUG_FAST_SKIP_FORESTS
 
-	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, 2, NO_VALUE, forest_stands,NULL,false);
-	SimplifyMap(gMap, false, gProgress);
+	MapFromDEM(forests,0,0,forests.mWidth,forests.mHeight, 2, 60, 60, NO_VALUE, forest_stands,NULL,false);
+	SimplifyMap(forest_stands, false, gProgress, false);
 
 	arrangement_simplifier<Pmwx> simplifier;
 	simplifier.simplify(forest_stands, 0.003, arrangement_simplifier<Pmwx>::traits_type(), gProgress);

@@ -113,7 +113,8 @@ void	WED_VertexTool::BeginEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->StartOperation("Marquee Drag");
+	op->StartOperation("Vertex Modification");  // can be any of - split ATC edge - move ATC edge node
+	                                 // - drag a node or modify a bezier node of any previously selected feature
 }
 
 void	WED_VertexTool::EndEdit(void)

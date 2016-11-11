@@ -77,7 +77,6 @@ protected:
 		WED_PropBoolText		windsock_lit;
 		WED_PropStringText		resource;
 		WED_PropIntEnum			show_level;
-		WED_PropBoolText		sign_clipboard;
 		WED_PropIntEnum			ramp_type;
 		WED_PropIntEnumBitfield	equip_type;
 		WED_PropIntEnum			width;

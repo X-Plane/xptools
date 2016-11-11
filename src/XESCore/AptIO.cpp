@@ -1162,6 +1162,15 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			string key = apt->meta_data.at(i).first;
 			string value = apt->meta_data.at(i).second;
 			
+			if (key == "faa_code"  ||
+				key == "iata_code" ||
+				key == "icao_code" ||
+				key == "region_code")
+			{
+				//Convert each to
+				transform(value.begin(), value.end(), value.begin(), (int(*)(int))toupper);
+			}
+			
 			fprintf(fi, "%d %s %s" CRLF, apt_meta_data, key.c_str(), value.c_str());
 		}
 

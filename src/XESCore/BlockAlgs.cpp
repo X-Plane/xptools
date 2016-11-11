@@ -311,9 +311,10 @@ void	do_insert_into_block(
 
 #endif
 
-void clean_block(Block_2& block)
+void clean_block(Block_2& block, bool merge_faces, bool merge_colinear)
 {
 	vector<Block_2::Halfedge_handle> kill;
+	if(merge_faces)
 	for(Block_2::Edge_iterator eig = block.edges_begin(); eig != block.edges_end(); ++eig)
 		if(eig->face()->data().usage == eig->twin()->face()->data().usage &&
 		   eig->face()->data().feature == eig->twin()->face()->data().feature &&
@@ -329,6 +330,7 @@ void clean_block(Block_2& block)
 	for(vector<Block_2::Halfedge_handle>::iterator k = kill.begin(); k != kill.end(); ++k)
 		block.remove_edge(*k);
 
+	if(merge_colinear)
 	for(Block_2::Vertex_iterator v = block.vertices_begin(); v != block.vertices_end();)
 	{
 		Block_2::Vertex_handle k(v);
@@ -344,7 +346,7 @@ void clean_block(Block_2& block)
 			{
 				Block_2::X_monotone_curve_2	nc(Block_traits_2::Segment_2(e1->source()->point(),e2->target()->point()));
 				block.merge_edge(e1,e2,nc);
-			}	
+			}
 		}
 	}
 	
