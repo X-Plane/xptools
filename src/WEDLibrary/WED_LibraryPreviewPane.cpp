@@ -48,6 +48,13 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 {
 	mRes = r;
 	mType = res_type;		
+	// allow preview of Forests. Create obj8 on the fly, then set preview to show this
+	if (mType == res_Forest)
+	{
+		mRes = mResMgr->MakeTmpForestObj(r);
+		if (mRes.length()) 
+			mType = res_Object;
+	}
 }
 
 void WED_LibraryPreviewPane::ClearResource(void)

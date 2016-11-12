@@ -55,7 +55,7 @@ WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_libr
 WED_ResourceMgr::~WED_ResourceMgr()
 {
 	Purge();
-
+	RemoveTmpFiles();
 }
 
 void	WED_ResourceMgr::Purge(void)
@@ -113,6 +113,8 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 	}
 
 	string p = mLibrary->GetResourcePath(path);
+	if (!p.size()) p = mLibrary->CreateLocalResourcePath(path);
+
 	obj = new XObj8;
 	if(!XObj8Read(p.c_str(),*obj))
 	{
@@ -341,6 +343,202 @@ inline void	do_rotate(int n, double& io_x, double& io_y)
 	io_y = v.dy;
 }
 
+#include <iostream>
+#include <cstdio>
+#include <fstream>
+#include <string>
+
+#define TMP_PREFIX "WED___"
+#define TPR 6           // # of trees shown in a row
+
+struct tree_t {
+	float s,t,w,y; 		// texture coordinates of tree
+	float o;            // offset of tree center line (where the quads inersect)
+	float pct;          // relative occurence percentage for this tree
+	float hmin,hmax;    // height range for this tree in meters
+	int q;				// number of quads the tree is constructed of
+};
+
+// create a .obj that is "similar" than what a .for would expand to XP, for previewing forest
+
+string WED_ResourceMgr::MakeTmpForestObj(const string& res_nam)
+{
+	string obj_fnam = TMP_PREFIX + res_nam;
+	obj_fnam.replace(obj_fnam.end()-4,obj_fnam.end(),".obj");
+
+	// sanitize resouce name to constitude a plain file name
+	for (int i=0; i < obj_fnam.size()-4; ++i)
+		if (obj_fnam.at(i) == '/' || obj_fnam.at(i) == '\\' || obj_fnam.at(i) == ':')
+			obj_fnam.replace(i,1,"_");
+
+	string res_path = mLibrary->GetResourcePath(res_nam);
+	string obj_path = mLibrary->CreateLocalResourcePath(obj_fnam);
+
+	ifstream for_fi (res_path.c_str());
+	if (for_fi)
+	{
+		ofstream obj_fi (obj_path.c_str());
+		if (obj_fi)
+		{
+			obj_fi << "A\n800\nOBJ\n\n";
+			
+			string line;
+			vector <tree_t> tree;
+			float scale_x=256, scale_y=256, space_x=30, space_y=30, rand_x=0, rand_y=0;
+			int quads=0;
+
+			while ( getline (for_fi,line) )
+			{
+				if (line.find("TEXTURE ") == 0) 
+				{
+					// get the path of the texture, relative to the original .for file
+					line.erase(0,line.find_first_not_of(" \t",7));
+		
+					// now get the relative path from where we create the obj_fnam.obj to where the texture actually is
+					process_texture_path(res_path, line);
+					line = gPackageMgr->ReducePath("", line);
+
+					obj_fi << "TEXTURE " << line << endl;
+				}
+				else if (line.find("SCALE_X") == 0)
+					sscanf(line.c_str()+7,"%f", &scale_x);
+				else if (line.find("SCALE_Y") == 0)
+					sscanf(line.c_str()+7,"%f", &scale_y);
+				else if (line.find("SPACING") == 0)
+					sscanf(line.c_str()+7,"%f%f", &space_x, &space_y);
+				else if (line.find("RANDOM") == 0)
+					sscanf(line.c_str()+7,"%f%f", &rand_x, &rand_y);
+				else if (line.find("TREE") == 0)
+				{
+					tree_t t;
+					int i = sscanf(line.c_str()+4,"%f%f%f%f%i%f%f%f%i", 
+					                 &t.s,&t.t,&t.w,&t.y,&t.o,&t.pct,&t.hmin,&t.hmax,&t.q);
+					if (i==9 && t.w > 1.0 && t.y > 1.0 )         // yup, there are some .for with zero size tree's in XP10
+					{
+						tree.push_back(t);
+						quads += t.q;
+					}
+				}
+			}
+			// now we have one of each tree. Like on the ark. Or maybe half that :)
+			// expand that to full forest of TPS * TPS trees, populated with all the varieties there are
+			int varieties =  tree.size();
+			vector <tree_t> treev = tree;
+			tree.clear();
+			quads = 0;
+
+#if 0		// truely random tree choice, taken into account each tree's relative percentage
+			// it works, but not so perfect for a forest with a relatively small number of tree's
+			// e.g. a 36 tree forest with one tree ocurring at 3.5% may have either 0, 1 or 2 of that kind
+					
+			for (int i=0; i<TPR*TPR; ++i)
+			{
+				int species = 0;
+					float prob = (100.0*rand())/RAND_MAX;
+				for (species=varieties-1; species>0; --species)
+					if (prob < treev[species].pct)
+						break;
+					else
+						prob-=treev[species].pct;
+				// if the pct for all tree's don't add up too 100% - species #0 will make up for it. 
+				// XP seems to do the same.
+				
+				tree.push_back(treev[species]);
+				quads += treev[species].q;
+			}
+#else
+			int species[TPR*TPR] = {};
+			
+			for (int i=varieties-1; i>0; --i)
+				for (int j=0; j<round(treev[i].pct/100.0*TPR*TPR); ++j)
+				{
+					int cnt=10;     // needed in case the tree percentages add up to more than 100%
+					do
+					{
+						int where = ((float) TPR*TPR*rand())/RAND_MAX;
+						if(where >= 0 && where < TPR*TPR && !species[where]) 
+						{ 
+							species[where] = i;
+							break;
+						}
+					} while (--cnt);
+				}
+			for (int i=0; i<TPR*TPR; ++i)
+			{
+				tree.push_back(treev[species[i]]);
+				quads += treev[species[i]].q;
+			}
+#endif
+				
+			obj_fi << "POINT_COUNTS " << 4*quads << " 0 0 " << 6*quads << endl;
+			
+			char buf[100];
+			for (int i = 0; i < tree.size(); ++i)
+			{
+				float t_h = (tree[i].hmin+tree[i].hmax);                       // height not randomized
+				float t_w = t_h * tree[i].w/tree[i].y /2.0;                    // half width of tree
+				float t_x = (i % TPR) * space_x + ((2.0*rand_x*rand())/RAND_MAX-0.5);  // tree position
+				float t_y = (i / TPR) * space_y + ((2.0*rand_y*rand())/RAND_MAX-0.5);
+				float rot_r = ((float) rand())/RAND_MAX;
+
+				for (int j=0; j<tree[i].q; ++j)
+				{
+					float rot = M_PI*(rot_r+j/(float) tree[i].q);        // tree rotation
+					float x = t_w * sin(rot);
+					float z = t_w * cos(rot);
+					
+					sprintf(buf,"VT %6.2f %6.2f %6.2f  0.0 1.0 0.0  %6.4f %6.4f\n",
+									t_x-x, 0.0, t_y-z, tree[i].s/scale_x, tree[i].t/scale_y);
+					obj_fi << buf;
+					sprintf(buf,"VT %6.2f %6.2f %6.2f  0.0 1.0 0.0  %6.4f %6.4f\n",
+									t_x+x, 0.0, t_y+z, (tree[i].s+tree[i].w)/scale_x, tree[i].t/scale_y);
+					obj_fi << buf;
+					sprintf(buf,"VT %6.2f %6.2f %6.2f  0.0 1.0 0.0  %6.4f %6.4f\n",
+									t_x+x, t_h, t_y+z, (tree[i].s+tree[i].w)/scale_x, (tree[i].t+tree[i].y)/scale_y);
+					obj_fi << buf;
+					sprintf(buf,"VT %6.2f %6.2f %6.2f  0.0 1.0 0.0  %6.4f %6.4f\n",
+									t_x-x, t_h, t_y-z, tree[i].s/scale_x, (tree[i].t+tree[i].y)/scale_y);
+					obj_fi << buf;
+				}
+			}
+			int seq[6] = {0,1,2,0,2,3};
+			for (int i = 0; i < 6*quads; ++i)
+			{
+				obj_fi << "IDX " << 4*(i/6)+seq[i%6] << endl;
+			}
+			obj_fi << "ATTR_LOD 0 1000\n";
+			obj_fi << "ATTR_no_cull\n";
+			obj_fi << "TRIS 0 " << 6*quads << endl;
+			obj_fi.close();
+		}
+		for_fi.close();
+		return obj_fnam;
+	}
+	else
+		return "";
+}
+
+bool WED_ResourceMgr::RemoveTmpFileCB(const char * fn, bool isDir, void * ref)
+{
+	if (!isDir)
+		if (strncmp(fn, TMP_PREFIX, strlen(TMP_PREFIX)) == 0)
+			if (strcmp(fn+strlen(fn)-4, ".obj") == 0)
+			{
+				string fn_path = (char *) ref;
+				fn_path += fn;
+				remove (fn_path.c_str());
+			}
+	return false;
+}
+
+
+// create a .obj that is "similar" than what a .for would create in XP, for previewing forest
+void WED_ResourceMgr::RemoveTmpFiles()
+{
+	string obj_path = mLibrary->CreateLocalResourcePath("");
+
+	MF_IterateDirectory(obj_path.c_str(),RemoveTmpFileCB, (void *) obj_path.c_str());
+}
 
 #if AIRPORT_ROUTING
 bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
