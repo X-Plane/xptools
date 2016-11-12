@@ -99,6 +99,10 @@ public:
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
 
+			// create on an .obj that is "similar" than what a .for would create in XP, for previewing forest
+			string	MakeTmpForestObj(const string& res_nam);
+			void 	RemoveTmpFiles(void);
+
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
 			bool	GetObj(const string& path, XObj8 *& obj);
@@ -113,6 +117,7 @@ public:
 							intptr_t				inParam);
 
 private:
+			static bool RemoveTmpFileCB(const char * fn, bool isDir, void * ref);
 
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
