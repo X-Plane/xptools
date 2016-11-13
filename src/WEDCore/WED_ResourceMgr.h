@@ -72,6 +72,10 @@ struct	fac_info_t {
 	vector<string>	walls;
 };
 
+struct	for_info_t {
+	XObj8 *         preview_obj;
+};
+
 #if AIRPORT_ROUTING
 struct agp_t {
 	struct obj {
@@ -98,10 +102,7 @@ public:
 
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
-
-			// create on an .obj that is "similar" than what a .for would create in XP, for previewing forest
-			string	MakeTmpForestObj(const string& res_nam);
-			void 	RemoveTmpFiles(void);
+			bool	GetFor(const string& path, for_info_t& out_info);
 
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
@@ -111,21 +112,23 @@ public:
 			bool	GetAGP(const string& path, agp_t& out_info);
 #endif			
 
+
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
 
 private:
-			static bool RemoveTmpFileCB(const char * fn, bool isDir, void * ref);
-
+	
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
+	map<string,for_info_t>		mFor;
 	map<string,XObj8 *>			mObj;
+
 #if AIRPORT_ROUTING	
 	map<string,agp_t>			mAGP;
 #endif	
 	WED_LibraryMgr *			mLibrary;
-};
+};	
 
 #endif /* WED_ResourceMgr_H */
