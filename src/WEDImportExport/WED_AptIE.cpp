@@ -69,11 +69,21 @@ error checking here and in apt-io
 static int get_apt_export_version()
 {
 	int version = 1000;
-	switch(gExportTarget) {
-	case wet_xplane_900:	version = 850; break;
+	switch(gExportTarget)
+	{
+	case wet_xplane_900:
+		version = 850;
+		break;
+	case wet_xplane_1000:
+		version = 1000;
+		break;
 	case wet_xplane_1050:
-	case wet_gateway:	version = 1050; break;
-	case wet_xplane_1100: version = 1100; break;
+	case wet_gateway:
+		version = 1050;
+		break;
+	case wet_xplane_1100:
+		version = 1100;
+		break;
 	}
 	return version;
 }

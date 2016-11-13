@@ -1710,7 +1710,7 @@ static void ValidateOneTruckDestination(WED_TruckDestination* destination,valida
 
 	if (truck_types.empty() == true)
 	{
-		msgs.push_back(validation_error_t("Truck destination " + name + " must have at least once truck type selected",destination,apt));
+		msgs.push_back(validation_error_t("Truck destination " + name + " must have at least once truck type selected", err_truck_dest_must_have_at_least_one_truck_type_selected, destination,apt));
 	}
 }
 
@@ -1727,7 +1727,7 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 			<< name
 			<< " cannot have negative car count of "
 			<< num_cars;
-		msgs.push_back(validation_error_t(ss.str(), truck_parking, apt));
+		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_cannot_have_negative_car_count, truck_parking, apt));
 	}
 
 	int MAX_CARS = 10;
@@ -1739,7 +1739,7 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 			<< " has more than  "
 			<< MAX_CARS
 			<< " baggage cars";
-		msgs.push_back(validation_error_t(ss.str(), truck_parking, apt));
+		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------------------
