@@ -48,13 +48,6 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 {
 	mRes = r;
 	mType = res_type;		
-	// allow preview of Forests. Create obj8 on the fly, then set preview to show this
-	if (mType == res_Forest)
-	{
-		mRes = mResMgr->MakeTmpForestObj(r);
-		if (mRes.length()) 
-			mType = res_Object;
-	}
 }
 
 void WED_LibraryPreviewPane::ClearResource(void)
@@ -113,6 +106,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	agp_t agp;
 	#endif
 	pol_info_t pol;
+	for_info_t for_info;
+
 	if(!mRes.empty())
 	switch(mType) {
 	case res_Polygon:
@@ -160,6 +155,46 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 		}
 		break;
+	case res_Forest:
+		if(mResMgr->GetFor(mRes,for_info))
+		{
+			XObj8 * o = for_info.preview_obj;
+			float real_radius=pythag(
+								o->xyz_max[0]-o->xyz_min[0],
+								o->xyz_max[1]-o->xyz_min[1],
+								o->xyz_max[2]-o->xyz_min[2]);
+			float approx_radius = real_radius * mZoom;
+
+			float dx = b[2] - b[0];
+			float dy = b[3] - b[1];
+			
+			float sx = (dx > dy) ? (dx / dy) : 1.0;
+			float sy = (dx > dy) ? 1.0 : (dy / dx);
+
+			glPushAttrib(GL_VIEWPORT_BIT);
+			glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+			glMatrixMode(GL_PROJECTION);
+			glPushMatrix();
+			glLoadIdentity();
+			glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+			glLoadIdentity();			
+			glRotatef(mThe,1,0,0);
+			glRotatef(mPsi,0,1,0);
+			g->EnableDepth(true,true);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			draw_obj_at_xyz(mTexMgr, o, 
+								-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
+								-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
+								-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
+				0, g);			
+			glMatrixMode(GL_PROJECTION);
+			glPopMatrix();
+			glMatrixMode(GL_MODELVIEW);
+			glPopMatrix();
+			glPopAttrib();			
+		}
 	case res_Object:
 		if(mResMgr->GetObj(mRes,o))
 		{
