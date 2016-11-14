@@ -37,6 +37,7 @@ enum validate_error_t
 	err_airport_no_icao,
 	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
+	err_airport_metadata_invalid,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atcrwy_centerline_not_parallel_centerline,
 	err_atcrwy_centerline_taxiroute_segment_off_center,

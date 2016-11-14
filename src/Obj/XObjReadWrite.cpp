@@ -1007,7 +1007,6 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		// ATTR_manip_noop
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ATTR_manip_noop",true))
 		{
-			outObj.lods.back().cmds.push_back(cmd);
 			cmd.cmd = attr_Manip_Noop;
 			cmd.idx_offset = outObj.manips.size();
 			outObj.lods.back().cmds.push_back(cmd);

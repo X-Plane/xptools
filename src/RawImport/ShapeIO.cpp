@@ -1330,6 +1330,9 @@ static int accum_ccb(
 		y.push_back(p.y());
 		
 	} while(--circ != stop);
+	
+	x.push_back(x[ret]);
+	y.push_back(y[ret]);
 	return ret;
 }
 
