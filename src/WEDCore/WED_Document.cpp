@@ -481,9 +481,7 @@ bool	WED_Document::TryClose(void)
 #endif
 	AsyncDestroy();     // This prevents most class deconstructors from being executed.
 	
-	delete this;        // So we do that ... its needed by WED_ResourceMgr, to cleaned up temp files it creates.
-//  mResourceMgr->RemoveTmpFiles(); // Another way to ensure the temp files get taken care of.
-
+	delete this;        // So we do that ... its needed by WED_ResourceMgr
 	return true;
 }
 

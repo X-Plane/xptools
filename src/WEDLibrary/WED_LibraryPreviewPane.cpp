@@ -40,7 +40,7 @@
 	#include <GL/gl.h>
 #endif
 
-WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(0.0f),mThe(0.0f)
+WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(20.0f),mThe(20.0f)
 {
 }
 
@@ -59,15 +59,15 @@ int		WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 {
 	while(dist > 0)
 	{
-		mZoom /= 1.1;
+		mZoom /= 1.2;
 		--dist;
 	}
 	while(dist < 0)
 	{
-		mZoom *= 1.1;
+		mZoom *= 1.2;
 		++dist;
 	}
-	mZoom=fltlim(mZoom,0.1,3.0);
+	mZoom=fltlim(mZoom,0.05,2.0);
 	Refresh();
 	return 1;
 }
@@ -100,13 +100,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
 	int b[4];
 	GetBounds(b);
-
-	XObj8 * o;
+	float dx = b[2] - b[0];
+	float dy = b[3] - b[1];
+	float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
+	float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+	
+	XObj8 * o = NULL;
 	#if AIRPORT_ROUTING
 	agp_t agp;
 	#endif
 	pol_info_t pol;
-	for_info_t for_info;
 
 	if(!mRes.empty())
 	switch(mType) {
@@ -128,12 +131,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					float ds = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? 1.0 : (pol.proj_s / pol.proj_t));
 					float dt = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? (pol.proj_t / pol.proj_s) : 1.0);
 					
-					float xc = (b[2] + b[0]) / 2;
-					float yc = (b[3] + b[1]) / 2;
-					float x1 = xc - 0.5 * ds;
-					float x2 = xc + 0.5 * ds;
-					float y1 = yc - 0.5 * dt;
-					float y2 = yc + 0.5 * dt;
+					float x1 = (dx - ds) /2;
+					float x2 = (dx + ds) /2;
+					float y1 = (dy - dt) /2;
+					float y2 = (dy + dt) /2;
 					
 					glBegin(GL_QUADS);
 					if(pol.wrap)
@@ -156,59 +157,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		}
 		break;
 	case res_Forest:
-		if(mResMgr->GetFor(mRes,for_info))
-		{
-			XObj8 * o = for_info.preview_obj;
-			float real_radius=pythag(
-								o->xyz_max[0]-o->xyz_min[0],
-								o->xyz_max[1]-o->xyz_min[1],
-								o->xyz_max[2]-o->xyz_min[2]);
-			float approx_radius = real_radius * mZoom;
-
-			float dx = b[2] - b[0];
-			float dy = b[3] - b[1];
-			
-			float sx = (dx > dy) ? (dx / dy) : 1.0;
-			float sy = (dx > dy) ? 1.0 : (dy / dx);
-
-			glPushAttrib(GL_VIEWPORT_BIT);
-			glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();			
-			glRotatef(mThe,1,0,0);
-			glRotatef(mPsi,0,1,0);
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			draw_obj_at_xyz(mTexMgr, o, 
-								-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
-								-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
-								-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
-				0, g);			
-			glMatrixMode(GL_PROJECTION);
-			glPopMatrix();
-			glMatrixMode(GL_MODELVIEW);
-			glPopMatrix();
-			glPopAttrib();			
-		}
+		if(!mResMgr->GetFor(mRes,o))
+			break;
 	case res_Object:
-		if(mResMgr->GetObj(mRes,o))
+		if (o || mResMgr->GetObj(mRes,o))
 		{
 			float real_radius=pythag(
 								o->xyz_max[0]-o->xyz_min[0],
 								o->xyz_max[1]-o->xyz_min[1],
 								o->xyz_max[2]-o->xyz_min[2]);
 			float approx_radius = real_radius * mZoom;
-
-			float dx = b[2] - b[0];
-			float dy = b[3] - b[1];
-			
-			float sx = (dx > dy) ? (dx / dy) : 1.0;
-			float sy = (dx > dy) ? 1.0 : (dy / dx);
 
 			glPushAttrib(GL_VIEWPORT_BIT);
 			glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
@@ -227,12 +185,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 								-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
 								-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
 								-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
-				0, g);			
+				0, g);
 			glMatrixMode(GL_PROJECTION);
 			glPopMatrix();
 			glMatrixMode(GL_MODELVIEW);
 			glPopMatrix();
-			glPopAttrib();			
+			glPopAttrib();
 		}
 		#if AIRPORT_ROUTING
 		else if (mResMgr->GetAGP(mRes,agp))
@@ -247,18 +205,11 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				max_xy[1] = max(max_xy[1],agp.tile[n+1]);
 			}
 
-
 			float real_radius=pythag(
 								max_xy[0] - min_xy[0],
 								max_xy[1] - min_xy[1]);
 								
 			float approx_radius = real_radius * mZoom;
-
-			float dx = b[2] - b[0];
-			float dy = b[3] - b[1];
-			
-			float sx = (dx > dy) ? (dx / dy) : 1.0;
-			float sy = (dx > dy) ? 1.0 : (dy / dx);
 
 			glPushAttrib(GL_VIEWPORT_BIT);
 			glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
@@ -277,7 +228,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			glTranslatef((max_xy[0]+min_xy[0]) * -0.5,
 						  0.0,
 						(max_xy[1]+min_xy[1]) * 0.5);
-
 
 				g->SetState(false,1,false,true,true,false,false);
 				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
@@ -305,18 +255,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
 					} 
 				}
-				
-
-
 
 			glMatrixMode(GL_PROJECTION);
 			glPopMatrix();
 			glMatrixMode(GL_MODELVIEW);
 			glPopMatrix();
 			glPopAttrib();			
-
-			
-			
 		}
 		#endif
 		break;

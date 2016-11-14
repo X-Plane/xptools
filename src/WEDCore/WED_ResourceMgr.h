@@ -72,10 +72,6 @@ struct	fac_info_t {
 	vector<string>	walls;
 };
 
-struct	for_info_t {
-	XObj8 *         preview_obj;
-};
-
 #if AIRPORT_ROUTING
 struct agp_t {
 	struct obj {
@@ -102,7 +98,7 @@ public:
 
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
-			bool	GetFor(const string& path, for_info_t& out_info);
+			bool	GetFor(const string& path, XObj8 *& obj);
 
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
@@ -122,7 +118,7 @@ private:
 	
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
-	map<string,for_info_t>		mFor;
+	map<string,XObj8 *>			mFor;
 	map<string,XObj8 *>			mObj;
 
 #if AIRPORT_ROUTING	
