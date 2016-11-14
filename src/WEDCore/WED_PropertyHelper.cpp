@@ -188,6 +188,7 @@ int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItem * item) cons
 
 void		WED_PropIntText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Int;
 	info.prop_name = mTitle;
@@ -282,6 +283,7 @@ void		WED_PropIntText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropBoolText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Bool;
 	info.prop_name = mTitle;
@@ -374,11 +376,13 @@ void		WED_PropBoolText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Double;
 	info.prop_name = mTitle;
 	info.digits = mDigits;
 	info.decimals = mDecimals;
+	info.round_down = false;
 	info.synthetic = 0;
 }
 
@@ -461,6 +465,39 @@ void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 	sprintf(as_double,"%.10lf", value);
 	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_double));
 }
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
+{
+	WED_PropDoubleText::GetPropertyInfo(info);
+	info.round_down= true;
+}
+
+int		WED_PropFrequencyText::GetAs10Khz(void) const
+{
+	// This is kind of a fuck-fest and some explanation is needed.  Unfortunately ATC frequencies are stored in decimal mhz
+	// in WED's internal data model, so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
+	// We want to TRUNCATE the 1's digit of the khz frequency, e.g.
+	// XP treats 123.125 and 123.12.  
+	
+	int freq_khz = round(this->value * 1000.0);
+	return freq_khz / 10;	// Intentional floor - 123.125 -> 12312.
+}
+
+void	WED_PropFrequencyText::AssignFrom10Khz(int freq_10khz)
+{
+	double mhz = (double) freq_10khz / 100.0;
+	*this = mhz;
+}
+
+void		WED_PropFrequencyText::ToXML(WED_XMLElement * parent)
+{
+	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
+	xml->add_attr_double(mXMLColumn.second,value,mDecimals+1);
+}
+
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -482,6 +519,7 @@ void		WED_PropDoubleTextMeters::SetProperty(const PropertyVal_t& val, WED_Proper
 
 void		WED_PropStringText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_String;
 	info.prop_name = mTitle;
@@ -576,6 +614,7 @@ void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropFileText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_FilePath;
 	info.prop_name = mTitle;
@@ -671,6 +710,7 @@ void		WED_PropFileText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Enum;
 	info.prop_name = mTitle;
@@ -772,6 +812,7 @@ void		WED_PropIntEnum::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
@@ -939,6 +980,7 @@ void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
@@ -1142,6 +1184,7 @@ void		WED_PropIntEnumSetUnion::GetPropertyInfo(PropertyInfo_t& info)
 {
 	info.prop_name = host;
 	info.prop_kind = prop_EnumSet;
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.exclusive = this->exclusive;
 	info.synthetic = 1;

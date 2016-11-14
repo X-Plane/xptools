@@ -25,16 +25,18 @@
 #include "WED_GatewayImport.h"
 
 #if HAS_GATEWAY
+#include "WED_MetaDataDefaults.h"
 
 #include "PlatformUtils.h"
 #include "GUI_Resources.h"
 #include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
+#include "RAII_Classes.h"
+
 #include <sstream>
 
 #include <json/json.h>
-
 
 #include "WED_Document.h"
 #include "WED_PackageMgr.h"
@@ -46,7 +48,6 @@
 #include "GUI_Timer.h"
 
 #include "GUI_Label.h"
-
 
 #include "WED_FilterBar.h"
 #include "GUI_Button.h"
@@ -75,11 +76,10 @@
 
 //------------------------//
 
+#include "WED_FileCache.h"
+
 //Heuristics for how big to initialize the rawJSONbuf, since it is faster to make a big chunk than make it constantly resize itself
 //These should probably change as the gateway gets bigger and the downloads get longer in average charecter length
-#define AIRPORTS_GET_SIZE_GUESS 9000000
-#define VERSIONS_GET_SIZE_GUESS 4000
-#define VERSION_GET_SIZE_GUESS  6000
 
 #if DEV
 
@@ -92,13 +92,13 @@
 
 enum imp_dialog_stages
 {
-imp_dialog_error,//for file and network errors
-imp_dialog_download_ICAO,
-imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
-imp_dialog_download_versions,
-imp_dialog_choose_versions,//Let user pick scenery pack(s) to download. The required GET is done before hand
-imp_dialog_download_specific_version//Download scenery pack, save the contents in the right place, import to WED
-
+	imp_dialog_error,//for file and network errors
+	imp_dialog_download_airport_metadata,
+	imp_dialog_download_ICAO,
+	imp_dialog_choose_ICAO,//Let the user choose the aiport from the table. The required GET is done before hand
+	imp_dialog_download_versions,
+	imp_dialog_choose_versions,//Let user pick scenery pack(s) to download. The required GET is done before hand
+	imp_dialog_download_specific_version//Download scenery pack, save the contents in the right place, import to WED
 };
 
 enum imp_dialog_msg
@@ -106,82 +106,6 @@ enum imp_dialog_msg
 	filter_changed,
 	click_next,
 	click_back
-};
-
-//starting a new one clears off the old one
-class RAII_CURL_HNDL
-{
-public:
-	RAII_CURL_HNDL():
-		curl_handle(NULL){}
-
-	void create_HNDL( const string& inURL,
-					const string& inCert,
-					int			  bufferReserveSize)
-					
-	{
-		if(curl_handle != NULL)
-		{
-			delete curl_handle;
-			curl_handle = NULL;
-		}
-
-		rawJSONBuf = vector<char>(bufferReserveSize);
-		curl_handle = new curl_http_get_file(inURL,&rawJSONBuf,inCert);
-	}
-
-	~RAII_CURL_HNDL()
-	{
-		delete curl_handle;
-		curl_handle = NULL;
-	}
-	curl_http_get_file * const get_curl_handle() { return curl_handle; }
-	const vector<char> & get_JSON_BUF() { return rawJSONBuf; }
-	
-	
-private:
-	RAII_CURL_HNDL(const RAII_CURL_HNDL & copy);
-	RAII_CURL_HNDL & operator= (const RAII_CURL_HNDL & rhs);
-
-	curl_http_get_file * curl_handle;
-	
-	//a buffer of chars to be filled, reserve a huge amount of space for it cause we'll need it
-	vector<char> rawJSONBuf;
-};
-
-class RAII_file 
-{
-public:
-
- RAII_file(const char * fname, const char * mode) :
-  mFile(fopen(fname,mode))
- {
- }
-
- ~RAII_file()
- {
-	if(mFile)
-	{
-		fclose(mFile);
-	}
- }
-
- int close() 
- { 
-	 if(mFile) 
-	 { 
-		 int retVal = fclose(mFile); 
-		 mFile = NULL;
-		 return retVal;
-	 }
-	 return 0;//TODO - if mFile doesn't exist, calling close is harmless so it should return 0 OR calling close is unexpected and client should know?
- }
-
- operator bool() const { return mFile != NULL; }
- FILE * operator()() { return mFile; }
-
-private:
- FILE * mFile;
 };
 
 //--Mem File Utils code for virtually handling the downloaded zip file--
@@ -231,7 +155,7 @@ string MemFileHandling(const string & zipPath, const string & filePath, const st
 			writeMode = "wb";
 		}
 						
-		RAII_file f(string(filePath + fileName).c_str(),writeMode.c_str());
+		RAII_FileHandle f(string(filePath + fileName), writeMode.c_str());
 
 		if(f)
 		{
@@ -255,58 +179,7 @@ string MemFileHandling(const string & zipPath, const string & filePath, const st
 	FileSet_Close(zipRep);
 	return string();
 }//end MemFile stuff
-//-------------------------------------------------------------
-
-//returns an error string if there is one
-string HandleNetworkError(curl_http_get_file * mCurl)
-{
-	int err = mCurl->get_error();
-	bool bad_net = mCurl->is_net_fail();
-
-	stringstream ss;
-	ss.str() = "";
-	if(err <= CURL_LAST)
-	{
-		string msg = curl_easy_strerror((CURLcode) err);
-		ss << "Download failed: " << msg << ". (" << err << ")";
-				
-		if(bad_net) ss << "(Please check your internet connectivity.)";
-	}
-	else if(err >= 100)
-	{
-		//Get the string of error data
-		vector<char>	errdat;
-		mCurl->get_error_data(errdat);
-				
-		bool is_ok = !errdat.empty();
-		for(vector<char>::iterator i = errdat.begin(); i != errdat.end(); ++i)
-		{
-			//If the charecter is not printable
-			if(!isprint(*i))
-			{
-				is_ok = false;
-				break;
-			}
-		}
-
-		if(is_ok)
-		{
-			string errmsg = string(errdat.begin(),errdat.end());
-			ss << "Error Code " << err << ": " << errmsg;
-		}
-		else
-		{
-			//Couldn't get a useful error message, displaying this instead
-			ss << "Download failed due to unknown error: " << err << ".";
-		}
-	}
-	else
-	{
-		ss << "Download failed due to unknown error: " << err << ".";
-	}
-
-	return ss.str();	
-}
+//---------------------------------------------------------------------------//
 
 typedef vector<char> JSON_BUF;
 
@@ -341,11 +214,18 @@ private:
 
 	WED_Document *		mResolver;
 	WED_MapPane *		mMapPane;
+
 	//Our curl handle we'll be using to get the json files, note the s
-	RAII_CURL_HNDL		mCurl;
+	WED_file_cache_request	mCacheRequest;
+	
+	//The number of times we request a file, reset before each download
+	int                     mRequestCount;
+
+	//Where the airport metadata csv file was ultimately downloaded to
+	string              mAirportMetadataCSVPath;
 
 	//The buffers of the specific packs downloaded at the end
-	vector<JSON_BUF>	mSpecificBufs;
+	vector<string>	mSpecificBufs;
 	
 	string				mICAOid;
 //--GUI parts
@@ -372,10 +252,14 @@ private:
 	GUI_TextTable			mICAO_TextTable;
 	GUI_TextTableHeader		mICAO_TextTableHeader;
 	
+	//Starts the download of the airport defaults csv
+	void StartCSVDownload();
+
 	//Starts the download of the json file containing the airports list
 	void StartICAODownload();
+
 	//From the downloaded JSON, fill the ICAO table
-	void FillICAOFromJSON();
+	void FillICAOFromJSON(const string& json_string);
 		//--ICAO Table Provider/Geometry
 		WED_ICAOTable			mICAO_AptProvider;
 		AptVector				mICAO_Apts;
@@ -399,14 +283,14 @@ private:
 	bool StartVersionsDownload();
 
 	//From the downloaded JSON, fill the versions table
-	void FillVersionsFromJSON();
+	void FillVersionsFromJSON(const string& json_string);
 	
 	//Attempts to download all the specific versions downloaded
 	void StartSpecificVersionDownload(int id);
 
 	//Once a specific version is downloaded this method decodes and imports it into the document
 	//Returns a pointer to the last imported airport
-	WED_Airport * ImportSpecificVersion(JSON_BUF version_json_buf);
+	WED_Airport * ImportSpecificVersion(const string& json_string);
 
 	//Keeps the versions downloading until they have all been (atleast attempted to download)
 	//returns false if there is nothing left in the queue
@@ -425,12 +309,12 @@ private:
 };
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
 
-//--Implemation of WED_GateWayImportDialog class---------------
+//--Implemation of WED_GateWayImportDialog class-------------------------------
 WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_MapPane * pane, GUI_Commander * cmdr) :
 	GUI_Window("Import from Gateway",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
-	mPhase(imp_dialog_download_ICAO),
+	mPhase(imp_dialog_download_airport_metadata),
 	mICAO_AptProvider(&mICAO_Apts),
 	mICAO_TextTable(this,100,0),
 	mVersions_VerProvider(&mVersions_Vers),
@@ -447,10 +331,10 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mPacker->Show();
 	GUI_Pane::GetBounds(bounds);
 	mPacker->SetBounds(bounds);
-	mPacker->SetBkgkndImage ("gradient.png");
+	mPacker->SetBkgkndImage ("gradient.png"); 
 
 	//Filter
-	mFilter = new WED_FilterBar(this,filter_changed,0,"Filter:","",NULL,false);
+	mFilter = new WED_FilterBar(this,filter_changed,0,"Search:","",NULL,false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(mPacker);
@@ -519,7 +403,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		mLabel->SetParent(this);
 		mLabel->SetDescriptor("Download in Progress, Please Wait");
 		mLabel->SetImplicitMultiline(true);
-		int labelBounds[4] = {70,230,480,270};
+		int labelBounds[4] = {70,230,600,270};
 		mLabel->SetBounds(labelBounds);
 		
 		
@@ -527,7 +411,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		
 		mLabel->SetSticky(1,0,1,1);
 		DecorateGUIWindow();
-	StartICAODownload();
+	StartCSVDownload();
 }
 
 WED_GatewayImportDialog::~WED_GatewayImportDialog()
@@ -537,12 +421,13 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 
 void WED_GatewayImportDialog::Next()
 {
-	
 	switch(mPhase)
 	{
 	case imp_dialog_error:
 		this->AsyncDestroy();
 		break;
+	//case imp_dialog_download_airport_metadata:
+		//break; no next button here
 	//case imp_dialog_download_ICAO:
 		//break; no next button here
 	case imp_dialog_choose_ICAO:
@@ -583,6 +468,7 @@ void WED_GatewayImportDialog::Back()
 	{
 	case imp_dialog_error:
 		break;
+	case imp_dialog_download_airport_metadata:
 	case imp_dialog_download_ICAO:
 	case imp_dialog_choose_ICAO:
 		this->AsyncDestroy();
@@ -604,103 +490,127 @@ void WED_GatewayImportDialog::Back()
 extern "C" void decode( const char * startP, const char * endP, char * destP, char ** out);
 void WED_GatewayImportDialog::TimerFired()
 {
-	if(	mPhase == imp_dialog_download_ICAO ||
-		mPhase == imp_dialog_download_versions ||
-		mPhase >= imp_dialog_download_specific_version)
+	WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+	
+	if(mPhase == imp_dialog_download_airport_metadata ||
+	   mPhase == imp_dialog_download_ICAO ||
+	   mPhase == imp_dialog_download_versions ||
+	   mPhase >= imp_dialog_download_specific_version)
 	{
-		//To avoid user confusion with a potential progress of -1, we'll just call it 0
-		int progress = mCurl.get_curl_handle()->get_progress();
-		if(progress < 0)
+		if(res.out_status != cache_status_available)
 		{
-			progress = 0;
+			//To avoid user confusion with a potential progress of -1, we'll just call it 0
+			int progress = res.out_download_progress;
+			if(progress < 0)
+			{
+				progress = 0;
+			}
+			stringstream ss;
+			ss << "Download in Progress: " << progress << "% Done";
+			DecorateGUIWindow(ss.str());
 		}
-		stringstream ss;
-		ss << "Download in Progress: " << progress << "% Done";
-		DecorateGUIWindow(ss.str());
 	}
-
-	if(mCurl.get_curl_handle()->is_done())
+	
+	//If we've reached a conclusion to this cache request
+	if(res.out_status != cache_status_downloading)
 	{
 		Stop();
 		mPhase++;
 		DecorateGUIWindow();
-		if(mCurl.get_curl_handle()->is_ok())
+		
+		if(res.out_status == cache_status_available)
 		{
-			if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
+			//Attempt to open the file we just downloaded
+			RAII_FileHandle file(res.out_path.c_str(),"r");
+		
+			string file_contents;
+			if(FILE_read_file_to_string(file(), file_contents) == 0)
 			{
-				FillICAOFromJSON();
-			}		
-			else if(mPhase == imp_dialog_choose_versions)//
-			{
-				FillVersionsFromJSON();
-			}
-			else if(mPhase - 1 >= imp_dialog_download_specific_version) // -1 to counter act the mPhase++, >= for the fact we have multiple downloads
-			{
-				
-				//Push back the latest buffer
-				mSpecificBufs.push_back(mCurl.get_JSON_BUF());
-				
-				//Try to start the next download
-				bool has_versions_left = NextVersionsDownload();
-				
-				//We're all done with everything!
-				if(has_versions_left == false)
+				file.close();
+
+				if(mPhase == imp_dialog_download_ICAO)
 				{
-					WED_Thing * wrl = WED_GetWorld(mResolver);
-					wrl->StartOperation("Import Scenery Pack");
-					
-					WED_Airport * last_imported = NULL;
-					
-					//If it fails anywhere inside it will soon be destroyed
-					for (int i = 0; i < mSpecificBufs.size(); i++)
-					{
-						last_imported = ImportSpecificVersion(mSpecificBufs[i]);
-						
-						//We completely abort if _anything_ goes wrong
-						if(last_imported == NULL)
-						{
-							wrl->AbortOperation();
-							return;
-						}
-					}
-					
-					//Set the current airport in the sense of "WED's current airport"
-					WED_SetCurrentAirport(mResolver,last_imported);
-
-					//Select the current airport in the sense of selecting something on the map pane
-					ISelection * sel = WED_GetSelect(mResolver);
-					sel->Clear();
-					sel->Insert(last_imported);
-
-					//Zoom to the airport
-					mMapPane->ZoomShowSel();
-
-					wrl->CommitOperation();
-					this->AsyncDestroy();//All done!
-					return;
+					mAirportMetadataCSVPath = res.out_path;
+					StartICAODownload();
+			
+					stringstream ss;
+					ss << "Loading file from hard drive, please wait...";
+					DecorateGUIWindow(ss.str());
 				}
-			}//end if(mPhase == imp_dialog_download_specific_version
+				if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
+				{
+					FillICAOFromJSON(file_contents);
+				}		
+				else if(mPhase == imp_dialog_choose_versions)//
+				{
+					FillVersionsFromJSON(file_contents);
+				}
+				else if(mPhase - 1 >= imp_dialog_download_specific_version) // -1 to counter act the mPhase++, >= for the fact we have multiple downloads
+				{
+					//Push back the latest buffer
+					mSpecificBufs.push_back(file_contents);
+				
+					//Try to start the next download
+					bool has_versions_left = NextVersionsDownload();
+				
+					//We're all done with everything!
+					if(has_versions_left == false)
+					{
+						WED_Thing * wrl = WED_GetWorld(mResolver);
+						wrl->StartOperation("Import Scenery Pack");
+					
+						WED_Airport * last_imported = NULL;
+					
+						//If it fails anywhere inside it will soon be destroyed
+						for (int i = 0; i < mSpecificBufs.size(); i++)
+						{
+							last_imported = ImportSpecificVersion(mSpecificBufs[i]);
+						
+							//We completely abort if _anything_ goes wrong
+							if(last_imported == NULL)
+							{
+								wrl->AbortOperation();
+								this->AsyncDestroy();//All done!
+								return;
+							}
+						}
+
+						//Set the current airport in the sense of "WED's current airport"
+						WED_SetCurrentAirport(mResolver, last_imported);
+
+						//Select the current airport in the sense of selecting something on the map pane
+						ISelection * sel = WED_GetSelect(mResolver);
+						sel->Clear();
+						sel->Insert(last_imported);
+
+						//Zoom to the airport
+						mMapPane->ZoomShowSel();
+
+						wrl->CommitOperation();
+						this->AsyncDestroy();//All done!
+						return;
+					}
+				}//end if(mPhase == imp_dialog_download_specific_version)
+				return;
+			}
+			file.close();
 		}//end if(mCurl.get_curl_handle()->is_ok())
-		else
+		else if(res.out_status == cache_status_error)
 		{
-			string res = HandleNetworkError(mCurl.get_curl_handle());
-			if(res != "")
+			if(res.out_error_human != "" || res.out_error_type != cache_error_type_none)
 			{
 				mPhase = imp_dialog_error;
-				DecorateGUIWindow(res);
+				DecorateGUIWindow(res.out_error_human);
 			}
 		}
-	}//end if(mCurl.get_curl_handle()->is_done())
+	}//end if res.out_status != cache_status_downloading && ... != cache_status_not_started
 }//end WED_GatewayImportDialog::TimerFired()
 
-void WED_GatewayImportDialog::FillICAOFromJSON()
+void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 {
-	//create a string from the vector of chars
-	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
-
 	Json::Value root;
 	Json::Reader reader;
-	bool success = reader.parse(rawJSONString,root);
+	bool success = reader.parse(json_string,root);
 	
 	//Check for errors
 	if(success == false)
@@ -738,16 +648,13 @@ void WED_GatewayImportDialog::FillICAOFromJSON()
 	mICAO_AptProvider.AptVectorChanged();
 }
 
-void WED_GatewayImportDialog::FillVersionsFromJSON()
+void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 {
-	//create a string from the vector of chars
-	string rawJSONString = string(mCurl.get_JSON_BUF().begin(),mCurl.get_JSON_BUF().end());
-
-	//Now that we have our rawJSONString we'll be turning it into a JSON object
+	//Now that we have our json_string we'll be turning it into a JSON object
 	Json::Value root(Json::objectValue);
 	
 	Json::Reader reader;
-	bool success = reader.parse(rawJSONString,root);
+	bool success = reader.parse(json_string,root);
 	
 	//Check for errors
 	if(success == false)
@@ -774,24 +681,26 @@ void WED_GatewayImportDialog::FillVersionsFromJSON()
 	{
 		Json::Value curScenery = *itr;
 		VerInfo_t tmp;
-					
-		tmp.sceneryId = curScenery.operator[]("sceneryId").asInt();
+		
+		//!!IMPORTANT!! Use of ".operator[]" because the author of jsoncpp didn't read Scott Meyer's "Item 26: Guard against potential ambiguity"!
+		tmp.sceneryId     = curScenery.operator[]("sceneryId").asInt();
 		tmp.isRecommended = tmp.sceneryId == airport.operator[]("recommendedSceneryId").asInt();
 		
 		tmp.parentId = curScenery.operator[]("parentId").asInt();
-		tmp.userId = curScenery.operator[]("userId").asInt();
+		tmp.userId   = curScenery.operator[]("userId").asInt();
 		tmp.userName = curScenery.operator[]("userName").asString() != "" ? curScenery.operator[]("userName").asString() : "N/A";
 		//Dates will appear as ISO8601: https://en.wikipedia.org/wiki/ISO_8601
 		//For example 2014-07-31T14:34:47.000Z
-																			//If the date string exists go with the date string, else go with a default
-		tmp.dateUploaded = curScenery.operator[]("dateUpload").asString() != "" ? curScenery.operator[]("dateUpload").asString() : "0000-00-00T00:00:00.000Z";
+		
+		//If the date string exists go with the date string, else go with a default
+		tmp.dateUploaded = curScenery.operator[]("dateUpload").asString()   != "" ? curScenery.operator[]("dateUpload").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.dateAccepted = curScenery.operator[]("dateAccepted").asString() != "" ? curScenery.operator[]("dateAccepted").asString() : "0000-00-00T00:00:00.000Z";
 		tmp.dateApproved = curScenery.operator[]("dateApproved").asString() != "" ? curScenery.operator[]("dateApproved").asString() : "0000-00-00T00:00:00.000Z";
-		tmp.type = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
+		tmp.type   = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
 		tmp.status = curScenery["Status"].asString();
 		
 		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
-		tmp.artistComments = curScenery.operator[]("artistComments").asString() != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
+		tmp.artistComments    = curScenery.operator[]("artistComments").asString()    != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
 		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("moderatorComments").asString() : "N/A";
 		
 		//Catches cases where acceptedSceneryCount > 0 && some pack only has uploadeded status
@@ -826,6 +735,32 @@ void WED_GatewayImportDialog::ReceiveMessage(
 	}
 }
 
+void WED_GatewayImportDialog::StartCSVDownload()
+{
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		mPhase = imp_dialog_error;
+		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+		return;
+	}
+
+	//Get it from the server
+	mCacheRequest.in_cert = cert;
+	mCacheRequest.in_domain = cache_domain_metadata_csv;
+	
+	stringstream ss;
+	ss << "scenery_packs";
+	mCacheRequest.in_folder_prefix = ss.str();
+
+	mCacheRequest.in_url = WED_URL_AIRPORT_METADATA_CSV;
+	mRequestCount = 0;
+
+	Start(0.1);
+	mLabel->Show();
+}
+
 void WED_GatewayImportDialog::StartICAODownload()
 {
 	string url = WED_URL_GATEWAY_API;
@@ -842,8 +777,15 @@ void WED_GatewayImportDialog::StartICAODownload()
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
 	url += "airports";
 
-	//Get it from the server
-	mCurl.create_HNDL(url,cert,AIRPORTS_GET_SIZE_GUESS);
+	mCacheRequest.in_cert = cert;
+	mCacheRequest.in_domain = cache_domain_airports_json;
+	stringstream ss;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport";
+	mCacheRequest.in_folder_prefix = ss.str();
+
+	mCacheRequest.in_url = url;
+	mRequestCount = 0;
+
 	Start(0.1);
 	mLabel->Show();
 }
@@ -862,7 +804,7 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
-
+	
 	mICAOid = current_apt.icao;
 	
 	//Get Certification
@@ -879,7 +821,16 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	url += "airport/" + mICAOid;
 
 	//Get it from the server
-	mCurl.create_HNDL(url,cert,VERSIONS_GET_SIZE_GUESS);
+	mCacheRequest.in_cert = cert;
+	mCacheRequest.in_domain = cache_domain_airport_versions_json;
+
+	stringstream ss;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;	
+	mCacheRequest.in_folder_prefix = ss.str();
+
+	mCacheRequest.in_url = url;
+	mRequestCount = 0;
+
 	Start(0.1);
 	mLabel->Show();
 	return true;
@@ -899,7 +850,17 @@ void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
 	stringstream url; 
 	
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
-	mCurl.create_HNDL(url.str(),cert,VERSION_GET_SIZE_GUESS);
+
+	mCacheRequest.in_cert = cert;
+	mCacheRequest.in_domain = cache_domain_scenery_pack;
+	
+	stringstream ss;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;
+	mCacheRequest.in_folder_prefix = ss.str();
+
+	mCacheRequest.in_url = url.str();
+	mRequestCount = 0;
+
 	Start(0.1);
 	mLabel->Show();
 }
@@ -922,15 +883,12 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	return true;
 }
 
-WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_json_buf)
+WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_string)
 {
-	//create a string from the vector of chars
-	string rawJSONString = string(version_json_buf.begin(),version_json_buf.end());
-
 	//Now that we have our rawJSONString we'll be turning it into a JSON object
 	Json::Value root = Json::Value(Json::objectValue);
 	Json::Reader reader;
-	bool success = reader.parse(rawJSONString,root);
+	bool success = reader.parse(json_string,root);
 
 	//Check for errors
 	if(success == false)
@@ -967,7 +925,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 
 	if(!outString.empty())
 	{
-		RAII_file f(zipPath.c_str(),"wb");
+		RAII_FileHandle f(zipPath.c_str(),"wb");
 		if(f)
 		{
 			size_t write_result = fwrite(&outString[0], sizeof(char), outString.size(), f());
@@ -987,7 +945,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 #else
 				DecorateGUIWindow("Could not create file at " + zipPath + ", please ensure you have enough space and sufficient permissions");
 #endif
-				int removeVal = FILE_delete_file(zipPath.c_str(),0);
+				int removeVal = FILE_delete_file(zipPath.c_str(), false);
 				if(removeVal != 0)
 				{
 					//DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
@@ -1028,17 +986,25 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 	//Operation inside of
 	vector<WED_Airport *> out_apt;
 	WED_ImportOneAptFile(aptdatPath,wrl,&out_apt);
+	
+	fill_in_airport_metadata_defaults(*out_apt[0], mAirportMetadataCSVPath);
+	out_apt[0]->StateChanged();
 
-	WED_Airport * g = out_apt[0];
-	g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
+	WED_Airport * g = NULL;
+
+	if(!out_apt.empty())
+	{
+		g = out_apt[0];
+		g->SetSceneryID(root["scenery"]["sceneryId"].asInt());
+	}
 
 	string dsfTextPath = filePath + mICAOid + ".txt";
-	if(has_dsf)
+	if(has_dsf && g)
 	{
 		WED_DoImportText(dsfTextPath.c_str(), (WED_Thing *) g);
 	}
-	
-#if !SAVE_ON_HDD
+
+#if !SAVE_ON_HDD && !GATEWAY_IMPORT_FEATURES
 	//clean up our files ICAOid.dat and potentially ICAOid.txt
 	if(has_dsf)
 	{
@@ -1056,6 +1022,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(JSON_BUF version_js
 		//DoUserAlert(string("Could not remove temporary file " + zipPath + ". You may delete this file if you wish").c_str());//TODO - is this not helpful to the user?
 	}
 #endif
+
 	return g;
 }
 
@@ -1299,7 +1266,6 @@ void WED_GatewayImportDialog::MakeVersionsTable(int bounds[4])
 	mVersions_Scroller->PositionHeaderPane(mVersions_Header);
 }
 //-------------------------------------------------------------
-
 
 //----------------------------------------------------------------------
 int	WED_CanImportFromGateway(IResolver * resolver)

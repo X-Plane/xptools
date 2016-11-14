@@ -52,6 +52,8 @@
 #include "GUI_TextField.h"
 #include "GUI_Splitter.h"
 
+#include "WED_FileCache.h"
+
 #define	REGISTER_LIST	\
 	_R(WED_Airport) \
 	_R(WED_AirportBeacon) \
@@ -174,6 +176,8 @@ int main(int argc, char * argv[])
 	start->ShowMessage("Scanning X-System Folder...");
 	pMgr.SetXPlaneFolder(GUI_GetPrefString("packages","xsystem",""));
 
+	start->ShowMessage("Initializing WED File Cache");
+	WED_file_cache_init();
 //	start->ShowMessage("Loading DEM tables...");
 //	LoadDEMTables();
 //	start->ShowMessage("Loading OBJ tables...");

@@ -8,6 +8,8 @@
 CHANGE HISTORY:
 -------------------------------------------------------------------------------
 
+1.4		?		Mipmap generation is done in linear space for better
+				night textures.
 1.3		3/30/15 Default gamma is now assumed to be sRGB
 1.2		2/18/10	More advanced mip-map contrl options
 1.1		1/25/10	Quilting Added

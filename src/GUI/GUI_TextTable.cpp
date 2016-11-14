@@ -54,6 +54,27 @@
 #define CELL_MARGIN 3
 #define	MIN_CELL_WIDTH	(CELL_MARGIN*2)
 
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+class GUI_MouseCatcher : public GUI_Pane, public GUI_Broadcaster {
+public:
+
+	GUI_MouseCatcher(intptr_t msg) : mMsg(msg) { }
+	virtual ~GUI_MouseCatcher() { }
+
+	virtual	int			MouseDown(int x, int y, int button) { 
+		BroadcastMessage(mMsg, 0);
+		return 1;
+	}
+	
+private:
+	intptr_t		mMsg;
+};
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+
 GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) : GUI_Commander(parent),
 	mContent(NULL),
 	mClickCellX(-1),
@@ -61,6 +82,7 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) 
 	mParent(NULL),
 	mTextField(NULL),
 	mSignField(NULL),
+	mCatcher(NULL),
 	mSelStartX(-1),
 	mSelStartY(-1),
 	mDragX(-1),
@@ -190,13 +212,20 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		//Change the instage so it is completely deactivated
 		inState->SetState(false, false, false,	false, false, false, false);
 		//sets the color
+		
 		glColor4fv(mColorGridlines);
 		//draws the border of where the image should be.
 		glBegin(GL_LINE_STRIP);
-		glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
-		glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
-		glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
+		GLfloat x1 = cell_bounds[0];
+		GLfloat x2 = cell_bounds[2];
+		GLfloat y1 = cell_bounds[1];
+		GLfloat y2 = cell_bounds[3];
+		
+		glVertex2f(x1 + 0.5f, y1 + 0.5f);
+		glVertex2f(x2 - 0.5f, y1 + 0.5f);
+		glVertex2f(x2 - 0.5f, y2 - 0.5f);
 		glEnd();
+		
 	}
 	//---------
 	
@@ -268,7 +297,17 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		break;
 	}
 	
-	
+	if(c.can_delete)
+	{
+					  //x, y, num_x tiles, num_y tiles
+		int tile[4] = { 0, 0, 1, 1};
+
+		glColor3f(1,1,1);
+		GUI_DrawCentered(inState, "delete.png", cell_bounds, -1,0, tile, NULL, NULL);
+
+		cell_bounds[0] += GUI_GetImageResourceWidth("delete.png");
+	}
+
 	if(c.is_disclosed || c.can_disclose)
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
@@ -504,6 +543,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		return 1;
 	}
 
+	//Fill mEditInfo so we can make decisions based on the cell's
+	//Abilities, Status, and Content
 	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
 
 	mClickCellX = -1;
@@ -513,15 +554,38 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 //	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 
+	if (mEditInfo.can_delete == true)
+	{
+		mTrackLeft = cell_bounds[0];
+		mTrackRight = cell_bounds[0] + GUI_GetImageResourceWidth("delete.png");
+		if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
+		{
+			//Set the TextTable to be thinking about this disclose handle
+			mContent->DoDeleteCell(cell_x, cell_y);
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
+			mInBounds = 1;
+			
+			return 1;
+		}
+	}
+
 	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
+		//Regardless of state, if it is able to we're going to toggle
+		//the button
 		if (mEditInfo.can_disclose)
 		{
+			//Find the horizontal dimensions
+			//(vertical is implied correct by this point)
 			mTrackLeft = cell_bounds[0];
 			mTrackRight = cell_bounds[0] + mDiscloseIndent;
 
+			//If the mouse is within those dimensions
 			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
 			{
+				//Set the TextTable to be thinking about this disclose handle
+				//we just clicked on
 				mEditInfo.content_type = gui_Cell_Disclose;
 				mClickCellX = cell_x;
 				mClickCellY = cell_y;
@@ -578,6 +642,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	}
 
 	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
+
+	
 
 	if (!mEditInfo.can_edit)	return 1;
 
@@ -1058,7 +1124,22 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_
 		if(!mSignField)
 		{
 			mSignField = new WED_Sign_Editor(this);
-			mSignField->SetParent(mParent);
+			if(mCatcher == NULL) 
+			{
+				mCatcher = new GUI_MouseCatcher(GUI_MOUSE_OUTSIDE_BOUNDS);
+				mCatcher->AddListener(this);
+			}
+						
+			GUI_Pane * parent = mParent;
+			while(parent->GetParent())
+				parent = parent->GetParent();
+			mSignField->SetParent(mCatcher);
+			mCatcher->SetParent(parent);
+			
+			int pb[4];
+			parent->GetBounds(pb);
+			mCatcher->SetBounds(pb);
+			mCatcher->Show();
 		}
 
 //		float	cell_h = cell_bounds[3] - cell_bounds[1];
@@ -1072,11 +1153,28 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_
 		int cb[4];
 		memcpy(cb,cell_bounds,sizeof(cb));
 			
-			
+		int wb[4];
+		mCatcher->GetBounds(wb);
+						
 		cb[0] += mEditInfo.indent_level * mCellIndent;
 		
 		cb[1] = cb[3] - 280;
-		cb[2] = cb[0] + 440;
+		cb[2] = cb[0] + 600;
+		
+		int dx = 0, dy = 0;
+		if(cb[2] > wb[2])
+			dx = wb[2] - cb[2];
+		if(cb[0] < wb[0])
+			dx = wb[0] - cb[0];
+		cb[0] += dx;
+		cb[2] += dx;
+		
+		if(cb[1] < wb[1])
+			dy = wb[1] - cb[1];
+		if(cb[3] > wb[3])
+			dy = wb[3] - cb[3];
+		cb[1] += dy;
+		cb[3] += dy;
 		
 		mSignField->SetBounds(cb);
 
@@ -1086,13 +1184,13 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_
 			mSignField->Hide();
 			delete mSignField;
 			mSignField = NULL;
+			mCatcher->Hide();
 		}
 		else
 		{
+			mCatcher->Show();
 			mSignField->Show();
 			mSignField->TakeFocus();
-
-			mParent->TrapFocus();	
 			mSignField->Refresh();			
 		}
 	}
@@ -1199,6 +1297,7 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 			{
 				s->Hide();
 				delete s;
+				mCatcher->Hide();
 			}
 			mEditInfo.content_type = gui_Cell_None;
 			return 1;
@@ -1363,7 +1462,10 @@ void	GUI_TextTable::ReceiveMessage(
 {
 	if(inMsg == GUI_TEXT_FIELD_TEXT_CHANGED && mLiveEdit)
 		TerminateEdit(true,false,false);
-	
+	if(inMsg == GUI_MOUSE_OUTSIDE_BOUNDS)
+	{
+		TerminateEdit(true, false, true);
+	}
 }
 
 

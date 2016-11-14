@@ -19,8 +19,8 @@
 #define MESHTOOL_VER		30000
 #define MESHTOOL_EXTRAVER	"-b1"
 
-#define AC3DPLUGIN_VER		30201
-#define AC3DPLUGIN_EXTRAVER	"-r2"
+#define AC3DPLUGIN_VER		30300
+#define AC3DPLUGIN_EXTRAVER	"b1"
 
 #define _VERBUF_SIZE		256
 static char __gverbuf[_VERBUF_SIZE];
@@ -39,7 +39,7 @@ product_version(uint32_t ver, const char* extra_ver)
 static inline void
 print_product_version(const char* product, uint32_t ver, const char* extra_ver)
 {
-	printf("%s %s, Copyright 2015 Laminar Research.  Compiled on "
+	printf("%s %s, Copyright 2016 Laminar Research.  Compiled on "
 		__DATE__".\n", product,	product_version(ver, extra_ver));
 	printf("Part of X-Plane Scenery Tools release: %s\n", XPT_PACKAGE_VER);
 }

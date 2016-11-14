@@ -24,18 +24,20 @@
 #ifndef WED_OBJPLACEMENT_H
 #define WED_OBJPLACEMENT_H
 
+#include "IHasResource.h"
 #include "WED_GISPoint_Heading.h"
 #include "WED_PropertyHelper.h"
 
-class	WED_ObjPlacement : public WED_GISPoint_Heading {
+
+class	WED_ObjPlacement : public WED_GISPoint_Heading, public IHasResource {
 
 DECLARE_PERSISTENT(WED_ObjPlacement)
 
 public:
 
 	virtual	bool		Cull(const Bbox2& b) const;
-			void		GetResource(	  string& r) const;
-			void		SetResource(const string& r);
+	virtual void		GetResource(	  string& r) const;
+	virtual void		SetResource(const string& r);
 
 #if AIRPORT_ROUTING
 			bool		HasCustomMSL(void) const;
@@ -52,11 +54,11 @@ public:
 private:
 
 #if AIRPORT_ROUTING
-	WED_PropBoolText		has_msl;
-	WED_PropDoubleText		msl;	
+	WED_PropBoolText			has_msl;
+	WED_PropDoubleTextMeters	msl;	
 #endif
-	WED_PropStringText		resource;
-	WED_PropIntEnum			show_level;
+	WED_PropStringText			resource;
+	WED_PropIntEnum				show_level;
 
 };
 

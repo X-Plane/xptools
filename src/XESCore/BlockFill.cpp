@@ -2857,8 +2857,12 @@ static bool in_range(CDT::Face_handle f, CoordTranslator2& t)
 
 static void push_curve(vector<Block_2::X_monotone_curve_2>& curves, const BPoint_2& p1, const BPoint_2& p2, int cat1, int cat2, int urban_idx, int oob_idx)
 {
-	DebugAssert(cat1 != cat2);
-	if(cat1 != urban_idx && cat2 != urban_idx && cat1 != oob_idx && cat2 != oob_idx)
+	if(cat1 == cat2)
+	{
+		EdgeKey_container	keys;
+		curves.push_back(Block_2::X_monotone_curve_2(BSegment_2(p1, p2), keys));
+	}
+	else if(cat1 != urban_idx && cat2 != urban_idx && cat1 != oob_idx && cat2 != oob_idx)
 	{
 		EdgeKey_container	keys;
 		keys.insert(cat1);
@@ -4099,7 +4103,6 @@ void	extract_features(
 								{
 										int ot = (forest_faces.count(circ->twin()->face()) == 0) ? -1 :
 											forest_type_idx[circ->twin()->face()->data().mTerrainType];
-								
 										push_curve(curves,
 												map2block(circ->source()->point()),
 												map2block(circ->target()->point()),
@@ -4140,7 +4143,7 @@ void	extract_features(
 	*/
 						
 						create_block(divided_forest, block_types, curves, oob_idx);
-						clean_block(divided_forest);
+						clean_block(divided_forest,false,true);
 	//					for(Block_2::Edge_iterator de= divided_forest.edges_begin(); de != divided_forest.edges_end(); ++de)
 	//						debug_mesh_line(cgal2ben(de->source()->point()),cgal2ben(de->target()->point()),1,1,1,1,1,1);
 
@@ -4157,11 +4160,16 @@ void	extract_features(
 								++h;
 								Block_2::Point_2 p2 = (*h)->source()->point();							
 								Block_2::X_monotone_curve_2 c (BSegment_2(p1, p2), 0);							
+
+								printf("WARNING: forest of %zd edges and %zd holes needs subdivision.\n",
+										divided_forest.number_of_edges(), df->number_of_holes());
+
 								
 								{
 									data_preserver_t<Block_2>	info(divided_forest);
 									CGAL::insert(divided_forest, c);
 								}
+								
 								goto retry;
 							}
 						}

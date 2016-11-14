@@ -28,6 +28,10 @@
 #include "GUI_Listener.h"
 #include "GUI_Destroyable.h"
 #include "GUI_Broadcaster.h"
+/* THEORY OF OPERATION - GUI_FormWindow
+
+GUI_FormWindow is meant to be a simple pop-up window that one can easily add GUI_Components to. See WED_ExportDialogDialog for an example.
+*/
 
 class GUI_FormWindow : public GUI_Window, public GUI_Listener, public GUI_Destroyable {
 public:
@@ -47,8 +51,11 @@ public:
 	virtual				~GUI_FormWindow();
 
 			void		Reset(
+								const string&			aux_label,
 								const string&			ok_label,
-								const string&			cancel_label);
+								const string&			cancel_label,
+								bool					submit_with_return_key);
+			
 
 			void		AddLabel(const string&			msg);
 
@@ -63,10 +70,15 @@ public:
 								const string&			label,
 								const string&			text);
 
-			string		GetField(
-								int						id);
-								
+			string		GetField(int					id);
+			
+	//The action preformed when the Aux button is pressed
+	virtual void        AuxiliaryAction() { };
+
+	//The action preformed when the submit or "Ok" button is pressed
 	virtual	void		Submit()=0;
+
+	//The action preformed when the cancle button is pressed
 	virtual	void		Cancel()=0;
 
 	virtual	bool		Closed(void) { return true; }
@@ -83,9 +95,13 @@ private:
 		
 		vector<GUI_Pane *>	mParts;
 		vector<GUI_Commander *> mFocusRing;
+		
+		//The auxiliary panel, a button that can be optionally hidden
+		GUI_Pane*           mAux;
 		GUI_Pane *			mOK;
 		GUI_Pane *			mCancel;
 
+		bool				mReturnSubmit;
 		int					mFormBounds[4];
 
 };

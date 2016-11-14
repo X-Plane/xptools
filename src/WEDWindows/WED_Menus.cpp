@@ -22,6 +22,7 @@
  */
 
 #include "WED_Menus.h"
+#include "WED_MetaDataKeys.h"
 #include "GUI_Application.h"
 #if APL
 #include "ObjCUtils.h"
@@ -53,7 +54,7 @@ static const GUI_MenuItem_t	kFileMenu[] = {
 {	"Import DS&F...",		0,		0,								0,	wed_ImportDSF		},
 {	"Import Ortho&photo...", 0,		0,								0,	wed_ImportOrtho		},
 #if HAS_GATEWAY
-{	"Import from Airport Scenery Gateway...",0,0,								0,	wed_ImportGateway		},
+{	"Import from Airport Scenery Gateway...",0,0,				0,	wed_ImportGateway	},
 #endif
 #if GATEWAY_IMPORT_FEATURES
 {	"Import Airport Scenery Gateway Extracts...",0,0,				0,	wed_ImportGatewayExtract },
@@ -77,6 +78,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 9.70",			0,		0,								0,	wed_Export900		},
 {	"X-Plane 10.00",		0,		0,								0,	wed_Export1000		},
 {	"X-Plane 10.21",		0,		0,								0,	wed_Export1021,		},
+{	"X-Plane 10.50",		0,		0,								0,	wed_Export1050,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
@@ -130,7 +132,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Pick Overlay Image...",	0,	0,										0,	wed_PickOverlay		},
 //{	"Toggle &Overlay Image",	0,	0,										0,	wed_ToggleOverlay	},
 {	"Toggle &World Map",		0,	0,										0,	wed_ToggleWorldMap	},
-{	"Toggle Previe&w",			0,	0,										0,	wed_TogglePreview	},
+{	"To&ggle Preview",			0,	0,										0,	wed_TogglePreview	},
 #if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
 #endif
@@ -170,18 +172,19 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select &Children",	GUI_KEY_DOWN,	gui_ControlFlag,				0,	wed_SelectChild		},
 {	"Select P&olygon",	GUI_KEY_UP,		gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectPoly		},
 {	"Select &Vertices",	GUI_KEY_DOWN,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_SelectVertex	},
+{	"Select Conn&ected",			0,			0,							0,	wed_SelectConnected },
 #if AIRPORT_ROUTING
 {	"-",						0,			0,							0,	0					},
-{	"Select Degenerate Edges",	0,			0,							0,	wed_SelectZeroLength },
-{	"Select Double Nodes",		0,			0,							0,	wed_SelectDoubles	},
-{	"Select Crossing Edges",	0,			0,							0,	wed_SelectCrossing	},
+{	"Select &Degenerate Edges",	0,			0,							0,	wed_SelectZeroLength },
+{	"Select Do&uble Nodes",		0,			0,							0,	wed_SelectDoubles	},
+{	"Select Crossing Ed&ges",	0,			0,							0,	wed_SelectCrossing	},
 #endif
 {	"-",						0,			0,							0,	0					},
-{	"Select Local Objects",		0,			0,							0,	wed_SelectLocalObjects },
-{	"Select Library Objects",	0,			0,							0,	wed_SelectLibraryObjects },
-{	"Select Laminar Library Objects",0,		0,							0,	wed_SelectDefaultObjects },
-{	"Select Third Party Library Objects",0,	0,							0,	wed_SelectThirdPartyObjects },
-{	"Select Missing Objects",	0,			0,							0,	wed_SelectMissingObjects },
+{	"Select Local Ob&jects",		0,			0,							0,	wed_SelectLocalObjects },
+{	"Select L&ibrary Objects",	0,			0,							0,	wed_SelectLibraryObjects },
+{	"Select &Laminar Library Objects",0,		0,							0,	wed_SelectDefaultObjects },
+{	"Select &Third Party Library Objects",0,	0,							0,	wed_SelectThirdPartyObjects },
+{	"Select &Missing Objects",	0,			0,							0,	wed_SelectMissingObjects },
 {	NULL,						0,			0,							0,	0					},
 };
 
@@ -193,11 +196,18 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"Create Runway Use",		0,		0,										0, wed_AddATCRunwayUse },
 {	"Create Runway Time Rule",	0,		0,										0, wed_AddATCTimeRule },
 {	"Create Runway Wind rule",	0,		0,										0, wed_AddATCWindRule },
-
 #endif
+{	"Add &Metadata",			0,		0,										0, 0 },
+{	"Update Metadata",			0,		0,										0, wed_UpdateMetadata},
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
+{	"-",							0,		0,									0,	0			},
+{	"Upgrade Ramps",				0,		0,									0,	wed_UpgradeRamps},
 {	NULL,						0,		0,										0, 0,				}
 };
+
+// end-begin?  YES!  Since begin is before the beginnined and end is AFTER the end this gives us ONE extra slot.
+// We NEED that slot to be the null terminator for the menu list.
+static GUI_MenuItem_t kAddMetaDataMenu[wed_AddMetaDataEnd-wed_AddMetaDataBegin] = { 0 };
 
 static const GUI_MenuItem_t kHelpMenu[] = {
 {	"&WED User's Guide",			0,	0,										0,	wed_HelpManual },
@@ -253,7 +263,7 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
-
+	
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
 		
@@ -264,8 +274,18 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 
 	GUI_Menu	airport_menu = inApp->CreateMenu(
-		"&Airport", kAirportMenu, inApp->GetMenuBar(),0);
+		"&Airport", kAirportMenu, inApp->GetMenuBar(), 0);
+	
+	for (KeyEnum key_enum = wed_AddMetaDataBegin + 1; key_enum < wed_AddMetaDataEnd; ++key_enum)
+	{
+		int index = key_enum - wed_AddMetaDataBegin - 1;
+		GUI_MenuItem_t menu_item = { META_KeyDisplayText(key_enum).c_str(), 0, 0, 0, key_enum };
+		kAddMetaDataMenu[index] = menu_item;
+	}
 
+	GUI_Menu	airport_add_meta_data_menu = inApp->CreateMenu(
+		"Add &Meta Data", kAddMetaDataMenu, airport_menu, 6);//This hardcoded 6 is a reference to
+															 //kAirportMenu[6]
 	GUI_Menu	help_menu = inApp->CreateMenu(
 		"&Help", kHelpMenu, inApp->GetMenuBar(), 0);
 }

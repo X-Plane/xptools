@@ -1117,7 +1117,7 @@ bool				GUI_Window::IsDragClick(int x, int y, int button)
 {
 	#if APL
 	
-		return run_event_tracking_until_move_or_up();
+		return run_event_tracking_until_move_or_up(button);
 
 	#elif IBM
 		POINT p;
@@ -1395,6 +1395,12 @@ void GUI_Window::EnableMenusWin(void)
 #endif
 
 #if APL
+
+void				GUI_Window::GotCommandHack(int command)
+{
+	this->DispatchHandleCommand(command);
+}
+
 
 int			GUI_Window::CalcHelpTip(int x, int y, int bounds[4], string& msg)
 {

@@ -85,7 +85,6 @@ WED_VertexTool::WED_VertexTool(
 				IResolver *				resolver,
 				int						sel_verts) :
 		WED_HandleToolBase(tool_name, host, zoomer, resolver),
-		mSelVerts(sel_verts),
 		mEntityCacheKeyArchive(-1),
 		mEntityCacheKeyZoomer(-1),
 		mSnapCacheKeyArchive(-1),
@@ -114,7 +113,8 @@ void	WED_VertexTool::BeginEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->StartOperation("Marquee Drag");
+	op->StartOperation("Vertex Modification");  // can be any of - split ATC edge - move ATC edge node
+	                                 // - drag a node or modify a bezier node of any previously selected feature
 }
 
 void	WED_VertexTool::EndEdit(void)
@@ -655,8 +655,9 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Point:
 		if ((pt = SAFE_CAST(IGISPoint,en)) != NULL)
 		{
+			io_pt += delta;
 			pt->GetLocation(gis_Geo,p);
-			SnapMovePoint(p,delta, en);
+			SnapMovePoint(io_pt,p, en);
 			pt->SetLocation(gis_Geo,p);
 			return;
 		}
@@ -694,7 +695,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) return;	break;
 			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) return;	break;
 			}
-			SnapMovePoint(p,delta, en);
+			io_pt += delta;
+			SnapMovePoint(io_pt,p, en);
 			switch(n) {
 			case 0:	pt_b->SetLocation(gis_Geo,p);	break;
 			case 1:	pt_b->SetControlHandleLo(gis_Geo,p);	break;
@@ -709,7 +711,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			pt_h->GetLocation(gis_Geo,p);
 			if (n == 0)
 			{
-				SnapMovePoint(p,delta, en);
+				io_pt += delta;
+				SnapMovePoint(io_pt,p, en);
 				pt_h->SetLocation(gis_Geo,p);
 			} else {
 				if(!mInEdit)
@@ -840,13 +843,8 @@ void WED_VertexTool::GetEntityInternal(void) const
 
 void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area ) const
 {
-	WED_Entity * went = SAFE_CAST(WED_Entity,e);
-	if (went)
-	{
-		if (went->GetLocked()) return;
-		if (went->GetHidden()) return;
-	}
-
+	if(!IsVisibleNow(e))	return;
+	if(IsLockedNow(e))		return;
 	if(!e->Cull(vis_area)) return;
 
 	Bbox2	ent_bounds;
@@ -924,12 +922,7 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 
 void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_area, ISelection * sel ) const
 {
-	WED_Entity * went = SAFE_CAST(WED_Entity,e);
-	if (went)
-	{
-//		if (went->GetLocked()) return;
-		if (went->GetHidden()) return;
-	}
+	if(!IsVisibleNow(e))	return;
 
 	Bbox2	ent_bounds;
 	e->GetBounds(gis_Geo,ent_bounds);
@@ -1015,9 +1008,12 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 	}
 }
 
-void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEntity * who)
+void		WED_VertexTool::SnapMovePoint(
+					const Point2&			ideal_track_pt,		// This is the ideal place the user is TRYING to drag the thing, without snapping
+					Point2&					io_thing_pt,		// And this is where the thing is right now - we will move it to a NEW loc
+					IGISEntity *			who)
 {
-	Point2	modi(io_pt+delta);
+	Point2	modi(ideal_track_pt);
 	double smallest_dist=9.9e9;
 	Point2	best(modi);
 	if (mSnapToGrid)
@@ -1054,7 +1050,7 @@ void		WED_VertexTool::SnapMovePoint(Point2& io_pt, const Vector2& delta, IGISEnt
 			}
 		}
 	}
-	io_pt = best;
+	io_thing_pt = best;
 }
 
 

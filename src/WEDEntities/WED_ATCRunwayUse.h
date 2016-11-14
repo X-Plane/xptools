@@ -39,6 +39,9 @@ public:
 	void	Export(		 AptRunwayRule_t& info) const;
 
 			void	SetRunway(int rwy);
+			int	GetRunway(void) const;
+			bool	HasArrivals(void) const;
+			bool	HasDepartures(void) const;
 
 	virtual	void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
@@ -47,7 +50,7 @@ public:
 private:
 
 	WED_PropIntEnum			rwy;
-	WED_PropDoubleText		dep_frq;
+	WED_PropFrequencyText		dep_frq;
 	WED_PropIntEnumBitfield	traffic;
 	WED_PropIntEnumBitfield	operations;	
 	WED_PropIntText			dep_heading_min;		// This is the range of departure gates that we'd want to use this runway for.

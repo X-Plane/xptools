@@ -37,6 +37,7 @@ handle_cross.png		GUI_RES		handles\handle_cross.png
 handle_square.png		GUI_RES		handles\handle_square.png
 handle_vertexround.png	GUI_RES		handles\handle_vertexround.png
 handle_arrowhead.png	GUI_RES		handles\handle_arrowhead.png
+handle_arrowhead_lg.png	GUI_RES		handles\handle_arrowhead_lg.png
 handle_rotatehead.png	GUI_RES		handles\handle_rotatehead.png
 handle_closeloop.png	GUI_RES		handles\handle_closeloop.png
 handle_control.png		GUI_RES		handles\handle_control.png
@@ -60,6 +61,7 @@ eye.png					GUI_RES		tables\eye.png
 lock.png				GUI_RES		tables\lock.png
 check.png				GUI_RES		tables\check.png
 gradient.png			GUI_RES		tables\gradient.png
+delete.png				GUI_RES		tables\delete.png
 disclose.png			GUI_RES		tables\disclose.png
 header.png				GUI_RES		tables\header.png
 sider.png				GUI_RES		tables\sider.png
@@ -117,6 +119,14 @@ line_BRunwayHold.png			GUI_RES		line_types/line_BRunwayHold.png
 line_BOtherHold.png				GUI_RES		line_types/line_BOtherHold.png
 line_BWideBrokenSingle.png		GUI_RES		line_types/line_BWideBrokenSingle.png
 line_BILSCriticalCenter.png		GUI_RES		line_types/line_BILSCriticalCenter.png
+
+/* parking spots*/
+ClassA.png						GUI_RES		parking_spots/ClassA.png
+ClassB.png						GUI_RES		parking_spots/ClassB.png
+ClassC.png						GUI_RES		parking_spots/ClassC.png
+ClassD.png						GUI_RES		parking_spots/ClassD.png
+ClassE.png						GUI_RES		parking_spots/ClassE.png
+ClassF.png						GUI_RES		parking_spots/ClassF.png
 
 /*WEDManual.pdf					GUI_RES	WEDManual.pdf */
 

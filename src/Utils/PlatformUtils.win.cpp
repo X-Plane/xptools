@@ -34,6 +34,39 @@ const char * GetApplicationPath(char * pathBuf, int sz)
 		return NULL;
 }
 
+const char * GetCacheFolder(char cache_path[], int sz)
+{
+	if(sz != MAX_PATH)
+	{
+		return NULL;
+	}
+
+	HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, cache_path);
+	if (SUCCEEDED(res))
+	{
+		return cache_path;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+const char * GetTempFilesFolder(char temp_path[], int sz)
+{
+	if(sz > MAX_PATH)
+	{
+		return NULL;
+	}
+
+	int result = GetTempPath(sz, temp_path);
+	if (result > strlen(temp_path) || result == 0)
+	{
+		return NULL;
+	}
+	
+	return  temp_path;
+}
 
 int		GetFilePathFromUser(
 					int					inType,
@@ -109,14 +142,14 @@ char *	GetMultiFilePathFromUser(
 {
 	OPENFILENAME	ofn = { 0 };
 	BOOL result;
-	char buf[4096];
+	char * buf = (char *) malloc(1024 * 1024);
 
 	ofn.lStructSize = sizeof(ofn);
 	ofn.lpstrFilter = "All Files\000*.*\000";
 	ofn.nFilterIndex = 1;	// Start with .acf files
 	ofn.lpstrFile = buf;
 	buf[0] = 0;		// No initialization for open.
-	ofn.nMaxFile = sizeof(buf);		// Guess string length?
+	ofn.nMaxFile = 1024 * 1024;		// Guess string length?
 	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
 	ofn.lpstrTitle = inPrompt;
 	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER;
@@ -154,11 +187,14 @@ char *	GetMultiFilePathFromUser(
 			p += (files[i].size() + 1);
 		}
 		*p = 0;
-	
+		free(buf);
 		return ret;
 	}
 	else
+	{
+		free(buf);
 		return NULL;
+	}
 }
 
 

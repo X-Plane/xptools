@@ -34,6 +34,9 @@ using std::multimap;
 using std::vector;
 using std::min;
 using std::max;
+using std::iterator;
+using std::pair;
+using std::forward_iterator_tag;
 
 namespace cgd {
 #include "CompGeomDefs2.h"

@@ -29,6 +29,7 @@
 #include "XESConstants.h"
 #include "CompGeomUtils.h"
 #include "DEMIO.h"
+#include "MathUtils.h"
 #include "PlatformUtils.h"
 #if USE_GEOJPEG2K
 #include <jasper/jasper.h>
@@ -665,11 +666,12 @@ void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2]
 void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& heading, double& len_mtr, int swapped)
 {
 	double diag_len = sqrt(VectorLLToMeters(ends[0],Vector2(ends[0],ends[1])).squared_length());
-	len_mtr = sqrt(diag_len * diag_len - width_mtr * width_mtr);
+	len_mtr = sqrt(max(diag_len * diag_len - width_mtr * width_mtr,0.0));
 
 	double diag_heading = VectorDegs2NorthHeading(ends[0],ends[0],Vector2(ends[0],ends[1]));
 
-	double offset = asin(width_mtr / diag_len) * RAD_TO_DEG;
+	// When user drags corners to < width, we need clamp to avoid NaN from asin out of range [-1..1]
+	double offset = diag_len == 0.0 ? 0.0 : asin(doblim(width_mtr / diag_len,-1.0,1.0)) * RAD_TO_DEG;
 
 	if (swapped)
 		heading = diag_heading + offset;

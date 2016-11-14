@@ -52,6 +52,7 @@
 #include "STLUtils.h"
 #include "WED_AptIE.h"
 #include "WED_Airport.h"
+#include "WED_MetadataUpdate.h"
 
 static void debug_it(const vector<BezierPoint2>& pts)
 {
@@ -78,10 +79,38 @@ inline bool end_match(const char * str, const char * suf)
 	return false;
 }
 
+enum dsf_import_category {
+	dsf_cat_exclusion = 0,
+	dsf_cat_objects,
+	dsf_cat_facades,
+	dsf_cat_forests,
+	dsf_cat_lines,
+	dsf_cat_strings,
+	dsf_cat_orthophoto,
+	dsf_cat_draped_poly,	
+	dsf_cat_DIM
+};
+
+static const char * k_dsf_cat_names[dsf_cat_DIM] = { 
+	"Exclusion Zones",
+	"Objects",
+	"Facades",
+	"Forests",
+	"Lines",
+	"Strings",
+	"Orthophotos",
+	"Draped Polygons"
+};
+
 class	DSF_Importer {
 public:
 
-	DSF_Importer() { for(int n = 0; n < 7; ++n) req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1; }
+	DSF_Importer() { 
+		for(int n = 0; n < 7; ++n) 
+			req_level_obj[n] = req_level_agp[n] = req_level_fac[n] = -1; 
+		for(int n = 0; n < dsf_cat_DIM; ++n)
+			bucket_parents[n] = NULL;
+	}
 
 	int					req_level_obj[7];
 	int					req_level_agp[7];
@@ -90,7 +119,8 @@ public:
 	vector<string>		obj_table;
 	vector<string>		pol_table;
 
-	WED_Thing *			parent;
+	WED_Thing *			master_parent;
+	WED_Thing *			bucket_parents[dsf_cat_DIM];
 	WED_Archive *		archive;
 
 	vector<BezierPoint2>pts,uvs;
@@ -100,6 +130,16 @@ public:
 	bool				want_uv;
 	bool				want_bezier;
 	bool				want_wall;
+	
+	WED_Thing * get_cat_parent(dsf_import_category cat)
+	{
+		if(bucket_parents[cat] == NULL)
+		{
+			bucket_parents[cat] = WED_Group::CreateTyped(archive);
+			bucket_parents[cat]->SetName(k_dsf_cat_names[cat]);
+		}
+		return bucket_parents[cat];
+	}
 
 	int GetShowForFacID(int id)
 	{
@@ -153,7 +193,7 @@ public:
 		{
 			WED_ExclusionZone * z = WED_ExclusionZone::CreateTyped(archive);
 			z->SetName("Exclusion Zone");
-			z->SetParent(parent,parent->CountChildren());
+			z->SetParent(get_cat_parent(dsf_cat_exclusion),get_cat_parent(dsf_cat_exclusion)->CountChildren());
 			set<int> s;
 			s.insert(k);
 			z->SetExclusions(s);
@@ -271,7 +311,7 @@ public:
 			#endif
 		obj->SetHeading(inCoordinates[2]);
 		obj->SetName(me->obj_table[inObjectType]);
-		obj->SetParent(me->parent,me->parent->CountChildren());
+		obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
 		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
 	}
 	static void	BeginSegment(
@@ -305,6 +345,9 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		string r  = me->pol_table[inPolygonType];
+		
+		dsf_import_category cat = dsf_cat_objects;
+		
 		if(end_match(r.c_str(),".fac"))
 		{
 			// Ben says: .fac must be 2-coord for v9.  But...maybe for v10 we allow curved facades?
@@ -320,7 +363,7 @@ public:
 			fac->SetHeight(inParam);
 			fac->SetResource(r);
 			fac->SetShowLevel(me->GetShowForFacID(inPolygonType));
-			
+			cat = dsf_cat_facades;
 		}
 
 		if(end_match(r.c_str(),".for"))
@@ -336,6 +379,7 @@ public:
 			forst->SetFillMode(inParam / 256);
 			#endif
 			forst->SetResource(r);
+			cat = dsf_cat_forests;
 		}
 
 		if(end_match(r.c_str(),".lin"))
@@ -348,6 +392,7 @@ public:
 			me->ring = lin;
 			lin->SetClosed(inParam);
 			lin->SetResource(r);
+			cat = dsf_cat_lines;
 		}
 
 		if(end_match(r.c_str(),".str") || end_match(r.c_str(),".ags"))
@@ -360,6 +405,7 @@ public:
 			me->ring = str;
 			str->SetSpacing(inParam);
 			str->SetResource(r);
+			cat = dsf_cat_strings;
 		}
 
 		if(end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb"))
@@ -372,6 +418,7 @@ public:
 				WED_DrapedOrthophoto * orth = WED_DrapedOrthophoto::CreateTyped(me->archive);
 				me->poly = orth;
 				orth->SetResource(r);
+				cat = dsf_cat_orthophoto;
 			}
 			else
 			{
@@ -379,18 +426,19 @@ public:
 				me->poly = pol;
 				pol->SetHeading(inParam);
 				pol->SetResource(r);
+				cat = dsf_cat_draped_poly;
 			}
 			me->ring = NULL;
 		}
 
 		if(me->poly)
 		{
-			me->poly->SetParent(me->parent,me->parent->CountChildren());
+			me->poly->SetParent(me->get_cat_parent(cat),me->get_cat_parent(cat)->CountChildren());
 			me->poly->SetName(r);
 		}
 		if(me->ring)
 		{
-			me->ring->SetParent(me->parent,me->parent->CountChildren());
+			me->ring->SetParent(me->get_cat_parent(cat),me->get_cat_parent(cat)->CountChildren());
 			me->ring->SetName(r);
 		}
 	}
@@ -600,8 +648,8 @@ public:
 
 	int do_import_dsf(const char * file_name, WED_Thing * base)
 	{
-		parent = base;
-		archive = parent->GetArchive();
+		master_parent = base;
+		archive = master_parent->GetArchive();
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
@@ -610,13 +658,18 @@ public:
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
 		int res = DSFReadFile(file_name, malloc, free, &cb, NULL, this);
+		
+		for(int i = 0; i < dsf_cat_DIM; ++i)
+		if(bucket_parents[i])
+			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
+		
 		return res;
 	}
 
 	void do_import_txt(const char * file_name, WED_Thing * base)
 	{
-		parent = base;
-		archive = parent->GetArchive();
+		master_parent = base;
+		archive = master_parent->GetArchive();
 
 		DSFCallbacks_t cb = {	NextPass, AcceptTerrainDef, AcceptObjectDef, AcceptPolygonDef, AcceptNetworkDef, AcceptRasterDef, AcceptProperty,
 								BeginPatch, BeginPrimitive, AddPatchVertex, EndPrimitive, EndPatch,
@@ -625,6 +678,11 @@ public:
 								BeginPolygon, BeginPolygonWinding, AddPolygonPoint,EndPolygonWinding, EndPolygon, AddRasterData, SetFilter };
 
 		int ok = Text2DSFWithWriter(file_name, &cb, this);
+		
+		for(int i = 0; i < dsf_cat_DIM; ++i)
+		if(bucket_parents[i])
+			bucket_parents[i]->SetParent(master_parent, master_parent->CountChildren());
+		
 
 //		int res = DSFReadFile(file_name, &cb, NULL, this);
 //		if(res != 0)
@@ -714,6 +772,23 @@ void WED_DoImportText(const char * path, WED_Thing * base)
 
 
 #if GATEWAY_IMPORT_FEATURES
+const string get_airport_id_from_gateway_file_path(const char * file_path)
+{
+	string tname(file_path);
+	string::size_type p = tname.find_last_of("\\/");
+	if(p != tname.npos)
+		tname = tname.substr(p+1);
+	p = tname.find_last_of(".");
+	if(p != tname.npos)
+		tname = tname.substr(0,p);
+	return tname;
+}
+WED_Thing * get_airport_from_gateway_file_path(const char * file_path, WED_Thing * wrl)
+{
+	return find_airport_by_icao_recursive(get_airport_id_from_gateway_file_path(file_path), wrl);
+}
+
+
 //This is from an older method of importing things which involved manually getting the files from the hard drive
 void	WED_DoImportDSFText(IResolver * resolver)
 {
@@ -731,6 +806,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 			if(strstr(paths,".dat"))
 			{			
 				WED_ImportOneAptFile(paths,wrl,NULL);
+				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
 			}
 			paths = paths + strlen(paths) + 1;
 		}
@@ -741,15 +817,7 @@ void	WED_DoImportDSFText(IResolver * resolver)
 		{
 			if(!strstr(paths,".dat"))
 			{
-				string tname(paths);
-				string::size_type p = tname.find_last_of("\\/");
-				if(p != tname.npos)
-					tname = tname.substr(p+1);
-				p = tname.find_last_of(".");
-				if(p != tname.npos)
-					tname = tname.substr(0,p);
-				
-				WED_Thing * g = find_airport_by_icao_recursive(tname,wrl);
+				WED_Thing * g = get_airport_from_gateway_file_path(paths, wrl);
 				if(g == NULL)
 				{
 					g = WED_Group::CreateTyped(wrl->GetArchive());

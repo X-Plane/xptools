@@ -56,7 +56,8 @@ static const int * calc_form_bounds(int b[4], int w, int h)
 static int form_bounds_default[4] = { 0, 0, 500, 50 };
 
 enum { 
-	gui_form_ok = GUI_APP_MESSAGES,
+	gui_form_aux = GUI_APP_MESSAGES,
+	gui_form_ok,
 	gui_form_cancel
 };
 
@@ -80,6 +81,15 @@ GUI_FormWindow::GUI_FormWindow(
 	int k_reg[4] = { 0, 0, 1, 3 };
 	int k_hil[4] = { 0, 1, 1, 3 };
 	
+	GUI_Button * aux_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+	mAux = aux_btn;
+	//Looks good as long as nobody resizes the window
+	aux_btn->SetBounds(205,5,305, GUI_GetImageResourceHeight("push_buttons.png") / 3);
+	aux_btn->Show();
+	aux_btn->SetSticky(1,1,0,0);
+	aux_btn->SetDescriptor("Learn More");
+	aux_btn->SetMsg(gui_form_aux,0);
+
 	GUI_Button * okay_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 	mOK = okay_btn;
 	okay_btn->SetBounds(105,5,205,GUI_GetImageResourceHeight("push_buttons.png") / 3);
@@ -87,6 +97,7 @@ GUI_FormWindow::GUI_FormWindow(
 	okay_btn->SetSticky(0,1,1,0);
 	okay_btn->SetDescriptor("OK");
 	okay_btn->SetMsg(gui_form_ok,0);
+	mReturnSubmit = true;
 
 	GUI_Button * cncl_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 	cncl_btn->SetBounds(5,5,105,GUI_GetImageResourceHeight("push_buttons.png") / 3);
@@ -99,9 +110,12 @@ GUI_FormWindow::GUI_FormWindow(
 	GUI_Pane * holder = new GUI_Pane;
 	holder->SetBounds(0,0,210,GUI_GetImageResourceHeight("push_buttons.png") / 3 + 10);
 	
-	
+	aux_btn->SetParent(holder);
+	aux_btn->AddListener(this);
+
 	okay_btn->SetParent(holder);
 	okay_btn->AddListener(this);
+
 	cncl_btn->SetParent(holder);
 	cncl_btn->AddListener(this);
 	
@@ -120,9 +134,12 @@ GUI_FormWindow::~GUI_FormWindow()
 }
 
 void		GUI_FormWindow::Reset(
+								const string&			aux_label,
 								const string&			ok_label,
-								const string&			cancel_label)
+								const string&			cancel_label,
+								bool					auto_return)
 {
+	mReturnSubmit = auto_return;
 	while(!mParts.empty())
 	{
 		delete mParts.back();
@@ -131,6 +148,26 @@ void		GUI_FormWindow::Reset(
 	
 	mFocusRing.clear();
 	
+	if(cancel_label.empty())
+	{
+		mCancel->Hide();
+	}
+	else
+	{
+		mCancel->Show();
+		mCancel->SetDescriptor(cancel_label);
+	}
+
+	if(aux_label.empty())
+	{
+		mAux->Hide();
+	}
+	else
+	{
+		mAux->Show();
+		mAux->SetDescriptor(aux_label);
+	}
+
 	if(ok_label.empty())
 	{
 		mOK->Hide();
@@ -257,7 +294,6 @@ void		GUI_FormWindow::AddField(
 	mParts.push_back(label);
 	mParts.push_back(text);
 	mFocusRing.push_back(text);
-	
 }
 
 void		GUI_FormWindow::AddFieldNoEdit(
@@ -302,10 +338,18 @@ void		GUI_FormWindow::ReceiveMessage(
 							intptr_t    			inMsg,
 							intptr_t				inParam)
 {
-	if(inMsg == gui_form_ok)
+	if(inMsg == gui_form_aux)
+	{
+		this->AuxiliaryAction();
+	}
+	else if(inMsg == gui_form_ok)
+	{
 		this->Submit();
+	}
 	else
+	{
 		this->Cancel();
+	}
 }
 
 string		GUI_FormWindow::GetField(
@@ -319,7 +363,7 @@ string		GUI_FormWindow::GetField(
 
 int			GUI_FormWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
 {
-	if(inVK == GUI_VK_RETURN)
+	if(inVK == GUI_VK_RETURN && mReturnSubmit)
 	{
 		this->Submit();
 		return 1;

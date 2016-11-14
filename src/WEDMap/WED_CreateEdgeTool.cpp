@@ -58,6 +58,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
+	mWidth(tool == create_TaxiRoute ? this : NULL, "Size", SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
 
 	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
 	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), RoadSubType, road_Highway),
@@ -115,8 +116,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 {
 	vector<Point2>	pts(in_pts);
 	int idx;
-	WED_Thing * host = GetHost(idx);
-	if (host == NULL) return;
+	WED_Thing * host_for_parent = GetHost(idx);
+	if (host_for_parent == NULL) return;
+	
+	WED_Thing * host_for_merging = WED_GetContainerForHost(GetResolver(), host_for_parent, kIsAirport[mType], idx);
 
 	string cname = string("Create ") + kCreateCmds[mType];
 
@@ -137,7 +140,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double	dist=frame_dist*frame_dist;
 		WED_Thing * who = NULL;
-		FindNear(host, NULL, WED_TaxiRoute::sClass, pts[p],who,dist);
+		FindNear(host_for_merging, NULL, WED_TaxiRoute::sClass, pts[p],who,dist);
 		if (who != NULL)
 		{
 			IGISPoint * pp = dynamic_cast<IGISPoint *>(who);
@@ -155,7 +158,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	{
 		double dist=frame_dist*frame_dist;
 		IGISPointSequence * seq = NULL;
-		FindNearP2S(host, NULL, WED_TaxiRoute::sClass,pts[p], seq, dist);
+		FindNearP2S(host_for_merging, NULL, WED_TaxiRoute::sClass,pts[p], seq, dist);
 		if(seq)
 			seq->SplitSide(pts[p], 0.001);		
 	}
@@ -166,7 +169,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<Point2>	splits;
-		SplitByPts(host, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
+		SplitByPts(host_for_merging, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
 //		printf("At index %d, got %d splits from pts.\n", p, splits.size());
 		SortSplits(Segment2(pts[p-1],pts[p]), splits);
 
@@ -188,7 +191,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	for(int p = 1; p < pts.size(); ++p)
 	{
 		vector<pair<IGISPointSequence *, Point2> >	splits;
-		SplitByLine(host, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits);
+		SplitByLine(host_for_merging, NULL, WED_TaxiRoute::sClass, Segment2(pts[p-1],pts[p]), splits);
 		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
 			s->first->SplitSide(s->second,0.001);
 //		printf("At index %d, got %d splits.\n", p, splits.size());
@@ -219,11 +222,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	
-		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[start % pts.size()],src,dist);
+		FindNear(host_for_merging, NULL, WED_TaxiRoute::sClass,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
 		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_SimpleBoundaryNode::CreateTyped(GetArchive());
-		src->SetParent(host,idx);
+		src->SetParent(host_for_parent,idx);
 		src->SetName(mName.value + "_start");
 		c->SetLocation(gis_Geo,pts[0]);
 	}
@@ -240,6 +243,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			tr->SetHotArrive(mHotArrive.value);
 			tr->SetHotILS(mHotILS.value);
 			tr->SetName(mName);
+			tr->SetWidth(mWidth.value);
 			break;
 		case create_Road:
 			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());
@@ -253,7 +257,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		dst = NULL;
 		
 		dist=frame_dist*frame_dist;
-		FindNear(host, NULL, WED_TaxiRoute::sClass,pts[p % pts.size()],dst,dist);
+		FindNear(host_for_merging, NULL, WED_TaxiRoute::sClass,pts[p % pts.size()],dst,dist);
 		if(dst == NULL)
 		{
 			switch(mType) {
@@ -264,14 +268,14 @@ void		WED_CreateEdgeTool::AcceptPath(
 				dst = c = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 				break;
 			}
-			dst->SetParent(host,idx);
+			dst->SetParent(host_for_parent,idx);
 			dst->SetName(mName.value+"_stop");
 			c->SetLocation(gis_Geo,pts[p % pts.size()]);
 		}		
 		new_edge->AddSource(dst,1);
 
 		// Do this last - half-built edge inserted the world destabilizes accessors.
-		new_edge->SetParent(host,idx);
+		new_edge->SetParent(host_for_parent,idx);
 		sel->Insert(new_edge);	
 	
 //		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
@@ -290,7 +294,7 @@ bool		WED_CreateEdgeTool::CanCreateNow(void)
 
 WED_Thing *	WED_CreateEdgeTool::GetHost(int& idx)
 {
-		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], idx);
+		return WED_GetCreateHost(GetResolver(), kIsAirport[mType], true, idx);
 }
 
 const char *		WED_CreateEdgeTool::GetStatusText(void)
@@ -310,8 +314,8 @@ void WED_CreateEdgeTool::FindNear(WED_Thing * host, IGISEntity * ent, const char
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;
@@ -368,8 +372,8 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;
@@ -433,8 +437,8 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const c
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;
@@ -494,8 +498,8 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const ch
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(et && et->GetHidden()) return;
-	if(et && et->GetLocked()) return;
+	if(!IsVisibleNow(et))	return;
+	if(IsLockedNow(et))		return;
 	if(e && t)
 	{
 		Point2	l;

@@ -277,8 +277,18 @@ const char *	GUI_GetResourceEnd(GUI_Resource res)
 	return ((res_struct*)res)->end_p;
 }
 
+typedef map<string, string>	tmp_res_paths;
+static tmp_res_paths sTmpResPaths;
+
 bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 {
+	tmp_res_paths::iterator it = sTmpResPaths.find(in_resource);
+	if (it != sTmpResPaths.end())
+	{
+		out_path = it->second;
+		return true;
+	}
+
 	GUI_Resource res = GUI_LoadResource(in_resource);
 	if (!res) return false;
 	const char * sp = GUI_GetResourceBegin(res);
@@ -295,6 +305,7 @@ bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
 	close(fd);
 
 	GUI_UnloadResource(res);
+	sTmpResPaths[in_resource]=tmpfilename;
 	out_path = tmpfilename;
     return true;
 }
@@ -319,7 +330,7 @@ int GUI_GetImageResource(
         ret = 1;
     #endif
 	} else
-		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 0, GAMMA_SRGB);
+		ret = CreateBitmapFromPNGData(GUI_GetResourceBegin(res), GUI_GetResourceEnd(res) - GUI_GetResourceBegin(res), io_image, 1, GAMMA_SRGB);
 	GUI_UnloadResource(res);
 	//Because createbitmapfromX now return the channels instead of -1,0,or 1 this is so we do not need to update everything else that calls this.
 	//The GUI does not care about the channels, only if it is real or not

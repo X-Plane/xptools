@@ -78,6 +78,7 @@
     <ClCompile Include="..\..\src\Utils\AssertUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\BitmapUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\CSVParser.cpp" />
     <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
     <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\GISUtils.cpp" />
@@ -117,6 +118,7 @@
     <ClCompile Include="..\..\src\WEDCore\WED_UndoLayer.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_UndoMgr.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Validate.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_XMLReader.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_XMLWriter.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Airport.cpp" />
@@ -176,6 +178,9 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_Thing.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_TowerViewpoint.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Windsock.cpp" />
+    <ClCompile Include="..\..\src\WEDFileCache\CACHE_CacheObject.cpp" />
+    <ClCompile Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.cpp" />
+    <ClCompile Include="..\..\src\WEDFileCache\WED_FileCache.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptIE.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptImportDialog.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_AptTable.cpp" />
@@ -184,11 +189,15 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_GatewayExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_GatewayImport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_ICAOTable.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_MetaDataKeys.cpp" />
+    <ClCompile Include="..\..\src\WEDImportExport\WED_MetadataUpdate.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_SceneryPackExport.cpp" />
     <ClCompile Include="..\..\src\WEDImportExport\WED_VerTable.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPane.cpp" />
     <ClCompile Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.cpp" />
+    <ClCompile Include="..\..\src\WEDMap\WED_ATCLayer.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_Colors.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_CreateBoxTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_CreateEdgeTool.cpp" />
@@ -214,6 +223,7 @@
     <ClCompile Include="..\..\src\WEDMap\WED_UIMeasurements.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_VertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDMap\WED_WorldMapLayer.cpp" />
+    <ClCompile Include="..\..\src\WEDNetwork\RAII_Classes.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\WED_Connection.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\WED_NWInfoLayer.cpp" />
     <ClCompile Include="..\..\src\WEDNetwork\WED_NWLinkAdapter.cpp" />
@@ -324,6 +334,7 @@
     <ClInclude Include="..\..\src\UI\XWinGL.h" />
     <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
+    <ClInclude Include="..\..\src\Utils\CSVParser.h" />
     <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
     <ClInclude Include="..\..\src\Utils\FileUtils.h" />
     <ClInclude Include="..\..\src\Utils\GISUtils.h" />
@@ -363,9 +374,11 @@
     <ClInclude Include="..\..\src\WEDCore\WED_UndoLayer.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_UndoMgr.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Validate.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Version.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_XMLReader.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_XMLWriter.h" />
+    <ClInclude Include="..\..\src\Interfaces\IHasResource.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Airport.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_AirportBeacon.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_AirportBoundary.h" />
@@ -424,6 +437,9 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_Thing.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_TowerViewpoint.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Windsock.h" />
+    <ClInclude Include="..\..\src\WEDFileCache\CACHE_CacheObject.h" />
+    <ClInclude Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.h" />
+    <ClInclude Include="..\..\src\WEDFileCache\WED_FileCache.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptIE.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptImportDialog.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_AptTable.h" />
@@ -432,11 +448,15 @@
     <ClInclude Include="..\..\src\WEDImportExport\WED_GatewayExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_GatewayImport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_ICAOTable.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataDefaults.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_MetaDataKeys.h" />
+    <ClInclude Include="..\..\src\WEDImportExport\WED_MetadataUpdate.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_SceneryPackExport.h" />
     <ClInclude Include="..\..\src\WEDImportExport\WED_VerTable.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryListAdapter.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPane.h" />
     <ClInclude Include="..\..\src\WEDLibrary\WED_LibraryPreviewPane.h" />
+    <ClInclude Include="..\..\src\WEDMap\WED_ATCLayer.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_Colors.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_CreateBoxTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_CreateEdgeTool.h" />
@@ -462,6 +482,7 @@
     <ClInclude Include="..\..\src\WEDMap\WED_UIMeasurements.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_VertexTool.h" />
     <ClInclude Include="..\..\src\WEDMap\WED_WorldMapLayer.h" />
+    <ClInclude Include="..\..\src\WEDNetwork\RAII_Classes.h" />
     <ClInclude Include="..\..\src\WEDNetwork\WED_Connection.h" />
     <ClInclude Include="..\..\src\WEDNetwork\WED_NWDefs.h" />
     <ClInclude Include="..\..\src\WEDNetwork\WED_NWInfoLayer.h" />
@@ -487,6 +508,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_Sign_Editor.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_StartWindow.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\AptDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptIO.h" />
     <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h" />
     <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h" />
@@ -579,14 +601,16 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;4482;</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\src\WEDFileCache;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -596,11 +620,13 @@
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
       <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\src\WEDFileCache;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>Yes</GenerateDebugInformation>
       <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LargeAddressAware>true</LargeAddressAware>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -26,6 +26,7 @@
 #include "AptDefs.h"
 #include "WED_ToolUtils.h"
 #include "STLUtils.h"
+#include "WED_TaxiRouteNode.h"
 
 #if AIRPORT_ROUTING
 
@@ -53,16 +54,33 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 }
 
 DEFINE_PERSISTENT(WED_TaxiRoute)
-TRIVIAL_COPY(WED_TaxiRoute, WED_GISEdge)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
 	oneway(this,"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
 	runway(this,"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
 	hot_depart(this,"Departures",		SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
 	hot_arrive(this,"Arrivals",			SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
-	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false)
+	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
+	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"), ATCIcaoWidth, width_E)
 {
 }
+
+void WED_TaxiRoute::CopyFrom(const WED_TaxiRoute * rhs)
+{
+	WED_GISEdge::CopyFrom(rhs);
+	// Why is this necessary?  All WED_Things attempt to copy their guts by usign the introspection
+	// interface of IPropertyObject.
+	//
+	// But WED_TaxiRoute LIES about its interface to make "virtual" hot zones when it is a runway -
+	// this keeps the UI matching x-plane.  But it results in a bug: when we copy the taxi route,
+	// those virtual hot zones are copied (via the property interface) and become real in the new object,
+	// which is bad.
+	// So we run the base class, then manually copy this stuff. 
+	hot_depart = rhs->hot_depart;
+	hot_arrive = rhs->hot_arrive;
+	hot_ils = rhs->hot_ils;
+}
+
 
 WED_TaxiRoute::~WED_TaxiRoute()
 {
@@ -93,6 +111,11 @@ void		WED_TaxiRoute::SetHotILS(const set<int>& rwys)
 	hot_ils = rwys;
 }
 
+void WED_TaxiRoute::SetWidth(int w)
+{
+	width= w;
+}
+
 void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
@@ -107,10 +130,18 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 		} else
 			runway = r;
 		
+		width = width_E;
+		
 	}
 	else
 	{
 		runway = atc_rwy_None;
+		width = ENUM_Import(ATCIcaoWidth, info.width);
+		if(width == -1)
+		{
+			print_func(ref,"Illegal width: %d\n", info.width);
+			width = width_E;
+		}
 	}
 
 	for(set<string>::iterator h = info.hot_depart.begin(); h != info.hot_depart.end(); ++h)
@@ -143,7 +174,13 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 }
 
 void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
-{	
+{
+	info.oneway = oneway.value;
+	info.hot_depart.clear();
+	info.hot_arrive.clear();
+	info.hot_ils.clear();
+	info.width = ENUM_Export(width.value);
+
 	if(runway.value == atc_rwy_None)
 	{
 		this->GetName(info.name);
@@ -153,13 +190,18 @@ void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
 	{
 		info.runway = 1;
 		info.name = ENUM_Desc(runway.value);
+
+		set<int>	runway_parts;
+		get_runway_parts(runway.value,runway_parts);
+
+		for(set<int>::iterator itr = runway_parts.begin(); itr != runway_parts.end(); ++itr)
+		{
+			info.hot_depart.insert(ENUM_Desc(*itr));
+			info.hot_arrive.insert(ENUM_Desc(*itr));
+			info.hot_ils.insert(ENUM_Desc(*itr));
+		}
 	}
-	
-	info.oneway = oneway.value;
-	info.hot_depart.clear();
-	info.hot_arrive.clear();
-	info.hot_ils.clear();
-	
+
 	set<int>::iterator h;
 	for (h = hot_depart.value.begin(); h != hot_depart.value.end(); ++h)
 		info.hot_depart.insert(ENUM_Desc(*h));
@@ -167,8 +209,6 @@ void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
 		info.hot_arrive.insert(ENUM_Desc(*h));
 	for (h = hot_ils.value.begin(); h != hot_ils.value.end(); ++h)
 		info.hot_ils.insert(ENUM_Desc(*h));
-
-
 }
 
 void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict) const
@@ -226,6 +266,7 @@ void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	if(runway.value != atc_rwy_None)
 	if(n == PropertyItemNumber(&name))
 	{
+		info.can_delete = false;
 		info.can_edit = false;
 	}
 }
@@ -263,19 +304,38 @@ bool	WED_TaxiRoute::IsRunway(void) const
 
 bool	WED_TaxiRoute::HasHotArrival(void) const
 {
-	// Ben says: since we auto-include ourselves in our flags if we are a runway, 
-	// set our status to match.  
-	return !hot_arrive.value.empty() || runway.value != atc_rwy_None;
+	// BEN SAYS: we used to treat being a runway as being hot.  But the UI needs to distinguish between
+	// "I am a runway and hot because I am a runway" and "Ia m a runway and hot for a CROSSING runway" -e.g.
+	// a LAHSO marking.  So only return TRUE hotness.
+	set<int>	runway_parts;
+	get_runway_parts(runway.value,runway_parts);
+
+	for(set<int>::iterator i = hot_arrive.value.begin(); i != hot_arrive.value.end(); ++i)
+		if(runway_parts.count(*i) == 0)
+			return true;
+	return false;
 }
 
 bool	WED_TaxiRoute::HasHotDepart(void) const
 {
-	return !hot_depart.value.empty() || runway.value != atc_rwy_None;
+	set<int>	runway_parts;
+	get_runway_parts(runway.value,runway_parts);
+
+	for(set<int>::iterator i = hot_depart.value.begin(); i != hot_depart.value.end(); ++i)
+		if(runway_parts.count(*i) == 0)
+			return true;
+	return false;
 }
 
 bool	WED_TaxiRoute::HasHotILS(void) const
 {
-	return !hot_ils.value.empty() || runway.value != atc_rwy_None;
+	set<int>	runway_parts;
+	get_runway_parts(runway.value,runway_parts);
+
+	for(set<int>::iterator i = hot_ils.value.begin(); i != hot_ils.value.end(); ++i)
+		if(runway_parts.count(*i) == 0)
+			return true;
+	return false;
 }
 
 bool	WED_TaxiRoute::HasInvalidHotZones(const set<int>& legal_rwys) const
@@ -300,6 +360,16 @@ bool	WED_TaxiRoute::HasInvalidHotZones(const set<int>& legal_rwys) const
 int		WED_TaxiRoute::GetRunway(void) const
 {
 	return runway.value;
+}
+
+int		WED_TaxiRoute::GetWidth(void) const
+{
+	return width.value;
+}
+
+WED_Thing *		WED_TaxiRoute::CreateSplitNode()
+{
+	return WED_TaxiRouteNode::CreateTyped(GetArchive());
 }
 
 

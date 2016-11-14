@@ -142,7 +142,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	WED_Entity * thing = dynamic_cast<WED_Entity *>(entity);
 	while(thing)
 	{
-		if (thing->GetLocked()) { locked=1;break;}
+		if(IsLockedNow(thing))	{ locked=1;break;}
 		thing = dynamic_cast<WED_Entity *>(thing->GetParent());
 	}
 
@@ -408,9 +408,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				rwy = tr->IsRunway();
 				ils = tr->HasHotILS();
 			}
-			if(hot)				struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
-			else if(ils)		struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
-			else if (rwy)		struct_color = selected ? wed_Runway_Selected : wed_Runway;
+			if(locked)
+				struct_color = wed_StructureLocked;
+			else
+			{
+				if(hot)                 struct_color = selected ? wed_Hotzone_Selected : wed_Hotzone;
+				else if(ils)            struct_color = selected ? wed_ILSzone_Selected : wed_ILSzone;
+				else if (rwy)           struct_color = selected ? wed_Runway_Selected : wed_Runway;
+			}
 			#endif
 			
 			int i, n = ps->GetNumSides();
@@ -456,7 +461,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				if(one_way && pts.size() >= 2)
 				{
 					Vector2 orient(pts[pts.size()-2],pts[pts.size()-1]);
-					GUI_PlotIcon(g,"handle_arrowhead.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);
+					GUI_PlotIcon(g,"handle_arrowhead_lg.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);
 				}
 			}
 
@@ -557,7 +562,7 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 	WED_Entity * thing = dynamic_cast<WED_Entity *>(entity);
 	while(thing)
 	{
-		if (thing->GetLocked()) { locked=1;break;}
+		if(IsLockedNow(thing))	{ locked=1;break;}
 		thing = dynamic_cast<WED_Entity *>(thing->GetParent());
 	}
 

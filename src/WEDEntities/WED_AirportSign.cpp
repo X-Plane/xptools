@@ -98,7 +98,6 @@ void		WED_AirportSign::GetNthProperty(int n, PropertyVal_t& val) const
 		DebugAssert(val.prop_kind == prop_String);
 		val.prop_kind = prop_TaxiSign;
 	}
-
 }
 
 void		WED_AirportSign::SetNthProperty(int n, const PropertyVal_t& val)

@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A23070DD-2C26-48CC-B062-65B3B7293766}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>AC3Dplugin</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Debug.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Release.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <TargetName>XPlaneSupportWin</TargetName>
+    <TargetExt>.p</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>XPlaneSupportWin</TargetName>
+    <TargetExt>.p</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WINDOWS;WIN32;_DEBUG;_WINDOWS;_USRDLL;AC3DPLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\SDK\ac3d;..\..\src\DSF;..\..\src\DSF\tri_stripper_101;..\..\src\DSFTools;..\..\src\GUI;..\..\src\Interfaces;..\..\src\Env;..\..\src\lib_json\include;..\..\src\Network;..\..\src\ObjEdit;..\..\src\Obj;..\..\src\OGLE;..\..\src\RenderFarmUI;..\..\src\RawImport;..\..\src\Utils;..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDXPlugin;..\..\src\WEDWindows;..\..\src\WEDTCE;..\..\src\WEDResources;..\..\src\WEDProperties;..\..\src\WEDNetwork;..\..\src\WEDMap;..\..\src\WEDLibrary;..\..\src\XESCore;..\..\src\WEDImportExport;..\..\src\XESTools;..\..\src\UI;..\..\src\XPCompat;..\..\msvc_libs\boost_1_57_0;..\..\msvc_libs\CGAL-4.5.2\include;..\..\msvc_libs\CGAL-4.5.2\build\include;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\include;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\jpeg-9a;..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\libgeotiff-1.2.5\libxtiff;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\tiff-4.0.3\libtiff;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\squish-1.11;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\shapelib-1.3.0;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\curl-7.36.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\msvc_libs\msvc_compiled_libs;..\..\SDK\ac3d</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ac3d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WINDOWS;WIN32;NDEBUG;_WINDOWS;_USRDLL;AC3DPLUGIN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\SDK\ac3d;..\..\src\DSF;..\..\src\DSF\tri_stripper_101;..\..\src\DSFTools;..\..\src\GUI;..\..\src\Interfaces;..\..\src\Env;..\..\src\lib_json\include;..\..\src\Network;..\..\src\ObjEdit;..\..\src\Obj;..\..\src\OGLE;..\..\src\RenderFarmUI;..\..\src\RawImport;..\..\src\Utils;..\..\src\WEDCore;..\..\src\WEDEntities;..\..\src\WEDXPlugin;..\..\src\WEDWindows;..\..\src\WEDTCE;..\..\src\WEDResources;..\..\src\WEDProperties;..\..\src\WEDNetwork;..\..\src\WEDMap;..\..\src\WEDLibrary;..\..\src\XESCore;..\..\src\WEDImportExport;..\..\src\XESTools;..\..\src\UI;..\..\src\XPCompat;..\..\msvc_libs\boost_1_57_0;..\..\msvc_libs\CGAL-4.5.2\include;..\..\msvc_libs\CGAL-4.5.2\build\include;..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\include;..\..\msvc_libs\Expat 2.1.0\Source\lib;..\..\msvc_libs\jpeg-9a;..\..\msvc_libs\jasper-1.701.0.GEO\src\libjasper\include;..\..\msvc_libs\libgeotiff-1.2.5;..\..\msvc_libs\libgeotiff-1.2.5\libxtiff;..\..\msvc_libs\libpng_zlib_BFOLDER\libpng-1.2.41;..\..\msvc_libs\libpng_zlib_BFOLDER\zlib;..\..\msvc_libs\tiff-4.0.3\libtiff;..\..\msvc_libs\sqlite-3.6.21;..\..\msvc_libs\squish-1.11;..\..\msvc_libs\proj-4.7.0\src;..\..\msvc_libs\shapelib-1.3.0;..\..\msvc_libs\freetype-2.2.1\include;..\..\msvc_libs\curl-7.36.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\msvc_libs\msvc_compiled_libs;..\..\SDK\ac3d</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ac3d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\AC3DPlugins\ac_utils.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\bitmap_match.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj8_export.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj8_import.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_anim.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_editor.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_model.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_panel.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_radius.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_tools.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\obj_update.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\prefs.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\TclStubs.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\tcl_utils.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\uv_mapper.cpp" />
+    <ClCompile Include="..\..\src\AC3DPlugins\xp_plugin.cpp" />
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\AC3DPlugins\ac3d_prefix.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\ac_utils.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\bitmap_match.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\dsf_export.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj8_export.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj8_import.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_anim.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_editor.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_model.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_panel.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_radius.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_tools.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\obj_update.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\prefs.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\TclStubs.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\tcl_utils.h" />
+    <ClInclude Include="..\..\src\AC3DPlugins\uv_mapper.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
+    <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
+    <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
+    <ClInclude Include="..\..\src\Obj\XDefs.h" />
+    <ClInclude Include="..\..\src\Obj\XObjBuilder.h" />
+    <ClInclude Include="..\..\src\Obj\XObjDefs.h" />
+    <ClInclude Include="..\..\src\Obj\XObjReadWrite.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

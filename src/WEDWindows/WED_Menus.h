@@ -55,6 +55,7 @@ enum {
 	wed_Export900,
 	wed_Export1000,
 	wed_Export1021,
+	wed_Export1050,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
@@ -112,6 +113,7 @@ enum {
 	wed_SelectChild,
 	wed_SelectVertex,
 	wed_SelectPoly,
+	wed_SelectConnected,
 #if AIRPORT_ROUTING
 	wed_SelectZeroLength,
 	wed_SelectDoubles,
@@ -132,6 +134,24 @@ enum {
 	wed_AddATCTimeRule,
 	wed_AddATCWindRule,
 #endif
+	wed_UpgradeRamps,
+	//-- Add Metadata Keys Menu--
+	//Organized by alphabetical order
+	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
+	wed_AddMetaDataCity,// or Locality
+	wed_AddMetaDataCountry,
+	wed_AddMetaDataDatumLat,
+	wed_AddMetaDataDatumLon,
+	wed_AddMetaDataFAA,
+	wed_AddMetaDataIATA,
+	wed_AddMetaDataICAO,
+	wed_AddMetaDataRegionCode,
+	wed_AddMetaDataState,// or Province
+	wed_AddMetaDataTransitionAlt,//Altitude
+	wed_AddMetaDataTransitionLevel,
+	wed_AddMetaDataEnd,//WARNING: DO NOT USE!
+	//---------------------------//
+	wed_UpdateMetadata, //Open up dialogbox
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery

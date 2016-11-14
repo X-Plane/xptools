@@ -27,6 +27,7 @@
 #include "XESConstants.h"
 #include "AptDefs.h"
 #include "MathUtils.h"
+#include "STLUtils.h"
 
 DEFINE_PERSISTENT(WED_Runway)
 TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
@@ -77,6 +78,68 @@ bool	WED_Runway::Cull(const Bbox2& b) const
 	return b.overlap(me);	
 }
 
+pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
+{
+	string name;
+	GetName(name);
+	
+	vector<string> parts;
+	tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
+	
+	if(parts.size() != 1 && parts.size() != 2)
+		return pair<int,int>(atc_Runway_None,atc_Runway_None);
+	
+	int e1 = ENUM_LookupDesc(ATCRunwayOneway,parts[0].c_str());
+	if(e1 == -1)
+	{
+		parts[0].insert(0,"0");
+		e1 = ENUM_LookupDesc(ATCRunwayOneway,parts[0].c_str());
+		if(e1 == -1)
+			return pair<int,int>(atc_Runway_None,atc_Runway_None);
+	}
+	
+	int e2 = atc_Runway_None;
+	if(parts.size() == 2)
+	{
+		e2 = ENUM_LookupDesc(ATCRunwayOneway,parts[1].c_str());
+		if(e2 == -1)
+		{
+			parts[1].insert(0,"0");
+			e2 = ENUM_LookupDesc(ATCRunwayOneway,parts[1].c_str());
+			if(e2 == -1)
+				e2 = atc_Runway_None;
+		}
+	}
+	
+	return make_pair(e1, e2);
+}
+	
+int				WED_Runway::GetRunwayEnumsTwoway() const
+{
+	string name;
+	GetName(name);
+	int e1 = ENUM_LookupDesc(ATCRunwayTwoway,name.c_str());
+	if(e1 != -1)
+		return e1;
+
+	string namez(name);
+	namez.insert(0,"0");
+	e1 = ENUM_LookupDesc(ATCRunwayTwoway,namez.c_str());
+	if(e1 != -1)
+		return e1;
+	
+	name += "/XXX";
+	namez += "/XXX";
+	
+	e1 = ENUM_LookupDesc(ATCRunwayTwoway,name.c_str());
+	if(e1 != -1)
+		return e1;
+
+	e1 = ENUM_LookupDesc(ATCRunwayTwoway,namez.c_str());
+	if(e1 != -1)
+		return e1;
+	return atc_rwy_None;
+}
 
 bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 {
@@ -411,5 +474,15 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.has_tdzl		[1] =			  tdzl2		  ;
 	x.reil_code		[1] = ENUM_Export(reil2.value);
 
+}
+
+
+void	WED_Runway::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_GISLine_Width::GetNthPropertyDict(n, dict);
+	if(n == PropertyItemNumber(&surface) && surface.value != surf_Water)
+	{
+		dict.erase(surf_Water);
+	}
 }
 

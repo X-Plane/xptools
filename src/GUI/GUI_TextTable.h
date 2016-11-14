@@ -28,6 +28,7 @@
 
 class	GUI_Pane;
 class	GUI_TextField;
+class	GUI_MouseCatcher;
 class	WED_Sign_Editor;
 
 /*
@@ -70,15 +71,20 @@ enum GUI_BoolIcon {
 
 struct	GUI_CellContent {
 	GUI_CellContentType		content_type;
+	
+	//Ways we can interact with the cell
+	bool					can_delete;
 	int						can_edit;
 	int						can_disclose;
 	int						can_select;
 	int						can_drag;
 
+	//Status of cell
 	int						is_disclosed;
 	int						is_selected;
 	int						indent_level;
 
+	//Contents of the cell
 	string					text_val;		// Only one of these is used - which one depends on the cell content type!
 	int						int_val;
 	double					double_val;
@@ -92,6 +98,7 @@ struct	GUI_CellContent {
 	void printCellInfo(
 		//Boolean flags to turn on/off drawing
 		bool pcontType =true,
+		bool pcan_delete =true,
 		bool pcan_edit =true,
 		bool pcan_disclose =true,
 		bool pcan_select =true,
@@ -131,6 +138,7 @@ struct	GUI_CellContent {
 			default: printf("*content_type: %d \n", content_type); break;
 		}
 	}	
+	if(pcan_delete) printf("can_delete: %d \n", can_delete);
 	if(pcan_edit) printf("*can_edit: %d \n", can_edit);
 	if(pcan_disclose) printf("*can_disclose: %d \n", can_disclose);
 	if(pcan_select) printf("*can_select: %d \n", can_select);
@@ -179,6 +187,11 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y)=0;
+	
+	virtual void	DoDeleteCell(
+						int							cell_x,
+						int							cell_y)=0;
+
 	virtual	void	DoDrag(
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,
@@ -208,7 +221,7 @@ public:
 	virtual	int		SelectDisclose(
 						int							open_it,
 						int							all)=0;		// return true if you support this op.
-
+	
 	virtual	int		TabAdvance(
 						int&						io_x,
 						int&						io_y,
@@ -361,6 +374,7 @@ private:
 	GUI_Table *				mParent;
 	GUI_TextField *			mTextField;
 	WED_Sign_Editor *		mSignField;
+	GUI_MouseCatcher *		mCatcher;
 	GUI_TableGeometry *		mGeometry;
 
 	int						mCellResize;

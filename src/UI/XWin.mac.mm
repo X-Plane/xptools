@@ -65,6 +65,8 @@
 		mOwner->Timer();
 }
 
+// This is the command handler for menus created directly by XWin, e.g. for trivial apps like XGrinder/ObjView/RenderFarm.
+// Thus the command is simply dispatched to the owner by index.
 - (void) menuItemPicked:(id) sender
 {
 	NSMenuItem * item = sender;
@@ -76,6 +78,40 @@
 		mOwner->mPopupPick = idx;
 	else
 		mOwner->HandleMenuCmd(owner, idx);	// Otherwise pass to subclass
+}
+
+// MASSIVE HACK ALERT.  I don't normally hotwire things together like this, but in this case we gotta ship WED 1.5 and frankly this
+// is going to be gross no matter what.
+// Anyway: in order for menu items to be dispatched EVEN in a modal loop, menu items have to be sent to the first responder, and not
+// to the app delegate.  (For some reason, menu items do go down the responder chain to the key window in a modal loop, but they won't
+// go directly to the app delegate.)  We need this for cut/copy/paste to work in the gateway import dialog box.
+//
+// So...the nasty thing is that the ObjC window that GUI uses is secretly down inside XWin (mac edition).  But because ObjC uses squashy
+// dispatch-by-name on selectors, we can _by luck_ put into the base window class the particular method name that ObjCUtils is going to use.
+// We then tie it to a template method.
+//
+// GUI turns around and (1) uses ObjCUtils to build menu items targeting this secret path and (2) overrides the tmeplate method and finally
+// GUI has access to menu picks in all modal situations.
+//
+// Note that this only works because WED _always_ has a window up - if we could close all windows, the application itself doesn't have
+// a responder chain handler to match.  We can fix that someday (by explicitly subclassing the application I guess????) if we ever need it.
+//
+// It's worth noting that the command sent to GUI_Window is sent from the focus target up the _GUI_ command chain, regardless of what ObjC 
+// thinks is going on.  So it is possible (if GUI is f---ed up) to have a command in one window act on another due to GUI bugs - the NS idea
+// of key window is NOT enforced.
+//
+// Note that there are TWO menu implementations here but only one runs at a time:
+// - If ALL menus go through XWin, then XWin creates the menu item, points at its own menuItemPicked selector, and then calls its own
+//   public HandleMenuCmd handler.  This dispatches menus by indexand is frankly a pretty clean way to do menus.
+//
+// - If ALL menus go through GUI_Menus, then ObjCUtils is used to manually build the menu bar, targeting the hidden selector in XWin that
+//   is sent to GUI_Window and up the GUI command chain.
+
+- (void) menu_picked:(id) sender
+{
+	NSMenuItem * menu = sender;
+	int cmd_id = [menu tag];
+	mOwner->GotCommandHack(cmd_id);
 }
 
 - (NSDragOperation)draggingSession:(NSDraggingSession *)session sourceOperationMaskForDraggingContext:(NSDraggingContext)context
@@ -200,7 +236,16 @@
 
 - (void)draggingSession:(NSDraggingSession *)session endedAtPoint:(NSPoint)screenPoint operation:(NSDragOperation)operation
 {
-	mOwner->mInDragOp = 0;
+	// This is a hack. When we are dragging we go into a modal loop to emulate the modal drag semantics of the other OSes and old UI
+	// kits.  We pump the event queue until we see that the drag is over, then we eject, and we skip up events while we do this.
+	// There's some kind of weird race - I've never seen it but we have seen the evidence in bug WED-566. Basically we end up with
+	// the drag session over but we are STILL inside "sendEvent" from inside the modal loop.  This was allowing for a re-dispach of
+	// a mouse down INSIDE a mouse down, resulting in double-click-counting.
+	//
+	// To prevent this, we use a tri-state flag..."2" means we are done with the drag (and thus we SHOULD exit the loop) but we have not
+	// YET exited the loop and unwound the stack, so we should not process down events.  Down events that hit this race window
+	// will now be dropped.
+	mOwner->mInDragOp = 2;
 }
 
 - (void)close
@@ -282,7 +327,7 @@
 	int y = [self frame].size.height - event_location.y;
 	// This kind of protection protects not only against our owner being destroyed while NS is alive by ref count,
 	// but also against getting mouse events leaking through the modal drag loop, which happnes rarely but not never.
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonDown(x,y,0, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -291,7 +336,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonDown(x,y,1, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -300,7 +345,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonDown(x,y,2, [theEvent modifierFlags] & NSControlKeyMask ? 1 : 0);
 }
 
@@ -336,7 +381,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonUp(x,y,0);
 }
 
@@ -345,7 +390,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonUp(x,y,1);
 }
 
@@ -354,7 +399,7 @@
 	NSPoint event_location = [theEvent locationInWindow];
 	int x = event_location.x;
 	int y = [self frame].size.height - event_location.y;
-	if(mOwner && !mOwner->mInDragOp)
+	if(mOwner && mOwner->mInDragOp == 0)
 	mOwner->EventButtonUp(x,y,2);
 }
 
@@ -436,7 +481,20 @@
 		param2 |= NSCommandKeyMask;
 
 	if(mOwner)
-	mOwner->KeyPressed(uni_code, msg, param1, param2);
+	{
+		if(!mOwner->KeyPressed(uni_code, msg, param1, param2))
+		{
+			NSPoint event_location = [[self window] convertScreenToBase:[NSEvent mouseLocation]];
+		
+			int x = event_location.x;
+			int y = [self frame].size.height - event_location.y;
+		
+			if (char_code == '=')
+				mOwner->MouseWheel(x, y, 1, 0);
+			else if (char_code == '-')
+				mOwner->MouseWheel(x, y, -1, 0);
+		}
+	}
 }
 
 // This proc is called when we get a tool tip request in the 'global' tool tip catcher...that's our cue to
@@ -923,7 +981,7 @@ void	XWin::DoMacDragAndDrop(int item_count,
 	// This is a blocking while loop that will run th event queue modally until we pop out of the drag,
 	// since DnD is supposed to act synchronous.
 	
-	while(mInDragOp)
+	while(mInDragOp == 1)
 	{
 		NSAutoreleasePool * pool = [[NSAutoreleasePool alloc] init];
 
@@ -934,6 +992,7 @@ void	XWin::DoMacDragAndDrop(int item_count,
 		[[NSApplication sharedApplication] sendEvent:e];
 		[pool drain];
 	}
+	mInDragOp = 0;
 
 	// This will force an up click IMMEDIATELY after us, without a down click - needed to ensure the DND op doesn't
 	// play out as a drag on some other widget.

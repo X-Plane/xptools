@@ -13,6 +13,124 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.5.1r1 10/11/16
+	Bug fixes:
+	- WED-698: Fixed import of apt.dat losing ramp operation type data
+	- WED-691: Text changed to “undo vertex modification”
+	- WED-690: Adding nodes to taxi routes added a ramp
+	- WED-586, 526: Validate selects vertices of zero length sides to be deleted
+
+WED 1.5r3 9/26/16
+	Bug fixes:
+	- WED-686: error margin for "Taxi route is not joined to a destination route" set to 1m
+	- WED-683: crash when clicking at extreme zoom levels
+	- WED-685: taxi sign creation tool uses clipboard
+
+WED 1.5r2 9/24/16
+	Bug fixes:
+	- WED-679: Crash validating ramp positions with no airlines on Windows
+
+WED 1.5r1 9/23/16
+
+	New features:
+	- Clearer validation error messages
+	- Validation includes error codes
+	- Faster when using ATC tab
+
+	Bug fixes:
+	- WED-669: Resource suffixes no longer case sensitive
+	- WED-663: Fixed crash when resource string is empty
+	- WED-660: Fixed crash when adding vertex to a circle
+	- WED-653: Updated colors for taxi route segments
+	- WED-647: Changed T-junction error message
+
+WED 1.5b4 9/19/16
+
+	Bug fixes:
+	- WED-660: Fixes crash sub-dividing the final segment of a closed-loop line.
+	- WED-641: Fixed selected color on runway taxi-route segments when ATC tab is not being used.
+	- Lowered hot zone distance requirement off the end of runways - fixes cases like KSBP runway 25.
+
+WED 1.5b3 9/14/16
+
+	Bug fixes:
+	- WED-651: Fixes preview of size A taxi route segments
+	- WED-648, WED-645, WED-643: Nodes in taxi routes no longer incorrectly flagged as T-junctions
+	- WED-637, WED-640: Fixed crashes due to taxi route node types
+	- WED-636: Runway taxi route segments no longer have to cover the entire runway
+	- WED-632: Corrects ATC edge colors when locked
+	- WED-627: Fixes ATC frequency decimals
+	- WED-625: Fixes issues with orthophoto file types
+	- WED-621: Only frequency conflicts on tower, ground, delivery and ASOS are validated
+
+WED 1.5b2 8/31/16
+
+	New features:
+	- New validation of taxi routes and flows
+	- Coloring of taxi routes in ATC tab layer
+	- New validation of ATC frequencies
+
+
+	Bug fixes:
+	- WED-620: Disallow curves in boundary tool
+	- WED-618: Large arrowhead for ATC one way
+	- WED-616: Fixed edge tool crash when ATC window is open and flow selected. Fixes merging lines within an airport with sub-groups and tools create map items outside ATC flows.
+	- WED-607: Fixed load of legacy packs
+	- WED-602: Flows allow decimals in minimum visibility field
+	- WED-594: Metric spacing in facades, strings and objects follows UI feet/meters display
+	- WED-584: Restored file-cleanup on gateway import
+	- WED-580: Leave ATC layer off when we start
+	- WED-575: Restored +/- zoom
+	- WED-517: Fixed cut-copy-paste in Gateway upload box
+	- WED-564: Fixed typo on tab title
+	- WED-493: Split function splits ATC edges that overlap
+	- WED-485, WED-595: Fixed frequency rounding in UI
+	- WED-392: Windows are modal on Windows OS
+	- Fixed preview of .agp files
+
+WED 1.5b1 7/13/16
+
+	Initial Release of WED 1.5
+
+	New features:
+	- 64-bit support
+	- AI Operation type 1301 record code
+	- File cache for Gateway Import/Metadata downloads
+	- Ground operation feature support
+	- Metadata fields (record code 1302)
+	- Select connected finds disjointed parts of ATC network
+	- Visualization of parking spots & ATC widths
+	- WYSIWYG taxi sign editor
+
+	Bug fixes:
+	- WED-544: Two decimal digits on PAPI export
+	- WED-538: Removed black line from 9 glyph
+	- WED-530: Validation code catches airport flow with no runways in use
+	- WED-521: Table gridlines
+	- WED-508: Windows start visible, per GUI's needs
+	- WED-507: NAN when diagonal-drag of runway corners is less than width
+	- WED-504: Tool preset drop downs available on all tools
+	- WED-502: Spelling errors fixed
+	- WED-475: Disabled enter key on form window for Gateway upload
+	- WED-472, WED-485: 25 kHz ATC freq rounding and departure rules
+	- WED-372: Importing apt and dxfs are grouped by type
+	- WED-323: Vertices getting "stuck" when dragging with snap
+	- WED-281, WED-554: Find and ban "water" type for all surface types
+	- WED-102: Validate co-located nodes or overlapping edges in ATC taxiways
+	- Fixed capitalization in none attributes
+
+	Improvements:
+	- Animation kf loop support in OBJ read/write code
+	- Disallow ATC frequencies outside the usable range
+	- Disallow helipad names longer than 3 characters
+	- GUI text "Filter:" is now replaced with "Search:" 
+	- Gateway Export dialog no longer opens instructions page after exporting an airport. Link is accessible through button
+	- ICAO filtering implemented in DSFs
+	- Merge command merges clusters of ATC nodes
+	- Option-click splits bezier as well as linear edges
+	- Support for AG-type mesh declarations in the gateway importer's search bar
+	- Gateway Import/Export dialog boxes show message that a file is loading from the hard drive instead of presenting a blank screen
+
 WED 1.4.1r1 12/17/15
 
 	Validation Checks:

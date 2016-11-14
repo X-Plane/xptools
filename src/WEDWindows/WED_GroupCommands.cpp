@@ -50,6 +50,14 @@
 #include "WED_TaxiRouteNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
+#include "WED_RampPosition.h"
+#include "WED_Menus.h"
+#include "WED_MetaDataKeys.h"
+#include "WED_ResourceMgr.h"
+#include "XObjDefs.h"
+#include "MathUtils.h"
+#include "WED_EnumSystem.h"
+#include <iterator>
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -368,6 +376,36 @@ int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name)
 	return want_sel != now_sel;
 }
 
+bool	WED_CanAddMetaData(IResolver * inResolver, int command)
+{
+	ISelection * sel = WED_GetSelect(inResolver);
+	if (sel->GetSelectionCount() != 1) return 0;
+
+	WED_Airport * sel_airport = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
+	if (sel_airport == NULL)
+	{
+		return 0;
+	}
+	else
+	{
+		return !sel_airport->ContainsMetaDataKey(META_KeyName(command));
+	}
+}
+
+void WED_DoAddMetaData(IResolver * inResolver, int command)
+{
+	ISelection * sel = WED_GetSelect(inResolver);
+	if (sel->GetSelectionCount() != 1) return;
+
+	WED_Airport * want_sel = SAFE_CAST(WED_Airport, sel->GetNthSelection(0));
+	if (want_sel == NULL) return;
+
+	MetaDataKey key_info = META_KeyInfo(command);
+	want_sel->StartOperation(string("Add Metadata Key " + key_info.display_text).c_str());
+	want_sel->StateChanged();
+	want_sel->AddMetaDataKey(key_info.name, "");
+	want_sel->CommitOperation();
+}
 
 int		WED_CanMakeNewATCFreq(IResolver * inResolver)
 {
@@ -1002,6 +1040,49 @@ void	WED_DoSelectPolygon(IResolver * resolver)
 	op->CommitOperation();
 }
 
+int		WED_CanSelectConnected(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	return 1;
+}
+
+void	WED_DoSelectConnected(IResolver * resolver)
+{
+	vector<WED_Thing *>	things;
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	sel->IterateSelectionOr(Iterate_CollectThings,&things);
+	if (things.empty()) return;
+	op->StartOperation("Select Connected");
+	set<WED_Thing *>	visited, to_visit;
+	std::copy(things.begin(),things.end(), inserter(to_visit,to_visit.end()));
+	
+	while(!to_visit.empty())
+	{
+		WED_Thing * i = *to_visit.begin();
+		to_visit.erase(to_visit.begin());
+		visited.insert(i);
+		
+		int s = i->CountSources();
+		for(int ss = 0; ss < s; ++ss)
+		{
+			WED_Thing * src = i->GetNthSource(ss);
+			if(visited.count(src) == 0)
+				to_visit.insert(src);
+		}
+		set<WED_Thing *>	viewers;
+		i->GetAllViewers(viewers);
+		set_difference(viewers.begin(), viewers.end(), visited.begin(), visited.end(), inserter(to_visit, to_visit.end()));
+	}
+	
+	for(set<WED_Thing *>::iterator v = visited.begin(); v != visited.end(); ++v)
+	{
+		sel->Insert(*v);
+	}
+	op->CommitOperation();
+}
+
 void select_zero_recursive(WED_Thing * t, ISelection * s)
 {
 	IGISEdge * e = dynamic_cast<IGISEdge *>(t);
@@ -1084,7 +1165,6 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Select Zero-Length Edges");
 	sel->Clear();
-
 	vector<WED_Thing *> pts;
 	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphEdge, pts);
 	
@@ -1114,15 +1194,14 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 			
 			Point2 x;
 			if (s1.p1 != s2.p1 &&
-				s1.p2 != s2.p1 &&
+				s1.p2 != s2.p2 &&
 				s1.p1 != s2.p2 &&
-				s1.p2 != s2.p2)
+				s1.p2 != s2.p1)
 			if(s1.intersect(s2, x))			
 			{
 				sel->Insert(pts[i]);
 				sel->Insert(pts[j]);
-				break;
-			}			
+			}
 		}
 	}
 	if(sel->GetSelectionCount() == 0)
@@ -1244,12 +1323,56 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
 	DoSelectWithFilter("Select Third Party Art Assets", HasThirdPartyResource, resolver);
 }
 
-
+// Given a vector of nodes all in the same place, this routine merges them all, returning the one surviver,
+// and nukes the rest.  All incoming edges of all of them are merged.  Note that any edges liknking two nodes in
+// nodes are now zero length.
+static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
+{
+	DebugAssert(nodes.size() > 1);
+	WED_Thing * winner = nodes.front();
+	
+	// This takes the centroid of the nodes - if the user provides a cluster of nodes this function can snap them together.
+	Point2	l(0.0,0.0);
+	for(int i = 0; i < nodes.size(); ++i)
+	{
+		IGISPoint * p = dynamic_cast<IGISPoint *>(nodes[i]);
+		DebugAssert(p);
+		Point2 ll;
+		p->GetLocation(gis_Geo, ll);
+		l.x_ += ll.x_;
+		l.y_ += ll.y_;
+	}
+	double r = nodes.size();
+	r = 1.0f / r;
+	l.x_ *= r;
+	l.y_ *= r;
+	
+	IGISPoint * w = dynamic_cast<IGISPoint *>(winner);
+	w->SetLocation(gis_Geo,l);
+	
+	for(int i = 1; i < nodes.size(); ++i)
+	{
+		WED_Thing * victim = nodes[i];
+		set<WED_Thing *> viewers;
+		victim->GetAllViewers(viewers);
+		for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
+			(*v)->ReplaceSource(victim, winner);
+		
+		victim->SetParent(NULL, 0);
+		victim->Delete();
+	}
+	return winner;
+}
 
 static int	unsplittable(ISelectable * base, void * ref)
 {
 	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
 	if (!t) return 1;
+	
+	// Network edges are always splittable
+	if(dynamic_cast<IGISEdge *>(base))
+		return 0;
+	
 	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
 	if (!p) return 1;
 //	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
@@ -1315,6 +1438,40 @@ static int	collect_splits(ISelectable * base, void * ref)
 }
 
 
+// This functor sorts points radially from a point.  When the points are on a line segment this is a cheap way to
+// order them from the anchor to the other end.
+struct sort_by_distance {
+	Point2	anchor;
+	bool operator()(const Point2& lhs, const Point2& rhs) const {
+		return anchor.squared_distance(lhs) < anchor.squared_distance(rhs);
+	}
+	sort_by_distance(const Point2& a) : anchor(a) { }
+};
+
+// For a given edge, this stores the splits that we found - we later sort them once they are all found.
+struct split_edge_info_t {
+	IGISEdge *				edge;
+	vector<Point2>			splits;
+
+	split_edge_info_t(IGISEdge * e) : edge(e) { }
+
+	void sort_along_edge()
+	{
+		Point2 a;
+		edge->GetNthPoint(0)->GetLocation(gis_Geo, a);
+		sort(splits.begin(),splits.end(), sort_by_distance(a));
+	}
+};
+
+// Simple collector of all GIS Edges in the selection.
+static int collect_edges(ISelectable * base, void * ref)
+{
+	vector<split_edge_info_t> * edges = (vector<split_edge_info_t>*) ref;
+	IGISEdge * e = dynamic_cast<IGISEdge *>(base);
+	if(e)
+		edges->push_back(e);
+	return 0;
+}
 
 int		WED_CanSplit(IResolver * resolver)
 {
@@ -1335,9 +1492,18 @@ void	WED_DoSplit(IResolver * resolver)
 	info.second = &who;
 
 	sel->IterateSelectionOr(collect_splits, &info);
-	if (who.empty()) return;
+	
+	vector<split_edge_info_t> edges;
+	
+	sel->IterateSelectionOr(collect_edges, &edges);
+	
+	if (who.empty() && edges.empty()) return;
 
 	op->StartOperation("Split Segments.");
+
+	//
+	// This super-obtuse block splits pairs of points in a GIS Chain.
+	//
 
 	for (vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
@@ -1400,7 +1566,94 @@ void	WED_DoSplit(IResolver * resolver)
 
 		sel->Insert(new_w);
 	}
-
+	
+	//
+	// This block splits overlapping GIS edges anywhere they cross.
+	//
+	
+	// Step 1: run a nested for loop and find all intersections between all
+	// segments...if the intersection is in the interior, we accumulate it on
+	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
+	// data sets big enough to need it.
+	for(int i = 0; i < edges.size(); ++i)
+	{
+		Segment2 is;
+		
+		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
+		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
+		for(int j = 0; j < i; ++j)
+		{
+			Segment2 js;
+			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
+			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
+			
+			if(is.p1 != is.p2 &&
+			   js.p1 != js.p2 &&
+			   is.p1 != js.p1 &&
+			   is.p2 != js.p2 &&
+			   is.p1 != js.p2 &&
+			   is.p2 != js.p1)
+			{
+				Point2 x;
+				if(is.intersect(js, x))
+				{
+					edges[i].splits.push_back(x);
+					edges[j].splits.push_back(x);
+				}
+			}
+		}
+	}
+	
+	// This will be a collection of all the nodes we _create_ by splitting, bucketed by their split point.
+	// When A and B cross, we create two new nodes, Xa and Xb, in the middle of each...when done we have
+	// to merge Xa and Xb to cross-link A1, A2, B1 and B2.  So we bucket Xa and Xb at point X.
+	map<Point2, vector<WED_Thing *>, lesser_x_then_y >	splits;
+	
+	for(int i = 0; i < edges.size(); ++i)
+	{
+		// Sort in order from source to dest - we need to go in order to avoid making Z shapes
+		// when splitting more than once.
+		edges[i].sort_along_edge();
+		
+		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
+		if(edges[i].splits.empty())
+		{
+			Segment2 s;
+			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo,s.p1);
+			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo,s.p2);
+			edges[i].splits.push_back(s.midpoint());
+		}
+		
+		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
+		// on the "dst" side - so by breaking off the very LAST split first, we keep as "us" the part of
+		// the segment containing all other splits.  We work backward.
+		for(vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
+		{
+			// If we had a 'T' then in theory SplitSide could return NULL?
+			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
+			if(split)
+			{
+				// Bucket our new node for merging later
+				WED_Thing * t = dynamic_cast<WED_Thing *>(split);
+				DebugAssert(t);
+				splits[*r].push_back(t);
+				
+				// Select every incident segment - some already selected but that's okay.
+				set<WED_Thing *> incident;
+				t->GetAllViewers(incident);
+				for(set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
+					sel->Insert(*i);
+			}
+		}
+	}
+	
+	// Finally for each bucketed set of nodes, merge them down to get topology.
+	for(map<Point2, vector<WED_Thing *>, lesser_x_then_y>::iterator s = splits.begin(); s != splits.end(); ++s)
+	{
+		if(s->second.size() > 1)
+			run_merge(s->second);
+	}
+	
 	op->CommitOperation();
 }
 
@@ -1498,43 +1751,6 @@ int	WED_CanMerge(IResolver * resolver)
 		return 0;
 	
 	return 1;
-}
-
-static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
-{
-	DebugAssert(nodes.size() > 1);
-	WED_Thing * winner = nodes.front();
-	
-	Point2	l(0.0,0.0);
-	for(int i = 0; i < nodes.size(); ++i)
-	{
-		IGISPoint * p = dynamic_cast<IGISPoint *>(nodes[i]);
-		DebugAssert(p);
-		Point2 ll;
-		p->GetLocation(gis_Geo, ll);
-		l.x_ += ll.x_;
-		l.y_ += ll.y_;
-	}
-	double r = nodes.size();
-	r = 1.0f / r;
-	l.x_ *= r;
-	l.y_ *= r;
-	
-	IGISPoint * w = dynamic_cast<IGISPoint *>(winner);
-	w->SetLocation(gis_Geo,l);
-	
-	for(int i = 1; i < nodes.size(); ++i)
-	{
-		WED_Thing * victim = nodes[i];
-		set<WED_Thing *> viewers;
-		victim->GetAllViewers(viewers);
-		for(set<WED_Thing *>::iterator v = viewers.begin(); v != viewers.end(); ++v)
-			(*v)->ReplaceSource(victim, winner);
-		
-		victim->SetParent(NULL, 0);
-		victim->Delete();
-	}
-	return winner;
 }
 
 void WED_DoMerge(IResolver * resolver)
@@ -1767,4 +1983,174 @@ int		WED_Repair(IResolver * resolver)
 	WED_SetAnyAirport(resolver);
 	root->CommitOperation();
 	return 1;
+}
+
+//---------------------------------------------------------------------------------------------------
+#pragma mark -
+//---------------------------------------------------------------------------------------------------
+
+struct obj_conflict_info {
+	WED_ObjPlacement *		obj;
+	double					approx_radius_m;
+	Point2					loc_ll;
+};
+
+static void center_and_radius_for_ramp_start(WED_RampPosition * pos, Point2& out_ctr, double& out_rad)
+{
+	double mtr = 15;
+	float offset = 5;
+	Point2 nose_wheel;
+	int icao_width = pos->GetWidth();
+	
+	pos->GetLocation(gis_Geo, nose_wheel);
+	switch(icao_width) {
+	case width_A:	mtr = 15.0;	offset = 1.85f; break;
+	case width_B:	mtr = 27.0;	offset = 2.75f; break;
+	case width_C:	mtr = 41.0;	offset = 4.70f; break;
+	case width_D:	mtr = 56.0;	offset = 9.50f; break;
+	case width_E:	mtr = 72.0;	offset = 8.20f; break;
+	case width_F:	mtr = 80.0;	offset = 8.80f; break;
+	}
+
+	double slip = (mtr * 0.5) - offset;
+
+	Point2 e[2];
+	
+	Quad_1to2(nose_wheel, pos->GetHeading(), slip*2.0, e);
+	
+	out_ctr = e[0];
+	out_rad = mtr * 0.5;
+}
+
+static void collect_ramps_recursive(WED_Thing * who, vector<WED_RampPosition *>& out_ramps, vector<obj_conflict_info>& out_conflicting_objs, WED_ResourceMgr * rmgr)
+{
+	if(who->GetClass() == WED_RampPosition::sClass)
+	{
+		WED_RampPosition * ramp = dynamic_cast<WED_RampPosition *>(who);		
+		DebugAssert(ramp);
+		out_ramps.push_back(ramp);
+	} 
+	if(who->GetClass() == WED_ObjPlacement::sClass)
+	{
+		WED_ObjPlacement * obj = dynamic_cast<WED_ObjPlacement *>(who);
+		DebugAssert(obj);		
+		obj_conflict_info r;
+		string vpath;
+		obj->GetResource(vpath);
+		XObj8 * obj8;
+		
+		if(strstr(vpath.c_str(), "lib/airport/aircraft/") != NULL)
+		if(rmgr->GetObj(vpath, obj8))
+		{
+			float b[3] = {
+				obj8->xyz_max[0] - obj8->xyz_min[0],
+				obj8->xyz_max[1] - obj8->xyz_min[1],
+				obj8->xyz_max[2] - obj8->xyz_min[2] };
+
+			Vector2 arm(
+						(obj8->xyz_min[0] + obj8->xyz_max[0]) * 0.5,
+						(obj8->xyz_min[2] + obj8->xyz_max[2]) *-0.5);
+			double c = cos(obj->GetHeading() * DEG_TO_RAD);
+			double s = sin(obj->GetHeading() * DEG_TO_RAD);
+			
+			Vector2 arm_wrl(arm.dx * c + arm.dy * s,
+						    arm.dy * c - arm.dx * s);
+			
+			r.approx_radius_m = pythag(b[0], b[1], b[2]) * 0.5f;
+			
+			r.obj = obj;
+			obj->GetLocation(gis_Geo, r.loc_ll);
+			Vector2 arm_ll = VectorMetersToLL(r.loc_ll, arm_wrl);
+			r.loc_ll += arm_ll;
+					
+				
+			
+			out_conflicting_objs.push_back(r);
+		}
+	}
+	
+	int nn = who->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		collect_ramps_recursive(who->GetNthChild(n), out_ramps, out_conflicting_objs, rmgr);
+}
+
+static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmgr, ISelection * sel)
+{
+	int did_work = 0;
+	if(who->GetClass() == WED_Airport::sClass)
+	{
+		vector<WED_RampPosition *> ramps;
+		vector<obj_conflict_info> objs;
+		collect_ramps_recursive(who, ramps,objs,rmgr);
+		
+		for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
+		{
+			int rt = (*r)->GetType();
+			if(rt == atc_Ramp_Gate)
+			{
+				(*r)->SetRampOperationType(ramp_operation_Airline);
+				did_work = 1;
+			}
+			if(rt == atc_Ramp_TieDown)
+			{
+				did_work = 1;
+				
+				set<int> eq;
+				(*r)->GetEquipment(eq);
+				
+				if(eq.count(atc_Heavies))
+					(*r)->SetRampOperationType(ramp_operation_Airline);
+				else
+					(*r)->SetRampOperationType(ramp_operation_GeneralAviation);
+			}
+		}		
+		
+		for(vector<obj_conflict_info>::iterator o = objs.begin(); o != objs.end(); ++o)
+		{
+			bool alive = true;
+			for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
+			{				
+
+				Point2 rp; double rs;
+				center_and_radius_for_ramp_start(*r, rp, rs);
+
+				double d = LonLatDistMeters(rp.x(), rp.y(), o->loc_ll.x(), o->loc_ll.y());
+				
+				if(d < (o->approx_radius_m + rs))
+				{
+					//debug_mesh_line(rp, o->loc_ll, 1,0,0,1,0,0);
+					alive = false;
+					break;
+				}
+			}
+			if(!alive)
+			{	
+				sel->Erase(o->obj);
+				o->obj->SetParent(NULL, 0);
+				o->obj->Delete();
+				did_work = 1;				
+			}
+			
+		}
+	}
+	int nn = who->CountChildren();
+	for(int n = 0; n < nn; ++n)	
+		if(wed_upgrade_airports_recursive(who->GetNthChild(n), rmgr, sel))
+			did_work = 1;
+	return did_work;
+	
+}
+
+void WED_UpgradeRampStarts(IResolver * resolver)
+{
+	WED_Thing * root = WED_GetWorld(resolver);
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+	root->StartCommand("Upgrade Ramp Positions");
+	int did_work = wed_upgrade_airports_recursive(root, rmgr, sel);
+	if(did_work)
+		root->CommitOperation();
+	else
+		root->AbortOperation();
+	
 }

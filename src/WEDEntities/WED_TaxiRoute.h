@@ -44,12 +44,14 @@ public:
 				bool	HasHotArrival(void) const;
 				bool	HasHotDepart(void) const;
 				bool	HasHotILS(void) const;
+				int		GetWidth(void) const;
 	
 				void		SetOneway(int p);
 				void		SetRunway(int r);
 				void		SetHotDepart(const set<int>& rwys);
 				void		SetHotArrive(const set<int>& rwys);
 				void		SetHotILS(const set<int>& rwys);
+				void		SetWidth(int width);
 				
 				bool		HasInvalidHotZones(const set<int>& legal_rwys) const;
 				int			GetRunway(void) const;	// returns two-way enum!
@@ -60,11 +62,14 @@ public:
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Taxi Route"; }
+
+	virtual	WED_Thing *		CreateSplitNode();
 	
 private:	
 
 		WED_PropBoolText		oneway;
 		WED_PropIntEnum			runway;
+		WED_PropIntEnum			width;
 		WED_PropIntEnumSet		hot_depart;
 		WED_PropIntEnumSet		hot_arrive;
 		WED_PropIntEnumSet		hot_ils;		

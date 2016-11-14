@@ -25,8 +25,9 @@
 #define WED_FacadePlacement_H
 
 #include "WED_GISPolygon.h"
+#include "IHasResource.h"
 
-class	WED_FacadePlacement : public WED_GISPolygon {
+class	WED_FacadePlacement : public WED_GISPolygon, public IHasResource {
 
 DECLARE_PERSISTENT(WED_FacadePlacement)
 
@@ -46,8 +47,8 @@ public:
 			double		GetHeight(void) const;
 			void		SetHeight(double h);
 
-			void		GetResource(	  string& r) const;
-			void		SetResource(const string& r);
+	virtual void		GetResource(	  string& r) const;
+	virtual void		SetResource(const string& r);
 
 			TopoMode	GetTopoMode(void) const;
 
@@ -68,12 +69,12 @@ protected:
 
 private:
 
-	WED_PropDoubleText		height;
-	WED_PropStringText		resource;
+	WED_PropDoubleTextMeters	height;
+	WED_PropStringText			resource;
 #if AIRPORT_ROUTING	
-	WED_PropBoolText		pick_walls;
+	WED_PropBoolText			pick_walls;
 #endif	
-	WED_PropIntEnum			show_level;
+	WED_PropIntEnum				show_level;
 
 };
 
