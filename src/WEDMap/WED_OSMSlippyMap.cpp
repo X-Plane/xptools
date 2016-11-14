@@ -177,7 +177,7 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			*/
 			
 			char path_buf[256];
-			sprintf(path_buf,"http://otile1.mqcdn.com/tiles/1.0.0/sat/%d/%d/%d.jpg", z, x, y);
+			sprintf(path_buf,"http://a.tile.openstreetmap.org/%d/%d/%d.png", z, x, y);
 			string path(path_buf);
 			if(m_cache.count(path))
 			{
@@ -249,7 +249,8 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 			if(m_req->is_ok())
 			{
 				struct ImageInfo info;
-				if(CreateBitmapFromJPEGData(&m_buffer[0], m_buffer.size(), &info) == 0)
+//				if(CreateBitmapFromJPEGData(&m_buffer[0], m_buffer.size(), &info) == 0)
+				if(CreateBitmapFromPNGData(&m_buffer[0], m_buffer.size(), &info, 0, 0) == 0)
 				{
 					GLuint tex_id;
 					glGenTextures(1, &tex_id);
