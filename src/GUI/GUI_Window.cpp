@@ -518,8 +518,8 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SetWindowPos(mToolTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		RECT	cl;
 		GetClientRect(mWindow,&cl);
-		TOOLINFO ti;
-		ti.cbSize = sizeof(ti);
+		TOOLINFOW ti;
+		ti.cbSize = sizeof(ti) - 4;
 		ti.uFlags = 0;	//TTF_SUBCLASS;
 		ti.hwnd = mWindow;
 		ti.uId = 1;
@@ -653,9 +653,9 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 {
 #if IBM
 		RECT cl;
-		TOOLINFO ti;
+		TOOLINFOW ti;
 					GetClientRect(mWindow, &cl);
-					ti.cbSize = sizeof(ti);
+					ti.cbSize = sizeof(ti) - 4;
 					ti.hwnd = mWindow;
 					ti.uId = 1;
 					ti.rect.bottom = cl.bottom;
@@ -1253,7 +1253,7 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 			{
 				NMHDR * hdr = (NMHDR *) lParam;
 				NMTTDISPINFO * di = (NMTTDISPINFO *) lParam;
-				TOOLINFO ti;
+				TOOLINFOW ti;
 				string tip;
 				int has_tip;
 				RECT cl;
