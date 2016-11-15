@@ -26,11 +26,11 @@
 #include "WED_LibraryMgr.h"
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
-#include "XObjDefs.h"
 #include "ObjConvert.h"
 #include "FileUtils.h"
 #include "WED_PackageMgr.h"
 #include "CompGeomDefs2.h"
+#include "MathUtils.h"
 
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
@@ -66,10 +66,13 @@ void	WED_ResourceMgr::Purge(void)
 		delete i->second;
 	for(map<string, XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
 		delete i->second;
-
+//	for(map<string, fac_info_t *>::iterator i = mFac.begin(); i != mFac.end(); ++i)
+//		delete i->preview;
+		
 	mPol.clear();
 	mObj.clear();
 	mFor.clear();
+	mFac.clear();
 }
 
 bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj)
@@ -156,7 +159,6 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * pol = MemFile_Open(p.c_str());
 	if(!pol) return false;
-
 
 	MFScanner	s;
 	MFS_init(&s, pol);
@@ -259,12 +261,18 @@ void	WED_ResourceMgr::ReceiveMessage(
 	}
 }
 
+struct wall_map_t {
+	
+	wall_map_t() : vert(), hori(), scale_x(1.0f) ,scale_y(1.0f), basem(0.0f) { }
+
+	float		vert[4];   // for now planning to only collect ONE example for wall type.
+	float		hori[4];
+	float		scale_x, scale_y;
+	float		basem;
+};
+
 bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 {
-	out_info.ring = true;
-	out_info.roof = true;
-	out_info.modern = true;
-	
 	map<string,fac_info_t>::iterator i = mFac.find(path);
 	if(i != mFac.end())
 	{
@@ -275,7 +283,6 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * fac = MemFile_Open(p.c_str());
 	if(!fac) return false;
-
 
 	MFScanner	s;
 	MFS_init(&s, fac);
@@ -291,7 +298,17 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 
 	out_info.ring = true;
 	out_info.roof = false;
+	out_info.preview = NULL;
 
+	vector <wall_map_t> wall;
+	
+	string		wall_tex;
+	string 		roof_tex;
+	float 		roof_scale[2]  = { 10.0, 10.0 };
+	float 		tex_size[2] = { 1.0, 1.0 };
+
+	bool roof_section = false;
+	 
 	while(!MFS_done(&s))
 	{
 		// RING
@@ -302,11 +319,19 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 		// ROOF
 		else if (MFS_string_match(&s,"ROOF", false))
 		{
+			roof_section = true;
+			out_info.roof = true;
+		}
+		else if (MFS_string_match(&s,"SHADER_ROOF", false))
+		{
+			roof_section = true;
 			out_info.roof = true;
 		}
 		else if (MFS_string_match(&s,"ROOF_SCALE", false))
 		{
 			out_info.roof = true;
+			roof_scale[0] = MFS_double(&s);
+			roof_scale[1] = MFS_double(&s);
 		}
 		// ROOF_HEIGHT
 		else if (MFS_string_match(&s,"ROOF_HEIGHT", false))
@@ -316,22 +341,207 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 		// WALL min max min max name
 		else if (MFS_string_match(&s,"WALL",false))
 		{
+			roof_section = false;
 			MFS_double(&s);
 			MFS_double(&s);
 			MFS_double(&s);
 			MFS_double(&s);
-			out_info.walls.push_back(string());
-			MFS_string(&s,&out_info.walls.back());
+			string buf;
+			MFS_string(&s,&buf);
+			if (buf.empty()) { char c[8]; sprintf(c,"#%i", (int) out_info.walls.size()); buf += c; } // make sure all wall types have some readable name
+			out_info.walls.push_back(buf);
+			
+			struct wall_map_t z;
+			wall.push_back(z);
 		} 
+		else if (MFS_string_match(&s,"SHADER_WALL", false))
+		{
+			roof_section = false;
+		}
 		else if(MFS_string_match(&s,"FLOOR",false))
 		{
 			out_info.walls.clear();
 		}
+		else if (MFS_string_match(&s,"TEXTURE", false))
+		{
+			if (roof_section)
+				MFS_string(&s,&roof_tex);
+			else
+				MFS_string(&s,&wall_tex);
+			
+		}
+		else if (MFS_string_match(&s,"SCALE", false))
+		{
+			wall.back().scale_x = MFS_double(&s);
+			wall.back().scale_y = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"TEX_SIZE",false))
+		{
+			tex_size[0] = MFS_double(&s);
+			tex_size[1] = MFS_double(&s);
+		} 
+		else if (MFS_string_match(&s,"BOTTOM",false))
+		{
+			wall.back().vert[0] = MFS_double(&s);
+			wall.back().vert[1] = MFS_double(&s);
+		} 
+		else if (MFS_string_match(&s,"TOP",false))
+		{
+			MFS_double(&s);
+			wall.back().vert[3]  = MFS_double(&s);
+		} 
+		else if (MFS_string_match(&s,"LEFT",false))
+		{
+			wall.back().hori[0] = MFS_double(&s);
+			wall.back().hori[1] = MFS_double(&s);
+			wall.back().hori[2] = wall.back().hori[1];
+			wall.back().hori[3] = wall.back().hori[1];
+		} 
+		else if (MFS_string_match(&s,"CENTER",false))
+		{
+			if (wall.back().hori[1] > 0.001)
+				MFS_double(&s);
+			else
+			{
+				wall.back().hori[0] = MFS_double(&s);
+				wall.back().hori[1] = wall.back().hori[0];
+			}
+			wall.back().hori[2] = MFS_double(&s);
+			wall.back().hori[3] = wall.back().hori[2];
+		} 
+		else if (MFS_string_match(&s,"RIGHT",false))
+		{
+			MFS_double(&s);
+			wall.back().hori[3] = MFS_double(&s);
+		} 
 
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(fac);
 
+	int floors = 1;  // # floors in the way the Obj8 is constructed. Not the floor of the building/facade represents.
+
+	// normalize and sanitize all texture coordinates
+	for (vector<wall_map_t>::iterator i = wall.begin(); i != wall.end(); ++i)
+	{
+		for (int j=0; j<4; ++j)
+		{
+			i->vert[j]/=tex_size[1];
+			i->hori[j]/=tex_size[0];
+		}
+		if (i->vert[1] < 0.001)
+//			wall.erase(i);
+			printf("Wall no bottom\n");
+		
+		if (i->vert[2] < 0.001) i->vert[2] = i->vert[1];
+		else floors = 2;
+		if (i->vert[3] < 0.001) i->vert[3] = i->vert[2];
+		else floors = 2;
+		
+		if (i->hori[1] == i->hori[2])  // left but no center section defined. Happens for walls intended to be very short only
+			i->hori[1] = i->hori[0];   // use left segment also for centers. Its not what XP does, but yeah ...
+
+		fflush(stdout);
+	}
+	
+	// populate all wall sections, if .fac does not set them excplicitly
+	if (wall.empty())
+		return true;
+	
+	// fills a XObj8-structure for library preview
+	if (v < 900)             // can't handle type 2 facades, yet
+	{
+		XObj8 *obj = new XObj8;
+	//	obj->indices.clear();
+		
+		XObjCmd8 cmd;
+		
+		obj->texture = wall_tex;
+		process_texture_path(p, obj->texture);
+
+		int quads = 0;       // total number of quads generated
+		int quads_fl;        // total number of quads for each floor
+		
+		float pt[8];
+		pt[3] = 0.0;    	// normal vector is don't care, so have it point up;
+		pt[4] = 1.0;
+		pt[5] = 0.0;
+
+		pt[1] = 0.0;        // height coordinate
+		for (int level=0; level<floors; ++level)
+		{
+			quads_fl=0;
+			for (int fl = 0; fl < 2; ++fl)
+			{
+				pt[0] = 0.0;        // left front corner
+				pt[2] = 0.0;
+
+				if (fl) pt[1] += (wall[0].vert[2+level]-wall[0].vert[level])*wall[0].scale_y;   // height of each floor
+
+				for (int i=0; i<2; ++i)
+					for (int j=0; j<2; ++j)
+					{	
+						if (!out_info.ring && i && j) break;      // open facades (fences etc) drawn with 3 sides only
+						
+						// wall selection. We want to show off as many different walls as practical
+						int w = 2*i+j;
+						if (w >= wall.size()) w = 0;   // show default wall if we run out of varieties
+						
+						pt[7] = wall[w].vert[2*fl+level];
+						
+						int sects = 2;    // how many sections do we need to drawfor this wall
+						float total_wall_len = (wall[w].hori[3]-wall[w].hori[0])*wall[0].scale_x;
+						
+						if ( total_wall_len < 10.0 ) sects = 1+10.0/total_wall_len;  // make really short walls bit longer
+						
+						for (int k=0; k<sects; k++)
+						{
+							float s1 = wall[w].hori[min(k,1)];
+							float s2 = wall[w].hori[2+(k==sects-1)];
+							float dx = (s2-s1)*wall[0].scale_x;
+							
+							// "VT "
+							pt[6] = s1;
+							obj->geo_tri.append(pt);
+							pt[2-2*j] += (1-2*i) * dx;
+							pt[6] = s2;
+							obj->geo_tri.append(pt);
+							if (fl) quads_fl++;
+						}
+					}
+			}
+			quads += quads_fl;
+		}
+		// set dimension
+		obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
+
+		// "IDX "
+		int seq[6] = {0, 1, 2*quads_fl, 1, 2*quads_fl+1, 2*quads_fl};
+		for (int i = 0; i < 6*quads; ++i)
+			obj->indices.push_back(2*(i/6)+seq[i%6]);
+
+		// "ATTR_LOD"
+		obj->lods.push_back(XObjLOD8());
+		obj->lods.back().lod_near = 0;
+		obj->lods.back().lod_far  = 1000;
+
+		// "ATTR_no_cull"
+		cmd.cmd = attr_NoCull;
+		obj->lods.back().cmds.push_back(cmd);
+
+		// "TRIS ";
+		cmd.cmd = obj8_Tris;
+		cmd.idx_offset = 0;
+		cmd.idx_count  = 6*quads;
+		obj->lods.back().cmds.push_back(cmd);
+
+		out_info.preview = obj;
+#if DEV
+		// only problem is that the texture path contain spaces -> obj reader can not read that
+		// but still valuable for checking the values/structure
+		XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
+#endif
+	}
 	mFac[path] = out_info;
 	return true;
 }
@@ -513,18 +723,18 @@ bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
 			pt[2] = t_y - z*(tree[i].o/tree[i].w);
 			pt[6] = tree[i].s/scale_x;
 			pt[7] = tree[i].t/scale_y;
-			obj->geo_tri.accumulate(pt);
+			obj->geo_tri.append(pt);
 			pt[0] = t_x + x*(1.0-tree[i].o/tree[i].w);
 			pt[2] = t_y + z*(1.0-tree[i].o/tree[i].w);
 			pt[6] = (tree[i].s+tree[i].w)/scale_x;
-			obj->geo_tri.accumulate(pt);
+			obj->geo_tri.append(pt);
 			pt[1] = t_h;
 			pt[7] = (tree[i].t+tree[i].y)/scale_y;
-			obj->geo_tri.accumulate(pt);
+			obj->geo_tri.append(pt);
 			pt[0] = t_x - x*(tree[i].o/tree[i].w);
 			pt[2] = t_y - z*(tree[i].o/tree[i].w);
 			pt[6] = tree[i].s/scale_x;
-			obj->geo_tri.accumulate(pt);
+			obj->geo_tri.append(pt);
 		}
 	}
 	// set dimension

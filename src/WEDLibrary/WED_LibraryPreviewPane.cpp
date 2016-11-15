@@ -33,6 +33,7 @@
 #include "ObjDraw.h"
 #include "GUI_GraphState.h"
 #include "WED_PreviewLayer.h"
+#include "GUI_Fonts.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -40,7 +41,7 @@
 	#include <GL/gl.h>
 #endif
 
-WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(20.0f),mThe(20.0f)
+WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(10.0f),mThe(10.0f)
 {
 }
 
@@ -67,7 +68,7 @@ int		WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 		mZoom *= 1.2;
 		++dist;
 	}
-	mZoom=fltlim(mZoom,0.05,2.0);
+	mZoom=fltlim(mZoom,0.1,3.0);
 	Refresh();
 	return 1;
 }
@@ -87,8 +88,8 @@ void		WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	mPsi = mPsiOrig + dx * 0.5;
 	mThe = mTheOrig - dy * 0.5;
 	
-	mThe = fltlim(mThe,-90,90);
-	mPsi = fltwrap(mPsi,-180,180);
+	mThe = fltlim(mThe,-89,89);             // prevent some vertical ovjects fading completely out of view
+	mPsi = fltwrap(mPsi,-180-45,180-45);    // adjusted for proper annotations in WED_LibraryPreviewPane::Draw
 	Refresh();
 }
 void		WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)
@@ -110,159 +111,188 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	agp_t agp;
 	#endif
 	pol_info_t pol;
+	fac_info_t fac;
 
 	if(!mRes.empty())
-	switch(mType) {
-	case res_Polygon:
-		if(mResMgr->GetPol(mRes,pol))
-		{
-			TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
-			if(ref != NULL)
+	{	switch(mType) {
+		case res_Polygon:
+			if(mResMgr->GetPol(mRes,pol))
 			{
-				int tex_id = mTexMgr->GetTexID(ref);
-
-				if (tex_id != 0)
+				TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+				if(ref != NULL)
 				{
-					g->SetState(false,1,false,!pol.kill_alpha,!pol.kill_alpha,false,false);
-					glColor3f(1,1,1);
-					g->BindTex(tex_id,0);
-					
-					float prev_space = min(b[2]-b[0],b[3]-b[1]);
-					float ds = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? 1.0 : (pol.proj_s / pol.proj_t));
-					float dt = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? (pol.proj_t / pol.proj_s) : 1.0);
-					
-					float x1 = (dx - ds) /2;
-					float x2 = (dx + ds) /2;
-					float y1 = (dy - dt) /2;
-					float y2 = (dy + dt) /2;
-					
-					glBegin(GL_QUADS);
-					if(pol.wrap)
+					int tex_id = mTexMgr->GetTexID(ref);
+
+					if (tex_id != 0)
 					{
-						glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[0],b[1]);
-						glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[0],b[3]);
-						glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[2],b[3]);
-						glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[2],b[1]);
-					}
-					else
-					{
-						glTexCoord2f(0,0); glVertex2f(x1,y1);
-						glTexCoord2f(0,1); glVertex2f(x1,y2);
-						glTexCoord2f(1,1); glVertex2f(x2,y2);
-						glTexCoord2f(1,0); glVertex2f(x2,y1);
-					}
-					glEnd();
-				}	
+						g->SetState(false,1,false,!pol.kill_alpha,!pol.kill_alpha,false,false);
+						glColor3f(1,1,1);
+						g->BindTex(tex_id,0);
+						
+						float prev_space = min(b[2]-b[0],b[3]-b[1]);
+						float ds = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? 1.0 : (pol.proj_s / pol.proj_t));
+						float dt = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? (pol.proj_t / pol.proj_s) : 1.0);
+						
+						float x1 = (dx - ds) /2;
+						float x2 = (dx + ds) /2;
+						float y1 = (dy - dt) /2;
+						float y2 = (dy + dt) /2;
+						
+						glBegin(GL_QUADS);
+						if(pol.wrap)
+						{
+							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[0],b[1]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[0]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[0],b[3]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[3]));			glVertex2f(b[2],b[3]);
+							glTexCoord2f(extrap(x1,0,x2,1,b[2]),	extrap(y1,0,y2,1,b[1]));			glVertex2f(b[2],b[1]);
+						}
+						else
+						{
+							glTexCoord2f(0,0); glVertex2f(x1,y1);
+							glTexCoord2f(0,1); glVertex2f(x1,y2);
+							glTexCoord2f(1,1); glVertex2f(x2,y2);
+							glTexCoord2f(1,0); glVertex2f(x2,y1);
+						}
+						glEnd();
+					}	
+				}
 			}
-		}
-		break;
-	case res_Forest:
-		if(!mResMgr->GetFor(mRes,o))
 			break;
-	case res_Object:
-		if (o || mResMgr->GetObj(mRes,o))
-		{
-			float real_radius=pythag(
-								o->xyz_max[0]-o->xyz_min[0],
-								o->xyz_max[1]-o->xyz_min[1],
-								o->xyz_max[2]-o->xyz_min[2]);
-			float approx_radius = real_radius * mZoom;
-
-			glPushAttrib(GL_VIEWPORT_BIT);
-			glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();			
-			glRotatef(mThe,1,0,0);
-			glRotatef(mPsi,0,1,0);
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			draw_obj_at_xyz(mTexMgr, o, 
-								-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
-								-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
-								-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
-				0, g);
-			glMatrixMode(GL_PROJECTION);
-			glPopMatrix();
-			glMatrixMode(GL_MODELVIEW);
-			glPopMatrix();
-			glPopAttrib();
-		}
-		#if AIRPORT_ROUTING
-		else if (mResMgr->GetAGP(mRes,agp))
-		{
-			double min_xy[2] = { 0, 0 };
-			double max_xy[2] = { 0, 0 };
-			for(int n = 0; n < agp.tile.size(); n += 4)
+		case res_Forest:
+			if(!mResMgr->GetFor(mRes,o))
+				break;
+		case res_Facade:
+			if(!o)
 			{
-				min_xy[0] = min(min_xy[0],agp.tile[n]);
-				max_xy[0] = max(max_xy[0],agp.tile[n]);
-				min_xy[1] = min(min_xy[1],agp.tile[n+1]);
-				max_xy[1] = max(max_xy[1],agp.tile[n+1]);
+				if (mResMgr->GetFac(mRes,fac))
+					o = fac.preview;
+				else
+					break;
 			}
+		case res_Object:
+			if (o || mResMgr->GetObj(mRes,o))
+			{
+				float real_radius=pythag(
+									o->xyz_max[0]-o->xyz_min[0],
+									o->xyz_max[1]-o->xyz_min[1],
+									o->xyz_max[2]-o->xyz_min[2]);
+				float approx_radius = real_radius * mZoom;
 
-			float real_radius=pythag(
-								max_xy[0] - min_xy[0],
-								max_xy[1] - min_xy[1]);
-								
-			float approx_radius = real_radius * mZoom;
-
-			glPushAttrib(GL_VIEWPORT_BIT);
-			glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();			
-			glRotatef(mThe,1,0,0);
-			glRotatef(mPsi,0,1,0);
-			g->EnableDepth(true,true);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			
-			glTranslatef((max_xy[0]+min_xy[0]) * -0.5,
-						  0.0,
-						(max_xy[1]+min_xy[1]) * 0.5);
-
-				g->SetState(false,1,false,true,true,false,false);
-				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
-				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
-				if(id1)g->BindTex(id1,0);
-
-				glColor3f(1,1,1);
-				if(!agp.tile.empty() && !agp.hide_tiles)
+				glPushAttrib(GL_VIEWPORT_BIT);
+				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+				glMatrixMode(GL_PROJECTION);
+				glPushMatrix();
+				glLoadIdentity();
+				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
+				glMatrixMode(GL_MODELVIEW);
+				glPushMatrix();
+				glLoadIdentity();			
+				glRotatef(mThe,1,0,0);
+				glRotatef(mPsi,0,1,0);
+				g->EnableDepth(true,true);
+				glClear(GL_DEPTH_BUFFER_BIT);
+				draw_obj_at_xyz(mTexMgr, o, 
+									-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
+									-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
+									-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
+					0, g);
+				glMatrixMode(GL_PROJECTION);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glPopMatrix();
+				glPopAttrib();
+			}
+			#if AIRPORT_ROUTING
+			else if (mResMgr->GetAGP(mRes,agp))
+			{
+				double min_xy[2] = { 0, 0 };
+				double max_xy[2] = { 0, 0 };
+				for(int n = 0; n < agp.tile.size(); n += 4)
 				{
-					glDisable(GL_CULL_FACE);
-					glBegin(GL_TRIANGLE_FAN);
-					for(int n = 0; n < agp.tile.size(); n += 4)
-					{
-						glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-						glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
-					}
-					glEnd();
-					glEnable(GL_CULL_FACE);
-				}	
-				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
-				{
-					XObj8 * oo;
-					if(mResMgr->GetObjRelative(o->name,mRes,oo))
-					{
-						draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
-					} 
+					min_xy[0] = min(min_xy[0],agp.tile[n]);
+					max_xy[0] = max(max_xy[0],agp.tile[n]);
+					min_xy[1] = min(min_xy[1],agp.tile[n+1]);
+					max_xy[1] = max(max_xy[1],agp.tile[n+1]);
 				}
 
-			glMatrixMode(GL_PROJECTION);
-			glPopMatrix();
-			glMatrixMode(GL_MODELVIEW);
-			glPopMatrix();
-			glPopAttrib();			
+				float real_radius=pythag(
+									max_xy[0] - min_xy[0],
+									max_xy[1] - min_xy[1]);
+									
+				float approx_radius = real_radius * mZoom;
+
+				glPushAttrib(GL_VIEWPORT_BIT);
+				glViewport(b[0],b[1],b[2]-b[0],b[3]-b[1]);
+				glMatrixMode(GL_PROJECTION);
+				glPushMatrix();
+				glLoadIdentity();
+				glOrtho(sx * -approx_radius,sx * approx_radius,sy * -approx_radius,sy * approx_radius,-real_radius,real_radius);
+				glMatrixMode(GL_MODELVIEW);
+				glPushMatrix();
+				glLoadIdentity();			
+				glRotatef(mThe,1,0,0);
+				glRotatef(mPsi,0,1,0);
+				g->EnableDepth(true,true);
+				glClear(GL_DEPTH_BUFFER_BIT);
+				
+				glTranslatef((max_xy[0]+min_xy[0]) * -0.5,
+							  0.0,
+							(max_xy[1]+min_xy[1]) * 0.5);
+
+					g->SetState(false,1,false,true,true,false,false);
+					TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
+					int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
+					if(id1)g->BindTex(id1,0);
+
+					glColor3f(1,1,1);
+					if(!agp.tile.empty() && !agp.hide_tiles)
+					{
+						glDisable(GL_CULL_FACE);
+						glBegin(GL_TRIANGLE_FAN);
+						for(int n = 0; n < agp.tile.size(); n += 4)
+						{
+							glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
+							glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
+						}
+						glEnd();
+						glEnable(GL_CULL_FACE);
+					}	
+					for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+					{
+						XObj8 * oo;
+						if(mResMgr->GetObjRelative(o->name,mRes,oo))
+						{
+							draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
+						} 
+					}
+
+				glMatrixMode(GL_PROJECTION);
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glPopMatrix();
+				glPopAttrib();			
+			}
+			#endif
+			break;
 		}
-		#endif
-		break;
+		
+		// plot some additional information about the previewed object
+		char buf[64];
+		switch(mType) 
+		{
+			case res_Facade:
+				if (fac.preview && fac.walls.size())
+				{
+					int side = (135-mPsi)/90.0;
+					if (side >= fac.walls.size()) side=0;
+					sprintf(buf,"Viewing Wall \'%s\' out of %i available", fac.walls[side].c_str(), (int) fac.walls.size());
+				}
+				else
+					sprintf(buf,"No preview available (yet).");
+				break;
+		}
+		float text_color[4] = { 1,1,1,1 };
+		GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 30, buf);
+		
 	}
 }

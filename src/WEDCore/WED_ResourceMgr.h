@@ -47,6 +47,8 @@
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
+#include "XObjDefs.h"
+
 class	WED_LibraryMgr;
 
 struct	XObj8;
@@ -66,10 +68,13 @@ struct	pol_info_t {
 };
 
 struct	fac_info_t {
-	bool			ring;
-	bool			roof;
-	bool			modern;
+	bool		ring;
+	bool		roof;
+	bool		modern;
 	vector<string>	walls;
+	vector<string>	w_use;
+	
+	XObj8 *	preview;
 };
 
 #if AIRPORT_ROUTING
