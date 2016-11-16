@@ -35,7 +35,6 @@
 #include "WED_Taxiway.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
-
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
@@ -77,6 +76,8 @@ const int kSourceIndex[5] = { 2, 2, 2, 2, 2 };
 const int kTargetIndex[5] = { 0, 1, 3, 4, 5 };
 
 
+
+
 WED_VertexTool::WED_VertexTool(
 				const char *			tool_name,
 				GUI_Pane *				host,
@@ -112,7 +113,7 @@ void	WED_VertexTool::BeginEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->StartOperation("Vertex Modification");  // can be any of - split ATC edge - move ATC edge node
+	op->StartOperation("Vertex modification");  // can be any of - split ATC edge - move ATC node
 	                                 // - drag a node or modify a bezier node of any previously selected feature
 }
 
@@ -691,8 +692,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			}
 			switch(n) {
 			case 0:	pt_b->GetLocation(gis_Geo,p);						break;
-			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) 	n=3; 	break;
-			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) 	n=3; 	break;
+			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) n=3;	break;
+			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) n=3;	break;
 			}
 			io_pt += delta;
 			SnapMovePoint(io_pt,p, en);
@@ -779,6 +780,7 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
 		} else
 			mNewSplitPoint = NULL;
+		
 	}	
 	Bbox2	old_b(Point2(0,0),Point2(1,1));
 	Bbox2	new_b(old_b);
