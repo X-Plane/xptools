@@ -3522,7 +3522,7 @@ bool	apply_fill_rules(
 	if(gZoningInfo[zoning].fill_area)
 	{
 		FillRule_t * r = GetFillRuleForBlock(orig_face);
-		bool has_backup = (r->fac_id != NO_VALUE | r->ags_id != NO_VALUE);
+		bool has_backup = r && (r->fac_id != NO_VALUE || r->ags_id != NO_VALUE);
 		
 		if(r != NULL)
 		if((agb_did_fail && has_backup) || r->agb_id == NO_VALUE)								// Apply the fill rule if our primary AGB rule failed AND we haev a backup or...
