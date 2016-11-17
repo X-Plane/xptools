@@ -41,6 +41,7 @@ public:
 	void	SetAirlines(const string& airlines);
 
 	string  GetAirlines() const;
+	int		GetRampOperationType() const;
 	int		GetType() const;
 	int		GetWidth() const;
 	void	GetEquipment(set<int>& out_eq) const;

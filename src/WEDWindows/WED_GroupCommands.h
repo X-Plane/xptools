@@ -28,6 +28,12 @@ class	IResolver;
 class	WED_Thing;
 class	WED_MapZoomerNew;
 
+class	ISelection;
+class	WED_ObjPlacement;
+class	WED_ResourceMgr;
+
+typedef WED_ObjPlacement WED_AgpPlacement;
+
 int		WED_CanGroup(IResolver * inResolver);
 int		WED_CanUngroup(IResolver * inResolver);
 void	WED_DoGroup(IResolver * inResolver);
@@ -110,12 +116,17 @@ void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot
 
 int		WED_Repair(IResolver * resolver);
 
+#include "WED_Airport.h"
+#include "WED_ObjPlacement.h"
+#include "WED_ResourceMgr.h"
+void	wed_break_apart_special_agps(WED_Airport* apt, vector<WED_AgpPlacement*> agp_placements, WED_ResourceMgr * rmgr, set<WED_ObjPlacement*>& out_added_objs, set<WED_AgpPlacement*>& out_replaced_agps);
 int		WED_CanBreakApartSpecialAgps(IResolver* resolver);
-void	WED_DoBreakApartSpecialAgps(IResolver* resolver);
+void	WED_DoBreakApartSpecialAgps(IResolver* resolver);// , bool no_start_cmd = false);//only use no_start_cmd if you've also called CanBreakApart
 
 int		WED_CanReplaceVehicleObj(IResolver* resolver);
-void	WED_DoReplaceVehicleObj(IResolver* resolver);
+void	WED_DoReplaceVehicleObj(IResolver* resolver, bool no_start_cmd=false);
+
+int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
 
 void WED_UpgradeRampStarts(IResolver * resolver);
-
 #endif /* WED_GroupCommands_H */

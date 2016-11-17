@@ -78,6 +78,12 @@
 // from the gateway.  You don't need this.
 #define GATEWAY_IMPORT_FEATURES 0
 
+#if GATEWAY_IMPORT_FEATURES
+#define TYLER_MODE 1
+#else
+#define TYLER_MODE 0
+#endif
+
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
 

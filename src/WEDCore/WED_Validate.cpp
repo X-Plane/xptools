@@ -86,6 +86,7 @@
 // Until we get the taxi validation to create error lists, this
 // turns off the early exit when ATC nodes are messed up.
 #if GATEWAY_IMPORT_FEATURES
+//#define TYLER_MODE 1
 #define FIND_BAD_AIRPORTS 1
 #else
 #define FIND_BAD_AIRPORTS 0
@@ -1908,7 +1909,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
 
-
+//Return true if the airport is clean
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 {
 #if FIND_BAD_AIRPORTS
@@ -1926,6 +1927,9 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 			break;
 		case wet_xplane_1050:
 			exp_target_str = "wet_xplane_1050";
+			break;
+		case wet_xplane_1100:
+			exp_target_str = "wet_xplane_1100";
 			break;
 		case wet_gateway:
 			exp_target_str = "wet_gateway";
@@ -1976,6 +1980,12 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 
 	validation_error_vector		msgs;
 
+#if GATEWAY_IMPORT_FEATURES && TYLER_MODE
+	if (gExportTarget != wet_latest_xplane)
+	{
+		DoUserAlert(string("Export Target is not set to latest: target is " + exp_target_str).c_str());
+	}
+#endif
 	if(wrl == NULL) wrl = WED_GetWorld(resolver);
 
 	ISelection * sel = WED_GetSelect(resolver);

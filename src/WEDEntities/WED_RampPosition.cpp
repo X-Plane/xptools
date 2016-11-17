@@ -143,6 +143,11 @@ string  WED_RampPosition::GetAirlines() const
 	return airlines.value;
 }
 
+int WED_RampPosition::GetRampOperationType() const
+{
+	return ramp_op_type.value;
+}
+
 int	WED_RampPosition::GetWidth() const
 {
 	return width.value;
