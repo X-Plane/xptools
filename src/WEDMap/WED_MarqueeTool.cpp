@@ -27,7 +27,7 @@
 #include "WED_ToolUtils.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_Entity.h"
+#include "WED_Ring.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
 #include "WED_GroupCommands.h"
@@ -537,9 +537,13 @@ void	WED_MarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bou
 			else
 				ent_set.insert(ent);
 		}
-		// dragging normally does not change uv mapping, but dragging a hole inside an ortho does
-		if (ent->GetGISClass() == gis_Ring && went->GetParent()->GetClass() == WED_DrapedOrthophoto::sClass) 
-			dynamic_cast <WED_DrapedOrthophoto *> (went->GetParent())->Redrape(0);
+		
+		if (ent->GetGISClass() == gis_Point_Bezier)        // one or more nodes were selected
+			went = dynamic_cast <WED_Entity *> (went->GetParent());
+		if (went->GetClass() == WED_Ring::sClass)          // a hole was selected
+			went = dynamic_cast <WED_Entity *>  (went->GetParent());
+		if (went->GetClass() == WED_DrapedOrthophoto::sClass)
+			dynamic_cast <WED_DrapedOrthophoto *> (went)->Redrape();
 	}
 	
 	for(set<IGISEntity *>::iterator e = ent_set.begin(); e != ent_set.end(); ++e)
@@ -589,12 +593,16 @@ void	WED_MarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *> (went);
 			ortho->SetHeading(ortho->GetHeading() + angle);
 		}
-#else
-		if (went->GetClass() == WED_DrapedOrthophoto::sClass) 
-			dynamic_cast <WED_DrapedOrthophoto *> (went)->Redrape(1);
+		else
 #endif
-		if (ent->GetGISClass() == gis_Ring && went->GetParent()->GetClass() == WED_DrapedOrthophoto::sClass)   // rotating a hole inside ortho changes UV mapping
-			dynamic_cast <WED_DrapedOrthophoto *> (went->GetParent())->Redrape(0);
+		{
+			if (ent->GetGISClass() == gis_Point_Bezier)       // one or more nodes were selected
+				went = dynamic_cast <WED_Entity *> (went->GetParent());
+			if (went->GetClass() == WED_Ring::sClass)         // a hole was selected
+				went = dynamic_cast <WED_Entity *>  (went->GetParent());
+			if (went->GetClass() == WED_DrapedOrthophoto::sClass)
+				dynamic_cast <WED_DrapedOrthophoto *> (went)->Redrape();
+		}
 	}
 	
 	for(set<IGISEntity *>::iterator e = ent_set.begin(); e != ent_set.end(); ++e)

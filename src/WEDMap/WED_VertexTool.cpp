@@ -704,16 +704,10 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			}
 #if 1   // redrape upon modificatoin of bezier node handles or location
 			WED_Thing * node = dynamic_cast <WED_Thing *> (en);
-			if (node)
-			{	
-				node = node->GetParent();
-				node = node->GetParent();
-				if (node->GetClass() == WED_DrapedOrthophoto::sClass)
-				{ 
-					WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *> (node);
-					if (ortho) ortho->Redrape();
-				}
-			}
+			node = node->GetParent();
+			node = node->GetParent();
+			WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+			if (ortho) ortho->Redrape();
 #endif
 			return;
 		}
@@ -800,12 +794,8 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	}
 #if 1    // redrape upon splitting of a segment
 	WED_Thing * node = dynamic_cast <WED_Thing *> (en);
-	if (node)
-	{
-		WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *> (node->GetParent());
-		if (ortho)
-			ortho->Redrape();
-	}
+	WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto,node->GetParent());
+	if (ortho) ortho->Redrape();
 #endif
 }
 

@@ -22,8 +22,7 @@
  */
 
 #include "WED_DrapedOrthophoto.h"
-#include "WED_TextureNode.h"
-#include "WED_TextureBezierNode.h"
+#include "WED_GISPoint_Bezier.h"
 #include "WED_Ring.h"
 #include "MathUtils.h"
 
@@ -31,14 +30,14 @@ DEFINE_PERSISTENT(WED_DrapedOrthophoto)
 TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
 
 WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	heading(this,"Heading",      SQL_Name("WED_dsf_overlay", "heading"),   XML_Name("draped_orthophoto","heading"),   0.0,3,1),
-	resource(this,"Resource",    SQL_Name("WED_dsf_overlay", "resource"),  XML_Name("draped_orthophoto","resource"),  ""),
-	width(this,"Width",          SQL_Name("WED_dsf_overlay", "width"),     XML_Name("draped_orthophoto","width"),     0.0,4,1),
-	length(this,"Length",        SQL_Name("WED_dsf_overlay", "length"),    XML_Name("draped_orthophoto","length"),    0.0,4,1),
-	top(this,"Texture Top",      SQL_Name("WED_dsf_overlay", "tex_top"),   XML_Name("draped_orthophoto","tex_top"),   1.0,5,3),
-	bottom(this,"Texture Bottom",SQL_Name("WED_dsf_overlay", "tex_bottom"),XML_Name("draped_orthophoto","tex_bottom"),0.0,5,3),
-	left(this,"Texture Left",    SQL_Name("WED_dsf_overlay", "tex_left"),  XML_Name("draped_orthophoto","tex_left"),  0.0,5,3),
-	right(this,"Texture Right",  SQL_Name("WED_dsf_overlay", "tex_right"), XML_Name("draped_orthophoto","tex_right"), 1.0,5,3)
+	heading(this,"Heading",       SQL_Name("WED_dsf_overlay", "heading"),   XML_Name("draped_orthophoto","heading"),   0.0,5,1),
+	resource(this,"Resource",     SQL_Name("WED_dsf_overlay", "resource"),  XML_Name("draped_orthophoto","resource"),  ""),
+	width(this,"Texture Width",  SQL_Name("WED_dsf_overlay", "width"),     XML_Name("draped_orthophoto","width"),     0.0,5,2),
+	length(this,"Texture Length",SQL_Name("WED_dsf_overlay", "length"),    XML_Name("draped_orthophoto","length"),    0.0,5,2),
+	top(this,"Texture Top",       SQL_Name("WED_dsf_overlay", "tex_top"),   XML_Name("draped_orthophoto","tex_top"),   1.0,5,3),
+	bottom(this,"Texture Bottom", SQL_Name("WED_dsf_overlay", "tex_bottom"),XML_Name("draped_orthophoto","tex_bottom"),0.0,5,3),
+	left(this,"Texture Left",     SQL_Name("WED_dsf_overlay", "tex_left"),  XML_Name("draped_orthophoto","tex_left"),  0.0,5,3),
+	right(this,"Texture Right",   SQL_Name("WED_dsf_overlay", "tex_right"), XML_Name("draped_orthophoto","tex_right"), 1.0,5,3)
 {
 }
 
@@ -139,6 +138,9 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 
 		Bbox2  uv_box;           // the part of the texture we are actually suppposed to use.
 		GetSubTexture(uv_box);
+		if (uv_box.is_empty())
+			return;              // allows turning off the auto-update by setting the UV coordinates of the polygon to all zero.
+			                     // usefull if UV mapping is set by hand for each node, like it was mandatory in WED 1.5.
 
 		// We want to allow for rotated textures. Thus we have to rotate the coordinates before UV calculation
 		// really doesn't matter around what point we rotate, as long it is somewehre nearby
@@ -156,7 +158,8 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 			vector <BezierPoint2> pt_bak;                    // backup of the coordinates we're going to rotate
 			for(int n = 0; n < np; ++n)
 			{
-				WED_TextureBezierNode * s = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
+//				WED_TextureBezierNode * s = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
+				WED_GISPoint_Bezier * s = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
 				BezierPoint2 pt;
 
 				s->GetBezierLocation(gis_Geo,pt);
@@ -173,8 +176,10 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 			}
 			for(int n = 0; n < np; ++n)
 			{
-				WED_TextureBezierNode * dest = dynamic_cast <WED_TextureBezierNode *>  (rCopy->GetNthChild(n));
-				WED_TextureBezierNode * src  = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
+//				WED_TextureBezierNode * dest = dynamic_cast <WED_TextureBezierNode *>  (rCopy->GetNthChild(n));
+				WED_GISPoint_Bezier * dest = dynamic_cast <WED_GISPoint_Bezier *>  (rCopy->GetNthChild(n));
+//				WED_TextureBezierNode * src  = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
+				WED_GISPoint_Bezier * src  = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
 				Point2 st,uv;
 				
 				// 4-sided orthos w/no bezier nodes are special. They are always streched to these corners, i.e. distorted.

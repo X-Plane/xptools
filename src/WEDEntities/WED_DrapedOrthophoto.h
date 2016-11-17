@@ -25,6 +25,8 @@
 #define WED_DrapedOrthophoto_H
 
 #include "IHasResource.h"
+#include "WED_GISPolygon.h"
+#include "WED_GISUtils.h"
 
 /*
 	WED_DrapedOrthophoto - THEORY OF OPERATION
@@ -40,9 +42,6 @@
 				WED_TextureBezierNode (is a bezier point)				these define the coordinates of the polygon boundary and map textures
 
 */
-
-#include "WED_GISPolygon.h"
-#include "WED_GISUtils.h"
 
 class	WED_DrapedOrthophoto : public WED_GISPolygon, public IHasResource {
 
@@ -63,6 +62,7 @@ public:
 			void 		Redrape(bool updProp = 1);
 			void		GetSubTexture(Bbox2& b);
 			void		SetSubTexture(const Bbox2& b);
+
 		virtual void	PropEditCallback(int before);
 
 protected:
