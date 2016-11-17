@@ -1680,7 +1680,7 @@ static int	init_subdivisions(
 	{
 		DebugAssert(regions.size() > 1);
 		for(i = 1; i < regions.size(); ++i)
-		if(regions[-1].bot_type != reg_agb)
+		if(regions[i-1].bot_type != reg_agb)
 			return 0;		
 	}
 	
@@ -3206,8 +3206,11 @@ bool	init_block(
 					Pmwx::Face_handle		face,
 					Block_2&				out_block,
 					CoordTranslator2&		translator,
-					const DEMGeo&			ag_ok_approx_dem)
+					const DEMGeo&			ag_ok_approx_dem,
+					int *					io_agb_fail)
 {
+	if(io_agb_fail) *io_agb_fail = 0;
+	
 	DebugAssert(!face->is_unbounded());
 
 	int zoning = face->data().GetZoning();
@@ -3291,7 +3294,11 @@ bool	init_block(
 		DebugAssert(!info->fill_edge);
 		FillRule_t * r = GetFillRuleForBlock(face);
 		if(r && (r->agb_id != NO_VALUE))
+		{
 			block_feature_count = init_subdivisions(face, r, translator, outer_ccb_pts, parts, curves);
+			if(!block_feature_count && io_agb_fail)
+				*io_agb_fail = 1;
+		}
 		if(block_feature_count)
 			oob_idx = parts.size() - 1;
 	}
@@ -3507,15 +3514,19 @@ bool	apply_fill_rules(
 					int						zoning,
 					Pmwx::Face_handle		orig_face,
 					Block_2&				block,
-					CoordTranslator2&		translator)
+					CoordTranslator2&		translator,
+					int						agb_did_fail)
 {
 	bool did_promote = false;
 	if(orig_face->data().GetParam(af_Median,0) == 0.0)
 	if(gZoningInfo[zoning].fill_area)
 	{
 		FillRule_t * r = GetFillRuleForBlock(orig_face);
-		if(r != NULL && (r->agb_id == NO_VALUE))
-		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)
+		bool has_backup = (r->fac_id != NO_VALUE | r->ags_id != NO_VALUE);
+		
+		if(r != NULL)
+		if((agb_did_fail && has_backup) || r->agb_id == NO_VALUE)								// Apply the fill rule if our primary AGB rule failed AND we haev a backup or...
+		for(Block_2::Face_iterator f = block.faces_begin(); f != block.faces_end(); ++f)		// we have NO AGB rule (in which case a backup was mandatory back when we made this thing)
 		if(!f->is_unbounded())
 		if(f->data().usage == usage_Empty)
 		if(is_road_adjacent(f))
@@ -3526,7 +3537,7 @@ bool	apply_fill_rules(
 				f->data().feature = r->fac_id;
 			else
 				f->data().feature = r->ags_id;
-			DebugAssert(f->data().feature != NO_VALUE);
+			DebugAssert(f->data().feature != NO_VALUE || agb_did_fail);
 		}
 	}
 
@@ -4213,12 +4224,14 @@ bool process_block(Pmwx::Face_handle f, CDT& mesh, const DEMGeo& ag_ok_approx_de
 	CoordTranslator2	trans;
 	Block_2 block;
 	
-	if(init_block(mesh, f, block, trans, ag_ok_approx_dem))
+	int agb_fail;
+	
+	if(init_block(mesh, f, block, trans, ag_ok_approx_dem,&agb_fail))
 	{
 //		simplify_block(block, 0.75);
 //		clean_block(block);
 
-		if (apply_fill_rules(z, f, block, trans))
+		if (apply_fill_rules(z, f, block, trans,agb_fail))
 			ret = true;
 		extract_features(block, f, trans, forest_dem, forest_index);
 	}

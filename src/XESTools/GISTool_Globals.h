@@ -35,6 +35,14 @@ class CDT;
 class DEMGeoMap;
 struct	PmwxIndex_t;
 
+
+enum rf_region {
+	rf_usa = 0,
+	rf_eu = 1
+};
+
+extern rf_region			gRegion;
+
 extern Pmwx					gMap;
 extern DEMGeoMap			gDem;
 //extern CDT					gTriangulationLo;

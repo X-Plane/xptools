@@ -323,7 +323,7 @@ void LoadZoningRules(void)
 	RegisterLineHandler("FACADE_TILE", ReadFacadeRule, NULL);
 	RegisterLineHandler("FACADE_SPELLING", ReadFacadeRule, NULL);
 
-	LoadConfigFile("zoning.txt");
+	LoadConfigFile(gRegion == rf_eu ? "zoning_eu.txt" : "zoning_us.txt");
 
 	for(FacadeSpellingTable::iterator sp = gFacadeSpellings.begin(); sp != gFacadeSpellings.end(); ++sp)
 	{

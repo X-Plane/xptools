@@ -429,6 +429,7 @@ void	XGrindInit(void)
 #if DEV
 	CGAL::set_warning_handler(cgal_warning);
 #endif
+
 	XESInit(true);
 
 //	RF_LoadPrefs();
