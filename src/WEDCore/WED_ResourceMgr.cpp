@@ -30,7 +30,6 @@
 #include "ObjConvert.h"
 #include "FileUtils.h"
 #include "WED_PackageMgr.h"
-#include "CompGeomDefs2.h"
 
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
@@ -136,6 +135,19 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 	return true;
 }
 
+bool 	WED_ResourceMgr::SetPolUV(const string& path, Bbox2 box)
+{
+	map<string,pol_info_t>::iterator i = mPol.find(path);
+	if(i != mPol.end())
+	{
+		i->second.mUVBox = box;
+		return true;
+	}
+	else
+		return false;
+}
+
+
 bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 {
 	map<string,pol_info_t>::iterator i = mPol.find(path);
@@ -144,11 +156,13 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		out_info = i->second;
 		return true;
 	}
+	
+	out_info.mSubBoxes.clear();
+	out_info.mUVBox = Bbox2();
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * pol = MemFile_Open(p.c_str());
 	if(!pol) return false;
-
 
 	MFScanner	s;
 	MFS_init(&s, pol);
@@ -181,6 +195,18 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 			out_info.proj_s = MFS_double(&s);
 			out_info.proj_t = MFS_double(&s);
 		}
+		else if (MFS_string_match(&s,"#subtex", false)) 
+		{
+			float s1 = MFS_double(&s);
+			float t1 = MFS_double(&s);
+			float s2 = MFS_double(&s);
+			float t2 = MFS_double(&s);
+			if (s2 > s1 && t2 > t1)
+			{
+		printf("read subtex\n");
+				out_info.mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
+			}
+		}
 		// TEXTURE_NOWRAP <texname>
 		else if (MFS_string_match(&s,"TEXTURE_NOWRAP", false))
 		{
@@ -204,8 +230,8 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	MemFile_Close(pol);
 
 	process_texture_path(p,out_info.base_tex);
-
 	mPol[path] = out_info;
+	
 	return true;
 }
 

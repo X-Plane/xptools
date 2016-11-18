@@ -47,6 +47,8 @@
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
+#include "CompGeomDefs2.h"
+
 class	WED_LibraryMgr;
 
 struct	XObj8;
@@ -63,6 +65,8 @@ struct	pol_info_t {
 	float		longitude;
 	double		height_Meters;
 	int			ddsHeight_Pxls;
+	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
+	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
 };
 
 struct	fac_info_t {
@@ -98,6 +102,7 @@ public:
 
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
+			bool 	SetPolUV(const string& path, Bbox2 box);
 
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?

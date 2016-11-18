@@ -100,10 +100,6 @@ WED_CreatePolygonTool::~WED_CreatePolygonTool()
 {
 }
 
-
-// link to WED_LibraryPreviewPane::MouseDown, a the proof-of-concept code for subtexture selection
-extern Bbox2 mSelBox;
-
 void	WED_CreatePolygonTool::AcceptPath(
 							const vector<Point2>&	pts,
 							const vector<Point2>&	dirs_lo,
@@ -129,25 +125,9 @@ void	WED_CreatePolygonTool::AcceptPath(
 	int is_bezier = mType != create_Forest && mType != create_Boundary;
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
-	int is_texed = 0;
+	int is_texed = mType == create_Polygon ? mUVMap.value : 0;
 	int is_forest = mType == create_Forest;
 	int is_facade = mType == create_Facade;
-	
-	if(mType == create_Polygon)
-	{
-		is_texed = mUVMap.value;
-
-		/* Yup, this a a poor place to do this, as it _forces_ the selection of orthophotos.  Better done during resource
-		   selection time, resulting in a meaningfull automatic preset, but still allowing user override.
-
-		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-		pol_info_t i;
-		if(rmgr->GetPol(mResource.value, i))
-		{
-			is_texed = !i.wrap;
-		}
-		*/
-	}
 	
 	if(mType == create_Hole)
 	{
@@ -366,9 +346,12 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	if (mType == create_Polygon && is_texed) 	// orthophoto's need the UV map set up
 	{
-		// ugly link via global variable to subtexture selector in preview pane, just for quick proof of concept
-		if (!mSelBox.is_null()) 
-			dpol->SetSubTexture(mSelBox);
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
+		pol_info_t info;
+
+		if(rmgr->GetPol(mResource.value, info))
+			if (!info.mUVBox.is_null())
+				dpol->SetSubTexture(info.mUVBox);
 
 		dpol->Redrape();
 	}

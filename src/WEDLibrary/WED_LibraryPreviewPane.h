@@ -28,7 +28,6 @@ class	WED_ResourceMgr;
 class	ITexMgr;
 
 #include "GUI_Pane.h"
-#include "CompGeomDefs2.h"
 
 class WED_LibraryPreviewPane : public GUI_Pane {
 public:
@@ -55,10 +54,6 @@ private:
 		ITexMgr *			mTexMgr;
 		string				mRes;
 		int					mType;
-		const char *		mSelText;
-		vector <Bbox2>		mSubBoxes;
-
-	
 };
 
 #endif
