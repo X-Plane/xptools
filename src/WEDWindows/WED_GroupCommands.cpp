@@ -2186,7 +2186,7 @@ static bool is_null(T test)
 	return test == NULL;
 }
 
-void wed_break_apart_special_agps(WED_Airport* apt, vector<WED_AgpPlacement*> agp_placements, WED_ResourceMgr * rmgr, set<WED_ObjPlacement*>& out_added_objs, set<WED_AgpPlacement*>& out_replaced_agps)
+int wed_break_apart_special_agps(WED_Airport* apt, const vector<WED_AgpPlacement*>& agp_placements, WED_ResourceMgr * rmgr, set<WED_ObjPlacement*>& out_added_objs)
 {
 	//The list of agp files we've decided to be special "service truck related"
 	set<string> agp_list = build_agp_list();
@@ -2197,8 +2197,10 @@ void wed_break_apart_special_agps(WED_Airport* apt, vector<WED_AgpPlacement*> ag
 	apt->GetBounds(gis_Geo, box);
 	CreateTranslatorForBounds(box, translator);
 
+	set<WED_AgpPlacement*> replaced_agps;
+
 	//For all agps
-	for (vector<WED_AgpPlacement*>::iterator agp = agp_placements.begin(); agp != agp_placements.end(); ++agp)
+	for (vector<WED_AgpPlacement*>::const_iterator agp = agp_placements.begin(); agp != agp_placements.end(); ++agp)
 	{
 		//Otherwise we have big problems
 		DebugAssert((*agp)->CountChildren() == 0);
@@ -2243,9 +2245,17 @@ void wed_break_apart_special_agps(WED_Airport* apt, vector<WED_AgpPlacement*> ag
 				}
 			}
 
-			out_replaced_agps.insert(*agp);
+			replaced_agps.insert(*agp);
 		}
 	}
+
+	for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
+	{
+		(*itr_agp)->SetParent(NULL, 0);
+		(*itr_agp)->Delete();
+	}
+
+	return replaced_agps.size();
 }
 
 void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
@@ -2293,19 +2303,12 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 		//To access agp files
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 		set<WED_AgpPlacement*> added_objs;
-		set<WED_AgpPlacement*> replaced_agps;
-		wed_break_apart_special_agps(apt, agp_placements, rmgr, added_objs, replaced_agps);
-
-		for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
-		{
-			(*itr_agp)->SetParent(NULL, 0);
-			(*itr_agp)->Delete();
-		}
+		int num_replaced_agps = wed_break_apart_special_agps(apt, agp_placements, rmgr, added_objs);
 
 		for (set<WED_ObjPlacement*>::iterator itr_obj = added_objs.begin(); itr_obj != added_objs.end(); ++itr_obj)
 		{
-			string obj_resource;
-			(*itr_obj)->GetResource(obj_resource);
+			//string obj_resource;
+			//(*itr_obj)->GetResource(obj_resource);
 			sel->Insert(*itr_obj);
 		}
 
@@ -2320,7 +2323,7 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 			root->CommitOperation();
 
 			stringstream ss;
-			ss << "Replaced " << replaced_agps.size() << " Agp objects with " << added_objs.size() << " Obj files";
+			ss << "Replaced " << num_replaced_agps << " Agp objects with " << added_objs.size() << " Obj files";
 			DoUserAlert(ss.str().c_str());
 		}
 	}
@@ -2401,7 +2404,7 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	return table;
 }
 
-void	WED_DoReplaceVehicleObj(IResolver* resolver, bool no_start_cmd)
+void	WED_DoReplaceVehicleObj(IResolver* resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
@@ -2413,9 +2416,10 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, bool no_start_cmd)
 		root->StartOperation("Replace Objects");
 		map<string,vehicle_replacement_info> table = build_replacement_table();
 		
+#if !TYLER_MODE
 		ISelection * sel = WED_GetSelect(resolver);
 		sel->Clear();
-
+#endif
 		for(vector<WED_ObjPlacement*>::iterator itr = obj_placements.begin(); itr != obj_placements.end(); ++itr)
 		{
 			string resource;
@@ -2443,29 +2447,38 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver, bool no_start_cmd)
 				replace_count++;
 				(*itr)->SetParent(NULL, 0);
 				(*itr)->Delete();
-
+#if !TYLER_MODE
 				sel->Insert(parking_loc);
+#endif
 			}
 		}
 
 		if(replace_count == 0)
 		{
+#if !TYLER_MODE
 			sel->Clear();
+#endif
 			root->AbortOperation();
+#if !TYLER_MODE
 			DoUserAlert("Nothing to replace");
+#endif
 		}
 		else
 		{
 			root->CommitOperation();
-
+#if !TYLER_MODE
 			stringstream ss;
 			ss << "Replaced " << replace_count << " objects";
+
 			DoUserAlert(ss.str().c_str());
+#endif
 		}
 	}
 	else
 	{
+#if !TYLER_MODE
 		DoUserAlert("Nothing to replace");
+#endif
 	}
 }
 //-----------------------------------------------------------------------------

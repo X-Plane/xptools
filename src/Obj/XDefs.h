@@ -76,7 +76,7 @@
 
 // These turn on the features to import the global apt databaes for the purpose of building a final scenery pack
 // from the gateway.  You don't need this.
-#define GATEWAY_IMPORT_FEATURES 0
+#define GATEWAY_IMPORT_FEATURES 1
 
 #if GATEWAY_IMPORT_FEATURES
 #define TYLER_MODE 1

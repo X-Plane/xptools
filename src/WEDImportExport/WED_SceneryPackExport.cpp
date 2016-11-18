@@ -38,7 +38,7 @@
 #include "WED_TruckParkingLocation.h"
 #include "WED_GroupCommands.h"
 #include <iterator>
-
+#include <iostream>
 #include "WED_EnumSystem.h"
 #include "WED_Validate.h"
 #endif
@@ -93,6 +93,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		if (non_empty_airlines_strs == 0 || non_op_none_ramp_starts == 0)
 		{
 			wrl->StartCommand("Upgrade Ramp Positions");
+			std::cout << "Upgrading Ramp Positions" << endl;
 			int did_work = wed_upgrade_one_airport(*apt_itr, rmgr, sel);
 			if (did_work == 0)
 			{
@@ -102,47 +103,58 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			{
 				wrl->CommitCommand();
 			}
-			break;
 		}
 		//---------------------------------------------------------------------------
 
 		//--Agp and obj upgrades-----------------------------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
-		vector<WED_TruckDestination*>     truck_destinations;
 		CollectRecursive(*apt_itr, back_inserter(parking_locations));
+
+		vector<WED_TruckDestination*>     truck_destinations;
 		CollectRecursive(*apt_itr, back_inserter(truck_destinations));
 
-		/*if (parking_locations.empty() == false ||
-		truck_destinations.empty() == false)
+		bool found_truck_evidence = false;
+		found_truck_evidence |= !parking_locations.empty();
+		found_truck_evidence |= !truck_destinations.empty();
+		
+		if (found_truck_evidence == false)
 		{
-		vector<WED_ObjPlacement*> all_objs;
-		CollectRecursive(
+			vector<WED_ObjPlacement*> all_objs;
+			vector<WED_AgpPlacement*> agp_placements;
+			CollectRecursive(*apt_itr, back_inserter(all_objs));
 
-		)
-		for (vector<ISelectable*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
-		{
-		WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(*itr);
-		if (agp != NULL)
-		{
-		string agp_resource;
-		agp->GetResource(agp_resource);
-		if (FILE_get_file_extension(agp_resource) != ".agp")
-		{
-		return false;
+			for (vector<WED_AgpPlacement*>::iterator obj_itr = all_objs.begin(); obj_itr != all_objs.end(); ++obj_itr)
+			{
+				string agp_resource;
+				(*obj_itr)->GetResource(agp_resource);
+				if (FILE_get_file_extension(agp_resource) == ".agp")
+				{
+					agp_placements.push_back(*obj_itr);
+				}
+			}
+			set<WED_ObjPlacement*> out_added_objs;
+			set<WED_AgpPlacement*> out_replaced_agps;
+			wrl->StartCommand("Break Apart Special Agps");
+			int num_replaced = wed_break_apart_special_agps(*apt_itr, agp_placements, rmgr, out_added_objs);
+			if (num_replaced == 0)
+			{
+				wrl->AbortCommand();
+			}
+			else
+			{
+				wrl->CommitCommand();
+			}
+
+			//Easy out
+			if (num_replaced > 0 || out_added_objs.size() > 0)
+			{
+				WED_DoReplaceVehicleObj(resolver);
+			}
+			else if (WED_CanReplaceVehicleObj(resolver) == true)
+			{
+				WED_DoReplaceVehicleObj(resolver);
+			}
 		}
-		}
-		else
-		{
-		return false;
-		}
-		}
-		WED_DoBreakApartSpecialAgps(resolver);
-		if (WED_CanReplaceVehicleObj(resolver))
-		{
-		WED_DoReplaceVehicleObj(resolver);
-		}
-		}
-		}*/
 	}
 }
 
