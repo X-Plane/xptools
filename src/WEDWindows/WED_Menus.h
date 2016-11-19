@@ -67,7 +67,7 @@ enum {
 #endif
 	wed_Split,
 	wed_Align,
-	wed_Square,
+	wed_Orthogonalize,
 #if AIRPORT_ROUTING
 	wed_Merge,
 #endif

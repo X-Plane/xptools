@@ -1753,7 +1753,7 @@ static int IterateCanSquare(ISelectable * what, void * ref)
 	return 0;
 }
 
-int		WED_CanSquare(IResolver * resolver)
+int		WED_CanOrthogonalize(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	if (sel->GetSelectionCount() == 0) return 0;
@@ -1891,7 +1891,7 @@ static void DoMakeOrthogonal(IGISPointSequence * seq )
 	}
 }
 
-void	WED_DoSquare(IResolver * resolver)
+void	WED_DoOrthogonalize(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
@@ -1900,7 +1900,7 @@ void	WED_DoSquare(IResolver * resolver)
 	sel->IterateSelectionOr(Iterate_CollectThings, &things);
 	if(things.empty()) return;
 
-	op->StartOperation("Make Square");
+	op->StartOperation("Orthogonalize");
 
 	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
 	{
