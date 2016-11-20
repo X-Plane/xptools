@@ -40,14 +40,14 @@
 	#include <GL/gl.h>
 #endif
 
-WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(20.0f),mThe(20.0f)
+WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(0.0f),mThe(0.0f)
 {
 }
 
 void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 {
 	mRes = r;
-	mType = res_type;		
+	mType = res_type;
 }
 
 void WED_LibraryPreviewPane::ClearResource(void)
@@ -67,7 +67,7 @@ int		WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 		mZoom *= 1.2;
 		++dist;
 	}
-	mZoom=fltlim(mZoom,0.05,2.0);
+	mZoom=fltlim(mZoom,0.1,3.0);
 	Refresh();
 	return 1;
 }
@@ -100,12 +100,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
 	int b[4];
 	GetBounds(b);
+
+	XObj8 * o = NULL;
 	float dx = b[2] - b[0];
 	float dy = b[3] - b[1];
 	float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
 	float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
-	
-	XObj8 * o = NULL;
 	#if AIRPORT_ROUTING
 	agp_t agp;
 	#endif
@@ -229,32 +229,32 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						  0.0,
 						(max_xy[1]+min_xy[1]) * 0.5);
 
-				g->SetState(false,1,false,true,true,false,false);
-				TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
-				int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
-				if(id1)g->BindTex(id1,0);
+			g->SetState(false,1,false,true,true,false,false);
+			TexRef	ref = mTexMgr->LookupTexture(agp.base_tex.c_str() ,true, tex_Linear|tex_Mipmap|tex_Compress_Ok);			
+			int id1 = ref  ? mTexMgr->GetTexID(ref ) : 0;
+			if(id1)g->BindTex(id1,0);
 
-				glColor3f(1,1,1);
-				if(!agp.tile.empty() && !agp.hide_tiles)
+			glColor3f(1,1,1);
+			if(!agp.tile.empty() && !agp.hide_tiles)
+			{
+				glDisable(GL_CULL_FACE);
+				glBegin(GL_TRIANGLE_FAN);
+				for(int n = 0; n < agp.tile.size(); n += 4)
 				{
-					glDisable(GL_CULL_FACE);
-					glBegin(GL_TRIANGLE_FAN);
-					for(int n = 0; n < agp.tile.size(); n += 4)
-					{
-						glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
-						glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
-					}
-					glEnd();
-					glEnable(GL_CULL_FACE);
-				}	
-				for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
-				{
-					XObj8 * oo;
-					if(mResMgr->GetObjRelative(o->name,mRes,oo))
-					{
-						draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
-					} 
+					glTexCoord2f(agp.tile[n+2],agp.tile[n+3]);
+					glVertex3f(agp.tile[n],0,-agp.tile[n+1]);
 				}
+				glEnd();
+				glEnable(GL_CULL_FACE);
+			}	
+			for(vector<agp_t::obj>::iterator o = agp.objs.begin(); o != agp.objs.end(); ++o)
+			{
+				XObj8 * oo;
+				if(mResMgr->GetObjRelative(o->name,mRes,oo))
+				{
+					draw_obj_at_xyz(mTexMgr, oo, o->x,0,-o->y,o->r, g);			
+				} 
+			}
 
 			glMatrixMode(GL_PROJECTION);
 			glPopMatrix();
