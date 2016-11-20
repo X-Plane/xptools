@@ -96,9 +96,9 @@ public:
 
 			void	Purge(void);
 
+			bool	GetFor(const string& path, XObj8 *& obj);
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
-			bool	GetFor(const string& path, XObj8 *& obj);
 
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
