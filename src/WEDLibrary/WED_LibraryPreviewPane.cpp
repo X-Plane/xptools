@@ -261,6 +261,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			glMatrixMode(GL_MODELVIEW);
 			glPopMatrix();
 			glPopAttrib();			
+
 		}
 		#endif
 		break;
