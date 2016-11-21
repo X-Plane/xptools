@@ -264,6 +264,7 @@ enum {
 	apt_truck_pushback = 0,
 	apt_truck_fuel_prop,
 	apt_truck_fuel_jet,
+	apt_truck_fuel_liner,
 	apt_truck_food,
 	apt_truck_baggage_loader,
 	apt_truck_baggage_train,

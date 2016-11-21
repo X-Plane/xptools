@@ -56,7 +56,7 @@ const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos"
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
 
-const char * truck_type_strings[] = { "pushback", "fuel_props", "fuel_jets","food","baggage_loader","baggage_train","crew_car","crew_limo","crew_ferrari","gpu", 0 };
+const char * truck_type_strings[] = { "pushback", "fuel_props", "fuel_jets", "fuel_liners", "food","baggage_loader","baggage_train","crew_car","crew_limo","crew_ferrari","gpu", 0 };
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)

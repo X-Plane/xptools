@@ -2364,6 +2364,9 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	//atc_ServiceTruck_FuelTruck_Prop, cause of the problem
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
 
+	//atc_ServiceTruck_FuelTruck_Liner
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Liner, 0)));
+
 	//atc_ServiceTruck_Food,
 	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
 
