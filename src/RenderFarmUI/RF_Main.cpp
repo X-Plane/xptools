@@ -429,13 +429,12 @@ void	XGrindInit(void)
 #if DEV
 	CGAL::set_warning_handler(cgal_warning);
 #endif
-
-	XESInit(true);
+	RF_AssertInit();
 
 //	RF_LoadPrefs();
 
-	LoadDEMTables();
-	LoadObjTables();
+//	LoadDEMTables();
+//	LoadObjTables();
 
 //	int w, h;
 //	XPLMGetScreenSize(&w, &h);
@@ -444,7 +443,6 @@ void	XGrindInit(void)
 //	RF_MapView *	map_view = new RF_MapView(20, h - 20, w - 20, 20, 1, NULL);
 //	RegisterProcessingCommands();
 
-	RF_AssertInit();
 
 #if 0
 	XPWidgetID	foo = XPCreateWidgetLayout(0, XP_DIALOG_BOX, "Title", XP_DIALOG_CLOSEBOX, 1, 0, NULL,

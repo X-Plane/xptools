@@ -138,6 +138,12 @@ static int FillWaterImage(const vector<const char *>& args)
 		int ww = w - 1 + x;
 		int ss = s - 1 + y;
 		
+		if(ww < -180) ww += 360;
+		if(ww >= 180) ww -= 360;
+		
+		if(ss < -90) ss = -90;
+		if(ss >= 90) ss = 89;
+		
 		int www = latlon_bucket(ww);
 		int sss = latlon_bucket(ss);
 		
@@ -150,7 +156,10 @@ static int FillWaterImage(const vector<const char *>& args)
 		ImageInfo ii;
 		err = CreateBitmapFromTIF(p.c_str(), &ii);
 		if(err)
+		{
+			printf("Could not open: %s\n", p.c_str());
 			return err;
+		}
 		
 		CopyBitmapSectionDirect(ii, i, 0, 0, x * 240, y * 240, 240, 240);
 		DestroyBitmap(&ii);
