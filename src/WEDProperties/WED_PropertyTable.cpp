@@ -982,6 +982,11 @@ void WED_PropertyTable::GetClosed(set<int>& closed_list)
 			closed_list.insert(it->first) ;
 }
 
+void WED_PropertyTable::SetFilter(const string & search_filter)
+{
+	mSearchFilter = search_filter;
+}
+
 
 // These routines encapsulate the hash table that tracks the disclosure of various WED things.  We wrap it like this so we can
 // easily map "no entry" to open.  This makes new entities default to open, which seems to be preferable.  It'd be easy to customize
@@ -1036,6 +1041,8 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	if (!mSelOnly || !sel || sel->IsSelected(what))
 	if (mFilter.empty() || mFilter.count(what->GetClass()))
 		visible = 1;
+
+	//TODO - use mSearchFilter here?
 
 	recurse_children = what->CountChildren();
 

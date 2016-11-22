@@ -29,21 +29,22 @@
 #include "GUI_SimpleTableGeometry.h"
 #include "WED_LibraryMgr.h"
 
+#include "AssertUtils.h"
+
 class	WED_FilterBar : public GUI_Table, public GUI_TextTableProvider, public GUI_SimpleTableGeometry {
 public:
 
 	WED_FilterBar(
-			GUI_Commander *	cmdr,
-			intptr_t		in_msg, 
-			intptr_t		in_param, 
-			const string&	in_label, 
-			const string&	in_def,
-			WED_LibraryMgr *mLibrary,
-			bool			havePacks);
+		GUI_Commander * cmdr,
+		intptr_t in_msg,
+		intptr_t in_param,
+		const string & in_label,
+		const string & in_def,
+		bool in_have_enum_dict);
 
 			string		GetText(void) { return mText; }
-			string		GetCurPak(void) {return mCurPak;}
-			int			GetPakVal(void) {return mCurPakVal;}
+			string		GetEnumText(void)  { DebugAssert(mHaveEnumDict == true); return mCurEnumTxt; }
+			int			GetEnumValue(void) { DebugAssert(mHaveEnumDict == true); return mCurEnumVal;}
 	// GUI_SimpleTableGeometry
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);
@@ -56,7 +57,7 @@ public:
 	virtual	void	GetEnumDictionary(
 						int							cell_x,
 						int							cell_y,
-						GUI_EnumDictionary&			out_dictionary);
+						GUI_EnumDictionary&			out_dictionary) { };
 	virtual	void	AcceptEdit(
 						int							cell_x,
 						int							cell_y,
@@ -149,15 +150,27 @@ public:
 											GUI_DragOperation			recommended) { return gui_Drag_None; }
 	
 	void							ClearFilter();
-private:
+protected:
+	string		GetEnumText() const { return mCurEnumTxt; }
+	int			GetEnumValue() const { return mCurEnumVal; }
+
+	bool		GetHaveEnumDict() const { return mHaveEnumDict; }
+
+private: 
 	//current pack one that is selected (used for GetCellContents)
 	//Data from AcceptEdit
-	string				mCurPak;
-	int					mCurPakVal;
-	//Decides if it should have packs
-	bool				mHavePacks;
+	string				mCurEnumTxt;
+	int					mCurEnumVal;
+
+	//Decides if it should have enum dictionary
+	bool				mHaveEnumDict;
+
+	//Label for the search bar
 	string				mLabel;
+
+	//Text inside the search bar
 	string				mText;
+
 	intptr_t			mMsg;
 	intptr_t			mParam;
 	GUI_TextTable		mTextTable;

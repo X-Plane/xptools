@@ -798,6 +798,12 @@
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1582,6 +1588,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Interfaces\IHasResource.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h">
+      <Filter>WEDWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

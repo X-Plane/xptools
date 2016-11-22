@@ -168,6 +168,7 @@ public:
 	virtual	void    SetClosed(const set<int>& closed_list);
 	virtual	void    GetClosed(		set<int>& closed_list);
 
+	void			SetFilter(const string& search_filter);
 private:
 
 			void			RebuildCache(void);
@@ -202,6 +203,7 @@ private:
 	int							mSelOnly;
 	set<string>					mFilter;
 
+	string						mSearchFilter;
 	vector<ISelectable *>		mSelSave;
 };
 
