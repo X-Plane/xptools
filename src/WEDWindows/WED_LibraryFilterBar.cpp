@@ -35,7 +35,6 @@ WED_LibraryFilterBar::WED_LibraryFilterBar(
 	WED_FilterBar(cmdr, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", true),
 	mLibrary(mLibrary)
 {
-	this->AddListener(this);
 }
 
 void	WED_LibraryFilterBar::GetCellContent(

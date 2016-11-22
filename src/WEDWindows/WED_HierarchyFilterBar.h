@@ -32,12 +32,7 @@
 
 class	WED_HierarchyFilterBar : public WED_FilterBar {
 public:
-	WED_HierarchyFilterBar(
-		GUI_Commander *	cmdr,
-		intptr_t		in_msg,
-		intptr_t		in_param,
-		const string&	in_label,
-		const string&	in_def);
+	WED_HierarchyFilterBar(GUI_Commander * cmdr);
 
 	// GUI_TextTableProvider
 	virtual void	GetCellContent(

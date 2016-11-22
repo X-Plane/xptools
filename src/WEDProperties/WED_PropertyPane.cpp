@@ -27,7 +27,7 @@
 #include "GUI_Resources.h"
 #include "GUI_Messages.h"
 
-#include "WED_FilterBar.h"
+#include "WED_HierarchyFilterBar.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -82,12 +82,15 @@ WED_PropertyPane::WED_PropertyPane(
 	mScroller->SetContent(mTable);
 	mTextTable.SetParentTable(mTable);
 
-	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false);
-	mFilter->Show();
-	mFilter->SetParent(this);
-	mFilter->AddListener(mTable);
-	mFilter->SetSticky(1, 0, 1, 1);
-	this->PackPane(mFilter, gui_Pack_Top);
+	if (pane_style == propPane_Hierarchy)
+	{
+		mFilter = new WED_HierarchyFilterBar(this);
+		mFilter->Show();
+		mFilter->SetParent(this);
+		mFilter->AddListener(mTable);
+		mFilter->SetSticky(1, 0, 1, 1);
+		this->PackPane(mFilter, gui_Pack_Top);
+	}
 
 	if (horizontal)
 	{

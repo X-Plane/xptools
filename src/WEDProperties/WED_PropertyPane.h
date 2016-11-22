@@ -94,8 +94,7 @@ private:
 	GUI_TextTableHeader				mTextTableHeader;
 	GUI_TextTableSide				mTextTableSide;
 
-	WED_PropertyTable				mPropertyTable	;
-
+	WED_PropertyTable				mPropertyTable;
 };
 
 #endif /* WED_PROPERTYPANE_H */

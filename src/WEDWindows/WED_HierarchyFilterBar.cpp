@@ -26,17 +26,12 @@
 #include "WED_Colors.h"
 #include "GUI_Fonts.h"
 #include "GUI_Resources.h"
+#include "GUI_Messages.h"
 
-WED_HierarchyFilterBar::WED_HierarchyFilterBar(
-	GUI_Commander * cmdr,
-	intptr_t in_msg,
-	intptr_t in_param,
-	const string & in_label,
-	const string & in_def)
+WED_HierarchyFilterBar::WED_HierarchyFilterBar(GUI_Commander * cmdr)
 	:
-	WED_FilterBar(cmdr, in_msg, in_param, in_label, in_def, false)
+	WED_FilterBar(cmdr, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false)
 {
-	this->AddListener(this);
 }
 
 void	WED_HierarchyFilterBar::GetCellContent(
