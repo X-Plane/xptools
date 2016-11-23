@@ -28,8 +28,6 @@
 #include "GUI_Listener.h"
 #include "GUI_SimpleTableGeometry.h"
 
-#include "IFilterable.h"
-
 class	ISelectable;
 class	ISelection;
 class	IResolver;
@@ -37,7 +35,7 @@ class	WED_Thing;
 class	WED_Archive;
 class	WED_Select;
 
-class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_Listener, public GUI_TextTableHeaderProvider, public GUI_Broadcaster, public IFilterable {
+class	WED_PropertyTable : public GUI_TextTableProvider, public GUI_SimpleTableGeometry, public GUI_Listener, public GUI_TextTableHeaderProvider, public GUI_Broadcaster {
 public:
 
 					 WED_PropertyTable(
@@ -170,9 +168,7 @@ public:
 	virtual	void    SetClosed(const set<int>& closed_list);
 	virtual	void    GetClosed(		set<int>& closed_list);
 
-	//--IFilterable---------------------------------------------------------------
-	virtual void	SetFilter(const string& filter);
-	//----------------------------------------------------------------------------
+	void	SetFilter(const string& filter);
 
 private:
 
