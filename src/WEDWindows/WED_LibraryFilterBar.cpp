@@ -32,7 +32,7 @@ WED_LibraryFilterBar::WED_LibraryFilterBar(
 	GUI_Commander * cmdr,
 	WED_LibraryMgr * mLibrary)
 	:
-	WED_FilterBar(cmdr, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", true),
+	WED_FilterBar(cmdr, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", true, pack_Default),
 	mLibrary(mLibrary)
 {
 }

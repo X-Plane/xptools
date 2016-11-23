@@ -309,6 +309,7 @@
     <ClInclude Include="..\..\src\Interfaces\IControlHandles.h" />
     <ClInclude Include="..\..\src\Interfaces\IDirectory.h" />
     <ClInclude Include="..\..\src\Interfaces\IDocPrefs.h" />
+    <ClInclude Include="..\..\src\Interfaces\IFilterable.h" />
     <ClInclude Include="..\..\src\Interfaces\IGIS.h" />
     <ClInclude Include="..\..\src\Interfaces\ILibrarian.h" />
     <ClInclude Include="..\..\src\Interfaces\IOperation.h" />

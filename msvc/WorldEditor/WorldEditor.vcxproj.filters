@@ -1595,6 +1595,9 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\src\WEDResources\ui_measurements.txt">

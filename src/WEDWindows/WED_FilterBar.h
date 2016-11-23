@@ -40,7 +40,8 @@ public:
 		intptr_t in_param,
 		const string & in_label,
 		const string & in_def,
-		bool in_have_enum_dict);
+		bool in_have_enum_dict,
+		int default_enum_val=0);
 
 			string		GetText(void) { return mText; }
 			string		GetEnumText(void)  { DebugAssert(mHaveEnumDict == true); return mCurEnumTxt; }
@@ -151,9 +152,8 @@ public:
 	
 	void							ClearFilter();
 protected:
-	string		GetEnumText() const { return mCurEnumTxt; }
-	int			GetEnumValue() const { return mCurEnumVal; }
-
+	string		GetEnumText()     const { return mCurEnumTxt; }
+	int			GetEnumValue()    const { return mCurEnumVal; }
 	bool		GetHaveEnumDict() const { return mHaveEnumDict; }
 
 private: 
@@ -174,8 +174,6 @@ private:
 	intptr_t			mMsg;
 	intptr_t			mParam;
 	GUI_TextTable		mTextTable;
-
-	WED_LibraryMgr		*mLibrary;
-};						
+};
 
 #endif

@@ -87,7 +87,7 @@ WED_PropertyPane::WED_PropertyPane(
 		mFilter = new WED_HierarchyFilterBar(this);
 		mFilter->Show();
 		mFilter->SetParent(this);
-		mFilter->AddListener(mTable);
+		mFilter->AddListener(this);
 		mFilter->SetSticky(1, 0, 1, 1);
 		this->PackPane(mFilter, gui_Pack_Top);
 	}

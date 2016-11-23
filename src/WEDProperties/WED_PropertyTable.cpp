@@ -30,13 +30,16 @@
 #include "ILibrarian.h"
 #include "WED_Entity.h"
 
+#include "STLUtils.h"
+
 #include "WED_GISComposite.h"
 #include "WED_Airport.h"
+#include "WED_Group.h"
 
-#include "WED_Messages.h"
 #include "PlatformUtils.h"
 #include "WED_UIDefs.h"
 #include "GUI_Messages.h"
+#include "WED_Messages.h"
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
 #include "WED_UIMeasurements.h"
@@ -80,6 +83,8 @@ WED_PropertyTable::WED_PropertyTable(
 	mResolver(resolver),
 	mCacheValid(false)
 {
+	RebuildCache();
+	mSorted = mThingCache;
 	if (col_names)
 	while(*col_names)
 		mColNames.push_back(*col_names++);
@@ -848,14 +853,22 @@ void WED_PropertyTable::RebuildCache(void)
 		sel->IterateSelectionOr(SelectAndParents,&all_sel);
 	if (root)
 		RebuildCacheRecursive(root,sel,mSelOnly ? &all_sel : NULL);
+	Resort();
 }
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
 {
-	if (!mCacheValid)	RebuildCache();
+	if (!mCacheValid)
+	{
+		RebuildCache();
+	}
+	
 	if (!mVertical)
-		row = mThingCache.size() - row - 1;
-	return mThingCache[row];
+	{
+		row = mSorted.size() - row - 1;
+	}
+
+	return mSorted[row];
 }
 
 int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
@@ -878,8 +891,12 @@ int			WED_PropertyTable::GetColCount(void)
 	if (!mVertical)
 		return mColNames.size();
 
-	if (!mCacheValid)	RebuildCache();
-	return mThingCache.size();
+	if (!mCacheValid)
+	{
+		RebuildCache();
+	}
+
+	return mSorted.size();
 }
 
 int		WED_PropertyTable::ColForX(int n)
@@ -895,7 +912,7 @@ int			WED_PropertyTable::GetRowCount(void)
 		return mColNames.size();
 
 	if (!mCacheValid)	RebuildCache();
-	return mThingCache.size();
+	return mSorted.size();
 }
 
 void	WED_PropertyTable::ReceiveMessage(
@@ -982,11 +999,52 @@ void WED_PropertyTable::GetClosed(set<int>& closed_list)
 			closed_list.insert(it->first) ;
 }
 
-void WED_PropertyTable::SetFilter(const string & search_filter)
+//--IFilterable----------------------------------------------------------------
+void WED_PropertyTable::SetFilter(const string & filter)
 {
-	mSearchFilter = search_filter;
+	mSearchFilter = filter;
+	Resort();
 }
 
+int sort_by_wed_thing_name(const WED_Thing* thing_1, const WED_Thing* thing_2)
+{
+	string name_1;
+	thing_1->GetName(name_1);
+
+	string name_2;
+	thing_2->GetName(name_2);
+
+	return name_1 == name_2;
+}
+
+void WED_PropertyTable::Resort()
+{
+	mSorted.clear();
+	if (mSearchFilter.empty() == true)
+	{
+		mSorted = mThingCache;
+	}
+	else
+	{
+		for (vector<WED_Thing*>::iterator itr = mThingCache.begin(); itr != mThingCache.end(); ++itr)
+		{
+			string name;
+			(*itr)->GetName(name);
+
+			if (mSearchFilter.empty()                    ||
+				name.find(mSearchFilter) != string::npos ||
+				((*itr)->GetClass() == WED_Airport::sClass && (*itr)->CountChildren() > 0) ||
+				((*itr)->GetClass() == WED_Group::sClass   && (*itr)->CountChildren() > 0)
+				)
+			{
+				mSorted.push_back(*itr);
+			}
+		}
+	}
+
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
+}
+//-----------------------------------------------------------------------------
 
 // These routines encapsulate the hash table that tracks the disclosure of various WED things.  We wrap it like this so we can
 // easily map "no entry" to open.  This makes new entities default to open, which seems to be preferable.  It'd be easy to customize
@@ -1054,6 +1112,9 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	{
 		can_disclose = is_composite;
 		is_disclose = can_disclose && GetOpen(what->GetID());
-		if (!is_disclose) recurse_children = 0;
+		if (!is_disclose)
+		{
+			recurse_children = 0;
+		}
 	}
 }

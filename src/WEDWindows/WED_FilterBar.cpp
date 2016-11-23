@@ -35,12 +35,14 @@ WED_FilterBar::WED_FilterBar(
 			intptr_t		in_param, 
 			const string&	in_label,
 			const string&	in_def,
-			bool			in_have_enum_dict) :
+			bool			in_have_enum_dict,
+			int				in_default_enum_val) :
 	GUI_Table(1),
 	GUI_SimpleTableGeometry(2, cols, GUI_GetImageResourceHeight("property_bar.png") / 2),
 	mTextTable(cmdr,0,1),
 	mLabel(in_label),
 	mHaveEnumDict(in_have_enum_dict),
+	mCurEnumVal(in_default_enum_val),
 	mText(in_def),
 	mMsg(in_msg),
 	mParam(in_param)
