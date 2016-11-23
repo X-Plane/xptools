@@ -50,7 +50,7 @@ class	GUI_Table;
 class	GUI_Header;
 class	GUI_Side;
 class	IResolver;
-class	WED_FilterBar;
+class	GUI_FilterBar;
 
 enum {
 
@@ -88,7 +88,7 @@ private:
 	GUI_Header *					mHeader;
 	GUI_Side *						mSide;
 	
-	WED_FilterBar *					mFilter;
+	GUI_FilterBar *					mFilter;
 	
 	GUI_TextTable					mTextTable;
 	GUI_TextTableHeader				mTextTableHeader;

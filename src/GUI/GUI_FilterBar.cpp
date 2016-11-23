@@ -21,15 +21,14 @@
  *
  */
 
-#include "WED_FilterBar.h"
-#include "WED_PackageMgr.h"
-#include "WED_Colors.h"
+#include "GUI_FilterBar.h"
+#include "WED_Colors.h" //TODO: Not in the GUI
 #include "GUI_Fonts.h"
 #include "GUI_Resources.h"
 
 static int cols[2] = { 100, 100 };
 
-WED_FilterBar::WED_FilterBar(
+GUI_FilterBar::GUI_FilterBar(
 			GUI_Commander *	cmdr,
 			intptr_t		in_msg, 
 			intptr_t		in_param, 
@@ -67,13 +66,13 @@ WED_FilterBar::WED_FilterBar(
 	
 }
 
-int			WED_FilterBar::GetColCount(void)
+int			GUI_FilterBar::GetColCount(void)
 {
 	//Label: | Search Field
 	return 2;
 }
 
-int			WED_FilterBar::GetRowCount(void)
+int			GUI_FilterBar::GetRowCount(void)
 {
 	if(mHaveEnumDict == false)
 	{
@@ -85,7 +84,7 @@ int			WED_FilterBar::GetRowCount(void)
 	}
 }
 
-void	WED_FilterBar::GetCellContent(
+void	GUI_FilterBar::GetCellContent(
 						int							cell_x,
 						int							cell_y,
 						GUI_CellContent&			the_content)
@@ -155,7 +154,7 @@ void	WED_FilterBar::GetCellContent(
 	}
 }
 
-void	WED_FilterBar::ClearFilter()
+void	GUI_FilterBar::ClearFilter()
 {
 	mTextTable.KillEditing(false);
 	mText.clear();
@@ -163,7 +162,7 @@ void	WED_FilterBar::ClearFilter()
 	Refresh();
 }
 
-void	WED_FilterBar::AcceptEdit(
+void	GUI_FilterBar::AcceptEdit(
 						int							cell_x,
 						int							cell_y,
 						const GUI_CellContent&		the_content,

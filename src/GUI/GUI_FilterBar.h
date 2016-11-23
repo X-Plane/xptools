@@ -21,20 +21,19 @@
  *
  */
 
-#ifndef WED_FilterBar_H
-#define WED_FilterBar_H
+#ifndef GUI_FILTERBAR_H
+#define GUI_FILTERBAR_H
 
 #include "GUI_Table.h"
 #include "GUI_TextTable.h"
 #include "GUI_SimpleTableGeometry.h"
-#include "WED_LibraryMgr.h"
 
 #include "AssertUtils.h"
 
-class	WED_FilterBar : public GUI_Table, public GUI_TextTableProvider, public GUI_SimpleTableGeometry {
+class	GUI_FilterBar : public GUI_Table, public GUI_TextTableProvider, public GUI_SimpleTableGeometry {
 public:
 
-	WED_FilterBar(
+	GUI_FilterBar(
 		GUI_Commander * cmdr,
 		intptr_t in_msg,
 		intptr_t in_param,
@@ -45,7 +44,7 @@ public:
 
 			string		GetText(void) { return mText; }
 			string		GetEnumText(void)  { DebugAssert(mHaveEnumDict == true); return mCurEnumTxt; }
-			int			GetEnumValue(void) { DebugAssert(mHaveEnumDict == true); return mCurEnumVal;}
+			int			GetEnumValue(void) { DebugAssert(mHaveEnumDict == true); return mCurEnumVal; }
 	// GUI_SimpleTableGeometry
 	virtual	int			GetColCount(void);
 	virtual	int			GetRowCount(void);

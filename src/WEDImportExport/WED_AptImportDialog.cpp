@@ -73,7 +73,7 @@ WED_AptImportDialog::WED_AptImportDialog(
 	packer->SetBounds(bounds);
 	packer->SetBkgkndImage ("gradient.png");
 
-	mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Search:","",false);
+	mFilter = new GUI_FilterBar(this,kMsg_FilterChanged,0,"Search:","",false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(packer);

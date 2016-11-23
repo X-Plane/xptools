@@ -30,7 +30,7 @@
 
 WED_HierarchyFilterBar::WED_HierarchyFilterBar(GUI_Commander * cmdr)
 	:
-	WED_FilterBar(cmdr, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false)
+	GUI_FilterBar(cmdr, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false)
 {
 }
 
@@ -39,14 +39,14 @@ void	WED_HierarchyFilterBar::GetCellContent(
 	int							cell_y,
 	GUI_CellContent&			the_content)
 {
-	WED_FilterBar::GetCellContent(cell_x, cell_y, the_content);
+	GUI_FilterBar::GetCellContent(cell_x, cell_y, the_content);
 	/* Filter Bar Table
 	* 0        1
 	* Lable | Text Field									1
 	* Lable | Enum Dictionary (Build from PackageManager)	0
 	*/
 	//Cell 0,0 and 1,0
-	if (cell_y == 1 || WED_FilterBar::GetHaveEnumDict() == false)
+	if (cell_y == 1 || GUI_FilterBar::GetHaveEnumDict() == false)
 	{
 		//if(cell_x == 0)
 		//	the_content.text_val = mLabel;
@@ -55,7 +55,7 @@ void	WED_HierarchyFilterBar::GetCellContent(
 		//the_content.string_is_resource=0;
 	}
 
-	if (cell_y == 0 && WED_FilterBar::GetHaveEnumDict() == true)
+	if (cell_y == 0 && GUI_FilterBar::GetHaveEnumDict() == true)
 	{
 		//Label
 		if (cell_x == 0)
@@ -71,7 +71,7 @@ void	WED_HierarchyFilterBar::GetCellContent(
 			//switch on the current int_val
 			//Special cases for Local, Library, and All
 			//Default for any other value
-			int cur_val = WED_FilterBar::GetEnumValue();
+			int cur_val = GUI_FilterBar::GetEnumValue();
 			switch (cur_val)
 			{
 			case pack_Library: the_content.text_val = "Library"; break;

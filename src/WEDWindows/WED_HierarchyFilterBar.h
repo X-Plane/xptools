@@ -25,12 +25,12 @@
 #define WED_HIERARCHYFILTERBAR_H
 
 #include "GUI_Table.h"
-#include "WED_FilterBar.h"
+#include "GUI_FilterBar.h"
 #include "GUI_TextTable.h"
 #include "GUI_SimpleTableGeometry.h"
 #include "WED_LibraryMgr.h"
 
-class	WED_HierarchyFilterBar : public WED_FilterBar {
+class	WED_HierarchyFilterBar : public GUI_FilterBar {
 public:
 	WED_HierarchyFilterBar(GUI_Commander * cmdr);
 

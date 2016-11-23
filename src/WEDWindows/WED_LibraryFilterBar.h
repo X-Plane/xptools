@@ -25,12 +25,12 @@
 #define WED_LIBRARYFILTERBAR_H
 
 #include "GUI_Table.h"
-#include "WED_FilterBar.h"
+#include "GUI_FilterBar.h"
 #include "GUI_TextTable.h"
 #include "GUI_SimpleTableGeometry.h"
 #include "WED_LibraryMgr.h"
 
-class	WED_LibraryFilterBar : public WED_FilterBar {
+class	WED_LibraryFilterBar : public GUI_FilterBar {
 public:
 	WED_LibraryFilterBar(
 			GUI_Commander *	cmdr,

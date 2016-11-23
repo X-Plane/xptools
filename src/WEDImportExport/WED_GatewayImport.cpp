@@ -49,7 +49,7 @@
 
 #include "GUI_Label.h"
 
-#include "WED_FilterBar.h"
+#include "GUI_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
 #include "MemFileUtils.h"
@@ -233,7 +233,7 @@ private:
 	//Changes the decoration of the GUI window's title, buttons, etc, based on the stage
 	void DecorateGUIWindow(string labelDesc="");
 	//--For the whole dialog box
-	WED_FilterBar	 *		mFilter;
+	GUI_FilterBar	 *		mFilter;
 	GUI_Packer *			mPacker;
 
 	GUI_Pane *				mButtonHolder;
@@ -334,7 +334,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mPacker->SetBkgkndImage ("gradient.png"); 
 
 	//Filter
-	mFilter = new WED_FilterBar(this,filter_changed,0,"Search:","",false);
+	mFilter = new GUI_FilterBar(this,filter_changed,0,"Search:","",false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(mPacker);

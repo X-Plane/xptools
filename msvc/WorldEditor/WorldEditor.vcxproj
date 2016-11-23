@@ -28,6 +28,7 @@
     <ClCompile Include="..\..\src\GUI\GUI_Control.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Destroyable.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_DrawUtils.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_FilterBar.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Fonts.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_FormWindow.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_GraphState.cpp" />
@@ -239,7 +240,6 @@
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEVertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
-    <ClCompile Include="..\..\src\WEDWindows\WED_FilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
@@ -275,6 +275,7 @@
     <ClInclude Include="..\..\src\GUI\GUI_Defs.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Destroyable.h" />
     <ClInclude Include="..\..\src\GUI\GUI_DrawUtils.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_FilterBar.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Fonts.h" />
     <ClInclude Include="..\..\src\GUI\GUI_FormWindow.h" />
     <ClInclude Include="..\..\src\GUI\GUI_GraphState.h" />
@@ -502,7 +503,6 @@
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEVertexTool.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
-    <ClInclude Include="..\..\src\WEDWindows\WED_FilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
