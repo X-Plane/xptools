@@ -68,6 +68,7 @@ enum {
 	wed_Split,
 	wed_Align,
 	wed_Orthogonalize,
+	wed_RegularPoly,
 #if AIRPORT_ROUTING
 	wed_Merge,
 #endif

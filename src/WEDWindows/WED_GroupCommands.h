@@ -74,6 +74,8 @@ int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
 int		WED_CanOrthogonalize(IResolver * resolver);
 void	WED_DoOrthogonalize(IResolver * resolver);
+int		WED_CanMakeRegularPoly(IResolver * resolver);
+void	WED_DoMakeRegularPoly(IResolver * resolver);
 int		WED_CanReverse(IResolver * resolver);
 void	WED_DoReverse(IResolver * resolver);
 int		WED_CanRotate(IResolver * resolver);

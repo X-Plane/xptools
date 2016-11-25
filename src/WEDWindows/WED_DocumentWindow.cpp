@@ -344,6 +344,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Align:		WED_DoAlign(mDocument); return 1;
 	case wed_Orthogonalize:	WED_DoOrthogonalize(mDocument); return 1;
+	case wed_RegularPoly:	WED_DoMakeRegularPoly(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
 	case wed_Rotate:	WED_DoRotate(mDocument); return 1;
 	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
@@ -461,6 +462,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Align:		return WED_CanAlign(mDocument);
 	case wed_Orthogonalize:	return WED_CanOrthogonalize(mDocument);
+	case wed_RegularPoly:	return WED_CanMakeRegularPoly(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);
 	case wed_Rotate:	return WED_CanRotate(mDocument);
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);

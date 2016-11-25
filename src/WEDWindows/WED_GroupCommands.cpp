@@ -1740,7 +1740,7 @@ void	WED_DoAlign(IResolver * resolver)
 	op->CommitOperation();
 }
 
-static int IterateCanSquare(ISelectable * what, void * ref)
+static int IterateCanOrthogonalize(ISelectable * what, void * ref)
 {
 	if(!Iterate_IsStructuredObject(what, ref)) return 0;
 	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
@@ -1757,7 +1757,7 @@ int		WED_CanOrthogonalize(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	if (sel->GetSelectionCount() == 0) return 0;
-	if (sel->IterateSelectionAnd(IterateCanSquare, NULL)) return 1;
+	if (sel->IterateSelectionAnd(IterateCanOrthogonalize, NULL)) return 1;
 	return 0;
 }
 
@@ -1917,6 +1917,126 @@ void	WED_DoOrthogonalize(IResolver * resolver)
 			{
 				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
 				DoMakeOrthogonal(seq);
+			}
+		}
+	}
+
+	op->CommitOperation();
+}
+
+static int IterateCanMakeRegularPoly(ISelectable * what, void * ref)
+{
+	if(!Iterate_IsStructuredObject(what, ref)) return 0;
+	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
+	if(pol && pol->GetOuterRing()->GetNumPoints() > 2) return 1;
+	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(what);
+	if(seq && seq->GetNumPoints() > 2) return 1;
+	return 0;
+}
+
+int		WED_CanMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionAnd(IterateCanMakeRegularPoly, NULL)) return 1;
+	return 0;
+}
+
+static void DoMakeRegularPoly(IGISPointSequence * seq )
+{
+	int n = seq->GetNumPoints();
+	if(n < 3 ) return;
+	
+	Point2 p1,p2;
+	double l = 0;
+	Vector2	v;
+	Polygon2 pol;
+	for( int i = 0 ; i < n ; ++i )
+	{
+		seq->GetNthPoint(i)->GetLocation(gis_Geo,p1);
+		seq->GetNthPoint((i+1) % n)->GetLocation(gis_Geo,p2);
+		l += LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+		pol.push_back(p1);
+	}
+	//avg edge length
+	l = l / n ;
+	//inner angle
+	double w = (2 * PI) / n ;
+	//outer radius
+	double ru = (l/2) / sin(w/2); 
+	//TODO: mroe : cannot find a good centerpoint , take this for now
+	Point2 ctr = pol.centroid();
+	//initial heading
+	double t = VectorDegs2NorthHeading(ctr,ctr,Vector2(ctr,pol[0])) * DEG_TO_RAD;
+	
+	if (pol.is_ccw()) w = -w ;
+	for( int i = 0 ; i < n ; ++i)
+	{	
+		double h = i*w+t ;
+		v.dx = ru*sin(h);
+		v.dy = ru*cos(h);
+		v = VectorMetersToLL(ctr,v);	
+		pol[i] = ctr + v;
+	}	
+
+	//http://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
+	double dc = (4./3.) * tan(w/4.);
+	double cl = ru * dc;
+
+	for( int i = 0 ; i < n  ; ++i)
+	{			
+		IGISPoint_Bezier * bez;
+		BezierPoint2 bp;
+		if(seq->GetNthPoint(i)->GetGISClass() == gis_Point_Bezier)
+		if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
+		{	
+			v = VectorLLToMeters(ctr,Vector2(ctr,pol[i]));	
+			v = v.perpendicular_ccw();
+			v.normalize();
+			v *= cl;
+			v = VectorMetersToLL(ctr, v);
+		
+			bez->GetBezierLocation(gis_Geo,bp);	
+			bp.hi = bp.has_hi() ? pol[i] - v : pol[i];
+			bp.lo = bp.has_lo() ? pol[i] + v : pol[i];
+			
+			bp.pt = pol[i];	
+			bez->SetBezierLocation(gis_Geo,bp);
+			bez->SetSplit(bp.is_split());
+		}
+		else
+		{
+			seq->GetNthPoint(i)->SetLocation(gis_Geo,pol[i]);
+		}
+	}	
+}
+
+void	WED_DoMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+	if(things.empty()) return;
+
+	op->StartOperation("Make Regular Poly");
+
+	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
+	{
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(*it);
+		if(seq)
+		{
+			DoMakeRegularPoly(seq);
+			continue;
+		}
+		IGISPolygon * pol = dynamic_cast<IGISPolygon *>(*it);
+		if(pol)
+		{
+			for(int i = -1; i < pol->GetNumHoles(); ++i)
+			{
+				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
+				DoMakeRegularPoly(seq);
 			}
 		}
 	}

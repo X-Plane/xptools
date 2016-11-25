@@ -99,7 +99,8 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
 {	"A&lign",				'L',	gui_ControlFlag,				0,	wed_Align		},
-{	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize  	},
+{	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize },
+{	"Make Regular Poly",	'Q',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_RegularPoly },
 #if AIRPORT_ROUTING
 {	"Merge",				'M',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Merge		},
 #endif
