@@ -1948,9 +1948,9 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 	if(n < 3 ) return;
 	
 	Point2 p1,p2;
-	double l = 0;
-	Vector2	v;
 	Polygon2 pol;
+
+	double l  = 0.0;
 	for( int i = 0 ; i < n ; ++i )
 	{
 		seq->GetNthPoint(i)->GetLocation(gis_Geo,p1);
@@ -1959,56 +1959,52 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 		pol.push_back(p1);
 	}
 	//avg edge length
-	l = l / n ;
-	//inner angle
-	double w = (2 * PI) / n ;
-	//outer radius
-	double ru = (l/2) / sin(w/2); 
+	l = l/n ;
 	//TODO: mroe : cannot find a good centerpoint , take this for now
 	Point2 ctr = pol.centroid();
+	//inner angle
+	double w = (2.0*PI) / n ;
+	//outer radius
+	double ru = (l/2.0) / sin(w/2.0);
+	if (pol.is_ccw()) w = -w;
+	//http://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
+	double c = (4.0/3.0) * tan(w/4.0) * ru;
+
 	//initial heading
-	double t = VectorDegs2NorthHeading(ctr,ctr,Vector2(ctr,pol[0])) * DEG_TO_RAD;
-	
-	if (pol.is_ccw()) w = -w ;
+	double t = VectorDegs2NorthHeading(ctr,ctr,Vector2(ctr,pol.at(0))) * DEG_TO_RAD;
 	for( int i = 0 ; i < n ; ++i)
 	{	
-		double h = i*w+t ;
+		double h = i*w+t;
+		Vector2	v;
 		v.dx = ru*sin(h);
 		v.dy = ru*cos(h);
-		v = VectorMetersToLL(ctr,v);	
-		pol[i] = ctr + v;
-	}	
 
-	//http://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
-	double dc = (4./3.) * tan(w/4.);
-	double cl = ru * dc;
+		Point2 ll = ctr + VectorMetersToLL(ctr,v);
 
-	for( int i = 0 ; i < n  ; ++i)
-	{			
-		IGISPoint_Bezier * bez;
 		BezierPoint2 bp;
+		IGISPoint_Bezier * bez;
 		if(seq->GetNthPoint(i)->GetGISClass() == gis_Point_Bezier)
-		if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
-		{	
-			v = VectorLLToMeters(ctr,Vector2(ctr,pol[i]));	
-			v = v.perpendicular_ccw();
-			v.normalize();
-			v *= cl;
-			v = VectorMetersToLL(ctr, v);
-		
-			bez->GetBezierLocation(gis_Geo,bp);	
-			bp.hi = bp.has_hi() ? pol[i] - v : pol[i];
-			bp.lo = bp.has_lo() ? pol[i] + v : pol[i];
-			
-			bp.pt = pol[i];	
-			bez->SetBezierLocation(gis_Geo,bp);
-			bez->SetSplit(bp.is_split());
+		{
+			if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
+			{
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+
+				bez->GetBezierLocation(gis_Geo,bp);
+				bp.hi = bp.has_hi() ? ll - VectorMetersToLL(ctr, v) : ll;
+				bp.lo = bp.has_lo() ? ll + VectorMetersToLL(ctr, v) : ll;
+				bp.pt = ll;
+
+				bez->SetBezierLocation(gis_Geo,bp);
+				bez->SetSplit(bp.is_split());
+			}
 		}
 		else
 		{
-			seq->GetNthPoint(i)->SetLocation(gis_Geo,pol[i]);
+			seq->GetNthPoint(i)->SetLocation(gis_Geo,ll);
 		}
-	}	
+	}
 }
 
 void	WED_DoMakeRegularPoly(IResolver * resolver)
