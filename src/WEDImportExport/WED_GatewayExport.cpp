@@ -54,7 +54,11 @@
 #include "GUI_Help.h"
 #include "WED_Messages.h"
 #include "WED_ATCFlow.h"
+
 #include "WED_TaxiRoute.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
+
 #include "WED_ObjPlacement.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
@@ -87,6 +91,7 @@
 
 #define ATC_FLOW_TAG       1
 #define ATC_TAXI_ROUTE_TAG 2
+#define ATC_GROUND_ROUTES_TAG 8
 
 // Curse C++98 for not having this.
 template<typename T>
@@ -127,9 +132,9 @@ enum {
 
 static bool is_of_class(WED_Thing * who, const char ** classes)
 {
-	while(*classes)
+	while (*classes)
 	{
-		if(strcmp(who->GetClass(), *classes) == 0)
+		if (strcmp(who->GetClass(), *classes) == 0)
 			return true;
 		++classes;
 	}
@@ -138,13 +143,38 @@ static bool is_of_class(WED_Thing * who, const char ** classes)
 
 static bool has_any_of_class(WED_Thing * who, const char ** classes)
 {
-	if(is_of_class(who,classes) )
+	if (is_of_class(who, classes))
 		return true;
 	int n, nn = who->CountChildren();
-	for(n = 0; n < nn; ++n)
-		if(has_any_of_class(who->GetNthChild(n), classes))
+	for (n = 0; n < nn; ++n)
+		if (has_any_of_class(who->GetNthChild(n), classes))
 			return true;
-	return false;		
+	return false;
+}
+
+static void count_all_of_classes_recursive(const WED_Thing * who, hash_map<const char*, vector<const WED_Thing*> >& classes, int& total)
+{
+	for (hash_map<const char*, vector<const WED_Thing*> >::iterator itr = classes.begin(); itr != classes.end(); ++itr)
+	{
+		if (strcmp(who->GetClass(), itr->first) == 0)
+		{
+			itr->second.push_back(who);
+			++total;
+		}
+	}
+
+	int n, nn = who->CountChildren();
+	for (n = 0; n < nn; ++n)
+	{
+		count_all_of_classes_recursive(who->GetNthChild(n), classes, total);
+	}
+}
+
+static int count_all_of_classes(const WED_Thing * who, hash_map<const char*, vector<const WED_Thing*> >& classes)
+{
+	int total = 0;
+	count_all_of_classes_recursive(who, classes, total);
+	return total;
 }
 
 // ATC classes - the entire flow hierarchy sits below WED_ATCFlow, so we only need that.  
@@ -152,10 +182,47 @@ static bool has_any_of_class(WED_Thing * who, const char ** classes)
 const char * k_atc_flow_class[] = { WED_ATCFlow::sClass, 0 };
 const char * k_atc_taxi_route_class[] = { WED_TaxiRoute::sClass, 0 };
 
+const char * k_atc_ground_route_class[] = { WED_TaxiRoute::sClass, //of type Ground Vehicles
+											WED_TruckDestination::sClass,
+											WED_TruckParkingLocation::sClass, 0 };
+
 // In apt.dat, taxi route lines are 1200 through 1204
 static bool has_atc_taxi_route(WED_Airport * who) { return has_any_of_class(who, k_atc_taxi_route_class); }
+
 // In apt.dat, flow lines are 1100 and 1101
-static bool has_atc_flow(WED_Airport * who)       { return has_any_of_class(who, k_atc_flow_class); }
+static bool has_atc_flow(WED_Airport * who) { return has_any_of_class(who, k_atc_flow_class); }
+
+static bool is_of_type_ground_vehicles(const WED_TaxiRoute* route)
+{
+	return route->AllowTrucks();
+}
+
+static bool has_atc_ground_routes(WED_Airport* who)
+{
+	hash_map<const char*, vector<const WED_Thing*> > classes;
+	classes.insert(make_pair(k_atc_ground_route_class[0], vector<const WED_Thing*>()));
+	classes.insert(make_pair(k_atc_ground_route_class[1], vector<const WED_Thing*>()));
+	classes.insert(make_pair(k_atc_ground_route_class[2], vector<const WED_Thing*>()));
+
+	int total_found = count_all_of_classes(who, classes);
+
+	if (total_found == 0)
+	{
+		return false;
+	}
+	//If we have a situation where we only have taxiroutes to tell us if we have ground vehicles, we must test them
+	else if(classes[WED_TaxiRoute::sClass].size() > 0 && classes[WED_TruckParkingLocation::sClass].size() == 0 && classes[WED_TruckDestination::sClass].size() == 0)
+	{
+		vector<const WED_TaxiRoute*> routes;
+		CollectRecursive(who, back_inserter(routes), is_of_type_ground_vehicles);
+
+		return routes.empty() == true ? false : true;
+	}
+	else
+	{
+		return true;
+	}
+}
 
 // We are intentionally IGNORING lin/pol/str and exclusion zones...this is 3-d in the 'user' sense
 // of the term, like, do things stick up.
@@ -616,6 +683,9 @@ void WED_GatewayExportDialog::Submit()
 			features += "," + to_string(ATC_FLOW_TAG);
 		if(has_atc_taxi_route(apt))
 			features += "," + to_string(ATC_TAXI_ROUTE_TAG);
+		if (has_atc_ground_routes(apt))
+			features += "," + to_string(ATC_GROUND_ROUTES_TAG);
+
 		if(!features.empty())
 			features.erase(features.begin());
 
