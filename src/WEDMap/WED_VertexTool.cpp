@@ -31,6 +31,7 @@
 #include "WED_ToolUtils.h"
 #include "WED_RunwayNode.h"
 #include "WED_OverlayImage.h"
+#include "WED_TextureNode.h"
 #include "WED_ExclusionZone.h"
 #include "WED_Taxiway.h"
 #include "WED_PolygonPlacement.h"
@@ -113,7 +114,7 @@ void	WED_VertexTool::BeginEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->StartOperation("Vertex modification");  // can be any of - split ATC edge - move ATC node
+	op->StartOperation("Vertex Modification");  // can be any of - split ATC edge - move ATC edge node
 	                                 // - drag a node or modify a bezier node of any previously selected feature
 }
 
@@ -765,10 +766,10 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(en);
+	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 	if(seq && !mInEdit)
 	{
 		mInEdit = 1;
-		GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 		if (mods & gui_OptionAltFlag)
 		{
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
@@ -778,10 +779,10 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	}	
 	Bbox2	old_b(Point2(0,0),Point2(1,1));
 	Bbox2	new_b(old_b);
-	new_b += delta;
 	
 	if(mNewSplitPoint)
 	{
+		new_b += delta;
 		mNewSplitPoint->Rescale(gis_Geo, old_b, new_b);
 	}
 	else if(seq)
@@ -789,6 +790,22 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 		int np = seq->GetNumPoints();
 		IGISPoint * p1 = seq->GetNthPoint(c);
 		IGISPoint * p2 = seq->GetNthPoint((c+1) % np);
+
+		if ( mods & gui_ControlFlag )
+		{
+			Point2 a,b ;
+			p1->GetLocation(gis_Geo,a);
+			p2->GetLocation(gis_Geo,b);
+			Vector2 n = VectorLLToMeters(a,Vector2(a,b));
+			n = n.perpendicular_ccw();
+			Vector2 delta_m = VectorLLToMeters(a,delta);
+			new_b += VectorMetersToLL(a,n.projection(delta_m));
+		}
+		else
+		{
+			new_b += delta;
+		}
+
 		p1->Rescale(gis_Geo, old_b, new_b);
 		p2->Rescale(gis_Geo, old_b, new_b);
 	}
@@ -796,7 +813,7 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	WED_Thing * node = dynamic_cast <WED_Thing *> (en);
 	WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto,node->GetParent());
 	if (ortho) ortho->Redrape();
-#endif
+#endif	
 }
 
 WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent, int pt_sel)
