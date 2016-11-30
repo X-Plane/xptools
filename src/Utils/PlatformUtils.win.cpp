@@ -27,9 +27,9 @@
 #include <shlobj.h>
 #include <stdio.h>
 
-const char * GetApplicationPath(char * pathBuf, int sz)
+string GetApplicationPath(char * pathBuf, int sz)
 {
-	UTF16 utf16_path_buf[MAX_PATH];
+	TCHAR utf16_path_buf[MAX_PATH];
 	if (GetModuleFileName(NULL, utf16_path_buf, sz))
 	{
 		cpy_wbuf_to_buf(utf16_path_buf, MAX_PATH, pathBuf, sz);
@@ -37,20 +37,20 @@ const char * GetApplicationPath(char * pathBuf, int sz)
 	}
 	else
 	{
-		return NULL;
+		return "";
 	}
 }
 
-const char * GetCacheFolder(char cache_path[], int sz)
+string GetCacheFolder(char cache_path[], int sz)
 {
 	assert(sz == MAX_PATH);
 
 	if(sz != MAX_PATH)
 	{
-		return NULL;
+		return "";
 	}
 
-	WCHAR wc_cache_path[MAX_PATH];
+	TCHAR wc_cache_path[MAX_PATH];
 	HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, wc_cache_path);
 	if (SUCCEEDED(res))
 	{
@@ -59,23 +59,23 @@ const char * GetCacheFolder(char cache_path[], int sz)
 	}
 	else
 	{
-		return NULL;
+		return "";
 	}
 }
 
-const char * GetTempFilesFolder(char temp_path[], int sz)
+string GetTempFilesFolder(char temp_path[], int sz)
 {
 	assert(sz == MAX_PATH);
 	if(sz > MAX_PATH)
 	{
-		return NULL;
+		return "";
 	}
 
-	WCHAR wc_temp_path[MAX_PATH];
+	TCHAR wc_temp_path[MAX_PATH];
 	int result = GetTempPath(sz, wc_temp_path);
 	if (result > wcslen(wc_temp_path) || result == 0)
 	{
-		return NULL;
+		return "";
 	}
 
 	cpy_wbuf_to_buf(wc_temp_path, MAX_PATH, temp_path, sz);

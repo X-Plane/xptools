@@ -24,7 +24,6 @@
 #include "EnvParser.h"
 #include <stdio.h>
 #include <string.h>
-#include "PlatformUtils.h"
 #include "EnvDefs.h"
 #include "EndianUtils.h"
 #include "errno.h"
@@ -61,6 +60,13 @@ int	ReadEnvFile(const char * envFileName)
 	/* Attempt to read the file format for a lat and lon, e.g. +42-71.  We need this
 	 * because 6.10 .env files only store lat/lon deltas!
 	 */
+#if	IBM
+	#define DIR_CHAR	'\\'
+#elif APL || LIN
+	#define	DIR_CHAR	'/'
+#else
+	#error PLATFORM NOT DEFINED
+#endif
 	sscanf(StripFileName(envFileName, DIR_CHAR), "%ld%ld", &lat, &lon);
 
 	fi = fopen(envFileName, "rb");

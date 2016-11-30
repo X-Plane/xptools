@@ -96,13 +96,13 @@ void CACHE_FileCacheInitializer::init()
 	//Get the cache folder path
 	{
 		char    base[TEMP_FILES_DIR_LEN];
-		const char * cache_folder = GetCacheFolder(base, TEMP_FILES_DIR_LEN);
-		if(cache_folder == NULL)
+		string cache_folder = GetCacheFolder(base, TEMP_FILES_DIR_LEN);
+		if(cache_folder.empty() == true)
 		{
 			AssertPrintf("Could not get OS cache folder");
 		}
 
-		CACHE_folder = string(cache_folder) + string(DIR_STR "wed_file_cache");
+		CACHE_folder = cache_folder + (DIR_STR "wed_file_cache");
 	}
 
 	vector<string> files;
