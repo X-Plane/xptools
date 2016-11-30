@@ -63,20 +63,11 @@ typedef	unsigned short		UTF16;													// We will use our normal string for 
 #endif
 typedef unsigned int		UTF32;													// string for UTF32 because it is only used for 1 char at a time.
 
-typedef basic_string<UTF8> string_utf8;
 typedef basic_string<UTF16> string_utf16;
 
 #if IBM
-string_utf8  convert_str_to_utf8(const string&  str);
 string_utf16 convert_str_to_utf16(const string& str);
-
-string       convert_utf8_to_str(const string_utf8& str_utf8);
-string_utf16 convert_utf8_to_utf16(const string_utf8&  str_utf8);
-
 string       convert_utf16_to_str(const string_utf16& str_utf16);
-string_utf8  convert_utf16_to_utf8(const string_utf16&  str_utf16);
-
-void         cpy_wbuf_to_buf(const UTF16* wbuf, int wsz, char* buf, int sz);
 #endif
 
 // UTF 8 routines to move through a string one unicode char at a time - could be any number of bytes.
@@ -103,9 +94,8 @@ inline const UTF16 *	UTF16_decode(const UTF16 * chars, UTF32& result);					// UT
 inline int				UTF16_encode(UTF32 inChar, UTF16 outChars[2]);						// UTF 16 encoder.  Fill buffer, return how many UTF16s was filled.
 
 // String-based UTF 16...this is handy for dealing with file paths on Windows.
-void	string_utf_8_to_16(const string_utf8& input, string_utf16& output);				// convert between UTF8 and 16 in STL strings.
+void	string_utf_8_to_16(const string& input, string_utf16& output);				// convert between UTF8 and 16 in STL strings.
 void	string_utf_16_to_8(const string_utf16& input, string& output);
-void	string_utf_16_to_8(const string_utf16& input, string_utf8& output);
 
 #if APL
 // Mac-specific: convert a system-script character to UTF32.  The system script might be macRoman or ISO-latin-1 or who-knows-what!
