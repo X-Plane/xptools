@@ -139,6 +139,7 @@ SOURCES += ./src/XESTools/GISTool_CoreCmds.cpp
 SOURCES += ./src/XESTools/GISTool.cpp
 SOURCES += ./src/XESTools/GISTool_DemCmds.cpp
 SOURCES += ./src/XESTools/GISTool_DumpCmds.cpp
+SOURCES += ./src/XESTools/GISTool_ImageCmds.cpp
 SOURCES += ./src/XESTools/GISTool_MiscCmds.cpp
 SOURCES += ./src/XESTools/GISTool_ObsCmds.cpp
 SOURCES += ./src/XESTools/GISTool_ProcessingCmds.cpp
