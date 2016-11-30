@@ -59,15 +59,6 @@ string_utf8 convert_utf16_to_utf8(const string_utf16&  str_utf16)
 	return str_utf8;
 }
 
-void         cpy_wbuf_to_buf(const UTF16* wbuf, int wsz, char* buf, int sz)
-{
-	assert(sz >= wsz);
-	if (sz >= wsz)
-	{
-		strcpy(buf, convert_utf16_to_str(string_utf16(wbuf)).c_str());
-	}
-}
-
 // These allocate memory - there is no point in inlining them as they will make a pile o function calls anyway.
 void	string_utf_8_to_16(const string_utf8& input, string_utf16& output)
 {

@@ -32,8 +32,7 @@ string GetApplicationPath(char * pathBuf, int sz)
 	TCHAR utf16_path_buf[MAX_PATH];
 	if (GetModuleFileName(NULL, utf16_path_buf, sz))
 	{
-		cpy_wbuf_to_buf(utf16_path_buf, MAX_PATH, pathBuf, sz);
-		return pathBuf;
+		return convert_utf16_to_str(utf16_path_buf);
 	}
 	else
 	{
@@ -54,8 +53,7 @@ string GetCacheFolder(char cache_path[], int sz)
 	HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, wc_cache_path);
 	if (SUCCEEDED(res))
 	{
-		cpy_wbuf_to_buf(wc_cache_path, MAX_PATH, cache_path, sz);
-		return cache_path;
+		return convert_utf16_to_str(wc_cache_path);
 	}
 	else
 	{
@@ -71,15 +69,14 @@ string GetTempFilesFolder(char temp_path[], int sz)
 		return "";
 	}
 
-	TCHAR wc_temp_path[MAX_PATH];
+	TCHAR wc_temp_path[MAX_PATH] = { 0 };
 	int result = GetTempPath(sz, wc_temp_path);
 	if (result > wcslen(wc_temp_path) || result == 0)
 	{
 		return "";
 	}
 
-	cpy_wbuf_to_buf(wc_temp_path, MAX_PATH, temp_path, sz);
-	return  temp_path;
+	return convert_utf16_to_str(wc_temp_path);
 }
 
 int		GetFilePathFromUser(
