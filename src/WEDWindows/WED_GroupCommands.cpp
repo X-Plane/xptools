@@ -39,6 +39,7 @@
 #include "GISUtils.h"
 #include "PlatformUtils.h"
 #include "WED_Ring.h"
+#include "WED_DrapedOrthophoto.h"
 #include "WED_UIDefs.h"
 #include "ILibrarian.h"
 #include "WED_MapZoomerNew.h"
@@ -1735,7 +1736,18 @@ void	WED_DoAlign(IResolver * resolver)
 		(*it)->GetLocation(gis_Geo,ll);
 		p = l.projection(translator.Forward(ll));
 		(*it)->SetLocation(gis_Geo,translator.Reverse(p));
+		// The brute force way: check after every move if the point is part of a DrapedOrthophoto
+		// If so, call the Redrape
+		WED_Thing * th = dynamic_cast<WED_Thing *> (*it);
+		th = th->GetParent();
+		th = th->GetParent();
+		WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto, th);
+		if (ortho) ortho->Redrape();
 	}
+// TODO
+// call a redrape for DrapedOrthophoto in a more efficient way:
+// If we were to collect a list of all WED_DrapedOrthophotos involved while doing the above loop,
+// we would have to call the redrape only once for each polygon.
 
 	op->CommitOperation();
 }
@@ -1889,6 +1901,11 @@ static void DoMakeOrthogonal(IGISPointSequence * seq )
 	{
 		seq->GetNthPoint(i)->SetLocation(gis_Geo,pol.at(i));
 	}
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * node = dynamic_cast <WED_Thing *> (seq);
+	node = node->GetParent();
+	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+	if (ortho) ortho->Redrape();
 }
 
 void	WED_DoOrthogonalize(IResolver * resolver)
@@ -2005,6 +2022,11 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 			seq->GetNthPoint(i)->SetLocation(gis_Geo,ll);
 		}
 	}
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * node = dynamic_cast <WED_Thing *> (seq);
+	node = node->GetParent();
+	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+	if (ortho) ortho->Redrape();
 }
 
 void	WED_DoMakeRegularPoly(IResolver * resolver)
