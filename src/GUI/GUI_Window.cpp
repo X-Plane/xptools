@@ -493,8 +493,8 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	#if IBM
 		mDND = new GUI_Window_DND(this, mWindow);
 		mBaseProc = (WNDPROC) GetWindowLongPtr(mWindow,GWLP_WNDPROC);
-		SetWindowLongPtr(mWindow,GWLP_USERDATA,(LONG_PTR)this);
-		SetWindowLongPtr(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
+		SetWindowLongPtrW(mWindow,GWLP_USERDATA,(LONG_PTR)this);
+		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
 
 		if (!sWindows.empty())
 		{
@@ -523,7 +523,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		ti.uFlags = 0;	//TTF_SUBCLASS;
 		ti.hwnd = mWindow;
 		ti.uId = 1;
-		ti.lpszText = LPSTR_TEXTCALLBACK;
+		ti.lpszText = LPSTR_TEXTCALLBACKW;
 		ti.rect.bottom = cl.bottom;
 		ti.rect.top = cl.top;
 		ti.rect.left = cl.left;
@@ -1252,13 +1252,13 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 		case WM_NOTIFY:
 			{
 				NMHDR * hdr = (NMHDR *) lParam;
-				NMTTDISPINFO * di = (NMTTDISPINFO *) lParam;
+				NMTTDISPINFOW * di = (NMTTDISPINFOW *) lParam;
 				TOOLINFOW ti;
 				string tip;
 				int has_tip;
 				RECT cl;
 				switch(hdr->code) {
-				case TTN_GETDISPINFO:
+				case TTN_GETDISPINFOW:
 					has_tip = me->InternalGetHelpTip(
 						Client2OGL_X(me->mMouse.x,hWnd),
 						Client2OGL_Y(me->mMouse.y,hWnd),
@@ -1300,9 +1300,9 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 				case gui_Cursor_Resize_V:	SetCursor(LoadCursor(NULL,IDC_SIZENS));	return 0;
 				}
 			}
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			return DefWindowProcW(hWnd, message, wParam, lParam);
 		default:
-			return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
+			return CallWindowProcW(me->mBaseProc, hWnd, message, wParam, lParam);
 	}
 }
 

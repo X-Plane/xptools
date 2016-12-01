@@ -275,9 +275,9 @@ int FILE_delete_file(const char * nuke_path, bool is_dir)
 	string_utf16 output = convert_str_to_utf16(nuke_path);
 	
 	if (is_dir)	{
-		if (!RemoveDirectory(output.c_str()))	return GetLastError();
+		if (!RemoveDirectoryW(output.c_str()))	return GetLastError();
 	} else {
-		if (!DeleteFile(output.c_str()))		return GetLastError();
+		if (!DeleteFileW(output.c_str()))		return GetLastError();
 	}
 #endif
 
@@ -331,7 +331,7 @@ int FILE_read_file_to_string(const string& path, string& content)
 int FILE_rename_file(const char * old_name, const char * new_name)
 {
 #if IBM
-	if(!MoveFile(convert_str_to_utf16(old_name).c_str(), convert_str_to_utf16(new_name).c_str())) return GetLastError();
+	if(!MoveFileW(convert_str_to_utf16(old_name).c_str(), convert_str_to_utf16(new_name).c_str())) return GetLastError();
 #endif
 #if LIN || APL
 	if(rename(old_name,new_name)<0)	return errno;
@@ -455,7 +455,7 @@ int FILE_get_directory_recursive(const string& path, vector<string>& out_files, 
 int FILE_make_dir(const char * in_dir)
 {
 	#if IBM
-		if (!CreateDirectory(convert_str_to_utf16(in_dir).c_str() ,NULL))	return GetLastError();
+		if (!CreateDirectoryW(convert_str_to_utf16(in_dir).c_str() ,NULL))	return GetLastError();
 	#endif
 	#if LIN || APL
 		if (mkdir(in_dir,0755) != 0)		return errno;

@@ -518,7 +518,7 @@ cleanmmap:
 	HANDLE			winFileMapping = NULL;
 	char *			winAddr = NULL;
 
-	winFile = CreateFile(convert_str_to_utf16(inPath).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	winFile = CreateFileW(convert_str_to_utf16(inPath).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (!winFile)
 		goto cleanupwin;
 
@@ -868,7 +868,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	strcpy(path, dirPath);
 	strcat(path, "\\*.*");
 
-	hFind = FindFirstFile(convert_str_to_utf16(path).c_str(), &FindFileData);
+	hFind = FindFirstFileW(convert_str_to_utf16(path).c_str(), &FindFileData);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
@@ -887,7 +887,7 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 			}
 		}
 
-		while (FindNextFile(hFind, &FindFileData) != 0)
+		while (FindNextFileW(hFind, &FindFileData) != 0)
 		{
 			in = FindFileData.cFileName;
 			if ( !( (in == L"." || in == L"..") ))
@@ -987,15 +987,15 @@ MF_GetDirectoryBulk(
 #if IBM
 
 	WCHAR				searchPath[MAX_PATH];
-	WIN32_FIND_DATA		findData;
+	WIN32_FIND_DATAW	findData;
 	HANDLE				hFind;
 	int					total = 0;
 	unsigned long long	when;
 
-	wcscpy(searchPath,(const WCHAR*)path);
-	wcscat(searchPath,L"\\*.*");
+	::wcscpy(searchPath,(const WCHAR*)path);
+	::wcscat(searchPath,L"\\*.*");
 
-	hFind = FindFirstFile(searchPath,&findData);
+	hFind = FindFirstFileW(searchPath,&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return 0;
 
 	++total;
@@ -1003,7 +1003,7 @@ MF_GetDirectoryBulk(
 
 	if (cbFunc(convert_utf16_to_str(findData.cFileName).c_str(), findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon))
 	{
-		while(FindNextFile(hFind,&findData) != 0)
+		while(FindNextFileW(hFind,&findData) != 0)
 		{
 			++total;
 			when= ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);

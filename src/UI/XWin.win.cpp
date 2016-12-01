@@ -20,6 +20,7 @@
  * THE SOFTWARE.
  *
  */
+
 #include "XWin.h"
 #include "GUI_Unicode.h"
 
@@ -35,7 +36,7 @@ MenuMap	gMenuMap;
 
 static	bool	sIniting = false;
 
-static TCHAR sWindowClass[] = L"XGrinderWindow";
+static WCHAR sWindowClass[] = L"XGrinderWindow";
 
 extern	HINSTANCE	gInstance;
 
@@ -44,7 +45,7 @@ map<HWND, XWin *>	sWindows;
 XWin::XWin(int default_dnd)
 {
 	sIniting = true;
-	mWindow = CreateWindow(sWindowClass, L"FullScreen",
+	mWindow = CreateWindowW(sWindowClass, L"FullScreen",
 		WS_OVERLAPPEDWINDOW,	// Style,
 		10, 10, 50, 50,
 		NULL,	// Parent
@@ -94,7 +95,9 @@ XWin::XWin(
 		(style |= WS_MINIMIZEBOX);
 
 	AdjustWindowRect(&bounds, style, true);
-	mWindow = CreateWindow(sWindowClass, convert_str_to_utf16(inTitle).c_str(), style,
+	mWindow = CreateWindowW(sWindowClass, 
+		convert_str_to_utf16(inTitle).c_str(),
+		style,
 		CW_USEDEFAULT, CW_USEDEFAULT,
 		bounds.right-bounds.left, bounds.bottom-bounds.top-1,
 		NULL,	// Parent
@@ -171,7 +174,7 @@ XWin::~XWin()
 
 void			XWin::SetTitle(const char * inTitle)
 {
-	SetWindowText(mWindow, convert_str_to_utf16(inTitle).c_str());
+	SetWindowTextW(mWindow, convert_str_to_utf16(inTitle).c_str());
 }
 
 void			XWin::SetFilePath(const char * inPath,bool modified)
@@ -389,7 +392,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 				obj->Resized(p->cx, p->cy);
 			}
 		}
-		result = DefWindowProc(hWnd, message, wParam, lParam);
+		result = DefWindowProcW(hWnd, message, wParam, lParam);
 		break;
 
 	case WM_ERASEBKGND:
@@ -424,7 +427,7 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 					obj->ClickMove(obj->mMouse.x,obj->mMouse.y);
 			}
 		}
-		result = DefWindowProc(hWnd, message, wParam, lParam);
+		result = DefWindowProcW(hWnd, message, wParam, lParam);
 		break;
 
 	case WM_KEYDOWN:
@@ -495,23 +498,23 @@ LRESULT CALLBACK XWin::WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_SYSCOMMAND:
 		if (obj && wParam == SC_CLOSE) {
 			if (obj->Closed())
-				result = DefWindowProc(hWnd, message, wParam, lParam);
+				result = DefWindowProcW(hWnd, message, wParam, lParam);
 		} else
-			result = DefWindowProc(hWnd, message, wParam, lParam);
+			result = DefWindowProcW(hWnd, message, wParam, lParam);
 		break;
 
 	case WM_COMMAND:
 		if (gMenuMap.find(LOWORD(wParam)) != gMenuMap.end())
 		{
 			if (!obj->HandleMenuCmd(gMenuMap[LOWORD(wParam)].first, gMenuMap[LOWORD(wParam)].second))
-				result = DefWindowProc(hWnd, message, wParam, lParam);
+				result = DefWindowProcW(hWnd, message, wParam, lParam);
 		} else {
 			if (!obj->HandleMenuCmd(NULL, LOWORD(wParam)))
-				result = DefWindowProc(hWnd, message, wParam, lParam);
+				result = DefWindowProcW(hWnd, message, wParam, lParam);
 		}
 		break;
 	default:
-		result = DefWindowProc(hWnd, message, wParam, lParam);
+		result = DefWindowProcW(hWnd, message, wParam, lParam);
 	}
 	return result;
 }
@@ -524,23 +527,23 @@ void	XWin::ReceiveFilesFromDrag(
 
 void	XWin::RegisterClass(HINSTANCE hInstance)
 {
-	WNDCLASSEX wcex;
+	WNDCLASSEXW wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.cbSize = sizeof(WNDCLASSEXW);
 
 	wcex.style			= CS_HREDRAW | CS_VREDRAW;
 	wcex.lpfnWndProc	= (WNDPROC)WinEventHandler;
 	wcex.cbClsExtra		= 0;
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
-	wcex.hIcon		= LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(100));
+	wcex.hIcon			= LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(100));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= NULL;
 	wcex.lpszClassName	= sWindowClass;
 	wcex.hIconSm		= LoadIcon(hInstance, (LPCTSTR)MAKEINTRESOURCE(100));
 
-	RegisterClassEx(&wcex);
+	RegisterClassExW(&wcex);
 }
 
 HMENU	XWin::GetMenuBar(void)

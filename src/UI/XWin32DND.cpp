@@ -324,7 +324,7 @@ void CDropTarget::DisplayFileNames(HWND hwndOwner, HGLOBAL hgFiles)
 
 	for(i = 0; i < nFiles; i++)
 	{
-		DragQueryFile((HDROP)hgFiles, i, path, MAX_PATH);
+		DragQueryFileW((HDROP)hgFiles, i, path, MAX_PATH);
 		fileList.push_back(convert_utf16_to_str(path));
 	}
 

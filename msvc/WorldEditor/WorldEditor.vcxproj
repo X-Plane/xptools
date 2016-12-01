@@ -597,7 +597,7 @@
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;4482;</DisableSpecificWarnings>
       <MinimalRebuild>false</MinimalRebuild>
-      <PreprocessorDefinitions>UNICODE;_UNICODE;WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\src\WEDFileCache;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -613,7 +613,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <DisableSpecificWarnings>4018;4244;4068;4800;4305;4355;4200;4250;</DisableSpecificWarnings>
-      <PreprocessorDefinitions>UNICODE;_UNICODE;WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WED=1;_LIB;NO_CGAL=1;CURL_STATICLIB;USE_JPEG=1;USE_TIF=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\src\WEDFileCache;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
