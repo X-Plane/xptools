@@ -61,7 +61,7 @@ static int desens_partial(DIR * dir, char * io_file)
 #endif
 
 //--XDefs fopen trick----------------------------------------------------------
-#if IBM
+#if IBM && SUPPORT_UNICODE
 FILE * x_fopen(const char * _Filename, const char * _Mode)
 {	
 	return _wfopen(convert_str_to_utf16(_Filename).c_str(), convert_str_to_utf16(_Mode).c_str());

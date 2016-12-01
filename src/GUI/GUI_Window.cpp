@@ -573,7 +573,7 @@ void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float i
 GUI_Window::~GUI_Window()
 {
 	#if IBM
-//		SetWindowLongPtr(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
+//		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
 		mDND->Release();
 	#endif
 	sWindows.erase(this);

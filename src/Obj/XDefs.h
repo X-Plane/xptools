@@ -252,7 +252,11 @@ using namespace std;
 #include <winsock2.h>
 #include <windows.h>
 
-#if __cplusplus
+#if (WED || OBJVIEW)
+#define SUPPORT_UNICODE 1
+#endif
+
+#if __cplusplus && SUPPORT_UNICODE
 #include <fstream>
 
 #define fopen x_fopen
