@@ -443,6 +443,8 @@
 		D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083050C1A4DBB00F33E06 /* earth_32.jpg */; };
 		D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083060C1A4DBB00F33E06 /* earth_41.jpg */; };
 		D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083070C1A4DBB00F33E06 /* earth_42.jpg */; };
+		D670D3121DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */; };
+		D670D3131DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */; };
 		D6734B350EACE5930002C4C1 /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
 		D6734B360EACE5930002C4C1 /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
 		D6734BA50EACFCEE0002C4C1 /* MapOverlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734BA40EACFCEE0002C4C1 /* MapOverlay.cpp */; };
@@ -835,7 +837,6 @@
 		D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */; };
-		D6ED3E4F0B6A674000D5484E /* GUI_TextTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */; };
 		D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3EC90B6A753300D5484E /* WED_PropertyTable.cpp */; };
 		D6ED3F560B6AA25600D5484E /* WED_Properties.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3F540B6AA25600D5484E /* WED_Properties.cpp */; };
 		D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED40370B6AD47300D5484E /* WED_Archive.cpp */; };
@@ -1284,6 +1285,8 @@
 		D67083060C1A4DBB00F33E06 /* earth_41.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_41.jpg; sourceTree = "<group>"; };
 		D67083070C1A4DBB00F33E06 /* earth_42.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_42.jpg; sourceTree = "<group>"; };
 		D6708AA60C1F2A1A00F33E06 /* MathUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MathUtils.h; sourceTree = "<group>"; };
+		D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GISTool_ImageCmds.cpp; sourceTree = "<group>"; };
+		D670D3111DD7D92000827DEA /* GISTool_ImageCmds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GISTool_ImageCmds.h; sourceTree = "<group>"; };
 		D6734B330EACE5930002C4C1 /* MapCreate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapCreate.h; sourceTree = "<group>"; };
 		D6734B340EACE5930002C4C1 /* MapCreate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapCreate.cpp; sourceTree = "<group>"; };
 		D6734BA30EACFCEE0002C4C1 /* MapOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapOverlay.h; sourceTree = "<group>"; };
@@ -3345,6 +3348,8 @@
 				D6BC38A00AB22C85003949C5 /* MiscFuncs.cpp */,
 				D6BC38A10AB22C85003949C5 /* MiscFuncs.h */,
 				D6BC38AA0AB22C85003949C5 /* SelfTest.cpp */,
+				D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */,
+				D670D3111DD7D92000827DEA /* GISTool_ImageCmds.h */,
 			);
 			path = XESTools;
 			sourceTree = "<group>";
@@ -4187,6 +4192,7 @@
 				D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */,
 				D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */,
 				D62435C80AE40392004F00E3 /* HTTPClient.cpp in Sources */,
+				D670D3121DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */,
 				D62435CD0AE40392004F00E3 /* Terraserver.cpp in Sources */,
 				D62435CE0AE40392004F00E3 /* XMLObject.cpp in Sources */,
 				D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */,
@@ -4417,6 +4423,7 @@
 				D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
+				D670D3131DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */,
 				D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */,
 				D6956ECC0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
 				D6DBA25310573941004E1089 /* AptAlgs.cpp in Sources */,
@@ -4636,7 +4643,6 @@
 				D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */,
 				D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */,
 				D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */,
-				D6ED3E4F0B6A674000D5484E /* GUI_TextTable.cpp in Sources */,
 				D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */,
 				D6ED3F560B6AA25600D5484E /* WED_Properties.cpp in Sources */,
 				D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */,

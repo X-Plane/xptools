@@ -41,6 +41,7 @@
 #include "MathUtils.h"
 #include "MapAlgs.h"
 #include "MapTopology.h"
+#include "Zoning.h"
 
 // Minimum bathymetric depth from water surface at any point!
 #define	MIN_DEPTH 10.0f
@@ -1150,25 +1151,29 @@ void	DeriveDEMs(
 		for (x = 0; x < landuse.mWidth; ++x)
 		{
 			float e = landuse.get(x,y);
-			 if(e == lu_globcover_URBAN_HIGH)						e = 1.0;
-		else if(e == lu_globcover_URBAN_TOWN)						e = 0.25;
-		else if(e == lu_globcover_URBAN_LOW)						e = 0.5;
-		else if(e == lu_globcover_URBAN_MEDIUM)						e = 0.75;
+			
+			LandClassInfoTable::iterator i = gLandClassInfo.find(e);
+			if(i != gLandClassInfo.end())
+				e = i->second.urban_density;
+			else if(e == lu_globcover_URBAN_HIGH)						e = 1.0;
+			else if(e == lu_globcover_URBAN_TOWN)						e = 0.25;
+			else if(e == lu_globcover_URBAN_LOW)						e = 0.5;
+			else if(e == lu_globcover_URBAN_MEDIUM)						e = 0.75;
 
-		else if(e == lu_globcover_URBAN_SQUARE_HIGH)				e = 1.0;
-		else if(e == lu_globcover_URBAN_SQUARE_TOWN)				e = 0.25;
-		else if(e == lu_globcover_URBAN_SQUARE_LOW)					e = 0.5;
-		else if(e == lu_globcover_URBAN_SQUARE_MEDIUM)				e = 0.75;
-		
-		else if(e == lu_globcover_URBAN_CROP_TOWN)					e = 0.1;
-		else if(e == lu_globcover_URBAN_SQUARE_CROP_TOWN)			e = 0.1;
-		else if(e == lu_globcover_INDUSTRY_SQUARE)					e = 1.0;
-		else if(e == lu_globcover_INDUSTRY)							e = 1.0;
-		else if(e == lu_usgs_URBAN_IRREGULAR)						e = 1.0;
-		else if(e == lu_usgs_URBAN_SQUARE)							e = 1.0;
+			else if(e == lu_globcover_URBAN_SQUARE_HIGH)				e = 1.0;
+			else if(e == lu_globcover_URBAN_SQUARE_TOWN)				e = 0.25;
+			else if(e == lu_globcover_URBAN_SQUARE_LOW)					e = 0.5;
+			else if(e == lu_globcover_URBAN_SQUARE_MEDIUM)				e = 0.75;
+			
+			else if(e == lu_globcover_URBAN_CROP_TOWN)					e = 0.1;
+			else if(e == lu_globcover_URBAN_SQUARE_CROP_TOWN)			e = 0.1;
+			else if(e == lu_globcover_INDUSTRY_SQUARE)					e = 1.0;
+			else if(e == lu_globcover_INDUSTRY)							e = 1.0;
+			else if(e == lu_usgs_URBAN_IRREGULAR)						e = 1.0;
+			else if(e == lu_usgs_URBAN_SQUARE)							e = 1.0;
 
-		else														e = 0.0;		
-			urbanTemp(x,y) = e;
+			else														e = 0.0;		
+				urbanTemp(x,y) = e;
 		}
 		
 		urbanTemp.derez(8);

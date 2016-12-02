@@ -523,6 +523,10 @@ static int DoAssignLandUse(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Assigning land use...\n");
 	AssignLandusesToMesh(gDem,gTriangulationHi,args[0],gProgress);
+	
+	if (gVerbose) printf("Finding rural roads...\n");
+	PatchCountryRoads(gMap, gTriangulationHi);
+
 
 //	map<int, int> lus;
 //	int t = CalcMeshTextures(gTriangulationHi,lus);

@@ -153,9 +153,9 @@ struct FillRule_t {
 	int			fac_depth_split;						// How much to split the depth of facades.  0 for no facade
 	float		fac_extra;
 	
-	int			agb_id;
-	int			fac_id;									// Only used for whole-facade case
-	int			ags_id;
+	int			agb_id;									// This is the AGB to use for square-ish blocks.  If it is not present, AGB subdivision is not used.
+	int			fac_id;									// When adding a single facade to be the whole block, this is the one we use
+	int			ags_id;									//
 	int			fil_id;									// Facade for fill-use only.
 	
 //	float		bldg_min,		bldg_max;
