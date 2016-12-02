@@ -1371,9 +1371,37 @@ put in  color enums?
 				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, str->c_str());
 				k -= (h+1);
 			}
+		}
+		else if(gFaceSelection.size() > 1)
+		{
+			map<int, int>	ag;
+			multimap<int, int>	rev;
+			int count = 0;
+			for(set<Pmwx::Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+			{
+				for(GISObjPlacementVector::iterator i = (*f)->data().mObjs.begin(); i != (*f)->data().mObjs.end(); ++i)
+				{
+					ag[i->mRepType]++;
+					++count;
+				}
+
+				for(GISPolyObjPlacementVector::iterator i = (*f)->data().mPolyObjs.begin(); i != (*f)->data().mPolyObjs.end(); ++i)
+				{
+					ag[i->mRepType]++;
+					++count;
+				}
+			}
+			for(map<int,int>::iterator a = ag.begin(); a != ag.end(); ++a)
+				rev.insert(make_pair(a->second,a->first));
 			
-			
-		}				
+			for(multimap<int,int>::reverse_iterator r = rev.rbegin(); r != rev.rend(); ++r)
+			{
+				sprintf(buf,"%d (%.1f): %s", r->first, (float) r->first * 1.00f / (float) count, FetchTokenString(r->second));
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+		}
+		
 	}
 
 	const char * nat = QuickToFile(gNaturalTerrainFile);

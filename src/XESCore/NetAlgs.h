@@ -28,9 +28,12 @@
 #include "MapDefs.h"
 
 class	DEMGeo;
+class	CDT;
 
 int		KillTunnels(Pmwx& ioMap);
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg);
+
+void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh);
 
 #if OPENGL_MAP && DEV
 void	debug_network(Pmwx& io_map);
