@@ -96,6 +96,7 @@ public:
 
 			void	Purge(void);
 
+			bool	GetFor(const string& path, XObj8 *& obj);
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
 
@@ -107,20 +108,23 @@ public:
 			bool	GetAGP(const string& path, agp_t& out_info);
 #endif			
 
+
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
 
 private:
-
+	
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
+	map<string,XObj8 *>			mFor;
 	map<string,XObj8 *>			mObj;
+
 #if AIRPORT_ROUTING	
 	map<string,agp_t>			mAGP;
 #endif	
 	WED_LibraryMgr *			mLibrary;
-};
+};	
 
 #endif /* WED_ResourceMgr_H */
