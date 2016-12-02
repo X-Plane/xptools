@@ -46,6 +46,7 @@
 #include "WED_Sealane.h"
 #include "WED_AirportSign.h"
 #include "WED_TowerViewpoint.h"
+#include "WED_TruckDestination.h"
 #include "WED_Airport.h"
 #include "WED_UIMeasurements.h"
 #include "WED_RampPosition.h"
@@ -334,6 +335,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				 if (sub_class == WED_LightFixture::sClass && (lfix = SAFE_CAST(WED_LightFixture,entity)) != NULL)pth = lfix, icon = "map_light.png"	;
 			else if (sub_class == WED_AirportSign::sClass  && (sign = SAFE_CAST(WED_AirportSign ,entity)) != NULL)pth = sign, icon = "map_taxisign.png"	;
 			else if (sub_class == WED_RampPosition::sClass && (ramp = SAFE_CAST(WED_RampPosition,entity)) != NULL)pth = ramp, icon = "map_rampstart.png";
+			else if (sub_class == WED_TruckDestination::sClass && (pth = SAFE_CAST(IGISPoint_Heading,entity)) != NULL) icon = "map_servicedest.png";
 			else pth = SAFE_CAST(IGISPoint_Heading,entity);
 			if (pth)
 			{

@@ -426,6 +426,7 @@ RESOURCES += ./src/WEDResources/icons/map_windsock.png
 RESOURCES += ./src/WEDResources/icons/map_seaport.png
 RESOURCES += ./src/WEDResources/icons/map_taxisign.png
 RESOURCES += ./src/WEDResources/icons/map_towerview.png
+RESOURCES += ./src/WEDResources/icons/map_servicedest.png
 RESOURCES += ./src/WEDResources/icons/map_tree.png
 RESOURCES += ./src/WEDResources/tables/eye.png
 RESOURCES += ./src/WEDResources/tables/lock.png
