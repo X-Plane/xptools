@@ -122,11 +122,11 @@ enum validate_error_t
 	err_taxiway_hole_does_not_have_at_least_3_sides,
 	err_taxiway_outer_boundary_does_not_have_at_least_3_sides,
 	err_taxiway_surface_water_not_valid_type,
-	err_wind_rule_blank_ICAO_for_METAR,
 	err_wind_rule_invalid_directions,
 	err_wind_rule_invalid_speed,
 	err_time_rule_invalid_times,
-	err_land_apt_no_boundary
+	err_land_apt_no_boundary,
+	err_wind_rule_blank_ICAO_for_METAR
 };
 
 // The validation error record stores a single validation problem for reporting.
