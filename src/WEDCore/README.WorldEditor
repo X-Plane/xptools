@@ -21,6 +21,15 @@ WED 1.6.0a1 12/02/16
 	- WED-605: Adding WordWrap to make full gateway server error messages readable
 	New Features:
 	- Add capability to preview forest definitions
+	- Add automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
+        - Add capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
+            for .POL definitions that support this
+        - Add 3 new editing functions to the 'Edit" menu:
+            Align ... nodes to fall into a straight line
+            Othogonalize ... all sides of a polygon e.g. to align building footprints, 
+                  make exact rectangles, L-shapes, staircase patterns etc.
+            Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
+                  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
 
 WED 1.5.1r1 10/11/16
 	Bug fixes:

@@ -169,7 +169,7 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 				is_b = false;
 			}
 		}
-		else if(!HasLayer(gis_UV))
+		else    //  if(HasLayer(gis_UV))    allow splitting all bezier seg's, found a way to get the uv maps right ...
 		{
 			if(b.is_near(p, dist))
 			{
@@ -208,18 +208,6 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 		{
 			Point2	bpp_proj = best_p.projection(p);
 			npp->SetLocation(gis_Geo, bpp_proj);
-			
-			if(HasLayer(gis_UV))
-			{
-				double t = sqrt(best_p.p1.squared_distance(bpp_proj)) /
-						   sqrt(best_p.squared_length());
-				Segment2 uvs;
-				Bezier2  uvb;
-				if(GetSide(gis_UV, best, uvs, uvb))
-					npp->SetLocation(gis_UV, uvb.midpoint(t));
-				else
-					npp->SetLocation(gis_UV, uvs.midpoint(t));
-			}
 		}
 		// Why wait?  Cuz...Getside on old side will USE this as soon as we are its parent!
 		np->SetParent(this, best+1);
