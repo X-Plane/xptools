@@ -13,6 +13,10 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.6.0a1 12/02/16
+	New Features:
+	- Add capability to preview forest definitions
+
 WED 1.5.1r1 10/11/16
 	Bug fixes:
 	- WED-698: Fixed import of apt.dat losing ramp operation type data
