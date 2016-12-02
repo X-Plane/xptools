@@ -1031,6 +1031,15 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 			string key = apt->meta_data.at(i).first;
 			string value = apt->meta_data.at(i).second;
 			
+			if (key == "faa_code"  ||
+				key == "iata_code" ||
+				key == "icao_code" ||
+				key == "region_code")
+			{
+				//Convert each to
+				transform(value.begin(), value.end(), value.begin(), (int(*)(int))toupper);
+			}
+			
 			fprintf(fi, "%d %s %s" CRLF, apt_meta_data, key.c_str(), value.c_str());
 		}
 
@@ -1388,7 +1397,7 @@ void	GenerateOGL(AptInfo_t * a)
 		CalcPavementBezier(&*a, &t->area,0.5,0.5,1.0,0.0);
 
 	for(AptBoundaryVector::iterator b = a->boundaries.begin(); b != a->boundaries.end(); ++b)
-		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,1.0);
+		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,0.0);
 
 	for(AptRunwayVector::iterator r = a->runways.begin(); r != a->runways.end(); ++r)
 		CalcPavementOGL(a, r->ends,

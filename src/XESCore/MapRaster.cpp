@@ -70,6 +70,8 @@ void	MapFromDEM(
 				int					x2,
 				int					y2,
 				int					splits,
+				int					cut_lines_x,
+				int					cut_lines_y,
 				float				null_post,
 				Pmwx&				out_map,
 				CoordTranslator2 *	translator,
@@ -96,7 +98,7 @@ void	MapFromDEM(
 			push_vertical(in_dem.x_to_lon_double(x1-0.5), y_bot, y_top, curves, null_post, translator, splits);
 
 		for(x = x1+1; x < x2; ++x)
-		if(in_dem.get(x-1,y) != in_dem.get(x,y))
+		if((cut_lines_x && (x % cut_lines_x == 0)) || in_dem.get(x-1,y) != in_dem.get(x,y))
 			push_vertical(in_dem.x_to_lon_double(x-0.5), y_bot, y_top, curves, in_dem.get(x-1,y), translator, splits);
 
 		if(in_dem.get(x2-1,y) != null_post)
@@ -114,7 +116,7 @@ void	MapFromDEM(
 			push_horizontal(in_dem.y_to_lat_double(y1-0.5), x_rgt, x_lft, curves, null_post, translator, splits);
 
 		for(y = y1+1; y < y2; ++y)
-		if(in_dem.get(x,y-1) != in_dem.get(x,y))
+		if((cut_lines_y && (y % cut_lines_y == 0)) || in_dem.get(x,y-1) != in_dem.get(x,y))
 			push_horizontal(in_dem.y_to_lat_double(y-0.5), x_rgt, x_lft, curves, in_dem.get(x,y-1), translator, splits);
 
 		if(in_dem.get(x,y2-1) != null_post)
