@@ -50,7 +50,8 @@
 // airport and 19 pixels of slop.
 #define TOO_SMALL_TO_GO_IN 20.0
 
-int	gDMS = 0;
+// display cursor position in D.M.S vs decimal degrees
+#define USE_DMS 0
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -58,6 +59,7 @@ int	gDMS = 0;
 	#include <GL/gl.h>
 #endif
 
+// display Frames Per Second. Will peg CPU/GPU load at 100%, only useable for diaganostic purposes.
 #define SHOW_FPS 0
 
 WED_Map::WED_Map(IResolver * in_resolver) :
@@ -180,7 +182,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 15, status);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 49, status);
 
 	char mouse_loc[350];
 	char * p = mouse_loc;
@@ -218,31 +220,32 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		}
 	}
 
+    #if USE_DMS
 	#define GET_NS(x)	((x) > 0.0 ? 'N' : 'S')
 	#define GET_EW(x)	((x) > 0.0 ? 'E' : 'W')
 	#define GET_DEGS(x) ((int) floor(fabs(x)))
 	#define GET_MINS(x) ((int) (  (fabs(x) - floor(fabs(x))  ) * 60.0) )
 	#define GET_SECS(x) (  (fabs(x * 60.0) - floor(fabs(x * 60.0))  ) * 60.0)
 
-	if (has_a1 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
-	if (has_a1 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf",
+	if (has_a1)         	p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
 												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
 												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
 	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
-	if (has_a2 && !gDMS)	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
-	if (has_a2 &&  gDMS)	p += sprintf(p, "%c%02d %02d %04.2lf %c%03d %02d %04.2lf",
+	if (has_a2)	            p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
 												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
 												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
-
-
-	#undef GET_DEGS
-	#undef GET_MINS
-	#undef GET_SECS
+    #else
+	if (has_a1)	            p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
+	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
+	if (has_a2)         	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
+    #endif
 
 	if (has_d)				p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet? "feet" : "meters");
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);
 
-	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 30, mouse_loc);
+	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 25, mouse_loc);
+
+	p = mouse_loc;
 
 	#if SHOW_FPS
 	static clock_t  last_time = 0;
@@ -252,14 +255,42 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		   if (cycle > 100)
 		   {
 				clock_t now = clock();
-				fps = ((float) (now - last_time) / ((float) CLOCKS_PER_SEC * 100.0f));
+				fps = (100.0f * CLOCKS_PER_SEC) / ((float) (now - last_time));
 				last_time = now;
 				cycle = 0;
 		   }
-		   sprintf(mouse_loc, "%lf FPS", fps);
-		   GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 45, mouse_loc);
-		   Refresh();
+		   p += sprintf(p, "%7.1f FPS ", fps);
+	#endif
 
+	// print map scale as number
+	// p += sprintf(p, "%7.3lf %s/pixel", (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM(), gIsFeet? "feet" : "meters");
+
+	// draw a bar of suitable length to indicate current map scale
+	#define MIN_BAR_LEN  100    // minimum length of bar in pixels
+	
+	float scale = MIN_BAR_LEN * (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM();
+	int bar_len;
+
+	if      (scale < 1.0)   bar_len = 1;
+	else if (scale < 3.0)   bar_len = 3;
+	else if (scale < 10.0)  bar_len = 10;
+	else if (scale < 30.0)  bar_len = 30;
+	else if (scale < 100.0) bar_len = 100;
+	else                    bar_len = 300;
+	sprintf(p, " %3d%c", bar_len, gIsFeet? '\'' : 'm');
+		
+	state->SetState(0,0,0,1,1,0,0);
+	glColor4fv(white);
+	glBegin(GL_LINES);
+	glVertex2i(b[0]+ 50, b[1] + 15);
+	glVertex2i(b[0]+ 50 +(int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
+	glVertex2i(b[0]+ 50 +(int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
+	glVertex2i(b[0]+ 50, b[1] + 14);
+	glEnd();
+	
+    GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 10, mouse_loc);
+	#if SHOW_FPS
+        Refresh();
 	#endif
 
 }
@@ -393,12 +424,12 @@ int			WED_Map::ScrollWheel(int x, int y, int dist, int axis)
 	double	zoom = 1.0;
 	while (dist > 0)
 	{
-		zoom *= 1.1;
+		zoom *= 1.2;
 		--dist;
 	}
 	while (dist < 0)
 	{
-		zoom /= 1.1;
+		zoom /= 1.2;
 		++dist;
 	}
 
