@@ -28,6 +28,7 @@
 #include <pwd.h>
 #include <cstring>
 #include <string>
+#include <linux/limits.h>
 
 string GetApplicationPath(char* pathBuf, int sz)
 {
@@ -41,7 +42,7 @@ string GetApplicationPath(char* pathBuf, int sz)
 //1. read env var 'XDG_CACHE_HOME'
 //2. ~/.cache if exists
 //3. fallback to default temp folder.
-string GetCacheFolder(char * temp_path, int sz)
+string GetCacheFolder()
 {
 	string path;
 	const char * cpath  = getenv("XDG_CACHE_HOME");
@@ -64,21 +65,22 @@ string GetCacheFolder(char * temp_path, int sz)
 	}
 
 	struct stat ss;
-	if (stat(path.c_str(),&ss) == 0)
-		if(sz > strlen(path.c_str()))
-			return string(strncpy(temp_path,path.c_str(),sz));
+	if (stat(path.c_str(), &ss) == 0)
+	{
+		return path;
+	}
 
 	return "";
 }
 
-string GetTempFilesFolder(char * temp_path, int sz)
+string GetTempFilesFolder()
 {
 	const char * tpath  = getenv("TMPDIR");
 	if(!tpath)
 		tpath = "/tmp";
-
-	int n = snprintf(temp_path,sz,"%s/xptools-%d",tpath,getuid());
-	if( n < 0 || n >= sz )
+	char temp_path[PATH_MAX] = { 0 };
+	int n = snprintf(temp_path,PATH_MAX,"%s/xptools-%d",tpath,getuid());
+	if( n < 0 || n >= PATH_MAX)
 		return "";
 
 	struct stat ss;

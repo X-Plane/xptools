@@ -58,12 +58,12 @@ string GetApplicationPath(char * pathBuf, int pathLen);
 /*
 * The FQP to the OS' semantically correct folder for caching files
 */
-string GetCacheFolder(char * cache_path, int sz);
+string GetCacheFolder();
 
 /*
 * Returns the FQP to the OS' "Best practices" temporary files folder
 */
-string GetTempFilesFolder(char * temp_path, int sz);
+string GetTempFilesFolder();
 
 /*
  * GetFilePathFromUser takes a prompting C-string and fills in the buffer with a path
