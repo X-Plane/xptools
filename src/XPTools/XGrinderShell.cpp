@@ -146,7 +146,7 @@ static vector<conversion_info*>			conversions;
 static xmenu							conversion_menu;
 static map<string,conversion_info *>	selected_conversions;
 
-static char * g_me = NULL;
+static string g_me;
 
 static bool file_cb(const char * fileName, bool isDir, unsigned long long modTime, void * ref);
 static void	sync_menu_checks();
@@ -199,7 +199,7 @@ static bool file_cb(const char * fileName, bool isDir, unsigned long long modTim
 {
 	if(isDir) return true;
 	if(strstr(fileName,".icns")) return true;
-	if(g_me && strcmp(fileName, g_me)==0) return true;
+	if(g_me == fileName) return true;
 	if(fileName[0] == '.') return true;
 	char pipe_buf[8192];
 	sprintf(pipe_buf,"%s/%s", (const char*)ref, fileName);
@@ -424,30 +424,30 @@ void	XGrindInit(string& t)
 //	file_cb("DDSTool");
 //	file_cb("ObjConverter");
 */
-	char	base[2048];
-	char      me[2048];
-	GetApplicationPath(base,sizeof(base));
+	char	base_UNUSED[2048];
+	
+	string app_path = GetApplicationPath(base_UNUSED,sizeof(base_UNUSED));
 
-	char * last_sep = base;
-	char * p = base;
+	const char * start = app_path.c_str();
+	const char * last_sep = start;
+	const char * p = start;
 
 	while(*p)
 	{
 		if(*p == '/' || *p == '\\') last_sep = p;
 		++p;
 	}
-	*last_sep++=0;
-	strcpy(me,last_sep);
-	g_me = me;
+	g_me = string(last_sep+1);
+	string base_path(start, last_sep);
 
 	/* search binaries under ./tools */
 	#if (!LIN && DEV) || (DEV && PHONE)
 		// Ben says: fuuuugly special case.  If we are a developer build on Mac, just use OUR dir as the tools dir.  Makes it possible
 		// to grind using the x-code build dir.  Of course, in release build we do NOT ship like this.  Same deal with phone.
 	#else
-		strcat(base,"/tools");
+		base_path += "/tools";
 	#endif
-	MF_GetDirectoryBulk(base, file_cb, base);
+	MF_GetDirectoryBulk(base_path.c_str(), file_cb, (void *) base_path.c_str());
 
 	// sort conversions
 

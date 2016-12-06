@@ -76,7 +76,6 @@
 		D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
 		D60734180D197A1100E08F61 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
 		D60734190D197A1100E08F61 /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D607341A0D197A1100E08F61 /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
 		D607341B0D197A1100E08F61 /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D607341C0D197A1100E08F61 /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -367,7 +366,6 @@
 		D65E4B270B65427C004D7887 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
 		D65E4B280B65427C004D7887 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
 		D65E4B290B65427C004D7887 /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D65E4B2A0B65427C004D7887 /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
 		D65E4B2B0B65427C004D7887 /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D65E4B2C0B65427C004D7887 /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D65E4B2D0B65427C004D7887 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -528,7 +526,6 @@
 		D67EF8640B5E5E7500D9190C /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
 		D67EF8650B5E5E7500D9190C /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
 		D67EF8660B5E5E7800D9190C /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D67EF8670B5E5E7900D9190C /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
 		D67EF8680B5E5E7A00D9190C /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D67EF86A0B5E5E8C00D9190C /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D67EF86B0B5E5E9100D9190C /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -538,7 +535,6 @@
 		D67EF8730B5E5EBF00D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
 		D67EF9780B6135F400D9190C /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D67EF9790B6135F400D9190C /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
 		D67EF97A0B6135F400D9190C /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D67EF97B0B6135F400D9190C /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D67EF97C0B6135F400D9190C /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
@@ -855,6 +851,7 @@
 		D6F3F0871D07294E00188B28 /* WED_MetaDataDefaults.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3F0831D07294E00188B28 /* WED_MetaDataDefaults.cpp */; };
 		D6F3F0881D07294E00188B28 /* WED_MetadataUpdate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3F0851D07294E00188B28 /* WED_MetadataUpdate.cpp */; };
 		D6F3F08B1D072BE800188B28 /* CSVParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3F0891D072BE800188B28 /* CSVParser.cpp */; };
+		D6F621651DF7297900B4091F /* GUI_TextTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */; };
 		D6F762E210891CC6003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E310891CCC003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E510891CD7003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
@@ -4100,7 +4097,6 @@
 				D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */,
 				D60734180D197A1100E08F61 /* DSFLibWrite.cpp in Sources */,
 				D60734190D197A1100E08F61 /* EnvParser.c in Sources */,
-				D607341A0D197A1100E08F61 /* EnvWrite.c in Sources */,
 				D607341B0D197A1100E08F61 /* Persistence.cpp in Sources */,
 				D607341C0D197A1100E08F61 /* XChunkyFileUtils.cpp in Sources */,
 				D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */,
@@ -4348,7 +4344,6 @@
 				D65E4B270B65427C004D7887 /* DSFPointPool.cpp in Sources */,
 				D65E4B280B65427C004D7887 /* DSFLibWrite.cpp in Sources */,
 				D65E4B290B65427C004D7887 /* EnvParser.c in Sources */,
-				D65E4B2A0B65427C004D7887 /* EnvWrite.c in Sources */,
 				D65E4B2B0B65427C004D7887 /* Persistence.cpp in Sources */,
 				D65E4B2C0B65427C004D7887 /* XChunkyFileUtils.cpp in Sources */,
 				D65E4B2D0B65427C004D7887 /* AssertUtils.cpp in Sources */,
@@ -4473,7 +4468,6 @@
 				D67EF8640B5E5E7500D9190C /* DSFPointPool.cpp in Sources */,
 				D67EF8650B5E5E7500D9190C /* DSFLibWrite.cpp in Sources */,
 				D67EF8660B5E5E7800D9190C /* EnvParser.c in Sources */,
-				D67EF8670B5E5E7900D9190C /* EnvWrite.c in Sources */,
 				D67EF8680B5E5E7A00D9190C /* Persistence.cpp in Sources */,
 				D67EF86A0B5E5E8C00D9190C /* XChunkyFileUtils.cpp in Sources */,
 				D67EF86B0B5E5E9100D9190C /* AssertUtils.cpp in Sources */,
@@ -4492,7 +4486,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D67EF9780B6135F400D9190C /* EnvParser.c in Sources */,
-				D67EF9790B6135F400D9190C /* EnvWrite.c in Sources */,
 				D67EF97A0B6135F400D9190C /* Persistence.cpp in Sources */,
 				D67EF97B0B6135F400D9190C /* XChunkyFileUtils.cpp in Sources */,
 				D67EF97C0B6135F400D9190C /* AssertUtils.cpp in Sources */,
@@ -4629,6 +4622,7 @@
 				D6ED371F0B67964D00D5484E /* b64.c in Sources */,
 				D6ED37220B67964D00D5484E /* BWImage.cpp in Sources */,
 				D6F3F08B1D072BE800188B28 /* CSVParser.cpp in Sources */,
+				D6F621651DF7297900B4091F /* GUI_TextTable.cpp in Sources */,
 				D6ED37230B67964D00D5484E /* GISUtils.cpp in Sources */,
 				D6ED37240B67964D00D5484E /* ProgressUtils.cpp in Sources */,
 				D6ED37250B67964D00D5484E /* UIUtils.cpp in Sources */,
