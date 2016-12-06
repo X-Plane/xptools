@@ -30,10 +30,11 @@
 #include <string>
 #include <linux/limits.h>
 
-string GetApplicationPath(char* pathBuf, int sz)
+string GetApplicationPath()
 {
-	memset(pathBuf, 0, sz);
-	if (readlink("/proc/self/exe", pathBuf, sz) == -1)
+	char pathBuf[PATH_MAX] = { 0 };
+	memset(pathBuf, 0, PATH_MAX);
+	if (readlink("/proc/self/exe", pathBuf, PATH_MAX) == -1)
 		return 0;
 	return string(pathBuf);
 }

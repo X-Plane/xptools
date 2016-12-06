@@ -10,7 +10,6 @@ INCLUDEPATHS += -I./src
 INCLUDEPATHS += -I./src/lib_json/include
 INCLUDEPATHS += -I./src/linuxinit
 INCLUDEPATHS += -I./src/WEDTCE
-INCLUDEPATHS += -I./src/Env
 INCLUDEPATHS += -I./src/DSF
 INCLUDEPATHS += -I./src/DSFTools
 INCLUDEPATHS += -I./src/GUI

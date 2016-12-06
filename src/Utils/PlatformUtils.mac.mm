@@ -25,7 +25,7 @@
 #import <AppKit/AppKit.h>
 
 
-string GetApplicationPath(char * pathBuf, int pathLen)
+string GetApplicationPath()
 {
 	NSBundle * bundle = [NSBundle mainBundle];
 	NSString * path = [bundle bundlePath];

@@ -27,18 +27,15 @@
 #include <shlobj.h>
 #include <stdio.h>
 
-string GetApplicationPath(char * pathBuf, int sz)
+string GetApplicationPath()
 {
 	WCHAR utf16_path_buf[MAX_PATH];
-	if (GetModuleFileNameW(NULL, utf16_path_buf, sz))
+	if (GetModuleFileNameW(NULL, utf16_path_buf, MAX_PATH))
 	{
-		string str = convert_utf16_to_str(utf16_path_buf);
-		strcpy(pathBuf, str.c_str());
-		return str;
+		return convert_utf16_to_str(utf16_path_buf);
 	}
 	else
 	{
-		*pathBuf = 0;
 		return "";
 	}
 }

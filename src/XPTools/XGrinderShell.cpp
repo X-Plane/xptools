@@ -424,9 +424,7 @@ void	XGrindInit(string& t)
 //	file_cb("DDSTool");
 //	file_cb("ObjConverter");
 */
-	char	base_UNUSED[2048];
-	
-	string app_path = GetApplicationPath(base_UNUSED,sizeof(base_UNUSED));
+	string app_path = GetApplicationPath();
 
 	const char * start = app_path.c_str();
 	const char * last_sep = start;

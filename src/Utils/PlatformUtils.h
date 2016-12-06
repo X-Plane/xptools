@@ -53,7 +53,7 @@
 * This routine returns a fully qualified path to the application.
 *
 */
-string GetApplicationPath(char * pathBuf, int pathLen);
+string GetApplicationPath();
 
 /*
 * The FQP to the OS' semantically correct folder for caching files
