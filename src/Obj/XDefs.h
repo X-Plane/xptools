@@ -223,7 +223,7 @@ using namespace std;
 #if defined(_MSC_VER)
 
 	#ifdef __cplusplus
-
+	#define _USE_MATH_DEFINES
 		#include <hash_map>
 		using namespace stdext;	// Ben says - can't entirely blame MSVC for this - hash maps are NOT stardard - a weakness of the STL that causes much grief!
 		using namespace std;
