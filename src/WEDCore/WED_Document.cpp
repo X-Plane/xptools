@@ -472,7 +472,9 @@ bool	WED_Document::TryClose(void)
 		WriteIntPref("network/port", mServer->GetPort());
 	}
 #endif
-	AsyncDestroy();
+	AsyncDestroy();     // This prevents most class deconstructors from being executed.
+	
+	delete this;        // So we do that ... its needed by WED_ResourceMgr
 	return true;
 }
 

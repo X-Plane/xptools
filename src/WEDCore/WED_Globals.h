@@ -23,7 +23,8 @@
 #ifndef WED_GLOBALS_H
 #define WED_GLOBALS_H
 
-#if DEV
+#if DEV || DEBUG_VIS_LINES
+
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 

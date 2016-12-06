@@ -96,8 +96,8 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	// here, submit a patch, or file a bug report.
 
 	const char * credits[] = {
-		"Thanks to Janos Laube, Mathias Roedel, and everyone else",
-		"who has contributed to WorldEditor's development.",
+		"Thanks to Janos Laube, Mathias Roedel, Michael Minnhaar",
+		"and everyone else who has contributed to WorldEditor's development.",
 		0 };
 	 n = 0;
 	while(credits[n])

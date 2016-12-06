@@ -31,6 +31,9 @@ bool	fill_in_airport_metadata_defaults(WED_Airport & airport, const string& file
 	
 	CSVParser::CSVTable table = CSVParser(',', str).ParseCSV();
 	
+	if (table.GetRows().size() < 1)                         //  See WED-701, file on server had syntax error
+        printf("Error parsing %s !\n", file_path.c_str());  //  DoUserAlert() might be over the top
+
 	t.close();
 	return fill_in_airport_metadata_defaults(airport, table);
 }
