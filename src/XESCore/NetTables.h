@@ -87,6 +87,9 @@ struct	ZoningPromote {
 typedef hash_map<int, ZoningPromote>			ZonePromoteTable;
 extern ZonePromoteTable								gZonePromote;
 
+typedef hash_map<int, int>						RoadCountryTable;
+extern RoadCountryTable							gRoadCountry;
+
 struct ForkRule {
 	int			trunk;
 	int			left;

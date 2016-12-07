@@ -360,7 +360,6 @@ SOURCES += ./src/DSF/DSFLibWrite.cpp
 SOURCES += ./src/DSF/DSFPointPool.cpp
 SOURCES += ./src/DSF/tri_stripper_101/tri_stripper.cpp
 SOURCES += ./src/DSFTools/DSF2Text.cpp
-SOURCES += ./src/DSFTools/ENV2Overlay.cpp
 SOURCES += ./src/OGLE/ogle.cpp
 #SOURCES += ./src/XESCore/AptAlgs.cpp
 SOURCES += ./src/XESCore/AptIO.cpp
@@ -368,8 +367,6 @@ SOURCES += ./src/XESCore/AptIO.cpp
 #SOURCES += ./src/XESCore/MapBuffer.cpp
 #SOURCES += ./src/XESCore/MapPolygon.cpp
 #SOURCES += ./src/XESCore/Bezier.cpp
-SOURCES += ./src/Env/EnvParser.c
-SOURCES += ./src/Env/Persistence.cpp
 SOURCES += ./src/Obj/ObjConvert.cpp
 
 SOURCES += ./src/lib_json/src/lib_json/json_writer.cpp

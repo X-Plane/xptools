@@ -37,6 +37,7 @@
 #include "XESConstants.h"
 #include "MathUtils.h"
 #include "GUI_Resources.h"
+#include "GUI_Fonts.h"
 #include "WED_Runway.h"
 #include "MatrixUtils.h"
 #include "WED_Helipad.h"
@@ -244,10 +245,45 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		if (has_blas1)				glShape2v(GL_LINE_LOOP, blas1,4);
 		if (has_blas2)				glShape2v(GL_LINE_LOOP, blas2, 4);
 
-		if (mRealLines) glColor4f(1,1,1,1);
+		float white[4] = { 1,1,1,1 };
+		
+		if (mRealLines) glColor4fv(locked ? WED_Color_RGBA(wed_StructureLocked): white);
 		if (has_disp1)				glShape2v(GL_LINE_LOOP, disp1,4);
 		if (has_disp2)				glShape2v(GL_LINE_LOOP, disp2,4);
 
+		if (Vector2(corners[3],corners[0]).normalize() > 20.0)  // paint the numbers on the runway, if scale large enough
+		{
+			Point2 Th1, Th2;    // locations of runway thresholds
+			if (has_disp1)
+				Th1 = Midpoint2(disp1[1],disp1[2]);
+			else
+				Th1 = Midpoint2(corners[3],corners[0]);
+
+			if (has_disp2)
+				Th2 = Midpoint2(disp2[3],disp2[0]);
+			else
+				Th2 = Midpoint2(corners[1],corners[2]);
+
+			pair<int,int> e = rwy->GetRunwayEnumsOneway();
+			float hdg = rwy->GetHeading();
+			
+			if(e.first != atc_Runway_None)
+			{
+				glPushMatrix();                  // rotate the numbers properly
+				glTranslatef(Th1.x(), Th1.y(), 0);
+				glRotatef(-hdg,0,0,1);
+				GUI_FontDraw(g, font_UI_Basic, locked ? WED_Color_RGBA(wed_StructureLocked) : white, -8, 10, ENUM_Desc(e.first));
+				glPopMatrix();
+			}
+			if(e.second != atc_Runway_None) 
+			{
+				glPushMatrix();
+				glTranslatef(Th2.x(), Th2.y(), 0);
+				glRotatef(180-hdg,0,0,1);
+				GUI_FontDraw(g, font_UI_Basic, locked ? WED_Color_RGBA(wed_StructureLocked) : white, -8, 10, ENUM_Desc(e.second));
+				glPopMatrix();
+			}
+		}
 	}
 	else switch(kind) {
 	case gis_Point:

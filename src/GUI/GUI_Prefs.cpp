@@ -22,6 +22,9 @@
  */
 
 #include "GUI_Prefs.h"
+#if IBM
+#include "GUI_Unicode.h"
+#endif
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
 
@@ -82,11 +85,12 @@ bool			GUI_GetPrefsDir(string& path)
 		return true;
 	#endif
 	#if IBM
-		char buf[MAX_PATH];
-		HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf);
+		WCHAR buf[MAX_PATH];
+		HRESULT res = SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf);
 		if (!SUCCEEDED(res))
 			return false;
-		path = buf;
+
+		path = convert_utf16_to_str(buf);
 		return true;
 	#endif
 	#if LIN

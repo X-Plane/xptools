@@ -59,6 +59,7 @@ enum validate_error_t
 	err_flow_has_opposite_arrivals,
 	err_flow_has_opposite_departures,
 	err_flow_pattern_runway_not_in_airport,
+	err_flow_visibility_negative,
 	err_freq_airport_has_gnd_or_del_but_no_tower,
 	err_freq_could_not_find_at_least_one_valid_freq_for_group,
 	err_freq_del_grnd_twr_in_civilian_band_must_be_on_25khz_spacing,
@@ -124,6 +125,10 @@ enum validate_error_t
 	err_truck_dest_must_have_at_least_one_truck_type_selected,
 	err_truck_parking_cannot_have_negative_car_count,
 	err_truck_parking_car_count_exceeds_max,
+	err_wind_rule_invalid_directions,
+	err_wind_rule_invalid_speed,
+	err_time_rule_invalid_times,
+	err_land_apt_no_boundary,
 	err_wind_rule_blank_ICAO_for_METAR
 };
 

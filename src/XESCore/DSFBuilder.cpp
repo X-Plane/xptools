@@ -1991,7 +1991,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			CleanupNetworkTopology(junctions, chains);
 			if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
-			cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);
+			if(gRegion == rf_eu)
+				cbs.AcceptNetworkDef_f("lib/g10/roads_EU.net", writer2);
+			else
+				cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);			
 
 			printf("Shape points: %d to %d.\n", orig_shape_count, reduced_shape_count);
 		}

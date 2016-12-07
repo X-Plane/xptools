@@ -454,7 +454,7 @@ static string InterpretNetworkError(curl_http_get_file* curl)
 				
 		if(is_ok)
 		{
-			string errmsg = string(errdat.begin(),errdat.end());
+			string errmsg = WordWrap(string(errdat.begin(),errdat.end()));
 			ss << "\n" << errmsg;
 		}
 	}

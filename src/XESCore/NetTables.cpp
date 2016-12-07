@@ -25,6 +25,7 @@
 #include "ConfigSystem.h"
 #include "AssertUtils.h"
 #include "XESConstants.h"
+#include "GISTool_Globals.h"
 #include <math.h>
 
 NetFeatureInfoTable				gNetFeatures;
@@ -38,6 +39,8 @@ map<int,int>					gTwinRules;
 LevelCrossingTable				gLevelCrossings;
 
 ZonePromoteTable				gZonePromote;
+RoadCountryTable				gRoadCountry;
+
 set<int>						gPromotedZoningSet;
 
 
@@ -65,11 +68,16 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 
 	float	crease, max_rad;
 
-	if (TokenizeLine(tokens, " effffeiifff",&rep_type,
-		&info.semi_l, &info.semi_r, &info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped, &crease, &max_rad, &info.max_err) != 12)
+	float edge_l, core_l, core_r, edge_r;
+
+	if (TokenizeLine(tokens, " effffffeiifff",&rep_type,
+		&edge_l, &core_l, &core_r, &edge_r,
+		&info.pad, &info.building_percent, &info.use_mode, &info.is_oneway, &info.export_type_draped, &crease, &max_rad, &info.max_err) != 14)
 	{
 		return false;
 	}
+	info.semi_l = edge_l+core_l;
+	info.semi_r = edge_r+core_r;
 	
 	info.crease_angle_cos=cos(crease * DEG_TO_RAD);
 	info.min_defl_deg_mtr = max_rad > 0.0 ? (360.0 / (2 * PI * max_rad)) : 0.0f;
@@ -78,6 +86,8 @@ bool	ReadRoadSpecificProps(const vector<string>& tokens, void * ref)
 		printf("WARNING: duplicate token %s\n", FetchTokenString(rep_type));
 
 	gNetReps[rep_type] = info;
+	
+//	printf("%s: %f, %f\n", FetchTokenString(rep_type),info.semi_l, info.semi_r);
 	return true;
 }
 
@@ -113,6 +123,15 @@ bool	ReadLevelCrossing(const vector<string>& tokens, void * ref)
 	if(TokenizeLine(tokens," ee", &t1, &t2) != 3)
 		return false;
 	gLevelCrossings[t1] = t2;
+	return true;
+}
+
+bool	ReadRoadCountry(const vector<string>& tokens, void * ref)
+{
+	int src, dst;
+	if(TokenizeLine(tokens, " ee", &src, &dst) != 3) return false;
+	DebugAssert(gRoadCountry.count(src) == 0);
+	gRoadCountry[src] = dst;
 	return true;
 }
 
@@ -223,7 +242,8 @@ void	LoadNetFeatureTables(void)
 	RegisterLineHandler("ROAD_PROMOTE_ZONING", ReadRoadPromoteZoning, NULL);
 	RegisterLineHandler("ROAD_PROMOTE", ReadRoadPromote, NULL);
 	RegisterLineHandler("LEVEL_CROSSING", ReadLevelCrossing, NULL);
-	LoadConfigFile("road_properties.txt");
+	RegisterLineHandler("ROAD_COUNTRY", ReadRoadCountry, NULL);
+	LoadConfigFile(gRegion == rf_eu ? "road_properties_eu.txt" : "road_properties_us.txt");
 }
 
 //bool	IsSeparatedHighway(int feat_type)

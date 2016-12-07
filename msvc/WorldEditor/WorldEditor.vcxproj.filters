@@ -52,9 +52,6 @@
     <Filter Include="OGLE">
       <UniqueIdentifier>{55e2d45f-d0d4-4ab6-87fb-3ed3ae3e56ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Env">
-      <UniqueIdentifier>{5b07cf95-cb4f-40bb-a900-01a5556e5965}</UniqueIdentifier>
-    </Filter>
     <Filter Include="DSF\tri_stripper_101">
       <UniqueIdentifier>{4f90643b-308a-4c22-a205-e4839a9404b5}</UniqueIdentifier>
     </Filter>
@@ -594,12 +591,6 @@
     <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Env\EnvParser.c">
-      <Filter>Env</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Env\Persistence.cpp">
-      <Filter>Env</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\OGLE\ogle.cpp">
       <Filter>OGLE</Filter>
     </ClCompile>
@@ -610,9 +601,6 @@
       <Filter>DSF\tri_stripper_101</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp">
-      <Filter>DSFTools</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp">
       <Filter>DSFTools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp">
@@ -1351,15 +1339,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Env\EnvDefs.h">
-      <Filter>Env</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Env\EnvParser.h">
-      <Filter>Env</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Env\Persistence.h">
-      <Filter>Env</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\OGLE\ogle.h">
       <Filter>OGLE</Filter>

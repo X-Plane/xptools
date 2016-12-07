@@ -166,9 +166,11 @@ ENUM_DOMAIN(ExclusionTypes, "Exclusion Types")
 
 ENUM_DOMAIN(TCE_GridSnap, "Grid")
 	ENUM(tce_Grid_None,				"None",								0)
-	ENUM(tce_Grid_Whole,			"1",								1)
-	ENUM(tce_Grid_Half,				"1/2",								2)		
-	ENUM(tce_Grid_Quarter,			"1/4",								3)
+	ENUM(tce_Grid_3x3,		 		"3x3",								1)
+	ENUM(tce_Grid_4x4,				"4x4",								2)
+	ENUM(tce_Grid_5x5,				"5x5",								3)
+	ENUM(tce_Grid_3x4,		 		"3x4",								4)
+	ENUM(tce_Grid_4x3,		 		"4x3",								5)
 	
 	
 ENUM_DOMAIN(ATCPatternSide,"Pattern Side")

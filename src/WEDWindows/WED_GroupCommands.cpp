@@ -40,6 +40,7 @@
 #include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "WED_Ring.h"
+#include "WED_DrapedOrthophoto.h"
 #include "WED_UIDefs.h"
 #include "ILibrarian.h"
 #include "WED_MapZoomerNew.h"
@@ -64,6 +65,7 @@
 #include "GISUtils.h"
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
+#include "CompGeomUtils.h"
 #include <iterator>
 #include <sstream>
 
@@ -1697,6 +1699,409 @@ void	WED_DoSplit(IResolver * resolver)
 			run_merge(s->second);
 	}
 	
+	op->CommitOperation();
+}
+
+static int collect_pnts(ISelectable * base,void * ref)
+{
+	vector<IGISPoint *> * points = (vector<IGISPoint *> *) ref;
+	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
+	if(p)
+	{
+		points->push_back(p);
+		return 1;
+	}
+	return 0;
+}
+
+int		WED_CanAlign(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() < 3 ) return false;
+	if (sel->IterateSelectionOr(Iterate_IsStructuredObject, NULL)) return 0;
+	// taxi route nodes are part of structured objects
+	//if (sel->IterateSelectionOr(Iterate_IsNotPartOfStructuredObject, NULL)) return 0;
+	return 1;
+}
+
+// Align in line
+// between the farthest away points
+void	WED_DoAlign(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<IGISPoint *> pnts;
+	if (!sel->IterateSelectionAnd(collect_pnts, &pnts))
+		return ;
+	if(pnts.size() < 3) return;
+
+	static CoordTranslator2 translator;
+	Bbox2 bb;
+	Point2 p1,p2;
+	double fdist = 0;
+    IGISPoint * s = pnts[0];
+	IGISPoint * d = pnts[1];
+
+	// find farthest away points and adjust bbox for translator
+	for( int i = 0; i < pnts.size(); ++i)
+	{
+		pnts[i]->GetLocation(gis_Geo,p1);
+		bb += p1;
+		for( int j = i+1 ; j < pnts.size(); ++j)
+		{
+			pnts[j]->GetLocation(gis_Geo,p2);
+			double dist = LonLatDistMeters(p1.x_,p1.y_,p2.x_,p2.y_);
+			if ( dist > fdist)
+			{
+				fdist = dist;
+				s = pnts[i];
+				d = pnts[j];
+			}
+		}
+	}
+	// if bbox area = 0 then translator fails
+	// anyhow , the points are already aligned vertical and horizontal
+	if( bb.xspan() == 0.0 || bb.yspan() == 0.0) return;
+
+	op->StartOperation("Align in line");
+
+	s->GetLocation(gis_Geo,p1);
+	d->GetLocation(gis_Geo,p2);
+
+	CreateTranslatorForBounds(bb,translator);
+	Segment2 l(translator.Forward(p1),translator.Forward(p2));
+	// move the other points on the line
+	for(vector<IGISPoint *>::iterator it = pnts.begin(); it != pnts.end();++it)
+	{
+		if(*it == s || *it == d ) continue;
+		Point2 ll,p;
+		(*it)->GetLocation(gis_Geo,ll);
+		p = l.projection(translator.Forward(ll));
+		(*it)->SetLocation(gis_Geo,translator.Reverse(p));
+		// The brute force way: check after every move if the point is part of a DrapedOrthophoto
+		// If so, call the Redrape
+		WED_Thing * th = dynamic_cast<WED_Thing *> (*it);
+		th = th->GetParent();
+		th = th->GetParent();
+		WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto, th);
+		if (ortho) ortho->Redrape();
+	}
+// TODO
+// call a redrape for DrapedOrthophoto in a more efficient way:
+// If we were to collect a list of all WED_DrapedOrthophotos involved while doing the above loop,
+// we would have to call the redrape only once for each polygon.
+
+	op->CommitOperation();
+}
+
+static int IterateCanOrthogonalize(ISelectable * what, void * ref)
+{
+	if(!Iterate_IsStructuredObject(what, ref)) return 0;
+	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
+	if(pol && pol->GetOuterRing()->GetNumPoints() > 3) return 1;
+	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(what);
+	if(!seq ) return 0;
+	int numpnts = seq->GetNumPoints();
+	if (numpnts > 3) return 1;
+	if(!seq->IsClosed() && numpnts > 2) return 1;
+	return 0;
+}
+
+int		WED_CanOrthogonalize(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionAnd(IterateCanOrthogonalize, NULL)) return 1;
+	return 0;
+}
+
+static void RotatePolygon(Polygon2 * pol,const Point2& ctr, double angle )
+{
+	for( int i = 0 ; i < pol->size() ; ++i )
+	{
+		Vector2 v_old = VectorLLToMeters(ctr,Vector2(ctr,pol->at(i)));
+		double old_len = sqrt(v_old.squared_length());
+		double old_ang = VectorMeters2NorthHeading(ctr,ctr,v_old);
+		double new_ang = old_ang - angle ;
+		Vector2 v_new;
+		NorthHeading2VectorMeters(ctr, ctr, new_ang,v_new);
+		v_new.normalize();
+		v_new *= old_len;
+		v_new = VectorMetersToLL(ctr,v_new);
+		pol->at(i) = ctr + v_new;
+	}
+}
+
+static void DoMakeOrthogonal(IGISPointSequence * seq )
+{
+	int numpoints = seq->GetNumPoints();
+	int maxpoints = numpoints;
+
+	bool is_closed = seq->IsClosed() ;
+	if (is_closed)
+	{
+		if(numpoints < 4) return;
+	}
+	else
+	{
+	   if(numpoints < 3 ) return;
+		maxpoints = numpoints - 1;
+	}
+
+	Polygon2 pol;
+	for( int i = 0 ; i < numpoints ; ++i )
+	{
+		Point2 p;
+		seq->GetNthPoint(i)->GetLocation(gis_Geo,p);
+		pol.push_back(p);
+	}
+
+	Point2 ctr = pol.centroid();
+
+	Segment2 seg = pol.side(0);
+
+	double heading = VectorDegs2NorthHeading(ctr,ctr,Vector2(seg.p1,seg.p2)) - 90.;
+	// rotate to realy east-west
+	RotatePolygon(&pol,ctr,heading);
+
+	int next_dir = 0;
+	int last_dir = 0;
+	int node_cnt = 0;
+	double   sum = 0;
+	bool use_first_value = false;
+
+	for( int i = 0 ; i < maxpoints ; ++i )
+	{
+		int prv = i ;
+		int pos = (i + 1) % pol.size() ;
+		int nxt = (i + 2) % pol.size() ;
+
+		Point2 p1 = pol.at(prv);
+		Point2 p2 = pol.at(pos);
+		Point2 p3 = pol.at(nxt);
+
+		Vector2	v_prv = VectorLLToMeters(p1,Vector2(p1,p2));
+		Vector2	v_nxt = VectorLLToMeters(p2,Vector2(p2,p3));
+
+		int turn_dir = v_prv.turn_direction(v_nxt);
+		v_prv.normalize();
+		v_nxt.normalize();
+		double cosa = v_prv.dot(v_nxt);
+		bool dir_change = false;
+
+		if(cosa < cos (45. * DEG_TO_RAD))
+		{
+			if(turn_dir == LEFT_TURN )
+				next_dir = (last_dir + 1) % 4;
+			else
+				next_dir = (last_dir + 3) % 4;
+			dir_change = true;
+		}
+		else
+		{
+			dir_change = false;
+		}
+
+		bool prv_is_vert = ( last_dir == 1 || last_dir == 3);
+		bool nxt_is_vert = ( next_dir == 1 || next_dir == 3);
+
+		last_dir = next_dir;
+
+		if(use_first_value)
+			sum += prv_is_vert ? pol.at(1).x_ : pol.at(1).y_ ;
+		else
+			sum += prv_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+		++node_cnt;
+
+		if( dir_change || pos < 2 || (!is_closed && nxt == 0))
+		{
+			double avg;
+			if( pos == 0 )
+			{
+				avg = prv_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+			}
+			else
+			{
+				avg  = sum / node_cnt ;
+			}
+			for ( int k = 0 ; k < node_cnt ; ++k)
+			{
+				int n = pos - k ; n = n < 0 ? n + pol.size() : n;
+				if(prv_is_vert) pol.at(n).x_ = avg;
+				else 			pol.at(n).y_ = avg;
+			}
+
+			sum = nxt_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+			node_cnt = 1;
+			use_first_value = (pos == 1) ? true : false;
+		}
+	}
+	//rotate back
+	RotatePolygon(&pol,ctr,-heading);
+
+	for( int i = 0 ; i < numpoints ; ++i  )
+	{
+		seq->GetNthPoint(i)->SetLocation(gis_Geo,pol.at(i));
+	}
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * node = dynamic_cast <WED_Thing *> (seq);
+	node = node->GetParent();
+	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+	if (ortho) ortho->Redrape();
+}
+
+void	WED_DoOrthogonalize(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+	if(things.empty()) return;
+
+	op->StartOperation("Orthogonalize");
+
+	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
+	{
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(*it);
+		if(seq)
+		{
+			DoMakeOrthogonal(seq);
+			continue;
+		}
+		IGISPolygon * pol = dynamic_cast<IGISPolygon *>(*it);
+		if(pol)
+		{
+			for(int i = -1; i < pol->GetNumHoles(); ++i)
+			{
+				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
+				DoMakeOrthogonal(seq);
+			}
+		}
+	}
+
+	op->CommitOperation();
+}
+
+static int IterateCanMakeRegularPoly(ISelectable * what, void * ref)
+{
+	if(!Iterate_IsStructuredObject(what, ref)) return 0;
+	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
+	if(pol && pol->GetOuterRing()->GetNumPoints() > 2) return 1;
+	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(what);
+	if(seq && seq->GetNumPoints() > 2) return 1;
+	return 0;
+}
+
+int		WED_CanMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionAnd(IterateCanMakeRegularPoly, NULL)) return 1;
+	return 0;
+}
+
+static void DoMakeRegularPoly(IGISPointSequence * seq )
+{
+	int n = seq->GetNumPoints();
+	if(n < 3 ) return;
+	
+	Point2 p1,p2;
+	Polygon2 pol;
+
+	double l  = 0.0;
+	for( int i = 0 ; i < n ; ++i )
+	{
+		seq->GetNthPoint(i)->GetLocation(gis_Geo,p1);
+		seq->GetNthPoint((i+1) % n)->GetLocation(gis_Geo,p2);
+		l += LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+		pol.push_back(p1);
+	}
+	//avg edge length
+	l = l/n ;
+	//TODO: mroe : cannot find a good centerpoint , take this for now
+	Point2 ctr = pol.centroid();
+	//inner angle
+	double w = (2.0*PI) / n ;
+	//outer radius
+	double ru = (l/2.0) / sin(w/2.0);
+	if (pol.is_ccw()) w = -w;
+	//http://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
+	double c = (4.0/3.0) * tan(w/4.0) * ru;
+
+	//initial heading
+	double t = VectorDegs2NorthHeading(ctr,ctr,Vector2(ctr,pol.at(0))) * DEG_TO_RAD;
+	for( int i = 0 ; i < n ; ++i)
+	{	
+		double h = i*w+t;
+		Vector2	v;
+		v.dx = ru*sin(h);
+		v.dy = ru*cos(h);
+
+		Point2 ll = ctr + VectorMetersToLL(ctr,v);
+
+		BezierPoint2 bp;
+		IGISPoint_Bezier * bez;
+		if(seq->GetNthPoint(i)->GetGISClass() == gis_Point_Bezier)
+		{
+			if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
+			{
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+
+				bez->GetBezierLocation(gis_Geo,bp);
+				bp.hi = bp.has_hi() ? ll - VectorMetersToLL(ctr, v) : ll;
+				bp.lo = bp.has_lo() ? ll + VectorMetersToLL(ctr, v) : ll;
+				bp.pt = ll;
+
+				bez->SetBezierLocation(gis_Geo,bp);
+				bez->SetSplit(bp.is_split());
+			}
+		}
+		else
+		{
+			seq->GetNthPoint(i)->SetLocation(gis_Geo,ll);
+		}
+	}
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * node = dynamic_cast <WED_Thing *> (seq);
+	node = node->GetParent();
+	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+	if (ortho) ortho->Redrape();
+}
+
+void	WED_DoMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+	if(things.empty()) return;
+
+	op->StartOperation("Make Regular Poly");
+
+	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
+	{
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(*it);
+		if(seq)
+		{
+			DoMakeRegularPoly(seq);
+			continue;
+		}
+		IGISPolygon * pol = dynamic_cast<IGISPolygon *>(*it);
+		if(pol)
+		{
+			for(int i = -1; i < pol->GetNumHoles(); ++i)
+			{
+				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
+				DoMakeRegularPoly(seq);
+			}
+		}
+	}
+
 	op->CommitOperation();
 }
 

@@ -147,7 +147,7 @@ int main(int argc, char * argv[])
 		if(AllocConsole())
 		{
 				freopen("CONOUT$", "w",stdout);
-				SetConsoleTitle("Debug Window");
+				SetConsoleTitleA("Debug Window");
 				ShowWindowAsync(GetConsoleWindow(),SW_SHOWNORMAL);
 				ShowWindowAsync(GetConsoleWindow(),SW_SHOWMINNOACTIVE);
 		}

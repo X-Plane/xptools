@@ -80,9 +80,10 @@ private:
 				void	ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_bounds);
 				void	ApplyRotate(const Point2& ctr, double angle);
 
-			tce_marquee_mode_t	mEditMode;
-			Point2		mRotateCtr;
-			Point2		mRotatePt;
+	tce_marquee_mode_t	mEditMode;
+	Point2				mRotateCtr;
+	Point2				mRotatePt;
+	WED_PropBoolText	mSnap;
 
 	mutable	Bbox2		mCacheBounds;
 	mutable long long	mCacheKeyArchive;

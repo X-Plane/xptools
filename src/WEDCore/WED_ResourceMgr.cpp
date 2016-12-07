@@ -30,7 +30,6 @@
 #include "ObjConvert.h"
 #include "FileUtils.h"
 #include "WED_PackageMgr.h"
-#include "CompGeomDefs2.h"
 
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
@@ -55,15 +54,21 @@ WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_libr
 WED_ResourceMgr::~WED_ResourceMgr()
 {
 	Purge();
-
+#if DEV
+    remove(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str());
+#endif
 }
 
 void	WED_ResourceMgr::Purge(void)
 {
 	for(map<string, XObj8 *>::iterator i = mObj.begin(); i != mObj.end(); ++i)
 		delete i->second;
+	for(map<string, XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
+		delete i->second;
+
 	mPol.clear();
 	mObj.clear();
+	mFor.clear();
 }
 
 bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj)
@@ -113,6 +118,8 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 	}
 
 	string p = mLibrary->GetResourcePath(path);
+//	if (!p.size()) p = mLibrary->CreateLocalResourcePath(path);
+
 	obj = new XObj8;
 	if(!XObj8Read(p.c_str(),*obj))
 	{
@@ -136,6 +143,19 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 	return true;
 }
 
+bool 	WED_ResourceMgr::SetPolUV(const string& path, Bbox2 box)
+{
+	map<string,pol_info_t>::iterator i = mPol.find(path);
+	if(i != mPol.end())
+	{
+		i->second.mUVBox = box;
+		return true;
+	}
+	else
+		return false;
+}
+
+
 bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 {
 	map<string,pol_info_t>::iterator i = mPol.find(path);
@@ -144,11 +164,13 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		out_info = i->second;
 		return true;
 	}
+	
+	out_info.mSubBoxes.clear();
+	out_info.mUVBox = Bbox2();
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * pol = MemFile_Open(p.c_str());
 	if(!pol) return false;
-
 
 	MFScanner	s;
 	MFS_init(&s, pol);
@@ -181,6 +203,18 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 			out_info.proj_s = MFS_double(&s);
 			out_info.proj_t = MFS_double(&s);
 		}
+		else if (MFS_string_match(&s,"#subtex", false)) 
+		{
+			float s1 = MFS_double(&s);
+			float t1 = MFS_double(&s);
+			float s2 = MFS_double(&s);
+			float t2 = MFS_double(&s);
+			if (s2 > s1 && t2 > t1)
+			{
+		printf("read subtex\n");
+				out_info.mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
+			}
+		}
 		// TEXTURE_NOWRAP <texname>
 		else if (MFS_string_match(&s,"TEXTURE_NOWRAP", false))
 		{
@@ -204,8 +238,8 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	MemFile_Close(pol);
 
 	process_texture_path(p,out_info.base_tex);
-
 	mPol[path] = out_info;
+	
 	return true;
 }
 
@@ -237,7 +271,6 @@ void WED_ResourceMgr::MakePol(const string& path, const pol_info_t& out_info)
 	fclose(fi);	
 	gPackageMgr->Rescan();
 }
-
 
 
 void	WED_ResourceMgr::ReceiveMessage(
@@ -341,6 +374,216 @@ inline void	do_rotate(int n, double& io_x, double& io_y)
 	io_y = v.dy;
 }
 
+#define TPR 6           // # of trees shown in a row
+
+struct tree_t {
+	float s,t,w,y; 		// texture coordinates of tree
+	float o;            // offset of tree center line (where the quads inersect)
+	float pct;          // relative occurence percentage for this tree
+	float hmin,hmax;    // height range for this tree in meters
+	int q;				// number of quads the tree is constructed of
+};
+
+bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
+{
+	map<string,XObj8 *>::iterator i = mFor.find(path);
+	if(i != mFor.end())
+	{
+		obj = i->second;
+		return true;
+	}
+	
+	string p = mLibrary->GetResourcePath(path);
+	
+	MFMemFile * fi = MemFile_Open(p.c_str());
+	if(!fi) return false;
+
+	MFScanner	s;
+	MFS_init(&s, fi);
+
+	int versions[] = { 800,900,1000, 0 };
+	if((MFS_xplane_header(&s,versions,"FOREST",NULL)) == 0)
+	{
+		MemFile_Close(fi);
+		return false;
+	}
+
+	vector <tree_t> tree;
+	float scale_x=256, scale_y=256, space_x=30, space_y=30, rand_x=0, rand_y=0;
+	string tex;
+
+	while(!MFS_done(&s))
+	{
+		if(MFS_string_match(&s,"TEXTURE",false))
+		{
+			MFS_string(&s,&tex);
+		}
+		else if (MFS_string_match(&s,"SCALE_X", false))
+		{
+			scale_x = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"SCALE_Y", false))
+		{
+			scale_y = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"SPACING", false))
+		{
+			space_x = MFS_double(&s);
+			space_y = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"RANDOM", false))
+		{
+			rand_x = MFS_double(&s);
+			rand_y = MFS_double(&s);
+		}		
+		else if (MFS_string_match(&s,"TREE", false))
+		{
+			tree_t t;
+			t.s    = MFS_double(&s);
+			t.t    = MFS_double(&s);
+			t.w    = MFS_double(&s);
+			t.y    = MFS_double(&s);
+			t.o    = MFS_double(&s);
+			t.pct  = MFS_double(&s);
+			t.hmin = MFS_double(&s);
+			t.hmax = MFS_double(&s);
+			t.q    = MFS_int(&s);
+
+			if (fabs(t.w) > 0.001 && t.y > 0.001 )   // there are some .for with zero size tree's in XP10 and OpensceneryX uses negative widths ...
+				tree.push_back(t);
+		}	
+		MFS_string_eol(&s,NULL);
+	}
+	MemFile_Close(fi);
+
+	// now we have one of each tree. Like on the ark. Or maybe half that :)
+	// expand that to full forest of TPS * TPS trees, populated with all the varieties there are
+	int varieties =  tree.size();
+	vector <tree_t> treev = tree;
+	tree.clear();
+	
+	if (varieties < 1) return false;
+
+#if 0		// truely random tree choice, taken into account each tree's relative percentage
+			// it works, but not so perfect for a forest with a relatively small number of tree's
+			// e.g. a 36 tree forest with one tree ocurring at 3.5% may have either 0, 1 or 2 of that kind
+					
+	for (int i=0; i<TPR*TPR; ++i)
+	{
+		int species = 0;
+		float prob = (100.0*rand())/RAND_MAX;
+		for (species=varieties-1; species>0; --species)
+			if (prob < treev[species].pct)
+				break;
+			else
+				prob-=treev[species].pct;
+		// if the pct for all tree's don't add up too 100% - species #0 will make up for it. 
+		// XP seems to do the same.
+		
+		tree.push_back(treev[species]);
+	}
+#else
+	int species[TPR*TPR] = {};
+	
+	for (int i=varieties-1; i>0; --i)
+		for (int j=0; j<round(treev[i].pct/100.0*TPR*TPR); ++j)
+		{
+			int cnt=10;     // needed in case the tree percentages add up to more than 100%
+			do
+			{
+				int where = ((float) TPR*TPR*rand())/RAND_MAX;
+				if(where >= 0 && where < TPR*TPR && !species[where]) 
+				{ 
+					species[where] = i;
+					break;
+				}
+			} while (--cnt);
+		}
+	for (int i=0; i<TPR*TPR; ++i)
+		tree.push_back(treev[species[i]]);
+#endif		
+	
+	// fills a XObj8-structure for library preview
+	obj = new XObj8;
+	XObjCmd8 cmd;
+
+	obj->texture = tex;
+	process_texture_path(p, obj->texture);
+	
+	int quads=0;
+
+	// "VT "
+	for (int i = 0; i < tree.size(); ++i)
+	{
+		float t_h = tree[i].hmin + ((float) rand())/RAND_MAX * (tree[i].hmax-tree[i].hmin);
+		float t_w = t_h * tree[i].w/tree[i].y;                                 // full width of tree
+		float t_x = (i % TPR) * space_x + rand_x*((2.0*rand())/RAND_MAX-1.0);  // tree position
+		float t_y = (i / TPR) * space_y + rand_y*((2.0*rand())/RAND_MAX-1.0);
+		float rot_r = ((float) rand())/RAND_MAX;
+
+		for (int j=0; j<tree[i].q; ++j)
+		{
+			float rot = M_PI*(rot_r+j/(float) tree[i].q);        // tree rotation
+			float x = t_w * sin(rot);
+			float z = t_w * cos(rot);
+
+			quads++;
+			
+			float pt[8];
+			pt[3] = 0.0;
+			pt[4] = 1.0;
+			pt[5] = 0.0;
+			
+			pt[0] = t_x - x*(tree[i].o/tree[i].w);
+			pt[1] = 0.0;
+			pt[2] = t_y - z*(tree[i].o/tree[i].w);
+			pt[6] = tree[i].s/scale_x;
+			pt[7] = tree[i].t/scale_y;
+			obj->geo_tri.accumulate(pt);
+			pt[0] = t_x + x*(1.0-tree[i].o/tree[i].w);
+			pt[2] = t_y + z*(1.0-tree[i].o/tree[i].w);
+			pt[6] = (tree[i].s+tree[i].w)/scale_x;
+			obj->geo_tri.accumulate(pt);
+			pt[1] = t_h;
+			pt[7] = (tree[i].t+tree[i].y)/scale_y;
+			obj->geo_tri.accumulate(pt);
+			pt[0] = t_x - x*(tree[i].o/tree[i].w);
+			pt[2] = t_y - z*(tree[i].o/tree[i].w);
+			pt[6] = tree[i].s/scale_x;
+			obj->geo_tri.accumulate(pt);
+		}
+	}
+	// set dimension
+	obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);		
+
+	// "IDX "
+	int seq[6] = {0,1,2,0,2,3};
+	for (int i = 0; i < 6*quads; ++i)
+		obj->indices.push_back(4*(i/6)+seq[i%6]);
+
+	// "ATTR_LOD"
+	obj->lods.push_back(XObjLOD8());
+	obj->lods.back().lod_near = 0;
+	obj->lods.back().lod_far  = 1000;
+
+	// "ATTR_no_cull"
+	cmd.cmd = attr_NoCull;
+	obj->lods.back().cmds.push_back(cmd);
+
+	// "TRIS ";
+	cmd.cmd = obj8_Tris;
+	cmd.idx_offset = 0;
+	cmd.idx_count  = 6*quads;
+	obj->lods.back().cmds.push_back(cmd);
+
+	mFor[path] = obj;
+#if DEV
+    // only problem is that the texture path contain spaces -> obj reader can not read that
+    // but still valuable for checking the values/structure
+    XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
+#endif
+	return true;
+}
 
 #if AIRPORT_ROUTING
 bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)

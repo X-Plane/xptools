@@ -30,6 +30,8 @@
 #include "DEMAlgs.h"
 #include "GISUtils.h"
 #include "STLUtils.h"
+#include "MeshDefs.h"
+#include "DEMTables.h"
 #include "CompGeomUtils.h"
 #if OPENGL_MAP && DEV
 	#include "RF_Selection.h"
@@ -64,6 +66,93 @@ static void strip_segments_to_one(GISNetworkSegmentVector& v)
 	GISNetworkSegment_t keep = *best;
 	v.clear();
 	v.push_back(keep);
+}
+
+static bool is_veg(CDT::Face_handle f)
+{
+	if(f->info().terrain == terrain_Water)
+	{
+		//printf("Wet.\n");
+		return false;
+	}
+
+	int lu = f->info().terrain;
+
+	for(int n = 0; n < 3; ++n)
+	{
+		CDT::Vertex_handle v = f->vertex(n);
+		for(hash_map<int,float>::iterator b = v->info().border_blend.begin(); b != v->info().border_blend.end(); ++b)
+		if(b->second > 0.5)
+		if(f->info().terrain_border.count(b->first))
+		if(LowerPriorityNaturalTerrain(lu, b->first))
+			lu = b->first;
+	}
+	
+	//printf("LU: %s (%s)\n",FetchTokenString(lu),FetchTokenString(gNaturalTerrainInfo[lu].autogen_mode));
+	
+	if(gNaturalTerrainInfo[lu].autogen_mode == URBAN)			return false;
+	else if (gNaturalTerrainInfo[lu].autogen_mode == FOREST)	return true;
+	else														return true;
+}
+
+
+void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh)
+{
+	int c = 0;
+	RoadCountryTable::iterator it;
+	for(Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
+	if(!e->face()->is_unbounded() && !e->twin()->face()->is_unbounded())
+	for(GISNetworkSegmentVector::iterator r = e->data().mSegments.begin(); r != e->data().mSegments.end(); ++r)
+	if((it = gRoadCountry.find(r->mRepType)) != gRoadCountry.end())
+	{
+		bool got_bad_for_country = false;
+		Point_2 src(e->source()->point());
+		Point_2 dst(e->target()->point());
+		
+		CDT::Face_handle	f;
+		int					i;
+		CDT::Locate_type	lt;
+		f = mesh.locate(src, lt, i);
+		
+		CDT::Line_face_circulator w(mesh.line_walk(src,dst,f));
+//		cout << setprecision(8);
+//		cout << src << "   " << dst << "   " << mesh.triangle(w) << endl;
+		
+		DebugAssert(!w.is_empty());
+		if(w.is_empty())
+			break;
+		
+		#if DEV
+		DebugAssert(!mesh.is_infinite(w));
+		CDT::Triangle tr(mesh.triangle(w));
+		DebugAssert(!tr.has_on_unbounded_side(src));
+		#endif
+
+		while(1)
+		{
+			//cout << mesh.triangle(w) << endl;
+			if(!is_veg(w))
+			{
+				got_bad_for_country = true;
+				break;
+			}
+			CDT::Triangle tr(mesh.triangle(w));
+			if(!tr.has_on_unbounded_side(dst))
+				break;
+			
+			++w;
+			DebugAssert(!mesh.is_infinite(w));
+			if(mesh.is_infinite(w))
+				break;
+		}
+		
+		if(!got_bad_for_country)
+		{
+			r->mRepType = it->second;
+			++c;
+		}
+	}
+	printf("Converted %d of %zd\n", c, ioMap.number_of_edges());
 }
 
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg)
