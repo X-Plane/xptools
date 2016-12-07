@@ -192,7 +192,7 @@ void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
 /************************************************************************************************************************************************
  * ROAD PROCESSOR
  ************************************************************************************************************************************************/
-
+#if ROAD_EDITING
 class dsf_road_grid_helper {
 public:
 
@@ -435,7 +435,7 @@ void dsf_road_grid_helper::export_to_dsf(
 		cbs->EndSegment_f(coords, false, writer);
 	}
 }
-
+#endif
 
 
 
@@ -457,11 +457,13 @@ struct	DSF_ResourceTable {
 
 	vector<string>				pol_defs;
 	map<pair<string, int>, int>	pol_defs_idx;
-	
+
+#if ROAD_EDITING
 	vector<string>				net_defs;
 	map<string, int>			net_defs_idx;
-	list<dsf_road_grid_helper>	net_grids;		// list to avoid massive realloc thrash on second grid?
 
+	list<dsf_road_grid_helper>	net_grids;		// list to avoid massive realloc thrash on second grid?
+#endif
 	vector<string>				filters;
 	map<string, int>			filter_idx;
 	
@@ -500,7 +502,7 @@ struct	DSF_ResourceTable {
 		pol_defs.push_back(f);
 		return				  pol_defs.size()-1;
 	}
-	
+#if ROAD_EDITING
 	dsf_road_grid_helper * accum_net(const string& f)
 	{
 		int ret = 0;
@@ -519,7 +521,7 @@ struct	DSF_ResourceTable {
 		advance(it, ret);
 		return &*it;
 	}
-	
+#endif
 	int accum_filter(const string& icao_filter)
 	{
 		map<string,int>::iterator i = filter_idx.find(icao_filter);
@@ -539,7 +541,7 @@ struct	DSF_ResourceTable {
 
 		for(vector<pair<string,string> >::iterator e = exclusions[-1].begin(); e != exclusions[-1].end(); ++e)
 			cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
-
+#if ROAD_EDITING
 		list<dsf_road_grid_helper>::iterator grid = net_grids.begin();
 		int road_idx = 0;
 		for(vector<string>::iterator s = net_defs.begin(); s != net_defs.end(); ++s, ++grid, ++road_idx)
@@ -547,7 +549,7 @@ struct	DSF_ResourceTable {
 			cbs.AcceptNetworkDef_f(s->c_str(), writer);
 			grid->export_to_dsf(road_idx, &cbs, writer);
 		}
-
+#endif
 		int idx = 0;
 		for(vector<string>::iterator s = filters.begin(); s != filters.end(); ++s, ++idx)
 		{
@@ -1113,7 +1115,9 @@ static int	DSF_ExportTileRecursive(
 	WED_PolygonPlacement * pol;
 	WED_DrapedOrthophoto * orth;
 	WED_ExclusionZone * xcl;
+#if ROAD_EDITING
 	WED_RoadEdge * roa;
+#endif
 	WED_Airport * apt;
 
 	int idx;
@@ -1856,16 +1860,18 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
+#if ROAD_EDITING
+	if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
+		if (show_level == 6)
+		{
+			string asset;
+			roa->GetResource(asset);
+			dsf_road_grid_helper * grid = io_table.accum_net(asset);
+			grid->add_segment(roa);
+			++real_thingies;
+		}
 
-	if((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
-	if(show_level == 6)
-	{
-		string asset;
-		roa->GetResource(asset);
-		dsf_road_grid_helper * grid = io_table.accum_net(asset);
-		grid->add_segment(roa);
-		++real_thingies;
-	}
+#endif // ROAD_EDITING
 
 
 	//------------------------------------------------------------------------------------------------------------

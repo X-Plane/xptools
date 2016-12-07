@@ -710,7 +710,10 @@ void hide_all_persistents(vector<const char*>& hide_list)
 	hide_list.push_back(WED_ATCTimeRule::sClass);
 	hide_list.push_back(WED_ATCWindRule::sClass);
 	hide_list.push_back(WED_ATCRunwayUse::sClass);
+#if ROAD_EDITING
 	hide_list.push_back(WED_RoadEdge::sClass);
+#endif // ROAD_EDITING
+
 }
 
 void unhide_persistent(vector<const char*>& hide_list, const char* to_unhide)

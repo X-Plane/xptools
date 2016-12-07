@@ -8,7 +8,7 @@
 
 #include "WED_RoadNode.h"
 
-
+#if ROAD_EDITING
 DEFINE_PERSISTENT(WED_RoadNode)
 TRIVIAL_COPY(WED_RoadNode,WED_GISPoint)
 
@@ -19,3 +19,4 @@ WED_RoadNode::WED_RoadNode(WED_Archive * a, int i) : WED_GISPoint(a,i)
 WED_RoadNode::~WED_RoadNode()
 {
 }
+#endif

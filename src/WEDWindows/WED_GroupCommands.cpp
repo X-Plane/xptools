@@ -574,12 +574,12 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
-
+#if ROAD_EDITING
 	if(SAFE_CAST(WED_RoadNode,t) &&
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
-
+#endif
 	IGISPolygon * p = dynamic_cast<IGISPolygon *>(t);
 	if (p && t->CountChildren() == 0)
 		return true;

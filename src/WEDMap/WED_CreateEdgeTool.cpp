@@ -50,7 +50,11 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	WED_CreateToolBase(tool_name, host, zoomer, resolver, archive,
 	2,						// min pts,
 	99999999,				// max pts - yes, I am a hack.
+#if ROAD_EDITING
 	tool == create_Road,	// curve allowed?					// Ben says: when we go road grids, we'll have to make this dynamic!
+#else
+	0,
+#endif
 	0,						// curve required?
 	1,						// close allowed?
 	0),						// close required
@@ -63,11 +67,11 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mWidth(tool == create_TaxiRoute ? this : NULL, "Size", SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
-
+#if ROAD_EDITING
 	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
 	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), 1, 3),
 	mResource(tool == create_Road ? this : NULL, "Resource",SQL_Name("",""),XML_Name("",""), "lib/g10/roads.net"),
-	
+#endif
 	mSlop(this, "Slop", SQL_Name("",""),XML_Name("",""), 10, 2)
 {
 }
@@ -140,9 +144,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 	double frame_dist = fabs(GetZoomer()->YPixelToLat(mSlop.value)-GetZoomer()->YPixelToLat(0));
 
 	const char * edge_class = WED_TaxiRoute::sClass;
+#if ROAD_EDITING
 	if(mType == create_Road)
 		edge_class = WED_RoadEdge::sClass;
-
+#endif
 	/************************************************************************************************
 	 * FIRST SNAPPING PASS - NODE TO NODE
 	 ************************************************************************************************/
@@ -238,7 +243,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
+#if ROAD_EDITING
 	WED_RoadEdge * er = NULL;
+#endif
 	static int n = 0;
 	int stop = closed ? pts.size() : pts.size()-1;
 	int start = 0;
@@ -250,7 +257,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 		FindNear(host_for_merging, NULL, edge_class,pts[start % pts.size()],src,dist);
 	if(src == NULL)
 	{
+#if ROAD_EDITING
 		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_RoadNode::CreateTyped(GetArchive());
+#else
+		src = c = (WED_GISPoint *)WED_TaxiRouteNode::CreateTyped(GetArchive());
+#endif
 		src->SetParent(host_for_parent,idx);
 		src->SetName(mName.value + "_start");
 		c->SetLocation(gis_Geo,pts[0]);
@@ -271,6 +282,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			tr->SetName(mName);
 			tr->SetWidth(mWidth.value);
 			break;
+#if ROAD_EDITING
 		case create_Road:
 			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());
 			er->SetSubtype(mSubtype.value);
@@ -279,6 +291,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 			er->SetName(mName);
 			er->SetResource(mResource.value);
 			break;
+#endif
 		}
 	
 		new_edge->AddSource(src,0);
@@ -292,9 +305,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 			case create_TaxiRoute:
 				dst = c = WED_TaxiRouteNode::CreateTyped(GetArchive());
 				break;
+#if ROAD_EDITING
 			case create_Road:
 				dst = c = WED_RoadNode::CreateTyped(GetArchive());
 				break;
+#endif
 			}
 			dst->SetParent(host_for_parent,idx);
 			dst->SetName(mName.value+"_stop");
@@ -617,6 +632,8 @@ void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const ch
 void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
+
+#if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
 		road_info_t r;
@@ -630,6 +647,9 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		}
 	}
 	else if(n == PropertyItemNumber(&mRunway))
+#else
+	if (n == PropertyItemNumber(&mRunway))
+#endif
 	{
 		WED_Airport * airport = WED_GetCurrentAirport(GetResolver());
 		if(airport)
@@ -674,6 +694,7 @@ void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 void		WED_CreateEdgeTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	WED_CreateToolBase::GetNthPropertyInfo(n, info);
+#if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
 		if(get_valid_road_info(NULL))
@@ -682,11 +703,13 @@ void		WED_CreateEdgeTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 			return;
 		}
 	}
+#endif
 }
 
 void		WED_CreateEdgeTool::GetNthProperty(int n, PropertyVal_t& val) const
 {
 	WED_CreateToolBase::GetNthProperty(n, val);
+#if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
 		if(get_valid_road_info(NULL))
@@ -694,10 +717,12 @@ void		WED_CreateEdgeTool::GetNthProperty(int n, PropertyVal_t& val) const
 			val.prop_kind = prop_Enum;
 		}
 	}
+#endif
 }
 
 void		WED_CreateEdgeTool::SetNthProperty(int n, const PropertyVal_t& val)
 {
+#if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
 		if(get_valid_road_info(NULL))
@@ -708,12 +733,14 @@ void		WED_CreateEdgeTool::SetNthProperty(int n, const PropertyVal_t& val)
 			return;
 		}
 	}
+#endif
 	WED_CreateToolBase::SetNthProperty(n, val);
 }
 
 
 void		WED_CreateEdgeTool::GetNthPropertyDictItem(int n, int e, string& item) const
 {
+#if ROAD_EDITING
 	if(n == PropertyItemNumber(&mSubtype))
 	{
 		road_info_t r;
@@ -727,18 +754,26 @@ void		WED_CreateEdgeTool::GetNthPropertyDictItem(int n, int e, string& item) con
 			}
 			else
 			{
-				stringstream ss;
-				ss << mSubtype.value;
-				item = ss.str();
+				if (mSubtype.value == 1)
+				{
+					item = "None";
+				}
+				else
+				{
+					stringstream ss;
+					ss << mSubtype.value;
+					item = ss.str();
+				}
 				return;
 			}
 		}
 	}
+#endif
 	WED_CreateToolBase::GetNthPropertyDictItem(n, e, item);
 }
 
 
-
+#if ROAD_EDITING
 bool		WED_CreateEdgeTool::get_valid_road_info(road_info_t * optional_info) const
 {
 	road_info_t temp;
@@ -755,7 +790,6 @@ bool		WED_CreateEdgeTool::get_valid_road_info(road_info_t * optional_info) const
 	}
 	return false;
 }
-
-
+#endif
 
 #endif

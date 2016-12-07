@@ -291,7 +291,12 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					// So we will special-case taxi routes for now.  When we get road grids in 
 					// we may need a better heuristic for this case than the actual obj type.
 								
-					if (sub_class == WED_TaxiRouteNode::sClass || sub_class == WED_RoadNode::sClass)
+					if (sub_class == WED_TaxiRouteNode::sClass
+#if ROAD_EDITING 
+						|| sub_class == WED_RoadNode::sClass
+#else
+						)
+#endif
 					{
 						if(mVertices)
 						{

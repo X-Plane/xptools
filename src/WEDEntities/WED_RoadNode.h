@@ -9,6 +9,7 @@
 #ifndef WED_RoadNode_h
 #define WED_RoadNode_h
 
+#if ROAD_EDITING
 #include "WED_GISPoint.h"
 // This trivial point forms the nodes of road networks.  They don't have properties now but
 // we need a special class so that the network editing code can know what types are "part of the network".
@@ -22,7 +23,7 @@ public:
 	virtual const char *	HumanReadableType(void) const { return "Road Network Node"; }
 
 };
-
+#endif
 
 
 

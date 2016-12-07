@@ -50,7 +50,7 @@
  
 */
 
-#if AIRPORT_ROUTING
+#if AIRPORT_ROUTING && ROAD_EDITING
 
 DEFINE_PERSISTENT(WED_RoadEdge)
 TRIVIAL_COPY(WED_RoadEdge, WED_GISEdge)
@@ -147,9 +147,16 @@ void		WED_RoadEdge::GetNthPropertyDictItem(int n, int e, string& item) const
 			}
 			else
 			{
-				stringstream ss;
-				ss << subtype.value;
-				item = ss.str();
+				if (subtype.value == 1)
+				{
+					item = "None";
+				}
+				else
+				{
+					stringstream ss;
+					ss << subtype.value;
+					item = ss.str();
+				}
 				return;
 			}
 		}
