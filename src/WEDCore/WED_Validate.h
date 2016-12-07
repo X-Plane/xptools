@@ -34,11 +34,16 @@ enum validate_error_t
 {
 	err_airport_elements_outside_hierarchy,
 	err_airport_impossible_size,
+	err_airport_no_boundary,
 	err_airport_no_icao,
 	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
 	err_atc_taxi_routes_only_for_gte_xp10,
+	err_atc_rule_wind_blank_ICAO_for_METAR,
+	err_atc_rule_wind_invalid_directions,
+	err_atc_rule_wind_invalid_speed,
+	err_atc_rule_time_invalid_times,
 	err_atcrwy_centerline_not_parallel_centerline,
 	err_atcrwy_centerline_taxiroute_segment_off_center,
 	err_atcrwy_centerline_too_sharp_turn,
@@ -124,12 +129,7 @@ enum validate_error_t
 	err_taxiway_surface_water_not_valid_type,
 	err_truck_dest_must_have_at_least_one_truck_type_selected,
 	err_truck_parking_cannot_have_negative_car_count,
-	err_truck_parking_car_count_exceeds_max,
-	err_wind_rule_invalid_directions,
-	err_wind_rule_invalid_speed,
-	err_time_rule_invalid_times,
-	err_land_apt_no_boundary,
-	err_wind_rule_blank_ICAO_for_METAR
+	err_truck_parking_car_count_exceeds_max
 };
 
 // The validation error record stores a single validation problem for reporting.

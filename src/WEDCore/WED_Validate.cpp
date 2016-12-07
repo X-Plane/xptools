@@ -863,14 +863,14 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		AptWindRule_t exp;
 		wrule->Export(exp);
 		if(exp.icao.empty())
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_wind_rule_blank_ICAO_for_METAR, wrule, apt));
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
 
 		if((exp.dir_lo_degs_mag < 0) || (exp.dir_lo_degs_mag > 359) || (exp.dir_hi_degs_mag < 0) || (exp.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
 							|| (exp.dir_lo_degs_mag == exp.dir_hi_degs_mag))
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has invalid from and/or to directions.", err_wind_rule_invalid_directions, wrule, apt));
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has invalid from and/or to directions.", err_atc_rule_wind_invalid_directions, wrule, apt));
 
 		if((exp.max_speed_knots < 1) || (exp.max_speed_knots >999))
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_wind_rule_invalid_speed, wrule, apt));
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
 	}
 	
 	// Check ATC Time rules having times being within 00:00 .. 24:00 hrs, 0..59 minutes and start != end time. Otherweise XP will give an error.
@@ -882,7 +882,7 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		trule->Export(exp);
 		if((exp.start_zulu < 0) || (exp.start_zulu > 2359) || (exp.end_zulu < 0) || (exp.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
 							|| (exp.start_zulu == exp.end_zulu) || (exp.start_zulu % 100 > 59) || (exp.end_zulu % 100 > 59))
-			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_time_rule_invalid_times, trule, apt));
+			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
 	}
 
 	#if !GATEWAY_IMPORT_FEATURES
@@ -1899,7 +1899,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		
 		// require any land airport (i.e. at least one runway) to have an airport boundary defined
 		if(!runways.empty() && boundaries.empty())
-			msgs.push_back(validation_error_t(string("The airport '") + name + "' contains a runway but no airport boundary.", 	err_land_apt_no_boundary, apt,apt));
+			msgs.push_back(validation_error_t(string("The airport '") + name + "' contains a runway but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
