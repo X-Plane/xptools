@@ -244,7 +244,7 @@ void		WED_LibraryMgr::Rescan()
 		gPackageMgr->GetNthPackagePath(p,pack_base);
 		
 		//concatinate string
-		pack_base += DIR_STR "Library.txt";
+		pack_base += DIR_STR "library.txt";
 
 		//
 		bool is_default_pack = gPackageMgr->IsPackageDefault(p);

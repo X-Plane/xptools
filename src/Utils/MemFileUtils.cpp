@@ -541,8 +541,11 @@ cleanupwin:
 	if (winFile) 		CloseHandle(winFile);
 #endif
 
-
+#if IBM
 	fi = fopen(inPath, "rb");
+#else
+	fi = fopen(path, "rb");
+#endif
 	if (!fi) goto bail;
 
 	fseek(fi, 0L, SEEK_END);
