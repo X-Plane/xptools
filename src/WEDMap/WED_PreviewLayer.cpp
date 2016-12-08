@@ -875,6 +875,7 @@ struct	preview_truck : public WED_PreviewItem {
 		case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj";break;
 		case atc_ServiceTruck_Crew_Limo:
 		case atc_ServiceTruck_Crew_Car:				vpath1 = "lib/airport/vehicles/servicing/crew_car.obj";			break;
+		case atc_ServiceTruck_Crew_Ferrari:			vpath1 = "lib/airport/vehicles/servicing/crew_ferrari.obj";		break;
 		case atc_ServiceTruck_Ground_Power_Unit:	vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
 													vpath2 = "lib/airport/vehicles/servicing/GPU.obj";				break;
 		}

@@ -2763,20 +2763,23 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
 
-	//atc_ServiceTruck_FuelTruck_Jet,
+	//atc_ServiceTruck_FuelTruck_Prop,
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
 
-	//atc_ServiceTruck_FuelTruck_Prop, cause of the problem
+	//atc_ServiceTruck_FuelTruck_Jet
 	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
 
 	//atc_ServiceTruck_FuelTruck_Liner
-	table.insert(make_pair("lib/airport/Common_Elements/vehicles/_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Liner, 0)));
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/hyd_disp_truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Liner, 0)));
 
 	//atc_ServiceTruck_Food,
 	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
 
 	//atc_ServiceTruck_Baggage_Train,
 	//table.insert(make_pair("lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,5)));
+
+	//atc_ServiceTruck_Baggage_Loader,
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader, 0)));
 
 	stringstream ss;
 	for(int i = 1; i <= 5; ++i)
@@ -2789,11 +2792,14 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	
 	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,1)));
 
-	//atc_ServiceTruck_Baggage_Loader,
-	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader,0)));
-
-	//atc_ServiceTruck_Crew_Car,
+	//atc_ServiceTruck_Crew_Car
 	table.insert(make_pair("lib/airport/vehicles/servicing/crew_car.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Car,0)));
+
+	//atc_ServiceTruck_Crew_Limo
+	//TODO: Waiting for art asset
+
+	//atc_ServiceTruck_Ferrarri
+	table.insert(make_pair("lib/airport/vehicles/servicing/crew_ferrari.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Ferrari, 0)));
 
 	//atc_ServiceTruck_Ground_Power_Unit,
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
