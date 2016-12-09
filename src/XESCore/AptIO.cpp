@@ -56,7 +56,7 @@ const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos"
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
 
-const char * truck_type_strings[] = { "pushback", "fuel_props", "fuel_jets", "fuel_liners", "food","baggage_loader","baggage_train","crew_car","crew_limo","crew_ferrari","gpu", 0 };
+const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", 0 }; 
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)
@@ -982,7 +982,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				{
 					if (strcmp(truck_type_str.c_str(),*str)==0)
 					{
-						outApts.back().truck_parking.back().parking_type = (str - truck_type_strings) + apt_truck_pushback; //Aka + apt_truck_begining of enums
+						outApts.back().truck_parking.back().parking_type = (str - truck_type_strings) + apt_truck_baggage_loader; //Aka + apt_truck_begining of enums
 						break;
 					}
 					++str;
@@ -1028,7 +1028,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					{
 						if (strcmp(itr->c_str(), *str) == 0)
 						{
-							truck_dest.truck_types.insert((str - truck_type_strings) + apt_truck_pushback); //Aka + apt_truck_begining of enums
+							truck_dest.truck_types.insert((str - truck_type_strings) + apt_truck_baggage_loader); //Aka + apt_truck_begining of enums
 							break;
 						}
 						++str;

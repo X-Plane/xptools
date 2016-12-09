@@ -261,18 +261,18 @@ enum {
 	ramp_operation_military = 4,
 	
 	//First entry of the service truck types
-	apt_truck_pushback = 0,
-	apt_truck_fuel_prop,
-	apt_truck_fuel_jet,
-	apt_truck_fuel_liner,
-	apt_truck_food,
-	apt_truck_baggage_loader,
+	apt_truck_baggage_loader = 0,
 	apt_truck_baggage_train,
 	apt_truck_crew_car,
-	apt_truck_crew_limo,
 	apt_truck_crew_ferrari,
-	apt_truck_ground_power_unit,
-	
+	apt_truck_crew_limo,
+	apt_truck_food,
+	apt_truck_fuel_liner,
+	apt_truck_fuel_jet,
+	apt_truck_fuel_prop,
+	apt_truck_gpu,
+	apt_truck_pushback,
+
 	apt_truck_destination_fuel_farm = 0,
 	apt_truck_destination_baggage_hall
 	
