@@ -35,6 +35,8 @@
 #include "WED_GISComposite.h"
 #include "WED_Airport.h"
 #include "WED_Group.h"
+#include "WED_Root.h"
+#include "WED_ATCFlow.h"
 
 #include "PlatformUtils.h"
 #include "WED_UIDefs.h"
@@ -84,7 +86,9 @@ WED_PropertyTable::WED_PropertyTable(
 	mCacheValid(false)
 {
 	RebuildCache();
-	mSorted = mThingCache;
+	mSortedCache = mThingCache;
+	mSortedOpen = mOpen;
+
 	if (col_names)
 	while(*col_names)
 		mColNames.push_back(*col_names++);
@@ -853,7 +857,6 @@ void WED_PropertyTable::RebuildCache(void)
 		sel->IterateSelectionOr(SelectAndParents,&all_sel);
 	if (root)
 		RebuildCacheRecursive(root,sel,mSelOnly ? &all_sel : NULL);
-	Resort();
 }
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
@@ -862,13 +865,14 @@ WED_Thing *	WED_PropertyTable::FetchNth(int row)
 	{
 		RebuildCache();
 	}
-	
+
+	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
 	if (!mVertical)
 	{
-		row = mSorted.size() - row - 1;
+		row = current_cache.size() - row - 1;
 	}
 
-	return mSorted[row];
+	return current_cache[row];
 }
 
 int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
@@ -883,6 +887,7 @@ int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
 		d = d->GetParent();
 		++ret;
 	}
+
 	return ret;
 }
 
@@ -896,7 +901,8 @@ int			WED_PropertyTable::GetColCount(void)
 		RebuildCache();
 	}
 
-	return mSorted.size();
+	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
+	return current_cache.size();
 }
 
 int		WED_PropertyTable::ColForX(int n)
@@ -911,8 +917,13 @@ int			WED_PropertyTable::GetRowCount(void)
 	if (mVertical)
 		return mColNames.size();
 
-	if (!mCacheValid)	RebuildCache();
-	return mSorted.size();
+	if (!mCacheValid)
+	{
+		RebuildCache();
+	}
+
+	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
+	return current_cache.size();
 }
 
 void	WED_PropertyTable::ReceiveMessage(
@@ -994,9 +1005,14 @@ void WED_PropertyTable::GetClosed(set<int>& closed_list)
 	closed_list.clear();
 	WED_Thing * root = WED_GetWorld(mResolver);
 	WED_Archive * arch = root->GetArchive();
-	for( hash_map<int,int>::iterator it = mOpen.begin(); it != mOpen.end(); ++it)
-	    if((arch->Fetch(it->first) != NULL)&&(!GetOpen(it->first)))
-			closed_list.insert(it->first) ;
+
+	for (hash_map<int, int>::iterator it = mOpen.begin(); it != mOpen.end(); ++it)
+	{
+		if ((arch->Fetch(it->first) != NULL) && (!GetOpen(it->first)))
+		{
+			closed_list.insert(it->first);
+		}
+	}
 }
 
 //--IFilterable----------------------------------------------------------------
@@ -1006,40 +1022,73 @@ void WED_PropertyTable::SetFilter(const string & filter)
 	Resort();
 }
 
-int sort_by_wed_thing_name(const WED_Thing* thing_1, const WED_Thing* thing_2)
+//parameters
+//thing - the current thing
+//search_filter - the search filter
+//sorted_cache - the sorted_cache of wed things we're building up
+//sorted_open_ids - the hash map of id and true false if its open or not
+//returns number of bad leafs
+int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_Thing*>& sorted_cache, hash_map<int,int>& sorted_open_ids)
 {
-	string name_1;
-	thing_1->GetName(name_1);
+	DebugAssert(thing != NULL);
 
-	string name_2;
-	thing_2->GetName(name_2);
+	bool is_group_like = thing->GetClass() == WED_Group::sClass   ||
+						 thing->GetClass() == WED_Airport::sClass ||
+						 thing->GetClass() == WED_ATCFlow::sClass;
 
-	return name_1 == name_2;
+	string thing_name;
+	thing->GetName(thing_name);
+	bool is_match = thing_name.find(search_filter) != string::npos;
+
+	int nc = thing->CountChildren();
+	if (nc == 0) //thing is a leaf
+	{
+		if (is_match)
+		{
+			sorted_cache.push_back(thing);
+
+			if (is_group_like == true)
+			{
+				sorted_open_ids.insert(make_pair(thing->GetID(), true));
+			}
+			return 0; //No bad leafs here!
+		}
+		else
+		{
+			return 1;
+		}
+	}
+	else
+	{
+		int bad_leafs = 0;
+		for (int n = 0; n < nc; ++n)
+		{
+			bad_leafs += collect_recusive(thing->GetNthChild(n), search_filter, sorted_cache, sorted_open_ids);
+		}
+
+		//If bad_leafs is less than the number of kids it means that there is at least some reason to keep this group
+		//Or if the group name exactly matches
+		if ((bad_leafs < nc && is_group_like) || is_match)
+		{
+			sorted_cache.push_back(thing);
+			sorted_open_ids.insert(make_pair(thing->GetID(), true));
+			return 0; //Somebody will want me too
+		}
+		else
+		{
+			return 1; //Ignore me
+		}
+	}
 }
 
 void WED_PropertyTable::Resort()
 {
-	mSorted.clear();
-	if (mSearchFilter.empty() == true)
+	mSortedCache.clear();
+	mSortedOpen.clear();
+	if (mSearchFilter.empty() == false)
 	{
-		mSorted = mThingCache;
-	}
-	else
-	{
-		for (vector<WED_Thing*>::iterator itr = mThingCache.begin(); itr != mThingCache.end(); ++itr)
-		{
-			string name;
-			(*itr)->GetName(name);
-
-			if (mSearchFilter.empty()                    ||
-				name.find(mSearchFilter) != string::npos ||
-				((*itr)->GetClass() == WED_Airport::sClass && (*itr)->CountChildren() > 0) ||
-				((*itr)->GetClass() == WED_Group::sClass   && (*itr)->CountChildren() > 0)
-				)
-			{
-				mSorted.push_back(*itr);
-			}
-		}
+		collect_recusive(WED_GetWorld(mResolver), mSearchFilter, mSortedCache, mSortedOpen);
+		reverse(mSortedCache.begin(), mSortedCache.end());
 	}
 
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
@@ -1052,18 +1101,23 @@ void WED_PropertyTable::Resort()
 
 bool WED_PropertyTable::GetOpen(int id)
 {
-	return mOpen.count(id) == 0 || mOpen[id] != 0;
+	hash_map<int, int>& current_open = mSearchFilter.empty() ? mOpen : mSortedOpen;
+	return current_open.count(id) == 0 || current_open[id] != 0;
 }
 
 void WED_PropertyTable::ToggleOpen(int id)
 {
+	hash_map<int, int>& current_open = mSearchFilter.empty() ? mOpen : mSortedOpen;
 	int old_val = GetOpen(id);
-	mOpen[id] = old_val ? 0 : 1;
+	current_open[id] = old_val ? 0 : 1;
 }
 
 void WED_PropertyTable::SetOpen(int id, int o)
 {
-	mOpen[id] = o;
+	if (mSearchFilter.empty() == true) //Easy hack for disabling disclose behavior, TODO fix?
+	{
+		mOpen[id] = o;
+	}
 }
 
 

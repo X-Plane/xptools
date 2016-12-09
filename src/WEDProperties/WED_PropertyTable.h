@@ -185,10 +185,12 @@ private:
 									int&	recurse_children,
 									int&	can_disclose,
 									int&	is_disclose);
-			
+
 			void	Resort();
+
 	vector<WED_Thing *>			mThingCache;
-	vector<WED_Thing *>			mSorted;
+	vector<WED_Thing *>			mSortedCache;
+
 	string						mSearchFilter;
 
 	bool						mCacheValid;
@@ -202,6 +204,7 @@ private:
 
 
 	hash_map<int,int>			mOpen;
+	hash_map<int,int>			mSortedOpen;
 
 	int							mVertical;
 	int							mDynamicCols;
