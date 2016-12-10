@@ -219,8 +219,9 @@ void					WED_XMLElement::add_attr_c_str(const char * name, const char * str)
 {
 #if FIX_EMPTY
 	if(name == 0 || *name == 0)	name = "tbd";
+	if(str == 0 || *str == 0) str = name;
 #else
-	DebugAssert(name && *name);	
+	DebugAssert(name && *name && str && *str);
 #endif
 	DebugAssert(!flushed);
 	attrs[name] = str;
