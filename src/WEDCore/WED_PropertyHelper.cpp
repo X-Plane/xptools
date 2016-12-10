@@ -972,7 +972,14 @@ void		WED_PropIntEnumSet::StartElement(
 	{
 		const XML_Char * v = get_att("value", atts);
 		if(!v) reader->FailWithError("no value");
-		else value.insert(ENUM_LookupDesc(domain,v));
+		else 
+		{ 
+			int i = ENUM_LookupDesc(domain,v);
+			// If asked to add enum of unknown name to set, just ignore it silently.
+			// If we were to add "-1" to the set instead, the set would become un-modifyable and 'save file' would bomb.
+			if (i >= 0)
+				value.insert(i);
+		}
 	}
 }
 void		WED_PropIntEnumSet::EndElement(void){ }
