@@ -341,7 +341,10 @@ int					WED_Thing::CountChildren(void) const
 
 WED_Thing *		WED_Thing::GetNthChild(int n) const
 {
-	return STATIC_CAST(WED_Thing,FetchPeer(child_id[n]));
+	if (child_id.empty())     // prevent SIGSEGV
+		return NULL;
+	else
+		return STATIC_CAST(WED_Thing,FetchPeer(child_id[n]));
 }
 
 WED_Thing *		WED_Thing::GetNamedChild(const string& s) const
