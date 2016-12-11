@@ -131,7 +131,10 @@ void  WED_DrapedOrthophoto::SetSubTexture(const Bbox2& b)
 // to exactly fit the poligon with all of the texture visible.
 
 void WED_DrapedOrthophoto::Redrape(bool updProp)
-{ 	if(HasLayer(gis_UV))
+{ 
+	// need to do some sanity checking:
+	// During DSF import, properties are being set, even before any nodes have been read, i.e. any OuterRing is set
+	if (GetNthChild(0))
 	{
 		Bbox2  ll_box;           // the lon/lat bounding box of the poly - this is what the texture needs to cover
 		Point2 ctr;
