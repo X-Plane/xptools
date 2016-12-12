@@ -29,6 +29,7 @@
 #include "WED_GISEdge.h"
 
 struct AptRouteEdge_t;
+struct AptServiceRoadEdge_t;
 
 class WED_TaxiRoute : public WED_GISEdge {
 
@@ -37,10 +38,13 @@ DECLARE_PERSISTENT(WED_TaxiRoute)
 public:
 
 	void		Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref);
-	void		Export(		 AptRouteEdge_t& info) const;
+	void		Import(const AptServiceRoadEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref);
+	int			Export(		 AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const;
 	
 	virtual		bool	IsOneway(void) const;
 				bool	IsRunway(void) const;
+				bool	AllowAircraft(void) const;
+				bool	AllowTrucks(void) const;
 				bool	HasHotArrival(void) const;
 				bool	HasHotDepart(void) const;
 				bool	HasHotILS(void) const;
@@ -52,6 +56,7 @@ public:
 				void		SetHotArrive(const set<int>& rwys);
 				void		SetHotILS(const set<int>& rwys);
 				void		SetWidth(int width);
+				void		SetVehicleClass(int vehicle_class);
 				
 				bool		HasInvalidHotZones(const set<int>& legal_rwys) const;
 				int			GetRunway(void) const;	// returns two-way enum!
@@ -72,7 +77,8 @@ private:
 		WED_PropIntEnum			width;
 		WED_PropIntEnumSet		hot_depart;
 		WED_PropIntEnumSet		hot_arrive;
-		WED_PropIntEnumSet		hot_ils;		
+		WED_PropIntEnumSet		hot_ils;
+		WED_PropIntEnum			vehicle_class;
 
 };
 

@@ -52,9 +52,6 @@
     <Filter Include="OGLE">
       <UniqueIdentifier>{55e2d45f-d0d4-4ab6-87fb-3ed3ae3e56ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Env">
-      <UniqueIdentifier>{5b07cf95-cb4f-40bb-a900-01a5556e5965}</UniqueIdentifier>
-    </Filter>
     <Filter Include="DSF\tri_stripper_101">
       <UniqueIdentifier>{4f90643b-308a-4c22-a205-e4839a9404b5}</UniqueIdentifier>
     </Filter>
@@ -594,12 +591,6 @@
     <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Env\EnvParser.c">
-      <Filter>Env</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Env\Persistence.cpp">
-      <Filter>Env</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\OGLE\ogle.cpp">
       <Filter>OGLE</Filter>
     </ClCompile>
@@ -610,9 +601,6 @@
       <Filter>DSF\tri_stripper_101</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp">
-      <Filter>DSFTools</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp">
       <Filter>DSFTools</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Obj\XObjDefs.cpp">
@@ -765,6 +753,9 @@
     <ClCompile Include="..\..\src\WEDImportExport\WED_ICAOTable.cpp">
       <Filter>WEDImportExport</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_RoadNode.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_ATCLayer.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
@@ -797,6 +788,12 @@
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.cpp">
       <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_TruckParkingLocation.cpp">
+      <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_TruckDestination.cpp">
+      <Filter>WEDEntities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1343,15 +1340,6 @@
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Env\EnvDefs.h">
-      <Filter>Env</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Env\EnvParser.h">
-      <Filter>Env</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Env\Persistence.h">
-      <Filter>Env</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\OGLE\ogle.h">
       <Filter>OGLE</Filter>
     </ClInclude>
@@ -1544,6 +1532,9 @@
     <ClInclude Include="..\..\src\WEDImportExport\WED_ICAOTable.h">
       <Filter>WEDImportExport</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_RoadNode.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_ATCLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
@@ -1582,6 +1573,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Interfaces\IHasResource.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_TruckParkingLocation.h">
+      <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h">
+      <Filter>WEDEntities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

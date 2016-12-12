@@ -56,6 +56,7 @@ enum {
 	wed_Export1000,
 	wed_Export1021,
 	wed_Export1050,
+	wed_Export1100,
 	wed_ExportGateway,
 	// Edit Menu,
 	wed_Group,
@@ -66,6 +67,9 @@ enum {
 //	wed_MakeRouting,
 #endif
 	wed_Split,
+	wed_Align,
+	wed_Orthogonalize,
+	wed_RegularPoly,
 #if AIRPORT_ROUTING
 	wed_Merge,
 #endif
@@ -75,6 +79,8 @@ enum {
 	wed_MovePrev,
 	wed_MoveNext,
 	wed_MoveLast,
+	wed_BreakApartSpecialAgps,
+	wed_ReplaceVehicleObj,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,

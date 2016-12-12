@@ -68,6 +68,7 @@
 #include "WED_OSMSlippyMap.h"
 
 char	kToolKeys[] = {
+	0, 0,
 	0, 0, 0, 0,
 	0, 0, 0, 0,
 
@@ -157,6 +158,9 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 #endif
 	// TOOLS
 
+	mTools.push_back(					new WED_CreatePointTool("Truck Parking", mMap, mMap, resolver, archive, create_TruckParking));
+	mTools.push_back(					new WED_CreatePointTool("Truck Destination", mMap, mMap, resolver, archive, create_TruckDestination));
+
 	mTools.push_back(					new WED_CreateBoxTool("Exclusions",mMap, mMap, resolver, archive, create_Exclusion));
 #if ROAD_EDITING
 	mTools.push_back(					new WED_CreateEdgeTool("Roads",mMap, mMap, resolver, archive, create_Road));
@@ -230,7 +234,7 @@ WED_MapPane::WED_MapPane(GUI_Commander * cmdr, double map_bounds[4], IResolver *
 
 	mInfoAdapter->AddListener(mTable);
 
-	mToolbar = new GUI_ToolBar(2,12,"map_tools.png");
+	mToolbar = new GUI_ToolBar(2,13,"map_tools.png");
 	mToolbar->SizeToBitmap();
 	mToolbar->Show();
 	mToolbar->SetParent(this);
@@ -712,7 +716,10 @@ void hide_all_persistents(vector<const char*>& hide_list)
 	hide_list.push_back(WED_ATCTimeRule::sClass);
 	hide_list.push_back(WED_ATCWindRule::sClass);
 	hide_list.push_back(WED_ATCRunwayUse::sClass);
+#if ROAD_EDITING
 	hide_list.push_back(WED_RoadEdge::sClass);
+#endif // ROAD_EDITING
+
 }
 
 void unhide_persistent(vector<const char*>& hide_list, const char* to_unhide)

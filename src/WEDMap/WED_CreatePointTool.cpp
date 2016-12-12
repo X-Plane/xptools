@@ -39,9 +39,11 @@
 #include "WED_ToolUtils.h"
 #include "IResolver.h"
 #include "GUI_Clipboard.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
 
-static int kIsToolDirectional[] = { 0, 1, 1, 1, 1, 0, 0, 1 };
-static int kIsAirport[]			= { 1, 1, 1, 1, 1, 1, 1, 0 };
+static int kIsToolDirectional[] = { 0, 1, 1, 1, 1, 0, 0, 1, 1, 1 };
+static int kIsAirport[]			= { 1, 1, 1, 1, 1, 1, 1, 0, 1, 1 };
 static const char * kCreateCmds[] = {
 	"Airport Beacon",
 	"Taxiway Sign",
@@ -50,7 +52,9 @@ static const char * kCreateCmds[] = {
 	"Ramp Start",
 	"Tower Viewpoint",
 	"Windsock",
-	"Object"
+	"Object",
+	"Service Truck",
+	"Service Truck Destination"
 };
 
 WED_CreatePointTool::WED_CreatePointTool(
@@ -87,7 +91,10 @@ WED_CreatePointTool::WED_CreatePointTool(
 		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType, 0),
 		width			(tool==create_RampStart		?this:NULL,"Size",	SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
 		ramp_op_type	(tool==create_RampStart		?this:NULL,"Ramp Operation Type",	SQL_Name("",""),XML_Name("",""), RampOperationType, ramp_operation_None),
-		airlines		(tool==create_RampStart		?this:NULL,"Airlines",SQL_Name("",""),XML_Name("",""), "")
+		airlines		(tool==create_RampStart		?this:NULL,"Airlines",		SQL_Name("",""),XML_Name("",""), ""),
+		truck_type		(tool==create_TruckParking	?this:NULL,"Truck Type",	SQL_Name("",""),XML_Name("",""), ATCServiceTruckType, atc_ServiceTruck_FuelTruck_Prop),
+		baggage_car_count(tool==create_TruckParking	?this:NULL,"Baggage Cars",	SQL_Name("",""),XML_Name("",""), 3, 1),
+		truck_types		(tool==create_TruckDestination?this:NULL,"Truck Types",SQL_Name("",""),XML_Name("",""), ATCServiceTruckType, 0)
 {
 }
 
@@ -178,6 +185,21 @@ void	WED_CreatePointTool::AcceptPath(
 			obj->SetName(n);
 		}
 		break;
+	case create_TruckParking:
+		{
+			WED_TruckParkingLocation * t;
+			new_pt_obj = new_pt_h = t = WED_TruckParkingLocation::CreateTyped(GetArchive());
+			t->SetTruckType(truck_type.value);
+			t->SetNumberOfCars(baggage_car_count.value);
+		}
+		break;
+	case create_TruckDestination:
+		{
+			WED_TruckDestination * t;
+			new_pt_obj = new_pt_h = t = WED_TruckDestination::CreateTyped(GetArchive());
+			t->SetTruckTypes(truck_types.value);			
+		}
+		break;
 	}
 
 	DebugAssert((kIsToolDirectional[mType] && new_pt_h != NULL) || (!kIsToolDirectional[mType] && new_pt_h == NULL));
@@ -231,7 +253,17 @@ void		WED_CreatePointTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		DebugAssert(info.prop_kind == prop_String);
 		info.prop_kind = prop_TaxiSign;
-	}	
+	}
+	
+	//Disable the baggage car count text field if the type is not Baggage_Train
+	PropertyVal_t prop;
+	truck_type.GetProperty(prop);
+	if (prop.int_val != atc_ServiceTruck_Baggage_Train && n == PropertyItemNumber(&baggage_car_count))
+	{
+		info.prop_name = "."; //The special hardcoded "disable me" string, see IPropertyObject.h
+		info.can_edit = false;
+		info.can_delete = false;
+	}
 }
 
 void		WED_CreatePointTool::GetNthProperty(int n, PropertyVal_t& val) const
