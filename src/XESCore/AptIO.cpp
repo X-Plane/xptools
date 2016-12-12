@@ -55,7 +55,8 @@ const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
-
+// TODO:
+// find a way to not have to keep this string in the same sequence with service enums defined in AptDefs.h and WED_Enums.h
 const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", 0 }; 
 
 // LLLHHH
