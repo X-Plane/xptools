@@ -1060,6 +1060,7 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 	}
 	else
 	{
+		int current_end_pos = sorted_cache.size();
 		int bad_leafs = 0;
 		for (int n = 0; n < nc; ++n)
 		{
@@ -1070,9 +1071,9 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 		//Or if the group name exactly matches
 		if ((bad_leafs < nc && is_group_like) || is_match)
 		{
-			sorted_cache.push_back(thing);
+			sorted_cache.insert(sorted_cache.begin() + current_end_pos, thing);
 			sorted_open_ids.insert(make_pair(thing->GetID(), true));
-			return 0; //Somebody will want me too
+			return 0;
 		}
 		else
 		{
@@ -1087,8 +1088,8 @@ void WED_PropertyTable::Resort()
 	mSortedOpen.clear();
 	if (mSearchFilter.empty() == false)
 	{
+		mSortedCache.reserve(mThingCache.size());
 		collect_recusive(WED_GetWorld(mResolver), mSearchFilter, mSortedCache, mSortedOpen);
-		reverse(mSortedCache.begin(), mSortedCache.end());
 	}
 
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
