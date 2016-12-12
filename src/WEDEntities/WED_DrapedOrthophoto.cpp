@@ -134,7 +134,7 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 { 
 	// need to do some sanity checking:
 	// During DSF import, properties are being set, even before any nodes have been read, i.e. any OuterRing is set
-	if (GetNthChild(0))
+	if (GetNthChild(0) && HasLayer(gis_UV))
 	{
 		Bbox2  ll_box;           // the lon/lat bounding box of the poly - this is what the texture needs to cover
 		Point2 ctr;

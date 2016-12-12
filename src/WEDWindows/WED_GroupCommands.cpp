@@ -1765,6 +1765,7 @@ void	WED_DoAlign(IResolver * resolver)
 	if( bb.xspan() == 0.0 || bb.yspan() == 0.0) return;
 
 	op->StartOperation("Align in line");
+	set<WED_DrapedOrthophoto *> os;
 
 	s->GetLocation(gis_Geo,p1);
 	d->GetLocation(gis_Geo,p2);
@@ -1779,18 +1780,29 @@ void	WED_DoAlign(IResolver * resolver)
 		(*it)->GetLocation(gis_Geo,ll);
 		p = l.projection(translator.Forward(ll));
 		(*it)->SetLocation(gis_Geo,translator.Reverse(p));
-		// The brute force way: check after every move if the point is part of a DrapedOrthophoto
-		// If so, call the Redrape
-		WED_Thing * th = dynamic_cast<WED_Thing *> (*it);
-		th = th->GetParent();
-		th = th->GetParent();
-		WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto, th);
-		if (ortho) ortho->Redrape();
+
+		//collect DrapedOrtho's involved
+		WED_Thing * thing = dynamic_cast<WED_Thing *>(*it);
+		if(thing)
+		{
+			WED_Thing * parent = thing->GetParent();
+			if(parent)
+			{
+				WED_Thing * grandparent = parent->GetParent();
+				if(grandparent && (strcmp(grandparent->GetClass() , "WED_DrapedOrthophoto") == 0))
+				{
+					WED_DrapedOrthophoto * ortho = dynamic_cast<WED_DrapedOrthophoto *>(grandparent);
+					if(ortho) os.insert(ortho);
+				}
+			}
+		}
 	}
-// TODO
-// call a redrape for DrapedOrthophoto in a more efficient way:
-// If we were to collect a list of all WED_DrapedOrthophotos involved while doing the above loop,
-// we would have to call the redrape only once for each polygon.
+
+	// redrape DrapedOthosphoto's upon modification of points
+	for(set<WED_DrapedOrthophoto *>::iterator it = os.begin(); it != os.end();++it)
+	{
+		 (*it)->Redrape();
+	}
 
 	op->CommitOperation();
 }
@@ -1944,11 +1956,18 @@ static void DoMakeOrthogonal(IGISPointSequence * seq )
 	{
 		seq->GetNthPoint(i)->SetLocation(gis_Geo,pol.at(i));
 	}
+
 	// redrape DrapedOthosphoto's upon modification of point sequence
-	WED_Thing * node = dynamic_cast <WED_Thing *> (seq);
-	node = node->GetParent();
-	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
-	if (ortho) ortho->Redrape();
+	WED_Thing * thing = dynamic_cast <WED_Thing *> (seq);
+	if(thing)
+	{
+		WED_Thing * parent = thing->GetParent();
+		if(parent)
+		{
+			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *>(parent);
+			if (ortho) ortho->Redrape();
+		}
+	}
 }
 
 void	WED_DoOrthogonalize(IResolver * resolver)
@@ -2022,24 +2041,26 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 	l = l/n ;
 	//TODO: mroe : cannot find a good centerpoint , take this for now
 	Point2 ctr = pol.centroid();
-	//inner angle
+	//centri angle
 	double w = (2.0*PI) / n ;
 	//outer radius
 	double ru = (l/2.0) / sin(w/2.0);
 	if (pol.is_ccw()) w = -w;
+
 	//http://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
 	double c = (4.0/3.0) * tan(w/4.0) * ru;
 
-	//initial heading
-	double t = VectorDegs2NorthHeading(ctr,ctr,Vector2(ctr,pol.at(0))) * DEG_TO_RAD;
+	//initial heading of first segment
+	double a1 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
+
 	for( int i = 0 ; i < n ; ++i)
 	{	
-		double h = i*w+t;
+		double h = i*w;
 		Vector2	v;
 		v.dx = ru*sin(h);
 		v.dy = ru*cos(h);
 
-		Point2 ll = ctr + VectorMetersToLL(ctr,v);
+		pol[i] = ctr + VectorMetersToLL(ctr,v);
 
 		BezierPoint2 bp;
 		IGISPoint_Bezier * bez;
@@ -2052,9 +2073,9 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 				v *= c;
 
 				bez->GetBezierLocation(gis_Geo,bp);
-				bp.hi = bp.has_hi() ? ll - VectorMetersToLL(ctr, v) : ll;
-				bp.lo = bp.has_lo() ? ll + VectorMetersToLL(ctr, v) : ll;
-				bp.pt = ll;
+				bp.hi = bp.has_hi() ? pol[i] - VectorMetersToLL(ctr, v) : pol[i];
+				bp.lo = bp.has_lo() ? pol[i] + VectorMetersToLL(ctr, v) : pol[i];
+				bp.pt = pol[i] ;
 
 				bez->SetBezierLocation(gis_Geo,bp);
 				bez->SetSplit(bp.is_split());
@@ -2062,14 +2083,25 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 		}
 		else
 		{
-			seq->GetNthPoint(i)->SetLocation(gis_Geo,ll);
+			seq->GetNthPoint(i)->SetLocation(gis_Geo,pol[i]);
 		}
 	}
+
+	double a2 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
+    //rotate to inital heading
+	seq->Rotate(gis_Geo,ctr,a1-a2);
+
 	// redrape DrapedOthosphoto's upon modification of point sequence
-	WED_Thing * node = dynamic_cast <WED_Thing *> (seq);
-	node = node->GetParent();
-	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
-	if (ortho) ortho->Redrape();
+	WED_Thing * thing = dynamic_cast <WED_Thing *> (seq);
+	if(thing)
+	{
+		WED_Thing * parent = thing->GetParent();
+		if(parent)
+		{
+			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *>(parent);
+			if (ortho) ortho->Redrape();
+		}
+	}
 }
 
 void	WED_DoMakeRegularPoly(IResolver * resolver)

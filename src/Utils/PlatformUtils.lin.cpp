@@ -55,7 +55,7 @@ string GetCacheFolder()
 		{
 			const char * pdir = pw->pw_dir;
 			if( strcmp(pdir,hdir) != 0)
-				return 0;
+				return "";
 		}
 		path = hdir;
 		path += "/.cache";
