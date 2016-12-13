@@ -788,11 +788,13 @@
     </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp">
       <Filter>WEDWindows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_TruckParkingLocation.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp">
       <Filter>WEDWindows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_TruckDestination.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
@@ -1577,11 +1579,13 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h">
       <Filter>WEDWindows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckParkingLocation.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h">
       <Filter>WEDWindows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
