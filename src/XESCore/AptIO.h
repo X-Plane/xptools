@@ -29,7 +29,7 @@ struct XAtomContainer;
 #include "AptDefs.h"
 #include <set>
 
-#define LATEST_APT_VERSION 1000
+#define LATEST_APT_VERSION 1100
 
 //void	WriteApts(FILE * fi, const AptVector& inApts);
 bool	ReadApts(XAtomContainer& container, AptVector& outApts);

@@ -75,9 +75,6 @@
 		D60734160D197A1100E08F61 /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
 		D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
 		D60734180D197A1100E08F61 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
-		D60734190D197A1100E08F61 /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D607341A0D197A1100E08F61 /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
-		D607341B0D197A1100E08F61 /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D607341C0D197A1100E08F61 /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D607341E0D197A1100E08F61 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
@@ -205,6 +202,8 @@
 		D6151ECD0FB47A1E008A355F /* RF_FileCommands.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6956EE80F82E96900F6718E /* RF_FileCommands.cpp */; };
 		D6151ED80FB47A4D008A355F /* sans.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D6C390010FA0D93400EFA56C /* sans.ttf */; };
 		D6183B961D766C7400E606E9 /* handle_arrowhead_lg.png in Resources */ = {isa = PBXBuildFile; fileRef = D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */; };
+		D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */; };
+		D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */; };
 		D61C275E0B615CD60092E098 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D61ECAE30C96DF0B00159B39 /* XGrinder_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */; };
 		D61ECAE40C96DF1600159B39 /* ObjView_icons.icns in Resources */ = {isa = PBXBuildFile; fileRef = D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */; };
@@ -366,9 +365,6 @@
 		D65E4B260B65427C004D7887 /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
 		D65E4B270B65427C004D7887 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
 		D65E4B280B65427C004D7887 /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
-		D65E4B290B65427C004D7887 /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D65E4B2A0B65427C004D7887 /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
-		D65E4B2B0B65427C004D7887 /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D65E4B2C0B65427C004D7887 /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D65E4B2D0B65427C004D7887 /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D65E4B2E0B65427C004D7887 /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
@@ -443,6 +439,8 @@
 		D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083050C1A4DBB00F33E06 /* earth_32.jpg */; };
 		D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083060C1A4DBB00F33E06 /* earth_41.jpg */; };
 		D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083070C1A4DBB00F33E06 /* earth_42.jpg */; };
+		D670D3121DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */; };
+		D670D3131DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */; };
 		D6734B350EACE5930002C4C1 /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
 		D6734B360EACE5930002C4C1 /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
 		D6734BA50EACFCEE0002C4C1 /* MapOverlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734BA40EACFCEE0002C4C1 /* MapOverlay.cpp */; };
@@ -520,14 +518,10 @@
 		D67EF5B70B5D34BE00D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
 		D67EF8520B5E5D9F00D9190C /* DSF2Text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC365D0AB22C84003949C5 /* DSF2Text.cpp */; };
 		D67EF8530B5E5DA200D9190C /* DSFToolCmdLine.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC365F0AB22C84003949C5 /* DSFToolCmdLine.cpp */; };
-		D67EF8540B5E5DA400D9190C /* ENV2Overlay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC366B0AB22C84003949C5 /* ENV2Overlay.cpp */; };
 		D67EF8620B5E5E7100D9190C /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
 		D67EF8630B5E5E7300D9190C /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
 		D67EF8640B5E5E7500D9190C /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
 		D67EF8650B5E5E7500D9190C /* DSFLibWrite.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36570AB22C84003949C5 /* DSFLibWrite.cpp */; };
-		D67EF8660B5E5E7800D9190C /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D67EF8670B5E5E7900D9190C /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
-		D67EF8680B5E5E7A00D9190C /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D67EF86A0B5E5E8C00D9190C /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D67EF86B0B5E5E9100D9190C /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
@@ -535,9 +529,6 @@
 		D67EF8710B5E5EB800D9190C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		D67EF8730B5E5EBF00D9190C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D67EF8770B5E5ED600D9190C /* EndianUtils.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377A0AB22C85003949C5 /* EndianUtils.c */; };
-		D67EF9780B6135F400D9190C /* EnvParser.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36710AB22C84003949C5 /* EnvParser.c */; };
-		D67EF9790B6135F400D9190C /* EnvWrite.c in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36730AB22C84003949C5 /* EnvWrite.c */; };
-		D67EF97A0B6135F400D9190C /* Persistence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36750AB22C84003949C5 /* Persistence.cpp */; };
 		D67EF97B0B6135F400D9190C /* XChunkyFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */; };
 		D67EF97C0B6135F400D9190C /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
 		D67EF97D0B6135F400D9190C /* MemFileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC378A0AB22C85003949C5 /* MemFileUtils.cpp */; };
@@ -835,7 +826,6 @@
 		D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */; };
-		D6ED3E4F0B6A674000D5484E /* GUI_TextTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */; };
 		D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3EC90B6A753300D5484E /* WED_PropertyTable.cpp */; };
 		D6ED3F560B6AA25600D5484E /* WED_Properties.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3F540B6AA25600D5484E /* WED_Properties.cpp */; };
 		D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED40370B6AD47300D5484E /* WED_Archive.cpp */; };
@@ -854,9 +844,11 @@
 		D6F3F0871D07294E00188B28 /* WED_MetaDataDefaults.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3F0831D07294E00188B28 /* WED_MetaDataDefaults.cpp */; };
 		D6F3F0881D07294E00188B28 /* WED_MetadataUpdate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3F0851D07294E00188B28 /* WED_MetadataUpdate.cpp */; };
 		D6F3F08B1D072BE800188B28 /* CSVParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F3F0891D072BE800188B28 /* CSVParser.cpp */; };
+		D6F621651DF7297900B4091F /* GUI_TextTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */; };
 		D6F762E210891CC6003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E310891CCC003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6F762E510891CD7003D881F /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D6F88E0E1C20A6BD00057F4D /* WED_RoadNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F88E0C1C20A6BD00057F4D /* WED_RoadNode.cpp */; };
 		D6F8E4B90C3C861C007A2EA7 /* WED_OverlayImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */; };
 		D6F8E4BA0C3C861C007A2EA7 /* WED_TextureNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */; };
 		D6FA51D40E16DFAC001C1035 /* MapAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38550AB22C85003949C5 /* MapAlgs.cpp */; };
@@ -1107,6 +1099,10 @@
 		D6151DC30FB46008008A355F /* RF_Application.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RF_Application.h; sourceTree = "<group>"; };
 		D6151DC40FB46008008A355F /* RF_Application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RF_Application.cpp; sourceTree = "<group>"; };
 		D6183B951D766C7400E606E9 /* handle_arrowhead_lg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_arrowhead_lg.png; sourceTree = "<group>"; };
+		D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TruckParkingLocation.cpp; sourceTree = "<group>"; };
+		D6183B981D7CA28200E606E9 /* WED_TruckParkingLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TruckParkingLocation.h; sourceTree = "<group>"; };
+		D6183B9A1D7CAD8900E606E9 /* WED_TruckDestination.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_TruckDestination.h; sourceTree = "<group>"; };
+		D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TruckDestination.cpp; sourceTree = "<group>"; };
 		D61ECAE00C96DF0B00159B39 /* ObjView_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = ObjView_icons.icns; sourceTree = "<group>"; };
 		D61ECAE10C96DF0B00159B39 /* XGrinder_icons.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = XGrinder_icons.icns; sourceTree = "<group>"; };
 		D6226E380E4B7F32005BD1D7 /* WED_FacadePlacement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FacadePlacement.h; sourceTree = "<group>"; };
@@ -1284,6 +1280,8 @@
 		D67083060C1A4DBB00F33E06 /* earth_41.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_41.jpg; sourceTree = "<group>"; };
 		D67083070C1A4DBB00F33E06 /* earth_42.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_42.jpg; sourceTree = "<group>"; };
 		D6708AA60C1F2A1A00F33E06 /* MathUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MathUtils.h; sourceTree = "<group>"; };
+		D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GISTool_ImageCmds.cpp; sourceTree = "<group>"; };
+		D670D3111DD7D92000827DEA /* GISTool_ImageCmds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GISTool_ImageCmds.h; sourceTree = "<group>"; };
 		D6734B330EACE5930002C4C1 /* MapCreate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapCreate.h; sourceTree = "<group>"; };
 		D6734B340EACE5930002C4C1 /* MapCreate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MapCreate.cpp; sourceTree = "<group>"; };
 		D6734BA30EACFCEE0002C4C1 /* MapOverlay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapOverlay.h; sourceTree = "<group>"; };
@@ -1553,16 +1551,7 @@
 		D6BC365D0AB22C84003949C5 /* DSF2Text.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSF2Text.cpp; sourceTree = "<group>"; };
 		D6BC365E0AB22C84003949C5 /* DSF2TextGUI.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSF2TextGUI.cpp; sourceTree = "<group>"; };
 		D6BC365F0AB22C84003949C5 /* DSFToolCmdLine.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DSFToolCmdLine.cpp; sourceTree = "<group>"; };
-		D6BC366B0AB22C84003949C5 /* ENV2Overlay.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ENV2Overlay.cpp; sourceTree = "<group>"; };
-		D6BC366C0AB22C84003949C5 /* ENV2OverlayGUI.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ENV2OverlayGUI.cpp; sourceTree = "<group>"; };
 		D6BC366D0AB22C84003949C5 /* README.dsf2text */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.dsf2text; sourceTree = "<group>"; };
-		D6BC36700AB22C84003949C5 /* EnvDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = EnvDefs.h; sourceTree = "<group>"; };
-		D6BC36710AB22C84003949C5 /* EnvParser.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = EnvParser.c; sourceTree = "<group>"; };
-		D6BC36720AB22C84003949C5 /* EnvParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = EnvParser.h; sourceTree = "<group>"; };
-		D6BC36730AB22C84003949C5 /* EnvWrite.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = EnvWrite.c; sourceTree = "<group>"; };
-		D6BC36740AB22C84003949C5 /* EnvWrite.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = EnvWrite.h; sourceTree = "<group>"; };
-		D6BC36750AB22C84003949C5 /* Persistence.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Persistence.cpp; sourceTree = "<group>"; };
-		D6BC36760AB22C84003949C5 /* Persistence.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Persistence.h; sourceTree = "<group>"; };
 		D6BC367A0AB22C84003949C5 /* GUI_Application.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_Application.h; sourceTree = "<group>"; };
 		D6BC367C0AB22C84003949C5 /* GUI_Broadcaster.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_Broadcaster.h; sourceTree = "<group>"; };
 		D6BC367E0AB22C84003949C5 /* GUI_Clipboard.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_Clipboard.h; sourceTree = "<group>"; };
@@ -2038,6 +2027,8 @@
 		D6F3F0891D072BE800188B28 /* CSVParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CSVParser.cpp; sourceTree = "<group>"; };
 		D6F3F08A1D072BE800188B28 /* CSVParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CSVParser.h; sourceTree = "<group>"; };
 		D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Sign_Parser.cpp; sourceTree = "<group>"; };
+		D6F88E0C1C20A6BD00057F4D /* WED_RoadNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RoadNode.cpp; sourceTree = "<group>"; };
+		D6F88E0D1C20A6BD00057F4D /* WED_RoadNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RoadNode.h; sourceTree = "<group>"; };
 		D6F8E4B50C3C861C007A2EA7 /* WED_OverlayImage.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_OverlayImage.cpp; sourceTree = "<group>"; };
 		D6F8E4B60C3C861C007A2EA7 /* WED_OverlayImage.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_OverlayImage.h; sourceTree = "<group>"; };
 		D6F8E4B70C3C861C007A2EA7 /* WED_TextureNode.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_TextureNode.cpp; sourceTree = "<group>"; };
@@ -2612,7 +2603,6 @@
 				D6FF28500B6E42B000960D5E /* Interfaces */,
 				D6BC36430AB22C84003949C5 /* DSF */,
 				D6BC365B0AB22C84003949C5 /* DSFTools */,
-				D6BC366E0AB22C84003949C5 /* Env */,
 				D6BC36770AB22C84003949C5 /* GUI */,
 				D60734500D197AF600E08F61 /* MeshTool */,
 				D6BC36DC0AB22C84003949C5 /* Obj */,
@@ -2666,25 +2656,9 @@
 				D687D5BB170E150B007300E2 /* DSF2Text.h */,
 				D6BC365E0AB22C84003949C5 /* DSF2TextGUI.cpp */,
 				D6BC365F0AB22C84003949C5 /* DSFToolCmdLine.cpp */,
-				D6BC366B0AB22C84003949C5 /* ENV2Overlay.cpp */,
-				D6BC366C0AB22C84003949C5 /* ENV2OverlayGUI.cpp */,
 				D6BC366D0AB22C84003949C5 /* README.dsf2text */,
 			);
 			path = DSFTools;
-			sourceTree = "<group>";
-		};
-		D6BC366E0AB22C84003949C5 /* Env */ = {
-			isa = PBXGroup;
-			children = (
-				D6BC36700AB22C84003949C5 /* EnvDefs.h */,
-				D6BC36710AB22C84003949C5 /* EnvParser.c */,
-				D6BC36720AB22C84003949C5 /* EnvParser.h */,
-				D6BC36730AB22C84003949C5 /* EnvWrite.c */,
-				D6BC36740AB22C84003949C5 /* EnvWrite.h */,
-				D6BC36750AB22C84003949C5 /* Persistence.cpp */,
-				D6BC36760AB22C84003949C5 /* Persistence.h */,
-			);
-			path = Env;
 			sourceTree = "<group>";
 		};
 		D6BC36770AB22C84003949C5 /* GUI */ = {
@@ -3345,6 +3319,8 @@
 				D6BC38A00AB22C85003949C5 /* MiscFuncs.cpp */,
 				D6BC38A10AB22C85003949C5 /* MiscFuncs.h */,
 				D6BC38AA0AB22C85003949C5 /* SelfTest.cpp */,
+				D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */,
+				D670D3111DD7D92000827DEA /* GISTool_ImageCmds.h */,
 			);
 			path = XESTools;
 			sourceTree = "<group>";
@@ -3642,6 +3618,12 @@
 				D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */,
 				D6917EB8172578270027AFBB /* WED_TaxiRouteNode.h */,
 				D6917EB9172578270027AFBB /* WED_TaxiRouteNode.cpp */,
+				D6F88E0C1C20A6BD00057F4D /* WED_RoadNode.cpp */,
+				D6F88E0D1C20A6BD00057F4D /* WED_RoadNode.h */,
+				D6183B9A1D7CAD8900E606E9 /* WED_TruckDestination.h */,
+				D6183B9B1D7CAD8900E606E9 /* WED_TruckDestination.cpp */,
+				D6183B971D7CA28200E606E9 /* WED_TruckParkingLocation.cpp */,
+				D6183B981D7CA28200E606E9 /* WED_TruckParkingLocation.h */,
 			);
 			path = WEDEntities;
 			sourceTree = "<group>";
@@ -4094,9 +4076,6 @@
 				D60734160D197A1100E08F61 /* DSFLib_Print.cpp in Sources */,
 				D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */,
 				D60734180D197A1100E08F61 /* DSFLibWrite.cpp in Sources */,
-				D60734190D197A1100E08F61 /* EnvParser.c in Sources */,
-				D607341A0D197A1100E08F61 /* EnvWrite.c in Sources */,
-				D607341B0D197A1100E08F61 /* Persistence.cpp in Sources */,
 				D607341C0D197A1100E08F61 /* XChunkyFileUtils.cpp in Sources */,
 				D607341D0D197A1100E08F61 /* AssertUtils.cpp in Sources */,
 				D607341E0D197A1100E08F61 /* MemFileUtils.cpp in Sources */,
@@ -4187,6 +4166,7 @@
 				D62435470AE40219004F00E3 /* DSFLibWrite.cpp in Sources */,
 				D62435480AE40219004F00E3 /* DSFPointPool.cpp in Sources */,
 				D62435C80AE40392004F00E3 /* HTTPClient.cpp in Sources */,
+				D670D3121DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */,
 				D62435CD0AE40392004F00E3 /* Terraserver.cpp in Sources */,
 				D62435CE0AE40392004F00E3 /* XMLObject.cpp in Sources */,
 				D62435D50AE403A4004F00E3 /* AptElev.cpp in Sources */,
@@ -4341,9 +4321,6 @@
 				D65E4B260B65427C004D7887 /* DSFLib_Print.cpp in Sources */,
 				D65E4B270B65427C004D7887 /* DSFPointPool.cpp in Sources */,
 				D65E4B280B65427C004D7887 /* DSFLibWrite.cpp in Sources */,
-				D65E4B290B65427C004D7887 /* EnvParser.c in Sources */,
-				D65E4B2A0B65427C004D7887 /* EnvWrite.c in Sources */,
-				D65E4B2B0B65427C004D7887 /* Persistence.cpp in Sources */,
 				D65E4B2C0B65427C004D7887 /* XChunkyFileUtils.cpp in Sources */,
 				D65E4B2D0B65427C004D7887 /* AssertUtils.cpp in Sources */,
 				D65E4B2E0B65427C004D7887 /* MemFileUtils.cpp in Sources */,
@@ -4417,6 +4394,7 @@
 				D68E28840EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
 				D6BB22910EC13287006499D7 /* MapTopology.cpp in Sources */,
 				D6BB23AF0EC1EBE1006499D7 /* CompGeomUtils.cpp in Sources */,
+				D670D3131DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */,
 				D678ADF60F7952B700F72139 /* tri_stripper.cpp in Sources */,
 				D6956ECC0F82DBF800F6718E /* MapHelpers.cpp in Sources */,
 				D6DBA25310573941004E1089 /* AptAlgs.cpp in Sources */,
@@ -4460,14 +4438,10 @@
 			files = (
 				D67EF8520B5E5D9F00D9190C /* DSF2Text.cpp in Sources */,
 				D67EF8530B5E5DA200D9190C /* DSFToolCmdLine.cpp in Sources */,
-				D67EF8540B5E5DA400D9190C /* ENV2Overlay.cpp in Sources */,
 				D67EF8620B5E5E7100D9190C /* DSFLib.cpp in Sources */,
 				D67EF8630B5E5E7300D9190C /* DSFLib_Print.cpp in Sources */,
 				D67EF8640B5E5E7500D9190C /* DSFPointPool.cpp in Sources */,
 				D67EF8650B5E5E7500D9190C /* DSFLibWrite.cpp in Sources */,
-				D67EF8660B5E5E7800D9190C /* EnvParser.c in Sources */,
-				D67EF8670B5E5E7900D9190C /* EnvWrite.c in Sources */,
-				D67EF8680B5E5E7A00D9190C /* Persistence.cpp in Sources */,
 				D67EF86A0B5E5E8C00D9190C /* XChunkyFileUtils.cpp in Sources */,
 				D67EF86B0B5E5E9100D9190C /* AssertUtils.cpp in Sources */,
 				D67EF86D0B5E5E9A00D9190C /* MemFileUtils.cpp in Sources */,
@@ -4484,9 +4458,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D67EF9780B6135F400D9190C /* EnvParser.c in Sources */,
-				D67EF9790B6135F400D9190C /* EnvWrite.c in Sources */,
-				D67EF97A0B6135F400D9190C /* Persistence.cpp in Sources */,
 				D67EF97B0B6135F400D9190C /* XChunkyFileUtils.cpp in Sources */,
 				D67EF97C0B6135F400D9190C /* AssertUtils.cpp in Sources */,
 				D67EF97D0B6135F400D9190C /* MemFileUtils.cpp in Sources */,
@@ -4616,12 +4587,14 @@
 				D6ED370A0B67964D00D5484E /* XObjDefs.cpp in Sources */,
 				D6ED370B0B67964D00D5484E /* XChunkyFileUtils.cpp in Sources */,
 				D6ED370C0B67964D00D5484E /* md5.c in Sources */,
+				D6183B991D7CA28200E606E9 /* WED_TruckParkingLocation.cpp in Sources */,
 				D6ED370D0B67964D00D5484E /* ogle.cpp in Sources */,
 				D6ED37100B67964D00D5484E /* MemFileUtils.cpp in Sources */,
 				D6ED37110B67964D00D5484E /* PolyRasterUtils.cpp in Sources */,
 				D6ED371F0B67964D00D5484E /* b64.c in Sources */,
 				D6ED37220B67964D00D5484E /* BWImage.cpp in Sources */,
 				D6F3F08B1D072BE800188B28 /* CSVParser.cpp in Sources */,
+				D6F621651DF7297900B4091F /* GUI_TextTable.cpp in Sources */,
 				D6ED37230B67964D00D5484E /* GISUtils.cpp in Sources */,
 				D6ED37240B67964D00D5484E /* ProgressUtils.cpp in Sources */,
 				D6ED37250B67964D00D5484E /* UIUtils.cpp in Sources */,
@@ -4636,7 +4609,6 @@
 				D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */,
 				D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */,
 				D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */,
-				D6ED3E4F0B6A674000D5484E /* GUI_TextTable.cpp in Sources */,
 				D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */,
 				D6ED3F560B6AA25600D5484E /* WED_Properties.cpp in Sources */,
 				D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */,
@@ -4764,6 +4736,7 @@
 				D6956ED40F82E91100F6718E /* WED_Assert.cpp in Sources */,
 				D6956ED50F82E91100F6718E /* WED_Globals.cpp in Sources */,
 				D6C38FDD0FA0D6E500EFA56C /* GUI_Unicode.cpp in Sources */,
+				D6F88E0E1C20A6BD00057F4D /* WED_RoadNode.cpp in Sources */,
 				D60B0ECD0FCC886A001E8DD3 /* WED_Orthophoto.cpp in Sources */,
 				D680AA1E0FCD85B400712B5B /* WED_GISUtils.cpp in Sources */,
 				D653D6D41054552100A502FF /* WED_DebugLayer.cpp in Sources */,
@@ -4796,6 +4769,7 @@
 				D6917EBA172578270027AFBB /* WED_TaxiRouteNode.cpp in Sources */,
 				D6FEF21A18E9C4360035421F /* WED_GatewayExport.cpp in Sources */,
 				D6FEF21D18E9C4440035421F /* WED_SceneryPackExport.cpp in Sources */,
+				D6183B9C1D7CAD8900E606E9 /* WED_TruckDestination.cpp in Sources */,
 				D6FEF45918EB045C0035421F /* WED_AptTable.cpp in Sources */,
 				D6FEF50418EB176A0035421F /* GUI_FormWindow.cpp in Sources */,
 				D6FEF55C18EB23B40035421F /* GUI_Label.cpp in Sources */,

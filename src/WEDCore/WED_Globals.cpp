@@ -22,7 +22,7 @@
  */
 #include "WED_Globals.h"
 
-#if DEV
+#if DEV || DEBUG_VIS_LINES
 
 vector<pair<Point2,Point3> >		gMeshPoints;
 vector<pair<Point2,Point3> >		gMeshLines;

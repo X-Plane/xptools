@@ -106,7 +106,7 @@ void	WED_PropertyTable::GetCellContent(
 						int							cell_y,
 						GUI_CellContent&			the_content)
 {
-	char buf[100], fmt[10];
+	char buf[100], fmt[16];
 
 	// By the end of this we need to have filled the_content out with
 	//  1. Abilities - can_edit, can_disclose, can_drag, etc...
@@ -164,26 +164,19 @@ void	WED_PropertyTable::GetCellContent(
 	case prop_Double:
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
+		sprintf(fmt,"%%%d.%dlf %s",inf.digits, inf.decimals, inf.units);
 		if(inf.round_down)
 		{
-			double int_part = floor(val.double_val);
-			double fract_part = val.double_val - int_part;
 			// We are going to shift our fractional part left 1 more decimal digit to the left than needed.  Why?
 			// The answer: we have to round to nearest to reconstruct numbers like 128.839999999 (as 128.84444444.
 			// But we don't want the round to bump our last digit up (128.825 should NOT become 128.83).  So we do
 			// the round with one EXTRA digit of precision to catch the floating point sliver case.
-			fract_part *= powf(10,inf.decimals+1);
-			fract_part = round(fract_part);
-			// Then we simply TRUNCATE the last digit via floor, turning 128.125 to 128.12 (because 125 / 10 floor'd is 12).
-			fract_part = floor(fract_part / 10.0);
-			int int_size = inf.digits - inf.decimals - 1;
-			int dec_size = inf.decimals;
-			sprintf(fmt,"%% %dd.%%0%dd",int_size,dec_size);
-			sprintf(buf,fmt,(int) int_part, (int) fract_part);
+			double fract = pow(10.0,inf.decimals);
+			double v = floor(fract * (val.double_val) + 0.05) / fract;
+			sprintf(buf,fmt,v);
 		}
 		else
 		{
-			sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
 			sprintf(buf,fmt,val.double_val);
 		}
 		the_content.text_val = buf;

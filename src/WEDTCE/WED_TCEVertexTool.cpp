@@ -10,6 +10,7 @@
 #include "AssertUtils.h"
 #include "IGIS.h"
 #include "WED_EnumSystem.h"
+#include "WED_DrapedOrthophoto.h"
 
 WED_TCEVertexTool::WED_TCEVertexTool(
 							const char *			tool_name,
@@ -17,7 +18,7 @@ WED_TCEVertexTool::WED_TCEVertexTool(
 							WED_MapZoomerNew *		zoomer,
 							IResolver *				resolver) :
 	WED_HandleToolBase(tool_name, host, zoomer, resolver),
-	mGrid(this,"Snap To Vertices", SQL_Name("",""),XML_Name("",""), TCE_GridSnap, tce_Grid_None)	
+	mGrid(this,"Snap to Grid", SQL_Name("",""),XML_Name("",""), TCE_GridSnap, tce_Grid_None)	
 {
 	SetCanSelect(0);
 	SetDrawAlways(1);
@@ -33,7 +34,7 @@ void		WED_TCEVertexTool::BeginEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->StartOperation("Marquee Drag");
+	op->StartOperation("UVmap Modification");
 }
 
 void		WED_TCEVertexTool::EndEdit(void)
@@ -250,6 +251,13 @@ void		WED_TCEVertexTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point
 	new_b.p1 += delta;
 	new_b.p2 += delta;
 	who->Rescale(gis_UV,old_b,new_b);
+	
+	// now that we used TCE to modify the UVmaping, turn off the automatic redraping
+	WED_Thing * node = dynamic_cast <WED_Thing *> (who);
+	node = node->GetParent();
+	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+	if (ortho)
+		ortho->SetSubTexture(Bbox2(0,0,0,0));
 }
 
 void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& delta, Point2& io_pt)
@@ -279,7 +287,7 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 			if(c == 0)
 			{
 				pt_bt->GetLocation(gis_UV,p);
-				io_pt += delta;				
+				io_pt += delta;
 				p = io_pt;
 				HandleSnap(p,delta);
 				pt_bt->SetLocation(gis_UV,p);
@@ -305,6 +313,18 @@ void		WED_TCEVertexTool::ControlsHandlesBy(intptr_t id, int c, const Vector2& de
 		}
 		break;
 	}
+
+	// now that we are going to use TCE to modify the UVmaping, turn off the automatic redraping first
+	WED_Thing * node = dynamic_cast <WED_Thing *> (who);
+	node = node->GetParent();
+	node = node->GetParent();
+	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+//	if (ortho)
+//		ortho->SetSubTexture(Bbox2(0,0,0,0));
+	
+	// next update mCache ?
+//	SyncCache();
+
 }
 
 void		WED_TCEVertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta, Point2& io_pt)
@@ -328,21 +348,29 @@ void		WED_TCEVertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& de
 		}
 		break;
 	}
-	
+	// now that we used TCE to modify the UVmaping, turn off the automatic redraping
+	WED_Thing * node = dynamic_cast <WED_Thing *> (who);
+	node = node->GetParent();
+	node = node->GetParent();
+	WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+	if (ortho)
+		ortho->SetSubTexture(Bbox2(0,0,0,0));
 }
 
 void	WED_TCEVertexTool::HandleSnap(Point2& io_pt, const Vector2& delta)
 {
 	if(mGrid.value != tce_Grid_None)
 	{
-		double sub_div = 1;
+		double sub_div_h = 1, sub_div_v = 1;
 		switch(mGrid.value) {
-		case tce_Grid_Whole:	sub_div = 1;	break;
-		case tce_Grid_Half:		sub_div = 2;	break;
-		case tce_Grid_Quarter:	sub_div = 4;	break;
+		case tce_Grid_3x3:	sub_div_h = sub_div_v = 3;	break;
+		case tce_Grid_4x4:	sub_div_h = sub_div_v = 4;	break;
+		case tce_Grid_5x5:	sub_div_h = sub_div_v = 5;	break;
+		case tce_Grid_3x4:	sub_div_h = 3; sub_div_v = 4;	break;
+		case tce_Grid_4x3:	sub_div_h = 4; sub_div_v = 3;	break;
 		}
-		io_pt.x_ = round(io_pt.x_ * sub_div) / sub_div;
-		io_pt.y_ = round(io_pt.y_ * sub_div) / sub_div;
+		io_pt.x_ = round(io_pt.x_ * sub_div_h) / sub_div_h;
+		io_pt.y_ = round(io_pt.y_ * sub_div_v) / sub_div_v;
 	}
 }
 

@@ -12,13 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp" />
-    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFLib.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFLibWrite.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFPointPool.cpp" />
     <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
-    <ClCompile Include="..\..\src\Env\EnvParser.c" />
-    <ClCompile Include="..\..\src\Env\Persistence.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Application.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Broadcaster.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Button.cpp" />
@@ -163,6 +160,7 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_RampPosition.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Ring.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_RoadEdge.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_RoadNode.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Root.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Runway.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_RunwayNode.cpp" />
@@ -178,6 +176,8 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_TextureNode.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Thing.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_TowerViewpoint.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TruckDestination.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_TruckParkingLocation.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Windsock.cpp" />
     <ClCompile Include="..\..\src\WEDFileCache\CACHE_CacheObject.cpp" />
     <ClCompile Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.cpp" />
@@ -262,9 +262,6 @@
     <ClInclude Include="..\..\src\DSF\tri_stripper_101\heap_array.h" />
     <ClInclude Include="..\..\src\DSF\tri_stripper_101\stdafx.h" />
     <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
-    <ClInclude Include="..\..\src\Env\EnvDefs.h" />
-    <ClInclude Include="..\..\src\Env\EnvParser.h" />
-    <ClInclude Include="..\..\src\Env\Persistence.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Application.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Broadcaster.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Button.h" />
@@ -425,6 +422,7 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_RampPosition.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Ring.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_RoadEdge.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_RoadNode.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Root.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Runway.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_RunwayNode.h" />
@@ -440,6 +438,8 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_TextureNode.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Thing.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_TowerViewpoint.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h" />
+    <ClInclude Include="..\..\src\WEDEntities\WED_TruckParkingLocation.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Windsock.h" />
     <ClInclude Include="..\..\src\WEDFileCache\CACHE_CacheObject.h" />
     <ClInclude Include="..\..\src\WEDFileCache\CACHE_DomainPolicy.h" />

@@ -699,7 +699,10 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		tmp.type   = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
 		tmp.status = curScenery["Status"].asString();
 		
-		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
+		//!!features is not needed to read!!
+		//string features_str = curScenery.operator[]("features").asString();
+		//tmp.features = vector<char>(features_str.begin(), features_str.end());
+		
 		tmp.artistComments    = curScenery.operator[]("artistComments").asString()    != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
 		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("moderatorComments").asString() : "N/A";
 		

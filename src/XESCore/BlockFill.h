@@ -37,13 +37,16 @@ bool	init_block(
 					CDT&					mesh,
 					Pmwx::Face_handle		face,
 					Block_2&				out_block,
-					CoordTranslator2&		translator);		// returns true if block is not insanely small!
+					CoordTranslator2&		translator,
+					int *					io_agb_fail);			// If not null, tells us if an attempt to apply an AGB rule with no facade fallback failed due to not-straight geometry.
+					// returns true if block is not insanely small!
 
 bool	apply_fill_rules(
 					int						zoning,
 					Pmwx::Face_handle		orig_face,
 					Block_2&				block,
-					CoordTranslator2&		translator);
+					CoordTranslator2&		translator,
+					int						agb_did_fail);			// If true, our AGB rule didn't work, so pretend it doesn't exist.
 
 void	extract_features(
 					Block_2&				block,

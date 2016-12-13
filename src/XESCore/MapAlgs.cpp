@@ -46,6 +46,8 @@
 #include <CGAL/Polyline_simplification_2/Stop_below_cost_threshold.h>
 #endif
 
+#define SHOW_ISLAND_REMOVAL 0
+
 #define DEBUG_OUTSET_REMOVER 1
 
 // NOTE: by convention all of the static helper routines and structs have the __ prefix..this is intended
@@ -2721,6 +2723,17 @@ int RemoveIslands(Pmwx& io_map, double max_area)
 			if (a < max_area)
 			{
 				f->set_data(holds_me->data());
+				#if SHOW_ISLAND_REMOVAL
+				Pmwx::Ccb_halfedge_circulator circ, stop;
+				circ = stop = f->outer_ccb();
+				do
+				{
+					debug_mesh_line(cgal2ben(circ->source()->point()),
+									cgal2ben(circ->target()->point()),
+									1,0,0,1,0,0);
+									
+				} while(++circ != stop);
+				#endif
 				++k;
 			}
 		}

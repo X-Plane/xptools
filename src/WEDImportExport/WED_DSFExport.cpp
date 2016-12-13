@@ -59,6 +59,7 @@
 #include <time.h>
 #include "PerfUtils.h"
 #include "STLUtils.h"
+#include "WED_RoadEdge.h"
 
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
@@ -189,6 +190,257 @@ void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
 }
 
 /************************************************************************************************************************************************
+ * ROAD PROCESSOR
+ ************************************************************************************************************************************************/
+#if ROAD_EDITING
+class dsf_road_grid_helper {
+public:
+
+	struct node {
+		vector<int>	edges;
+		int			id;
+	};
+	struct edge {
+		int start_node;
+		int	end_node;
+		int start_level;
+		int end_level;
+		int subtype;
+		vector<Bezier2>	path;
+		
+		bool level_is_uniform() { return start_level == end_level; }
+		int level_for_node(int n)
+		{
+			DebugAssert(n == start_node || n == end_node);
+			if (n == start_node)return start_level;
+			else				return end_level;
+		}
+	};
+
+	typedef map<IGISPoint *, int>	node_index;
+
+	node_index				m_node_index;
+	vector<node>			m_nodes;
+	vector<edge>			m_edges;
+	
+	void add_segment(WED_RoadEdge * e);
+
+	void remove_dupes();
+	void assign_ids();
+	void export_to_dsf(	int						net_type,
+						const DSFCallbacks_t *	cbs,
+						void *					writer);
+
+
+};
+
+void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
+{
+	IGISPoint * start = e->GetNthPoint(0);
+	IGISPoint * end = e->GetNthPoint(1);
+
+	node_index::iterator si = m_node_index.find(start);
+	node_index::iterator ei = m_node_index.find(end);
+	
+	edge new_edge;
+	new_edge.start_level = e->GetStartLayer();
+	new_edge.end_level = e->GetEndLayer();
+	new_edge.subtype = e->GetSubtype();
+	if(si == m_node_index.end())
+	{
+		new_edge.start_node = m_nodes.size();
+		si = m_node_index.insert(make_pair(start, m_nodes.size())).first;
+		m_nodes.push_back(node());
+	}
+	else
+	{
+		new_edge.start_node = si->second;
+	}
+	
+	if(ei == m_node_index.end())
+	{
+		new_edge.end_node = m_nodes.size();
+		ei = m_node_index.insert(make_pair(end, m_nodes.size())).first;
+		m_nodes.push_back(node());
+	}
+	else
+	{
+		new_edge.end_node = ei->second;
+	}
+	
+	m_nodes[si->second].edges.push_back(m_edges.size());
+	m_nodes[ei->second].edges.push_back(m_edges.size());
+	
+	Bezier2 b;
+	Segment2 s;
+	if(!e->GetSide(gis_Geo, 0, s, b))
+	{
+		b.p1 = s.p1;
+		b.c1 = s.p1;
+		b.c2 = s.p2;
+		b.c2 = s.p2;
+	}
+	else
+	{
+		if(b.p1 != b.c1 || b.p2 != b.c2)	// We are a real bezier:
+		{
+			if(b.p1 == b.c1)
+			{
+				b.c1 = b.p1 + b.derivative(0.01);
+			}
+			else if(b.p2 == b.c2)
+			{
+				b.c2 = b.p2 - b.derivative(0.99);
+			}
+		}
+	}
+	new_edge.path.push_back(b);
+	
+	m_edges.push_back(new_edge);
+}
+
+void dsf_road_grid_helper::remove_dupes()
+{
+	// For each node, we identify a node of degree 2 with an outgoing and incoming road
+	// that are exactly the same.  We merge around us and clear us out.
+	for(int n = 0; n < m_nodes.size(); ++n)
+	{
+		if(m_nodes[n].edges.size() == 2)
+		{
+			int e1 = m_nodes[n].edges[0];
+			int e2 = m_nodes[n].edges[1];
+			if(e1 != e2)						// If we have a loop (a contour going to itself) we can't merge.
+			{
+				edge * ee1 = &m_edges[e1];
+				edge * ee2 = &m_edges[e2];
+				
+				if(ee1->level_is_uniform() && ee2->level_is_uniform())
+				if(ee1->level_for_node(n) == ee2->level_for_node(n) && ee1->subtype == ee2->subtype)	// Only merge if level and subtype matches
+				{
+					DebugAssert(ee1->start_node == n || ee1->end_node == n);
+					DebugAssert(ee2->start_node == n || ee2->end_node == n);
+					DebugAssert(ee1->start_node != n || ee1->end_node != n);
+					DebugAssert(ee2->start_node != n || ee2->end_node != n);
+					
+					int incoming1 = ee1->end_node == n;
+					int incoming2 = ee2->end_node == n;
+					
+					if(incoming1 != incoming2)									// Only merge if one is in and one is out - so direction isn't reversed.
+					{
+						if(!incoming1)
+						{
+							// merge 2 then 1
+							DebugAssert(ee2->end_node == ee1->start_node);
+							swap(ee1, ee2);
+							swap(e1, e2);
+						}
+
+						// Now we have e1->e2 for sure
+						// merge 1 then 2
+						DebugAssert(ee1->end_node == ee2->start_node);
+						
+						// Find the final destination of e2, and mark it as having e1 coming in.
+						node * dest = &m_nodes[ee2->end_node];
+						vector<int>::iterator i = find(dest->edges.begin(), dest->edges.end(), e2);
+						DebugAssert(i != dest->edges.end());
+						if(i != dest->edges.end())
+						{
+							*i = e1;
+						}
+						
+						// Now merge - ee1 get's ee2's path and destination
+						
+						ee1->path.insert(ee1->path.end(),ee2->path.begin(), ee2->path.end());
+						ee1->end_node = ee2->end_node;
+						ee1->end_level = ee2->end_level;
+
+						// Mark ee2 as unused - path is clear, no connectivity
+						ee2->start_node = -1;
+						ee2->end_node = -1;
+						ee2->path.clear();
+						
+						// Mark ourselves as dead - no adjacent edges
+						m_nodes[n].edges.clear();
+					}
+				}
+			}
+		}
+	}
+}
+
+
+void dsf_road_grid_helper::assign_ids()
+{
+	int idx = 1;
+	for(vector<node>::iterator n = m_nodes.begin(); n != m_nodes.end(); ++n)
+	{
+		if(n->edges.empty())
+			n->id = 0;
+		else
+			n->id = idx++;
+	}
+}
+
+void dsf_road_grid_helper::export_to_dsf(
+	int						net_type,
+	const DSFCallbacks_t *	cbs,
+	void *					writer)
+{
+	remove_dupes();
+	assign_ids();
+
+				double coords[4];
+
+	for(vector<edge>::iterator e = m_edges.begin(); e != m_edges.end(); ++e)
+	if(!e->path.empty())
+	{
+		for(vector<Bezier2>::iterator b = e->path.begin(); b != e->path.end(); ++b)
+		{
+			coords[0] = b->p1.x();
+			coords[1] = b->p1.y();
+
+			if(b == e->path.begin())
+			{
+				coords[2] = e->start_level;
+				coords[3] = m_nodes[e->start_node].id;
+				cbs->BeginSegment_f(
+								net_type,
+								e->subtype,
+								coords,
+								false,
+								writer);
+			}
+			else
+			{
+				coords[2] = 0;
+				cbs->AddSegmentShapePoint_f(coords, false, writer);
+			}
+			
+			if(b->p1 != b->c1 || b->p2 != b->c2)
+			{
+				coords[2] = 1;
+				coords[0] = b->c1.x();
+				coords[1] = b->c1.y();
+				cbs->AddSegmentShapePoint_f(coords, false, writer);
+				coords[0] = b->c2.x();
+				coords[1] = b->c2.y();
+				cbs->AddSegmentShapePoint_f(coords, false, writer);
+			}
+		}
+		
+		coords[2] = e->end_level;
+		coords[0] = e->path.back().p2.x();
+		coords[1] = e->path.back().p2.y();
+		coords[3] = m_nodes[e->end_node].id;
+		cbs->EndSegment_f(coords, false, writer);
+	}
+}
+#endif
+
+
+
+
+/************************************************************************************************************************************************
  * DSF EXPORT UTILS
  ************************************************************************************************************************************************/
 
@@ -206,6 +458,12 @@ struct	DSF_ResourceTable {
 	vector<string>				pol_defs;
 	map<pair<string, int>, int>	pol_defs_idx;
 
+#if ROAD_EDITING
+	vector<string>				net_defs;
+	map<string, int>			net_defs_idx;
+
+	list<dsf_road_grid_helper>	net_grids;		// list to avoid massive realloc thrash on second grid?
+#endif
 	vector<string>				filters;
 	map<string, int>			filter_idx;
 	
@@ -244,7 +502,26 @@ struct	DSF_ResourceTable {
 		pol_defs.push_back(f);
 		return				  pol_defs.size()-1;
 	}
-	
+#if ROAD_EDITING
+	dsf_road_grid_helper * accum_net(const string& f)
+	{
+		int ret = 0;
+		map<string,int>::iterator i = net_defs_idx.find(f);
+		if(i != net_defs_idx.end())
+			ret = i->second;
+		else
+		{
+			net_defs_idx[f] = net_defs.size();
+			net_defs.push_back(f);
+			net_grids.push_back(dsf_road_grid_helper());
+			ret = net_defs.size()-1;
+		}
+		
+		list<dsf_road_grid_helper>::iterator it = net_grids.begin();
+		advance(it, ret);
+		return &*it;
+	}
+#endif
 	int accum_filter(const string& icao_filter)
 	{
 		map<string,int>::iterator i = filter_idx.find(icao_filter);
@@ -264,7 +541,15 @@ struct	DSF_ResourceTable {
 
 		for(vector<pair<string,string> >::iterator e = exclusions[-1].begin(); e != exclusions[-1].end(); ++e)
 			cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
-
+#if ROAD_EDITING
+		list<dsf_road_grid_helper>::iterator grid = net_grids.begin();
+		int road_idx = 0;
+		for(vector<string>::iterator s = net_defs.begin(); s != net_defs.end(); ++s, ++grid, ++road_idx)
+		{
+			cbs.AcceptNetworkDef_f(s->c_str(), writer);
+			grid->export_to_dsf(road_idx, &cbs, writer);
+		}
+#endif
 		int idx = 0;
 		for(vector<string>::iterator s = filters.begin(); s != filters.end(); ++s, ++idx)
 		{
@@ -830,6 +1115,9 @@ static int	DSF_ExportTileRecursive(
 	WED_PolygonPlacement * pol;
 	WED_DrapedOrthophoto * orth;
 	WED_ExclusionZone * xcl;
+#if ROAD_EDITING
+	WED_RoadEdge * roa;
+#endif
 	WED_Airport * apt;
 
 	int idx;
@@ -1572,6 +1860,18 @@ static int	DSF_ExportTileRecursive(
 			}
 		}
 	}
+#if ROAD_EDITING
+	if ((roa = dynamic_cast<WED_RoadEdge*>(what)) != NULL)
+		if (show_level == 6)
+		{
+			string asset;
+			roa->GetResource(asset);
+			dsf_road_grid_helper * grid = io_table.accum_net(asset);
+			grid->add_segment(roa);
+			++real_thingies;
+		}
+
+#endif // ROAD_EDITING
 
 
 	//------------------------------------------------------------------------------------------------------------
