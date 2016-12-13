@@ -870,7 +870,14 @@ WED_Thing *	WED_PropertyTable::FetchNth(int row)
 {
 	if (!mCacheValid)
 	{
-		RebuildCache();
+		if (mSearchFilter.empty() == true)
+		{
+			RebuildCache();
+		}
+		else
+		{
+			Resort();
+		}
 	}
 
 	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
@@ -905,7 +912,14 @@ int			WED_PropertyTable::GetColCount(void)
 
 	if (!mCacheValid)
 	{
-		RebuildCache();
+		if (mSearchFilter.empty() == true)
+		{
+			RebuildCache();
+		}
+		else
+		{
+			Resort();
+		}
 	}
 
 	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
@@ -926,7 +940,14 @@ int			WED_PropertyTable::GetRowCount(void)
 
 	if (!mCacheValid)
 	{
-		RebuildCache();
+		if (mSearchFilter.empty() == true)
+		{
+			RebuildCache();
+		}
+		else
+		{
+			Resort();
+		}
 	}
 
 	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
@@ -1027,6 +1048,8 @@ void WED_PropertyTable::SetFilter(const string & filter)
 {
 	mSearchFilter = filter;
 	Resort();
+
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
 }
 
 //parameters
@@ -1091,8 +1114,6 @@ void WED_PropertyTable::Resort()
 		mSortedCache.reserve(mThingCache.size());
 		collect_recusive(WED_GetWorld(mResolver), mSearchFilter, mSortedCache);
 	}
-
-	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
 }
 //-----------------------------------------------------------------------------
 
