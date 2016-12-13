@@ -86,8 +86,6 @@ WED_PropertyTable::WED_PropertyTable(
 	mCacheValid(false)
 {
 	RebuildCache();
-	mSortedCache = mThingCache;
-	mSortedOpen = mOpen;
 
 	if (col_names)
 	while(*col_names)
@@ -251,6 +249,15 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_edit = inf.can_edit;
 	if (the_content.can_edit)
 	if (WED_GetWorld(mResolver) == t)	the_content.can_edit = 0;
+
+	//THIS IS A HACK to stop the user from being able to disclose arrows during search mode
+	if (mSearchFilter.empty() == false)
+	{
+		if (the_content.can_disclose == true)
+		{
+			the_content.is_disclosed = true;
+		}
+	}
 
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
@@ -1028,7 +1035,7 @@ void WED_PropertyTable::SetFilter(const string & filter)
 //sorted_cache - the sorted_cache of wed things we're building up
 //sorted_open_ids - the hash map of id and true false if its open or not
 //returns number of bad leafs
-int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_Thing*>& sorted_cache, hash_map<int,int>& sorted_open_ids)
+int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_Thing*>& sorted_cache)
 {
 	DebugAssert(thing != NULL);
 
@@ -1046,11 +1053,6 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 		if (is_match)
 		{
 			sorted_cache.push_back(thing);
-
-			if (is_group_like == true)
-			{
-				sorted_open_ids.insert(make_pair(thing->GetID(), true));
-			}
 			return 0; //No bad leafs here!
 		}
 		else
@@ -1064,7 +1066,7 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 		int bad_leafs = 0;
 		for (int n = 0; n < nc; ++n)
 		{
-			bad_leafs += collect_recusive(thing->GetNthChild(n), search_filter, sorted_cache, sorted_open_ids);
+			bad_leafs += collect_recusive(thing->GetNthChild(n), search_filter, sorted_cache);
 		}
 
 		//If bad_leafs is less than the number of kids it means that there is at least some reason to keep this group
@@ -1072,7 +1074,6 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 		if ((bad_leafs < nc && is_group_like) || is_match)
 		{
 			sorted_cache.insert(sorted_cache.begin() + current_end_pos, thing);
-			sorted_open_ids.insert(make_pair(thing->GetID(), true));
 			return 0;
 		}
 		else
@@ -1085,11 +1086,10 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 void WED_PropertyTable::Resort()
 {
 	mSortedCache.clear();
-	mSortedOpen.clear();
 	if (mSearchFilter.empty() == false)
 	{
 		mSortedCache.reserve(mThingCache.size());
-		collect_recusive(WED_GetWorld(mResolver), mSearchFilter, mSortedCache, mSortedOpen);
+		collect_recusive(WED_GetWorld(mResolver), mSearchFilter, mSortedCache);
 	}
 
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
@@ -1102,25 +1102,25 @@ void WED_PropertyTable::Resort()
 
 bool WED_PropertyTable::GetOpen(int id)
 {
-	hash_map<int, int>& current_open = mSearchFilter.empty() ? mOpen : mSortedOpen;
-	return current_open.count(id) == 0 || current_open[id] != 0;
+	return mOpen.count(id) == 0 || mOpen[id] != 0;
 }
 
 void WED_PropertyTable::ToggleOpen(int id)
 {
-	hash_map<int, int>& current_open = mSearchFilter.empty() ? mOpen : mSortedOpen;
-	int old_val = GetOpen(id);
-	current_open[id] = old_val ? 0 : 1;
+	if (mSearchFilter.empty() == true)
+	{
+		int old_val = GetOpen(id);
+		mOpen[id] = old_val ? 0 : 1;
+	}
 }
 
 void WED_PropertyTable::SetOpen(int id, int o)
 {
-	if (mSearchFilter.empty() == true) //Easy hack for disabling disclose behavior, TODO fix?
+	if (mSearchFilter.empty() == true)
 	{
 		mOpen[id] = o;
 	}
 }
-
 
 // This is the main "filter" function - it determines four properties at once about an entity:
 // 1. Can we actually see this entity?

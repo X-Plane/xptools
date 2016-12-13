@@ -204,7 +204,6 @@ private:
 
 
 	hash_map<int,int>			mOpen;
-	hash_map<int,int>			mSortedOpen;
 
 	int							mVertical;
 	int							mDynamicCols;
