@@ -268,7 +268,7 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	int bnds[4];
 	GetHost()->GetBounds(bnds);
 	
-	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, zoom_msg.str().c_str());
+	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
 
 }
 
