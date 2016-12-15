@@ -365,8 +365,6 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 	if(itr == CACHE_file_cache.end()) //1. Not in CACHE_file_cache?
 	{
 		//If it is not on disk, not cooling down, and not in the download_queue, we finally get to download it
-		cout << "CACHE size: " << CACHE_folder.size() << endl;
-		printf("start_new_cache_object: url %s", req.in_url.c_str());
 		return start_new_cache_object(req);
 	}
 	

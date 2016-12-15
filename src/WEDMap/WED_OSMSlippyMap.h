@@ -32,6 +32,7 @@ private:
 
 	WED_file_cache_request* m_cache_request;
 
+	//The texture cache, where they key is the tile texture path on disk and the value is the texture id
 	map<string,int>				m_cache;
 
 };
