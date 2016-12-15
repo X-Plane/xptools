@@ -165,6 +165,19 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			
 			int has_geo = 0;
 			
+			string base_tex = path;
+			int pp = base_tex.find_last_of("/:\\");
+			if(pp != base_tex.npos)
+				base_tex.erase(0,pp+1);
+			if (base_tex.find(" ") != base_tex.npos)
+			{
+				DoUserAlert("XP does not support spaces in texture names.");
+				wrl->AbortOperation();
+				free(free_me);
+				return;
+			}
+			
+			
 			ImageInfo	inf;
 			int res = MakeSupportedType(path, &inf);
 			if(res != 0)
