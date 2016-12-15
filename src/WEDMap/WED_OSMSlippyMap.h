@@ -30,7 +30,7 @@ private:
 
 			void	finish_loading_tile();
 
-	auto_ptr<WED_file_cache_request> m_cache_request;
+	WED_file_cache_request* m_cache_request;
 
 	map<string,int>				m_cache;
 

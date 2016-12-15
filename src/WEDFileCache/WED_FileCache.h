@@ -74,7 +74,10 @@ struct WED_file_cache_request
 
 	//The URL to request from, cached inside CACHE_CacheObject
 	string in_url;
+
 };
+
+ostream& operator << (ostream& os, const WED_file_cache_request& rhs);
 
 struct WED_file_cache_response
 {
@@ -113,6 +116,10 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 string WED_file_cache_file_in_cache(const WED_file_cache_request& req);
 
 string WED_file_cache_url_to_cache_path(const WED_file_cache_request& req);
+
+//Gets the files currently on disk without starting downloads
+vector<string> WED_file_cache_get_files_available(CACHE_domain domain, string folder_prefix);
+
 //Blocks until all previous cURL handles are finished or are forcibly stopped. Called once at the end of the program.
 void WED_file_cache_shutdown();
 

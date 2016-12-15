@@ -14,6 +14,7 @@
 #include "WED_MapZoomerNew.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
+#include "PlatformUtils.h"
 #include "TexUtils.h"
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
@@ -27,6 +28,10 @@
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
+#endif
+
+#if DEV
+#include <iostream>
 #endif
 
 #define MIN_ZOOM 0
@@ -115,7 +120,9 @@ static void get_tile_range_for_box(const double bounds[4], int z, int tiles[4])
 }
 
 
-WED_OSMSlippyMap::WED_OSMSlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) : WED_MapLayer(h, zoomer, resolver)
+WED_OSMSlippyMap::WED_OSMSlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver)
+	: WED_MapLayer(h, zoomer, resolver),
+	m_cache_request(NULL)
 {
 }
 
@@ -181,17 +188,28 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			GUI_FontDraw(g, font_UI_Basic, c, (pbounds[0]+pbounds[2]) / 2, (pbounds[1] + pbounds[3])/2, msg);
 			*/
 			
-
-			stringstream url;
-			url << "http://a.tile.openstreetmap.org/" << z << "/" << x << "/" << y << ".png";
-			string potential_path = WED_file_cache_url_to_cache_path(WED_file_cache_request("", cache_domain_osm_tile, "OSMSlippyMap", url.str()));
+			//cout << 
+			//for (map<string,int>::iterator itr = m_cache.begin(); itr != m_cache.end(); ++itr)
+			{
+				//cout << "Path: " << itr->first << " Enabled: " << std::boolalpha << itr->second << "\n---\n";
+			}
 			
-			if (m_cache.count(potential_path) != 0)
+			char path_buf[256];
+			sprintf(path_buf, "http://a.tile.openstreetmap.org/%d/%d/%d.png", z, x, y);
+			string url(path_buf);
+			//cout << url << endl;
+			stringstream folder_prefix;
+			folder_prefix << "OSMSlippyMap" << DIR_STR << z << DIR_STR << x;// << DIR_STR << y;
+			string potential_path = WED_file_cache_url_to_cache_path(WED_file_cache_request("", cache_domain_osm_tile, folder_prefix.str() , url));
+
+			if (m_cache.count(potential_path))
 			{
 				++got;
+
 				int id = m_cache[potential_path];
 				if(id != 0)
 				{
+					//cout << "Drawing URL: " << url << " path: " << potential_path.substr(28) << " id: " << id << endl;
 					g->SetState(0, 1, 0, 0, 0, 0, 0);
 					glColor4f(1,1,1,1);
 					g->BindTex(id, 0);
@@ -207,20 +225,30 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 						glTexCoord2f(0,1);
 						glVertex2f(pbounds[0],pbounds[1]);
 					glEnd();
+
+					float clr[4] = { 0,0,0,1 };
+
+					//stringstream ss;
+					//ss << potential_path.substr(28) << " Id: " << id;
+					//if (x % 3 == 0 && y % 3 == 0)
+					{
+						//GUI_FontDraw(g, font_UI_Basic, clr, pbounds[0] + 10, pbounds[1] + 10, ss.str().c_str());
+					}
 				}
 				else
 				{
 					++bad;
 				}
 			}
-			else if(m_cache_request.get() == NULL)
+			else if(m_cache_request == NULL)
 			{
-				m_cache_request.reset(new WED_file_cache_request("",cache_domain_osm_tile,"OSMSlippyMap",url.str()));
+				m_cache_request = new WED_file_cache_request("",cache_domain_osm_tile, folder_prefix.str(),url);
+				//cout << "Begin " << *m_cache_request << endl;
 			}
 		}
 	}
 
-	if (m_cache_request.get())
+	if (m_cache_request)
 	{
 		this->Start(0.05);
 	}
@@ -229,19 +257,21 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 		this->Stop();
 	}
 
-	stringstream ss;
-
-	ss << "Zoom level " << z_max
-		<< ": " << got << " of " << want
-		<< " (" << (float)got * 100.0f / (float)want << "% done, " << bad << " errors). "
-		<< (int)m_cache.size()
-		<< " tiles cached (" << (int)m_cache.size() / 4 << " MB)";
+	char buf[1024];
+	sprintf(buf, "Zoom level %d: %d of %d (%f%% done, %d errors). %d tiles cached (%d MB)",
+		z_max,
+		got,
+		want,
+		(float)got * 100.0f / (float)want,
+		bad,
+		(int)m_cache.size(),
+		(int)m_cache.size() / 4);
 
 	float clr[4] = { 1, 1, 1, 1 };
 	int bnds[4];
 	GetHost()->GetBounds(bnds);
 	
-	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, ss.str().c_str());
+	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, buf);
 
 }
 
@@ -252,7 +282,7 @@ void	WED_OSMSlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_a
 
 void	WED_OSMSlippyMap::finish_loading_tile()
 {
-	if (m_cache_request.get() != NULL)
+	if (m_cache_request != NULL)
 	{
 		WED_file_cache_response res = WED_file_cache_request_file(*m_cache_request);
 		if (res.out_status == cache_status_available)
@@ -277,7 +307,11 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 				printf("Bad JPEG data.\n");
 				m_cache[res.out_path] = 0;
 			}
-			m_cache_request.release();
+
+			//cout << "Finished " << *m_cache_request << " path: " << res.out_path << endl;
+
+			delete m_cache_request;
+			m_cache_request = NULL;
 		}
 		else if (res.out_status == cache_status_error)
 		{
@@ -286,7 +320,9 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 			printf("%s: %d\n%s\n", res.out_path.c_str(), code, res.out_error_human.c_str());
 
 			m_cache[res.out_path] = 0;
-			m_cache_request.release();
+
+			delete m_cache_request;
+			m_cache_request = NULL;
 		}
 	}
 }

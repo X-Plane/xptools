@@ -51,6 +51,12 @@ WED_file_cache_request::WED_file_cache_request(const string & cert, CACHE_domain
 {
 
 }
+
+ostream & operator<<(ostream & os, const WED_file_cache_request & rhs)
+{
+	return os << "cert: " << rhs.in_cert << " domain: " <<  rhs.in_domain << " prefix: " << rhs.in_folder_prefix << " url: " << rhs.in_url;
+}
+
 //---------------------------------------------------------------------------//
 
 //--WED_file_cache_response--------------------------------------------------
@@ -316,7 +322,6 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 {
 	//The cache must be initialized!
 	DebugAssert(CACHE_folder != "");
-
 	/*
 	-------------------------Method outline------------------------------------
 	
@@ -347,7 +352,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 	vector<CACHE_CacheObject* >::iterator itr = CACHE_file_cache.begin();
 	for ( ; itr != CACHE_file_cache.end(); ++itr)
 	{
-		if(FILE_get_file_name((**itr).get_disk_location()) == FILE_get_file_name(req.in_url))
+		if((**itr).get_disk_location() == WED_file_cache_url_to_cache_path(req))
 		{
 			break;
 		}
@@ -360,6 +365,8 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 	if(itr == CACHE_file_cache.end()) //1. Not in CACHE_file_cache?
 	{
 		//If it is not on disk, not cooling down, and not in the download_queue, we finally get to download it
+		cout << "CACHE size: " << CACHE_folder.size() << endl;
+		printf("start_new_cache_object: url %s", req.in_url.c_str());
 		return start_new_cache_object(req);
 	}
 	
@@ -437,7 +444,12 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 					FILE_delete_file(f.path().c_str(), false);
 					FILE_delete_file(cache_object_info.path().c_str(), false);
 					res.out_error_human = res.out_path + " could not be saved, check if the folder or file is in use or if you have sufficient privaleges";
+					printf("%s",res.out_error_human.c_str());
 					co.set_last_error_type(cache_error_type_disk_write);
+				}
+				else
+				{
+					printf("Success: %s\n", res.out_path.c_str());// out_error_human.c_str());
 				}
 #endif
 				res.out_error_type = co.get_last_error_type();
@@ -505,6 +517,12 @@ string WED_file_cache_file_in_cache(const WED_file_cache_request & req)
 string WED_file_cache_url_to_cache_path(const WED_file_cache_request & req)
 {
 	return CACHE_folder + DIR_STR + req.in_folder_prefix + DIR_STR + FILE_get_file_name(req.in_url);
+}
+
+vector<string> WED_file_cache_get_files_available(CACHE_domain domain, string folder_prefix)
+{
+	//vector<CACHE_CacheObject*> available_objs = CACHE_file_cache.a
+	return vector<string>();
 }
 
 void WED_file_cache_shutdown()
