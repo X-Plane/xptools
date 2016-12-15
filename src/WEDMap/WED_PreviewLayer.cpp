@@ -49,6 +49,9 @@
 #include "WED_EnumSystem.h"
 #include "GUI_Resources.h"
 #include "XESConstants.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_EnumSystem.h"
+#include "GISUtils.h"
 
 #if APL
 #include <OpenGL/gl.h>
@@ -849,6 +852,99 @@ struct	preview_object : public WED_PreviewItem {
 	}
 };
 
+struct	preview_truck : public WED_PreviewItem {
+	WED_TruckParkingLocation * trk;
+	int	preview_level;
+	IResolver * resolver;
+	preview_truck(WED_TruckParkingLocation * o, int l, int pl, IResolver * r) : WED_PreviewItem(l), trk(o), resolver(r), preview_level(pl) { }
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		ITexMgr *	tman = WED_GetTexMgr(resolver);
+		ILibrarian * lmgr = WED_GetLibrarian(resolver);
+		string vpath1, vpath2;
+
+		switch(trk->GetTruckType()) {
+		case atc_ServiceTruck_Baggage_Loader:		vpath1 = "lib/airport/vehicles/baggage_handling/belt_loader.obj";break;
+		case atc_ServiceTruck_Baggage_Train:		vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
+													vpath2 = "lib/airport/vehicles/baggage_handling/bag_cart.obj";	break;
+		case atc_ServiceTruck_Crew_Limo:
+		case atc_ServiceTruck_Crew_Car:				vpath1 = "lib/airport/vehicles/servicing/crew_car.obj";			break;
+		case atc_ServiceTruck_Crew_Ferrari:			vpath1 = "lib/airport/vehicles/servicing/crew_ferrari.obj";		break;
+		case atc_ServiceTruck_Food:					vpath1 = "lib/airport/vehicles/servicing/catering_truck.obj";	break;
+		case atc_ServiceTruck_FuelTruck_Jet:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_large.obj";	break;
+		case atc_ServiceTruck_FuelTruck_Liner:		vpath1 = "lib/airport/vehicles/fuel/hyd_disp_truck.obj";		break;
+		case atc_ServiceTruck_FuelTruck_Prop:		vpath1 = "lib/airport/vehicles/servicing/fuel_truck_small.obj";	break;
+		case atc_ServiceTruck_Ground_Power_Unit:	vpath1 = "lib/airport/vehicles/baggage_handling/tractor.obj";
+													vpath2 = "lib/airport/vehicles/servicing/GPU.obj";				break;
+		case atc_ServiceTruck_Pushback:				vpath1 = "lib/airport/vehicles/pushback/tug.obj";				break;
+		}
+
+		XObj8 * o1 = NULL, * o2 = NULL;
+		#if AIRPORT_ROUTING
+		agp_t agp;
+		#endif
+		if(!vpath1.empty() && rmgr->GetObj(vpath1,o1))
+		{
+			g->SetState(false,1,false,false,true,false,false);
+			glColor3f(1,1,1);
+			Point2 loc;
+			trk->GetLocation(gis_Geo,loc);
+			double trk_heading = trk->GetHeading();
+			if(!cull_obj(zoomer,o1, loc, trk_heading))
+			{
+				draw_obj_at_ll(tman, o1, loc, trk_heading, g, zoomer);
+			}
+
+			if(trk->GetTruckType() == atc_ServiceTruck_Baggage_Train)
+			{
+				rmgr->GetObj(vpath2,o2);
+				if(o2)
+				{
+					double gap = 3.899;
+					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
+								 cos(trk_heading * DEG_TO_RAD));
+					
+					Vector2 llv = VectorMetersToLL(loc, dirv);
+				
+					
+					for(int c = 0; c < trk->GetNumberOfCars(); ++c)
+					{
+						loc -= (llv * gap);
+						draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
+						gap = 3.598;
+					}
+				}
+			}
+			if(trk->GetTruckType() == atc_ServiceTruck_Ground_Power_Unit)
+			{
+				rmgr->GetObj(vpath2,o2);
+				if(o2)
+				{
+					double gap = 4.247;
+					Vector2 dirv(sin(trk_heading * DEG_TO_RAD),
+								 cos(trk_heading * DEG_TO_RAD));
+					
+					Vector2 llv = VectorMetersToLL(loc, dirv);
+				
+					
+					loc -= (llv * gap);
+					draw_obj_at_ll(tman, o2, loc, trk_heading, g, zoomer);
+				}
+			}
+		}
+		else
+		{
+			Point2 l;
+			trk->GetLocation(gis_Geo,l);
+			l = zoomer->LLToPixel(l);
+			glColor3f(1,0,0);
+			GUI_PlotIcon(g,"map_missing_obj.png", l.x(),l.y(),0,1.0);
+		}
+	}
+};
+
+
 
 /***************************************************************************************************************************************************
  * DRAWING OBJECT
@@ -889,6 +985,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	WED_PolygonPlacement * pol = NULL;
 	WED_DrapedOrthophoto * orth = NULL;
 	WED_ObjPlacement * obj = NULL;
+	WED_TruckParkingLocation * trk = NULL;
 	WED_ForestPlacement * forst = NULL;
 	WED_FacadePlacement * fac = NULL;
 	WED_Runway * rwy = NULL;
@@ -952,6 +1049,9 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	if (sub_class == WED_ObjPlacement::sClass && (obj = SAFE_CAST(WED_ObjPlacement, entity)) != NULL)
 	if(obj->GetShowLevel() <= mObjDensity) 	
 	mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
+
+	if (sub_class == WED_TruckParkingLocation::sClass && (trk = SAFE_CAST(WED_TruckParkingLocation, entity)) != NULL)
+	mPreviewItems.push_back(new preview_truck(trk, group_Objects, mObjDensity, GetResolver()));
 
 	return true;
 }

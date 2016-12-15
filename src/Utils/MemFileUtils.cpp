@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2004, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -100,7 +100,6 @@
 		#define DIR_CHAR '/'
 #elif IBM
 	#define DIR_CHAR '\\'
-	#include <sys/stat.h>
 #else
 	#error PLATFORM NOT DEFINED NEED DIR CHAR
 #endif
@@ -122,6 +121,10 @@
 #elif IBM
 	#include <windows.h>
 	#include "GUI_Unicode.h"
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#include <wchar.h>
+	#include <stdio.h>
 #else
 	#error PLATFORM NOT DEFINED
 #endif
@@ -446,10 +449,6 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 	void *		addr = NULL;		// Not that you should be doing that
 	int			len = 0;	// anyway.
 #endif
-#if IBM
-	string input(path);
-	string_utf16 output;
-#endif
 
 	obj = new MFMemFile;
 	if (!obj) goto bail;
@@ -518,10 +517,10 @@ cleanmmap:
 	HANDLE			winFile = NULL;
 	HANDLE			winFileMapping = NULL;
 	char *			winAddr = NULL;
-	string_utf_8_to_16(input, output);
 
-	winFile = CreateFileW((const wchar_t*)output.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
-	if (!winFile) goto cleanupwin;
+	winFile = CreateFileW(convert_str_to_utf16(inPath).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	if (!winFile)
+		goto cleanupwin;
 
 	winFileMapping = CreateFileMapping(winFile, NULL, PAGE_READONLY, 0, 0, NULL);
 	if (!winFileMapping) goto cleanupwin;
@@ -542,8 +541,11 @@ cleanupwin:
 	if (winFile) 		CloseHandle(winFile);
 #endif
 
-
+#if IBM
+	fi = fopen(inPath, "rb");
+#else
 	fi = fopen(path, "rb");
+#endif
 	if (!fi) goto bail;
 
 	fseek(fi, 0L, SEEK_END);
@@ -868,11 +870,8 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	strcpy(SearchPath, dirPath);
 	strcpy(path, dirPath);
 	strcat(path, "\\*.*");
-	string input(path);
-	string_utf16 output;
-	string_utf_8_to_16(input, output);
 
-	hFind = FindFirstFileW((const wchar_t*)output.c_str(), &FindFileData);
+	hFind = FindFirstFileW(convert_str_to_utf16(path).c_str(), &FindFileData);
 
 	if (hFind == INVALID_HANDLE_VALUE)
 	{
@@ -880,13 +879,11 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 	}
 	else
 	{
-		string_utf16 in((const unsigned short*)FindFileData.cFileName);
-		string out;
-		string_utf_16_to_8(in, out);
-
-		if ( !( (strcmp(out.c_str(), ".") == 0) || (strcmp(out.c_str(), "..") == 0) ) )
+		string_utf16 in(FindFileData.cFileName);
+		
+		if ( !( (in == L"." || in == L"..")) )
 		{
-			if (cbFunc(out.c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+			if (cbFunc(convert_utf16_to_str(in).c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 			{
 				FindClose(hFind);
 				return true;
@@ -895,11 +892,10 @@ bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * file
 
 		while (FindNextFileW(hFind, &FindFileData) != 0)
 		{
-			in = (const unsigned short*)FindFileData.cFileName;
-			string_utf_16_to_8(in, out);
-			if ( !( (strcmp(out.c_str(), ".") == 0) || (strcmp(out.c_str(), "..") == 0) ) )
+			in = FindFileData.cFileName;
+			if ( !( (in == L"." || in == L"..") ))
 			{
-				if (cbFunc(out.c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
+				if (cbFunc(convert_utf16_to_str(in).c_str(), FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, ref))
 				{
 					FindClose(hFind);
 					return true;
@@ -928,17 +924,15 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 	file_size = ss.st_size;
 
 #elif IBM
-/*	struct stat ss;
-	if (stat(path, &ss) < 0)
+	struct _stat ss;
+	string_utf16 utf_path = convert_str_to_utf16(path);
+	const wchar_t* c_path = utf_path.c_str();
+	int ret = _wstat(c_path, &ss);
+	if (ret < 0)
+	{
 		return mf_BadFile;
-//	if (ss.st_mode & S_IFDIR) return mf_Directory;
-	if (S_ISDIR(ss.st_mode) != 0)
-		return mf_Directory;
-	file_size = ss.st_size;
-*/
-	struct stat ss;
-	if (stat(path, &ss) < 0)
-		return mf_BadFile;
+	}
+
 	if (S_ISDIR(ss.st_mode) != 0) return mf_Directory;
 	file_size = ss.st_size;
 
@@ -990,33 +984,33 @@ static int getoct(char *p,int width)
 int
 MF_GetDirectoryBulk(
 		const char *		path,
-		bool (* 			cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * refcon),
+		bool(*cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * refcon),
 		void *				refcon)
 {
 #if IBM
 
-	char				searchPath[MAX_PATH];
-	WIN32_FIND_DATA		findData;
+	WCHAR				searchPath[MAX_PATH];
+	WIN32_FIND_DATAW	findData;
 	HANDLE				hFind;
 	int					total = 0;
 	unsigned long long	when;
 
-	strcpy(searchPath,path);
-	strcat(searchPath,"\\*.*");
+	::wcscpy(searchPath,(const WCHAR*)path);
+	::wcscat(searchPath,L"\\*.*");
 
-	hFind = FindFirstFile(searchPath,&findData);
+	hFind = FindFirstFileW(searchPath,&findData);
 	if (hFind == INVALID_HANDLE_VALUE) return 0;
 
 	++total;
 	when = ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
 
-	if (cbFunc(findData.cFileName, findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon))
+	if (cbFunc(convert_utf16_to_str(findData.cFileName).c_str(), findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon))
 	{
-		while(FindNextFile(hFind,&findData) != 0)
+		while(FindNextFileW(hFind,&findData) != 0)
 		{
 			++total;
 			when= ((unsigned long long) findData.ftLastWriteTime.dwHighDateTime << 32) | ((unsigned long long) findData.ftLastWriteTime.dwLowDateTime);
-			if (!cbFunc(findData.cFileName, findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
+			if (!cbFunc(convert_utf16_to_str(findData.cFileName).c_str(), findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY, when, refcon)) break;
 		}
 	}
 

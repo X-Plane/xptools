@@ -31,7 +31,7 @@
 
 class	GUI_ScrollerPane;
 class	WED_LibraryMgr;
-class	WED_FilterBar;
+class	WED_LibraryFilterBar;
 
 class WED_LibraryPane : public GUI_Packer, public GUI_Commander, public GUI_Listener {
 public:
@@ -56,7 +56,7 @@ private:
 	GUI_TextTableHeader		mTextTableHeader;
 
 
-	WED_FilterBar *			mFilter;
+	WED_LibraryFilterBar *			mFilter;
 	WED_LibraryListAdapter	mLibraryList;
 
 };

@@ -214,6 +214,7 @@ string csv_parser_generate_test(bool make_junk, int str_len)
 	return output;
 }
 
+#if 0
 //Runs n number of tests and saves the result to a file one can review
 void csv_parser_run_tests(int count)
 {
@@ -251,4 +252,5 @@ void csv_parser_run_tests(int count)
 		ofs << endl << endl;
 	}
 }
+#endif
 #endif

@@ -28,20 +28,22 @@
 #include <pwd.h>
 #include <cstring>
 #include <string>
+#include <linux/limits.h>
 
-const char* GetApplicationPath(char* pathBuf, int sz)
+string GetApplicationPath()
 {
-	memset(pathBuf, 0, sz);
-	if (readlink("/proc/self/exe", pathBuf, sz) == -1)
+	char pathBuf[PATH_MAX] = { 0 };
+	memset(pathBuf, 0, PATH_MAX);
+	if (readlink("/proc/self/exe", pathBuf, PATH_MAX) == -1)
 		return 0;
-	return pathBuf;
+	return string(pathBuf);
 }
 
 //common practice to get the cache folder:
 //1. read env var 'XDG_CACHE_HOME'
 //2. ~/.cache if exists
 //3. fallback to default temp folder.
-const char * GetCacheFolder(char * temp_path, int sz)
+string GetCacheFolder()
 {
 	string path;
 	const char * cpath  = getenv("XDG_CACHE_HOME");
@@ -53,7 +55,7 @@ const char * GetCacheFolder(char * temp_path, int sz)
 		{
 			const char * pdir = pw->pw_dir;
 			if( strcmp(pdir,hdir) != 0)
-				return 0;
+				return "";
 		}
 		path = hdir;
 		path += "/.cache";
@@ -64,29 +66,30 @@ const char * GetCacheFolder(char * temp_path, int sz)
 	}
 
 	struct stat ss;
-	if (stat(path.c_str(),&ss) == 0)
-		if(sz > strlen(path.c_str()))
-			return strncpy(temp_path,path.c_str(),sz);
+	if (stat(path.c_str(), &ss) == 0)
+	{
+		return path;
+	}
 
-	return 0;
+	return "";
 }
 
-const char * GetTempFilesFolder(char * temp_path, int sz)
+string GetTempFilesFolder()
 {
 	const char * tpath  = getenv("TMPDIR");
 	if(!tpath)
 		tpath = "/tmp";
-
-	int n = snprintf(temp_path,sz,"%s/xptools-%d",tpath,getuid());
-	if( n < 0 || n >= sz )
-		return 0;
+	char temp_path[PATH_MAX] = { 0 };
+	int n = snprintf(temp_path,PATH_MAX,"%s/xptools-%d",tpath,getuid());
+	if( n < 0 || n >= PATH_MAX)
+		return "";
 
 	struct stat ss;
 	if (stat(temp_path,&ss) < 0)
 		if(mkdir(temp_path,0700) !=0)
-			return 0;
+			return "";
 
-	return temp_path;
+	return string(temp_path);
 }
 
 int		GetFilePathFromUser(

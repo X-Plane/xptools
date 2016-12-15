@@ -50,6 +50,7 @@ public:
 				 		WED_Document *	inDocument);
 	virtual		~WED_DocumentWindow();
 
+	void		SetFilter(string& filter);
 	virtual	int	HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	int	HandleCommand(int command);
 	virtual	int	CanHandleCommand(int command, string& ioName, int& ioCheck);

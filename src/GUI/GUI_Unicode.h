@@ -56,11 +56,19 @@
 */
 
 typedef	unsigned char		UTF8;													// Definitions for chars in each of the 3 encoding formats.
+#if IBM
+typedef wchar_t UTF16;
+#else
 typedef	unsigned short		UTF16;													// We will use our normal string for UTF8.  We do not make a
+#endif
 typedef unsigned int		UTF32;													// string for UTF32 because it is only used for 1 char at a time.
 
-typedef basic_string<UTF16>	string_utf16;											// Just like an STL string, but made of 16-bit UTF 16 chars.
+typedef basic_string<UTF16> string_utf16;
 
+#if IBM
+string_utf16 convert_str_to_utf16(const string& str);
+string       convert_utf16_to_str(const string_utf16& str_utf16);
+#endif
 
 // UTF 8 routines to move through a string one unicode char at a time - could be any number of bytes.
 inline		 UTF8 *		UTF8_align(		 UTF8 * string);

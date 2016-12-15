@@ -26,7 +26,10 @@
 #include "GUI_Application.h"
 #include "AssertUtils.h"
 #include "GUI_Clipboard.h"
+
+#if IBM
 #include "GUI_Unicode.h"
+#endif
 #include "ObjCUtils.h"
 
 #if APL
@@ -467,16 +470,16 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 	int num_items = ::GetMenuItemCount(src);
 	for (int i = 0; i < num_items; ++i)
 	{
-		MENUITEMINFO mif = { 0 };
+		MENUITEMINFOA mif = { 0 };
 		mif.cbSize = sizeof(mif);
 		mif.fMask = MIIM_TYPE | MIIM_SUBMENU | MIIM_STATE | MIIM_ID;
 		mif.cch = sizeof(buf);
 		mif.dwTypeData = buf;
-		GetMenuItemInfo(src, i, true, &mif);
+		GetMenuItemInfoA(src, i, true, &mif);
 		HMENU orig_submenu = mif.hSubMenu;
 		if (mif.hSubMenu != NULL)
 			mif.hSubMenu = CreateMenu();
-		InsertMenuItem(dst,-1,true,&mif);
+		InsertMenuItemA(dst,-1,true,&mif);
 		if (mif.hSubMenu)
 			CopyMenusRecursive(orig_submenu, mif.hSubMenu);
 	}
@@ -490,8 +493,8 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 	#if IBM
 		mDND = new GUI_Window_DND(this, mWindow);
 		mBaseProc = (WNDPROC) GetWindowLongPtr(mWindow,GWLP_WNDPROC);
-		SetWindowLongPtr(mWindow,GWLP_USERDATA,(LONG_PTR)this);
-		SetWindowLongPtr(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
+		SetWindowLongPtrW(mWindow,GWLP_USERDATA,(LONG_PTR)this);
+		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
 
 		if (!sWindows.empty())
 		{
@@ -515,12 +518,12 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SetWindowPos(mToolTip, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		RECT	cl;
 		GetClientRect(mWindow,&cl);
-		TOOLINFO ti;
-		ti.cbSize = sizeof(ti);
+		TOOLINFOW ti;
+		ti.cbSize = sizeof(ti) - 4;
 		ti.uFlags = 0;	//TTF_SUBCLASS;
 		ti.hwnd = mWindow;
 		ti.uId = 1;
-		ti.lpszText = LPSTR_TEXTCALLBACK;
+		ti.lpszText = LPSTR_TEXTCALLBACKW;
 		ti.rect.bottom = cl.bottom;
 		ti.rect.top = cl.top;
 		ti.rect.left = cl.left;
@@ -570,7 +573,7 @@ void	GUI_Window::SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float i
 GUI_Window::~GUI_Window()
 {
 	#if IBM
-//		SetWindowLongPtr(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
+//		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
 		mDND->Release();
 	#endif
 	sWindows.erase(this);
@@ -650,9 +653,9 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 {
 #if IBM
 		RECT cl;
-		TOOLINFO ti;
+		TOOLINFOW ti;
 					GetClientRect(mWindow, &cl);
-					ti.cbSize = sizeof(ti);
+					ti.cbSize = sizeof(ti) - 4;
 					ti.hwnd = mWindow;
 					ti.uId = 1;
 					ti.rect.bottom = cl.bottom;
@@ -1249,19 +1252,25 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 		case WM_NOTIFY:
 			{
 				NMHDR * hdr = (NMHDR *) lParam;
-				NMTTDISPINFO * di = (NMTTDISPINFO *) lParam;
-				TOOLINFO ti;
+				NMTTDISPINFOW * di = (NMTTDISPINFOW *) lParam;
+				TOOLINFOW ti;
 				string tip;
 				int has_tip;
 				RECT cl;
 				switch(hdr->code) {
-				case TTN_GETDISPINFO:
+				case TTN_GETDISPINFOW:
 					has_tip = me->InternalGetHelpTip(
 						Client2OGL_X(me->mMouse.x,hWnd),
 						Client2OGL_Y(me->mMouse.y,hWnd),
 						me->mTipBounds, tip);
-					if (tip.empty()) di->szText[0] = 0;
-					else			 strncpy_s(di->szText,80,tip.c_str(),_TRUNCATE);
+					if (tip.empty())
+					{
+						di->szText[0] = 0;
+					}
+					else
+					{
+						wcscpy_s(di->szText, 80, convert_str_to_utf16(tip).c_str());
+					}
 					return 0;
 				default:
 					return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
@@ -1291,9 +1300,9 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 				case gui_Cursor_Resize_V:	SetCursor(LoadCursor(NULL,IDC_SIZENS));	return 0;
 				}
 			}
-			return DefWindowProc(hWnd, message, wParam, lParam);
+			return DefWindowProcW(hWnd, message, wParam, lParam);
 		default:
-			return CallWindowProc(me->mBaseProc, hWnd, message, wParam, lParam);
+			return CallWindowProcW(me->mBaseProc, hWnd, message, wParam, lParam);
 	}
 }
 
@@ -1330,12 +1339,12 @@ static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
 	int ct = GetMenuItemCount(menu);
 	for (int n = 0; n < ct; ++n)
 	{
-		MENUITEMINFO mif = { 0 };
+		MENUITEMINFOA mif = { 0 };
 		mif.cbSize = sizeof(mif);
 		mif.fMask = MIIM_ID | MIIM_SUBMENU | MIIM_TYPE;
 		mif.cch = sizeof(buf);
 		mif.dwTypeData = buf;
-		GetMenuItemInfo(menu, n, true, &mif);
+		GetMenuItemInfoA(menu, n, true, &mif);
 		string suffix;
 		if (mif.fType == MFT_STRING)
 		{
@@ -1357,10 +1366,10 @@ static void ApplyCmdsRecursive(HMENU menu, const CmdMap_t& io_map)
 				if (!iter->second.new_name.empty())
 				{
 					total_name = iter->second.new_name + suffix;
-					mif.dwTypeData = (char *) total_name.c_str();
+					mif.dwTypeData = const_cast<char*>(total_name.c_str());
 				}
 				mif.fState = (iter->second.enabled ? MFS_ENABLED : MFS_DISABLED) | (iter->second.checked ? MFS_CHECKED : MFS_UNCHECKED);
-				SetMenuItemInfo(menu, n, true, &mif);
+				SetMenuItemInfoA(menu, n, true, &mif);
 			}
 		}
 	}

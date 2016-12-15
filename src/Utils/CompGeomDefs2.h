@@ -200,6 +200,8 @@ struct	Vector2 {
 	bool	no_turn(const Vector2& v) const { return (-dy * v.dx + dx * v.dy) == 0.0; }
 	int		turn_direction(const Vector2& v) const { double d = -dy * v.dx + dx * v.dy; if (d > 0.0) return LEFT_TURN; if (d < 0.0) return RIGHT_TURN; return COLLINEAR; }
 
+	void	rotate_by_degrees(const double& degrees);
+
 	// Signed area = the area of the triangle formed by placing V at our origin.
 	// If they form a counter-clockwise triangle (that is, rotate us ccw to get to V) then
 	// the area is positive, clockwise = negative.
@@ -668,6 +670,18 @@ inline Point2& Point2::operator += (const Vector2& v) { x_ += v.dx; y_ += v.dy; 
 inline Point2& Point2::operator -= (const Vector2& v) { x_ -= v.dx; y_ -= v.dy; return *this; }
 inline Point2 Point2::operator+(const Vector2& v) const { return Point2(x_ + v.dx, y_ + v.dy); }
 inline Point2 Point2::operator-(const Vector2& v) const { return Point2(x_ - v.dx, y_ - v.dy); }
+
+inline void	Vector2::rotate_by_degrees(const double& degrees)
+{
+	double cs = cos(0.0174532925199432958 * degrees);
+	double sn = sin(0.0174532925199432958 * degrees);
+
+	double rx = dx * cs - dy * sn;
+	double ry = dx * sn + dy * cs;
+
+	dx = rx;
+	dy = ry;
+}
 
 inline Vector2	Vector2::projection(const Vector2& rhs) const
 {

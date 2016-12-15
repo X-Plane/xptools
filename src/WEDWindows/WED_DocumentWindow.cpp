@@ -342,6 +342,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Merge:		WED_DoMerge(mDocument); return 1;
 #endif
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
+	case wed_Align:		WED_DoAlign(mDocument); return 1;
+	case wed_Orthogonalize:	WED_DoOrthogonalize(mDocument); return 1;
+	case wed_RegularPoly:	WED_DoMakeRegularPoly(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
 	case wed_Rotate:	WED_DoRotate(mDocument); return 1;
 	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
@@ -351,7 +354,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
 	case wed_MoveLast:	WED_DoReorder(mDocument, 1,1);	return 1;
-
+	case wed_BreakApartSpecialAgps: WED_DoBreakApartSpecialAgps(mDocument); return 1;
+	case wed_ReplaceVehicleObj:  WED_DoReplaceVehicleObj(mDocument); return 1;
 	case wed_AddATCFreq:WED_DoMakeNewATCFreq(mDocument); return 1;
 #if AIRPORT_ROUTING
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
@@ -412,7 +416,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
 	case wed_Export1021:gExportTarget = wet_xplane_1021;	Refresh(); return 1;
 	case wed_Export1050:gExportTarget = wet_xplane_1050;	Refresh(); return 1;
-	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;	
+	case wed_Export1100:gExportTarget = wet_xplane_1100;	Refresh(); return 1;
+	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;
 	
 #if WITHNWLINK
 	case wed_ToggleLiveView :
@@ -457,6 +462,9 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Overlay:														return 1;
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
+	case wed_Align:		return WED_CanAlign(mDocument);
+	case wed_Orthogonalize:	return WED_CanOrthogonalize(mDocument);
+	case wed_RegularPoly:	return WED_CanMakeRegularPoly(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);
 	case wed_Rotate:	return WED_CanRotate(mDocument);
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
@@ -478,7 +486,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);
 	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);
 	case wed_MoveLast:	return WED_CanReorder(mDocument, 1,1);
-
+	case wed_BreakApartSpecialAgps: return WED_CanBreakApartSpecialAgps(mDocument);
+	case wed_ReplaceVehicleObj:  return WED_CanReplaceVehicleObj(mDocument);
 	case gui_Save:		return mDocument->IsDirty();
 	case gui_Revert:	return mDocument->IsDirty() && mDocument->IsOnDisk();
 
@@ -524,6 +533,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
 	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
 	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
+	case wed_Export1100:ioCheck = gExportTarget == wet_xplane_1100;	return 1;
+	
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 	
 #if WITHNWLINK
