@@ -11,7 +11,7 @@
 
 #define OSM_ZOOM_LEVELS 19
 
-class	curl_http_get_file;
+class	WED_file_cache_request;
 
 #include "GUI_Timer.h"
 #include "WED_MapLayer.h"
@@ -30,9 +30,8 @@ private:
 
 			void	finish_loading_tile();
 
-	vector<char>				m_buffer;
-	curl_http_get_file *		m_req;
-	string						m_req_path;
+	auto_ptr<WED_file_cache_request> m_cache_request;
+
 	map<string,int>				m_cache;
 
 };

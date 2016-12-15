@@ -6,8 +6,11 @@
 //
 //
 
-#include "XDefs.h"
 #include "WED_OSMSlippyMap.h"
+#include "XDefs.h"
+
+#include <sstream>
+
 #include "WED_MapZoomerNew.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
@@ -15,6 +18,10 @@
 #include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
 #include "curl_http.h"
+
+#include "WED_FileCache.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -108,8 +115,7 @@ static void get_tile_range_for_box(const double bounds[4], int z, int tiles[4])
 }
 
 
-WED_OSMSlippyMap::WED_OSMSlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) : WED_MapLayer(h, zoomer, resolver),
-	m_req(NULL)
+WED_OSMSlippyMap::WED_OSMSlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) : WED_MapLayer(h, zoomer, resolver)
 {
 }
 
@@ -139,7 +145,6 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	
 	for(int z = MIN_ZOOM; z <= z_max; ++z)
 	{
-	
 		int tiles[4];
 		
 		get_tile_range_for_box(map_bounds,z,tiles);
@@ -176,13 +181,15 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			GUI_FontDraw(g, font_UI_Basic, c, (pbounds[0]+pbounds[2]) / 2, (pbounds[1] + pbounds[3])/2, msg);
 			*/
 			
-			char path_buf[256];
-			sprintf(path_buf,"http://a.tile.openstreetmap.org/%d/%d/%d.png", z, x, y);
-			string path(path_buf);
-			if(m_cache.count(path))
+
+			stringstream url;
+			url << "http://a.tile.openstreetmap.org/" << z << "/" << x << "/" << y << ".png";
+			string potential_path = WED_file_cache_url_to_cache_path(WED_file_cache_request("", cache_domain_osm_tile, "OSMSlippyMap", url.str()));
+			
+			if (m_cache.count(potential_path) != 0)
 			{
 				++got;
-				int id = m_cache[path];
+				int id = m_cache[potential_path];
 				if(id != 0)
 				{
 					g->SetState(0, 1, 0, 0, 0, 0, 0);
@@ -199,39 +206,42 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 
 						glTexCoord2f(0,1);
 						glVertex2f(pbounds[0],pbounds[1]);
-
-
 					glEnd();
-				} else
+				}
+				else
+				{
 					++bad;
+				}
 			}
-			else if(m_req == NULL)
+			else if(m_cache_request.get() == NULL)
 			{
-				m_req_path = path;
-				m_req = new curl_http_get_file(path, &m_buffer, string());
+				m_cache_request.reset(new WED_file_cache_request("",cache_domain_osm_tile,"OSMSlippyMap",url.str()));
 			}
 		}
 	}
-	if(m_req)
-		this->Start(0.05);
-	else
-		this->Stop();
 
-	char buf[1024];
-	sprintf(buf,"Zoom level %d: %d of %d (%f%% done, %d errors). %d tiles cached (%d MB)",
-		z_max,
-		got,
-		want,
-		(float) got * 100.0f / (float) want,
-		bad,
-		(int) m_cache.size(),
-		(int) m_cache.size() / 4);
-		
+	if (m_cache_request.get())
+	{
+		this->Start(0.05);
+	}
+	else
+	{
+		this->Stop();
+	}
+
+	stringstream ss;
+
+	ss << "Zoom level " << z_max
+		<< ": " << got << " of " << want
+		<< " (" << (float)got * 100.0f / (float)want << "% done, " << bad << " errors). "
+		<< (int)m_cache.size()
+		<< " tiles cached (" << (int)m_cache.size() / 4 << " MB)";
+
 	float clr[4] = { 1, 1, 1, 1 };
 	int bnds[4];
 	GetHost()->GetBounds(bnds);
 	
-	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, buf);
+	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 10, ss.str().c_str());
 
 }
 
@@ -242,50 +252,41 @@ void	WED_OSMSlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_a
 
 void	WED_OSMSlippyMap::finish_loading_tile()
 {
-	if(m_req)
+	if (m_cache_request.get() != NULL)
 	{
-		if(m_req->is_done())
+		WED_file_cache_response res = WED_file_cache_request_file(*m_cache_request);
+		if (res.out_status == cache_status_available)
 		{
-			if(m_req->is_ok())
+			struct ImageInfo info;
+			if (CreateBitmapFromPNG(res.out_path.c_str(), &info, false, 0) == 0)
 			{
-				struct ImageInfo info;
-//				if(CreateBitmapFromJPEGData(&m_buffer[0], m_buffer.size(), &info) == 0)
-				if(CreateBitmapFromPNGData(&m_buffer[0], m_buffer.size(), &info, 0, 0) == 0)
+				GLuint tex_id;
+				glGenTextures(1, &tex_id);
+				if (LoadTextureFromImage(info, tex_id, tex_Linear | tex_Mipmap, NULL, NULL, NULL, NULL))
 				{
-					GLuint tex_id;
-					glGenTextures(1, &tex_id);
-					if(LoadTextureFromImage(info, tex_id, tex_Linear|tex_Mipmap, NULL, NULL, NULL, NULL))
-					{
-						m_cache[m_req_path] = tex_id;
-					}
-					else
-					{
-						printf("Failed texture load from image.\n");
-						m_cache[m_req_path] = 0;
-					}
+					m_cache[res.out_path] = tex_id;
 				}
 				else
 				{
-					printf("Bad JPEG data.\n");
-					m_cache[m_req_path] = 0;
+					printf("Failed texture load from image.\n");
+					m_cache[res.out_path] = 0;
 				}
-
 			}
 			else
 			{
-				int code = m_req->get_error();
-				vector<char> buf;
-				m_req->get_error_data(buf);
-				string msg(buf.begin(),buf.end());
-				
-				printf("%s: %d\n%s\n", m_req_path.c_str(), code, msg.c_str());
-				
-				m_cache[m_req_path] = 0;
+				printf("Bad JPEG data.\n");
+				m_cache[res.out_path] = 0;
 			}
-			delete m_req;
-			m_req = NULL;
-			m_req_path.clear();
-			m_buffer.clear();
+			m_cache_request.release();
+		}
+		else if (res.out_status == cache_status_error)
+		{
+			int code = res.out_error_type;
+
+			printf("%s: %d\n%s\n", res.out_path.c_str(), code, res.out_error_human.c_str());
+
+			m_cache[res.out_path] = 0;
+			m_cache_request.release();
 		}
 	}
 }

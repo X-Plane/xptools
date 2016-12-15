@@ -42,6 +42,15 @@ WED_file_cache_request::WED_file_cache_request()
 	  in_url("")
 {
 }
+
+WED_file_cache_request::WED_file_cache_request(const string & cert, CACHE_domain domain, const string & folder_prefix, const string & url)
+	: in_cert(cert),
+	  in_domain(domain),
+	  in_folder_prefix(folder_prefix),
+	  in_url(url)
+{
+
+}
 //---------------------------------------------------------------------------//
 
 //--WED_file_cache_response--------------------------------------------------
@@ -381,7 +390,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 				Either it all is saved perfectly or we delete it all and report an error. This is an all or nothing situation.
 				*/
 
-				res.out_path = CACHE_folder + DIR_STR + req.in_folder_prefix + DIR_STR + FILE_get_file_name(req.in_url);
+				res.out_path = WED_file_cache_url_to_cache_path(req);
 				FILE_make_dir_exist(string(CACHE_folder + DIR_STR + req.in_folder_prefix).c_str());
 
 				//We test if file and cache_file_info file save PERFECECTLY, with NO issues
@@ -389,7 +398,7 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 				bool good_file_save = false;
 
 				//Attempt to save the file content
-				RAII_FileHandle f(res.out_path,"w");
+				RAII_FileHandle f(res.out_path,"wb");
 				
 				if(f() != NULL)
 				{
@@ -486,6 +495,16 @@ WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request
 			return start_new_cache_object(req);
 		}
 	}
+}
+
+string WED_file_cache_file_in_cache(const WED_file_cache_request & req)
+{
+	return WED_file_cache_request_file(req).out_path;
+}
+
+string WED_file_cache_url_to_cache_path(const WED_file_cache_request & req)
+{
+	return CACHE_folder + DIR_STR + req.in_folder_prefix + DIR_STR + FILE_get_file_name(req.in_url);
 }
 
 void WED_file_cache_shutdown()

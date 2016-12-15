@@ -61,6 +61,8 @@ struct WED_file_cache_request
 {
 	WED_file_cache_request();
 
+	WED_file_cache_request(const string& cert, CACHE_domain domain, const string& folder_prefix, const string& url);
+
 	//Our security certification
 	string in_cert;
 	
@@ -106,6 +108,11 @@ void WED_file_cache_init();
 //This is intended to be called a timer until a client gets their file or sufficient indication they should stop trying.
 WED_file_cache_response WED_file_cache_request_file(const WED_file_cache_request& req);
 
+//Checks if the file is in cache without starting any downloads. in_cert member of WED_file_cache_request is ignored
+//returns the file path if it exists on disk, "" if not
+string WED_file_cache_file_in_cache(const WED_file_cache_request& req);
+
+string WED_file_cache_url_to_cache_path(const WED_file_cache_request& req);
 //Blocks until all previous cURL handles are finished or are forcibly stopped. Called once at the end of the program.
 void WED_file_cache_shutdown();
 
