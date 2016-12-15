@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Obj">
+      <UniqueIdentifier>{c856ea88-4839-43a6-ab0c-4ea369fbe870}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="XPTools">
+      <UniqueIdentifier>{860a7ae4-c450-49da-9f58-5a02c75be25a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ObjEdit">
+      <UniqueIdentifier>{c5d53556-1734-4044-9aa3-bbb7aa447b62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{95043bad-57fe-40fc-b190-13210157853d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{5c3029c6-9313-4a45-b339-369baba718e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{2ab68e50-8738-4e16-b99e-f33e3c3cbd88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSF">
+      <UniqueIdentifier>{bcea2d0f-2107-4b47-84da-c5773c6336e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSF\tri_stripper_101">
+      <UniqueIdentifier>{0044ce38-d522-4821-b46d-f411929c90f5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\ObjDraw.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\XObjDefs.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Obj\XObjWriteEmbedded.cpp">
+      <Filter>Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\XPTools\ViewObj.cpp">
+      <Filter>XPTools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ObjEdit\OE_Zoomer3d.cpp">
+      <Filter>ObjEdit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\XWin.win.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\XWin32DND.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\XWinGL.win.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\AssertUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\BitmapUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\EndianUtils.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\FileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\md5.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\TexUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\unzip.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\XUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\zip.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\trackball.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\GeoUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\ObjUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\UI\XGUIApp.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\ObjDraw.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\ObjPointPool.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XDefs.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XObjBuilder.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XObjDefs.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XObjReadWrite.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Obj\XObjWriteEmbedded.h">
+      <Filter>Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\ObjEdit\OE_Zoomer3d.h">
+      <Filter>ObjEdit</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\XWin.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\XWin32DND.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\XWinGL.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\AssertUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\CompGeomUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\EndianUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\FileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\md5.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\MemFileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\PlatformUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\TexUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\unzip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\XUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\zip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\trackball.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\GeoUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\ObjUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\GUI\GUI_Unicode.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\cache_simulator.h">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\graph_array.h">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\heap_array.h">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\stdafx.h">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\UI\XGUIApp.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\XPTools\ObjView_icons.ico">
+      <Filter>XPTools</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\src\XPTools\ObjView.rc">
+      <Filter>XPTools</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

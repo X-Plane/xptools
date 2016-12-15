@@ -311,9 +311,10 @@ void	do_insert_into_block(
 
 #endif
 
-void clean_block(Block_2& block)
+void clean_block(Block_2& block, bool merge_faces, bool merge_colinear)
 {
 	vector<Block_2::Halfedge_handle> kill;
+	if(merge_faces)
 	for(Block_2::Edge_iterator eig = block.edges_begin(); eig != block.edges_end(); ++eig)
 		if(eig->face()->data().usage == eig->twin()->face()->data().usage &&
 		   eig->face()->data().feature == eig->twin()->face()->data().feature &&
@@ -329,6 +330,7 @@ void clean_block(Block_2& block)
 	for(vector<Block_2::Halfedge_handle>::iterator k = kill.begin(); k != kill.end(); ++k)
 		block.remove_edge(*k);
 
+	if(merge_colinear)
 	for(Block_2::Vertex_iterator v = block.vertices_begin(); v != block.vertices_end();)
 	{
 		Block_2::Vertex_handle k(v);
@@ -344,7 +346,7 @@ void clean_block(Block_2& block)
 			{
 				Block_2::X_monotone_curve_2	nc(Block_traits_2::Segment_2(e1->source()->point(),e2->target()->point()));
 				block.merge_edge(e1,e2,nc);
-			}	
+			}
 		}
 	}
 	
@@ -441,7 +443,7 @@ void find_major_axis(vector<block_pt>&	pts,
 		int longest = -1;
 		double corr_len = -1;
 		for(int i = 0; i < pts.size(); ++i)
-		if(elev_ok || ground_road_access_for_he(pts[i].orig))
+		if(/*elev_ok ||*/ ground_road_access_for_he(pts[i].orig))
 		{
 			int j = (i + 1) % pts.size();
 			Vector2 this_side(pts[i].loc,pts[j].loc);
@@ -814,7 +816,7 @@ int	pick_major_axis(
 		int longest = -1;
 		double corr_len = -1;
 		for(int i = 0; i < sides.size(); ++i)
-		if(elev_ok || ground_road_access_for_he(sides[i].first))
+		if(/*elev_ok ||*/ ground_road_access_for_he(sides[i].first))
 		{
 			Vector2 this_side(bounds.side(i).p1,bounds.side(i).p2);
 			double len = this_side.normalize();
@@ -855,6 +857,7 @@ int	pick_major_axis(
 	
 	//printf("Our bbox is %lf,%lf to %lf,%lf\n", bbox[0],bbox[1],bbox[2],bbox[3]);
 
+	if(0)
 	if((bbox[2] - bbox[0]) < (bbox[3] - bbox[1]))
 	{
 		v_x = v_x.perpendicular_ccw();

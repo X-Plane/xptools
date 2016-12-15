@@ -32,6 +32,7 @@ class	GUI_Pane;
 class	ISelectable;
 class	ITexMgr;
 class	WED_ResourceMgr;
+class	WED_LibraryMgr;
 class	WED_Airport;
 class	WED_Thing;
 class	ISelection;
@@ -47,10 +48,25 @@ WED_Thing *		WED_FindParent(ISelection * isel,	// Selected objects
 void			WED_GetSelectionInOrder(IResolver * resolver, vector<WED_Thing *>& out_sel);
 void			WED_GetSelectionRecursive(IResolver * resolver, set<WED_Thing *>& out_sel);
 bool			WED_IsSelectionNested(IResolver * resolver);		// Returns true if there are parent-children who are selected!
-WED_Thing *		WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx);
+
+
+// This API attempts to find the right "container" thing for creating a new entity.  You get back the WED_thing that should be your parent and the index
+// YOU should be in when you become a child.
+//
+// require_airport - if this is true, the parent will be inside the currently edited airport.  Set this to true if you are making an entity that MUST be airport
+// contained, like a runway or ATC frequency.  Set this to false if your new thing can be in any part of the hierarchy, e.g. a forest.
+//
+// needs spatial - the host must be a map item like a group or airport, not a non-map item like an ATC flow
+WED_Thing *		WED_GetCreateHost(IResolver * resolver,
+									bool	require_airport,
+									bool	needs_spatial,
+									int&	idx);
+
+WED_Thing *		WED_GetContainerForHost(IResolver * resolver, WED_Thing * host, bool require_airport, int& idx);
 
 WED_Airport *	WED_GetCurrentAirport(IResolver * resolver);
 WED_Airport *	WED_GetParentAirport(WED_Thing * who);
+const WED_Airport *	WED_GetParentAirport(const WED_Thing * who);
 void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport);		// Does NOT create a command!!!!!!
 void			WED_SetAnyAirport(IResolver * resolver);
 
@@ -59,6 +75,7 @@ WED_Thing	*	WED_GetWorld(IResolver * resolver);
 ILibrarian *	WED_GetLibrarian(IResolver * resolver);
 ITexMgr *		WED_GetTexMgr(IResolver * resolver);
 WED_ResourceMgr*WED_GetResourceMgr(IResolver * resolver);
+WED_LibraryMgr*	WED_GetLibraryMgr(IResolver * resolver);
 
 bool			WED_IsIconic(IGISEntity * what);
 
@@ -74,8 +91,8 @@ WED_Thing*		WED_HasSingleSelectionOfType(IResolver * resolver, const char * in_c
 const char *	WED_GetParentForClass(const char * in_class);
 
 
-void			WED_GetAllRunwaysOneway(WED_Airport * airport, set<int>& runways);
-void			WED_GetAllRunwaysTwoway(WED_Airport * airport, set<int>& runways);
+void			WED_GetAllRunwaysOneway(const WED_Airport * airport, set<int>& runways);
+void			WED_GetAllRunwaysTwoway(const WED_Airport * airport, set<int>& runways);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // FILTERS:
@@ -118,7 +135,8 @@ int Iterate_CollectEntitiesUV(ISelectable * what, void * ref);			// ref is a ptr
 
 bool IsGraphNode(WED_Thing * what);
 bool IsGraphEdge(WED_Thing * what);
-void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *), vector<WED_Thing *>& items);
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *			  ),			 vector<WED_Thing *>& items);
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *, void * ref), void * ref, vector<WED_Thing *>& items);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // DRAG & DROP

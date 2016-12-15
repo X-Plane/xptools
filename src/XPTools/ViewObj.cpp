@@ -23,8 +23,6 @@
 
 #define FACADES 0
 
-#include <time.h>
-#include "hl_types.h"
 #include "XObjDefs.h"
 #include "ObjDraw.h"
 #include "ObjUtils.h"
@@ -39,6 +37,8 @@
 #include <set>
 #include "PlatformUtils.h"
 #include "OE_Zoomer3d.h"
+#include <time.h>
+#include "PerfUtils.h"
 
 #if FACADES
 	#include "FacadeObj.h"
@@ -66,7 +66,10 @@ static float gStopTime = 0.0;
 
 inline float float_clock(void)
 {
-	return (float) clock() / (float) CLOCKS_PER_SEC;
+	static unsigned long tbase = query_hpc();
+	unsigned long tnow = query_hpc() - tbase;
+	double tdob = hpc_to_microseconds(tnow);
+	return tdob / 1000000.0;
 }
 
 static	bool	gHasMultitexture = false;
@@ -123,7 +126,7 @@ public:
 
 			void			ReceiveObject(double x, double y, double z, double r, const string& obj);
 
-	virtual	void			Timer(void) { }
+	virtual	void			Timer(void) { ForceRefresh(); }
 	virtual	void			GLReshaped(int inWidth, int inHeight);
 	virtual	void			GLDraw(void);
 
@@ -358,9 +361,6 @@ void			XObjWin::GLDraw(void)
 	}
 #endif
 	mZoomer.ResetMatrices();
-
-	if (mAnimate)
-		ForceRefresh();
 
 }
 
@@ -628,6 +628,10 @@ int			XObjWin::KeyPressed(unsigned int inKey, long, long, long)
 		else
 			gStopTime = float_clock();
 		mAnimate = !mAnimate;
+		if(mAnimate)
+			SetTimerInterval(0.01);
+		else
+			SetTimerInterval(0);
 		break;
 	case 'n':
 	case 'N':
@@ -744,7 +748,11 @@ void	XGrindFiles(const vector<string>& files)
 
 void	XGrindInit(void)
 {
-	(new XObjWin(NULL))->ForceRefresh();
+	XObjWin * win = new XObjWin(NULL);
+	
+	win->GetMenuBar();
+	win->ForceRefresh();
+	
 
 	const char * ext = (const char *) glGetString(GL_EXTENSIONS);
 	int	major=0, minor=0, revision=0;
@@ -956,6 +964,7 @@ static float	ObjView_GetAnimParam(const char * string, float v1, float v2, void 
 	if (now > 0.5)	now = 1.0 - now;
 	now *= 2.0;
 
+	printf("%f\n", now);
 	return v1 + (v2 - v1) * now;
 }
 

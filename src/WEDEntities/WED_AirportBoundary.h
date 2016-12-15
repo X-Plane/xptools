@@ -43,6 +43,11 @@ protected:
 
 	virtual	bool		IsInteriorFilled(void) const { return false; }
 
+private:
+
+	WED_PropIntEnumSetUnion	lines;
+	WED_PropIntEnumSetUnion	lights;
+
 };
 
 #endif /* WED_AIRPORTBOUNDARY_H */

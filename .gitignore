@@ -19,6 +19,10 @@ Uninstall/
 
 #kDiff files
 *.orig
+*.ORIG
+*.BASE
+*.LOCAL
+*.REMOTE
 
 #https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 ## Ignore Visual Studio temporary files, build results, and
@@ -36,7 +40,13 @@ Uninstall/
 x64/
 build/
 [Bb]in/
-[Oo]bj/
+*.obj
+
+*.pbxuser
+*.mode1v3
+xcuserdata/
+contents.xcworkspacedata
+*.xccheckout
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -73,6 +83,7 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+*.VC.*
 
 # Visual Studio profiler
 *.psess
@@ -172,3 +183,12 @@ $RECYCLE.BIN/
 msvc/xtools_wed/xtools_wed/xtools_wed.vcxproj.orig
 
 Uninstall/
+msvc/msvc_libs/jasper-1.701.0.GEO/src/msvc/*___Win32_Debug/
+msvc/msvc_libs/jasper-1.701.0.GEO/src/msvc/Win32_Debug/
+*.tlog
+*elease
+
+nohup.out
+*.swm
+*.swn
+*.swo

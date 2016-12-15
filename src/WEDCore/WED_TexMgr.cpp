@@ -37,6 +37,15 @@ WED_TexMgr::WED_TexMgr(const string& package) : mPackage(package)
 {
 }
 
+WED_TexMgr::~WED_TexMgr()
+{
+	for(map<string,TexInfo *>::iterator t = mTexes.begin(); t != mTexes.end(); ++t)
+	{
+		GLuint id = t->second->tex_id;
+		glDeleteTextures(1, &id);
+		delete t->second;
+	}
+}
 
 TexRef		WED_TexMgr::LookupTexture(const char * path, bool is_absolute, int flags)
 {
@@ -97,15 +106,8 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 		MemFile_Close(dds_file);
 	}
 */
-	if (CreateBitmapFromPNG(fpath.c_str(), &im, false, GAMMA_SRGB) != 0)
-	if (CreateBitmapFromDDS(fpath.c_str(), &im) != 0)
-	if (CreateBitmapFromFile(fpath.c_str(), &im) != 0)
-#if USE_JPEG
-	if (CreateBitmapFromJPEG(fpath.c_str(), &im) != 0)
-#endif
-#if USE_TIF
-	if (CreateBitmapFromTIF(fpath.c_str(), &im) != 0)
-#endif
+	int res = MakeSupportedType(fpath.c_str(),&im);
+	if(res != 0)
 	{
 		return NULL;
 	}

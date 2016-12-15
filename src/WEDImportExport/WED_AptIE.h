@@ -31,14 +31,16 @@ class	WED_Archive;
 class	IResolver;
 class	WED_Document;
 class	WED_MapPane;
+class	WED_Airport;
 
 void	WED_AptImport(
 				WED_Archive *			archive,
 				WED_Thing *				container,
 				const char *			file_path,
 				AptVector&				apts,
-				vector<WED_Thing *> *	out_airports);
+				vector<WED_Airport *> *	out_airports);
 				
+// Main apt export AIP - we can write to a file path or to a stream via a print func.
 
 void	WED_AptExport(
 				WED_Thing *		container,
@@ -52,6 +54,7 @@ void	WED_AptExport(
 // Given a "WED_thing", add it to the apts as needed.
 // A little bit dangerous but this can be a good way
 // to convert a selection into an aptdefs.h construct.
+// This is really an internal utility.
 void	AptExportRecursive(WED_Thing * what, 
 				AptVector& apts);
 
@@ -61,5 +64,11 @@ void	WED_DoExportApt(IResolver * resolver);
 
 int		WED_CanImportApt(IResolver * resolver);
 void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);
+
+// Given a WED_thing, put airports at file path into it - must be called inside an undo operation!
+void	WED_ImportOneAptFile(
+				const string&			in_path,
+				WED_Thing *				in_parent,
+				vector<WED_Airport *> *	out_apts);	// optional, can be NULL
 
 #endif /* WED_AptIE_H */

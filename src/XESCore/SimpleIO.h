@@ -23,10 +23,6 @@
 #ifndef SIMPLEIO_H
 #define SIMPLEIO_H
 
-#if APL && !defined(__MACH__)
-#include <Files.h>
-#endif
-
 #include "IODefs.h"
 #include <zlib.h>
 #include <zip.h>

@@ -22,7 +22,6 @@
  */
 #include "TIGERRead.h"
 #include "AssertUtils.h"
-#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "MemFileUtils.h"
 #include "TIGERImport.h"

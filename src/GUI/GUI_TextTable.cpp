@@ -33,6 +33,8 @@
 #include "WED_ToolUtils.h"
 #include "GUI_Resources.h"
 #include "AssertUtils.h"
+#include "WED_Sign_Editor.h"
+
 #define RESIZE_MARGIN 4
 
 #if APL
@@ -52,12 +54,35 @@
 #define CELL_MARGIN 3
 #define	MIN_CELL_WIDTH	(CELL_MARGIN*2)
 
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+class GUI_MouseCatcher : public GUI_Pane, public GUI_Broadcaster {
+public:
+
+	GUI_MouseCatcher(intptr_t msg) : mMsg(msg) { }
+	virtual ~GUI_MouseCatcher() { }
+
+	virtual	int			MouseDown(int x, int y, int button) { 
+		BroadcastMessage(mMsg, 0);
+		return 1;
+	}
+	
+private:
+	intptr_t		mMsg;
+};
+
+
+//--------------------------------------------------------------------------------------------------------------------------------------------
+
+
 GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) : GUI_Commander(parent),
 	mContent(NULL),
 	mClickCellX(-1),
 	mClickCellY(-1),
 	mParent(NULL),
 	mTextField(NULL),
+	mSignField(NULL),
+	mCatcher(NULL),
 	mSelStartX(-1),
 	mSelStartY(-1),
 	mDragX(-1),
@@ -187,13 +212,20 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		//Change the instage so it is completely deactivated
 		inState->SetState(false, false, false,	false, false, false, false);
 		//sets the color
+		
 		glColor4fv(mColorGridlines);
 		//draws the border of where the image should be.
 		glBegin(GL_LINE_STRIP);
-		glVertex2i(cell_bounds[0]  ,cell_bounds[1]);
-		glVertex2i(cell_bounds[2]-1,cell_bounds[1]);
-		glVertex2i(cell_bounds[2]-1,cell_bounds[3]);
+		GLfloat x1 = cell_bounds[0];
+		GLfloat x2 = cell_bounds[2];
+		GLfloat y1 = cell_bounds[1];
+		GLfloat y2 = cell_bounds[3];
+		
+		glVertex2f(x1 + 0.5f, y1 + 0.5f);
+		glVertex2f(x2 - 0.5f, y1 + 0.5f);
+		glVertex2f(x2 - 0.5f, y2 - 0.5f);
 		glEnd();
+		
 	}
 	//---------
 	
@@ -265,7 +297,17 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		break;
 	}
 	
-	
+	if(c.can_delete)
+	{
+					  //x, y, num_x tiles, num_y tiles
+		int tile[4] = { 0, 0, 1, 1};
+
+		glColor3f(1,1,1);
+		GUI_DrawCentered(inState, "delete.png", cell_bounds, -1,0, tile, NULL, NULL);
+
+		cell_bounds[0] += GUI_GetImageResourceWidth("delete.png");
+	}
+
 	if(c.is_disclosed || c.can_disclose)
 	{
 		int middle = (cell_bounds[1] + cell_bounds[3]) / 2;
@@ -295,7 +337,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	int		descent = GUI_GetLineDescent(mFont);
 	float	cell2line = (cell_h - line_h + descent) * 0.5f;
 
-	if (mTextField == NULL || mClickCellX != cell_x || mClickCellY != cell_y)
+	if (!HasEdit() || mClickCellX != cell_x || mClickCellY != cell_y)
 	{
 		int trunc_width = cell_bounds[2] - cell_bounds[0] - (CELL_MARGIN*2);
 		if (c.content_type == gui_Cell_Enum || c.content_type == gui_Cell_EnumSet)
@@ -330,12 +372,23 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 		}
 		else
 		{
-			GUI_TruncateText(c.text_val, mFont, trunc_width);
-			
-			//Draws normal text
-			GUI_FontDraw(inState, mFont,
-				(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
-				cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());
+			if(c.content_type == gui_Cell_TaxiText)
+			{
+				RenderSign(inState, 
+							cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line,
+							c.text_val.c_str(),
+							0.5f, mFont,
+							(c.is_selected||cell_type) ? mColorTextSelect : mColorText);
+			}
+			else
+			{
+				GUI_TruncateText(c.text_val, mFont, trunc_width);
+				
+				//Draws normal text
+				GUI_FontDraw(inState, mFont,
+					(c.is_selected||cell_type) ? mColorTextSelect : mColorText,
+					cell_bounds[0]+CELL_MARGIN, (float) cell_bounds[1] + cell2line, c.text_val.c_str());
+			}
 		}
 	}
 
@@ -481,7 +534,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 	if (!IsFocusedChain())
 		TakeFocus();
 
-	if (mTextField)
+	if (HasEdit())
 	{
 		TerminateEdit(true, false, true);	// ben says: mac finder will 'eat' the click that ends edits sometimes, but I find this annoying.
 		mClickCellX = -1;
@@ -490,6 +543,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		return 1;
 	}
 
+	//Fill mEditInfo so we can make decisions based on the cell's
+	//Abilities, Status, and Content
 	mContent->GetCellContent(cell_x,cell_y,mEditInfo);
 
 	mClickCellX = -1;
@@ -499,15 +554,38 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 //	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 
+	if (mEditInfo.can_delete == true)
+	{
+		mTrackLeft = cell_bounds[0];
+		mTrackRight = cell_bounds[0] + GUI_GetImageResourceWidth("delete.png");
+		if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
+		{
+			//Set the TextTable to be thinking about this disclose handle
+			mContent->DoDeleteCell(cell_x, cell_y);
+			mClickCellX = cell_x;
+			mClickCellY = cell_y;
+			mInBounds = 1;
+			
+			return 1;
+		}
+	}
+
 	if(mEditInfo.is_disclosed || mEditInfo.can_disclose)
 	{
+		//Regardless of state, if it is able to we're going to toggle
+		//the button
 		if (mEditInfo.can_disclose)
 		{
+			//Find the horizontal dimensions
+			//(vertical is implied correct by this point)
 			mTrackLeft = cell_bounds[0];
 			mTrackRight = cell_bounds[0] + mDiscloseIndent;
 
+			//If the mouse is within those dimensions
 			if (mouse_x >= mTrackLeft && mouse_x < mTrackRight)
 			{
+				//Set the TextTable to be thinking about this disclose handle
+				//we just clicked on
 				mEditInfo.content_type = gui_Cell_Disclose;
 				mClickCellX = cell_x;
 				mClickCellY = cell_y;
@@ -565,6 +643,8 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	if (mouse_x < cell_bounds[0])	{ mEditInfo.content_type = gui_Cell_None; return 1; }
 
+	
+
 	if (!mEditInfo.can_edit)	return 1;
 
 	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
@@ -592,16 +672,15 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 		}
 		break;
 	case gui_Cell_EditText:
+	case gui_Cell_TaxiText:
 	case gui_Cell_Integer:
 	case gui_Cell_Double:
 		if (mParent)
 		{
 			cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-			CreateEdit(cell_bounds);
+			CreateEdit(cell_bounds, mEditInfo.text_val, mEditInfo.content_type == gui_Cell_TaxiText);
 			mClickCellX = cell_x;
 			mClickCellY = cell_y;
-			mTextField->SetDescriptor(mEditInfo.text_val);
-			mTextField->SetSelection(0,mEditInfo.text_val.size());
 			return 1;
 		}
 		break;
@@ -670,7 +749,7 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 					items[i].flags = 0;
 					items[i].cmd = 0;
 					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
-					if (mEditInfo.int_val == it->first && cur == -1) cur = i;
+					if (items[i].checked && cur == -1) cur = i;
 				}
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 				if (choice >= 0 && choice < enum_vals.size())
@@ -803,7 +882,7 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 		}
 		break;
 	}
-	if (!mTextField)
+	if (!HasEdit())
 	{
 		mEditInfo.content_type = gui_Cell_None;
 		mClickCellX = -1;
@@ -831,6 +910,7 @@ int			GUI_TextTable::CellGetHelpTip(int cell_bounds[4], int cell_x, int cell_y, 
 	mContent->GetCellContent(cell_x,cell_y,c);
 	switch(c.content_type) {
 	case gui_Cell_EditText:
+	case gui_Cell_TaxiText:
 	case gui_Cell_FileText:
 	case gui_Cell_Integer:
 	case gui_Cell_Double:
@@ -1037,52 +1117,137 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 
 
 
-void		GUI_TextTable::CreateEdit(int cell_bounds[4])
+void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_sign)
 {
-	if (!mTextField)
+	if(is_sign)
 	{
-		mTextField = new GUI_TextField(1,this);
-		mTextField->SetFont(mFont);
-		mTextField->SetKeyMsg(GUI_TEXT_FIELD_TEXT_CHANGED,0);
-		mTextField->AddListener(this);
-		mTextField->SetParent(mParent);
-		mTextField->SetVKAllowed(GUI_VK_RETURN, false);
-		mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false);
-		mTextField->SetKeyAllowed(GUI_KEY_TAB, false);
-		if (!mImage.empty())
+		if(!mSignField)
 		{
-			float transparent[4] = { 0.0, 0.0, 0.0, 0.0 };
-			mTextField->SetColors(mColorTextSelect, mColorSelect, transparent, transparent);
-		} else {
-			mTextField->SetColors(mTFColorText,mTFColorHilite,mTFColorBkgnd,mTFColorBox);
+			mSignField = new WED_Sign_Editor(this);
+			if(mCatcher == NULL) 
+			{
+				mCatcher = new GUI_MouseCatcher(GUI_MOUSE_OUTSIDE_BOUNDS);
+				mCatcher->AddListener(this);
+			}
+						
+			GUI_Pane * parent = mParent;
+			while(parent->GetParent())
+				parent = parent->GetParent();
+			mSignField->SetParent(mCatcher);
+			mCatcher->SetParent(parent);
+			
+			int pb[4];
+			parent->GetBounds(pb);
+			mCatcher->SetBounds(pb);
+			mCatcher->Show();
+		}
+
+//		float	cell_h = cell_bounds[3] - cell_bounds[1];
+//		float	line_h = GUI_GetLineHeight(mFont);
+//		int		descent = GUI_GetLineDescent(mFont);
+//		float	cell2line = (cell_h - line_h + descent) * 0.5f;
+
+//		float pad_bottom = cell2line - descent;
+//		float pad_top = cell_h - line_h - pad_bottom;
+			
+		int cb[4];
+		memcpy(cb,cell_bounds,sizeof(cb));
+			
+		int wb[4];
+		mCatcher->GetBounds(wb);
+						
+		cb[0] += mEditInfo.indent_level * mCellIndent;
+		
+		cb[1] = cb[3] - 280;
+		cb[2] = cb[0] + 600;
+		
+		int dx = 0, dy = 0;
+		if(cb[2] > wb[2])
+			dx = wb[2] - cb[2];
+		if(cb[0] < wb[0])
+			dx = wb[0] - cb[0];
+		cb[0] += dx;
+		cb[2] += dx;
+		
+		if(cb[1] < wb[1])
+			dy = wb[1] - cb[1];
+		if(cb[3] > wb[3])
+			dy = wb[3] - cb[3];
+		cb[1] += dy;
+		cb[3] += dy;
+		
+		mSignField->SetBounds(cb);
+
+		if(!mSignField->SetSignText(text))
+		{
+			is_sign = false;
+			mSignField->Hide();
+			delete mSignField;
+			mSignField = NULL;
+			mCatcher->Hide();
+		}
+		else
+		{
+			mCatcher->Show();
+			mSignField->Show();
+			mSignField->TakeFocus();
+			mSignField->Refresh();			
 		}
 	}
+	
+	if(!is_sign)
+	{
+		if (!mTextField)
+		{
+			mTextField = new GUI_TextField(1,this);
+			mTextField->SetFont(mFont);
+			mTextField->SetKeyMsg(GUI_TEXT_FIELD_TEXT_CHANGED,0);
+			mTextField->AddListener(this);
+			mTextField->SetParent(mParent);
+			mTextField->SetVKAllowed(GUI_VK_RETURN, false);
+			mTextField->SetKeyAllowed(GUI_KEY_ESCAPE, false);
+			mTextField->SetKeyAllowed(GUI_KEY_TAB, false);
+			if (!mImage.empty())
+			{
+				float transparent[4] = { 0.0, 0.0, 0.0, 0.0 };
+				mTextField->SetColors(mColorTextSelect, mColorSelect, transparent, transparent);
+			} else {
+				mTextField->SetColors(mTFColorText,mTFColorHilite,mTFColorBkgnd,mTFColorBox);
+			}
+		}
 
-	float	cell_h = cell_bounds[3] - cell_bounds[1];
-	float	line_h = GUI_GetLineHeight(mFont);
-	int		descent = GUI_GetLineDescent(mFont);
-	float	cell2line = (cell_h - line_h + descent) * 0.5f;
+		float	cell_h = cell_bounds[3] - cell_bounds[1];
+		float	line_h = GUI_GetLineHeight(mFont);
+		int		descent = GUI_GetLineDescent(mFont);
+		float	cell2line = (cell_h - line_h + descent) * 0.5f;
 
-	float pad_bottom = cell2line - descent;
-	float pad_top = cell_h - line_h - pad_bottom;
+		float pad_bottom = cell2line - descent;
+		float pad_top = cell_h - line_h - pad_bottom;
 
-	mTextField->SetMargins(CELL_MARGIN,pad_bottom,CELL_MARGIN,pad_top);
+		mTextField->SetMargins(CELL_MARGIN,pad_bottom,CELL_MARGIN,pad_top);
 
 
-	cell_bounds[0] += mEditInfo.indent_level * mCellIndent;
-	mTextField->SetBounds(cell_bounds);
-	mTextField->SetWidth(max(cell_bounds[2] - cell_bounds[0],2048));
-//	mTextField->SetWidth(1000);
-	mTextField->Show();
-	mTextField->TakeFocus();
+		cell_bounds[0] += mEditInfo.indent_level * mCellIndent;
+		mTextField->SetBounds(cell_bounds);
+		mTextField->SetWidth(max(cell_bounds[2] - cell_bounds[0],2048));
+	//	mTextField->SetWidth(1000);
+		mTextField->Show();
+		mTextField->TakeFocus();
 
-	mParent->TrapFocus();
+		mParent->TrapFocus();	
+		
+		mTextField->SetDescriptor(text);
+		mTextField->SetSelection(0,text.size());
+		mTextField->Refresh();
+	}
 }
 
 int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 {
-	if (mTextField && mTextField->IsFocused() &&
-		(mEditInfo.content_type == gui_Cell_EditText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
+	GUI_Commander * cmd_field = mTextField ? (GUI_Commander *) mTextField : (GUI_Commander *) mSignField;
+	
+	if (cmd_field && cmd_field->IsFocused() &&
+		(mEditInfo.content_type == gui_Cell_EditText || mEditInfo.content_type == gui_Cell_TaxiText ||  mEditInfo.content_type == gui_Cell_Integer || mEditInfo.content_type == gui_Cell_Double))
 	{
 
 		// This is a bit tricky: _if_ we are going to kill off the text field later, memorize the field and mark our member var
@@ -1095,12 +1260,19 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 		//
 		// This is, at best, hokey...maybe revisit someday?
 		GUI_TextField * f = mTextField;
-		if(in_close) 
+		WED_Sign_Editor * s = mSignField;
+		if(in_close) {
 			mTextField = NULL;
+			mSignField = NULL;
+		}
+		DebugAssert(f != NULL || s != NULL);	
 			
 		if (inSave)
 		{
-			f->GetDescriptor(mEditInfo.text_val);
+			if(f)
+				f->GetDescriptor(mEditInfo.text_val);
+			else	
+				s->GetSignText(mEditInfo.text_val);
 			switch(mEditInfo.content_type) {
 			case gui_Cell_Integer:
 				mEditInfo.int_val = atoi(mEditInfo.text_val.c_str());
@@ -1114,9 +1286,19 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 		if(in_close)
 		{
 			mTextField = NULL;
+			mSignField = NULL;
 			this->TakeFocus();
-			f->Hide();
-			delete f;
+			if(f)
+			{
+				f->Hide();
+				delete f;
+			}
+			if(s)
+			{
+				s->Hide();
+				delete s;
+				mCatcher->Hide();
+			}
 			mEditInfo.content_type = gui_Cell_None;
 			return 1;
 		}
@@ -1224,7 +1406,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 		break;
 	}
 
-	if(inKey == GUI_KEY_TAB && mTextField && mContent)
+	if(inKey == GUI_KEY_TAB && HasEdit() && mContent)
 	{
 		int x = mClickCellX;
 		int y = mClickCellY;
@@ -1238,15 +1420,12 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 				mParent->CalcCellBounds(x,y,cell_bounds);
 				mClickCellX = x;
 				mClickCellY = y;
-				CreateEdit(cell_bounds);
-				mTextField->SetDescriptor(mEditInfo.text_val);
-				mTextField->SetSelection(0,mEditInfo.text_val.size());
-				mTextField->Refresh();
+				CreateEdit(cell_bounds, mEditInfo.text_val,mEditInfo.content_type == gui_Cell_TaxiText);
 			}
 		}
 	}
 
-	if(inVK == GUI_VK_RETURN && mTextField)
+	if(inVK == GUI_VK_RETURN && HasEdit())
 	{
 		TerminateEdit(true, inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		return 1;
@@ -1263,15 +1442,12 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 				mParent->CalcCellBounds(x1,y2,cell_bounds);
 				mClickCellX = x1;
 				mClickCellY = y2;
-				CreateEdit(cell_bounds);
-				mTextField->SetDescriptor(mEditInfo.text_val);
-				mTextField->SetSelection(0,mEditInfo.text_val.size());
-				mTextField->Refresh();
+				CreateEdit(cell_bounds, mEditInfo.text_val,mEditInfo.content_type == gui_Cell_TaxiText);
 			}
 		}
 	}
 
-	if(inKey == GUI_KEY_ESCAPE && mTextField)
+	if(inKey == GUI_KEY_ESCAPE && HasEdit())
 	{
 		TerminateEdit(false, false, true);
 		return 1;
@@ -1286,7 +1462,10 @@ void	GUI_TextTable::ReceiveMessage(
 {
 	if(inMsg == GUI_TEXT_FIELD_TEXT_CHANGED && mLiveEdit)
 		TerminateEdit(true,false,false);
-	
+	if(inMsg == GUI_MOUSE_OUTSIDE_BOUNDS)
+	{
+		TerminateEdit(true, false, true);
+	}
 }
 
 

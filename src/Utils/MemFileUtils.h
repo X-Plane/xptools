@@ -83,10 +83,18 @@ void			MemFile_Close		(MFMemFile * inFile);
  ******************************************************************************/
 const char *	TextScanner_GetBegin	(MFTextScanner * inScanner);
 const char *	TextScanner_GetEnd		(MFTextScanner * inScanner);
+
+//Open memory file as an MFTextScanner
 MFTextScanner *	TextScanner_Open		(MFMemFile * inFile);
+
+//Open a portion of memory as an MFTextScanner
 MFTextScanner *	TextScanner_OpenMem		(const char * inBegin, const char * inEnd);
 void			TextScanner_Close		(MFTextScanner * inScanner);
+
+//Returns true if the TextScanner is at the end (or past) of the buffer
 bool			TextScanner_IsDone		(MFTextScanner * inScanner);
+
+//Go to the next line
 void			TextScanner_Next		(MFTextScanner * inScanner);
 
 char			TextScanner_ExtractChar(MFTextScanner * inScanner, int inBegin);

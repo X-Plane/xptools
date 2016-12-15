@@ -58,6 +58,7 @@ using std::string;
  	// X Y Z R G B
  	void	AccumLight(float inPoint[6]);
 	void	AccumLightNamed(float xyz[3], const char * name);
+	void	AddParam(float p);
 	void	AccumLightCustom(float xyz[3], float params[9], const char * dataref);
 	void	AccumSmoke(int cmd, float xyz[3], float size);
 
@@ -70,8 +71,8 @@ using std::string;
 	void	AccumShow(float v1, float v2, const char * ref);
 	void	AccumHide(float v1, float v2, const char * ref);
 
-	void	AccumTranslateBegin(const char * ref);
-	void	AccumRotateBegin(float axis[3], const char * ref);
+	void	AccumTranslateBegin(const char * ref, float loop);
+	void	AccumRotateBegin(float axis[3], const char * ref, float loop);
  	void	AccumTranslateKey(float v, float xyz[3]);
  	void	AccumRotateKey(float v, float a);
 	void	AccumTranslateEnd(void);

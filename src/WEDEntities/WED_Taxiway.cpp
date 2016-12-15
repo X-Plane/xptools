@@ -86,3 +86,12 @@ void		WED_Taxiway::Export(		 AptTaxiway_t& x) const
 	x.heading = heading;
 	GetName(x.name);
 }
+
+void	WED_Taxiway::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_GISPolygon::GetNthPropertyDict(n, dict);
+	if(n == PropertyItemNumber(&surface) && surface.value != surf_Water)
+	{
+		dict.erase(surf_Water);
+	}
+}

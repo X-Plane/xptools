@@ -189,21 +189,18 @@ private:
 
 #if APL
 
-#define __DEBUGGING__
-#include <Carbon/Carbon.h>
+// Convenience routines to convert our drop-actions to native and back. - These match NSDragging.h secretly
 
-// Convenience routines to convert our drop-actions to native and back.
-
-inline DragActions	OP_GUI2Mac(GUI_DragOperation fx)
+inline int	OP_GUI2Mac(GUI_DragOperation fx)
 {
-	return (fx & gui_Drag_Move ? kDragActionMove : kDragActionNothing) +
-		   (fx & gui_Drag_Copy ? kDragActionCopy : kDragActionNothing);
+	return (fx & gui_Drag_Move ? 16 : 0) +
+		   (fx & gui_Drag_Copy ? 1 : 0);
 }
 
-inline GUI_DragOperation	OP_Mac2GUI(DragActions fx)
+inline GUI_DragOperation	OP_Mac2GUI(int fx)
 {
-	return (fx & kDragActionMove ?  gui_Drag_Move: gui_Drag_None) +
-		   (fx & kDragActionCopy ?  gui_Drag_Copy: gui_Drag_None);
+	return (fx & 16 ?  gui_Drag_Move: gui_Drag_None) +
+		   (fx & 1 ?  gui_Drag_Copy: gui_Drag_None);
 }
 
 // GUI_DragMgr_Adapter is a light-weight adapter that makes a Mac Drag Mgr reference
@@ -212,7 +209,7 @@ inline GUI_DragOperation	OP_Mac2GUI(DragActions fx)
 
 class	GUI_DragMgr_Adapter : public GUI_DragData {
 public:
-			 GUI_DragMgr_Adapter(DragRef data_obj);
+			 GUI_DragMgr_Adapter(void * ns_dragging_info);
 			~GUI_DragMgr_Adapter();
 
 	virtual	int		CountItems(void);
@@ -220,20 +217,23 @@ public:
 	virtual	int		GetNthItemSize(int n, GUI_ClipType ct);
 	virtual	bool	GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr);
 private:
-	DragRef		mObject;
+	void *		mObject;
 };
 
-// This routine loads  data into a drag...
+// This routine loads  data into a single drag item.  The returned void * is really
+// an NSDraggingItem with one retain count.
 
-void GUI_LoadSimpleDrag(
-							DragRef					the_drag,
-							int						type_count,
+void * GUI_LoadOneSimpleDrag(
+							int						typeCount,
 							GUI_ClipType			inTypes[],
 							int						sizes[],
 							const void *			ptrs[],
-							GUI_GetData_f			fetch_func,
-							void *					ref);
+							const int				bounds[4]);
 
+// A utility bridge for drag and drop - this returns a vector of the UTI strings of all
+// registered drag types within the app.  GUI_Window uses this just-in-time to make sure
+// we can receive the right kinds of drags.
+void GUI_GetMacNativeDragTypeList(vector<string>& out_types);
 
 #endif /* APL */
 

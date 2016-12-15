@@ -23,7 +23,6 @@
 
 #include "WED_DSFExport.h"
 #include "WED_UIDefs.h"
-#include "WED_AptIE.h"
 #include "DSFLib.h"
 #include "FileUtils.h"
 #include "WED_Entity.h"
@@ -57,6 +56,10 @@
 #include "WED_ResourceMgr.h"
 #include "BitmapUtils.h"
 #include "GISUtils.h"
+#include <time.h>
+#include "PerfUtils.h"
+#include "STLUtils.h"
+
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
 // a full 0.5 degrees of 'extra'.  But...that's a LOT more than we
@@ -141,6 +144,50 @@ bool bad_match(const T& s1, const T& s2)
 {
 	return s1.p1 != s2.p2;
 }
+
+static bool is_dir_sep(char c) { return c == '/' || c == ':' || c == '\\'; }
+
+static bool is_backout_path(const string& p)
+{
+	vector<string> comps;
+	tokenize_string_func(p.begin(), p.end(), back_inserter(comps), is_dir_sep);
+	
+	comps.erase(remove(comps.begin(),comps.end(),string(".")),comps.end());	
+	
+	bool did_work = false;
+	do {
+		did_work = false;
+		for(int i = 1; i < comps.size(); ++i)
+		if(comps[i] == string(".."))
+		if(comps[i-1] != string(".."))
+		{
+			comps.erase(comps.begin()+i-1,comps.begin()+i+1);
+			did_work = true;
+			break;
+		}	
+	} while(did_work);
+	
+	for(int i = 0; i < comps.size(); ++i)
+	{
+		if(comps[i] == string(".."))
+			return true;
+	}
+	return false;
+}
+
+struct kill_zero_length_segment {
+
+	bool operator()(const Segment2& s) const { return s.p1 == s.p2; }
+
+};
+
+// We normally reject zero length segments, but for the sake of grandfathered global airports, we'll instead simply remove them on export.
+template<class Segment>
+void remove_all_zero_length_segments(vector<Segment> &in_out_chain)
+{
+	in_out_chain.erase(remove_if(in_out_chain.begin(), in_out_chain.end(), kill_zero_length_segment()), in_out_chain.end());
+}
+
 /************************************************************************************************************************************************
  * DSF EXPORT UTILS
  ************************************************************************************************************************************************/
@@ -152,15 +199,29 @@ bool bad_match(const T& s1, const T& s2)
 static bool g_dropped_pts = false;
 
 struct	DSF_ResourceTable {
-	DSF_ResourceTable() { for(int i = 0; i < 7; ++i) show_level_obj[i] = show_level_pol[i] = -1; }
+	DSF_ResourceTable() { for(int i = 0; i < 7; ++i) show_level_obj[i] = show_level_pol[i] = -1; cur_filter = -1;}
 	vector<string>				obj_defs;
 	map<pair<string,int>, int>	obj_defs_idx;
 
 	vector<string>				pol_defs;
 	map<pair<string, int>, int>	pol_defs_idx;
 
+	vector<string>				filters;
+	map<string, int>			filter_idx;
+	
+	map<int, vector<pair<string, string> > > exclusions;
+	
+	int							cur_filter;
+	
 	int show_level_obj[7];
 	int show_level_pol[7];
+
+	void set_filter(int x) { cur_filter = x; }
+
+	void accum_exclusion(const string& key, const string& value)
+	{
+		exclusions[cur_filter].push_back(make_pair(key,value));
+	}
 
 	int accum_obj(const string& f, int show_level)
 	{
@@ -182,6 +243,52 @@ struct	DSF_ResourceTable {
 		DebugAssert(show_level_pol[show_level] <= pol_defs.size());
 		pol_defs.push_back(f);
 		return				  pol_defs.size()-1;
+	}
+	
+	int accum_filter(const string& icao_filter)
+	{
+		map<string,int>::iterator i = filter_idx.find(icao_filter);
+		if(i != filter_idx.end()) return i->second;
+		filter_idx[icao_filter] = filters.size();
+		filters.push_back(icao_filter);
+		return filters.size()-1;
+	}
+	
+	void write_tables(DSFCallbacks_t& cbs, void * writer)
+	{
+		for(vector<string>::iterator s = obj_defs.begin(); s != obj_defs.end(); ++s)
+			cbs.AcceptObjectDef_f(s->c_str(), writer);
+
+		for(vector<string>::iterator s = pol_defs.begin(); s != pol_defs.end(); ++s)
+			cbs.AcceptPolygonDef_f(s->c_str(), writer);
+
+		for(vector<pair<string,string> >::iterator e = exclusions[-1].begin(); e != exclusions[-1].end(); ++e)
+			cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
+
+		int idx = 0;
+		for(vector<string>::iterator s = filters.begin(); s != filters.end(); ++s, ++idx)
+		{
+			cbs.AcceptProperty_f("sim/filter/aptid",s->c_str(),writer);
+
+			for(vector<pair<string,string> >::iterator e = exclusions[idx].begin(); e != exclusions[idx].end(); ++e)
+				cbs.AcceptProperty_f(e->first.c_str(), e->second.c_str(), writer);
+		}
+		for(int i = 1; i <= 6; ++i)
+		{
+			char buf[20];
+			if(show_level_obj[i] != -1)
+			{
+				sprintf(buf,"%d/%d",i,show_level_obj[i]);
+				cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
+				cbs.AcceptProperty_f("sim/require_object", buf, writer);
+			}
+			if(show_level_pol[i] != -1)
+			{
+				sprintf(buf,"%d/%d",i,show_level_pol[i]);
+				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
+			}
+		}		
+
 	}
 };
 
@@ -317,23 +424,23 @@ static void	DSF_AccumChainBezier(
 			vector<BezierPoint2p>	pts,pts_triple;
 			BezierToBezierPointSeq(n,e,back_inserter(pts));
 			
-			printf("Original pts:\n");
-			for(vector<BezierPoint2p>::iterator i = pts.begin(); i != pts.end(); ++i)
-				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
-						i->lo.x(), i->lo.y(),
-						i->pt.x(), i->pt.y(),
-						i->hi.x(), i->hi.y(),
-						i->param);
+//			printf("Original pts:\n");
+//			for(vector<BezierPoint2p>::iterator i = pts.begin(); i != pts.end(); ++i)
+//				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
+//						i->lo.x(), i->lo.y(),
+//						i->pt.x(), i->pt.y(),
+//						i->hi.x(), i->hi.y(),
+//						i->param);
 			
 			BezierPointSeqToTriple(pts.begin(),pts.end(),back_inserter(pts_triple));
 
-			printf("Triple pts:\n");
-			for(vector<BezierPoint2p>::iterator i = pts_triple.begin(); i != pts_triple.end(); ++i)
-				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
-						i->lo.x(), i->lo.y(),
-						i->pt.x(), i->pt.y(),
-						i->hi.x(), i->hi.y(),
-						i->param);
+//			printf("Triple pts:\n");
+//			for(vector<BezierPoint2p>::iterator i = pts_triple.begin(); i != pts_triple.end(); ++i)
+//				printf("%lf,%lf | %lf,%lf | %lf, %lf (%d)\n", 
+//						i->lo.x(), i->lo.y(),
+//						i->pt.x(), i->pt.y(),
+//						i->hi.x(), i->hi.y(),
+//						i->param);
 			
 			for(int i = 0; i < pts_triple.size(); ++i)
 			{
@@ -342,7 +449,7 @@ static void	DSF_AccumChainBezier(
 						pts_triple[i].param,
 						&pts_triple[i].hi, 
 						bounds);
-				printf("bezier: %f %f %f   %f %f\n", c[0],c[1],c[2],c[3],c[4]);
+//				printf("bezier: %f %f %f   %f %f\n", c[0],c[1],c[2],c[3],c[4]);
 				if(!auto_closed || i != (pts_triple.size()-1))
 				{
 //					debug_mesh_line(pts_triple[i].pt,pts_triple[i].hi,1,1,1,0,1,0);
@@ -620,9 +727,22 @@ void DSF_AccumPolygonWithHoles(
 	cbs->EndPolygonWinding_f(writer);
 }
 
-static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, double& out_msl_max)
+// 1 = got at least 1 min/max height entity
+// 0 = got entities, none affected by height
+// -1 = cull
+static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, double& out_msl_max, const Bbox2& bounds)
 {
 	WED_ObjPlacement * obj;
+	IGISEntity * ent;
+	if((ent = dynamic_cast<IGISEntity *>(what)) != NULL)
+	{
+		Bbox2	cbounds;
+		ent->GetBounds(gis_Geo, cbounds);
+		if(!cbounds.overlap(bounds))
+			return -1;
+	}
+	
+	
 	if((obj = dynamic_cast<WED_ObjPlacement *>(what)) != NULL)
 	{
 #if AIRPORT_ROUTING	
@@ -633,13 +753,17 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 		}
 #endif		
 	}
-	int found = 0;
+	
+	int found = 0;		// true if we found at least 1 min/max
+	int any_inside = 0;	// true if we found ANYTHING inside at all?
 	int nn = what->CountChildren();
 	for(int n = 0; n < nn; ++n)
 	{
 		double msl_min, msl_max;
-		if (DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max))
+		int child_cull = DSF_HeightRangeRecursive(what->GetNthChild(n),msl_min,msl_max, bounds);
+		if (child_cull == 1)
 		{
+			any_inside = 1;
 			if(found)
 			{
 				out_msl_min=min(out_msl_min,msl_min);
@@ -652,14 +776,42 @@ static int	DSF_HeightRangeRecursive(WED_Thing * what, double& out_msl_min, doubl
 				found=1;
 			}
 		}
+		else if(child_cull == 0)
+			any_inside = 1;
 	}
-	return found;
-}
 
+	if(!any_inside && ent && ent->GetGISClass() != gis_Composite)
+		return 0;
+	
+	return found ? 1 : (any_inside ? 0 : -1);
+}
+//A wrapper around MakePol to reduce the amount of repetition that goes on.
+//Takes the relative DDS string, the relative POL path string, an orthophoto, a height, and the resourcemanager
+static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_DrapedOrthophoto * orth, int inHeight, WED_ResourceMgr * rmgr)
+{
+	//-------------------Information for the .pol
+	//Find most reduced path
+	const char * p = relativeDDSP;
+	const char * n = relativeDDSP;
+	while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+
+			
+	Point2 p1;
+	Point2 p2;
+	orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
+	orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
+			
+	float centerLat = (p2.y() + p1.y())/2;
+	float centerLon = (p2.x() + p1.x())/2;
+	//-------------------------------------------
+	pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
+		/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
+	rmgr->MakePol(relativePOLP,out_info);
+}
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what,
 						IResolver *					resolver,
-						ILibrarian *				pkg, 
+						const string&				pkg, 
 						const Bbox2&				cull_bounds,		// This is the area for which we are TRYING to get scenery.
 						const Bbox2&				safe_bounds,		// This is the 'safe' area into which we CAN write scenery without exploding.
 						DSF_ResourceTable&			io_table, 
@@ -678,6 +830,7 @@ static int	DSF_ExportTileRecursive(
 	WED_PolygonPlacement * pol;
 	WED_DrapedOrthophoto * orth;
 	WED_ExclusionZone * xcl;
+	WED_Airport * apt;
 
 	int idx;
 	string r;
@@ -704,6 +857,16 @@ static int	DSF_ExportTileRecursive(
 		centroid_ob = true;
 	}
 
+	if((apt = dynamic_cast<WED_Airport*>(what)) != NULL)
+	{
+		string id;
+		apt->GetICAO(id);
+		
+		int filter_idx = io_table.accum_filter(id.c_str());
+		
+		cbs->SetFilter_f(filter_idx,writer);
+		io_table.set_filter(filter_idx);
+	}
 
 	if((xcl = dynamic_cast<WED_ExclusionZone *>(what)) != NULL)
 	if(show_level == 6)
@@ -736,7 +899,7 @@ static int	DSF_ExportTileRecursive(
 				char valbuf[512];
 				sprintf(valbuf,"%.6lf/%.6lf/%.6lf/%.6lf",minp.x(),minp.y(),maxp.x(),maxp.y());
 				++real_thingies;
-				cbs->AcceptProperty_f(pname, valbuf, writer);
+				io_table.accum_exclusion(pname, valbuf);
 			}
 		}
 	}
@@ -753,20 +916,21 @@ static int	DSF_ExportTileRecursive(
 		obj->GetLocation(gis_Geo,p);
 		if(cull_bounds.contains(p))
 		{
-			double xy[3] = { p.x(), p.y(), 0.0 };
+			double xyrz[4] = { p.x(), p.y(), 0.0 };
 			float heading = obj->GetHeading();
 			while(heading < 0) heading += 360.0;
 			while(heading >= 360.0) heading -= 360.0;
 			++real_thingies;
+			xyrz[2] = heading;
 			#if AIRPORT_ROUTING
 			if(obj->HasCustomMSL())
 			{
-				xy[2] = obj->GetCustomMSL();
-				cbs->AddObjectAbsolute_f(idx, xy, heading, writer);
+				xyrz[3] = obj->GetCustomMSL();
+				cbs->AddObject_f(idx, xyrz, 4, writer);
 			}
 			else
 			#endif
-				cbs->AddObject_f(idx, xy, heading, writer);
+				cbs->AddObject_f(idx, xyrz, 3, writer);
 		}
 	}
 	
@@ -917,6 +1081,8 @@ static int	DSF_ExportTileRecursive(
 					vector<Segment2p>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					remove_all_zero_length_segments(chain);
 					if(gExportTarget < wet_xplane_1021)
 						clip_segments(chain,cull_bounds);
 					else if(centroid_ob)
@@ -963,6 +1129,8 @@ static int	DSF_ExportTileRecursive(
 					vector<Segment2>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					remove_all_zero_length_segments(chain);
 					if(gExportTarget < wet_xplane_1021)
 						clip_segments(chain,cull_bounds);
 					else if(centroid_ob)
@@ -998,6 +1166,10 @@ static int	DSF_ExportTileRecursive(
 				vector<Polygon2>	fst_area;
 				Assert(WED_PolygonWithHolesForPolygon(fst,fst_area));
 
+				// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+				for(vector<Polygon2>::iterator f = fst_area.begin(); f != fst_area.end(); ++f)
+					f->erase(unique(f->begin(),f->end()),f->end());
+
 				vector<vector<Polygon2> >	fst_clipped;
 				if (!clip_polygon(fst_area, fst_clipped,cull_bounds))
 				{
@@ -1022,10 +1194,15 @@ static int	DSF_ExportTileRecursive(
 					vector<Segment2>	chain;
 				
 					WED_VectorForPointSequence(seq,chain);
+					// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+					remove_all_zero_length_segments(chain);
+				
 					clip_segments(chain, cull_bounds);
-
-					++real_thingies;
-					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, param, 0);
+					if(!chain.empty())
+					{
+						++real_thingies;
+						DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, param, 0);
+					}
 				}
 			}
 			break;
@@ -1083,6 +1260,8 @@ static int	DSF_ExportTileRecursive(
 			vector<Segment2>	chain;
 		
 			WED_VectorForPointSequence(str,chain);
+			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+			remove_all_zero_length_segments(chain);
 			clip_segments(chain, cull_bounds);
 			if(!chain.empty())
 			{
@@ -1110,63 +1289,69 @@ static int	DSF_ExportTileRecursive(
 			WED_BezierVectorForPointSequence(lin,chain);
 
 			clip_segments(chain, cull_bounds);
-
-			int closed = 0;
-			if(one_winding(chain))
+			if(!chain.empty())
 			{
-				if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+				int closed = 0;
+				if(one_winding(chain))
 				{
-					closed = 1;
+					if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+					{
+						closed = 1;
+					}
 				}
-			}
-			else
-			{
-				while(chain.front().p1 == chain.back().p2)
+				else
 				{
-					chain.insert(chain.begin(),chain.back());
-					chain.pop_back();
+					while(chain.front().p1 == chain.back().p2)
+					{
+						chain.insert(chain.begin(),chain.back());
+						chain.pop_back();
+					}
 				}
+				++real_thingies;
+				if(closed && bad_match(chain.front(),chain.back()))
+				{
+					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
+					problem_children.insert(what);
+				}
+				else
+					DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 			}
-			++real_thingies;
-			if(closed && bad_match(chain.front(),chain.back()))
-			{
-				DebugAssert(!"We should not get here - it's a logic error, not a precision error!");
-				problem_children.insert(what);
-			}
-			else
-				DSF_AccumChainBezier(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 		}
 		else
 		{		
 			vector<Segment2>	chain;
 		
 			WED_VectorForPointSequence(lin,chain);
+			// We normally reject zero length segments, but for grandfathered global airports, we'll try to clean this.
+			remove_all_zero_length_segments(chain);
 			clip_segments(chain, cull_bounds);
-
-			int closed = 0;
-			if(one_winding(chain))
+			if(!chain.empty())
 			{
-				if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+				int closed = 0;
+				if(one_winding(chain))
 				{
-					closed = 1;
+					if(chain.front().p1 == chain.back().p2 && chain.size() > 1)
+					{
+						closed = 1;
+					}
 				}
-			}
-			else
-			{
-				while(chain.front().p1 == chain.back().p2)
+				else
 				{
-					chain.insert(chain.begin(),chain.back());
-					chain.pop_back();
+					while(chain.front().p1 == chain.back().p2)
+					{
+						chain.insert(chain.begin(),chain.back());
+						chain.pop_back();
+					}
 				}
+				++real_thingies;					
+				if(closed && bad_match(chain.front(),chain.back()))
+				{
+					DebugAssert(!"We should not get here - it's a logic error, not a precision error!");			
+					problem_children.insert(what);
+				}
+				else
+					DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 			}
-			++real_thingies;					
-			if(closed && bad_match(chain.front(),chain.back()))
-			{
-				DebugAssert(!"We should not get here - it's a logic error, not a precision error!");			
-				problem_children.insert(what);
-			}
-			else
-				DSF_AccumChain(chain.begin(),chain.end(), safe_bounds, cbs,writer, idx, closed, closed);
 		}
 	}
 
@@ -1235,107 +1420,112 @@ static int	DSF_ExportTileRecursive(
 		//Get the relative path
 		orth->GetResource(r);
 
-		//Various Strings, it may be a lot but it ensures one never get confused
-		//-----------------
-		string relativePathDDS = r;
-		relativePathDDS.replace(relativePathDDS.length()-3,3,"dds");
-		//-----------------
-		string relativePathPOL = r;
-		relativePathPOL.replace(relativePathDDS.length()-3,3,"pol");
-		//-----------------
-		string absPathIMG = r;
-		pkg->LookupPath(absPathIMG);
-		//-----------------
-		string absPathDDS = absPathIMG;
-		absPathDDS.replace(absPathDDS.length()-3,3,"dds");
-		//-----------------
-		string absPathPOL = absPathIMG;
-		absPathPOL.replace(absPathPOL.length()-3,3,"pol");
-
-		date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
-		//-----------------
-		/* How to export a Torthoptho
-		* Create a Bitmap from whatever file format is being used
-		* Create a DDS from that file format
-		* Create the .pol with the file format in mind
-		* Enjoy your new Torthophoto
-		*/
-		//File extenstion
-		string resrcEnd = "";
+		string resrcEnd;
 		if(orth->IsNew(&resrcEnd) == true)
 		{
-			WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-			ImageInfo imgInfo;
-
-			if(strcasecmp(resrcEnd.c_str(),".tif")==0 && date_cmpr_res == dcr_firstIsNew)
+			if(GetSupportedType(r.c_str()) == -1)
 			{
-				int inWidth = 1;
-				int inHeight = 1;
+				string msg = string("The polygon '") + r + string("' cannot be converted to an orthophoto.");
+				DoUserAlert(msg.c_str());
+				return 0;
+			}
 				
-				if(!CreateBitmapFromTIF(absPathIMG.c_str(),&imgInfo))
+			//Various Strings, it may be a lot but it ensures one never get confused
+			//-----------------
+			string relativePathDDS = r;
+			relativePathDDS.replace(relativePathDDS.length()-3,3,"dds");
+			//-----------------
+			string relativePathPOL = r;
+			relativePathPOL.replace(relativePathDDS.length()-3,3,"pol");
+			if(is_backout_path(relativePathPOL))
+			{
+				string msg = string("The path '") + relativePathPOL + string("' is illegal because it backs out of your scenery pack.");
+				DoUserAlert(msg.c_str());
+				return 0;
+			}
+
+			//-----------------
+			string absPathIMG = pkg + r;
+			//-----------------
+			string absPathDDS = absPathIMG;
+			absPathDDS.replace(absPathDDS.length()-3,3,"dds");
+			//-----------------
+			string absPathPOL = absPathIMG;
+			absPathPOL.replace(absPathPOL.length()-3,3,"pol");
+
+			r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
+
+			date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
+			//-----------------
+			/* How to export a Torthoptho
+			* If it is a torthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
+			* Create a Bitmap from whatever file format is being used.
+			* Use the number of channels to decide the compression level
+			* Create a DDS from that file format
+			* Create the .pol with the file format in mind
+			* Enjoy your new Torthophoto
+			*
+			* Currently supported image file types (including # channel based compression)
+			* JPEG2000 (.jp2)
+			* TIFF (.tif)
+			*/
+			//File extenstion
+
+			if(date_cmpr_res == dcr_firstIsNew || date_cmpr_res == dcr_same)
+			{
+				WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+				ImageInfo imgInfo;
+				ImageInfo smaller;
+				int inWidth = 1;
+				int inHeight = 1;	
+				
+				int DXTMethod = 0;
+				
+				int res = MakeSupportedType(absPathIMG.c_str(),&imgInfo);
+				if(res != 0)
 				{
-					ImageInfo smaller;
-
-					while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
-						
-					
-					while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
-
-					if (!CreateNewBitmap(inWidth,inHeight, 4, &smaller))
-					{
-						int isize = 2048;
-						isize = max(smaller.width,smaller.height);
-
-						CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
-     
-						MakeMipmapStack(&smaller);
-						WriteBitmapToDDS(smaller, 5, absPathDDS.c_str(), 1);
-						DestroyBitmap(&smaller);
-					}
-
-					DestroyBitmap(&imgInfo);
+					string msg = string("Unable to convert the image file '") + absPathIMG + string("'to a DDS file.");
+					DoUserAlert(msg.c_str());
+					return 0;
 				}
+				
+				//If only RGB
+				if(imgInfo.channels == 3)
+				{
+					ConvertBitmapToAlpha(&imgInfo,false);
+					DXTMethod = 1;
+				}
+				else
+				{
+					DXTMethod = 5;
+				}
+				while(inWidth < imgInfo.width && inWidth < 2048) inWidth <<= 1;
+				
+				while(inHeight < imgInfo.height && inHeight < 2048) inHeight <<= 1;
 
-				//-------------------Information for the .pol
-				//Find most reduced path
-				const char * p = relativePathDDS.c_str();
-				const char * n = relativePathDDS.c_str();
-				while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
+				if (CreateNewBitmap(inWidth,inHeight, 4, &smaller) == 0)
+				{
+					int isize = 2048;
+					isize = max(smaller.width,smaller.height);
 
-			
-				Point2 p1;
-				Point2 p2;
-				orth->GetOuterRing()->GetNthPoint(0)->GetLocation(gis_Geo,p1);
-				orth->GetOuterRing()->GetNthPoint(2)->GetLocation(gis_Geo,p2);
-			
-				float centerLat = (p2.y() + p1.y())/2;
-				float centerLon = (p2.x() + p1.x())/2;
-				//-------------------------------------------
-				pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
-					/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
-				rmgr->MakePol(relativePathPOL.c_str(),out_info);
+					CopyBitmapSection(&imgInfo,&smaller, 0,0,imgInfo.width,imgInfo.height, 0, 0, smaller.width,smaller.height);    
+		 
+					MakeMipmapStack(&smaller);
+					WriteBitmapToDDS(smaller, DXTMethod, absPathDDS.c_str(), 1);
+					DestroyBitmap(&smaller);
+				}
+				DestroyBitmap(&imgInfo);
+				ExportPOL(relativePathDDS.c_str(),relativePathPOL.c_str(),orth,inHeight,rmgr);
 			}
-			//------------------For when this gets implemented, other images to repeat the above process^
-			else if(strcasecmp(resrcEnd.c_str(),".png")==0 && date_cmpr_res == dcr_firstIsNew)
+			else if(date_cmpr_res == dcr_error)
 			{
-				CreateBitmapFromPNG(absPathIMG.c_str(),&imgInfo,false,GAMMA_SRGB);
+				string msg = string("The file '") + absPathIMG + string("' is missing.");
+				DoUserAlert(msg.c_str());
+				return 0;
 			}
-			else if((strcasecmp(resrcEnd.c_str(),".jpeg")==0 || strcasecmp(resrcEnd.c_str(),".jpg")==0) && date_cmpr_res == dcr_firstIsNew)
-			{
-				CreateBitmapFromJPEG(absPathIMG.c_str(),&imgInfo);
-			}
-			else if(strcasecmp(resrcEnd.c_str(),".bmp")==0 && date_cmpr_res == dcr_firstIsNew)
-			{
-				CreateBitmapFromFile(absPathIMG.c_str(),&imgInfo);
-			}
-			else if(strcasecmp(resrcEnd.c_str(),".dds")==0 && date_cmpr_res == dcr_firstIsNew)
-			{
-				//CreateBitmapFromDDS(absPath.c_str(),&imgInfo);
-			}
-
 		}
 
-		idx = io_table.accum_pol(relativePathPOL,show_level);
+		idx = io_table.accum_pol(r,show_level);
 		bool bez = WED_HasBezierPol(orth);
 
 		UVMap_t	uv;
@@ -1392,17 +1582,32 @@ static int	DSF_ExportTileRecursive(
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
 		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children,show_level);
-	return real_thingies;	
+	
+	if(apt)
+	{
+		cbs->SetFilter_f(-1,writer);
+		io_table.set_filter(-1);		
+	}
+
+	return real_thingies;
 }
 
-static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * pkg, int x, int y, set <WED_Thing *>& problem_children)
+static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
 	char	prop_buf[256];
 
 	double msl_min, msl_max;
-	if(DSF_HeightRangeRecursive(base,msl_min,msl_max))
+	
+	Bbox2	cull(x,y,x+1,y+1);
+	
+	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
+	
+	if(cull_code < 0)
+		return;
+	
+	if(cull_code > 0)
 	{
 		msl_min = floor(msl_min);
 		msl_max = ceil(msl_max);
@@ -1429,7 +1634,7 @@ static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * 
 
 	Bbox2	cull_bounds(x,y,x+1,y+1);
 	Bbox2	safe_bounds(cull_bounds);
-	if(gExportTarget == wet_xplane_1021)
+	if(gExportTarget >= wet_xplane_1021)
 		safe_bounds.expand(DSF_EXTRA_1021);
 	
 	
@@ -1437,50 +1642,49 @@ static void DSF_ExportTile(WED_Group * base, IResolver * resolver, ILibrarian * 
 	for(int show_level = 6; show_level >= 1; --show_level)	
 		entities += DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
-	for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
-		cbs.AcceptObjectDef_f(s->c_str(), writer);
-
-	for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
-		cbs.AcceptPolygonDef_f(s->c_str(), writer);
-		
-	for(int i = 1; i <= 6; ++i)
-	{
-		char buf[20];
-		if(rsrc.show_level_obj[i] != -1)
-		{
-			sprintf(buf,"%d/%d",i,rsrc.show_level_obj[i]);
-			cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
-			cbs.AcceptProperty_f("sim/require_object", buf, writer);
-		}
-		if(rsrc.show_level_pol[i] != -1)
-		{
-			sprintf(buf,"%d/%d",i,rsrc.show_level_pol[i]);
-			cbs.AcceptProperty_f("sim/require_facade", buf, writer);
-		}
-	}		
+	rsrc.write_tables(cbs,writer);
 
 	char	rel_dir [512];
 	char	rel_path[512];
 	string full_dir, full_path;
 	sprintf(rel_dir ,"Earth nav data" DIR_STR "%+03d%+04d",							  latlon_bucket(y), latlon_bucket(x)	  );
 	sprintf(rel_path,"Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf",  latlon_bucket(y), latlon_bucket(x), y, x);
-	full_path = rel_path;
-	full_dir  = rel_dir ;
-	pkg->LookupPath(full_dir );
-	pkg->LookupPath(full_path);
+	full_path = pkg + rel_path;
+	full_dir  = pkg + rel_dir ;
 	if(entities)	// empty DSF?  Don't write a empty file, makes a mess!
 	{
 		FILE_make_dir_exist(full_dir.c_str());
 		DSFWriteToFile(full_path.c_str(), writer);
 	}
+	
+	/* 
+	// test code to make sure culling works - asserts if we false-cull.
+	if(cull_code == -1)	
+	{
+		if(entities > 0)
+		{
+			int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);			
+		}
+		Assert(entities == 0);
+	}
+	*/
+
 	DSFDestroyWriter(writer);
 }
 
-void DSF_Export(WED_Group * base, IResolver * resolver, ILibrarian * package, set<WED_Thing *>& problem_children)
+void DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
+	StElapsedTime	etime("Export time");
+
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
-	base->GetBounds(gis_Geo,wrl_bounds);
+	
+	IGISEntity * ent = dynamic_cast<IGISEntity *>(base);
+	DebugAssert(ent);
+	if(!ent) 
+		return;
+	
+	ent->GetBounds(gis_Geo,wrl_bounds);
 	int tile_west  = floor(wrl_bounds.p1.x());
 	int tile_east  = ceil (wrl_bounds.p2.x());
 	int tile_south = floor(wrl_bounds.p1.y());
@@ -1496,39 +1700,27 @@ void DSF_Export(WED_Group * base, IResolver * resolver, ILibrarian * package, se
 		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");		
 }
 
-int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who, zipFile archive, set<WED_Thing *>& problem_children)
+int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const string& package, set<WED_Thing *>& problem_children)
 {
-	if(who->GetClass() == WED_Airport::sClass)
+	if(apt->GetHidden())
+		return 1;
+
+	//----------------------------------------------------------------------------------------------------
+
+	string icao;
+	apt->GetICAO(icao);
+
+	string dsf_path = package + icao + ".txt";
+	
+	FILE * dsf = fopen(dsf_path.c_str(),"w");
+	if(dsf)
 	{
-		WED_Airport * apt = dynamic_cast<WED_Airport *>(who);
-		if(apt->GetHidden())
-			return 1;
-
-		//----------------------------------------------------------------------------------------------------
-
-		ILibrarian * pkg = WED_GetLibrarian(resolver);
-		string icao;
-		apt->GetICAO(icao);
-
-		icao += ".txt";
-		
-		if(zipOpenNewFileInZip (archive,icao.c_str(),
-						NULL,		// mod dates, etc??
-						NULL,0,
-						NULL,0,
-						NULL,		// comment
-						Z_DEFLATED,
-						Z_DEFAULT_COMPRESSION) != 0)
-		{
-			string msg = string("Unable to write to zip file.");
-			return 0;
-		}
-		
+				
 		DSFCallbacks_t	cbs;
 		DSF2Text_CreateWriterCallbacks(&cbs);
 		print_funcs_s pf;
-		pf.print_func = (int (*)(void *,const char *,...)) zip_printf;
-		pf.ref = archive;
+		pf.print_func = (int (*)(void *, const char *, ...)) fprintf;
+		pf.ref = dsf;
 		
 		void * writer = &pf;
 		
@@ -1548,164 +1740,15 @@ int DSF_ExportOneAirportOverlayRecursive(IResolver * resolver, WED_Thing  * who,
 		
 		int entities = 0;
 		for(int show_level = 6; show_level >= 1; --show_level)	
-			entities += DSF_ExportTileRecursive(who, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+			entities += DSF_ExportTileRecursive(apt, resolver, package, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
 
-		for(vector<string>::iterator s = rsrc.obj_defs.begin(); s != rsrc.obj_defs.end(); ++s)
-			cbs.AcceptObjectDef_f(s->c_str(), writer);
+		rsrc.write_tables(cbs,writer);
 
-		for(vector<string>::iterator s = rsrc.pol_defs.begin(); s != rsrc.pol_defs.end(); ++s)
-			cbs.AcceptPolygonDef_f(s->c_str(), writer);
-			
-		for(int i = 1; i <= 6; ++i)
-		{
-			char buf[20];
-			if(rsrc.show_level_obj[i] != -1)
-			{
-				sprintf(buf,"%d/%d",i,rsrc.show_level_obj[i]);
-				cbs.AcceptProperty_f("sim/require_agpoint", buf, writer);
-				cbs.AcceptProperty_f("sim/require_object", buf, writer);
-			}
-			if(rsrc.show_level_pol[i] != -1)
-			{
-				sprintf(buf,"%d/%d",i,rsrc.show_level_pol[i]);
-				cbs.AcceptProperty_f("sim/require_facade", buf, writer);
-			}
-		}		
-	
-		zipCloseFileInZip(archive);
-
-		//-------------------------------------------------------------------
-
-		apt->GetICAO(icao);
-
-		icao += ".dat";
-		
-		if(zipOpenNewFileInZip (archive, icao.c_str(),
-						NULL,		// mod dates, etc??
-						NULL,0,
-						NULL,0,
-						NULL,		// comment
-						Z_DEFLATED,
-						Z_DEFAULT_COMPRESSION) != 0)
-		{
-			string msg = string("Unable to write to zip file.");
-			return 0;
-		}
-		
-		WED_AptExport(apt, zip_printf, archive);
-		zipCloseFileInZip(archive);
-		
-
-
+		fclose(dsf);
 		return 1;
 	}
-	else if(who->GetClass() == WED_Group::sClass)
-	{
-		WED_Group * g = dynamic_cast<WED_Group *>(who);
-		if(g && g->GetHidden())
-			return 1;
-			
-		int n = who->CountChildren();
-		for(int i = 0; i < n; ++i)
-		{
-			WED_Thing * child = who->GetNthChild(i);
-			if(DSF_ExportOneAirportOverlayRecursive(resolver, child, archive,problem_children) == 0)
-			{
-				// err on export?  bail out of recursion.
-				return 0;
-			}
-		}
-		return 1;
-	} 
 	else
-	{
-		problem_children.insert(who);
-		DoUserAlert("You cannot export this scenery pack for Robin because some DSF overlay elements are not inside an airport.");
 		return 0;
-	}
 }
 
-
-
-int		WED_CanExportPack(IResolver * resolver)
-{
-	return 1;
-}
-
-void	WED_DoExportPack(IResolver * resolver)
-{
-	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	if(!WED_ValidateApt(resolver))
-		return;
-
-	ILibrarian * l = WED_GetLibrarian(resolver);
-	WED_Thing * w = WED_GetWorld(resolver);
-	set<WED_Thing *>	problem_children;
-	DSF_Export(dynamic_cast<WED_Group *>(w), resolver, l,problem_children);
-
-	string	apt = "Earth nav data" DIR_STR "apt.dat";
-	string	apt_dir = "Earth nav data";
-	l->LookupPath(apt);
-	l->LookupPath(apt_dir);
-
-	FILE_make_dir_exist(apt_dir.c_str());
-	WED_AptExport(w, apt.c_str());
-	if(!problem_children.empty())
-	{
-		DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
-		ISelection * sel = WED_GetSelect(resolver);
-		(*problem_children.begin())->StartOperation("Select broken items.");
-		sel->Clear();
-		for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
-			sel->Insert(*p);
-		(*problem_children.begin())->CommitOperation();		
-	}
-}
-
-void	WED_DoExportRobin(IResolver * resolver)
-{
-	WED_Export_Target old_target = gExportTarget;
-	gExportTarget = wet_robin;
-
-	if(!WED_ValidateApt(resolver))
-	{
-		gExportTarget = old_target;
-		return;
-	}
-
-	char path[1024];
-	strcpy(path,"");
-	if (GetFilePathFromUser(getFile_Save,"Save for Global Airports...", "Export...", FILE_DIALOG_EXPORT_ROBIN, path, sizeof(path)))
-	{	
-		WED_Thing * w = WED_GetWorld(resolver);
-		set<WED_Thing *>	problem_children;
-		
-		zipFile archive = zipOpen(path, 0);
-		if(archive == NULL)
-		{
-			DoUserAlert("Unable to open zip archive.");
-			gExportTarget = old_target;
-			return;
-		}
-	
-		if(DSF_ExportOneAirportOverlayRecursive(resolver, w, archive, problem_children))
-		{
-			// success.
-		}
-		zipClose(archive, NULL);
-
-		if(!problem_children.empty())
-		{
-			DoUserAlert("One or more objects could not exported - check for self intersecting polygons and closed-ring facades crossing DFS boundaries.");
-			ISelection * sel = WED_GetSelect(resolver);
-			(*problem_children.begin())->StartOperation("Select broken items.");
-			sel->Clear();
-			for(set<WED_Thing*>::iterator p = problem_children.begin(); p != problem_children.end(); ++p)
-				sel->Insert(*p);
-			(*problem_children.begin())->CommitOperation();		
-		}
-	}
-	gExportTarget = old_target;
-
-}
 

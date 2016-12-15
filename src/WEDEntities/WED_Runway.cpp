@@ -26,6 +26,8 @@
 #include "GISUtils.h"
 #include "XESConstants.h"
 #include "AptDefs.h"
+#include "MathUtils.h"
+#include "STLUtils.h"
 
 DEFINE_PERSISTENT(WED_Runway)
 TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
@@ -38,14 +40,14 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	edge_lites		(this,"Edge Lights",				SQL_Name("WED_runway","edge_lites"),	XML_Name("runway","edge_lites"),	Edge_Lights,	edge_MIRL),
 	remaining_signs	(this,"Distance Signs",				SQL_Name("WED_runway","distance_signs"),XML_Name("runway","distance_signs"),1),
 
-	disp1			(this,"Displaced Threshhold 1",		SQL_Name("WED_runway","displaced1"),	XML_Name("runway","displaced1"),	0,6,1),
+	disp1			(this,"Displaced Threshold 1",		SQL_Name("WED_runway","displaced1"),	XML_Name("runway","displaced1"),	0,6,1),
 	blas1			(this,"Blastpad 1",					SQL_Name("WED_runway","blastpad1"),		XML_Name("runway","blastpad1"),		0,6,1),
 	mark1			(this,"Markings 1",					SQL_Name("WED_runway","markings1"),		XML_Name("runway","markings1"),		Runway_Markings,	mark_NonPrecis),
 	appl1			(this,"Approach Lights 1",			SQL_Name("WED_runway","app_lites1"),	XML_Name("runway","app_lites1"),	Light_App,			app_MALSF),
 	tdzl1			(this,"TDZ Lights 1",				SQL_Name("WED_runway","TDZL1"),			XML_Name("runway","TDZL1"),			1),
 	reil1			(this,"REIL 1",						SQL_Name("WED_runway","REIL1"),			XML_Name("runway","REIL1"),			REIL_Lights,		reil_None),
 
-	disp2			(this,"Displaced Threshhold 2",		SQL_Name("WED_runway","displaced2"),	XML_Name("runway","displaced2"),	0,6,1),
+	disp2			(this,"Displaced Threshold 2",		SQL_Name("WED_runway","displaced2"),	XML_Name("runway","displaced2"),	0,6,1),
 	blas2			(this,"Blastpad 2",					SQL_Name("WED_runway","blastpad2"),		XML_Name("runway","blastpad2"),		0,6,1),
 	mark2			(this,"Markings 2",					SQL_Name("WED_runway","markings2"),		XML_Name("runway","markings2"),		Runway_Markings,	mark_NonPrecis),
 	appl2			(this,"Approach Lights 2",			SQL_Name("WED_runway","app_lites2"),	XML_Name("runway","app_lites2"),	Light_App,			app_MALSF),
@@ -76,6 +78,68 @@ bool	WED_Runway::Cull(const Bbox2& b) const
 	return b.overlap(me);	
 }
 
+pair<int,int>	WED_Runway::GetRunwayEnumsOneway() const
+{
+	string name;
+	GetName(name);
+	
+	vector<string> parts;
+	tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
+	
+	if(parts.size() != 1 && parts.size() != 2)
+		return pair<int,int>(atc_Runway_None,atc_Runway_None);
+	
+	int e1 = ENUM_LookupDesc(ATCRunwayOneway,parts[0].c_str());
+	if(e1 == -1)
+	{
+		parts[0].insert(0,"0");
+		e1 = ENUM_LookupDesc(ATCRunwayOneway,parts[0].c_str());
+		if(e1 == -1)
+			return pair<int,int>(atc_Runway_None,atc_Runway_None);
+	}
+	
+	int e2 = atc_Runway_None;
+	if(parts.size() == 2)
+	{
+		e2 = ENUM_LookupDesc(ATCRunwayOneway,parts[1].c_str());
+		if(e2 == -1)
+		{
+			parts[1].insert(0,"0");
+			e2 = ENUM_LookupDesc(ATCRunwayOneway,parts[1].c_str());
+			if(e2 == -1)
+				e2 = atc_Runway_None;
+		}
+	}
+	
+	return make_pair(e1, e2);
+}
+	
+int				WED_Runway::GetRunwayEnumsTwoway() const
+{
+	string name;
+	GetName(name);
+	int e1 = ENUM_LookupDesc(ATCRunwayTwoway,name.c_str());
+	if(e1 != -1)
+		return e1;
+
+	string namez(name);
+	namez.insert(0,"0");
+	e1 = ENUM_LookupDesc(ATCRunwayTwoway,namez.c_str());
+	if(e1 != -1)
+		return e1;
+	
+	name += "/XXX";
+	namez += "/XXX";
+	
+	e1 = ENUM_LookupDesc(ATCRunwayTwoway,name.c_str());
+	if(e1 != -1)
+		return e1;
+
+	e1 = ENUM_LookupDesc(ATCRunwayTwoway,namez.c_str());
+	if(e1 != -1)
+		return e1;
+	return atc_rwy_None;
+}
 
 bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 {
@@ -269,6 +333,7 @@ double		WED_Runway::GetDisp1(void) const { return disp1.value; }
 double		WED_Runway::GetDisp2(void) const { return disp2.value; }
 double		WED_Runway::GetBlas1(void) const { return blas1.value; }
 double		WED_Runway::GetBlas2(void) const { return blas2.value; }
+double		WED_Runway::GetRoughness(void) const { return roughness.value; }
 
 
 	void		WED_Runway::SetSurface(int x) { surface = x; }
@@ -295,7 +360,7 @@ void		WED_Runway::Import(const AptRunway_t& x, void (* print_func)(void *, const
 
 	surface			= ENUM_Import(Surface_Type,		x.surf_code				);
 	shoulder		= ENUM_Import(Shoulder_Type,	x.shoulder_code			);
-	roughness		=								x.roughness_ratio		 ;
+	roughness		= fltlim(						x.roughness_ratio,0.0f,1.0f);
 	center_lites	=								x.has_centerline		 ;
 	edge_lites		= ENUM_Import(Edge_Lights,		x.edge_light_code		);
 	remaining_signs =								x.has_distance_remaining ;
@@ -376,7 +441,7 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 
 	x.surf_code				 = ENUM_Export(surface.value   );
 	x.shoulder_code			 = ENUM_Export(shoulder.value  );
-	x.roughness_ratio		 =			   roughness		;
+	x.roughness_ratio		 = fltlim     (roughness,0.0f,1.0f);
 	x.has_centerline		 =			   center_lites		;
 	x.edge_light_code		 = ENUM_Export(edge_lites.value);
 	x.has_distance_remaining =			   remaining_signs	;
@@ -409,5 +474,15 @@ void		WED_Runway::Export(		 AptRunway_t& x) const
 	x.has_tdzl		[1] =			  tdzl2		  ;
 	x.reil_code		[1] = ENUM_Export(reil2.value);
 
+}
+
+
+void	WED_Runway::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_GISLine_Width::GetNthPropertyDict(n, dict);
+	if(n == PropertyItemNumber(&surface) && surface.value != surf_Water)
+	{
+		dict.erase(surf_Water);
+	}
 }
 

@@ -294,8 +294,9 @@ struct	road_coords_checker {
 
 // Edge-wrapper...turns out CDT::Edge is so deeply templated that stuffing it in a map crashes CW8.
 // So we build a dummy wrapper around an edge to prevent a template with a huge expanded name.
+#if 0
 struct	edge_wrapper {
-	edge_wrapper() : edge((const void*)NULL, 0) { };
+	edge_wrapper() : edge(CDT::Edge()) { };
 	edge_wrapper(const CDT::Edge e) : edge(e) { };
 	edge_wrapper(const edge_wrapper& x) : edge(x.edge) { }
 	edge_wrapper(CDT::Face_handle f, int i) : edge(CDT::Edge(f, i)) { }
@@ -308,6 +309,7 @@ struct	edge_wrapper {
 
 	CDT::Edge	edge;
 };
+#endif
 
 HASH_MAP_NAMESPACE_START
 #if MSC
@@ -318,16 +320,16 @@ size_t hash_value<edge_wrapper>(const edge_wrapper& key)
 }
 #else
 struct hash_edge {
-	typedef edge_wrapper		KeyType;
+	typedef CDT::Edge		KeyType;
 	// Trick: we think most ptrs are 4-byte aligned - reuse lower 2 bits.
-	size_t operator()(const KeyType& key) const { return (size_t) &*key.edge.first + (size_t) key.edge.second; }
+	size_t operator()(const KeyType& key) const { return (size_t) &*key.first + (size_t) key.second; }
 };
 #endif
 HASH_MAP_NAMESPACE_END
 
 
 // Given a beach edge, fetch the beach-type coords.  last means use the target rather than src pt.
-static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, double coords[3], int kind)
+static void BeachPtGrab(const CDT::Edge& edge, bool last, const CDT& inMesh, double coords[3], int kind)
 {
 	CDT::Face_circulator stop, circ;
 //	int	lterrain = NO_VALUE;
@@ -337,11 +339,11 @@ static void BeachPtGrab(const edge_wrapper& edge, bool last, const CDT& inMesh, 
 
 //	loc = inMesh.locate(CDT::Point(pm_vs->point().x, pm_vs->point().y), lt, i, loc);
 //	Assert(lt == CDT::VERTEX);
-	CDT::Vertex_handle v_s = edge.edge.first->vertex(CDT::ccw(edge.edge.second));
+	CDT::Vertex_handle v_s = edge.first->vertex(CDT::ccw(edge.second));
 	DebugAssert(!inMesh.is_infinite(v_s));
 //	loc = inMesh.locate(CDT::Point(pm_vt->point().x, pm_vt->point().y), lt, i, loc);
 //	Assert(lt == CDT::VERTEX);
-	CDT::Vertex_handle v_t = edge.edge.first->vertex(CDT::cw(edge.edge.second));
+	CDT::Vertex_handle v_t = edge.first->vertex(CDT::cw(edge.second));
 	DebugAssert(!inMesh.is_infinite(v_t));
 
 	if (last)
@@ -562,72 +564,72 @@ static double GetTightnessBlend(CDT& inMesh, CDT::Face_handle f_han, CDT::Vertex
 
 // Given an edge, finds the next edge clockwise from the source vertex
 // of this edge.  (Pmwx equivalent is twin->next
-edge_wrapper edge_twin_next(const edge_wrapper& e)
+CDT::Edge edge_twin_next(const CDT::Edge& e)
 {
-	edge_wrapper new_e;
-	int center_index = CDT::ccw(e.edge.second);
-	CDT::Vertex_handle center = e.edge.first->vertex(center_index);
+	CDT::Edge new_e;
+	int center_index = CDT::ccw(e.second);
+	CDT::Vertex_handle center = e.first->vertex(center_index);
 
-	new_e.edge.first = e.edge.first->neighbor(e.edge.second);
-	new_e.edge.second = CDT::cw(new_e.edge.first->index(center));
+	new_e.first = e.first->neighbor(e.second);
+	new_e.second = CDT::cw(new_e.first->index(center));
 	return new_e;
 }
 
 // Given an edge, find the next edge in a clockwise circulation
 // around its target vertex.  (Pmwx equivalent is next->twin)
-edge_wrapper edge_next_twin(const edge_wrapper& e)
+CDT::Edge edge_next_twin(const CDT::Edge& e)
 {
-	edge_wrapper new_e;
+	CDT::Edge new_e;
 
-	new_e.edge.first = e.edge.first->neighbor(CDT::ccw(e.edge.second));
-	new_e.edge.second = CDT::cw(new_e.edge.first->index(e.edge.first->vertex(e.edge.second)));
+	new_e.first = e.first->neighbor(CDT::ccw(e.second));
+	new_e.second = CDT::cw(new_e.first->index(e.first->vertex(e.second)));
 	return new_e;
 }
 
 
 // Given an edge, find the leftmost turn connected to us.  (pmwx equivalent is next)
-edge_wrapper edge_next(const edge_wrapper& e)
+CDT::Edge edge_next(const CDT::Edge& e)
 {
-	edge_wrapper new_e(e);
-	new_e.edge.second = CDT::ccw(new_e.edge.second);
+	CDT::Edge new_e(e);
+	new_e.second = CDT::ccw(new_e.second);
 	return new_e;
 }
 
 // Find the edge in opposite direction (pmwx version is twin)
-edge_wrapper edge_twin(const edge_wrapper& e)
+CDT::Edge edge_twin(const CDT::Edge& e)
 {
-	edge_wrapper new_e(e);
-	CDT::Vertex_handle v = e.edge.first->vertex(CDT::ccw(e.edge.second));
-	new_e.edge.first = e.edge.first->neighbor(e.edge.second);
-	new_e.edge.second = CDT::ccw(new_e.edge.first->index(v));
+	CDT::Edge new_e(e);
+	CDT::Vertex_handle v = e.first->vertex(CDT::ccw(e.second));
+	new_e.first = e.first->neighbor(e.second);
+	new_e.second = CDT::ccw(new_e.first->index(v));
 	return new_e;
 }
 
-int is_coast(const edge_wrapper& inEdge, const CDT& inMesh)
+int is_coast(const CDT::Edge& inEdge, const CDT& inMesh)
 {
-	if (inMesh.is_infinite(inEdge.edge.first)) return false;
-	if (inMesh.is_infinite(inEdge.edge.first->neighbor(inEdge.edge.second))) return false;
+	if (inMesh.is_infinite(inEdge.first)) return false;
+	if (inMesh.is_infinite(inEdge.first->neighbor(inEdge.second))) return false;
 
-	if (inEdge.edge.first->info().terrain != terrain_Water) return false;
-	if (inEdge.edge.first->neighbor(inEdge.edge.second)->info().terrain == terrain_Water) return false;
+	if (inEdge.first->info().terrain != terrain_Water) return false;
+	if (inEdge.first->neighbor(inEdge.second)->info().terrain == terrain_Water) return false;
 	return true;
 }
 
-double edge_len(const edge_wrapper& e)
+double edge_len(const CDT::Edge& e)
 {
-	CDT::Vertex_handle	v_s = e.edge.first->vertex(CDT::ccw(e.edge.second));
-	CDT::Vertex_handle	v_t = e.edge.first->vertex(CDT:: cw(e.edge.second));
+	CDT::Vertex_handle	v_s = e.first->vertex(CDT::ccw(e.second));
+	CDT::Vertex_handle	v_t = e.first->vertex(CDT:: cw(e.second));
 	return LonLatDistMeters(CGAL::to_double(v_s->point().x()),CGAL::to_double(v_s->point().y()),
 							CGAL::to_double(v_t->point().x()),CGAL::to_double(v_t->point().y()));
 }
 
-bool edge_convex(const edge_wrapper& e1, const edge_wrapper& e2)
+bool edge_convex(const CDT::Edge& e1, const CDT::Edge& e2)
 {
-	CDT::Vertex_handle	e1s = e1.edge.first->vertex(CDT::ccw(e1.edge.second));
-	CDT::Vertex_handle	e1t = e1.edge.first->vertex(CDT:: cw(e1.edge.second));
+	CDT::Vertex_handle	e1s = e1.first->vertex(CDT::ccw(e1.second));
+	CDT::Vertex_handle	e1t = e1.first->vertex(CDT:: cw(e1.second));
 
-	CDT::Vertex_handle	e2s = e2.edge.first->vertex(CDT::ccw(e2.edge.second));
-	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
+	CDT::Vertex_handle	e2s = e2.first->vertex(CDT::ccw(e2.second));
+	CDT::Vertex_handle	e2t = e2.first->vertex(CDT:: cw(e2.second));
 
 	DebugAssert(e1t == e2s);
 
@@ -641,13 +643,13 @@ bool edge_convex(const edge_wrapper& e1, const edge_wrapper& e2)
 	return v1.left_turn(v2);
 }
 
-double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
+double edge_angle(const CDT::Edge& e1, const CDT::Edge& e2)
 {
-	CDT::Vertex_handle	e1s = e1.edge.first->vertex(CDT::ccw(e1.edge.second));
-	CDT::Vertex_handle	e1t = e1.edge.first->vertex(CDT:: cw(e1.edge.second));
+	CDT::Vertex_handle	e1s = e1.first->vertex(CDT::ccw(e1.second));
+	CDT::Vertex_handle	e1t = e1.first->vertex(CDT:: cw(e1.second));
 
-	CDT::Vertex_handle	e2s = e2.edge.first->vertex(CDT::ccw(e2.edge.second));
-	CDT::Vertex_handle	e2t = e2.edge.first->vertex(CDT:: cw(e2.edge.second));
+	CDT::Vertex_handle	e2s = e2.first->vertex(CDT::ccw(e2.second));
+	CDT::Vertex_handle	e2t = e2.first->vertex(CDT:: cw(e2.second));
 
 	DebugAssert(e1t == e2s);
 
@@ -667,18 +669,18 @@ double edge_angle(const edge_wrapper& e1, const edge_wrapper& e2)
 }
 
 
-int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
+int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind)
 {
 #if PHONE
 	return false;
 #endif
 	if (!is_coast(inEdge, inMesh))	return false;
 
-	CDT::Face_handle tri = inEdge.edge.first;
+	CDT::Face_handle tri = inEdge.first;
 
 	DebugAssert(tri->info().terrain == terrain_Water);
 	if (tri->info().terrain == terrain_Water)
-		tri = inEdge.edge.first->neighbor(inEdge.edge.second);
+		tri = inEdge.first->neighbor(inEdge.second);
 
 	int lterrain = tri->info().terrain;
 	int is_apt = IsAirportTerrain(lterrain);
@@ -686,10 +688,10 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 
 	if(IsCustom(lterrain)) return false;
 
-	CDT::Vertex_handle v_s = inEdge.edge.first->vertex(CDT::ccw(inEdge.edge.second));
-	CDT::Vertex_handle v_t = inEdge.edge.first->vertex(CDT::cw(inEdge.edge.second));
+	CDT::Vertex_handle v_s = inEdge.first->vertex(CDT::ccw(inEdge.second));
+	CDT::Vertex_handle v_t = inEdge.first->vertex(CDT::cw(inEdge.second));
 
-	const Face_handle orig_face = inEdge.orig_face();
+	const Face_handle orig_face = inEdge.first->info().orig_face;
 	//Assert(orig_face != NULL);
 
 	double	prev_ang = 1.0, next_ang = 1.0;
@@ -698,7 +700,7 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	double next_len = 0.0;
 
 	// Find our outgoing (next) angle
-	for (edge_wrapper iter = edge_next(inEdge); iter != edge_twin(inEdge); iter = edge_twin_next(iter))
+	for (CDT::Edge iter = edge_next(inEdge); iter != edge_twin(inEdge); iter = edge_twin_next(iter))
 	if (is_coast(iter, inMesh))
 	{
 		next_ang = edge_angle(inEdge, iter);
@@ -708,7 +710,7 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 	}
 
 	// Find our incoming (previous) angle
-	for (edge_wrapper iter = edge_next_twin(edge_twin(inEdge)); iter != edge_twin(inEdge); iter = edge_next_twin(iter))
+	for (CDT::Edge iter = edge_next_twin(edge_twin(inEdge)); iter != edge_twin(inEdge); iter = edge_next_twin(iter))
 	if (is_coast(iter, inMesh))
 	{
 		prev_ang = edge_angle(iter, inEdge);
@@ -755,19 +757,19 @@ int	has_beach(const edge_wrapper& inEdge, const CDT& inMesh, int& kind)
 }
 
 #if MSC
-typedef hash_map<edge_wrapper,edge_wrapper>	edge_hash_map;
-typedef hash_map<edge_wrapper, int>			edge_info_map;
+typedef hash_map<CDT::Edge,CDT::Edge>	edge_hash_map;
+typedef hash_map<CDT::Edge, int>			edge_info_map;
 #else
-typedef hash_map<edge_wrapper, edge_wrapper, hash_edge> edge_hash_map;
-typedef hash_map<edge_wrapper, int, hash_edge> edge_info_map;
+typedef hash_map<CDT::Edge, CDT::Edge, hash_edge> edge_hash_map;
+typedef hash_map<CDT::Edge, int, hash_edge> edge_info_map;
 #endif
 
 void FixBeachContinuity(
 						edge_hash_map&								linkNext,
-						const edge_wrapper&							this_start,
+						const CDT::Edge&							this_start,
 						edge_info_map&								typedata)
 {
-	edge_wrapper circ, discon, stop, iter;
+	CDT::Edge circ, discon, stop, iter;
 	bool retry;
 
 	for (int lim = 0; lim < gBeachInfoTable.size(); ++lim)
@@ -787,9 +789,9 @@ void FixBeachContinuity(
 				do
 				{
 					len += edge_len(discon);
-					discon = (linkNext.count(discon) == 0) ? edge_wrapper() : linkNext[discon];
+					discon = (linkNext.count(discon) == 0) ? CDT::Edge() : linkNext[discon];
 					// incr disocn!
-				} while (discon != edge_wrapper() && discon != stop && typedata[discon] == typedata[circ]);
+				} while (discon != CDT::Edge() && discon != stop && typedata[discon] == typedata[circ]);
 
 				// If we failed - go back and retry, otherwise advance forward and break out
 				if (len < req_len && gBeachIndex[typedata[circ]] < lim)
@@ -799,13 +801,13 @@ void FixBeachContinuity(
 					iter = circ;
 					do {
 						typedata[iter] = new_type;
-						iter = (linkNext.count(iter) == 0) ? edge_wrapper() : linkNext[iter];
+						iter = (linkNext.count(iter) == 0) ? CDT::Edge() : linkNext[iter];
 					} while (iter != discon);
 
 				}
 				circ = discon;
 
-			} while (circ != stop && circ != edge_wrapper());
+			} while (circ != stop && circ != CDT::Edge());
 		} while (retry);
 	}
 }
@@ -960,6 +962,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		int		cur_id = 0, tri, tris_this_patch;
 		double	coords3[3];
+		double	coords4[4];
 		double	coords2[2];
 		//double	coords6[6];
 		double	coords8[8];
@@ -1516,14 +1519,14 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		// We also need to identify rings somehow.
 
 		typedef edge_hash_map														LinkMap;
-		typedef set<edge_wrapper>													LinkSet;
+		typedef set<CDT::Edge>													LinkSet;
 		typedef edge_info_map														LinkInfo;
 
 		LinkMap			linkNext;	// A hash map from each halfedge to the next with matching beach.  Uses CCW traversal to handle screw cases.
 		LinkSet			nonStart;	// Set of all halfedges that are pointed to by another.
 		LinkInfo		all;		// Ones we haven't exported.
 		LinkSet			starts;		// Ones that are not pointed to by a HE
-		edge_wrapper	beach, last_beach;
+		CDT::Edge	beach, last_beach;
 		int				beachKind;
 
 		// Go through and build up the link map, e.g. for each edge, who's next.
@@ -1532,16 +1535,16 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		for (fi = inHiresMesh.finite_faces_begin(); fi != inHiresMesh.finite_faces_end(); ++fi)
 		for (v = 0; v < 3; ++v)
 		{
-			edge_wrapper edge;
-			edge.edge.first = fi;
-			edge.edge.second = v;
+			CDT::Edge edge;
+			edge.first = fi;
+			edge.second = v;
 			if (has_beach(edge, inHiresMesh, beachKind))
 			{
 				all[edge] = beachKind;
 				starts.insert(edge);
 				// Go through each he coming out of our target starting with the one to the clockwise of us, going clockwise.
 				// We're searching for the next beach seg but skipping bogus in-water stuff like brides.
-				for (edge_wrapper iter = edge_next(edge); iter != edge_twin(edge); iter = edge_twin_next(iter))
+				for (CDT::Edge iter = edge_next(edge); iter != edge_twin(edge); iter = edge_twin_next(iter))
 				{
 					if (has_beach(iter, inHiresMesh, beachKind))
 					{
@@ -1554,7 +1557,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					}
 					// If we hit something that isn't bounding water, we've gone out of our land into the next
 					// water out of this vertex.  Stop now before we link to a non-connected water body!!
-					if (iter.edge.first->info().terrain != terrain_Water)
+					if (iter.first->info().terrain != terrain_Water)
 						break;
 				}
 			}
@@ -1575,7 +1578,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			cbs.BeginPolygon_f(0, 0, 3, writer1);
 			cbs.BeginPolygonWinding_f(writer1);
 
-			for (beach = *a_start; beach.edge.first != NULL; beach = ((linkNext.count(beach)) ? (linkNext[beach]) : edge_wrapper(NULL, 0)))
+			for (beach = *a_start; beach != CDT::Edge(); beach = ((linkNext.count(beach)) ? (linkNext[beach]) : CDT::Edge()))
 			{
 	//			printf("output non-circ beach type = %d, len = %lf\n", all[beach], edge_len(beach));
 				last_beach = beach;
@@ -1609,7 +1612,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		// Now just pick an edge and export in a circulator - we should only have rings!
 		while (!all.empty())
 		{
-			edge_wrapper this_start = all.begin()->first;
+			CDT::Edge this_start = all.begin()->first;
 			FixBeachContinuity(linkNext, this_start, all);
 			cbs.BeginPolygon_f(0, 1, 3, writer1);
 			cbs.BeginPolygonWinding_f(writer1);
@@ -1857,11 +1860,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			for (ci = chains.begin(); ci != chains.end(); ++ci)
 			{
-				coords3[0] = (*ci)->start_junction->location.x();
-				coords3[1] = (*ci)->start_junction->location.y();
-				coords3[2] = (*ci)->start_junction->GetLayerForChain(*ci);
+				coords4[0] = (*ci)->start_junction->location.x();
+				coords4[1] = (*ci)->start_junction->location.y();
+				coords4[2] = (*ci)->start_junction->GetLayerForChain(*ci);
+				coords4[3] = (*ci)->start_junction->index;
 
-				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
+				if (coords4[0] < inElevation.mWest  || coords4[0] > inElevation.mEast || coords4[1] < inElevation.mSouth || coords4[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
 				DebugAssert(junctions.count((*ci)->start_junction));
@@ -1874,8 +1878,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 				cbs.BeginSegment_f(
 								0,
 								(*ci)->export_type,
-								(*ci)->start_junction->index,
-								coords3,
+								coords4,
 								false,
 								writer2);
 				++total_chains;
@@ -1968,18 +1971,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 					//debug_mesh_point(Point2(coords3[0],coords3[1]),1,1,coords3[2]);
 				}
 
-				coords3[0] = (*ci)->end_junction->location.x();
-				coords3[1] = (*ci)->end_junction->location.y();
-				coords3[2] = (*ci)->end_junction->GetLayerForChain(*ci);
+				coords4[0] = (*ci)->end_junction->location.x();
+				coords4[1] = (*ci)->end_junction->location.y();
+				coords4[2] = (*ci)->end_junction->GetLayerForChain(*ci);
+				coords4[3] = (*ci)->end_junction->index;
 
-				if (coords3[0] < inElevation.mWest  || coords3[0] > inElevation.mEast || coords3[1] < inElevation.mSouth || coords3[1] > inElevation.mNorth)
+				if (coords4[0] < inElevation.mWest  || coords4[0] > inElevation.mEast || coords4[1] < inElevation.mSouth || coords4[1] > inElevation.mNorth)
 					printf("WARNING: coordinate out of range.\n");
 
-				checker.check(coords3,'E');
+				checker.check(coords4,'E');
 
 				cbs.EndSegment_f(
-						(*ci)->end_junction->index,
-						coords3,
+						coords4,
 						false,
 						writer2);
 				//debug_mesh_point(Point2(coords3[0],coords3[1]),0,1,0);
@@ -1988,7 +1991,10 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 			CleanupNetworkTopology(junctions, chains);
 			if (inProgress && inProgress(3, 5, "Compiling Vectors", 1.0)) return;
-			cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);
+			if(gRegion == rf_eu)
+				cbs.AcceptNetworkDef_f("lib/g10/roads_EU.net", writer2);
+			else
+				cbs.AcceptNetworkDef_f("lib/g10/roads.net", writer2);			
 
 			printf("Shape points: %d to %d.\n", orig_shape_count, reduced_shape_count);
 		}

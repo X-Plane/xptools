@@ -47,7 +47,6 @@
 #include "Zoning.h"
 #include "NetPlacement.h"
 #include "NetAlgs.h"
-#include "ObjPlacement.h"
 #include "ObjTables.h"
 #include "ShapeIO.h"
 #include "FileUtils.h"
@@ -186,7 +185,7 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 	DeriveDEMs(*the_map, sDem,sApts, sAptIndex, true, ConsoleProgressFunc);
 
 	// -zoning
-	ZoneManMadeAreas(*the_map, sDem[dem_LandUse], sDem[dem_ForestType], sDem[dem_ParkType],  sDem[dem_Slope],sApts,Pmwx::Face_handle(),ConsoleProgressFunc);
+	ZoneManMadeAreas(*the_map, sDem[dem_Elevation], sDem[dem_LandUse], sDem[dem_ForestType], sDem[dem_ParkType],  sDem[dem_Slope],sApts,Pmwx::Face_handle(),ConsoleProgressFunc);
 
 	// -calcmesh
 	TriangulateMesh(*the_map, sMesh, sDem, dump, ConsoleProgressFunc);
@@ -213,24 +212,6 @@ void MT_MakeDSF(const char * dump, const char * out_dsf)
 		DebugAssert(tri->info().terrain != -1);
 	}
 	#endif
-
-	printf("Instantiating objects...\n");
-	vector<PreinsetFace>	insets;
-
-	set<int>				the_types;
-	GetObjTerrainTypes		(the_types);
-
-	printf("%llu obj types\n", (unsigned long long)the_types.size());
-	for (set<int>::iterator i = the_types.begin(); i != the_types.end(); ++i)
-		printf("%s ", FetchTokenString(*i));
-
-	Bbox2	lim(sDem[dem_Elevation].mWest, sDem[dem_Elevation].mSouth, sDem[dem_Elevation].mEast, sDem[dem_Elevation].mNorth);
-	GenerateInsets(*the_map, sMesh, lim, the_types, true, insets, ConsoleProgressFunc);
-
-	InstantiateGTPolygonAll(insets, sDem, sMesh, ConsoleProgressFunc);
-	DumpPlacementCounts();
-
-
 
 	// -exportDSF
 	BuildDSF(out_dsf, NULL, sDem[dem_Elevation],sDem[dem_Bathymetry],sDem[dem_UrbanDensity],sMesh, /*sTriangulationLo,*/ *the_map, ConsoleProgressFunc);
@@ -446,6 +427,8 @@ bool MT_PolygonEnd(void)
 	}
 	holes.clear();
 	ring.clear();
+	
+	return zyes;
 }
 
 void MT_HoleStart(void)

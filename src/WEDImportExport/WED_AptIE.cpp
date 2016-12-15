@@ -46,6 +46,9 @@
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
+#include "WED_TaxiRouteNode.h"
+#include "WED_Group.h"
+#include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
 
@@ -60,6 +63,17 @@
 #if ERROR_CHECK
 error checking here and in apt-io
 #endif
+
+static int get_apt_export_version()
+{
+	int version = 1000;
+	switch(gExportTarget) {
+	case wet_xplane_900:	version = 850; break;
+	case wet_xplane_1050:
+	case wet_gateway:	version = 1050; break;
+	}
+	return version;
+}
 
 inline Point2	recip(const Point2& pt, const Point2& ctrl) { return pt + Vector2(ctrl,pt); }
 inline	void	accum(AptPolygon_t& poly, int code, const Point2& pt, const Point2& ctrl, const set<int>& attrs)
@@ -131,43 +145,89 @@ static void ExportLinearPath(WED_AirportChain * chain, AptPolygon_t& poly)
 }
 
 #if AIRPORT_ROUTING
-
-static void CollectTaxiEdges(WED_Thing * root, set<WED_TaxiRoute *> & all_edges)
+/**
+ * Recursively walks the root tree to collect all elements of the specified type.
+ * 
+ * For instance, you might use this to collect all WED_TaxiRouteNode objects
+ * within an airport (and store them in the order the same relative order that they
+ * were listed in the editor).
+ */
+template<class T>
+static void CollectAllElementsOfType(WED_Thing * root, vector<T *> & elements)
 {
-	WED_TaxiRoute * r = dynamic_cast<WED_TaxiRoute*>(root);
-	if(r) all_edges.insert(r);
+	T * r = dynamic_cast<T*>(root);
+	if(r)
+	{
+		elements.push_back(r);
+	}
+	
 	int nn = root->CountChildren();
 	for(int n = 0; n < nn; ++n)
-		CollectTaxiEdges(root->GetNthChild(n), all_edges);
+	{
+		CollectAllElementsOfType<T>(root->GetNthChild(n), elements);
+	}
 }
 
-static void MakeRouting(set<WED_TaxiRoute *>& edges, AptNetwork_t& net)
+// Just like above, but limits to a specific subset of nodes.  WHY not just copy keepers to elements?  
+// The resulting vector is IN HIERARCHY ORDER but only contains keepers.
+
+template<class T>
+static void CollectAllElementsOfTypeInSet(WED_Thing * root, vector<T *> & elements, const set<T *>& keepers)
 {
-	set<WED_Thing *>	nodes;
-	for(set<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+	T * r = dynamic_cast<T*>(root);
+	if(r)
+	if(keepers.count(r))
 	{
-		AptRouteEdge_t ne;
+		elements.push_back(r);
+	}
+	
+	int nn = root->CountChildren();
+	for(int n = 0; n < nn; ++n)
+	{
+		CollectAllElementsOfTypeInSet<T>(root->GetNthChild(n), elements, keepers);
+	}
+}
 
-		(*e)->Export(ne);
-		
-		ne.src = (*e)->GetNthSource(0)->GetID();
-		ne.dst = (*e)->GetNthSource(1)->GetID();
-		
-		nodes.insert((*e)->GetNthSource(0));
-		nodes.insert((*e)->GetNthSource(1));
-		
-		net.edges.push_back(ne);
-	}	
 
-	for(set<WED_Thing *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
+
+/**
+ * "Exports" the list of nodes into the airport network
+ */
+static void MakeNodeRouting(vector<IGISPoint *>& nodes, AptNetwork_t& net)
+{
+	for(vector<IGISPoint *>::iterator n = nodes.begin(); n != nodes.end(); ++n)
 	{
 		AptRouteNode_t nd;
-		nd.id = (*n)->GetID();
-		(*n)->GetName(nd.name);
+		// Node's ID is its index in file order	
+		nd.id = std::distance(nodes.begin(), n);
+		WED_Thing * t = dynamic_cast<WED_Thing *>(*n);
+		if(t)
+			t->GetName(nd.name);
 		
-		IGISPoint * p = dynamic_cast<IGISPoint*>(*n);
-		p->GetLocation(gis_Geo, nd.location);
-		net.nodes.push_back(nd);
+		(*n)->GetLocation(gis_Geo, nd.location);
+		net.nodes.push_back(nd);	
+	}
+}
+
+/**
+ * "Exports" the list of edges into the airport network
+ * @param nodes The list of all taxi route nodes in the airport (required to get accurate IDs for the nodes)
+ */
+static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, vector<IGISPoint *> * nodes)
+{
+	for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+	{
+		AptRouteEdge_t ne;
+		(*e)->Export(ne);
+		
+		// Node's ID is its index in file order
+		vector<IGISPoint *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(0));
+		ne.src = std::distance(nodes->begin(), pos_src);
+		
+		vector<IGISPoint *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(1));
+		ne.dst = std::distance(nodes->begin(), pos_dst);;
+		
+		net.edges.push_back(ne);
 	}
 }
 #endif
@@ -212,9 +272,23 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apt->Export(apts.back());
 		
 #if AIRPORT_ROUTING
-		set<WED_TaxiRoute *> edges;
-		CollectTaxiEdges(apt, edges);
-		MakeRouting(edges, apts.back().taxi_route);		
+		vector<WED_TaxiRoute *> edges;			// These are in
+		vector<IGISPoint *>		nodes;			// hierarchy order for stability!
+		set<IGISPoint *>		wanted_nodes;
+
+		CollectAllElementsOfType<WED_TaxiRoute>(apt, edges);
+
+		for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
+		{
+			wanted_nodes.insert((*e)->GetNthPoint(0));
+			wanted_nodes.insert((*e)->GetNthPoint(1));
+		}
+		
+		CollectAllElementsOfTypeInSet<IGISPoint>(apt, nodes, wanted_nodes);
+
+		MakeNodeRouting(nodes, apts.back().taxi_route);
+		MakeEdgeRouting(edges, apts.back().taxi_route, &nodes);
+		
 #endif
 	}
 	else if (bcn = dynamic_cast<WED_AirportBeacon *>(what))
@@ -336,7 +410,7 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	AptExportRecursive(container, apts);
-	WriteAptFile(file_path,apts, gExportTarget == wet_xplane_900 ? 850 : 1000);
+	WriteAptFile(file_path,apts, get_apt_export_version());
 }
 
 void	WED_AptExport(
@@ -346,7 +420,7 @@ void	WED_AptExport(
 {
 	AptVector	apts;
 	AptExportRecursive(container, apts);
-	WriteAptFileProcs(print_func, ref, apts, gExportTarget == wet_xplane_900 ? 850 : 1000);
+	WriteAptFileProcs(print_func, ref, apts, get_apt_export_version());
 }
 
 
@@ -470,12 +544,24 @@ void LazyPrintf(void * ref, const char * fmt, ...)
 	if (l->fi) vfprintf(l->fi,fmt,arg);
 }
 
+static void add_to_bucket(WED_Thing * child, WED_Thing * apt, const string& name, map<string, WED_Thing *>& io_buckets)
+{
+	map<string,WED_Thing *>::iterator b = io_buckets.find(name);
+	if(b == io_buckets.end())
+	{
+		WED_Thing * new_bucket = WED_Group::CreateTyped(apt->GetArchive());
+		b = io_buckets.insert(make_pair(name, new_bucket)).first;
+	}
+	child->SetParent(b->second, b->second->CountChildren());
+}
+
+
 void	WED_AptImport(
 				WED_Archive *			archive,
 				WED_Thing *				container,
 				const char *			file_path,
 				AptVector&				apts,
-				vector<WED_Thing *> *	out_airports)
+				vector<WED_Airport *> *	out_airports)
 {
 	char path[1024];
 	strcpy(path,file_path);
@@ -485,7 +571,15 @@ void	WED_AptImport(
 
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
+		bool apt_ok = CheckATCRouting(*apt);
+		if(!apt_ok)
+		{
+			LazyPrintf(&log,"Airport %s (%s) had a problem with its taxi routes.\n", apt->name.c_str(), apt->icao.c_str());
+		}
+
 		ConvertForward(*apt);
+
+		map<string, WED_Thing *>	buckets;
 
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
@@ -497,7 +591,7 @@ void	WED_AptImport(
 			WED_Runway *		new_rwy = WED_Runway::CreateTyped(archive);
 			WED_RunwayNode *	source = WED_RunwayNode::CreateTyped(archive);
 			WED_RunwayNode *	target = WED_RunwayNode::CreateTyped(archive);
-			new_rwy->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_rwy,new_apt,"Runways",buckets);
 			source->SetParent(new_rwy,0);
 			target->SetParent(new_rwy,1);
 			new_rwy->Import(*rwy, LazyPrintf, &log);
@@ -508,7 +602,7 @@ void	WED_AptImport(
 			WED_Sealane *		new_sea = WED_Sealane::CreateTyped(archive);
 			WED_RunwayNode *	source = WED_RunwayNode::CreateTyped(archive);
 			WED_RunwayNode *	target = WED_RunwayNode::CreateTyped(archive);
-			new_sea->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_sea,new_apt,"Runways",buckets);
 			source->SetParent(new_sea,0);
 			target->SetParent(new_sea,1);
 			new_sea->Import(*sea, LazyPrintf, &log);
@@ -517,14 +611,14 @@ void	WED_AptImport(
 		for (AptHelipadVector::iterator hel = apt->helipads.begin(); hel != apt->helipads.end(); ++hel)
 		{
 			WED_Helipad * new_hel = WED_Helipad::CreateTyped(archive);
-			new_hel->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_hel,new_apt,"Runways",buckets);
 			new_hel->Import(*hel, LazyPrintf, &log);
 		}
 
 		for (AptTaxiwayVector::iterator tax = apt->taxiways.begin(); tax != apt->taxiways.end(); ++tax)
 		{
 			WED_Taxiway * new_tax = WED_Taxiway::CreateTyped(archive);
-			new_tax->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_tax,new_apt,"Taxiways",buckets);
 			new_tax->Import(*tax, LazyPrintf, &log);
 
 			if (!ImportLinearPath(tax->area, archive, new_tax, NULL, LazyPrintf, &log))
@@ -537,7 +631,7 @@ void	WED_AptImport(
 		for (AptBoundaryVector::iterator bou = apt->boundaries.begin(); bou != apt->boundaries.end(); ++bou)
 		{
 			WED_AirportBoundary * new_bou = WED_AirportBoundary::CreateTyped(archive);
-			new_bou->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_bou,new_apt,"Tower, Beacon and Boundaries",buckets);
 			new_bou->Import(*bou, LazyPrintf, &log);
 
 			if (!ImportLinearPath(bou->area, archive, new_bou, NULL, LazyPrintf, &log))
@@ -550,7 +644,15 @@ void	WED_AptImport(
 		for (AptMarkingVector::iterator lin = apt->lines.begin(); lin != apt->lines.end(); ++lin)
 		{
 			vector<WED_AirportChain *> new_lin;
-			ImportLinearPath(lin->area, archive, new_apt, &new_lin, LazyPrintf, &log);
+			WED_Thing * markings = buckets["Markings"];
+			if(markings == NULL)
+			{
+				markings = WED_Group::CreateTyped(new_apt->GetArchive());
+				markings->SetName("Markings");
+				buckets["Markings"] = markings;
+			}
+			
+			ImportLinearPath(lin->area, archive, markings, &new_lin, LazyPrintf, &log);
 			for (vector<WED_AirportChain *>::iterator li = new_lin.begin(); li != new_lin.end(); ++li)
 				(*li)->Import(*lin, LazyPrintf, &log);
 		}
@@ -558,49 +660,49 @@ void	WED_AptImport(
 		for (AptLightVector::iterator lit = apt->lights.begin(); lit != apt->lights.end(); ++lit)
 		{
 			WED_LightFixture * new_lit = WED_LightFixture::CreateTyped(archive);
-			new_lit->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_lit,new_apt,"Lights",buckets);
 			new_lit->Import(*lit, LazyPrintf, &log);
 		}
 
 		for (AptSignVector::iterator sin = apt->signs.begin(); sin != apt->signs.end(); ++sin)
 		{
 			WED_AirportSign * new_sin = WED_AirportSign::CreateTyped(archive);
-			new_sin->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_sin,new_apt,"Signs",buckets);
 			new_sin->Import(*sin, LazyPrintf, &log);
 		}
 
 		for (AptGateVector::iterator gat = apt->gates.begin(); gat != apt->gates.end(); ++gat)
 		{
 			WED_RampPosition * new_gat = WED_RampPosition::CreateTyped(archive);
-			new_gat->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_gat,new_apt,"Ramp Starts",buckets);
 			new_gat->Import(*gat, LazyPrintf, &log);
 		}
 
 		if (apt->tower.draw_obj != -1)
 		{
 			WED_TowerViewpoint * new_twr = WED_TowerViewpoint::CreateTyped(archive);
-			new_twr->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_twr,new_apt,"Tower, Beacon and Boundaries",buckets);
 			new_twr->Import(apt->tower, LazyPrintf, &log);
 		}
 
 		if (apt->beacon.color_code != apt_beacon_none)
 		{
 			WED_AirportBeacon * new_bea = WED_AirportBeacon::CreateTyped(archive);
-			new_bea->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_bea,new_apt,"Tower, Beacon and Boundaries",buckets);
 			new_bea->Import(apt->beacon, LazyPrintf, &log);
 		}
 
 		for (AptWindsockVector::iterator win = apt->windsocks.begin(); win != apt->windsocks.end(); ++win)
 		{
 			WED_Windsock * new_win = WED_Windsock::CreateTyped(archive);
-			new_win->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_win,new_apt,"Windsocks",buckets);
 			new_win->Import(*win, LazyPrintf, &log);
 		}
 
 		for (AptATCFreqVector::iterator atc = apt->atc.begin(); atc != apt->atc.end(); ++atc)
 		{
 			WED_ATCFrequency * new_atc = WED_ATCFrequency::CreateTyped(archive);
-			new_atc->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_atc,new_apt,"ATC",buckets);
 			new_atc->Import(*atc, LazyPrintf, &log);
 		}
 		
@@ -608,7 +710,7 @@ void	WED_AptImport(
 		for(AptFlowVector::iterator flw = apt->flows.begin(); flw != apt->flows.end(); ++flw)
 		{
 			WED_ATCFlow * new_flw = WED_ATCFlow::CreateTyped(archive);
-			new_flw->SetParent(new_apt,new_apt->CountChildren());
+			add_to_bucket(new_flw,new_apt,"ATC",buckets);
 			new_flw->Import(*flw, LazyPrintf, &log);
 			
 			for(AptRunwayRuleVector::iterator use = flw->runway_rules.begin(); use != flw->runway_rules.end(); ++use)
@@ -631,24 +733,33 @@ void	WED_AptImport(
 			}
 		}
 		
-		map<int,WED_AirportNode *>	nodes;
-		for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+		if(apt_ok)
 		{
-			WED_AirportNode * new_n = WED_AirportNode::CreateTyped(archive);
-			new_n->SetParent(new_apt,new_apt->CountChildren());
-			new_n->SetName(n->name);
-			new_n->SetLocation(gis_Geo,n->location);
-			nodes[n->id] = new_n;
-		}
-		for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
-		{
-			WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
-			new_e->AddSource(nodes[e->src], 0);
-			new_e->AddSource(nodes[e->dst], 1);
-			new_e->SetParent(new_apt,new_apt->CountChildren());
-			new_e->Import(*e,LazyPrintf, &log);
+			map<int,WED_TaxiRouteNode *>	nodes;
+			for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+			{
+				WED_TaxiRouteNode * new_n = WED_TaxiRouteNode::CreateTyped(archive);
+				add_to_bucket(new_n,new_apt,"Taxi Routes",buckets);
+				new_n->SetName(n->name);
+				new_n->SetLocation(gis_Geo,n->location);
+				nodes[n->id] = new_n;
+			}
+			for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
+			{
+				WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
+				new_e->AddSource(nodes[e->src], 0);
+				new_e->AddSource(nodes[e->dst], 1);
+				add_to_bucket(new_e,new_apt,"Taxi Routes",buckets);
+				new_e->Import(*e,LazyPrintf, &log);
+			}
 		}
 #endif		
+
+		for(map<string, WED_Thing *>::iterator b = buckets.begin(); b != buckets.end(); ++b)
+		{
+			b->second->SetName(b->first);
+			b->second->SetParent(new_apt, new_apt->CountChildren());
+		}
 	}
 
 	if (log.fi)
@@ -666,30 +777,21 @@ int		WED_CanImportApt(IResolver * resolver)
 void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane)
 {
 	vector<string>	fnames;
-	
-	#if ROBIN_IMPORT_FEATURES
-	
-		char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
-		if(!path)
-			return;
 		
-		char * free_me = path;
+	char * path = GetMultiFilePathFromUser("Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT);
+	if(!path)
+		return;
 		
-		while(*path)
-		{
-			fnames.push_back(path);
-			path += (strlen(path)+1);
-		}
+	char * free_me = path;
 		
-		free(free_me);
-	
-	#else
-		char path[1024];
-		strcpy(path,"");	
-		if (GetFilePathFromUser(getFile_Open,"Import apt.dat...", "Import", FILE_DIALOG_IMPORT_APTDAT, path, sizeof(path)))
+	while(*path)
+	{
 		fnames.push_back(path);
-	#endif
-	
+		path += (strlen(path)+1);
+	}
+		
+	free(free_me);
+		
 	if(fnames.empty())
 		return;
 		
@@ -700,7 +802,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{
-			string msg = string("Unable to read apt.dat file '") + path + string("': ") + result;
+			string msg = string("The apt.dat file '") + path + string("' could not be imported:\n") + result;
 			DoUserAlert(msg.c_str());
 			return;
 		}
@@ -711,3 +813,24 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive, pane);
 }
 
+void	WED_ImportOneAptFile(
+				const string&			in_path,
+				WED_Thing *				in_parent,
+				vector<WED_Airport *> *	out_apts)
+{
+	AptVector		apts;
+	string result = ReadAptFile(in_path.c_str(), apts);
+	if(!result.empty())
+	{
+		string msg = string("Unable to read apt.dat file '") + in_path + string("': ") + result;
+		DoUserAlert(msg.c_str());
+		return;
+	}
+	
+	WED_AptImport(
+			in_parent->GetArchive(),
+			in_parent,
+			in_path.c_str(),
+			apts,
+			out_apts);
+}

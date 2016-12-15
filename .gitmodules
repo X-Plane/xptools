@@ -1,3 +1,6 @@
 [submodule "libs"]
 	path = libs
-	url = git://dev.x-plane.com/xptools_libs.git
+	url = https://github.com/X-Plane/xptools_libs.git
+[submodule "msvc_libs"]
+	path = msvc_libs
+	url = https://github.com/X-Plane/xptools_msvc_libs.git

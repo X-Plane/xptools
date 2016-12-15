@@ -79,6 +79,76 @@ bool validate_poly_closed(I begin, I end)
 	return first->p1 == prev->p2;
 }
 
+template <typename T>
+bool side_is_degenerate(const T& s)
+{
+	return s.p1 == s.p2;
+}
+
+
+
+template <typename T>
+void bbox_for_any(const T& e, Bbox2& b)
+{
+	b += e;
+}
+template <>
+void bbox_for_any<BezierPoint2>(const BezierPoint2& e, Bbox2& b)
+{
+	b += e.lo;
+	b += e.pt;
+	b += e.hi;
+}
+
+template <>
+void bbox_for_any<Segment2>(const Segment2& e, Bbox2& b)
+{
+	b += e.p1;
+	b += e.p2;
+}
+
+//template <>
+//void bbox_for_any<Segment2p>(const Segment2p& e, Bbox2& b)
+//{
+//	b += e.p1;
+//	b += e.p2;
+//}
+
+template <>
+void bbox_for_any<Bezier2>(const Bezier2& e, Bbox2& b)
+{
+	b += e.p1;
+	b += e.c1;
+	b += e.p2;
+	b += e.c2;
+}
+
+template <>
+void bbox_for_any<Bezier2p>(const Bezier2p& e, Bbox2& b)
+{
+	b += e.p1;
+	b += e.c1;
+	b += e.p2;
+	b += e.c2;
+}
+
+
+template <typename T>
+void bbox_for_any_vector(const vector<T>& e, Bbox2& b)
+{
+	for(typename vector<T>::const_iterator i = e.begin(); i != e.end(); ++i)
+		bbox_for_any(*i,b);
+}
+
+
+template <typename T>
+void bbox_for_any_vector2(const vector<T>& e, Bbox2& b)
+{
+	for(typename vector<T>::const_iterator i = e.begin(); i != e.end(); ++i)
+		bbox_for_any_vector(*i,b);
+}
+
+
 // ------------------------------------------------------------------------------------------------------------------------
 
 
@@ -162,30 +232,36 @@ struct split_at_line_h {
 	int operator()(const Segment2& in_seg, Segment2 out_segs[2])
 	{
 		if((in_seg.p1.y() <= y && in_seg.p2.y() <= y) ||
-			in_seg.p1.y() >= y && in_seg.p2.y() >= y)
+			(in_seg.p1.y() >= y && in_seg.p2.y() >= y))
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		
 		double x = in_seg.x_at_y(y);
 		out_segs[0] = Segment2(in_seg.p1,Point2(x,y));
 		out_segs[1] = Segment2(Point2(x,y),in_seg.p2);
+		DebugAssert(!side_is_degenerate(out_segs[0]));
+		DebugAssert(!side_is_degenerate(out_segs[1]));
 		return 2;
 	}
 
 	int operator()(const Segment2p& in_seg, Segment2p out_segs[2])
 	{
 		if((in_seg.p1.y() <= y && in_seg.p2.y() <= y) ||
-			in_seg.p1.y() >= y && in_seg.p2.y() >= y)
+			(in_seg.p1.y() >= y && in_seg.p2.y() >= y))
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		
 		double x = in_seg.x_at_y(y);
 		out_segs[0] = Segment2p(in_seg.p1,Point2(x,y),in_seg.param);
 		out_segs[1] = Segment2p(Point2(x,y),in_seg.p2,in_seg.param);
+		DebugAssert(!side_is_degenerate(out_segs[0]));
+		DebugAssert(!side_is_degenerate(out_segs[1]));
 		return 2;
 	}
 
@@ -196,7 +272,10 @@ struct split_at_line_h {
 			Segment2 os[2];
 			int n = this->operator()(in_seg.as_segment(),os);
 			for(int i = 0; i < n; ++i)
+			{
 				out_segs[i] = Bezier2(os[i]);
+				DebugAssert(!side_is_degenerate(out_segs[i]));
+			}
 			return n;
 		}
 		
@@ -206,6 +285,7 @@ struct split_at_line_h {
 		if(cuts == 0)
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		int i;
@@ -220,6 +300,7 @@ struct split_at_line_h {
 		{
 			in_seg.subcurve(out_segs[ret],0.0,t[0]);
 			out_segs[ret].p2 = p[0];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 		
@@ -228,6 +309,7 @@ struct split_at_line_h {
 			in_seg.subcurve(out_segs[ret],t[i-1],t[i]);
 			out_segs[ret].p1 = p[i-1];
 			out_segs[ret].p2 = p[i  ];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 
@@ -235,6 +317,7 @@ struct split_at_line_h {
 		{
 			in_seg.subcurve(out_segs[ret],t[cuts-1],1.0);
 			out_segs[ret].p1 = p[cuts-1];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 		
@@ -248,7 +331,10 @@ struct split_at_line_h {
 			Segment2 os[2];
 			int n = this->operator()(in_seg.as_segment(),os);
 			for(int i = 0; i < n; ++i)
+			{
 				out_segs[i] = Bezier2p(os[i], in_seg.param);
+				DebugAssert(!side_is_degenerate(out_segs[i]));
+			}	
 			return n;
 		}
 		
@@ -258,6 +344,7 @@ struct split_at_line_h {
 		if(cuts == 0)
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		int i;
@@ -272,6 +359,7 @@ struct split_at_line_h {
 		{
 			in_seg.subcurve(out_segs[ret],0.0,t[0]);
 			out_segs[ret].p2 = p[0];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 		
@@ -280,6 +368,7 @@ struct split_at_line_h {
 			in_seg.subcurve(out_segs[ret],t[i-1],t[i]);
 			out_segs[ret].p1 = p[i-1];
 			out_segs[ret].p2 = p[i  ];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 
@@ -287,6 +376,7 @@ struct split_at_line_h {
 		{
 			in_seg.subcurve(out_segs[ret],t[cuts-1],1.0);
 			out_segs[ret].p1 = p[cuts-1];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 
@@ -305,30 +395,36 @@ struct split_at_line_v {
 	int operator()(const Segment2& in_seg, Segment2 out_segs[2])
 	{
 		if((in_seg.p1.x() <= x && in_seg.p2.x() <= x) ||
-			in_seg.p1.x() >= x && in_seg.p2.x() >= x)
+			(in_seg.p1.x() >= x && in_seg.p2.x() >= x))
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		
 		double y = in_seg.y_at_x(x);
 		out_segs[0] = Segment2(in_seg.p1,Point2(x,y));
 		out_segs[1] = Segment2(Point2(x,y),in_seg.p2);
+		DebugAssert(!side_is_degenerate(out_segs[0]));
+		DebugAssert(!side_is_degenerate(out_segs[1]));
 		return 2;
 	}
 
 	int operator()(const Segment2p& in_seg, Segment2p out_segs[2])
 	{
 		if((in_seg.p1.x() <= x && in_seg.p2.x() <= x) ||
-			in_seg.p1.x() >= x && in_seg.p2.x() >= x)
+			(in_seg.p1.x() >= x && in_seg.p2.x() >= x))
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		
 		double y = in_seg.y_at_x(x);
 		out_segs[0] = Segment2p(in_seg.p1,Point2(x,y),in_seg.param);
 		out_segs[1] = Segment2p(Point2(x,y),in_seg.p2,in_seg.param);
+		DebugAssert(!side_is_degenerate(out_segs[0]));
+		DebugAssert(!side_is_degenerate(out_segs[1]));
 		return 2;
 	}
 	
@@ -339,7 +435,10 @@ struct split_at_line_v {
 			Segment2 os[2];
 			int n = this->operator()(in_seg.as_segment(),os);
 			for(int i = 0; i < n; ++i)
+			{
 				out_segs[i] = Bezier2(os[i]);
+				DebugAssert(!side_is_degenerate(out_segs[i]));
+			}
 			return n;
 		}
 		
@@ -349,6 +448,7 @@ struct split_at_line_v {
 		if(cuts == 0)
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		int i;
@@ -363,6 +463,7 @@ struct split_at_line_v {
 		{
 			in_seg.subcurve(out_segs[ret],0.0,t[0]);
 			out_segs[ret].p2 = p[0];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 		
@@ -371,6 +472,7 @@ struct split_at_line_v {
 			in_seg.subcurve(out_segs[ret],t[i-1],t[i]);
 			out_segs[ret].p1 = p[i-1];
 			out_segs[ret].p2 = p[i  ];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 
@@ -378,6 +480,7 @@ struct split_at_line_v {
 		{
 			in_seg.subcurve(out_segs[ret],t[cuts-1],1.0);
 			out_segs[ret].p1 = p[cuts-1];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 		
@@ -391,7 +494,10 @@ struct split_at_line_v {
 			Segment2 os[2];
 			int n = this->operator()(in_seg.as_segment(),os);
 			for(int i = 0; i < n; ++i)
+			{
 				out_segs[i] = Bezier2p(os[i],in_seg.param);
+				DebugAssert(!side_is_degenerate(out_segs[i]));
+			}
 			return n;
 		}
 		
@@ -401,6 +507,7 @@ struct split_at_line_v {
 		if(cuts == 0)
 		{
 			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
 			return 1;
 		}
 		int i;
@@ -415,6 +522,7 @@ struct split_at_line_v {
 		{
 			in_seg.subcurve(out_segs[ret],0.0,t[0]);
 			out_segs[ret].p2 = p[0];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 		
@@ -423,6 +531,7 @@ struct split_at_line_v {
 			in_seg.subcurve(out_segs[ret],t[i-1],t[i]);
 			out_segs[ret].p1 = p[i-1];
 			out_segs[ret].p2 = p[i  ];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 
@@ -430,6 +539,7 @@ struct split_at_line_v {
 		{
 			in_seg.subcurve(out_segs[ret],t[cuts-1],1.0);
 			out_segs[ret].p1 = p[cuts-1];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
 			ret++;
 		}
 
@@ -632,6 +742,7 @@ bool	cap_edge_h(const C& in_segs, F make_curve, double y, int dir)
 	
 	for(typename C::const_iterator i = in_segs.begin(); i != in_segs.end(); ++i)
 	{
+		DebugAssert(!side_is_degenerate(*i));
 		if(i->p1.y() == y)
 			xons.insert(typename imap_t::value_type(i->p1.x(),make_pair(-1,i)));
 		if(i->p2.y() == y)
@@ -772,6 +883,7 @@ bool	cap_edge_v(const C& in_segs, F make_curve, double x, int dir)
 	
 	for(typename C::const_iterator i = in_segs.begin(); i != in_segs.end(); ++i)
 	{
+		DebugAssert(!side_is_degenerate(*i));
 		if(i->p1.x() == x)
 			xons.insert(typename imap_t::value_type(i->p1.y(),make_pair(-1,i)));
 		if(i->p2.x() == x)
@@ -970,6 +1082,10 @@ struct split_traits<Bezier2p> {		// needed?  I don't know.  C++ paranoia!!
 template <typename SC>
 bool clip_any(SC& io_segs, const clipping_line& l, bool cap)
 {
+	#if DEV
+		for(typename SC::iterator s = io_segs.begin(); s != io_segs.end(); ++s)
+			DebugAssert(!side_is_degenerate(*s));
+	#endif
 	typedef typename SC::value_type S;
 	if(l.is_vertical)
 	{
@@ -977,7 +1093,14 @@ bool clip_any(SC& io_segs, const clipping_line& l, bool cap)
 		on_side_of_line_v	filter(l.coord, -l.dir);	// vertical line going UP, we want the NEGATIVE x side.
 
 		apply_split<SC, split_at_line_v,split_traits<S>::N>(io_segs, splitter);	
+
+		for(typename SC::iterator s = io_segs.begin(); s != io_segs.end(); ++s)
+			DebugAssert(!side_is_degenerate(*s));
+
 		apply_filter(io_segs, filter);		
+
+		for(typename SC::iterator s = io_segs.begin(); s != io_segs.end(); ++s)
+			DebugAssert(!side_is_degenerate(*s));
 		
 		if(cap)
 		{
@@ -994,8 +1117,15 @@ bool clip_any(SC& io_segs, const clipping_line& l, bool cap)
 		on_side_of_line_h	filter(l.coord, l.dir);		// horizonta line goes right, we want the UP side - positive Y!
 
 		apply_split<SC, split_at_line_h,split_traits<S>::N>(io_segs, splitter);	
+
+		for(typename SC::iterator s = io_segs.begin(); s != io_segs.end(); ++s)
+			DebugAssert(!side_is_degenerate(*s));
+
 		apply_filter(io_segs, filter);		
 
+		for(typename SC::iterator s = io_segs.begin(); s != io_segs.end(); ++s)
+			DebugAssert(!side_is_degenerate(*s));
+			
 		if(cap)
 		{
 			SC new_segs;
@@ -1367,10 +1497,13 @@ bool clip_pwh(const vector<GP>& pwh, vector<vector<GP> >& out_pwh_list, const cl
 		
 	for(typename vector<GP>::iterator i = outer_ccbs.begin(); i != outer_ccbs.end(); ++i)
 	{
-		DebugAssert(is_ccw_polygon_seg(i->begin(),i->end()));
+		DebugAssert(i->size() == 2 || (i->size() > 2 && is_ccw_polygon_seg(i->begin(),i->end())));
 		
-		out_pwh_list.push_back(vector<GP>());
-		out_pwh_list.back().push_back(*i);
+		if(i->size() > 2)
+		{
+			out_pwh_list.push_back(vector<GP>());
+			out_pwh_list.back().push_back(*i);
+		}
 	}
 	
 	// Hole bucketing - we are now going to go through all of our fully retained holes and use one
@@ -1424,6 +1557,37 @@ bool clip_pwh_list(const vector<vector<GP> >& pwh_list, vector<vector<GP> >& out
 template <typename GP>
 bool clip_general_polygon(const vector<GP>& in_pwh, vector<vector<GP> >& out_pwh_list, const Bbox2& box)
 {
+	// This special case is sort of a hack.  We detect the case where we are -entirely- inside the clip box
+	// and return our direct input.  This isn't just a "fast exit" case.  It turns out that the math deep
+	// inside the line-bezier intersection code goes absolutely bat-shit if you try to intersect a finite
+	// length bezier with a line that's "really far" from the cubic.*  We can avoid this by recognizing that
+	// the clip lines are -nowhere near- us and avoiding the math pitfall.
+	//
+	// * The bug is that when the cubic is far from the intersection line, the partial calculations become
+	//   so huge (in magnitude) that they truncate; dividing them does not reconstitute a high precision 
+	//   answer and we get -false- intersections within the time 0...1 (which makes it look like a valid
+	//   intersection).
+	
+	Bbox2	bounds;
+	bbox_for_any_vector2(in_pwh,bounds);
+	if(box.contains(bounds))
+	{
+		out_pwh_list.push_back(in_pwh);
+		return true;
+	}
+
+	for(typename vector<GP>::const_iterator p = in_pwh.begin(); p != in_pwh.end(); ++p)
+	for(typename GP::const_iterator s = p->begin(); s != p->end(); ++s)
+	{
+		if(side_is_degenerate(*s))
+		{
+			#if DEV
+				printf("Zero length side on input.");			
+			#endif
+			return false;
+		}
+	}
+
 	clipping_line	left (true, box.xmin(),-1);
 	clipping_line	right(true, box.xmax(), 1);
 	
@@ -1503,6 +1667,14 @@ bool recompose_polygon_with_holes(const vector<vector<Segment2> > & in_poly, vec
 
 bool clip_polygon(const vector<Polygon2>& in_pwh, vector<vector<Polygon2> >& out_pwh_list, const Bbox2& box)
 {
+	Bbox2	bounds;
+	bbox_for_any_vector2(in_pwh,bounds);
+	if(box.contains(bounds))
+	{
+		out_pwh_list.push_back(in_pwh);
+		return true;
+	}
+
 	vector<vector<Segment2> > pwh;
 	vector<vector<vector<Segment2> > > pwh_list;
 	

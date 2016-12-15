@@ -26,11 +26,11 @@
 	<key>CFBundleExecutable</key>
 	<string>XGrinder</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XGrinder 1.0r1 Copyright 2008, Laminar Research</string>
+	<string>XGrinder 1.1r1 Copyright 2015, Laminar Research</string>
 	<key>CFBundleIconFile</key>
 	<string>XGrinder_icons.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.laminar_research.XGrinder</string>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -38,7 +38,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0r1</string>
+	<string>1.1r1</string>
 	<key>CFBundleVersion</key>
 	<string>398</string>
 	<key>LSHasLocalizedDisplayName</key>

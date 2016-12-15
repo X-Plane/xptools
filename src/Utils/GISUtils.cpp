@@ -23,19 +23,26 @@
 #include "GISUtils.h"
 #include <geotiffio.h>
 #include <geo_normalize.h>
-#if defined(__MWERKS__)
-#include <libxtiff/xtiffio.h>
-#else
-#include <xtiffio.h>
-#endif
 #define PVALUE LIBPROJ_PVALUE
 #include <projects.h>
 #include <cpl_serv.h>
 #include "XESConstants.h"
 #include "CompGeomUtils.h"
 #include "DEMIO.h"
+#include "MathUtils.h"
 #include "PlatformUtils.h"
+#if USE_GEOJPEG2K
+#include <jasper/jasper.h>
+#endif
 
+// set to 1 to save geotiff inside geojp2 to disk
+#define DUMP_GTIF 0
+
+#if defined(_MSC_VER)
+	#include <libxtiff/xtiffio.h>
+#else
+	#include <xtiffio.h>
+#endif
 void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
 {
 	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
@@ -47,20 +54,55 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
         return false;
-
+	
     if( defn->Model == ModelTypeGeographic )
     {
     	outLon = x;
     	outLat = y;
     	return true;
     }
-    else
-    {
+    else    
+	{
         if( GTIFProj4ToLatLong( defn, 1, &x, &y ) )
         {
 			outLon = x;
 			outLat = y;
 			return true;
+		}
+
+		int size = 0;
+		tagtype_t type = TYPE_UNKNOWN;
+		int key_count = GTIFKeyInfo(gtif, GTCitationGeoKey, &size, &type);
+		
+		if(key_count > 0 && key_count < 1024 && type == TYPE_ASCII && size == 1)
+		{
+			vector<char>	ascii(key_count);
+			int r = GTIFKeyGet(gtif, GTCitationGeoKey, &ascii[0], 0, key_count);
+			if(r == key_count)
+			{
+				DebugAssert(ascii.back() == 0);
+				string citation = string(&ascii[0]);
+				if(citation == "PCS Name = WGS_1984_Web_Mercator_Auxiliary_Sphere")
+				{
+					char ** args = CSLTokenizeStringComplex("+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext  +no_defs", " +", TRUE, FALSE);
+					PJ * psPJ = pj_init( CSLCount(args), args );
+					CSLDestroy(args);
+					if(psPJ)
+					{
+						projUV	sUV;
+
+						sUV.u = x;
+						sUV.v = y;
+
+						sUV = pj_inv( sUV, psPJ );
+
+						outLon = sUV.u * RAD_TO_DEG;
+						outLat = sUV.v * RAD_TO_DEG;
+						pj_free(psPJ);
+						return true;
+					}
+				}
+			}
 		}
 	}
 	return false;
@@ -75,6 +117,7 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 		retVal = FetchTIFFCornersWithTIFF(tiffFile, corners, post_pos);
 		XTIFFClose(tiffFile);
 	}
+	
 	return retVal;
 }
 
@@ -84,7 +127,7 @@ static int pm(char * s, void * v)
 	return 0;
 }
 
-bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
+bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)
 {
 	bool retVal = false;
 	GTIF * gtif = GTIFNew(tiffFile);
@@ -96,14 +139,25 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
         if( GTIFGetDefn( gtif, &defn ) )
         {
         	int xs, ys;
+			double xsize,ysize;
             TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xs );
             TIFFGetField( tiffFile, TIFFTAG_IMAGELENGTH, &ys );
 
 			uint16 pixel_type;
 			double dx=0.0;
 			double dy=0.0;
-			double xsize=xs;
-			double ysize=ys;
+
+			//If there is the optional width and height
+			if(width > 0 && height > 0)
+			{
+				xsize=width;
+				ysize=height;
+			}
+			else
+			{
+				xsize=xs;
+				ysize=ys;
+			}
 
 			if (GTIFKeyGet(gtif,GTRasterTypeGeoKey, &pixel_type, 0, 1) != 1)
 				pixel_type=RasterPixelIsArea;
@@ -162,6 +216,175 @@ bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos)
 	}
 	return retVal;
 }
+#if USE_GEOJPEG2K
+
+//Represents a jas_aux_buffer_t + the offset of bytes read.
+struct	MemJASGeoFile {
+	MemJASGeoFile(jas_aux_buffer_t * aux_buf_t) 
+	{
+		file = aux_buf_t;
+		offset = 0; 
+	}
+	~MemJASGeoFile() { }
+
+	//The jas_aux_buffer_t (containing the GeoTiff [in the form of aux_buf], and the length of said buffer)
+	jas_aux_buffer_t *		file;
+	//Number of bytes read
+	int				offset;
+
+	//Get's the end pointer of the file
+	unsigned char * GetEnd()
+	{
+		//End = address of start + number of charecters * 8
+		return 	(unsigned char *)(file->buf + (file->size * 8));
+	}
+};
+
+
+static tsize_t	MemJASGeoRead(thandle_t handle, tdata_t data, tsize_t len)
+{
+	//Cast a the handle back to a MemJASGeoFile
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+
+	//Get the remaining bytes
+	//Start is pointer
+	//End = address of start + number of charecters * 8
+
+	//int remain = End-Start-Offset
+	
+	int remain = f->GetEnd() - (f->file->buf) - (f->offset);
+	
+	if (len > remain) 
+		len = remain;
+	if (len < 0) 
+		len = 0;
+	//If length is greater than 0, copy the data
+	//Copy from the pointer + the offset
+	if (len > 0)
+		memcpy(data,f->file->buf+f->offset,len);
+
+	f->offset += len;
+	return len;
+}
+
+static tsize_t MemJASGeoWrite(thandle_t handle, tdata_t data, tsize_t len)
+{
+	return 0;
+}
+
+static toff_t 	MemJASGeoSeek(thandle_t handle, toff_t pos, int mode)
+{
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+	switch(mode) {
+	case SEEK_SET:
+	default:
+		f->offset = pos;
+		return f->offset;
+	case SEEK_CUR:
+		f->offset += pos;
+		return f->offset;
+	case SEEK_END:
+		f->offset = f->GetEnd()-f->file->buf - pos;
+		return f->offset;
+	}
+}
+
+static int 		MemJASGeoClose(thandle_t)
+{
+	return 0;
+}
+
+static toff_t 	MemJASGeoSize(thandle_t handle)
+{
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+	return f->GetEnd()-f->file->buf;
+}
+
+static int 		MemJASGeoMapFile(thandle_t handle, tdata_t* dp, toff_t* len)
+{
+	MemJASGeoFile * f = (MemJASGeoFile *) handle;
+	*dp = (tdata_t) f->file->buf;
+	*len = f->GetEnd() - (f->file->buf);
+	return 1;
+}
+
+static void 	MemJASGeoUnmapFile(thandle_t, tdata_t, toff_t)
+{
+}
+
+bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& post_pos)
+{
+	jas_stream_t *inStream;
+	jas_image_t *image;
+
+	if(jas_init() != 0 )
+	{
+		//If it failed then return error
+		return -1;
+	}
+
+		//If the data stream cannot be created
+	if((inStream = jas_stream_fopen(inFileName,"rb"))==false)
+	{
+		return false;
+	}
+
+	//Get the format ID
+	int formatId;
+
+	//If there are any errors in getting the format
+	if((formatId = jas_image_getfmt(inStream)) < 0)
+	{
+		//It is an invalid format
+		return false;
+	}
+
+	//If the image cannot be decoded
+	if((image = jas_image_decode(inStream, formatId, 0)) == false)
+	{
+		//Return an error
+		return false;
+	}
+	
+	//If it turns out the .jp2 never had any geological data exit
+	if(image->aux_buf.size == 0)
+	{
+		return false;
+	}
+	
+	
+	#if DUMP_GTIF
+	FILE * foo = fopen("temp.tiff","wb");
+	if(foo)
+	{
+		fwrite(image->aux_buf.buf, 1, image->aux_buf.size, foo);
+		fclose(foo);
+	}
+	#endif
+	
+	//Create the handle to be used in XTIFFClientOpen
+	MemJASGeoFile jasHandle(&image->aux_buf);
+	//Create a TIFF handle
+	TIFF * tif = XTIFFClientOpen(inFileName,"r",&jasHandle,MemJASGeoRead, MemJASGeoWrite,
+	    MemJASGeoSeek, MemJASGeoClose,
+	    MemJASGeoSize,
+ 	    MemJASGeoMapFile, MemJASGeoUnmapFile);
+
+	int postType = dem_want_Area;
+	//Pass in our TIF handle, post type, width, and height
+	if(FetchTIFFCornersWithTIFF(tif,corners,postType,(image->brx_-image->tlx_),(image->bry_-image->tly_))==false)
+	{
+		return false;
+	}
+	//Shut downthe stream
+	jas_stream_close(inStream);
+	
+	//Unintialize jasper
+	jas_cleanup();
+	//It all worked!
+	return true;
+}
+#endif
 
 hash_map<int, projPJ>	sUTMProj;
 struct CTABLE *		sNADGrid = NULL;
@@ -443,11 +666,12 @@ void	Quad_1to2(const Point2& ctr, double heading, double len_mtr, Point2 ends[2]
 void	Quad_diagto1(const Point2 ends[2], double width_mtr, Point2& ctr, double& heading, double& len_mtr, int swapped)
 {
 	double diag_len = sqrt(VectorLLToMeters(ends[0],Vector2(ends[0],ends[1])).squared_length());
-	len_mtr = sqrt(diag_len * diag_len - width_mtr * width_mtr);
+	len_mtr = sqrt(max(diag_len * diag_len - width_mtr * width_mtr,0.0));
 
 	double diag_heading = VectorDegs2NorthHeading(ends[0],ends[0],Vector2(ends[0],ends[1]));
 
-	double offset = asin(width_mtr / diag_len) * RAD_TO_DEG;
+	// When user drags corners to < width, we need clamp to avoid NaN from asin out of range [-1..1]
+	double offset = diag_len == 0.0 ? 0.0 : asin(doblim(width_mtr / diag_len,-1.0,1.0)) * RAD_TO_DEG;
 
 	if (swapped)
 		heading = diag_heading + offset;

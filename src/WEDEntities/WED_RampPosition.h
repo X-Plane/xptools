@@ -36,6 +36,16 @@ public:
 
 	void	SetType(int		ramp_type);
 	void	SetEquipment(const set<int>&	et);
+	void	SetWidth(int		width);
+	void	SetRampOperationType(int ait);
+	void	SetAirlines(const string& airlines);
+
+	string  GetAirlines() const;
+	int		GetType() const;
+	int		GetWidth() const;
+	void	GetEquipment(set<int>& out_eq) const;
+	
+	static string CorrectAirlinesString(const string &a);
 
 	void	Import(const AptGate_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void	Export(		 AptGate_t& x) const;
@@ -46,6 +56,9 @@ private:
 
 	WED_PropIntEnum			ramp_type;
 	WED_PropIntEnumBitfield	equip_type;
+	WED_PropIntEnum			width;
+	WED_PropIntEnum			ramp_op_type;
+	WED_PropStringText		airlines;
 
 };
 

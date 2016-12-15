@@ -85,7 +85,7 @@ void	WED_CreateLineTool::AcceptPath(
 	GetArchive()->StartCommand(buf);
 
 	int idx;
-	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, idx);
+	WED_Thing * host = WED_GetCreateHost(GetResolver(), true, true, idx);
 
 	WED_GISLine_Width * obj = NULL;
 
@@ -169,5 +169,14 @@ const char *	WED_CreateLineTool::GetStatusText(void)
 bool		WED_CreateLineTool::CanCreateNow(void)
 {
 	return WED_GetCurrentAirport(GetResolver()) != NULL;
+}
+
+void	WED_CreateLineTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
+{
+	WED_CreateToolBase::GetNthPropertyDict(n, dict);
+	if(n == PropertyItemNumber(&rwy_surface) && rwy_surface.value != surf_Water)
+	{
+		dict.erase(surf_Water);
+	}
 }
 

@@ -30,6 +30,9 @@
 #include <math.h>
 #include <vector>
 #include <algorithm>
+
+#include "AssertUtils.h"
+
 using std::vector;
 using std::swap;
 using std::min;
@@ -243,6 +246,10 @@ struct	Segment2 {
 	Point2	projection(const Point2& pt) const;
 	double	squared_distance_supporting_line(const Point2& p) const;		// Squared distance to our supporting line.
 	double	squared_distance(const Point2& p) const;
+	
+	//Moves this segment by some vector to a new location, keeping the segments orientation
+	void	move_by_vector(const Vector2& v);
+
 	bool	collinear_has_on(const Point2& p) const;
 	bool	on_left_side(const Point2& p) const { return Vector2(p1, p2).left_turn(Vector2(p1, p)); }
 	bool	on_right_side(const Point2& p) const { return Vector2(p1, p2).right_turn(Vector2(p1, p)); }
@@ -449,6 +456,9 @@ struct	Polygon2 : public vector<Point2> {
 	// Returns true if the point is inside the polygon.  Works on any polygon.
 	bool		inside(const Point2& inPoint) const;
 
+	// Returns true if the segment intersects any part of the polygon, very simple and not optimized
+	bool		intersects(const Segment2& inSegment) const;
+
 	int			prev(int index) const { return (index + size() - 1) % size(); }
 	int			next(int index) const { return (index + 1) % size(); }
 
@@ -530,9 +540,10 @@ struct	Bezier2 {
 	double	y_at_x(double x) const;
 	double	x_at_y(double y) const;
 	
-	int		t_at_x(double x, double t[4]) const;
-	int		t_at_y(double y, double t[4]) const;
-
+	int		t_at_x(double x, double t[3]) const;
+	int		t_at_y(double y, double t[3]) const;
+	double	approx_t_for_xy(double x, double y) const;
+	
 	Point2	p1;
 	Point2	p2;
 	Point2	c1;
@@ -715,6 +726,12 @@ inline double Segment2::squared_distance(const Point2& p) const
 	// Otherwise, just take the closer of the two end points.
 	if(collinear_has_on(p)) return squared_distance_supporting_line(p);
 	else					return min(p1.squared_distance(p), p2.squared_distance(p));
+}
+
+inline void	Segment2::move_by_vector(const Vector2& v)
+{
+	this->p1 += v;
+	this->p2 += v;
 }
 
 inline bool Segment2::could_intersect(const Segment2& rhs) const
@@ -1095,6 +1112,20 @@ inline bool		Polygon2::inside(const Point2& inPoint) const
 	return inside_polygon_pt(begin(),end(),inPoint);
 }
 
+inline bool		Polygon2::intersects(const Segment2& inSegment) const
+{
+	Point2 p;
+	for (int i = 0; i < this->size(); i++)
+	{
+		if(inSegment.intersect(this->side(i),p))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 inline bool Polygon2::is_ccw(void) const
 {
 	if(size() < 3)	return true;
@@ -1166,6 +1197,10 @@ inline Vector2 Bezier2::derivative(double t) const
 
 inline void	Bezier2::subcurve(Bezier2& sub, double t1, double t2) const
 {
+	DebugAssert(t1 >= 0.0);
+	DebugAssert(t2 <= 1.0);
+	DebugAssert(t1 < t2);
+	
 	Bezier2 dummy, sub1;
 	if(t1 <= 0.0 && t2 >= 1.0)
 		sub = *this;
@@ -1508,6 +1543,14 @@ bool in_order(T& lhs, T& rhs)	// Assure lhs <= rhs
 
 inline int	Bezier2::t_at_x(double x, double t[3]) const
 {
+	// If the intercept is out of the bounding box, early exit.
+	// For hugely "off curve" values of X, the cubic formula runs out of internal
+	// precision and returns bogus T values.
+	if(x < p1.x_ && x < p2.x_ && x < c1.x_ && x < c2.x_)
+		return 0;
+	if(x > p1.x_ && x > p2.x_ && x > c1.x_ && x > c2.x_)
+		return 0;
+
 	double Ax =       -p1.x_ + 3.0 * c1.x_ - 3.0 * c2.x_ + p2.x_;
 	double Bx =  3.0 * p1.x_ - 6.0 * c1.x_ + 3.0 * c2.x_;
 	double Cx = -3.0 * p1.x_ + 3.0 * c1.x_;
@@ -1528,11 +1571,23 @@ inline int	Bezier2::t_at_x(double x, double t[3]) const
 	if(r > 2) if(in_order(t[1], t[2]))		// Now since we know 1 is bigger than 0, if 2 is OOTO this makes 2 right
 					in_order(t[0], t[1]);	// If we moved 1 up to 2, maybe the old 2 needs to go all the wy down to zero?
 
+	#if DEV
+		if(r > 1)
+			DebugAssert(t[0] < t[1]);
+		if(r > 2)
+			DebugAssert(t[1] < t[2]);
+	#endif
+
 	return r;
 }
 
 inline int	Bezier2::t_at_y(double y, double t[3]) const
 {
+	if(y < p1.y_ && y < p2.y_ && y < c1.y_ && y < c2.y_)
+		return 0;
+	if(y > p1.y_ && y > p2.y_ && y > c1.y_ && y > c2.y_)
+		return 0;
+
 	double Ay =       -p1.y_ + 3.0 * c1.y_ - 3.0 * c2.y_ + p2.y_;
 	double By =  3.0 * p1.y_ - 6.0 * c1.y_ + 3.0 * c2.y_;
 	double Cy = -3.0 * p1.y_ + 3.0 * c1.y_;
@@ -1553,7 +1608,57 @@ inline int	Bezier2::t_at_y(double y, double t[3]) const
 	if(r > 2) if(in_order(t[1], t[2]))		// Now since we know 1 is bigger than 0, if 2 is OOTO this makes 2 right
 					in_order(t[0], t[1]);	// If we moved 1 up to 2, maybe the old 2 needs to go all the wy down to zero?
 
+
+	#if DEV
+		if(r > 1)
+			DebugAssert(t[0] < t[1]);
+		if(r > 2)
+			DebugAssert(t[1] < t[2]);
+	#endif
+
 	return r;
+}
+
+inline double	Bezier2::approx_t_for_xy(double x, double y) const
+{
+	// There isn't a really good way to do this - so we use sort of a bad way.
+	// Basically an X or Y probe may return up to 3 hits if it's "over" the airspace
+	// of the curve and we have an S curve.  So when we hit one root in either direction,
+	// we take it.  if we hit more than one root in both, we compare each pair of roots
+	// and take the X root for which there exists the smallest root-pair distance.
+	// For points ON the curve, this difference should be rounding error.
+	//
+	// For points off the curve...YMMV.
+	double x_roots[3], y_roots[3];
+	int xc = t_at_x(x,x_roots);
+	int yc = t_at_y(y,y_roots);
+	
+	if(yc == 0 && xc == 0)	return 0.5;
+	if(xc == 0) return y_roots[0];
+	if(yc == 0) return x_roots[0];
+	
+	int idx = -1;
+	double d = 9.9e9;
+	for(int ix = 0; ix < xc; ++ix)
+	{
+		double xd = 9.9e9;
+		for(int iy = 0; iy < yc; ++iy)
+		{
+			double rel = fabs(x_roots[ix] - y_roots[iy]);
+			if(rel < xd)
+				xd = rel;
+		}
+		if(xd < d)
+		{
+			 d = xd;
+			 idx = ix;
+		}
+	}
+	if(idx >= 0)
+		return x_roots[idx];
+	
+	DebugAssert(!"How did we get here?");
+	return 0.5;
 }
 
 

@@ -29,7 +29,6 @@
 #else
 	#include <GL/gl.h>
 	#include <GL/glu.h>
-	#include <GL/glext.h>
 #endif
 #include "squish.h"
 
@@ -43,6 +42,7 @@ struct  gl_info_t {
 	int		gl_minor_version;
 	bool	has_tex_compression;
 	bool	has_edge_clamp;
+	bool	has_non_pots;
 	int		max_tex_size;
 };
 
@@ -65,6 +65,7 @@ static void init_gl_info(gl_info_t * i)
 	
 	i->has_edge_clamp = true;		// If a user runs WED on a machine with less than GL 1.2, I will find that user and punch him directly in the throat.
 	i->has_tex_compression = (glv >= 130) || strstr(ext_str,"GL_ARB_texture_compression") != NULL;
+	i->has_non_pots = (glv >= 200) || strstr(ext_str,"GL_ARB_texture_non_power_of_two") != NULL;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE,&i->max_tex_size);
 	if(i->max_tex_size > 8192)
 		i->max_tex_size = 8192;
@@ -159,6 +160,7 @@ bool LoadTextureFromFile(
  *****************************************************************************************/
 bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWidth, int * outHeight, float * outS, float * outT)
 {
+	
 	INIT_GL_INFO
 	
 	long				count = 0;
@@ -175,8 +177,10 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 	if (im.pad != 0)
  		UnpadImage(&im);
 
-	int		res_x = NextPowerOf2(im.width);
-	int		res_y = NextPowerOf2(im.height);
+	int non_pots = ((inFlags & tex_Always_Pad) == 0) && gl_info.has_non_pots;
+
+	int		res_x = non_pots ? im.width : NextPowerOf2(im.width);
+	int		res_y = non_pots ? im.height : NextPowerOf2(im.height);
 	bool	resize = (res_x != im.width || res_y != im.height);
 	bool	rescale = resize && (inFlags & tex_Rescale);
 	if (resize && (im.width > res_x || im.height > res_y))	// Always rescale if the image is too big for the max tex!!
@@ -261,14 +265,16 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 		// BAS note: for some reason on my WinXP system with GF-FX, if
 		// I do not set these explicitly to linear, I get no drawing at all.
 		// Who knows what default state the card is in. :-(
-		if(inFlags & tex_Nearest)
-		{
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		} else if (inFlags & tex_Linear) {
+//		if(inFlags & tex_Nearest)
+//		{
+//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//		} else 
+		if (inFlags & tex_Linear) {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_LINEAR_MIPMAP_NEAREST : GL_LINEAR);
 		} else {
+			// If we have nearest-neighboring and we are down-sampling WITHOUT a mip-map we STILL use linear in an attempt to keep this thing from looking TOTALY blitzed, I guess?
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (inFlags & tex_Mipmap) ? GL_NEAREST_MIPMAP_NEAREST : GL_LINEAR);
 		}
@@ -289,13 +295,8 @@ bool LoadTextureFromImage(ImageInfo& im, int inTexNum, int inFlags, int * outWid
 
 #if BIG
 	#if APL
-		#if defined(__MACH__)
-			#include <libkern/OSByteOrder.h>
-			#define SWAP32(x) (OSSwapConstInt32(x))
-		#else
-			#include <Endian.h>
-			#define SWAP32(x) (Endian32_Swap(x))
-		#endif
+		#include <libkern/OSByteOrder.h>
+		#define SWAP32(x) (OSSwapConstInt32(x))
 	#else
 		#error we do not have big endian support on non-Mac platforms
 	#endif

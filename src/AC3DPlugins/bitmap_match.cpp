@@ -26,7 +26,7 @@
 #include <ac_plugin.h>
 #include <stdio.h>
 #include <string.h>
-#ifdef LIN
+#ifndef IBM
     #include <stdint.h>
 #endif
 

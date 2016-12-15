@@ -31,6 +31,8 @@
 #include "RF_DrawMap.h"
 #endif
 
+rf_region			gRegion = rf_usa;
+
 Pmwx				gMap;
 #if OPENGL_MAP
 PmwxIndex_t			gMapIndex;

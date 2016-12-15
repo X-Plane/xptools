@@ -28,10 +28,6 @@
 #if IBM
         #include <winsock2.h>
         #include <ws2tcpip.h>
-#elif 0
-	#include <Carbon/Carbon.h>
-//	#include <OpenTransport.h>
-//	#include <OpenTransportProviders.h>
 #elif LIN || APL
 	#include <sys/socket.h>
 	#include <netinet/in.h>
@@ -204,24 +200,6 @@ private:
 		bool		mSentRelease;
 		bool		mIsAServer;
 				PCSBSocket(SOCKET inWorkerSocket);
-#elif 0
-	/* Mac-Specific private instance variables: */
-		void		MopupEvents(void);
-				PCSBSocket(EndpointRef inSocket);
-
-		EndpointRef	mMacSocket;
-
-		unsigned long	mLocalIP;
-		unsigned short	mLocalPort;
-		unsigned long	mRemoteIP;
-		unsigned short	mRemotePort;
-
-		bool		mDone;
-		bool		mErr;
-		TCall		mIncoming;
-		InetAddress	mIncomingIP;
-		bool		mHasIncoming;
-		EndpointRef	mWorker;
 #else  //Linux
 		int		mLinSocket;
 	struct	sockaddr_in	sIn;

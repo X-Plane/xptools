@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
+    <ClCompile Include="..\..\src\ObjEdit\OE_Zoomer3d.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjConvert.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjDraw.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjWriteEmbedded.cpp" />
+    <ClCompile Include="..\..\src\UI\XGUIApp.cpp" />
+    <ClCompile Include="..\..\src\UI\XWin.win.cpp" />
+    <ClCompile Include="..\..\src\UI\XWin32DND.cpp" />
+    <ClCompile Include="..\..\src\UI\XWinGL.win.cpp" />
+    <ClCompile Include="..\..\src\Utils\AssertUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\BitmapUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
+    <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\GeoUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\md5.c" />
+    <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\ObjUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp" />
+    <ClCompile Include="..\..\src\Utils\TexUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\trackball.c" />
+    <ClCompile Include="..\..\src\Utils\unzip.c" />
+    <ClCompile Include="..\..\src\Utils\XUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\zip.c" />
+    <ClCompile Include="..\..\src\XPTools\ViewObj.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\cache_simulator.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\graph_array.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\heap_array.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\stdafx.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Unicode.h" />
+    <ClInclude Include="..\..\src\ObjEdit\OE_Zoomer3d.h" />
+    <ClInclude Include="..\..\src\Obj\ObjConvert.h" />
+    <ClInclude Include="..\..\src\Obj\ObjDraw.h" />
+    <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
+    <ClInclude Include="..\..\src\Obj\XDefs.h" />
+    <ClInclude Include="..\..\src\Obj\XObjBuilder.h" />
+    <ClInclude Include="..\..\src\Obj\XObjDefs.h" />
+    <ClInclude Include="..\..\src\Obj\XObjReadWrite.h" />
+    <ClInclude Include="..\..\src\Obj\XObjWriteEmbedded.h" />
+    <ClInclude Include="..\..\src\UI\XGUIApp.h" />
+    <ClInclude Include="..\..\src\UI\XWin.h" />
+    <ClInclude Include="..\..\src\UI\XWin32DND.h" />
+    <ClInclude Include="..\..\src\UI\XWinGL.h" />
+    <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
+    <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
+    <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
+    <ClInclude Include="..\..\src\Utils\FileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\GeoUtils.h" />
+    <ClInclude Include="..\..\src\Utils\md5.h" />
+    <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\ObjUtils.h" />
+    <ClInclude Include="..\..\src\Utils\PlatformUtils.h" />
+    <ClInclude Include="..\..\src\Utils\TexUtils.h" />
+    <ClInclude Include="..\..\src\Utils\trackball.h" />
+    <ClInclude Include="..\..\src\Utils\unzip.h" />
+    <ClInclude Include="..\..\src\Utils\XUtils.h" />
+    <ClInclude Include="..\..\src\Utils\zip.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\XPTools\ObjView_icons.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\src\XPTools\ObjView.rc" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{899D8E57-07F9-4656-A5DD-3F6A1718CD54}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>ObjView</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Debug.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Release.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libexpatMT.lib;zlibstat.lib;freetype221.lib;jpeg.lib;libpng.lib;libtiff.lib;proj.lib;geotiff.lib;libcurl.lib;libjasper.lib;Comctl32.lib;Ws2_32.lib;opengl32.lib;glu32.lib;squish.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -54,6 +54,9 @@ void	WED_DoMakeNewATCTimeRule(IResolver * inResolver);
 int		WED_CanSetCurrentAirport(IResolver * inResolver, string& io_cmd_name);
 void	WED_DoSetCurrentAirport(IResolver * inResolver);
 
+bool	WED_CanAddMetaData(IResolver * inResolver, int command);
+void	WED_DoAddMetaData(IResolver * inResolver, int command);
+
 int		WED_CanReorder(IResolver * resolver, int direction, int to_end);
 void	WED_DoReorder (IResolver * resolver, int direction, int to_end);
 
@@ -87,14 +90,26 @@ int		WED_CanSelectVertices(IResolver * resolver);
 void	WED_DoSelectVertices(IResolver * resolver);
 int		WED_CanSelectPolygon(IResolver * resolver);
 void	WED_DoSelectPolygon(IResolver * resolver);
+int		WED_CanSelectConnected(IResolver * resolver);
+void	WED_DoSelectConnected(IResolver * resolver);
 
-void	WED_DoSelectZeroLength(IResolver * resolver);
-void	WED_DoSelectDoubles(IResolver * resolver);
-void	WED_DoSelectCrossing(IResolver * resolver);
+bool	WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree=NULL);			// These return true if they did an operation to change selection due to there being work to do.
+bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
+bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
+
+void	WED_DoSelectMissingObjects(IResolver * resolver);
+void	WED_DoSelectLocalObjects(IResolver * resolver);
+void	WED_DoSelectLibraryObjects(IResolver * resolver);
+void	WED_DoSelectDefaultObjects(IResolver * resolver);
+void	WED_DoSelectThirdPartyObjects(IResolver * resolver);
 
 
 // This isn't really a command...rather, it's used by drag & drop code.  But...trying to keep all of the grouping logic in one place.
 int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
 void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
+
+int		WED_Repair(IResolver * resolver);
+
+void WED_UpgradeRampStarts(IResolver * resolver);
 
 #endif /* WED_GroupCommands_H */

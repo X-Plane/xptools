@@ -70,8 +70,8 @@ bool		WED_ObjPlacement::Cull(const Bbox2& b) const
 
 	// 20 km - if your OBJ is bigger than that, you are REALLY doing it wrong.
 	// In fact, if your OBJ is bigger than 5 km you're doing it wrong.
-	#define SLOP 0.2
-	Bbox2	my_bounds(my_loc - Vector2(SLOP,SLOP), my_loc + Vector2(SLOP, SLOP));	
+	Bbox2	my_bounds(my_loc - Vector2(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR,GLOBAL_WED_ART_ASSET_FUDGE_FACTOR), 
+					  my_loc + Vector2(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR, GLOBAL_WED_ART_ASSET_FUDGE_FACTOR));	
 	return b.overlap(my_bounds);
 }
 

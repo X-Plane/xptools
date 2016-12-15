@@ -31,7 +31,7 @@ TRIVIAL_COPY(WED_GISLine_Width, WED_GISLine)
 
 WED_GISLine_Width::WED_GISLine_Width(WED_Archive * parent, int id) :
 	WED_GISLine(parent, id),
-	width(this,"width",SQL_Name("GIS_lines_heading", "width"), XML_Name("line","width"),50.0,6,2)
+	width(this,"Width",SQL_Name("GIS_lines_heading", "width"), XML_Name("line","width"),50.0,6,2)
 {
 }
 
@@ -66,7 +66,7 @@ const char * kRwyPropNames[rwy_prop_count] = {
 	"Longitude 2"
 };
 
-int			WED_GISLine_Width::FindProperty(const char * in_prop)
+int			WED_GISLine_Width::FindProperty(const char * in_prop) const
 {
 	for (int n = 0; n < rwy_prop_count; ++n)
 	{
@@ -82,13 +82,16 @@ int			WED_GISLine_Width::CountProperties(void) const
 	return WED_GISLine::CountProperties() + rwy_prop_count;
 }
 
-void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	if (n < rwy_prop_count)
 	{
+		info.can_delete = false;
 		info.can_edit = true;
 		info.prop_name = kRwyPropNames[n];
 		info.prop_kind = prop_Double;
+		info.synthetic = true;
+		info.round_down = false;
 	}
 
 	switch(n) {
@@ -104,12 +107,12 @@ void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info)
 	}
 }
 
-void		WED_GISLine_Width::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void		WED_GISLine_Width::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	WED_GISLine::GetNthPropertyDict(n-rwy_prop_count, dict);
 }
 
-void		WED_GISLine_Width::GetNthPropertyDictItem(int n, int e, string& item)
+void		WED_GISLine_Width::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	WED_GISLine::GetNthPropertyDictItem(n-rwy_prop_count, e, item);
 }
@@ -328,7 +331,12 @@ void	WED_GISLine_Width::MoveCorner(GISLayer_t layer,  int corner, const Vector2&
 		double	h, l;
 		double	w = GetWidth();
 	Quad_diagto1(ends, w, ctr, h, l, swapped);
+	DebugAssert(h == h);						// These are NaN checks
+	DebugAssert(l == l);
+	DebugAssert(ctr.x_ == ctr.x_);
+	DebugAssert(ctr.y_ == ctr.y_);
 	Quad_1to2(ctr, h, l, ends);
+	DebugAssert(ends[0].x_ == ends[0].x_ && ends[0].y_ == ends[0].y_ && ends[1].x_ == ends[1].x_ && ends[1].y_ == ends[1].y_);
 
 	GetSource()->SetLocation(layer,ends[0]);
 	GetTarget()->SetLocation(layer,ends[1]);
@@ -411,5 +419,12 @@ double		WED_GISLine_Width::GetLength(void) const
 	GetTarget()->GetLocation(gis_Geo,ends[1]);
 	Quad_2to1(ends, ctr, h, l);
 	return l;
+}
+
+
+int			WED_GISLine_Width::PropertyItemNumber(const WED_PropertyItem * item) const
+{
+	int r = WED_GISLine::PropertyItemNumber(item);
+	return r >= 0 ? r + rwy_prop_count : r;
 }
 

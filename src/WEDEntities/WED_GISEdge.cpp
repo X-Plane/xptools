@@ -270,18 +270,27 @@ void WED_GISEdge::Shuffle(GISLayer_t l)
 	this->Reverse(l);
 }
 
+WED_Thing *		WED_GISEdge::CreateSplitNode()
+{
+	WED_Thing * p1 = GetNthSource(0);
+	WED_Thing * np = dynamic_cast<WED_Thing*>(p1->Clone());
+	return np;
+}
+
+
 
 IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 {
 	Segment2	s;
 	Bezier2		b;
-	if(GetSide(gis_Geo,0,s,b))	return NULL;
+	bool is_b = GetSide(gis_Geo,0,s,b);
 	if (s.p1 == p || s.p2 == p) return NULL;
+
 	
 	WED_Thing * p1 = GetNthSource(0);
 	WED_Thing * p2 = GetNthSource(1);
 
-	WED_Thing * np = dynamic_cast<WED_Thing*>(dynamic_cast<WED_Thing*>(p1)->Clone());	
+	WED_Thing * np = CreateSplitNode();
 	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
 	
 	string name;
@@ -299,13 +308,24 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	me2->AddSource(np,0);
 	me2->RemoveSource(p1);
 	
-	Segment2 s1(s), s2(s);
-	
-	s1.p2 = p;
-	s2.p1 = p;
-	
-	this->SetSide(gis_Geo, s1);
-	me2->SetSide(gis_Geo, s2);
+	if(is_b)
+	{
+		double t = b.approx_t_for_xy(p.x(), p.y());
+		Bezier2 b1, b2;
+		b.partition(b1, b2, t);
+		this->SetSideBezier(gis_Geo, b1);
+		me2->SetSideBezier(gis_Geo,b2);
+	}
+	else
+	{
+		Segment2 s1(s), s2(s);
+		
+		s1.p2 = p;
+		s2.p1 = p;
+		
+		this->SetSide(gis_Geo, s1);
+		me2->SetSide(gis_Geo, s2);
+	}
 
 	return dynamic_cast<IGISPoint *>(np);	
 }

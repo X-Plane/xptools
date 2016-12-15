@@ -62,7 +62,7 @@ void			GUI_Commander::BeginDefer(void)
 {
 	// Make sure we aren't at the 10+ level of defers - that much recursive
 	// defer implies that we're leaking defer count.
-	DebugAssert(mDeferLevel < 10);
+	DebugAssert(mDeferLevel < 1);
 	++mDeferLevel;
 }
 

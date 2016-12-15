@@ -10,12 +10,14 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 
 ifdef PLAT_LINUX
 #LDFLAGS		+= -nodefaultlibs
+LDFLAGS		+= -Wl,--exclude-libs,libpng.a
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lpthread
 endif #PLAT_LINUX
 
@@ -29,6 +31,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
 LIBS		+= -luuid
 endif #PLAT_MINGW
@@ -41,6 +44,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_DARWIN
 
 

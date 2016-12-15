@@ -144,74 +144,96 @@ static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing *
 void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 {		
 	//From GroupCommands-WED_DoMakeNewOverlay(...)
-	char buf[1024];
-	if (GetFilePathFromUser(getFile_Open, "Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY, buf, sizeof(buf)))
+
+	char * path = GetMultiFilePathFromUser("Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
+	if(path)
 	{
+		char * free_me = path;
+		
+		WED_Thing * wrl = WED_GetWorld(in_Resolver);
+		ISelection * sel = WED_GetSelect(in_Resolver);
 
-		Point2	coords[4];
-		double c[8];
-
+		wrl->StartOperation("Create Ortho Image");
+		sel->Clear();
+	
+		while(*path)
 		{
-			ImageInfo	inf;
-			int tif_ok=-1;
-
-			if (CreateBitmapFromDDS(buf,&inf) != 0)
-			if (CreateBitmapFromPNG(buf,&inf,false, GAMMA_SRGB) != 0)
-#if USE_JPEG
-			if (CreateBitmapFromJPEG(buf,&inf) != 0)
-#endif
-#if USE_TIF
-			if ((tif_ok=CreateBitmapFromTIF(buf,&inf)) != 0)
-#endif
-			if (CreateBitmapFromFile(buf,&inf) != 0)
-			{
-				#if ERROR_CHECK
-				better reporting
-				#endif
-				DoUserAlert("Unable to open image file.");
-				return;
-			}
-
-			double	nn,ss,ee,ww;
-			zoomer->GetPixelBounds(ww,ss,ee,nn);
-
-			Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
-
-			double grow_x = 0.5*(ee-ww)/((double) inf.width);
-			double grow_y = 0.5*(nn-ss)/((double) inf.height);
-
-			double pix_w, pix_h;
-
-			if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-			else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
-
-			coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-			coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-			coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-			coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
-
-			DestroyBitmap(&inf);
-			//uncomment when dem_want_Area and FetchTIFF are fixing
+		
+			Point2	coords[4];
+			double c[8];
 			int align = dem_want_Area;
-			if (tif_ok==0)
-			if (FetchTIFFCorners(buf, c, align))
-			{
-			// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-				coords[3].x_ = c[0];
-				coords[3].y_ = c[1];
-				coords[0].x_ = c[2];
-				coords[0].y_ = c[3];
-				coords[2].x_ = c[4];
-				coords[2].y_ = c[5];
-				coords[1].x_ = c[6];
-				coords[1].y_ = c[7];
-			}
 			
-			WED_Thing * wrl = WED_GetWorld(in_Resolver);
-			ISelection * sel = WED_GetSelect(in_Resolver);
+			int has_geo = 0;
+			
+			ImageInfo	inf;
+			int res = MakeSupportedType(path, &inf);
+			if(res != 0)
+			{
+				DoUserAlert("Unable to open image file.");
+				wrl->AbortOperation();
+				free(free_me);
+				return;//No good images or a broken file path
+			}
 
-			wrl->StartOperation("Create Ortho Image");
-			sel->Clear();
+			switch(GetSupportedType(path))
+			{
+			#if USE_GEOJPEG2K
+			case WED_JP2K:
+				if(FetchTIFFCornersWithJP2K(path,c,align))
+				{
+					coords[3].x_ = c[0];
+					coords[3].y_ = c[1];
+					coords[0].x_ = c[2];
+					coords[0].y_ = c[3];
+					coords[2].x_ = c[4];
+					coords[2].y_ = c[5];
+					coords[1].x_ = c[6];
+					coords[1].y_ = c[7];
+					has_geo = 1;
+				}
+				break;
+			#endif
+			case WED_TIF:
+				if (FetchTIFFCorners(path, c, align))
+				{
+					// SW, SE, NW, NE from tiff, but SE NE NW SW internally
+					coords[3].x_ = c[0];
+					coords[3].y_ = c[1];
+					coords[0].x_ = c[2];
+					coords[0].y_ = c[3];
+					coords[2].x_ = c[4];
+					coords[2].y_ = c[5];
+					coords[1].x_ = c[6];
+					coords[1].y_ = c[7];
+					has_geo = 1;
+				}
+				break;
+			}
+
+			if (!has_geo)
+			{
+
+				double	nn,ss,ee,ww;
+				zoomer->GetPixelBounds(ww,ss,ee,nn);
+
+				Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+
+				double grow_x = 0.5*(ee-ww)/((double) inf.width);
+				double grow_y = 0.5*(nn-ss)/((double) inf.height);
+
+				double pix_w, pix_h;
+
+				if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+				else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+
+				coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+				coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+			}
+				
+			DestroyBitmap(&inf);
+
 			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
 
 			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
@@ -219,12 +241,12 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
 			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			
+				
 			p4->SetParent(rng,0);
 			p3->SetParent(rng,1);
 			p2->SetParent(rng,2);
 			p1->SetParent(rng,3);
-			
+				
 			rng->SetParent(dpol,0);
 			dpol->SetParent(wrl,0);
 			sel->Select(dpol);
@@ -235,28 +257,32 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			p4->SetLocation(gis_Geo,coords[0]);
 
 
-			string img_path(buf);
+			string img_path(path);
 			WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
 
 			dpol->SetResource(img_path);
 
-			p1->SetName("Corner 1");
-			p1->SetName("Corner 2");
-			p1->SetName("Corner 3");
+			p4->SetName("Corner 1");
+			p3->SetName("Corner 2");
+			p2->SetName("Corner 3");
 			p1->SetName("Corner 4");
 			rng->SetName("Image Boundary");
-			const char * p = buf;
-			const char * n = buf;
+			const char * p = path;
+			const char * n = path;
 			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
-			
+				
 			dpol->SetName(n);
 
 			p1->SetLocation(gis_UV,Point2(0,0));
 			p2->SetLocation(gis_UV,Point2(0,1));
 			p3->SetLocation(gis_UV,Point2(1,1));
 			p4->SetLocation(gis_UV,Point2(1,0));
-
-			wrl->CommitOperation();
+			
+			path = path + strlen(path) + 1;
 		}
+
+		wrl->CommitOperation();
+		
+		free(free_me);
 	}
 }

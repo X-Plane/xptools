@@ -24,6 +24,10 @@
 #include "XGrinderApp.h"
 #include "XWin.h"
 #include "XUtils.h"
+#include "PlatformUtils.h"
+#if APL
+#include "ObjCUtils.h"
+#endif
 
 class	XGrinderWin;
 
@@ -33,10 +37,6 @@ static	XGrinderWin * 	gWin = NULL;
 
 #if IBM
 HINSTANCE	gInstance = NULL;
-#endif
-
-#if APL
-static pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon);
 #endif
 
 class	XGrinderWin : public XWin {
@@ -95,16 +95,8 @@ void XGrinderWin::Update(XWin::XContext ctx)
     this->update(0,0,w,h);
 #endif
 #if APL
-		Rect	bounds;
-
-	::SetRect(&bounds, 0, 0, w, h);
-	::EraseRect(&bounds);
-
-	CFStringRef	cfstr = CFStringCreateWithCString(kCFAllocatorDefault, gCurMessage, kCFStringEncodingMacRoman);
-
-	::DrawThemeTextBox(cfstr, kThemeSystemFont, kThemeStateActive, true, &bounds, teJustLeft, NULL);
-
-	CFRelease(cfstr);
+	erase_a_rect(0,0,w,h);
+	draw_text(0,0,w,h,gCurMessage);
 #endif
 #if IBM
 	RECT	bounds;
@@ -173,19 +165,14 @@ int main(int argc, char* argv[])
 #if APL
 int		main(int argc, char ** argv)
 {
-//#if !defined(__MACH__)
-//	SetMenuBar(GetNewMBar(128));
-//	SIOUXSettings.stubmode = true;
-	AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
-		NewAEEventHandlerUPP(HandleOpenDoc), 0, FALSE);
-//#endif
+	init_ns_stuff();
 
 	gWin = new XGrinderWin();
 	XGrindInit(gTitle);
 	gWin->SetTitle(gTitle.c_str());
-
 	gWin->ForceRefresh();
-	RunApplicationEventLoop();
+
+	run_app();
 
 	return 0;
 }
@@ -227,48 +214,5 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 }
 #endif
 
-#pragma mark -
 
-#if APL
-pascal OSErr HandleOpenDoc(const AppleEvent *theAppleEvent, AppleEvent *reply, long handlerRefcon)
-{
-	string	fpath;
-	vector<string>	files;
-
-
-	AEDescList	inDocList = { 0 };
-	OSErr err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &inDocList);
-	if (err) return err;
-
-	SInt32		numDocs;
-	err = ::AECountItems(&inDocList, &numDocs);
-	if (err) goto puke;
-
-		// Loop through all items in the list
-			// Extract descriptor for the document
-			// Coerce descriptor data into a FSSpec
-			// Tell Program object to open or print document
-
-
-	for (SInt32 i = 1; i <= numDocs; i++) {
-		AEKeyword	theKey;
-		DescType	theType;
-		FSRef		theFileSpec;
-		Size		theSize;
-		err = ::AEGetNthPtr(&inDocList, i, typeFSRef, &theKey, &theType,
-							(Ptr) &theFileSpec, sizeof(FSRef), &theSize);
-		if (err) goto puke;
-		UInt8 buf[2048];
-		if(FSRefMakePath(&theFileSpec, buf, sizeof(buf)) == noErr)
-		files.push_back((const char *) buf);
-	}
-	XGrindFiles(files);
-
-puke:
-	AEDisposeDesc(&inDocList);
-	return noErr;
-}
-
-
-#endif
 

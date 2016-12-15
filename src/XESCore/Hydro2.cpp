@@ -315,7 +315,7 @@ void add_missing_water(
 	gDem[dem_Wizard6] = water_dem;
 
 
-	MapFromDEM(water_dem, 0, 0, water_dem.mWidth, water_dem.mHeight, 2, NO_VALUE, water, NULL, true);
+	MapFromDEM(water_dem, 0, 0, water_dem.mWidth, water_dem.mHeight, 2, 0, 0, NO_VALUE, water, NULL, true);
 	for(Pmwx::Edge_iterator e = water.edges_begin(); e != water.edges_end(); ++e)
 	{
 //		debug_mesh_line(cgal2ben(e->source()->point()),cgal2ben(e->target()->point()),1,1,0,1,1,0);

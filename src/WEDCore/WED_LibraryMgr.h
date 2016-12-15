@@ -48,11 +48,22 @@ enum {
 	pack_Default	= -4			// Return only library items that come from the default scenery packs that x-plane ships with.
 };
 
+enum {
+	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
+	status_Deprecated	= 1,
+	status_Public		= 2
+};
+
 class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
 
 				 WED_LibraryMgr(const string& local_package);
 				~WED_LibraryMgr();
+
+				
+	//Returns "My Package" of .../Custom Scenery/My Package
+	//Combine with WED_PackageMgr::ComputePath to save a file in the package dir
+	string		GetLocalPackage() const;
 
 	string		GetResourceParent(const string& r);
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
@@ -61,6 +72,9 @@ public:
 	
 				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
 	bool		IsResourceDefault(const string& r);
+	bool		IsResourceLocal(const string& r);
+	bool		IsResourceLibrary(const string& r);
+	bool		IsResourceDeprecatedOrPrivate(const string& r);
 	
 	string		CreateLocalResourcePath(const string& r);
 
@@ -75,7 +89,7 @@ public:
 private:
 
 	void			Rescan();
-	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default);
+	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default, int status);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
 	struct	res_info_t {
@@ -84,6 +98,7 @@ private:
 		string		real_path;
 		bool		is_backup;
 		bool		is_default;
+		int			status;
 	};
 
 	struct compare_str_no_case {

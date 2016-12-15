@@ -40,15 +40,16 @@ using namespace std;
 /* A tuple - an N dimensional coordinate.  Real
  * handy because it can be used for any kind of DSF coordinate. */
 
-/* Of course, in practice, variable sized arrays are way too
- * expensive to manipulate, so we're fixed sized.  Right now
- * 7 planes covers the worst case for global - XYZ, norm, ST */
+// This comment has been changed 600 times - the REAL max length is 9:
+// a DSF base mesh overlay triangle with custom UV for both the base
+// (orthophotos) and overlay mask (custom mask elements) requires
+// 9 components:
+// lon, lat, ele
+// normal dx, dz
+// base mesh U,V
+// overlay U,V
  
- // BEN SAYS: BEN IS AN IDIOT.  Max length is 7 for DSF base meshes.
- // Max length is 8 for DSF overlays.  (UV mapped bezier polygon.)
- // Set for 8 for now for WED, revisit how mem-strapped scenery is later.
- 
-#define	MAX_TUPLE_LEN 8
+#define	MAX_TUPLE_LEN 9
 
 class	DSFTuple {
 public:

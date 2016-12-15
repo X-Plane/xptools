@@ -23,6 +23,7 @@
 
 #include "ac_utils.h"
 #include <math.h>
+#include <stdlib.h>
 #include <string>
 using std::string;
 using std::min;

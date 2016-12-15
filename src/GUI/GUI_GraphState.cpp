@@ -26,6 +26,8 @@
 #if APL
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glext.h>
+#elif IBM
+	#include <GL/gl.h>
 #else
 	#include <GL/gl.h>
 	#include <GL/glext.h>

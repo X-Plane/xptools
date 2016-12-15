@@ -559,11 +559,13 @@ proc xplane_light_sync { x container } {
 	pack forget $container.light.dataref
 	pack forget $container.light.smoke_black
 	pack forget $container.light.smoke_white
+	pack forget $container.light.param
 	
-	if { [set xplane_light_type$x] == "rgb"}		 { pack $container.light.rgb }
-	if { [set xplane_light_type$x] == "custom"}		 { pack $container.light.dataref }
-	if { [set xplane_light_type$x] == "black smoke"} { pack $container.light.smoke_black }
-	if { [set xplane_light_type$x] == "white smoke"} { pack $container.light.smoke_white }
+	if { [set xplane_light_type$x] == "rgb"}		      { pack $container.light.rgb } \
+	elseif { [set xplane_light_type$x] == "custom"}	  { pack $container.light.dataref } \
+	elseif { [set xplane_light_type$x] == "black smoke"} { pack $container.light.smoke_black } \
+	elseif { [set xplane_light_type$x] == "white smoke"} { pack $container.light.smoke_white } \
+	else										{ pack $container.light.param }
 }
 
 proc xplane_light_sync_all {} {
@@ -606,6 +608,7 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.none.manip.cmnd2
 	pack forget $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 	pack forget $container.obj.none.manip.xplane_manip_tooltip$idx
+	pack forget $container.obj.none.manip.xplane_manip_wheel$idx
 	
 	if { [set xplane_anim_type$idx] == "no animation"} { pack $container.obj.none }
 	if { [set xplane_anim_type$idx] == "rotate"} { 
@@ -660,12 +663,13 @@ proc xplane_obj_sync { idx container } {
 	if { [set xplane_manip_type$idx] == 2} {
 		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
 		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
-		pack $container.obj.none.manip.xplane_manip_dz$idx $container.obj.none.manip.guess$idx		
+		packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
 		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
 		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
 	}
 	# axis_2d
 	if { [set xplane_manip_type$idx] == 3} {
@@ -690,15 +694,17 @@ proc xplane_obj_sync { idx container } {
 	if { [set xplane_manip_type$idx] == 5} {
 		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
 		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
-		pack $container.obj.none.manip.xplane_manip_dz$idx $container.obj.none.manip.guess$idx
+		packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
 		pack $container.obj.none.manip.cmnd1
 		pack $container.obj.none.manip.cmnd2
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 	}
 	#no-op is 6
-
-
+	if { [set xplane_manip_type$idx] == 6} {
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
 	# dref-push
 	if { [set xplane_manip_type$idx] == 7} {
 		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Up"
@@ -706,6 +712,7 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
 	}
 	# dref-radio
 	if { [set xplane_manip_type$idx] == 8} {
@@ -713,6 +720,7 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
 	}
 	# dref-toggle
 	if { [set xplane_manip_type$idx] == 9} {
@@ -721,6 +729,7 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
 	}
 	# dref-delta
 	if { [set xplane_manip_type$idx] == 10} {
@@ -731,6 +740,7 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
 	}
 	# dref-wrap
 	if { [set xplane_manip_type$idx] == 11} {
@@ -738,6 +748,70 @@ proc xplane_obj_sync { idx container } {
 		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Hold"
 		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min"
 		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
+	}
+	# axis-pix
+	if { [set xplane_manip_type$idx] == 12} {
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Distance (Pixels)"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Step"
+		packtext $container.obj.none.manip.xplane_manip_dz$idx "Exponent"
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
+	}
+	# command-knob
+	if { [set xplane_manip_type$idx] == 13} {
+		pack $container.obj.none.manip.cmnd1
+		pack $container.obj.none.manip.cmnd2
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command-switch-ud
+	if { [set xplane_manip_type$idx] == 14} {
+		pack $container.obj.none.manip.cmnd1
+		pack $container.obj.none.manip.cmnd2
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command-switch-lr
+	if { [set xplane_manip_type$idx] == 15} {
+		pack $container.obj.none.manip.cmnd1
+		pack $container.obj.none.manip.cmnd2
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command-axis-knob
+	if { [set xplane_manip_type$idx] == 16} {
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Click Step"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Hold Step/Sec"
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command-axis-switch-ud
+	if { [set xplane_manip_type$idx] == 17} {
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Click Step"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Hold Step/Sec"
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command-axis-switch-lr
+	if { [set xplane_manip_type$idx] == 18} {
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Click Step"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Hold Step/Sec"
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
@@ -858,6 +932,18 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.light.smoke_white "Puff size:" xplane_light_smoke_size$idx 10
 			pack $container.light.smoke_white
 
+			labelframe $container.light.param -text "Params:"
+				make_labeled_entry $container.light.param "1:" xplane_light_p1$idx 10
+				make_labeled_entry $container.light.param "2:" xplane_light_p2$idx 10
+				make_labeled_entry $container.light.param "3:" xplane_light_p3$idx 10
+				make_labeled_entry $container.light.param "4:" xplane_light_p4$idx 10
+				make_labeled_entry $container.light.param "5:" xplane_light_p5$idx 10
+				make_labeled_entry $container.light.param "6:" xplane_light_p6$idx 10
+				make_labeled_entry $container.light.param "7:" xplane_light_p7$idx 10
+				make_labeled_entry $container.light.param "8:" xplane_light_p8$idx 10
+				make_labeled_entry $container.light.param "9:" xplane_light_p9$idx 10
+			pack $container.light.param
+
 			#-------------------------------------- OBJECTS --------------------------------------
 			
 			label $container.obj.name_label -text "Name:"
@@ -941,6 +1027,7 @@ proc xplane_inspector {} {
 					build_listbox_cmnd $container.obj.none.manip.cmnd1 $container.obj.none.cmnd1_scroll xplane_manip_cmnd1$idx
 					build_listbox_cmnd $container.obj.none.manip.cmnd2 $container.obj.none.cmnd2_scroll xplane_manip_cmnd2$idx
 					make_labeled_entry $container.obj.none.manip "tooltip" xplane_manip_tooltip$idx 50
+					make_labeled_entry $container.obj.none.manip "wheel" xplane_manip_wheel$idx 10
 					
 				pack $container.obj.none.manip
 				
@@ -960,6 +1047,7 @@ proc xplane_inspector {} {
 						pack $container.obj.rotate.xplane_anim_value$x$idx.go -side left -anchor nw
 					}
 				}
+				make_labeled_entry $container.obj.rotate "loop" xplane_anim_loop$idx 10
 				# This would make a dataref text field instead of popup menu
 #				make_labeled_entry $container.obj.rotate "dataref" xplane_anim_dataref$idx 10
 #				menubutton $container.obj.rotate.dref_btn -menu $container.obj.rotate.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
@@ -982,6 +1070,7 @@ proc xplane_inspector {} {
 					}
 				}
 				make_labeled_entry $container.obj.trans "anchor" xplane_anim_keyframe_root$idx 10
+				make_labeled_entry $container.obj.trans "loop" xplane_anim_loop$idx 10
 #				make_labeled_entry $container.obj.trans "dataref" xplane_anim_dataref$idx
 #				menubutton $container.obj.trans.dref_btn -menu $container.obj.trans.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.trans.dref_btn xplane_anim_dataref$idx
@@ -1079,9 +1168,10 @@ if {$IPHONE} {
 		airplane_landing airplane_nav_l airplane_nav_r airplane_nav_t airplane_strobe airplane_beacon ]
 
 } else {
-	set xplane_light_options [list none "black smoke" "white smoke" rgb custom \
+	set xplane_light_options [list none "black smoke" "white smoke" rgb custom param \
 		headlight taillight \
-		airplane_landing airplane_taxi airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
+		____param_lights____ airplane_landing_core airplane_landing_glow airplane_landing_flare airplane_landing_cone airplane_landing_sp airplane_landing_size airplane_landing_flash airplane_taxi_core airplane_taxi_glow airplane_taxi_flare airplane_taxi_cone airplane_taxi_sp airplane_taxi_size airplane_taxi_flash airplane_spot_core airplane_spot_glow airplane_spot_flare airplane_spot_cone airplane_spot_sp airplane_generic_core airplane_generic_glow airplane_generic_flare airplane_generic_cone airplane_generic_sp airplane_generic_size airplane_generic_flash airplane_beacon_rotate airplane_beacon_rotate_sp airplane_beacon_strobe airplane_beacon_strobe_sp airplane_beacon_size airplane_strobe_omni airplane_strobe_dir airplane_strobe_sp airplane_strobe_size airplane_nav_tail_size airplane_nav_left_size airplane_nav_right_size airplane_nav_sp airplane_panel_sp airplane_inst_sp ____end_param_lights____ \
+		airplane_landing airplane_landing1 airplane_landing2 airplane_taxi airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
 		ship_nav_left ship_nav_right ship_mast_obs ship_mast_grn ship_nav_tail ship_mast_powered \
 		carrier_datum carrier_waveoff carrier_meatball1 carrier_meatball2 carrier_meatball3	carrier_meatball4 carrier_meatball5	carrier_mast_strobe	carrier_deck_blue_s	carrier_deck_blue_w \
 		carrier_deck_blue_n	carrier_deck_blue_e	carrier_pitch_lights carrier_foul_line_red carrier_foul_line_white carrier_center_white	carrier_edge_white carrier_thresh_white \
@@ -1096,7 +1186,7 @@ set xplane_layer_group_options [list none terrain beaches shoulders taxiways run
 set xplane_cursor_options [list four_arrows hand button rotate_small rotate_small_left rotate_small_right rotate_medium rotate_medium_left rotate_medium_right rotate_large \
 	rotate_large_left rotate_large_right up_down down up left_right right left  arrow]
 
-set xplane_manip_types [list none panel axis axis_2d command command_axis no_op push radio toggle delta wrap]
+set xplane_manip_types [list none panel axis axis_2d command command_axis no_op push radio toggle delta wrap axis-pix command-knob command-switch-up/down command-switch-left/right dataref-knob dataref-switch-up/down dataref-switch-left/right]
 
 
 trace add variable select_info write xplane_inspector_update

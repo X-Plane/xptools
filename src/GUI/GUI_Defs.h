@@ -213,6 +213,8 @@ struct	GUI_MenuItem_t {
 // over the place.
 typedef	int	GUI_ClipType;
 
+#define gui_ClipType_Invalid -1
+
 // Free function - used to deallocate memory.
 typedef	void			(* GUI_FreeFunc_f)(const void * mem, void * ref);
 

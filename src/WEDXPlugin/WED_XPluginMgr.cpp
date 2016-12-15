@@ -122,18 +122,18 @@ WED_XPluginEntity * WED_XPluginMgr::GetbyId(int inId)
 
 string  WED_XPluginMgr::GetPackagePath()
 {
-	if (mPackage=="unknown") return mPackage;
+    if (mPackage=="unknown") return mPackage;
 
-    char DirPath[512];
+    char DirPath[2048];
     char PS[1];
 
     strcpy(PS,XPLMGetDirectorySeparator());
 
     XPLMGetSystemPath(DirPath);
 
-    sprintf(DirPath,"%s%s%s%s",SCNFOLDERNAME,PS,mPackage.c_str(),PS);
-
-    return DirPath ;
+    string pkgpath = DirPath + string(SCNFOLDERNAME) + PS + mPackage + PS ;
+    
+    return pkgpath ;
 }
 
 void WED_XPluginMgr::Sync()

@@ -36,7 +36,7 @@ WED_ATCFlow::WED_ATCFlow(WED_Archive * a, int i) :
 	WED_Thing(a,i),
 	icao(this,"METAR ICAO",						SQL_Name("WED_atcflow","icao"),			XML_Name("atc_flow","icao"),		""),
 	cld_min_ft(this,"Minimum Ceiling (ft msl)",	SQL_Name("WED_atcflow","cld_min"),		XML_Name("atc_flow","cld_min"),		0, 4, 0),
-	vis_min_sm(this,"Minimum Visibility (sm)",	SQL_Name("WED_atcflow","vis_min"),		XML_Name("atc_flow","vis_min"),		0, 2),
+	vis_min_sm(this,"Minimum Visibility (sm)",	SQL_Name("WED_atcflow","vis_min"),		XML_Name("atc_flow","vis_min"),		0, 2, 1),
 //	wnd_spd_max(this,"Wind Speed Maximum",		SQL_Name("WED_atcflow","wnd_spd_max"),	XML_Name("atc_flow","wnd_spd_max"),	0, 3),
 //	wnd_dir_min(this,"Wind Direction Minimum",	SQL_Name("WED_atcflow","wnd_dir_min"),	XML_Name("atc_flow","wnd_dir_min"),	0, 3),
 //	wnd_dir_max(this,"Wind Direction Maximum",	SQL_Name("WED_atcflow","wnd_dir_max"),	XML_Name("atc_flow","wnd_dir_max"),	360, 3),
@@ -95,12 +95,12 @@ void	WED_ATCFlow::Export(		 AptFlow_t& info) const
 	info.pattern_runway = ENUM_Desc(pattern_rwy.value);
 }
 
-void	WED_ATCFlow::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void	WED_ATCFlow::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
 	if(n == PropertyItemNumber(&pattern_rwy))
 	{
-		WED_Airport * airport = WED_GetParentAirport(this);
+		const WED_Airport * airport = WED_GetParentAirport(this);
 		if(airport)
 		{
 			PropertyDict_t full;

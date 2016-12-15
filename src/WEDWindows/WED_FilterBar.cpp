@@ -100,6 +100,7 @@ void	WED_FilterBar::GetCellContent(
 	if(cell_y == 1 || mHavePacks == false)
 	{
 		the_content.content_type=gui_Cell_EditText;
+		the_content.can_delete = false;
 		the_content.can_edit=(cell_x==1);
 		the_content.can_disclose=0;
 		the_content.can_select=0;
@@ -122,6 +123,7 @@ void	WED_FilterBar::GetCellContent(
 		if(cell_x == 0)
 		{
 			the_content.content_type=gui_Cell_EditText;
+			the_content.can_delete=false;
 			the_content.can_edit=0;
 			the_content.can_disclose=0;
 			the_content.can_select=0;
@@ -138,6 +140,7 @@ void	WED_FilterBar::GetCellContent(
 		if(cell_x == 1)
 		{
 			the_content.content_type=gui_Cell_Enum;
+			the_content.can_delete=false;
 			the_content.can_edit=1;
 			the_content.can_disclose=0;
 			the_content.can_select=0;
@@ -194,6 +197,13 @@ void	WED_FilterBar::GetEnumDictionary(
 	}
 
 }
+void	WED_FilterBar::ClearFilter()
+{
+	mTextTable.KillEditing(false);
+	mText.clear();
+	BroadcastMessage(mMsg, mParam);
+	Refresh();
+}
 
 void	WED_FilterBar::AcceptEdit(
 						int							cell_x,
@@ -208,7 +218,7 @@ void	WED_FilterBar::AcceptEdit(
 
 		BroadcastMessage(mMsg, mParam);
 	}
-	if(cell_x == 1 && cell_y == 1 || mHavePacks == false)
+	if((cell_x == 1 && cell_y == 1) || mHavePacks == false)
 	{
 		if(mText != the_content.text_val)
 		{

@@ -22,9 +22,6 @@
  */
 
 #include "GUI_Help.h"
-#if APL
-//	#include <Carbon/Carbon.h>
-#endif
 #if LIN
 #include <QtGui/QDesktopServices>
 #include <QtCore/QUrl>
@@ -36,14 +33,6 @@ void	GUI_LaunchURL(const char * url)
 		string cmd = "open \"";
 		cmd += url;
 		cmd += "\"";
-/*		ICInstance inst;
-		OSStatus err=ICStart(&inst,0x3F3F3F3F);	// Use your creator code if you have one!
-		if(err==noErr){
-			long startSel	=0			;
-			long endSel		=strlen(url);
-			err=ICLaunchURL(inst,"\p",url,endSel,&startSel,&endSel);
-			(void)ICStop(inst);}
-*/
 		system(cmd.c_str());
 	#endif
 	#if IBM

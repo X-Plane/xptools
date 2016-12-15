@@ -27,13 +27,20 @@
 #include "AssertUtils.h"
 #include "GUI_Clipboard.h"
 #include "GUI_Unicode.h"
+#include "ObjCUtils.h"
+
+#if APL
+#define __DEBUGGING__
+#include <Carbon/Carbon.h>		// we use this for vkeys/low mem accessors to keyboard
+#endif
+
 static set<GUI_Window *>	sWindows;
 
 #if APL
-inline int Client2OGL_X(int x, WindowRef w) { return x; }
-inline int Client2OGL_Y(int y, WindowRef w) { Rect r; GetWindowBounds(w,kWindowContentRgn,&r); return r.bottom-r.top-y; }
-inline int OGL2Client_X(int x, WindowRef w) { return x; }
-inline int OGL2Client_Y(int y, WindowRef w) { Rect c; GetWindowBounds(w,kWindowContentRgn,&c); return c.bottom-c.top-y; }
+inline int Client2OGL_X(int x, void* w) { return x; }
+inline int Client2OGL_Y(int y, void* w) { int h = get_ns_window_height(w); return h-y; }
+inline int OGL2Client_X(int x, void* w) { return x; }
+inline int OGL2Client_Y(int y, void* w) { int h = get_ns_window_height(w); return h-y; }
 #endif
 
 #if IBM
@@ -58,32 +65,11 @@ static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSour
 
 #define mWindow 0
 
+inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
+inline int GUI_Window::Client2OGL_Y(int y, void* w) { return (this->size().height() - y ); }
+inline int GUI_Window::OGL2Client_X(int x, void* w) { return x; }
+inline int GUI_Window::OGL2Client_Y(int y, void* w) { return (this->size().height() - y ); }
 
-inline int GUI_Window::Client2OGL_X(int x, void* w)
-{
-	return x;
-}
-
-inline int GUI_Window::Client2OGL_Y(int y, void* w)
-{
-	int ry;
-	int rx;
-	XWin::GetBounds(&rx, &ry);
-	return (ry-y);
-}
-
-inline int GUI_Window::OGL2Client_X(int x, void* w)
-{
-	return x;
-}
-
-inline int GUI_Window::OGL2Client_Y(int y, void* w)
-{
-	int ry;
-	int rx;
-	XWin::GetBounds(&rx, &ry);
-	return (ry-y);
-}
 //---------------------------------------------------------------------------------------------------------------------------------------
 // LIN DND
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -386,157 +372,88 @@ HRESULT GUI_DropSource::GiveFeedback(DWORD dwEffect)
 
 #if APL
 
-// These are the Mac drag-tracking handlers.  Unlike Windows, we don't need a separate "object" to do this.  (On Windows we could have
-// derived our window from an IDropTarget, but whatever).  We simply shunt our calls back to our window, using GUI_DragMgr_Adapter
-// to convert drag-refs to something we understand.
-
-pascal OSErr	GUI_Window::TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag)
+int		GUI_Window::AdvancedDragEntered(void * ns_dragging_info)
 {
-	GUI_Window *	win = (GUI_Window *) ref;
-
-	Point	p;
-	GetDragMouse(theDrag, &p, NULL);
-	SetPortWindowPort(win->mWindow);
-	GlobalToLocal(&p);
-	Rect	bounds;
-	::GetWindowBounds(theWindow, kWindowContentRgn, &bounds);
-	p.v = (bounds.bottom - bounds.top) - p.v;
-
-	DragActions	allowed;
-	GetDragAllowableActions(theDrag, &allowed);
-
-	GUI_DragMgr_Adapter	adapter(theDrag);
-
+	GUI_DragMgr_Adapter adapter(ns_dragging_info);
+	int x, y;
+	GUI_DragOperation allowed = OP_Mac2GUI(get_drag_operations(ns_dragging_info));
 	GUI_DragOperation recommended = allowed;
-	if ((allowed & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
+	get_drag_location(ns_dragging_info, &x, &y);
+
+	if ((recommended & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
 	{
-		SInt16 modifiers;
-		if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
-		if (modifiers & optionKey)
+		if(drag_has_option_key(ns_dragging_info))
 			recommended = gui_Drag_Copy;
 	}
-
-	switch(message) {
-	case kDragTrackingEnterWindow:
-		allowed = OP_GUI2Mac(win->InternalDragEnter(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
-		win->mInDrag = 1;
-		win->SetTimerInterval(0.05);
-		win->mLastDragX = p.h;
-		win->mLastDragY = p.v;
-		SetDragDropAction(theDrag, allowed);
-		// If we are dragging to ourselve, our event pump is blocked in the call to do-drag.  Flush now to
-		// force to the screen anything drawn.
-		win->UpdateNow();
-		if (allowed == kDragActionNothing)	return dragNotAcceptedErr;
-		else								return noErr;
-
-	case kDragTrackingInWindow:
-		allowed = OP_GUI2Mac(win->InternalDragOver(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
-		win->mLastDragX = p.h;
-		win->mLastDragY = p.v;
-		SetDragDropAction(theDrag, allowed);
-		win->UpdateNow();
-		if (allowed == kDragActionNothing)	return dragNotAcceptedErr;
-		else								return noErr;
-
- 	case kDragTrackingLeaveWindow:
-		win->mInDrag = 0;
-		win->SetTimerInterval(0.0);
-		win->InternalDragLeave();
-		win->UpdateNow();
- 		return noErr;
-	}
-	return noErr;
+	
+	allowed = InternalDragEnter(x, y, &adapter, allowed, recommended);
+	mInDrag = 1;
+	SetTimerInterval(0.05);
+	mLastDragX = x;
+	mLastDragY = y;
+	
+	ForceRefresh();
+	
+	return OP_GUI2Mac(allowed);
 }
-
-pascal OSErr	GUI_Window::ReceiveHandler(WindowRef theWindow, void * ref, DragRef theDrag)
+	
+int		GUI_Window::AdvancedDragUpdated(void * ns_dragging_info)
 {
-	GUI_Window *	win = (GUI_Window *) ref;
-
-	Point	p;
-	GetDragMouse(theDrag, &p, NULL);
-	SetPortWindowPort(win->mWindow);
-	GlobalToLocal(&p);
-	Rect	bounds;
-	::GetWindowBounds(theWindow, kWindowContentRgn, &bounds);
-	p.v = (bounds.bottom - bounds.top) - p.v;
-
-	DragActions	allowed;
-	GetDragAllowableActions(theDrag, &allowed);
-
-	GUI_DragMgr_Adapter	adapter(theDrag);
-
+	GUI_DragMgr_Adapter adapter(ns_dragging_info);
+	int x, y;
+	GUI_DragOperation allowed = OP_Mac2GUI(get_drag_operations(ns_dragging_info));
 	GUI_DragOperation recommended = allowed;
-	if ((allowed & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
+	get_drag_location(ns_dragging_info, &x, &y);
+
+	if ((recommended & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
 	{
-		SInt16 modifiers;
-		if (GetDragModifiers(theDrag, &modifiers, NULL, NULL) == noErr)
-		if (modifiers & optionKey)
+		if(drag_has_option_key(ns_dragging_info))
 			recommended = gui_Drag_Copy;
 	}
-
-	allowed = OP_GUI2Mac(win->InternalDrop(p.h, p.v, &adapter, OP_Mac2GUI(allowed), recommended));
-	SetDragDropAction(theDrag, allowed);
-	if (allowed == kDragActionNothing)	return dragNotAcceptedErr;
-	else								return noErr;
+	
+	allowed = InternalDragOver(x, y, &adapter, allowed, recommended);
+	mLastDragX = x;
+	mLastDragY = y;
+	
+	ForceRefresh();
+	
+	return OP_GUI2Mac(allowed);
 }
 
-
-DragTrackingHandlerUPP	GUI_Window::sTrackingHandlerUPP = NewDragTrackingHandlerUPP(GUI_Window::TrackingHandler);
-DragReceiveHandlerUPP	GUI_Window::sReceiveHandlerUPP = NewDragReceiveHandlerUPP(GUI_Window::ReceiveHandler);
-
-#endif
-
-//---------------------------------------------------------------------------------------------------------------------------------------
-// MAC TOOL TIPS
-//---------------------------------------------------------------------------------------------------------------------------------------
-
-#if APL
-
-pascal OSStatus	GUI_Window::TooltipCB(WindowRef inWindow, Point inGlobalMouse, HMContentRequest inRequest, HMContentProvidedType *outContentProvided, HMHelpContentPtr ioHelpContent)
+void	GUI_Window::AdvancedDragExited(void * ns_dragging_info)
 {
-	GUI_Window * me = (GUI_Window * ) GetWRefCon(inWindow);
-	int has_tip;
-	string tip_str;
-	int tip_bounds[4];
-
-	switch(inRequest) {
-	case kHMSupplyContent:
-        ioHelpContent->version = kMacHelpVersion;
-        ioHelpContent->tagSide = kHMDefaultSide;// 2
-
-		SetPortWindowPort(inWindow);
-		GlobalToLocal(&inGlobalMouse);
-		has_tip = me->InternalGetHelpTip(
-			Client2OGL_X(inGlobalMouse.h, inWindow),
-			Client2OGL_Y(inGlobalMouse.v, inWindow),
-			tip_bounds, tip_str);
-
-		if (has_tip && !tip_str.empty())
-		{
-			ioHelpContent->absHotRect.top    = OGL2Client_Y(tip_bounds[3],inWindow);
-			ioHelpContent->absHotRect.bottom = OGL2Client_Y(tip_bounds[1],inWindow);
-			ioHelpContent->absHotRect.right  = OGL2Client_X(tip_bounds[2],inWindow);
-			ioHelpContent->absHotRect.left   = OGL2Client_X(tip_bounds[0],inWindow);
-			LocalToGlobal((Point*)&ioHelpContent->absHotRect.top);
-			LocalToGlobal((Point*)&ioHelpContent->absHotRect.bottom);
-			ioHelpContent->content[kHMMinimumContentIndex].contentType = kHMCFStringContent;
-			ioHelpContent->content[kHMMinimumContentIndex].u.tagCFString = CFStringCreateWithCString(kCFAllocatorDefault, tip_str.c_str(),kCFStringEncodingMacRoman);
-			ioHelpContent->content[kHMMaximumContentIndex].contentType = kHMCFStringContent;
-			ioHelpContent->content[kHMMaximumContentIndex].u.tagCFString = CFStringCreateWithCString(kCFAllocatorDefault, tip_str.c_str(),kCFStringEncodingMacRoman);
-		}
-        *outContentProvided = has_tip ? kHMContentProvided : kHMContentNotProvidedDontPropagate;
-		break;
-	case kHMDisposeContent:
-		break;
-	}
-	return noErr;
+	mInDrag = 0;
+	SetTimerInterval(0.0);
+	InternalDragLeave();
+	ForceRefresh();
 }
 
-HMWindowContentUPP	GUI_Window::sTooltipUPP = NewHMWindowContentUPP(TooltipCB);
+int		GUI_Window::AdvancedPerformDrop(void * ns_dragging_info)
+{
+	GUI_DragMgr_Adapter adapter(ns_dragging_info);
+	int x, y;
+	GUI_DragOperation allowed = OP_Mac2GUI(get_drag_operations(ns_dragging_info));
+	GUI_DragOperation recommended = allowed;
+	get_drag_location(ns_dragging_info, &x, &y);
 
+	if ((recommended & (gui_Drag_Move | gui_Drag_Copy)) == (gui_Drag_Move | gui_Drag_Copy))
+	{
+		if(drag_has_option_key(ns_dragging_info))
+			recommended = gui_Drag_Copy;
+	}
+	
+	allowed = InternalDrop(x, y, &adapter, allowed, recommended);
+	mLastDragX = x;
+	mLastDragY = y;
+	
+	mInDrag = 0;
+	SetTimerInterval(0.0);
+	InternalDragLeave();
+	ForceRefresh();
+	
+	return OP_GUI2Mac(allowed);
+}
 #endif
-
 
 
 //---------------------------------------------------------------------------------------------------------------------------------------
@@ -566,7 +483,7 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 }
 #endif
 
-GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
+GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
 	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
@@ -611,24 +528,13 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
-	#if APL
-
-		InstallTrackingHandler(sTrackingHandlerUPP, mWindow, reinterpret_cast<void *>(this));
-		InstallReceiveHandler(sReceiveHandlerUPP, mWindow, reinterpret_cast<void *>(this));
-
-		HMInstallWindowContentCallback(mWindow,sTooltipUPP);
-
-		SetWRefCon(mWindow, (long) this);
-
-	#endif
 	#if LIN
 		this->setMenuBar(gApplication->getqmenu());
+		this->Resize(inBounds[2]-inBounds[0],inBounds[3]-inBounds[1]);
 		QApplication::setActiveWindow(this);
 		setFocusPolicy(Qt::StrongFocus);
 		setAcceptDrops(true);
-		raise();
 		setFocus();
-		activateWindow();
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
@@ -640,7 +546,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, int inBounds[4], 
 	mClearColorRGBA[1] = 1.0;
 	mClearColorRGBA[2] = 1.0;
 	mClearColorRGBA[3] = 1.0;
-	mClearDepth = false;;
+	mClearDepth = false;
 	mClearColor = true;
 	mDesc = inTitle;
 	mState.Init();
@@ -667,23 +573,21 @@ GUI_Window::~GUI_Window()
 //		SetWindowLongPtr(mWindow,GWLP_WNDPROC,(LONG_PTR) mBaseProc);
 		mDND->Release();
 	#endif
-	#if APL
-		RemoveTrackingHandler(sTrackingHandlerUPP, mWindow);
-		RemoveReceiveHandler (sReceiveHandlerUPP , mWindow);
-	#endif
 	sWindows.erase(this);
 }
 
 void			GUI_Window::ClickDown(int inX, int inY, int inButton)
 {
+	DebugAssert(mMouseFocusPane[inButton] == NULL);
 	this->GetRootForCommander()->BeginDefer();
 	mMouseFocusPane[inButton] = InternalMouseDown(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow), inButton);
 
 //		Ben says - we should not need to poll on mouse clickig...turn off for now
 //					until we find out what the hell needed this!
+//		(This was probably to do auto-scroll on tracking handlers without having to wiggle the mouse.  Do we
+//		have ANY cases in WED where we can see this?!
 //	if (mMouseFocusPane)
 //		SetTimerInterval(0.1);
-
 }
 
 void			GUI_Window::ClickUp(int inX, int inY, int inButton)
@@ -718,18 +622,18 @@ void		GUI_Window::ClickMove(int inX, int inY)
 		// Windows handles this separately...to avoid thrash with WM_SETCURSOR
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 		switch(cursor) {
-		case gui_Cursor_Resize_H:	SetThemeCursor(kThemeResizeLeftRightCursor);	break;
-		case gui_Cursor_Resize_V:	SetThemeCursor(kThemeResizeUpDownCursor);		break;
+		case gui_Cursor_Resize_H:	set_left_right_cursor();	break;
+		case gui_Cursor_Resize_V:	set_up_down_cursor();		break;
 		case gui_Cursor_None:
 		case gui_Cursor_Arrow:
-		default:					SetThemeCursor(kThemeArrowCursor);	break;
+		default:					set_arrow_cursor();	break;
 		}
 	#endif
 	#if LIN
 		int cursor = this->InternalGetCursor(Client2OGL_X(inX, mWindow), Client2OGL_Y(inY, mWindow));
 		switch(cursor) {
-		case gui_Cursor_Resize_H:	this->setCursor(Qt::SplitHCursor);	break;
-		case gui_Cursor_Resize_V:	this->setCursor(Qt::SplitVCursor);	break;
+		case gui_Cursor_Resize_H:	this->setCursor(Qt::SizeHorCursor);	break;
+		case gui_Cursor_Resize_V:	this->setCursor(Qt::SizeVerCursor);	break;
 		case gui_Cursor_None:
 		case gui_Cursor_Arrow:
 		default:					this->setCursor(Qt::ArrowCursor);	break;
@@ -756,6 +660,11 @@ void			GUI_Window::GLReshaped(int inWidth, int inHeight)
 					ti.rect.left = cl.left;
 					ti.rect.right= cl.right;
 					SendMessage(mToolTip, TTM_NEWTOOLRECT, 0, (LPARAM) &ti);
+
+	// Windoze: avoid shrinking and changing side-bar position when minimized.
+	// If there's a better test for this we should change it!
+	if(inWidth == 0 && inHeight == 0)
+		return;
 
 #endif
 
@@ -860,15 +769,15 @@ const char	gui_Key_Map [256] = {
 /* 18 */	GUI_VK_EQUAL,		GUI_VK_9,			GUI_VK_7,			GUI_VK_MINUS,		GUI_VK_8,			GUI_VK_0,			GUI_VK_RBRACE,		GUI_VK_O,
 /* 20 */	GUI_VK_U,			GUI_VK_LBRACE,		GUI_VK_I,			GUI_VK_P,			GUI_VK_RETURN,		GUI_VK_L,			GUI_VK_J,			GUI_VK_QUOTE,
 /* 28 */	GUI_VK_K,			GUI_VK_SEMICOLON,	GUI_VK_BACKSLASH,	GUI_VK_COMMA,		GUI_VK_SLASH,		GUI_VK_N,			GUI_VK_M,			GUI_VK_PERIOD,
-/* 30 */	GUI_VK_TAB,		GUI_VK_SPACE,		GUI_VK_BACKQUOTE,	GUI_VK_DELETE,		GUI_VK_ENTER,		GUI_VK_ESCAPE,		0,					0,
+/* 30 */	GUI_VK_TAB,			GUI_VK_SPACE,		GUI_VK_BACKQUOTE,	GUI_VK_BACK,		GUI_VK_ENTER,		GUI_VK_ESCAPE,		0,					0,
 /* 38 */	0,					0,					0,					0,					0,					0,					0,					0,
-/* 40 */	0,					GUI_VK_DECIMAL,	0,					GUI_VK_MULTIPLY,	0,					GUI_VK_ADD,		0,					GUI_VK_CLEAR,
+/* 40 */	0,					GUI_VK_DECIMAL,		0,					GUI_VK_MULTIPLY,	0,					GUI_VK_ADD,			0,					GUI_VK_CLEAR,
 /* 48 */	0,					0,					0,					GUI_VK_DIVIDE,		GUI_VK_NUMPAD_ENT,	0,					GUI_VK_SUBTRACT,	0,
-/* 50 */	0,					GUI_VK_NUMPAD_EQ,	GUI_VK_NUMPAD0,	GUI_VK_NUMPAD1,	GUI_VK_NUMPAD2,	GUI_VK_NUMPAD3,	GUI_VK_NUMPAD4,	GUI_VK_NUMPAD5,
-/* 58 */	GUI_VK_NUMPAD6,	GUI_VK_NUMPAD7,	0,					GUI_VK_NUMPAD8,	GUI_VK_NUMPAD9,	0,					0,					0,
+/* 50 */	0,					GUI_VK_NUMPAD_EQ,	GUI_VK_NUMPAD0,		GUI_VK_NUMPAD1,		GUI_VK_NUMPAD2,		GUI_VK_NUMPAD3,		GUI_VK_NUMPAD4,		GUI_VK_NUMPAD5,
+/* 58 */	GUI_VK_NUMPAD6,		GUI_VK_NUMPAD7,		0,					GUI_VK_NUMPAD8,		GUI_VK_NUMPAD9,		0,					0,					0,
 /* 60 */	GUI_VK_F5,			GUI_VK_F6,			GUI_VK_F7,			GUI_VK_F3,			GUI_VK_F8,			GUI_VK_F9,			0,					GUI_VK_F11	,
-/* 68 */	0,					0,					0,					0,					0,					GUI_VK_F10,		0,					GUI_VK_F12,
-/* 70 */	0,					0,					0,					GUI_VK_HOME,		GUI_VK_PRIOR,		0,					GUI_VK_F4,			GUI_VK_END,
+/* 68 */	0,					0,					0,					0,					0,					GUI_VK_F10,			0,					GUI_VK_F12,
+/* 70 */	0,					0,					0,					GUI_VK_HOME,		GUI_VK_PRIOR,		GUI_VK_DELETE,		GUI_VK_F4,			GUI_VK_END,
 /* 78 */	GUI_VK_F2,			GUI_VK_NEXT,		GUI_VK_F1,			GUI_VK_LEFT,		GUI_VK_RIGHT,		GUI_VK_DOWN,		GUI_VK_UP,			0
 };
 
@@ -932,30 +841,40 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 #endif
 
 #if APL
+	enum {
+    NSAlphaShiftKeyMask         = 1 << 16,
+    NSShiftKeyMask              = 1 << 17,
+    NSControlKeyMask            = 1 << 18,
+    NSAlternateKeyMask          = 1 << 19,
+    NSCommandKeyMask            = 1 << 20,
+    NSNumericPadKeyMask         = 1 << 21,
+    NSHelpKeyMask               = 1 << 22,
+    NSFunctionKeyMask           = 1 << 23,
+    NSKeyDown                   = 10,
+    NSKeyUp                     = 11,
+	};
 
-	charCode = inParam1 & charCodeMask;
-	virtualCode = (inParam1 & keyCodeMask) >> 8L;
-	if (inParam2 & shiftKey)
+	charCode = inParam1 & 0xFF;
+	virtualCode = (inParam1 & 0xFF00) >> 8L;
+	if (inParam2 & NSShiftKeyMask)
 		flags |= gui_ShiftFlag;
-	if (inParam2 & cmdKey)
+	if (inParam2 & NSCommandKeyMask)
 		flags |= gui_ControlFlag;
-	if (inParam2 & optionKey)
+	if (inParam2 & NSAlternateKeyMask)
 		flags |= gui_OptionAltFlag;
-	if (inMsg == keyDown)
+	if (inMsg == NSKeyDown)
 		flags |= gui_DownFlag;
-	if (inMsg == keyUp)
+	if (inMsg == NSKeyUp)
 		flags |= gui_UpFlag;
 
-	KeyboardLayoutRef			kr;
-	const void *				KCHR=NULL;																	// First we'll try for a uchr (unicode keyboard layout)
-	const UCKeyboardLayout *	uchr=NULL;																	// then fall back to KCHR (script mgr layout) if we have no uhcr.
-																											// 10.5 has all uchr, but 10.4 has a mix.  There should always be
-	if(KLGetCurrentKeyboardLayout(&kr)==0)																	// one or the other.
-	if(KLGetKeyboardLayoutProperty(kr,kKLuchrData,(const void **) &uchr)!= noErr || uchr == NULL)
-	   KLGetKeyboardLayoutProperty(kr,kKLKCHRData,&KCHR);
+	TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardLayoutInputSource();
+	CFDataRef uchr_data = (CFDataRef)TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData);
+	const UCKeyboardLayout *uchr = uchr_data ? (const UCKeyboardLayout*)CFDataGetBytePtr(uchr_data) : NULL;
+	CFRelease(currentKeyboard);
 
-	int scan_code = ((inParam1 & keyCodeMask) >> 8) & 0xFF	;			// The vkey and the scan code are the same on the Mac.
-	int os_vkey =   ((inParam1 & keyCodeMask) >> 8) & 0xFF	;			// So use for both.  Vkey codes are relatively low numbres.
+
+	int scan_code = ((inParam1 & 0xFF00) >> 8) & 0xFF	;			// The vkey and the scan code are the same on the Mac.
+	int os_vkey =   ((inParam1 & 0xFF00) >> 8) & 0xFF	;			// So use for both.  Vkey codes are relatively low numbres.
 
 	if(uchr)
 	{
@@ -972,21 +891,6 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 
 //		result = UCKeyTranslate(uchr, os_vkey, kUCKeyActionDisplay, shiftKey >> 8, LMGetKbdType(), kUCKeyTranslateNoDeadKeysMask, &dead_upper, 2, &ct, buf);
 //		if (result == noErr && ct > 0) uni_upper = buf[0];
-	}
-	else if (KCHR)
-	{
-		static UInt32	dead_state = 0;
-		UInt32 dead_lower = 0, dead_upper = 0;		// Why not static?  Don't accume daed state for up-down sniffing.  For vkeys we want the same value every time.
-		int result;
-
-		result = KeyTranslate(KCHR,(os_vkey & 0x7F) | (inMsg == keyUp ? 0x80 : 0) | (inParam2 & 0xFF00), &dead_state) & 0xFF;
-		if(result > 0 && result < 0x100) charCode = script_to_utf32(result);
-
-//		result = KeyTranslate(KCHR,(os_vkey & 0x7F) | 0, &dead_lower) & 0xFF;
-//		if(result > 0 && result < 0x100) uni_lower = script_to_utf32(result);
-
-//		result = KeyTranslate(KCHR,(os_vkey & 0x7F) | shiftKey, &dead_upper) & 0xFF;
-//		if(result > 0 && result < 0x100) uni_upper = script_to_utf32(result);
 	}
 	else
 	{
@@ -1066,7 +970,7 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	virtualCode = gui_Key_Map[virtualCode];
 #endif
 
-#if IBM
+#if IBM || APL
 	switch (virtualCode)
 	{
 		case GUI_VK_RETURN:	charCode = GUI_KEY_RETURN;	break;
@@ -1128,6 +1032,9 @@ int			GUI_Window::KeyPressed(uint32_t inKey, long inMsg, long inParam1, long inP
 	  {
 		case Qt::Key_Enter:
 		case Qt::Key_Return:	virtualCode = GUI_VK_RETURN;	break;
+		case Qt::Key_Escape:	virtualCode = GUI_VK_ESCAPE;	break;
+		case Qt::Key_Tab:
+		case Qt::Key_Backtab:	virtualCode = GUI_VK_TAB;	break;						
 		case Qt::Key_PageUp:	virtualCode = GUI_VK_PRIOR;	break;
 		case Qt::Key_PageDown:	virtualCode = GUI_VK_NEXT;	break;
 		case Qt::Key_End:	virtualCode = GUI_VK_END;	break;
@@ -1164,7 +1071,7 @@ void		GUI_Window::Timer(void)
 	for(int btn=0;btn<BUTTON_DIM;++btn)
 	if (mMouseFocusPane[btn])
 	{
-		XWinGL::GetMouseLoc(&x, &y);
+		XWinGL::GetMouseLoc(&x,&y);
 		mMouseFocusPane[btn]->MouseDrag(Client2OGL_X(x, mWindow), Client2OGL_Y(y, mWindow), btn);
 	}
 
@@ -1209,21 +1116,8 @@ int		GUI_Window::PopupMenuDynamic(const GUI_MenuItem_t items[], int x, int y, in
 bool				GUI_Window::IsDragClick(int x, int y, int button)
 {
 	#if APL
-
-		// Ben says: we're about to block waiting for a drag.  But any immediate pre-block feedback isn't on screen
-		// because we haven't processed events (and are not about to).  So...draw now.
-		UpdateNow();
-
-		Point	p;
-		int bounds[4];
-
-		SetPortWindowPort(mWindow);
-		GUI_Pane::GetBounds(bounds);
-
-		p.h = x;
-		p.v = (bounds[3] - bounds[1]) - y;
-		LocalToGlobal(&p);
-		return WaitMouseMoved(p);
+	
+		return run_event_tracking_until_move_or_up(button);
 
 	#elif IBM
 		POINT p;
@@ -1276,66 +1170,24 @@ GUI_DragOperation	GUI_Window::DoDragAndDrop(
 							GUI_GetData_f			fetch_func,
 							void *					ref)
 {
+	DebugAssert(fetch_func == NULL);
 	#if APL
-
-		int bounds[4];
-		SetPortWindowPort(mWindow);
-		GUI_Pane::GetBounds(bounds);
-
-		Point	mac_click;
-		mac_click.h = x;
-		mac_click.v = (bounds[3] - bounds[1]) - y;
-		LocalToGlobal(&mac_click);
-
-		Rect	the_item;
-		the_item.left = where[0];
-		the_item.right = where[2];
-		the_item.bottom = (bounds[3] - bounds[1]) - where[1];
-		the_item.top = (bounds[3] - bounds[1]) - where[3];
-		LocalToGlobal((Point *) &the_item.top);
-		LocalToGlobal((Point *) &the_item.bottom);
-
-			EventRecord	fake;
-
-		fake.what = mouseDown;
-		fake.when = TickCount();
-		fake.where = mac_click;
-		fake.modifiers = GetCurrentKeyModifiers() & 0xFFFF;
-
-			DragRef		drag;
-
-			NewDrag(&drag);
-
-			RgnHandle rgn = NewRgn();
-			RectRgn(rgn, &the_item);
-
-		SetDragAllowableActions(drag, OP_GUI2Mac(operations),1);
-		SetDragAllowableActions(drag, OP_GUI2Mac(operations),0);
-
-		GUI_LoadSimpleDrag(drag, type_count, inTypes, sizes, ptrs, fetch_func, ref);
-
-		DragItemRef	item_ref;
-		GetDragItemReferenceNumber(drag, 1, &item_ref);
-		SetDragItemBounds(drag, item_ref, &the_item);
-
-
-		int success = TrackDrag(drag, &fake, rgn) == noErr;
-
-		DisposeRgn(rgn);
-
-		if (success)
+	
+		vector<string> types;
+		GUI_GetMacNativeDragTypeList(types);
+		vector<const char *> raw(types.size());
+		for(int i = 0; i < types.size(); ++i)
 		{
-			DragActions act;
-			GetDragDropAction(drag, &act);
-			GUI_DragOperation result = OP_Mac2GUI(act);
-			DisposeDrag(drag);
-			return result;
-		} else {
-
-			DisposeDrag(drag);
-			return gui_Drag_None;
-
+			raw[i] = types[i].c_str();
 		}
+	
+		register_drag_types_for_window(mWindow, raw.size(), &raw[0]);
+	
+		void * item = GUI_LoadOneSimpleDrag(type_count, inTypes, sizes, ptrs, where);
+
+		DoMacDragAndDrop(1, &item, OP_GUI2Mac(operations));
+		
+		return gui_Drag_None;
 
 	#elif IBM
 		GUI_DropSource	* drop_source = new GUI_DropSource;
@@ -1421,6 +1273,9 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 			return 0;
 		case WM_DESTROY:
 			// Default behavior of xwin is quit-on-close - this stops that.
+			return 0;
+		case WM_CLOSE:
+			delete me;
 			return 0;
 		case WM_COMMAND:
 			if(LOWORD(wParam))
@@ -1536,5 +1391,32 @@ void GUI_Window::EnableMenusWin(void)
 }
 
 
+
+#endif
+
+#if APL
+
+void				GUI_Window::GotCommandHack(int command)
+{
+	this->DispatchHandleCommand(command);
+}
+
+
+int			GUI_Window::CalcHelpTip(int x, int y, int bounds[4], string& msg)
+{
+	x = Client2OGL_X(x, mWindow);
+	y = Client2OGL_Y(y, mWindow);
+	if (this->InternalGetHelpTip(x, y, bounds, msg))
+	{
+		bounds[0] = OGL2Client_X(bounds[0], mWindow);
+		bounds[1] = OGL2Client_Y(bounds[1], mWindow);
+		bounds[2] = OGL2Client_X(bounds[2], mWindow);
+		bounds[3] = OGL2Client_Y(bounds[3], mWindow);
+		swap(bounds[3], bounds[1]);
+		return 1;
+	}
+	else
+		return 0;
+}
 
 #endif

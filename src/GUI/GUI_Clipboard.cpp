@@ -24,11 +24,7 @@
 #include "GUI_Clipboard.h"
 
 #if APL
-	#if defined(__MWERKS__)
-		#include <Carbon.h>
-	#else
-		#include <Carbon/Carbon.h>
-	#endif
+	#include "ObjCUtils.h"
 #elif IBM
 #include <Windows.h>
 #endif
@@ -39,7 +35,7 @@
 #endif
 
 #if APL
-	typedef	OSType	GUI_CIT;		// Clipboard Internal Type
+	typedef	string	GUI_CIT;		// Clipboard Internal Type
 #elif IBM
 	typedef	CLIPFORMAT	GUI_CIT;		// Clipboard Internal Type
 #else
@@ -79,7 +75,7 @@ static int	CIT2GUI(GUI_CIT in_t, GUI_ClipType& out_t)
 void GUI_InitClipboard(void)
 {
 	#if APL
-		sCITs.push_back(kScrapFlavorTypeText);
+		sCITs.push_back(get_pasteboard_text_type());
 	#elif IBM
 		sCITs.push_back(CF_TEXT);
 	#else
@@ -98,9 +94,9 @@ GUI_ClipType	GUI_RegisterPrivateClipType(const char * clip_type)
 
 	sClipStrings.push_back(clip_type);
 	#if APL
-		static GUI_CIT private_counter = 'PRV0';
-		sCITs.push_back(private_counter);
-		++private_counter;
+		string full_type = "com.laminar.";
+		full_type += clip_type;
+		sCITs.push_back(full_type);
 	#elif IBM
 		sCITs.push_back(CF_PRIVATEFIRST + sCITs.size() - gui_First_Private);
 	#else
@@ -114,6 +110,13 @@ GUI_ClipType	GUI_GetTextClipType(void)
 	return gui_Clip_Text;
 }
 
+#if APL
+void GUI_GetMacNativeDragTypeList(vector<string>& out_types)
+{
+	out_types = sCITs;
+}
+#endif
+
 //---------------------------------------------------------------------------------------------------------
 // DATA MANAGEMENT
 //---------------------------------------------------------------------------------------------------------
@@ -123,13 +126,7 @@ GUI_ClipType	GUI_GetTextClipType(void)
 bool			GUI_Clipboard_HasClipType(GUI_ClipType inType)
 {
 	#if APL
-		ScrapRef			scrap;
-		ScrapFlavorFlags	flags;
-		if (GetCurrentScrap(&scrap) != noErr) return false;
-		if (GetScrapFlavorFlags(scrap, sCITs[inType], &flags) != noErr) return false;
-
-		return (inType < gui_First_Private || (flags & kScrapFlavorMaskSenderOnly));
-
+		return clipboard_has_type(sCITs[inType].c_str());
 	#elif IBM
 		return (IsClipboardFormatAvailable(sCITs[inType]));
 	#else
@@ -140,25 +137,15 @@ bool			GUI_Clipboard_HasClipType(GUI_ClipType inType)
 void			GUI_Clipboard_GetTypes(vector<GUI_ClipType>& outTypes)
 {
 	#if APL
-			ScrapRef			scrap;
-			UInt32				count;
+		int total = count_clipboard_formats();
 		outTypes.clear();
-		if (GetCurrentScrap(&scrap) != noErr) return;
-		if (GetScrapFlavorCount(scrap, &count) != noErr) return;
-		if (count == 0) return;
-		vector<ScrapFlavorInfo>	info(count);
-		if (GetScrapFlavorInfoList(scrap, &count, &*info.begin()) != noErr) return;
-		if (info.size() != count) return;
-
-		for (int n = 0; n < info.size(); ++n)
+		for (int n = 0; n < total; ++n)
 		{
-			GUI_CIT raw_type = info[n].flavorType;
+			GUI_CIT raw_type = get_nth_clipboard_format(n);
 			GUI_ClipType ct;
 			if (CIT2GUI(raw_type, ct))
-			if (ct < gui_First_Private || (info[n].flavorFlags & kScrapFlavorMaskSenderOnly))
 				outTypes.push_back(ct);
 		}
-
 	#elif IBM
 		int total = CountClipboardFormats();
 		outTypes.clear();
@@ -205,12 +192,7 @@ struct	StGlobalLock {
 int				GUI_Clipboard_GetSize(GUI_ClipType inType)
 {
 	#if APL
-			ScrapRef			scrap;
-			Size				sz;
-		if (GetCurrentScrap(&scrap) != noErr) return 0;
-		if (GetScrapFlavorSize(scrap, sCITs[inType], &sz) != noErr) return 0;
-		return sz;
-
+		return get_clipboard_data_size(sCITs[inType].c_str());
 	#elif IBM
 
 			HGLOBAL   	hglb;
@@ -233,15 +215,9 @@ int				GUI_Clipboard_GetSize(GUI_ClipType inType)
 bool			GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 {
 	#if APL
-			ScrapRef			scrap;
-			Size				sz;
-		if (GetCurrentScrap(&scrap) != noErr) return false;
-		if (GetScrapFlavorSize(scrap, sCITs[inType], &sz) != noErr) return false;
-		if (sz != size) return false;
+		int amt = copy_data_of_type(sCITs[inType].c_str(), ptr, size);
+		return amt == size;
 
-		if (GetScrapFlavorData(scrap, sCITs[inType], &sz, ptr) != noErr) return false;
-		if (sz != size) return false;
-		return true;
 	#elif IBM
 
 			HGLOBAL   	hglb;
@@ -269,18 +245,10 @@ bool			GUI_Clipboard_GetData(GUI_ClipType inType, int size, void * ptr)
 bool			GUI_Clipboard_SetData(int type_count, GUI_ClipType inTypes[], int sizes[], const void * ptrs[])
 {
 	#if APL
-			ScrapRef	scrap;
-		if (ClearCurrentScrap() != noErr) return false;
-		if (GetCurrentScrap(&scrap) != noErr) return false;
+		clear_clipboard();
 
 		for (int n = 0; n < type_count; ++n)
-		if (PutScrapFlavor(
-				scrap,
-				sCITs[inTypes[n]],
-				(n >= gui_First_Private) ? kScrapFlavorMaskSenderOnly :
-				kScrapFlavorMaskNone, sizes[n],
-				ptrs[n]) != noErr)
-			return false;
+		add_data_of_type(sCITs[inTypes[n]].c_str(), ptrs[n], sizes[n]);
 		return true;
 	#elif IBM
 		StOpenClipboard	open_it;
@@ -753,7 +721,7 @@ STDMETHODIMP		GUI_SimpleEnumFORMATETC::Clone			(IEnumFORMATETC ** pp_obj)
 
 // The GUI_DragMgr_Adapter is a simple adapter class from the drag mgr API to the
 // GUI abstract class.  IT's almost a 1:1 coding of the API.
-GUI_DragMgr_Adapter::GUI_DragMgr_Adapter(DragRef data_obj) : mObject(data_obj)
+GUI_DragMgr_Adapter::GUI_DragMgr_Adapter(void * data_obj) : mObject(data_obj)
 {
 }
 
@@ -763,99 +731,41 @@ GUI_DragMgr_Adapter::~GUI_DragMgr_Adapter()
 
 int		GUI_DragMgr_Adapter::CountItems(void)
 {
-	UInt16 count;
-	if (CountDragItems(mObject, &count) != noErr) return 0;
-	return count;
+	return count_drag_items(mObject);
 }
 
 bool	GUI_DragMgr_Adapter::NthItemHasClipType(int n, GUI_ClipType ct)
 {
-	GUI_CIT		native;
-	DragItemRef ref;
-	FlavorFlags	flags;
-	if (!GUI2CIT(ct,native))										return false;
-	if (GetDragItemReferenceNumber(mObject, n+1, &ref) != noErr)	return false;
-	if (GetFlavorFlags(mObject,ref,native,&flags) != noErr)			return false;
-	if (ct >= gui_First_Private && (flags & flavorSenderOnly)==0)	return false;
-																	return true;
+	return nth_drag_item_has_type(mObject, n, sCITs[ct].c_str());
 }
 
 int		GUI_DragMgr_Adapter::GetNthItemSize(int n, GUI_ClipType ct)
 {
-	GUI_CIT		native;
-	DragItemRef ref;
-	FlavorFlags	flags;
-	Size		sz;
-	if (!GUI2CIT(ct,native))										return 0;
-	if (GetDragItemReferenceNumber(mObject, n+1, &ref) != noErr)	return 0;
-	if (GetFlavorFlags(mObject,ref,native,&flags) != noErr)			return 0;
-	if (ct >= gui_First_Private && (flags & flavorSenderOnly)==0)	return 0;
-	if (GetFlavorDataSize(mObject,ref,native,&sz) != noErr)			return 0;
-																	return sz;
-
+	return nth_drag_item_get_size(mObject, n, sCITs[ct].c_str());
 }
 
 bool	GUI_DragMgr_Adapter::GetNthItemData(int n, GUI_ClipType ct, int size, void * ptr)
 {
-	GUI_CIT		native;
-	DragItemRef ref;
-	FlavorFlags	flags;
-	Size		sz;
-	if (!GUI2CIT(ct,native))										return false;
-	if (GetDragItemReferenceNumber(mObject, n+1, &ref) != noErr)	return false;
-	if (GetFlavorFlags(mObject,ref,native,&flags) != noErr)			return false;
-	if (ct >= gui_First_Private && (flags & flavorSenderOnly)==0)	return false;
-	if (GetFlavorDataSize(mObject,ref,native,&sz) != noErr)			return false;
-	if (size != sz)													return false;
-	if (GetFlavorData(mObject,ref,native,ptr,&sz,0) != noErr)		return false;
-	if (size != sz)													return false;
-																	return true;
+	return nth_drag_item_get_data(mObject, n, sCITs[ct].c_str(), size, ptr) == size;
 }
 
-// This function is used to pull missing drag flavors from the "get data" function.
-static pascal OSErr GUI_DragDataFetcher(FlavorType native, void * ref, DragItemRef item, DragRef drag)
-{
-	// Ben says: weird encoding - we need TWO refcons and I am too lazy to allocate a stack-based struct - it's awkward due
-	// to the use of utility funcs.  So: item ref is picked to be refcon for pull func.  Real mac refcon to the func is
-	// our func ptr.
-	GUI_GetData_f		func = (GUI_GetData_f) ref;
-	void *				func_ref = (void *) item;
-
-	GUI_ClipType	cit;
-	if (!CIT2GUI(native, cit)) return badDragFlavorErr;
-
-	const void * start_p;
-	const void * end_p;
-	GUI_FreeFunc_f	free_it = func(cit, &start_p, &end_p, func_ref);
-	if (start_p == NULL) return badDragFlavorErr;
-
-	OSErr err = SetDragItemFlavorData(drag, item, native, start_p, (const char *) end_p - (const char *) start_p, 0);
-	if (free_it) free_it(start_p, func_ref);
-	return err;
-}
-
-static DragSendDataUPP	gui_DragDataFetcher = NewDragSendDataUPP(GUI_DragDataFetcher);
-
-void GUI_LoadSimpleDrag(
-							DragRef					drag,
-							int						type_count,
+void * GUI_LoadOneSimpleDrag(
+							int						inTypeCount,
 							GUI_ClipType			inTypes[],
 							int						sizes[],
 							const void *			ptrs[],
-							GUI_GetData_f			fetch_func,
-							void *					ref)
+							const int				bounds[4])
 {
-	// First, load up an item with all of the data we've been given.
-
-	GUI_CIT	native;
-	for (int n = 0; n < type_count; ++n)
-	if (GUI2CIT(inTypes[n],native))
-		AddDragItemFlavor(drag, (DragItemRef) ref, native, ptrs[n], sizes[n], (inTypes[n] >= gui_First_Private) ? flavorSenderOnly : 0);
-
-	// If a fetch-func is provided, also register it for later use.
-	if (fetch_func)
-		SetDragSendProc(drag, gui_DragDataFetcher, (void *) fetch_func);
+	vector<const char *>	raw_types;
+	
+	for(int i = 0; i < inTypeCount; ++i)
+	{
+		raw_types.push_back(sCITs[inTypes[i]].c_str());
+	}
+	
+	return create_drag_item_with_data(inTypeCount, &raw_types[0],sizes, ptrs,bounds);
 }
+
 
 #endif /* APL */
 

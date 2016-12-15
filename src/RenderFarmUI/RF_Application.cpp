@@ -33,8 +33,9 @@
 #endif
 
 #if LIN
-RF_Application::RF_Application(int& argc, char* argv[])
-: GUI_Application(argc, argv)
+RF_Application::RF_Application(int& argc, char* argv[]) : GUI_Application(argc, argv)
+#elif APL
+RF_Application::RF_Application() : GUI_Application("RFMainMenu")
 #else
 RF_Application::RF_Application()
 #endif

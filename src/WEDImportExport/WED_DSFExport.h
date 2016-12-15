@@ -24,19 +24,17 @@
 #ifndef WED_DSFExport_H
 #define WED_DSFExport_H
 
-class	WED_Group;
+#include "zip.h"
+
 class	IResolver;
-class	ILibrarian;
 class	WED_Thing;
+class	WED_Airport;
 
-//You will need the IResolver in case you're handling a Torthophoto
-void DSF_Export(WED_Group * base, ILibrarian * in_package, IResolver * resolver, set<WED_Thing *>& problem_items);
+// You will need the IResolver in case you're handling a Torthophoto
+void DSF_Export(WED_Thing * base, IResolver * resolver, const string& in_package, set<WED_Thing *>& problem_items);
 
-int		WED_CanExportPack(IResolver * resolver);
-void	WED_DoExportPack(IResolver * resolver);
-
-void	WED_DoExportRobin(IResolver * resolver);
-
+// 
+int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * who, const string& package, set<WED_Thing *>& problem_children);
 
 
 #endif /* WED_DSFExport_H */

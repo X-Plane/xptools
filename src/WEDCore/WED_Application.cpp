@@ -30,13 +30,16 @@
 #include "WED_UIDefs.h"
 #include "WED_Menus.h"
 #include "WED_PackageMgr.h"
+#include "WED_Url.h"
 
 #if LIN
-WED_Application::WED_Application(int& argc, char* argv[])
-: GUI_Application(argc, argv), mAboutBox(NULL)
+WED_Application::WED_Application(int& argc, char* argv[]) : GUI_Application(argc, argv),
+#elif APL
+WED_Application::WED_Application() : GUI_Application("WEDMainMenu"),
 #else
-WED_Application::WED_Application() : mAboutBox(NULL)
+	WED_Application::WED_Application() :
 #endif
+		mAboutBox(NULL)
 {
 }
 
@@ -64,7 +67,7 @@ int		WED_Application::HandleCommand(int command)
 		// LR maintains a forwarding directory for all v10-class products 
 		// so that we can restructure our content management without breaking binary
 		// apps in-field.  So...this is the perma-marker for WED 1.1 scenery help.
-		GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_12_scenery.html");
+		GUI_LaunchURL(WED_URL_HELP_SCENERY);
 		return 1;
 	case wed_HelpManual:
 		{
@@ -76,7 +79,7 @@ int		WED_Application::HandleCommand(int command)
 //			{
 //				GUI_LaunchURL(path.c_str());
 //			}
-			GUI_LaunchURL("http://www.x-plane.com/_lookup_10_/wed_12_manual.html");
+			GUI_LaunchURL(WED_URL_MANUAL);
 		}
 		return 1;
 	default:

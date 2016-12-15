@@ -25,10 +25,13 @@
 #include "MathUtils.h"
 #include "GUI_Resources.h"
 #include "WED_UIMeasurements.h"
+#include "IGIS.h"
+#include "WED_Entity.h"
 
 #include "WED_MapZoomerNew.h"
 
-WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) : mZoomer(z), mResolver(i), mHost(h)
+WED_MapLayer::WED_MapLayer(GUI_Pane * h, WED_MapZoomerNew * z, IResolver * i) :
+	mZoomer(z), mResolver(i), mHost(h), mHideFilter(NULL), mLockFilter(NULL)
 {
 	int dims[2];
 
@@ -74,9 +77,125 @@ bool		WED_MapLayer::IsVisible(void) const
 	return mVisible;
 }
 
+void		WED_MapLayer::SetVisible(bool visibility)
+{
+	mVisible = visibility;
+}
+
 void		WED_MapLayer::ToggleVisible(void)
 {
 	mVisible = !mVisible;
 	GetHost()->Refresh();
 }
 
+void		WED_MapLayer::SetFilter(const vector<const char *> * hide_filter_ptr, const vector<const char *> * lock_filter_ptr)
+{
+	mHideFilter = hide_filter_ptr;
+	mLockFilter = lock_filter_ptr;
+}
+
+static bool matches_filter(WED_Thing * thing ,const  vector<const char *> * filter )
+{
+	for(vector<const char *>::const_iterator filterit = filter->begin(); filterit != filter->end(); ++filterit)
+	{
+		const char * p = *filterit;
+		int slash_count = 0;
+		while (*p != 0 )
+		{
+			if (*p == '/') ++slash_count;
+			++p;
+		}
+
+		string type = thing->GetClass();
+		WED_Thing * parent = thing;
+		for (unsigned int i = 0 ; i < slash_count; ++i)
+		{
+			parent = parent->GetParent();
+			if(parent == NULL)
+			{
+				return false;
+			}
+			else
+			{
+				type += '/';
+				string parent_type = parent->GetClass();
+				//Handles nesting for CSS selection type filters
+				if( parent_type == "WED_Airport"  || parent_type == "WED_Group" )
+				{
+					parent_type = "WED_GISComposite";
+				}
+				type += parent_type;
+			}
+		}
+
+		if(type.length() == strlen(*filterit))
+			if(type == *filterit)
+				return true;
+	}
+
+	return false;
+}
+
+bool	WED_MapLayer::IsVisibleNow(IGISEntity * ent) const
+{
+	if(mHideFilter)
+	{
+		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mHideFilter ))
+			return false;
+	}
+
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+	{
+		return false;
+	}
+	return !e->GetHidden();
+}
+
+bool	WED_MapLayer::IsLockedNow(IGISEntity * ent) const
+{
+	if(mLockFilter)
+	{
+		if( matches_filter(dynamic_cast<WED_Thing *>(ent), mLockFilter ))
+			return true;
+	}
+
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+	{
+		return false;
+	}
+	return e->GetLocked();
+}
+
+bool	WED_MapLayer::IsVisibleNow(WED_Thing * ent) const
+{
+	if(mHideFilter)
+	{
+		if( matches_filter(ent, mHideFilter ))
+			return false;
+	}
+
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+	{
+		return false;
+	}
+	return !e->GetHidden();
+}
+
+bool	WED_MapLayer::IsLockedNow(WED_Thing * ent) const
+{
+	if(mLockFilter)
+	{
+		if( matches_filter(ent, mLockFilter ))
+			return true;
+	}
+
+	WED_Entity * e = dynamic_cast<WED_Entity *>(ent);
+	if(!e)
+	{
+		return false;
+	}
+	return e->GetLocked();
+}

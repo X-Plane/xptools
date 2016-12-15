@@ -89,7 +89,11 @@ inline void fi_escape(const char * str, FILE * fi)
 				fprintf(fi,"&amp;");
 				break;
 			default:
-				fputc(*b,fi);
+				// This is STILL not ideal - XML disallows anything above #x10FFFF or the surrogate blocks, but 
+				// for now just notice that control chars are bogus.  Drop control chars, there's just no way to
+				// encode them, and frankly they are silly.
+				if(*b >= ' ' || *b == '\t' || *b == '\r' || *b == '\n')
+					fputc(*b,fi);
 				break;
 			}
 			++b;
@@ -97,7 +101,9 @@ inline void fi_escape(const char * str, FILE * fi)
 		const UTF8 * iv = UTF8_InvalidRange(b,e);
 		while(b < iv)
 		{
-			fprintf(fi,"&#x%2X;",(int) *b);
+			// No low-number chars - that blows up the reader.
+			if(*b >= ' ' || *b == '\t' || *b == '\r' || *b == '\n')
+				fprintf(fi,"&#x%02X;",(int) *b);
 			++b;
 		}
 	}	

@@ -27,8 +27,6 @@
 #if IBM
 	#include <Winsock2.h>
 	#include <Ws2tcpip.h>
-#elif 0
-	#include <Carbon/Carbon.h>
 #else
 	#include <sys/socket.h>
 	#include <netinet/in.h>
@@ -80,8 +78,6 @@ private:
 #if IBM
 		SOCKET				mWinSocket;		//our socket
 		SOCKADDR_IN			sIn;			//our address struct
-#elif 0
-		EndpointRef			mMacSocket;
 #else
 		int					mWinSocket;
 		sockaddr_in			sIn;

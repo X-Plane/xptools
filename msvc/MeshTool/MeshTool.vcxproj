@@ -1,0 +1,237 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1FE791E1-B248-40C2-8408-77A7FB90835F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>MeshTool</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Debug.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Release.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>libboost_system-vc100-mt-s-1_57.lib;libboost_thread-vc100-mt-s-1_57.lib;libCGAL-vc100-mt-s-4.5.2.lib;libCGAL_Core-vc100-mt-s-4.5.2.lib;libpng.lib;geotiff.lib;libtiff.lib;zlibstat.lib;libjasper.lib;jpeg.lib;proj.lib;libexpatMT.lib;squish.lib;libgmp-10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>2097152</StackReserveSize>
+    </Link>
+    <ProjectReference />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>libboost_system-vc100-mt-s-1_57.lib;libboost_thread-vc100-mt-s-1_57.lib;libCGAL-vc100-mt-s-4.5.2.lib;libCGAL_Core-vc100-mt-s-4.5.2.lib;libpng.lib;geotiff.lib;libtiff.lib;zlibstat.lib;libjasper.lib;jpeg.lib;proj.lib;libexpatMT.lib;squish.lib;libgmp-10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\msvc_libs\CGAL-4.5.2\auxiliary\gmp\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <StackReserveSize>2097152</StackReserveSize>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\DSF\DSFLib.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFLibWrite.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFPointPool.cpp" />
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
+    <ClCompile Include="..\..\src\MeshTool\MeshTool.cpp" />
+    <ClCompile Include="..\..\src\MeshTool\MeshTool_Create.cpp" />
+    <ClCompile Include="..\..\src\Obj\ObjPointPool.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjBuilder.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjDefs.cpp" />
+    <ClCompile Include="..\..\src\Obj\XObjReadWrite.cpp" />
+    <ClCompile Include="..\..\src\RawImport\ShapeIO.cpp" />
+    <ClCompile Include="..\..\src\Utils\AssertUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\BitmapUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\BWImage.cpp" />
+    <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
+    <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\GISUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\MatrixUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\md5.c" />
+    <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\ObjUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\perlin.cpp" />
+    <ClCompile Include="..\..\src\Utils\PolyRasterUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\ProgressUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\Skeleton.cpp" />
+    <ClCompile Include="..\..\src\Utils\unzip.c" />
+    <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\XUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\zip.c" />
+    <ClCompile Include="..\..\src\XESCore\AptAlgs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\Beaches.cpp" />
+    <ClCompile Include="..\..\src\XESCore\BezierApprox.cpp" />
+    <ClCompile Include="..\..\src\XESCore\BlockAlgs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\BlockFill.cpp" />
+    <ClCompile Include="..\..\src\XESCore\ConfigSystem.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMAlgs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMDefs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMGrid.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMTables.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DEMToVector.cpp" />
+    <ClCompile Include="..\..\src\XESCore\DSFBuilder.cpp" />
+    <ClCompile Include="..\..\src\XESCore\EnumSystem.cpp" />
+    <ClCompile Include="..\..\src\XESCore\ForestTables.cpp" />
+    <ClCompile Include="..\..\src\XESCore\GreedyMesh.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapAlgs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapBuffer.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapCreate.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapHelpers.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapOverlay.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapPolygon.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MapTopology.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MeshAlgs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MeshDefs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MeshIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\MeshSimplify.cpp" />
+    <ClCompile Include="..\..\src\XESCore\NetAlgs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\NetHelpers.cpp" />
+    <ClCompile Include="..\..\src\XESCore\NetPlacement.cpp" />
+    <ClCompile Include="..\..\src\XESCore\NetTables.cpp" />
+    <ClCompile Include="..\..\src\XESCore\ObjTables.cpp" />
+    <ClCompile Include="..\..\src\XESCore\ParamDefs.cpp" />
+    <ClCompile Include="..\..\src\XESCore\SceneryPackages.cpp" />
+    <ClCompile Include="..\..\src\XESCore\SimpleIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\TensorRoads.cpp" />
+    <ClCompile Include="..\..\src\XESCore\TriFan.cpp" />
+    <ClCompile Include="..\..\src\XESCore\XESInit.cpp" />
+    <ClCompile Include="..\..\src\XESCore\XESIO.cpp" />
+    <ClCompile Include="..\..\src\XESCore\Zoning.cpp" />
+    <ClCompile Include="..\..\msvc_libs\shapelib-1.3.0\dbfopen.c" />
+    <ClCompile Include="..\..\msvc_libs\shapelib-1.3.0\safileio.c" />
+    <ClCompile Include="..\..\msvc_libs\shapelib-1.3.0\shpopen.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\DSF\DSFLib.h" />
+    <ClInclude Include="..\..\src\DSF\DSFPointPool.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Unicode.h" />
+    <ClInclude Include="..\..\src\MeshTool\MeshTool_Create.h" />
+    <ClInclude Include="..\..\src\Obj\ObjPointPool.h" />
+    <ClInclude Include="..\..\src\Obj\XObjBuilder.h" />
+    <ClInclude Include="..\..\src\Obj\XObjDefs.h" />
+    <ClInclude Include="..\..\src\Obj\XObjReadWrite.h" />
+    <ClInclude Include="..\..\src\RawImport\ShapeIO.h" />
+    <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
+    <ClInclude Include="..\..\src\Utils\BitmapUtils.h" />
+    <ClInclude Include="..\..\src\Utils\BWImage.h" />
+    <ClInclude Include="..\..\src\Utils\CompGeomUtils.h" />
+    <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
+    <ClInclude Include="..\..\src\Utils\FileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\GISUtils.h" />
+    <ClInclude Include="..\..\src\Utils\MatrixUtils.h" />
+    <ClInclude Include="..\..\src\Utils\md5.h" />
+    <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\ObjUtils.h" />
+    <ClInclude Include="..\..\src\Utils\perlin.h" />
+    <ClInclude Include="..\..\src\Utils\PolyRasterUtils.h" />
+    <ClInclude Include="..\..\src\Utils\ProgressUtils.h" />
+    <ClInclude Include="..\..\src\Utils\Skeleton.h" />
+    <ClInclude Include="..\..\src\Utils\unzip.h" />
+    <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\XUtils.h" />
+    <ClInclude Include="..\..\src\Utils\zip.h" />
+    <ClInclude Include="..\..\src\XESCore\AptAlgs.h" />
+    <ClInclude Include="..\..\src\XESCore\AptDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\AptIO.h" />
+    <ClInclude Include="..\..\src\XESCore\Beaches.h" />
+    <ClInclude Include="..\..\src\XESCore\BezierApprox.h" />
+    <ClInclude Include="..\..\src\XESCore\BlockAlgs.h" />
+    <ClInclude Include="..\..\src\XESCore\BlockDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\BlockFill.h" />
+    <ClInclude Include="..\..\src\XESCore\ConfigSystem.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMAlgs.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMGrid.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMIO.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMTables.h" />
+    <ClInclude Include="..\..\src\XESCore\DEMToVector.h" />
+    <ClInclude Include="..\..\src\XESCore\DSFBuilder.h" />
+    <ClInclude Include="..\..\src\XESCore\EnumSystem.h" />
+    <ClInclude Include="..\..\src\XESCore\ForestTables.h" />
+    <ClInclude Include="..\..\src\XESCore\GreedyMesh.h" />
+    <ClInclude Include="..\..\src\XESCore\IODefs.h" />
+    <ClInclude Include="..\..\src\XESCore\MapAlgs.h" />
+    <ClInclude Include="..\..\src\XESCore\MapBuffer.h" />
+    <ClInclude Include="..\..\src\XESCore\MapCreate.h" />
+    <ClInclude Include="..\..\src\XESCore\MapDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\MapHelpers.h" />
+    <ClInclude Include="..\..\src\XESCore\MapIO.h" />
+    <ClInclude Include="..\..\src\XESCore\MapOverlay.h" />
+    <ClInclude Include="..\..\src\XESCore\MapPolygon.h" />
+    <ClInclude Include="..\..\src\XESCore\MapTopology.h" />
+    <ClInclude Include="..\..\src\XESCore\MeshAlgs.h" />
+    <ClInclude Include="..\..\src\XESCore\MeshConformer.h" />
+    <ClInclude Include="..\..\src\XESCore\MeshDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\MeshIO.h" />
+    <ClInclude Include="..\..\src\XESCore\MeshSimplify.h" />
+    <ClInclude Include="..\..\src\XESCore\NetAlgs.h" />
+    <ClInclude Include="..\..\src\XESCore\NetHelpers.h" />
+    <ClInclude Include="..\..\src\XESCore\NetPlacement.h" />
+    <ClInclude Include="..\..\src\XESCore\NetTables.h" />
+    <ClInclude Include="..\..\src\XESCore\ObjTables.h" />
+    <ClInclude Include="..\..\src\XESCore\ParamDefs.h" />
+    <ClInclude Include="..\..\src\XESCore\SceneryPackages.h" />
+    <ClInclude Include="..\..\src\XESCore\SimpleIO.h" />
+    <ClInclude Include="..\..\src\XESCore\TensorRoads.h" />
+    <ClInclude Include="..\..\src\XESCore\TriFan.h" />
+    <ClInclude Include="..\..\src\XESCore\XESConstants.h" />
+    <ClInclude Include="..\..\src\XESCore\XESInit.h" />
+    <ClInclude Include="..\..\src\XESCore\XESIO.h" />
+    <ClInclude Include="..\..\src\XESCore\Zoning.h" />
+    <ClInclude Include="..\..\msvc_libs\shapelib-1.3.0\shapefil.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

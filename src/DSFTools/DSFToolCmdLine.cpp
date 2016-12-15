@@ -25,6 +25,10 @@
 #include <stdio.h>
 #include "AssertUtils.h"
 
+#if IBM
+#include <stdlib.h>
+#endif
+
 FILE * err_fi = stdout;
 
 void AssertShellBail(const char * condition, const char * file, int line)

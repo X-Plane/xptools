@@ -43,10 +43,6 @@
 #include "MeshSimplify.h"
 #include "NetHelpers.h"
 #include "Zoning.h"	// for urban cheat table.
-#if APL && !defined(__MACH__)
-#define __DEBUGGING__
-#include "XUtils.h"
-#endif
 #if OPENGL_MAP
 #include "GISTool_Globals.h"
 #endif
@@ -99,6 +95,9 @@
 // changes, we don't need to overdo basic subdivision - this produces acceptable triangles.
 #define REDUCE_SUBDIVIDE 2
 
+// This is how far to match a border point from the neighboring file.  If this is too huge and water doesn't match
+// across tiles (which can happen on recuts) we get sort of silly border matching. 
+#define MAX_BORDER_MATCH 0.001
 
 // Andras: define max slope for non flattened water edges and the number of iterations
 #define MAX_WATER_SLOPE 0.2
@@ -416,7 +415,7 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				dest->vertices.push_back(mesh_match_vertex_t());
 				sscanf(buf, "VT %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
 				dest->vertices.back().loc = Point_2(x,y);
-				dest->vertices.back().buddy = NULL;
+				dest->vertices.back().buddy = CDT::Vertex_handle();
 			}
 			if (MATCH(buf, "VC"))
 			{
@@ -424,7 +423,7 @@ static bool	load_match_file(const char * path, mesh_match_t& outLeft, mesh_match
 				dest->vertices.push_back(mesh_match_vertex_t());
 				sscanf(buf, "VC %lf, %lf, %lf", &x, &y, &dest->vertices.back().height);
 				dest->vertices.back().loc = Point_2(x,y);
-				dest->vertices.back().buddy = NULL;
+				dest->vertices.back().buddy = CDT::Vertex_handle();
 			}
 			if (fgets(buf, sizeof(buf), fi) == NULL) goto bail;
 			sscanf(buf, "VBC %d", &count);
@@ -538,13 +537,14 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 
 		// Go through each non-assigned vertex.
 		for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
-		if (pts->buddy == NULL)
+		if (pts->buddy == CDT::Vertex_handle())
 		{
 			// Find the nearest slave for it by decreasing distance.
 			for (map<double, CDT::Vertex_handle>::iterator sl = slaves.begin(); sl != slaves.end(); ++sl)
 			{
 				double myDist = (side_num == 0 || side_num == 2) ? (CGAL::to_double(pts->loc.y() - sl->second->point().y())) : (CGAL::to_double(pts->loc.x() - sl->second->point().x()));
 				if (myDist < 0.0) myDist = -myDist;
+				if(myDist < MAX_BORDER_MATCH)
 				nearest.insert(multimap<double, pair<double, mesh_match_vertex_t *> >::value_type(myDist, pair<double, mesh_match_vertex_t *>(sl->first, &*pts)));
 			}
 		}
@@ -570,9 +570,9 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 	}
 
 	// Step 3.  Go through all unmatched masters and insert them directly into the mesh.
-	CDT::Face_handle	nearf = NULL;
+	CDT::Face_handle	nearf = CDT::Face_handle();
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
-	if (pts->buddy == NULL)
+	if (pts->buddy == CDT::Vertex_handle())
 	{	
 		//printf("Found no buddy for: %lf,%lf\n", CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y()));
 		pts->buddy = ioMesh.insert(CDT::Point(CGAL::to_double(pts->loc.x()), CGAL::to_double(pts->loc.y())), nearf);
@@ -1075,7 +1075,7 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 	{
 		ffi->info().terrain = terrain_Natural;
 		ffi->info().feature = NO_VALUE;
-		ffi->info().orig_face == Face_handle();
+		ffi->info().orig_face = Face_handle();
 
 		for(int n = 0; n < 3; ++n)
 		if(ffi->is_constrained(n))
@@ -1229,7 +1229,7 @@ struct sort_cdt_face_by_lowest_height {
 	}
 };
 
-#define NEW_ALG 0
+#define NEW_ALG 1
 // this is faster - by going in order from bottom to top we avoid a crapload of retries on neighboring verts.
 // going by MESH FACE is not so good - mesh face is at THREE alts at once..in theory at least.  or something.
 void FlattenWater(CDT& ioMesh)
@@ -1240,22 +1240,27 @@ void FlattenWater(CDT& ioMesh)
 	for(CDT::Finite_vertices_iterator v = ioMesh.finite_vertices_begin(); v != ioMesh.finite_vertices_end(); ++v)
 	{
 		if(CategorizeVertex(ioMesh, v,terrain_Water) <= 0)
-		if(!IsNoFlattenVertex(ioMes,v))
+		if(!IsNoFlattenVertex(ioMesh,v))
 			to_do.insert(v);
 	}
 	//printf("Q: %zd vertices.\n", to_do.size());
 	
-	double hwm = (*to_do.begin())->info().height;
+	double hwm = 0.0;
 	
-	set<CDT::Vertex_handle, sort_cdt_face_by_lowest_height>::iterator i,p;
-	p = i = to_do.begin();
-	++i;
-	while(i != to_do.end())
-	{
-		//printf("   %p: %lf\n", &**i,(*i)->info().height);
-		DebugAssert((*i)->info().height >= (*p)->info().height);
-		p = i;
+	if(!to_do.empty())
+	{	
+		hwm = (*to_do.begin())->info().height;
+		
+		set<CDT::Vertex_handle, sort_cdt_face_by_lowest_height>::iterator i,p;
+		p = i = to_do.begin();
 		++i;
+		while(i != to_do.end())
+		{
+			//printf("   %p: %lf\n", &**i,(*i)->info().height);
+			DebugAssert((*i)->info().height >= (*p)->info().height);
+			p = i;
+			++i;
+		}
 	}
 	
 	while(!to_do.empty())
@@ -1371,7 +1376,7 @@ void FlattenWater(CDT& ioMesh)
 		}
 	}
 	//printf("processed: %d\n", c);
-
+#endif
 	/////////////////////////////////////////////
 	//Andras: Water smoothing for rivers etc.
 	/////////////////////////////////////////////
@@ -1454,7 +1459,6 @@ void FlattenWater(CDT& ioMesh)
 		}
 		printf("Water smoothing iteration %d , water vertices: %d , changed vertices: %d .\n", it_n, water_vertices, changed_vertices);
 	}
-#endif	
 }
 
 /*
@@ -1578,13 +1582,6 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 		char	fname_top[512];
 
 		string border_loc = mesh_folder;
-#if APL && !defined(__MACH__)
-		string	appP;
-		AppPath(appP);
-		string::size_type b = appP.rfind(':');
-		appP.erase(b+1);
-		border_loc = appP + border_loc;
-#endif
 
 		make_cache_file_path(border_loc.c_str(),deriv.mWest-1, deriv.mSouth,"border",fname_lef);
 		make_cache_file_path(border_loc.c_str(),deriv.mWest+1, deriv.mSouth,"border",fname_rgt);
@@ -2584,13 +2581,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		char	fname[512];
 
 		string border_loc = mesh_folder;
-#if APL && !defined(__MACH__)
-		string	appP;
-		AppPath(appP);
-		string::size_type b = appP.rfind(':');
-		appP.erase(b+1);
-		border_loc = appP + border_loc;
-#endif
 
 		make_cache_file_path(border_loc.c_str(),west, south,"border",fname);
 
@@ -2777,7 +2767,7 @@ double	HeightWithinTri(CDT& inMesh, CDT::Face_handle f, CDT::Point in)
 double	MeshHeightAtPoint(CDT& inMesh, double inLon, double inLat, int hint_id)
 {
 	if (inMesh.number_of_faces() < 1) return DEM_NO_DATA;
-	CDT::Face_handle	f = NULL;
+	CDT::Face_handle	f = CDT::Face_handle();
 	int	n;
 	CDT::Locate_type lt;
 	f = inMesh.locate_cache(CDT::Point(inLon, inLat), lt, n, hint_id);
@@ -2836,7 +2826,7 @@ int	CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, float
 				   Segment2(last_tri_loc[2],last_tri_loc[0]).on_right_side(ll))
 				{
 
-					CDT::Face_handle	f = NULL;
+					CDT::Face_handle	f = CDT::Face_handle();
 					int	n;
 					CDT::Locate_type lt;
 					f = mesh.locate(CDT::Point(ll.x(), ll.y()), lt, n, last_tri);

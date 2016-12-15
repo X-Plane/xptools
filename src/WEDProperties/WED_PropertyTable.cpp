@@ -29,6 +29,10 @@
 #include "IGIS.h"
 #include "ILibrarian.h"
 #include "WED_Entity.h"
+
+#include "WED_GISComposite.h"
+#include "WED_Airport.h"
+
 #include "WED_Messages.h"
 #include "PlatformUtils.h"
 #include "WED_UIDefs.h"
@@ -97,8 +101,15 @@ void	WED_PropertyTable::GetCellContent(
 {
 	char buf[100], fmt[10];
 
+	// By the end of this we need to have filled the_content out with
+	//  1. Abilities - can_edit, can_disclose, can_drag, etc...
+	//  2. State - is_disclosed, is_selected, indent_level
+	//  3. Content - content_type, its corrisponding value filled in
+	
+	//Our default assumptions
 	the_content.content_type = gui_Cell_None;
 	the_content.string_is_resource = 0;
+	the_content.can_delete = false;
 	the_content.can_edit = 0;
 	the_content.can_disclose = 0;
 	the_content.can_select = 0;
@@ -107,12 +118,16 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_drag = 1;
 	the_content.indent_level = 0;
 
+	//Find the row or column we're dealing with
 	WED_Thing * t = FetchNth(mVertical ? cell_x : cell_y);
 	if (t == NULL) return;
 
 	ISelection * s = WED_GetSelect(mResolver);
 
+	//Find the property index in said row or column based on the name
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
+	
+	//If there has been one found, use the_content as it is and exit
 	if (idx == -1) return;
 
 	WED_Thing * my_parent = t->GetParent();
@@ -120,6 +135,7 @@ void	WED_PropertyTable::GetCellContent(
 	if(!WED_IsFolder(my_parent))
 		the_content.can_drag = 0;
 
+	//With the property index, get the property's value and info
 	PropertyInfo_t	inf;
 	PropertyVal_t	val;
 	t->GetNthPropertyInfo(idx,inf);
@@ -128,6 +144,8 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_select = mSelOnly ? 0 : 1;
 	the_content.is_selected = s->IsSelected(t);
 
+	//Based on type turn PropertyVal_t into GUI_CellContent,
+	//taking care of "3. Content"
 	switch(inf.prop_kind) {
 	case prop_Int:
 		the_content.content_type = gui_Cell_Integer;
@@ -139,12 +157,36 @@ void	WED_PropertyTable::GetCellContent(
 	case prop_Double:
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
-		sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
-		sprintf(buf,fmt,val.double_val);
+		if(inf.round_down)
+		{
+			double int_part = floor(val.double_val);
+			double fract_part = val.double_val - int_part;
+			// We are going to shift our fractional part left 1 more decimal digit to the left than needed.  Why?
+			// The answer: we have to round to nearest to reconstruct numbers like 128.839999999 (as 128.84444444.
+			// But we don't want the round to bump our last digit up (128.825 should NOT become 128.83).  So we do
+			// the round with one EXTRA digit of precision to catch the floating point sliver case.
+			fract_part *= powf(10,inf.decimals+1);
+			fract_part = round(fract_part);
+			// Then we simply TRUNCATE the last digit via floor, turning 128.125 to 128.12 (because 125 / 10 floor'd is 12).
+			fract_part = floor(fract_part / 10.0);
+			int int_size = inf.digits - inf.decimals - 1;
+			int dec_size = inf.decimals;
+			sprintf(fmt,"%% %dd.%%0%dd",int_size,dec_size);
+			sprintf(buf,fmt,(int) int_part, (int) fract_part);
+		}
+		else
+		{
+			sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
+			sprintf(buf,fmt,val.double_val);
+		}
 		the_content.text_val = buf;
 		break;
 	case prop_String:
 		the_content.content_type = gui_Cell_EditText;
+		the_content.text_val = val.string_val;
+		break;
+	case prop_TaxiSign:
+		the_content.content_type = gui_Cell_TaxiText;
 		the_content.text_val = val.string_val;
 		break;
 	case prop_FilePath:
@@ -181,7 +223,7 @@ void	WED_PropertyTable::GetCellContent(
 			}
 			the_content.text_val += label;
 		}
-		if (the_content.text_val.empty())	the_content.text_val="none";
+		if (the_content.text_val.empty())	the_content.text_val="None";
 		if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
 		break;
 	}
@@ -190,10 +232,13 @@ void	WED_PropertyTable::GetCellContent(
 	if (!mVertical && !mSelOnly)
 	if (mColNames[mVertical ? cell_y : cell_x] == "Name")
 	{
+		//Fill in more about abilities and state, see method for more comments
 		GetFilterStatus(t, s, unused_vis, unused_kids, the_content.can_disclose,the_content.is_disclosed);
 		the_content.indent_level = GetThingDepth(t);	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
 	}
 
+
+	the_content.can_delete = inf.can_delete;
 	the_content.can_edit = inf.can_edit;
 	if (the_content.can_edit)
 	if (WED_GetWorld(mResolver) == t)	the_content.can_edit = 0;
@@ -275,6 +320,7 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Int		&& content.content_type != gui_Cell_Integer	)	continue;
 		if (inf.prop_kind == prop_Double	&& content.content_type != gui_Cell_Double	)	continue;
 		if (inf.prop_kind == prop_String	&& content.content_type != gui_Cell_EditText)	continue;
+		if (inf.prop_kind == prop_TaxiSign && content.content_type != gui_Cell_TaxiText) continue;
 		if (inf.prop_kind == prop_FilePath	&& content.content_type != gui_Cell_FileText)	continue;
 		if (inf.prop_kind == prop_Bool		&& content.content_type != gui_Cell_CheckBox)	continue;
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
@@ -291,6 +337,10 @@ void	WED_PropertyTable::AcceptEdit(
 			break;
 		case prop_String:
 			val.prop_kind = prop_String;
+			val.string_val = content.text_val;
+			break;
+		case prop_TaxiSign:
+			val.prop_kind = prop_TaxiSign;
 			val.string_val = content.text_val;
 			break;
 		case prop_FilePath:
@@ -332,6 +382,23 @@ void	WED_PropertyTable::ToggleDisclose(
 		ToggleOpen(t->GetID());
 	mCacheValid = false;
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
+}
+
+void	WED_PropertyTable::DoDeleteCell(
+						int							cell_x,
+						int							cell_y)
+{
+	//Get the airport
+	WED_Airport * airport = static_cast<WED_Airport * >(FetchNth(0));
+	
+	airport->StartCommand("Delete Meta Data Key");
+	//To be in uniform with other IPropertyMethods we'll transform cell_y->NS_META_DATA
+	int ns_meta_data = (airport->WED_GISComposite::CountProperties());
+	airport->DeleteNthProperty(ns_meta_data + airport->CountMetaDataKeys() - cell_y - 1);
+	airport->CommitCommand();
+
+	//TODO - Is this needed?
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
 }
 
 void	WED_PropertyTable::DoDrag(
@@ -533,6 +600,7 @@ int		WED_PropertyTable::TabAdvance(
 		GetCellContent(io_x, io_y, the_content);
 		if (the_content.can_edit && (
 			the_content.content_type == gui_Cell_EditText ||
+			the_content.content_type == gui_Cell_TaxiText ||
 			the_content.content_type == gui_Cell_Integer ||
 			the_content.content_type == gui_Cell_Double))
 		{
@@ -947,7 +1015,6 @@ void WED_PropertyTable::SetOpen(int id, int o)
 // - It makes sure that filtered items are inherently open (since we can't disclose them).
 // - Right now it is programmed not to iterate on the children of not-truly-composite GIS entities
 //  (Thus it hides the guts of a polygon).
-
 void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 									int&	visible,
 									int&	recurse_children,

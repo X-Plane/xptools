@@ -34,6 +34,39 @@ const char * GetApplicationPath(char * pathBuf, int sz)
 		return NULL;
 }
 
+const char * GetCacheFolder(char cache_path[], int sz)
+{
+	if(sz != MAX_PATH)
+	{
+		return NULL;
+	}
+
+	HRESULT res = SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, cache_path);
+	if (SUCCEEDED(res))
+	{
+		return cache_path;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+const char * GetTempFilesFolder(char temp_path[], int sz)
+{
+	if(sz > MAX_PATH)
+	{
+		return NULL;
+	}
+
+	int result = GetTempPath(sz, temp_path);
+	if (result > strlen(temp_path) || result == 0)
+	{
+		return NULL;
+	}
+	
+	return  temp_path;
+}
 
 int		GetFilePathFromUser(
 					int					inType,
@@ -100,6 +133,72 @@ int		GetFilePathFromUser(
 	}
 	return 0;
 }
+
+
+char *	GetMultiFilePathFromUser(
+					const char * 		inPrompt,
+					const char *		inAction,
+					int					inID)
+{
+	OPENFILENAME	ofn = { 0 };
+	BOOL result;
+	char * buf = (char *) malloc(1024 * 1024);
+
+	ofn.lStructSize = sizeof(ofn);
+	ofn.lpstrFilter = "All Files\000*.*\000";
+	ofn.nFilterIndex = 1;	// Start with .acf files
+	ofn.lpstrFile = buf;
+	buf[0] = 0;		// No initialization for open.
+	ofn.nMaxFile = 1024 * 1024;		// Guess string length?
+	ofn.lpstrFileTitle = NULL;	// Don't want file name w/out path
+	ofn.lpstrTitle = inPrompt;
+	ofn.Flags =  OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+
+	result = GetOpenFileName(&ofn);
+	if(result)
+	{
+		vector<string>	files;
+		string path(buf);
+		char * fptr = buf+path.size()+1;
+
+		// One-file case: we get one complete fully qualified file path, full stop.
+		if(*fptr == 0)
+		{
+			files.push_back(path);
+		}
+		else
+		// Multi-file path - we got the dir once in "path" and now we get the null-terminated list of file names.
+		while(*fptr)
+		{
+			files.push_back(path + "\\" + fptr);
+			fptr += (strlen(fptr) + 1);
+		}
+
+		int buf_size = 1;
+		for(int i = 0; i < files.size(); ++i)
+			buf_size += (files[i].size() + 1);
+	
+		char * ret = (char *) malloc(buf_size);
+		char * p = ret;
+
+		for(int i = 0; i < files.size(); ++i)
+		{
+			strcpy(p, files[i].c_str());
+			p += (files[i].size() + 1);
+		}
+		*p = 0;
+		free(buf);
+		return ret;
+	}
+	else
+	{
+		free(buf);
+		return NULL;
+	}
+}
+
+
+
 
 void	DoUserAlert(const char * inMsg)
 {

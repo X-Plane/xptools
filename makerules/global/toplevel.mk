@@ -96,8 +96,8 @@ endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
 ifeq ($(cross), m32)
-	MULTI_SUFFIX	:= 32
-	M32_SWITCH	:= -m32
+	MULTI_SUFFIX	:= 64
+	M32_SWITCH	:= -m64
 endif
 endif
 
@@ -119,9 +119,9 @@ endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(M32_SWITCH) -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	CFLAGS		:= $(M32_SWITCH) -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	LDFLAGS		:= $(M32_SWITCH) -isysroot /Developer/SDKs/MacOSX10.6.sdk -mmacosx-version-min=10.5 -static-libgcc
+	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6
 	STRIPFLAGS	:= -x
 endif
 ifdef PLAT_MINGW

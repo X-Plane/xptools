@@ -27,6 +27,7 @@
 #include "IODefs.h"
 #include "STLUtils.h"
 #include "SQLUtils.h"
+#include "MathUtils.h"
 #include "XESConstants.h"
 #include "WED_EnumSystem.h"
 #include <algorithm>
@@ -41,7 +42,7 @@ inline int remap(const map<int,int>& m, int v)
 	return i->second;
 }
 
-int		WED_PropertyHelper::FindProperty(const char * in_prop)
+int		WED_PropertyHelper::FindProperty(const char * in_prop) const
 {
 	for (int n = 0; n < mItems.size(); ++n)
 		if (strcmp(mItems[n]->mTitle, in_prop)==0) return n;
@@ -53,17 +54,17 @@ int		WED_PropertyHelper::CountProperties(void) const
 	return mItems.size();
 }
 
-void		WED_PropertyHelper::GetNthPropertyInfo(int n, PropertyInfo_t& info)
+void		WED_PropertyHelper::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 {
 	mItems[n]->GetPropertyInfo(info);
 }
 
-void		WED_PropertyHelper::GetNthPropertyDict(int n, PropertyDict_t& dict)
+void		WED_PropertyHelper::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	mItems[n]->GetPropertyDict(dict);
 }
 
-void		WED_PropertyHelper::GetNthPropertyDictItem(int n, int e, string& item)
+void		WED_PropertyHelper::GetNthPropertyDictItem(int n, int e, string& item) const
 {
 	mItems[n]->GetPropertyDictItem(e, item);
 }
@@ -187,10 +188,12 @@ int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItem * item) cons
 
 void		WED_PropIntText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Int;
 	info.prop_name = mTitle;
 	info.digits = mDigits;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntText::GetPropertyDict(PropertyDict_t& dict)
@@ -280,9 +283,11 @@ void		WED_PropIntText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropBoolText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Bool;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropBoolText::GetPropertyDict(PropertyDict_t& dict)
@@ -297,7 +302,7 @@ void		WED_PropBoolText::GetPropertyDictItem(int e, string& item)
 
 void		WED_PropBoolText::GetProperty(PropertyVal_t& val) const
 {
-	val.int_val = value;
+	val.int_val = intlim(value,0,1);
 	val.prop_kind = prop_Bool;
 }
 
@@ -371,11 +376,14 @@ void		WED_PropBoolText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Double;
 	info.prop_name = mTitle;
 	info.digits = mDigits;
 	info.decimals = mDecimals;
+	info.round_down = false;
+	info.synthetic = 0;
 }
 
 void		WED_PropDoubleText::GetPropertyDict(PropertyDict_t& dict)
@@ -457,6 +465,39 @@ void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
 	sprintf(as_double,"%.10lf", value);
 	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_double));
 }
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
+{
+	WED_PropDoubleText::GetPropertyInfo(info);
+	info.round_down= true;
+}
+
+int		WED_PropFrequencyText::GetAs10Khz(void) const
+{
+	// This is kind of a fuck-fest and some explanation is needed.  Unfortunately ATC frequencies are stored in decimal mhz
+	// in WED's internal data model, so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
+	// We want to TRUNCATE the 1's digit of the khz frequency, e.g.
+	// XP treats 123.125 and 123.12.  
+	
+	int freq_khz = round(this->value * 1000.0);
+	return freq_khz / 10;	// Intentional floor - 123.125 -> 12312.
+}
+
+void	WED_PropFrequencyText::AssignFrom10Khz(int freq_10khz)
+{
+	double mhz = (double) freq_10khz / 100.0;
+	*this = mhz;
+}
+
+void		WED_PropFrequencyText::ToXML(WED_XMLElement * parent)
+{
+	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
+	xml->add_attr_double(mXMLColumn.second,value,mDecimals+1);
+}
+
+
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -478,9 +519,11 @@ void		WED_PropDoubleTextMeters::SetProperty(const PropertyVal_t& val, WED_Proper
 
 void		WED_PropStringText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_String;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropStringText::GetPropertyDict(PropertyDict_t& dict)
@@ -571,9 +614,11 @@ void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropFileText::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_FilePath;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropFileText::GetPropertyDict(PropertyDict_t& dict)
@@ -665,9 +710,11 @@ void		WED_PropFileText::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnum::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_Enum;
 	info.prop_name = mTitle;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntEnum::GetPropertyDict(PropertyDict_t& dict)
@@ -765,10 +812,12 @@ void		WED_PropIntEnum::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnumSet::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
 	info.exclusive = this->exclusive;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntEnumSet::GetPropertyDict(PropertyDict_t& dict)
@@ -931,10 +980,12 @@ void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
 
 void		WED_PropIntEnumBitfield::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.prop_kind = prop_EnumSet;
 	info.prop_name = mTitle;
 	info.exclusive = false;
+	info.synthetic = 0;
 }
 
 void		WED_PropIntEnumBitfield::GetPropertyDict(PropertyDict_t& dict)
@@ -1048,6 +1099,7 @@ void		WED_PropIntEnumSetFilter::GetPropertyInfo(PropertyInfo_t& info)
 	mParent->GetNthPropertyInfo(me, info);
 	info.prop_name = mTitle;
 	info.exclusive = exclusive;
+	info.synthetic = 1;
 }
 
 void		WED_PropIntEnumSetFilter::GetPropertyDict(PropertyDict_t& dict)
@@ -1132,8 +1184,10 @@ void		WED_PropIntEnumSetUnion::GetPropertyInfo(PropertyInfo_t& info)
 {
 	info.prop_name = host;
 	info.prop_kind = prop_EnumSet;
+	info.can_delete = false;
 	info.can_edit = 1;
 	info.exclusive = this->exclusive;
+	info.synthetic = 1;
 }
 
 void		WED_PropIntEnumSetUnion::GetPropertyDict(PropertyDict_t& dict)

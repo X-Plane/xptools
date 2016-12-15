@@ -65,9 +65,14 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 	int pc = rhs->CountProperties();
 	for (int p = 0; p < pc; ++p)
 	{
+		PropertyInfo_t i;
 		PropertyVal_t v;
-		rhs->GetNthProperty(p, v);
-		this->SetNthProperty(p, v);
+		rhs->GetNthPropertyInfo(p, i);
+		if(i.can_edit && !i.synthetic)
+		{
+			rhs->GetNthProperty(p, v);
+			this->SetNthProperty(p, v);
+		}
 	}
 }
 
@@ -336,7 +341,7 @@ int					WED_Thing::CountChildren(void) const
 
 WED_Thing *		WED_Thing::GetNthChild(int n) const
 {
-	return SAFE_CAST(WED_Thing,FetchPeer(child_id[n]));
+	return STATIC_CAST(WED_Thing,FetchPeer(child_id[n]));
 }
 
 WED_Thing *		WED_Thing::GetNamedChild(const string& s) const
@@ -363,7 +368,7 @@ int					WED_Thing::CountSources(void) const
 
 WED_Thing *			WED_Thing::GetNthSource(int n) const
 {
-	return SAFE_CAST(WED_Thing,FetchPeer(source_id[n]));
+	return STATIC_CAST(WED_Thing,FetchPeer(source_id[n]));
 }
 
 int					WED_Thing::CountViewers(void) const
@@ -376,7 +381,7 @@ void WED_Thing::GetAllViewers(set<WED_Thing *>& out_viewers) const
 	out_viewers.clear();
 	for(set<int>::iterator i = viewer_id.begin(); i != viewer_id.end(); ++i)
 	{
-		WED_Thing * v = SAFE_CAST(WED_Thing, FetchPeer(*i));
+		WED_Thing * v = STATIC_CAST(WED_Thing, FetchPeer(*i));
 		DebugAssert(v);
 		if(v)
 			out_viewers.insert(v);
@@ -396,13 +401,13 @@ void	WED_Thing::SetName(const string& n)
 
 WED_Thing *		WED_Thing::GetParent(void) const
 {
-	return SAFE_CAST(WED_Thing,FetchPeer(parent_id));
+	return STATIC_CAST(WED_Thing,FetchPeer(parent_id));
 }
 
 void				WED_Thing::SetParent(WED_Thing * parent, int nth)
 {
 	StateChanged(wed_Change_Topology);
-	WED_Thing * old_parent = SAFE_CAST(WED_Thing, FetchPeer(parent_id));
+	WED_Thing * old_parent = STATIC_CAST(WED_Thing, FetchPeer(parent_id));
 	if (old_parent) old_parent->RemoveChild(GetID());
 	parent_id = parent ? parent->GetID() : 0;
 	if (parent) parent->AddChild(GetID(),nth);
@@ -457,7 +462,7 @@ void	WED_Thing::ReplaceSource(WED_Thing * old, WED_Thing * rep)
 
 int			WED_Thing::GetMyPosition(void) const
 {
-	WED_Thing * parent = SAFE_CAST(WED_Thing, FetchPeer(parent_id));
+	WED_Thing * parent = STATIC_CAST(WED_Thing, FetchPeer(parent_id));
 	if (!parent) return 0;
 	int n = 0;
 	vector<int>::iterator i = find(parent->child_id.begin(), parent->child_id.end(), this->GetID());
@@ -586,9 +591,11 @@ WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", SQL_N
 
 void		WED_TypeField::GetPropertyInfo(PropertyInfo_t& info)
 {
+	info.can_delete = false;
 	info.can_edit = 0;
 	info.prop_kind = prop_String;
 	info.prop_name = "Class";
+	info.synthetic = 0;
 }
 
 void		WED_TypeField::GetPropertyDict(PropertyDict_t& dict)

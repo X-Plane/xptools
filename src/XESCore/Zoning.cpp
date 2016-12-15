@@ -34,7 +34,6 @@
 #include "NetHelpers.h"
 #include "PolyRasterUtils.h"
 #include "AptDefs.h"
-#include "ObjPlacement2.h"
 #include "ConfigSystem.h"
 #include "MapTopology.h"
 #include "GISTool_Globals.h"
@@ -143,7 +142,7 @@ static bool ReadFacadeRule(const vector<string>& tokens, void * ref)
 	{
 		string fac_front, fac_back;
 		FacadeChoice_t c;
-		if(TokenizeLine(tokens," ffffss",&c.width, &c.height_min, &c.height_max, &c.depth, &fac_front, &fac_back) != 7)
+		if(TokenizeLine(tokens," ffffss",&c.width, &c.height_min, &c.height_max, &c.depth_unused, &fac_front, &fac_back) != 7)
 			return false;
 		c.fac_id_front =  RegisterAGResource(fac_front);
 		c.fac_id_back =  RegisterAGResource(fac_back);
@@ -170,27 +169,29 @@ static void		pick_n(vector<float>& choices, int count, vector<float>& picks)
 static bool ReadFillRule(const vector<string>& tokens, void * ref)
 {
 	FillRule_t r;
-	string agb, fac, ags;
+	string agb, fac, ags, fil;
 	if(TokenizeLine(tokens, " eii"
 							"fffff"
 							"ffffff"
 							"fffif"
-							"sss",
+							"ssss",
 			&r.zoning,			&r.road,			&r.variant,
 			&r.min_height,&r.max_height,			&r.min_side_len, &r.max_side_len,			&r.block_err_max,
 			&r.min_side_major,&r.max_side_major,	&r.min_side_minor,&r.max_side_minor,		&r.ang_min,&r.ang_max,
 
-			&r.agb_min_width,			&r.agb_slop_width,			&r.fac_min_width,			&r.fac_depth_split,			&r.fac_extra,
+			&r.agb_min_width,			&r.agb_slop_width,			&r.fac_min_width_unused,	&r.fac_depth_split,			&r.fac_extra,
 
-			&agb,			&fac,			&ags) != 23)
+			&agb,			&fac,			&ags, &fil) != 24)
 			return false;
 
 	r.agb_slop_depth = r.agb_slop_width;
 
+	
 
 	r.agb_id = RegisterAGResource(agb);
 	r.ags_id = RegisterAGResource(ags);
 	r.fac_id = RegisterAGResource(fac);
+	r.fil_id = RegisterAGResource(fil);
 
 //	if((r.fac_min_width == 0.0 && r.fac_id != NO_VALUE && r.agb_id != NO_VALUE)
 //	{
@@ -322,7 +323,7 @@ void LoadZoningRules(void)
 	RegisterLineHandler("FACADE_TILE", ReadFacadeRule, NULL);
 	RegisterLineHandler("FACADE_SPELLING", ReadFacadeRule, NULL);
 
-	LoadConfigFile("zoning.txt");
+	LoadConfigFile(gRegion == rf_eu ? "zoning_eu.txt" : "zoning_us.txt");
 
 	for(FacadeSpellingTable::iterator sp = gFacadeSpellings.begin(); sp != gFacadeSpellings.end(); ++sp)
 	{
@@ -339,7 +340,7 @@ void LoadZoningRules(void)
 template <typename T>
 inline bool	check_rule(T minv, T maxv, T actv)
 {
-	return ((minv == maxv) && (minv == 0) || (actv >= minv && actv <= maxv));
+	return ((minv == maxv && minv == 0) || (actv >= minv && actv <= maxv));
 }
 
 inline bool any_match(const set<int>& lhs, const set<int>& rhs)
@@ -588,6 +589,7 @@ void kill_antennas(Pmwx& io_map, Pmwx::Face_handle f, float max_len)
 
 static void ZoneOneFace(
 				Pmwx& 				ioMap,
+				const DEMGeo&		inElev,
 				const DEMGeo& 		inLanduse,
 				const DEMGeo&		inForest,
 				const DEMGeo&		inPark,
@@ -643,7 +645,10 @@ static void ZoneOneFace(
 			{
 				float e = inLanduse.get(x,y);
 				float f = inForest.get(x,y);
-				float p = inPark.get(x,y);
+//				float p = inPark.get(x,y);
+				float p = inPark.get(
+					inPark.map_x_from(inLanduse, x),
+					inPark.map_y_from(inLanduse,y));
 				float d = urban_density_from_lu.get(x,y);
 				count++;
 
@@ -758,7 +763,7 @@ static void ZoneOneFace(
 		if(!circ->twin()->face()->is_unbounded() && circ->twin()->face()->data().IsWater())
 			has_water = 1;
 		else
-			has_non_water;
+			has_non_water = 1;
 	} while (++circ != stop);
 
 	if(has_water && !has_non_water) has_water = 2;
@@ -909,9 +914,8 @@ static void ZoneOneFace(
 			if(major != -1)
 			{
 				// This shows the AG final major axis in green.
-//				Segment2 real_major = mbounds.side(major);
-//				debug_mesh_line(trans.Reverse(real_major.p1 + v_y),trans.Reverse(real_major.p2 + v_y),0,1,0,0,1,0);
-
+				Segment2 real_major = mbounds.side(major);
+//				debug_mesh_line(trans.Reverse(real_major.p1/* + v_y*/),trans.Reverse(real_major.p2/* + v_y*/),0,1,0,0,1,0);
 				
 				bounds[0] = bounds[2] = v_x.dot(Vector2(mbounds[0]));
 				bounds[1] = bounds[3] = v_y.dot(Vector2(mbounds[0]));	
@@ -924,8 +928,30 @@ static void ZoneOneFace(
 					bounds[2] = max(bounds[2],x);
 					bounds[3] = max(bounds[3],y);
 				}
-				short_axis_length = fabs(bounds[3] - bounds[1]);
-				long_axis_length = fabs(bounds[2] - bounds[0]);
+
+				double worst_l[4] = { 0 };
+
+				for(int n = 0; n < mbounds.size(); ++n)
+				{
+					double x = v_x.dot(Vector2(mbounds[n]));
+					double y = v_y.dot(Vector2(mbounds[n]));
+
+					double dif[4] = {
+						x-bounds[0],
+						bounds[2]-x,
+						y-bounds[1],
+						bounds[3]-y };
+					
+					for(int s = 0; s < 4; ++s)
+					{																									
+						DebugAssert(dif[s] >= 0.0f);
+						if(dif[s] < 2.0f)
+							worst_l[s] = max(worst_l[s],dif[s]);
+					}
+				}
+				
+				short_axis_length = fabs(bounds[3] - bounds[1]) - worst_l[0] - worst_l[2];
+				long_axis_length = fabs(bounds[2] - bounds[0]) - worst_l[1] - worst_l[3];
 
 			}
 
@@ -1053,6 +1079,7 @@ static void ZoneOneFace(
 
 void	ZoneManMadeAreas(
 				Pmwx& 				ioMap,
+				const DEMGeo&		inElev,
 				const DEMGeo& 		inLanduse,
 				const DEMGeo&		inForest,
 				const DEMGeo&		inPark,
@@ -1097,6 +1124,7 @@ void	ZoneManMadeAreas(
 		PROGRESS_CHECK(inProg, 0, 3, "Zoning terrain...", ctr, total, check)
 		ZoneOneFace(
 					ioMap,
+					inElev,
 					inLanduse,
 					inForest,
 					inPark,
@@ -1109,6 +1137,105 @@ void	ZoneManMadeAreas(
 
 #define HEIGHT_SPREAD_FACTOR 0.5
 #define MIN_HEIGHT_TO_SPREAD 16.0
+
+	PROGRESS_DONE(inProg, 0, 3, "Zoning terrain...")
+
+	//--------------------------------------------------------------------------------------------------------------------------------
+	// APPROACH PATHS
+	//--------------------------------------------------------------------------------------------------------------------------------
+
+	PROGRESS_START(inProg, 1, 3, "Checking approach paths...")
+
+	ctr = 0;
+	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
+	if (!face->is_unbounded())
+	if ( face->data().mTerrainType != terrain_Airport)
+	if (!face->data().IsWater())
+	{
+		PROGRESS_CHECK(inProg, 1, 3, "Checking approach paths...", ctr, total, check)
+//		set<Face_handle>	neighbors;
+//		//FindAdjacentFaces(face, neighbors);
+//		{
+//			neighbors.clear();
+//			set<Halfedge_handle> e;
+//			FindEdgesForFace(face, e);
+//			for (set<Halfedge_handle>::iterator he = e.begin(); he != e.end(); ++he)
+//				if ((*he)->twin()->face() != face)
+//					neighbors.insert((*he)->twin()->face());
+//		}
+		Polygon2 me;
+		Bbox2	me_bounds;
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		circ = stop = face->outer_ccb();
+		do {
+			Point2 bp = cgal2ben(circ->target()->point());
+			me.push_back(bp);
+			me_bounds += bp;
+			++circ;
+		} while (circ != stop);
+
+		CoordTranslator2 trans;
+		CreateTranslatorForBounds(me_bounds,trans);
+
+		Point2	myloc = trans.Forward(me.centroid());
+
+		double	lowest_restrict = 9.9e9;
+		bool	got_restrict = false;
+
+//		for (set<Face_handle>::iterator niter = neighbors.begin(); niter != neighbors.end(); ++niter)
+//		{
+//			max_agl = max(max_agl, (*niter)->data().mParams[af_HeightObjs] * 0.5);
+//		}
+
+		for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
+		if (apt->kind_code == apt_airport)
+		if (!apt->runways.empty())
+		{
+			Point2 midp = trans.Forward(apt->runways.front().ends.midpoint());
+			double dist = myloc.squared_distance(midp);
+			if (dist < 30000.0*30000.0)
+			for (AptRunwayVector::const_iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
+			for(int rend = 0; rend < 2; ++rend)
+			{
+				Point2 origin = trans.Forward(rend ? rwy->ends.p2 : rwy->ends.p1);
+
+				Vector2	rwy_dir = Vector2(rwy->ends.source(), rwy->ends.target());
+				rwy_dir.normalize();
+				if(!rend) rwy_dir = -rwy_dir;				// no, really! point TO the approaching plane to measure dist to threshold.				
+				origin -= (rwy_dir * rwy->disp_mtr[rend]);	// Because we are backward above, subtract the displaced threshold - moves origin to 50ft point.
+				
+				double rwy_dir_off = rwy_dir.dot(Vector2(origin));
+				
+				Vector2 rwy_nrm = rwy_dir.perpendicular_cw();
+				double rwy_nrm_off = rwy_nrm.dot(Vector2(origin));
+
+				for(Polygon2::iterator pp = me.begin(); pp != me.end(); ++pp)
+				{
+					Point2 polyp = trans.Forward(*pp);
+					double signed_dist_from_threshold = rwy_dir.dot(Vector2(polyp)) - rwy_dir_off;
+					double signed_dist_offset = fabs(rwy_nrm.dot(Vector2(polyp)) - rwy_nrm_off);
+					
+					if(signed_dist_from_threshold > 0 && signed_dist_from_threshold < 18000)
+					if(signed_dist_offset < 300 || signed_dist_offset < (signed_dist_from_threshold / 16.0))
+					{
+						double dist = sqrt(polyp.squared_distance(origin));
+						double gs_elev_msl = apt->elevation_ft * FT_TO_MTR + dist / 18.0 + 15.24;	// cross at 50 feet AGL + an 18:1 (~3 degree) slope
+						double gs_elev_agl = gs_elev_msl - inElev.value_linear(pp->x(), pp->y());
+						
+						if(gs_elev_agl < 1000.0)
+						{
+							lowest_restrict = min(lowest_restrict,gs_elev_agl);
+							got_restrict = true;
+						}
+					}
+				}
+			}
+		}
+
+		if(got_restrict)
+			face->data().mParams[af_HeightApproach] = lowest_restrict;
+	}
+	PROGRESS_DONE(inProg, 1, 3, "Checking approach paths...")
 
 	//--------------------------------------------------------------------------------------------------------------------------------
 	// HEIGHT SPREAD
@@ -1133,7 +1260,7 @@ void	ZoneManMadeAreas(
 		Pmwx::Face_handle me = *to_visit.begin();
 		to_visit.erase(to_visit.begin());
 
-		double h = me->data().mParams[af_HeightObjs] * HEIGHT_SPREAD_FACTOR;
+		float h = me->data().mParams[af_HeightObjs] * HEIGHT_SPREAD_FACTOR;
 		if(h > MIN_HEIGHT_TO_SPREAD)
 		{
 			set<Pmwx::Face_handle>	neighbors;
@@ -1147,87 +1274,13 @@ void	ZoneManMadeAreas(
 				float my_height = (*n)->data().GetParam(af_HeightObjs,0.0);
 				if(h > my_height)
 				{
+					h = min(h, face->data().GetParam(af_HeightApproach,h));
 					(*n)->data().mParams[af_HeightObjs] = h;
 					to_visit.insert(*n);
 				}
 			}
 		}
 	}
-
-	//--------------------------------------------------------------------------------------------------------------------------------
-	// DEAD CODE - APPROACH PATHS
-	//--------------------------------------------------------------------------------------------------------------------------------
-
-
-
-	PROGRESS_DONE(inProg, 0, 3, "Zoning terrain...")
-#if 0
-	PROGRESS_START(inProg, 1, 3, "Checking approach paths...")
-
-	ctr = 0;
-	for (face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face, ++ctr)
-	if (!face->is_unbounded())
-	if (face->data().mTerrainType != terrain_Airport)
-	if (!face->data().IsWater())
-	{
-		PROGRESS_CHECK(inProg, 1, 3, "Checking approach paths...", ctr, total, check)
-		set<Face_handle>	neighbors;
-		//FindAdjacentFaces(face, neighbors);
-		{
-			neighbors.clear();
-			set<Halfedge_handle> e;
-			FindEdgesForFace(face, e);
-			for (set<Halfedge_handle>::iterator he = e.begin(); he != e.end(); ++he)
-				if ((*he)->twin()->face() != face)
-					neighbors.insert((*he)->twin()->face());
-		}
-		Polygon_2 me;
-		Pmwx::Ccb_halfedge_circulator circ, stop;
-		circ = stop = face->outer_ccb();
-		do {
-			me.push_back(circ->target()->point());
-			++circ;
-		} while (circ != stop);
-
-		Point_2	myloc = centroid(me);
-
-		double	my_agl = face->data().mParams[af_HeightObjs];
-		double	max_agl = my_agl;
-
-		for (set<Face_handle>::iterator niter = neighbors.begin(); niter != neighbors.end(); ++niter)
-		{
-			max_agl = max(max_agl, (*niter)->data().mParams[af_HeightObjs] * 0.5);
-		}
-
-		for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
-		if (apt->kind_code == apt_airport)
-		if (!apt->pavements.empty())
-		{
-			Point_2 midp = CGAL::midpoint(apt->pavements.front().ends.source(),apt->pavements.front().ends.target());
-			double dist = LonLatDistMeters(midp.x(), midp.y(), myloc.x(), myloc.y());
-			if (dist < 15000.0)
-			for (AptPavementVector::const_iterator rwy = apt->pavements.begin(); rwy != apt->pavements.end(); ++rwy)
-			if (rwy->name != "xxx")
-			{
-				midp = CGAL::midpoint(rwy->ends.source(), rwy->ends.target());
-				dist = LonLatDistMeters(midp.x(), midp.y(), myloc.x(), myloc.y());
-
-				Vector_2	azi_rwy = normalize(Vector_2(rwy->ends.source(), rwy->ends.target()));
-				Vector_2 azi_me = normalize(Vector_2(midp, myloc));
-
-				double dot = azi_rwy * azi_me;
-
-				double gs_elev = dist / 18.0;
-				if (dot > 0.8 && dist < 700.0)
-					max_agl = min(max_agl, gs_elev);
-			}
-		}
-
-		my_agl = max(my_agl, max_agl);
-		face->data().mParams[af_Height] = max_agl;
-	}
-	PROGRESS_DONE(inProg, 1, 3, "Checking approach paths...")
-#endif
 
 	//--------------------------------------------------------------------------------------------------------------------------------
 	// WATER ANALYSIS
@@ -1326,7 +1379,7 @@ void	ZoneManMadeAreas(
 
 		Pmwx::Ccb_halfedge_circulator circ, stop;
 		DebugAssert(ioMap.unbounded_face()->number_of_holes() == 1);
-		circ = stop = *ioMap.unbounded_face()->holes_begin();//->outer_ccb();
+		circ = stop = Pmwx::Halfedge_iterator(*ioMap.unbounded_face()->holes_begin());//->outer_ccb();
 		do
 		{
 			if(must_burn_v(circ->target()))
@@ -1956,7 +2009,7 @@ PointRule_t * GetPointRuleForFeature(int zoning, const GISPointFeature_t& f)
 	return NULL;
 }
 
-FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth)
+FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len, double height, double depth_one_fac)
 {
 	vector<FacadeSpelling_t *>	possible;
 	FacadeSpelling_t * emerg = NULL;
@@ -1965,7 +2018,7 @@ FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len,
 	if(r->zoning == NO_VALUE || r->zoning == zoning)
 	if(r->variant == -1 || r->variant == variant)
 	if(r->height_min == r->height_max || (r->height_min <= height && height <= r->height_max))
-	if(r->depth_min == r->depth_max || (r->depth_min <= depth && depth <= r->depth_max))
+	if(r->depth_min == r->depth_max || (r->depth_min <= depth_one_fac && depth_one_fac <= r->depth_max))
 	{
 		{
 			double dist_to_this = 0;
@@ -2002,7 +2055,7 @@ FacadeSpelling_t * GetFacadeRule(int zoning, int variant, double front_wall_len,
 	}
 
 	#if DEV
-		printf("WARNING: no facade rule for %s v%d at %lf x %lf\n", FetchTokenString(zoning), variant, front_wall_len,height);
+		printf("WARNING: no facade rule for %s v%d at %lf x %lf x %lf (height %s zero.)\n", FetchTokenString(zoning), variant, front_wall_len,height,depth_one_fac, height==0.0 ? "is" : "is not");
 	#endif
 	return NULL;
 }

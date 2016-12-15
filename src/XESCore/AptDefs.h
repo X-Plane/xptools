@@ -80,8 +80,8 @@ enum {
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
 
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
-
-
+	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list
+	apt_meta_data = 1302,				// 1302 <key> <value>
 	// Surface codes
 	apt_surf_none		= 0,
 	apt_surf_asphalt,
@@ -228,8 +228,9 @@ enum {
 	atc_traffic_turbos = 4,
 	atc_traffic_props = 8,
 	atc_traffic_helis = 16,
+	atc_traffic_fighters = 32,
 	
-	atc_traffic_all = (atc_traffic_heavies|atc_traffic_jets|atc_traffic_turbos|atc_traffic_props|atc_traffic_helis),
+	atc_traffic_all = (atc_traffic_heavies|atc_traffic_jets|atc_traffic_turbos|atc_traffic_props|atc_traffic_helis|atc_traffic_fighters),
 	
 	atc_op_arrivals = 1,
 	atc_op_departures = 2,
@@ -238,7 +239,20 @@ enum {
 	atc_ramp_misc = 0,
 	atc_ramp_gate = 1,
 	atc_ramp_tie_down = 2,
-	atc_ramp_hangar = 3
+	atc_ramp_hangar = 3,
+	
+	atc_width_A = 0,
+	atc_width_B = 1,
+	atc_width_C = 2,
+	atc_width_D = 3,
+	atc_width_E = 4,
+	atc_width_F = 5,
+
+	ramp_operation_none = 0,
+	ramp_operation_general_aviation = 1,
+	ramp_operation_airline = 2,
+	ramp_operation_cargo = 3,
+	ramp_operation_military = 4
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -351,7 +365,10 @@ struct	AptGate_t {
 	float		heading;
 	int			type;
 	int			equipment;
+	int			width;			// icao width code
 	string		name;
+	int			ramp_op_type;     // ramp operations type
+	string		airlines;
 };
 typedef vector<AptGate_t>		AptGateVector;
 
@@ -435,7 +452,7 @@ struct AptFlow_t {
 
 	string						icao;
 	int							ceiling_ft;
-	int							visibility_sm;
+	float						visibility_sm;
 	AptTimeRuleVector			time_rules;
 	AptWindRuleVector			wind_rules;	
 	int							pattern_side;
@@ -456,6 +473,7 @@ struct AptRouteEdge_t {
 	int							dst;
 	int							oneway;
 	int							runway;
+	int							width;	// icao width code
 	set<string>					hot_depart;
 	set<string>					hot_arrive;
 	set<string>					hot_ils;
@@ -476,6 +494,7 @@ struct AptInfo_t {
 	int					elevation_ft;
 	int					has_atc_twr;
 	int					default_buildings;		// not used in 850
+	std::vector<std::pair<string,string> > meta_data; //Contains meta data for real and synthetic properties
 
 	AptRunwayVector		runways;				// 850 structures
 	AptSealaneVector	sealanes;

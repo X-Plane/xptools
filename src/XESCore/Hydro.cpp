@@ -39,10 +39,6 @@
 #include "DEMToVector.h"
 #include "CompGeomUtils.h"
 #include "PlatformUtils.h"
-#if APL && !defined(__MACH__)
-#define __DEBUGGING__
-#include "XUtils.h"
-#endif
 
 inline Halfedge_handle	dominant(Halfedge_handle e) { return e->data().mDominant ? e : e->twin(); }
 
@@ -1352,13 +1348,6 @@ void	ConformWater(DEMGeoMap& dems, const char * hydro_dir, bool inWrite, int bor
 	char	fname_self[1024];
 
 	string border_loc = hydro_dir;
-#if APL && !defined(__MACH__)
-	string	appP;
-	AppPath(appP);
-	string::size_type b = appP.rfind(':');
-	appP.erase(b+1);
-	border_loc = appP + border_loc;
-#endif
 
 	sprintf(fname_self,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth  ),latlon_bucket(water_elev.mWest  ),DIR_STR,(int)(water_elev.mSouth  ),(int)(water_elev.mWest  ));
 	sprintf(fname_left,"%s%s%+03d%+04d%s%+03d%+04d.hydro.txt",border_loc.c_str(),DIR_STR,latlon_bucket(water_elev.mSouth  ),latlon_bucket(water_elev.mWest-1),DIR_STR,(int)(water_elev.mSouth  ),(int)(water_elev.mWest-1));

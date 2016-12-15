@@ -35,9 +35,9 @@
 #include "WED_Messages.h"
 #include "WED_Document.h"
 #include "WED_MapPane.h"
+#include "WED_Airport.h"
 
 static int import_bounds_default[4] = { 0, 0, 500, 500 };
-static int kDefCols[] = { 100, 100 };
 
 enum {
 	kMsg_FilterChanged = WED_PRIVATE_MSG_BASE,
@@ -53,14 +53,12 @@ WED_AptImportDialog::WED_AptImportDialog(
 		WED_Archive *	archive,
 		WED_MapPane *	pane) : 
 	GUI_Window("Import apt.dat", xwin_style_resizable|xwin_style_visible|xwin_style_centered, import_bounds_default, cmdr),
-	GUI_SimpleTableGeometry(2,kDefCols,20),
 	mTextTable(this,100,0),
 	mMapPane(pane),
 	mResolver(resolver),
 	mArchive(archive),
 	mPath(file_path),
-	mSortColumn(1),
-	mInvertSort(1)	
+	mAptTable(&mApts)
 {
 	resolver->AddListener(this);
 
@@ -75,21 +73,21 @@ WED_AptImportDialog::WED_AptImportDialog(
 	packer->SetBounds(bounds);
 	packer->SetBkgkndImage ("gradient.png");
 
-	mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Filter:","",NULL,false);
+	mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Search:","",NULL,false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(packer);
 	mFilter->AddListener(this);
 
-	resort();
+	mAptTable.SetFilter(mFilter->GetText());
 	
 	mScroller = new GUI_ScrollerPane(0,1);
 	mScroller->SetParent(this);
 	mScroller->Show();
 	mScroller->SetSticky(1,1,1,1);
 
-	mTextTable.SetProvider(this);
-	mTextTable.SetGeometry(this);
+	mTextTable.SetProvider(&mAptTable);
+	mTextTable.SetGeometry(&mAptTable);
 
 	mTextTable.SetColors(
 				WED_Color_RGBA(wed_Table_Gridlines),
@@ -105,7 +103,7 @@ WED_AptImportDialog::WED_AptImportDialog(
 				WED_Color_RGBA(wed_TextField_FocusRing));
 
 	mTable = new GUI_Table(true);
-	mTable->SetGeometry(this);
+	mTable->SetGeometry(&mAptTable);
 	mTable->SetContent(&mTextTable);
 	mTable->SetParent(mScroller);
 	mTable->SetSticky(1,1,1,1);
@@ -114,8 +112,8 @@ WED_AptImportDialog::WED_AptImportDialog(
 	mScroller->SetContent(mTable);
 	mTextTable.SetParentTable(mTable);
 
-	mTextTableHeader.SetProvider(this);
-	mTextTableHeader.SetGeometry(this);
+	mTextTableHeader.SetProvider(&mAptTable);
+	mTextTableHeader.SetGeometry(&mAptTable);
 
 	mTextTableHeader.SetImage("header.png");
 	mTextTableHeader.SetColors(
@@ -127,7 +125,7 @@ WED_AptImportDialog::WED_AptImportDialog(
 	bounds[1] = 0;
 	bounds[3] = GUI_GetImageResourceHeight("header.png") / 2;
 	mHeader->SetBounds(bounds);
-	mHeader->SetGeometry(this);
+	mHeader->SetGeometry(&mAptTable);
 	mHeader->SetHeader(&mTextTableHeader);
 	mHeader->SetParent(this);
 	mHeader->Show();
@@ -138,7 +136,7 @@ WED_AptImportDialog::WED_AptImportDialog(
 					mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
 					mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
-					this->AddListener(mTable);			// Table listens to actual property content to know when data itself changes
+					mAptTable.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
 	packer->PackPane(mFilter,gui_Pack_Top);
 	packer->PackPane(mHeader,gui_Pack_Top);
@@ -181,19 +179,32 @@ WED_AptImportDialog::WED_AptImportDialog(
 	mScroller->PositionHeaderPane(mHeader);
 }
 
+WED_AptImportDialog::~WED_AptImportDialog()
+{
+}
+
+bool	WED_AptImportDialog::Closed(void)
+{
+	return true;
+}
+
 void WED_AptImportDialog::DoIt(void)
 {
 	WED_Thing * wrl = WED_GetWorld(mResolver);
 
 	AptVector apts;
-	for(int n = 0; n < mSorted.size(); ++n)
-	if(mSelected.count(mSorted[n]))
-	apts.push_back(mApts[mSorted[n]]);
+	
+	set<int>	selected;
+	mAptTable.GetSelection(selected);
+	
+	for(int n = 0; n < mApts.size(); ++n)
+	if(selected.count(n))
+		apts.push_back(mApts[n]);
 	
 	if(!apts.empty())
 	{
 		wrl->StartOperation("Import apt.dat");
-		vector<WED_Thing *>	new_apts;
+		vector<WED_Airport *>	new_apts;
 		WED_AptImport(mArchive, wrl, mPath.c_str(), apts, &new_apts);
 		WED_SetAnyAirport(mResolver);
 
@@ -210,177 +221,6 @@ void WED_AptImportDialog::DoIt(void)
 	}
 }
 
-WED_AptImportDialog::~WED_AptImportDialog()
-{
-}
-
-bool	WED_AptImportDialog::Closed(void)
-{
-	return true;
-}
-
-void	WED_AptImportDialog::SelectHeaderCell(
-						int							cell_x)
-{
-	if(cell_x == mSortColumn)
-		mInvertSort = !mInvertSort;
-	else
-	{
-		mSortColumn = cell_x;
-		mInvertSort = 1;
-	}
-	resort();
-	Refresh();
-}
-
-void	WED_AptImportDialog::GetHeaderContent(
-						int							cell_x,
-						GUI_HeaderContent&			the_content)
-{
-	the_content.is_selected = (cell_x == mSortColumn);
-	the_content.can_resize = 1;
-	the_content.can_select = 1;
-	switch(cell_x) {
-	case 0:
-		the_content.title = "ICAO";
-		break;
-	case 1:
-		the_content.title = "Name";
-		break;
-	}		
-}
-
-int		WED_AptImportDialog::GetColCount(void)
-{
-	return 2;
-}
-
-int		WED_AptImportDialog::GetRowCount(void)
-{
-	return mSorted.size();
-}
-
-
-void	WED_AptImportDialog::GetCellContent(
-					int							cell_x,
-					int							cell_y,
-					GUI_CellContent&			the_content)
-{
-	the_content.content_type = gui_Cell_EditText;
-	the_content.can_edit = 0;
-	the_content.can_disclose = 0;
-	the_content.can_select = 1;
-	the_content.can_drag = 0;
-
-	int apt_id = mSorted[cell_y];
-
-	the_content.is_disclosed = 0;
-	the_content.is_selected = mSelected.count(apt_id);
-	the_content.indent_level = 0;
-
-
-	switch(cell_x) {
-	case 0:		
-		the_content.text_val = mApts[apt_id].icao;
-		break;
-	case 1:		
-		the_content.text_val = mApts[apt_id].name;
-		break;
-	}
-	the_content.string_is_resource = 0;
-}
-
-void	WED_AptImportDialog::SelectionStart(
-					int							clear)
-{
-	if(clear)
-		mSelected.clear();
-	mSelectedOrig = mSelected;
-}
-
-int		WED_AptImportDialog::SelectGetExtent(
-					int&						low_x,
-					int&						low_y,
-					int&						high_x,
-					int&						high_y)
-{
-	if(mSorted.empty())	
-		return 0;
-	low_x = 0;
-	high_x = 0;
-	low_y = mSorted.size();
-	high_y = 0;
-	for(int i = 0; i < mSorted.size(); ++i)
-	if(mSelected.count(mSorted[i]))
-	{
-		low_y = min(low_y,i);
-		high_y = max(high_y,i);
-	}
-	if(low_y <= high_y)
-		return 1;
-	else
-		return 0;
-}
-
-int		WED_AptImportDialog::SelectGetLimits(
-					int&						low_x,
-					int&						low_y,
-					int&						high_x,
-					int&						high_y)
-{
-	if(mSorted.empty())	return 0;
-	low_x = 0;
-	low_y = 0;
-	high_x = 0;
-	high_y = mSorted.size()-1;
-	return 1;
-}
-
-void	WED_AptImportDialog::SelectRange(
-					int							start_x,
-					int							start_y,
-					int							end_x,
-					int							end_y,
-					int							is_toggle)
-{
-	mSelected = mSelectedOrig;
-
-	for(int x = start_y; x <= end_y; ++x)
-	{
-		int apt_id = mSorted[x];
-		if(is_toggle && mSelected.count(apt_id))		mSelected.erase (apt_id);
-		else											mSelected.insert(apt_id);		
-	}
-	BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
-}
-
-void	WED_AptImportDialog::SelectionEnd(void)
-{
-}
-
-int		WED_AptImportDialog::SelectDisclose(
-					int							open_it,
-					int							all)
-{
-	return 0;
-}
-
-int		WED_AptImportDialog::TabAdvance(
-					int&						io_x,
-					int&						io_y,
-					int							reverse,
-					GUI_CellContent&			the_content)
-{
-	return 0;
-}
-
-int		WED_AptImportDialog::DoubleClickCell(
-					int							cell_x,
-					int							cell_y)
-{
-	return 0;
-}
-
 void	WED_AptImportDialog::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t    			inMsg,
@@ -388,7 +228,7 @@ void	WED_AptImportDialog::ReceiveMessage(
 {
 	switch(inMsg) {
 	case kMsg_FilterChanged:	
-		resort();
+		mAptTable.SetFilter(mFilter->GetText());
 		break;
 	case kMsgImport:
 		DoIt();
@@ -401,47 +241,3 @@ void	WED_AptImportDialog::ReceiveMessage(
 	}
 }
 
-void toupper(string& io_string)
-{
-	for(int i = 0; i < io_string.size(); ++i)
-		io_string[i] = toupper(io_string[i]);
-}
-
-struct sort_by_apt {
-	sort_by_apt(const AptVector * apts, int sort_column, int invert_sort) : apts_(apts), sort_column_(sort_column), invert_sort_(invert_sort) { }
-
-	bool operator()(int x, int y) const {
-		string xs(sort_column_ ? apts_->at(x).name : apts_->at(x).icao);
-		string ys(sort_column_ ? apts_->at(y).name : apts_->at(y).icao);
-		toupper(xs);
-		toupper(ys);
-		if(invert_sort_)
-			return ys < xs;
-		else
-			return xs < ys;
-	}
-
-	int sort_column_;
-	int invert_sort_;
-	const AptVector * apts_;
-};
-
-void		WED_AptImportDialog::resort(void)
-{
-	string	fstr = mFilter->GetText();
-	vector<string>	filters;
-	tokenize_string_func(fstr.begin(),fstr.end(),back_inserter(filters),::isspace);
-
-	mSorted.clear();
-	for(int i = 0; i < mApts.size(); ++i)
-	{
-		if (filters.empty() ||
-			filter_match(mApts[i].icao, filters.begin(),filters.end()) ||
-			filter_match(mApts[i].name, filters.begin(),filters.end()))
-		{
-			mSorted.push_back(i);
-		}
-	}
-	sort(mSorted.begin(),mSorted.end(), sort_by_apt(&mApts, mSortColumn,mInvertSort));
-	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED,0);
-}

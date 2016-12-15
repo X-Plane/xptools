@@ -489,7 +489,6 @@ int DoRasterScale(const vector<const char *>& args)
 	
 }
 
-
 #define DoRasterResample_HELP \
 "USAGE: -raster_resample x_res y_res post layer\n"\
 "This resamples a raster layer.  The resampling occurs over\n"\
@@ -521,6 +520,49 @@ int DoRasterResample(const vector<const char *>& args)
 	dem.set_rez(atof(args[0]),atof(args[1]));
 
 	ResampleDEM(src, dem);
+	swap(src,dem);
+
+	#if OPENGL_MAP
+	RF_Notifiable::Notify(rf_Cat_File, rf_Msg_FileLoaded, NULL);
+	#endif
+
+	return 0;
+}
+
+#define DoRasterResampleMedian_HELP \
+"USAGE: -raster_resample_median x_res y_res radius layer\n"\
+"This resamples a raster layer with median filter (using rectangular window with\n"\
+"radius number of pixels in each direction).  The resampling occurs over\n"\
+"the current global extent (which becomes the new DEM bounds.\n"\
+"DEM_NO_DATA is set for samples inside the resampling region\n"\
+"but outside the old layer data.\n"
+int DoRasterResampleMedian(const vector<const char *>& args)
+{
+	int layer = LookupToken(args[3]);
+	int radius = atoi(args[2]);
+
+	if (layer == -1)
+	{
+		fprintf(stderr,"Layer %s unknown.\n",args[3]);
+		return 1;
+	}
+
+	if (gDem.count(layer) == 0)
+	{
+		fprintf(stderr,"Layer %s not initialized.\n",args[3]);
+		return 1;
+	}
+
+	DEMGeo& src = gDem[layer];
+	DEMGeo	dem;
+	dem.mWest = gMapWest;
+	dem.mEast = gMapEast;
+	dem.mNorth = gMapNorth;
+	dem.mSouth = gMapSouth;
+	dem.mPost = 0;
+	dem.set_rez(atof(args[0]),atof(args[1]));
+
+	ResampleDEMmedian(src, dem, radius);
 	swap(src,dem);
 
 	#if OPENGL_MAP
@@ -952,6 +994,7 @@ static	GISTool_RegCmd_t		sDemCmds[] = {
 { "-raster_init",	4, 5, DoRasterInit,			"Create new empty raster layer.", DoRasterInit_HELP }, 
 { "-raster_scale",	2, 2, DoRasterScale,		"Resize a raster layer.", DoRasterScale_HELP },
 { "-raster_resample",4, 4, DoRasterResample,	"Resample raster layer.", DoRasterResample_HELP }, 
+{ "-raster_resample_median",4, 4, DoRasterResampleMedian,	"Resample raster layer with median.", DoRasterResampleMedian_HELP },
 { "-raster_adjust", 4, 4, DoRasterAdjust,		"Adjust levels of raster layers to match.", DoRasterAdjust_HELP },
 { "-raster_merge", 4, 4, DoRasterMerge,			"Merge two raster layers.", DoRasterMerge_HELP },
 { "-raster_watershed", 3, 3, DoRasterWatershed,	"Calculate watersheds from one layer, dump in another", DoRasterWatershed_HELP },

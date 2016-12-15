@@ -27,7 +27,10 @@
 DEFINE_PERSISTENT(WED_AirportBoundary)
 TRIVIAL_COPY(WED_AirportBoundary, WED_GISPolygon)
 
-WED_AirportBoundary::WED_AirportBoundary(WED_Archive * a, int i) : WED_GISPolygon(a,i)
+WED_AirportBoundary::WED_AirportBoundary(WED_Archive * a, int i) : WED_GISPolygon(a,i),
+	lines(this,"Line Attributes",			SQL_Name("",""),XML_Name("",""),"Line Attributes", 1),
+	lights(this,"Light Attributes",			SQL_Name("",""),XML_Name("",""),"Light Attributes", 1)
+	
 {
 }
 

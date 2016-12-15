@@ -50,6 +50,7 @@
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
+#include "WED_GroupCommands.h"
 #include "GUI_Unicode.h"
 // TODO:
 // migrate all old stuff
@@ -209,9 +210,13 @@ void	WED_Document::Save(void)
 	* both: for when the .bak and regular files are in place
 	*/
 	enum {none,nobackup,both};
-	int stage;
+	int stage = none;
 
-	//Create the strings path..earth.wed.xml,earth.wed.bak.xml,earth.wed.bak.bak.xml
+	//Create the strings path.
+	//.earth.wed.xml,
+	//earth.wed.bak.xml,
+	//earth.wed.bak.bak.xml, deleted before the user sees it.
+
 	//All or some of these are used through out
 	
 	string xml = mFilePath;
@@ -219,7 +224,7 @@ void	WED_Document::Save(void)
 	
 	string bakXML = xml;	
 	bakXML = bakXML.insert((bakXML.length()-4),".bak");
-	
+
 	string tempBakBak = bakXML;
 	tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
 
@@ -227,16 +232,22 @@ void	WED_Document::Save(void)
 	string_utf16 wname;
 	string_utf_8_to_16(xml,wname);
 
-	//If there is no earth.wed.xml file
-	if(FILE_exists(xml.c_str()) == false){
+	bool earth_wed_xml = FILE_exists(xml.c_str());
+	bool earth_wed_bak_xml = FILE_exists(bakXML.c_str());
+
+	//If there is no earth.wed.xml file for any reason
+	if(earth_wed_xml == false)
+	{
 		stage = none;
 	}
 	//If there is no back up and there is an earth.wed.xml
-	else if(FILE_exists(bakXML.c_str()) == false && FILE_exists(xml.c_str()) == true){
+	else if(earth_wed_xml == true && earth_wed_bak_xml == false)
+	{
 		stage = nobackup;
 	}
 	//If there is a back up and an earth.wed.xml
-	else if(FILE_exists(xml.c_str()) == true && FILE_exists(bakXML.c_str()) == true){
+	else if(earth_wed_xml == true && earth_wed_bak_xml == true)
+	{
 		stage = both;
 	}
 
@@ -288,25 +299,25 @@ void	WED_Document::Save(void)
 		switch(stage)
 		{
 			case none:
-				FILE_delete_file(xml.c_str(),0);
+				FILE_delete_file(xml.c_str(), false);
 				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 			case nobackup:
 				//Delete's the bad save
-				FILE_delete_file(xml.c_str(),0);
+				FILE_delete_file(xml.c_str(), false);
 				//un-renames the old one
 				FILE_rename_file(bakXML.c_str(),xml.c_str());
 				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 			case both:
 				//delete incomplete file
-				FILE_delete_file(xml.c_str(),0);
+				FILE_delete_file(xml.c_str(), false);
 
 				//un-rename earth.wed.bak.xml to earth.wed.xml
-				FILE_rename_file(bakXML.c_str(),xml.c_str());
+				FILE_rename_file(bakXML.c_str(), xml.c_str());
 
 				//un-rename earth.wed.bak.bak.xml to earth.wed.bak.xml
-				FILE_rename_file(tempBakBak.c_str(),bakXML.c_str());
+				FILE_rename_file(tempBakBak.c_str(), bakXML.c_str());
 				DoUserAlert("Please check file path for errors or missing parts");
 				break;
 		}
@@ -321,7 +332,7 @@ void	WED_Document::Save(void)
 	if(FILE_exists(tempBakBak.c_str()) == true)
 	{
 		//Delete it
-		FILE_delete_file(tempBakBak.c_str(),0);
+		FILE_delete_file(tempBakBak.c_str(), false);
 	}
 }
 
@@ -427,6 +438,14 @@ void	WED_Document::Revert(void)
 		throw;
 	}
 	mUndo.CommitCommand();
+
+	if(WED_Repair(this))
+	{
+		string msg = string("Warning: the package '") + mPackage + string("' has some corrupt contents."
+					"They have been deleted so that the document can be opened.  If you have a better backup of the project, do not save these changes.");
+		DoUserAlert(msg.c_str());
+		mUndo.PurgeUndo();
+	}
 
 	BroadcastMessage(msg_DocLoaded, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 }

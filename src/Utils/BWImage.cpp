@@ -28,9 +28,6 @@
 #else
 #include <GL/gl.h>
 #endif
-#if APL && DEV && !defined(__MACH__)
-#include <agl.h>
-#endif
 
 #if !INLINING_BW
 
@@ -394,42 +391,3 @@ BWINLINE bool			BWImage::RasterizeLocalCheck(
 
 #endif
 
-#if !INLINING_BW
-
-#if APL && DEV && !defined(__MACH__)
-void BWImage::Debug()
-{
-	#if BIG
-	if(WORD_SIZE != 32)	
-		assert(!"This code is not 64-bit PPC safe!");
-	for (int i = 0; i < (mWidth * mHeight / WORD_SIZE); ++i)
-	{
-		mData[i] = Endian32_Swap(mData[i]);
-	}
-	#endif
-	XPLMSetGraphicsState(0, 0, 0,   0, 0,  0, 0);
-	glColor3f(0.0, 0.0, 0.0);
-	glBegin(GL_QUADS);
-	glVertex2i(0,0);
-	glVertex2i(0,mHeight);
-	glVertex2i(mWidth,mHeight);
-	glVertex2i(mWidth,0);
-	glEnd();
-	glColor3f(1.0, 1.0, 1.0);
-	glRasterPos2i(0, 0);
-	glPixelStorei(GL_UNPACK_LSB_FIRST, 1);
-	glBitmap(mWidth, mHeight, 0,0, 0, 0, (unsigned char *) mData);
-	aglSwapBuffers(aglGetCurrentContext());
-	while (!Button()) { }
-	while (Button()) { }
-	glPixelStorei(GL_UNPACK_LSB_FIRST, 0);
-	#if BIG
-	for (int i = 0; i < (mWidth * mHeight / WORD_SIZE); ++i)
-	{
-		mData[i] = Endian32_Swap(mData[i]);
-	}
-	#endif
-}
-#endif
-
-#endif

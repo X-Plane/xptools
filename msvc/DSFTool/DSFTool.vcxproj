@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{508A48EB-4E1E-4667-939A-7496F8848F0C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>DSFTool</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Debug.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="..\XPTools_Base.props" />
+    <Import Project="..\XPTools_Release.props" />
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>false</MinimalRebuild>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp" />
+    <ClCompile Include="..\..\src\DSFTools\DSFToolCmdLine.cpp" />
+    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFLib.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFLibWrite.cpp" />
+    <ClCompile Include="..\..\src\DSF\DSFPointPool.cpp" />
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
+    <ClCompile Include="..\..\src\Env\EnvParser.c" />
+    <ClCompile Include="..\..\src\Env\Persistence.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp" />
+    <ClCompile Include="..\..\src\Utils\AssertUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\EndianUtils.c" />
+    <ClCompile Include="..\..\src\Utils\FileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\md5.c" />
+    <ClCompile Include="..\..\src\Utils\unzip.c" />
+    <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\zip.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
+    <ClInclude Include="..\..\src\DSF\DSFLib.h" />
+    <ClInclude Include="..\..\src\DSF\DSFPointPool.h" />
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
+    <ClInclude Include="..\..\src\Env\EnvParser.h" />
+    <ClInclude Include="..\..\src\Env\Persistence.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_Unicode.h" />
+    <ClInclude Include="..\..\src\Utils\AssertUtils.h" />
+    <ClInclude Include="..\..\src\Utils\EndianUtils.h" />
+    <ClInclude Include="..\..\src\Utils\FileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\md5.h" />
+    <ClInclude Include="..\..\src\Utils\unzip.h" />
+    <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
+    <ClInclude Include="..\..\src\Utils\zip.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

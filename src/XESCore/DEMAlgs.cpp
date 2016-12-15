@@ -23,7 +23,6 @@
 #include "DEMAlgs.h"
 #include "ParamDefs.h"
 #include "PolyRasterUtils.h"
-#include "ObjTables.h"
 #include "NetTables.h"
 #include "AssertUtils.h"
 #include "DEMTables.h"
@@ -31,7 +30,6 @@
 #include "PolyRasterUtils.h"
 #include "WED_Document.h"
 #include "XESConstants.h"
-#define XUTILS_EXCLUDE_MAC_CRAP 1
 #include "XUtils.h"
 #include "DEMAlgs.h"
 #include "WED_Globals.h"
@@ -43,6 +41,7 @@
 #include "MathUtils.h"
 #include "MapAlgs.h"
 #include "MapTopology.h"
+#include "Zoning.h"
 
 // Minimum bathymetric depth from water surface at any point!
 #define	MIN_DEPTH 10.0f
@@ -61,7 +60,7 @@ struct	SnowLineInfo_t {
 /*
 http://www-das.uwyo.edu/~geerts/cwx/notes/chap10/snowline.html
 units in meters
-Table 1. Effects of hemisphere, latitude and climatic dryness on the average snowlineÕs elevation, in metres (1). SH = southern hemisphere; NH = northern hemisphere. The figures for South America are from (2).
+Table 1. Effects of hemisphere, latitude and climatic dryness on the average snowlineï¿½s elevation, in metres (1). SH = southern hemisphere; NH = northern hemisphere. The figures for South America are from (2).
 */
 static const SnowLineInfo_t kSnowLineInfo[] = {
 //	Lati	SHdry	SHmoist	NHdry	NHmoist
@@ -338,6 +337,23 @@ void ResampleDEM(const DEMGeo& inSrc, DEMGeo& inDst)
 		double lat = inDst.y_to_lat(y);
 		
 		double e = inSrc.value_linear(lon, lat);
+		inDst(x,y) = e;
+	}
+}
+
+void ResampleDEMmedian(const DEMGeo& inSrc, DEMGeo& inDst, int radius)
+{
+	double xstep = (inDst.mEast - inDst.mWest) / inDst.x_res();
+	double ystep = (inDst.mNorth - inDst.mSouth) / inDst.y_res();
+
+
+	for(int y = 0; y < inDst.mHeight; ++y)
+	for(int x = 0; x < inDst.mWidth; ++x)
+	{
+		double lon = inDst.x_to_lon(x);
+		double lat = inDst.y_to_lat(y);
+
+		double e = inSrc.get_median(lon, lat, xstep, ystep, radius);
 		inDst(x,y) = e;
 	}
 }
@@ -670,20 +686,6 @@ static float	GetRoadDensity(Pmwx::Halfedge_const_handle	he)
 	return best;
 }
 
-static	void	ApplyFeatureAtPoint(DEMGeo& ioValues, int feature, const Point_2& where)
-{
-	if (gFeatures.find(feature) == gFeatures.end()) return;
-	float p = gFeatures[feature].property_value;
-
-	int x, y;
-	float h = ioValues.xy_nearest(CGAL::to_double(where.x()),CGAL::to_double(where.y()),x,y);
-	if (h != DEM_NO_DATA)
-//		ioValues(x,y) = p;
-//	else
-		ioValues(x,y) = 0.5 * h + 0.5 * p;
-}
-
-
 // We are passed in a rough urban density calculation, basically a ballpark esetimate.  We then
 // make it more detailed via roads.
 //
@@ -764,59 +766,6 @@ static void	BuildRoadDensityDEM(const Pmwx& inMap, DEMGeo& ioTransport)
 	}
 }
 
-
-
-// Input: the land uses - output property values, normalized of course
-static	void	CalcPropertyValues(DEMGeo&	ioDem, const DEMGeo& topology, const Pmwx& ioMap)
-{
-	fprintf(stderr, "\nCalcPropertyValues ");
-	int x, y;
-	for(x = 0; x < ioDem.mWidth ; ++x)
-	for(y = 0; y < ioDem.mHeight;++y)
-	{
-		int v = ioDem(x,y);
-//		if (gLandUseInfo.find(v) != gLandUseInfo.end())
-//			ioDem(x,y) = gLandUseInfo[v].prop_value_percent;
-//		else
-			ioDem(x,y) = 0.5;
-	}
-
-	float	filter[7*7], filter2[3*3];
-	CalculateFilter(7, filter, demFilter_Spread, true);		// Take basic prop values and splat them all over the place
-	CalculateFilter(3, filter2, demFilter_Spread, true);	// slight diffusion of feature values just for niceness.
-
-
-	ioDem.filter_self(7, filter);
-
-	for (Pmwx::Face_const_iterator face = ioMap.faces_begin(); face != ioMap.faces_end(); ++face)
-	{
-		if (face->is_unbounded()) continue;
-
-		for (GISPointFeatureVector::const_iterator f = face->data().mPointFeatures.begin(); f != face->data().mPointFeatures.end(); ++f)
-			ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mLocation);
-
-
-		for (GISPolygonFeatureVector::const_iterator f = face->data().mPolygonFeatures.begin(); f != face->data().mPolygonFeatures.end(); ++f)
-		{
-			//ApplyFeatureAtPoint(ioDem, f->mFeatType, f->mShape.centroid());
-		}
-
-		/*
-		if (face->data().mAreaFeature.begin()->mFeatType != NO_VALUE)
-		{
-			Pmwx::Ccb_halfedge_const_circulator i, s;
-			i = s = face->outer_ccb();
-			do {
-				ApplyFeatureAtPoint(ioDem, face->data().mAreaFeature.begin()->mFeatType, i->source()->point());
-				++i;
-			} while (i != s);
-		}
-		 */
-	}
-
-	ioDem.filter_self(3, filter2);
-
-}
 
 #if 0
 /*
@@ -1202,25 +1151,29 @@ void	DeriveDEMs(
 		for (x = 0; x < landuse.mWidth; ++x)
 		{
 			float e = landuse.get(x,y);
-			 if(e == lu_globcover_URBAN_HIGH)						e = 1.0;
-		else if(e == lu_globcover_URBAN_TOWN)						e = 0.25;
-		else if(e == lu_globcover_URBAN_LOW)						e = 0.5;
-		else if(e == lu_globcover_URBAN_MEDIUM)						e = 0.75;
+			
+			LandClassInfoTable::iterator i = gLandClassInfo.find(e);
+			if(i != gLandClassInfo.end())
+				e = i->second.urban_density;
+			else if(e == lu_globcover_URBAN_HIGH)						e = 1.0;
+			else if(e == lu_globcover_URBAN_TOWN)						e = 0.25;
+			else if(e == lu_globcover_URBAN_LOW)						e = 0.5;
+			else if(e == lu_globcover_URBAN_MEDIUM)						e = 0.75;
 
-		else if(e == lu_globcover_URBAN_SQUARE_HIGH)				e = 1.0;
-		else if(e == lu_globcover_URBAN_SQUARE_TOWN)				e = 0.25;
-		else if(e == lu_globcover_URBAN_SQUARE_LOW)					e = 0.5;
-		else if(e == lu_globcover_URBAN_SQUARE_MEDIUM)				e = 0.75;
-		
-		else if(e == lu_globcover_URBAN_CROP_TOWN)					e = 0.1;
-		else if(e == lu_globcover_URBAN_SQUARE_CROP_TOWN)			e = 0.1;
-		else if(e == lu_globcover_INDUSTRY_SQUARE)					e = 1.0;
-		else if(e == lu_globcover_INDUSTRY)							e = 1.0;
-		else if(e == lu_usgs_URBAN_IRREGULAR)						e = 1.0;
-		else if(e == lu_usgs_URBAN_SQUARE)							e = 1.0;
+			else if(e == lu_globcover_URBAN_SQUARE_HIGH)				e = 1.0;
+			else if(e == lu_globcover_URBAN_SQUARE_TOWN)				e = 0.25;
+			else if(e == lu_globcover_URBAN_SQUARE_LOW)					e = 0.5;
+			else if(e == lu_globcover_URBAN_SQUARE_MEDIUM)				e = 0.75;
+			
+			else if(e == lu_globcover_URBAN_CROP_TOWN)					e = 0.1;
+			else if(e == lu_globcover_URBAN_SQUARE_CROP_TOWN)			e = 0.1;
+			else if(e == lu_globcover_INDUSTRY_SQUARE)					e = 1.0;
+			else if(e == lu_globcover_INDUSTRY)							e = 1.0;
+			else if(e == lu_usgs_URBAN_IRREGULAR)						e = 1.0;
+			else if(e == lu_usgs_URBAN_SQUARE)							e = 1.0;
 
-		else														e = 0.0;		
-			urbanTemp(x,y) = e;
+			else														e = 0.0;		
+				urbanTemp(x,y) = e;
 		}
 		
 		urbanTemp.derez(8);
@@ -2328,7 +2281,7 @@ void	NeighborHisto(const DEMGeo& input, DEMGeo& output, int semi)
 		for(int dx = x-semi; dx <= x+semi; ++dx)
 		if(input.get(dx,dy) != v)
 			++c;
-		
+
 		output(x,y) = c;
 	}
 }

@@ -34,14 +34,17 @@ DECLARE_INTERMEDIATE(WED_GISLine_Width)
 public:
 
 	// IPropertyObject
-	virtual	int			FindProperty(const char * in_prop);
+	virtual	int			FindProperty(const char * in_prop) const;
 	virtual int			CountProperties(void) const;
-	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
-	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict);
-	virtual	void		GetNthPropertyDictItem(int n, int e, string& item);
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const;
 
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+
+	// WED_PropertyHelper hack/override
+	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
 
 	// IGISEntity
 	virtual	GISClass_t		GetGISClass		(void				 ) const;

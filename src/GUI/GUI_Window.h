@@ -36,7 +36,7 @@ class	GUI_Window_DND;
 class	GUI_Window : public XWinGL, public GUI_Pane, public GUI_Commander {
 public:
 
-							GUI_Window(const char * inTitle, int inAttributes, int inBounds[4],GUI_Commander * inCommander);
+							GUI_Window(const char * inTitle, int inAttributes, const int inBounds[4],GUI_Commander * inCommander);
 	virtual					~GUI_Window();
 
 			void			SetClearSpecs(bool inDoClearColor, bool inDoClearDepth, float inClearColor[4]);
@@ -112,13 +112,17 @@ private:
 #endif
 
 #if APL
-		static pascal OSErr		TrackingHandler(DragTrackingMessage message, WindowRef theWindow, void * ref, DragRef theDrag);
-		static pascal OSErr		ReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
-		static pascal OSStatus	TooltipCB(WindowRef inWindow, Point inGlobalMouse, HMContentRequest inRequest, HMContentProvidedType *outContentProvided, HMHelpContentPtr ioHelpContent);
-
-		static DragTrackingHandlerUPP	sTrackingHandlerUPP;
-		static DragReceiveHandlerUPP	sReceiveHandlerUPP;
-		static HMWindowContentUPP		sTooltipUPP;
+	
+	// For OS SX, we get a bunch of call-backs from XWin because we can't run ObjC code directly in GUI_window.cpp.
+	virtual int					CalcHelpTip(int x, int y, int bounds[4], string& msg);
+	virtual	int					AdvancedDragEntered(void * ns_dragging_info);
+	virtual	int					AdvancedDragUpdated(void * ns_dragging_info);
+	virtual	void				AdvancedDragExited(void * ns_dragging_info);
+	virtual	int					AdvancedPerformDrop(void * ns_dragging_info);
+	
+	virtual	void				GotCommandHack(int command);
+	
+	
 #endif
 
 	GUI_GraphState	mState;

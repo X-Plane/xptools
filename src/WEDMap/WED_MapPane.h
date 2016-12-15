@@ -42,6 +42,7 @@ class WED_ToolInfoAdapter;
 class	WED_TerraserverLayer;
 #endif
 class	WED_StructureLayer;
+class	WED_ATCLayer;
 class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
 //class	WED_TileServerLayer;
@@ -65,7 +66,7 @@ class	WED_NWInfoLayer;
 
 */
 
-class	WED_MapPane : public GUI_Packer, GUI_Listener {
+class	WED_MapPane : public GUI_Packer, public GUI_Listener {
 public:
 
 						 WED_MapPane(GUI_Commander * cmdr, double log_bounds[4], IResolver * resolver, WED_Archive * archive, WED_LibraryListAdapter * library);
@@ -92,6 +93,9 @@ public:
 
 private:
 
+			void		SetTabFilterMode(int mode);
+
+
 	WED_Map *				mMap;
 
 	vector<WED_MapLayer *>	mLayers;
@@ -102,6 +106,7 @@ private:
 #endif	
 //	WED_TileServerLayer *	mTileserver;
 	WED_StructureLayer *	mStructureLayer;
+	WED_ATCLayer *			mATCLayer;
 	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
 #if WITHNWLINK

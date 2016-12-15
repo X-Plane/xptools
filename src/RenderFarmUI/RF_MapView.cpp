@@ -22,7 +22,6 @@
  */
  #define check CHECK
 #include "RF_MapView.h"
-#include "Forests.h"
 
 #include "GUI_Application.h"
 
@@ -196,6 +195,7 @@ GUI_MenuItem_t	kViewItems[] = {
 {	"Color Vector Map Terrain",				'T',			gui_ControlFlag,						0,	viewCmd_ColorMapTerr	},
 {	"Color Vector Map Zoning",				'Z',			gui_ControlFlag,						0,	viewCmd_ColorMapZone	},
 {	"Color Vector Map Superblocks",			'C',			gui_ControlFlag,						0,	viewCmd_ColorMapSupr	},
+{	"Color Vector Map Flight Paths",		'I',			gui_ControlFlag,						0,	viewCmd_ColorMapAppr	},
 {	"-",									0,				0,										0,	0						},
 {	"Vector Map",							'1',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_VecMap			},
 {	"Airports",								'2',			gui_ControlFlag + gui_OptionAltFlag,	0,	viewCmd_Airports		},
@@ -273,10 +273,11 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 	case viewCmd_ZoomLoad:		ioCheck = sZoomLoad;			return 1;
 	case viewCmd_ShowExtent:	ioCheck = sShowExtent;			return 1;
 	case viewCmd_VecMap:		ioCheck = sShowMap;				return 1;
-	case viewCmd_ColorMapFeat:	ioCheck = !g_color_face_with_terr && !g_color_face_with_zone && !g_color_face_with_supr; return 1;
+	case viewCmd_ColorMapFeat:	ioCheck = !g_color_face_with_terr && !g_color_face_with_zone && !g_color_face_with_supr && !g_color_face_with_appr; return 1;
 	case viewCmd_ColorMapTerr:	ioCheck = g_color_face_with_terr;return 1;
 	case viewCmd_ColorMapZone:	ioCheck = g_color_face_with_zone;return 1;
 	case viewCmd_ColorMapSupr:	ioCheck = g_color_face_with_supr;return 1;	
+	case viewCmd_ColorMapAppr:	ioCheck = g_color_face_with_appr;return 1;
 	case viewCmd_Airports:		ioCheck = sShowAirports;		return 1;
 	case viewCmd_ShowShading:	ioCheck = sShowShading;			return 1;
 	case viewCmd_ShowSuper:		ioCheck = g_color_face_use_supr_tint;	return 1;
@@ -359,9 +360,11 @@ int		RF_MapView::HandleCommand(int command)
 	case viewCmd_ColorMapZone:
 	case viewCmd_ColorMapSupr:
 	case viewCmd_ColorMapFeat:
+	case viewCmd_ColorMapAppr:
 		g_color_face_with_terr = command == viewCmd_ColorMapTerr;
 		g_color_face_with_zone = command == viewCmd_ColorMapZone;
 		g_color_face_with_supr = command == viewCmd_ColorMapSupr;
+		g_color_face_with_appr = command == viewCmd_ColorMapAppr;
 		mNeedRecalcMapMeta = 1;	return 1;	
 		
 	case viewCmd_ShowGrids:		sShowGrids = !sShowGrids;			return 1;
@@ -1368,9 +1371,37 @@ put in  color enums?
 				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, str->c_str());
 				k -= (h+1);
 			}
+		}
+		else if(gFaceSelection.size() > 1)
+		{
+			map<int, int>	ag;
+			multimap<int, int>	rev;
+			int count = 0;
+			for(set<Pmwx::Face_handle>::iterator f = gFaceSelection.begin(); f != gFaceSelection.end(); ++f)
+			{
+				for(GISObjPlacementVector::iterator i = (*f)->data().mObjs.begin(); i != (*f)->data().mObjs.end(); ++i)
+				{
+					ag[i->mRepType]++;
+					++count;
+				}
+
+				for(GISPolyObjPlacementVector::iterator i = (*f)->data().mPolyObjs.begin(); i != (*f)->data().mPolyObjs.end(); ++i)
+				{
+					ag[i->mRepType]++;
+					++count;
+				}
+			}
+			for(map<int,int>::iterator a = ag.begin(); a != ag.end(); ++a)
+				rev.insert(make_pair(a->second,a->first));
 			
-			
-		}				
+			for(multimap<int,int>::reverse_iterator r = rev.rbegin(); r != rev.rend(); ++r)
+			{
+				sprintf(buf,"%d (%.1f): %s", r->first, (float) r->first * 1.00f / (float) count, FetchTokenString(r->second));
+				FontDrawDarkBox(state, font_UI_Basic, white, l+5,k,9999, buf);
+				k -= (h+1);
+			}
+		}
+		
 	}
 
 	const char * nat = QuickToFile(gNaturalTerrainFile);

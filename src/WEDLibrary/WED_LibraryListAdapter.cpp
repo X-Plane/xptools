@@ -100,6 +100,8 @@ void	WED_LibraryListAdapter::GetCellContent(
 	c.content_type = (cell_y < mCache.size()) ? gui_Cell_EditText : gui_Cell_None;
 	
 	//Defaults 0, makes !special or !normal
+	
+	c.can_delete = false;
 	c.can_edit = false;
 	c.can_disclose = 0; //Default no.
 	
@@ -146,7 +148,7 @@ void	WED_LibraryListAdapter::GetCellContent(
 	//Cut here
 	c.text_val = c.text_val.substr(cut+1);
 #if DEV
-	//c.printCellInfo(true,true,true,true,false,true,true,false,true,0,0,0,0,1);
+	//c.printCellInfo(true,true,true,true,true,false,true,true,false,true,0,0,0,0,1);
 #endif
 }
 
@@ -276,7 +278,7 @@ int		WED_LibraryListAdapter::SelectDisclose(
 		tempMSel = GetNthCacheIndex(distance(mCache.begin(),itr),true);
 	}
 	
-	if (!mSel.empty() && mLibrary->GetResourceType(tempMSel) == res_Directory ||
+	if ((!mSel.empty() && mLibrary->GetResourceType(tempMSel) == res_Directory) ||
 		mSel == mLocalStr || mSel == mLibraryStr)
 	{
 		SetOpen(mSel, open_it);
@@ -362,7 +364,7 @@ void WED_LibraryListAdapter::DoFilter()
 					if(mCache[p].size() < mCache[i].size() &&
 						strncasecmp(mCache[p].c_str(),mCache[i].c_str(),mCache[p].size()) == 0)
 					{
-						keepers.push_back(mCache[p]);					
+						keepers.push_back(mCache[p]);			
 					}
 				}
 				//Add the string to keepers
@@ -379,14 +381,17 @@ void WED_LibraryListAdapter::DoFilter()
 	reverse(mCache.begin(),mCache.end());
 
 	//Set the locations of mCatLocInd and mCatLibInd
+	mCatLibInd = -1 ;
+	mCatLocInd = -1 ;	
+	
 	for(vector<string>::iterator itr = mCache.begin(); itr != mCache.end(); ++itr)
 	{
 		if(*itr == mLocalStr)
 		{
-			mCatLocInd = distance(mCache.begin(),itr);
+			mCatLocInd = distance(mCache.begin(),itr);	
 		}
 		if(*itr == mLibraryStr)
-		{
+		{	
 			mCatLibInd = distance(mCache.begin(),itr);
 		}
 	}

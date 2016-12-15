@@ -28,17 +28,10 @@
 
 #if BIG
 	#if APL
-		#if defined (__MACH__)
-			#include <libkern/OSByteOrder.h>
-			#define SWAP16(x) (OSSwapConstInt16(x))
-			#define SWAP32(x) (OSSwapConstInt32(x))
-			#define SWAP64(x) (OSSwapConstInt64(x))
-		#else
-			#include <Endian.h>
-			#define SWAP16(x) (Endian16_Swap(x))
-			#define SWAP32(x) (Endian32_Swap(x))
-			#define SWAP64(x) (Endian64_Swap(x))
-		#endif
+		#include <libkern/OSByteOrder.h>
+		#define SWAP16(x) (OSSwapConstInt16(x))
+		#define SWAP32(x) (OSSwapConstInt32(x))
+		#define SWAP64(x) (OSSwapConstInt64(x))
 	#else
 		#error we do not have non-apple big endian swapping routines.
 	#endif
@@ -50,25 +43,10 @@
 	#error endian not defined
 #endif
 
-#if APL
-#pragma pack(2)
-#endif
-#if IBM
-#pragma pack(push, 2)
-#endif
-
 struct	XAtomHeader_t {
 	uint32_t	id;
 	uint32_t	length;
 };
-
-
-#if APL
-#pragma options align=reset
-#endif
-#if IBM
-#pragma pack(pop)
-#endif
 
 
 enum {
@@ -158,6 +136,24 @@ struct	XAtomPlanerNumericTable : public XAtom {
 	int		GetArraySize(void);
 	int		GetPlaneCount(void);
 
+	// doc this!!
+	int 	DecompressShortToDoubleInterleaved(
+					int		numberOfPlanes,
+					int		planeSize,
+					double *ioPlaneBuffer,
+					double *ioScales,
+					double inReduce,
+					double *ioOffsets);
+
+	int 	DecompressIntToDoubleInterleaved(
+					int		numberOfPlanes,
+					int		planeSize,
+					double *ioPlaneBuffer,
+					double *ioScales,
+					double inReduce,
+					double *ioOffsets);
+
+	
 	/* These routines decompress the data into a set of planes.
 	 * They return the number of planes filled, but will never
 	 * exceed numberOfPlanes. */
@@ -195,16 +191,16 @@ struct	XAtomPackedData : public XAtom {
 	bool	Done(void)			{ return position >= end;					}
 	bool	Overrun(void)		{ return position > end;					}
 
-	unsigned char				ReadUInt8 (void)	{ unsigned char  v = *((unsigned char *	) position); position += sizeof(v); return v; 		  }
-			 char				ReadSInt8 (void)	{ char 			 v = *((char *			) position); position += sizeof(v);	return v; 		  }
-	unsigned short				ReadUInt16(void)	{ unsigned short v = *((unsigned short *) position); position += sizeof(v);	return SWAP16(v); }
-			 short				ReadSInt16(void)	{ short 		 v = *((short *		    ) position); position += sizeof(v);	return SWAP16(v); }
-	unsigned int				ReadUInt32(void)	{ unsigned int   v = *((unsigned int *	) position); position += sizeof(v);	return SWAP32(v); }
-			 int				ReadSInt32(void)	{ int 			 v = *((int *		  	) position); position += sizeof(v);	return SWAP32(v); }
-			 float				ReadFloat32(void)	{ float 		 v = *((float *			) position); *((int *	   ) &v) = SWAP32(*((int *		) &v));	position += sizeof(v);	return v; }
-			 double				ReadFloat64(void) 	{ double 		 v = *((double *		) position); *((long long *) &v) = SWAP64(*((long long *) &v));	position += sizeof(v);	return v; }
+	uint8_t				ReadUInt8 (void)	{ uint8_t	v = *((uint8_t *	) position); position += sizeof(v); return v; 		  }
+	int8_t				ReadSInt8 (void)	{ int8_t 	v = *((int8_t *		) position); position += sizeof(v);	return v; 		  }
+	uint16_t			ReadUInt16(void)	{ uint16_t	v = *((uint16_t *	) position); position += sizeof(v);	return SWAP16(v); }
+	int16_t				ReadSInt16(void)	{ int16_t 	v = *((int16_t *	) position); position += sizeof(v);	return SWAP16(v); }
+	uint32_t			ReadUInt32(void)	{ uint32_t  v = *((uint32_t *	) position); position += sizeof(v);	return SWAP32(v); }
+	int32_t				ReadSInt32(void)	{ int32_t 	v = *((int32_t *	) position); position += sizeof(v);	return SWAP32(v); }
+	float				ReadFloat32(void)	{ float 	v = *((float *		) position); *((int32_t *	) &v) = SWAP32(*((int32_t *) &v));	position += sizeof(v);	return v; }
+	double				ReadFloat64(void) 	{ double 	v = *((double *		) position); *((int64_t *	) &v) = SWAP64(*((int64_t *) &v));	position += sizeof(v);	return v; }
 
-	void						Advance(int bytes)	{ position += bytes; }
+	void				Advance(int bytes)	{ position += bytes; }
 
 	char *		position;
 
@@ -259,8 +255,8 @@ void	WritePlanarNumericAtomDouble(
 							int			interleaved,
 							double *	ioData);
 
-void			WriteUInt8  (FILE * fi, unsigned char	 v);
-void			WriteSInt8  (FILE * fi, 		 char	 v);
+void			WriteUInt8  (FILE * fi,			uint8_t	 v);
+void			WriteSInt8  (FILE * fi, 		 int8_t	 v);
 void			WriteUInt16 (FILE * fi,			uint16_t v);
 void			WriteSInt16 (FILE * fi, 		 int16_t v);
 void			WriteUInt32 (FILE * fi,			uint32_t v);

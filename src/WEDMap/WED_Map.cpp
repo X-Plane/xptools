@@ -39,6 +39,17 @@
 #include "GUI_Fonts.h"
 #include <time.h>
 
+// This is the size that a GIS composite must be to cause us to skip iterating down into it, in pixels.
+// The idea is that when we are zoomed way out and we have a bunch of global airports, we don't want to 
+// iterate into each airport just to realize that all details are too small to draw.  
+//
+// So we measure the container to make a judgment.  
+//
+// Because we have to add the object hang-over slop to our cull decision, the size of cull in screen space 
+// is surprisingly big.  In other words, we might pick 20 pixels as the cutoff because we have 1 pixel of
+// airport and 19 pixels of slop.
+#define TOO_SMALL_TO_GO_IN 20.0
+
 int	gDMS = 0;
 
 #if APL
@@ -70,8 +81,19 @@ void		WED_Map::SetTool(WED_MapToolNew * tool)
 
 void		WED_Map::AddLayer(WED_MapLayer * layer)
 {
+	layer->SetFilter(&mHideFilter, &mLockFilter);
 	mLayers.push_back(layer);
 }
+
+void		WED_Map::SetFilter(const string& filterName, const vector<const char *>& hide_filter, const vector<const char *>& lock_filter)
+{
+	mFilterName = filterName;
+	mHideFilter = hide_filter;
+	mLockFilter = lock_filter;
+
+	Refresh();
+}
+
 
 void		WED_Map::SetBounds(int x1, int y1, int x2, int y2)
 {
@@ -103,7 +125,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
-		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
+		if (base && draw_ent_v) DrawVisFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawVisualization(cur == *l, state);
 	}
 
@@ -111,7 +133,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if((*l)->IsVisible())
 	{
 		(*l)->GetCaps(draw_ent_v, draw_ent_s, wants_sel, wants_clicks);
-		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL);
+		if (base && draw_ent_s) DrawStrFor(*l, cur == *l, bounds, base, state, wants_sel ? sel : NULL, 0);
 		(*l)->DrawStructure(cur == *l, state);
 	}
 
@@ -150,8 +172,11 @@ void		WED_Map::Draw(GUI_GraphState * state)
 			apt->GetICAO(icao);
 			n = an + string("(") + icao + string(")");
 		}
-		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 30, n.c_str());
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[3] - 45, n.c_str());
 	}
+	
+	if(!mFilterName.empty())
+		GUI_FontDraw(state, font_UI_Basic, white, b[0]+5, b[3] - 30, mFilterName.c_str());
 
 	const char * status = mTool ? mTool->GetStatusText() : NULL;
 	if (status)
@@ -183,7 +208,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		if (mIsDownExtraCount)
 		{
 			has_d = 1;	dist = LonLatDistMeters(o.x(),o.y(),n.x(),n.y());
-			has_h = 1;	head = VectorMeters2NorthHeading(o, o, Vector2(o,n));
+			has_h = 1;	head = VectorDegs2NorthHeading(o, o, Vector2(o,n));
 			has_a1 = 1; anchor1 = o;
 			has_a2 = 1; anchor2 = n;
 		}
@@ -239,37 +264,54 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 }
 
-void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
+void		WED_Map::DrawVisFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth)
 {
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
-	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
-	if (e && e->GetHidden()) return;
+	if(!layer->IsVisibleNow(what))	return;
 
 	if (layer->DrawEntityVisualization(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
-		int t = c->GetNumEntities();
-		for (int n = t-1; n >= 0; --n)
-			DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+		Bbox2	on_screen;
+		what->GetBounds(gis_Geo, on_screen);
+		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+		Point2 p1 = this->LLToPixel(on_screen.p1);
+		Point2 p2 = this->LLToPixel(on_screen.p2);
+		Vector2 span(p1,p2);
+		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)		// Why p1 == p2?  If the composite contains ONLY ONE POINT it is zero-size.  We'd LOD out.  But if it contains one thing
+		{																				// then we might as well ALWAYS draw it - it's relatively cheap!
+			int t = c->GetNumEntities();												// Depth == 0 means we draw ALL top level objects -- good for airports.
+			for (int n = t-1; n >= 0; --n)
+				DrawVisFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);
+		}
 	}
 }
 
-void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel)
+void		WED_Map::DrawStrFor(WED_MapLayer * layer, int current, const Bbox2& bounds, IGISEntity * what, GUI_GraphState * g, ISelection * sel, int depth)
 {
 	if(!what->Cull(bounds))	return;
 	IGISComposite * c;
 
-	WED_Entity * e = dynamic_cast<WED_Entity *>(what);
-	if (e && e->GetHidden()) return;
+	if(!layer->IsVisibleNow(what))	return;
 
 	if (layer->DrawEntityStructure(current, what, g, sel && sel->IsSelected(what)))
 	if (what->GetGISClass() == gis_Composite && (c = SAFE_CAST(IGISComposite, what)) != NULL)
 	{
-		int t = c->GetNumEntities();
-		for (int n = t-1; n >= 0; --n)
-			DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel);
+		Bbox2	on_screen;
+		what->GetBounds(gis_Geo, on_screen);
+		on_screen.expand(GLOBAL_WED_ART_ASSET_FUDGE_FACTOR);
+		
+		Point2 p1 = this->LLToPixel(on_screen.p1);
+		Point2 p2 = this->LLToPixel(on_screen.p2);
+		Vector2 span(p1,p2);
+		if(max(span.dx, span.dy) > TOO_SMALL_TO_GO_IN || (p1 == p2) || depth == 0)
+		{
+			int t = c->GetNumEntities();
+			for (int n = t-1; n >= 0; --n)
+				DrawStrFor(layer, current, bounds, c->GetNthEntity(n), g, sel, depth+1);
+		}
 	}
 }
 

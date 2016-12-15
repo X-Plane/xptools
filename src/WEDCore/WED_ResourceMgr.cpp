@@ -334,7 +334,7 @@ inline void	do_rotate(int n, double& io_x, double& io_y)
 	Vector2 v(io_x,io_y);
 	while(n > 0)
 	{
-		v = v.perpendicular_ccw();
+		v = v.perpendicular_cw();
 		--n;
 	}
 	io_x = v.dx;
@@ -375,13 +375,24 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 	out_info.hide_tiles = 0;
 	vector<string>	obj_paths;
 
+	bool is_mesh_shader = false;
+
 	while(!MFS_done(&s))
 	{
 		if(MFS_string_match(&s,"TEXTURE",false))
 		{
-			MFS_string(&s,&out_info.base_tex);
-			process_texture_path(p,out_info.base_tex);
-			
+			string tex;
+			MFS_string(&s,&tex);
+			if(is_mesh_shader)
+			{
+				out_info.mesh_tex = tex;
+				process_texture_path(p,out_info.mesh_tex);
+			}
+			else
+			{
+				out_info.base_tex = tex;
+				process_texture_path(p,out_info.base_tex);
+			}
 		}
 		else if(MFS_string_match(&s,"TEXTURE_SCALE",false))
 		{
@@ -472,7 +483,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		{
 			out_info.hide_tiles = 1;
 		}
-		
+		else if (MFS_string_match(&s,"MESH_SHADER",true))
+		{
+			is_mesh_shader = true;
+		}
 		MFS_string_eol(&s,NULL);
 	}
 	
@@ -487,8 +501,10 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		o->x -= anchor_x;
 		o->y -= anchor_y;
 		do_rotate(rotation,o->x,o->y);
+		o->r += 90.0 * rotation;
 	}
-
+	
+	MemFile_Close(agp);
 
 	mAGP[path] = out_info;
 	return true;

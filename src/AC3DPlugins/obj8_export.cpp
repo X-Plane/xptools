@@ -70,6 +70,7 @@ attributes.
 #include "XObjBuilder.h"
 #include "prefs.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <list>
 #include <set>
 using std::list;
@@ -248,6 +249,13 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 	}
 }
 
+static void strip_whitespace(string& s)
+{
+	while(!s.empty() && s[0] == ' ')	s.erase(0);
+	
+	while(!s.empty() && s[s.size()-1] == ' ' )	s.erase(s.size()-1);
+}
+
 static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 {
 	Point3	xyz;
@@ -292,7 +300,26 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 	}
 	else
 	{
+		string p[9];
+		char buf[256];
+		p[0] = OBJ_get_light_p1(obj, buf);
+		p[1] = OBJ_get_light_p2(obj, buf);
+		p[2] = OBJ_get_light_p3(obj, buf);
+		p[3] = OBJ_get_light_p4(obj, buf);
+		p[4] = OBJ_get_light_p5(obj, buf);
+		p[5] = OBJ_get_light_p6(obj, buf);
+		p[6] = OBJ_get_light_p7(obj, buf);
+		p[7] = OBJ_get_light_p8(obj, buf);
+		p[8] = OBJ_get_light_p9(obj, buf);
+	
 		builder->AccumLightNamed(pos, lname);
+		
+		for(int i = 0; i < 9; ++i)
+		{
+			strip_whitespace(p[i]);	
+			if(!p[i].empty())	
+				builder->AddParam(atof(p[i].c_str()));
+		}
 	}
 }
 
@@ -342,7 +369,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			center_for_rotation(obj, xyz2),
 			0.0, 0.0, "none");
 		builder->AccumRotateBegin(axis_for_rotation(obj,xyz1),
-							OBJ_get_anim_dataref(obj, dref));
+							OBJ_get_anim_dataref(obj, dref), OBJ_get_anim_loop(obj));
 		for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
 			builder->AccumRotateKey(OBJ_get_anim_nth_value(obj, k),
 									OBJ_get_anim_nth_angle(obj, k));
@@ -354,7 +381,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		break;
 	case anim_trans:
 		{
-			builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref));
+			builder->AccumTranslateBegin(OBJ_get_anim_dataref(obj, dref),OBJ_get_anim_loop(obj));
 			for(k = 0; k < OBJ_get_anim_keyframe_count(obj); ++k)
 				builder->AccumTranslateKey(OBJ_get_anim_nth_value(obj,k),
 											anim_trans_nth_relative(obj, k, xyz1));
@@ -484,6 +511,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			m.axis[0] = OBJ_get_manip_dx(obj);
 			m.axis[1] = OBJ_get_manip_dy(obj);
 			m.axis[2] = OBJ_get_manip_dz(obj);
+			m.mouse_wheel_delta = OBJ_get_manip_wheel(obj);
 
 			switch(OBJ_get_manip_type(obj)) {
 			case manip_panel:
@@ -530,6 +558,27 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				break;
 			case manip_dref_wrap:
 				builder->AccumManip(attr_Manip_Wrap,m);
+				break;
+			case manip_axis_pix:
+				builder->AccumManip(attr_Manip_Drag_Axis_Pix,m);
+				break;
+			case manip_command_knob:
+				builder->AccumManip(attr_Manip_Command_Knob,m);
+				break;
+			case manip_command_switch_lr:
+				builder->AccumManip(attr_Manip_Command_Switch_Left_Right,m);
+				break;
+			case manip_command_switch_ud:
+				builder->AccumManip(attr_Manip_Command_Switch_Up_Down,m);
+				break;
+			case manip_dref_knob:
+				builder->AccumManip(attr_Manip_Axis_Knob,m);
+				break;
+			case manip_dref_switch_ud:
+				builder->AccumManip(attr_Manip_Axis_Switch_Up_Down,m);
+				break;
+			case manip_dref_switch_lr:
+				builder->AccumManip(attr_Manip_Axis_Switch_Left_Right,m);
 				break;
 			}
 

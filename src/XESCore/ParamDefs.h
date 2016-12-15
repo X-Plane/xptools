@@ -116,8 +116,9 @@
 
 	/* POLYGONAL (AREA) FEATURE PARAMS */
 
-	TOKEN(af_Height)				// Highest legal auto-gen obj we can put here
-	TOKEN(af_HeightObjs)			// Height of tallest obj in face
+	TOKEN(af_Height)				// Highest legal auto-gen obj we can put here - used only for OLD code.
+	TOKEN(af_HeightObjs)			// Height of tallest obj in face/also zoned height
+	TOKEN(af_HeightApproach)		// Max height before interfering with aircraft operations!
 
 	TOKEN(af_FlattenMode)			// If present, defines enum for flatten mode.  NO_FLATTEN means skip flattening.
 
@@ -182,6 +183,8 @@
 	TOKEN(road_Start_LocalRoad)
 		TOKEN(road_Local)
 		TOKEN(road_LocalOneway)
+		TOKEN(service_Road)
+		TOKEN(service_RoadOneway)
 	TOKEN(road_End_LocalRoad)
 
 	TOKEN(road_Start_Access)

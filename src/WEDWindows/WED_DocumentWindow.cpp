@@ -43,7 +43,12 @@
 #include "WED_Colors.h"
 #include "GUI_Splitter.h"
 #include "WED_GroupCommands.h"
-#include "WED_DSFExport.h"
+#include "WED_SceneryPackExport.h"
+
+#include "WED_MetadataUpdate.h"
+#include "WED_GatewayExport.h"
+#include "WED_GatewayImport.h"
+
 #include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
@@ -52,6 +57,7 @@
 #include "WED_Routing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
+
 
 #if WITHNWLINK
 #include "WED_Server.h"
@@ -182,9 +188,9 @@ WED_DocumentWindow::WED_DocumentWindow(
 	prop_tabs->Show();
 	prop_tabs->SetSticky(1,1,1,0.5);
 	prop_tabs->SetTextColor(WED_Color_RGBA(wed_Tabs_Text));
+	prop_tabs->AddListener(mMapPane);
 
 	// --------------- Selection ---------------
-
 
 	static const char * sel_t[] = { "Name", "Type", NULL };
 	static		 int	sel_w[] = { 100, 100 };
@@ -192,54 +198,30 @@ WED_DocumentWindow::WED_DocumentWindow(
 	WED_PropertyPane * prop_pane1 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
 	prop_tabs->AddPane(prop_pane1, "Selection");
 
-	// --------------- AIRPORT
+	// --------------- Pavement Tab Mode ---------------
 
-	static const char * air_t[] = { "Name", "Type", "Field Elevation", "Has ATC", "ICAO Identifier", "Frequency", NULL };
-	static		 int	air_w[] = { 200, 100, 100, 75, 100, 150  };
-	static const char * air_f[] = { "WED_Airport", "WED_ATCFrequency", NULL };
+	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane2, "Pavement");
 
-	WED_PropertyPane * prop_pane2 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, air_t, air_w,inDocument->GetArchive(), propPane_Filtered, air_f);
-	prop_tabs->AddPane(prop_pane2, "Airports");
+	// --------------- ATC Taxi + Flow ---------------
 
-	// --------------- LIGHTS, SIGNS, BEACONS ---------------
+	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane3, "ATC Taxi + Flow");
 
-	static const char * sin_t[] = { "Name", "Type", "Size", "Angle", 0 };
-	static		 int	sin_w[] = { 200, 100, 100, 100  };
-	static const char * sin_f[] = { "WED_Airport", "WED_LightFixture", "WED_AirportBeacon", "WED_AirportSign", "WED_Group", NULL };
+	// --------------- Lights and Markings ---------------
 
-	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sin_t, sin_w,inDocument->GetArchive(), propPane_Filtered, sin_f);
-	prop_tabs->AddPane(prop_pane3, "Signs");
+	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane4, "Lights and Markings");
 
-	// --------------- RUNWAYS ---------------
+	// ---------------- 3D Mode ---------------------
 
-	static const char * rwy_t[] = { "REIL 2", "TDZ Lights 2", "Approach Lights 2", "Markings 2", "Blastpad 2", "Displaced Threshhold 2",
-									"REIL 1", "TDZ Lights 1", "Approach Lights 1", "Markings 1", "Blastpad 1", "Displaced Threshhold 1",
-									"Distance Signs", "Edge Lights", "Centerline Lights", "Roughness", "Shoulder", "Surface", "Name", 0 };
-	static		 int	rwy_w[] = { 150, 150, 150, 150, 150, 150,
-									150, 150, 150, 150, 150, 150,
-									150, 150, 150, 150, 150, 150, 150 };
-	static const char * rwy_f[] = { "WED_Airport", "WED_Runway", NULL };
+	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane5, "3D Objects");
 
-	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, rwy_t, rwy_w,inDocument->GetArchive(), propPane_FilteredVertical, rwy_f);
-	prop_tabs->AddPane(prop_pane4, "Runways");
+	// ---------------- Exclusions ------------------
 
-	// --------------- TAXIWAYS ---------------
-
-	static const char * tax_t[] = { "Name", "Surface", "Roughness", "Texture Heading", 0 };
-	static		 int	tax_w[] = { 200, 150, 100, 150  };
-	static const char * tax_f[] = { "WED_Airport", "WED_Taxiway", "WED_Group", NULL };
-
-	WED_PropertyPane * prop_pane5 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, tax_t, tax_w,inDocument->GetArchive(), propPane_Filtered, tax_f);
-	prop_tabs->AddPane(prop_pane5, "Taxiways");
-
-	// --------------- HELIPADS ---------------
-
-	static const char * hel_t[] = { "Name", "Surface", "Markings", "Shoulder", "Roughness", "Lights", 0 };
-	static		 int	hel_w[] = { 200, 130, 130, 130, 100, 130 };
-	static const char * hel_f[] = { "WED_Airport", "WED_Helipad", NULL };
-
-	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, hel_t, hel_w,inDocument->GetArchive(), propPane_Filtered, hel_f);
-	prop_tabs->AddPane(prop_pane6, "Helipads");
+	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
+	prop_tabs->AddPane(prop_pane6, "Exclusions and Boundaries");
 
 	// ---------------- TCE -------------
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
@@ -325,6 +307,14 @@ int	WED_DocumentWindow::HandleCommand(int command)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
 
+	//--Add Meta Data Sub Menu-----------------
+	if(command > wed_AddMetaDataBegin && command < wed_AddMetaDataEnd)
+	{
+		WED_DoAddMetaData(mDocument, command);
+		return 1;
+	}
+	//------------------------------------------//
+
 	switch(command) {
 	case wed_RestorePanes:
 		{
@@ -367,8 +357,9 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCFlow: WED_DoMakeNewATCFlow(mDocument); return 1;
 	case wed_AddATCRunwayUse:WED_DoMakeNewATCRunwayUse(mDocument); return 1;
 	case wed_AddATCTimeRule: WED_DoMakeNewATCTimeRule(mDocument); return 1;
-	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;
+	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;	
 #endif
+	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -382,23 +373,35 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectChild:	WED_DoSelectChildren(mDocument);	return 1;
 	case wed_SelectVertex:	WED_DoSelectVertices(mDocument);	return 1;
 	case wed_SelectPoly:	WED_DoSelectPolygon(mDocument);	return 1;
+	case wed_SelectConnected:WED_DoSelectConnected(mDocument);	return 1;
 
 #if AIRPORT_ROUTING
-	case wed_SelectZeroLength:	WED_DoSelectZeroLength(mDocument);	return 1;
-	case wed_SelectDoubles:		WED_DoSelectDoubles(mDocument);		return 1;
-	case wed_SelectCrossing:	WED_DoSelectCrossing(mDocument);	return 1;
+	case wed_SelectZeroLength:	if(!WED_DoSelectZeroLength(mDocument))		DoUserAlert("Your project has no zero-length ATC routing lines.");	return 1;
+	case wed_SelectDoubles:		if(!WED_DoSelectDoubles(mDocument))			DoUserAlert("Your project has no doubled ATC routing nodes.");	return 1;
+	case wed_SelectCrossing:	if(!WED_DoSelectCrossing(mDocument))		DoUserAlert("Your project has no crossed ATC routing lines.");	return 1;
+	
+	case wed_SelectLocalObjects:		WED_DoSelectLocalObjects(mDocument); return 1;
+	case wed_SelectLibraryObjects:		WED_DoSelectLibraryObjects(mDocument); return 1;
+	case wed_SelectDefaultObjects:		WED_DoSelectDefaultObjects(mDocument); return 1;
+	case wed_SelectThirdPartyObjects:	WED_DoSelectThirdPartyObjects(mDocument); return 1;
+	case wed_SelectMissingObjects:		WED_DoSelectMissingObjects(mDocument); return 1;
 #endif
-
+	case wed_UpdateMetadata:     WED_DoUpdateMetadata(mDocument); return 1;
 	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
-	case wed_ExportPack:		WED_DoExportPack(mDocument);	return 1;
-	case wed_ExportToRobin:		WED_DoExportRobin(mDocument); return 1;
+	case wed_ExportPack:	WED_DoExportPack(mDocument); return 1;
+#if HAS_GATEWAY	
+	case wed_ExportToGateway:		WED_DoExportToGateway(mDocument); return 1;
+#endif	
 	case wed_ImportApt:		WED_DoImportApt(mDocument,mDocument->GetArchive(), mMapPane); return 1;
 	case wed_ImportDSF:		WED_DoImportDSF(mDocument); return 1;
 	case wed_ImportOrtho:
 		mMapPane->Map_HandleCommand(command);
 		return 1;
-#if ROBIN_IMPORT_FEATURES	
-	case wed_ImportRobin:	WED_DoImportDSFText(mDocument); return 1;
+#if HAS_GATEWAY		
+	case wed_ImportGateway: WED_DoImportFromGateway(mDocument,mMapPane); return 1;
+#endif	
+#if GATEWAY_IMPORT_FEATURES
+	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
 #endif	
 	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
@@ -408,7 +411,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
 	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
 	case wed_Export1021:gExportTarget = wet_xplane_1021;	Refresh(); return 1;
-	case wed_ExportRobin:gExportTarget = wet_robin;	Refresh(); return 1;	
+	case wed_Export1050:gExportTarget = wet_xplane_1050;	Refresh(); return 1;
+	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;	
 	
 #if WITHNWLINK
 	case wed_ToggleLiveView :
@@ -430,6 +434,14 @@ int	WED_DocumentWindow::HandleCommand(int command)
 int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
 	WED_UndoMgr * um = mDocument->GetUndoMgr();
+	
+	//--Add Meta Data Sub Menu-----------------
+	if(command > wed_AddMetaDataBegin && command < wed_AddMetaDataEnd)
+	{
+		return WED_CanAddMetaData(mDocument, command);
+	}
+	//------------------------------------------//
+
 	switch(command) {
 	case wed_RestorePanes:	return 1;
 	case gui_Undo:		if (um->HasUndo())	{ ioName = um->GetUndoName();	return 1; }
@@ -456,10 +468,12 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_AddATCRunwayUse: return WED_CanMakeNewATCRunwayUse(mDocument);
 	case wed_AddATCTimeRule:return WED_CanMakeNewATCTimeRule(mDocument);
 	case wed_AddATCWindRule:return WED_CanMakeNewATCWindRule(mDocument);
+	case wed_UpgradeRamps:	return 1;
 
 #endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
 	case wed_EditApt:	return WED_CanSetCurrentAirport(mDocument, ioName);
+	case wed_UpdateMetadata:     return WED_CanUpdateMetadata(mDocument);
 	case wed_MoveFirst:	return WED_CanReorder(mDocument,-1,1);
 	case wed_MovePrev:	return WED_CanReorder(mDocument,-1,0);
 	case wed_MoveNext:	return WED_CanReorder(mDocument, 1,0);
@@ -474,21 +488,32 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_SelectChild:	return WED_CanSelectChildren(mDocument);
 	case wed_SelectVertex:	return WED_CanSelectVertices(mDocument);
 	case wed_SelectPoly:	return WED_CanSelectPolygon(mDocument);
+	case wed_SelectConnected:	return WED_CanSelectConnected(mDocument);
 
 #if AIRPORT_ROUTING
 	case wed_SelectZeroLength:
 	case wed_SelectDoubles:
-	case wed_SelectCrossing:	return 1;
+	case wed_SelectCrossing:	
+	case wed_SelectLocalObjects:
+	case wed_SelectLibraryObjects:
+	case wed_SelectDefaultObjects:
+	case wed_SelectThirdPartyObjects:
+	case wed_SelectMissingObjects:	return 1;
 #endif
 
 	case wed_ExportApt:		return WED_CanExportApt(mDocument);
 	case wed_ExportPack:	return WED_CanExportPack(mDocument);
-	case wed_ExportToRobin:	return 1;
+#if HAS_GATEWAY	
+	case wed_ExportToGateway:	return WED_CanExportToGateway(mDocument);
+#endif	
 	case wed_ImportApt:		return WED_CanImportApt(mDocument);
 	case wed_ImportDSF:		return WED_CanImportApt(mDocument);
 	case wed_ImportOrtho:	return 1;
-#if ROBIN_IMPORT_FEATURES
-	case wed_ImportRobin:	return 1;
+#if HAS_GATEWAY
+	case wed_ImportGateway:	return WED_CanImportFromGateway(mDocument);
+#endif	
+#if GATEWAY_IMPORT_FEATURES
+	case wed_ImportGatewayExtract: return 1;
 #endif	
 	case wed_Validate:		return 1;
 
@@ -498,7 +523,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
 	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
 	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
-	case wed_ExportRobin:ioCheck = gExportTarget == wet_robin;	return 1;
+	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
+	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 	
 #if WITHNWLINK
 	case wed_ToggleLiveView :

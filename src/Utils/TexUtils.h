@@ -32,8 +32,9 @@ enum {
 	tex_Linear			=	4,	// Linear filter (otherwise nearest)
 	tex_Mipmap			=	8,	// Generate mipmaps
 	tex_Rescale			=	16,	// Rescale to use whole tex
-	tex_Nearest			=	32,
-	tex_Compress_Ok		=	64
+//	tex_Nearest			=	32,	// Use nearest-neighbor - appears to be legacy that this is explicit?
+	tex_Compress_Ok		=	64,	// Allow driver-driven texture compression
+	tex_Always_Pad		=	128	// Force pad up to pow2 even if we have non-pots card.  Needed for UI
 
 };
 

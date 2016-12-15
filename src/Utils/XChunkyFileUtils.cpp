@@ -21,21 +21,18 @@
  *
  */
 #include "XChunkyFileUtils.h"
-#include "AssertUtils.h"
 #include <vector>
 #include <string.h>
 
-// BENTODO - resolve hl_types dependency!!
-//#if !defined(APL) && !defined(IBM)
-//#include "hl_types.h"
-//#endif
 
 using std::vector;
 
-inline short	SwapValueTyped(int16_t v) { return (int16_t) SWAP16(v); }
-inline int		SwapValueTyped(int32_t v) { return (int32_t) SWAP32(v); }
-inline float	SwapValueTyped(float v	) { return (float  ) SWAP32(v); }
-inline double	SwapValueTyped(double v	) { return (double ) SWAP64(v); }
+inline int16_t	SwapValueTyped(int16_t v ) { return (int16_t ) SWAP16(v); }
+inline uint16_t	SwapValueTyped(uint16_t v) { return (uint16_t) SWAP16(v); }
+inline int32_t	SwapValueTyped(int32_t v ) { return (int32_t ) SWAP32(v); }
+inline uint32_t	SwapValueTyped(uint32_t v) { return (uint32_t) SWAP32(v); }
+inline float	SwapValueTyped(float v	 ) { return (float   ) SWAP32(v); }
+inline double	SwapValueTyped(double v	 ) { return (double  ) SWAP64(v); }
 
 #pragma mark class FlatDecoder
 
@@ -43,12 +40,18 @@ template <class T>
 class	FlatDecoder {
 public:
 
-	unsigned char * p;
+	uint8_t * p;
 
-	FlatDecoder(unsigned char * mem) : p(mem)
+	FlatDecoder(uint8_t * mem) : p(mem)
 	{
 	}
 
+	T	Peek(void)
+	{
+		T retval = *((T *) p);
+		return retval;
+	}
+	
 	T	Fetch(void)
 	{
 		T retval = *((T *) p);
@@ -56,7 +59,7 @@ public:
 		return retval;
 	}
 
-	unsigned char * EndPos(void)
+	uint8_t * EndPos(void)
 	{
 		return p;
 	}
@@ -67,12 +70,12 @@ template <class T>
 class	RLEDecoder {
 public:
 
-	unsigned char *	p;
+	uint8_t *	p;
 	bool	is_run;
 	bool	is_individual;
 	int		run_length;
 
-	RLEDecoder(unsigned char * mem)
+	RLEDecoder(uint8_t * mem)
 	{
 		p = mem;
 		is_run = is_individual = false;
@@ -105,7 +108,7 @@ public:
 		}
 		else
 		{
-			unsigned char code = *p++;
+			uint8_t code = *p++;
 			if (code & 0x80)
 			{
 				is_run = true;
@@ -117,7 +120,7 @@ public:
 		}
 	}
 
-	unsigned char *	EndPos(void)
+	uint8_t *	EndPos(void)
 	{
 		return p;
 	}
@@ -170,7 +173,7 @@ public:
 
 	void Accum(T value)
 	{
-		unsigned char	token;
+		uint8_t			token;
 		T				item;
 
 		if (is_run)
@@ -272,7 +275,7 @@ public:
 
 	void Done(void)
 	{
-		unsigned char token;
+		uint8_t			token;
 		T				item;
 
 		if (is_run)
@@ -439,9 +442,6 @@ bool	XAtomContainer::GetNthAtomOfID(uint32_t inID, int inIndex, XAtom& outAtom)
 	return false;
 }
 
-
-
-
 const char *	XAtomStringTable::GetFirstString(void)
 {
 	char * str = begin + sizeof(XAtomHeader_t);
@@ -455,7 +455,6 @@ const char *	XAtomStringTable::GetNextString(const char * inString)
 	if (inString == NULL) return NULL;
 	int len = strlen(inString);
 	const char * str = inString + len + 1;
-	DebugAssert(str <= end);
 	if (str == end)
 		return NULL;
 	return str;
@@ -484,16 +483,15 @@ int	XAtomPlanerNumericTable::GetArraySize(void)
 int	XAtomPlanerNumericTable::GetPlaneCount(void)
 {
 	char *	contents = begin + sizeof(XAtomHeader_t) + sizeof(int);
-	return *((unsigned char *) contents);
+	return *((uint8_t *) contents);
 }
 
 template<class T>
 static int DecodeNumericPlane(
 						int 					inPlaneCount,
 						int						inPlaneSize,
-						int						inInterleaved,
-						unsigned char *			inAtomData,
-						unsigned char *			inAtomDataEnd,
+						uint8_t		*			inAtomData,
+						uint8_t		*			inAtomDataEnd,
 						T *						ioPlane)
 
 {
@@ -502,29 +500,21 @@ static int DecodeNumericPlane(
 	for (plane = 0; plane < inPlaneCount; ++plane)
 	{
 		if (inAtomData >= inAtomDataEnd) return plane;
-		unsigned char	encodeMode = *inAtomData++;
+		uint8_t	encodeMode = *inAtomData++;
 		if (encodeMode == xpna_Mode_Raw)
 		{
 			FlatDecoder<T>	decoder(inAtomData);
 			for (i = 0; i < inPlaneSize; ++i)
-			{
-				if (inInterleaved)
-					ioPlane[i * inPlaneCount + plane] = SwapValueTyped(decoder.Fetch());
-				else
-					ioPlane[plane * inPlaneSize + i] = SwapValueTyped(decoder.Fetch());
-			}
+				ioPlane[plane * inPlaneSize + i] = SwapValueTyped(decoder.Fetch());
 			inAtomData = decoder.EndPos();
 		}
 		if (encodeMode == xpna_Mode_Differenced)
-		{
+			{
 			FlatDecoder<T>	decoder(inAtomData);
 			last = 0;
 			for (i = 0; i < inPlaneSize; ++i)
 			{
-				if (inInterleaved)
-					ioPlane[i * inPlaneCount + plane] = val = last + SwapValueTyped(decoder.Fetch());
-				else
-					ioPlane[plane * inPlaneSize + i] = val = last + SwapValueTyped(decoder.Fetch());
+				ioPlane[plane * inPlaneSize + i] = val = last + SwapValueTyped(decoder.Fetch());
 				last = val;
 			}
 			inAtomData = decoder.EndPos();
@@ -533,25 +523,165 @@ static int DecodeNumericPlane(
 		{
 			RLEDecoder<T>	decoder(inAtomData);
 			for (i = 0; i < inPlaneSize; ++i)
-			{
-				if (inInterleaved)
-					ioPlane[i * inPlaneCount + plane] = SwapValueTyped(decoder.Fetch());
-				else
 					ioPlane[plane * inPlaneSize + i] = SwapValueTyped(decoder.Fetch());
-			}
 			inAtomData = decoder.EndPos();
-		}
+			}
 		if (encodeMode == xpna_Mode_RLE_Differenced)
 		{
 			RLEDecoder<T>	decoder(inAtomData);
 			last = 0;
 			for (i = 0; i < inPlaneSize; ++i)
 			{
-				if (inInterleaved)
-					ioPlane[i * inPlaneCount + plane] = val = last + SwapValueTyped(decoder.Fetch());
-				else
-					ioPlane[plane * inPlaneSize + i] = val = last + SwapValueTyped(decoder.Fetch());
+				ioPlane[plane * inPlaneSize + i] = val = last + SwapValueTyped(decoder.Fetch());
 				last = val;
+			}
+			inAtomData = decoder.EndPos();
+		}
+	}
+	return inPlaneCount;
+}	
+
+
+template<class T>
+static int DecodeNumericPlaneInterleaved(
+						int 					inPlaneCount,
+						int						inPlaneSize,
+						uint8_t		*			inAtomData,
+						uint8_t		*			inAtomDataEnd,
+						T *						ioPlane)
+
+{
+	int i, plane;
+	T last, val;
+	for (plane = 0; plane < inPlaneCount; ++plane)
+	{
+		if (inAtomData >= inAtomDataEnd) return plane;
+		uint8_t	encodeMode = *inAtomData++;
+		if (encodeMode == xpna_Mode_Raw)
+		{
+			FlatDecoder<T>	decoder(inAtomData);
+			for (i = 0; i < inPlaneSize; ++i)
+				ioPlane[i * inPlaneCount + plane] = SwapValueTyped(decoder.Fetch());
+			inAtomData = decoder.EndPos();
+		}
+		if (encodeMode == xpna_Mode_Differenced)
+		{
+			FlatDecoder<T>	decoder(inAtomData);
+			last = 0;
+			for (i = 0; i < inPlaneSize; ++i)
+			{
+					ioPlane[i * inPlaneCount + plane] = val = last + SwapValueTyped(decoder.Fetch());
+				last = val;
+			}
+			inAtomData = decoder.EndPos();
+		}
+		if (encodeMode == xpna_Mode_RLE)
+		{
+			RLEDecoder<T>	decoder(inAtomData);
+			for (i = 0; i < inPlaneSize; ++i)
+				ioPlane[i * inPlaneCount + plane] = SwapValueTyped(decoder.Fetch());
+			inAtomData = decoder.EndPos();
+		}
+		if (encodeMode == xpna_Mode_RLE_Differenced)
+			{
+			RLEDecoder<T>	decoder(inAtomData);
+			last = 0;
+			for (i = 0; i < inPlaneSize; ++i)
+			{
+				ioPlane[i * inPlaneCount + plane] = val = last + SwapValueTyped(decoder.Fetch());
+				last = val;
+			}
+			inAtomData = decoder.EndPos();
+		}
+	}
+	return inPlaneCount;
+}	
+
+template<class T, class F>
+static F DecodeNumericPlaneInterleavedScaled(
+						int 					inPlaneCount,
+						int						inPlaneSize,
+						uint8_t		*			inAtomData,
+						uint8_t		*			inAtomDataEnd,
+						F *						ioPlane,
+						F *						ioScales,
+						F						inReduce,
+						F *						ioOffsets)
+
+{
+	int plane, i;
+	T last, val;
+	for (plane = 0; plane < inPlaneCount; ++plane)
+	{
+		if (inAtomData >= inAtomDataEnd) return plane;
+		F sc = *ioScales++;
+		F of = *ioOffsets++;
+		
+		uint8_t	encodeMode = *inAtomData++;
+		if (encodeMode == xpna_Mode_Raw)
+		{
+			FlatDecoder<T>	decoder(inAtomData);
+			if (sc)
+				for (i = 0; i < inPlaneSize; ++i)
+				{
+					ioPlane[i*inPlaneCount+plane] = ((F)SwapValueTyped(decoder.Fetch())) * sc * inReduce + of;					
+				}
+			else
+				for (i = 0; i < inPlaneSize; ++i)
+				{
+					ioPlane[i * inPlaneCount + plane] = SwapValueTyped(decoder.Fetch());
+				}
+			inAtomData = decoder.EndPos();
+		}
+		if (encodeMode == xpna_Mode_Differenced)
+		{
+			FlatDecoder<T>	decoder(inAtomData);
+			last = 0;
+			if (sc)
+				for (i = 0; i < inPlaneSize; ++i)
+				{
+					ioPlane[i*inPlaneCount+plane] = ((F)(val = last + SwapValueTyped(decoder.Fetch()))) * sc * inReduce + of;
+					last = val;
+				}
+				else
+				for (i = 0; i < inPlaneSize; ++i)
+				{
+					ioPlane[i*inPlaneCount+plane] = val = last + SwapValueTyped(decoder.Fetch());
+					last = val;
+			}
+			inAtomData = decoder.EndPos();
+		}
+		if (encodeMode == xpna_Mode_RLE)
+		{
+			RLEDecoder<T>	decoder(inAtomData);
+			if (sc)			
+				for (i = 0; i < inPlaneSize; ++i)
+				{
+					ioPlane[i*inPlaneCount+plane] = ((F)SwapValueTyped(decoder.Fetch())) * sc * inReduce + of;
+				}
+			else
+				for (i = 0; i < inPlaneSize; ++i)
+				{
+					ioPlane[i*inPlaneCount+plane] = SwapValueTyped(decoder.Fetch());			
+				}
+			inAtomData = decoder.EndPos();
+		}
+		if (encodeMode == xpna_Mode_RLE_Differenced)
+		{
+			RLEDecoder<T>	decoder(inAtomData);
+			last = 0;
+			if (sc)
+			for (i = 0; i < inPlaneSize; ++i)
+			{
+					ioPlane[i*inPlaneCount+plane] = ((F)(val = last + SwapValueTyped(decoder.Fetch()))) * sc * inReduce + of;
+					last = val;					
+				}
+			else
+				for (i = 0; i < inPlaneSize; ++i)
+				{
+					ioPlane[i * inPlaneCount + plane] = val = last + SwapValueTyped(decoder.Fetch());
+				last = val;
+					
 			}
 			inAtomData = decoder.EndPos();
 		}
@@ -559,14 +689,53 @@ static int DecodeNumericPlane(
 	return inPlaneCount;
 }
 
+int XAtomPlanerNumericTable::DecompressShortToDoubleInterleaved(
+					int		numberOfPlanes,
+					int		planeSize,
+					double *ioPlaneBuffer,
+					double *ioScales,
+					double	inReduce,
+					double *ioOffsets)
+{
+	return DecodeNumericPlaneInterleavedScaled<uint16_t, double>(numberOfPlanes, planeSize,
+							(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
+							ioPlaneBuffer,
+							ioScales,
+							inReduce,
+							ioOffsets);
+}
+
+
+int XAtomPlanerNumericTable::DecompressIntToDoubleInterleaved(
+					int		numberOfPlanes,
+					int		planeSize,
+					double *ioPlaneBuffer,
+					double *ioScales,
+					double	inReduce,
+					double *ioOffsets)
+{
+	return DecodeNumericPlaneInterleavedScaled<unsigned int, double>(numberOfPlanes, planeSize,
+							(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
+							ioPlaneBuffer,
+							ioScales,
+							inReduce,
+							ioOffsets);
+}
+
+
 int	XAtomPlanerNumericTable::DecompressShort(
 					int		numberOfPlanes,
 					int		planeSize,
 					int		interleaved,
 					int16_t * ioPlaneBuffer)
 {
-	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
-						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
+	if (interleaved)
+	return DecodeNumericPlaneInterleaved(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
+						ioPlaneBuffer);
+	else
+	return DecodeNumericPlane(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
 						ioPlaneBuffer);
 }
 
@@ -575,10 +744,15 @@ int	XAtomPlanerNumericTable::DecompressInt(
 					int		numberOfPlanes,
 					int		planeSize,
 					int		interleaved,
-					int32_t * ioPlaneBuffer)
+					int * ioPlaneBuffer)
 {
-	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
-						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
+	if (interleaved)
+	return DecodeNumericPlaneInterleaved(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
+						ioPlaneBuffer);
+	else
+	return DecodeNumericPlane(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
 						ioPlaneBuffer);
 }
 
@@ -588,8 +762,13 @@ int	XAtomPlanerNumericTable::DecompressFloat(
 					int		interleaved,
 					float * ioPlaneBuffer)
 {
-	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
-						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
+	if (interleaved)
+	return DecodeNumericPlaneInterleaved(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
+						ioPlaneBuffer);
+	else
+	return DecodeNumericPlane(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
 						ioPlaneBuffer);
 }
 int	XAtomPlanerNumericTable::DecompressDouble(
@@ -598,8 +777,13 @@ int	XAtomPlanerNumericTable::DecompressDouble(
 					int		interleaved,
 					double * ioPlaneBuffer)
 {
-	return DecodeNumericPlane(numberOfPlanes, planeSize, interleaved,
-						(unsigned char *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (unsigned char *) end,
+	if (interleaved)
+	return DecodeNumericPlaneInterleaved(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
+						ioPlaneBuffer);
+	else
+	return DecodeNumericPlane(numberOfPlanes, planeSize, 
+						(uint8_t *) begin + sizeof(XAtomHeader_t) + sizeof(int) + sizeof(char), (uint8_t *) end,
 						ioPlaneBuffer);
 }
 
@@ -645,13 +829,13 @@ void	WritePlanarNumericAtom(
 	T	value, diff, last;
 
 	int	psize = SWAP32(planeSize);
-	unsigned char nplanes = numberOfPlanes;
+	uint8_t nplanes = numberOfPlanes;
 	fwrite(&psize, sizeof(psize), 1, file);
 	fwrite(&nplanes, sizeof(nplanes), 1, file);
 
 	for (int pln = 0; pln < numberOfPlanes; ++pln)
 	{
-		unsigned char encode = encodeMode;
+		uint8_t encode = encodeMode;
 		fwrite(&encode, sizeof(encode), 1, file);
 		if (encodeMode == xpna_Mode_Raw)
 		{
@@ -759,12 +943,12 @@ void	WritePlanarNumericAtomDouble(
 
 //#erro TODO: rewrite decoder to take interleaved param and do swapping, always work one at a time!
 
-void			WriteUInt8  (FILE * fi, unsigned char	v)
+void			WriteUInt8  (FILE * fi, uint8_t	v)
 {
 	fwrite(&v, 1, sizeof(v), fi);
 }
 
-void			WriteSInt8  (FILE * fi, 		 char	v)
+void			WriteSInt8  (FILE * fi, 		 int8_t	v)
 {
 	fwrite(&v, 1, sizeof(v), fi);
 }

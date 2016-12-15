@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="DSF">
+      <UniqueIdentifier>{984f04b0-f5dd-4965-a418-d04a9b444e3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSFTool">
+      <UniqueIdentifier>{bda23cdb-36d4-4c39-8e84-31b3fb852798}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ENV">
+      <UniqueIdentifier>{e23adef6-75fd-474e-a59a-25a8e0afeca9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{9291b136-d971-4a00-bb77-e0a546ad5a4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{d32ee4bd-136b-4b57-ad82-ecbc457a21c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DSF\tri_stripper_101">
+      <UniqueIdentifier>{d6db9d41-952e-4dbb-8010-1a0dc013e1bf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSF\DSFLib.cpp">
+      <Filter>DSF</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSF\DSFLibWrite.cpp">
+      <Filter>DSF</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSF\DSFPointPool.cpp">
+      <Filter>DSF</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp">
+      <Filter>DSFTool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSFTools\DSFToolCmdLine.cpp">
+      <Filter>DSFTool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp">
+      <Filter>DSFTool</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Env\EnvParser.c">
+      <Filter>ENV</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Env\Persistence.cpp">
+      <Filter>ENV</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\md5.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\unzip.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\zip.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\AssertUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\FileUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utils\EndianUtils.c">
+      <Filter>Utils</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h">
+      <Filter>DSF\tri_stripper_101</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\DSFLib.h">
+      <Filter>DSF</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSF\DSFPointPool.h">
+      <Filter>DSF</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\DSFTools\DSF2Text.h">
+      <Filter>DSFTool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Env\EnvParser.h">
+      <Filter>ENV</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Env\Persistence.h">
+      <Filter>ENV</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\GUI\GUI_Unicode.h">
+      <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\md5.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\unzip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\zip.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\AssertUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\FileUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\EndianUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

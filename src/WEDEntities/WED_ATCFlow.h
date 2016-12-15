@@ -41,7 +41,7 @@ public:
 	int		GetPatternRunway(void) const;		// Return WED ENUM!!!
 	void	SetPatternRunway(int r);
 
-	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict);
+	virtual void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 	virtual const char *	HumanReadableType(void) const { return "ATC Flow"; }
 
@@ -50,7 +50,7 @@ private:
 	// Flow rules
 	WED_PropStringText			icao;
 	WED_PropDoubleText			cld_min_ft;
-	WED_PropIntText				vis_min_sm;
+	WED_PropDoubleText			vis_min_sm;
 
 	WED_PropIntEnum		pattern_rwy;
 	WED_PropIntEnum		traffic_dir;

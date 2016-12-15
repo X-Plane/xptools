@@ -44,10 +44,16 @@ XWinGL::XWinGL(int default_dnd, XWinGL* inShare, QWidget* parent) : XWin(default
 	mGlWidget->setMouseTracking(true);
 	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
+	layout()->update();
+	layout()->activate();
 	mGlWidget->updateGL();
-	XWin::show();
-	XWin::activateWindow();
+	XWin::SetVisible(true);
 	XWinGL::mInited = true;
+	// Ben says: pixel packing expected to be "byte-packed" on all OSes - put here to mimic behavior of other
+	// OSes.  If someone wants to push this down into the implementation to factor it, go for it - I'm avoiding
+	// jamming stuff into code I don't have a ton of situational wwareness for.
+   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);	
 }
 
 XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX, int inY, int inWidth, int inHeight, XWinGL * inShare, QWidget* parent) : XWin(default_dnd, inTitle, inAttributes, inX, inY, inWidth, inHeight, parent), mInited(false)
@@ -56,12 +62,15 @@ XWinGL::XWinGL(int default_dnd, const char * inTitle, int inAttributes, int inX,
 	mGlWidget->setMouseTracking(true);
 	//mGlWidget->setFocusPolicy(Qt::StrongFocus);
 	setCentralWidget(mGlWidget);
+	layout()->update();
+	layout()->activate();
 	mGlWidget->updateGL();
 	if (inAttributes & xwin_style_visible) {
-		XWin::show();
-		XWin::activateWindow();
+		XWin::SetVisible(true);
 	}
 	XWinGL::mInited = true;
+   glPixelStorei	(GL_UNPACK_ALIGNMENT,1				);
+   glPixelStorei	(GL_PACK_ALIGNMENT  ,1				);
 }
 
 XWinGL::~XWinGL()

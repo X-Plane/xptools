@@ -24,15 +24,20 @@
 #ifndef WED_DSFImport_H
 #define WED_DSFImport_H
 
-class	WED_Group;
+class	WED_Thing;
 class	IResolver;
 class	ILibrarian;
 
-void DSF_Import(const char * file, WED_Group * base);
+// The parent object for DSF_Import really really really should be some kind of composite
+// like WED_Group or WED_Airport; however this API lets you specify any base and hopes
+// you know what you're doing. This is because WED_GISComposite is sort of an implementation
+// intermediate and thus kind of weird to have in a public API.
+int DSF_Import(const char * file, WED_Thing * base);
 
 int		WED_CanImportDSF(IResolver * resolver);
 void	WED_DoImportDSF(IResolver * resolver);
-#if ROBIN_IMPORT_FEATURES
+void	WED_DoImportText(const char * path, WED_Thing * base);
+#if GATEWAY_IMPORT_FEATURES
 void	WED_DoImportDSFText(IResolver * resolver);
 #endif
 

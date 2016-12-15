@@ -88,13 +88,14 @@ private:
 class WED_PropertyHelper : public WED_XMLHandler, public IPropertyObject {
 public:
 
-	virtual	int			FindProperty(const char * in_prop);
+	virtual	int			FindProperty(const char * in_prop) const;
 	virtual int			CountProperties(void) const;
-	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info);
-	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict);
-	virtual	void		GetNthPropertyDictItem(int n, int e, string& item);
+	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+	virtual	void		GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void		GetNthPropertyDictItem(int n, int e, string& item) const;
 	virtual void		GetNthProperty(int n, PropertyVal_t& val) const;
 	virtual void		SetNthProperty(int n, const PropertyVal_t& val);
+	virtual void		DeleteNthProperty(int n) { };
 
 	virtual	void				PropEditCallback(int before)=0;
 	virtual	int					CountSubs(void)=0;
@@ -116,8 +117,8 @@ public:
 	virtual	void		PopHandler(void);
 
 
-
-			int			PropertyItemNumber(const WED_PropertyItem * item) const;
+	// This is virtual so remappers like WED_Runway can "fix" the results
+	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
 private:
 
 	friend class	WED_PropertyItem;
@@ -213,12 +214,26 @@ public:
 
 };
 
+class	WED_PropFrequencyText : public WED_PropDoubleText {
+public:
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, sql_col,xml_col, initial, digits, decimals) { }
+
+	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		ToXML(WED_XMLElement * parent);
+	
+	int		GetAs10Khz(void) const;
+	void	AssignFrom10Khz(int freq_10khz);
+
+};
+
 // A double value edited as text.  Stored in meters, but displayed in feet or meters, depending on UI settings.
 class	WED_PropDoubleTextMeters : public WED_PropDoubleText {
 public:
 	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, sql_col,xml_col, initial, digits, decimals) { }
 
-	WED_PropDoubleText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
+	WED_PropDoubleTextMeters& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
 	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);

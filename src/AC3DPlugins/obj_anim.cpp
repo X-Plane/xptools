@@ -25,6 +25,7 @@
 #include "obj_model.h"
 #include "obj_editor.h"
 #include "Undoable.h"
+#include <assert.h>
 //#include "CompGeomDefs3.h"
 #include "ac_plugin.h"
 #include <ac_plugin.h>
@@ -104,7 +105,8 @@ static void anim_add_any(
 				float						xyz2[3],
 				const vector<XObjKey>&		keys,
 				const char *				dataref,
-				const char *				name)
+				const char *				name,
+				float						loop)
 {
 	ACObject * new_obj = new_object(OBJECT_NORMAL);
 	object_set_name(new_obj, (char*) name);
@@ -139,6 +141,7 @@ static void anim_add_any(
 
 	OBJ_set_anim_type(new_obj, anim_kind);
 	OBJ_set_anim_keyframe_count(new_obj, keys.size());
+	OBJ_set_anim_loop(new_obj,loop);
 	int n;
 	for (n = 0, i = keys.begin(); i != keys.end(); ++i, ++n)
 	{
@@ -164,9 +167,10 @@ void anim_add_translate(
 				int							add_head,
 				const vector<XObjKey>&		key_table,
 				const char *				dataref,
-				const char *				name)
+				const char *				name,
+				float						loop)
 {
-	anim_add_any(obj, add_head, anim_trans, NULL, NULL, key_table, dataref, name);
+	anim_add_any(obj, add_head, anim_trans, NULL, NULL, key_table, dataref, name,loop);
 }
 
 
@@ -177,12 +181,13 @@ void anim_add_rotate(
 				float						axis[3],
 				const vector<XObjKey>&		key_table,
 				const char *				dataref,
-				const char *				name)
+				const char *				name,
+				float						loop)
 {
 	float	l1[3] = { center[0] - axis[0], center[1] - axis[1], center[2] - axis[2] };
 	float	l2[3] = { center[0] + axis[0], center[1] + axis[1], center[2] + axis[2] };
 
-	anim_add_any(obj, add_head, anim_rotate, l1, l2, key_table, dataref, name);
+	anim_add_any(obj, add_head, anim_rotate, l1, l2, key_table, dataref, name,loop);
 }
 
 void anim_add_static(
@@ -194,7 +199,7 @@ void anim_add_static(
 {
 	float origin[3] = { 0.0, 0.0, 0.0 };
 	vector<XObjKey>	keys;
-	anim_add_any(obj, add_head, anim_static, origin, xyz1, keys, dataref, name);
+	anim_add_any(obj, add_head, anim_static, origin, xyz1, keys, dataref, name,0);
 }
 
 void anim_add_show(
@@ -205,7 +210,7 @@ void anim_add_show(
 				const char *				name)
 {
 	float origin[3] = { 0.0, 0.0, 0.0 };
-	anim_add_any(obj, add_head, anim_show, origin, origin, key_table, dataref, name);
+	anim_add_any(obj, add_head, anim_show, origin, origin, key_table, dataref, name,0);
 }
 
 void anim_add_hide(
@@ -216,7 +221,7 @@ void anim_add_hide(
 				const char *				name)
 {
 	float origin[3] = { 0.0, 0.0, 0.0 };
-	anim_add_any(obj, add_head, anim_hide, origin, origin, key_table, dataref, name);
+	anim_add_any(obj, add_head, anim_hide, origin, origin, key_table, dataref, name,0);
 }
 
 
@@ -311,8 +316,10 @@ void bake_static_transitions(ACObject * object)
 	Point3	diff = { 0.0, 0.0, 0.0 };
 	List * p;
 	List * kids = ac_object_get_childrenlist(object);
+	int kid_count = 0;
     for (p = kids; p != NULL; p = p->next)
     {
+		kid_count++;
     	ACObject * child = (ACObject *)p->data;
 		if (OBJ_get_anim_type(child) == anim_static)
 		{
@@ -331,10 +338,21 @@ void bake_static_transitions(ACObject * object)
 			translate_object(child, &diff);
 		}
 	}
-
-	for (set<ACObject *>::iterator kill = kill_set.begin(); kill != kill_set.end(); ++kill)
-		object_delete(*kill);
-
+	
+	if(kid_count > kill_set.size())
+	{
+		// stupid: if the imported file contains this:
+		// ANIM_begin
+		//   ANIM_trans <static stuff>
+		// ANIM_end
+		// we end up deleting our only child here and ac3d kills US too, which causes recursive
+		// baking to be f--ed.  This is a really stupid edge case - the above 3 lines of OBJ do
+		// nothing but waste CPU cycles.  So don't bother to optimize - we're just avoiding a 
+		// crash here.
+		for (set<ACObject *>::iterator kill = kill_set.begin(); kill != kill_set.end(); ++kill)
+			object_delete(*kill);
+	}
+	
 	kids = ac_object_get_childrenlist(object);
     for (p = kids; p != NULL; p = p->next)
 		bake_static_transitions((ACObject *)p->data);
@@ -566,10 +584,10 @@ static void make_anim_of_type(int argc, char * argv[])
 	}
 
 	if (strcmp(argv[1],"translate")==0)
-		anim_add_translate(*parents.begin(), 1, keys, "none", "translation");
+		anim_add_translate(*parents.begin(), 1, keys, "none", "translation",0);
 
 	if (strcmp(argv[1],"rotate")==0)
-		anim_add_rotate(*parents.begin(), 1, a1, a2, keys, "none", "rotation");
+		anim_add_rotate(*parents.begin(), 1, a1, a2, keys, "none", "rotation",0);
 
 	if (strcmp(argv[1],"show")==0)
 		anim_add_show(*parents.begin(), 1, keys, "none", "show");

@@ -51,6 +51,8 @@ bool WED_DrapedOrthophoto::IsNew(string * out_suffix)
 {
 	//Find position
 	int pos = resource.value.find_last_of('.',resource.value.size());
+	if(pos == resource.value.npos)
+		return false;
 	
 	//get the ending extension
 	string testString = resource.value.substr(pos);

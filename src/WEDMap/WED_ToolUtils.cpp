@@ -60,6 +60,7 @@
 #include "WED_ATCWindRule.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_LibraryMgr.h"
 
 using std::list;
 
@@ -137,6 +138,17 @@ void			WED_SetCurrentAirport(IResolver * resolver, WED_Airport * airport)
 	keys->Directory_Edit("airport", airport);
 }
 
+const WED_Airport * WED_GetParentAirport(const WED_Thing * who)
+{
+	while(who)
+	{
+		const WED_Airport * a = dynamic_cast<const WED_Airport *>(who);
+		if(a) return a;
+		who = who->GetParent();
+	}
+	return NULL;
+}
+
 WED_Airport * WED_GetParentAirport(WED_Thing * who)
 {
 	while(who)
@@ -201,7 +213,12 @@ WED_ResourceMgr*WED_GetResourceMgr(IResolver * resolver)
 	return SAFE_CAST(WED_ResourceMgr,resolver->Resolver_Find("resmgr"));
 }
 
-WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& idx)
+WED_LibraryMgr*WED_GetLibraryMgr(IResolver * resolver)
+{
+	return SAFE_CAST(WED_LibraryMgr,resolver->Resolver_Find("libmgr"));
+}
+
+WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, bool needs_spatial, int& idx)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -211,6 +228,7 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 		WED_Thing * obj = SAFE_CAST(WED_Thing, sel->GetNthSelection(0));
 		if (obj != wrl)
 		if (obj->GetParent())
+		if (!needs_spatial || dynamic_cast<IGISEntity *>(obj->GetParent()))
 		if (!Iterate_IsPartOfStructuredObject(obj,NULL))
 		if (!require_airport || Iterate_IsOrParentClass(obj->GetParent(), (void *) WED_Airport::sClass))
 		{
@@ -228,6 +246,9 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 	if (parent_of_sel && require_airport && !Iterate_IsOrParentClass(parent_of_sel, (void *) WED_Airport::sClass))
 		parent_of_sel = NULL;
 
+	if (parent_of_sel && needs_spatial && dynamic_cast<IGISEntity *>(parent_of_sel) == NULL)
+		parent_of_sel = NULL;
+
 	if (parent_of_sel == NULL)
 	{
 		if (require_airport)
@@ -238,6 +259,24 @@ WED_Thing * WED_GetCreateHost(IResolver * resolver, bool require_airport, int& i
 
 	if(parent_of_sel == wrl->GetParent()) parent_of_sel = wrl;
 	return parent_of_sel;
+}
+
+WED_Thing *		WED_GetContainerForHost(IResolver * resolver, WED_Thing * host, bool require_airport, int& idx)
+{
+	if(host->GetClass() == WED_Airport::sClass)	return host;
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	if(!require_airport && host == wrl)	return host;
+	
+	idx = 0;
+	
+	WED_Airport * apt = WED_GetParentAirport(host);
+	if(apt != NULL)
+		return apt;
+	
+	if(require_airport)
+		return WED_GetCurrentAirport(resolver);
+	else
+		return wrl;
 }
 
 static void	WED_GetSelectionInOrderRecursive(ISelection * sel, WED_Thing * who, vector<WED_Thing *>& out_sel)
@@ -353,46 +392,46 @@ const char *	WED_GetParentForClass(const char * in_class)
 	return NULL;
 }
 
-static void WED_LookupRunwayRecursive(WED_Thing * thing, set<int>& runways, int domain)
+static void WED_LookupRunwayRecursiveOneway(const WED_Thing * thing, set<int>& runways)
 {
-	WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<WED_Runway *>(thing) : NULL;
+	const WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<const WED_Runway *>(thing) : NULL;
 	if(rwy)
 	{
-		string name;
-		rwy->GetName(name);
-		int e1 = ENUM_LookupDesc(domain,name.c_str());
-		if(ENUM_Domain(e1) == domain)
-			runways.insert(e1);
-		vector<string> parts;
-		tokenize_string(name.begin(),name.end(),back_inserter(parts), '/');
-		for(vector<string>::iterator p = parts.begin(); p != parts.end(); ++p)
-		{
-			int e2 = ENUM_LookupDesc(domain,p->c_str());
-			if(ENUM_Domain(e2) == domain)
-				runways.insert(e2);
-		}
-		name += "/XXX";
-		int e3 = ENUM_LookupDesc(domain,name.c_str());
-		if(ENUM_Domain(e3) == domain)
-			runways.insert(e3);
-
+		pair<int,int> e = rwy->GetRunwayEnumsOneway();
+		if(e.first != atc_Runway_None) runways.insert(e.first);
+		if(e.second != atc_Runway_None) runways.insert(e.second);
 	}
 	for(int n = 0; n < thing->CountChildren(); ++n)
 	{
-		WED_LookupRunwayRecursive(thing->GetNthChild(n), runways, domain);
+		WED_LookupRunwayRecursiveOneway(thing->GetNthChild(n), runways);
 	}
 }
 
-void			WED_GetAllRunwaysOneway(WED_Airport * airport, set<int>& runways)
+static void WED_LookupRunwayRecursiveTwoway(const WED_Thing * thing, set<int>& runways)
 {
-	runways.clear();
-	WED_LookupRunwayRecursive(airport,runways, ATCRunwayOneway);
+	const WED_Runway * rwy = (thing->GetClass() == WED_Runway::sClass) ? dynamic_cast<const WED_Runway *>(thing) : NULL;
+	if(rwy)
+	{
+		int e = rwy->GetRunwayEnumsTwoway();
+		if(e != atc_rwy_None)
+			runways.insert(e);
+	}
+	for(int n = 0; n < thing->CountChildren(); ++n)
+	{
+		WED_LookupRunwayRecursiveTwoway(thing->GetNthChild(n), runways);
+	}
 }
 
-void			WED_GetAllRunwaysTwoway(WED_Airport * airport, set<int>& runways)
+void			WED_GetAllRunwaysOneway(const WED_Airport * airport, set<int>& runways)
 {
 	runways.clear();
-	WED_LookupRunwayRecursive(airport,runways, ATCRunwayTwoway);
+	WED_LookupRunwayRecursiveOneway(airport,runways);
+}
+
+void			WED_GetAllRunwaysTwoway(const WED_Airport * airport, set<int>& runways)
+{
+	runways.clear();
+	WED_LookupRunwayRecursiveTwoway(airport,runways);
 }
 
 #pragma mark -
@@ -640,7 +679,7 @@ int Iterate_CollectRequiredParents(ISelectable * what, void * ref)
 // DRAG & DROP
 //---------------------------------------------------------------------------------------------------------------------------------
 
-static	GUI_ClipType	sSelectionType;
+static	GUI_ClipType	sSelectionType = gui_ClipType_Invalid;
 
 void				WED_RegisterDND(void)
 {
@@ -654,6 +693,8 @@ GUI_DragOperation	WED_DoDragSelection(
 								int						button,
 								int						where[4])
 {
+	if(sSelectionType == gui_ClipType_Invalid) WED_RegisterDND();
+	
 	void * dummy = NULL;
 	const void *	ptrs[1] = { &dummy };
 	int		sizes[1] = { sizeof(dummy) };
@@ -669,6 +710,8 @@ GUI_DragOperation	WED_DoDragSelection(
 bool				WED_IsDragSelection(
 								GUI_DragData *			drag)
 {
+	if(sSelectionType == gui_ClipType_Invalid) WED_RegisterDND();
+
 	if (drag->CountItems() != 1) return false;
 	return drag->NthItemHasClipType(0, sSelectionType);
 }
@@ -719,4 +762,12 @@ void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *), vector<WED_
 	int nn = root->CountChildren();
 	for(int n = 0; n < nn; ++n)
 		CollectRecursive(root->GetNthChild(n), filter, items);
+}
+
+void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *, void * ref), void * ref, vector<WED_Thing *>& items)
+{
+	if(filter(root,ref)) items.push_back(root);
+	int nn = root->CountChildren();
+	for(int n = 0; n < nn; ++n)
+		CollectRecursive(root->GetNthChild(n), filter, ref, items);
 }

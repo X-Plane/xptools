@@ -56,6 +56,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 
 	the_content.string_is_resource = 0;
 	the_content.content_type = gui_Cell_None;
+	the_content.can_delete = false;
 	the_content.can_disclose = 0;
 	the_content.can_select = 0;
 	the_content.is_disclosed = 0;
@@ -86,12 +87,27 @@ void	WED_ToolInfoAdapter::GetCellContent(
 		case prop_Double:
 			the_content.content_type = gui_Cell_Double;
 			the_content.double_val = val.double_val;
-			sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
-			sprintf(buf,fmt,val.double_val);
+			if(inf.round_down)
+			{
+				double int_part = floor(val.double_val);
+				double fract_part = val.double_val - int_part;
+				fract_part *= powf(10,inf.decimals);
+				fract_part = floor(fract_part);
+				int int_size = inf.digits - inf.decimals - 1;
+				int dec_size = inf.decimals;
+				sprintf(fmt,"%% %dd.%%0%dd",int_size,dec_size);
+				sprintf(buf,fmt,(int) int_part, (int) fract_part);
+			}
+			else
+			{
+				sprintf(fmt,"%%%d.%dlf",inf.digits, inf.decimals);
+				sprintf(buf,fmt,val.double_val);
+			}
 			the_content.text_val = buf;
 			break;
 		case prop_String:	the_content.content_type = gui_Cell_EditText;		the_content.text_val = val.string_val;		break;
 		case prop_FilePath:	the_content.content_type = gui_Cell_FileText;		the_content.text_val = val.string_val;		break;
+		case prop_TaxiSign:	the_content.content_type = gui_Cell_TaxiText;		the_content.text_val = val.string_val;		break;
 		case prop_Bool:		the_content.content_type = gui_Cell_CheckBox;		the_content.int_val = val.int_val;			break;
 		case prop_Enum:		the_content.content_type = gui_Cell_Enum;			the_content.int_val = val.int_val;			break;
 		case prop_EnumSet:	the_content.content_type = gui_Cell_EnumSet;		the_content.int_set_val = val.set_val;		break;
@@ -118,7 +134,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 				}
 				the_content.text_val += label;
 			}
-			if (the_content.text_val.empty())	the_content.text_val="none";
+			if (the_content.text_val.empty())	the_content.text_val="None";
 			if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
 		}
 
@@ -127,6 +143,7 @@ void	WED_ToolInfoAdapter::GetCellContent(
 	{
 		mTool->GetNthPropertyInfo(cell_x / 2, inf);
 		the_content.content_type = gui_Cell_EditText;
+		the_content.can_delete = false;
 		the_content.can_edit = 0;
 		the_content.text_val = inf.prop_name;
 		the_content.indent_level = 1;
@@ -171,6 +188,10 @@ void	WED_ToolInfoAdapter::AcceptEdit(
 		break;
 	case prop_String:
 		val.prop_kind = prop_String;
+		val.string_val = the_content.text_val;
+		break;
+	case prop_TaxiSign:
+		val.prop_kind = prop_TaxiSign;
 		val.string_val = the_content.text_val;
 		break;
 	case prop_FilePath:
@@ -325,6 +346,7 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	case prop_Bool:			return 30;
 	case prop_Enum:
 	case prop_EnumSet:		return 75;
+	case prop_TaxiSign:		return 150;
 //		mTool->GetNthPropertyDict(n / 2, dict);
 //		for(PropertyDict_t::iterator d = dict.begin(); d != dict.end(); ++d)
 //			w = max(w,(int) GUI_MeasureRange(OUR_FONT, &*d->second.begin(),&*d->second.end())+20);
@@ -365,6 +387,7 @@ int			WED_ToolInfoAdapter::ColForX(int n)
 
 int			WED_ToolInfoAdapter::RowForY(int n)
 {
+	if(n < 0) return -1; //Fixes being able to click an imaginary last cell and select the real last cell
 	return n / mRowHeight;
 }
 

@@ -30,16 +30,29 @@
 #endif
 
 #if APL
-#if defined(__MACH__)
-#define _STDINT_H_
-#endif
-#if __MWERKS__
-#include <Carbon.h>
+
+// Our helper window is declared here so we don't have to cast it all the time.
+#if defined(__OBJC__)
+	#import <AppKit/AppKit.h>
+	class XWin;
+
+	@interface XWinCocoa : NSWindow <NSDraggingDestination, NSDraggingSource> {
+		XWin * mOwner;
+		NSView * mView;
+	};
+	- (void) setOwner:(XWin*)owner withView:(NSView *) view;
+	- (NSView *) view;
+	- (void) timerFired;
+	- (void) menuItemPicked:(id) sender;
+	- (void) menu_picked:(id) sender;	
+	@end
+
 #else
-#include <Carbon/Carbon.h>
+	#define XWinCocoa void
 #endif
-#define xmenu MenuRef
+	typedef void * xmenu;		// Since this is in the public API, we get C++ binding errors if we redefine it by compiler type.
 #endif
+
 #if IBM
 #define xmenu HMENU
 #endif
@@ -68,9 +81,12 @@ enum {
 	xwin_style_thin				= 0,			// Thin window - just a rectangle
 	xwin_style_movable			= 1,			// Movable - but no machinery to resize
 	xwin_style_resizable		= 2,			// The works: resize, maximize, minimize, zoom, etc.
-	xwin_style_visible			= 4,			// Start visible?
-	xwin_style_centered			= 8,			// Center on screen
-	xwin_style_fullscreen		= 16			// Maximize to fill a screen
+	xwin_style_modal			= 3,			// Modal - don't let the user have access to what's behind until they deal with this!
+
+	xwin_style_visible			= 8,			// Start visible?
+
+	xwin_style_centered			= 16,			// Center on screen
+	xwin_style_fullscreen		= 32			// Maximize to fill a screen
 };
 
 class	XWin
@@ -165,25 +181,80 @@ public:
 	static	void			CheckMenuItem(xmenu menu, int item, bool inCheck);
 	static	void			EnableMenuItem(xmenu menu, int item, bool inEnable);
 
-protected:
 
 #if APL
 
-		WindowRef				mWindow;
-		EventLoopTimerRef		mTimer;
-		int						mInDrag;			// Button being dragged or -1 if none.  This ensures we send only one down/drag/up sequence.
-		int						mWantFakeUp;		// True if the down or drag handler should fake an up click and end the gesture.
-		int						mLastMouseX;
-		int						mLastMouseY;
-		int						mIsControlClick;
+protected:
+
+		XWinCocoa *				mWindow;
+private:
+#if defined(__OBJC__)
+		NSTimer *				mTimer;
+#else
+		void *					mTimer;
+#endif
+
 public:
-		static pascal OSStatus	MacEventHandler(EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
-		static pascal OSErr		MacTrackingHandler(DragTrackingMessage message, WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
-		static pascal OSErr		MacReceiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag);
-		static pascal void		MacTimer(EventLoopTimerRef inTimer, void *inUserData);
+		int						mDefaultDND;		// If true, we dispatch the simple file-based D&D.  Otherwise we use the Mac-specific
+													// advanced callbacks.
+
+		int						mInInit;			// Init protection flag to keep obj-c from calling virtual functions from ctor
+		int						mInPopup;			// This flag tells us we are in a popup menu, so we stash menu picks instead of dispatching them.
+		int						mPopupPick;			// Local storage from popup callback handler for what we picked
+
+
+		int						mInDrag;			// Button being dragged or -1 if none.  This ensures we send only one down/drag/up sequence.
+		int						mInMouseHandler;	// Detector for re-entrancy in mouse handlers
+		int						mWantFakeUp;		// True if the down or drag handler should fake an up click and end the gesture.
+		int						mIsControlClick;	// Flag if control key down on the mInDrag down click - control + button 0 = button 1
+		int						mLastX;				// Last known mouse event for when we have to fake an event.
+		int						mLastY;
+
+		void *					mToolTipMem;		// Tool tips - a retained NSString current tool tip casted to void.
+		int						mToolTipLive;		// True if the tip is up.
+		int						mToolTipBounds[4];	// If the tip is up, we kill the tip when it goes out of these bounds so we can recompute it.
+
+		int						mCurrentDragOps;	// Legal drag mask (in NS constants) for current drag op)
+		int						mInDragOp;			// Flag if we are in a drag and drop op - since the op is closed via a callback we have to keep a flag.
+													// 0 = we are NOT in the drag op.
+													// 1 = we are in the modal loop and the drag is happening
+													// 2 = we are in the modal loop but the drag is over.  This tells us that we SHOULD
+													//	   exit the loop but we haven't YET exited the loop.  See endedAtPoint in .mm
+	
+		// Mac common handlers for obj-C's 5 million event messages.
+		void					EventButtonDown(int x, int y, int button, int has_control_key);
+		void					EventButtonUp  (int x, int y, int button					 );
+		void					EventButtonMove(int x, int y								 );
+		void					ManageToolTipForMouse(int x, int y);
+
+	// This is sent to the sub-class to get our help tip.  We need to do this in the Mac because the
+	// tool tip call comes from obj-C.
+	virtual int					CalcHelpTip(int x, int y, int bounds[4], string& msg) { return 0; }
+
+	// These handlers are sent to the sub-class on Mac only if we are NOT doing default DND support so
+	// that GUI_window can implement its own drag handling.   The passed in value is an NSDraggingInfo
+	// casted to a generic ptr.
+	virtual	int					AdvancedDragEntered(void * ns_dragging_info) { return 0; }
+	virtual	int					AdvancedDragUpdated(void * ns_dragging_info) { return 0; }
+	virtual	void				AdvancedDragExited (void * ns_dragging_info) {			 }
+	virtual	int					AdvancedPerformDrop(void * ns_dragging_info) { return 0; }
+
+	virtual	void				GotCommandHack(int command) { }
+
+protected:
+		void		initCommon(int dnd, const char * title, int attributes, int x, int y, int dx, int dy);
+
+		// Utility to initiate a DnD - provided down here because we need to be in ObjC with access to NS
+		// stuf to do a DnD.
+		void		DoMacDragAndDrop(int item_count,
+								  void *	items[],			// Memory for NSDragItem is released here!
+								  int		mac_drag_types);
 
 #endif
 #if IBM
+
+protected:
+
 
 		HWND			mWindow;
 		CDropTarget *	mDropTarget;
@@ -191,6 +262,7 @@ public:
 		POINT			mSizeMin;
 		int				mDragging;
 		int				mWantFakeUp;
+		int				mIsModal;
 
 		static LRESULT CALLBACK WinEventHandler(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -203,12 +275,16 @@ public:
 #endif
 
 #if LIN
+
+protected:
+
 	int		mDragging; // Button being dragged or -1 if none ;
 	int		mWantFakeUp;
 	int		mBlockEvents;	
 	int		mTimer;
 	POINT	mMouse;
 public:
+	int GetMenuBarHeight(void);
 	virtual void ReceiveFilesFromDrag(const vector<string>& inFiles);
 	bool mInited;
 private slots:

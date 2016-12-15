@@ -28,6 +28,8 @@
 
 class	GUI_Pane;
 class	GUI_TextField;
+class	GUI_MouseCatcher;
+class	WED_Sign_Editor;
 
 /*
 
@@ -53,6 +55,7 @@ enum GUI_CellContentType {
 	gui_Cell_Disclose,			// n/a - this is used as an internal symbol for disclosure tris
 	gui_Cell_EditText,			// string&string		string
 	gui_Cell_FileText,			// string&string		string
+	gui_Cell_TaxiText,			// string			string
 	gui_Cell_CheckBox,			// int val				int val
 	gui_Cell_Integer,			// string&int val		int val
 	gui_Cell_Double,			// string&double val	double val
@@ -68,27 +71,34 @@ enum GUI_BoolIcon {
 
 struct	GUI_CellContent {
 	GUI_CellContentType		content_type;
+	
+	//Ways we can interact with the cell
+	bool					can_delete;
 	int						can_edit;
 	int						can_disclose;
 	int						can_select;
 	int						can_drag;
 
+	//Status of cell
 	int						is_disclosed;
 	int						is_selected;
 	int						indent_level;
 
+	//Contents of the cell
 	string					text_val;		// Only one of these is used - which one depends on the cell content type!
 	int						int_val;
 	double					double_val;
 	set<int>				int_set_val;
 	GUI_BoolIcon			bool_val;		// for get only - to pick check type!
 	int						bool_partial;	// for checks - if we are on but our parent is off...
-	int						string_is_resource;
+	int						string_is_resource;	// the string is actually the resource name of the PNG image to draw
 
+#if DEV
 	//Prints a cell's information to the console window, by default it prints only important stuff
 	void printCellInfo(
 		//Boolean flags to turn on/off drawing
 		bool pcontType =true,
+		bool pcan_delete =true,
 		bool pcan_edit =true,
 		bool pcan_disclose =true,
 		bool pcan_select =true,
@@ -128,6 +138,7 @@ struct	GUI_CellContent {
 			default: printf("*content_type: %d \n", content_type); break;
 		}
 	}	
+	if(pcan_delete) printf("can_delete: %d \n", can_delete);
 	if(pcan_edit) printf("*can_edit: %d \n", can_edit);
 	if(pcan_disclose) printf("*can_disclose: %d \n", can_disclose);
 	if(pcan_select) printf("*can_select: %d \n", can_select);
@@ -144,7 +155,7 @@ struct	GUI_CellContent {
 	if(pbool_partial) printf("bool_partial: %d \n", bool_partial);
 	if(pstring_is_resource) printf("string_is_resource: %d \n", string_is_resource);
 	}
-
+#endif
 };
 
 struct GUI_HeaderContent {
@@ -176,6 +187,11 @@ public:
 	virtual	void	ToggleDisclose(
 						int							cell_x,
 						int							cell_y)=0;
+	
+	virtual void	DoDeleteCell(
+						int							cell_x,
+						int							cell_y)=0;
+
 	virtual	void	DoDrag(
 						GUI_Pane *					drag_emitter,
 						int							mouse_x,
@@ -205,7 +221,7 @@ public:
 	virtual	int		SelectDisclose(
 						int							open_it,
 						int							all)=0;		// return true if you support this op.
-
+	
 	virtual	int		TabAdvance(
 						int&						io_x,
 						int&						io_y,
@@ -342,9 +358,11 @@ private:
 		gui_Insert_Top
 	};
 
-			void			CreateEdit(int cell_bounds[4]);
+			void			CreateEdit(int cell_bounds[4], const string& text, bool is_sign);
 			int				TerminateEdit(bool inSave, bool inAll, bool inDone);
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
+			bool			HasEdit() { return mSignField != NULL || mTextField != NULL; }
+	
 
 	GUI_TextTableProvider * mContent;
 	int						mClickCellX;
@@ -355,6 +373,8 @@ private:
 	int						mTrackRight;
 	GUI_Table *				mParent;
 	GUI_TextField *			mTextField;
+	WED_Sign_Editor *		mSignField;
+	GUI_MouseCatcher *		mCatcher;
 	GUI_TableGeometry *		mGeometry;
 
 	int						mCellResize;

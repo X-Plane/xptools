@@ -252,6 +252,15 @@ FLT_PROP(light_s1,light_s1)
 FLT_PROP(light_t1,light_t1)
 FLT_PROP(light_s2,light_s2)
 FLT_PROP(light_t2,light_t2)
+STR_PROP(light_p1,light_p1)
+STR_PROP(light_p2,light_p2)
+STR_PROP(light_p3,light_p3)
+STR_PROP(light_p4,light_p4)
+STR_PROP(light_p5,light_p5)
+STR_PROP(light_p6,light_p6)
+STR_PROP(light_p7,light_p7)
+STR_PROP(light_p8,light_p8)
+STR_PROP(light_p9,light_p9)
 FLT_PROP(light_smoke_size,smoke_size);
 STR_PROP(light_dataref,dataref)
 
@@ -263,6 +272,7 @@ INT_PROP(layer_group_offset,layer_group_offset)
 
 INT_PROP(animation_group,animated)
 STR_PROP(anim_dataref,dataref)
+FLT_PROP(anim_loop,anim_loop)
 
 INT_PROP(anim_keyframe_count,anim_keyframe_count)
 INT_PROP(anim_keyframe_root,anim_keyframe_root)
@@ -280,6 +290,7 @@ STR_PROP(manip_dref1,manip_dref1)
 STR_PROP(manip_dref2,manip_dref2)
 STR_PROP(manip_tooltip,manip_tooltip)
 STR_PROP(manip_cursor,manip_cursor)
+FLT_PROP(manip_wheel,manip_wheel)
 
 
 INT_PROP(has_panel_regions,has_panel_regions)

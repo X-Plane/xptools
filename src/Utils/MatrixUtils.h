@@ -29,7 +29,7 @@
 #define __MATRIX_H__
 
 //#include <glut.h>
-#if __MACH__
+#if APL
 #include <OpenGL/gl.h>
 #elif LIN
 #include <GL/gl.h>

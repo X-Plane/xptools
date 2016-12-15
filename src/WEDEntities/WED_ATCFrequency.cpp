@@ -42,7 +42,7 @@ WED_ATCFrequency::~WED_ATCFrequency()
 void	WED_ATCFrequency::Import(const AptATCFreq_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
-	freq = (double) info.freq / 100.0;
+	freq.AssignFrom10Khz(info.freq);
 	freq_type = ENUM_Import(ATCFrequency, info.atc_type);
 	if (freq_type == -1)
 	{
@@ -55,7 +55,7 @@ void	WED_ATCFrequency::Import(const AptATCFreq_t& info, void (* print_func)(void
 void	WED_ATCFrequency::Export(		 AptATCFreq_t& info) const
 {
 	GetName(info.name);
-	info.freq = round(freq.value * 100.0);
+	info.freq = freq.GetAs10Khz();
 	info.atc_type = ENUM_Export(freq_type.value);
 }
 

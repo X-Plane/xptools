@@ -48,6 +48,9 @@
 #define MAX_ERR_APT_BEZ_CHECK 0.0
 #define OKAY_WITH_BEZ_BORDERS true
 
+
+#define WANT_NEW_BORDER_RULES 0
+
 #define KILL_IF_APT_LEAK 1
 
 #define DEBUG_FLATTENING 0
@@ -218,7 +221,13 @@ void BurnInAirport(
 
 	outArea.clear();
 
-	if (!inAirport->boundaries.empty() && inFillWater != fill_nukeroads)
+	if (!inAirport->boundaries.empty() && 
+#if WANT_NEW_BORDER_RULES 	
+		inFillWater != fill_nukeroads
+#else
+		inFillWater == fill_dirt2apt
+#endif		
+		)
 	{
 		// Precomputed boundary?  Use it!
 
@@ -408,7 +417,11 @@ void	SimplifyAirportAreasAndSplat(Pmwx& inDstMap, Polygon_set_2& in_area, bool d
 		}
 		#endif
 	}
-	if (inFillWater == fill_dirt2apt || (inFillWater != fill_nukeroads && !do_simplify))
+	if (inFillWater == fill_dirt2apt 
+		#if WANT_NEW_BORDER_RULES
+		|| (inFillWater != fill_nukeroads && !do_simplify)
+		#endif
+	)
 	{
 		// Merge in airports, leaving roads, etc.
 		MapMergePolygonSet(inDstMap, area, &outDstFaces, loc);
@@ -483,14 +496,14 @@ static void mask_with(DEMGeo& dst, const DEMGeo& src)
 
 void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMGeo& transport, bool crop, bool dems, bool kill_rivers, ProgressFunc prog)
 {
-	double wet_area = 0;
-	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
-	if(!f->is_unbounded())
-	if(f->data().IsWater())
-	{
-		wet_area += GetMapFaceAreaMeters(f,NULL);
-	}
-	printf("BEFORE: %lf sq meters.\n", wet_area);
+//	double wet_area = 0;
+//	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+//	if(!f->is_unbounded())
+//	if(f->data().IsWater())
+//	{
+//		wet_area += GetMapFaceAreaMeters(f,NULL);
+//	}
+//	printf("BEFORE: %lf sq meters.\n", wet_area);
 
 	int x1, x2, x, y1, y2, y;
 	Point_2 p1, p2;
@@ -542,6 +555,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 			SimplifyAirportAreasAndSplat(ioMap, foo, apts[n].boundaries.empty(), simple_faces, fill_water2apt, NULL);		// Simplify the airport surface area a bit.
 	}
 
+#if WANT_NEW_BORDER_RULES
 	for (int n = 0; n < apts.size(); ++n)
 	if (apts[n].kind_code == apt_airport)
 	if(!apts[n].boundaries.empty())
@@ -553,6 +567,7 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		if(!foo.is_empty())																// Check for empty airport (e.g. all sea plane lanes or somthing.)
 			SimplifyAirportAreasAndSplat(ioMap, foo, apts[n].boundaries.empty(), simple_faces, fill_nukeroads, NULL);		// Simplify the airport surface area a bit.
 	}
+#endif
 
 	// Pass 2 - wide boundaries, kill roads but not water, and burn DEM.
 	// BUT...if we have user-specified boundaries, this is the only pass and we do fill water.
@@ -679,14 +694,14 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 	
 	
 	
-	wet_area = 0;
-	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
-	if(!f->is_unbounded())
-	if(f->data().IsWater())
-	{
-		wet_area += GetMapFaceAreaMeters(f,NULL);
-	}
-	printf("AFTER: %lf sq meters.\n", wet_area);
+//	wet_area = 0;
+//	for(Pmwx::Face_iterator f = ioMap.faces_begin(); f != ioMap.faces_end(); ++f)
+//	if(!f->is_unbounded())
+//	if(f->data().IsWater())
+//	{
+//		wet_area += GetMapFaceAreaMeters(f,NULL);
+//	}
+//	printf("AFTER: %lf sq meters.\n", wet_area);
 	
 
 }
@@ -818,7 +833,7 @@ void	BezierToSegments(
 					{
 						if(sqrt(s.squared_distance_supporting_line(bpb)) > inSimplify * MTR_TO_DEG_LAT)
 						{
-							#if OPENGL_MAP
+							#if OPENGL_MAP && DEV
 								debug_mesh_line(bpb,s.projection(bpb),1,0,0,1,0,0);
 							#else
 								throw "too curvy curve!";

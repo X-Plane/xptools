@@ -24,19 +24,17 @@
 #define XWINGL_H
 
 #if APL
-	// hack for conflict with DebugAssert!
-	#define __DEBUGGING__
-	#if __MWERKS__
-		#include <AGL.h>
+	#include <OpenGL/gl.h>
+	#if __OBJC__
+		#import <AppKit/AppKit.h>
 	#else
-		#include <AGL/agl.h>
+		typedef void NSOpenGLView;
 	#endif
 #endif
 #include "XWin.h"
 
 #if IBM
 #include <gl/gl.h>
-#include <gl/glext.h>
 #endif
 
 #if LIN
@@ -64,10 +62,14 @@ private:
 #endif
 
 #if IBM
+	// Ben says: glext.h doesn't come with stock MSVC.  Here we include the few extensions we gotta have by hand.  Maybe someday we'll use GLEW.
+
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FARBPROC    )(GLenum,GLfloat,GLfloat);
    typedef void (APIENTRY * PFNGLMULTITEXCOORD2FVARBPROC   )(GLenum,const GLfloat *);
    typedef void (APIENTRY * PFNGLACTIVETEXTUREARBPROC      )(GLenum                );
    typedef void (APIENTRY * PFNGLCLIENTACTIVETEXTUREARBPROC)(GLenum texture        );
+   typedef void (APIENTRY * PFNGLCOMPRESSEDTEXIMAGE2DARBPROC)(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, GLvoid* data); 
+
    extern PFNGLMULTITEXCOORD2FARBPROC     glMultiTexCoord2fARB	;
    extern PFNGLMULTITEXCOORD2FVARBPROC    glMultiTexCoord2fvARB;
    extern PFNGLACTIVETEXTUREARBPROC       glActiveTextureARB	;
@@ -110,7 +112,18 @@ private:
 #define GL_CLIENT_ACTIVE_TEXTURE_ARB      0x84E1
 #define GL_MAX_TEXTURE_UNITS_ARB          0x84E2
 
+#define GL_COMPRESSED_RGB                 0x84ED
+#define GL_COMPRESSED_RGBA                0x84EE
+#define GL_TEXTURE_COMPRESSION_HINT       0x84EF
+#define GL_TEXTURE_COMPRESSED_IMAGE_SIZE  0x86A0
+#define GL_TEXTURE_COMPRESSED             0x86A1
+#define GL_NUM_COMPRESSED_TEXTURE_FORMATS 0x86A2
+#define GL_COMPRESSED_TEXTURE_FORMATS     0x86A3
+
+#define GL_CLAMP_TO_EDGE                  0x812F
+
 #endif
+
 
 class	XWinGL : public XWin
 {
@@ -148,7 +161,7 @@ public:
 private:
 
 #if APL
-		AGLContext		mContext;
+		NSOpenGLView *		mContext;
 #endif
 
 #if IBM
