@@ -161,11 +161,17 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 			vector <BezierPoint2> pt_bak;                    // backup of the coordinates we're going to rotate
 			for(int n = 0; n < np; ++n)
 			{
-//				WED_TextureBezierNode * s = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
 				WED_GISPoint_Bezier * s = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
 				BezierPoint2 pt;
-
-				s->GetBezierLocation(gis_Geo,pt);
+				if (s)
+					s->GetBezierLocation(gis_Geo,pt);
+				else
+				{
+					WED_GISPoint * sp = dynamic_cast <WED_GISPoint *> (ring->GetNthChild(n));
+					Point2 p;
+					sp->GetLocation(gis_Geo,p);
+					pt.pt = p;
+				}
 				pt_bak.push_back(pt);
 			}
 			rCopy = dynamic_cast <WED_Ring *> (ring);        // now that we have a backup, we can mess with the original without guilt
@@ -179,10 +185,8 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 			}
 			for(int n = 0; n < np; ++n)
 			{
-//				WED_TextureBezierNode * dest = dynamic_cast <WED_TextureBezierNode *>  (rCopy->GetNthChild(n));
-				WED_GISPoint_Bezier * dest = dynamic_cast <WED_GISPoint_Bezier *>  (rCopy->GetNthChild(n));
-//				WED_TextureBezierNode * src  = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
-				WED_GISPoint_Bezier * src  = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
+				WED_GISPoint * dest = dynamic_cast <WED_GISPoint *>  (rCopy->GetNthChild(n));
+				WED_GISPoint * src  = dynamic_cast <WED_GISPoint *> (ring->GetNthChild(n));
 				Point2 st,uv;
 				
 				// 4-sided orthos w/no bezier nodes are special. They are always streched to these corners, i.e. distorted.
@@ -212,20 +216,26 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 				}
 				dest->SetLocation(gis_UV,uv);
 				
-				if(src->GetControlHandleHi(gis_Geo,st))
+				WED_GISPoint_Bezier * srcb  = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
+				if(srcb)
 				{
-					dest->SetControlHandleHi(gis_UV,Point2(
-						(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
-						(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
+					WED_GISPoint_Bezier * destb = dynamic_cast <WED_GISPoint_Bezier *>  (rCopy->GetNthChild(n));
+					if(srcb->GetControlHandleHi(gis_Geo,st))
+					{
+						destb->SetControlHandleHi(gis_UV,Point2(
+							(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
+							(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
+					}
+					if(srcb->GetControlHandleLo(gis_Geo,st))
+					{
+						destb->SetControlHandleLo(gis_UV,Point2(
+							(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
+							(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
+					}
+					srcb->SetBezierLocation(gis_Geo,pt_bak[n]);    // restore to coordinate to what they were from the backup
 				}
-				if(src->GetControlHandleLo(gis_Geo,st))
-				{
-					dest->SetControlHandleLo(gis_UV,Point2(
-						(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
-						(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
-				}
-
-				src->SetBezierLocation(gis_Geo,pt_bak[n]);    // restore to coordinate to what they were from the backup
+				else
+					src->SetLocation(gis_Geo,pt_bak[n].pt);
 			}
 		}
 	}
