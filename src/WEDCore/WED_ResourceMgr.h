@@ -48,6 +48,7 @@
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
 #include "XObjDefs.h"
+#include "CompGeomDefs2.h"
 
 class	WED_LibraryMgr;
 
@@ -65,6 +66,8 @@ struct	pol_info_t {
 	float		longitude;
 	double		height_Meters;
 	int			ddsHeight_Pxls;
+	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
+	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
 };
 
 struct	fac_info_t {
@@ -75,6 +78,18 @@ struct	fac_info_t {
 	vector<string>	w_use;
 	
 	XObj8 *	preview;
+};
+
+struct	lin_info_t {
+	string		base_tex;
+	float		proj_s;
+	float		proj_t;
+	vector<float>	s1,sm,s2;
+};
+
+
+struct	road_info_t {
+	map<int, string>	vroad_types;
 };
 
 #if AIRPORT_ROUTING
@@ -103,6 +118,8 @@ public:
 
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
+			bool 	SetPolUV(const string& path, Bbox2 box);
+			bool	GetLin(const string& path, lin_info_t& out_info);
 			bool	GetFor(const string& path, XObj8 *& obj);
 
 			//path is a RELATIVE PATH
@@ -111,6 +128,7 @@ public:
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING
 			bool	GetAGP(const string& path, agp_t& out_info);
+			bool	GetRoad(const string& path, road_info_t& out_info);
 #endif			
 
 
@@ -123,11 +141,13 @@ private:
 	
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
+	map<string,lin_info_t>		mLin;
 	map<string,XObj8 *>			mFor;
 	map<string,XObj8 *>			mObj;
 
 #if AIRPORT_ROUTING	
 	map<string,agp_t>			mAGP;
+	map<string,road_info_t>		mRoad;
 #endif	
 	WED_LibraryMgr *			mLibrary;
 };	

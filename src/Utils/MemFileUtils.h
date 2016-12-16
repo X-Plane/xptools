@@ -198,7 +198,7 @@ MF_GetFileType(
 int
 MF_GetDirectoryBulk(
 		const char *		path,
-		bool (* 			cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * ref),
+		bool(*cbFunc)(const char * fileName, bool isDir, unsigned long long modTime, void * ref),
 		void *				ref);
 
 /*

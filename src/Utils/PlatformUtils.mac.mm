@@ -25,29 +25,26 @@
 #import <AppKit/AppKit.h>
 
 
-const char * GetApplicationPath(char * pathBuf, int pathLen)
+string GetApplicationPath()
 {
 	NSBundle * bundle = [NSBundle mainBundle];
 	NSString * path = [bundle bundlePath];
 	
-	const char * p = [path UTF8String];
-	strncpy(pathBuf, p, pathLen);
-	return pathBuf;
+	return string([path UTF8String]);
 }
 
-const char * GetCacheFolder(char * cache_path, int sz)
+string GetCacheFolder()
 {
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];	
 	NSFileManager * fmgr = [NSFileManager defaultManager];	
 	NSURL * dir = [fmgr URLForDirectory:NSCachesDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:nil];
 
-	strncpy(cache_path, [[dir path] UTF8String], sz);
-
-	strncat(cache_path, DIR_STR, sz);
+	string ret([[dir path] UTF8String]);
+	ret += DIR_STR;
 
 	[pool release];
 	
-	return cache_path;
+	return ret;
 
 
 /*		FSRef	ref;

@@ -66,10 +66,11 @@ void	WED_ResourceMgr::Purge(void)
 		delete i->second;
 	for(map<string, XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
 		delete i->second;
-//	for(map<string, fac_info_t *>::iterator i = mFac.begin(); i != mFac.end(); ++i)
-//		delete i->preview;
+	for(map<string, fac_info_t>::iterator i = mFac.begin(); i != mFac.end(); ++i)
+		delete i->second.preview;
 		
 	mPol.clear();
+	mLin.clear();
 	mObj.clear();
 	mFor.clear();
 	mFac.clear();
@@ -147,6 +148,93 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 	return true;
 }
 
+bool 	WED_ResourceMgr::SetPolUV(const string& path, Bbox2 box)
+{
+	map<string,pol_info_t>::iterator i = mPol.find(path);
+	if(i != mPol.end())
+	{
+		i->second.mUVBox = box;
+		return true;
+	}
+	else
+		return false;
+}
+
+bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
+{
+	map<string,lin_info_t>::iterator i = mLin.find(path);
+	if(i != mLin.end())
+	{
+		out_info = i->second;
+		return true;
+	}
+
+	out_info.base_tex.clear();
+	out_info.proj_s=100;
+	out_info.proj_t=100;
+	float tex_width = 1024;
+	out_info.s1.clear();
+	out_info.sm.clear();
+	out_info.s2.clear();
+
+	string p = mLibrary->GetResourcePath(path);
+	MFMemFile * lin = MemFile_Open(p.c_str());
+	if(!lin) return false;
+
+	MFScanner	s;
+	MFS_init(&s, lin);
+
+	int versions[] = { 850, 0 };
+
+	if(!MFS_xplane_header(&s,versions,"LINE_PAINT",NULL))
+	{
+		MemFile_Close(lin);
+		return false;
+	}
+
+	while(!MFS_done(&s))
+	{
+		if (MFS_string_match(&s,"TEXTURE", false))
+		{
+			MFS_string(&s,&out_info.base_tex);
+		}
+		else if (MFS_string_match(&s,"SCALE", false))
+		{
+			out_info.proj_s = MFS_double(&s);
+			out_info.proj_t = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"TEX_WIDTH", false))
+		{
+			tex_width = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"S_OFFSET", false))
+		{
+			float ly = MFS_double(&s);
+			float s1 = MFS_double(&s);
+			float sm = MFS_double(&s);
+			float s2 = MFS_double(&s);
+			if (s2 > s1 && s2 > sm)
+			{
+				out_info.s1.push_back(s1/tex_width);
+				out_info.sm.push_back(sm/tex_width);
+				out_info.s2.push_back(s2/tex_width);
+			}
+		}
+		MFS_string_eol(&s,NULL);
+	}
+	MemFile_Close(lin);
+	
+	if (out_info.s1.size() < 1) 
+		return false;
+	
+	out_info.proj_s = out_info.proj_s * (out_info.s2[0]-out_info.s1[0]);
+
+	process_texture_path(p,out_info.base_tex);
+	mLin[path] = out_info;
+	
+	return true;
+}
+
 bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 {
 	map<string,pol_info_t>::iterator i = mPol.find(path);
@@ -155,6 +243,9 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		out_info = i->second;
 		return true;
 	}
+	
+	out_info.mSubBoxes.clear();
+	out_info.mUVBox = Bbox2();
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * pol = MemFile_Open(p.c_str());
@@ -191,6 +282,18 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 			out_info.proj_s = MFS_double(&s);
 			out_info.proj_t = MFS_double(&s);
 		}
+		else if (MFS_string_match(&s,"#subtex", false)) 
+		{
+			float s1 = MFS_double(&s);
+			float t1 = MFS_double(&s);
+			float s2 = MFS_double(&s);
+			float t2 = MFS_double(&s);
+			if (s2 > s1 && t2 > t1)
+			{
+		printf("read subtex\n");
+				out_info.mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
+			}
+		}
 		// TEXTURE_NOWRAP <texname>
 		else if (MFS_string_match(&s,"TEXTURE_NOWRAP", false))
 		{
@@ -214,8 +317,8 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	MemFile_Close(pol);
 
 	process_texture_path(p,out_info.base_tex);
-
 	mPol[path] = out_info;
+	
 	return true;
 }
 
@@ -536,11 +639,9 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 		obj->lods.back().cmds.push_back(cmd);
 
 		out_info.preview = obj;
-#if DEV
 		// only problem is that the texture path contain spaces -> obj reader can not read that
 		// but still valuable for checking the values/structure
-		XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
-#endif
+//		XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
 	}
 	mFac[path] = out_info;
 	return true;
@@ -723,6 +824,7 @@ bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
 			pt[2] = t_y - z*(tree[i].o/tree[i].w);
 			pt[6] = tree[i].s/scale_x;
 			pt[7] = tree[i].t/scale_y;
+
 			obj->geo_tri.append(pt);
 			pt[0] = t_x + x*(1.0-tree[i].o/tree[i].w);
 			pt[2] = t_y + z*(1.0-tree[i].o/tree[i].w);
@@ -761,11 +863,10 @@ bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
 	obj->lods.back().cmds.push_back(cmd);
 
 	mFor[path] = obj;
-#if DEV
     // only problem is that the texture path contain spaces -> obj reader can not read that
     // but still valuable for checking the values/structure
-    XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
-#endif
+//    XObj8Write(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str(), *obj);
+
 	return true;
 }
 
@@ -936,6 +1037,51 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 	mAGP[path] = out_info;
 	return true;
 }
+
+bool	WED_ResourceMgr::GetRoad(const string& path, road_info_t& out_info)
+{
+	map<string,road_info_t>::iterator i = mRoad.find(path);
+	if(i != mRoad.end())
+	{
+		out_info = i->second;
+		return true;
+	}
 	
+	string p = mLibrary->GetResourcePath(path);
+	MFMemFile * road = MemFile_Open(p.c_str());
+	if(!road) return false;
+
+	MFScanner	s;
+	MFS_init(&s, road);
+
+	int versions[] = { 800, 0 };
+	int v;
+	if((v=MFS_xplane_header(&s,versions,"ROADS",NULL)) == 0)
+	{
+		MemFile_Close(road);
+		return false;
+	}
+	
+	string last_name;
+	
+	while(!MFS_done(&s))
+	{
+		if(MFS_string_match(&s,"#VROAD",false))
+		{
+			MFS_string(&s,&last_name);
+		}
+		if(MFS_string_match(&s, "ROAD_DRAPED", 0))
+		{
+			MFS_int(&s);		// draping mode
+			int id = MFS_int(&s);
+			out_info.vroad_types[id] = last_name;
+		}
+		MFS_string_eol(&s, NULL);
+	}
+	
+	MemFile_Close(road);
+	mRoad[path] = out_info;
+	return true;
+}
 	
 #endif

@@ -237,6 +237,7 @@ public:
 
 	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 };
 
 // A string, edited as text.

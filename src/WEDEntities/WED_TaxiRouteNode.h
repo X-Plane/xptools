@@ -24,7 +24,8 @@
 #define WED_TaxiRouteNode_H
 
 #include "WED_GISPoint.h"
-// A trivial bezier point with no properties, usually used inside the rings of non-airport stuff.
+// This trivial point forms the nodes of ATC routes.  They don't have properties now but
+// we need a special class so that the network editing code can know what types are "part of the network".
 
 class WED_TaxiRouteNode : public WED_GISPoint {
 

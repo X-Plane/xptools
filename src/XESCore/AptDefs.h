@@ -75,13 +75,19 @@ enum {
 	
 	apt_taxi_header		= 1200,			// 1200 <name>
 	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id> <name>
-	apt_taxi_edge		= 1202,			// 1202 <src> <dst> <flags> <id> <name>
+	apt_taxi_edge		= 1202,			// 1202 <src> <dst> <oneway flag> <runway flag/taxi width> <name>
 	apt_taxi_shape		= 1203,			// 1203 <lat> <lon>
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
+	apt_taxi_control	= 1205,			// 1205 <lat> <lon
+	apt_taxi_truck_edge = 1206,			// 1206 <src> <dst> <name>
 
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
 	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list
 	apt_meta_data = 1302,				// 1302 <key> <value>
+	
+	apt_truck_parking	= 1400,			// 1400 lat lon heading type cars name
+	apt_truck_destination = 1401,		// 1401 lat lon heading type|type|type... name
+	
 	// Surface codes
 	apt_surf_none		= 0,
 	apt_surf_asphalt,
@@ -252,7 +258,24 @@ enum {
 	ramp_operation_general_aviation = 1,
 	ramp_operation_airline = 2,
 	ramp_operation_cargo = 3,
-	ramp_operation_military = 4
+	ramp_operation_military = 4,
+	
+	//First entry of the service truck types
+	apt_truck_baggage_loader = 0,
+	apt_truck_baggage_train,
+	apt_truck_crew_car,
+	apt_truck_crew_ferrari,
+	apt_truck_crew_limo,
+	apt_truck_fuel_jet,
+	apt_truck_fuel_liner,
+	apt_truck_fuel_prop,
+	apt_truck_food,
+	apt_truck_gpu,
+	apt_truck_pushback,
+
+	apt_truck_destination_fuel_farm = 0,
+	apt_truck_destination_baggage_hall
+	
 };
 
 inline bool apt_code_is_curve(int code) { return code == apt_lin_crv || code == apt_rng_crv || code == apt_end_crv; }
@@ -467,26 +490,52 @@ struct AptRouteNode_t {
 	Point2						location;
 };
 
-struct AptRouteEdge_t {
-	string						name;
+struct AptEdgeBase_t {
 	int							src;
 	int							dst;
 	int							oneway;
+	vector<pair<Point2, bool> >	shape;			// This is pairs of shape points and curved flags - true means curve control point
+												// The end points are NOT included in shape.  It is a requirement that no more
+												// than 2 adjacent curve control points exist without a regular point.  There is no min/max size requirement for shape.
+};
+
+struct AptRouteEdge_t : AptEdgeBase_t {
+	string						name;
 	int							runway;
 	int							width;	// icao width code
 	set<string>					hot_depart;
 	set<string>					hot_arrive;
 	set<string>					hot_ils;
 	
-	vector<Point2>				shape;
+};
+
+struct AptServiceRoadEdge_t : AptEdgeBase_t {
+	string						name;
 };
 
 struct AptNetwork_t {
 	string						name;
 	vector<AptRouteNode_t>		nodes;
 	vector<AptRouteEdge_t>		edges;
+	vector<AptServiceRoadEdge_t>service_roads;
 };
 
+struct AptTruckParking_t {
+	string						name;
+	Point2						location;
+	float						heading;
+	int							parking_type;
+	int							train_car_count;
+};
+typedef vector<AptTruckParking_t> AptTruckParkingVector;
+
+struct AptTruckDestination_t {
+	string						name;
+	Point2						location;
+	float						heading;
+	set<int>					truck_types;
+};
+typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
 struct AptInfo_t {
 	int					kind_code;				// Enum
 	string				icao;
@@ -506,8 +555,11 @@ struct AptInfo_t {
 	AptSignVector		signs;
 
 	AptPavementVector	pavements;				// 810 structures
-
 	AptGateVector		gates;					// shared structures
+	
+	AptTruckParkingVector		truck_parking;
+	AptTruckDestinationVector	truck_destinations;
+	
 	AptTowerPt_t		tower;
 	AptBeacon_t			beacon;
 	AptWindsockVector	windsocks;

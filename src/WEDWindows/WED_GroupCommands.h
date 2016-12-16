@@ -70,6 +70,12 @@ void	WED_DoMerge(IResolver * resolver);
 
 int		WED_CanSplit(IResolver * resolver);
 void	WED_DoSplit(IResolver * resolver);
+int		WED_CanAlign(IResolver * resolver);
+void	WED_DoAlign(IResolver * resolver);
+int		WED_CanOrthogonalize(IResolver * resolver);
+void	WED_DoOrthogonalize(IResolver * resolver);
+int		WED_CanMakeRegularPoly(IResolver * resolver);
+void	WED_DoMakeRegularPoly(IResolver * resolver);
 int		WED_CanReverse(IResolver * resolver);
 void	WED_DoReverse(IResolver * resolver);
 int		WED_CanRotate(IResolver * resolver);
@@ -109,6 +115,12 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 void	WED_DoMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slot);
 
 int		WED_Repair(IResolver * resolver);
+
+int		WED_CanBreakApartSpecialAgps(IResolver* resolver);
+void	WED_DoBreakApartSpecialAgps(IResolver* resolver);
+
+int		WED_CanReplaceVehicleObj(IResolver* resolver);
+void	WED_DoReplaceVehicleObj(IResolver* resolver);
 
 void WED_UpgradeRampStarts(IResolver * resolver);
 

@@ -25,6 +25,9 @@
 #include "WED_UIMeasurements.h"
 #include "WED_Colors.h"
 #include "GUI_Resources.h"
+#include "GUI_Messages.h"
+
+#include "WED_HierarchyFilterBar.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -79,6 +82,16 @@ WED_PropertyPane::WED_PropertyPane(
 	mScroller->SetContent(mTable);
 	mTextTable.SetParentTable(mTable);
 
+	if (pane_style == propPane_Hierarchy)
+	{
+		mFilter = new WED_HierarchyFilterBar(this);
+		mFilter->Show();
+		mFilter->SetParent(this);
+		mFilter->AddListener(this);
+		mFilter->SetSticky(1, 0, 1, 1);
+		this->PackPane(mFilter, gui_Pack_Top);
+	}
+
 	if (horizontal)
 	{
 		mTextTableHeader.SetProvider(&mPropertyTable);
@@ -114,7 +127,7 @@ WED_PropertyPane::WED_PropertyPane(
 
 		mSide = new GUI_Side;
 		bounds[0] = 0;
-		bounds[2] = 180;
+		bounds[2] = 120;                       // fixed width of the first property colums, showing the names of all properties
 		mSide->SetBounds(bounds);
 		mSide->SetGeometry(&mPropertyTable);
 		mSide->SetSide(&mTextTableSide);
@@ -175,3 +188,13 @@ void	WED_PropertyPane::ToPrefs(IDocPrefs * prefs,int id)
 	prefs->WriteIntSetPref(key.c_str(), mClosedList);
 }
 
+void	WED_PropertyPane::ReceiveMessage(
+	GUI_Broadcaster *		inSrc,
+	intptr_t				inMsg,
+	intptr_t				inParam)
+{
+	if (inMsg == GUI_FILTER_FIELD_CHANGED)
+	{
+		mPropertyTable.SetFilter(mFilter->GetText());
+	}
+}

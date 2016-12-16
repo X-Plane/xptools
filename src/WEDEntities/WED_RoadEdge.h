@@ -24,9 +24,11 @@
 #ifndef WED_RoadEdge_H
 #define WED_RoadEdge_H
 
-#if AIRPORT_ROUTING
+#if AIRPORT_ROUTING && ROAD_EDITING
 
 #include "WED_GISEdge.h"
+
+struct road_info_t;
 
 class WED_RoadEdge : public WED_GISEdge {
 
@@ -34,17 +36,33 @@ DECLARE_PERSISTENT(WED_RoadEdge)
 
 public:
 
-			void			SetLayer(int layer);
-			void			SetSubtype(int subtype);
+			int				GetStartLayer(void) const { return start_layer.value; }
+			void			SetStartLayer(int l) { start_layer = l; }
+			int				GetEndLayer(void) const { return end_layer.value; }
+			void			SetEndLayer(int l) { end_layer = l; }
+			int				GetSubtype(void) const { return subtype.value; }
+			void			SetSubtype(int s) { subtype = s; }
+			void			GetResource(string& r) const { r = resource.value; }
+			void			SetResource(const string& r) { resource = r; }
 
 	virtual	bool			IsOneway(void) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Road"; }
 
+	virtual	void			GetNthProperty(int n, PropertyVal_t& val) const;
+	virtual	void			SetNthProperty(int n, const PropertyVal_t& val);
+	virtual	void			GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void			GetNthPropertyDictItem(int n, int e, string& item) const;
+	virtual	void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+
 private:
 
-	WED_PropIntText			layer;
-	WED_PropIntEnum			subtype;
+			bool			get_valid_road_info(road_info_t * optional_info) const;
+
+	WED_PropStringText		resource;
+	WED_PropIntText			start_layer;
+	WED_PropIntText			end_layer;
+	WED_PropIntText			subtype;
 
 };
 

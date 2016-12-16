@@ -22,6 +22,8 @@
  */
 
 #include "WED_GISChain.h"
+#include "WED_AirportChain.h"
+#include "WED_AirportNode.h"
 
 TRIVIAL_COPY(WED_GISChain, WED_Entity)
 
@@ -167,7 +169,7 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 				is_b = false;
 			}
 		}
-		else if(!HasLayer(gis_UV))
+		else    //  if(HasLayer(gis_UV))    allow splitting all bezier seg's, found a way to get the uv maps right ...
 		{
 			if(b.is_near(p, dist))
 			{
@@ -206,18 +208,6 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 		{
 			Point2	bpp_proj = best_p.projection(p);
 			npp->SetLocation(gis_Geo, bpp_proj);
-			
-			if(HasLayer(gis_UV))
-			{
-				double t = sqrt(best_p.p1.squared_distance(bpp_proj)) /
-						   sqrt(best_p.squared_length());
-				Segment2 uvs;
-				Bezier2  uvb;
-				if(GetSide(gis_UV, best, uvs, uvb))
-					npp->SetLocation(gis_UV, uvb.midpoint(t));
-				else
-					npp->SetLocation(gis_UV, uvs.midpoint(t));
-			}
 		}
 		// Why wait?  Cuz...Getside on old side will USE this as soon as we are its parent!
 		np->SetParent(this, best+1);
@@ -416,7 +406,26 @@ void WED_GISChain::Reverse(GISLayer_t l)
 			if (has_hi[n])	mCachePtsBezier[t]->SetControlHandleLo(l, p_h[n]);
 			else			mCachePtsBezier[t]->DeleteHandleLo();
 		}
-	}	
+	}
+	
+    // On Airport Lines and Taxiways, we want to preserve the line/light properties of each segment, effectivly ONLY reversing the node sequence.
+    // Very usefull when reversing airport lines with differently tagged segments. It effectively brings the blue taxiway edge lights to the other side ONLY.
+    
+	if (GetClass() == WED_AirportChain::sClass)
+	{
+		for(n = 0; n < np/2; ++n)    // directly swap the attributes of the nodes. No need to first build a local copy and then write it back in reverse order.
+		{
+			t = np - n - 2;
+			WED_AirportNode * a_n = dynamic_cast <WED_AirportNode *> (GetNthChild(n));  // note to self: mCache would yield no speedup here, as we dynamic_cast every point only once
+			WED_AirportNode * a_t = dynamic_cast <WED_AirportNode *> (GetNthChild(t));  // thus we get away with NOT expanding RebuildCache to work for 'gis_Apt" layers :)
+			set<int>	tmp1, tmp2;
+			
+			a_n->GetAttributes(tmp1);
+			a_t->GetAttributes(tmp2);
+			a_n->SetAttributes(tmp2);
+			a_t->SetAttributes(tmp1);
+		}
+	}
 }
 
 void WED_GISChain::Shuffle(GISLayer_t l)

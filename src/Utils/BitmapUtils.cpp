@@ -36,6 +36,10 @@
 #endif
 #include "AssertUtils.h"
 
+#if IBM
+#include "GUI_Unicode.h"
+#endif
+
 /*
 	WARNING: Struct alignment must be "68K" (e.g. 2-byte alignment) for these
 	structures to be happy!!!
@@ -1345,7 +1349,11 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 	int result = -1;
 	TIFFErrorHandler	errH = TIFFSetWarningHandler(IgnoreTiffWarnings);
 	TIFFErrorHandler	errH2= TIFFSetErrorHandler(IgnoreTiffWarnings);
+#if SUPPORT_UNICODE
+    TIFF* tif = TIFFOpenW(convert_str_to_utf16(inFilePath).c_str(), "r");
+#else
     TIFF* tif = TIFFOpen(inFilePath, "r");
+#endif
     if (tif == NULL) goto bail;
 
 	uint32 w, h;

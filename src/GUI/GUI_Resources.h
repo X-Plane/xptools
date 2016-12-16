@@ -66,5 +66,11 @@ int		GUI_GetImageResourceSize(const char * in_resource, int dims[2]);
 inline float	GUI_Rescale_S(float s, GUI_TexPosition_t * metrics) { return s * metrics->s_rescale; }
 inline float	GUI_Rescale_T(float t, GUI_TexPosition_t * metrics) { return t * metrics->t_rescale; }
 
+// WordWrap a string by replacing spaces in it for \n.
+// If the string already has some \n in it, be clever as to not insert more than needed.
+// Also be clever about single words longer than the allowed width, don't truncate those.
+
+std::string WordWrap( std::string str, size_t width = 72 );
+
 
 #endif

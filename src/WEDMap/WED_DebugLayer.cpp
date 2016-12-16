@@ -39,7 +39,7 @@ WED_DebugLayer::~WED_DebugLayer()
 void	WED_DebugLayer::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 {
 	WED_MapZoomerNew * z = GetZoomer();
-	#if DEV
+	#if DEV || DEBUG_VIS_LINES
 		g->SetState(false, 0, false,    false, false,   false, false);
 
 		for(int n = 0; n < gMeshPolygons.size(); ++n)
