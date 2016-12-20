@@ -344,6 +344,7 @@
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\src\Utils\zip.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_HierarchyUtils.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Sign_Parser.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Archive.h" />
