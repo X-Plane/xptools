@@ -47,6 +47,8 @@
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
+#include "CompGeomDefs2.h"
+
 class	WED_LibraryMgr;
 
 struct	XObj8;
@@ -63,6 +65,8 @@ struct	pol_info_t {
 	float		longitude;
 	double		height_Meters;
 	int			ddsHeight_Pxls;
+	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
+	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
 };
 
 struct	fac_info_t {
@@ -70,6 +74,10 @@ struct	fac_info_t {
 	bool			roof;
 	bool			modern;
 	vector<string>	walls;
+};
+
+struct	road_info_t {
+	map<int, string>	vroad_types;
 };
 
 #if AIRPORT_ROUTING
@@ -96,8 +104,10 @@ public:
 
 			void	Purge(void);
 
+			bool	GetFor(const string& path, XObj8 *& obj);
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
+			bool 	SetPolUV(const string& path, Bbox2 box);
 
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
@@ -105,7 +115,9 @@ public:
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING
 			bool	GetAGP(const string& path, agp_t& out_info);
+			bool	GetRoad(const string& path, road_info_t& out_info);
 #endif			
+
 
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -113,14 +125,17 @@ public:
 							intptr_t				inParam);
 
 private:
-
+	
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
+	map<string,XObj8 *>			mFor;
 	map<string,XObj8 *>			mObj;
+
 #if AIRPORT_ROUTING	
 	map<string,agp_t>			mAGP;
+	map<string,road_info_t>		mRoad;
 #endif	
 	WED_LibraryMgr *			mLibrary;
-};
+};	
 
 #endif /* WED_ResourceMgr_H */

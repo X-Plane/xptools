@@ -36,6 +36,7 @@
 // for now
 #define	ATC_VERS 1000
 #define ATC_VERS2 1050
+#define ATC_VERS3 1100
 
 
 #if OPENGL_MAP
@@ -54,6 +55,9 @@ const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
+// TODO:
+// find a way to not have to keep this string in the same sequence with service enums defined in AptDefs.h and WED_Enums.h
+const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", 0 }; 
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)
@@ -258,7 +262,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	if (ok.empty())
 	{
 		if (TextScanner_FormatScan(s, "i", &vers) != 1) ok = "Invalid version";
-		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000 && vers != 1050) ok = "Illegal Version";
+		if (vers != 703 && vers != 715 && vers != 810 && vers != 850 && vers != 1000 && vers != 1050 && vers != 1100) ok = "Illegal Version";
 		TextScanner_Next(s);
 		++ln;
 	}
@@ -269,6 +273,8 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 	bool			hit_prob = false;
 	AptPolygon_t *	open_poly = NULL;
 	Point2			pt,ctrl;
+	
+	AptEdgeBase_t *	last_edge = NULL;
 	
 	bool forceDone = false;
 	while (ok.empty() && !TextScanner_IsDone(s) && !forceDone)
@@ -294,6 +300,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 		case apt_heliport:
 			centers.clear();
 			hit_prob = false;
+			last_edge = NULL;
 			outApts.push_back(AptInfo_t());
 			if (TextScanner_FormatScan(s, "iiiiTT|",
 				&rec_code,
@@ -880,17 +887,31 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				if(runway_flag == "taxiway_D")	{ if(vers < ATC_VERS2) ok = "Illegal sized taxiway in older apt.dat format."; else outApts.back().taxi_route.edges.back().width = atc_width_D; }
 				if(runway_flag == "taxiway_E")	{ if(vers < ATC_VERS2) ok = "Illegal sized taxiway in older apt.dat format."; else outApts.back().taxi_route.edges.back().width = atc_width_E; }
 				if(runway_flag == "taxiway_F")	{ if(vers < ATC_VERS2) ok = "Illegal sized taxiway in older apt.dat format."; else outApts.back().taxi_route.edges.back().width = atc_width_F; }
+				last_edge = &outApts.back().taxi_route.edges.back();
 			}
 			break;
 		case apt_taxi_shape:
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: taxi layout edge outside an airport.";
 			else if (outApts.back().taxi_route.edges.empty()) ok = "Error: taxi layout shape point without an edge.";
+			else if (!last_edge) ok = "Error: taxi shape point without a previous edge for this airport.";
 			else {
-				outApts.back().taxi_route.edges.back().shape.push_back(Point2());
+				last_edge->shape.push_back(make_pair(Point2(),false));
 				if(TextScanner_FormatScan(s,"idd", &rec_code,
-					&outApts.back().taxi_route.edges.back().shape.back().y_,
-					&outApts.back().taxi_route.edges.back().shape.back().x_) != 3) ok = "Error: illegal shape point record.";
+					&last_edge->shape.back().first.y_,
+					&last_edge->shape.back().first.x_) != 3) ok = "Error: illegal shape point record.";
+			}
+			break;
+		case apt_taxi_control:
+			if(vers < ATC_VERS3) ok = "Error: no ATC curved data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi layout edge outside an airport.";
+			else if (outApts.back().taxi_route.edges.empty()) ok = "Error: taxi layout shape point without an edge.";
+			else if (!last_edge) ok = "Error: taxi control point without a previous edge for this airport.";
+			else {
+				last_edge->shape.push_back(make_pair(Point2(),true));
+				if(TextScanner_FormatScan(s,"idd", &rec_code,
+					&last_edge->shape.back().first.y_,
+					&last_edge->shape.back().first.x_) != 3) ok = "Error: illegal control point record.";
 			}
 			break;
 		case apt_taxi_active:
@@ -911,7 +932,117 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					copy(runways_parsed.begin(),runways_parsed.end(), set_inserter(outApts.back().taxi_route.edges.back().hot_ils));
 			}
 			break;
+		case apt_taxi_truck_edge:
+			if(vers < ATC_VERS3) ok = "Error: no ATC truck data in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi layout truck edge outside an airport.";
+			else {
+				outApts.back().taxi_route.service_roads.push_back(AptServiceRoadEdge_t());
+				string oneway_flag, runway_flag;
+				if(TextScanner_FormatScan(s,"iiiTTT|",
+					&rec_code,
+					&outApts.back().taxi_route.service_roads.back().src,
+					&outApts.back().taxi_route.service_roads.back().dst,
+					&oneway_flag,
+					&outApts.back().taxi_route.service_roads.back().name) < 5) ok = "Error: illegal service road edge.";
+				outApts.back().taxi_route.service_roads.back().oneway = oneway_flag == "oneway";
+				last_edge = &outApts.back().taxi_route.service_roads.back();
+			}
+			break;
+		case apt_truck_parking:
+			//1400 lat lon heading type cars name
+			if (vers < ATC_VERS3) ok = "Error: no ATC truck parking locations in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: taxi parking location outside an airport.";
+			else
+			{
+				outApts.back().truck_parking.push_back(AptTruckParking_t());
 
+				string truck_type_str;
+				double lat, lon;
+				if (TextScanner_FormatScan(s,
+					"idddTiT|",
+					&rec_code,
+					&lat,
+					&lon,
+					&outApts.back().truck_parking.back().heading,
+					&truck_type_str,
+					&outApts.back().truck_parking.back().train_car_count,
+					&outApts.back().truck_parking.back().name) != 7)
+				{
+					ok = "Error: Illegal truck parking.";
+				}
+
+				outApts.back().truck_parking.back().location = Point2(lon, lat);
+
+				if (truck_type_str == "\0")
+				{
+					ok = "Error: Truck type string cannot be null";
+				}
+
+				const char** str = truck_type_strings;
+				while(*str != '\0')
+				{
+					if (strcmp(truck_type_str.c_str(),*str)==0)
+					{
+						outApts.back().truck_parking.back().parking_type = (str - truck_type_strings) + apt_truck_baggage_loader; //Aka + apt_truck_begining of enums
+						break;
+					}
+					++str;
+					if (*str == '\0')
+					{
+						ok = ("Error: Truck type " + truck_type_str + " is not supported.");
+					}
+				}
+			}
+			break;
+		case apt_truck_destination:
+			// 1401 lat lon heading type|type|type... name
+			if (vers < ATC_VERS3) ok = "Error: no ATC truck destinations in older apt.dat files.";
+			else if (outApts.empty()) ok = "Error: truck destination outside an airport.";
+			else
+			{
+				double lat, lon, heading = 0.0;
+				string truck_types_for_dest;
+				string name;
+				if(TextScanner_FormatScan(s,"idddTT",
+											&rec_code,
+											&lat,
+											&lon,
+											&heading,
+											&truck_types_for_dest,
+											&name) != 6)
+				{ 
+					ok = "Error: Illegal truck destination";
+				}
+				
+				AptTruckDestination_t truck_dest;
+				truck_dest.location = Point2(lat, lon);
+				truck_dest.heading = heading;
+				truck_dest.name = name;
+
+				//TODO: One day create a multi_scan_bitfields if this case happens again?
+				std::vector<std::string> tokenized;
+				tokenize_string(truck_types_for_dest.begin(), truck_types_for_dest.end(), back_inserter(tokenized), '|');
+				for (vector<string>::iterator itr = tokenized.begin(); itr != tokenized.end(); ++itr)
+				{
+					const char** str = truck_type_strings;
+					while (*str != '\0')
+					{
+						if (strcmp(itr->c_str(), *str) == 0)
+						{
+							truck_dest.truck_types.insert((str - truck_type_strings) + apt_truck_baggage_loader); //Aka + apt_truck_begining of enums
+							break;
+						}
+						++str;
+						if (*str == '\0')
+						{
+							ok = ("Error: Truck type " + *itr + " is not supported.");
+						}
+					}
+				}
+
+				outApts.back().truck_destinations.push_back(truck_dest);
+			}
+			break;
 		case apt_done:
 			forceDone = true;
 			break;
@@ -1011,13 +1142,14 @@ bool	WriteAptFileOpen(FILE * fi, const AptVector& inApts, int version)
 
 bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void * fi, const AptVector& inApts, int version)
 {
-	DebugAssert(version == 850 || version == 1000 || version == 1050);
+	DebugAssert(version == 850 || version == 1000 || version == 1050 || version == 1100);
 	fprintf(fi, "%c" CRLF, APL ? 'A' : 'I');
 	fprintf(fi, "%d Generated by WorldEditor" CRLF, version);
 
 
 	bool has_atc = (version >= 1000);
 	bool has_atc2 = (version >= 1050);
+	bool has_atc3 = (version >= 1100);
 
 	for (AptVector::const_iterator apt = inApts.begin(); apt != inApts.end(); ++apt)
 	{
@@ -1241,8 +1373,8 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					}
 					fprintf(fi," %s" CRLF, e->name.c_str());
 					
-					for(vector<Point2>::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
-						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, apt_taxi_shape, s->y(), s->x());
+					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
+						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
 
 					if(!e->hot_depart.empty())
 					{
@@ -1266,6 +1398,46 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						fprintf(fi,CRLF);
 					}
 				}
+
+				if(has_atc3)
+				for(vector<AptServiceRoadEdge_t>::const_iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
+				{
+					fprintf(fi,"%2d %d %d %s ", apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
+					fprintf(fi," %s" CRLF, e->name.c_str());
+					
+					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
+						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
+				}
+				
+				if(has_atc3)
+				for(AptTruckParkingVector::const_iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
+				{
+					//Don't export car count unless our type is baggage_train
+					int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
+
+					fprintf(fi,"%2d % 3.8lf % 3.8lf % 4.1f %s %d %s" CRLF,
+						apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
+						truck_type_strings[trk->parking_type], car_count, trk->name.c_str());
+				}
+
+				if(has_atc3)
+				for(AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
+				{
+					fprintf(fi,"%2d % 3.8lf % 3.8lf % 4.1f ",
+						apt_truck_destination, dst->location.y_, dst->location.x_, dst->heading);
+				
+					for(set<int>::const_iterator tt = dst->truck_types.begin(); tt != dst->truck_types.end(); ++tt)
+					{
+						fprintf(fi,tt == dst->truck_types.begin() ? "%s" : "|%s",
+							truck_type_strings[*tt]);
+					}
+					fprintf(fi," %s" CRLF, dst->name.c_str());
+					#if !DEV
+					//	#error we need to have an importer for this.
+					//	#error we need to have a validator for this.
+					#endif
+				}
+
 			}
 		}
 	}

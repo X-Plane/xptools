@@ -79,6 +79,7 @@ static const GUI_MenuItem_t kExportTargetMenu[] = {
 {	"X-Plane 10.00",		0,		0,								0,	wed_Export1000		},
 {	"X-Plane 10.21",		0,		0,								0,	wed_Export1021,		},
 {	"X-Plane 10.50",		0,		0,								0,	wed_Export1050,		},
+{	"X-Plane 11.00",		0,		0,								0,	wed_Export1100,		},
 {	"Airport Scenery Gateway",0,	0,								0,	wed_ExportGateway	},
 {	NULL,					0,		0,								0,	0					}
 };
@@ -98,6 +99,9 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"U&ngroup",				'G'	,	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Ungroup		},
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
+{	"A&lign",				'L',	gui_ControlFlag,				0,	wed_Align		},
+{	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize },
+{	"Make Regular Poly",	'Q',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_RegularPoly },
 #if AIRPORT_ROUTING
 {	"Merge",				'M',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Merge		},
 #endif
@@ -113,6 +117,8 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"&Move Up",				'[',	gui_ControlFlag,				0,	wed_MovePrev	},
 {	"Move Do&wn",			']',	gui_ControlFlag,				0,	wed_MoveNext	},
 {	"Move &Last",			']',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MoveLast	},
+{	"Explode Special Agps",   0,    0,                              0,  wed_BreakApartSpecialAgps  },
+{	"Replace Vehicle Objects", 0,	0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,					0,		0,								0,	0				},
 };
 

@@ -35,12 +35,16 @@
 
 enum CreateEdge_t {
 	create_TaxiRoute = 0,
+#if ROAD_EDITING
 	create_Road
+#endif
 };
 
 class	WED_Thing;
 class	IGISEntity;
 class	IGISPointSequence;
+struct	road_info_t;
+
 
 class WED_CreateEdgeTool : public WED_CreateToolBase {
 public:
@@ -58,12 +62,17 @@ public:
 	// WED_MapToolNew
 	virtual	const char *		GetStatusText(void);
 
-	virtual void				GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void			GetNthProperty(int n, PropertyVal_t& val) const;
+	virtual	void			SetNthProperty(int n, const PropertyVal_t& val);
+	virtual	void			GetNthPropertyDict(int n, PropertyDict_t& dict) const;
+	virtual	void			GetNthPropertyDictItem(int n, int e, string& item) const;
+	virtual	void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
 
 private:
 
 	WED_PropBoolText		mOneway;
 	WED_PropIntEnum			mRunway;
+	WED_PropIntEnum			mVehicleClass;
 	WED_PropIntEnumSet		mHotDepart;
 	WED_PropIntEnumSet		mHotArrive;
 	WED_PropIntEnumSet		mHotILS;		
@@ -71,10 +80,12 @@ private:
 	
 	WED_PropStringText		mName;
 	WED_PropIntText			mSlop;
-	
-	WED_PropIntText			mLayer;
-	WED_PropIntEnum			mSubtype;
 
+#if ROAD_EDITING
+	WED_PropIntText			mLayer;
+	WED_PropIntText			mSubtype;
+	WED_PropStringText		mResource;
+#endif
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
 							const vector<Point2>&	dirs_lo,
@@ -91,6 +102,8 @@ private:
 			void		SplitByLine(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& s, vector<pair<IGISPointSequence *, Point2> >& out_splits);
 			void		SplitByPts(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& s, vector<Point2>& out_splits, double dsq);
 			WED_Thing *	GetHost(int& idx);
+
+	bool		get_valid_road_info(road_info_t * optional_info) const;
 
 		CreateEdge_t	mType;
 

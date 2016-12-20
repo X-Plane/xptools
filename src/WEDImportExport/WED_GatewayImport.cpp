@@ -49,7 +49,7 @@
 
 #include "GUI_Label.h"
 
-#include "WED_FilterBar.h"
+#include "GUI_FilterBar.h"
 #include "GUI_Button.h"
 #include "WED_Messages.h"
 #include "MemFileUtils.h"
@@ -233,7 +233,7 @@ private:
 	//Changes the decoration of the GUI window's title, buttons, etc, based on the stage
 	void DecorateGUIWindow(string labelDesc="");
 	//--For the whole dialog box
-	WED_FilterBar	 *		mFilter;
+	GUI_FilterBar	 *		mFilter;
 	GUI_Packer *			mPacker;
 
 	GUI_Pane *				mButtonHolder;
@@ -334,7 +334,7 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 	mPacker->SetBkgkndImage ("gradient.png"); 
 
 	//Filter
-	mFilter = new WED_FilterBar(this,filter_changed,0,"Search:","",NULL,false);
+	mFilter = new GUI_FilterBar(this,filter_changed,0,"Search:","",false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(mPacker);
@@ -699,7 +699,10 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		tmp.type   = curScenery.operator[]("type").asString();		//2 for 2D =  3 for 3D
 		tmp.status = curScenery["Status"].asString();
 		
-		//TODO when the "features" part is nailed down what it is -tmp.features = curScenery.operator[]("features").asString();
+		//!!features is not needed to read!!
+		//string features_str = curScenery.operator[]("features").asString();
+		//tmp.features = vector<char>(features_str.begin(), features_str.end());
+		
 		tmp.artistComments    = curScenery.operator[]("artistComments").asString()    != "" ? curScenery.operator[]("artistComments").asString() : "N/A";
 		tmp.moderatorComments = curScenery.operator[]("moderatorComments").asString() != "" ? curScenery.operator[]("moderatorComments").asString() : "N/A";
 		

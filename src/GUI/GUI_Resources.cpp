@@ -22,6 +22,9 @@
  */
 
 #include "GUI_Resources.h"
+#if IBM
+#include "GUI_Unicode.h"
+#endif
 #include "AssertUtils.h"
 #include "TexUtils.h"
 #include "BitmapUtils.h"
@@ -168,7 +171,7 @@ GUI_Resource	GUI_LoadResource(const char * in_resource)
 	res_map::iterator i = sResMap.find(path);
 	if (i != sResMap.end()) return &(i->second);
 
-	HRSRC	res_info = FindResource(NULL,in_resource,"GUI_RES");
+	HRSRC	res_info = FindResourceW(NULL, convert_str_to_utf16(in_resource).c_str(),L"GUI_RES");
 	if (res_info==NULL) return NULL;
 	HGLOBAL res = LoadResource(NULL, res_info);
 	if (res == NULL) return NULL;
@@ -196,31 +199,34 @@ const char *	GUI_GetResourceEnd(GUI_Resource res)
 		return ((res_struct*)res)->end_p;
 }
 
-bool			GUI_GetTempResourcePath(const char * in_resource, string& out_path)
+bool			GUI_GetTempResourcePath(const char* in_resource, string& out_path)
 {
 	GUI_Resource res = GUI_LoadResource(in_resource);
 	if (res == NULL) return false;
 	const char * sp = GUI_GetResourceBegin(res);
 	const char * ep = GUI_GetResourceEnd(res);
 
-	char	temp_path[MAX_PATH];
-	char	temp_file[MAX_PATH];
+	WCHAR	temp_path[MAX_PATH] = { 0 };
+	WCHAR	temp_file[MAX_PATH] = { 0 };
      // Get the temp path.
-    int result = GetTempPath(sizeof(temp_path), temp_path);
-	if (result > sizeof(temp_path) || result == 0) { GUI_UnloadResource(res); return false; }
+    int result = GetTempPathW(MAX_PATH, temp_path);
+	if (result > sizeof(temp_path) || result == 0)
+	{
+		GUI_UnloadResource(res); return false;
+	}
 
-	result =  GetTempFileName(temp_path, in_resource, 0, temp_file);
+	result =  GetTempFileNameW(temp_path, convert_str_to_utf16(in_resource).c_str(), 0, temp_file);
 	if (result == 0) { GUI_UnloadResource(res); return false; }
 
-	strcat(temp_file, in_resource);
+	wcscat(temp_file, convert_str_to_utf16(in_resource).c_str());
 
-	FILE * fi = fopen(temp_file, "wb");
+	FILE * fi = fopen(convert_utf16_to_str(temp_file).c_str(), "wb");
 	if (fi == NULL) { GUI_UnloadResource(res); return false; }
 	fwrite(sp, ep - sp, 1, fi);
 
 	fclose(fi);
 	GUI_UnloadResource(res);
-	out_path = temp_file;
+	out_path = convert_utf16_to_str(temp_file);
 	return true;
 }
 

@@ -66,7 +66,6 @@
 // Road-grid editor - NOT even remotely done yet, leave this off, dude.
 #define ROAD_EDITING 0
 
-
 // mroe : -- really early stage of dev , do not change.
 #define WITHNWLINK 0
 
@@ -77,6 +76,10 @@
 // These turn on the features to import the global apt databaes for the purpose of building a final scenery pack
 // from the gateway.  You don't need this.
 #define GATEWAY_IMPORT_FEATURES 0
+
+// After running ATC Runway Validation, show the hitboxes used for hot zone tests
+// 0 = never, 1 = only those causing a violation, 2 = always show all
+#define DEBUG_VIS_LINES 1
 
 // Set this to 1 to replace vector with a version that checks bounds.  Usually only used to catch fugly bugs.
 #define SAFE_VECTORS 0
@@ -115,6 +118,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <iterator>
 
 #if SAFE_VECTORS && DEV
 
@@ -219,7 +223,7 @@ using namespace std;
 #if defined(_MSC_VER)
 
 	#ifdef __cplusplus
-
+	#define _USE_MATH_DEFINES
 		#include <hash_map>
 		using namespace stdext;	// Ben says - can't entirely blame MSVC for this - hash maps are NOT stardard - a weakness of the STL that causes much grief!
 		using namespace std;
@@ -251,6 +255,45 @@ using namespace std;
 #define WINDOWS_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <windows.h>
+
+#if (WED || OBJVIEW)
+#define SUPPORT_UNICODE 1
+#endif
+
+#if __cplusplus && SUPPORT_UNICODE
+#include <fstream>
+
+#define fopen x_fopen
+#define ofstream x_ofstream
+extern FILE* x_fopen(const char * _Filename, const char * _Mode);
+//extern FILE* x_fopen(const WCHAR* _Filename, const wchar_t * _Mode);
+
+// This class is a replacement for ofstreams. X-Plane uses ofstreams in various places
+// but it always initializes them with std::strings which have UTF-8 characters jammed
+// into them. On windows however, we need UTF-16 characters in wide format for our file
+// paths. We want the conversion to be automatic and in one place so this was easier than
+// modifying the client code in numerous places.
+class x_ofstream : public basic_ostream<char, char_traits<char>> {
+public:
+	typedef basic_ofstream<char, char_traits<char>> _Myt;
+	typedef basic_ostream<char, char_traits<char>> _Mybase;
+	typedef basic_filebuf<char, char_traits<char>> _Myfb;
+	typedef basic_ios<char, char_traits<char>> _Myios;
+
+	x_ofstream() :_Mybase(&_Filebuffer) {}
+	virtual ~x_ofstream() {}
+
+	// Implementation is in FILE_ops.cpp
+	void open(const char *_Filename, ios_base::openmode _Mode = ios_base::out, int _Prot = (int)ios_base::_Openprot);
+	void open(const wchar_t *_Filename, ios_base::openmode _Mode = ios_base::out, int _Prot = (int)ios_base::_Openprot);
+	void close();
+
+private:
+	_Myfb _Filebuffer;
+};
+
+
+#endif
 #endif
 
 #if APL

@@ -50,6 +50,7 @@ class	GUI_Table;
 class	GUI_Header;
 class	GUI_Side;
 class	IResolver;
+class	GUI_FilterBar;
 
 enum {
 
@@ -60,7 +61,7 @@ enum {
 
 };
 
-class	WED_PropertyPane : public GUI_Packer, public GUI_Commander {
+class	WED_PropertyPane : public GUI_Packer, public GUI_Commander, public GUI_Listener {
 public:
 
 			 WED_PropertyPane(
@@ -76,19 +77,24 @@ public:
 	void		ToPrefs(IDocPrefs * prefs,int id);
 	void		FromPrefs(IDocPrefs * prefs,int id);
 
+	virtual	void	ReceiveMessage(
+		GUI_Broadcaster *		inSrc,
+		intptr_t    			inMsg,
+		intptr_t				inParam);
 private:
 
 	GUI_ScrollerPane *				mScroller;
 	GUI_Table *						mTable;
 	GUI_Header *					mHeader;
 	GUI_Side *						mSide;
-
+	
+	GUI_FilterBar *					mFilter;
+	
 	GUI_TextTable					mTextTable;
 	GUI_TextTableHeader				mTextTableHeader;
 	GUI_TextTableSide				mTextTableSide;
 
-	WED_PropertyTable				mPropertyTable	;
-
+	WED_PropertyTable				mPropertyTable;
 };
 
 #endif /* WED_PROPERTYPANE_H */

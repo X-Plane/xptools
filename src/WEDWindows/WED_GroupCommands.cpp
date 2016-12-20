@@ -37,17 +37,22 @@
 #include "WED_Group.h"
 #include "BitmapUtils.h"
 #include "GISUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "WED_Ring.h"
+#include "WED_DrapedOrthophoto.h"
 #include "WED_UIDefs.h"
 #include "ILibrarian.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_OverlayImage.h"
+#include "WED_ObjPlacement.h"
 #include "WED_AirportChain.h"
 #include "WED_TextureNode.h"
 #include "WED_Airport.h"
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_RoadNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_LibraryMgr.h"
 #include "WED_RampPosition.h"
@@ -55,9 +60,19 @@
 #include "WED_MetaDataKeys.h"
 #include "WED_ResourceMgr.h"
 #include "XObjDefs.h"
+#include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
+#include "GISUtils.h"
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
+#include "CompGeomUtils.h"
 #include <iterator>
+#include <sstream>
+
+#if DEV
+#include "WED_Globals.h"
+#include <iostream>
+#endif
 
 #define DOUBLE_PT_DIST (1.0 * MTR_TO_DEG_LAT)
 
@@ -561,7 +576,12 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
-
+#if ROAD_EDITING
+	if(SAFE_CAST(WED_RoadNode,t) &&
+		SAFE_CAST(IGISComposite,t->GetParent()) &&
+		t->CountViewers() == 0)
+		return true;
+#endif
 	IGISPolygon * p = dynamic_cast<IGISPolygon *>(t);
 	if (p && t->CountChildren() == 0)
 		return true;
@@ -1180,16 +1200,28 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 			DebugAssert(jj);
 			Segment2 s1, s2;
 			Bezier2 b1, b2;
+			bool isb1, isb2;
 			
-			if(ii->GetSide(gis_Geo, 0, s1,b1))
+			if(isb1 = ii->GetSide(gis_Geo, 0, s1,b1))
 			{
 				s1.p1 = b1.p1;
 				s1.p2 = b1.p2;
 			}
-			if(jj->GetSide(gis_Geo, 0, s2,b2))
+			else
+			{
+				b1.c1 = b1.p1;
+				b1.c2 = b1.p2;
+			}
+			
+			if(isb2 = jj->GetSide(gis_Geo, 0, s2,b2))
 			{
 				s2.p1 = b2.p1;
 				s2.p2 = b2.p2;
+			}
+			else
+			{
+				b2.c1 = b2.p1;
+				b2.c2 = b2.p2;
 			}
 			
 			Point2 x;
@@ -1197,10 +1229,23 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				s1.p2 != s2.p2 &&
 				s1.p1 != s2.p2 &&
 				s1.p2 != s2.p1)
-			if(s1.intersect(s2, x))			
 			{
-				sel->Insert(pts[i]);
-				sel->Insert(pts[j]);
+				if(!isb1 && !isb2)
+				{
+					if(s1.intersect(s2, x))
+					{
+						sel->Insert(pts[i]);
+						sel->Insert(pts[j]);
+					}
+				}
+				else
+				{
+					if(b1.intersect(b2, 12))
+					{
+						sel->Insert(pts[i]);
+						sel->Insert(pts[j]);
+					}
+				}
 			}
 		}
 	}
@@ -1657,6 +1702,441 @@ void	WED_DoSplit(IResolver * resolver)
 	op->CommitOperation();
 }
 
+static int collect_pnts(ISelectable * base,void * ref)
+{
+	vector<IGISPoint *> * points = (vector<IGISPoint *> *) ref;
+	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
+	if(p)
+	{
+		points->push_back(p);
+		return 1;
+	}
+	return 0;
+}
+
+int		WED_CanAlign(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() < 3 ) return false;
+	if (sel->IterateSelectionOr(Iterate_IsStructuredObject, NULL)) return 0;
+	// taxi route nodes are part of structured objects
+	//if (sel->IterateSelectionOr(Iterate_IsNotPartOfStructuredObject, NULL)) return 0;
+	return 1;
+}
+
+// Align in line
+// between the farthest away points
+void	WED_DoAlign(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<IGISPoint *> pnts;
+	if (!sel->IterateSelectionAnd(collect_pnts, &pnts))
+		return ;
+	if(pnts.size() < 3) return;
+
+	static CoordTranslator2 translator;
+	Bbox2 bb;
+	Point2 p1,p2;
+	double fdist = 0;
+    IGISPoint * s = pnts[0];
+	IGISPoint * d = pnts[1];
+
+	// find farthest away points and adjust bbox for translator
+	for( int i = 0; i < pnts.size(); ++i)
+	{
+		pnts[i]->GetLocation(gis_Geo,p1);
+		bb += p1;
+		for( int j = i+1 ; j < pnts.size(); ++j)
+		{
+			pnts[j]->GetLocation(gis_Geo,p2);
+			double dist = LonLatDistMeters(p1.x_,p1.y_,p2.x_,p2.y_);
+			if ( dist > fdist)
+			{
+				fdist = dist;
+				s = pnts[i];
+				d = pnts[j];
+			}
+		}
+	}
+	// if bbox area = 0 then translator fails
+	// anyhow , the points are already aligned vertical and horizontal
+	if( bb.xspan() == 0.0 || bb.yspan() == 0.0) return;
+
+	op->StartOperation("Align in line");
+	set<WED_DrapedOrthophoto *> os;
+
+	s->GetLocation(gis_Geo,p1);
+	d->GetLocation(gis_Geo,p2);
+
+	CreateTranslatorForBounds(bb,translator);
+	Segment2 l(translator.Forward(p1),translator.Forward(p2));
+	// move the other points on the line
+	for(vector<IGISPoint *>::iterator it = pnts.begin(); it != pnts.end();++it)
+	{
+		if(*it == s || *it == d ) continue;
+		Point2 ll,p;
+		(*it)->GetLocation(gis_Geo,ll);
+		p = l.projection(translator.Forward(ll));
+		(*it)->SetLocation(gis_Geo,translator.Reverse(p));
+
+		//collect DrapedOrtho's involved
+		WED_Thing * thing = dynamic_cast<WED_Thing *>(*it);
+		if(thing)
+		{
+			WED_Thing * parent = thing->GetParent();
+			if(parent)
+			{
+				WED_Thing * grandparent = parent->GetParent();
+				if(grandparent && (strcmp(grandparent->GetClass() , "WED_DrapedOrthophoto") == 0))
+				{
+					WED_DrapedOrthophoto * ortho = dynamic_cast<WED_DrapedOrthophoto *>(grandparent);
+					if(ortho) os.insert(ortho);
+				}
+			}
+		}
+	}
+
+	// redrape DrapedOthosphoto's upon modification of points
+	for(set<WED_DrapedOrthophoto *>::iterator it = os.begin(); it != os.end();++it)
+	{
+		 (*it)->Redrape();
+	}
+
+	op->CommitOperation();
+}
+
+static int IterateCanOrthogonalize(ISelectable * what, void * ref)
+{
+	if(!Iterate_IsStructuredObject(what, ref)) return 0;
+	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
+	if(pol && pol->GetOuterRing()->GetNumPoints() > 3) return 1;
+	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(what);
+	if(!seq ) return 0;
+	int numpnts = seq->GetNumPoints();
+	if (numpnts > 3) return 1;
+	if(!seq->IsClosed() && numpnts > 2) return 1;
+	return 0;
+}
+
+int		WED_CanOrthogonalize(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionAnd(IterateCanOrthogonalize, NULL)) return 1;
+	return 0;
+}
+
+static void RotatePolygon(Polygon2 * pol,const Point2& ctr, double angle )
+{
+	for( int i = 0 ; i < pol->size() ; ++i )
+	{
+		Vector2 v_old = VectorLLToMeters(ctr,Vector2(ctr,pol->at(i)));
+		double old_len = sqrt(v_old.squared_length());
+		double old_ang = VectorMeters2NorthHeading(ctr,ctr,v_old);
+		double new_ang = old_ang - angle ;
+		Vector2 v_new;
+		NorthHeading2VectorMeters(ctr, ctr, new_ang,v_new);
+		v_new.normalize();
+		v_new *= old_len;
+		v_new = VectorMetersToLL(ctr,v_new);
+		pol->at(i) = ctr + v_new;
+	}
+}
+
+static void DoMakeOrthogonal(IGISPointSequence * seq )
+{
+	int numpoints = seq->GetNumPoints();
+	int maxpoints = numpoints;
+
+	bool is_closed = seq->IsClosed() ;
+	if (is_closed)
+	{
+		if(numpoints < 4) return;
+	}
+	else
+	{
+	   if(numpoints < 3 ) return;
+		maxpoints = numpoints - 1;
+	}
+
+	Polygon2 pol;
+	for( int i = 0 ; i < numpoints ; ++i )
+	{
+		Point2 p;
+		seq->GetNthPoint(i)->GetLocation(gis_Geo,p);
+		pol.push_back(p);
+	}
+
+	Point2 ctr = pol.centroid();
+
+	Segment2 seg = pol.side(0);
+
+	double heading = VectorDegs2NorthHeading(ctr,ctr,Vector2(seg.p1,seg.p2)) - 90.;
+	// rotate to realy east-west
+	RotatePolygon(&pol,ctr,heading);
+
+	int next_dir = 0;
+	int last_dir = 0;
+	int node_cnt = 0;
+	double   sum = 0;
+	bool use_first_value = false;
+
+	for( int i = 0 ; i < maxpoints ; ++i )
+	{
+		int prv = i ;
+		int pos = (i + 1) % pol.size() ;
+		int nxt = (i + 2) % pol.size() ;
+
+		Point2 p1 = pol.at(prv);
+		Point2 p2 = pol.at(pos);
+		Point2 p3 = pol.at(nxt);
+
+		Vector2	v_prv = VectorLLToMeters(p1,Vector2(p1,p2));
+		Vector2	v_nxt = VectorLLToMeters(p2,Vector2(p2,p3));
+
+		int turn_dir = v_prv.turn_direction(v_nxt);
+		v_prv.normalize();
+		v_nxt.normalize();
+		double cosa = v_prv.dot(v_nxt);
+		bool dir_change = false;
+
+		if(cosa < cos (45. * DEG_TO_RAD))
+		{
+			if(turn_dir == LEFT_TURN )
+				next_dir = (last_dir + 1) % 4;
+			else
+				next_dir = (last_dir + 3) % 4;
+			dir_change = true;
+		}
+		else
+		{
+			dir_change = false;
+		}
+
+		bool prv_is_vert = ( last_dir == 1 || last_dir == 3);
+		bool nxt_is_vert = ( next_dir == 1 || next_dir == 3);
+
+		last_dir = next_dir;
+
+		if(use_first_value)
+			sum += prv_is_vert ? pol.at(1).x_ : pol.at(1).y_ ;
+		else
+			sum += prv_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+		++node_cnt;
+
+		if( dir_change || pos < 2 || (!is_closed && nxt == 0))
+		{
+			double avg;
+			if( pos == 0 )
+			{
+				avg = prv_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+			}
+			else
+			{
+				avg  = sum / node_cnt ;
+			}
+			for ( int k = 0 ; k < node_cnt ; ++k)
+			{
+				int n = pos - k ; n = n < 0 ? n + pol.size() : n;
+				if(prv_is_vert) pol.at(n).x_ = avg;
+				else 			pol.at(n).y_ = avg;
+			}
+
+			sum = nxt_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+			node_cnt = 1;
+			use_first_value = (pos == 1) ? true : false;
+		}
+	}
+	//rotate back
+	RotatePolygon(&pol,ctr,-heading);
+
+	for( int i = 0 ; i < numpoints ; ++i  )
+	{
+		seq->GetNthPoint(i)->SetLocation(gis_Geo,pol.at(i));
+	}
+
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * thing = dynamic_cast <WED_Thing *> (seq);
+	if(thing)
+	{
+		WED_Thing * parent = thing->GetParent();
+		if(parent)
+		{
+			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *>(parent);
+			if (ortho) ortho->Redrape();
+		}
+	}
+}
+
+void	WED_DoOrthogonalize(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+	if(things.empty()) return;
+
+	op->StartOperation("Orthogonalize");
+
+	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
+	{
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(*it);
+		if(seq)
+		{
+			DoMakeOrthogonal(seq);
+			continue;
+		}
+		IGISPolygon * pol = dynamic_cast<IGISPolygon *>(*it);
+		if(pol)
+		{
+			for(int i = -1; i < pol->GetNumHoles(); ++i)
+			{
+				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
+				DoMakeOrthogonal(seq);
+			}
+		}
+	}
+
+	op->CommitOperation();
+}
+
+static int IterateCanMakeRegularPoly(ISelectable * what, void * ref)
+{
+	if(!Iterate_IsStructuredObject(what, ref)) return 0;
+	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
+	if(pol && pol->GetOuterRing()->GetNumPoints() > 2) return 1;
+	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(what);
+	if(seq && seq->GetNumPoints() > 2) return 1;
+	return 0;
+}
+
+int		WED_CanMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionAnd(IterateCanMakeRegularPoly, NULL)) return 1;
+	return 0;
+}
+
+static void DoMakeRegularPoly(IGISPointSequence * seq )
+{
+	int n = seq->GetNumPoints();
+	if(n < 3 ) return;
+	
+	Point2 p1,p2;
+	Polygon2 pol;
+
+	double l  = 0.0;
+	for( int i = 0 ; i < n ; ++i )
+	{
+		seq->GetNthPoint(i)->GetLocation(gis_Geo,p1);
+		seq->GetNthPoint((i+1) % n)->GetLocation(gis_Geo,p2);
+		l += LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+		pol.push_back(p1);
+	}
+	//avg edge length
+	l = l/n ;
+	//TODO: mroe : cannot find a good centerpoint , take this for now
+	Point2 ctr = pol.centroid();
+	//centri angle
+	double w = (2.0*PI) / n ;
+	//outer radius
+	double ru = (l/2.0) / sin(w/2.0);
+	if (pol.is_ccw()) w = -w;
+
+	//http://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
+	double c = (4.0/3.0) * tan(w/4.0) * ru;
+
+	//initial heading of first segment
+	double a1 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
+
+	for( int i = 0 ; i < n ; ++i)
+	{	
+		double h = i*w;
+		Vector2	v;
+		v.dx = ru*sin(h);
+		v.dy = ru*cos(h);
+
+		pol[i] = ctr + VectorMetersToLL(ctr,v);
+
+		BezierPoint2 bp;
+		IGISPoint_Bezier * bez;
+		if(seq->GetNthPoint(i)->GetGISClass() == gis_Point_Bezier)
+		{
+			if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
+			{
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+
+				bez->GetBezierLocation(gis_Geo,bp);
+				bp.hi = bp.has_hi() ? pol[i] - VectorMetersToLL(ctr, v) : pol[i];
+				bp.lo = bp.has_lo() ? pol[i] + VectorMetersToLL(ctr, v) : pol[i];
+				bp.pt = pol[i] ;
+
+				bez->SetBezierLocation(gis_Geo,bp);
+				bez->SetSplit(bp.is_split());
+			}
+		}
+		else
+		{
+			seq->GetNthPoint(i)->SetLocation(gis_Geo,pol[i]);
+		}
+	}
+
+	double a2 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
+    //rotate to inital heading
+	seq->Rotate(gis_Geo,ctr,a1-a2);
+
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * thing = dynamic_cast <WED_Thing *> (seq);
+	if(thing)
+	{
+		WED_Thing * parent = thing->GetParent();
+		if(parent)
+		{
+			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *>(parent);
+			if (ortho) ortho->Redrape();
+		}
+	}
+}
+
+void	WED_DoMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+	if(things.empty()) return;
+
+	op->StartOperation("Make Regular Poly");
+
+	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
+	{
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(*it);
+		if(seq)
+		{
+			DoMakeRegularPoly(seq);
+			continue;
+		}
+		IGISPolygon * pol = dynamic_cast<IGISPolygon *>(*it);
+		if(pol)
+		{
+			for(int i = -1; i < pol->GetNumHoles(); ++i)
+			{
+				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
+				DoMakeRegularPoly(seq);
+			}
+		}
+	}
+
+	op->CommitOperation();
+}
+
 typedef map<Point2, pair<const char *, vector<WED_Thing *> >,lesser_y_then_x>	merge_class_map;
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
@@ -1984,6 +2464,452 @@ int		WED_Repair(IResolver * resolver)
 	root->CommitOperation();
 	return 1;
 }
+
+//----------------------------------------------------------------------------
+// Obj and Agp Replacement
+//----------------------------------------------------------------------------
+
+template <typename T>
+static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible)
+{
+	int num_analyzed = 0;
+	return CountChildOfTypeRecursive<T>(thing, must_be_visible, 0, num_analyzed); //Needed to offset counting "thing" as a child if it matches type T
+}
+
+//Warning: Don't call this overload, call the wrapper version
+template <typename T>
+static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible, int accumulator, int& num_analyzed)
+{
+	T* test_thing = dynamic_cast<T*>(thing);
+	++num_analyzed;
+
+	if(test_thing != NULL)
+	{
+		WED_Entity* test_ent = dynamic_cast<WED_Entity*>(thing);
+		if (test_ent == NULL)
+		{
+			return accumulator;
+		}
+		else if(test_ent->GetHidden() == true && must_be_visible == true)
+		{
+			return accumulator;
+		}
+		else
+		{
+			if (num_analyzed > 1)
+			{
+				accumulator += 1;
+			}
+		}
+	}
+
+	int nc = thing->CountChildren();
+	for(int n = 0; n < nc; ++n)
+	{
+		int old_accum = accumulator;
+		int new_accum = CountChildOfTypeRecursive<T>(thing->GetNthChild(n), must_be_visible, accumulator, num_analyzed);
+
+		if(new_accum != old_accum)
+		{
+			accumulator = new_accum;
+			continue;
+		}
+	}
+
+	return accumulator;
+}
+
+template <typename OutputIterator>
+static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
+{
+	// TODO: do fast WED type ptr check on sClass before any other casts?
+	// Factor out WED_Entity check to avoid second dynamic cast?
+	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
+	if(ent && ent->GetHidden())
+	{
+		return;
+	}
+	
+	typedef typename OutputIterator::container_type::value_type VT;
+	VT ct = dynamic_cast<VT>(thing);
+	bool took_it = false;
+	if(ct)
+	{	
+		oi = ct;
+		took_it = true;
+	}
+	
+	if(!took_it)
+	{
+		int nc = thing->CountChildren();
+		for(int n = 0; n < nc; ++n)
+		{
+			CollectRecursive(thing->GetNthChild(n), oi);
+		}
+	}
+}
+
+set<string> build_agp_list()
+{
+	set<string> agp_list;
+	//-------------------------------------------------------------------------
+	//10/06/2016 - The code for breaking apart AGPs doesn't take into account if textures should be saved
+	//because these agps can have their textures thrown away. Additional AGPs will have to be analyzed
+	//and the code will possibly have to be made to be more robust
+	agp_list.insert("lib/airport/Ramp_Equipment/250cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_2.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_3.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/400cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/500cm_Jetway_Group.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Medium.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Narrow.agp");
+	agp_list.insert("lib/airport/Ramp_Equipment/Ramp_Group_Wide.agp");
+	//-------------------------------------------------------------------------
+	return agp_list;
+}
+
+typedef WED_ObjPlacement WED_AgpPlacement;
+int		WED_CanBreakApartSpecialAgps(IResolver* resolver)
+{
+	//Returns true if the selection
+	//- is not empty
+	//- only has .agp files (of all kinds)
+	ISelection* sel = WED_GetSelect(resolver);
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	if (!selected.empty())
+	{
+		for (vector<ISelectable*>::iterator itr = selected.begin(); itr != selected.end(); ++itr)
+		{
+			WED_AgpPlacement* agp = dynamic_cast<WED_AgpPlacement*>(*itr);
+			if (agp != NULL)
+			{
+				string agp_resource;
+				agp->GetResource(agp_resource);
+				if(FILE_get_file_extension(agp_resource) != ".agp")
+				{
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+template <typename From, typename To>
+static To cast(From test)
+{
+	return dynamic_cast<To>(test);
+}
+
+template <typename T>
+static bool is_null(T test)
+{
+	return test == NULL;
+}
+
+void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
+{
+	//Collect all obj_placements from the world
+	WED_Thing* root = WED_GetWorld(resolver);
+
+	ISelection * sel = WED_GetSelect(resolver);
+
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+	DebugAssert(selected.empty() == false);
+
+	vector<WED_AgpPlacement*> agp_placements;
+	std::transform(selected.begin(), selected.end(), back_inserter(agp_placements), cast<ISelectable*, WED_AgpPlacement*>);
+	agp_placements.erase(std::remove_if(agp_placements.begin(), agp_placements.end(), is_null<WED_AgpPlacement*>), agp_placements.end());
+
+	if(!agp_placements.empty())
+	{
+		int agp_replace_count = 0;
+		int obj_replace_count = 0;
+
+		//Set up the operation
+		root->StartOperation("Break Apart Special Agps");
+
+		sel->Clear();
+
+		//We'll have at least one!
+		WED_Airport * apt = WED_GetParentAirport(agp_placements[0]);
+		if(apt == NULL)
+		{
+			root->AbortCommand();
+			DoUserAlert("Agp(s) must be in an airport in the heirarchy");
+			return;
+		}
+
+		if(CountChildOfTypeRecursive<IGISEntity>(apt, false) <= 1)
+		{
+			sel->Select(apt);
+			root->AbortCommand();
+			DoUserAlert("Airport only contains one Agp: breaking apart cannot occur. Add something else to the airport first");
+			return;
+		}
+
+		//The list of agp files we've decided to be special "service truck related"
+		set<string> agp_list = build_agp_list();
+		
+		//To access agp files
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
+		
+		//To translate from lat/lon to meters
+		CoordTranslator2 translator;
+		Bbox2 box;
+		apt->GetBounds(gis_Geo, box);
+		CreateTranslatorForBounds(box,translator);
+
+		//A set of all the agps that we're going to replace
+		set<WED_AgpPlacement*> replaced_agps;
+		set<WED_ObjPlacement*> added_objs;
+
+		//For all agps
+		for(vector<WED_AgpPlacement*>::iterator agp = agp_placements.begin(); agp != agp_placements.end(); ++agp)
+		{
+			//Otherwise we have big problems
+			DebugAssert((*agp)->CountChildren() == 0);
+
+			string agp_resource;
+			(*agp)->GetResource(agp_resource);
+
+			//Is the agp found in the special agp list?
+			if(agp_list.find(agp_resource) != agp_list.end())
+			{
+				//Break it all up here
+				agp_t agp_data;
+				if(rmgr->GetAGP(agp_resource, agp_data))
+				{
+					Point2 agp_origin_geo;
+					(*agp)->GetLocation(gis_Geo,agp_origin_geo);
+					Point2 agp_origin_m = translator.Forward(agp_origin_geo);
+
+					for (vector<agp_t::obj>::iterator agp_obj = agp_data.objs.begin(); agp_obj != agp_data.objs.end(); ++agp_obj)
+					{
+						Vector2 torotate(agp_origin_m, Point2(agp_origin_m.x() + agp_obj->x, agp_origin_m.y() + agp_obj->y));
+
+						//Note!! WED has clockwise heading, C's cos and sin functions are ccw in radians. We reverse directions and negate again
+						torotate.rotate_by_degrees((*agp)->GetHeading()*-1);
+						torotate *= -1;
+
+						Point2 new_point_m = Point2(agp_origin_m.x() - torotate.x(), agp_origin_m.y() - torotate.y());
+						Point2 new_point_geo = translator.Reverse(new_point_m);
+
+						WED_ObjPlacement* new_obj = WED_ObjPlacement::CreateTyped(root->GetArchive());
+						new_obj->SetLocation(gis_Geo, new_point_geo);
+
+						//Other data that is important to resetting up the object
+						new_obj->SetDefaultMSL();
+						new_obj->SetHeading(agp_obj->r + (*agp)->GetHeading());
+						new_obj->SetName(agp_obj->name);
+						new_obj->SetParent((*agp)->GetParent(), (*agp)->GetMyPosition());
+						new_obj->SetResource(agp_obj->name);
+						new_obj->SetShowLevel((*agp)->GetShowLevel());
+
+						added_objs.insert(new_obj);
+					}
+				}
+
+				replaced_agps.insert(*agp);
+			}
+		}
+
+		for (set<WED_AgpPlacement*>::iterator itr_agp = replaced_agps.begin(); itr_agp != replaced_agps.end(); ++itr_agp)
+		{
+			(*itr_agp)->SetParent(NULL, 0);
+			(*itr_agp)->Delete();
+		}
+
+		for (set<WED_ObjPlacement*>::iterator itr_obj = added_objs.begin(); itr_obj != added_objs.end(); ++itr_obj)
+		{
+			string obj_resource;
+			(*itr_obj)->GetResource(obj_resource);
+			sel->Insert(*itr_obj);
+		}
+
+		if(added_objs.size() == 0)
+		{
+			sel->Clear();
+			root->AbortOperation();
+			DoUserAlert("Nothing to replace"); //IMPORTANT: Do not call DoUserAlert during an operation!!!
+		}
+		else
+		{
+			root->CommitOperation();
+
+			stringstream ss;
+			ss << "Replaced " << replaced_agps.size() << " Agp objects with " << added_objs.size() << " Obj files";
+			DoUserAlert(ss.str().c_str());
+		}
+	}
+	else
+	{
+		DoUserAlert("There are no relavent special Agps to break apart");
+	}
+}
+
+int	WED_CanReplaceVehicleObj(IResolver* resolver)
+{
+	//Returns true if there are any Obj files in the world.
+	//TODO: This Aught to be the current airport
+	WED_Thing * root = WED_GetWorld(resolver);
+	return CountChildOfTypeRecursive<WED_ObjPlacement>(root,true);
+}
+
+struct vehicle_replacement_info
+{
+	vehicle_replacement_info(/*const vector<string>& resource_strs,*/const int service_truck_type, const int number_of_cars)
+		:/*resource_strs(resource_strs),*/
+		 service_truck_type(service_truck_type),
+		 number_of_cars(number_of_cars)
+	{
+	}
+
+	//The resource strings that can represent this vehicle_replacement_info
+	//vector<string> resource_strs;
+
+	//A member of ATCServiceTruckType
+	int service_truck_type;
+
+	//The number of cars in the model
+	int number_of_cars;
+};
+
+static map<string,vehicle_replacement_info> build_replacement_table()
+{
+	map<string,vehicle_replacement_info> table;
+
+	//atc_ServiceTruck_Baggage_Loader
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader, 0)));
+
+	table.insert(make_pair("lib/airport/vehicles/baggage_handling/belt_loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader, 0)));
+
+	//atc_ServiceTruck_Baggage_Train
+	stringstream ss;
+	for(int i = 1; i <= 5; ++i)
+	{
+ 		ss << "lib/airport/Ramp_Equipment/Lugg_Train_Straight" << i << ".obj";
+		table.insert(make_pair(ss.str(), vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,i)));
+		ss.clear();
+		ss.str("");
+	}
+
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,0)));
+
+	//atc_ServiceTruck_Crew_Car
+	table.insert(make_pair("lib/airport/vehicles/servicing/crew_car.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Car,0)));
+
+	//atc_ServiceTruck_Crew_Ferrari
+	table.insert(make_pair("lib/airport/vehicles/servicing/crew_ferrari.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Ferrari, 0)));
+
+	//atc_ServiceTruck_Crew_Limo
+	//TODO: Waiting for art asset
+
+	//atc_ServiceTruck_Food
+	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
+
+	//atc_ServiceTruck_FuelTruck_Liner
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/hyd_disp_truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Liner, 0)));
+
+	//!!Important!! - Large and Small are reversed on purpose!
+
+	//atc_ServiceTruck_FuelTruck_Jet
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
+
+	//atc_ServiceTruck_FuelTruck_Prop
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
+
+	//atc_ServiceTruck_Ground_Power_Unit
+	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
+
+	//atc_ServiceTruck_Pushback
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
+
+	return table;
+}
+
+void	WED_DoReplaceVehicleObj(IResolver* resolver)
+{
+	WED_Thing * root = WED_GetWorld(resolver);
+	vector<WED_ObjPlacement*> obj_placements;
+	CollectRecursive(root, back_inserter(obj_placements));
+
+	if(!obj_placements.empty())
+	{
+		int replace_count = 0;
+		root->StartOperation("Replace Objects");
+		map<string,vehicle_replacement_info> table = build_replacement_table();
+		
+		ISelection * sel = WED_GetSelect(resolver);
+		sel->Clear();
+
+		for(vector<WED_ObjPlacement*>::iterator itr = obj_placements.begin(); itr != obj_placements.end(); ++itr)
+		{
+			string resource;
+			(*itr)->GetResource(resource);
+			
+			map<string,vehicle_replacement_info>::iterator info_itr = table.find(resource);
+			if(info_itr != table.end())
+			{
+				
+				WED_TruckParkingLocation * parking_loc = WED_TruckParkingLocation::CreateTyped(root->GetArchive());
+				parking_loc->SetHeading((*itr)->GetHeading());
+				
+				Point2 p;
+				(*itr)->GetLocation(gis_Geo, p);
+				parking_loc->SetLocation(gis_Geo,p);
+
+				string name;
+				(*itr)->GetName(name);
+				parking_loc->SetName(name);
+				parking_loc->SetNumberOfCars(info_itr->second.number_of_cars);
+				parking_loc->SetParent((*itr)->GetParent(), (*itr)->GetMyPosition());
+				parking_loc->SetTruckType(info_itr->second.service_truck_type);
+				parking_loc->StateChanged();
+
+				replace_count++;
+				(*itr)->SetParent(NULL, 0);
+				(*itr)->Delete();
+
+				sel->Insert(parking_loc);
+			}
+		}
+
+		if(replace_count == 0)
+		{
+			sel->Clear();
+			root->AbortOperation();
+			DoUserAlert("Nothing to replace");
+		}
+		else
+		{
+			root->CommitOperation();
+
+			stringstream ss;
+			ss << "Replaced " << replace_count << " objects";
+			DoUserAlert(ss.str().c_str());
+		}
+	}
+	else
+	{
+		DoUserAlert("Nothing to replace");
+	}
+}
+//-----------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------
 #pragma mark -

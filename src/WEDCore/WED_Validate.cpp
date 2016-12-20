@@ -43,6 +43,8 @@
 #include "WED_RampPosition.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
+#include "WED_TruckDestination.h"
+#include "WED_TruckParkingLocation.h"
 #include "WED_ATCFlow.h"
 #include "WED_LibraryMgr.h"
 #include "WED_AirportBoundary.h"
@@ -50,6 +52,7 @@
 #include "WED_Group.h"
 #include "WED_ATCRunwayUse.h"
 #include "WED_ATCWindRule.h"
+#include "WED_ATCTimeRule.h"
 #include "WED_EnumSystem.h"
 #include "WED_Menus.h"
 #include "WED_Taxiway.h"
@@ -678,7 +681,8 @@ struct TaxiRouteInfo2
 		node_1(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(1)))
 	{
 		AptRouteEdge_t apt_route;
-		taxiroute->Export(apt_route);
+		AptServiceRoadEdge_t dummy;
+		taxiroute->Export(apt_route, dummy);
 		taxiroute_name = apt_route.name;
 
 		Bezier2 bez;
@@ -823,20 +827,26 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
 {
+	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, has at least one runway use rule. Otherweise XP 10.51 will give an error.
+
 	string name;
 	flow->GetName(name);
 	AptFlow_t exp;
 	flow->Export(exp);
 	if(exp.icao.empty())
 		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' has a blank ICAO code for its visibility METAR source.", err_flow_blank_ICAO_for_METAR,  flow, apt));
+	if( (exp.visibility_sm < 0.0) ||  (exp.ceiling_ft < 0))
+		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' ceiling and visibility must be positive numbers.", err_flow_visibility_negative, flow, apt));
 
 	if(name.empty())
 		msgs.push_back(validation_error_t("An ATC Flow has a blank name. You must name every flow.", err_flow_blank_name, flow, apt));
 
 	vector<WED_ATCWindRule*>	wind;
+	vector<WED_ATCTimeRule*>	timeR;
 	vector<WED_ATCRunwayUse*>	ruse;
 
 	CollectRecursive(flow, back_inserter(wind));
+	CollectRecursive(flow, back_inserter(timeR));
 	CollectRecursive(flow, back_inserter(ruse));
 
 	if(ruse.empty())
@@ -845,13 +855,34 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	if(legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
 		msgs.push_back(validation_error_t(string("The pattern runway ") + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.", err_flow_pattern_runway_not_in_airport, flow, apt));
 
+	// Check ATC Wind rules having directions within 0 ..360 deg, speed from 1..99 knots.  Otherweise XP 10.51 will give an error.
+	
 	for(vector<WED_ATCWindRule*>::iterator w = wind.begin(); w != wind.end(); ++w)
 	{
 		WED_ATCWindRule * wrule = *w;
 		AptWindRule_t exp;
 		wrule->Export(exp);
 		if(exp.icao.empty())
-			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_wind_rule_blank_ICAO_for_METAR, wrule, apt));
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
+
+		if((exp.dir_lo_degs_mag < 0) || (exp.dir_lo_degs_mag > 359) || (exp.dir_hi_degs_mag < 0) || (exp.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
+							|| (exp.dir_lo_degs_mag == exp.dir_hi_degs_mag))
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has invalid from and/or to directions.", err_atc_rule_wind_invalid_directions, wrule, apt));
+
+		if((exp.max_speed_knots < 1) || (exp.max_speed_knots >999))
+			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has maximum wind speed outside 1..999 knots range.", err_atc_rule_wind_invalid_speed, wrule, apt));
+	}
+	
+	// Check ATC Time rules having times being within 00:00 .. 24:00 hrs, 0..59 minutes and start != end time. Otherweise XP will give an error.
+	
+	for(vector<WED_ATCTimeRule*>::iterator w = timeR.begin(); w != timeR.end(); ++w)
+	{
+		WED_ATCTimeRule * trule = *w;
+		AptTimeRule_t exp;
+		trule->Export(exp);
+		if((exp.start_zulu < 0) || (exp.start_zulu > 2359) || (exp.end_zulu < 0) || (exp.end_zulu > 2400)     // yes, 24:00z is OK with XP 10.51
+							|| (exp.start_zulu == exp.end_zulu) || (exp.start_zulu % 100 > 59) || (exp.end_zulu % 100 > 59))
+			msgs.push_back(validation_error_t(string("ATC time rule '") + name + "' has invalid start and/or stop time.", err_atc_rule_time_invalid_times, trule, apt));
 	}
 
 	#if !GATEWAY_IMPORT_FEATURES
@@ -1698,6 +1729,47 @@ static void ValidateOneTaxiway(WED_Taxiway* twy, validation_error_vector& msgs, 
 	}
 }
 
+static void ValidateOneTruckDestination(WED_TruckDestination* destination,validation_error_vector& msgs, WED_Airport* apt)
+{
+	string name;
+	destination->GetName(name);
+	set<int> truck_types;
+	destination->GetTruckTypes(truck_types);
+
+	if (truck_types.empty() == true)
+	{
+		msgs.push_back(validation_error_t("Truck destination " + name + " must have at least once truck type selected", err_truck_dest_must_have_at_least_one_truck_type_selected, destination,apt));
+	}
+}
+
+static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
+{
+	string name;
+	truck_parking->GetName(name);
+	int num_cars = truck_parking->GetNumberOfCars();
+
+	if (num_cars < 0)
+	{
+		stringstream ss;
+		ss  << "Truck parking location "
+			<< name
+			<< " cannot have negative car count of "
+			<< num_cars;
+		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_cannot_have_negative_car_count, truck_parking, apt));
+	}
+
+	int MAX_CARS = 10;
+	if (truck_parking->GetNumberOfCars() > MAX_CARS)
+	{
+		stringstream ss;
+		ss  << "Truck parking location "
+			<< name
+			<< " has more than  "
+			<< MAX_CARS
+			<< " baggage cars";
+		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
+	}
+}
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -1719,8 +1791,11 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	vector<WED_Sealane *>		sealanes;
 	vector<WED_AirportSign *>	signs;
 	vector<WED_Taxiway *>		taxiways;
+	vector<WED_TruckDestination*>     truck_destinations;
+	vector<WED_TruckParkingLocation*> truck_parking_locs;
 	vector<WED_RampPosition*>	ramps;
-	vector<WED_Thing *>		runway_or_sealane;
+	vector<WED_Thing *>			runway_or_sealane;
+	vector<WED_AirportBoundary *> boundaries;
 
 	string name, icao;
 	apt->GetName(name);
@@ -1739,7 +1814,10 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	CollectRecursive(apt, back_inserter(sealanes));
 	CollectRecursive(apt, back_inserter(signs));
 	CollectRecursive(apt, back_inserter(taxiways));
+	CollectRecursive(apt, back_inserter(truck_destinations));
+	CollectRecursive(apt, back_inserter(truck_parking_locs));
 	CollectRecursive(apt, back_inserter(ramps));
+	CollectRecursive(apt, back_inserter(boundaries));
 
 	copy(runways.begin(), runways.end(), back_inserter(runway_or_sealane));
 	copy(sealanes.begin(), sealanes.end(), back_inserter(runway_or_sealane));
@@ -1779,6 +1857,16 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		ValidateOneTaxiway(*t,msgs,apt);
 	}
 
+	for (vector<WED_TruckDestination*>::iterator t_dest = truck_destinations.begin(); t_dest != truck_destinations.end(); ++t_dest)
+	{
+		ValidateOneTruckDestination(*t_dest, msgs, apt);
+	}
+
+	for(vector<WED_TruckParkingLocation*>::iterator t_park = truck_parking_locs.begin(); t_park != truck_parking_locs.end(); ++t_park)
+	{
+		ValidateOneTruckParking(*t_park,msgs,apt);
+	}
+
 	for(vector<WED_Thing *>::iterator r = runway_or_sealane.begin(); r != runway_or_sealane.end(); ++r)
 	{
 		ValidateOneRunwayOrSealane(*r, msgs,apt);
@@ -1808,6 +1896,10 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		{
 			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_airport_impossible_size, apt,apt));
 		}
+		
+		// require any land airport (i.e. at least one runway) to have an airport boundary defined
+		if(!runways.empty() && boundaries.empty())
+			msgs.push_back(validation_error_t(string("The airport '") + name + "' contains a runway but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
