@@ -30,13 +30,18 @@
 #include "ILibrarian.h"
 #include "WED_Entity.h"
 
+#include "STLUtils.h"
+
 #include "WED_GISComposite.h"
 #include "WED_Airport.h"
+#include "WED_Group.h"
+#include "WED_Root.h"
+#include "WED_ATCFlow.h"
 
-#include "WED_Messages.h"
 #include "PlatformUtils.h"
 #include "WED_UIDefs.h"
 #include "GUI_Messages.h"
+#include "WED_Messages.h"
 #include "WED_ToolUtils.h"
 #include "WED_GroupCommands.h"
 #include "WED_UIMeasurements.h"
@@ -80,6 +85,8 @@ WED_PropertyTable::WED_PropertyTable(
 	mResolver(resolver),
 	mCacheValid(false)
 {
+	RebuildCache();
+
 	if (col_names)
 	while(*col_names)
 		mColNames.push_back(*col_names++);
@@ -235,6 +242,15 @@ void	WED_PropertyTable::GetCellContent(
 	the_content.can_edit = inf.can_edit;
 	if (the_content.can_edit)
 	if (WED_GetWorld(mResolver) == t)	the_content.can_edit = 0;
+
+	//THIS IS A HACK to stop the user from being able to disclose arrows during search mode
+	if (mSearchFilter.empty() == false)
+	{
+		if (the_content.can_disclose == true)
+		{
+			the_content.is_disclosed = true;
+		}
+	}
 
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
@@ -845,10 +861,25 @@ void WED_PropertyTable::RebuildCache(void)
 
 WED_Thing *	WED_PropertyTable::FetchNth(int row)
 {
-	if (!mCacheValid)	RebuildCache();
+	if (!mCacheValid)
+	{
+		if (mSearchFilter.empty() == true)
+		{
+			RebuildCache();
+		}
+		else
+		{
+			Resort();
+		}
+	}
+
+	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
 	if (!mVertical)
-		row = mThingCache.size() - row - 1;
-	return mThingCache[row];
+	{
+		row = current_cache.size() - row - 1;
+	}
+
+	return current_cache[row];
 }
 
 int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
@@ -863,6 +894,7 @@ int			WED_PropertyTable::GetThingDepth(WED_Thing * d)
 		d = d->GetParent();
 		++ret;
 	}
+
 	return ret;
 }
 
@@ -871,8 +903,20 @@ int			WED_PropertyTable::GetColCount(void)
 	if (!mVertical)
 		return mColNames.size();
 
-	if (!mCacheValid)	RebuildCache();
-	return mThingCache.size();
+	if (!mCacheValid)
+	{
+		if (mSearchFilter.empty() == true)
+		{
+			RebuildCache();
+		}
+		else
+		{
+			Resort();
+		}
+	}
+
+	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
+	return current_cache.size();
 }
 
 int		WED_PropertyTable::ColForX(int n)
@@ -887,8 +931,20 @@ int			WED_PropertyTable::GetRowCount(void)
 	if (mVertical)
 		return mColNames.size();
 
-	if (!mCacheValid)	RebuildCache();
-	return mThingCache.size();
+	if (!mCacheValid)
+	{
+		if (mSearchFilter.empty() == true)
+		{
+			RebuildCache();
+		}
+		else
+		{
+			Resort();
+		}
+	}
+
+	vector<WED_Thing*>& current_cache = mSearchFilter.empty() ? mThingCache : mSortedCache;
+	return current_cache.size();
 }
 
 void	WED_PropertyTable::ReceiveMessage(
@@ -970,11 +1026,89 @@ void WED_PropertyTable::GetClosed(set<int>& closed_list)
 	closed_list.clear();
 	WED_Thing * root = WED_GetWorld(mResolver);
 	WED_Archive * arch = root->GetArchive();
-	for( hash_map<int,int>::iterator it = mOpen.begin(); it != mOpen.end(); ++it)
-	    if((arch->Fetch(it->first) != NULL)&&(!GetOpen(it->first)))
-			closed_list.insert(it->first) ;
+
+	for (hash_map<int, int>::iterator it = mOpen.begin(); it != mOpen.end(); ++it)
+	{
+		if ((arch->Fetch(it->first) != NULL) && (!GetOpen(it->first)))
+		{
+			closed_list.insert(it->first);
+		}
+	}
 }
 
+//--IFilterable----------------------------------------------------------------
+void WED_PropertyTable::SetFilter(const string & filter)
+{
+	mSearchFilter = filter;
+	Resort();
+
+	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
+}
+
+//parameters
+//thing - the current thing
+//search_filter - the search filter
+//sorted_cache - the sorted_cache of wed things we're building up
+//sorted_open_ids - the hash map of id and true false if its open or not
+//returns number of bad leafs
+int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_Thing*>& sorted_cache)
+{
+	DebugAssert(thing != NULL);
+
+	bool is_group_like = thing->GetClass() == WED_Group::sClass   ||
+						 thing->GetClass() == WED_Airport::sClass ||
+						 thing->GetClass() == WED_ATCFlow::sClass;
+
+	string thing_name;
+	thing->GetName(thing_name);
+	bool is_match = thing_name.find(search_filter) != string::npos;
+
+	int nc = thing->CountChildren();
+	if (nc == 0) //thing is a leaf
+	{
+		if (is_match)
+		{
+			sorted_cache.push_back(thing);
+			return 0; //No bad leafs here!
+		}
+		else
+		{
+			return 1;
+		}
+	}
+	else
+	{
+		int current_end_pos = sorted_cache.size();
+		int bad_leafs = 0;
+		for (int n = 0; n < nc; ++n)
+		{
+			bad_leafs += collect_recusive(thing->GetNthChild(n), search_filter, sorted_cache);
+		}
+
+		//If bad_leafs is less than the number of kids it means that there is at least some reason to keep this group
+		//Or if the group name exactly matches
+		if ((bad_leafs < nc && is_group_like) || is_match)
+		{
+			sorted_cache.insert(sorted_cache.begin() + current_end_pos, thing);
+			return 0;
+		}
+		else
+		{
+			return 1; //Ignore me
+		}
+	}
+}
+
+void WED_PropertyTable::Resort()
+{
+	mSortedCache.clear();
+	if (mSearchFilter.empty() == false)
+	{
+		mSortedCache.reserve(mThingCache.size());
+		collect_recusive(WED_GetWorld(mResolver), mSearchFilter, mSortedCache);
+	}
+}
+//-----------------------------------------------------------------------------
 
 // These routines encapsulate the hash table that tracks the disclosure of various WED things.  We wrap it like this so we can
 // easily map "no entry" to open.  This makes new entities default to open, which seems to be preferable.  It'd be easy to customize
@@ -987,15 +1121,20 @@ bool WED_PropertyTable::GetOpen(int id)
 
 void WED_PropertyTable::ToggleOpen(int id)
 {
-	int old_val = GetOpen(id);
-	mOpen[id] = old_val ? 0 : 1;
+	if (mSearchFilter.empty() == true)
+	{
+		int old_val = GetOpen(id);
+		mOpen[id] = old_val ? 0 : 1;
+	}
 }
 
 void WED_PropertyTable::SetOpen(int id, int o)
 {
-	mOpen[id] = o;
+	if (mSearchFilter.empty() == true)
+	{
+		mOpen[id] = o;
+	}
 }
-
 
 // This is the main "filter" function - it determines four properties at once about an entity:
 // 1. Can we actually see this entity?
@@ -1030,6 +1169,8 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	if (mFilter.empty() || mFilter.count(what->GetClass()))
 		visible = 1;
 
+	//TODO - use mSearchFilter here?
+
 	recurse_children = what->CountChildren();
 
 	if (!visible || mVertical)
@@ -1040,6 +1181,9 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	{
 		can_disclose = is_composite;
 		is_disclose = can_disclose && GetOpen(what->GetID());
-		if (!is_disclose) recurse_children = 0;
+		if (!is_disclose)
+		{
+			recurse_children = 0;
+		}
 	}
 }

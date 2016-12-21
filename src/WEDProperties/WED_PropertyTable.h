@@ -168,6 +168,8 @@ public:
 	virtual	void    SetClosed(const set<int>& closed_list);
 	virtual	void    GetClosed(		set<int>& closed_list);
 
+	void	SetFilter(const string& filter);
+
 private:
 
 			void			RebuildCache(void);
@@ -184,7 +186,13 @@ private:
 									int&	can_disclose,
 									int&	is_disclose);
 
+			void	Resort();
+
 	vector<WED_Thing *>			mThingCache;
+	vector<WED_Thing *>			mSortedCache;
+
+	string						mSearchFilter;
+
 	bool						mCacheValid;
 
 	vector<string>				mColNames;

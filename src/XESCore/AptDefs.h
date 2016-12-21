@@ -266,10 +266,10 @@ enum {
 	apt_truck_crew_car,
 	apt_truck_crew_ferrari,
 	apt_truck_crew_limo,
-	apt_truck_food,
-	apt_truck_fuel_liner,
 	apt_truck_fuel_jet,
+	apt_truck_fuel_liner,
 	apt_truck_fuel_prop,
+	apt_truck_food,
 	apt_truck_gpu,
 	apt_truck_pushback,
 

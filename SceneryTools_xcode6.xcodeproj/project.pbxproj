@@ -137,10 +137,13 @@
 		D607B7990C0B831400992876 /* lock.png in Resources */ = {isa = PBXBuildFile; fileRef = D607B7970C0B831400992876 /* lock.png */; };
 		D607B7A10C0B847C00992876 /* check.png in Resources */ = {isa = PBXBuildFile; fileRef = D607B7A00C0B847C00992876 /* check.png */; };
 		D60800AB15461164001BE1A9 /* WED_AptImportDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60800AA15461164001BE1A9 /* WED_AptImportDialog.cpp */; };
-		D608024715463380001BE1A9 /* WED_FilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608024615463380001BE1A9 /* WED_FilterBar.cpp */; };
 		D6080505154659A7001BE1A9 /* push_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = D6080504154659A7001BE1A9 /* push_buttons.png */; };
 		D60808821546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */; };
 		D60826581C3622AC001CC3CF /* WED_Sign_Editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */; };
+		D608C9841E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */; };
+		D608C9851E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */; };
+		D608C9881E01B906002E68F9 /* GUI_FilterBar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D608C9861E01B906002E68F9 /* GUI_FilterBar.cpp */; };
+		D608C98A1E01BC09002E68F9 /* map_servicedest.png in Resources */ = {isa = PBXBuildFile; fileRef = D608C9891E01BC09002E68F9 /* map_servicedest.png */; };
 		D60A99AE0B7A57E0002680BD /* GUI_Packer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */; };
 		D60B0ECD0FCC886A001E8DD3 /* WED_Orthophoto.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B0ECC0FCC886A001E8DD3 /* WED_Orthophoto.cpp */; };
 		D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60B10210C075B3700AD5EB7 /* WED_AptIE.cpp */; };
@@ -1059,13 +1062,18 @@
 		D607B7A00C0B847C00992876 /* check.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check.png; sourceTree = "<group>"; };
 		D60800A915461164001BE1A9 /* WED_AptImportDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_AptImportDialog.h; sourceTree = "<group>"; };
 		D60800AA15461164001BE1A9 /* WED_AptImportDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AptImportDialog.cpp; sourceTree = "<group>"; };
-		D608024515463380001BE1A9 /* WED_FilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FilterBar.h; sourceTree = "<group>"; };
-		D608024615463380001BE1A9 /* WED_FilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FilterBar.cpp; sourceTree = "<group>"; };
 		D6080504154659A7001BE1A9 /* push_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = push_buttons.png; sourceTree = "<group>"; };
 		D60808801546E5F6001BE1A9 /* WED_LibraryPreviewPane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_LibraryPreviewPane.h; sourceTree = "<group>"; };
 		D60808811546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryPreviewPane.cpp; sourceTree = "<group>"; };
 		D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Sign_Editor.cpp; sourceTree = "<group>"; };
 		D60826571C3622AC001CC3CF /* WED_Sign_Editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Sign_Editor.h; sourceTree = "<group>"; };
+		D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_HierarchyFilterBar.cpp; sourceTree = "<group>"; };
+		D608C9811E01B8F8002E68F9 /* WED_HierarchyFilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_HierarchyFilterBar.h; sourceTree = "<group>"; };
+		D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_LibraryFilterBar.cpp; sourceTree = "<group>"; };
+		D608C9831E01B8F8002E68F9 /* WED_LibraryFilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_LibraryFilterBar.h; sourceTree = "<group>"; };
+		D608C9861E01B906002E68F9 /* GUI_FilterBar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_FilterBar.cpp; sourceTree = "<group>"; };
+		D608C9871E01B906002E68F9 /* GUI_FilterBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_FilterBar.h; sourceTree = "<group>"; };
+		D608C9891E01BC09002E68F9 /* map_servicedest.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = map_servicedest.png; sourceTree = "<group>"; };
 		D60A99AC0B7A57E0002680BD /* GUI_Packer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Packer.h; sourceTree = "<group>"; };
 		D60A99AD0B7A57E0002680BD /* GUI_Packer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Packer.cpp; sourceTree = "<group>"; };
 		D60B0ECB0FCC886A001E8DD3 /* WED_Orthophoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Orthophoto.h; sourceTree = "<group>"; };
@@ -2307,6 +2315,7 @@
 		D60BFC3C0C03619A00AD5EB7 /* icons */ = {
 			isa = PBXGroup;
 			children = (
+				D608C9891E01BC09002E68F9 /* map_servicedest.png */,
 				D6FE7C80173EC49C007721F2 /* map_tree.png */,
 				D63D8E6013F32E5500E353E8 /* map_missing_obj.png */,
 				D60BFC3E0C03619A00AD5EB7 /* map_airport.png */,
@@ -2664,6 +2673,8 @@
 		D6BC36770AB22C84003949C5 /* GUI */ = {
 			isa = PBXGroup;
 			children = (
+				D608C9861E01B906002E68F9 /* GUI_FilterBar.cpp */,
+				D608C9871E01B906002E68F9 /* GUI_FilterBar.h */,
 				D6E023EB0C39841C00BD789F /* GUI_Prefs.h */,
 				D6E023E60C39840400BD789F /* GUI_Prefs.cpp */,
 				D6E064580BDD2E020070E31C /* GUI_ToolBar.cpp */,
@@ -3146,6 +3157,10 @@
 		D6BC37E70AB22C85003949C5 /* WEDWindows */ = {
 			isa = PBXGroup;
 			children = (
+				D608C9801E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp */,
+				D608C9811E01B8F8002E68F9 /* WED_HierarchyFilterBar.h */,
+				D608C9821E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp */,
+				D608C9831E01B8F8002E68F9 /* WED_LibraryFilterBar.h */,
 				D6E023EC0C39842700BD789F /* WED_PackageListAdapter.cpp */,
 				D6E023ED0C39842700BD789F /* WED_PackageListAdapter.h */,
 				D6BC37E90AB22C85003949C5 /* WED_DocumentWindow.cpp */,
@@ -3163,8 +3178,6 @@
 				D607B65A0C0A3FF300992876 /* WED_AboutBox.cpp */,
 				D682DDEC0C10939C00BBE1A0 /* WED_StartWindow.h */,
 				D682DDED0C10939C00BBE1A0 /* WED_StartWindow.cpp */,
-				D608024515463380001BE1A9 /* WED_FilterBar.h */,
-				D608024615463380001BE1A9 /* WED_FilterBar.cpp */,
 				D60826561C3622AC001CC3CF /* WED_Sign_Editor.cpp */,
 				D60826571C3622AC001CC3CF /* WED_Sign_Editor.h */,
 			);
@@ -3923,6 +3936,7 @@
 				D60BFC500C03619A00AD5EB7 /* map_taxisign.png in Resources */,
 				D60BFC510C03619A00AD5EB7 /* map_towerview.png in Resources */,
 				D60BFC520C03619A00AD5EB7 /* map_windsock.png in Resources */,
+				D608C98A1E01BC09002E68F9 /* map_servicedest.png in Resources */,
 				D60BFCDC0C03664F00AD5EB7 /* handle_arrowhead.png in Resources */,
 				D60BFCDD0C03664F00AD5EB7 /* handle_closeloop.png in Resources */,
 				D60BFCDE0C03664F00AD5EB7 /* handle_control.png in Resources */,
@@ -4663,6 +4677,7 @@
 				D62FCEE20BD51B2900ED6CF8 /* WED_RampPosition.cpp in Sources */,
 				D62FCEEC0BD51BBE00ED6CF8 /* WED_LightFixture.cpp in Sources */,
 				D62FCEFE0BD51D9200ED6CF8 /* WED_Helipad.cpp in Sources */,
+				D608C9841E01B8F8002E68F9 /* WED_HierarchyFilterBar.cpp in Sources */,
 				D62FCF310BD535AA00ED6CF8 /* WED_Runway.cpp in Sources */,
 				D62FCF6B0BD539EE00ED6CF8 /* WED_Sealane.cpp in Sources */,
 				D62FCF8D0BD53C7F00ED6CF8 /* WED_Airport.cpp in Sources */,
@@ -4692,6 +4707,7 @@
 				D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */,
 				D64E06F80C25970F004B20D0 /* GUI_MemoryHog.cpp in Sources */,
 				D6C37B180C27920D0023B35C /* GUI_Help.cpp in Sources */,
+				D608C9881E01B906002E68F9 /* GUI_FilterBar.cpp in Sources */,
 				D6E023E70C39840400BD789F /* GUI_Prefs.cpp in Sources */,
 				D6E023EA0C39841200BD789F /* WED_PackageMgr.cpp in Sources */,
 				D6F3F0821D0728CA00188B28 /* RAII_Classes.cpp in Sources */,
@@ -4760,7 +4776,6 @@
 				D6FDBB5115112F4D009DB5EF /* WED_NWLinkAdapter.cpp in Sources */,
 				D6FDBB5215112F4D009DB5EF /* WED_Server.cpp in Sources */,
 				D60800AB15461164001BE1A9 /* WED_AptImportDialog.cpp in Sources */,
-				D608024715463380001BE1A9 /* WED_FilterBar.cpp in Sources */,
 				D60808821546E5F6001BE1A9 /* WED_LibraryPreviewPane.cpp in Sources */,
 				D691EDF91709F4DC00AD6E4C /* WED_Validate.cpp in Sources */,
 				D691EE75170A1DAD00AD6E4C /* WED_Clipping.cpp in Sources */,
@@ -4778,6 +4793,7 @@
 				D6E4C95718EC91DE000D98B8 /* json_writer.cpp in Sources */,
 				D6E4C9CF18ECA18D000D98B8 /* curl_http.cpp in Sources */,
 				D6B8043A198A7DD00005C1FF /* WED_Sign_Parser.cpp in Sources */,
+				D608C9851E01B8F8002E68F9 /* WED_LibraryFilterBar.cpp in Sources */,
 				D6ABE9E319F1F8CC00684AC1 /* WED_GatewayImport.cpp in Sources */,
 				D6ABE9E419F1F8CC00684AC1 /* WED_VerTable.cpp in Sources */,
 				D63112CA1A240A6300524526 /* WED_ICAOTable.cpp in Sources */,
