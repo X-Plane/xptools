@@ -21,6 +21,7 @@ WED 1.6.0a1 12/02/16
         - WED-701: Print debugging info to console if airport meta data download from gateway is corrupt
 	- WED-605: Adding WordWrap to make full gateway server error messages readable
 	- WED-511, WED-708: fix XML reader/writer to not crash on illegal enum names
+	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
 	- WED-740,741,743,744,730,: internal issues during WED 1.6 development
 
 	New Features:
