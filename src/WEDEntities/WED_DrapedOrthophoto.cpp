@@ -22,8 +22,8 @@
  */
 
 #include "WED_DrapedOrthophoto.h"
-#include "WED_GISPoint_Bezier.h"
-#include "WED_Ring.h"
+#include "WED_GISUtils.h"
+#include "XESConstants.h"
 #include "MathUtils.h"
 
 DEFINE_PERSISTENT(WED_DrapedOrthophoto)
@@ -155,38 +155,36 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 
 		for (int h = 0; h < nh; h++)
 		{
-			WED_Thing * ring = GetNthChild(h);
-			int         np   = ring->CountChildren();
-			WED_Ring * rCopy;
+			IGISPointSequence *ring = h ? GetNthHole(h-1) : GetOuterRing();
+			int np = ring->GetNumPoints();
 			vector <BezierPoint2> pt_bak;                    // backup of the coordinates we're going to rotate
 			for(int n = 0; n < np; ++n)
 			{
-				WED_GISPoint_Bezier * s = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
+				IGISPoint_Bezier *s = dynamic_cast<IGISPoint_Bezier *> (ring->GetNthPoint(n));
 				BezierPoint2 pt;
 				if (s)
 					s->GetBezierLocation(gis_Geo,pt);
 				else
 				{
-					WED_GISPoint * sp = dynamic_cast <WED_GISPoint *> (ring->GetNthChild(n));
+					IGISPoint *sp = ring->GetNthPoint(n);
 					Point2 p;
 					sp->GetLocation(gis_Geo,p);
 					pt.pt = p;
 				}
 				pt_bak.push_back(pt);
 			}
-			rCopy = dynamic_cast <WED_Ring *> (ring);        // now that we have a backup, we can mess with the original without guilt
-			rCopy->Rotate(gis_Geo, ctr, -angle);             // rotate coordinates to match desired texture heading
+			                                        // now that we have a backup, we can mess with the original without guilt
+			ring->Rotate(gis_Geo, ctr, -angle);     // rotate coordinates to match desired texture heading
 			if (h==0)
 			{
-				rCopy->GetBounds(gis_Geo, ll_box);     // get the bounding box in _rotated_ coordinates
-				double w=ll_box.xspan()*1852*60*cos(ctr.y()/180.0*M_PI);
-				double l=ll_box.yspan()*1852*60;
+				ring->GetBounds(gis_Geo, ll_box);     // get the bounding box in _rotated_ coordinates
+				double w=ll_box.xspan()*DEG_TO_MTR_LAT*cos(ctr.y()*DEG_TO_RAD);
+				double l=ll_box.yspan()*DEG_TO_MTR_LAT;
 				if (updProp) SetSizeDisp(w,l);
 			}
 			for(int n = 0; n < np; ++n)
 			{
-				WED_GISPoint * dest = dynamic_cast <WED_GISPoint *>  (rCopy->GetNthChild(n));
-				WED_GISPoint * src  = dynamic_cast <WED_GISPoint *> (ring->GetNthChild(n));
+				IGISPoint *src = ring->GetNthPoint(n);
 				Point2 st,uv;
 				
 				// 4-sided orthos w/no bezier nodes are special. They are always streched to these corners, i.e. distorted.
@@ -203,7 +201,7 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 									st = pt_bak[3].pt;
 									double hdg = 0.0;
 									if (st.y()-ctr.y() != 0.0)
-										hdg = 180.0/M_PI*atan((st.x()-ctr.x())*cos(ctr.y()/180.0*M_PI)/(st.y()-ctr.y()));  // very crude heading calculation
+										hdg = RAD_TO_DEG*atan((st.x()-ctr.x())*cos(ctr.y()*DEG_TO_RAD)/(st.y()-ctr.y()));  // very crude heading calculation
 									SetHeading(hdg);
 								}
 					}
@@ -214,21 +212,20 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 					uv = Point2((st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
 								(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin());
 				}
-				dest->SetLocation(gis_UV,uv);
+				src->SetLocation(gis_UV,uv);
 				
-				WED_GISPoint_Bezier * srcb  = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
+				IGISPoint_Bezier * srcb  = dynamic_cast <IGISPoint_Bezier *> (ring->GetNthPoint(n));
 				if(srcb)
 				{
-					WED_GISPoint_Bezier * destb = dynamic_cast <WED_GISPoint_Bezier *>  (rCopy->GetNthChild(n));
 					if(srcb->GetControlHandleHi(gis_Geo,st))
 					{
-						destb->SetControlHandleHi(gis_UV,Point2(
+						srcb->SetControlHandleHi(gis_UV,Point2(
 							(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
 							(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
 					}
 					if(srcb->GetControlHandleLo(gis_Geo,st))
 					{
-						destb->SetControlHandleLo(gis_UV,Point2(
+						srcb->SetControlHandleLo(gis_UV,Point2(
 							(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
 							(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
 					}
