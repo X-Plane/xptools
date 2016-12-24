@@ -51,6 +51,7 @@ enum validate_error_t
 	err_atcrwy_connectivity_n_split,
 	err_atcrwy_connectivity_not_continous,
 	err_atcrwy_hotzone_taxi_route_too_close,
+	err_atcrwy_truck_route_too_close_to_runway,
 	err_atcrwy_taxi_route_does_not_span_enough_rwy,
 	err_atcrwy_taxi_route_node_out_of_bounds,
 	err_atcrwy_taxi_route_node_within_bounds_but_not_connected,
