@@ -1208,6 +1208,9 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_FilterBar.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h">
       <Filter>WEDWindows</Filter>
     </ClInclude>
@@ -1589,8 +1592,8 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
-      <Filter>Interfaces</Filter>
+    <ClInclude Include="..\..\src\WEDCore\WED_HierarchyUtils.h">
+      <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\GUI\GUI_FilterBar.h">
       <Filter>GUI</Filter>

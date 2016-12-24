@@ -43,8 +43,11 @@ public:
 	
 	virtual		bool	IsOneway(void) const;
 				bool	IsRunway(void) const;
+
+				//AllowAircraft and AllowTrucks are exclusive. A taxiroute cannot support both at the same time
 				bool	AllowAircraft(void) const;
 				bool	AllowTrucks(void) const;
+
 				bool	HasHotArrival(void) const;
 				bool	HasHotDepart(void) const;
 				bool	HasHotILS(void) const;
