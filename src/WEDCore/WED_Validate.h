@@ -30,6 +30,7 @@ class	IResolver;
 class	WED_Thing;
 class	WED_Airport;
 
+//Keep this enum strictly organized by alphabetical order
 enum validate_error_t
 {
 	err_airport_elements_outside_hierarchy,
@@ -51,10 +52,10 @@ enum validate_error_t
 	err_atcrwy_connectivity_n_split,
 	err_atcrwy_connectivity_not_continous,
 	err_atcrwy_hotzone_taxi_route_too_close,
-	err_atcrwy_truck_route_too_close_to_runway,
 	err_atcrwy_taxi_route_does_not_span_enough_rwy,
 	err_atcrwy_taxi_route_node_out_of_bounds,
 	err_atcrwy_taxi_route_node_within_bounds_but_not_connected,
+	err_atcrwy_truck_route_too_close_to_runway,
 	err_bez_curve_do_not_use_in_apt_boundaries,
 	err_cannot_export_airport_overlays_if_airports_in_hierarchy,
 	err_duplicate_name,

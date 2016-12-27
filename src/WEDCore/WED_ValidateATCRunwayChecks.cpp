@@ -1158,18 +1158,27 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 
 	for(TaxiRouteInfoVec_t::const_iterator route_itr = all_taxiroutes.begin(); route_itr != all_taxiroutes.end(); ++route_itr)
 	{
-		for (int i=0; i<2; ++i)
+		if (runway_hit_box_m.intersects(route_itr->taxiroute_segment_m) == true)
 		{
-			WED_GISPoint *node =  dynamic_cast<WED_GISPoint*>(route_itr->taxiroute_ptr->GetNthSource(i));
-			Point2 node_location;
-			node->GetLocation(gis_Geo,node_location);
 			
-			if(runway_hit_box_geo.inside(node_location))
+			string msg = "Truck Route " + route_itr->taxiroute_name + " intersects with runway " + runway_info.runway_name;
+			msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, route_itr->taxiroute_ptr, apt));
+		}
+		else
+		{
+			for (int i = 0; i < 2; ++i)
 			{
-				string node_name;
-				node->GetName(node_name);
-				string msg = "Truck Route node " + node_name + " is too close to runway " + runway_info.runway_name;
-				msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, node, apt));
+				WED_GISPoint *node = dynamic_cast<WED_GISPoint*>(route_itr->taxiroute_ptr->GetNthSource(i));
+				Point2 node_location;
+				node->GetLocation(gis_Geo, node_location);
+
+				if (runway_hit_box_geo.inside(node_location))
+				{
+					string node_name;
+					node->GetName(node_name);
+					string msg = "Truck Route node " + node_name + " is too close to runway " + runway_info.runway_name;
+					msgs.push_back(validation_error_t(msg, err_atcrwy_truck_route_too_close_to_runway, node, apt));
+				}
 			}
 		}
 	}
@@ -1272,11 +1281,6 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	
 	if(!all_truckroutes_plain.empty())
 	{
-	
-//		This is no good, as it wont allow us to validate TruckRoutes when there are no Aircaft TaxiRoutes
-//		TaxiRouteInfoVec_t all_taxiroutes = TaxiRouteInfoVec_t(all_taxiroutes_plain.begin(),all_taxiroutes_plain.end());
-//		RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(all_taxiroutes, msgs, &apt);
-
 //      So we validate even harsher: _all_ runways, even the inactive ones ...
 		RunwayVec_t all_runways;
 		CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways));
