@@ -326,20 +326,12 @@ void		WED_LibraryMgr::Rescan()
 				else
 				{
 					if(MFS_string_match(&s,"PUBLIC",true))
-					{	
 						cur_status = status_Public;
-						MFS_string_eol(&s,NULL);
-					}	
 					else if(MFS_string_match(&s,"PRIVATE",true))    
-					{	
 						cur_status = status_Private;
-						MFS_string_eol(&s,NULL);
-					}	
 					else if(MFS_string_match(&s,"DEPRECATED",true)) 
-					{
 						cur_status = status_Deprecated;
-						MFS_string_eol(&s,NULL);
-					}	
+						
 					MFS_string_eol(&s,NULL);
 				}
 			}
