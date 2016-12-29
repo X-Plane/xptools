@@ -140,9 +140,10 @@ struct TaxiRouteInfo
 	{
 		AptRouteEdge_t apt_route;
 		AptServiceRoadEdge_t dummy;
-		int w = taxiroute->Export(apt_route, dummy);
-//		DebugAssert(w == 0);
-		if (w==1)
+		taxiroute->Export(apt_route, dummy);
+		bool is_aircraft_route = taxiroute->AllowAircraft();
+
+		if (is_aircraft_route == false)
 		{
 			taxiroute_name = dummy.name;
 		}
@@ -169,11 +170,17 @@ struct TaxiRouteInfo
 		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
 	}
 	
+	//Pointer to the original WED_TaxiRoute in WED's data model
+	WED_TaxiRoute* taxiroute_ptr;
 
-	WED_TaxiRoute* taxiroute_ptr;    // Pointer to the original WED_TaxiRoute in WED's data model
+	//Name of the taxiroute
 	string taxiroute_name;
-	Segment2 taxiroute_segment_geo;  // location is lat/lon
-	Segment2 taxiroute_segment_m;    // location is meters
+
+	//Segment2 representing the taxiroute in lat/lon
+	Segment2 taxiroute_segment_geo;
+
+	//Segment2 representing the taxiroute in meters
+	Segment2 taxiroute_segment_m;
 
 	set<string> hot_arrivals;
 	set<string> hot_departures;
@@ -289,7 +296,7 @@ static TaxiRouteInfoVec_t FilterMatchingRunways( const RunwayInfo& runway_info,
 	return matching_taxiroutes;
 }
 
-static void AssignRunwayUse( RunwayInfo& runway_info,
+static void AssaignRunwayUse( RunwayInfo& runway_info,
 							  const ATCRunwayUseVec_t& all_use_rules)
 {
 	if(all_use_rules.empty() == true)
@@ -1222,7 +1229,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	CreateTranslatorForBounds(box,translator);
 	
 	TaxiRouteVec_t all_taxiroutes_plain;
-	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain), is_aircraft_taxi_route);
+	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_taxiroutes_plain));
 
 	if(!all_taxiroutes_plain.empty())
 	{
@@ -1270,7 +1277,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 			debug_mesh_segment((*runway_info_itr).runway_centerline_geo,DBG_LIN_COLOR);
 			}
 	#endif
-			AssignRunwayUse(*runway_info_itr, all_use_rules);
+			AssaignRunwayUse(*runway_info_itr, all_use_rules);
 			bool passes_hotzone_checks = DoHotZoneChecks(*runway_info_itr, all_taxiroutes, msgs, &apt);
 			//Nothing to do here yet until we have more checks after this
 		}

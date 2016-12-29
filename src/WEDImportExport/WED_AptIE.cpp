@@ -232,9 +232,10 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 	{
 		AptRouteEdge_t ne;
 		AptServiceRoadEdge_t se;
-		int w = (*e)->Export(ne,se);
-		
-		AptEdgeBase_t * base = w ? (AptEdgeBase_t *) &se : (AptEdgeBase_t *) &ne;
+		(*e)->Export(ne,se);
+		bool is_truxiroute = (*e)->AllowTrucks();
+
+		AptEdgeBase_t * base = is_truxiroute ? (AptEdgeBase_t *) &se : (AptEdgeBase_t *) &ne;
 		
 		// Node's ID is its index in file order
 		vector<IGISPoint *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(0));
@@ -251,7 +252,7 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 			base->shape.push_back(make_pair(b.c2,true));
 		}
 		
-		if(w)
+		if(is_truxiroute)
 			net.service_roads.push_back(se);
 		else
 			net.edges.push_back(ne);
