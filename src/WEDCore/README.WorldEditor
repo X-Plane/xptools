@@ -27,7 +27,7 @@ WED 1.6.0a1 12/02/16
 	New Features:
 	- Support new XP11 features: Ground Traffic routes, Service Truck starts and destinations
 	- Support for UTF-8 characters in GUI on Windows builds
-	- WED-285: Add search bar for items in right side hierachy pane
+	- WED-285: Add search bar for items in the right side hierachy pane
 	- WED-183, WED-42: Preview forest definitions in LinraryPreviewPane
 	- WED-702: Automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
 				- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
