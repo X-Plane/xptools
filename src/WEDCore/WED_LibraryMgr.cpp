@@ -43,6 +43,30 @@ static void clean_rpath(string& s)
 		s[p] = DIR_CHAR;
 }
 
+// checks if path includes enough '..' to possibly not be a true subdirectory of the current directory
+// i.e. dir/../x  or  d/../x or ./x      are fine
+//      ../x  or  dir/../../x  or ./../x  or  dir/./../../x get flagged
+static bool is_no_true_subdir_path(string& s)
+{
+	int subdir_levels = 0;
+	for(string::size_type p = 0; p < s.size(); ++p)
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+		{
+			if (p>=1 && s[p-1] != '.')
+				subdir_levels++;
+			else if (p>=2 && s[p-1] == '.')
+			{
+				if (s[p-2] == '.')
+			  		subdir_levels--;
+				else if (s[p-2] != '\\' && s[p-2] != ':' && s[p-2] != '/')
+					subdir_levels++;
+			}
+			
+			if (subdir_levels < 0)
+				return true;
+		}
+	return false;
+}
 
 static void split_path(const string& i, string& p, string& f)
 {
@@ -275,63 +299,42 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 
-				if(MFS_string_match(&s,"PUBLIC",true))		cur_status = status_Public;
-				if(MFS_string_match(&s,"PRIVATE",true))		cur_status = status_Private;
-				if(MFS_string_match(&s,"DEPRECATED",true))	cur_status = status_Deprecated;
-
-				if(MFS_string_match(&s,"EXPORT",false))
+				if(MFS_string_match(&s,"EXPORT",false) ||
+				   MFS_string_match(&s,"EXPORT_EXTEND",false) ||
+				   MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
+				   MFS_string_match(&s,"EXPORT_BACKUP",false))
 				{
 					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
+					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
+					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
 					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
-
-				if(MFS_string_match(&s,"EXPORT_EXTEND",false))
+				else if(MFS_string_match(&s,"EXPORT_RATIO",false))
 				{
+				    double x = MFS_double(&s);
 					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
+					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
+					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
 					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
-
-				if(MFS_string_match(&s,"EXPORT_EXCLUDE",false))
+				else
 				{
-					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
-					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
+					if(MFS_string_match(&s,"PUBLIC",true))
+						cur_status = status_Public;
+					else if(MFS_string_match(&s,"PRIVATE",true))    
+						cur_status = status_Private;
+					else if(MFS_string_match(&s,"DEPRECATED",true)) 
+						cur_status = status_Deprecated;
+						
+					MFS_string_eol(&s,NULL);
 				}
-
-				if(MFS_string_match(&s,"EXPORT_BACKUP",false))
-				{
-					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
-					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,true,is_default_pack, cur_status);
-				}
-
-				if(MFS_string_match(&s,"EXPORT_RATIO",false))
-				{
-					MFS_int(&s);
-					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
-					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
-				}
-				MFS_string_eol(&s,NULL);
 			}
-
 			MemFile_Close(lib);
 		}
 	}
