@@ -536,6 +536,7 @@ struct AptTruckDestination_t {
 	set<int>					truck_types;
 };
 typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
+
 struct AptInfo_t {
 	int					kind_code;				// Enum
 	string				icao;
