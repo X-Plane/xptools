@@ -81,6 +81,7 @@ enum validate_error_t
 	err_gis_poly_line_and_point_forests_only_for_gte_xp10,
 	err_gis_poly_linear_feature_at_least_two_points,
 	err_gis_poly_zero_length_side,
+	err_gis_poly_clockwise,
 	err_heli_name_does_not_start_with_h,
 	err_heli_name_illegal_characters,
 	err_heli_name_longer_than_allowed,
