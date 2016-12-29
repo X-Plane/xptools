@@ -462,9 +462,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDWindows\WED_FilterBar.cpp">
-      <Filter>WEDWindows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp">
       <Filter>WEDWindows</Filter>
     </ClCompile>
@@ -789,11 +786,20 @@
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_TruckParkingLocation.cpp">
       <Filter>WEDEntities</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDEntities\WED_TruckDestination.cpp">
       <Filter>WEDEntities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\GUI\GUI_FilterBar.cpp">
+      <Filter>GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1574,11 +1580,23 @@
     <ClInclude Include="..\..\src\Interfaces\IHasResource.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckParkingLocation.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h">
       <Filter>WEDEntities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDCore\WED_HierarchyUtils.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\GUI\GUI_FilterBar.h">
+      <Filter>GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

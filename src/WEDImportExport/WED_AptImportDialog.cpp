@@ -29,7 +29,7 @@
 #include "GUI_Resources.h"
 #include "GUI_Packer.h"
 #include "GUI_Button.h"
-#include "WED_FilterBar.h"
+#include "WED_LibraryFilterBar.h"
 #include "GUI_Messages.h"
 #include "STLUtils.h"
 #include "WED_Messages.h"
@@ -73,7 +73,7 @@ WED_AptImportDialog::WED_AptImportDialog(
 	packer->SetBounds(bounds);
 	packer->SetBkgkndImage ("gradient.png");
 
-	mFilter = new WED_FilterBar(this,kMsg_FilterChanged,0,"Search:","",NULL,false);
+	mFilter = new GUI_FilterBar(this,kMsg_FilterChanged,0,"Search:","",false);
 	mFilter->Show();
 	mFilter->SetSticky(1,0,1,1);
 	mFilter->SetParent(packer);

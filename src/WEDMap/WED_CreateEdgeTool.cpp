@@ -270,6 +270,9 @@ void		WED_CreateEdgeTool::AcceptPath(
 	int p = start + 1;
 	while(p <= stop)
 	{
+		int sp = p - 1;
+		int dp = p % pts.size();
+
 		switch(mType) {
 		case create_TaxiRoute:
 			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
@@ -298,7 +301,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 		dst = NULL;
 		
 		dist=frame_dist*frame_dist;
-		FindNear(host_for_merging, NULL, edge_class,pts[p % pts.size()],dst,dist);
+		FindNear(host_for_merging, NULL, edge_class,pts[dp],dst,dist);
 		if(dst == NULL)
 		{
 			switch(mType) {
@@ -313,32 +316,26 @@ void		WED_CreateEdgeTool::AcceptPath(
 			}
 			dst->SetParent(host_for_parent,idx);
 			dst->SetName(mName.value+"_stop");
-			c->SetLocation(gis_Geo,pts[p % pts.size()]);
+			c->SetLocation(gis_Geo,pts[dp]);
 		}		
 		new_edge->AddSource(dst,1);
 		
-		if(has_dirs[p-1])
+		if(has_dirs[sp])
 		{
-			if(has_dirs[p])
+			if(has_dirs[dp])
 			{
-				new_edge->SetSideBezier(gis_Geo,
-								Bezier2(in_pts[p-1],dirs_hi[p-1],
-								dirs_lo[p], in_pts[p]));
+				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],dirs_lo[dp],in_pts[dp]));
 			}
 			else
 			{
-				new_edge->SetSideBezier(gis_Geo,
-								Bezier2(in_pts[p-1],dirs_hi[p-1],
-								in_pts[p], in_pts[p]));
+				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],in_pts[dp],in_pts[dp]));
 			}
 		}
 		else
 		{
-			if(has_dirs[p])
+			if(has_dirs[dp])
 			{
-				new_edge->SetSideBezier(gis_Geo,
-								Bezier2(in_pts[p-1],in_pts[p-1],
-								dirs_lo[p], in_pts[p]));
+				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],in_pts[sp],dirs_lo[dp],in_pts[dp]));
 			}
 		}
 		// Do this last - half-built edge inserted the world destabilizes accessors.

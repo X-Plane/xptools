@@ -25,7 +25,7 @@
 #include "GUI_ScrollerPane.h"
 #include "WED_UIMeasurements.h"
 #include "WED_Colors.h"
-#include "WED_FilterBar.h"
+#include "WED_LibraryFilterBar.h"
 #include "GUI_Resources.h"
 #include "GUI_Messages.h"
 
@@ -95,7 +95,7 @@ WED_LibraryPane::WED_LibraryPane(GUI_Commander * commander, WED_LibraryMgr * mgr
 					mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
 					mLibraryList.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
 
-	mFilter = new WED_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", mgr,true);
+	mFilter = new WED_LibraryFilterBar(this, mgr);
 	mFilter->Show();
 	mFilter->SetParent(this);
 	mFilter->AddListener(this);
@@ -122,5 +122,5 @@ void	WED_LibraryPane::ReceiveMessage(
 							intptr_t				inParam)
 {
 	if(inMsg == GUI_FILTER_FIELD_CHANGED)
-		mLibraryList.SetFilter(mFilter->GetText(),mFilter->GetPakVal());
+		mLibraryList.SetFilter(mFilter->GetText(),mFilter->GetEnumValue());
 }

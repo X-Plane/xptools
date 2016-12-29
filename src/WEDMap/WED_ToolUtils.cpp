@@ -760,6 +760,7 @@ bool IsGraphEdge(WED_Thing * what)
 	return dynamic_cast<IGISEdge*>(what) != NULL;
 }
 
+/*
 void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *), vector<WED_Thing *>& items)
 {
 	if(filter(root)) items.push_back(root);
@@ -774,4 +775,4 @@ void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *, void * ref),
 	int nn = root->CountChildren();
 	for(int n = 0; n < nn; ++n)
 		CollectRecursive(root->GetNthChild(n), filter, ref, items);
-}
+}*/

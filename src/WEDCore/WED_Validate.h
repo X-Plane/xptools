@@ -30,6 +30,7 @@ class	IResolver;
 class	WED_Thing;
 class	WED_Airport;
 
+//Keep this enum strictly organized by alphabetical order and sub catagory. Make this collection easily grep-able
 enum validate_error_t
 {
 	err_airport_elements_outside_hierarchy,
@@ -39,6 +40,7 @@ enum validate_error_t
 	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
+	err_apt_boundary_bez_curve_used,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atc_rule_wind_blank_ICAO_for_METAR,
 	err_atc_rule_wind_invalid_directions,
@@ -54,8 +56,7 @@ enum validate_error_t
 	err_atcrwy_taxi_route_does_not_span_enough_rwy,
 	err_atcrwy_taxi_route_node_out_of_bounds,
 	err_atcrwy_taxi_route_node_within_bounds_but_not_connected,
-	err_bez_curve_do_not_use_in_apt_boundaries,
-	err_cannot_export_airport_overlays_if_airports_in_hierarchy,
+	err_atcrwy_truck_route_too_close_to_runway,
 	err_duplicate_name,
 	err_flow_blank_ICAO_for_METAR,
 	err_flow_blank_name,
@@ -78,6 +79,7 @@ enum validate_error_t
 	err_gis_poly_facades_curved_only_for_gte_xp10, //gte is greater than or equal to
 	err_gis_poly_line_and_point_forests_only_for_gte_xp10,
 	err_gis_poly_linear_feature_at_least_two_points,
+	err_gis_poly_wound_clockwise,
 	err_gis_poly_zero_length_side,
 	err_heli_name_does_not_start_with_h,
 	err_heli_name_illegal_characters,

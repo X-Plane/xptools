@@ -359,12 +359,12 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	     parent->GetClass() == WED_PolygonPlacement::sClass ||
 	     // parent->GetClass() == WED_Taxiway::sClass ||          // we also test those elsewhere, but not for zero length segments
 	     parent->GetClass() == WED_ForestPlacement::sClass ||
-             parent->GetClass() == WED_FacadePlacement::sClass ))
+	     parent->GetClass() == WED_FacadePlacement::sClass ))
 	{
 		if(nn < 2)
 		{
 			string msg = "Polygon feature '" + string(parent->HumanReadableType()) + "' needs at least three points.";
-			msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_two_points, dynamic_cast<WED_Thing *>(parent),apt));
+			msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_two_points, parent,apt));
 		}
 	}
 	else
@@ -389,7 +389,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	if (problem_children.size() > 0)
 	{
 		string msg = string(parent->HumanReadableType()) + string(" has overlapping duplicate vertices. Delete the selected vertices to fix this.");
- 		msgs.push_back(validation_error_t(msg, err_gis_poly_zero_length_side, problem_children, apt));
+		msgs.push_back(validation_error_t(msg, err_gis_poly_zero_length_side, problem_children, apt));
 	}
 #endif
 }
@@ -460,6 +460,46 @@ static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& 
 		msgs.push_back(validation_error_t("Line and point forests are only supported in X-Plane 10 and newer.", err_gis_poly_line_and_point_forests_only_for_gte_xp10, who,apt));
 }
 
+
+static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msgs, WED_Airport * apt)
+{
+	// check for outer ring wound CCW (best case it will not show in XP, worst case it will assert in DSF export)
+	// don't check Forests unless they are closed, don't check Facades with no roof
+	
+
+/*	if ( who->GetClass() == WED_DrapedOrthophoto::sClass ||
+	     who->GetClass() == WED_PolygonPlacement::sClass ||
+	     who->GetClass() == WED_Taxiway::sClass ||
+	     (who->GetClass() == WED_ForestPlacement::sClass && dynamic_cast<WED_ForestPlacement*>(who)->GetFillMode() == dsf_fill_area) ||
+         (who->GetClass() == WED_FacadePlacement::sClass && dynamic_cast<WED_FacadePlacement*>(who)->GetTopoMode() == WED_FacadePlacement::topo_Area) )
+*/
+	if(who->GetGISClass() == gis_Polygon)
+    {        
+		IGISPointSequence * ips = who->GetOuterRing();
+		if (ips) 
+		{
+			vector <Point2> seq;
+			int nn = ips->GetNumPoints();
+			for(int n = 0; n < nn; ++n)
+			{
+				IGISPoint * igp = ips->GetNthPoint(n);
+				Point2 p;
+				if (igp) 
+				{
+					igp->GetLocation(gis_Geo, p);
+	//				if (!(p == seq.back()))  // skip over zero length segemnts, as they cause
+						seq.push_back(p);    // false positives in the clockwise wound test
+				} 
+			}
+			if (!is_ccw_polygon_pt(seq.begin(), seq.end()))
+			{
+				string msg = "Polygon '" + string(who->HumanReadableType()) + "' is wound clock wise. Reverse selected polygon to fix this.";
+				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who, apt));
+			}
+		}
+	}
+}
+
 static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, validation_error_vector& msgs, WED_Airport * parent_apt)
 {
 	// Don't validate hidden stuff - we won't export it!
@@ -475,6 +515,12 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 	if(who->GetClass() == WED_ForestPlacement::sClass)
 	{
 		ValidateOneForestPlacement(who, msgs, parent_apt);
+	}
+
+	WED_GISPolygon * poly = dynamic_cast<WED_GISPolygon  *> (who);
+	if (poly)
+	{
+		ValidateOnePolygon(poly, msgs, parent_apt);
 	}
 
 	if(gExportTarget == wet_gateway)
@@ -997,7 +1043,7 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 static void ValidateOneAirportBoundary(WED_AirportBoundary* bnd, validation_error_vector& msgs, WED_Airport * apt)
 {
 	if(WED_HasBezierPol(bnd))
-		msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_bez_curve_do_not_use_in_apt_boundaries, bnd,apt));
+		msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, bnd,apt));
 }
 
 static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt)
