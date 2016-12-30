@@ -2143,7 +2143,12 @@ void	WED_DoMakeRegularPoly(IResolver * resolver)
 	op->CommitOperation();
 }
 
-typedef map<Point2, pair<const char *, vector<WED_Thing *> >,lesser_y_then_x>	merge_class_map;
+typedef vector<pair<Point2, pair<const char *, vector<WED_Thing *> > > > merge_class_map;
+
+static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *, vector<WED_Thing *> > >& lhs, const pair<Point2, pair<const char *, vector<WED_Thing *> > > & rhs)
+{
+	return (lhs.first.y_ == rhs.first.y_) ? (lhs.first.x_ < rhs.first.x_) : (lhs.first.y_ < rhs.first.y_);
+}
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
 {
@@ -2194,10 +2199,18 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	
 	Point2	loc;
 	p->GetLocation(gis_Geo, loc);
-	merge_class_map::iterator l = sinks->find(loc);
+	merge_class_map::iterator l = sinks->end();
+	for (merge_class_map::iterator itr = sinks->begin(); itr != sinks->end(); ++itr)
+	{
+		if (itr->first == loc)
+		{
+			l = itr;
+		}
+	}
+	
 	if(l == sinks->end())
 	{
-		sinks->insert(make_pair(loc,make_pair(tag,vector<WED_Thing*>(1,t))));
+		sinks->insert(l, make_pair(loc,make_pair(tag,vector<WED_Thing*>(1,t))));
 		return 1;
 	}
 	else
@@ -2211,7 +2224,6 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	}
 }
 
-
 int	WED_CanMerge(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
@@ -2219,9 +2231,13 @@ int	WED_CanMerge(IResolver * resolver)
 		return 0;		// can't merge 1 thing!
 	
 	merge_class_map sinkmap;
-	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
+	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
+	{
 		return 0;
-	
+	}
+
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
 	bool has_overlap = false;
 	const char * has_loner = NULL;
 	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
