@@ -39,6 +39,7 @@
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
+#include "WED_OverlayImage.h"
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
 #include "WED_TaxiRoute.h"
@@ -473,7 +474,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 	     (who->GetClass() == WED_ForestPlacement::sClass && dynamic_cast<WED_ForestPlacement*>(who)->GetFillMode() == dsf_fill_area) ||
          (who->GetClass() == WED_FacadePlacement::sClass && dynamic_cast<WED_FacadePlacement*>(who)->GetTopoMode() == WED_FacadePlacement::topo_Area) )
 */
-	if(who->GetGISClass() == gis_Polygon)
+	if(who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) // exempt RefImages, since WEDbing places them with CW nodes
     {        
 		IGISPointSequence * ips = who->GetOuterRing();
 		if (ips) 

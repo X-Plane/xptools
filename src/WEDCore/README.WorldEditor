@@ -22,7 +22,7 @@ WED 1.6.0a1 12/02/16
 	- WED-511, WED-708: fix XML reader/writer to not crash on illegal enum names
 	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
 	- WED-726: enable processing of library.txt file paths including spaces 
-	- WED-740,741,743,744,730,736,747: internal issues during WED 1.6 development
+	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
 
 	New Features:
 	- Support new XP11 features: Ground Traffic routes, Service Truck starts and destinations
