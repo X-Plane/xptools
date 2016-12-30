@@ -1093,6 +1093,8 @@ static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_
 		/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
 	rmgr->MakePol(relativePOLP,out_info);
 }
+
+//Returns -1 for abort, or n where n > 0 for the number of 
 static int	DSF_ExportTileRecursive(
 						WED_Thing *					what,
 						IResolver *					resolver,
@@ -1124,13 +1126,20 @@ static int	DSF_ExportTileRecursive(
 	string r;
 	Point2	p;
 	WED_Entity * ent = dynamic_cast<WED_Entity *>(what);
-	if (!ent) return 0;
-	if (ent->GetHidden()) return 0;
-	
+	if (!ent)
+	{
+		return 0;
+	}
+
+	if (ent->GetHidden())
+	{
+		return 0;
+	}
+
 	IGISEntity * e = dynamic_cast<IGISEntity *>(what);
 	
-		Bbox2	ent_box;
-		e->GetBounds(gis_Geo,ent_box);
+	Bbox2	ent_box;
+	e->GetBounds(gis_Geo,ent_box);
 	
 	if(!ent_box.overlap(cull_bounds))
 		return 0;
@@ -1715,7 +1724,7 @@ static int	DSF_ExportTileRecursive(
 			{
 				string msg = string("The polygon '") + r + string("' cannot be converted to an orthophoto.");
 				DoUserAlert(msg.c_str());
-				return 0;
+				return -1;
 			}
 				
 			//Various Strings, it may be a lot but it ensures one never get confused
@@ -1729,7 +1738,7 @@ static int	DSF_ExportTileRecursive(
 			{
 				string msg = string("The path '") + relativePathPOL + string("' is illegal because it backs out of your scenery pack.");
 				DoUserAlert(msg.c_str());
-				return 0;
+				return -1;
 			}
 
 			//-----------------
@@ -1774,7 +1783,7 @@ static int	DSF_ExportTileRecursive(
 				{
 					string msg = string("Unable to convert the image file '") + absPathIMG + string("'to a DDS file.");
 					DoUserAlert(msg.c_str());
-					return 0;
+					return -1;
 				}
 				
 				//If only RGB
@@ -1809,7 +1818,7 @@ static int	DSF_ExportTileRecursive(
 			{
 				string msg = string("The file '") + absPathIMG + string("' is missing.");
 				DoUserAlert(msg.c_str());
-				return 0;
+				return -1;
 			}
 		}
 
@@ -1881,8 +1890,19 @@ static int	DSF_ExportTileRecursive(
 
 	int cc = what->CountChildren();
 	for (int c = 0; c < cc; ++c)
-		real_thingies += DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children,show_level);
-	
+	{
+		int result = DSF_ExportTileRecursive(what->GetNthChild(c), resolver, pkg, cull_bounds, safe_bounds, io_table, cbs, writer, problem_children, show_level);
+		if (result == -1)
+		{
+			real_thingies = -1; //Abort!
+			break;
+		}
+		else
+		{
+			real_thingies += result;
+		}
+	}
+
 	if(apt)
 	{
 		cbs->SetFilter_f(-1,writer);
@@ -1939,8 +1959,16 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 	
 	
 	int entities = 0;
-	for(int show_level = 6; show_level >= 1; --show_level)	
-		entities += DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer,problem_children,show_level);
+	for (int show_level = 6; show_level >= 1; --show_level)
+	{
+		int result = DSF_ExportTileRecursive(base, resolver, pkg, cull_bounds, safe_bounds, rsrc, &cbs, writer, problem_children, show_level);
+		if (result == -1)
+		{
+			DSFDestroyWriter(writer);
+			break; //Abort!
+		}
+		entities += result;
+	}
 
 	rsrc.write_tables(cbs,writer);
 
