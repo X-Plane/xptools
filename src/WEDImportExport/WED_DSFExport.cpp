@@ -1912,7 +1912,7 @@ static int	DSF_ExportTileRecursive(
 	return real_thingies;
 }
 
-static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
+static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& pkg, int x, int y, set <WED_Thing *>& problem_children)
 {
 	void *			writer;
 	DSFCallbacks_t	cbs;
@@ -1925,7 +1925,7 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 	int cull_code = DSF_HeightRangeRecursive(base,msl_min,msl_max, cull);
 	
 	if(cull_code < 0)
-		return;
+		return 0;
 	
 	if(cull_code > 0)
 	{
@@ -1965,7 +1965,7 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 		if (result == -1)
 		{
 			DSFDestroyWriter(writer);
-			break; //Abort!
+			return -1; //Abort!
 		}
 		entities += result;
 	}
@@ -2000,7 +2000,7 @@ static void DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string&
 	DSFDestroyWriter(writer);
 }
 
-void DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
+int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
 	StElapsedTime	etime("Export time");
 
@@ -2010,7 +2010,7 @@ void DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, s
 	IGISEntity * ent = dynamic_cast<IGISEntity *>(base);
 	DebugAssert(ent);
 	if(!ent) 
-		return;
+		return 0;
 	
 	ent->GetBounds(gis_Geo,wrl_bounds);
 	int tile_west  = floor(wrl_bounds.p1.x());
@@ -2018,14 +2018,29 @@ void DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, s
 	int tile_south = floor(wrl_bounds.p1.y());
 	int tile_north = ceil (wrl_bounds.p2.y());
 
+	int DSF_export_tile_res = 0;
 	for (int y = tile_south; y < tile_north; ++y)
-	for (int x = tile_west ; x < tile_east ; ++x)
 	{
-		DSF_ExportTile(base, resolver, package, x, y, problem_children);
+		for (int x = tile_west; x < tile_east; ++x)
+		{
+			DSF_export_tile_res = DSF_ExportTile(base, resolver, package, x, y, problem_children);
+			if (DSF_export_tile_res == -1)
+			{
+				break;
+			}
+		}
+
+		if (DSF_export_tile_res == -1)
+		{
+			break;
+		}
 	}
 
-	if(g_dropped_pts)
-		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");		
+	if (g_dropped_pts)
+	{
+		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
+		return -1;
+	}
 }
 
 int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const string& package, set<WED_Thing *>& problem_children)
