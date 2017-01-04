@@ -1377,7 +1377,9 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
 // Given a vector of nodes all in the same place, this routine merges them all, returning the one surviver,
 // and nukes the rest.  All incoming edges of all of them are merged.  Note that any edges liknking two nodes in
 // nodes are now zero length.
-static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
+
+//Return the deleted node
+static void /*vector<WED_Thing*>::iterator */run_merge(vector<WED_Thing *> nodes)
 {
 	DebugAssert(nodes.size() > 1);
 	WED_Thing * winner = nodes.front();
@@ -1412,7 +1414,7 @@ static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
 		victim->SetParent(NULL, 0);
 		victim->Delete();
 	}
-	return winner;
+	return;
 }
 
 static int	unsplittable(ISelectable * base, void * ref)
@@ -2143,11 +2145,61 @@ void	WED_DoMakeRegularPoly(IResolver * resolver)
 	op->CommitOperation();
 }
 
-typedef vector<pair<Point2, pair<const char *, vector<WED_Thing *> > > > merge_class_map;
+typedef vector<pair<Point2, pair<const char *, WED_Thing *> > > merge_class_map;
 
-static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *, vector<WED_Thing *> > >& lhs, const pair<Point2, pair<const char *, vector<WED_Thing *> > > & rhs)
+//
+static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *, WED_Thing * > >& lhs, const pair<Point2, pair<const char *, WED_Thing * > > & rhs)
 {
-	return (lhs.first.y_ == rhs.first.y_) ? (lhs.first.x_ < rhs.first.x_) : (lhs.first.y_ < rhs.first.y_);
+	// 1. Is lhs.y less than rhs.y?
+	// 2. Is lhs.x less than rhs.y?
+	// |a            b
+	// |   1.False | 1. False
+	// |   2.True  | 2. False
+	// |  --------lhs----------
+	// |c  1. True |d 1. True
+	// |   2. True |  2. False
+	//0------------------------
+
+	//c or d
+	if (lhs.first.y() < rhs.first.y())
+	{
+		if (lhs.first.x() < rhs.first.x())
+		{
+			//c
+			return true;
+		}
+		else
+		{
+			//d
+			return true;
+		}
+	}
+	else
+	{
+		//a or b
+		if (lhs.first.x() < rhs.first.x())
+		{
+			//a
+			return true;
+		}
+		else
+		{
+			//b
+			return false;
+		}
+	}
+
+	/*
+	if (lhs.first.y_ == rhs.first.y_)
+	{
+		//a or b
+		return (lhs.first.x_ < rhs.first.x_);
+	}
+	else
+	{
+		//a or b or c or d
+		return (lhs.first.y_ < rhs.first.y_);
+	}*/
 }
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
@@ -2210,14 +2262,14 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	
 	if(l == sinks->end())
 	{
-		sinks->insert(l, make_pair(loc,make_pair(tag,vector<WED_Thing*>(1,t))));
+		sinks->push_back(make_pair(loc,make_pair(tag,t)));
 		return 1;
 	}
 	else
 	{
 		if(l->second.first == tag)
 		{
-			l->second.second.push_back(t);
+			l->second.second = t;
 			return 1;
 		}
 		return 0;
@@ -2230,6 +2282,8 @@ int	WED_CanMerge(IResolver * resolver)
 	if(sel->GetSelectionCount() < 2)
 		return 0;		// can't merge 1 thing!
 	
+	return true;
+
 	merge_class_map sinkmap;
 	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
@@ -2242,21 +2296,26 @@ int	WED_CanMerge(IResolver * resolver)
 	const char * has_loner = NULL;
 	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
 	{
-		if(m->second.second.size() == 1)
+		//if(m->second.second.size() == 1)
 		{
-			if(has_loner == NULL)
+			if (has_loner == NULL)
 				has_loner = m->second.first;
-			else if(has_loner != m->second.first)
+			else if (has_loner != m->second.first)
 				return 0;
+			else
+				has_overlap = true;
 		}
-		else
-			has_overlap = true;
 	}
 	
 	if(has_loner && has_overlap)
 		return 0;
 	
 	return 1;
+}
+
+WED_Thing* take_things(const merge_class_map::value_type& value)
+{
+	return value.second.second;
 }
 
 void WED_DoMerge(IResolver * resolver)
@@ -2275,6 +2334,90 @@ void WED_DoMerge(IResolver * resolver)
 		return;
 	}
 	
+	if (sinkmap.size() > 10000)
+	{
+		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
+		return;
+	}
+	else if (sinkmap.size() < 2)
+	{
+		return;
+	}
+	
+	Bbox2 bb;
+	WED_Airport * apt = WED_GetCurrentAirport(resolver);
+
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	merge_class_map::iterator start_thing = sinkmap.begin();
+	const int MAX_DIST_M_SQ = 1;
+	while (start_thing != sinkmap.end())
+	{
+		if(start_thing + 1 != sinkmap.end())
+		{
+			merge_class_map::iterator merge_pair = start_thing+1;
+
+			bool greater_than_max_distance = false;
+			while (merge_pair != sinkmap.end())
+			{
+				Point2 start_pos_m      = translator.Forward(start_thing->first);
+				Point2 merge_pair_pos_m = translator.Forward(merge_pair->first);
+				double a_sqr = pow((merge_pair_pos_m.x() - start_pos_m.x()), 2);
+				double b_sqr = pow (merge_pair_pos_m.y() - start_pos_m.y(), 2);
+				double sum_a_b = a_sqr + b_sqr;
+				greater_than_max_distance =  sum_a_b > MAX_DIST_M_SQ;
+				if (greater_than_max_distance == false)
+				{
+					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
+					sub_list.push_back(start_thing->second.second);
+					sub_list.push_back(merge_pair->second.second);
+
+					merge_pair = sinkmap.erase(merge_pair);
+
+					//TODO is this needed?
+					run_merge(sub_list);
+					
+					 //start_thing + 1;
+				}
+				else
+				{
+					++merge_pair;
+				}
+			}
+			
+			/*
+			do
+			{
+
+
+				
+			}
+			while(greater_than_max_distance == false);
+
+			vector<WED_Thing*> sub_list = vector<WED_Thing*>(std::distance(start_thing, end_thing));
+			transform(start_thing, end_thing, sub_list.begin(), take_things);
+			start_thing->second.second = run_merge(sub_list);*/
+		}
+
+		++start_thing;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+#if 0
+
 	vector<WED_Thing *>		remaining_nodes;
 	vector<WED_Thing *>	solos;
 	
@@ -2310,6 +2453,7 @@ void WED_DoMerge(IResolver * resolver)
 				
 		sel->Insert((*node));
 	}
+#endif
 	op->CommitOperation();
 }
 
