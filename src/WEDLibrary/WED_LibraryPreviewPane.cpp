@@ -42,6 +42,8 @@
 	#include <GL/gl.h>
 #endif
 
+extern int gIsFeet;
+
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(10.0f),mThe(10.0f)
 {
 }
@@ -271,6 +273,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Forest:
 			if(!mResMgr->GetFor(mRes,o))
 				break;
+#if 0  
+		// facade preview, not yet ready for primetime
 		case res_Facade:
 			if(!o)
 			{
@@ -279,6 +283,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				else
 					break;
 			}
+#endif
 		case res_Object:
 			if (o || mResMgr->GetObj(mRes,o))
 			{
@@ -406,9 +411,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					sprintf(buf,"Select desired part of texture by clicking on it.");
 				}
 				break;
+			case res_Line:
+				if (lin.s1.size() && lin.s2.size())
+				{ 
+//					float w = (lin.s2[0]-lin.s1[0])/lin.proj_s;
+					sprintf(buf,"Aproximate width %.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+				}
+				break;
 		}
 		float text_color[4] = { 1,1,1,1 };
-		GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 30, buf);
+		GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 15, buf);
 		
 	}
 }
