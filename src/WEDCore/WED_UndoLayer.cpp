@@ -138,6 +138,7 @@ void	WED_UndoLayer::ObjectDestroyed(WED_Persistent * inObject)
 
 void	WED_UndoLayer::Execute(void)
 {
+	vector<WED_Persistent *>	needs_post_call;
 	int d;
 	for (ObjInfoMap::iterator i = mObjects.begin(); i != mObjects.end(); ++i)
 	{
@@ -155,7 +156,8 @@ void	WED_UndoLayer::Execute(void)
 			DebugAssert(i->second.buffer != NULL);
 			i->second.buffer->ResetRead();
 			obj->StateChanged();
-			obj->ReadFrom(i->second.buffer);
+			if(obj->ReadFrom(i->second.buffer))
+				needs_post_call.push_back(obj);
 			i->second.buffer->ReadInt(d);
 			obj->SetDirty(d);
 			break;
@@ -164,11 +166,14 @@ void	WED_UndoLayer::Execute(void)
 			DebugAssert(obj != NULL);
 			DebugAssert(i->second.buffer != NULL);
 			i->second.buffer->ResetRead();
-			obj->ReadFrom(i->second.buffer);
+			if(obj->ReadFrom(i->second.buffer))
+				needs_post_call.push_back(obj);
 			i->second.buffer->ReadInt(d);
 			obj->SetDirty(d);
 			break;
 		}
 	}
+	for(vector<WED_Persistent *>::iterator o = needs_post_call.begin(); o != needs_post_call.end(); ++o)
+		(*o)->PostChangeNotify();
 }
 

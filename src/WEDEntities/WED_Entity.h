@@ -113,12 +113,13 @@ public:
 			int		GetLocked(void) const;
 			int		GetHidden(void) const;
 
-	virtual	void 	ReadFrom(IOReader * reader);
-	virtual void	FromDB(sqlite3 * db, const map<int,int>& mapping);
-
+	virtual	bool 	ReadFrom(IOReader * reader);
+	
+	virtual	void	PostChangeNotify(void);
+	
 protected:
 
-			void	CacheInval(int flags);			// Invalidate the cache.
+			void	CacheInval(int flags);				// Invalidate the cache.
 			int		CacheBuild(int flags) const;		// Set cache to valid.  Returns true if cache needed rebuilding
 
 	virtual	void	AddChild(int id, int n);

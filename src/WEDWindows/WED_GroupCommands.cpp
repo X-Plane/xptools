@@ -35,10 +35,12 @@
 #include "WED_ATCWindRule.h"
 #include "WED_AirportNode.h"
 #include "WED_Group.h"
+
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+
 #include "WED_Ring.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_UIDefs.h"
@@ -62,10 +64,13 @@
 #include "XObjDefs.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"
+#include "WED_GISEdge.h"
 #include "GISUtils.h"
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
 #include "CompGeomUtils.h"
+#include "WED_HierarchyUtils.h"
+
 #include <iterator>
 #include <sstream>
 
@@ -1142,7 +1147,7 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 	sel->Clear();
 
 	vector<WED_Thing *> pts;
-	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphNode, pts);
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(pts), EntityNotHidden, IsGraphNode);
 	
 	// Ben says: yes this totally sucks - replace it someday?
 	for(int i = 0; i < pts.size(); ++i)
@@ -1183,18 +1188,19 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	op->StartOperation("Select Zero-Length Edges");
+	op->StartOperation("Select Crossing Edges");
 	sel->Clear();
-	vector<WED_Thing *> pts;
-	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphEdge, pts);
+
+	vector<WED_GISEdge *> edges;
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
 	
 	// Ben says: yes this totally sucks - replace it someday?
-	for(int i = 0; i < pts.size(); ++i)
+	for(int i = 0; i < edges.size(); ++i)
 	{
-		for(int j = i + 1; j < pts.size(); ++j)
+		for(int j = i + 1; j < edges.size(); ++j)
 		{
-			IGISEdge * ii = dynamic_cast<IGISEdge *>(pts[i]);
-			IGISEdge * jj = dynamic_cast<IGISEdge *>(pts[j]);
+			IGISEdge * ii = dynamic_cast<IGISEdge *>(edges[i]);
+			IGISEdge * jj = dynamic_cast<IGISEdge *>(edges[j]);
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
@@ -1234,16 +1240,16 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				{
 					if(s1.intersect(s2, x))
 					{
-						sel->Insert(pts[i]);
-						sel->Insert(pts[j]);
+						sel->Insert(edges[i]);
+						sel->Insert(edges[j]);
 					}
 				}
 				else
 				{
 					if(b1.intersect(b2, 12))
 					{
-						sel->Insert(pts[i]);
-						sel->Insert(pts[j]);
+						sel->Insert(edges[i]);
+						sel->Insert(edges[j]);
 					}
 				}
 			}
@@ -1333,7 +1339,7 @@ static void DoSelectWithFilter(const char * op_name, bool (* filter)(WED_Thing *
 	WED_LibraryMgr * mgr = WED_GetLibraryMgr(resolver);
 
 	vector<WED_Thing *> who;
-	CollectRecursive(WED_GetWorld(resolver), filter, mgr, who);
+	//CollectRecursive(WED_GetWorld(resolver), filter, mgr, who);
 	
 	for(vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
@@ -2177,11 +2183,14 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 {
 	merge_class_map * sinks = (merge_class_map *) ref;
 	IGISPoint * p = dynamic_cast<IGISPoint *>(who);
-	if(p == NULL) return 0;
+	if(p == NULL)
+		return 0;
 	WED_Thing * t = dynamic_cast<WED_Thing *>(who);
 	const char * tag = get_merge_tag_for_thing(p);
-	if(tag == NULL) return 0;
-	if(t == NULL) return 0;
+	if(tag == NULL)
+		return 0;
+	if(t == NULL)
+		return 0;
 	
 	Point2	loc;
 	p->GetLocation(gis_Geo, loc);
@@ -2206,7 +2215,8 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 int	WED_CanMerge(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if(sel->GetSelectionCount() < 2) return 0;		// can't merge 1 thing!
+	if(sel->GetSelectionCount() < 2)
+		return 0;		// can't merge 1 thing!
 	
 	merge_class_map sinkmap;
 	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
@@ -2519,8 +2529,8 @@ static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible, int
 	return accumulator;
 }
 
-template <typename OutputIterator>
-static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
+//template <typename OutputIterator>
+/*static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 {
 	// TODO: do fast WED type ptr check on sClass before any other casts?
 	// Factor out WED_Entity check to avoid second dynamic cast?
@@ -2547,7 +2557,7 @@ static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 			CollectRecursive(thing->GetNthChild(n), oi);
 		}
 	}
-}
+}*/
 
 set<string> build_agp_list()
 {
@@ -2846,7 +2856,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
-	CollectRecursive(root, back_inserter(obj_placements));
+	//CollectRecursive(root, WED_ObjPlacement::sClass, back_inserter(obj_placements));
 
 	if(!obj_placements.empty())
 	{

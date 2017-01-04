@@ -135,8 +135,8 @@ int Iterate_CollectEntitiesUV(ISelectable * what, void * ref);			// ref is a ptr
 
 bool IsGraphNode(WED_Thing * what);
 bool IsGraphEdge(WED_Thing * what);
-void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *			  ),			 vector<WED_Thing *>& items);
-void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *, void * ref), void * ref, vector<WED_Thing *>& items);
+//void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *			  ),			 vector<WED_Thing *>& items);
+//void CollectRecursive(WED_Thing * root, bool(* filter)(WED_Thing *, void * ref), void * ref, vector<WED_Thing *>& items);
 
 //---------------------------------------------------------------------------------------------------------------------------------
 // DRAG & DROP
