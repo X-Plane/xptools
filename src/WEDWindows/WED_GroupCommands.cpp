@@ -1378,8 +1378,8 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
 // and nukes the rest.  All incoming edges of all of them are merged.  Note that any edges liknking two nodes in
 // nodes are now zero length.
 
-//Return the deleted node
-static void /*vector<WED_Thing*>::iterator */run_merge(vector<WED_Thing *> nodes)
+//Return the winning node
+static WED_Thing* run_merge(vector<WED_Thing *> nodes)
 {
 	DebugAssert(nodes.size() > 1);
 	WED_Thing * winner = nodes.front();
@@ -1414,7 +1414,7 @@ static void /*vector<WED_Thing*>::iterator */run_merge(vector<WED_Thing *> nodes
 		victim->SetParent(NULL, 0);
 		victim->Delete();
 	}
-	return;
+	return winner;
 }
 
 static int	unsplittable(ISelectable * base, void * ref)
@@ -2220,8 +2220,18 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	return 1;
 }
 
+//Returns true if every node can be merged with each other, by type and by location
 int	WED_CanMerge(IResolver * resolver)
 {
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed test in
+	//   0.001130 seconds.
+	//   0.020325 seconds.
+	//   0.000842 seconds.
+	//   0.020704 seconds.
+	//   0.016719 seconds.
+	//StElapsedTime can_merge_timer("WED_CanMerge");
 	ISelection * sel = WED_GetSelect(resolver);
 	if(sel->GetSelectionCount() < 2)
 		return 0;		// can't merge 1 thing!
@@ -2233,9 +2243,9 @@ int	WED_CanMerge(IResolver * resolver)
 		return 0;
 	}
 
-	if (sinkmap.size() < 2)
+	if (sinkmap.size() > 10000 || sinkmap.size() < 2)
 	{
-		return 1;
+		return 0;
 	}
 
 	//2. Sort by location, a small optimization
@@ -2266,6 +2276,7 @@ int	WED_CanMerge(IResolver * resolver)
 		}
 	}
 
+	//Ensure expected UI behavior - Only perfect merges are allowed
 	if (can_snap_objects.size() == sinkmap.size())
 	{
 		return 1;
@@ -2276,19 +2287,23 @@ int	WED_CanMerge(IResolver * resolver)
 	}
 }
 
-WED_Thing* take_things(const merge_class_map::value_type& value)
-{
-	return value.second.second;
-}
-
+//WED_DoMerge will merge every node in the selection possible, any nodes that could not be merged are left as is.
+//Ex: 0-0-0-0---------------------0 will turn into 0-------------------------0.
+//If WED_CanMerge is called first this behavior would not be possible
 void WED_DoMerge(IResolver * resolver)
 {
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed snapping and merged to ~900 in
+	//   0.023290 seconds
+	//StElapsedTime can_merge_timer("WED_DoMerge");
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
 	DebugAssert(sel->GetSelectionCount() >= 2);
 
+	//Validate and collect from selection
 	merge_class_map sinkmap;
 	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
@@ -2297,6 +2312,7 @@ void WED_DoMerge(IResolver * resolver)
 		return;
 	}
 
+	//Ensure sinkmap is not rediculous or unmergable
 	if (sinkmap.size() > 10000)
 	{
 		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
@@ -2306,13 +2322,18 @@ void WED_DoMerge(IResolver * resolver)
 	{
 		return;
 	}
-	
+
+	//2. Sort by location, a small optimization
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
 	WED_Airport* apt = WED_GetCurrentAirport(resolver);
 	Bbox2 bb;
 	CoordTranslator2 translator;
 	apt->GetBounds(gis_Geo, bb);
 	CreateTranslatorForBounds(bb, translator);
 
+	//All the nodes that will end up snapped
+	set<WED_Thing*> snapped_nodes;
 	merge_class_map::iterator start_thing = sinkmap.begin();
 	while (start_thing != sinkmap.end())
 	{
@@ -2332,9 +2353,7 @@ void WED_DoMerge(IResolver * resolver)
 					sub_list.push_back(merge_pair->second.second);
 
 					merge_pair = sinkmap.erase(merge_pair);
-
-					//TODO is this needed?
-					run_merge(sub_list);
+					snapped_nodes.insert(run_merge(sub_list));
 				}
 				else
 				{
@@ -2346,37 +2365,9 @@ void WED_DoMerge(IResolver * resolver)
 		++start_thing;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-#if 0
-
-	vector<WED_Thing *>		remaining_nodes;
-	vector<WED_Thing *>	solos;
-	
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
-	{
-		if(m->second.second.size() == 1)
-			solos.push_back(m->second.second.front());
-		else
-			remaining_nodes.push_back(run_merge(m->second.second));
-	}
-	
-	if(!solos.empty())
-		remaining_nodes.push_back(run_merge(solos));
-
 	sel->Clear();
 	
-	for(vector<WED_Thing *>::iterator node = remaining_nodes.begin(); node != remaining_nodes.end(); ++node)
+	for(set<WED_Thing *>::iterator node = snapped_nodes.begin(); node != snapped_nodes.end(); ++node)
 	{
 		set<WED_Thing *>	viewers;
 		(*node)->GetAllViewers(viewers);
@@ -2392,10 +2383,9 @@ void WED_DoMerge(IResolver * resolver)
 	
 		// Ben says: DO NOT delete the "unviable" isolated vertex here..if the user merged this down, maybe the user will link to it next?
 		// User can clean this by hand - it is in the selection when we are done.
-				
 		sel->Insert((*node));
 	}
-#endif
+
 	op->CommitOperation();
 }
 
