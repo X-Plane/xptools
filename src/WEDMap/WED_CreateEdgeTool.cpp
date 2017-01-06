@@ -508,6 +508,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 
 void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const char* filter, const Segment2& splitter, vector<pair<IGISPointSequence *, Point2> >& out_splits)
 {
+	return;
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
@@ -569,6 +570,7 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const c
 
 void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& splitter, vector<Point2>& out_splits, double dsq)
 {
+	return;
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
