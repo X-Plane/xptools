@@ -2150,56 +2150,20 @@ typedef vector<pair<Point2, pair<const char *, WED_Thing *> > > merge_class_map;
 //
 static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *, WED_Thing * > >& lhs, const pair<Point2, pair<const char *, WED_Thing * > > & rhs)
 {
-	// 1. Is lhs.y less than rhs.y?
-	// 2. Is lhs.x less than rhs.y?
-	// |a            b
-	// |   1.False | 1. False
-	// |   2.True  | 2. False
-	// |  --------lhs----------
-	// |c  1. True |d 1. True
-	// |   2. True |  2. False
-	//0------------------------
+	return (lhs.first.y() == rhs.first.y()) ? (lhs.first.x() < rhs.first.x()) : (lhs.first.y() < rhs.first.y());
+}
 
-	//c or d
-	if (lhs.first.y() < rhs.first.y())
-	{
-		if (lhs.first.x() < rhs.first.x())
-		{
-			//c
-			return true;
-		}
-		else
-		{
-			//d
-			return true;
-		}
-	}
-	else
-	{
-		//a or b
-		if (lhs.first.x() < rhs.first.x())
-		{
-			//a
-			return true;
-		}
-		else
-		{
-			//b
-			return false;
-		}
-	}
+static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
+{
+	const int MAX_DIST_M_SQ = 1;
 
-	/*
-	if (lhs.first.y_ == rhs.first.y_)
-	{
-		//a or b
-		return (lhs.first.x_ < rhs.first.x_);
-	}
-	else
-	{
-		//a or b or c or d
-		return (lhs.first.y_ < rhs.first.y_);
-	}*/
+	Point2 first_pos_m       = translator.Forward(first_thing->first);
+	Point2 second_thing_pos_m = translator.Forward(second_thing->first);
+	double a_sqr = pow((second_thing_pos_m.x() - first_pos_m.x()), 2);
+	double b_sqr = pow (second_thing_pos_m.y() - first_pos_m.y(), 2);
+	double sum_a_b = a_sqr + b_sqr;
+	bool is_snappable =  sum_a_b < MAX_DIST_M_SQ;
+	return is_snappable;
 }
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
@@ -2251,29 +2215,9 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	
 	Point2	loc;
 	p->GetLocation(gis_Geo, loc);
-	merge_class_map::iterator l = sinks->end();
-	for (merge_class_map::iterator itr = sinks->begin(); itr != sinks->end(); ++itr)
-	{
-		if (itr->first == loc)
-		{
-			l = itr;
-		}
-	}
-	
-	if(l == sinks->end())
-	{
-		sinks->push_back(make_pair(loc,make_pair(tag,t)));
-		return 1;
-	}
-	else
-	{
-		if(l->second.first == tag)
-		{
-			l->second.second = t;
-			return 1;
-		}
-		return 0;
-	}
+
+	sinks->push_back(make_pair(loc, make_pair(tag, t)));
+	return 1;
 }
 
 int	WED_CanMerge(IResolver * resolver)
@@ -2281,36 +2225,55 @@ int	WED_CanMerge(IResolver * resolver)
 	ISelection * sel = WED_GetSelect(resolver);
 	if(sel->GetSelectionCount() < 2)
 		return 0;		// can't merge 1 thing!
-	
-	return true;
 
+	//1. Ensure all of the selection is mergeable, collect
 	merge_class_map sinkmap;
 	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
 		return 0;
 	}
 
+	if (sinkmap.size() < 2)
+	{
+		return 1;
+	}
+
+	//2. Sort by location, a small optimization
 	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
 
-	bool has_overlap = false;
-	const char * has_loner = NULL;
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
+	//Find the bounds for the current airport
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	Bbox2 bb;
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	//Keeps track of which objects we've discovered we can snap (hopefully all)
+	set<merge_class_map::iterator> can_snap_objects;
+
+	//For each item in the sink map
+	for (merge_class_map::iterator thing_1_itr = sinkmap.begin(); thing_1_itr != sinkmap.end() - 1; ++thing_1_itr)
 	{
-		//if(m->second.second.size() == 1)
+		//For each item after that
+		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
 		{
-			if (has_loner == NULL)
-				has_loner = m->second.first;
-			else if (has_loner != m->second.first)
-				return 0;
-			else
-				has_overlap = true;
+			//If the two things are within snapping distance of each other, record so
+			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr, translator))
+			{
+				can_snap_objects.insert(thing_1_itr);
+				can_snap_objects.insert(merge_pair_itr);
+			}
 		}
 	}
-	
-	if(has_loner && has_overlap)
+
+	if (can_snap_objects.size() == sinkmap.size())
+	{
+		return 1;
+	}
+	else
+	{
 		return 0;
-	
-	return 1;
+	}
 }
 
 WED_Thing* take_things(const merge_class_map::value_type& value)
@@ -2325,7 +2288,7 @@ void WED_DoMerge(IResolver * resolver)
 	op->StartOperation("Merge Nodes");
 
 	DebugAssert(sel->GetSelectionCount() >= 2);
-	
+
 	merge_class_map sinkmap;
 	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
@@ -2333,7 +2296,7 @@ void WED_DoMerge(IResolver * resolver)
 		op->AbortOperation();
 		return;
 	}
-	
+
 	if (sinkmap.size() > 10000)
 	{
 		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
@@ -2344,31 +2307,25 @@ void WED_DoMerge(IResolver * resolver)
 		return;
 	}
 	
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
 	Bbox2 bb;
-	WED_Airport * apt = WED_GetCurrentAirport(resolver);
-
 	CoordTranslator2 translator;
 	apt->GetBounds(gis_Geo, bb);
 	CreateTranslatorForBounds(bb, translator);
 
 	merge_class_map::iterator start_thing = sinkmap.begin();
-	const int MAX_DIST_M_SQ = 1;
 	while (start_thing != sinkmap.end())
 	{
 		if(start_thing + 1 != sinkmap.end())
 		{
 			merge_class_map::iterator merge_pair = start_thing+1;
 
-			bool greater_than_max_distance = false;
 			while (merge_pair != sinkmap.end())
 			{
-				Point2 start_pos_m      = translator.Forward(start_thing->first);
-				Point2 merge_pair_pos_m = translator.Forward(merge_pair->first);
-				double a_sqr = pow((merge_pair_pos_m.x() - start_pos_m.x()), 2);
-				double b_sqr = pow (merge_pair_pos_m.y() - start_pos_m.y(), 2);
-				double sum_a_b = a_sqr + b_sqr;
-				greater_than_max_distance =  sum_a_b > MAX_DIST_M_SQ;
-				if (greater_than_max_distance == false)
+				const char * tag_1 = start_thing->second.first;
+				const char * tag_2 = merge_pair->second.first;
+
+				if (is_within_snapping_distance(start_thing, merge_pair, translator) && tag_1 == tag_2)
 				{
 					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
 					sub_list.push_back(start_thing->second.second);
@@ -2378,27 +2335,12 @@ void WED_DoMerge(IResolver * resolver)
 
 					//TODO is this needed?
 					run_merge(sub_list);
-					
-					 //start_thing + 1;
 				}
 				else
 				{
 					++merge_pair;
 				}
 			}
-			
-			/*
-			do
-			{
-
-
-				
-			}
-			while(greater_than_max_distance == false);
-
-			vector<WED_Thing*> sub_list = vector<WED_Thing*>(std::distance(start_thing, end_thing));
-			transform(start_thing, end_thing, sub_list.begin(), take_things);
-			start_thing->second.second = run_merge(sub_list);*/
 		}
 
 		++start_thing;
