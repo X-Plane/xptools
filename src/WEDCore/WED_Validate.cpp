@@ -39,6 +39,7 @@
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
+#include "WED_OverlayImage.h"
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
 #include "WED_TaxiRoute.h"
@@ -473,7 +474,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 	     (who->GetClass() == WED_ForestPlacement::sClass && dynamic_cast<WED_ForestPlacement*>(who)->GetFillMode() == dsf_fill_area) ||
          (who->GetClass() == WED_FacadePlacement::sClass && dynamic_cast<WED_FacadePlacement*>(who)->GetTopoMode() == WED_FacadePlacement::topo_Area) )
 */
-	if(who->GetGISClass() == gis_Polygon)
+	if(who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) // exempt RefImages, since WEDbing places them with CW nodes
     {        
 		IGISPointSequence * ips = who->GetOuterRing();
 		if (ips) 
@@ -494,7 +495,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 			if (!is_ccw_polygon_pt(seq.begin(), seq.end()))
 			{
 				string msg = "Polygon '" + string(who->HumanReadableType()) + "' is wound clock wise. Reverse selected polygon to fix this.";
-				msgs.push_back(validation_error_t(msg, 	err_gis_poly_clockwise, who, apt));
+				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who, apt));
 			}
 		}
 	}
@@ -1043,7 +1044,7 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 static void ValidateOneAirportBoundary(WED_AirportBoundary* bnd, validation_error_vector& msgs, WED_Airport * apt)
 {
 	if(WED_HasBezierPol(bnd))
-		msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_bez_curve_do_not_use_in_apt_boundaries, bnd,apt));
+		msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, bnd,apt));
 }
 
 static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt)

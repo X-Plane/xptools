@@ -187,13 +187,13 @@ void	WED_TaxiRoute::Import(const AptServiceRoadEdge_t& info, void (* print_func)
 	vehicle_class = atc_Vehicle_Ground_Trucks;
 }
 
-int	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const
+void	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const
 {
 	if(AllowTrucks())
 	{
 		info2.oneway = oneway.value;
 		this->GetName(info2.name);
-		return 1;
+		return;
 	}
 	else
 	{
@@ -232,7 +232,7 @@ int	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) con
 			info.hot_ils.insert(ENUM_Desc(*h));
 
 		info.oneway = oneway.value;
-		return 0;
+		return;
 	}
 }
 
