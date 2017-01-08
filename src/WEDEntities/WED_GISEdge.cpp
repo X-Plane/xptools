@@ -30,9 +30,7 @@ WED_GISEdge::WED_GISEdge(WED_Archive * parent, int id) : WED_Entity(parent, id),
 	ctrl_lat_lo(this,"control_latitude_lo" ,XML_Name("edge","ctrl_latitude_lo" ),0.0,13,9),
 	ctrl_lon_lo(this,"control_longitude_lo",XML_Name("edge","ctrl_longitude_lo"),0.0,14,9),
 	ctrl_lat_hi(this,"control_latitude_hi" ,XML_Name("edge","ctrl_latitude_hi" ),0.0,13,9),
-	ctrl_lon_hi(this,"control_longitude_hi",XML_Name("edge","ctrl_longitude_hi"),0.0,14,9),
-	is_split   (this,"Split"			   ,XML_Name("edge","split"			 ),0)
-	
+	ctrl_lon_hi(this,"control_longitude_hi",XML_Name("edge","ctrl_longitude_hi"),0.0,14,9)
 
 /*	mScL(this,"S (Ctrl Low)", "WED_texturenode_bezier","sc_lo", 0.0,5,4),
 	mTcL(this,"T (Ctrl Low)", "WED_texturenode_bezier","tc_lo", 0.0,5,4),

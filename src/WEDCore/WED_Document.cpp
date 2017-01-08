@@ -50,7 +50,10 @@
 #include "WED_LibraryMgr.h"
 #include "WED_ResourceMgr.h"
 #include "WED_GroupCommands.h"
+
+#if IBM
 #include "GUI_Unicode.h"
+#endif
 // TODO:
 // migrate all old stuff
 // wire dirty to obj persistence
@@ -176,11 +179,7 @@ void	WED_Document::Save(void)
 
 	string tempBakBak = bakXML;
 	tempBakBak = tempBakBak.insert((bakXML.length()-4),".bak");
-
-
-	string_utf16 wname;
-	string_utf_8_to_16(xml,wname);
-
+	
 	bool earth_wed_xml = FILE_exists(xml.c_str());
 	bool earth_wed_bak_xml = FILE_exists(bakXML.c_str());
 
@@ -218,17 +217,11 @@ void	WED_Document::Save(void)
 		break;
 	}
 	
-	//Create the file
-	#if IBM
 	//Create an xml file by opening the file located on the hard drive (windows)
 	//open a file for writing creating/nukeing if necissary
-		
-	//A File
-	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
-	#else
+
 	FILE * xml_file = fopen(xml.c_str(),"w");
-	#endif
-	
+
 	if(xml_file == NULL)
 	{
 		DoUserAlert("Please check file path for errors or missing parts");
@@ -389,7 +382,9 @@ bool	WED_Document::TryClose(void)
 		WriteIntPref("network/port", mServer->GetPort());
 	}
 #endif
-	AsyncDestroy();
+	AsyncDestroy();     // This prevents most class deconstructors from being executed.
+	
+	delete this;        // So we do that ... its needed by WED_ResourceMgr
 	return true;
 }
 
@@ -661,13 +656,8 @@ void WED_Document::Panic(void)
 	// we save the user's work.
 	string xml = mFilePath;
 	xml += ".crash.xml";
-#if IBM
-	string_utf16 wname;
-	string_utf_8_to_16(xml,wname);
-	FILE * xml_file = _wfopen((const wchar_t*) wname.c_str(),L"w");
-#else
+
 	FILE * xml_file = fopen(xml.c_str(),"w");
-#endif
 	if(xml_file)
 	{
 		WriteXML(xml_file);

@@ -63,7 +63,7 @@ public:
 	virtual		int				IterateSelectionAnd(int (* func)(ISelectable * who, void * ref), void * ref) const;
 
 	// WED_Persistent
-	virtual		void 			ReadFrom(IOReader * reader);
+	virtual		bool 			ReadFrom(IOReader * reader);
 	virtual		void 			WriteTo(IOWriter * writer);
 	virtual		void			AddExtraXML(WED_XMLElement * obj);
 	virtual void		StartElement(

@@ -281,6 +281,7 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.decimals = mDecimals;
 	info.round_down = false;
 	info.synthetic = 0;
+	info.units = " ";
 }
 
 void		WED_PropDoubleText::GetPropertyDict(PropertyDict_t& dict)
@@ -340,7 +341,8 @@ bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name
 void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
 {
 	WED_PropDoubleText::GetPropertyInfo(info);
-	info.round_down= true;
+	info.round_down = true;
+	info.units = "MHz";
 }
 
 int		WED_PropFrequencyText::GetAs10Khz(void) const
@@ -379,6 +381,12 @@ void		WED_PropDoubleTextMeters::SetProperty(const PropertyVal_t& val, WED_Proper
 	PropertyVal_t	ft_val(val);
 	if(gIsFeet)ft_val.double_val *= FT_TO_MTR;
 	WED_PropDoubleText::SetProperty(ft_val,parent);
+}
+
+void		WED_PropDoubleTextMeters::GetPropertyInfo(PropertyInfo_t& info)
+{
+	WED_PropDoubleText::GetPropertyInfo(info);
+	info.units = gIsFeet ? "ft" : "m";
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -695,7 +703,14 @@ void		WED_PropIntEnumSet::StartElement(
 	{
 		const XML_Char * v = get_att("value", atts);
 		if(!v) reader->FailWithError("no value");
-		else value.insert(ENUM_LookupDesc(domain,v));
+		else 
+		{ 
+			int i = ENUM_LookupDesc(domain,v);
+			// If asked to add enum of unknown name to set, just ignore it silently.
+			// If we were to add "-1" to the set instead, the set would become un-modifyable and 'save file' would bomb.
+			if (i >= 0)
+				value.insert(i);
+		}
 	}
 }
 void		WED_PropIntEnumSet::EndElement(void){ }

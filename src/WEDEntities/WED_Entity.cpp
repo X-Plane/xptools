@@ -40,7 +40,7 @@ WED_Entity::~WED_Entity()
 void WED_Entity::CopyFrom(const WED_Entity * rhs)
 {
 	WED_Thing::CopyFrom(rhs);
-	CacheInval(cache_All);
+	cache_valid_ &= ~cache_All;
 }
 
 int		WED_Entity::GetLocked(void) const
@@ -56,10 +56,15 @@ int		WED_Entity::GetHidden(void) const
 // Read from DB or undo mem - in both cases, mark our cache as invalid...the real core data has probably been
 // splatted.
 
-void 	WED_Entity::ReadFrom(IOReader * reader)
+bool 	WED_Entity::ReadFrom(IOReader * reader)
+{
+	WED_Thing::ReadFrom(reader);
+	return true;
+}
+
+void	WED_Entity::PostChangeNotify(void)
 {
 	CacheInval(cache_All);
-	WED_Thing::ReadFrom(reader);
 }
 
 void	WED_Entity::CacheInval(int flags)

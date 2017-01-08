@@ -47,15 +47,9 @@ using std::vector;
 class	WED_PropertyHelper;
 class	IOWriter;
 class	IOReader;
-// struct	sqlite3;
 class	WED_XMLElement;
 
-//typedef pair<string,string>				SQL_ColumnUpdate;
-//typedef vector<SQL_ColumnUpdate>		SQL_TableUpdate;
-//typedef map<string, SQL_TableUpdate>	SQL_Update;
-
 // We could have used type-def here, but this forces us to use the right type in the right place, for code clarity.  
-//struct SQL_Name : public pair<const char *, const char *> { SQL_Name(const char * a, const char * b) : pair<const char *, const char *>(a,b) { } };
 struct XML_Name : public pair<const char *, const char *> { XML_Name(const char * a, const char * b) : pair<const char *, const char *>(a,b) { } };
 
 class	WED_PropertyItem {
@@ -69,16 +63,12 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
 	virtual	void 		ReadFrom(IOReader * reader)=0;
 	virtual	void 		WriteTo(IOWriter * writer)=0;
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)=0;
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val)=0;
 	virtual	void		ToXML(WED_XMLElement * parent)=0;
-//	virtual	void		GetUpdate(SQL_Update& io_update)=0;
 
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
 	const char *			mTitle;
-//	SQL_Name				mSQLColumn;
 	XML_Name				mXMLColumn;
 	WED_PropertyHelper *	mParent;
 private:
@@ -105,8 +95,6 @@ public:
 	// Utility to help manage streaming
 			void 		ReadPropsFrom(IOReader * reader);
 			void 		WritePropsTo(IOWriter * writer);
-//			void		PropsFromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table);
 			void		PropsToXML(WED_XMLElement * parent);
 
 	virtual void		StartElement(
@@ -115,7 +103,6 @@ public:
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
-
 
 	// This is virtual so remappers like WED_Runway can "fix" the results
 	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
@@ -133,7 +120,6 @@ class	WED_PropIntText : public WED_PropertyItem {
 public:
 
 	int				value;
-
 	int				mDigits;
 
 	operator int&() { return value; }
@@ -149,11 +135,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
 
 };
 
@@ -176,12 +159,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // A double value edited as text.
@@ -206,12 +185,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 class	WED_PropFrequencyText : public WED_PropDoubleText {
@@ -237,6 +212,7 @@ public:
 
 	virtual void		GetProperty(PropertyVal_t& val) const;
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 };
 
 // A string, edited as text.
@@ -258,12 +234,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // A file path, saved as an STL string, edited by the file-open dialog box.
@@ -285,12 +257,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // An enumerated item.  Stored as an int, edited as a popup menu.  Property knows the "domain" the enum belongs to.
@@ -313,12 +281,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // A set of enumerated items.  Stored as an STL set of int values, edited as a multi-check popup.  We store the domain.
@@ -344,12 +308,9 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
 
 	virtual void		StartElement(
 								WED_XMLReader * reader,
@@ -385,11 +346,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
 
 };
 
@@ -414,12 +372,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // VIRTUAL ITEM: a UNION display.  Property helpers can contain "sub" property helpers.  For the WED hierarchy, each hierarchy item (WED_Thing) is a 
@@ -441,13 +395,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-//	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-//	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-//	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 #endif
-

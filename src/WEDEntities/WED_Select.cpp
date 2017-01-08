@@ -46,9 +46,9 @@ void WED_Select::CopyFrom(const WED_Select * rhs)
 	mSelected = rhs->mSelected;
 }
 
-void 			WED_Select::ReadFrom(IOReader * reader)
+bool 			WED_Select::ReadFrom(IOReader * reader)
 {
-	WED_Thing::ReadFrom(reader);
+	bool r = WED_Thing::ReadFrom(reader);
 	int n,id;
 	reader->ReadInt(n);
 	mSelected.clear();
@@ -57,7 +57,7 @@ void 			WED_Select::ReadFrom(IOReader * reader)
 		reader->ReadInt(id);
 		mSelected.insert(id);
 	}
-
+	return r;
 }
 
 void 			WED_Select::WriteTo(IOWriter * writer)

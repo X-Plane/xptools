@@ -103,10 +103,11 @@ public:
 			void				SetName(const string& name);
 
 	// WED_Persistent
-	virtual	void 			ReadFrom(IOReader * reader);
+	virtual	bool 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
-	virtual	void			ToXML(WED_XMLElement * parent);	
+	virtual	void			ToXML(WED_XMLElement * parent);
 	virtual	void			FromXML(WED_XMLReader * reader, const XML_Char ** atts);
+	virtual	void			PostChangeNotify(void);
 	virtual	void			Validate(void);
 
 	// This is a template method - sub-classes of things that have to add MORE XML than they would get via the property system and the thing

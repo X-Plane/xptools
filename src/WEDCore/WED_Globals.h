@@ -23,7 +23,8 @@
 #ifndef WED_GLOBALS_H
 #define WED_GLOBALS_H
 
-#if DEV
+#if DEV || DEBUG_VIS_LINES
+
 #include "CompGeomDefs2.h"
 #include "CompGeomDefs3.h"
 
@@ -49,7 +50,9 @@ enum WED_Export_Target {
 		wet_xplane_1000,	// X-Plane 10-compatible DSFs - includes, ATC, etc.
 		wet_xplane_1021,	// Adds out-of-DSF overlays
 		wet_xplane_1050,	// Adds next-gen apt.dat stuff
-		wet_gateway			// Latest format but with strict checking for gateway.
+		wet_xplane_1100,	// Adds new curved taxiways and other ground ops stuff
+		wet_gateway,		// Latest format but with strict checking for gateway.
+		wet_latest_xplane = wet_xplane_1050,	// meta-token for whatever the very newest x-plane export is
 };
 
 /* What target output format does WED want? */

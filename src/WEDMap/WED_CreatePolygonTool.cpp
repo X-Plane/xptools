@@ -26,6 +26,7 @@
 #include "WED_Taxiway.h"
 #include "IResolver.h"
 #include "GISUtils.h"
+#include "WED_GISUtils.h"
 #include "ISelection.h"
 #include "WED_AirportNode.h"
 #include "WED_FacadeNode.h"
@@ -90,7 +91,7 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mDensity(tool  == create_Forest ? this : NULL, "Density", XML_Name("",""), 1.0, 3, 2),
 		mSpacing(tool  == create_String ? this : NULL, "Spacing", XML_Name("",""), 5.0, 3, 1),
 		
-		mUVMap(tool    == create_Polygon ? this : NULL, "Use Texture Map", XML_Name("",""), 0)
+		mUVMap(tool == create_Polygon ? this : NULL, "Use Texture Map - Orthophoto", XML_Name("",""), 0)
 {
 	mPavement.value = surf_Concrete;
 }
@@ -124,22 +125,9 @@ void	WED_CreatePolygonTool::AcceptPath(
 	int is_bezier = mType != create_Forest && mType != create_Boundary;
 	int is_apt = mType <= create_Hole;
 	int is_poly = mType != create_Hole && mType != create_String && mType != create_Line;
-	int is_texed = 0;
+	int is_texed = mType == create_Polygon ? mUVMap.value : 0;
 	int is_forest = mType == create_Forest;
 	int is_facade = mType == create_Facade;
-	
-	if(mType == create_Polygon)
-	{
-		is_texed = mUVMap.value;
-		/*
-		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-		pol_info_t i;
-		if(rmgr->GetPol(mResource.value, i))
-		{
-			is_texed = !i.wrap;
-		}
-		*/
-	}
 	
 	if(mType == create_Hole)
 	{
@@ -168,6 +156,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	bool is_ccw = (mType == create_Marks || mType == create_String || mType == create_Line) ? true : is_ccw_polygon_pt(pts.begin(), pts.end());
 	if (mType == create_Hole) is_ccw = !is_ccw;
+
+	WED_DrapedOrthophoto * dpol = NULL;
 
 	switch(mType) {
 	case create_Taxi:
@@ -216,7 +206,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 	case create_Hole:
 		{
 			outer_ring->SetParent(host, host->CountChildren());
-			sprintf(buf,"Linear Feature %d",n);
+			sprintf(buf,"Hole %d", n);
 			outer_ring->SetName(buf);
 
 			if (mType != create_Hole)
@@ -279,15 +269,16 @@ void	WED_CreatePolygonTool::AcceptPath(
 	case create_Polygon:
 		if(is_texed)
 		{
-			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
+			dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
 			outer_ring->SetParent(dpol,0);
 			dpol->SetParent(host,idx);
 			sprintf(buf,"Orthophoto %d",n);
 			dpol->SetName(stripped_resource(mResource.value));
-			sprintf(buf,"Polygon %d outer ring",n);
+			sprintf(buf,"Orthophoto %d Outer Ring",n);
 			outer_ring->SetName(buf);
 			sel->Select(dpol);
 			dpol->SetResource(mResource.value);
+			dpol->SetHeading(mHeading.value);
 		}
 		else
 		{
@@ -296,7 +287,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			pol->SetParent(host,idx);
 			sprintf(buf,"Polygon %d",n);
 			pol->SetName(stripped_resource(mResource.value));
-			sprintf(buf,"Polygon %d outer ring",n);
+			sprintf(buf,"Polygon %d Outer Ring",n);
 			outer_ring->SetName(buf);
 			sel->Select(pol);
 			pol->SetResource(mResource.value);
@@ -307,36 +298,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 
 	if(apt_ring)
 		apt_ring->SetClosed(closed);
-
-	double	lonmax=-9.9e9;
-	double	latmax=-9.9e9;
-	double	lonmin= 9.9e9;
-	double	latmin= 9.9e9;
-	bool	has_any_dirs = false;
-	for(int n = 0; n < pts.size(); ++n)
-	{
-		lonmax=max(lonmax,pts[n].x());
-		lonmin=min(lonmin,pts[n].x());
-		latmax=max(latmax,pts[n].y());
-		latmin=min(latmin,pts[n].y());
-		if(has_dirs[n])
-		{
-			has_any_dirs=true;
-
-			lonmax=max(lonmax,dirs_hi[n].x());
-			lonmin=min(lonmin,dirs_hi[n].x());
-			latmax=max(latmax,dirs_hi[n].y());
-			latmin=min(latmin,dirs_hi[n].y());
-
-			lonmax=max(lonmax,dirs_lo[n].x());
-			lonmin=min(lonmin,dirs_lo[n].x());
-			latmax=max(latmax,dirs_lo[n].y());
-			latmin=min(latmin,dirs_lo[n].y());
-		}
-	}
-
-	const float hard_coded_s[4] = { 0.0, 1.0, 1.0, 0.0 };
-	const float hard_coded_t[4] = { 0.0, 0.0, 1.0, 1.0 };
 
 	for(int n = 0; n < pts.size(); ++n)
 	{
@@ -356,25 +317,12 @@ void	WED_CreatePolygonTool::AcceptPath(
 		else								node = WED_SimpleBoundaryNode::CreateTyped(GetArchive());
 
 		node->SetLocation(gis_Geo,pts[idx]);
-		Point2 st(			interp(lonmin,0.0,lonmax,1.0,pts[idx].x()),
-							interp(latmin,0.0,latmax,1.0,pts[idx].y()));
-		if(pts.size() == 4 && !has_any_dirs)	{st.x_ = hard_coded_s[n];
-												 st.y_ = hard_coded_t[n];}
-							
-		if(tnode)			tnode->SetLocation(gis_UV,st);
-		if(tbnode)			tbnode->SetLocation(gis_UV,st);
-
 		if(bnode)
 		{
 			if (!has_dirs[idx])
 			{
 				bnode->DeleteHandleHi();
 				bnode->DeleteHandleLo();
-				if(tbnode)
-				{
-					tbnode->SetControlHandleLo(gis_UV,st);
-					tbnode->SetControlHandleHi(gis_UV,st);
-				}
 			}
 			else
 			{
@@ -383,27 +331,9 @@ void	WED_CreatePolygonTool::AcceptPath(
 				{
 					bnode->SetControlHandleHi(gis_Geo,dirs_hi[idx]);
 					bnode->SetControlHandleLo(gis_Geo,dirs_lo[idx]);
-					if(tbnode)
-					{
-						tbnode->SetControlHandleHi(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
-						tbnode->SetControlHandleLo(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
-					}
 				} else {
 					bnode->SetControlHandleHi(gis_Geo,dirs_lo[idx]);
 					bnode->SetControlHandleLo(gis_Geo,dirs_hi[idx]);
-					if(tbnode)
-					{
-						tbnode->SetControlHandleHi(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_lo[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_lo[idx].y())));
-						tbnode->SetControlHandleLo(gis_UV,Point2(
-							interp(lonmin,0.0,lonmax,1.0,dirs_hi[idx].x()),
-							interp(latmin,0.0,latmax,1.0,dirs_hi[idx].y())));
-					}
 				}
 			}
 		}
@@ -414,8 +344,21 @@ void	WED_CreatePolygonTool::AcceptPath(
 		node->SetName(buf);
 	}
 
-	GetArchive()->CommitCommand();
+	if (mType == create_Polygon && is_texed) 	// orthophoto's need the UV map set up
+	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
+		pol_info_t info;
 
+		if(rmgr->GetPol(mResource.value, info))
+			if (!info.mUVBox.is_null())
+				dpol->SetSubTexture(info.mUVBox);
+
+		dpol->Redrape();
+	}
+	else if (mType == create_Hole && host->GetClass() == WED_DrapedOrthophoto::sClass)   // holes in orthos also need UV map set
+		dynamic_cast <WED_DrapedOrthophoto *> (host)->Redrape();
+ 
+	GetArchive()->CommitCommand();
 }
 
 const char *	WED_CreatePolygonTool::GetStatusText(void)
@@ -460,6 +403,12 @@ WED_Thing *		WED_CreatePolygonTool::GetHost(int& idx)
 void		WED_CreatePolygonTool::SetResource(const string& r)
 {
 	mResource.value = r;
+
+	// Preset polygon / orthophoto flag when selecting resource. Still allows user overriding it in vertex tool.
+	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
+	pol_info_t i;
+	if(rmgr->GetPol(mResource.value, i))
+		mUVMap.value = !i.wrap;
 }
 
 void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const

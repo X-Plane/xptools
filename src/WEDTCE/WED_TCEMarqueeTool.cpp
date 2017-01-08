@@ -32,6 +32,9 @@
 #include "WED_Thing.h"
 #include "WED_Entity.h"
 #include "IGIS.h"
+#include "WED_Ring.h"
+#include "WED_DrapedOrthophoto.h"
+#include "WED_ResourceMgr.h"
 
 
 //	HANDLES			LINKS
@@ -91,6 +94,7 @@ WED_TCEMarqueeTool::WED_TCEMarqueeTool(
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver) :
 				WED_HandleToolBase(tool_name, host, zoomer, resolver),
+				mSnap(this,"Click selects Subtexture", XML_Name("",""), true),
 				mCacheKeyArchive(-1),
 				mEditMode(tmm_None)
 {
@@ -107,7 +111,7 @@ void	WED_TCEMarqueeTool::BeginEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->StartOperation("Marquee Drag");
+	op->StartOperation("UVbounds Modification");
 	mEditMode=tmm_None;
 }
 
@@ -244,8 +248,12 @@ int		WED_TCEMarqueeTool::GetNthLinkTargetCtl(intptr_t id, int n) const
 
 bool	WED_TCEMarqueeTool::PointOnStructure(intptr_t id, const Point2& p) const
 {
-	if (!GetTotalBounds()) return false;
-	return mCacheBounds.contains(p);
+	if (!GetTotalBounds()) 
+		return false;
+	if (mSnap)
+		return true;  // we care about clicking anywhere in the TCE windows
+	else
+		return mCacheBounds.contains(p);
 }
 
 void	WED_TCEMarqueeTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point2& io_pt)
@@ -254,10 +262,67 @@ void	WED_TCEMarqueeTool::ControlsMoveBy(intptr_t id, const Vector2& delta, Point
 	if (!GetTotalBounds()) return;
 	
 	mEditMode = tmm_Drag;
+	
+	if (mSnap)
+	{
+		// find texture who's UVmap we modify here
+		ISelection * sel = WED_GetSelect(GetResolver());
+		DebugAssert(sel != NULL);
+		WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto,sel->GetNthSelection(0));
+		DebugAssert(ortho != NULL);
+		
+		WED_ResourceMgr * mResMgr = WED_GetResourceMgr(GetResolver());
+		string mRes; ortho->GetResource(mRes);
 
-	new_b = mCacheBounds;
-	new_b.p1 += delta;
-	new_b.p2 += delta;
+		pol_info_t pol;
+		mResMgr->GetPol(mRes,pol);
+		
+		io_pt +=delta;
+		
+		// find where we clicked
+		if (pol.mSubBoxes.size())
+		{
+			// go through list of subtexture boxes and find if we clicked inside one
+			static int lastBox = -1;                // the box we clicked on the last time. Helps to cycle trough overlapping boxes
+			int        firstBox = 999;              // the first box that fits this click location
+			int n;
+			for (n=0; n < pol.mSubBoxes.size(); ++n)
+			{
+				if (pol.mSubBoxes[n].contains(io_pt))
+				{
+					if (n < firstBox) firstBox = n; // memorize the first of all boxes that fits the click
+					if (n > lastBox)                // is it a new-to-us box ?
+					{
+						new_b = pol.mSubBoxes[n];
+						lastBox = n;
+						break;
+					}
+				}
+			}
+
+			if (n >= pol.mSubBoxes.size())         // apparently there is no new-to-us box here
+			{
+				if (firstBox < 999)
+				{
+					new_b = pol.mSubBoxes[firstBox];    // so we go with the first best box we found
+					lastBox = firstBox;
+				}
+				else
+				{
+					new_b = Bbox2(0,0,1,1);   // there is no box where we clicked -> select whole texture
+					lastBox = -1;
+				}
+			}
+		}
+		else
+			new_b = Bbox2();                 // there are no subboxes defined at all
+	}
+	else
+	{
+		new_b = mCacheBounds;
+		new_b.p1 += delta;
+		new_b.p2 += delta;
+	}
 	ApplyRescale(mCacheBounds,new_b);
 }
 
@@ -459,6 +524,10 @@ void	WED_TCEMarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_
 		{
 			ent->Rescale(gis_UV,old_bounds,new_bounds);
 		}
+		// now that we used TCE to modify the UVmaping, update UVbounds to allow continued use of automatic redraping
+		WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto, went);
+		if (ortho)
+			ortho->SetSubTexture(new_bounds);
 	}
 
 }

@@ -58,6 +58,10 @@ public:
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+	
+	virtual	int			GetCursor(int x, int y) { 
+							return 	gui_Cursor_Arrow;  // prevents cursor being affected by elements in underlyig windows
+							}
 
 	virtual	void		TimerFired(void);
 			bool		SetSignText(const string& outDesc);

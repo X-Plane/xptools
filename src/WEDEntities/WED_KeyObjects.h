@@ -44,10 +44,8 @@ public:
 	virtual	IBase *			Directory_Find(const char * name);
 	virtual	void			Directory_Edit(const char * name, IBase * who);
 
-	virtual	void 			ReadFrom(IOReader * reader);
+	virtual	bool 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
-//	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
-//	virtual void			ToDB(sqlite3 * db);
 	virtual	void			AddExtraXML(WED_XMLElement * obj);
 	virtual void		StartElement(
 								WED_XMLReader * reader,

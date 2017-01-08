@@ -22,6 +22,10 @@
  */
 
 #include "GUI_Application.h"
+#if IBM
+#include "GUI_Unicode.h"
+#endif
+
 #include "AssertUtils.h"
 #include "GUI_Menus.h"
 #include "XWin.h"
@@ -337,18 +341,18 @@ GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t 
 
 	if (parent)
 	{
-		MENUITEMINFO	mif = { 0 };
+		MENUITEMINFOA	mif = { 0 };
 		mif.cbSize = sizeof(mif);
 		mif.hSubMenu = (HMENU) new_menu;
 		mif.fType = MFT_STRING;
-		mif.dwTypeData = const_cast<char *>(inTitle);
+		mif.dwTypeData = const_cast<char*>(inTitle);
 		mif.fMask = (parent == GetPopupContainer()) ? MIIM_TYPE : (MIIM_TYPE | MIIM_SUBMENU);
 
 		if (parent == GetMenuBar())
 		{
-			InsertMenuItem((HMENU) parent, -1, true, &mif);
+			InsertMenuItemA((HMENU) parent, -1, true, &mif);
 		} else {
-			SetMenuItemInfo((HMENU) parent, parentItem, true, &mif);
+			SetMenuItemInfoA((HMENU) parent, parentItem, true, &mif);
 		}
 	}
 #endif
@@ -444,7 +448,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 				RegisterAccel(accel);
 			}
 
-			MENUITEMINFO mif = { 0 };
+			MENUITEMINFOA mif = { 0 };
 			mif.cbSize = sizeof(mif);
 			mif.fMask = MIIM_TYPE | MIIM_ID | MIIM_STATE;
 			mif.fType = (itemname=="-") ? MFT_SEPARATOR : MFT_STRING;
@@ -454,7 +458,7 @@ void	GUI_Application::RebuildMenu(GUI_Menu new_menu, const GUI_MenuItem_t	items[
 			mif.wID = items[n].cmd;
 			mif.dwItemData = items[n].cmd;
 			mif.dwTypeData = const_cast<char*>(itemname.c_str());
-			int err = InsertMenuItem((HMENU) new_menu, -1, true, &mif);
+			int err = InsertMenuItemA((HMENU) new_menu, -1, true, &mif);
 
 			++n;
 		}

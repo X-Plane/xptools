@@ -13,7 +13,7 @@
 #include "WED_ToolUtils.h"
 #include "WED_OverlayImage.h"
 #include "WED_Ring.h"
-#include "WED_TextureNode.h"
+#include "WED_TextureBezierNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ResourceMgr.h"
 #include "PlatformUtils.h"
@@ -165,6 +165,19 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			
 			int has_geo = 0;
 			
+			string base_tex = path;
+			int pp = base_tex.find_last_of("/:\\");
+			if(pp != base_tex.npos)
+				base_tex.erase(0,pp+1);
+			if (base_tex.find(" ") != base_tex.npos)
+			{
+				DoUserAlert("XP does not support spaces in texture names.");
+				wrl->AbortOperation();
+				free(free_me);
+				return;
+			}
+			
+			
 			ImageInfo	inf;
 			int res = MakeSupportedType(path, &inf);
 			if(res != 0)
@@ -172,7 +185,7 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 				DoUserAlert("Unable to open image file.");
 				wrl->AbortOperation();
 				free(free_me);
-				return;//No good images or a broken file path
+				return;  //No good images or a broken file path
 			}
 
 			switch(GetSupportedType(path))
@@ -181,14 +194,14 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			case WED_JP2K:
 				if(FetchTIFFCornersWithJP2K(path,c,align))
 				{
-					coords[3].x_ = c[0];
-					coords[3].y_ = c[1];
-					coords[0].x_ = c[2];
-					coords[0].y_ = c[3];
-					coords[2].x_ = c[4];
-					coords[2].y_ = c[5];
-					coords[1].x_ = c[6];
-					coords[1].y_ = c[7];
+					coords[0].x_ = c[0];
+					coords[0].y_ = c[1];
+					coords[1].x_ = c[2];
+					coords[1].y_ = c[3];
+					coords[3].x_ = c[4];
+					coords[3].y_ = c[5];
+					coords[2].x_ = c[6];
+					coords[2].y_ = c[7];
 					has_geo = 1;
 				}
 				break;
@@ -196,15 +209,15 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			case WED_TIF:
 				if (FetchTIFFCorners(path, c, align))
 				{
-					// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-					coords[3].x_ = c[0];
-					coords[3].y_ = c[1];
-					coords[0].x_ = c[2];
-					coords[0].y_ = c[3];
-					coords[2].x_ = c[4];
-					coords[2].y_ = c[5];
-					coords[1].x_ = c[6];
-					coords[1].y_ = c[7];
+					// SW, SE, NW, NE from tiff, but SW SE NE NW internally
+					coords[0].x_ = c[0];
+					coords[0].y_ = c[1];
+					coords[1].x_ = c[2];
+					coords[1].y_ = c[3];
+					coords[3].x_ = c[4];
+					coords[3].y_ = c[5];
+					coords[2].x_ = c[6];
+					coords[2].y_ = c[7];
 					has_geo = 1;
 				}
 				break;
@@ -226,10 +239,10 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 				if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
 				else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
 
-				coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-				coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+				coords[2] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+				coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
 			}
 				
 			DestroyBitmap(&inf);
@@ -237,35 +250,26 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
 
 			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-				
-			p4->SetParent(rng,0);
-			p3->SetParent(rng,1);
-			p2->SetParent(rng,2);
-			p1->SetParent(rng,3);
-				
+			WED_TextureBezierNode * tbn[4];     // Use Bezier, so nodes can be concerted to Bezier if users wnats too
+			for (int i=0; i<4; ++i)
+			{
+				tbn[i] = WED_TextureBezierNode::CreateTyped(wrl->GetArchive());
+				tbn[i]->SetParent(rng,i);
+				tbn[i]->SetLocation(gis_Geo,coords[i]);
+				char s[10]; sprintf(s,"Corner %d",i+1);
+				tbn[i]->SetName(s);
+				// tbn[i]->SetLocation(gis_UV,Point2(i<2,i==1||i==2));  Redrape() will do that for you
+			}
+			
 			rng->SetParent(dpol,0);
 			dpol->SetParent(wrl,0);
 			sel->Select(dpol);
-
-			p1->SetLocation(gis_Geo,coords[3]);
-			p2->SetLocation(gis_Geo,coords[2]);
-			p3->SetLocation(gis_Geo,coords[1]);
-			p4->SetLocation(gis_Geo,coords[0]);
-
 
 			string img_path(path);
 			WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
 
 			dpol->SetResource(img_path);
 
-			p4->SetName("Corner 1");
-			p3->SetName("Corner 2");
-			p2->SetName("Corner 3");
-			p1->SetName("Corner 4");
 			rng->SetName("Image Boundary");
 			const char * p = path;
 			const char * n = path;
@@ -273,11 +277,6 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 				
 			dpol->SetName(n);
 
-			p1->SetLocation(gis_UV,Point2(0,0));
-			p2->SetLocation(gis_UV,Point2(0,1));
-			p3->SetLocation(gis_UV,Point2(1,1));
-			p4->SetLocation(gis_UV,Point2(1,0));
-			
 			path = path + strlen(path) + 1;
 		}
 

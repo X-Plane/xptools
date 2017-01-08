@@ -52,7 +52,20 @@
 #include "STLUtils.h"
 #include "WED_AptIE.h"
 #include "WED_Airport.h"
+#include "WED_RoadNode.h"
+#include "WED_RoadEdge.h"
 #include "WED_MetadataUpdate.h"
+
+#include <sstream>
+
+#define NO_FOR 0
+#define NO_FAC 0
+#define NO_LIN 0
+#define NO_STR 0
+#define NO_POL 0
+#define NO_OBJ 0
+#define NO_NET !ROAD_EDITING
+#define NO_EXC 0
 
 static void debug_it(const vector<BezierPoint2>& pts)
 {
@@ -87,7 +100,8 @@ enum dsf_import_category {
 	dsf_cat_lines,
 	dsf_cat_strings,
 	dsf_cat_orthophoto,
-	dsf_cat_draped_poly,	
+	dsf_cat_draped_poly,
+	dsf_cat_roads,
 	dsf_cat_DIM
 };
 
@@ -99,7 +113,8 @@ static const char * k_dsf_cat_names[dsf_cat_DIM] = {
 	"Lines",
 	"Strings",
 	"Orthophotos",
-	"Draped Polygons"
+	"Draped Polygons",
+	"Roads"
 };
 
 class	DSF_Importer {
@@ -118,6 +133,7 @@ public:
 
 	vector<string>		obj_table;
 	vector<string>		pol_table;
+	vector<string>		net_table;
 
 	WED_Thing *			master_parent;
 	WED_Thing *			bucket_parents[dsf_cat_DIM];
@@ -140,6 +156,15 @@ public:
 		}
 		return bucket_parents[cat];
 	}
+
+	vector<pair<Point2, int> >	accum_road;
+	pair<int, int>		accum_road_type;
+
+#if !NO_NET
+	typedef map<pair<int, int>, WED_RoadNode *> road_node_map_t;
+	road_node_map_t road_nodes;
+	WED_RoadNode *		road_start;
+#endif
 
 	int GetShowForFacID(int id)
 	{
@@ -235,6 +260,8 @@ public:
 
 	static int	AcceptNetworkDef(const char * inPartialPath, void * inRef)
 	{
+		DSF_Importer * me = (DSF_Importer *) inRef;
+		me->net_table.push_back(inPartialPath);
 		return 1;
 	}
 	
@@ -247,6 +274,7 @@ public:
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
 
+#if !NO_EXC
 		if(strcmp(inProp, "sim/exclude_obj") == 0)	me->make_exclusion(inValue, exclude_Obj);
 		if(strcmp(inProp, "sim/exclude_fac") == 0)	me->make_exclusion(inValue, exclude_Fac);
 		if(strcmp(inProp, "sim/exclude_for") == 0)	me->make_exclusion(inValue, exclude_For);
@@ -255,6 +283,7 @@ public:
 		if(strcmp(inProp, "sim/exclude_lin") == 0)	me->make_exclusion(inValue, exclude_Lin);
 		if(strcmp(inProp, "sim/exclude_pol") == 0)	me->make_exclusion(inValue, exclude_Pol);
 		if(strcmp(inProp, "sim/exclude_str") == 0)	me->make_exclusion(inValue, exclude_Str);
+#endif
 		
 		if(strcmp(inProp, "sim/require_object") == 0)	me->handle_req_obj(inValue);
 		if(strcmp(inProp, "sim/require_agpoint") == 0)	me->handle_req_agp(inValue);
@@ -299,6 +328,7 @@ public:
 					int				inCoordDepth,
 					void *			inRef)
 	{
+#if !NO_OBJ
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		WED_ObjPlacement * obj = WED_ObjPlacement::CreateTyped(me->archive);
 		obj->SetResource(me->obj_table[inObjectType]);
@@ -307,12 +337,13 @@ public:
 		if(inCoordDepth == 4)
 			obj->SetCustomMSL(inCoordinates[3]);
 		else
-		obj->SetDefaultMSL();
-			#endif
+			obj->SetDefaultMSL();
+		#endif
 		obj->SetHeading(inCoordinates[2]);
 		obj->SetName(me->obj_table[inObjectType]);
 		obj->SetParent(me->get_cat_parent(dsf_cat_objects),me->get_cat_parent(dsf_cat_objects)->CountChildren());
 		obj->SetShowLevel(me->GetShowForObjID(inObjectType));
+#endif
 	}
 	static void	BeginSegment(
 					unsigned int	inNetworkType,
@@ -321,6 +352,29 @@ public:
 					bool			inCurved,
 					void *			inRef)
 	{
+#if !NO_NET
+		DSF_Importer * me = (DSF_Importer *) inRef;
+		DebugAssert(me->accum_road.empty());
+		unsigned int inStartNodeID = (unsigned int) inCoordinates[3];
+		
+		road_node_map_t::iterator rn = me->road_nodes.find(make_pair(inNetworkType, inStartNodeID));
+		if(rn == me->road_nodes.end())
+		{
+			WED_RoadNode * start_node = WED_RoadNode::CreateTyped(me->archive);
+			start_node->SetParent(me->get_cat_parent(dsf_cat_roads),me->get_cat_parent(dsf_cat_roads)->CountChildren());
+			stringstream ss;
+			ss << inStartNodeID;
+			start_node->SetLocation(gis_Geo, Point2(inCoordinates[0], inCoordinates[1]));
+			start_node->SetName(ss.str());
+			me->road_nodes[make_pair(inNetworkType, inStartNodeID)] = start_node;
+			me->road_start = start_node;
+		}
+		else
+			me->road_start = rn->second;
+		
+		me->accum_road_type = make_pair(inNetworkType, inNetworkSubtype);
+		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
+#endif
 	}
 
 	static void	AddSegmentShapePoint(
@@ -328,6 +382,10 @@ public:
 					bool			inCurved,
 					void *			inRef)
 	{
+#if !NO_NET
+		DSF_Importer * me = (DSF_Importer *) inRef;
+		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
+#endif
 	}
 
 	static void	EndSegment(
@@ -335,6 +393,103 @@ public:
 					bool			inCurved,
 					void *			inRef)
 	{
+#if !NO_NET
+		DSF_Importer * me = (DSF_Importer *) inRef;
+		
+		unsigned int inEndNodeID = inCoordinates[3];
+		
+		road_node_map_t::iterator rn = me->road_nodes.find(make_pair(me->accum_road_type.first, inEndNodeID));
+		WED_RoadNode * road_end;
+		if(rn == me->road_nodes.end())
+		{
+			WED_RoadNode * end_node = WED_RoadNode::CreateTyped(me->archive);
+			end_node->SetParent(me->get_cat_parent(dsf_cat_roads),me->get_cat_parent(dsf_cat_roads)->CountChildren());
+			stringstream ss;
+			ss << inEndNodeID;
+			end_node->SetLocation(gis_Geo, Point2(inCoordinates[0], inCoordinates[1]));
+			end_node->SetName(ss.str());
+			me->road_nodes[make_pair(me->accum_road_type.first, inEndNodeID)] = end_node;
+			road_end = end_node;
+		}
+		else
+			road_end = rn->second;
+
+		me->accum_road.push_back(make_pair(Point2(inCoordinates[0], inCoordinates[1]), int(inCoordinates[2])));
+
+		DebugAssert(me->accum_road.size() > 1);
+		
+		int start_level = me->accum_road[0].second;
+		int end_level = inCoordinates[2];
+		me->accum_road.front().second = 0;
+		me->accum_road.back().second = 0;
+		
+		int last = me->accum_road.size()-1;
+		int s = 0;
+		WED_RoadNode * last_node = me->road_start;
+		while(s < last)
+		{
+			int n = s+1;
+			while(n < me->accum_road.size() && me->accum_road[n].second == 1)
+				++n;
+			DebugAssert(n <= last);
+			int span = n - s;
+			DebugAssert(span > 0);
+			DebugAssert(span < 4);
+			WED_RoadEdge * edge = WED_RoadEdge::CreateTyped(me->archive);
+			edge->SetParent(me->get_cat_parent(dsf_cat_roads), me->get_cat_parent(dsf_cat_roads)->CountChildren());
+			edge->SetResource(me->net_table[me->accum_road_type.first]);
+			edge->SetSubtype(me->accum_road_type.second);
+			edge->SetStartLayer(start_level);
+			edge->SetEndLayer(end_level);
+			edge->AddSource(last_node, 0);
+			if(n == last)
+			{
+				edge->AddSource(road_end, 1);
+			}
+			else
+			{
+				WED_RoadNode * shape = WED_RoadNode::CreateTyped(me->archive);
+				shape->SetName("shape point");
+				shape->SetLocation(gis_Geo, me->accum_road[n].first);
+				shape->SetParent(me->get_cat_parent(dsf_cat_roads), me->get_cat_parent(dsf_cat_roads)->CountChildren());
+				edge->AddSource(shape, 1);
+				last_node = shape;
+			}
+			
+			if(span == 1)
+			{
+				Segment2 path(me->accum_road[s].first, me->accum_road[n].first);
+				edge->SetSide(gis_Geo, path);
+			}
+			else if(span == 2)
+			{
+				Point2 p1 = me->accum_road[s].first;
+				Point2 p2 = me->accum_road[s+2].first;
+				Point2	c = me->accum_road[s+1].first;
+				
+				Point2 c1 = Point2(
+								p1.x() + (c.x() - p1.x()) * 2.0 / 3.0,
+								p1.y() + (c.y() - p1.y()) * 2.0 / 3.0);
+				Point2 c2 = Point2(
+								p2.x() + (c.x() - p2.x()) * 2.0 / 3.0,
+								p2.y() + (c.y() - p2.y()) * 2.0 / 3.0);
+				
+				Bezier2 path(p1,c1,c2,p2);
+				edge->SetSideBezier(gis_Geo, path);
+			}
+			else if(span == 3)
+			{
+				Bezier2 path(me->accum_road[s].first,
+							me->accum_road[s+1].first,
+							me->accum_road[s+2].first,
+							me->accum_road[s+3].first);
+				edge->SetSideBezier(gis_Geo, path);
+			}
+			s = n;
+		}
+		
+		me->accum_road.clear();
+#endif
 	}
 
 	static void	BeginPolygon(
@@ -346,7 +501,12 @@ public:
 		DSF_Importer * me = (DSF_Importer *) inRef;
 		string r  = me->pol_table[inPolygonType];
 		
+		me->poly = NULL;
+		me->ring = NULL;
+
 		dsf_import_category cat = dsf_cat_objects;
+		
+#if !NO_FAC
 		
 		if(end_match(r.c_str(),".fac"))
 		{
@@ -365,7 +525,9 @@ public:
 			fac->SetShowLevel(me->GetShowForFacID(inPolygonType));
 			cat = dsf_cat_facades;
 		}
+#endif
 
+#if !NO_FOR
 		if(end_match(r.c_str(),".for"))
 		{
 			me->want_uv=false;
@@ -381,7 +543,9 @@ public:
 			forst->SetResource(r);
 			cat = dsf_cat_forests;
 		}
+#endif
 
+#if !NO_LIN
 		if(end_match(r.c_str(),".lin"))
 		{
 			me->want_uv=false;
@@ -394,7 +558,9 @@ public:
 			lin->SetResource(r);
 			cat = dsf_cat_lines;
 		}
+#endif
 
+#if !NO_STR
 		if(end_match(r.c_str(),".str") || end_match(r.c_str(),".ags"))
 		{
 			me->want_uv=false;
@@ -407,7 +573,9 @@ public:
 			str->SetResource(r);
 			cat = dsf_cat_strings;
 		}
+#endif
 
+#if !NO_POL
 		if(end_match(r.c_str(),".pol") || end_match(r.c_str(),".agb"))
 		{
 			me->want_uv=inParam == 65535;
@@ -430,6 +598,7 @@ public:
 			}
 			me->ring = NULL;
 		}
+#endif
 
 		if(me->poly)
 		{
@@ -544,6 +713,9 @@ public:
 					void *			inRef)
 	{
 		DSF_Importer * me = (DSF_Importer *) inRef;
+		
+		if(me->ring == NULL)
+			return;
 		
 		if(me->want_bezier)
 		{

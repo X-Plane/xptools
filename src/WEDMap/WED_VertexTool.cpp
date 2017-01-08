@@ -35,6 +35,7 @@
 #include "WED_ExclusionZone.h"
 #include "WED_Taxiway.h"
 #include "WED_PolygonPlacement.h"
+#include "WED_DrapedOrthophoto.h"
 #include "WED_Runway.h"
 #include "WED_MapZoomerNew.h"
 #include "GISUtils.h"
@@ -113,7 +114,7 @@ void	WED_VertexTool::BeginEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->StartOperation("Vertex modification");  // can be any of - split ATC edge - move ATC edge node
+	op->StartOperation("Vertex Modification");  // can be any of - split ATC edge - move ATC edge node
 	                                 // - drag a node or modify a bezier node of any previously selected feature
 }
 
@@ -153,6 +154,7 @@ int		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
 	IGISPointSequence * s;
+	IGISEdge * e;
 
 	if (rwy)													return 13;
 	else if (quad)												return 9;
@@ -172,10 +174,13 @@ int		WED_VertexTool::CountControlHandles(intptr_t id						  ) const
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
-	case gis_Edge:
 		s = dynamic_cast<IGISPointSequence *>(en);
 		DebugAssert(s);
 		return s ? s->GetNumSides() * 4 : 0;
+	case gis_Edge:
+		e = dynamic_cast<IGISEdge *>(en);
+		DebugAssert(e);
+		return e ? 4 : 0;
 	}
 	return 0;
 }
@@ -196,7 +201,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
 	IGISPointSequence * s;
-
+	IGISEdge * e;
 	if (rwy && n >= 9)
 	{
 		Point2 corners[4];
@@ -372,7 +377,6 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		break;
 	case gis_PointSequence:
 	case gis_Chain:
-	case gis_Edge:
 	case gis_Ring:
 		s = dynamic_cast<IGISPointSequence *>(en);
 		DebugAssert(s);
@@ -396,6 +400,65 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			return;
 		}
 		break;
+	case gis_Edge:
+		e = dynamic_cast<IGISEdge *>(en);
+		DebugAssert(e);
+		if(e)
+		{
+			Bezier2	b;
+			Segment2 s;
+			if(con_type) *con_type = handle_None;
+			if(active) *active = 0;
+			
+			if(e->GetSide(gis_Geo, 0, s, b))
+			{
+				switch(n) {
+				case 0:
+					*p = b.p1;
+					if(con_type) *con_type = handle_Vertex;
+					break;
+				case 1:
+					*p = b.c1;
+					if(con_type) *con_type = handle_Bezier;
+					if(active) *active = 1;
+					if(dir) *dir = Vector2(b.c1,b.p1);
+					break;
+				case 2:
+					*p = b.c2;
+					if(con_type) *con_type = handle_Bezier;
+					if(active) *active = 1;
+					if(dir) *dir = Vector2(b.c2,b.p2);
+					break;
+				case 3:
+					*p = b.p2;
+					if(con_type) *con_type = handle_Vertex;
+					break;
+				}
+			}
+			else
+			{
+				switch(n) {
+				case 0:
+					*p = s.p1;
+					if(con_type) *con_type = handle_VertexSharp;
+					break;
+				case 1:
+					*p = s.p1;
+					if(con_type) *con_type = handle_None;
+					break;
+				case 2:
+					*p = s.p2;
+					if(con_type) *con_type = handle_None;
+					break;
+				case 3:
+					*p = s.p2;
+					if(con_type) *con_type = handle_VertexSharp;
+					break;
+				}
+			}
+			return;
+		}
+		break;
 	}	
 	DebugAssert(!"Cast failed!");
 	return;
@@ -412,6 +475,7 @@ int		WED_VertexTool::GetLinks		    (intptr_t id) const
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
 	IGISPointSequence * s;
+	IGISEdge * e;
 	
 	if (quad)															return 4;
 	else switch(en->GetGISClass()) {
@@ -427,9 +491,11 @@ int		WED_VertexTool::GetLinks		    (intptr_t id) const
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
-	case gis_Edge:
 		s = dynamic_cast<IGISPointSequence*>(en);
 		return s ? s->GetNumSides() : 0;
+	case gis_Edge:
+		e = dynamic_cast<IGISEdge*>(en);
+		return e ? 3 : 0;
 	}
 	return 0;
 }
@@ -441,6 +507,7 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISPoint_Bezier * pt_b;
+	IGISEdge * e;
 
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
@@ -451,10 +518,20 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 	case gis_PointSequence:
 	case gis_Ring:
 	case gis_Chain:
-	case gis_Edge:
 		if(ltype) *ltype = link_None;
 		if(active) *active = 1;
 		break;
+	case gis_Edge:
+		if(n == 0)
+		{
+			if(ltype) *ltype = link_None;
+			if(active) *active = 1;
+		}
+		else
+		{
+			if(ltype) *ltype = link_BezierCtrl;
+			if(active) *active = 0;
+		}
 	}
 }
 
@@ -473,8 +550,13 @@ int		WED_VertexTool::GetNthLinkSource   (intptr_t id, int n) const
 	case gis_Line_Width:		return kSourceIndex[n];
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Chain:				return n*4;
 	case gis_Edge:
-	case gis_Chain:				return n*4;	
+		switch(n) {
+		case 0: return 0;
+		case 1: return 0;
+		case 2: return 3;
+		}
 	}
 	return 0;
 }
@@ -485,8 +567,13 @@ int		WED_VertexTool::GetNthLinkSourceCtl(intptr_t id, int n) const
 	switch(en->GetGISClass()) {
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Chain:				return n*4+1;
 	case gis_Edge:
-	case gis_Chain:				return n*4+1;	
+		switch(n) {
+		case 0: return 1;
+		case 1: return 0;
+		case 2: return 3;
+		}
 	}
 	return -1;
 }
@@ -504,8 +591,13 @@ int		WED_VertexTool::GetNthLinkTarget   (intptr_t id, int n) const
 	case gis_Line:				return 1;
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Chain:				return n*4+2;
 	case gis_Edge:
-	case gis_Chain:				return n*4+2;	
+		switch(n) {
+		case 0: return 3;
+		case 1: return 1;
+		case 2: return 2;
+		}
 	}
 	return 0;
 }
@@ -516,8 +608,13 @@ int		WED_VertexTool::GetNthLinkTargetCtl(intptr_t id, int n) const
 	switch(en->GetGISClass()) {
 	case gis_PointSequence:
 	case gis_Ring:
+	case gis_Chain:				return n*4+3;
 	case gis_Edge:
-	case gis_Chain:				return n*4+3;	
+		switch(n) {
+		case 0: return 2;
+		case 1: return 1;
+		case 2: return 2;
+		}
 	}
 	return -1;
 }
@@ -570,6 +667,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	IGISPoint_Bezier * pt_b;
 	IGISPoint_Heading * pt_h;
 	IGISLine * ln;
+	IGISEdge * e;
 
 	Point2	p;
 	if (rwy && n >= 9)
@@ -692,8 +790,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			}
 			switch(n) {
 			case 0:	pt_b->GetLocation(gis_Geo,p);						break;
-			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) return;	break;
-			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) return;	break;
+			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) n=3;	break;
+			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) n=3;	break;
 			}
 			io_pt += delta;
 			SnapMovePoint(io_pt,p, en);
@@ -702,6 +800,13 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			case 1:	pt_b->SetControlHandleLo(gis_Geo,p);	break;
 			case 2: pt_b->SetControlHandleHi(gis_Geo,p);	break;
 			}
+#if 1   // redrape upon modificatoin of bezier node handles or location
+			WED_Thing * node = dynamic_cast <WED_Thing *> (en);
+			node = node->GetParent();
+			node = node->GetParent();
+			WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto,node);
+			if (ortho) ortho->Redrape();
+#endif
 			return;
 		}
 		break;
@@ -749,6 +854,21 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			return;
 		}
 		break;
+	case gis_Edge:
+		if((e = SAFE_CAST(IGISEdge,en)) != NULL)
+		{
+			Segment2 s;
+			Bezier2 b;
+			if(e->GetSide(gis_Geo, 0, s, b))
+			{
+				if(n == 1)
+					b.c1 += delta;
+				if(n == 2)
+					b.c2 += delta;
+				e->SetSideBezier(gis_Geo, b);
+			}
+			return;
+		}
 	}
 	DebugAssert(!"Cast failed!");
 	return;
@@ -758,10 +878,10 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 {
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(en);
+	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 	if(seq && !mInEdit)
 	{
 		mInEdit = 1;
-		GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 		if (mods & gui_OptionAltFlag)
 		{
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
@@ -771,10 +891,10 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	}	
 	Bbox2	old_b(Point2(0,0),Point2(1,1));
 	Bbox2	new_b(old_b);
-	new_b += delta;
 	
 	if(mNewSplitPoint)
 	{
+		new_b += delta;
 		mNewSplitPoint->Rescale(gis_Geo, old_b, new_b);
 	}
 	else if(seq)
@@ -782,10 +902,30 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 		int np = seq->GetNumPoints();
 		IGISPoint * p1 = seq->GetNthPoint(c);
 		IGISPoint * p2 = seq->GetNthPoint((c+1) % np);
+
+		if ( mods & gui_ControlFlag )
+		{
+			Point2 a,b ;
+			p1->GetLocation(gis_Geo,a);
+			p2->GetLocation(gis_Geo,b);
+			Vector2 n = VectorLLToMeters(a,Vector2(a,b));
+			n = n.perpendicular_ccw();
+			Vector2 delta_m = VectorLLToMeters(a,delta);
+			new_b += VectorMetersToLL(a,n.projection(delta_m));
+		}
+		else
+		{
+			new_b += delta;
+		}
+
 		p1->Rescale(gis_Geo, old_b, new_b);
 		p2->Rescale(gis_Geo, old_b, new_b);
 	}
-	
+#if 1    // redrape upon splitting of a segment
+	WED_Thing * node = dynamic_cast <WED_Thing *> (en);
+	WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto,node->GetParent());
+	if (ortho) ortho->Redrape();
+#endif	
 }
 
 WED_HandleToolBase::EntityHandling_t	WED_VertexTool::TraverseEntity(IGISEntity * ent, int pt_sel)

@@ -36,7 +36,7 @@ class	GUI_TextTableHeader;
 class	WED_Document;
 class	IResolver;
 class	WED_Archive;
-class	WED_FilterBar;
+class	GUI_FilterBar;
 class	WED_MapPane;
 
 #include "GUI_Window.h"
@@ -69,7 +69,7 @@ private:
 
 	WED_MapPane *			mMapPane;
 
-	WED_FilterBar *			mFilter;
+	GUI_FilterBar *			mFilter;
 
 	GUI_ScrollerPane *		mScroller;
 	GUI_Table *				mTable;

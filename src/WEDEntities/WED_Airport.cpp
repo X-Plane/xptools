@@ -108,7 +108,7 @@ void		WED_Airport::AddMetaDataKey(const string& key, const string& value)
 	{
 		if(itr->first == key)
 		{
-			itr->second == key;//On collision replace value
+			itr->second = value;//On collision replace value
 			return;
 		}
 	}
@@ -196,6 +196,11 @@ bool		WED_Airport::ContainsMetaDataKey(const string& key) const
 	return false;
 }
 
+bool		WED_Airport::ContainsMetaDataKey(int meta_data_enum) const
+{
+	return ContainsMetaDataKey(META_KeyName(meta_data_enum));
+}
+
 int			WED_Airport::CountMetaDataKeys()
 {
 	return meta_data_vec_map.size();
@@ -217,7 +222,10 @@ string		WED_Airport::GetMetaDataValue(const string& key) const
 	return "";//Note that we shouldn't ever get to this point
 }
 
-
+string		WED_Airport::GetMetaDataValue(int meta_data_enum) const
+{
+	return WED_Airport::GetMetaDataValue(META_KeyName(meta_data_enum));
+}
 
 void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
@@ -431,9 +439,9 @@ void WED_Airport::CopyFrom(const WED_Airport* rhs)
 	meta_data_vec_map = rhs->meta_data_vec_map;
 }
 
-void 			WED_Airport::ReadFrom(IOReader * reader)
+bool 			WED_Airport::ReadFrom(IOReader * reader)
 {
-	WED_GISComposite::ReadFrom(reader);
+	bool r = WED_GISComposite::ReadFrom(reader);
 	
 	meta_data_vec_map.clear();
 
@@ -459,6 +467,7 @@ void 			WED_Airport::ReadFrom(IOReader * reader)
 		
 		meta_data_vec_map.push_back(meta_data_entry(key,val));
 	}
+	return r;
 }
 
 void 			WED_Airport::WriteTo(IOWriter * writer)
@@ -523,12 +532,3 @@ void			WED_Airport::StartElement(
 		WED_GISComposite::StartElement(reader, name, atts);
 	}
 }
-
-/*
-void			WED_Airport::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-}
-
-void			WED_Airport::ToDB(sqlite3 * db)
-{
-}*/
