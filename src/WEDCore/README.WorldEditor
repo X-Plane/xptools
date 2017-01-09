@@ -22,13 +22,14 @@ WED 1.6.0a1 12/02/16
 	- WED-511, WED-708: fix XML reader/writer to not crash on illegal enum names
 	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
 	- WED-726: enable processing of library.txt file paths including spaces 
-	- WED-740,741,743,744,730,736,747: internal issues during WED 1.6 development
+	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
 
 	New Features:
 	- Support new XP11 features: Ground Traffic routes, Service Truck starts and destinations
 	- Support for UTF-8 characters in GUI on Windows builds
 	- WED-285: Add search bar for items in the right side hierachy pane
 	- WED-183, WED-42: Preview forest definitions in LinraryPreviewPane
+	- WED-491,364,297: Preview line definitions in LinraryPreviewPane
 	- WED-702: Automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
 				- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
 					for .POL definitions that support this
