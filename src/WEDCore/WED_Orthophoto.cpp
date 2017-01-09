@@ -209,15 +209,31 @@ void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
 			case WED_TIF:
 				if (FetchTIFFCorners(path, c, align))
 				{
-					// SW, SE, NW, NE from tiff, but SW SE NE NW internally
-					coords[0].x_ = c[0];
-					coords[0].y_ = c[1];
-					coords[1].x_ = c[2];
-					coords[1].y_ = c[3];
-					coords[3].x_ = c[4];
-					coords[3].y_ = c[5];
-					coords[2].x_ = c[6];
-					coords[2].y_ = c[7];
+					if (c[1] < c[5])
+					{
+						// SW, SE, NW, NE from tiff, but we are making a CCW wound polygon, i.e. SW SE NE NW
+						coords[0].x_ = c[0];
+						coords[0].y_ = c[1];
+						coords[1].x_ = c[2];
+						coords[1].y_ = c[3];
+						coords[3].x_ = c[4];
+						coords[3].y_ = c[5];
+						coords[2].x_ = c[6];
+						coords[2].y_ = c[7];
+					}
+					else
+					{
+						// jpg compressed files have the origin at the bottom, not the top. So their encoding is
+						// NW, NE, SW, SE, but we are making a CCW wound polygon, i.e. need it to be SW SE NE NW
+						coords[0].x_ = c[4];
+						coords[0].y_ = c[5];
+						coords[1].x_ = c[6];
+						coords[1].y_ = c[7];
+						coords[3].x_ = c[0];
+						coords[3].y_ = c[1];
+						coords[2].x_ = c[2];
+						coords[2].y_ = c[3];
+					}
 					has_geo = 1;
 				}
 				break;
