@@ -35,7 +35,9 @@
 
 enum CreateEdge_t {
 	create_TaxiRoute = 0,
+#if ROAD_EDITING
 	create_Road
+#endif
 };
 
 class	WED_Thing;
@@ -78,11 +80,12 @@ private:
 	
 	WED_PropStringText		mName;
 	WED_PropIntText			mSlop;
-	
+
+#if ROAD_EDITING
 	WED_PropIntText			mLayer;
 	WED_PropIntText			mSubtype;
 	WED_PropStringText		mResource;
-
+#endif
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
 							const vector<Point2>&	dirs_lo,

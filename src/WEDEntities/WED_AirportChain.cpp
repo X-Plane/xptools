@@ -100,10 +100,11 @@ bool	 WED_AirportChain::IsClosed	(void	) const
 }
 
 
-void 			WED_AirportChain::ReadFrom(IOReader * reader)
+bool 			WED_AirportChain::ReadFrom(IOReader * reader)
 {
-	WED_GISChain::ReadFrom(reader);
+	bool r = WED_GISChain::ReadFrom(reader);
 	reader->ReadInt(closed);
+	return r;
 }
 
 void 			WED_AirportChain::WriteTo(IOWriter * writer)

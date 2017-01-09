@@ -23,6 +23,8 @@
 #ifndef _PlatformUtils_h_
 #define _PlatformUtils_h_
 
+#include <string>
+
 /*
  * PlatformUtils
  *
@@ -48,20 +50,20 @@
 #endif
 
 /*
- * This routine returns a fully qualified path to the application.
- *
- */
-const char * GetApplicationPath(char * pathBuf, int pathLen);
+* This routine returns a fully qualified path to the application.
+*
+*/
+string GetApplicationPath();
 
 /*
- * The FQP to the OS' semantically correct folder for caching files
- */
-const char * GetCacheFolder(char * cache_path, int sz);
+* The FQP to the OS' semantically correct folder for caching files
+*/
+string GetCacheFolder();
 
 /*
- * Returns the FQP to the OS' "Best practices" temporary files folder
- */
-const char * GetTempFilesFolder(char * temp_path, int sz);
+* Returns the FQP to the OS' "Best practices" temporary files folder
+*/
+string GetTempFilesFolder();
 
 /*
  * GetFilePathFromUser takes a prompting C-string and fills in the buffer with a path
@@ -79,7 +81,7 @@ int		GetFilePathFromUser(
 					const char * 		inPrompt,
 					const char *		inAction,
 					int					inID,
-					char * 				outFileName,
+					char *				outFileName,
 					int					inBufSize);
 
 // 0-len-terminated list of paths, you must free!

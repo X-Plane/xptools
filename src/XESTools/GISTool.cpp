@@ -33,6 +33,7 @@
 #include "GISTool_CoreCmds.h"
 #include "GISTool_DumpCmds.h"
 #include "GISTool_MiscCmds.h"
+#include "GISTool_ImageCmds.h"
 #include "GISTool_ProcessingCmds.h"
 #include "GISTool_VectorCmds.h"
 #if USE_CHUD
@@ -40,8 +41,6 @@
 #endif
 #include <CGAL/assertions.h>
 #include <CGAL/assertions_behaviour.h>
-
-
 
 extern void	SelfTestAll(void);
 
@@ -114,12 +113,6 @@ int	main(int argc, char * argv[])
 		CGAL::set_error_handler(CGALFailure);
 
 		int start_arg = 1;
-		{
-			if (argc < 2 || strcmp(argv[1], "-noinit"))
-				XESInit(true);
-			else
-				++start_arg;
-		}
 
 		GISTool_RegisterCommands(sUtilCmds);
 
@@ -130,7 +123,8 @@ int	main(int argc, char * argv[])
 		RegisterProcessingCmds();
 		RegisterObsCmds();
 		RegisterMiscCmds();
-
+		RegisterImageCmds();
+		
 		vector<const char *>	args;
 
 

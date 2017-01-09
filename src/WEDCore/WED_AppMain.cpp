@@ -100,10 +100,10 @@
 	_R(WED_ATCTimeRule) \
 	_R(WED_ATCWindRule) \
 	_R(WED_ATCRunwayUse) \
-	_R(WED_RoadEdge) \
-	_R(WED_RoadNode) \
 	_R(WED_TruckParkingLocation) \
 	_R(WED_TruckDestination)
+	//_R(WED_RoadNode) \
+	//_R(WED_RoadEdge)
 
 #define _R(x)	extern void x##_Register();
 REGISTER_LIST
@@ -147,7 +147,7 @@ int main(int argc, char * argv[])
 		if(AllocConsole())
 		{
 				freopen("CONOUT$", "w",stdout);
-				SetConsoleTitle("Debug Window");
+				SetConsoleTitleA("Debug Window");
 				ShowWindowAsync(GetConsoleWindow(),SW_SHOWNORMAL);
 				ShowWindowAsync(GetConsoleWindow(),SW_SHOWMINNOACTIVE);
 		}

@@ -39,12 +39,16 @@ public:
 
 	void		Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Import(const AptServiceRoadEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref);
-	int			Export(		 AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const;
+	
+	void		Export(		 AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const;
 	
 	virtual		bool	IsOneway(void) const;
 				bool	IsRunway(void) const;
+
+				//AllowAircraft and AllowTrucks are exclusive. A taxiroute cannot support both at the same time
 				bool	AllowAircraft(void) const;
 				bool	AllowTrucks(void) const;
+
 				bool	HasHotArrival(void) const;
 				bool	HasHotDepart(void) const;
 				bool	HasHotILS(void) const;

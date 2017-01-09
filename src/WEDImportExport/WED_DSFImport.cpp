@@ -64,7 +64,7 @@
 #define NO_STR 0
 #define NO_POL 0
 #define NO_OBJ 0
-#define NO_NET 0
+#define NO_NET !ROAD_EDITING
 #define NO_EXC 0
 
 static void debug_it(const vector<BezierPoint2>& pts)
@@ -160,10 +160,11 @@ public:
 	vector<pair<Point2, int> >	accum_road;
 	pair<int, int>		accum_road_type;
 
+#if !NO_NET
 	typedef map<pair<int, int>, WED_RoadNode *> road_node_map_t;
 	road_node_map_t road_nodes;
 	WED_RoadNode *		road_start;
-	
+#endif
 
 	int GetShowForFacID(int id)
 	{

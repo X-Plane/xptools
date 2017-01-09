@@ -47,6 +47,9 @@
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
+#include "XObjDefs.h"
+#include "CompGeomDefs2.h"
+
 class	WED_LibraryMgr;
 
 struct	XObj8;
@@ -63,14 +66,37 @@ struct	pol_info_t {
 	float		longitude;
 	double		height_Meters;
 	int			ddsHeight_Pxls;
+	vector <Bbox2>	mSubBoxes;       // for subTexture selection in PreviewPanel
+	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
 };
 
 struct	fac_info_t {
-	bool			ring;
-	bool			roof;
-	bool			modern;
+	bool		ring;
+	bool		roof;
+	bool		modern;
 	vector<string>	walls;
+	vector<string>	w_use;
+	
+	XObj8 *	preview;
 };
+
+struct wall_map_t {
+	
+	wall_map_t() : vert(), hori(), scale_x(1.0f) ,scale_y(1.0f), basem(0.0f) { }
+
+	float		vert[4];   // for now planning to only collect ONE example for wall type.
+	float		hori[4];
+	float		scale_x, scale_y;
+	float		basem;
+};
+
+struct	lin_info_t {
+	string		base_tex;
+	float		proj_s;
+	float		proj_t;
+	vector<float>	s1,sm,s2;
+};
+
 
 struct	road_info_t {
 	map<int, string>	vroad_types;
@@ -102,6 +128,9 @@ public:
 
 			bool	GetFac(const string& path, fac_info_t& out_info);
 			bool	GetPol(const string& path, pol_info_t& out_info);
+			bool 	SetPolUV(const string& path, Bbox2 box);
+			bool	GetLin(const string& path, lin_info_t& out_info);
+			bool	GetFor(const string& path, XObj8 *& obj);
 
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
@@ -112,21 +141,25 @@ public:
 			bool	GetRoad(const string& path, road_info_t& out_info);
 #endif			
 
+
 	virtual	void	ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
 							intptr_t				inMsg,
 							intptr_t				inParam);
 
 private:
-
+	
 	map<string,fac_info_t>		mFac;
 	map<string,pol_info_t>		mPol;
+	map<string,lin_info_t>		mLin;
+	map<string,XObj8 *>			mFor;
 	map<string,XObj8 *>			mObj;
+
 #if AIRPORT_ROUTING	
 	map<string,agp_t>			mAGP;
 	map<string,road_info_t>		mRoad;
 #endif	
 	WED_LibraryMgr *			mLibrary;
-};
+};	
 
 #endif /* WED_ResourceMgr_H */

@@ -35,11 +35,14 @@
 #include "WED_ATCWindRule.h"
 #include "WED_AirportNode.h"
 #include "WED_Group.h"
+
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+
 #include "WED_Ring.h"
+#include "WED_DrapedOrthophoto.h"
 #include "WED_UIDefs.h"
 #include "ILibrarian.h"
 #include "WED_MapZoomerNew.h"
@@ -61,9 +64,13 @@
 #include "XObjDefs.h"
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"
+#include "WED_GISEdge.h"
 #include "GISUtils.h"
 #include "MathUtils.h"
 #include "WED_EnumSystem.h"
+#include "CompGeomUtils.h"
+#include "WED_HierarchyUtils.h"
+
 #include <iterator>
 #include <sstream>
 
@@ -574,12 +581,12 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
-
+#if ROAD_EDITING
 	if(SAFE_CAST(WED_RoadNode,t) &&
 		SAFE_CAST(IGISComposite,t->GetParent()) &&
 		t->CountViewers() == 0)
 		return true;
-
+#endif
 	IGISPolygon * p = dynamic_cast<IGISPolygon *>(t);
 	if (p && t->CountChildren() == 0)
 		return true;
@@ -1140,7 +1147,7 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 	sel->Clear();
 
 	vector<WED_Thing *> pts;
-	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphNode, pts);
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(pts), EntityNotHidden, IsGraphNode);
 	
 	// Ben says: yes this totally sucks - replace it someday?
 	for(int i = 0; i < pts.size(); ++i)
@@ -1181,18 +1188,19 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	op->StartOperation("Select Zero-Length Edges");
+	op->StartOperation("Select Crossing Edges");
 	sel->Clear();
-	vector<WED_Thing *> pts;
-	CollectRecursive(sub_tree ? sub_tree : WED_GetWorld(resolver), IsGraphEdge, pts);
+
+	vector<WED_GISEdge *> edges;
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
 	
 	// Ben says: yes this totally sucks - replace it someday?
-	for(int i = 0; i < pts.size(); ++i)
+	for(int i = 0; i < edges.size(); ++i)
 	{
-		for(int j = i + 1; j < pts.size(); ++j)
+		for(int j = i + 1; j < edges.size(); ++j)
 		{
-			IGISEdge * ii = dynamic_cast<IGISEdge *>(pts[i]);
-			IGISEdge * jj = dynamic_cast<IGISEdge *>(pts[j]);
+			IGISEdge * ii = dynamic_cast<IGISEdge *>(edges[i]);
+			IGISEdge * jj = dynamic_cast<IGISEdge *>(edges[j]);
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
@@ -1232,16 +1240,16 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				{
 					if(s1.intersect(s2, x))
 					{
-						sel->Insert(pts[i]);
-						sel->Insert(pts[j]);
+						sel->Insert(edges[i]);
+						sel->Insert(edges[j]);
 					}
 				}
 				else
 				{
 					if(b1.intersect(b2, 12))
 					{
-						sel->Insert(pts[i]);
-						sel->Insert(pts[j]);
+						sel->Insert(edges[i]);
+						sel->Insert(edges[j]);
 					}
 				}
 			}
@@ -1331,7 +1339,7 @@ static void DoSelectWithFilter(const char * op_name, bool (* filter)(WED_Thing *
 	WED_LibraryMgr * mgr = WED_GetLibraryMgr(resolver);
 
 	vector<WED_Thing *> who;
-	CollectRecursive(WED_GetWorld(resolver), filter, mgr, who);
+	//CollectRecursive(WED_GetWorld(resolver), filter, mgr, who);
 	
 	for(vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
@@ -1369,7 +1377,9 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
 // Given a vector of nodes all in the same place, this routine merges them all, returning the one surviver,
 // and nukes the rest.  All incoming edges of all of them are merged.  Note that any edges liknking two nodes in
 // nodes are now zero length.
-static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
+
+//Return the winning node
+static WED_Thing* run_merge(vector<WED_Thing *> nodes)
 {
 	DebugAssert(nodes.size() > 1);
 	WED_Thing * winner = nodes.front();
@@ -1700,7 +1710,461 @@ void	WED_DoSplit(IResolver * resolver)
 	op->CommitOperation();
 }
 
-typedef map<Point2, pair<const char *, vector<WED_Thing *> >,lesser_y_then_x>	merge_class_map;
+static int collect_pnts(ISelectable * base,void * ref)
+{
+	vector<IGISPoint *> * points = (vector<IGISPoint *> *) ref;
+	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
+	if(p)
+	{
+		points->push_back(p);
+		return 1;
+	}
+	return 0;
+}
+
+int		WED_CanAlign(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() < 3 ) return false;
+	if (sel->IterateSelectionOr(Iterate_IsStructuredObject, NULL)) return 0;
+	// taxi route nodes are part of structured objects
+	//if (sel->IterateSelectionOr(Iterate_IsNotPartOfStructuredObject, NULL)) return 0;
+	return 1;
+}
+
+// Align in line
+// between the farthest away points
+void	WED_DoAlign(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<IGISPoint *> pnts;
+	if (!sel->IterateSelectionAnd(collect_pnts, &pnts))
+		return ;
+	if(pnts.size() < 3) return;
+
+	static CoordTranslator2 translator;
+	Bbox2 bb;
+	Point2 p1,p2;
+	double fdist = 0;
+    IGISPoint * s = pnts[0];
+	IGISPoint * d = pnts[1];
+
+	// find farthest away points and adjust bbox for translator
+	for( int i = 0; i < pnts.size(); ++i)
+	{
+		pnts[i]->GetLocation(gis_Geo,p1);
+		bb += p1;
+		for( int j = i+1 ; j < pnts.size(); ++j)
+		{
+			pnts[j]->GetLocation(gis_Geo,p2);
+			double dist = LonLatDistMeters(p1.x_,p1.y_,p2.x_,p2.y_);
+			if ( dist > fdist)
+			{
+				fdist = dist;
+				s = pnts[i];
+				d = pnts[j];
+			}
+		}
+	}
+	// if bbox area = 0 then translator fails
+	// anyhow , the points are already aligned vertical and horizontal
+	if( bb.xspan() == 0.0 || bb.yspan() == 0.0) return;
+
+	op->StartOperation("Align in line");
+	set<WED_DrapedOrthophoto *> os;
+
+	s->GetLocation(gis_Geo,p1);
+	d->GetLocation(gis_Geo,p2);
+
+	CreateTranslatorForBounds(bb,translator);
+	Segment2 l(translator.Forward(p1),translator.Forward(p2));
+	// move the other points on the line
+	for(vector<IGISPoint *>::iterator it = pnts.begin(); it != pnts.end();++it)
+	{
+		if(*it == s || *it == d ) continue;
+		Point2 ll,p;
+		(*it)->GetLocation(gis_Geo,ll);
+		p = l.projection(translator.Forward(ll));
+		(*it)->SetLocation(gis_Geo,translator.Reverse(p));
+
+		//collect DrapedOrtho's involved
+		WED_Thing * thing = dynamic_cast<WED_Thing *>(*it);
+		if(thing)
+		{
+			WED_Thing * parent = thing->GetParent();
+			if(parent)
+			{
+				WED_Thing * grandparent = parent->GetParent();
+				if(grandparent && (strcmp(grandparent->GetClass() , "WED_DrapedOrthophoto") == 0))
+				{
+					WED_DrapedOrthophoto * ortho = dynamic_cast<WED_DrapedOrthophoto *>(grandparent);
+					if(ortho) os.insert(ortho);
+				}
+			}
+		}
+	}
+
+	// redrape DrapedOthosphoto's upon modification of points
+	for(set<WED_DrapedOrthophoto *>::iterator it = os.begin(); it != os.end();++it)
+	{
+		 (*it)->Redrape();
+	}
+
+	op->CommitOperation();
+}
+
+static int IterateCanOrthogonalize(ISelectable * what, void * ref)
+{
+	if(!Iterate_IsStructuredObject(what, ref)) return 0;
+	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
+	if(pol && pol->GetOuterRing()->GetNumPoints() > 3) return 1;
+	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(what);
+	if(!seq ) return 0;
+	int numpnts = seq->GetNumPoints();
+	if (numpnts > 3) return 1;
+	if(!seq->IsClosed() && numpnts > 2) return 1;
+	return 0;
+}
+
+int		WED_CanOrthogonalize(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionAnd(IterateCanOrthogonalize, NULL)) return 1;
+	return 0;
+}
+
+static void RotatePolygon(Polygon2 * pol,const Point2& ctr, double angle )
+{
+	for( int i = 0 ; i < pol->size() ; ++i )
+	{
+		Vector2 v_old = VectorLLToMeters(ctr,Vector2(ctr,pol->at(i)));
+		double old_len = sqrt(v_old.squared_length());
+		double old_ang = VectorMeters2NorthHeading(ctr,ctr,v_old);
+		double new_ang = old_ang - angle ;
+		Vector2 v_new;
+		NorthHeading2VectorMeters(ctr, ctr, new_ang,v_new);
+		v_new.normalize();
+		v_new *= old_len;
+		v_new = VectorMetersToLL(ctr,v_new);
+		pol->at(i) = ctr + v_new;
+	}
+}
+
+static void DoMakeOrthogonal(IGISPointSequence * seq )
+{
+	int numpoints = seq->GetNumPoints();
+	int maxpoints = numpoints;
+
+	bool is_closed = seq->IsClosed() ;
+	if (is_closed)
+	{
+		if(numpoints < 4) return;
+	}
+	else
+	{
+	   if(numpoints < 3 ) return;
+		maxpoints = numpoints - 1;
+	}
+
+	Polygon2 pol;
+	for( int i = 0 ; i < numpoints ; ++i )
+	{
+		Point2 p;
+		seq->GetNthPoint(i)->GetLocation(gis_Geo,p);
+		pol.push_back(p);
+	}
+
+	Point2 ctr = pol.centroid();
+
+	Segment2 seg = pol.side(0);
+
+	double heading = VectorDegs2NorthHeading(ctr,ctr,Vector2(seg.p1,seg.p2)) - 90.;
+	// rotate to realy east-west
+	RotatePolygon(&pol,ctr,heading);
+
+	int next_dir = 0;
+	int last_dir = 0;
+	int node_cnt = 0;
+	double   sum = 0;
+	bool use_first_value = false;
+
+	for( int i = 0 ; i < maxpoints ; ++i )
+	{
+		int prv = i ;
+		int pos = (i + 1) % pol.size() ;
+		int nxt = (i + 2) % pol.size() ;
+
+		Point2 p1 = pol.at(prv);
+		Point2 p2 = pol.at(pos);
+		Point2 p3 = pol.at(nxt);
+
+		Vector2	v_prv = VectorLLToMeters(p1,Vector2(p1,p2));
+		Vector2	v_nxt = VectorLLToMeters(p2,Vector2(p2,p3));
+
+		int turn_dir = v_prv.turn_direction(v_nxt);
+		v_prv.normalize();
+		v_nxt.normalize();
+		double cosa = v_prv.dot(v_nxt);
+		bool dir_change = false;
+
+		if(cosa < cos (45. * DEG_TO_RAD))
+		{
+			if(turn_dir == LEFT_TURN )
+				next_dir = (last_dir + 1) % 4;
+			else
+				next_dir = (last_dir + 3) % 4;
+			dir_change = true;
+		}
+		else
+		{
+			dir_change = false;
+		}
+
+		bool prv_is_vert = ( last_dir == 1 || last_dir == 3);
+		bool nxt_is_vert = ( next_dir == 1 || next_dir == 3);
+
+		last_dir = next_dir;
+
+		if(use_first_value)
+			sum += prv_is_vert ? pol.at(1).x_ : pol.at(1).y_ ;
+		else
+			sum += prv_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+		++node_cnt;
+
+		if( dir_change || pos < 2 || (!is_closed && nxt == 0))
+		{
+			double avg;
+			if( pos == 0 )
+			{
+				avg = prv_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+			}
+			else
+			{
+				avg  = sum / node_cnt ;
+			}
+			for ( int k = 0 ; k < node_cnt ; ++k)
+			{
+				int n = pos - k ; n = n < 0 ? n + pol.size() : n;
+				if(prv_is_vert) pol.at(n).x_ = avg;
+				else 			pol.at(n).y_ = avg;
+			}
+
+			sum = nxt_is_vert ? pol.at(pos).x_ : pol.at(pos).y_ ;
+			node_cnt = 1;
+			use_first_value = (pos == 1) ? true : false;
+		}
+	}
+	//rotate back
+	RotatePolygon(&pol,ctr,-heading);
+
+	for( int i = 0 ; i < numpoints ; ++i  )
+	{
+		seq->GetNthPoint(i)->SetLocation(gis_Geo,pol.at(i));
+	}
+
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * thing = dynamic_cast <WED_Thing *> (seq);
+	if(thing)
+	{
+		WED_Thing * parent = thing->GetParent();
+		if(parent)
+		{
+			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *>(parent);
+			if (ortho) ortho->Redrape();
+		}
+	}
+}
+
+void	WED_DoOrthogonalize(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+	if(things.empty()) return;
+
+	op->StartOperation("Orthogonalize");
+
+	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
+	{
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(*it);
+		if(seq)
+		{
+			DoMakeOrthogonal(seq);
+			continue;
+		}
+		IGISPolygon * pol = dynamic_cast<IGISPolygon *>(*it);
+		if(pol)
+		{
+			for(int i = -1; i < pol->GetNumHoles(); ++i)
+			{
+				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
+				DoMakeOrthogonal(seq);
+			}
+		}
+	}
+
+	op->CommitOperation();
+}
+
+static int IterateCanMakeRegularPoly(ISelectable * what, void * ref)
+{
+	if(!Iterate_IsStructuredObject(what, ref)) return 0;
+	IGISPolygon * pol = dynamic_cast<IGISPolygon *>(what);
+	if(pol && pol->GetOuterRing()->GetNumPoints() > 2) return 1;
+	IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(what);
+	if(seq && seq->GetNumPoints() > 2) return 1;
+	return 0;
+}
+
+int		WED_CanMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->IterateSelectionAnd(IterateCanMakeRegularPoly, NULL)) return 1;
+	return 0;
+}
+
+static void DoMakeRegularPoly(IGISPointSequence * seq )
+{
+	int n = seq->GetNumPoints();
+	if(n < 3 ) return;
+	
+	Point2 p1,p2;
+	Polygon2 pol;
+
+	double l  = 0.0;
+	for( int i = 0 ; i < n ; ++i )
+	{
+		seq->GetNthPoint(i)->GetLocation(gis_Geo,p1);
+		seq->GetNthPoint((i+1) % n)->GetLocation(gis_Geo,p2);
+		l += LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+		pol.push_back(p1);
+	}
+	//avg edge length
+	l = l/n ;
+	//TODO: mroe : cannot find a good centerpoint , take this for now
+	Point2 ctr = pol.centroid();
+	//centri angle
+	double w = (2.0*PI) / n ;
+	//outer radius
+	double ru = (l/2.0) / sin(w/2.0);
+	if (pol.is_ccw()) w = -w;
+
+	//http://stackoverflow.com/questions/1734745/how-to-create-circle-with-b%C3%A9zier-curves
+	double c = (4.0/3.0) * tan(w/4.0) * ru;
+
+	//initial heading of first segment
+	double a1 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
+
+	for( int i = 0 ; i < n ; ++i)
+	{	
+		double h = i*w;
+		Vector2	v;
+		v.dx = ru*sin(h);
+		v.dy = ru*cos(h);
+
+		pol[i] = ctr + VectorMetersToLL(ctr,v);
+
+		BezierPoint2 bp;
+		IGISPoint_Bezier * bez;
+		if(seq->GetNthPoint(i)->GetGISClass() == gis_Point_Bezier)
+		{
+			if((bez = dynamic_cast<IGISPoint_Bezier *>(seq->GetNthPoint(i))) != NULL)
+			{
+				v = v.perpendicular_ccw();
+				v.normalize();
+				v *= c;
+
+				bez->GetBezierLocation(gis_Geo,bp);
+				bp.hi = bp.has_hi() ? pol[i] - VectorMetersToLL(ctr, v) : pol[i];
+				bp.lo = bp.has_lo() ? pol[i] + VectorMetersToLL(ctr, v) : pol[i];
+				bp.pt = pol[i] ;
+
+				bez->SetBezierLocation(gis_Geo,bp);
+				bez->SetSplit(bp.is_split());
+			}
+		}
+		else
+		{
+			seq->GetNthPoint(i)->SetLocation(gis_Geo,pol[i]);
+		}
+	}
+
+	double a2 = VectorDegs2NorthHeading(ctr,ctr,Vector2(pol.at(0),pol.at(1)));
+    //rotate to inital heading
+	seq->Rotate(gis_Geo,ctr,a1-a2);
+
+	// redrape DrapedOthosphoto's upon modification of point sequence
+	WED_Thing * thing = dynamic_cast <WED_Thing *> (seq);
+	if(thing)
+	{
+		WED_Thing * parent = thing->GetParent();
+		if(parent)
+		{
+			WED_DrapedOrthophoto * ortho = dynamic_cast <WED_DrapedOrthophoto *>(parent);
+			if (ortho) ortho->Redrape();
+		}
+	}
+}
+
+void	WED_DoMakeRegularPoly(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+
+	vector<WED_Thing *> things;
+	sel->IterateSelectionOr(Iterate_CollectThings, &things);
+	if(things.empty()) return;
+
+	op->StartOperation("Make Regular Poly");
+
+	for(vector<WED_Thing *>::iterator it = things.begin(); it != things.end();++it)
+	{
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(*it);
+		if(seq)
+		{
+			DoMakeRegularPoly(seq);
+			continue;
+		}
+		IGISPolygon * pol = dynamic_cast<IGISPolygon *>(*it);
+		if(pol)
+		{
+			for(int i = -1; i < pol->GetNumHoles(); ++i)
+			{
+				seq = ( i == -1 ? pol->GetOuterRing() : pol->GetNthHole(i));
+				DoMakeRegularPoly(seq);
+			}
+		}
+	}
+
+	op->CommitOperation();
+}
+
+typedef vector<pair<Point2, pair<const char *, WED_Thing *> > > merge_class_map;
+
+//
+static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *, WED_Thing * > >& lhs, const pair<Point2, pair<const char *, WED_Thing * > > & rhs)
+{
+	return (lhs.first.y() == rhs.first.y()) ? (lhs.first.x() < rhs.first.x()) : (lhs.first.y() < rhs.first.y());
+}
+
+static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
+{
+	const int MAX_DIST_M_SQ = 1;
+
+	Point2 first_pos_m       = translator.Forward(first_thing->first);
+	Point2 second_thing_pos_m = translator.Forward(second_thing->first);
+	double a_sqr = pow((second_thing_pos_m.x() - first_pos_m.x()), 2);
+	double b_sqr = pow (second_thing_pos_m.y() - first_pos_m.y(), 2);
+	double sum_a_b = a_sqr + b_sqr;
+	bool is_snappable =  sum_a_b < MAX_DIST_M_SQ;
+	return is_snappable;
+}
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
 {
@@ -1740,70 +2204,106 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 {
 	merge_class_map * sinks = (merge_class_map *) ref;
 	IGISPoint * p = dynamic_cast<IGISPoint *>(who);
-	if(p == NULL) return 0;
+	if(p == NULL)
+		return 0;
 	WED_Thing * t = dynamic_cast<WED_Thing *>(who);
 	const char * tag = get_merge_tag_for_thing(p);
-	if(tag == NULL) return 0;
-	if(t == NULL) return 0;
+	if(tag == NULL)
+		return 0;
+	if(t == NULL)
+		return 0;
 	
 	Point2	loc;
 	p->GetLocation(gis_Geo, loc);
-	merge_class_map::iterator l = sinks->find(loc);
-	if(l == sinks->end())
+
+	sinks->push_back(make_pair(loc, make_pair(tag, t)));
+	return 1;
+}
+
+//Returns true if every node can be merged with each other, by type and by location
+int	WED_CanMerge(IResolver * resolver)
+{
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed test in
+	//   0.001130 seconds.
+	//   0.020325 seconds.
+	//   0.000842 seconds.
+	//   0.020704 seconds.
+	//   0.016719 seconds.
+	//StElapsedTime can_merge_timer("WED_CanMerge");
+	ISelection * sel = WED_GetSelect(resolver);
+	if(sel->GetSelectionCount() < 2)
+		return 0;		// can't merge 1 thing!
+
+	//1. Ensure all of the selection is mergeable, collect
+	merge_class_map sinkmap;
+	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
-		sinks->insert(make_pair(loc,make_pair(tag,vector<WED_Thing*>(1,t))));
+		return 0;
+	}
+
+	if (sinkmap.size() > 10000 || sinkmap.size() < 2)
+	{
+		return 0;
+	}
+
+	//2. Sort by location, a small optimization
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
+	//Find the bounds for the current airport
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	Bbox2 bb;
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	//Keeps track of which objects we've discovered we can snap (hopefully all)
+	set<merge_class_map::iterator> can_snap_objects;
+
+	//For each item in the sink map
+	for (merge_class_map::iterator thing_1_itr = sinkmap.begin(); thing_1_itr != sinkmap.end() - 1; ++thing_1_itr)
+	{
+		//For each item after that
+		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
+		{
+			//If the two things are within snapping distance of each other, record so
+			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr, translator))
+			{
+				can_snap_objects.insert(thing_1_itr);
+				can_snap_objects.insert(merge_pair_itr);
+			}
+		}
+	}
+
+	//Ensure expected UI behavior - Only perfect merges are allowed
+	if (can_snap_objects.size() == sinkmap.size())
+	{
 		return 1;
 	}
 	else
 	{
-		if(l->second.first == tag)
-		{
-			l->second.second.push_back(t);
-			return 1;
-		}
 		return 0;
 	}
 }
 
-
-int	WED_CanMerge(IResolver * resolver)
-{
-	ISelection * sel = WED_GetSelect(resolver);
-	if(sel->GetSelectionCount() < 2) return 0;		// can't merge 1 thing!
-	
-	merge_class_map sinkmap;
-	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
-		return 0;
-	
-	bool has_overlap = false;
-	const char * has_loner = NULL;
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
-	{
-		if(m->second.second.size() == 1)
-		{
-			if(has_loner == NULL)
-				has_loner = m->second.first;
-			else if(has_loner != m->second.first)
-				return 0;
-		}
-		else
-			has_overlap = true;
-	}
-	
-	if(has_loner && has_overlap)
-		return 0;
-	
-	return 1;
-}
-
+//WED_DoMerge will merge every node in the selection possible, any nodes that could not be merged are left as is.
+//Ex: 0-0-0-0---------------------0 will turn into 0-------------------------0.
+//If WED_CanMerge is called first this behavior would not be possible
 void WED_DoMerge(IResolver * resolver)
 {
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed snapping and merged to ~900 in
+	//   0.023290 seconds
+	//StElapsedTime can_merge_timer("WED_DoMerge");
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
 	DebugAssert(sel->GetSelectionCount() >= 2);
-	
+
+	//Validate and collect from selection
 	merge_class_map sinkmap;
 	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
@@ -1811,24 +2311,63 @@ void WED_DoMerge(IResolver * resolver)
 		op->AbortOperation();
 		return;
 	}
-	
-	vector<WED_Thing *>		remaining_nodes;
-	vector<WED_Thing *>	solos;
-	
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
+
+	//Ensure sinkmap is not rediculous or unmergable
+	if (sinkmap.size() > 10000)
 	{
-		if(m->second.second.size() == 1)
-			solos.push_back(m->second.second.front());
-		else
-			remaining_nodes.push_back(run_merge(m->second.second));
+		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
+		return;
 	}
-	
-	if(!solos.empty())
-		remaining_nodes.push_back(run_merge(solos));
+	else if (sinkmap.size() < 2)
+	{
+		return;
+	}
+
+	//2. Sort by location, a small optimization
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	Bbox2 bb;
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	//All the nodes that will end up snapped
+	set<WED_Thing*> snapped_nodes;
+	merge_class_map::iterator start_thing = sinkmap.begin();
+	while (start_thing != sinkmap.end())
+	{
+		if(start_thing + 1 != sinkmap.end())
+		{
+			merge_class_map::iterator merge_pair = start_thing+1;
+
+			while (merge_pair != sinkmap.end())
+			{
+				const char * tag_1 = start_thing->second.first;
+				const char * tag_2 = merge_pair->second.first;
+
+				if (is_within_snapping_distance(start_thing, merge_pair, translator) && tag_1 == tag_2)
+				{
+					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
+					sub_list.push_back(start_thing->second.second);
+					sub_list.push_back(merge_pair->second.second);
+
+					merge_pair = sinkmap.erase(merge_pair);
+					snapped_nodes.insert(run_merge(sub_list));
+				}
+				else
+				{
+					++merge_pair;
+				}
+			}
+		}
+
+		++start_thing;
+	}
 
 	sel->Clear();
 	
-	for(vector<WED_Thing *>::iterator node = remaining_nodes.begin(); node != remaining_nodes.end(); ++node)
+	for(set<WED_Thing *>::iterator node = snapped_nodes.begin(); node != snapped_nodes.end(); ++node)
 	{
 		set<WED_Thing *>	viewers;
 		(*node)->GetAllViewers(viewers);
@@ -1844,9 +2383,9 @@ void WED_DoMerge(IResolver * resolver)
 	
 		// Ben says: DO NOT delete the "unviable" isolated vertex here..if the user merged this down, maybe the user will link to it next?
 		// User can clean this by hand - it is in the selection when we are done.
-				
 		sel->Insert((*node));
 	}
+
 	op->CommitOperation();
 }
 
@@ -2082,8 +2621,8 @@ static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible, int
 	return accumulator;
 }
 
-template <typename OutputIterator>
-static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
+//template <typename OutputIterator>
+/*static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 {
 	// TODO: do fast WED type ptr check on sClass before any other casts?
 	// Factor out WED_Entity check to avoid second dynamic cast?
@@ -2110,7 +2649,7 @@ static void CollectRecursive(WED_Thing * thing, OutputIterator oi)
 			CollectRecursive(thing->GetNthChild(n), oi);
 		}
 	}
-}
+}*/
 
 set<string> build_agp_list()
 {
@@ -2364,22 +2903,12 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 {
 	map<string,vehicle_replacement_info> table;
 
-	//atc_ServiceTruck_Pushback,
-	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
-	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
+	//atc_ServiceTruck_Baggage_Loader
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader, 0)));
 
-	//atc_ServiceTruck_FuelTruck_Jet,
-	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
+	table.insert(make_pair("lib/airport/vehicles/baggage_handling/belt_loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader, 0)));
 
-	//atc_ServiceTruck_FuelTruck_Prop, cause of the problem
-	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
-
-	//atc_ServiceTruck_Food,
-	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
-
-	//atc_ServiceTruck_Baggage_Train,
-	//table.insert(make_pair("lib/airport/Ramp_Equipment/Lugg_Train_Straight.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,5)));
-
+	//atc_ServiceTruck_Baggage_Train
 	stringstream ss;
 	for(int i = 1; i <= 5; ++i)
 	{
@@ -2388,19 +2917,40 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 		ss.clear();
 		ss.str("");
 	}
-	
-	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,1)));
 
-	//atc_ServiceTruck_Baggage_Loader,
-	table.insert(make_pair("lib/airport/Ramp_Equipment/Belt_Loader.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Loader,0)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Luggage_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_Baggage_Train,0)));
 
-	//atc_ServiceTruck_Crew_Car,
+	//atc_ServiceTruck_Crew_Car
 	table.insert(make_pair("lib/airport/vehicles/servicing/crew_car.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Car,0)));
 
-	//atc_ServiceTruck_Ground_Power_Unit,
+	//atc_ServiceTruck_Crew_Ferrari
+	table.insert(make_pair("lib/airport/vehicles/servicing/crew_ferrari.obj", vehicle_replacement_info(atc_ServiceTruck_Crew_Ferrari, 0)));
+
+	//atc_ServiceTruck_Crew_Limo
+	//TODO: Waiting for art asset
+
+	//atc_ServiceTruck_Food
+	table.insert(make_pair("lib/airport/vehicles/servicing/catering_truck.obj", vehicle_replacement_info(atc_ServiceTruck_Food,0)));
+
+	//atc_ServiceTruck_FuelTruck_Liner
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/hyd_disp_truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Liner, 0)));
+
+	//!!Important!! - Large and Small are reversed on purpose!
+
+	//atc_ServiceTruck_FuelTruck_Jet
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Small_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Jet,0)));
+
+	//atc_ServiceTruck_FuelTruck_Prop
+	table.insert(make_pair("lib/airport/Common_Elements/vehicles/Large_Fuel_Truck.obj", vehicle_replacement_info(atc_ServiceTruck_FuelTruck_Prop,0)));
+
+	//atc_ServiceTruck_Ground_Power_Unit
 	table.insert(make_pair("lib/airport/vehicles/baggage_handling/tractor.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
 	table.insert(make_pair("ib/airport/Ramp_Equipment/GPU_1.obj", vehicle_replacement_info(atc_ServiceTruck_Ground_Power_Unit,0)));
-	
+
+	//atc_ServiceTruck_Pushback
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_1.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
+	table.insert(make_pair("lib/airport/Ramp_Equipment/Tow_Tractor_2.obj", vehicle_replacement_info(atc_ServiceTruck_Pushback,0)));
+
 	return table;
 }
 
@@ -2408,7 +2958,7 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
-	CollectRecursive(root, back_inserter(obj_placements));
+	//CollectRecursive(root, WED_ObjPlacement::sClass, back_inserter(obj_placements));
 
 	if(!obj_placements.empty())
 	{

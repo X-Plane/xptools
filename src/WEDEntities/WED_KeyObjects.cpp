@@ -70,9 +70,9 @@ void WED_KeyObjects::Directory_Edit(const char * name, IBase * who)
 	choices[n] = id;
 }
 
-void 			WED_KeyObjects::ReadFrom(IOReader * reader)
+bool 			WED_KeyObjects::ReadFrom(IOReader * reader)
 {
-	WED_Thing::ReadFrom(reader);
+	bool r = WED_Thing::ReadFrom(reader);
 	choices.clear();
 	int n;
 	reader->ReadInt(n);
@@ -87,6 +87,7 @@ void 			WED_KeyObjects::ReadFrom(IOReader * reader)
 		reader->ReadInt(id);
 		choices[key] = id;
 	}
+	return r;
 }
 
 void 			WED_KeyObjects::WriteTo(IOWriter * writer)

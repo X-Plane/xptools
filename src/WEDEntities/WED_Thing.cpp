@@ -76,7 +76,7 @@ void WED_Thing::CopyFrom(const WED_Thing * rhs)
 	}
 }
 
-void 			WED_Thing::ReadFrom(IOReader * reader)
+bool 			WED_Thing::ReadFrom(IOReader * reader)
 {
 	int ct;
 	reader->ReadInt(parent_id);
@@ -104,6 +104,7 @@ void 			WED_Thing::ReadFrom(IOReader * reader)
 		reader->ReadInt(source_id[n]);
 
 	ReadPropsFrom(reader);
+	return false;
 }
 
 void 			WED_Thing::WriteTo(IOWriter * writer)
@@ -334,6 +335,10 @@ void		WED_Thing::PopHandler(void)
 {
 }
 
+void	WED_Thing::PostChangeNotify(void)
+{
+}
+
 int					WED_Thing::CountChildren(void) const
 {
 	return child_id.size();
@@ -341,7 +346,10 @@ int					WED_Thing::CountChildren(void) const
 
 WED_Thing *		WED_Thing::GetNthChild(int n) const
 {
-	return STATIC_CAST(WED_Thing,FetchPeer(child_id[n]));
+	if (child_id.empty())     // prevent SIGSEGV
+		return NULL;
+	else
+		return STATIC_CAST(WED_Thing,FetchPeer(child_id[n]));
 }
 
 WED_Thing *		WED_Thing::GetNamedChild(const string& s) const

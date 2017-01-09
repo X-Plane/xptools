@@ -55,8 +55,9 @@ const char * pattern_strings[] = { "left", "right", 0 };
 const char * equip_strings[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters", 0 };
 const char * equip_strings_gate[] = { "heavy", "jets", "turboprops", "props", "helos", "fighters","all","A","B","C","D","E","F", 0 };
 const char * op_strings[] = { "arrivals", "departures", 0 };
-
-const char * truck_type_strings[] = { "pushback", "fuel_props", "fuel_jets","food","baggage_loader","baggage_train","crew_car","crew_limo","crew_ferrari","gpu", 0 };
+// TODO:
+// find a way to not have to keep this string in the same sequence with service enums defined in AptDefs.h and WED_Enums.h
+const char * truck_type_strings[] = { "baggage_loader", "baggage_train", "crew_car", "crew_ferrari", "crew_limo", "fuel_jets", "fuel_liners", "fuel_props", "food", "gpu", "pushback", 0 }; 
 
 // LLLHHH
 void divide_heading(int * lo, int * hi)
@@ -982,7 +983,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				{
 					if (strcmp(truck_type_str.c_str(),*str)==0)
 					{
-						outApts.back().truck_parking.back().parking_type = (str - truck_type_strings) + apt_truck_pushback; //Aka + apt_truck_begining of enums
+						outApts.back().truck_parking.back().parking_type = (str - truck_type_strings) + apt_truck_baggage_loader; //Aka + apt_truck_begining of enums
 						break;
 					}
 					++str;
@@ -1028,7 +1029,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					{
 						if (strcmp(itr->c_str(), *str) == 0)
 						{
-							truck_dest.truck_types.insert((str - truck_type_strings) + apt_truck_pushback); //Aka + apt_truck_begining of enums
+							truck_dest.truck_types.insert((str - truck_type_strings) + apt_truck_baggage_loader); //Aka + apt_truck_begining of enums
 							break;
 						}
 						++str;
@@ -1352,9 +1353,15 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				}
 			}
 
+			bool wrote_taxi_route_net_name = false;
 			if(!apt->taxi_route.edges.empty())
 			{
-				fprintf(fi,"%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
+				if (wrote_taxi_route_net_name == false)
+				{
+					fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
+					wrote_taxi_route_net_name = true;
+				}
+
 				for(vector<AptRouteNode_t>::const_iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
 				{
 					fprintf(fi,"%2d % 012.8lf % 013.8lf both %d %s" CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id, n->name.c_str());
@@ -1397,46 +1404,58 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						fprintf(fi,CRLF);
 					}
 				}
-
-				if(has_atc3)
-				for(vector<AptServiceRoadEdge_t>::const_iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
+			}
+			
+			if (has_atc3)
+			{
+				if (wrote_taxi_route_net_name == false)
 				{
-					fprintf(fi,"%2d %d %d %s ", apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
-					fprintf(fi," %s" CRLF, e->name.c_str());
-					
-					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
-						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
-				}
-				
-				if(has_atc3)
-				for(AptTruckParkingVector::const_iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
-				{
-					//Don't export car count unless our type is baggage_train
-					int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
-
-					fprintf(fi,"%2d % 3.8lf % 3.8lf % 4.1f %s %d %s" CRLF,
-						apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
-						truck_type_strings[trk->parking_type], car_count, trk->name.c_str());
+					fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
+					wrote_taxi_route_net_name = true;
 				}
 
-				if(has_atc3)
-				for(AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
+				for (vector<AptServiceRoadEdge_t>::const_iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
 				{
-					fprintf(fi,"%2d % 3.8lf % 3.8lf % 4.1f ",
-						apt_truck_destination, dst->location.y_, dst->location.x_, dst->heading);
-				
-					for(set<int>::const_iterator tt = dst->truck_types.begin(); tt != dst->truck_types.end(); ++tt)
+					fprintf(fi, "%2d %d %d %s ", apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
+					fprintf(fi, " %s" CRLF, e->name.c_str());
+
+					for (vector<pair<Point2, bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
+						fprintf(fi, "%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
+				}
+			}
+
+			int num_service_truck_pieces = apt->truck_parking.size() + apt->truck_destinations.size();
+
+			if (num_service_truck_pieces > 0)
+			{
+				if (has_atc3)
+				{
+					for (AptTruckParkingVector::const_iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
 					{
-						fprintf(fi,tt == dst->truck_types.begin() ? "%s" : "|%s",
-							truck_type_strings[*tt]);
-					}
-					fprintf(fi," %s" CRLF, dst->name.c_str());
-					#if !DEV
-					//	#error we need to have an importer for this.
-					//	#error we need to have a validator for this.
-					#endif
-				}
+						//Don't export car count unless our type is baggage_train
+						int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
 
+						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.1f %s %d %s" CRLF,
+							apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
+							truck_type_strings[trk->parking_type], car_count, trk->name.c_str());
+					}
+				}
+				
+				if (has_atc3)
+				{
+					for (AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
+					{
+						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.1f ",
+							apt_truck_destination, dst->location.y_, dst->location.x_, dst->heading);
+
+						for (set<int>::const_iterator tt = dst->truck_types.begin(); tt != dst->truck_types.end(); ++tt)
+						{
+							fprintf(fi, tt == dst->truck_types.begin() ? "%s" : "|%s",
+								truck_type_strings[*tt]);
+						}
+						fprintf(fi, " %s" CRLF, dst->name.c_str());
+					}
+				}
 			}
 		}
 	}
@@ -1568,7 +1587,7 @@ void	GenerateOGL(AptInfo_t * a)
 		CalcPavementBezier(&*a, &t->area,0.5,0.5,1.0,0.0);
 
 	for(AptBoundaryVector::iterator b = a->boundaries.begin(); b != a->boundaries.end(); ++b)
-		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,1.0);
+		CalcPavementBezier(&*a, &b->area,1.0,0.5,0.5,0.0);
 
 	for(AptRunwayVector::iterator r = a->runways.begin(); r != a->runways.end(); ++r)
 		CalcPavementOGL(a, r->ends,

@@ -92,10 +92,11 @@ void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		info.prop_kind = prop_Double;
 		info.synthetic = true;
 		info.round_down = false;
+		info.units = "";
 	}
 
 	switch(n) {
-	case rwy_prop_length:	info.digits = 5; info.decimals = 1; break;
+	case rwy_prop_length:	info.digits = 5; info.decimals = 1; info.units = (gIsFeet ? "ft" : "m"); break;
 	case rwy_prop_heading:	info.digits = 5; info.decimals = 2; break;
 	case rwy_prop_lat1:		info.digits = 10; info.decimals = 6; break;
 	case rwy_prop_lon1:		info.digits = 11; info.decimals = 6; break;

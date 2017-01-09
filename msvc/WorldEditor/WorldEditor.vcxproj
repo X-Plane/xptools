@@ -12,13 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\DSFTools\DSF2Text.cpp" />
-    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFLib.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFLibWrite.cpp" />
     <ClCompile Include="..\..\src\DSF\DSFPointPool.cpp" />
     <ClCompile Include="..\..\src\DSF\tri_stripper_101\tri_stripper.cpp" />
-    <ClCompile Include="..\..\src\Env\EnvParser.c" />
-    <ClCompile Include="..\..\src\Env\Persistence.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Application.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Broadcaster.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Button.cpp" />
@@ -28,6 +25,7 @@
     <ClCompile Include="..\..\src\GUI\GUI_Control.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Destroyable.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_DrawUtils.cpp" />
+    <ClCompile Include="..\..\src\GUI\GUI_FilterBar.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_Fonts.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_FormWindow.cpp" />
     <ClCompile Include="..\..\src\GUI\GUI_GraphState.cpp" />
@@ -242,8 +240,9 @@
     <ClCompile Include="..\..\src\WEDTCE\WED_TCEVertexTool.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_AboutBox.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_DocumentWindow.cpp" />
-    <ClCompile Include="..\..\src\WEDWindows\WED_FilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
@@ -263,9 +262,6 @@
     <ClInclude Include="..\..\src\DSF\tri_stripper_101\heap_array.h" />
     <ClInclude Include="..\..\src\DSF\tri_stripper_101\stdafx.h" />
     <ClInclude Include="..\..\src\DSF\tri_stripper_101\tri_stripper.h" />
-    <ClInclude Include="..\..\src\Env\EnvDefs.h" />
-    <ClInclude Include="..\..\src\Env\EnvParser.h" />
-    <ClInclude Include="..\..\src\Env\Persistence.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Application.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Broadcaster.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Button.h" />
@@ -276,6 +272,7 @@
     <ClInclude Include="..\..\src\GUI\GUI_Defs.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Destroyable.h" />
     <ClInclude Include="..\..\src\GUI\GUI_DrawUtils.h" />
+    <ClInclude Include="..\..\src\GUI\GUI_FilterBar.h" />
     <ClInclude Include="..\..\src\GUI\GUI_Fonts.h" />
     <ClInclude Include="..\..\src\GUI\GUI_FormWindow.h" />
     <ClInclude Include="..\..\src\GUI\GUI_GraphState.h" />
@@ -310,6 +307,7 @@
     <ClInclude Include="..\..\src\Interfaces\IControlHandles.h" />
     <ClInclude Include="..\..\src\Interfaces\IDirectory.h" />
     <ClInclude Include="..\..\src\Interfaces\IDocPrefs.h" />
+    <ClInclude Include="..\..\src\Interfaces\IFilterable.h" />
     <ClInclude Include="..\..\src\Interfaces\IGIS.h" />
     <ClInclude Include="..\..\src\Interfaces\ILibrarian.h" />
     <ClInclude Include="..\..\src\Interfaces\IOperation.h" />
@@ -350,6 +348,7 @@
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\XUtils.h" />
     <ClInclude Include="..\..\src\Utils\zip.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_HierarchyUtils.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Sign_Parser.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Archive.h" />
@@ -505,8 +504,9 @@
     <ClInclude Include="..\..\src\WEDTCE\WED_TCEVertexTool.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_AboutBox.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_DocumentWindow.h" />
-    <ClInclude Include="..\..\src\WEDWindows\WED_FilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h" />
