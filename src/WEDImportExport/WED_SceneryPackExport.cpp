@@ -60,6 +60,7 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
+#if TYLER_MODE
 static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
@@ -157,10 +158,13 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		}
 	}
 }
+#endif
 
 void	WED_DoExportPack(IResolver * resolver)
 {
+#if TYLER_MODE
 	DoHueristicAnalysisAndAutoUpgrade(resolver);
+#endif
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
 	if(!WED_ValidateApt(resolver))
 		return;
