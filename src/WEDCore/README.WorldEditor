@@ -23,6 +23,8 @@ WED 1.6.0a1 12/02/16
 	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
 	- WED-726: enable processing of library.txt file paths including spaces 
 	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
+	- WED-757: fix import for GeoTIFF's using jpeg compression (reversed/flipped)
+	- WED-758: allow tiff and jpeg suffixes to be used for ImportOrthos and OverlayImages
 
 	New Features:
 	- Support new XP11 features: Ground Traffic routes, Service Truck starts and destinations
@@ -31,15 +33,15 @@ WED 1.6.0a1 12/02/16
 	- WED-183, WED-42: Preview forest definitions in LinraryPreviewPane
 	- WED-491,364,297: Preview line definitions in LinraryPreviewPane
 	- WED-702: Automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
-				- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
-					for .POL definitions that support this
-				- WED-658, WED-568, WED-659, WED-123, WED-107, WED-14: 
-					Add 3 new editing functions in 'Edit" menu:
-					Align ... nodes to fall into a straight line
-					Othogonalize ... all sides of a polygon e.g. to align building footprints, 
-						  make exact rectangles, L-shapes, staircase patterns etc.
-					Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
-						  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
+	- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
+		for .POL definitions that support this
+	- WED-658, WED-568, WED-659, WED-123, WED-107, WED-14: 
+		Add 3 new editing functions in 'Edit" menu:
+		Align ... nodes to fall into a straight line
+		Othogonalize ... all sides of a polygon e.g. to align building footprints, 
+			  make exact rectangles, L-shapes, staircase patterns etc.
+		Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
+			  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
 	- WED-710: Show runway numbers in map view
 	- Print units (ft,m) after property values representing a length
 	- WED-704: Validate parameters in ATC flow, wind & time rules to be XP-legal

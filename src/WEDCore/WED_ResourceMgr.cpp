@@ -332,8 +332,9 @@ void WED_ResourceMgr::MakePol(const string& path, const pol_info_t& out_info)
 
 	string p = mLibrary->CreateLocalResourcePath(path);
 	//Makes sure that the file will end in .pol
-	string pol = "pol";
-	p.replace(p.length()-3,3,pol);
+	int pp = p.find_last_of(".");
+	p = p.substr(0,pp+1) + "pol";
+	
 	FILE * fi = fopen(p.c_str(), "w");
 	if(!fi)	return;
 	fprintf(fi,"A\n850\nDRAPED_POLYGON\n\n");

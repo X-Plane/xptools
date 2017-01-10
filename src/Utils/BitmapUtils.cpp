@@ -371,17 +371,9 @@ int GetSupportedType(const char * path)
 		
 	extension = extension.substr(sep+1);
 
-	if(extension.length() == 3)
-	{
-		extension[0] = tolower(extension[0]);
-		extension[1] = tolower(extension[1]);
-		extension[2] = tolower(extension[2]);
-	}
-	else
-	{
-		return -1;
-	}
-
+	for (int i = 0; i < extension.length(); ++i)
+		extension[i] = tolower(extension[i]);
+	
 	//compare the string and if it is perfectly the same return that code
 	if(extension == "bmp") return WED_BMP;
 	if(extension == "dds") return WED_DDS;

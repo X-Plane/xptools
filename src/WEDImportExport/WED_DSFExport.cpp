@@ -1717,14 +1717,12 @@ static int	DSF_ExportTileRecursive(
 				DoUserAlert(msg.c_str());
 				return 0;
 			}
-				
+
 			//Various Strings, it may be a lot but it ensures one never get confused
-			//-----------------
-			string relativePathDDS = r;
-			relativePathDDS.replace(relativePathDDS.length()-3,3,"dds");
-			//-----------------
-			string relativePathPOL = r;
-			relativePathPOL.replace(relativePathDDS.length()-3,3,"pol");
+			string::size_type suf = r.find_last_of(".")+1;
+			string relativePathDDS = r.substr(0,suf) + "dds";
+			string relativePathPOL = r.substr(0,suf) + "pol";
+			
 			if(is_backout_path(relativePathPOL))
 			{
 				string msg = string("The path '") + relativePathPOL + string("' is illegal because it backs out of your scenery pack.");
@@ -1732,21 +1730,16 @@ static int	DSF_ExportTileRecursive(
 				return 0;
 			}
 
-			//-----------------
 			string absPathIMG = pkg + r;
-			//-----------------
-			string absPathDDS = absPathIMG;
-			absPathDDS.replace(absPathDDS.length()-3,3,"dds");
-			//-----------------
-			string absPathPOL = absPathIMG;
-			absPathPOL.replace(absPathPOL.length()-3,3,"pol");
+			string absPathDDS = pkg + relativePathDDS;
+			string absPathPOL = pkg + relativePathPOL;
 
 			r = relativePathPOL;		// Resource name comes from the pol no matter what we compress to disk.
 
 			date_cmpr_result_t date_cmpr_res = FILE_date_cmpr(absPathIMG.c_str(),absPathDDS.c_str());
 			//-----------------
-			/* How to export a Torthoptho
-			* If it is a torthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
+			/* How to export a orthophoto
+			* If it is a orthophoto and the image is newer than the DDS (avoid unnecissary DDS creation),
 			* Create a Bitmap from whatever file format is being used.
 			* Use the number of channels to decide the compression level
 			* Create a DDS from that file format
@@ -1765,7 +1758,7 @@ static int	DSF_ExportTileRecursive(
 				ImageInfo imgInfo;
 				ImageInfo smaller;
 				int inWidth = 1;
-				int inHeight = 1;	
+				int inHeight = 1;
 				
 				int DXTMethod = 0;
 				
