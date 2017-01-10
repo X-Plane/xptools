@@ -68,7 +68,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
-	CollectRecursive(wrl, back_inserter(apts),WED_Airport::sClass);
+	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
 
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 	ISelection * sel = WED_GetSelect(resolver);

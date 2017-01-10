@@ -82,15 +82,25 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visib
 	}
 
 	bool took_thing = true;
-	if (ct && (visibility_pred(thing) == false))
+
+	if (visibility_pred(thing))
 	{
-		return;
+		if (ct != NULL)
+		{
+			//ct is of type, is visible enough : collect, if it passes take_pred
+			if (take_pred(thing) == true)
+			{
+				//Push back the matching WED_Thing*
+				oi = ct;
+				took_thing = true;
+			}
+		}
+		//else ct is not of type, visible enough: continue
 	}
-	else if (take_pred(thing) == true)
+	else
 	{
-		//Push back the matching WED_Thing*
-		oi = ct;
-		took_thing = true;
+		//ct is not of type, not visible enough or ct is of type, not visible enough
+		return;
 	}
 
 	if (!took_thing || max_tree_levels > 0)
