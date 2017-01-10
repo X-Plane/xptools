@@ -27,18 +27,18 @@
 #include "WED_Entity.h"
 #include "WED_Thing.h"
 
-bool TakeAlways(WED_Thing* v)
+static bool TakeAlways(WED_Thing* v)
 {
 	return true;
 }
 
-bool IgnoreVisiblity(WED_Thing* v)
+static bool IgnoreVisiblity(WED_Thing* v)
 {
 	return true;
 }
 
 //Warning T must be of type WED_Entity!
-bool EntityNotHidden(WED_Thing* v)
+static bool EntityNotHidden(WED_Thing* v)
 {
 	DebugAssert(v != NULL);
 	return !static_cast<WED_Entity*>(v)->GetHidden();

@@ -343,6 +343,7 @@
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\PlatformUtils.h" />
     <ClInclude Include="..\..\src\Utils\SQLUtils.h" />
+    <ClInclude Include="..\..\src\Utils\STLUtils.h" />
     <ClInclude Include="..\..\src\Utils\TexUtils.h" />
     <ClInclude Include="..\..\src\Utils\unzip.h" />
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />

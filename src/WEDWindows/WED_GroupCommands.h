@@ -131,7 +131,8 @@ int		WED_CanBreakApartSpecialAgps(IResolver* resolver);
 void	WED_DoBreakApartSpecialAgps(IResolver* resolver);// , bool no_start_cmd = false);//only use no_start_cmd if you've also called CanBreakApart
 
 int		WED_CanReplaceVehicleObj(IResolver* resolver);
-void	WED_DoReplaceVehicleObj(IResolver* resolver);
+int		WED_CanReplaceVehicleObj(WED_Airport* airport);
+void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
 int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
 

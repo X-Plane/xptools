@@ -2875,9 +2875,13 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 int	WED_CanReplaceVehicleObj(IResolver* resolver)
 {
 	//Returns true if there are any Obj files in the world.
-	//TODO: This Aught to be the current airport
-	WED_Thing * root = WED_GetWorld(resolver);
-	return CountChildOfTypeRecursive<WED_ObjPlacement>(root,true);
+	return CountChildOfTypeRecursive<WED_ObjPlacement>(WED_GetWorld(resolver), true);
+}
+
+int	WED_CanReplaceVehicleObj(WED_Airport* airport)
+{
+	//Returns true if there are any Obj files in the airport.
+	return CountChildOfTypeRecursive<WED_ObjPlacement>(airport, true);
 }
 
 struct vehicle_replacement_info
@@ -2954,11 +2958,13 @@ static map<string,vehicle_replacement_info> build_replacement_table()
 	return table;
 }
 
-void	WED_DoReplaceVehicleObj(IResolver* resolver)
+void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
 	vector<WED_ObjPlacement*> obj_placements;
-	//CollectRecursive(root, WED_ObjPlacement::sClass, back_inserter(obj_placements));
+	
+	WED_Thing* collection_start = apt == NULL ? root : apt;
+	CollectRecursive(collection_start, back_inserter(obj_placements), WED_ObjPlacement::sClass);
 
 	if(!obj_placements.empty())
 	{

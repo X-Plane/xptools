@@ -25,7 +25,10 @@
 #include "WED_AptIE.h"
 #include "WED_DSFExport.h"
 #include "IResolver.h"
+
+#include "WED_HierarchyUtils.h"
 #include "WED_ToolUtils.h"
+
 #include "ILibrarian.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
@@ -65,7 +68,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	vector<WED_Airport*> apts;
-	CollectRecursiveNoNesting(wrl, back_inserter(apts));
+	CollectRecursive(wrl, back_inserter(apts),WED_Airport::sClass);
 
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
 	ISelection * sel = WED_GetSelect(resolver);
@@ -74,7 +77,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 	{
 		//--Ramp Positions-----------------------------------------------------------
 		vector<WED_RampPosition*> ramp_positions;
-		CollectRecursive(wrl, back_inserter(ramp_positions));
+		CollectRecursive(*apt_itr, back_inserter(ramp_positions),WED_RampPosition::sClass);
 
 		int non_empty_airlines_strs = 0;
 		int non_op_none_ramp_starts = 0;
@@ -109,10 +112,10 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 
 		//--Agp and obj upgrades-----------------------------------------------------
 		vector<WED_TruckParkingLocation*> parking_locations;
-		CollectRecursive(*apt_itr, back_inserter(parking_locations));
+		CollectRecursive(*apt_itr, back_inserter(parking_locations),WED_TruckParkingLocation::sClass);
 
 		vector<WED_TruckDestination*>     truck_destinations;
-		CollectRecursive(*apt_itr, back_inserter(truck_destinations));
+		CollectRecursive(*apt_itr, back_inserter(truck_destinations),WED_TruckDestination::sClass);
 
 		bool found_truck_evidence = false;
 		found_truck_evidence |= !parking_locations.empty();
@@ -122,7 +125,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 		{
 			vector<WED_ObjPlacement*> all_objs;
 			vector<WED_AgpPlacement*> agp_placements;
-			CollectRecursive(*apt_itr, back_inserter(all_objs));
+			CollectRecursive(*apt_itr, back_inserter(all_objs),WED_ObjPlacement::sClass);
 
 			for (vector<WED_AgpPlacement*>::iterator obj_itr = all_objs.begin(); obj_itr != all_objs.end(); ++obj_itr)
 			{
@@ -149,13 +152,16 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			//Easy out
 			if (num_replaced > 0 || out_added_objs.size() > 0)
 			{
-				WED_DoReplaceVehicleObj(resolver);
+				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
 			else if (WED_CanReplaceVehicleObj(resolver) == true)
 			{
-				WED_DoReplaceVehicleObj(resolver);
+				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
 		}
+
+		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
+		printf("%0.0f through heuristic\n", percent_done);
 	}
 }
 #endif
