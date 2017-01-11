@@ -40,6 +40,7 @@
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+#include "STLUtils.h"
 
 #include "WED_Ring.h"
 #include "WED_DrapedOrthophoto.h"
@@ -1186,10 +1187,12 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 
 bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 {
+	//---Cut-----------------------
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Select Crossing Edges");
 	sel->Clear();
+	//-----------------------------
 
 	vector<WED_GISEdge *> edges;
 	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
@@ -1255,6 +1258,8 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 			}
 		}
 	}
+
+	//---Cut------------------------
 	if(sel->GetSelectionCount() == 0)
 	{
 		op->AbortOperation();
@@ -1265,6 +1270,7 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 		op->CommitOperation();
 		return true;
 	}
+	//------------------------------
 }
 
 static bool get_any_resource_for_thing(WED_Thing * thing, string& r)
@@ -1455,27 +1461,75 @@ static int	unsplittable(ISelectable * base, void * ref)
 
 typedef	pair<ISelection *, vector<WED_Thing *> * >	hack_t;
 
+static bool test_type(IBase* in_base, WED_Thing*& out_t, IGISPoint*& out_p, /*WED_AirportNode* a,*/ WED_Thing*& out_parent, IGISPointSequence*& out_s)
+{
+	//Set all to NULL so we don't get any false positives
+	out_t = NULL;
+	out_p = NULL;
+	//out_a = NULL;
+	out_parent = NULL;
+	out_s = NULL;
+
+	out_t = dynamic_cast<WED_Thing *>(in_base);
+	if (!out_t)
+		return 0;
+	out_p = dynamic_cast<IGISPoint *>(in_base);
+	if (!out_p)
+		return 0;
+	//	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
+	//	if (!a) return 0;
+
+	out_parent = out_t->GetParent();
+	if (!out_parent)
+		return 0;
+
+	out_s = dynamic_cast<IGISPointSequence*>(out_parent);
+	if (!out_s)
+		return 0;
+
+	if (out_s->GetGISClass() != gis_Ring && out_s->GetGISClass() != gis_Chain)
+		return 0;
+
+	return 1;
+}
+
+static int	collect_splits(IBase * base)
+{
+	//const WED_Thing* t = NULL;
+	//const IGISPoint* p = NULL;
+	///*const WED_AirportNode* a = NULL*/ 
+	//const WED_Thing* parent = NULL;
+	//const IGISPointSequence* s = NULL;
+
+	//bool is_valid_type = test_type(base, t, p, parent, s);
+
+	//int pos = t->GetMyPosition();
+	//int next = (pos							  + 1) % parent->CountChildren();
+	//int okay_next = (s->GetGISClass() == gis_Ring) || next > pos;
+
+	//WED_Thing * tnext = okay_next ? parent->GetNthChild(next) : NULL;
+	//return tnext != NULL;
+	return false;
+}
+
 static int	collect_splits(ISelectable * base, void * ref)
 {
-	hack_t * info = (hack_t *) ref;
+	hack_t * info = (hack_t *)ref;
 
-	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
-	if (!t) return 0;
-	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
-	if (!p) return 0;
-//	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
-//	if (!a) return 0;
+	WED_Thing* t = NULL;
+	IGISPoint* p = NULL;
+	/*WED_AirportNode* a = NULL*/
+	WED_Thing* parent = NULL;
+	IGISPointSequence* s = NULL;
 
-	WED_Thing * parent = t->GetParent();
-	if (!parent) return 0;
-
-	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
-	if (!s) return 0;
-
-	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain) return 0;
+	bool is_valid_type = test_type(base, t, p, parent, s);
+	if (is_valid_type == false)
+	{
+		return 0;
+	}
 
 	int pos = t->GetMyPosition();
-	int next = (pos							  + 1) % parent->CountChildren();
+	int next = (pos + 1) % parent->CountChildren();
 	int okay_next = (s->GetGISClass() == gis_Ring) || next > pos;
 
 	WED_Thing * tnext = okay_next ? parent->GetNthChild(next) : NULL;
@@ -1487,7 +1541,6 @@ static int	collect_splits(ISelectable * base, void * ref)
 		info->second->push_back(t);
 	return 0;
 }
-
 
 // This functor sorts points radially from a point.  When the points are on a line segment this is a cheap way to
 // order them from the anchor to the other end.
@@ -1532,35 +1585,39 @@ int		WED_CanSplit(IResolver * resolver)
 	return 1;
 }
 
-void	WED_DoSplit(IResolver * resolver)
+void	do_split(vector<WED_Thing *>& who, vector<split_edge_info_t>&edges)
 {
-	ISelection * sel = WED_GetSelect(resolver);
-	IOperation * op = dynamic_cast<IOperation *>(sel);
+	vector<WED_Thing *> safe_who;
+	copy_if(who.begin(), who.end(), back_inserter(safe_who), (int(*)(IBase*))collect_splits);
+	
+	//vector<split_edge_info_t> edges;
+	if (who.empty() && edges.empty())
+		return;
+}
 
-	vector<WED_Thing *> who;
-	hack_t	info;
-	info.first = sel;
-	info.second = &who;
+void	do_split(ISelection * sel, hack_t& info, vector<split_edge_info_t>& edges)
+{
+	DebugAssert(sel != NULL);
 
+	//--Needs to work without selection
 	sel->IterateSelectionOr(collect_splits, &info);
-	
-	vector<split_edge_info_t> edges;
-	
+
 	sel->IterateSelectionOr(collect_edges, &edges);
-	
-	if (who.empty() && edges.empty()) return;
+	//---------------------------------
+}
 
-	op->StartOperation("Split Segments.");
-
+vector<WED_Thing*> run_split(vector<WED_Thing* > who, vector<split_edge_info_t>& edges)
+{
+	//------Core-------------------------
 	//
 	// This super-obtuse block splits pairs of points in a GIS Chain.
 	//
-
+	vector<WED_Thing*> new_pieces;
 	for (vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
 		WED_Thing * parent = (*w)->GetParent();
 		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(parent);
-		WED_Thing * new_w = (WED_Thing *) (*w)->Clone();
+		WED_Thing * new_w = (WED_Thing *)(*w)->Clone();
 
 		IGISPoint * as_p = dynamic_cast<IGISPoint *>(new_w);
 		IGISPoint_Bezier * as_bp = dynamic_cast<IGISPoint_Bezier *>(new_w);
@@ -1568,45 +1625,45 @@ void	WED_DoSplit(IResolver * resolver)
 		Segment2	seg;
 		Bezier2		bez;
 
-//		set<int> attrs;
-//		node->GetAttributes(attrs);
-///		new_node->SetAttributes(attrs);
+		//		set<int> attrs;
+		//		node->GetAttributes(attrs);
+		///		new_node->SetAttributes(attrs);
 
-		if (seq->GetSide(gis_Geo,(*w)->GetMyPosition(),seg,bez))
+		if (seq->GetSide(gis_Geo, (*w)->GetMyPosition(), seg, bez))
 		{
 			IGISPoint_Bezier * pre = dynamic_cast<IGISPoint_Bezier *>(*w);
-			IGISPoint_Bezier * follow = dynamic_cast<IGISPoint_Bezier *>(parent->GetNthChild(((*w)->GetMyPosition()+1) % parent->CountChildren()));
+			IGISPoint_Bezier * follow = dynamic_cast<IGISPoint_Bezier *>(parent->GetNthChild(((*w)->GetMyPosition() + 1) % parent->CountChildren()));
 			DebugAssert(as_bp);
 			DebugAssert(pre);
 			DebugAssert(follow);
 			Bezier2	b1, b2;
-			bez.partition(b1,b2);
-			as_bp->SetLocation(gis_Geo,b2.p1);
+			bez.partition(b1, b2);
+			as_bp->SetLocation(gis_Geo, b2.p1);
 			as_bp->SetSplit(false);
-			as_bp->SetControlHandleHi(gis_Geo,b2.c1);
+			as_bp->SetControlHandleHi(gis_Geo, b2.c1);
 			pre->SetSplit(true);
-			pre->SetControlHandleHi(gis_Geo,b1.c1);
+			pre->SetControlHandleHi(gis_Geo, b1.c1);
 			follow->SetSplit(true);
-			follow->SetControlHandleLo(gis_Geo,b2.c2);
-			if(as_bp->HasLayer(gis_UV))
+			follow->SetControlHandleLo(gis_Geo, b2.c2);
+			if (as_bp->HasLayer(gis_UV))
 			{
-				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);
-				bez.partition(b1,b2);
-				as_bp->SetLocation(gis_UV,b2.p1);
-				as_bp->SetControlHandleHi(gis_UV,b2.c1);
-				as_bp->SetControlHandleLo(gis_UV,b1.c2);
-				pre->SetControlHandleHi(gis_UV,b1.c1);
-				follow->SetControlHandleLo(gis_UV,b2.c2);			
+				seq->GetSide(gis_UV, (*w)->GetMyPosition(), seg, bez);
+				bez.partition(b1, b2);
+				as_bp->SetLocation(gis_UV, b2.p1);
+				as_bp->SetControlHandleHi(gis_UV, b2.c1);
+				as_bp->SetControlHandleLo(gis_UV, b1.c2);
+				pre->SetControlHandleHi(gis_UV, b1.c1);
+				follow->SetControlHandleLo(gis_UV, b2.c2);
 			}
 		}
 		else
 		{
 			DebugAssert(as_p);
-			as_p->SetLocation(gis_Geo,seg.midpoint());
-			if(as_p->HasLayer(gis_UV))
+			as_p->SetLocation(gis_Geo, seg.midpoint());
+			if (as_p->HasLayer(gis_UV))
 			{
-				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);			
-				as_p->SetLocation(gis_UV,seg.midpoint());
+				seq->GetSide(gis_UV, (*w)->GetMyPosition(), seg, bez);
+				as_p->SetLocation(gis_UV, seg.midpoint());
 			}
 		}
 		new_w->SetParent(parent, (*w)->GetMyPosition() + 1);
@@ -1615,38 +1672,41 @@ void	WED_DoSplit(IResolver * resolver)
 		name += ".1";
 		new_w->SetName(name);
 
-		sel->Insert(new_w);
+		//--cut--------------
+		new_pieces.push_back(new_w);
+		//-------------------
 	}
-	
+
+	//--Cut------------------
 	//
 	// This block splits overlapping GIS edges anywhere they cross.
 	//
-	
+
 	// Step 1: run a nested for loop and find all intersections between all
 	// segments...if the intersection is in the interior, we accumulate it on
 	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
 	// data sets big enough to need it.
-	for(int i = 0; i < edges.size(); ++i)
+	for (int i = 0; i < edges.size(); ++i)
 	{
 		Segment2 is;
-		
+
 		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
 		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
-		for(int j = 0; j < i; ++j)
+		for (int j = 0; j < i; ++j)
 		{
 			Segment2 js;
 			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
 			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
-			
-			if(is.p1 != is.p2 &&
-			   js.p1 != js.p2 &&
-			   is.p1 != js.p1 &&
-			   is.p2 != js.p2 &&
-			   is.p1 != js.p2 &&
-			   is.p2 != js.p1)
+
+			if (is.p1 != is.p2 &&
+				js.p1 != js.p2 &&
+				is.p1 != js.p1 &&
+				is.p2 != js.p2 &&
+				is.p1 != js.p2 &&
+				is.p2 != js.p1)
 			{
 				Point2 x;
-				if(is.intersect(js, x))
+				if (is.intersect(js, x))
 				{
 					edges[i].splits.push_back(x);
 					edges[j].splits.push_back(x);
@@ -1654,58 +1714,94 @@ void	WED_DoSplit(IResolver * resolver)
 			}
 		}
 	}
-	
+
 	// This will be a collection of all the nodes we _create_ by splitting, bucketed by their split point.
 	// When A and B cross, we create two new nodes, Xa and Xb, in the middle of each...when done we have
 	// to merge Xa and Xb to cross-link A1, A2, B1 and B2.  So we bucket Xa and Xb at point X.
 	map<Point2, vector<WED_Thing *>, lesser_x_then_y >	splits;
-	
-	for(int i = 0; i < edges.size(); ++i)
+
+	for (int i = 0; i < edges.size(); ++i)
 	{
 		// Sort in order from source to dest - we need to go in order to avoid making Z shapes
 		// when splitting more than once.
 		edges[i].sort_along_edge();
-		
+
 		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
-		if(edges[i].splits.empty())
+		if (edges[i].splits.empty())
 		{
 			Segment2 s;
-			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo,s.p1);
-			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo,s.p2);
+			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, s.p1);
+			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, s.p2);
 			edges[i].splits.push_back(s.midpoint());
 		}
-		
+
 		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
 		// on the "dst" side - so by breaking off the very LAST split first, we keep as "us" the part of
 		// the segment containing all other splits.  We work backward.
-		for(vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
+		for (vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
 		{
 			// If we had a 'T' then in theory SplitSide could return NULL?
 			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
-			if(split)
+			if (split)
 			{
 				// Bucket our new node for merging later
 				WED_Thing * t = dynamic_cast<WED_Thing *>(split);
 				DebugAssert(t);
 				splits[*r].push_back(t);
-				
+
 				// Select every incident segment - some already selected but that's okay.
 				set<WED_Thing *> incident;
 				t->GetAllViewers(incident);
-				for(set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
-					sel->Insert(*i);
+				for (set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
+				//--Cut--------------
+					new_pieces.push_back(*i);
+				//-------------------
 			}
 		}
 	}
-	
+
 	// Finally for each bucketed set of nodes, merge them down to get topology.
-	for(map<Point2, vector<WED_Thing *>, lesser_x_then_y>::iterator s = splits.begin(); s != splits.end(); ++s)
+	for (map<Point2, vector<WED_Thing *>, lesser_x_then_y>::iterator s = splits.begin(); s != splits.end(); ++s)
 	{
-		if(s->second.size() > 1)
+		if (s->second.size() > 1)
 			run_merge(s->second);
 	}
+
+	return new_pieces;
+}
+void	WED_DoSplit(IResolver * resolver)
+{
+	//--Cut----------
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	//---------------
+
+	vector<WED_Thing *> who;
+	hack_t	info;
+	info.first = sel;
+	info.second = &who;
 	
+	vector<split_edge_info_t> edges;
+	do_split(sel, info, edges);
+
+	if (who.empty() && edges.empty())
+		return;
+
+	//--Cut------------------------------
+	op->StartOperation("Split Segments.");
+	//-----------------------------------
+	
+	vector<WED_Thing*> new_pieces = run_split(who, edges);
+
+	//Copy the new pieces into 
+	for (vector<WED_Thing*>::iterator itr = new_pieces.begin(); itr != new_pieces.end(); ++itr)
+	{
+		sel->Insert(*itr);
+	}
+
+	//--Cut----------------
 	op->CommitOperation();
+	//---------------------
 }
 
 static int collect_pnts(ISelectable * base,void * ref)
