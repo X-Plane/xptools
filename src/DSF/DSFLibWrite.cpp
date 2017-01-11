@@ -35,6 +35,9 @@
 
 #define	POLY_POINT_POOL_COUNT	12
 
+#define ALLOW_CONTIGUOUS_PRIMITIVES 0
+#define ALLOW_SHARED_ROADS 0
+
 // Define this to 1 to see statistics about the encoded DSF file.
 #define ENCODING_STATS 1
 
@@ -589,7 +592,9 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 
 		for (prim = prims->second.begin(); prim != prims->second.end(); ++prim)
 		{
-			if (terrainPool[prims->first].CanBeContiguous((*prim)->vertices))
+			if (ALLOW_CONTIGUOUS_PRIMITIVES &&
+					terrainPool[prims->first].CountShared((*prim)->vertices) == 0 &&
+					terrainPool[prims->first].CanBeContiguous((*prim)->vertices))
 			{
 				Assert((*prim)->vertices.size() < 65536);
 				loc = terrainPool[prims->first].AcceptContiguous((*prim)->vertices);
@@ -633,7 +638,10 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	}
 
 #if ENCODING_STATS
-	printf("Contiguous vertices: %d.  Individual vertices: %d\n", total_prim_v_contig, total_prim_v_shared);
+	int shared = 0;
+	for(DSFSharedPointPoolMap::iterator i = terrainPool.begin(); i != terrainPool.end(); ++i)
+		shared += i->second.Count();
+	printf("Contiguous vertices: %d.  Individual vertices: %d (%d)\n", total_prim_v_contig, total_prim_v_shared, shared);
 #endif
 
 	// Compact final pool data.
@@ -819,7 +827,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		int	sharedLen = vectorPool.CountShared(chainSpecs[n].path);
 		int planes = chainSpecs[n].curved ? 7 : 4;
 		int chainLen = chainSpecs[n].path.size();
-		if ((2 + chainLen * planes) > (chainLen + (chainLen - sharedLen) * planes))
+		if (ALLOW_SHARED_ROADS && (2 + chainLen * planes) > (chainLen + (chainLen - sharedLen) * planes))
 		{
 			// Sink into the most shared pool
 			chainSpecs[n].contiguous = false;

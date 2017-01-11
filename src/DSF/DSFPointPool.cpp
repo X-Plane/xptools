@@ -168,6 +168,26 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguousPool(int p, SharedSubPool * p
 	return retval;
 }
 
+int	DSFSharedPointPool::CountShared(const DSFTupleVector& inPoints)
+{
+	int c = 0;
+	for(int n = 0; n < inPoints.size(); ++n)
+	{
+		// First check every scale for the point already existing.
+		for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
+		{
+			DSFTuple	point(inPoints[n]);
+			if (point.encode(pool->mOffset, pool->mScale))
+			{
+				hash_map<DSFTuple,int>::iterator iter = pool->mPointsIndex.find(point);
+				if (iter != pool->mPointsIndex.end())
+					++c;
+			}
+		}
+	}
+	return c;
+}
+
 pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 {
 	int p = 0;
@@ -204,6 +224,15 @@ void			DSFSharedPointPool::Trim(void)
 	for (list<SharedSubPool>::iterator i = mPools.begin(); i != mPools.end(); ++i)
 		trim(i->mPoints);
 }
+
+int				DSFSharedPointPool::Count() const
+{
+	int t = 0;
+	for (list<SharedSubPool>::const_iterator i = mPools.begin(); i != mPools.end(); ++i)
+		t += (i->mPoints.size());
+	return t;
+}
+
 
 void			DSFSharedPointPool::ProcessPoints(void)
 {
