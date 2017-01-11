@@ -547,8 +547,8 @@ inline void DSFTuple::dumphex(void) const
 
 inline size_t DSFTuple::hash(void) const
 {
-	size_t	ret = 0;
-	size_t * p = (size_t *) mData;
+	uint32_t	ret = 0;
+	uint32_t * p = (uint32_t *) mData;
 	int words = mLen;
 
 	while (words--)
