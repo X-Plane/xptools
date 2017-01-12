@@ -1461,84 +1461,68 @@ static int	unsplittable(ISelectable * base, void * ref)
 
 typedef	pair<ISelection *, vector<WED_Thing *> * >	hack_t;
 
-static bool test_type(IBase* in_base, WED_Thing*& out_t, IGISPoint*& out_p, /*WED_AirportNode* a,*/ WED_Thing*& out_parent, IGISPointSequence*& out_s)
+class SplittableThing
 {
-	//Set all to NULL so we don't get any false positives
-	out_t = NULL;
-	out_p = NULL;
-	//out_a = NULL;
-	out_parent = NULL;
-	out_s = NULL;
+public:
+	SplittableThing(IBase* base) :
+		thing(dynamic_cast<WED_Thing* >(base)),
+		point(dynamic_cast<IGISPoint* >(base)),
+		//airport_node(dynamic_cast<WED_AirportNode *>(base)),
+		parent(thing != NULL ? thing->GetParent() : NULL)
+	{
+	}
 
-	out_t = dynamic_cast<WED_Thing *>(in_base);
-	if (!out_t)
-		return 0;
-	out_p = dynamic_cast<IGISPoint *>(in_base);
-	if (!out_p)
-		return 0;
-	//	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
-	//	if (!a) return 0;
+	WED_Thing* const AsWED_Thing() const { return thing; }
+	IGISPoint* const AsIGISPoint() const { return point; }
+	//WED_AirportNode* const AsWED_AirportNode { return airport_node; }
+	WED_Thing* const GetParent() const { return parent; }
 
-	out_parent = out_t->GetParent();
-	if (!out_parent)
-		return 0;
+	bool IsValid() const
+	{
+		bool dynamic_types_correct = thing != NULL && point != NULL;
+		if(dynamic_types_correct == true && parent != NULL)
+		{
+			return true;
+		}
 
-	out_s = dynamic_cast<IGISPointSequence*>(out_parent);
-	if (!out_s)
-		return 0;
+		return false;
+	}
 
-	if (out_s->GetGISClass() != gis_Ring && out_s->GetGISClass() != gis_Chain)
-		return 0;
-
-	return 1;
-}
-
-static int	collect_splits(IBase * base)
-{
-	//const WED_Thing* t = NULL;
-	//const IGISPoint* p = NULL;
-	///*const WED_AirportNode* a = NULL*/ 
-	//const WED_Thing* parent = NULL;
-	//const IGISPointSequence* s = NULL;
-
-	//bool is_valid_type = test_type(base, t, p, parent, s);
-
-	//int pos = t->GetMyPosition();
-	//int next = (pos							  + 1) % parent->CountChildren();
-	//int okay_next = (s->GetGISClass() == gis_Ring) || next > pos;
-
-	//WED_Thing * tnext = okay_next ? parent->GetNthChild(next) : NULL;
-	//return tnext != NULL;
-	return false;
-}
+private:
+	WED_Thing* const thing;
+	IGISPoint* const point;
+	//WED_AirportNode* const airport_node;
+	WED_Thing* const parent;
+};
 
 static int	collect_splits(ISelectable * base, void * ref)
 {
 	hack_t * info = (hack_t *)ref;
 
-	WED_Thing* t = NULL;
-	IGISPoint* p = NULL;
-	/*WED_AirportNode* a = NULL*/
-	WED_Thing* parent = NULL;
-	IGISPointSequence* s = NULL;
-
-	bool is_valid_type = test_type(base, t, p, parent, s);
-	if (is_valid_type == false)
+	const SplittableThing sp_thing(base);
+	if(sp_thing.IsValid() == false)
 	{
 		return 0;
 	}
 
-	int pos = t->GetMyPosition();
-	int next = (pos + 1) % parent->CountChildren();
+	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(sp_thing.GetParent());
+	if (!s)
+		return 0;
+
+	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain)
+		return 0;
+
+	int pos = sp_thing.AsWED_Thing()->GetMyPosition();
+	int next = (pos							  + 1) % sp_thing.GetParent()->CountChildren();
 	int okay_next = (s->GetGISClass() == gis_Ring) || next > pos;
 
-	WED_Thing * tnext = okay_next ? parent->GetNthChild(next) : NULL;
+	WED_Thing * tnext = okay_next ? sp_thing.GetParent()->GetNthChild(next) : NULL;
 
 	ISelection * sel = info->first;
 
 	int okay = tnext && sel->IsSelected(tnext);
-	if (okay)
-		info->second->push_back(t);
+	if(okay)
+		info->second->push_back(sp_thing.AsWED_Thing());
 	return 0;
 }
 
@@ -1580,33 +1564,13 @@ static int collect_edges(ISelectable * base, void * ref)
 int		WED_CanSplit(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if (sel->GetSelectionCount() == 0) return false;
+	if (sel->GetSelectionCount() == 0) return 0;
 	if (sel->IterateSelectionOr(unsplittable, sel)) return 0;
 	return 1;
 }
 
-void	do_split(vector<WED_Thing *>& who, vector<split_edge_info_t>&edges)
-{
-	vector<WED_Thing *> safe_who;
-	copy_if(who.begin(), who.end(), back_inserter(safe_who), (int(*)(IBase*))collect_splits);
-	
-	//vector<split_edge_info_t> edges;
-	if (who.empty() && edges.empty())
-		return;
-}
-
-void	do_split(ISelection * sel, hack_t& info, vector<split_edge_info_t>& edges)
-{
-	DebugAssert(sel != NULL);
-
-	//--Needs to work without selection
-	sel->IterateSelectionOr(collect_splits, &info);
-
-	sel->IterateSelectionOr(collect_edges, &edges);
-	//---------------------------------
-}
-
-vector<WED_Thing*> run_split(vector<WED_Thing* > who, vector<split_edge_info_t>& edges)
+//Local only to here in WED_DoSplit
+static vector<WED_Thing*> run_split_on_point_seqs(vector<WED_Thing* > who)
 {
 	//------Core-------------------------
 	//
@@ -1627,7 +1591,7 @@ vector<WED_Thing*> run_split(vector<WED_Thing* > who, vector<split_edge_info_t>&
 
 		//		set<int> attrs;
 		//		node->GetAttributes(attrs);
-		///		new_node->SetAttributes(attrs);
+		//		new_node->SetAttributes(attrs);
 
 		if (seq->GetSide(gis_Geo, (*w)->GetMyPosition(), seg, bez))
 		{
@@ -1672,16 +1636,18 @@ vector<WED_Thing*> run_split(vector<WED_Thing* > who, vector<split_edge_info_t>&
 		name += ".1";
 		new_w->SetName(name);
 
-		//--cut--------------
 		new_pieces.push_back(new_w);
-		//-------------------
 	}
 
-	//--Cut------------------
+	return new_pieces;
+}
+
+vector<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
+{
 	//
 	// This block splits overlapping GIS edges anywhere they cross.
 	//
-
+	vector<WED_Thing*> new_pieces;
 	// Step 1: run a nested for loop and find all intersections between all
 	// segments...if the intersection is in the interior, we accumulate it on
 	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
@@ -1753,9 +1719,9 @@ vector<WED_Thing*> run_split(vector<WED_Thing* > who, vector<split_edge_info_t>&
 				set<WED_Thing *> incident;
 				t->GetAllViewers(incident);
 				for (set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
-				//--Cut--------------
+				{
 					new_pieces.push_back(*i);
-				//-------------------
+				}
 			}
 		}
 	}
@@ -1769,6 +1735,7 @@ vector<WED_Thing*> run_split(vector<WED_Thing* > who, vector<split_edge_info_t>&
 
 	return new_pieces;
 }
+
 void	WED_DoSplit(IResolver * resolver)
 {
 	//--Cut----------
@@ -1780,21 +1747,30 @@ void	WED_DoSplit(IResolver * resolver)
 	hack_t	info;
 	info.first = sel;
 	info.second = &who;
-	
+
+	//--Needs to work without selection
+	sel->IterateSelectionOr(collect_splits, &info);
+
 	vector<split_edge_info_t> edges;
-	do_split(sel, info, edges);
+	sel->IterateSelectionOr(collect_edges, &edges);
 
 	if (who.empty() && edges.empty())
 		return;
 
 	//--Cut------------------------------
-	op->StartOperation("Split Segments.");
+	op->StartOperation("Split Segments");
 	//-----------------------------------
 	
-	vector<WED_Thing*> new_pieces = run_split(who, edges);
+	vector<WED_Thing*> new_pieces  = run_split_on_point_seqs(who);
+	vector<WED_Thing*> new_pieces2 = run_split_on_edges(edges);
 
 	//Copy the new pieces into 
 	for (vector<WED_Thing*>::iterator itr = new_pieces.begin(); itr != new_pieces.end(); ++itr)
+	{
+		sel->Insert(*itr);
+	}
+
+	for (vector<WED_Thing*>::iterator itr = new_pieces2.begin(); itr != new_pieces2.end(); ++itr)
 	{
 		sel->Insert(*itr);
 	}

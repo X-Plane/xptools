@@ -27,6 +27,7 @@
 class	IResolver;
 class	WED_Thing;
 class	WED_MapZoomerNew;
+class	split_edge_info_t;
 
 int		WED_CanGroup(IResolver * inResolver);
 int		WED_CanUngroup(IResolver * inResolver);
@@ -69,6 +70,10 @@ int		WED_CanMerge(IResolver * resolver);
 void	WED_DoMerge(IResolver * resolver);
 
 int		WED_CanSplit(IResolver * resolver);
+
+//Given a vector of splittable objects and splittable edges, preform the actual math
+//It returns a vector of the new pieces
+vector<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
