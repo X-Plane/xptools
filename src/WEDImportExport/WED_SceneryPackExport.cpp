@@ -154,14 +154,14 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 			{
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
-			else if (WED_CanReplaceVehicleObj(resolver) == true)
+			else if (WED_CanReplaceVehicleObj(*apt_itr) == true)
 			{
 				WED_DoReplaceVehicleObj(resolver,*apt_itr);
 			}
 		}
 
 		double percent_done = (double)distance(apts.begin(), apt_itr) / apts.size() * 100;
-		printf("%0.0f through heuristic\n", percent_done);
+		printf("%0.0f%% through heuristic\n", percent_done);
 	}
 }
 #endif
@@ -172,7 +172,9 @@ void	WED_DoExportPack(IResolver * resolver)
 	DoHueristicAnalysisAndAutoUpgrade(resolver);
 #endif
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	if(!WED_ValidateApt(resolver))
+	// Special case: in Tyler's bulk-Gateway-export-mode, Tyler can be trusted to run the validation *first*, before attempting to
+	// export... and if the export blows up or something, it's Tyler's fault.
+	if(!TYLER_MODE && !WED_ValidateApt(resolver))
 		return;
 
 	ILibrarian * l = WED_GetLibrarian(resolver);
