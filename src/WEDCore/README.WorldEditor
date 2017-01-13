@@ -13,6 +13,14 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.6.0a2 12/13/16
+	Bug fixes:
+	- WED-748: TaxiRouteNode Merge does handle "near" merge case
+	- WED-716: Orthophoto DSF export no longer causes endless DoUserAlerts
+
+	Features:
+		wet_latest_xplane set to wet_xplane_1100
+
 WED 1.6.0a1 12/02/16
 	Bug fixes:
 	- WED-724: Prevent cursor in TaxiSignEditor changing due to items in windows underneath it
