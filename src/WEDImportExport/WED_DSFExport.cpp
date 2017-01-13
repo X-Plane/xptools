@@ -1998,6 +1998,7 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 	*/
 
 	DSFDestroyWriter(writer);
+	return entities;
 }
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
@@ -2041,6 +2042,7 @@ int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, se
 		DoUserAlert("Warning: you have bezier curves that cross a DSF tile boundary.  X-Plane 9 cannot handle this case.  To fix this, only use non-curved polygons to cross a tile boundary.");
 		return -1;
 	}
+	return 0;
 }
 
 int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * apt, const string& package, set<WED_Thing *>& problem_children)
