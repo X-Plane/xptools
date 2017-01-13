@@ -1377,7 +1377,9 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
 // Given a vector of nodes all in the same place, this routine merges them all, returning the one surviver,
 // and nukes the rest.  All incoming edges of all of them are merged.  Note that any edges liknking two nodes in
 // nodes are now zero length.
-static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
+
+//Return the winning node
+static WED_Thing* run_merge(vector<WED_Thing *> nodes)
 {
 	DebugAssert(nodes.size() > 1);
 	WED_Thing * winner = nodes.front();
@@ -2143,7 +2145,26 @@ void	WED_DoMakeRegularPoly(IResolver * resolver)
 	op->CommitOperation();
 }
 
-typedef map<Point2, pair<const char *, vector<WED_Thing *> >,lesser_y_then_x>	merge_class_map;
+typedef vector<pair<Point2, pair<const char *, WED_Thing *> > > merge_class_map;
+
+//
+static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *, WED_Thing * > >& lhs, const pair<Point2, pair<const char *, WED_Thing * > > & rhs)
+{
+	return (lhs.first.y() == rhs.first.y()) ? (lhs.first.x() < rhs.first.x()) : (lhs.first.y() < rhs.first.y());
+}
+
+static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
+{
+	const int MAX_DIST_M_SQ = 1;
+
+	Point2 first_pos_m       = translator.Forward(first_thing->first);
+	Point2 second_thing_pos_m = translator.Forward(second_thing->first);
+	double a_sqr = pow((second_thing_pos_m.x() - first_pos_m.x()), 2);
+	double b_sqr = pow (second_thing_pos_m.y() - first_pos_m.y(), 2);
+	double sum_a_b = a_sqr + b_sqr;
+	bool is_snappable =  sum_a_b < MAX_DIST_M_SQ;
+	return is_snappable;
+}
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
 {
@@ -2194,63 +2215,95 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	
 	Point2	loc;
 	p->GetLocation(gis_Geo, loc);
-	merge_class_map::iterator l = sinks->find(loc);
-	if(l == sinks->end())
+
+	sinks->push_back(make_pair(loc, make_pair(tag, t)));
+	return 1;
+}
+
+//Returns true if every node can be merged with each other, by type and by location
+int	WED_CanMerge(IResolver * resolver)
+{
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed test in
+	//   0.001130 seconds.
+	//   0.020325 seconds.
+	//   0.000842 seconds.
+	//   0.020704 seconds.
+	//   0.016719 seconds.
+	//StElapsedTime can_merge_timer("WED_CanMerge");
+	ISelection * sel = WED_GetSelect(resolver);
+	if(sel->GetSelectionCount() < 2)
+		return 0;		// can't merge 1 thing!
+
+	//1. Ensure all of the selection is mergeable, collect
+	merge_class_map sinkmap;
+	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
-		sinks->insert(make_pair(loc,make_pair(tag,vector<WED_Thing*>(1,t))));
+		return 0;
+	}
+
+	if (sinkmap.size() > 10000 || sinkmap.size() < 2)
+	{
+		return 0;
+	}
+
+	//2. Sort by location, a small optimization
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
+	//Find the bounds for the current airport
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	Bbox2 bb;
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	//Keeps track of which objects we've discovered we can snap (hopefully all)
+	set<merge_class_map::iterator> can_snap_objects;
+
+	//For each item in the sink map
+	for (merge_class_map::iterator thing_1_itr = sinkmap.begin(); thing_1_itr != sinkmap.end() - 1; ++thing_1_itr)
+	{
+		//For each item after that
+		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
+		{
+			//If the two things are within snapping distance of each other, record so
+			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr, translator))
+			{
+				can_snap_objects.insert(thing_1_itr);
+				can_snap_objects.insert(merge_pair_itr);
+			}
+		}
+	}
+
+	//Ensure expected UI behavior - Only perfect merges are allowed
+	if (can_snap_objects.size() == sinkmap.size())
+	{
 		return 1;
 	}
 	else
 	{
-		if(l->second.first == tag)
-		{
-			l->second.second.push_back(t);
-			return 1;
-		}
 		return 0;
 	}
 }
 
-
-int	WED_CanMerge(IResolver * resolver)
-{
-	ISelection * sel = WED_GetSelect(resolver);
-	if(sel->GetSelectionCount() < 2)
-		return 0;		// can't merge 1 thing!
-	
-	merge_class_map sinkmap;
-	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
-		return 0;
-	
-	bool has_overlap = false;
-	const char * has_loner = NULL;
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
-	{
-		if(m->second.second.size() == 1)
-		{
-			if(has_loner == NULL)
-				has_loner = m->second.first;
-			else if(has_loner != m->second.first)
-				return 0;
-		}
-		else
-			has_overlap = true;
-	}
-	
-	if(has_loner && has_overlap)
-		return 0;
-	
-	return 1;
-}
-
+//WED_DoMerge will merge every node in the selection possible, any nodes that could not be merged are left as is.
+//Ex: 0-0-0-0---------------------0 will turn into 0-------------------------0.
+//If WED_CanMerge is called first this behavior would not be possible
 void WED_DoMerge(IResolver * resolver)
 {
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed snapping and merged to ~900 in
+	//   0.023290 seconds
+	//StElapsedTime can_merge_timer("WED_DoMerge");
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
 	DebugAssert(sel->GetSelectionCount() >= 2);
-	
+
+	//Validate and collect from selection
 	merge_class_map sinkmap;
 	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
@@ -2258,24 +2311,63 @@ void WED_DoMerge(IResolver * resolver)
 		op->AbortOperation();
 		return;
 	}
-	
-	vector<WED_Thing *>		remaining_nodes;
-	vector<WED_Thing *>	solos;
-	
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
+
+	//Ensure sinkmap is not rediculous or unmergable
+	if (sinkmap.size() > 10000)
 	{
-		if(m->second.second.size() == 1)
-			solos.push_back(m->second.second.front());
-		else
-			remaining_nodes.push_back(run_merge(m->second.second));
+		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
+		return;
 	}
-	
-	if(!solos.empty())
-		remaining_nodes.push_back(run_merge(solos));
+	else if (sinkmap.size() < 2)
+	{
+		return;
+	}
+
+	//2. Sort by location, a small optimization
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	Bbox2 bb;
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	//All the nodes that will end up snapped
+	set<WED_Thing*> snapped_nodes;
+	merge_class_map::iterator start_thing = sinkmap.begin();
+	while (start_thing != sinkmap.end())
+	{
+		if(start_thing + 1 != sinkmap.end())
+		{
+			merge_class_map::iterator merge_pair = start_thing+1;
+
+			while (merge_pair != sinkmap.end())
+			{
+				const char * tag_1 = start_thing->second.first;
+				const char * tag_2 = merge_pair->second.first;
+
+				if (is_within_snapping_distance(start_thing, merge_pair, translator) && tag_1 == tag_2)
+				{
+					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
+					sub_list.push_back(start_thing->second.second);
+					sub_list.push_back(merge_pair->second.second);
+
+					merge_pair = sinkmap.erase(merge_pair);
+					snapped_nodes.insert(run_merge(sub_list));
+				}
+				else
+				{
+					++merge_pair;
+				}
+			}
+		}
+
+		++start_thing;
+	}
 
 	sel->Clear();
 	
-	for(vector<WED_Thing *>::iterator node = remaining_nodes.begin(); node != remaining_nodes.end(); ++node)
+	for(set<WED_Thing *>::iterator node = snapped_nodes.begin(); node != snapped_nodes.end(); ++node)
 	{
 		set<WED_Thing *>	viewers;
 		(*node)->GetAllViewers(viewers);
@@ -2291,9 +2383,9 @@ void WED_DoMerge(IResolver * resolver)
 	
 		// Ben says: DO NOT delete the "unviable" isolated vertex here..if the user merged this down, maybe the user will link to it next?
 		// User can clean this by hand - it is in the selection when we are done.
-				
 		sel->Insert((*node));
 	}
+
 	op->CommitOperation();
 }
 
