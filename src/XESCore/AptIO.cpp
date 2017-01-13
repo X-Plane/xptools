@@ -639,7 +639,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&gate.heading,
 					&ramp_type,
 					&equip,
-					&gate.name) < 4)
+					&gate.name) < 6)
 					ok = "Illegal startup loc";
 				else		
 				{			
@@ -748,7 +748,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				outApts.back().flows.push_back(AptFlow_t());
 				if(TextScanner_FormatScan(s,"iT|",
 					&rec_code,
-					&outApts.back().flows.back().name) != 2) ok = "Error: bad apt flow record.";
+					&outApts.back().flows.back().name) < 1) ok = "Error: bad apt flow record.";
 			}
 			break;
 		case apt_flow_wind:
@@ -826,7 +826,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&equip,
 					&outApts.back().flows.back().runway_rules.back().dep_heading_lo,
 					&outApts.back().flows.back().runway_rules.back().ini_heading_lo,
-					&outApts.back().flows.back().runway_rules.back().name) != 8) ok = "Error: incorrect runway use rule.";
+					&outApts.back().flows.back().runway_rules.back().name) < 7) ok = "Error: incorrect runway use rule.";
 				else
 				{
 					outApts.back().flows.back().runway_rules.back().operations = scan_bitfields(op.c_str(),op_strings, atc_op_all);
@@ -938,12 +938,12 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 			else {
 				outApts.back().taxi_route.service_roads.push_back(AptServiceRoadEdge_t());
 				string oneway_flag, runway_flag;
-				if(TextScanner_FormatScan(s,"iiiTTT|",
+				if(TextScanner_FormatScan(s,"iiiTT|",
 					&rec_code,
 					&outApts.back().taxi_route.service_roads.back().src,
 					&outApts.back().taxi_route.service_roads.back().dst,
 					&oneway_flag,
-					&outApts.back().taxi_route.service_roads.back().name) < 5) ok = "Error: illegal service road edge.";
+					&outApts.back().taxi_route.service_roads.back().name) < 4) ok = "Error: illegal service road edge.";
 				outApts.back().taxi_route.service_roads.back().oneway = oneway_flag == "oneway";
 				last_edge = &outApts.back().taxi_route.service_roads.back();
 			}
@@ -966,7 +966,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 					&outApts.back().truck_parking.back().heading,
 					&truck_type_str,
 					&outApts.back().truck_parking.back().train_car_count,
-					&outApts.back().truck_parking.back().name) != 7)
+					&outApts.back().truck_parking.back().name) < 6)
 				{
 					ok = "Error: Illegal truck parking.";
 				}
@@ -1015,7 +1015,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				}
 				
 				AptTruckDestination_t truck_dest;
-				truck_dest.location = Point2(lat, lon);
+				truck_dest.location = Point2(lon, lat);
 				truck_dest.heading = heading;
 				truck_dest.name = name;
 
@@ -1053,7 +1053,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				if (TextScanner_FormatScan(s, "iiT|",
 					&outApts.back().atc.back().atc_type,
 					&outApts.back().atc.back().freq,
-					&outApts.back().atc.back().name) < 2)	// ATC name can be blank in v9...sketchy but apparently true.
+					&outApts.back().atc.back().name) != 3)	// ATC name can be blank in v9...sketchy but apparently true.
 				ok = "Illegal ATC frequency";
 			} else
 				ok = "Illegal unknown record";
