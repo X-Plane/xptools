@@ -1184,9 +1184,9 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 	}	
 }
 
-vector<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
+set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 {
-	vector<WED_GISEdge*> crossed_edges;
+	set<WED_GISEdge*> crossed_edges;
 	// Ben says: yes this totally sucks - replace it someday?
 	for (int i = 0; i < edges.size(); ++i)
 	{
@@ -1233,16 +1233,16 @@ vector<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 				{
 					if (s1.intersect(s2, x))
 					{
-						crossed_edges.push_back(edges[i]);
-						crossed_edges.push_back(edges[j]);
+						crossed_edges.insert(edges[i]);
+						crossed_edges.insert(edges[j]);
 					}
 				}
 				else
 				{
 					if (b1.intersect(b2, 12))
 					{
-						crossed_edges.push_back(edges[i]);
-						crossed_edges.push_back(edges[j]);
+						crossed_edges.insert(edges[i]);
+						crossed_edges.insert(edges[j]);
 					}
 				}
 			}
@@ -1264,11 +1264,8 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 	vector<WED_GISEdge *> edges;
 	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
 	
-	vector<WED_GISEdge *> crossed_edges = do_select_crossing(edges);
-	for (vector<WED_GISEdge *>::iterator itr = edges.begin(); itr != edges.end(); ++itr)
-	{
-		sel->Insert(*itr);
-	}
+	set<WED_GISEdge *> crossed_edges = do_select_crossing(edges);
+	sel->Insert(set<ISelectable*>(crossed_edges.begin(), crossed_edges.end()));
 
 	//--Keep-------------------------
 	if(sel->GetSelectionCount() == 0)

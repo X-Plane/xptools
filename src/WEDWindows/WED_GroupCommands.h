@@ -116,7 +116,7 @@ void	WED_DoSelectConnected(IResolver * resolver);
 bool	WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree=NULL);			// These return true if they did an operation to change selection due to there being work to do.
 bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
 
-vector<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges);
+set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges);
 bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
 
 void	WED_DoSelectMissingObjects(IResolver * resolver);

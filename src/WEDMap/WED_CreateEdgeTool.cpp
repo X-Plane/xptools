@@ -349,22 +349,20 @@ void		WED_CreateEdgeTool::AcceptPath(
 		}
 		// Do this last - half-built edge inserted the world destabilizes accessors.
 		new_edge->SetParent(host_for_parent,idx);
-		//edges.push_back(new_edge);
-		//sel->Insert(new_edge);	
-	
+
 //		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
 		src = dst;
 		++p;
 	}
 	
-	vector<split_edge_info_t> edges_to_split;
 	CollectRecursive(host_for_parent, back_inserter(edges));
-	
-	vector<WED_GISEdge*> crossing_edges = do_select_crossing(edges);
+	set<WED_GISEdge*> crossing_edges = do_select_crossing(edges);
+
+	vector<split_edge_info_t> edges_to_split;
 	transform(crossing_edges.begin(), crossing_edges.end(), back_inserter(edges_to_split), cast_WED_GISEdge_to_split_edge_info_t);
 	set<WED_Thing*> new_pieces = run_split_on_edges(edges_to_split);
+
 	set<ISelectable*> iselectable_new_pieces(new_pieces.begin(), new_pieces.end());
-	//copy(new_pieces.begin(), new_pieces.end(), iselectable_new_pieces);
 	sel->Insert(iselectable_new_pieces);
 
 	GetArchive()->CommitCommand();
