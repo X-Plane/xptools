@@ -25,6 +25,7 @@
 #define HIERARCHYUTILS_H
 
 #include "WED_Entity.h"
+#include "WED_Persistent.h"
 #include "WED_Thing.h"
 
 inline bool TakeAlways(WED_Thing* v)
@@ -46,14 +47,14 @@ inline bool EntityNotHidden(WED_Thing* v)
 
 //Default CollectRecursive, uses WED_Entity's GetHidden and Collects Everything
 template <typename OutputIterator>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, const char* sClass="")
+void CollectRecursive(WED_Thing * thing, OutputIterator oi, sClass_t sClass="")
 {
 	typedef typename OutputIterator::container_type::value_type VT;
 	CollectRecursive(thing, oi, EntityNotHidden, TakeAlways, sClass, INT_MAX);
 }
 
 template <typename OutputIterator>
-void CollectRecursiveNoNesting(WED_Thing * thing, OutputIterator oi, const char* sClass = "")
+void CollectRecursiveNoNesting(WED_Thing * thing, OutputIterator oi, sClass_t sClass = "")
 {
 	typedef typename OutputIterator::container_type::value_type VT;
 	CollectRecursive(thing, oi, EntityNotHidden, TakeAlways, sClass, 1);
@@ -62,7 +63,7 @@ void CollectRecursiveNoNesting(WED_Thing * thing, OutputIterator oi, const char*
 //Preforms a depth first traversal of the WED Hierarchy, first checking if its the right type, then its visibility, then other Takeion critera
 //A maximum level of tree levels can be set
 template<typename OutputIterator, typename VisibilityPred, typename TakePred>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visibility_pred, TakePred take_pred, const char* sClass ="", int max_tree_levels = INT_MAX)
+void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visibility_pred, TakePred take_pred, sClass_t sClass ="", int max_tree_levels = INT_MAX)
 {
 	bool is_of_type_and_visible = false;
 
@@ -82,15 +83,25 @@ void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visib
 	}
 
 	bool took_thing = true;
-	if (ct && (visibility_pred(thing) == false))
+
+	if (visibility_pred(thing))
 	{
-		return;
+		if (ct != NULL)
+		{
+			//ct is of type, is visible enough : collect, if it passes take_pred
+			if (take_pred(thing) == true)
+			{
+				//Push back the matching WED_Thing*
+				oi = ct;
+				took_thing = true;
+			}
+		}
+		//else ct is not of type, visible enough: continue
 	}
-	else if (take_pred(thing) == true)
+	else
 	{
-		//Push back the matching WED_Thing*
-		oi = ct;
-		took_thing = true;
+		//ct is not of type, not visible enough or ct is of type, not visible enough
+		return;
 	}
 
 	if (!took_thing || max_tree_levels > 0)
