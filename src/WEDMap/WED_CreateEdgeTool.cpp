@@ -31,10 +31,12 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_ResourceMgr.h"
 #include "WED_GISUtils.h"
+#include "WED_HierarchyUtils.h"
 #include "WED_EnumSystem.h"
 #include "STLUtils.h"
 #include <sstream>
 
+#include "WED_GroupCommands.h"
 #if AIRPORT_ROUTING
 
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
@@ -115,6 +117,12 @@ static void SortSplits(const Segment2& s, vector<pair<IGISPointSequence *, Point
 
 
 
+split_edge_info_t cast_WED_GISEdge_to_split_edge_info_t(WED_GISEdge* edge)
+{
+	DebugAssert(edge != NULL);
+	return split_edge_info_t(edge);
+}
+
 void		WED_CreateEdgeTool::AcceptPath(
 			const vector<Point2>&	in_pts,
 			const vector<Point2>&	in_dirs_lo,
@@ -182,170 +190,180 @@ void		WED_CreateEdgeTool::AcceptPath(
 			seq->SplitSide(pts[p], 0.001);		
 	}
 	
+	vector<WED_GISEdge*> edges;
+	vector<split_edge_info_t> edges_to_split;
+	CollectRecursive(host_for_parent, back_inserter(edges));
+
+	vector<WED_GISEdge*> crossing_edges = do_select_crossing(edges);
+	transform(crossing_edges.begin(), crossing_edges.end(), back_inserter(edges_to_split), cast_WED_GISEdge_to_split_edge_info_t);
+	set<WED_Thing*> new_pieces = run_split_on_edges(edges_to_split);
+	set<ISelectable*> iselectable_new_pieces(new_pieces.begin(),new_pieces.end());
+	//copy(new_pieces.begin(), new_pieces.end(), iselectable_new_pieces);
+	sel->Insert(iselectable_new_pieces);
 	/************************************************************************************************
 	 * THIRD SNAPPING PASS - SPLIT NEW EDGES NEAR TO EXISTING PTS
 	 ************************************************************************************************/
-	for(int p = 1; p < pts.size(); ++p)
-	{
-		vector<Point2>	splits;
-		SplitByPts(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
-//		printf("At index %d, got %d splits from pts.\n", p, splits.size());
-		SortSplits(Segment2(pts[p-1],pts[p]), splits);
-
-		pts.insert(pts.begin()+p,splits.begin(), splits.end());
-		dirs_lo.insert(dirs_lo.begin()+p,splits.begin(), splits.end());
-		dirs_hi.insert(dirs_hi.begin()+p,splits.begin(), splits.end());
-		vector<int> flags(splits.size(),0);
-		has_dirs.insert(has_dirs.begin()+p,flags.begin(),flags.end());
-		has_split.insert(has_split.begin()+p,flags.begin(),flags.end());
-		
-		p += splits.size();
-		
-//		printf("p = %d\n", p);
-//		for(int n = 0; n < pts.size(); ++n)
-//			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());		
-	}
-
-	/************************************************************************************************
-	 * FOURTH SNAPPING PASS - PRE-INTERSECT LINES WE WILL GO THROUGH
-	 ************************************************************************************************/
-	// Now that we've snapped all we can, look for real non-end point segment intersections.  Cut the
-	// existing segment using "split" and save the exact point.  This way we will have exact hits on
-	// nodes later and consolidate.
-
-	for(int p = 1; p < pts.size(); ++p)
-	{
-		vector<pair<IGISPointSequence *, Point2> >	splits;
-		SplitByLine(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
-		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
-			s->first->SplitSide(s->second,0.001);
-//		printf("At index %d, got %d splits.\n", p, splits.size());
-		SortSplits(Segment2(pts[p-1],pts[p]), splits);
-		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
-		{			
-			pts.insert(pts.begin()+p,s->second);
-			dirs_lo.insert(dirs_lo.begin()+p,s->second);
-			dirs_hi.insert(dirs_hi.begin()+p,s->second);
-			has_dirs.insert(has_dirs.begin()+p,0);
-			has_split.insert(has_split.begin()+p,0);
-			
-			++p;
-		}	
-		
-//		printf("p = %d\n", p);
-//		for(int n = 0; n < pts.size(); ++n)
-//			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());
-	}
-
-	/************************************************************************************************
-	 *
-	 ************************************************************************************************/
-
-	WED_GISEdge *	new_edge = NULL;
-	WED_TaxiRoute *	tr = NULL;
-#if ROAD_EDITING
-	WED_RoadEdge * er = NULL;
-#endif
-	static int n = 0;
-	int stop = closed ? pts.size() : pts.size()-1;
-	int start = 0;
-
-	WED_GISPoint * c;
-	WED_Thing * src = NULL, * dst = NULL;
-	double	dist=frame_dist*frame_dist;
-	if(src == NULL)	
-		FindNear(host_for_merging, NULL, edge_class,pts[start % pts.size()],src,dist);
-	if(src == NULL)
-	{
-#if ROAD_EDITING
-		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_RoadNode::CreateTyped(GetArchive());
-#else
-		src = c = (WED_GISPoint *)WED_TaxiRouteNode::CreateTyped(GetArchive());
-#endif
-		src->SetParent(host_for_parent,idx);
-		src->SetName(mName.value + "_start");
-		c->SetLocation(gis_Geo,pts[0]);
-	}
-
-	int p = start + 1;
-	while(p <= stop)
-	{
-		int sp = p - 1;
-		int dp = p % pts.size();
-
-		switch(mType) {
-		case create_TaxiRoute:
-			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
-			tr->SetOneway(mOneway.value);			
-			tr->SetRunway(mRunway.value);
-			tr->SetVehicleClass(mVehicleClass.value);
-			tr->SetHotDepart(mHotDepart.value);
-			tr->SetHotArrive(mHotArrive.value);
-			tr->SetHotILS(mHotILS.value);
-			tr->SetName(mName);
-			tr->SetWidth(mWidth.value);
-			break;
-#if ROAD_EDITING
-		case create_Road:
-			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());
-			er->SetSubtype(mSubtype.value);
-			er->SetStartLayer(mLayer.value);
-			er->SetEndLayer(mLayer.value);
-			er->SetName(mName);
-			er->SetResource(mResource.value);
-			break;
-#endif
-		}
-	
-		new_edge->AddSource(src,0);
-		dst = NULL;
-		
-		dist=frame_dist*frame_dist;
-		FindNear(host_for_merging, NULL, edge_class,pts[dp],dst,dist);
-		if(dst == NULL)
-		{
-			switch(mType) {
-			case create_TaxiRoute:
-				dst = c = WED_TaxiRouteNode::CreateTyped(GetArchive());
-				break;
-#if ROAD_EDITING
-			case create_Road:
-				dst = c = WED_RoadNode::CreateTyped(GetArchive());
-				break;
-#endif
-			}
-			dst->SetParent(host_for_parent,idx);
-			dst->SetName(mName.value+"_stop");
-			c->SetLocation(gis_Geo,pts[dp]);
-		}		
-		new_edge->AddSource(dst,1);
-		
-		if(has_dirs[sp])
-		{
-			if(has_dirs[dp])
-			{
-				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],dirs_lo[dp],in_pts[dp]));
-			}
-			else
-			{
-				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],in_pts[dp],in_pts[dp]));
-			}
-		}
-		else
-		{
-			if(has_dirs[dp])
-			{
-				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],in_pts[sp],dirs_lo[dp],in_pts[dp]));
-			}
-		}
-		// Do this last - half-built edge inserted the world destabilizes accessors.
-		new_edge->SetParent(host_for_parent,idx);
-		sel->Insert(new_edge);	
-	
-//		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
-		src = dst;
-		++p;
-	}	
+////	for(int p = 1; p < pts.size(); ++p)
+////	{
+////		vector<Point2>	splits;
+////		//SplitByPts(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
+//////		printf("At index %d, got %d splits from pts.\n", p, splits.size());
+////		SortSplits(Segment2(pts[p-1],pts[p]), splits);
+////
+////		pts.insert(pts.begin()+p,splits.begin(), splits.end());
+////		dirs_lo.insert(dirs_lo.begin()+p,splits.begin(), splits.end());
+////		dirs_hi.insert(dirs_hi.begin()+p,splits.begin(), splits.end());
+////		vector<int> flags(splits.size(),0);
+////		has_dirs.insert(has_dirs.begin()+p,flags.begin(),flags.end());
+////		has_split.insert(has_split.begin()+p,flags.begin(),flags.end());
+////		
+////		p += splits.size();
+////		
+//////		printf("p = %d\n", p);
+//////		for(int n = 0; n < pts.size(); ++n)
+//////			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());		
+////	}
+////
+////	/************************************************************************************************
+////	 * FOURTH SNAPPING PASS - PRE-INTERSECT LINES WE WILL GO THROUGH
+////	 ************************************************************************************************/
+////	// Now that we've snapped all we can, look for real non-end point segment intersections.  Cut the
+////	// existing segment using "split" and save the exact point.  This way we will have exact hits on
+////	// nodes later and consolidate.
+////
+////	for(int p = 1; p < pts.size(); ++p)
+////	{
+////		vector<pair<IGISPointSequence *, Point2> >	splits;
+////		SplitByLine(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
+////		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
+////			s->first->SplitSide(s->second,0.001);
+//////		printf("At index %d, got %d splits.\n", p, splits.size());
+////		SortSplits(Segment2(pts[p-1],pts[p]), splits);
+////		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
+////		{			
+////			pts.insert(pts.begin()+p,s->second);
+////			dirs_lo.insert(dirs_lo.begin()+p,s->second);
+////			dirs_hi.insert(dirs_hi.begin()+p,s->second);
+////			has_dirs.insert(has_dirs.begin()+p,0);
+////			has_split.insert(has_split.begin()+p,0);
+////			
+////			++p;
+////		}	
+////		
+//////		printf("p = %d\n", p);
+//////		for(int n = 0; n < pts.size(); ++n)
+//////			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());
+////	}
+//
+//	/************************************************************************************************
+//	 *
+//	 ************************************************************************************************/
+//
+//	WED_GISEdge *	new_edge = NULL;
+//	WED_TaxiRoute *	tr = NULL;
+//#if ROAD_EDITING
+//	WED_RoadEdge * er = NULL;
+//#endif
+//	static int n = 0;
+//	int stop = closed ? pts.size() : pts.size()-1;
+//	int start = 0;
+//
+//	WED_GISPoint * c;
+//	WED_Thing * src = NULL, * dst = NULL;
+//	double	dist=frame_dist*frame_dist;
+//	if(src == NULL)	
+//		FindNear(host_for_merging, NULL, edge_class,pts[start % pts.size()],src,dist);
+//	if(src == NULL)
+//	{
+//#if ROAD_EDITING
+//		src = c = (mType == create_TaxiRoute) ? (WED_GISPoint *) WED_TaxiRouteNode::CreateTyped(GetArchive()) : (WED_GISPoint *) WED_RoadNode::CreateTyped(GetArchive());
+//#else
+//		src = c = (WED_GISPoint *)WED_TaxiRouteNode::CreateTyped(GetArchive());
+//#endif
+//		src->SetParent(host_for_parent,idx);
+//		src->SetName(mName.value + "_start");
+//		c->SetLocation(gis_Geo,pts[0]);
+//	}
+//
+//	int p = start + 1;
+//	while(p <= stop)
+//	{
+//		int sp = p - 1;
+//		int dp = p % pts.size();
+//
+//		switch(mType) {
+//		case create_TaxiRoute:
+//			new_edge = tr = WED_TaxiRoute::CreateTyped(GetArchive());
+//			tr->SetOneway(mOneway.value);			
+//			tr->SetRunway(mRunway.value);
+//			tr->SetVehicleClass(mVehicleClass.value);
+//			tr->SetHotDepart(mHotDepart.value);
+//			tr->SetHotArrive(mHotArrive.value);
+//			tr->SetHotILS(mHotILS.value);
+//			tr->SetName(mName);
+//			tr->SetWidth(mWidth.value);
+//			break;
+//#if ROAD_EDITING
+//		case create_Road:
+//			new_edge = er = WED_RoadEdge::CreateTyped(GetArchive());
+//			er->SetSubtype(mSubtype.value);
+//			er->SetStartLayer(mLayer.value);
+//			er->SetEndLayer(mLayer.value);
+//			er->SetName(mName);
+//			er->SetResource(mResource.value);
+//			break;
+//#endif
+//		}
+//	
+//		new_edge->AddSource(src,0);
+//		dst = NULL;
+//		
+//		dist=frame_dist*frame_dist;
+//		FindNear(host_for_merging, NULL, edge_class,pts[dp],dst,dist);
+//		if(dst == NULL)
+//		{
+//			switch(mType) {
+//			case create_TaxiRoute:
+//				dst = c = WED_TaxiRouteNode::CreateTyped(GetArchive());
+//				break;
+//#if ROAD_EDITING
+//			case create_Road:
+//				dst = c = WED_RoadNode::CreateTyped(GetArchive());
+//				break;
+//#endif
+//			}
+//			dst->SetParent(host_for_parent,idx);
+//			dst->SetName(mName.value+"_stop");
+//			c->SetLocation(gis_Geo,pts[dp]);
+//		}		
+//		new_edge->AddSource(dst,1);
+//		
+//		if(has_dirs[sp])
+//		{
+//			if(has_dirs[dp])
+//			{
+//				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],dirs_lo[dp],in_pts[dp]));
+//			}
+//			else
+//			{
+//				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],dirs_hi[sp],in_pts[dp],in_pts[dp]));
+//			}
+//		}
+//		else
+//		{
+//			if(has_dirs[dp])
+//			{
+//				new_edge->SetSideBezier(gis_Geo,Bezier2(in_pts[sp],in_pts[sp],dirs_lo[dp],in_pts[dp]));
+//			}
+//		}
+//		// Do this last - half-built edge inserted the world destabilizes accessors.
+//		new_edge->SetParent(host_for_parent,idx);
+//		sel->Insert(new_edge);	
+//	
+////		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
+//		src = dst;
+//		++p;
+//	}	
 
 	GetArchive()->CommitCommand();
 }

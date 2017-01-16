@@ -40,7 +40,6 @@
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
-#include "STLUtils.h"
 
 #include "WED_Ring.h"
 #include "WED_DrapedOrthophoto.h"
@@ -1185,33 +1184,24 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 	}	
 }
 
-bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
+vector<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 {
-	//---Cut-----------------------
-	ISelection * sel = WED_GetSelect(resolver);
-	IOperation * op = dynamic_cast<IOperation *>(sel);
-	op->StartOperation("Select Crossing Edges");
-	sel->Clear();
-	//-----------------------------
-
-	vector<WED_GISEdge *> edges;
-	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
-	
+	vector<WED_GISEdge*> crossed_edges;
 	// Ben says: yes this totally sucks - replace it someday?
-	for(int i = 0; i < edges.size(); ++i)
+	for (int i = 0; i < edges.size(); ++i)
 	{
-		for(int j = i + 1; j < edges.size(); ++j)
+		for (int j = i + 1; j < edges.size(); ++j)
 		{
-			IGISEdge * ii = dynamic_cast<IGISEdge *>(edges[i]);
-			IGISEdge * jj = dynamic_cast<IGISEdge *>(edges[j]);
+			IGISEdge * ii = edges[i];
+			IGISEdge * jj = edges[j];
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
 			Segment2 s1, s2;
 			Bezier2 b1, b2;
 			bool isb1, isb2;
-			
-			if(isb1 = ii->GetSide(gis_Geo, 0, s1,b1))
+
+			if (isb1 = ii->GetSide(gis_Geo, 0, s1, b1))
 			{
 				s1.p1 = b1.p1;
 				s1.p2 = b1.p2;
@@ -1221,8 +1211,8 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				b1.c1 = b1.p1;
 				b1.c2 = b1.p2;
 			}
-			
-			if(isb2 = jj->GetSide(gis_Geo, 0, s2,b2))
+
+			if (isb2 = jj->GetSide(gis_Geo, 0, s2, b2))
 			{
 				s2.p1 = b2.p1;
 				s2.p2 = b2.p2;
@@ -1232,34 +1222,55 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				b2.c1 = b2.p1;
 				b2.c2 = b2.p2;
 			}
-			
+
 			Point2 x;
 			if (s1.p1 != s2.p1 &&
 				s1.p2 != s2.p2 &&
 				s1.p1 != s2.p2 &&
 				s1.p2 != s2.p1)
 			{
-				if(!isb1 && !isb2)
+				if (!isb1 && !isb2)
 				{
-					if(s1.intersect(s2, x))
+					if (s1.intersect(s2, x))
 					{
-						sel->Insert(edges[i]);
-						sel->Insert(edges[j]);
+						crossed_edges.push_back(edges[i]);
+						crossed_edges.push_back(edges[j]);
 					}
 				}
 				else
 				{
-					if(b1.intersect(b2, 12))
+					if (b1.intersect(b2, 12))
 					{
-						sel->Insert(edges[i]);
-						sel->Insert(edges[j]);
+						crossed_edges.push_back(edges[i]);
+						crossed_edges.push_back(edges[j]);
 					}
 				}
 			}
 		}
 	}
 
-	//---Cut------------------------
+	return crossed_edges;
+}
+
+bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
+{
+	//--Keep-----------
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Select Crossing Edges");
+	sel->Clear();
+	//-----------------
+
+	vector<WED_GISEdge *> edges;
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
+	
+	vector<WED_GISEdge *> crossed_edges = do_select_crossing(edges);
+	for (vector<WED_GISEdge *>::iterator itr = edges.begin(); itr != edges.end(); ++itr)
+	{
+		sel->Insert(*itr);
+	}
+
+	//--Keep-------------------------
 	if(sel->GetSelectionCount() == 0)
 	{
 		op->AbortOperation();
@@ -1270,7 +1281,7 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 		op->CommitOperation();
 		return true;
 	}
-	//------------------------------
+	//-------------------------------
 }
 
 static bool get_any_resource_for_thing(WED_Thing * thing, string& r)
@@ -1383,7 +1394,9 @@ void	WED_DoSelectThirdPartyObjects(IResolver * resolver)
 // Given a vector of nodes all in the same place, this routine merges them all, returning the one surviver,
 // and nukes the rest.  All incoming edges of all of them are merged.  Note that any edges liknking two nodes in
 // nodes are now zero length.
-static WED_Thing * run_merge(const vector<WED_Thing *>& nodes)
+
+//Return the winning node
+static WED_Thing* run_merge(vector<WED_Thing *> nodes)
 {
 	DebugAssert(nodes.size() > 1);
 	WED_Thing * winner = nodes.front();
@@ -1461,70 +1474,39 @@ static int	unsplittable(ISelectable * base, void * ref)
 
 typedef	pair<ISelection *, vector<WED_Thing *> * >	hack_t;
 
-class SplittableThing
-{
-public:
-	SplittableThing(IBase* base) :
-		thing(dynamic_cast<WED_Thing* >(base)),
-		point(dynamic_cast<IGISPoint* >(base)),
-		//airport_node(dynamic_cast<WED_AirportNode *>(base)),
-		parent(thing != NULL ? thing->GetParent() : NULL)
-	{
-	}
-
-	WED_Thing* const AsWED_Thing() const { return thing; }
-	IGISPoint* const AsIGISPoint() const { return point; }
-	//WED_AirportNode* const AsWED_AirportNode { return airport_node; }
-	WED_Thing* const GetParent() const { return parent; }
-
-	bool IsValid() const
-	{
-		bool dynamic_types_correct = thing != NULL && point != NULL;
-		if(dynamic_types_correct == true && parent != NULL)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-private:
-	WED_Thing* const thing;
-	IGISPoint* const point;
-	//WED_AirportNode* const airport_node;
-	WED_Thing* const parent;
-};
-
 static int	collect_splits(ISelectable * base, void * ref)
 {
-	hack_t * info = (hack_t *)ref;
+	hack_t * info = (hack_t *) ref;
 
-	const SplittableThing sp_thing(base);
-	if(sp_thing.IsValid() == false)
-	{
-		return 0;
-	}
+	WED_Thing * t = dynamic_cast<WED_Thing *>(base);
+	if (!t) return 0;
+	IGISPoint * p = dynamic_cast<IGISPoint *>(base);
+	if (!p) return 0;
+//	WED_AirportNode * a = dynamic_cast<WED_AirportNode *>(base);
+//	if (!a) return 0;
 
-	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(sp_thing.GetParent());
-	if (!s)
-		return 0;
+	WED_Thing * parent = t->GetParent();
+	if (!parent) return 0;
 
-	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain)
-		return 0;
+	IGISPointSequence * s = dynamic_cast<IGISPointSequence*>(parent);
+	if (!s) return 0;
 
-	int pos = sp_thing.AsWED_Thing()->GetMyPosition();
-	int next = (pos							  + 1) % sp_thing.GetParent()->CountChildren();
+	if (s->GetGISClass() != gis_Ring && s->GetGISClass() != gis_Chain) return 0;
+
+	int pos = t->GetMyPosition();
+	int next = (pos							  + 1) % parent->CountChildren();
 	int okay_next = (s->GetGISClass() == gis_Ring) || next > pos;
 
-	WED_Thing * tnext = okay_next ? sp_thing.GetParent()->GetNthChild(next) : NULL;
+	WED_Thing * tnext = okay_next ? parent->GetNthChild(next) : NULL;
 
 	ISelection * sel = info->first;
 
 	int okay = tnext && sel->IsSelected(tnext);
-	if(okay)
-		info->second->push_back(sp_thing.AsWED_Thing());
+	if (okay)
+		info->second->push_back(t);
 	return 0;
 }
+
 
 // This functor sorts points radially from a point.  When the points are on a line segment this is a cheap way to
 // order them from the anchor to the other end.
@@ -1537,19 +1519,19 @@ struct sort_by_distance {
 };
 
 // For a given edge, this stores the splits that we found - we later sort them once they are all found.
-struct split_edge_info_t {
-	IGISEdge *				edge;
-	vector<Point2>			splits;
+//struct split_edge_info_t {
+	//IGISEdge *				edge;
+	//vector<Point2>			splits;
 
-	split_edge_info_t(IGISEdge * e) : edge(e) { }
+split_edge_info_t::split_edge_info_t(IGISEdge * e) : edge(e) { }
 
-	void sort_along_edge()
-	{
-		Point2 a;
-		edge->GetNthPoint(0)->GetLocation(gis_Geo, a);
-		sort(splits.begin(),splits.end(), sort_by_distance(a));
-	}
-};
+void split_edge_info_t::sort_along_edge()
+{
+	Point2 a;
+	edge->GetNthPoint(0)->GetLocation(gis_Geo, a);
+	sort(splits.begin(),splits.end(), sort_by_distance(a));
+}
+//};
 
 // Simple collector of all GIS Edges in the selection.
 static int collect_edges(ISelectable * base, void * ref)
@@ -1564,90 +1546,20 @@ static int collect_edges(ISelectable * base, void * ref)
 int		WED_CanSplit(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if (sel->GetSelectionCount() == 0) return 0;
+	if (sel->GetSelectionCount() == 0) return false;
 	if (sel->IterateSelectionOr(unsplittable, sel)) return 0;
 	return 1;
 }
 
-//Local only to here in WED_DoSplit
-static vector<WED_Thing*> run_split_on_point_seqs(vector<WED_Thing* > who)
+
+
+set<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
 {
-	//------Core-------------------------
-	//
-	// This super-obtuse block splits pairs of points in a GIS Chain.
-	//
-	vector<WED_Thing*> new_pieces;
-	for (vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
-	{
-		WED_Thing * parent = (*w)->GetParent();
-		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(parent);
-		WED_Thing * new_w = (WED_Thing *)(*w)->Clone();
-
-		IGISPoint * as_p = dynamic_cast<IGISPoint *>(new_w);
-		IGISPoint_Bezier * as_bp = dynamic_cast<IGISPoint_Bezier *>(new_w);
-
-		Segment2	seg;
-		Bezier2		bez;
-
-		//		set<int> attrs;
-		//		node->GetAttributes(attrs);
-		//		new_node->SetAttributes(attrs);
-
-		if (seq->GetSide(gis_Geo, (*w)->GetMyPosition(), seg, bez))
-		{
-			IGISPoint_Bezier * pre = dynamic_cast<IGISPoint_Bezier *>(*w);
-			IGISPoint_Bezier * follow = dynamic_cast<IGISPoint_Bezier *>(parent->GetNthChild(((*w)->GetMyPosition() + 1) % parent->CountChildren()));
-			DebugAssert(as_bp);
-			DebugAssert(pre);
-			DebugAssert(follow);
-			Bezier2	b1, b2;
-			bez.partition(b1, b2);
-			as_bp->SetLocation(gis_Geo, b2.p1);
-			as_bp->SetSplit(false);
-			as_bp->SetControlHandleHi(gis_Geo, b2.c1);
-			pre->SetSplit(true);
-			pre->SetControlHandleHi(gis_Geo, b1.c1);
-			follow->SetSplit(true);
-			follow->SetControlHandleLo(gis_Geo, b2.c2);
-			if (as_bp->HasLayer(gis_UV))
-			{
-				seq->GetSide(gis_UV, (*w)->GetMyPosition(), seg, bez);
-				bez.partition(b1, b2);
-				as_bp->SetLocation(gis_UV, b2.p1);
-				as_bp->SetControlHandleHi(gis_UV, b2.c1);
-				as_bp->SetControlHandleLo(gis_UV, b1.c2);
-				pre->SetControlHandleHi(gis_UV, b1.c1);
-				follow->SetControlHandleLo(gis_UV, b2.c2);
-			}
-		}
-		else
-		{
-			DebugAssert(as_p);
-			as_p->SetLocation(gis_Geo, seg.midpoint());
-			if (as_p->HasLayer(gis_UV))
-			{
-				seq->GetSide(gis_UV, (*w)->GetMyPosition(), seg, bez);
-				as_p->SetLocation(gis_UV, seg.midpoint());
-			}
-		}
-		new_w->SetParent(parent, (*w)->GetMyPosition() + 1);
-		string name;
-		new_w->GetName(name);
-		name += ".1";
-		new_w->SetName(name);
-
-		new_pieces.push_back(new_w);
-	}
-
-	return new_pieces;
-}
-
-vector<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
-{
+	set<WED_Thing*> new_pieces;
 	//
 	// This block splits overlapping GIS edges anywhere they cross.
 	//
-	vector<WED_Thing*> new_pieces;
+
 	// Step 1: run a nested for loop and find all intersections between all
 	// segments...if the intersection is in the interior, we accumulate it on
 	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
@@ -1719,9 +1631,7 @@ vector<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
 				set<WED_Thing *> incident;
 				t->GetAllViewers(incident);
 				for (set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
-				{
-					new_pieces.push_back(*i);
-				}
+					new_pieces.insert(*i);
 			}
 		}
 	}
@@ -1738,46 +1648,95 @@ vector<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
 
 void	WED_DoSplit(IResolver * resolver)
 {
-	//--Cut----------
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
-	//---------------
 
 	vector<WED_Thing *> who;
 	hack_t	info;
 	info.first = sel;
 	info.second = &who;
 
-	//--Needs to work without selection
 	sel->IterateSelectionOr(collect_splits, &info);
-
-	vector<split_edge_info_t> edges;
-	sel->IterateSelectionOr(collect_edges, &edges);
-
-	if (who.empty() && edges.empty())
-		return;
-
-	//--Cut------------------------------
-	op->StartOperation("Split Segments");
-	//-----------------------------------
 	
-	vector<WED_Thing*> new_pieces  = run_split_on_point_seqs(who);
-	vector<WED_Thing*> new_pieces2 = run_split_on_edges(edges);
+	vector<split_edge_info_t> edges;
+	
+	sel->IterateSelectionOr(collect_edges, &edges);
+	
+	if (who.empty() && edges.empty()) return;
 
-	//Copy the new pieces into 
-	for (vector<WED_Thing*>::iterator itr = new_pieces.begin(); itr != new_pieces.end(); ++itr)
+	op->StartOperation("Split Segments.");
+
+	//
+	// This super-obtuse block splits pairs of points in a GIS Chain.
+	//
+
+	for (vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
-		sel->Insert(*itr);
-	}
+		WED_Thing * parent = (*w)->GetParent();
+		IGISPointSequence * seq = dynamic_cast<IGISPointSequence *>(parent);
+		WED_Thing * new_w = (WED_Thing *) (*w)->Clone();
 
-	for (vector<WED_Thing*>::iterator itr = new_pieces2.begin(); itr != new_pieces2.end(); ++itr)
-	{
-		sel->Insert(*itr);
-	}
+		IGISPoint * as_p = dynamic_cast<IGISPoint *>(new_w);
+		IGISPoint_Bezier * as_bp = dynamic_cast<IGISPoint_Bezier *>(new_w);
 
-	//--Cut----------------
+		Segment2	seg;
+		Bezier2		bez;
+
+//		set<int> attrs;
+//		node->GetAttributes(attrs);
+///		new_node->SetAttributes(attrs);
+
+		if (seq->GetSide(gis_Geo,(*w)->GetMyPosition(),seg,bez))
+		{
+			IGISPoint_Bezier * pre = dynamic_cast<IGISPoint_Bezier *>(*w);
+			IGISPoint_Bezier * follow = dynamic_cast<IGISPoint_Bezier *>(parent->GetNthChild(((*w)->GetMyPosition()+1) % parent->CountChildren()));
+			DebugAssert(as_bp);
+			DebugAssert(pre);
+			DebugAssert(follow);
+			Bezier2	b1, b2;
+			bez.partition(b1,b2);
+			as_bp->SetLocation(gis_Geo,b2.p1);
+			as_bp->SetSplit(false);
+			as_bp->SetControlHandleHi(gis_Geo,b2.c1);
+			pre->SetSplit(true);
+			pre->SetControlHandleHi(gis_Geo,b1.c1);
+			follow->SetSplit(true);
+			follow->SetControlHandleLo(gis_Geo,b2.c2);
+			if(as_bp->HasLayer(gis_UV))
+			{
+				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);
+				bez.partition(b1,b2);
+				as_bp->SetLocation(gis_UV,b2.p1);
+				as_bp->SetControlHandleHi(gis_UV,b2.c1);
+				as_bp->SetControlHandleLo(gis_UV,b1.c2);
+				pre->SetControlHandleHi(gis_UV,b1.c1);
+				follow->SetControlHandleLo(gis_UV,b2.c2);			
+			}
+		}
+		else
+		{
+			DebugAssert(as_p);
+			as_p->SetLocation(gis_Geo,seg.midpoint());
+			if(as_p->HasLayer(gis_UV))
+			{
+				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);			
+				as_p->SetLocation(gis_UV,seg.midpoint());
+			}
+		}
+		new_w->SetParent(parent, (*w)->GetMyPosition() + 1);
+		string name;
+		new_w->GetName(name);
+		name += ".1";
+		new_w->SetName(name);
+
+		sel->Insert(new_w);
+	}
+	
+	set<WED_Thing*> new_pieces = run_split_on_edges(edges);
+	set<ISelectable*> iselectable_new_pieces(new_pieces.begin(),new_pieces.end());
+	sel->Insert(iselectable_new_pieces);
+
 	op->CommitOperation();
-	//---------------------
 }
 
 static int collect_pnts(ISelectable * base,void * ref)
@@ -2215,7 +2174,26 @@ void	WED_DoMakeRegularPoly(IResolver * resolver)
 	op->CommitOperation();
 }
 
-typedef map<Point2, pair<const char *, vector<WED_Thing *> >,lesser_y_then_x>	merge_class_map;
+typedef vector<pair<Point2, pair<const char *, WED_Thing *> > > merge_class_map;
+
+//
+static bool lesser_y_then_x_merge_class_map(const pair<Point2, pair<const char *, WED_Thing * > >& lhs, const pair<Point2, pair<const char *, WED_Thing * > > & rhs)
+{
+	return (lhs.first.y() == rhs.first.y()) ? (lhs.first.x() < rhs.first.x()) : (lhs.first.y() < rhs.first.y());
+}
+
+static bool is_within_snapping_distance(const merge_class_map::iterator& first_thing, const merge_class_map::iterator& second_thing, const CoordTranslator2& translator)
+{
+	const int MAX_DIST_M_SQ = 1;
+
+	Point2 first_pos_m       = translator.Forward(first_thing->first);
+	Point2 second_thing_pos_m = translator.Forward(second_thing->first);
+	double a_sqr = pow((second_thing_pos_m.x() - first_pos_m.x()), 2);
+	double b_sqr = pow (second_thing_pos_m.y() - first_pos_m.y(), 2);
+	double sum_a_b = a_sqr + b_sqr;
+	bool is_snappable =  sum_a_b < MAX_DIST_M_SQ;
+	return is_snappable;
+}
 
 static const char * get_merge_tag_for_thing(IGISPoint * ething)
 {
@@ -2266,63 +2244,95 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	
 	Point2	loc;
 	p->GetLocation(gis_Geo, loc);
-	merge_class_map::iterator l = sinks->find(loc);
-	if(l == sinks->end())
+
+	sinks->push_back(make_pair(loc, make_pair(tag, t)));
+	return 1;
+}
+
+//Returns true if every node can be merged with each other, by type and by location
+int	WED_CanMerge(IResolver * resolver)
+{
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed test in
+	//   0.001130 seconds.
+	//   0.020325 seconds.
+	//   0.000842 seconds.
+	//   0.020704 seconds.
+	//   0.016719 seconds.
+	//StElapsedTime can_merge_timer("WED_CanMerge");
+	ISelection * sel = WED_GetSelect(resolver);
+	if(sel->GetSelectionCount() < 2)
+		return 0;		// can't merge 1 thing!
+
+	//1. Ensure all of the selection is mergeable, collect
+	merge_class_map sinkmap;
+	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
-		sinks->insert(make_pair(loc,make_pair(tag,vector<WED_Thing*>(1,t))));
+		return 0;
+	}
+
+	if (sinkmap.size() > 10000 || sinkmap.size() < 2)
+	{
+		return 0;
+	}
+
+	//2. Sort by location, a small optimization
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
+	//Find the bounds for the current airport
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	Bbox2 bb;
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	//Keeps track of which objects we've discovered we can snap (hopefully all)
+	set<merge_class_map::iterator> can_snap_objects;
+
+	//For each item in the sink map
+	for (merge_class_map::iterator thing_1_itr = sinkmap.begin(); thing_1_itr != sinkmap.end() - 1; ++thing_1_itr)
+	{
+		//For each item after that
+		for (merge_class_map::iterator merge_pair_itr = thing_1_itr + 1; merge_pair_itr != sinkmap.end(); ++merge_pair_itr)
+		{
+			//If the two things are within snapping distance of each other, record so
+			if (is_within_snapping_distance(thing_1_itr, merge_pair_itr, translator))
+			{
+				can_snap_objects.insert(thing_1_itr);
+				can_snap_objects.insert(merge_pair_itr);
+			}
+		}
+	}
+
+	//Ensure expected UI behavior - Only perfect merges are allowed
+	if (can_snap_objects.size() == sinkmap.size())
+	{
 		return 1;
 	}
 	else
 	{
-		if(l->second.first == tag)
-		{
-			l->second.second.push_back(t);
-			return 1;
-		}
 		return 0;
 	}
 }
 
-
-int	WED_CanMerge(IResolver * resolver)
-{
-	ISelection * sel = WED_GetSelect(resolver);
-	if(sel->GetSelectionCount() < 2)
-		return 0;		// can't merge 1 thing!
-	
-	merge_class_map sinkmap;
-	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
-		return 0;
-	
-	bool has_overlap = false;
-	const char * has_loner = NULL;
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
-	{
-		if(m->second.second.size() == 1)
-		{
-			if(has_loner == NULL)
-				has_loner = m->second.first;
-			else if(has_loner != m->second.first)
-				return 0;
-		}
-		else
-			has_overlap = true;
-	}
-	
-	if(has_loner && has_overlap)
-		return 0;
-	
-	return 1;
-}
-
+//WED_DoMerge will merge every node in the selection possible, any nodes that could not be merged are left as is.
+//Ex: 0-0-0-0---------------------0 will turn into 0-------------------------0.
+//If WED_CanMerge is called first this behavior would not be possible
 void WED_DoMerge(IResolver * resolver)
 {
+	//Preformance notes 1/6/2017:
+	//Release build -> 1300 nodes collected
+	//Completed snapping and merged to ~900 in
+	//   0.023290 seconds
+	//StElapsedTime can_merge_timer("WED_DoMerge");
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
 	DebugAssert(sel->GetSelectionCount() >= 2);
-	
+
+	//Validate and collect from selection
 	merge_class_map sinkmap;
 	if(!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
@@ -2330,24 +2340,63 @@ void WED_DoMerge(IResolver * resolver)
 		op->AbortOperation();
 		return;
 	}
-	
-	vector<WED_Thing *>		remaining_nodes;
-	vector<WED_Thing *>	solos;
-	
-	for(merge_class_map::iterator m = sinkmap.begin(); m != sinkmap.end(); ++m)
+
+	//Ensure sinkmap is not rediculous or unmergable
+	if (sinkmap.size() > 10000)
 	{
-		if(m->second.second.size() == 1)
-			solos.push_back(m->second.second.front());
-		else
-			remaining_nodes.push_back(run_merge(m->second.second));
+		DoUserAlert("You have too many things selected to merge them, deselect some of them first");
+		return;
 	}
-	
-	if(!solos.empty())
-		remaining_nodes.push_back(run_merge(solos));
+	else if (sinkmap.size() < 2)
+	{
+		return;
+	}
+
+	//2. Sort by location, a small optimization
+	sort(sinkmap.begin(), sinkmap.end(), lesser_y_then_x_merge_class_map);
+
+	WED_Airport* apt = WED_GetCurrentAirport(resolver);
+	Bbox2 bb;
+	CoordTranslator2 translator;
+	apt->GetBounds(gis_Geo, bb);
+	CreateTranslatorForBounds(bb, translator);
+
+	//All the nodes that will end up snapped
+	set<WED_Thing*> snapped_nodes;
+	merge_class_map::iterator start_thing = sinkmap.begin();
+	while (start_thing != sinkmap.end())
+	{
+		if(start_thing + 1 != sinkmap.end())
+		{
+			merge_class_map::iterator merge_pair = start_thing+1;
+
+			while (merge_pair != sinkmap.end())
+			{
+				const char * tag_1 = start_thing->second.first;
+				const char * tag_2 = merge_pair->second.first;
+
+				if (is_within_snapping_distance(start_thing, merge_pair, translator) && tag_1 == tag_2)
+				{
+					vector<WED_Thing*> sub_list = vector<WED_Thing*>();
+					sub_list.push_back(start_thing->second.second);
+					sub_list.push_back(merge_pair->second.second);
+
+					merge_pair = sinkmap.erase(merge_pair);
+					snapped_nodes.insert(run_merge(sub_list));
+				}
+				else
+				{
+					++merge_pair;
+				}
+			}
+		}
+
+		++start_thing;
+	}
 
 	sel->Clear();
 	
-	for(vector<WED_Thing *>::iterator node = remaining_nodes.begin(); node != remaining_nodes.end(); ++node)
+	for(set<WED_Thing *>::iterator node = snapped_nodes.begin(); node != snapped_nodes.end(); ++node)
 	{
 		set<WED_Thing *>	viewers;
 		(*node)->GetAllViewers(viewers);
@@ -2363,9 +2412,9 @@ void WED_DoMerge(IResolver * resolver)
 	
 		// Ben says: DO NOT delete the "unviable" isolated vertex here..if the user merged this down, maybe the user will link to it next?
 		// User can clean this by hand - it is in the selection when we are done.
-				
 		sel->Insert((*node));
 	}
+
 	op->CommitOperation();
 }
 

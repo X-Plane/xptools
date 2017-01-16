@@ -27,7 +27,9 @@
 class	IResolver;
 class	WED_Thing;
 class	WED_MapZoomerNew;
-class	split_edge_info_t;
+class	IGISEdge;
+class	WED_GISEdge;
+class	Point2;
 
 int		WED_CanGroup(IResolver * inResolver);
 int		WED_CanUngroup(IResolver * inResolver);
@@ -71,9 +73,16 @@ void	WED_DoMerge(IResolver * resolver);
 
 int		WED_CanSplit(IResolver * resolver);
 
+struct split_edge_info_t {
+	IGISEdge *				edge;
+	vector<Point2>			splits;
+	split_edge_info_t(IGISEdge* edge);
+	void sort_along_edge();
+};
+
 //Given a vector of splittable objects and splittable edges, preform the actual math
 //It returns a vector of the new pieces
-vector<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges);
+set<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
@@ -106,6 +115,8 @@ void	WED_DoSelectConnected(IResolver * resolver);
 
 bool	WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree=NULL);			// These return true if they did an operation to change selection due to there being work to do.
 bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
+
+vector<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges);
 bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
 
 void	WED_DoSelectMissingObjects(IResolver * resolver);
