@@ -1520,7 +1520,9 @@ struct sort_by_distance {
 	//IGISEdge *				edge;
 	//vector<Point2>			splits;
 
-split_edge_info_t::split_edge_info_t(IGISEdge * e) : edge(e) { }
+split_edge_info_t::split_edge_info_t(WED_GISEdge * e) : edge(e)
+{ 
+}
 
 void split_edge_info_t::sort_along_edge()
 {
@@ -1534,7 +1536,7 @@ void split_edge_info_t::sort_along_edge()
 static int collect_edges(ISelectable * base, void * ref)
 {
 	vector<split_edge_info_t> * edges = (vector<split_edge_info_t>*) ref;
-	IGISEdge * e = dynamic_cast<IGISEdge *>(base);
+	WED_GISEdge * e = dynamic_cast<WED_GISEdge *>(base);
 	if(e)
 		edges->push_back(e);
 	return 0;
@@ -1550,9 +1552,9 @@ int		WED_CanSplit(IResolver * resolver)
 
 
 
-set<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
+map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges)
 {
-	set<WED_Thing*> new_pieces;
+	map<WED_Thing*, vector<WED_Thing*> > new_pieces;
 	//
 	// This block splits overlapping GIS edges anywhere they cross.
 	//
@@ -1625,10 +1627,16 @@ set<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
 				splits[*r].push_back(t);
 
 				// Select every incident segment - some already selected but that's okay.
+
+				//key observation, runs before node is merged in run merge
 				set<WED_Thing *> incident;
 				t->GetAllViewers(incident);
-				for (set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
-					new_pieces.insert(*i);
+				for (set<WED_Thing *>::iterator itr = incident.begin(); itr != incident.end(); ++itr)
+				{
+					//here is access of only two new edges map
+					edge_to_child_edges_map_t::mapped_type& child_edges = new_pieces[(WED_Thing*)edges[i].edge];
+					child_edges.push_back(*itr);
+				}
 			}
 		}
 	}
@@ -1637,6 +1645,7 @@ set<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
 	for (map<Point2, vector<WED_Thing *>, lesser_x_then_y>::iterator s = splits.begin(); s != splits.end(); ++s)
 	{
 		if (s->second.size() > 1)
+			//ufuse nodes
 			run_merge(s->second);
 	}
 
@@ -1729,9 +1738,13 @@ void	WED_DoSplit(IResolver * resolver)
 		sel->Insert(new_w);
 	}
 	
-	set<WED_Thing*> new_pieces = run_split_on_edges(edges);
-	set<ISelectable*> iselectable_new_pieces(new_pieces.begin(),new_pieces.end());
-	sel->Insert(iselectable_new_pieces);
+	//Add every single edge and child edges generated
+	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges);
+	for (edge_to_child_edges_map_t::iterator itr = new_pieces.begin(); itr != new_pieces.end(); ++itr)
+	{
+		sel->Insert(itr->first);
+		set<ISelectable*> iselectable_new_pieces(itr->second.begin(), itr->second.end());
+	}
 
 	op->CommitOperation();
 }

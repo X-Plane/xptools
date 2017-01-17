@@ -249,7 +249,8 @@ void		WED_CreateEdgeTool::AcceptPath(
 	/************************************************************************************************
 	 *
 	 ************************************************************************************************/
-	vector<WED_GISEdge*> edges;
+	
+	vector<WED_GISEdge*> tool_created_edges;
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
 #if ROAD_EDITING
@@ -349,21 +350,37 @@ void		WED_CreateEdgeTool::AcceptPath(
 		}
 		// Do this last - half-built edge inserted the world destabilizes accessors.
 		new_edge->SetParent(host_for_parent,idx);
-
+		tool_created_edges.push_back(new_edge);
+		sel->Insert(new_edge);
 //		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
 		src = dst;
 		++p;
 	}
-	
-	CollectRecursive(host_for_parent, back_inserter(edges));
-	set<WED_GISEdge*> crossing_edges = do_select_crossing(edges);
 
+	//Collect edges in the current airport
+	vector<WED_GISEdge*> all_edges;
+	CollectRecursive(host_for_parent, back_inserter(all_edges));
+
+	//filter them for just the crossing ones
+	set<WED_GISEdge*> crossing_edges = do_select_crossing(all_edges);
+
+	//convert, and run split!
 	vector<split_edge_info_t> edges_to_split;
 	transform(crossing_edges.begin(), crossing_edges.end(), back_inserter(edges_to_split), cast_WED_GISEdge_to_split_edge_info_t);
-	set<WED_Thing*> new_pieces = run_split_on_edges(edges_to_split);
+	edge_to_child_edges_map_t& new_pieces = run_split_on_edges(edges_to_split);
+	
+	//For all the tool_created_edges that were split
+	for(vector<WED_GISEdge*>::iterator itr = tool_created_edges.begin();
+		itr != tool_created_edges.end() && new_pieces.size() > 0;
+		++itr)
+	{
+		//Save the children as selected
+		edge_to_child_edges_map_t::mapped_type& edge_map_entry = new_pieces[*itr];
 
-	set<ISelectable*> iselectable_new_pieces(new_pieces.begin(), new_pieces.end());
-	sel->Insert(iselectable_new_pieces);
+		//Select only the new pieces
+		set<ISelectable*> iselectable_new_pieces(edge_map_entry.begin(), edge_map_entry.end());
+		sel->Insert(iselectable_new_pieces);
+	}
 
 	GetArchive()->CommitCommand();
 }

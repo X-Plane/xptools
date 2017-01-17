@@ -24,12 +24,16 @@
 #ifndef WED_GroupCommands_H
 #define WED_GroupCommands_H
 
-class	IResolver;
-class	WED_Thing;
-class	WED_MapZoomerNew;
+#include <map>
+
 class	IGISEdge;
-class	WED_GISEdge;
+class	IResolver;
+
 class	Point2;
+
+class	WED_GISEdge;
+class	WED_MapZoomerNew;
+class	WED_Thing;
 
 int		WED_CanGroup(IResolver * inResolver);
 int		WED_CanUngroup(IResolver * inResolver);
@@ -74,15 +78,18 @@ void	WED_DoMerge(IResolver * resolver);
 int		WED_CanSplit(IResolver * resolver);
 
 struct split_edge_info_t {
-	IGISEdge *				edge;
+	WED_GISEdge *			edge;
 	vector<Point2>			splits;
-	split_edge_info_t(IGISEdge* edge);
+	split_edge_info_t(WED_GISEdge* edge);
 	void sort_along_edge();
 };
 
+//Where the key is the edge and the value is the edges that spawned off because of it
+typedef map<WED_Thing*, vector<WED_Thing*> > edge_to_child_edges_map_t;
+
 //Given a vector of splittable objects and splittable edges, preform the actual math
 //It returns a vector of the new pieces
-set<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges);
+edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
