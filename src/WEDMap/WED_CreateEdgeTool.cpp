@@ -31,10 +31,12 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_ResourceMgr.h"
 #include "WED_GISUtils.h"
+#include "WED_HierarchyUtils.h"
 #include "WED_EnumSystem.h"
 #include "STLUtils.h"
 #include <sstream>
 
+#include "WED_GroupCommands.h"
 #if AIRPORT_ROUTING
 
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
@@ -115,6 +117,12 @@ static void SortSplits(const Segment2& s, vector<pair<IGISPointSequence *, Point
 
 
 
+split_edge_info_t cast_WED_GISEdge_to_split_edge_info_t(WED_GISEdge* edge)
+{
+	DebugAssert(edge != NULL);
+	return split_edge_info_t(edge);
+}
+
 void		WED_CreateEdgeTool::AcceptPath(
 			const vector<Point2>&	in_pts,
 			const vector<Point2>&	in_dirs_lo,
@@ -182,24 +190,25 @@ void		WED_CreateEdgeTool::AcceptPath(
 			seq->SplitSide(pts[p], 0.001);		
 	}
 	
+
 	/************************************************************************************************
 	 * THIRD SNAPPING PASS - SPLIT NEW EDGES NEAR TO EXISTING PTS
 	 ************************************************************************************************/
 	for(int p = 1; p < pts.size(); ++p)
 	{
-		vector<Point2>	splits;
-		SplitByPts(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
+		//vector<Point2>	splits;
+		//SplitByPts(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
 //		printf("At index %d, got %d splits from pts.\n", p, splits.size());
-		SortSplits(Segment2(pts[p-1],pts[p]), splits);
+		//SortSplits(Segment2(pts[p-1],pts[p]), splits);
 
-		pts.insert(pts.begin()+p,splits.begin(), splits.end());
-		dirs_lo.insert(dirs_lo.begin()+p,splits.begin(), splits.end());
-		dirs_hi.insert(dirs_hi.begin()+p,splits.begin(), splits.end());
-		vector<int> flags(splits.size(),0);
-		has_dirs.insert(has_dirs.begin()+p,flags.begin(),flags.end());
-		has_split.insert(has_split.begin()+p,flags.begin(),flags.end());
+		//pts.insert(pts.begin()+p,splits.begin(), splits.end());
+		//dirs_lo.insert(dirs_lo.begin()+p,splits.begin(), splits.end());
+		//dirs_hi.insert(dirs_hi.begin()+p,splits.begin(), splits.end());
+		//vector<int> flags(splits.size(),0);
+		//has_dirs.insert(has_dirs.begin()+p,flags.begin(),flags.end());
+		//has_split.insert(has_split.begin()+p,flags.begin(),flags.end());
 		
-		p += splits.size();
+		//p += splits.size();
 		
 //		printf("p = %d\n", p);
 //		for(int n = 0; n < pts.size(); ++n)
@@ -215,22 +224,22 @@ void		WED_CreateEdgeTool::AcceptPath(
 
 	for(int p = 1; p < pts.size(); ++p)
 	{
-		vector<pair<IGISPointSequence *, Point2> >	splits;
-		SplitByLine(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
-		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
-			s->first->SplitSide(s->second,0.001);
-//		printf("At index %d, got %d splits.\n", p, splits.size());
-		SortSplits(Segment2(pts[p-1],pts[p]), splits);
-		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
-		{			
-			pts.insert(pts.begin()+p,s->second);
-			dirs_lo.insert(dirs_lo.begin()+p,s->second);
-			dirs_hi.insert(dirs_hi.begin()+p,s->second);
-			has_dirs.insert(has_dirs.begin()+p,0);
-			has_split.insert(has_split.begin()+p,0);
-			
-			++p;
-		}	
+//		vector<pair<IGISPointSequence *, Point2> >	splits;
+//		//SplitByLine(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
+//		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
+//			s->first->SplitSide(s->second,0.001);
+////		printf("At index %d, got %d splits.\n", p, splits.size());
+//		SortSplits(Segment2(pts[p-1],pts[p]), splits);
+//		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
+//		{			
+//			pts.insert(pts.begin()+p,s->second);
+//			dirs_lo.insert(dirs_lo.begin()+p,s->second);
+//			dirs_hi.insert(dirs_hi.begin()+p,s->second);
+//			has_dirs.insert(has_dirs.begin()+p,0);
+//			has_split.insert(has_split.begin()+p,0);
+//			
+//			++p;
+//		}	
 		
 //		printf("p = %d\n", p);
 //		for(int n = 0; n < pts.size(); ++n)
@@ -240,7 +249,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	/************************************************************************************************
 	 *
 	 ************************************************************************************************/
-
+	vector<WED_GISEdge*> edges;
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
 #if ROAD_EDITING
@@ -340,12 +349,21 @@ void		WED_CreateEdgeTool::AcceptPath(
 		}
 		// Do this last - half-built edge inserted the world destabilizes accessors.
 		new_edge->SetParent(host_for_parent,idx);
-		sel->Insert(new_edge);	
-	
+
 //		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
 		src = dst;
 		++p;
-	}	
+	}
+	
+	CollectRecursive(host_for_parent, back_inserter(edges));
+	set<WED_GISEdge*> crossing_edges = do_select_crossing(edges);
+
+	vector<split_edge_info_t> edges_to_split;
+	transform(crossing_edges.begin(), crossing_edges.end(), back_inserter(edges_to_split), cast_WED_GISEdge_to_split_edge_info_t);
+	set<WED_Thing*> new_pieces = run_split_on_edges(edges_to_split);
+
+	set<ISelectable*> iselectable_new_pieces(new_pieces.begin(), new_pieces.end());
+	sel->Insert(iselectable_new_pieces);
 
 	GetArchive()->CommitCommand();
 }
@@ -508,6 +526,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 
 void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const char* filter, const Segment2& splitter, vector<pair<IGISPointSequence *, Point2> >& out_splits)
 {
+	return;
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
@@ -569,6 +588,7 @@ void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const c
 
 void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& splitter, vector<Point2>& out_splits, double dsq)
 {
+	return;
 	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
 	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
 	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;

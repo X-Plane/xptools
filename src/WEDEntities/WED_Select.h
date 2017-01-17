@@ -52,6 +52,10 @@ public:
 	virtual		void			Clear (void			 );
 	virtual		void			Toggle(ISelectable * who);
 	virtual		void			Insert(ISelectable * who);
+	virtual		void			Insert(const set<ISelectable*>& sel);
+	virtual		void			Insert(const set<ISelectable*>::const_iterator& begin, const set<ISelectable*>::const_iterator& end);
+	virtual		void			Insert(const vector<ISelectable*>& sel);
+	virtual		void			Insert(const vector<ISelectable*>::const_iterator& begin, const vector<ISelectable*>::const_iterator& end);
 	virtual		void			Erase (ISelectable * who);
 
 	virtual		int				GetSelectionCount(void) const;

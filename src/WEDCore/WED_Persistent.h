@@ -90,6 +90,11 @@ class	WED_XMLElement;
  *
  */
 
+//Because the sClass of WED_Persistent is actually a pointer to a static string
+//we can communicate the difference between the data type and expected use with this
+//typedef
+typedef const char* sClass_t;
+
 #define DECLARE_PERSISTENT(__Class)		 							\
 public: 															\
 	static WED_Persistent * Create(									\

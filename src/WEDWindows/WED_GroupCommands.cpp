@@ -1184,31 +1184,24 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 	}	
 }
 
-bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
+set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 {
-	ISelection * sel = WED_GetSelect(resolver);
-	IOperation * op = dynamic_cast<IOperation *>(sel);
-	op->StartOperation("Select Crossing Edges");
-	sel->Clear();
-
-	vector<WED_GISEdge *> edges;
-	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
-	
+	set<WED_GISEdge*> crossed_edges;
 	// Ben says: yes this totally sucks - replace it someday?
-	for(int i = 0; i < edges.size(); ++i)
+	for (int i = 0; i < edges.size(); ++i)
 	{
-		for(int j = i + 1; j < edges.size(); ++j)
+		for (int j = i + 1; j < edges.size(); ++j)
 		{
-			IGISEdge * ii = dynamic_cast<IGISEdge *>(edges[i]);
-			IGISEdge * jj = dynamic_cast<IGISEdge *>(edges[j]);
+			IGISEdge * ii = edges[i];
+			IGISEdge * jj = edges[j];
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
 			Segment2 s1, s2;
 			Bezier2 b1, b2;
 			bool isb1, isb2;
-			
-			if(isb1 = ii->GetSide(gis_Geo, 0, s1,b1))
+
+			if (isb1 = ii->GetSide(gis_Geo, 0, s1, b1))
 			{
 				s1.p1 = b1.p1;
 				s1.p2 = b1.p2;
@@ -1218,8 +1211,8 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				b1.c1 = b1.p1;
 				b1.c2 = b1.p2;
 			}
-			
-			if(isb2 = jj->GetSide(gis_Geo, 0, s2,b2))
+
+			if (isb2 = jj->GetSide(gis_Geo, 0, s2, b2))
 			{
 				s2.p1 = b2.p1;
 				s2.p2 = b2.p2;
@@ -1229,32 +1222,52 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 				b2.c1 = b2.p1;
 				b2.c2 = b2.p2;
 			}
-			
+
 			Point2 x;
 			if (s1.p1 != s2.p1 &&
 				s1.p2 != s2.p2 &&
 				s1.p1 != s2.p2 &&
 				s1.p2 != s2.p1)
 			{
-				if(!isb1 && !isb2)
+				if (!isb1 && !isb2)
 				{
-					if(s1.intersect(s2, x))
+					if (s1.intersect(s2, x))
 					{
-						sel->Insert(edges[i]);
-						sel->Insert(edges[j]);
+						crossed_edges.insert(edges[i]);
+						crossed_edges.insert(edges[j]);
 					}
 				}
 				else
 				{
-					if(b1.intersect(b2, 12))
+					if (b1.intersect(b2, 12))
 					{
-						sel->Insert(edges[i]);
-						sel->Insert(edges[j]);
+						crossed_edges.insert(edges[i]);
+						crossed_edges.insert(edges[j]);
 					}
 				}
 			}
 		}
 	}
+
+	return crossed_edges;
+}
+
+bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
+{
+	//--Keep-----------
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Select Crossing Edges");
+	sel->Clear();
+	//-----------------
+
+	vector<WED_GISEdge *> edges;
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
+	
+	set<WED_GISEdge *> crossed_edges = do_select_crossing(edges);
+	sel->Insert(set<ISelectable*>(crossed_edges.begin(), crossed_edges.end()));
+
+	//--Keep-------------------------
 	if(sel->GetSelectionCount() == 0)
 	{
 		op->AbortOperation();
@@ -1265,6 +1278,7 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 		op->CommitOperation();
 		return true;
 	}
+	//-------------------------------
 }
 
 static bool get_any_resource_for_thing(WED_Thing * thing, string& r)
@@ -1502,19 +1516,19 @@ struct sort_by_distance {
 };
 
 // For a given edge, this stores the splits that we found - we later sort them once they are all found.
-struct split_edge_info_t {
-	IGISEdge *				edge;
-	vector<Point2>			splits;
+//struct split_edge_info_t {
+	//IGISEdge *				edge;
+	//vector<Point2>			splits;
 
-	split_edge_info_t(IGISEdge * e) : edge(e) { }
+split_edge_info_t::split_edge_info_t(IGISEdge * e) : edge(e) { }
 
-	void sort_along_edge()
-	{
-		Point2 a;
-		edge->GetNthPoint(0)->GetLocation(gis_Geo, a);
-		sort(splits.begin(),splits.end(), sort_by_distance(a));
-	}
-};
+void split_edge_info_t::sort_along_edge()
+{
+	Point2 a;
+	edge->GetNthPoint(0)->GetLocation(gis_Geo, a);
+	sort(splits.begin(),splits.end(), sort_by_distance(a));
+}
+//};
 
 // Simple collector of all GIS Edges in the selection.
 static int collect_edges(ISelectable * base, void * ref)
@@ -1532,6 +1546,101 @@ int		WED_CanSplit(IResolver * resolver)
 	if (sel->GetSelectionCount() == 0) return false;
 	if (sel->IterateSelectionOr(unsplittable, sel)) return 0;
 	return 1;
+}
+
+
+
+set<WED_Thing*> run_split_on_edges(vector<split_edge_info_t>& edges)
+{
+	set<WED_Thing*> new_pieces;
+	//
+	// This block splits overlapping GIS edges anywhere they cross.
+	//
+
+	// Step 1: run a nested for loop and find all intersections between all
+	// segments...if the intersection is in the interior, we accumulate it on
+	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
+	// data sets big enough to need it.
+	for (int i = 0; i < edges.size(); ++i)
+	{
+		Segment2 is;
+
+		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
+		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
+		for (int j = 0; j < i; ++j)
+		{
+			Segment2 js;
+			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
+			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
+
+			if (is.p1 != is.p2 &&
+				js.p1 != js.p2 &&
+				is.p1 != js.p1 &&
+				is.p2 != js.p2 &&
+				is.p1 != js.p2 &&
+				is.p2 != js.p1)
+			{
+				Point2 x;
+				if (is.intersect(js, x))
+				{
+					edges[i].splits.push_back(x);
+					edges[j].splits.push_back(x);
+				}
+			}
+		}
+	}
+
+	// This will be a collection of all the nodes we _create_ by splitting, bucketed by their split point.
+	// When A and B cross, we create two new nodes, Xa and Xb, in the middle of each...when done we have
+	// to merge Xa and Xb to cross-link A1, A2, B1 and B2.  So we bucket Xa and Xb at point X.
+	map<Point2, vector<WED_Thing *>, lesser_x_then_y >	splits;
+
+	for (int i = 0; i < edges.size(); ++i)
+	{
+		// Sort in order from source to dest - we need to go in order to avoid making Z shapes
+		// when splitting more than once.
+		edges[i].sort_along_edge();
+
+		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
+		if (edges[i].splits.empty())
+		{
+			Segment2 s;
+			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, s.p1);
+			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, s.p2);
+			edges[i].splits.push_back(s.midpoint());
+		}
+
+		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
+		// on the "dst" side - so by breaking off the very LAST split first, we keep as "us" the part of
+		// the segment containing all other splits.  We work backward.
+		for (vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
+		{
+			// If we had a 'T' then in theory SplitSide could return NULL?
+			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
+			if (split)
+			{
+				// Bucket our new node for merging later
+				WED_Thing * t = dynamic_cast<WED_Thing *>(split);
+				DebugAssert(t);
+				splits[*r].push_back(t);
+
+				// Select every incident segment - some already selected but that's okay.
+				set<WED_Thing *> incident;
+				t->GetAllViewers(incident);
+				for (set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
+					new_pieces.insert(*i);
+			}
+		}
+	}
+
+	// Finally for each bucketed set of nodes, merge them down to get topology.
+	for (map<Point2, vector<WED_Thing *>, lesser_x_then_y>::iterator s = splits.begin(); s != splits.end(); ++s)
+	{
+		if (s->second.size() > 1)
+			run_merge(s->second);
+	}
+
+	return new_pieces;
 }
 
 void	WED_DoSplit(IResolver * resolver)
@@ -1620,93 +1729,10 @@ void	WED_DoSplit(IResolver * resolver)
 		sel->Insert(new_w);
 	}
 	
-	//
-	// This block splits overlapping GIS edges anywhere they cross.
-	//
-	
-	// Step 1: run a nested for loop and find all intersections between all
-	// segments...if the intersection is in the interior, we accumulate it on
-	// the edge.  This is O(N^2) - a sweep line would be better if we ever have
-	// data sets big enough to need it.
-	for(int i = 0; i < edges.size(); ++i)
-	{
-		Segment2 is;
-		
-		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
-		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
-		for(int j = 0; j < i; ++j)
-		{
-			Segment2 js;
-			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
-			edges[j].edge->GetNthPoint(1)->GetLocation(gis_Geo, js.p2);
-			
-			if(is.p1 != is.p2 &&
-			   js.p1 != js.p2 &&
-			   is.p1 != js.p1 &&
-			   is.p2 != js.p2 &&
-			   is.p1 != js.p2 &&
-			   is.p2 != js.p1)
-			{
-				Point2 x;
-				if(is.intersect(js, x))
-				{
-					edges[i].splits.push_back(x);
-					edges[j].splits.push_back(x);
-				}
-			}
-		}
-	}
-	
-	// This will be a collection of all the nodes we _create_ by splitting, bucketed by their split point.
-	// When A and B cross, we create two new nodes, Xa and Xb, in the middle of each...when done we have
-	// to merge Xa and Xb to cross-link A1, A2, B1 and B2.  So we bucket Xa and Xb at point X.
-	map<Point2, vector<WED_Thing *>, lesser_x_then_y >	splits;
-	
-	for(int i = 0; i < edges.size(); ++i)
-	{
-		// Sort in order from source to dest - we need to go in order to avoid making Z shapes
-		// when splitting more than once.
-		edges[i].sort_along_edge();
-		
-		// If the edge is uncrossed the user is just subdividing it - split it at the midpoint.
-		if(edges[i].splits.empty())
-		{
-			Segment2 s;
-			edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo,s.p1);
-			edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo,s.p2);
-			edges[i].splits.push_back(s.midpoint());
-		}
-		
-		// Now we go BACKWARD from high to low - we do this because the GIS Edge's split makes the clone
-		// on the "dst" side - so by breaking off the very LAST split first, we keep as "us" the part of
-		// the segment containing all other splits.  We work backward.
-		for(vector<Point2>::reverse_iterator r = edges[i].splits.rbegin(); r != edges[i].splits.rend(); ++r)
-		{
-			// If we had a 'T' then in theory SplitSide could return NULL?
-			IGISPoint * split = edges[i].edge->SplitSide(*r, 0.0);
-			if(split)
-			{
-				// Bucket our new node for merging later
-				WED_Thing * t = dynamic_cast<WED_Thing *>(split);
-				DebugAssert(t);
-				splits[*r].push_back(t);
-				
-				// Select every incident segment - some already selected but that's okay.
-				set<WED_Thing *> incident;
-				t->GetAllViewers(incident);
-				for(set<WED_Thing *>::iterator i = incident.begin(); i != incident.end(); ++i)
-					sel->Insert(*i);
-			}
-		}
-	}
-	
-	// Finally for each bucketed set of nodes, merge them down to get topology.
-	for(map<Point2, vector<WED_Thing *>, lesser_x_then_y>::iterator s = splits.begin(); s != splits.end(); ++s)
-	{
-		if(s->second.size() > 1)
-			run_merge(s->second);
-	}
-	
+	set<WED_Thing*> new_pieces = run_split_on_edges(edges);
+	set<ISelectable*> iselectable_new_pieces(new_pieces.begin(),new_pieces.end());
+	sel->Insert(iselectable_new_pieces);
+
 	op->CommitOperation();
 }
 
