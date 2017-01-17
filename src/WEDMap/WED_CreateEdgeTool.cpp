@@ -117,10 +117,10 @@ static void SortSplits(const Segment2& s, vector<pair<IGISPointSequence *, Point
 
 
 
-split_edge_info_t cast_WED_GISEdge_to_split_edge_info_t(WED_GISEdge* edge)
+split_edge_info_t cast_WED_GISEdge_to_split_edge_info_t(WED_GISEdge* edge, bool active)
 {
 	DebugAssert(edge != NULL);
-	return split_edge_info_t(edge);
+	return split_edge_info_t(edge, active);
 }
 
 void		WED_CreateEdgeTool::AcceptPath(
@@ -366,8 +366,11 @@ void		WED_CreateEdgeTool::AcceptPath(
 
 	//convert, and run split!
 	vector<split_edge_info_t> edges_to_split;
-	transform(crossing_edges.begin(), crossing_edges.end(), back_inserter(edges_to_split), cast_WED_GISEdge_to_split_edge_info_t);
-	edge_to_child_edges_map_t& new_pieces = run_split_on_edges(edges_to_split);
+	
+	for(set<WED_GISEdge*>::iterator e = crossing_edges.begin(); e != crossing_edges.end(); ++e)
+		edges_to_split.push_back(cast_WED_GISEdge_to_split_edge_info_t(*e, find(tool_created_edges.begin(), tool_created_edges.end(), *e) != tool_created_edges.end()));
+	
+	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split);
 	
 	//For all the tool_created_edges that were split
 	for(vector<WED_GISEdge*>::iterator itr = tool_created_edges.begin();

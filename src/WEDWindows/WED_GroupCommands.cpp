@@ -1520,7 +1520,7 @@ struct sort_by_distance {
 	//IGISEdge *				edge;
 	//vector<Point2>			splits;
 
-split_edge_info_t::split_edge_info_t(WED_GISEdge * e) : edge(e)
+split_edge_info_t::split_edge_info_t(WED_GISEdge * e, bool a) : edge(e), active(a)
 { 
 }
 
@@ -1538,7 +1538,7 @@ static int collect_edges(ISelectable * base, void * ref)
 	vector<split_edge_info_t> * edges = (vector<split_edge_info_t>*) ref;
 	WED_GISEdge * e = dynamic_cast<WED_GISEdge *>(base);
 	if(e)
-		edges->push_back(e);
+		edges->push_back(split_edge_info_t(e,true));
 	return 0;
 }
 
@@ -1570,6 +1570,7 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 		edges[i].edge->GetNthPoint(0)->GetLocation(gis_Geo, is.p1);
 		edges[i].edge->GetNthPoint(1)->GetLocation(gis_Geo, is.p2);
 		for (int j = 0; j < i; ++j)
+		if(edges[i].active || edges[j].active)								// At least one edge MUST be active or we do not split.
 		{
 			Segment2 js;
 			edges[j].edge->GetNthPoint(0)->GetLocation(gis_Geo, js.p1);
@@ -1743,7 +1744,8 @@ void	WED_DoSplit(IResolver * resolver)
 	for (edge_to_child_edges_map_t::iterator itr = new_pieces.begin(); itr != new_pieces.end(); ++itr)
 	{
 		sel->Insert(itr->first);
-		set<ISelectable*> iselectable_new_pieces(itr->second.begin(), itr->second.end());
+		for(vector<WED_Thing *>::iterator nt = itr->second.begin(); nt != itr->second.end(); ++nt)
+			sel->Insert(*nt);
 	}
 
 	op->CommitOperation();

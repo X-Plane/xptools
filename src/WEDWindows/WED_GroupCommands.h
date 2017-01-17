@@ -79,8 +79,9 @@ int		WED_CanSplit(IResolver * resolver);
 
 struct split_edge_info_t {
 	WED_GISEdge *			edge;
-	vector<Point2>			splits;
-	split_edge_info_t(WED_GISEdge* edge);
+	bool					active;						// Of all the edges we can split, only some are ACTIVE.  To make a split, at least ONE must be active.
+	vector<Point2>			splits;						// This lets us say "the new edges are cutting everything, but legacy edges do not cut each other."
+	split_edge_info_t(WED_GISEdge* edge, bool active);
 	void sort_along_edge();
 };
 
