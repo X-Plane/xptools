@@ -27,6 +27,9 @@
 #include "WED_Entity.h"
 #include "WED_Persistent.h"
 #include "WED_Thing.h"
+#if LIN
+#include <limits.h>
+#endif
 
 inline bool TakeAlways(WED_Thing* v)
 {
