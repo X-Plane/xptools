@@ -68,21 +68,29 @@ error checking here and in apt-io
 
 static int get_apt_export_version()
 {
+	int target = gExportTarget;
+	
+	if(target == wet_gateway)
+		target = wet_latest_xplane;
+	
 	int version = 1000;
-	switch(gExportTarget)
+	switch(target)
 	{
 	case wet_xplane_900:
 		version = 850;
 		break;
+	case wet_xplane_1021:
 	case wet_xplane_1000:
 		version = 1000;
 		break;
 	case wet_xplane_1050:
-	case wet_gateway:
 		version = 1050;
 		break;
 	case wet_xplane_1100:
 		version = 1100;
+		break;
+	default:
+		DebugAssert(!"You forgot to add a case!");
 		break;
 	}
 	return version;
