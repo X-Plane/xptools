@@ -34,7 +34,11 @@
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
-	DSF_Export(root, resolver, in_path,problem_children);
+	int result = DSF_Export(root, resolver, in_path,problem_children);
+	if (result == -1)
+	{
+		return;
+	}
 
 	string	apt = in_path + "Earth nav data" DIR_STR "apt.dat";
 	string	apt_dir = in_path + "Earth nav data";
