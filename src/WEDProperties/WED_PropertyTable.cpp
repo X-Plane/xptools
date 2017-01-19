@@ -135,7 +135,8 @@ void	WED_PropertyTable::GetCellContent(
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
 	
 	//If there has been one found, use the_content as it is and exit
-	if (idx == -1) return;
+	if (idx == -1)
+		return;
 
 	WED_Thing * my_parent = t->GetParent();
 	if(my_parent)
