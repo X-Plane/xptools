@@ -12,6 +12,7 @@ WorldEditor's user's manual is online; pick "WED User's Guide" from the help
 menu to view it online.
 
 CHANGE HISTORY
+        - WED-760: Check XSystem path upon submission to be a valid X-plane base directory
 
 WED 1.6.0a3 12/17/16
 	Bug fixes:
