@@ -1051,7 +1051,7 @@ void WED_PropertyTable::SetFilter(const string & filter)
 //sorted_cache - the sorted_cache of wed things we're building up
 //sorted_open_ids - the hash map of id and true false if its open or not
 //returns number of bad leafs
-int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_Thing*>& sorted_cache)
+int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<WED_Thing*>& sorted_cache)
 {
 	DebugAssert(thing != NULL);
 
@@ -1061,7 +1061,9 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 
 	string thing_name;
 	thing->GetName(thing_name);
-	bool is_match = thing_name.find(search_filter) != string::npos;
+	ci_string ithing_name(thing_name.begin(),thing_name.end());
+
+	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
 
 	int nc = thing->CountChildren();
 	if (nc == 0) //thing is a leaf
@@ -1082,7 +1084,7 @@ int collect_recusive(WED_Thing * thing, const string& search_filter, vector<WED_
 		int bad_leafs = 0;
 		for (int n = 0; n < nc; ++n)
 		{
-			bad_leafs += collect_recusive(thing->GetNthChild(n), search_filter, sorted_cache);
+			bad_leafs += collect_recusive(thing->GetNthChild(n), isearch_filter, sorted_cache);
 		}
 
 		//If bad_leafs is less than the number of kids it means that there is at least some reason to keep this group
@@ -1105,7 +1107,8 @@ void WED_PropertyTable::Resort()
 	if (mSearchFilter.empty() == false)
 	{
 		mSortedCache.reserve(mThingCache.size());
-		collect_recusive(WED_GetWorld(mResolver), mSearchFilter, mSortedCache);
+		ci_string isearch_filter(mSearchFilter.begin(), mSearchFilter.end());
+		collect_recusive(WED_GetWorld(mResolver), isearch_filter, mSortedCache);
 	}
 }
 //-----------------------------------------------------------------------------
