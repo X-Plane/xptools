@@ -18,6 +18,7 @@ WED 1.6.0a3 12/17/16
 	- WED-746: Split algorithm is buggy, was replaced
 	- WED-728: No more crash in rare undo of edge split
 	- Updates the about box with better formated credits
+	- WED-762: Remove strange characters when previewing .obj definitions
 
 WED 1.6.0a2 12/13/16
 	Bug fixes:
