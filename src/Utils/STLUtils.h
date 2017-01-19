@@ -25,10 +25,6 @@
 #define STLUtils_H
 
 #include "AssertUtils.h"
-#include <cctype>
-#include <iostream>
-#include <iterator>
-#include <string>
 
 template<typename T>				void trim(T& v);							// Remove extra space from a vector.
 template <class T>					void nuke_container(T& v);					// Clear a container, free vector memory
@@ -195,47 +191,18 @@ public:
 
 //--Case insensitive string implementation-------------------------------------
 //Thanks Herb Stutter http://www.gotw.ca/gotw/029.htm
+template<> struct char_traits<char>;
 struct ci_char_traits : public std::char_traits<char>
 {
-	static bool eq(char c1, char c2)
-	{
-		return std::toupper(c1) == std::toupper(c2);
-	}
-
-	static bool lt(char c1, char c2)
-	{
-		return std::toupper(c1) <  std::toupper(c2);
-	}
-
-	static int compare(const char* s1, const char* s2, size_t n)
-	{
-		while (n-- != 0) {
-			if (std::toupper(*s1) < std::toupper(*s2)) return -1;
-			if (std::toupper(*s1) > std::toupper(*s2)) return 1;
-			++s1; ++s2;
-		}
-		return 0;
-	}
-
-	static const char* find(const char* s, int n, char a)
-	{
-		const int ua(std::toupper(a));
-		while (n-- != 0)
-		{
-			if (std::toupper(*s) == ua)
-				return s;
-			s++;
-		}
-		return NULL;
-	}
+	static bool eq(char c1, char c2);
+	static bool lt(char c1, char c2);
+	static int compare(const char* s1, const char* s2, size_t n);
+	static const char* find(const char* s, int n, char a);
 };
 
 typedef std::basic_string<char, ci_char_traits> ci_string;
 
-static std::ostream& operator<<(std::ostream& os, const ci_string& str)
-{
-	return os.write(str.data(), str.size());
-}
+static std::ostream& operator<<(std::ostream& os, const ci_string& str);
 //---------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------------------------------
