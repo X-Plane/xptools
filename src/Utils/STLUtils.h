@@ -191,7 +191,6 @@ public:
 
 //--Case insensitive string implementation-------------------------------------
 //Thanks Herb Stutter http://www.gotw.ca/gotw/029.htm
-template<> struct char_traits<char>;
 struct ci_char_traits : public std::char_traits<char>
 {
 	static bool eq(char c1, char c2);
