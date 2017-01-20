@@ -53,6 +53,8 @@ WED 1.6.0a1 12/02/16
 						  make exact rectangles, L-shapes, staircase patterns etc.
 					Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
 						  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
+					new feature for Vertex tool :
+						holding CTRL-Key while dragging a edge line moves the segment in parallel.
 	- WED-710: Show runway numbers in map view
 	- WED-704: Validate parameters in ATC flow, wind & time rules to be XP-legal
 	- WED-696: Validate (gateway only) land airports to have a airport boundary
