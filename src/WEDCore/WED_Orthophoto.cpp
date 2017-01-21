@@ -59,19 +59,19 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 			if (c[1] < c[5])
 			{
 				// SW, SE, NW, NE from tiff, but we are making a CCW wound polygon, i.e. SW SE NE NW
-				coords[0] = Point2(c[0],c[1]);
-				coords[1] = Point2(c[2],c[3]);
-				coords[3] = Point2(c[4],c[5]);
-				coords[2] = Point2(c[6],c[7]);
+				coords[3] = Point2(c[0],c[1]);
+				coords[0] = Point2(c[2],c[3]);
+				coords[2] = Point2(c[4],c[5]);
+				coords[1] = Point2(c[6],c[7]);
 			}
 			else
 			{
 				// jpg compressed files have the origin at the bottom, not the top. So their encoding is
 				// NW, NE, SW, SE, but we are making a CCW wound polygon, i.e. need it to be SW SE NE NW
-				coords[0] = Point2(c[4],c[5]);
-				coords[1] = Point2(c[6],c[7]);
-				coords[3] = Point2(c[0],c[1]);
-				coords[2] = Point2(c[2],c[3]);
+				coords[3] = Point2(c[4],c[5]);
+				coords[0] = Point2(c[6],c[7]);
+				coords[2] = Point2(c[0],c[1]);
+				coords[1] = Point2(c[2],c[3]);
 			}
 			has_geo = 1;
 		}
@@ -93,10 +93,10 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 		if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
 		else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
 
-		coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-		coords[2] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+		coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+		coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+		coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
 	}
 	DestroyBitmap(&inf);
 
