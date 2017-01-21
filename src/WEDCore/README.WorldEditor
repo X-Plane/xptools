@@ -13,6 +13,12 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.6b2 
+	Bug fixes:
+	- WED-767: prevent uncommanded rotation OrthoPhotos placed in WED 1.5
+	- WED-758: recognize .jpeg and .tiff as valid image suffixes
+	- WED-757: fix jpg compressed GeoTiff's imported upside down
+
 WED 1.6.0a3 12/17/16
 	Bug fixes:
 	- WED-746: Split algorithm is buggy, was replaced
