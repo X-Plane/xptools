@@ -70,6 +70,7 @@
 #include "WED_EnumSystem.h"
 #include "CompGeomUtils.h"
 #include "WED_HierarchyUtils.h"
+#include "WED_Orthophoto.h"
 
 #include <iterator>
 #include <sstream>
@@ -201,144 +202,30 @@ void	WED_DoMakeNewOverlay(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 	char * path = GetMultiFilePathFromUser("Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
 	if(path)
 	{
-		Point2	coords[4];
-		double c[8];
-		
-		WED_Thing * wrl = WED_GetWorld(inResolver);
-		ISelection * sel = WED_GetSelect(inResolver);
+		WED_Thing *    wrl = WED_GetWorld(inResolver);
+		WED_Archive * arch = wrl->GetArchive();
+		ISelection *   sel = WED_GetSelect(inResolver);
+		ILibrarian *   lib = WED_GetLibrarian(inResolver);
+		char * free_me = path;
 
 		wrl->StartOperation("Add Overlay Image");
 		sel->Clear();
 		
-		char * free_me = path;
-		
 		while(*path)
 		{
-			ImageInfo	inf;
-			int has_geo = 0;
-			int align = dem_want_Area;
-			
-			int res = MakeSupportedType(path, &inf);
-			if(res != 0)
+			WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, false);
+			if (rng)
 			{
-				string msg = "Unable to open image file: ";
-				msg += path;
-				DoUserAlert(msg.c_str());
-				path = path + strlen(path)+1;
-				continue;
+				WED_OverlayImage * img = WED_OverlayImage::CreateTyped(arch);
+				rng->SetParent(img,0);
+				img->SetParent(wrl,0);
+				sel->Select(img);
+
+				string img_path(path);
+				lib->ReducePath(img_path);
+				img->SetImage(img_path);
+				img->SetName(img_path);
 			}
-
-			switch(GetSupportedType(path))
-			{
-			#if USE_GEOJPEG2K
-			case WED_JP2K:
-				if(FetchTIFFCornersWithJP2K(path,c,align))
-				{
-					coords[3].x_ = c[0];
-					coords[3].y_ = c[1];
-					coords[0].x_ = c[2];
-					coords[0].y_ = c[3];
-					coords[2].x_ = c[4];
-					coords[2].y_ = c[5];
-					coords[1].x_ = c[6];
-					coords[1].y_ = c[7];
-					has_geo=1;
-				}
-				break;
-			#endif
-			case WED_TIF:
-				if (FetchTIFFCorners(path, c, align))
-				{
-					// SW, SE, NW, NE from tiff, but SE NE NW SW internally
-					coords[3].x_ = c[0];
-					coords[3].y_ = c[1];
-					coords[0].x_ = c[2];
-					coords[0].y_ = c[3];
-					coords[2].x_ = c[4];
-					coords[2].y_ = c[5];
-					coords[1].x_ = c[6];
-					coords[1].y_ = c[7];
-					has_geo=1;
-				}
-				break;
-			}
-
-			if(!has_geo)
-			{
-				double	nn,ss,ee,ww;
-				zoomer->GetPixelBounds(ww,ss,ee,nn);
-
-				Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
-
-				double grow_x = 0.5*(ee-ww)/((double) inf.width);
-				double grow_y = 0.5*(nn-ss)/((double) inf.height);
-
-				double pix_w, pix_h;
-
-				if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-				else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
-
-				coords[0] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-				coords[2] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
-			}
-			
-			DestroyBitmap(&inf);
-
-			WED_OverlayImage * img = WED_OverlayImage::CreateTyped(wrl->GetArchive());
-			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p1 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p2 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p3 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-			WED_TextureNode *  p4 = WED_TextureNode::CreateTyped(wrl->GetArchive());
-
-			p1->SetParent(rng,0);
-			p2->SetParent(rng,1);
-			p3->SetParent(rng,2);
-			p4->SetParent(rng,3);
-			rng->SetParent(img,0);
-			img->SetParent(wrl,0);
-			sel->Select(img);
-
-			p1->SetLocation(gis_Geo,coords[3]);
-			p2->SetLocation(gis_Geo,coords[2]);
-			p3->SetLocation(gis_Geo,coords[1]);
-			p4->SetLocation(gis_Geo,coords[0]);
-
-
-			string img_path(path);
-			WED_GetLibrarian(inResolver)->ReducePath(img_path);
-			img->SetImage(img_path);
-
-			p1->SetName("Corner 1");
-			p1->SetName("Corner 2");
-			p1->SetName("Corner 3");
-			p1->SetName("Corner 4");
-			rng->SetName("Image Boundary");
-			const char * p = path;
-			const char * n = path;
-
-			//While p is not the null pointer (not the end of the of the char*)
-			while(*p)
-			{ 
-				//If the letter is special
-				if (*p == '/' || *p == ':' || *p == '\\')
-				{
-					//Advance n's pointer
-					n = p+1;
-				}
-				//Advance regardless
-				++p; 
-			}
-			//n is now just the file name
-			img->SetName(n);
-
-			p1->SetLocation(gis_UV,Point2(0,0));
-			p2->SetLocation(gis_UV,Point2(0,1));
-			p3->SetLocation(gis_UV,Point2(1,1));
-			p4->SetLocation(gis_UV,Point2(1,0));
-
 			path = path + strlen(path)+1;
 		}
 		

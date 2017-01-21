@@ -192,10 +192,10 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 				{
 					switch (n)
 					{
-						case 0: uv=uv_box.bottom_left();  break;
-						case 1: uv=uv_box.bottom_right(); break;
-						case 2: uv=uv_box.top_right();    break;
-						case 3: uv=uv_box.top_left();
+						case 0: uv=uv_box.bottom_right();  break;
+						case 1: uv=uv_box.top_right(); break;
+						case 2: uv=uv_box.top_left();    break;
+						case 3: uv=uv_box.bottom_left();
 								if (updProp)
 								{
 									st = pt_bak[3].pt;
