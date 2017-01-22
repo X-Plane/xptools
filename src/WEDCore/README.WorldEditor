@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 1.6b2 
 	Bug fixes:
+	- WED-766: extend validation error message to clearify corrective action
 	- WED-767: prevent uncommanded rotation OrthoPhotos placed in WED 1.5
 	- WED-758: recognize .jpeg and .tiff as valid image suffixes
 	- WED-757: fix jpg compressed GeoTiff's imported upside down
