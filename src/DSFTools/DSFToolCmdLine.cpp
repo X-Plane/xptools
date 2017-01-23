@@ -40,7 +40,6 @@ void AssertShellBail(const char * condition, const char * file, int line)
 
 bool DSF2Text(char ** inDSF, int n, const char * inFileName);
 bool Text2DSF(const char * inFileName, const char * inDSF);
-bool ENV2Overlay(const char * inFileName, const char * inDSF);
 
 int main(int argc, char * argv[])
 {
@@ -51,7 +50,6 @@ int main(int argc, char * argv[])
 
 	if(!strcmp(argv[1],"--auto_config"))
 	{
-		printf("CMD .env .dsf \"%s\" -env2overlay \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .txt .dsf \"%s\" -text2dsf \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		printf("CMD .dsf .txt \"%s\" -dsf2text \"INFILE\" \"OUTFILE\"\n", argv[0]);
 		return 0;
@@ -59,24 +57,6 @@ int main(int argc, char * argv[])
 
 	for (int n = 1; n < argc; ++n)
 	{
-		if (!strcmp(argv[n], "-env2overlay") ||
-			!strcmp(argv[n], "--env2overlay"))
-		{
-			++n;
-			if (n >= argc) goto help;
-			const char * f1 = argv[n];
-			++n;
-			if (n >= argc) goto help;
-			const char * f2 = argv[n];
-
-			printf("Converting %s from ENV to DSF overlay as %s\n", f1, f2);
-			if (ENV2Overlay(f1, f2))
-				printf("Converted %s to %s\n",f1, f2);
-			else
-				{ fprintf(err_fi,"ERROR: Error converting %s to %s\n", f1, f2); exit(1); }
-		}
-
-
 		if (!strcmp(argv[n], "-dsf2text") ||
 			!strcmp(argv[n], "--dsf2text"))
 		{

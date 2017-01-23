@@ -47,9 +47,9 @@ void WED_Select::CopyFrom(const WED_Select * rhs)
 	mSelected = rhs->mSelected;
 }
 
-void 			WED_Select::ReadFrom(IOReader * reader)
+bool 			WED_Select::ReadFrom(IOReader * reader)
 {
-	WED_Thing::ReadFrom(reader);
+	bool r = WED_Thing::ReadFrom(reader);
 	int n,id;
 	reader->ReadInt(n);
 	mSelected.clear();
@@ -58,7 +58,7 @@ void 			WED_Select::ReadFrom(IOReader * reader)
 		reader->ReadInt(id);
 		mSelected.insert(id);
 	}
-
+	return r;
 }
 
 void 			WED_Select::WriteTo(IOWriter * writer)
@@ -195,6 +195,32 @@ void		WED_Select::Insert(ISelectable * iwho)
 	{
 		StateChanged(wed_Change_Selection);
 		mSelected.insert(id);
+	}
+}
+
+void WED_Select::Insert(const set<ISelectable*>& sel)
+{
+	Insert(sel.begin(), sel.end());
+}
+
+void WED_Select::Insert(const set<ISelectable*>::const_iterator& begin, const set<ISelectable*>::const_iterator& end)
+{
+	for (set<ISelectable*>::const_iterator itr = begin; itr != end; ++itr)
+	{
+		Insert(*itr);
+	}
+}
+
+void WED_Select::Insert(const vector<ISelectable*>& sel)
+{
+	Insert(sel.begin(), sel.end());
+}
+
+void WED_Select::Insert(const vector<ISelectable*>::const_iterator& begin, const vector<ISelectable*>::const_iterator& end)
+{
+	for (vector<ISelectable*>::const_iterator itr = begin; itr != end; ++itr)
+	{
+		Insert(*itr);
 	}
 }
 

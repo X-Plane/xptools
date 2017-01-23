@@ -56,12 +56,13 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 DEFINE_PERSISTENT(WED_TaxiRoute)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	oneway(this,"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
-	runway(this,"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
-	hot_depart(this,"Departures",		SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
-	hot_arrive(this,"Arrivals",			SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
-	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
-	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"), ATCIcaoWidth, width_E)
+	vehicle_class(this,	"Allowed Vehicles",		SQL_Name("",""),								XML_Name("taxi_route","vehicle_class"),	ATCVehicleClass,atc_Vehicle_Aircraft),
+	oneway(this,		"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
+	runway(this,		"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
+	hot_depart(this,	"Departures",			SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
+	hot_arrive(this,	"Arrivals",				SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
+	hot_ils(this,		"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
+	width(this,			"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"),			ATCIcaoWidth, width_E)
 {
 }
 
@@ -116,9 +117,15 @@ void WED_TaxiRoute::SetWidth(int w)
 	width= w;
 }
 
+void	WED_TaxiRoute::SetVehicleClass(int in_class)
+{
+	vehicle_class = in_class;
+}
+
 void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
 	SetName(info.name);
+	vehicle_class = atc_Vehicle_Aircraft;
 	oneway = info.oneway;
 	if(info.runway)
 	{
@@ -170,45 +177,63 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 		else
 			hot_ils += r;
 	}
-
 }
 
-void	WED_TaxiRoute::Export(		 AptRouteEdge_t& info) const
+void	WED_TaxiRoute::Import(const AptServiceRoadEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref)
 {
-	info.oneway = oneway.value;
-	info.hot_depart.clear();
-	info.hot_arrive.clear();
-	info.hot_ils.clear();
-	info.width = ENUM_Export(width.value);
+	SetName(info.name);
+	oneway = info.oneway;
+	runway = atc_rwy_None;
+	vehicle_class = atc_Vehicle_Ground_Trucks;
+}
 
-	if(runway.value == atc_rwy_None)
+void	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const
+{
+	if(AllowTrucks())
 	{
-		this->GetName(info.name);
-		info.runway = 0;
+		info2.oneway = oneway.value;
+		this->GetName(info2.name);
+		return;
 	}
 	else
 	{
-		info.runway = 1;
-		info.name = ENUM_Desc(runway.value);
+		info.hot_depart.clear();
+		info.hot_arrive.clear();
+		info.hot_ils.clear();
+		info.width = ENUM_Export(width.value);
 
-		set<int>	runway_parts;
-		get_runway_parts(runway.value,runway_parts);
-
-		for(set<int>::iterator itr = runway_parts.begin(); itr != runway_parts.end(); ++itr)
+		if(runway.value == atc_rwy_None)
 		{
-			info.hot_depart.insert(ENUM_Desc(*itr));
-			info.hot_arrive.insert(ENUM_Desc(*itr));
-			info.hot_ils.insert(ENUM_Desc(*itr));
+			this->GetName(info.name);
+			info.runway = 0;
 		}
-	}
+		else
+		{
+			info.runway = 1;
+			info.name = ENUM_Desc(runway.value);
+			
+			set<int>	runway_parts;
+			get_runway_parts(runway.value,runway_parts);
 
-	set<int>::iterator h;
-	for (h = hot_depart.value.begin(); h != hot_depart.value.end(); ++h)
-		info.hot_depart.insert(ENUM_Desc(*h));
-	for (h = hot_arrive.value.begin(); h != hot_arrive.value.end(); ++h)
-		info.hot_arrive.insert(ENUM_Desc(*h));
-	for (h = hot_ils.value.begin(); h != hot_ils.value.end(); ++h)
-		info.hot_ils.insert(ENUM_Desc(*h));
+			for(set<int>::iterator itr = runway_parts.begin(); itr != runway_parts.end(); ++itr)
+			{
+				info.hot_depart.insert(ENUM_Desc(*itr));
+				info.hot_arrive.insert(ENUM_Desc(*itr));
+				info.hot_ils.insert(ENUM_Desc(*itr));
+			}
+		}
+
+		set<int>::iterator h;
+		for (h = hot_depart.value.begin(); h != hot_depart.value.end(); ++h)
+			info.hot_depart.insert(ENUM_Desc(*h));
+		for (h = hot_arrive.value.begin(); h != hot_arrive.value.end(); ++h)
+			info.hot_arrive.insert(ENUM_Desc(*h));
+		for (h = hot_ils.value.begin(); h != hot_ils.value.end(); ++h)
+			info.hot_ils.insert(ENUM_Desc(*h));
+
+		info.oneway = oneway.value;
+		return;
+	}
 }
 
 void	WED_TaxiRoute::GetNthPropertyDict(int n, PropertyDict_t& dict) const
@@ -268,6 +293,23 @@ void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		info.can_delete = false;
 		info.can_edit = false;
+	}
+
+	PropertyVal_t prop;
+	vehicle_class.GetProperty(prop);
+
+	if (prop.int_val == atc_Vehicle_Ground_Trucks)
+	{
+		if (n == PropertyItemNumber(&runway) ||
+			n == PropertyItemNumber(&hot_depart) ||
+			n == PropertyItemNumber(&hot_arrive) ||
+			n == PropertyItemNumber(&hot_ils) ||
+			n == PropertyItemNumber(&width))
+		{
+			info.prop_name = ".";
+			info.can_edit = false;
+			info.can_delete = false;
+		}
 	}
 }
 
@@ -371,6 +413,17 @@ WED_Thing *		WED_TaxiRoute::CreateSplitNode()
 {
 	return WED_TaxiRouteNode::CreateTyped(GetArchive());
 }
+
+bool	WED_TaxiRoute::AllowAircraft(void) const
+{
+	return vehicle_class.value == atc_Vehicle_Aircraft;
+}
+
+bool	WED_TaxiRoute::AllowTrucks(void) const
+{
+	return vehicle_class.value == atc_Vehicle_Ground_Trucks;
+}
+
 
 
 #endif

@@ -36,6 +36,10 @@
 #endif
 #include "AssertUtils.h"
 
+#if IBM
+#include "GUI_Unicode.h"
+#endif
+
 /*
 	WARNING: Struct alignment must be "68K" (e.g. 2-byte alignment) for these
 	structures to be happy!!!
@@ -367,17 +371,9 @@ int GetSupportedType(const char * path)
 		
 	extension = extension.substr(sep+1);
 
-	if(extension.length() == 3)
-	{
-		extension[0] = tolower(extension[0]);
-		extension[1] = tolower(extension[1]);
-		extension[2] = tolower(extension[2]);
-	}
-	else
-	{
-		return -1;
-	}
-
+	for (int i = 0; i < extension.length(); ++i)
+		extension[i] = tolower(extension[i]);
+	
 	//compare the string and if it is perfectly the same return that code
 	if(extension == "bmp") return WED_BMP;
 	if(extension == "dds") return WED_DDS;
@@ -1345,7 +1341,11 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 	int result = -1;
 	TIFFErrorHandler	errH = TIFFSetWarningHandler(IgnoreTiffWarnings);
 	TIFFErrorHandler	errH2= TIFFSetErrorHandler(IgnoreTiffWarnings);
+#if SUPPORT_UNICODE
+    TIFF* tif = TIFFOpenW(convert_str_to_utf16(inFilePath).c_str(), "r");
+#else
     TIFF* tif = TIFFOpen(inFilePath, "r");
+#endif
     if (tif == NULL) goto bail;
 
 	uint32 w, h;

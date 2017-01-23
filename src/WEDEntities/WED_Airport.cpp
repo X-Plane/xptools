@@ -439,9 +439,9 @@ void WED_Airport::CopyFrom(const WED_Airport* rhs)
 	meta_data_vec_map = rhs->meta_data_vec_map;
 }
 
-void 			WED_Airport::ReadFrom(IOReader * reader)
+bool 			WED_Airport::ReadFrom(IOReader * reader)
 {
-	WED_GISComposite::ReadFrom(reader);
+	bool r = WED_GISComposite::ReadFrom(reader);
 	
 	meta_data_vec_map.clear();
 
@@ -467,6 +467,7 @@ void 			WED_Airport::ReadFrom(IOReader * reader)
 		
 		meta_data_vec_map.push_back(meta_data_entry(key,val));
 	}
+	return r;
 }
 
 void 			WED_Airport::WriteTo(IOWriter * writer)

@@ -30,7 +30,10 @@ Version History
 	2/18/12 - 2.0			Support for raster data for X-Plane 10
 	3/30/15 - 2.0.1			Added error message that the file might be 7-zipped.
 							Fixed decode of MSL-base objects.
-								 
+	(Not yet released)
+							ENV support removed
+
+
 -------------------------------------------------------------------------------
 OVERVIEW
 -------------------------------------------------------------------------------
@@ -38,15 +41,10 @@ OVERVIEW
 DSFTool is a utility that converts X-plane Distribution Scenery Format (DSF)
 files to a text format and back again.
 
-DSFTool can also extract the custom objects from an ENV file and build an
-overlay DSF.
-
 WARNING: Working with DSF files as text DSFTool is intended primarily for
 programmers who want to create DSF files.
 
-WARNING: this utility does NOT work with Mars ENV files!
-
-Note: Previously the UI version was called DSF2Text; now both are called 
+Note: Previously the UI version was called DSF2Text; now both are called
 DSFTool.
 
 -------------------------------------------------------------------------------
@@ -62,7 +60,7 @@ USING DSFTool
 -------------------------------------------------------------------------------
 
 DSFTool can be used via the command-line or in conjunction with XGrinder.  To
-use DSFTool with XGrinder, simply drag a .txt, .dsf or .env file into the 
+use DSFTool with XGrinder, simply drag a .txt or .dsf file into the
 XGrinder window.
 
 WARNING: If DSF crashes, check your line endings!  I have had reports that
@@ -71,7 +69,6 @@ TextEdit on the Mac ruines line endings.
 SUFFIX			CONVERSION
 TXT				Text -> DSF*
 DSF				DSF* -> Text
-ENV				ENV -> Overlay DSF
 
 * DSFs can be converted to text and back for full or overlay DSFs.
 
@@ -87,9 +84,7 @@ to convert from DSF to text and
 
 DSFTool --text2dsf <text file> <dsf file>
 
-to convert the other way.  To convert an ENV to an overlay use:
-
-DSFTool --env2overlay <env file> <dsf file>
+to convert the other way.
 
 For <text file> you can specify a single dash (-)
 to read from stdin/stdout instead of a text file.  This allows for piped usage
@@ -98,7 +93,7 @@ of DSFTool, e.g.
 cat file.txt | ./DSFTool -text2dsf - output.dsf
 ./DSFTool -DSFTool foo.dsf - | grep OBJECT_DEF | wc -l
 
-Piping is not available for DSF and ENV output files.  When converting to a binary
+Piping is not available for DSF output files.  When converting to a binary
 file, status messages are sent to stdout and error messages to stderr.  When
 converting to text, all messages are sent to stderr so that piped output is
 strictly the DSF contents.  The result code indicates a successful conversion.

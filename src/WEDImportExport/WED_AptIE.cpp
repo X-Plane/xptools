@@ -51,6 +51,8 @@
 #include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
+#include "WED_TruckParkingLocation.h"
+#include "WED_TruckDestination.h"
 
 #include "AptIO.h"
 #include "WED_ToolUtils.h"
@@ -66,11 +68,30 @@ error checking here and in apt-io
 
 static int get_apt_export_version()
 {
+	int target = gExportTarget;
+	
+	if(target == wet_gateway)
+		target = wet_latest_xplane;
+	
 	int version = 1000;
-	switch(gExportTarget) {
-	case wet_xplane_900:	version = 850; break;
+	switch(target)
+	{
+	case wet_xplane_900:
+		version = 850;
+		break;
+	case wet_xplane_1021:
+	case wet_xplane_1000:
+		version = 1000;
+		break;
 	case wet_xplane_1050:
-	case wet_gateway:	version = 1050; break;
+		version = 1050;
+		break;
+	case wet_xplane_1100:
+		version = 1100;
+		break;
+	default:
+		DebugAssert(!"You forgot to add a case!");
+		break;
 	}
 	return version;
 }
@@ -218,16 +239,31 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 	for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
 	{
 		AptRouteEdge_t ne;
-		(*e)->Export(ne);
+		AptServiceRoadEdge_t se;
+		(*e)->Export(ne,se);
+		bool is_truxiroute = (*e)->AllowTrucks();
+
+		AptEdgeBase_t * base = is_truxiroute ? (AptEdgeBase_t *) &se : (AptEdgeBase_t *) &ne;
 		
 		// Node's ID is its index in file order
 		vector<IGISPoint *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(0));
-		ne.src = std::distance(nodes->begin(), pos_src);
+		base->src = std::distance(nodes->begin(), pos_src);
 		
 		vector<IGISPoint *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(1));
-		ne.dst = std::distance(nodes->begin(), pos_dst);;
+		base->dst = std::distance(nodes->begin(), pos_dst);;
 		
-		net.edges.push_back(ne);
+		Segment2 s;
+		Bezier2 b;
+		if((*e)->GetSide(gis_Geo, 0, s, b))
+		{
+			base->shape.push_back(make_pair(b.c1,true));
+			base->shape.push_back(make_pair(b.c2,true));
+		}
+		
+		if(is_truxiroute)
+			net.service_roads.push_back(se);
+		else
+			net.edges.push_back(ne);
 	}
 }
 #endif
@@ -254,6 +290,8 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 	WED_ATCRunwayUse *		use;
 	WED_ATCTimeRule *		tim;
 	WED_ATCWindRule *		wnd;
+	WED_TruckDestination *	dst;
+	WED_TruckParkingLocation*trk;
 #endif
 	int holes, h;
 	
@@ -397,6 +435,18 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		apts.back().flows.back().wind_rules.push_back(AptWindRule_t());
 		wnd->Export(apts.back().flows.back().wind_rules.back());
 	}
+	else if(trk = dynamic_cast<WED_TruckParkingLocation*>(what))
+	{
+		apts.back().truck_parking.push_back(AptTruckParking_t());
+		trk->Export(apts.back().truck_parking.back());
+	}
+	else if(dst = dynamic_cast<WED_TruckDestination*>(what))
+	{
+		apts.back().truck_destinations.push_back(AptTruckDestination_t());
+		dst->Export(apts.back().truck_destinations.back());
+	}
+	
+	
 #endif	
 
 	int cc = what->CountChildren();
@@ -707,6 +757,21 @@ void	WED_AptImport(
 		}
 		
 #if AIRPORT_ROUTING
+
+		for(AptTruckParkingVector::iterator trk = apt->truck_parking.begin(); trk != apt->truck_parking.end(); ++trk)
+		{
+			WED_TruckParkingLocation * new_trk = WED_TruckParkingLocation::CreateTyped(archive);
+			add_to_bucket(new_trk,new_apt,"Ground Vehicles",buckets);
+			new_trk->Import(*trk, LazyPrintf, &log);
+		}
+
+		for(AptTruckDestinationVector::iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
+		{
+			WED_TruckDestination * new_dst = WED_TruckDestination::CreateTyped(archive);
+			add_to_bucket(new_dst,new_apt,"Ground Vehicles",buckets);
+			new_dst->Import(*dst, LazyPrintf, &log);
+		}
+
 		for(AptFlowVector::iterator flw = apt->flows.begin(); flw != apt->flows.end(); ++flw)
 		{
 			WED_ATCFlow * new_flw = WED_ATCFlow::CreateTyped(archive);
@@ -744,14 +809,161 @@ void	WED_AptImport(
 				new_n->SetLocation(gis_Geo,n->location);
 				nodes[n->id] = new_n;
 			}
+			
+			// COPY PASTA WARNING PART 1
 			for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
 			{
-				WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
-				new_e->AddSource(nodes[e->src], 0);
-				new_e->AddSource(nodes[e->dst], 1);
-				add_to_bucket(new_e,new_apt,"Taxi Routes",buckets);
-				new_e->Import(*e,LazyPrintf, &log);
+				vector<pair<Point2, bool> >		shape(e->shape);
+				Point2 start_geo, end_geo;
+				nodes[e->src]->GetLocation(gis_Geo, start_geo);
+				nodes[e->dst]->GetLocation(gis_Geo, end_geo);
+				shape.insert(shape.begin(),make_pair(start_geo, false));
+				shape.insert(shape.end(),make_pair(end_geo, false));
+			
+				vector<pair<Point2, bool> >::iterator p1, p2, stop;
+				p1 = p2 = shape.begin();
+				stop = shape.end();
+				--stop;
+				WED_TaxiRouteNode * next, * prev = nodes[e->src];
+				while(p1 != stop)
+				{
+					DebugAssert(!p1->second);
+					p2 = p1;
+					++p2;
+					while(p2->second) ++p2;
+					
+					if(p2 == stop)
+						next = nodes[e->dst];
+					else
+					{
+						next = WED_TaxiRouteNode::CreateTyped(archive);
+						add_to_bucket(next,new_apt,"Taxi Routes",buckets);
+						next->SetName(e->name);
+						next->SetLocation(gis_Geo, p2->first);
+					}
+					
+					int cc = p2 - p1;
+					if(cc > 3)
+						LazyPrintf(&log,"Too many control points");
+			
+					WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
+					new_e->AddSource(prev,0);
+					new_e->AddSource(next,1);
+					new_e->Import(*e,LazyPrintf,&log);
+					add_to_bucket(new_e,new_apt,"Taxi Routes", buckets);
+
+					if(cc == 2)
+					{
+						Bezier2 b;
+						b.p1 = p1->first;
+						b.p2 = p2->first;
+						++p1;
+						
+						Vector2 to_c1 = Vector2(b.p1,p1->first);
+						Vector2 to_c2 = Vector2(b.p2,p1->first);
+						
+						b.c1 = b.p1 + to_c1 * 2.0 / 3.0;
+						b.c2 = b.p2 + to_c2 * 2.0 / 3.0;
+						
+						new_e->SetSideBezier(gis_Geo,b);
+					}
+					else if(cc == 3)
+					{
+						Bezier2 b;
+						b.p1 = p1->first;
+						++p1;
+						DebugAssert(p1->second);
+						b.c1 = p1->first;
+						++p1;
+						DebugAssert(p1->second);
+						b.c2 = p1->first;
+						b.p2 = p2->first;
+						new_e->SetSideBezier(gis_Geo,b);
+					}
+					
+					prev = next;
+					
+					p1 = p2;
+				}
 			}
+			
+			// COPY PASTA WARNING PART 2
+			for(vector<AptServiceRoadEdge_t>::iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
+			{
+				vector<pair<Point2, bool> >		shape(e->shape);
+				Point2 start_geo, end_geo;
+				nodes[e->src]->GetLocation(gis_Geo, start_geo);
+				nodes[e->dst]->GetLocation(gis_Geo, end_geo);
+				shape.insert(shape.begin(),make_pair(start_geo, false));
+				shape.insert(shape.end(),make_pair(end_geo, false));
+			
+				vector<pair<Point2, bool> >::iterator p1, p2, stop;
+				p1 = p2 = shape.begin();
+				stop = shape.end();
+				--stop;
+				WED_TaxiRouteNode * next, * prev = nodes[e->src];
+				while(p1 != stop)
+				{
+					DebugAssert(!p1->second);
+					p2 = p1;
+					++p2;
+					while(p2->second) ++p2;
+					
+					if(p2 == stop)
+						next = nodes[e->dst];
+					else
+					{
+						next = WED_TaxiRouteNode::CreateTyped(archive);
+						add_to_bucket(next,new_apt,"Taxi Routes",buckets);
+						next->SetName(e->name);
+						next->SetLocation(gis_Geo, p2->first);
+					}
+					
+					int cc = p2 - p1;
+					if(cc > 3)
+						LazyPrintf(&log,"Too many control points");
+			
+					WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
+					new_e->AddSource(prev,0);
+					new_e->AddSource(next,1);
+					new_e->Import(*e,LazyPrintf,&log);
+					add_to_bucket(new_e,new_apt,"Taxi Routes", buckets);
+
+					if(cc == 2)
+					{
+						Bezier2 b;
+						b.p1 = p1->first;
+						b.p2 = p2->first;
+						++p1;
+						
+						Vector2 to_c1 = Vector2(b.p1,p1->first);
+						Vector2 to_c2 = Vector2(b.p2,p1->first);
+						
+						b.c1 = b.p1 + to_c1 * 2.0 / 3.0;
+						b.c2 = b.p2 + to_c2 * 2.0 / 3.0;
+						
+						new_e->SetSideBezier(gis_Geo,b);
+					}
+					else if(cc == 3)
+					{
+						Bezier2 b;
+						b.p1 = p1->first;
+						++p1;
+						DebugAssert(p1->second);
+						b.c1 = p1->first;
+						++p1;
+						DebugAssert(p1->second);
+						b.c2 = p1->first;
+						b.p2 = p2->first;
+						new_e->SetSideBezier(gis_Geo,b);
+					}
+					
+					prev = next;
+					
+					p1 = p2;
+				}
+			}
+			// END COPY PASTA WARNING
 		}
 #endif		
 
