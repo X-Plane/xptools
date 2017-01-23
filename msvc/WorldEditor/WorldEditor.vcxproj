@@ -85,6 +85,7 @@
     <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp" />
     <ClCompile Include="..\..\src\Utils\SQLUtils.cpp" />
+    <ClCompile Include="..\..\src\Utils\STLUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\TexUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\unzip.c" />
     <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp" />

@@ -1059,7 +1059,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				if (TextScanner_FormatScan(s, "iiT|",
 					&outApts.back().atc.back().atc_type,
 					&outApts.back().atc.back().freq,
-					&outApts.back().atc.back().name) != 3)	// ATC name can be blank in v9...sketchy but apparently true.
+					&outApts.back().atc.back().name) < 2)	// ATC name can be blank in v9...sketchy but apparently true.
 				ok = "Illegal ATC frequency";
 			} else
 				ok = "Illegal unknown record";

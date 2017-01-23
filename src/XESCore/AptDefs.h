@@ -79,7 +79,7 @@ enum {
 	apt_taxi_shape		= 1203,			// 1203 <lat> <lon>
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
 	apt_taxi_control	= 1205,			// 1205 <lat> <lon
-	apt_taxi_truck_edge = 1206,			// 1206 <src> <dst> <name>
+	apt_taxi_truck_edge = 1206,			// 1206 <src> <dst> <oneway flag> <name>
 
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
 	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list

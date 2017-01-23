@@ -351,7 +351,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	int nn = ps->GetNumSides();
 	if(nn < 1)
 	{
-		string msg = "Linear feature '" + string(who->HumanReadableType()) + "' needs at least two points.";
+		string msg = "Linear feature '" + string(who->HumanReadableType()) + "' needs at least two points. Delete the selected item to fix this.";
 		msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_two_points, dynamic_cast<WED_Thing *>(ps),apt));
 	}
 	WED_Thing * parent = who->GetParent();

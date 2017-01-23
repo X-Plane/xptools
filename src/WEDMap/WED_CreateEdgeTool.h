@@ -70,9 +70,9 @@ public:
 
 private:
 
+	WED_PropIntEnum			mVehicleClass;
 	WED_PropBoolText		mOneway;
 	WED_PropIntEnum			mRunway;
-	WED_PropIntEnum			mVehicleClass;
 	WED_PropIntEnumSet		mHotDepart;
 	WED_PropIntEnumSet		mHotArrive;
 	WED_PropIntEnumSet		mHotILS;		
