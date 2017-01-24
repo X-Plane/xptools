@@ -619,12 +619,22 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 
 		DebugAssert(!itr->empty());
 
+		//for all frequencies
 		for(vector<WED_ATCFrequency*>::iterator freq = itr->begin(); freq != itr->end(); ++freq)
 		{
 			(*freq)->Export(freq_info);
+
+#if !GATEWAY_IMPORT_FEATURES
+			if (freq_info.name.empty() == true)
+			{
+				msgs.push_back(validation_error_t(string("Frequency ") + freq_info.name + " not between 0 and 1000 Mhz.", err_freq_freq_name_empty, *freq, who));
+				continue;
+			}
+#endif
 			int mhz = freq_info.freq / 100;
 			int last_digit = freq_info.freq % 10;
 			string freq_str = format_freq(freq_info.freq);
+
 
 			all_freqs[freq_info.freq].push_back(*freq);
 
@@ -1738,6 +1748,15 @@ static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vecto
 		}
 		msgs.push_back(validation_error_t(m, err_sign_error, airSign,apt));
 	}
+
+
+#if !GATEWAY_IMPORT_FEATURES
+	if (out.errors.empty() == true)
+	{
+		msgs.push_back(validation_error_t("Taxi sign " + signName + " has no glpyhs, is likely empty", err_sign_name_empty, airSign, apt));
+		return;
+	}
+#endif
 }
 
 static void ValidateOneTaxiway(WED_Taxiway* twy, validation_error_vector& msgs, WED_Airport * apt)
