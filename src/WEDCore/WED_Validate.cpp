@@ -22,6 +22,7 @@
  */
 
 #include "WED_Validate.h"
+#include <algorithm>
 #include <iterator>
 
 #include "WED_Globals.h"
@@ -90,8 +91,18 @@
 #if GATEWAY_IMPORT_FEATURES
 //#define TYLER_MODE 1
 #define FIND_BAD_AIRPORTS 1
+
+//To speed up Tyler's exports, for data that is not dangerous for X-Plane we'll allow it.
+//This means that old validation rules that let 1050 data through must be preserved.
+//When preserving the old, new validations should be enabled so new WED usage creates better data
+//The key here is data, not export version!
+//
+//Maybe in 20 years we'll turn these off hoping that all the old data has been cleared out,
+//though, with a software company's luck, it probably won't be.
+#define GRANDFATHER_1050_DATA 1
 #else
 #define FIND_BAD_AIRPORTS 0
+#define GRANDFATHER_1050_DATA 0
 #endif
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
@@ -193,6 +204,19 @@ static const int k_rwy_enums[73][2] = {
 
 	{ 0, 0 },
 };
+
+
+//If GRANDFATHER_1050_DATA is on, str.empty() is used to test - nonblank as in not empty, whitespace only string allowed
+//Else test means not empty, whitespace (as defined by std::isspace) only not allowed
+//static bool str_is_nonempty(const string& str)
+static bool str_is_nonblank(const string& str)
+{
+#if GRANDFATHER_1050_DATA
+	return str.empty() == false;
+#else
+	return count_if(str.begin(), str.end(), ::isspace) != str.size();
+#endif
+}
 
 static int get_opposite_rwy(int rwy_enum)
 {
@@ -625,7 +649,7 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			(*freq)->Export(freq_info);
 
 #if !GATEWAY_IMPORT_FEATURES
-			if (freq_info.name.empty() == true)
+			if(str_is_nonblank(freq_info.name) == false)
 			{
 				msgs.push_back(validation_error_t(string("Frequency ") + freq_info.name + " not between 0 and 1000 Mhz.", err_freq_freq_name_empty, *freq, who));
 				continue;
@@ -891,12 +915,13 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	flow->GetName(name);
 	AptFlow_t exp;
 	flow->Export(exp);
-	if(exp.icao.empty())
+
+	if(str_is_nonblank(exp.icao) == false)
 		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' has a blank ICAO code for its visibility METAR source.", err_flow_blank_ICAO_for_METAR,  flow, apt));
 	if( (exp.visibility_sm < 0.0) ||  (exp.ceiling_ft < 0))
 		msgs.push_back(validation_error_t(string("ATC Flow '") + name + "' ceiling and visibility must be positive numbers.", err_flow_visibility_negative, flow, apt));
 
-	if(name.empty())
+	if(str_is_nonblank(name) == false)
 		msgs.push_back(validation_error_t("An ATC Flow has a blank name. You must name every flow.", err_flow_blank_name, flow, apt));
 
 	vector<WED_ATCWindRule*>	wind;
@@ -920,7 +945,8 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		WED_ATCWindRule * wrule = *w;
 		AptWindRule_t exp;
 		wrule->Export(exp);
-		if(exp.icao.empty())
+
+		if (str_is_nonblank(exp.icao) == false)
 			msgs.push_back(validation_error_t(string("ATC wind rule '") + name + "' has a blank ICAO code for its METAR source.", err_atc_rule_wind_blank_ICAO_for_METAR, wrule, apt));
 
 		if((exp.dir_lo_degs_mag < 0) || (exp.dir_lo_degs_mag > 359) || (exp.dir_hi_degs_mag < 0) || (exp.dir_hi_degs_mag > 360) // 360 is ok with XP10.51, but as a 'from' direction its poor style.
@@ -1328,7 +1354,7 @@ static void ValidateOneHelipad(WED_Helipad* who, validation_error_vector& msgs, 
 	who->GetName(name);
 
 	n1 = name;
-	if (n1.empty())
+	if (str_is_nonblank(n1) == false)
 	{
 		msgs.push_back(validation_error_t("The selected helipad has no name.", err_heli_name_none, who,apt));
 	}
@@ -1394,6 +1420,7 @@ static bool is_all_alnum(const string& s)
 
 static bool air_org_code_valid(int min_char, int max_char, bool mix_letters_and_numbers, const string& org_code, string& error_content)
 {
+	error_content.clear();
 	if (is_all_alnum(org_code) == false)
 	{
 		error_content = org_code + " contains non-ASCII alphanumeric characters. Use only the standard English alphabet";
@@ -1751,7 +1778,7 @@ static void ValidateOneTaxiSign(WED_AirportSign* airSign, validation_error_vecto
 
 
 #if !GATEWAY_IMPORT_FEATURES
-	if (out.errors.empty() == true)
+	if (out.errors.empty() == false)
 	{
 		msgs.push_back(validation_error_t("Taxi sign " + signName + " has no glpyhs, is likely empty", err_sign_name_empty, airSign, apt));
 		return;
@@ -1870,7 +1897,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	if(name.empty())
 		msgs.push_back(validation_error_t("An airport contains no name.", err_airport_no_name, apt,apt));
-	else if(icao.empty())
+	else if(str_is_nonblank(icao) == false)
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty ICAO code.", err_airport_no_icao, apt,apt));
 
 	set<int>		legal_rwy_oneway;
