@@ -1359,19 +1359,24 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				}
 			}
 
-			bool wrote_taxi_route_net_name = false;
-			if(!apt->taxi_route.edges.empty())
+			//If we have airplane taxi edges or service roads edges
+			if (!apt->taxi_route.edges.empty() || !apt->taxi_route.service_roads.empty())
 			{
-				if (wrote_taxi_route_net_name == false)
-				{
-					fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
-					wrote_taxi_route_net_name = true;
-				}
+				//write taxi route network name
+				fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
 
-				for(vector<AptRouteNode_t>::const_iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+				//write all nodes in network
+				for (vector<AptRouteNode_t>::const_iterator n = apt->taxi_route.nodes.begin();
+					n != apt->taxi_route.nodes.end();
+					++n)
 				{
-					fprintf(fi,"%2d % 012.8lf % 013.8lf both %d %s" CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id, n->name.c_str());
+					fprintf(fi, "%2d % 012.8lf % 013.8lf both %d %s" CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id, n->name.c_str());
 				}
+			}
+
+			//If we have any, write all edges
+			if (!apt->taxi_route.edges.empty())
+			{
 				for(vector<AptRouteEdge_t>::const_iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
 				{
 					fprintf(fi,"%2d %d %d %s ", apt_taxi_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
@@ -1412,14 +1417,9 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				}
 			}
 			
+			//If we have any, write all service roads
 			if (has_atc3)
 			{
-				if (wrote_taxi_route_net_name == false)
-				{
-					fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
-					wrote_taxi_route_net_name = true;
-				}
-
 				for (vector<AptServiceRoadEdge_t>::const_iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
 				{
 					fprintf(fi, "%2d %d %d %s ", apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
