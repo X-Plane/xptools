@@ -20,6 +20,8 @@ WED 1.6b2
 	- WED-758: recognize .jpeg and .tiff as valid image suffixes
 	- WED-757: fix jpg compressed GeoTiff's imported upside down
 	- WED-784: import WED 1.5 created DrapedOrthos with redraping turned off
+        - WED-565: Add validation for Airport name and ICAO identifier
+        - WED-760: Check XSystem path upon submission to be a valid X-plane base directory
 
 WED 1.6.0a3 12/17/16
 	Bug fixes:
@@ -45,6 +47,10 @@ WED 1.6.0a1 12/02/16
 	- WED-701: Print debugging info to console if airport meta data download from gateway is corrupt
 	- WED-605: Adding WordWrap to make full gateway server error messages readable
 	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
+	- WED-726: enable processing of library.txt file paths including spaces 
+	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
+	- WED-757: fix import for GeoTIFF's using jpeg compression (reversed/flipped)
+	- WED-758: allow tiff and jpeg suffixes to be used for ImportOrthos and OverlayImages
 	- WED-511, WED-708: fix XML reader/writer to not crash on illegal enum names
 
 	New Features:
@@ -52,17 +58,17 @@ WED 1.6.0a1 12/02/16
 	- Support new XP11 features: Ground Traffic routes, Service Truck starts and destinations
 	- Support for UTF-8 characters in GUI on Windows builds
 	- WED-702: Automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
-				- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
-					for .POL definitions that support this
-				- WED-658, WED-568, WED-659, WED-123, WED-107, WED-14: 
-					Add 3 new editing functions in 'Edit" menu:
-					Align ... nodes to fall into a straight line
-					Othogonalize ... all sides of a polygon e.g. to align building footprints, 
-						  make exact rectangles, L-shapes, staircase patterns etc.
-					Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
-						  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
-					new feature for Vertex tool :
-						holding CTRL-Key while dragging a edge line moves the segment in parallel.
+	- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
+		for .POL definitions that support this
+	- WED-658, WED-568, WED-659, WED-123, WED-107, WED-14: 
+		Add 3 new editing functions in 'Edit" menu:
+		Align ... nodes to fall into a straight line
+		Othogonalize ... all sides of a polygon e.g. to align building footprints, 
+			  make exact rectangles, L-shapes, staircase patterns etc.
+		Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
+			  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
+		new feature for Vertex tool :
+			holding CTRL-Key while dragging a edge line moves the segment in parallel.
 	- WED-710: Show runway numbers in map view
 	- WED-704: Validate parameters in ATC flow, wind & time rules to be XP-legal
 	- WED-696: Validate (gateway only) land airports to have a airport boundary
