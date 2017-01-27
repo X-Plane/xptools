@@ -1034,7 +1034,7 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 	sel->Clear();
 
 	vector<WED_Thing *> pts;
-	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(pts), EntityNotHidden, IsGraphNode);
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(pts), ThingNotHidden, IsGraphNode);
 	
 	// Ben says: yes this totally sucks - replace it someday?
 	for(int i = 0; i < pts.size(); ++i)
@@ -1149,7 +1149,7 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 	//-----------------
 
 	vector<WED_GISEdge *> edges;
-	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), EntityNotHidden, IsGraphEdge);
+	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), ThingNotHidden, IsGraphEdge);
 	
 	set<WED_GISEdge *> crossed_edges = do_select_crossing(edges);
 	sel->Insert(set<ISelectable*>(crossed_edges.begin(), crossed_edges.end()));
@@ -1179,9 +1179,9 @@ static bool get_any_resource_for_thing(WED_Thing * thing, string& r)
 	return false;
 }
 
-bool HasMissingResource(WED_Thing * t, void * ref)
+bool HasMissingResource(WED_Thing * t)
 {
-	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	static WED_LibraryMgr * mgr = WED_GetLibraryMgr(t->GetArchive()->GetResolver());
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
@@ -1189,9 +1189,9 @@ bool HasMissingResource(WED_Thing * t, void * ref)
 	return mgr->GetResourceType(r) == res_None;	
 }
 
-bool HasLocalResource(WED_Thing * t, void * ref)
+bool HasLocalResource(WED_Thing * t)
 {
-	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	static WED_LibraryMgr * mgr = WED_GetLibraryMgr(t->GetArchive()->GetResolver());
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
@@ -1199,9 +1199,9 @@ bool HasLocalResource(WED_Thing * t, void * ref)
 	return mgr->IsResourceLocal(r);
 }
 
-bool HasLibraryResource(WED_Thing * t, void * ref)
+bool HasLibraryResource(WED_Thing * t)
 {
-	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	static WED_LibraryMgr * mgr = WED_GetLibraryMgr(t->GetArchive()->GetResolver());
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
@@ -1209,9 +1209,9 @@ bool HasLibraryResource(WED_Thing * t, void * ref)
 	return mgr->IsResourceLibrary(r);
 }
 
-bool HasDefaultResource(WED_Thing * t, void * ref)
+bool HasDefaultResource(WED_Thing * t)
 {
-	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	static WED_LibraryMgr * mgr = WED_GetLibraryMgr(t->GetArchive()->GetResolver());
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
@@ -1219,9 +1219,9 @@ bool HasDefaultResource(WED_Thing * t, void * ref)
 	return mgr->IsResourceDefault(r);
 }
 
-bool HasThirdPartyResource(WED_Thing * t, void * ref)
+bool HasThirdPartyResource(WED_Thing * t)
 {
-	WED_LibraryMgr * mgr = (WED_LibraryMgr *) ref;
+	static WED_LibraryMgr * mgr = WED_GetLibraryMgr(t->GetArchive()->GetResolver());
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
@@ -1230,7 +1230,7 @@ bool HasThirdPartyResource(WED_Thing * t, void * ref)
 }
 
 
-static void DoSelectWithFilter(const char * op_name, bool (* filter)(WED_Thing * t, void * ref), IResolver * resolver)
+static void DoSelectWithFilter(const char * op_name, bool (* filter)(WED_Thing * t), IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
@@ -1240,8 +1240,7 @@ static void DoSelectWithFilter(const char * op_name, bool (* filter)(WED_Thing *
 	WED_LibraryMgr * mgr = WED_GetLibraryMgr(resolver);
 
 	vector<WED_Thing *> who;
-	//CollectRecursive(WED_GetWorld(resolver), filter, mgr, who);
-	
+	CollectRecursive(WED_GetWorld(resolver), back_inserter(who), ThingNotHidden, filter);
 	for(vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
 		sel->Insert(*w);
