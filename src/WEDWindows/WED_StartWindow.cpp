@@ -361,7 +361,11 @@ int			WED_StartWindow::HandleCommand(int command)
 			if (is_XSystemDir(buf))
 				gPackageMgr->SetXPlaneFolder(buf);
 			else
-				DoUserAlert("This is not the base of a X-Plane installation.\n It needs to have a 'Custom Scenery' and a 'Resources' folder inside it.");
+			{
+				string msg = string("'") + buf + "' is not the base of a X-Plane installation.\n"
+				             + "It needs to have a 'Custom Scenery' and a 'Resources' folder inside it.";
+				DoUserAlert(msg.c_str());
+			}	
 		}
 		return 1;
 	case wed_NewPackage:
