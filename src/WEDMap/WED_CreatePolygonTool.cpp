@@ -352,6 +352,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 		if(rmgr->GetPol(mResource.value, info))
 			if (!info.mUVBox.is_null())
 				dpol->SetSubTexture(info.mUVBox);
+			else
+				dpol->SetSubTexture(Bbox2(0,0,1,1));
 
 		dpol->Redrape();
 	}

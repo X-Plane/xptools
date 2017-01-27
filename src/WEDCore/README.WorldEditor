@@ -19,6 +19,7 @@ WED 1.6b2
 	- WED-767: prevent uncommanded rotation OrthoPhotos placed in WED 1.5
 	- WED-758: recognize .jpeg and .tiff as valid image suffixes
 	- WED-757: fix jpg compressed GeoTiff's imported upside down
+	- WED-784: import WED 1.5 created DrapedOrthos with redraping turned off
 
 WED 1.6.0a3 12/17/16
 	Bug fixes:
