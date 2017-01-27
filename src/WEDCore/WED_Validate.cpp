@@ -350,7 +350,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	int nn = ps->GetNumSides();
 	if(nn < 1)
 	{
-		string msg = "Linear feature '" + string(who->HumanReadableType()) + "' needs at least two points.";
+		string msg = "Linear feature '" + string(who->HumanReadableType()) + "' needs at least two points. Delete the selected item to fix this.";
 		msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_two_points, dynamic_cast<WED_Thing *>(ps),apt));
 	}
 	WED_Thing * parent = who->GetParent();
@@ -1254,7 +1254,14 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 	{
 		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
 		Assert(lw);
-		if (lw->GetWidth() < 1.0) msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least one meter wide.", err_rwy_not_adequetely_wide, who, apt));
+		if (lw->GetWidth() < 1.0)
+		{
+			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least one meter wide.", err_rwy_not_adequetely_wide, who, apt));
+		}
+		else if (lw->GetWidth() < 3 && lw->GetLength() < 30)
+		{
+			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 3 meters wide by 30 meters long.", err_rwy_unrealistically_small, who, apt));
+		}
 
 		WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 		if (rwy)

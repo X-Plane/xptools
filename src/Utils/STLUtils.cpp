@@ -22,4 +22,43 @@
  */
 
 #include "STLUtils.h"
+#include <cctype>
+#include <iostream>
+#include <string>
 
+bool ci_char_traits::eq(char c1, char c2)
+{
+	return std::toupper(c1) == std::toupper(c2);
+}
+
+bool ci_char_traits::lt(char c1, char c2)
+{
+	return std::toupper(c1) <  std::toupper(c2);
+}
+
+int ci_char_traits::compare(const char* s1, const char* s2, size_t n)
+{
+	while (n-- != 0) {
+		if (std::toupper(*s1) < std::toupper(*s2)) return -1;
+		if (std::toupper(*s1) > std::toupper(*s2)) return 1;
+		++s1; ++s2;
+	}
+	return 0;
+}
+
+const char* ci_char_traits::find(const char* s, int n, char a)
+{
+	const int ua(std::toupper(a));
+	while (n-- != 0)
+	{
+		if (std::toupper(*s) == ua)
+			return s;
+		s++;
+	}
+	return NULL;
+}
+
+std::ostream& operator<<(std::ostream& os, const ci_string& str)
+{
+	return os.write(str.data(), str.size());
+}

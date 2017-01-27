@@ -12,6 +12,14 @@ WorldEditor's user's manual is online; pick "WED User's Guide" from the help
 menu to view it online.
 
 CHANGE HISTORY
+
+WED 1.6b2 
+	Bug fixes:
+	- WED-766: extend validation error message to clearify corrective action
+	- WED-767: prevent uncommanded rotation OrthoPhotos placed in WED 1.5
+	- WED-758: recognize .jpeg and .tiff as valid image suffixes
+	- WED-757: fix jpg compressed GeoTiff's imported upside down
+	- WED-784: import WED 1.5 created DrapedOrthos with redraping turned off
         - WED-565: Add validation for Airport name and ICAO identifier
         - WED-760: Check XSystem path upon submission to be a valid X-plane base directory
 
@@ -20,6 +28,7 @@ WED 1.6.0a3 12/17/16
 	- WED-746: Split algorithm is buggy, was replaced
 	- WED-728: No more crash in rare undo of edge split
 	- Updates the about box with better formated credits
+	- WED-762: Remove strange characters when previewing .obj definitions
 
 WED 1.6.0a2 12/13/16
 	Bug fixes:
@@ -58,6 +67,8 @@ WED 1.6.0a1 12/02/16
 			  make exact rectangles, L-shapes, staircase patterns etc.
 		Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
 			  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
+		new feature for Vertex tool :
+			holding CTRL-Key while dragging a edge line moves the segment in parallel.
 	- WED-710: Show runway numbers in map view
 	- WED-704: Validate parameters in ATC flow, wind & time rules to be XP-legal
 	- WED-696: Validate (gateway only) land airports to have a airport boundary

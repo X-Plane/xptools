@@ -61,10 +61,10 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	1,						// close allowed?
 	0),						// close required
 	mType(tool),
+	mVehicleClass(tool == create_TaxiRoute ? this : NULL,"Allowed Vehicles",SQL_Name("",""),XML_Name("",""), ATCVehicleClass, atc_Vehicle_Aircraft),
 	mName(this, "Name", SQL_Name("",""),XML_Name("",""), "N"),
 	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", SQL_Name("",""),XML_Name("",""), 1),
 	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway", SQL_Name("",""),XML_Name("",""), ATCRunwayTwoway, atc_rwy_None),
-	mVehicleClass(tool == create_TaxiRoute ? this : NULL,"Allowed Vehicles",SQL_Name("",""),XML_Name("",""), ATCVehicleClass, atc_Vehicle_Aircraft),
 	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
 	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
@@ -562,6 +562,25 @@ void		WED_CreateEdgeTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		}
 	}
 #endif
+
+	//Ensures only the relevant properties are shown with atc_Vehicles_Ground_Trucks selected
+	PropertyVal_t prop;
+	mVehicleClass.GetProperty(prop);
+
+	if (prop.int_val == atc_Vehicle_Ground_Trucks)
+	{
+		if (n == PropertyItemNumber(&mRunway)    ||
+			n == PropertyItemNumber(&mHotDepart) ||
+			n == PropertyItemNumber(&mHotArrive) ||
+			n == PropertyItemNumber(&mHotILS)    ||
+			n == PropertyItemNumber(&mWidth))
+		{
+			//"." is the special hardcoded "disable me" string, see IPropertyObject.h
+			info.prop_name = ".";
+			info.can_edit = false;
+			info.can_delete = false;
+		}
+	}
 }
 
 void		WED_CreateEdgeTool::GetNthProperty(int n, PropertyVal_t& val) const

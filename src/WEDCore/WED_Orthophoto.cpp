@@ -93,10 +93,10 @@ WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew *
 		if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
 		else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
 
+		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
 		coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
 		coords[2] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
 		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
 	}
 	DestroyBitmap(&inf);
 

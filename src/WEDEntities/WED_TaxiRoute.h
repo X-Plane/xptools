@@ -76,13 +76,13 @@ public:
 	
 private:	
 
+		WED_PropIntEnum			vehicle_class;
 		WED_PropBoolText		oneway;
 		WED_PropIntEnum			runway;
 		WED_PropIntEnum			width;
 		WED_PropIntEnumSet		hot_depart;
 		WED_PropIntEnumSet		hot_arrive;
 		WED_PropIntEnumSet		hot_ils;
-		WED_PropIntEnum			vehicle_class;
 
 };
 
