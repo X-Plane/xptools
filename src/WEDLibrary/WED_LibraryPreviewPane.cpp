@@ -220,7 +220,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						}
 						glEnd();
 						
-						if (!pol.mUVBox.is_empty())                   // draw a box around the selected texture area
+						if (!pol.mUVBox.is_null())                   // draw a box around the selected texture area
 						{
 							g->Reset();
 							glColor4fv(WED_Color_RGBA(wed_StructureSelected));
