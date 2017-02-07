@@ -24,6 +24,8 @@
 #ifndef ASSERTUTILS_H
 #define ASSERTUTILS_H
 
+#include <stdarg.h> // for va_args
+
 /************************************************************
  * ASSERTION MACROS
  ************************************************************/

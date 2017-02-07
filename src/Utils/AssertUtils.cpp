@@ -25,7 +25,9 @@
 #include <stdio.h>
 #include <exception>
 #include <stdarg.h>
+#include <algorithm> // for std::swap()
 using std::exception;
+using std::swap;
 
 #ifndef _MSL_THROW
 	#define	_MSL_THROW throw()

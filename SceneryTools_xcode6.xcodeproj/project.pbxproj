@@ -13,6 +13,7 @@
 			buildPhases = (
 			);
 			dependencies = (
+				2F2CDDCF1E4A1159005F7D9B /* PBXTargetDependency */,
 				D60734330D197A2300E08F61 /* PBXTargetDependency */,
 				D61C26EF0B6155A10092E098 /* PBXTargetDependency */,
 				D61C26ED0B61559E0092E098 /* PBXTargetDependency */,
@@ -30,6 +31,7 @@
 			buildPhases = (
 			);
 			dependencies = (
+				2F2CDDCD1E4A1153005F7D9B /* PBXTargetDependency */,
 				D60734350D197A2700E08F61 /* PBXTargetDependency */,
 				D6C68DED0BEFB3BE00C9F880 /* PBXTargetDependency */,
 				D6C68DE90BEFB3BE00C9F880 /* PBXTargetDependency */,
@@ -48,7 +50,13 @@
 
 /* Begin PBXBuildFile section */
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
+		2F2CDDCA1E4A100F005F7D9B /* WED_Sign_Parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */; };
+		2F2CDDCB1E4A1029005F7D9B /* AssertUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376B0AB22C85003949C5 /* AssertUtils.cpp */; };
+		2F2CDDD41E4A21EC005F7D9B /* SignParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F2CDDD21E4A21EC005F7D9B /* SignParser.cpp */; };
+		2F2CDDD61E4A2202005F7D9B /* SignParser_Canonicalize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F2CDDD51E4A2202005F7D9B /* SignParser_Canonicalize.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
+		69B49D103C5AFCC533D803A6 /* WED_Taxi_Sign.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69B4910FE8C245777C34CCC4 /* WED_Taxi_Sign.cpp */; };
+		69B49E3D47A1B60A9D468F2E /* WED_Taxi_Sign.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69B4910FE8C245777C34CCC4 /* WED_Taxi_Sign.cpp */; };
 		D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */; };
 		D604AE9E1C0D5D8F006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
 		D604AEA31C0DF420006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
@@ -877,6 +885,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		2F2CDDCC1E4A1153005F7D9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2F2CDDBF1E492C6C005F7D9B;
+			remoteInfo = SignParser;
+		};
+		2F2CDDCE1E4A1159005F7D9B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2F2CDDBF1E492C6C005F7D9B;
+			remoteInfo = SignParser;
+		};
 		D60734320D197A2300E08F61 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 20286C28FDCF999611CA2CEA /* Project object */;
@@ -999,6 +1021,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		2F2CDDBE1E492C6C005F7D9B /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		D6A2672F0F992DDE00E1E754 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1016,11 +1047,19 @@
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
+		2F2CDDC01E492C6C005F7D9B /* SignParser */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SignParser; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F2CDDD01E4A21EC005F7D9B /* SignParser_Canonicalize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SignParser_Canonicalize.h; path = src/SignParser/SignParser_Canonicalize.h; sourceTree = SOURCE_ROOT; };
+		2F2CDDD11E4A21EC005F7D9B /* SignParser_Python_Module.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SignParser_Python_Module.cpp; path = src/SignParser/SignParser_Python_Module.cpp; sourceTree = SOURCE_ROOT; };
+		2F2CDDD21E4A21EC005F7D9B /* SignParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SignParser.cpp; path = src/SignParser/SignParser.cpp; sourceTree = SOURCE_ROOT; };
+		2F2CDDD51E4A2202005F7D9B /* SignParser_Canonicalize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = SignParser_Canonicalize.cpp; path = src/SignParser/SignParser_Canonicalize.cpp; sourceTree = SOURCE_ROOT; };
+		2F2CDDD71E4A2860005F7D9B /* setup.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; name = setup.py; path = src/SignParser/setup.py; sourceTree = SOURCE_ROOT; };
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
 		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		69B4910FE8C245777C34CCC4 /* WED_Taxi_Sign.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Taxi_Sign.cpp; sourceTree = "<group>"; };
+		69B49C4B2BA0CA42B5E3EDB5 /* WED_Taxi_Sign.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_Taxi_Sign.h; sourceTree = "<group>"; };
 		D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCLayer.cpp; sourceTree = "<group>"; };
 		D60075371C56A30E0096D4D9 /* WED_ATCLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCLayer.h; sourceTree = "<group>"; };
 		D60418960D86E15200AF6E16 /* README.meshtool */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.meshtool; sourceTree = "<group>"; };
@@ -2086,6 +2125,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		2F2CDDBD1E492C6C005F7D9B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D0C4E910486CD37000505A6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -2196,6 +2242,7 @@
 				D6C579D60C7E3C7B00FCB4C1 /* DDSTool */,
 				D607342C0D197A1100E08F61 /* MeshTool */,
 				D6A2665E0F99266D00E1E754 /* XPlaneSupportMac.p */,
+				2F2CDDC01E492C6C005F7D9B /* SignParser */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2250,6 +2297,18 @@
 			);
 			name = "Configuration Files";
 			sourceTree = "<group>";
+		};
+		69B496A5BC94DF1839E23470 /* SignParser */ = {
+			isa = PBXGroup;
+			children = (
+				2F2CDDD71E4A2860005F7D9B /* setup.py */,
+				2F2CDDD51E4A2202005F7D9B /* SignParser_Canonicalize.cpp */,
+				2F2CDDD01E4A21EC005F7D9B /* SignParser_Canonicalize.h */,
+				2F2CDDD11E4A21EC005F7D9B /* SignParser_Python_Module.cpp */,
+				2F2CDDD21E4A21EC005F7D9B /* SignParser.cpp */,
+			);
+			path = SignParser;
+			sourceTree = SOURCE_ROOT;
 		};
 		D60734500D197AF600E08F61 /* MeshTool */ = {
 			isa = PBXGroup;
@@ -2619,6 +2678,7 @@
 				D6BC37270AB22C84003949C5 /* OGLE */,
 				D6BC37320AB22C85003949C5 /* RawImport */,
 				D6956ED70F82E96900F6718E /* RenderFarmUI */,
+				69B496A5BC94DF1839E23470 /* SignParser */,
 				D6BC373B0AB22C85003949C5 /* SDTS */,
 				D6BC37460AB22C85003949C5 /* Tiger */,
 				D6BC37560AB22C85003949C5 /* UI */,
@@ -3091,6 +3151,8 @@
 				D691EE74170A1DAD00AD6E4C /* WED_Clipping.cpp */,
 				D6B80CD019A24B220005C1FF /* WED_Url.h */,
 				D6DA657F1ACC593D007B6A75 /* README.WorldEditor */,
+				69B4910FE8C245777C34CCC4 /* WED_Taxi_Sign.cpp */,
+				69B49C4B2BA0CA42B5E3EDB5 /* WED_Taxi_Sign.h */,
 			);
 			path = WEDCore;
 			sourceTree = "<group>";
@@ -3682,6 +3744,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		2F2CDDBF1E492C6C005F7D9B /* SignParser */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2F2CDDC81E492C6C005F7D9B /* Build configuration list for PBXNativeTarget "SignParser" */;
+			buildPhases = (
+				2F2CDDBC1E492C6C005F7D9B /* Sources */,
+				2F2CDDBD1E492C6C005F7D9B /* Frameworks */,
+				2F2CDDBE1E492C6C005F7D9B /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SignParser;
+			productName = SignParser;
+			productReference = 2F2CDDC01E492C6C005F7D9B /* SignParser */;
+			productType = "com.apple.product-type.tool";
+		};
 		8D0C4E890486CD37000505A6 /* ObjView */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = C0E91AC508A95435008D54AB /* Build configuration list for PBXNativeTarget "ObjView" */;
@@ -3859,6 +3938,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0710;
+				TargetAttributes = {
+					2F2CDDBF1E492C6C005F7D9B = {
+						CreatedOnToolsVersion = 8.2.1;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools_xcode6" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -3883,6 +3968,7 @@
 				D67EF96F0B6135F400D9190C /* ObjConverter */,
 				D6C579BC0C7E3C7B00FCB4C1 /* DDSTool */,
 				D60734100D197A1100E08F61 /* MeshTool */,
+				2F2CDDBF1E492C6C005F7D9B /* SignParser */,
 				D6A2665D0F99266D00E1E754 /* ac3d */,
 				D61C26E70B6155960092E098 /* Build Tools */,
 				D6C68DDD0BEFB3B300C9F880 /* Build All */,
@@ -4048,6 +4134,18 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2F2CDDBC1E492C6C005F7D9B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F2CDDD41E4A21EC005F7D9B /* SignParser.cpp in Sources */,
+				2F2CDDCB1E4A1029005F7D9B /* AssertUtils.cpp in Sources */,
+				2F2CDDCA1E4A100F005F7D9B /* WED_Sign_Parser.cpp in Sources */,
+				69B49E3D47A1B60A9D468F2E /* WED_Taxi_Sign.cpp in Sources */,
+				2F2CDDD61E4A2202005F7D9B /* SignParser_Canonicalize.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8D0C4E8F0486CD37000505A6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -4797,12 +4895,23 @@
 				D6ABE9E319F1F8CC00684AC1 /* WED_GatewayImport.cpp in Sources */,
 				D6ABE9E419F1F8CC00684AC1 /* WED_VerTable.cpp in Sources */,
 				D63112CA1A240A6300524526 /* WED_ICAOTable.cpp in Sources */,
+				69B49D103C5AFCC533D803A6 /* WED_Taxi_Sign.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		2F2CDDCD1E4A1153005F7D9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2F2CDDBF1E492C6C005F7D9B /* SignParser */;
+			targetProxy = 2F2CDDCC1E4A1153005F7D9B /* PBXContainerItemProxy */;
+		};
+		2F2CDDCF1E4A1159005F7D9B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2F2CDDBF1E492C6C005F7D9B /* SignParser */;
+			targetProxy = 2F2CDDCE1E4A1159005F7D9B /* PBXContainerItemProxy */;
+		};
 		D60734330D197A2300E08F61 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D60734100D197A1100E08F61 /* MeshTool */;
@@ -4891,6 +5000,168 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		2F2CDDC41E492C6C005F7D9B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		2F2CDDC51E492C6C005F7D9B /* Phone */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Phone;
+		};
+		2F2CDDC61E492C6C005F7D9B /* DebugOpt */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = DebugOpt;
+		};
+		2F2CDDC71E492C6C005F7D9B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		C0E91AC608A95435008D54AB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -6078,6 +6349,17 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2F2CDDC81E492C6C005F7D9B /* Build configuration list for PBXNativeTarget "SignParser" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F2CDDC41E492C6C005F7D9B /* Debug */,
+				2F2CDDC51E492C6C005F7D9B /* Phone */,
+				2F2CDDC61E492C6C005F7D9B /* DebugOpt */,
+				2F2CDDC71E492C6C005F7D9B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		C0E91AC508A95435008D54AB /* Build configuration list for PBXNativeTarget "ObjView" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

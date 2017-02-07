@@ -13,37 +13,10 @@
 #include "GUI_Pane.h"
 #include "GUI_Commander.h"
 #include "GUI_Timer.h"
+#include "WED_Taxi_Sign.h"
 
 class GUI_GraphState;
 
-struct sign_token {
-	parser_glyph_t	glyph;
-	parser_color_t	color;
-	int				has_left_border;
-	int				has_right_border;
-	
-	int				calc_width() const;	// returns width in screen pixels
-};
-
-struct sign_data {
-	vector<sign_token>	front;
-	vector<sign_token>	back;
-
-	bool	from_code(const string& code);
-	string	to_code() const;
-	void	recalc_borders();	// sets borders of each glyph as needed
-
-	int		calc_width(int side); // width of whole sign in pixels
-	int		left_offset(int side, int token);	// pixel of left side
-	int		right_offset(int side, int token);	// pixel of left side
-	int		find_token(int side, int offset);	// which token does a pixel fall in - tie goes to pixel on right
-	int		insert_point(int side, int offset);
-	
-	void	insert_glyph(int side, int position, const sign_token& glyph);
-	void	delete_range(int side, int start, int end);		
-
-};
-	
 int plot_token(const sign_token& sign, int x, int y, float scale, GUI_GraphState * g);
 
 void RenderSign(GUI_GraphState * state, int x, int y, const string& sign_text, float scale, int font_id, const float color[4]);
