@@ -32,6 +32,7 @@
 #include "STLUtils.h"
 #include "MeshDefs.h"
 #include "DEMTables.h"
+#include "Zoning.h"
 #include "CompGeomUtils.h"
 #if OPENGL_MAP && DEV
 	#include "RF_Selection.h"
@@ -101,13 +102,53 @@ static bool is_veg(CDT::Face_handle f)
 	else														return true;
 }
 
+static bool allow_country_roads(Pmwx::Face_const_handle f)
+{
+	int zt = f->data().GetZoning();
+	ZoningInfoTable::iterator i = gZoningInfo.find(zt);
+	if(i == gZoningInfo.end())
+		return false;
+	return i->second.allow_country_roads;
+}
 
-void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh)
+static bool allow_country_roads(Pmwx::Halfedge_const_handle h)
+{
+	return allow_country_roads(h->face()) && allow_country_roads(h->twin()->face());
+}
+
+static bool too_urban(Pmwx::Halfedge_const_handle h, const DEMGeo& urban_density)
+{
+	Point2 p1(cgal2ben(h->source()->point()));
+	Point2 p2(cgal2ben(h->target()->point()));
+	
+	Point2 p1i(urban_density.lon_to_x(p1.x()),
+			   urban_density.lat_to_y(p1.y()));
+	Point2 p2i(urban_density.lon_to_x(p2.x()),
+			   urban_density.lat_to_y(p2.y()));
+	
+	double x_span = fabs(p1i.x() - p2i.x());
+	double y_span = fabs(p1i.y() - p2i.y());
+	
+	int steps = ceil(max(x_span,y_span));
+	for(int i = 0; i <= steps; ++i)
+	{
+		double x = double_interp(0,p1i.x(),steps,p2i.x(),i);
+		double y = double_interp(0,p1i.y(),steps,p2i.y(),i);
+		float v = urban_density.get(round(x), round(y));
+		
+		if(v > 0.07) return true;
+	}
+	return false;
+}
+
+void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh, const DEMGeo& urban_density)
 {
 	int c = 0;
 	RoadCountryTable::iterator it;
 	for(Pmwx::Halfedge_iterator e = ioMap.halfedges_begin(); e != ioMap.halfedges_end(); ++e)
 	if(!e->face()->is_unbounded() && !e->twin()->face()->is_unbounded())
+	if(allow_country_roads(e))
+	if(!too_urban(e, urban_density))
 	for(GISNetworkSegmentVector::iterator r = e->data().mSegments.begin(); r != e->data().mSegments.end(); ++r)
 	if((it = gRoadCountry.find(r->mRepType)) != gRoadCountry.end())
 	{
@@ -154,6 +195,10 @@ void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh)
 		
 		if(!got_bad_for_country)
 		{
+//			Point2 p1(cgal2ben(e->source()->point()));
+//			Point2 p2(cgal2ben(e->target()->point()));
+//			debug_mesh_line(p1,p2,0.1,1,0.4,0.1,1,0.4);
+			
 			r->mRepType = it->second;
 			++c;
 		}
