@@ -315,7 +315,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().has_atc_twr,
 				&outApts.back().default_buildings,
 				&outApts.back().icao,
-				&outApts.back().name) != 6)
+				&outApts.back().name) != 6)							// Name field is mandatory for aiprort
 				ok = "Illegal line (airport, seaport or heliport)";
 			outApts.back().kind_code = rec_code;
 			outApts.back().beacon.color_code = apt_beacon_none;
@@ -1015,7 +1015,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 											&lon,
 											&heading,
 											&truck_types_for_dest,
-											&name) != 6)
+											&name) < 5)
 				{ 
 					ok = "Error: Illegal truck destination";
 				}
