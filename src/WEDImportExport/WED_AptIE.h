@@ -36,8 +36,8 @@ class	WED_Airport;
 void	WED_AptImport(
 				WED_Archive *			archive,
 				WED_Thing *				container,
-				const char *			file_path,
-				AptVector&				apts,
+				const string&			file_path,		// For logging errors
+				AptVector&				apts,			// Not const because "convert forward" called - destructive.
 				vector<WED_Airport *> *	out_airports);
 				
 // Main apt export AIP - we can write to a file path or to a stream via a print func.
