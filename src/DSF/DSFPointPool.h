@@ -147,6 +147,9 @@ public:
 	// run before any points are accepted.
 	bool			CanBeContiguous(const DSFTupleVector& inPoints);
 
+	// Returns how many of these points will reuse existing vertices
+	int				CountShared(const DSFTupleVector& inPoints);
+
 	// This routine accepts a run as a contiguous set in one pool, and
 	// returns the pool and index, or -1, -1 if any of the points are
 	// already in one of the point pools (and thus it should be shared).
@@ -162,6 +165,8 @@ public:
 
 	int				WritePoolAtoms(FILE * fi, int32_t id);
 	int				WriteScaleAtoms(FILE * fi, int32_t id);
+
+	int				Count() const;
 
 private:
 
@@ -547,8 +552,8 @@ inline void DSFTuple::dumphex(void) const
 
 inline size_t DSFTuple::hash(void) const
 {
-	size_t	ret = 0;
-	size_t * p = (size_t *) mData;
+	uint32_t	ret = 0;
+	uint32_t * p = (uint32_t *) mData;
 	int words = mLen;
 
 	while (words--)

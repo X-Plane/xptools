@@ -168,6 +168,26 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguousPool(int p, SharedSubPool * p
 	return retval;
 }
 
+int	DSFSharedPointPool::CountShared(const DSFTupleVector& inPoints)
+{
+	int c = 0;
+	for(int n = 0; n < inPoints.size(); ++n)
+	{
+		// First check every scale for the point already existing.
+		for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
+		{
+			DSFTuple	point(inPoints[n]);
+			if (point.encode(pool->mOffset, pool->mScale))
+			{
+				hash_map<DSFTuple,int>::iterator iter = pool->mPointsIndex.find(point);
+				if (iter != pool->mPointsIndex.end())
+					++c;
+			}
+		}
+	}
+	return c;
+}
+
 pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 {
 	int p = 0;
@@ -204,6 +224,15 @@ void			DSFSharedPointPool::Trim(void)
 	for (list<SharedSubPool>::iterator i = mPools.begin(); i != mPools.end(); ++i)
 		trim(i->mPoints);
 }
+
+int				DSFSharedPointPool::Count() const
+{
+	int t = 0;
+	for (list<SharedSubPool>::const_iterator i = mPools.begin(); i != mPools.end(); ++i)
+		t += (i->mPoints.size());
+	return t;
+}
+
 
 void			DSFSharedPointPool::ProcessPoints(void)
 {
@@ -242,9 +271,14 @@ int				DSFSharedPointPool::MapPoolNumber(int n)
 
 int			DSFSharedPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 {
+	#if DSF_WRITE_STATS
+		printf("Shared pool of depth %d\n", mMin.size());
+		StFileSizeDebugger how_big(fi,"shared point pool total");
+	#endif
+
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
-		StAtomWriter	poolAtom(fi, id);
+		StAtomWriter	poolAtom(fi, id, true);
 		vector<uint16_t>	shorts;
 		for (DSFTupleVector::iterator i = pool->mPoints.begin();
 			i != pool->mPoints.end(); ++i)
@@ -263,7 +297,7 @@ int			DSFSharedPointPool::WriteScaleAtoms(FILE * fi, int32_t id)
 {
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
-		StAtomWriter	scaleAtom(fi, id);
+		StAtomWriter	scaleAtom(fi, id, true);
 		for (int d = 0; d < pool->mScale.size(); ++d)
 		{
 			WriteFloat32(fi, pool->mScale[d]);
@@ -408,9 +442,14 @@ int				DSFContiguousPointPool::MapPoolNumber(int n)
 
 int			DSFContiguousPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 {
+	#if DSF_WRITE_STATS
+		printf("Contiguous pool of depth %d\n", mPools.empty() ? mMin.size() : mPools.begin()->mScale.size());
+		StFileSizeDebugger how_big(fi,"contiguous point pool total");
+	#endif
+
 	for (list<ContiguousSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
-		StAtomWriter	poolAtom(fi, id);
+		StAtomWriter	poolAtom(fi, id, true);
 		vector<uint16_t>	shorts;
 		for (DSFTupleVector::iterator i = pool->mPoints.begin();
 			i != pool->mPoints.end(); ++i)
@@ -431,7 +470,7 @@ int			DSFContiguousPointPool::WriteScaleAtoms(FILE * fi, int32_t id)
 {
 	for (list<ContiguousSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool)
 	{
-		StAtomWriter	scaleAtom(fi, id);
+		StAtomWriter	scaleAtom(fi, id, true);
 		for (int d = 0; d < pool->mScale.size(); ++d)
 		{
 			WriteFloat32(fi, pool->mScale[d]);
@@ -518,7 +557,11 @@ void				DSF32BitPointPool::Trim(void)
 
 int				DSF32BitPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 {
-	StAtomWriter	poolAtom(fi, id);
+	#if DSF_WRITE_STATS
+		printf("32-bit pool of depth %d\n", mScale.size());
+		StFileSizeDebugger how_big(fi,"32-bit point pool total");
+	#endif
+	StAtomWriter	poolAtom(fi, id, true);
 	vector<uint32_t>	longs;
 	for (DSFTupleVector::iterator i = mPoints.begin();
 		i != mPoints.end(); ++i)
@@ -535,7 +578,7 @@ int				DSF32BitPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 
 int				DSF32BitPointPool::WriteScaleAtoms(FILE * fi, int32_t id)
 {
-	StAtomWriter	scaleAtom(fi, id);
+	StAtomWriter	scaleAtom(fi, id, true);
 	for (int d = 0; d < mScale.size(); ++d)
 	{
 		WriteFloat32(fi, mScale[d]);

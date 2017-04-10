@@ -118,6 +118,7 @@ enum validate_error_t
 	err_rwy_overlapping_displaced_thresholds,
 	err_rwy_surface_illegal_roughness,
 	err_rwy_surface_water_not_valid,
+	err_rwy_unrealistically_small,
 	err_rwy_use_must_have_at_least_one_equip,
 	err_rwy_use_must_have_at_least_one_op,
 	err_rwy_use_no_runway_selected,
@@ -165,53 +166,6 @@ struct	validation_error_t {
 typedef vector<validation_error_t> validation_error_vector;
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-
-template <typename OutputIterator, typename Predicate>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred, bool nested_ok = true)
-{
-	// TODO: do fast WED type ptr check on sClass before any other casts?
-	// Factor out WED_Entity check to avoid second dynamic cast?
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
-	if(ent && ent->GetHidden())
-	{
-		return;
-	}
-	
-	typedef typename OutputIterator::container_type::value_type VT;
-	VT ct = dynamic_cast<VT>(thing);
-	bool took_it = false;
-	if(ct && pred(ct))
-	{	
-		oi = ct;
-		took_it = true;
-	}
-	
-	if(!took_it || nested_ok)
-	{
-		int nc = thing->CountChildren();
-		for(int n = 0; n < nc; ++n)
-		{
-			CollectRecursive(thing->GetNthChild(n), oi, pred);
-		}
-	}
-}
-
-template <typename T> bool take_always(T v) { return true; }
-
-template <typename OutputIterator>
-void CollectRecursive(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>);
-}
-
-template <typename OutputIterator>
-void CollectRecursiveNoNesting(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>, false);	// Nesting not allowed
-}
-
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
 
 template <typename T>

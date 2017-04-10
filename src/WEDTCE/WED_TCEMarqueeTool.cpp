@@ -522,14 +522,14 @@ void	WED_TCEMarqueeTool::ApplyRescale(const Bbox2& old_bounds, const Bbox2& new_
 
 		if (ent)
 		{
-			ent->Rescale(gis_UV,old_bounds,new_bounds);
+			WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto, went);
+			if (ortho)
+				ortho->SetSubTexture(new_bounds);
+			else
+				ent->Rescale(gis_UV,old_bounds,new_bounds);
+			
 		}
-		// now that we used TCE to modify the UVmaping, update UVbounds to allow continued use of automatic redraping
-		WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto, went);
-		if (ortho)
-			ortho->SetSubTexture(new_bounds);
 	}
-
 }
 
 void	WED_TCEMarqueeTool::ApplyRotate(const Point2& ctr, double angle)
@@ -552,8 +552,18 @@ void	WED_TCEMarqueeTool::ApplyRotate(const Point2& ctr, double angle)
 
 		if (ent)
 		{
-			ent->Rotate(gis_UV,ctr, angle);
+			WED_DrapedOrthophoto * ortho = SAFE_CAST (WED_DrapedOrthophoto, went);
+			if (ortho)
+			{
+				float hdg;
+				hdg = ortho->GetHeading() - angle;
+				ortho->SetHeading(hdg);
+				                        // this isn't needed to show the new mapping - but it forces
+				                        // a re-calculation of the heading in 4-sided non-bezier orthos,
+				ortho->Redrape();       // which are to be behave differently wrt heading/UV mapping
+			}
+			else
+				ent->Rotate(gis_UV,ctr, angle);
 		}
 	}
-
 }

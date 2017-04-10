@@ -54,6 +54,7 @@ struct ZoningInfo_t {
 	int			fill_area;								// Use rules to put AG in interior areas
 	int			fill_points;
 	int			fill_veg;								// Use rules to put forests into remaining area
+	int			allow_country_roads;					// Allow adjacent roads to get rural edging
 	int			terrain_type;							// Source terrain type required for this zoning.
 };
 
