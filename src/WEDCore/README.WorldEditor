@@ -22,6 +22,7 @@ WED 1.6b2
 	- WED-784: import WED 1.5 created DrapedOrthos with redraping turned off
         - WED-565: Add validation for Airport name and ICAO identifier
         - WED-760: Check XSystem path upon submission to be a valid X-plane base directory
+	- WED-787: prevent duplicated nodes being deleted at apt.dat or gateway imports
 
 WED 1.6.0a3 12/17/16
 	Bug fixes:

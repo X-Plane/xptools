@@ -48,7 +48,7 @@ enum {
 WED_AptImportDialog::WED_AptImportDialog(
 		GUI_Commander * cmdr, 
 		AptVector&		apts,
-		const char *	file_path,
+		const string&	file_path,
 		WED_Document *	resolver, 
 		WED_Archive *	archive,
 		WED_MapPane *	pane) : 
@@ -201,11 +201,13 @@ void WED_AptImportDialog::DoIt(void)
 	if(selected.count(n))
 		apts.push_back(mApts[n]);
 	
+	
+	
 	if(!apts.empty())
 	{
 		wrl->StartOperation("Import apt.dat");
 		vector<WED_Airport *>	new_apts;
-		WED_AptImport(mArchive, wrl, mPath.c_str(), apts, &new_apts);
+		WED_AptImport(mArchive, wrl, mPath, apts, &new_apts);
 		WED_SetAnyAirport(mResolver);
 
 		if(!new_apts.empty())

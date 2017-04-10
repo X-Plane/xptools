@@ -609,18 +609,17 @@ static void add_to_bucket(WED_Thing * child, WED_Thing * apt, const string& name
 void	WED_AptImport(
 				WED_Archive *			archive,
 				WED_Thing *				container,
-				const char *			file_path,
+				const string&			file_path,
 				AptVector&				apts,
 				vector<WED_Airport *> *	out_airports)
 {
-	char path[1024];
-	strcpy(path,file_path);
-	strcat(path,".log");
-
-	LazyLog_t log = { path, NULL };
-
+	bool import_ok = true;
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
+		string log_path(file_path);
+		log_path += ".log";
+		LazyLog_t log = { log_path.c_str(), NULL };
+
 		bool apt_ok = CheckATCRouting(*apt);
 		if(!apt_ok)
 		{
@@ -972,13 +971,16 @@ void	WED_AptImport(
 			b->second->SetName(b->first);
 			b->second->SetParent(new_apt, new_apt->CountChildren());
 		}
+
+		if (log.fi)
+		{
+			fclose(log.fi);
+			import_ok = false;
+		}
 	}
 
-	if (log.fi)
-	{
-		fclose(log.fi);
+	if(!import_ok)
 		DoUserAlert("There were problems during the import.  A log file has been created in the same file as the apt.dat file.");
-	}
 }
 
 int		WED_CanImportApt(IResolver * resolver)
@@ -1014,7 +1016,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{
-			string msg = string("The apt.dat file '") + path + string("' could not be imported:\n") + result;
+			string msg = string("The apt.dat file '") + *f + string("' could not be imported:\n") + result;
 			DoUserAlert(msg.c_str());
 			return;
 		}
@@ -1022,7 +1024,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		apts.insert(apts.end(),one_apt.begin(),one_apt.end());
 	}
 	
-	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive, pane);
+	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, fnames[0], resolver, archive, pane);
 }
 
 void	WED_ImportOneAptFile(

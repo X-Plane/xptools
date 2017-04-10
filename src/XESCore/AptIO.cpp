@@ -315,7 +315,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().has_atc_twr,
 				&outApts.back().default_buildings,
 				&outApts.back().icao,
-				&outApts.back().name) != 6)
+				&outApts.back().name) != 6)							// Name field is mandatory for aiprort
 				ok = "Illegal line (airport, seaport or heliport)";
 			outApts.back().kind_code = rec_code;
 			outApts.back().beacon.color_code = apt_beacon_none;
@@ -617,6 +617,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&p1y,
 				&p1x) != 3) ok = "Illegal straight end.";
 				open_poly->back().pt = POINT2(p1x, p1y);
+printf("read open_poly %i elements\n",int(open_poly->size()));
 			break;
 		case apt_end_crv:
 			if (vers < 850) ok = "Error: new end curves allowed before 850";
@@ -1015,7 +1016,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 											&lon,
 											&heading,
 											&truck_types_for_dest,
-											&name) != 6)
+											&name) < 5)
 				{ 
 					ok = "Error: Illegal truck destination";
 				}
