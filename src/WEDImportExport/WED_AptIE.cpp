@@ -48,17 +48,21 @@
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_Group.h"
-#include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TruckDestination.h"
 
 #include "AptIO.h"
-#include "WED_ToolUtils.h"
-#include "WED_UIDefs.h"
 
+//Utils
 #include "PlatformUtils.h"
+
+//WEDUtils
+#include "WED_HierarchyUtils.h"
+#include "WED_ToolUtils.h"
+
+#include "WED_UIDefs.h"
 #include <stdarg.h>
 
 
@@ -314,12 +318,16 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		vector<IGISPoint *>		nodes;			// hierarchy order for stability!
 		set<IGISPoint *>		wanted_nodes;
 
-		CollectAllElementsOfType<WED_TaxiRoute>(apt, edges);
+		CollectRecursive(apt, back_inserter(edges), WED_TaxiRoute::sClass);
 
 		for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
 		{
-			wanted_nodes.insert((*e)->GetNthPoint(0));
-			wanted_nodes.insert((*e)->GetNthPoint(1));
+			IGISPoint* point_0 = (*e)->GetNthPoint(0);
+			IGISPoint* point_1 = (*e)->GetNthPoint(1);
+			DebugAssert(point_0 != NULL && point_1 != NULL);
+
+			wanted_nodes.insert(point_0);
+			wanted_nodes.insert(point_1);
 		}
 		
 		CollectAllElementsOfTypeInSet<IGISPoint>(apt, nodes, wanted_nodes);

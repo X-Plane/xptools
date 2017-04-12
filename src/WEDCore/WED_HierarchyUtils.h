@@ -34,12 +34,14 @@
 //Warning! Type not garunteed by default!
 
 //Always returns true, ignoring a WED_Entity's true state
-bool IgnoreVisiblity(WED_Thing* v);
+bool IgnoreVisiblity(WED_Thing* t);
 
 //Warning T must be of type WED_Entity!
-bool EntityNotHidden(WED_Thing* v);
+//Do not use if your root WED_Thing* is an airport, since it could have WED_ATCFlows which
+//are NOT WED_Entitys!
+bool EntityNotHidden(WED_Thing* t);
 
-//For cases where T could also be a WED_Thing
+//For cases where T could not have WED_Entity as a parent.
 //Uses dynamic_cast to first test if the thing can be actually checked for its visibilty
 //If it is not secretly a WED_Entity, the function returns true to follow WED's if it "exists" its visible.
 //An ATC Flow should always "exist", therefore, it is true

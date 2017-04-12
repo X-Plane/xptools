@@ -1,15 +1,15 @@
 #include "WED_HierarchyUtils.h"
 #include "WED_Entity.h"
 
-bool IgnoreVisiblity(WED_Thing* v)
+bool IgnoreVisiblity(WED_Thing* t)
 {
 	return true;
 }
 
-bool EntityNotHidden(WED_Thing* v)
+bool EntityNotHidden(WED_Thing* t)
 {
-	DebugAssert(v != NULL);
-	return !static_cast<WED_Entity*>(v)->GetHidden();
+	DebugAssert(t != NULL);
+	return !static_cast<WED_Entity*>(t)->GetHidden();
 }
 
 bool ThingNotHidden(WED_Thing * t)
