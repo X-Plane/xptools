@@ -162,6 +162,8 @@ public:
 		return bucket_parents[cat];
 	}
 
+	vector<WED_ExclusionZone *> accum_exclusions;
+
 	vector<pair<Point2, int> >	accum_road;
 	pair<int, int>		accum_road_type;
 
@@ -221,21 +223,40 @@ public:
 		float b[4];
 		if(sscanf(ex,"%f/%f/%f/%f",b,b+1,b+2,b+3)==4)
 		{
-			WED_ExclusionZone * z = WED_ExclusionZone::CreateTyped(archive);
+			set<int> s;
+			WED_ExclusionZone * z;
+
+			for(unsigned int i = 0; i < accum_exclusions.size(); ++i)
+			{
+				z = accum_exclusions[i];
+				Point2 pnt1,pnt2;
+				z->GetMin()->GetLocation(gis_Geo,pnt1);
+				z->GetMax()->GetLocation(gis_Geo,pnt2);
+				if(Point2(b[0],b[1]) == pnt1  &&  Point2(b[2],b[3]) == pnt2 )
+				{
+					z->GetExclusions(s);
+					s.insert(k);
+					z->SetExclusions(s);
+					return;
+				}
+			}
+
+			z = WED_ExclusionZone::CreateTyped(archive);
 			z->SetName("Exclusion Zone");
 			z->SetParent(get_cat_parent(dsf_cat_exclusion),get_cat_parent(dsf_cat_exclusion)->CountChildren());
-			set<int> s;
 			s.insert(k);
 			z->SetExclusions(s);
 
-			WED_SimpleBoundaryNode * p1 =WED_SimpleBoundaryNode::CreateTyped(archive);
-			WED_SimpleBoundaryNode * p2 =WED_SimpleBoundaryNode::CreateTyped(archive);
+			WED_SimpleBoundaryNode * p1 = WED_SimpleBoundaryNode::CreateTyped(archive);
+			WED_SimpleBoundaryNode * p2 = WED_SimpleBoundaryNode::CreateTyped(archive);
 			p1->SetParent(z,0);
 			p2->SetParent(z,1);
 			p1->SetName("e1");
 			p2->SetName("e2");
 			p1->SetLocation(gis_Geo,Point2(b[0],b[1]));
 			p2->SetLocation(gis_Geo,Point2(b[2],b[3]));
+
+			accum_exclusions.push_back(z);
 		}
 	}
 
