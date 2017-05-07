@@ -796,7 +796,7 @@ void			XWin::UpdateNow(void)
 
 void			XWin::SetTimerInterval(double seconds)
 {
-	if(mTimer) [mTimer release];
+	if(mTimer) [mTimer invalidate];
 	mTimer = NULL;
 	
 	if(seconds)
