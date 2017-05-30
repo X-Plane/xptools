@@ -57,6 +57,7 @@
 
 //Utils
 #include "PlatformUtils.h"
+#include "STLUtils.h"
 
 //WEDUtils
 #include "WED_HierarchyUtils.h"
@@ -602,17 +603,110 @@ void LazyPrintf(void * ref, const char * fmt, ...)
 	if (l->fi) vfprintf(l->fi,fmt,arg);
 }
 
-static void add_to_bucket(WED_Thing * child, WED_Thing * apt, const string& name, map<string, WED_Thing *>& io_buckets)
+//A set of values describing the desired hierarchy order
+// pair<Parent Group Name, Child Group Name>
+// "" can be used if the group is intended to be under the world root
+typedef set<string> hierarchy_order_set;
+
+static hierarchy_order_set build_order_set()
 {
-	map<string,WED_Thing *>::iterator b = io_buckets.find(name);
-	if(b == io_buckets.end())
+	hierarchy_order_set h_set;
+	//BEWARE: Stringified-data abounds!
+	//If this has to be editted more than twice a year, we'll create
+	//an enum + dictionary solution that is more type safe
+	//"/" is like a dir seperator
+	h_set.insert("/ATC");
+	h_set.insert("/Ground Vehicles");
+	h_set.insert("/Ground Vehicles/Dynamic");
+	h_set.insert("/Ground Vehicles/Static");
+	h_set.insert("/Lights");
+	h_set.insert("/Markings");
+	h_set.insert("/Ramp Starts");
+	h_set.insert("/Runways");
+	h_set.insert("/Signs");
+	h_set.insert("/Taxi Routes");
+	h_set.insert("/Ground Routes");
+	h_set.insert("/Taxiways");
+	h_set.insert("/Tower, Beacon and Boundaries");
+	h_set.insert("/Windsocks");
+	h_set.insert("/Exclusion Zones");
+	h_set.insert("/Objects");
+	h_set.insert("/Objects/Buildings");
+	h_set.insert("/Objects/Vehicles");
+	h_set.insert("/Objects/Trees");
+	h_set.insert("/Objects/Other");
+	h_set.insert("/Facades");
+	h_set.insert("/Forests");
+	h_set.insert("/Lines");
+	h_set.insert("/Draped Polygons");
+	return h_set;
+}
+
+static const hierarchy_order_set prefered_hierarchy_order = build_order_set();
+struct compare_bucket_order : public less<string>
+{
+	bool operator()(const string& lhs, const string& rhs)
 	{
-		WED_Thing * new_bucket = WED_Group::CreateTyped(apt->GetArchive());
-		b = io_buckets.insert(make_pair(name, new_bucket)).first;
+		hierarchy_order_set::iterator lhs_pos = prefered_hierarchy_order.end();
+		hierarchy_order_set::iterator rhs_pos = prefered_hierarchy_order.end();
+		hierarchy_order_set::iterator pref_end = prefered_hierarchy_order.end();
+
+		hierarchy_order_set::iterator itr = prefered_hierarchy_order.begin();
+		
+		while(itr != pref_end && lhs_pos == pref_end && rhs_pos == pref_end)
+		{
+			lhs_pos = lhs == *itr ? itr : pref_end;
+			rhs_pos = rhs == *itr ? itr : pref_end;
+			++itr;
+		}
+
+		DebugAssert(lhs_pos != pref_end);
+		DebugAssert(rhs_pos != pref_end);
+		
+		return std::distance(prefered_hierarchy_order.begin(), lhs_pos) < std::distance(prefered_hierarchy_order.begin(), rhs_pos);
 	}
+};
+
+typedef  map<string, WED_Thing *> hierarchy_bucket_map;
+
+//
+static hierarchy_bucket_map::iterator create_buckets(WED_Thing* apt, const string& name, hierarchy_bucket_map& io_buckets, WED_Thing* parent_group = NULL)
+{
+	WED_Thing * new_bucket = WED_Group::CreateTyped(apt->GetArchive());
+	new_bucket->SetName(name);
+
+	if (parent_group != NULL)
+	{
+		new_bucket->SetParent(parent_group, parent_group->CountChildren());
+	}
+	else
+	{
+		new_bucket->SetParent(apt, apt->CountChildren());
+	}
+	return io_buckets.insert(make_pair(name, new_bucket)).first;
+}
+
+static void add_to_bucket(WED_Thing * child, WED_Thing * apt, const string& name, hierarchy_bucket_map& io_buckets)
+{
+	DebugAssert(io_buckets.find(name) != io_buckets.end());
+	hierarchy_bucket_map::iterator b = io_buckets.find(name);
+		//set<string> group_names;
+		//tokenize_string(name.begin(), name.end(), back_inserter(group_names), '/');
+		//for (set<string>::iterator itr = group_names.begin(); itr != group_names.end(); ++itr)
+		//{
+		//	WED_Thing * new_bucket = WED_Group::CreateTyped(apt->GetArchive());
+		//	new_bucket->SetName(*itr);
+		//	new_bucket->SetParent(last_parent, last_parent->CountChildren());
+		//	last_parent = new_bucket;
+		//	io_buckets.insert(make_pair(name, new_bucket)).first;
+		//}
+
 	child->SetParent(b->second, b->second->CountChildren());
 }
 
+void recursive_delete_empty_groups(WED_Thing* group)
+{
+}
 
 void	WED_AptImport(
 				WED_Archive *			archive,
@@ -636,12 +730,35 @@ void	WED_AptImport(
 
 		ConvertForward(*apt);
 
-		map<string, WED_Thing *>	buckets;
-
+		hierarchy_bucket_map buckets;
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
 		new_apt->Import(*apt, LazyPrintf, &log);
 		if(out_airports) out_airports->push_back(new_apt);
+		                               create_buckets(new_apt, "ATC", buckets); //v
+		hierarchy_bucket_map::iterator grnd_bucket = create_buckets(new_apt, "Ground Vehicles", buckets);
+		                               create_buckets(new_apt, "Dynamic",         buckets, grnd_bucket->second);
+		                               create_buckets(new_apt, "Static",          buckets, grnd_bucket->second);
+		                               create_buckets(new_apt, "Lights",   buckets); //v
+		                               create_buckets(new_apt, "Markings", buckets); //v
+		                               create_buckets(new_apt, "Ramp Starts", buckets); //v
+		                               create_buckets(new_apt, "Runways", buckets); //v
+		                               create_buckets(new_apt, "Signs", buckets); //v
+		                               create_buckets(new_apt, "Taxi Routes", buckets); //v
+		                               create_buckets(new_apt, "Ground Routes", buckets); //v
+		                               create_buckets(new_apt, "Taxiways", buckets); //v
+		                               create_buckets(new_apt, "Tower, Beacon and Boundaries", buckets); //v
+		                               create_buckets(new_apt, "Windsocks", buckets); //v
+		                               //create_buckets(new_apt, "Exclusion Zones", buckets); //not in WED_AptIE... :(
+		//hierarchy_bucket_map::iterator obj_bucket  = create_buckets(new_apt, "Objects",   buckets);
+		//                               create_buckets(new_apt, "Buildings", buckets, obj_bucket->second);
+		//                               create_buckets(new_apt, "Vehicles",  buckets, obj_bucket->second);
+		//                               create_buckets(new_apt, "Trees",     buckets, obj_bucket->second);
+		//                               create_buckets(new_apt, "Other",     buckets, obj_bucket->second);
+		//                               create_buckets(new_apt, "Facedes", buckets);
+		//							   create_buckets(new_apt, "Forests", buckets);
+		//                               create_buckets(new_apt, "Lines", buckets);
+		//                               create_buckets(new_apt, "Draped Polygons", buckets);
 
 		for (AptRunwayVector::iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
@@ -704,6 +821,7 @@ void	WED_AptImport(
 			WED_Thing * markings = buckets["Markings"];
 			if(markings == NULL)
 			{
+				DebugAssert(false);
 				markings = WED_Group::CreateTyped(new_apt->GetArchive());
 				markings->SetName("Markings");
 				buckets["Markings"] = markings;
@@ -921,7 +1039,7 @@ void	WED_AptImport(
 					else
 					{
 						next = WED_TaxiRouteNode::CreateTyped(archive);
-						add_to_bucket(next,new_apt,"Taxi Routes",buckets);
+						add_to_bucket(next,new_apt,"Ground Routes",buckets);
 						next->SetName(e->name);
 						next->SetLocation(gis_Geo, p2->first);
 					}
@@ -934,7 +1052,7 @@ void	WED_AptImport(
 					new_e->AddSource(prev,0);
 					new_e->AddSource(next,1);
 					new_e->Import(*e,LazyPrintf,&log);
-					add_to_bucket(new_e,new_apt,"Taxi Routes", buckets);
+					add_to_bucket(new_e,new_apt,"Ground Routes", buckets);
 
 					if(cc == 2)
 					{
@@ -971,14 +1089,17 @@ void	WED_AptImport(
 				}
 			}
 			// END COPY PASTA WARNING
+
+			for (hierarchy_bucket_map::reverse_iterator ritr = buckets.rbegin(); ritr != buckets.rend(); ++ritr)
+			{
+				if (ritr->second->CountChildren() == 0)
+				{
+					ritr->second->SetParent(NULL, 0);
+					ritr->second->Delete();
+				}
+			}
 		}
 #endif		
-
-		for(map<string, WED_Thing *>::iterator b = buckets.begin(); b != buckets.end(); ++b)
-		{
-			b->second->SetName(b->first);
-			b->second->SetParent(new_apt, new_apt->CountChildren());
-		}
 
 		if (log.fi)
 		{
