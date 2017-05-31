@@ -1111,6 +1111,7 @@ void WED_PropertyTable::Resort()
 		ci_string isearch_filter(mSearchFilter.begin(), mSearchFilter.end());
 		collect_recusive(WED_GetWorld(mResolver), isearch_filter, mSortedCache);
 	}
+	mCacheValid = true;
 }
 //-----------------------------------------------------------------------------
 
