@@ -1823,6 +1823,28 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 			<< " baggage cars";
 		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
 	}
+
+	set<WED_Thing*> viewers;
+	truck_parking->GetAllViewers(viewers);
+
+	bool found_ground_route = false;
+	for (set<WED_Thing*>::iterator itr = viewers.begin(); itr != viewers.end(); ++itr)
+	{
+		WED_TaxiRoute* rt = dynamic_cast<WED_TaxiRoute*>(*itr);
+		if (rt != NULL)
+		{
+			if (rt->AllowTrucks())
+			{
+				found_ground_route = true;
+				break;
+			}
+		}
+	}
+
+	if (found_ground_route == false)
+	{
+		msgs.push_back(validation_error_t("Truck parking location " + name + " must be connected to a taxi route that allows 'Ground Trucks'", err_truck_parking_no_attached_ground_route, truck_parking, apt));
+	}
 }
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
