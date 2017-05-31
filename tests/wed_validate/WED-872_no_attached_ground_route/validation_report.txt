@@ -1,0 +1,2 @@
+xxxx: Truck parking location None - Bad must be connected to a taxi route that allows 'Ground Trucks'
+xxxx: Truck parking location Aircraft Route - Bad must be connected to a taxi route that allows 'Ground Trucks'
