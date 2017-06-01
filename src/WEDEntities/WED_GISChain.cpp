@@ -320,6 +320,28 @@ void WED_GISChain::RebuildCache(int flags) const
 
 	if(flags & cache_Spatial)
 	{
+		// This is a necesasry hack - we get only one notification from our child that their
+		// cache is invalid until we LOOK at their cache again.  Otherwise they assuem we already
+		// know and don't spam us.  Soooooo...
+		// If we rebuild our cache and don't ask our kids for THEIR bounds, then the next time they
+		// move they won't invalidate us because they are still marked as invalid since they were
+		// never forecd to rebuild.  Getting the side (which pulls location) does not revalidate.
+		//
+		// So grab their bounding box even though we don't need it.  This fixes WED-828.
+		//
+		// What would be better would be to have the cache flags SPECIFIC to certain operations so
+		// that it was unambiguous that GetBounds() is the right call to address a particular flag.
+		
+		int m = GetNumPoints();
+		for(int mm = 0; mm < m; ++mm)
+		{
+			Bbox2 temp;
+			WED_Thing * c = GetNthChild(mm);
+			IGISEntity *		   p = dynamic_cast<IGISEntity *>(c);
+			if(p)
+				p->GetBounds(gis_Geo, temp);
+		}
+		
 		int n = GetNumSides();			// We MUST ensure that this only builds topo cache or we are dead dead dead!!
 		mCacheBounds = Bbox2();
 		mCacheBoundsUV = Bbox2();
