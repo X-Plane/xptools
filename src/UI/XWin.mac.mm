@@ -291,6 +291,9 @@
 
 - (void)windowDidResize:(NSNotification *)notification
 {
+	// Work around WED-851...mOwner is NULL if we get a resize message
+	// on a hide due to being destroyed. 
+	if(mOwner)
 	if(!mOwner->mInInit)
 	{
 		int w, h;
