@@ -299,18 +299,24 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 
-				if(MFS_string_match(&s,"EXPORT",false) ||
-				   MFS_string_match(&s,"EXPORT_EXTEND",false) ||
-				   MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
-				   MFS_string_match(&s,"EXPORT_BACKUP",false))
+				bool is_export_export  = MFS_string_match(&s,"EXPORT",false);
+				bool is_export_extend  = MFS_string_match(&s,"EXPORT_EXTEND",false);
+				bool is_export_exclude = MFS_string_match(&s,"EXPORT_EXCLUDE",false);
+				bool is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false);
+
+				if( is_export_export  ||
+					is_export_extend  ||
+					is_export_exclude ||
+					is_export_backup)
 				{
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
+
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
+					AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
 				}
 				else if(MFS_string_match(&s,"EXPORT_RATIO",false))
 				{
