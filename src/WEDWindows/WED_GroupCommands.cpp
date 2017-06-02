@@ -760,6 +760,9 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_ATCFlow::sClass)) return 0;
 	}
 	#endif
+
+	// If the parent of any selection isn't a folder, don't allow the re-org.
+	if(sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
 	
 	// Finally, we need to make sure that everyone in the selection is going to get their needs met.
 	set<string>	required_parents;
