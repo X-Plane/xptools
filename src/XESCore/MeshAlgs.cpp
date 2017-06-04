@@ -144,8 +144,8 @@
 
 #if HD_MESH
 	MeshPrefs_t gMeshPrefs = {		/*iphone*/
-	/* max_points		*/	PHONE ?		25000	: 250000,
-	/* max_error		*/	PHONE ?		15		: 2.5,
+	/* max_points		*/	PHONE ?		25000	: 300000,
+	/* max_error		*/	PHONE ?		15		: 2.3,
 	/* border_match		*/	PHONE ?		1		: 1,
 	/* optimize_borders	*/	PHONE ?		1		: 1,
 	/* max_tri_size_m	*/	PHONE ?		6000	: 250,
@@ -153,8 +153,8 @@
 	};
 #elif UHD_MESH
 	MeshPrefs_t gMeshPrefs = {		/*iphone*/
-	/* max_points		*/	PHONE ?		25000	: 650000,
-	/* max_error		*/	PHONE ?		15		: 0.9,
+	/* max_points		*/	PHONE ?		25000	: 750000,
+	/* max_error		*/	PHONE ?		15		: 0.8,
 	/* border_match		*/	PHONE ?		1		: 1,
 	/* optimize_borders	*/	PHONE ?		1		: 1,
 	/* max_tri_size_m	*/	PHONE ?		6000	: 200,
