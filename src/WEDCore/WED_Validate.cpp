@@ -1796,6 +1796,19 @@ static void ValidateOneTruckDestination(WED_TruckDestination* destination,valida
 	}
 }
 
+bool is_ground_route(WED_Thing* taxi_route)
+{
+	WED_TaxiRoute* ground_rt = dynamic_cast<WED_TaxiRoute*>(taxi_route);
+	if (ground_rt != NULL)
+	{
+		if (ground_rt->AllowTrucks())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
 {
 	string name;
@@ -1824,26 +1837,12 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
 	}
 
-	set<WED_Thing*> viewers;
-	truck_parking->GetAllViewers(viewers);
-
-	bool found_ground_route = false;
-	for (set<WED_Thing*>::iterator itr = viewers.begin(); itr != viewers.end(); ++itr)
+	vector<WED_TaxiRoute*> truck_routes;
+	CollectRecursive(apt, back_inserter(truck_routes), EntityNotHidden, is_ground_route, WED_TaxiRoute::sClass);
+	
+	if (truck_routes.empty() == true)
 	{
-		WED_TaxiRoute* rt = dynamic_cast<WED_TaxiRoute*>(*itr);
-		if (rt != NULL)
-		{
-			if (rt->AllowTrucks())
-			{
-				found_ground_route = true;
-				break;
-			}
-		}
-	}
-
-	if (found_ground_route == false)
-	{
-		msgs.push_back(validation_error_t("Truck parking location " + name + " must be connected to a taxi route that allows 'Ground Trucks'", err_truck_parking_no_attached_ground_route, truck_parking, apt));
+		msgs.push_back(validation_error_t("Truck parking location '" + name + "' is invalid. Its airport does not contain any taxi routes for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking, apt));
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------------------
