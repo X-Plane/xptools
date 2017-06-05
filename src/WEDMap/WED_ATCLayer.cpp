@@ -154,10 +154,10 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 			glColor4f(1,0,0,0.4);
 		else if(ils)
 			glColor4f(0.8,0.5,0,0.4);
+		else if(road) //Warning! Because a ground route can also have IsRunway() == true, this check must come first
+			glColor4f(1, 1, 1, 0.4);
 		else if(rwy)
 			glColor4f(0.0,0.2,0.6,0.4);
-		else if(road)
-			glColor4f(1,1,1,0.4);
 		else
 			glColor4f(1,1,0,0.4);
 		

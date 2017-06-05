@@ -330,9 +330,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					if (sub_class == WED_TaxiRouteNode::sClass
 #if ROAD_EDITING 
 						|| sub_class == WED_RoadNode::sClass
-#else
-						)
 #endif
+						)
 					{
 						if(mVertices)
 						{

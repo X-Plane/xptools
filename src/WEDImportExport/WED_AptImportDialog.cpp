@@ -52,7 +52,7 @@ WED_AptImportDialog::WED_AptImportDialog(
 		WED_Document *	resolver, 
 		WED_Archive *	archive,
 		WED_MapPane *	pane) : 
-	GUI_Window("Import apt.dat", xwin_style_resizable|xwin_style_visible|xwin_style_centered, import_bounds_default, cmdr),
+	GUI_Window("Import apt.dat", xwin_style_resizable|xwin_style_visible|xwin_style_centered|xwin_style_modal, import_bounds_default, cmdr),
 	mTextTable(this,100,0),
 	mMapPane(pane),
 	mResolver(resolver),

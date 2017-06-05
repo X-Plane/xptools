@@ -27,6 +27,7 @@
 #include "ISelection.h"
 #include "IOperation.h"
 #include "IGIS.h"
+#include "IHasResource.h"
 #include "ILibrarian.h"
 #include "WED_Entity.h"
 
@@ -1065,6 +1066,18 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	ci_string ithing_name(thing_name.begin(),thing_name.end());
 
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
+	//Stop if the cheap test succeeds
+	if (is_match == false)
+	{
+		IHasResource * has_resource_thing = dynamic_cast<IHasResource*>(thing);
+		if (has_resource_thing != NULL)
+		{
+			string res;
+			has_resource_thing->GetResource(res);
+
+			is_match |= ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
+		}
+	}
 
 	int nc = thing->CountChildren();
 	if (nc == 0) //thing is a leaf
