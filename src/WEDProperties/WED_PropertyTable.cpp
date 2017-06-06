@@ -27,6 +27,7 @@
 #include "ISelection.h"
 #include "IOperation.h"
 #include "IGIS.h"
+#include "IHasResource.h"
 #include "ILibrarian.h"
 #include "WED_Entity.h"
 
@@ -159,7 +160,7 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.content_type = gui_Cell_Integer;
 		the_content.int_val = val.int_val;
 		sprintf(fmt,"%%%dd", inf.digits);
-		sprintf(buf,fmt,val.int_val);
+		snprintf(buf,sizeof(buf),fmt,val.int_val);
 		the_content.text_val = buf;
 		break;
 	case prop_Double:
@@ -174,11 +175,11 @@ void	WED_PropertyTable::GetCellContent(
 			// the round with one EXTRA digit of precision to catch the floating point sliver case.
 			double fract = pow(10.0,inf.decimals);
 			double v = floor(fract * (val.double_val) + 0.05) / fract;
-			sprintf(buf,fmt,v);
+			snprintf(buf,sizeof(buf),fmt,v);
 		}
 		else
 		{
-			sprintf(buf,fmt,val.double_val);
+			snprintf(buf,sizeof(buf),fmt,val.double_val);
 		}
 		the_content.text_val = buf;
 		break;
@@ -1065,6 +1066,18 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	ci_string ithing_name(thing_name.begin(),thing_name.end());
 
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
+	//Stop if the cheap test succeeds
+	if (is_match == false)
+	{
+		IHasResource * has_resource_thing = dynamic_cast<IHasResource*>(thing);
+		if (has_resource_thing != NULL)
+		{
+			string res;
+			has_resource_thing->GetResource(res);
+
+			is_match |= ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
+		}
+	}
 
 	int nc = thing->CountChildren();
 	if (nc == 0) //thing is a leaf
@@ -1111,6 +1124,7 @@ void WED_PropertyTable::Resort()
 		ci_string isearch_filter(mSearchFilter.begin(), mSearchFilter.end());
 		collect_recusive(WED_GetWorld(mResolver), isearch_filter, mSortedCache);
 	}
+	mCacheValid = true;
 }
 //-----------------------------------------------------------------------------
 

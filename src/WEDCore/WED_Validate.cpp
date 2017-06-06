@@ -49,6 +49,8 @@
 #include "WED_ATCFlow.h"
 #include "WED_LibraryMgr.h"
 #include "WED_AirportBoundary.h"
+#include "WED_TextureNode.h"
+#include "WED_TextureBezierNode.h"
 
 #include "WED_GISUtils.h"
 #include "WED_HierarchyUtils.h"
@@ -1796,6 +1798,19 @@ static void ValidateOneTruckDestination(WED_TruckDestination* destination,valida
 	}
 }
 
+bool is_ground_route(WED_Thing* taxi_route)
+{
+	WED_TaxiRoute* ground_rt = dynamic_cast<WED_TaxiRoute*>(taxi_route);
+	if (ground_rt != NULL)
+	{
+		if (ground_rt->AllowTrucks())
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,validation_error_vector& msgs, WED_Airport* apt)
 {
 	string name;
@@ -1822,6 +1837,14 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 			<< MAX_CARS
 			<< " baggage cars";
 		msgs.push_back(validation_error_t(ss.str(), err_truck_parking_car_count_exceeds_max, truck_parking, apt));
+	}
+
+	vector<WED_TaxiRoute*> truck_routes;
+	CollectRecursive(apt, back_inserter(truck_routes), EntityNotHidden, is_ground_route, WED_TaxiRoute::sClass);
+	
+	if (truck_routes.empty() == true)
+	{
+		msgs.push_back(validation_error_t("Truck parking location '" + name + "' is invalid. Its airport does not contain any taxi routes for ground trucks", err_truck_parking_no_ground_taxi_routes, truck_parking, apt));
 	}
 }
 //------------------------------------------------------------------------------------------------------------------------------------
@@ -1991,6 +2014,36 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 					err_gateway_resource_private_or_depricated,
 						*ru, apt));
 				#endif
+			}
+		}
+	}
+	else
+	{
+		vector<WED_TextureNode *>			tex_nodes;
+		vector<WED_TextureBezierNode *>	tex_nodes_curved;
+		CollectRecursive(apt, back_inserter(tex_nodes),WED_TextureNode::sClass);
+		CollectRecursive(apt, back_inserter(tex_nodes_curved),WED_TextureBezierNode::sClass);
+		for(vector<WED_TextureNode *>::iterator t = tex_nodes.begin(); t != tex_nodes.end(); ++t)
+		{
+			Point2 p;
+			(*t)->GetLocation(gis_UV, p);
+			if(p.x() < -65536.0 || p.x() > 65536.0 ||
+				p.y() < -65536.0 || p.y() > 65536.0)
+			{
+					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
+					err_orthophoto_bad_uv_map, *t, apt));
+			}
+		}
+		
+		for(vector<WED_TextureBezierNode *>::iterator t = tex_nodes_curved.begin(); t != tex_nodes_curved.end(); ++t)
+		{
+			Point2 p;
+			(*t)->GetLocation(gis_UV, p);
+			if(p.x() < -65536.0 || p.x() > 65536.0 ||
+				p.y() < -65536.0 || p.y() > 65536.0)
+			{
+					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
+					err_orthophoto_bad_uv_map, *t, apt));
 			}
 		}
 	}

@@ -540,10 +540,11 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		AptPolygon_t::const_iterator next = cur, orig = cur, prev = cur;
 		++next;
 		while (next != path.end() && next->pt == cur->pt &&
-			(!is_curved(prev->code) || !is_curved(next->code)))
+			(!is_curved(prev->code) || !is_curved(next->code)) && 
+			(is_curved(prev->code) || is_curved(next->code)) ) // skip only if the co-located points are actually part of a bezier-node
 		{
 			prev = next;
-//			printf("Skip: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
+//			printf("Skip: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x(),next->pt.y(),next->ctrl.x(),next->ctrl.y());
 			++next;
 		}
 //		printf("stopped due to: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);

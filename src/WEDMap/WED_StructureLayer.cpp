@@ -330,9 +330,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					if (sub_class == WED_TaxiRouteNode::sClass
 #if ROAD_EDITING 
 						|| sub_class == WED_RoadNode::sClass
-#else
-						)
 #endif
+						)
 					{
 						if(mVertices)
 						{
@@ -665,44 +664,46 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 			if (overlay)
 			{
 				IGISPointSequence * oring = overlay->GetOuterRing();
-				WED_TextureNode * tn1 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(0));
-				WED_TextureNode * tn2 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(1));
-				WED_TextureNode * tn3 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(2));
-				WED_TextureNode * tn4 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(3));
-				Point2 st1,st2,st3,st4, v1,v2,v3,v4;
-				tn1->GetLocation(gis_UV,st1);	tn1->GetLocation(gis_Geo,v1);
-				tn2->GetLocation(gis_UV,st2);	tn2->GetLocation(gis_Geo,v2);
-				tn3->GetLocation(gis_UV,st3);	tn3->GetLocation(gis_Geo,v3);
-				tn4->GetLocation(gis_UV,st4);	tn4->GetLocation(gis_Geo,v4);
+				if(oring->GetNumPoints() > 3)
+				{
+					WED_TextureNode * tn1 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(0));
+					WED_TextureNode * tn2 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(1));
+					WED_TextureNode * tn3 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(2));
+					WED_TextureNode * tn4 = dynamic_cast<WED_TextureNode *>(oring->GetNthPoint(3));
+					Point2 st1,st2,st3,st4, v1,v2,v3,v4;
+					tn1->GetLocation(gis_UV,st1);	tn1->GetLocation(gis_Geo,v1);
+					tn2->GetLocation(gis_UV,st2);	tn2->GetLocation(gis_Geo,v2);
+					tn3->GetLocation(gis_UV,st3);	tn3->GetLocation(gis_Geo,v3);
+					tn4->GetLocation(gis_UV,st4);	tn4->GetLocation(gis_Geo,v4);
 
 
-				string img_file;
-				overlay->GetImage(img_file);
+					string img_file;
+					overlay->GetImage(img_file);
 
-				ITexMgr * mgr = WED_GetTexMgr(GetResolver());
-				TexRef ref = mgr->LookupTexture(img_file.c_str(),false,tex_Compress_Ok);
-				g->SetState(0,ref ? 1 : 0,0, 1, 1, 0, 0);
-				if (ref) { g->BindTex(mgr->GetTexID(ref),0);
+					ITexMgr * mgr = WED_GetTexMgr(GetResolver());
+					TexRef ref = mgr->LookupTexture(img_file.c_str(),false,tex_Compress_Ok);
+					g->SetState(0,ref ? 1 : 0,0, 1, 1, 0, 0);
+					if (ref) { g->BindTex(mgr->GetTexID(ref),0);
 
-				int vis_x, vis_y, tot_x, tot_y;
-				mgr->GetTexInfo(ref,&vis_x,&vis_y,&tot_x,&tot_y, NULL, NULL);
-				double sx = (double) vis_x / (double) tot_x;
-				double sy = (double) vis_y / (double) tot_y;
-				st1.x_ *= sx; st1.y_ *= sy;
-				st2.x_ *= sx; st2.y_ *= sy;
-				st3.x_ *= sx; st3.y_ *= sy;
-				st4.x_ *= sx; st4.y_ *= sy;
+					int vis_x, vis_y, tot_x, tot_y;
+					mgr->GetTexInfo(ref,&vis_x,&vis_y,&tot_x,&tot_y, NULL, NULL);
+					double sx = (double) vis_x / (double) tot_x;
+					double sy = (double) vis_y / (double) tot_y;
+					st1.x_ *= sx; st1.y_ *= sy;
+					st2.x_ *= sx; st2.y_ *= sy;
+					st3.x_ *= sx; st3.y_ *= sy;
+					st4.x_ *= sx; st4.y_ *= sy;
+					}
+					glDisable(GL_CULL_FACE);
+					glColor4f(1,1,1,overlay->GetAlpha());
+					glBegin(GL_QUADS);
+					glTexCoord2(st4);	glVertex2(GetZoomer()->LLToPixel(v4));
+					glTexCoord2(st3);	glVertex2(GetZoomer()->LLToPixel(v3));
+					glTexCoord2(st2);	glVertex2(GetZoomer()->LLToPixel(v2));
+					glTexCoord2(st1);	glVertex2(GetZoomer()->LLToPixel(v1));
+					glEnd();
+					glEnable(GL_CULL_FACE);
 				}
-				glDisable(GL_CULL_FACE);
-				glColor4f(1,1,1,overlay->GetAlpha());
-				glBegin(GL_QUADS);
-				glTexCoord2(st4);	glVertex2(GetZoomer()->LLToPixel(v4));
-				glTexCoord2(st3);	glVertex2(GetZoomer()->LLToPixel(v3));
-				glTexCoord2(st2);	glVertex2(GetZoomer()->LLToPixel(v2));
-				glTexCoord2(st1);	glVertex2(GetZoomer()->LLToPixel(v1));
-				glEnd();
-				glEnable(GL_CULL_FACE);
-
 			}
 		}
 		break;
