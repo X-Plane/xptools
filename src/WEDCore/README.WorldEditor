@@ -21,6 +21,7 @@ WED 1.6r1
 	- WED-836: EXPORT_BACKUP directively was previously not respected
 	- WED-860: Improper color used for ground trucks route and taxi route
 	- Preformance Boost: Unnecissary drawing removed when the hierachry search filter is in use
+	- WED-864: Adds special order of AptIE imports and separates out ground truck routes and aircraft taxi routes into two categories.
 
 WED 1.6b2 
 	Bug fixes:

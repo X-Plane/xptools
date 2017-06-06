@@ -735,31 +735,21 @@ void	WED_AptImport(
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
 		new_apt->Import(*apt, LazyPrintf, &log);
-		if(out_airports) out_airports->push_back(new_apt);
-		                               create_buckets(new_apt, "ATC", buckets); //v
-		hierarchy_bucket_map::iterator grnd_bucket = create_buckets(new_apt, "Ground Vehicles", buckets);
-		                               create_buckets(new_apt, "Dynamic",         buckets, grnd_bucket->second);
-		                               create_buckets(new_apt, "Static",          buckets, grnd_bucket->second);
-		                               create_buckets(new_apt, "Lights",   buckets); //v
-		                               create_buckets(new_apt, "Markings", buckets); //v
-		                               create_buckets(new_apt, "Ramp Starts", buckets); //v
-		                               create_buckets(new_apt, "Runways", buckets); //v
-		                               create_buckets(new_apt, "Signs", buckets); //v
-		                               create_buckets(new_apt, "Taxi Routes", buckets); //v
-		                               create_buckets(new_apt, "Ground Routes", buckets); //v
-		                               create_buckets(new_apt, "Taxiways", buckets); //v
-		                               create_buckets(new_apt, "Tower, Beacon and Boundaries", buckets); //v
-		                               create_buckets(new_apt, "Windsocks", buckets); //v
-		                               //create_buckets(new_apt, "Exclusion Zones", buckets); //not in WED_AptIE... :(
-		//hierarchy_bucket_map::iterator obj_bucket  = create_buckets(new_apt, "Objects",   buckets);
-		//                               create_buckets(new_apt, "Buildings", buckets, obj_bucket->second);
-		//                               create_buckets(new_apt, "Vehicles",  buckets, obj_bucket->second);
-		//                               create_buckets(new_apt, "Trees",     buckets, obj_bucket->second);
-		//                               create_buckets(new_apt, "Other",     buckets, obj_bucket->second);
-		//                               create_buckets(new_apt, "Facedes", buckets);
-		//							   create_buckets(new_apt, "Forests", buckets);
-		//                               create_buckets(new_apt, "Lines", buckets);
-		//                               create_buckets(new_apt, "Draped Polygons", buckets);
+		if(out_airports)
+			out_airports->push_back(new_apt);
+
+		create_buckets(new_apt, "ATC",                          buckets);
+		create_buckets(new_apt, "Ground Vehicles",              buckets);
+		create_buckets(new_apt, "Lights",                       buckets);
+		create_buckets(new_apt, "Markings",                     buckets);
+		create_buckets(new_apt, "Ramp Starts",                  buckets);
+		create_buckets(new_apt, "Runways",                      buckets);
+		create_buckets(new_apt, "Signs",                        buckets);
+		create_buckets(new_apt, "Taxi Routes",                  buckets);
+		create_buckets(new_apt, "Ground Routes",                buckets);
+		create_buckets(new_apt, "Taxiways",                     buckets);
+		create_buckets(new_apt, "Tower, Beacon and Boundaries", buckets);
+		create_buckets(new_apt, "Windsocks",                    buckets);
 
 		for (AptRunwayVector::iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
