@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 1.6r1
 	Bug fixes
+	- WED-787: Prevent apt.dat read in from deleting co-located non-bezier nodes
 	- WED-872: Validation test to ensure that if there are truck parking location(s), there are also ground truck taxi routes present
 	- WED-854: Hiearchry search filter now also searches and matches object's resources
 	- WED-836: EXPORT_BACKUP directively was previously not respected
