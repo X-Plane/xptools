@@ -454,7 +454,7 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 		WED_Thing * parent = t->GetParent();
 		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
 			min_children = 4;
-		if (parent && dynamic_cast<WED_GISPolygon *>(parent))			// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
+		else if (parent && dynamic_cast<WED_GISPolygon *>(parent))			// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
 			min_children = strict ? 3 : 2;								// Loose requirements for repair require 2 - matches minimum apt.dat spec.
 
 		if(t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
@@ -760,6 +760,9 @@ int		WED_CanMoveSelectionTo(IResolver * resolver, WED_Thing * dest, int dest_slo
 		if (sel->IterateSelectionOr(Iterate_IsOrChildClass, (void *) WED_ATCFlow::sClass)) return 0;
 	}
 	#endif
+
+	// If the parent of any selection isn't a folder, don't allow the re-org.
+	if(sel->IterateSelectionOr(Iterate_IsPartOfStructuredObject, NULL)) return 0;
 	
 	// Finally, we need to make sure that everyone in the selection is going to get their needs met.
 	set<string>	required_parents;

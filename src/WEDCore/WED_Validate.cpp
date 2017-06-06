@@ -49,6 +49,8 @@
 #include "WED_ATCFlow.h"
 #include "WED_LibraryMgr.h"
 #include "WED_AirportBoundary.h"
+#include "WED_TextureNode.h"
+#include "WED_TextureBezierNode.h"
 
 #include "WED_GISUtils.h"
 #include "WED_HierarchyUtils.h"
@@ -2012,6 +2014,36 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 					err_gateway_resource_private_or_depricated,
 						*ru, apt));
 				#endif
+			}
+		}
+	}
+	else
+	{
+		vector<WED_TextureNode *>			tex_nodes;
+		vector<WED_TextureBezierNode *>	tex_nodes_curved;
+		CollectRecursive(apt, back_inserter(tex_nodes),WED_TextureNode::sClass);
+		CollectRecursive(apt, back_inserter(tex_nodes_curved),WED_TextureBezierNode::sClass);
+		for(vector<WED_TextureNode *>::iterator t = tex_nodes.begin(); t != tex_nodes.end(); ++t)
+		{
+			Point2 p;
+			(*t)->GetLocation(gis_UV, p);
+			if(p.x() < -65536.0 || p.x() > 65536.0 ||
+				p.y() < -65536.0 || p.y() > 65536.0)
+			{
+					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
+					err_orthophoto_bad_uv_map, *t, apt));
+			}
+		}
+		
+		for(vector<WED_TextureBezierNode *>::iterator t = tex_nodes_curved.begin(); t != tex_nodes_curved.end(); ++t)
+		{
+			Point2 p;
+			(*t)->GetLocation(gis_UV, p);
+			if(p.x() < -65536.0 || p.x() > 65536.0 ||
+				p.y() < -65536.0 || p.y() > 65536.0)
+			{
+					msgs.push_back(validation_error_t(string("The UV map point is out of bounds."),
+					err_orthophoto_bad_uv_map, *t, apt));
 			}
 		}
 	}
