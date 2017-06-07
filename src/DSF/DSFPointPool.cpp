@@ -204,18 +204,37 @@ pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 	}
 	// Hrm...doesn't exist.  Try to add it.
 	p = 0;
+	
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
-	if(pool->mPoints.size() < 65535)
 	{
 		DSFTuple	point(inPoint);
 		if (point.encode(pool->mOffset, pool->mScale))
 		{
-			int our_pos = pool->mPoints.size();
-			pool->mPoints.push_back(point);
-			pool->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(point, our_pos));
-			return pair<int, int>(p, our_pos);
+			if(pool->mPoints.size() < 65535)
+			{
+				int our_pos = pool->mPoints.size();
+				pool->mPoints.push_back(point);
+				pool->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(point, our_pos));
+				return pair<int, int>(p, our_pos);
+			}
+			else
+			{
+				mPools.push_back(SharedSubPool());
+				mPools.back().mOffset = pool->mOffset;
+				mPools.back().mScale = pool->mScale;
+
+				pool = mPools.end();
+				--pool;
+
+				int our_pos = pool->mPoints.size();
+				pool->mPoints.push_back(point);
+				pool->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(point, our_pos));
+				return pair<int, int>(mPools.size()-1, our_pos);
+			}
 		}
 	}
+
+	// We hit this encode failure if we are out of pool bounds.
 	return pair<int, int>(-1, -1);
 }
 
