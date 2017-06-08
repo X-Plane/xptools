@@ -1998,7 +1998,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		CollectRecursive(apt, back_inserter(orthos), WED_DrapedOrthophoto::sClass);
 		for(vector<WED_DrapedOrthophoto *>::iterator o = orthos.begin(); o != orthos.end(); ++o)
 		{
-			printf("o addr %X\n",o);
 			string res;
 			pol_info_t pol;
 			
