@@ -73,6 +73,7 @@
 #include "ILibrarian.h"
 #include "WED_LibraryMgr.h"
 #include "WED_PackageMgr.h"
+#include "WED_ResourceMgr.h"
 
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"
@@ -282,6 +283,7 @@ static bool GetThingResource(WED_Thing * who, string& r)
 	WED_LinePlacement * lin;
 	WED_StringPlacement * str;
 	WED_PolygonPlacement * pol;
+	WED_DrapedOrthophoto * ort;
 
 	#define CAST_WITH_CHECK(CLASS,VAR) \
 	if(who->GetClass() == CLASS::sClass && (VAR = dynamic_cast<CLASS *>(who)) != NULL) { \
@@ -294,6 +296,7 @@ static bool GetThingResource(WED_Thing * who, string& r)
 	CAST_WITH_CHECK(WED_LinePlacement,lin)
 	CAST_WITH_CHECK(WED_StringPlacement,str)
 	CAST_WITH_CHECK(WED_PolygonPlacement,pol)
+	CAST_WITH_CHECK(WED_DrapedOrthophoto,ort)
 
 	return false;
 }
@@ -1851,7 +1854,7 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
 
-static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr)
+static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, WED_ResourceMgr * res_mgr)
 {
 	/*--Validate Airport Rules-------------------------------------------------
 		Airport Name rules
@@ -1991,11 +1994,27 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		}
 #endif
 
-		vector<WED_DrapedOrthophoto *> orthos;
+		vector<WED_DrapedOrthophoto *> orthos, orthos_illegal;
 		CollectRecursive(apt, back_inserter(orthos), WED_DrapedOrthophoto::sClass);
-		if(!orthos.empty())
-			msgs.push_back(validation_error_t("Orthophotos cannot be exported to the Gateway. Please hide or remove these.", err_gateway_orthophoto_cannot_be_exported, orthos,apt));
+		for(vector<WED_DrapedOrthophoto *>::iterator o = orthos.begin(); o != orthos.end(); ++o)
+		{
+			printf("o addr %X\n",o);
+			string res;
+			pol_info_t pol;
+			
+			(*o)->GetResource(res);
+			res_mgr->GetPol(res,pol);
 
+			if (!pol.mSubBoxes.size())
+			{
+				orthos_illegal.push_back(*o);
+			}
+//			else
+//				printf("kosher ortho, has %d subtex\n", pol.mSubBoxes.size());
+		}
+		if(!orthos_illegal.empty())
+			msgs.push_back(validation_error_t("Only Orthophotos with automatic subtexture selection can be exported to the Gateway. Please hide or remove selected Orthophotos.", 
+						err_gateway_orthophoto_cannot_be_exported, orthos_illegal, apt));
 
 		vector<WED_Thing *>	res_users;
 		CollectRecursive(apt, back_inserter(res_users), ThingNotHidden, IsThingResource);
@@ -2126,13 +2145,14 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	ISelection * sel = WED_GetSelect(resolver);
 
 	WED_LibraryMgr * lib_mgr = 	WED_GetLibraryMgr(resolver);
+	WED_ResourceMgr * res_mgr = 	WED_GetResourceMgr(resolver);
 
 	vector<WED_Airport *> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
 
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
 	{
-		ValidateOneAirport(*a, msgs, lib_mgr);
+		ValidateOneAirport(*a, msgs, lib_mgr, res_mgr);
 	}
 
 	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
