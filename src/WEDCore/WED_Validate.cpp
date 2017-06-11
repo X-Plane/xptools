@@ -1615,7 +1615,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string code        = who->GetMetaDataValue(wed_AddMetaDataLocal);
 		string error_content;
 
-		if (!air_org_code_valid(3,5, true, code, error_content) && !code.empty())
+		if (!air_org_code_valid(3,7, true, code, error_content) && !code.empty())
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataLocal, code, error_content, who, msgs, apt);
 		}
@@ -1627,7 +1627,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		string code        = who->GetMetaDataValue(wed_AddMetaDataLocAuth);
 		string error_content;
 
-		if (!air_org_code_valid(3,11, false, code, error_content) && !code.empty())
+		if (!air_org_code_valid(3,32, false, code, error_content) && !code.empty())
 		{
 			add_formated_metadata_error(error_template, wed_AddMetaDataLocAuth, code, error_content, who, msgs, apt);
 		}
