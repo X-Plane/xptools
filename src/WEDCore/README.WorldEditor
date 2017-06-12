@@ -13,6 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.6.1
+        - XSG-8877 validation change for daped orthos on gateway
+
 WED 1.6r1 6/7/17
 	Bug fixes
 	- WED-787: Prevent apt.dat read in from deleting co-located non-bezier nodes
