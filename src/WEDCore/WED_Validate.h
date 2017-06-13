@@ -87,6 +87,7 @@ enum validate_error_t
 	err_heli_name_none,
 	err_heli_not_adequetely_long,
 	err_heli_not_adequetely_wide,
+	err_orthophoto_bad_uv_map,
 	err_ramp_airlines_contains_non_lowercase_letters,
 	err_ramp_airlines_is_not_in_groups_of_three,
 	err_ramp_airlines_is_not_spaced_correctly,
@@ -132,7 +133,8 @@ enum validate_error_t
 	err_taxiway_surface_water_not_valid_type,
 	err_truck_dest_must_have_at_least_one_truck_type_selected,
 	err_truck_parking_cannot_have_negative_car_count,
-	err_truck_parking_car_count_exceeds_max
+	err_truck_parking_car_count_exceeds_max,
+	err_truck_parking_no_ground_taxi_routes
 };
 
 // The validation error record stores a single validation problem for reporting.
@@ -149,74 +151,27 @@ struct	validation_error_t {
 	// This constructor creates a validation error with a single object ("who") participating.  Due to C++ weirdness
 	// we have to template; the assumption is that "who" is a WED_Thing derivative.
 	template <typename T>
-	validation_error_t(const string& m, int error_code, T * who, WED_Airport * a) : msg(m), airport(a) { bad_objects.push_back(who); }
+	validation_error_t(const string& m, validate_error_t error_code, T * who, WED_Airport * a) : msg(m), airport(a) { bad_objects.push_back(who); }
 
 	// This constructor takes an arbitrary container of ptrs to WED_Thing derivatives and builds a single validation
 	// failure with every object listed.
 	template <typename T>
-	validation_error_t(const string& msg, int error_code, const T& container, WED_Airport * airport);
+	validation_error_t(const string& msg, validate_error_t error_code, const T& container, WED_Airport * airport);
 	
 
 	WED_Airport *		airport;		// NULL if error is in an object outside ANY airport
 	vector<WED_Thing *>	bad_objects;	// object(s) involved in the validation error - at least one required.
 	string				msg;
-	int					err_code;
+	validate_error_t	err_code;
 };
 
 typedef vector<validation_error_t> validation_error_vector;
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-
-template <typename OutputIterator, typename Predicate>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred, bool nested_ok = true)
-{
-	// TODO: do fast WED type ptr check on sClass before any other casts?
-	// Factor out WED_Entity check to avoid second dynamic cast?
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
-	if(ent && ent->GetHidden())
-	{
-		return;
-	}
-	
-	typedef typename OutputIterator::container_type::value_type VT;
-	VT ct = dynamic_cast<VT>(thing);
-	bool took_it = false;
-	if(ct && pred(ct))
-	{	
-		oi = ct;
-		took_it = true;
-	}
-	
-	if(!took_it || nested_ok)
-	{
-		int nc = thing->CountChildren();
-		for(int n = 0; n < nc; ++n)
-		{
-			CollectRecursive(thing->GetNthChild(n), oi, pred);
-		}
-	}
-}
-
-template <typename T> bool take_always(T v) { return true; }
-
-template <typename OutputIterator>
-void CollectRecursive(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>);
-}
-
-template <typename OutputIterator>
-void CollectRecursiveNoNesting(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>, false);	// Nesting not allowed
-}
-
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
 
 template <typename T>
-validation_error_t::validation_error_t(const string& m, int error_code, const T& container, WED_Airport * a) :
+validation_error_t::validation_error_t(const string& m, validate_error_t error_code, const T& container, WED_Airport * a) :
 	msg(m), err_code(error_code), airport(a)
 {
 	copy(container.begin(), container.end(), back_inserter(bad_objects));

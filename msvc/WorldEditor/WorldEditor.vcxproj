@@ -91,6 +91,7 @@
     <ClCompile Include="..\..\src\Utils\XChunkyFileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\XUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\zip.c" />
+    <ClCompile Include="..\..\src\WEDCore\WED_HierarchyUtils.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Sign_Parser.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Application.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_AppMain.cpp" />

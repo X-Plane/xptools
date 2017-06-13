@@ -17,6 +17,8 @@
 #include "WED_EnumSystem.h"
 #include "WED_Validate.h"
 
+#include "WED_HierarchyUtils.h"
+
 #include "WED_Airport.h"
 #include "WED_ATCFlow.h"
 #include "WED_ATCRunwayUse.h"
@@ -208,10 +210,10 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 														WED_Airport* apt)
 {
 	FlowVec_t flows;
-	CollectRecursive(apt,back_inserter<FlowVec_t>(flows));
+	CollectRecursive(apt,back_inserter<FlowVec_t>(flows),WED_ATCFlow::sClass);
 
 	RunwayVec_t all_runways;
-	CollectRecursive(apt,back_inserter<RunwayVec_t>(all_runways));
+	CollectRecursive(apt,back_inserter<RunwayVec_t>(all_runways),WED_Runway::sClass);
 
 	//Find all potentially active runways:
 	//0 flows means treat all runways as potentially active
@@ -227,7 +229,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 	else
 	{
 		ATCRunwayUseVec_t use_rules;
-		CollectRecursive(apt,back_inserter<ATCRunwayUseVec_t>(use_rules));
+		CollectRecursive(apt,back_inserter<ATCRunwayUseVec_t>(use_rules),WED_ATCRunwayUse::sClass);
 
 		//For all runways in the airport
 		for(RunwayVec_t::const_iterator runway_itr = all_runways.begin(); runway_itr != all_runways.end(); ++runway_itr)
@@ -1204,14 +1206,14 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 }
 
 
-static bool is_ground_traffic_route(WED_TaxiRoute * r)
+static bool is_ground_traffic_route(WED_Thing * r)
 {
-	return r->AllowTrucks();
+	return static_cast<WED_TaxiRoute*>(r)->AllowTrucks();
 }
 
-static bool is_aircraft_taxi_route(WED_TaxiRoute * r)
+static bool is_aircraft_taxi_route(WED_Thing * r)
 {
-	return r->AllowAircraft();
+	return static_cast<WED_TaxiRoute*>(r)->AllowAircraft();
 }
 
 //-----------------------------------------------------------------------------
@@ -1238,7 +1240,7 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 		RunwayInfoVec_t potentially_active_runways = CollectPotentiallyActiveRunways(all_taxiroutes, msgs, &apt);
 		
 		ATCRunwayUseVec_t all_use_rules;
-		CollectRecursive(&apt,back_inserter<ATCRunwayUseVec_t>(all_use_rules));
+		CollectRecursive(&apt,back_inserter<ATCRunwayUseVec_t>(all_use_rules), WED_ATCRunwayUse::sClass);
 		
 		//Pre-check
 		//- Does this active runway even have any taxi routes associated with it?
@@ -1284,13 +1286,13 @@ void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 	}
 
 	TaxiRouteVec_t all_truckroutes_plain;
-	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_truckroutes_plain), is_ground_traffic_route);
+	CollectRecursive(&apt,back_inserter<TaxiRouteVec_t>(all_truckroutes_plain), ThingNotHidden, is_ground_traffic_route, WED_TaxiRoute::sClass);
 	
 	if(!all_truckroutes_plain.empty())
 	{
 //      So we validate even harsher: _all_ runways, even the inactive ones ...
 		RunwayVec_t all_runways;
-		CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways));
+		CollectRecursive(&apt,back_inserter<RunwayVec_t>(all_runways),WED_Runway::sClass);
 		RunwayInfoVec_t runway_info_vec;
 		runway_info_vec.insert(runway_info_vec.begin(),all_runways.begin(),all_runways.end());
 

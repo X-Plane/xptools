@@ -74,7 +74,7 @@ enum {
 	apt_flow_pattern	= 1101,
 	
 	apt_taxi_header		= 1200,			// 1200 <name>
-	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id> <name>
+	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id, 0 based sequence, ascending> <name>
 	apt_taxi_edge		= 1202,			// 1202 <src> <dst> <oneway flag> <runway flag/taxi width> <name>
 	apt_taxi_shape		= 1203,			// 1203 <lat> <lon>
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
