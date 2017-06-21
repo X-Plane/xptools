@@ -130,8 +130,8 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 	{
 		if(me->first.size() < r.size())								break;
 		if(strncasecmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
-		// Ben says: in WED 1.3 we'll get more clever about this and optionally show library innards.  But for now, just hide our privates.
-		if(me->second.status == status_Public)
+		// Ben says: even in WED 1.6 we still don't show private or deprecated stuff
+		if(me->second.status >= status_Public)
 		if(is_direct_parent(r,me->first))
 		{
 			bool want_it = true;
@@ -140,17 +140,12 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 			case pack_All:			break;
 			case pack_Default:		want_it = me->second.is_default;	break;
 			case pack_Local:		// Since "local" is a virtal index, the search for Nth pack works for local too.
+			case pack_New:			want_it = me->second.status == status_New; break;
 			default:				want_it = me->second.packages.count(filter_package);
 			}
 			if(want_it)
 			{
 				children.push_back(me->first);
-				#if DEV
-					//Gets the last thing added to the vector
-					//string temp = children.back();
-
-					//printf("GetResource:%s \n", temp.c_str());
-				#endif
 			}
 		}
 		++me;
@@ -216,7 +211,7 @@ bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 		fixed[p] = '/';
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
-	return me->second.status != status_Public;
+	return me->second.status < status_Public;
 }
 
 bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
@@ -332,7 +327,24 @@ void		WED_LibraryMgr::Rescan()
 				else
 				{
 					if(MFS_string_match(&s,"PUBLIC",true))
+					{	
 						cur_status = status_Public;
+						
+						int new_until = 0;
+						new_until = MFS_int(&s);
+						if (new_until > 20170101)
+						{
+							time_t rawtime;
+							struct tm * timeinfo;
+							time (&rawtime);
+							timeinfo = localtime (&rawtime);							
+							int now = 10000 * (timeinfo->tm_year+1900) +100*timeinfo->tm_mon + timeinfo->tm_mday;
+							if (new_until >= now)
+							{
+								cur_status = status_New;
+							}
+						}
+					}
 					else if(MFS_string_match(&s,"PRIVATE",true))    
 						cur_status = status_Private;
 					else if(MFS_string_match(&s,"DEPRECATED",true)) 
