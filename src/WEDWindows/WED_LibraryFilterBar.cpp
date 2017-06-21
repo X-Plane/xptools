@@ -80,7 +80,9 @@ void	WED_LibraryFilterBar::GetCellContent(
 				case pack_Library: the_content.text_val = "All Libraries"; break;
 				case pack_Default: the_content.text_val = "Laminar Library"; break;
 				case pack_New:     the_content.text_val = "Newly Released Items"; break;
-				default: gPackageMgr->GetNthPackageName(GetEnumValue(),the_content.text_val); break;
+				default: 	gPackageMgr->GetNthPackageName(GetEnumValue(),the_content.text_val);
+// int i = mLibrary->DoesPackHaveLibraryItems(GetEnumValue());
+printf("Lib %d '%s' has %d items\n",GetEnumValue(),the_content.text_val.c_str(),0);
 			}
 			the_content.string_is_resource=0;
 		}
@@ -112,7 +114,7 @@ void	WED_LibraryFilterBar::GetEnumDictionary(
 		string temp = "";
 		gPackageMgr->GetNthPackageName(i,temp);
 
-		if(mLibrary->DoesPackHaveLibraryItems(i) == true)
+		if(gPackageMgr->IsPackagePublicItems(i))
 		{
 			out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
 		}
