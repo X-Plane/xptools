@@ -81,8 +81,6 @@ void	WED_LibraryFilterBar::GetCellContent(
 				case pack_Default: the_content.text_val = "Laminar Library"; break;
 				case pack_New:     the_content.text_val = "Newly Released Items"; break;
 				default: 	gPackageMgr->GetNthPackageName(GetEnumValue(),the_content.text_val);
-// int i = mLibrary->DoesPackHaveLibraryItems(GetEnumValue());
-printf("Lib %d '%s' has %d items\n",GetEnumValue(),the_content.text_val.c_str(),0);
 			}
 			the_content.string_is_resource=0;
 		}
