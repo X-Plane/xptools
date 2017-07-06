@@ -123,7 +123,27 @@ bool		WED_PackageMgr::IsPackageDefault(int n) const
 	return n >= (custom_package_names.size() + global_package_names.size());
 }
 
+bool		WED_PackageMgr::IsPackagePublicItems(int n) const
+{
+	if (n < custom_package_names.size())	return custom_package_hasPublicItems[n];
+	n -= custom_package_names.size();
 
+	if (n < global_package_names.size())	return global_package_hasPublicItems[n];
+	n -= global_package_names.size();
+
+	return default_package_hasPublicItems[n];
+}
+
+void		WED_PackageMgr::HasPublicItems(int n)
+{
+	if (n < custom_package_names.size())	{ custom_package_hasPublicItems[n] = true; return; }
+	n -= custom_package_names.size();
+
+	if (n < global_package_names.size())	{ global_package_hasPublicItems[n] = true; return; }
+	n -= global_package_names.size();
+
+	default_package_hasPublicItems[n] = true;
+}
 
 void		WED_PackageMgr::RenameCustomPackage(int n, const string& new_name)
 {
@@ -172,6 +192,7 @@ int WED_PackageMgr::CreateNewCustomPackage(void)
 		}
 
 		custom_package_names.push_back(name);
+		custom_package_hasPublicItems.push_back(false);  // that may not always be true, but rescan() will fix that later
 		BroadcastMessage(msg_SystemFolderUpdated,0);
 		return custom_package_names.size()-1;
 	} while (1);
@@ -182,10 +203,10 @@ static bool CompareNoCase(const string& s1, const string& s2) { return strcasecm
 
 void		WED_PackageMgr::Rescan(void)
 {
-
 	custom_package_names.clear();
 	global_package_names.clear();
 	default_package_names.clear();
+	
 	system_exists=false;
 	if (MF_GetFileType(system_path.c_str(),mf_CheckType) == mf_Directory)
 	{
@@ -213,6 +234,18 @@ void		WED_PackageMgr::Rescan(void)
 			sort(default_package_names.begin(),default_package_names.end(),CompareNoCase);
 		}
 	}
+	
+	custom_package_hasPublicItems.clear();
+	global_package_hasPublicItems.clear();
+	default_package_hasPublicItems.clear();
+	
+	for (int i=0; i<custom_package_names.size(); ++i)
+			custom_package_hasPublicItems.push_back(false);
+	for (int i=0; i<global_package_names.size(); ++i)
+			global_package_hasPublicItems.push_back(false);
+	for (int i=0; i<default_package_names.size(); ++i)
+			default_package_hasPublicItems.push_back(false);
+
 	BroadcastMessage(msg_SystemFolderChanged,0);
 }
 

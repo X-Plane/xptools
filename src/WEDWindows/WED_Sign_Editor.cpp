@@ -920,7 +920,7 @@ void		WED_Sign_Editor::replace_selection(parser_glyph_t g, parser_color_t c)
 	int low = min(mEditStart,mEditEnd);
 	int high = max(mEditStart,mEditEnd);
 	
-	if(g == glyph_separator)
+	if(g == glyph_separator)      // check for various cases where we don't allow a separator to be placed
 	{
 		if(low < 1) 
 			return;
@@ -929,13 +929,13 @@ void		WED_Sign_Editor::replace_selection(parser_glyph_t g, parser_color_t c)
 		if(side[low-1].color != sign_color_red &&
 			side[low-1].color != sign_color_yellow &&
 			side[low-1].color != sign_color_location)
-		return;
-					
+			return;
+		if(high == side.size())
+			return;
 		if(high < side.size())
 		{			
 			if(side[low-1].color != side[high].color)
 				return;
-			
 		}
 	}	
 	

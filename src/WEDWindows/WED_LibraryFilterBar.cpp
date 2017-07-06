@@ -63,7 +63,7 @@ void	WED_LibraryFilterBar::GetCellContent(
 		//Label
 		if(cell_x == 0)
 		{
-			the_content.text_val = "Choose Pack:";
+			the_content.text_val = "Filter Libraries:";
 		}
 		//Enum
 		if(cell_x == 1)
@@ -77,9 +77,10 @@ void	WED_LibraryFilterBar::GetCellContent(
 			int cur_val = GUI_FilterBar::GetEnumValue();
 			switch(cur_val)
 			{
-				case pack_Library: the_content.text_val = "Library"; break;
+				case pack_Library: the_content.text_val = "All Libraries"; break;
 				case pack_Default: the_content.text_val = "Laminar Library"; break;
-				default: gPackageMgr->GetNthPackageName(GetEnumValue(),the_content.text_val); break;
+				case pack_New:     the_content.text_val = "Newly Released Items"; break;
+				default: 	gPackageMgr->GetNthPackageName(GetEnumValue(),the_content.text_val);
 			}
 			the_content.string_is_resource=0;
 		}
@@ -102,15 +103,16 @@ void	WED_LibraryFilterBar::GetEnumDictionary(
 	/*An important note!
 	* To make something the default enum choice make sure you update the inilized mCurEnumVal this AND in the LibraryAdapter
 	*/
-	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_Library,make_pair("Library",true)));
 	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_Default,make_pair("Laminar Library",true))); //Aka the default library aka pack_Default
+	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_Library,make_pair("All Libraries",true)));
+	out_dictionary.insert(GUI_EnumDictionary::value_type(i+pack_New,make_pair("Newly Released Items",true)));
 
 	while(i < gPackageMgr->CountPackages())
 	{
 		string temp = "";
 		gPackageMgr->GetNthPackageName(i,temp);
 
-		if(mLibrary->DoesPackHaveLibraryItems(i) == true)
+		if(gPackageMgr->IsPackagePublicItems(i))
 		{
 			out_dictionary.insert(GUI_EnumDictionary::value_type(i,make_pair(temp,true)));
 		}

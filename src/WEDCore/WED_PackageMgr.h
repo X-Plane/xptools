@@ -48,6 +48,8 @@ public:
 	void		GetNthPackagePath(int n, string& package) const;
 	
 	bool		IsPackageDefault(int n) const;
+	bool		IsPackagePublicItems(int n) const;        // library has at least one public item declared in it
+	void		HasPublicItems(int n);
 
 	void		RenameCustomPackage(int n, const string& new_name);
 
@@ -64,6 +66,10 @@ private:
 	vector<string>	custom_package_names;
 	vector<string>	global_package_names;
 	vector<string>	default_package_names;
+	
+	vector<bool>	custom_package_hasPublicItems;
+	vector<bool>	global_package_hasPublicItems;
+	vector<bool>	default_package_hasPublicItems;
 
 };
 
