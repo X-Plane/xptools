@@ -73,21 +73,11 @@ struct	pol_info_t {
 struct	fac_info_t {
 	bool		ring;
 	bool		roof;
-	bool		modern;
+	int			version;
 	vector<string>	walls;
 	vector<string>	w_use;
 	
 	XObj8 *	preview;
-};
-
-struct wall_map_t {
-	
-	wall_map_t() : vert(), hori(), scale_x(1.0f) ,scale_y(1.0f), basem(0.0f) { }
-
-	float		vert[4];   // for now planning to only collect ONE example for wall type.
-	float		hori[4];
-	float		scale_x, scale_y;
-	float		basem;
 };
 
 struct	lin_info_t {
@@ -96,7 +86,6 @@ struct	lin_info_t {
 	float		proj_t;
 	vector<float>	s1,sm,s2;
 };
-
 
 struct	road_info_t {
 	map<int, string>	vroad_types;

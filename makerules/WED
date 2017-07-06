@@ -182,6 +182,7 @@ SOURCES += ./src/WEDEntities/WED_Entity.cpp
 SOURCES += ./src/WEDEntities/WED_FacadeNode.cpp
 SOURCES += ./src/WEDEntities/WED_FacadePlacement.cpp
 SOURCES += ./src/WEDEntities/WED_FacadeRing.cpp
+SOURCES += ./src/WEDEntities/WED_FacadePreview.cpp
 SOURCES += ./src/WEDEntities/WED_ForestPlacement.cpp
 SOURCES += ./src/WEDEntities/WED_ForestRing.cpp
 SOURCES += ./src/WEDEntities/WED_GISChain.cpp

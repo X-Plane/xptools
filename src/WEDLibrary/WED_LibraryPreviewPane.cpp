@@ -273,7 +273,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Forest:
 			if(!mResMgr->GetFor(mRes,o))
 				break;
-#if 0  
+#if 1 
 		// facade preview, not yet ready for primetime
 		case res_Facade:
 			if(!o)
@@ -416,6 +416,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				{ 
 //					float w = (lin.s2[0]-lin.s1[0])/lin.proj_s;
 					sprintf(buf,"Aproximate width %.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+				}
+				break;
+			case res_Forest:
+			case res_Object:
+				if (o)
+				{ 
+					if (gIsFeet)
+						sprintf(buf,"Overall height %.0f'",(o->xyz_max[1]-o->xyz_min[1]) / 0.3048 );
+					else
+						sprintf(buf,"Overall height %.1fm",(o->xyz_max[1]-o->xyz_min[1]));
 				}
 				break;
 		}

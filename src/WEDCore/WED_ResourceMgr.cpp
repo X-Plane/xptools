@@ -22,6 +22,7 @@
  */
 
 #include "WED_ResourceMgr.h"
+#include "WED_FacadePreview.h"
 #include "WED_Messages.h"
 #include "WED_LibraryMgr.h"
 #include "MemFileUtils.h"
@@ -109,8 +110,6 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 
 	mObj[lib_key] = obj;
 	return true;
-	
-	
 }
 
 bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
@@ -270,13 +269,11 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 
 	while(!MFS_done(&s))
 	{
-		// TEXTURE <texname>
 		if (MFS_string_match(&s,"TEXTURE", false))
 		{
 			MFS_string(&s,&out_info.base_tex);
 			out_info.wrap=true;
 		}
-		// SCALE <ms> <mt>
 		else if (MFS_string_match(&s,"SCALE", false))
 		{
 			out_info.proj_s = MFS_double(&s);
@@ -294,18 +291,15 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 				out_info.mSubBoxes.push_back(Bbox2(s1,t1,s2,t2));
 			}
 		}
-		// TEXTURE_NOWRAP <texname>
 		else if (MFS_string_match(&s,"TEXTURE_NOWRAP", false))
 		{
 			MFS_string(&s,&out_info.base_tex);
 			out_info.wrap=false;
 		}
-		// NO_ALPHA
 		else if (MFS_string_match(&s,"NO_ALPHA", true))
 		{
 			out_info.kill_alpha=true;
 		}
-		// LAYER_GROUP
 		else if (MFS_string_match(&s,"LAYER_GROUP",false))
 		{
 			MFS_string(&s,&out_info.group);
@@ -388,8 +382,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 		MemFile_Close(fac);
 		return false;
 	}
-	out_info.modern = v > 800;
-
+	out_info.version  = v;
 	out_info.ring = true;
 	out_info.roof = false;
 	out_info.preview = NULL;
@@ -405,12 +398,10 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 	 
 	while(!MFS_done(&s))
 	{
-		// RING
 		if (MFS_string_match(&s,"RING", false))
 		{
 			out_info.ring = MFS_int(&s) > 0;
 		}
-		// ROOF
 		else if (MFS_string_match(&s,"ROOF", false))
 		{
 			roof_section = true;
@@ -513,7 +504,10 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 	}
 	MemFile_Close(fac);
 
-// MakeFacadePreview(out_info, wall, iwall_tex, tex_size, roof_tex, roof_scale);
+	process_texture_path(p, wall_tex);
+	process_texture_path(p, roof_tex);
+
+	WED_MakeFacadePreview(out_info, wall, wall_tex, tex_size, roof_tex, roof_scale);
 
 	mFac[path] = out_info;
 	return true;
@@ -712,7 +706,7 @@ bool	WED_ResourceMgr::GetFor(const string& path,  XObj8 *& obj)
 		}
 	}
 	// set dimension
-	obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);		
+	obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
 
 	// "IDX "
 	int seq[6] = {0,1,2,0,2,3};
