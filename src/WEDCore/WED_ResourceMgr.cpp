@@ -525,7 +525,10 @@ printf("%s no bot but mid\n",p.c_str());
 		{
 			float x = MFS_double(&s)/tex_size_x;
 			if(wall.back().hori[1] == 0.0)
+			{
+printf("%s first left\n",p.c_str());
 				wall.back().hori[0] = x;
+			}
 			wall.back().hori[1] = MFS_double(&s)/tex_size_x;
 		} 
 		else if (MFS_string_match(&s,"CENTER",false))

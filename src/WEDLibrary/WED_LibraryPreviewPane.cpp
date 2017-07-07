@@ -321,7 +321,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
 						0, g);
 						
-				if (o_vec.size() > 1)
+				if(o_vec.size() > 1)
 					draw_obj_at_xyz(mTexMgr, o_vec[1],
 						-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
 						-(o->xyz_max[1]+o->xyz_min[1])*0.5f,

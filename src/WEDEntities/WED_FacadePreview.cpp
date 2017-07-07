@@ -61,28 +61,24 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 	printf("no top v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
 		}
 
-		float ideal_len = (i->hori[2]-i->hori[0]) * info.scale_x;
 		if (i->hori[2] == 0.0)
 		{
 			i->hori[2] = i->hori[1];
 			i->hori[1] = i->hori[0];
 	printf("no center h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
 		}
-//		else
-//			ideal_len +=  (i->hori[2]-i->hori[1]) * info.scale_x;
+		
 		
 		if (i->hori[3] == 0.0)
 		{
 			i->hori[3] = i->hori[2];
 	printf("no right h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
 		}
-		else
-			ideal_len +=  (i->hori[3]-i->hori[1]) * info.scale_y;
+		
+		float ideal_len = (i->hori[2]-i->hori[0] + i->hori[3]-i->hori[1]) * info.scale_x;
 		
 	printf("ideal_len %3.1f\n",ideal_len);
-	
-			ideal_len -=0.1;
-	
+		
         want_len = max(want_len,ideal_len);
 
 	fflush(stdout);
@@ -111,8 +107,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 		
 		obj->texture = wall_tex;
 
-		int quads = 0;       // total number of quads generated
-		int quads_fl;        // total number of quads for each floor
+		int quads;          // total number of quads for each floor
 		
 		float pt[8];
 		pt[3] = 0.0;    	// normal vector is a don't care, so have it point straight up
@@ -122,7 +117,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 		pt[1] = 0.0;        // initial height coordinate - todo: basements
 		for (int level=0; level<want_floors; ++level)
 		{
-			quads_fl=0;
+			quads=0;
 			for (int fl = 0; fl < 2; ++fl)
 			{
 				pt[0] = 0.0;        // left front corner
@@ -141,15 +136,11 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 						
 						pt[7] = walls[w].vert[2*fl+level];
 						
-						int sects = 2;    // how many sections do we need to drawfor this wall
-//						float total_wall_len = (walls[w].hori[3]-walls[w].hori[0])*walls[0].scale_x;
-//						if ( total_wall_len < 10.0 ) sects = 1+10.0/total_wall_len;  // make really short walls bit longer
-
-
 						float len_left = want_len - (walls[w].hori[2]-walls[w].hori[0] + walls[w].hori[3]-walls[w].hori[1]) * info.scale_x;
-						sects = 2.0 + len_left / ((walls[w].hori[2]-walls[w].hori[1]) * info.scale_x);
+						float exact = 2.0 + len_left / ((walls[w].hori[2]-walls[w].hori[1]) * info.scale_x);
+						int sects = ceil(exact);
 
-printf("want %5.1f left %5.1f sects %d\n",want_len, len_left, sects);
+printf("want %5.1f left %5.1f sects %d left %5.1f\n",want_len, len_left, sects, exact-sects);
 						
 						for (int k=0; k<sects; k++)
 						{
@@ -160,36 +151,31 @@ printf("want %5.1f left %5.1f sects %d\n",want_len, len_left, sects);
 							// "VT "
 							pt[6] = s1;
 							obj->geo_tri.append(pt);
-							pt[2-2*j] += (1-2*i) * dx;
-							pt[6] = s2;
+							pt[2-2*j] += (1-2*i) * dx * (1.0-(k==sects-2)*(sects-exact));
+							pt[6] = s2 - (s2-s1)*(k==sects-2)*(sects-exact);
 							obj->geo_tri.append(pt);
-							if (fl) quads_fl++;
+							if (fl) quads++;
 						}
 					}
 			}
-			quads += quads_fl;
+			int seq[6] = {0, 1, 2*quads, 1, 2*quads+1, 2*quads};
+			for (int i = 0; i < 6*quads; ++i)
+				obj->indices.push_back(2*(i/6)+seq[i%6]);
+			
 		}
-		// set dimension
+		
 		obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
-
-		// "IDX "
-		int seq[6] = {0, 1, 2*quads_fl, 1, 2*quads_fl+1, 2*quads_fl};
-		for (int i = 0; i < 6*quads; ++i)
-			obj->indices.push_back(2*(i/6)+seq[i%6]);
-
-		// "ATTR_LOD"
+	
 		obj->lods.push_back(XObjLOD8());
 		obj->lods.back().lod_near = 0;
 		obj->lods.back().lod_far  = 1000;
 
-		// "ATTR_no_cull"
 		cmd.cmd = attr_NoCull;
 		obj->lods.back().cmds.push_back(cmd);
 
-		// "TRIS ";
 		cmd.cmd = obj8_Tris;
 		cmd.idx_offset = 0;
-		cmd.idx_count  = 6*quads;
+		cmd.idx_count  = obj->indices.size();
 		obj->lods.back().cmds.push_back(cmd);
 
 		info.previews.push_back(obj);
@@ -199,10 +185,7 @@ printf("want %5.1f left %5.1f sects %d\n",want_len, len_left, sects);
 			XObj8 *r_obj = new XObj8;
 			r_obj->texture = wall_tex;
 			
-			r_obj->geo_tri.get_minmax(obj->xyz_min,obj->xyz_max);
-			
 			quads=1;
-			quads_fl=1;
 			pt[1] = obj->xyz_max[1]; // height
 			
 			for (int i = 0; i<2; ++i)
@@ -221,7 +204,7 @@ printf("want %5.1f left %5.1f sects %d\n",want_len, len_left, sects);
 			r_obj->geo_tri.get_minmax(r_obj->xyz_min,r_obj->xyz_max);
 			
 			// "IDX "
-			int seq[6] = {0, 1, 2*quads_fl, 1, 2*quads_fl+1, 2*quads_fl};
+			int seq[6] = {0, 1, 2*quads, 1, 2*quads+1, 2*quads};
 			for (int i = 0; i < 6*quads; ++i)
 				r_obj->indices.push_back(2*(i/6)+seq[i%6]);
 
@@ -233,7 +216,7 @@ printf("want %5.1f left %5.1f sects %d\n",want_len, len_left, sects);
 			// "TRIS ";
 			cmd.cmd = obj8_Tris;
 			cmd.idx_offset = 0;
-			cmd.idx_count  = 6*quads;
+			cmd.idx_count  = r_obj->indices.size();
 			r_obj->lods.back().cmds.push_back(cmd);
 
 			info.previews.push_back(r_obj);
