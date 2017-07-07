@@ -56,6 +56,7 @@ struct	XObj8;
 
 struct	pol_info_t {
 	string		base_tex; //Relative path
+	bool		hasDecal;
 	float		proj_s;
 	float		proj_t;
 	bool		kill_alpha;
@@ -71,13 +72,19 @@ struct	pol_info_t {
 };
 
 struct	fac_info_t {
-	bool		ring;
-	bool		roof;
+	bool		ring;               // can be drawn as open polygon
+	bool		roof;               // shown with solid fill in map window
 	int			version;
+	float		roof_slope, roof_height;
+	float		scale_x, scale_y;
+	float		floors_min;         // min accepted floors or -1 if facade is fixed height only
+	float		floors_max;         // max accepted floors or aproximate height in meter if single height only
+	float		basem;
+
 	vector<string>	walls;
 	vector<string>	w_use;
-	
-	XObj8 *	preview;
+
+	vector<XObj8 *> previews;
 };
 
 struct	lin_info_t {

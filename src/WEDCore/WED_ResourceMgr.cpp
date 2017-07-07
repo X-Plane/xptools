@@ -33,6 +33,8 @@
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
 
+extern int gIsFeet;
+
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
 	string root(path_of_tex);
@@ -56,9 +58,6 @@ WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_libr
 WED_ResourceMgr::~WED_ResourceMgr()
 {
 	Purge();
-#if DEV
-    remove(mLibrary->CreateLocalResourcePath("forest_preview.obj").c_str());
-#endif
 }
 
 void	WED_ResourceMgr::Purge(void)
@@ -68,7 +67,8 @@ void	WED_ResourceMgr::Purge(void)
 	for(map<string, XObj8 *>::iterator i = mFor.begin(); i != mFor.end(); ++i)
 		delete i->second;
 	for(map<string, fac_info_t>::iterator i = mFac.begin(); i != mFac.end(); ++i)
-		delete i->second.preview;
+		for(vector<XObj8 *>::iterator j = i->second.previews.begin(); j != i->second.previews.end(); ++j)
+			delete *j;
 		
 	mPol.clear();
 	mLin.clear();
@@ -262,6 +262,7 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 	}
 
 	out_info.base_tex.clear();
+	out_info.hasDecal=false;
 	out_info.proj_s=1000;
 	out_info.proj_t=1000;
 	out_info.kill_alpha=false;
@@ -295,6 +296,10 @@ bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 		{
 			MFS_string(&s,&out_info.base_tex);
 			out_info.wrap=false;
+		}
+		else if (MFS_string_match(&s,"DECAL_LIB", true))
+		{
+			out_info.hasDecal=true;
 		}
 		else if (MFS_string_match(&s,"NO_ALPHA", true))
 		{
@@ -385,14 +390,19 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 	out_info.version  = v;
 	out_info.ring = true;
 	out_info.roof = false;
-	out_info.preview = NULL;
+	out_info.roof_slope = 0.0;
+	out_info.roof_height = 0.0;
+	out_info.scale_x = 20.0;
+	out_info.scale_y = 20.0;
+	out_info.floors_min = 1.0;
+	out_info.floors_max = 9999.0;
+	out_info.previews.clear();
 
 	vector <wall_map_t> wall;
 	
-	string		wall_tex;
-	string 		roof_tex;
-	float 		roof_scale[2]  = { 10.0, 10.0 };
-	float 		tex_size[2] = { 1.0, 1.0 };
+	string		texture;
+	float 		roof_uv[4]  = { 0.0, 0.0, 1.0, 1.0 };
+	float 		tex_size_x = 1024.0, tex_size_y = 1024.0;
 
 	bool roof_section = false;
 	 
@@ -406,38 +416,62 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 		{
 			roof_section = true;
 			out_info.roof = true;
-		}
-		else if (MFS_string_match(&s,"SHADER_ROOF", false))
-		{
-			roof_section = true;
-			out_info.roof = true;
+//			roof_uv[2] = MFS_double(&s);
+//			roof_uv[3] = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"ROOF_SCALE", false))
 		{
 			out_info.roof = true;
-			roof_scale[0] = MFS_double(&s);
-			roof_scale[1] = MFS_double(&s);
+			roof_uv[0] = MFS_double(&s)/tex_size_x;
+			roof_uv[1] = MFS_double(&s)/tex_size_y;
+			MFS_double(&s);
+			MFS_double(&s);
+			roof_uv[2] = MFS_double(&s)/tex_size_x;
+			roof_uv[3] = MFS_double(&s)/tex_size_y;
 		}
-		// ROOF_HEIGHT
+		else if (MFS_string_match(&s,"FLOORS_MIN", false))
+		{
+			out_info.floors_min = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"FLOORS_MAX", false))
+		{
+			out_info.floors_max = MFS_double(&s);
+		}
 		else if (MFS_string_match(&s,"ROOF_HEIGHT", false))
 		{
 			out_info.roof = true;
+			out_info.roof_height = MFS_double(&s);
 		}
-		// WALL min max min max name
+		else if (MFS_string_match(&s,"ROOF_SLOPE", false))
+		{
+			out_info.roof = true;
+			out_info.roof_slope = MFS_double(&s);
+		}
 		else if (MFS_string_match(&s,"WALL",false))
 		{
-			roof_section = false;
-			MFS_double(&s);
-			MFS_double(&s);
-			MFS_double(&s);
-			MFS_double(&s);
 			string buf;
-			MFS_string(&s,&buf);
-			if (buf.empty()) { char c[8]; sprintf(c,"#%i", (int) out_info.walls.size()); buf += c; } // make sure all wall types have some readable name
-			out_info.walls.push_back(buf);
-			
 			struct wall_map_t z;
+			
+			roof_section = false;
+			z.min_w = MFS_double(&s);
+			z.max_w = MFS_double(&s);
+			MFS_double(&s);
+			MFS_double(&s);
+			MFS_string(&s,&buf);
+			
 			wall.push_back(z);
+
+			char c[100];
+			if (buf.empty())                 // make sure all wall types have some readable name
+			{   
+				sprintf(c,"#%i", (int) out_info.walls.size()); 
+				buf = c;
+			}
+			out_info.walls.push_back(buf);
+
+			sprintf(c, "w=%.0f%c to %.0f%c", z.min_w / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm', z.max_w  / (gIsFeet ? 0.3048 : 1.0 ), gIsFeet ? '\'' : 'm') ;
+			buf = c;
+			out_info.w_use.push_back(buf);
 		} 
 		else if (MFS_string_match(&s,"SHADER_WALL", false))
 		{
@@ -449,65 +483,71 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 		}
 		else if (MFS_string_match(&s,"TEXTURE", false))
 		{
-			if (roof_section)
-				MFS_string(&s,&roof_tex);
-			else
-				MFS_string(&s,&wall_tex);
-			
+			MFS_string(&s,&texture);
 		}
 		else if (MFS_string_match(&s,"SCALE", false))
 		{
-			wall.back().scale_x = MFS_double(&s);
-			wall.back().scale_y = MFS_double(&s);
+			out_info.scale_x = MFS_double(&s);
+			out_info.scale_y = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"TEX_SIZE",false))
 		{
-			tex_size[0] = MFS_double(&s);
-			tex_size[1] = MFS_double(&s);
+			tex_size_x = MFS_double(&s);
+			tex_size_y = MFS_double(&s);
 		} 
 		else if (MFS_string_match(&s,"BOTTOM",false))
 		{
-			wall.back().vert[0] = MFS_double(&s);
-			wall.back().vert[1] = MFS_double(&s);
+			float x = MFS_double(&s)/tex_size_y;
+			if(wall.back().vert[1] == 0.0)
+				wall.back().vert[0] = x;
+			wall.back().vert[1] = MFS_double(&s)/tex_size_y;
+		} 
+		else if (MFS_string_match(&s,"MIDDLE",false))
+		{
+			float x = MFS_double(&s)/tex_size_y;
+			wall.back().vert[2] = MFS_double(&s)/tex_size_y;
+			if(wall.back().vert[1] == 0.0)
+			{
+printf("%s no bot but mid\n",p.c_str());
+				wall.back().vert[0] = x;
+				wall.back().vert[1] = wall.back().vert[2];
+			}
 		} 
 		else if (MFS_string_match(&s,"TOP",false))
 		{
 			MFS_double(&s);
-			wall.back().vert[3]  = MFS_double(&s);
+			wall.back().vert[3]  = MFS_double(&s)/tex_size_y;
 		} 
 		else if (MFS_string_match(&s,"LEFT",false))
 		{
-			wall.back().hori[0] = MFS_double(&s);
-			wall.back().hori[1] = MFS_double(&s);
-			wall.back().hori[2] = wall.back().hori[1];
-			wall.back().hori[3] = wall.back().hori[1];
+			float x = MFS_double(&s)/tex_size_x;
+			if(wall.back().hori[1] == 0.0)
+				wall.back().hori[0] = x;
+			wall.back().hori[1] = MFS_double(&s)/tex_size_x;
 		} 
 		else if (MFS_string_match(&s,"CENTER",false))
 		{
-			if (wall.back().hori[1] > 0.001)
-				MFS_double(&s);
-			else
+			float x = MFS_double(&s)/tex_size_x;
+			if(wall.back().hori[1] == 0.0)
 			{
-				wall.back().hori[0] = MFS_double(&s);
-				wall.back().hori[1] = wall.back().hori[0];
+printf("%s no left but center\n",p.c_str());
+				wall.back().hori[1] = x;
+				wall.back().hori[0] = x;
 			}
-			wall.back().hori[2] = MFS_double(&s);
-			wall.back().hori[3] = wall.back().hori[2];
+			wall.back().hori[2] = MFS_double(&s)/tex_size_x;
 		} 
 		else if (MFS_string_match(&s,"RIGHT",false))
 		{
 			MFS_double(&s);
-			wall.back().hori[3] = MFS_double(&s);
+			wall.back().hori[3] = MFS_double(&s)/tex_size_x;
 		} 
 
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(fac);
 
-	process_texture_path(p, wall_tex);
-	process_texture_path(p, roof_tex);
-
-	WED_MakeFacadePreview(out_info, wall, wall_tex, tex_size, roof_tex, roof_scale);
+    process_texture_path(p,texture);
+	WED_MakeFacadePreview(out_info, wall, texture, roof_uv);
 
 	mFac[path] = out_info;
 	return true;

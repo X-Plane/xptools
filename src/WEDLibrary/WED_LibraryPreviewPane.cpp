@@ -157,10 +157,10 @@ void		WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	mPsi = fltwrap(mPsi,-180-45,180-45);    // adjusted for proper annotations in WED_LibraryPreviewPane::Draw
 	Refresh();
 }
+
 void		WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)
 {
 }
-
 
 void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
@@ -168,10 +168,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 	GetBounds(b);
 
 	XObj8 * o = NULL;
+	vector<XObj8 *> o_vec;
+	
 	float dx = b[2] - b[0];
 	float dy = b[3] - b[1];
 	float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
 	float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+	
 	#if AIRPORT_ROUTING
 	agp_t agp;
 	#endif
@@ -279,7 +282,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			if(!o)
 			{
 				if (mResMgr->GetFac(mRes,fac))
-					o = fac.preview;
+				{
+					o = fac.previews[0];
+					o_vec = fac.previews;
+				}
 				else
 					break;
 			}
@@ -306,11 +312,23 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				glRotatef(mPsi,0,1,0);
 				g->EnableDepth(true,true);
 				glClear(GL_DEPTH_BUFFER_BIT);
-				draw_obj_at_xyz(mTexMgr, o, 
-									-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
-									-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
-									-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
-					0, g);
+
+				if (o_vec.size() < 1) o_vec.push_back(o);
+//				for (vector<XObj8 *>::iterator i = o_vec.begin(); i != o_vec.end(); ++i)
+					draw_obj_at_xyz(mTexMgr, o_vec[0],
+						-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
+						-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
+						-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
+						0, g);
+						
+				if (o_vec.size() > 1)
+					draw_obj_at_xyz(mTexMgr, o_vec[1],
+						-(o->xyz_max[0]+o->xyz_min[0])*0.5f,
+						-(o->xyz_max[1]+o->xyz_min[1])*0.5f,
+						-(o->xyz_max[2]+o->xyz_min[2])*0.5f,
+						0, g);
+
+					
 				glMatrixMode(GL_PROJECTION);
 				glPopMatrix();
 				glMatrixMode(GL_MODELVIEW);
@@ -392,46 +410,58 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		}
 		
 		// plot some additional information about the previewed object
-		char buf[64] = "";
+		char buf1[100] = "", buf2[100] = "";
 		switch(mType)
 		{
 			case res_Facade:
-				if (fac.preview && fac.walls.size())
+				if (fac.previews.size() && fac.walls.size())
 				{
 					int side = (135-mPsi)/90.0;
 					if (side >= fac.walls.size()) side=0;
-					sprintf(buf,"Viewing Wall \'%s\' out of %i available", fac.walls[side].c_str(), (int) fac.walls.size());
+					sprintf(buf1,"Viewing Wall \'%s\' intended for %s", fac.walls[side].c_str(), fac.w_use[side].c_str());
+					
+					if (fac.floors_min < 0.0) 
+						sprintf(buf2,"Type %d with %d walls of fixed height %.1f%c", fac.version < 900 ? 1 : 2, (int) fac.walls.size(), fac.floors_max / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+					else
+						sprintf(buf2,"Type %d with %d walls, accepts h=%.1f to %.1f floors", fac.version < 900 ? 1 : 2, (int) fac.walls.size(), fac.floors_min, fac.floors_max);
 				}
 				else
-					sprintf(buf,"No preview available (yet).");
+					sprintf(buf2,"No preview for this facde type available, yet");
 				break;
 			case res_Polygon:
+				if (pol.hasDecal)
+				{
+					sprintf(buf1,"Has decal fine texture (not shown here)");
+				}
 				if (pol.mSubBoxes.size())
 				{
-					sprintf(buf,"Select desired part of texture by clicking on it.");
+					sprintf(buf2,"Select desired part of texture by clicking on it");
 				}
 				break;
 			case res_Line:
 				if (lin.s1.size() && lin.s2.size())
 				{ 
 //					float w = (lin.s2[0]-lin.s1[0])/lin.proj_s;
-					sprintf(buf,"Aproximate width %.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+					sprintf(buf2,"Aproximate width %.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				}
 				break;
-			case res_Forest:
 			case res_Object:
+			case res_Forest:
 				if (o)
-				{ 
-					if (gIsFeet)
-						sprintf(buf,"Overall height %.0f'",(o->xyz_max[1]-o->xyz_min[1]) / 0.3048 );
-					else
-						sprintf(buf,"Overall height %.1fm",(o->xyz_max[1]-o->xyz_min[1]));
+				{
+					int n;
+					n = sprintf(buf2,"Height above ground %.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+						
+					if (o->xyz_min[1] < -0.01)
+						sprintf(buf2+n,", extends below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 				}
 				break;
 		}
 		float text_color[4] = { 1,1,1,1 };
-		if (buf[0])
-			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 15, buf);
+		if (buf1[0])
+			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 25, buf1);
+		if (buf2[0])
+			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 10, buf2);
 		
 	}
 }
