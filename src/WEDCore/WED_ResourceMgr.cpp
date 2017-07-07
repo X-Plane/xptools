@@ -390,13 +390,16 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 	out_info.version  = v;
 	out_info.ring = true;
 	out_info.roof = false;
+	out_info.floors_min = 1.0;
+	out_info.floors_max = 9999.0;
+	out_info.previews.clear();
+
+    // these dont need to be public	
 	out_info.roof_slope = 0.0;
 	out_info.roof_height = 0.0;
 	out_info.scale_x = 20.0;
 	out_info.scale_y = 20.0;
-	out_info.floors_min = 1.0;
-	out_info.floors_max = 9999.0;
-	out_info.previews.clear();
+
 
 	vector <wall_map_t> wall;
 	

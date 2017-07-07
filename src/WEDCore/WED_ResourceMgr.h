@@ -75,11 +75,12 @@ struct	fac_info_t {
 	bool		ring;               // can be drawn as open polygon
 	bool		roof;               // shown with solid fill in map window
 	int			version;
-	float		roof_slope, roof_height;
-	float		scale_x, scale_y;
 	float		floors_min;         // min accepted floors or -1 if facade is fixed height only
 	float		floors_max;         // max accepted floors or aproximate height in meter if single height only
 	float		basem;
+    // these dont need to be public	
+	float		roof_slope, roof_height;
+	float		scale_x, scale_y;
 
 	vector<string>	walls;
 	vector<string>	w_use;

@@ -68,8 +68,8 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 			i->hori[1] = i->hori[0];
 	printf("no center h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
 		}
-		else
-			ideal_len +=  (i->hori[2]-i->hori[1]) * info.scale_x;
+//		else
+//			ideal_len +=  (i->hori[2]-i->hori[1]) * info.scale_x;
 		
 		if (i->hori[3] == 0.0)
 		{
@@ -80,6 +80,8 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 			ideal_len +=  (i->hori[3]-i->hori[1]) * info.scale_y;
 		
 	printf("ideal_len %3.1f\n",ideal_len);
+	
+			ideal_len -=0.1;
 	
         want_len = max(want_len,ideal_len);
 
@@ -92,7 +94,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 	else
 	{
 		info.floors_min = -1.0;
-		info.floors_max =  (walls[0].vert[2]-walls[0].vert[0]) * info.scale_x;
+		info.floors_max =  (walls[0].vert[2]-walls[0].vert[0]) * info.scale_y;
 	}
 	
 	// populate all wall sections, if .fac does not set them excplicitly
@@ -236,6 +238,9 @@ printf("want %5.1f left %5.1f sects %d\n",want_len, len_left, sects);
 
 			info.previews.push_back(r_obj);
 		}
+		return true;
 	}
+	else
+		return false; // todo: deal with type 2 facades here
 }
 

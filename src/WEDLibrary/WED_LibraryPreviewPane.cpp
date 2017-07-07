@@ -283,7 +283,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			{
 				if (mResMgr->GetFac(mRes,fac))
 				{
-					o = fac.previews[0];
+					if (fac.previews.size()) o = fac.previews[0];
 					o_vec = fac.previews;
 				}
 				else
