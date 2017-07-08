@@ -29,7 +29,7 @@
 #include "WED_FacadePreview.h"
 
 bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, 
-	string wall_tex, float roof_uv[4])
+	string wall_tex, float roof_uv[4], string roof_tex)
 {
 	float want_len=3;               // minimum size to draw as initial guess
 	bool has_middles = false;       // if there are no middle sections in the walls, the facade will allow only one floor, i.e. is fixed height
@@ -60,6 +60,8 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 			i->vert[3] = i->vert[2];
 	printf("no top v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
 		}
+		else
+			has_middles=true;
 
 		if (i->hori[2] == 0.0)
 		{
@@ -183,7 +185,7 @@ printf("want %5.1f left %5.1f sects %d left %5.1f\n",want_len, len_left, sects, 
 		if (info.roof)
 		{ 
 			XObj8 *r_obj = new XObj8;
-			r_obj->texture = wall_tex;
+			r_obj->texture = roof_tex;
 			
 			quads=1;
 			pt[1] = obj->xyz_max[1]; // height

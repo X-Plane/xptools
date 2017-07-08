@@ -420,10 +420,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					if (side >= fac.walls.size()) side=0;
 					sprintf(buf1,"Viewing Wall \'%s\' intended for %s", fac.walls[side].c_str(), fac.w_use[side].c_str());
 					
+					int n_wall = fac.walls.size();
+					int j = sprintf(buf2,"Type %d offering %d wall style%s ", fac.version < 900 ? 1 : 2, n_wall, n_wall > 1 ? "s" : "");
+
 					if (fac.floors_min < 0.0) 
-						sprintf(buf2,"Type %d with %d walls of fixed height %.1f%c", fac.version < 900 ? 1 : 2, (int) fac.walls.size(), fac.floors_max / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+						sprintf(buf2+j,"at fixed height %.1f%c", fac.floors_max / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					else
-						sprintf(buf2,"Type %d with %d walls, accepts h=%.1f to %.1f floors", fac.version < 900 ? 1 : 2, (int) fac.walls.size(), fac.floors_min, fac.floors_max);
+						sprintf(buf2+j,", accepts h=%.1f to %.1f floors", fac.floors_min, fac.floors_max);
 				}
 				else
 					sprintf(buf2,"No preview for this facde type available, yet");
@@ -441,7 +444,6 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Line:
 				if (lin.s1.size() && lin.s2.size())
 				{ 
-//					float w = (lin.s2[0]-lin.s1[0])/lin.proj_s;
 					sprintf(buf2,"Aproximate width %.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				}
 				break;
@@ -449,10 +451,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Forest:
 				if (o)
 				{
-					int n;
-					n = sprintf(buf2,"Height above ground %.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
-						
-					if (o->xyz_min[1] < -0.01)
+					int n = sprintf(buf2,"Height above ground %.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					if (o->xyz_min[1] < -0.05)
 						sprintf(buf2+n,", extends below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 				}
 				break;

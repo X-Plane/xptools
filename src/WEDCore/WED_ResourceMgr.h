@@ -78,8 +78,8 @@ struct	fac_info_t {
 	float		floors_min;         // min accepted floors or -1 if facade is fixed height only
 	float		floors_max;         // max accepted floors or aproximate height in meter if single height only
 	float		basem;
-    // these dont need to be public	
-	float		roof_slope, roof_height;
+	
+	float		roof_height, roof_slope;
 	float		scale_x, scale_y;
 
 	vector<string>	walls;

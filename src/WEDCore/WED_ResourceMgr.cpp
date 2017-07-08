@@ -403,7 +403,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 
 	vector <wall_map_t> wall;
 	
-	string		texture;
+	string		wall_tex, roof_tex;
 	float 		roof_uv[4]  = { 0.0, 0.0, 1.0, 1.0 };
 	float 		tex_size_x = 1024.0, tex_size_y = 1024.0;
 
@@ -450,6 +450,14 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 			out_info.roof = true;
 			out_info.roof_slope = MFS_double(&s);
 		}
+		else if (MFS_string_match(&s,"SHADER_ROOF", false))
+		{
+			roof_section = true;
+		}
+		else if (MFS_string_match(&s,"SHADER_WALL", false))
+		{
+			roof_section = false;
+		}
 		else if (MFS_string_match(&s,"WALL",false))
 		{
 			string buf;
@@ -476,17 +484,16 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 			buf = c;
 			out_info.w_use.push_back(buf);
 		} 
-		else if (MFS_string_match(&s,"SHADER_WALL", false))
-		{
-			roof_section = false;
-		}
 		else if(MFS_string_match(&s,"FLOOR",false))
 		{
 			out_info.walls.clear();
 		}
 		else if (MFS_string_match(&s,"TEXTURE", false))
 		{
-			MFS_string(&s,&texture);
+			if (roof_section)
+				MFS_string(&s,&roof_tex);
+			else
+				MFS_string(&s,&wall_tex);
 		}
 		else if (MFS_string_match(&s,"SCALE", false))
 		{
@@ -552,8 +559,9 @@ printf("%s no left but center\n",p.c_str());
 	}
 	MemFile_Close(fac);
 
-    process_texture_path(p,texture);
-	WED_MakeFacadePreview(out_info, wall, texture, roof_uv);
+    process_texture_path(p,wall_tex);
+    process_texture_path(p,roof_tex);
+	WED_MakeFacadePreview(out_info, wall, wall_tex, roof_uv, roof_tex);
 
 	mFac[path] = out_info;
 	return true;

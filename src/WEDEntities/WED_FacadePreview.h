@@ -37,6 +37,7 @@ struct wall_map_t {
 	float	min_w, max_w;   // range of widths supported by this wall definition
 };
 
-bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, string wall_tex, float roof_uv[4]);
+bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, string wall_tex, 
+					float roof_uv[4], string roof_tex);
 
 #endif
