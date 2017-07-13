@@ -315,7 +315,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&outApts.back().has_atc_twr,
 				&outApts.back().default_buildings,
 				&outApts.back().icao,
-				&outApts.back().name) != 6)
+				&outApts.back().name) != 6)							// Name field is mandatory for aiprort
 				ok = "Illegal line (airport, seaport or heliport)";
 			outApts.back().kind_code = rec_code;
 			outApts.back().beacon.color_code = apt_beacon_none;
@@ -617,6 +617,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&p1y,
 				&p1x) != 3) ok = "Illegal straight end.";
 				open_poly->back().pt = POINT2(p1x, p1y);
+printf("read open_poly %i elements\n",int(open_poly->size()));
 			break;
 		case apt_end_crv:
 			if (vers < 850) ok = "Error: new end curves allowed before 850";
@@ -1015,7 +1016,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 											&lon,
 											&heading,
 											&truck_types_for_dest,
-											&name) != 6)
+											&name) < 5)
 				{ 
 					ok = "Error: Illegal truck destination";
 				}
@@ -1059,7 +1060,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				if (TextScanner_FormatScan(s, "iiT|",
 					&outApts.back().atc.back().atc_type,
 					&outApts.back().atc.back().freq,
-					&outApts.back().atc.back().name) != 3)	// ATC name can be blank in v9...sketchy but apparently true.
+					&outApts.back().atc.back().name) < 2)	// ATC name can be blank in v9...sketchy but apparently true.
 				ok = "Illegal ATC frequency";
 			} else
 				ok = "Illegal unknown record";
@@ -1359,19 +1360,24 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				}
 			}
 
-			bool wrote_taxi_route_net_name = false;
-			if(!apt->taxi_route.edges.empty())
+			//If we have airplane taxi edges or service roads edges
+			if (!apt->taxi_route.edges.empty() || !apt->taxi_route.service_roads.empty())
 			{
-				if (wrote_taxi_route_net_name == false)
-				{
-					fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
-					wrote_taxi_route_net_name = true;
-				}
+				//write taxi route network name
+				fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
 
-				for(vector<AptRouteNode_t>::const_iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+				//write all nodes in network
+				for (vector<AptRouteNode_t>::const_iterator n = apt->taxi_route.nodes.begin();
+					n != apt->taxi_route.nodes.end();
+					++n)
 				{
-					fprintf(fi,"%2d % 012.8lf % 013.8lf both %d %s" CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id, n->name.c_str());
+					fprintf(fi, "%2d % 012.8lf % 013.8lf both %d %s" CRLF, apt_taxi_node, n->location.y(), n->location.x(), n->id, n->name.c_str());
 				}
+			}
+
+			//If we have any, write all edges
+			if (!apt->taxi_route.edges.empty())
+			{
 				for(vector<AptRouteEdge_t>::const_iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
 				{
 					fprintf(fi,"%2d %d %d %s ", apt_taxi_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
@@ -1412,14 +1418,9 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				}
 			}
 			
+			//If we have any, write all service roads
 			if (has_atc3)
 			{
-				if (wrote_taxi_route_net_name == false)
-				{
-					fprintf(fi, "%2d %s" CRLF, apt_taxi_header, apt->taxi_route.name.c_str());
-					wrote_taxi_route_net_name = true;
-				}
-
 				for (vector<AptServiceRoadEdge_t>::const_iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
 				{
 					fprintf(fi, "%2d %d %d %s ", apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
@@ -1441,7 +1442,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 						//Don't export car count unless our type is baggage_train
 						int car_count = trk->parking_type == apt_truck_baggage_train ? trk->train_car_count : 0;
 
-						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.1f %s %d %s" CRLF,
+						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.2f %s %d %s" CRLF,
 							apt_truck_parking, trk->location.y_, trk->location.x_, trk->heading,
 							truck_type_strings[trk->parking_type], car_count, trk->name.c_str());
 					}
@@ -1451,7 +1452,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				{
 					for (AptTruckDestinationVector::const_iterator dst = apt->truck_destinations.begin(); dst != apt->truck_destinations.end(); ++dst)
 					{
-						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.1f ",
+						fprintf(fi, "%2d % 3.8lf % 3.8lf % 4.2f ",
 							apt_truck_destination, dst->location.y_, dst->location.x_, dst->heading);
 
 						for (set<int>::const_iterator tt = dst->truck_types.begin(); tt != dst->truck_types.end(); ++tt)

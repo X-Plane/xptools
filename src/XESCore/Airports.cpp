@@ -634,8 +634,14 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 						gDem[dem_Wizard1+k].overlay(t, x1,y1);
 						
 					}
-#endif					
-					GaussianBlurDEM(airport_area,3.0);
+#endif				
+					#if HD_MESH
+						GaussianBlurDEM(airport_area,4.0);
+					#elif UHD_MESH
+						GaussianBlurDEM(airport_area,12.0);
+					#else
+						GaussianBlurDEM(airport_area,3.0);
+					#endif
 					#if DEBUG_FLATTENING
 					gDem[dem_Wizard1].overlay(airport_area, x1,y1);
 					#endif

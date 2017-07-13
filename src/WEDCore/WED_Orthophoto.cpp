@@ -3,285 +3,169 @@
  *  SceneryTools
  *
  *  Created by bsupnik on 5/26/09.
- *  Copyright 2009 __MyCompanyName__. All rights reserved.
+ *  Copyright 2009 Laminar Research. All rights reserved.
  *
  */
 
 #include "WED_Orthophoto.h"
 #include "IGIS.h"
-#include "DEMTables.h"
 #include "WED_ToolUtils.h"
-#include "WED_OverlayImage.h"
 #include "WED_Ring.h"
+#include "WED_TextureNode.h"
 #include "WED_TextureBezierNode.h"
 #include "WED_DrapedOrthophoto.h"
 #include "WED_ResourceMgr.h"
 #include "PlatformUtils.h"
 #include "BitmapUtils.h"
-#include "WED_Thing.h"
-#include "WED_PropertyHelper.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_UIDefs.h"
 #include "ILibrarian.h"
 #include "GISUtils.h"
 #include "DEMIO.h"
-#if 0
 
-#define USE_CGAL_POLYGONS 1
-#include "WED_GISUtils.h"
-
-#include "PlatformUtils.h"
-#include "WED_DrawUtils.h"
-#include "WED_ObjPlacement.h"
-
-static void	cgal2ben(const Polygon_2& cgal, Polygon2& ben)
+WED_Ring * WED_RingfromImage(char * path, WED_Archive * arch, WED_MapZoomerNew * zoomer, bool use_bezier)
 {
-	ben.resize(cgal.size());
-	for(int n = 0; n < cgal.size(); ++n)
-		ben[n] = cgal2ben(cgal.vertex(n));
-}
-
-static void	cgal2ben(const Polygon_with_holes_2& cgal, vector<Polygon2>& ben)
-{
-	ben.push_back(Polygon2());
-	if(!cgal.is_unbounded())	cgal2ben(cgal.outer_boundary(),ben.back());
-	for(Polygon_with_holes_2::Hole_const_iterator h = cgal.holes_begin(); h != cgal.holes_end(); ++h)
+	Point2	coords[4];
+	double c[8];
+		
+	ImageInfo	inf;
+	int has_geo = 0;
+	int align = dem_want_Area;
+		
+	int res = MakeSupportedType(path, &inf);
+	if(res != 0)
 	{
-		ben.push_back(Polygon2());
-		cgal2ben(*h,ben.back());
+		DoUserAlert("Unable to open image file.");
+		return NULL;
 	}
-}
 
-static void add_pol_ring(WED_OverlayImage * image, const Polygon2& loc, const Polygon2& uv, WED_Thing * parent, bool is_outer)
-{
-	WED_Ring * r = WED_Ring::CreateTyped(parent->GetArchive());
-	r->SetParent(parent, parent->CountChildren());
-	r->SetName("ring");
-	for(int n = 0; n < loc.size(); ++n)
+	switch(GetSupportedType(path))
 	{
-		WED_TextureNode * tnode = WED_TextureNode::CreateTyped(r->GetArchive());
-		tnode->SetParent(r, n);
-		tnode->SetName("node");
-		tnode->SetLocation(gis_Geo,loc[n]);
-		tnode->SetLocation(gis_UV,uv[n]);
-	}	
-}
-
-static void make_one_pol(WED_OverlayImage * image, const vector<Polygon2>& area, WED_Thing * wrl, WED_ResourceMgr * rmgr)
-{
-	vector<Polygon2>	uv_poly;	
-	UVMap_t	uv_map;
-	
-	WED_MakeUVMap((IGISQuad *) image, uv_map);
-	WED_MapPolygonWithHoles(uv_map, area, uv_poly);
-	
-	string img, res;
-	image->GetImage(img);
-	res = img;
-	string::size_type pp = res.find_last_of(".");
-	if(pp != res.npos) res.erase(pp);
-	res += ".pol";
-
-	pol_info_t	info;
-	if(!rmgr->GetPol(res,info))
-	{
-		info.base_tex = img;
-		pp = info.base_tex.find_last_of("/:\\");
-		if(pp != info.base_tex.npos)
-			info.base_tex.erase(0,pp+1);
-		info.proj_s = info.proj_t = 25.0;
-		info.kill_alpha = false;
-		info.wrap = false;
-		rmgr->MakePol(res,info);
-//		#if !DEV
-//			#error add load center
-//		#endif
-	}
-	
-	WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
-	dpol->SetParent(wrl,wrl->CountChildren());
-	dpol->SetName(img);
-	dpol->SetResource(res);
-
-	DebugAssert(!area.empty() && !area[0].empty());
-
-	for(vector<Polygon2>::const_iterator a = area.begin(), b = uv_poly.begin(); a != area.end(); ++a, ++b)
-		add_pol_ring(image,*a,*b, dpol, false);
-}
-
-static int cut_for_image(WED_Thing * ent, const Polygon_set_2& area, WED_Thing * wrl, WED_ResourceMgr * rmgr)
-{
-	int c = 0;
-	WED_OverlayImage * ref_image = SAFE_CAST(WED_OverlayImage,ent);
-	if(ref_image)
-	{
-		Polygon_set_2	clip_ref_image;	
-		WED_PolygonSetForEntity(ref_image,clip_ref_image);
-		
-		Polygon_set_2	real_area(area);
-		
-		real_area.intersection(clip_ref_image);
-
-		vector<Polygon_with_holes_2>	draped_orthos;
-		real_area.polygons_with_holes(back_insert_iterator<vector<Polygon_with_holes_2> >(draped_orthos));
-		
-		for(vector<Polygon_with_holes_2>::iterator d = draped_orthos.begin(); d != draped_orthos.end(); ++d)
+	#if USE_GEOJPEG2K
+	case WED_JP2K:
+		if(FetchTIFFCornersWithJP2K(path,c,align))
 		{
-			vector<Polygon2>	pwh;
-			cgal2ben(*d, pwh);
-		
-			make_one_pol(ref_image, pwh, wrl, rmgr);		
-			++c;
-		}		
+			coords[0] = Point2(c[0],c[1]);
+			coords[1] = Point2(c[2],c[3]);
+			coords[3] = Point2(c[4],c[5]);
+			coords[2] = Point2(c[6],c[7]);
+			has_geo = 1;
+		}
+		break;
+	#endif
+	case WED_TIF:
+		if (FetchTIFFCorners(path, c, align))
+		{
+			if (c[1] < c[5])
+			{
+				// SW, SE, NW, NE from tiff, but we are making a CCW wound polygon, i.e. SW SE NE NW
+				coords[0] = Point2(c[0],c[1]);
+				coords[1] = Point2(c[2],c[3]);
+				coords[3] = Point2(c[4],c[5]);
+				coords[2] = Point2(c[6],c[7]);
+			}
+			else
+			{
+				// jpg compressed files have the origin at the bottom, not the top. So their encoding is
+				// NW, NE, SW, SE, but we are making a CCW wound polygon, i.e. need it to be SW SE NE NW
+				coords[0] = Point2(c[4],c[5]);
+				coords[1] = Point2(c[6],c[7]);
+				coords[3] = Point2(c[0],c[1]);
+				coords[2] = Point2(c[2],c[3]);
+			}
+			has_geo = 1;
+		}
+		break;
 	}
-	for(int n = 0; n < ent->CountChildren(); ++n)
-		c += cut_for_image(ent->GetNthChild(n), area,wrl, rmgr);
-	return c;
+
+	if (!has_geo)
+	{
+		double	nn,ss,ee,ww;
+		zoomer->GetPixelBounds(ww,ss,ee,nn);
+
+		Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
+		
+		double grow_x = 0.5*(ee-ww)/((double) inf.width);
+		double grow_y = 0.5*(nn-ss)/((double) inf.height);
+
+		double pix_w, pix_h;
+
+		if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
+		else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
+
+		coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
+		coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
+		coords[2] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
+		coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
+	}
+	DestroyBitmap(&inf);
+
+	WED_Ring * rng = WED_Ring::CreateTyped(arch);
+	rng->SetName("Image Boundary");
+	for (int i=0; i<4; ++i)
+	{
+		WED_GISPoint * tbn;
+		char s[12]; 
+		if (use_bezier)
+			tbn = WED_TextureBezierNode::CreateTyped(arch);
+		else
+			tbn = WED_TextureNode::CreateTyped(arch);
+		tbn->SetParent(rng,i);
+		sprintf(s,"Corner %d",i+1);
+		tbn->SetName(s);
+		tbn->SetLocation(gis_Geo,coords[i]);
+		tbn->SetLocation(gis_UV,Point2(i==1||i==2,i>1));     // Redrape() will also do that
+	}
+	return rng;
 }
 
-#endif
-
-void	WED_MakeOrthos(IResolver * in_Resolver, WED_MapZoomerNew * zoomer)
+void	WED_MakeOrthos(IResolver * inResolver, WED_MapZoomerNew * zoomer)
 {		
-	//From GroupCommands-WED_DoMakeNewOverlay(...)
-
 	char * path = GetMultiFilePathFromUser("Please pick an image file", "Open", FILE_DIALOG_PICK_IMAGE_OVERLAY);
 	if(path)
 	{
+		WED_Thing *    wrl = WED_GetWorld(inResolver);
+		WED_Archive * arch = wrl->GetArchive();
+		ISelection *   sel = WED_GetSelect(inResolver);
+		ILibrarian *   lib = WED_GetLibrarian(inResolver);
 		char * free_me = path;
-		
-		WED_Thing * wrl = WED_GetWorld(in_Resolver);
-		ISelection * sel = WED_GetSelect(in_Resolver);
 
 		wrl->StartOperation("Create Ortho Image");
 		sel->Clear();
 	
 		while(*path)
 		{
-		
-			Point2	coords[4];
-			double c[8];
-			int align = dem_want_Area;
-			
-			int has_geo = 0;
-			
-			string base_tex = path;
-			int pp = base_tex.find_last_of("/:\\");
-			if(pp != base_tex.npos)
+			string base_tex(path);
+			string::size_type pp = base_tex.find_last_of("/:\\");
+			if(pp != base_tex.npos)	
 				base_tex.erase(0,pp+1);
-			if (base_tex.find(" ") != base_tex.npos)
+			if (base_tex.find(" ") == base_tex.npos)
+			{
+				WED_Ring * rng = WED_RingfromImage(path, arch, zoomer, true);
+				if (rng)
+				{
+					WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(arch);
+					rng->SetParent(dpol,0);
+					dpol->SetParent(wrl,0);
+					sel->Select(dpol);
+
+					string img_path(path);
+					lib->ReducePath(img_path);
+					dpol->SetResource(img_path);
+					dpol->SetName(base_tex);
+				}
+			}
+			else
 			{
 				DoUserAlert("XP does not support spaces in texture names.");
-				wrl->AbortOperation();
-				free(free_me);
-				return;
 			}
-			
-			
-			ImageInfo	inf;
-			int res = MakeSupportedType(path, &inf);
-			if(res != 0)
-			{
-				DoUserAlert("Unable to open image file.");
-				wrl->AbortOperation();
-				free(free_me);
-				return;  //No good images or a broken file path
-			}
-
-			switch(GetSupportedType(path))
-			{
-			#if USE_GEOJPEG2K
-			case WED_JP2K:
-				if(FetchTIFFCornersWithJP2K(path,c,align))
-				{
-					coords[0].x_ = c[0];
-					coords[0].y_ = c[1];
-					coords[1].x_ = c[2];
-					coords[1].y_ = c[3];
-					coords[3].x_ = c[4];
-					coords[3].y_ = c[5];
-					coords[2].x_ = c[6];
-					coords[2].y_ = c[7];
-					has_geo = 1;
-				}
-				break;
-			#endif
-			case WED_TIF:
-				if (FetchTIFFCorners(path, c, align))
-				{
-					// SW, SE, NW, NE from tiff, but SW SE NE NW internally
-					coords[0].x_ = c[0];
-					coords[0].y_ = c[1];
-					coords[1].x_ = c[2];
-					coords[1].y_ = c[3];
-					coords[3].x_ = c[4];
-					coords[3].y_ = c[5];
-					coords[2].x_ = c[6];
-					coords[2].y_ = c[7];
-					has_geo = 1;
-				}
-				break;
-			}
-
-			if (!has_geo)
-			{
-
-				double	nn,ss,ee,ww;
-				zoomer->GetPixelBounds(ww,ss,ee,nn);
-
-				Point2 center((ee+ww)*0.5,(nn+ss)*0.5);
-
-				double grow_x = 0.5*(ee-ww)/((double) inf.width);
-				double grow_y = 0.5*(nn-ss)/((double) inf.height);
-
-				double pix_w, pix_h;
-
-				if (grow_x < grow_y) { pix_w = grow_x * (double) inf.width;	pix_h = grow_x * (double) inf.height; }
-				else				 { pix_w = grow_y * (double) inf.width;	pix_h = grow_y * (double) inf.height; }
-
-				coords[1] = zoomer->PixelToLL(center + Vector2( pix_w,-pix_h));
-				coords[2] = zoomer->PixelToLL(center + Vector2( pix_w,+pix_h));
-				coords[3] = zoomer->PixelToLL(center + Vector2(-pix_w,+pix_h));
-				coords[0] = zoomer->PixelToLL(center + Vector2(-pix_w,-pix_h));
-			}
-				
-			DestroyBitmap(&inf);
-
-			WED_DrapedOrthophoto * dpol = WED_DrapedOrthophoto::CreateTyped(wrl->GetArchive());
-
-			WED_Ring * rng = WED_Ring::CreateTyped(wrl->GetArchive());
-			WED_TextureBezierNode * tbn[4];     // Use Bezier, so nodes can be concerted to Bezier if users wnats too
-			for (int i=0; i<4; ++i)
-			{
-				tbn[i] = WED_TextureBezierNode::CreateTyped(wrl->GetArchive());
-				tbn[i]->SetParent(rng,i);
-				tbn[i]->SetLocation(gis_Geo,coords[i]);
-				char s[10]; sprintf(s,"Corner %d",i+1);
-				tbn[i]->SetName(s);
-				// tbn[i]->SetLocation(gis_UV,Point2(i<2,i==1||i==2));  Redrape() will do that for you
-			}
-			
-			rng->SetParent(dpol,0);
-			dpol->SetParent(wrl,0);
-			sel->Select(dpol);
-
-			string img_path(path);
-			WED_GetLibrarian(in_Resolver)->ReducePath(img_path);
-
-			dpol->SetResource(img_path);
-
-			rng->SetName("Image Boundary");
-			const char * p = path;
-			const char * n = path;
-			while(*p) { if (*p == '/' || *p == ':' || *p == '\\') n = p+1; ++p; }
-				
-			dpol->SetName(n);
-
-			path = path + strlen(path) + 1;
+			path += strlen(path) + 1;
 		}
-
-		wrl->CommitOperation();
 		
+		if(sel->GetSelectionCount() == 0)
+			wrl->AbortOperation();
+		else
+			wrl->CommitOperation();
 		free(free_me);
 	}
 }

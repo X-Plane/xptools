@@ -34,10 +34,10 @@ WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPoly
 	heading(this,"Texture Heading",SQL_Name("WED_dsf_overlay", "heading"),  XML_Name("draped_orthophoto","heading"),   0.0,5,1),
 	width(this,"Texture Width",   SQL_Name("WED_dsf_overlay", "width"),     XML_Name("draped_orthophoto","width"),     0.0,5,2),
 	length(this,"Texture Length", SQL_Name("WED_dsf_overlay", "length"),    XML_Name("draped_orthophoto","length"),    0.0,5,2),
-	top(this,"Texture Top",       SQL_Name("WED_dsf_overlay", "tex_top"),   XML_Name("draped_orthophoto","tex_top"),   1.0,5,3),
+	top(this,"Texture Top",       SQL_Name("WED_dsf_overlay", "tex_top"),   XML_Name("draped_orthophoto","tex_top"),   0.0,5,3),
 	bottom(this,"Texture Bottom", SQL_Name("WED_dsf_overlay", "tex_bottom"),XML_Name("draped_orthophoto","tex_bottom"),0.0,5,3),
 	left(this,"Texture Left",     SQL_Name("WED_dsf_overlay", "tex_left"),  XML_Name("draped_orthophoto","tex_left"),  0.0,5,3),
-	right(this,"Texture Right",   SQL_Name("WED_dsf_overlay", "tex_right"), XML_Name("draped_orthophoto","tex_right"), 1.0,5,3)
+	right(this,"Texture Right",   SQL_Name("WED_dsf_overlay", "tex_right"), XML_Name("draped_orthophoto","tex_right"), 0.0,5,3)
 {
 }
 
