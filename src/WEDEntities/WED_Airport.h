@@ -110,6 +110,7 @@ private:
 	WED_PropBoolText			has_atc;
 	WED_PropStringText			icao;
 	WED_PropBoolText			always_flatten;
+	WED_PropBoolText			drive_on_left;
 	WED_PropIntText				scenery_id;
 	
 	//A vector of meta data key,value entrys, all synthetic properties
