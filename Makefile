@@ -2,7 +2,7 @@ BE_QUIET	:= > /dev/null 2>&1
 
 # http://www.cgal.org/
 # http://gforge.inria.fr/frs/?group_id=52
-VER_CGAL	:= 4.5.2
+VER_CGAL	:= 4.10
 # http://www.freetype.org/
 # http://sourceforge.net/projects/freetype/files/
 VER_FREETYPE	:= 2.3.11
@@ -283,7 +283,7 @@ CONF_LIB3DS		+= --host=$(CROSSHOST)
 endif
 
 # libcgal
-ARCHIVE_CGAL		:= CGAL-$(VER_CGAL).tar.gz
+ARCHIVE_CGAL		:= CGAL-$(VER_CGAL).tar.xz
 
 
 # libsquish
