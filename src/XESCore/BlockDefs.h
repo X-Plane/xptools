@@ -87,14 +87,6 @@ typedef CGAL::Arrangement_2<Block_traits_2,Block_dcel>					Block_2;
 typedef CGAL::Arr_landmarks_point_location<Block_2>  Block_locator;
 
 
-inline bool operator<(const Block_2::Face_handle& lhs, const Block_2::Face_handle& rhs)			{	return &*lhs < &*rhs;	}
-inline bool operator<(const Block_2::Vertex_handle& lhs, const Block_2::Vertex_handle& rhs)		{	return &*lhs < &*rhs;	}
-inline bool operator<(const Block_2::Halfedge_handle& lhs, const Block_2::Halfedge_handle& rhs)	{	return &*lhs < &*rhs;	}
-inline bool operator<(const Block_2::Face_const_handle& lhs, const Block_2::Face_const_handle& rhs)			{	return &*lhs < &*rhs;	}
-inline bool operator<(const Block_2::Vertex_const_handle& lhs, const Block_2::Vertex_const_handle& rhs)		{	return &*lhs < &*rhs;	}
-inline bool operator<(const Block_2::Halfedge_const_handle& lhs, const Block_2::Halfedge_const_handle& rhs)	{	return &*lhs < &*rhs;	}
-
-
 struct EdgeRule_t;
 struct block_pt {
 	bool operator==(const block_pt& rhs) const { return loc == rhs.loc; }
