@@ -10,7 +10,7 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/x86_64-linux-gnu/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a

@@ -10,14 +10,12 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 
 ifdef PLAT_LINUX
 LDFLAGS		+= -static
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libdime.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/lib3ds.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libdime.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/lib3ds.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
@@ -26,7 +24,6 @@ endif #PLAT_DARWIN
 ifdef PLAT_MINGW
 LDFLAGS		+= -static
 DEFINES		+= -DDIME_NOT_DLL -DUNDER_CE -DMINGW_BUILD=1
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libdime.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/lib3ds.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
