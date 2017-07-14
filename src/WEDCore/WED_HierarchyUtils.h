@@ -21,46 +21,51 @@
 *
 */
 
-#ifndef HIERARCHYUTILS_H
-#define HIERARCHYUTILS_H
+#ifndef WED_HIERARCHYUTILS_H
+#define WED_HIERARCHYUTILS_H
 
-#include "WED_Entity.h"
 #include "WED_Persistent.h"
 #include "WED_Thing.h"
 #if LIN
 #include <limits.h>
 #endif
 
-inline bool TakeAlways(WED_Thing* v)
-{
-	return true;
-}
+//--Visibility Predicates------------------------------------------------------
+//Warning! Type not garunteed by default!
 
-inline bool IgnoreVisiblity(WED_Thing* v)
-{
-	return true;
-}
+//Always returns true, ignoring a WED_Entity's true state
+bool IgnoreVisiblity(WED_Thing* t);
 
 //Warning T must be of type WED_Entity!
-inline bool EntityNotHidden(WED_Thing* v)
-{
-	DebugAssert(v != NULL);
-	return !static_cast<WED_Entity*>(v)->GetHidden();
-}
+//Do not use if your root WED_Thing* is an airport, since it could have WED_ATCFlows which
+//are NOT WED_Entitys!
+bool EntityNotHidden(WED_Thing* t);
 
-//Default CollectRecursive, uses WED_Entity's GetHidden and Collects Everything
+//For cases where T could not have WED_Entity as a parent.
+//Uses dynamic_cast to first test if the thing can be actually checked for its visibilty
+//If it is not secretly a WED_Entity, the function returns true to follow WED's if it "exists" its visible.
+//An ATC Flow should always "exist", therefore, it is true
+bool ThingNotHidden(WED_Thing* t);
+//---------------------------------------------------------------------------//
+
+//--Take Predicates------------------------------------------------------------
+bool TakeAlways(WED_Thing* v);
+//---------------------------------------------------------------------------//
+
+//Default CollectRecursive, uses ThingNotHidden and TakeAlways, INT_MAX levels checked
 template <typename OutputIterator>
 void CollectRecursive(WED_Thing * thing, OutputIterator oi, sClass_t sClass="")
 {
 	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(thing, oi, EntityNotHidden, TakeAlways, sClass, INT_MAX);
+	CollectRecursive(thing, oi, ThingNotHidden, TakeAlways, sClass, INT_MAX);
 }
 
+//Default CollectRecursive, uses ThingNotHidden and TakeAlways, 1 levels checked
 template <typename OutputIterator>
 void CollectRecursiveNoNesting(WED_Thing * thing, OutputIterator oi, sClass_t sClass = "")
 {
 	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(thing, oi, EntityNotHidden, TakeAlways, sClass, 1);
+	CollectRecursive(thing, oi, ThingNotHidden, TakeAlways, sClass, 1);
 }
 
 //Preforms a depth first traversal of the WED Hierarchy, first checking if its the right type, then its visibility, then other Takeion critera

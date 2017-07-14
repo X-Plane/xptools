@@ -312,17 +312,26 @@ void WED_Sign_Parser::append_parser_out_info(parser_glyph_t glyph)
 	{
 		// For the first char in a side, do the start-with-pipe check.
 		if(glyph == glyph_separator)
-			append_error(sem_pipe_begins_sign);
+		{
+			return; // silently drop unwanted separator at very front of sign
+// 			append_error(sem_pipe_begins_sign);
+		}
 	}
 	else
 	{
 		// For all others do adjaceny checks.
 		if(side.back().glyph_name == glyph_separator && glyph == glyph_separator)
-			append_error(sem_pipe_double_juxed);
+		{
+			return; // silently drop unwanted separator next to existing separator
+//			append_error(sem_pipe_double_juxed);
+		}
 		
 		if(side.back().glyph_name == glyph_separator || glyph == glyph_separator)
 		if(side.back().glyph_color != glyphColor)
+		{
+			return; // silently drop unwanted separator next to a color change in the sign
 			append_error(sem_pipe_color_mismatch);
+		}
 	}
 	
 	side.push_back(parser_glyph_info(glyphColor, glyph));
@@ -531,15 +540,19 @@ void WED_Sign_Parser::MainLoop()
 	
 	if(mOnFront)
 	{
-		if(!mOutput.out_sign.front.empty())
-		if(mOutput.out_sign.front.back().glyph_name == glyph_separator)
-			append_error(sem_pipe_ends_sign);
+		if( !mOutput.out_sign.front.empty() && mOutput.out_sign.front.back().glyph_name == glyph_separator )
+		{
+			mOutput.out_sign.front.pop_back(); // silently delete undesired separator
+//			append_error(sem_pipe_ends_sign);
+		}
 	}
 	else
 	{
-		if(!mOutput.out_sign.back.empty())
-		if(mOutput.out_sign.back.back().glyph_name == glyph_separator)
-			append_error(sem_pipe_ends_sign);
+		if( !mOutput.out_sign.back.empty() &&  mOutput.out_sign.back.back().glyph_name == glyph_separator )
+		{
+			mOutput.out_sign.back.pop_back(); // silently delete undesired separator
+//			append_error(sem_pipe_ends_sign);
+		}
 	}
 
 //	bool foundError = preform_final_semantic_checks();

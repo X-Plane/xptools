@@ -28,7 +28,7 @@
 #include "GUI_DrawUtils.h"
 #include "GUI_Resources.h"
 
-#define		TAB_PADDING	15
+#define		TAB_PADDING	5
 #define		TAB_BASELINE 10
 #if APL
 	#include <OpenGL/gl.h>

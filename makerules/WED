@@ -143,6 +143,7 @@ SOURCES += ./src/WEDCore/WED_EnumSystem.cpp
 SOURCES += ./src/WEDCore/WED_Errors.cpp
 SOURCES += ./src/WEDCore/WED_FastBuffer.cpp
 SOURCES += ./src/WEDCore/WED_Globals.cpp
+SOURCES += ./src/WEDCore/WED_HierarchyUtils.cpp
 SOURCES += ./src/WEDCore/WED_LibraryMgr.cpp
 SOURCES += ./src/WEDCore/WED_Persistent.cpp
 SOURCES += ./src/WEDCore/WED_Properties.cpp

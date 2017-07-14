@@ -152,6 +152,7 @@ void	WED_UndoMgr::Undo(void)
 	delete undo;
 	mUndo.pop_back();
 	mArchive->mOpCount--;
+	mArchive->mCacheKey++;
 	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
 }
 
@@ -168,6 +169,7 @@ void	WED_UndoMgr::Redo(void)
 	delete redo;
 	mRedo.pop_front();
 	mArchive->mOpCount++;
+	mArchive->mCacheKey++;
 	mArchive->BroadcastMessage(msg_ArchiveChanged,change_mask);
 }
 

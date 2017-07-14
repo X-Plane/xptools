@@ -206,12 +206,12 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- ATC Taxi + Flow ---------------
 
 	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane3, "ATC Taxi + Flow");
+	prop_tabs->AddPane(prop_pane3, "Taxi+Flow");
 
 	// --------------- Lights and Markings ---------------
 
 	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane4, "Lights + Markings");
+	prop_tabs->AddPane(prop_pane4, "Light+Marking");
 
 	// ---------------- 3D Mode ---------------------
 
@@ -221,7 +221,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// ---------------- Exclusions ------------------
 
 	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane6, "Exclusions + Boundary");
+	prop_tabs->AddPane(prop_pane6, "Exclude+Boundary");
 
 	// ---------------- TCE -------------
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());

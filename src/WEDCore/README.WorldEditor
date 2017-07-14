@@ -13,7 +13,29 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.6b2 
+WED 1.6.1
+        - XSG-8877: Validation change to allow some draped orthos on gateway
+	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
+
+WED 1.6r1 6/7/17
+	Bug fixes
+	- WED-787: Prevent apt.dat read in from deleting co-located non-bezier nodes
+	- WED-872: Validation test to ensure that if there are truck parking location(s), there are also ground truck taxi routes present
+	- WED-854: Hiearchry search filter now also searches and matches object's resources
+	- WED-836: EXPORT_BACKUP directively was previously not respected
+	- WED-860: Improper color used for ground trucks route and taxi route
+	- WED-864: Adds special order of AptIE imports and separates out ground truck routes and aircraft taxi routes into two categories.
+	- WED-559: Bezier nodes can't be edited on Mac.
+	- WED-776: Disabled .net resources in resource list until we ship roads.
+	- WED-852: Fixed crash when dragging vertices out of their container polygons by accident.
+	- WED-851: Fixed crash when importaing apt.dat in full screen mode on Mac OS.
+	- WED-828: Fixed marquee bounds drawing wrong after multiple undo of resizing a polygon.
+	- WED-845: Fixed crash when corner of photo reference image is deleted by accident.
+	- Preformance Boost: Unnecissary drawing removed when the hierachry search filter is in use
+	- Added support for trucks-drive-on-left meta-tag for v11 airports.
+	- Added validation to detect corrupt UV-map coordinates on orthophotos.
+
+WED 1.6b2 5/1/17
 	Bug fixes:
 	- WED-766: extend validation error message to clearify corrective action
 	- WED-767: prevent uncommanded rotation OrthoPhotos placed in WED 1.5
@@ -22,7 +44,11 @@ WED 1.6b2
 	- WED-784: import WED 1.5 created DrapedOrthos with redraping turned off
         - WED-565: Add validation for Airport name and ICAO identifier
         - WED-760: Check XSystem path upon submission to be a valid X-plane base directory
-	- WED-787: prevent duplicated nodes being deleted at apt.dat or gateway imports
+	- WED-780: Fixed WED crashing on tooltips longer than 80 characters on Windows
+	- WED-824: Fixed where hidden nodes and hidden edges would be written out the apt.dat file inappropriately
+	- Made truck destination name not mandatory, and not blocking of reimporting apt.dat
+	- Fixed use after freeing C malloc buffer bug in airport importer
+	- Fixed uninvited data in vertex tool. Prevented random data in fields could cause very long delays when clicking
 
 WED 1.6.0a3 12/17/16
 	Bug fixes:
