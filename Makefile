@@ -637,7 +637,7 @@ libcgal: ./local$(MULTI_SUFFIX)/lib/.xpt_libcgal
 	@echo "building libcgal..."
 	@-mkdir -p "./local$(MULTI_SUFFIX)/include"
 	@-mkdir -p "./local$(MULTI_SUFFIX)/lib"
-	@tar -xzf "./archives/$(ARCHIVE_CGAL)"
+	@tar -xf "./archives/$(ARCHIVE_CGAL)"
 ifdef PLAT_DARWIN
 	@cd "CGAL-$(VER_CGAL)" && \
 	export MACOSX_DEPLOYMENT_TARGET=10.6 && CXXFLAGS="-fvisibility=hidden" cmake \
