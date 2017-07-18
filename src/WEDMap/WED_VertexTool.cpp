@@ -1166,7 +1166,7 @@ void		WED_VertexTool::SnapMovePoint(
 	Point2	modi(ideal_track_pt);
 	double smallest_dist=9.9e9;
 	Point2	best(modi);
-	if (mSnapToPoint || mSnapToLine)	
+	if (mSnapToPoint || mSnapToLine)
 	{
 		ISelection * sel = WED_GetSelect(GetResolver());
 		WED_Thing * wrl = WED_GetWorld(GetResolver());
@@ -1201,71 +1201,61 @@ void		WED_VertexTool::SnapMovePoint(
 				{
 					smallest_dist = dist;
 					best = posi;
-					mSnapPoint = posi;
 					mIsSnap = true;
 				}
 			}
 		}
 
-		if(mSnapToLine && !mIsSnap)
+		if(!mIsSnap && mSnapToLine)
 		{
-			for(int n = 0; n < mSnapLineCache.size(); ++n)
+			double dist = GetZoomer()->GetClickRadius(SNAP_RADIUS);
+			double d = dist*dist;
+
+			for(int i = 0; i < mSnapLineCache.size(); ++i)
 			{
-				IGISPointSequence * ps = mSnapLineCache[n];
-				bool IsMyParent = false ;
-					
-				int	c = ps->GetNumPoints();
-				for (int k = 0; k < c; ++k)
+				IGISPointSequence * ps = mSnapLineCache[i];
+
+				int ns = ps->GetNumSides();
+				int	np = ps->GetNumPoints();
+
+				for (int n = 0; n < ns; ++n)
 				{
-					if( ps->GetNthPoint(k) == who)
-					{
-						IsMyParent = true ;
-						break ;
-					}		
-				}
-				if(IsMyParent) continue;
-								
-				c = ps->GetNumSides();
-				double dist = GetZoomer()->GetClickRadius(4);
-				double d = dist*dist;
-				for (int n = 0; n < c; ++n)
-				{
+					IGISPoint * p1 = ps->GetNthPoint(n);
+					IGISPoint * p2 = ps->GetNthPoint((n+1) % np);
+
+					//is my linked side
+					if(p1 == who || p2 == who ) continue;
+
 					Bezier2 b;
 					Segment2 s;
-					bool IsNear = false;
-
 					if (ps->GetSide(gis_Geo,n,s,b))
 					{
 						if (b.is_near(modi,dist))
 						{
-							posi = b.midpoint(b.approx_t_for_xy(modi.x(), modi.y()));
-							IsNear = true;
+							best = b.midpoint(b.approx_t_for_xy(modi.x(), modi.y()));
+							mIsSnap = true;
+							//if we found a point near a curve we can break since we dont have a distance to compare
+							break;
 						}
 					}
-					else 
+					else
 					{
 						double dd = s.squared_distance_supporting_line(modi);
 						if (dd < d && s.collinear_has_on(modi))
 						{
 							d = dd;
-							posi = s.projection(modi);
-							IsNear = true;
+							best = s.projection(modi);
+							mIsSnap = true;
 						}
-					}
-					if(IsNear)
-					{
-						best = posi;
-						mSnapPoint = posi;
-						mIsSnap = true;
 					}
 				}
 			}
-		}//if(mSnapToLine)		
-		
+		}//if(mSnapToLine)
 	}
+
+	if(mIsSnap) mSnapPoint = best;
 	io_thing_pt = best;
 }
-
 
 
 void		WED_VertexTool::DrawSelected(bool inCurrent, GUI_GraphState * g)
