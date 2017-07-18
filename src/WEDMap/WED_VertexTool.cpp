@@ -1251,9 +1251,10 @@ void		WED_VertexTool::SnapMovePoint(
 				}
 			}
 		}//if(mSnapToLine)
+
+		if(mIsSnap) mSnapPoint = best;
 	}
 
-	if(mIsSnap) mSnapPoint = best;
 	io_thing_pt = best;
 }
 
