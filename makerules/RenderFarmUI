@@ -9,8 +9,8 @@ DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1 -DOPENGL_MAP=1
 FORCEREBUILD_SUFFIX := _rfui
 
 ifdef PLAT_LINUX
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/x86_64-linux-gnu/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/x86_64-linux-gnu/libCGAL_Core.a
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 LDFLAGS		+= -nodefaultlibs -rdynamic
 #LDFLAGS	+= -pie
 LIBS		+= -Wl,--as-needed
