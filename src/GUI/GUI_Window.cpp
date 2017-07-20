@@ -1269,7 +1269,15 @@ LRESULT CALLBACK GUI_Window::SubclassFunc(HWND hWnd, UINT message, WPARAM wParam
 					}
 					else
 					{
-						wcscpy_s(di->szText, 80, convert_str_to_utf16(tip).c_str());
+						string_utf16 clean_str = convert_str_to_utf16(tip);
+						if (clean_str.size() > 79)
+						{
+							clean_str = clean_str.substr(0, 79).replace(76, 3, L"...");
+						}
+
+						//Beware! A buffer over run inside of wcscpy will silently crash the program!
+						//https://msdn.microsoft.com/en-us/library/windows/desktop/bb760258(v=vs.85).aspx
+						wcscpy_s(di->szText, 80, clean_str.c_str());
 					}
 					return 0;
 				default:

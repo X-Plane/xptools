@@ -71,6 +71,7 @@
 		D60617F00C14D18C007BA5C9 /* disclose.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EE0C14D18C007BA5C9 /* disclose.png */; };
 		D60617F10C14D18C007BA5C9 /* gradient.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EF0C14D18C007BA5C9 /* gradient.png */; };
 		D6061A1C0C150845007BA5C9 /* header.png in Resources */ = {isa = PBXBuildFile; fileRef = D6061A1B0C150844007BA5C9 /* header.png */; };
+		D60628E01EA110D90007CC13 /* WED_HierarchyUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */; };
 		D60734150D197A1100E08F61 /* DSFLib.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36460AB22C84003949C5 /* DSFLib.cpp */; };
 		D60734160D197A1100E08F61 /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
 		D60734170D197A1100E08F61 /* DSFPointPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36580AB22C84003949C5 /* DSFPointPool.cpp */; };
@@ -1041,6 +1042,8 @@
 		D60617EE0C14D18C007BA5C9 /* disclose.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = disclose.png; sourceTree = "<group>"; };
 		D60617EF0C14D18C007BA5C9 /* gradient.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gradient.png; sourceTree = "<group>"; };
 		D6061A1B0C150844007BA5C9 /* header.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = header.png; sourceTree = "<group>"; };
+		D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_HierarchyUtils.cpp; sourceTree = "<group>"; };
+		D60628DF1EA110D90007CC13 /* WED_HierarchyUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_HierarchyUtils.h; sourceTree = "<group>"; };
 		D607342C0D197A1100E08F61 /* MeshTool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MeshTool; sourceTree = BUILT_PRODUCTS_DIR; };
 		D60734510D197B1100E08F61 /* MeshTool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MeshTool.cpp; sourceTree = "<group>"; };
 		D607AC850C0385AA00992876 /* scroll_btn_h.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = scroll_btn_h.png; sourceTree = "<group>"; };
@@ -3027,6 +3030,8 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */,
+				D60628DF1EA110D90007CC13 /* WED_HierarchyUtils.h */,
 				D652F3E21D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp */,
 				D652F3E31D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.h */,
 				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
@@ -4788,6 +4793,7 @@
 				D6FEF45918EB045C0035421F /* WED_AptTable.cpp in Sources */,
 				D6FEF50418EB176A0035421F /* GUI_FormWindow.cpp in Sources */,
 				D6FEF55C18EB23B40035421F /* GUI_Label.cpp in Sources */,
+				D60628E01EA110D90007CC13 /* WED_HierarchyUtils.cpp in Sources */,
 				D6E4C95418EC91DE000D98B8 /* json_reader.cpp in Sources */,
 				D6E4C95518EC91DE000D98B8 /* json_value.cpp in Sources */,
 				D6E4C95718EC91DE000D98B8 /* json_writer.cpp in Sources */,

@@ -130,8 +130,8 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 	{
 		if(me->first.size() < r.size())								break;
 		if(strncasecmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
-		// Ben says: in WED 1.3 we'll get more clever about this and optionally show library innards.  But for now, just hide our privates.
-		if(me->second.status == status_Public)
+		// Ben says: even in WED 1.6 we still don't show private or deprecated stuff
+		if(me->second.status >= status_Public)
 		if(is_direct_parent(r,me->first))
 		{
 			bool want_it = true;
@@ -139,18 +139,13 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 			case pack_Library:		want_it = me->second.packages.size() > 1 || !me->second.packages.count(pack_Local);	// Lib if we are in two packs or we are NOT in local.  (We are always SOMEWHERE)
 			case pack_All:			break;
 			case pack_Default:		want_it = me->second.is_default;	break;
+			case pack_New:			want_it = me->second.status == status_New; break;
 			case pack_Local:		// Since "local" is a virtal index, the search for Nth pack works for local too.
 			default:				want_it = me->second.packages.count(filter_package);
 			}
 			if(want_it)
 			{
 				children.push_back(me->first);
-				#if DEV
-					//Gets the last thing added to the vector
-					//string temp = children.back();
-
-					//printf("GetResource:%s \n", temp.c_str());
-				#endif
 			}
 		}
 		++me;
@@ -216,14 +211,25 @@ bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 		fixed[p] = '/';
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
-	return me->second.status != status_Public;
+	return me->second.status < status_Public;
 }
 
 bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 {
 	for(res_map_t::iterator i = res_table.begin(); i != res_table.end(); ++i)
-	if(i->second.packages.count(package))
-		return true;
+		if(i->second.packages.count(package))
+		{
+//	The problem here is that a resource can be defined in multiple libraries,
+//  some of those definitions may be deprecated or private, but others not.
+//  If there is at least one public definition, the resource has status >= status_Public.
+//  So its impossible to find out this way if a given library has no public items ...
+
+// if  (i->second.status > status_Public)
+//			printf("Pack %d '%s' status = %d\n",package,i->second.real_path.c_str(),i->second.status);
+//			if ( i->second.status >= status_Public)	
+
+			return true;
+		}
 	return false;
 }
 
@@ -299,18 +305,24 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 
-				if(MFS_string_match(&s,"EXPORT",false) ||
-				   MFS_string_match(&s,"EXPORT_EXTEND",false) ||
-				   MFS_string_match(&s,"EXPORT_EXCLUDE",false) ||
-				   MFS_string_match(&s,"EXPORT_BACKUP",false))
+				bool is_export_export  = MFS_string_match(&s,"EXPORT",false);
+				bool is_export_extend  = MFS_string_match(&s,"EXPORT_EXTEND",false);
+				bool is_export_exclude = MFS_string_match(&s,"EXPORT_EXCLUDE",false);
+				bool is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false);
+
+				if( is_export_export  ||
+					is_export_extend  ||
+					is_export_exclude ||
+					is_export_backup)
 				{
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
+
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
+					AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
 				}
 				else if(MFS_string_match(&s,"EXPORT_RATIO",false))
 				{
@@ -326,7 +338,24 @@ void		WED_LibraryMgr::Rescan()
 				else
 				{
 					if(MFS_string_match(&s,"PUBLIC",true))
+					{	
 						cur_status = status_Public;
+						
+						int new_until = 0;
+						new_until = MFS_int(&s);
+						if (new_until > 20170101)
+						{
+							time_t rawtime;
+							struct tm * timeinfo;
+							time (&rawtime);
+							timeinfo = localtime (&rawtime);							
+							int now = 10000 * (timeinfo->tm_year+1900) +100*timeinfo->tm_mon + timeinfo->tm_mday;
+							if (new_until >= now)
+							{
+								cur_status = status_New;
+							}
+						}
+					}
 					else if(MFS_string_match(&s,"PRIVATE",true))    
 						cur_status = status_Private;
 					else if(MFS_string_match(&s,"DEPRECATED",true)) 
@@ -366,8 +395,12 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 	if(HasExtNoCase(path, ".lin"))	rt = res_Line;
 	if(HasExtNoCase(path, ".pol"))	rt = res_Polygon;
 	if(HasExtNoCase(path, ".agb"))	rt = res_Polygon;
+#if ROAD_EDITING
 	if(HasExtNoCase(path, ".net"))	rt = res_Road;
+#endif
 	if(rt == res_None) return;
+
+	if (package >= 0 && status >= status_Public) gPackageMgr->HasPublicItems(package);
 
 	string p(path);
 	while(!p.empty())

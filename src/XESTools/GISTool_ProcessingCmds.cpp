@@ -525,7 +525,7 @@ static int DoAssignLandUse(const vector<const char *>& args)
 	AssignLandusesToMesh(gDem,gTriangulationHi,args[0],gProgress);
 	
 	if (gVerbose) printf("Finding rural roads...\n");
-	PatchCountryRoads(gMap, gTriangulationHi);
+	PatchCountryRoads(gMap, gTriangulationHi,gDem[dem_UrbanDensity]);
 
 
 //	map<int, int> lus;

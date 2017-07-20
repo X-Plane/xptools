@@ -41,7 +41,10 @@
 
 #include "WED_DSFExport.h"
 #include "WED_Globals.h"
+
+#include "WED_HierarchyUtils.h"
 #include "WED_ToolUtils.h"
+
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
 #include "WED_Thing.h"
@@ -192,9 +195,9 @@ static bool has_atc_taxi_route(WED_Airport * who) { return has_any_of_class(who,
 // In apt.dat, flow lines are 1100 and 1101
 static bool has_atc_flow(WED_Airport * who) { return has_any_of_class(who, k_atc_flow_class); }
 
-static bool is_of_type_ground_vehicles(const WED_TaxiRoute* route)
+static bool is_of_type_ground_vehicles(WED_Thing* route)
 {
-	return route->AllowTrucks();
+	return static_cast<WED_TaxiRoute*>(route)->AllowTrucks();
 }
 
 static bool has_atc_ground_routes(WED_Airport* who)
@@ -213,8 +216,8 @@ static bool has_atc_ground_routes(WED_Airport* who)
 	//If we have a situation where we only have taxiroutes to tell us if we have ground vehicles, we must test them
 	else if(classes[WED_TaxiRoute::sClass].size() > 0 && classes[WED_TruckParkingLocation::sClass].size() == 0 && classes[WED_TruckDestination::sClass].size() == 0)
 	{
-		vector<const WED_TaxiRoute*> routes;
-		CollectRecursive(who, back_inserter(routes), is_of_type_ground_vehicles);
+		vector<WED_TaxiRoute*> routes;
+		CollectRecursive(who, back_inserter(routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
 
 		return routes.empty() == true ? false : true;
 	}
