@@ -1612,6 +1612,43 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	}
 
 	//Local Code (feature request)
+	
+	if(who->ContainsMetaDataKey(wed_AddMetaDataLocal))
+	{
+		string code        = who->GetMetaDataValue(wed_AddMetaDataLocal);
+		string error_content;
+
+		if (!air_org_code_valid(3,7, true, code, error_content) && !code.empty())
+		{
+			add_formated_metadata_error(error_template, wed_AddMetaDataLocal, code, error_content, who, msgs, apt);
+		}
+		all_keys.push_back(code);
+	}
+
+	if(who->ContainsMetaDataKey(wed_AddMetaDataLocAuth))
+	{
+		string code        = who->GetMetaDataValue(wed_AddMetaDataLocAuth);
+		string error_content;
+
+		if (!air_org_code_valid(3,32, false, code, error_content) && !code.empty())
+		{
+			add_formated_metadata_error(error_template, wed_AddMetaDataLocAuth, code, error_content, who, msgs, apt);
+		}
+		all_keys.push_back(code);
+	}
+	
+	if(who->ContainsMetaDataKey(wed_AddMetaDataFAA) && who->ContainsMetaDataKey(wed_AddMetaDataLocal))
+	{
+		string codeFAA    = who->GetMetaDataValue(wed_AddMetaDataFAA);
+		string codeLocal  = who->GetMetaDataValue(wed_AddMetaDataLocal);
+		string error      = "Do only specify one of the two Meta-data tags 'FAA code' or 'Local Code' !";
+
+		if (!codeFAA.empty() && !codeLocal.empty())
+		{
+			msgs.push_back(validation_error_t(error, err_airport_metadata_invalid, who , apt));
+		}
+		all_keys.push_back(codeFAA);
+	}
 
 	if(who->ContainsMetaDataKey(wed_AddMetaDataRegionCode))
 	{

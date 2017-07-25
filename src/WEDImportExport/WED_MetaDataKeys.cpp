@@ -16,6 +16,8 @@ const MetaDataKey known_keys[] = {
 {	"FAA Code",        "faa_code"    },         // wed_AddMetaDataFAA
 {	"IATA Code",       "iata_code"   },         // wed_AddMetaDataIATA
 {	"ICAO Code",       "icao_code"   },         // wed_AddMetaDataICAO
+{	"Local Code",      "local_code"  },         // wed_AddMetaDataLocal
+{	"Local Authorithy","local_authority" },     // wed_AddMetaDataLocAuth
 {	"Region Code",     "region_code" },         // wed_AddMetaDataRegionCode
 {	"State/Province",  "state"       },         // wed_AddMetaDataState
 {	"Transition Altitude", "transition_alt"  }, // wed_AddMetaDataTransitionAlt

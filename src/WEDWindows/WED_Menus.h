@@ -150,6 +150,8 @@ enum {
 	wed_AddMetaDataFAA,
 	wed_AddMetaDataIATA,
 	wed_AddMetaDataICAO,
+	wed_AddMetaDataLocal,
+	wed_AddMetaDataLocAuth,
 	wed_AddMetaDataRegionCode,
 	wed_AddMetaDataState,// or Province
 	wed_AddMetaDataTransitionAlt,//Altitude
