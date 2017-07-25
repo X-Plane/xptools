@@ -68,7 +68,7 @@ WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
 	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
 	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
 	always_flatten	(this, "Always Flatten",	SQL_Name("",""),						XML_Name("airport", "always_flatten"), 0),
-	drive_on_left	(this, "Vehicles Drive on Left", SQL_Name("",""),					XML_Name("airport", "drive_on_left"), 0),
+	drive_on_left	(this, "Left Hand Driving", SQL_Name("",""),					XML_Name("airport", "drive_on_left"), 0),
 	scenery_id		(this, "Scenery ID",		SQL_Name("", ""),				XML_Name("airport", "scenery_id"), -1, 8),
 	meta_data_vec_map ()
 {
