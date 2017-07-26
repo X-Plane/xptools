@@ -13,14 +13,16 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.6.1
+WED 1.6.1b1
+	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
-	- XSG-3343: Stop changing ATC taxi segment width, when already set, upon gateway/apt.dat import
-	- WED 888: Make "Vehicles Drive on Left" airport property readable 
-	- WED-855: Fix taxi sign editor problems with separator glyphs
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
 	- WED-825: Add meta-tags and validation for 'local_code' and 'local_authorithy'
 	- Add "snap to line" option to vertex tool
+	Bug fixes:
+	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon gateway/apt.dat import
+	- WED 888: Make "Vehicles Drive on Left" airport property readable 
+	- WED-855: Fix taxi sign editor problems with separator glyphs
 
 WED 1.6r1 6/7/17
 	Bug fixes
