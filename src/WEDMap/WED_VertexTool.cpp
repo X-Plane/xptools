@@ -42,7 +42,6 @@
 #include "MathUtils.h"
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
-#include "GUI_DrawUtils.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -97,10 +96,8 @@ WED_VertexTool::WED_VertexTool(
 		mIsTaxiSpin(0),
 		mNewSplitPoint(NULL),
 		mIsScale(0),
-		mIsSnap(0),
 		mRotateIndex(-1),
-		mSnapToPoint(this,"Snap To Vertices", SQL_Name("",""),XML_Name("",""), 0),
-		mSnapToLine(this,"Snap To Line", SQL_Name("",""),XML_Name("",""), 0)
+		mSnapToGrid(this,"Snap To Vertices", SQL_Name("",""),XML_Name("",""), 0)
 {
 	SetControlProvider(this);
 }
@@ -115,7 +112,6 @@ void	WED_VertexTool::BeginEdit(void)
 	mIsRotate = 0;
 	mIsSymetric = 0;
 	mIsScale = 0;
-	mIsSnap = 0;
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
@@ -134,7 +130,6 @@ void	WED_VertexTool::EndEdit(void)
 	mIsSymetric = 0;
 	mIsScale = 0;
 	mIsTaxiSpin = 0;
-	mIsSnap = 0;
 }
 
 int		WED_VertexTool::CountEntities(void) const
@@ -1066,7 +1061,7 @@ void		WED_VertexTool::AddEntityRecursive(IGISEntity * e, const Bbox2& vis_area )
 }
 
 
-void		WED_VertexTool::AddSnapTargetRecursive(IGISEntity * e, const Bbox2& vis_area, ISelection * sel ) const
+void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_area, ISelection * sel ) const
 {
 	if(!IsVisibleNow(e))	return;
 
@@ -1085,8 +1080,6 @@ void		WED_VertexTool::AddSnapTargetRecursive(IGISEntity * e, const Bbox2& vis_ar
 	IGISPoint * pt;
 	IGISPoint_Bezier * bt;
 	Point2	loc;
-	Segment2 seg;
-	Bezier2 bez;
 
 	switch(e->GetGISClass()) {
 	case gis_Point:
@@ -1096,7 +1089,7 @@ void		WED_VertexTool::AddSnapTargetRecursive(IGISEntity * e, const Bbox2& vis_ar
 		if (pt)
 		{
 			pt->GetLocation(gis_Geo,loc);
-			mSnapPointCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 		}
 		break;
 	case gis_Point_Bezier:
@@ -1104,13 +1097,13 @@ void		WED_VertexTool::AddSnapTargetRecursive(IGISEntity * e, const Bbox2& vis_ar
 		if (bt)
 		{
 			bt->GetLocation(gis_Geo,loc);
-			mSnapPointCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 //			if (sel->IsSelected(e))
 			{
 				if (bt->GetControlHandleLo(gis_Geo,loc))
-					mSnapPointCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 				if (bt->GetControlHandleHi(gis_Geo,loc))
-					mSnapPointCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+					mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
 			}
 		}
 		break;
@@ -1124,12 +1117,10 @@ void		WED_VertexTool::AddSnapTargetRecursive(IGISEntity * e, const Bbox2& vis_ar
 			ent_bounds.yspan() < MIN_HANDLE_RECURSE_SIZE) return;
 
 		if ((ps = SAFE_CAST(IGISPointSequence, e)) != NULL)
-		{	
-			mSnapLineCache.push_back(ps);
-		
+		{
 			c = ps->GetNumPoints();
 			for (n = 0; n < c; ++n)
-				AddSnapTargetRecursive(ps->GetNthPoint(n),vis_area, sel);
+				AddSnapPointRecursive(ps->GetNthPoint(n),vis_area, sel);
 		}
 		break;
 	case gis_Polygon:
@@ -1138,10 +1129,10 @@ void		WED_VertexTool::AddSnapTargetRecursive(IGISEntity * e, const Bbox2& vis_ar
 
 		if ((poly = SAFE_CAST(IGISPolygon, e)) != NULL)
 		{
-			AddSnapTargetRecursive(poly->GetOuterRing(),vis_area, sel);
+			AddSnapPointRecursive(poly->GetOuterRing(),vis_area, sel);
 			c = poly->GetNumHoles();
 			for (n = 0; n < c; ++n)
-				AddSnapTargetRecursive(poly->GetNthHole(n),vis_area, sel);
+				AddSnapPointRecursive(poly->GetNthHole(n),vis_area, sel);
 		}
 		break;
 	case gis_Composite:
@@ -1152,7 +1143,7 @@ void		WED_VertexTool::AddSnapTargetRecursive(IGISEntity * e, const Bbox2& vis_ar
 		{
 			c = cmp->GetNumEntities();
 			for (n = 0; n < c; ++n)
-				AddSnapTargetRecursive(cmp->GetNthEntity(n),vis_area, sel);
+				AddSnapPointRecursive(cmp->GetNthEntity(n),vis_area, sel);
 		}
 		break;
 	}
@@ -1166,7 +1157,8 @@ void		WED_VertexTool::SnapMovePoint(
 	Point2	modi(ideal_track_pt);
 	double smallest_dist=9.9e9;
 	Point2	best(modi);
-	if (mSnapToPoint || mSnapToLine)
+
+	if (mSnapToGrid)
 	{
 		ISelection * sel = WED_GetSelect(GetResolver());
 		WED_Thing * wrl = WED_GetWorld(GetResolver());
@@ -1174,101 +1166,40 @@ void		WED_VertexTool::SnapMovePoint(
 		long long key_z = GetZoomer()->CacheKey();
 		if (key_a != mSnapCacheKeyArchive || key_z != mSnapCacheKeyZoomer)
 		{
-			mSnapPointCache.clear();
-			mSnapLineCache.clear();
+			mSnapCache.clear();
 			Bbox2	bounds;
 			GetZoomer()->GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 
-			AddSnapTargetRecursive(dynamic_cast<IGISEntity *>(wrl), bounds, sel);
+			AddSnapPointRecursive(dynamic_cast<IGISEntity *>(wrl), bounds, sel);
 		}
 
-		mIsSnap = false;
 		Point2  posi;
+		IGISPoint * pt;
 		GetEntityInternal();
-
-		if(mSnapToPoint)
+		for(int n = 0; n < mSnapCache.size(); ++n)
+		if (mSnapCache[n].second != who)
 		{
-			for(int n = 0; n < mSnapPointCache.size(); ++n)
-			if (mSnapPointCache[n].second != who)
-			{
-				posi = mSnapPointCache[n].first;
+			posi = mSnapCache[n].first;
 
-				double dist = Vector2(
-					GetZoomer()->LLToPixel(posi),
-					GetZoomer()->LLToPixel(modi)).squared_length();
-				if (dist < (SNAP_RADIUS * SNAP_RADIUS) &&
-					dist < smallest_dist)
-				{
-					smallest_dist = dist;
-					best = posi;
-					mIsSnap = true;
-				}
+			double dist = Vector2(
+				GetZoomer()->LLToPixel(posi),
+				GetZoomer()->LLToPixel(modi)).squared_length();
+			if (dist < (SNAP_RADIUS * SNAP_RADIUS) &&
+				dist < smallest_dist)
+			{
+				smallest_dist = dist;
+				best = posi;
 			}
 		}
-
-		if(!mIsSnap && mSnapToLine)
-		{
-			double dist = GetZoomer()->GetClickRadius(SNAP_RADIUS);
-			double d = dist*dist;
-
-			for(int i = 0; i < mSnapLineCache.size(); ++i)
-			{
-				IGISPointSequence * ps = mSnapLineCache[i];
-
-				int ns = ps->GetNumSides();
-				int	np = ps->GetNumPoints();
-
-				for (int n = 0; n < ns; ++n)
-				{
-					IGISPoint * p1 = ps->GetNthPoint(n);
-					IGISPoint * p2 = ps->GetNthPoint((n+1) % np);
-
-					//is my linked side
-					if(p1 == who || p2 == who ) continue;
-
-					Bezier2 b;
-					Segment2 s;
-					if (ps->GetSide(gis_Geo,n,s,b))
-					{
-						if (b.is_near(modi,dist))
-						{
-							best = b.midpoint(b.approx_t_for_xy(modi.x(), modi.y()));
-							mIsSnap = true;
-							//if we found a point near a curve we can break since we dont have a distance to compare
-							break;
-						}
-					}
-					else
-					{
-						double dd = s.squared_distance_supporting_line(modi);
-						if (dd < d && s.collinear_has_on(modi))
-						{
-							d = dd;
-							best = s.projection(modi);
-							mIsSnap = true;
-						}
-					}
-				}
-			}
-		}//if(mSnapToLine)
-
-		if(mIsSnap) mSnapPoint = best;
 	}
 
 	io_thing_pt = best;
 }
 
 
-void		WED_VertexTool::DrawSelected(bool inCurrent, GUI_GraphState * g)
+void		WED_VertexTool::DrawSelected			(bool inCurrent, GUI_GraphState * g)
 {
 	WED_HandleToolBase::DrawSelected(inCurrent, g);
-	if (mIsSnap)
-	{
-		g->SetState(false,false, false, true, true, false, false);
-		glColor4f(1,0,1,1);
-		GUI_PlotIcon(g,"handle_closeloop.png", GetZoomer()->LonToXPixel(mSnapPoint.x()),GetZoomer()->LatToYPixel(mSnapPoint.y()),0,1.0);
-	}
-
 	if (mIsTaxiSpin)
 	{
 		g->SetState(false,false, false, true, true, false, false);

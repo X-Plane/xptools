@@ -29,7 +29,6 @@
 #include "IOperation.h"
 
 class	IGISEntity;
-class	IGISPointSequence;
 class	IGISPoint;
 class	ISelection;
 
@@ -89,7 +88,7 @@ private:
 
 			void		GetEntityInternal(void) const;
 			void		AddEntityRecursive(IGISEntity * e, const Bbox2& bounds) const;
-			void		AddSnapTargetRecursive(IGISEntity * e, const Bbox2& bounds, ISelection * sel) const;
+			void		AddSnapPointRecursive(IGISEntity * e, const Bbox2& bounds, ISelection * sel) const;
 			void		SnapMovePoint(const Point2& ideal_track_pt, Point2& io_thing_pt, IGISEntity * who);
 
 		int						mInEdit;
@@ -97,25 +96,20 @@ private:
 		int						mIsScale;
 		int						mIsSymetric;
 		int						mIsTaxiSpin;
-		int						mIsSnap;
 		mutable Point2			mRotateCtr;
 		mutable Point2			mTaxiDest;
-		mutable Point2			mSnapPoint ;
-
 		mutable double			mRotateOffset;
 		mutable	int				mRotateIndex;
 
 		IGISPoint *				mNewSplitPoint;		// When we option-click to get a split point...this is the newly born point.
 		
-		WED_PropBoolText		mSnapToPoint;
-		WED_PropBoolText		mSnapToLine;
+		WED_PropBoolText		mSnapToGrid;
 
 		mutable vector<IGISEntity *>	mEntityCache;
 		mutable long long				mEntityCacheKeyArchive;
 		mutable long long				mEntityCacheKeyZoomer;
 
-		mutable vector<pair<Point2,IGISEntity *> >		mSnapPointCache;
-		mutable vector<IGISPointSequence *>				mSnapLineCache;
+		mutable vector<pair<Point2,IGISEntity *> >		mSnapCache;
 		mutable long long								mSnapCacheKeyArchive;
 		mutable long long								mSnapCacheKeyZoomer;
 
