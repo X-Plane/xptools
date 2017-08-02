@@ -18,7 +18,6 @@ WED 1.6.1b1
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
 	- WED-825: Add meta-tags and validation for 'local_code' and 'local_authorithy'
-	- Add "snap to line" option to vertex tool
 	Bug fixes:
 	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon gateway/apt.dat import
 	- WED 888: Make "Vehicles Drive on Left" airport property readable 
