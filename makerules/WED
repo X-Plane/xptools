@@ -316,6 +316,7 @@ SOURCES += ./src/Utils/ObjUtils.cpp
 #SOURCES += ./src/Utils/perlin.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp
 SOURCES += ./src/Utils/CSVParser.cpp
+SOURCES += ./src/Utils/STLUtils.cpp
 SOURCES += ./src/Obj/ObjPointPool.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp

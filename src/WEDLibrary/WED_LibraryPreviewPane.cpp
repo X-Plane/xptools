@@ -220,7 +220,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						}
 						glEnd();
 						
-						if (!pol.mUVBox.is_empty())                   // draw a box around the selected texture area
+						if (!pol.mUVBox.is_null())                   // draw a box around the selected texture area
 						{
 							g->Reset();
 							glColor4fv(WED_Color_RGBA(wed_StructureSelected));
@@ -392,8 +392,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		}
 		
 		// plot some additional information about the previewed object
-		char buf[64];
-		switch(mType) 
+		char buf[64] = "";
+		switch(mType)
 		{
 			case res_Facade:
 				if (fac.preview && fac.walls.size())
@@ -420,7 +420,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				break;
 		}
 		float text_color[4] = { 1,1,1,1 };
-		GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 15, buf);
+		if (buf[0])
+			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 15, buf);
 		
 	}
 }

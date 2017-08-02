@@ -282,10 +282,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	state->SetState(0,0,0,1,1,0,0);
 	glColor4fv(white);
 	glBegin(GL_LINES);
-	glVertex2i(b[0]+ 50, b[1] + 15);
-	glVertex2i(b[0]+ 50 +(int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
-	glVertex2i(b[0]+ 50 +(int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
-	glVertex2i(b[0]+ 50, b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 15);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 14);
 	glEnd();
 	
     GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 10, mouse_loc);

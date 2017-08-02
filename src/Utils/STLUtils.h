@@ -25,7 +25,6 @@
 #define STLUtils_H
 
 #include "AssertUtils.h"
-#include <iterator>
 
 template<typename T>				void trim(T& v);							// Remove extra space from a vector.
 template <class T>					void nuke_container(T& v);					// Clear a container, free vector memory
@@ -189,6 +188,21 @@ public:
 	size_t			size(void) const;
 };
 */
+
+//--Case insensitive string implementation-------------------------------------
+//Thanks Herb Stutter http://www.gotw.ca/gotw/029.htm
+struct ci_char_traits : public std::char_traits<char>
+{
+	static bool eq(char c1, char c2);
+	static bool lt(char c1, char c2);
+	static int compare(const char* s1, const char* s2, size_t n);
+	static const char* find(const char* s, int n, char a);
+};
+
+typedef std::basic_string<char, ci_char_traits> ci_string;
+
+static std::ostream& operator<<(std::ostream& os, const ci_string& str);
+//---------------------------------------------------------------------------//
 
 //------------------------------------------------------------------------------------------------------------------------
 
@@ -516,7 +530,5 @@ void sequence_push_back(T& container, S& seq)
 		++seq;
 	}
 }
-
-
 
 #endif /* STLUtils_H */

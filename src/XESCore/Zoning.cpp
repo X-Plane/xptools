@@ -232,7 +232,7 @@ static bool ReadZoningInfo(const vector<string>& tokens, void * ref)
 {
 	ZoningInfo_t	info;
 	int				zoning;
-	if(TokenizeLine(tokens," efiiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_points, &info.fill_veg,&info.terrain_type) != 9)
+	if(TokenizeLine(tokens," efiiiiiie", &zoning,&info.max_slope,&info.need_lu,&info.fill_edge,&info.fill_area,&info.fill_points, &info.fill_veg,&info.allow_country_roads,&info.terrain_type) != 10)
 		return false;
 	// optimization: if slope will never filter out AND we don't need LU, set slope to 0 to turn the mesh check off entirely!
 	if(info.max_slope == 90.0 && info.need_lu == 0)

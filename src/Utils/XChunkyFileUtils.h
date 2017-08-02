@@ -214,10 +214,20 @@ struct	XAtomPackedData : public XAtom {
  *
  */
 
+struct StFileSizeDebugger {
+	StFileSizeDebugger(FILE * inFile, const char * label);
+	~StFileSizeDebugger();
+
+	FILE *			mFile;
+	int32_t			mAtomStart;
+	const char *	mLabel;
+};
+
 struct	StAtomWriter {
-	StAtomWriter(FILE * inFile, uint32_t inID);
+	StAtomWriter(FILE * inFile, uint32_t inID, bool no_show_size_debug=false);
 	~StAtomWriter();
 
+	bool			mNoSize;
 	FILE *			mFile;
 	int32_t			mAtomStart;
 	uint32_t		mID;

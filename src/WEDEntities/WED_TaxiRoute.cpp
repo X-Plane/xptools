@@ -56,13 +56,13 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 DEFINE_PERSISTENT(WED_TaxiRoute)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
+	vehicle_class(this,	"Allowed Vehicles",XML_Name("taxi_route","vehicle_class"),ATCVehicleClass,atc_Vehicle_Aircraft),
 	oneway(this,"One-Way",                 XML_Name("taxi_route","oneway"),   1),
 	runway(this,"Runway",                  XML_Name("taxi_route","runway"),   ATCRunwayTwoway, atc_rwy_None),
 	hot_depart(this,"Departures",          XML_Name("departures","runway"),   ATCRunwayOneway,false),
 	hot_arrive(this,"Arrivals",            XML_Name("arrivals","runway"),     ATCRunwayOneway,false),
 	hot_ils(this,"ILS Precision Area",     XML_Name("ils_holds","runway"),    ATCRunwayOneway,false),
-	width(this,"Size",                     XML_Name("taxi_route","width"),    ATCIcaoWidth, width_E),
-	vehicle_class(this,"Allowed Vehicles", XML_Name("taxi_route","vehicle_class"), ATCVehicleClass,atc_Vehicle_Aircraft)
+	width(this,"Size",                     XML_Name("taxi_route","width"),    ATCIcaoWidth, width_E)
 {
 }
 
@@ -293,6 +293,23 @@ void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		info.can_delete = false;
 		info.can_edit = false;
+	}
+
+	PropertyVal_t prop;
+	vehicle_class.GetProperty(prop);
+
+	if (prop.int_val == atc_Vehicle_Ground_Trucks)
+	{
+		if (n == PropertyItemNumber(&runway) ||
+			n == PropertyItemNumber(&hot_depart) ||
+			n == PropertyItemNumber(&hot_arrive) ||
+			n == PropertyItemNumber(&hot_ils) ||
+			n == PropertyItemNumber(&width))
+		{
+			info.prop_name = ".";
+			info.can_edit = false;
+			info.can_delete = false;
+		}
 	}
 }
 

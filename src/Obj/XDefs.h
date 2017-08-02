@@ -105,6 +105,9 @@
 // X-Plane actually contains slight math errors in OBJ placement on a round world and will not handle this well.
 #define GLOBAL_WED_ART_ASSET_FUDGE_FACTOR 0.1
 
+// Causes DSFLib to output stats about encoding quality.
+#define DSF_WRITE_STATS 0
+
 #include "MemUtils.h"
 
 /************************************************************************************************************************************************************************

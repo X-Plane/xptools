@@ -617,7 +617,8 @@ bool	build_convex_polygon(
 		Vector2	v2(msides[j].p1,msides[j].p2);
 		v1.normalize();
 		v2.normalize();
-		if(v1.dot(v2) > 0.9998 ||
+		if(v1.dot(v2) >  0.9998 ||
+		   v1.dot(v2) < -0.9998 ||
 			!v1.left_turn(v2))
 		{
 			//debug_mesh_point(trans.Reverse(msides[i].p2),1,0,0);
@@ -639,6 +640,19 @@ bool	build_convex_polygon(
 		Point2	p;
 		if(!li.intersect(lj,p))
 		{
+			/*
+			for(int k = 0; k < sides.size(); ++k)
+			{
+				Segment2 d(trans.Reverse(msides[k].p1), trans.Reverse(msides[k].p2));
+				if(k == j)
+				debug_mesh_line(d.p1, d.p2, 0.5,0.5,0.0, 1,1,0);
+				else if(k == i)
+				debug_mesh_line(d.p1, d.p2, 0.5,0.0,0.0, 1.0,0,0);
+				else
+				debug_mesh_line(d.p1, d.p2, 0.5,0.5,0.5, 0.5,0,0);
+			}
+			*/
+		
 			Assert(!"Failure to intersect.\n");
 			return false;
 		}

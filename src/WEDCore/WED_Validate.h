@@ -118,6 +118,7 @@ enum validate_error_t
 	err_rwy_overlapping_displaced_thresholds,
 	err_rwy_surface_illegal_roughness,
 	err_rwy_surface_water_not_valid,
+	err_rwy_unrealistically_small,
 	err_rwy_use_must_have_at_least_one_equip,
 	err_rwy_use_must_have_at_least_one_op,
 	err_rwy_use_no_runway_selected,

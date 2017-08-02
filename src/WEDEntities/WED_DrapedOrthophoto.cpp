@@ -34,10 +34,10 @@ WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPoly
 	heading(this,"Texture Heading", XML_Name("draped_orthophoto","heading"),   0.0,5,1),
 	width(this,"Texture Width",     XML_Name("draped_orthophoto","width"),     0.0,5,2),
 	length(this,"Texture Length",   XML_Name("draped_orthophoto","length"),    0.0,5,2),
-	top(this,"Texture Top",         XML_Name("draped_orthophoto","tex_top"),   1.0,5,3),
+	top(this,"Texture Top",         XML_Name("draped_orthophoto","tex_top"),   0.0,5,3),
 	bottom(this,"Texture Bottom",   XML_Name("draped_orthophoto","tex_bottom"),0.0,5,3),
 	left(this,"Texture Left",       XML_Name("draped_orthophoto","tex_left"),  0.0,5,3),
-	right(this,"Texture Right",     XML_Name("draped_orthophoto","tex_right"), 1.0,5,3)
+	right(this,"Texture Right",     XML_Name("draped_orthophoto","tex_right"), 0.0,5,3)
 {
 }
 

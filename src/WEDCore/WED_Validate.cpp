@@ -350,7 +350,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	int nn = ps->GetNumSides();
 	if(nn < 1)
 	{
-		string msg = "Linear feature '" + string(who->HumanReadableType()) + "' needs at least two points.";
+		string msg = "Linear feature '" + string(who->HumanReadableType()) + "' needs at least two points. Delete the selected item to fix this.";
 		msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_two_points, dynamic_cast<WED_Thing *>(ps),apt));
 	}
 	WED_Thing * parent = who->GetParent();
@@ -1254,7 +1254,14 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 	{
 		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
 		Assert(lw);
-		if (lw->GetWidth() < 1.0) msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least one meter wide.", err_rwy_not_adequetely_wide, who, apt));
+		if (lw->GetWidth() < 1.0)
+		{
+			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least one meter wide.", err_rwy_not_adequetely_wide, who, apt));
+		}
+		else if (lw->GetWidth() < 3 && lw->GetLength() < 30)
+		{
+			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 3 meters wide by 30 meters long.", err_rwy_unrealistically_small, who, apt));
+		}
 
 		WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
 		if (rwy)
@@ -1849,9 +1856,13 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	apt->GetICAO(icao);
 
 	if(name.empty())
-		msgs.push_back(validation_error_t("An airport contains no name.", err_airport_no_name, apt,apt));
-	else if(icao.empty())
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty ICAO code.", err_airport_no_icao, apt,apt));
+		msgs.push_back(validation_error_t("An airport has no name.", err_airport_no_name, apt,apt));
+	else if(name[0] == ' ' || name[name.length()-1] == ' ')
+		msgs.push_back(validation_error_t(string("The airport '") + name + "' name includes leading or trailing spaces.", err_airport_no_name, apt,apt));
+	if(icao.empty())
+		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty ICAO identifier.", err_airport_no_icao, apt,apt));
+	else if(!is_all_alnum(icao))
+		msgs.push_back(validation_error_t(string("The ICAO identifier for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_no_icao, apt,apt));
 
 	set<int>		legal_rwy_oneway;
 	set<int>		legal_rwy_twoway;

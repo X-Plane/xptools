@@ -35,6 +35,9 @@
 
 #define	POLY_POINT_POOL_COUNT	12
 
+#define ALLOW_CONTIGUOUS_PRIMITIVES 0
+#define ALLOW_SHARED_ROADS 0
+
 // Define this to 1 to see statistics about the encoded DSF file.
 #define ENCODING_STATS 1
 
@@ -440,16 +443,8 @@ DSFFileWriterImp::DSFFileWriterImp(double inWest, double inSouth, double inEast,
 	vecRangeMax.push_back(inNorth);
 	vecRangeMax.push_back(32767.0);
 	vecRangeMax.push_back(0.0);
-//	DSFTuple	vecRangeCurveMin(vecRangeMin), vecRangeCurveMax(vecRangeMax);
-//	vecRangeCurveMin.push_back(inWest);
-//	vecRangeCurveMin.push_back(inSouth);
-//	vecRangeCurveMin.push_back(-32768.0);
-//	vecRangeCurveMax.push_back(inEast);
-//	vecRangeCurveMax.push_back(inNorth);
-//	vecRangeCurveMax.push_back(32767.0);
 
 	vectorPool.SetRange(vecRangeMin, vecRangeMax);
-//	vectorPoolCurved.SetRange(vecRangeCurveMin, vecRangeCurveMax);
 
 	// BUILD OBJECT POINT POOLS
 
@@ -517,6 +512,210 @@ void write_raster_pile(FILE * fi, int count, const DT * data)
 		RF(fi,*data++);
 	}
 }
+
+const char * k_cmd_names[35] = {
+	"dsf_Cmd_Reserved",
+
+	"dsf_Cmd_PoolSelect",
+	"dsf_Cmd_JunctionOffsetSelect",
+	"dsf_Cmd_SetDefinition8",
+	"dsf_Cmd_SetDefinition16",
+	"dsf_Cmd_SetDefinition32",
+	"dsf_Cmd_SetRoadSubtype8",
+
+	"dsf_Cmd_Object",
+	"dsf_Cmd_ObjectRange",
+
+	"dsf_Cmd_NetworkChain",
+	"dsf_Cmd_NetworkChainRange",
+	"dsf_Cmd_NetworkChain32",
+
+	"dsf_Cmd_Polygon",
+	"dsf_Cmd_PolygonRange",
+	"dsf_Cmd_NestedPolygon",
+	"dsf_Cmd_NestedPolygonRange",
+
+	"dsf_Cmd_TerrainPatch",
+	"dsf_Cmd_TerrainPatchFlags",
+	"dsf_Cmd_TerrainPatchFlagsLOD",
+	"19","20","21","22",
+
+	"dsf_Cmd_Triangle",
+	"dsf_Cmd_TriangleCrossPool",
+	"dsf_Cmd_TriangleRange",
+	"dsf_Cmd_TriangleStrip",
+	"dsf_Cmd_TriangleStripCrossPool",
+	"dsf_Cmd_TriangleStripRange",
+	"dsf_Cmd_TriangleFan",
+	"dsf_Cmd_TriangleFanCrossPool",
+	"dsf_Cmd_TriangleFanRange",
+
+	"dsf_Cmd_Comment8",
+	"dsf_Cmd_Comment16",
+	"dsf_Cmd_Comment32" };
+
+
+static void analyze_cmd_mem_use(XAtomPackedData& cmdsAtom)
+{
+	map<int,int>	mem_use;
+	int count, counter, commentLen;
+	
+	while(!cmdsAtom.Done())
+	{
+		const char * cmd_start = cmdsAtom.position;
+		int cmd = cmdsAtom.ReadUInt8();
+		if(cmd < 0 || cmd > 34)
+			printf("PARSER ERROR.\n");
+		switch(cmd) {
+		case dsf_Cmd_PoolSelect					:
+			cmdsAtom.ReadUInt16();
+			break;
+		case dsf_Cmd_JunctionOffsetSelect		:
+			cmdsAtom.ReadUInt32();
+			break;
+		case dsf_Cmd_SetDefinition8				:
+			cmdsAtom.ReadUInt8();
+			break;
+		case dsf_Cmd_SetDefinition16			:
+			cmdsAtom.ReadUInt16();
+			break;
+		case dsf_Cmd_SetDefinition32			:
+			cmdsAtom.ReadUInt32();
+			break;
+		case dsf_Cmd_SetRoadSubtype8:
+			cmdsAtom.ReadUInt8();
+			break;
+		/**************************************************************************************************************
+		 * OBJECT COMMANDS
+		 **************************************************************************************************************/
+		case dsf_Cmd_Object						:
+			cmdsAtom.ReadUInt16();
+			break;
+		case dsf_Cmd_ObjectRange				:
+			cmdsAtom.ReadUInt16();
+			cmdsAtom.ReadUInt16();
+			break;
+		/**************************************************************************************************************
+		 * NETWORK COMMANDS
+		 **************************************************************************************************************/
+		case dsf_Cmd_NetworkChain				:
+			count = cmdsAtom.ReadUInt8();
+			for (counter = 0; counter < count; ++counter)
+			{
+				cmdsAtom.ReadUInt16();
+			}
+			break;
+		case dsf_Cmd_NetworkChainRange			:
+			cmdsAtom.ReadUInt16();
+			cmdsAtom.ReadUInt16();
+			break;
+		case dsf_Cmd_NetworkChain32		:
+			count = cmdsAtom.ReadUInt8();
+			for (counter = 0; counter < count; ++counter)
+			{
+				cmdsAtom.ReadUInt32();
+			}
+			break;
+		/**************************************************************************************************************
+		 * POLYGON COMMANDS
+		 **************************************************************************************************************/
+		case dsf_Cmd_Polygon:
+			cmdsAtom.ReadUInt16();
+			count = cmdsAtom.ReadUInt8();
+			while(count--)
+			{
+				cmdsAtom.ReadUInt16();
+			}
+			break;
+		case dsf_Cmd_PolygonRange:
+			cmdsAtom.ReadUInt16();
+			cmdsAtom.ReadUInt16();
+			cmdsAtom.ReadUInt16();
+			break;
+		case dsf_Cmd_NestedPolygon:
+			cmdsAtom.ReadUInt16();
+			count = cmdsAtom.ReadUInt8();
+			while(count--)
+			{
+				counter = cmdsAtom.ReadUInt8();
+				while (counter--)
+				{
+					cmdsAtom.ReadUInt16();
+				}
+			}
+			break;
+		case dsf_Cmd_NestedPolygonRange:
+			cmdsAtom.ReadUInt16();
+			count = cmdsAtom.ReadUInt8() + 1;
+			while(count--)
+			{
+				cmdsAtom.ReadUInt16();
+			}
+			break;
+		/**************************************************************************************************************
+		 * TERRAIN COMMANDS
+		 **************************************************************************************************************/
+		case dsf_Cmd_TerrainPatch				:
+			break;
+		case dsf_Cmd_TerrainPatchFlags			:
+			cmdsAtom.ReadUInt8();
+			break;
+		case dsf_Cmd_TerrainPatchFlagsLOD		:
+			cmdsAtom.ReadUInt8();
+			cmdsAtom.ReadFloat32();
+			cmdsAtom.ReadFloat32();
+			break;
+		case dsf_Cmd_Triangle					:
+		case dsf_Cmd_TriangleStrip				:
+		case dsf_Cmd_TriangleFan				:
+			count = cmdsAtom.ReadUInt8();
+			for (counter = 0; counter < count; ++counter)
+			{
+				cmdsAtom.ReadUInt16();
+			}
+			break;
+		case dsf_Cmd_TriangleCrossPool:
+		case dsf_Cmd_TriangleStripCrossPool:
+		case dsf_Cmd_TriangleFanCrossPool:
+			count = cmdsAtom.ReadUInt8();
+			for (counter = 0; counter < count; ++counter)
+			{
+				cmdsAtom.ReadUInt16();
+				cmdsAtom.ReadUInt16();
+			}
+			break;
+		case dsf_Cmd_TriangleRange				:
+		case dsf_Cmd_TriangleStripRange			:
+		case dsf_Cmd_TriangleFanRange			:
+
+			cmdsAtom.ReadUInt16();
+			cmdsAtom.ReadUInt16();
+			break;
+		/**************************************************************************************************************
+		 * COMMENT COMMANDS
+		 **************************************************************************************************************/
+		case dsf_Cmd_Comment8					:
+			commentLen = cmdsAtom.ReadUInt8();
+			cmdsAtom.Advance(commentLen);
+			break;
+		case dsf_Cmd_Comment16					:
+			commentLen = cmdsAtom.ReadUInt16();
+			cmdsAtom.Advance(commentLen);
+			break;
+		case dsf_Cmd_Comment32					:
+			commentLen = cmdsAtom.ReadUInt32();
+			cmdsAtom.Advance(commentLen);
+			break;
+		}
+		
+		int cmd_len = cmdsAtom.position - cmd_start;
+		mem_use[cmd] += cmd_len;
+	}
+	
+	for(map<int,int>::iterator i = mem_use.begin(); i != mem_use.end(); ++i)
+		printf(" %s: %d\n", k_cmd_names[i->first], i->second);
+}
+
 
 void DSFFileWriterImp::WriteToFile(const char * inPath)
 {
@@ -589,7 +788,9 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 
 		for (prim = prims->second.begin(); prim != prims->second.end(); ++prim)
 		{
-			if (terrainPool[prims->first].CanBeContiguous((*prim)->vertices))
+			if (ALLOW_CONTIGUOUS_PRIMITIVES &&
+					terrainPool[prims->first].CountShared((*prim)->vertices) == 0 &&
+					terrainPool[prims->first].CanBeContiguous((*prim)->vertices))
 			{
 				Assert((*prim)->vertices.size() < 65536);
 				loc = terrainPool[prims->first].AcceptContiguous((*prim)->vertices);
@@ -633,7 +834,10 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	}
 
 #if ENCODING_STATS
-	printf("Contiguous vertices: %d.  Individual vertices: %d\n", total_prim_v_contig, total_prim_v_shared);
+	int shared = 0;
+	for(DSFSharedPointPoolMap::iterator i = terrainPool.begin(); i != terrainPool.end(); ++i)
+		shared += i->second.Count();
+	printf("Contiguous vertices: %d.  Individual vertices: %d (%d)\n", total_prim_v_contig, total_prim_v_shared, shared);
 #endif
 
 	// Compact final pool data.
@@ -819,7 +1023,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		int	sharedLen = vectorPool.CountShared(chainSpecs[n].path);
 		int planes = chainSpecs[n].curved ? 7 : 4;
 		int chainLen = chainSpecs[n].path.size();
-		if ((2 + chainLen * planes) > (chainLen + (chainLen - sharedLen) * planes))
+		if (ALLOW_SHARED_ROADS && (2 + chainLen * planes) > (chainLen + (chainLen - sharedLen) * planes))
 		{
 			// Sink into the most shared pool
 			chainSpecs[n].contiguous = false;
@@ -974,8 +1178,12 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	double	lastLODFar = -1.0;
 	unsigned char lastFlags = 0xFF;
 
+	int cmnd_start = 0;
+
 	{
 		StAtomWriter	writeCmds(fi, dsf_CommandsAtom);
+
+		cmnd_start = writeCmds.mAtomStart;
 
 		WriteUInt8(fi, dsf_Cmd_JunctionOffsetSelect);
 		WriteUInt32(fi, 0);
@@ -1281,6 +1489,31 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 	noCrappyFiles.release();
 	fclose(fi);
 
+	#if DSF_WRITE_STATS
+	
+	fi = fopen(inPath,"r");
+	
+	fseek(fi,cmnd_start,SEEK_SET);
+	
+	XAtomHeader_t	h;
+	fread(&h,sizeof(h),1,fi);
+	h.id = SWAP32(h.id);
+	h.length = SWAP32(h.length);
+	
+	char * buf = (char *) malloc(h.length);
+	fread(buf,h.length,1,fi);
+	fclose(fi);
+	
+	XAtomPackedData cmdsAtom;
+	cmdsAtom.begin = buf - sizeof(XAtomHeader_t);
+	cmdsAtom.position = buf;
+	cmdsAtom.end = cmdsAtom.begin + h.length;
+	analyze_cmd_mem_use(cmdsAtom);
+	
+	free(buf);
+
+	#endif
+
 	DSFSignMD5(inPath);
 }
 
@@ -1441,7 +1674,6 @@ void	DSFFileWriterImp::EndPatch(
 
 		me->primitives.clear();
 		DSFOptimizePrimitives(prims);
-
 		for(vector<DSFPrimitive>::iterator pp = prims.begin(); pp != prims.end(); ++pp)
 		{
 			me->primitives.push_back(TriPrimitive());

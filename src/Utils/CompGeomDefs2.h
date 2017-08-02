@@ -613,6 +613,7 @@ struct lesser_y {	bool	operator()(const Point2& lhs, const Point2& rhs) const { 
 struct lesser_x {	bool	operator()(const Point2& lhs, const Point2& rhs) const { return (lhs.x_ < rhs.x_);}};
 
 
+//Implemented to follow Strict Weak Ordering requirements of the STL
 struct lesser_y_then_x {
 	bool	operator()(const Point2& lhs, const Point2& rhs) const {
 		return (lhs.y_ == rhs.y_) ? (lhs.x_ < rhs.x_) : (lhs.y_ < rhs.y_);

@@ -154,6 +154,32 @@ void		WED_Select::Insert(ISelectable * iwho)
 	}
 }
 
+void WED_Select::Insert(const set<ISelectable*>& sel)
+{
+	Insert(sel.begin(), sel.end());
+}
+
+void WED_Select::Insert(const set<ISelectable*>::const_iterator& begin, const set<ISelectable*>::const_iterator& end)
+{
+	for (set<ISelectable*>::const_iterator itr = begin; itr != end; ++itr)
+	{
+		Insert(*itr);
+	}
+}
+
+void WED_Select::Insert(const vector<ISelectable*>& sel)
+{
+	Insert(sel.begin(), sel.end());
+}
+
+void WED_Select::Insert(const vector<ISelectable*>::const_iterator& begin, const vector<ISelectable*>::const_iterator& end)
+{
+	for (vector<ISelectable*>::const_iterator itr = begin; itr != end; ++itr)
+	{
+		Insert(*itr);
+	}
+}
+
 void		WED_Select::Erase(ISelectable * iwho)
 {
 	int id = iwho->GetSelectionID();
