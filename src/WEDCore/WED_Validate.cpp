@@ -502,7 +502,84 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 				string msg = "Polygon '" + string(who->HumanReadableType()) + "' is wound clock wise. Reverse selected polygon to fix this.";
 				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who, apt));
 			}
+			
+			// TODO: merge below with do_select_crossing(vector<WED_GISEdge* > edges) in WED_GroupCommands.cpp
+
+			set<int> crossed_edges;
+			nn = ips->GetNumSides();
+
+			for (int i = 0; i < nn-1; ++i)
+				for (int j = i + 1; j < nn; ++j)
+				{
+					Segment2 s1, s2;
+					Bezier2 b1, b2;
+
+					bool isb1, isb2;
+
+					if (isb1 = ips->GetSide(gis_Geo, i, s1, b1))
+					{
+						s1.p1 = b1.p1;
+						s1.p2 = b1.p2;
+					}
+					else
+					{
+						b1.c1 = b1.p1;
+						b1.c2 = b1.p2;
+					}
+
+					if (isb2 = ips->GetSide(gis_Geo, j, s2, b2))
+					{
+						s2.p1 = b2.p1;
+						s2.p2 = b2.p2;
+					}
+					else
+					{
+						b2.c1 = b2.p1;
+						b2.c2 = b2.p2;
+					}
+
+					Point2 x;
+					if (s1.p1 != s2.p1 &&
+						s1.p2 != s2.p2 &&
+						s1.p1 != s2.p2 &&
+						s1.p2 != s2.p1)
+					{
+						if (!isb1 && !isb2)
+						{
+							if (s1.intersect(s2, x))
+							{
+								crossed_edges.insert(i);
+								crossed_edges.insert(j);
+							}
+						}
+						else
+						{
+							if (b1.intersect(b2, 12))      // may have to go higher to catch all ?
+							{
+								crossed_edges.insert(i);
+								crossed_edges.insert(j);
+							}
+							if (b1.self_intersect(12))     // may have to go higher to catch all ?
+							{
+								crossed_edges.insert(i);
+							}
+						}
+					}
+				}
+
+// ToDo: Map edge numbers into nodes, then select those to indicate location of protested edge(s)
+			
+//			vector<WED_TextureNode*> nod;
+//			for(iterator vv// may have to go higher to catch all ?
+			
+			if (!crossed_edges.empty())
+			{
+				string msg = "Polygon '" + string(who->HumanReadableType()) + "' has crossing or self-intersecting edges.";
+				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who, apt));
+			}
+
 		}
+
 	}
 }
 
