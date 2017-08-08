@@ -1078,7 +1078,7 @@ set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 {
 	set<WED_GISEdge*> crossed_edges;
 	// Ben says: yes this totally sucks - replace it someday?
-	for (int i = 0; i < edges.size(); ++i)
+	for (int i = 0; i < edges.size()-1; ++i)
 	{
 		for (int j = i + 1; j < edges.size(); ++j)
 		{
@@ -1091,45 +1091,26 @@ set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 			Bezier2 b1, b2;
 			bool isb1, isb2;
 
-			if (isb1 = ii->GetSide(gis_Geo, 0, s1, b1))
-			{
-				s1.p1 = b1.p1;
-				s1.p2 = b1.p2;
+			isb1 = ii->GetSide(gis_Geo, 0, s1, b1);
+			isb2 = jj->GetSide(gis_Geo, 0, s2, b2);
+			
+			if (isb1 || isb2)
+			{   // should never get here, as edges (used for ATC routes only) are not supposed to have bezier segments
+				if (b1.intersect(b2, 12))
+				{
+					crossed_edges.insert(edges[i]);
+					crossed_edges.insert(edges[j]);
+				}
 			}
-			else
+			else 
 			{
-				b1.c1 = b1.p1;
-				b1.c2 = b1.p2;
-			}
-
-			if (isb2 = jj->GetSide(gis_Geo, 0, s2, b2))
-			{
-				s2.p1 = b2.p1;
-				s2.p2 = b2.p2;
-			}
-			else
-			{
-				b2.c1 = b2.p1;
-				b2.c2 = b2.p2;
-			}
-
-			Point2 x;
-			if (s1.p1 != s2.p1 &&
-				s1.p2 != s2.p2 &&
-				s1.p1 != s2.p2 &&
-				s1.p2 != s2.p1)
-			{
-				if (!isb1 && !isb2)
+				Point2 x;
+				if (s1.p1 != s2.p1 &&
+					s1.p2 != s2.p2 &&
+					s1.p1 != s2.p2 &&
+					s1.p2 != s2.p1)
 				{
 					if (s1.intersect(s2, x))
-					{
-						crossed_edges.insert(edges[i]);
-						crossed_edges.insert(edges[j]);
-					}
-				}
-				else
-				{
-					if (b1.intersect(b2, 12))
 					{
 						crossed_edges.insert(edges[i]);
 						crossed_edges.insert(edges[j]);

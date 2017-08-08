@@ -471,9 +471,9 @@ static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& 
 static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msgs, WED_Airport * apt)
 {
 	// check for outer ring wound CCW (best case it will not show in XP, worst case it will assert in DSF export)
-	// don't check Forests unless they are closed, don't check Facades with no roof
+	// check for self-intersecting polygons
+	// not called for Forests unless they are closed, not for Facades with no roof
 	
-
 /*	if ( who->GetClass() == WED_DrapedOrthophoto::sClass ||
 	     who->GetClass() == WED_PolygonPlacement::sClass ||
 	     who->GetClass() == WED_Taxiway::sClass ||
@@ -505,12 +505,10 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who, apt));
 			}
 			
-			// TODO: merge below with do_select_crossing(vector<WED_GISEdge* > edges) in WED_GroupCommands.cpp
-
-			set<WED_GISPoint *> nodes;
+			set<WED_GISPoint *> nodes_next2crossings;
 			int n_sides = ips->GetNumSides();
-#if 1
-			for (int i = 0; i < n_sides-1; ++i)
+
+			for (int i = 0; i < n_sides; ++i)
 			{
 				Segment2 s1;
 				Bezier2 b1;
@@ -520,9 +518,9 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 				{
 					WED_GISPoint *n;
 					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-						nodes.insert(n);
+						nodes_next2crossings.insert(n);
 					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-						nodes.insert(n);
+						nodes_next2crossings.insert(n);
 				}
 
 				for (int j = i + 1; j < n_sides; ++j)
@@ -537,13 +535,13 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 						{							   // be broken up into 2^10 = 1024 sub-segments at the most
 							WED_GISPoint *n;
 							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-								nodes.insert(n);
+								nodes_next2crossings.insert(n);
 							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-								nodes.insert(n);
+								nodes_next2crossings.insert(n);
 							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(j)))
-								nodes.insert(n);
+								nodes_next2crossings.insert(n);
 							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((j+1)%n_pts)))
-								nodes.insert(n);
+								nodes_next2crossings.insert(n);
 						}
 					}
 					else // precision would not matter, we would not have to treat linear segments separately ...
@@ -558,27 +556,25 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 							{
 								WED_GISPoint *n;
 								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-									nodes.insert(n);
+									nodes_next2crossings.insert(n);
 								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-									nodes.insert(n);
+									nodes_next2crossings.insert(n);
 								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(j)))
-									nodes.insert(n);
+									nodes_next2crossings.insert(n);
 								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((j+1)%n_pts)))
-									nodes.insert(n);
+									nodes_next2crossings.insert(n);
 							}
 						}
 					}
 				}
 			}
-			if (!nodes.empty())
+			if (!nodes_next2crossings.empty())
 			{
 			    string nam; who->GetName(nam);
 				string msg = string(who->HumanReadableType()) + " '" + nam + "' has crossing or self-intersecting segments.";
-				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, nodes, apt));
+				msgs.push_back(validation_error_t(msg, 	err_gis_poly_self_intersecting, nodes_next2crossings, apt));
 			}
-#endif
 		}
-
 	}
 }
 
@@ -2141,19 +2137,23 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 	}
+// very basic profiling
+// struct timespec t0,t1; char c[100];
+// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
 
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 
-
-struct timespec t0,t1;
-clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
+// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
+// sprintf(c,"Time for ValidatePointSequencesRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
+// DoUserAlert(c);
+ 
+// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
  
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 	
-clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
-char c[100]; sprintf(c,"Time for ValidateDSFRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
-DoUserAlert(c);
-
+// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
+// sprintf(c,"Time for ValidateDSFRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
+// DoUserAlert(c);
 }
 
 
