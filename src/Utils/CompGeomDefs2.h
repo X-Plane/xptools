@@ -773,10 +773,10 @@ inline bool	Segment2::intersect(const Segment2& rhs, Point2& p) const
 	// Interest uses Line2 for the general case and then colinear-has-on to see
 	// if we're off the end of the "caps".  But first we special-case all horizontal
 	// and vertical cases to get "perfect" intersections.
-	if (rhs.p1 == p1 && rhs.p2 == p2) return false;
-	if (rhs.p1 == p2 && rhs.p2 == p1) return false;
-	if (rhs.p1 == p1 || rhs.p2 == p1) { p = p1; return true; }
-	if (rhs.p1 == p2 || rhs.p2 == p2) { p = p2; return true; }
+	if (rhs.p1 == p1 && rhs.p2 == p2) return false;     // co-located segments
+	if (rhs.p1 == p2 && rhs.p2 == p1) return false;     // reversed, co-located segments
+	if (rhs.p1 == p1 || rhs.p2 == p1) { p = p1; return true; }  // segments sharing node 1
+	if (rhs.p1 == p2 || rhs.p2 == p2) { p = p2; return true; }  // segments sharing node 2
 
 	if (is_horizontal())
 	{
@@ -1325,7 +1325,29 @@ inline bool	Bezier2::intersect(const Bezier2& rhs, int d) const
 	this->bounds(lhs_bbox);
 	rhs.bounds(rhs_bbox);
 
-	if (d < 0)									return true;
+	if (d < 0)
+	{
+		//	return true;    //  In case of the current checked dub-segments connecting to a common node, any curves that connect there under 
+							//  an acute angles are in many cases having overlapping bounding boxes without actually crossing. 
+							// To avoid these false positive, we finish with check for a straigt segment aproximation here.
+							
+		Segment2 lhs_seg, rhs_seg;
+		lhs_seg.p1 = this->p1;
+		lhs_seg.p2 = this->p2;
+		rhs_seg.p1 = rhs.p1;
+		rhs_seg.p2 = rhs.p2;
+		
+		if (lhs_seg.p1 != rhs_seg.p1 &&      // check if segments are adjacent, i.e. share a node,
+		    lhs_seg.p1 != rhs_seg.p2 &&      // as linear segment cross check returns a false positive here
+		    lhs_seg.p2 != rhs_seg.p1 &&      // (unlike the bezier intersect test)
+		    lhs_seg.p2 != rhs_seg.p2)
+		{		
+			Point2 x;
+			return lhs_seg.intersect(rhs_seg, x);
+		}
+		else
+			return false;                     // we assume the sub-segments connecting to a common node never intersect.
+	}
 	if (!lhs_bbox.interior_overlap(rhs_bbox))	return false;
 
 	// Ben says: it is NOT good enough to say that if the underlying segments cross, the curves cross EVEN if they're monotone.  Why?
@@ -1485,9 +1507,9 @@ inline void	Bezier2::bounds(Bbox2& bounds) const
 {
 	double t[4];
 	int n = monotone_regions(t);
-	bounds = Bbox2(p1,p2);				// bounding box is exetended by the endpoints and
-	for (int i = 0; i < n; ++i)			// any point where we change monotonacity.  This is equivalent to breaking the
-		bounds += midpoint(t[i]);		// curve into up to 4 monotone pieces, taking those 4 bounding box endpoints, and unioning them all!
+	bounds = Bbox2(p1,p2);				// bounding box is extended by the endpoints and any point where it 
+	for (int i = 0; i < n; ++i)			// changes monotonicity.  This is equivalent to breaking the curve up into
+		bounds += midpoint(t[i]);		// 4 monotone pieces, taking those 4 bounding box endpoints and unioning them all !
 }
 
 
