@@ -509,17 +509,27 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 
 			set<WED_GISPoint *> nodes;
 			int n_sides = ips->GetNumSides();
-
+#if 1
 			for (int i = 0; i < n_sides-1; ++i)
+			{
+				Segment2 s1;
+				Bezier2 b1;
+				bool isb1 = ips->GetSide(gis_Geo, i, s1, b1);
+				
+				if (isb1 && b1.self_intersect(10))
+				{
+					WED_GISPoint *n;
+					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
+						nodes.insert(n);
+					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
+						nodes.insert(n);
+				}
+
 				for (int j = i + 1; j < n_sides; ++j)
 				{
-					Segment2 s1, s2;
-					Bezier2 b1, b2;
-
-					bool isb1, isb2;
-
-					isb1 = ips->GetSide(gis_Geo, i, s1, b1);
-					isb2 = ips->GetSide(gis_Geo, j, s2, b2);
+					Segment2 s2;
+					Bezier2 b2;
+					bool isb2 = ips->GetSide(gis_Geo, j, s2, b2);
 
 					if (isb1 || isb2)
 					{
@@ -533,14 +543,6 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(j)))
 								nodes.insert(n);
 							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((j+1)%n_pts)))
-								nodes.insert(n);
-						}
-						if (b1.self_intersect(10))
-						{
-							WED_GISPoint *n;
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-								nodes.insert(n);
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
 								nodes.insert(n);
 						}
 					}
@@ -567,14 +569,14 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 						}
 					}
 				}
-			
+			}
 			if (!nodes.empty())
 			{
 			    string nam; who->GetName(nam);
 				string msg = string(who->HumanReadableType()) + " '" + nam + "' has crossing or self-intersecting segments.";
 				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, nodes, apt));
 			}
-
+#endif
 		}
 
 	}
@@ -2142,7 +2144,16 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	ValidatePointSequencesRecursive(apt, msgs,apt);
 
+
+struct timespec t0,t1;
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
+ 
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
+	
+clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
+char c[100]; sprintf(c,"Time for ValidateDSFRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
+DoUserAlert(c);
+
 }
 
 
