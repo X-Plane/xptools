@@ -1078,7 +1078,7 @@ set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 {
 	set<WED_GISEdge*> crossed_edges;
 	// Ben says: yes this totally sucks - replace it someday?
-	for (int i = 0; i < edges.size()-1; ++i)
+	for (int i = 0; i < edges.size(); ++i)
 	{
 		for (int j = i + 1; j < edges.size(); ++j)
 		{
@@ -1096,7 +1096,7 @@ set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 			
 			if (isb1 || isb2)
 			{   // should never get here, as edges (used for ATC routes only) are not supposed to have bezier segments
-				if (b1.intersect(b2, 12))
+				if (b1.intersect(b2, 10))
 				{
 					crossed_edges.insert(edges[i]);
 					crossed_edges.insert(edges[j]);
