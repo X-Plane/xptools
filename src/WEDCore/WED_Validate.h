@@ -25,6 +25,8 @@
 #define WED_Validate_h
 
 #include "WED_Entity.h"
+#include "WED_TaxiRoute.h"
+
 
 class	IResolver;
 class	WED_Thing;
@@ -177,4 +179,5 @@ validation_error_t::validation_error_t(const string& m, validate_error_t error_c
 {
 	copy(container.begin(), container.end(), back_inserter(bad_objects));
 }
+
 #endif

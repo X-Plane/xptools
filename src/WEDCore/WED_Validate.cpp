@@ -875,9 +875,9 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 				continue;
 			}
 
-			TaxiRouteInfo2 edge_a(*edge_a_itr,translator);
-			TaxiRouteInfo2 edge_b(*edge_b_itr,translator);
-
+			TaxiRouteInfo edge_a(*edge_a_itr,translator);
+			TaxiRouteInfo edge_b(*edge_b_itr,translator);
+ 
 			//tmp doesn't matter to us
 			Point2 tmp;
 			if (edge_a.taxiroute_segment_m.intersect(edge_b.taxiroute_segment_m,tmp) == true)
@@ -909,14 +909,7 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 			for (int i = 0; i < 2; i++)
 			{
 				set<WED_Thing*> node_viewers;
-				if (i == 0)
-				{
-					edge_b.node_0->GetAllViewers(node_viewers);
-				}
-				else if (i == 1)
-				{
-					edge_b.node_1->GetAllViewers(node_viewers);
-				}
+				edge_b.nodes[i]->GetAllViewers(node_viewers);
 
 				int valence = node_viewers.size();
 				if (valence == 1)
@@ -930,16 +923,8 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 						string problem_node_name;
 
-						if (i == 0)//src
-						{
-							problem_children.push_back((edge_b.node_0));
-							edge_b.node_0->GetName(problem_node_name);
-						}
-						else if (i == 1)
-						{
-							problem_children.push_back((edge_b.node_1));
-							edge_b.node_1->GetName(problem_node_name);
-						}
+						problem_children.push_back((edge_b.nodes[i]));
+						edge_b.nodes[i]->GetName(problem_node_name);
 
 						msgs.push_back(validation_error_t("Taxi route " + edge_a.taxiroute_name + " is not joined to a destination route.", err_taxi_route_not_joined_to_dest_route, problem_children, apt));
 					}
