@@ -32,15 +32,15 @@
 static void clean_vpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
-	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-		s[p] = '/';
+		if(s[p] == '\\' || s[p] == ':')
+			s[p] = '/';
 }
 
 static void clean_rpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
-	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-		s[p] = DIR_CHAR;
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+			s[p] = DIR_CHAR;
 }
 
 // checks if path includes enough '..' to possibly not be a true subdirectory of the current directory
@@ -162,9 +162,7 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 string		WED_LibraryMgr::GetResourcePath(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return string();
 	return me->second.real_path;
@@ -173,9 +171,7 @@ string		WED_LibraryMgr::GetResourcePath(const string& r)
 bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.is_default;	
@@ -184,9 +180,7 @@ bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 bool	WED_LibraryMgr::IsResourceLocal(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.packages.count(pack_Local) && me->second.packages.size() == 1;
@@ -195,9 +189,7 @@ bool	WED_LibraryMgr::IsResourceLocal(const string& r)
 bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return !me->second.packages.count(pack_Local) || me->second.packages.size() > 1;
@@ -206,9 +198,7 @@ bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.status < status_Public;
