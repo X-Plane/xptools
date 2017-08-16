@@ -159,13 +159,14 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 	return me->second.res_type;
 }
 
-string		WED_LibraryMgr::GetResourcePath(const string& r)
+string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
 	string fixed(r);
 	clean_vpath(fixed);
 	res_map_t::iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return string();
-	return me->second.real_path;
+	DebugAssert(variant < me->second.real_paths.size());
+	return me->second.real_paths[variant];
 }
 
 bool	WED_LibraryMgr::IsResourceDefault(const string& r)
@@ -221,6 +222,15 @@ bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 			return true;
 		}
 	return false;
+}
+
+int		WED_LibraryMgr::GetNumVariants(const string& r)
+{
+	string fixed(r);
+	clean_vpath(fixed);
+	res_map_t::const_iterator me = res_table.find(fixed);
+	if (me==res_table.end()) return 1;
+	return me->second.real_paths.size();
 }
 
 
@@ -402,7 +412,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.status = status;
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
-			new_info.real_path = rpath;
+			new_info.real_paths.push_back(rpath);
 			new_info.is_backup = is_backup;
 			new_info.is_default = is_default;
 			res_table.insert(res_map_t::value_type(p,new_info));
@@ -415,8 +425,12 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			if(i->second.is_backup && !is_backup)
 			{
 				i->second.is_backup = false;
-				i->second.real_path = rpath;
+				i->second.real_paths.clear();
 			}
+			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
+			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
+				i->second.real_paths.push_back(rpath);
+				
 			if(is_default && !i->second.is_default)
 				i->second.is_default = true;
 		}

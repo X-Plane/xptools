@@ -54,6 +54,8 @@ private:
 		ITexMgr *			mTexMgr;
 		string				mRes;
 		int					mType;
+		int					mNumVariants;  // number of variants provided by object
+		int					mVariant;      // variant we want to show
 };
 
 #endif

@@ -37,20 +37,20 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 	// sanitize list of walls
 	for (vector<wall_map_t>::iterator i = walls.begin(); i != walls.end(); ++i)
 	{
-	printf("%s\ninitial wall v=%5.3f %5.3f %5.3f %5.3f h=%5.3f %5.3f %5.3f %5.3f\n",wall_tex.c_str(),i->vert[0],i->vert[1],i->vert[2],i->vert[3],i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
+//	printf("%s\ninitial wall v=%5.3f %5.3f %5.3f %5.3f h=%5.3f %5.3f %5.3f %5.3f\n",wall_tex.c_str(),i->vert[0],i->vert[1],i->vert[2],i->vert[3],i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
 		
 		
 		if (i->vert[1] == 0.0)
 		{
 //			walls.erase(i);
-	printf("no bottom no middle => erase !\n");
+//	printf("no bottom no middle => erase !\n");
 			break;
 		}
 
 		if (i->vert[2] == 0.0)
 		{
 			i->vert[2] = i->vert[1];
-	printf("no middle v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
+//	printf("no middle v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
 		}
 		else
 			has_middles=true;
@@ -58,7 +58,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 		if (i->vert[3] == 0.0)
 		{   
 			i->vert[3] = i->vert[2];
-	printf("no top v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
+//	printf("no top v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
 		}
 		else
 			has_middles=true;
@@ -67,23 +67,23 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 		{
 			i->hori[2] = i->hori[1];
 			i->hori[1] = i->hori[0];
-	printf("no center h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
+//	printf("no center h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
 		}
 		
 		
 		if (i->hori[3] == 0.0)
 		{
 			i->hori[3] = i->hori[2];
-	printf("no right h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
+//	printf("no right h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
 		}
 		
 		float ideal_len = (i->hori[2]-i->hori[0] + i->hori[3]-i->hori[1]) * info.scale_x;
 		
-	printf("ideal_len %3.1f\n",ideal_len);
+//	printf("ideal_len %3.1f\n",ideal_len);
 		
         want_len = max(want_len,ideal_len);
 
-	fflush(stdout);
+//	fflush(stdout);
 	}
 	
 	int want_floors = 1;      // # floors in the way the Obj8 is constructed. Not the floors of the building/facade represents.
@@ -142,7 +142,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 						float exact = 2.0 + len_left / ((walls[w].hori[2]-walls[w].hori[1]) * info.scale_x);
 						int sects = ceil(exact);
 
-printf("want %5.1f left %5.1f sects %d left %5.1f\n",want_len, len_left, sects, exact-sects);
+// printf("want %5.1f left %5.1f sects %d left %5.1f\n",want_len, len_left, sects, exact-sects);
 						
 						for (int k=0; k<sects; k++)
 						{

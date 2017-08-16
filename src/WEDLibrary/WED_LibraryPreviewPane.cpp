@@ -52,6 +52,12 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 {
 	mRes = r;
 	mType = res_type;
+	
+	if(res_type == res_Object || res_type == res_Facade) 
+		mNumVariants = mResMgr->GetNumVariants(r);
+	else
+		mNumVariants = 1;     // we haven't yet implemented variant display for anything else
+	mVariant = 0;
 }
 
 void WED_LibraryPreviewPane::ClearResource(void)
@@ -59,7 +65,7 @@ void WED_LibraryPreviewPane::ClearResource(void)
 	mRes.clear();
 }
 
-int		WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
+int	WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 {
 	while(dist > 0)
 	{
@@ -75,9 +81,6 @@ int		WED_LibraryPreviewPane::ScrollWheel(int x, int y, int dist, int axis)
 	Refresh();
 	return 1;
 }
-
-// proof-of concept level code for subTexture selectoin.
-// links WED_CreatePolygonTool::AcceptPath via this global variable
 
 int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 {
@@ -143,10 +146,21 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 		mResMgr->SetPolUV(mRes,pol.mUVBox);
 		Refresh();
 	}
+	else
+	{
+		if (y >= b[3]-15)         // click in top right corner, where the ugly botton is
+		{
+			if (mVariant < mNumVariants-1)
+				mVariant++;
+			else
+				mVariant = 0;
+			Refresh();
+		}
+	}
 	return 1;
 }
 
-void		WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
+void	WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 {
 	float dx = x - mX;
 	float dy = y - mY;
@@ -158,7 +172,7 @@ void		WED_LibraryPreviewPane::MouseDrag(int x, int y, int button)
 	Refresh();
 }
 
-void		WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)
+void	WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)
 {
 }
 
@@ -281,7 +295,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Facade:
 			if(!o)
 			{
-				if (mResMgr->GetFac(mRes,fac))
+				if (mResMgr->GetFac(mRes,fac,mVariant))
 				{
 					if (fac.previews.size()) o = fac.previews[0];
 					o_vec = fac.previews;
@@ -291,7 +305,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 #endif
 		case res_Object:
-			if (o || mResMgr->GetObj(mRes,o))
+			if (o || mResMgr->GetObj(mRes,o,mVariant))
 			{
 				float real_radius=pythag(
 									o->xyz_max[0]-o->xyz_min[0],
@@ -452,16 +466,31 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				if (o)
 				{
 					int n = sprintf(buf2,"Height above ground %.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
-					if (o->xyz_min[1] < -0.05)
+					if (o->xyz_min[1] < -0.07)
 						sprintf(buf2+n,", extends below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 				}
 				break;
 		}
 		float text_color[4] = { 1,1,1,1 };
 		if (buf1[0])
-			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 25, buf1);
+			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1]+25, buf1);
 		if (buf2[0])
-			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1] + 10, buf2);
+			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1]+10, buf2);
+		
+		if (mNumVariants > 1) // show "variant selector" button, qugly, but quick.
+		{
+			g->Reset();
+			glColor4fv(WED_Color_RGBA(wed_TextField_Bkgnd));
+			glBegin(GL_LINE_LOOP);
+			glVertex2f(b[0]+1, b[3]-15);
+			glVertex2f(b[2]-1, b[3]-15);
+			glVertex2f(b[2]+1, b[3]-1);
+			glVertex2f(b[0]-1, b[3]-1);
+			glEnd();
+			
+			sprintf(buf1,"Showing %d of %d variants exported. Click here to cycle through.",mVariant+1,mNumVariants);
+			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[3]-13, buf1);
+		}
 		
 	}
 }
