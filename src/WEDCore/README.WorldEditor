@@ -23,6 +23,7 @@ WED 1.6.1b1
 	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon gateway/apt.dat import
 	- WED 888: Make "Vehicles Drive on Left" airport property readable 
 	- WED-855: Fix taxi sign editor problems with separator glyphs
+	- WED-903: Fix missing texturing in WED for .OBJ that use ATTR_draped with TEXTURE and no TEXTURE_DRAPED commands.
 
 WED 1.6r1 6/7/17
 	Bug fixes

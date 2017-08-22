@@ -105,7 +105,10 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 	}
 
 	process_texture_path(p,obj->texture);
-	process_texture_path(p,obj->texture_draped);
+	if (obj->texture_draped.length() > 0)
+		process_texture_path(p,obj->texture_draped);
+	else
+		obj->texture_draped = obj->texture;
 
 	mObj[lib_key] = obj;
 	return true;
@@ -142,7 +145,10 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj)
 	}
 
 	process_texture_path(p,obj->texture);
-	process_texture_path(p,obj->texture_draped);
+	if (obj->texture_draped.length() > 0)
+		process_texture_path(p,obj->texture_draped);
+	else
+		obj->texture_draped = obj->texture;
 
 	mObj[path] = obj;
 	return true;
