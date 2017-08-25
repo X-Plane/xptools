@@ -936,7 +936,8 @@ static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_erro
 
 static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs, set<int>& legal_rwy_oneway, WED_Airport * apt)
 {
-	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, has at least one runway use rule. Otherweise XP 10.51 will give an error.
+	// Check ATC Flow visibility > 0, ceiling > 0, ICAO code is set, at least one arrival and one departure runway and 
+	// is not using any runway in opposing directions simultaneously fro either arr or dep
 
 	string name;
 	flow->GetName(name);
@@ -957,9 +958,6 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 	CollectRecursive(flow, back_inserter(wind),  IgnoreVisiblity, TakeAlways, WED_ATCWindRule::sClass);
 	CollectRecursive(flow, back_inserter(timeR), IgnoreVisiblity, TakeAlways, WED_ATCTimeRule::sClass);
 	CollectRecursive(flow, back_inserter(ruse),  IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
-
-	if(ruse.empty())
-		msgs.push_back(validation_error_t("You have an airport flow with no runway use rules.  You need at least oneway use rule to create an active runway.", err_flow_no_rwy_use_rules, flow, apt));
 
 	if(legal_rwy_oneway.count(flow->GetPatternRunway()) == 0)
 		msgs.push_back(validation_error_t(string("The pattern runway ") + string(ENUM_Desc(flow->GetPatternRunway())) + " is illegal for the ATC flow '" + name + "' because it is not a runway at this airport.", err_flow_pattern_runway_not_in_airport, flow, apt));
@@ -1023,7 +1021,7 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 			{
 				if(departure_rwys.count(get_opposite_rwy(rwy)))
 				{
-					msgs.push_back(validation_error_t("Airport Flow has opposite direction departures.", err_flow_has_opposite_departures, departure_rwys[get_opposite_rwy(rwy)], apt));
+					msgs.push_back(validation_error_t("Airport flow has opposite direction departures.", err_flow_has_opposite_departures, departure_rwys[get_opposite_rwy(rwy)], apt));
 					msgs.back().bad_objects.push_back(use);
 				}
 				departure_rwys[rwy].push_back(use);
@@ -1031,6 +1029,10 @@ static void ValidateOneATCFlow(WED_ATCFlow * flow, validation_error_vector& msgs
 		}
 	}
 	#endif
+	
+	if (arrival_rwys.empty() || departure_rwys.empty())
+		msgs.push_back(validation_error_t("Airport flow must specify at least one active arrival and one departure runway", err_flow_no_arr_or_no_dep_runway, flow, apt));
+	
 }
 
 static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int>& legal_rwy_oneway, set<int>& legal_rwy_twoway)

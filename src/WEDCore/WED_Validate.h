@@ -63,7 +63,7 @@ enum validate_error_t
 	err_flow_blank_ICAO_for_METAR,
 	err_flow_blank_name,
 	err_flow_flows_only_for_gte_xp10,
-	err_flow_no_rwy_use_rules,
+	err_flow_no_arr_or_no_dep_runway,
 	err_flow_has_opposite_arrivals,
 	err_flow_has_opposite_departures,
 	err_flow_pattern_runway_not_in_airport,
