@@ -486,3 +486,144 @@ void	WED_Runway::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 	}
 }
 
+#include "WED_Airport.h"
+#include "WED_HierarchyUtils.h"
+#include "WED_TaxiRoute.h"
+#include "WED_AirportSign.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCRunwayUse.h"
+
+void  WED_Runway::PropEditCallback(int before)
+{
+#if 1 // DEV
+	static int    old_enum;            // we want to catch changes of the name property, only
+	static pair<int,int> old_enum_2wy;
+	if (before)
+	{
+		old_enum = GetRunwayEnumsTwoway();
+		old_enum_2wy = GetRunwayEnumsOneway();
+		
+		string old_name; GetName(old_name);
+		printf("old N %s E %d\n", old_name.c_str(),old_enum);
+	}
+	else
+	{
+		int new_enum = GetRunwayEnumsTwoway();
+		pair<int,int> new_enum_2wy = GetRunwayEnumsOneway();
+		
+		if (new_enum == atc_rwy_None)
+		{
+			printf("New name is illegal !\n");
+//			SetName(old_name); // refuse change to any illegal name
+		}
+		else if(0) 
+		{
+			printf("Another runway of same name already exists !\n");
+//			SetName(old_name); // refuse change to any duplicate name
+		}
+		else if(new_enum != old_enum)
+		{
+			string new_name; GetName(new_name);
+			printf("New N %s E %d\n", new_name.c_str(),new_enum);
+			
+			// find the airport we're belonging to
+			WED_Thing * thing = this;
+			WED_Airport * apt;
+				
+			while (thing = thing->GetParent())
+			{
+				apt = dynamic_cast<WED_Airport *>(thing);
+				if (apt) break;
+			}
+			
+			if (apt)
+			{	
+				// get all ATC Taxi segments
+				vector<WED_TaxiRoute *>	taxi_routes;
+				CollectRecursive(apt,back_inserter(taxi_routes), WED_TaxiRoute::sClass);
+				
+				for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
+				{
+					// move all hotzone tags 
+					set<int> hotZ;
+					hotZ = (*t)->GetHotArrive();
+					if (hotZ.erase(old_enum_2wy.first))
+						hotZ.insert(new_enum_2wy.first);
+					if( hotZ.erase(old_enum_2wy.second))
+						hotZ.insert(new_enum_2wy.second);
+					(*t)->SetHotArrive(hotZ);
+					
+					hotZ = (*t)->GetHotDepart();
+					if (hotZ.erase(old_enum_2wy.first))
+						hotZ.insert(new_enum_2wy.first);
+					if( hotZ.erase(old_enum_2wy.second))
+						hotZ.insert(new_enum_2wy.second);
+					(*t)->SetHotDepart(hotZ);
+					
+					hotZ = (*t)->GetHotILS();
+					if (hotZ.erase(old_enum_2wy.first))
+						hotZ.insert(new_enum_2wy.first);
+					if( hotZ.erase(old_enum_2wy.second))
+						hotZ.insert(new_enum_2wy.second);
+					(*t)->SetHotILS(hotZ);
+				
+					if ((*t)->GetRunway() == old_enum)
+					{
+						(*t)->SetRunway(new_enum);
+					}
+						
+				}
+
+				// get all flows
+				vector<WED_ATCFlow *> flows;
+				CollectRecursive(apt,back_inserter(flows), IgnoreVisiblity, TakeAlways, WED_ATCFlow::sClass);
+
+				for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
+				{
+					int r = (*f)->GetPatternRunway();
+					if(r = old_enum_2wy.first)
+						(*f)->SetPatternRunway(new_enum_2wy.first);
+					else if(r = old_enum_2wy.second)
+						(*f)->SetPatternRunway(new_enum_2wy.second);
+				}
+
+				// get all runway use rules
+				vector<WED_ATCRunwayUse *> uses;
+				CollectRecursive(apt, back_inserter(uses), IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
+				
+				for(vector<WED_ATCRunwayUse *>::iterator u = uses.begin(); u != uses.end(); ++u)
+				{
+					int r = (*u)->GetRunway();
+					if(r = old_enum_2wy.first)
+						(*u)->SetRunway(new_enum_2wy.first);
+					else if(r = old_enum_2wy.second)
+						(*u)->SetRunway(new_enum_2wy.second);
+				}
+				// get all taxi signs
+				vector<WED_AirportSign *> signs;
+				CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
+				string old_rwy = ENUM_Desc(old_enum_2wy.first);
+				string new_rwy = ENUM_Desc(new_enum_2wy.first);
+				
+				printf("looking for %s\n",ENUM_Desc(old_enum_2wy.first));
+		
+				for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
+				{
+					string label; (*s)->GetName(label);
+					// gotta be a bit more conservative than just looking for a substring,
+					// don't change a sign "GATE 12" when renaming Rwy 12.
+
+					printf("check sign %s\n",label.c_str());
+					
+					if (label.find(old_rwy) != string::npos || (old_rwy[0] == '0' && label.find(old_rwy.substr(1)) != string::npos) )
+					{
+						printf("change sign %s\n",label.c_str());
+					}
+				}
+				
+			}
+		}
+	}
+#endif
+}
+
