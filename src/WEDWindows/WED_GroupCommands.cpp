@@ -3099,6 +3099,8 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 	
 }
 
+#include "WED_Runway.h"
+
 void WED_UpgradeRampStarts(IResolver * resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
@@ -3111,4 +3113,122 @@ void WED_UpgradeRampStarts(IResolver * resolver)
 	else
 		root->AbortOperation();
 	
+}
+
+struct changelist_t
+{
+	string ICAO;
+	int old_rwy;
+	int new_rwy;
+};
+
+int wed_rename_rwys_recursive(WED_Thing * who, vector<struct changelist_t> clist)
+{
+	int renamed = 0;
+	WED_Airport * apt = dynamic_cast<WED_Airport *> (who);
+	if(apt)
+	{
+		vector<WED_Runway *> rwys;
+		CollectRecursive(apt, back_inserter(rwys),  WED_Runway::sClass);
+		
+		for(vector<WED_Runway *>::iterator r = rwys.begin(); r != rwys.end(); ++r)
+		{
+			int old_rwy_enum = (*r)->GetRunwayEnumsTwoway();
+			for(vector<struct changelist_t>::iterator c = clist.begin(); c != clist.end(); ++c)
+			{
+				string s; apt->GetICAO(s);
+				if((*c).ICAO == s) 
+				{
+					if ((*c).old_rwy == old_rwy_enum)
+					{
+						printf("Renaming %s Rwy %s to %s\n",s.c_str(),ENUM_Desc((*c).old_rwy),ENUM_Desc((*c).new_rwy));
+						(*r)->SetName(ENUM_Desc((*c).new_rwy));
+						renamed++;
+					}
+				}
+			}
+			
+		}
+	}
+	else            // no need to check for nested airports
+	{
+		int nn = who->CountChildren();
+		for(int n = 0; n < nn; ++n)
+			renamed += wed_rename_rwys_recursive(who->GetNthChild(n), clist);
+	}
+	return renamed;
+}
+
+#include "CSVParser.h"
+#include <fstream>
+
+void WED_RenameRunwayNames(IResolver * resolver)
+{
+
+	WED_Thing * root = WED_GetWorld(resolver);
+	vector<struct changelist_t> changelist;
+
+	char fn[200];
+	if (!GetFilePathFromUser(getFile_Open,"Pick CSV file with 'ICAO,VALID_RWY,OLD_RWY' entries", "Open",
+								FILE_DIALOG_PICK_VALID_RUNWAY_TABLE, fn,sizeof(fn)))
+		return;
+
+	ifstream t( fn, ifstream::in);
+	if(t.good())
+	{
+		string str((istreambuf_iterator<char>(t)),istreambuf_iterator<char>());
+		CSVParser::CSVTable table = CSVParser(',', str).ParseCSV();
+		t.close();
+
+		if(table.GetHeader()[0] != "ICAO")
+		{
+			printf("CSV has no header row or first column is not 'ICAO'\n");
+			return;
+		}
+		int legal_rwy=0, old_rwy=0;
+		for (int i=1; i<table.GetHeader().size(); ++i)
+		{
+			if(table.GetHeader()[i] == "LEGAL_RWY")
+			  legal_rwy = i;
+			if(table.GetHeader()[i] == "OLD_RWY")
+			  old_rwy = i;
+		}
+		if (legal_rwy && old_rwy)
+			for (int i=0; i<table.GetRows().size(); ++i)
+			{
+				struct changelist_t entry;
+				entry.ICAO = table.GetRows()[i][0];
+
+				entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,table.GetRows()[i][legal_rwy].c_str());
+				if (entry.new_rwy == -1) 
+					entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,string("0" + table.GetRows()[i][legal_rwy]).c_str());
+					
+				entry.old_rwy = ENUM_LookupDesc(ATCRunwayTwoway,table.GetRows()[i][old_rwy].c_str());
+				if (entry.old_rwy == -1) 
+					entry.old_rwy = ENUM_LookupDesc(ATCRunwayTwoway,string("0" + table.GetRows()[i][old_rwy]).c_str());
+				
+				if(entry.old_rwy > atc_rwy_None && entry.new_rwy > atc_rwy_None)
+					changelist.push_back(entry);
+				else
+					printf("Ignoring illegal runways in CSV row #%d\n",i);
+				
+			}
+		else
+			printf("CSV has no columns 'LEGAL_RWY' or 'OLD_RWY'\n");
+	}
+	 
+	if (!changelist.empty())
+	{
+		root->StartCommand("Rename Runways");
+		int renamed_count = wed_rename_rwys_recursive(root, changelist);
+		if(renamed_count)
+		{
+			stringstream ss;
+			ss << "Renamed " << renamed_count << " runways";
+			DoUserAlert(ss.str().c_str());
+			root->CommitOperation();
+		}
+		else
+			root->AbortOperation();
+	}
 }

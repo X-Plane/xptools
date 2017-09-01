@@ -499,6 +499,7 @@ void  WED_Runway::PropEditCallback(int before)
 #if 1 // DEV
 	static int    old_enum;            // we want to catch changes of the name property, only
 	static pair<int,int> old_enum_1wy;
+	
 	if (before)
 	{
 		old_enum = GetRunwayEnumsTwoway();
@@ -512,7 +513,6 @@ void  WED_Runway::PropEditCallback(int before)
 		if (new_enum == atc_rwy_None)
 		{
 			printf("New rwy name is illegal, no auto-rename\n");
-//			SetName(old_name); // refuse change to any illegal name
 		}
 		else if(new_enum != old_enum)
 		{
@@ -523,7 +523,6 @@ void  WED_Runway::PropEditCallback(int before)
 			if (all_rwys.find(new_enum) == all_rwys.end())
 			{
 				printf("Another runway of same name already exists, no auto-rename\n");
-//				SetName(old_name); // refuse change to any duplicate name
 			}
 			else
 			{

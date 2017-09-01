@@ -140,6 +140,7 @@ enum {
 	wed_AddATCWindRule,
 #endif
 	wed_UpgradeRamps,
+	wed_RenameRwys,
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!

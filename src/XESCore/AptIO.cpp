@@ -617,7 +617,6 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&p1y,
 				&p1x) != 3) ok = "Illegal straight end.";
 				open_poly->back().pt = POINT2(p1x, p1y);
-printf("read open_poly %i elements\n",int(open_poly->size()));
 			break;
 		case apt_end_crv:
 			if (vers < 850) ok = "Error: new end curves allowed before 850";
