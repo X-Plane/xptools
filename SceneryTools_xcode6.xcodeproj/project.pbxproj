@@ -666,6 +666,7 @@
 		D6AC14D70F1279EB0006E096 /* WED_PreviewLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14D60F1279EB0006E096 /* WED_PreviewLayer.cpp */; };
 		D6AC14E90F127AFE0006E096 /* WED_ResourceMgr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC14E70F127AFE0006E096 /* WED_ResourceMgr.cpp */; };
 		D6AC154D0F12866E0006E096 /* WED_DrawUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */; };
+		D6AF0A521F44E7B400CC7328 /* WED_FacadePreview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */; };
 		D6B0DD080E155D6A00DDBD89 /* BWImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376F0AB22C85003949C5 /* BWImage.cpp */; };
 		D6B0DD0C0E155D8300DDBD89 /* XUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37B00AB22C85003949C5 /* XUtils.cpp */; };
 		D6B0DD0F0E155D8E00DDBD89 /* Skeleton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC379F0AB22C85003949C5 /* Skeleton.cpp */; };
@@ -1540,6 +1541,7 @@
 		D6AC14E80F127AFE0006E096 /* WED_ResourceMgr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ResourceMgr.h; sourceTree = "<group>"; };
 		D6AC154B0F12866E0006E096 /* WED_DrawUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DrawUtils.h; sourceTree = "<group>"; };
 		D6AC154C0F12866E0006E096 /* WED_DrawUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DrawUtils.cpp; sourceTree = "<group>"; };
+		D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_FacadePreview.cpp; sourceTree = "<group>"; };
 		D6B69CDF1C582B6A005C78C5 /* ClassA.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ClassA.png; sourceTree = "<group>"; };
 		D6B69CE01C582B6A005C78C5 /* ClassB.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ClassB.png; sourceTree = "<group>"; };
 		D6B69CE11C582B6A005C78C5 /* ClassC.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ClassC.png; sourceTree = "<group>"; };
@@ -3524,6 +3526,7 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */,
 				D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */,
 				D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */,
 				D63A13AC132ABBC400D36061 /* WED_FacadeNode.cpp */,
@@ -4669,6 +4672,7 @@
 				D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */,
 				D6A184B30BA8311000BBCD0C /* GUI_Button.cpp in Sources */,
 				D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */,
+				D6AF0A521F44E7B400CC7328 /* WED_FacadePreview.cpp in Sources */,
 				D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */,
 				D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */,
 				D62FC99B0BCEF3D600ED6CF8 /* WED_Map.cpp in Sources */,
