@@ -1605,9 +1605,9 @@ void 	DSFFileWriterImp::BeginPatch(
 			fracMax.push_back((double) (j+1) / double (REF(inRef)->mDivisions));
 			for (int k = 0; k < (inCoordDepth-2); ++k)
 				fracMax.push_back(1.0);
-			accum_patch_pool->AddPool(fracMin, fracMax);
-			accum_patch_pool->AddPool(fracMin, fracMax);
-			accum_patch_pool->AddPool(fracMin, fracMax);
+
+			// New: we need only ONE Point pool for this "bucket" - shared point pool
+			// will clone its buckets on the fly as needed.
 			accum_patch_pool->AddPool(fracMin, fracMax);
 		}
 	}

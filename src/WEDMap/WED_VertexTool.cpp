@@ -1157,6 +1157,7 @@ void		WED_VertexTool::SnapMovePoint(
 	Point2	modi(ideal_track_pt);
 	double smallest_dist=9.9e9;
 	Point2	best(modi);
+
 	if (mSnapToGrid)
 	{
 		ISelection * sel = WED_GetSelect(GetResolver());
@@ -1191,6 +1192,7 @@ void		WED_VertexTool::SnapMovePoint(
 			}
 		}
 	}
+
 	io_thing_pt = best;
 }
 

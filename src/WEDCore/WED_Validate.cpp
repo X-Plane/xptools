@@ -1650,6 +1650,43 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	}
 
 	//Local Code (feature request)
+	
+	if(who->ContainsMetaDataKey(wed_AddMetaDataLocal))
+	{
+		string code        = who->GetMetaDataValue(wed_AddMetaDataLocal);
+		string error_content;
+
+		if (!air_org_code_valid(3,7, true, code, error_content) && !code.empty())
+		{
+			add_formated_metadata_error(error_template, wed_AddMetaDataLocal, code, error_content, who, msgs, apt);
+		}
+		all_keys.push_back(code);
+	}
+
+	if(who->ContainsMetaDataKey(wed_AddMetaDataLocAuth))
+	{
+		string code        = who->GetMetaDataValue(wed_AddMetaDataLocAuth);
+		string error_content;
+
+		if (!air_org_code_valid(3,32, false, code, error_content) && !code.empty())
+		{
+			add_formated_metadata_error(error_template, wed_AddMetaDataLocAuth, code, error_content, who, msgs, apt);
+		}
+		all_keys.push_back(code);
+	}
+	
+	if(who->ContainsMetaDataKey(wed_AddMetaDataFAA) && who->ContainsMetaDataKey(wed_AddMetaDataLocal))
+	{
+		string codeFAA    = who->GetMetaDataValue(wed_AddMetaDataFAA);
+		string codeLocal  = who->GetMetaDataValue(wed_AddMetaDataLocal);
+		string error      = "Do only specify one of the two Meta-data tags 'FAA code' or 'Local Code' !";
+
+		if (!codeFAA.empty() && !codeLocal.empty())
+		{
+			msgs.push_back(validation_error_t(error, err_airport_metadata_invalid, who , apt));
+		}
+		all_keys.push_back(codeFAA);
+	}
 
 	if(who->ContainsMetaDataKey(wed_AddMetaDataRegionCode))
 	{
@@ -1933,9 +1970,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	else if(name[0] == ' ' || name[name.length()-1] == ' ')
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' name includes leading or trailing spaces.", err_airport_no_name, apt,apt));
 	if(icao.empty())
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty ICAO identifier.", err_airport_no_icao, apt,apt));
+		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_no_icao, apt,apt));
 	else if(!is_all_alnum(icao))
-		msgs.push_back(validation_error_t(string("The ICAO identifier for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_no_icao, apt,apt));
+		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_no_icao, apt,apt));
 
 	set<int>		legal_rwy_oneway;
 	set<int>		legal_rwy_twoway;

@@ -86,10 +86,14 @@ typedef UTL_interval<double>	time_region;
 
 #include <CGAL/Arr_overlay_2.h>
 
-#define TOO_SMALL_TO_CARE 300
-
-// This controls how much we subdivide small forest stands.
-#define FOREST_SUBDIVIDE_AREA		(1000000.0)
+#if HD_MESH || UHD_MESH
+	#define TOO_SMALL_TO_CARE			0
+	#define FOREST_SUBDIVIDE_AREA		(100000.0)
+#else
+	#define TOO_SMALL_TO_CARE			300
+	// This controls how much we subdivide small forest stands.
+	#define FOREST_SUBDIVIDE_AREA		(1000000.0)
+#endif
 
 // Don't mess with this if you want to MAKE a DSF - larger than 255 and DSF encoder blows up.
 #define MAX_FOREST_RINGS			255

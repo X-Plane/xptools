@@ -55,8 +55,9 @@ enum {
 enum {
 	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
 	status_Deprecated	= 1,
-	status_Public		= 2,
-	status_New			= 3
+	status_Yellow		= 2,		// half-deprecated items, visibility of deprecated, validates as public
+	status_Public		= 3,
+	status_New			= 4
 };
 
 class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {

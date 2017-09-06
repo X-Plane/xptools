@@ -369,8 +369,11 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 	SimplifyMap(forest_stands, false, gProgress, false);
 
 	arrangement_simplifier<Pmwx> simplifier;
-	simplifier.simplify(forest_stands, 0.003, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
-
+	#if UHD_MESH || HD_MESH
+		simplifier.simplify(forest_stands, 0.0003, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
+	#else
+		simplifier.simplify(forest_stands, 0.003, arrangement_simplifier<Pmwx>::traits_type(), gProgress);
+	#endif
 	vector<ForestIndex::item_type>			forest_faces;
 	forest_faces.reserve(forest_stands.number_of_faces());
 	

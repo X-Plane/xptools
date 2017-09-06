@@ -204,18 +204,45 @@ pair<int, int>	DSFSharedPointPool::AcceptShared(const DSFTuple& inPoint)
 	}
 	// Hrm...doesn't exist.  Try to add it.
 	p = 0;
+	
+	list<SharedSubPool>::iterator exemplar = mPools.end();
 	for (list<SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
-	if(pool->mPoints.size() < 65535)
 	{
 		DSFTuple	point(inPoint);
 		if (point.encode(pool->mOffset, pool->mScale))
 		{
-			int our_pos = pool->mPoints.size();
-			pool->mPoints.push_back(point);
-			pool->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(point, our_pos));
-			return pair<int, int>(p, our_pos);
+			if(pool->mPoints.size() < 65535)
+			{
+				int our_pos = pool->mPoints.size();
+				pool->mPoints.push_back(point);
+				pool->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(point, our_pos));
+				return pair<int, int>(p, our_pos);
+			}
+			else if(exemplar == mPools.end())
+				exemplar = pool;
 		}
 	}
+	
+	if(exemplar != mPools.end())
+	{
+		DSFTuple	point(inPoint);
+		if (!point.encode(exemplar->mOffset, exemplar->mScale))
+			Assert(!"Failure to re-encode into copied pool. This should never happen.");
+
+		mPools.push_back(SharedSubPool());
+		mPools.back().mOffset = exemplar->mOffset;
+		mPools.back().mScale = exemplar->mScale;
+
+		exemplar = mPools.end();
+		--exemplar;
+
+		int our_pos = exemplar->mPoints.size();
+		exemplar->mPoints.push_back(point);
+		exemplar->mPointsIndex.insert(hash_map<DSFTuple, int>::value_type(point, our_pos));
+		return pair<int, int>(mPools.size()-1, our_pos);
+	}
+
+	// We hit this encode failure if we are out of pool bounds.
 	return pair<int, int>(-1, -1);
 }
 

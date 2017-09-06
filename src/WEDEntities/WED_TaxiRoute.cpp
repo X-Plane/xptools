@@ -136,19 +136,15 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 			runway = atc_rwy_None;
 		} else
 			runway = r;
-		
-		width = width_E;
-		
 	}
 	else
-	{
 		runway = atc_rwy_None;
-		width = ENUM_Import(ATCIcaoWidth, info.width);
-		if(width == -1)
-		{
-			print_func(ref,"Illegal width: %d\n", info.width);
-			width = width_E;
-		}
+
+	width = ENUM_Import(ATCIcaoWidth, info.width);
+	if(width == -1)
+	{
+		print_func(ref,"Illegal width: %d\n", info.width);
+		width = width_E;
 	}
 
 	for(set<string>::iterator h = info.hot_depart.begin(); h != info.hot_depart.end(); ++h)
