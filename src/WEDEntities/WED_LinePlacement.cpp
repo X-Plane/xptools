@@ -27,8 +27,8 @@ DEFINE_PERSISTENT(WED_LinePlacement)
 TRIVIAL_COPY(WED_LinePlacement,WED_GISChain)
 
 WED_LinePlacement::WED_LinePlacement(WED_Archive * a, int i) : WED_GISChain(a,i),
-	closed(this,"Closed",SQL_Name("WED_dsf_polygon","closed"),XML_Name("line_placement","closed"),0),
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("line_placement","resource"),"")
+	closed(this,"Closed",    XML_Name("line_placement","closed"),0),
+	resource(this,"Resource",XML_Name("line_placement","resource"),"")
 {
 }
 

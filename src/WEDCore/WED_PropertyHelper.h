@@ -47,20 +47,14 @@ using std::vector;
 class	WED_PropertyHelper;
 class	IOWriter;
 class	IOReader;
-struct	sqlite3;
 class	WED_XMLElement;
 
-typedef pair<string,string>				SQL_ColumnUpdate;
-typedef vector<SQL_ColumnUpdate>		SQL_TableUpdate;
-typedef map<string, SQL_TableUpdate>	SQL_Update;
-
 // We could have used type-def here, but this forces us to use the right type in the right place, for code clarity.  
-struct SQL_Name : public pair<const char *, const char *> { SQL_Name(const char * a, const char * b) : pair<const char *, const char *>(a,b) { } };
 struct XML_Name : public pair<const char *, const char *> { XML_Name(const char * a, const char * b) : pair<const char *, const char *>(a,b) { } };
 
 class	WED_PropertyItem {
 public:
-	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, SQL_Name sql_column, XML_Name xml_column);
+	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, XML_Name xml_column);
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
 	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
@@ -69,16 +63,12 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
 	virtual	void 		ReadFrom(IOReader * reader)=0;
 	virtual	void 		WriteTo(IOWriter * writer)=0;
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)=0;
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val)=0;
 	virtual	void		ToXML(WED_XMLElement * parent)=0;
-	virtual	void		GetUpdate(SQL_Update& io_update)=0;
 
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
 
 	const char *			mTitle;
-	SQL_Name				mSQLColumn;
 	XML_Name				mXMLColumn;
 	WED_PropertyHelper *	mParent;
 private:
@@ -105,8 +95,6 @@ public:
 	// Utility to help manage streaming
 			void 		ReadPropsFrom(IOReader * reader);
 			void 		WritePropsTo(IOWriter * writer);
-			void		PropsFromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-			void		PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table);
 			void		PropsToXML(WED_XMLElement * parent);
 
 	virtual void		StartElement(
@@ -115,7 +103,6 @@ public:
 								const XML_Char **	atts);
 	virtual	void		EndElement(void);
 	virtual	void		PopHandler(void);
-
 
 	// This is virtual so remappers like WED_Runway can "fix" the results
 	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
@@ -133,14 +120,13 @@ class	WED_PropIntText : public WED_PropertyItem {
 public:
 
 	int				value;
-
 	int				mDigits;
 
 	operator int&() { return value; }
 	operator int() const { return value; }
 	WED_PropIntText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, int initial, int digits)  : WED_PropertyItem(parent, title, sql_col,xml_col), value(initial), mDigits(digits) { }
+	WED_PropIntText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int initial, int digits)  : WED_PropertyItem(parent, title, xml_col), value(initial), mDigits(digits) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -149,11 +135,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
 
 };
 
@@ -167,7 +150,7 @@ public:
 	operator int() const { return value; }
 	WED_PropBoolText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, int initial)  : WED_PropertyItem(parent, title, sql_col,xml_col), value(initial) { }
+	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int initial)  : WED_PropertyItem(parent, title, xml_col), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -176,12 +159,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // A double value edited as text.
@@ -197,7 +176,7 @@ public:
 						operator double() const { return value; }
 	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropertyItem(parent, title, sql_col,xml_col), mDigits(digits), mDecimals(decimals), value(initial) { }
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropertyItem(parent, title, xml_col), mDigits(digits), mDecimals(decimals), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -206,17 +185,13 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 class	WED_PropFrequencyText : public WED_PropDoubleText {
 public:
-	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, sql_col,xml_col, initial, digits, decimals) { }
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, xml_col, initial, digits, decimals) { }
 
 	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
@@ -231,7 +206,7 @@ public:
 // A double value edited as text.  Stored in meters, but displayed in feet or meters, depending on UI settings.
 class	WED_PropDoubleTextMeters : public WED_PropDoubleText {
 public:
-	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, sql_col,xml_col, initial, digits, decimals) { }
+	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, xml_col, initial, digits, decimals) { }
 
 	WED_PropDoubleTextMeters& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
@@ -250,7 +225,7 @@ public:
 						operator string() const { return value; }
 	WED_PropStringText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropStringText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, const string& initial)  : WED_PropertyItem(parent, title, sql_col,xml_col), value(initial) { }
+	WED_PropStringText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const string& initial)  : WED_PropertyItem(parent, title, xml_col), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -259,12 +234,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // A file path, saved as an STL string, edited by the file-open dialog box.
@@ -277,7 +248,7 @@ public:
 						operator string() const { return value; }
 	WED_PropFileText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropFileText(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, const string& initial)  : WED_PropertyItem(parent, title, sql_col,xml_col), value(initial) { }
+	WED_PropFileText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const string& initial)  : WED_PropertyItem(parent, title, xml_col), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -286,12 +257,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // An enumerated item.  Stored as an int, edited as a popup menu.  Property knows the "domain" the enum belongs to.
@@ -305,7 +272,7 @@ public:
 						operator int() const { return value; }
 	WED_PropIntEnum& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, int idomain, int initial)  : WED_PropertyItem(parent, title, sql_col,xml_col), value(initial), domain(idomain) { }
+	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int idomain, int initial)  : WED_PropertyItem(parent, title, xml_col), value(initial), domain(idomain) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -314,12 +281,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // A set of enumerated items.  Stored as an STL set of int values, edited as a multi-check popup.  We store the domain.
@@ -336,7 +299,7 @@ public:
 						operator set<int>() const { return value; }
 	WED_PropIntEnumSet& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 	WED_PropIntEnumSet& operator+=(const int v) { if(value.count(v) == 0) { if (mParent) mParent->PropEditCallback(1); value.insert(v); if (mParent) mParent->PropEditCallback(0); } return *this; }
-	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, int idomain, int iexclusive)  : WED_PropertyItem(parent, title, sql_col,xml_col), domain(idomain), exclusive(iexclusive) { }
+	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int idomain, int iexclusive)  : WED_PropertyItem(parent, title, xml_col), domain(idomain), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -345,12 +308,9 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
 	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name);
-	virtual	void		GetUpdate(SQL_Update& io_update);
 
 	virtual void		StartElement(
 								WED_XMLReader * reader,
@@ -377,7 +337,7 @@ public:
 						operator set<int>() const { return value; }
 	WED_PropIntEnumBitfield& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, int idomain, int be_none)  : WED_PropertyItem(parent, title, sql_col,xml_col), domain(idomain), can_be_none(be_none) { }
+	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int idomain, int be_none)  : WED_PropertyItem(parent, title, xml_col), domain(idomain), can_be_none(be_none) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -386,11 +346,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
 
 };
 
@@ -406,7 +363,7 @@ public:
 	int						maxv;
 	int						exclusive;
 
-	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItem(parent, title, sql_col,xml_col), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
+	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItem(parent, title, xml_col), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -415,12 +372,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
 // VIRTUAL ITEM: a UNION display.  Property helpers can contain "sub" property helpers.  For the WED hierarchy, each hierarchy item (WED_Thing) is a 
@@ -433,7 +386,7 @@ public:
 	const char *			host;
 	int						exclusive;
 
-	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, SQL_Name sql_col, XML_Name xml_col, const char * ihost, int iexclusive)  : WED_PropertyItem(parent, title, sql_col,xml_col), host(ihost), exclusive(iexclusive) { }
+	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const char * ihost, int iexclusive)  : WED_PropertyItem(parent, title, xml_col), host(ihost), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -442,17 +395,8 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
-	virtual	void		GetUpdate(SQL_Update& io_update);
-
 };
 
-
-
-
-
 #endif
-

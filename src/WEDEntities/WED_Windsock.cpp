@@ -28,7 +28,7 @@ DEFINE_PERSISTENT(WED_Windsock)
 TRIVIAL_COPY(WED_Windsock, WED_GISPoint)
 
 WED_Windsock::WED_Windsock(WED_Archive * a, int i) : WED_GISPoint(a,i),
-	lit(this,"Lit",SQL_Name("WED_windsocks", "lit"),XML_Name("windsock","lit"),0)
+	lit(this,"Lit", XML_Name("windsock","lit"),0)
 {
 }
 

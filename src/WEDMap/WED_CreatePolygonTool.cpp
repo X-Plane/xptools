@@ -79,19 +79,19 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 	1,							// close allowed
 	kRequireClosed[tool]),		// close required?
 	mType(tool),
-		mPavement(tool == create_Taxi ? this : NULL,"Pavement",SQL_Name("",""),XML_Name("",""),Surface_Type,surf_Concrete),
-		mRoughness(tool == create_Taxi ? this : NULL,"Roughness",SQL_Name("",""),XML_Name("",""),0.25,4,2),
-		mHeading(tool == create_Taxi || tool == create_Polygon ? this : NULL,"Heading",SQL_Name("",""),XML_Name("",""),0,5,2),
-		mMarkings(tool <= create_Hole ? this : NULL,".Markings", SQL_Name("",""),XML_Name("",""), LinearFeature, 0),
-		mMarkingsLines(tool <= create_Hole ? this : NULL,"Markings", SQL_Name("",""),XML_Name("",""), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
-		mMarkingsLights(tool <= create_Hole ? this : NULL,"Lights", SQL_Name("",""),XML_Name("",""), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
+		mPavement(tool    == create_Taxi ? this : NULL,"Pavement",XML_Name("",""),Surface_Type,surf_Concrete),
+		mRoughness(tool   == create_Taxi ? this : NULL,"Roughness",XML_Name("",""),0.25,4,2),
+		mHeading(tool     == create_Taxi || tool == create_Polygon ? this : NULL,"Heading",XML_Name("",""),0,5,2),
+		mMarkings(tool    <= create_Hole ? this : NULL,".Markings", XML_Name("",""), LinearFeature, 0),
+		mMarkingsLines(tool <= create_Hole ? this : NULL,"Markings", XML_Name("",""), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
+		mMarkingsLights(tool <= create_Hole ? this : NULL,"Lights", XML_Name("",""), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
 
-		mResource(tool > create_Hole ? this : NULL, "Resource", SQL_Name("",""),XML_Name("",""), ""),
-		mHeight(tool == create_Facade ? this : NULL, "Height", SQL_Name("",""),XML_Name("",""), 10.0, 4, 2),
-		mDensity(tool == create_Forest ? this : NULL, "Density", SQL_Name("",""),XML_Name("",""), 1.0, 3, 2),
-		mSpacing(tool == create_String ? this : NULL, "Spacing", SQL_Name("",""),XML_Name("",""), 5.0, 3, 1),
+		mResource(tool >  create_Hole ? this : NULL, "Resource", XML_Name("",""), ""),
+		mHeight(tool   == create_Facade ? this : NULL, "Height", XML_Name("",""), 10.0, 4, 2),
+		mDensity(tool  == create_Forest ? this : NULL, "Density", XML_Name("",""), 1.0, 3, 2),
+		mSpacing(tool  == create_String ? this : NULL, "Spacing", XML_Name("",""), 5.0, 3, 1),
 		
-		mUVMap(tool == create_Polygon ? this : NULL, "Use Texture Map - Orthophoto", SQL_Name("",""),XML_Name("",""), 0)
+		mUVMap(tool == create_Polygon ? this : NULL, "Use Texture Map - Orthophoto", XML_Name("",""), 0)
 {
 	mPavement.value = surf_Concrete;
 }

@@ -30,8 +30,8 @@ DEFINE_PERSISTENT(WED_ATCFrequency)
 TRIVIAL_COPY(WED_ATCFrequency, WED_Thing)
 
 WED_ATCFrequency::WED_ATCFrequency(WED_Archive * a, int i) : WED_Thing(a, i),
-	freq_type	(this, "Type",		SQL_Name("WED_ATCFrequency",	"kind"), XML_Name("atc_frequency",	"kind"), ATCFrequency, atc_Tower),
-	freq		(this, "Frequency",	SQL_Name("WED_ATCFrequency",	"freq"), XML_Name("atc_frequency",	"freq"), 128.8, 6, 2)
+	freq_type	(this, "Type",		XML_Name("atc_frequency",	"kind"), ATCFrequency, atc_Tower),
+	freq		(this, "Frequency",	XML_Name("atc_frequency",	"freq"), 128.8, 6, 2)
 {
 }
 

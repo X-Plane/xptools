@@ -84,7 +84,6 @@
     <ClCompile Include="..\..\src\Utils\md5.c" />
     <ClCompile Include="..\..\src\Utils\MemFileUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp" />
-    <ClCompile Include="..\..\src\Utils\SQLUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\STLUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\TexUtils.cpp" />
     <ClCompile Include="..\..\src\Utils\unzip.c" />
@@ -110,7 +109,6 @@
     <ClCompile Include="..\..\src\WEDCore\WED_Package.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_PackageMgr.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Persistent.cpp" />
-    <ClCompile Include="..\..\src\WEDCore\WED_Properties.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_PropertyHelper.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_ResourceMgr.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_TCEDebugLayer.cpp" />
@@ -252,7 +250,6 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_Sign_Editor.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_StartWindow.cpp" />
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp" />
-    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h" />
@@ -344,8 +341,11 @@
     <ClInclude Include="..\..\src\Utils\md5.h" />
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\PlatformUtils.h" />
+<<<<<<< HEAD
+=======
     <ClInclude Include="..\..\src\Utils\SQLUtils.h" />
     <ClInclude Include="..\..\src\Utils\STLUtils.h" />
+>>>>>>> master
     <ClInclude Include="..\..\src\Utils\TexUtils.h" />
     <ClInclude Include="..\..\src\Utils\unzip.h" />
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
@@ -371,7 +371,6 @@
     <ClInclude Include="..\..\src\WEDCore\WED_Package.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_PackageMgr.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Persistent.h" />
-    <ClInclude Include="..\..\src\WEDCore\WED_Properties.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_PropertyHelper.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_ResourceMgr.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_TCEDebugLayer.h" />
@@ -519,8 +518,6 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_UIDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptDefs.h" />
     <ClInclude Include="..\..\src\XESCore\AptIO.h" />
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h" />
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\src\WEDResources\ui_measurements.txt" />

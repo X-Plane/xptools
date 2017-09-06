@@ -32,7 +32,7 @@ TRIVIAL_COPY(WED_FacadeNode,WED_GISPoint_Bezier)
 
 WED_FacadeNode::WED_FacadeNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a,i)
 #if AIRPORT_ROUTING
-	,wall_type(this,"Wall",SQL_Name("WED_facadenode", "wall"), XML_Name("facade_node","wall_type"),FacadeWall, facade_Wall0)
+	,wall_type(this,"Wall", XML_Name("facade_node","wall_type"),FacadeWall, facade_Wall0)
 #endif	
 {
 }

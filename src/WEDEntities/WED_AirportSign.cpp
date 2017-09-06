@@ -30,8 +30,8 @@ DEFINE_PERSISTENT(WED_AirportSign)
 TRIVIAL_COPY(WED_AirportSign, WED_GISPoint_Heading)
 
 WED_AirportSign::WED_AirportSign(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
-	style(this,"Type",SQL_Name("WED_airportsign","style"),XML_Name("airport_sign","style"),Sign_Style,style_Default),
-	height(this,"Size",SQL_Name("WED_airportsign","size"),XML_Name("airport_sign","size"),Sign_Size,size_MediumTaxi)
+	style(this,"Type",  XML_Name("airport_sign","style"),Sign_Style,style_Default),
+	height(this,"Size", XML_Name("airport_sign","size"),Sign_Size,size_MediumTaxi)
 {
 }
 

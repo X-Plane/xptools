@@ -18,7 +18,7 @@ WED_TCEVertexTool::WED_TCEVertexTool(
 							WED_MapZoomerNew *		zoomer,
 							IResolver *				resolver) :
 	WED_HandleToolBase(tool_name, host, zoomer, resolver),
-	mGrid(this,"Snap to Grid", SQL_Name("",""),XML_Name("",""), TCE_GridSnap, tce_Grid_None)	
+	mGrid(this,"Snap To Grid", XML_Name("",""), TCE_GridSnap, tce_Grid_None)	
 {
 	SetCanSelect(0);
 	SetDrawAlways(1);

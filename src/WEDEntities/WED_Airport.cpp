@@ -63,13 +63,13 @@ L   - NS_AIRPORT
 #define NS_META_DATA (NUM_REAL)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
-	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
-	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
-	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
-	icao			(this, "Airport ID",		SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
-	always_flatten	(this, "Always Flatten",	SQL_Name("",""),						XML_Name("airport", "always_flatten"), 0),
-	drive_on_left	(this, "Left Hand Driving", SQL_Name("",""),						XML_Name("airport", "drive_on_left"), 0),
-	scenery_id		(this, "Scenery ID",		SQL_Name("", ""),						XML_Name("airport", "scenery_id"), -1, 8),
+	airport_type	(this, "Type",				XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
+	elevation		(this, "Field Elevation",	XML_Name("airport",	"elevation"),	0,6,1),
+	has_atc			(this, "Has ATC",			XML_Name("airport",	"has_atc"),		1),
+	icao			(this, "ICAO Identifier",	XML_Name("airport",	"icao"),		"xxxx"),
+	always_flatten	(this, "Always Flatten",	XML_Name("airport", "always_flatten"), 0),
+	drive_on_left	(this, "Left Hand Driving",	XML_Name("airport", "drive_on_left"), 0),
+	scenery_id		(this, "Scenery ID",		XML_Name("airport", "scenery_id"), -1, 8),
 	meta_data_vec_map ()
 {
 }
@@ -542,12 +542,3 @@ void			WED_Airport::StartElement(
 		WED_GISComposite::StartElement(reader, name, atts);
 	}
 }
-
-/*
-void			WED_Airport::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-}
-
-void			WED_Airport::ToDB(sqlite3 * db)
-{
-}*/

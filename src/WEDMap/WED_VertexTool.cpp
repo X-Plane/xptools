@@ -97,7 +97,7 @@ WED_VertexTool::WED_VertexTool(
 		mNewSplitPoint(NULL),
 		mIsScale(0),
 		mRotateIndex(-1),
-		mSnapToGrid(this,"Snap To Vertices", SQL_Name("",""),XML_Name("",""), 0)
+		mSnapToGrid(this,"Snap To Vertices", XML_Name("",""), 0)
 {
 	SetControlProvider(this);
 }

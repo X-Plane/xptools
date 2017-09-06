@@ -28,11 +28,11 @@ DEFINE_PERSISTENT(WED_Taxiway)
 TRIVIAL_COPY(WED_Taxiway, WED_GISPolygon)
 
 WED_Taxiway::WED_Taxiway(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	surface(this,		"Surface",			SQL_Name("WED_taxiway",	"surface"),		XML_Name("taxiway",	"surface"),		Surface_Type,	surf_Concrete),
-	roughness(this,		"Roughness",		SQL_Name("WED_taxiway",	"roughness"),	XML_Name("taxiway",	"roughness"),	0.25,4,2),
-	heading(this,		"Texture Heading",	SQL_Name("WED_taxiway",	"heading"),		XML_Name("taxiway",	"heading"),		0,6,2),
-	lines(this,"Line Attributes",			SQL_Name("",""),XML_Name("",""),"Line Attributes", 1),
-	lights(this,"Light Attributes",			SQL_Name("",""),XML_Name("",""),"Light Attributes", 1)
+	surface(this,   "Surface",          XML_Name("taxiway",	"surface"), Surface_Type, surf_Concrete),
+	roughness(this, "Roughness",        XML_Name("taxiway",	"roughness"),0.25,4,2),
+	heading(this,   "Texture Heading",  XML_Name("taxiway",	"heading"), 0,6,2),
+	lines(this,     "Line Attributes",  XML_Name("",""),"Line Attributes", 1),
+	lights(this,    "Light Attributes", XML_Name("",""),"Light Attributes", 1)
 {
 }
 

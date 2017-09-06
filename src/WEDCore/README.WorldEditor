@@ -13,6 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.7.0
+    - WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
+
 WED 1.6.1b1
 	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway

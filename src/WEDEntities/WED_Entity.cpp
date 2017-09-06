@@ -23,13 +23,12 @@
 
 #include "WED_Entity.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_Errors.h"
 
 WED_Entity::WED_Entity(WED_Archive * parent, int id) :
 	WED_Thing(parent, id),
-	locked(this,"Locked",SQL_Name("WED_entities","locked"),XML_Name("hierarchy","locked"),0),
-	hidden(this,"Hidden",SQL_Name("WED_entities","hidden"),XML_Name("hierarchy","hidden"),0),
+	locked(this,"Locked", XML_Name("hierarchy","locked"),0),
+	hidden(this,"Hidden", XML_Name("hierarchy","hidden"),0),
 	cache_valid_(0)
 {
 }

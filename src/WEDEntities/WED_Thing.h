@@ -67,10 +67,7 @@ public:
 	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void 		ReadFrom(IOReader * reader);
 	virtual	void 		WriteTo(IOWriter * writer);
-	virtual	void		FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping);
-	virtual	void		ToDB(sqlite3 * db, const char * id_col, const char * id_val);
 	virtual	void		ToXML(WED_XMLElement * parent);
-	virtual	void		GetUpdate(SQL_Update& io_update);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);	
 
 	WED_Thing * val;
@@ -108,8 +105,6 @@ public:
 	// WED_Persistent
 	virtual	bool 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
-	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
-	virtual void			ToDB(sqlite3 * db);
 	virtual	void			ToXML(WED_XMLElement * parent);
 	virtual	void			FromXML(WED_XMLReader * reader, const XML_Char ** atts);
 	virtual	void			PostChangeNotify(void);

@@ -14,7 +14,7 @@ DEFINE_PERSISTENT(WED_TruckDestination)
 TRIVIAL_COPY(WED_TruckDestination, WED_GISPoint_Heading)
 
 WED_TruckDestination::WED_TruckDestination(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
-	truck_types		(this, "Truck Types",		SQL_Name("",""),	XML_Name("truck_destination","types"   ), ATCServiceTruckType, 0)
+	truck_types		(this, "Truck Types",   XML_Name("truck_destination","types"), ATCServiceTruckType, 0)
 {
 }
 

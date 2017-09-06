@@ -126,9 +126,6 @@
     <ClCompile Include="..\..\src\WEDCore\WED_Persistent.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDCore\WED_Properties.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_PropertyHelper.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
@@ -708,9 +705,6 @@
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp">
       <Filter>XESCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c">
-      <Filter>SQLite</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\GUI\GUI_FormWindow.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
@@ -861,9 +855,6 @@
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_Persistent.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDCore\WED_Properties.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_PropertyHelper.h">
@@ -1468,12 +1459,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\XESCore\AptIO.h">
       <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h">
-      <Filter>SQLite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h">
-      <Filter>SQLite</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Interfaces\IArray.h">
       <Filter>Interfaces</Filter>

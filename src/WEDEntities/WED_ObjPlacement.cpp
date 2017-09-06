@@ -30,11 +30,11 @@ TRIVIAL_COPY(WED_ObjPlacement,WED_GISPoint_Heading)
 WED_ObjPlacement::WED_ObjPlacement(WED_Archive * a, int i) : 
 	WED_GISPoint_Heading(a,i),
 #if AIRPORT_ROUTING
-	has_msl(this,"Set MSL", SQL_Name("", ""), XML_Name("obj_placement","custom_msl"),0),
-	msl(this,"MSL", SQL_Name("", ""), XML_Name("obj_placement","msl"), 0, 5,3),
+	has_msl(this,"Set MSL", XML_Name("obj_placement","custom_msl"),0),
+	msl(this,"MSL",         XML_Name("obj_placement","msl"), 0, 5,3),
 #endif
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"), XML_Name("obj_placement","resource"),""),
-	show_level(this,"Show with", SQL_Name("",""),XML_Name("obj_placement","show_level"),ShowLevel, show_Level1)
+	resource(this,"Resource",   XML_Name("obj_placement","resource"),""),
+	show_level(this,"Show with",XML_Name("obj_placement","show_level"),ShowLevel, show_Level1)
 
 {
 }
