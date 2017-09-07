@@ -112,6 +112,22 @@ void		WED_TaxiRoute::SetHotILS(const set<int>& rwys)
 	hot_ils = rwys;
 }
 
+set<int> WED_TaxiRoute::GetHotDepart()
+{
+	return hot_depart;
+}
+
+set<int> WED_TaxiRoute::GetHotArrive()
+{
+	return hot_arrive;
+}
+
+set<int> WED_TaxiRoute::GetHotILS()
+{
+	return hot_ils;
+}
+
+
 void WED_TaxiRoute::SetWidth(int w)
 {
 	width= w;
