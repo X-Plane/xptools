@@ -15,6 +15,8 @@ CHANGE HISTORY
 
 WED 1.7.0
     - WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
+	Features:
+    - WED-774: Automatically fixup all TaxiSigns, Flows, Rules & Taxi Routes when a runway is renamed
 
 WED 1.6.1b1
 	Features:
