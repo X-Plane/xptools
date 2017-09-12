@@ -1267,11 +1267,7 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 	{
 		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
 		Assert(lw);
-		if (lw->GetWidth() < 1.0)
-		{
-			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least one meter wide.", err_rwy_not_adequetely_wide, who, apt));
-		}
-		else if (lw->GetWidth() < 3 && lw->GetLength() < 30)
+		if (lw->GetWidth() < 3 && lw->GetLength() < 30)
 		{
 			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 3 meters wide by 30 meters long.", err_rwy_unrealistically_small, who, apt));
 		}
@@ -1929,6 +1925,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+	
 
 	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);

@@ -42,6 +42,7 @@ enum validate_error_t
 	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
+	err_airport_missing_runway_matching_cifp,
 	err_apt_boundary_bez_curve_used,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atc_rule_wind_blank_ICAO_for_METAR,
@@ -118,7 +119,6 @@ enum validate_error_t
 	err_rwy_name_reversed_runway_numbers_low_snd,  //and should be second
 	err_rwy_name_suffix_only_on_one_end,
 	err_rwy_name_suffixes_match,
-	err_rwy_not_adequetely_wide,
 	err_rwy_overlapping_displaced_thresholds,
 	err_rwy_surface_illegal_roughness,
 	err_rwy_surface_water_not_valid,
