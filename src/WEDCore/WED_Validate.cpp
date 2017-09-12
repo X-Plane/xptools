@@ -795,57 +795,6 @@ static void ValidateOneATCRunwayUse(WED_ATCRunwayUse* use, validation_error_vect
 		msgs.push_back(validation_error_t("ATC runway use must support at least one equipment type.", err_rwy_use_must_have_at_least_one_equip, use, apt));
 }
 
-//TODO: Unify with WED_ValidateATCRunwayChecks
-
-struct TaxiRouteInfo2
-{
-	TaxiRouteInfo2(WED_TaxiRoute* taxiroute, const CoordTranslator2 translator)
-		: taxiroute_ptr(taxiroute),
-		node_0(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(0))),
-		node_1(static_cast<WED_GISPoint*>(taxiroute->GetNthSource(1)))
-	{
-		AptRouteEdge_t apt_route;
-		AptServiceRoadEdge_t dummy;
-		taxiroute->Export(apt_route, dummy);
-		taxiroute_name = apt_route.name;
-
-		Bezier2 bez;
-		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
-		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1), translator.Forward(taxiroute_segment_geo.p2));
-
-		nodes_m[0] = Point2();
-		nodes_m[1] = Point2();
-
-		node_0->GetLocation(gis_Geo, nodes_m[0]);
-		nodes_m[0] = translator.Forward(nodes_m[0]);
-
-		node_1->GetLocation(gis_Geo, nodes_m[1]);
-		nodes_m[1] = translator.Forward(nodes_m[1]);
-	}
-
-	//Pointer to the original WED_TaxiRoute in WED's data model
-	WED_TaxiRoute* taxiroute_ptr;
-
-	//Name of the taxiroute
-	string taxiroute_name;
-
-	//Segment2 representing the taxiroute in lat/lon
-	Segment2 taxiroute_segment_geo;
-
-	//Segment2 representing the taxiroute in meters
-	Segment2 taxiroute_segment_m;
-
-	//Source node of the taxiroute
-	WED_GISPoint* node_0;
-
-	//Target node of the taxiroute
-	WED_GISPoint* node_1;
-
-	//0 is node 0,
-	//1 is node 1
-	Point2 nodes_m[2];
-};
-
 static void TJunctionTest(vector<WED_TaxiRoute*> all_taxiroutes, validation_error_vector& msgs, WED_Airport * apt)
 {
 	static CoordTranslator2 translator;
