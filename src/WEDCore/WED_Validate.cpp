@@ -85,6 +85,10 @@
 #include "PlatformUtils.h"
 #include "MathUtils.h"
 
+#include "WED_FileCache.h"
+#include "WED_Url.h"
+#include "GUI_Resources.h"
+
 #include <cctype>
 #include "WED_ATCFrequency.h"
 #include "WED_MetaDataKeys.h"
@@ -1998,7 +2002,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			ValidateOneAirportBoundary(*b, msgs,apt);
 		}
 #endif
-
+		// allow some draped orthophotos (like grund painted signs)
 		vector<WED_DrapedOrthophoto *> orthos, orthos_illegal;
 		CollectRecursive(apt, back_inserter(orthos), WED_DrapedOrthophoto::sClass);
 		for(vector<WED_DrapedOrthophoto *>::iterator o = orthos.begin(); o != orthos.end(); ++o)
@@ -2039,8 +2043,73 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				#endif
 			}
 		}
+		// check if all runways mentioned in CIFP are present at airport
+		set<int> CIFP_rwys;
+		WED_file_cache_request  mCacheRequest;
+		string cert;
+		if(!GUI_GetTempResourcePath("gateway.crt", cert))
+			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+			
+		mCacheRequest.in_cert = cert;
+		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
+		mCacheRequest.in_folder_prefix = "scenery_packs";
+		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
+		
+		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+
+		for (int i = 0; i < 3; ++i)
+		{
+			if(res.out_status == cache_status_downloading)
+			{
+				printf("Download of Runway Data in progress, trying again in 1 sec\n");
+				sleep(1);
+				res = WED_file_cache_request_file(mCacheRequest);
+			}
+		}
+
+		if(res.out_status != cache_status_available)
+		{
+			stringstream ss;
+			ss << "Error downloading the list of gateway mandated runway data.\n" << res.out_error_human;
+			ss << "\nSkipping this part of validation.";
+			DoUserAlert(ss.str().c_str());
+		}
+		else
+		{
+			FILE* file = fopen(res.out_path.c_str(),"r");
+			if (file)
+			{
+				char anam[16], rnam[16];
+				float lon,lat,hdg;
+				while (fscanf(file,"%s%s%f%f%f", anam, rnam, &lat, &lon, &hdg) == 5)
+				{
+					if(icao == string(anam))
+					{
+						printf("V:Adding to list %s\n",rnam);
+						CIFP_rwys.insert(ENUM_LookupDesc(ATCRunwayOneway,rnam));
+					}
+				}
+				fclose(file);
+			}
+		}
+		
+		// yes, if the above download or file caching fails, the list is empty and no validation happens.
+		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
+		{
+			CIFP_rwys.erase((*i));
+		}
+		if (!CIFP_rwys.empty())
+		{
+			stringstream ss;
+			ss  << "Could not find runway(s) ";
+			for(set<int>::iterator i = CIFP_rwys.begin(); i != CIFP_rwys.end(); ++i)
+				ss << ENUM_Desc(*i) << " ";
+			ss << "required by CIFP data at airport " << icao << ". ";
+			msgs.push_back(validation_error_t(ss.str(), err_airport_missing_runway_matching_cifp, apt, apt));
+		}
+		
 	}
-	else
+	else  // target is NOT the gateway
 	{
 		vector<WED_TextureNode *>			tex_nodes;
 		vector<WED_TextureBezierNode *>	tex_nodes_curved;
