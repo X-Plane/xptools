@@ -22,7 +22,7 @@
  */
 
 #include "WED_Validate.h"
-#include <iterator>
+#include "WED_ValidateATCRunwayChecks.h"
 
 #include "WED_Globals.h"
 #include "WED_Sign_Parser.h"
@@ -30,8 +30,8 @@
 #include "WED_Sealane.h"
 #include "WED_Helipad.h"
 #include "WED_Airport.h"
+#include "WED_AirportBoundary.h"
 #include "WED_AirportSign.h"
-#include "WED_ToolUtils.h"
 #include "WED_FacadePlacement.h"
 #include "WED_ForestPlacement.h"
 #include "WED_ObjPlacement.h"
@@ -42,34 +42,30 @@
 #include "WED_OverlayImage.h"
 #include "WED_FacadeNode.h"
 #include "WED_RampPosition.h"
+#include "WED_Taxiway.h"
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_TruckDestination.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_ATCFlow.h"
-#include "WED_LibraryMgr.h"
-#include "WED_AirportBoundary.h"
+#include "WED_ATCFrequency.h"
+#include "WED_ATCRunwayUse.h"
+#include "WED_ATCWindRule.h"
+#include "WED_ATCTimeRule.h"
 #include "WED_GISPoint.h"
 #include "WED_TextureNode.h"
 #include "WED_TextureBezierNode.h"
 
 #include "WED_GISUtils.h"
+#include "WED_ToolUtils.h"
 #include "WED_HierarchyUtils.h"
 
 #include "WED_Group.h"
-#include "WED_ATCRunwayUse.h"
-#include "WED_ATCWindRule.h"
-#include "WED_ATCTimeRule.h"
 #include "WED_EnumSystem.h"
 #include "WED_Menus.h"
-#include "WED_Taxiway.h"
 #include "WED_GroupCommands.h"
-#include "IGIS.h"
-#include <iomanip>
-#include <istream>
-#include "WED_ValidateATCRunwayChecks.h"
+#include "WED_MetaDataKeys.h"
 
-#include "AptDefs.h"
 #include "IResolver.h"
 #include "ILibrarian.h"
 #include "WED_LibraryMgr.h"
@@ -89,9 +85,8 @@
 #include "WED_Url.h"
 #include "GUI_Resources.h"
 
-#include <cctype>
-#include "WED_ATCFrequency.h"
-#include "WED_MetaDataKeys.h"
+#include <iomanip>
+#include <istream>
 
 #define MAX_LON_SPAN_GATEWAY 0.2
 #define MAX_LAT_SPAN_GATEWAY 0.2
@@ -2080,7 +2075,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				#endif
 			}
 		}
-		// check if all runways mentioned in CIFP are present at airport
+		// get data about runways from CIFP data
 		set<int> CIFP_rwys;
 		WED_file_cache_request  mCacheRequest;
 		string cert;
@@ -2130,10 +2125,18 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 		
-		// yes, if the above download or file caching fails, the list is empty and no validation happens.
+		// now check for the presence and location of required runways
 		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
 		{
-			CIFP_rwys.erase((*i));
+			if (CIFP_rwys.erase(*i))
+			{
+				if(0)
+				{
+					stringstream ss;
+					ss  << "End of runway " << ENUM_Desc(*i) << "not within +/-10m of location mandated by gateway CIFP data.";
+					msgs.push_back(validation_error_t(ss.str(), err_rwy_end_not_matching_cifp, apt, apt));
+				}
+			}
 		}
 		if (!CIFP_rwys.empty())
 		{

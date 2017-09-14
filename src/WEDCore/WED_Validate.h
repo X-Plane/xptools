@@ -103,6 +103,7 @@ enum validate_error_t
 	err_resource_cannot_be_found,
 	err_resource_does_not_have_correct_file_type,
 	err_rwy_end_outside_of_map,
+	err_rwy_end_not_matching_cifp,
 	err_rwy_misaligned_with_name,
 	err_rwy_must_be_reversed_to_match_name,
 	err_rwy_name_high_illegal_characters,
