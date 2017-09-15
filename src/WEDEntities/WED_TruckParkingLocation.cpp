@@ -16,8 +16,8 @@ DEFINE_PERSISTENT(WED_TruckParkingLocation)
 TRIVIAL_COPY(WED_TruckParkingLocation, WED_GISPoint_Heading)
 
 WED_TruckParkingLocation::WED_TruckParkingLocation(WED_Archive * a, int i) : WED_GISPoint_Heading(a,i),
-	truck_type		(this, "Truck Type",		SQL_Name("",""),	XML_Name("truck_parking_spot","type"   ), ATCServiceTruckType, apt_truck_fuel_prop),
-	number_of_cars	(this, "Number of Baggage Cars",	SQL_Name("",""),	XML_Name("truck_parking_spot","number_of_cars"), 3, 1)
+	truck_type    (this, "Truck Type",             XML_Name("truck_parking_spot","type"   ),    ATCServiceTruckType, apt_truck_fuel_prop),
+	number_of_cars(this, "Number of Baggage Cars", XML_Name("truck_parking_spot","number_of_cars"), 3, 1)
 {
 }
 

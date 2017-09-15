@@ -29,7 +29,7 @@ DEFINE_PERSISTENT(WED_TowerViewpoint)
 TRIVIAL_COPY(WED_TowerViewpoint, WED_GISPoint)
 
 WED_TowerViewpoint::WED_TowerViewpoint(WED_Archive * a, int i) : WED_GISPoint(a,i),
-	height(this,"Height",SQL_Name("WED_towerviewpoint","height"),XML_Name("tower_viewpoint","height"),0,3,0)
+	height(this,"Height", XML_Name("tower_viewpoint","height"),0,3,0)
 {
 }
 

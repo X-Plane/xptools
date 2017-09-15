@@ -202,10 +202,10 @@ bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
-	return me->second.status < status_Public;
+	return me->second.status < status_Yellow;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
 
-bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
+bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 {
 	for(res_map_t::iterator i = res_table.begin(); i != res_table.end(); ++i)
 		if(i->second.packages.count(package))
@@ -360,6 +360,8 @@ void		WED_LibraryMgr::Rescan()
 						cur_status = status_Private;
 					else if(MFS_string_match(&s,"DEPRECATED",true)) 
 						cur_status = status_Deprecated;
+					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true)) 
+						cur_status = status_Yellow;
 						
 					MFS_string_eol(&s,NULL);
 				}

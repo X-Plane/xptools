@@ -230,7 +230,7 @@ void WED_UpdateMetadataDialog::Submit()
 		{
 			mApt->AbortCommand();
 			this->Reset("","","Exit",true);
-			this->AddLabel("Could not find metadata, check ICAO or if airport is supported.");
+			this->AddLabel("Could not find metadata, check Airport ID or if airport is supported.");
 		}
 		else
 		{

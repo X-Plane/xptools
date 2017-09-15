@@ -127,7 +127,7 @@ WED_PropertyPane::WED_PropertyPane(
 
 		mSide = new GUI_Side;
 		bounds[0] = 0;
-		bounds[2] = 120;                       // fixed width of the first property colums, showing the names of all properties
+		bounds[2] = 140;                       // fixed width of the first property colums, showing the names of all properties
 		mSide->SetBounds(bounds);
 		mSide->SetGeometry(&mPropertyTable);
 		mSide->SetSide(&mTextTableSide);

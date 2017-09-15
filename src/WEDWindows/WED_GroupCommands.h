@@ -147,5 +147,6 @@ int		WED_CanReplaceVehicleObj(IResolver* resolver);
 void	WED_DoReplaceVehicleObj(IResolver* resolver);
 
 void WED_UpgradeRampStarts(IResolver * resolver);
+void WED_RenameRunwayNames(IResolver * resolver);
 
 #endif /* WED_GroupCommands_H */

@@ -23,7 +23,6 @@
 
 #include "WED_Thing.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_Errors.h"
 #include "WED_XMLWriter.h"
 #include <algorithm>
@@ -31,7 +30,7 @@
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
 	type(this),
-	name(this,"Name",SQL_Name("WED_things", "name"),XML_Name("hierarchy","name"),"unnamed entity")
+	name(this,"Name", XML_Name("hierarchy","name"),"unnamed entity")
 {
 	parent_id = 0;
 }
@@ -128,129 +127,6 @@ void 			WED_Thing::WriteTo(IOWriter * writer)
 		writer->WriteInt(source_id[n]);
 
 	WritePropsTo(writer);
-}
-
-void			WED_Thing::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-	child_id.clear();
-	viewer_id.clear();
-	source_id.clear();
-
-	sql_row1<int>						key(GetID());
-	
-	// Read in parent
-	sql_command	cmd(db,"SELECT parent FROM WED_things WHERE id=@i;","@i");
-	sql_row1<int>						me;
-	int err = cmd.simple_exec(key, me);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("Unable to complete thing query: %d (%s)",err, sqlite3_errmsg(db));
-	parent_id = me.a;
-
-	// Read in Children
-	sql_command kids(db, "SELECT id FROM WED_things WHERE parent=@id ORDER BY seq;","@id");
-	sql_row1<int>	kid;
-	kids.set_params(key);
-	kids.begin();
-	while ((err = kids.get_row(kid)) == SQLITE_ROW)
-	{
-		child_id.push_back(kid.a);
-	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to complete thing query on kids: %d (%s)",err, sqlite3_errmsg(db));
-
-	// Read in viewers
-	sql_command viewers(db,"SELECT viewer FROM WED_thing_viewers WHERE source=@id;","@id");
-	sql_row1<int>	viewer;
-	viewers.set_params(key);
-	viewers.begin();
-	while((err = viewers.get_row(viewer)) == SQLITE_ROW)
-	{
-		viewer_id.insert(viewer.a);
-	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to complete thing query on viewers: %d (%s)",err, sqlite3_errmsg(db));
-
-	// Read in sources.  Note that sources are ORDERED because we might make a point sequence from our sources. 
-	// Viewers are not ordered - they only exist so that a point can notify its observing line that it is, like, dead or something.
-	sql_command sources(db,"SELECT source FROM WED_thing_viewers WHERE viewer=@id ORDER BY seq;","@id");
-	sql_row1<int>	source;
-	sources.set_params(key);
-	sources.begin();
-	while((err = sources.get_row(source)) == SQLITE_ROW)
-	{
-		source_id.push_back(source.a);
-	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to complete thing query on sources: %d (%s)",err, sqlite3_errmsg(db));	
-	
-	// Read in properties
-	char where_crud[100];
-	sprintf(where_crud,"id=%d",GetID());
-	PropsFromDB(db,where_crud,mapping);
-}
-
-void			WED_Thing::ToDB(sqlite3 * db)
-{
-	int err;
-
-	int persistent_class_id;
-
-	{
-		const char * my_class = this->GetClass();
-
-		sql_command	find_my_class(db,"SELECT id FROM WED_classes WHERE name=@name;","@name");
-		sql_row1<string>	class_key(my_class);
-
-		find_my_class.set_params(class_key);
-		sql_row1<int>	found_id;
-		if (find_my_class.get_row(found_id) == SQLITE_ROW)
-		{
-			persistent_class_id = found_id.a;
-		}
-		else
-		{
-			sql_command	find_highest_id(db,"SELECT MAX(id) FROM WED_classes;",NULL);
-			sql_row1<int>	highest_key;
-			err = find_highest_id.simple_exec(sql_row0(), highest_key);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
-
-			persistent_class_id = highest_key.a + 1;
-
-			sql_command record_new_class(db,"INSERT INTO WED_classes VALUES(@id,@name);","@id,@name");
-			sql_row2<int,string> new_class_info(persistent_class_id,my_class);
-			err = record_new_class.simple_exec(new_class_info);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
-		}
-	}
-	
-	// Write our properties and parent.  Children array is not written - it is inferred by a backward query.
-	sql_command write_me(db,"INSERT OR REPLACE INTO WED_things VALUES(@id,@parent,@seq,@name,@class_id);","@id,@parent,@seq,@name,@class_id");
-	sql_row5<int,int,int,string,int>	bindings(
-												GetID(),
-												parent_id,
-												GetMyPosition(),
-												name.value,
-												persistent_class_id);
-
-	err =  write_me.simple_exec(bindings);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("UNable to update thing info: %d (%s)",err, sqlite3_errmsg(db));
-
-	// We have to clear out old viewers that we might have had!  INSERT OR REPLACE only replaces if we have a sane primary key.
-	// Since the viewer->source table is really a bunch of tuples (with ordering), we must nuke everything or we'll have stale points.
-	char cmd_buf[1024];
-	sprintf(cmd_buf,"DELETE FROM WED_thing_viewers WHERE viewer=%d;",GetID());
-	sql_command clear_viewers(db,cmd_buf,NULL);
-	err = clear_viewers.simple_exec();
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-
-	// Write out our sources in order. 
-	sql_command write_src(db,"INSERT OR REPLACE INTO WED_thing_viewers VALUES(@v, @s,@n);","@v,@s,@n");
-	for(int n = 0; n < source_id.size(); ++n)
-	{
-		sql_row3<int,int,int> one_tuple(GetID(), source_id[n], n);
-		err = write_src.simple_exec(one_tuple);
-		if(err != SQLITE_DONE)		WED_ThrowPrintf("Unable to update thing source info info: %d (%s)",err, sqlite3_errmsg(db));		
-	}
-
-	char id_str[20];
-	sprintf(id_str,"%d",GetID());
-	PropsToDB(db,"id",id_str, "WED_things");
 }
 
 void			WED_Thing::ToXML(WED_XMLElement * parent)
@@ -593,7 +469,7 @@ void	WED_Thing::Validate(void)
 
 #pragma mark -
 
-WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", SQL_Name("",""),XML_Name("","")), val(t)
+WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", XML_Name("","")), val(t)
 {
 }
 
@@ -632,19 +508,7 @@ void 		WED_TypeField::WriteTo(IOWriter * writer)
 {
 }
 
-void		WED_TypeField::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-}
-
-void		WED_TypeField::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_TypeField::ToXML(WED_XMLElement * parent)
-{
-}
-
-void		WED_TypeField::GetUpdate(SQL_Update& io_update)
 {
 }
 

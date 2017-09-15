@@ -32,8 +32,8 @@ TRIVIAL_COPY(WED_ATCTimeRule,WED_Thing)
 
 
 WED_ATCTimeRule::WED_ATCTimeRule(WED_Archive * a, int id) : WED_Thing(a,id),
-	start_time_zulu(this,"Start (Zulu)",SQL_Name("",""), XML_Name("atc_timerule", "start_zulu"),0,4),
-	end_time_zulu(this,"End (Zulu)",SQL_Name("",""), XML_Name("atc_timerule", "end_zulu"),0,4)
+	start_time_zulu(this,"Start (Zulu)", XML_Name("atc_timerule", "start_zulu"),0,4),
+	end_time_zulu(this,"End (Zulu)", XML_Name("atc_timerule", "end_zulu"),0,4)
 {
 }
 

@@ -52,17 +52,17 @@ WED_CreateLineTool::WED_CreateLineTool(
 	0),								// close required?
 	mType(tool),
 		// Ben says: toolbar for runway create tool BARELY fits on 1024 x 768 res, so all tool names are intentionally super-short.
-		rwy_surface			(tool==create_Runway	?this:NULL,"Surface",				SQL_Name("",""),XML_Name("",""),Surface_Type,	surf_Concrete),
-		rwy_shoulder		(tool==create_Runway	?this:NULL,"Shoulder",				SQL_Name("",""),XML_Name("",""),Shoulder_Type,shoulder_None),
-		rwy_roughness		(tool==create_Runway	?this:NULL,"Rough",					SQL_Name("",""),XML_Name("",""),0.25,4,2),
-		rwy_center_lites	(tool==create_Runway	?this:NULL,"Center",				SQL_Name("",""),XML_Name("",""),1),
-		rwy_edge_lights		(tool==create_Runway	?this:NULL,"Edge",					SQL_Name("",""),XML_Name("",""),Edge_Lights,	edge_MIRL),
-		rwy_remaining_signs	(tool==create_Runway	?this:NULL,"Dist",					SQL_Name("",""),XML_Name("",""),1),
-		rwy_markings		(tool==create_Runway	?this:NULL,"Marks",					SQL_Name("",""),XML_Name("",""),Runway_Markings,	mark_NonPrecis),
-		rwy_app_lights		(tool==create_Runway	?this:NULL,"Appch",					SQL_Name("",""),XML_Name("",""),Light_App,		app_MALSF),
-		rwy_tdzl			(tool==create_Runway	?this:NULL,"TDZL",					SQL_Name("",""),XML_Name("",""),0),
-		rwy_reil			(tool==create_Runway	?this:NULL,"REIL",					SQL_Name("",""),XML_Name("",""),REIL_Lights,		reil_None),
-		sea_buoys			(tool==create_Sealane	?this:NULL,"Buoys",					SQL_Name("",""),XML_Name("",""),1)
+		rwy_surface			(tool==create_Runway	?this:NULL,"Surface",  XML_Name("",""),Surface_Type,	surf_Concrete),
+		rwy_shoulder		(tool==create_Runway	?this:NULL,"Shoulder", XML_Name("",""),Shoulder_Type,shoulder_None),
+		rwy_roughness		(tool==create_Runway	?this:NULL,"Rough",	   XML_Name("",""),0.25,4,2),
+		rwy_center_lites	(tool==create_Runway	?this:NULL,"Center",   XML_Name("",""),1),
+		rwy_edge_lights		(tool==create_Runway	?this:NULL,"Edge",	   XML_Name("",""),Edge_Lights,	edge_MIRL),
+		rwy_remaining_signs	(tool==create_Runway	?this:NULL,"Dist",	   XML_Name("",""),1),
+		rwy_markings		(tool==create_Runway	?this:NULL,"Marks",	   XML_Name("",""),Runway_Markings,	mark_NonPrecis),
+		rwy_app_lights		(tool==create_Runway	?this:NULL,"Appch",	   XML_Name("",""),Light_App,		app_MALSF),
+		rwy_tdzl			(tool==create_Runway	?this:NULL,"TDZL",	   XML_Name("",""),0),
+		rwy_reil			(tool==create_Runway	?this:NULL,"REIL",	   XML_Name("",""),REIL_Lights,		reil_None),
+		sea_buoys			(tool==create_Sealane	?this:NULL,"Buoys",	   XML_Name("",""),1)
 {
 }
 

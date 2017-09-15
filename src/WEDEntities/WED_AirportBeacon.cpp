@@ -30,7 +30,7 @@ DEFINE_PERSISTENT(WED_AirportBeacon)
 TRIVIAL_COPY(WED_AirportBeacon, WED_GISPoint)
 
 WED_AirportBeacon::WED_AirportBeacon(WED_Archive * a, int i) : WED_GISPoint(a,i),
-	kind(this,"Type", SQL_Name("WED_beacons", "type"), XML_Name("airport_beacon","type"),Airport_Beacon, beacon_Airport)
+	kind(this,"Type", XML_Name("airport_beacon","type"),Airport_Beacon, beacon_Airport)
 {
 }
 

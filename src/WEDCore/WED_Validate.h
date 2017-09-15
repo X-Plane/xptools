@@ -25,6 +25,8 @@
 #define WED_Validate_h
 
 #include "WED_Entity.h"
+#include "WED_TaxiRoute.h"
+
 
 class	IResolver;
 class	WED_Thing;
@@ -40,6 +42,8 @@ enum validate_error_t
 	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
+	err_airport_no_runway_matching_cifp,
+	err_airport_runway_matching_cifp_mislocated,
 	err_apt_boundary_bez_curve_used,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atc_rule_wind_blank_ICAO_for_METAR,
@@ -61,7 +65,7 @@ enum validate_error_t
 	err_flow_blank_ICAO_for_METAR,
 	err_flow_blank_name,
 	err_flow_flows_only_for_gte_xp10,
-	err_flow_no_rwy_use_rules,
+	err_flow_no_arr_or_no_dep_runway,
 	err_flow_has_opposite_arrivals,
 	err_flow_has_opposite_departures,
 	err_flow_pattern_runway_not_in_airport,
@@ -79,6 +83,7 @@ enum validate_error_t
 	err_gis_poly_facades_curved_only_for_gte_xp10, //gte is greater than or equal to
 	err_gis_poly_line_and_point_forests_only_for_gte_xp10,
 	err_gis_poly_linear_feature_at_least_two_points,
+	err_gis_poly_self_intersecting,
 	err_gis_poly_wound_clockwise,
 	err_gis_poly_zero_length_side,
 	err_heli_name_does_not_start_with_h,
@@ -99,6 +104,7 @@ enum validate_error_t
 	err_resource_cannot_be_found,
 	err_resource_does_not_have_correct_file_type,
 	err_rwy_end_outside_of_map,
+	err_rwy_end_not_matching_cifp,
 	err_rwy_misaligned_with_name,
 	err_rwy_must_be_reversed_to_match_name,
 	err_rwy_name_high_illegal_characters,
@@ -115,7 +121,6 @@ enum validate_error_t
 	err_rwy_name_reversed_runway_numbers_low_snd,  //and should be second
 	err_rwy_name_suffix_only_on_one_end,
 	err_rwy_name_suffixes_match,
-	err_rwy_not_adequetely_wide,
 	err_rwy_overlapping_displaced_thresholds,
 	err_rwy_surface_illegal_roughness,
 	err_rwy_surface_water_not_valid,
@@ -176,4 +181,5 @@ validation_error_t::validation_error_t(const string& m, validate_error_t error_c
 {
 	copy(container.begin(), container.end(), back_inserter(bad_objects));
 }
+
 #endif

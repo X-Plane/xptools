@@ -87,8 +87,6 @@ public:
 	//WED_Persistant, for Undo/Redo
 	virtual	bool 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
-	/*virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
-	virtual void			ToDB(sqlite3 * db);*/
 
 	//WED_Thing
 	virtual void			AddExtraXML(WED_XMLElement * obj);

@@ -31,8 +31,8 @@ TRIVIAL_COPY(WED_LightFixture, WED_GISPoint_Heading)
 
 
 WED_LightFixture::WED_LightFixture(WED_Archive * a, int i) : WED_GISPoint_Heading(a, i),
-	light_type(this, "Type", SQL_Name("WED_lightfixture", "kind"), XML_Name("light_fixture","type"),Light_Fixt, light_VASI),
-	angle(this,"Angle",SQL_Name("WED_lightfixture","angle"),XML_Name("light_fixture","angle"),3.0,4,2)
+	light_type(this, "Type", XML_Name("light_fixture","type"),Light_Fixt, light_VASI),
+	angle(this,"Angle",      XML_Name("light_fixture","angle"),3.0,4,2)
 {
 }
 

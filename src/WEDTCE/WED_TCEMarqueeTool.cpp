@@ -94,7 +94,7 @@ WED_TCEMarqueeTool::WED_TCEMarqueeTool(
 										WED_MapZoomerNew *		zoomer,
 										IResolver *				resolver) :
 				WED_HandleToolBase(tool_name, host, zoomer, resolver),
-				mSnap(this,"Click selects Subtexture", SQL_Name("",""),XML_Name("",""), true),
+				mSnap(this,"Click selects Subtexture", XML_Name("",""), true),
 				mCacheKeyArchive(-1),
 				mEditMode(tmm_None)
 {

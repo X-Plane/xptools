@@ -72,29 +72,29 @@ WED_CreatePointTool::WED_CreatePointTool(
 	0,								// close allowed
 	0),								// close required?
 	mType(tool),
-		beacon_kind		(tool==create_Beacon		?this:NULL,"Kind",			SQL_Name("",""),XML_Name("",""),Airport_Beacon,beacon_Airport),
-		sign_text		(tool==create_Sign			?this:NULL,"Text",			SQL_Name("",""),XML_Name("",""),"{@L}A"),
-		sign_style		(tool==create_Sign			?this:NULL,"Style",			SQL_Name("",""),XML_Name("",""),Sign_Style,style_Default),
-		sign_height		(tool==create_Sign			?this:NULL,"Size",			SQL_Name("",""),XML_Name("",""),Sign_Size,size_MediumTaxi),
-		heli_surface	(tool==create_Helipad		?this:NULL,"Surface",		SQL_Name("",""),XML_Name("",""),Surface_Type,surf_Concrete),
-		heli_markings	(tool==create_Helipad		?this:NULL,"Markings",		SQL_Name("",""),XML_Name("",""),Helipad_Markings,heli_Mark_Default),
-		heli_shoulder	(tool==create_Helipad		?this:NULL,"Shoulder",		SQL_Name("",""),XML_Name("",""),Shoulder_Type,shoulder_None),
-		heli_roughness	(tool==create_Helipad		?this:NULL,"Roughness",		SQL_Name("",""),XML_Name("",""),0.25,4,2),
-		heli_edgelights	(tool==create_Helipad		?this:NULL,"Edge Lights",	SQL_Name("",""),XML_Name("",""),Heli_Lights,heli_Yellow),
-		light_kind		(tool==create_Lights		?this:NULL,"Fixture Type",	SQL_Name("",""),XML_Name("",""),Light_Fixt,light_VASI),
-		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle",SQL_Name("",""),XML_Name("",""),3.0,4,2),
-		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	SQL_Name("",""),XML_Name("",""),25.0,5,1),
-		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			SQL_Name("",""),XML_Name("",""),0),
-		resource		(tool==create_Object		?this:NULL,"Object",		SQL_Name("",""),XML_Name("",""),""),
-		show_level		(tool==create_Object		?this:NULL,"Show with",		SQL_Name("",""),XML_Name("",""),ShowLevel,show_Level1),
-		ramp_type		(tool==create_RampStart		?this:NULL,"Ramp Start Type",SQL_Name("",""),XML_Name("",""   ), ATCRampType, atc_Ramp_Misc),
-		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",SQL_Name("",""),XML_Name("",""), ATCTrafficType, 0),
-		width			(tool==create_RampStart		?this:NULL,"Size",	SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
-		ramp_op_type	(tool==create_RampStart		?this:NULL,"Ramp Operation Type",	SQL_Name("",""),XML_Name("",""), RampOperationType, ramp_operation_None),
-		airlines		(tool==create_RampStart		?this:NULL,"Airlines",		SQL_Name("",""),XML_Name("",""), ""),
-		truck_type		(tool==create_TruckParking	?this:NULL,"Truck Type",	SQL_Name("",""),XML_Name("",""), ATCServiceTruckType, atc_ServiceTruck_FuelTruck_Prop),
-		baggage_car_count(tool==create_TruckParking	?this:NULL,"Baggage Cars",	SQL_Name("",""),XML_Name("",""), 3, 1),
-		truck_types		(tool==create_TruckDestination?this:NULL,"Truck Types",SQL_Name("",""),XML_Name("",""), ATCServiceTruckType, 0)
+		beacon_kind		(tool==create_Beacon		?this:NULL,"Kind",			XML_Name("",""),Airport_Beacon,beacon_Airport),
+		sign_text		(tool==create_Sign			?this:NULL,"Text",			XML_Name("",""),"{@L}A"),
+		sign_style		(tool==create_Sign			?this:NULL,"Style",			XML_Name("",""),Sign_Style,style_Default),
+		sign_height		(tool==create_Sign			?this:NULL,"Size",			XML_Name("",""),Sign_Size,size_MediumTaxi),
+		heli_surface	(tool==create_Helipad		?this:NULL,"Surface",		XML_Name("",""),Surface_Type,surf_Concrete),
+		heli_markings	(tool==create_Helipad		?this:NULL,"Markings",		XML_Name("",""),Helipad_Markings,heli_Mark_Default),
+		heli_shoulder	(tool==create_Helipad		?this:NULL,"Shoulder",		XML_Name("",""),Shoulder_Type,shoulder_None),
+		heli_roughness	(tool==create_Helipad		?this:NULL,"Roughness",		XML_Name("",""),0.25,4,2),
+		heli_edgelights	(tool==create_Helipad		?this:NULL,"Edge Lights",	XML_Name("",""),Heli_Lights,heli_Yellow),
+		light_kind		(tool==create_Lights		?this:NULL,"Fixture Type",	XML_Name("",""),Light_Fixt,light_VASI),
+		light_angle		(tool==create_Lights		?this:NULL,"Approach Angle",XML_Name("",""),3.0,4,2),
+		tower_height	(tool==create_TowerViewpoint?this:NULL,"Tower Height",	XML_Name("",""),25.0,5,1),
+		windsock_lit	(tool==create_Windsock		?this:NULL,"Lit",			XML_Name("",""),0),
+		resource		(tool==create_Object		?this:NULL,"Object",		XML_Name("",""),""),
+		show_level		(tool==create_Object		?this:NULL,"Show with",		XML_Name("",""),ShowLevel,show_Level1),
+		ramp_type		(tool==create_RampStart		?this:NULL,"Ramp Start Type",XML_Name("",""   ), ATCRampType, atc_Ramp_Misc),
+		equip_type		(tool==create_RampStart		?this:NULL,"Equipment Type",XML_Name("",""), ATCTrafficType, 0),
+		width			(tool==create_RampStart		?this:NULL,"Size",	        XML_Name("",""), ATCIcaoWidth, width_E),
+		ramp_op_type	(tool==create_RampStart		?this:NULL,"Ramp Operation Type",XML_Name("",""), RampOperationType, ramp_operation_None),
+		airlines		(tool==create_RampStart		?this:NULL,"Airlines",      XML_Name("",""), ""),
+		truck_type		(tool==create_TruckParking	?this:NULL,"Truck Type",	XML_Name("",""), ATCServiceTruckType, atc_ServiceTruck_FuelTruck_Prop),
+		baggage_car_count(tool==create_TruckParking	?this:NULL,"Baggage Cars",	XML_Name("",""), 3, 1),
+		truck_types		(tool==create_TruckDestination?this:NULL,"Truck Types", XML_Name("",""), ATCServiceTruckType, 0)
 {
 }
 
@@ -208,7 +208,6 @@ void	WED_CreatePointTool::AcceptPath(
 	if (new_pt_h) new_pt_h->SetHeading(VectorDegs2NorthHeading(pts[0],pts[0],Vector2(pts[0],dirs_hi[0])));
 
 	static int n = 0;
-	static int h = 0;
 	new_pt_obj->SetParent(host, idx);
 	if (mType == create_Helipad)
 		sprintf(buf,"H%d",++n);

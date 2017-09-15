@@ -59,6 +59,10 @@ public:
 				void		SetHotDepart(const set<int>& rwys);
 				void		SetHotArrive(const set<int>& rwys);
 				void		SetHotILS(const set<int>& rwys);
+				set<int>	GetHotDepart(void);
+				set<int>	GetHotArrive(void);
+				set<int>	GetHotILS(void);
+
 				void		SetWidth(int width);
 				void		SetVehicleClass(int vehicle_class);
 				

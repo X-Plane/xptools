@@ -1091,45 +1091,26 @@ set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
 			Bezier2 b1, b2;
 			bool isb1, isb2;
 
-			if (isb1 = ii->GetSide(gis_Geo, 0, s1, b1))
-			{
-				s1.p1 = b1.p1;
-				s1.p2 = b1.p2;
+			isb1 = ii->GetSide(gis_Geo, 0, s1, b1);
+			isb2 = jj->GetSide(gis_Geo, 0, s2, b2);
+			
+			if (isb1 || isb2)
+			{   // should never get here, as edges (used for ATC routes only) are not supposed to have bezier segments
+				if (b1.intersect(b2, 10))
+				{
+					crossed_edges.insert(edges[i]);
+					crossed_edges.insert(edges[j]);
+				}
 			}
-			else
+			else 
 			{
-				b1.c1 = b1.p1;
-				b1.c2 = b1.p2;
-			}
-
-			if (isb2 = jj->GetSide(gis_Geo, 0, s2, b2))
-			{
-				s2.p1 = b2.p1;
-				s2.p2 = b2.p2;
-			}
-			else
-			{
-				b2.c1 = b2.p1;
-				b2.c2 = b2.p2;
-			}
-
-			Point2 x;
-			if (s1.p1 != s2.p1 &&
-				s1.p2 != s2.p2 &&
-				s1.p1 != s2.p2 &&
-				s1.p2 != s2.p1)
-			{
-				if (!isb1 && !isb2)
+				Point2 x;
+				if (s1.p1 != s2.p1 &&
+					s1.p2 != s2.p2 &&
+					s1.p1 != s2.p2 &&
+					s1.p2 != s2.p1)
 				{
 					if (s1.intersect(s2, x))
-					{
-						crossed_edges.insert(edges[i]);
-						crossed_edges.insert(edges[j]);
-					}
-				}
-				else
-				{
-					if (b1.intersect(b2, 12))
 					{
 						crossed_edges.insert(edges[i]);
 						crossed_edges.insert(edges[j]);
@@ -3099,6 +3080,8 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 	
 }
 
+#include "WED_Runway.h"
+
 void WED_UpgradeRampStarts(IResolver * resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
@@ -3111,4 +3094,188 @@ void WED_UpgradeRampStarts(IResolver * resolver)
 	else
 		root->AbortOperation();
 	
+}
+
+struct changelist_t
+{
+	string ICAO;
+	int new_rwy;
+	Point2 rwy_pt0;
+	Point2 rwy_pt1;
+};
+
+static bool IsRwyMatching(WED_Runway * rwy, struct changelist_t * entry)
+{
+	// very crude match criteria: 
+	// threshold, expanded by one runway width to the sides,
+	// expanded by 5% of runway's length 
+
+    Point2 rwy_corner[4];
+	Vector2 dw, dl;
+	
+	rwy->GetCorners(gis_Geo, rwy_corner);
+	dw = Vector2(rwy_corner[2],rwy_corner[1]);
+	dw *= 0.5;
+	dl = Vector2(rwy_corner[1],rwy_corner[0]);
+	dl *= 0.05;
+	
+    Point2 thr_corner[4];
+	
+	rwy->GetCornersDisp1(thr_corner);
+	
+	thr_corner[0]+=dw; thr_corner[1]+=dw;
+	thr_corner[3]-=dw; thr_corner[2]-=dw;
+	
+	thr_corner[0]+=dl; thr_corner[1]-=dl;
+	thr_corner[3]+=dl; thr_corner[2]-=dl;
+	
+	Polygon2 end0;
+	for (int i=0; i<4; ++i)
+		end0.push_back(thr_corner[i]);
+
+	rwy->GetCornersDisp2(thr_corner);
+	
+	thr_corner[1]+=dw; thr_corner[0]+=dw;
+	thr_corner[2]-=dw; thr_corner[3]-=dw;
+	
+	thr_corner[1]-=dl; thr_corner[0]+=dl;
+	thr_corner[2]-=dl; thr_corner[3]+=dl;
+
+	Polygon2 end1;
+	for (int i=0; i<4; ++i)
+		end1.push_back(thr_corner[i]);
+	
+	if(end0.inside(entry->rwy_pt0) &&
+	   end1.inside(entry->rwy_pt1))
+	{
+		printf(" Yup\n");
+		return true;
+	}
+	else if(end0.inside(entry->rwy_pt1) &&
+	   end1.inside(entry->rwy_pt0))
+	{
+		printf(" Rev\n");
+		return true;
+	}
+	else
+	{
+		printf(" Nope\n");
+		return false;
+	}
+}
+
+static int rename_rwys_recursive(WED_Thing * who, vector<struct changelist_t> clist)
+{
+	int renamed = 0;
+	WED_Airport * apt = dynamic_cast<WED_Airport *> (who);
+	if(apt)
+	{
+		vector<WED_Runway *> rwys;
+		CollectRecursive(apt, back_inserter(rwys),  WED_Runway::sClass);
+		
+		for(vector<WED_Runway *>::iterator r = rwys.begin(); r != rwys.end(); ++r)
+		{
+			for(vector<struct changelist_t>::iterator c = clist.begin(); c != clist.end(); ++c)
+			{
+				string s; apt->GetICAO(s);
+				if((*c).ICAO == s) 
+				{
+					int old_rwy_enum = (*r)->GetRunwayEnumsTwoway();
+					printf("Testing O=%s against N=%s at %s ... ",ENUM_Desc(old_rwy_enum), ENUM_Desc((*c).new_rwy),s.c_str());
+					if (IsRwyMatching(*r,&(*c)))
+					{
+						printf("Renaming %s Rwy %s to %s\n",s.c_str(),ENUM_Desc(old_rwy_enum),ENUM_Desc((*c).new_rwy));
+						(*r)->SetName(ENUM_Desc((*c).new_rwy));
+						renamed++;
+					}
+				}
+			}
+			
+		}
+	}
+	else            // no need to check for nested airports
+	{
+		int nn = who->CountChildren();
+		for(int n = 0; n < nn; ++n)
+			renamed += rename_rwys_recursive(who->GetNthChild(n), clist);
+	}
+	return renamed;
+}
+
+void WED_RenameRunwayNames(IResolver * resolver)
+{
+
+	WED_Thing * root = WED_GetWorld(resolver);
+	vector<struct changelist_t> changelist;
+
+	char fn[200];
+	if (!GetFilePathFromUser(getFile_Open,"Pick file with 'ICAO & Runway entries", "Open",
+								FILE_DIALOG_PICK_VALID_RUNWAY_TABLE, fn,sizeof(fn)))
+		return;
+
+	FILE* file = fopen(fn,"r");
+	if (file)
+	{
+		bool second_end = false;
+		string first_rwy;
+		char icao[16], rnam[16];
+		float lon,lat,hdg;
+		struct changelist_t entry;
+		
+		int lnum=0;
+		while (fscanf(file,"%s%s%f%f%f", icao, rnam, &lat, &lon, &hdg) == 5)
+		{
+			if (second_end)
+			{
+				if (entry.ICAO == string(icao))
+				{
+					string rwy_2wy = first_rwy + "/" + rnam;
+					entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,rwy_2wy.c_str());
+					if (entry.new_rwy == -1) 
+					{
+						rwy_2wy = "0" + rwy_2wy;
+						entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,rwy_2wy.c_str());
+					}
+					entry.rwy_pt1 = Point2(lon,lat);
+					
+					if(entry.new_rwy > atc_rwy_None)
+						changelist.push_back(entry);
+					else
+						printf("Ignoring illegal runway specification pair ending in line %d\n",lnum);
+				}
+				else
+					printf("Ignoring ICAO for not matching preceeding one in line %d\n",lnum);
+				second_end = false;
+			}
+			else
+			{
+				entry.ICAO = icao;
+				first_rwy = rnam;
+				entry.rwy_pt0 = Point2(lon,lat);
+				second_end = true;
+			}
+			lnum++;
+		}
+		fclose(file);
+	}
+	else
+	{
+		printf("Can't read file\n");
+		return;
+	}
+	 
+	if (!changelist.empty())
+	{
+		root->StartCommand("Rename Runways");
+		int renamed_count = rename_rwys_recursive(root, changelist);
+		if(renamed_count)
+		{
+			stringstream ss;
+			ss << "Renamed " << renamed_count << " runways";
+			DoUserAlert(ss.str().c_str());
+			root->CommitOperation();
+		}
+		else
+			root->AbortOperation();
+	}
 }

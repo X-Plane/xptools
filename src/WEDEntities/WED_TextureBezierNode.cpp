@@ -28,12 +28,12 @@ DEFINE_PERSISTENT(WED_TextureBezierNode)
 TRIVIAL_COPY(WED_TextureBezierNode, WED_GISPoint_Bezier)
 
 WED_TextureBezierNode::WED_TextureBezierNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a,i),
-	mS(this,"S",				SQL_Name("WED_texturenode","s"),			XML_Name("texture_node","s"),	  0.0,5,4),
-	mT(this,"T",				SQL_Name("WED_texturenode","t"),			XML_Name("texture_node","t"),	  0.0,5,4),
-	mScL(this,"S (Ctrl Low)",	SQL_Name("WED_texturenode_bezier","sc_lo"), XML_Name("texture_node","sc_lo"), 0.0,5,4),
-	mTcL(this,"T (Ctrl Low)",	SQL_Name("WED_texturenode_bezier","tc_lo"), XML_Name("texture_node","tc_lo"), 0.0,5,4),
-	mScH(this,"S (Ctrl Hi)",	SQL_Name("WED_texturenode_bezier","sc_hi"), XML_Name("texture_node","sc_hi"), 0.0,5,4),
-	mTcH(this,"T (Ctrl Hi)",	SQL_Name("WED_texturenode_bezier","tc_hi"), XML_Name("texture_node","tc_hi"), 0.0,5,4)
+	mS(this,"S",				XML_Name("texture_node","s"),	  0.0,5,4),
+	mT(this,"T",				XML_Name("texture_node","t"),	  0.0,5,4),
+	mScL(this,"S (Ctrl Low)",	XML_Name("texture_node","sc_lo"), 0.0,5,4),
+	mTcL(this,"T (Ctrl Low)",	XML_Name("texture_node","tc_lo"), 0.0,5,4),
+	mScH(this,"S (Ctrl Hi)",	XML_Name("texture_node","sc_hi"), 0.0,5,4),
+	mTcH(this,"T (Ctrl Hi)",	XML_Name("texture_node","tc_hi"), 0.0,5,4)
 {
 }
 

@@ -28,9 +28,9 @@ DEFINE_PERSISTENT(WED_AirportNode)
 TRIVIAL_COPY(WED_AirportNode, WED_GISPoint_Bezier)
 
 WED_AirportNode::WED_AirportNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a,i),
-	attrs(this,".Attributes",SQL_Name("WED_airportnode", "attributes"), XML_Name("markings","marking"),LinearFeature, 0),
-	lines(this,"Line Attributes",SQL_Name("",""),XML_Name("",""),".Attributes",line_SolidYellow,line_BWideBrokenDouble, 1),
-	lights(this,"Light Attributes",SQL_Name("",""),XML_Name("",""),".Attributes",line_TaxiCenter,line_BoundaryEdge, 1)
+	attrs(this,".Attributes",       XML_Name("markings","marking"),LinearFeature, 0),
+	lines(this,"Line Attributes",   XML_Name("",""),".Attributes",line_SolidYellow,line_BWideBrokenDouble, 1),
+	lights(this,"Light Attributes", XML_Name("",""),".Attributes",line_TaxiCenter,line_BoundaryEdge, 1)
 {
 }
 

@@ -28,11 +28,11 @@ DEFINE_PERSISTENT(WED_ForestPlacement)
 TRIVIAL_COPY(WED_ForestPlacement,WED_GISPolygon)
 
 WED_ForestPlacement::WED_ForestPlacement(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	density(this,"Density",SQL_Name("WED_dsf_polygon","param"),XML_Name("forest_placement","density"),10.0,3,1),
+	density(this,"Density",     XML_Name("forest_placement","density"),10.0,3,1),
 #if AIRPORT_ROUTING
-	fill_mode(this,"Fill Mode", SQL_Name("WED_dsf_polygon", "closed"), XML_Name("forest_placement","closed"),ForestFill, forest_Fill),
+	fill_mode(this,"Fill Mode", XML_Name("forest_placement","closed"),ForestFill, forest_Fill),
 #endif	
-	resource(this,"Resource", SQL_Name("WED_dsf_overlay", "resource"),XML_Name("forest_placement","resource"), "")
+	resource(this,"Resource",   XML_Name("forest_placement","resource"), "")
 {
 }
 

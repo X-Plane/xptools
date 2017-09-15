@@ -364,6 +364,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;	
 #endif
 	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
+	case wed_RenameRwys:	WED_RenameRunwayNames(mDocument);	return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -477,6 +478,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_AddATCTimeRule:return WED_CanMakeNewATCTimeRule(mDocument);
 	case wed_AddATCWindRule:return WED_CanMakeNewATCWindRule(mDocument);
 	case wed_UpgradeRamps:	return 1;
+	case wed_RenameRwys:	return 1;
 
 #endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);

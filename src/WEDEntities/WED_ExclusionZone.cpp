@@ -27,7 +27,7 @@ DEFINE_PERSISTENT(WED_ExclusionZone)
 TRIVIAL_COPY(WED_ExclusionZone, WED_GISBoundingBox)
 
 WED_ExclusionZone::WED_ExclusionZone(WED_Archive * a, int i) : WED_GISBoundingBox(a,i),
-	exclusions(this,"Exclusions",SQL_Name("WED_exclusionzone", "exclusions"), XML_Name("excluzions","exclusion"),ExclusionTypes, 0)
+	exclusions(this,"Exclusions", XML_Name("excluzions","exclusion"),ExclusionTypes, 0)
 {
 }
 

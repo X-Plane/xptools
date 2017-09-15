@@ -24,7 +24,6 @@
 #include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_EnumSystem.h"
 #include "WED_Errors.h"
 #include "AptDefs.h"
@@ -34,8 +33,8 @@ DEFINE_PERSISTENT(WED_AirportChain)
 
 WED_AirportChain::WED_AirportChain(WED_Archive * a, int i) : WED_GISChain(a,i),
 	closed(0),
-	lines(this,"Line Attributes",SQL_Name("",""),XML_Name("",""),"Line Attributes", 1),
-	lights(this,"Light Attributes",SQL_Name("",""),XML_Name("",""),"Light Attributes", 1)
+	lines(this,"Line Attributes", XML_Name("",""),"Line Attributes", 1),
+	lights(this,"Light Attributes", XML_Name("",""),"Light Attributes", 1)
 {
 }
 
@@ -111,32 +110,6 @@ void 			WED_AirportChain::WriteTo(IOWriter * writer)
 {
 	WED_GISChain::WriteTo(writer);
 	writer->WriteInt(closed);
-}
-
-void			WED_AirportChain::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-	WED_GISChain::FromDB(db, mapping);
-
-	sql_command	cmd(db,"SELECT closed FROM WED_airportchains WHERE id=@i;","@i");
-
-	sql_row1<int>						key(GetID());
-	sql_row1<int>						cl;
-
-	int err = cmd.simple_exec(key, cl);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-
-	closed = cl.a;
-}
-
-void			WED_AirportChain::ToDB(sqlite3 * db)
-{
-	WED_GISChain::ToDB(db);
-
-	int err;
-	sql_command	write_me(db,"INSERT OR REPLACE INTO WED_airportchains values(@id,@closed);","@id,@closed");
-	sql_row2 <int,int>bindings(GetID(),closed);
-	err = write_me.simple_exec(bindings);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
 }
 
 void	WED_AirportChain::AddExtraXML(WED_XMLElement * obj)

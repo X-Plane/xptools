@@ -114,7 +114,10 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 	}
 
 	process_texture_path(p,obj->texture);
-	process_texture_path(p,obj->texture_draped);
+	if (obj->texture_draped.length() > 0)
+		process_texture_path(p,obj->texture_draped);
+	else
+		obj->texture_draped = obj->texture;
 
 	mObj[lib_key].push_back(obj);
 	
@@ -155,10 +158,14 @@ printf("load %s\n",p.c_str());
 			}
 		}
 		process_texture_path(p,obj->texture);
-		process_texture_path(p,obj->texture_draped);
+		if (obj->texture_draped.length() > 0)
+			process_texture_path(p,obj->texture_draped);
+		else
+			obj->texture_draped = obj->texture;
+
 		mObj[path].push_back(obj);
 	}
-	obj = mObj[path].front();
+
 	return true;
 }
 
