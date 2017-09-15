@@ -102,6 +102,8 @@
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
 
+#define DBG_LIN_COLOR 1,0,1,1,0,1
+
 // This table is used to find the matching opposite direction for a given runway
 // to detect head-on collisions.
 
@@ -2076,9 +2078,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 		// get data about runways from CIFP data
-		set<int> CIFP_rwys;
 		WED_file_cache_request  mCacheRequest;
 		string cert;
+		
 		if(!GUI_GetTempResourcePath("gateway.crt", cert))
 			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
 			
@@ -2099,6 +2101,9 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 
+		map<int,Point2> CIFP_rwys;
+		set<int> rwys_missing;
+		
 		if(res.out_status != cache_status_available)
 		{
 			stringstream ss;
@@ -2117,36 +2122,77 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				{
 					if(icao == string(anam))
 					{
-						printf("V:Adding to list %s\n",rnam);
-						CIFP_rwys.insert(ENUM_LookupDesc(ATCRunwayOneway,rnam));
+						int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam);
+						if (rwy_enum != atc_rwy_None)
+						{
+							printf("V:Adding to list %s\n",rnam);
+							
+							Point2 pt(lon,lat);
+							CIFP_rwys[rwy_enum]=pt;
+							rwys_missing.insert(rwy_enum);
+						}
 					}
 				}
 				fclose(file);
 			}
 		}
 		
-		// now check for the presence and location of required runways
+		// now check for the presence of required runways
 		for(set<int>::iterator i = legal_rwy_oneway.begin(); i != legal_rwy_oneway.end(); ++i)
 		{
-			if (CIFP_rwys.erase(*i))
-			{
-				if(0)
-				{
-					stringstream ss;
-					ss  << "End of runway " << ENUM_Desc(*i) << "not within +/-10m of location mandated by gateway CIFP data.";
-					msgs.push_back(validation_error_t(ss.str(), err_rwy_end_not_matching_cifp, apt, apt));
-				}
-			}
+			rwys_missing.erase(*i);
 		}
-		if (!CIFP_rwys.empty())
+		if (!rwys_missing.empty())
 		{
 			stringstream ss;
 			ss  << "Could not find runway(s) ";
-			for(set<int>::iterator i = CIFP_rwys.begin(); i != CIFP_rwys.end(); ++i)
+			for(set<int>::iterator i = rwys_missing.begin(); i != rwys_missing.end(); ++i)
 				ss << ENUM_Desc(*i) << " ";
 			ss << "required by CIFP data at airport " << icao << ". ";
-			msgs.push_back(validation_error_t(ss.str(), err_airport_missing_runway_matching_cifp, apt, apt));
+			msgs.push_back(validation_error_t(ss.str(), err_airport_no_runway_matching_cifp, apt, apt));
 		}
+		
+		// location accuracy of runways with CIFP data
+		for(vector<WED_Runway *>::iterator r = runways.begin(); r != runways.end(); ++r)
+		{
+			int r_enum[2]; 
+			pair<int,int> p = (*r)->GetRunwayEnumsOneway();
+			r_enum[0] = p.first; r_enum[1] = p.second;
+
+			Point2 r_loc[2];
+			(*r)->GetSource()->GetLocation(gis_Geo, r_loc[0]);
+			(*r)->GetTarget()->GetLocation(gis_Geo, r_loc[1]);
+			
+			const float CIFP_LOCATION_ERROR = 10.0;
+			
+			for(int i = 0; i < 2; ++i)
+			{
+				map<int,Point2>::iterator r_cifp;
+				if((r_cifp = CIFP_rwys.find(r_enum[i])) != CIFP_rwys.end())
+				{
+					float loc_err;
+					loc_err = LonLatDistMeters(r_loc[i].x(), r_loc[i].y(), r_cifp->second.x(), r_cifp->second.y());
+					if (loc_err > CIFP_LOCATION_ERROR)
+					{
+						stringstream ss;
+						ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location mandated by gateway CIFP data.";
+						msgs.push_back(validation_error_t(ss.str(), err_airport_runway_matching_cifp_mislocated, *r, apt));
+#if DEBUG_VIS_LINES
+						const int NUM_PTS = 20;
+						Point2 pt_cir[NUM_PTS];
+						for (int j = 0; j < NUM_PTS; ++j)
+							pt_cir[j] = Point2(CIFP_LOCATION_ERROR*sin(2.0*j*M_PI/NUM_PTS), CIFP_LOCATION_ERROR*cos(2.0*j*M_PI/NUM_PTS));
+					
+						MetersToLLE(r_cifp->second, NUM_PTS, pt_cir);
+						
+						for (int j = 0; j < NUM_PTS; ++j)
+							debug_mesh_line(pt_cir[j],pt_cir[(j+1)%NUM_PTS], DBG_LIN_COLOR);
+#endif
+					}
+				}
+			}	
+		}
+		
 		
 	}
 	else  // target is NOT the gateway
@@ -2262,6 +2308,13 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		printf("%s\n", msg.c_str());
 #endif
 	}
+#endif
+
+#if DEBUG_VIS_LINES
+	//Clear the previously drawn lines before every validation
+	gMeshPoints.clear();
+	gMeshLines.clear();
+	gMeshPolygons.clear();
 #endif
 
 	validation_error_vector		msgs;

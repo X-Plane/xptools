@@ -25,8 +25,6 @@
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 
-#include "AptDefs.h"
-
 #include "CompGeomDefs2.h"
 #include "CompGeomUtils.h"
 #include "GISUtils.h"
@@ -185,17 +183,20 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
 		matching_taxiroute_nodes.push_back(dynamic_cast<WED_GISPoint*>(taxiroute_itr->taxiroute_ptr->GetNthSource(1)));
 	}
 
-	Polygon2 runway_hit_box_geo(4);
-	runway_hit_box_geo[0] = translator.Reverse(runway_info.corners_m[0] - runway_info.dir_1m*2.0);
-	runway_hit_box_geo[1] = translator.Reverse(runway_info.corners_m[1] + runway_info.dir_1m*2.0);
-	runway_hit_box_geo[2] = translator.Reverse(runway_info.corners_m[2] + runway_info.dir_1m*2.0);
-	runway_hit_box_geo[3] = translator.Reverse(runway_info.corners_m[3] - runway_info.dir_1m*2.0);
+	Polygon2 runway_hit_box(runway_info.corners_geo);
 	
+	Vector2 dir_ext = runway_info.dir_vec_1m *2.0;       // extend runway in longitudinal direction by 2m
+
+	runway_hit_box[0] -= dir_ext;
+	runway_hit_box[1] += dir_ext;
+	runway_hit_box[2] += dir_ext;
+	runway_hit_box[3] -= dir_ext;
+
 	for(TaxiRouteNodeVec_t::const_iterator node_itr = matching_taxiroute_nodes.begin(); node_itr != matching_taxiroute_nodes.end(); ++node_itr)
 	{
 		Point2 node_location;
 		(*node_itr)->GetLocation(gis_Geo,node_location);
-		if(runway_hit_box_geo.inside(node_location) == false)
+		if(runway_hit_box.inside(node_location) == false)
 		{
 			string node_name;
 			(*node_itr)->GetName(node_name);
@@ -209,10 +210,10 @@ static bool AllTaxiRouteNodesInRunway( const RunwayInfo& runway_info,
     if (msgs.size() - original_num_errors != 0)
 #endif
     {
-        debug_mesh_segment(runway_hit_box_geo.side(0), DBG_LIN_COLOR); //left side
-        debug_mesh_segment(runway_hit_box_geo.side(1), DBG_LIN_COLOR); //top side
-        debug_mesh_segment(runway_hit_box_geo.side(2), DBG_LIN_COLOR); //right side
-        debug_mesh_segment(runway_hit_box_geo.side(3), DBG_LIN_COLOR); //bottom side
+        debug_mesh_segment(runway_hit_box.side(0), DBG_LIN_COLOR); //left side
+        debug_mesh_segment(runway_hit_box.side(1), DBG_LIN_COLOR); //top side
+        debug_mesh_segment(runway_hit_box.side(2), DBG_LIN_COLOR); //right side
+        debug_mesh_segment(runway_hit_box.side(3), DBG_LIN_COLOR); //bottom side
 	}
 #endif
 	return msgs.size() - original_num_errors == 0 ? true : false;
@@ -610,13 +611,11 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	{
 		for (vector<WED_GISPoint*>::const_iterator point_itr = itr->nodes.begin(); point_itr != itr->nodes.end(); ++point_itr)
 		{
-			Point2 node_geo;
-			(*point_itr)->GetLocation(gis_Geo, node_geo);
-
-			Point2 node_m = translator.Forward(node_geo);
+			Point2 node;
+			(*point_itr)->GetLocation(gis_Geo, node);
 
 			//We don't want to collect the runway nodes, which are inside and are WED_GISPoints, but never something we care about
-			if (runway_info.corners_m.inside(node_m) == true)
+			if (runway_info.corners_geo.inside(node) == true)
 			{
 				on_pavement_nodes.push_back(*point_itr);
 			}
@@ -670,12 +669,9 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	//How much gap on a side there could be
 	double COVERAGE_THRESHOLD = runway_info.runway_ptr->GetLength() * 0.25;
 
-	AptRunway_t apt_runway;
-	runway_info.runway_ptr->Export(apt_runway);
-	//Clamp extremely small runways to the length
-	if((apt_runway.width_mtr  * 4) > COVERAGE_THRESHOLD)
+	if((runway_info.runway_ptr->GetWidth() * 4.0) > COVERAGE_THRESHOLD)
 	{
-		COVERAGE_THRESHOLD = (apt_runway.width_mtr * 4);
+		COVERAGE_THRESHOLD = runway_info.runway_ptr->GetWidth() * 4.0;
 	}
 
 	//Plus 5 meters in slop zone
@@ -790,33 +786,27 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relaven
 		HITZONE_WIDTH_THRESHOLD_M = 30.0; // good guess, again, FAA is too wishfull
 	}
 
-	Point2 bottom_left  = runway_info.corners_m[0];
-	Point2 top_left     = runway_info.corners_m[1];
-	Point2 top_right    = runway_info.corners_m[2];
-	Point2 bottom_right = runway_info.corners_m[3];
-
-	/*
-	           top
-	                 ^
+	Polygon2 runway_hit_box(runway_info.corners_geo);
+	/*         top   ^
 	                 |
-	                 runway_info.dir_1m
+	                 runway_info.dir_vec_1m
 	            1    |
-	        1_______2!
+	        1_______2!----> runway_info.width_vec_1m
 		   |    |    |
-		   |    |    |
-		0  |    |    | 3
-		   |    |    |
+		0  |    |    | 2
 		   |    |    |
 		   0---------3
-		        0
-		      bottom
+		        3
+		      bottom 
 	*/
+	Vector2 width_ext = runway_info.width_vec_1m * HITZONE_WIDTH_THRESHOLD_M;
+	
+	runway_hit_box[0] -= width_ext;
+	runway_hit_box[1] -= width_ext;
+	runway_hit_box[2] += width_ext;
+	runway_hit_box[3] += width_ext;
 
-	Vector2 width_1m_vec = runway_info.dir_1m.perpendicular_cw() * HITZONE_WIDTH_THRESHOLD_M; // Make RPZ wider than runway
-	bottom_left -= width_1m_vec;
-	bottom_right += width_1m_vec;
-	top_left -= width_1m_vec;
-	top_right += width_1m_vec;
+	Vector2 len_ext;
 
 	if(runway_number <= atc_18R)
 	{
@@ -824,15 +814,15 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relaven
 		{
 			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp1(), 0.0);
 			//arrival_side is bottom_side;
-			bottom_left  -= runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
-			bottom_right -= runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[0] -= runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[3] -= runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
 		}
 
 		if(runway_info.IsHotForDeparture(runway_number) == true && make_arrival == false)
 		{
 			//departure_side is top_side;
-			top_left  += runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
-			top_right += runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[1] += runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[2] += runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
 		}
 	}
 	else
@@ -841,24 +831,19 @@ static Polygon2 MakeHotZoneHitBox( const RunwayInfo& runway_info, // The relaven
 		{
 			HITZONE_OVERFLY_THRESHOLD_M = max(HITZONE_OVERFLY_THRESHOLD_M - runway_info.runway_ptr->GetDisp2(), 0.0);
 			//arrival_side is top_side;
-			top_left  += runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
-			top_right += runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[1] += runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[2] += runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
 		}
 
 		if(runway_info.IsHotForDeparture(runway_number) == true  && make_arrival == false)
 		{
 			//departure_side is bottom_side;
-			bottom_left  -= runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
-			bottom_right -= runway_info.dir_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[0] -= runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
+			runway_hit_box[3] -= runway_info.dir_vec_1m * HITZONE_OVERFLY_THRESHOLD_M;
 		}
 	}
 
-	Polygon2 runway_hit_box_geo(4);
-	runway_hit_box_geo[0] = translator.Reverse(bottom_left);
-	runway_hit_box_geo[1] = translator.Reverse(top_left);
-	runway_hit_box_geo[2] = translator.Reverse(top_right);
-	runway_hit_box_geo[3] = translator.Reverse(bottom_right);
-	return runway_hit_box_geo;
+	return runway_hit_box;
 }
 
 static bool DoHotZoneChecks( const RunwayInfo& runway_info,
@@ -959,28 +944,19 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 {
 	int original_num_errors = msgs.size();
 
-	Point2 bottom_left  = runway_info.corners_m[0];
-	Point2 top_left     = runway_info.corners_m[1];
-	Point2 top_right    = runway_info.corners_m[2];
-	Point2 bottom_right = runway_info.corners_m[3];
+	Polygon2 runway_hit_box(runway_info.corners_geo);
 	
-	Vector2 side_ext = runway_info.dir_1m.perpendicular_cw() * 10.0; // Require 10m side clearance
-	Vector2 len_ext  = runway_info.dir_1m * 30.0;      // required distance of ground traffic routes from runway ends in meters
+	Vector2 side_ext = runway_info.width_vec_1m * 10.0;  // Require 10m side clearance
+	Vector2 len_ext  = runway_info.dir_vec_1m   * 30.0;  // required distance of ground traffic routes from runway ends in meters
 
-	top_left     += len_ext - side_ext;
-	top_right    += len_ext + side_ext;
-	bottom_left  -= len_ext + side_ext;
-	bottom_right -= len_ext - side_ext;
+	runway_hit_box[0] -= len_ext + side_ext;
+	runway_hit_box[1] += len_ext - side_ext;
+	runway_hit_box[2] += len_ext + side_ext;
+	runway_hit_box[3] -= len_ext - side_ext;
 	
-	Polygon2 runway_hit_box_geo(4);
-	runway_hit_box_geo[0] = translator.Reverse(bottom_left);
-	runway_hit_box_geo[1] = translator.Reverse(top_left);
-	runway_hit_box_geo[2] = translator.Reverse(top_right);
-	runway_hit_box_geo[3] = translator.Reverse(bottom_right);
-
 	for(TaxiRouteInfoVec_t::const_iterator route_itr = all_taxiroutes.begin(); route_itr != all_taxiroutes.end(); ++route_itr)
 	{
-		if (runway_info.corners_m.intersects(route_itr->taxiroute_segment_m) == true)
+		if (runway_info.corners_geo.intersects(route_itr->taxiroute_segment_geo) == true)
 		{
 			
 			string msg = "Truck Route " + route_itr->taxiroute_name + " intersects with runway " + runway_info.runway_name;
@@ -994,7 +970,7 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 				Point2 node_location;
 				node->GetLocation(gis_Geo, node_location);
 
-				if (runway_hit_box_geo.inside(node_location))
+				if (runway_hit_box.inside(node_location))
 				{
 					string node_name;
 					node->GetName(node_name);
@@ -1010,10 +986,10 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
     if (msgs.size() - original_num_errors != 0)
 #endif
     {
-        debug_mesh_segment(runway_hit_box_geo.side(0), DBG_LIN_COLOR); //left side
-        debug_mesh_segment(runway_hit_box_geo.side(1), DBG_LIN_COLOR); //top side
-        debug_mesh_segment(runway_hit_box_geo.side(2), DBG_LIN_COLOR); //right side
-        debug_mesh_segment(runway_hit_box_geo.side(3), DBG_LIN_COLOR); //bottom side
+        debug_mesh_segment(runway_hit_box.side(0), DBG_LIN_COLOR); //left side
+        debug_mesh_segment(runway_hit_box.side(1), DBG_LIN_COLOR); //top side
+        debug_mesh_segment(runway_hit_box.side(2), DBG_LIN_COLOR); //right side
+        debug_mesh_segment(runway_hit_box.side(3), DBG_LIN_COLOR); //bottom side
 	}
 #endif
 }
@@ -1032,13 +1008,6 @@ static bool is_aircraft_taxi_route(WED_Thing * r)
 //-----------------------------------------------------------------------------
 void WED_DoATCRunwayChecks(WED_Airport& apt, validation_error_vector& msgs)
 {
-#if DEBUG_VIS_LINES
-	//Clear the previously drawn lines before every validation
-	gMeshPoints.clear();
-	gMeshLines.clear();
-	gMeshPolygons.clear();
-#endif
-
 	Bbox2 box;
 	apt.GetBounds(gis_Geo, box);
 	CreateTranslatorForBounds(box,translator);

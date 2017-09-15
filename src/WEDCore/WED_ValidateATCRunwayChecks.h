@@ -26,6 +26,7 @@
 
 #include "CompGeomUtils.h"
 #include "CompGeomDefs2.h"
+#include "GISUtils.h"
 
 class WED_Airport;
 #include "AptDefs.h"
@@ -57,7 +58,7 @@ struct RunwayInfo
 		for (int i=0; i<4; ++i)
 		{
 			corners_geo.push_back(bounds[i]);
-			corners_m.push_back(translator.Forward(bounds[i]));
+//			corners_m.push_back(translator.Forward(bounds[i]));
 		}
 		Point2 ends[2];
 		runway->GetSource()->GetLocation(gis_Geo,ends[0]);
@@ -67,6 +68,9 @@ struct RunwayInfo
 		centerline_m = Segment2(translator.Forward(ends[0]), translator.Forward(ends[1]));
 		dir_1m = Vector2(centerline_m.p1, centerline_m.p2);
 		dir_1m.normalize();
+		
+		dir_vec_1m   = Vector2(bounds[0], bounds[1]) / LonLatDistMeters(bounds[0].x(),bounds[0].y(),bounds[1].x(),bounds[1].y());
+		width_vec_1m = Vector2(bounds[1], bounds[2]) / LonLatDistMeters(bounds[1].x(),bounds[1].y(),bounds[2].x(),bounds[2].y());
 	}
 
 	WED_Runway* runway_ptr;  // Pointer to the underlying runway class
@@ -77,11 +81,14 @@ struct RunwayInfo
 	int runway_ops[2];              // operations type as per flow_info, 1 = arrival, 2 = departure, 3 = both 
 	
 	Polygon2 corners_geo;    // corners in lat/lon
-	Polygon2 corners_m;      // corners in meters
+//	Polygon2 corners_m;      // corners in meters
 	Segment2 centerline_geo; // center line in lat/lon. p1 is source, p2 is target
 	Segment2 centerline_m;   // center line in meters.  p1 is source, p2 is target
 	
-	Vector2 dir_1m;			// vector of 1m length, in runway direction
+	Vector2 dir_1m;		 	 // vector of 1m length, in runway direction
+	
+	Vector2 dir_vec_1m;      // vector of 1m length, in runway length direction
+	Vector2 width_vec_1m;    // vector of 1m length, in runway width direction
 
 	bool IsHotForArrival(int runway_number) const
 	{

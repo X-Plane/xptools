@@ -19,7 +19,7 @@ WED 1.7.0
 	- WED-515: Validate polygons for crossing & self-intersecting segments
     - WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
     - WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
-    - XSG-8227: Validate runway names against list of CIFP required rwys obtained from gateway
+    - XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
     Bug fixes:
 
 WED 1.6.1b1
