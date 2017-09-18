@@ -22,19 +22,25 @@
  */
 
 #include "WED_LibraryPreviewPane.h"
+
 #include "GUI_DrawUtils.h"
+#include "GUI_GraphState.h"
+#include "GUI_Fonts.h"
+#include "GUI_Resources.h"
+#include "GUI_Broadcaster.h"
+#include "GUI_Messages.h"
 
 #include "WED_ResourceMgr.h"
 #include "ITexMgr.h"
+#include "TexUtils.h"
 #include "WED_LibraryMgr.h"
+#include "WED_Colors.h"
+#include "WED_PreviewLayer.h"
+
 #include "MathUtils.h"
 #include "XObjDefs.h"
-#include "TexUtils.h"
 #include "ObjDraw.h"
-#include "GUI_GraphState.h"
-#include "WED_PreviewLayer.h"
-#include "GUI_Fonts.h"
-#include "WED_Colors.h"
+
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -44,20 +50,63 @@
 
 extern int gIsFeet;
 
+enum { 
+	next_variant = GUI_APP_MESSAGES
+};
+
+
 WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr) : mResMgr(res_mgr), mTexMgr(tex_mgr),mZoom(1.0),mPsi(10.0f),mThe(10.0f)
 {
+		int k_reg[4] = { 0, 0, 1, 3 };
+		int k_hil[4] = { 0, 1, 1, 3 };
+
+		mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+		mNextButton->SetBounds(5,45,55,45+GUI_GetImageResourceHeight("push_buttons.png") / 3);
+		mNextButton->SetParent(this);
+		mNextButton->AddListener(this);
+		mNextButton->Hide();
+		mNextButton->SetSticky(1,1,0,0);
+		mNextButton->SetMsg(next_variant,0);
+}
+
+void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam)
+{
+	if(inMsg == next_variant)
+	{
+		if (mVariant < mNumVariants-1)
+			mVariant++;
+		else
+			mVariant = 0;
+		
+		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
+		mNextButton->SetDescriptor(s);
+		Refresh();
+	}
 }
 
 void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 {
 	mRes = r;
 	mType = res_type;
+	mVariant = 0;
 	
 	if(res_type == res_Object || res_type == res_Facade) 
+	{	
 		mNumVariants = mResMgr->GetNumVariants(r);
+		if(mNumVariants >1)
+		{
+			char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
+			mNextButton->SetDescriptor(s);
+			mNextButton->Show();
+		}
+		else
+			mNextButton->Hide();
+	}
 	else
+	{
 		mNumVariants = 1;     // we haven't yet implemented variant display for anything else
-	mVariant = 0;
+		mNextButton->Hide();
+	}
 }
 
 void WED_LibraryPreviewPane::ClearResource(void)
@@ -145,17 +194,6 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
 		
 		mResMgr->SetPolUV(mRes,pol.mUVBox);
 		Refresh();
-	}
-	else
-	{
-		if (y >= b[3]-15)         // click in top right corner, where the ugly botton is
-		{
-			if (mVariant < mNumVariants-1)
-				mVariant++;
-			else
-				mVariant = 0;
-			Refresh();
-		}
 	}
 	return 1;
 }
@@ -435,12 +473,12 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					sprintf(buf1,"Viewing Wall \'%s\' intended for %s", fac.walls[side].c_str(), fac.w_use[side].c_str());
 					
 					int n_wall = fac.walls.size();
-					int j = sprintf(buf2,"Type %d offering %d wall style%s ", fac.version < 900 ? 1 : 2, n_wall, n_wall > 1 ? "s" : "");
+					int j = sprintf(buf2,"Type %d w/%d wall%s ", fac.version < 900 ? 1 : 2, n_wall, n_wall > 1 ? "s" : "");
 
 					if (fac.floors_min < 0.0) 
-						sprintf(buf2+j,"at fixed height %.1f%c", fac.floors_max / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+						sprintf(buf2+j,", fixed height %.1f%c", fac.floors_max / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					else
-						sprintf(buf2+j,", accepts h=%.1f to %.1f floors", fac.floors_min, fac.floors_max);
+						sprintf(buf2+j,", accepts h=%.1f to %.1f", fac.floors_min, fac.floors_max);
 				}
 				else
 					sprintf(buf2,"No preview for this facde type available, yet");
@@ -458,16 +496,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Line:
 				if (lin.s1.size() && lin.s2.size())
 				{ 
-					sprintf(buf2,"Aproximate width %.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
+					sprintf(buf2,"Width = %.0f%s",lin.proj_s * (gIsFeet ? 100.0/2.54 : 100.0), gIsFeet ? "in" : "cm" );
 				}
 				break;
 			case res_Object:
 			case res_Forest:
 				if (o)
 				{
-					int n = sprintf(buf2,"Height above ground %.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+					int n = sprintf(buf2,"Height = %.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 					if (o->xyz_min[1] < -0.07)
-						sprintf(buf2+n,", extends below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
+						sprintf(buf2+n,", below ground to %.1f%s", o->xyz_min[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");
 				}
 				break;
 		}
@@ -476,21 +514,5 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1]+25, buf1);
 		if (buf2[0])
 			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[1]+10, buf2);
-		
-		if (mNumVariants > 1) // show "variant selector" button, qugly, but quick.
-		{
-			g->Reset();
-			glColor4fv(WED_Color_RGBA(wed_TextField_Bkgnd));
-			glBegin(GL_LINE_LOOP);
-			glVertex2f(b[0]+1, b[3]-15);
-			glVertex2f(b[2]-1, b[3]-15);
-			glVertex2f(b[2]+1, b[3]-1);
-			glVertex2f(b[0]-1, b[3]-1);
-			glEnd();
-			
-			sprintf(buf1,"Showing %d of %d variants exported. Click here to cycle through.",mVariant+1,mNumVariants);
-			GUI_FontDraw(g, font_UI_Basic, text_color, b[0]+5,b[3]-13, buf1);
-		}
-		
 	}
 }
