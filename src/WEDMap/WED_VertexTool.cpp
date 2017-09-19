@@ -52,31 +52,18 @@
 #define	MIN_HANDLE_RECURSE_SIZE 20
 #define SNAP_RADIUS 4
 
-const double kCornerBlend0[5] = { 0.5, 0.5, 0.25, 0.0, 0.0 };
-const double kCornerBlend1[5] = { 0.0, 0.5, 0.25, 0.0, 0.5 };
-const double kCornerBlend2[5] = { 0.0, 0.0, 0.25, 0.5, 0.5 };
-const double kCornerBlend3[5] = { 0.5, 0.0, 0.25, 0.5, 0.0 };
-
 const double kRunwayBlend0[4] = { 0.75,		0.0,	0.75,	0.0		};
 const double kRunwayBlend1[4] = { 0.0,		0.25,	0.0,	0.25	};
 const double kRunwayBlend2[4] = { 0.0,		0.75,	0.0,	0.75	};
 const double kRunwayBlend3[4] = { 0.25,		0.0,	0.25,	0.0		};
-
-static double kImageBlend0[10] = { 1.0,	0.0, 0.0, 0.0, 0.5,	0.0, 0.0, 0.5,  0.55, -0.05 };
-static double kImageBlend1[10] = { 0.0,	1.0, 0.0, 0.0, 0.5,	0.5, 0.0, 0.0, -0.05,  0.55 };
-static double kImageBlend2[10] = { 0.0,	0.0, 1.0, 0.0, 0.0,	0.5, 0.5, 0.0, -0.05,  0.55 };
-static double kImageBlend3[10] = { 0.0,	0.0, 0.0, 1.0, 0.0,	0.0, 0.5, 0.5,  0.55, -0.05 };
 
 const double kQuadBlend0[9] = { 1.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.25 };
 const double kQuadBlend1[9] = { 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.25 };
 const double kQuadBlend2[9] = { 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.25 };
 const double kQuadBlend3[9] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.25 };
 
-
 const int kSourceIndex[5] = { 2, 2, 2, 2, 2 };
 const int kTargetIndex[5] = { 0, 1, 3, 4, 5 };
-
-
 
 
 WED_VertexTool::WED_VertexTool(

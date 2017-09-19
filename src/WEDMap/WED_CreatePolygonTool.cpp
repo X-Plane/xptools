@@ -370,7 +370,7 @@ const char *	WED_CreatePolygonTool::GetStatusText(void)
 	if (GetHost(n) == NULL)
 	{
 		if (mType == create_Hole)
-			sprintf(buf,"You must selet a polygon before you can insert a hole into it.  Facades cannot have interior holes.");
+			sprintf(buf,"You must select a polygon before you can insert a hole into it.  Facades cannot have interior holes.");
 		else
 			sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
 		return buf;
@@ -408,9 +408,12 @@ void		WED_CreatePolygonTool::SetResource(const string& r)
 
 	// Preset polygon / orthophoto flag when selecting resource. Still allows user overriding it in vertex tool.
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-	pol_info_t i;
-	if(rmgr->GetPol(mResource.value, i))
-		mUVMap.value = !i.wrap;
+	pol_info_t pol_i;
+	fac_info_t fac_i;
+	if(rmgr->GetPol(mResource.value, pol_i))
+		mUVMap.value = !pol_i.wrap;
+	else if(rmgr->GetFac(mResource.value, fac_i))
+		mMinPts = !fac_i.ring && !fac_i.roof ? 2 : 3;                        // allow placement of some 2-node facades
 }
 
 void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const

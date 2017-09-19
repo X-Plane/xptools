@@ -83,6 +83,7 @@ enum validate_error_t
 	err_gis_poly_facades_curved_only_for_gte_xp10, //gte is greater than or equal to
 	err_gis_poly_line_and_point_forests_only_for_gte_xp10,
 	err_gis_poly_linear_feature_at_least_two_points,
+	err_gis_poly_linear_feature_at_least_three_points,
 	err_gis_poly_self_intersecting,
 	err_gis_poly_wound_clockwise,
 	err_gis_poly_zero_length_side,

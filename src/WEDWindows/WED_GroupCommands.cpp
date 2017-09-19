@@ -71,6 +71,7 @@
 #include "CompGeomUtils.h"
 #include "WED_HierarchyUtils.h"
 #include "WED_Orthophoto.h"
+#include "WED_FacadePlacement.h"
 
 #include <iterator>
 #include <sstream>
@@ -452,11 +453,13 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 	{
 		int min_children = 2;
 		WED_Thing * parent = t->GetParent();
+		WED_FacadePlacement * facade;
 		if (parent && dynamic_cast<WED_OverlayImage *>(parent))
 			min_children = 4;
-		else if (parent && dynamic_cast<WED_GISPolygon *>(parent))			// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
+		else if (parent && (facade = dynamic_cast<WED_FacadePlacement *>(parent)))
+			min_children = facade->GetTopoMode() == WED_FacadePlacement::topo_Chain ? 2 : 3;  // allow some 2-node facades. No strict check, as hafaces can not have holes
+		else if (parent && dynamic_cast<WED_GISPolygon *>(parent))		// Strict rules for delete key require 3 points to a polygon - prevents degenerate holes.
 			min_children = strict ? 3 : 2;								// Loose requirements for repair require 2 - matches minimum apt.dat spec.
-
 		if(t->CountSources() == 2 && t->GetNthSource(0) == NULL) return true;
 		if(t->CountSources() == 2 && t->GetNthSource(1) == NULL) return true;
 
