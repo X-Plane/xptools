@@ -59,14 +59,17 @@ WED_LibraryPreviewPane::WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMg
 {
 		int k_reg[4] = { 0, 0, 1, 3 };
 		int k_hil[4] = { 0, 1, 1, 3 };
+		
+//		int b[4]; GetBounds(b);  // No good, bounds not established at this point
 
 		mNextButton = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 		mNextButton->SetBounds(5,45,55,45+GUI_GetImageResourceHeight("push_buttons.png") / 3);
+//		mNextButton->SetBounds(b[2]-55,b[3]-5-GUI_GetImageResourceHeight("push_buttons.png") / 3,b[2]-5,b[4]-5);
+		mNextButton->SetSticky(1,1,0,0); // follow left bottom corner
 		mNextButton->SetParent(this);
+		mNextButton->SetMsg(next_variant,0);
 		mNextButton->AddListener(this);
 		mNextButton->Hide();
-		mNextButton->SetSticky(1,1,0,0);
-		mNextButton->SetMsg(next_variant,0);
 }
 
 void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam)
@@ -80,7 +83,6 @@ void		WED_LibraryPreviewPane::ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t i
 		
 		char s[16]; sprintf(s,"%d/%d",mVariant+1,mNumVariants);
 		mNextButton->SetDescriptor(s);
-		Refresh();
 	}
 }
 
@@ -486,7 +488,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			case res_Polygon:
 				if (pol.hasDecal)
 				{
-					sprintf(buf1,"Has decal fine texture (not shown here)");
+					sprintf(buf1,"Has decal (not shown)");
 				}
 				if (pol.mSubBoxes.size())
 				{
