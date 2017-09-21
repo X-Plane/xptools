@@ -46,7 +46,7 @@ private:
 	WED_PropStringText			icao;
 	WED_PropIntText				heading_lo;
 	WED_PropIntText				heading_hi;
-	WED_PropIntText				speed_knots;
+	WED_PropDoubleText			speed_knots;
 
 };
 

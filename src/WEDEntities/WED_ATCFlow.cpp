@@ -35,13 +35,8 @@ TRIVIAL_COPY(WED_ATCFlow, WED_Thing)
 WED_ATCFlow::WED_ATCFlow(WED_Archive * a, int i) : 
 	WED_Thing(a,i),
 	icao(this,"METAR ICAO",						XML_Name("atc_flow","icao"),		""),
-	cld_min_ft(this,"Minimum Ceiling (ft msl)",	XML_Name("atc_flow","cld_min"),		0, 4, 0),
-	vis_min_sm(this,"Minimum Visibility (sm)",	XML_Name("atc_flow","vis_min"),		0, 2, 1),
-//	wnd_spd_max(this,"Wind Speed Maximum",		XML_Name("atc_flow","wnd_spd_max"),	0, 3),
-//	wnd_dir_min(this,"Wind Direction Minimum",	XML_Name("atc_flow","wnd_dir_min"),	0, 3),
-//	wnd_dir_max(this,"Wind Direction Maximum",	XML_Name("atc_flow","wnd_dir_max"),	360, 3),
-//	time_min(this,"Start Time (Local)",			XML_Name("atc_flow","time_min"),	0, 3),
-//	time_max(this,"End Time (Local)",			XML_Name("atc_flow","time_max"),	2400, 3),
+	cld_min_ft(this,"Minimum Ceiling",			XML_Name("atc_flow","cld_min"),		0, 4, 0, "ft AGL"),
+	vis_min_sm(this,"Minimum Visibility",		XML_Name("atc_flow","vis_min"),		0, 2, 1, "sm"),
 	traffic_dir(this,"Pattern Direction",		XML_Name("atc_flow","pattern_side"),ATCPatternSide,atc_Left),
 	pattern_rwy(this,"Pattern Runway",			XML_Name("atc_flow","pattern_rwy"),	ATCRunwayOneway, atc_Runway_None)
 {
@@ -117,6 +112,5 @@ void	WED_ATCFlow::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 	else
 		WED_Thing::GetNthPropertyDict(n,dict);			
 }
-
 
 #endif

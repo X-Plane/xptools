@@ -171,12 +171,13 @@ public:
 
 	int				mDigits;
 	int				mDecimals;
+	string			mUnit;
 
 						operator double&() { return value; }
 						operator double() const { return value; }
 	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropertyItem(parent, title, xml_col), mDigits(digits), mDecimals(decimals), value(initial) { }
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals, string unit = "") : WED_PropertyItem(parent, title, xml_col), mDigits(digits), mDecimals(decimals), value(initial), mUnit(unit) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -191,7 +192,7 @@ public:
 
 class	WED_PropFrequencyText : public WED_PropDoubleText {
 public:
-	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, xml_col, initial, digits, decimals) { }
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, xml_col, initial, digits, decimals, "MHz") { }
 
 	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 

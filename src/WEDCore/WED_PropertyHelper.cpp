@@ -281,7 +281,7 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.decimals = mDecimals;
 	info.round_down = false;
 	info.synthetic = 0;
-	info.units = " ";
+	info.units = mUnit.c_str();
 }
 
 void		WED_PropDoubleText::GetPropertyDict(PropertyDict_t& dict)
@@ -342,7 +342,6 @@ void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
 {
 	WED_PropDoubleText::GetPropertyInfo(info);
 	info.round_down = true;
-	info.units = "MHz";
 }
 
 int		WED_PropFrequencyText::GetAs10Khz(void) const
