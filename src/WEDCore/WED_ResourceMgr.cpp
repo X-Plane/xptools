@@ -140,7 +140,6 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj, int variant)
 	{
 		string p = mLibrary->GetResourcePath(path,v);
 //	if (!p.size()) p = mLibrary->CreateLocalResourcePath(path);
-printf("load %s\n",p.c_str());
 	
 		obj = new XObj8;
 		if(!XObj8Read(p.c_str(),*obj))
@@ -399,12 +398,12 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info, int varia
 
 	int n_variants = mLibrary->GetNumVariants(path);
 	
-printf("NEW FAC p=%s, v=%d\n",path.c_str(),n_variants);
+//printf("NEW FAC p=%s, v=%d\n",path.c_str(),n_variants);
 
 	for(int v = 0; v < n_variants; ++v)
 	{
 		string p = mLibrary->GetResourcePath(path, v);
-printf("load %s\n",p.c_str());
+
 		MFMemFile * fac = MemFile_Open(p.c_str());
 		if(!fac) return false;
 
