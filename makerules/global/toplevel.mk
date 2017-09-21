@@ -26,10 +26,6 @@ endif
 ifeq ($(PLATFORM), Darwin)
 	PLAT_DARWIN	:= Yes
 endif
-ifndef conf
-conf	:= debug
-endif
-
 
 ##
 # architecture specific environment
@@ -144,12 +140,12 @@ ifeq ($(conf), release_opt)
 	DEFINES		+= -DDEV=0 -DNDEBUG
 	StripDebug	:= Yes
 else ifeq ($(conf), release)
-	CFLAGS		+= -O1 -g
-	CXXFLAGS	+= -O1 -g
+	CFLAGS		+= -O1 
+	CXXFLAGS	+= -O1
 	DEFINES		+= -DDEV=0 -DNDEBUG
 else ifeq ($(conf), debug)
-	CFLAGS		+= -O1 -g
-	CXXFLAGS	+= -O1 -g
+	CFLAGS		+= -O0 -g
+	CXXFLAGS	+= -O0 -g
 	DEFINES		+= -DDEV=1
 else ifeq ($(conf), phone)
 	CFLAGS		+= -O1 -g

@@ -354,8 +354,8 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
                  if any are found,  select the first node connected to each zero length segment,
                  so it can be fixed by deleting those. Is much easier than writing an extra merge function.
         */
-	int nn = ps->GetNumSides();
-	if(nn < 1)
+	int nn = ps->GetNumPoints();
+	if(nn < 2)
 	{
 		string msg = "Linear feature '" + string(who->HumanReadableType()) + "' needs at least two points. Delete the selected item to fix this.";
 		msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_two_points, dynamic_cast<WED_Thing *>(ps),apt));
@@ -369,10 +369,16 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	     parent->GetClass() == WED_ForestPlacement::sClass ||
 	     parent->GetClass() == WED_FacadePlacement::sClass ))
 	{
-		if(nn < 2)
+		bool is_area = true;
+		
+		WED_FacadePlacement * fac = dynamic_cast<WED_FacadePlacement *>(parent);
+		if (fac && fac->GetTopoMode() == WED_FacadePlacement::topo_Chain )
+			is_area = false;
+		     
+		if(is_area && nn < 3)
 		{
 			string msg = "Polygon feature '" + string(parent->HumanReadableType()) + "' needs at least three points.";
-			msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_two_points, parent,apt));
+			msgs.push_back(validation_error_t(msg, err_gis_poly_linear_feature_at_least_three_points, parent,apt));
 		}
 	}
 	else
