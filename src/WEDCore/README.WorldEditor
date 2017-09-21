@@ -20,6 +20,7 @@ WED 1.7.0
     - WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
     - WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
     - XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
+    - WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
     Bug fixes:
     - WED-913: Allow 2-node polygons for "chain" type facades (no roof, no ring)
 
