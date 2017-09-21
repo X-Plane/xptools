@@ -8,12 +8,31 @@
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
+			<Target title="Release-opt">
+				<Option output="../../build/Linux/debug/WED" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="~" />
+				<Option object_output="./" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<MakeCommands>
+					<Build command="conf=release_opt $make -j4 WED" />
+					<CompileFile command="conf=release_opt $make $file" />
+					<Clean command="$make clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="conf=release_opt $make -q WED" />
+					<SilentBuild command="conf=release_opt $make -j4 WED &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
 			<Target title="Debug">
 				<Option output="../../build/Linux/debug/WED" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="~" />
 				<Option object_output="./" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -22,8 +41,27 @@
 					<CompileFile command="conf=debug $make $file" />
 					<Clean command="$make clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
-					<AskRebuildNeeded command="$make -q WED" />
+					<AskRebuildNeeded command="conf=debug $make -q WED" />
 					<SilentBuild command="conf=debug $make -j4 WED &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+			<Target title="(default)">
+				<Option output="../../build/Linux/debug/WED" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="~" />
+				<Option object_output="./" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<MakeCommands>
+					<Build command="$make -j4 WED" />
+					<CompileFile command="$make $file" />
+					<Clean command="$make clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q WED" />
+					<SilentBuild command="$make -j4 WED &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
 		</Build>
@@ -157,6 +195,10 @@
 		<Unit filename="../../src/Utils/MemFileUtils.h" />
 		<Unit filename="../../src/Utils/ObjUtils.cpp" />
 		<Unit filename="../../src/Utils/ObjUtils.h" />
+		<Unit filename="../../src/Utils/PlatformUtils.h" />
+		<Unit filename="../../src/Utils/PlatformUtils.lin.cpp" />
+		<Unit filename="../../src/Utils/PlatformUtils.mac.mm" />
+		<Unit filename="../../src/Utils/PlatformUtils.win.cpp" />
 		<Unit filename="../../src/Utils/PolyRasterUtils.cpp" />
 		<Unit filename="../../src/Utils/PolyRasterUtils.h" />
 		<Unit filename="../../src/Utils/STLUtils.cpp" />
@@ -457,6 +499,41 @@
 		<Unit filename="../../src/WEDProperties/WED_PropertyPane.h" />
 		<Unit filename="../../src/WEDProperties/WED_PropertyTable.cpp" />
 		<Unit filename="../../src/WEDProperties/WED_PropertyTable.h" />
+		<Unit filename="../../src/WEDResources/about.png" />
+		<Unit filename="../../src/WEDResources/checkbutton.png" />
+		<Unit filename="../../src/WEDResources/colors.png" />
+		<Unit filename="../../src/WEDResources/map_tools.png" />
+		<Unit filename="../../src/WEDResources/map_tools2_blank.png" />
+		<Unit filename="../../src/WEDResources/map_tools_blank.png" />
+		<Unit filename="../../src/WEDResources/push_buttons.png" />
+		<Unit filename="../../src/WEDResources/pushbutton.png" />
+		<Unit filename="../../src/WEDResources/radiobutton.png" />
+		<Unit filename="../../src/WEDResources/reset_options.png" />
+		<Unit filename="../../src/WEDResources/scroll_btn_h.png" />
+		<Unit filename="../../src/WEDResources/scroll_btn_v.png" />
+		<Unit filename="../../src/WEDResources/scrollbar_corner.png" />
+		<Unit filename="../../src/WEDResources/scrollbar_h.png" />
+		<Unit filename="../../src/WEDResources/scrollbar_v.png" />
+		<Unit filename="../../src/WEDResources/splitter_h.png" />
+		<Unit filename="../../src/WEDResources/splitter_v.png" />
+		<Unit filename="../../src/WEDResources/startup_bar.png" />
+		<Unit filename="../../src/WEDResources/startup_bkgnd.png" />
+		<Unit filename="../../src/WEDResources/startup_btns.png" />
+		<Unit filename="../../src/WEDResources/tables/arrows.png" />
+		<Unit filename="../../src/WEDResources/tables/check.png" />
+		<Unit filename="../../src/WEDResources/tables/delete.png" />
+		<Unit filename="../../src/WEDResources/tables/disclose.png" />
+		<Unit filename="../../src/WEDResources/tables/eye.png" />
+		<Unit filename="../../src/WEDResources/tables/gradient.png" />
+		<Unit filename="../../src/WEDResources/tables/header.png" />
+		<Unit filename="../../src/WEDResources/tables/lock.png" />
+		<Unit filename="../../src/WEDResources/tables/property_bar.png" />
+		<Unit filename="../../src/WEDResources/tables/sider.png" />
+		<Unit filename="../../src/WEDResources/tabs.png" />
+		<Unit filename="../../src/WEDResources/taxi_sign.png" />
+		<Unit filename="../../src/WEDResources/tce_tools.png" />
+		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
+		<Unit filename="../../src/WEDResources/ui_measurements.txt" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />
