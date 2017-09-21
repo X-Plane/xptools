@@ -158,6 +158,19 @@
 		<Unit filename="../../src/GUI/GUI_Unicode.h" />
 		<Unit filename="../../src/GUI/GUI_Window.cpp" />
 		<Unit filename="../../src/GUI/GUI_Window.h" />
+		<Unit filename="../../src/Interfaces/IArray.h" />
+		<Unit filename="../../src/Interfaces/IBase.h" />
+		<Unit filename="../../src/Interfaces/IControlHandles.h" />
+		<Unit filename="../../src/Interfaces/IDirectory.h" />
+		<Unit filename="../../src/Interfaces/IDocPrefs.h" />
+		<Unit filename="../../src/Interfaces/IGIS.h" />
+		<Unit filename="../../src/Interfaces/IHasResource.h" />
+		<Unit filename="../../src/Interfaces/ILibrarian.h" />
+		<Unit filename="../../src/Interfaces/IOperation.h" />
+		<Unit filename="../../src/Interfaces/IPropertyObject.h" />
+		<Unit filename="../../src/Interfaces/IResolver.h" />
+		<Unit filename="../../src/Interfaces/ISelection.h" />
+		<Unit filename="../../src/Interfaces/ITexMgr.h" />
 		<Unit filename="../../src/Network/b64.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -189,6 +202,7 @@
 		<Unit filename="../../src/Utils/FileUtils.h" />
 		<Unit filename="../../src/Utils/GISUtils.cpp" />
 		<Unit filename="../../src/Utils/GISUtils.h" />
+		<Unit filename="../../src/Utils/MathUtils.h" />
 		<Unit filename="../../src/Utils/MatrixUtils.cpp" />
 		<Unit filename="../../src/Utils/MatrixUtils.h" />
 		<Unit filename="../../src/Utils/MemFileUtils.cpp" />
@@ -536,6 +550,14 @@
 		<Unit filename="../../src/WEDResources/tce_tools.png" />
 		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
 		<Unit filename="../../src/WEDResources/ui_measurements.txt" />
+		<Unit filename="../../src/WEDResources/world/earth_11.jpg" />
+		<Unit filename="../../src/WEDResources/world/earth_12.jpg" />
+		<Unit filename="../../src/WEDResources/world/earth_21.jpg" />
+		<Unit filename="../../src/WEDResources/world/earth_22.jpg" />
+		<Unit filename="../../src/WEDResources/world/earth_31.jpg" />
+		<Unit filename="../../src/WEDResources/world/earth_32.jpg" />
+		<Unit filename="../../src/WEDResources/world/earth_41.jpg" />
+		<Unit filename="../../src/WEDResources/world/earth_42.jpg" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />
@@ -576,6 +598,8 @@
 		<Unit filename="../../src/XESCore/AptDefs.h" />
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
+		<Unit filename="../../src/XESCore/IODefs.h" />
+		<Unit filename="../../src/XESCore/XESConstants.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
