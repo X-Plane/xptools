@@ -389,6 +389,8 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 
     // surprise: This function is called 60,300 time upon loading any scenery. Yep, XP11 has that many items in the libraries.
     // Resultingly the full path was converted to lower case 0.6 million times => 24 million calls to tolower() ... time to optimize
+    
+    if (path.length() < 5) return;
 
 	string suffix(path.substr(path.length()-4));
 	for (int i = 1; i < 4; ++i)
