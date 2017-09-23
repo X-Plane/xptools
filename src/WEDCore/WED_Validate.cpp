@@ -1480,7 +1480,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			{
 				error_content = "Country cannot be a number";
 			}
-			else if (std::isdigit(country[0]))
+			else if (isdigit(country[0]))
 			{
 				error_content = "Country cannot start with a number";
 			}
@@ -1709,7 +1709,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 			{
 				error_content = "State cannot be a number";
 			}
-			else if (std::isdigit(state[0]))
+			else if (isdigit(state[0]))
 			{
 				error_content = "State cannot start with a number";
 			}
