@@ -77,6 +77,14 @@ public:
 	
 	virtual	void				Validate(void);
 
+	// IPropertyObject
+	virtual void				GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
+	
+
+protected:
+
+	virtual	bool				CanBeCurved() const=0;
+
 private:
 
 	virtual	WED_Thing *			CreateSplitNode();

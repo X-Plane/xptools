@@ -78,6 +78,10 @@ public:
 
 	virtual	WED_Thing *		CreateSplitNode();
 	
+protected:
+
+	virtual	bool			CanBeCurved() const;
+	
 private:	
 
 		WED_PropIntEnum			vehicle_class;
