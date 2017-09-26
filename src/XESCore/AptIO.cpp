@@ -910,6 +910,7 @@ printf("read open_poly %i elements\n",int(open_poly->size()));
 					&last_edge->shape.back().first.x_) != 3) ok = "Error: illegal shape point record.";
 			}
 			break;
+#if HAS_CURVED_ATC_ROUTE
 		case apt_taxi_control:
 			if(vers < ATC_VERS3) ok = "Error: no ATC curved data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: taxi layout edge outside an airport.";
@@ -922,6 +923,7 @@ printf("read open_poly %i elements\n",int(open_poly->size()));
 					&last_edge->shape.back().first.x_) != 3) ok = "Error: illegal control point record.";
 			}
 			break;
+#endif
 		case apt_taxi_active:
 
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
@@ -1390,10 +1392,14 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 							fprintf(fi,"_%c", 'A' + e->width);
 					}
 					fprintf(fi," %s" CRLF, e->name.c_str());
-					
+
+#if HAS_CURVED_ATC_ROUTE
 					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
 						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
-
+#else
+					for(vector<pair<Point2,bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
+						fprintf(fi,"%2d % 012.8lf % 013.8lf" CRLF, apt_taxi_shape, s->first.y(), s->first.x());
+#endif
 					if(!e->hot_depart.empty())
 					{
 						fprintf(fi,"%2d departure", apt_taxi_active);
@@ -1426,8 +1432,13 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 					fprintf(fi, "%2d %d %d %s ", apt_taxi_truck_edge, e->src, e->dst, e->oneway ? "oneway" : "twoway");
 					fprintf(fi, " %s" CRLF, e->name.c_str());
 
+#if HAS_CURVED_ATC_ROUTE
 					for (vector<pair<Point2, bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
 						fprintf(fi, "%2d % 012.8lf % 013.8lf" CRLF, (s->second && has_atc3) ? apt_taxi_control : apt_taxi_shape, s->first.y(), s->first.x());
+#else
+					for (vector<pair<Point2, bool> >::const_iterator s = e->shape.begin(); s != e->shape.end(); ++s)
+						fprintf(fi, "%2d % 012.8lf % 013.8lf" CRLF, apt_taxi_shape, s->first.y(), s->first.x());
+#endif
 				}
 			}
 

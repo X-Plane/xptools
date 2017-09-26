@@ -42,6 +42,19 @@
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
 static const int kIsAirport[] = { 1, 0 };
 
+static bool is_edge_curved(CreateEdge_t tool_type)
+{
+	#if ROAD_EDITING
+		if(tool_type == create_Road)
+			return true;
+	#endif
+	#if HAS_CURVED_ATC_ROUTE
+		return true;
+	#endif
+	
+	return false;
+}
+
 WED_CreateEdgeTool::WED_CreateEdgeTool(
 					const char *		tool_name,
 					GUI_Pane *			host,
@@ -52,11 +65,7 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	WED_CreateToolBase(tool_name, host, zoomer, resolver, archive,
 	2,						// min pts,
 	99999999,				// max pts - yes, I am a hack.
-#if ROAD_EDITING
-	tool == create_Road,	// curve allowed?					// Ben says: when we go road grids, we'll have to make this dynamic!
-#else
-	0,
-#endif
+	is_edge_curved(tool),	// curve allowed?
 	0,						// curve required?
 	1,						// close allowed?
 	0),						// close required
