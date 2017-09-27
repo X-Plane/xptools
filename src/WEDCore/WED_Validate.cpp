@@ -2097,15 +2097,25 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		
 		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
 
+/* ToDo: get a better way to do automatic retryies for cache updates.
+		Ultimately, during the actual gateway submission we MUST wait and get full verification
+		at all times.
+		C++11 sleep_for(1000) is a good candidate.
+*/
 		for (int i = 0; i < 3; ++i)
 		{
 			if(res.out_status == cache_status_downloading)
 			{
 				printf("Download of Runway Data in progress, trying again in 1 sec\n");
+#if IBM
+				Sleep(1000);
+#else
 				sleep(1);
+#endif
 				res = WED_file_cache_request_file(mCacheRequest);
 			}
 		}
+
 
 		map<int,Point2> CIFP_rwys;
 		set<int> rwys_missing;
