@@ -341,11 +341,7 @@
     <ClInclude Include="..\..\src\Utils\md5.h" />
     <ClInclude Include="..\..\src\Utils\MemFileUtils.h" />
     <ClInclude Include="..\..\src\Utils\PlatformUtils.h" />
-<<<<<<< HEAD
-=======
-    <ClInclude Include="..\..\src\Utils\SQLUtils.h" />
     <ClInclude Include="..\..\src\Utils\STLUtils.h" />
->>>>>>> master
     <ClInclude Include="..\..\src\Utils\TexUtils.h" />
     <ClInclude Include="..\..\src\Utils\unzip.h" />
     <ClInclude Include="..\..\src\Utils\XChunkyFileUtils.h" />
@@ -395,7 +391,6 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_ATCTimeRule.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_ATCWindRule.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h" />
-    <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_ExclusionZone.h" />
     <ClInclude Include="..\..\src\WEDEntities\WED_FacadeNode.h" />

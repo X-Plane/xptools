@@ -55,6 +55,10 @@ public:
 	virtual	void			GetNthPropertyDictItem(int n, int e, string& item) const;
 	virtual	void			GetNthPropertyInfo(int n, PropertyInfo_t& info) const;
 
+protected:
+	
+	virtual bool			CanBeCurved() const { return true; }
+
 private:
 
 			bool			get_valid_road_info(road_info_t * optional_info) const;
