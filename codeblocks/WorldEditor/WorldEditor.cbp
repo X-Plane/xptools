@@ -180,6 +180,7 @@
 		<Unit filename="../../src/Obj/ObjDraw.h" />
 		<Unit filename="../../src/Obj/ObjPointPool.cpp" />
 		<Unit filename="../../src/Obj/ObjPointPool.h" />
+		<Unit filename="../../src/Obj/XDefs.h" />
 		<Unit filename="../../src/Obj/XObjDefs.cpp" />
 		<Unit filename="../../src/Obj/XObjDefs.h" />
 		<Unit filename="../../src/Obj/XObjReadWrite.cpp" />
