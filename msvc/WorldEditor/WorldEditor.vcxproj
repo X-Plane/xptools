@@ -135,6 +135,7 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_ExclusionZone.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadeNode.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadePlacement.cpp" />
+    <ClCompile Include="..\..\src\WEDEntities\WED_FacadePreview.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadeRing.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_ForestPlacement.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_ForestRing.cpp" />
