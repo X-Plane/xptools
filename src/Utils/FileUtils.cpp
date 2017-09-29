@@ -243,6 +243,19 @@ string FILE_get_file_name(const string& path)
 	}
 }
 
+string FILE_get_dir_name(const string& path)
+{
+	size_t last_sep = path.find_last_of("\\/");
+	if(last_sep == string::npos)
+	{
+		return path; //Meaning we either have a empty string or a path without directory seperators
+	}
+	else
+	{
+		return path.substr(0,last_sep);
+	}
+}
+
 string FILE_get_file_name_wo_extensions(const string& path)
 {
 	string name = FILE_get_file_name(path);

@@ -47,6 +47,7 @@ int FILE_case_correct(char * buf);
 	exists                      | Does file exist?                              | N/A                 | True/false
 	get_file_extension          | Gets the chars from the last dot to the end   | N/A                 | non-empty (".txt",".jpeg". No case change), empty string
 	get_file_meta_data          | Get file info like creation time and date     | No                  | 0, -1
+	get_dir_name                | Get directory part of filename                | N/A                 | non-empty, empty string
 	get_file_name               | Get file name w/o directory, can use / or \   | N/A                 | non-empty, empty string
 	get_file_name_wo_extensions | Get file name w/o directory or any extensions | N/A                 | non-empty, empty string
 	delete_file                 | rm 1 file or folder                           | No                  | 0, last_error
@@ -76,6 +77,8 @@ string FILE_get_file_extension(const string& path);
 int FILE_get_file_meta_data(const string& path, struct stat& meta_data);
 
 string FILE_get_file_name(const string& path);
+
+string FILE_get_dir_name(const string& path);
 
 string FILE_get_file_name_wo_extensions(const string& path);
 
