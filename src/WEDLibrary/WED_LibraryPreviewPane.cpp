@@ -471,16 +471,16 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				if (fac.previews.size() && fac.walls.size())
 				{
 					int side = (135-mPsi)/90.0;
-					if (side >= fac.walls.size()) side=0;
-					sprintf(buf1,"Facing Wall \'%s\' intended for %s", fac.walls[side].c_str(), fac.w_use[side].c_str());
+					if (side >= fac.w_nam.size()) side=0;
+					sprintf(buf1,"Facing Wall \'%s\' intended for %s", fac.w_nam[side].c_str(), fac.w_use[side].c_str());
 					
 					int n_wall = fac.walls.size();
-					int j = sprintf(buf2,"Type %d, %d wall%s ", fac.version < 900 ? 1 : 2, n_wall, n_wall > 1 ? "s" : "");
+					int j = sprintf(buf2,"Type %d, %d wall%s ", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "");
 
-					if (fac.floors_min < 0.0) 
-						sprintf(buf2+j,", h=%.1f%c only", fac.floors_max / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+					if (fac.min_floors < 0.0) 
+						sprintf(buf2+j,", h=%.1f%c only", fac.max_floors / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					else
-						sprintf(buf2+j,", h=%.1f to %.1f", fac.floors_min, fac.floors_max);
+						sprintf(buf2+j,", h=%.1f to %.1f", fac.min_floors, fac.max_floors);
 				}
 				else
 					sprintf(buf2,"No preview for this facde type available, yet");

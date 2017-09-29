@@ -26,7 +26,22 @@
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
 
+#include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
+
+FacadeWall_t::FacadeWall_t() :
+	x_scale(0.0),
+	y_scale(0.0),
+	roof_slope(0.0),
+	left(0),
+	center(0),
+	right(0),	
+	bottom(0),
+	middle(0),
+	top(0),
+	basement(0.0)	
+{
+}
 
 bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, 
 	string wall_tex, float roof_uv[4], string roof_tex)
@@ -91,8 +106,8 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 		want_floors=2;
 	else
 	{
-		info.floors_min = -1.0;
-		info.floors_max =  (walls[0].vert[2]-walls[0].vert[0]) * info.scale_y;
+		info.min_floors = -1.0;
+		info.max_floors =  (walls[0].vert[2]-walls[0].vert[0]) * info.scale_y;
 	}
 	
 	// populate all wall sections, if .fac does not set them excplicitly
@@ -100,7 +115,7 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 		return true;
 	
 	// fills a XObj8-structure for library preview
-	if (info.version == 800)         // can't handle type 2 facades, yet
+	if (!info.is_new)         // can't handle type 2 facades, yet
 	{
 		XObj8 *obj = new XObj8;
 	//	obj->indices.clear();

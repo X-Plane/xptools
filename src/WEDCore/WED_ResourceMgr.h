@@ -49,6 +49,7 @@
 #include "IBase.h"
 #include "XObjDefs.h"
 #include "CompGeomDefs2.h"
+#include "WED_FacadePreview.h"
 
 class	WED_LibraryMgr;
 
@@ -74,18 +75,38 @@ struct	pol_info_t {
 struct	fac_info_t {
 	bool		ring;               // can be drawn as open polygon
 	bool		roof;               // shown with solid fill in map window
-	int			version;
-	float		floors_min;         // min accepted floors or -1 if facade is fixed height only
-	float		floors_max;         // max accepted floors or aproximate height in meter if single height only
-	float		basem;
+	bool		is_new;				// set if version 1000, aka type 2
+	float		min_floors;         // min accepted floors or -1 if facade is fixed height only
+	float		max_floors;         // max accepted floors or aproximate height in meter if single height only
 	
-	float		roof_height, roof_slope;
+//	float		roof_height, roof_slope;
 	float		scale_x, scale_y;
+	
+	bool		tex_correct_slope;
 
-	vector<string>	walls;
+	vector<double>	roof_s;
+	vector<double>	roof_t;
+	float			roof_st[4];
+	float			roof_ab[4];
+
+	vector<FacadeWall_t>	walls;
+	
+	vector<string>	w_nam;
 	vector<string>	w_use;
 
 	vector<XObj8 *> previews;
+
+	/*	
+	bool					tex_correct_slope;
+	float					lod_near;
+	float					lod_far;
+	vector<FacadeWall_t>	walls;
+	vector<double>			roof_s;
+	vector<double>			roof_t;
+	xflt					roof_st[4];
+	xflt					roof_ab[4];
+	bool					has_roof;
+*/
 };
 
 struct	lin_info_t {

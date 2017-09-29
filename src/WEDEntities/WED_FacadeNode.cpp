@@ -65,8 +65,8 @@ void	WED_FacadeNode::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 			if(!info.walls.empty())
 			{
 				dict.clear();
-				for (int n = 0; n < info.walls.size(); ++n)
-					dict[n + facade_Wall0] = make_pair(info.walls[n],true);
+				for (int n = 0; n < info.w_nam.size(); ++n)
+					dict[n + facade_Wall0] = make_pair(info.w_nam[n],true);
 				return;
 			}
 		}
@@ -94,9 +94,9 @@ void		WED_FacadeNode::GetNthPropertyDictItem(int n, int e, string& item) const
 		{
 			fac->GetResource(res);
 			if (mgr->GetFac(res,info))
-			if(info.walls.size() > idx)
+			if(info.w_nam.size() > idx)
 			{
-				item = info.walls[idx];
+				item = info.w_nam[idx];
 				return;
 			}
 		}

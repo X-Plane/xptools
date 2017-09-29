@@ -24,9 +24,7 @@
 #ifndef WED_FacadePreview_H
 #define WED_FacadePreview_H
 
-#ifndef WED_ResourceMgr_H
-#include "WED_ResourceMgr.h"
-#endif
+struct	fac_info_t;
 
 struct wall_map_t {
 	
@@ -36,6 +34,28 @@ struct wall_map_t {
 	float	hori[4];
 	float	min_w, max_w;   // range of widths supported by this wall definition
 };
+
+struct	FacadeWall_t {
+
+	FacadeWall_t();
+
+	double			x_scale;	// From tex to meters
+	double			y_scale;
+	float			basement;	// basement height in t-ratio pixels
+	double			roof_slope;	// 0 = none, 1 = 45 degree ratio
+	
+	// S&T coordinates for each panel and floor
+	vector<pair<float, float> >		s_panels;
+	int								left;
+	int								center;
+	int								right;
+	
+	vector<pair<float, float> >		t_floors;
+	int								bottom;
+	int								middle;
+	int								top;
+};	
+
 
 bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, string wall_tex, 
 					float roof_uv[4], string roof_tex);
