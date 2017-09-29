@@ -20,7 +20,6 @@
  * THE SOFTWARE.
  *
  */
-
 #include "WED_GroupCommands.h"
 #include "WED_ToolUtils.h"
 #include "AssertUtils.h"
@@ -3083,8 +3082,6 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 	
 }
 
-#include "WED_Runway.h"
-
 void WED_UpgradeRampStarts(IResolver * resolver)
 {
 	WED_Thing * root = WED_GetWorld(resolver);
@@ -3099,6 +3096,8 @@ void WED_UpgradeRampStarts(IResolver * resolver)
 	
 }
 
+#include "WED_Runway.h"
+
 struct changelist_t
 {
 	string ICAO;
@@ -3107,64 +3106,36 @@ struct changelist_t
 	Point2 rwy_pt1;
 };
 
-static bool IsRwyMatching(WED_Runway * rwy, struct changelist_t * entry)
+static bool IsRwyMatching(WED_Runway * rwy, struct changelist_t * entry, const vector<WED_Runway *>& rwys)
 {
-	// very crude match criteria: 
-	// threshold, expanded by one runway width to the sides,
-	// expanded by 5% of runway's length 
-
-    Point2 rwy_corner[4];
-	Vector2 dw, dl;
+	// very crude match criteria:
+	// both runway end coordinates must be within some meters of the current runway's end.
 	
-	rwy->GetCorners(gis_Geo, rwy_corner);
-	dw = Vector2(rwy_corner[2],rwy_corner[1]);
-	dw *= 0.5;
-	dl = Vector2(rwy_corner[1],rwy_corner[0]);
-	dl *= 0.05;
+    Point2 r_loc0, r_loc1;
 	
-    Point2 thr_corner[4];
+	rwy->GetSource()->GetLocation(gis_Geo,r_loc0);
+	rwy->GetTarget()->GetLocation(gis_Geo,r_loc1);
 	
-	rwy->GetCornersDisp1(thr_corner);
+	float loc_err0 = LonLatDistMeters(r_loc0.x(), r_loc0.y(), entry->rwy_pt0.x(), entry->rwy_pt0.y());
+	float loc_err1 = LonLatDistMeters(r_loc1.x(), r_loc1.y(), entry->rwy_pt1.x(), entry->rwy_pt1.y());
 	
-	thr_corner[0]+=dw; thr_corner[1]+=dw;
-	thr_corner[3]-=dw; thr_corner[2]-=dw;
+	float loc_err_allowed = 20.0;
+	if (rwys.size() == 1) loc_err_allowed = 50.0;   // if there is only ONE runway at that airport, be very lenient
 	
-	thr_corner[0]+=dl; thr_corner[1]-=dl;
-	thr_corner[3]+=dl; thr_corner[2]-=dl;
+	if(loc_err0 < loc_err_allowed && loc_err1 < loc_err_allowed)
+		return true;
 	
-	Polygon2 end0;
-	for (int i=0; i<4; ++i)
-		end0.push_back(thr_corner[i]);
-
-	rwy->GetCornersDisp2(thr_corner);
-	
-	thr_corner[1]+=dw; thr_corner[0]+=dw;
-	thr_corner[2]-=dw; thr_corner[3]-=dw;
-	
-	thr_corner[1]-=dl; thr_corner[0]+=dl;
-	thr_corner[2]-=dl; thr_corner[3]+=dl;
-
-	Polygon2 end1;
-	for (int i=0; i<4; ++i)
-		end1.push_back(thr_corner[i]);
-	
-	if(end0.inside(entry->rwy_pt0) &&
-	   end1.inside(entry->rwy_pt1))
+	loc_err0 = LonLatDistMeters(r_loc0.x(), r_loc0.y(), entry->rwy_pt1.x(), entry->rwy_pt1.y());
+	loc_err1 = LonLatDistMeters(r_loc1.x(), r_loc1.y(), entry->rwy_pt0.x(), entry->rwy_pt0.y());
+	if(loc_err0 < loc_err_allowed && loc_err1 < loc_err_allowed)
 	{
-		printf(" Yup\n");
+		printf("Reverse match !\n");
 		return true;
 	}
-	else if(end0.inside(entry->rwy_pt1) &&
-	   end1.inside(entry->rwy_pt0))
-	{
-		printf(" Rev\n");
-		return true;
-	}
-	else
-	{
-		printf(" Nope\n");
-		return false;
-	}
+	
+	// Todo: More agressive search
+	
+	return false;
 }
 
 static int rename_rwys_recursive(WED_Thing * who, vector<struct changelist_t> clist)
@@ -3185,7 +3156,7 @@ static int rename_rwys_recursive(WED_Thing * who, vector<struct changelist_t> cl
 				{
 					int old_rwy_enum = (*r)->GetRunwayEnumsTwoway();
 					printf("Testing O=%s against N=%s at %s ... ",ENUM_Desc(old_rwy_enum), ENUM_Desc((*c).new_rwy),s.c_str());
-					if (IsRwyMatching(*r,&(*c)))
+					if (IsRwyMatching(*r,&(*c),rwys))
 					{
 						printf("Renaming %s Rwy %s to %s\n",s.c_str(),ENUM_Desc(old_rwy_enum),ENUM_Desc((*c).new_rwy));
 						(*r)->SetName(ENUM_Desc((*c).new_rwy));
