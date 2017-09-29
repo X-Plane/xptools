@@ -22,7 +22,8 @@ WED 1.7.0
     - XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
     - WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
     Bug fixes:
-    - WED-913: Allow 2-node polygons for "chain" type facades (no roof, no ring)
+    - WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
+    - WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
 
 WED 1.6.1b1
 	Features:

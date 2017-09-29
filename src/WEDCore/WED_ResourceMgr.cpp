@@ -436,6 +436,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info, int varia
 		float 		tex_size_x = 1024.0, tex_size_y = 1024.0;
 
 		bool roof_section = false;
+		bool no_roof_mesh = false;
 		 
 		while(!MFS_done(&s))
 		{
@@ -449,6 +450,10 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info, int varia
 				out_info.roof = true;
 	//			roof_uv[2] = MFS_double(&s);
 	//			roof_uv[3] = MFS_double(&s);
+			}
+			else if (MFS_string_match(&s,"NO_ROOF_MESH", false))
+			{
+				no_roof_mesh = true;
 			}
 			else if (MFS_string_match(&s,"ROOF_SCALE", false))
 			{
@@ -591,6 +596,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info, int varia
 		process_texture_path(p,roof_tex);
 		WED_MakeFacadePreview(out_info, wall, wall_tex, roof_uv, roof_tex);
 
+		if (no_roof_mesh) out_info.roof = false;
 		mFac[path].push_back(out_info);
 	}
 	
