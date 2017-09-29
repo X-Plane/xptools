@@ -408,15 +408,14 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 	float 		tex_size[2] = { 1.0, 1.0 };
 
 	bool roof_section = false;
+	bool no_roof_mesh = false;
 	 
 	while(!MFS_done(&s))
 	{
-		// RING
 		if (MFS_string_match(&s,"RING", false))
 		{
 			out_info.ring = MFS_int(&s) > 0;
 		}
-		// ROOF
 		else if (MFS_string_match(&s,"ROOF", false))
 		{
 			roof_section = true;
@@ -433,10 +432,13 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 			roof_scale[0] = MFS_double(&s);
 			roof_scale[1] = MFS_double(&s);
 		}
-		// ROOF_HEIGHT
 		else if (MFS_string_match(&s,"ROOF_HEIGHT", false))
 		{
 			out_info.roof = true;
+		}
+		else if (MFS_string_match(&s,"NO_ROOF_MESH", false))
+		{
+			no_roof_mesh = true;
 		}
 		// WALL min max min max name
 		else if (MFS_string_match(&s,"WALL",false))
@@ -518,6 +520,8 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info)
 		MFS_string_eol(&s,NULL);
 	}
 	MemFile_Close(fac);
+	
+	if (no_roof_mesh) out_info.roof = false;
 
 // MakeFacadePreview(out_info, wall, iwall_tex, tex_size, roof_tex, roof_scale);
 
