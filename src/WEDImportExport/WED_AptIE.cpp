@@ -57,6 +57,7 @@
 
 //Utils
 #include "PlatformUtils.h"
+#include "FileUtils.h"
 #include "STLUtils.h"
 
 //WEDUtils
@@ -1141,6 +1142,16 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 	
 	for(vector<string>::iterator f = fnames.begin(); f != fnames.end(); ++f)
 	{
+
+		string parent_dir = FILE_get_dir_name(*f);
+		parent_dir = parent_dir + DIR_STR + ".." + DIR_STR;
+		
+		if( FILE_exists((parent_dir + "COPYING").c_str()) && 
+				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str())) )
+			if(!ConfirmMessage("Warning !\nIt is not recommended to import the apt.dat for scenery gateway airports.\n"
+			                   "Use File->Import the from scenery gateway instead.", "Proceed import of apt.dat", "Cancel"))
+				return;
+		
 		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{
