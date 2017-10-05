@@ -510,7 +510,7 @@ void  WED_Runway::PropEditCallback(int before)
 		old_enum = GetRunwayEnumsTwoway();
 		old_enum_1wy = GetRunwayEnumsOneway();
 		apt = WED_GetParentAirport(this);
-		WED_GetAllRunwaysTwoway(apt, all_rwys);
+		if (apt) WED_GetAllRunwaysTwoway(apt, all_rwys);
 	}
 	else
 	{
