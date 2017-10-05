@@ -72,12 +72,14 @@ int FILE_case_correct(char * buf);
 //Returns true if the file exists, returns false if it doesn't
 bool FILE_exists(const char * path);
 
+// returns file extension, NOT including the dot, always as lower case
 string FILE_get_file_extension(const string& path);
 
 int FILE_get_file_meta_data(const string& path, struct stat& meta_data);
 
 string FILE_get_file_name(const string& path);
 
+// returns directory name, i.e. path to file w/o filename, including the final directory separator
 string FILE_get_dir_name(const string& path);
 
 string FILE_get_file_name_wo_extensions(const string& path);

@@ -183,24 +183,18 @@ string FILE_get_file_extension(const string& path)
 {
 	string name;
 
-	//If the path contains no path seperators at all, we have just the filename, extension, or an empty string
-	if(path.find('\\') == string::npos && path.find('/') == string::npos)
-	{
-		name = path;
-	}
-	else
-	{
-		name = FILE_get_file_name(path);
-	}
+	// cutting off the pathname prevents confusion in cases of suffix-less file names, e.g. /dir/dir.fake/filename
+	name = FILE_get_file_name(path);
 	
 	size_t dot_start = name.find_last_of('.');
 	if(dot_start == string::npos)
-	{
 		return "";
-	}
 	else
 	{
-		return name.substr(dot_start);
+		name = name.substr(dot_start+1);
+		for (string::iterator i = name.begin(); i != name.end(); ++i)
+		    (*i) = tolower(*i);
+		return name;
 	}
 }
 
@@ -229,44 +223,31 @@ int FILE_get_file_meta_data(const string& path, struct stat& meta_data)
 
 string FILE_get_file_name(const string& path)
 {
-	string unix_path = path;
-	replace(unix_path.begin(), unix_path.end(), '\\', '/');
-
-	size_t last_sep = unix_path.find_last_of('/');
-	if(last_sep == string::npos)
-	{
-		return path; //Meaning we either have a empty string or a path without directory seperators
-	}
+	size_t last_sep = path.find_last_of("\\:/");
+	if(last_sep == path.npos)
+		return path;                        // path was either empty string or just a filename, without directory separators
 	else
-	{
 		return path.substr(last_sep + 1);
-	}
 }
 
 string FILE_get_dir_name(const string& path)
 {
-	size_t last_sep = path.find_last_of("\\/");
-	if(last_sep == string::npos)
-	{
-		return path; //Meaning we either have a empty string or a path without directory seperators
-	}
+	size_t last_sep = path.find_last_of("\\:/");
+	if(last_sep == path.npos)
+		return "";                          // path was either empty string or just a filename, without directory separators
 	else
-	{
-		return path.substr(0,last_sep);
-	}
+		return path.substr(0,last_sep + 1);
 }
 
 string FILE_get_file_name_wo_extensions(const string& path)
 {
 	string name = FILE_get_file_name(path);
 	
-	size_t dot_pos = name.find_first_of('.');
+	size_t dot_pos = name.find_last_of('.');
 	if(dot_pos == path.npos || dot_pos == 0)
-	{
 		return name;
-	}
-	
-	return name.substr(0, dot_pos);
+	else
+		return name.substr(0, dot_pos);
 }
 
 int FILE_delete_file(const char * nuke_path, bool is_dir)

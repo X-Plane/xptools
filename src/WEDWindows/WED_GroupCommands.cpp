@@ -2602,7 +2602,7 @@ int		WED_CanBreakApartSpecialAgps(IResolver* resolver)
 			{
 				string agp_resource;
 				agp->GetResource(agp_resource);
-				if(FILE_get_file_extension(agp_resource) != ".agp")
+				if(FILE_get_file_extension(agp_resource) != "agp")
 				{
 					return false;
 				}
