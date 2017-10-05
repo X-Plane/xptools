@@ -1717,8 +1717,7 @@ static int	DSF_ExportTileRecursive(
 		//Get the relative path
 		orth->GetResource(r);
 
-		string resrcEnd;
-		if(orth->IsNew(&resrcEnd) == true)
+		if(orth->IsNew())
 		{
 			if(GetSupportedType(r.c_str()) == -1)
 			{

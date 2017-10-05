@@ -25,6 +25,7 @@
 #include "WED_GISUtils.h"
 #include "XESConstants.h"
 #include "MathUtils.h"
+#include "FileUtils.h"
 
 DEFINE_PERSISTENT(WED_DrapedOrthophoto)
 TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
@@ -78,31 +79,16 @@ void WED_DrapedOrthophoto::SetSizeDisp(double w, double l)
 
 bool WED_DrapedOrthophoto::IsNew(string * out_suffix) 
 {
-	//Find position
-	int pos = resource.value.find_last_of('.',resource.value.size());
-	if(pos == resource.value.npos)
-		return false;
+	string ext = FILE_get_file_extension(resource.value);
 	
-	//get the ending extension
-	string testString = resource.value.substr(pos);
-	
-	//If it is not .pol
-	
-	if(testString != ".pol")
+	if(ext != "pol")
 	{
-		
-		if(out_suffix != NULL)
-		{
-			*out_suffix = testString;
-		}
-		//it is new, therefore true
+		if(out_suffix)
+			*out_suffix = ext;
 		return true;
 	}
 	else
-	{
-		//It is an old .pol file, therefore false
 		return false;
-	}
 }
 
 void  WED_DrapedOrthophoto::GetSubTexture(Bbox2& b)

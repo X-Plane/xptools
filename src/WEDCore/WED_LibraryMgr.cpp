@@ -25,6 +25,7 @@
 #include "WED_PackageMgr.h"
 #include "WED_Messages.h"
 #include "AssertUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
 #include <time.h>
@@ -391,25 +392,23 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
     // surprise: This function is called 60,300 time upon loading any scenery. Yep, XP11 has that many items in the libraries.
     // Resultingly the full path was converted to lower case 0.6 million times => 24 million calls to tolower() ... time to optimize
     
-    if (path.length() < 5) return;
-
-	string suffix(path.substr(path.length()-4));
-	for (int i = 1; i < 4; ++i)
-	  suffix[i] = tolower(suffix[i]);
+	string suffix;
+	suffix = FILE_get_file_extension(path);
 	
 	int	rt;
 	
-	if     (suffix == ".obj") rt = res_Object;
-	else if(suffix == ".agp") rt = res_Object;
-	else if(suffix == ".fac") rt = res_Facade;
-	else if(suffix == ".for") rt = res_Forest;
-	else if(suffix == ".str") rt = res_String;
-	else if(suffix == ".ags") rt = res_Polygon;
-	else if(suffix == ".lin") rt = res_Line;
-	else if(suffix == ".pol") rt = res_Polygon;
-	else if(suffix == ".agb") rt = res_Polygon;
+	if     (suffix == "obj") rt = res_Object;
+	else if(suffix == "agp") rt = res_Object;
+	else if(suffix == "fac") rt = res_Facade;
+	else if(suffix == "for") rt = res_Forest;
+	else if(suffix == "str") rt = res_String;
+	else if(suffix == "lin") rt = res_Line;
+	else if(suffix == "pol") rt = res_Polygon;
+// not sure we want to even list these	
+	else if(suffix == "ags") rt = res_Polygon;
+	else if(suffix == "agb") rt = res_Polygon;
 #if ROAD_EDITING
-	else if(suffix == ".net") rt = res_Road;
+	else if(suffix == "net") rt = res_Road;
 #endif
 	else return;
 

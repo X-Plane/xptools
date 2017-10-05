@@ -648,15 +648,15 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
 #define EXTENSION_DOES_MATCH(CLASS,EXT) (who->GetClass() == CLASS::sClass && FILE_get_file_extension(resource_str) == EXT) ? true : false;
-		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, ".pol");
+		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, "pol");
 		matches |= EXTENSION_DOES_MATCH(WED_DrapedOrthophoto, FILE_get_file_extension(path)); //This may be a tautology
-		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  ".fac");
-		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  ".for");
-		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    ".lin");
-		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".obj");
-		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     ".agp");
-		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, ".pol");
-		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  ".str");
+		matches |= EXTENSION_DOES_MATCH(WED_FacadePlacement,  "fac");
+		matches |= EXTENSION_DOES_MATCH(WED_ForestPlacement,  "for");
+		matches |= EXTENSION_DOES_MATCH(WED_LinePlacement,    "lin");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     "obj");
+		matches |= EXTENSION_DOES_MATCH(WED_ObjPlacement,     "agp");
+		matches |= EXTENSION_DOES_MATCH(WED_PolygonPlacement, "pol");
+		matches |= EXTENSION_DOES_MATCH(WED_StringPlacement,  "str");
 
 		if(matches == false)
 		{

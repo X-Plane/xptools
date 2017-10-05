@@ -26,6 +26,7 @@ WED 1.7.0
     Bug fixes:
     - WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
     - WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
+    - XPD-8307: Fix textures w/upper case suffixes not showing
 
 WED 1.6.1b1
 	Features:

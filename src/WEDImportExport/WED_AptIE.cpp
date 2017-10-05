@@ -1144,7 +1144,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 	{
 
 		string parent_dir = FILE_get_dir_name(*f);
-		parent_dir = parent_dir + DIR_STR + ".." + DIR_STR;
+		parent_dir = parent_dir + ".." + DIR_STR;
 		
 		if( FILE_exists((parent_dir + "COPYING").c_str()) && 
 				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str())) )

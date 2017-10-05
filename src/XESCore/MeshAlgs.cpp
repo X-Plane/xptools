@@ -52,12 +52,12 @@
 #if HD_MESH
 	// This is the frequency of triangulation in open water, where we have no height, as
 	// a multiple of DEM pts.
-	#define LOW_RES_WATER_INTERVAL 60
+	#define LOW_RES_WATER_INTERVAL 80
 	// This is the freuqency of forced triangulation at airports as a multiple of DEM points.
-	#define APT_INTERVAL 6
+	#define APT_INTERVAL 8
 #elif UHD_MESH
-	#define LOW_RES_WATER_INTERVAL 120
-	#define APT_INTERVAL 12
+	#define LOW_RES_WATER_INTERVAL 140
+	#define APT_INTERVAL 14
 #elif PHONE
 	#define LOW_RES_WATER_INTERVAL 50
 	#define APT_INTERVAL 40
@@ -144,8 +144,8 @@
 
 #if HD_MESH
 	MeshPrefs_t gMeshPrefs = {		/*iphone*/
-	/* max_points		*/	PHONE ?		25000	: 300000,
-	/* max_error		*/	PHONE ?		15		: 2.3,
+	/* max_points		*/	PHONE ?		25000	: 350000,
+	/* max_error		*/	PHONE ?		15		: 2.2,
 	/* border_match		*/	PHONE ?		1		: 1,
 	/* optimize_borders	*/	PHONE ?		1		: 1,
 	/* max_tri_size_m	*/	PHONE ?		6000	: 250,
@@ -153,8 +153,8 @@
 	};
 #elif UHD_MESH
 	MeshPrefs_t gMeshPrefs = {		/*iphone*/
-	/* max_points		*/	PHONE ?		25000	: 750000,
-	/* max_error		*/	PHONE ?		15		: 0.8,
+	/* max_points		*/	PHONE ?		25000	: 800000,
+	/* max_error		*/	PHONE ?		15		: 0.7,
 	/* border_match		*/	PHONE ?		1		: 1,
 	/* optimize_borders	*/	PHONE ?		1		: 1,
 	/* max_tri_size_m	*/	PHONE ?		6000	: 200,
