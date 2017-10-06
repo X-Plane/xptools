@@ -214,7 +214,6 @@
 		<Unit filename="../../src/Utils/TexUtils.h" />
 		<Unit filename="../../src/Utils/XChunkyFileUtils.cpp" />
 		<Unit filename="../../src/Utils/XChunkyFileUtils.h" />
-		<Unit filename="../../src/Utils/XUtils.cpp" />
 		<Unit filename="../../src/Utils/XUtils.h" />
 		<Unit filename="../../src/Utils/md5.c">
 			<Option compilerVar="CC" />
