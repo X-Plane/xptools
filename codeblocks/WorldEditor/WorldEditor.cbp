@@ -68,6 +68,9 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add option="-DLIN=1" />
+			<Add option="-DAIRPORT_ROUTING=1" />
+			<Add option="-DHAS_GATEWAY=1" />
 		</Compiler>
 		<Unit filename="../../../facades/REN_extrude_defs.h" />
 		<Unit filename="../../../facades/REN_extrude_utils.h" />
@@ -192,6 +195,10 @@
 		<Unit filename="../../src/Obj/XObjDefs.h" />
 		<Unit filename="../../src/Obj/XObjReadWrite.cpp" />
 		<Unit filename="../../src/Obj/XObjReadWrite.h" />
+		<Unit filename="../../src/UI/XWin.h" />
+		<Unit filename="../../src/UI/XWin.lin.cpp" />
+		<Unit filename="../../src/UI/XWinGL.h" />
+		<Unit filename="../../src/UI/XWinGL.lin.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.h" />
 		<Unit filename="../../src/Utils/BWImage.cpp" />
@@ -215,12 +222,11 @@
 		<Unit filename="../../src/Utils/MatrixUtils.h" />
 		<Unit filename="../../src/Utils/MemFileUtils.cpp" />
 		<Unit filename="../../src/Utils/MemFileUtils.h" />
+		<Unit filename="../../src/Utils/MemUtils.h" />
 		<Unit filename="../../src/Utils/ObjUtils.cpp" />
 		<Unit filename="../../src/Utils/ObjUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.lin.cpp" />
-		<Unit filename="../../src/Utils/PlatformUtils.mac.mm" />
-		<Unit filename="../../src/Utils/PlatformUtils.win.cpp" />
 		<Unit filename="../../src/Utils/PolyRasterUtils.cpp" />
 		<Unit filename="../../src/Utils/PolyRasterUtils.h" />
 		<Unit filename="../../src/Utils/STLUtils.cpp" />
@@ -229,7 +235,6 @@
 		<Unit filename="../../src/Utils/TexUtils.h" />
 		<Unit filename="../../src/Utils/XChunkyFileUtils.cpp" />
 		<Unit filename="../../src/Utils/XChunkyFileUtils.h" />
-		<Unit filename="../../src/Utils/XUtils.cpp" />
 		<Unit filename="../../src/Utils/XUtils.h" />
 		<Unit filename="../../src/Utils/md5.c">
 			<Option compilerVar="CC" />
@@ -610,7 +615,7 @@
 		<Unit filename="../../src/XESCore/XESConstants.h" />
 		<Extensions>
 			<code_completion />
-			<envvars />
+			<envvars set="default" />
 			<debugger />
 			<lib_finder disable_auto="1" />
 		</Extensions>

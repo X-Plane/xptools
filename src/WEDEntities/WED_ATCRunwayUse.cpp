@@ -38,10 +38,10 @@ WED_ATCRunwayUse::WED_ATCRunwayUse(WED_Archive * a, int i) :
 	dep_frq(this,"Departure Frequency",               XML_Name("runway_use","dep_frq"),   133.0, 6, 2),
 	traffic(this,"Traffic Type",                      XML_Name("runway_use","traffic"),   ATCTrafficType, 0),
 	operations(this,"Operations",                     XML_Name("runway_use","operations"),ATCOperationType, 0),
-	dep_heading_min(this,"Legal On-Course hdg (min)", XML_Name("runway_use","dep_min"),	0, 3),
-	dep_heading_max(this,"Legal On-Course hdg (max)", XML_Name("runway_use","dep_max"),	0, 3),
-	vec_heading_min(this,"ATC Assigned hdg (min)",    XML_Name("runway_use","ini_min"),	0, 3),
-	vec_heading_max(this,"ATC Assigned hdg (max)",    XML_Name("runway_use","ini_max"),	0, 3)
+	dep_heading_min(this,"min. legal On-Course hdg", XML_Name("runway_use","dep_min"),	0, 3),
+	dep_heading_max(this,"max. legal On-Course hdg", XML_Name("runway_use","dep_max"),	0, 3),
+	vec_heading_min(this,"min. ATC Assigned hdg",    XML_Name("runway_use","ini_min"),	0, 3),
+	vec_heading_max(this,"max. ATC Assigned hdg",    XML_Name("runway_use","ini_max"),	0, 3)
 {
 }
 

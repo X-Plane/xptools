@@ -37,17 +37,6 @@
 
 GUI_Application *	gApplication = NULL;
 
-#if APL || LIN
-static void	NukeAmpersand(string& ioString)
-{
-	string::size_type loc;
-	while ((loc = ioString.find('&')) != ioString.npos)
-	{
-		ioString.erase(loc,1);
-	}
-}
-#endif
-
 static bool IsDisabledString(string& ioString)
 {
 	if(!ioString.empty() && ioString[0] == ';')
@@ -58,15 +47,16 @@ static bool IsDisabledString(string& ioString)
 	return false;
 }
 
-
-#if IBM
-HACCEL			gAccel = NULL;
-vector<ACCEL>	gAccelTable;
-#endif
-
-#include "XUtils.h"
-
 #if APL
+
+static void	NukeAmpersand(string& ioString)
+{
+	string::size_type loc;
+	while ((loc = ioString.find('&')) != ioString.npos)
+	{
+		ioString.erase(loc,1);
+	}
+}
 
 void GUI_Application::MenuUpdateCB(void * ref, int cmd, char * io_name, int * io_check, int * io_enable)
 {
@@ -182,8 +172,12 @@ QMenuBar* GUI_Application::getqmenu()
     return mbar;
 }
 #endif
-
 #if IBM
+
+
+HACCEL			gAccel = NULL;
+vector<ACCEL>	gAccelTable;
+
 void	RegisterAccel(const ACCEL& inAccel)
 {
 	gAccelTable.push_back(inAccel);
@@ -210,9 +204,7 @@ GUI_Application::GUI_Application()
 #if APL
 
 	app_callbacks cb = { this, MenuUpdateCB, TryQuitCB };
-	
 	set_delegate(&cb, menu_nib);
-
 	void * mbar = get_menu_bar();
 
 #endif
@@ -251,7 +243,6 @@ void			GUI_Application::Run(void)
 	run_app();
 #endif
 #if IBM
-
 	MSG msg;
 
 	BuildAccels();

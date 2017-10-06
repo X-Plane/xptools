@@ -37,18 +37,19 @@ extern int gIsFeet;
 
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
-	string root(path_of_tex);
-	string parent(path_of_obj);
+	string parent;
 
-	string::size_type pp = parent.find_last_of("\\:/");
-	if(pp == parent.npos) parent.clear();
-	else				  parent.erase(pp+1);
-
-	pp = root.find_last_of(".");
-	if(pp != root.npos) root.erase(pp);
-											path_of_tex = parent + root + ".dds";
-	if(!FILE_exists(path_of_tex.c_str()))	path_of_tex = parent + root + ".png";
-	if(!FILE_exists(path_of_tex.c_str()))	path_of_tex = parent + root + ".bmp";
+	parent = FILE_get_dir_name(path_of_obj.c_str()) + FILE_get_dir_name(path_of_tex.c_str()) 
+			+ FILE_get_file_name_wo_extensions(path_of_tex.c_str());
+	
+	                                       path_of_tex = parent + ".dds";
+	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".DDS";
+	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".png";
+	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".PNG";
+	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".bmp";
+	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".BMP";
+	
+	printf("texpath=%s\n",path_of_tex.c_str());
 }
 
 WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_library)

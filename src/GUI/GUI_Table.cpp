@@ -849,7 +849,8 @@ int		GUI_Header::CalcCellBounds(int x, int bounds[4])
  GUI_Side::GUI_Side() :
 	mGeometry(NULL),
 	mSide(NULL),
-	mTable(NULL)
+	mTable(NULL),
+	mWideY(-1)
 {
 }
 
@@ -880,16 +881,26 @@ void		GUI_Side::Draw(GUI_GraphState * state)
 	int me[4];
 	GetVisibleBounds(me);
 
+
 	glPushAttrib(GL_SCISSOR_BIT);
 	glEnable(GL_SCISSOR_TEST);
 
 	int cells[2], cellbounds[4];
 	if (CalcVisibleCells(cells))
-	for (int y = cells[0]; y < cells[1]; ++y)
 	{
-		if (CalcCellBounds(y,cellbounds))
-		if (ClipTo(me, cellbounds))
-			mSide->SideDraw(cellbounds,y,state);
+		for (int y = cells[0]; y < cells[1]; ++y)
+		{
+			if (CalcCellBounds(y,cellbounds))
+			{
+				if (y == mWideY)        // make cell wider to show full text
+				{
+					cellbounds[2] += 80;
+					me[2] += 80;
+				}
+				if (ClipTo(me, cellbounds))
+					mSide->SideDraw(cellbounds,y,state);
+			}
+		}
 	}
 	glPopAttrib();
 }
@@ -898,10 +909,16 @@ int			GUI_Side::MouseDown(int x, int y, int button)
 {
 	if (mGeometry == NULL) return 0;
 	if (mSide == NULL) return 0;
+	
 	mClickCellY = MouseToCellY(y);
+	
+
 	if (mClickCellY >= 0 &&
 		mClickCellY < mGeometry->GetRowCount())
 	{
+		mWideY = mClickCellY;
+		Refresh();
+		
 		int cellbounds[4];
 		if (CalcCellBounds(mClickCellY, cellbounds))
 		if (mSide->SideMouseDown(cellbounds, mClickCellY, x, y, button, this->GetModifiersNow(), mLocked))
@@ -914,6 +931,13 @@ void		GUI_Side::MouseDrag(int x, int y, int button)
 {
 	if (mGeometry == NULL) return;
 	if (mSide == NULL) return;
+
+	if (mWideY >=0)
+	{
+		mWideY = -1;
+		Refresh();
+	}
+	
 	if (!mLocked)
 		mClickCellY = MouseToCellY(y);
 
@@ -926,6 +950,13 @@ void		GUI_Side::MouseUp  (int x, int y, int button)
 {
 	if (mGeometry == NULL) return;
 	if (mSide == NULL) return;
+	
+	if (mWideY >=0)
+	{
+		mWideY = -1;
+		Refresh();
+	}
+	
 	int cellbounds[4];
 	if (!mLocked)
 		mClickCellY = MouseToCellY(y);
