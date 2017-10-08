@@ -9,7 +9,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Release-opt">
-				<Option output="../../build/Linux/debug/WED" prefix_auto="0" extension_auto="0" />
+				<Option output="../../build/Linux/release_opt/WED" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="~" />
 				<Option object_output="./" />
 				<Option type="0" />
@@ -68,6 +68,9 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add option="-DLIN=1" />
+			<Add option="-DAIRPORT_ROUTING=1" />
+			<Add option="-DHAS_GATEWAY=1" />
 		</Compiler>
 		<Unit filename="../../src/DSF/DSFDefs.h" />
 		<Unit filename="../../src/DSF/DSFLib.cpp" />
@@ -172,6 +175,10 @@
 		<Unit filename="../../src/Obj/XObjDefs.h" />
 		<Unit filename="../../src/Obj/XObjReadWrite.cpp" />
 		<Unit filename="../../src/Obj/XObjReadWrite.h" />
+		<Unit filename="../../src/UI/XWin.h" />
+		<Unit filename="../../src/UI/XWin.lin.cpp" />
+		<Unit filename="../../src/UI/XWinGL.h" />
+		<Unit filename="../../src/UI/XWinGL.lin.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.h" />
 		<Unit filename="../../src/Utils/BWImage.cpp" />
@@ -194,12 +201,11 @@
 		<Unit filename="../../src/Utils/MatrixUtils.h" />
 		<Unit filename="../../src/Utils/MemFileUtils.cpp" />
 		<Unit filename="../../src/Utils/MemFileUtils.h" />
+		<Unit filename="../../src/Utils/MemUtils.h" />
 		<Unit filename="../../src/Utils/ObjUtils.cpp" />
 		<Unit filename="../../src/Utils/ObjUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.h" />
 		<Unit filename="../../src/Utils/PlatformUtils.lin.cpp" />
-		<Unit filename="../../src/Utils/PlatformUtils.mac.mm" />
-		<Unit filename="../../src/Utils/PlatformUtils.win.cpp" />
 		<Unit filename="../../src/Utils/PolyRasterUtils.cpp" />
 		<Unit filename="../../src/Utils/PolyRasterUtils.h" />
 		<Unit filename="../../src/Utils/STLUtils.cpp" />
@@ -208,7 +214,6 @@
 		<Unit filename="../../src/Utils/TexUtils.h" />
 		<Unit filename="../../src/Utils/XChunkyFileUtils.cpp" />
 		<Unit filename="../../src/Utils/XChunkyFileUtils.h" />
-		<Unit filename="../../src/Utils/XUtils.cpp" />
 		<Unit filename="../../src/Utils/XUtils.h" />
 		<Unit filename="../../src/Utils/md5.c">
 			<Option compilerVar="CC" />
@@ -577,7 +582,7 @@
 		<Unit filename="../../src/XESCore/AptIO.h" />
 		<Extensions>
 			<code_completion />
-			<envvars />
+			<envvars set="default" />
 			<debugger />
 			<lib_finder disable_auto="1" />
 		</Extensions>
