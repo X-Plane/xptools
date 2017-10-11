@@ -17,6 +17,7 @@ endif
 
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
+#LDFLAGS		+= -Wl,--verbose
 LIBS		+= -lQtCore
 LIBS		+= -lQtGui
 LIBS		+= -lQtOpenGL
@@ -55,7 +56,6 @@ endif #PLAT_DARWIN
 
 #LIBS           := ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 #LIBS           += ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
@@ -65,6 +65,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 
 
 ##
