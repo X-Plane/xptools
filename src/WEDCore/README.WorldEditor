@@ -23,6 +23,7 @@ WED 1.7.0
     - WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
     - WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
     - WED-926: Allow viewving of full/long property name by clicking on it
+    - Facade preview basedon XP code
     Bug fixes:
     - WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
     - WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
