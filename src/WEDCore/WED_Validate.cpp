@@ -2141,8 +2141,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 						int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam);
 						if (rwy_enum != atc_rwy_None)
 						{
-							printf("V:Adding to list %s\n",rnam);
-							
 							Point2 pt(lon,lat);
 							CIFP_rwys[rwy_enum]=pt;
 							rwys_missing.insert(rwy_enum);
