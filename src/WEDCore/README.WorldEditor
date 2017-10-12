@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0
+WED 1.7.0a4
     - WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	Features:
 	- WED-515: Validate polygons for crossing & self-intersecting segments
