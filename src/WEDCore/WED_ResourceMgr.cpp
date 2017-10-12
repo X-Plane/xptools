@@ -48,8 +48,6 @@ static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".PNG";
 	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".bmp";
 	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".BMP";
-	
-	printf("texpath=%s\n",path_of_tex.c_str());
 }
 
 WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_library)
