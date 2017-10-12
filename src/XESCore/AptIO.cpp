@@ -910,8 +910,8 @@ printf("read open_poly %i elements\n",int(open_poly->size()));
 					&last_edge->shape.back().first.x_) != 3) ok = "Error: illegal shape point record.";
 			}
 			break;
-#if HAS_CURVED_ATC_ROUTE
 		case apt_taxi_control:
+#if HAS_CURVED_ATC_ROUTE
 			if(vers < ATC_VERS3) ok = "Error: no ATC curved data in older apt.dat files.";
 			else if (outApts.empty()) ok = "Error: taxi layout edge outside an airport.";
 			else if (outApts.back().taxi_route.edges.empty()) ok = "Error: taxi layout shape point without an edge.";
@@ -922,8 +922,10 @@ printf("read open_poly %i elements\n",int(open_poly->size()));
 					&last_edge->shape.back().first.y_,
 					&last_edge->shape.back().first.x_) != 3) ok = "Error: illegal control point record.";
 			}
-			break;
+#else
+			// gracefully ignore those records, as some have already slipped into the apt.dat
 #endif
+			break;
 		case apt_taxi_active:
 
 			if(vers < ATC_VERS) ok = "Error: no ATC data in older apt.dat files.";
