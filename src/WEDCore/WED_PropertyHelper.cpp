@@ -78,12 +78,6 @@ void		WED_PropertyHelper::SetNthProperty(int n, const PropertyVal_t& val)
 	mItems[n]->SetProperty(val,this);
 }
 
-WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title, XML_Name xml_col) : mTitle(title), mXMLColumn(xml_col), mParent(pops)
-{
-	if (pops)
-		pops->mItems.push_back(this);
-}
-
 void 		WED_PropertyHelper::ReadPropsFrom(IOReader * reader)
 {
 	for (int n = 0; n < mItems.size(); ++n)
@@ -131,7 +125,7 @@ void		WED_PropertyHelper::PopHandler(void)
 {
 }
 
-int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItem * item) const
+int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItemBase * item) const
 {
 	for(int n = 0; n < mItems.size(); ++n)
 		if(item == mItems[n]) return n;
@@ -281,7 +275,7 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.decimals = mDecimals;
 	info.round_down = false;
 	info.synthetic = 0;
-	info.units = mUnit.c_str();
+	info.units = mUnit;
 }
 
 void		WED_PropDoubleText::GetPropertyDict(PropertyDict_t& dict)

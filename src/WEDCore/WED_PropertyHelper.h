@@ -49,31 +49,7 @@ class	IOWriter;
 class	IOReader;
 class	WED_XMLElement;
 
-// We could have used type-def here, but this forces us to use the right type in the right place, for code clarity.  
-struct XML_Name : public pair<const char *, const char *> { XML_Name(const char * a, const char * b) : pair<const char *, const char *>(a,b) { } };
-
-class	WED_PropertyItem {
-public:
-	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, XML_Name xml_column);
-
-	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
-	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
-	virtual	void		GetPropertyDictItem(int e, string& item)=0;
-	virtual void		GetProperty(PropertyVal_t& val) const=0;
-	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
-	virtual	void 		ReadFrom(IOReader * reader)=0;
-	virtual	void 		WriteTo(IOWriter * writer)=0;
-	virtual	void		ToXML(WED_XMLElement * parent)=0;
-
-	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
-	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
-
-	const char *			mTitle;
-	XML_Name				mXMLColumn;
-	WED_PropertyHelper *	mParent;
-private:
-	WED_PropertyItem();
-};
+class	WED_PropertyItemBase;
 
 class WED_PropertyHelper : public WED_XMLHandler, public IPropertyObject {
 public:
@@ -105,12 +81,55 @@ public:
 	virtual	void		PopHandler(void);
 
 	// This is virtual so remappers like WED_Runway can "fix" the results
-	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
+	virtual	int			PropertyItemNumber(const WED_PropertyItemBase * item) const;
 private:
 
-	friend class	WED_PropertyItem;
-	vector<WED_PropertyItem *>		mItems;
+	friend class	WED_PropertyItemBase;
+	vector<WED_PropertyItemBase *>		mItems;
 
+};
+
+// This class is to be used for those properties that do not have a editable content, i.e. don't need to
+// store the XML info. ALthough that's just 24 bytes less, all WED_things use this now via WED_TypeField's
+// and the memory footprint of *every* WED_Thing is about this much smaller. Saves about 4% memory on 
+// large sceneries.
+
+class	WED_PropertyItemBase {
+public:
+	WED_PropertyItemBase(WED_PropertyHelper * pops, const char * title) : mTitle(title), mParent(pops)
+	{
+		if (pops)
+			pops->mItems.push_back(this);
+	}
+
+	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
+	virtual	void		GetPropertyDictItem(int e, string& item)=0;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
+	virtual	void 		ReadFrom(IOReader * reader)=0;
+	virtual	void 		WriteTo(IOWriter * writer)=0;
+	virtual	void		ToXML(WED_XMLElement * parent)=0;
+	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
+	virtual void		GetProperty(PropertyVal_t& val) const=0;
+
+	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
+	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value) { return false; }
+
+	WED_PropertyHelper *	mParent;
+	const char *		mTitle;
+private:
+	WED_PropertyItemBase();
+};
+
+// We could have used type-def here, but this forces us to use the right type in the right place, for code clarity.  
+struct XML_Name : public pair<const char *, const char *> { XML_Name(const char * a, const char * b) : pair<const char *, const char *>(a,b) { } };
+
+class	WED_PropertyItem : public WED_PropertyItemBase {
+public:
+	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, XML_Name xml_column) : WED_PropertyItemBase(parent, title), mXMLColumn(xml_column) { }
+
+	XML_Name				mXMLColumn;
+private:
+	WED_PropertyItem();
 };
 
 // ------------------------------ A LIBRARY OF HANDY MEMBER VARIABLES ------------------------------------
@@ -169,15 +188,16 @@ public:
 
 	double			value;
 
-	int				mDigits;
-	int				mDecimals;
-	string			mUnit;
+	char			mDigits;
+	char			mDecimals;
+	char 			mUnit[6];  // this can be non-zero terminated if desired unit text is 6 chars (or longer, but its truncated then)
 
 						operator double&() { return value; }
 						operator double() const { return value; }
 	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals, string unit = "") : WED_PropertyItem(parent, title, xml_col), mDigits(digits), mDecimals(decimals), value(initial), mUnit(unit) { }
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals, const char * unit = "") 
+		: WED_PropertyItem(parent, title, xml_col), mDigits(digits), mDecimals(decimals), value(initial) { strncpy(mUnit,unit,6); }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -294,7 +314,7 @@ public:
 
 	set<int>	value;
 	int			domain;
-	int			exclusive;
+	bool		exclusive;
 
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
@@ -332,7 +352,7 @@ public:
 
 	set<int>	value;
 	int			domain;
-	int			can_be_none;
+	bool		can_be_none;
 						
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
@@ -356,15 +376,15 @@ public:
 // VIRTUAL ITEM: A FILTERED display.
 // This item doesn't REALLY create data - it provides a filtered view of another enum set, showing only the enums within a given range.
 // This is used to take ALL taxiway attributes and show only lights or only lines.
-class	WED_PropIntEnumSetFilter : public WED_PropertyItem {
+class	WED_PropIntEnumSetFilter : public WED_PropertyItemBase {
 public:
 
 	const char *			host;
-	int						minv;
-	int						maxv;
-	int						exclusive;
+	short int				minv;
+	short int				maxv;
+	bool					exclusive;
 
-	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItem(parent, title, xml_col), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
+	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItemBase(parent, title), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -381,13 +401,13 @@ public:
 // property helper (with properties inside it) and the sub-items in the hierarchy are the sub-helpers.  Thus a property item's parent (the "helper" sub-class)
 // gives access to sub-items.  This filter looks at all enums on all children and unions them.
 // We use this to let a user edit the marking attributes of all lines by editing the taxiway itself.
-class	WED_PropIntEnumSetUnion : public WED_PropertyItem {
+class	WED_PropIntEnumSetUnion : public WED_PropertyItemBase {
 public:
 
 	const char *			host;
-	int						exclusive;
+	bool					exclusive;
 
-	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const char * ihost, int iexclusive)  : WED_PropertyItem(parent, title, xml_col), host(ihost), exclusive(iexclusive) { }
+	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, const char * ihost, int iexclusive)  : WED_PropertyItemBase(parent, title), host(ihost), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
