@@ -166,7 +166,7 @@ void	WED_PropertyTable::GetCellContent(
 	case prop_Double:
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
-		sprintf(fmt,"%%%d.%dlf %s",inf.digits, inf.decimals, inf.units);
+		sprintf(fmt,"%%%d.%dlf %6s",inf.digits, inf.decimals, inf.units);  // info.units may be not zero terminated
 		if(inf.round_down)
 		{
 			// We are going to shift our fractional part left 1 more decimal digit to the left than needed.  Why?

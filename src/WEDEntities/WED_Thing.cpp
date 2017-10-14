@@ -469,7 +469,7 @@ void	WED_Thing::Validate(void)
 
 #pragma mark -
 
-WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", XML_Name("","")), val(t)
+WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItemBase(t, "Class")
 {
 }
 
@@ -478,41 +478,12 @@ void		WED_TypeField::GetPropertyInfo(PropertyInfo_t& info)
 	info.can_delete = false;
 	info.can_edit = 0;
 	info.prop_kind = prop_String;
-	info.prop_name = "Class";
+	info.prop_name = mTitle;
 	info.synthetic = 0;
-}
-
-void		WED_TypeField::GetPropertyDict(PropertyDict_t& dict)
-{
-}
-
-void		WED_TypeField::GetPropertyDictItem(int e, string& item)
-{
 }
 
 void		WED_TypeField::GetProperty(PropertyVal_t& v) const
 {
 	v.prop_kind = prop_String;
-	v.string_val = val->HumanReadableType();
-}
-
-void		WED_TypeField::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
-{
-}
-
-void 		WED_TypeField::ReadFrom(IOReader * reader)
-{
-}
-
-void 		WED_TypeField::WriteTo(IOWriter * writer)
-{
-}
-
-void		WED_TypeField::ToXML(WED_XMLElement * parent)
-{
-}
-
-bool		WED_TypeField::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
-{
-	return false;
+	v.string_val = dynamic_cast<WED_Thing*>(mParent)->HumanReadableType();
 }
