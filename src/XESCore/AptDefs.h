@@ -79,7 +79,9 @@ enum {
 	apt_taxi_shape		= 1203,			// 1203 <lat> <lon>
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
 #if HAS_CURVED_ATC_ROUTE
-	apt_taxi_control	= 1205,			// 1205 <lat> <lon
+	apt_taxi_control	= 1205,			// 1205 <lat> <lon>
+#else
+	apt_taxi_control	= 1205,			// 1205 just gracefully ignore these for now. Some are already in the apt.dat
 #endif
 	apt_taxi_truck_edge = 1206,			// 1206 <src> <dst> <oneway flag> <name>
 
