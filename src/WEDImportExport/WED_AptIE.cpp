@@ -603,6 +603,7 @@ void LazyPrintf(void * ref, const char * fmt, ...)
 	LazyLog_t * l = (LazyLog_t *) ref;
 	if (l->fi == NULL) l->fi = fopen(l->path,"w");
 	if (l->fi) vfprintf(l->fi,fmt,arg);
+	va_end(arg);
 }
 
 //A set of values describing the desired hierarchy order

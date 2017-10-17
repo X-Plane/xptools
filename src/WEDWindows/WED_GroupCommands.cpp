@@ -2650,12 +2650,7 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 
 	if(!agp_placements.empty())
 	{
-		int agp_replace_count = 0;
-		int obj_replace_count = 0;
-
-		//Set up the operation
 		root->StartOperation("Break Apart Special Agps");
-
 		sel->Clear();
 
 		//We'll have at least one!
@@ -3197,7 +3192,7 @@ void WED_RenameRunwayNames(IResolver * resolver)
 		struct changelist_t entry;
 		
 		int lnum=0;
-		while (fscanf(file,"%s%s%f%f%f", icao, rnam, &lat, &lon, &hdg) == 5)
+		while (fscanf(file,"%15s%15s%f%f%f", icao, rnam, &lat, &lon, &hdg) == 5)
 		{
 			if (second_end)
 			{

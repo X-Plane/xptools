@@ -95,7 +95,6 @@ void CACHE_FileCacheInitializer::init()
 {
 	//Get the cache folder path
 	{
-		char    base[TEMP_FILES_DIR_LEN];
 		string cache_folder = GetCacheFolder();
 		if(cache_folder.empty() == true)
 		{

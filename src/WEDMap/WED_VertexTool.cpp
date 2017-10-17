@@ -495,7 +495,6 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISPoint_Bezier * pt_b;
-	IGISEdge * e;
 
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
@@ -1208,7 +1207,6 @@ bool		WED_VertexTool::SnapMovePoint(
 		}
 
 		Point2  posi;
-		IGISPoint * pt;
 		GetEntityInternal();
 		for(int n = 0; n < mSnapCache.size(); ++n)
 		if (mSnapCache[n].second != who)

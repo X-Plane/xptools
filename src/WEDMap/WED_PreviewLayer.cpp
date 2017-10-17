@@ -977,7 +977,6 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 {
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 		ILibrarian * lmgr = WED_GetLibrarian(GetResolver());
-		ITexMgr *	tman = WED_GetTexMgr(GetResolver());
 		string vpath;
 		pol_info_t	pol_info;
 
@@ -1003,8 +1002,6 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	if (sub_class == WED_Helipad::sClass)			heli = SAFE_CAST(WED_Helipad,entity);
 	if (sub_class == WED_Sealane::sClass)			sea = SAFE_CAST(WED_Sealane,entity);
 	if (sub_class == WED_Taxiway::sClass)			taxi = SAFE_CAST(WED_Taxiway,entity);
-
-	float							storage[4];
 
 	if(rwy)		mPreviewItems.push_back(new preview_runway(rwy,mRunwayLayer++,0));
 	if(rwy)		mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1));

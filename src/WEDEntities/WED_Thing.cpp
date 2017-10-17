@@ -108,7 +108,6 @@ bool 			WED_Thing::ReadFrom(IOReader * reader)
 
 void 			WED_Thing::WriteTo(IOWriter * writer)
 {
-	int n;
 	writer->WriteInt(parent_id);
 
 	// Children
@@ -348,7 +347,6 @@ int			WED_Thing::GetMyPosition(void) const
 {
 	WED_Thing * parent = STATIC_CAST(WED_Thing, FetchPeer(parent_id));
 	if (!parent) return 0;
-	int n = 0;
 	vector<int>::iterator i = find(parent->child_id.begin(), parent->child_id.end(), this->GetID());
 	return distance(parent->child_id.begin(), i);
 }

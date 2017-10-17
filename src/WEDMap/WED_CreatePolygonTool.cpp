@@ -219,7 +219,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fac,0);
 			fac->SetParent(host,idx);
-			sprintf(buf,"Facade %d",n);
 			fac->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Facade %d outer ring",n);
 			outer_ring->SetName(buf);
@@ -233,7 +232,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_ForestPlacement * fst = WED_ForestPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fst,0);
 			fst->SetParent(host,idx);
-			sprintf(buf,"Forest %d",n);
 			fst->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Forest %d outer ring",n);
 			outer_ring->SetName(buf);
@@ -247,7 +245,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(GetArchive());
 			outer_ring = str;
 			str->SetParent(host,idx);
-			sprintf(buf,"String %d",n);
 			str->SetName(stripped_resource(mResource.value));
 			sel->Select(str);
 			str->SetClosed(closed);
@@ -273,7 +270,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
 			outer_ring->SetParent(dpol,0);
 			dpol->SetParent(host,idx);
-			sprintf(buf,"Orthophoto %d",n);
 			dpol->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Orthophoto %d Outer Ring",n);
 			outer_ring->SetName(buf);
@@ -286,7 +282,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(pol,0);
 			pol->SetParent(host,idx);
-			sprintf(buf,"Polygon %d",n);
 			pol->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Polygon %d Outer Ring",n);
 			outer_ring->SetName(buf);

@@ -2134,7 +2134,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			{
 				char anam[16], rnam[16];
 				float lon,lat,hdg;
-				while (fscanf(file,"%s%s%f%f%f", anam, rnam, &lat, &lon, &hdg) == 5)
+				while (fscanf(file,"%15s%15s%f%f%f", anam, rnam, &lat, &lon, &hdg) == 5)
 				{
 					if(icao == string(anam))
 					{
@@ -2355,10 +2355,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 	
-	FILE * fi = stdout;
-	string write_mode = "w";
-
-	fi = fopen(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt").c_str(), write_mode.c_str());
+	FILE * fi = fopen(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt").c_str(), "w");
 
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{

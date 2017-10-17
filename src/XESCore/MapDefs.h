@@ -555,7 +555,6 @@ static void	InsetPolygon_2(
 	if (!outChain.is_empty())
 		outChain.clear();
 
-	int n = 0;
 	vector<Segment_2>	segments, orig_segments;
 
 	// First we calculate the inset edges of each side of the polygon.

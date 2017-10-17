@@ -681,8 +681,6 @@ static bool RunwayHasCorrectCoverage( const RunwayInfo& runway_info,
 	{
 #if DEV
 		//We have to figure out which side(s) to report as too short
-		double amount_not_covered = 0.0;
-		
 		ostringstream oss;
 		oss.precision(2);
 		oss << std::fixed << COVERAGE_THRESHOLD - length_accumulator;

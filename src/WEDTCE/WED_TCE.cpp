@@ -88,11 +88,11 @@ void		WED_TCE::Draw(GUI_GraphState * state)
 
 	Bbox2 bounds;
 
-	bool draw_ent_v, draw_ent_s, wants_sel;
+	bool draw_ent_v, draw_ent_s;
 
 	GetMapVisibleBounds(bounds.p1.x_,bounds.p1.y_,bounds.p2.x_,bounds.p2.y_);
 	ISelection * sel = GetSel();
-	IGISEntity * base = GetGISBase();
+//	IGISEntity * base = GetGISBase();
 
 	vector<IGISEntity *> possibles;
 	sel->IterateSelectionOr(Iterate_CollectEntities, &possibles);
