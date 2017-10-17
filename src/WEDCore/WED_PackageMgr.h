@@ -35,7 +35,7 @@ public:
 	bool		HasSystemFolder(void) const;
 	bool		GetXPlaneFolder(string& root) const;
 
-	void		SetXPlaneFolder(const string& root);
+	bool		SetXPlaneFolder(const string& root);
 
 	int			CountCustomPackages(void) const;
 	void		GetNthCustomPackageName(int n, string& package) const;

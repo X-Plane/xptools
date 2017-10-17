@@ -13,23 +13,23 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a4
-    - WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
+WED 1.7.0a5
+	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	Features:
 	- WED-515: Validate polygons for crossing & self-intersecting segments
-    - WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
-    - WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
-    - XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
-    - WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
-    - WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
-    - WED-926: Allow viewving of full/long property name by clicking on it
-    - Memory allocation improvements - WED now uses 30% less meomry on very large sceneries
+	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
+	- WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
+	- XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
+	- WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
+	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
+	- WED-926: Allow viewving of full/long property name by clicking on it
+	- Memory allocation improvements - WED now uses 30% less meomry on very large sceneries
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
-    Bug fixes:
-    - WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
-    - WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
-    - XPD-8307: Fix textures w/upper case suffixes not showing
-    - Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
+	Bug fixes:
+	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
+	- WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
+	- XPD-8307: Fix textures w/upper case suffixes not showing
+	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
 
 WED 1.6.1b1
 	Features:
@@ -43,8 +43,8 @@ WED 1.6.1b1
 	- WED-855: Fix taxi sign editor problems with separator glyphs
 	- WED-903: Fix missing texturing in WED for .OBJ that use ATTR_draped with TEXTURE and no TEXTURE_DRAPED commands.
 	- WED-909: Rename 'ICAO Identifier' to 'Airport ID' for consistency with the gateway
-    - WED-910: Fix crash at import of erroneous apt.dat or gateway airport that were created with WED 1.6.0 beta1
-    - Increase number of different facade walls selectable from 10 to 16
+	- WED-910: Fix crash at import of erroneous apt.dat or gateway airport that were created with WED 1.6.0 beta1
+	- Increase number of different facade walls selectable from 10 to 16
 
 WED 1.6r1 6/7/17
 	Bug fixes
