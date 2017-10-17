@@ -29,6 +29,7 @@ WED 1.7.0a4
     - WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
     - WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
     - XPD-8307: Fix textures w/upper case suffixes not showing
+    - Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
 
 WED 1.6.1b1
 	Features:
