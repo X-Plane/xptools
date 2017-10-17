@@ -56,14 +56,14 @@ WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
 	mark1			(this,PROP_Name("Markings 1",			XML_Name("runway","markings1")),	Runway_Markings,mark_NonPrecis),
 	appl1			(this,PROP_Name("Approach Lights 1",	XML_Name("runway","app_lites1")),	Light_App,		app_MALSF),
 	tdzl1			(this,PROP_Name("TDZ Lights 1",			XML_Name("runway","TDZL1")),		1),
-	reil1			(this,PROP_Name("REIL 1",				XML_Name("runway","REIL1")),		REIL_Lights,	reil_None),
+	reil1			(this,PROP_Name("REIL strobes 1",		XML_Name("runway","REIL1")),		REIL_Lights,	reil_None),
 
 	disp2			(this,PROP_Name("Displaced Threshold 2",XML_Name("runway","displaced2")),	0,6,1),
 	blas2			(this,PROP_Name("Blastpad 2",			XML_Name("runway","blastpad2")),	0,6,1),
 	mark2			(this,PROP_Name("Markings 2",			XML_Name("runway","markings2")),	Runway_Markings,mark_NonPrecis),
 	appl2			(this,PROP_Name("Approach Lights 2",	XML_Name("runway","app_lites2")),	Light_App,		app_MALSF),
 	tdzl2			(this,PROP_Name("TDZ Lights 2",			XML_Name("runway","TDZL2")),		1),
-	reil2			(this,PROP_Name("REIL 2",				XML_Name("runway","REIL2")),		REIL_Lights,	reil_None)
+	reil2			(this,PROP_Name("REIL strobes 2",		XML_Name("runway","REIL2")),		REIL_Lights,	reil_None)
 {
 }
 
