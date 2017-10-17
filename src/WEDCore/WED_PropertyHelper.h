@@ -49,7 +49,35 @@ class	IOWriter;
 class	IOReader;
 class	WED_XMLElement;
 
-class	WED_PropertyItemBase;
+// macros to create a *single* string containing a properties WED name and XML names
+// this saves another 2 pointers in each property item, after the sqlite removal already removed 2 pointers.
+// Overall, this reduces the WED memory size with large sceneries (like importing the global apt.dat)
+
+#define XML_Name(x,y) x "\0" y
+#define PROP_Name(wed_name,xml_name) (wed_name "\0" xml_name)
+
+class	WED_PropertyItem {
+public:
+	WED_PropertyItem(WED_PropertyHelper * parent, const char * title);
+
+	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
+	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
+	virtual	void		GetPropertyDictItem(int e, string& item)=0;
+	virtual void		GetProperty(PropertyVal_t& val) const=0;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
+	virtual	void 		ReadFrom(IOReader * reader)=0;
+	virtual	void 		WriteTo(IOWriter * writer)=0;
+	virtual	void		ToXML(WED_XMLElement * parent)=0;
+
+	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
+	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value)=0;
+
+	const char *			mTitle;
+	WED_PropertyHelper *	mParent;
+private:
+	WED_PropertyItem();
+};
+
 
 class WED_PropertyHelper : public WED_XMLHandler, public IPropertyObject {
 public:
@@ -81,55 +109,12 @@ public:
 	virtual	void		PopHandler(void);
 
 	// This is virtual so remappers like WED_Runway can "fix" the results
-	virtual	int			PropertyItemNumber(const WED_PropertyItemBase * item) const;
+	virtual	int			PropertyItemNumber(const WED_PropertyItem * item) const;
 private:
 
-	friend class	WED_PropertyItemBase;
-	vector<WED_PropertyItemBase *>		mItems;
+	friend class	WED_PropertyItem;
+	vector<WED_PropertyItem *>		mItems;
 
-};
-
-// This class is to be used for those properties that do not have a editable content, i.e. don't need to
-// store the XML info. ALthough that's just 24 bytes less, all WED_things use this now via WED_TypeField's
-// and the memory footprint of *every* WED_Thing is about this much smaller. Saves about 4% memory on 
-// large sceneries.
-
-class	WED_PropertyItemBase {
-public:
-	WED_PropertyItemBase(WED_PropertyHelper * pops, const char * title) : mTitle(title), mParent(pops)
-	{
-		if (pops)
-			pops->mItems.push_back(this);
-	}
-
-	virtual	void		GetPropertyDict(PropertyDict_t& dict)=0;
-	virtual	void		GetPropertyDictItem(int e, string& item)=0;
-	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)=0;
-	virtual	void 		ReadFrom(IOReader * reader)=0;
-	virtual	void 		WriteTo(IOWriter * writer)=0;
-	virtual	void		ToXML(WED_XMLElement * parent)=0;
-	virtual void		GetPropertyInfo(PropertyInfo_t& info)=0;
-	virtual void		GetProperty(PropertyVal_t& val) const=0;
-
-	virtual	bool		WantsElement(WED_XMLReader * reader, const char * name) { return false; }
-	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value) { return false; }
-
-	WED_PropertyHelper *	mParent;
-	const char *		mTitle;
-private:
-	WED_PropertyItemBase();
-};
-
-// We could have used type-def here, but this forces us to use the right type in the right place, for code clarity.  
-struct XML_Name : public pair<const char *, const char *> { XML_Name(const char * a, const char * b) : pair<const char *, const char *>(a,b) { } };
-
-class	WED_PropertyItem : public WED_PropertyItemBase {
-public:
-	WED_PropertyItem(WED_PropertyHelper * parent, const char * title, XML_Name xml_column) : WED_PropertyItemBase(parent, title), mXMLColumn(xml_column) { }
-
-	XML_Name				mXMLColumn;
-private:
-	WED_PropertyItem();
 };
 
 // ------------------------------ A LIBRARY OF HANDY MEMBER VARIABLES ------------------------------------
@@ -145,7 +130,7 @@ public:
 	operator int() const { return value; }
 	WED_PropIntText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int initial, int digits)  : WED_PropertyItem(parent, title, xml_col), value(initial), mDigits(digits) { }
+	WED_PropIntText(WED_PropertyHelper * parent, const char * title, int initial, int digits)  : WED_PropertyItem(parent, title), value(initial), mDigits(digits) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -169,7 +154,7 @@ public:
 	operator int() const { return value; }
 	WED_PropBoolText& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int initial)  : WED_PropertyItem(parent, title, xml_col), value(initial) { }
+	WED_PropBoolText(WED_PropertyHelper * parent, const char * title, int initial)  : WED_PropertyItem(parent, title), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -188,16 +173,19 @@ public:
 
 	double			value;
 
+#pragma pack (push)
+#pragma pack (1)
 	char			mDigits;
 	char			mDecimals;
 	char 			mUnit[6];  // this can be non-zero terminated if desired unit text is 6 chars (or longer, but its truncated then)
+#pragma pack (pop)
 
 						operator double&() { return value; }
 						operator double() const { return value; }
 	WED_PropDoubleText& operator=(double v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals, const char * unit = "") 
-		: WED_PropertyItem(parent, title, xml_col), mDigits(digits), mDecimals(decimals), value(initial) { strncpy(mUnit,unit,6); }
+	WED_PropDoubleText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals, const char * unit = "") 
+		: WED_PropertyItem(parent, title), mDigits(digits), mDecimals(decimals), value(initial) { strncpy(mUnit,unit,6); }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -212,7 +200,7 @@ public:
 
 class	WED_PropFrequencyText : public WED_PropDoubleText {
 public:
-	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, xml_col, initial, digits, decimals, "MHz") { }
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, initial, digits, decimals, "MHz") { }
 
 	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
@@ -227,7 +215,7 @@ public:
 // A double value edited as text.  Stored in meters, but displayed in feet or meters, depending on UI settings.
 class	WED_PropDoubleTextMeters : public WED_PropDoubleText {
 public:
-	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, xml_col, initial, digits, decimals) { }
+	WED_PropDoubleTextMeters(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, initial, digits, decimals) { }
 
 	WED_PropDoubleTextMeters& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
@@ -246,7 +234,7 @@ public:
 						operator string() const { return value; }
 	WED_PropStringText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropStringText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const string& initial)  : WED_PropertyItem(parent, title, xml_col), value(initial) { }
+	WED_PropStringText(WED_PropertyHelper * parent, const char * title, const string& initial)  : WED_PropertyItem(parent, title), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -269,7 +257,7 @@ public:
 						operator string() const { return value; }
 	WED_PropFileText& operator=(const string& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropFileText(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, const string& initial)  : WED_PropertyItem(parent, title, xml_col), value(initial) { }
+	WED_PropFileText(WED_PropertyHelper * parent, const char * title, const string& initial)  : WED_PropertyItem(parent, title), value(initial) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -293,7 +281,7 @@ public:
 						operator int() const { return value; }
 	WED_PropIntEnum& operator=(int v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int idomain, int initial)  : WED_PropertyItem(parent, title, xml_col), value(initial), domain(idomain) { }
+	WED_PropIntEnum(WED_PropertyHelper * parent, const char * title, int idomain, int initial)  : WED_PropertyItem(parent, title), value(initial), domain(idomain) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -314,13 +302,13 @@ public:
 
 	set<int>	value;
 	int			domain;
-	bool		exclusive;
+	int			exclusive;
 
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumSet& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 	WED_PropIntEnumSet& operator+=(const int v) { if(value.count(v) == 0) { if (mParent) mParent->PropEditCallback(1); value.insert(v); if (mParent) mParent->PropEditCallback(0); } return *this; }
-	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int idomain, int iexclusive)  : WED_PropertyItem(parent, title, xml_col), domain(idomain), exclusive(iexclusive) { }
+	WED_PropIntEnumSet(WED_PropertyHelper * parent, const char * title, int idomain, int iexclusive)  : WED_PropertyItem(parent, title), domain(idomain), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -352,13 +340,13 @@ public:
 
 	set<int>	value;
 	int			domain;
-	bool		can_be_none;
+	int			can_be_none;
 						
 						operator set<int>&() { return value; }
 						operator set<int>() const { return value; }
 	WED_PropIntEnumBitfield& operator=(const set<int>& v) { if (value != v) { if (mParent) mParent->PropEditCallback(1); value = v; if (mParent) mParent->PropEditCallback(0); } return *this; }
 
-	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, XML_Name xml_col, int idomain, int be_none)  : WED_PropertyItem(parent, title, xml_col), domain(idomain), can_be_none(be_none) { }
+	WED_PropIntEnumBitfield(WED_PropertyHelper * parent, const char * title, int idomain, int be_none)  : WED_PropertyItem(parent, title), domain(idomain), can_be_none(be_none) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -376,15 +364,18 @@ public:
 // VIRTUAL ITEM: A FILTERED display.
 // This item doesn't REALLY create data - it provides a filtered view of another enum set, showing only the enums within a given range.
 // This is used to take ALL taxiway attributes and show only lights or only lines.
-class	WED_PropIntEnumSetFilter : public WED_PropertyItemBase {
+class	WED_PropIntEnumSetFilter : public WED_PropertyItem {
 public:
 
 	const char *			host;
+#pragma pack (push)
+#pragma pack (1)
 	short int				minv;
 	short int				maxv;
 	bool					exclusive;
+#pragma pack (pop)
 
-	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItemBase(parent, title), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
+	WED_PropIntEnumSetFilter(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  : WED_PropertyItem(parent, title), host(ihost), minv(iminv), maxv(imaxv), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);
@@ -401,13 +392,13 @@ public:
 // property helper (with properties inside it) and the sub-items in the hierarchy are the sub-helpers.  Thus a property item's parent (the "helper" sub-class)
 // gives access to sub-items.  This filter looks at all enums on all children and unions them.
 // We use this to let a user edit the marking attributes of all lines by editing the taxiway itself.
-class	WED_PropIntEnumSetUnion : public WED_PropertyItemBase {
+class	WED_PropIntEnumSetUnion : public WED_PropertyItem {
 public:
 
 	const char *			host;
-	bool					exclusive;
+	int						exclusive;
 
-	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, const char * ihost, int iexclusive)  : WED_PropertyItemBase(parent, title), host(ihost), exclusive(iexclusive) { }
+	WED_PropIntEnumSetUnion(WED_PropertyHelper * parent, const char * title, const char * ihost, int iexclusive)  : WED_PropertyItem(parent, title), host(ihost), exclusive(iexclusive) { }
 
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
 	virtual	void		GetPropertyDict(PropertyDict_t& dict);

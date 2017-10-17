@@ -30,8 +30,8 @@ TRIVIAL_COPY(WED_GISPoint, WED_Entity)
 
 WED_GISPoint::WED_GISPoint(WED_Archive * parent, int id) :
 	WED_Entity(parent, id),
-	latitude (this,"latitude" ,XML_Name("point","latitude" ),0.0,13,9),
-	longitude(this,"longitude",XML_Name("point","longitude"),0.0,14,9)
+	latitude (this,PROP_Name("latitude" ,XML_Name("point","latitude" )),0.0,13,9),
+	longitude(this,PROP_Name("longitude",XML_Name("point","longitude")),0.0,14,9)
 {
 }
 

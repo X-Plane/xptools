@@ -70,20 +70,20 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	1,						// close allowed?
 	0),						// close required
 	mType(tool),
-	mVehicleClass(tool == create_TaxiRoute ? this : NULL,"Allowed Vehicles",XML_Name("",""), ATCVehicleClass, atc_Vehicle_Aircraft),
-	mName(this, "Name",                                           XML_Name("",""), "N"),
-	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway",     XML_Name("",""), 1),
-	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway",     XML_Name("",""), ATCRunwayTwoway, atc_rwy_None),
-	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", XML_Name("",""), ATCRunwayOneway,false),
-	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", XML_Name("",""), ATCRunwayOneway,false),
-	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS",        XML_Name("",""), ATCRunwayOneway,false),
-	mWidth(tool == create_TaxiRoute ? this : NULL, "Size",        XML_Name("",""), ATCIcaoWidth, width_E),
+	mVehicleClass(tool == create_TaxiRoute ? this : NULL,PROP_Name("Allowed Vehicles",XML_Name("","")), ATCVehicleClass, atc_Vehicle_Aircraft),
+	mName(                                   this,       PROP_Name("Name",            XML_Name("","")), "N"),
+	mOneway(tool == create_TaxiRoute ?       this : NULL,PROP_Name("Oneway",          XML_Name("","")), 1),
+	mRunway(tool == create_TaxiRoute ?       this : NULL,PROP_Name("Runway",          XML_Name("","")), ATCRunwayTwoway, atc_rwy_None),
+	mHotDepart(tool == create_TaxiRoute ?    this : NULL,PROP_Name("Departure",       XML_Name("","")), ATCRunwayOneway,false),
+	mHotArrive(tool == create_TaxiRoute ?    this : NULL,PROP_Name("Arrival",         XML_Name("","")), ATCRunwayOneway,false),
+	mHotILS(tool == create_TaxiRoute ?       this : NULL,PROP_Name("ILS",             XML_Name("","")), ATCRunwayOneway,false),
+	mWidth(tool == create_TaxiRoute ?        this : NULL,PROP_Name("Size",            XML_Name("","")), ATCIcaoWidth, width_E),
 #if ROAD_EDITING
-	mLayer(tool == create_Road ? this : NULL, "Layer",         XML_Name("",""), 0, 2),
-	mSubtype(tool == create_Road ? this : NULL, "Type",        XML_Name("",""), 1, 3),
-	mResource(tool == create_Road ? this : NULL, "Resource",   XML_Name("",""), "lib/g10/roads.net"),
+	mLayer(tool == create_Road ?             this : NULL,PROP_Name("Layer",           XML_Name("","")), 0, 2),
+	mSubtype(tool == create_Road ?           this : NULL,PROP_Name("Type",            XML_Name("","")), 1, 3),
+	mResource(tool == create_Road ?          this : NULL,PROP_Name("Resource",        XML_Name("","")), "lib/g10/roads.net"),
 #endif
-	mSlop(this, "Slop",                                        XML_Name("",""), 10, 2)
+	mSlop(                                   this,        PROP_Name("Slop",           XML_Name("","")), 10, 2)
 {
 }
 

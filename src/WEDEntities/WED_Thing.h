@@ -54,22 +54,21 @@ enum {
 
 class	WED_Thing;
 
-class WED_TypeField : public WED_PropertyItemBase {
+class WED_TypeField : public WED_PropertyItem {
 public:
 
 	WED_TypeField(WED_Thing * parent);
 
-	// From WED_PropertyItemBase - just to get our type
+	// From WED_PropertyItem - just to get our type
 	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual	void		GetPropertyDictItem(int e, string& item);
 	virtual void		GetProperty(PropertyVal_t& val) const;
-	
-	virtual	void		GetPropertyDict(PropertyDict_t& dict) {};
-	virtual	void		GetPropertyDictItem(int e, string& item) {};
-	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent) {};
-	virtual	void 		ReadFrom(IOReader * reader) {};
-	virtual	void 		WriteTo(IOWriter * writer) {};
-	virtual	void		ToXML(WED_XMLElement * parent) {};
-
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+	virtual	void 		ReadFrom(IOReader * reader);
+	virtual	void 		WriteTo(IOWriter * writer);
+	virtual	void		ToXML(WED_XMLElement * parent);
+	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);	
 };
 
 class	WED_Thing :	public			WED_Persistent, 

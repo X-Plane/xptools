@@ -78,6 +78,12 @@ void		WED_PropertyHelper::SetNthProperty(int n, const PropertyVal_t& val)
 	mItems[n]->SetProperty(val,this);
 }
 
+WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title) : mTitle(title), mParent(pops)
+{
+	if (pops)
+		pops->mItems.push_back(this);
+}
+
 void 		WED_PropertyHelper::ReadPropsFrom(IOReader * reader)
 {
 	for (int n = 0; n < mItems.size(); ++n)
@@ -125,7 +131,7 @@ void		WED_PropertyHelper::PopHandler(void)
 {
 }
 
-int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItemBase * item) const
+int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItem * item) const
 {
 	for(int n = 0; n < mItems.size(); ++n)
 		if(item == mItems[n]) return n;
@@ -183,14 +189,18 @@ void 		WED_PropIntText::WriteTo(IOWriter * writer)
 
 void		WED_PropIntText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_int(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_int(p,value);
 }
 
 bool		WED_PropIntText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = atoi(att_value);
 		return true;
@@ -248,14 +258,18 @@ void 		WED_PropBoolText::WriteTo(IOWriter * writer)
 
 void		WED_PropBoolText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_int(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_int(p,value);
 }
 
 bool		WED_PropBoolText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = atoi(att_value);
 		return true;
@@ -317,14 +331,18 @@ void 		WED_PropDoubleText::WriteTo(IOWriter * writer)
 
 void		WED_PropDoubleText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_double(mXMLColumn.second,value,mDecimals);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_double(p,value,mDecimals);
 }
 
 bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = atof(att_value);
 		return true;
@@ -357,8 +375,10 @@ void	WED_PropFrequencyText::AssignFrom10Khz(int freq_10khz)
 
 void		WED_PropFrequencyText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_double(mXMLColumn.second,value,mDecimals+1);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_double(p,value,mDecimals+1);
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -437,14 +457,18 @@ void 		WED_PropStringText::WriteTo(IOWriter * writer)
 
 void		WED_PropStringText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_stl_str(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_stl_str(p,value);
 }
 
 bool		WED_PropStringText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = att_value;
 		return true;
@@ -507,14 +531,18 @@ void 		WED_PropFileText::WriteTo(IOWriter * writer)
 
 void		WED_PropFileText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_stl_str(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_stl_str(p,value);
 }
 
 bool		WED_PropFileText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = att_value;
 		return true;
@@ -578,14 +606,18 @@ void 		WED_PropIntEnum::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnum::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_c_str(mXMLColumn.second,ENUM_Desc(value));
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_c_str(p,ENUM_Desc(value));
 }
 
 bool		WED_PropIntEnum::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = ENUM_LookupDesc(domain,att_value);
 		return true;
@@ -663,10 +695,12 @@ void 		WED_PropIntEnumSet::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnumSet::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
 	for(set<int>::iterator i = value.begin(); i != value.end(); ++i)
 	{
-		WED_XMLElement * ele = xml->add_sub_element(mXMLColumn.second);
+		WED_XMLElement * ele = xml->add_sub_element(p);
 		ele->add_attr_c_str("value",ENUM_Desc(*i));
 	}
 }
@@ -678,7 +712,8 @@ bool		WED_PropIntEnumSet::WantsAttribute(const char * ele, const char * att_name
 
 bool		WED_PropIntEnumSet::WantsElement(WED_XMLReader * reader, const char * name)
 {
-	if(strcasecmp(name,mXMLColumn.first)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(name,p)==0)
 	{
 		reader->PushHandler(this);
 		value.clear();	
@@ -692,7 +727,9 @@ void		WED_PropIntEnumSet::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,mXMLColumn.second) == 0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	p += strlen(p)+1;
+	if(strcasecmp(name,p) == 0)
 	{
 		const XML_Char * v = get_att("value", atts);
 		if(!v) reader->FailWithError("no value");
@@ -781,14 +818,18 @@ void 		WED_PropIntEnumBitfield::WriteTo(IOWriter * writer)
 
 void		WED_PropIntEnumBitfield::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_int(mXMLColumn.second,ENUM_ExportSet(value));
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_int(p,ENUM_ExportSet(value));
 }
 
 bool		WED_PropIntEnumBitfield::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		int bf = atoi(att_value);
 		ENUM_ImportSet(domain, bf, value);		

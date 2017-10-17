@@ -31,10 +31,10 @@ TRIVIAL_COPY(WED_ATCWindRule, WED_Thing)
 
 
 WED_ATCWindRule::WED_ATCWindRule(WED_Archive * a, int id) : WED_Thing(a,id),
-	icao		(this,"METAR ICAO",			XML_Name("atc_windrule","weather_icao"),	""),
-	heading_lo	(this,"Direction From",		XML_Name("atc_windrule","dir_lo_degs_mag"),0,3),
-	heading_hi	(this,"Direction To",		XML_Name("atc_windrule","dir_hi_degs_mag"),0,3),
-	speed_knots	(this,"Maximum Speed",		XML_Name("atc_windrule","speed_knots"),0,3,0, "kn")
+	icao		(this,PROP_Name("METAR ICAO",		XML_Name("atc_windrule","weather_icao")),	""),
+	heading_lo	(this,PROP_Name("Direction From",	XML_Name("atc_windrule","dir_lo_degs_mag")),0,3),
+	heading_hi	(this,PROP_Name("Direction To",		XML_Name("atc_windrule","dir_hi_degs_mag")),0,3),
+	speed_knots	(this,PROP_Name("Maximum Speed",	XML_Name("atc_windrule","speed_knots")),0,3,0, "kn")
 {
 }
 
