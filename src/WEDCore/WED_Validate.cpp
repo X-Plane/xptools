@@ -487,7 +487,8 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 	     (who->GetClass() == WED_ForestPlacement::sClass && dynamic_cast<WED_ForestPlacement*>(who)->GetFillMode() == dsf_fill_area) ||
          (who->GetClass() == WED_FacadePlacement::sClass && dynamic_cast<WED_FacadePlacement*>(who)->GetTopoMode() == WED_FacadePlacement::topo_Area) )
 */
-	if(who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) // exempt RefImages, since WEDbing places them with CW nodes
+	if((who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) ||	// exempt RefImages, since WEDbing places them with CW nodes
+	   (who->GetClass() == WED_AirportBoundary::sClass))										// ALWAYS validate airport boundary like a polygon - it's really a collection of sequences, but self intersection is NOT alowed.
     {        
 		IGISPointSequence * ips = who->GetOuterRing();
 		if (ips) 
