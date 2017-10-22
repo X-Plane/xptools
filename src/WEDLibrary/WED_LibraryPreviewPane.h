@@ -54,6 +54,7 @@ private:
 		ITexMgr *			mTexMgr;
 		string				mRes;
 		int					mType;
+		float				mDs, mDt;
 };
 
 #endif

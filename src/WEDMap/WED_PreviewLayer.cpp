@@ -27,7 +27,6 @@
 #include "WED_TexMgr.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_TexMgr.h"
 #include "MatrixUtils.h"
 #include "GUI_GraphState.h"
 #include "GUI_DrawUtils.h"
