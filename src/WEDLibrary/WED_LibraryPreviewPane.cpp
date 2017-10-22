@@ -61,10 +61,14 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 
 		mResMgr->GetPol(mRes,pol);
 		TexRef	tref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
-		mTexMgr->GetTexInfo(tref,&tex_x,&tex_y,NULL, NULL, NULL, NULL);
-
-		tex_aspect = float(pol.proj_s * tex_x) / float(pol.proj_t * tex_y);
-
+		if (tref)
+		{
+			mTexMgr->GetTexInfo(tref,&tex_x,&tex_y,NULL, NULL, NULL, NULL);
+			tex_aspect = float(pol.proj_s * tex_x) / float(pol.proj_t * tex_y);
+		}
+		else
+			tex_aspect = 1.0;
+			
 		mDs = tex_aspect > 1.0 ? 1.0 : tex_aspect;
 		mDt = tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
 	}
