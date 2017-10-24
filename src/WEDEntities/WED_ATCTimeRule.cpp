@@ -45,6 +45,7 @@ void		WED_ATCTimeRule::Import(const AptTimeRule_t& info, void (* print_func)(voi
 {
 	start_time_zulu = info.start_zulu;
 	end_time_zulu = info.end_zulu;
+	PropEditCallback(0);           // give it a meaningfull name on Gateway/apt.dat import (it has no name in that data, anyways)
 }
 
 void		WED_ATCTimeRule::Export(		 AptTimeRule_t& info) const
@@ -52,5 +53,19 @@ void		WED_ATCTimeRule::Export(		 AptTimeRule_t& info) const
 	info.start_zulu = start_time_zulu.value;
 	info.end_zulu = end_time_zulu.value;
 }
+
+void		WED_ATCTimeRule::PropEditCallback(int before)
+{
+	if (!before)   
+	{
+		char buf[20];
+		snprintf(buf,20,"Time %04d-%04dz",start_time_zulu.value,end_time_zulu.value);
+		string old_name;
+		GetName(old_name);
+		if (old_name != buf)     // Prevent infinite recursion by calling SetName() if name actually changes
+			SetName(buf);
+	}
+}
+
 
 #endif

@@ -50,6 +50,7 @@
 #include "WED_AirportChain.h"
 #include "WED_TextureNode.h"
 #include "WED_Airport.h"
+#include "AptDefs.h"
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_TruckParkingLocation.h"
@@ -396,13 +397,16 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	now_sel->CommitOperation();
 }
 
+
 void	WED_DoMakeNewATCWindRule(IResolver * inResolver)
 {
 	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass);
 	now_sel->StartOperation("Add ATC Wind Rule");
 	WED_ATCWindRule * f=  WED_ATCWindRule::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
-	f->SetName("Unnamed Wind Rule");
+	struct AptFlow_t info;                                    // pre-fill METAR ICAO
+	dynamic_cast<WED_ATCFlow *>(now_sel)->Export(info);
+	f->SetICAO(info.icao);
 	now_sel->CommitOperation();
 }
 
@@ -412,7 +416,6 @@ void	WED_DoMakeNewATCTimeRule(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Time Rule");
 	WED_ATCTimeRule * f=  WED_ATCTimeRule::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
-	f->SetName("Unnamed Time Rule");
 	now_sel->CommitOperation();
 }
 

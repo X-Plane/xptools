@@ -25,6 +25,7 @@ WED 1.7.0a5
 	- WED-926: Allow viewving of full/long property name by clicking on it
 	- Memory allocation improvements - WED now uses 30% less meomry on very large sceneries
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
+	- Flow editing enhancements: Preset METAR ICAO, create meaningfull wind/time rules names
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
