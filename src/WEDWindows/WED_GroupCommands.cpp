@@ -3225,10 +3225,16 @@ void WED_RenameRunwayNames(IResolver * resolver)
 						changelist.push_back(entry);
 					else
 						printf("Read changelist: Ignoring bad rwy spec pair %s ending in line %d\n",rwy_2wy.c_str(),lnum);
+						
+					second_end = false;
 				}
-				else
-					printf("Read changelist: ICAO of lines %d and %d do not match.\n",lnum-1, lnum);
-				second_end = false;
+				else  // we got out of sync. Let see if we can recover.
+				{
+					printf("Read changelist: ICAO in lines %d and %d do not match, ignoring line %d\n",lnum-1, lnum, lnum-1);
+					entry.ICAO = icao;
+					first_rwy = rnam;
+					entry.rwy_pt0 = Point2(lon,lat);
+				}
 			}
 			else
 			{

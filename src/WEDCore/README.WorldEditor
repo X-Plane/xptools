@@ -62,7 +62,7 @@ WED 1.6r1 6/7/17
 	- WED-851: Fixed crash when importaing apt.dat in full screen mode on Mac OS.
 	- WED-828: Fixed marquee bounds drawing wrong after multiple undo of resizing a polygon.
 	- WED-845: Fixed crash when corner of photo reference image is deleted by accident.
-	- Preformance Boost: Unnecissary drawing removed when the hierachry search filter is in use
+	- Preformance Boost: Unneci-A srcssary drawing removed when the hierachry search filter is in use
 	- Added support for trucks-drive-on-left meta-tag for v11 airports.
 	- Added validation to detect corrupt UV-map coordinates on orthophotos.
 
