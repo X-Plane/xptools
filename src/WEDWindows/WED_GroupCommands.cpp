@@ -38,6 +38,7 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
+#include "MemFileUtils.h"
 #include "PlatformUtils.h"
 
 #include "WED_Ring.h"
@@ -73,7 +74,6 @@
 #include "WED_Orthophoto.h"
 #include "WED_FacadePlacement.h"
 
-#include <iterator>
 #include <sstream>
 
 #if DEV
@@ -3153,10 +3153,10 @@ static int rename_rwys_recursive(WED_Thing * who, vector<struct changelist_t> cl
 				if((*c).ICAO == s) 
 				{
 					int old_rwy_enum = (*r)->GetRunwayEnumsTwoway();
-					printf("Testing O=%s against N=%s at %s ... ",ENUM_Desc(old_rwy_enum), ENUM_Desc((*c).new_rwy),s.c_str());
-					if (IsRwyMatching(*r,&(*c),rwys))
+//					printf("Testing O=%s against N=%s at %s ... ",ENUM_Desc(old_rwy_enum), ENUM_Desc((*c).new_rwy),s.c_str());
+					if (IsRwyMatching(*r,&(*c),rwys) && (*c).new_rwy != old_rwy_enum)
 					{
-						printf("Renaming %s Rwy %s to %s\n",s.c_str(),ENUM_Desc(old_rwy_enum),ENUM_Desc((*c).new_rwy));
+						printf("%s: Renaming Rwy %s to %s\n",s.c_str(),ENUM_Desc(old_rwy_enum),ENUM_Desc((*c).new_rwy));
 						(*r)->SetName(ENUM_Desc((*c).new_rwy));
 						renamed++;
 					}
@@ -3185,21 +3185,32 @@ void WED_RenameRunwayNames(IResolver * resolver)
 								FILE_DIALOG_PICK_VALID_RUNWAY_TABLE, fn,sizeof(fn)))
 		return;
 
-	FILE* file = fopen(fn,"r");
-	if (file)
+	MFMemFile * mf = MemFile_Open(fn);
+
+	if (mf)
 	{
 		bool second_end = false;
 		string first_rwy;
-		char icao[16], rnam[16];
-		float lon,lat,hdg;
+		string icao, rnam;
 		struct changelist_t entry;
 		
-		int lnum=0;
-		while (fscanf(file,"%15s%15s%f%f%f", icao, rnam, &lat, &lon, &hdg) == 5)
+		MFScanner	s;
+		MFS_init(&s, mf);
+
+		// skip first line, so Tyler can put a comment/version in there
+		MFS_string_eol(&s,NULL);
+		
+		int lnum=1;
+		while(!MFS_done(&s))
 		{
+			MFS_string(&s,&icao);
+			MFS_string(&s,&rnam);
+			double lat = MFS_double(&s);
+			double lon = MFS_double(&s);
+
 			if (second_end)
 			{
-				if (entry.ICAO == string(icao))
+				if (entry.ICAO == icao)
 				{
 					string rwy_2wy = first_rwy + "/" + rnam;
 					entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,rwy_2wy.c_str());
@@ -3213,10 +3224,10 @@ void WED_RenameRunwayNames(IResolver * resolver)
 					if(entry.new_rwy > atc_rwy_None)
 						changelist.push_back(entry);
 					else
-						printf("Ignoring illegal runway specification pair ending in line %d\n",lnum);
+						printf("Read changelist: Ignoring bad rwy spec pair %s ending in line %d\n",rwy_2wy.c_str(),lnum);
 				}
 				else
-					printf("Ignoring ICAO for not matching preceeding one in line %d\n",lnum);
+					printf("Read changelist: ICAO of lines %d and %d do not match.\n",lnum-1, lnum);
 				second_end = false;
 			}
 			else
@@ -3227,12 +3238,13 @@ void WED_RenameRunwayNames(IResolver * resolver)
 				second_end = true;
 			}
 			lnum++;
+			MFS_string_eol(&s,NULL);
 		}
-		fclose(file);
+		MemFile_Close(mf);
 	}
 	else
 	{
-		printf("Can't read file\n");
+		printf("Read changelist: Can't open file\n");
 		return;
 	}
 	 

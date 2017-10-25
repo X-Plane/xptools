@@ -78,6 +78,7 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
+#include "MemFileUtils.h"
 #include "PlatformUtils.h"
 #include "MathUtils.h"
 
@@ -1062,12 +1063,6 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
 
-static void ValidateOneAirportBoundary(WED_AirportBoundary* bnd, validation_error_vector& msgs, WED_Airport * apt)
-{
-	if(WED_HasBezierPol(bnd))
-		msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, bnd,apt));
-}
-
 static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt)
 {
 	AptGate_t	g;
@@ -1903,7 +1898,7 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
 
-static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, WED_ResourceMgr * res_mgr)
+static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, WED_ResourceMgr * res_mgr, MFMemFile * mf)
 {
 	/*--Validate Airport Rules-------------------------------------------------
 		Airport Name rules
@@ -1971,7 +1966,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
 	
-
+#if 0
 	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);
 	#endif
@@ -2020,7 +2015,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	{
 		ValidateAirportMetadata(apt,msgs,apt);
 	}
-
+#endif
 	if(gExportTarget == wet_gateway)
 	{
 		Bbox2 bounds;
@@ -2033,14 +2028,15 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		
 		// require any land airport (i.e. at least one runway) to have an airport boundary defined
 		if(!runways.empty() && boundaries.empty())
-			msgs.push_back(validation_error_t(string("The airport '") + name + "' contains a runway but no airport boundary.", 	err_airport_no_boundary, apt,apt));
+			msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
 		CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
 		for(vector<WED_AirportBoundary *>::iterator b = boundaries.begin(); b != boundaries.end(); ++b)
 		{
-			ValidateOneAirportBoundary(*b, msgs,apt);
+			if(WED_HasBezierPol(*b))
+				msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, *b, apt));
 		}
 #endif
 		// allow some draped orthophotos (like grund painted signs)
@@ -2084,71 +2080,35 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				#endif
 			}
 		}
-		// get data about runways from CIFP data
-		WED_file_cache_request  mCacheRequest;
-		string cert;
-		
-		if(!GUI_GetTempResourcePath("gateway.crt", cert))
-			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-			
-		mCacheRequest.in_cert = cert;
-		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
-		mCacheRequest.in_folder_prefix = "scenery_packs";
-		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
-		
-		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
-
-/* ToDo: get a better way to do automatic retryies for cache updates.
-		Ultimately, during the actual gateway submission we MUST wait and get full verification
-		at all times.
-		C++11 sleep_for(1000) is a good candidate.
-*/
-		for (int i = 0; i < 3; ++i)
-		{
-			if(res.out_status == cache_status_downloading)
-			{
-				printf("Download of Runway Data in progress, trying again in 1 sec\n");
-#if IBM
-				Sleep(1000);
-#else
-				sleep(1);
-#endif
-				res = WED_file_cache_request_file(mCacheRequest);
-			}
-		}
-
 
 		map<int,Point2> CIFP_rwys;
 		set<int> rwys_missing;
 		
-		if(res.out_status != cache_status_available)
+		if (mf)
 		{
-			stringstream ss;
-			ss << "Error downloading the list of gateway mandated runway data.\n" << res.out_error_human;
-			ss << "\nSkipping this part of validation.";
-			DoUserAlert(ss.str().c_str());
-		}
-		else
-		{
-			FILE* file = fopen(res.out_path.c_str(),"r");
-			if (file)
+			MFScanner	s;
+			MFS_init(&s, mf);
+			
+			// skip first line, so Tyler can put a comment/version in there
+			MFS_string_eol(&s,NULL);
+			
+			while(!MFS_done(&s))
 			{
-				char anam[16], rnam[16];
-				float lon,lat,hdg;
-				while (fscanf(file,"%15s%15s%f%f%f", anam, rnam, &lat, &lon, &hdg) == 5)
+				if(MFS_string_match_no_case(&s,icao.c_str(),false))
 				{
-					if(icao == string(anam))
+					string rnam;
+					MFS_string(&s,&rnam);
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					
+					int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam.c_str());
+					if (rwy_enum != atc_rwy_None)
 					{
-						int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam);
-						if (rwy_enum != atc_rwy_None)
-						{
-							Point2 pt(lon,lat);
-							CIFP_rwys[rwy_enum]=pt;
-							rwys_missing.insert(rwy_enum);
-						}
+						CIFP_rwys[rwy_enum]=Point2(lon,lat);
+						rwys_missing.insert(rwy_enum);
 					}
 				}
-				fclose(file);
+				MFS_string_eol(&s,NULL);
 			}
 		}
 		
@@ -2240,23 +2200,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 	}
-// very basic profiling
-// struct timespec t0,t1; char c[100];
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
-
-	ValidatePointSequencesRecursive(apt, msgs,apt);
-
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
-// sprintf(c,"Time for ValidatePointSequencesRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
-// DoUserAlert(c);
- 
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
- 
-	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
-	
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
-// sprintf(c,"Time for ValidateDSFRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
-// DoUserAlert(c);
+//	ValidatePointSequencesRecursive(apt, msgs,apt);
+//	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
 
 
@@ -2344,10 +2289,60 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	vector<WED_Airport *> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
 
+
+	// get data about runways from CIFP data
+	MFMemFile * mf = NULL;
+	if(gExportTarget == wet_gateway)
+	{
+		WED_file_cache_request  mCacheRequest;
+		string cert;
+		
+		if(!GUI_GetTempResourcePath("gateway.crt", cert))
+			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+			
+		mCacheRequest.in_cert = cert;
+		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
+		mCacheRequest.in_folder_prefix = "scenery_packs";
+		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
+		
+		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+
+	/* ToDo: get a better way to do automatic retryies for cache updates.
+		Ultimately, during the actual gateway submission we MUST wait and get full verification
+		at all times.
+		C++11 sleep_for(1000) is a good candidate.
+	*/
+		for (int i = 0; i < 3; ++i)
+		{
+			if(res.out_status == cache_status_downloading)
+			{
+				printf("Download of Runway Data in progress, trying again in 1 sec\n");
+	#if IBM
+				Sleep(1000);
+	#else
+				sleep(1);
+	#endif
+				res = WED_file_cache_request_file(mCacheRequest);
+			}
+		}
+		
+		if(res.out_status != cache_status_available)
+		{
+			stringstream ss;
+			ss << "Error downloading list of CIFP data compliant runway names and coordinates from scenery gateway.\n" << res.out_error_human;
+			ss << "\nSkipping this part of validation.";
+			DoUserAlert(ss.str().c_str());
+		}
+		else
+			mf = MemFile_Open(res.out_path.c_str());
+	}
+
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
 	{
-		ValidateOneAirport(*a, msgs, lib_mgr, res_mgr);
+		ValidateOneAirport(*a, msgs, lib_mgr, res_mgr, mf);
 	}
+	if (mf) MemFile_Close(mf);
+
 
 	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
 	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
