@@ -442,7 +442,7 @@ void	OBJ_editor_init(void)
 	blend_level_var = new TCL_linked_vardv(ac_get_tcl_interp(), "xplane_blend_level", MAX_MULTI_COUNT, xplane_blend_level_cb, NULL, 0.0);
 	anim_type_var = new TCL_linked_varsv(ac_get_tcl_interp(),"xplane_anim_type",MAX_MULTI_COUNT, xplane_anim_type_cb,NULL,"no animation");
 
-	for (uintptr_t n = 0; n < NUM_KEYFRAMES; ++n)
+	for (int n = 0; n < NUM_KEYFRAMES; ++n)
 	{
 		char	buf[25];
 		sprintf(buf,"xplane_anim_value%d", n);

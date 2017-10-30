@@ -354,24 +354,24 @@ float		OBJ_get_anim_nth_angle(ACObject * obj, int n)
 int			OBJ_get_panel_left(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"left0",r);
+	sprintf(tag,"left%d",r);
 	return OBJ_get_property_int(obj,tag);
 }
 int			OBJ_get_panel_bottom(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"bottom0",r);
+	sprintf(tag,"bottom%d",r);
 	return OBJ_get_property_int(obj,tag);
 }
 int			OBJ_get_panel_right(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"right0",r);
+	sprintf(tag,"right%d",r);
 	return OBJ_get_property_int(obj,tag);
 }
 int			OBJ_get_panel_top(ACObject * obj, int r)
 {
 	char tag[25];
-	sprintf(tag,"top0",r);
+	sprintf(tag,"top%d",r);
 	return OBJ_get_property_int(obj,tag);
 }
