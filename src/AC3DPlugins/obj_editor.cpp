@@ -115,10 +115,16 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_FLT(manip_dx,get_sel_single_obj,OBJ_set_manip_dx,OBJ_get_manip_dx) \
 	SIMPLE_PROPERTY_FLT(manip_dy,get_sel_single_obj,OBJ_set_manip_dy,OBJ_get_manip_dy) \
 	SIMPLE_PROPERTY_FLT(manip_dz,get_sel_single_obj,OBJ_set_manip_dz,OBJ_get_manip_dz) \
+	SIMPLE_PROPERTY_FLT(manip_centroid_x,get_sel_single_obj,OBJ_set_manip_centroid_x,OBJ_get_manip_centroid_x) \
+	SIMPLE_PROPERTY_FLT(manip_centroid_y,get_sel_single_obj,OBJ_set_manip_centroid_y,OBJ_get_manip_centroid_y) \
+	SIMPLE_PROPERTY_FLT(manip_centroid_z,get_sel_single_obj,OBJ_set_manip_centroid_z,OBJ_get_manip_centroid_z) \
 	SIMPLE_PROPERTY_FLT(manip_v1_min,get_sel_single_obj,OBJ_set_manip_v1_min,OBJ_get_manip_v1_min) \
 	SIMPLE_PROPERTY_FLT(manip_v1_max,get_sel_single_obj,OBJ_set_manip_v1_max,OBJ_get_manip_v1_max) \
 	SIMPLE_PROPERTY_FLT(manip_v2_min,get_sel_single_obj,OBJ_set_manip_v2_min,OBJ_get_manip_v2_min) \
 	SIMPLE_PROPERTY_FLT(manip_v2_max,get_sel_single_obj,OBJ_set_manip_v2_max,OBJ_get_manip_v2_max) \
+	SIMPLE_PROPERTY_FLT(manip_angle_min,get_sel_single_obj,OBJ_set_manip_angle_min,OBJ_get_manip_angle_min) \
+	SIMPLE_PROPERTY_FLT(manip_angle_max,get_sel_single_obj,OBJ_set_manip_angle_max,OBJ_get_manip_angle_max) \
+	SIMPLE_PROPERTY_FLT(manip_lift,get_sel_single_obj,OBJ_set_manip_lift,OBJ_get_manip_lift) \
 	SIMPLE_PROPERTY_STR(manip_dref1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \
 	SIMPLE_PROPERTY_STR(manip_dref2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
 	SIMPLE_PROPERTY_STR(manip_cmnd1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \

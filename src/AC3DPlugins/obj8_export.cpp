@@ -511,6 +511,15 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			m.axis[0] = OBJ_get_manip_dx(obj);
 			m.axis[1] = OBJ_get_manip_dy(obj);
 			m.axis[2] = OBJ_get_manip_dz(obj);
+
+			m.centroid[0] = OBJ_get_manip_centroid_x(obj);
+			m.centroid[1] = OBJ_get_manip_centroid_y(obj);
+			m.centroid[2] = OBJ_get_manip_centroid_z(obj);
+			
+			m.lift = OBJ_get_manip_lift(obj);
+			m.angle_min = OBJ_get_manip_angle_min(obj);
+			m.angle_max = OBJ_get_manip_angle_max(obj);
+			
 			m.mouse_wheel_delta = OBJ_get_manip_wheel(obj);
 
 			switch(OBJ_get_manip_type(obj)) {
@@ -530,6 +539,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 				builder->AccumManip(attr_Manip_None,m);
 				break;
 			case manip_axis:
+			case manip_axis_detent:
 				builder->AccumManip(attr_Manip_Drag_Axis,m);
 				break;
 			case manip_axis_2d:
@@ -580,6 +590,20 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			case manip_dref_switch_lr:
 				builder->AccumManip(attr_Manip_Axis_Switch_Left_Right,m);
 				break;
+				
+			case manip_rotate:
+				builder->AccumManip(attr_Manip_Drag_Rotate,m);
+				break;
+			case manip_command_knob2:
+				builder->AccumManip(attr_Manip_Command_Knob2,m);
+				break;
+			case manip_command_switch_ud2:
+				builder->AccumManip(attr_Manip_Command_Switch_Up_Down2,m);
+				break;
+			case manip_command_switch_lr2:
+				builder->AccumManip(attr_Manip_Command_Switch_Left_Right2,m);
+				break;
+				
 			}
 
 			int do_surf = has_real_tex ? (tex_id == -1 || tex_id == ac_object_get_texture_index(obj)) : do_misc;

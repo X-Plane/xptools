@@ -56,7 +56,14 @@ enum {
 	manip_command_switch_lr = 15,
 	manip_dref_knob = 16,
 	manip_dref_switch_ud = 17,
-	manip_dref_switch_lr = 18
+	manip_dref_switch_lr = 18,
+	
+	manip_rotate = 19,
+	manip_axis_detent = 20,
+	manip_command_knob2 = 21,
+	manip_command_switch_ud2 = 22,
+	manip_command_switch_lr2 = 23,
+	
 };
 
 void		OBJ_set_name(ACObject * obj, const char * name);
@@ -119,10 +126,18 @@ void		OBJ_set_manip_type(ACObject * obj, int n);
 void		OBJ_set_manip_dx(ACObject * obj, float dx);
 void		OBJ_set_manip_dy(ACObject * obj, float dy);
 void		OBJ_set_manip_dz(ACObject * obj, float dz);
+
+void		OBJ_set_manip_centroid_x(ACObject * obj, float dx);
+void		OBJ_set_manip_centroid_y(ACObject * obj, float dy);
+void		OBJ_set_manip_centroid_z(ACObject * obj, float dz);
+
 void		OBJ_set_manip_v1_min(ACObject * obj, float v);
 void		OBJ_set_manip_v1_max(ACObject * obj, float v);
 void		OBJ_set_manip_v2_min(ACObject * obj, float v);
 void		OBJ_set_manip_v2_max(ACObject * obj, float v);
+void		OBJ_set_manip_angle_min(ACObject * obj, float v);
+void		OBJ_set_manip_angle_max(ACObject * obj, float v);
+void		OBJ_set_manip_lift(ACObject * obj, float v);
 void		OBJ_set_manip_dref1(ACObject * obj, const char * dref);
 void		OBJ_set_manip_dref2(ACObject * obj, const char * dref);
 void		OBJ_set_manip_tooltip(ACObject * obj, const char * dref);
@@ -200,10 +215,16 @@ int				OBJ_get_manip_type(ACObject * obj);
 float			OBJ_get_manip_dx(ACObject * obj);
 float			OBJ_get_manip_dy(ACObject * obj);
 float			OBJ_get_manip_dz(ACObject * obj);
+float			OBJ_get_manip_centroid_x(ACObject * obj);
+float			OBJ_get_manip_centroid_y(ACObject * obj);
+float			OBJ_get_manip_centroid_z(ACObject * obj);
 float			OBJ_get_manip_v1_min(ACObject * obj);
 float			OBJ_get_manip_v1_max(ACObject * obj);
 float			OBJ_get_manip_v2_min(ACObject * obj);
 float			OBJ_get_manip_v2_max(ACObject * obj);
+float			OBJ_get_manip_angle_min(ACObject * obj);
+float			OBJ_get_manip_angle_max(ACObject * obj);
+float			OBJ_get_manip_lift(ACObject * obj);
 const char *	OBJ_get_manip_dref1(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_dref2(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_tooltip(ACObject * obj, char * buf);

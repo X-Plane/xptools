@@ -274,10 +274,14 @@ ACObject *	do_obj8_load(char *filename)
 		string	manip_dref1, manip_dref2, manip_cursor, manip_tooltip;
 		float	manip_wheel = 0.0;
 		float	manip_drag_axis[3];
+		float	manip_centroid[3];
 		float	manip_v1_min;
 		float	manip_v1_max;
 		float	manip_v2_min;
 		float	manip_v2_max;
+		float	manip_angle_min;
+		float	manip_angle_max;
+		float	manip_lift;
 
 		map<int, Vertex *>	vmap;
 
@@ -335,6 +339,9 @@ ACObject *	do_obj8_load(char *filename)
 						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
 						break;
 					case manip_command:
+					case manip_command_knob2:
+					case manip_command_switch_ud2:
+					case manip_command_switch_lr2:
 						OBJ_set_manip_dref1(stuff_obj,manip_dref1.c_str());
 						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
 						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
@@ -397,6 +404,42 @@ ACObject *	do_obj8_load(char *filename)
 						OBJ_set_manip_v1_max(stuff_obj,manip_v1_max);
 						OBJ_set_manip_dx(stuff_obj,manip_drag_axis[0]);
 						OBJ_set_manip_dy(stuff_obj,manip_drag_axis[1]);
+						break;
+					case manip_axis_detent:
+						OBJ_set_manip_v1_min(stuff_obj,manip_v1_min);
+						OBJ_set_manip_v1_max(stuff_obj,manip_v1_max);
+						OBJ_set_manip_v2_min(stuff_obj,manip_v2_min);
+						OBJ_set_manip_v2_max(stuff_obj,manip_v2_max);
+						OBJ_set_manip_dx(stuff_obj,manip_drag_axis[0]);
+						OBJ_set_manip_dy(stuff_obj,manip_drag_axis[1]);
+						OBJ_set_manip_dz(stuff_obj,manip_drag_axis[2]);
+						OBJ_set_manip_centroid_x(stuff_obj,manip_centroid[0]);
+						OBJ_set_manip_centroid_y(stuff_obj,manip_centroid[1]);
+						OBJ_set_manip_centroid_z(stuff_obj,manip_centroid[2]);
+						OBJ_set_manip_dref1(stuff_obj,manip_dref1.c_str());
+						OBJ_set_manip_dref2(stuff_obj,manip_dref2.c_str());
+						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
+						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
+						OBJ_set_manip_wheel(stuff_obj, manip_wheel);
+					case manip_rotate:
+						OBJ_set_manip_v1_min(stuff_obj,manip_v1_min);
+						OBJ_set_manip_v1_max(stuff_obj,manip_v1_max);
+						OBJ_set_manip_v2_min(stuff_obj,manip_v2_min);
+						OBJ_set_manip_v2_max(stuff_obj,manip_v2_max);
+						OBJ_set_manip_angle_min(stuff_obj,manip_angle_min);
+						OBJ_set_manip_angle_max(stuff_obj,manip_angle_max);
+						OBJ_set_manip_lift(stuff_obj,manip_lift);
+						OBJ_set_manip_dx(stuff_obj,manip_drag_axis[0]);
+						OBJ_set_manip_dy(stuff_obj,manip_drag_axis[1]);
+						OBJ_set_manip_dz(stuff_obj,manip_drag_axis[2]);
+						OBJ_set_manip_centroid_x(stuff_obj,manip_centroid[0]);
+						OBJ_set_manip_centroid_y(stuff_obj,manip_centroid[1]);
+						OBJ_set_manip_centroid_z(stuff_obj,manip_centroid[2]);
+						OBJ_set_manip_dref1(stuff_obj,manip_dref1.c_str());
+						OBJ_set_manip_dref2(stuff_obj,manip_dref2.c_str());
+						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
+						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
+						OBJ_set_manip_wheel(stuff_obj, manip_wheel);
 						break;
 					}
 
@@ -594,6 +637,7 @@ ACObject *	do_obj8_load(char *filename)
 				stuff_obj = NULL;
 				manip_type = manip_axis;
 				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
+				manip_dref2 = obj8.manips[cmd->idx_offset].dataref2;
 				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
 				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
 				manip_v1_min = obj8.manips[cmd->idx_offset].v1_min;
@@ -601,7 +645,16 @@ ACObject *	do_obj8_load(char *filename)
 				manip_drag_axis[0] = obj8.manips[cmd->idx_offset].axis[0];
 				manip_drag_axis[1] = obj8.manips[cmd->idx_offset].axis[1];
 				manip_drag_axis[2] = obj8.manips[cmd->idx_offset].axis[2];
-				manip_wheel = obj8.manips[cmd->idx_offset].mouse_wheel_delta;				
+				manip_wheel = obj8.manips[cmd->idx_offset].mouse_wheel_delta;
+				if(!manip_dref2.empty())
+				{
+					manip_type = manip_axis_detent;
+					manip_v2_min = obj8.manips[cmd->idx_offset].v2_min;
+					manip_v2_max = obj8.manips[cmd->idx_offset].v2_max;
+					manip_centroid[0] = obj8.manips[cmd->idx_offset].centroid[0];
+					manip_centroid[1] = obj8.manips[cmd->idx_offset].centroid[1];
+					manip_centroid[2] = obj8.manips[cmd->idx_offset].centroid[2];
+				}
 				break;
 			case attr_Manip_Drag_2d:
 				stuff_obj = NULL;
@@ -618,8 +671,24 @@ ACObject *	do_obj8_load(char *filename)
 				manip_drag_axis[1] = obj8.manips[cmd->idx_offset].axis[1];
 				break;
 			case attr_Manip_Command:
+			case attr_Manip_Command_Knob2:
+			case attr_Manip_Command_Switch_Up_Down2:
+			case attr_Manip_Command_Switch_Left_Right2:
 				stuff_obj = NULL;
-				manip_type = manip_command;
+				switch(cmd->cmd) {
+				case attr_Manip_Command:
+					manip_type = manip_command;
+					break;
+				case attr_Manip_Command_Knob2:
+					manip_type = manip_command_knob2;
+					break;
+				case attr_Manip_Command_Switch_Up_Down2:
+					manip_type = manip_command_switch_ud2;
+					break;
+				case attr_Manip_Command_Switch_Left_Right2:
+					manip_type = manip_command_switch_lr2;
+					break;
+				}
 				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
 				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
 				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
@@ -764,6 +833,29 @@ ACObject *	do_obj8_load(char *filename)
 				manip_drag_axis[0] = obj8.manips[cmd->idx_offset].axis[0];
 				manip_drag_axis[1] = obj8.manips[cmd->idx_offset].axis[1];
 				break;
+			case attr_Manip_Drag_Rotate:
+				stuff_obj = NULL;
+				manip_type = manip_rotate;
+				manip_dref1 = obj8.manips[cmd->idx_offset].dataref1;
+				manip_dref2 = obj8.manips[cmd->idx_offset].dataref2;
+				manip_cursor = obj8.manips[cmd->idx_offset].cursor;
+				manip_tooltip = obj8.manips[cmd->idx_offset].tooltip;
+				manip_v1_min = obj8.manips[cmd->idx_offset].v1_min;
+				manip_v1_max = obj8.manips[cmd->idx_offset].v1_max;
+				manip_v2_min = obj8.manips[cmd->idx_offset].v2_min;
+				manip_v2_max = obj8.manips[cmd->idx_offset].v2_max;
+				manip_drag_axis[0] = obj8.manips[cmd->idx_offset].axis[0];
+				manip_drag_axis[1] = obj8.manips[cmd->idx_offset].axis[1];
+				manip_drag_axis[2] = obj8.manips[cmd->idx_offset].axis[2];
+				manip_centroid[0] = obj8.manips[cmd->idx_offset].centroid[0];
+				manip_centroid[1] = obj8.manips[cmd->idx_offset].centroid[1];
+				manip_centroid[2] = obj8.manips[cmd->idx_offset].centroid[2];
+				manip_lift = obj8.manips[cmd->idx_offset].lift;
+				manip_angle_min = obj8.manips[cmd->idx_offset].angle_min;
+				manip_angle_max = obj8.manips[cmd->idx_offset].angle_max;
+				manip_wheel = obj8.manips[cmd->idx_offset].mouse_wheel_delta;
+				break;
+				
 			case anim_Begin:
 				{
 					stuff_obj = NULL;

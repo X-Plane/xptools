@@ -597,6 +597,12 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.none.manip.xplane_manip_dx$idx
 	pack forget $container.obj.none.manip.xplane_manip_dy$idx
 	pack forget $container.obj.none.manip.xplane_manip_dz$idx
+	pack forget $container.obj.none.manip.xplane_manip_centroid_x$idx
+	pack forget $container.obj.none.manip.xplane_manip_centroid_y$idx
+	pack forget $container.obj.none.manip.xplane_manip_centroid_z$idx
+	pack forget $container.obj.none.manip.xplane_manip_angle_min$idx
+	pack forget $container.obj.none.manip.xplane_manip_angle_max$idx
+	pack forget $container.obj.none.manip.xplane_manip_lift$idx
 	pack forget $container.obj.none.manip.guess$idx
 	pack forget $container.obj.none.manip.xplane_manip_v1_min$idx
 	pack forget $container.obj.none.manip.xplane_manip_v1_max$idx
@@ -670,6 +676,7 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 		pack $container.obj.none.manip.xplane_manip_wheel$idx
+		pack $container.obj.none.manip.guess$idx -side left -anchor nw
 	}
 	# axis_2d
 	if { [set xplane_manip_type$idx] == 3} {
@@ -813,6 +820,65 @@ proc xplane_obj_sync { idx container } {
 		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
 		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
 		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# manip-rotate
+	if { [set xplane_manip_type$idx] == 19} {
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
+		packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
+		packtext $container.obj.none.manip.xplane_manip_centroid_x$idx "Center (X)"
+		packtext $container.obj.none.manip.xplane_manip_centroid_y$idx "Center (Y)"
+		packtext $container.obj.none.manip.xplane_manip_centroid_z$idx "Center (Z)"
+		packtext $container.obj.none.manip.xplane_manip_angle_min$idx "Start Angle"
+		packtext $container.obj.none.manip.xplane_manip_angle_max$idx "End Angle"
+		packtext $container.obj.none.manip.xplane_manip_lift$idx "Lift"
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
+		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min Detent"
+		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.dref2
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
+		pack $container.obj.none.manip.guess$idx -side left -anchor nw
+	}
+	# manip-axis-detent
+	if { [set xplane_manip_type$idx] == 20} {
+		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
+		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
+		packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
+		packtext $container.obj.none.manip.xplane_manip_centroid_x$idx "Detent Axis (X Component)"
+		packtext $container.obj.none.manip.xplane_manip_centroid_y$idx "Detent Axis (Y Component)"
+		packtext $container.obj.none.manip.xplane_manip_centroid_z$idx "Detent Axis (Z Component)"
+		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
+		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min Detent"
+		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
+		pack $container.obj.none.manip.dref1
+		pack $container.obj.none.manip.dref2
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+		pack $container.obj.none.manip.xplane_manip_wheel$idx
+		pack $container.obj.none.manip.guess$idx -side left -anchor nw
+	}
+	# command knob2
+	if { [set xplane_manip_type$idx] == 21} {
+		pack $container.obj.none.manip.cmnd1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command switch ud2
+	if { [set xplane_manip_type$idx] == 22} {
+		pack $container.obj.none.manip.cmnd1
+		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
+		pack $container.obj.none.manip.xplane_manip_tooltip$idx
+	}
+	# command switch lr2
+	if { [set xplane_manip_type$idx] == 23} {
+		pack $container.obj.none.manip.cmnd1
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 	}
@@ -1005,7 +1071,16 @@ proc xplane_inspector {} {
 
 					make_labeled_entry $container.obj.none.manip "Dx:" xplane_manip_dx$idx 10
 					make_labeled_entry $container.obj.none.manip "Dy:" xplane_manip_dy$idx 10
-					make_labeled_entry $container.obj.none.manip "Axis (Z Component)" xplane_manip_dz$idx 10
+					make_labeled_entry $container.obj.none.manip "Dz:" xplane_manip_dz$idx 10
+
+					make_labeled_entry $container.obj.none.manip "x:" xplane_manip_centroid_x$idx 10
+					make_labeled_entry $container.obj.none.manip "y:" xplane_manip_centroid_y$idx 10
+					make_labeled_entry $container.obj.none.manip "z:" xplane_manip_centroid_z$idx 10
+
+					make_labeled_entry $container.obj.none.manip "Min Angle:" xplane_manip_angle_min$idx 10
+					make_labeled_entry $container.obj.none.manip "Max Angle:" xplane_manip_angle_max$idx 10
+					make_labeled_entry $container.obj.none.manip "Lift:" xplane_manip_lift$idx 10
+
 					button $container.obj.none.manip.guess$idx -text "Guess" -command "ac3d xplane_guess_axis $idx"
 					pack $container.obj.none.manip.guess$idx -side left -anchor nw
 
@@ -1186,7 +1261,7 @@ set xplane_layer_group_options [list none terrain beaches shoulders taxiways run
 set xplane_cursor_options [list four_arrows hand button rotate_small rotate_small_left rotate_small_right rotate_medium rotate_medium_left rotate_medium_right rotate_large \
 	rotate_large_left rotate_large_right up_down down up left_right right left  arrow]
 
-set xplane_manip_types [list none panel axis axis_2d command command_axis no_op push radio toggle delta wrap axis-pix command-knob command-switch-up/down command-switch-left/right dataref-knob dataref-switch-up/down dataref-switch-left/right]
+set xplane_manip_types [list none panel axis axis_2d command command_axis no_op push radio toggle delta wrap axis-pix command-knob command-switch-up/down command-switch-left/right dataref-knob dataref-switch-up/down dataref-switch-left/right rotate axis-detent command-knob-2way command-switch-up/down-2way command-switch-left/right-2way]
 
 
 trace add variable select_info write xplane_inspector_update
