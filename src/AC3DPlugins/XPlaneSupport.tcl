@@ -848,19 +848,19 @@ proc xplane_obj_sync { idx container } {
 	}
 	# manip-rotate
 	if { [set xplane_manip_type$idx] == 19} {
-		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
-		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
-		packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
-		packtext $container.obj.none.manip.xplane_manip_centroid_x$idx "Center (X)"
-		packtext $container.obj.none.manip.xplane_manip_centroid_y$idx "Center (Y)"
-		packtext $container.obj.none.manip.xplane_manip_centroid_z$idx "Center (Z)"
-		packtext $container.obj.none.manip.xplane_manip_angle_min$idx "Start Angle"
-		packtext $container.obj.none.manip.xplane_manip_angle_max$idx "End Angle"
-		packtext $container.obj.none.manip.xplane_manip_lift$idx "Lift"
-		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
-		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
-		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min Detent"
-		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
+		#packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
+		#packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
+		#packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
+		#packtext $container.obj.none.manip.xplane_manip_centroid_x$idx "Center (X)"
+		#packtext $container.obj.none.manip.xplane_manip_centroid_y$idx "Center (Y)"
+		#packtext $container.obj.none.manip.xplane_manip_centroid_z$idx "Center (Z)"
+		#packtext $container.obj.none.manip.xplane_manip_angle_min$idx "Start Angle"
+		#packtext $container.obj.none.manip.xplane_manip_angle_max$idx "End Angle"
+		#packtext $container.obj.none.manip.xplane_manip_lift$idx "Lift"
+		#packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		#packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
+		#packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min Detent"
+		#packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.dref2
 		pack $container.obj.none.manip.detents
@@ -875,20 +875,20 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 		pack $container.obj.none.manip.xplane_manip_wheel$idx
-		pack $container.obj.none.manip.guess$idx -side left -anchor nw
+		#pack $container.obj.none.manip.guess$idx -side left -anchor nw
 	}
 	# manip-axis-detent
 	if { [set xplane_manip_type$idx] == 20} {
-		packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
-		packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
-		packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
-		packtext $container.obj.none.manip.xplane_manip_centroid_x$idx "Detent Axis (X Component)"
-		packtext $container.obj.none.manip.xplane_manip_centroid_y$idx "Detent Axis (Y Component)"
-		packtext $container.obj.none.manip.xplane_manip_centroid_z$idx "Detent Axis (Z Component)"
-		packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
-		packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
-		packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min Detent"
-		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
+		#packtext $container.obj.none.manip.xplane_manip_dx$idx "Axis (X Component)"
+		#packtext $container.obj.none.manip.xplane_manip_dy$idx "Axis (Y Component)"
+		#packtext $container.obj.none.manip.xplane_manip_dz$idx "Axis (Z Component)"
+		#packtext $container.obj.none.manip.xplane_manip_centroid_x$idx "Detent Axis (X Component)"
+		#packtext $container.obj.none.manip.xplane_manip_centroid_y$idx "Detent Axis (Y Component)"
+		#packtext $container.obj.none.manip.xplane_manip_centroid_z$idx "Detent Axis (Z Component)"
+		#packtext $container.obj.none.manip.xplane_manip_v1_min$idx "Min"
+		#packtext $container.obj.none.manip.xplane_manip_v1_max$idx "Max"
+		#packtext $container.obj.none.manip.xplane_manip_v2_min$idx "Min Detent"
+		#packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.dref2
 		pack $container.obj.none.manip.detents
@@ -903,7 +903,7 @@ proc xplane_obj_sync { idx container } {
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 		pack $container.obj.none.manip.xplane_manip_wheel$idx
-		pack $container.obj.none.manip.guess$idx -side left -anchor nw
+		#pack $container.obj.none.manip.guess$idx -side left -anchor nw
 
 	}
 	# command knob2
