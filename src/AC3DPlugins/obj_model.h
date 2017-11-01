@@ -143,6 +143,10 @@ void		OBJ_set_manip_dref2(ACObject * obj, const char * dref);
 void		OBJ_set_manip_tooltip(ACObject * obj, const char * dref);
 void		OBJ_set_manip_cursor(ACObject * obj, const char * cursor);
 void		OBJ_set_manip_wheel(ACObject * obj, float v);
+void		OBJ_set_manip_nth_detent_lo(ACObject * obj, int n, float v);
+void		OBJ_set_manip_nth_detent_hi(ACObject * obj, int n, float v);
+void		OBJ_set_manip_nth_detent_hgt(ACObject * obj, int n, float v);
+void		OBJ_set_manip_detent_count(ACObject * obj, int count);
 
 void		OBJ_set_has_panel_regions(ACObject * obj, int e);
 void		OBJ_set_num_panel_regions(ACObject * obj, int k);
@@ -230,6 +234,10 @@ const char *	OBJ_get_manip_dref2(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_tooltip(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_cursor(ACObject * obj, char * buf);
 float			OBJ_get_manip_wheel(ACObject * obj);
+float			OBJ_get_manip_nth_detent_lo(ACObject * obj, int n);
+float			OBJ_get_manip_nth_detent_hi(ACObject * obj, int n);
+float			OBJ_get_manip_nth_detent_hgt(ACObject * obj, int n);
+int				OBJ_get_manip_detent_count(ACObject * obj);
 
 int				OBJ_get_has_panel_regions(ACObject * obj);
 int				OBJ_get_num_panel_regions(ACObject * obj);

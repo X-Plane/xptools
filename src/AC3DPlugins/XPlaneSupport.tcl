@@ -27,6 +27,7 @@ catch {namespace import combobox::*}
 # Note: the key-frame RFC doesn't post a max number of keyframes, but more than 50 seems like a lot.
 # Note: the sub-panel RFC does postulate a max-region count of 4!
 set MAX_KEYFRAMES 50
+set MAX_DETENTS 15
 set MAX_SEL 5
 set SUBPANEL_DIM 4
 
@@ -73,6 +74,25 @@ proc make_labeled_entry_pair { path name1 var1 name2 var2 } {
 	entry $vare1 -textvariable $var1 -width 7
 	entry $vare2 -textvariable $var2 -width 7
 	pack $varl1 $vare1 $varl2 $vare2 -side left -anchor nw
+	pack $varc -side top -anchor nw
+}
+
+proc make_labeled_entry_triplet { path name1 var1 name2 var2 name3 var3 } {
+	set varl1 [join [list $path "." $var1 ".l1"] "" ]
+	set varl2 [join [list $path "." $var1 ".l2"] "" ]
+	set varl3 [join [list $path "." $var1 ".l3"] "" ]
+	set vare1 [join [list $path "." $var1 ".e1"] "" ]
+	set vare2 [join [list $path "." $var1 ".e2"] "" ]
+	set vare3 [join [list $path "." $var1 ".e3"] "" ]
+	set varc [join [list $path "." $var1 ] "" ]
+	frame $varc
+	label $varl1 -text "$name1"
+	label $varl2 -text "$name2"
+	label $varl3 -text "$name3"
+	entry $vare1 -textvariable $var1 -width 7
+	entry $vare2 -textvariable $var2 -width 7
+	entry $vare3 -textvariable $var3 -width 7
+	pack $varl1 $vare1 $varl2 $vare2 $varl3 $vare3 -side left -anchor nw
 	pack $varc -side top -anchor nw
 }
 
@@ -583,10 +603,12 @@ proc xplane_obj_sync { idx container } {
 	global xplane_blend_enable$idx
 	global xplane_hard_surf$idx
 	global xplane_anim_keyframe_count$idx
+	global xplane_manip_detent_count$idx
 	global xplane_mod_lit$idx
 	global xplane_manip_type$idx
 	
 	global MAX_KEYFRAMES
+	global MAX_DETENTS
 	pack forget $container.obj.none
 	pack forget $container.obj.trans
 	pack forget $container.obj.rotate
@@ -615,7 +637,8 @@ proc xplane_obj_sync { idx container } {
 	pack forget $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn					
 	pack forget $container.obj.none.manip.xplane_manip_tooltip$idx
 	pack forget $container.obj.none.manip.xplane_manip_wheel$idx
-	
+	pack forget $container.obj.none.manip.detents
+
 	if { [set xplane_anim_type$idx] == "no animation"} { pack $container.obj.none }
 	if { [set xplane_anim_type$idx] == "rotate"} { 
 		pack $container.obj.rotate
@@ -840,6 +863,15 @@ proc xplane_obj_sync { idx container } {
 		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.dref2
+		pack $container.obj.none.manip.detents
+
+		for {set x 0} {$x<$MAX_DETENTS} {incr x} {
+			pack forget $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx
+		}
+		for {set x 0} {$x< [set xplane_manip_detent_count$idx] } {incr x} {
+			pack $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx
+		}
+
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 		pack $container.obj.none.manip.xplane_manip_wheel$idx
@@ -859,10 +891,20 @@ proc xplane_obj_sync { idx container } {
 		packtext $container.obj.none.manip.xplane_manip_v2_max$idx "Max Detent"
 		pack $container.obj.none.manip.dref1
 		pack $container.obj.none.manip.dref2
+		pack $container.obj.none.manip.detents
+
+		for {set x 0} {$x<$MAX_DETENTS} {incr x} {
+			pack forget $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx
+		}
+		for {set x 0} {$x< [set xplane_manip_detent_count$idx] } {incr x} {
+			pack $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx
+		}
+
 		pack $container.obj.none.manip.cursor_label $container.obj.none.manip.cursor_btn
 		pack $container.obj.none.manip.xplane_manip_tooltip$idx
 		pack $container.obj.none.manip.xplane_manip_wheel$idx
 		pack $container.obj.none.manip.guess$idx -side left -anchor nw
+
 	}
 	# command knob2
 	if { [set xplane_manip_type$idx] == 21} {
@@ -898,6 +940,7 @@ ac3d add_pref window_geom_xplane_inspector ""
 
 proc xplane_inspector {} {
 	global MAX_KEYFRAMES
+	global MAX_DETENTS
 	global MAX_SEL
 
 	for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
@@ -1103,7 +1146,18 @@ proc xplane_inspector {} {
 					build_listbox_cmnd $container.obj.none.manip.cmnd2 $container.obj.none.cmnd2_scroll xplane_manip_cmnd2$idx
 					make_labeled_entry $container.obj.none.manip "tooltip" xplane_manip_tooltip$idx 50
 					make_labeled_entry $container.obj.none.manip "wheel" xplane_manip_wheel$idx 10
-					
+
+					labelframe $container.obj.none.manip.detents -text "Detents:"
+
+					for {set x 0} {$x<$MAX_DETENTS} {incr x} {
+						make_labeled_entry_triplet $container.obj.none.manip.detents "lo $x" xplane_manip_detent_lo$x$idx "hi $x" xplane_manip_detent_hi$x$idx "height $x" xplane_manip_detent_hgt$x$idx
+						button $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.delete -text "Delete" -command "ac3d xplane_delete_detent $x $idx"
+						button $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.add -text "Add" -command "ac3d xplane_add_detent $x $idx"
+						pack $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.delete $container.obj.none.manip.detents.xplane_manip_detent_lo$x$idx.add -side left -anchor nw
+					}
+
+					pack $container.obj.none.manip.detents
+
 				pack $container.obj.none.manip
 				
 			pack $container.obj.none
@@ -1267,6 +1321,7 @@ set xplane_manip_types [list none panel axis axis_2d command command_axis no_op 
 trace add variable select_info write xplane_inspector_update
 for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
 	trace add variable xplane_anim_keyframe_count$idx write xplane_inspector_update
+	trace add variable xplane_manip_detent_count$idx write xplane_inspector_update
 }
 
 ##########################################################################################################################################################

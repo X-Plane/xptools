@@ -521,6 +521,16 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 			m.angle_max = OBJ_get_manip_angle_max(obj);
 			
 			m.mouse_wheel_delta = OBJ_get_manip_wheel(obj);
+			
+			m.detents.clear();
+			for(int i = 0; i < OBJ_get_manip_detent_count(obj); ++i)
+			{
+				XObjDetentRange dt;
+				dt.lo = OBJ_get_manip_nth_detent_lo(obj, i);
+				dt.hi = OBJ_get_manip_nth_detent_hi(obj, i);
+				dt.height = OBJ_get_manip_nth_detent_hgt(obj, i);
+				m.detents.push_back(dt);
+			}
 
 			switch(OBJ_get_manip_type(obj)) {
 			case manip_panel:

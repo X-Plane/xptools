@@ -37,6 +37,7 @@
 
 
 const int NUM_KEYFRAMES = 50;
+const int NUM_DETENTS = 15;
 const int MAX_MULTI_COUNT = 5;
 
 /****************************************************************************************************************/
@@ -131,7 +132,9 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_STR(manip_cmnd2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
 	SIMPLE_PROPERTY_STR(manip_tooltip,get_sel_single_obj,OBJ_set_manip_tooltip,OBJ_get_manip_tooltip,"", "") \
 	SIMPLE_PROPERTY_STR(manip_cursor,get_sel_single_obj,OBJ_set_manip_cursor,OBJ_get_manip_cursor,"", "") \
-	SIMPLE_PROPERTY_FLT(manip_wheel,get_sel_single_obj,OBJ_set_manip_wheel,OBJ_get_manip_wheel)
+	SIMPLE_PROPERTY_FLT(manip_wheel,get_sel_single_obj,OBJ_set_manip_wheel,OBJ_get_manip_wheel) \
+	SIMPLE_PROPERTY_INT(manip_detent_count, get_sel_single_obj,OBJ_set_manip_detent_count,OBJ_get_manip_detent_count)
+
 //	SIMPLE_PROPERTY_FLT(anim_low_value,get_sel_single_obj,OBJ_set_anim_low_value,OBJ_get_anim_low_value) \
 //	SIMPLE_PROPERTY_FLT(anim_low_angle,get_sel_single_obj,OBJ_set_anim_low_angle,OBJ_get_anim_low_angle) \
 //	SIMPLE_PROPERTY_FLT(anim_high_value,get_sel_single_obj,OBJ_set_anim_high_value,OBJ_get_anim_high_value) \
@@ -266,11 +269,31 @@ static void xplane_anim_angle_cb(double value, int idx, void * ref, TCL_linked_v
 	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_anim_nth_angle(obj, (uintptr_t) ref, value))
 }
 
+static void xplane_detent_lo_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
+{
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_manip_nth_detent_lo(obj, (uintptr_t) ref, value))
+}
+
+static void xplane_detent_hi_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
+{
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_manip_nth_detent_hi(obj, (uintptr_t) ref, value))
+}
+
+static void xplane_detent_hgt_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
+{
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_manip_nth_detent_hgt(obj, (uintptr_t) ref, value))
+}
+
 TCL_linked_variv * blend_enable_var = NULL;
 TCL_linked_vardv * blend_level_var = NULL;
 TCL_linked_varsv * anim_type_var = NULL;
 TCL_linked_vardv * anim_value_vars[NUM_KEYFRAMES] = { 0 };
 TCL_linked_vardv * anim_angle_vars[NUM_KEYFRAMES] = { 0 };
+
+
+TCL_linked_vardv * detent_lo_vars[NUM_DETENTS] = { 0 };
+TCL_linked_vardv * detent_hi_vars[NUM_DETENTS] = { 0 };
+TCL_linked_vardv * detent_hgt_vars[NUM_DETENTS] = { 0 };
 
 
 /****************************************************************************************************************/
@@ -397,6 +420,12 @@ static void OBJ_editor_sync(ACObject * changed)
 					anim_value_vars[n]->set(idx, OBJ_get_anim_nth_value(obj,n));
 					anim_angle_vars[n]->set(idx, OBJ_get_anim_nth_angle(obj,n));
 				}
+				for(int n = 0; n < OBJ_get_manip_detent_count(obj); ++n)
+				{
+					detent_lo_vars[n]->set(idx,OBJ_get_manip_nth_detent_lo(obj,n));
+					detent_hi_vars[n]->set(idx,OBJ_get_manip_nth_detent_hi(obj,n));
+					detent_hgt_vars[n]->set(idx,OBJ_get_manip_nth_detent_hgt(obj,n));
+				}
 			}
 			if (seltype == sel_light && (changed == obj || changed == NULL))
 			{
@@ -456,6 +485,19 @@ void	OBJ_editor_init(void)
 		sprintf(buf,"xplane_anim_angle%d", n);
 		anim_angle_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_anim_angle_cb, (void *) n, 0);
 	}
+	
+	for(int n = 0; n < NUM_DETENTS; ++n)
+	{
+		char buf[25];
+		sprintf(buf,"xplane_manip_detent_lo%d", n);
+		detent_lo_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_detent_lo_cb, (void *) n, 0);
+		sprintf(buf,"xplane_manip_detent_hi%d", n);
+		detent_hi_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_detent_hi_cb, (void *) n, 0);
+		sprintf(buf,"xplane_manip_detent_hgt%d", n);
+		detent_hgt_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_detent_hgt_cb, (void *) n, 0);
+	}
+	
+	
 
 	multi_edit =  new TCL_linked_vari(ac_get_tcl_interp(), "xplane_multi_edit", NULL, NULL, 0);
 

@@ -80,6 +80,16 @@ using std::list;
  * OBJ8 IMPORT AND EXPORT
  ***************************************************************************************************/
 
+static void stuff_in_detents(ACObject * obj, const vector<float>& detents)
+{
+	OBJ_set_manip_detent_count(obj, detents.size() / 3);
+	for(int i = 0; i < detents.size(); i += 3)
+	{
+		OBJ_set_manip_nth_detent_lo(obj, i / 3, detents[i]);
+		OBJ_set_manip_nth_detent_hi(obj, i / 3, detents[i+1]);
+		OBJ_set_manip_nth_detent_hgt(obj, i / 3, detents[i+2]);
+	}
+}
 
 ACObject *	do_obj8_load(char *filename)
 {
@@ -282,7 +292,7 @@ ACObject *	do_obj8_load(char *filename)
 		float	manip_angle_min;
 		float	manip_angle_max;
 		float	manip_lift;
-
+		vector<float>	manip_detent;
 		map<int, Vertex *>	vmap;
 
 		for(vector<XObjCmd8>::iterator cmd = lod->cmds.begin(); cmd != lod->cmds.end(); ++cmd)
@@ -421,6 +431,7 @@ ACObject *	do_obj8_load(char *filename)
 						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
 						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
 						OBJ_set_manip_wheel(stuff_obj, manip_wheel);
+						stuff_in_detents(stuff_obj,manip_detent);
 					case manip_rotate:
 						OBJ_set_manip_v1_min(stuff_obj,manip_v1_min);
 						OBJ_set_manip_v1_max(stuff_obj,manip_v1_max);
@@ -440,6 +451,7 @@ ACObject *	do_obj8_load(char *filename)
 						OBJ_set_manip_cursor(stuff_obj,manip_cursor.c_str());
 						OBJ_set_manip_tooltip(stuff_obj,manip_tooltip.c_str());
 						OBJ_set_manip_wheel(stuff_obj, manip_wheel);
+						stuff_in_detents(stuff_obj,manip_detent);
 						break;
 					}
 
@@ -654,6 +666,14 @@ ACObject *	do_obj8_load(char *filename)
 					manip_centroid[0] = obj8.manips[cmd->idx_offset].centroid[0];
 					manip_centroid[1] = obj8.manips[cmd->idx_offset].centroid[1];
 					manip_centroid[2] = obj8.manips[cmd->idx_offset].centroid[2];
+					manip_detent.clear();
+					for(vector<XObjDetentRange>::const_iterator k = obj8.manips[cmd->idx_offset].detents.begin();
+						k != obj8.manips[cmd->idx_offset].detents.end(); ++k)
+					{
+						manip_detent.push_back(k->lo);
+						manip_detent.push_back(k->hi);
+						manip_detent.push_back(k->height);
+					}
 				}
 				break;
 			case attr_Manip_Drag_2d:
@@ -854,6 +874,14 @@ ACObject *	do_obj8_load(char *filename)
 				manip_angle_min = obj8.manips[cmd->idx_offset].angle_min;
 				manip_angle_max = obj8.manips[cmd->idx_offset].angle_max;
 				manip_wheel = obj8.manips[cmd->idx_offset].mouse_wheel_delta;
+				manip_detent.clear();
+				for(vector<XObjDetentRange>::const_iterator k = obj8.manips[cmd->idx_offset].detents.begin();
+					k != obj8.manips[cmd->idx_offset].detents.end(); ++k)
+				{
+					manip_detent.push_back(k->lo);
+					manip_detent.push_back(k->hi);
+					manip_detent.push_back(k->height);
+				}
 				break;
 				
 			case anim_Begin:

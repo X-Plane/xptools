@@ -278,7 +278,6 @@ INT_PROP(anim_keyframe_count,anim_keyframe_count)
 INT_PROP(anim_keyframe_root,anim_keyframe_root)
 INT_PROP(anim_type,anim_type)
 
-INT_PROP(manip_type,manip_type)
 FLT_PROP(manip_dx,manip_dx)
 FLT_PROP(manip_dy,manip_dy)
 FLT_PROP(manip_dz,manip_dz)
@@ -297,10 +296,68 @@ STR_PROP(manip_dref2,manip_dref2)
 STR_PROP(manip_tooltip,manip_tooltip)
 STR_PROP(manip_cursor,manip_cursor)
 FLT_PROP(manip_wheel,manip_wheel)
+INT_PROP(manip_detent_count,manip_detent_count)
 
 
 INT_PROP(has_panel_regions,has_panel_regions)
 INT_PROP(num_panel_regions,num_panel_regions)
+
+void		OBJ_set_manip_nth_detent_lo(ACObject * obj, int n, float v)
+{
+	char tag[25];
+	sprintf(tag,"detentlo%d", n);
+	OBJ_set_property_flt(obj, tag, v);
+}
+
+void		OBJ_set_manip_nth_detent_hi(ACObject * obj, int n, float v)
+{
+	char tag[25];
+	sprintf(tag,"detenthi%d", n);
+	OBJ_set_property_flt(obj, tag, v);
+}
+
+void		OBJ_set_manip_nth_detent_hgt(ACObject * obj, int n, float v)
+{
+	char tag[25];
+	sprintf(tag,"detenthgt%d", n);
+	OBJ_set_property_flt(obj, tag, v);
+}
+
+void	OBJ_set_manip_type(ACObject * obj, int t)
+{
+	if(t == manip_rotate || t == manip_axis_detent)
+	{
+		if(OBJ_get_manip_detent_count(obj) < 1)
+			OBJ_set_manip_detent_count(obj, 1);
+	}
+	OBJ_set_property_int(obj,"manip_type",t);
+}
+
+int OBJ_get_manip_type(ACObject * obj)
+{
+	return OBJ_get_property_int(obj,"manip_type");
+}
+
+float		OBJ_get_manip_nth_detent_lo(ACObject * obj, int n)
+{
+	char tag[25];
+	sprintf(tag,"detentlo%d", n);
+	return OBJ_get_property_flt(obj, tag);
+}
+
+float		OBJ_get_manip_nth_detent_hi(ACObject * obj, int n)
+{
+	char tag[25];
+	sprintf(tag,"detenthi%d", n);
+	return OBJ_get_property_flt(obj, tag);
+}
+
+float		OBJ_get_manip_nth_detent_hgt(ACObject * obj, int n)
+{
+	char tag[25];
+	sprintf(tag,"detenthgt%d", n);
+	return OBJ_get_property_flt(obj, tag);
+}
 
 void		OBJ_set_anim_nth_value(ACObject * obj, int n, float v)
 {
