@@ -78,6 +78,7 @@ int zip_printf(void * fi, const char * fmt, ...)
 	va_start(args, fmt);
 	char tmp[4000];
 	int l = vsprintf(tmp,fmt,args);
+	va_end(args);
 	
 	zipWriteInFileInZip((zipFile) fi, tmp, l);
 	return l;

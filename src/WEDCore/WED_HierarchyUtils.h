@@ -73,8 +73,6 @@ void CollectRecursiveNoNesting(WED_Thing * thing, OutputIterator oi, sClass_t sC
 template<typename OutputIterator, typename VisibilityPred, typename TakePred>
 void CollectRecursive(WED_Thing * thing, OutputIterator oi, VisibilityPred visibility_pred, TakePred take_pred, sClass_t sClass ="", int max_tree_levels = INT_MAX)
 {
-	bool is_of_type_and_visible = false;
-
 	//Quick sClass Test
 	typedef typename OutputIterator::container_type::value_type VT;
 

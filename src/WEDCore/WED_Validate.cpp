@@ -78,6 +78,7 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
+#include "MemFileUtils.h"
 #include "PlatformUtils.h"
 #include "MathUtils.h"
 
@@ -474,112 +475,103 @@ static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& 
 		msgs.push_back(validation_error_t("Line and point forests are only supported in X-Plane 10 and newer.", err_gis_poly_line_and_point_forests_only_for_gte_xp10, who,apt));
 }
 
+static void AddNodesOfSegment(const IGISPointSequence * ips, const int seg, set<WED_GISPoint *>& nlist)
+{
+	WED_GISPoint *n;
+	if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(seg)))
+			nlist.insert(n);
+	if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((seg+1) % ips->GetNumPoints())))
+			nlist.insert(n);
+}
 
 static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msgs, WED_Airport * apt)
 {
 	// check for outer ring wound CCW (best case it will not show in XP, worst case it will assert in DSF export)
 	// check for self-intersecting polygons
-	// not called for Forests unless they are closed, not for Facades with no roof
-	
-/*	if ( who->GetClass() == WED_DrapedOrthophoto::sClass ||
-	     who->GetClass() == WED_PolygonPlacement::sClass ||
-	     who->GetClass() == WED_Taxiway::sClass ||
-	     (who->GetClass() == WED_ForestPlacement::sClass && dynamic_cast<WED_ForestPlacement*>(who)->GetFillMode() == dsf_fill_area) ||
-         (who->GetClass() == WED_FacadePlacement::sClass && dynamic_cast<WED_FacadePlacement*>(who)->GetTopoMode() == WED_FacadePlacement::topo_Area) )
-*/
-	if(who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) // exempt RefImages, since WEDbing places them with CW nodes
+
+	if((who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) ||	// exempt RefImages, since WEDbing places them with CW nodes
+	   (who->GetClass() == WED_AirportBoundary::sClass))										// ALWAYS validate airport boundary like a polygon - it's really a collection of sequences, but self intersection is NOT allowed.
     {        
-		IGISPointSequence * ips = who->GetOuterRing();
-		if (ips) 
+		for(int child = 0; child < who->CountChildren(); ++child)
 		{
-			vector <Point2> seq;
-			int n_pts = ips->GetNumPoints();
-			for(int n = 0; n < n_pts; ++n)
-			{
-				IGISPoint * igp = ips->GetNthPoint(n);
-				Point2 p;
-				if (igp) 
-				{
-					igp->GetLocation(gis_Geo, p);
-	//				if (!(p == seq.back()))  // skip over zero length segemnts, as they cause
-						seq.push_back(p);    // false positives in the clockwise wound test
-				} 
-			}
-			if (!is_ccw_polygon_pt(seq.begin(), seq.end()))
-			{
-			    string nam; who->GetName(nam);
-				string msg = string(who->HumanReadableType()) + " '" + nam + "' is wound clock wise. Reverse selected polygon to fix this.";
-				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who, apt));
-			}
-			
-			set<WED_GISPoint *> nodes_next2crossings;
-			int n_sides = ips->GetNumSides();
+			IGISPointSequence * ips = SAFE_CAST(IGISPointSequence,who->GetNthChild(child));
 
-			for (int i = 0; i < n_sides; ++i)
+			if (ips)
 			{
-				Segment2 s1;
-				Bezier2 b1;
-				bool isb1 = ips->GetSide(gis_Geo, i, s1, b1);
-				
-				if (isb1 && b1.self_intersect(10))
-				{
-					WED_GISPoint *n;
-					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-						nodes_next2crossings.insert(n);
-					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-						nodes_next2crossings.insert(n);
-				}
-
-				for (int j = i + 1; j < n_sides; ++j)
-				{
-					Segment2 s2;
-					Bezier2 b2;
-					bool isb2 = ips->GetSide(gis_Geo, j, s2, b2);
-
-					if (isb1 || isb2)
+				{   // this would be much easier if we'd  code that as a member function of WED_GisChain: So we'd have access to mCachePts, i.e. the ordered vector of points
+				    // until then - here we build our own vector of points by polling some other verctor of points ...
+					vector <Point2> seq;
+					int n_pts = ips->GetNumPoints();
+					for(int n = 0; n < n_pts; ++n)
 					{
-						if (b1.intersect(b2, 10))      // Note this test aproximate and recursive, causing the curve to
-						{							   // be broken up into 2^10 = 1024 sub-segments at the most
-							WED_GISPoint *n;
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-								nodes_next2crossings.insert(n);
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-								nodes_next2crossings.insert(n);
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(j)))
-								nodes_next2crossings.insert(n);
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((j+1)%n_pts)))
-								nodes_next2crossings.insert(n);
-						}
+						IGISPoint * igp = ips->GetNthPoint(n);
+						if (igp) 
+						{
+							Point2 p;
+							igp->GetLocation(gis_Geo, p);
+//							if (!(p == seq.back()))  // skip over zero length segemnts, as they cause
+								seq.push_back(p);    // false positives in the clockwise wound test. And taxiways are allowed to have ZLSegments !!
+						} 
 					}
-					else // precision would not matter, we would not have to treat linear segments separately ...
+					if ( (child == 0) != is_ccw_polygon_pt(seq.begin(), seq.end())) // Holes need to be CW, Outer rings CCW
 					{
-						if (b1.p1 != b2.p1 &&      // check if segments are adjacent, i.e. share a node,
-						    b1.p2 != b2.p2 &&      // as linear segment cross check returns false positive here
-						    b1.p1 != b2.p2 &&      // (unlike the bezier intersect test)
-						    b1.p2 != b2.p1)
-						{		
-							Point2 x;
-							if (s1.intersect(s2, x))
+						string nam; who->GetName(nam);
+						string msg = string(child ? "Hole in " : "") + who->HumanReadableType() + " '" + nam + "' is wound " +
+											(child ? "counter" : "r") + "clock wise. Reverse selected component to fix this.";
+						msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who->GetNthChild(child), apt));
+					}
+				}
+				{
+					set<WED_GISPoint *> nodes_next2crossings;
+					int n_sides = ips->GetNumSides();
+
+					for (int i = 0; i < n_sides; ++i)
+					{
+						Segment2 s1;
+						Bezier2 b1;
+						bool isb1 = ips->GetSide(gis_Geo, i, s1, b1);
+						
+						if (isb1 && b1.self_intersect(10))
+							AddNodesOfSegment(ips,i,nodes_next2crossings);
+
+						for (int j = i + 1; j < n_sides; ++j)
+						{
+							Segment2 s2;
+							Bezier2 b2;
+							bool isb2 = ips->GetSide(gis_Geo, j, s2, b2);
+
+							if (isb1 || isb2)
 							{
-								WED_GISPoint *n;
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-									nodes_next2crossings.insert(n);
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-									nodes_next2crossings.insert(n);
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(j)))
-									nodes_next2crossings.insert(n);
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((j+1)%n_pts)))
-									nodes_next2crossings.insert(n);
+								if (b1.intersect(b2, 10))      // Note this test aproximate and recursive, causing the curve to
+								{							   // be broken up into 2^10 = 1024 sub-segments at the most
+									AddNodesOfSegment(ips,i,nodes_next2crossings);
+									AddNodesOfSegment(ips,j,nodes_next2crossings);
+								}
+							}
+							else // precision and speed would not matter, we would not have to treat linear segments separately ...
+							{
+								if (b1.p1 != b2.p1 &&      // check if segments share a node, the
+									b1.p2 != b2.p2 &&      // linear segment intersect check returns a false positive
+									b1.p1 != b2.p2 &&      // (unlike the bezier intersect test)
+									b1.p2 != b2.p1)
+								{		
+									Point2 x;
+									if (s1.intersect(s2, x))
+									{
+										AddNodesOfSegment(ips,i,nodes_next2crossings);
+										AddNodesOfSegment(ips,j,nodes_next2crossings);
+									}
+								}
 							}
 						}
 					}
+					if (!nodes_next2crossings.empty())
+					{
+						string nam; who->GetName(nam);
+						string msg = string(who->HumanReadableType()) + " '" + nam + "' has crossing or self-intersecting segments.";
+						msgs.push_back(validation_error_t(msg, 	err_gis_poly_self_intersecting, nodes_next2crossings, apt));
+					}
 				}
-			}
-			if (!nodes_next2crossings.empty())
-			{
-			    string nam; who->GetName(nam);
-				string msg = string(who->HumanReadableType()) + " '" + nam + "' has crossing or self-intersecting segments.";
-				msgs.push_back(validation_error_t(msg, 	err_gis_poly_self_intersecting, nodes_next2crossings, apt));
 			}
 		}
 	}
@@ -1060,12 +1052,6 @@ static void ValidateATC(WED_Airport* apt, validation_error_vector& msgs, set<int
 // AIRPORT VALIDATIONS
 //------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
-
-static void ValidateOneAirportBoundary(WED_AirportBoundary* bnd, validation_error_vector& msgs, WED_Airport * apt)
-{
-	if(WED_HasBezierPol(bnd))
-		msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, bnd,apt));
-}
 
 static void ValidateOneRampPosition(WED_RampPosition* ramp, validation_error_vector& msgs, WED_Airport * apt)
 {
@@ -1902,7 +1888,7 @@ static void ValidateOneTruckParking(WED_TruckParkingLocation* truck_parking,vali
 #pragma mark -
 //------------------------------------------------------------------------------------------------------------------------------------
 
-static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, WED_ResourceMgr * res_mgr)
+static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, WED_LibraryMgr* lib_mgr, WED_ResourceMgr * res_mgr, MFMemFile * mf)
 {
 	/*--Validate Airport Rules-------------------------------------------------
 		Airport Name rules
@@ -1970,7 +1956,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
 	
-
 	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);
 	#endif
@@ -2032,14 +2017,15 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		
 		// require any land airport (i.e. at least one runway) to have an airport boundary defined
 		if(!runways.empty() && boundaries.empty())
-			msgs.push_back(validation_error_t(string("The airport '") + name + "' contains a runway but no airport boundary.", 	err_airport_no_boundary, apt,apt));
+			msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
 		CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
 		for(vector<WED_AirportBoundary *>::iterator b = boundaries.begin(); b != boundaries.end(); ++b)
 		{
-			ValidateOneAirportBoundary(*b, msgs,apt);
+			if(WED_HasBezierPol(*b))
+				msgs.push_back(validation_error_t("Do not use bezier curves in airport boundaries.", err_apt_boundary_bez_curve_used, *b, apt));
 		}
 #endif
 		// allow some draped orthophotos (like grund painted signs)
@@ -2083,71 +2069,35 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				#endif
 			}
 		}
-		// get data about runways from CIFP data
-		WED_file_cache_request  mCacheRequest;
-		string cert;
-		
-		if(!GUI_GetTempResourcePath("gateway.crt", cert))
-			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-			
-		mCacheRequest.in_cert = cert;
-		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
-		mCacheRequest.in_folder_prefix = "scenery_packs";
-		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
-		
-		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
-
-/* ToDo: get a better way to do automatic retryies for cache updates.
-		Ultimately, during the actual gateway submission we MUST wait and get full verification
-		at all times.
-		C++11 sleep_for(1000) is a good candidate.
-*/
-		for (int i = 0; i < 3; ++i)
-		{
-			if(res.out_status == cache_status_downloading)
-			{
-				printf("Download of Runway Data in progress, trying again in 1 sec\n");
-#if IBM
-				Sleep(1000);
-#else
-				sleep(1);
-#endif
-				res = WED_file_cache_request_file(mCacheRequest);
-			}
-		}
-
 
 		map<int,Point2> CIFP_rwys;
 		set<int> rwys_missing;
 		
-		if(res.out_status != cache_status_available)
+		if (mf)
 		{
-			stringstream ss;
-			ss << "Error downloading the list of gateway mandated runway data.\n" << res.out_error_human;
-			ss << "\nSkipping this part of validation.";
-			DoUserAlert(ss.str().c_str());
-		}
-		else
-		{
-			FILE* file = fopen(res.out_path.c_str(),"r");
-			if (file)
+			MFScanner	s;
+			MFS_init(&s, mf);
+			
+			// skip first line, so Tyler can put a comment/version in there
+			MFS_string_eol(&s,NULL);
+			
+			while(!MFS_done(&s))
 			{
-				char anam[16], rnam[16];
-				float lon,lat,hdg;
-				while (fscanf(file,"%s%s%f%f%f", anam, rnam, &lat, &lon, &hdg) == 5)
+				if(MFS_string_match_no_case(&s,icao.c_str(),false))
 				{
-					if(icao == string(anam))
+					string rnam;
+					MFS_string(&s,&rnam);
+					double lat = MFS_double(&s);
+					double lon = MFS_double(&s);
+					
+					int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam.c_str());
+					if (rwy_enum != atc_rwy_None)
 					{
-						int rwy_enum=ENUM_LookupDesc(ATCRunwayOneway,rnam);
-						if (rwy_enum != atc_rwy_None)
-						{
-							Point2 pt(lon,lat);
-							CIFP_rwys[rwy_enum]=pt;
-							rwys_missing.insert(rwy_enum);
-						}
+						CIFP_rwys[rwy_enum]=Point2(lon,lat);
+						rwys_missing.insert(rwy_enum);
 					}
 				}
-				fclose(file);
+				MFS_string_eol(&s,NULL);
 			}
 		}
 		
@@ -2239,23 +2189,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 	}
-// very basic profiling
-// struct timespec t0,t1; char c[100];
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
-
 	ValidatePointSequencesRecursive(apt, msgs,apt);
-
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
-// sprintf(c,"Time for ValidatePointSequencesRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
-// DoUserAlert(c);
- 
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t0);
- 
 	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
-	
-// clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t1);
-// sprintf(c,"Time for ValidateDSFRecursive %.2lf\n", t1.tv_sec-t0.tv_sec + 1.0e-9 * (t1.tv_nsec - t0.tv_nsec) );
-// DoUserAlert(c);
 }
 
 
@@ -2343,10 +2278,60 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	vector<WED_Airport *> apts;
 	CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
 
+
+	// get data about runways from CIFP data
+	MFMemFile * mf = NULL;
+	if(gExportTarget == wet_gateway)
+	{
+		WED_file_cache_request  mCacheRequest;
+		string cert;
+		
+		if(!GUI_GetTempResourcePath("gateway.crt", cert))
+			DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+			
+		mCacheRequest.in_cert = cert;
+		mCacheRequest.in_domain = cache_domain_metadata_csv;    // cache expiration time = 1 day
+		mCacheRequest.in_folder_prefix = "scenery_packs";
+		mCacheRequest.in_url = WED_URL_CIFP_RUNWAYS;
+		
+		WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+
+	/* ToDo: get a better way to do automatic retryies for cache updates.
+		Ultimately, during the actual gateway submission we MUST wait and get full verification
+		at all times.
+		C++11 sleep_for(1000) is a good candidate.
+	*/
+		for (int i = 0; i < 3; ++i)
+		{
+			if(res.out_status == cache_status_downloading)
+			{
+				printf("Download of Runway Data in progress, trying again in 1 sec\n");
+	#if IBM
+				Sleep(1000);
+	#else
+				sleep(1);
+	#endif
+				res = WED_file_cache_request_file(mCacheRequest);
+			}
+		}
+		
+		if(res.out_status != cache_status_available)
+		{
+			stringstream ss;
+			ss << "Error downloading list of CIFP data compliant runway names and coordinates from scenery gateway.\n" << res.out_error_human;
+			ss << "\nSkipping this part of validation.";
+			DoUserAlert(ss.str().c_str());
+		}
+		else
+			mf = MemFile_Open(res.out_path.c_str());
+	}
+
 	for(vector<WED_Airport *>::iterator a = apts.begin(); a != apts.end(); ++a)
 	{
-		ValidateOneAirport(*a, msgs, lib_mgr, res_mgr);
+		ValidateOneAirport(*a, msgs, lib_mgr, res_mgr, mf);
 	}
+	if (mf) MemFile_Close(mf);
+
 
 	// These are programmed to NOT iterate up INTO airports.  But you can START them at an airport.
 	// So...IF wrl (which MIGHT be the world or MIGHt be a selection or might be an airport) turns out to
@@ -2355,10 +2340,7 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	ValidatePointSequencesRecursive(wrl, msgs,dynamic_cast<WED_Airport *>(wrl));
 	ValidateDSFRecursive(wrl, lib_mgr, msgs, dynamic_cast<WED_Airport *>(wrl));
 	
-	FILE * fi = stdout;
-	string write_mode = "w";
-
-	fi = fopen(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt").c_str(), write_mode.c_str());
+	FILE * fi = fopen(gPackageMgr->ComputePath(lib_mgr->GetLocalPackage(), "validation_report.txt").c_str(), "w");
 
 	for(validation_error_vector::iterator v = msgs.begin(); v != msgs.end(); ++v)
 	{

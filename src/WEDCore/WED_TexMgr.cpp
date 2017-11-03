@@ -109,6 +109,7 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 	int res = MakeSupportedType(fpath.c_str(),&im);
 	if(res != 0)
 	{
+		delete inf;
 		return NULL;
 	}
 

@@ -27,15 +27,10 @@
 TRIVIAL_COPY(WED_GISEdge, WED_Entity)
 
 WED_GISEdge::WED_GISEdge(WED_Archive * parent, int id) : WED_Entity(parent, id),
-	ctrl_lat_lo(this,"control_latitude_lo" ,XML_Name("edge","ctrl_latitude_lo" ),0.0,13,9),
-	ctrl_lon_lo(this,"control_longitude_lo",XML_Name("edge","ctrl_longitude_lo"),0.0,14,9),
-	ctrl_lat_hi(this,"control_latitude_hi" ,XML_Name("edge","ctrl_latitude_hi" ),0.0,13,9),
-	ctrl_lon_hi(this,"control_longitude_hi",XML_Name("edge","ctrl_longitude_hi"),0.0,14,9)
-
-/*	mScL(this,"S (Ctrl Low)", "WED_texturenode_bezier","sc_lo", 0.0,5,4),
-	mTcL(this,"T (Ctrl Low)", "WED_texturenode_bezier","tc_lo", 0.0,5,4),
-	mScH(this,"S (Ctrl Hi)", "WED_texturenode_bezier","sc_hi", 0.0,5,4),
-	mTcH(this,"T (Ctrl Hi)", "WED_texturenode_bezier","tc_hi", 0.0,5,4)*/
+	ctrl_lat_lo(this,PROP_Name("control_latitude_lo" ,XML_Name("edge","ctrl_latitude_lo" )),0.0,13,9),
+	ctrl_lon_lo(this,PROP_Name("control_longitude_lo",XML_Name("edge","ctrl_longitude_lo")),0.0,14,9),
+	ctrl_lat_hi(this,PROP_Name("control_latitude_hi" ,XML_Name("edge","ctrl_latitude_hi" )),0.0,13,9),
+	ctrl_lon_hi(this,PROP_Name("control_longitude_hi",XML_Name("edge","ctrl_longitude_hi")),0.0,14,9)
 {
 }
 
@@ -292,8 +287,8 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	np->SetParent(p1->GetParent(), p1->GetMyPosition()+1);
 	
 	string name;
-	np->GetName(name);
-	name += "(split)";
+	p1->GetName(name);
+//	name += "(split)";
 	np->SetName(name);
 	
 	WED_GISEdge * me2 = dynamic_cast<WED_GISEdge*>(this->Clone());

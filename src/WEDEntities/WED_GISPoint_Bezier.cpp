@@ -34,11 +34,11 @@ TRIVIAL_COPY(WED_GISPoint_Bezier, WED_GISPoint)
 
 WED_GISPoint_Bezier::WED_GISPoint_Bezier(WED_Archive * parent, int id) :
 	WED_GISPoint(parent, id),
-	is_split(this,"Split",                  XML_Name("point","split"),0),
-	ctrl_lat_lo(this,"control_latitude_lo" ,XML_Name("point","ctrl_latitude_lo" ),0.0,13,9),
-	ctrl_lon_lo(this,"control_longitude_lo",XML_Name("point","ctrl_longitude_lo"),0.0,14,9),
-	ctrl_lat_hi(this,"control_latitude_hi" ,XML_Name("point","ctrl_latitude_hi" ),0.0,13,9),
-	ctrl_lon_hi(this,"control_longitude_hi",XML_Name("point","ctrl_longitude_hi"),0.0,14,9)
+	is_split   (this,PROP_Name("Split",                  XML_Name("point","split")),0),
+	ctrl_lat_lo(this,PROP_Name("control_latitude_lo" ,XML_Name("point","ctrl_latitude_lo" )),0.0,13,9),
+	ctrl_lon_lo(this,PROP_Name("control_longitude_lo",XML_Name("point","ctrl_longitude_lo")),0.0,14,9),
+	ctrl_lat_hi(this,PROP_Name("control_latitude_hi" ,XML_Name("point","ctrl_latitude_hi" )),0.0,13,9),
+	ctrl_lon_hi(this,PROP_Name("control_longitude_hi",XML_Name("point","ctrl_longitude_hi")),0.0,14,9)
 {
 }
 

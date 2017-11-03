@@ -29,7 +29,7 @@ TRIVIAL_COPY(WED_GISPoint_Heading, WED_GISPoint)
 
 WED_GISPoint_Heading::WED_GISPoint_Heading(WED_Archive * parent, int id) :
 	WED_GISPoint(parent, id),
-	heading(this,"heading", XML_Name("point","heading"),0.0,6,2)
+	heading(this,PROP_Name("heading", XML_Name("point","heading")),0.0,6,2)
 {
 }
 

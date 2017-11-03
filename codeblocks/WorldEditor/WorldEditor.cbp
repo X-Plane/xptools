@@ -12,8 +12,9 @@
 				<Option output="../../build/Linux/release_opt/WED" prefix_auto="0" extension_auto="0" />
 				<Option working_dir="~" />
 				<Option object_output="./" />
-				<Option type="0" />
+				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
@@ -217,7 +218,6 @@
 		<Unit filename="../../src/Utils/FileUtils.h" />
 		<Unit filename="../../src/Utils/GISUtils.cpp" />
 		<Unit filename="../../src/Utils/GISUtils.h" />
-		<Unit filename="../../src/Utils/MathUtils.h" />
 		<Unit filename="../../src/Utils/MatrixUtils.cpp" />
 		<Unit filename="../../src/Utils/MatrixUtils.h" />
 		<Unit filename="../../src/Utils/MemFileUtils.cpp" />
@@ -286,8 +286,6 @@
 		<Unit filename="../../src/WEDCore/WED_PackageMgr.h" />
 		<Unit filename="../../src/WEDCore/WED_Persistent.cpp" />
 		<Unit filename="../../src/WEDCore/WED_Persistent.h" />
-		<Unit filename="../../src/WEDCore/WED_Properties.cpp" />
-		<Unit filename="../../src/WEDCore/WED_Properties.h" />
 		<Unit filename="../../src/WEDCore/WED_PropertyHelper.cpp" />
 		<Unit filename="../../src/WEDCore/WED_PropertyHelper.h" />
 		<Unit filename="../../src/WEDCore/WED_ResourceMgr.cpp" />
@@ -344,8 +342,6 @@
 		<Unit filename="../../src/WEDEntities/WED_FacadeNode.h" />
 		<Unit filename="../../src/WEDEntities/WED_FacadePlacement.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_FacadePlacement.h" />
-		<Unit filename="../../src/WEDEntities/WED_FacadePreview.cpp" />
-		<Unit filename="../../src/WEDEntities/WED_FacadePreview.h" />
 		<Unit filename="../../src/WEDEntities/WED_FacadeRing.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_FacadeRing.h" />
 		<Unit filename="../../src/WEDEntities/WED_ForestPlacement.cpp" />
@@ -563,14 +559,6 @@
 		<Unit filename="../../src/WEDResources/tce_tools.png" />
 		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
 		<Unit filename="../../src/WEDResources/ui_measurements.txt" />
-		<Unit filename="../../src/WEDResources/world/earth_11.jpg" />
-		<Unit filename="../../src/WEDResources/world/earth_12.jpg" />
-		<Unit filename="../../src/WEDResources/world/earth_21.jpg" />
-		<Unit filename="../../src/WEDResources/world/earth_22.jpg" />
-		<Unit filename="../../src/WEDResources/world/earth_31.jpg" />
-		<Unit filename="../../src/WEDResources/world/earth_32.jpg" />
-		<Unit filename="../../src/WEDResources/world/earth_41.jpg" />
-		<Unit filename="../../src/WEDResources/world/earth_42.jpg" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />
@@ -611,8 +599,6 @@
 		<Unit filename="../../src/XESCore/AptDefs.h" />
 		<Unit filename="../../src/XESCore/AptIO.cpp" />
 		<Unit filename="../../src/XESCore/AptIO.h" />
-		<Unit filename="../../src/XESCore/IODefs.h" />
-		<Unit filename="../../src/XESCore/XESConstants.h" />
 		<Extensions>
 			<code_completion />
 			<envvars set="default" />

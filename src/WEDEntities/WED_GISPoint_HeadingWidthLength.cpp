@@ -33,8 +33,8 @@ TRIVIAL_COPY(WED_GISPoint_HeadingWidthLength, WED_GISPoint_Heading)
 
 WED_GISPoint_HeadingWidthLength::WED_GISPoint_HeadingWidthLength(WED_Archive * parent, int id) :
 	WED_GISPoint_Heading(parent, id),
-	width (this,"width", XML_Name("point","width"),1.0,5,1),
-	length(this,"length",XML_Name("point","length"),1.0,5,1)
+	width (this,PROP_Name("width", XML_Name("point","width")),1.0,5,1),
+	length(this,PROP_Name("length",XML_Name("point","length")),1.0,5,1)
 {
 }
 

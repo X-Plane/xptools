@@ -281,9 +281,6 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	//advance the left side of the cell bounds by the indent level * the pixels of an indent
 	cell_bounds[0] += (c.indent_level * mCellIndent);
 
-	//Buffer of charecters, apperently unused.
-	char buf[50];
-	
 	//Switch on the content type
 	switch(c.content_type) {
 	//If the Cell is disclosed
@@ -649,7 +646,6 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 
 	int	all_edit = mParent->GetModifiersNow() & (gui_OptionAltFlag | gui_ControlFlag);
 
-	char  buf[256];
 	switch(mEditInfo.content_type) {
 	case gui_Cell_FileText:
 		{
@@ -835,8 +831,6 @@ void		GUI_TextTable::CellMouseUp  (int cell_bounds[4], int cell_x, int cell_y, i
 		BroadcastMessage(GUI_TABLE_SHAPE_RESIZED,0);
 		return;
 	}
-
-	int new_in;
 
 	if (mSelStartX != -1 && mSelStartY != -1)
 	{
@@ -1411,7 +1405,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 		int x = mClickCellX;
 		int y = mClickCellY;
 		int cell_bounds[4];
-		TerminateEdit(true, inFlags & inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
+		TerminateEdit(true, inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		if (mParent)
 		{
 			if (mContent->TabAdvance(x,y, (inFlags & gui_ShiftFlag) ? -1 : 1, mEditInfo))

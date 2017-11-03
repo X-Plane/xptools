@@ -825,14 +825,12 @@
 		D6ED37380B67964D00D5484E /* WED_MapZoomerNew.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D65E498C0B65117D004D7887 /* WED_MapZoomerNew.cpp */; };
 		D6ED373D0B67964D00D5484E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D6BC3A710AB22E67003949C5 /* OpenGL.framework */; };
 		D6ED37400B67964D00D5484E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
-		D6ED37DF0B67AD9A00D5484E /* SQLUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */; };
 		D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */; };
 		D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
 		D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */; };
 		D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3EC90B6A753300D5484E /* WED_PropertyTable.cpp */; };
-		D6ED3F560B6AA25600D5484E /* WED_Properties.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3F540B6AA25600D5484E /* WED_Properties.cpp */; };
 		D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED40370B6AD47300D5484E /* WED_Archive.cpp */; };
 		D6ED40420B6AD47300D5484E /* WED_Buffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED40390B6AD47300D5484E /* WED_Buffer.cpp */; };
 		D6ED40430B6AD47300D5484E /* WED_Persistent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED403B0B6AD47300D5484E /* WED_Persistent.cpp */; };
@@ -1996,8 +1994,6 @@
 		D6EAA00D11A19ECA004ADCCC /* WED_RoadEdge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RoadEdge.h; sourceTree = "<group>"; };
 		D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RoadEdge.cpp; sourceTree = "<group>"; };
 		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLUtils.h; sourceTree = "<group>"; };
-		D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SQLUtils.cpp; sourceTree = "<group>"; };
 		D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AppMain.cpp; sourceTree = "<group>"; };
 		D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileUtils.cpp; sourceTree = "<group>"; };
 		D6ED3B030B67F0E500D5484E /* FileUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtils.h; sourceTree = "<group>"; };
@@ -2008,8 +2004,6 @@
 		D6ED3E4E0B6A674000D5484E /* GUI_TextTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_TextTable.cpp; sourceTree = "<group>"; };
 		D6ED3EC80B6A753300D5484E /* WED_PropertyTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_PropertyTable.h; sourceTree = "<group>"; };
 		D6ED3EC90B6A753300D5484E /* WED_PropertyTable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_PropertyTable.cpp; sourceTree = "<group>"; };
-		D6ED3F540B6AA25600D5484E /* WED_Properties.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Properties.cpp; sourceTree = "<group>"; };
-		D6ED3F550B6AA25600D5484E /* WED_Properties.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Properties.h; sourceTree = "<group>"; };
 		D6ED40370B6AD47300D5484E /* WED_Archive.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Archive.cpp; sourceTree = "<group>"; };
 		D6ED40380B6AD47300D5484E /* WED_Archive.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WED_Archive.h; sourceTree = "<group>"; };
 		D6ED40390B6AD47300D5484E /* WED_Buffer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WED_Buffer.cpp; sourceTree = "<group>"; };
@@ -2998,8 +2992,6 @@
 				D6BC37B10AB22C85003949C5 /* XUtils.h */,
 				D6BC37B20AB22C85003949C5 /* ZLIBUtils.cpp */,
 				D6BC37B30AB22C85003949C5 /* ZLIBUtils.h */,
-				D6ED37DD0B67AD9A00D5484E /* SQLUtils.h */,
-				D6ED37DE0B67AD9A00D5484E /* SQLUtils.cpp */,
 				D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */,
 				D6ED3B030B67F0E500D5484E /* FileUtils.h */,
 				D6FF2DBE0B6F8C0400960D5E /* QuadTree.h */,
@@ -3057,8 +3049,6 @@
 				D6ED403E0B6AD47300D5484E /* WED_UndoLayer.h */,
 				D6ED403F0B6AD47300D5484E /* WED_UndoMgr.cpp */,
 				D6ED40400B6AD47300D5484E /* WED_UndoMgr.h */,
-				D6ED3F540B6AA25600D5484E /* WED_Properties.cpp */,
-				D6ED3F550B6AA25600D5484E /* WED_Properties.h */,
 				D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */,
 				D6BC37BD0AB22C85003949C5 /* WED_Application.cpp */,
 				D6BC37BE0AB22C85003949C5 /* WED_Application.h */,
@@ -4627,12 +4617,10 @@
 				D6ED37370B67964D00D5484E /* GUI_Clipboard.cpp in Sources */,
 				D66569BF1CE261FC00662E5C /* CACHE_CacheObject.cpp in Sources */,
 				D6ED37380B67964D00D5484E /* WED_MapZoomerNew.cpp in Sources */,
-				D6ED37DF0B67AD9A00D5484E /* SQLUtils.cpp in Sources */,
 				D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */,
 				D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */,
 				D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */,
 				D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */,
-				D6ED3F560B6AA25600D5484E /* WED_Properties.cpp in Sources */,
 				D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */,
 				D6ED40420B6AD47300D5484E /* WED_Buffer.cpp in Sources */,
 				D6ED40430B6AD47300D5484E /* WED_Persistent.cpp in Sources */,

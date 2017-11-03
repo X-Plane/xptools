@@ -336,20 +336,6 @@ int			WED_StartWindow::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inF
 	return 0;
 }
 
-// check for the presence of a "Custom Scenery" and a "Resources" folder (actually, even files of these names will do)
-static bool is_XSystemDir(string path)
-{
-	string dir = path + DIR_STR + "Custom Scenery";
-
-	if (FILE_exists(dir.c_str()))
-	{
-		dir = path + DIR_STR + "Resources";
-		if (FILE_exists(dir.c_str()))
-			return true;
-	}
-	return false;
-}
-
 int			WED_StartWindow::HandleCommand(int command)
 {
 	char buf[1024];
@@ -358,12 +344,10 @@ int			WED_StartWindow::HandleCommand(int command)
 	case wed_ChangeSystem:
 		if (GetFilePathFromUser(getFile_PickFolder, "Please select your X-Plane folder", "Select", FILE_DIALOG_PICK_XSYSTEM, buf, sizeof(buf) ))
 		{
-			if (is_XSystemDir(buf))
-				gPackageMgr->SetXPlaneFolder(buf);
-			else
+			if (!gPackageMgr->SetXPlaneFolder(buf))
 			{
 				string msg = string("'") + buf + "' is not the base of a X-Plane installation.\n"
-				             + "It needs to have a 'Custom Scenery' and a 'Resources' folder inside it.";
+				                + "It needs to have 'Custom Scenery' and 'Resources/default scenery' folders inside it.";
 				DoUserAlert(msg.c_str());
 			}	
 		}

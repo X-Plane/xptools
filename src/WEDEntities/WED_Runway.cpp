@@ -44,26 +44,26 @@ DEFINE_PERSISTENT(WED_Runway)
 TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
 
 WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
-	surface			(this,"Surface",				XML_Name("runway","surface"),		Surface_Type,	surf_Concrete),
-	shoulder		(this,"Shoulder",				XML_Name("runway","shoulder"),		Shoulder_Type,	shoulder_None),
-	roughness		(this,"Roughness",				XML_Name("runway","roughness"),		0.25,4,2),
-	center_lites	(this,"Centerline Lights",		XML_Name("runway","center_lites"),	1),
-	edge_lites		(this,"Edge Lights",			XML_Name("runway","edge_lites"),	Edge_Lights,	edge_MIRL),
-	remaining_signs	(this,"Distance Signs",			XML_Name("runway","distance_signs"),1),
+	surface			(this,PROP_Name("Surface",				XML_Name("runway","surface")),		Surface_Type,	surf_Concrete),
+	shoulder		(this,PROP_Name("Shoulder",				XML_Name("runway","shoulder")),		Shoulder_Type,	shoulder_None),
+	roughness		(this,PROP_Name("Roughness",			XML_Name("runway","roughness")),	0.25,4,2),
+	center_lites	(this,PROP_Name("Centerline Lights",	XML_Name("runway","center_lites")),	1),
+	edge_lites		(this,PROP_Name("Edge Lights",			XML_Name("runway","edge_lites")),	Edge_Lights,	edge_MIRL),
+	remaining_signs	(this,PROP_Name("Distance Signs",		XML_Name("runway","distance_signs")),1),
 
-	disp1			(this,"Displaced Threshold 1",	XML_Name("runway","displaced1"),	0,6,1),
-	blas1			(this,"Blastpad 1",				XML_Name("runway","blastpad1"),		0,6,1),
-	mark1			(this,"Markings 1",				XML_Name("runway","markings1"),		Runway_Markings,	mark_NonPrecis),
-	appl1			(this,"Approach Lights 1",		XML_Name("runway","app_lites1"),	Light_App,			app_MALSF),
-	tdzl1			(this,"TDZ Lights 1",			XML_Name("runway","TDZL1"),			1),
-	reil1			(this,"REIL 1",					XML_Name("runway","REIL1"),			REIL_Lights,		reil_None),
+	disp1			(this,PROP_Name("Displaced Threshold 1",XML_Name("runway","displaced1")),	0,6,1),
+	blas1			(this,PROP_Name("Blastpad 1",			XML_Name("runway","blastpad1")),	0,6,1),
+	mark1			(this,PROP_Name("Markings 1",			XML_Name("runway","markings1")),	Runway_Markings,mark_NonPrecis),
+	appl1			(this,PROP_Name("Approach Lights 1",	XML_Name("runway","app_lites1")),	Light_App,		app_MALSF),
+	tdzl1			(this,PROP_Name("TDZ Lights 1",			XML_Name("runway","TDZL1")),		1),
+	reil1			(this,PROP_Name("REIL strobes 1",		XML_Name("runway","REIL1")),		REIL_Lights,	reil_None),
 
-	disp2			(this,"Displaced Threshold 2",	XML_Name("runway","displaced2"),	0,6,1),
-	blas2			(this,"Blastpad 2",				XML_Name("runway","blastpad2"),		0,6,1),
-	mark2			(this,"Markings 2",				XML_Name("runway","markings2"),		Runway_Markings,	mark_NonPrecis),
-	appl2			(this,"Approach Lights 2",		XML_Name("runway","app_lites2"),	Light_App,			app_MALSF),
-	tdzl2			(this,"TDZ Lights 2",			XML_Name("runway","TDZL2"),			1),
-	reil2			(this,"REIL 2",					XML_Name("runway","REIL2"),			REIL_Lights,		reil_None)
+	disp2			(this,PROP_Name("Displaced Threshold 2",XML_Name("runway","displaced2")),	0,6,1),
+	blas2			(this,PROP_Name("Blastpad 2",			XML_Name("runway","blastpad2")),	0,6,1),
+	mark2			(this,PROP_Name("Markings 2",			XML_Name("runway","markings2")),	Runway_Markings,mark_NonPrecis),
+	appl2			(this,PROP_Name("Approach Lights 2",	XML_Name("runway","app_lites2")),	Light_App,		app_MALSF),
+	tdzl2			(this,PROP_Name("TDZ Lights 2",			XML_Name("runway","TDZL2")),		1),
+	reil2			(this,PROP_Name("REIL strobes 2",		XML_Name("runway","REIL2")),		REIL_Lights,	reil_None)
 {
 }
 

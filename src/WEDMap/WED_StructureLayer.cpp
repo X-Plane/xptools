@@ -614,32 +614,10 @@ bool		WED_StructureLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity *
 
 	GISClass_t 		kind		= entity->GetGISClass();
 	const char *	sub_class	= entity->GetGISSubtype();
-	IGISPoint *						pt;
-	IGISPoint_Heading *				pth;
-	IGISPoint_WidthLength *			ptwl;
-	IGISPointSequence *				ps;
-	IGISLine_Width *				lw;
 	IGISPolygon *					poly;
-	IGISBoundingBox *				box;
 
 	WED_Taxiway *					taxi;
 	WED_OverlayImage *				overlay;
-	WED_Sealane *					sea;
-
-	WED_Runway *					rwy;
-	WED_Helipad *					helipad;
-
-	WED_LightFixture *				lfix;
-	WED_AirportSign *				sign;
-	WED_RampPosition *				ramp;
-
-	WED_TowerViewpoint *			tower;
-	WED_Windsock *					sock;
-	WED_AirportBeacon *				beacon;
-
-	WED_Airport *					airport;
-
-	float							storage[4];
 
 	glColor4fv(WED_Color_RGBA(struct_color));
 

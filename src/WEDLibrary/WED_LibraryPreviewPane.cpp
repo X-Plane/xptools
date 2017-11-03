@@ -109,6 +109,26 @@ void WED_LibraryPreviewPane::SetResource(const string& r, int res_type)
 		mNumVariants = 1;     // we haven't yet implemented variant display for anything else
 		mNextButton->Hide();
 	}
+
+	if (res_type == res_Polygon)
+	{
+		int tex_x, tex_y;
+		float tex_aspect;
+		pol_info_t pol;
+
+		mResMgr->GetPol(mRes,pol);
+		TexRef	tref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+		if (tref)
+		{
+			mTexMgr->GetTexInfo(tref,&tex_x,&tex_y,NULL, NULL, NULL, NULL);
+			tex_aspect = float(pol.proj_s * tex_x) / float(pol.proj_t * tex_y);
+		}
+		else
+			tex_aspect = 1.0;
+			
+		mDs = tex_aspect > 1.0 ? 1.0 : tex_aspect;
+		mDt = tex_aspect > 1.0 ? 1.0/tex_aspect : 1.0;
+	}
 }
 
 void WED_LibraryPreviewPane::ClearResource(void)
@@ -146,16 +166,16 @@ int	WED_LibraryPreviewPane::MouseDown(int x, int y, int button)
     {
 		pol_info_t pol;
 		mResMgr->GetPol(mRes,pol);
-		TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
 		
 		float prev_space = min(b[2]-b[0],b[3]-b[1]);
-		float ds = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? 1.0 : (pol.proj_s / pol.proj_t));
-		float dt = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? (pol.proj_t / pol.proj_s) : 1.0);
+		float ds = prev_space / mZoom * mDs;
+		float dt = prev_space / mZoom * mDt;
+
 
 		float x1 = 0.5 *(b[2] + b[0] - ds);         // texture left bottom corner
 		float y1 = 0.5* (b[3] + b[1] - dt);
 
-		Point2 st = Point2((x-x1)/ds, (y-y1)/dt );  // texture coodinates where we clicked at
+		Point2 st = Point2((x-x1)/ds, (y-y1)/dt);   // texture coodinates where we clicked at
 
 		if (pol.mSubBoxes.size())
 		{
@@ -218,17 +238,14 @@ void	WED_LibraryPreviewPane::MouseUp  (int x, int y, int button)
 
 void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 {
-	int b[4];
-	GetBounds(b);
+	int b[4]; GetBounds(b);
 
 	XObj8 * o = NULL;
 	vector<XObj8 *> o_vec;
 	
 	float dx = b[2] - b[0];
 	float dy = b[3] - b[1];
-	float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
-	float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
-	
+
 	#if AIRPORT_ROUTING
 	agp_t agp;
 	#endif
@@ -241,10 +258,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Polygon:
 			if(mResMgr->GetPol(mRes,pol))
 			{
-				TexRef	ref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
-				if(ref != NULL)
+				TexRef	tref = mTexMgr->LookupTexture(pol.base_tex.c_str(),true, pol.wrap ? (tex_Compress_Ok|tex_Wrap) : tex_Compress_Ok);
+				if(tref != NULL)
 				{
-					int tex_id = mTexMgr->GetTexID(ref);
+					int tex_id = mTexMgr->GetTexID(tref);
 
 					if (tex_id != 0)
 					{
@@ -252,8 +269,8 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 						g->BindTex(tex_id,0);
 						
 						float prev_space = min(b[2]-b[0],b[3]-b[1]);
-						float ds = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? 1.0 : (pol.proj_s / pol.proj_t));
-						float dt = prev_space / mZoom * ((pol.proj_s > pol.proj_t) ? (pol.proj_t / pol.proj_s) : 1.0);
+						float ds = prev_space / mZoom * mDs;
+						float dt = prev_space / mZoom * mDt;
 						
 						float x1 = (dx - ds) /2;
 						float x2 = (dx + ds) /2;
@@ -295,10 +312,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Line:
 			if(mResMgr->GetLin(mRes,lin))
 			{
-				TexRef	ref = mTexMgr->LookupTexture(lin.base_tex.c_str(),true, tex_Compress_Ok);
-				if(ref != NULL)
+				TexRef	tref = mTexMgr->LookupTexture(lin.base_tex.c_str(),true, tex_Compress_Ok);
+				if(tref != NULL)
 				{
-					int tex_id = mTexMgr->GetTexID(ref);
+					int tex_id = mTexMgr->GetTexID(tref);
 
 					if (tex_id != 0)
 					{
@@ -345,6 +362,9 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 			}
 #endif
 		case res_Object:
+			float sx = ((dx > dy) ? (dx / dy) : 1.0)/2;
+			float sy = ((dx > dy) ? 1.0 : (dy / dx))/2;
+
 			if (o || mResMgr->GetObj(mRes,o,mVariant))
 			{
 				float real_radius=pythag(
