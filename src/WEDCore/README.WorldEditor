@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 1.7.0a6
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
+	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	Features:
 	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
 	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
@@ -23,9 +24,11 @@ WED 1.7.0a6
 	- WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
 	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
 	- WED-926: Allow viewving of full/long property name by clicking on it
-	- Memory allocation improvements - WED now uses 30% less meomry on very large sceneries
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
 	- Flow editing enhancements: Preset METAR ICAO, create meaningfull wind/time rules names
+	- Previews allow to cycle through all variants for multi-exported items
+	- Previews show textual info on many objects
+	- Primitve, incomplete type 1 facade preview
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
