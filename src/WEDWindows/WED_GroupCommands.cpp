@@ -38,6 +38,7 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
+#include "MemFileUtils.h"
 #include "PlatformUtils.h"
 
 #include "WED_Ring.h"
@@ -50,6 +51,7 @@
 #include "WED_AirportChain.h"
 #include "WED_TextureNode.h"
 #include "WED_Airport.h"
+#include "AptDefs.h"
 #include "XESConstants.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_TruckParkingLocation.h"
@@ -72,7 +74,6 @@
 #include "WED_Orthophoto.h"
 #include "WED_FacadePlacement.h"
 
-#include <iterator>
 #include <sstream>
 
 #if DEV
@@ -396,13 +397,16 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	now_sel->CommitOperation();
 }
 
+
 void	WED_DoMakeNewATCWindRule(IResolver * inResolver)
 {
 	WED_Thing * now_sel = WED_HasSingleSelectionOfType(inResolver, WED_ATCFlow::sClass);
 	now_sel->StartOperation("Add ATC Wind Rule");
 	WED_ATCWindRule * f=  WED_ATCWindRule::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
-	f->SetName("Unnamed Wind Rule");
+	struct AptFlow_t info;                                    // pre-fill METAR ICAO
+	dynamic_cast<WED_ATCFlow *>(now_sel)->Export(info);
+	f->SetICAO(info.icao);
 	now_sel->CommitOperation();
 }
 
@@ -412,7 +416,6 @@ void	WED_DoMakeNewATCTimeRule(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Time Rule");
 	WED_ATCTimeRule * f=  WED_ATCTimeRule::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
-	f->SetName("Unnamed Time Rule");
 	now_sel->CommitOperation();
 }
 
@@ -2650,12 +2653,7 @@ void	WED_DoBreakApartSpecialAgps(IResolver* resolver)
 
 	if(!agp_placements.empty())
 	{
-		int agp_replace_count = 0;
-		int obj_replace_count = 0;
-
-		//Set up the operation
 		root->StartOperation("Break Apart Special Agps");
-
 		sel->Clear();
 
 		//We'll have at least one!
@@ -3106,7 +3104,7 @@ struct changelist_t
 	Point2 rwy_pt1;
 };
 
-static bool IsRwyMatching(WED_Runway * rwy, struct changelist_t * entry, const vector<WED_Runway *>& rwys)
+static bool IsRwyMatching(const WED_Runway * rwy, const struct changelist_t * entry, const vector<WED_Runway *>& rwys, vector<Vector2>& error)
 {
 	// very crude match criteria:
 	// both runway end coordinates must be within some meters of the current runway's end.
@@ -3119,89 +3117,64 @@ static bool IsRwyMatching(WED_Runway * rwy, struct changelist_t * entry, const v
 	float loc_err0 = LonLatDistMeters(r_loc0.x(), r_loc0.y(), entry->rwy_pt0.x(), entry->rwy_pt0.y());
 	float loc_err1 = LonLatDistMeters(r_loc1.x(), r_loc1.y(), entry->rwy_pt1.x(), entry->rwy_pt1.y());
 	
-	float loc_err_allowed = 20.0;
-	if (rwys.size() == 1) loc_err_allowed = 50.0;   // if there is only ONE runway at that airport, be very lenient
+	float loc_err_allowed = 30.0;
+	if (rwys.size() == 1) loc_err_allowed = 60.0;   // if there is only ONE runway at that airport, be very lenient
 	
 	if(loc_err0 < loc_err_allowed && loc_err1 < loc_err_allowed)
+	{
+		error.push_back(Vector2(r_loc0, entry->rwy_pt0));
+		error.push_back(Vector2(r_loc1, entry->rwy_pt1));
 		return true;
-	
+	}
+	// the runway end could be listed in the changelist in reverse order, so test the other way round as well
 	loc_err0 = LonLatDistMeters(r_loc0.x(), r_loc0.y(), entry->rwy_pt1.x(), entry->rwy_pt1.y());
 	loc_err1 = LonLatDistMeters(r_loc1.x(), r_loc1.y(), entry->rwy_pt0.x(), entry->rwy_pt0.y());
 	if(loc_err0 < loc_err_allowed && loc_err1 < loc_err_allowed)
 	{
-		printf("Reverse match !\n");
+		error.push_back(Vector2(r_loc0, entry->rwy_pt1));
+		error.push_back(Vector2(r_loc1, entry->rwy_pt0));
 		return true;
 	}
-	
-	// Todo: More agressive search
+	// Todo: More agressive search, in case the runway is more seriously dislocated
 	
 	return false;
 }
 
-static int rename_rwys_recursive(WED_Thing * who, vector<struct changelist_t> clist)
-{
-	int renamed = 0;
-	WED_Airport * apt = dynamic_cast<WED_Airport *> (who);
-	if(apt)
-	{
-		vector<WED_Runway *> rwys;
-		CollectRecursive(apt, back_inserter(rwys),  WED_Runway::sClass);
-		
-		for(vector<WED_Runway *>::iterator r = rwys.begin(); r != rwys.end(); ++r)
-		{
-			for(vector<struct changelist_t>::iterator c = clist.begin(); c != clist.end(); ++c)
-			{
-				string s; apt->GetICAO(s);
-				if((*c).ICAO == s) 
-				{
-					int old_rwy_enum = (*r)->GetRunwayEnumsTwoway();
-					printf("Testing O=%s against N=%s at %s ... ",ENUM_Desc(old_rwy_enum), ENUM_Desc((*c).new_rwy),s.c_str());
-					if (IsRwyMatching(*r,&(*c),rwys))
-					{
-						printf("Renaming %s Rwy %s to %s\n",s.c_str(),ENUM_Desc(old_rwy_enum),ENUM_Desc((*c).new_rwy));
-						(*r)->SetName(ENUM_Desc((*c).new_rwy));
-						renamed++;
-					}
-				}
-			}
-			
-		}
-	}
-	else            // no need to check for nested airports
-	{
-		int nn = who->CountChildren();
-		for(int n = 0; n < nn; ++n)
-			renamed += rename_rwys_recursive(who->GetNthChild(n), clist);
-	}
-	return renamed;
-}
-
 void WED_RenameRunwayNames(IResolver * resolver)
 {
-
-	WED_Thing * root = WED_GetWorld(resolver);
 	vector<struct changelist_t> changelist;
 
 	char fn[200];
-	if (!GetFilePathFromUser(getFile_Open,"Pick file with 'ICAO & Runway entries", "Open",
+	if (!GetFilePathFromUser(getFile_Open,"Pick file with runway names and coordinates", "Read changelist",
 								FILE_DIALOG_PICK_VALID_RUNWAY_TABLE, fn,sizeof(fn)))
 		return;
 
-	FILE* file = fopen(fn,"r");
-	if (file)
+	MFMemFile * mf = MemFile_Open(fn);
+
+	if (mf)
 	{
+		MFScanner	s;
+		MFS_init(&s, mf);
+		// skip first line, so Tyler can put a comment/version in there
+		MFS_string_eol(&s,NULL);
+
 		bool second_end = false;
 		string first_rwy;
-		char icao[16], rnam[16];
-		float lon,lat,hdg;
+		string icao, rnam;
 		struct changelist_t entry;
-		
-		int lnum=0;
-		while (fscanf(file,"%s%s%f%f%f", icao, rnam, &lat, &lon, &hdg) == 5)
+
+		int lnum=1;
+
+		while(!MFS_done(&s))
 		{
+			MFS_string(&s,&icao);
+			MFS_string(&s,&rnam);
+			double lat = MFS_double(&s);
+			double lon = MFS_double(&s);
+
 			if (second_end)
 			{
-				if (entry.ICAO == string(icao))
+				if (entry.ICAO == icao)
 				{
 					string rwy_2wy = first_rwy + "/" + rnam;
 					entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,rwy_2wy.c_str());
@@ -3211,15 +3184,21 @@ void WED_RenameRunwayNames(IResolver * resolver)
 						entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,rwy_2wy.c_str());
 					}
 					entry.rwy_pt1 = Point2(lon,lat);
-					
+
 					if(entry.new_rwy > atc_rwy_None)
 						changelist.push_back(entry);
 					else
-						printf("Ignoring illegal runway specification pair ending in line %d\n",lnum);
+						printf("Read changelist: Ignoring bad rwy spec pair %s ending in line %d\n",rwy_2wy.c_str(),lnum);
+
+					second_end = false;
 				}
-				else
-					printf("Ignoring ICAO for not matching preceeding one in line %d\n",lnum);
-				second_end = false;
+				else  // we got out of sync. Let see if we can recover.
+				{
+					printf("Read changelist: ICAO in lines %d and %d do not match, ignoring line %d\n",lnum-1, lnum, lnum-1);
+					entry.ICAO = icao;
+					first_rwy = rnam;
+					entry.rwy_pt0 = Point2(lon,lat);
+				}
 			}
 			else
 			{
@@ -3229,27 +3208,94 @@ void WED_RenameRunwayNames(IResolver * resolver)
 				second_end = true;
 			}
 			lnum++;
+			MFS_string_eol(&s,NULL);
 		}
-		fclose(file);
+		MemFile_Close(mf);
+		printf("Read changelist completed, found %d valid runway definitions\n", (int) changelist.size());
 	}
-	else
-	{
-		printf("Can't read file\n");
-		return;
-	}
-	 
+
 	if (!changelist.empty())
 	{
-		root->StartCommand("Rename Runways");
-		int renamed_count = rename_rwys_recursive(root, changelist);
-		if(renamed_count)
+		WED_Thing * wrl = WED_GetWorld(resolver);
+		ISelection * sel = WED_GetSelect(resolver);
+
+		vector<WED_Airport *> apts;
+		int renamed_count = 0;
+		int moved_count = 0;
+
+		CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
+		sel->Clear();
+
+		wrl->StartCommand("Rename Runways");
+
+		for(vector<WED_Airport *>::iterator apt = apts.begin(); apt !=apts.end(); ++apt)
 		{
-			stringstream ss;
-			ss << "Renamed " << renamed_count << " runways";
-			DoUserAlert(ss.str().c_str());
-			root->CommitOperation();
+			vector<WED_Runway *> rwys;
+			vector<Vector2> coord_errors;
+			bool apt_changed = false;
+			string thisICAO; (*apt)->GetICAO(thisICAO);
+
+			CollectRecursive(*apt, back_inserter(rwys),  WED_Runway::sClass);
+
+			for(vector<WED_Runway *>::iterator r = rwys.begin(); r != rwys.end(); ++r)
+			{
+				int old_rwy_enum = (*r)->GetRunwayEnumsTwoway();
+				for(vector<struct changelist_t>::iterator c = changelist.begin(); c != changelist.end(); ++c)
+				{
+					if((*c).ICAO == thisICAO)
+					{
+						// see if we have runways that roughly match those locations
+						// printf("Testing %s against %s at %s\n",ENUM_Desc(old_rwy_enum), ENUM_Desc((*c).new_rwy),thisICAO.c_str());
+						if (IsRwyMatching(*r,&(*c),rwys,coord_errors))
+						{
+							if((*c).new_rwy != old_rwy_enum)
+							{
+								printf("%s: Renaming Rwy %s to %s\n",thisICAO.c_str(),ENUM_Desc(old_rwy_enum),ENUM_Desc((*c).new_rwy));
+								(*r)->SetName(ENUM_Desc((*c).new_rwy));
+								renamed_count++;
+								apt_changed = true;
+							}
+						}
+					}
+				}
+			}
+#if 0
+			// check if we could make the runway coordinate errors smaller if we were to move the whole airport
+			Vector2 avg_error;
+			for(vector<Vector2>::iterator i = coord_errors.begin(); i != coord_errors.end(); ++i)
+			{
+				avg_error += *i;
+				printf("error = %6.2lf N-S, %6.2lf E-W\n", 1e5*i->x(), 1e5*i->y());
+			}
+			avg_error /= coord_errors.size();
+			printf("avg err %6.2lf N-S, %6.2lf E-W\n", 1e5*avg_error.x(), 1e5*avg_error.y());
+			for(vector<Vector2>::iterator i = coord_errors.begin(); i != coord_errors.end(); ++i)
+			{
+				float loc_err = sqrt(i->squared_length());
+				printf("dist %.2fm", 1e5*loc_err);
+				(*i) -= avg_error;
+				loc_err = sqrt(i->squared_length());
+				printf(" fixed to %.2fm\n", 1e5*loc_err);
+			}
+
+			if(0)
+			{
+				printf("%s: Moving Apt %.8lf N-S, %.8lf E-W\n",thisICAO.c_str(), avg_error.x(), avg_error.y());
+				moved_count++;
+				apt_changed = true;
+			}
+
+			if(!apt_changed) sel->Insert(*apt);   // selects all unchanged airports. So they can be deleted and whats left re-submitted to the gateway ...
+#endif
 		}
+		if(renamed_count || moved_count)
+			wrl->CommitOperation();
 		else
-			root->AbortOperation();
+			wrl->AbortOperation();
+
+		stringstream ss;
+		ss << "Renamed " << renamed_count << " runways.\n";
+		ss << "Moved " << moved_count << " airports.\n\nAll airports with *NO* no changes have been selected.";
+		DoUserAlert(ss.str().c_str());
 	}
 }

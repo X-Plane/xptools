@@ -38,8 +38,10 @@ public:
 
 	void		Import(const AptWindRule_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptWindRule_t& info) const;
+	void		SetICAO(const string &t);
 
 	virtual const char *	HumanReadableType(void) const { return "Wind Rule"; }
+	virtual	void			PropEditCallback(int before);
 
 private:
 

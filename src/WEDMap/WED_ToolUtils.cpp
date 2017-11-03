@@ -331,7 +331,6 @@ bool			WED_IsSelectionNested(IResolver * resolver)
 
 bool WED_IsFolder(WED_Thing * what)
 {
-	IGISEntity * ent;
 	if(dynamic_cast<IGISPolygon*>(what))					return false;
 	if(dynamic_cast<IGISPointSequence*>(what))				return false;
 	if(dynamic_cast<IGISComposite*>(what))					return true;

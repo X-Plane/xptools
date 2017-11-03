@@ -1,6 +1,9 @@
 [submodule "libs"]
 	path = libs
 	url = https://github.com/X-Plane/xptools_libs.git
+	branch = master
 [submodule "msvc_libs"]
 	path = msvc_libs
 	url = https://github.com/X-Plane/xptools_msvc_libs.git
+	branch = master
+

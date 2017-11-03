@@ -943,6 +943,8 @@ void		WED_Sign_Editor::replace_selection(parser_glyph_t g, parser_color_t c)
 	sign_token gl;
 	gl.color = c;
 	gl.glyph = g;
+	gl.has_left_border=0;
+	gl.has_right_border=0;
 	mData.insert_glyph(mEditSide, mEditStart, gl);
 	mEditStart++;
 	mEditEnd++;

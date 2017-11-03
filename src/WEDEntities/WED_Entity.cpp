@@ -27,8 +27,8 @@
 
 WED_Entity::WED_Entity(WED_Archive * parent, int id) :
 	WED_Thing(parent, id),
-	locked(this,"Locked", XML_Name("hierarchy","locked"),0),
-	hidden(this,"Hidden", XML_Name("hierarchy","hidden"),0),
+	locked(this,PROP_Name("Locked", XML_Name("hierarchy","locked")),0),
+	hidden(this,PROP_Name("Hidden", XML_Name("hierarchy","hidden")),0),
 	cache_valid_(0)
 {
 }

@@ -209,8 +209,6 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 
 	//-------------------------------- CONTROL LINK TAG-UP -------------------------------------------------------
 
-	best_dist = 9.9e9;
-
 	if (mDragType == drag_None && ei_count > 0)
 	for (ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
 	{

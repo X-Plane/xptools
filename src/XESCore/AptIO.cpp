@@ -702,7 +702,7 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 						
 						//Loop through every string in ramp_air_operation_type
 						//including the end of the array (a null terminator)
-						for (int i = 0; i <= NUM_RAMP_OP_TYPES && ok == ""; i++)
+						for (int i = 0; i < NUM_RAMP_OP_TYPES && ok == ""; i++)
 						{
 							//If we've loop through the whole array of ramp_ai_opperation_types
 							//we have a problem

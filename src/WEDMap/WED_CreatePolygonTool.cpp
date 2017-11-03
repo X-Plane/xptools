@@ -79,19 +79,20 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 	1,							// close allowed
 	kRequireClosed[tool]),		// close required?
 	mType(tool),
-		mPavement(tool    == create_Taxi ? this : NULL,"Pavement",XML_Name("",""),Surface_Type,surf_Concrete),
-		mRoughness(tool   == create_Taxi ? this : NULL,"Roughness",XML_Name("",""),0.25,4,2),
-		mHeading(tool     == create_Taxi || tool == create_Polygon ? this : NULL,"Heading",XML_Name("",""),0,5,2),
-		mMarkings(tool    <= create_Hole ? this : NULL,".Markings", XML_Name("",""), LinearFeature, 0),
-		mMarkingsLines(tool <= create_Hole ? this : NULL,"Markings", XML_Name("",""), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
-		mMarkingsLights(tool <= create_Hole ? this : NULL,"Lights", XML_Name("",""), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
+		mPavement(tool    == create_Taxi    ? this : NULL,PROP_Name("Pavement", XML_Name("","")),Surface_Type,surf_Concrete),
+		mRoughness(tool   == create_Taxi    ? this : NULL,PROP_Name("Roughness",XML_Name("","")),0.25,4,2),
+		mHeading(tool     == create_Taxi   || tool == create_Polygon ? 
+		                                      this : NULL,PROP_Name("Heading",  XML_Name("","")),0,5,2),
+		mMarkings(tool    <= create_Hole    ? this : NULL,PROP_Name(".Markings",XML_Name("","")), LinearFeature, 0),
+		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
+		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
 
-		mResource(tool >  create_Hole ? this : NULL, "Resource", XML_Name("",""), ""),
-		mHeight(tool   == create_Facade ? this : NULL, "Height", XML_Name("",""), 10.0, 4, 2),
-		mDensity(tool  == create_Forest ? this : NULL, "Density", XML_Name("",""), 1.0, 3, 2),
-		mSpacing(tool  == create_String ? this : NULL, "Spacing", XML_Name("",""), 5.0, 3, 1),
+		mResource(tool >  create_Hole    ? this : NULL,PROP_Name("Resource", XML_Name("","")), ""),
+		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 4, 2),
+		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
+		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 3, 1),
 		
-		mUVMap(tool == create_Polygon ? this : NULL, "Use Texture Map - Orthophoto", XML_Name("",""), 0)
+		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0)
 {
 	mPavement.value = surf_Concrete;
 }
@@ -218,7 +219,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fac,0);
 			fac->SetParent(host,idx);
-			sprintf(buf,"Facade %d",n);
 			fac->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Facade %d outer ring",n);
 			outer_ring->SetName(buf);
@@ -232,7 +232,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_ForestPlacement * fst = WED_ForestPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fst,0);
 			fst->SetParent(host,idx);
-			sprintf(buf,"Forest %d",n);
 			fst->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Forest %d outer ring",n);
 			outer_ring->SetName(buf);
@@ -246,7 +245,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(GetArchive());
 			outer_ring = str;
 			str->SetParent(host,idx);
-			sprintf(buf,"String %d",n);
 			str->SetName(stripped_resource(mResource.value));
 			sel->Select(str);
 			str->SetClosed(closed);
@@ -272,7 +270,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
 			outer_ring->SetParent(dpol,0);
 			dpol->SetParent(host,idx);
-			sprintf(buf,"Orthophoto %d",n);
 			dpol->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Orthophoto %d Outer Ring",n);
 			outer_ring->SetName(buf);
@@ -285,7 +282,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(pol,0);
 			pol->SetParent(host,idx);
-			sprintf(buf,"Polygon %d",n);
 			pol->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Polygon %d Outer Ring",n);
 			outer_ring->SetName(buf);

@@ -69,9 +69,6 @@ public:
 	virtual	void 		WriteTo(IOWriter * writer);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);	
-
-	WED_Thing * val;
-
 };
 
 class	WED_Thing :	public			WED_Persistent, 

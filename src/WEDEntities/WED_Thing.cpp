@@ -30,7 +30,7 @@
 WED_Thing::WED_Thing(WED_Archive * parent, int id) :
 	WED_Persistent(parent, id),
 	type(this),
-	name(this,"Name", XML_Name("hierarchy","name"),"unnamed entity")
+	name(this,PROP_Name("Name", XML_Name("hierarchy","name")),"unnamed entity")
 {
 	parent_id = 0;
 }
@@ -108,7 +108,6 @@ bool 			WED_Thing::ReadFrom(IOReader * reader)
 
 void 			WED_Thing::WriteTo(IOWriter * writer)
 {
-	int n;
 	writer->WriteInt(parent_id);
 
 	// Children
@@ -348,7 +347,6 @@ int			WED_Thing::GetMyPosition(void) const
 {
 	WED_Thing * parent = STATIC_CAST(WED_Thing, FetchPeer(parent_id));
 	if (!parent) return 0;
-	int n = 0;
 	vector<int>::iterator i = find(parent->child_id.begin(), parent->child_id.end(), this->GetID());
 	return distance(parent->child_id.begin(), i);
 }
@@ -469,9 +467,10 @@ void	WED_Thing::Validate(void)
 
 #pragma mark -
 
-WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class", XML_Name("","")), val(t)
+WED_TypeField::WED_TypeField(WED_Thing * t) : WED_PropertyItem(t, "Class")
 {
 }
+
 
 void		WED_TypeField::GetPropertyInfo(PropertyInfo_t& info)
 {
@@ -493,7 +492,7 @@ void		WED_TypeField::GetPropertyDictItem(int e, string& item)
 void		WED_TypeField::GetProperty(PropertyVal_t& v) const
 {
 	v.prop_kind = prop_String;
-	v.string_val = val->HumanReadableType();
+	v.string_val = dynamic_cast<WED_Thing*>(mParent)->HumanReadableType();
 }
 
 void		WED_TypeField::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)

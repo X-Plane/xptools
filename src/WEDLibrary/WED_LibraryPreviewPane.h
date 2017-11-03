@@ -62,7 +62,7 @@ private:
 		int					mNumVariants;  // number of variants provided by object
 		int					mVariant;      // variant we want to show
 		GUI_Button *		mNextButton;   // Button to advance to next Variant
-
+		float				mDs, mDt;
 };
 
 #endif

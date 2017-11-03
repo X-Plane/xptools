@@ -838,8 +838,8 @@ StFileSizeDebugger::~StFileSizeDebugger()
 {
 //	fflush(mFile);
 	int end_of_atom = ftell(mFile);
-	int len = end_of_atom - mAtomStart;
 	#if DSF_WRITE_STATS
+		int len = end_of_atom - mAtomStart;
 		char id[5] = { 0 };
 		printf("DSF atom %s: %d\n", mLabel, len);
 	#endif

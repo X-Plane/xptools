@@ -34,11 +34,11 @@ TRIVIAL_COPY(WED_ATCFlow, WED_Thing)
 
 WED_ATCFlow::WED_ATCFlow(WED_Archive * a, int i) : 
 	WED_Thing(a,i),
-	icao(this,"METAR ICAO",						XML_Name("atc_flow","icao"),		""),
-	cld_min_ft(this,"Minimum Ceiling",			XML_Name("atc_flow","cld_min"),		0, 4, 0, "ft AGL"),
-	vis_min_sm(this,"Minimum Visibility",		XML_Name("atc_flow","vis_min"),		0, 2, 1, "sm"),
-	traffic_dir(this,"Pattern Direction",		XML_Name("atc_flow","pattern_side"),ATCPatternSide,atc_Left),
-	pattern_rwy(this,"Pattern Runway",			XML_Name("atc_flow","pattern_rwy"),	ATCRunwayOneway, atc_Runway_None)
+	icao       (this,PROP_Name("METAR ICAO",        XML_Name("atc_flow","icao")),        ""),
+	cld_min_ft (this,PROP_Name("Minimum Ceiling",   XML_Name("atc_flow","cld_min")),     0, 4, 0, "ft AGL"),
+	vis_min_sm (this,PROP_Name("Minimum Visibility",XML_Name("atc_flow","vis_min")),     0, 2, 1, "sm"),
+	traffic_dir(this,PROP_Name("Pattern Direction", XML_Name("atc_flow","pattern_side")),ATCPatternSide,atc_Left),
+	pattern_rwy(this,PROP_Name("Pattern Runway",    XML_Name("atc_flow","pattern_rwy")), ATCRunwayOneway, atc_Runway_None)
 {
 	
 }
