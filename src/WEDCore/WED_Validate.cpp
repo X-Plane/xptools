@@ -475,113 +475,103 @@ static void ValidateOneForestPlacement(WED_Thing* who, validation_error_vector& 
 		msgs.push_back(validation_error_t("Line and point forests are only supported in X-Plane 10 and newer.", err_gis_poly_line_and_point_forests_only_for_gte_xp10, who,apt));
 }
 
+static void AddNodesOfSegment(const IGISPointSequence * ips, const int seg, set<WED_GISPoint *>& nlist)
+{
+	WED_GISPoint *n;
+	if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(seg)))
+			nlist.insert(n);
+	if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((seg+1) % ips->GetNumPoints())))
+			nlist.insert(n);
+}
 
 static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msgs, WED_Airport * apt)
 {
 	// check for outer ring wound CCW (best case it will not show in XP, worst case it will assert in DSF export)
 	// check for self-intersecting polygons
-	// not called for Forests unless they are closed, not for Facades with no roof
-	
-/*	if ( who->GetClass() == WED_DrapedOrthophoto::sClass ||
-	     who->GetClass() == WED_PolygonPlacement::sClass ||
-	     who->GetClass() == WED_Taxiway::sClass ||
-	     (who->GetClass() == WED_ForestPlacement::sClass && dynamic_cast<WED_ForestPlacement*>(who)->GetFillMode() == dsf_fill_area) ||
-         (who->GetClass() == WED_FacadePlacement::sClass && dynamic_cast<WED_FacadePlacement*>(who)->GetTopoMode() == WED_FacadePlacement::topo_Area) )
-*/
+
 	if((who->GetGISClass() == gis_Polygon && who->GetClass() != WED_OverlayImage::sClass ) ||	// exempt RefImages, since WEDbing places them with CW nodes
-	   (who->GetClass() == WED_AirportBoundary::sClass))										// ALWAYS validate airport boundary like a polygon - it's really a collection of sequences, but self intersection is NOT alowed.
+	   (who->GetClass() == WED_AirportBoundary::sClass))										// ALWAYS validate airport boundary like a polygon - it's really a collection of sequences, but self intersection is NOT allowed.
     {        
-		IGISPointSequence * ips = who->GetOuterRing();
-		if (ips) 
+		for(int child = 0; child < who->CountChildren(); ++child)
 		{
-			vector <Point2> seq;
-			int n_pts = ips->GetNumPoints();
-			for(int n = 0; n < n_pts; ++n)
-			{
-				IGISPoint * igp = ips->GetNthPoint(n);
-				Point2 p;
-				if (igp) 
-				{
-					igp->GetLocation(gis_Geo, p);
-	//				if (!(p == seq.back()))  // skip over zero length segemnts, as they cause
-						seq.push_back(p);    // false positives in the clockwise wound test
-				} 
-			}
-			if (!is_ccw_polygon_pt(seq.begin(), seq.end()))
-			{
-			    string nam; who->GetName(nam);
-				string msg = string(who->HumanReadableType()) + " '" + nam + "' is wound clock wise. Reverse selected polygon to fix this.";
-				msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who, apt));
-			}
-			
-			set<WED_GISPoint *> nodes_next2crossings;
-			int n_sides = ips->GetNumSides();
+			IGISPointSequence * ips = SAFE_CAST(IGISPointSequence,who->GetNthChild(child));
 
-			for (int i = 0; i < n_sides; ++i)
+			if (ips)
 			{
-				Segment2 s1;
-				Bezier2 b1;
-				bool isb1 = ips->GetSide(gis_Geo, i, s1, b1);
-				
-				if (isb1 && b1.self_intersect(10))
-				{
-					WED_GISPoint *n;
-					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-						nodes_next2crossings.insert(n);
-					if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-						nodes_next2crossings.insert(n);
-				}
-
-				for (int j = i + 1; j < n_sides; ++j)
-				{
-					Segment2 s2;
-					Bezier2 b2;
-					bool isb2 = ips->GetSide(gis_Geo, j, s2, b2);
-
-					if (isb1 || isb2)
+				{   // this would be much easier if we'd  code that as a member function of WED_GisChain: So we'd have access to mCachePts, i.e. the ordered vector of points
+				    // until then - here we build our own vector of points by polling some other verctor of points ...
+					vector <Point2> seq;
+					int n_pts = ips->GetNumPoints();
+					for(int n = 0; n < n_pts; ++n)
 					{
-						if (b1.intersect(b2, 10))      // Note this test aproximate and recursive, causing the curve to
-						{							   // be broken up into 2^10 = 1024 sub-segments at the most
-							WED_GISPoint *n;
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-								nodes_next2crossings.insert(n);
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-								nodes_next2crossings.insert(n);
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(j)))
-								nodes_next2crossings.insert(n);
-							if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((j+1)%n_pts)))
-								nodes_next2crossings.insert(n);
-						}
+						IGISPoint * igp = ips->GetNthPoint(n);
+						if (igp) 
+						{
+							Point2 p;
+							igp->GetLocation(gis_Geo, p);
+//							if (!(p == seq.back()))  // skip over zero length segemnts, as they cause
+								seq.push_back(p);    // false positives in the clockwise wound test. And taxiways are allowed to have ZLSegments !!
+						} 
 					}
-					else // precision would not matter, we would not have to treat linear segments separately ...
+					if ( (child == 0) != is_ccw_polygon_pt(seq.begin(), seq.end())) // Holes need to be CW, Outer rings CCW
 					{
-						if (b1.p1 != b2.p1 &&      // check if segments are adjacent, i.e. share a node,
-						    b1.p2 != b2.p2 &&      // as linear segment cross check returns false positive here
-						    b1.p1 != b2.p2 &&      // (unlike the bezier intersect test)
-						    b1.p2 != b2.p1)
-						{		
-							Point2 x;
-							if (s1.intersect(s2, x))
+						string nam; who->GetName(nam);
+						string msg = string(child ? "Hole in " : "") + who->HumanReadableType() + " '" + nam + "' is wound " +
+											(child ? "counter" : "r") + "clock wise. Reverse selected component to fix this.";
+						msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who->GetNthChild(child), apt));
+					}
+				}
+				{
+					set<WED_GISPoint *> nodes_next2crossings;
+					int n_sides = ips->GetNumSides();
+
+					for (int i = 0; i < n_sides; ++i)
+					{
+						Segment2 s1;
+						Bezier2 b1;
+						bool isb1 = ips->GetSide(gis_Geo, i, s1, b1);
+						
+						if (isb1 && b1.self_intersect(10))
+							AddNodesOfSegment(ips,i,nodes_next2crossings);
+
+						for (int j = i + 1; j < n_sides; ++j)
+						{
+							Segment2 s2;
+							Bezier2 b2;
+							bool isb2 = ips->GetSide(gis_Geo, j, s2, b2);
+
+							if (isb1 || isb2)
 							{
-								WED_GISPoint *n;
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(i)))
-									nodes_next2crossings.insert(n);
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((i+1)%n_pts)))
-									nodes_next2crossings.insert(n);
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint(j)))
-									nodes_next2crossings.insert(n);
-								if (n = dynamic_cast<WED_GISPoint *> (ips->GetNthPoint((j+1)%n_pts)))
-									nodes_next2crossings.insert(n);
+								if (b1.intersect(b2, 10))      // Note this test aproximate and recursive, causing the curve to
+								{							   // be broken up into 2^10 = 1024 sub-segments at the most
+									AddNodesOfSegment(ips,i,nodes_next2crossings);
+									AddNodesOfSegment(ips,j,nodes_next2crossings);
+								}
+							}
+							else // precision and speed would not matter, we would not have to treat linear segments separately ...
+							{
+								if (b1.p1 != b2.p1 &&      // check if segments share a node, the
+									b1.p2 != b2.p2 &&      // linear segment intersect check returns a false positive
+									b1.p1 != b2.p2 &&      // (unlike the bezier intersect test)
+									b1.p2 != b2.p1)
+								{		
+									Point2 x;
+									if (s1.intersect(s2, x))
+									{
+										AddNodesOfSegment(ips,i,nodes_next2crossings);
+										AddNodesOfSegment(ips,j,nodes_next2crossings);
+									}
+								}
 							}
 						}
 					}
+					if (!nodes_next2crossings.empty())
+					{
+						string nam; who->GetName(nam);
+						string msg = string(who->HumanReadableType()) + " '" + nam + "' has crossing or self-intersecting segments.";
+						msgs.push_back(validation_error_t(msg, 	err_gis_poly_self_intersecting, nodes_next2crossings, apt));
+					}
 				}
-			}
-			if (!nodes_next2crossings.empty())
-			{
-			    string nam; who->GetName(nam);
-				string msg = string(who->HumanReadableType()) + " '" + nam + "' has crossing or self-intersecting segments.";
-				msgs.push_back(validation_error_t(msg, 	err_gis_poly_self_intersecting, nodes_next2crossings, apt));
 			}
 		}
 	}
@@ -1966,7 +1956,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	if(runways.empty() && helipads.empty() && sealanes.empty())
 		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
 	
-#if 0
 	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);
 	#endif
@@ -2015,7 +2004,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	{
 		ValidateAirportMetadata(apt,msgs,apt);
 	}
-#endif
+
 	if(gExportTarget == wet_gateway)
 	{
 		Bbox2 bounds;
@@ -2200,8 +2189,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			}
 		}
 	}
-//	ValidatePointSequencesRecursive(apt, msgs,apt);
-//	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
+	ValidatePointSequencesRecursive(apt, msgs,apt);
+	ValidateDSFRecursive(apt, lib_mgr, msgs, apt);
 }
 
 
