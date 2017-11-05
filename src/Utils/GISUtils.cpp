@@ -55,10 +55,19 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 {
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
+    {
+#if DEV
+			printf( "GTIF to PCS failed\n");
+			fflush(stdout);
+#endif
         return false;
-	
+	}
     if( defn->Model == ModelTypeGeographic )
     {
+#if DEV
+			printf( "GTIF ModelIsGeo=>done\n");
+			fflush(stdout);
+#endif
     	outLon = x;
     	outLat = y;
     	return true;
@@ -69,8 +78,19 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
         {
 			outLon = x;
 			outLat = y;
+#if DEV
+			printf( "GTIF Proj4 worked: %lf %lf\n",x,y);
+			fflush(stdout);
+#endif
 			return true;
 		}
+#if DEV
+	else
+	{
+		printf( "GTIF Proj4 failed\n");
+		fflush(stdout);
+	}
+#endif
 
 #if USE_GEOJPEG2K
 		int size = 0;
