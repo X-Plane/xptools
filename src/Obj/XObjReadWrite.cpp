@@ -1421,7 +1421,24 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			ate_eoln=true;
 			outObj.manips.push_back(manip);
 		}
-		
+		else if(TXT_MAP_str_match_space(cur_ptr, end_ptr, "MAGNET", xfals))
+		{
+			cmd.cmd = attr_Magnet;
+			// SKIP magnet name - we always write 'magnet'
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &cmd.name);
+			// Scan a second time to pick up type, e.g. ipad
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &cmd.name);
+			
+			cmd.params[0] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			cmd.params[1] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			cmd.params[2] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			cmd.params[3] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			cmd.params[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			cmd.params[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+
+			outObj.lods.back().cmds.push_back(cmd);
+		}
+
 /******************************************************************************************************************************/
 		// DEFAULT
 /******************************************************************************************************************************/
@@ -1922,7 +1939,17 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
-					
+			case attr_Magnet:
+				fprintf(fi,"MAGNET magnet %s %f %f %f  %f %f %f" CRLF,
+					cmd->name.c_str(),
+					cmd->params[0],
+					cmd->params[1],
+					cmd->params[2],
+
+					cmd->params[3],
+					cmd->params[4],
+					cmd->params[5]);
+				break;
 			default:
 				{
 					int idx = FindIndexForCmd(cmd->cmd);

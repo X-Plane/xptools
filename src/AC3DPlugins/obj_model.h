@@ -117,6 +117,8 @@ void		OBJ_set_anim_loop(ACObject * obj, float v);
 //void		OBJ_set_anim_low_angle(ACObject * obj, float a1);
 //void		OBJ_set_anim_high_angle(ACObject * obj, float a2);
 
+void		OBJ_set_magnet_type(ACObject * obj, const char * name);
+
 void		OBJ_set_anim_nth_value(ACObject * obj, int n, float v);
 void		OBJ_set_anim_nth_angle(ACObject * obj, int n, float a);
 void		OBJ_set_anim_keyframe_count(ACObject * obj, int n);
@@ -209,6 +211,8 @@ float			OBJ_get_anim_loop(ACObject * obj);
 //float			OBJ_get_anim_high_value(ACObject * obj);
 //float			OBJ_get_anim_low_angle(ACObject * obj);
 //float			OBJ_get_anim_high_angle(ACObject * obj);
+
+const char *	OBJ_get_magnet_type(ACObject * obj, char * buf);
 
 float			OBJ_get_anim_nth_value(ACObject * obj, int n);
 float			OBJ_get_anim_nth_angle(ACObject * obj, int n);

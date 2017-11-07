@@ -580,11 +580,13 @@ proc xplane_light_sync { x container } {
 	pack forget $container.light.smoke_black
 	pack forget $container.light.smoke_white
 	pack forget $container.light.param
-	
+	pack forget $container.light.magnet
+
 	if { [set xplane_light_type$x] == "rgb"}		      { pack $container.light.rgb } \
 	elseif { [set xplane_light_type$x] == "custom"}	  { pack $container.light.dataref } \
 	elseif { [set xplane_light_type$x] == "black smoke"} { pack $container.light.smoke_black } \
 	elseif { [set xplane_light_type$x] == "white smoke"} { pack $container.light.smoke_white } \
+	elseif { [set xplane_light_type$x] == "magnet"} { pack $container.light.magnet} \
 	else										{ pack $container.light.param }
 }
 
@@ -953,6 +955,7 @@ proc xplane_inspector {} {
 	global xplane_cursor_options
 	global xplane_hard_surface_options
 	global xplane_light_options
+	global xplane_magnet_options
 	global xplane_layer_group_options
 	global xplane_manip_types
 	global USE_KEYFRAMES
@@ -1040,6 +1043,15 @@ proc xplane_inspector {} {
 			labelframe $container.light.smoke_white -text "White Smoke Puff:"
 				make_labeled_entry $container.light.smoke_white "Puff size:" xplane_light_smoke_size$idx 10
 			pack $container.light.smoke_white
+
+			labelframe $container.light.magnet -text "Magnet:"
+			menubutton $container.light.magnet.type -menu $container.light.magnet.type.menu -direction flush  -textvariable xplane_magnet_type$idx -padx 30 -pady 5
+			menu $container.light.magnet.type.menu
+			foreach magnet $xplane_magnet_options {
+				$container.light.magnet.type.menu add radiobutton -label $magnet -variable xplane_magnet_type$idx
+			}
+			pack $container.light.magnet.type
+			pack $container.light.magnet
 
 			labelframe $container.light.param -text "Params:"
 				make_labeled_entry $container.light.param "1:" xplane_light_p1$idx 10
@@ -1297,7 +1309,7 @@ if {$IPHONE} {
 		airplane_landing airplane_nav_l airplane_nav_r airplane_nav_t airplane_strobe airplane_beacon ]
 
 } else {
-	set xplane_light_options [list none "black smoke" "white smoke" rgb custom param \
+	set xplane_light_options [list none "black smoke" "white smoke" magnet rgb custom param \
 		headlight taillight \
 		____param_lights____ airplane_landing_core airplane_landing_glow airplane_landing_flare airplane_landing_cone airplane_landing_sp airplane_landing_size airplane_landing_flash airplane_taxi_core airplane_taxi_glow airplane_taxi_flare airplane_taxi_cone airplane_taxi_sp airplane_taxi_size airplane_taxi_flash airplane_spot_core airplane_spot_glow airplane_spot_flare airplane_spot_cone airplane_spot_sp airplane_generic_core airplane_generic_glow airplane_generic_flare airplane_generic_cone airplane_generic_sp airplane_generic_size airplane_generic_flash airplane_beacon_rotate airplane_beacon_rotate_sp airplane_beacon_strobe airplane_beacon_strobe_sp airplane_beacon_size airplane_strobe_omni airplane_strobe_dir airplane_strobe_sp airplane_strobe_size airplane_nav_tail_size airplane_nav_left_size airplane_nav_right_size airplane_nav_sp airplane_panel_sp airplane_inst_sp ____end_param_lights____ \
 		airplane_landing airplane_landing1 airplane_landing2 airplane_taxi airplane_beacon airplane_nav_tail airplane_nav_left airplane_nav_right airplane_strobe \
@@ -1309,6 +1321,8 @@ if {$IPHONE} {
 		town_tiny_light_60 town_tiny_light_90 town_tiny_light_150 town_tiny_light_180 town_tiny_light_220 town_tiny_light_280 town_tiny_light_330 town_tiny_light_350 town_tiny_light_omni \
 		obs_strobe_day obs_strobe_night obs_red_day obs_red_night]
 }
+
+set xplane_magnet_options [list xpad flashlight "xpad|flashlight"]
 	
 set xplane_hard_surface_options [list none object water concrete asphalt grass dirt gravel lakebed snow shoulder blastpad]
 set xplane_layer_group_options [list none terrain beaches shoulders taxiways runways markings airports roads objects light_objects cars]

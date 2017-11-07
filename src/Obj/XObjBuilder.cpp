@@ -541,6 +541,21 @@ void	XObjBuilder::AccumSmoke(int cmd, float xyz[3], float size)
 	lod->cmds.back().params[3] = size;
 }
 
+void	XObjBuilder::AccumMagnet(const float xyz[3], const char * magType)
+{
+	AssureLOD();
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = attr_Magnet;
+	lod->cmds.back().params[0] = xyz[0];
+	lod->cmds.back().params[1] = xyz[1];
+	lod->cmds.back().params[2] = xyz[2];
+	lod->cmds.back().params[3] = 0.0f;
+	lod->cmds.back().params[4] = 0.0f;
+	lod->cmds.back().params[5] = 0.0f;
+	lod->cmds.back().name = magType;
+}
+
+
 void	XObjBuilder::AccumAnimBegin(void)
 {
 	AssureLOD();

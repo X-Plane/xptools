@@ -116,6 +116,9 @@ cmd_info	gCmds[] = {
 // Particles
 {	attr_Emitter,			type_Attr,	"EMITTER",					1,0,1},
 
+// Magnets
+{	attr_Magnet,			type_Attr,	"MAGNET",					1,0,1},
+
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 
 };

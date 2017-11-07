@@ -148,6 +148,7 @@ static ACObject * get_sel_single_light(int n)
 
 #define	SIMPLE_PROPERTY_MAPPINGS_LGT	\
 	SIMPLE_PROPERTY_STR(light_type,get_sel_single_light,OBJ_set_light_named, OBJ_get_light_named,"","none") \
+	SIMPLE_PROPERTY_STR(magnet_type,get_sel_single_light,OBJ_set_magnet_type, OBJ_get_magnet_type,"","none") \
 	SIMPLE_PROPERTY_STR(light_dataref,get_sel_single_light,OBJ_set_light_dataref, OBJ_get_light_dataref,"","") \
 	SIMPLE_PROPERTY_FLT(light_red,get_sel_single_light,OBJ_set_light_red,OBJ_get_light_red) \
 	SIMPLE_PROPERTY_FLT(light_green,get_sel_single_light,OBJ_set_light_green,OBJ_get_light_green) \

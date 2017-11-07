@@ -162,6 +162,9 @@ enum {
 	// Future particle system...
 	attr_Emitter,
 	
+	// Magnets, how do they work???
+	attr_Magnet,
+	
 	attr_Max
 };
 

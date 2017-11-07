@@ -302,6 +302,9 @@ INT_PROP(manip_detent_count,manip_detent_count)
 INT_PROP(has_panel_regions,has_panel_regions)
 INT_PROP(num_panel_regions,num_panel_regions)
 
+STR_PROP(magnet_type,magnet_type)
+
+
 void		OBJ_set_manip_nth_detent_lo(ACObject * obj, int n, float v)
 {
 	char tag[25];

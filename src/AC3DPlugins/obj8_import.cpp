@@ -1068,6 +1068,21 @@ ACObject *	do_obj8_load(char *filename)
 				current_material.emissive.g = 0.0;
 				current_material.emissive.b = 0.0;
 				break;
+			case attr_Magnet:
+				{
+					stuff_obj = NULL;
+					ACObject * light = new_object(OBJECT_LIGHT);
+					Point3	pt_ac3, col_ac3 = { 0.0, 0.0, 0.0 };
+					pt_ac3.x = cmd->params[0];
+					pt_ac3.y = cmd->params[1];
+					pt_ac3.z = cmd->params[2];
+					ac_entity_set_point_value(light, (char*)"loc", &pt_ac3);
+					object_set_name(light, (char*)"Magnet");
+					object_add_child(anim_obj.empty() ? lod_obj : anim_obj.back(), light);
+					OBJ_set_light_named(light, "magnet");
+					OBJ_set_magnet_type(light, cmd->name.c_str());
+				}
+				break;
 			}
 		}
 	}

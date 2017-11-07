@@ -302,6 +302,10 @@ static void obj8_output_light(XObjBuilder * builder, ACObject *obj)
 	{
 		builder->AccumSmoke(obj_Smoke_Black, pos, OBJ_get_light_smoke_size(obj));
 	}
+	else if(strcmp(lname,"magnet")==0)
+	{
+		builder->AccumMagnet(pos, OBJ_get_magnet_type(obj, lref));
+	}
 	else
 	{
 		string p[9];
