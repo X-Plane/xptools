@@ -65,9 +65,7 @@
 		D604AEB71C0E7D7B006DC1F0 /* GLDebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D604AEB31C0E7D7B006DC1F0 /* GLDebugMacros.cpp */; };
 		D604AEB91C0EAEF1006DC1F0 /* WEDMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D604AEB81C0EAEF1006DC1F0 /* WEDMainMenu.xib */; };
 		D604AEBE1C0F4827006DC1F0 /* RFMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D604AEBB1C0F4821006DC1F0 /* RFMainMenu.xib */; };
-		D606162B0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp in Resources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
 		D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */ = {isa = PBXBuildFile; fileRef = D606164E0C14BE46007BA5C9 /* ui_measurements.txt */; };
-		D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
 		D60617F00C14D18C007BA5C9 /* disclose.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EE0C14D18C007BA5C9 /* disclose.png */; };
 		D60617F10C14D18C007BA5C9 /* gradient.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EF0C14D18C007BA5C9 /* gradient.png */; };
 		D6061A1C0C150845007BA5C9 /* header.png in Resources */ = {isa = PBXBuildFile; fileRef = D6061A1B0C150844007BA5C9 /* header.png */; };
@@ -469,6 +467,7 @@
 		D67683740CC67BCC0032B90C /* GISTool_VectorCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38920AB22C85003949C5 /* GISTool_VectorCmds.cpp */; };
 		D67683750CC67BD20032B90C /* DSFLib_Print.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC36550AB22C84003949C5 /* DSFLib_Print.cpp */; };
 		D67685270CC6A0690032B90C /* TensorRoads.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67685260CC6A0690032B90C /* TensorRoads.cpp */; };
+		D677F6861FB1519900D0A702 /* WED_UIMeasurements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
 		D678ADF20F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D678ADF30F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
 		D678ADF40F7952B700F72139 /* tri_stripper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D678ADF00F7952B700F72139 /* tri_stripper.cpp */; };
@@ -742,13 +741,9 @@
 		D6E067770BDE91990070E31C /* WED_ToolInfoAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */; };
 		D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E304B2105F7779009E6E7F /* WED_TCEMarqueeTool.cpp */; };
 		D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E30556105F8EE7009E6E7F /* tce_tools.png */; };
-		D6E4C95218EC91DE000D98B8 /* json_internalarray.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93818EC91DD000D98B8 /* json_internalarray.inl */; };
-		D6E4C95318EC91DE000D98B8 /* json_internalmap.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93918EC91DD000D98B8 /* json_internalmap.inl */; };
 		D6E4C95418EC91DE000D98B8 /* json_reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93A18EC91DD000D98B8 /* json_reader.cpp */; };
 		D6E4C95518EC91DE000D98B8 /* json_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93C18EC91DD000D98B8 /* json_value.cpp */; };
-		D6E4C95618EC91DE000D98B8 /* json_valueiterator.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93D18EC91DD000D98B8 /* json_valueiterator.inl */; };
 		D6E4C95718EC91DE000D98B8 /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93E18EC91DD000D98B8 /* json_writer.cpp */; };
-		D6E4C95818EC91DE000D98B8 /* sconscript in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93F18EC91DD000D98B8 /* sconscript */; };
 		D6E4C95D18EC91FF000D98B8 /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93E18EC91DD000D98B8 /* json_writer.cpp */; };
 		D6E4C95E18EC9200000D98B8 /* json_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93C18EC91DD000D98B8 /* json_value.cpp */; };
 		D6E4C95F18EC9201000D98B8 /* json_reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93A18EC91DD000D98B8 /* json_reader.cpp */; };
@@ -3969,7 +3964,6 @@
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
 				D682E1060C10E23C00BBE1A0 /* scrollbar_corner.png in Resources */,
-				D606162B0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp in Resources */,
 				D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */,
 				D60617F00C14D18C007BA5C9 /* disclose.png in Resources */,
 				D60617F10C14D18C007BA5C9 /* gradient.png in Resources */,
@@ -4033,10 +4027,6 @@
 				D6080505154659A7001BE1A9 /* push_buttons.png in Resources */,
 				D6FE7C81173EC49C007721F2 /* map_tree.png in Resources */,
 				D6B69CE51C582B6A005C78C5 /* ClassA.png in Resources */,
-				D6E4C95218EC91DE000D98B8 /* json_internalarray.inl in Resources */,
-				D6E4C95318EC91DE000D98B8 /* json_internalmap.inl in Resources */,
-				D6E4C95618EC91DE000D98B8 /* json_valueiterator.inl in Resources */,
-				D6E4C95818EC91DE000D98B8 /* sconscript in Resources */,
 				D63D3A33192FA28F0004534A /* gateway.crt in Resources */,
 				D63A80201A997EB5008D218D /* COPYING in Resources */,
 			);
@@ -4624,6 +4614,7 @@
 				D6ED37370B67964D00D5484E /* GUI_Clipboard.cpp in Sources */,
 				D66569BF1CE261FC00662E5C /* CACHE_CacheObject.cpp in Sources */,
 				D6ED37380B67964D00D5484E /* WED_MapZoomerNew.cpp in Sources */,
+				D677F6861FB1519900D0A702 /* WED_UIMeasurements.cpp in Sources */,
 				D6ED37DF0B67AD9A00D5484E /* SQLUtils.cpp in Sources */,
 				D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */,
 				D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */,
@@ -4706,7 +4697,6 @@
 				D60B10220C075B3700AD5EB7 /* WED_AptIE.cpp in Sources */,
 				D607B65B0C0A3FF300992876 /* WED_AboutBox.cpp in Sources */,
 				D682DDEE0C10939C00BBE1A0 /* WED_StartWindow.cpp in Sources */,
-				D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */,
 				D6F25F920C185F8000C26DC4 /* WED_WorldMapLayer.cpp in Sources */,
 				D6F262F00C18904E00C26DC4 /* WED_ATCFrequency.cpp in Sources */,
 				D60C07E20C2328B700783179 /* WED_FastBuffer.cpp in Sources */,
