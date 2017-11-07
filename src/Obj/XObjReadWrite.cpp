@@ -41,6 +41,13 @@
 	#endif
 #endif
 
+static const char * dataref_or_none(const char * d)
+{
+	if(d[0] == 0)
+		return "none";
+	return d;
+}
+
 /****************************************************************************************
  * FILE SCANNING UTILS
  ****************************************************************************************/
@@ -1665,8 +1672,8 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					outObj.manips[cmd->idx_offset].v1_max,
 					outObj.manips[cmd->idx_offset].v2_min,
 					outObj.manips[cmd->idx_offset].v2_max,
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
-					outObj.manips[cmd->idx_offset].dataref2.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
 			case attr_Manip_Drag_Axis:
@@ -1677,7 +1684,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					outObj.manips[cmd->idx_offset].axis[2],
 					outObj.manips[cmd->idx_offset].v1_min,
 					outObj.manips[cmd->idx_offset].v1_max,
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 
 				if(!outObj.manips[cmd->idx_offset].dataref2.empty())
@@ -1688,7 +1695,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					outObj.manips[cmd->idx_offset].centroid[2],
 					outObj.manips[cmd->idx_offset].v2_min,
 					outObj.manips[cmd->idx_offset].v2_max,
-					outObj.manips[cmd->idx_offset].dataref2.c_str());
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()));
 				}
 				for(vector<XObjDetentRange>::const_iterator di = outObj.manips[cmd->idx_offset].detents.begin();
 					di != outObj.manips[cmd->idx_offset].detents.end(); ++di)
@@ -1702,7 +1709,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			case attr_Manip_Command:
 				fprintf(fi,"ATTR_manip_command %s %s %s" CRLF,
 					outObj.manips[cmd->idx_offset].cursor.c_str(),
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
 			case attr_Manip_Command_Axis:
@@ -1711,13 +1718,13 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					outObj.manips[cmd->idx_offset].axis[0],
 					outObj.manips[cmd->idx_offset].axis[1],
 					outObj.manips[cmd->idx_offset].axis[2],
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
-					outObj.manips[cmd->idx_offset].dataref2.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
 			case attr_Manip_Noop:
 				fprintf(fi,"ATTR_manip_noop %s %s" CRLF,
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
 			case attr_Light_Level:
@@ -1729,7 +1736,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].v1_min,
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
@@ -1738,7 +1745,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 					fprintf(fi,"ATTR_manip_radio %s %f %s %s" CRLF,
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
 						outObj.manips[cmd->idx_offset].v1_max,
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
@@ -1748,7 +1755,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].v1_min,
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
@@ -1761,7 +1768,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].v2_min,
 						outObj.manips[cmd->idx_offset].v2_max,
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
@@ -1774,7 +1781,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].v2_min,
 						outObj.manips[cmd->idx_offset].v2_max,
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
@@ -1787,7 +1794,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].axis[2],
 						outObj.manips[cmd->idx_offset].v1_min,
 						outObj.manips[cmd->idx_offset].v1_max,
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					if(outObj.manips[cmd->idx_offset].mouse_wheel_delta != 0)
 						fprintf(fi,"ATTR_manip_wheel %f" CRLF, outObj.manips[cmd->idx_offset].mouse_wheel_delta);
@@ -1795,22 +1802,22 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			case attr_Manip_Command_Knob:
 					fprintf(fi,"ATTR_manip_command_knob %s %s %s %s" CRLF,
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
-						outObj.manips[cmd->idx_offset].dataref2.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					break;
 			case attr_Manip_Command_Switch_Up_Down:
 					fprintf(fi,"ATTR_manip_command_switch_up_down %s %s %s %s" CRLF,
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
-						outObj.manips[cmd->idx_offset].dataref2.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					break;
 			case attr_Manip_Command_Switch_Left_Right:
 					fprintf(fi,"ATTR_manip_command_switch_left_right %s %s %s %s" CRLF,
 						outObj.manips[cmd->idx_offset].cursor.c_str(),
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
-						outObj.manips[cmd->idx_offset].dataref2.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					break;
 			case attr_Manip_Axis_Knob:
@@ -1820,7 +1827,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].axis[0],
 						outObj.manips[cmd->idx_offset].axis[1],
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					break;
 			case attr_Manip_Axis_Switch_Up_Down:
@@ -1830,7 +1837,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].axis[0],
 						outObj.manips[cmd->idx_offset].axis[1],
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					break;
 			case attr_Manip_Axis_Switch_Left_Right:
@@ -1840,7 +1847,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].axis[0],
 						outObj.manips[cmd->idx_offset].axis[1],
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					break;
 			case attr_Emitter:
@@ -1879,8 +1886,8 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 						outObj.manips[cmd->idx_offset].v1_max,
 						outObj.manips[cmd->idx_offset].v2_min,
 						outObj.manips[cmd->idx_offset].v2_max,
-						outObj.manips[cmd->idx_offset].dataref1.c_str(),
-						outObj.manips[cmd->idx_offset].dataref2.c_str(),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
+						dataref_or_none(outObj.manips[cmd->idx_offset].dataref2.c_str()),
 						outObj.manips[cmd->idx_offset].tooltip.c_str());
 					
 					for(vector<XObjKey>::const_iterator ki = outObj.manips[cmd->idx_offset].rotation_key_frames.begin();
@@ -1900,19 +1907,19 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 			case attr_Manip_Command_Switch_Left_Right2:
 				fprintf(fi,"ATTR_manip_command_switch_left_right2 %s %s %s" CRLF,
 					outObj.manips[cmd->idx_offset].cursor.c_str(),
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
 			case attr_Manip_Command_Switch_Up_Down2:
 				fprintf(fi,"ATTR_manip_command_switch_up_down2 %s %s %s" CRLF,
 					outObj.manips[cmd->idx_offset].cursor.c_str(),
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
 			case attr_Manip_Command_Knob2:
 				fprintf(fi,"ATTR_manip_command_knob2 %s %s %s" CRLF,
 					outObj.manips[cmd->idx_offset].cursor.c_str(),
-					outObj.manips[cmd->idx_offset].dataref1.c_str(),
+					dataref_or_none(outObj.manips[cmd->idx_offset].dataref1.c_str()),
 					outObj.manips[cmd->idx_offset].tooltip.c_str());
 				break;
 					
