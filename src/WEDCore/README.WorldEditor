@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a6
+WED 1.7.0a7
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	Features:
@@ -26,6 +26,7 @@ WED 1.7.0a6
 	- WED-926: Allow viewving of full/long property name by clicking on it
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
 	- Flow editing enhancements: Preset METAR ICAO, create meaningfull wind/time rules names
+	- geotiff import enhancements: decode almost any format currently use to encode coordinates, not only WGS84
 	- Previews allow to cycle through all variants for multi-exported items
 	- Previews show textual info on many objects
 	- Primitve, incomplete type 1 facade preview
