@@ -40,7 +40,7 @@
 // set to 1 to save geotiff inside geojp2 to disk
 #define DUMP_GTIF 0
 
-#if defined(IBM)
+#if IBM
 	#include <libxtiff/xtiffio.h>
 	#include "GUI_Unicode.h"
 #else
