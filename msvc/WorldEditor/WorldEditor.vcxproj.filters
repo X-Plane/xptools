@@ -693,9 +693,6 @@
     <ClCompile Include="..\..\src\Utils\TexUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utils\SQLUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -799,6 +796,9 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_HierarchyUtils.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_FacadePreview.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
   </ItemGroup>
@@ -921,9 +921,6 @@
       <Filter>WEDEntities</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h">
-      <Filter>WEDEntities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h">
@@ -1445,9 +1442,6 @@
     <ClInclude Include="..\..\src\Utils\TexUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Utils\SQLUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -1586,9 +1580,11 @@
     <ClInclude Include="..\..\src\GUI\GUI_FilterBar.h">
       <Filter>GUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Interfaces\IFilterable.h" />
     <ClInclude Include="..\..\src\Utils\STLUtils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
+      <Filter>Interfaces</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
