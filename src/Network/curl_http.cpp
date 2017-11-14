@@ -232,7 +232,9 @@ int			curl_http_get_file::progress_cb(void* ptr, double TotalToDownload, double 
 		int intp = prog;
 		me->m_progress = intp;
 	}	
-	
+	else   // gzipped transfers dont know the total transfer size ahead of time, so we report in kB, as a *negative* number
+		me->m_progress = (int) -NowDownloaded / 1024.0;
+
 	return 0;
 }
 
@@ -260,6 +262,9 @@ curl_http_get_file::thread_proc(void * param)
 	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, progress_cb);	
 	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, param);
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+	
+	curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "");  // empty string is expanded into all methods supported by this version of curl.
+
 #if DEV	
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 #endif	

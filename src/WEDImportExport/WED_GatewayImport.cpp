@@ -108,6 +108,7 @@ enum imp_dialog_msg
 	click_back
 };
 
+
 //--Mem File Utils code for virtually handling the downloaded zip file--
 //Returns an empty string if everything went well, the error message if not
 string MemFileHandling(const string & zipPath, const string & filePath, const string & ICAO, bool & has_dsf)
@@ -226,8 +227,7 @@ private:
 
 	//The buffers of the specific packs downloaded at the end
 	vector<string>	mSpecificBufs;
-	
-	string				mICAOid;
+
 //--GUI parts
 
 	//Changes the decoration of the GUI window's title, buttons, etc, based on the stage
@@ -286,7 +286,7 @@ private:
 	void FillVersionsFromJSON(const string& json_string);
 	
 	//Attempts to download all the specific versions downloaded
-	void StartSpecificVersionDownload(int id);
+	void StartSpecificVersionDownload(int id, const string & icao);
 
 	//Once a specific version is downloaded this method decodes and imports it into the document
 	//Returns a pointer to the last imported airport
@@ -307,6 +307,9 @@ private:
 //----------------------//
 	
 };
+
+
+
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
@@ -411,6 +414,16 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		
 		mLabel->SetSticky(1,0,1,1);
 		DecorateGUIWindow();
+		
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		mPhase = imp_dialog_error;
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+	}
+	mCacheRequest.in_cert = cert;
+	
 	StartCSVDownload();
 }
 
@@ -501,12 +514,11 @@ void WED_GatewayImportDialog::TimerFired()
 		{
 			//To avoid user confusion with a potential progress of -1, we'll just call it 0
 			int progress = res.out_download_progress;
-			if(progress < 0)
-			{
-				progress = 0;
-			}
 			stringstream ss;
-			ss << "Download in Progress: " << progress << "% Done";
+			if(progress < 0)
+				ss << "Compressed Download in Progress: " << -progress << "kB transferred";
+			else	
+				ss << "Download in Progress: " << progress << "% Done";
 			DecorateGUIWindow(ss.str());
 		}
 	}
@@ -740,17 +752,6 @@ void WED_GatewayImportDialog::ReceiveMessage(
 
 void WED_GatewayImportDialog::StartCSVDownload()
 {
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-
-	//Get it from the server
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	
 	stringstream ss;
@@ -766,21 +767,10 @@ void WED_GatewayImportDialog::StartCSVDownload()
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	string url = WED_URL_GATEWAY_API;
-	
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+	string url = WED_URL_GATEWAY_API;
 	url += "airports";
 
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_airports_json;
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport";
@@ -808,30 +798,17 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
 	
-	mICAOid = current_apt.icao;
-	
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return false;
-	}
-	
 	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-	url += "airport/" + mICAOid;
+	url += "airport/" + current_apt.icao;
+	mCacheRequest.in_url = url;
 
-	//Get it from the server
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
 	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;	
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << current_apt.icao;	
 	mCacheRequest.in_folder_prefix = ss.str();
 
-	mCacheRequest.in_url = url;
 	mRequestCount = 0;
 
 	Start(0.1);
@@ -839,29 +816,18 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	return true;
 }
 
-void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
+void WED_GatewayImportDialog::StartSpecificVersionDownload(int id, const string& icao)
 {
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-	
 	stringstream url; 
-	
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
+	mCacheRequest.in_url = url.str();
 
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_scenery_pack;
 	
 	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << icao;
 	mCacheRequest.in_folder_prefix = ss.str();
 
-	mCacheRequest.in_url = url.str();
 	mRequestCount = 0;
 
 	Start(0.1);
@@ -879,7 +845,7 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	
 	int id = mVersions_Vers[*index].sceneryId;
 	//Start the download
-	StartSpecificVersionDownload(id);
+	StartSpecificVersionDownload(id,mVersions_Vers[*index].icao);
 
 	//Erase that one off the queue
 	mVersions_VersionsSelected.erase(mVersions_VersionsSelected.begin());
@@ -924,6 +890,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	ILibrarian * lib = WED_GetLibrarian(mResolver);
     lib->LookupPath(filePath);
 
+	string mICAOid = root["scenery"]["icao"].asString();
 	string zipPath = filePath + mICAOid + ".zip";
 
 	if(!outString.empty())
