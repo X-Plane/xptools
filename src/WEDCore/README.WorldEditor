@@ -16,7 +16,7 @@ CHANGE HISTORY
 WED 1.7.0a7
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
-	- Gateway communication speedup - used compressed http transfer for all downloads
+	- Gateway communication speedup - now using compressed http transfer for all downloads
 	Features:
 	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
 	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
