@@ -67,9 +67,13 @@
 #include "GUI_TextTable.h"
 #include "WED_Colors.h"
 
-	//--ICAO Table------------
+#define ALLOW_MULTI_IMPORT 0    // set this if you want to allow to import multiple airports at a time
+
+#if ALLOW_MULTI_IMPORT
+	#include "WED_AptTable.h"
+#else
 	#include "WED_ICAOTable.h"
-	//------------------------//
+#endif
 	//--Version Table---------
 	#include "WED_VerTable.h"
 	//------------------------//
@@ -261,7 +265,11 @@ private:
 	//From the downloaded JSON, fill the ICAO table
 	void FillICAOFromJSON(const string& json_string);
 		//--ICAO Table Provider/Geometry
+#if ALLOW_MULTI_IMPORT
+		WED_AptTable			mICAO_AptProvider;
+#else
 		WED_ICAOTable			mICAO_AptProvider;
+#endif
 		AptVector				mICAO_Apts;
 
 		//Sets up the ICAO table GUI and event handlers
@@ -434,6 +442,9 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 
 void WED_GatewayImportDialog::Next()
 {
+#if ALLOW_MULTI_IMPORT
+	set<int> apts;
+#endif
 	switch(mPhase)
 	{
 	case imp_dialog_error:
@@ -444,6 +455,29 @@ void WED_GatewayImportDialog::Next()
 	//case imp_dialog_download_ICAO:
 		//break; no next button here
 	case imp_dialog_choose_ICAO:
+
+#if ALLOW_MULTI_IMPORT
+		mICAO_AptProvider.GetSelection(apts);
+		if(apts.size() > 1)
+		{
+				if (ConfirmMessage("Multiple Airports are selected", "Import recommended version for each", "Cancel"))
+				{
+					mVersions_VersionsSelected.clear();
+					mVersions_Vers.clear();
+					for(set<int>::iterator apt = apts.begin(); apt!=apts.end(); ++apt)
+					{
+						VerInfo_t v; 
+						v.icao = mICAO_Apts.at(*apt).icao; v.sceneryId = mICAO_Apts.at(*apt).kind_code;
+						mVersions_Vers.push_back(v);
+						mVersions_VersionsSelected.insert(mVersions_Vers.size()-1);
+					}
+					DecorateGUIWindow("Loading file(s) from hard drive, please wait...");
+					NextVersionsDownload();
+					mPhase = imp_dialog_download_specific_version;
+				}
+		}
+		else
+#endif
 		//Going to show versions
 		if(StartVersionsDownload())
 		{
@@ -512,14 +546,17 @@ void WED_GatewayImportDialog::TimerFired()
 	{
 		if(res.out_status != cache_status_available)
 		{
-			//To avoid user confusion with a potential progress of -1, we'll just call it 0
+			char p[30] = "";
+			if(mPhase > imp_dialog_download_specific_version)
+				sprintf(p," Plus %2d more files to go.",(int) mVersions_VersionsSelected.size());
+
 			int progress = res.out_download_progress;
-			stringstream ss;
+			char c[100];
 			if(progress < 0)
-				ss << "Compressed Download in Progress: " << -progress << "kB transferred";
-			else	
-				ss << "Download in Progress: " << progress << "% Done";
-			DecorateGUIWindow(ss.str());
+				sprintf(c,"Download in Progress: %4dkB received. %s",-progress,p);
+			else
+				sprintf(c,"Download in Progress: %2d%% done. %s",progress,p);
+			DecorateGUIWindow(c);
 		}
 	}
 	
@@ -545,9 +582,7 @@ void WED_GatewayImportDialog::TimerFired()
 					mAirportMetadataCSVPath = res.out_path;
 					StartICAODownload();
 			
-					stringstream ss;
-					ss << "Loading file from hard drive, please wait...";
-					DecorateGUIWindow(ss.str());
+					DecorateGUIWindow("Loading file from hard drive, please wait...");
 				}
 				if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
 				{
@@ -652,6 +687,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
 			cur_airport.name = tmp["AirportName"].asString();
+			cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();  // mis-using that property to support multi-airport import
 
 			//Add the current scenery object's airport code
 			mICAO_Apts.push_back(cur_airport);
@@ -696,6 +732,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		
 		//!!IMPORTANT!! Use of ".operator[]" because the author of jsoncpp didn't read Scott Meyer's "Item 26: Guard against potential ambiguity"!
 		tmp.sceneryId     = curScenery.operator[]("sceneryId").asInt();
+		tmp.icao          = curScenery.operator[]("icao").asString();
 		tmp.isRecommended = tmp.sceneryId == airport.operator[]("recommendedSceneryId").asInt();
 		
 		tmp.parentId = curScenery.operator[]("parentId").asInt();
@@ -839,12 +876,14 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	if(mVersions_VersionsSelected.size() == 0)
 	{
 		Stop();
+		DecorateGUIWindow("Importing airport(s), please wait...");
 		return false;
 	}
 	std::set<int>::iterator index = mVersions_VersionsSelected.begin();
 	
 	int id = mVersions_Vers[*index].sceneryId;
 	//Start the download
+	
 	StartSpecificVersionDownload(id,mVersions_Vers[*index].icao);
 
 	//Erase that one off the queue
