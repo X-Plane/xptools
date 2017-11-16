@@ -69,9 +69,14 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add option="-DWED=1" />
 			<Add option="-DLIN=1" />
+			<Add option="-DBIG=0" />
+			<Add option="-DLIL=1" />
 			<Add option="-DAIRPORT_ROUTING=1" />
 			<Add option="-DHAS_GATEWAY=1" />
+			<Add option="-DUSE_JPEG=1" />
+			<Add option="-DUSE_TIF=1" />
 		</Compiler>
 		<Unit filename="../../../facades/REN_extrude_defs.h" />
 		<Unit filename="../../../facades/REN_extrude_utils.h" />

@@ -67,9 +67,13 @@
 #include "GUI_TextTable.h"
 #include "WED_Colors.h"
 
-	//--ICAO Table------------
+#define ALLOW_MULTI_IMPORT 0    // set this if you want to allow to import multiple airports at a time
+
+#if ALLOW_MULTI_IMPORT
+	#include "WED_AptTable.h"
+#else
 	#include "WED_ICAOTable.h"
-	//------------------------//
+#endif
 	//--Version Table---------
 	#include "WED_VerTable.h"
 	//------------------------//
@@ -107,6 +111,7 @@ enum imp_dialog_msg
 	click_next,
 	click_back
 };
+
 
 //--Mem File Utils code for virtually handling the downloaded zip file--
 //Returns an empty string if everything went well, the error message if not
@@ -226,8 +231,7 @@ private:
 
 	//The buffers of the specific packs downloaded at the end
 	vector<string>	mSpecificBufs;
-	
-	string				mICAOid;
+
 //--GUI parts
 
 	//Changes the decoration of the GUI window's title, buttons, etc, based on the stage
@@ -261,7 +265,11 @@ private:
 	//From the downloaded JSON, fill the ICAO table
 	void FillICAOFromJSON(const string& json_string);
 		//--ICAO Table Provider/Geometry
+#if ALLOW_MULTI_IMPORT
+		WED_AptTable			mICAO_AptProvider;
+#else
 		WED_ICAOTable			mICAO_AptProvider;
+#endif
 		AptVector				mICAO_Apts;
 
 		//Sets up the ICAO table GUI and event handlers
@@ -286,7 +294,7 @@ private:
 	void FillVersionsFromJSON(const string& json_string);
 	
 	//Attempts to download all the specific versions downloaded
-	void StartSpecificVersionDownload(int id);
+	void StartSpecificVersionDownload(int id, const string & icao);
 
 	//Once a specific version is downloaded this method decodes and imports it into the document
 	//Returns a pointer to the last imported airport
@@ -307,6 +315,9 @@ private:
 //----------------------//
 	
 };
+
+
+
 int WED_GatewayImportDialog::import_bounds_default[4] = { 0, 0, 750, 500 };
 
 //--Implemation of WED_GateWayImportDialog class-------------------------------
@@ -411,6 +422,16 @@ WED_GatewayImportDialog::WED_GatewayImportDialog(WED_Document * resolver, WED_Ma
 		
 		mLabel->SetSticky(1,0,1,1);
 		DecorateGUIWindow();
+		
+	//Get Certification
+	string cert;
+	if(!GUI_GetTempResourcePath("gateway.crt", cert))
+	{
+		mPhase = imp_dialog_error;
+		DoUserAlert("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+	}
+	mCacheRequest.in_cert = cert;
+	
 	StartCSVDownload();
 }
 
@@ -421,6 +442,9 @@ WED_GatewayImportDialog::~WED_GatewayImportDialog()
 
 void WED_GatewayImportDialog::Next()
 {
+#if ALLOW_MULTI_IMPORT
+	set<int> apts;
+#endif
 	switch(mPhase)
 	{
 	case imp_dialog_error:
@@ -431,6 +455,29 @@ void WED_GatewayImportDialog::Next()
 	//case imp_dialog_download_ICAO:
 		//break; no next button here
 	case imp_dialog_choose_ICAO:
+
+#if ALLOW_MULTI_IMPORT
+		mICAO_AptProvider.GetSelection(apts);
+		if(apts.size() > 1)
+		{
+				if (ConfirmMessage("Multiple Airports are selected", "Import recommended version for each", "Cancel"))
+				{
+					mVersions_VersionsSelected.clear();
+					mVersions_Vers.clear();
+					for(set<int>::iterator apt = apts.begin(); apt!=apts.end(); ++apt)
+					{
+						VerInfo_t v; 
+						v.icao = mICAO_Apts.at(*apt).icao; v.sceneryId = mICAO_Apts.at(*apt).kind_code;
+						mVersions_Vers.push_back(v);
+						mVersions_VersionsSelected.insert(mVersions_Vers.size()-1);
+					}
+					DecorateGUIWindow("Loading file(s) from hard drive, please wait...");
+					NextVersionsDownload();
+					mPhase = imp_dialog_download_specific_version;
+				}
+		}
+		else
+#endif
 		//Going to show versions
 		if(StartVersionsDownload())
 		{
@@ -499,15 +546,17 @@ void WED_GatewayImportDialog::TimerFired()
 	{
 		if(res.out_status != cache_status_available)
 		{
-			//To avoid user confusion with a potential progress of -1, we'll just call it 0
+			char p[30] = "";
+			if(mPhase > imp_dialog_download_specific_version)
+				sprintf(p," Plus %2d more files to go.",(int) mVersions_VersionsSelected.size());
+
 			int progress = res.out_download_progress;
+			char c[100];
 			if(progress < 0)
-			{
-				progress = 0;
-			}
-			stringstream ss;
-			ss << "Download in Progress: " << progress << "% Done";
-			DecorateGUIWindow(ss.str());
+				sprintf(c,"Download in Progress: %4dkB received. %s",-progress,p);
+			else
+				sprintf(c,"Download in Progress: %2d%% done. %s",progress,p);
+			DecorateGUIWindow(c);
 		}
 	}
 	
@@ -533,9 +582,7 @@ void WED_GatewayImportDialog::TimerFired()
 					mAirportMetadataCSVPath = res.out_path;
 					StartICAODownload();
 			
-					stringstream ss;
-					ss << "Loading file from hard drive, please wait...";
-					DecorateGUIWindow(ss.str());
+					DecorateGUIWindow("Loading file from hard drive, please wait...");
 				}
 				if(mPhase == imp_dialog_choose_ICAO)//We just finished downloading the ICAO list
 				{
@@ -640,6 +687,7 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
 			cur_airport.name = tmp["AirportName"].asString();
+			cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();  // mis-using that property to support multi-airport import
 
 			//Add the current scenery object's airport code
 			mICAO_Apts.push_back(cur_airport);
@@ -684,6 +732,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		
 		//!!IMPORTANT!! Use of ".operator[]" because the author of jsoncpp didn't read Scott Meyer's "Item 26: Guard against potential ambiguity"!
 		tmp.sceneryId     = curScenery.operator[]("sceneryId").asInt();
+		tmp.icao          = curScenery.operator[]("icao").asString();
 		tmp.isRecommended = tmp.sceneryId == airport.operator[]("recommendedSceneryId").asInt();
 		
 		tmp.parentId = curScenery.operator[]("parentId").asInt();
@@ -740,17 +789,6 @@ void WED_GatewayImportDialog::ReceiveMessage(
 
 void WED_GatewayImportDialog::StartCSVDownload()
 {
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-
-	//Get it from the server
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_metadata_csv;
 	
 	stringstream ss;
@@ -766,21 +804,10 @@ void WED_GatewayImportDialog::StartCSVDownload()
 
 void WED_GatewayImportDialog::StartICAODownload()
 {
-	string url = WED_URL_GATEWAY_API;
-	
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airports"
+	string url = WED_URL_GATEWAY_API;
 	url += "airports";
 
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_airports_json;
 	stringstream ss;
 	ss << "scenery_packs" << DIR_STR << "GatewayImport";
@@ -808,30 +835,17 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
 	
-	mICAOid = current_apt.icao;
-	
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return false;
-	}
-	
 	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
-	url += "airport/" + mICAOid;
+	url += "airport/" + current_apt.icao;
+	mCacheRequest.in_url = url;
 
-	//Get it from the server
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_airport_versions_json;
 
 	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;	
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << current_apt.icao;	
 	mCacheRequest.in_folder_prefix = ss.str();
 
-	mCacheRequest.in_url = url;
 	mRequestCount = 0;
 
 	Start(0.1);
@@ -839,29 +853,18 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	return true;
 }
 
-void WED_GatewayImportDialog::StartSpecificVersionDownload(int id)
+void WED_GatewayImportDialog::StartSpecificVersionDownload(int id, const string& icao)
 {
-	//Get Certification
-	string cert;
-	if(!GUI_GetTempResourcePath("gateway.crt", cert))
-	{
-		mPhase = imp_dialog_error;
-		DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
-		return;
-	}
-	
 	stringstream url; 
-	
 	url << WED_URL_GATEWAY_API << "scenery/" << id;
+	mCacheRequest.in_url = url.str();
 
-	mCacheRequest.in_cert = cert;
 	mCacheRequest.in_domain = cache_domain_scenery_pack;
 	
 	stringstream ss;
-	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << mICAOid;
+	ss << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << icao;
 	mCacheRequest.in_folder_prefix = ss.str();
 
-	mCacheRequest.in_url = url.str();
 	mRequestCount = 0;
 
 	Start(0.1);
@@ -873,13 +876,15 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	if(mVersions_VersionsSelected.size() == 0)
 	{
 		Stop();
+		DecorateGUIWindow("Importing airport(s), please wait...");
 		return false;
 	}
 	std::set<int>::iterator index = mVersions_VersionsSelected.begin();
 	
 	int id = mVersions_Vers[*index].sceneryId;
 	//Start the download
-	StartSpecificVersionDownload(id);
+	
+	StartSpecificVersionDownload(id,mVersions_Vers[*index].icao);
 
 	//Erase that one off the queue
 	mVersions_VersionsSelected.erase(mVersions_VersionsSelected.begin());
@@ -924,6 +929,7 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 	ILibrarian * lib = WED_GetLibrarian(mResolver);
     lib->LookupPath(filePath);
 
+	string mICAOid = root["scenery"]["icao"].asString();
 	string zipPath = filePath + mICAOid + ".zip";
 
 	if(!outString.empty())
