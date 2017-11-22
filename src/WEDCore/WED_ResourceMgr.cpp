@@ -605,7 +605,7 @@ bool	WED_ResourceMgr::GetFac(const string& path, fac_info_t& out_info, int varia
 
 		process_texture_path(p,wall_tex);
 		process_texture_path(p,roof_tex);
-//		WED_MakeFacadePreview(out_info, wall, wall_tex, roof_uv, roof_tex);
+		WED_MakeFacadePreview(out_info, wall_tex, roof_tex);
 
 		if (no_roof_mesh) out_info.roof = false;
 		mFac[path].push_back(out_info);

@@ -57,7 +57,6 @@ struct	FacadeWall_t {
 };	
 
 
-bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, string wall_tex, 
-					float roof_uv[4], string roof_tex);
+bool WED_MakeFacadePreview(fac_info_t& info, const string& wall_tex, const string& roof_tex);
 
 #endif

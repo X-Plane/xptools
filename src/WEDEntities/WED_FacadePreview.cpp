@@ -43,14 +43,12 @@ FacadeWall_t::FacadeWall_t() :
 {
 }
 
-bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, 
-	string wall_tex, float roof_uv[4], string roof_tex)
+bool WED_MakeFacadePreview(fac_info_t& info, const string& wall_tex, const string &roof_tex)
 {
 	float want_len=3;               // minimum size to draw as initial guess
-	bool has_middles = false;       // if there are no middle sections in the walls, the facade will allow only one floor, i.e. is fixed height
 
 	// sanitize list of walls
-	for (vector<wall_map_t>::iterator i = walls.begin(); i != walls.end(); ++i)
+	for (vector<wall_map_t>::iterator i = info.walls.begin(); i != info.walls.end(); ++i)
 	{
 //	printf("%s\ninitial wall v=%5.3f %5.3f %5.3f %5.3f h=%5.3f %5.3f %5.3f %5.3f\n",wall_tex.c_str(),i->vert[0],i->vert[1],i->vert[2],i->vert[3],i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
 		
@@ -62,40 +60,6 @@ bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls,
 			break;
 		}
 
-		if (i->vert[2] == 0.0)
-		{
-			i->vert[2] = i->vert[1];
-//	printf("no middle v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
-		}
-		else
-			has_middles=true;
-		
-		if (i->vert[3] == 0.0)
-		{   
-			i->vert[3] = i->vert[2];
-//	printf("no top v=%5.3f %5.3f %5.3f %5.3f\n",i->vert[0],i->vert[1],i->vert[2],i->vert[3]);
-		}
-		else
-			has_middles=true;
-
-		if (i->hori[2] == 0.0)
-		{
-			i->hori[2] = i->hori[1];
-			i->hori[1] = i->hori[0];
-//	printf("no center h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
-		}
-		
-		
-		if (i->hori[3] == 0.0)
-		{
-			i->hori[3] = i->hori[2];
-//	printf("no right h=%5.3f %5.3f %5.3f %5.3f\n",i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
-		}
-		
-		float ideal_len = (i->hori[2]-i->hori[0] + i->hori[3]-i->hori[1]) * info.scale_x;
-		
-//	printf("ideal_len %3.1f\n",ideal_len);
-		
         want_len = max(want_len,ideal_len);
 
 //	fflush(stdout);
