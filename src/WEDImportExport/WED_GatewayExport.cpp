@@ -37,7 +37,6 @@
 #include "curl_http.h"
 #include "RAII_Classes.h"
 #include "WED_FileCache.h"
-#include "WED_MetaDataDefaults.h"
 
 #include "WED_DSFExport.h"
 #include "WED_Globals.h"
@@ -51,6 +50,7 @@
 #include "WED_ToolUtils.h"
 #include "WED_Airport.h"
 #include "ILibrarian.h"
+#include "WED_PackageMgr.h"
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "GUI_Application.h"
@@ -689,10 +689,11 @@ void WED_GatewayExportDialog::Submit()
 		if (has_atc_ground_routes(apt))
 			features += "," + to_string(ATC_GROUND_ROUTES_TAG);
 
-		if(!features.empty())
+		if(!features.empty())                        // remove leading ","
 			features.erase(features.begin());
 
 		scenery["features"] = features;
+		scenery["validatedAgainst"] = gPackageMgr->GetXPversion();
 		scenery["icao"] = icao;
 		scenery["masterZipBlob"] = uu64;
 		
@@ -763,8 +764,6 @@ void WED_GatewayExportDialog::Submit()
 
 void WED_GatewayExportDialog::TimerFired()
 {
-	string good_msg = "";
-	string bad_msg = "";
 		
 	if(mPhase == expt_dialog_download_airport_metadata)
 	{
@@ -777,12 +776,23 @@ void WED_GatewayExportDialog::TimerFired()
 			{
 				WED_GatewayExportDialog::mAirportMetadataCSVPath = res.out_path;
 				mPhase = expt_dialog_upload_to_gateway;
-				good_msg = "Airport metadata defaults have been downloaded succesfully.";
+
+				string ver(gPackageMgr->GetXPversion());
+				if(ver.find("rc") != ver.npos )
+					this->AddLabel("Airport metadata defaults have been downloaded succesfully.");
+				else
+				{
+					stringstream ss;
+					ss << "The selected X-Plane Folder contains an unreleased X-plane version " << ver << "\n";
+					ss << "This can cause validation to miss deprecated or unavailable items.\n \n";
+					ss << "All submissions are re-validated with the last officially released X-Plane version.";
+					this->AddLabel(ss.str().c_str());
+				}
 			}
 			else if(res.out_status == cache_status_error)
 			{
 				mPhase = expt_dialog_done;
-				bad_msg = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());
+				this->AddLabel(InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle()));
 			}
 		}
 		return;
@@ -793,7 +803,10 @@ void WED_GatewayExportDialog::TimerFired()
 		if(mCurl->is_done())
 		{
 			Stop();
-		
+
+			string good_msg = "";
+			string bad_msg = "";
+
 			mPhase = expt_dialog_done;
 			if(mCurl->is_ok())
 			{

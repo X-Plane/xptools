@@ -59,6 +59,9 @@ public:
 	string		ComputePath(const string& package, const string& rel_file) const;
 	string		ReducePath(const string& package, const string& full_file) const;
 
+	const char * GetXPversion() const;                           // report apparent XP installation version by looking at Log.txt
+	bool		IsSameXPVersion( const string& version) const;
+
 private:
 
 	string			system_path;
@@ -71,6 +74,7 @@ private:
 	vector<bool>	global_package_hasPublicItems;
 	vector<bool>	default_package_hasPublicItems;
 
+	string			XPversion;     // apparent version of XP install, from examining Log.txt
 };
 
 extern WED_PackageMgr *		gPackageMgr;

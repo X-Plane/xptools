@@ -255,6 +255,24 @@ void		WED_PackageMgr::Rescan(void)
 	for (int i=0; i<default_package_names.size(); ++i)
 			default_package_hasPublicItems.push_back(false);
 
+	XPversion = "Unknown";
+	string logfile = system_path + DIR_STR "Log.txt";
+	FILE *f = fopen(logfile.c_str(),"r");  // not using ifstream as its not unicode aware
+	if (f)
+	{
+		char c[100];
+		fgets(c,100,f);
+		fclose(f);
+
+		char * v_pos = strcasestr(c,"X-Plane");  // version string is the one behind the X-plane keyword
+		if (v_pos)
+		{
+			char v[16];
+			sscanf(v_pos+8,"%15s",v);
+			XPversion = v;
+		}
+	}
+
 	BroadcastMessage(msg_SystemFolderChanged,0);
 }
 
@@ -297,4 +315,14 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 		partial = string("../") + partial;
 	}
 	return partial;
+}
+
+const char * WED_PackageMgr::GetXPversion() const
+{
+	return XPversion.c_str();
+}
+
+bool		WED_PackageMgr::IsSameXPVersion( const string& version) const
+{
+	return (XPversion == version);   // might have to refine that, i.e. consider various all release candidates to be equivalent ?
 }
