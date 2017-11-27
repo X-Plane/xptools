@@ -778,7 +778,7 @@ void WED_GatewayExportDialog::TimerFired()
 				mPhase = expt_dialog_upload_to_gateway;
 
 				string ver(gPackageMgr->GetXPversion());
-				if(ver.find("rc") != ver.npos )
+				if(ver.find('r') != ver.npos )
 					this->AddLabel("Airport metadata defaults have been downloaded succesfully.");
 				else
 				{
