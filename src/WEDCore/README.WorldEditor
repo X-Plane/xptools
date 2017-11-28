@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a7
+WED 1.7.0a8
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
@@ -26,6 +26,8 @@ WED 1.7.0a7
 	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
 	- WED-926: Allow viewving of full/long property name by clicking on it
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
+	- Warn about unreleased X-plane versions at gateway export
+	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for gatewy submissions
 	- Flow editing enhancements: Preset METAR ICAO, create meaningfull wind/time rules names
 	- geotiff import enhancements: decode almost any format currently use to encode coordinates, not only WGS84
 	- Previews allow to cycle through all variants for multi-exported items
