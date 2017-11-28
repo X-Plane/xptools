@@ -732,7 +732,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		
 		//!!IMPORTANT!! Use of ".operator[]" because the author of jsoncpp didn't read Scott Meyer's "Item 26: Guard against potential ambiguity"!
 		tmp.sceneryId     = curScenery.operator[]("sceneryId").asInt();
-		tmp.icao          = curScenery.operator[]("icao").asString();
+		tmp.icao          = airport["icao"].asString();
 		tmp.isRecommended = tmp.sceneryId == airport.operator[]("recommendedSceneryId").asInt();
 		
 		tmp.parentId = curScenery.operator[]("parentId").asInt();
@@ -883,7 +883,6 @@ bool WED_GatewayImportDialog::NextVersionsDownload()
 	
 	int id = mVersions_Vers[*index].sceneryId;
 	//Start the download
-	
 	StartSpecificVersionDownload(id,mVersions_Vers[*index].icao);
 
 	//Erase that one off the queue
