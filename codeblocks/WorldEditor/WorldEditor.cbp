@@ -347,6 +347,8 @@
 		<Unit filename="../../src/WEDEntities/WED_FacadeNode.h" />
 		<Unit filename="../../src/WEDEntities/WED_FacadePlacement.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_FacadePlacement.h" />
+		<Unit filename="../../src/WEDEntities/WED_FacadePreview.cpp" />
+		<Unit filename="../../src/WEDEntities/WED_FacadePreview.h" />
 		<Unit filename="../../src/WEDEntities/WED_FacadeRing.cpp" />
 		<Unit filename="../../src/WEDEntities/WED_FacadeRing.h" />
 		<Unit filename="../../src/WEDEntities/WED_ForestPlacement.cpp" />
