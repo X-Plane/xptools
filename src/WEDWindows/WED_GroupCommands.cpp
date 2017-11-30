@@ -1003,15 +1003,15 @@ void	WED_DoSelectConnected(IResolver * resolver)
 	op->CommitOperation();
 }
 
-void select_zero_recursive(WED_Thing * t, ISelection * s)
+void WED_select_zero_recursive(WED_Thing * t, set<WED_GISEdge *> *s)
 {
-	IGISEdge * e = dynamic_cast<IGISEdge *>(t);
+	WED_GISEdge * e = dynamic_cast<WED_GISEdge *>(t);
 	if(e)
 	if(e->GetNthPoint(0) == e->GetNthPoint(1))
-		s->Insert(t);
+		s->insert(e);
 	int nn = t->CountChildren();
 	for(int n = 0; n < nn; ++n)
-		select_zero_recursive(t->GetNthChild(n), s);
+		WED_select_zero_recursive(t->GetNthChild(n), s);
 }
 
 bool WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree)
@@ -1020,7 +1020,11 @@ bool WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Select Zero-Length Edges");
 	sel->Clear();
-	select_zero_recursive(sub_tree ? sub_tree : WED_GetWorld(resolver), sel);
+
+	set<WED_GISEdge *> edges;
+	WED_select_zero_recursive(sub_tree ? sub_tree : WED_GetWorld(resolver), &edges);
+	
+	sel->Insert(set<ISelectable*>(edges.begin(), edges.end()));
 	
 	if(sel->GetSelectionCount() == 0)
 	{
@@ -1034,15 +1038,13 @@ bool WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree)
 	}
 }
 
-bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
+set<WED_Thing *> WED_select_doubles(WED_Thing * t)
 {
-	ISelection * sel = WED_GetSelect(resolver);
-	IOperation * op = dynamic_cast<IOperation *>(sel);
-	op->StartOperation("Select Zero-Length Edges");
-	sel->Clear();
 
 	vector<WED_Thing *> pts;
-	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(pts), ThingNotHidden, IsGraphNode);
+	CollectRecursive(t, back_inserter(pts), ThingNotHidden, IsGraphNode);
+
+	set<WED_Thing *> doubles;
 	
 	// Ben says: yes this totally sucks - replace it someday?
 	for(int i = 0; i < pts.size(); ++i)
@@ -1060,12 +1062,25 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 			
 			if(p1.squared_distance(p2) < (DOUBLE_PT_DIST*DOUBLE_PT_DIST))
 			{
-				sel->Insert(pts[i]);
-				sel->Insert(pts[j]);
+				doubles.insert(pts[i]);
+				doubles.insert(pts[j]);
 				break;
 			}			
 		}
 	}
+	return doubles;
+}
+
+bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Select Double Nodes");
+
+	set<WED_Thing*> things = WED_select_doubles(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree);
+
+	sel->Clear();
+	sel->Insert(set<ISelectable*>(things.begin(), things.end()));
 
 	if(sel->GetSelectionCount() == 0)
 	{
@@ -1079,7 +1094,15 @@ bool WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree)
 	}	
 }
 
-set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges)
+set<WED_GISEdge *> WED_do_select_crossing(WED_Thing * t)
+{
+	vector<WED_GISEdge *> edges;
+	CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
+
+	return WED_do_select_crossing(edges);
+}
+
+set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
 {
 	set<WED_GISEdge*> crossed_edges;
 	// Ben says: yes this totally sucks - replace it someday?
@@ -1137,10 +1160,8 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 	sel->Clear();
 	//-----------------
 
-	vector<WED_GISEdge *> edges;
-	CollectRecursive(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree, back_inserter(edges), ThingNotHidden, IsGraphEdge);
+	set<WED_GISEdge *> crossed_edges = WED_do_select_crossing(sub_tree == NULL ? WED_GetWorld(resolver) : sub_tree);
 	
-	set<WED_GISEdge *> crossed_edges = do_select_crossing(edges);
 	sel->Insert(set<ISelectable*>(crossed_edges.begin(), crossed_edges.end()));
 
 	//--Keep-------------------------

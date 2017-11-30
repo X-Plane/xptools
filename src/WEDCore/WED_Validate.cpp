@@ -1924,6 +1924,27 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	else if(!is_all_alnum(icao))
 		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_no_icao, apt,apt));
 
+#if !GATEWAY_IMPORT_FEATURES
+	set<WED_GISEdge*> edges;
+	WED_select_zero_recursive(apt, &edges);
+	if(edges.size())
+	{
+		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. These should be deleted.", err_airport_no_name, edges, apt));
+	}
+
+	set<WED_Thing*> points = WED_select_doubles(apt);
+	if(points.size())
+	{
+		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_no_name, points, apt));
+	}
+
+	edges = WED_do_select_crossing(apt);
+	if(edges.size())
+	{
+		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.", err_airport_no_name, edges, apt));
+	}
+#endif
+
 	set<int>		legal_rwy_oneway;
 	set<int>		legal_rwy_twoway;
 
@@ -2223,41 +2244,6 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	printf("Export Target: %s\n", exp_target_str.c_str());
 #endif
 
-#if !GATEWAY_IMPORT_FEATURES
-	string msg = "";
-	if(WED_DoSelectZeroLength(resolver))
-	{
-		msg = "Your airport contains zero-length ATC routing lines. These should be deleted.";
-#if !FIND_BAD_AIRPORTS
-		DoUserAlert(msg.c_str());
-		return false;
-#else
-		printf("%s\n", msg.c_str());
-#endif
-	}
-
-	if(WED_DoSelectDoubles(resolver))
-	{
-		msg = "Your airport contains doubled ATC routing nodes. These should be merged.";
-#if !FIND_BAD_AIRPORTS
-		DoUserAlert(msg.c_str());
-		return false;
-#else
-		printf("%s\n", msg.c_str());
-#endif
-	}
-
-	if(WED_DoSelectCrossing(resolver))
-	{
-		msg = "Your airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.";
-#if !FIND_BAD_AIRPORTS
-		DoUserAlert(msg.c_str());
-		return false;
-#else
-		printf("%s\n", msg.c_str());
-#endif
-	}
-#endif
 
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2269,8 +2255,6 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 	validation_error_vector		msgs;
 
 	if(wrl == NULL) wrl = WED_GetWorld(resolver);
-
-	ISelection * sel = WED_GetSelect(resolver);
 
 	WED_LibraryMgr * lib_mgr = 	WED_GetLibraryMgr(resolver);
 	WED_ResourceMgr * res_mgr = 	WED_GetResourceMgr(resolver);
@@ -2357,13 +2341,15 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 
 	if(!msgs.empty())
 	{
-		DoUserAlert(msgs.front().msg.c_str());
-
+		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");
+
 		sel->Clear();
 		for(vector<WED_Thing *>::iterator b = msgs.front().bad_objects.begin(); b != msgs.front().bad_objects.end(); ++b)
 			sel->Insert(*b);
 		wrl->CommitOperation();
+		
+		DoUserAlert(msgs.front().msg.c_str());
 		return GATEWAY_IMPORT_FEATURES;
 	}
 

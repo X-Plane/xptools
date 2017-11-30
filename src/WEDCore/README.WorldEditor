@@ -25,6 +25,7 @@ WED 1.7.0a8
 	- WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
 	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
 	- WED-926: Allow viewving of full/long property name by clicking on it
+	- WED-954: Bring ATC taxi route validations inline with other validations and report in validation_error.txt
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
 	- Warn about unreleased X-plane versions at gateway export
 	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for gatewy submissions
