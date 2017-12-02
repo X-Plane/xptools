@@ -39,7 +39,15 @@ private:
 	FILE_case_correct_path& operator=(const FILE_case_correct_path& rhs);
 };
 
-//Tests for file/folder case correctness on LIN, returns 1/0, or always 1 on IBM or APL
+/* Tests and corrects path as needed for file/folder case correctness 
+   on LIN it
+   returns 1 if file exists using case-sensitive filename matching
+   returns 1 if file exists, but path is not case-correct, aka file-insensitive match. In this case the path is corrected to case-match the actual file name.
+   returns 0 is file can not be found at all with case-insensitive match
+
+   On APL or IBM its does nothing and always returns 1, as these file systems are always case insensitive.
+*/
+
 int FILE_case_correct(char * buf);
 
 /* FILE API Overview
