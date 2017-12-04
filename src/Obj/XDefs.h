@@ -301,9 +301,19 @@ public:
 private:
 	_Myfb _Filebuffer;
 };
-
-
 #endif
+#endif
+
+#if LIN
+// This is to put an case-insensitive fopen in place, see in FileUtils.cpp
+
+#ifdef __cplusplus
+extern "C" FILE* x_fopen(const char * _Filename, const char * _Mode);
+#else
+extern FILE* x_fopen(const char * _Filename, const char * _Mode);
+#endif
+
+#define fopen(_Filename,_Mode) x_fopen(_Filename, _Mode)
 #endif
 
 #if APL

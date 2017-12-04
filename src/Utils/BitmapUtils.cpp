@@ -1335,7 +1335,8 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 #if SUPPORT_UNICODE
     TIFF* tif = TIFFOpenW(convert_str_to_utf16(inFilePath).c_str(), "r");
 #else
-    TIFF* tif = TIFFOpen(inFilePath, "r");
+	FILE_case_correct_path path(inFilePath);  // If earth.wed.xml with case-incorrect .tif references are exchanged, this helps on Linux
+    TIFF* tif = TIFFOpen(path, "r");
 #endif
     if (tif == NULL) goto bail;
 

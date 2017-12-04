@@ -77,7 +77,7 @@ int FILE_case_correct(char * buf);
 	get_directory_recursive's vectors of strings contain fully qualified names, unlike get_directory.
 /*/
 
-//Returns true if the file exists, returns false if it doesn't
+//Returns true if the file (or directory) exists, returns false if it doesn't
 bool FILE_exists(const char * path);
 
 // returns file extension, NOT including the dot, always as lower case
