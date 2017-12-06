@@ -459,6 +459,11 @@ void	UTMToLonLat(double x, double y, int zone, double * outLon, double * outLat)
 	if (outLat) *outLat = sUV.v * RAD_TO_DEG;
 }
 
+double	LonLatDistMeters(Point2 lonlat1, Point2 lonlat2)
+{
+	return LonLatDistMeters(lonlat1.x(), lonlat1.y(), lonlat2.x(), lonlat2.y());
+}
+
 
 double	LonLatDistMeters(double lon1, double lat1, double lon2, double lat2)
 {
