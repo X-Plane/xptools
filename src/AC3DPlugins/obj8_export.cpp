@@ -591,7 +591,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 					m.v1_max = OBJ_get_anim_nth_value(gOuterTransForAutoManip, kfc-1);
 
 					anim_trans_nth(gOuterTransForAutoManip, 0	 , t0);
-					anim_trans_nth(gOuterTransForAutoManip, kfd-1, t1);
+					anim_trans_nth(gOuterTransForAutoManip, kfc-1, t1);
 					m.axis[0] = t1[0] - t0[0];
 					m.axis[1] = t1[1] - t0[1];
 					m.axis[2] = t1[2] - t0[2];
