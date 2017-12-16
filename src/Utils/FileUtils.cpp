@@ -567,7 +567,8 @@ int FILE_delete_dir_recursive(const string& path)
 	r = FILE_delete_file(path.c_str(),true);
 	return r;
 }
-	
+
+#if WED	
 static int compress_one_file(zipFile archive, const string& src, const string& dst)
 {
 	FILE * srcf = fopen(src.c_str(),"rb");
@@ -581,7 +582,6 @@ static int compress_one_file(zipFile archive, const string& src, const string& d
 	time_t		t;			
 	time(&t);
 	struct tm * our_time = localtime(&t);
-
 	if(our_time)
 	{
 		fi.tmz_date.tm_sec  = our_time->tm_sec ;
@@ -670,3 +670,4 @@ int FILE_compress_dir(const string& src_path, const string& dst_path, const stri
 	return r;
 	
 }
+#endif // WED
