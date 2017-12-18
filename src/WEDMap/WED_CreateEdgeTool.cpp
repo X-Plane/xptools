@@ -213,7 +213,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	int stop = closed ? pts.size() : pts.size()-1;
 	int start = 0;
 
-	WED_GISPoint * c;
+	WED_GISPoint * c = NULL;
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	

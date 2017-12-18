@@ -590,7 +590,7 @@ bool	WED_MergePoints(const vector<IGISEntity *>& in_points)
 	vector<WED_Thing *>	things;
 
 	Point2	avg(0.0,0.0);
-	IGISPoint * keeper;
+	IGISPoint * keeper = NULL;
 
 	for(int n = 0; n < in_points.size(); ++n)
 	{

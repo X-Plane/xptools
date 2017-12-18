@@ -121,6 +121,12 @@
  * STL AND OTHER GLOBAL INCLUDES THAT WE LIKE ENOUGH TO HAVE EVERYWHERE
  ************************************************************************************************************************************************************************/
 
+#if defined(_MSC_VER)
+	#define _CRT_SECURE_NO_WARNING
+	#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
+
+ 
 #ifdef __cplusplus
 
 #include <vector>
@@ -233,7 +239,8 @@ using namespace std;
 #if defined(_MSC_VER)
 
 	#ifdef __cplusplus
-	#define _USE_MATH_DEFINES
+		#define _USE_MATH_DEFINES
+		#define _SILENCE_STDEXT_HASH_WARNINGS
 		#include <hash_map>
 		using namespace stdext;	// Ben says - can't entirely blame MSVC for this - hash maps are NOT stardard - a weakness of the STL that causes much grief!
 		using namespace std;
@@ -252,6 +259,8 @@ using namespace std;
 
 	#define ENOERR 0
 	#define snprintf _snprintf
+	#define strdup _strdup
+	#define mkstemp _mktemp
 
 #if __cplusplus
 	static __inline double round(double v) { return floor(v+0.5); }

@@ -424,7 +424,7 @@ struct	Polygon2 : public vector<Point2> {
 	
 		const Polygon2 * p_;
 		int n_;
-		Segment2 operator*(){ return p_->side(n_); }
+		Segment2 operator*() const { return p_->side(n_); }
 		const_side_iterator& operator++() { ++n_; return *this; }
 		bool operator==(const const_side_iterator& rhs) const { return p_ == rhs.p_ && n_ == rhs.n_; }
 		bool operator!=(const const_side_iterator& rhs) const { return p_ != rhs.p_ || n_ != rhs.n_; }

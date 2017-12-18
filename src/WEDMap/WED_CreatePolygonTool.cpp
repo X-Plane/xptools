@@ -144,8 +144,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 		is_facade = dynamic_cast<WED_FacadeRing*>(old_outer_ring) != NULL;
 	}
 
-	WED_AirportChain *	apt_ring=NULL;
-	WED_Thing *			outer_ring;
+	WED_AirportChain *	apt_ring = NULL;
+	WED_Thing *			outer_ring = NULL;
 
 		 if(is_apt)					outer_ring = apt_ring = WED_AirportChain::CreateTyped(GetArchive());
 	else if(is_forest)				outer_ring			  = WED_ForestRing::CreateTyped(GetArchive());

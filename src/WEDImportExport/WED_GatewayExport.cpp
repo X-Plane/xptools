@@ -567,18 +567,14 @@ void WED_GatewayExportDialog::Submit()
 
 		ILibrarian * lib = WED_GetLibrarian(mResolver);
 
-		string temp_folder("tempXXXXXX");
-		lib->LookupPath(temp_folder);
-		vector<char> temp_chars(temp_folder.begin(),temp_folder.end());
-		temp_chars.push_back(0);
+		string targ_folder("tempXXXXXX");
+		lib->LookupPath(targ_folder);
 
-		if(!mktemp(&temp_chars[0]))
+		if(!mkstemp((char *) targ_folder.c_str()))    // its safe, as length will never change
 		{
 			gExportTarget = old_target;
 			return;
 		}
-		temp_chars.pop_back();
-		string targ_folder(temp_chars.begin(),temp_chars.end());
 		targ_folder += DIR_STR;
 
 		printf("Dest: %s\n", targ_folder.c_str());

@@ -167,7 +167,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	WED_Sealane *					sea;
 
 	WED_Runway *					rwy;
-	WED_Helipad *					helipad;
+	WED_Helipad *					helipad = NULL;
 
 	WED_LightFixture *				lfix;
 	WED_AirportSign *				sign;

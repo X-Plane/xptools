@@ -73,7 +73,7 @@ void	WED_CreateBoxTool::AcceptPath(
 	int idx;
 	WED_Thing * host = WED_GetCreateHost(GetResolver(), false, true, idx);
 	WED_ExclusionZone * exc;
-	WED_GISBoundingBox * obj;
+	WED_GISBoundingBox * obj = NULL;
 
 	switch(mType) {
 	case create_Exclusion:

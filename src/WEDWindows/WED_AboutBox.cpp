@@ -64,7 +64,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 	const char * main_text[] = {
 		"",
 		"WorldEditor " WED_VERSION_STRING_SHORT,
-		"©Copyright 2007-2016, Laminar Research.",
+		"©Copyright 2007-2017, Laminar Research.",
 		"",
 		"This software is available under an open license.",
 		"Visit http://developer.x-plane.com/code/ for more info.",
@@ -80,7 +80,7 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 
 	char buf[1024];
 
-	sprintf(buf,"WorldEditor " WED_VERSION_STRING ", compiled on "__DATE__" "__TIME__);
+	sprintf(buf,"WorldEditor " WED_VERSION_STRING ", compiled on " __DATE__ " " __TIME__);
 
 	GUI_FontDrawScaled(state, font_UI_Basic, color,
 		bounds[0],

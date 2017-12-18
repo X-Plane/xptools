@@ -2529,7 +2529,7 @@ static int CountChildOfTypeRecursive(WED_Thing* thing, bool must_be_visible, int
 		{
 			return accumulator;
 		}
-		else if(test_ent->GetHidden() == true && must_be_visible == true)
+		else if(test_ent->GetHidden() && must_be_visible == true)
 		{
 			return accumulator;
 		}
