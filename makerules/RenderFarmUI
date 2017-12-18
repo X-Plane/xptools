@@ -15,9 +15,9 @@ LIBS		+= -Wl,--as-needed
 LIBS		+= -Wl,-Bstatic -Wl,--start-group
 LIBS		+= -lexpat -lsquish -lshp -lgeotiff
 LIBS		+= -lCGAL -lCGAL_Core -lproj -lfreetype -ltiff -ljpeg -lpng -lz -ljasper
-LIBS		+= -lgmp -lmpfr -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -lgmp -lmpfr -lstdc++ -lgcc -lgcc_eh
 LIBS		+= -Wl,--end-group -Wl,-Bdynamic
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lm
 LIBS		+= -lboost_thread -lboost_system -lpthread
 endif #PLAT_LINUX
 
