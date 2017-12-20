@@ -256,19 +256,15 @@ void		WED_PackageMgr::Rescan(void)
 			default_package_hasPublicItems.push_back(false);
 
 	XPversion = "Unknown";
-	string logfile = system_path + DIR_STR "Log.txt";
-	FILE *f = fopen(logfile.c_str(),"r");  // not using ifstream as its not unicode aware
-	if (f)
+	string logfile_name = system_path + DIR_STR "Log.txt";
+	string logfile_contents;
+	if (FILE_read_file_to_string(logfile_name, logfile_contents))
 	{
-		char c[100];
-		fgets(c,100,f);
-		fclose(f);
-
-		char * v_pos = strcasestr(c,"X-Plane");  // version string is the one behind the X-plane keyword
-		if (v_pos)
+		size_t v_pos = logfile_contents.find("X-Plane",0,100);  // version string is the one behind the X-plane keyword
+		if (v_pos != string::npos)
 		{
 			char v[16];
-			sscanf(v_pos+8,"%15s",v);
+			sscanf(logfile_contents.c_str()+v_pos+8,"%15s",v);
 			XPversion = v;
 		}
 	}
