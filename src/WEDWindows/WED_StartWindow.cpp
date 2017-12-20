@@ -253,6 +253,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 			if (mScroller->IsVisible()) {
 				gPackageMgr->GetXPlaneFolder(m);
 				m = string("Scenery packages in: ") + m;
+				m += "  ( X-Plane version " + string(gPackageMgr->GetXPversion()) + " )";
 				child[1] = me[3] - 15;
 				child[3] = me[3] - 15;
 			} else {

@@ -258,10 +258,11 @@ void		WED_PackageMgr::Rescan(void)
 	XPversion = "Unknown";
 	string logfile_name = system_path + DIR_STR "Log.txt";
 	string logfile_contents;
-	if (FILE_read_file_to_string(logfile_name, logfile_contents))
+	if (FILE_exists(logfile_name.c_str()) &&
+		FILE_read_file_to_string(logfile_name, logfile_contents) == 0)
 	{
-		size_t v_pos = logfile_contents.find("X-Plane",0,100);  // version string is the one behind the X-plane keyword
-		if (v_pos != string::npos)
+		size_t v_pos = logfile_contents.find("X-Plane");  // version string is the one behind the X-plane keyword
+		if (v_pos != string::npos && v_pos < 100)
 		{
 			char v[16];
 			sscanf(logfile_contents.c_str()+v_pos+8,"%15s",v);
