@@ -761,7 +761,6 @@
 		D6E941DF10DC717300192A02 /* MapRaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941DA10DC717300192A02 /* MapRaster.cpp */; };
 		D6E941E010DC717300192A02 /* ForestTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941D810DC717300192A02 /* ForestTables.cpp */; };
 		D6E941E110DC717300192A02 /* MapRaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E941DA10DC717300192A02 /* MapRaster.cpp */; };
-		D6EA9CC711A0B2C8004ADCCC /* WED_DataModel2.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6424EFD115948CD0031370E /* WED_DataModel2.sql */; };
 		D6EAA00F11A19ECA004ADCCC /* WED_RoadEdge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */; };
 		D6ED369D0B67964D00D5484E /* XWin.mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37630AB22C85003949C5 /* XWin.mac.mm */; };
 		D6ED369E0B67964D00D5484E /* XWinGL.mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = D6BC37680AB22C85003949C5 /* XWinGL.mac.mm */; };
@@ -827,8 +826,6 @@
 		D6ED37400B67964D00D5484E /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = D656B2780B51883C003FF84F /* libz.dylib */; };
 		D6ED39B20B67D08F00D5484E /* WED_AppMain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */; };
 		D6ED3AFD0B67F0B000D5484E /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
-		D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
-		D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */ = {isa = PBXBuildFile; fileRef = D6ED3D100B6A369900D5484E /* WED_DataModel.sql */; };
 		D6ED3E050B6A61A700D5484E /* GUI_Resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */; };
 		D6ED3ECA0B6A753300D5484E /* WED_PropertyTable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3EC90B6A753300D5484E /* WED_PropertyTable.cpp */; };
 		D6ED40410B6AD47300D5484E /* WED_Archive.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED40370B6AD47300D5484E /* WED_Archive.cpp */; };
@@ -1244,7 +1241,6 @@
 		D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlockAlgs.cpp; sourceTree = "<group>"; };
 		D63F72731180917800AB7C1F /* BlockFill.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BlockFill.h; sourceTree = "<group>"; };
 		D63F72741180917800AB7C1F /* BlockFill.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BlockFill.cpp; sourceTree = "<group>"; };
-		D6424EFD115948CD0031370E /* WED_DataModel2.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = WED_DataModel2.sql; sourceTree = "<group>"; };
 		D64A08A8127AFDC1000D58A7 /* NetAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetAlgs.h; sourceTree = "<group>"; };
 		D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetAlgs.cpp; sourceTree = "<group>"; };
 		D64A08AD127AFDEA000D58A7 /* NetHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetHelpers.h; sourceTree = "<group>"; };
@@ -1993,11 +1989,10 @@
 		D6E941DB10DC717300192A02 /* MapRaster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapRaster.h; sourceTree = "<group>"; };
 		D6EAA00D11A19ECA004ADCCC /* WED_RoadEdge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RoadEdge.h; sourceTree = "<group>"; };
 		D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RoadEdge.cpp; sourceTree = "<group>"; };
-		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = archive.zip; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AppMain.cpp; sourceTree = "<group>"; };
 		D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileUtils.cpp; sourceTree = "<group>"; };
 		D6ED3B030B67F0E500D5484E /* FileUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtils.h; sourceTree = "<group>"; };
-		D6ED3D100B6A369900D5484E /* WED_DataModel.sql */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = WED_DataModel.sql; sourceTree = "<group>"; };
 		D6ED3E030B6A61A700D5484E /* GUI_Resources.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Resources.cpp; sourceTree = "<group>"; };
 		D6ED3E040B6A61A700D5484E /* GUI_Resources.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GUI_Resources.h; sourceTree = "<group>"; };
 		D6ED3E4D0B6A674000D5484E /* GUI_TextTable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_TextTable.h; sourceTree = "<group>"; };
@@ -3030,7 +3025,6 @@
 				D652F3E31D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.h */,
 				D6110F981C32136000A37784 /* WED_Sign_Parser.h */,
 				D6F72EAF18A1489700DB1193 /* WED_Sign_Parser.cpp */,
-				D6424EFD115948CD0031370E /* WED_DataModel2.sql */,
 				D6956ED00F82E91100F6718E /* WED_Assert.cpp */,
 				D6956ED10F82E91100F6718E /* WED_Assert.h */,
 				D6956ED20F82E91100F6718E /* WED_Globals.cpp */,
@@ -3059,7 +3053,6 @@
 				D6BC37C90AB22C85003949C5 /* WED_Messages.h */,
 				D6BC37CC0AB22C85003949C5 /* WED_Package.cpp */,
 				D6BC37CD0AB22C85003949C5 /* WED_Package.h */,
-				D6ED3D100B6A369900D5484E /* WED_DataModel.sql */,
 				D6FF28600B6E4A3600960D5E /* WED_PropertyHelper.h */,
 				D6FF28610B6E4A3600960D5E /* WED_PropertyHelper.cpp */,
 				D6A17E180BA5994900BBCD0C /* WED_EnumSystem.h */,
@@ -3857,6 +3850,12 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0710;
+				TargetAttributes = {
+					D6ED369A0B67964D00D5484E = {
+						DevelopmentTeam = 7U46C6N6EP;
+						ProvisioningStyle = Manual;
+					};
+				};
 			};
 			buildConfigurationList = C0E91AC908A95435008D54AB /* Build configuration list for PBXProject "SceneryTools_xcode6" */;
 			compatibilityVersion = "Xcode 6.3";
@@ -3918,7 +3917,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6ED3D560B6A57F800D5484E /* WED_DataModel.sql in Resources */,
 				D6A185AF0BA878B100BBCD0C /* checkbutton.png in Resources */,
 				D6A185B00BA878B100BBCD0C /* pushbutton.png in Resources */,
 				D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */,
@@ -4020,7 +4018,6 @@
 				D67B2A100C5661A100A21ABC /* line_WideBrokenSingle.png in Resources */,
 				D6C390020FA0D93400EFA56C /* sans.ttf in Resources */,
 				D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */,
-				D6EA9CC711A0B2C8004ADCCC /* WED_DataModel2.sql in Resources */,
 				D63D8E6113F32E5500E353E8 /* map_missing_obj.png in Resources */,
 				D6C21A3C1C41A5DB00EE5FB3 /* taxi_sign.png in Resources */,
 				D6080505154659A7001BE1A9 /* push_buttons.png in Resources */,
@@ -4032,14 +4029,6 @@
 				D6E4C95818EC91DE000D98B8 /* sconscript in Resources */,
 				D63D3A33192FA28F0004534A /* gateway.crt in Resources */,
 				D63A80201A997EB5008D218D /* COPYING in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D6ED3D420B6A4C1800D5484E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				D6ED3D440B6A4C2A00D5484E /* WED_DataModel.sql in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5200,7 +5189,9 @@
 		D60E98F30EDDDEEA0096DE0E /* Phone */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 7U46C6N6EP;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5231,7 +5222,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
@@ -5270,7 +5260,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
@@ -5467,7 +5456,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
@@ -5498,7 +5486,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
@@ -5745,7 +5732,9 @@
 		D6ED37470B67964D00D5484E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 7U46C6N6EP;
 				GCC_DEBUGGING_SYMBOLS = full;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
@@ -5777,7 +5766,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
@@ -5792,7 +5780,9 @@
 		D6ED37480B67964D00D5484E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 7U46C6N6EP;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5823,7 +5813,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
@@ -5930,7 +5919,9 @@
 		D6F01D770CDABA8D00A3F1B0 /* DebugOpt */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 7U46C6N6EP;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"USE_TIF=1",
 					"USE_JPEG=1",
@@ -5961,7 +5952,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libsquish.a,
 					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
@@ -5994,7 +5984,6 @@
 					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libsqlite3.a,
 					libs/local/lib/libCGAL.a,
 					libs/local/lib/libCGAL_Core.a,
 					libs/local/lib/libshp.a,
