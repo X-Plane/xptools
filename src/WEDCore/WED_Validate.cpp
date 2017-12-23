@@ -2174,7 +2174,10 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 					if (thr_err > CIFP_LOCATION_ERROR)
 					{
 						stringstream ss;
-						ss  << "Runway " << ENUM_Desc(r_cifp->first) << " threshold not within " <<  CIFP_LOCATION_ERROR << "m of location mandated by gateway CIFP data.";
+						if (rwy_err < CIFP_LOCATION_ERROR)
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " threshold displacement not matching gateway CIFP data. Move runway displaced threshold to indicated location.";
+						else
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " threshold not within " <<  CIFP_LOCATION_ERROR << "m of location mandated by gateway CIFP data.";
 						msgs.push_back(validation_error_t(ss.str(), err_runway_matching_cifp_mislocated, *r, apt));
 #if DEBUG_VIS_LINES
 						const int NUM_PTS = 20;
@@ -2193,11 +2196,13 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 #endif
 #endif
 					}
-					
 					if (rwy_err > CIFP_LOCATION_ERROR)
 					{
 						stringstream ss;
-						ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location recommended by gateway CIFP data.";
+						if (thr_err > CIFP_LOCATION_ERROR)
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location recommended by gateway CIFP data.";
+						else
+							ss  << "Runway " << ENUM_Desc(r_cifp->first) << " end not within " <<  CIFP_LOCATION_ERROR << "m of location recommended by gateway CIFP data. Move runway end to indicated location and pull back displaced threshold distance so runway threshold stays at current location";
 						msgs.push_back(validation_error_t(ss.str(), warn_runway_matching_cifp_mislocated, *r, apt));
 #if DEBUG_VIS_LINES
 						const int NUM_PTS = 20;
