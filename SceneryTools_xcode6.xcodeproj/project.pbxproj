@@ -47,6 +47,8 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
+		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
 		D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */; };
@@ -55,10 +57,8 @@
 		D604AEA61C0E0355006DC1F0 /* ObjCUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */; };
 		D604AEA71C0E08CB006DC1F0 /* ObjCUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */; };
 		D604AEAA1C0E1D6F006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
-		D604AEAE1C0E1E5E006DC1F0 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AEAD1C0E1E5E006DC1F0 /* Carbon.framework */; };
 		D604AEAF1C0E2F8E006DC1F0 /* ObjCUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */; };
 		D604AEB01C0E364E006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
-		D604AEB11C0E365A006DC1F0 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AEAD1C0E1E5E006DC1F0 /* Carbon.framework */; };
 		D604AEB21C0E3662006DC1F0 /* ObjCUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */; };
 		D604AEB51C0E7D7B006DC1F0 /* GLDebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D604AEB31C0E7D7B006DC1F0 /* GLDebugMacros.cpp */; };
 		D604AEB61C0E7D7B006DC1F0 /* GLDebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D604AEB31C0E7D7B006DC1F0 /* GLDebugMacros.cpp */; };
@@ -1015,8 +1015,6 @@
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
-		4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
-		4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCLayer.cpp; sourceTree = "<group>"; };
 		D60075371C56A30E0096D4D9 /* WED_ATCLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCLayer.h; sourceTree = "<group>"; };
@@ -1026,8 +1024,6 @@
 		D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		D604AEA41C0E0355006DC1F0 /* ObjCUtils.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ObjCUtils.mm; sourceTree = "<group>"; };
 		D604AEA51C0E0355006DC1F0 /* ObjCUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjCUtils.h; sourceTree = "<group>"; };
-		D604AEAB1C0E1E4B006DC1F0 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
-		D604AEAD1C0E1E5E006DC1F0 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		D604AEB31C0E7D7B006DC1F0 /* GLDebugMacros.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GLDebugMacros.cpp; sourceTree = "<group>"; };
 		D604AEB41C0E7D7B006DC1F0 /* GLDebugMacros.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLDebugMacros.h; sourceTree = "<group>"; };
 		D604AEB81C0EAEF1006DC1F0 /* WEDMainMenu.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = WEDMainMenu.xib; sourceTree = "<group>"; };
@@ -1912,7 +1908,6 @@
 		D6BC38C90AB22C85003949C5 /* TaxiMaker.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = TaxiMaker.cpp; sourceTree = "<group>"; };
 		D6BC38CA0AB22C85003949C5 /* TigerTool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = TigerTool.cpp; sourceTree = "<group>"; };
 		D6BC38CB0AB22C85003949C5 /* ViewObj.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ViewObj.cpp; sourceTree = "<group>"; };
-		D6BC3A6D0AB22E5C003949C5 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = ../../System/Library/Frameworks/AGL.framework; sourceTree = "<group>"; };
 		D6BC3A710AB22E67003949C5 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = ../../System/Library/Frameworks/OpenGL.framework; sourceTree = "<group>"; };
 		D6C21A3B1C41A5DB00EE5FB3 /* taxi_sign.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = taxi_sign.png; sourceTree = "<group>"; };
 		D6C37B160C27920D0023B35C /* GUI_Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_Help.h; sourceTree = "<group>"; };
@@ -1989,7 +1984,7 @@
 		D6E941DB10DC717300192A02 /* MapRaster.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MapRaster.h; sourceTree = "<group>"; };
 		D6EAA00D11A19ECA004ADCCC /* WED_RoadEdge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_RoadEdge.h; sourceTree = "<group>"; };
 		D6EAA00E11A19ECA004ADCCC /* WED_RoadEdge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_RoadEdge.cpp; sourceTree = "<group>"; };
-		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = archive.zip; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6ED37490B67964D00D5484E /* WED.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WED.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D6ED39B10B67D08F00D5484E /* WED_AppMain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_AppMain.cpp; sourceTree = "<group>"; };
 		D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FileUtils.cpp; sourceTree = "<group>"; };
 		D6ED3B030B67F0E500D5484E /* FileUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtils.h; sourceTree = "<group>"; };
@@ -2103,9 +2098,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D604AEAE1C0E1E5E006DC1F0 /* Carbon.framework in Frameworks */,
 				D604AEAA1C0E1D6F006DC1F0 /* AppKit.framework in Frameworks */,
 				D624353E0AE401EF004F00E3 /* OpenGL.framework in Frameworks */,
+				0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */,
 				D656B2790B51883C003FF84F /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2167,9 +2162,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D604AEB11C0E365A006DC1F0 /* Carbon.framework in Frameworks */,
 				D604AEB01C0E364E006DC1F0 /* AppKit.framework in Frameworks */,
 				D6ED373D0B67964D00D5484E /* OpenGL.framework in Frameworks */,
+				0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */,
 				D6ED37400B67964D00D5484E /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2197,10 +2192,6 @@
 		20286C29FDCF999611CA2CEA /* SceneryTools */ = {
 			isa = PBXGroup;
 			children = (
-				D604AEAD1C0E1E5E006DC1F0 /* Carbon.framework */,
-				D604AEAB1C0E1E4B006DC1F0 /* CoreServices.framework */,
-				D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */,
-				5048396909E3304600765E4B /* Configuration Files */,
 				20286C2AFDCF999611CA2CEA /* Source */,
 				20286C2CFDCF999611CA2CEA /* Resources */,
 				20286C32FDCF999611CA2CEA /* External Frameworks and Libraries */,
@@ -2230,19 +2221,10 @@
 			children = (
 				D656B2780B51883C003FF84F /* libz.dylib */,
 				D6BC3A710AB22E67003949C5 /* OpenGL.framework */,
-				D6BC3A6D0AB22E5C003949C5 /* AGL.framework */,
+				D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */,
 				20286C33FDCF999611CA2CEA /* Carbon.framework */,
-				4A9504CAFFE6A41611CA0CBA /* CoreServices.framework */,
-				4A9504C8FFE6A3BC11CA0CBA /* ApplicationServices.framework */,
 			);
 			name = "External Frameworks and Libraries";
-			sourceTree = "<group>";
-		};
-		5048396909E3304600765E4B /* Configuration Files */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = "Configuration Files";
 			sourceTree = "<group>";
 		};
 		D60734500D197AF600E08F61 /* MeshTool */ = {
@@ -3731,7 +3713,6 @@
 			buildPhases = (
 				D65E4B210B65427C004D7887 /* Sources */,
 				D65E4B340B65427C004D7887 /* Frameworks */,
-				D6ED3D420B6A4C1800D5484E /* Resources */,
 			);
 			buildRules = (
 			);
@@ -4889,7 +4870,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
 			};
@@ -4906,7 +4886,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
 			};
@@ -5137,7 +5116,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
 			};
@@ -5171,7 +5149,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Phone;
@@ -5219,15 +5196,12 @@
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
-					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
 			};
@@ -5397,7 +5371,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Debug;
@@ -5430,7 +5403,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = Release;
@@ -5763,15 +5735,12 @@
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
-					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
 			};
@@ -5810,15 +5779,12 @@
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
-					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
 			};
@@ -5835,7 +5801,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.ObjView;
 			};
@@ -5869,7 +5834,6 @@
 					libs/local/lib/libpng.a,
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libgeotiff.a,
-					libs/local/lib/libjasper.a,
 				);
 			};
 			name = DebugOpt;
@@ -5949,15 +5913,12 @@
 					libs/local/lib/libtiff.a,
 					libs/local/lib/libfreetype.a,
 					libs/local/lib/libproj.a,
-					libs/local/lib/libtiffxx.a,
 					libs/local/lib/libjpeg.a,
 					libs/local/lib/libgeotiff.a,
 					libs/local/lib/libsquish.a,
-					libs/local/lib/libshp.a,
 					libs/local/lib/libcrypto.a,
 					libs/local/lib/libssl.a,
 					libs/local/lib/libcurl.a,
-					libs/local/lib/libjasper.a,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.laminar_research.WED;
 			};

@@ -115,8 +115,8 @@ endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
+	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
 	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6
 	STRIPFLAGS	:= -x
 endif
@@ -355,6 +355,15 @@ $(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.c
 	|| $(print_error)
 
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.cpp
+	@$(print_comp_cxx) $(subst $(PWD)/, ./, $(abspath $(<)))
+	@-mkdir -p $(dir $(@))
+	@$(CXX) $(MACARCHS) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) \
+	-c $(<) -o $(@) || $(print_error)
+	@$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) $(CPPFLAGS) \
+	-MM -MT $(@) -MT $(@:.o=.cppdep) -o $(@:.o=.cppdep) $(<) \
+	|| $(print_error)
+
+$(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.mm
 	@$(print_comp_cxx) $(subst $(PWD)/, ./, $(abspath $(<)))
 	@-mkdir -p $(dir $(@))
 	@$(CXX) $(MACARCHS) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) \

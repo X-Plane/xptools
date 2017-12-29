@@ -22,7 +22,7 @@ LIBS		+= -lboost_thread -lboost_system -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
+LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
 LIBS		:= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libCGAL_Core.a
 LIBS		+= ./libs/local/lib/libboost_thread.a
@@ -48,8 +48,8 @@ endif #PLAT_DARWIN
 
 ifdef PLAT_LINUX
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
-SOURCES += ./src/Network/PCSBSocket.lin.cpp
-SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
+#SOURCES += ./src/Network/PCSBSocket.lin.cpp
+#SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
 MOCSRC += ./src/UI/XWin.h
@@ -61,6 +61,7 @@ endif #PLAT_LINUX
 ifdef PLAT_DARWIN
 SOURCES += ./src/UI/XWin.mac.cpp
 SOURCES += ./src/UI/XWinGL.mac.cpp
+SOURCES += ./src/UI/ObjCUtils.cpp
 SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
