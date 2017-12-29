@@ -356,7 +356,11 @@ SOURCES += ./src/lib_json/src/lib_json/json_value.cpp
 ###########
 
 ifdef PLAT_LINUX
-RESOURCES += ./src/WEDResources/WED.ico
+RESOURCES := ./src/WEDResources/WED.ico
+else
+RESOURCES := ./src/WEDResources/WED.icns
+XIB_RESOURCE := ./src/WEDResources/WEDMainMenu.xib
+endif
 RESOURCES += ./src/WEDResources/sans.ttf
 RESOURCES += ./src/WEDResources/pushbutton.png
 RESOURCES += ./src/WEDResources/push_buttons.png
@@ -462,4 +466,3 @@ RESOURCES += ./src/WEDResources/parking_spots/ClassC.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassD.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassE.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassF.png
-endif #PLAT_LINUX

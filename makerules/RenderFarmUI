@@ -225,6 +225,5 @@ SOURCES += ./src/WEDCore/WED_Sign_Parser.cpp
 # resources
 ###########
 
-ifdef PLAT_LINUX
-RESOURCES += ./src/WEDResources/sans.ttf
-endif #PLAT_LINUX
+RESOURCES := ./src/WEDResources/sans.ttf
+XIB_RESOURCE := ./src/XESTools/RFMainMenu.xib
