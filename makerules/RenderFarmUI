@@ -48,8 +48,8 @@ endif #PLAT_DARWIN
 
 ifdef PLAT_LINUX
 SOURCES += ./src/Utils/PlatformUtils.lin.cpp
-#SOURCES += ./src/Network/PCSBSocket.lin.cpp
-#SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
+SOURCES += ./src/Network/PCSBSocket.lin.cpp
+SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
 SOURCES += ./src/UI/XWin.lin.cpp
 SOURCES += ./src/UI/XWinGL.lin.cpp
 MOCSRC += ./src/UI/XWin.h
