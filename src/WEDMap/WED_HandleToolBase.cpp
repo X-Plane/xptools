@@ -29,6 +29,7 @@
 #include "XESConstants.h"
 #include "GUI_GraphState.h"
 #include "GUI_DrawUtils.h"
+#include "WED_DrawUtils.h"
 #include "WED_Entity.h"
 #include "IControlHandles.h"
 #include "IResolver.h"
@@ -685,10 +686,7 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 					}
 					if (ControlLinkToCurve(mHandles,eid,l,b,s,GetZoomer()))
 					{
-						int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
-											sqrt(Vector2(b.c1,b.c2).squared_length()) +
-											sqrt(Vector2(b.c2,b.p2).squared_length());
-						int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+						int point_count = BezierPtsCount(b,GetZoomer());
 
 						for (int n = 0; n < point_count; ++n)
 						{

@@ -462,8 +462,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			#endif
 			
 			int i, n = ps->GetNumSides();
-			double zb[4]; GetZoomer()->GetPixelBounds(zb[0], zb[1], zb[2], zb[3]);
-
+			WED_MapZoomerNew * z = GetZoomer();
+			
 			for (i = 0; i < n; ++i)
 			{
 				set<int>		attrs;
@@ -478,28 +478,13 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				Bezier2		b;
 				if (ps->GetSide(gis_Geo,i,s,b))
 				{
-					s.p1 = b.p1;
-					s.p2 = b.p2;
+					b.p1 = z->LLToPixel(b.p1);
+					b.p2 = z->LLToPixel(b.p2);
+					b.c1 = z->LLToPixel(b.c1);
+					b.c2 = z->LLToPixel(b.c2);
 
-					b.p1 = GetZoomer()->LLToPixel(b.p1);
-					b.p2 = GetZoomer()->LLToPixel(b.p2);
-					b.c1 = GetZoomer()->LLToPixel(b.c1);
-					b.c2 = GetZoomer()->LLToPixel(b.c2);
-
-					int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
-										sqrt(Vector2(b.c1,b.c2).squared_length()) +
-										sqrt(Vector2(b.c2,b.p2).squared_length());
-					int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+					int point_count = BezierPtsCount(b, z);
 					
-					Bbox2 bb; b.bounds_fast(bb);
-					bool visible = true;
-					if( bb.xmax() < zb[0]) visible = false;
-					if( bb.xmin() > zb[2]) visible = false;
-					if( bb.ymax() < zb[1]) visible = false;
-					if( bb.ymin() > zb[3]) visible = false;
-					
-					if (!visible) point_count = BEZ_MIN_SEGS; // greatly simplify not visible beziers
-
 					pts.reserve(point_count+1);
 					for (int n = 0; n <= point_count; ++n)
 						pts.push_back(b.midpoint((float) n / (float) point_count));
@@ -507,8 +492,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				}
 				else
 				{
-					pts.push_back(GetZoomer()->LLToPixel(s.p1));
-					pts.push_back(GetZoomer()->LLToPixel(s.p2));
+					pts.push_back(z->LLToPixel(s.p1));
+					pts.push_back(z->LLToPixel(s.p2));
 				}
 				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);
 				
