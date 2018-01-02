@@ -182,6 +182,9 @@ using namespace std;
 
 #ifdef __cplusplus
 
+#if DEV
+#include "PerfUtils.h"
+#endif
 
 #if __GNUC__							// gnuc is the x-code compiler
 

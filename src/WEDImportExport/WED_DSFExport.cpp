@@ -27,7 +27,6 @@
 #include "FileUtils.h"
 #include "WED_Entity.h"
 #include "PlatformUtils.h"
-//#include "GISUtils.h"
 #include "CompGeomDefs2.h"
 #include "WED_Group.h"
 #include "WED_Version.h"
@@ -57,7 +56,6 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include <time.h>
-#include "PerfUtils.h"
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
 
@@ -1996,8 +1994,9 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
+#if DEV
 	StElapsedTime	etime("Export time");
-
+#endif
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
 	
