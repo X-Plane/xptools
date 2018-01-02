@@ -18,6 +18,7 @@ WED 1.7.0a8
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
 	- code fixes to compile under MSVC 2017, XCode 8
+	- improve display speed when zoomed in very far and lots of bezier segments are present in the scenery
 	Features:
 	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
 	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes

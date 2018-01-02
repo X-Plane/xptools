@@ -462,6 +462,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			#endif
 			
 			int i, n = ps->GetNumSides();
+			double zb[4]; GetZoomer()->GetPixelBounds(zb[0], zb[1], zb[2], zb[3]);
+
 			for (i = 0; i < n; ++i)
 			{
 				set<int>		attrs;
@@ -484,11 +486,20 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					b.c1 = GetZoomer()->LLToPixel(b.c1);
 					b.c2 = GetZoomer()->LLToPixel(b.c2);
 
-
 					int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
 										sqrt(Vector2(b.c1,b.c2).squared_length()) +
 										sqrt(Vector2(b.c2,b.p2).squared_length());
 					int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+					
+					Bbox2 bb; b.bounds_fast(bb);
+					bool visible = true;
+					if( bb.xmax() < zb[0]) visible = false;
+					if( bb.xmin() > zb[2]) visible = false;
+					if( bb.ymax() < zb[1]) visible = false;
+					if( bb.ymin() > zb[3]) visible = false;
+					
+					if (!visible) point_count = BEZ_MIN_SEGS; // greatly simplify not visible beziers
+
 					pts.reserve(point_count+1);
 					for (int n = 0; n <= point_count; ++n)
 						pts.push_back(b.midpoint((float) n / (float) point_count));

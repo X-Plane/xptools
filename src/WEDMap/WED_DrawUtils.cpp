@@ -42,6 +42,8 @@ void PointSequenceToVector(
 			int						is_hole)
 {
 	int n = ps->GetNumSides();
+	double zb[4]; z->GetPixelBounds(zb[0], zb[1], zb[2], zb[3]);
+
 	for (int i = 0; i < n; ++i)
 	{
 		Segment2	s, suv;
@@ -53,12 +55,22 @@ void PointSequenceToVector(
 			b.p2 = z->LLToPixel(b.p2);
 			b.c1 = z->LLToPixel(b.c1);
 			b.c2 = z->LLToPixel(b.c2);
-
+			
 			int pixels_approx = sqrt(Vector2(b.p1,b.c1).squared_length()) +
 								sqrt(Vector2(b.c1,b.c2).squared_length()) +
 								sqrt(Vector2(b.c2,b.p2).squared_length());
 			int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
-					 pts. reserve(pts. capacity() + point_count * (get_uv ? 2 : 1));
+			
+			Bbox2 bb; b.bounds_fast(bb);
+			bool visible = true;
+			if( bb.xmax() < zb[0]) visible = false;
+			if( bb.xmin() > zb[2]) visible = false;
+			if( bb.ymax() < zb[1]) visible = false;
+			if( bb.ymin() > zb[3]) visible = false;
+			
+			if (!visible) point_count = BEZ_MIN_SEGS; // greatly simplify not visible beziers
+			
+			pts.reserve(pts. capacity() + point_count * (get_uv ? 2 : 1));
 			contours.reserve(contours.capacity() + point_count);
 			for (int k = 0; k < point_count; ++k)
 			{
@@ -482,6 +494,9 @@ void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<P
 							sqrt(Vector2(b.c1,b.c2).squared_length()) +
 							sqrt(Vector2(b.c2,b.p2).squared_length());
 		int point_count = intlim(pixels_approx / BEZ_PIX_PER_SEG, BEZ_MIN_SEGS, BEZ_MAX_SEGS);
+		
+printf("Side2Points len %d pts %d\n",  pixels_approx, point_count);
+
 		pts.reserve(point_count+1);
 		for (int n = 0; n <= point_count; ++n)
 			pts.push_back(b.midpoint((float) n / (float) point_count));
