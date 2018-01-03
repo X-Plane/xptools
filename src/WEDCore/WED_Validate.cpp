@@ -382,11 +382,10 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	vector<WED_Thing*> problem_children;
 	for(int n = 0; n < nn; ++n)
 	{
-		Bezier2 b; Segment2 s;
-		bool bez = ps->GetSide(gis_Geo,n,s,b);
-		if(bez) {s.p1 = b.p1; s.p2 = b.p2; }
+		Bezier2 b;
+		bool bez = ps->GetSide(gis_Geo,n,b);
 
-		if(s.p1 == s.p2)
+		if(b.p1 == b.p2)
 		{
 			// add first node of each zero length segment to list
 			problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
@@ -518,18 +517,16 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 
 					for (int i = 0; i < n_sides; ++i)
 					{
-						Segment2 s1;
 						Bezier2 b1;
-						bool isb1 = ips->GetSide(gis_Geo, i, s1, b1);
+						bool isb1 = ips->GetSide(gis_Geo, i, b1);
 						
 						if (isb1 && b1.self_intersect(10))
 							AddNodesOfSegment(ips,i,nodes_next2crossings);
 
 						for (int j = i + 1; j < n_sides; ++j)
 						{
-							Segment2 s2;
 							Bezier2 b2;
-							bool isb2 = ips->GetSide(gis_Geo, j, s2, b2);
+							bool isb2 = ips->GetSide(gis_Geo, j, b2);
 
 							if (isb1 || isb2)
 							{
@@ -547,7 +544,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 									b1.p2 != b2.p1)
 								{		
 									Point2 x;
-									if (s1.intersect(s2, x))
+									if (b1.as_segment().intersect(b2.as_segment(), x))
 									{
 										AddNodesOfSegment(ips,i,nodes_next2crossings);
 										AddNodesOfSegment(ips,j,nodes_next2crossings);

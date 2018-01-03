@@ -59,12 +59,9 @@ void			WED_GISEdge::GetBounds		(GISLayer_t l, Bbox2&  bounds) const
 {
 	CacheBuild(cache_Spatial);
 
-	Segment2	s;
 	Bezier2		b;
-	if(GetSide(l,0,s,b))
-		b.bounds(bounds);
-	else
-		bounds = Bbox2(s.p1,s.p2);
+	GetSide(l,0,b);
+	b.bounds(bounds);
 }
 
 bool			WED_GISEdge::IntersectsBox	(GISLayer_t l,const Bbox2&  bounds) const
@@ -88,20 +85,14 @@ bool			WED_GISEdge::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 	int n = GetNumSides();
 	for (int i = 0; i < n; ++i)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if (GetSide(l,i,s,b))
-		{
-			Bbox2	bb;
-			b.bounds(bb);
+		GetSide(l,i,b);
+		Bbox2	bb;
+		b.bounds(bb);
 			// Ben says: bounding-box of a bezier is assured to touch the extreme points of the bezier.
 			// Thus if the bezier's bounding box is inside, the whole bezier must be inside since all extreme
 			// points are.  And since there is no "slop", this is the only test we need.
-			if (!bounds.contains(bb)) return false;
-		} else {
-			if (!bounds.contains(s.p1)) return false;
-			if (!bounds.contains(s.p2)) return false;
-		}
+		if (!bounds.contains(bb)) return false;
 	}
 	return true;
 }
@@ -122,13 +113,12 @@ bool			WED_GISEdge::PtOnFrame		(GISLayer_t l,const Point2& p, double d) const
 	int c = GetNumSides();
 	for (int n = 0; n < c; ++n)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if (GetSide(l,n,s,b))
+		if (GetSide(l,n,b))
 		{
 			if (b.is_near(p,d)) return true;
 		} else {
-			if (s.is_near(p,d)) return true;
+			if (b.as_segment().is_near(p,d)) return true;
 		}
 	}
 	return false;
@@ -228,16 +218,13 @@ int					WED_GISEdge::GetNumSides(void) const
 	return 1;
 }
 
-bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Segment2& s, Bezier2& b) const
+bool				WED_GISEdge::GetSide  (GISLayer_t l,int n, Bezier2& b) const
 {
 	GetNthPoint(0)->GetLocation(l,b.p1);
 	GetNthPoint(1)->GetLocation(l,b.p2);
 
 	b.c1 = b.p1 + Vector2(ctrl_lon_lo.value,ctrl_lat_lo.value);
 	b.c2 = b.p2 + Vector2(ctrl_lon_hi.value,ctrl_lat_hi.value);
-	
-	s.p1 = b.p1;
-	s.p2 = b.p2;
 	
 	return (b.p1 != b.c1 || b.p2 != b.c2);
 }
@@ -274,12 +261,10 @@ WED_Thing *		WED_GISEdge::CreateSplitNode()
 
 IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 {
-	Segment2	s;
 	Bezier2		b;
-	bool is_b = GetSide(gis_Geo,0,s,b);
-	if (s.p1 == p || s.p2 == p) return NULL;
+	bool is_b = GetSide(gis_Geo,0,b);
+	if (b.p1 == p || b.p2 == p) return NULL;
 
-	
 	WED_Thing * p1 = GetNthSource(0);
 	WED_Thing * p2 = GetNthSource(1);
 
@@ -311,10 +296,12 @@ IGISPoint *	WED_GISEdge::SplitSide   (const Point2& p, double dist)
 	}
 	else
 	{
-		Segment2 s1(s), s2(s);
+		Segment2 s1, s2;
 		
+		s1.p1 = b.p1;
 		s1.p2 = p;
 		s2.p1 = p;
+		s2.p2 = b.p2;
 		
 		this->SetSide(gis_Geo, s1);
 		me2->SetSide(gis_Geo, s2);

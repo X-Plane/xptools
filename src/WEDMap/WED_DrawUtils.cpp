@@ -72,10 +72,9 @@ void PointSequenceToVector(
 
 	for (int i = 0; i < n; ++i)
 	{
-		Segment2	s, suv;
 		Bezier2		b, buv;
-		if(get_uv) ps->GetSide(gis_UV,i,suv,buv);
-		if (ps->GetSide(gis_Geo,i,s,b))
+		if(get_uv) ps->GetSide(gis_UV,i,buv);
+		if (ps->GetSide(gis_Geo,i,b))
 		{
 			b.p1 = z->LLToPixel(b.p1);
 			b.p2 = z->LLToPixel(b.p2);
@@ -102,13 +101,13 @@ void PointSequenceToVector(
 		}
 		else
 		{
-							pts.push_back(z->LLToPixel(s.p1));
-			if(get_uv)		pts.push_back(suv.p1);
+							pts.push_back(z->LLToPixel(b.p1));
+			if(get_uv)		pts.push_back(buv.p1);
 			contours.push_back(i == 0 ? is_hole : 0);
 			if (i == n-1 && !ps->IsClosed())
 			{
-							pts.push_back(s.p2);
-				if(get_uv)	pts.push_back(suv.p2);
+							pts.push_back(z->LLToPixel(b.p2));
+				if(get_uv)	pts.push_back(buv.p2);
 				contours.push_back(0);
 			}
 		}
@@ -491,9 +490,8 @@ void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const 
 
 void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<Point2>& pts)
 {
-	Segment2	s;
 	Bezier2		b;
-	if (ps->GetSide(gis_Geo,i,s,b))
+	if (ps->GetSide(gis_Geo,i,b))
 	{
 		b.p1 = z->LLToPixel(b.p1);
 		b.p2 = z->LLToPixel(b.p2);
@@ -509,7 +507,7 @@ void SideToPoints(IGISPointSequence * ps, int i, WED_MapZoomerNew * z,  vector<P
 	}
 	else
 	{
-		pts.push_back(z->LLToPixel(s.p1));
-		pts.push_back(z->LLToPixel(s.p2));
+		pts.push_back(z->LLToPixel(b.p1));
+		pts.push_back(z->LLToPixel(b.p2));
 	}
 }

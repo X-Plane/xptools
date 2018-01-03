@@ -39,13 +39,10 @@ WED_Ring::~WED_Ring()
 IGISPoint *	WED_Ring::SplitSide   (int n)
 {
 	int c = GetNumSides();
-
 	if (n > c) return NULL;
 
 	Bezier2		b;
-	Segment2	s;
-
-	if (GetSide(n, s, b))
+	if (GetSide(n, b))
 	{
 		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
 

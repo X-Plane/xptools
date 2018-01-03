@@ -474,9 +474,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				}
 				vector<Point2>	pts;
 
-				Segment2	s;
 				Bezier2		b;
-				if (ps->GetSide(gis_Geo,i,s,b))
+				if (ps->GetSide(gis_Geo,i,b))
 				{
 					b.p1 = z->LLToPixel(b.p1);
 					b.p2 = z->LLToPixel(b.p2);
@@ -492,8 +491,8 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 				}
 				else
 				{
-					pts.push_back(z->LLToPixel(s.p1));
-					pts.push_back(z->LLToPixel(s.p2));
+					pts.push_back(z->LLToPixel(b.p1));
+					pts.push_back(z->LLToPixel(b.p2));
 				}
 				DrawLineAttrs(g, &*pts.begin(), pts.size(), attrs, struct_color);
 				
