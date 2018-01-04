@@ -1378,6 +1378,22 @@ static bool is_all_alnum(const string& s)
 	return count_if(s.begin(), s.end(), ::isalnum) == s.size();
 }
 
+
+// finds substring, but only if its a full free-standing word, i.e. not just part of a word
+static bool contains_word(const string& s, const char* word)
+{
+	size_t p = s.find(word);
+	if(p != string::npos)
+	{
+		char c_preceed = p > 0 ? s[p-1] : ' ';
+		char c_follow  = p < s.length()+strlen(word) ? s[p+strlen(word)] : ' ';
+		if(!isalpha(c_preceed) && !isalpha(c_follow))
+			return true;
+	}
+	return false;
+}
+
+
 static bool air_org_code_valid(int min_char, int max_char, bool mix_letters_and_numbers, const string& org_code, string& error_content)
 {
 	if (is_all_alnum(org_code) == false)
@@ -1915,15 +1931,16 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		if (ucase > 2 && lcase == 0)
 			msgs.push_back(validation_error_t(string("Airport name '") + name + "' is all upper case.", warn_airport_name_style, apt,apt));
 		
-		string name_lcase, icao_lcase;
-		std::transform(name.begin(), name.end(), name_lcase.begin(), tolower);  // waiting for C++11 ...
-		std::transform(icao.begin(), icao.end(), icao_lcase.begin(), tolower);  // waiting for C++11 ...
+		string name_lcase(name), icao_lcase(icao);
+		std::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), tolower);  // waiting for C++11 ...
+		std::transform(icao_lcase.begin(), icao_lcase.end(), icao_lcase.begin(), tolower);  // waiting for C++11 ...
 
-		if (name_lcase.find("airport") != string::npos)
+		if (contains_word(name_lcase,"airport"))
+//		if (name_lcase.find("airport") != string::npos)
 			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include the word 'Airport'.", warn_airport_name_style, apt,apt));
-		if (name_lcase.find("intl") != string::npos || name_lcase.find("rgnl") != string::npos || name_lcase.find("muni") != string::npos)
+		if (contains_word(name_lcase,"intl") || contains_word(name_lcase,"rgnl") || contains_word(name_lcase,"muni"))
 			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include akronyms. Use full words like 'International' instead of 'Intl'.", warn_airport_name_style, apt,apt));
-		if (name_lcase.find(icao_lcase) != string::npos)
+		if (contains_word(name_lcase, icao_lcase.c_str()))
 			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
 
 	}
