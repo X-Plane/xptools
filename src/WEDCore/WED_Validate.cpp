@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2013, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -1904,32 +1904,52 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	apt->GetICAO(icao);
 
 	if(name.empty())
-		msgs.push_back(validation_error_t("An airport has no name.", err_airport_no_name, apt,apt));
-	else if(name[0] == ' ' || name[name.length()-1] == ' ')
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' name includes leading or trailing spaces.", err_airport_no_name, apt,apt));
+		msgs.push_back(validation_error_t("An airport has no name.", err_airport_name, apt,apt));
+	else 
+	{
+		if(name[0] == ' ' || name[name.length()-1] == ' ')
+			msgs.push_back(validation_error_t(string("The airport '") + name + "' name includes leading or trailing spaces.", err_airport_name, apt,apt));
+		
+		int lcase = count_if(name.begin(), name.end(), ::islower);
+		int ucase = count_if(name.begin(), name.end(), ::isupper);
+		if (ucase > 2 && lcase == 0)
+			msgs.push_back(validation_error_t(string("Airport name '") + name + "' is all upper case.", warn_airport_name_style, apt,apt));
+		
+		string name_lcase, icao_lcase;
+		std::transform(name.begin(), name.end(), name_lcase.begin(), tolower);  // waiting for C++11 ...
+		std::transform(icao.begin(), icao.end(), icao_lcase.begin(), tolower);  // waiting for C++11 ...
+
+		if (name_lcase.find("airport") != string::npos)
+			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include the word 'Airport'.", warn_airport_name_style, apt,apt));
+		if (name_lcase.find("intl") != string::npos || name_lcase.find("rgnl") != string::npos || name_lcase.find("muni") != string::npos)
+			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include akronyms. Use full words like 'International' instead of 'Intl'.", warn_airport_name_style, apt,apt));
+		if (name_lcase.find(icao_lcase) != string::npos)
+			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
+
+	}
 	if(icao.empty())
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_no_icao, apt,apt));
+		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_icao, apt,apt));
 	else if(!is_all_alnum(icao))
-		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_no_icao, apt,apt));
+		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 	set<WED_GISEdge*> edges;
 	WED_select_zero_recursive(apt, &edges);
 	if(edges.size())
 	{
-		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. These should be deleted.", err_airport_no_name, edges, apt));
+		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. These should be deleted.", err_airport_ATC_network, edges, apt));
 	}
 
 	set<WED_Thing*> points = WED_select_doubles(apt);
 	if(points.size())
 	{
-		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_no_name, points, apt));
+		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_ATC_network, points, apt));
 	}
 
 	edges = WED_do_select_crossing(apt);
 	if(edges.size())
 	{
-		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.", err_airport_no_name, edges, apt));
+		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.", err_airport_ATC_network, edges, apt));
 	}
 #endif
 

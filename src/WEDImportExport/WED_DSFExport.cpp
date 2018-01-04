@@ -59,6 +59,10 @@
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
 
+#if DEV
+#include "PerfUtils.h"
+#endif
+
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
 // a full 0.5 degrees of 'extra'.  But...that's a LOT more than we

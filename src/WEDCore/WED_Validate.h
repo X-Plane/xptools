@@ -37,9 +37,10 @@ enum validate_error_t
 {
 	err_airport_elements_outside_hierarchy,
 	err_airport_impossible_size,
+	err_airport_icao,
+	err_airport_name,
+	err_airport_ATC_network,
 	err_airport_no_boundary,
-	err_airport_no_icao,
-	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
 	err_airport_no_runway_matching_cifp,
@@ -142,6 +143,7 @@ enum validate_error_t
 	err_truck_parking_car_count_exceeds_max,
 	err_truck_parking_no_ground_taxi_routes,
 	warnings_start_here,
+	warn_airport_name_style,
 	warn_runway_matching_cifp_mislocated
 };
 
