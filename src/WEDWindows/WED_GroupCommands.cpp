@@ -1040,9 +1040,28 @@ bool WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree)
 
 set<WED_Thing *> WED_select_doubles(WED_Thing * t)
 {
-
 	vector<WED_Thing *> pts;
-	CollectRecursive(t, back_inserter(pts), ThingNotHidden, IsGraphNode);
+/*	CollectRecursive(t, back_inserter(pts), ThingNotHidden, IsGraphNode);
+    
+	We can not trust the ThingNotHidden - as it stops looking into levels that are hidden.
+	But even a node inside a hidden hierachy could still be used by a TaxiRoute Edge 
+	outside that hierachy that is NOT hidden. 
+	On the other hand, we do not want to check nodes that are only connected to hidden edges,
+	as those do not matter. So go check which nodes are actually in use. */
+	{
+		vector<WED_GISEdge *> edges;
+		CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
+
+		set<WED_Thing *> nodes;
+		for(vector<WED_GISEdge *>::iterator e = edges.begin(); e != edges.end(); ++e)
+		{
+			DebugAssert(*e);
+			nodes.insert( (*e)->GetNthSource(0) );
+			nodes.insert( (*e)->GetNthSource(1) );
+		}
+		for(set<WED_Thing *>::iterator s = nodes.begin(); s != nodes.end(); ++s)
+			pts.push_back(*s);
+	}
 
 	set<WED_Thing *> doubles;
 	

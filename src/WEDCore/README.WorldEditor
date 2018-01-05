@@ -44,6 +44,7 @@ WED 1.7.0a8
 	- XPD-8307: Fix textures w/upper case suffixes not showing
 	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on linux
 	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
+	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
 
 WED 1.6.1b1
 	Features:
