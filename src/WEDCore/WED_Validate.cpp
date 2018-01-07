@@ -623,7 +623,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 			}
 		}
 
-		std::transform(resource_str.begin(), resource_str.end(), resource_str.begin(), ::tolower);
+		::transform(resource_str.begin(), resource_str.end(), resource_str.begin(), ::tolower);
 
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
@@ -1690,7 +1690,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 		string region_code      = who->GetMetaDataValue(wed_AddMetaDataRegionCode);
 		all_keys.push_back(region_code);
-		transform(region_code.begin(), region_code.end(), region_code.begin(), (int(*)(int))toupper);
+		::transform(region_code.begin(), region_code.end(), region_code.begin(), ::toupper);
 
 		vector<string> region_codes = vector<string>(NUM_REGION_CODES);
 		region_codes.insert(region_codes.end(), &legal_region_codes[0], &legal_region_codes[NUM_REGION_CODES]);
@@ -1754,7 +1754,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 	for(vector<string>::iterator itr = all_keys.begin(); itr != all_keys.end(); ++itr)
 	{
-		transform(itr->begin(), itr->end(), itr->begin(), (int(*)(int))tolower);
+		::transform(itr->begin(), itr->end(), itr->begin(), ::tolower);
 		if(itr->find("http") != string::npos)
 		{
 			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
@@ -1932,8 +1932,8 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			msgs.push_back(validation_error_t(string("Airport name '") + name + "' is all upper case.", warn_airport_name_style, apt,apt));
 		
 		string name_lcase(name), icao_lcase(icao);
-		std::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), tolower);  // waiting for C++11 ...
-		std::transform(icao_lcase.begin(), icao_lcase.end(), icao_lcase.begin(), tolower);  // waiting for C++11 ...
+		::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), ::tolower);  // waiting for C++11 ...
+		::transform(icao_lcase.begin(), icao_lcase.end(), icao_lcase.begin(), ::tolower);  // waiting for C++11 ...
 
 		if (contains_word(name_lcase,"airport"))
 //		if (name_lcase.find("airport") != string::npos)
