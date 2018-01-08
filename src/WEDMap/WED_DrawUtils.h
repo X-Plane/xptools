@@ -62,7 +62,7 @@ inline void glShapeOffset2v(GLenum mode,  const Point2 * pts, int n, double offs
 
 
 void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const set<int>& attrs, WED_Color c);
-
+int BezierPtsCount(const Bezier2& b, WED_MapZoomerNew * z);
 
 // A note on UV mapping: we encode a point sequence for UV mapping as a pair of points, the vertex coord followed by the UV coords.
 // So it's an interleaved array.  This is what PointSequenceToVector returns too.

@@ -80,9 +80,8 @@ bool			WED_GISChain::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 	int n = GetNumSides();
 	for (int i = 0; i < n; ++i)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if (GetSide(l,i,s,b))
+		if (GetSide(l,i,b))
 		{
 			Bbox2	bb;
 			b.bounds(bb);
@@ -91,8 +90,8 @@ bool			WED_GISChain::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 			// points are.  And since there is no "slop", this is the only test we need.
 			if (!bounds.contains(bb)) return false;
 		} else {
-			if (!bounds.contains(s.p1)) return false;
-			if (!bounds.contains(s.p2)) return false;
+			if (!bounds.contains(b.p1)) return false;
+			if (!bounds.contains(b.p2)) return false;
 		}
 	}
 	return true;
@@ -115,13 +114,12 @@ bool			WED_GISChain::PtOnFrame		(GISLayer_t l,const Point2& p, double d	 ) const
 	int c = GetNumSides();
 	for (int n = 0; n < c; ++n)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if (GetSide(l,n,s,b))
+		if (GetSide(l,n,b))
 		{
 			if (b.is_near(p,d)) return true;
 		} else {
-			if (s.is_near(p,d)) return true;
+			if (b.as_segment().is_near(p,d)) return true;
 		}
 	}
 	return false;
@@ -156,10 +154,10 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 	bool		is_b = false;
 	for(int n = 0; n < s; ++n)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if(!GetSide(gis_Geo, n, s, b))
+		if(!GetSide(gis_Geo, n, b))
 		{
+			Segment2 s(b.as_segment());
 			double dd = s.squared_distance_supporting_line(p);
 			if (dd < d && s.collinear_has_on(p))
 			{
@@ -257,7 +255,7 @@ int			WED_GISChain::GetNumSides(void) const
 	return (IsClosed()) ? n : (n-1);
 }
 
-bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
+bool		WED_GISChain::GetSide(GISLayer_t l,int n, Bezier2& b) const
 {
 	RebuildCache(CacheBuild(cache_Topological));
 
@@ -282,12 +280,9 @@ bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
 	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
 	// Simpify down to a segment and return it -- some code may use this 'fast case'.
 	if (!c1 && !c2)
-	{
-		s.p1 = b.p1;
-		s.p2 = b.p2;
 		return false;
-	}
-	return true;
+	else
+		return true;
 }
 
 void WED_GISChain::RebuildCache(int flags) const
@@ -348,29 +343,18 @@ void WED_GISChain::RebuildCache(int flags) const
 		
 		for (int i = 0; i < n; ++i)
 		{
-			Segment2 s;
 			Bezier2 b;
-			if (GetSide(gis_Geo, i,s,b))
-			{
-				Bbox2	bb;
-				b.bounds(bb);
-				mCacheBounds += bb;
-			} else {
-				mCacheBounds += s.p1;
-				mCacheBounds += s.p2;
-			}
+			GetSide(gis_Geo, i,b);
+			Bbox2	bb;
+			b.bounds(bb);
+			mCacheBounds += bb;
 
 			if(mHasUV)
 			{
-				if (GetSide(gis_UV, i,s,b))
-				{
-					Bbox2	bb;
-					b.bounds(bb);
-					mCacheBoundsUV += bb;
-				} else {
-					mCacheBoundsUV += s.p1;
-					mCacheBoundsUV += s.p2;
-				}
+				GetSide(gis_UV, i,b);
+				Bbox2	bb;
+				b.bounds(bb);
+				mCacheBoundsUV += bb;
 			}
 		}
 	

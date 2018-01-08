@@ -65,7 +65,7 @@ public:
 	virtual		  IGISPoint *	GetNthPoint (int n) const;
 
 	virtual	int					GetNumSides(void) const;
-	virtual	bool				GetSide  (GISLayer_t l,int n, Segment2& s, Bezier2& b) const;	// true for bezier
+	virtual	bool				GetSide  (GISLayer_t l,int n, Bezier2& b) const;	// true for bezier
 
 	virtual	bool				IsClosed(void) const;
 	virtual	void				Reverse(GISLayer_t l);

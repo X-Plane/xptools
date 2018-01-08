@@ -248,7 +248,7 @@ void	WED_PropertyTable::GetCellContent(
 	//THIS IS A HACK to stop the user from being able to disclose arrows during search mode
 	if (mSearchFilter.empty() == false)
 	{
-		if (the_content.can_disclose == true)
+		if (the_content.can_disclose)
 		{
 			the_content.is_disclosed = true;
 		}

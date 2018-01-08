@@ -112,7 +112,7 @@ pair<int, int>	DSFSharedPointPool::AcceptContiguous(const DSFTupleVector& inPoin
 	DSFTupleVector	encoded;
 	int	first_ok_pool = -1;
 	int p = 0;
-	SharedSubPool * found;
+	SharedSubPool * found = NULL;
 
 	for (list <SharedSubPool>::iterator pool = mPools.begin(); pool != mPools.end(); ++pool, ++p)
 	{

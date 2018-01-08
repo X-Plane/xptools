@@ -37,13 +37,13 @@ enum validate_error_t
 {
 	err_airport_elements_outside_hierarchy,
 	err_airport_impossible_size,
+	err_airport_icao,
+	err_airport_name,
+	err_airport_ATC_network,
 	err_airport_no_boundary,
-	err_airport_no_icao,
-	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
 	err_airport_no_runway_matching_cifp,
-	err_airport_runway_matching_cifp_mislocated,
 	err_apt_boundary_bez_curve_used,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atc_rule_wind_blank_ICAO_for_METAR,
@@ -104,6 +104,7 @@ enum validate_error_t
 	err_ramp_start_with_specific_traffic_and_types_only_for_gte_xp10,
 	err_resource_cannot_be_found,
 	err_resource_does_not_have_correct_file_type,
+	err_runway_matching_cifp_mislocated,
 	err_rwy_end_outside_of_map,
 	err_rwy_end_not_matching_cifp,
 	err_rwy_misaligned_with_name,
@@ -140,7 +141,10 @@ enum validate_error_t
 	err_truck_dest_must_have_at_least_one_truck_type_selected,
 	err_truck_parking_cannot_have_negative_car_count,
 	err_truck_parking_car_count_exceeds_max,
-	err_truck_parking_no_ground_taxi_routes
+	err_truck_parking_no_ground_taxi_routes,
+	warnings_start_here,
+	warn_airport_name_style,
+	warn_runway_matching_cifp_mislocated
 };
 
 // The validation error record stores a single validation problem for reporting.
@@ -157,7 +161,7 @@ struct	validation_error_t {
 	// This constructor creates a validation error with a single object ("who") participating.  Due to C++ weirdness
 	// we have to template; the assumption is that "who" is a WED_Thing derivative.
 	template <typename T>
-	validation_error_t(const string& m, validate_error_t error_code, T * who, WED_Airport * a) : msg(m), airport(a) { bad_objects.push_back(who); }
+	validation_error_t(const string& m, validate_error_t error_code, T * who, WED_Airport * a) : msg(m), airport(a), err_code(error_code) { bad_objects.push_back(who); }
 
 	// This constructor takes an arbitrary container of ptrs to WED_Thing derivatives and builds a single validation
 	// failure with every object listed.

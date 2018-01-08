@@ -17,6 +17,8 @@ WED 1.7.0a8
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
+	- code fixes to compile under MSVC 2017, XCode 8
+	- improve display speed when zoomed in very far and lots of bezier segments are present in the scenery
 	Features:
 	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
 	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
@@ -25,6 +27,8 @@ WED 1.7.0a8
 	- WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
 	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
 	- WED-926: Allow viewving of full/long property name by clicking on it
+	- WED-954: Bring ATC taxi route validations inline with other validations and report in validation_error.txt
+	- WED-938: Add validation *warnings* if the airport name include akronyms, ICAO codes or the word 'Airport'
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
 	- Warn about unreleased X-plane versions at gateway export
 	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for gatewy submissions
@@ -38,7 +42,9 @@ WED 1.7.0a8
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
 	- WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
 	- XPD-8307: Fix textures w/upper case suffixes not showing
+	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on linux
 	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
+	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
 
 WED 1.6.1b1
 	Features:

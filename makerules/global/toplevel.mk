@@ -115,8 +115,8 @@ endif
 ifdef PLAT_DARWIN
 # -DLIL/-DBIG have to be defined in the code itself to support universal builds
 	DEFINES		:= -DLIN=0 -DIBM=0 -DAPL=1
-	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
-	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated-declarations -Wno-multichar -frounding-math -fvisibility=hidden
+	CXXFLAGS	:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
+	CFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6 -Wno-deprecated-declarations -Wno-multichar -fvisibility=hidden
 	LDFLAGS		:= $(M32_SWITCH) -mmacosx-version-min=10.6
 	STRIPFLAGS	:= -x
 endif
@@ -237,6 +237,13 @@ endif
 
 else
 
+ifdef PLAT_DARWIN
+ifdef RESOURCES
+RES_DIR		:= $(REAL_TARGET).app/Contents/Resources
+REAL_TARGET	:= $(REAL_TARGET).app/Contents/MacOS/$(TARGET)
+endif
+endif
+
 ifdef TYPE_LIBDYNAMIC
 REAL_TARGET := $(REAL_TARGET).p
 endif
@@ -282,8 +289,12 @@ CXXOBJECTS	:= $(patsubst %.cpp, $(BUILDDIR)/obj/%$(BIN_SUFFIX).o, $(CXXSOURCES))
 MOCOBJ		:= $(patsubst %, $(BUILDDIR)/obj/%$(BIN_SUFFIX).moc.o, $(MOCSRC))
 CXXOBJECTS	:= $(sort $(MOCOBJ) $(CXXOBJECTS))
 
+ifdef RES_DIR
+RESOURCEOBJ	:= $(RESOURCES)
+else
 RESOURCEOBJ	:= $(patsubst %, $(BUILDDIR)/obj/%$(BIN_SUFFIX).res.o, $(RESOURCES))
 RESOURCEOBJ	+= $(patsubst %, $(BUILDDIR)/obj/%$(BIN_SUFFIX).winres.o, $(WIN_RESOURCES))
+endif
 
 ALL_DEPS	:= $(sort $(CDEPS) $(CXXDEPS))
 ALL_OBJECTS	:= $(sort $(COBJECTS) $(CXXOBJECTS))
@@ -300,13 +311,22 @@ FINALBUILTIN	:= $(BUILDDIR)/obj/builtin$(BIN_SUFFIX).o.$(TARGET).final
 
 all: $(REAL_TARGET)
 
-$(REAL_TARGET): $(ALL_OBJECTS) $(RESOURCEOBJ)
+$(REAL_TARGET): $(ALL_OBJECTS) $(RESOURCEOBJ) $(XIB_RESOURCE)
 	@-mkdir -p $(dir $(@))
 	@$(print_link) $(subst $(PWD)/, ./, $(abspath $(@)))
-
 ifdef TYPE_EXECUTABLE
+  ifdef RES_DIR
+	@$(LD) -o $(@) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) \
+	$(ALL_OBJECTS) $(LIBS) || $(print_error)
+	@-mkdir -p $(RES_DIR)
+	@cp $(RESOURCES) $(RES_DIR)
+    ifdef XIB_RESOURCE
+	@ibtool --compile $(RES_DIR)/$(notdir $(XIB_RESOURCE:.xib=.nib)) $(XIB_RESOURCE)
+    endif
+  else
 	@$(LD) -o $(@) $(MACARCHS) $(LIBPATHS) $(LDFLAGS) \
 	$(ALL_OBJECTS) $(LIBS) $(RESOURCEOBJ) || $(print_error)
+  endif
 endif
 ifdef TYPE_LIBDYNAMIC
 ifdef PLAT_LINUX
@@ -355,6 +375,15 @@ $(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.c
 	|| $(print_error)
 
 $(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.cpp
+	@$(print_comp_cxx) $(subst $(PWD)/, ./, $(abspath $(<)))
+	@-mkdir -p $(dir $(@))
+	@$(CXX) $(MACARCHS) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) \
+	-c $(<) -o $(@) || $(print_error)
+	@$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) $(CPPFLAGS) \
+	-MM -MT $(@) -MT $(@:.o=.cppdep) -o $(@:.o=.cppdep) $(<) \
+	|| $(print_error)
+
+$(BUILDDIR)/obj/%$(BIN_SUFFIX).o: %.mm
 	@$(print_comp_cxx) $(subst $(PWD)/, ./, $(abspath $(<)))
 	@-mkdir -p $(dir $(@))
 	@$(CXX) $(MACARCHS) $(CXXFLAGS) $(DEFINES) $(INCLUDEPATHS) \

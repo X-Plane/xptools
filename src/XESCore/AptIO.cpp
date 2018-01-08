@@ -1179,7 +1179,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				key == "region_code")
 			{
 				//Convert each to
-				transform(value.begin(), value.end(), value.begin(), (int(*)(int))toupper);
+				::transform(value.begin(), value.end(), value.begin(), ::toupper);
 			}
 			
 			fprintf(fi, "%d %s %s" CRLF, apt_meta_data, key.c_str(), value.c_str());

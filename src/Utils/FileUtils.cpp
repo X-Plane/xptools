@@ -36,31 +36,8 @@
 #endif
 #include "zip.h"
 
-#define LOG_CASE_DESENS 0
-
-#if LOG_CASE_DESENS	
-	#define	LOG_MSG(fmt,...) printf(fmt, __VA_ARGS__)
-#else
-	#define	LOG_MSG(fmt,...)
-#endif
-
-#if LIN
-static int desens_partial(DIR * dir, char * io_file)
-{
- struct dirent* de;
- while (de = readdir(dir))
- {
-  if (!strcasecmp(io_file, de->d_name))
-  {
-   strcpy(io_file, de->d_name);
-   return 1;
-  }
- }
- return 0;
-}
-#endif
-
 //--XDefs fopen trick----------------------------------------------------------
+
 #if IBM && SUPPORT_UNICODE
 FILE * x_fopen(const char * _Filename, const char * _Mode)
 {	
@@ -87,6 +64,36 @@ void x_ofstream::close()
 {
 	if (_Filebuffer.close() == 0)
 		_Myios::setstate(ios_base::failbit);
+}
+#endif
+
+#if LIN
+FILE * x_fopen(const char * _Filename, const char * _Mode)
+{
+	FILE_case_correct_path Filename(_Filename);
+	return (fopen)(Filename, _Mode);       // the brackets are to prevent macro expansion of this fopen
+}
+
+#define LOG_CASE_DESENS 0
+
+#if LOG_CASE_DESENS
+	#define	LOG_MSG(fmt,...) printf(fmt, __VA_ARGS__)
+#else
+	#define	LOG_MSG(fmt,...)
+#endif
+
+static int desens_partial(DIR * dir, char * io_file)
+{
+ struct dirent* de;
+ while (de = readdir(dir))
+ {
+  if (!strcasecmp(io_file, de->d_name))
+  {
+   strcpy(io_file, de->d_name);
+   return 1;
+  }
+ }
+ return 0;
 }
 #endif
 //-----------------------------------------------------------------------------
@@ -163,7 +170,6 @@ int FILE_case_correct(char * buf)
 
 FILE_case_correct_path::FILE_case_correct_path(const char * in_path) : path(strdup(in_path)) { FILE_case_correct(path); }
 FILE_case_correct_path::~FILE_case_correct_path() { free(path); }
-
 FILE_case_correct_path::operator const char * (void) const { return path; }
 
 bool FILE_exists(const char * path)
@@ -172,8 +178,9 @@ bool FILE_exists(const char * path)
 	struct _stat ss;
 	if (_wstat(convert_str_to_utf16(path).c_str(),&ss) < 0) return false;
 #else
+	FILE_case_correct_path path2(path);
 	struct stat ss;
-	if (stat(path,&ss) < 0) return 0;
+	if (stat(path2,&ss) < 0) return false;
 #endif
 	return true;
 //	return (S_ISDIR(ss.st_mode))? 1 : 0;
@@ -560,7 +567,8 @@ int FILE_delete_dir_recursive(const string& path)
 	r = FILE_delete_file(path.c_str(),true);
 	return r;
 }
-	
+
+#if WED	
 static int compress_one_file(zipFile archive, const string& src, const string& dst)
 {
 	FILE * srcf = fopen(src.c_str(),"rb");
@@ -574,7 +582,6 @@ static int compress_one_file(zipFile archive, const string& src, const string& d
 	time_t		t;			
 	time(&t);
 	struct tm * our_time = localtime(&t);
-
 	if(our_time)
 	{
 		fi.tmz_date.tm_sec  = our_time->tm_sec ;
@@ -663,3 +670,4 @@ int FILE_compress_dir(const string& src_path, const string& dst_path, const stri
 	return r;
 	
 }
+#endif // WED

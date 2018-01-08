@@ -320,9 +320,16 @@ void		WED_LibraryMgr::Rescan()
 					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
-
+					
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
+					FILE_case_correct( (char *) rpath.c_str());  /* yeah - I know I'm overriding the 'const' protection of the c_str() here.
+					
+					   But I know this operation is never going to change the strings length, so thats OK to do.
+					    
+					   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
+					   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.	
+					   */
 					AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
 				}
 				else if(MFS_string_match(&s,"EXPORT_RATIO",false))
@@ -334,6 +341,7 @@ void		WED_LibraryMgr::Rescan()
 					clean_rpath(rpath);
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
+					FILE_case_correct( (char *) rpath.c_str());  // yeah - I know I'm overriding the 'const' protection of the c_str() here.
 					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
 				else

@@ -554,12 +554,9 @@ struct	preview_facade : public preview_polygon {
 				int param = 0;
 				if(fac->HasCustomWalls())				
 				{
-					Segment2	sp;
 					Bezier2		bp;
-					if(ps->GetSide(gis_Param,i,sp,bp))
-						param = bp.p1.x();
-					else
-						param = sp.p1.x();
+					ps->GetSide(gis_Param,i,bp);
+					param = bp.p1.x();
 				}
 				
 				float colors[24] = {  1, 0, 0, 0.75,

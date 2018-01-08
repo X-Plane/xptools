@@ -482,7 +482,7 @@ void		WED_CreateToolBase::RecalcHeadings(void)
 	{
 		SetAnchor1(mPts[mPts.size()-2]);
 		SetAnchor2(mPts[mPts.size()-1]);
-		SetDistance (LonLatDistMeters(mPts[mPts.size()-2].x(),mPts[mPts.size()-2].y(),mPts[mPts.size()-1].x(),mPts[mPts.size()-1].y()));
+		SetDistance(LonLatDistMeters(mPts[mPts.size()-2],mPts[mPts.size()-1]));
 		SetHeading(VectorMeters2NorthHeading(mPts[mPts.size()-2],mPts[mPts.size()-2],Vector2(mPts[mPts.size()-2],mPts[mPts.size()-1])));
 	}
 	else if (mPts.size() > 0)

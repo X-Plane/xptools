@@ -156,7 +156,10 @@ void CACHE_FileCacheInitializer::init()
 			}
 			else
 			{
-				paired_files.push_back(make_pair<string,string>(files[i], files[i+1]));
+//				paired_files.push_back(make_pair<string,string>(files[i], files[i+1]));  // msvc 2017 will not take this
+				pair<string,string> fp;
+				fp.first=files[i]; fp.second=files[i+1];
+				paired_files.push_back(fp);
 				i += 2;
 			}
 		}

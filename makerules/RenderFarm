@@ -8,8 +8,6 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _rf
 
-ifdef PLAT_LINUX
-
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
@@ -27,29 +25,13 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 
+ifdef PLAT_LINUX
 LIBS		+= -lpthread -lrt
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
 LDFLAGS		+= -framework Carbon
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_system.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_DARWIN
-
 
 ##
 # sources
