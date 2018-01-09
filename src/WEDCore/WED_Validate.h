@@ -28,9 +28,10 @@
 #include "WED_TaxiRoute.h"
 
 
-class	IResolver;
 class	WED_Thing;
 class	WED_Airport;
+class	WED_MapPane;
+class	WED_Document;
 
 //Keep this enum strictly organized by alphabetical order and sub catagory. Make this collection easily grep-able
 enum validate_error_t
@@ -178,7 +179,7 @@ struct	validation_error_t {
 typedef vector<validation_error_t> validation_error_vector;
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
+bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
 
 template <typename T>
 validation_error_t::validation_error_t(const string& m, validate_error_t error_code, const T& container, WED_Airport * a) :

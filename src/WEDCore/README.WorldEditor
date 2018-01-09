@@ -37,6 +37,7 @@ WED 1.7.0a8
 	- Previews allow to cycle through all variants for multi-exported items
 	- Previews show textual info on many objects
 	- Primitve, incomplete type 1 facade preview
+	- Validation errors and warnings come up in a browser window to access full list of messages
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)

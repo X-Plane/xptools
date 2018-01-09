@@ -27,6 +27,8 @@
 class	WED_Thing;
 class	WED_Group;
 class	IResolver;
+class 	WED_MapPane;
+class	WED_Document;
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children);
 
@@ -36,6 +38,6 @@ void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& 
 
 // Top level commands for WED.
 int		WED_CanExportPack(IResolver * resolver);
-void	WED_DoExportPack(IResolver * resolver);
+void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane);
 
 #endif /* WED_SceneryPackExport_H */

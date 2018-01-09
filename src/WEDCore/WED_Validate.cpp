@@ -23,6 +23,7 @@
 
 #include "WED_Validate.h"
 #include "WED_ValidateATCRunwayChecks.h"
+ #include "WED_ValidateList.h"
 
 #include "WED_Globals.h"
 #include "WED_Sign_Parser.h"
@@ -81,6 +82,7 @@
 #include "PlatformUtils.h"
 #include "MathUtils.h"
 
+#include "WED_Document.h"
 #include "WED_FileCache.h"
 #include "WED_Url.h"
 #include "GUI_Resources.h"
@@ -2288,7 +2290,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 }
 
 
-bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
+bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2393,9 +2395,12 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 
 	if(!msgs.empty())
 	{
-		ISelection * sel = WED_GetSelect(resolver);
+		new WED_ValidateDialog(resolver, pane, msgs);
+
+/*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");
 		sel->Clear();
+
 		for(vector<WED_Thing *>::iterator b = msgs.front().bad_objects.begin(); b != msgs.front().bad_objects.end(); ++b)
 			sel->Insert(*b);
 		wrl->CommitOperation();
@@ -2405,8 +2410,8 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		else
 			DoUserAlert((string("No errors exist, but there is at least one warning:\n\n") + msgs.front().msg
 			                     + "\n\nFor a full list of messages see\n" + logfile).c_str());
+*/
 	}
-
 	if(first_error != msgs.end())
 		return GATEWAY_IMPORT_FEATURES;
 	else

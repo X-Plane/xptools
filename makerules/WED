@@ -133,6 +133,7 @@ SOURCES += ./src/WEDCore/WED_GISUtils.cpp
 SOURCES += ./src/WEDCore/WED_Orthophoto.cpp
 SOURCES += ./src/WEDCore/WED_Validate.cpp
 SOURCES += ./src/WEDCore/WED_ValidateATCRunwayChecks.cpp
+SOURCES += ./src/WEDCore/WED_ValidateList.cpp
 SOURCES += ./src/WEDCore/WED_XMLReader.cpp
 SOURCES += ./src/WEDCore/WED_XMLWriter.cpp
 SOURCES += ./src/WEDEntities/WED_AirportBeacon.cpp

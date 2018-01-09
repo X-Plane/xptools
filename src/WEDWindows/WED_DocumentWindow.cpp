@@ -392,8 +392,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectMissingObjects:		WED_DoSelectMissingObjects(mDocument); return 1;
 #endif
 	case wed_UpdateMetadata:     WED_DoUpdateMetadata(mDocument); return 1;
-	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
-	case wed_ExportPack:	WED_DoExportPack(mDocument); return 1;
+	case wed_ExportApt:		WED_DoExportApt(mDocument, mMapPane); return 1;
+	case wed_ExportPack:	WED_DoExportPack(mDocument, mMapPane); return 1;
 #if HAS_GATEWAY	
 	case wed_ExportToGateway:		WED_DoExportToGateway(mDocument); return 1;
 #endif	
@@ -403,12 +403,12 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		mMapPane->Map_HandleCommand(command);
 		return 1;
 #if HAS_GATEWAY		
-	case wed_ImportGateway: WED_DoImportFromGateway(mDocument,mMapPane); return 1;
+	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane); return 1;
 #endif	
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
 #endif	
-	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
+	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
 	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
 	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
