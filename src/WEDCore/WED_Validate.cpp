@@ -22,8 +22,8 @@
  */
 
 #include "WED_Validate.h"
+#include "WED_ValidateList.h"
 #include "WED_ValidateATCRunwayChecks.h"
- #include "WED_ValidateList.h"
 
 #include "WED_Globals.h"
 #include "WED_Sign_Parser.h"

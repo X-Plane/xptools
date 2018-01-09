@@ -22,15 +22,14 @@
  */
 
 #include "WED_Validate.h"
+
 #include "WED_ValidateList.h"
 #include "PlatformUtils.h"
 
-// we mis-use this table once - but its OK, we need exactly this format
+// we mis-use this table here - its good enough for now
 #include "WED_AptTable.h"
-#include "AptDefs.h"
 
 //--Table Code------------
-
 #include "WED_Colors.h"
 #include "WED_Messages.h"
 #include "WED_Document.h"
@@ -43,8 +42,6 @@
 #include "WED_ToolUtils.h"
 #include "GUI_Application.h"
 
-// *********
-
 enum {
 	kMsg_FilterChanged = WED_PRIVATE_MSG_BASE,
 	kMsg_ZoomTo,
@@ -56,7 +53,6 @@ static int import_bounds_default[4] = { 0, 0, 800, 300 };
 
 WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pane, const validation_error_vector& msgs) :
 	GUI_Window("Validation Result List",xwin_style_visible|xwin_style_centered|xwin_style_resizable|xwin_style_modal,import_bounds_default,gApplication),
-//	GUI_Window("Validation Result List",xwin_style_visible|xwin_style_centered|xwin_style_resizable,import_bounds_default,cmdr),
 	mResolver(resolver),
 	mMapPane(pane),
 	mTextTable(this,100,0),

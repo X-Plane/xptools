@@ -493,6 +493,8 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState)
 			return O_ACCUM_GLYPHS;
 		}
 		break;
+	default:
+		return O_ACCUM_GLYPHS;
 	}
 }
 //---------------------------------------------------------

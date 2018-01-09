@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2014, Laminar Research.
+ * Copyright (c) 2018, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -27,25 +27,17 @@
 class	GUI_ScrollerPane;
 class	GUI_Table;
 class	GUI_Header;
-class	GUI_Packer;
-
 class	GUI_TextTable;
 class	GUI_TextTableHeader;
-
 class	WED_Document;
 class	GUI_FilterBar;
 class	WED_MapPane;
 
-
 #include "GUI_Window.h"
-#include "GUI_TextTable.h"
-#include "GUI_SimpleTableGeometry.h"
-#include "GUI_Broadcaster.h"
 #include "GUI_Listener.h"
 #include "GUI_Destroyable.h"
 
 #include "WED_AptTable.h"
-#include "AptDefs.h"
 
 class WED_ValidateDialog : public GUI_Window, public GUI_Listener, public GUI_Destroyable {
 
@@ -53,14 +45,11 @@ public:
 	WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pane, const validation_error_vector& msg);
 	~WED_ValidateDialog();
 
-private:
-	//i Button handling, so we can move/highlight each error
-	
 	virtual void ReceiveMessage(
 					GUI_Broadcaster *		inSrc,
 					intptr_t    			inMsg,
 					intptr_t				inParam);
-
+private:
 	WED_Document *		mResolver;
 	WED_MapPane *		mMapPane;
 	GUI_FilterBar *		mFilter;
