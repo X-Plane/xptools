@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a8
+WED 1.7.0a11
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
@@ -38,6 +38,7 @@ WED 1.7.0a8
 	- Previews show textual info on many objects
 	- Primitve, incomplete type 1 facade preview
 	- Validation errors and warnings come up in a browser window to access full list of messages
+	- WED-973: change single-click selection to go by type-basaed priority rather than design hierachy
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
@@ -46,8 +47,9 @@ WED 1.7.0a8
 	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on linux
 	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
 	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
+	- WED-972: Fix co-located nodes not allowing bezier conversion with vertex snapping on
 
-WED 1.6.1b1
+WED 1.6.1r1
 	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
