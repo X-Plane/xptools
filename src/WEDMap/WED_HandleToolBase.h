@@ -85,11 +85,18 @@ protected:
 
 private:
 
-			int					ProcessSelectionRecursive(
-									IGISEntity *		entity,
-									const Bbox2&		bounds,
-									set<IGISEntity *>&	result,
-									bool				is_root);
+			void ProcessSelection(
+								IGISEntity *		entity,
+								Bbox2&				bounds,
+								set<IGISEntity *>&	result);
+									
+			void ProcessSelectionRecursive(
+								IGISEntity *		entity,
+								const Bbox2&		bounds,
+								int					pt_sel,
+								double				icon_dist_h,
+								double				icon_dist_v,
+								set<IGISEntity *>&	result);
 
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything

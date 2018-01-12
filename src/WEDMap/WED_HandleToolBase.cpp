@@ -49,6 +49,12 @@
 #define LINE_DIST 4
 #define	HANDLE_RAD 5
 
+#if DEV
+#define DEBUG_PRINTF_N_LINES 1
+#endif
+
+#define SELECTION_BOX_SIZE 10
+
 // This util routine forms the line segment or bezier for a given "link" in a handles, converting from lat/lon to pixels.
 // returns true for bezier, false for segment.
 static bool	ControlLinkToCurve(
@@ -386,7 +392,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 							GetZoomer()->XPixelToLon(inX),
 							GetZoomer()->YPixelToLat(inY));
 
-			ProcessSelectionRecursive(ent_base, bounds, sel_set, true);
+			ProcessSelection(ent_base, bounds, sel_set);
 			if(op) op->StartOperation("Change Selection");
 
 			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
@@ -437,195 +443,204 @@ and only "new" finds after the filtering to be added.
 */
 #endif
 
-#define XXX 1
 
-int		WED_HandleToolBase::ProcessSelectionRecursive(
-									IGISEntity *		entity,
-									const Bbox2&		bounds,
-									set<IGISEntity *>&	result,
-									bool				is_root)
+void WED_HandleToolBase::ProcessSelection(
+							IGISEntity *		entity,
+							Bbox2&				bounds,
+							set<IGISEntity *>&	result)
 {
-	int pt_sel = bounds.is_point();
-	Point2	psel = bounds.p1;
+	bool pt_sel(bounds.is_point());
 
-	double	frame_dist = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(3));
-	double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(GetFurnitureIconRadius()));
-	double	icon_dist_h = fabs(GetZoomer()->XPixelToLon(0)-GetZoomer()->XPixelToLon(GetFurnitureIconRadius()));
-	double	max_slop_h = max(icon_dist_h,frame_dist);
-	double	max_slop_v = max(icon_dist_v,frame_dist);
-	if(WED_IsIconic(entity))
-		frame_dist = max(icon_dist_h,icon_dist_v);
-
-	Bbox2		ent_bounds;
-	entity->GetBounds(gis_Geo,ent_bounds);
-//	if (pt_sel)
+	double	icon_dist_h = fabs(GetZoomer()->XPixelToLon(0)-GetZoomer()->XPixelToLon(SELECTION_BOX_SIZE));
+	double	icon_dist_v = fabs(GetZoomer()->YPixelToLat(0)-GetZoomer()->YPixelToLat(SELECTION_BOX_SIZE));
+	if(pt_sel) bounds.expand(icon_dist_h,icon_dist_v); // select things even a bit further away
+	
+//	set<IGISEntity *> result_old;
+//	if(pt_sel) { result_old = result; result.clear(); } // start from scratch, so can filter only the new selections later
+#if DEBUG_PRINTF_N_LINES
+	gMeshLines.clear();
+#else
+	#define printf(x)
+#endif
+	ProcessSelectionRecursive(entity, bounds, pt_sel, icon_dist_h, icon_dist_v, result);
+	
+	if(pt_sel)             // filter list, keep only 1 result, selected by a special priority list
 	{
-		ent_bounds.p1 -= Vector2(max_slop_h,max_slop_v);
-		ent_bounds.p2 += Vector2(max_slop_h,max_slop_v);
+		IGISEntity * keeper = NULL;
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
+			{
+				if( (*i)->GetGISClass() ==  gis_Composite &&
+					strcmp((*i)->GetGISSubtype(), "WED_AirportBoundary") == 0 )  { printf("AirportBdry\n"); keeper = *i;  break; }   //  for Marquee tool only, prevents selecting the world
+			}
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)         // anything point-like comes first
+			{
+				if( (*i)->GetGISClass() == gis_Point ||
+					(*i)->GetGISClass() == gis_Point_Bezier ||
+					(*i)->GetGISClass()	== gis_Point_Heading ||
+					(*i)->GetGISClass()	== gis_Point_HeadingWidthLength ) { printf("Point\n");  keeper = *i;  break; }     // TODO check for "nearest" to avoid overlapping bounding box issues
+			}
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // area-type objects that create 3D "above ground" stuff
+			{
+				if( ((*i)->GetGISClass() ==  gis_Polygon || (*i)->GetGISClass() ==  gis_Composite) && (
+					strcmp((*i)->GetGISSubtype(), "WED_ForestPlacement") == 0 ||
+					strcmp((*i)->GetGISSubtype(), "WED_FacadePlacement") == 0 ) ) { printf("Forest/Facade\n"); keeper = *i;  break; }
+			}
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // then any kind of line-type objects
+			{
+				if( (*i)->GetGISClass() ==  gis_Line || 
+					(*i)->GetGISClass() ==  gis_Edge ||
+					(*i)->GetGISClass() ==  gis_Ring ||                                      // APT Boundaries, but only the ring part, not the inner area
+					(*i)->GetGISClass() ==  gis_Chain   ) { printf("Line\n");  keeper = *i;  break; }
+			}
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // now the polygons, in similar order as typical LAYER_GROUP assignments
+			{
+				if( ((*i)->GetGISClass() ==  gis_Polygon || (*i)->GetGISClass() ==  gis_Composite) && (
+					strcmp((*i)->GetGISSubtype(),"WED_PolygonPlacement") == 0 ||                           // Textured Polys
+					strcmp((*i)->GetGISSubtype(),"WED_DrapedOrthophoto") == 0 ) ) { printf("Polygon\n"); keeper = *i;  break; } // Draped Polys - also Ground Painted Signs
+			}
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // Runways
+			{
+				if( (*i)->GetGISClass() ==  gis_Line_Width )                      { printf("Runway\n"); keeper = *i;  break; }
+			}
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
+			{
+				if( (*i)->GetGISClass() ==  gis_Polygon ||
+					(*i)->GetGISClass() ==  gis_Area )                            { printf("Taxiway\n"); keeper = *i;  break; }     // all other polygons and areas - like Taxiways
+			}                                                                                                             // consider it a catch-all
+		if(!keeper)
+			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
+			{
+				if( (*i)->GetGISClass() ==  gis_BoundingBox )                       { printf("Exclusion\n"); keeper = *i;  break; }              //  thats exclusion zones
+			}
+
+		//	gis_PointSequence,  gis_Composite - not expected to ever come up.
+		
+#if DEBUG_PRINTF_N_LINES
+		for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
+			printf("Total selected GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
+#endif		
+		if(keeper) { result.clear(); result.insert(keeper); }    // ok found something from our priority list, only keep that one
+#if DEBUG_PRINTF_N_LINES
+		else
+		{
+			if (result.empty())
+				printf("FYI, nothing to select here.\n");
+			else
+			{	
+				printf("duh - this should not happen. Multiple items are selected,\nbut none of them are in the priority list for object selection:\n");
+				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
+					printf("Selected are GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
+			}
+		}
+#endif		
+//	result.insert(result_old.begin(), result_old.end());   // merge back in what we took out initially
+	}
+}
+
+
+void WED_HandleToolBase::ProcessSelectionRecursive(
+							IGISEntity *	entity,
+							const Bbox2&	bounds,
+							int				pt_sel,
+							double			icon_dist_h,
+							double			icon_dist_v,
+							set<IGISEntity *>&	result)
+{
+	Point2	psel; if(pt_sel) psel = bounds.centroid();
+	double	frame_dist  = icon_dist_v/2;
+
+	{   //  speedup: do not traverse into entities which have their own bounding box already out of reach
+		Bbox2	ent_bounds;
+		entity->GetBounds(gis_Geo,ent_bounds);
+		ent_bounds.expand(icon_dist_h,icon_dist_v);
+#if DEBUG_PRINTF_N_LINES
+		#define DBG_LIN_COLOR .4,0,.4,.4,0,.4
+		debug_mesh_segment(ent_bounds.right_side(), DBG_LIN_COLOR);
+		debug_mesh_segment(ent_bounds.top_side(),   DBG_LIN_COLOR);
+		debug_mesh_segment(ent_bounds.left_side(),  DBG_LIN_COLOR);
+		debug_mesh_segment(ent_bounds.bottom_side(),DBG_LIN_COLOR);
+#endif
+
+		if (pt_sel) { if (!ent_bounds.contains(psel))	return; }
+		else		{ if (!ent_bounds.overlap(bounds))	return; }
 	}
 
-	if (pt_sel) { if (!ent_bounds.contains(psel))				return 0;	}
-	else		{ if (!ent_bounds.overlap(bounds))				return 0;	}
+	if(!IsVisibleNow(entity))	return;
+	if(IsLockedNow(entity))		return;
 
-	if(!IsVisibleNow(entity))	return 0;
-	if(IsLockedNow(entity))		return 0;
-
+	// if(is_root && pt_sel) bounds.expand(icon_dist_h,icon_dist_v); // select things even a bit further away
+		
 	EntityHandling_t choice = TraverseEntity(entity,pt_sel);
-	IGISComposite * com = SAFE_CAST(IGISComposite, entity);
+	IGISComposite *     com = SAFE_CAST(IGISComposite, entity);
 	IGISPointSequence * seq = SAFE_CAST(IGISPointSequence, entity);
-	IGISPolygon * poly = SAFE_CAST(IGISPolygon, entity);
-	if(com && com->GetGISClass() != gis_Composite) com = NULL;
-	if(seq && seq->GetGISClass() == gis_Composite) seq = NULL;
-	if(poly && poly->GetGISClass() != gis_Polygon) poly = NULL;
-	//string n = "???";
-	//	if (thang) thang->GetName(n);
-	//printf("Recursive traverse on %s: com=%p seq=%p, poly=%p, choice=%d\n", n.c_str(), com,seq,poly,choice);
-	#if XXX
-	int pt_sel2 = pt_sel;
-	set<IGISEntity *> result_old;
-	if(is_root) { result_old = result; result.clear(); } // start from scratch, so we-re better setup for filtering later
-	#endif
-	
+	IGISPolygon *      poly = SAFE_CAST(IGISPolygon, entity);
+	if(com  &&  com->GetGISClass() != gis_Composite) com = NULL;
+	if(seq  &&  seq->GetGISClass() == gis_Composite) seq = NULL;
+	if(poly && poly->GetGISClass() != gis_Polygon)  poly = NULL;
+
 	switch(choice) {
 	case ent_Atomic:
-		if (pt_sel)	{ if (entity->PtWithin(gis_Geo,psel) || entity->PtOnFrame(gis_Geo,psel, frame_dist)) { result.insert(entity); return 1; } }
-		else		{ if (entity->WithinBox(gis_Geo,bounds))                                               result.insert(entity); }
+//		if(entity->IntersectsBox(gis_Geo,bounds))                 result.insert(entity);   // includes the inner area of BoundingBoxes aka Exclusions
+		if(entity->WithinBox(gis_Geo,bounds))                     result.insert(entity);   // excludes the inner area of BoundingBoxes aka Exclusions
+		if(pt_sel && entity->PtOnFrame(gis_Geo,psel, frame_dist)) result.insert(entity);
 		break;
 	case ent_Container:
-	#if XXX
-		pt_sel = 0;   // disable stop-on-first-find
-	#endif
+		if (pt_sel && entity->PtOnFrame(gis_Geo,psel, frame_dist))  result.insert(entity);   // select the GisComposite as well, for Forest and Facade Chains
+
 		if (com)
 		{
 			int count = com->GetNumEntities();
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result,false) && pt_sel) return 1;
+				ProcessSelectionRecursive(com->GetNthEntity(n),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
 		}
 		else if (seq)
 		{
 			int count = seq->GetNumPoints();
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result,false) && pt_sel) return 1;
-		}
-		else if(poly)
-		{
-			int count = poly->GetNumHoles();
-			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result,false) && pt_sel) return 1;
-			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result,false) && pt_sel) return 1;
-		}
-		break;
-	case ent_AtomicOrContainer:
-		if (!pt_sel && entity->WithinBox(gis_Geo,bounds) && !is_root)	// Do NOT select a folder if it is the world!
-			result.insert(entity);
-		else if (com)
-		{
-			#if XXX
-				pt_sel = 0;   // disable stop-on-first-find
-			#endif
-			int count = com->GetNumEntities();
-			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(com->GetNthEntity(n),bounds,result,false) && pt_sel) return 1;
-		}
-		else if (seq)
-		{
-			#if XXX
-				pt_sel = 0;   // disable stop-on-first-find
-			#endif
-			int count = seq->GetNumPoints();
-			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,result,false) && pt_sel) return 1;
+				ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
 		}
 		else if (poly)
 		{
-			#if XXX
-				pt_sel = 0;   // disable stop-on-first-find
-			#endif
 			int count = poly->GetNumHoles();
-			if (ProcessSelectionRecursive(poly->GetOuterRing(),bounds,result,false) && pt_sel) return 1;
+			ProcessSelectionRecursive(poly->GetOuterRing(),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
 			for (int n = 0; n < count; ++n)
-				if (ProcessSelectionRecursive(poly->GetNthHole(n),bounds,result,false) && pt_sel) return 1;
+				ProcessSelectionRecursive(poly->GetNthHole(n),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
 		}
-// this is the termination criteria. If any of the above recursion above dad found something, we'd never get here but did return 1 already
-// resultingly, we always abort after the first items we find in point selection mode
-	
-		if (pt_sel2 && entity->PtWithin(gis_Geo,psel))				{ result.insert(entity); return 1; }
-		if (pt_sel2 && entity->PtOnFrame(gis_Geo,psel, frame_dist))  { result.insert(entity); return 1; }
-
+		break;
+	case ent_AtomicOrContainer:
+		if ( !pt_sel &&  entity->WithinBox(gis_Geo,bounds) ) // select the container, if possible instead of its innards
+			result.insert(entity); 
+		else if (com)
+		{
+			int count = com->GetNumEntities();
+			for (int n = 0; n < count; ++n)
+				ProcessSelectionRecursive(com->GetNthEntity(n),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
+		}
+		else if (seq)
+		{
+			int count = seq->GetNumPoints();
+			for (int n = 0; n < count; ++n)
+				ProcessSelectionRecursive(seq->GetNthPoint(n),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
+		}
+		else if (poly)
+		{
+			int count = poly->GetNumHoles();
+			ProcessSelectionRecursive(poly->GetOuterRing(),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
+			for (int n = 0; n < count; ++n)
+				ProcessSelectionRecursive(poly->GetNthHole(n),bounds,pt_sel, icon_dist_h, icon_dist_v, result);
+		}
+		if (pt_sel && entity->PtWithin(gis_Geo,psel))				result.insert(entity);
+		if (pt_sel && entity->PtOnFrame(gis_Geo,psel, frame_dist))  result.insert(entity);
 		break;
 	}
-#if XXX
-	if (is_root)
-	{
-		if(pt_sel2)             // filter list, keep only 1 result, selected by a special priority list
-		{
-			IGISEntity * keeper = NULL;
-			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)         // anything point-like comes first
-			{
-				if( (*i)->GetGISClass() == gis_Point ||
-				    (*i)->GetGISClass() == gis_Point_Bezier ||
-				    (*i)->GetGISClass()	== gis_Point_Heading ||
-				    (*i)->GetGISClass()	== gis_Point_HeadingWidthLength ) { printf("Point\n");  keeper = *i;  break; }     // TODO check for "nearest" to avoid overlapping bounding box issues
-			}
-			if(!keeper)
-				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // then any kind of line-type objects
-				{
-					if( (*i)->GetGISClass() ==  gis_Line || 
-					    (*i)->GetGISClass() ==  gis_Edge ||
-					    (*i)->GetGISClass() ==  gis_Ring ||                                      // APT Boundaries, but only the ring part, not the inner area
-					    (*i)->GetGISClass() ==  gis_Chain   ) { printf("Line\n");  keeper = *i;  break; }
-				}
-			if(!keeper)
-				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // area-type objects that create 3D "above ground" stuff
-				{
-					if( (*i)->GetGISClass() ==  gis_Polygon && (
-						strcmp((*i)->GetGISSubtype(), "WED_ForestPlacement") == 0 ||
-						strcmp((*i)->GetGISSubtype(), "WED_FacadePlacement") == 0 ) ) { printf("Forest/Facade\n"); keeper = *i;  break; }
-				}
-			if(!keeper)
-				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // now the polygons, in similar order as typical LAYER_GROUP assignments
-				{
-					if( (*i)->GetGISClass() ==  gis_Polygon && (
-						strcmp((*i)->GetGISSubtype(),"WED_PolygonPlacement") == 0 ||                           // Textured Polys
-						strcmp((*i)->GetGISSubtype(),"WED_DrapedOrthophoto") == 0 ) ) { printf("Polygon\n"); keeper = *i;  break; } // Draped Polys - also Ground Painted Signs
-				}
-			if(!keeper)
-				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // Runways
-				{
-					if( (*i)->GetGISClass() ==  gis_Line_Width )                      { printf("Runway\n"); keeper = *i;  break; }
-				}
-			if(!keeper)
-				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
-				{
-					if( (*i)->GetGISClass() ==  gis_Polygon ||
-						(*i)->GetGISClass() ==  gis_Area         )                     { printf("Taxiway\n"); keeper = *i;  break; }     // all other polygons and areas - like Taxiways
-				}                                                                                                             // consider it a catch-all
-			if(!keeper)
-				for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
-				{
-					if( (*i)->GetGISClass() ==  gis_BoundingBox  )                     { printf("Exclusion\n"); keeper = *i;  break; }              //  thats exclusion zones only
-				}
-
-			//	gis_PointSequence,  gis_Composite - not expected to ever come up.
-			
-			if(keeper) { result.clear(); result.insert(keeper); }    // ok found something from our priority list, only keep that one
-			else
-			{
-				if (result.empty())
-					printf("FYI, nothing to select here.\n");
-				else
-				{	
-					printf("duh - this should not happen. Multiple items are selected,\nbut none of them are in the priority list for object selection:\n");
-					for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
-						printf("Selected are GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
-				}
-			}
-
-		}
-		result.insert(result_old.begin(), result_old.end());   // merge back in what we took out initially
-#endif
-	}
-	return 0;
+	return;
 }
 
 
@@ -686,7 +701,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 								GetZoomer()->XPixelToLon(inX),
 								GetZoomer()->YPixelToLat(inY));
 
-				ProcessSelectionRecursive(ent_base, bounds, sel_set,true);
+				ProcessSelection(ent_base, bounds, sel_set);
 
 				sel->Clear();
 				for (vector<ISelectable *>::iterator u = mSelSave.begin(); u != mSelSave.end(); ++u)
