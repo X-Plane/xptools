@@ -511,7 +511,21 @@ struct	preview_forest : public preview_polygon {
 			interp(0,0.5,1,0.3,fst->GetDensity()),
 			interp(0,0.1,1,0.0,fst->GetDensity()));
 
-		preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+		if(fst->GetFillMode() == dsf_fill_area)
+			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+		else if(fst->GetFillMode() == dsf_fill_line)
+		{
+			IGISPointSequence * ps = fst->GetOuterRing();
+			for(int i = 0; i < ps->GetNumSides(); ++i)
+			{
+				vector<Point2>	pts;
+				SideToPoints(ps,i,zoomer, pts);
+				glLineWidth(5);
+				glShape2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size());
+				glLineWidth(1);
+
+			}			
+		}
 	}
 };
 
@@ -1030,7 +1044,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	if(fac)		if(fac->GetShowLevel() <= mObjDensity) mPreviewItems.push_back(new preview_facade(fac,group_Objects));
 	if(forst)	
 #if AIRPORT_ROUTING
-	if(forst->GetGISClass() == gis_Polygon)
+//	if(forst->GetGISClass() == gis_Polygon || forst->GetGISClass() == gis_Ring )
 #endif
 		mPreviewItems.push_back(new preview_forest(forst,group_Objects));
 	
