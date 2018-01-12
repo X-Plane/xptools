@@ -22,8 +22,8 @@
  */
 
 #include "WED_GISChain.h"
-#include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
+#include "WED_FacadeNode.h"
 
 TRIVIAL_COPY(WED_GISChain, WED_Entity)
 
@@ -417,7 +417,7 @@ void WED_GISChain::Reverse(GISLayer_t l)
     // On Airport Lines and Taxiways, we want to preserve the line/light properties of each segment, effectivly ONLY reversing the node sequence.
     // Very usefull when reversing airport lines with differently tagged segments. It effectively brings the blue taxiway edge lights to the other side ONLY.
     
-	if (GetClass() == WED_AirportChain::sClass)
+	if (dynamic_cast <WED_AirportNode *> (GetNthChild(0)))
 	{
 		for(n = 0; n < np/2; ++n)    // directly swap the attributes of the nodes. No need to first build a local copy and then write it back in reverse order.
 		{
@@ -432,6 +432,22 @@ void WED_GISChain::Reverse(GISLayer_t l)
 			a_t->SetAttributes(tmp1);
 		}
 	}
+	else if (dynamic_cast <WED_FacadeNode *> (GetNthChild(0)))
+	{
+		for(n = 0; n < np/2; ++n)    // directly swap the attributes of the nodes. No need to first build a local copy and then write it back in reverse order.
+		{
+			t = np - n - 2;
+			WED_FacadeNode * a_n = dynamic_cast <WED_FacadeNode *> (GetNthChild(n));  // note to self: mCache would yield no speedup here, as we dynamic_cast every point only once
+			WED_FacadeNode * a_t = dynamic_cast <WED_FacadeNode *> (GetNthChild(t));  // thus we get away with NOT expanding RebuildCache to work for 'gis_Apt" layers :)
+			int	tmp1, tmp2;
+			
+			tmp1 = a_n->GetWallType();
+			tmp2 = a_t->GetWallType();
+			a_n->SetWallType(tmp2);
+			a_t->SetWallType(tmp1);
+		}
+	}
+	
 }
 
 void WED_GISChain::Shuffle(GISLayer_t l)
