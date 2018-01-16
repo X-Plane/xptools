@@ -40,6 +40,7 @@ WED 1.7.0a11
 	- Validation errors and warnings come up in a browser window to access full list of messages
 	- WED-973: change single-click selection to go by type-basaed priority rather than design hierachy
 	- show green shadow around flinear fill mode forests, aka Facade wall selection
+	- WED-912: Warn about airports currently not accepting submissions at Gateway im/export
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)

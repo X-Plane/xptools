@@ -687,7 +687,9 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
 			cur_airport.name = tmp["AirportName"].asString();
-			cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();  // mis-using that property to support multi-airport import
+			cur_airport.default_buildings = tmp["ExcludeSubmissions"].asInt();  // mis-using that property for warnings
+			cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();        // mis-using that property to support multi-airport import
+			
 
 			//Add the current scenery object's airport code
 			mICAO_Apts.push_back(cur_airport);
@@ -834,6 +836,9 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
+	
+	if(current_apt.default_buildings)
+		DoUserAlert("Submissions for this airport are not being accepted on the Gateway currently. Further development of this scenery pack for Gateway purposes is therefore not recommended.");
 	
 	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
