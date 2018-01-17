@@ -46,14 +46,17 @@
 	#include <GL/gl.h>
 #endif
 
+// snap distance for control handles, in pixels
 #define LINE_DIST 4
+// selection circle radius for control handles, in pixels
 #define	HANDLE_RAD 5
 
 #if DEV
 #define DEBUG_PRINTF_N_LINES 0
 #endif
 
-#define SELECTION_BOX_SIZE 10
+// half width of selection box for nodes, aka node selection radius (but its actually a square box), in pixels
+#define SELECTION_BOX_SIZE 8
 
 // This util routine forms the line segment or bezier for a given "link" in a handles, converting from lat/lon to pixels.
 // returns true for bezier, false for segment.
@@ -449,6 +452,7 @@ void WED_HandleToolBase::ProcessSelection(
 							Bbox2&				bounds,
 							set<IGISEntity *>&	result)
 {
+	Point2 sel_p1(bounds.p1);
 	bool pt_sel(bounds.is_point());
 
 	double	icon_dist_h = fabs(GetZoomer()->XPixelToLon(0)-GetZoomer()->XPixelToLon(SELECTION_BOX_SIZE));
@@ -470,17 +474,36 @@ void WED_HandleToolBase::ProcessSelection(
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 			{
-				if( (*i)->GetGISClass() ==  gis_Composite &&
-					strcmp((*i)->GetGISSubtype(), "WED_AirportBoundary") == 0 )  { printf("AirportBdry\n"); keeper = *i;  break; }   //  for Marquee tool only, prevents selecting the world
+				if( (*i)->GetGISClass() ==  gis_Composite &&                                     //  for Marquee tool only, prevents selecting the world
+					strcmp((*i)->GetGISSubtype(), "WED_AirportBoundary") == 0 )  { printf("AirportBdry\n"); keeper = *i;  break; }
 			}
 		if(!keeper)
+		{	vector<IGISEntity *> candidates;
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)         // anything point-like comes first
 			{
 				if( (*i)->GetGISClass() == gis_Point ||
 					(*i)->GetGISClass() == gis_Point_Bezier ||
 					(*i)->GetGISClass()	== gis_Point_Heading ||
-					(*i)->GetGISClass()	== gis_Point_HeadingWidthLength ) { printf("Point\n");  keeper = *i;  break; }     // TODO check for "nearest" to avoid overlapping bounding box issues
+					(*i)->GetGISClass()	== gis_Point_HeadingWidthLength ) { printf("Point\n");  candidates.push_back(*i); }
 			}
+			if(candidates.size() == 1)
+				keeper = candidates.front();
+			else if(candidates.size() > 1)                                                       // find the closest point
+			{
+				double min_distance = 1.0E9;
+				for(vector<IGISEntity *> ::iterator i = candidates.begin(); i != candidates.end(); ++i)  // anything point-like comes first
+				{
+					IGISPoint * poi = SAFE_CAST(IGISPoint, *i);
+					Point2 pos;
+					poi->GetLocation(gis_Geo,pos);
+					if (sel_p1.squared_distance(pos) < min_distance)
+					{
+						min_distance = sel_p1.squared_distance(pos);
+						keeper = *i;
+					}
+				}
+			}
+		}
 		if(!keeper)
 			for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)     // area-type objects that create 3D "above ground" stuff
 			{
@@ -670,6 +693,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 					GetZoomer()->PixelToLL(Point2(inX, inY)));
 		break;
 	case drag_Move:
+		if( !(mSelX == inX && mSelY == inY) )
 		{
 			Point2	op(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY));
 			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
@@ -683,8 +707,20 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			{
 				(*e)->Rescale(gis_Geo,old_b, new_b);
 			}
+			break;
 		}
-		break;
+		// its a drag-move, but we really did not drag. So we instead execute a re-select
+		else
+		{
+			printf("HandleClickDrag re-select\n");
+			IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+			if(op)
+			{
+				op->AbortOperation();
+				op->StartOperation("Change Selection");
+			}
+			mDragType = drag_Sel;
+		}
 	case drag_Sel:
 		{
 			mSelX = inX;
@@ -731,8 +767,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->CommitOperation();
 		mSelManip.clear();
-	}
-	if (mDragType == drag_Sel)
+	} else if (mDragType == drag_Sel)
 	{
 		ClearAnchor1();
 		ClearAnchor2();
