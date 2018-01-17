@@ -63,7 +63,10 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 	for(int i = 0; i < msgs.size(); ++i)
 	{
 		AptInfo_t apt;
-		msgs[i].airport->GetICAO(apt.icao);
+		if(msgs[i].airport)
+			msgs[i].airport->GetICAO(apt.icao);
+		else
+			apt.icao = "Off Airport";
 		apt.name  = msgs[i].err_code > warnings_start_here ? "Warning: " : "Error: ";
 		apt.name += msgs[i].msg;
 		mMsgs.push_back(apt);
