@@ -50,7 +50,7 @@
 #define	HANDLE_RAD 5
 
 #if DEV
-#define DEBUG_PRINTF_N_LINES 1
+#define DEBUG_PRINTF_N_LINES 0
 #endif
 
 #define SELECTION_BOX_SIZE 10
