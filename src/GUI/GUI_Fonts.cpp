@@ -471,7 +471,8 @@ void	GUI_FontDraw(
 				const float						color[4],	//	4-part color, featuring alpha.
 				float							inX,
 				float							inY,
-				const char *					inString)
+				const char *					inString,
+				int								inAlign)
 {
 	TT_establish_font(inFontID);
 	TT_font_info * f = tt_font[inFontID];
@@ -481,7 +482,7 @@ void	GUI_FontDraw(
 		inX,
 		inY - f->line_descent  + f->line_height,
 		inString, inString + strlen(inString),
-		align_Left);
+		inAlign);
 }
 
 
