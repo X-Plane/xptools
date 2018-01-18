@@ -781,7 +781,14 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->CommitOperation();
 		mSelManip.clear();
-	} else if (mDragType == drag_Sel)
+	}
+	else if (mDragType == drag_PreMove)
+	{
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+		if(op) op->AbortOperation();
+		mSelManip.clear();
+	} 
+	else if (mDragType == drag_Sel)
 	{
 		ClearAnchor1();
 		ClearAnchor2();
