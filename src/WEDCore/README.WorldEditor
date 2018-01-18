@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a11
+WED 1.7.0a13
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
@@ -52,7 +52,7 @@ WED 1.7.0a11
 	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
 	- WED-972: Fix co-located nodes not allowing bezier conversion with vertex snapping on
 
-WED 1.6.1r1
+WED 1.6.1r1 12/11/17
 	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources

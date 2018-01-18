@@ -236,8 +236,6 @@ void WED_ValidateDialog::ReceiveMessage(
 	case kMsg_Cancel:
 		this->AsyncDestroy();
 		break;
-	default:
-		printf("ValidateDia: src=%p msg=%p\n", inSrc, inMsg);
 	}
 }
 
