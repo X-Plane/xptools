@@ -141,9 +141,11 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 	mHeader->SetTable(mTable);
 
 	mTextTableHeader.AddListener(mHeader);		// Header listens to text table to know when to refresh on col resize
-	mTextTableHeader.AddListener(mTable);		// Table listense to text table header to announce scroll changes (and refresh) on col resize
-	mTextTable.AddListener(mTable);				// Table listens to text table to know when content changes in a resizing way
-	mMsgTable.AddListener(mTable);			// Table listens to actual property content to know when data itself changes
+	mTextTableHeader.AddListener(mTable);		// Table  listens to text table header to announce scroll changes (and refresh) on col resize
+	mTextTable.AddListener(mTable);				// Table  listens to text table to know when content changes in a resizing way
+	mMsgTable.AddListener(mTable);			    // Table  listens to actual property content to know when data itself changes
+	
+	mMsgTable.AddListener(this);				// We listen to the mMsgTable for changes of selection
 
 	packer->PackPane(mFilter,gui_Pack_Top);
 	packer->PackPane(mHeader,gui_Pack_Top);
@@ -166,23 +168,23 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 	cncl_btn->SetParent(holder);
 	cncl_btn->AddListener(this);
 
-	GUI_Button * zoom_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	zoom_btn->SetBounds(155,5,260,GUI_GetImageResourceHeight("push_buttons.png") / 3);
-	zoom_btn->Show();
-	zoom_btn->SetSticky(0,1,1,0);
-	zoom_btn->SetDescriptor("Zoom to Issue");
-	zoom_btn->SetMsg(kMsg_ZoomTo,0);
-	zoom_btn->SetParent(holder);
-	zoom_btn->AddListener(this);
+	mZoomBtn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+	mZoomBtn->SetBounds(155,5,260,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+//	mZoomBtn->Show();
+	mZoomBtn->SetSticky(0,1,1,0);
+	mZoomBtn->SetDescriptor("Zoom to Issue");
+	mZoomBtn->SetMsg(kMsg_ZoomTo,0);
+	mZoomBtn->SetParent(holder);
+	mZoomBtn->AddListener(this);
 	
-	GUI_Button * zoom_out_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	zoom_out_btn->SetBounds(265,5,365,GUI_GetImageResourceHeight("push_buttons.png") / 3);
-	zoom_out_btn->Show();
-	zoom_out_btn->SetSticky(0,1,1,0);
-	zoom_out_btn->SetDescriptor("Zoom out");
-	zoom_out_btn->SetMsg(kMsg_ZoomOut,0);
-	zoom_out_btn->SetParent(holder);
-	zoom_out_btn->AddListener(this);
+	mZoomOutBtn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
+	mZoomOutBtn->SetBounds(265,5,365,GUI_GetImageResourceHeight("push_buttons.png") / 3);
+//	mZoomOutBtn->Show();
+	mZoomOutBtn->SetSticky(0,1,1,0);
+	mZoomOutBtn->SetDescriptor("Zoom out");
+	mZoomOutBtn->SetMsg(kMsg_ZoomOut,0);
+	mZoomOutBtn->SetParent(holder);
+	mZoomOutBtn->AddListener(this);
 
 	packer->PackPane(holder,gui_Pack_Bottom);
 	packer->PackPane(mScroller,gui_Pack_Center);
@@ -206,6 +208,9 @@ void WED_ValidateDialog::ReceiveMessage(
 	case kMsg_FilterChanged:	
 		mMsgTable.SetFilter(mFilter->GetText());
 		break;
+	case GUI_TABLE_CONTENT_CHANGED:
+		mZoomBtn->Show();
+		mZoomOutBtn->Show();
 	case kMsg_ZoomTo:
 		{
 			WED_Thing * wrl = WED_GetWorld(mResolver);
@@ -219,6 +224,7 @@ void WED_ValidateDialog::ReceiveMessage(
 					sel->Insert(*b);
 			wrl->CommitOperation();
 		}
+		if (inMsg == GUI_TABLE_CONTENT_CHANGED) break;
 		mZoom = 1.05;
 		mMapPane->ZoomShowSel(mZoom);
 		break;
@@ -230,6 +236,8 @@ void WED_ValidateDialog::ReceiveMessage(
 	case kMsg_Cancel:
 		this->AsyncDestroy();
 		break;
+	default:
+		printf("ValidateDia: src=%p msg=%p\n", inSrc, inMsg);
 	}
 }
 

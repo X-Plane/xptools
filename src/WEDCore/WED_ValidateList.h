@@ -32,6 +32,7 @@ class	GUI_TextTableHeader;
 class	WED_Document;
 class	GUI_FilterBar;
 class	WED_MapPane;
+class	GUI_Button;
 
 #include "GUI_Window.h"
 #include "GUI_Listener.h"
@@ -58,6 +59,8 @@ private:
 	GUI_ScrollerPane *		mScroller;
 	GUI_Table *				mTable;
 	GUI_Header *			mHeader;
+	GUI_Button *			mZoomBtn;
+	GUI_Button *			mZoomOutBtn;
 
 	GUI_TextTable			mTextTable;
 	GUI_TextTableHeader		mTextTableHeader;
