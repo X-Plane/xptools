@@ -382,8 +382,6 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Runway Use");
 	WED_ATCRunwayUse * f=  WED_ATCRunwayUse::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
-	f->SetName("Unnamed Runway Use");
-	
 	const WED_Airport * airport = WED_GetParentAirport(f);
 	if(airport)
 	{
@@ -393,7 +391,6 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 		if(!legal.empty())
 			f->SetRunway(*legal.begin());		
 	}
-	
 	now_sel->CommitOperation();
 }
 

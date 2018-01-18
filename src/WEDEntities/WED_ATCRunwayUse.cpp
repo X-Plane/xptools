@@ -125,6 +125,22 @@ void	WED_ATCRunwayUse::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 		WED_Thing::GetNthPropertyDict(n,dict);			
 }
 
+void		WED_ATCRunwayUse::PropEditCallback(int before)
+{
+	if (!before)   
+	{
+		char buf[30];
+		snprintf(buf,20,"%s%s%s Rwy %s", operations.value.count(atc_Arrivals) ? "Arr" : "",
+		                                 operations.value.count(atc_Arrivals) && operations.value.count(atc_Departures) ? "," : "",
+		                                 operations.value.count(atc_Departures) ? "Dep" : "",
+		                                 ENUM_Desc(rwy.value));
+		string old_name;
+		GetName(old_name);
+		if (old_name != buf)     // Prevent infinite recursion by calling SetName() if name actually changes
+			SetName(buf);
+	}
+}
+
 
 #endif
 
