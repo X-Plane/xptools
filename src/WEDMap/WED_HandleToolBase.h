@@ -105,6 +105,7 @@ private:
 		drag_Ent,			// Control handles: We are dragging an entire entity.
 		drag_Sel,			// We are selecting things
 		drag_Move,			// we are moving the selection
+		drag_PreMove,		// we have not yet dragged far enough to make the 'move' actually start
 		drag_Create
 	};
 
@@ -117,14 +118,14 @@ private:
 
 		// Variables for drag tracking
 		DragType_t				mDragType;
-		int						mDragX;
+		int						mDragX;	            // pixel coordinates where the drag started
 		int						mDragY;
 		int						mSelX;
 		int						mSelY;
 
 		intptr_t				mHandleEntity;		// Which entity do we drag
 		int						mHandleIndex;
-		Point2					mTrackPoint;
+		Point2					mTrackPoint;        // geo coordinates where the drag started
 
 		vector<IGISEntity *>	mSelManip;
 
