@@ -445,5 +445,18 @@ bool	WED_TaxiRoute::CanBeCurved() const
 #endif
 }
 
+void  WED_TaxiRoute::PropEditCallback(int before)
+{
+	static int    old_rwy_tag;            // we want to catch changes of the name property, only
+
+	if (before)
+	{
+		old_rwy_tag = runway.value;
+	}
+	else if(old_rwy_tag != runway.value)
+	{
+		SetName(string(ENUM_Desc(runway.value)));
+	}
+}
 #endif
 

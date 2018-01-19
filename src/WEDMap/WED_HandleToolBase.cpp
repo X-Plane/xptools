@@ -51,6 +51,9 @@
 // selection circle radius for control handles, in pixels
 #define	HANDLE_RAD 5
 
+// distance a drag_Move needs to drag before actually moving selection, i.e. item is initially "sticky"
+#define DRAG_START_DIST 4
+
 #if DEV
 #define DEBUG_PRINTF_N_LINES 0
 #endif
@@ -335,7 +338,7 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 		}
 		if (has_click)
 		{
-			mDragType = drag_Move;
+			mDragType = drag_PreMove;
 			mTrackPoint = click_pt;
 			IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 			if (GetHost()->GetModifiersNow() & gui_OptionAltFlag)
@@ -693,7 +696,6 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 					GetZoomer()->PixelToLL(Point2(inX, inY)));
 		break;
 	case drag_Move:
-		if( !(mSelX == inX && mSelY == inY) )
 		{
 			Point2	op(GetZoomer()->XPixelToLon(mDragX),GetZoomer()->YPixelToLat(mDragY));
 			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
@@ -707,19 +709,31 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			{
 				(*e)->Rescale(gis_Geo,old_b, new_b);
 			}
-			break;
 		}
-		// its a drag-move, but we really did not drag. So we instead execute a re-select
-		else
+		break;
+	case drag_PreMove:
 		{
-			printf("HandleClickDrag re-select\n");
-			IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
-			if(op)
+			Point2 mSel(mSelX, mSelY);
+			double drag_dist = mSel.squared_distance(Point2(inX,inY));
+
+			if (drag_dist >	DRAG_START_DIST * DRAG_START_DIST)	// see if we drag'd far enough to "break loose" and actually move the object
 			{
-				op->AbortOperation();
-				op->StartOperation("Change Selection");
+				mDragType = drag_Move;
+				break;
 			}
-			mDragType = drag_Sel;
+			else if(drag_dist > 0.0)                            // we've drag'd some, but not much. Do nothing, for now.
+				break;
+			else 			// its a drag-move, but we really did not drag a single pixel. So we instead execute a single click select
+			{
+				printf("HandleClickDrag re-select\n");
+				IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+				if(op)
+				{
+					op->AbortOperation();
+					op->StartOperation("Change Selection");
+				}
+				mDragType = drag_Sel;
+			}
 		}
 	case drag_Sel:
 		{
@@ -767,7 +781,14 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->CommitOperation();
 		mSelManip.clear();
-	} else if (mDragType == drag_Sel)
+	}
+	else if (mDragType == drag_PreMove)
+	{
+		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
+		if(op) op->AbortOperation();
+		mSelManip.clear();
+	} 
+	else if (mDragType == drag_Sel)
 	{
 		ClearAnchor1();
 		ClearAnchor2();

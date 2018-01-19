@@ -51,7 +51,7 @@ WED_ATCRunwayUse::~WED_ATCRunwayUse()
 
 void	WED_ATCRunwayUse::SetRunway(int r)
 {
-	rwy.value = r;
+	rwy = r;
 }
 
 int WED_ATCRunwayUse::GetRunway(void) const
@@ -127,17 +127,14 @@ void	WED_ATCRunwayUse::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 
 void		WED_ATCRunwayUse::PropEditCallback(int before)
 {
-	if (!before)   
+	if (!before)
 	{
-		char buf[30];
+		char buf[20];
 		snprintf(buf,20,"%s%s%s Rwy %s", operations.value.count(atc_Arrivals) ? "Arr" : "",
-		                                 operations.value.count(atc_Arrivals) && operations.value.count(atc_Departures) ? "," : "",
+		                                 operations.value.size() > 1 ? "," : "",
 		                                 operations.value.count(atc_Departures) ? "Dep" : "",
 		                                 ENUM_Desc(rwy.value));
-		string old_name;
-		GetName(old_name);
-		if (old_name != buf)     // Prevent infinite recursion by calling SetName() if name actually changes
-			SetName(buf);
+		SetName(buf);
 	}
 }
 

@@ -69,6 +69,8 @@ public:
 				bool		HasInvalidHotZones(const set<int>& legal_rwys) const;
 				int			GetRunway(void) const;	// returns two-way enum!
 
+	virtual		void		PropEditCallback(int before);
+
 	virtual		void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 	virtual void		GetNthPropertyInfo(int n, PropertyInfo_t& info) const;

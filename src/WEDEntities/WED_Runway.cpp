@@ -502,7 +502,7 @@ void  WED_Runway::PropEditCallback(int before)
 {
 	static int    old_enum;            // we want to catch changes of the name property, only
 	static pair<int,int> old_enum_1wy;
-	static set<int> all_rwys;
+	static set<int> old_all_rwys;
 	static WED_Airport * apt ;
 	
 	if (before)
@@ -510,176 +510,172 @@ void  WED_Runway::PropEditCallback(int before)
 		old_enum = GetRunwayEnumsTwoway();
 		old_enum_1wy = GetRunwayEnumsOneway();
 		apt = WED_GetParentAirport(this);
-		if (apt) WED_GetAllRunwaysTwoway(apt, all_rwys);
+		if (apt) WED_GetAllRunwaysTwoway(apt, old_all_rwys);
 	}
 	else
 	{
 		int new_enum = GetRunwayEnumsTwoway();
-		pair<int,int> new_enum_1wy = GetRunwayEnumsOneway();
 		
 		if (new_enum == atc_rwy_None)
 		{
-#if DEV
-			printf("New rwy name is illegal, no auto-rename\n");
-#endif
+			int	res = ConfirmMessage("New Runway Name is illegal, Smart Runway Rename can not be applied.", 
+						"Proceed with new name", "Keep old name");
+			if(res == 0)
+				SetName(string(ENUM_Desc(old_enum)));
+			return;
 		}
-		else if(new_enum != old_enum)
+		else if(new_enum != old_enum && old_enum != atc_rwy_None)
 		{
-			if (all_rwys.find(new_enum) != all_rwys.end())
+			int renamed_taxi=0;         // keep statistics of modified items
+			int renamed_flows=0;
+			int renamed_signs=0;
+			
+			vector<WED_TaxiRoute *>	taxi_routes;
+			if(apt) CollectRecursive(apt,back_inserter(taxi_routes), WED_TaxiRoute::sClass);
+			vector<WED_ATCFlow *> flows;
+			if(apt) CollectRecursive(apt,back_inserter(flows), IgnoreVisiblity, TakeAlways, WED_ATCFlow::sClass);
+			vector<WED_ATCRunwayUse *> uses;
+			if(apt) CollectRecursive(apt, back_inserter(uses), IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
+			vector<WED_AirportSign *> signs;
+			if(apt) CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
+			
+			if (old_all_rwys.find(new_enum) != old_all_rwys.end())
 			{
-				DoUserAlert("Another runway of same name already exists, smart runway rename not activated.\n");
+				DoUserAlert("Another runway of same name already exists, Smart Runway Rename will not be applied.");
+				return;
 			}
-			else
+	
+			if(apt) 
 			{
-				int renamed_taxi=0;         // keep statistics of modified items
-				int renamed_signs=0;
-				int renamed_flows=0;
-				
-//				apt->CommitCommand();
-//				apt->StartCommand("Smart Runway Rename");
-
-				// get all ATC Taxi segments
-				vector<WED_TaxiRoute *>	taxi_routes;
-				CollectRecursive(apt,back_inserter(taxi_routes), WED_TaxiRoute::sClass);
-				
-				for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
+				apt->CommitCommand();
+				apt->StartCommand("Smart Runway Rename");
+			}
+			
+			pair<int,int> new_enum_1wy = GetRunwayEnumsOneway();
+			
+			for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
+			{
+				// move all hotzone tags
+				bool renamed = false;
+				set<int> hotZ;
+				hotZ = (*t)->GetHotArrive();
+				if (hotZ.erase(old_enum_1wy.first))
 				{
-					// move all hotzone tags
-					bool renamed = false;
-					set<int> hotZ;
-					hotZ = (*t)->GetHotArrive();
-					if (hotZ.erase(old_enum_1wy.first))
-					{
-						renamed=true;
-						hotZ.insert(new_enum_1wy.first);
-					}
-					if( hotZ.erase(old_enum_1wy.second))
-					{
-						renamed=true;
-						hotZ.insert(new_enum_1wy.second);
-					}
-					(*t)->SetHotArrive(hotZ);
-					
-					hotZ = (*t)->GetHotDepart();
-					if (hotZ.erase(old_enum_1wy.first))
-					{
-						renamed=true;
-						hotZ.insert(new_enum_1wy.first);
-					}
-					if( hotZ.erase(old_enum_1wy.second))
-					{
-						renamed=true;
-						hotZ.insert(new_enum_1wy.second);
-					}
-					(*t)->SetHotDepart(hotZ);
-					
-					hotZ = (*t)->GetHotILS();
-					if (hotZ.erase(old_enum_1wy.first))
-					{
-						renamed=true;
-						hotZ.insert(new_enum_1wy.first);
-					}
-					if( hotZ.erase(old_enum_1wy.second))
-					{
-						renamed=true;
-						hotZ.insert(new_enum_1wy.second);
-					}
-					(*t)->SetHotILS(hotZ);
-				
-					if ((*t)->GetRunway() == old_enum)
-					{
-						renamed=true;
-						(*t)->SetRunway(new_enum);
-					}
-					if (renamed) renamed_taxi++;
+					renamed=true;
+					hotZ.insert(new_enum_1wy.first);
 				}
-				// get all flows
-				vector<WED_ATCFlow *> flows;
-				CollectRecursive(apt,back_inserter(flows), IgnoreVisiblity, TakeAlways, WED_ATCFlow::sClass);
-
-				for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
+				if( hotZ.erase(old_enum_1wy.second))
 				{
-					bool renamed = false;
-					int r = (*f)->GetPatternRunway();
-					if(r = old_enum_1wy.first)
-					{
-						renamed=true;
-						(*f)->SetPatternRunway(new_enum_1wy.first);
-					}
-					else if(r = old_enum_1wy.second)
-					{
-						renamed=true;
-						(*f)->SetPatternRunway(new_enum_1wy.second);
-					}
-					if (renamed) renamed_flows++;
+					renamed=true;
+					hotZ.insert(new_enum_1wy.second);
 				}
-
-				// get all runway use rules
-				vector<WED_ATCRunwayUse *> uses;
-				CollectRecursive(apt, back_inserter(uses), IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
+				(*t)->SetHotArrive(hotZ);
 				
-				for(vector<WED_ATCRunwayUse *>::iterator u = uses.begin(); u != uses.end(); ++u)
+				hotZ = (*t)->GetHotDepart();
+				if (hotZ.erase(old_enum_1wy.first))
 				{
-					int r = (*u)->GetRunway();
-					if(r = old_enum_1wy.first)
-						(*u)->SetRunway(new_enum_1wy.first);
-					else if(r = old_enum_1wy.second)
-						(*u)->SetRunway(new_enum_1wy.second);
+					renamed=true;
+					hotZ.insert(new_enum_1wy.first);
 				}
-				// get all taxi signs
-				vector<WED_AirportSign *> signs;
-				CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
-				
-				// create list of strings to replace
-				vector<string> old_rwys, new_rwys;
-				old_rwys.push_back(ENUM_Desc(old_enum_1wy.second));
-				new_rwys.push_back(ENUM_Desc(new_enum_1wy.second));
-				old_rwys.push_back(ENUM_Desc(old_enum_1wy.first));
-				new_rwys.push_back(ENUM_Desc(new_enum_1wy.first));
-				
-				if (old_rwys.back()[0] == '0')  // also search & replace a sign that has no leading zero in rwy number
+				if( hotZ.erase(old_enum_1wy.second))
 				{
-					old_rwys.push_back(old_rwys.back().substr(1));
-					new_rwys.push_back(new_rwys.back().substr(1));
+					renamed=true;
+					hotZ.insert(new_enum_1wy.second);
 				}
+				(*t)->SetHotDepart(hotZ);
 				
-				for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
+				hotZ = (*t)->GetHotILS();
+				if (hotZ.erase(old_enum_1wy.first))
 				{
-					bool renamed = false;
-					string label; (*s)->GetName(label);
-					for (int i = 0; i < old_rwys.size(); ++i)
+					renamed=true;
+					hotZ.insert(new_enum_1wy.first);
+				}
+				if( hotZ.erase(old_enum_1wy.second))
+				{
+					renamed=true;
+					hotZ.insert(new_enum_1wy.second);
+				}
+				(*t)->SetHotILS(hotZ);
+			
+				if ((*t)->GetRunway() == old_enum)
+				{
+					renamed=true;
+					(*t)->SetRunway(new_enum);
+				}
+				if (renamed) renamed_taxi++;
+			}
+			for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
+			{
+				bool renamed = false;
+				int r = (*f)->GetPatternRunway();
+				if(r = old_enum_1wy.first)
+				{
+					renamed=true;
+					(*f)->SetPatternRunway(new_enum_1wy.first);
+				}
+				else if(r = old_enum_1wy.second)
+				{
+					renamed=true;
+					(*f)->SetPatternRunway(new_enum_1wy.second);
+				}
+				if (renamed) renamed_flows++;
+			}
+			for(vector<WED_ATCRunwayUse *>::iterator u = uses.begin(); u != uses.end(); ++u)
+			{
+				int r = (*u)->GetRunway();
+				if(r = old_enum_1wy.first)
+					(*u)->SetRunway(new_enum_1wy.first);
+				else if(r = old_enum_1wy.second)
+					(*u)->SetRunway(new_enum_1wy.second);
+			}
+			// create list of strings to replace
+			vector<string> old_rwys, new_rwys;
+			old_rwys.push_back(ENUM_Desc(old_enum_1wy.second));
+			new_rwys.push_back(ENUM_Desc(new_enum_1wy.second));
+			old_rwys.push_back(ENUM_Desc(old_enum_1wy.first));
+			new_rwys.push_back(ENUM_Desc(new_enum_1wy.first));
+			
+			if (old_rwys.back()[0] == '0')  // also search & replace a sign that has no leading zero in rwy number
+			{
+				old_rwys.push_back(old_rwys.back().substr(1));
+				new_rwys.push_back(new_rwys.back().substr(1));
+			}
+			for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
+			{
+				bool renamed = false;
+				string label; (*s)->GetName(label);
+				for (int i = 0; i < old_rwys.size(); ++i)
+				{
+					string old_rwy = old_rwys[i];
+					string new_rwy = new_rwys[i];
+					size_t pos;
+					if ((pos = label.find(old_rwy)) != string::npos)
 					{
-						string old_rwy = old_rwys[i];
-						string new_rwy = new_rwys[i];
-						size_t pos;
-						if ((pos = label.find(old_rwy)) != string::npos)
+						size_t len = label.length();
+						size_t next_pos = pos + old_rwy.length();
+						
+						char prec_char = len > 0 ? label[pos-1] : '!';
+						char next_char = next_pos < len ? label[next_pos] : '!';
+						
+						// gotta be a bit more conservative than just looking for a substring,
+						// don't change a sign "GATE 12" when renaming Rwy 12.
+						if (!isalnum(prec_char) && !isalnum(next_char))
 						{
-							size_t len = label.length();
-							size_t next_pos = pos + old_rwy.length();
-							
-							char prec_char = len > 0 ? label[pos-1] : '!';
-							char next_char = next_pos < len ? label[next_pos] : '!';
-							
-							// gotta be a bit more conservative than just looking for a substring,
-							// don't change a sign "GATE 12" when renaming Rwy 12.
-							if (!isalnum(prec_char) && !isalnum(next_char))
-							{
-								renamed=true;
-								label = label.replace(pos, old_rwy.length(), new_rwy);
-								(*s)->SetName(label);
-							}
+							renamed=true;
+							label = label.replace(pos, old_rwy.length(), new_rwy);
+							(*s)->SetName(label);
 						}
 					}
-					if (renamed) renamed_signs++;
 				}
+				if (renamed) renamed_signs++;
+			}
 
-				if (renamed_flows || renamed_signs || renamed_taxi)
-				{
-					stringstream ss;
-					ss << "Smart runway rename activated:\n" << renamed_taxi << " taxi route edges\n";
-					ss << renamed_flows << " ATC flows\n" << renamed_signs << " taxi signs\nrefering to this runway were automatically renamed." ;
-					DoUserAlert(ss.str().c_str());
-				}
+			if (renamed_flows || renamed_signs || renamed_taxi)
+			{
+				stringstream ss;
+				ss << "Smart Runway Rename completed:\n" << renamed_taxi << " taxi route edges\n";
+				ss << renamed_flows << " ATC flows\n" << renamed_signs << " taxi signs\nrefering to this runway were updated." ;
+				DoUserAlert(ss.str().c_str());
 			}
 		}
 	}

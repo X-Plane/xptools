@@ -873,19 +873,19 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	if(seq && !mInEdit)
 	{
 		mInEdit = 1;
+		Point2 p1,p2;
+		int np = seq->GetNumPoints();
+		seq->GetNthPoint(c)->GetLocation(gis_Geo,p1);
+		seq->GetNthPoint((c+1) % np)->GetLocation(gis_Geo,p2);
+		mPointOffset1 = Vector2(io_pt,p1);
+		mPointOffset2 = Vector2(io_pt,p2);
+
 		if (mods & gui_OptionAltFlag)
 		{
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
 		}
 		else
 		{
-			Point2 p1,p2;
-			int np = seq->GetNumPoints();
-			seq->GetNthPoint(c)->GetLocation(gis_Geo,p1);
-			seq->GetNthPoint((c+1) % np)->GetLocation(gis_Geo,p2);
-			mPointOffset1 = Vector2(io_pt,p1);
-			mPointOffset2 = Vector2(io_pt,p2);
-
 			mNewSplitPoint = NULL;
 		}
 	}
