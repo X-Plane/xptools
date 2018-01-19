@@ -47,6 +47,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0224ED2720048B7F004729CD /* WED_ValidateList.cpp */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
@@ -1010,6 +1011,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0224ED2720048B7F004729CD /* WED_ValidateList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ValidateList.cpp; sourceTree = "<group>"; };
+		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
@@ -3001,6 +3004,8 @@
 		D6BC37BB0AB22C85003949C5 /* WEDCore */ = {
 			isa = PBXGroup;
 			children = (
+				0224ED2720048B7F004729CD /* WED_ValidateList.cpp */,
+				0224ED2820048B7F004729CD /* WED_ValidateList.h */,
 				D60628DE1EA110D90007CC13 /* WED_HierarchyUtils.cpp */,
 				D60628DF1EA110D90007CC13 /* WED_HierarchyUtils.h */,
 				D652F3E21D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp */,
@@ -4616,6 +4621,7 @@
 				D636819A0B8AC9C200091AFC /* WED_GISChain.cpp in Sources */,
 				D636819F0B8ACA1500091AFC /* WED_GISPolygon.cpp in Sources */,
 				D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */,
+				0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */,
 				D63681A20B8ACA2600091AFC /* WED_GISComposite.cpp in Sources */,
 				D629FA830B95CB5600A2FB57 /* WED_MapLayer.cpp in Sources */,
 				D629FA9B0B95CDF000A2FB57 /* WED_MapToolNew.cpp in Sources */,
