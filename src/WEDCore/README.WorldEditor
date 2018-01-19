@@ -52,7 +52,7 @@ WED 1.7.0a13
 	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
 	- WED-972: Fix co-located nodes not allowing bezier conversion with vertex snapping on
 	- WED-976: Fix opt-ALT click near edge causing uncommanded move of edge location
-	- WED-974: Fix Bezier-handle conversion nor working for co-located nodes in some cases
+	- WED-974: Fix Bezier-handle conversion not working for co-located nodes in some cases
 
 WED 1.6.1r1 12/11/17
 	Features:

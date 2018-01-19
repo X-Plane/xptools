@@ -516,6 +516,8 @@ void  WED_Runway::PropEditCallback(int before)
 	{
 		int new_enum = GetRunwayEnumsTwoway();
 		
+		if (old_enum == atc_rwy_None) return;
+		
 		if (new_enum == atc_rwy_None)
 		{
 			int	res = ConfirmMessage("New Runway Name is illegal, Smart Runway Rename can not be applied.", 
@@ -524,7 +526,7 @@ void  WED_Runway::PropEditCallback(int before)
 				SetName(string(ENUM_Desc(old_enum)));
 			return;
 		}
-		else if(new_enum != old_enum && old_enum != atc_rwy_None)
+		else if(new_enum != old_enum)
 		{
 			int renamed_taxi=0;         // keep statistics of modified items
 			int renamed_flows=0;
