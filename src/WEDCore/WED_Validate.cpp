@@ -382,6 +382,7 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	}
 #if CHECK_ZERO_LENGTH
 	vector<WED_Thing*> problem_children;
+	nn = ps->GetNumSides();
 	for(int n = 0; n < nn; ++n)
 	{
 		Bezier2 b;
@@ -548,8 +549,11 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 									Point2 x;
 									if (b1.as_segment().intersect(b2.as_segment(), x))
 									{
-										AddNodesOfSegment(ips,i,nodes_next2crossings);
-										AddNodesOfSegment(ips,j,nodes_next2crossings);
+										//if(i == 0 && j == n_sides-1 && x == b1.p2) // touching ends of its just "closing a ring"
+										{
+											AddNodesOfSegment(ips,i,nodes_next2crossings);
+											AddNodesOfSegment(ips,j,nodes_next2crossings);
+										}
 									}
 								}
 							}
