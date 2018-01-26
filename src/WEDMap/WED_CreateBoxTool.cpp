@@ -48,7 +48,7 @@ WED_CreateBoxTool::WED_CreateBoxTool(
 	0,								// close allowed
 	0),								// close required?
 	mType(tool),
-		mExclusions(this,"Exclusions", SQL_Name("",""),XML_Name("",""), ExclusionTypes, 0)
+		mExclusions(this,PROP_Name("Exclusions", XML_Name("","")), ExclusionTypes, 0)
 {
 }
 
@@ -73,7 +73,7 @@ void	WED_CreateBoxTool::AcceptPath(
 	int idx;
 	WED_Thing * host = WED_GetCreateHost(GetResolver(), false, true, idx);
 	WED_ExclusionZone * exc;
-	WED_GISBoundingBox * obj;
+	WED_GISBoundingBox * obj = NULL;
 
 	switch(mType) {
 	case create_Exclusion:

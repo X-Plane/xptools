@@ -36,8 +36,10 @@ enum {
 	res_Forest,
 	res_String,
 	res_Line,
-	res_Polygon,
-	res_Road
+	res_Polygon
+#if ROAD_EDITING
+	,res_Road
+#endif	
 };
 
 // "Virtual" package numbers...package mgr IDs packages as 0-based index.  These meta-constants are used for filtering in special ways.
@@ -46,13 +48,16 @@ enum {
 	pack_Local		= -1,			// Return only files in the users's currently open pack.
 	pack_Library	= -2,			// Return only library items.
 	pack_All		= -3,			// Return local files and the entire library.
-	pack_Default	= -4			// Return only library items that come from the default scenery packs that x-plane ships with.
-};
+	pack_Default	= -4,			// Return only library items that come from the default scenery packs that x-plane ships with.
+	pack_New		= -5
+	};
 
 enum {
 	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
 	status_Deprecated	= 1,
-	status_Public		= 2
+	status_Yellow		= 2,		// half-deprecated items, visibility of deprecated, validates as public
+	status_Public		= 3,
+	status_New			= 4
 };
 
 class WED_LibraryMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
@@ -69,14 +74,14 @@ public:
 	string		GetResourceParent(const string& r);
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);
-	string		GetResourcePath(const string& r);
+	string		GetResourcePath(const string& r, int variant = 0);
 	
 				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
 	bool		IsResourceDefault(const string& r);
 	bool		IsResourceLocal(const string& r);
 	bool		IsResourceLibrary(const string& r);
 	bool		IsResourceDeprecatedOrPrivate(const string& r);
-	
+		
 	string		CreateLocalResourcePath(const string& r);
 
 	virtual	void	ReceiveMessage(
@@ -86,6 +91,8 @@ public:
 
 				// This returns true if the package number 'package_number' adds at least one item to the library.
 	bool		DoesPackHaveLibraryItems(int package_number);
+				// indicates if art asset exported by multiple exports, i.e. has randomized appearance
+	int			GetNumVariants(const string& r);
 
 private:
 
@@ -95,8 +102,8 @@ private:
 
 	struct	res_info_t {
 		int			res_type;
-		set<int>	packages;
-		string		real_path;
+		set<int>	packages;       // points out if same items is exported by multiple libraries
+		vector<string> real_paths;  // holds all the variants causeed by multiple EXPORTS commands
 		bool		is_backup;
 		bool		is_default;
 		int			status;

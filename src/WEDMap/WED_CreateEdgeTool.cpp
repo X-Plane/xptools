@@ -31,14 +31,29 @@
 #include "WED_MapZoomerNew.h"
 #include "WED_ResourceMgr.h"
 #include "WED_GISUtils.h"
+#include "WED_HierarchyUtils.h"
 #include "WED_EnumSystem.h"
 #include "STLUtils.h"
 #include <sstream>
 
+#include "WED_GroupCommands.h"
 #if AIRPORT_ROUTING
 
 static const char * kCreateCmds[] = { "Taxiway Route Line", "Road" };
 static const int kIsAirport[] = { 1, 0 };
+
+static bool is_edge_curved(CreateEdge_t tool_type)
+{
+	#if ROAD_EDITING
+		if(tool_type == create_Road)
+			return true;
+	#endif
+	#if HAS_CURVED_ATC_ROUTE
+		return true;
+	#endif
+	
+	return false;
+}
 
 WED_CreateEdgeTool::WED_CreateEdgeTool(
 					const char *		tool_name,
@@ -50,29 +65,25 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	WED_CreateToolBase(tool_name, host, zoomer, resolver, archive,
 	2,						// min pts,
 	99999999,				// max pts - yes, I am a hack.
-#if ROAD_EDITING
-	tool == create_Road,	// curve allowed?					// Ben says: when we go road grids, we'll have to make this dynamic!
-#else
-	0,
-#endif
+	is_edge_curved(tool),	// curve allowed?
 	0,						// curve required?
 	1,						// close allowed?
 	0),						// close required
 	mType(tool),
-	mName(this, "Name", SQL_Name("",""),XML_Name("",""), "N"),
-	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", SQL_Name("",""),XML_Name("",""), 1),
-	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway", SQL_Name("",""),XML_Name("",""), ATCRunwayTwoway, atc_rwy_None),
-	mVehicleClass(tool == create_TaxiRoute ? this : NULL,"Allowed Vehicles",SQL_Name("",""),XML_Name("",""), ATCVehicleClass, atc_Vehicle_Aircraft),
-	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
-	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
-	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
-	mWidth(tool == create_TaxiRoute ? this : NULL, "Size", SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
+	mVehicleClass(tool == create_TaxiRoute ? this : NULL,PROP_Name("Allowed Vehicles",XML_Name("","")), ATCVehicleClass, atc_Vehicle_Aircraft),
+	mName(                                   this,       PROP_Name("Name",            XML_Name("","")), "N"),
+	mOneway(tool == create_TaxiRoute ?       this : NULL,PROP_Name("Oneway",          XML_Name("","")), 1),
+	mRunway(tool == create_TaxiRoute ?       this : NULL,PROP_Name("Runway",          XML_Name("","")), ATCRunwayTwoway, atc_rwy_None),
+	mHotDepart(tool == create_TaxiRoute ?    this : NULL,PROP_Name("Departure",       XML_Name("","")), ATCRunwayOneway,false),
+	mHotArrive(tool == create_TaxiRoute ?    this : NULL,PROP_Name("Arrival",         XML_Name("","")), ATCRunwayOneway,false),
+	mHotILS(tool == create_TaxiRoute ?       this : NULL,PROP_Name("ILS",             XML_Name("","")), ATCRunwayOneway,false),
+	mWidth(tool == create_TaxiRoute ?        this : NULL,PROP_Name("Size",            XML_Name("","")), ATCIcaoWidth, width_E),
 #if ROAD_EDITING
-	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
-	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), 1, 3),
-	mResource(tool == create_Road ? this : NULL, "Resource",SQL_Name("",""),XML_Name("",""), "lib/g10/roads.net"),
+	mLayer(tool == create_Road ?             this : NULL,PROP_Name("Layer",           XML_Name("","")), 0, 2),
+	mSubtype(tool == create_Road ?           this : NULL,PROP_Name("Type",            XML_Name("","")), 1, 3),
+	mResource(tool == create_Road ?          this : NULL,PROP_Name("Resource",        XML_Name("","")), "lib/g10/roads.net"),
 #endif
-	mSlop(this, "Slop", SQL_Name("",""),XML_Name("",""), 10, 2)
+	mSlop(                                   this,        PROP_Name("Slop",           XML_Name("","")), 10, 2)
 {
 }
 
@@ -114,6 +125,12 @@ static void SortSplits(const Segment2& s, vector<pair<IGISPointSequence *, Point
 }
 
 
+
+split_edge_info_t cast_WED_GISEdge_to_split_edge_info_t(WED_GISEdge* edge, bool active)
+{
+	DebugAssert(edge != NULL);
+	return split_edge_info_t(edge, active);
+}
 
 void		WED_CreateEdgeTool::AcceptPath(
 			const vector<Point2>&	in_pts,
@@ -183,64 +200,10 @@ void		WED_CreateEdgeTool::AcceptPath(
 	}
 	
 	/************************************************************************************************
-	 * THIRD SNAPPING PASS - SPLIT NEW EDGES NEAR TO EXISTING PTS
-	 ************************************************************************************************/
-	for(int p = 1; p < pts.size(); ++p)
-	{
-		vector<Point2>	splits;
-		SplitByPts(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits,frame_dist*frame_dist);
-//		printf("At index %d, got %d splits from pts.\n", p, splits.size());
-		SortSplits(Segment2(pts[p-1],pts[p]), splits);
-
-		pts.insert(pts.begin()+p,splits.begin(), splits.end());
-		dirs_lo.insert(dirs_lo.begin()+p,splits.begin(), splits.end());
-		dirs_hi.insert(dirs_hi.begin()+p,splits.begin(), splits.end());
-		vector<int> flags(splits.size(),0);
-		has_dirs.insert(has_dirs.begin()+p,flags.begin(),flags.end());
-		has_split.insert(has_split.begin()+p,flags.begin(),flags.end());
-		
-		p += splits.size();
-		
-//		printf("p = %d\n", p);
-//		for(int n = 0; n < pts.size(); ++n)
-//			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());		
-	}
-
-	/************************************************************************************************
-	 * FOURTH SNAPPING PASS - PRE-INTERSECT LINES WE WILL GO THROUGH
-	 ************************************************************************************************/
-	// Now that we've snapped all we can, look for real non-end point segment intersections.  Cut the
-	// existing segment using "split" and save the exact point.  This way we will have exact hits on
-	// nodes later and consolidate.
-
-	for(int p = 1; p < pts.size(); ++p)
-	{
-		vector<pair<IGISPointSequence *, Point2> >	splits;
-		SplitByLine(host_for_merging, NULL, edge_class, Segment2(pts[p-1],pts[p]), splits);
-		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
-			s->first->SplitSide(s->second,0.001);
-//		printf("At index %d, got %d splits.\n", p, splits.size());
-		SortSplits(Segment2(pts[p-1],pts[p]), splits);
-		for(vector<pair<IGISPointSequence *, Point2> >::iterator s = splits.begin(); s != splits.end(); ++s)
-		{			
-			pts.insert(pts.begin()+p,s->second);
-			dirs_lo.insert(dirs_lo.begin()+p,s->second);
-			dirs_hi.insert(dirs_hi.begin()+p,s->second);
-			has_dirs.insert(has_dirs.begin()+p,0);
-			has_split.insert(has_split.begin()+p,0);
-			
-			++p;
-		}	
-		
-//		printf("p = %d\n", p);
-//		for(int n = 0; n < pts.size(); ++n)
-//			printf("    %d = %lf,%lf\n", n,pts[n].x(),pts[n].y());
-	}
-
-	/************************************************************************************************
 	 *
 	 ************************************************************************************************/
-
+	
+	vector<WED_GISEdge*> tool_created_edges;
 	WED_GISEdge *	new_edge = NULL;
 	WED_TaxiRoute *	tr = NULL;
 #if ROAD_EDITING
@@ -250,7 +213,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	int stop = closed ? pts.size() : pts.size()-1;
 	int start = 0;
 
-	WED_GISPoint * c;
+	WED_GISPoint * c = NULL;
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	
@@ -340,12 +303,40 @@ void		WED_CreateEdgeTool::AcceptPath(
 		}
 		// Do this last - half-built edge inserted the world destabilizes accessors.
 		new_edge->SetParent(host_for_parent,idx);
-		sel->Insert(new_edge);	
-	
+		tool_created_edges.push_back(new_edge);
+		sel->Insert(new_edge);
 //		printf("Added edge %d  from 0x%08x to 0x%08x\n", p, src, dst);
 		src = dst;
 		++p;
-	}	
+	}
+
+	//Collect edges in the current airport
+	vector<WED_GISEdge*> all_edges;
+	CollectRecursive(host_for_parent, back_inserter(all_edges));
+
+	//filter them for just the crossing ones
+	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges);
+
+	//convert, and run split!
+	vector<split_edge_info_t> edges_to_split;
+	
+	for(set<WED_GISEdge*>::iterator e = crossing_edges.begin(); e != crossing_edges.end(); ++e)
+		edges_to_split.push_back(cast_WED_GISEdge_to_split_edge_info_t(*e, find(tool_created_edges.begin(), tool_created_edges.end(), *e) != tool_created_edges.end()));
+	
+	edge_to_child_edges_map_t new_pieces = run_split_on_edges(edges_to_split);
+	
+	//For all the tool_created_edges that were split
+	for(vector<WED_GISEdge*>::iterator itr = tool_created_edges.begin();
+		itr != tool_created_edges.end() && new_pieces.size() > 0;
+		++itr)
+	{
+		//Save the children as selected
+		edge_to_child_edges_map_t::mapped_type& edge_map_entry = new_pieces[*itr];
+
+		//Select only the new pieces
+		set<ISelectable*> iselectable_new_pieces(edge_map_entry.begin(), edge_map_entry.end());
+		sel->Insert(iselectable_new_pieces);
+	}
 
 	GetArchive()->CommitCommand();
 }
@@ -505,127 +496,6 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 
 
 
-
-void WED_CreateEdgeTool::SplitByLine(WED_Thing * host, IGISEntity * ent, const char* filter, const Segment2& splitter, vector<pair<IGISPointSequence *, Point2> >& out_splits)
-{
-	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
-	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
-	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(!IsVisibleNow(et))	return;
-	if(IsLockedNow(et))		return;
-	if(e && t)
-	{
-		Point2	l;
-		IGISPoint * p;
-		IGISPointSequence * ps;
-		IGISComposite * c;
-	
-		switch(e->GetGISClass()) {
-		case gis_PointSequence:
-		case gis_Line:
-		case gis_Line_Width:
-		case gis_Ring:
-		case gis_Edge:
-		case gis_Chain:			
-			if(filter == NULL || t->GetClass() == filter)
-			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
-			{
-				int ss = ps->GetNumSides();
-				for(int s = 0; s < ss; ++s)
-				{
-					Segment2 side;
-					Bezier2 bez;
-					if(!ps->GetSide(gis_Geo,s,side,bez))
-					{
-						Point2 x;
-						if(splitter.p1 != side.p1 &&
-						   splitter.p1 != side.p2 &&
-						   splitter.p2 != side.p1 &&
-						   splitter.p2 != side.p2)						
-						if(splitter.intersect(side,x))
-						{
-							out_splits.push_back(pair<IGISPointSequence *, Point2>(ps, x));
-//							ps->SplitSide(x, 0.001);
-						}
-					}
-				}
-			}
-			break;
-		case gis_Composite:
-			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
-			{
-				for(int n = 0; n < c->GetNumEntities(); ++n)
-					SplitByLine(NULL,c->GetNthEntity(n), filter, splitter, out_splits);
-			}
-		}
-	}
-	else
-	{
-		for(int n = 0; n < host->CountChildren(); ++n)
-			SplitByLine(host->GetNthChild(n), NULL, filter, splitter, out_splits);
-	}
-}
-
-
-void WED_CreateEdgeTool::SplitByPts(WED_Thing * host, IGISEntity * ent, const char * filter, const Segment2& splitter, vector<Point2>& out_splits, double dsq)
-{
-	IGISEntity * e = ent ? ent : dynamic_cast<IGISEntity*>(host);
-	WED_Thing * t = host ? host : dynamic_cast<WED_Thing *>(ent);
-	WED_Entity * et = t ? dynamic_cast<WED_Entity *>(t) : NULL;
-	if(!IsVisibleNow(et))	return;
-	if(IsLockedNow(et))		return;
-	if(e && t)
-	{
-		Point2	l;
-		IGISPoint * p;
-		IGISPointSequence * ps;
-		IGISComposite * c;
-	
-		switch(e->GetGISClass()) {
-		case gis_Point:
-		case gis_Point_Bezier:
-		case gis_Point_Heading:
-		case gis_Point_HeadingWidthLength:
-			if((p = dynamic_cast<IGISPoint *>(e)) != NULL)
-			{
-				p->GetLocation(gis_Geo,l);
-				double my_dist = splitter.squared_distance(l);
-				if(my_dist < dsq && splitter.p1 != l && splitter.p2 != l)
-				{
-					out_splits.push_back(l);
-				}
-			}
-			break;
-		case gis_PointSequence:
-		case gis_Line:
-		case gis_Line_Width:
-		case gis_Ring:
-		case gis_Edge:
-		case gis_Chain:			
-			if(filter == NULL || filter == t->GetClass())
-			if((ps = dynamic_cast<IGISPointSequence*>(e)) != NULL)
-			{
-				for(int n = 0; n < ps->GetNumPoints(); ++n)
-					SplitByPts(NULL,ps->GetNthPoint(n), filter, splitter, out_splits, dsq);
-			}
-			break;
-
-			break;
-		case gis_Composite:
-			if((c = dynamic_cast<IGISComposite *>(e)) != NULL)
-			{
-				for(int n = 0; n < c->GetNumEntities(); ++n)
-					SplitByPts(NULL,c->GetNthEntity(n), filter, splitter, out_splits, dsq);
-			}
-		}
-	}
-	else
-	{
-		for(int n = 0; n < host->CountChildren(); ++n)
-			SplitByPts(host->GetNthChild(n), NULL, filter, splitter, out_splits,dsq);
-	}
-}
-
 void	WED_CreateEdgeTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 {
 	dict.clear();
@@ -701,6 +571,25 @@ void		WED_CreateEdgeTool::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		}
 	}
 #endif
+
+	//Ensures only the relevant properties are shown with atc_Vehicles_Ground_Trucks selected
+	PropertyVal_t prop;
+	mVehicleClass.GetProperty(prop);
+
+	if (prop.int_val == atc_Vehicle_Ground_Trucks)
+	{
+		if (n == PropertyItemNumber(&mRunway)    ||
+			n == PropertyItemNumber(&mHotDepart) ||
+			n == PropertyItemNumber(&mHotArrive) ||
+			n == PropertyItemNumber(&mHotILS)    ||
+			n == PropertyItemNumber(&mWidth))
+		{
+			//"." is the special hardcoded "disable me" string, see IPropertyObject.h
+			info.prop_name = ".";
+			info.can_edit = false;
+			info.can_delete = false;
+		}
+	}
 }
 
 void		WED_CreateEdgeTool::GetNthProperty(int n, PropertyVal_t& val) const

@@ -74,12 +74,16 @@ enum {
 	apt_flow_pattern	= 1101,
 	
 	apt_taxi_header		= 1200,			// 1200 <name>
-	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id> <name>
+	apt_taxi_node		= 1201,			// 1201 <lat> <lon> <type> <id, 0 based sequence, ascending> <name>
 	apt_taxi_edge		= 1202,			// 1202 <src> <dst> <oneway flag> <runway flag/taxi width> <name>
 	apt_taxi_shape		= 1203,			// 1203 <lat> <lon>
 	apt_taxi_active		= 1204,			// 1204 type|flags runway,list
-	apt_taxi_control	= 1205,			// 1205 <lat> <lon
-	apt_taxi_truck_edge = 1206,			// 1206 <src> <dst> <name>
+#if HAS_CURVED_ATC_ROUTE
+	apt_taxi_control	= 1205,			// 1205 <lat> <lon>
+#else
+	apt_taxi_control	= 1205,			// 1205 just gracefully ignore these for now. Some are already in the apt.dat
+#endif
+	apt_taxi_truck_edge = 1206,			// 1206 <src> <dst> <oneway flag> <name>
 
 	apt_startup_loc_new	= 1300,			// 1300 lat lon heading misc|gate|tie_down|hangar traffic name
 	apt_startup_loc_extended = 1301,	// 1301 size opertaions_type airline_list
@@ -536,6 +540,7 @@ struct AptTruckDestination_t {
 	set<int>					truck_types;
 };
 typedef vector<AptTruckDestination_t> AptTruckDestinationVector;
+
 struct AptInfo_t {
 	int					kind_code;				// Enum
 	string				icao;

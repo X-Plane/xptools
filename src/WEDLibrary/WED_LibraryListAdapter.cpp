@@ -24,12 +24,10 @@
 #include "WED_LibraryListAdapter.h"
 #include "WED_LibraryMgr.h"
 #include "WED_Messages.h"
-#include "GUI_Messages.h"
 #include "WED_CreatePointTool.h"
 #include "WED_CreatePolygonTool.h"
 #include "WED_LibraryPreviewPane.h"
 #include "WED_MapPane.h"
-#include "GUI_Messages.h"
 #include "STLUtils.h"
 
 static int kDefCols[] = { 100, 100 };

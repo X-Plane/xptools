@@ -126,9 +126,6 @@
     <ClCompile Include="..\..\src\WEDCore\WED_Persistent.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDCore\WED_Properties.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_PropertyHelper.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
@@ -696,9 +693,6 @@
     <ClCompile Include="..\..\src\Utils\TexUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utils\SQLUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -707,9 +701,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp">
       <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c">
-      <Filter>SQLite</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\GUI\GUI_FormWindow.cpp">
       <Filter>GUI</Filter>
@@ -801,6 +792,15 @@
     <ClCompile Include="..\..\src\GUI\GUI_FilterBar.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utils\STLUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDCore\WED_HierarchyUtils.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_FacadePreview.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -855,9 +855,6 @@
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_Persistent.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDCore\WED_Properties.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_PropertyHelper.h">
@@ -924,9 +921,6 @@
       <Filter>WEDEntities</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h">
-      <Filter>WEDEntities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h">
@@ -1448,9 +1442,6 @@
     <ClInclude Include="..\..\src\Utils\TexUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Utils\SQLUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -1462,12 +1453,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\XESCore\AptIO.h">
       <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h">
-      <Filter>SQLite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h">
-      <Filter>SQLite</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Interfaces\IArray.h">
       <Filter>Interfaces</Filter>
@@ -1589,11 +1574,17 @@
     <ClInclude Include="..\..\src\WEDEntities\WED_TruckDestination.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
-      <Filter>Interfaces</Filter>
+    <ClInclude Include="..\..\src\WEDCore\WED_HierarchyUtils.h">
+      <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\GUI\GUI_FilterBar.h">
       <Filter>GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Utils\STLUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
+      <Filter>Interfaces</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

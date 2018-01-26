@@ -31,7 +31,7 @@ class	WED_Thing;
 class	WED_Airport;
 
 // You will need the IResolver in case you're handling a Torthophoto
-void DSF_Export(WED_Thing * base, IResolver * resolver, const string& in_package, set<WED_Thing *>& problem_items);
+int DSF_Export(WED_Thing * base, IResolver * resolver, const string& in_package, set<WED_Thing *>& problem_items);
 
 // 
 int DSF_ExportAirportOverlay(IResolver * resolver, WED_Airport  * who, const string& package, set<WED_Thing *>& problem_children);

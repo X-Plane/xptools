@@ -26,7 +26,6 @@
 
 #include "IHasResource.h"
 #include "WED_GISPolygon.h"
-#include "WED_GISUtils.h"
 
 /*
 	WED_DrapedOrthophoto - THEORY OF OPERATION

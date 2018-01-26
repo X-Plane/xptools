@@ -48,17 +48,23 @@
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_Group.h"
-#include "WED_AptImportDialog.h"
 #include "GUI_Application.h"
 #include "WED_Validate.h"
 #include "WED_TruckParkingLocation.h"
 #include "WED_TruckDestination.h"
 
 #include "AptIO.h"
-#include "WED_ToolUtils.h"
-#include "WED_UIDefs.h"
 
+//Utils
 #include "PlatformUtils.h"
+#include "FileUtils.h"
+#include "STLUtils.h"
+
+//WEDUtils
+#include "WED_HierarchyUtils.h"
+#include "WED_ToolUtils.h"
+
+#include "WED_UIDefs.h"
 #include <stdarg.h>
 
 
@@ -68,21 +74,29 @@ error checking here and in apt-io
 
 static int get_apt_export_version()
 {
+	int target = gExportTarget;
+	
+	if(target == wet_gateway)
+		target = wet_latest_xplane;
+	
 	int version = 1000;
-	switch(gExportTarget)
+	switch(target)
 	{
 	case wet_xplane_900:
 		version = 850;
 		break;
+	case wet_xplane_1021:
 	case wet_xplane_1000:
 		version = 1000;
 		break;
 	case wet_xplane_1050:
-	case wet_gateway:
 		version = 1050;
 		break;
 	case wet_xplane_1100:
 		version = 1100;
+		break;
+	default:
+		DebugAssert(!"You forgot to add a case!");
 		break;
 	}
 	return version;
@@ -232,9 +246,10 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 	{
 		AptRouteEdge_t ne;
 		AptServiceRoadEdge_t se;
-		int w = (*e)->Export(ne,se);
-		
-		AptEdgeBase_t * base = w ? (AptEdgeBase_t *) &se : (AptEdgeBase_t *) &ne;
+		(*e)->Export(ne,se);
+		bool is_truxiroute = (*e)->AllowTrucks();
+
+		AptEdgeBase_t * base = is_truxiroute ? (AptEdgeBase_t *) &se : (AptEdgeBase_t *) &ne;
 		
 		// Node's ID is its index in file order
 		vector<IGISPoint *>::iterator pos_src = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(0));
@@ -251,7 +266,7 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 			base->shape.push_back(make_pair(b.c2,true));
 		}
 		
-		if(w)
+		if(is_truxiroute)
 			net.service_roads.push_back(se);
 		else
 			net.edges.push_back(ne);
@@ -305,12 +320,16 @@ void	AptExportRecursive(WED_Thing * what, AptVector& apts)
 		vector<IGISPoint *>		nodes;			// hierarchy order for stability!
 		set<IGISPoint *>		wanted_nodes;
 
-		CollectAllElementsOfType<WED_TaxiRoute>(apt, edges);
+		CollectRecursive(apt, back_inserter(edges), WED_TaxiRoute::sClass);
 
 		for(vector<WED_TaxiRoute *>::iterator e = edges.begin(); e != edges.end(); ++e)
 		{
-			wanted_nodes.insert((*e)->GetNthPoint(0));
-			wanted_nodes.insert((*e)->GetNthPoint(1));
+			IGISPoint* point_0 = (*e)->GetNthPoint(0);
+			IGISPoint* point_1 = (*e)->GetNthPoint(1);
+			DebugAssert(point_0 != NULL && point_1 != NULL);
+
+			wanted_nodes.insert(point_0);
+			wanted_nodes.insert(point_1);
 		}
 		
 		CollectAllElementsOfTypeInSet<IGISPoint>(apt, nodes, wanted_nodes);
@@ -522,10 +541,11 @@ static WED_AirportChain * ImportLinearPath(const AptPolygon_t& path, WED_Archive
 		AptPolygon_t::const_iterator next = cur, orig = cur, prev = cur;
 		++next;
 		while (next != path.end() && next->pt == cur->pt &&
-			(!is_curved(prev->code) || !is_curved(next->code)))
+			(!is_curved(prev->code) || !is_curved(next->code)) && 
+			(is_curved(prev->code) || is_curved(next->code)) ) // skip only if the co-located points are actually part of a bezier-node
 		{
 			prev = next;
-//			printf("Skip: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
+//			printf("Skip: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x(),next->pt.y(),next->ctrl.x(),next->ctrl.y());
 			++next;
 		}
 //		printf("stopped due to: %d %lf,%lf (%lf,%lf)\n", next->code, next->pt.x,next->pt.y,next->ctrl.x,next->ctrl.y);
@@ -583,35 +603,128 @@ void LazyPrintf(void * ref, const char * fmt, ...)
 	LazyLog_t * l = (LazyLog_t *) ref;
 	if (l->fi == NULL) l->fi = fopen(l->path,"w");
 	if (l->fi) vfprintf(l->fi,fmt,arg);
+	va_end(arg);
 }
 
-static void add_to_bucket(WED_Thing * child, WED_Thing * apt, const string& name, map<string, WED_Thing *>& io_buckets)
+//A set of values describing the desired hierarchy order
+// pair<Parent Group Name, Child Group Name>
+// "" can be used if the group is intended to be under the world root
+typedef set<string> hierarchy_order_set;
+
+static hierarchy_order_set build_order_set()
 {
-	map<string,WED_Thing *>::iterator b = io_buckets.find(name);
-	if(b == io_buckets.end())
+	hierarchy_order_set h_set;
+	//BEWARE: Stringified-data abounds!
+	//If this has to be editted more than twice a year, we'll create
+	//an enum + dictionary solution that is more type safe
+	//"/" is like a dir seperator
+	h_set.insert("/ATC");
+	h_set.insert("/Ground Vehicles");
+	h_set.insert("/Ground Vehicles/Dynamic");
+	h_set.insert("/Ground Vehicles/Static");
+	h_set.insert("/Lights");
+	h_set.insert("/Markings");
+	h_set.insert("/Ramp Starts");
+	h_set.insert("/Runways");
+	h_set.insert("/Signs");
+	h_set.insert("/Taxi Routes");
+	h_set.insert("/Ground Routes");
+	h_set.insert("/Taxiways");
+	h_set.insert("/Tower, Beacon and Boundaries");
+	h_set.insert("/Windsocks");
+	h_set.insert("/Exclusion Zones");
+	h_set.insert("/Objects");
+	h_set.insert("/Objects/Buildings");
+	h_set.insert("/Objects/Vehicles");
+	h_set.insert("/Objects/Trees");
+	h_set.insert("/Objects/Other");
+	h_set.insert("/Facades");
+	h_set.insert("/Forests");
+	h_set.insert("/Lines");
+	h_set.insert("/Draped Polygons");
+	return h_set;
+}
+
+static const hierarchy_order_set prefered_hierarchy_order = build_order_set();
+struct compare_bucket_order : public less<string>
+{
+	bool operator()(const string& lhs, const string& rhs)
 	{
-		WED_Thing * new_bucket = WED_Group::CreateTyped(apt->GetArchive());
-		b = io_buckets.insert(make_pair(name, new_bucket)).first;
+		hierarchy_order_set::iterator lhs_pos = prefered_hierarchy_order.end();
+		hierarchy_order_set::iterator rhs_pos = prefered_hierarchy_order.end();
+		hierarchy_order_set::iterator pref_end = prefered_hierarchy_order.end();
+
+		hierarchy_order_set::iterator itr = prefered_hierarchy_order.begin();
+		
+		while(itr != pref_end && lhs_pos == pref_end && rhs_pos == pref_end)
+		{
+			lhs_pos = lhs == *itr ? itr : pref_end;
+			rhs_pos = rhs == *itr ? itr : pref_end;
+			++itr;
+		}
+
+		DebugAssert(lhs_pos != pref_end);
+		DebugAssert(rhs_pos != pref_end);
+		
+		return std::distance(prefered_hierarchy_order.begin(), lhs_pos) < std::distance(prefered_hierarchy_order.begin(), rhs_pos);
 	}
+};
+
+typedef  map<string, WED_Thing *> hierarchy_bucket_map;
+
+//
+static hierarchy_bucket_map::iterator create_buckets(WED_Thing* apt, const string& name, hierarchy_bucket_map& io_buckets, WED_Thing* parent_group = NULL)
+{
+	WED_Thing * new_bucket = WED_Group::CreateTyped(apt->GetArchive());
+	new_bucket->SetName(name);
+
+	if (parent_group != NULL)
+	{
+		new_bucket->SetParent(parent_group, parent_group->CountChildren());
+	}
+	else
+	{
+		new_bucket->SetParent(apt, apt->CountChildren());
+	}
+	return io_buckets.insert(make_pair(name, new_bucket)).first;
+}
+
+static void add_to_bucket(WED_Thing * child, WED_Thing * apt, const string& name, hierarchy_bucket_map& io_buckets)
+{
+	DebugAssert(io_buckets.find(name) != io_buckets.end());
+	hierarchy_bucket_map::iterator b = io_buckets.find(name);
+		//set<string> group_names;
+		//tokenize_string(name.begin(), name.end(), back_inserter(group_names), '/');
+		//for (set<string>::iterator itr = group_names.begin(); itr != group_names.end(); ++itr)
+		//{
+		//	WED_Thing * new_bucket = WED_Group::CreateTyped(apt->GetArchive());
+		//	new_bucket->SetName(*itr);
+		//	new_bucket->SetParent(last_parent, last_parent->CountChildren());
+		//	last_parent = new_bucket;
+		//	io_buckets.insert(make_pair(name, new_bucket)).first;
+		//}
+
 	child->SetParent(b->second, b->second->CountChildren());
 }
 
+void recursive_delete_empty_groups(WED_Thing* group)
+{
+}
 
 void	WED_AptImport(
 				WED_Archive *			archive,
 				WED_Thing *				container,
-				const char *			file_path,
+				const string&			file_path,
 				AptVector&				apts,
 				vector<WED_Airport *> *	out_airports)
 {
-	char path[1024];
-	strcpy(path,file_path);
-	strcat(path,".log");
-
-	LazyLog_t log = { path, NULL };
-
+	bool import_ok = true;
 	for (AptVector::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 	{
+		string log_path(file_path);
+		log_path += ".log";
+		LazyLog_t log = { log_path.c_str(), NULL };
+
 		bool apt_ok = CheckATCRouting(*apt);
 		if(!apt_ok)
 		{
@@ -620,12 +733,25 @@ void	WED_AptImport(
 
 		ConvertForward(*apt);
 
-		map<string, WED_Thing *>	buckets;
-
+		hierarchy_bucket_map buckets;
 		WED_Airport * new_apt = WED_Airport::CreateTyped(archive);
 		new_apt->SetParent(container,container->CountChildren());
 		new_apt->Import(*apt, LazyPrintf, &log);
-		if(out_airports) out_airports->push_back(new_apt);
+		if(out_airports)
+			out_airports->push_back(new_apt);
+
+		create_buckets(new_apt, "ATC",                          buckets);
+		create_buckets(new_apt, "Ground Vehicles",              buckets);
+		create_buckets(new_apt, "Lights",                       buckets);
+		create_buckets(new_apt, "Markings",                     buckets);
+		create_buckets(new_apt, "Ramp Starts",                  buckets);
+		create_buckets(new_apt, "Runways",                      buckets);
+		create_buckets(new_apt, "Signs",                        buckets);
+		create_buckets(new_apt, "Taxi Routes",                  buckets);
+		create_buckets(new_apt, "Ground Routes",                buckets);
+		create_buckets(new_apt, "Taxiways",                     buckets);
+		create_buckets(new_apt, "Tower, Beacon and Boundaries", buckets);
+		create_buckets(new_apt, "Windsocks",                    buckets);
 
 		for (AptRunwayVector::iterator rwy = apt->runways.begin(); rwy != apt->runways.end(); ++rwy)
 		{
@@ -688,6 +814,7 @@ void	WED_AptImport(
 			WED_Thing * markings = buckets["Markings"];
 			if(markings == NULL)
 			{
+				DebugAssert(false);
 				markings = WED_Group::CreateTyped(new_apt->GetArchive());
 				markings->SetName("Markings");
 				buckets["Markings"] = markings;
@@ -791,185 +918,199 @@ void	WED_AptImport(
 		
 		if(apt_ok)
 		{
-			map<int,WED_TaxiRouteNode *>	nodes;
-			for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
+			if ( (apt->taxi_route.edges.size() > 0 || apt->taxi_route.service_roads.size() > 0) 
+						&& apt->taxi_route.nodes.size() < 2 )                  // bug in WED 1.6.0 beta1: no nodes saved
 			{
-				WED_TaxiRouteNode * new_n = WED_TaxiRouteNode::CreateTyped(archive);
-				add_to_bucket(new_n,new_apt,"Taxi Routes",buckets);
-				new_n->SetName(n->name);
-				new_n->SetLocation(gis_Geo,n->location);
-				nodes[n->id] = new_n;
+				LazyPrintf(&log,"Not enough taxi_route nodes, skipping all Taxi/Ground Routes");
 			}
-			
-			// COPY PASTA WARNING PART 1
-			for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
+			else
 			{
-				vector<pair<Point2, bool> >		shape(e->shape);
-				Point2 start_geo, end_geo;
-				nodes[e->src]->GetLocation(gis_Geo, start_geo);
-				nodes[e->dst]->GetLocation(gis_Geo, end_geo);
-				shape.insert(shape.begin(),make_pair(start_geo, false));
-				shape.insert(shape.end(),make_pair(end_geo, false));
-			
-				vector<pair<Point2, bool> >::iterator p1, p2, stop;
-				p1 = p2 = shape.begin();
-				stop = shape.end();
-				--stop;
-				WED_TaxiRouteNode * next, * prev = nodes[e->src];
-				while(p1 != stop)
+				map<int,WED_TaxiRouteNode *>	nodes;
+				for(vector<AptRouteNode_t>::iterator n = apt->taxi_route.nodes.begin(); n != apt->taxi_route.nodes.end(); ++n)
 				{
-					DebugAssert(!p1->second);
-					p2 = p1;
-					++p2;
-					while(p2->second) ++p2;
-					
-					if(p2 == stop)
-						next = nodes[e->dst];
-					else
+					WED_TaxiRouteNode * new_n = WED_TaxiRouteNode::CreateTyped(archive);
+					add_to_bucket(new_n,new_apt,"Taxi Routes",buckets);
+					new_n->SetName(n->name);
+					new_n->SetLocation(gis_Geo,n->location);
+					nodes[n->id] = new_n;
+				}
+				
+				// COPY PASTA WARNING PART 1
+				for(vector<AptRouteEdge_t>::iterator e = apt->taxi_route.edges.begin(); e != apt->taxi_route.edges.end(); ++e)
+				{
+					vector<pair<Point2, bool> >		shape(e->shape);
+					Point2 start_geo, end_geo;
+					nodes[e->src]->GetLocation(gis_Geo, start_geo);
+					nodes[e->dst]->GetLocation(gis_Geo, end_geo);
+					shape.insert(shape.begin(),make_pair(start_geo, false));
+					shape.insert(shape.end(),make_pair(end_geo, false));
+				
+					vector<pair<Point2, bool> >::iterator p1, p2, stop;
+					p1 = p2 = shape.begin();
+					stop = shape.end();
+					--stop;
+					WED_TaxiRouteNode * next, * prev = nodes[e->src];
+					while(p1 != stop)
 					{
-						next = WED_TaxiRouteNode::CreateTyped(archive);
-						add_to_bucket(next,new_apt,"Taxi Routes",buckets);
-						next->SetName(e->name);
-						next->SetLocation(gis_Geo, p2->first);
-					}
-					
-					int cc = p2 - p1;
-					if(cc > 3)
-						LazyPrintf(&log,"Too many control points");
-			
-					WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
-					new_e->AddSource(prev,0);
-					new_e->AddSource(next,1);
-					new_e->Import(*e,LazyPrintf,&log);
-					add_to_bucket(new_e,new_apt,"Taxi Routes", buckets);
+						DebugAssert(!p1->second);
+						p2 = p1;
+						++p2;
+						while(p2->second) ++p2;
+						
+						if(p2 == stop)
+							next = nodes[e->dst];
+						else
+						{
+							next = WED_TaxiRouteNode::CreateTyped(archive);
+							add_to_bucket(next,new_apt,"Taxi Routes",buckets);
+							next->SetName(e->name);
+							next->SetLocation(gis_Geo, p2->first);
+						}
+						
+						int cc = p2 - p1;
+						if(cc > 3)
+							LazyPrintf(&log,"Too many control points");
+				
+						WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
+						new_e->AddSource(prev,0);
+						new_e->AddSource(next,1);
+						new_e->Import(*e,LazyPrintf,&log);
+						add_to_bucket(new_e,new_apt,"Taxi Routes", buckets);
 
-					if(cc == 2)
-					{
-						Bezier2 b;
-						b.p1 = p1->first;
-						b.p2 = p2->first;
-						++p1;
+						if(cc == 2)
+						{
+							Bezier2 b;
+							b.p1 = p1->first;
+							b.p2 = p2->first;
+							++p1;
+							
+							Vector2 to_c1 = Vector2(b.p1,p1->first);
+							Vector2 to_c2 = Vector2(b.p2,p1->first);
+							
+							b.c1 = b.p1 + to_c1 * 2.0 / 3.0;
+							b.c2 = b.p2 + to_c2 * 2.0 / 3.0;
+							
+							new_e->SetSideBezier(gis_Geo,b);
+						}
+						else if(cc == 3)
+						{
+							Bezier2 b;
+							b.p1 = p1->first;
+							++p1;
+							DebugAssert(p1->second);
+							b.c1 = p1->first;
+							++p1;
+							DebugAssert(p1->second);
+							b.c2 = p1->first;
+							b.p2 = p2->first;
+							new_e->SetSideBezier(gis_Geo,b);
+						}
 						
-						Vector2 to_c1 = Vector2(b.p1,p1->first);
-						Vector2 to_c2 = Vector2(b.p2,p1->first);
+						prev = next;
 						
-						b.c1 = b.p1 + to_c1 * 2.0 / 3.0;
-						b.c2 = b.p2 + to_c2 * 2.0 / 3.0;
-						
-						new_e->SetSideBezier(gis_Geo,b);
+						p1 = p2;
 					}
-					else if(cc == 3)
+				}
+				
+				// COPY PASTA WARNING PART 2
+				for(vector<AptServiceRoadEdge_t>::iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
+				{
+					vector<pair<Point2, bool> >		shape(e->shape);
+					Point2 start_geo, end_geo;
+					nodes[e->src]->GetLocation(gis_Geo, start_geo);
+					nodes[e->dst]->GetLocation(gis_Geo, end_geo);
+					shape.insert(shape.begin(),make_pair(start_geo, false));
+					shape.insert(shape.end(),make_pair(end_geo, false));
+				
+					vector<pair<Point2, bool> >::iterator p1, p2, stop;
+					p1 = p2 = shape.begin();
+					stop = shape.end();
+					--stop;
+					WED_TaxiRouteNode * next, * prev = nodes[e->src];
+					while(p1 != stop)
 					{
-						Bezier2 b;
-						b.p1 = p1->first;
-						++p1;
-						DebugAssert(p1->second);
-						b.c1 = p1->first;
-						++p1;
-						DebugAssert(p1->second);
-						b.c2 = p1->first;
-						b.p2 = p2->first;
-						new_e->SetSideBezier(gis_Geo,b);
+						DebugAssert(!p1->second);
+						p2 = p1;
+						++p2;
+						while(p2->second) ++p2;
+						
+						if(p2 == stop)
+							next = nodes[e->dst];
+						else
+						{
+							next = WED_TaxiRouteNode::CreateTyped(archive);
+							add_to_bucket(next,new_apt,"Ground Routes",buckets);
+							next->SetName(e->name);
+							next->SetLocation(gis_Geo, p2->first);
+						}
+						
+						int cc = p2 - p1;
+						if(cc > 3)
+							LazyPrintf(&log,"Too many control points");
+				
+						WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
+						new_e->AddSource(prev,0);
+						new_e->AddSource(next,1);
+						new_e->Import(*e,LazyPrintf,&log);
+						add_to_bucket(new_e,new_apt,"Ground Routes", buckets);
+
+						if(cc == 2)
+						{
+							Bezier2 b;
+							b.p1 = p1->first;
+							b.p2 = p2->first;
+							++p1;
+							
+							Vector2 to_c1 = Vector2(b.p1,p1->first);
+							Vector2 to_c2 = Vector2(b.p2,p1->first);
+							
+							b.c1 = b.p1 + to_c1 * 2.0 / 3.0;
+							b.c2 = b.p2 + to_c2 * 2.0 / 3.0;
+							
+							new_e->SetSideBezier(gis_Geo,b);
+						}
+						else if(cc == 3)
+						{
+							Bezier2 b;
+							b.p1 = p1->first;
+							++p1;
+							DebugAssert(p1->second);
+							b.c1 = p1->first;
+							++p1;
+							DebugAssert(p1->second);
+							b.c2 = p1->first;
+							b.p2 = p2->first;
+							new_e->SetSideBezier(gis_Geo,b);
+						}
+						
+						prev = next;
+						
+						p1 = p2;
 					}
-					
-					prev = next;
-					
-					p1 = p2;
+				}
+				// END COPY PASTA WARNING
+
+				for (hierarchy_bucket_map::reverse_iterator ritr = buckets.rbegin(); ritr != buckets.rend(); ++ritr)
+				{
+					if (ritr->second->CountChildren() == 0)
+					{
+						ritr->second->SetParent(NULL, 0);
+						ritr->second->Delete();
+					}
 				}
 			}
-			
-			// COPY PASTA WARNING PART 2
-			for(vector<AptServiceRoadEdge_t>::iterator e = apt->taxi_route.service_roads.begin(); e != apt->taxi_route.service_roads.end(); ++e)
-			{
-				vector<pair<Point2, bool> >		shape(e->shape);
-				Point2 start_geo, end_geo;
-				nodes[e->src]->GetLocation(gis_Geo, start_geo);
-				nodes[e->dst]->GetLocation(gis_Geo, end_geo);
-				shape.insert(shape.begin(),make_pair(start_geo, false));
-				shape.insert(shape.end(),make_pair(end_geo, false));
-			
-				vector<pair<Point2, bool> >::iterator p1, p2, stop;
-				p1 = p2 = shape.begin();
-				stop = shape.end();
-				--stop;
-				WED_TaxiRouteNode * next, * prev = nodes[e->src];
-				while(p1 != stop)
-				{
-					DebugAssert(!p1->second);
-					p2 = p1;
-					++p2;
-					while(p2->second) ++p2;
-					
-					if(p2 == stop)
-						next = nodes[e->dst];
-					else
-					{
-						next = WED_TaxiRouteNode::CreateTyped(archive);
-						add_to_bucket(next,new_apt,"Taxi Routes",buckets);
-						next->SetName(e->name);
-						next->SetLocation(gis_Geo, p2->first);
-					}
-					
-					int cc = p2 - p1;
-					if(cc > 3)
-						LazyPrintf(&log,"Too many control points");
-			
-					WED_TaxiRoute * new_e = WED_TaxiRoute::CreateTyped(archive);
-					new_e->AddSource(prev,0);
-					new_e->AddSource(next,1);
-					new_e->Import(*e,LazyPrintf,&log);
-					add_to_bucket(new_e,new_apt,"Taxi Routes", buckets);
-
-					if(cc == 2)
-					{
-						Bezier2 b;
-						b.p1 = p1->first;
-						b.p2 = p2->first;
-						++p1;
-						
-						Vector2 to_c1 = Vector2(b.p1,p1->first);
-						Vector2 to_c2 = Vector2(b.p2,p1->first);
-						
-						b.c1 = b.p1 + to_c1 * 2.0 / 3.0;
-						b.c2 = b.p2 + to_c2 * 2.0 / 3.0;
-						
-						new_e->SetSideBezier(gis_Geo,b);
-					}
-					else if(cc == 3)
-					{
-						Bezier2 b;
-						b.p1 = p1->first;
-						++p1;
-						DebugAssert(p1->second);
-						b.c1 = p1->first;
-						++p1;
-						DebugAssert(p1->second);
-						b.c2 = p1->first;
-						b.p2 = p2->first;
-						new_e->SetSideBezier(gis_Geo,b);
-					}
-					
-					prev = next;
-					
-					p1 = p2;
-				}
-			}
-			// END COPY PASTA WARNING
 		}
 #endif		
 
-		for(map<string, WED_Thing *>::iterator b = buckets.begin(); b != buckets.end(); ++b)
+		if (log.fi)
 		{
-			b->second->SetName(b->first);
-			b->second->SetParent(new_apt, new_apt->CountChildren());
+			fclose(log.fi);
+			import_ok = false;
 		}
 	}
 
-	if (log.fi)
-	{
-		fclose(log.fi);
+	if(!import_ok)
 		DoUserAlert("There were problems during the import.  A log file has been created in the same file as the apt.dat file.");
-	}
 }
 
 int		WED_CanImportApt(IResolver * resolver)
@@ -1002,10 +1143,20 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 	
 	for(vector<string>::iterator f = fnames.begin(); f != fnames.end(); ++f)
 	{
+
+		string parent_dir = FILE_get_dir_name(*f);
+		parent_dir = parent_dir + ".." + DIR_STR;
+		
+		if( FILE_exists((parent_dir + "COPYING").c_str()) && 
+				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str())) )
+			if(!ConfirmMessage("Warning !\nIt is not recommended to import the apt.dat for scenery gateway airports.\n"
+			                   "Use File->Import the from scenery gateway instead.", "Proceed import of apt.dat", "Cancel"))
+				return;
+		
 		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{
-			string msg = string("The apt.dat file '") + path + string("' could not be imported:\n") + result;
+			string msg = string("The apt.dat file '") + *f + string("' could not be imported:\n") + result;
 			DoUserAlert(msg.c_str());
 			return;
 		}
@@ -1013,7 +1164,7 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 		apts.insert(apts.end(),one_apt.begin(),one_apt.end());
 	}
 	
-	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, path, resolver, archive, pane);
+	WED_AptImportDialog * importer = new WED_AptImportDialog(gApplication, apts, fnames[0], resolver, archive, pane);
 }
 
 void	WED_ImportOneAptFile(

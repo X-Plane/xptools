@@ -1,0 +1,35 @@
+This directory includes a number of geo-referenced .tiff files to test the TIF format import into WED as 
+ well as the geo-referencing functions.
+
+Howto test:
+
+Open the KSEA Demo Area scenery as included in X-plane.
+
+Execute View -> Pick Overlay Image or File -> Import Orthophoto
+Select all .tif files in this directory 
+
+All images should result in visible Reference Images within the area of the KSEA airport. With exception
+of "ksea_raw_nogeo.tif" they all should be aligned properly with the run & taxiways in the scenery.
+
+Details about the images:
+
+ksea_raw_nogeo.tif - Image uncompressed rgb8 format, *NO* geotiff tags - thats why it should *NOT*
+                     be positioned or scaled right after import.
+
+ksea_raw_wgs84.tif - same as before, but with geotiff tags in lat/long format, WGS84 referenced. 
+                     Should work properly even with versions as old as WED 1.3
+
+ksea_lzw_nad83.tif  - Image lzw compressed, geotiff in lat/lon format, NAD83 referenced. Typical of 
+                      users unaware of the existence of other reference systems than WGS84
+
+ksea_zip_utm10.tif  - Image deflate/zlib compressed, tiff tags in UTM raster, WGS84 referenced. 
+                      Most commonly found on usgs earth-explorer aerial imagery.
+
+ksea_jpeg_epsg3785.tif - Image jpeg compressed, geotiff tags in UTM raster, reference EPSG:3785. 
+                         Most commonly used by Bing/Google derived sattelite imagery. 
+                         Basical has no datum/ellipsoid/meridian information tags, but only refers 
+                         to the SRS-designation EPSG:3785. All WED <1.7 lack the lookup tables to
+                         expand this information into lat/long coordinates.
+
+
+### end ###

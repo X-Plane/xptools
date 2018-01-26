@@ -38,15 +38,17 @@ public:
 
 	void		Import(const AptWindRule_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptWindRule_t& info) const;
+	void		SetICAO(const string &t);
 
 	virtual const char *	HumanReadableType(void) const { return "Wind Rule"; }
+	virtual	void			PropEditCallback(int before);
 
 private:
 
 	WED_PropStringText			icao;
 	WED_PropIntText				heading_lo;
 	WED_PropIntText				heading_hi;
-	WED_PropIntText				speed_knots;
+	WED_PropDoubleText			speed_knots;
 
 };
 

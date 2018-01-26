@@ -33,7 +33,7 @@ class	CDT;
 int		KillTunnels(Pmwx& ioMap);
 void	CalcRoadTypes(Pmwx& ioMap, const DEMGeo& inElevation, const DEMGeo& inUrbanDensity, const DEMGeo& inTemp, const DEMGeo& inRain, ProgressFunc inProg);
 
-void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh);
+void	PatchCountryRoads(Pmwx& ioMap, CDT& mesh, const DEMGeo& inUrbanDensity);
 
 #if OPENGL_MAP && DEV
 void	debug_network(Pmwx& io_map);

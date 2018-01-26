@@ -49,16 +49,21 @@
 
 //typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
-// This is the frequency of triangulation in open water, where we have no height, as 
-// a multiple of DEM pts.
-#if PHONE
-#define LOW_RES_WATER_INTERVAL 50
-#define APT_INTERVAL 40
+#if HD_MESH
+	// This is the frequency of triangulation in open water, where we have no height, as
+	// a multiple of DEM pts.
+	#define LOW_RES_WATER_INTERVAL 80
+	// This is the freuqency of forced triangulation at airports as a multiple of DEM points.
+	#define APT_INTERVAL 8
+#elif UHD_MESH
+	#define LOW_RES_WATER_INTERVAL 140
+	#define APT_INTERVAL 14
+#elif PHONE
+	#define LOW_RES_WATER_INTERVAL 50
+	#define APT_INTERVAL 40
 #else
-#define LOW_RES_WATER_INTERVAL 40
-
-// This is the freuqency of forced triangulatoin at airports as a multiple of DEM points.
-#define APT_INTERVAL 2
+	#define LOW_RES_WATER_INTERVAL 40
+	#define APT_INTERVAL 2
 #endif
 
 // This adds more vertices to cliffs.
@@ -100,8 +105,16 @@
 #define MAX_BORDER_MATCH 0.001
 
 // Andras: define max slope for non flattened water edges and the number of iterations
-#define MAX_WATER_SLOPE 0.2
-#define WATER_SMOOTHER_ITERATIONS 25
+#if UHD_MESH
+	#define MAX_WATER_SLOPE 0.4
+	#define WATER_SMOOTHER_ITERATIONS 15
+#elif HD_MESH
+	#define MAX_WATER_SLOPE 0.4
+	#define WATER_SMOOTHER_ITERATIONS 15
+#else
+	#define MAX_WATER_SLOPE 0.2
+	#define WATER_SMOOTHER_ITERATIONS 25
+#endif
 
 #if SHOW_STEPS
 
@@ -128,14 +141,35 @@
 #define PHONE 0
 #endif
 
-MeshPrefs_t gMeshPrefs = {		/*iphone*/
-/* max_points		*/	PHONE ?		25000	: 78000,
-/* max_error		*/	PHONE ?		15		: 5.0,
-/* border_match		*/	PHONE ?		1		: 1,
-/* optimize_borders	*/	PHONE ?		1		: 1,
-/* max_tri_size_m	*/	PHONE ?		6000	: 1500,
-/* rep_switch_m		*/	PHONE ?		50000	: 50000
-};
+
+#if HD_MESH
+	MeshPrefs_t gMeshPrefs = {		/*iphone*/
+	/* max_points		*/	PHONE ?		25000	: 350000,
+	/* max_error		*/	PHONE ?		15		: 2.2,
+	/* border_match		*/	PHONE ?		1		: 1,
+	/* optimize_borders	*/	PHONE ?		1		: 1,
+	/* max_tri_size_m	*/	PHONE ?		6000	: 250,
+	/* rep_switch_m		*/	PHONE ?		50000	: 50000
+	};
+#elif UHD_MESH
+	MeshPrefs_t gMeshPrefs = {		/*iphone*/
+	/* max_points		*/	PHONE ?		25000	: 800000,
+	/* max_error		*/	PHONE ?		15		: 0.7,
+	/* border_match		*/	PHONE ?		1		: 1,
+	/* optimize_borders	*/	PHONE ?		1		: 1,
+	/* max_tri_size_m	*/	PHONE ?		6000	: 200,
+	/* rep_switch_m		*/	PHONE ?		50000	: 50000
+	};
+#else
+	MeshPrefs_t gMeshPrefs = {		/*iphone*/
+	/* max_points		*/	PHONE ?		25000	: 78000,
+	/* max_error		*/	PHONE ?		15		: 5.0,
+	/* border_match		*/	PHONE ?		1		: 1,
+	/* optimize_borders	*/	PHONE ?		1		: 1,
+	/* max_tri_size_m	*/	PHONE ?		6000	: 1500,
+	/* rep_switch_m		*/	PHONE ?		50000	: 50000
+	};
+#endif
 
 Pmwx::Halfedge_handle	mesh_to_pmwx_he(CDT& io_mesh, CDT::Edge& e);
 

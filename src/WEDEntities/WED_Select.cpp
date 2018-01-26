@@ -23,7 +23,6 @@
 
 #include "WED_Select.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_XMLWriter.h"
 #include "WED_Errors.h"
 #include "WED_Messages.h"
@@ -47,9 +46,9 @@ void WED_Select::CopyFrom(const WED_Select * rhs)
 	mSelected = rhs->mSelected;
 }
 
-void 			WED_Select::ReadFrom(IOReader * reader)
+bool 			WED_Select::ReadFrom(IOReader * reader)
 {
-	WED_Thing::ReadFrom(reader);
+	bool r = WED_Thing::ReadFrom(reader);
 	int n,id;
 	reader->ReadInt(n);
 	mSelected.clear();
@@ -58,7 +57,7 @@ void 			WED_Select::ReadFrom(IOReader * reader)
 		reader->ReadInt(id);
 		mSelected.insert(id);
 	}
-
+	return r;
 }
 
 void 			WED_Select::WriteTo(IOWriter * writer)
@@ -68,49 +67,6 @@ void 			WED_Select::WriteTo(IOWriter * writer)
 	for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
 		writer->WriteInt(*i);
 
-}
-
-void			WED_Select::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-	WED_Thing::FromDB(db, mapping);
-
-	mSelected.clear();
-	sql_command	cmd(db,"SELECT item FROM WED_selection WHERE id=@id;","@id");
-
-	sql_row1<int>				id(GetID());
-	sql_row1<int>				item;
-
-	int err;
-	cmd.set_params(id);
-	cmd.begin();
-
-	while ((err = cmd.get_row(item)) == SQLITE_ROW)
-	{
-		mSelected.insert(item.a);
-	}
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-}
-
-void			WED_Select::ToDB(sqlite3 * db)
-{
-	WED_Thing::ToDB(db);
-
-	int err;
-	sql_command	nuke_all(db,"DELETE FROM WED_selection where id=@id;","@id");
-	sql_row1<int>	me(GetID());
-	err = nuke_all.simple_exec(me);
-	if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-
-	if (!mSelected.empty())
-	{
-		sql_command write_ids(db,"INSERT INTO WED_selection(id,item) VALUES(@id,@item);","@id,@item");
-		for (set<int>::iterator i = mSelected.begin(); i != mSelected.end(); ++i)
-		{
-			sql_row2<int, int>	id(GetID(),*i);
-			err = write_ids.simple_exec(id);
-			if(err != SQLITE_DONE)		WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-		}
-	}
 }
 
 void		WED_Select::AddExtraXML(WED_XMLElement * obj)
@@ -195,6 +151,32 @@ void		WED_Select::Insert(ISelectable * iwho)
 	{
 		StateChanged(wed_Change_Selection);
 		mSelected.insert(id);
+	}
+}
+
+void WED_Select::Insert(const set<ISelectable*>& sel)
+{
+	Insert(sel.begin(), sel.end());
+}
+
+void WED_Select::Insert(const set<ISelectable*>::const_iterator& begin, const set<ISelectable*>::const_iterator& end)
+{
+	for (set<ISelectable*>::const_iterator itr = begin; itr != end; ++itr)
+	{
+		Insert(*itr);
+	}
+}
+
+void WED_Select::Insert(const vector<ISelectable*>& sel)
+{
+	Insert(sel.begin(), sel.end());
+}
+
+void WED_Select::Insert(const vector<ISelectable*>::const_iterator& begin, const vector<ISelectable*>::const_iterator& end)
+{
+	for (vector<ISelectable*>::const_iterator itr = begin; itr != end; ++itr)
+	{
+		Insert(*itr);
 	}
 }
 

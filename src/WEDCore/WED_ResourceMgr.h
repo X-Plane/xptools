@@ -47,6 +47,7 @@
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
 #include "IBase.h"
+#include "XObjDefs.h"
 #include "CompGeomDefs2.h"
 
 class	WED_LibraryMgr;
@@ -55,6 +56,7 @@ struct	XObj8;
 
 struct	pol_info_t {
 	string		base_tex; //Relative path
+	bool		hasDecal;
 	float		proj_s;
 	float		proj_t;
 	bool		kill_alpha;
@@ -70,10 +72,27 @@ struct	pol_info_t {
 };
 
 struct	fac_info_t {
-	bool			ring;
-	bool			roof;
-	bool			modern;
+	bool		ring;               // can be drawn as open polygon
+	bool		roof;               // shown with solid fill in map window
+	int			version;
+	float		floors_min;         // min accepted floors or -1 if facade is fixed height only
+	float		floors_max;         // max accepted floors or aproximate height in meter if single height only
+	float		basem;
+	
+	float		roof_height, roof_slope;
+	float		scale_x, scale_y;
+
 	vector<string>	walls;
+	vector<string>	w_use;
+
+	vector<XObj8 *> previews;
+};
+
+struct	lin_info_t {
+	string		base_tex;
+	float		proj_s;
+	float		proj_t;
+	vector<float>	s1,sm,s2;
 };
 
 struct	road_info_t {
@@ -104,14 +123,16 @@ public:
 
 			void	Purge(void);
 
-			bool	GetFor(const string& path, XObj8 *& obj);
-			bool	GetFac(const string& path, fac_info_t& out_info);
+			bool	GetFac(const string& path, fac_info_t& out_info, int variant =0);
 			bool	GetPol(const string& path, pol_info_t& out_info);
 			bool 	SetPolUV(const string& path, Bbox2 box);
+			bool	GetLin(const string& path, lin_info_t& out_info);
+			bool	GetFor(const string& path, XObj8 *& obj);
+			int		GetNumVariants(const string& path);
 
 			//path is a RELATIVE PATH
 			void	MakePol(const string& path, const pol_info_t& out_info); // side note: shouldn't this be in_info?
-			bool	GetObj(const string& path, XObj8 *& obj);
+			bool	GetObj(const string& path, XObj8 *& obj, int variant = 0);
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING
 			bool	GetAGP(const string& path, agp_t& out_info);
@@ -126,10 +147,11 @@ public:
 
 private:
 	
-	map<string,fac_info_t>		mFac;
+	map<string,vector<fac_info_t> > mFac;
 	map<string,pol_info_t>		mPol;
+	map<string,lin_info_t>		mLin;
 	map<string,XObj8 *>			mFor;
-	map<string,XObj8 *>			mObj;
+	map<string,vector<XObj8 *> > mObj;
 
 #if AIRPORT_ROUTING	
 	map<string,agp_t>			mAGP;

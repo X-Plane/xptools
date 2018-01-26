@@ -22,22 +22,23 @@
  */
 
 #include "WED_DrapedOrthophoto.h"
-#include "WED_GISPoint_Bezier.h"
-#include "WED_Ring.h"
+#include "WED_GISUtils.h"
+#include "XESConstants.h"
 #include "MathUtils.h"
+#include "FileUtils.h"
 
 DEFINE_PERSISTENT(WED_DrapedOrthophoto)
 TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
 
 WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	resource(this,"Resource",     SQL_Name("WED_dsf_overlay", "resource"),  XML_Name("draped_orthophoto","resource"),  ""),
-	heading(this,"Texture Heading",SQL_Name("WED_dsf_overlay", "heading"),  XML_Name("draped_orthophoto","heading"),   0.0,5,1),
-	width(this,"Texture Width",   SQL_Name("WED_dsf_overlay", "width"),     XML_Name("draped_orthophoto","width"),     0.0,5,2),
-	length(this,"Texture Length", SQL_Name("WED_dsf_overlay", "length"),    XML_Name("draped_orthophoto","length"),    0.0,5,2),
-	top(this,"Texture Top",       SQL_Name("WED_dsf_overlay", "tex_top"),   XML_Name("draped_orthophoto","tex_top"),   1.0,5,3),
-	bottom(this,"Texture Bottom", SQL_Name("WED_dsf_overlay", "tex_bottom"),XML_Name("draped_orthophoto","tex_bottom"),0.0,5,3),
-	left(this,"Texture Left",     SQL_Name("WED_dsf_overlay", "tex_left"),  XML_Name("draped_orthophoto","tex_left"),  0.0,5,3),
-	right(this,"Texture Right",   SQL_Name("WED_dsf_overlay", "tex_right"), XML_Name("draped_orthophoto","tex_right"), 1.0,5,3)
+	resource(this,PROP_Name("Resource",       XML_Name("draped_orthophoto","resource")),  ""),
+	heading (this,PROP_Name("Texture Heading",XML_Name("draped_orthophoto","heading")),   0.0,5,1),
+	width   (this,PROP_Name("Texture Width",  XML_Name("draped_orthophoto","width")),     0.0,5,2),
+	length  (this,PROP_Name("Texture Length", XML_Name("draped_orthophoto","length")),    0.0,5,2),
+	top     (this,PROP_Name("Texture Top",    XML_Name("draped_orthophoto","tex_top")),   0.0,5,3),
+	bottom  (this,PROP_Name("Texture Bottom", XML_Name("draped_orthophoto","tex_bottom")),0.0,5,3),
+	left    (this,PROP_Name("Texture Left",   XML_Name("draped_orthophoto","tex_left")),  0.0,5,3),
+	right   (this,PROP_Name("Texture Right",  XML_Name("draped_orthophoto","tex_right")), 0.0,5,3)
 {
 }
 
@@ -78,31 +79,16 @@ void WED_DrapedOrthophoto::SetSizeDisp(double w, double l)
 
 bool WED_DrapedOrthophoto::IsNew(string * out_suffix) 
 {
-	//Find position
-	int pos = resource.value.find_last_of('.',resource.value.size());
-	if(pos == resource.value.npos)
-		return false;
+	string ext = FILE_get_file_extension(resource.value);
 	
-	//get the ending extension
-	string testString = resource.value.substr(pos);
-	
-	//If it is not .pol
-	
-	if(testString != ".pol")
+	if(ext != "pol")
 	{
-		
-		if(out_suffix != NULL)
-		{
-			*out_suffix = testString;
-		}
-		//it is new, therefore true
+		if(out_suffix)
+			*out_suffix = ext;
 		return true;
 	}
 	else
-	{
-		//It is an old .pol file, therefore false
 		return false;
-	}
 }
 
 void  WED_DrapedOrthophoto::GetSubTexture(Bbox2& b)
@@ -155,34 +141,36 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 
 		for (int h = 0; h < nh; h++)
 		{
-			WED_Thing * ring = GetNthChild(h);
-			int         np   = ring->CountChildren();
-			WED_Ring * rCopy;
+			IGISPointSequence *ring = h ? GetNthHole(h-1) : GetOuterRing();
+			int np = ring->GetNumPoints();
 			vector <BezierPoint2> pt_bak;                    // backup of the coordinates we're going to rotate
 			for(int n = 0; n < np; ++n)
 			{
-//				WED_TextureBezierNode * s = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
-				WED_GISPoint_Bezier * s = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
+				IGISPoint_Bezier *s = dynamic_cast<IGISPoint_Bezier *> (ring->GetNthPoint(n));
 				BezierPoint2 pt;
-
-				s->GetBezierLocation(gis_Geo,pt);
+				if (s)
+					s->GetBezierLocation(gis_Geo,pt);
+				else
+				{
+					IGISPoint *sp = ring->GetNthPoint(n);
+					Point2 p;
+					sp->GetLocation(gis_Geo,p);
+					pt.pt = p;
+				}
 				pt_bak.push_back(pt);
 			}
-			rCopy = dynamic_cast <WED_Ring *> (ring);        // now that we have a backup, we can mess with the original without guilt
-			rCopy->Rotate(gis_Geo, ctr, -angle);             // rotate coordinates to match desired texture heading
+			                                        // now that we have a backup, we can mess with the original without guilt
+			ring->Rotate(gis_Geo, ctr, -angle);     // rotate coordinates to match desired texture heading
 			if (h==0)
 			{
-				rCopy->GetBounds(gis_Geo, ll_box);     // get the bounding box in _rotated_ coordinates
-				double w=ll_box.xspan()*1852*60*cos(ctr.y()/180.0*M_PI);
-				double l=ll_box.yspan()*1852*60;
+				ring->GetBounds(gis_Geo, ll_box);     // get the bounding box in _rotated_ coordinates
+				double w=ll_box.xspan()*DEG_TO_MTR_LAT*cos(ctr.y()*DEG_TO_RAD);
+				double l=ll_box.yspan()*DEG_TO_MTR_LAT;
 				if (updProp) SetSizeDisp(w,l);
 			}
 			for(int n = 0; n < np; ++n)
 			{
-//				WED_TextureBezierNode * dest = dynamic_cast <WED_TextureBezierNode *>  (rCopy->GetNthChild(n));
-				WED_GISPoint_Bezier * dest = dynamic_cast <WED_GISPoint_Bezier *>  (rCopy->GetNthChild(n));
-//				WED_TextureBezierNode * src  = dynamic_cast <WED_TextureBezierNode *> (ring->GetNthChild(n));
-				WED_GISPoint_Bezier * src  = dynamic_cast <WED_GISPoint_Bezier *> (ring->GetNthChild(n));
+				IGISPoint *src = ring->GetNthPoint(n);
 				Point2 st,uv;
 				
 				// 4-sided orthos w/no bezier nodes are special. They are always streched to these corners, i.e. distorted.
@@ -199,7 +187,7 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 									st = pt_bak[3].pt;
 									double hdg = 0.0;
 									if (st.y()-ctr.y() != 0.0)
-										hdg = 180.0/M_PI*atan((st.x()-ctr.x())*cos(ctr.y()/180.0*M_PI)/(st.y()-ctr.y()));  // very crude heading calculation
+										hdg = RAD_TO_DEG*atan((st.x()-ctr.x())*cos(ctr.y()*DEG_TO_RAD)/(st.y()-ctr.y()));  // very crude heading calculation
 									SetHeading(hdg);
 								}
 					}
@@ -210,22 +198,27 @@ void WED_DrapedOrthophoto::Redrape(bool updProp)
 					uv = Point2((st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
 								(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin());
 				}
-				dest->SetLocation(gis_UV,uv);
+				src->SetLocation(gis_UV,uv);
 				
-				if(src->GetControlHandleHi(gis_Geo,st))
+				IGISPoint_Bezier * srcb  = dynamic_cast <IGISPoint_Bezier *> (ring->GetNthPoint(n));
+				if(srcb)
 				{
-					dest->SetControlHandleHi(gis_UV,Point2(
-						(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
-						(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
+					if(srcb->GetControlHandleHi(gis_Geo,st))
+					{
+						srcb->SetControlHandleHi(gis_UV,Point2(
+							(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
+							(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
+					}
+					if(srcb->GetControlHandleLo(gis_Geo,st))
+					{
+						srcb->SetControlHandleLo(gis_UV,Point2(
+							(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
+							(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
+					}
+					srcb->SetBezierLocation(gis_Geo,pt_bak[n]);    // restore to coordinate to what they were from the backup
 				}
-				if(src->GetControlHandleLo(gis_Geo,st))
-				{
-					dest->SetControlHandleLo(gis_UV,Point2(
-						(st.x() - ll_box.xmin()) / ll_box.xspan() * uv_box.xspan() + uv_box.xmin(),
-						(st.y() - ll_box.ymin()) / ll_box.yspan() * uv_box.yspan() + uv_box.ymin()));
-				}
-
-				src->SetBezierLocation(gis_Geo,pt_bak[n]);    // restore to coordinate to what they were from the backup
+				else
+					src->SetLocation(gis_Geo,pt_bak[n].pt);
 			}
 		}
 	}

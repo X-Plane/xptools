@@ -206,12 +206,12 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// --------------- ATC Taxi + Flow ---------------
 
 	WED_PropertyPane * prop_pane3 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane3, "ATC Taxi + Flow");
+	prop_tabs->AddPane(prop_pane3, "Taxi+Flow");
 
 	// --------------- Lights and Markings ---------------
 
 	WED_PropertyPane * prop_pane4 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane4, "Lights and Markings");
+	prop_tabs->AddPane(prop_pane4, "Light+Marking");
 
 	// ---------------- 3D Mode ---------------------
 
@@ -221,7 +221,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 	// ---------------- Exclusions ------------------
 
 	WED_PropertyPane * prop_pane6 = new WED_PropertyPane(prop_tabs->GetPaneOwner(), inDocument, sel_t, sel_w,inDocument->GetArchive(), propPane_Selection, 0);
-	prop_tabs->AddPane(prop_pane6, "Exclusions and Boundaries");
+	prop_tabs->AddPane(prop_pane6, "Exclude+Boundary");
 
 	// ---------------- TCE -------------
 	mTCEPane = new WED_TCEPane(this, inDocument,inDocument->GetArchive());
@@ -364,6 +364,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;	
 #endif
 	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
+	case wed_RenameRwys:	WED_RenameRunwayNames(mDocument);	return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -477,6 +478,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_AddATCTimeRule:return WED_CanMakeNewATCTimeRule(mDocument);
 	case wed_AddATCWindRule:return WED_CanMakeNewATCWindRule(mDocument);
 	case wed_UpgradeRamps:	return 1;
+	case wed_RenameRwys:	return 1;
 
 #endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);

@@ -36,6 +36,7 @@
 #include "WED_PackageListAdapter.h"
 #include "WED_Messages.h"
 #include "PlatformUtils.h"
+#include "FileUtils.h"
 #include "WED_UIDefs.h"
 #include "WED_Document.h"
 #include "WED_DocumentWindow.h"
@@ -252,6 +253,7 @@ void	WED_StartWindow::Draw(GUI_GraphState * state)
 			if (mScroller->IsVisible()) {
 				gPackageMgr->GetXPlaneFolder(m);
 				m = string("Scenery packages in: ") + m;
+				m += "  ( X-Plane version " + string(gPackageMgr->GetXPversion()) + " )";
 				child[1] = me[3] - 15;
 				child[3] = me[3] - 15;
 			} else {
@@ -343,7 +345,12 @@ int			WED_StartWindow::HandleCommand(int command)
 	case wed_ChangeSystem:
 		if (GetFilePathFromUser(getFile_PickFolder, "Please select your X-Plane folder", "Select", FILE_DIALOG_PICK_XSYSTEM, buf, sizeof(buf) ))
 		{
-			gPackageMgr->SetXPlaneFolder(buf);
+			if (!gPackageMgr->SetXPlaneFolder(buf))
+			{
+				string msg = string("'") + buf + "' is not the base of a X-Plane installation.\n"
+				                + "It needs to have 'Custom Scenery' and 'Resources/default scenery' folders inside it.";
+				DoUserAlert(msg.c_str());
+			}	
 		}
 		return 1;
 	case wed_NewPackage:

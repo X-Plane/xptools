@@ -28,21 +28,26 @@ class	WED_ResourceMgr;
 class	ITexMgr;
 
 #include "GUI_Pane.h"
+#include "GUI_Button.h"
+#include "GUI_Listener.h"
 
-class WED_LibraryPreviewPane : public GUI_Pane {
+
+class WED_LibraryPreviewPane : public GUI_Pane, public GUI_Listener {
 public:
 
 	WED_LibraryPreviewPane(WED_ResourceMgr * res_mgr, ITexMgr * tex_mgr);
 
 	virtual	void		Draw(GUI_GraphState * state);
+	void				SetResource(const string& r, int res_type);
+	void				ClearResource(void);
+	
+	virtual void		ReceiveMessage(GUI_Broadcaster * inSrc, intptr_t inMsg, intptr_t inParam);
 
-	void SetResource(const string& r, int res_type);
-	void ClearResource(void);
-
-	int			ScrollWheel(int x, int y, int dist, int axis);
+	int					ScrollWheel(int x, int y, int dist, int axis);
 	virtual	int			MouseDown(int x, int y, int button);
 	virtual	void		MouseDrag(int x, int y, int button);
 	virtual	void		MouseUp  (int x, int y, int button);
+
 
 private:
 	
@@ -54,6 +59,10 @@ private:
 		ITexMgr *			mTexMgr;
 		string				mRes;
 		int					mType;
+		int					mNumVariants;  // number of variants provided by object
+		int					mVariant;      // variant we want to show
+		GUI_Button *		mNextButton;   // Button to advance to next Variant
+		float				mDs, mDt;
 };
 
 #endif

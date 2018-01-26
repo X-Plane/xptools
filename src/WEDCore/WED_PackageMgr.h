@@ -35,7 +35,7 @@ public:
 	bool		HasSystemFolder(void) const;
 	bool		GetXPlaneFolder(string& root) const;
 
-	void		SetXPlaneFolder(const string& root);
+	bool		SetXPlaneFolder(const string& root);
 
 	int			CountCustomPackages(void) const;
 	void		GetNthCustomPackageName(int n, string& package) const;
@@ -48,6 +48,8 @@ public:
 	void		GetNthPackagePath(int n, string& package) const;
 	
 	bool		IsPackageDefault(int n) const;
+	bool		IsPackagePublicItems(int n) const;        // library has at least one public item declared in it
+	void		HasPublicItems(int n);
 
 	void		RenameCustomPackage(int n, const string& new_name);
 
@@ -57,6 +59,9 @@ public:
 	string		ComputePath(const string& package, const string& rel_file) const;
 	string		ReducePath(const string& package, const string& full_file) const;
 
+	const char * GetXPversion() const;                           // report apparent XP installation version by looking at Log.txt
+	bool		IsSameXPVersion( const string& version) const;
+
 private:
 
 	string			system_path;
@@ -64,7 +69,12 @@ private:
 	vector<string>	custom_package_names;
 	vector<string>	global_package_names;
 	vector<string>	default_package_names;
+	
+	vector<bool>	custom_package_hasPublicItems;
+	vector<bool>	global_package_hasPublicItems;
+	vector<bool>	default_package_hasPublicItems;
 
+	string			XPversion;     // apparent version of XP install, from examining Log.txt
 };
 
 extern WED_PackageMgr *		gPackageMgr;

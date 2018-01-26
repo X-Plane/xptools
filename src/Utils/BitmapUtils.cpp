@@ -23,6 +23,7 @@
 
 #include "BitmapUtils.h"
 #include "EndianUtils.h"
+#include "FileUtils.h"
 #include <stdio.h>
 #include <errno.h>
 #include <math.h>
@@ -361,34 +362,16 @@ int		CreateNewBitmap(long inWidth, long inHeight, short inChannels, struct Image
 		return ENOMEM;
 	return 0;
 }
+
 int GetSupportedType(const char * path)
 {
-	string extension(path);
-	//Takes care of cases like .PNG and .JPG
-	string::size_type sep = extension.find_last_of('.');
-	if(sep == extension.npos)
-		return -1;
+	string extension;
 		
-	extension = extension.substr(sep+1);
+	extension = FILE_get_file_extension(path);
 
-	if(extension.length() == 3)
-	{
-		extension[0] = tolower(extension[0]);
-		extension[1] = tolower(extension[1]);
-		extension[2] = tolower(extension[2]);
-	}
-	else
-	{
-		return -1;
-	}
-
-	//compare the string and if it is perfectly the same return that code
 	if(extension == "bmp") return WED_BMP;
 	if(extension == "dds") return WED_DDS;
-	#if USE_GEOJPEG2K
 	if(extension == "jp2") return WED_JP2K;
-	#endif
-	//jpeg or jpg is supported
 	if((extension == "jpeg")||(extension == "jpg")) return WED_JPEG;
 	if(extension == "png") return WED_PNG;
 	if(extension == "tif" || extension == "tiff") return WED_TIF;
@@ -1352,7 +1335,8 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 #if SUPPORT_UNICODE
     TIFF* tif = TIFFOpenW(convert_str_to_utf16(inFilePath).c_str(), "r");
 #else
-    TIFF* tif = TIFFOpen(inFilePath, "r");
+	FILE_case_correct_path path(inFilePath);  // If earth.wed.xml with case-incorrect .tif references are exchanged, this helps on Linux
+    TIFF* tif = TIFFOpen(path, "r");
 #endif
     if (tif == NULL) goto bail;
 

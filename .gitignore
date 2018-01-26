@@ -164,6 +164,9 @@ UpgradeLog*.htm
 App_Data/*.mdf
 App_Data/*.ldf
 
+#VS 2017 files
+.vs/*
+
 # =========================
 # Windows detritus
 # =========================
@@ -189,6 +192,8 @@ msvc/msvc_libs/jasper-1.701.0.GEO/src/msvc/Win32_Debug/
 *elease
 
 nohup.out
+
+#Vim swap files
 *.swm
 *.swn
 *.swo

@@ -791,8 +791,9 @@ int	XAtomPlanerNumericTable::DecompressDouble(
 
 #pragma mark -
 
-StAtomWriter::StAtomWriter(FILE * inFile, uint32_t inID)
+StAtomWriter::StAtomWriter(FILE * inFile, uint32_t inID, bool no_size)
 {
+	mNoSize = no_size;
 	mID = inID;
 	mFile = inFile;
 //	fflush(mFile);
@@ -808,6 +809,16 @@ StAtomWriter::~StAtomWriter()
 //	fflush(mFile);
 	int end_of_atom = ftell(mFile);
 	int len = end_of_atom - mAtomStart;
+	#if DSF_WRITE_STATS
+	if(!mNoSize)
+	{
+		char id[5] = { 0 };
+		memcpy(id, &mID, 4);
+		swap(id[0],id[3]);
+		swap(id[1],id[2]);
+		printf("DSF atom %s: %d\n", id, len);
+	}
+	#endif
 	fseek(mFile, mAtomStart, SEEK_SET);
 	XAtomHeader_t	header;
 	header.id = SWAP32(mID);
@@ -815,6 +826,25 @@ StAtomWriter::~StAtomWriter()
 	fwrite(&header, sizeof(header), 1, mFile);
 	fseek(mFile, end_of_atom, SEEK_SET);
 }
+
+StFileSizeDebugger::StFileSizeDebugger(FILE * inFile, const char * label)
+{
+	mLabel = label;
+	mFile = inFile;
+	mAtomStart = ftell(inFile);
+}
+
+StFileSizeDebugger::~StFileSizeDebugger()
+{
+//	fflush(mFile);
+	int end_of_atom = ftell(mFile);
+	#if DSF_WRITE_STATS
+		int len = end_of_atom - mAtomStart;
+		char id[5] = { 0 };
+		printf("DSF atom %s: %d\n", mLabel, len);
+	#endif
+}
+
 
 
 template <class T>

@@ -63,12 +63,13 @@ L   - NS_AIRPORT
 #define NS_META_DATA (NUM_REAL)
 
 WED_Airport::WED_Airport(WED_Archive * a, int i) : WED_GISComposite(a,i),
-	airport_type	(this, "Type",				SQL_Name("WED_airport",	"kind"),		XML_Name("airport",	"kind"),		Airport_Type, type_Airport),
-	elevation		(this, "Field Elevation",	SQL_Name("WED_airport",	"elevation"),	XML_Name("airport",	"elevation"),	0,6,1),
-	has_atc			(this, "Has ATC",			SQL_Name("WED_airport",	"has_atc"),		XML_Name("airport",	"has_atc"),		1),
-	icao			(this, "ICAO Identifier",	SQL_Name("WED_airport",	"icao"),		XML_Name("airport",	"icao"),		"xxxx"),
-	always_flatten	(this, "Always Flatten",	SQL_Name("",""),						XML_Name("airport", "always_flatten"), 0),
-	scenery_id		(this, "Scenery ID",		SQL_Name("", ""),				XML_Name("airport", "scenery_id"), -1, 8),
+	airport_type	(this,PROP_Name("Type",				XML_Name("airport",	"kind")),		Airport_Type, type_Airport),
+	elevation		(this,PROP_Name("Field Elevation",	XML_Name("airport",	"elevation")),	0,6,1),
+	has_atc			(this,PROP_Name("Has ATC",			XML_Name("airport",	"has_atc")),		1),
+	icao			(this,PROP_Name("Airport ID",		XML_Name("airport",	"icao")),		"xxxx"),
+	always_flatten	(this,PROP_Name("Always Flatten",	XML_Name("airport", "always_flatten")), 0),
+	drive_on_left	(this,PROP_Name("Left Hand Driving",XML_Name("airport", "drive_on_left")), 0),
+	scenery_id		(this,PROP_Name("Scenery ID",		XML_Name("airport", "scenery_id")), -1, 8),
 	meta_data_vec_map ()
 {
 }
@@ -242,6 +243,7 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 	SetName(info.name);
 	meta_data_vec_map = info.meta_data;
 	int want_flatten = 0;
+	int want_drive_on_left = 0;
 
 	//When importing from an apt.dat file, special non-sythetic entries are used and removed
 	
@@ -271,10 +273,16 @@ void		WED_Airport::Import(const AptInfo_t& info, void (* print_func)(void *, con
 			want_flatten = 1;
 			i = meta_data_vec_map.erase(i);
 		}
+		else if(i->first == "drive_on_left")
+		{
+			want_drive_on_left = 1;
+			i = meta_data_vec_map.erase(i);
+		}
 		else
 			++i;
 	}
 	always_flatten = want_flatten;
+	drive_on_left = want_drive_on_left;
 }
 
 void		WED_Airport::Export(AptInfo_t& info) const
@@ -295,6 +303,8 @@ void		WED_Airport::Export(AptInfo_t& info) const
 	info.meta_data = meta_data_vec_map;
 	if(always_flatten.value)
 		info.meta_data.push_back(make_pair(string("flatten"),string("1")));
+	if(drive_on_left.value)
+		info.meta_data.push_back(make_pair(string("drive_on_left"),string("1")));
 }
 
 //--IPropertyObject------------------------------------------------------------
@@ -439,9 +449,9 @@ void WED_Airport::CopyFrom(const WED_Airport* rhs)
 	meta_data_vec_map = rhs->meta_data_vec_map;
 }
 
-void 			WED_Airport::ReadFrom(IOReader * reader)
+bool 			WED_Airport::ReadFrom(IOReader * reader)
 {
-	WED_GISComposite::ReadFrom(reader);
+	bool r = WED_GISComposite::ReadFrom(reader);
 	
 	meta_data_vec_map.clear();
 
@@ -467,6 +477,7 @@ void 			WED_Airport::ReadFrom(IOReader * reader)
 		
 		meta_data_vec_map.push_back(meta_data_entry(key,val));
 	}
+	return r;
 }
 
 void 			WED_Airport::WriteTo(IOWriter * writer)
@@ -531,12 +542,3 @@ void			WED_Airport::StartElement(
 		WED_GISComposite::StartElement(reader, name, atts);
 	}
 }
-
-/*
-void			WED_Airport::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-}
-
-void			WED_Airport::ToDB(sqlite3 * db)
-{
-}*/

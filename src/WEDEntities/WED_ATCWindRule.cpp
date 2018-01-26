@@ -31,10 +31,10 @@ TRIVIAL_COPY(WED_ATCWindRule, WED_Thing)
 
 
 WED_ATCWindRule::WED_ATCWindRule(WED_Archive * a, int id) : WED_Thing(a,id),
-	icao		(this,"METAR ICAO",			SQL_Name("",""), XML_Name("atc_windrule","weather_icao"),	""),
-	heading_lo	(this,"Direction From",		SQL_Name("",""), XML_Name("atc_windrule","dir_lo_degs_mag"),0,3),
-	heading_hi	(this,"Direction To",		SQL_Name("",""), XML_Name("atc_windrule","dir_hi_degs_mag"),0,3),
-	speed_knots	(this,"Max Speed (Knots)",	SQL_Name("",""), XML_Name("atc_windrule","speed_knots"),0,3)
+	icao		(this,PROP_Name("METAR ICAO",		XML_Name("atc_windrule","weather_icao")),	""),
+	heading_lo	(this,PROP_Name("Direction From",	XML_Name("atc_windrule","dir_lo_degs_mag")),0,3),
+	heading_hi	(this,PROP_Name("Direction To",		XML_Name("atc_windrule","dir_hi_degs_mag")),0,3),
+	speed_knots	(this,PROP_Name("Maximum Speed",	XML_Name("atc_windrule","speed_knots")),0,3,0, "kn")
 {
 }
 
@@ -48,6 +48,7 @@ void		WED_ATCWindRule::Import(const AptWindRule_t& info, void (* print_func)(voi
 	heading_lo = info.dir_lo_degs_mag;
 	heading_hi = info.dir_hi_degs_mag;
 	speed_knots = info.max_speed_knots;
+	PropEditCallback(0);           // give it a meaningfull name on Gateway/apt.dat import (it has no name in that data, anyways)
 }
 
 void		WED_ATCWindRule::Export(		 AptWindRule_t& info) const
@@ -58,4 +59,21 @@ void		WED_ATCWindRule::Export(		 AptWindRule_t& info) const
 	info.max_speed_knots = speed_knots.value;
 }
 
+void		WED_ATCWindRule::SetICAO(const string &t)
+{ 
+	icao.value = t; 
+}
+
+void		WED_ATCWindRule::PropEditCallback(int before)
+{
+	if (!before)   
+	{
+		char buf[20];
+		snprintf(buf,20,"Wind %.0lf@%d-%d",speed_knots.value,heading_lo.value,heading_hi.value);
+		string old_name;
+		GetName(old_name);
+		if (old_name != buf)     // Prevent infinite recursion by calling SetName() if name actually changes
+			SetName(buf);
+	}
+}
 #endif

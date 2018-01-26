@@ -25,7 +25,6 @@
 #include "AssertUtils.h"
 #include "AptDefs.h"
 #include "WED_Errors.h"
-#include "SQLUtils.h"
 #include <string>
 using std::string;
 
@@ -283,80 +282,8 @@ void				ENUM_ImportSet(int domain, int export_value, set<int>& vals)
 		vals.insert(e);
 }
 
-
-
 void	ENUM_Init(void)
 {
 	int last_d = -1;
 	#include "WED_Enums.h"
 }
-
-#undef ENUM_DOMAIN
-#undef ENUM
-
-void		ENUM_write(sqlite3 * db)
-{
-	int err;
-	{
-		sql_command	clear_table(db,"DELETE FROM WED_enum_system WHERE 1;",NULL);
-		err = clear_table.simple_exec();
-		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	}
-
-	{
-		sql_command add_item(db,"INSERT INTO WED_enum_system VALUES(@i,@n,@s,@d,@e);","@i,@n,@s,@d,@e");
-		for(int i = 0; i < sEnums.size(); ++i)
-		{
-			sql_row5<int,string,string,int,int>	r;
-
-			r.a = i;
-			r.b = sEnums[i].name;
-			r.c = sEnums[i].desc;
-			r.d = sEnums[i].domain;
-			r.e = sEnums[i].export_value;
-//			printf("Writing: %d,%s,%d ",r.a,r.b.c_str(),r.c);
-			err = add_item.simple_exec(r);
-//			printf(" result = %d\n", err);
-			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-		}
-	}
-}
-
-void		ENUM_read (sqlite3 * db, enum_map_t& out_map)
-{
-	int err;
-	out_map.clear();
-
-	{
-		sql_command	sel_domains(db,"SELECT value,name,desc FROM WED_enum_system where domain = -1;",NULL);
-
-		sql_row3<int,string, string>	drec;
-		sel_domains.begin();
-
-		while((err = sel_domains.get_row(drec)) == SQLITE_ROW)
-		{
-			int real_d = DOMAIN_Create(drec.b.c_str(),drec.c.c_str());
-			out_map[drec.a] = real_d;
-
-		}
-		if (err != SQLITE_DONE)
-			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	}
-
-	{
-		sql_command	sel_vals(db,"SELECT value,name,desc,domain,export FROM WED_enum_system where domain != -1;",NULL);
-		sql_row5<int,string, string, int, int>	erec;
-		sel_vals.begin();
-
-		while((err = sel_vals.get_row(erec)) == SQLITE_ROW)
-		{
-			DebugAssert(out_map.count(erec.d) > 0);
-			int real_e = ENUM_Create(out_map[erec.d], erec.b.c_str(), erec.c.c_str(), erec.e);
-			out_map[erec.a] = real_e;
-
-		}
-		if (err != SQLITE_DONE)
-			WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	}
-}
-

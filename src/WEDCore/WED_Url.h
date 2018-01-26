@@ -35,4 +35,6 @@
 #define WED_URL_GATEWAY_API "https://gatewayapi.x-plane.com:3001/apiv1/"
 #define WED_URL_AIRPORT_METADATA_CSV "https://gatewayapi.x-plane.com:3001/airport_metadata.csv"
 
+#define WED_URL_CIFP_RUNWAYS "https://gatewayapi.x-plane.com:3001/runway_coordinates.txt"
+
 #endif /* WED_Url_H */
