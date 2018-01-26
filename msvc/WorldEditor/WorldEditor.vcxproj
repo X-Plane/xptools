@@ -117,6 +117,7 @@
     <ClCompile Include="..\..\src\WEDCore\WED_UndoMgr.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_Validate.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.cpp" />
+    <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_XMLReader.cpp" />
     <ClCompile Include="..\..\src\WEDCore\WED_XMLWriter.cpp" />
     <ClCompile Include="..\..\src\WEDEntities\WED_Airport.cpp" />
@@ -376,6 +377,7 @@
     <ClInclude Include="..\..\src\WEDCore\WED_UndoMgr.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Validate.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_ValidateATCRunwayChecks.h" />
+    <ClInclude Include="..\..\src\WEDCore\WED_ValidateList.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_Version.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_XMLReader.h" />
     <ClInclude Include="..\..\src\WEDCore\WED_XMLWriter.h" />

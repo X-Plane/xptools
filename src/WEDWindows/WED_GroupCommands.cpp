@@ -382,8 +382,6 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 	now_sel->StartOperation("Add ATC Runway Use");
 	WED_ATCRunwayUse * f=  WED_ATCRunwayUse::CreateTyped(now_sel->GetArchive());
 	f->SetParent(now_sel,now_sel->CountChildren());
-	f->SetName("Unnamed Runway Use");
-	
 	const WED_Airport * airport = WED_GetParentAirport(f);
 	if(airport)
 	{
@@ -393,7 +391,6 @@ void	WED_DoMakeNewATCRunwayUse(IResolver * inResolver)
 		if(!legal.empty())
 			f->SetRunway(*legal.begin());		
 	}
-	
 	now_sel->CommitOperation();
 }
 
@@ -1040,9 +1037,28 @@ bool WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree)
 
 set<WED_Thing *> WED_select_doubles(WED_Thing * t)
 {
-
 	vector<WED_Thing *> pts;
-	CollectRecursive(t, back_inserter(pts), ThingNotHidden, IsGraphNode);
+/*	CollectRecursive(t, back_inserter(pts), ThingNotHidden, IsGraphNode);
+    
+	We can not trust the ThingNotHidden - as it stops looking into levels that are hidden.
+	But even a node inside a hidden hierachy could still be used by a TaxiRoute Edge 
+	outside that hierachy that is NOT hidden. 
+	On the other hand, we do not want to check nodes that are only connected to hidden edges,
+	as those do not matter. So go check which nodes are actually in use. */
+	{
+		vector<WED_GISEdge *> edges;
+		CollectRecursive(t, back_inserter(edges), ThingNotHidden, IsGraphEdge);
+
+		set<WED_Thing *> nodes;
+		for(vector<WED_GISEdge *>::iterator e = edges.begin(); e != edges.end(); ++e)
+		{
+			DebugAssert(*e);
+			nodes.insert( (*e)->GetNthSource(0) );
+			nodes.insert( (*e)->GetNthSource(1) );
+		}
+		for(set<WED_Thing *>::iterator s = nodes.begin(); s != nodes.end(); ++s)
+			pts.push_back(*s);
+	}
 
 	set<WED_Thing *> doubles;
 	
@@ -1115,12 +1131,11 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
 			DebugAssert(ii != jj);
 			DebugAssert(ii);
 			DebugAssert(jj);
-			Segment2 s1, s2;
 			Bezier2 b1, b2;
 			bool isb1, isb2;
 
-			isb1 = ii->GetSide(gis_Geo, 0, s1, b1);
-			isb2 = jj->GetSide(gis_Geo, 0, s2, b2);
+			isb1 = ii->GetSide(gis_Geo, 0, b1);
+			isb2 = jj->GetSide(gis_Geo, 0, b2);
 			
 			if (isb1 || isb2)
 			{   // should never get here, as edges (used for ATC routes only) are not supposed to have bezier segments
@@ -1133,12 +1148,12 @@ set<WED_GISEdge *> WED_do_select_crossing(const vector<WED_GISEdge *> edges)
 			else 
 			{
 				Point2 x;
-				if (s1.p1 != s2.p1 &&
-					s1.p2 != s2.p2 &&
-					s1.p1 != s2.p2 &&
-					s1.p2 != s2.p1)
+				if (b1.p1 != b2.p1 &&
+					b1.p2 != b2.p2 &&
+					b1.p1 != b2.p2 &&
+					b1.p2 != b2.p1)
 				{
-					if (s1.intersect(s2, x))
+					if (b1.as_segment().intersect(b2.as_segment(), x))
 					{
 						crossed_edges.insert(edges[i]);
 						crossed_edges.insert(edges[j]);
@@ -1582,14 +1597,13 @@ void	WED_DoSplit(IResolver * resolver)
 		IGISPoint * as_p = dynamic_cast<IGISPoint *>(new_w);
 		IGISPoint_Bezier * as_bp = dynamic_cast<IGISPoint_Bezier *>(new_w);
 
-		Segment2	seg;
 		Bezier2		bez;
 
 //		set<int> attrs;
 //		node->GetAttributes(attrs);
 ///		new_node->SetAttributes(attrs);
 
-		if (seq->GetSide(gis_Geo,(*w)->GetMyPosition(),seg,bez))
+		if (seq->GetSide(gis_Geo,(*w)->GetMyPosition(),bez))
 		{
 			IGISPoint_Bezier * pre = dynamic_cast<IGISPoint_Bezier *>(*w);
 			IGISPoint_Bezier * follow = dynamic_cast<IGISPoint_Bezier *>(parent->GetNthChild(((*w)->GetMyPosition()+1) % parent->CountChildren()));
@@ -1607,7 +1621,7 @@ void	WED_DoSplit(IResolver * resolver)
 			follow->SetControlHandleLo(gis_Geo,b2.c2);
 			if(as_bp->HasLayer(gis_UV))
 			{
-				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);
+				seq->GetSide(gis_UV,(*w)->GetMyPosition(),bez);
 				bez.partition(b1,b2);
 				as_bp->SetLocation(gis_UV,b2.p1);
 				as_bp->SetControlHandleHi(gis_UV,b2.c1);
@@ -1619,11 +1633,11 @@ void	WED_DoSplit(IResolver * resolver)
 		else
 		{
 			DebugAssert(as_p);
-			as_p->SetLocation(gis_Geo,seg.midpoint());
+			as_p->SetLocation(gis_Geo,bez.as_segment().midpoint());
 			if(as_p->HasLayer(gis_UV))
 			{
-				seq->GetSide(gis_UV,(*w)->GetMyPosition(),seg,bez);			
-				as_p->SetLocation(gis_UV,seg.midpoint());
+				seq->GetSide(gis_UV,(*w)->GetMyPosition(),bez);			
+				as_p->SetLocation(gis_UV,bez.as_segment().midpoint());
 			}
 		}
 		new_w->SetParent(parent, (*w)->GetMyPosition() + 1);
@@ -1696,7 +1710,7 @@ void	WED_DoAlign(IResolver * resolver)
 		for( int j = i+1 ; j < pnts.size(); ++j)
 		{
 			pnts[j]->GetLocation(gis_Geo,p2);
-			double dist = LonLatDistMeters(p1.x_,p1.y_,p2.x_,p2.y_);
+			double dist = LonLatDistMeters(p1,p2);
 			if ( dist > fdist)
 			{
 				fdist = dist;
@@ -1979,7 +1993,7 @@ static void DoMakeRegularPoly(IGISPointSequence * seq )
 	{
 		seq->GetNthPoint(i)->GetLocation(gis_Geo,p1);
 		seq->GetNthPoint((i+1) % n)->GetLocation(gis_Geo,p2);
-		l += LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+		l += LonLatDistMeters(p1,p2);
 		pol.push_back(p1);
 	}
 	//avg edge length
@@ -3074,7 +3088,7 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 				Point2 rp; double rs;
 				center_and_radius_for_ramp_start(*r, rp, rs);
 
-				double d = LonLatDistMeters(rp.x(), rp.y(), o->loc_ll.x(), o->loc_ll.y());
+				double d = LonLatDistMeters(rp, o->loc_ll);
 				
 				if(d < (o->approx_radius_m + rs))
 				{
@@ -3135,8 +3149,8 @@ static bool IsRwyMatching(const WED_Runway * rwy, const struct changelist_t * en
 	rwy->GetSource()->GetLocation(gis_Geo,r_loc0);
 	rwy->GetTarget()->GetLocation(gis_Geo,r_loc1);
 	
-	float loc_err0 = LonLatDistMeters(r_loc0.x(), r_loc0.y(), entry->rwy_pt0.x(), entry->rwy_pt0.y());
-	float loc_err1 = LonLatDistMeters(r_loc1.x(), r_loc1.y(), entry->rwy_pt1.x(), entry->rwy_pt1.y());
+	float loc_err0 = LonLatDistMeters(r_loc0, entry->rwy_pt0);
+	float loc_err1 = LonLatDistMeters(r_loc1, entry->rwy_pt1);
 	
 	float loc_err_allowed = 30.0;
 	if (rwys.size() == 1) loc_err_allowed = 60.0;   // if there is only ONE runway at that airport, be very lenient
@@ -3148,8 +3162,8 @@ static bool IsRwyMatching(const WED_Runway * rwy, const struct changelist_t * en
 		return true;
 	}
 	// the runway end could be listed in the changelist in reverse order, so test the other way round as well
-	loc_err0 = LonLatDistMeters(r_loc0.x(), r_loc0.y(), entry->rwy_pt1.x(), entry->rwy_pt1.y());
-	loc_err1 = LonLatDistMeters(r_loc1.x(), r_loc1.y(), entry->rwy_pt0.x(), entry->rwy_pt0.y());
+	loc_err0 = LonLatDistMeters(r_loc0, entry->rwy_pt1);
+	loc_err1 = LonLatDistMeters(r_loc1, entry->rwy_pt0);
 	if(loc_err0 < loc_err_allowed && loc_err1 < loc_err_allowed)
 	{
 		error.push_back(Vector2(r_loc0, entry->rwy_pt1));

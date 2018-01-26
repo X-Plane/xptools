@@ -182,7 +182,6 @@ using namespace std;
 
 #ifdef __cplusplus
 
-
 #if __GNUC__							// gnuc is the x-code compiler
 
 	// Some code bases like CGAL think __powerpc__ is lower case - for some reason gcc has upper, so...

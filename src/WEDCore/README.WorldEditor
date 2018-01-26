@@ -13,11 +13,12 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a8
+WED 1.7.0a13
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
 	- code fixes to compile under MSVC 2017, XCode 8
+	- improve display speed when zoomed in very far and lots of bezier segments are present in the scenery
 	Features:
 	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
 	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
@@ -27,6 +28,7 @@ WED 1.7.0a8
 	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
 	- WED-926: Allow viewving of full/long property name by clicking on it
 	- WED-954: Bring ATC taxi route validations inline with other validations and report in validation_error.txt
+	- WED-938: Add validation *warnings* if the airport name include akronyms, ICAO codes or the word 'Airport'
 	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
 	- Warn about unreleased X-plane versions at gateway export
 	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for gatewy submissions
@@ -35,6 +37,11 @@ WED 1.7.0a8
 	- Previews allow to cycle through all variants for multi-exported items
 	- Previews show textual info on many objects
 	- Primitve, incomplete type 1 facade preview
+	- Validation errors and warnings come up in a browser window to access full list of messages
+	- WED-973: change single-click selection to go by type-basaed priority rather than design hierachy
+	- show green shadow around flinear fill mode forests, aka Facade wall selection
+	- WED-912: Warn about airports currently not accepting submissions at Gateway im/export
+	- WED-929: Print names of ATC Taxiroutes in ATC+Taxi view
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
@@ -42,8 +49,12 @@ WED 1.7.0a8
 	- XPD-8307: Fix textures w/upper case suffixes not showing
 	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on linux
 	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
+	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
+	- WED-972: Fix co-located nodes not allowing bezier conversion with vertex snapping on
+	- WED-976: Fix opt-ALT click near edge causing uncommanded move of edge location
+	- WED-974: Fix Bezier-handle conversion not working for co-located nodes in some cases
 
-WED 1.6.1b1
+WED 1.6.1r1 12/11/17
 	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources

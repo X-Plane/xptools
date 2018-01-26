@@ -142,17 +142,14 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 		{
 			*active = 0;
 			*con_type = handle_None;
-			Bezier2 bez; Segment2 seg;
-			if(!s->GetSide(gis_UV,n/4, seg, bez))
+			Bezier2 bez;
+			s->GetSide(gis_UV,n/4, bez);
+			switch(n % 4) 
 			{
-				bez.p1 = bez.c1 = seg.p1;
-				bez.p2 = bez.c2 = seg.p2;
-			}
-			switch(n % 4) {
-			case 0: *p = bez.p1;	break;
-			case 1: *p = bez.c1;	break;
-			case 2: *p = bez.p2;	break;
-			case 3: *p = bez.c2;	break;
+				case 0: *p = bez.p1;	break;
+				case 1: *p = bez.c1;	break;
+				case 2: *p = bez.p2;	break;
+				case 3: *p = bez.c2;	break;
 			}
 		}
 		break;

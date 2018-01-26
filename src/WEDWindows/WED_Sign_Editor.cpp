@@ -268,13 +268,13 @@ bool	sign_data::from_code(const string& code)
 	front.clear();
 	back.clear();
 	
-	transform(
+	::transform(
 		output.out_sign.front.begin(),
 		output.out_sign.front.end(),
 		back_inserter(front),
 		make_from_parser);
 
-	transform(
+	::transform(
 		output.out_sign.back.begin(),
 		output.out_sign.back.end(),
 		back_inserter(back),

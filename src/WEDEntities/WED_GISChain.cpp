@@ -22,8 +22,8 @@
  */
 
 #include "WED_GISChain.h"
-#include "WED_AirportChain.h"
 #include "WED_AirportNode.h"
+#include "WED_FacadeNode.h"
 
 TRIVIAL_COPY(WED_GISChain, WED_Entity)
 
@@ -80,9 +80,8 @@ bool			WED_GISChain::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 	int n = GetNumSides();
 	for (int i = 0; i < n; ++i)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if (GetSide(l,i,s,b))
+		if (GetSide(l,i,b))
 		{
 			Bbox2	bb;
 			b.bounds(bb);
@@ -91,8 +90,8 @@ bool			WED_GISChain::WithinBox		(GISLayer_t l,const Bbox2&  bounds) const
 			// points are.  And since there is no "slop", this is the only test we need.
 			if (!bounds.contains(bb)) return false;
 		} else {
-			if (!bounds.contains(s.p1)) return false;
-			if (!bounds.contains(s.p2)) return false;
+			if (!bounds.contains(b.p1)) return false;
+			if (!bounds.contains(b.p2)) return false;
 		}
 	}
 	return true;
@@ -115,13 +114,12 @@ bool			WED_GISChain::PtOnFrame		(GISLayer_t l,const Point2& p, double d	 ) const
 	int c = GetNumSides();
 	for (int n = 0; n < c; ++n)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if (GetSide(l,n,s,b))
+		if (GetSide(l,n,b))
 		{
 			if (b.is_near(p,d)) return true;
 		} else {
-			if (s.is_near(p,d)) return true;
+			if (b.as_segment().is_near(p,d)) return true;
 		}
 	}
 	return false;
@@ -156,10 +154,10 @@ IGISPoint *	WED_GISChain::SplitSide   (const Point2& p, double dist)
 	bool		is_b = false;
 	for(int n = 0; n < s; ++n)
 	{
-		Segment2 s;
 		Bezier2 b;
-		if(!GetSide(gis_Geo, n, s, b))
+		if(!GetSide(gis_Geo, n, b))
 		{
+			Segment2 s(b.as_segment());
 			double dd = s.squared_distance_supporting_line(p);
 			if (dd < d && s.collinear_has_on(p))
 			{
@@ -257,7 +255,7 @@ int			WED_GISChain::GetNumSides(void) const
 	return (IsClosed()) ? n : (n-1);
 }
 
-bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
+bool		WED_GISChain::GetSide(GISLayer_t l,int n, Bezier2& b) const
 {
 	RebuildCache(CacheBuild(cache_Topological));
 
@@ -282,12 +280,9 @@ bool		WED_GISChain::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
 	// If we have neither end, we either had no bezier pt, or the bezier pt has no control handle.
 	// Simpify down to a segment and return it -- some code may use this 'fast case'.
 	if (!c1 && !c2)
-	{
-		s.p1 = b.p1;
-		s.p2 = b.p2;
 		return false;
-	}
-	return true;
+	else
+		return true;
 }
 
 void WED_GISChain::RebuildCache(int flags) const
@@ -348,29 +343,18 @@ void WED_GISChain::RebuildCache(int flags) const
 		
 		for (int i = 0; i < n; ++i)
 		{
-			Segment2 s;
 			Bezier2 b;
-			if (GetSide(gis_Geo, i,s,b))
-			{
-				Bbox2	bb;
-				b.bounds(bb);
-				mCacheBounds += bb;
-			} else {
-				mCacheBounds += s.p1;
-				mCacheBounds += s.p2;
-			}
+			GetSide(gis_Geo, i,b);
+			Bbox2	bb;
+			b.bounds(bb);
+			mCacheBounds += bb;
 
 			if(mHasUV)
 			{
-				if (GetSide(gis_UV, i,s,b))
-				{
-					Bbox2	bb;
-					b.bounds(bb);
-					mCacheBoundsUV += bb;
-				} else {
-					mCacheBoundsUV += s.p1;
-					mCacheBoundsUV += s.p2;
-				}
+				GetSide(gis_UV, i,b);
+				Bbox2	bb;
+				b.bounds(bb);
+				mCacheBoundsUV += bb;
 			}
 		}
 	
@@ -433,7 +417,7 @@ void WED_GISChain::Reverse(GISLayer_t l)
     // On Airport Lines and Taxiways, we want to preserve the line/light properties of each segment, effectivly ONLY reversing the node sequence.
     // Very usefull when reversing airport lines with differently tagged segments. It effectively brings the blue taxiway edge lights to the other side ONLY.
     
-	if (GetClass() == WED_AirportChain::sClass)
+	if (dynamic_cast <WED_AirportNode *> (GetNthChild(0)))
 	{
 		for(n = 0; n < np/2; ++n)    // directly swap the attributes of the nodes. No need to first build a local copy and then write it back in reverse order.
 		{
@@ -448,6 +432,22 @@ void WED_GISChain::Reverse(GISLayer_t l)
 			a_t->SetAttributes(tmp1);
 		}
 	}
+	else if (dynamic_cast <WED_FacadeNode *> (GetNthChild(0)))
+	{
+		for(n = 0; n < np/2; ++n)    // directly swap the attributes of the nodes. No need to first build a local copy and then write it back in reverse order.
+		{
+			t = np - n - 2;
+			WED_FacadeNode * a_n = dynamic_cast <WED_FacadeNode *> (GetNthChild(n));  // note to self: mCache would yield no speedup here, as we dynamic_cast every point only once
+			WED_FacadeNode * a_t = dynamic_cast <WED_FacadeNode *> (GetNthChild(t));  // thus we get away with NOT expanding RebuildCache to work for 'gis_Apt" layers :)
+			int	tmp1, tmp2;
+			
+			tmp1 = a_n->GetWallType();
+			tmp2 = a_t->GetWallType();
+			a_n->SetWallType(tmp2);
+			a_t->SetWallType(tmp1);
+		}
+	}
+	
 }
 
 void WED_GISChain::Shuffle(GISLayer_t l)

@@ -60,7 +60,7 @@ void	AptExportRecursive(WED_Thing * what,
 
 
 int		WED_CanExportApt(IResolver * resolver);
-void	WED_DoExportApt(IResolver * resolver);
+void	WED_DoExportApt(WED_Document * resolver, WED_MapPane * pane);
 
 int		WED_CanImportApt(IResolver * resolver);
 void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane * pane);

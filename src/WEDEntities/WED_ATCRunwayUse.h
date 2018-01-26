@@ -39,10 +39,11 @@ public:
 	void	Export(		 AptRunwayRule_t& info) const;
 
 			void	SetRunway(int rwy);
-			int	GetRunway(void) const;
+			int		GetRunway(void) const;
 			bool	HasArrivals(void) const;
 			bool	HasDepartures(void) const;
-
+			
+	virtual	void	PropEditCallback(int before);
 	virtual	void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Runway Use"; }

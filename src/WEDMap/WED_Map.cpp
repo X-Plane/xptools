@@ -209,7 +209,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 		if (mIsDownExtraCount)
 		{
-			has_d = 1;	dist = LonLatDistMeters(o.x(),o.y(),n.x(),n.y());
+			has_d = 1;	dist = LonLatDistMeters(o,n);
 			has_h = 1;	head = VectorDegs2NorthHeading(o, o, Vector2(o,n));
 			has_a1 = 1; anchor1 = o;
 			has_a2 = 1; anchor2 = n;
@@ -252,10 +252,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	static float	fps = 0.0f;
 	static int		cycle = 0;
 		   ++cycle;
-		   if (cycle > 100)
+		   if (cycle > 20)
 		   {
 				clock_t now = clock();
-				fps = (100.0f * CLOCKS_PER_SEC) / ((float) (now - last_time));
+				fps = (20.0 * CLOCKS_PER_SEC) / ((float) (now - last_time));
 				last_time = now;
 				cycle = 0;
 		   }

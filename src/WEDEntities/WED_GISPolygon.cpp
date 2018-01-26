@@ -317,12 +317,7 @@ Bezier_Seq_Iterator Bezier_Seq_Iterator::operator++(int)
 Bezier2 Bezier_Seq_Iterator::operator*(void) const
 {
 	Bezier2 ret;
-	Segment2 s;
-	if (!mSeq->GetSide(mLayer, mIndex, s, ret))
-	{
-		ret.p1 = ret.c1 = s.p1;
-		ret.p2 = ret.c2 = s.p2;
-	}
+	mSeq->GetSide(mLayer, mIndex, ret);
 	return ret;
 }
 

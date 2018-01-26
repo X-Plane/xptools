@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2013, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -22,6 +22,7 @@
  */
 
 #include "WED_Validate.h"
+#include "WED_ValidateList.h"
 #include "WED_ValidateATCRunwayChecks.h"
 
 #include "WED_Globals.h"
@@ -81,6 +82,7 @@
 #include "PlatformUtils.h"
 #include "MathUtils.h"
 
+#include "WED_Document.h"
 #include "WED_FileCache.h"
 #include "WED_Url.h"
 #include "GUI_Resources.h"
@@ -380,13 +382,13 @@ static void ValidateOnePointSequence(WED_Thing* who, validation_error_vector& ms
 	}
 #if CHECK_ZERO_LENGTH
 	vector<WED_Thing*> problem_children;
+	nn = ps->GetNumSides();
 	for(int n = 0; n < nn; ++n)
 	{
-		Bezier2 b; Segment2 s;
-		bool bez = ps->GetSide(gis_Geo,n,s,b);
-		if(bez) {s.p1 = b.p1; s.p2 = b.p2; }
+		Bezier2 b;
+		bool bez = ps->GetSide(gis_Geo,n,b);
 
-		if(s.p1 == s.p2)
+		if(b.p1 == b.p2)
 		{
 			// add first node of each zero length segment to list
 			problem_children.push_back(dynamic_cast<WED_Thing *>(ps->GetNthPoint(n)));
@@ -518,18 +520,16 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 
 					for (int i = 0; i < n_sides; ++i)
 					{
-						Segment2 s1;
 						Bezier2 b1;
-						bool isb1 = ips->GetSide(gis_Geo, i, s1, b1);
+						bool isb1 = ips->GetSide(gis_Geo, i, b1);
 						
 						if (isb1 && b1.self_intersect(10))
 							AddNodesOfSegment(ips,i,nodes_next2crossings);
 
 						for (int j = i + 1; j < n_sides; ++j)
 						{
-							Segment2 s2;
 							Bezier2 b2;
-							bool isb2 = ips->GetSide(gis_Geo, j, s2, b2);
+							bool isb2 = ips->GetSide(gis_Geo, j, b2);
 
 							if (isb1 || isb2)
 							{
@@ -547,10 +547,13 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 									b1.p2 != b2.p1)
 								{		
 									Point2 x;
-									if (s1.intersect(s2, x))
+									if (b1.as_segment().intersect(b2.as_segment(), x))
 									{
-										AddNodesOfSegment(ips,i,nodes_next2crossings);
-										AddNodesOfSegment(ips,j,nodes_next2crossings);
+										//if(i == 0 && j == n_sides-1 && x == b1.p2) // touching ends of its just "closing a ring"
+										{
+											AddNodesOfSegment(ips,i,nodes_next2crossings);
+											AddNodesOfSegment(ips,j,nodes_next2crossings);
+										}
 									}
 								}
 							}
@@ -626,7 +629,7 @@ static void ValidateDSFRecursive(WED_Thing * who, WED_LibraryMgr* library_mgr, v
 			}
 		}
 
-		std::transform(resource_str.begin(), resource_str.end(), resource_str.begin(), ::tolower);
+		::transform(resource_str.begin(), resource_str.end(), resource_str.begin(), ::tolower);
 
 		//3. What happen if the user free types a real resource of the wrong type into the box?
 		bool matches = false;
@@ -1381,6 +1384,22 @@ static bool is_all_alnum(const string& s)
 	return count_if(s.begin(), s.end(), ::isalnum) == s.size();
 }
 
+
+// finds substring, but only if its a full free-standing word, i.e. not just part of a word
+static bool contains_word(const string& s, const char* word)
+{
+	size_t p = s.find(word);
+	if(p != string::npos)
+	{
+		char c_preceed = p > 0 ? s[p-1] : ' ';
+		char c_follow  = p < s.length()+strlen(word) ? s[p+strlen(word)] : ' ';
+		if(!isalpha(c_preceed) && !isalpha(c_follow))
+			return true;
+	}
+	return false;
+}
+
+
 static bool air_org_code_valid(int min_char, int max_char, bool mix_letters_and_numbers, const string& org_code, string& error_content)
 {
 	if (is_all_alnum(org_code) == false)
@@ -1677,7 +1696,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 		string region_code      = who->GetMetaDataValue(wed_AddMetaDataRegionCode);
 		all_keys.push_back(region_code);
-		transform(region_code.begin(), region_code.end(), region_code.begin(), (int(*)(int))toupper);
+		::transform(region_code.begin(), region_code.end(), region_code.begin(), ::toupper);
 
 		vector<string> region_codes = vector<string>(NUM_REGION_CODES);
 		region_codes.insert(region_codes.end(), &legal_region_codes[0], &legal_region_codes[NUM_REGION_CODES]);
@@ -1741,7 +1760,7 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 
 	for(vector<string>::iterator itr = all_keys.begin(); itr != all_keys.end(); ++itr)
 	{
-		transform(itr->begin(), itr->end(), itr->begin(), (int(*)(int))tolower);
+		::transform(itr->begin(), itr->end(), itr->begin(), ::tolower);
 		if(itr->find("http") != string::npos)
 		{
 			msgs.push_back(validation_error_t("Metadata value " + *itr + " contains 'http', is likely a URL", err_airport_metadata_invalid, who, apt));
@@ -1907,32 +1926,53 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	apt->GetICAO(icao);
 
 	if(name.empty())
-		msgs.push_back(validation_error_t("An airport has no name.", err_airport_no_name, apt,apt));
-	else if(name[0] == ' ' || name[name.length()-1] == ' ')
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' name includes leading or trailing spaces.", err_airport_no_name, apt,apt));
+		msgs.push_back(validation_error_t("An airport has no name.", err_airport_name, apt,apt));
+	else 
+	{
+		if(name[0] == ' ' || name[name.length()-1] == ' ')
+			msgs.push_back(validation_error_t(string("The airport '") + name + "' name includes leading or trailing spaces.", err_airport_name, apt,apt));
+		
+		int lcase = count_if(name.begin(), name.end(), ::islower);
+		int ucase = count_if(name.begin(), name.end(), ::isupper);
+		if (ucase > 2 && lcase == 0)
+			msgs.push_back(validation_error_t(string("Airport name '") + name + "' is all upper case.", warn_airport_name_style, apt,apt));
+		
+		string name_lcase(name), icao_lcase(icao);
+		::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), ::tolower);  // waiting for C++11 ...
+		::transform(icao_lcase.begin(), icao_lcase.end(), icao_lcase.begin(), ::tolower);  // waiting for C++11 ...
+
+		if (contains_word(name_lcase,"airport"))
+//		if (name_lcase.find("airport") != string::npos)
+			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include the word 'Airport'.", warn_airport_name_style, apt,apt));
+		if (contains_word(name_lcase,"intl") || contains_word(name_lcase,"rgnl") || contains_word(name_lcase,"muni"))
+			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include akronyms. Use full words like 'International' instead of 'Intl'.", warn_airport_name_style, apt,apt));
+		if (contains_word(name_lcase, icao_lcase.c_str()))
+			msgs.push_back(validation_error_t(string("The airport name '") + name + "' should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
+
+	}
 	if(icao.empty())
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_no_icao, apt,apt));
+		msgs.push_back(validation_error_t(string("The airport '") + name + "' has an empty Airport ID.", err_airport_icao, apt,apt));
 	else if(!is_all_alnum(icao))
-		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_no_icao, apt,apt));
+		msgs.push_back(validation_error_t(string("The Airport ID for airport '") + name + "' must contain ASCII alpha-numeric characters only.", err_airport_icao, apt,apt));
 
 #if !GATEWAY_IMPORT_FEATURES
 	set<WED_GISEdge*> edges;
 	WED_select_zero_recursive(apt, &edges);
 	if(edges.size())
 	{
-		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. These should be deleted.", err_airport_no_name, edges, apt));
+		msgs.push_back(validation_error_t("Airport contains zero-length ATC routing lines. These should be deleted.", err_airport_ATC_network, edges, apt));
 	}
 
 	set<WED_Thing*> points = WED_select_doubles(apt);
 	if(points.size())
 	{
-		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_no_name, points, apt));
+		msgs.push_back(validation_error_t("Airport contains doubled ATC routing nodes. These should be merged.", err_airport_ATC_network, points, apt));
 	}
 
 	edges = WED_do_select_crossing(apt);
 	if(edges.size())
 	{
-		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.", err_airport_no_name, edges, apt));
+		msgs.push_back(validation_error_t("Airport contains crossing ATC routing lines with no node at the crossing point.  Split the lines and join the nodes.", err_airport_ATC_network, edges, apt));
 	}
 #endif
 
@@ -2254,7 +2294,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 }
 
 
-bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
+bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2359,9 +2399,12 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 
 	if(!msgs.empty())
 	{
-		ISelection * sel = WED_GetSelect(resolver);
+		new WED_ValidateDialog(resolver, pane, msgs);
+
+/*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");
 		sel->Clear();
+
 		for(vector<WED_Thing *>::iterator b = msgs.front().bad_objects.begin(); b != msgs.front().bad_objects.end(); ++b)
 			sel->Insert(*b);
 		wrl->CommitOperation();
@@ -2371,8 +2414,8 @@ bool	WED_ValidateApt(IResolver * resolver, WED_Thing * wrl)
 		else
 			DoUserAlert((string("No errors exist, but there is at least one warning:\n\n") + msgs.front().msg
 			                     + "\n\nFor a full list of messages see\n" + logfile).c_str());
+*/
 	}
-
 	if(first_error != msgs.end())
 		return GATEWAY_IMPORT_FEATURES;
 	else

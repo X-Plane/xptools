@@ -801,6 +801,9 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadePreview.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1585,6 +1588,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
       <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDCore\WED_ValidateList.h">
+      <Filter>WEDCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

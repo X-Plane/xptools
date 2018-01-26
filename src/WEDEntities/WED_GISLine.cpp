@@ -164,11 +164,13 @@ int					WED_GISLine::GetNumSides(void) const
 	return 1;
 }
 
-bool				WED_GISLine::GetSide(GISLayer_t l,int n, Segment2& s, Bezier2& b) const
+bool				WED_GISLine::GetSide(GISLayer_t l,int n, Bezier2& b) const
 {
 	Assert(n == 0);
-	GetSource()->GetLocation(l,s.p1);
-	GetTarget()->GetLocation(l,s.p2);
+	GetSource()->GetLocation(l,b.p1);
+	GetTarget()->GetLocation(l,b.p2);
+	b.c1=b.p1;
+	b.c2=b.p2;
 	return false;
 }
 

@@ -31,6 +31,8 @@
 #include "PlatformUtils.h"
 #include "WED_Group.h"
 #include "WED_Validate.h"
+#include "WED_Document.h"
+
 
 void	WED_ExportPackToPath(WED_Thing * root, IResolver * resolver, const string& in_path, set<WED_Thing *>& problem_children)
 {
@@ -53,10 +55,10 @@ int		WED_CanExportPack(IResolver * resolver)
 	return 1;
 }
 
-void	WED_DoExportPack(IResolver * resolver)
+void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	if(!WED_ValidateApt(resolver))
+	if(!WED_ValidateApt(resolver, pane))
 		return;
 
 	ILibrarian * l = WED_GetLibrarian(resolver);

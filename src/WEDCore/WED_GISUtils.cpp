@@ -125,11 +125,10 @@ bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2>& ou
 	for(int n = 0; n < ns; ++n)
 	{
 		Bezier2		b;
-		Segment2	s;
-		if(in_seq->GetSide(gis_Geo, n, s, b))
+		if(in_seq->GetSide(gis_Geo, n, b))
 			return false;
 
-		out_pol.push_back(s);
+		out_pol.push_back(b.as_segment());
 	}
 	return true;
 }
@@ -139,15 +138,13 @@ bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2p>& o
 	int ns = in_seq->GetNumSides();
 	for(int n = 0; n < ns; ++n)
 	{
-		Bezier2		b;
-		Segment2	s;
-		Segment2	sp;
-		if(in_seq->GetSide(gis_Geo, n, s, b))
+		Bezier2		b, sp;
+		if(in_seq->GetSide(gis_Geo, n, b))
 			return false;
-		if(in_seq->GetSide(gis_Param, n, sp, b))
+		if(in_seq->GetSide(gis_Param, n, sp))
 			return false;
 
-		out_pol.push_back(Segment2p(s,sp.p1.x()));
+		out_pol.push_back(Segment2p(b.p1,b.p2,sp.p1.x()));
 	}
 	return true;
 }
@@ -223,12 +220,7 @@ void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2
 	for(int n = 0; n < ns; ++n)
 	{
 		Bezier2		b;
-		Segment2	s;
-		if(!in_seq->GetSide(gis_Geo, n, s, b))
-		{
-			b.p1 = b.c1 = s.p1;
-			b.p2 = b.c2 = s.p2;
-		}
+		in_seq->GetSide(gis_Geo, n, b);
 		out_pol.push_back(b);
 	}
 }
@@ -241,17 +233,8 @@ void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2
 	{
 		Bezier2		b;
 		Bezier2		bp;
-		Segment2	s;
-		if(!in_seq->GetSide(gis_Geo, n, s, b))
-		{
-			b.p1 = b.c1 = s.p1;
-			b.p2 = b.c2 = s.p2;
-		}
-		if(!in_seq->GetSide(gis_Param, n, s, bp))
-		{
-			bp.p1 = bp.c1 = s.p1;
-			bp.p2 = bp.c2 = s.p2;
-		}
+		in_seq->GetSide(gis_Geo, n, b);
+		in_seq->GetSide(gis_Param, n, bp);
 		out_pol.push_back(Bezier2p(b,bp.p1.x()));
 	}
 }
@@ -430,29 +413,25 @@ static bool WED_TO_UV_ps(IGISPointSequence * ps, vector<uv_vert>& out_vert)
 	for(n = 0; n < ns; ++n)
 	{
 		Bezier2		llb, uvb;
-		Segment2	lls, uvs;
 		
 		if(!ps->HasLayer(gis_UV))
 			return false;
 		
-		bool bez_ll = ps->GetSide(gis_Geo, n, lls, llb);
-		bool bez_uv = ps->GetSide(gis_UV, n, uvs, uvb);
+		bool bez_ll = ps->GetSide(gis_Geo, n, llb);
+		bool bez_uv = ps->GetSide(gis_UV, n, uvb);
 		
 		if(bez_ll != bez_uv)
 			return false;
 			
+		out_vert.push_back(uv_vert(llb.p1,uvb.p1));
+		
 		if(bez_ll)
 		{			
-			out_vert.push_back(uv_vert(llb.p1,uvb.p1));
 			if(out_vert.back().xy != llb.c1)
 				out_vert.push_back(uv_vert(llb.c1,uvb.c1));
 			if(out_vert.back().xy != llb.c2 &&
 				llb.c2 != llb.p2)
 			out_vert.push_back(uv_vert(llb.c2,uvb.c2));
-		}
-		else
-		{
-			out_vert.push_back(uv_vert(lls.p1,uvs.p1));
 		}
 	}
 	return true;

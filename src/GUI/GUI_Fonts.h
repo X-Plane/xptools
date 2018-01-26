@@ -43,7 +43,8 @@ void	GUI_FontDraw(
 				const float						color[4],	//	4-part color, featuring alpha.
 				float							inX,
 				float							inY,
-				const char *					inString);
+				const char *					inString,
+				int								inAlign = align_Left);
 
 void	GUI_FontDrawScaled(
 				GUI_GraphState *				inState,

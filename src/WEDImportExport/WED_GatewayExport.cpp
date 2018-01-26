@@ -32,6 +32,8 @@
 #include "WED_MetaDataDefaults.h"
 #include "WED_Menus.h"
 
+#include "WED_Document.h"
+
 #include "PlatformUtils.h"
 #include "FileUtils.h"
 #include "curl_http.h"
@@ -307,7 +309,7 @@ enum expt_dialog_stage
 
 class	WED_GatewayExportDialog : public GUI_FormWindow, public GUI_Timer {
 public:
-	WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver);
+	WED_GatewayExportDialog(WED_Airport * apt, WED_Document * resolver);
 
 	//When pressed, opens up the developer blog post about the Gateway 
 	virtual void AuxiliaryAction();
@@ -341,8 +343,8 @@ private:
 	curl_http_get_file*     mCurl;
 
 	//The phase of the state in the dialog box
-	expt_dialog_stage	mPhase;
-	IResolver *				mResolver;
+	expt_dialog_stage		mPhase;
+	WED_Document *			mResolver;
 
 	string					mParID;
 	set<WED_Thing *>		mProblemChildren;
@@ -371,7 +373,7 @@ int WED_CanExportToGateway(IResolver * resolver)
 #endif	
 }
 
-void WED_DoExportToGateway(IResolver * resolver)
+void WED_DoExportToGateway(WED_Document * resolver)
 {
 	#if BULK_SPLAT_IO
 
@@ -415,10 +417,10 @@ void WED_DoExportToGateway(IResolver * resolver)
 
 int Iterate_JSON_One_Airport(ISelectable * what, void * ref)
 {
-	IResolver * resolver = (IResolver *) ref;	
+	WED_Document * resolver = (WED_Document *) ref;
 	WED_Airport * apt = SAFE_CAST(WED_Airport,what);
 	if(!apt)
-		return 0;			
+		return 0;
 	WED_GatewayExportDialog * dlg = new WED_GatewayExportDialog(apt, resolver);
 	dlg->Submit();
 	#if !BULK_SPLAT_IO
@@ -469,7 +471,7 @@ static string InterpretNetworkError(curl_http_get_file* curl)
 	return ss.str();
 }
 
-WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver) : 
+WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, WED_Document * resolver) :
 	GUI_FormWindow(gApplication, "Airport Scenery Gateway", 500, 400),
 	mAirportMetadataCURLHandle(NULL),
 	mApt(apt),
@@ -559,7 +561,7 @@ void WED_GatewayExportDialog::Submit()
 		WED_Export_Target old_target = gExportTarget;
 		gExportTarget = wet_gateway;
 
-		if(!WED_ValidateApt(mResolver, apt))
+		if(!WED_ValidateApt(mResolver, NULL, apt))
 		{
 			gExportTarget = old_target;
 			return;

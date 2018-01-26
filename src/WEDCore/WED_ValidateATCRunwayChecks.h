@@ -69,8 +69,8 @@ struct RunwayInfo
 		dir_1m = Vector2(centerline_m.p1, centerline_m.p2);
 		dir_1m.normalize();
 		
-		dir_vec_1m   = Vector2(bounds[0], bounds[1]) / LonLatDistMeters(bounds[0].x(),bounds[0].y(),bounds[1].x(),bounds[1].y());
-		width_vec_1m = Vector2(bounds[1], bounds[2]) / LonLatDistMeters(bounds[1].x(),bounds[1].y(),bounds[2].x(),bounds[2].y());
+		dir_vec_1m   = Vector2(bounds[0], bounds[1]) / LonLatDistMeters(bounds[0],bounds[1]);
+		width_vec_1m = Vector2(bounds[1], bounds[2]) / LonLatDistMeters(bounds[1],bounds[2]);
 	}
 
 	WED_Runway* runway_ptr;  // Pointer to the underlying runway class
@@ -138,8 +138,9 @@ struct TaxiRouteInfo
 			}
 		}
 		DebugAssert(nodes.size() >= 2);
-		Bezier2 bez;
-		taxiroute->GetSide(gis_Geo, 0, taxiroute_segment_geo, bez);
+		Bezier2 b;
+		taxiroute->GetSide(gis_Geo, 0, b);
+		taxiroute_segment_geo=b.as_segment(); 
 		taxiroute_segment_m = Segment2(translator.Forward(taxiroute_segment_geo.p1),translator.Forward(taxiroute_segment_geo.p2));
 	}
 
