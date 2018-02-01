@@ -2202,7 +2202,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 
 			float CIFP_LOCATION_ERROR = 10.0;
 			
-			if((*r)->GetSurface() != apt_surf_asphalt && (*r)->GetSurface() != apt_surf_concrete)   // for unpaved runways ...
+			if((*r)->GetSurface() != surf_Asphalt && (*r)->GetSurface() != surf_Concrete)   // for unpaved runways ...
 			{
 				float r_wid = (*r)->GetWidth() / 2.0;
 				CIFP_LOCATION_ERROR =  fltlim(r_wid, CIFP_LOCATION_ERROR, 50.0);   // allow the error circle to be as wide as a unpaved runway, within reason
