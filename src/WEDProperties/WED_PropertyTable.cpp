@@ -627,7 +627,8 @@ int		WED_PropertyTable::TabAdvance(
 		}
 		if (reverse==0)reverse=1;
 		++tries;
-	} while (start_x != io_x || start_y != io_y || tries <= 1);
+	} while ((start_x != io_x || start_y != io_y || tries <= 1) 
+				&& tries < 100);                 // prevent infinite loop if nothing in table is "advanceable" to, e.g. a taxi route edge runway segment
 	return 0;
 }
 
