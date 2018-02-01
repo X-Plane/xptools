@@ -2200,7 +2200,13 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			(*r)->GetSource()->GetLocation(gis_Geo, r_loc[0]);
 			(*r)->GetTarget()->GetLocation(gis_Geo, r_loc[1]);
 
-			const float CIFP_LOCATION_ERROR = 10.0;
+			float CIFP_LOCATION_ERROR = 10.0;
+			
+			if((*r)->GetSurface() != apt_surf_asphalt && (*r)->GetSurface() != apt_surf_concrete)   // for unpaved runways ...
+			{
+				float r_wid = (*r)->GetWidth() / 2.0;
+				CIFP_LOCATION_ERROR =  fltlim(r_wid, CIFP_LOCATION_ERROR, 50.0);   // allow the error circle to be as wide as a unpaved runway, within reason
+			}
 
 			for(int i = 0; i < 2; ++i)       // loop to cover both runway ends
 			{

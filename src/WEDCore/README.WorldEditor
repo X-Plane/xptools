@@ -53,7 +53,7 @@ WED 1.7.0a17
 	- WED-972: Fix co-located nodes not allowing bezier conversion with vertex snapping on
 	- WED-976: Fix opt-ALT click near edge causing uncommanded move of edge location
 	- WED-974: Fix Bezier-handle conversion not working for co-located nodes in some cases
-	- fix infinite loop when pressing "return" with a taxi route edge selected that is a runway segemnt
+	- fix infinite loop when pressing "return" with a taxi route edge selected that has runway tags
 
 WED 1.6.1r1 12/11/17
 	Features:
