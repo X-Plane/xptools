@@ -3129,51 +3129,70 @@ void WED_UpgradeRampStarts(IResolver * resolver)
 	
 }
 
+// ****** Runway Auto Rename & Move Stuff. Ugly code, its a BETA !!! *****
+
 #include "WED_Runway.h"
 
 struct changelist_t
 {
 	string ICAO;
 	int new_rwy;
-	Point2 rwy_pt0;
+	Point2 rwy_pt0;        // the location of that runways thresholds
 	Point2 rwy_pt1;
+	int disp0, disp1;
 };
+
+#define MIN_ERROR_TO_MOVE    5.0    // average threshold location error must be over this to move the whole airport
+#define PEAK_ERR_AFT_MOVE   10.0    // move needs to yield a WC threshold location error for all runways under this
+#define MAX_ERROR_TO_FIND  100.0    // Both thresholds must be within this distance of the CIFP location for any runway to be considered
+                                    // to be matching the one in the CIFP data. Also implies - no airport is moved any further than this.
 
 static bool IsRwyMatching(const WED_Runway * rwy, const struct changelist_t * entry, const vector<WED_Runway *>& rwys, vector<Vector2>& error)
 {
 	// very crude match criteria:
-	// both runway end coordinates must be within some meters of the current runway's end.
+	// both runway threshold coordinates must be within some meters of the current runways ones.
 	
-    Point2 r_loc0, r_loc1;
+    Point2 thr_loc0, thr_loc1;
+	Point2 corners[4];
+
+	if (rwy->GetCornersDisp2(corners))
+		thr_loc1 = Midpoint2(corners[0],corners[3]);
+	else
+		rwy->GetTarget()->GetLocation(gis_Geo, thr_loc1);
 	
-	rwy->GetSource()->GetLocation(gis_Geo,r_loc0);
-	rwy->GetTarget()->GetLocation(gis_Geo,r_loc1);
+	if (rwy->GetCornersDisp1(corners))
+		thr_loc0 = Midpoint2(corners[1],corners[2]);
+	else
+		rwy->GetSource()->GetLocation(gis_Geo, thr_loc0);
+
+//	printf("Checking runway     at Lon %.6lf Lat %.6lf, Lon %.6lf Lat %.6lf\n",thr_loc0.x(),thr_loc0.y(),thr_loc1.x(),thr_loc1.y());
+		
+	float loc_err_allowed = MAX_ERROR_TO_FIND;
+//	if (rwys.size() == 1) loc_err_allowed *= 2.0;   // if there is only ONE runway at that airport, be more lenient in matching if the runway
 	
-	float loc_err0 = LonLatDistMeters(r_loc0, entry->rwy_pt0);
-	float loc_err1 = LonLatDistMeters(r_loc1, entry->rwy_pt1);
-	
-	float loc_err_allowed = 30.0;
-	if (rwys.size() == 1) loc_err_allowed = 60.0;   // if there is only ONE runway at that airport, be very lenient
-	
+	float loc_err0 = LonLatDistMeters(thr_loc0, entry->rwy_pt0);
+	float loc_err1 = LonLatDistMeters(thr_loc1, entry->rwy_pt1);
 	if(loc_err0 < loc_err_allowed && loc_err1 < loc_err_allowed)
 	{
-		error.push_back(Vector2(r_loc0, entry->rwy_pt0));
-		error.push_back(Vector2(r_loc1, entry->rwy_pt1));
+		error.push_back(Vector2(thr_loc0, entry->rwy_pt0));
+		error.push_back(Vector2(thr_loc1, entry->rwy_pt1));
 		return true;
 	}
+	
 	// the runway end could be listed in the changelist in reverse order, so test the other way round as well
-	loc_err0 = LonLatDistMeters(r_loc0, entry->rwy_pt1);
-	loc_err1 = LonLatDistMeters(r_loc1, entry->rwy_pt0);
+	loc_err0 = LonLatDistMeters(thr_loc0, entry->rwy_pt1);
+	loc_err1 = LonLatDistMeters(thr_loc1, entry->rwy_pt0);
 	if(loc_err0 < loc_err_allowed && loc_err1 < loc_err_allowed)
 	{
-		error.push_back(Vector2(r_loc0, entry->rwy_pt1));
-		error.push_back(Vector2(r_loc1, entry->rwy_pt0));
+		error.push_back(Vector2(thr_loc0, entry->rwy_pt1));
+		error.push_back(Vector2(thr_loc1, entry->rwy_pt0));
 		return true;
 	}
 	// Todo: More agressive search, in case the runway is more seriously dislocated
 	
 	return false;
 }
+
 
 void WED_RenameRunwayNames(IResolver * resolver)
 {
@@ -3183,6 +3202,8 @@ void WED_RenameRunwayNames(IResolver * resolver)
 	if (!GetFilePathFromUser(getFile_Open,"Pick file with runway names and coordinates", "Read changelist",
 								FILE_DIALOG_PICK_VALID_RUNWAY_TABLE, fn,sizeof(fn)))
 		return;
+		
+	int doMove = ConfirmMessage("Also move airports to minimize Runway Location error ?", "Yes", "No, only rename Rwys");
 
 	MFMemFile * mf = MemFile_Open(fn);
 
@@ -3206,6 +3227,7 @@ void WED_RenameRunwayNames(IResolver * resolver)
 			MFS_string(&s,&rnam);
 			double lat = MFS_double(&s);
 			double lon = MFS_double(&s);
+			double disp= MFS_double(&s);
 
 			if (second_end)
 			{
@@ -3219,9 +3241,22 @@ void WED_RenameRunwayNames(IResolver * resolver)
 						entry.new_rwy = ENUM_LookupDesc(ATCRunwayTwoway,rwy_2wy.c_str());
 					}
 					entry.rwy_pt1 = Point2(lon,lat);
-
+					entry.disp1 = disp;
+					
 					if(entry.new_rwy > atc_rwy_None)
+					{
+//						printf("Read changelist: Using Lon %.6lf Lat %.6lf, Lon %.6lf Lat %.6lf\n",entry.rwy_pt0.x(),entry.rwy_pt0.y(),entry.rwy_pt1.x(),entry.rwy_pt1.y());
+						if (entry.disp0 > 0.0 || entry.disp1 > 0.0)
+						{
+							float rwy_len_cifp = LonLatDistMeters(entry.rwy_pt0, entry.rwy_pt1);
+							if (entry.disp0 > 0.0)
+								entry.rwy_pt0 += Vector2(entry.rwy_pt0, entry.rwy_pt1) / rwy_len_cifp * entry.disp0;
+							if (entry.disp1 > 0.0)
+								entry.rwy_pt1 += Vector2(entry.rwy_pt1, entry.rwy_pt0) / rwy_len_cifp * entry.disp1;
+						}
 						changelist.push_back(entry);
+//						printf("Read changelist: Added Lat %.6lf Lat %.6lf, Lon %.6lf Lat %.6lf\n",entry.rwy_pt0.x(),entry.rwy_pt0.y(),entry.rwy_pt1.x(),entry.rwy_pt1.y());
+					}
 					else
 						printf("Read changelist: Ignoring bad rwy spec pair %s ending in line %d\n",rwy_2wy.c_str(),lnum);
 
@@ -3233,6 +3268,7 @@ void WED_RenameRunwayNames(IResolver * resolver)
 					entry.ICAO = icao;
 					first_rwy = rnam;
 					entry.rwy_pt0 = Point2(lon,lat);
+					entry.disp0 = disp;
 				}
 			}
 			else
@@ -3240,6 +3276,7 @@ void WED_RenameRunwayNames(IResolver * resolver)
 				entry.ICAO = icao;
 				first_rwy = rnam;
 				entry.rwy_pt0 = Point2(lon,lat);
+				entry.disp0 = disp;
 				second_end = true;
 			}
 			lnum++;
@@ -3261,7 +3298,7 @@ void WED_RenameRunwayNames(IResolver * resolver)
 		CollectRecursiveNoNesting(wrl, back_inserter(apts),WED_Airport::sClass);
 		sel->Clear();
 
-		wrl->StartCommand("Rename Runways");
+		wrl->StartCommand("Auto Rename Runways");
 
 		for(vector<WED_Airport *>::iterator apt = apts.begin(); apt !=apts.end(); ++apt)
 		{
@@ -3294,34 +3331,47 @@ void WED_RenameRunwayNames(IResolver * resolver)
 					}
 				}
 			}
-#if 0
-			// check if we could make the runway coordinate errors smaller if we were to move the whole airport
-			Vector2 avg_error;
-			for(vector<Vector2>::iterator i = coord_errors.begin(); i != coord_errors.end(); ++i)
+			if (doMove)
 			{
-				avg_error += *i;
-				printf("error = %6.2lf N-S, %6.2lf E-W\n", 1e5*i->x(), 1e5*i->y());
-			}
-			avg_error /= coord_errors.size();
-			printf("avg err %6.2lf N-S, %6.2lf E-W\n", 1e5*avg_error.x(), 1e5*avg_error.y());
-			for(vector<Vector2>::iterator i = coord_errors.begin(); i != coord_errors.end(); ++i)
-			{
-				float loc_err = sqrt(i->squared_length());
-				printf("dist %.2fm", 1e5*loc_err);
-				(*i) -= avg_error;
-				loc_err = sqrt(i->squared_length());
-				printf(" fixed to %.2fm\n", 1e5*loc_err);
-			}
+				// check if we could make the runway coordinate errors smaller if we were to move the whole airport
+				Vector2 avg_error;
+				for(vector<Vector2>::iterator i = coord_errors.begin(); i != coord_errors.end(); ++i)
+				{
+					avg_error += *i;
+//					printf("threshold error = %6.2lf EW, %6.2lf NS\n", 1e5*i->x(), 1e5*i->y());
+				}
+				avg_error /= coord_errors.size();
+//				printf("avg thr err %6.2lf EW, %6.2lf NS\n", 1e5*avg_error.x(), 1e5*avg_error.y());
+				
+				float peak_err_aft = 0.0;
+				for(vector<Vector2>::iterator i = coord_errors.begin(); i != coord_errors.end(); ++i)
+				{
+					float loc_err = sqrt(i->squared_length());
+//					printf("dist %.2lf", 1e5*loc_err);
+					(*i) -= avg_error;
+					float loc_err_aft = sqrt(i->squared_length());
+//					printf(" fixed to %.2lf\n", 1e5*loc_err_aft);
+					
+					if(peak_err_aft < loc_err_aft)
+						peak_err_aft = loc_err_aft;
+				}
 
-			if(0)
-			{
-				printf("%s: Moving Apt %.8lf N-S, %.8lf E-W\n",thisICAO.c_str(), avg_error.x(), avg_error.y());
-				moved_count++;
-				apt_changed = true;
-			}
+				if(1e5*sqrt(avg_error.squared_length()) > MIN_ERROR_TO_MOVE && 1e5*peak_err_aft < PEAK_ERR_AFT_MOVE)
+				{
+					printf("%s: Moving Apt %.2lf East %.2lf North, will reduce WC thr error to %.2lf \n",thisICAO.c_str(), 1e5*avg_error.x(), 1e5*avg_error.y(), 1e5*peak_err_aft);
 
+					Bbox2 old_pos, new_pos;
+					(*apt)->GetBounds(gis_Geo, old_pos);
+					new_pos = old_pos; new_pos += avg_error;
+					(*apt)->Rescale(gis_Geo, old_pos, new_pos);
+
+					moved_count++;
+					apt_changed = true;
+				}
+				else
+					printf("%s: Not moving, not worth it: avg err is %.2lf, WC error aft move %.2lf \n",thisICAO.c_str(),1e5*sqrt(avg_error.squared_length()), 1e5*peak_err_aft);
+			}		
 			if(!apt_changed) sel->Insert(*apt);   // selects all unchanged airports. So they can be deleted and whats left re-submitted to the gateway ...
-#endif
 		}
 		if(renamed_count || moved_count)
 			wrl->CommitOperation();

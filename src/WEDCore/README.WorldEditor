@@ -42,6 +42,7 @@ WED 1.7.0a17
 	- show green shadow around flinear fill mode forests, aka Facade wall selection
 	- WED-912: Warn about airports currently not accepting submissions at Gateway im/export
 	- WED-929: Print names of ATC Taxiroutes in ATC+Taxi view
+	- Auto Runway Renane function can now, optionally, also move whole airports.
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
