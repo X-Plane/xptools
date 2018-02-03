@@ -55,6 +55,7 @@ WED 1.7.0a17
 	- WED-976: Fix opt-ALT click near edge causing uncommanded move of edge location
 	- WED-974: Fix Bezier-handle conversion not working for co-located nodes in some cases
 	- fix infinite loop when pressing "return" with a taxi route edge selected that has runway tags
+	- WED-984: Fix red ground traffic routes when hotzone tags still set
 
 WED 1.6.1r1 12/11/17
 	Features:
