@@ -218,6 +218,7 @@
 		<Unit filename="../../src/Utils/FileUtils.h" />
 		<Unit filename="../../src/Utils/GISUtils.cpp" />
 		<Unit filename="../../src/Utils/GISUtils.h" />
+		<Unit filename="../../src/Utils/MathUtils.h" />
 		<Unit filename="../../src/Utils/MatrixUtils.cpp" />
 		<Unit filename="../../src/Utils/MatrixUtils.h" />
 		<Unit filename="../../src/Utils/MemFileUtils.cpp" />
