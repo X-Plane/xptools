@@ -19,12 +19,12 @@
 					<Add option="-g" />
 				</Compiler>
 				<MakeCommands>
-					<Build command="conf=release_opt $make -j4 WED" />
-					<CompileFile command="conf=release_opt $make $file" />
+					<Build command="conf=release_opt $make CXX=g++-4.8 CC=gcc-4.8 -j4 WED" />
+					<CompileFile command="conf=release_opt $make CXX=g++-4.8 CC=gcc-4.8 $file" />
 					<Clean command="$make clean" />
 					<DistClean command="$make -f $makefile distclean$target" />
-					<AskRebuildNeeded command="conf=release_opt $make -q WED" />
-					<SilentBuild command="conf=release_opt $make -j4 WED &gt; $(CMD_NULL)" />
+					<AskRebuildNeeded command="conf=release_opt $make CXX=g++-4.8 CC=gcc-4.8 -q WED" />
+					<SilentBuild command="conf=release_opt $make CXX=g++-4.8 CC=gcc-4.8 -j4 WED &gt; $(CMD_NULL)" />
 				</MakeCommands>
 			</Target>
 			<Target title="Debug">
