@@ -4,9 +4,6 @@
     <Filter Include="WEDCore">
       <UniqueIdentifier>{92914035-ec28-45d5-bff1-5852f4a29139}</UniqueIdentifier>
     </Filter>
-    <Filter Include="WEDDocs">
-      <UniqueIdentifier>{4fc0b295-5e2e-4978-9875-ebe96a18b985}</UniqueIdentifier>
-    </Filter>
     <Filter Include="WEDEntities">
       <UniqueIdentifier>{2c535d37-b2a7-4836-aa67-4e8252ab5457}</UniqueIdentifier>
     </Filter>
@@ -63,9 +60,6 @@
     </Filter>
     <Filter Include="XESCore">
       <UniqueIdentifier>{288927bc-9dc2-46ee-a91d-3c451344b887}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLite">
-      <UniqueIdentifier>{81bee108-7857-464e-a673-c18b4b57b1fd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Interfaces">
       <UniqueIdentifier>{5e1ce0f9-593b-4814-aeba-ae3ddfa3caa7}</UniqueIdentifier>
