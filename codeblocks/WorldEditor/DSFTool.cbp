@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="DSFTool" />
+		<Option makefile_is_custom="1" />
+		<Option execution_dir="../../../xptools" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Release-opt">
+				<Option output="../../build/Linux/release_opt/DSFTool" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="~" />
+				<Option object_output="./" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<MakeCommands>
+					<Build command="conf=release_opt $make -j4 DSFTool" />
+					<CompileFile command="conf=release_opt $make $file" />
+					<Clean command="$make clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="conf=release_opt $make -q DSFTool" />
+					<SilentBuild command="conf=release_opt $make -j4 DSFTool &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+			<Target title="Debug">
+				<Option output="../../build/Linux/debug/DSFTool" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="~" />
+				<Option object_output="./" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<MakeCommands>
+					<Build command="conf=debug $make -j4 DSFTool" />
+					<CompileFile command="conf=debug $make $file" />
+					<Clean command="$make clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="conf=debug $make -q DSFTool" />
+					<SilentBuild command="conf=debug $make -j4 DSFTool &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+			<Target title="(default)">
+				<Option output="../../build/Linux/debug/DSFTTool" prefix_auto="0" extension_auto="0" />
+				<Option working_dir="~" />
+				<Option object_output="./" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<MakeCommands>
+					<Build command="$make -j4 DSFTool" />
+					<CompileFile command="$make $file" />
+					<Clean command="$make clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -q DSFTool" />
+					<SilentBuild command="$make -j4 DSFTool &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="-DLIN=1" />
+			<Add option="-DBIG=0" />
+			<Add option="-DLIL=1" />
+			<Add option="-DUSE_JPEG=1" />
+			<Add option="-DUSE_TIF=1" />
+		</Compiler>
+		<Unit filename="../../src/DSF/DSFDefs.h" />
+		<Unit filename="../../src/DSF/DSFLib.cpp" />
+		<Unit filename="../../src/DSF/DSFLib.h" />
+		<Unit filename="../../src/DSF/DSFLibWrite.cpp" />
+		<Unit filename="../../src/DSF/DSFPointPool.cpp" />
+		<Unit filename="../../src/DSF/DSFPointPool.h" />
+		<Unit filename="../../src/DSF/tri_stripper_101/cache_simulator.h" />
+		<Unit filename="../../src/DSF/tri_stripper_101/graph_array.h" />
+		<Unit filename="../../src/DSF/tri_stripper_101/heap_array.h" />
+		<Unit filename="../../src/DSF/tri_stripper_101/stdafx.h" />
+		<Unit filename="../../src/DSF/tri_stripper_101/tri_stripper.cpp" />
+		<Unit filename="../../src/DSF/tri_stripper_101/tri_stripper.h" />
+		<Unit filename="../../src/DSFTools/DSF2Text.cpp" />
+		<Unit filename="../../src/DSFTools/DSF2Text.h" />
+		<Unit filename="../../src/DSFTools/DSFToolCmdLine.cpp" />
+		<Unit filename="../../src/Utils/AssertUtils.cpp" />
+		<Unit filename="../../src/Utils/AssertUtils.h" />
+		<Unit filename="../../src/Utils/EndianUtils.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/Utils/EndianUtils.h" />
+		<Unit filename="../../src/Utils/FileUtils.cpp" />
+		<Unit filename="../../src/Utils/FileUtils.h" />
+		<Unit filename="../../src/Utils/XChunkyFileUtils.cpp" />
+		<Unit filename="../../src/Utils/XChunkyFileUtils.h" />
+		<Unit filename="../../src/Utils/XUtils.h" />
+		<Unit filename="../../src/Utils/md5.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/Utils/md5.h" />
+		<Unit filename="../../src/Utils/unzip.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/Utils/unzip.h" />
+		<Unit filename="../../src/Utils/zip.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../src/Utils/zip.h" />
+		<Extensions>
+			<code_completion />
+			<envvars set="default" />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
