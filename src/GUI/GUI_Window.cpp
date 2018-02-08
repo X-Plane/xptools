@@ -496,7 +496,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SetWindowLongPtrW(mWindow,GWLP_USERDATA,(LONG_PTR)this);
 		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
 
-		if (!sWindows.empty())
+		if (!sWindows.empty() && !(inAttributes & xwin_style_modal))
 		{
 			HMENU new_mbar = ::CreateMenu();
 			::SetMenu(mWindow,new_mbar);
@@ -530,14 +530,6 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		ti.rect.right = cl.right;
 
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
-	#endif
-	#if LIN
-		this->setMenuBar(gApplication->getqmenu());
-		this->Resize(inBounds[2]-inBounds[0],inBounds[3]-inBounds[1]);
-		QApplication::setActiveWindow(this);
-		setFocusPolicy(Qt::StrongFocus);
-		setAcceptDrops(true);
-		setFocus();
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;

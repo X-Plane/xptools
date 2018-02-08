@@ -81,7 +81,7 @@ enum {
 	xwin_style_thin				= 0,			// Thin window - just a rectangle
 	xwin_style_movable			= 1,			// Movable - but no machinery to resize
 	xwin_style_resizable		= 2,			// The works: resize, maximize, minimize, zoom, etc.
-	xwin_style_modal			= 3,			// Modal - don't let the user have access to what's behind until they deal with this!
+	xwin_style_modal			= 4,			// Modal - don't let the user have access to what's behind until they deal with this!
 
 	xwin_style_visible			= 8,			// Start visible?
 

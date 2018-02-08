@@ -1,4 +1,6 @@
 #include "XWin.h"
+#include "GUI_Application.h"
+
 
 XWin::XWin(
 	int		default_dnd,
@@ -17,10 +19,6 @@ XWin::XWin(
 	mMouse.y     = 0;
 	SetTitle(inTitle);
 
-	QRect ScreenBounds = QApplication::desktop()->availableGeometry(-1);
-	int screen_w = ScreenBounds.width();
-	int screen_h = ScreenBounds.height();
-	
 	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
 	int y = (inAttributes & xwin_style_fullscreen) ? 0 : inY;
 	int w = (inAttributes & xwin_style_fullscreen) ? 1024 : inWidth;
@@ -28,22 +26,23 @@ XWin::XWin(
    
 	if( inAttributes & xwin_style_centered )
 	{
-		x = (screen_w - w) / 2;
-		y = (screen_h - h) / 2;
+		QRect ScreenBounds = QApplication::desktop()->availableGeometry(-1);
+		x = (ScreenBounds.width() - w) / 2;
+		y = (ScreenBounds.height() - h) / 2;
 	}
 	
 	MoveTo(x, y);
 	Resize(w, h);
 	
-	bool isModalWindow = (( inAttributes & 3 ) == xwin_style_modal) ;
-	
-	if(isModalWindow)
+	if(inAttributes & xwin_style_modal)
 	{
 		this->setWindowFlags(windowFlags()| Qt::Dialog);
 		this->setWindowModality(Qt::ApplicationModal);
 	}
+	else
+		this->setMenuBar(gApplication->getqmenu());              // On Linux, modal (popup) windows usuallly have no menu bar
 	
-	if( (!(inAttributes & xwin_style_resizable)) || isModalWindow )
+	if( !(inAttributes & xwin_style_resizable) )
 	{
 		this->setFixedSize(this->size());
 	}
@@ -57,8 +56,10 @@ XWin::XWin(
 	// Anyway, since many have this problem, 'Oxygen' has a property introduced what is now also accepted by qt-curve. 
 	// Perhaps it becomes a standard.
 	setProperty( "_kde_no_window_grab", true ); 
-	
+
 	setFocusPolicy(Qt::StrongFocus);
+	QApplication::setActiveWindow(this);
+
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
