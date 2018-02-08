@@ -1,7 +1,12 @@
-all: gen_roads gen_path osm_tile osm2shape split_image GenTerrain shape2xon
+BINARIES = gen_roads10 gen_roads genpath osm_tile osm2shape split_image GenTerrain shape2xon
+
+all: $(BINARIES)
 
 LOCAL_PATH = ../../libs/local
 LOCAL_OPTS = -I$(LOCAL_PATH)/include -L$(LOCAL_PATH)/lib
+
+gen_roads10: gen_roads10.cpp
+	g++ gen_roads10.cpp -o gen_roads10
 
 gen_roads: gen_roads.cpp
 	g++ gen_roads.cpp -o gen_roads
@@ -25,4 +30,4 @@ shape2xon: shape2xon.cpp
 	g++ shape2xon.cpp $(LOCAL_OPTS) -o shape2xon -lshp -O3
 
 clean:
-	rm gen_roads genpath osm_tile osm2shape split_image GenTerrain shape2xon
+	-rm -f $(BINARIES)

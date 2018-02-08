@@ -44,7 +44,7 @@ int main(int argc, char * argv[])
 	InstallDebugAssertHandler(AssertShellBail);
 	InstallAssertHandler(AssertShellBail);
 
-	if (argc < 2 || strcmp(argv[1],"-h")) goto help;
+	if (argc < 2 || !strcmp(argv[1],"-h")) goto help;
 
 	if(!strcmp(argv[1],"--auto_config"))
 	{
