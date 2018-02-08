@@ -160,6 +160,18 @@ void GUI_QtAction::ontriggered()
 			app->DispatchHandleCommand(cmd);
 }
 
+void GUI_Application::setCutnPasteShortcuts(GUI_Window * parent)
+{
+	GUI_QtAction * HK;
+	HK = new GUI_QtAction("", parent, "Ctrl+X" , gui_Cut,   this, false);  // use same definitions as in WED_Menus.cpp
+	parent->addAction(HK);
+	HK = new GUI_QtAction("", parent, "Ctrl+C" , gui_Copy,  this, false);
+	parent->addAction(HK);
+	HK = new GUI_QtAction("", parent, "Ctrl+V" , gui_Paste, this, false);
+	parent->addAction(HK);
+}
+
+
 QMenuBar* GUI_Application::getqmenu()
 {
     QMenuBar * mbar = new QMenuBar(0);

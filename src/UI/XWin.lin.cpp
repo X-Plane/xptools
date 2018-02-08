@@ -1,6 +1,4 @@
 #include "XWin.h"
-#include "GUI_Application.h"
-
 
 XWin::XWin(
 	int		default_dnd,
@@ -39,9 +37,7 @@ XWin::XWin(
 		this->setWindowFlags(windowFlags()| Qt::Dialog);
 		this->setWindowModality(Qt::ApplicationModal);
 	}
-	else
-		this->setMenuBar(gApplication->getqmenu());              // On Linux, modal (popup) windows usuallly have no menu bar
-	
+
 	if( !(inAttributes & xwin_style_resizable) )
 	{
 		this->setFixedSize(this->size());
@@ -58,8 +54,6 @@ XWin::XWin(
 	setProperty( "_kde_no_window_grab", true ); 
 
 	setFocusPolicy(Qt::StrongFocus);
-	QApplication::setActiveWindow(this);
-
 	setMouseTracking(true);
 	if (default_dnd)
 		setAcceptDrops(true);
