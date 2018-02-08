@@ -259,7 +259,6 @@ using namespace std;
 	#define ENOERR 0
 	#define snprintf _snprintf
 	#define strdup _strdup
-	#define mkstemp _mktemp
 
 #if __cplusplus
 	static __inline double round(double v) { return floor(v+0.5); }

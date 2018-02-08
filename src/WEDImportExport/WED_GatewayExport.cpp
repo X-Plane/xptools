@@ -572,14 +572,13 @@ void WED_GatewayExportDialog::Submit()
 		string targ_folder("tempXXXXXX");
 		lib->LookupPath(targ_folder);
 
-		if(!mkstemp((char *) targ_folder.c_str()))    // its safe, as length will never change
+		if(!mkdtemp((char *) targ_folder.c_str()))    // its safe, as length will never change
 		{
 			gExportTarget = old_target;
 			return;
 		}
 		targ_folder += DIR_STR;
-
-		printf("Dest: %s\n", targ_folder.c_str());
+//		printf("Dest: %s\n", targ_folder.c_str());
 
 		string targ_folder_zip = icao + "_gateway_upload.zip";
 		lib->LookupPath(targ_folder_zip);
@@ -587,10 +586,6 @@ void WED_GatewayExportDialog::Submit()
 		{
 			FILE_delete_file(targ_folder_zip.c_str(), false);
 		}
-
-		DebugAssert(!FILE_exists(targ_folder.c_str()));
-
-		FILE_make_dir_exist(targ_folder.c_str());
 
 		if(has_dsf(apt))
 		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
