@@ -42,20 +42,15 @@ char * mkdtemp(char *dirname)
 {
 	if(_wmktemp((wchar_t *) convert_str_to_utf16(dirname).c_str()))
 	{
-		DoUserAlert("wmktemp");
 		if(FILE_delete_file(dirname, false))
 		{
-			DoUserAlert("delete");
 			if (FILE_make_dir_exist(dirname))
 			{
-				DoUserAlert("mkdir");
 				return dirname;
 			}
 		}
 	}
-	DoUserAlert(dirname);
 	return NULL;
-
 }
 #endif
 

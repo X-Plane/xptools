@@ -7,9 +7,6 @@
     <Filter Include="DSFTool">
       <UniqueIdentifier>{bda23cdb-36d4-4c39-8e84-31b3fb852798}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ENV">
-      <UniqueIdentifier>{e23adef6-75fd-474e-a59a-25a8e0afeca9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GUI">
       <UniqueIdentifier>{9291b136-d971-4a00-bb77-e0a546ad5a4e}</UniqueIdentifier>
     </Filter>
@@ -38,15 +35,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\DSFTools\DSFToolCmdLine.cpp">
       <Filter>DSFTool</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\DSFTools\ENV2Overlay.cpp">
-      <Filter>DSFTool</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Env\EnvParser.c">
-      <Filter>ENV</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Env\Persistence.cpp">
-      <Filter>ENV</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\GUI\GUI_Unicode.cpp">
       <Filter>GUI</Filter>
@@ -85,12 +73,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\DSFTools\DSF2Text.h">
       <Filter>DSFTool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Env\EnvParser.h">
-      <Filter>ENV</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Env\Persistence.h">
-      <Filter>ENV</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\GUI\GUI_Unicode.h">
       <Filter>GUI</Filter>
