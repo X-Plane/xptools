@@ -474,8 +474,14 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 }
 #endif
 
+#if LIN
+#define DEFAULT_DND 1
+#else
+#define DEFAULT_DND 0
+#endif
+
 GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
-	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+	XWinGL(DEFAULT_DND, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
 	#if IBM
