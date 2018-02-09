@@ -579,13 +579,18 @@ void	XWin::initCommon(int dnd, const char * title, int attributes, int x, int y,
 
 	int mask = 0;
 	
-	switch(attributes & xwin_style_modal) {
-	case xwin_style_thin:		break;
-	case xwin_style_movable:	mask = NSTitledWindowMask|NSClosableWindowMask;		break;
-	case xwin_style_resizable:	mask =	NSTitledWindowMask|NSClosableWindowMask|NSResizableWindowMask|NSMiniaturizableWindowMask; break;
-	case xwin_style_modal:		mask = NSTitledWindowMask;			break;
-	}
-	
+	if (attributes & xwin_style_modal)
+    {
+        mask = NSTitledWindowMask;
+        if(attributes & xwin_style_resizable)
+            mask |= NSResizableWindowMask;
+    }
+    else if (attributes & (xwin_style_movable | xwin_style_resizable))
+    {
+        mask =	NSTitledWindowMask | NSClosableWindowMask;
+        if(attributes & xwin_style_resizable)
+            mask |= NSMiniaturizableWindowMask | NSResizableWindowMask;
+    }
 	float h = [[[NSScreen screens] objectAtIndex:0] frame].size.height;
 
 	XWinCocoa * window;
