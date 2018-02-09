@@ -67,7 +67,7 @@
 #define ROAD_EDITING 0
 
 // mroe : -- really early stage of dev , do not change.
-#define WITHNWLINK 0
+#define WITHNWLINK 1
 
 // Terraserver is always borked - I am killing it for now - will add back if it ever becomes useful.
 // Really we need a better tile service.
