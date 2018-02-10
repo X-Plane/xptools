@@ -322,6 +322,12 @@ static bool IsThingResource(WED_Thing * who)
 	return GetThingResource(who,r);
 }
 
+static bool is_of_type_ground_vehicles(WED_Thing* route)
+{
+	return static_cast<WED_TaxiRoute*>(route)->AllowTrucks();
+}
+
+
 // This template buidls an error list for a subset of objects that have the same name - one validation error is generated
 // for each set of same-named objects.
 template <typename T>
@@ -1273,9 +1279,9 @@ static void ValidateOneRunwayOrSealane(WED_Thing* who, validation_error_vector& 
 	{
 		WED_GISLine_Width * lw = dynamic_cast<WED_GISLine_Width *>(who);
 		Assert(lw);
-		if (lw->GetWidth() < 3 && lw->GetLength() < 30)
+		if (lw->GetWidth() < 5 && lw->GetLength() < 100)
 		{
-			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 3 meters wide by 30 meters long.", err_rwy_unrealistically_small, who, apt));
+			msgs.push_back(validation_error_t(string("The runway/sealane '") + name + "' must be at least 5 meters wide by 100 meters long.", err_rwy_unrealistically_small, who, apt));
 		}
 
 		WED_Runway * rwy = dynamic_cast<WED_Runway *>(who);
@@ -2094,7 +2100,13 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 		// require any land airport (i.e. at least one runway) to have an airport boundary defined
 		if(!runways.empty() && boundaries.empty())
 			msgs.push_back(validation_error_t("This airport contains runway(s) but no airport boundary.", 	err_airport_no_boundary, apt,apt));
-
+		
+		vector<WED_Taxiway *>	GT_routes;
+		CollectRecursive(apt, back_inserter(GT_routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
+		if(GT_routes.size() && truck_parking_locs.empty())
+			msgs.push_back(validation_error_t("Ground routes are defined, but no service vehicle starts. This disables all ground traffic, including auto generated pushback vehicles.", warn_truckroutes_but_no_starts, apt,apt));
+			
+			
 #if !GATEWAY_IMPORT_FEATURES
 		vector<WED_AirportBoundary *>	boundaries;
 		CollectRecursive(apt, back_inserter(boundaries), WED_AirportBoundary::sClass);
@@ -2287,7 +2299,6 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 				}
 			}	
 		}
-		
 	}
 	else  // target is NOT the gateway
 	{
