@@ -25,8 +25,6 @@
 #include "WED_Document.h"
 #include "WED_Menus.h"
 #include "WED_Url.h"
-
-//#include "WED_Globals.h"
 #include "WED_Messages.h"
 
 #include "GUI_Resources.h"
@@ -36,6 +34,7 @@
 #include "GUI_Button.h"
 #include "GUI_Label.h"
 
+//#include "WED_Globals.h"
 int gIsFeet = 0;
 int gInfoDMS = 0;
 

@@ -396,9 +396,6 @@
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\WEDMap\WED_TerraserverLayer.cpp">
-      <Filter>WEDMap</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
@@ -1131,9 +1128,6 @@
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h">
-      <Filter>WEDMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDMap\WED_TerraserverLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h">
