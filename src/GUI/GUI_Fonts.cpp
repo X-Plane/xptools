@@ -498,7 +498,7 @@ void	GUI_FontDrawScaled(
 				const char *					inEnd,
 				int								inAlign)
 {
-	float l, b, r, t, scale;
+	float l, b, scale;
 
 	TT_establish_font(inFontID);
 	TT_font_info * inFont = tt_font[inFontID];

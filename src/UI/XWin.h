@@ -102,14 +102,12 @@ class	XWin
 #endif
 public:
 
-#if APL
-		typedef	void *	XContext;
-#endif
 #if IBM
 		typedef HDC		XContext;
+#else
+        typedef void *	XContext;
 #endif
 #if LIN
-        typedef void*	XContext;
 	XWin(int default_dnd, QWidget *parent = 0);
 	XWin(
 		int		default_dnd,

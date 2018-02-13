@@ -719,10 +719,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		return;
 	}
 	Json::Value airport = root["airport"];
-	
-	
-	Json::Value sceneryArray = Json::Value(Json::arrayValue);
-	sceneryArray = airport["scenery"];
+	Json::Value sceneryArray = airport["scenery"];
 	
 	//Clear the previous list no matter what
 	mVersions_Vers.clear();
@@ -973,12 +970,6 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 			return NULL;
 		}
 	}
-
-#if DEV
-	//This line makes it easier to edit the zip path in the memory editor
-	//DO NOT USE edit_me
-	const char * edit_me = zipPath.c_str();
-#endif
 
 	bool has_dsf = false;
 

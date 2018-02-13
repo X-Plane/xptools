@@ -130,8 +130,6 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	packer->SetBkgkndImage("about.png");
 	
 	RadioButton(220, 360 , this, &gIsFeet, "Length Units", "Meters", "Feet");
-	
-	int x=0;
 	RadioButton(220, 320 , this, &gInfoDMS, "Info Bar\nCoordinates", "DD.DDDDD", "DD MM SS");
 	
 	GUI_Button * moderator_btn = new GUI_Button(texture,btn_Check,k_no, k_no, k_yes, k_yes);

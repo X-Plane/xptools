@@ -528,6 +528,7 @@
 		<Unit filename="../../src/WEDProperties/WED_PropertyTable.cpp" />
 		<Unit filename="../../src/WEDProperties/WED_PropertyTable.h" />
 		<Unit filename="../../src/WEDResources/about.png" />
+		<Unit filename="../../src/WEDResources/check_buttons.png" />
 		<Unit filename="../../src/WEDResources/checkbutton.png" />
 		<Unit filename="../../src/WEDResources/colors.png" />
 		<Unit filename="../../src/WEDResources/map_tools.png" />
@@ -536,7 +537,6 @@
 		<Unit filename="../../src/WEDResources/push_buttons.png" />
 		<Unit filename="../../src/WEDResources/pushbutton.png" />
 		<Unit filename="../../src/WEDResources/radiobutton.png" />
-		<Unit filename="../../src/WEDResources/reset_options.png" />
 		<Unit filename="../../src/WEDResources/scroll_btn_h.png" />
 		<Unit filename="../../src/WEDResources/scroll_btn_v.png" />
 		<Unit filename="../../src/WEDResources/scrollbar_corner.png" />

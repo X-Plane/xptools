@@ -1759,7 +1759,6 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 	if(who->ContainsMetaDataKey(wed_AddMetaDataTransitionAlt))
 	{
 		string transition_alt   = who->GetMetaDataValue(wed_AddMetaDataTransitionAlt);
-		string error_content;
 
 		if (is_a_number(transition_alt) == true)
 		{

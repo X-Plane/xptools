@@ -109,7 +109,6 @@ void CACHE_FileCacheInitializer::init()
 	//Attempt to get the folder, if non-existant make it
 	int num_files = FILE_get_directory_recursive(CACHE_folder, files, dirs);
 
-	time_t t = time(NULL);
 	sort(files.begin(), files.end(), less<string>());
 
 	if(num_files == -1)

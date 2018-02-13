@@ -22,16 +22,16 @@
  */
 
 #include "WED_PropertyHelper.h"
-#include "AssertUtils.h"
 #include "WED_Errors.h"
 #include "WED_Globals.h"
+#include "WED_XMLWriter.h"
+#include "WED_EnumSystem.h"
+#include "AssertUtils.h"
 #include "IODefs.h"
 #include "STLUtils.h"
 #include "MathUtils.h"
 #include "XESConstants.h"
-#include "WED_EnumSystem.h"
 #include <algorithm>
-#include "WED_XMLWriter.h"
 
 inline int remap(const map<int,int>& m, int v)
 {
