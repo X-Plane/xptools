@@ -1596,7 +1596,7 @@
     <Image Include="..\..\src\WEDResources\about.png">
       <Filter>WEDResources</Filter>
     </Image>
-    <Image Include="..\..\src\WEDResources\checkbutton.png">
+    <Image Include="..\..\src\WEDResources\check_buttons.png">
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\colors.png">
@@ -1612,12 +1612,6 @@
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\push_buttons.png">
-      <Filter>WEDResources</Filter>
-    </Image>
-    <Image Include="..\..\src\WEDResources\pushbutton.png">
-      <Filter>WEDResources</Filter>
-    </Image>
-    <Image Include="..\..\src\WEDResources\radiobutton.png">
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\scroll_btn_h.png">

@@ -50,9 +50,6 @@
 // airport and 19 pixels of slop.
 #define TOO_SMALL_TO_GO_IN 20.0
 
-// display cursor position in D.M.S vs decimal degrees
-#define USE_DMS 0
-
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -220,25 +217,28 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		}
 	}
 
-    #if USE_DMS
+    if(gInfoDMS)
+    {
 	#define GET_NS(x)	((x) > 0.0 ? 'N' : 'S')
 	#define GET_EW(x)	((x) > 0.0 ? 'E' : 'W')
 	#define GET_DEGS(x) ((int) floor(fabs(x)))
 	#define GET_MINS(x) ((int) (  (fabs(x) - floor(fabs(x))  ) * 60.0) )
 	#define GET_SECS(x) (  (fabs(x * 60.0) - floor(fabs(x * 60.0))  ) * 60.0)
 
-	if (has_a1)         	p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
-												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
-												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
-	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
-	if (has_a2)	            p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
-												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
-												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
-    #else
-	if (has_a1)	            p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
-	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
-	if (has_a2)         	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
-    #endif
+		if (has_a1)         	p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
+										GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
+										GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
+		if (has_a1 && has_a2)	p += sprintf(p, " -> ");
+		if (has_a2)	            p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
+										GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
+										GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
+    }
+    else
+	{
+		if (has_a1)	            p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
+		if (has_a1 && has_a2)	p += sprintf(p, " -> ");
+		if (has_a2)         	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
+	}
 
 	if (has_d)				p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet? "feet" : "meters");
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);

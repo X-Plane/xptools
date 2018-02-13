@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a18
+WED 1.7.0a19
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
@@ -45,6 +45,7 @@ WED 1.7.0a18
 	- Auto Align Airport function can be used to mass-move airports to bring runways into CIFP compliance
 	- Windows and Linux menu bars removed from modal windows - so appearance is more "native"
 	- WED-988: Add validation warnings if no truckroutes but not vehicle parking position available
+	- WED-917: Move meter/feet settings a new "Preferences" Menu, add D.M.S choices for info bar
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)

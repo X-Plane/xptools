@@ -25,8 +25,9 @@
 #define WED_APPLICATION_H
 
 #include "GUI_Application.h"
-
-class	GUI_Window;
+#include "GUI_Window.h"
+#include "GUI_Listener.h"
+#include "GUI_Broadcaster.h"
 
 class	WED_Application : public GUI_Application {
 public:
@@ -52,6 +53,19 @@ private:
 	GUI_Window * mAboutBox;
 
 };
+
+class WED_Settings : public GUI_Window , public GUI_Listener, public GUI_Broadcaster {
+public:
+						 WED_Settings(GUI_Commander * cmdr);
+	virtual				~WED_Settings() {};
+
+	virtual	void ReceiveMessage(
+					GUI_Broadcaster *	inSrc,
+					intptr_t    		inMsg,
+					intptr_t			inParam);
+
+};
+
 
 #endif
 

@@ -522,14 +522,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\src\WEDResources\about.png" />
-    <Image Include="..\..\src\WEDResources\checkbutton.png" />
+    <Image Include="..\..\src\WEDResources\check_buttons.png" />
     <Image Include="..\..\src\WEDResources\colors.png" />
     <Image Include="..\..\src\WEDResources\map_tools.png" />
     <Image Include="..\..\src\WEDResources\map_tools2_blank.png" />
     <Image Include="..\..\src\WEDResources\map_tools_blank.png" />
-    <Image Include="..\..\src\WEDResources\pushbutton.png" />
     <Image Include="..\..\src\WEDResources\push_buttons.png" />
-    <Image Include="..\..\src\WEDResources\radiobutton.png" />
     <Image Include="..\..\src\WEDResources\scrollbar_corner.png" />
     <Image Include="..\..\src\WEDResources\scrollbar_h.png" />
     <Image Include="..\..\src\WEDResources\scrollbar_v.png" />

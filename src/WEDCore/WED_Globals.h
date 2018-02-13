@@ -43,7 +43,11 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);
 
 
 /* Is WED running in English or metric units?  (feet == 0 -> metric.) */
-extern	int	gIsFeet;
+extern	const int	gIsFeet;
+
+/* Infobar at bottom of Map in DD.DDD == 0 or DD MM SS == 1 */
+extern	const int	gInfoDMS;
+
 
 enum WED_Export_Target {
 		wet_xplane_900,		// X-Plane 9-compatible DSFs.

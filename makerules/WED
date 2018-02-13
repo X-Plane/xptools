@@ -363,10 +363,11 @@ RESOURCES := ./src/WEDResources/WED.icns
 XIB_RESOURCE := ./src/WEDResources/WEDMainMenu.xib
 endif
 RESOURCES += ./src/WEDResources/sans.ttf
-RESOURCES += ./src/WEDResources/pushbutton.png
+//RESOURCES += ./src/WEDResources/pushbutton.png
 RESOURCES += ./src/WEDResources/push_buttons.png
-RESOURCES += ./src/WEDResources/checkbutton.png
-RESOURCES += ./src/WEDResources/radiobutton.png
+//RESOURCES += ./src/WEDResources/checkbutton.png
+RESOURCES += ./src/WEDResources/check_buttons.png
+//RESOURCES += ./src/WEDResources/radiobutton.png
 RESOURCES += ./src/WEDResources/tabs.png
 RESOURCES += ./src/WEDResources/splitter_h.png
 RESOURCES += ./src/WEDResources/splitter_v.png

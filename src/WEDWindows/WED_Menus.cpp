@@ -127,8 +127,8 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Zoom Package",			'/',gui_ControlFlag+gui_OptionAltFlag,		0,	wed_ZoomAll			},
 {	"Zoom &Selection",			'/',gui_ControlFlag,						0,	wed_ZoomSelection	},	// simple cmd-slash for MOST imoprtant zoom command!
 {	"-",						0,	0,										0,	0					},
-{	"&Feet",					0,	0,										0,	wed_UnitFeet		},
-{	"&Meters",					0,	0,										0,	wed_UnitMeters		},
+//{	"&Feet",					0,	0,										0,	wed_UnitFeet		},
+//{	"&Meters",					0,	0,										0,	wed_UnitMeters		},
 {	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},

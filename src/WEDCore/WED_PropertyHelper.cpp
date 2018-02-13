@@ -24,6 +24,7 @@
 #include "WED_PropertyHelper.h"
 #include "AssertUtils.h"
 #include "WED_Errors.h"
+#include "WED_Globals.h"
 #include "IODefs.h"
 #include "STLUtils.h"
 #include "MathUtils.h"
@@ -31,8 +32,6 @@
 #include "WED_EnumSystem.h"
 #include <algorithm>
 #include "WED_XMLWriter.h"
-
-int gIsFeet = 0;
 
 inline int remap(const map<int,int>& m, int v)
 {

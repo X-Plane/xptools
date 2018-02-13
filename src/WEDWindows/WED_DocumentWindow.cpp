@@ -283,7 +283,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	mMapPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
-	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
+//	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);   // this is a WED global preference now, not read from document
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
 	
 	//#if DEV
@@ -410,8 +410,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif	
 	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
-	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
-	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
+//	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
+//	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
 
 	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
 	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
@@ -528,8 +528,8 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif	
 	case wed_Validate:		return 1;
 
-	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;
-	case wed_UnitMeters:ioCheck=!gIsFeet;return 1;
+//	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;
+//	case wed_UnitMeters:ioCheck=!gIsFeet;return 1;
 
 	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
 	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
@@ -589,7 +589,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mMapPane->FromPrefs(prefs);
 		mPropPane->FromPrefs(prefs,0);
 
-		gIsFeet = prefs->ReadIntPref("doc/use_feet",gIsFeet);
+//		gIsFeet = prefs->ReadIntPref("doc/use_feet",gIsFeet);
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}
