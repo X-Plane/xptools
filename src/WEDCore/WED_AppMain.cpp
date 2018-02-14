@@ -33,7 +33,6 @@
 #include "WED_Document.h"
 #include "WED_Assert.h"
 //#include "DEMTables.h"
-#include "WED_AboutBox.h"
 #include "WED_StartWindow.h"
 //#include "ObjTables.h"
 #include "GUI_Clipboard.h"
@@ -160,6 +159,7 @@ int main(int argc, char * argv[])
 	// sustain OpenGL.
 
 	WED_AboutBox * about = new WED_AboutBox(&app);
+//	WED_Settings * about = new WED_Settings(&app);
 	WED_MakeMenus(&app);
 	#if LIN
 	//mroe: resize after update the menubar

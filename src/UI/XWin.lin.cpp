@@ -17,20 +17,12 @@ XWin::XWin(
 	mMouse.y     = 0;
 	SetTitle(inTitle);
 
-	int x = (inAttributes & xwin_style_fullscreen) ? 0 : inX;
-	int y = (inAttributes & xwin_style_fullscreen) ? 0 : inY;
-	int w = (inAttributes & xwin_style_fullscreen) ? 1024 : inWidth;
-	int h = (inAttributes & xwin_style_fullscreen) ? 768 : inHeight;	 
-   
-	if( inAttributes & xwin_style_centered )
-	{
-		QRect ScreenBounds = QApplication::desktop()->availableGeometry(-1);
-		x = (ScreenBounds.width() - w) / 2;
-		y = (ScreenBounds.height() - h) / 2;
-	}
+	if(inAttributes & xwin_style_centered)
+		this->setGeometry(QStyle::alignedRect(Qt::LeftToRight,Qt::AlignCenter, this->size(), qApp->desktop()->availableGeometry()));
+	else
+		MoveTo(inX, inY);
 	
-	MoveTo(x, y);
-	Resize(w, h);
+	Resize(inWidth, inHeight);
 	
 	if(inAttributes & xwin_style_modal)
 	{

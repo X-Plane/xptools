@@ -526,7 +526,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if LIN
-		if(!(inAttributes & xwin_style_modal))
+		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
 		{
 			this->setMenuBar(gApplication->getqmenu());
 			this->Resize(inBounds[2]-inBounds[0],inBounds[3]-inBounds[1]);

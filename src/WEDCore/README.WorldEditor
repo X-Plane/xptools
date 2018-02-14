@@ -46,6 +46,7 @@ WED 1.7.0a19
 	- Windows and Linux menu bars removed from modal windows - so appearance is more "native"
 	- WED-988: Add validation warnings if no truckroutes but not vehicle parking position available
 	- WED-917: Move meter/feet settings a new "Preferences" Menu, add D.M.S choices for info bar
+	- Julians moderator mode can now be selected in the preferences, affects GW import listing only
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
 	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)

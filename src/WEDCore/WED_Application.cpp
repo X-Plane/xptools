@@ -39,6 +39,7 @@
 //#include "WED_Globals.h"
 int gIsFeet = 0;
 int gInfoDMS = 0;
+int gModeratorMode = 0;
 
 static int settings_bounds[4] = { 0, 0, 512, 384};
 
@@ -74,14 +75,14 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  int * var, cons
 	btn_0->SetDescriptor(text0);
 	btn_0->SetParent(parent);
 	btn_0->Show();
-	btn_0->SetMsg((intptr_t) var, 1);
 
 	GUI_Button * btn_1 = new GUI_Button(texture, btn_Radio, r_nil, r_nil, r_yes, r_yes);
 	btn_1->SetBounds(x1,y0-h,x1+200,y0);
 	btn_1->SetDescriptor(text1);
 	btn_1->SetParent(parent);
 	btn_1->Show();
-	btn_1->SetMsg((intptr_t) var, 0);
+	btn_1->AddListener(parent);
+	btn_1->SetMsg((intptr_t) var,  (intptr_t) btn_1);
 	
 	btn_0->AddRadioFriend(btn_1);
 	btn_1->AddRadioFriend(btn_0);
@@ -90,9 +91,6 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  int * var, cons
 		btn_0->SetValue(1.0);
 	else
 		btn_1->SetValue(1.0);
-		
-	btn_0->AddListener(parent);
-	btn_1->AddListener(parent);
 }
 
 
@@ -112,12 +110,16 @@ void WED_Settings::ReceiveMessage(
 	
 	if(inMsg == (intptr_t) &gIsFeet)
 	{
-			gIsFeet = inParam;
+			gIsFeet = ((GUI_Button *) inParam)->GetValue();
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 	}
 	else if(inMsg == (intptr_t) &gInfoDMS)
 	{
-			gInfoDMS = inParam;
+			gInfoDMS = ((GUI_Button *) inParam)->GetValue();
+	}
+	else if(inMsg == (intptr_t) &gModeratorMode)
+	{
+			gModeratorMode = ((GUI_Button *) inParam)->GetValue();
 	}
 /*	else if (inMsg == kMsg_Close)
 	{
@@ -128,7 +130,7 @@ void WED_Settings::ReceiveMessage(
 }
 
 
-WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences", xwin_style_movable | xwin_style_centered , settings_bounds, cmdr)
+WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences", xwin_style_movable | xwin_style_centered | xwin_style_popup, settings_bounds, cmdr)
 {
 	GUI_Packer * packer = new GUI_Packer;
 	packer->SetParent(this);
@@ -147,12 +149,15 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	moderator_btn->Show();
 	moderator_btn->SetDescriptor("Moderator Mode");
 	moderator_btn->SetParent(this);
+	moderator_btn->AddListener(this);
+	moderator_btn->SetMsg((intptr_t) &gModeratorMode, (intptr_t) moderator_btn);
 
 /*	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
 	close_btn->SetBounds(220,5,290,5+GUI_GetImageResourceHeight("push_buttons.png")/3);
 	close_btn->Show();
 	close_btn->SetDescriptor("Close");
 	close_btn->SetParent(this);
+	close_btn->AddListener(this);
 	close_btn->SetMsg(kMsg_Close,0);
 */
  }
