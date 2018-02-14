@@ -630,7 +630,7 @@ void	XWin::initCommon(int dnd, const char * title, int attributes, int x, int y,
 	{
 		[window zoom:NULL];
 	}
-	if((attributes & xwin_style_modal) == xwin_style_modal)
+	if(attributes & xwin_style_modal)
 	{
 		// Since modals are popped up NOW, they have to be visible, otherwise NS puts
 		// the window up and GUI thinks we're hidden and doesn't draw.
@@ -674,7 +674,7 @@ void	XWin::initCommon(int dnd, const char * title, int attributes, int x, int y,
 	// THEN at the main loop, the block runs, runs the modal loop, and the window's close box will kill the modal loop.
 	//
 	// The rest of GUI doesn't care - it's still getting app call-outs.
-	if((attributes & xwin_style_modal) == xwin_style_modal)
+	if(attributes & xwin_style_modal)
 		dispatch_async(dispatch_get_main_queue(),^{
 			[[NSApplication sharedApplication] runModalForWindow:mWindow];
 		});

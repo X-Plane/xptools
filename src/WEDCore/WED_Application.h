@@ -28,6 +28,11 @@
 #include "GUI_Window.h"
 #include "GUI_Listener.h"
 #include "GUI_Broadcaster.h"
+//#include "GUI_Destroyable.h"
+
+class WED_Settings;
+class GUI_Button;
+class GUI_Packer;
 
 class	WED_Application : public GUI_Application {
 public:
@@ -50,22 +55,22 @@ public:
 
 private:
 
-	GUI_Window * mAboutBox;
-
+	GUI_Window   * mAboutBox;
+	WED_Settings * mSettingsWin;
 };
 
 class WED_Settings : public GUI_Window , public GUI_Listener, public GUI_Broadcaster {
 public:
 						 WED_Settings(GUI_Commander * cmdr);
 	virtual				~WED_Settings() {};
+	
+	virtual bool Closed(void);
 
 	virtual	void ReceiveMessage(
 					GUI_Broadcaster *	inSrc,
 					intptr_t    		inMsg,
 					intptr_t			inParam);
-
 };
-
 
 #endif
 

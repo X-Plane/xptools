@@ -27,6 +27,8 @@
 #include "WED_Url.h"
 #include "WED_Messages.h"
 
+#include "WED_AboutBox.h"
+
 #include "GUI_Resources.h"
 #include "GUI_Fonts.h"
 #include "GUI_Help.h"
@@ -39,6 +41,8 @@ int gIsFeet = 0;
 int gInfoDMS = 0;
 
 static int settings_bounds[4] = { 0, 0, 512, 384};
+
+enum { kMsg_Close = WED_PRIVATE_MSG_BASE };
 
 class RadioButton {
 public:
@@ -89,8 +93,15 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  int * var, cons
 		
 	btn_0->AddListener(parent);
 	btn_1->AddListener(parent);
-	
 }
+
+
+bool WED_Settings::Closed(void)
+{
+	Hide();
+	return true;
+}
+
 
 void WED_Settings::ReceiveMessage(
 							GUI_Broadcaster *		inSrc,
@@ -104,41 +115,47 @@ void WED_Settings::ReceiveMessage(
 			gIsFeet = inParam;
 			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 	}
-	if(inMsg == (intptr_t) &gInfoDMS)
+	else if(inMsg == (intptr_t) &gInfoDMS)
 	{
 			gInfoDMS = inParam;
-			BroadcastMessage(GUI_TABLE_CONTENT_CHANGED,0);
 	}
-	
+/*	else if (inMsg == kMsg_Close)
+	{
+		Hide();
+		AsyncDestroy();
+	}
+ */
 }
 
 
-WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences", xwin_style_movable | xwin_style_centered | xwin_style_modal, settings_bounds, cmdr)
+WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences", xwin_style_movable | xwin_style_centered , settings_bounds, cmdr)
 {
-	char * texture = "check_buttons.png";
-	int k_yes[4] = { 0, 1, 1, 3 };
-	int k_no[4]  = { 0, 2, 1, 3 };
-
-	int bounds[4];
 	GUI_Packer * packer = new GUI_Packer;
 	packer->SetParent(this);
-	packer->SetSticky(1,1,1,1);
 	packer->Show();
-	GUI_Pane::GetBounds(bounds);
-	packer->SetBounds(bounds);
+	packer->SetBounds(settings_bounds);
 	packer->SetBkgkndImage("about.png");
+
+	RadioButton(220, 350 , this, &gIsFeet, "Length Units", "Meters", "Feet");
+	RadioButton(220, 300 , this, &gInfoDMS, "Info Bar\nCoordinates", "DD.DDDDD", "DD MM SS");
 	
-	RadioButton(220, 360 , this, &gIsFeet, "Length Units", "Meters", "Feet");
-	RadioButton(220, 320 , this, &gInfoDMS, "Info Bar\nCoordinates", "DD.DDDDD", "DD MM SS");
+	int k_yes[4] = { 0, 1, 1, 3 };
+	int k_no[4]  = { 0, 2, 1, 3 };
 	
-	GUI_Button * moderator_btn = new GUI_Button(texture,btn_Check,k_no, k_no, k_yes, k_yes);
-	moderator_btn->SetBounds(350,280,500,280+GUI_GetImageResourceHeight(texture)/3);
+	GUI_Button * moderator_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
+	moderator_btn->SetBounds(350,250,500,250+GUI_GetImageResourceHeight("check_buttons.png")/3);
 	moderator_btn->Show();
 	moderator_btn->SetDescriptor("Moderator Mode");
 	moderator_btn->SetParent(this);
-		
-//	okay_btn->SetMsg(AsyncDestroy(),0);
-}
+
+/*	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
+	close_btn->SetBounds(220,5,290,5+GUI_GetImageResourceHeight("push_buttons.png")/3);
+	close_btn->Show();
+	close_btn->SetDescriptor("Close");
+	close_btn->SetParent(this);
+	close_btn->SetMsg(kMsg_Close,0);
+*/
+ }
 
 #if LIN
 WED_Application::WED_Application(int& argc, char* argv[]) : GUI_Application(argc, argv),
@@ -147,7 +164,8 @@ WED_Application::WED_Application() : GUI_Application("WEDMainMenu"),
 #else
 	WED_Application::WED_Application() :
 #endif
-		mAboutBox(NULL)
+		mAboutBox(NULL),
+		mSettingsWin(NULL)
 {
 }
 
@@ -210,7 +228,7 @@ void	WED_Application::AboutBox(void)
 void	WED_Application::Preferences(void)
 {
 //	DoUserAlert("WED does not yet have any preferences.");
-	GUI_Window * mSettingsWin = new WED_Settings( this );
+	if(!mSettingsWin) mSettingsWin = new WED_Settings( this );
 	mSettingsWin->Show();
 }
 

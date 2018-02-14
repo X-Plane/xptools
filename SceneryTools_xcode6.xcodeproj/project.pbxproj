@@ -48,6 +48,7 @@
 
 /* Begin PBXBuildFile section */
 		0224ED2A20048CA0004729CD /* WED_ValidateList.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0224ED2720048B7F004729CD /* WED_ValidateList.cpp */; };
+		0236B9732034264A0046900C /* check_buttons.png in Resources */ = {isa = PBXBuildFile; fileRef = 0236B971203425CE0046900C /* check_buttons.png */; };
 		0269A8551FF5F8F00085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		0269A8561FF5F8F10085A37C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 20286C33FDCF999611CA2CEA /* Carbon.framework */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
@@ -618,9 +619,6 @@
 		D6A182030BA6196B00BBCD0C /* WED_Root.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A182020BA6196B00BBCD0C /* WED_Root.cpp */; };
 		D6A184B30BA8311000BBCD0C /* GUI_Button.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A184B20BA8311000BBCD0C /* GUI_Button.cpp */; };
 		D6A184FD0BA833E700BBCD0C /* GUI_DrawUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A184FC0BA833E700BBCD0C /* GUI_DrawUtils.cpp */; };
-		D6A185AF0BA878B100BBCD0C /* checkbutton.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A185AC0BA878B100BBCD0C /* checkbutton.png */; };
-		D6A185B00BA878B100BBCD0C /* pushbutton.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A185AD0BA878B100BBCD0C /* pushbutton.png */; };
-		D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A185AE0BA878B100BBCD0C /* radiobutton.png */; };
 		D6A185B60BA99DAA00BBCD0C /* GUI_PopupButton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */; };
 		D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */ = {isa = PBXBuildFile; fileRef = D6A1860D0BA9A59C00BBCD0C /* tabs.png */; };
 		D6A186380BA9B28900BBCD0C /* GUI_TabControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6A186370BA9B28900BBCD0C /* GUI_TabControl.cpp */; };
@@ -1013,6 +1011,7 @@
 /* Begin PBXFileReference section */
 		0224ED2720048B7F004729CD /* WED_ValidateList.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ValidateList.cpp; sourceTree = "<group>"; };
 		0224ED2820048B7F004729CD /* WED_ValidateList.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ValidateList.h; sourceTree = "<group>"; };
+		0236B971203425CE0046900C /* check_buttons.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check_buttons.png; sourceTree = "<group>"; };
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
@@ -1259,7 +1258,6 @@
 		D653D6D21054552100A502FF /* WED_DebugLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DebugLayer.h; sourceTree = "<group>"; };
 		D653D6D31054552100A502FF /* WED_DebugLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DebugLayer.cpp; sourceTree = "<group>"; };
 		D653F6EB1D74702E00E11EF6 /* IHasResource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IHasResource.h; sourceTree = "<group>"; };
-		D654C52E0C676995009726BD /* WEDManual.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = WEDManual.pdf; sourceTree = "<group>"; };
 		D656B2780B51883C003FF84F /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = ../../usr/lib/libz.dylib; sourceTree = "<group>"; };
 		D659755D0BEA6D18001FC7C3 /* GUI_ChangeView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_ChangeView.h; sourceTree = "<group>"; };
 		D659755E0BEA6D18001FC7C3 /* GUI_ChangeView.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_ChangeView.cpp; sourceTree = "<group>"; };
@@ -1467,9 +1465,6 @@
 		D6A184B20BA8311000BBCD0C /* GUI_Button.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_Button.cpp; sourceTree = "<group>"; };
 		D6A184FB0BA833E700BBCD0C /* GUI_DrawUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_DrawUtils.h; sourceTree = "<group>"; };
 		D6A184FC0BA833E700BBCD0C /* GUI_DrawUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_DrawUtils.cpp; sourceTree = "<group>"; };
-		D6A185AC0BA878B100BBCD0C /* checkbutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = checkbutton.png; sourceTree = "<group>"; };
-		D6A185AD0BA878B100BBCD0C /* pushbutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pushbutton.png; sourceTree = "<group>"; };
-		D6A185AE0BA878B100BBCD0C /* radiobutton.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = radiobutton.png; sourceTree = "<group>"; };
 		D6A185B40BA99DAA00BBCD0C /* GUI_PopupButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_PopupButton.h; sourceTree = "<group>"; };
 		D6A185B50BA99DAA00BBCD0C /* GUI_PopupButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_PopupButton.cpp; sourceTree = "<group>"; };
 		D6A1860D0BA9A59C00BBCD0C /* tabs.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = tabs.png; sourceTree = "<group>"; };
@@ -3448,9 +3443,9 @@
 				D63A801F1A997EB5008D218D /* COPYING */,
 				D63D3A32192FA28F0004534A /* gateway.crt */,
 				D6080504154659A7001BE1A9 /* push_buttons.png */,
+				0236B971203425CE0046900C /* check_buttons.png */,
 				D6E30556105F8EE7009E6E7F /* tce_tools.png */,
 				D6C390010FA0D93400EFA56C /* sans.ttf */,
-				D654C52E0C676995009726BD /* WEDManual.pdf */,
 				D67B29DA0C5661A100A21ABC /* line_types */,
 				D67B21400C5536A300A21ABC /* pavement */,
 				D67082FF0C1A4DBA00F33E06 /* world */,
@@ -3472,9 +3467,6 @@
 				D607AC880C0385AA00992876 /* scrollbar_v.png */,
 				D6E064810BDD32010070E31C /* map_tools.png */,
 				D6A1860D0BA9A59C00BBCD0C /* tabs.png */,
-				D6A185AC0BA878B100BBCD0C /* checkbutton.png */,
-				D6A185AD0BA878B100BBCD0C /* pushbutton.png */,
-				D6A185AE0BA878B100BBCD0C /* radiobutton.png */,
 				D607B6320C09FE5F00992876 /* WED_Info.plist */,
 				D606164E0C14BE46007BA5C9 /* ui_measurements.txt */,
 				D604AEB81C0EAEF1006DC1F0 /* WEDMainMenu.xib */,
@@ -3903,9 +3895,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D6A185AF0BA878B100BBCD0C /* checkbutton.png in Resources */,
-				D6A185B00BA878B100BBCD0C /* pushbutton.png in Resources */,
-				D6A185B10BA878B100BBCD0C /* radiobutton.png in Resources */,
 				D6A1860E0BA9A59C00BBCD0C /* tabs.png in Resources */,
 				D6E064820BDD32010070E31C /* map_tools.png in Resources */,
 				D60BFC490C03619A00AD5EB7 /* map_airport.png in Resources */,
@@ -3946,6 +3935,7 @@
 				D682DE5E0C10985100BBE1A0 /* startup_bkgnd.png in Resources */,
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
 				D682E1060C10E23C00BBE1A0 /* scrollbar_corner.png in Resources */,
+				0236B9732034264A0046900C /* check_buttons.png in Resources */,
 				D606162B0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp in Resources */,
 				D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */,
 				D60617F00C14D18C007BA5C9 /* disclose.png in Resources */,
