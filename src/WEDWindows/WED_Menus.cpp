@@ -129,7 +129,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"-",						0,	0,										0,	0					},
 //{	"&Feet",					0,	0,										0,	wed_UnitFeet		},
 //{	"&Meters",					0,	0,										0,	wed_UnitMeters		},
-{	"-",						0,	0,										0,	0					},
+//{	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
@@ -271,10 +271,10 @@ void WED_MakeMenus(GUI_Application * inApp)
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
 	
 	GUI_Menu	pave_menu = inApp->CreateMenu(
-		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
+		"Pavement T&ransparency",	kPavementMenu, view_menu, 6);
 		
 	GUI_Menu	objd_menu = inApp->CreateMenu(
-		"&Object Density", kObjDensityMenu, view_menu, 10);
+		"&Object Density", kObjDensityMenu, view_menu, 7);
 
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
