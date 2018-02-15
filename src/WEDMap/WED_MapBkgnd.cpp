@@ -99,8 +99,6 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	lb = GetZoomer()->LatToYPixel(lb);
 	lt = GetZoomer()->LatToYPixel(lt);
 
-
-
 	// First: splat the whole area with the matte color.  This is clipped to
 	// pixel bounds cuz we don't need to draw where we can't see.
 	g->SetState(false,false,false, true,true, false,false);
@@ -113,7 +111,6 @@ void		WED_MapBkgnd::DrawStructure(bool inCurrent, GUI_GraphState * g)
 	double longest_span = max(lon_span,lat_span);
 	double divisions = 1;
 	if (longest_span > 20)	divisions = 10;
-	if (longest_span > 60)	divisions = 30;
 	if (longest_span > 90)	divisions = 45;
 
 	double cl = floor(vl / divisions) * divisions;

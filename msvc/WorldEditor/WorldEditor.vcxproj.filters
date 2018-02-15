@@ -1647,6 +1647,9 @@
     <Image Include="..\..\src\WEDResources\tce_tools_blank.png">
       <Filter>WEDResources</Filter>
     </Image>
+    <Image Include="..\..\src\WEDResources\worldmap.jpg">
+      <Filter>WEDResources</Filter>
+    </Image>
     <Image Include="..\..\src\WEDResources\WED.ico">
       <Filter>WEDResources</Filter>
     </Image>
@@ -1703,3 +1706,4 @@
     </Font>
   </ItemGroup>
 </Project>
+

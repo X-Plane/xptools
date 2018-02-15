@@ -195,8 +195,12 @@
 		<Unit filename="../../src/Obj/XObjReadWrite.h" />
 		<Unit filename="../../src/UI/XWin.h" />
 		<Unit filename="../../src/UI/XWin.lin.cpp" />
+		<Unit filename="../../src/UI/XWin.mac.mm" />
+		<Unit filename="../../src/UI/XWin.win.cpp" />
 		<Unit filename="../../src/UI/XWinGL.h" />
 		<Unit filename="../../src/UI/XWinGL.lin.cpp" />
+		<Unit filename="../../src/UI/XWinGL.mac.mm" />
+		<Unit filename="../../src/UI/XWinGL.win.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.cpp" />
 		<Unit filename="../../src/Utils/AssertUtils.h" />
 		<Unit filename="../../src/Utils/BWImage.cpp" />
@@ -562,6 +566,7 @@
 		<Unit filename="../../src/WEDResources/tce_tools.png" />
 		<Unit filename="../../src/WEDResources/tce_tools_blank.png" />
 		<Unit filename="../../src/WEDResources/ui_measurements.txt" />
+		<Unit filename="../../src/WEDResources/worldmap.jpg" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.cpp" />
 		<Unit filename="../../src/WEDTCE/WED_TCE.h" />
 		<Unit filename="../../src/WEDTCE/WED_TCELayer.cpp" />

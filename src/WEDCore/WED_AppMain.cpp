@@ -159,7 +159,6 @@ int main(int argc, char * argv[])
 	// sustain OpenGL.
 
 	WED_AboutBox * about = new WED_AboutBox(&app);
-//	WED_Settings * about = new WED_Settings(&app);
 	WED_MakeMenus(&app);
 	#if LIN
 	//mroe: resize after update the menubar
@@ -197,16 +196,6 @@ int main(int argc, char * argv[])
 	REGISTER_LIST_ATC
 	#endif
 	#undef _R
-
-	for (int y = 0; y < 2; ++y)
-	for (int x = 0; x < 4; ++x)
-	{
-		char	fname[30];
-		sprintf(fname,"earth_%d%d.jpg",x+1,y+1);
-		int	tex_id = GUI_GetTextureResource(fname, 0, NULL);
-		sprintf(fname,"Loading earth_%d%d.jpg",x+1,y+1);
-		start->ShowMessage(fname);
-	}
 
 	app.SetAbout(about);
 
