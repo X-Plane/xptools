@@ -553,8 +553,8 @@
     <None Include="..\..\src\WEDResources\tables\property_bar.png" />
     <None Include="..\..\src\WEDResources\tables\sider.png" />
     <None Include="..\..\src\WEDResources\WED.icns" />
-    <None Include="..\..\src\WEDResources\WEDManual.pdf" />
     <None Include="..\..\src\WEDResources\WED_Info.plist" />
+    <None Include="..\..\src\WEDResources\worldmap.jpg" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\WEDResources\WED.rc" />

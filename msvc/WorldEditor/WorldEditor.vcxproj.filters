@@ -1647,9 +1647,6 @@
     <Image Include="..\..\src\WEDResources\tce_tools_blank.png">
       <Filter>WEDResources</Filter>
     </Image>
-    <Image Include="..\..\src\WEDResources\worldmap.jpg">
-      <Filter>WEDResources</Filter>
-    </Image>
     <Image Include="..\..\src\WEDResources\WED.ico">
       <Filter>WEDResources</Filter>
     </Image>
@@ -1662,9 +1659,6 @@
       <Filter>WEDResources</Filter>
     </None>
     <None Include="..\..\src\WEDResources\WED_Info.plist">
-      <Filter>WEDResources</Filter>
-    </None>
-    <None Include="..\..\src\WEDResources\WEDManual.pdf">
       <Filter>WEDResources</Filter>
     </None>
     <None Include="..\..\src\WEDResources\tables\arrows.png">
@@ -1694,6 +1688,9 @@
     <None Include="..\..\src\WEDResources\tables\sider.png">
       <Filter>WEDResources\table</Filter>
     </None>
+    <None Include="..\..\src\WEDResources\worldmap.jpg">
+      <Filter>WEDResources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\WEDResources\WED.rc">
@@ -1706,4 +1703,3 @@
     </Font>
   </ItemGroup>
 </Project>
-
