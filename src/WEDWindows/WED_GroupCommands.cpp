@@ -21,11 +21,7 @@
  *
  */
 #include "WED_GroupCommands.h"
-#include "WED_ToolUtils.h"
-#include "AssertUtils.h"
-#include "ISelection.h"
-#include "DEMIO.h"
-#include "WED_Thing.h"
+
 #include "WED_Airport.h"
 #include "WED_ATCFrequency.h"
 #include "WED_ATCFlow.h"
@@ -33,46 +29,46 @@
 #include "WED_ATCTimeRule.h"
 #include "WED_ATCWindRule.h"
 #include "WED_AirportNode.h"
-#include "WED_Group.h"
+#include "WED_RampPosition.h"
+#include "WED_TruckParkingLocation.h"
 
+#include "ISelection.h"
+#include "ILibrarian.h"
+
+#include "AssertUtils.h"
 #include "BitmapUtils.h"
+#include "CompGeomUtils.h"
 #include "GISUtils.h"
 #include "FileUtils.h"
+#include "MathUtils.h"
 #include "MemFileUtils.h"
 #include "PlatformUtils.h"
 
-#include "WED_Ring.h"
-#include "WED_DrapedOrthophoto.h"
-#include "WED_UIDefs.h"
-#include "ILibrarian.h"
-#include "WED_MapZoomerNew.h"
-#include "WED_OverlayImage.h"
-#include "WED_ObjPlacement.h"
-#include "WED_AirportChain.h"
-#include "WED_TextureNode.h"
-#include "WED_Airport.h"
 #include "AptDefs.h"
+#include "XObjDefs.h"
 #include "XESConstants.h"
-#include "WED_TaxiRouteNode.h"
-#include "WED_TruckParkingLocation.h"
-#include "WED_RoadNode.h"
+
+#include "WED_DrapedOrthophoto.h"
+#include "WED_Group.h"
+#include "WED_GISEdge.h"
+#include "WED_FacadePlacement.h"
 #include "WED_ObjPlacement.h"
+#include "WED_Orthophoto.h"
+#include "WED_OverlayImage.h"
+#include "WED_Ring.h"
+#include "WED_RoadNode.h"
+#include "WED_TextureNode.h"
+#include "WED_TaxiRouteNode.h"
+
+#include "WED_EnumSystem.h"
+#include "WED_HierarchyUtils.h"
 #include "WED_LibraryMgr.h"
-#include "WED_RampPosition.h"
 #include "WED_Menus.h"
 #include "WED_MetaDataKeys.h"
+#include "WED_MapZoomerNew.h"
 #include "WED_ResourceMgr.h"
-#include "XObjDefs.h"
-#include "CompGeomDefs2.h"
-#include "CompGeomUtils.h"
-#include "WED_GISEdge.h"
-#include "GISUtils.h"
-#include "MathUtils.h"
-#include "WED_EnumSystem.h"
-#include "CompGeomUtils.h"
-#include "WED_HierarchyUtils.h"
-#include "WED_Orthophoto.h"
-#include "WED_FacadePlacement.h"
+#include "WED_ToolUtils.h"
+#include "WED_UIDefs.h"
 
 #include <sstream>
 
@@ -1195,10 +1191,10 @@ bool WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree)
 
 static bool get_any_resource_for_thing(WED_Thing * thing, string& r)
 {
-	if(thing->GetClass() == WED_ObjPlacement::sClass)
+	IHasResource * has_resource_thing = dynamic_cast<IHasResource*>(thing);
+	if (has_resource_thing != NULL)
 	{
-		WED_ObjPlacement * o = dynamic_cast<WED_ObjPlacement *>(thing);
-		o->GetResource(r);
+		has_resource_thing->GetResource(r);
 		return true;
 	}
 	return false;
@@ -1250,7 +1246,7 @@ bool HasThirdPartyResource(WED_Thing * t)
 	string r;
 	if(!get_any_resource_for_thing(t,r))
 		return false;
-	
+
 	return !mgr->IsResourceDefault(r) && mgr->IsResourceLibrary(r);
 }
 
@@ -1266,6 +1262,7 @@ static void DoSelectWithFilter(const char * op_name, bool (* filter)(WED_Thing *
 
 	vector<WED_Thing *> who;
 	CollectRecursive(WED_GetWorld(resolver), back_inserter(who), ThingNotHidden, filter);
+
 	for(vector<WED_Thing *>::iterator w = who.begin(); w != who.end(); ++w)
 	{
 		sel->Insert(*w);

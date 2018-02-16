@@ -41,7 +41,7 @@ static const GUI_MenuItem_t	kAppMenu[] = {
 static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&New Package...",		'N',	gui_ControlFlag,				0,	wed_NewPackage		},
 {	"&Open Package...",		'O',	gui_ControlFlag,				0,	wed_OpenPackage		},
-{	"Chan&ge X-System Folder...",0,	0,								0,	wed_ChangeSystem	},
+{	"Change X-System Folder...",0,	0,								0,	wed_ChangeSystem	},
 {	"-",					0,  	0,								0,	0					},
 {	"&Close",				'W',	gui_ControlFlag,				0,	gui_Close			},
 {	"&Save",				'S',	gui_ControlFlag,				0,	gui_Save			},
@@ -185,11 +185,11 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select Crossing Ed&ges",	0,			0,							0,	wed_SelectCrossing	},
 #endif
 {	"-",						0,			0,							0,	0					},
-{	"Select Local Ob&jects",		0,			0,							0,	wed_SelectLocalObjects },
-{	"Select L&ibrary Objects",	0,			0,							0,	wed_SelectLibraryObjects },
-{	"Select &Laminar Library Objects",0,		0,							0,	wed_SelectDefaultObjects },
-{	"Select &Third Party Library Objects",0,	0,							0,	wed_SelectThirdPartyObjects },
-{	"Select &Missing Objects",	0,			0,							0,	wed_SelectMissingObjects },
+{	"Select Local Items",		0,			0,							0,	wed_SelectLocalObjects },
+{	"Select Library Items",		0,			0,							0,	wed_SelectLibraryObjects },
+{	"Select &Laminar Library Items",0,		0,							0,	wed_SelectDefaultObjects },
+{	"Select &Third Party Library Items",0,	0,							0,	wed_SelectThirdPartyObjects },
+{	"Select &Missing Items",	0,			0,							0,	wed_SelectMissingObjects },
 {	NULL,						0,			0,							0,	0					},
 };
 
