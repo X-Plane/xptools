@@ -23,32 +23,31 @@
 
 #include "WED_LibraryPreviewPane.h"
 
-#include "GUI_DrawUtils.h"
-#include "GUI_GraphState.h"
-#include "GUI_Fonts.h"
-#include "GUI_Resources.h"
-#include "GUI_Broadcaster.h"
-#include "GUI_Messages.h"
-
-#include "WED_ResourceMgr.h"
 #include "ITexMgr.h"
 #include "TexUtils.h"
-#include "WED_LibraryMgr.h"
+#include "MathUtils.h"
+
+#include "GUI_DrawUtils.h"
+#include "GUI_Broadcaster.h"
+#include "GUI_GraphState.h"
+#include "GUI_Fonts.h"
+#include "GUI_Messages.h"
+#include "GUI_Resources.h"
+
 #include "WED_Colors.h"
+#include "WED_LibraryMgr.h"
+#include "WED_Globals.h"
+#include "WED_ResourceMgr.h"
 #include "WED_PreviewLayer.h"
 
-#include "MathUtils.h"
 #include "XObjDefs.h"
 #include "ObjDraw.h"
-
 
 #if APL
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
 #endif
-
-extern int gIsFeet;
 
 enum { 
 	next_variant = GUI_APP_MESSAGES
