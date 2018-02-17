@@ -24,18 +24,184 @@
 #ifndef WED_FacadePreview_H
 #define WED_FacadePreview_H
 
-struct	fac_info_t;
 
-struct wall_map_t {
-	
-	wall_map_t() : vert(), hori(), min_w(), max_w(999.0) { }
+/******** from REN_facade.h *******/
 
-	float	vert[4];   // for now planning to only collect ONE example for wall type.
-	float	hori[4];
-	float	min_w, max_w;   // range of widths supported by this wall definition
+typedef unsigned char 	xbyt;
+typedef int				xint;
+typedef float			xflt;
+#define xtrue			true
+#define xfals			false
+
+struct asset_freq {
+	xint lo;  xint hi; 
+	asset_freq( xint in_lo,  xint in_hi) : lo(in_lo), hi(in_hi) { } 
+}; 
+
+struct asset_range {
+	xint lo;  xint hi; 
+	asset_range( xint in_lo,  xint in_hi) : lo(in_lo), hi(in_hi) { } 
+}; 
+
+
+#include "XObjDefs.h"
+typedef XObj8* obj_ref;
+
+#include <list>
+
+#if APL
+#include <OpenGL/glu.h>
+#else
+#include <GL/glu.h>
+#endif
+
+#define OGL_CALL
+
+#define dev_assert(x) DebugAssert(x)
+#include "AssertUtils.h"
+
+typedef int OGL_std_shader;
+
+#include "../../../facades/REN_extrude_defs.h"
+#include "../../../facades/REN_extrude_utils.h"
+#include "../../../facades/UTL_tile.h"
+
+/****************************************************************************************************
+ * NEW V2 FACADE GUNK
+ ****************************************************************************************************/
+
+// Wall template - this is our minimum "pourable" entity.  The object is stored in "normalized" coordinates - that is, the
+// length of the wall goes from z=0 to z=-1, and the height from y=0 to y=1.  The wall's X is x=0 is on the wall, x=1 is outside
+// and x=-1 is inside.  The units for X match Z - that is, if the wall's "natural" length is 20 meters, X = 20 is a full 20 meters
+// outside the wall.  
+// 
+// To extrude, we "pour" the object into 2 or more rectilinear frames.  The format of the frame is four vertices: lower wall, lower outside,
+// upper outside, upper wall, where the width of the frames matches the length of the overall segment (path-wise).  
+//
+// When we pour, a positive tangent means to advance the OUTSIDE elements closer to the TARGET of the wall - 1.0 means advance as much
+// (along -z) as we have X.  So a square with beveled edges would have each wall have a tangent value of -1, 1 respectively.
+//
+// Normal vectors are calculated during pouring by passing in the original linear/bezier path for the floor, and we always of course pass "up"
+// to give an extrusion direction.  
+
+struct REN_facade_wall_filter_t {
+	REN_facade_wall_filter_t() : min_width(), max_width(0), min_heading(0), max_heading(0) { }
+	xflt							min_width;
+	xflt							max_width;
+	double							min_heading;
+	double							max_heading;
+	bool	is_ok(xflt len, xflt rel_hdg) const;
 };
 
-struct	FacadeWall_t {
+struct REN_facade_wall_filters_t {
+	vector<REN_facade_wall_filter_t>	filters;
+	
+	bool	is_ok(xflt len, xflt rel_hdg) const;
+};
+	
+struct REN_facade_template_t {
+
+	struct obj {
+		xint		idx;
+		xint		graded;
+		xflt		xyzr[4];
+		asset_freq	freq;		
+	};
+	
+	vector<obj>				objs;
+	vector<vector<xflt> >	meshes;		// Each mesh within this template.
+	vector<pair<xint,xflt> >lods;		// For each mesh, first is group ID, second is far LOD for additive LOD
+	xflt					bounds[3];
+	xint					divisions;
+//	bool				stretch_base;
+//	bool				stretch_over;
+//	bool				clip_tex_base;
+//	bool				clip_tex_over;
+
+//	void load_from_obj(const string& in_path);
+
+#if xxx
+	void read_inline(xmap_class& m);
+
+	void add_attached_obj(xint idx, xint graded, xflt x, xflt y, xflt z, xflt psi, xint show_lo, xint show_hi);
+
+	void extrude_to_volume_linear(
+					REN_extrude_patch *			extruder,
+					REN_extrude_object *		extruder2,
+					xint						checker,
+					xint						group_id,
+					
+					xint						num_frames,		// must be at least 2
+					xflt						frames[],		// 12 floats per frame: XYZ for: bottom line, bottom outside, top outside, top line
+					
+					xflt						p1[3],			// Bezier defines "Z" axis derivative for normal
+					xflt						c1[3],			// Pass NULL for both ctl points for linear normal vectors.
+					xflt						c2[3],
+					xflt						p2[3],			
+					
+					xflt						up[3],
+					const vector<asset_range>&	objects,
+					const vector<obj_ref>&		assets) const;	// "Up" vector for normals.  Length = real height of extrusion.
+
+	// Build an extrusion volume of 2 frames for a linear segment.
+	void make_extrude_vol_linear(
+							xflt p1[3],
+							xflt p2[3],
+							xflt up[3],
+							xflt tan1,
+							xflt tan2,
+							vector<xflt>& out_frames) const;
+
+	// Build an extrusion volume of "splits" frames for a bezier curve.	
+	void make_extrude_vol_bezier(
+							xflt p1[3],
+							xflt c1[3],
+							xflt c2[3],
+							xflt p2[3],
+							xflt up[3],
+							xflt tan1,
+							xflt tan2,
+							xint splits,
+							xflt r1,
+							xflt r2,
+							vector<xflt>& out_frames) const;
+#endif
+};
+
+
+struct REN_facade_wall_t : public REN_facade_wall_filters_t {
+	vector<UTL_spelling_t>			spellings;
+};
+
+struct REN_facade_roof_t {
+	xflt							roof_height;
+	xint							two_sided;
+	struct robj {
+		xflt		str[3];
+		xint		obj;
+		asset_freq	freq;
+	};
+	vector<robj>			roof_objs;
+	REN_facade_roof_t(xflt h=0.0) : roof_height(h), two_sided(xfals) { }
+};	
+
+struct REN_facade_floor_t {
+	string							name;
+	vector<REN_facade_template_t>	templates;
+	vector<REN_facade_template_t>	templates_curved;
+	vector<xint>					groups;		// sorted list of group IDs used by ANY piece of ANY wall.  Used to plan iteration around the floor multiple times.
+	xint							roof_surface;
+	vector<REN_facade_wall_t>		walls;
+	vector<REN_facade_roof_t>		roofs;
+	inline xflt						max_roof_height(void) const { return roofs.empty() ? 0.0 : roofs.back().roof_height; }
+};
+
+/****************************************************************************************************
+ * OLD SCHOOL V1 FACADE PIECES
+ ****************************************************************************************************/
+
+
+struct	FacadeWall_t : public REN_facade_wall_filters_t {
 
 	FacadeWall_t();
 
@@ -56,7 +222,89 @@ struct	FacadeWall_t {
 	int								top;
 };	
 
+struct	FacadeLOD_t {
 
-bool WED_MakeFacadePreview(fac_info_t& info, const string& wall_tex, const string& roof_tex);
+	FacadeLOD_t();
+	
+	bool					tex_correct_slope;
+	float					lod_near;
+	float					lod_far;
+	vector<FacadeWall_t>	walls;
+	vector<double>			roof_s;
+	vector<double>			roof_t;
+	xflt					roof_st[4];
+	xflt					roof_ab[4];
+	bool					has_roof;
+};
+
+// Facade scraper - defines how to combine an OBJ + facade into a two-part sky-scraper.
+// Note: we will encode scraper floors as (1+scraper IDX) * 256 + facade floors
+// If we have a scraper idx > 0 (e.g. floors > 256) then floors is the floors of the BIG 
+// building in steps up from min AGL.
+struct REN_facade_tower_t {
+	asset_range			base_obj;			// OBJ to be used
+	asset_range			towr_obj;			// tower object - can be empty range if base-only scraper -- it happens!
+	asset_range			towr2_obj;			// OBJ to be used - can be empty if no secondary scraper!
+	xflt				base_xyzr[4];		// offset - tower2 is this much higher in ref point!
+	xflt				towr_xyzr[4];		// offset - tower2 is this much higher in ref point!
+	xflt				towr2_xyzr[4];		// offset - tower2 is this much higher in ref point!
+	asset_freq			base_frq;
+	asset_freq			towr_frq;
+	asset_freq			towr2_frq;
+	vector<xflt>		pins;
+};
+
+struct REN_facade_scraper_t {
+	vector<obj_ref>				assets;
+	vector<REN_facade_tower_t>	choices;
+	xflt						min_agl;			// range of AGL where this scraper rule applies
+	xflt						max_agl;
+	xflt						step_agl;			// Step from min AGL up for height
+	xint						floors;				// number of floors to use for facade base
+};
+
+class REN_facade  {   // : public UTL_art_asset<REN_facade>, public REN_basic_resource_mgr {
+public:
+
+	// shared crap
+	bool					is_new;
+	OGL_std_shader			wall_shader;
+	OGL_std_shader			roof_shader;
+	bool					is_ring;
+	bool					is_graded;
+	xint					layer_group;
+	xint					layer_group_draped;
+
+	// V1 crap
+	
+	vector<FacadeLOD_t>		lods;
+	xint					roof_surface;
+	xint					wall_surface;
+//	bool					has_roof;
+//	bool					is_closed;
+	bool					doubled;
+	int						min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
+	int						max_floors;	
+
+	// V2 crap
+	list<REN_facade_floor_t>floors;
+	vector<asset_range>		objs;
+	vector<obj_ref>			assets;
+	xflt					roof_scale_s;
+	xflt					roof_scale_t;
+	
+	// Facade Scrapers
+	vector<REN_facade_scraper_t>	scrapers;
+	
+	
+	REN_facade(xint lon,xint lat, const string& path);
+};
+
+
+/**********************/
+
+#include "WED_ResourceMgr.h"
+
+bool WED_MakeFacadePreview(fac_info_t * info, const string& wall_tex, const string& roof_tex);
 
 #endif

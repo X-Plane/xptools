@@ -49,7 +49,7 @@
 #include "IBase.h"
 #include "XObjDefs.h"
 #include "CompGeomDefs2.h"
-#include "WED_FacadePreview.h"
+//include "WED_FacadePreview.h"
 
 class	WED_LibraryMgr;
 
@@ -89,7 +89,7 @@ struct	fac_info_t {
 	float			roof_st[4];
 	float			roof_ab[4];
 
-	vector<FacadeWall_t>	walls;
+//	vector<FacadeWall_t>	walls;
 	
 	vector<string>	w_nam;
 	vector<string>	w_use;

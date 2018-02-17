@@ -29,42 +29,37 @@
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
 
-FacadeWall_t::FacadeWall_t() :
-	x_scale(0.0),
-	y_scale(0.0),
-	roof_slope(0.0),
-	left(0),
-	center(0),
-	right(0),	
-	bottom(0),
-	middle(0),
-	top(0),
-	basement(0.0)	
-{
-}
 
-bool WED_MakeFacadePreview(fac_info_t& info, const string& wall_tex, const string &roof_tex)
+
+//void print_wall(const REN_facade_wall_t& w)
+//{
+//	printf("%f %f %f %f\n", w.min_width,w.max_width, w.min_heading,w.max_heading);
+//	for(vector<UTL_spelling_t>::const_iterator s = w.spellings.begin(); s != w.spellings.end(); ++s)
+//	{
+//		printf("%zd ",distance(w.spellings.begin(),s));
+//		for(vector<xbyt>::const_iterator b = s->indices.begin(); b != s->indices.end(); ++b)
+//			printf(" %d", *b);
+//		printf("\n");
+//	}	
+//}
+
+bool WED_MakeFacadePreview(fac_info_t * info, const string& wall_tex, const string &roof_tex)
 {
-	float want_len=3;               // minimum size to draw as initial guess
 
 	// sanitize list of walls
-	for (vector<wall_map_t>::iterator i = info.walls.begin(); i != info.walls.end(); ++i)
-	{
-//	printf("%s\ninitial wall v=%5.3f %5.3f %5.3f %5.3f h=%5.3f %5.3f %5.3f %5.3f\n",wall_tex.c_str(),i->vert[0],i->vert[1],i->vert[2],i->vert[3],i->hori[0],i->hori[1],i->hori[2],i->hori[3]);
-		
-		
-		if (i->vert[1] == 0.0)
-		{
-//			walls.erase(i);
-//	printf("no bottom no middle => erase !\n");
-			break;
-		}
+#if 1
+	if (!info.is_new) 
+	{  // type 1 stuff
 
-        want_len = max(want_len,ideal_len);
 
-//	fflush(stdout);
+
+		return true;
 	}
-	
+	else
+	{  //type 2 stuff
+		return true;
+	}
+#else
 	// populate all wall sections, if .fac does not set them excplicitly
 	if (walls.empty())
 		return true;
@@ -207,4 +202,4 @@ bool WED_MakeFacadePreview(fac_info_t& info, const string& wall_tex, const strin
 	else
 		return false; // todo: deal with type 2 facades here
 }
-
+#endif
