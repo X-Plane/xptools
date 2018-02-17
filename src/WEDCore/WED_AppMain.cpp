@@ -33,7 +33,6 @@
 #include "WED_Document.h"
 #include "WED_Assert.h"
 //#include "DEMTables.h"
-#include "WED_AboutBox.h"
 #include "WED_StartWindow.h"
 //#include "ObjTables.h"
 #include "GUI_Clipboard.h"
@@ -197,16 +196,6 @@ int main(int argc, char * argv[])
 	REGISTER_LIST_ATC
 	#endif
 	#undef _R
-
-	for (int y = 0; y < 2; ++y)
-	for (int x = 0; x < 4; ++x)
-	{
-		char	fname[30];
-		sprintf(fname,"earth_%d%d.jpg",x+1,y+1);
-		int	tex_id = GUI_GetTextureResource(fname, 0, NULL);
-		sprintf(fname,"Loading earth_%d%d.jpg",x+1,y+1);
-		start->ShowMessage(fname);
-	}
 
 	app.SetAbout(about);
 

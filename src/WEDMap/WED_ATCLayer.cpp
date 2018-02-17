@@ -6,13 +6,14 @@
 //
 //
 
-#include "XDefs.h"
 #include "WED_ATCLayer.h"
 #include "WED_TaxiRoute.h"
 #include "AssertUtils.h"
 #include "WED_EnumSystem.h"
 #include "GISUtils.h"
 #include "GUI_GraphState.h"
+#include "GUI_Fonts.h"
+#include "MathUtils.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_DrawUtils.h"
 #include "WED_RampPosition.h"
@@ -179,6 +180,32 @@ bool		WED_ATCLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * entity, G
 		glBegin(GL_TRIANGLE_FAN);
 		glVertex2v(d,np);
 		glEnd();
+		
+		if (seg->AllowAircraft())              // display name of taxi route
+		{
+			string nam; 	
+			if(seg->GetRunway() != atc_rwy_None)   // ideally this would not be needed, but cant figure a way to fix up name upon earth.wed.xml import
+				nam = ENUM_Desc(seg->GetRunway());
+			else
+				seg->GetName(nam);
+			
+			if(!nam.empty())
+			{ 
+				if (d[1].squared_distance(d[2]) > 20*20 &&         // draw labels only if segment wide enough
+					d[0].squared_distance(d[1]) > sqr(20+6.0*nam.size()) )      // and long enough
+				{
+					glPushMatrix();
+					Point2 label_xy = GetZoomer()->LLToPixel(Midpoint2(ends[0],ends[1]));
+					glTranslatef(label_xy.x(), label_xy.y(), 0);
+					double hdg = VectorDegs2NorthHeading(ends[0],ends[1], Vector2(ends[0],ends[1]));
+					if (hdg > 180.0) hdg -=180; // dont print label upside down
+					glRotated(90.0-hdg,0,0,1);
+					float white[4] = { 1.0, 1.0, 1.0, 1.0 };
+					GUI_FontDraw(g, font_UI_Basic, white,  0, -4, nam.c_str(), align_Center);
+					glPopMatrix();
+				}
+			}
+		}
 		
 	}
 

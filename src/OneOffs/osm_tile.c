@@ -118,6 +118,7 @@
 #include <zlib.h>
 #include <stdarg.h>
 #include <expat.h>
+#include <sys/resource.h>
 
 #define START_STRING	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<osm version=\"0.5\" generator=\"JOSM\">\n"
 #define END_STRING "</osm>\n"
@@ -309,7 +310,7 @@ void xml_die(const char * fmt, ...)
 	va_start(va,fmt);
 	vprintf(fmt, va);
 
-	printf("Line: %d, Col: %d (Byte %d)\n",
+	printf("Line: %ld, Col: %ld (Byte %ld)\n",
 		XML_GetCurrentLineNumber(g_parser),
 		XML_GetCurrentColumnNumber(g_parser),
 		XML_GetCurrentByteIndex(g_parser));
@@ -988,7 +989,7 @@ int main(int argc, const char * argv[])
 		max_files_use = max_files.rlim_cur;
 		printf("(I will use %d files - that is the API FD limit for this OS.\n", max_files_use);
 	} else
-		printf("(OS can have %d of %d files open.\n", max_files.rlim_cur, max_files.rlim_max);
+		printf("(OS can have %ld of %ld files open.\n", max_files.rlim_cur, max_files.rlim_max);
 
 	/**************************************************************************************************************
 	 * PASS 0 - COUNTING

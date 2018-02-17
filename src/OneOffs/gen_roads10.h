@@ -3,6 +3,7 @@
 #include <string>
 #include <math.h>
 #include <stdio.h>
+#include <assert.h>
 #include <map>
 
 using namespace::std;

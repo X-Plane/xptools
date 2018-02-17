@@ -72,9 +72,6 @@
     <ClCompile Include="..\..\src\Utils\PlatformUtils.win.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utils\SQLUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\TexUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -144,9 +141,6 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\PlatformUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Utils\SQLUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Utils\TexUtils.h">

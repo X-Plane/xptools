@@ -4,10 +4,8 @@
 /* core UI resources */
 sans.ttf				GUI_RES		sans.ttf
 
-pushbutton.png			GUI_RES		pushbutton.png
-checkbutton.png			GUI_RES		checkbutton.png
-radiobutton.png			GUI_RES		radiobutton.png
 push_buttons.png		GUI_RES		push_buttons.png
+check_buttons.png		GUI_RES		check_buttons.png
 tabs.png				GUI_RES		tabs.png
 splitter_h.png			GUI_RES		splitter_h.png
 splitter_v.png			GUI_RES		splitter_v.png
@@ -69,18 +67,8 @@ sider.png				GUI_RES		tables\sider.png
 property_bar.png		GUI_RES		tables\property_bar.png
 arrows.png				GUI_RES		tables\arrows.png
 
-/* app code */
-WED_DataModel.sql		GUI_RES		"..\\WEDCore\\WED_DataModel.sql"
-
 /* world map */
-earth_12.jpg			GUI_RES		world\earth_12.jpg
-earth_41.jpg			GUI_RES		world\earth_41.jpg
-earth_22.jpg			GUI_RES		world\earth_22.jpg
-earth_31.jpg			GUI_RES		world\earth_31.jpg
-earth_21.jpg			GUI_RES		world\earth_21.jpg
-earth_32.jpg			GUI_RES		world\earth_32.jpg
-earth_11.jpg			GUI_RES		world\earth_11.jpg
-earth_42.jpg			GUI_RES		world\earth_42.jpg
+worldmap.jpg			GUI_RES		worldmap.jpg
 
 /* pavement texes */
 dirt.png				GUI_RES		pavement/dirt.png

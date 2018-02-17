@@ -73,7 +73,7 @@ public:
 	virtual				~WED_MapPane();
 
 			void		ZoomShowAll(void);
-			void		ZoomShowSel(void);
+			void		ZoomShowSel(double scale = 1.05);   // scale is area shown vs size of object, i.e. by default 5% margin all around
 
 			void		SetResource(const string& r, int res_type);
 

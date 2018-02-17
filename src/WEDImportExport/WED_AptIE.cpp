@@ -489,9 +489,9 @@ int		WED_CanExportApt(IResolver * resolver)
 	return wrl->CountChildren() > 0;
 }
 
-void	WED_DoExportApt(IResolver * resolver)
+void	WED_DoExportApt(WED_Document * resolver, WED_MapPane * pane)
 {
-	if (!WED_ValidateApt(resolver)) return;
+	if (!WED_ValidateApt(resolver, pane)) return;
 
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	char path[1024];

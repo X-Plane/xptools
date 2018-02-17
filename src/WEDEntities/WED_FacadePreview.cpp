@@ -65,18 +65,18 @@ bool WED_MakeFacadePreview(fac_info_t& info, const string& wall_tex, const strin
 //	fflush(stdout);
 	}
 	
+	// populate all wall sections, if .fac does not set them excplicitly
+	if (walls.empty())
+		return true;
+	
 	int want_floors = 1;      // # floors in the way the Obj8 is constructed. Not the floors of the building/facade represents.
 	if (has_middles) 
-		want_floors=2;
+		want_floors = 2;
 	else
 	{
 		info.min_floors = -1.0;
 		info.max_floors =  (walls[0].vert[2]-walls[0].vert[0]) * info.scale_y;
 	}
-	
-	// populate all wall sections, if .fac does not set them excplicitly
-	if (walls.empty())
-		return true;
 	
 	// fills a XObj8-structure for library preview
 	if (!info.is_new)         // can't handle type 2 facades, yet

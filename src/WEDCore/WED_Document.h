@@ -25,7 +25,6 @@
 #define WED_DOCUMENT_H
 
 #include "WED_XMLReader.h"
-//#include "WED_Globals.h"
 #include "GUI_Destroyable.h"
 //#include "MeshDefs.h"
 #include "AptDefs.h"

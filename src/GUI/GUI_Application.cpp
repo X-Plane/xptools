@@ -160,6 +160,18 @@ void GUI_QtAction::ontriggered()
 			app->DispatchHandleCommand(cmd);
 }
 
+void GUI_Application::setCutnPasteShortcuts(GUI_Window * parent)
+{
+	GUI_QtAction * HK;
+	HK = new GUI_QtAction("", parent, "Ctrl+X" , gui_Cut,   this, false);  // use same definitions as in WED_Menus.cpp
+	parent->addAction(HK);
+	HK = new GUI_QtAction("", parent, "Ctrl+C" , gui_Copy,  this, false);
+	parent->addAction(HK);
+	HK = new GUI_QtAction("", parent, "Ctrl+V" , gui_Paste, this, false);
+	parent->addAction(HK);
+}
+
+
 QMenuBar* GUI_Application::getqmenu()
 {
     QMenuBar * mbar = new QMenuBar(0);
@@ -309,13 +321,6 @@ GUI_Menu		GUI_Application::GetPopupContainer(void)
 
 GUI_Menu	GUI_Application::CreateMenu(const char * inTitle, const GUI_MenuItem_t items[], GUI_Menu	parent, int parentItem)
 {
-
-#if IBM
-	static int		gIDs = 1000;
-#endif
-#if LIN
-	static int		gIDs = 1000;
-#endif
 
 #if APL
 	string title(inTitle);

@@ -363,7 +363,8 @@ unsigned char srgb_filter(unsigned char src[], int count, int channel, int level
 	
 	if(total <= 0.0f) return 0;
 	if (total >= 255.0f) return 255;
-	return roundf(total);
+
+	return round(total);   // msvc2010 has no roundf
 }
 
 unsigned char night_filter(unsigned char src[], int count, int channel, int level)

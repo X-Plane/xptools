@@ -128,16 +128,16 @@ XWin::XWin(
 		mDropTarget = NULL;
 
 	if (inAttributes & xwin_style_visible)
-		ShowWindow(mWindow, (inAttributes & xwin_style_fullscreen						) ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
+		ShowWindow(mWindow, (inAttributes & xwin_style_fullscreen ) ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
 	mDragging=-1;
 	mWantFakeUp=0;
 	mMouse.x = 0;
 	mMouse.y = 0;
 
-	mIsModal = 0;
-	if((inAttributes & xwin_style_modal) == xwin_style_modal)
+	mIsModal = inAttributes & xwin_style_modal;
+
+	if(mIsModal)
 	{
-		mIsModal = 1;
 		for(map<HWND,XWin *>::iterator all = sWindows.begin(); all != sWindows.end(); ++all)
 		{
 				if(all->first != mWindow)
