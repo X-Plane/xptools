@@ -409,7 +409,7 @@ void		WED_CreatePolygonTool::SetResource(const string& r)
 	if(rmgr->GetPol(mResource.value, pol_i))
 		mUVMap.value = !pol_i.wrap;
 	else if(rmgr->GetFac(mResource.value, fac_i))
-		mMinPts = !fac_i.ring && !fac_i.roof ? 2 : 3;                        // allow placement of some 2-node facades
+		mMinPts = !fac_i.is_ring && !fac_i.has_roof ? 2 : 3;                        // allow placement of some 2-node facades
 }
 
 void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const

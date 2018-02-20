@@ -29,8 +29,6 @@
 #include "WED_ResourceMgr.h"
 #include "WED_FacadePreview.h"
 
-
-
 //void print_wall(const REN_facade_wall_t& w)
 //{
 //	printf("%f %f %f %f\n", w.min_width,w.max_width, w.min_heading,w.max_heading);
@@ -42,16 +40,46 @@
 //		printf("\n");
 //	}	
 //}
+inline bool in_heading_in_range(xflt h, xflt h_min, xflt h_max)
+{
+	if (h_min == h_max) return true;
+	
+	h = fltwrap(h,0,360);
+	h_min = fltwrap(h_min,0,360);
+	h_max = fltwrap(h_max,0,360);
+	
+	if (h_min < h_max) return (h_min <= h && h < h_max);
+					   return (h_min <= h || h < h_max);
+}
 
-bool WED_MakeFacadePreview(fac_info_t * info, const string& wall_tex, const string &roof_tex)
+bool	REN_facade_wall_filter_t::is_ok(xflt len, xflt rel_hdg) const
+{
+	return fltrange(len,min_width, max_width) && in_heading_in_range(rel_hdg, min_heading, max_heading);		
+}
+
+bool	REN_facade_wall_filters_t::is_ok(xflt len, xflt rel_hdg) const
+{
+	for(vector<REN_facade_wall_filter_t>::const_iterator i = filters.begin(); i != filters.end(); ++i)
+		if(i->is_ok(len,rel_hdg))
+			return true;
+	return false;
+}
+
+FacadeWall_t::FacadeWall_t() :
+	x_scale(0.0),y_scale(0.0),
+	roof_slope(0.0),
+	left(0), center(0), right(0),	
+	bottom(0), middle(0), top(0),
+	basement(0.0)	
+{}
+
+bool WED_MakeFacadePreview(const fac_info_t& info)
 {
 
 	// sanitize list of walls
 #if 1
 	if (!info.is_new) 
 	{  // type 1 stuff
-
-
 
 		return true;
 	}
@@ -156,7 +184,7 @@ bool WED_MakeFacadePreview(fac_info_t * info, const string& wall_tex, const stri
 
 		info.previews.push_back(obj);
 		
-		if (info.roof)
+		if (info.has_roof)
 		{ 
 			XObj8 *r_obj = new XObj8;
 			r_obj->texture = roof_tex;
@@ -201,5 +229,5 @@ bool WED_MakeFacadePreview(fac_info_t * info, const string& wall_tex, const stri
 	}
 	else
 		return false; // todo: deal with type 2 facades here
-}
 #endif
+}

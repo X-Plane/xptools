@@ -49,11 +49,8 @@
 #include "IBase.h"
 #include "XObjDefs.h"
 #include "CompGeomDefs2.h"
-//include "WED_FacadePreview.h"
 
 class	WED_LibraryMgr;
-
-struct	XObj8;
 
 struct	pol_info_t {
 	string		base_tex; //Relative path
@@ -72,41 +69,50 @@ struct	pol_info_t {
 	Bbox2		mUVBox;              // set by PreviewPanel from selected subTexture
 };
 
-struct	fac_info_t {
-	bool		ring;               // can be drawn as open polygon
-	bool		roof;               // shown with solid fill in map window
-	bool		is_new;				// set if version 1000, aka type 2
-	float		min_floors;         // min accepted floors or -1 if facade is fixed height only
-	float		max_floors;         // max accepted floors or aproximate height in meter if single height only
+struct fac_info_t;
+#include "WED_FacadePreview.h"
+
+struct	fac_info_t : public FacadeLOD_t  {
 	
-//	float		roof_height, roof_slope;
-	float		scale_x, scale_y;
+	bool		is_new;       // set if version 1000, aka type 2
+	string		wall_tex;
+	string		roof_tex;
+	bool		is_ring; 	  // can be drawn as open polygon
 	
-	bool		tex_correct_slope;
-
-	vector<double>	roof_s;
-	vector<double>	roof_t;
-	float			roof_st[4];
-	float			roof_ab[4];
-
-//	vector<FacadeWall_t>	walls;
-	
-	vector<string>	w_nam;
-	vector<string>	w_use;
-
-	vector<XObj8 *> previews;
-
-	/*	
+	// V1 only
+//	vector<FacadeLOD_t>		lods;  WED does not recognize anytghing by the LOD that starts at 0
 	bool					tex_correct_slope;
-	float					lod_near;
-	float					lod_far;
 	vector<FacadeWall_t>	walls;
 	vector<double>			roof_s;
 	vector<double>			roof_t;
 	xflt					roof_st[4];
 	xflt					roof_ab[4];
 	bool					has_roof;
-*/
+
+	xint					roof_surface;
+	xint					wall_surface;
+//	bool					has_roof;
+//	bool					is_closed;
+	bool					doubled;
+	int						min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
+	int						max_floors;	
+	
+	// V2 only
+	list<REN_facade_floor_t>floors;
+	vector<asset_range>		objs;
+	vector<obj_ref>			assets;
+	xflt					roof_scale_s;
+	xflt					roof_scale_t;
+	
+	// Facade Scrapers
+	vector<REN_facade_scraper_t>	scrapers;
+	
+	// WED only
+	vector<string>	w_nam;        // wall names, for property window etc
+	vector<string>	w_use;        // purpose of wall, for display in preview window
+
+	vector<XObj8 *> previews;
+	
 };
 
 struct	lin_info_t {

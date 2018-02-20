@@ -24,12 +24,19 @@
 #ifndef WED_FacadePreview_H
 #define WED_FacadePreview_H
 
-
 /******** from REN_facade.h *******/
 
+// get the basic facade_info_t and some typedefs etc
+
+#include <list>
+
+struct  XObj8;
+typedef XObj8* obj_ref;
+
+
+typedef int xint;
+typedef float xflt;
 typedef unsigned char 	xbyt;
-typedef int				xint;
-typedef float			xflt;
 #define xtrue			true
 #define xfals			false
 
@@ -42,12 +49,6 @@ struct asset_range {
 	xint lo;  xint hi; 
 	asset_range( xint in_lo,  xint in_hi) : lo(in_lo), hi(in_hi) { } 
 }; 
-
-
-#include "XObjDefs.h"
-typedef XObj8* obj_ref;
-
-#include <list>
 
 #if APL
 #include <OpenGL/glu.h>
@@ -222,21 +223,6 @@ struct	FacadeWall_t : public REN_facade_wall_filters_t {
 	int								top;
 };	
 
-struct	FacadeLOD_t {
-
-	FacadeLOD_t();
-	
-	bool					tex_correct_slope;
-	float					lod_near;
-	float					lod_far;
-	vector<FacadeWall_t>	walls;
-	vector<double>			roof_s;
-	vector<double>			roof_t;
-	xflt					roof_st[4];
-	xflt					roof_ab[4];
-	bool					has_roof;
-};
-
 // Facade scraper - defines how to combine an OBJ + facade into a two-part sky-scraper.
 // Note: we will encode scraper floors as (1+scraper IDX) * 256 + facade floors
 // If we have a scraper idx > 0 (e.g. floors > 256) then floors is the floors of the BIG 
@@ -263,48 +249,22 @@ struct REN_facade_scraper_t {
 	xint						floors;				// number of floors to use for facade base
 };
 
-class REN_facade  {   // : public UTL_art_asset<REN_facade>, public REN_basic_resource_mgr {
-public:
+struct	FacadeLOD_t {
 
-	// shared crap
-	bool					is_new;
-	OGL_std_shader			wall_shader;
-	OGL_std_shader			roof_shader;
-	bool					is_ring;
-	bool					is_graded;
-	xint					layer_group;
-	xint					layer_group_draped;
-
-	// V1 crap
-	
-	vector<FacadeLOD_t>		lods;
-	xint					roof_surface;
-	xint					wall_surface;
-//	bool					has_roof;
-//	bool					is_closed;
-	bool					doubled;
-	int						min_floors;	// new in 10.20 - for floor count determination, this clamps the floor range.
-	int						max_floors;	
-
-	// V2 crap
-	list<REN_facade_floor_t>floors;
-	vector<asset_range>		objs;
-	vector<obj_ref>			assets;
-	xflt					roof_scale_s;
-	xflt					roof_scale_t;
-	
-	// Facade Scrapers
-	vector<REN_facade_scraper_t>	scrapers;
-	
-	
-	REN_facade(xint lon,xint lat, const string& path);
+	bool					tex_correct_slope;
+//	float					lod_near;
+//	float					lod_far;
+	vector<FacadeWall_t>	walls;
+	vector<double>			roof_s;
+	vector<double>			roof_t;
+	xflt					roof_st[4];
+	xflt					roof_ab[4];
+	bool					has_roof;
 };
 
 
 /**********************/
 
-#include "WED_ResourceMgr.h"
-
-bool WED_MakeFacadePreview(fac_info_t * info, const string& wall_tex, const string& roof_tex);
+bool WED_MakeFacadePreview(const fac_info_t& o);
 
 #endif

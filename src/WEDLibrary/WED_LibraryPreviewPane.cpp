@@ -496,10 +496,10 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 					int n_wall = fac.walls.size();
 					int j = sprintf(buf2,"Type %d, %d wall%s ", fac.is_new ? 2 : 1, n_wall, n_wall > 1 ? "s" : "");
 
-					if (fac.min_floors < 0.0) 
-						sprintf(buf2+j,", h=%.1f%c only", fac.max_floors / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
+					if (fac.min_floors < 0) 
+						sprintf(buf2+j,", h=%d %c only", fac.max_floors / (gIsFeet ? 0.3048 : 1), gIsFeet ? '\'' : 'm');
 					else
-						sprintf(buf2+j,", h=%.1f to %.1f", fac.min_floors, fac.max_floors);
+						sprintf(buf2+j,", h=%d to %d", fac.min_floors, fac.max_floors);
 				}
 				else
 					sprintf(buf2,"No preview for this facde type available, yet");
