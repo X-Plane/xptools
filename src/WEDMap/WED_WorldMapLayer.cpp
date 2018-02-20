@@ -87,19 +87,13 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 
 	double lon_span = vr - vl;               // draw the high res tiles only if zoomed in enough
 	double lat_span = vt - vb;
-	if (lon_span < 20.0 && lat_span < 14.0)  // covering a 20 deg span requires up to 3 textures at 10 deg each - depending of how they are aligned
+	if (lon_span < 30.0 && lat_span < 20.0)  // covering a 30 deg span requires up to 4 textures at 10 deg each - depending of how they are aligned
 	{
 		int l = 10 * (int) floor(vl / 10.0);
 		int b = 10 * (int) floor(vb / 10.0);
 		int r = 10 * (int) ceil(vr / 10.0);
 		int t = 10 * (int) ceil(vt / 10.0);
-#if 1
-		if( t-b > 20 )                       // Save VRAM: if we need to show more than 2 tiles vertically, only show 2 of the 3 tiles
-			if ( t-vt > vb-b )               // we'd theoretically need, just to avoid having to load another 3 tiles. While this may
-				t-=10;                       // sound super-cheap - these tiles all never free'd - my old imac has only 256MB and I do 
-			else                             // zoom like a maniac. Otherwise, show 30x20deg=12 tiles max and drop this penny saving code.
-				b+=10;
-#endif
+
 		for (int y = b; y < t; y += 10)
 			for (int x = l; x < r; x += 10)
 			{

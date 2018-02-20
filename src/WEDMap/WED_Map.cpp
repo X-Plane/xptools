@@ -243,23 +243,40 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);
 
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 25, mouse_loc);
-
+	
 	p = mouse_loc;
+	
+#if SHOW_FPS
+	#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX
+	#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
+	#endif
+	#ifndef TEXTURE_FREE_MEMORY_ATI
+	#define TEXTURE_FREE_MEMORY_ATI 0x87FC
+	#endif
+	static GLint vram_info[4] = { 0,0,0,0 };
 
-	#if SHOW_FPS
 	static clock_t  last_time = 0;
 	static float	fps = 0.0f;
 	static int		cycle = 0;
-		   ++cycle;
-		   if (cycle > 20)
-		   {
-				clock_t now = clock();
-				fps = (20.0 * CLOCKS_PER_SEC) / ((float) (now - last_time));
-				last_time = now;
-				cycle = 0;
-		   }
-		   p += sprintf(p, "%7.1f FPS ", fps);
-	#endif
+	++cycle;
+	if (cycle > 20)
+	{
+#if APL
+		// not sure there is something like this
+#else
+		// get available high speed = VRAM for textures
+		glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram_info);
+		glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, vram_info);
+		glGetError();
+#endif
+		clock_t now = clock();
+		fps = (20.0 * CLOCKS_PER_SEC) / ((float) (now - last_time));
+		last_time = now;
+		cycle = 0;
+	}
+	p += sprintf(p, "%6d MB %6.1f FPS ", vram_info[0]/1024, fps);
+
+#endif
 
 	// print map scale as number
 	// p += sprintf(p, "%7.3lf %s/pixel", (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM(), gIsFeet? "feet" : "meters");
@@ -281,10 +298,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	state->SetState(0,0,0,1,1,0,0);
 	glColor4fv(white);
 	glBegin(GL_LINES);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + 15);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + 14);
 	glEnd();
 	
     GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 10, mouse_loc);
