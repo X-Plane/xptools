@@ -1974,7 +1974,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			msgs.push_back(validation_error_t("The airport name should not include the word 'Airport'.", warn_airport_name_style, apt,apt));
 		if (contains_word(name_lcase,"international") || contains_word(name_lcase,"int")|| contains_word(name_lcase,"regional") || contains_word(name_lcase,"rgnl") 
 			|| contains_word(name_lcase,"municipal"))
-			msgs.push_back(validation_error_t("The airport name should use the akronyms 'Intl', 'Regl' and 'Muni' instead of full words.", warn_airport_name_style, apt,apt));
+			msgs.push_back(validation_error_t("The airport name should use the abbreviations 'Intl', 'Regl' and 'Muni' instead of full words.", warn_airport_name_style, apt,apt));
 		if (contains_word(name_lcase, icao_lcase.c_str()))
 			msgs.push_back(validation_error_t("The airport name should not include the ICAO code. Use the common name only.", warn_airport_name_style, apt,apt));
 
