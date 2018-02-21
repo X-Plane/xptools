@@ -332,7 +332,6 @@ int			WED_ToolInfoAdapter::GetCellWidth(int n)
 	mTool->GetNthPropertyInfo(n / 2, inf);
 
 	PropertyDict_t	dict;
-	int w = 0;
 
 	if (!inf.prop_name.empty() && inf.prop_name[0] == '.') return 1;
 

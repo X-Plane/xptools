@@ -52,8 +52,10 @@
 #include "STLUtils.h"
 #include "WED_AptIE.h"
 #include "WED_Airport.h"
+#if ROAD_EDITING
 #include "WED_RoadNode.h"
 #include "WED_RoadEdge.h"
+#endif
 #include "WED_MetadataUpdate.h"
 
 #include <sstream>

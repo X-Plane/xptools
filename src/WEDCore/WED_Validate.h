@@ -25,11 +25,14 @@
 #define WED_Validate_h
 
 #include "WED_Entity.h"
+#include "WED_TaxiRoute.h"
+
 
 class	IResolver;
 class	WED_Thing;
 class	WED_Airport;
 
+//Keep this enum strictly organized by alphabetical order and sub catagory. Make this collection easily grep-able
 enum validate_error_t
 {
 	err_airport_elements_outside_hierarchy,
@@ -39,6 +42,8 @@ enum validate_error_t
 	err_airport_no_name,
 	err_airport_no_rwys_sealanes_or_helipads,
 	err_airport_metadata_invalid,
+	err_airport_no_runway_matching_cifp,
+	err_apt_boundary_bez_curve_used,
 	err_atc_taxi_routes_only_for_gte_xp10,
 	err_atc_rule_wind_blank_ICAO_for_METAR,
 	err_atc_rule_wind_invalid_directions,
@@ -54,13 +59,12 @@ enum validate_error_t
 	err_atcrwy_taxi_route_does_not_span_enough_rwy,
 	err_atcrwy_taxi_route_node_out_of_bounds,
 	err_atcrwy_taxi_route_node_within_bounds_but_not_connected,
-	err_bez_curve_do_not_use_in_apt_boundaries,
-	err_cannot_export_airport_overlays_if_airports_in_hierarchy,
+	err_atcrwy_truck_route_too_close_to_runway,
 	err_duplicate_name,
 	err_flow_blank_ICAO_for_METAR,
 	err_flow_blank_name,
 	err_flow_flows_only_for_gte_xp10,
-	err_flow_no_rwy_use_rules,
+	err_flow_no_arr_or_no_dep_runway,
 	err_flow_has_opposite_arrivals,
 	err_flow_has_opposite_departures,
 	err_flow_pattern_runway_not_in_airport,
@@ -78,6 +82,9 @@ enum validate_error_t
 	err_gis_poly_facades_curved_only_for_gte_xp10, //gte is greater than or equal to
 	err_gis_poly_line_and_point_forests_only_for_gte_xp10,
 	err_gis_poly_linear_feature_at_least_two_points,
+	err_gis_poly_linear_feature_at_least_three_points,
+	err_gis_poly_self_intersecting,
+	err_gis_poly_wound_clockwise,
 	err_gis_poly_zero_length_side,
 	err_heli_name_does_not_start_with_h,
 	err_heli_name_illegal_characters,
@@ -85,6 +92,7 @@ enum validate_error_t
 	err_heli_name_none,
 	err_heli_not_adequetely_long,
 	err_heli_not_adequetely_wide,
+	err_orthophoto_bad_uv_map,
 	err_ramp_airlines_contains_non_lowercase_letters,
 	err_ramp_airlines_is_not_in_groups_of_three,
 	err_ramp_airlines_is_not_spaced_correctly,
@@ -95,7 +103,9 @@ enum validate_error_t
 	err_ramp_start_with_specific_traffic_and_types_only_for_gte_xp10,
 	err_resource_cannot_be_found,
 	err_resource_does_not_have_correct_file_type,
+	err_runway_matching_cifp_mislocated,
 	err_rwy_end_outside_of_map,
+	err_rwy_end_not_matching_cifp,
 	err_rwy_misaligned_with_name,
 	err_rwy_must_be_reversed_to_match_name,
 	err_rwy_name_high_illegal_characters,
@@ -112,10 +122,10 @@ enum validate_error_t
 	err_rwy_name_reversed_runway_numbers_low_snd,  //and should be second
 	err_rwy_name_suffix_only_on_one_end,
 	err_rwy_name_suffixes_match,
-	err_rwy_not_adequetely_wide,
 	err_rwy_overlapping_displaced_thresholds,
 	err_rwy_surface_illegal_roughness,
 	err_rwy_surface_water_not_valid,
+	err_rwy_unrealistically_small,
 	err_rwy_use_must_have_at_least_one_equip,
 	err_rwy_use_must_have_at_least_one_op,
 	err_rwy_use_no_runway_selected,
@@ -129,7 +139,10 @@ enum validate_error_t
 	err_taxiway_surface_water_not_valid_type,
 	err_truck_dest_must_have_at_least_one_truck_type_selected,
 	err_truck_parking_cannot_have_negative_car_count,
-	err_truck_parking_car_count_exceeds_max
+	err_truck_parking_car_count_exceeds_max,
+	err_truck_parking_no_ground_taxi_routes,
+	warnings_start_here,
+	warn_runway_matching_cifp_mislocated
 };
 
 // The validation error record stores a single validation problem for reporting.
@@ -146,76 +159,30 @@ struct	validation_error_t {
 	// This constructor creates a validation error with a single object ("who") participating.  Due to C++ weirdness
 	// we have to template; the assumption is that "who" is a WED_Thing derivative.
 	template <typename T>
-	validation_error_t(const string& m, int error_code, T * who, WED_Airport * a) : msg(m), airport(a) { bad_objects.push_back(who); }
+	validation_error_t(const string& m, validate_error_t error_code, T * who, WED_Airport * a) : msg(m), airport(a), err_code(error_code) { bad_objects.push_back(who); }
 
 	// This constructor takes an arbitrary container of ptrs to WED_Thing derivatives and builds a single validation
 	// failure with every object listed.
 	template <typename T>
-	validation_error_t(const string& msg, int error_code, const T& container, WED_Airport * airport);
+	validation_error_t(const string& msg, validate_error_t error_code, const T& container, WED_Airport * airport);
 	
 
 	WED_Airport *		airport;		// NULL if error is in an object outside ANY airport
 	vector<WED_Thing *>	bad_objects;	// object(s) involved in the validation error - at least one required.
 	string				msg;
-	int					err_code;
+	validate_error_t	err_code;
 };
 
 typedef vector<validation_error_t> validation_error_vector;
 
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-
-template <typename OutputIterator, typename Predicate>
-void CollectRecursive(WED_Thing * thing, OutputIterator oi, Predicate pred, bool nested_ok = true)
-{
-	// TODO: do fast WED type ptr check on sClass before any other casts?
-	// Factor out WED_Entity check to avoid second dynamic cast?
-	WED_Entity * ent = dynamic_cast<WED_Entity*>(thing);
-	if(ent && ent->GetHidden())
-	{
-		return;
-	}
-	
-	typedef typename OutputIterator::container_type::value_type VT;
-	VT ct = dynamic_cast<VT>(thing);
-	bool took_it = false;
-	if(ct && pred(ct))
-	{	
-		oi = ct;
-		took_it = true;
-	}
-	
-	if(!took_it || nested_ok)
-	{
-		int nc = thing->CountChildren();
-		for(int n = 0; n < nc; ++n)
-		{
-			CollectRecursive(thing->GetNthChild(n), oi, pred);
-		}
-	}
-}
-
-template <typename T> bool take_always(T v) { return true; }
-
-template <typename OutputIterator>
-void CollectRecursive(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>);
-}
-
-template <typename OutputIterator>
-void CollectRecursiveNoNesting(WED_Thing * t, OutputIterator oi)
-{
-	typedef typename OutputIterator::container_type::value_type VT;
-	CollectRecursive(t,oi,take_always<VT>, false);	// Nesting not allowed
-}
-
 bool	WED_ValidateApt(IResolver * resolver, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
 
 template <typename T>
-validation_error_t::validation_error_t(const string& m, int error_code, const T& container, WED_Airport * a) :
+validation_error_t::validation_error_t(const string& m, validate_error_t error_code, const T& container, WED_Airport * a) :
 	msg(m), err_code(error_code), airport(a)
 {
 	copy(container.begin(), container.end(), back_inserter(bad_objects));
 }
+
 #endif

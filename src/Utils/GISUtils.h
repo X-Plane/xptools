@@ -57,6 +57,7 @@ bool	FetchTIFFCornersWithJP2K(const char * inFileName, double corners[8], int& p
 void	UTMToLonLat(double x, double y, int zone, double * outLon, double * outLat);
 
 double	LonLatDistMeters(double lon1, double lat1, double lon2, double lat2);
+double	LonLatDistMeters(Point2 lonlat1, Point2 lonlat2);
 double	LonLatDistMetersWithScale(double lon1, double lat1, double lon2, double lat2,
 								double deg_to_mtr_x, double deg_to_mtr_y);
 

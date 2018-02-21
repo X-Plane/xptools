@@ -85,10 +85,8 @@ public:
 	void		DeleteNthProperty(int n);
 
 	//WED_Persistant, for Undo/Redo
-	virtual	void 			ReadFrom(IOReader * reader);
+	virtual	bool 			ReadFrom(IOReader * reader);
 	virtual	void 			WriteTo(IOWriter * writer);
-	/*virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping);
-	virtual void			ToDB(sqlite3 * db);*/
 
 	//WED_Thing
 	virtual void			AddExtraXML(WED_XMLElement * obj);
@@ -110,6 +108,7 @@ private:
 	WED_PropBoolText			has_atc;
 	WED_PropStringText			icao;
 	WED_PropBoolText			always_flatten;
+	WED_PropBoolText			drive_on_left;
 	WED_PropIntText				scenery_id;
 	
 	//A vector of meta data key,value entrys, all synthetic properties

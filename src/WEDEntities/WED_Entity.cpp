@@ -23,13 +23,12 @@
 
 #include "WED_Entity.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_Errors.h"
 
 WED_Entity::WED_Entity(WED_Archive * parent, int id) :
 	WED_Thing(parent, id),
-	locked(this,"Locked",SQL_Name("WED_entities","locked"),XML_Name("hierarchy","locked"),0),
-	hidden(this,"Hidden",SQL_Name("WED_entities","hidden"),XML_Name("hierarchy","hidden"),0),
+	locked(this,PROP_Name("Locked", XML_Name("hierarchy","locked")),0),
+	hidden(this,PROP_Name("Hidden", XML_Name("hierarchy","hidden")),0),
 	cache_valid_(0)
 {
 }
@@ -41,7 +40,7 @@ WED_Entity::~WED_Entity()
 void WED_Entity::CopyFrom(const WED_Entity * rhs)
 {
 	WED_Thing::CopyFrom(rhs);
-	CacheInval(cache_All);
+	cache_valid_ &= ~cache_All;
 }
 
 int		WED_Entity::GetLocked(void) const
@@ -57,16 +56,15 @@ int		WED_Entity::GetHidden(void) const
 // Read from DB or undo mem - in both cases, mark our cache as invalid...the real core data has probably been
 // splatted.
 
-void 	WED_Entity::ReadFrom(IOReader * reader)
+bool 	WED_Entity::ReadFrom(IOReader * reader)
 {
-	CacheInval(cache_All);
 	WED_Thing::ReadFrom(reader);
+	return true;
 }
 
-void	WED_Entity::FromDB(sqlite3 * db, const map<int,int>& mapping)
+void	WED_Entity::PostChangeNotify(void)
 {
 	CacheInval(cache_All);
-	WED_Thing::FromDB(db,mapping);
 }
 
 void	WED_Entity::CacheInval(int flags)

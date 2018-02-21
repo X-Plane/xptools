@@ -82,7 +82,7 @@ void	WED_AptTable::GetHeaderContent(
 	the_content.can_select = 1;
 	switch(cell_x) {
 	case 0:
-		the_content.title = "ICAO";
+		the_content.title = "Airport ID";
 		break;
 	case 1:
 		the_content.title = "Name";

@@ -58,10 +58,6 @@ void	WED_Application::OpenFiles(const vector<string>& inFiles)
 
 int		WED_Application::HandleCommand(int command)
 {
-	char buf[1024];
-	int pack_bounds[4] = { 50, 50, 550, 300 };
-	buf[0] = 0;
-
 	switch(command) {
 	case wed_HelpScenery:
 		// LR maintains a forwarding directory for all v10-class products 

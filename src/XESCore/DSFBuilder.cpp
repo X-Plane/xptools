@@ -58,9 +58,11 @@ DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 	// And increasing bucket size does NOT improve stripification al ot.
 	#define		PATCH_DIM_HI	32
 	#define		PATCH_DIM_LO	32
+	#define		DSF_DIVISIONS	8
 #else
 	#define		PATCH_DIM_HI	16
 	#define		PATCH_DIM_LO	16
+	#define		DSF_DIVISIONS	8
 #endif
 
 #define		TERRAIN_NEAR_LOD			 0.0
@@ -1025,8 +1027,8 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	int use_max = use_min + erange2;
 	printf("Real span: %lf to %lf.  Using: %d to %d\n", hmin, hmax, use_min, use_max);
 	// Andrew: change divisions to 16
-	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, -32768, 32767, 16) : NULL;
-	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth,use_min, use_max, 16)) : NULL;
+	writer1 = inFileName1 ? DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth, -32768, 32767, DSF_DIVISIONS) : NULL;
+	writer2 = inFileName2 ? ((inFileName1 && strcmp(inFileName1,inFileName2)==0) ? writer1 : DSFCreateWriter(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth,use_min, use_max, DSF_DIVISIONS)) : NULL;
 	StNukeWriter	dontLeakWriter1(writer1);
 	StNukeWriter	dontLeakWriter2(writer2==writer1 ? NULL : writer2);
  	DSFGetWriterCallbacks(&cbs);

@@ -23,7 +23,8 @@
 
 #include "MemFileUtils.h"
 #include "FileUtils.h"
-#include <stdio.h>
+#include "PlatformUtils.h"
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <math.h>
@@ -97,27 +98,10 @@
 #if LIN || APL
 		#include <dirent.h>
 		#include <sys/stat.h>
-		#define DIR_CHAR '/'
-#elif IBM
-	#define DIR_CHAR '\\'
-#else
-	#error PLATFORM NOT DEFINED NEED DIR CHAR
-#endif
-
-
-#include <zlib.h>
-
-#if LIN || APL
 		#include <sys/types.h>
 		#include <sys/mman.h>
 		#include <unistd.h>
 		#include <fcntl.h>
-		#define bsd_open	 	open
-		#define bsd_close 		close
-		#define bsd_lseek 		lseek
-		#define bsd_mmap	 	mmap
-		#define bsd_munmap		munmap
-		#define bsd_fstat 		fstat
 #elif IBM
 	#include <windows.h>
 	#include "GUI_Unicode.h"
@@ -129,6 +113,7 @@
 	#error PLATFORM NOT DEFINED
 #endif
 
+#include <zlib.h>
 #include <unzip.h>
 
 #define REGTYPE	 '0'		/* regular file */
@@ -170,12 +155,6 @@ union tar_buffer {
 };
 
 
-
-
-
-
-
-
 struct	MFFileSet {
 
 	MF_FileType			mType;			// Type of directory (directory, zip files, or gz tar ball.
@@ -202,7 +181,6 @@ struct	MFMemFile {
 };
 
 /*
-
 	Three kinds of file sets:
 	- File set made from a directory...lazily create directory.  Test files with stat or open.
 	  Create a regular mem file for each entry using the regular file.
@@ -217,7 +195,6 @@ struct	MFMemFile {
 	 - Single zipped file, same as above, but use zip lib, affirm one file!
 	 - File made from a mem buffer that can be nuked.  Made by opening a zip archive.
 	 - File made from a buffer that's not ours, used to read tar balls.
-
 */
 
 bool	StringVectorCB(const char * fname, bool dir, void * ref)
@@ -437,23 +414,15 @@ const char *	MemFile_GetEnd(MFMemFile * inFile)
 
 MFMemFile * 	MemFile_Open(const char * inPath)
 {
-	FILE_case_correct_path	path(inPath);
 	FILE *		fi = NULL;
 	char *		mem = NULL;
 	int			file_size = 0;
 	MFMemFile *	obj = NULL;
 	unzFile		unz = NULL;
-#if APL || LIN
-	struct stat	ss;			// Put this here to avoid crossing
-	int			fd = 0;		// definition when you do a goto!
-	void *		addr = NULL;		// Not that you should be doing that
-	int			len = 0;	// anyway.
-#endif
-
 	obj = new MFMemFile;
 	if (!obj) goto bail;
 
-	unz = unzOpen(path);
+	unz = unzOpen(inPath);
 	if (unz)
 	{
 		unz_global_info	info;
@@ -484,17 +453,22 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 		}
 		unzClose(unz);
 	}
-
 #if APL	|| LIN
-
-	fd = bsd_open(path, O_RDONLY, 0);
+	{
+	struct stat	ss;			// Put this here to avoid crossing
+	int			fd = 0;		// definition when you do a goto!
+	void *		addr = NULL;		// Not that you should be doing that
+	int			len = 0;	// anyway.
+	
+	FILE_case_correct_path path(inPath);
+	fd = open(path, O_RDONLY, 0);
 
 	if (fd == 0 || fd == -1) goto cleanmmap;
 
-	if (bsd_fstat(fd, &ss) < 0) goto cleanmmap;
+	if (fstat(fd, &ss) < 0) goto cleanmmap;
 	len = ss.st_size;
 
-	addr = bsd_mmap(NULL, len, PROT_READ, MAP_FILE, fd, 0);
+	addr = mmap(NULL, len, PROT_READ, MAP_FILE, fd, 0);
 	if (addr == 0) goto cleanmmap;
 	if (addr == (void *) -1) goto cleanmmap;
 
@@ -507,13 +481,14 @@ MFMemFile * 	MemFile_Open(const char * inPath)
 	return obj;
 
 cleanmmap:
-	if (addr != 0 && addr != (void *) -1) bsd_munmap(addr, len);
-	if (fd) bsd_close(fd);
+	if (addr != 0 && addr != (void *) -1) munmap(addr, len);
+	if (fd) close(fd);
 	fd = 0;
 	addr = NULL;
-#endif
-
-#if IBM
+	fi = fopen(path, "rb");
+	}
+#else // IBM
+	{
 	HANDLE			winFile = NULL;
 	HANDLE			winFileMapping = NULL;
 	char *			winAddr = NULL;
@@ -539,12 +514,8 @@ cleanupwin:
 	if (winAddr) 		UnmapViewOfFile(winAddr);
 	if (winFileMapping) CloseHandle(winFileMapping);
 	if (winFile) 		CloseHandle(winFile);
-#endif
-
-#if IBM
 	fi = fopen(inPath, "rb");
-#else
-	fi = fopen(path, "rb");
+	}
 #endif
 	if (!fi) goto bail;
 
@@ -581,11 +552,10 @@ void		MemFile_Close(MFMemFile * inFile)
 		free((void *) inFile->mBegin);
 #if APL || LIN
 	if (inFile->mUnmap)
-		bsd_munmap((void *) inFile->mBegin, inFile->mEnd - inFile->mBegin);
+		munmap((void *) inFile->mBegin, inFile->mEnd - inFile->mBegin);
 	if (inFile->mClose)
-		bsd_close(inFile->mFile);
-#endif
-#if IBM
+		close(inFile->mFile);
+#else // IBM
 	if (inFile->mUnmap)
 	{
 #if MINGW_BUILD
@@ -839,28 +809,26 @@ int				TextScanner_FormatScan(MFTextScanner * inScanner, const char * fmt, ...)
 bool	MF_IterateDirectory(const char * dirPath, bool (* cbFunc)(const char * fileName, bool isDir, void * ref), void * ref)
 {
 #if APL || LIN
-     DIR* dir;
-     struct dirent* ent;
-     dir = opendir(dirPath);
-     if (!dir) return false;
+	DIR* dir;
+	struct dirent* ent;
+	dir = opendir(dirPath);
+	if (!dir) return false;
+	while ((ent = readdir(dir)))
+	{
+		struct stat ss;
 
-     while ((ent = readdir(dir)))
-     {
-         struct stat ss;
+		string	fullPath(dirPath);
+		fullPath += DIR_CHAR;
+		fullPath += ent->d_name;
 
-         string	fullPath(dirPath);
-         fullPath += DIR_CHAR;
-         fullPath += ent->d_name;
-
-         if (stat(fullPath.c_str(), &ss) < 0)
-            continue;
+		if (stat(fullPath.c_str(), &ss) < 0)
+			continue;
 
 		if (cbFunc(ent->d_name, S_ISDIR(ss.st_mode), ref))
 			break;
-
 	}
-     closedir(dir);
-     return true;
+	closedir(dir);
+	return true;
 
 #elif IBM
 
@@ -935,9 +903,6 @@ MF_FileType	MF_GetFileType(const char * path, int analysis_level)
 
 	if (S_ISDIR(ss.st_mode) != 0) return mf_Directory;
 	file_size = ss.st_size;
-
-
-
 #else
 	#error PLATFORM NOT KNOWN
 #endif

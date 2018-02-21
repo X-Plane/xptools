@@ -141,6 +141,7 @@ enum {
 	wed_AddATCWindRule,
 #endif
 	wed_UpgradeRamps,
+	wed_RenameRwys,
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!
@@ -151,6 +152,8 @@ enum {
 	wed_AddMetaDataFAA,
 	wed_AddMetaDataIATA,
 	wed_AddMetaDataICAO,
+	wed_AddMetaDataLocal,
+	wed_AddMetaDataLocAuth,
 	wed_AddMetaDataRegionCode,
 	wed_AddMetaDataState,// or Province
 	wed_AddMetaDataTransitionAlt,//Altitude

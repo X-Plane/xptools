@@ -13,16 +13,16 @@ LDFLAGS		+= -nodefaultlibs -rdynamic
 #LDFLAGS	+= -pie
 LIBS		+= -Wl,--as-needed
 LIBS		+= -Wl,-Bstatic -Wl,--start-group
-LIBS		+= -lexpat -lsquish -lsqlite3 -lshp -lgeotiff
+LIBS		+= -lexpat -lsquish -lshp -lgeotiff
 LIBS		+= -lCGAL -lCGAL_Core -lproj -lfreetype -ltiff -ljpeg -lpng -lz -ljasper
-LIBS		+= -lgmp -lmpfr -lstdc++ -lm -lgcc -lgcc_eh
+LIBS		+= -lgmp -lmpfr -lstdc++ -lgcc -lgcc_eh
 LIBS		+= -Wl,--end-group -Wl,-Bdynamic
-LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc
+LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lc -lm
 LIBS		+= -lboost_thread -lboost_system -lpthread
 endif #PLAT_LINUX
 
 ifdef PLAT_DARWIN
-LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
+LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
 LIBS		:= ./libs/local/lib/libCGAL.a
 LIBS		+= ./libs/local/lib/libCGAL_Core.a
 LIBS		+= ./libs/local/lib/libboost_thread.a
@@ -61,6 +61,7 @@ endif #PLAT_LINUX
 ifdef PLAT_DARWIN
 SOURCES += ./src/UI/XWin.mac.cpp
 SOURCES += ./src/UI/XWinGL.mac.cpp
+SOURCES += ./src/UI/ObjCUtils.cpp
 SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
@@ -224,6 +225,5 @@ SOURCES += ./src/WEDCore/WED_Sign_Parser.cpp
 # resources
 ###########
 
-ifdef PLAT_LINUX
-RESOURCES += ./src/WEDResources/sans.ttf
-endif #PLAT_LINUX
+RESOURCES := ./src/WEDResources/sans.ttf
+XIB_RESOURCE := ./src/XESTools/RFMainMenu.xib

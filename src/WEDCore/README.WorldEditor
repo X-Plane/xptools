@@ -13,30 +13,138 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.7.0a8
+	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
+	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
+	- Gateway communication speedup - now using compressed http transfer for all downloads
+	- code fixes to compile under MSVC 2017, XCode 8
+	Features:
+	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
+	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
+	- WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
+	- XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
+	- WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
+	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
+	- WED-926: Allow viewving of full/long property name by clicking on it
+	- WED-954: Bring ATC taxi route validations inline with other validations and report in validation_error.txt
+	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
+	- Warn about unreleased X-plane versions at gateway export
+	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for gatewy submissions
+	- Flow editing enhancements: Preset METAR ICAO, create meaningfull wind/time rules names
+	- geotiff import enhancements: decode almost any format currently use to encode coordinates, not only WGS84
+	- Previews allow to cycle through all variants for multi-exported items
+	- Previews show textual info on many objects
+	- Primitve, incomplete type 1 facade preview
+	Bug fixes:
+	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
+	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
+	- WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
+	- XPD-8307: Fix textures w/upper case suffixes not showing
+	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on linux
+	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
+
+WED 1.6.1b1
+	Features:
+	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
+	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
+	- WED-825: Add meta-tags and validation for 'local_code' and 'local_authorithy'
+	- WED-899: Add categorie 'SEMI-DEPRECATED' for library.txt
+	Bug fixes:
+	- XSG-3343: Stop changing ATC taxi runway segment width, when already set, upon gateway/apt.dat import
+	- WED 888: Make "Vehicles Drive on Left" airport property readable 
+	- WED-855: Fix taxi sign editor problems with separator glyphs
+	- WED-903: Fix missing texturing in WED for .OBJ that use ATTR_draped with TEXTURE and no TEXTURE_DRAPED commands.
+	- WED-909: Rename 'ICAO Identifier' to 'Airport ID' for consistency with the gateway
+	- WED-910: Fix crash at import of erroneous apt.dat or gateway airport that were created with WED 1.6.0 beta1
+	- Increase number of different facade walls selectable from 10 to 16
+
+WED 1.6r1 6/7/17
+	Bug fixes
+	- WED-787: Prevent apt.dat read in from deleting co-located non-bezier nodes
+	- WED-872: Validation test to ensure that if there are truck parking location(s), there are also ground truck taxi routes present
+	- WED-854: Hiearchry search filter now also searches and matches object's resources
+	- WED-836: EXPORT_BACKUP directively was previously not respected
+	- WED-860: Improper color used for ground trucks route and taxi route
+	- WED-864: Adds special order of AptIE imports and separates out ground truck routes and aircraft taxi routes into two categories.
+	- WED-559: Bezier nodes can't be edited on Mac.
+	- WED-776: Disabled .net resources in resource list until we ship roads.
+	- WED-852: Fixed crash when dragging vertices out of their container polygons by accident.
+	- WED-851: Fixed crash when importaing apt.dat in full screen mode on Mac OS.
+	- WED-828: Fixed marquee bounds drawing wrong after multiple undo of resizing a polygon.
+	- WED-845: Fixed crash when corner of photo reference image is deleted by accident.
+	- Preformance Boost: Unneci-A srcssary drawing removed when the hierachry search filter is in use
+	- Added support for trucks-drive-on-left meta-tag for v11 airports.
+	- Added validation to detect corrupt UV-map coordinates on orthophotos.
+
+WED 1.6b2 5/1/17
+	Bug fixes:
+	- WED-766: extend validation error message to clearify corrective action
+	- WED-767: prevent uncommanded rotation OrthoPhotos placed in WED 1.5
+	- WED-758: recognize .jpeg and .tiff as valid image suffixes
+	- WED-757: fix jpg compressed GeoTiff's imported upside down
+	- WED-784: import WED 1.5 created DrapedOrthos with redraping turned off
+        - WED-565: Add validation for Airport name and ICAO identifier
+        - WED-760: Check XSystem path upon submission to be a valid X-plane base directory
+	- WED-780: Fixed WED crashing on tooltips longer than 80 characters on Windows
+	- WED-824: Fixed where hidden nodes and hidden edges would be written out the apt.dat file inappropriately
+	- Made truck destination name not mandatory, and not blocking of reimporting apt.dat
+	- Fixed use after freeing C malloc buffer bug in airport importer
+	- Fixed uninvited data in vertex tool. Prevented random data in fields could cause very long delays when clicking
+
+WED 1.6.0a3 12/17/16
+	Bug fixes:
+	- WED-746: Split algorithm is buggy, was replaced
+	- WED-728: No more crash in rare undo of edge split
+	- Updates the about box with better formated credits
+	- WED-762: Remove strange characters when previewing .obj definitions
+
+WED 1.6.0a2 12/13/16
+	Bug fixes:
+	- WED-748: TaxiRouteNode Merge does handle "near" merge case
+	- WED-716: Orthophoto DSF export no longer causes endless DoUserAlerts
+
+	Features:
+		wet_latest_xplane set to wet_xplane_1100
+
 WED 1.6.0a1 12/02/16
 	Bug fixes:
+	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
+	- WED-726: enable processing of library.txt file paths including spaces 
 	- WED-724: Prevent cursor in TaxiSignEditor changing due to items in windows underneath it
 	- WED-712, WED-531, WED-367: Reverse function will now preserve line/light attributes on airport lines and taxiways
-        - WED-701: Print debugging info to console if airport meta data download from gateway is corrupt
+	- WED-701: Print debugging info to console if airport meta data download from gateway is corrupt
 	- WED-605: Adding WordWrap to make full gateway server error messages readable
+	- WED-567: Adding validation for CW wound polygons to prevent crashes on DSF export
+	- WED-726: enable processing of library.txt file paths including spaces 
+	- WED-740,741,743,744,730,736,747,753: internal issues during WED 1.6 development
+	- WED-757: fix import for GeoTIFF's using jpeg compression (reversed/flipped)
+	- WED-758: allow tiff and jpeg suffixes to be used for ImportOrthos and OverlayImages
+	- WED-511, WED-708: fix XML reader/writer to not crash on illegal enum names
 
 	New Features:
-	- WED-183, WED-42: Preview forest definitions in LinraryPreviewPane
-	- Automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
-        - Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
-            for .POL definitions that support this
-        - WED-568, WED-659, WED-123, WED-107, WED-14: 3 new editing functions in 'Edit" menu:
-            Align ... nodes to fall into a straight line
-            Othogonalize ... all sides of a polygon e.g. to align building footprints, 
-                  make exact rectangles, L-shapes, staircase patterns etc.
-            Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
-                  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
-        - WED-710: Show runway numbers in map view
-	- print units (ft,m) after property values representing a length
+	- Print units (ft,m) after property values representing a length
+	- Support new XP11 features: Ground Traffic routes, Service Truck starts and destinations
+	- Support for UTF-8 characters in GUI on Windows builds
+	- WED-702: Automatic recalculation of UVmapping for distortion free editing of DrapedOrthohotos
+	- Capability to select predefined 'subtextures" in PreviewPanel and Texture tab (TCE) 
+		for .POL definitions that support this
+	- WED-658, WED-568, WED-659, WED-123, WED-107, WED-14: 
+		Add 3 new editing functions in 'Edit" menu:
+		Align ... nodes to fall into a straight line
+		Othogonalize ... all sides of a polygon e.g. to align building footprints, 
+			  make exact rectangles, L-shapes, staircase patterns etc.
+		Make Regular Polygon ... turns polygons into rotationally or axially symmetric 
+			  shapes, e.g. circles, squares, equilateral triangles, octagons etc.
+		new feature for Vertex tool :
+			holding CTRL-Key while dragging a edge line moves the segment in parallel.
+	- WED-710: Show runway numbers in map view
 	- WED-704: Validate parameters in ATC flow, wind & time rules to be XP-legal
 	- WED-696: Validate (gateway only) land airports to have a airport boundary
-	- XSG-2043,XSG-1964: Display 'hitbox" ATC Runway validation error.
 	- WED-430: Display a scale bar at bottom of map view
+	- WED-297,364,491: Preview line definitions in LinraryPreviewPane
+	- WED-285: Add search bar for items in the right side hierachy pane
+	- WED-42, WED-183: Preview forest definitions in LinraryPreviewPane
+	- XSG-2043, XSG-1964: Display 'hitbox" ATC Runway validation error.
 
 WED 1.5.1r1 10/11/16
 	Bug fixes:

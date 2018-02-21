@@ -23,7 +23,6 @@
 
 #include "WED_KeyObjects.h"
 #include "IODefs.h"
-#include "SQLUtils.h"
 #include "WED_Errors.h"
 #include "WED_XMLWriter.h"
 
@@ -70,9 +69,9 @@ void WED_KeyObjects::Directory_Edit(const char * name, IBase * who)
 	choices[n] = id;
 }
 
-void 			WED_KeyObjects::ReadFrom(IOReader * reader)
+bool 			WED_KeyObjects::ReadFrom(IOReader * reader)
 {
-	WED_Thing::ReadFrom(reader);
+	bool r = WED_Thing::ReadFrom(reader);
 	choices.clear();
 	int n;
 	reader->ReadInt(n);
@@ -87,6 +86,7 @@ void 			WED_KeyObjects::ReadFrom(IOReader * reader)
 		reader->ReadInt(id);
 		choices[key] = id;
 	}
+	return r;
 }
 
 void 			WED_KeyObjects::WriteTo(IOWriter * writer)
@@ -101,50 +101,6 @@ void 			WED_KeyObjects::WriteTo(IOWriter * writer)
 	}
 }
 
-void			WED_KeyObjects::FromDB(sqlite3 * db, const map<int,int>& mapping)
-{
-	WED_Thing::FromDB(db, mapping);
-	choices.clear();
-
-	int err;
-	sql_command cmd(db,"SELECT key,value FROM WED_key_objects WHERE id=@i;","@i");
-
-	sql_row1<int>			key(GetID());
-	sql_row2<string,int>	pair;
-
-	cmd.set_params(key);
-	cmd.begin();
-	while((err = cmd.get_row(pair)) == SQLITE_ROW)
-	{
-		choices[pair.a] = pair.b;
-	}
-	if (err != SQLITE_DONE) WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-}
-
-void			WED_KeyObjects::ToDB(sqlite3 * db)
-{
-	WED_Thing::ToDB(db);
-	int err;
-
-	{
-		sql_command clear_it(db,"DELETE FROM WED_key_objects WHERE id=@i;","@i");
-		sql_row1<int>	key(GetID());
-
-		err = clear_it.simple_exec(key);
-		if (err != SQLITE_DONE) WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	}
-	{
-		sql_command add_pair(db,"INSERT INTO WED_key_objects(id,key,value) VALUES(@i,@k,@v);","@i,@k,@v");
-
-		for (map<string,int>::iterator i = choices.begin(); i != choices.end(); ++i)
-		{
-			sql_row3<int, string, int>	binding(GetID(),i->first,i->second);
-			err = add_pair.simple_exec(binding);
-			if (err != SQLITE_DONE) WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-		}
-	}
-}
-
 void			WED_KeyObjects::AddExtraXML(WED_XMLElement * obj)
 {
 	WED_XMLElement * xml = obj->add_sub_element("keys");
@@ -155,7 +111,6 @@ void			WED_KeyObjects::AddExtraXML(WED_XMLElement * obj)
 		c->add_attr_int("id",i->second);
 	}
 }
-
 
 void		WED_KeyObjects::StartElement(
 								WED_XMLReader * reader,

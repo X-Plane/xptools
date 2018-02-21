@@ -91,6 +91,9 @@
 // This enables gateway communication.  You can turn this off if you don't have a working CURL/SSL.
 #define HAS_GATEWAY 1
 
+// This enablse curved ATC taxiways - feature is NOT done yet or offical so, like, don't use it.
+#define HAS_CURVED_ATC_ROUTE 0
+
 // This is a big hack.  WED objects have culling "built-in" based on a bounding rect - it's part of the IGIS interface.
 // But this is kind of a design flaw; the actual culling depends on the -visualization-, which is applied via a map layer.
 // Only the map visualization knows how big things are.
@@ -105,12 +108,25 @@
 // X-Plane actually contains slight math errors in OBJ placement on a round world and will not handle this well.
 #define GLOBAL_WED_ART_ASSET_FUDGE_FACTOR 0.1
 
+// Causes DSFLib to output stats about encoding quality.
+#define DSF_WRITE_STATS 0
+
+// Set this to 1 to crank up the mesh to ludicrous speed...
+#define HD_MESH 0
+#define UHD_MESH 1
+
 #include "MemUtils.h"
 
 /************************************************************************************************************************************************************************
  * STL AND OTHER GLOBAL INCLUDES THAT WE LIKE ENOUGH TO HAVE EVERYWHERE
  ************************************************************************************************************************************************************************/
 
+#if defined(_MSC_VER)
+	#define _CRT_SECURE_NO_WARNING
+	#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
+
+ 
 #ifdef __cplusplus
 
 #include <vector>
@@ -223,7 +239,8 @@ using namespace std;
 #if defined(_MSC_VER)
 
 	#ifdef __cplusplus
-	#define _USE_MATH_DEFINES
+		#define _USE_MATH_DEFINES
+		#define _SILENCE_STDEXT_HASH_WARNINGS
 		#include <hash_map>
 		using namespace stdext;	// Ben says - can't entirely blame MSVC for this - hash maps are NOT stardard - a weakness of the STL that causes much grief!
 		using namespace std;
@@ -242,6 +259,8 @@ using namespace std;
 
 	#define ENOERR 0
 	#define snprintf _snprintf
+	#define strdup _strdup
+	#define mkstemp _mktemp
 
 #if __cplusplus
 	static __inline double round(double v) { return floor(v+0.5); }
@@ -291,9 +310,19 @@ public:
 private:
 	_Myfb _Filebuffer;
 };
-
-
 #endif
+#endif
+
+#if LIN
+// This is to put an case-insensitive fopen in place, see in FileUtils.cpp
+
+#ifdef __cplusplus
+extern "C" FILE* x_fopen(const char * _Filename, const char * _Mode);
+#else
+extern FILE* x_fopen(const char * _Filename, const char * _Mode);
+#endif
+
+#define fopen(_Filename,_Mode) x_fopen(_Filename, _Mode)
 #endif
 
 #if APL

@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2007, Laminar Research.
+ * Copyright (c) 2016, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a 
  * copy of this software and associated documentation files (the "Software"), 
@@ -21,7 +21,33 @@
  *
  */
 
-#pragma precompile_target "InstallerWinPCH"
+#ifndef WED_LIBRARYFILTERBAR_H
+#define WED_LIBRARYFILTERBAR_H
 
-#define IBM 1
-#include <Windows.h>
+#include "GUI_Table.h"
+#include "GUI_FilterBar.h"
+#include "GUI_TextTable.h"
+#include "GUI_SimpleTableGeometry.h"
+#include "WED_LibraryMgr.h"
+
+class	WED_LibraryFilterBar : public GUI_FilterBar {
+public:
+	WED_LibraryFilterBar(
+			GUI_Commander *	cmdr,
+			WED_LibraryMgr *mLibrary);
+
+	// GUI_TextTableProvider
+	virtual void	GetCellContent(
+						int							cell_x,
+						int							cell_y,
+						GUI_CellContent&			the_content);
+	virtual	void	GetEnumDictionary(
+						int							cell_x,
+						int							cell_y,
+						GUI_EnumDictionary&			out_dictionary);
+
+private:
+	WED_LibraryMgr		*mLibrary;
+};						
+
+#endif

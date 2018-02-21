@@ -30,7 +30,6 @@
 #include "ISelection.h"
 #include "WED_XMLReader.h"
 
-struct	sqlite3;
 class	IOReader;
 class	IOWriter;
 class	WED_XMLElement;
@@ -89,6 +88,11 @@ class	WED_XMLElement;
  *	END_CASTING									Use this to close off the casting control block.
  *
  */
+
+//Because the sClass of WED_Persistent is actually a pointer to a static string
+//we can communicate the difference between the data type and expected use with this
+//typedef
+typedef const char* sClass_t;
 
 #define DECLARE_PERSISTENT(__Class)		 							\
 public: 															\
@@ -197,14 +201,18 @@ public:
 			int				GetID(void) const					{ return mID;		}
 
 	// IO methods to read and write state of class to a data holder.  ReadFrom
-	// does NOT call StateChanged!  Subclasses must provide.
+	// does NOT call StateChanged!  Subclasses must provide.  Readers return true
+	// if they need a post-change notification - see below.
 	virtual WED_Persistent*	Clone(void) const=0;
-	virtual	void 			ReadFrom(IOReader * reader)=0;
+	virtual	bool 			ReadFrom(IOReader * reader)=0;
 	virtual	void 			WriteTo(IOWriter * writer)=0;
-	virtual void			FromDB(sqlite3 * db, const map<int,int>& mapping)=0;
-	virtual void			ToDB(sqlite3 * db)=0;
 	virtual	void			ToXML(WED_XMLElement * parent)=0;
 	virtual	void			FromXML(WED_XMLReader * reader, const XML_Char ** atts)=0;
+
+	// If you return true from read, this is called on you AFTER the entire archive is
+	// processed. Computing that requires all peers/parents/children to be fully
+	// re-instantiated goes here.
+	virtual	void			PostChangeNotify(void)=0;
 
 	virtual void			Validate(void) { }
 

@@ -82,9 +82,7 @@ public:
 	virtual void		KillOperation(bool mouse_is_down);
 	virtual	int			HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags			  );
 
-
 protected:
-
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,
@@ -120,19 +118,13 @@ private:
 	vector<int>			mHasDirs;
 	vector<int>			mIsSplit;
 
-//	int		mStartX;
-//	int		mStartY;
-//	int		mNowX;
-//	int		mNowY;
-
 	float	mLastTime;
 	Point2	mLastPt;
 
-
-//	int		mDirOpen;
 	int		mCreating;
-
+protected:
 	int		mMinPts;
+private:
 	int		mMaxPts;
 	int		mCanClose;
 	int		mMustClose;

@@ -37,17 +37,20 @@
 #include "curl_http.h"
 #include "RAII_Classes.h"
 #include "WED_FileCache.h"
-#include "WED_MetaDataDefaults.h"
 
 #include "WED_DSFExport.h"
 #include "WED_Globals.h"
+
+#include "WED_HierarchyUtils.h"
 #include "WED_ToolUtils.h"
+
 #include "WED_UIDefs.h"
 #include "WED_Validate.h"
 #include "WED_Thing.h"
 #include "WED_ToolUtils.h"
 #include "WED_Airport.h"
 #include "ILibrarian.h"
+#include "WED_PackageMgr.h"
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "GUI_Application.h"
@@ -192,9 +195,9 @@ static bool has_atc_taxi_route(WED_Airport * who) { return has_any_of_class(who,
 // In apt.dat, flow lines are 1100 and 1101
 static bool has_atc_flow(WED_Airport * who) { return has_any_of_class(who, k_atc_flow_class); }
 
-static bool is_of_type_ground_vehicles(const WED_TaxiRoute* route)
+static bool is_of_type_ground_vehicles(WED_Thing* route)
 {
-	return route->AllowTrucks();
+	return static_cast<WED_TaxiRoute*>(route)->AllowTrucks();
 }
 
 static bool has_atc_ground_routes(WED_Airport* who)
@@ -213,8 +216,8 @@ static bool has_atc_ground_routes(WED_Airport* who)
 	//If we have a situation where we only have taxiroutes to tell us if we have ground vehicles, we must test them
 	else if(classes[WED_TaxiRoute::sClass].size() > 0 && classes[WED_TruckParkingLocation::sClass].size() == 0 && classes[WED_TruckDestination::sClass].size() == 0)
 	{
-		vector<const WED_TaxiRoute*> routes;
-		CollectRecursive(who, back_inserter(routes), is_of_type_ground_vehicles);
+		vector<WED_TaxiRoute*> routes;
+		CollectRecursive(who, back_inserter(routes), ThingNotHidden, is_of_type_ground_vehicles, WED_TaxiRoute::sClass);
 
 		return routes.empty() == true ? false : true;
 	}
@@ -564,18 +567,14 @@ void WED_GatewayExportDialog::Submit()
 
 		ILibrarian * lib = WED_GetLibrarian(mResolver);
 
-		string temp_folder("tempXXXXXX");
-		lib->LookupPath(temp_folder);
-		vector<char> temp_chars(temp_folder.begin(),temp_folder.end());
-		temp_chars.push_back(0);
+		string targ_folder("tempXXXXXX");
+		lib->LookupPath(targ_folder);
 
-		if(!mktemp(&temp_chars[0]))
+		if(!mkstemp((char *) targ_folder.c_str()))    // its safe, as length will never change
 		{
 			gExportTarget = old_target;
 			return;
 		}
-		temp_chars.pop_back();
-		string targ_folder(temp_chars.begin(),temp_chars.end());
 		targ_folder += DIR_STR;
 
 		printf("Dest: %s\n", targ_folder.c_str());
@@ -686,10 +685,11 @@ void WED_GatewayExportDialog::Submit()
 		if (has_atc_ground_routes(apt))
 			features += "," + to_string(ATC_GROUND_ROUTES_TAG);
 
-		if(!features.empty())
+		if(!features.empty())                        // remove leading ","
 			features.erase(features.begin());
 
 		scenery["features"] = features;
+		scenery["validatedAgainst"] = gPackageMgr->GetXPversion();
 		scenery["icao"] = icao;
 		scenery["masterZipBlob"] = uu64;
 		
@@ -760,8 +760,6 @@ void WED_GatewayExportDialog::Submit()
 
 void WED_GatewayExportDialog::TimerFired()
 {
-	string good_msg = "";
-	string bad_msg = "";
 		
 	if(mPhase == expt_dialog_download_airport_metadata)
 	{
@@ -774,12 +772,23 @@ void WED_GatewayExportDialog::TimerFired()
 			{
 				WED_GatewayExportDialog::mAirportMetadataCSVPath = res.out_path;
 				mPhase = expt_dialog_upload_to_gateway;
-				good_msg = "Airport metadata defaults have been downloaded succesfully.";
+
+				string ver(gPackageMgr->GetXPversion());
+				if(ver.find('r') != ver.npos )
+					this->AddLabel("Airport metadata defaults have been downloaded succesfully.");
+				else
+				{
+					stringstream ss;
+					ss << "The selected X-Plane Folder contains an unreleased X-plane version " << ver << "\n";
+					ss << "This can cause validation to miss deprecated or unavailable items.\n \n";
+					ss << "All submissions are re-validated with the last officially released X-Plane version.";
+					this->AddLabel(ss.str().c_str());
+				}
 			}
 			else if(res.out_status == cache_status_error)
 			{
 				mPhase = expt_dialog_done;
-				bad_msg = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());
+				this->AddLabel(InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle()));
 			}
 		}
 		return;
@@ -790,7 +799,10 @@ void WED_GatewayExportDialog::TimerFired()
 		if(mCurl->is_done())
 		{
 			Stop();
-		
+
+			string good_msg = "";
+			string bad_msg = "";
+
 			mPhase = expt_dialog_done;
 			if(mCurl->is_ok())
 			{

@@ -39,12 +39,16 @@ public:
 
 	void		Import(const AptRouteEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Import(const AptServiceRoadEdge_t& info, void (* print_func)(void *, const char *, ...), void * ref);
-	int			Export(		 AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const;
+	
+	void		Export(		 AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const;
 	
 	virtual		bool	IsOneway(void) const;
 				bool	IsRunway(void) const;
+
+				//AllowAircraft and AllowTrucks are exclusive. A taxiroute cannot support both at the same time
 				bool	AllowAircraft(void) const;
 				bool	AllowTrucks(void) const;
+
 				bool	HasHotArrival(void) const;
 				bool	HasHotDepart(void) const;
 				bool	HasHotILS(void) const;
@@ -55,6 +59,10 @@ public:
 				void		SetHotDepart(const set<int>& rwys);
 				void		SetHotArrive(const set<int>& rwys);
 				void		SetHotILS(const set<int>& rwys);
+				set<int>	GetHotDepart(void);
+				set<int>	GetHotArrive(void);
+				set<int>	GetHotILS(void);
+
 				void		SetWidth(int width);
 				void		SetVehicleClass(int vehicle_class);
 				
@@ -70,15 +78,19 @@ public:
 
 	virtual	WED_Thing *		CreateSplitNode();
 	
+protected:
+
+	virtual	bool			CanBeCurved() const;
+	
 private:	
 
+		WED_PropIntEnum			vehicle_class;
 		WED_PropBoolText		oneway;
 		WED_PropIntEnum			runway;
 		WED_PropIntEnum			width;
 		WED_PropIntEnumSet		hot_depart;
 		WED_PropIntEnumSet		hot_arrive;
 		WED_PropIntEnumSet		hot_ils;
-		WED_PropIntEnum			vehicle_class;
 
 };
 

@@ -24,9 +24,16 @@
 #ifndef WED_GroupCommands_H
 #define WED_GroupCommands_H
 
+#include <map>
+
+class	IGISEdge;
 class	IResolver;
-class	WED_Thing;
+
+class	Point2;
+
+class	WED_GISEdge;
 class	WED_MapZoomerNew;
+class	WED_Thing;
 
 int		WED_CanGroup(IResolver * inResolver);
 int		WED_CanUngroup(IResolver * inResolver);
@@ -69,6 +76,21 @@ int		WED_CanMerge(IResolver * resolver);
 void	WED_DoMerge(IResolver * resolver);
 
 int		WED_CanSplit(IResolver * resolver);
+
+struct split_edge_info_t {
+	WED_GISEdge *			edge;
+	bool					active;						// Of all the edges we can split, only some are ACTIVE.  To make a split, at least ONE must be active.
+	vector<Point2>			splits;						// This lets us say "the new edges are cutting everything, but legacy edges do not cut each other."
+	split_edge_info_t(WED_GISEdge* edge, bool active);
+	void sort_along_edge();
+};
+
+//Where the key is the edge and the value is the edges that spawned off because of it
+typedef map<WED_Thing*, vector<WED_Thing*> > edge_to_child_edges_map_t;
+
+//Given a vector of splittable objects and splittable edges, preform the actual math
+//It returns a vector of the new pieces
+edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
@@ -99,8 +121,14 @@ void	WED_DoSelectPolygon(IResolver * resolver);
 int		WED_CanSelectConnected(IResolver * resolver);
 void	WED_DoSelectConnected(IResolver * resolver);
 
+void	WED_select_zero_recursive(WED_Thing * t, set<WED_GISEdge*> *s);
 bool	WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree=NULL);			// These return true if they did an operation to change selection due to there being work to do.
+
+set<WED_Thing*> WED_select_doubles(WED_Thing * t);
 bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
+
+set<WED_GISEdge*> WED_do_select_crossing(WED_Thing * t);
+set<WED_GISEdge*> WED_do_select_crossing(const vector<WED_GISEdge*> edges);
 bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
 
 void	WED_DoSelectMissingObjects(IResolver * resolver);
@@ -123,5 +151,6 @@ int		WED_CanReplaceVehicleObj(IResolver* resolver);
 void	WED_DoReplaceVehicleObj(IResolver* resolver);
 
 void WED_UpgradeRampStarts(IResolver * resolver);
+void WED_RenameRunwayNames(IResolver * resolver);
 
 #endif /* WED_GroupCommands_H */

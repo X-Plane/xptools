@@ -79,19 +79,20 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 	1,							// close allowed
 	kRequireClosed[tool]),		// close required?
 	mType(tool),
-		mPavement(tool == create_Taxi ? this : NULL,"Pavement",SQL_Name("",""),XML_Name("",""),Surface_Type,surf_Concrete),
-		mRoughness(tool == create_Taxi ? this : NULL,"Roughness",SQL_Name("",""),XML_Name("",""),0.25,4,2),
-		mHeading(tool == create_Taxi || tool == create_Polygon ? this : NULL,"Heading",SQL_Name("",""),XML_Name("",""),0,5,2),
-		mMarkings(tool <= create_Hole ? this : NULL,".Markings", SQL_Name("",""),XML_Name("",""), LinearFeature, 0),
-		mMarkingsLines(tool <= create_Hole ? this : NULL,"Markings", SQL_Name("",""),XML_Name("",""), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
-		mMarkingsLights(tool <= create_Hole ? this : NULL,"Lights", SQL_Name("",""),XML_Name("",""), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
+		mPavement(tool    == create_Taxi    ? this : NULL,PROP_Name("Pavement", XML_Name("","")),Surface_Type,surf_Concrete),
+		mRoughness(tool   == create_Taxi    ? this : NULL,PROP_Name("Roughness",XML_Name("","")),0.25,4,2),
+		mHeading(tool     == create_Taxi   || tool == create_Polygon ? 
+		                                      this : NULL,PROP_Name("Heading",  XML_Name("","")),0,5,2),
+		mMarkings(tool    <= create_Hole    ? this : NULL,PROP_Name(".Markings",XML_Name("","")), LinearFeature, 0),
+		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
+		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
 
-		mResource(tool > create_Hole ? this : NULL, "Resource", SQL_Name("",""),XML_Name("",""), ""),
-		mHeight(tool == create_Facade ? this : NULL, "Height", SQL_Name("",""),XML_Name("",""), 10.0, 4, 2),
-		mDensity(tool == create_Forest ? this : NULL, "Density", SQL_Name("",""),XML_Name("",""), 1.0, 3, 2),
-		mSpacing(tool == create_String ? this : NULL, "Spacing", SQL_Name("",""),XML_Name("",""), 5.0, 3, 1),
+		mResource(tool >  create_Hole    ? this : NULL,PROP_Name("Resource", XML_Name("","")), ""),
+		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 4, 2),
+		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
+		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 3, 1),
 		
-		mUVMap(tool == create_Polygon ? this : NULL, "Use Texture Map - Orthophoto", SQL_Name("",""),XML_Name("",""), 0)
+		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0)
 {
 	mPavement.value = surf_Concrete;
 }
@@ -143,8 +144,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 		is_facade = dynamic_cast<WED_FacadeRing*>(old_outer_ring) != NULL;
 	}
 
-	WED_AirportChain *	apt_ring=NULL;
-	WED_Thing *			outer_ring;
+	WED_AirportChain *	apt_ring = NULL;
+	WED_Thing *			outer_ring = NULL;
 
 		 if(is_apt)					outer_ring = apt_ring = WED_AirportChain::CreateTyped(GetArchive());
 	else if(is_forest)				outer_ring			  = WED_ForestRing::CreateTyped(GetArchive());
@@ -218,7 +219,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_FacadePlacement * fac = WED_FacadePlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fac,0);
 			fac->SetParent(host,idx);
-			sprintf(buf,"Facade %d",n);
 			fac->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Facade %d outer ring",n);
 			outer_ring->SetName(buf);
@@ -232,7 +232,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_ForestPlacement * fst = WED_ForestPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(fst,0);
 			fst->SetParent(host,idx);
-			sprintf(buf,"Forest %d",n);
 			fst->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Forest %d outer ring",n);
 			outer_ring->SetName(buf);
@@ -246,7 +245,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_StringPlacement * str = WED_StringPlacement::CreateTyped(GetArchive());
 			outer_ring = str;
 			str->SetParent(host,idx);
-			sprintf(buf,"String %d",n);
 			str->SetName(stripped_resource(mResource.value));
 			sel->Select(str);
 			str->SetClosed(closed);
@@ -272,7 +270,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			dpol = WED_DrapedOrthophoto::CreateTyped(GetArchive());
 			outer_ring->SetParent(dpol,0);
 			dpol->SetParent(host,idx);
-			sprintf(buf,"Orthophoto %d",n);
 			dpol->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Orthophoto %d Outer Ring",n);
 			outer_ring->SetName(buf);
@@ -285,7 +282,6 @@ void	WED_CreatePolygonTool::AcceptPath(
 			WED_PolygonPlacement * pol = WED_PolygonPlacement::CreateTyped(GetArchive());
 			outer_ring->SetParent(pol,0);
 			pol->SetParent(host,idx);
-			sprintf(buf,"Polygon %d",n);
 			pol->SetName(stripped_resource(mResource.value));
 			sprintf(buf,"Polygon %d Outer Ring",n);
 			outer_ring->SetName(buf);
@@ -352,6 +348,8 @@ void	WED_CreatePolygonTool::AcceptPath(
 		if(rmgr->GetPol(mResource.value, info))
 			if (!info.mUVBox.is_null())
 				dpol->SetSubTexture(info.mUVBox);
+			else
+				dpol->SetSubTexture(Bbox2(0,0,1,1));
 
 		dpol->Redrape();
 	}
@@ -368,7 +366,7 @@ const char *	WED_CreatePolygonTool::GetStatusText(void)
 	if (GetHost(n) == NULL)
 	{
 		if (mType == create_Hole)
-			sprintf(buf,"You must selet a polygon before you can insert a hole into it.  Facades cannot have interior holes.");
+			sprintf(buf,"You must select a polygon before you can insert a hole into it.  Facades cannot have interior holes.");
 		else
 			sprintf(buf,"You must create an airport before you can add a %s.",kCreateCmds[mType]);
 		return buf;
@@ -406,9 +404,12 @@ void		WED_CreatePolygonTool::SetResource(const string& r)
 
 	// Preset polygon / orthophoto flag when selecting resource. Still allows user overriding it in vertex tool.
 	WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
-	pol_info_t i;
-	if(rmgr->GetPol(mResource.value, i))
-		mUVMap.value = !i.wrap;
+	pol_info_t pol_i;
+	fac_info_t fac_i;
+	if(rmgr->GetPol(mResource.value, pol_i))
+		mUVMap.value = !pol_i.wrap;
+	else if(rmgr->GetFac(mResource.value, fac_i))
+		mMinPts = !fac_i.ring && !fac_i.roof ? 2 : 3;                        // allow placement of some 2-node facades
 }
 
 void	WED_CreatePolygonTool::GetNthPropertyDict(int n, PropertyDict_t& dict) const

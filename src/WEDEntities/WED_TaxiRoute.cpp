@@ -56,13 +56,13 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 DEFINE_PERSISTENT(WED_TaxiRoute)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	oneway(this,"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
-	runway(this,"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
-	hot_depart(this,"Departures",		SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
-	hot_arrive(this,"Arrivals",			SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
-	hot_ils(this,"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
-	width(this,"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"),			ATCIcaoWidth, width_E),
-	vehicle_class(this,"Allowed Vehicles",SQL_Name("",""),								XML_Name("taxi_route","vehicle_class"),	ATCVehicleClass,atc_Vehicle_Aircraft)
+	vehicle_class(this,PROP_Name("Allowed Vehicles",  XML_Name("taxi_route","vehicle_class")),ATCVehicleClass,atc_Vehicle_Aircraft),
+	oneway       (this,PROP_Name("One-Way",           XML_Name("taxi_route","oneway")),   1),
+	runway       (this,PROP_Name("Runway",            XML_Name("taxi_route","runway")),   ATCRunwayTwoway, atc_rwy_None),
+	hot_depart   (this,PROP_Name("Departures",        XML_Name("departures","runway")),   ATCRunwayOneway,false),
+	hot_arrive   (this,PROP_Name("Arrivals",          XML_Name("arrivals","runway")),     ATCRunwayOneway,false),
+	hot_ils      (this,PROP_Name("ILS Precision Area",XML_Name("ils_holds","runway")),    ATCRunwayOneway,false),
+	width        (this,PROP_Name("Size",              XML_Name("taxi_route","width")),    ATCIcaoWidth, width_E)
 {
 }
 
@@ -112,6 +112,22 @@ void		WED_TaxiRoute::SetHotILS(const set<int>& rwys)
 	hot_ils = rwys;
 }
 
+set<int> WED_TaxiRoute::GetHotDepart()
+{
+	return hot_depart;
+}
+
+set<int> WED_TaxiRoute::GetHotArrive()
+{
+	return hot_arrive;
+}
+
+set<int> WED_TaxiRoute::GetHotILS()
+{
+	return hot_ils;
+}
+
+
 void WED_TaxiRoute::SetWidth(int w)
 {
 	width= w;
@@ -136,19 +152,15 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 			runway = atc_rwy_None;
 		} else
 			runway = r;
-		
-		width = width_E;
-		
 	}
 	else
-	{
 		runway = atc_rwy_None;
-		width = ENUM_Import(ATCIcaoWidth, info.width);
-		if(width == -1)
-		{
-			print_func(ref,"Illegal width: %d\n", info.width);
-			width = width_E;
-		}
+
+	width = ENUM_Import(ATCIcaoWidth, info.width);
+	if(width == -1)
+	{
+		print_func(ref,"Illegal width: %d\n", info.width);
+		width = width_E;
 	}
 
 	for(set<string>::iterator h = info.hot_depart.begin(); h != info.hot_depart.end(); ++h)
@@ -187,13 +199,13 @@ void	WED_TaxiRoute::Import(const AptServiceRoadEdge_t& info, void (* print_func)
 	vehicle_class = atc_Vehicle_Ground_Trucks;
 }
 
-int	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const
+void	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) const
 {
 	if(AllowTrucks())
 	{
 		info2.oneway = oneway.value;
 		this->GetName(info2.name);
-		return 1;
+		return;
 	}
 	else
 	{
@@ -232,7 +244,7 @@ int	WED_TaxiRoute::Export(AptRouteEdge_t& info, AptServiceRoadEdge_t& info2) con
 			info.hot_ils.insert(ENUM_Desc(*h));
 
 		info.oneway = oneway.value;
-		return 0;
+		return;
 	}
 }
 
@@ -293,6 +305,23 @@ void		WED_TaxiRoute::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 	{
 		info.can_delete = false;
 		info.can_edit = false;
+	}
+
+	PropertyVal_t prop;
+	vehicle_class.GetProperty(prop);
+
+	if (prop.int_val == atc_Vehicle_Ground_Trucks)
+	{
+		if (n == PropertyItemNumber(&runway) ||
+			n == PropertyItemNumber(&hot_depart) ||
+			n == PropertyItemNumber(&hot_arrive) ||
+			n == PropertyItemNumber(&hot_ils) ||
+			n == PropertyItemNumber(&width))
+		{
+			info.prop_name = ".";
+			info.can_edit = false;
+			info.can_delete = false;
+		}
 	}
 }
 
@@ -407,6 +436,14 @@ bool	WED_TaxiRoute::AllowTrucks(void) const
 	return vehicle_class.value == atc_Vehicle_Ground_Trucks;
 }
 
-
+bool	WED_TaxiRoute::CanBeCurved() const
+{
+#if HAS_CURVED_ATC_ROUTE
+	return true;
+#else
+	return false;
+#endif
+}
 
 #endif
+

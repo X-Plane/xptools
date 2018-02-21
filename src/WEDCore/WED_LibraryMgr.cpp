@@ -24,25 +24,50 @@
 #include "WED_LibraryMgr.h"
 #include "WED_PackageMgr.h"
 #include "WED_Messages.h"
-#include "XUtils.h"
 #include "AssertUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
+#include <time.h>
 
 static void clean_vpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
-	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-		s[p] = '/';
+		if(s[p] == '\\' || s[p] == ':')
+			s[p] = '/';
 }
 
 static void clean_rpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
-	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-		s[p] = DIR_CHAR;
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+			s[p] = DIR_CHAR;
 }
 
+// checks if path includes enough '..' to possibly not be a true subdirectory of the current directory
+// i.e. dir/../x  or  d/../x or ./x      are fine
+//      ../x  or  dir/../../x  or ./../x  or  dir/./../../x get flagged
+static bool is_no_true_subdir_path(string& s)
+{
+	int subdir_levels = 0;
+	for(string::size_type p = 0; p < s.size(); ++p)
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+		{
+			if (p>=1 && s[p-1] != '.')
+				subdir_levels++;
+			else if (p>=2 && s[p-1] == '.')
+			{
+				if (s[p-2] == '.')
+			  		subdir_levels--;
+				else if (s[p-2] != '\\' && s[p-2] != ':' && s[p-2] != '/')
+					subdir_levels++;
+			}
+			
+			if (subdir_levels < 0)
+				return true;
+		}
+	return false;
+}
 
 static void split_path(const string& i, string& p, string& f)
 {
@@ -106,8 +131,8 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 	{
 		if(me->first.size() < r.size())								break;
 		if(strncasecmp(me->first.c_str(),r.c_str(),r.size()) != 0)	break;
-		// Ben says: in WED 1.3 we'll get more clever about this and optionally show library innards.  But for now, just hide our privates.
-		if(me->second.status == status_Public)
+		// Ben says: even in WED 1.6 we still don't show private or deprecated stuff
+		if(me->second.status >= status_Public)
 		if(is_direct_parent(r,me->first))
 		{
 			bool want_it = true;
@@ -115,18 +140,13 @@ void		WED_LibraryMgr::GetResourceChildren(const string& r, int filter_package, v
 			case pack_Library:		want_it = me->second.packages.size() > 1 || !me->second.packages.count(pack_Local);	// Lib if we are in two packs or we are NOT in local.  (We are always SOMEWHERE)
 			case pack_All:			break;
 			case pack_Default:		want_it = me->second.is_default;	break;
+			case pack_New:			want_it = me->second.status == status_New; break;
 			case pack_Local:		// Since "local" is a virtal index, the search for Nth pack works for local too.
 			default:				want_it = me->second.packages.count(filter_package);
 			}
 			if(want_it)
 			{
 				children.push_back(me->first);
-				#if DEV
-					//Gets the last thing added to the vector
-					//string temp = children.back();
-
-					//printf("GetResource:%s \n", temp.c_str());
-				#endif
 			}
 		}
 		++me;
@@ -140,23 +160,20 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 	return me->second.res_type;
 }
 
-string		WED_LibraryMgr::GetResourcePath(const string& r)
+string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return string();
-	return me->second.real_path;
+	DebugAssert(variant < me->second.real_paths.size());
+	return me->second.real_paths[variant];
 }
 
 bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.is_default;	
@@ -165,9 +182,7 @@ bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 bool	WED_LibraryMgr::IsResourceLocal(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.packages.count(pack_Local) && me->second.packages.size() == 1;
@@ -176,9 +191,7 @@ bool	WED_LibraryMgr::IsResourceLocal(const string& r)
 bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return !me->second.packages.count(pack_Local) || me->second.packages.size() > 1;
@@ -187,20 +200,38 @@ bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
-	return me->second.status != status_Public;
+	return me->second.status < status_Yellow;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
 }
 
-bool		WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
+bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 {
 	for(res_map_t::iterator i = res_table.begin(); i != res_table.end(); ++i)
-	if(i->second.packages.count(package))
-		return true;
+		if(i->second.packages.count(package))
+		{
+//	The problem here is that a resource can be defined in multiple libraries,
+//  some of those definitions may be deprecated or private, but others not.
+//  If there is at least one public definition, the resource has status >= status_Public.
+//  So its impossible to find out this way if a given library has no public items ...
+
+// if  (i->second.status > status_Public)
+//			printf("Pack %d '%s' status = %d\n",package,i->second.real_path.c_str(),i->second.status);
+//			if ( i->second.status >= status_Public)	
+
+			return true;
+		}
 	return false;
+}
+
+int		WED_LibraryMgr::GetNumVariants(const string& r)
+{
+	string fixed(r);
+	clean_vpath(fixed);
+	res_map_t::const_iterator me = res_table.find(fixed);
+	if (me==res_table.end()) return 1;
+	return me->second.real_paths.size();
 }
 
 
@@ -275,63 +306,75 @@ void		WED_LibraryMgr::Rescan()
 			{
 				string vpath, rpath;
 
-				if(MFS_string_match(&s,"PUBLIC",true))		cur_status = status_Public;
-				if(MFS_string_match(&s,"PRIVATE",true))		cur_status = status_Private;
-				if(MFS_string_match(&s,"DEPRECATED",true))	cur_status = status_Deprecated;
+				bool is_export_export  = MFS_string_match(&s,"EXPORT",false);
+				bool is_export_extend  = MFS_string_match(&s,"EXPORT_EXTEND",false);
+				bool is_export_exclude = MFS_string_match(&s,"EXPORT_EXCLUDE",false);
+				bool is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false);
 
-				if(MFS_string_match(&s,"EXPORT",false))
+				if( is_export_export  ||
+					is_export_extend  ||
+					is_export_exclude ||
+					is_export_backup)
 				{
 					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
+					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
+					
+					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
+					FILE_case_correct( (char *) rpath.c_str());  /* yeah - I know I'm overriding the 'const' protection of the c_str() here.
+					
+					   But I know this operation is never going to change the strings length, so thats OK to do.
+					    
+					   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
+					   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.	
+					   */
+					AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
+				}
+				else if(MFS_string_match(&s,"EXPORT_RATIO",false))
+				{
+				    double x = MFS_double(&s);
+					MFS_string(&s,&vpath);
+					MFS_string_eol(&s,&rpath);
+					clean_vpath(vpath);
+					clean_rpath(rpath);
+					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
+					rpath=pack_base+DIR_STR+rpath;
+					FILE_case_correct( (char *) rpath.c_str());  // yeah - I know I'm overriding the 'const' protection of the c_str() here.
 					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
-
-				if(MFS_string_match(&s,"EXPORT_EXTEND",false))
+				else
 				{
-					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
-					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
+					if(MFS_string_match(&s,"PUBLIC",true))
+					{	
+						cur_status = status_Public;
+						
+						int new_until = 0;
+						new_until = MFS_int(&s);
+						if (new_until > 20170101)
+						{
+							time_t rawtime;
+							struct tm * timeinfo;
+							time (&rawtime);
+							timeinfo = localtime (&rawtime);							
+							int now = 10000 * (timeinfo->tm_year+1900) +100*timeinfo->tm_mon + timeinfo->tm_mday;
+							if (new_until >= now)
+							{
+								cur_status = status_New;
+							}
+						}
+					}
+					else if(MFS_string_match(&s,"PRIVATE",true))    
+						cur_status = status_Private;
+					else if(MFS_string_match(&s,"DEPRECATED",true)) 
+						cur_status = status_Deprecated;
+					else if(MFS_string_match(&s,"SEMI_DEPRECATED",true)) 
+						cur_status = status_Yellow;
+						
+					MFS_string_eol(&s,NULL);
 				}
-
-				if(MFS_string_match(&s,"EXPORT_EXCLUDE",false))
-				{
-					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
-					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
-				}
-
-				if(MFS_string_match(&s,"EXPORT_BACKUP",false))
-				{
-					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
-					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,true,is_default_pack, cur_status);
-				}
-
-				if(MFS_string_match(&s,"EXPORT_RATIO",false))
-				{
-					MFS_int(&s);
-					MFS_string(&s,&vpath);
-					MFS_string(&s,&rpath);
-					clean_vpath(vpath);
-					clean_rpath(rpath);
-					rpath=pack_base+DIR_STR+rpath;
-					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
-				}
-				MFS_string_eol(&s,NULL);
 			}
-
 			MemFile_Close(lib);
 		}
 	}
@@ -353,18 +396,31 @@ void		WED_LibraryMgr::Rescan()
 
 void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default, int status)
 {
-	int								rt = res_None;
-	if(HasExtNoCase(path, ".obj"))	rt = res_Object;
-	if(HasExtNoCase(path, ".agp"))	rt = res_Object;
-	if(HasExtNoCase(path, ".fac"))	rt = res_Facade;
-	if(HasExtNoCase(path, ".for"))	rt = res_Forest;
-	if(HasExtNoCase(path, ".str"))	rt = res_String;
-	if(HasExtNoCase(path, ".ags"))	rt = res_Polygon;
-	if(HasExtNoCase(path, ".lin"))	rt = res_Line;
-	if(HasExtNoCase(path, ".pol"))	rt = res_Polygon;
-	if(HasExtNoCase(path, ".agb"))	rt = res_Polygon;
-	if(HasExtNoCase(path, ".net"))	rt = res_Road;
-	if(rt == res_None) return;
+
+    // surprise: This function is called 60,300 time upon loading any scenery. Yep, XP11 has that many items in the libraries.
+    // Resultingly the full path was converted to lower case 0.6 million times => 24 million calls to tolower() ... time to optimize
+    
+	string suffix;
+	suffix = FILE_get_file_extension(path);
+	
+	int	rt;
+	
+	if     (suffix == "obj") rt = res_Object;
+	else if(suffix == "agp") rt = res_Object;
+	else if(suffix == "fac") rt = res_Facade;
+	else if(suffix == "for") rt = res_Forest;
+	else if(suffix == "str") rt = res_String;
+	else if(suffix == "lin") rt = res_Line;
+	else if(suffix == "pol") rt = res_Polygon;
+// not sure we want to even list these	
+	else if(suffix == "ags") rt = res_Polygon;
+	else if(suffix == "agb") rt = res_Polygon;
+#if ROAD_EDITING
+	else if(suffix == "net") rt = res_Road;
+#endif
+	else return;
+
+	if (package >= 0 && status >= status_Public) gPackageMgr->HasPublicItems(package);
 
 	string p(path);
 	while(!p.empty())
@@ -376,7 +432,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.status = status;
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
-			new_info.real_path = rpath;
+			new_info.real_paths.push_back(rpath);
 			new_info.is_backup = is_backup;
 			new_info.is_default = is_default;
 			res_table.insert(res_map_t::value_type(p,new_info));
@@ -389,8 +445,12 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			if(i->second.is_backup && !is_backup)
 			{
 				i->second.is_backup = false;
-				i->second.real_path = rpath;
+				i->second.real_paths.clear();
 			}
+			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
+			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
+				i->second.real_paths.push_back(rpath);
+				
 			if(is_default && !i->second.is_default)
 				i->second.is_default = true;
 		}

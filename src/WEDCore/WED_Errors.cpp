@@ -48,7 +48,7 @@ wed_error_exception::wed_error_exception(const char * file, int line, const char
 	va_list	arg;
 	va_start(arg, fmt);
 	vsnprintf(mMsg, sizeof(mMsg), fmt, arg);
-
+	va_end(arg);
 }
 
 wed_error_exception::wed_error_exception(const wed_error_exception& rhs) _MSL_THROW
@@ -82,6 +82,7 @@ void			WED_ReportExceptionUI(const exception& what, const char * fmt, ...)
 	va_list	arg;
 	va_start(arg, fmt);
 	vsnprintf(msg, sizeof(msg), fmt, arg);
+	va_end(arg);
 
 	strcat(msg, what.what());
 

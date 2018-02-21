@@ -17,7 +17,7 @@ const CACHE_domain_policy k_domain_policies[] = {
 	// age,          client,  server cooldown
 	{ (MINUTE * 10), (MINUTE), (MINUTE) }, //none
 	{ (DAY)        , (MINUTE), (MINUTE) }, //metadata_csv
-	{ (MINUTE * 10), (MINUTE), (MINUTE) }, //airports_json
+	{ (HOUR),        (MINUTE), (MINUTE) }, //airports_json
 	{ (MINUTE * 10), (MINUTE), (MINUTE) }, //airports_versions_json
 	{ (INFINITE),    (MINUTE), (MINUTE) }, //scenery_pack
 	{ (WEEK),    (MINUTE), (MINUTE) },     //osm_tile

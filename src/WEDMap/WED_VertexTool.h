@@ -89,7 +89,7 @@ private:
 			void		GetEntityInternal(void) const;
 			void		AddEntityRecursive(IGISEntity * e, const Bbox2& bounds) const;
 			void		AddSnapPointRecursive(IGISEntity * e, const Bbox2& bounds, ISelection * sel) const;
-			void		SnapMovePoint(const Point2& ideal_track_pt, Point2& io_thing_pt, IGISEntity * who);
+			bool		SnapMovePoint(const Point2& ideal_track_pt, Point2& io_thing_pt, IGISEntity * who);
 
 		int						mInEdit;
 		int						mIsRotate;
@@ -100,6 +100,8 @@ private:
 		mutable Point2			mTaxiDest;
 		mutable double			mRotateOffset;
 		mutable	int				mRotateIndex;
+		mutable	Vector2			mPointOffset1;
+		mutable	Vector2			mPointOffset2;
 
 		IGISPoint *				mNewSplitPoint;		// When we option-click to get a split point...this is the newly born point.
 		

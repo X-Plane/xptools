@@ -26,7 +26,6 @@
 #include "WED_Errors.h"
 #include "IODefs.h"
 #include "STLUtils.h"
-#include "SQLUtils.h"
 #include "MathUtils.h"
 #include "XESConstants.h"
 #include "WED_EnumSystem.h"
@@ -79,7 +78,7 @@ void		WED_PropertyHelper::SetNthProperty(int n, const PropertyVal_t& val)
 	mItems[n]->SetProperty(val,this);
 }
 
-WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title, SQL_Name sql_col, XML_Name xml_col) : mTitle(title), mSQLColumn(sql_col), mXMLColumn(xml_col), mParent(pops)
+WED_PropertyItem::WED_PropertyItem(WED_PropertyHelper * pops, const char * title) : mTitle(title), mParent(pops)
 {
 	if (pops)
 		pops->mItems.push_back(this);
@@ -95,47 +94,6 @@ void 		WED_PropertyHelper::WritePropsTo(IOWriter * writer)
 {
 	for (int n = 0; n < mItems.size(); ++n)
 		mItems[n]->WriteTo(writer);
-}
-
-void 		WED_PropertyHelper::PropsFromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	for (int n = 0; n < mItems.size(); ++n)
-		mItems[n]->FromDB(db,where_clause, mapping);
-}
-
-void 		WED_PropertyHelper::PropsToDB(sqlite3 * db, const char * id_col, const char * id_val, const char * skip_table)
-{
-	SQL_Update update;
-	for (int n = 0; n < mItems.size(); ++n)
-	{
-		mItems[n]->ToDB(db,id_col, id_val);
-		mItems[n]->GetUpdate(update);
-	}
-
-	string skip(skip_table ? skip_table : "");
-
-	for (SQL_Update::iterator table = update.begin(); table != update.end(); ++table)
-	{
-		if (table->first == skip) continue;
-		string cols = id_col;
-		string vals = id_val;
-		for (SQL_TableUpdate::iterator col = table->second.begin(); col != table->second.end(); ++col)
-		{
-			cols += ",";
-			cols += col->first;
-			vals += ",";
-			vals += col->second;
-		}
-
-		string cmd = string("INSERT OR REPLACE INTO ") + table->first +
-					 string("(") + cols +
-					 string(") VALUES(") +
-					 vals + ");";
-
-		sql_command write_to_table(db, cmd.c_str(), NULL);
-		int err = write_to_table.simple_exec();
-		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	}
 }
 
 void		WED_PropertyHelper::PropsToXML(WED_XMLElement * parent)
@@ -180,11 +138,7 @@ int			WED_PropertyHelper::PropertyItemNumber(const WED_PropertyItem * item) cons
 	return -1;
 }
 
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
 #pragma mark -
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 void		WED_PropIntText::GetPropertyInfo(PropertyInfo_t& info)
 {
@@ -233,51 +187,26 @@ void 		WED_PropIntText::WriteTo(IOWriter * writer)
 	writer->WriteInt(value);
 }
 
-void		WED_PropIntText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.second[0] == 0) return;
-
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0		k;
-	sql_row1<int>	v;
-	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;
-}
-
-void		WED_PropIntText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropIntText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_int(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_int(p,value);
 }
 
 bool		WED_PropIntText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = atoi(att_value);
 		return true;
 	}
 	return false;
 }
-
-
-
-void		WED_PropIntText::GetUpdate(SQL_Update& io_update)
-{
-	if(mSQLColumn.second[0] == 0) return;
-	char as_int[1024];
-	sprintf(as_int,"%d", value);
-	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_int));
-}
-
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -327,50 +256,26 @@ void 		WED_PropBoolText::WriteTo(IOWriter * writer)
 	writer->WriteInt(value);
 }
 
-void		WED_PropBoolText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.first[0] == 0)	
-		return;
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0		k;
-	sql_row1<int>	v;
-	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;
-}
-
-void		WED_PropBoolText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropBoolText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_int(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_int(p,value);
 }
 
 bool		WED_PropBoolText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = atoi(att_value);
 		return true;
 	}
 	return false;
 }
-
-
-void		WED_PropBoolText::GetUpdate(SQL_Update& io_update)
-{
-	if(mSQLColumn.first[0] == 0)	return;
-	char as_int[1024];
-	sprintf(as_int,"%d", value);
-	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_int));
-}
-
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -384,7 +289,7 @@ void		WED_PropDoubleText::GetPropertyInfo(PropertyInfo_t& info)
 	info.decimals = mDecimals;
 	info.round_down = false;
 	info.synthetic = 0;
-	info.units = " ";
+	info.units = mUnit;
 }
 
 void		WED_PropDoubleText::GetPropertyDict(PropertyDict_t& dict)
@@ -424,33 +329,20 @@ void 		WED_PropDoubleText::WriteTo(IOWriter * writer)
 	writer->WriteDouble(value);
 }
 
-void		WED_PropDoubleText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0			k;
-	sql_row1<double>	v;
-	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;
-}
-
-void		WED_PropDoubleText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropDoubleText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_double(mXMLColumn.second,value,mDecimals);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_double(p,value,mDecimals);
 }
 
 bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = atof(att_value);
 		return true;
@@ -458,22 +350,10 @@ bool		WED_PropDoubleText::WantsAttribute(const char * ele, const char * att_name
 	return false;
 }
 
-
-void		WED_PropDoubleText::GetUpdate(SQL_Update& io_update)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char as_double[1024];
-	sprintf(as_double,"%.10lf", value);
-	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_double));
-}
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 void		WED_PropFrequencyText::GetPropertyInfo(PropertyInfo_t& info)
 {
 	WED_PropDoubleText::GetPropertyInfo(info);
 	info.round_down = true;
-	info.units = "MHz";
 }
 
 int		WED_PropFrequencyText::GetAs10Khz(void) const
@@ -495,11 +375,11 @@ void	WED_PropFrequencyText::AssignFrom10Khz(int freq_10khz)
 
 void		WED_PropFrequencyText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_double(mXMLColumn.second,value,mDecimals+1);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_double(p,value,mDecimals+1);
 }
-
-
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -575,46 +455,25 @@ void 		WED_PropStringText::WriteTo(IOWriter * writer)
 	writer->WriteBulk(value.c_str(),value.size(),false);
 }
 
-
-void		WED_PropStringText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0			k;
-	sql_row1<string>	v;
-	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;
-}
-
-void		WED_PropStringText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropStringText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_stl_str(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_stl_str(p,value);
 }
 
 bool		WED_PropStringText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = att_value;
 		return true;
 	}
 	return false;
-}
-
-void		WED_PropStringText::GetUpdate(SQL_Update& io_update)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	string quoted = sqlite3_quote_string(value);
-	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, quoted));
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -670,48 +529,26 @@ void 		WED_PropFileText::WriteTo(IOWriter * writer)
 	writer->WriteBulk(value.c_str(),value.size(),false);
 }
 
-
-void		WED_PropFileText::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0			k;
-	sql_row1<string>	v;
-	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	value = v.a;
-}
-
-void		WED_PropFileText::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropFileText::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_stl_str(mXMLColumn.second,value);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_stl_str(p,value);
 }
 
 bool		WED_PropFileText::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = att_value;
 		return true;
 	}
 	return false;
 }
-
-void		WED_PropFileText::GetUpdate(SQL_Update& io_update)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	string quoted = sqlite3_quote_string(value);
-	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, quoted));
-}
-
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -767,53 +604,26 @@ void 		WED_PropIntEnum::WriteTo(IOWriter * writer)
 	writer->WriteInt(value);
 }
 
-void		WED_PropIntEnum::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0			k;
-	sql_row1<int>		v;
-	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-
-	value = remap(mapping,v.a);
-	DebugAssert(value != -1);
-	DebugAssert(ENUM_Domain(value)==domain);
-}
-
-void		WED_PropIntEnum::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropIntEnum::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_c_str(mXMLColumn.second,ENUM_Desc(value));
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_c_str(p,ENUM_Desc(value));
 }
 
 bool		WED_PropIntEnum::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		value = ENUM_LookupDesc(domain,att_value);
 		return true;
 	}
 	return false;
 }
-
-
-void		WED_PropIntEnum::GetUpdate(SQL_Update& io_update)
-{
-	if(mSQLColumn.first[0] == 0) return;
-
-	char as_int[1024];
-	sprintf(as_int,"%d", value);
-	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_int));
-}
-
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -883,66 +693,14 @@ void 		WED_PropIntEnumSet::WriteTo(IOWriter * writer)
 	}
 }
 
-void		WED_PropIntEnumSet::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0			k;
-	sql_row1<int>		v;
-
-	value.clear();
-	cmd.begin();
-	int rc;
-	do {
-		rc = cmd.get_row(v);
-		if (rc == SQLITE_ROW)
-		{
-			v.a = remap(mapping, v.a);
-			DebugAssert(v.a != -1);
-			value.insert(v.a);
-			DebugAssert(ENUM_Domain(v.a)==domain);
-		}
-	} while (rc == SQLITE_ROW);
-
-	if (rc != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),rc);
-}
-
-void		WED_PropIntEnumSet::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-	if(mSQLColumn.first[0] == 0) return;
-
-	char cmd_buf[1000];
-
-	{
-		sprintf(cmd_buf,"DELETE FROM %s WHERE %s=%s;",mSQLColumn.first, id_col,id_val);
-		sql_command cmd(db,cmd_buf,NULL);
-		int err = cmd.simple_exec();
-		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	}
-
-	if (!value.empty())
-	{
-		sprintf(cmd_buf, "INSERT INTO %s (%s,%s) VALUES(%s,@e);", mSQLColumn.first, id_col, mSQLColumn.second, id_val);
-		sql_command cmd2(db,cmd_buf,"@e");
-		for (set<int>::iterator i = value.begin(); i != value.end(); ++i)
-		{
-			sql_row1<int>	p;
-
-			p.a = *i;
-			int err = cmd2.simple_exec(p);
-			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-		}
-	}
-}
-
 void		WED_PropIntEnumSet::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
 	for(set<int>::iterator i = value.begin(); i != value.end(); ++i)
 	{
-		WED_XMLElement * ele = xml->add_sub_element(mXMLColumn.second);
+		WED_XMLElement * ele = xml->add_sub_element(p);
 		ele->add_attr_c_str("value",ENUM_Desc(*i));
 	}
 }
@@ -954,7 +712,8 @@ bool		WED_PropIntEnumSet::WantsAttribute(const char * ele, const char * att_name
 
 bool		WED_PropIntEnumSet::WantsElement(WED_XMLReader * reader, const char * name)
 {
-	if(strcasecmp(name,mXMLColumn.first)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(name,p)==0)
 	{
 		reader->PushHandler(this);
 		value.clear();	
@@ -968,7 +727,9 @@ void		WED_PropIntEnumSet::StartElement(
 								const XML_Char *	name,
 								const XML_Char **	atts)
 {
-	if(strcasecmp(name,mXMLColumn.second) == 0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	p += strlen(p)+1;
+	if(strcasecmp(name,p) == 0)
 	{
 		const XML_Char * v = get_att("value", atts);
 		if(!v) reader->FailWithError("no value");
@@ -984,11 +745,6 @@ void		WED_PropIntEnumSet::StartElement(
 }
 void		WED_PropIntEnumSet::EndElement(void){ }
 void		WED_PropIntEnumSet::PopHandler(void){ }
-
-void		WED_PropIntEnumSet::GetUpdate(SQL_Update& io_update)
-{
-}
-
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1060,33 +816,20 @@ void 		WED_PropIntEnumBitfield::WriteTo(IOWriter * writer)
 	}
 }
 
-void		WED_PropIntEnumBitfield::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char cmd_buf[1000];
-	sprintf(cmd_buf,"SELECT %s FROM %s WHERE %s;",mSQLColumn.second,mSQLColumn.first, where_clause);
-	sql_command cmd(db, cmd_buf,NULL);
-	sql_row0		k;
-	sql_row1<int>	v;
-	int err = cmd.simple_exec(k,v);
-	if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db),err);
-	ENUM_ImportSet(domain, v.a, value);
-}
-
-void		WED_PropIntEnumBitfield::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropIntEnumBitfield::ToXML(WED_XMLElement * parent)
 {
-	WED_XMLElement * xml = parent->add_or_find_sub_element(mXMLColumn.first);
-	xml->add_attr_int(mXMLColumn.second,ENUM_ExportSet(value));
+	const char *p = mTitle+strlen(mTitle)+1;
+	WED_XMLElement * xml = parent->add_or_find_sub_element(p);
+	p += strlen(p)+1;
+	xml->add_attr_int(p,ENUM_ExportSet(value));
 }
 
 bool		WED_PropIntEnumBitfield::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
-	if(strcasecmp(mXMLColumn.first,ele)==0)
-	if(strcasecmp(mXMLColumn.second,att_name)==0)
+	const char *p = mTitle+strlen(mTitle)+1;
+	if(strcasecmp(p,ele)==0)
+	p += strlen(p)+1;
+	if(strcasecmp(p,att_name)==0)
 	{
 		int bf = atoi(att_value);
 		ENUM_ImportSet(domain, bf, value);		
@@ -1095,17 +838,7 @@ bool		WED_PropIntEnumBitfield::WantsAttribute(const char * ele, const char * att
 	return false;
 }
 
-
-void		WED_PropIntEnumBitfield::GetUpdate(SQL_Update& io_update)
-{
-	if(mSQLColumn.first[0] == 0) return;
-	char as_int[1024];
-	sprintf(as_int,"%d", ENUM_ExportSet(value));
-	io_update[mSQLColumn.first].push_back(SQL_ColumnUpdate(mSQLColumn.second, as_int));
-}
-
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 void		WED_PropIntEnumSetFilter::GetPropertyInfo(PropertyInfo_t& info)
 {
@@ -1169,14 +902,6 @@ void 		WED_PropIntEnumSetFilter::WriteTo(IOWriter * writer)
 {
 }
 
-void		WED_PropIntEnumSetFilter::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-}
-
-void		WED_PropIntEnumSetFilter::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropIntEnumSetFilter::ToXML(WED_XMLElement * parent)
 {
 }
@@ -1184,11 +909,6 @@ void		WED_PropIntEnumSetFilter::ToXML(WED_XMLElement * parent)
 bool		WED_PropIntEnumSetFilter::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
 	return false;
-}
-
-
-void		WED_PropIntEnumSetFilter::GetUpdate(SQL_Update& io_update)
-{
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1297,14 +1017,6 @@ void 		WED_PropIntEnumSetUnion::WriteTo(IOWriter * writer)
 {
 }
 
-void		WED_PropIntEnumSetUnion::FromDB(sqlite3 * db, const char * where_clause, const map<int,int>& mapping)
-{
-}
-
-void		WED_PropIntEnumSetUnion::ToDB(sqlite3 * db, const char * id_col, const char * id_val)
-{
-}
-
 void		WED_PropIntEnumSetUnion::ToXML(WED_XMLElement * parent)
 {
 }
@@ -1313,8 +1025,3 @@ bool		WED_PropIntEnumSetUnion::WantsAttribute(const char * ele, const char * att
 {
 	return false;
 }
-
-void		WED_PropIntEnumSetUnion::GetUpdate(SQL_Update& io_update)
-{
-}
-
