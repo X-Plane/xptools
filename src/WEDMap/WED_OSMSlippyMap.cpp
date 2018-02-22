@@ -34,10 +34,10 @@
 #include <iostream>
 #endif
 
-#define MIN_ZOOM  13
+#define MIN_ZOOM  13        // stop displaying OSM at all below this level
 #define MAX_ZOOM  16
 #define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
-							// Since zoom goes 1.2x steps - it matters little w.r.t "sharpness"
+							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
 							// but saves on average 34% of all tile loads
 
 // This table of zoom levels comes from...
@@ -58,7 +58,7 @@ static const double k_mpp[OSM_ZOOM_LEVELS] = {
 	38.219,
 	19.109,
 	9.5546,
-	4.7773,
+	4.7773,      // ZL16, the hihest level that is always cached data arther than real-time computed
 	2.3887,
 	1.1943,
 	0.5972 };

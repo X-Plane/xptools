@@ -47,6 +47,7 @@ WED 1.7.0a19
 	- WED-988: Add validation warnings if no truckroutes but not vehicle parking position available
 	- WED-917: Move meter/feet settings a new "Preferences" Menu, add D.M.S choices for info bar
 	- Julians moderator mode can now be selected in the preferences, affects GW import listing only
+	- OSM SlippyMap Display
 	- WED-78: Increase resolution of World Map background display
 	Bug fixes:
 	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
