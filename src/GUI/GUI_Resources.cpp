@@ -59,8 +59,7 @@ static char* mangle_name (const char* filename, const char* suffix)
 
 	buf = new char[size];
 	if (buf == 0) return 0;
-	memset(buf, 0, size);
-	sprintf(buf, "_binary_%s_%s", filename, suffix);
+	snprintf(buf, size, "_binary_%s_%s", filename, suffix);
 
 	for (p = buf; *p; p++)
 	if (!isalnum(*p)) *p = '_';

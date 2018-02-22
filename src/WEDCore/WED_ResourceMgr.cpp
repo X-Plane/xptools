@@ -25,6 +25,8 @@
 #include "WED_FacadePreview.h"
 #include "WED_Messages.h"
 #include "WED_LibraryMgr.h"
+#include "WED_Globals.h"
+
 #include "MemFileUtils.h"
 #include "XObjReadWrite.h"
 #include "ObjConvert.h"
@@ -32,8 +34,6 @@
 #include "WED_PackageMgr.h"
 #include "CompGeomDefs2.h"
 #include "MathUtils.h"
-
-extern int gIsFeet;
 
 static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {

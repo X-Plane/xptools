@@ -27,7 +27,6 @@
 #include "FileUtils.h"
 #include "WED_Entity.h"
 #include "PlatformUtils.h"
-//#include "GISUtils.h"
 #include "CompGeomDefs2.h"
 #include "WED_Group.h"
 #include "WED_Version.h"
@@ -57,9 +56,12 @@
 #include "BitmapUtils.h"
 #include "GISUtils.h"
 #include <time.h>
-#include "PerfUtils.h"
 #include "STLUtils.h"
 #include "WED_RoadEdge.h"
+
+#if DEV
+#include "PerfUtils.h"
+#endif
 
 // This is how much outside the DSF bounds we can legally go.
 // Between you, me, and the wall, X-Plane 10.21 actually allows
@@ -273,26 +275,15 @@ void dsf_road_grid_helper::add_segment(WED_RoadEdge * e)
 	m_nodes[ei->second].edges.push_back(m_edges.size());
 	
 	Bezier2 b;
-	Segment2 s;
-	if(!e->GetSide(gis_Geo, 0, s, b))
+	if(e->GetSide(gis_Geo, 0, b)) // We are a real bezier:
 	{
-		b.p1 = s.p1;
-		b.c1 = s.p1;
-		b.c2 = s.p2;
-		b.c2 = s.p2;
-	}
-	else
-	{
-		if(b.p1 != b.c1 || b.p2 != b.c2)	// We are a real bezier:
+		if(b.p1 == b.c1)
 		{
-			if(b.p1 == b.c1)
-			{
-				b.c1 = b.p1 + b.derivative(0.01);
-			}
-			else if(b.p2 == b.c2)
-			{
-				b.c2 = b.p2 - b.derivative(0.99);
-			}
+			b.c1 = b.p1 + b.derivative(0.01);
+		}
+		else if(b.p2 == b.c2)
+		{
+			b.c2 = b.p2 - b.derivative(0.99);
 		}
 	}
 	new_edge.path.push_back(b);
@@ -1996,8 +1987,9 @@ static int DSF_ExportTile(WED_Thing * base, IResolver * resolver, const string& 
 
 int DSF_Export(WED_Thing * base, IResolver * resolver, const string& package, set<WED_Thing *>& problem_children)
 {
+#if DEV
 	StElapsedTime	etime("Export time");
-
+#endif
 	g_dropped_pts = false;
 	Bbox2	wrl_bounds;
 	

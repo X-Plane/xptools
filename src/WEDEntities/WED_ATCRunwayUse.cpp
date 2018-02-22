@@ -51,7 +51,7 @@ WED_ATCRunwayUse::~WED_ATCRunwayUse()
 
 void	WED_ATCRunwayUse::SetRunway(int r)
 {
-	rwy.value = r;
+	rwy = r;
 }
 
 int WED_ATCRunwayUse::GetRunway(void) const
@@ -123,6 +123,19 @@ void	WED_ATCRunwayUse::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 	}
 	else
 		WED_Thing::GetNthPropertyDict(n,dict);			
+}
+
+void		WED_ATCRunwayUse::PropEditCallback(int before)
+{
+	if (!before)
+	{
+		char buf[20];
+		snprintf(buf,20,"%s%s%s Rwy %s", operations.value.count(atc_Arrivals) ? "Arr" : "",
+		                                 operations.value.size() > 1 ? "," : "",
+		                                 operations.value.count(atc_Departures) ? "Dep" : "",
+		                                 ENUM_Desc(rwy.value));
+		SetName(buf);
+	}
 }
 
 

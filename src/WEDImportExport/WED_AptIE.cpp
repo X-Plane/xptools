@@ -258,9 +258,8 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 		vector<IGISPoint *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(1));
 		base->dst = std::distance(nodes->begin(), pos_dst);;
 		
-		Segment2 s;
 		Bezier2 b;
-		if((*e)->GetSide(gis_Geo, 0, s, b))
+		if((*e)->GetSide(gis_Geo, 0, b))
 		{
 			base->shape.push_back(make_pair(b.c1,true));
 			base->shape.push_back(make_pair(b.c2,true));
@@ -490,9 +489,9 @@ int		WED_CanExportApt(IResolver * resolver)
 	return wrl->CountChildren() > 0;
 }
 
-void	WED_DoExportApt(IResolver * resolver)
+void	WED_DoExportApt(WED_Document * resolver, WED_MapPane * pane)
 {
-	if (!WED_ValidateApt(resolver)) return;
+	if (!WED_ValidateApt(resolver, pane)) return;
 
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	char path[1024];

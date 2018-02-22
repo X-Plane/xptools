@@ -21,7 +21,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
+#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= -lpthread -lrt
 endif #PLAT_LINUX
 
@@ -38,7 +38,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
+#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
@@ -54,7 +54,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
+#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 endif #PLAT_DARWIN
 
 

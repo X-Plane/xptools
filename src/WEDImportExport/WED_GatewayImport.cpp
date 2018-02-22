@@ -21,39 +21,38 @@
  *
  */
 
-#include "XDefs.h"
+
 #include "WED_GatewayImport.h"
 
 #if HAS_GATEWAY
-#include "WED_MetaDataDefaults.h"
+#include "MemFileUtils.h"
+#include "FileUtils.h"
 
 #include "PlatformUtils.h"
 #include "GUI_Resources.h"
-#include "WED_Url.h"
 #include "curl_http.h"
 #include <curl/curl.h>
+#include <json/json.h>
 #include "RAII_Classes.h"
 
 #include <sstream>
 
-#include <json/json.h>
-
 #include "WED_Document.h"
 #include "WED_PackageMgr.h"
 #include "WED_MapPane.h"
+#include "WED_MetaDataDefaults.h"
+#include "WED_Url.h"
+#include "WED_Globals.h"
 
 #include "GUI_Application.h"
 #include "GUI_Window.h"
 #include "GUI_Packer.h"
 #include "GUI_Timer.h"
-
 #include "GUI_Label.h"
-
 #include "GUI_FilterBar.h"
 #include "GUI_Button.h"
+
 #include "WED_Messages.h"
-#include "MemFileUtils.h"
-#include "FileUtils.h"
 //--DSF/AptImport
 #include "WED_AptIE.h"
 #include "WED_ToolUtils.h"
@@ -67,7 +66,7 @@
 #include "GUI_TextTable.h"
 #include "WED_Colors.h"
 
-#define ALLOW_MULTI_IMPORT 0    // set this if you want to allow to import multiple airports at a time
+#define ALLOW_MULTI_IMPORT 1    // set this if you want to allow to import multiple airports at a time
 
 #if ALLOW_MULTI_IMPORT
 	#include "WED_AptTable.h"
@@ -462,14 +461,16 @@ void WED_GatewayImportDialog::Next()
 		{
 				if (ConfirmMessage("Multiple Airports are selected", "Import recommended version for each", "Cancel"))
 				{
+					int max_imports = 50;                  // some artifical limit from keeping the gateway being loaded by robots
 					mVersions_VersionsSelected.clear();
 					mVersions_Vers.clear();
-					for(set<int>::iterator apt = apts.begin(); apt!=apts.end(); ++apt)
+					for(set<int>::iterator apt = apts.begin(); apt != apts.end(); ++apt)
 					{
 						VerInfo_t v; 
 						v.icao = mICAO_Apts.at(*apt).icao; v.sceneryId = mICAO_Apts.at(*apt).kind_code;
 						mVersions_Vers.push_back(v);
 						mVersions_VersionsSelected.insert(mVersions_Vers.size()-1);
+						if(!--max_imports) break;                 
 					}
 					DecorateGUIWindow("Loading file(s) from hard drive, please wait...");
 					NextVersionsDownload();
@@ -686,9 +687,90 @@ void WED_GatewayImportDialog::FillICAOFromJSON(const string& json_string)
 		{
 			AptInfo_t cur_airport;
 			cur_airport.icao = tmp["AirportCode"].asString();
-			cur_airport.name = tmp["AirportName"].asString();
-			cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();  // mis-using that property to support multi-airport import
+			cur_airport.default_buildings = tmp["ExcludeSubmissions"].asInt();  // mis-using that property for warnings
+			
+			if(gModeratorMode)
+			{
+				cur_airport.kind_code = 0;           // we put the scenery-ID to download in here
 
+				if (tmp["AcceptedSceneryCount"].asInt() > tmp["ApprovedSceneryCount"].asInt())
+				{
+					string cert;
+					if(!GUI_GetTempResourcePath("gateway.crt", cert))
+					{
+						mPhase = imp_dialog_error;
+						DecorateGUIWindow("This copy of WED is damaged - the certificate for the X-Plane airport gateway is missing.");
+						return;
+					}
+
+					string url = WED_URL_GATEWAY_API;
+					//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
+					url += "airport/" + cur_airport.icao;
+					mCacheRequest.in_url = url;
+
+					//Get it from the server
+					mCacheRequest.in_cert = cert;
+					mCacheRequest.in_domain = cache_domain_airport_versions_json;
+
+					stringstream pfx;
+					pfx << "scenery_packs" << DIR_STR << "GatewayImport" << DIR_STR << cur_airport.icao;
+					mCacheRequest.in_folder_prefix = pfx.str();
+					
+					mRequestCount = 0;
+					
+					WED_file_cache_response res = WED_file_cache_request_file(mCacheRequest);
+					
+					for (int i = 0; i < 5; ++i) // try downloading version info for 5sec. Should normally be enough.
+					{
+						if(res.out_status == cache_status_downloading)
+						{
+							printf("Downloading version info for %s, hang on %d\n", cur_airport.icao.c_str(), i);
+							#if IBM
+							Sleep(1000);
+							#else
+							sleep(1);     // really dumb, as it makes the program unresponsible during this download.
+							#endif
+							res = WED_file_cache_request_file(mCacheRequest);
+						}
+					}
+
+					string vers_info;
+					if(res.out_status == cache_status_available && FILE_read_file_to_string(res.out_path, vers_info) == 0)
+					{
+						string AcceptDate;
+						
+						Json::Value root2;
+						Json::Reader reader2;
+						bool success = reader2.parse(vers_info,root2);
+						if(success == false)
+							break;
+						Json::Value airport = root2["airport"];
+						Json::Value sceneryArray = Json::Value(Json::arrayValue);
+						sceneryArray = airport["scenery"];
+						for (Json::ValueIterator itr = sceneryArray.begin(); itr != sceneryArray.end(); itr++)
+						{
+							Json::Value curScenery = *itr;
+							if(curScenery["Status"].asString() == "Accepted")
+							{
+								AcceptDate = curScenery.operator[]("dateAccepted").asString();
+								if (AcceptDate == "") AcceptDate = "(No date)";
+								cur_airport.kind_code = curScenery.operator[]("sceneryId").asInt();
+								break;
+							}
+						}
+						cur_airport.name = string("Accepted ") + AcceptDate.substr(0,10) + ": " + tmp["AirportName"].asString();
+					}
+					else
+						cur_airport.name = string("Accepted (download error): ") + tmp["AirportName"].asString();
+				}
+				else
+					cur_airport.name = string("Nothing to do: ") + tmp["AirportName"].asString();
+			}
+			else
+			{
+				cur_airport.name = tmp["AirportName"].asString();
+				cur_airport.kind_code = tmp["RecommendedSceneryId"].asInt();        // mis-using that property to support multi-airport import
+			}
 			//Add the current scenery object's airport code
 			mICAO_Apts.push_back(cur_airport);
 		}
@@ -717,10 +799,7 @@ void WED_GatewayImportDialog::FillVersionsFromJSON(const string& json_string)
 		return;
 	}
 	Json::Value airport = root["airport"];
-	
-	
-	Json::Value sceneryArray = Json::Value(Json::arrayValue);
-	sceneryArray = airport["scenery"];
+	Json::Value sceneryArray = airport["scenery"];
 	
 	//Clear the previous list no matter what
 	mVersions_Vers.clear();
@@ -834,6 +913,9 @@ bool WED_GatewayImportDialog::StartVersionsDownload()
 	
 	//Current airport selected
 	AptInfo_t current_apt = mICAO_Apts.at(*out_selection.begin());
+	
+	if(current_apt.default_buildings)
+		DoUserAlert("Submissions for this airport are not being accepted on the Gateway currently. Further development of this scenery pack for Gateway purposes is therefore not recommended.");
 	
 	string url = WED_URL_GATEWAY_API;
 	//Makes the url "https://gatewayapi.x-plane.com:3001/apiv1/airport/ICAO"
@@ -968,12 +1050,6 @@ WED_Airport * WED_GatewayImportDialog::ImportSpecificVersion(const string& json_
 			return NULL;
 		}
 	}
-
-#if DEV
-	//This line makes it easier to edit the zip path in the memory editor
-	//DO NOT USE edit_me
-	const char * edit_me = zipPath.c_str();
-#endif
 
 	bool has_dsf = false;
 

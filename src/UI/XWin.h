@@ -81,12 +81,11 @@ enum {
 	xwin_style_thin				= 0,			// Thin window - just a rectangle
 	xwin_style_movable			= 1,			// Movable - but no machinery to resize
 	xwin_style_resizable		= 2,			// The works: resize, maximize, minimize, zoom, etc.
-	xwin_style_modal			= 3,			// Modal - don't let the user have access to what's behind until they deal with this!
-
+	xwin_style_modal			= 4,			// Modal - don't let the user have access to what's behind until they deal with this!
 	xwin_style_visible			= 8,			// Start visible?
-
 	xwin_style_centered			= 16,			// Center on screen
-	xwin_style_fullscreen		= 32			// Maximize to fill a screen
+	xwin_style_fullscreen		= 32,			// start in full screen mode
+	xwin_style_popup			= 64			// popup-window style, i.e. no menubar on Lin/Win
 };
 
 class	XWin
@@ -102,14 +101,12 @@ class	XWin
 #endif
 public:
 
-#if APL
-		typedef	void *	XContext;
-#endif
 #if IBM
 		typedef HDC		XContext;
+#else
+        typedef void *	XContext;
 #endif
 #if LIN
-        typedef void*	XContext;
 	XWin(int default_dnd, QWidget *parent = 0);
 	XWin(
 		int		default_dnd,

@@ -98,8 +98,8 @@ enum {
 	wed_ZoomWorld,
 	wed_ZoomAll,
 	wed_ZoomSelection,
-	wed_UnitFeet,
-	wed_UnitMeters,
+//	wed_UnitFeet,
+//	wed_UnitMeters,
 	wed_ToggleLines,
 	wed_ToggleVertices,
 	wed_PickOverlay,
@@ -141,7 +141,7 @@ enum {
 	wed_AddATCWindRule,
 #endif
 	wed_UpgradeRamps,
-	wed_RenameRwys,
+	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!

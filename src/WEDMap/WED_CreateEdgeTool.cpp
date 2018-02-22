@@ -450,8 +450,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 				for(int n = 0; n < ns; ++n)
 				{
 					Bezier2 b;
-					Segment2 s;
-					if(ps->GetSide(gis_Geo,n,s,b))
+					if(ps->GetSide(gis_Geo,n,b))
 					{
 						if(loc != b.p1 && loc != b.p2)
 						{								
@@ -466,9 +465,9 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 					}
 					else					
 					{
-						if(loc != s.p1 && loc != s.p2)
+						if(loc != b.p1 && loc != b.p2)
 						{
-							double d = s.squared_distance(loc);
+							double d = b.as_segment().squared_distance(loc);
 							if(d < out_dsq)
 							{
 								out_dsq = d;
