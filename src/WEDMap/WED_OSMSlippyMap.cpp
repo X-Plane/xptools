@@ -34,7 +34,11 @@
 #include <iostream>
 #endif
 
-#define MIN_ZOOM 0
+#define MIN_ZOOM  13
+#define MAX_ZOOM  16
+#define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
+							// Since zoom goes 1.2x steps - it matters little w.r.t "sharpness"
+							// but saves on average 34% of all tile loads
 
 // This table of zoom levels comes from...
 // http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
@@ -85,14 +89,11 @@ double tiley2lat(int y, int z)
 
 
 
-
-
-
 static int get_osm_zoom_for_map_ppm(double in_ppm)
 {
 	double mpp = 1.0 / in_ppm;
 	int osm = 0;
-	while(osm < OSM_ZOOM_LEVELS && k_mpp[osm] > mpp)
+	while(osm <= MAX_ZOOM && k_mpp[osm]*TILE_FACTOR > mpp)
 		++osm;
 	
 	if(osm > 0) --osm;
@@ -147,13 +148,12 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	map_bounds[3] = doblim(map_bounds[3],-85.0,85.0);
 
 	double ppm = zoomer->GetPPM();
-	
 	int z_max = get_osm_zoom_for_map_ppm(ppm);
+	if(z_max < MIN_ZOOM) return;
 	
 	int want = 0, got = 0, bad = 0;
-	
-	for(int z = MIN_ZOOM; z <= z_max; ++z)
-	{
+	for(int z = max(MIN_ZOOM,z_max-1); z <= z_max; ++z)      // Display only the next lower zoom level
+	{                                                        // avoids having to load up to 4x14 extra tiles at ZL16
 		int tiles[4];
 		
 		get_tile_range_for_box(map_bounds,z,tiles);
@@ -175,27 +175,25 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 #if DEV && 0
 			//Draw border around tile
 			g->SetState(0, 0, 0, 0, 0, 0, 0);
-			float c[4] = { 0, 0, 0, 1 };
-			glColor4fv(c);
+			GLfloat black[4] = { 0, 0, 0, 1 };
+			glColor4fv(black);
 
 			GLfloat prev_line_width = 0;
 			glGetFloatv(GL_LINE_WIDTH, &prev_line_width);
 			glLineWidth(3.0f);
 			glBegin(GL_LINE_LOOP);
-			glVertex2f(pbounds[0] + 1, pbounds[1] + 1);
-			glVertex2f(pbounds[0] + 1, pbounds[3] - 1);
-			glVertex2f(pbounds[2] - 1, pbounds[3] - 1);
-			glVertex2f(pbounds[2] - 1, pbounds[1] + 1);
+			glVertex2f(pbounds[0], pbounds[1]);
+			glVertex2f(pbounds[0], pbounds[3]);
+			glVertex2f(pbounds[2], pbounds[3]);
+			glVertex2f(pbounds[2], pbounds[1]);
 			glEnd();
 			glLineWidth(prev_line_width);
-
 			{
-				char msg[512];
-				sprintf(msg, "%d/%d/%d", z, x, y);
-				GUI_FontDraw(g, font_UI_Basic, c, (pbounds[0] + pbounds[2]) / 2, (pbounds[1] + pbounds[3]) / 2, msg);
+				char msg[100];
+				snprintf(msg, 100, "%d/%d/%d", z, x, y);
+				GUI_FontDraw(g, font_UI_Basic, black, (pbounds[0] + pbounds[2]) / 2, (pbounds[1] + pbounds[3]) / 2, msg);
 			}
 #endif
-			
 			stringstream url;
 			url << "http://a.tile.openstreetmap.org/" << z << "/" << x << "/" << y << ".png";
 
@@ -229,12 +227,10 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 						glVertex2f(pbounds[0],pbounds[1]);
 					glEnd();
 
-					float clr[4] = { 0,0,0,1 };
-
 					#if DEV && 0
 						stringstream ss;
 						ss << potential_path.substr(28) << " Id: " << id;
-						GUI_FontDraw(g, font_UI_Basic, clr, pbounds[0] + 10, pbounds[1] + 10, ss.str().c_str());
+						GUI_FontDraw(g, font_UI_Basic, black, pbounds[0] + 5, pbounds[1] - 15, ss.str().c_str()+20);
 					#endif
 				}
 				else
@@ -259,17 +255,15 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	}
 
 	stringstream zoom_msg;
-	zoom_msg << "Zoom level " << z_max << ": " 
+	zoom_msg << "ZL" << z_max << ": " 
 			 << got << " of " << want
 			 << " (" << (float)got * 100.0f / (float)want << "% done, " << bad << " errors). "
 			 << (int)m_cache.size() << " tiles cached (" << (int)m_cache.size() / 4 << " MB)";
 	
-	float clr[4] = { .25, .25, .25, 1 };
 	int bnds[4];
 	GetHost()->GetBounds(bnds);
-	
-	GUI_FontDraw(g, font_UI_Basic, clr, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
-
+	GLfloat white[4] = { 1, 1, 1, 1 };
+	GUI_FontDraw(g, font_UI_Basic, white, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
 }
 
 void	WED_OSMSlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
@@ -287,9 +281,19 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 			struct ImageInfo info;
 			if (CreateBitmapFromPNG(res.out_path.c_str(), &info, false, 0) == 0)
 			{
+				if (info.channels == 3)                                                        // apply to color changes
+					for (int x = 0; x < info.height * (info.width+info.pad) * info.channels; x += info.channels)
+						{
+#define BRIGHTNESS  -140.0
+#define SATURATION  0.4
+							int val = 0.3 * info.data[x] + 0.6 * info.data[x+1] + 0.1 * info.data[x+2];  // deliberately not HSV weighing - want red's brighter
+							for (int c = 0; c < info.channels; ++c)
+								info.data[x+c] = intlim((1.0-SATURATION) * val + SATURATION * info.data[x+c] + BRIGHTNESS, 0, 255);
+						}
+			
 				GLuint tex_id;
 				glGenTextures(1, &tex_id);
-				if (LoadTextureFromImage(info, tex_id, tex_Linear | tex_Mipmap, NULL, NULL, NULL, NULL))
+				if (LoadTextureFromImage(info, tex_id, tex_Linear, NULL, NULL, NULL, NULL))
 				{
 					m_cache[res.out_path] = tex_id;
 				}
@@ -301,7 +305,7 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 			}
 			else
 			{
-				printf("Bad JPEG data.\n");
+				printf("Bad PNG data.\n");
 				m_cache[res.out_path] = 0;
 			}
 

@@ -20,7 +20,7 @@ const CACHE_domain_policy k_domain_policies[] = {
 	{ (HOUR),        (MINUTE), (MINUTE) }, //airports_json
 	{ (MINUTE * 10), (MINUTE), (MINUTE) }, //airports_versions_json
 	{ (INFINITE),    (MINUTE), (MINUTE) }, //scenery_pack
-	{ (WEEK),    (MINUTE), (MINUTE) },     //osm_tile
+	{ (4*WEEK),      (MINUTE), (MINUTE) }, //osm_tile
 #if DEV
 	{0,0,0} //debug
 #endif
