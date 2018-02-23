@@ -163,7 +163,8 @@ enum {
 	wed_UpdateMetadata, //Open up dialogbox
 	// Help Menu
 	wed_HelpManual,
-	wed_HelpScenery
+	wed_HelpScenery,
+	wed_OSMFixTheMap
 };
 
 class	GUI_Application;

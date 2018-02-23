@@ -7,11 +7,11 @@
 //
 
 #include "WED_OSMSlippyMap.h"
-#include "XDefs.h"
 
 #include <sstream>
 
 #include "WED_MapZoomerNew.h"
+#include "WED_Url.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
 #include "PlatformUtils.h"

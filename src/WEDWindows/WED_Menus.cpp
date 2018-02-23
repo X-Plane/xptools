@@ -220,6 +220,7 @@ static const GUI_MenuItem_t kHelpMenu[] = {
 {	"&WED User's Guide",			0,	0,										0,	wed_HelpManual },
 {	"-",							0,	0,										0,	0				},
 {	"&X-Plane Scenery Homepage",	0,	0,										0,	wed_HelpScenery },
+{	"&OpenStreetMap Bug Fixing",	0,	0,										0,	wed_OSMFixTheMap },
 #if IBM || LIN
 {	"-",							0,		0,									0,	0				},
 {	"&About WED",					0,		0,									0,	gui_About		},

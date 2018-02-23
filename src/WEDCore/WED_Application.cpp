@@ -190,6 +190,10 @@ void	WED_Application::OpenFiles(const vector<string>& inFiles)
 int		WED_Application::HandleCommand(int command)
 {
 	switch(command) {
+	case wed_OSMFixTheMap:
+		// as per https://operations.osmfoundation.org/policies/tiles/
+		GUI_LaunchURL(WED_URL_OSM_FIXTHEMAP);
+		return 1;
 	case wed_HelpScenery:
 		// LR maintains a forwarding directory for all v10-class products 
 		// so that we can restructure our content management without breaking binary
@@ -219,8 +223,10 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 	switch(command) {
 	case gui_Undo:		ioName = "&Undo"; return 0;
 	case gui_Redo:		ioName = "&Redo"; return 0;
-	case wed_HelpScenery:	return 1;
-	case wed_HelpManual:	return 1;
+	case wed_HelpScenery:
+	case wed_HelpManual:
+	case wed_OSMFixTheMap:
+							return 1;
 	default:				return GUI_Application::CanHandleCommand(command, ioName, ioCheck);
 	}
 }
