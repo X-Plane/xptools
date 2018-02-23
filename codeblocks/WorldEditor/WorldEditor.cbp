@@ -180,9 +180,17 @@
 		<Unit filename="../../src/Interfaces/IResolver.h" />
 		<Unit filename="../../src/Interfaces/ISelection.h" />
 		<Unit filename="../../src/Interfaces/ITexMgr.h" />
+		<Unit filename="../../src/Network/PCSBSocket.h" />
+		<Unit filename="../../src/Network/PCSBSocket.lin.cpp" />
+		<Unit filename="../../src/Network/PCSBSocket.win.cpp" />
+		<Unit filename="../../src/Network/PCSBSocketUDP.h" />
+		<Unit filename="../../src/Network/PCSBSocketUDP.lin.cpp" />
+		<Unit filename="../../src/Network/PCSBSocketUDP.win.cpp" />
 		<Unit filename="../../src/Network/b64.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../src/Network/curl_http.cpp" />
+		<Unit filename="../../src/Network/curl_http.h" />
 		<Unit filename="../../src/OGLE/ogle.cpp" />
 		<Unit filename="../../src/OGLE/ogle.h" />
 		<Unit filename="../../src/Obj/ObjDraw.cpp" />
