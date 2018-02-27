@@ -80,7 +80,7 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 				AptRunwayRule_t runway_rule;
 				(*use_itr)->Export(runway_rule);
 
-				//Compare the name of the runway to the name of the taxiway
+				//Compare the name of the runway mentioned by the taxiway to the runway
 				string runway_name;
 				(*runway_itr)->GetName(runway_name);
 				string runway_name_p1 = runway_name.substr(0,runway_name.find_first_of('/'));
@@ -103,7 +103,8 @@ static RunwayInfoVec_t CollectPotentiallyActiveRunways( const TaxiRouteInfoVec_t
 				
 							string runway_name;
 							(*runway_itr)->GetName(runway_name);
-							if(runway_name == taxiroute_name)
+							
+							if(runway_name == taxiroute_name || ( taxiroute_name[0] = '0' && runway_name == taxiroute_name.substr(1) ))
 							{
 								runway_info_vec.push_back(RunwayInfo(*runway_itr,translator));
 								break; //exit all_taxiroutes loop

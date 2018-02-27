@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a19
+WED 1.7.0 Beta1 2/26/18
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
@@ -63,6 +63,7 @@ WED 1.7.0a19
 	- WED-984: Fix red ground traffic routes when hotzone tags still set
 	- WED-801: Fix GatewayExport on Win & OSX not always creating a temporary directory for the MasterZipBlob
 	- fix Select Local/Laminar/3rd Party/Missing Items menu function only catching objects, but no polygons/lines etc
+	- runway ATC route validation not running on some runways mentioned in flow, name starting w/no leading zero
 	
 WED 1.6.1r1 12/11/17
 	Features:
