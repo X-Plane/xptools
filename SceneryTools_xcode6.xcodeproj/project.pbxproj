@@ -437,14 +437,6 @@
 		D66569BF1CE261FC00662E5C /* CACHE_CacheObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66569BB1CE261FC00662E5C /* CACHE_CacheObject.cpp */; };
 		D66569C01CE261FC00662E5C /* WED_FileCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66569BD1CE261FC00662E5C /* WED_FileCache.cpp */; };
 		D66864250C4F783C00DB3056 /* WED_DSFExport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */; };
-		D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083000C1A4DBA00F33E06 /* earth_11.jpg */; };
-		D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083010C1A4DBA00F33E06 /* earth_12.jpg */; };
-		D670830B0C1A4DBB00F33E06 /* earth_21.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083020C1A4DBB00F33E06 /* earth_21.jpg */; };
-		D670830C0C1A4DBB00F33E06 /* earth_22.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083030C1A4DBB00F33E06 /* earth_22.jpg */; };
-		D670830D0C1A4DBB00F33E06 /* earth_31.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083040C1A4DBB00F33E06 /* earth_31.jpg */; };
-		D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083050C1A4DBB00F33E06 /* earth_32.jpg */; };
-		D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083060C1A4DBB00F33E06 /* earth_41.jpg */; };
-		D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */ = {isa = PBXBuildFile; fileRef = D67083070C1A4DBB00F33E06 /* earth_42.jpg */; };
 		D670D3121DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */; };
 		D670D3131DD7D92000827DEA /* GISTool_ImageCmds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */; };
 		D6734B350EACE5930002C4C1 /* MapCreate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6734B340EACE5930002C4C1 /* MapCreate.cpp */; };
@@ -1274,14 +1266,6 @@
 		D66569BE1CE261FC00662E5C /* WED_FileCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_FileCache.h; sourceTree = "<group>"; };
 		D66864230C4F783C00DB3056 /* WED_DSFExport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_DSFExport.h; sourceTree = "<group>"; };
 		D66864240C4F783C00DB3056 /* WED_DSFExport.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_DSFExport.cpp; sourceTree = "<group>"; };
-		D67083000C1A4DBA00F33E06 /* earth_11.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_11.jpg; sourceTree = "<group>"; };
-		D67083010C1A4DBA00F33E06 /* earth_12.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_12.jpg; sourceTree = "<group>"; };
-		D67083020C1A4DBB00F33E06 /* earth_21.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_21.jpg; sourceTree = "<group>"; };
-		D67083030C1A4DBB00F33E06 /* earth_22.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_22.jpg; sourceTree = "<group>"; };
-		D67083040C1A4DBB00F33E06 /* earth_31.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_31.jpg; sourceTree = "<group>"; };
-		D67083050C1A4DBB00F33E06 /* earth_32.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_32.jpg; sourceTree = "<group>"; };
-		D67083060C1A4DBB00F33E06 /* earth_41.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_41.jpg; sourceTree = "<group>"; };
-		D67083070C1A4DBB00F33E06 /* earth_42.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = earth_42.jpg; sourceTree = "<group>"; };
 		D6708AA60C1F2A1A00F33E06 /* MathUtils.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MathUtils.h; sourceTree = "<group>"; };
 		D670D3101DD7D92000827DEA /* GISTool_ImageCmds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GISTool_ImageCmds.cpp; sourceTree = "<group>"; };
 		D670D3111DD7D92000827DEA /* GISTool_ImageCmds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GISTool_ImageCmds.h; sourceTree = "<group>"; };
@@ -2346,21 +2330,6 @@
 				D66569BE1CE261FC00662E5C /* WED_FileCache.h */,
 			);
 			path = WEDFileCache;
-			sourceTree = "<group>";
-		};
-		D67082FF0C1A4DBA00F33E06 /* world */ = {
-			isa = PBXGroup;
-			children = (
-				D67083000C1A4DBA00F33E06 /* earth_11.jpg */,
-				D67083010C1A4DBA00F33E06 /* earth_12.jpg */,
-				D67083020C1A4DBB00F33E06 /* earth_21.jpg */,
-				D67083030C1A4DBB00F33E06 /* earth_22.jpg */,
-				D67083040C1A4DBB00F33E06 /* earth_31.jpg */,
-				D67083050C1A4DBB00F33E06 /* earth_32.jpg */,
-				D67083060C1A4DBB00F33E06 /* earth_41.jpg */,
-				D67083070C1A4DBB00F33E06 /* earth_42.jpg */,
-			);
-			path = world;
 			sourceTree = "<group>";
 		};
 		D678ADEB0F7952B700F72139 /* tri_stripper_101 */ = {
@@ -3448,7 +3417,6 @@
 				D6C390010FA0D93400EFA56C /* sans.ttf */,
 				D67B29DA0C5661A100A21ABC /* line_types */,
 				D67B21400C5536A300A21ABC /* pavement */,
-				D67082FF0C1A4DBA00F33E06 /* world */,
 				D682E1050C10E23C00BBE1A0 /* scrollbar_corner.png */,
 				D682DE5A0C10985100BBE1A0 /* startup_bar.png */,
 				D682DE5B0C10985100BBE1A0 /* startup_bkgnd.png */,
@@ -3944,15 +3912,7 @@
 				D682E4170C1627F700BBE1A0 /* property_bar.png in Resources */,
 				D682E4840C162C9100BBE1A0 /* arrows.png in Resources */,
 				D682E97A0C17124A00BBE1A0 /* sider.png in Resources */,
-				D67083090C1A4DBB00F33E06 /* earth_11.jpg in Resources */,
-				D670830A0C1A4DBB00F33E06 /* earth_12.jpg in Resources */,
-				D670830B0C1A4DBB00F33E06 /* earth_21.jpg in Resources */,
-				D670830C0C1A4DBB00F33E06 /* earth_22.jpg in Resources */,
-				D670830D0C1A4DBB00F33E06 /* earth_31.jpg in Resources */,
 				D6B69CE91C582B6A005C78C5 /* ClassE.png in Resources */,
-				D670830E0C1A4DBB00F33E06 /* earth_32.jpg in Resources */,
-				D670830F0C1A4DBB00F33E06 /* earth_41.jpg in Resources */,
-				D67083100C1A4DBB00F33E06 /* earth_42.jpg in Resources */,
 				D6DB37700C452B0400DE04F0 /* handle_rotatehead.png in Resources */,
 				D67B21480C5536A300A21ABC /* asphalt.png in Resources */,
 				D67B21490C5536A300A21ABC /* concrete.png in Resources */,
