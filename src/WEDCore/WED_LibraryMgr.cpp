@@ -28,6 +28,7 @@
 #include "AssertUtils.h"
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
+#include <time.h>
 
 static void clean_vpath(string& s)
 {

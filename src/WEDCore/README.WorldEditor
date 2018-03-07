@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.6.1b1
+WED 1.6.1r1 11/6/17
 	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
@@ -26,6 +26,7 @@ WED 1.6.1b1
 	- WED-903: Fix missing texturing in WED for .OBJ that use ATTR_draped with TEXTURE and no TEXTURE_DRAPED commands.
 	- WED-909: Rename 'ICAO Identifier' to 'Airport ID' for consistency with the gateway
     - WED-910: Fix crash at import of erroneous apt.dat or gateway airport that were created with WED 1.6.0 beta1
+    - Increase number of different facade walls selectable from 10 to 16
 
 WED 1.6r1 6/7/17
 	Bug fixes

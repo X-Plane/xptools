@@ -365,3 +365,18 @@ void		WED_GISEdge::Validate(void)
 				p = SAFE_CAST(IGISPoint, GetNthSource(1));
 	DebugAssert(p);
 }
+
+void		WED_GISEdge::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
+{
+	WED_Entity::GetNthPropertyInfo(n, info);
+	if(!this->CanBeCurved())
+	if (n == PropertyItemNumber(&ctrl_lat_hi) ||
+		n == PropertyItemNumber(&ctrl_lat_lo) ||
+		n == PropertyItemNumber(&ctrl_lon_hi) ||
+		n == PropertyItemNumber(&ctrl_lon_lo))
+	{
+		info.prop_name = ".";
+		info.can_edit = 0;
+		info.can_delete = 0;
+	}
+}

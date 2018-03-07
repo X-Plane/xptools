@@ -420,6 +420,15 @@ bool	WED_TaxiRoute::AllowTrucks(void) const
 	return vehicle_class.value == atc_Vehicle_Ground_Trucks;
 }
 
+bool	WED_TaxiRoute::CanBeCurved() const
+{
+#if HAS_CURVED_ATC_ROUTE
+	return true;
+#else
+	return false;
+#endif
+}
 
 
 #endif
+
