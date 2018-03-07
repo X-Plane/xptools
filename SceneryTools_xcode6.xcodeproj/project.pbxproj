@@ -68,7 +68,6 @@
 		D604AEB71C0E7D7B006DC1F0 /* GLDebugMacros.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D604AEB31C0E7D7B006DC1F0 /* GLDebugMacros.cpp */; };
 		D604AEB91C0EAEF1006DC1F0 /* WEDMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D604AEB81C0EAEF1006DC1F0 /* WEDMainMenu.xib */; };
 		D604AEBE1C0F4827006DC1F0 /* RFMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = D604AEBB1C0F4821006DC1F0 /* RFMainMenu.xib */; };
-		D606162B0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp in Resources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
 		D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */ = {isa = PBXBuildFile; fileRef = D606164E0C14BE46007BA5C9 /* ui_measurements.txt */; };
 		D606168E0C14BF83007BA5C9 /* WED_UIMeasurements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D606162A0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp */; };
 		D60617F00C14D18C007BA5C9 /* disclose.png in Resources */ = {isa = PBXBuildFile; fileRef = D60617EE0C14D18C007BA5C9 /* disclose.png */; };
@@ -735,13 +734,9 @@
 		D6E067770BDE91990070E31C /* WED_ToolInfoAdapter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E067760BDE91990070E31C /* WED_ToolInfoAdapter.cpp */; };
 		D6E304B3105F7779009E6E7F /* WED_TCEMarqueeTool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E304B2105F7779009E6E7F /* WED_TCEMarqueeTool.cpp */; };
 		D6E30557105F8EE7009E6E7F /* tce_tools.png in Resources */ = {isa = PBXBuildFile; fileRef = D6E30556105F8EE7009E6E7F /* tce_tools.png */; };
-		D6E4C95218EC91DE000D98B8 /* json_internalarray.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93818EC91DD000D98B8 /* json_internalarray.inl */; };
-		D6E4C95318EC91DE000D98B8 /* json_internalmap.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93918EC91DD000D98B8 /* json_internalmap.inl */; };
 		D6E4C95418EC91DE000D98B8 /* json_reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93A18EC91DD000D98B8 /* json_reader.cpp */; };
 		D6E4C95518EC91DE000D98B8 /* json_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93C18EC91DD000D98B8 /* json_value.cpp */; };
-		D6E4C95618EC91DE000D98B8 /* json_valueiterator.inl in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93D18EC91DD000D98B8 /* json_valueiterator.inl */; };
 		D6E4C95718EC91DE000D98B8 /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93E18EC91DD000D98B8 /* json_writer.cpp */; };
-		D6E4C95818EC91DE000D98B8 /* sconscript in Resources */ = {isa = PBXBuildFile; fileRef = D6E4C93F18EC91DD000D98B8 /* sconscript */; };
 		D6E4C95D18EC91FF000D98B8 /* json_writer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93E18EC91DD000D98B8 /* json_writer.cpp */; };
 		D6E4C95E18EC9200000D98B8 /* json_value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93C18EC91DD000D98B8 /* json_value.cpp */; };
 		D6E4C95F18EC9201000D98B8 /* json_reader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6E4C93A18EC91DD000D98B8 /* json_reader.cpp */; };
@@ -3899,7 +3894,6 @@
 				D682DE5F0C10985100BBE1A0 /* startup_btns.png in Resources */,
 				D682E1060C10E23C00BBE1A0 /* scrollbar_corner.png in Resources */,
 				0236B9732034264A0046900C /* check_buttons.png in Resources */,
-				D606162B0C14BAC0007BA5C9 /* WED_UIMeasurements.cpp in Resources */,
 				D606164F0C14BE46007BA5C9 /* ui_measurements.txt in Resources */,
 				D60617F00C14D18C007BA5C9 /* disclose.png in Resources */,
 				D60617F10C14D18C007BA5C9 /* gradient.png in Resources */,
@@ -3955,10 +3949,6 @@
 				D6080505154659A7001BE1A9 /* push_buttons.png in Resources */,
 				D6FE7C81173EC49C007721F2 /* map_tree.png in Resources */,
 				D6B69CE51C582B6A005C78C5 /* ClassA.png in Resources */,
-				D6E4C95218EC91DE000D98B8 /* json_internalarray.inl in Resources */,
-				D6E4C95318EC91DE000D98B8 /* json_internalmap.inl in Resources */,
-				D6E4C95618EC91DE000D98B8 /* json_valueiterator.inl in Resources */,
-				D6E4C95818EC91DE000D98B8 /* sconscript in Resources */,
 				D63D3A33192FA28F0004534A /* gateway.crt in Resources */,
 				D63A80201A997EB5008D218D /* COPYING in Resources */,
 			);
