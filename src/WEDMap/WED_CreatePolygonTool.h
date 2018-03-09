@@ -77,6 +77,7 @@ protected:
 		WED_PropDoubleText				mSpacing;
 		
 		WED_PropBoolText				mUVMap;
+		WED_PropBoolText				mPickWalls;
 
 	virtual	void		AcceptPath(
 							const vector<Point2>&	pts,

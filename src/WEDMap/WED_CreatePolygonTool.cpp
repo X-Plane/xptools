@@ -92,9 +92,11 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mDensity(tool  == create_Forest  ? this : NULL,PROP_Name("Density",  XML_Name("","")), 1.0, 3, 2),
 		mSpacing(tool  == create_String  ? this : NULL,PROP_Name("Spacing",  XML_Name("","")), 5.0, 3, 1),
 		
-		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0)
+		mUVMap(tool == create_Polygon    ? this : NULL,PROP_Name("Use Texture Map - Orthophoto", XML_Name("","")), 0),
+		mPickWalls(tool == create_Facade ? this : NULL,PROP_Name("Pick Walls", XML_Name("","")), 0)
 {
 	mPavement.value = surf_Concrete;
+	mPickWalls.value = true;
 }
 
 WED_CreatePolygonTool::~WED_CreatePolygonTool()
@@ -225,6 +227,7 @@ void	WED_CreatePolygonTool::AcceptPath(
 			sel->Select(fac);
 			fac->SetResource(mResource.value);
 			fac->SetHeight(mHeight.value);
+			fac->SetCustomWalls(mPickWalls.value);
 		}
 		break;
 	case create_Forest:
