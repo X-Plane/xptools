@@ -61,6 +61,7 @@
 #include "WED_TaxiRouteNode.h"
 
 #include "WED_EnumSystem.h"
+#include "WED_GISUtils.h"
 #include "WED_HierarchyUtils.h"
 #include "WED_LibraryMgr.h"
 #include "WED_Menus.h"
@@ -71,6 +72,7 @@
 #include "WED_UIDefs.h"
 
 #include <sstream>
+#include <algorithm>
 
 #if DEV
 #include "WED_Globals.h"
@@ -1450,15 +1452,279 @@ static int collect_edges(ISelectable * base, void * ref)
 	return 0;
 }
 
+namespace
+{
+struct chain_split_info_t {
+	WED_GISChain * c;
+	WED_GISPoint * p;
+};
+
+struct ring_split_info_t {
+	WED_GISChain * c;
+	WED_GISPoint * p0;
+	WED_GISPoint * p1;
+	int pos_0;
+	int pos_1;
+};
+}
+
+static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
+{
+	// Must have exactly one point selected
+	if(sel->GetSelectionCount() != 1) return false;
+	WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(0));
+	if(!p) return false;
+
+	// The point must have a WED_GISChain parent
+	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p->GetParent());
+	if(!c) return false;
+
+	// The chain must be open
+	if(c->IsClosed()) return false;
+
+	// The point must not be the first or last point in the chain
+	int pos = p->GetMyPosition();
+	if (pos == 0 || pos == c->CountChildren()-1) return false;
+
+	if(info)
+	{
+		info->c = c;
+		info->p = p;
+	}
+
+	return true;
+}
+
+static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
+{
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	// Must have exactly two points selected
+	if(selected.size() != 2) return false;
+	WED_GISPoint * p0 = dynamic_cast<WED_GISPoint*>(selected[0]);
+	WED_GISPoint * p1 = dynamic_cast<WED_GISPoint *>(selected[1]);
+	if(!p0 || !p1) return false;
+
+	// The points must have the same WED_GISChain parent
+	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p0->GetParent());
+	if(!c || c != p1->GetParent()) return false;
+
+	// The chain must be closed (i.e. it must be a ring).
+	if(!c->IsClosed()) return false;
+
+	// The points must not be adjacent
+	int pos_0 = p0->GetMyPosition();
+	int pos_1 = p1->GetMyPosition();
+	if(pos_0 > pos_1)
+	{
+		std::swap(pos_0, pos_1);
+		std::swap(p0, p1);
+	}
+	if(pos_1 == pos_0 + 1) return false;
+	if(pos_0 == 0 && pos_1 == c->CountChildren()-1) return false;
+
+	if(info)
+	{
+		info->p0 = p0;
+		info->p1 = p1;
+		info->pos_0 = pos_0;
+		info->pos_1 = pos_1;
+		info->c = c;
+	}
+
+	return true;
+}
+
+static bool is_edge_split(ISelection * sel)
+{
+	if (sel->GetSelectionCount() == 0) return false;
+	if (sel->IterateSelectionOr(unsplittable, sel)) return false;
+	return true;
+}
+
 int		WED_CanSplit(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if (sel->GetSelectionCount() == 0) return false;
-	if (sel->IterateSelectionOr(unsplittable, sel)) return 0;
-	return 1;
+	return is_chain_split(sel, NULL) || is_ring_split(sel, NULL) || is_edge_split(sel)? 1 : 0;
 }
 
+static void delete_with_children(const vector<WED_Thing*>& things)
+{
+	for (size_t i = 0; i < things.size(); ++i)
+	{
+		things[i]->SetParent(NULL, 0);
+		vector<WED_Thing*> children(things[i]->CountChildren());
+		for (int child = 0; child < things[i]->CountChildren(); ++child)
+		{
+			children[child] = things[i]->GetNthChild(child);
+		}
+		delete_with_children(children);
+		things[i]->Delete();
+	}
+}
 
+static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
+{
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Split chain");
+
+	WED_GISChain * chain_clone = dynamic_cast<WED_GISChain*>(info.c->Clone());
+	chain_clone->SetParent(info.c->GetParent(), info.c->GetMyPosition()+1);
+
+	int pos = info.p->GetMyPosition();
+	sel->Insert(chain_clone->GetNthChild(pos));
+
+	vector<WED_Thing*> to_delete;
+	for (int i = 0; i < info.c->CountChildren(); ++i)
+	{
+		if (i < pos)
+			to_delete.push_back(chain_clone->GetNthChild(i));
+		if (i > pos)
+			to_delete.push_back(info.c->GetNthChild(i));
+	}
+
+	delete_with_children(to_delete);
+
+	op->CommitOperation();
+}
+
+// Returns which side of the line formed by p1 and p2 the hole is on
+// (LEFT_TURN or RIGHT_TURN). Returns COLLINEAR if the hole intersects the
+// line.
+static int hole_side(IGISPointSequence * hole, IGISPoint * p1, IGISPoint * p2)
+{
+	vector<Bezier2> pol;
+	WED_BezierVectorForPointSequence(hole, pol);
+
+	Point2 point1, point2;
+	p1->GetLocation(gis_Geo, point1);
+	p2->GetLocation(gis_Geo, point2);
+	Segment2 segment(point1, point2);
+
+	// Collect all points in the hole, including control points.
+	vector<Point2> points;
+	for (int i = 0; i < hole->GetNumPoints(); ++i)
+	{
+		IGISPoint * igis_point = hole->GetNthPoint(i);
+		Point2 hole_point;
+		igis_point->GetLocation(gis_Geo, hole_point);
+		points.push_back(hole_point);
+
+		IGISPoint_Bezier * bezier_point = dynamic_cast<IGISPoint_Bezier*>(igis_point);
+		if (bezier_point)
+		{
+			bezier_point->GetControlHandleLo(gis_Geo, hole_point);
+			points.push_back(hole_point);
+			bezier_point->GetControlHandleHi(gis_Geo, hole_point);
+			points.push_back(hole_point);
+		}
+	}
+
+	if (points.empty()) return COLLINEAR;
+
+	int side = segment.side_of_line(points[0]);
+	for (size_t i = 1; i < points.size(); ++i)
+	{
+		if (segment.side_of_line(points[i]) != side)
+			return COLLINEAR;
+	}
+
+	return side;
+}
+
+static void delete_bezier_handle(IGISPoint * p, int handle) {
+	IGISPoint_Bezier * bezier = dynamic_cast<IGISPoint_Bezier*>(p);
+	if (!bezier) return;
+
+	bezier->SetSplit(true);
+	if (handle == 0)
+		bezier->DeleteHandleLo();
+	else
+		bezier->DeleteHandleHi();
+}
+
+static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
+{
+	WED_Thing * parent = info.c->GetParent();
+	if (!parent) return;
+
+	WED_GISPolygon * polygon = dynamic_cast<WED_GISPolygon*>(info.c->GetParent());
+	vector<int> hole_sides;
+	if (polygon && info.c == polygon->GetOuterRing())
+	{
+		// For each hole, check which side of the split it is on.
+		hole_sides.resize(polygon->GetNumHoles());
+		for (int i = 0; i < polygon->GetNumHoles(); ++i)
+		{
+			IGISPointSequence * hole = polygon->GetNthHole(i);
+			hole_sides[i] = hole_side(hole, info.p0, info.p1);
+			if (hole_sides[i] == COLLINEAR)
+			{
+				// We could theoretically do this check already in
+				// is_ring_split(), but it would be too hard for the user to
+				// understand why the Split function is sometimes available
+				// and sometimes greyed out. Instead, we do the check here so
+				// we can display a meaningful message.
+				DoUserAlert("Cannot split across holes");
+				return;
+			}
+		}
+	}
+
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Split ring");
+
+	vector<WED_Thing*> to_delete;
+	WED_GISChain * chain_clone = NULL;
+
+	// Is the ring the outer ring of a polygon?
+	if (polygon && info.c == polygon->GetOuterRing())
+	{
+		// Clone the entire polygon
+		WED_GISPolygon * polygon_clone = dynamic_cast<WED_GISPolygon*>(polygon->Clone());
+		polygon_clone->SetParent(polygon->GetParent(), polygon->GetMyPosition()+1);
+		chain_clone = dynamic_cast<WED_GISChain*>(polygon_clone->GetOuterRing());
+
+		// Distribute the holes between the original polygon and the clone
+		for (int i = 0; i < polygon->GetNumHoles(); ++i)
+		{
+			if (hole_sides[i] == RIGHT_TURN)
+				to_delete.push_back(dynamic_cast<WED_Thing*>(polygon->GetNthHole(i)));
+			else
+				to_delete.push_back(dynamic_cast<WED_Thing*>(polygon_clone->GetNthHole(i)));
+		}
+	}
+	else
+	{
+		// Clone just the chain
+		chain_clone = dynamic_cast<WED_GISChain*>(info.c->Clone());
+		chain_clone->SetParent(info.c->GetParent(), info.c->GetMyPosition()+1);
+	}
+
+	sel->Insert(chain_clone->GetNthChild(info.pos_0));
+	sel->Insert(chain_clone->GetNthChild(info.pos_1));
+
+	// On the two shared points, delete the Bezier handles that face the other
+	// polygon to make the two halves fit together exactly
+	delete_bezier_handle(info.c->GetNthPoint(info.pos_0), 1);
+	delete_bezier_handle(info.c->GetNthPoint(info.pos_1), 0);
+	delete_bezier_handle(chain_clone->GetNthPoint(info.pos_0), 0);
+	delete_bezier_handle(chain_clone->GetNthPoint(info.pos_1), 1);
+
+	// Distribute the points among the the original and the clone
+	for (int i = 0; i < info.c->CountChildren(); ++i)
+	{
+		if (i > info.pos_0 && i < info.pos_1)
+			to_delete.push_back(info.c->GetNthChild(i));
+		if (i < info.pos_0 || i > info.pos_1)
+			to_delete.push_back(chain_clone->GetNthChild(i));
+	}
+
+	delete_with_children(to_delete);
+
+	op->CommitOperation();
+}
 
 map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges)
 {
@@ -1561,9 +1827,8 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 	return new_pieces;
 }
 
-void	WED_DoSplit(IResolver * resolver)
+void do_edge_split(ISelection * sel)
 {
-	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 
 	vector<WED_Thing *> who;
@@ -1656,6 +1921,27 @@ void	WED_DoSplit(IResolver * resolver)
 	}
 
 	op->CommitOperation();
+}
+
+void	WED_DoSplit(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+
+	chain_split_info_t chain_info;
+	if (is_chain_split(sel, &chain_info))
+	{
+		do_chain_split(sel, chain_info);
+		return;
+	}
+
+	ring_split_info_t ring_info;
+	if (is_ring_split(sel, &ring_info))
+	{
+		do_ring_split(sel, ring_info);
+		return;
+	}
+
+	do_edge_split(sel);
 }
 
 static int collect_pnts(ISelectable * base,void * ref)
