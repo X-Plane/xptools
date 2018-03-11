@@ -70,6 +70,23 @@
 #include "WED_ResourceMgr.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
+#include "XObjDefs.h"
+#include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
+#include "WED_GISEdge.h"
+#include "GISUtils.h"
+#include "MathUtils.h"
+#include "WED_EnumSystem.h"
+#include "CompGeomUtils.h"
+#include "WED_AirportChain.h"
+#include "WED_HierarchyUtils.h"
+#include "WED_Orthophoto.h"
+#include "WED_FacadePlacement.h"
+#include "WED_GISUtils.h"
+#include "WED_LinePlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_Taxiway.h"
 
 #include <sstream>
 #include <algorithm>
@@ -3754,4 +3771,301 @@ void WED_AlignAirports(IResolver * resolver)
 		ss << "Moved " << moved_count << " airports.\n\n" << unchanged_count << " airports with *NO* changes have been selected.";
 		DoUserAlert(ss.str().c_str());
 	}
+}
+
+int		WED_CanConvertTo(IResolver * resolver, IsTypeFunc isDstType, bool dstIsPolygon)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0)
+		return 0;
+
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * t = dynamic_cast<WED_Thing*>(selected[i]);
+		if (!t)
+			return 0;
+
+		// Must not already be of type we're converting to
+		if (isDstType(t))
+			return 0;
+
+		// Must be one of the four types we can convert from
+		if (!dynamic_cast<WED_PolygonPlacement*>(t) &&
+			!dynamic_cast<WED_Taxiway*>(t) &&
+			!dynamic_cast<WED_AirportChain*>(t) &&
+			!dynamic_cast<WED_LinePlacement*>(t))
+		{
+			return 0;
+		}
+
+		// Parent must not be a WED_GISPolygon (which can happen if it's a WED_AirportChain)
+		if (dynamic_cast<WED_GISPolygon*>(t->GetParent()))
+			return 0;
+
+		// If the destination is a polygon and the chain is a source, it must be closed
+		// with at least three points
+		WED_GISChain * chain = dynamic_cast<WED_GISChain*>(t);
+		if (chain != NULL && dstIsPolygon)
+		{
+			if (!chain->IsClosed() || chain->GetNumPoints() < 3)
+				return 0;
+		}
+	}
+
+	return 1;
+}
+
+// Gets all the WED_GISChains in 't', including 't' itself if it is a WED_GISChain.
+static void get_chains(WED_Thing * t, vector<WED_GISChain*>& chains)
+{
+	if (!t)
+		return;
+
+	WED_GISChain * c = dynamic_cast<WED_GISChain*>(t);
+	if (c)
+	{
+		chains.push_back(c);
+		return;
+	}
+
+	vector<WED_Thing*> children(t->CountChildren());
+	for (int child = 0; child < t->CountChildren(); ++child)
+	{
+		c = dynamic_cast<WED_GISChain*>(t->GetNthChild(child));
+		if (c)
+			chains.push_back(c);
+	}
+}
+
+// Moves Bezier points from 'src' to 'dst'. Converts between WED_AirportNode and WED_SimpleBezierBoundaryNode
+// as necessitated by the type of 'dst'. Nodes may be removed from 'src' (if no conversion is necessary)
+// but are not guaranteed to be.
+static void move_points(WED_Thing * src, WED_Thing * dst)
+{
+	// Collect points from 'src' (before we start removing any childern)
+	vector<WED_GISPoint_Bezier*> points;
+	for (int i = 0; i < src->CountChildren(); ++i)
+	{
+		WED_GISPoint_Bezier * p = dynamic_cast<WED_GISPoint_Bezier*>(src->GetNthChild(i));
+		if (p)
+			points.push_back(p);
+	}
+
+	bool want_apt_nodes = (dynamic_cast<WED_AirportChain*>(dst) != NULL);
+
+	for (int i = 0; i < points.size(); ++i)
+	{
+		bool have_apt_node = (dynamic_cast<WED_AirportNode*>(points[i]) != NULL);
+		if (have_apt_node == want_apt_nodes)
+		{
+			points[i]->SetParent(dst, i);
+		}
+		else
+		{
+			WED_GISPoint_Bezier * dst_node;
+			if (want_apt_nodes)
+				dst_node = WED_AirportNode::CreateTyped(dst->GetArchive());
+			else
+				dst_node = WED_SimpleBezierBoundaryNode::CreateTyped(dst->GetArchive());
+			string name;
+			points[i]->GetName(name);
+			dst_node->SetName(name);
+			BezierPoint2 location;
+			points[i]->GetBezierLocation(gis_Geo, location);
+			dst_node->SetBezierLocation(gis_Geo, location);
+			dst_node->SetParent(dst, i);
+		}
+	}
+}
+
+static bool is_ccw(WED_GISChain * c)
+{
+	vector<Point2> points(c->GetNumPoints());
+	for (int i = 0; i < c->GetNumPoints(); ++i)
+		c->GetNthPoint(i)->GetLocation(gis_Geo, points[i]);
+	return is_ccw_polygon_pt(points.begin(), points.end());
+}
+
+// Adds copies of the given chains to 'dst'; creates chains of the appropriate type for 'dst'. The source chains are not
+// deleted or reparented, but nodes may be removed from them.
+static void add_chains(WED_Thing * dst, const vector<WED_GISChain*>& chains)
+{
+	for (int i = 0; i < chains.size(); ++i)
+	{
+		WED_GISChain * dst_chain;
+		if (dynamic_cast<WED_Taxiway*>(dst))
+		{
+			WED_AirportChain *ac = WED_AirportChain::CreateTyped(dst->GetArchive());
+			ac->SetClosed(true);
+			dst_chain = ac;
+		}
+		else
+			dst_chain = WED_Ring::CreateTyped(dst->GetArchive());
+		move_points(chains[i], dst_chain);
+		if (!is_ccw(dst_chain))
+			dst_chain->Reverse(gis_Geo);
+		dst_chain->SetParent(dst, i);
+	}
+}
+
+static void copy_heading(WED_Thing * src, WED_Thing * dst)
+{
+	int src_prop = src->FindProperty("Heading");
+	if (src_prop == -1)
+		src_prop = src->FindProperty("Texture Heading");
+	int dst_prop = dst->FindProperty("Heading");
+	if (dst_prop == -1)
+		dst_prop = dst->FindProperty("Texture Heading");
+	if (src_prop != -1 && dst_prop != -1)
+	{
+		PropertyVal_t val;
+		src->GetNthProperty(src_prop, val);
+		dst->SetNthProperty(dst_prop, val);
+	}
+}
+
+static int get_surface(WED_Thing * t)
+{
+	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
+	if (taxiway)
+		return taxiway->GetSurface();
+	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
+	if (polygon)
+	{
+		string resource;
+		polygon->GetResource(resource);
+		if (resource.find("concrete") != string::npos)
+			return surf_Concrete;
+	}
+	return surf_Asphalt;
+}
+
+static void set_surface(WED_Thing * t, int surface)
+{
+	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
+	if (taxiway)
+	{
+		taxiway->SetSurface(surface);
+		return;
+	}
+	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
+	if (polygon)
+	{
+		if (surface == surf_Asphalt)
+			polygon->SetResource("lib/airport/pavement/asphalt_1D.pol");
+		else
+			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
+	}
+}
+
+static void set_closed(WED_Thing * t, bool closed)
+{
+	WED_AirportChain * ac = dynamic_cast<WED_AirportChain*>(t);
+	if (ac)
+	{
+		ac->SetClosed(closed ? 1 : 0);
+		return;
+	}
+	WED_LinePlacement * lp = dynamic_cast<WED_LinePlacement*>(t);
+	if (lp)
+		lp->SetClosed(closed ? 1 : 0);
+}
+
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+
+	// First create a dummy object to find out various properties of the destination type
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("");
+	WED_Thing * tmp = create(wrl->GetArchive());
+	string dst_type_name = tmp->HumanReadableType();
+	bool dst_is_polygon = (dynamic_cast<WED_GISPolygon*>(tmp) != NULL);
+	bool dst_is_apt_type = dynamic_cast<WED_Taxiway*>(tmp) != NULL || dynamic_cast<WED_AirportChain*>(tmp) != NULL;
+	tmp->Delete();
+	op->AbortOperation();
+
+	// If the destination type is an airport object, make sure all selected objects are underneath an airport.
+	// We do this here rather than in WED_CanConvertTo() so we can explain to the user what the problem is.
+	if (dst_is_apt_type)
+	{
+		vector<ISelectable*> selected;
+		sel->GetSelectionVector(selected);
+		for (size_t i = 0; i < selected.size(); ++i)
+		{
+			if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
+			{
+				DoUserAlert("All objects to convert must be in an airport in the hierarchy");
+				return;
+			}
+		}
+	}
+
+	string op_name = string("Convert to ") + dst_type_name;
+	op->StartOperation(op_name.c_str());
+
+	set<WED_Thing*> to_delete;
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * src = dynamic_cast<WED_Thing*>(selected[i]);
+		vector<WED_GISChain*> chains;
+		get_chains(src, chains);
+		if (chains.empty())
+		{
+			DoUserAlert("No chains");
+			op->AbortOperation();
+			return;
+		}
+
+		if (dst_is_polygon)
+		{
+			WED_Thing * dst = create(wrl->GetArchive());
+
+			add_chains(dst, chains);
+
+			string name;
+			src->GetName(name);
+			dst->SetName(name);
+
+			copy_heading(src, dst);
+
+			set_surface(dst, get_surface(src));
+
+			sel->Insert(dst);
+			dst->SetParent(src->GetParent(), src->GetMyPosition() + 1);
+		}
+		else
+		{
+			for (int i = 0; i < chains.size(); ++i)
+			{
+				WED_Thing * dst = create(wrl->GetArchive());
+
+				string name;
+				src->GetName(name);
+				dst->SetName(name);
+
+				set_closed(dst, chains[i]->IsClosed());
+
+				move_points(chains[i], dst);
+
+				sel->Insert(dst);
+				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
+			}
+		}
+
+		sel->Erase(src);
+		src->SetParent(NULL, 0);
+
+		to_delete.insert(src);
+	}
+
+	WED_AddChildrenRecursive(to_delete);
+	WED_RecursiveDelete(to_delete);
+
+	op->CommitOperation();
 }

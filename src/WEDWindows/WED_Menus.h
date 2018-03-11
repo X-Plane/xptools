@@ -81,6 +81,11 @@ enum {
 	wed_MoveLast,
 	wed_BreakApartSpecialAgps,
 	wed_ReplaceVehicleObj,
+	// Convert To menu
+	wed_ConvertToPolygon,
+	wed_ConvertToTaxiway,
+	wed_ConvertToTaxiline,
+	wed_ConvertToLine,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,

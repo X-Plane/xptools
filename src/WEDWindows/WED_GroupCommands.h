@@ -31,6 +31,7 @@ class	IResolver;
 
 class	Point2;
 
+class	WED_Archive;
 class	WED_GISEdge;
 class	WED_MapZoomerNew;
 class	WED_Thing;
@@ -152,5 +153,18 @@ void	WED_DoReplaceVehicleObj(IResolver* resolver);
 
 void WED_UpgradeRampStarts(IResolver * resolver);
 void WED_AlignAirports(IResolver * resolver);
+
+// Tests if 'thing' is of a specific type.
+typedef bool (*IsTypeFunc)(WED_Thing * thing);
+
+// Checks whether the selected objects can be converted to the type checked for by 'isDstType'.
+// 'dstIsPolygon' specifies whether the destination type is a subclass of WED_GISPolygon.
+int		WED_CanConvertTo(IResolver * resolver, IsTypeFunc isDstType, bool dstIsPolygon);
+
+// Factory function for a certain subclass of WED_Thing.
+typedef WED_Thing * (*CreateThingFunc)(WED_Archive * parent);
+
+// Converts the selected objects to the type produced by 'create'.
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create);
 
 #endif /* WED_GroupCommands_H */

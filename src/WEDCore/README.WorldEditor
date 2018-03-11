@@ -16,6 +16,7 @@ CHANGE HISTORY
 WED 1.7.1
     - Allow to pre-select 'Split Walls' when placing facades
     - Enable splitting of line/area features into 2 separate things by selecting non-adjacent nodes, Edit->Split
+    - Added "Convert to" feature for converting between taxiways, draped polygon, taxi lines and lines.
 
 WED 1.7.0 rc1 ?
    - WED-995 fix update of runway textures & properties not showing immediately

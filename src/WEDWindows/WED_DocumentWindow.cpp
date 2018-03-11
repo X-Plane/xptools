@@ -49,17 +49,37 @@
 #include "WED_GatewayExport.h"
 #include "WED_GatewayImport.h"
 
+#include "WED_AirportChain.h"
 #include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
+#include "WED_LinePlacement.h"
+//#include "WED_Orthophoto.h"
+#include "WED_PolygonPlacement.h"
 #include "WED_Routing.h"
+#include "WED_Taxiway.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
 
 #if WITHNWLINK
 #include "WED_Server.h"
 #endif
+
+namespace
+{
+template<class T>
+WED_Thing * CreateThing(WED_Archive * parent)
+{
+	return T::CreateTyped(parent);
+}
+
+template<class T>
+bool IsType(WED_Thing * thing)
+{
+	return dynamic_cast<T*>(thing) != NULL;
+}
+}
 
 int kDefaultDocSize[4] = { 0, 0, 1024, 768 };
 
@@ -342,6 +362,10 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
+	case wed_ConvertToPolygon:	WED_DoConvertTo(mDocument, &CreateThing<WED_PolygonPlacement>);	return 1;
+	case wed_ConvertToTaxiway:	WED_DoConvertTo(mDocument, &CreateThing<WED_Taxiway>);	return 1;
+	case wed_ConvertToTaxiline:	WED_DoConvertTo(mDocument, &CreateThing<WED_AirportChain>);	return 1;
+	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>);	return 1;
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
@@ -460,6 +484,10 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
+	case wed_ConvertToPolygon:	return WED_CanConvertTo(mDocument, &IsType<WED_PolygonPlacement>, true);
+	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, &IsType<WED_Taxiway>, true);
+	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, &IsType<WED_AirportChain>, false);
+	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, &IsType<WED_LinePlacement>, false);
 	case wed_AddATCFreq:return WED_CanMakeNewATCFreq(mDocument);
 #if AIRPORT_ROUTING
 	case wed_AddATCFlow:return WED_CanMakeNewATCFlow(mDocument);
