@@ -1485,20 +1485,25 @@ struct ring_split_info_t {
 static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
 {
 	// Must have exactly one point selected
-	if(sel->GetSelectionCount() != 1) return false;
+	if(sel->GetSelectionCount() != 1)
+		return false;
 	WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(0));
-	if(!p) return false;
+	if(!p)
+		return false;
 
 	// The point must have a WED_GISChain parent
 	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p->GetParent());
-	if(!c) return false;
+	if(!c)
+		return false;
 
 	// The chain must be open
-	if(c->IsClosed()) return false;
+	if(c->IsClosed())
+		return false;
 
 	// The point must not be the first or last point in the chain
 	int pos = p->GetMyPosition();
-	if (pos == 0 || pos == c->CountChildren()-1) return false;
+	if (pos == 0 || pos == c->CountChildren()-1)
+		return false;
 
 	if(info)
 	{
@@ -1515,17 +1520,21 @@ static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
 	sel->GetSelectionVector(selected);
 
 	// Must have exactly two points selected
-	if(selected.size() != 2) return false;
+	if(selected.size() != 2)
+		return false;
 	WED_GISPoint * p0 = dynamic_cast<WED_GISPoint*>(selected[0]);
 	WED_GISPoint * p1 = dynamic_cast<WED_GISPoint *>(selected[1]);
-	if(!p0 || !p1) return false;
+	if(!p0 || !p1)
+		return false;
 
 	// The points must have the same WED_GISChain parent
 	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p0->GetParent());
-	if(!c || c != p1->GetParent()) return false;
+	if(!c || c != p1->GetParent())
+		return false;
 
 	// The chain must be closed (i.e. it must be a ring).
-	if(!c->IsClosed()) return false;
+	if(!c->IsClosed())
+		return false;
 
 	// The points must not be adjacent
 	int pos_0 = p0->GetMyPosition();
@@ -1535,8 +1544,10 @@ static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
 		std::swap(pos_0, pos_1);
 		std::swap(p0, p1);
 	}
-	if(pos_1 == pos_0 + 1) return false;
-	if(pos_0 == 0 && pos_1 == c->CountChildren()-1) return false;
+	if(pos_1 == pos_0 + 1)
+		return false;
+	if(pos_0 == 0 && pos_1 == c->CountChildren()-1)
+		return false;
 
 	if(info)
 	{
@@ -1552,8 +1563,10 @@ static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
 
 static bool is_edge_split(ISelection * sel)
 {
-	if (sel->GetSelectionCount() == 0) return false;
-	if (sel->IterateSelectionOr(unsplittable, sel)) return false;
+	if (sel->GetSelectionCount() == 0)
+		return false;
+	if (sel->IterateSelectionOr(unsplittable, sel))
+		return false;
 	return true;
 }
 
@@ -1621,7 +1634,8 @@ static int hole_side(IGISPointSequence * hole, IGISPoint * p1, IGISPoint * p2)
 		}
 	}
 
-	if (points.empty()) return COLLINEAR;
+	if (points.empty())
+		return COLLINEAR;
 
 	int side = segment.side_of_line(points[0]);
 	for (size_t i = 1; i < points.size(); ++i)
@@ -1635,7 +1649,8 @@ static int hole_side(IGISPointSequence * hole, IGISPoint * p1, IGISPoint * p2)
 
 static void delete_bezier_handle(IGISPoint * p, int handle) {
 	IGISPoint_Bezier * bezier = dynamic_cast<IGISPoint_Bezier*>(p);
-	if (!bezier) return;
+	if (!bezier)
+		return;
 
 	bezier->SetSplit(true);
 	if (handle == 0)
@@ -1647,7 +1662,8 @@ static void delete_bezier_handle(IGISPoint * p, int handle) {
 static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
 {
 	WED_Thing * parent = info.c->GetParent();
-	if (!parent) return;
+	if (!parent)
+		return;
 
 	WED_GISPolygon * polygon = dynamic_cast<WED_GISPolygon*>(info.c->GetParent());
 	vector<int> hole_sides;
