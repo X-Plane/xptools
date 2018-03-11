@@ -481,6 +481,20 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 	return false;
 }
 
+// For every object in 'who', adds all of its descendents to 'who'.
+static void WED_AddChildrenRecursive(set<WED_Thing *>& who)
+{
+	// Make a copy of the roots of the search, as we don't want to modify 'who' while we're
+	// iterating over it.
+	vector<WED_Thing*> roots(who.begin(), who.end());
+
+	for (size_t i = 0; i < roots.size(); ++i)
+		CollectRecursive(roots[i], inserter(who, who.end()), IgnoreVisiblity, TakeAlways);
+}
+
+// Deletes everything in 'who', along with any parents, sources and viewers that the deletion
+// makes unviable.
+// Requirement: For every object in 'who', all of its children must also be be in 'who'.
 static void WED_RecursiveDelete(set<WED_Thing *>& who)
 {
 	// This is sort of a scary mess.  We are going to delete everyone in 'who'.  But this might have
@@ -1549,21 +1563,6 @@ int		WED_CanSplit(IResolver * resolver)
 	return is_chain_split(sel, NULL) || is_ring_split(sel, NULL) || is_edge_split(sel)? 1 : 0;
 }
 
-static void delete_with_children(const vector<WED_Thing*>& things)
-{
-	for (size_t i = 0; i < things.size(); ++i)
-	{
-		things[i]->SetParent(NULL, 0);
-		vector<WED_Thing*> children(things[i]->CountChildren());
-		for (int child = 0; child < things[i]->CountChildren(); ++child)
-		{
-			children[child] = things[i]->GetNthChild(child);
-		}
-		delete_with_children(children);
-		things[i]->Delete();
-	}
-}
-
 static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 {
 	IOperation * op = dynamic_cast<IOperation *>(sel);
@@ -1575,16 +1574,17 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 	int pos = info.p->GetMyPosition();
 	sel->Insert(chain_clone->GetNthChild(pos));
 
-	vector<WED_Thing*> to_delete;
+	set<WED_Thing*> to_delete;
 	for (int i = 0; i < info.c->CountChildren(); ++i)
 	{
 		if (i < pos)
-			to_delete.push_back(chain_clone->GetNthChild(i));
+			to_delete.insert(chain_clone->GetNthChild(i));
 		if (i > pos)
-			to_delete.push_back(info.c->GetNthChild(i));
+			to_delete.insert(info.c->GetNthChild(i));
 	}
 
-	delete_with_children(to_delete);
+	WED_AddChildrenRecursive(to_delete);
+	WED_RecursiveDelete(to_delete);
 
 	op->CommitOperation();
 }
@@ -1675,7 +1675,7 @@ static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Split ring");
 
-	vector<WED_Thing*> to_delete;
+	set<WED_Thing*> to_delete;
 	WED_GISChain * chain_clone = NULL;
 
 	// Is the ring the outer ring of a polygon?
@@ -1690,9 +1690,9 @@ static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
 		for (int i = 0; i < polygon->GetNumHoles(); ++i)
 		{
 			if (hole_sides[i] == RIGHT_TURN)
-				to_delete.push_back(dynamic_cast<WED_Thing*>(polygon->GetNthHole(i)));
+				to_delete.insert(dynamic_cast<WED_Thing*>(polygon->GetNthHole(i)));
 			else
-				to_delete.push_back(dynamic_cast<WED_Thing*>(polygon_clone->GetNthHole(i)));
+				to_delete.insert(dynamic_cast<WED_Thing*>(polygon_clone->GetNthHole(i)));
 		}
 	}
 	else
@@ -1716,12 +1716,13 @@ static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
 	for (int i = 0; i < info.c->CountChildren(); ++i)
 	{
 		if (i > info.pos_0 && i < info.pos_1)
-			to_delete.push_back(info.c->GetNthChild(i));
+			to_delete.insert(info.c->GetNthChild(i));
 		if (i < info.pos_0 || i > info.pos_1)
-			to_delete.push_back(chain_clone->GetNthChild(i));
+			to_delete.insert(chain_clone->GetNthChild(i));
 	}
 
-	delete_with_children(to_delete);
+	WED_AddChildrenRecursive(to_delete);
+	WED_RecursiveDelete(to_delete);
 
 	op->CommitOperation();
 }
