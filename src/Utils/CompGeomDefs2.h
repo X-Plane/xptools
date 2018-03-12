@@ -131,6 +131,17 @@ struct Point2 {
 	double	y_;
 };
 
+namespace std
+{
+template <> struct hash<Point2>
+{
+	size_t operator()(const Point2 & p) const
+	{
+		return std::hash<double>()(p.x()) + std::hash<double>()(p.y());
+	}
+};
+}
+
 /****************************************************************************************************
  * Vector2
  ****************************************************************************************************/
