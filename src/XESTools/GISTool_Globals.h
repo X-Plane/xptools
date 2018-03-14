@@ -41,6 +41,7 @@ enum rf_region {
 	rf_eu = 1
 };
 
+extern bool					gMobile; // true if we're building for Mobile; false if we're building for Desktop
 extern rf_region			gRegion;
 
 extern Pmwx					gMap;

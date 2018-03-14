@@ -39,6 +39,8 @@ bool	RegisterLineHandler(
 					ProcessConfigString_f 	inHandler,
 					void * 					inRef);
 
+void	AddConfigDirectory(const char * config_dir); // adds a new directory, where we'll look first for your config files, before falling back to the default
+
 // Locate a config file by name.  (Handles CFM weirdness nicely.)
 string	FindConfigFile(const char * inFileName);
 
@@ -46,6 +48,8 @@ string	FindConfigFile(const char * inFileName);
 // (1) an I/O error occurs, (2) one of the line handlers returns false, indicating
 // a line error, or (3) an unknown parsing token is found.
 bool	LoadConfigFile(const char * inFilename);
+// Loads all config files with this name in any of our config directories
+bool	LoadAllConfigFiles(const char * inFilename);
 bool	LoadConfigFileFullPath(const char * inFilename);
 
 // Same as above, except the config file is only loaded the first time

@@ -53,26 +53,16 @@
 
 DSFBuildPrefs_t	gDSFBuildPrefs = { 1 };
 
-#if PHONE
-	// Ben syas: 32x32 is definitely a good bucket size - when we go 16x16 our vertex count goes way up and fps tank.
-	// And increasing bucket size does NOT improve stripification al ot.
-	#define		PATCH_DIM_HI	32
-	#define		PATCH_DIM_LO	32
-	#define		DSF_DIVISIONS	8
-#else
-	#define		PATCH_DIM_HI	16
-	#define		PATCH_DIM_LO	16
-	#define		DSF_DIVISIONS	8
-#endif
+// Ben syas: 32x32 is definitely a good bucket size - when we go 16x16 our vertex count goes way up and fps tank.
+// And increasing bucket size does NOT improve stripification al ot.
+static inline int get_patch_dim_hi() { return gMobile ? 32 : 16; }
+static inline int get_patch_dim_lo() { return gMobile ? 32 : 16; }
+#define		DSF_DIVISIONS	8
 
 #define		TERRAIN_NEAR_LOD			 0.0
 #define		TERRAIN_FAR_LOD				-1.0
 #define		TERRAIN_NEAR_BORDER_LOD 	 0.0
-#if PHONE
-#define		TERRAIN_FAR_BORDER_LOD		 10000			// Ben says - 5000 was too small - it popped - ugly!
-#else
-#define		TERRAIN_FAR_BORDER_LOD		 40000
-#endif
+static inline int get_terrain_far_border_lod() { return gMobile ? 10000 : 40000; } // Ben says - 5000 was too small - it popped - ugly!
 
 #define		ORTHO_NEAR_LOD			100000.0
 #define		ORTHO_FAR_LOD			-1.0
@@ -673,9 +663,11 @@ double edge_angle(const CDT::Edge& e1, const CDT::Edge& e2)
 
 int	has_beach(const CDT::Edge& inEdge, const CDT& inMesh, int& kind)
 {
-#if PHONE
-	return false;
-#endif
+	if(gMobile)
+	{
+		return false;
+	}
+	
 	if (!is_coast(inEdge, inMesh))	return false;
 
 	CDT::Face_handle tri = inEdge.first;
@@ -832,11 +824,9 @@ bool StripSoft(string& n)
 string		get_terrain_name(int composite)
 {
 	if (composite == terrain_Water)
-#if PHONE
-		return "RESOURCE:water.ter";
-#else
-		return FetchTokenString(composite);
-#endif
+	{
+		return gMobile ? "RESOURCE:water.ter" : FetchTokenString(composite);
+	}
 	else if (gNaturalTerrainInfo.count(composite) > 0)
 	{
 		if(IsCustom(composite))
@@ -848,12 +838,13 @@ string		get_terrain_name(int composite)
 				return n;
 			}
 			return FetchTokenString(composite);
-		} else
-#if PHONE
-			return string(FetchTokenString(composite)) + ".ter";
-#else
-			return string("lib/g10/") + FetchTokenString(composite) + ".ter";
-#endif
+		}
+		else
+		{
+			// TODO: Add real prefix for mobile!
+			const string prefix = gMobile ? "" : "lib/g10/";
+			return prefix + string(FetchTokenString(composite)) + ".ter";
+		}
 	}
 
 //	DebugAssert(!"bad terrain.");
@@ -941,11 +932,11 @@ void	BuildDSF(
 {
 
 
-vector<CDT::Face_handle>	sHiResTris[PATCH_DIM_HI * PATCH_DIM_HI];
-vector<CDT::Face_handle>	sLoResTris[PATCH_DIM_LO * PATCH_DIM_LO];
-set<int>					sHiResLU[PATCH_DIM_HI * PATCH_DIM_HI];
-set<int>					sHiResBO[PATCH_DIM_HI * PATCH_DIM_HI];
-set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
+vector<CDT::Face_handle>	sHiResTris[get_patch_dim_hi() * get_patch_dim_hi()];
+vector<CDT::Face_handle>	sLoResTris[get_patch_dim_lo() * get_patch_dim_hi()];
+set<int>					sHiResLU[get_patch_dim_hi() * get_patch_dim_hi()];
+set<int>					sHiResBO[get_patch_dim_hi() * get_patch_dim_hi()];
+set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 
 
 		double	prog_c = 0.0;
@@ -1129,12 +1120,12 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		x = (x - inElevation.mWest) / (inElevation.mEast - inElevation.mWest);
 		y = (y - inElevation.mSouth) / (inElevation.mNorth - inElevation.mSouth);
 
-		x = floor(x*PATCH_DIM_HI);
-		y = floor(y*PATCH_DIM_HI);
+		x = floor(x*get_patch_dim_hi());
+		y = floor(y*get_patch_dim_hi());
 
-		if (x == PATCH_DIM_HI) x = PATCH_DIM_HI-1;
-		if (y == PATCH_DIM_HI) y = PATCH_DIM_HI-1;
-		if (x < 0 || y < 0 || x > PATCH_DIM_HI || y > PATCH_DIM_HI)
+		if (x == get_patch_dim_hi()) x = get_patch_dim_hi()-1;
+		if (y == get_patch_dim_hi()) y = get_patch_dim_hi()-1;
+		if (x < 0 || y < 0 || x > get_patch_dim_hi() || y > get_patch_dim_hi())
 			fprintf(stderr, "Hires Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y,
 				CGAL::to_double(fi->vertex(0)->point().x()),CGAL::to_double(fi->vertex(0)->point().y()),
 				CGAL::to_double(fi->vertex(1)->point().x()),CGAL::to_double(fi->vertex(1)->point().y()),
@@ -1142,13 +1133,13 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 
 		// Accumulate the various texes into the various layers.  This means marking what land uses we have per each patch
 		// and also any borders we need.
-		sHiResTris[(int) x + (int) y * PATCH_DIM_HI].push_back(fi);
+		sHiResTris[(int) x + (int) y * get_patch_dim_hi()].push_back(fi);
 		DebugAssert(fi->info().terrain != -1);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		// special case: maybe the hard variant is never used?  In that case, make sure to accum it here or we'll never export that land use.
 		if(IsAliased(fi->info().terrain))
 			landuses.insert(map<int, int, SortByLULayer>::value_type(IsAliased(fi->info().terrain),0));
-		sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(fi->info().terrain);
+		sHiResLU[(int) x + (int) y * get_patch_dim_hi()].insert(fi->info().terrain);
 
 
 		if(IsCustomOverWaterHard(fi->info().terrain))
@@ -1156,18 +1147,18 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 			// Over water, but maintain hard physics.  So we need to put ourselves in the visual layer, and make sure there is water for aliasing.
 			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_Water,0));
 			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_VisualWater,0));
-			sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(terrain_VisualWater);
+			sHiResLU[(int) x + (int) y * get_patch_dim_hi()].insert(terrain_VisualWater);
 		}
 		if(IsCustomOverWaterSoft(fi->info().terrain))
 		{
 			// Over water soft - put us in the water layer.
 			landuses.insert(map<int, int, SortByLULayer>::value_type(terrain_Water,0));
-			sHiResLU[(int) x + (int) y * PATCH_DIM_HI].insert(terrain_Water);
+			sHiResLU[(int) x + (int) y * get_patch_dim_hi()].insert(terrain_Water);
 		}
 
 		for (border_lu = fi->info().terrain_border.begin(); border_lu != fi->info().terrain_border.end(); ++border_lu)
 		{
-			sHiResBO[(int) x + (int) y * PATCH_DIM_HI].insert(*border_lu);
+			sHiResBO[(int) x + (int) y * get_patch_dim_hi()].insert(*border_lu);
 			landuses.insert(map<int, int, SortByLULayer>::value_type(*border_lu,0));
 			DebugAssert(*border_lu != -1);
 		}
@@ -1201,19 +1192,19 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		x = (x - inElevation.mWest) / (inElevation.mEast - inElevation.mWest);
 		y = (y - inElevation.mSouth) / (inElevation.mNorth - inElevation.mSouth);
 
-		x = floor(x*PATCH_DIM_LO);
-		y = floor(y*PATCH_DIM_LO);
+		x = floor(x*get_patch_dim_lo());
+		y = floor(y*get_patch_dim_lo());
 
-		if (x < 0 || y < 0 || x >= PATCH_DIM_LO || y >= PATCH_DIM_LO)
+		if (x < 0 || y < 0 || x >= get_patch_dim_lo() || y >= get_patch_dim_lo())
 			fprintf(stderr, "Lores Triangle out of range, patch %lf,%lf, coords are %lf,%lf %lf,%lf %lf,%lf\n", x, y,
 				fi->vertex(0)->point().x(),fi->vertex(0)->point().y(),
 				fi->vertex(1)->point().x(),fi->vertex(1)->point().y(),
 				fi->vertex(2)->point().x(),fi->vertex(2)->point().y());
 
-		sLoResTris[(int) x + (int) y * PATCH_DIM_LO].push_back(fi);
+		sLoResTris[(int) x + (int) y * get_patch_dim_lo()].push_back(fi);
 		landuses.insert(map<int, int, SortByLULayer>::value_type(fi->info().terrain,0));
 		DebugAssert(fi->info().terrain != -1);
-		sLoResLU[(int) x + (int) y * PATCH_DIM_LO].insert(fi->info().terrain);
+		sLoResLU[(int) x + (int) y * get_patch_dim_lo()].insert(fi->info().terrain);
 	}
 #endif
 
@@ -1249,7 +1240,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		is_overlay		= IsCustomOverWaterAny(lu_ranked->first);		// This layer is an overlay to water, so be sure to set the flags!
 
 #if !NO_ORTHO
-		for (cur_id = 0; cur_id < (PATCH_DIM_LO*PATCH_DIM_LO); ++cur_id)
+		for (cur_id = 0; cur_id < (get_patch_dim_lo()*get_patch_dim_lo()); ++cur_id)
 		if (sLoResLU[cur_id].count(lu_ranked->first))
 		{
 			TriFanBuilder	fan_builder(&inLoresMesh);
@@ -1304,7 +1295,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		/***************************************************************************************************************************************
 		 * WRITE OUT HI RES BASE PATCHES
 		 ***************************************************************************************************************************************/
-		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)
+		for (cur_id = 0; cur_id < (get_patch_dim_hi()*get_patch_dim_hi()); ++cur_id)
 		if (sHiResLU[cur_id].count(lu_ranked->first))
 		{
 			TriFanBuilder	fan_builder(&inHiresMesh);
@@ -1395,11 +1386,11 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		 ***************************************************************************************************************************************/
 
 #if !NO_BORDERS
-		for (cur_id = 0; cur_id < (PATCH_DIM_HI*PATCH_DIM_HI); ++cur_id)		// For each triangle in this patch
+		for (cur_id = 0; cur_id < (get_patch_dim_hi()*get_patch_dim_hi()); ++cur_id)		// For each triangle in this patch
 		if (lu_ranked->first >= terrain_Natural)
 		if (sHiResBO[cur_id].count(lu_ranked->first))							// Quick check: do we have ANY border tris in this layer in this patch?
 		{
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, TERRAIN_FAR_BORDER_LOD, dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer1);
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, get_terrain_far_border_lod(), dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer1);
 			cbs.BeginPrimitive_f(dsf_Tri, writer1);
 			tris_this_patch = 0;
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)				// For each tri
@@ -1511,9 +1502,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 	/****************************************************************
 	 * BEACH EXPORT
 	 ****************************************************************/
-
-#if !PHONE
-	if(writer1)
+	if(!gMobile && writer1)
 	{
 		// Beach export - we are going to export polygon rings/chains out of
 		// every homogenous continous coastline type.  Two issues:
@@ -1638,7 +1627,7 @@ set<int>					sLoResLU[PATCH_DIM_LO * PATCH_DIM_LO];
 		}
 		cbs.AcceptPolygonDef_f("lib/g8/beaches.bch", writer1);
 	}
-#endif
+
 	/****************************************************************
 	 * OBJECT EXPORT/FACADE/FOREST WRITEOUT
 	 ****************************************************************/

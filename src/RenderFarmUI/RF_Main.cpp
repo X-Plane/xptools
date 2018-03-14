@@ -596,6 +596,22 @@ int main(int argc, char * argv[])
 	RF_Application	app;
 #endif
 	setlocale(LC_ALL,"en_US.UTF-8");
+	
+	// Check for a custom config directory
+	int arg = 1;
+	bool next_arg_is_config_file = false;
+	while(arg < argc)
+	{
+		if(!strcmp(argv[arg], "--config") || !strcmp(argv[arg], "-c"))
+		{
+			if(arg + 1 < argc)
+			{
+				++arg;
+				AddConfigDirectory(argv[arg]);
+			}
+		}
+		++arg;
+	}
 
 	XGrindInit();
 

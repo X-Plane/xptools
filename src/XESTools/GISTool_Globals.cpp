@@ -31,6 +31,7 @@
 #include "RF_DrawMap.h"
 #endif
 
+bool				gMobile = false;
 rf_region			gRegion = rf_usa;
 
 Pmwx				gMap;

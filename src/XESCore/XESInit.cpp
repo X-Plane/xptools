@@ -43,7 +43,7 @@ void	XESInit(bool want_forests)
 {
 	InitEnumSystem();
 	RegisterLineHandler("VOCAB", HandleVocab, NULL);
-	LoadConfigFile("vocab.txt");
+	LoadAllConfigFiles("vocab.txt");
 
 	// Load first - zoning rules needed to validate terrain rules.
 	#if !PHONE

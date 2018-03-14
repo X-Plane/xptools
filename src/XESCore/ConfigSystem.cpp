@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <list>
 #include "AssertUtils.h"
+#include "FileUtils.h"
 using std::list;
 
 #include "PlatformUtils.h"
@@ -99,16 +100,48 @@ bool	RegisterLineHandler(
 	return true;
 }
 
+static vector<string> s_config_dirs(1, "config" DIR_STR);
+void AddConfigDirectory(const char * new_config_dir)
+{
+	s_config_dirs.push_back(new_config_dir);
+	DebugAssert(!s_config_dirs.back().empty());
+	DebugAssert(FILE_get_directory(s_config_dirs.back(), NULL, NULL) > 0);
+	const char last_char = *(s_config_dirs.back().end() - 1);
+	if(last_char != DIR_CHAR)
+	{
+		s_config_dirs.back() += DIR_CHAR;
+	}
+	
+}
+
 string	FindConfigFile(const char * inFilename)
 {
-	string	partial_path = string("config" DIR_STR) + inFilename;
-	return partial_path;
+	for(vector<string>::const_reverse_iterator cfg = s_config_dirs.rbegin(); cfg != s_config_dirs.rend(); ++cfg)
+	{
+		const string path = *cfg + inFilename;
+		if(FILE_exists(path.c_str()))
+		{
+			return path;
+		}
+	}
+	return s_config_dirs.back() + inFilename;
 }
 
 bool	LoadConfigFile(const char * inFilename)
 {
 	string partial_path = FindConfigFile(inFilename);
 	return LoadConfigFileFullPath(partial_path.c_str());
+}
+
+bool LoadAllConfigFiles(const char * filename)
+{
+	bool out_success = true;
+	for(vector<string>::const_reverse_iterator cfg = s_config_dirs.rbegin(); cfg != s_config_dirs.rend(); ++cfg)
+	{
+		const string path = *cfg + filename;
+		out_success &= LoadConfigFileFullPath(path.c_str());
+	}
+	return out_success;
 }
 
 
@@ -268,7 +301,9 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots)
 		int bade;
 		slots.insert(bade = LookupToken(subst.c_str()));
 		if (bade == -1)
+		{
 			printf("WARNING: could not find token: '%s'\n", subst.c_str());
+		}
 		if(e==tokens.npos)
 			break;
 		else

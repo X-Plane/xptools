@@ -2964,6 +2964,13 @@ static const char * eu_latlon[] = {
 NULL
 };
 
+static int SetMobile(const vector<const char *>& args)
+{
+	DebugAssert(args.size() == 1 && strlen(args[0]));
+	gMobile = args[0][0] == 't' || args[0][0] == 'T' || !strcmp(args[0], "1");
+	return 0;
+}
+
 static bool is_eu(const char * tile)
 {
 	int n = 0;
@@ -2984,11 +2991,12 @@ static int DoInitWithRegion(const vector<const char *>& args)
 	else
 		gRegion = rf_usa;
 	
-	XESInit(true);
+	XESInit(gMobile);
 	return 0;
 }
 
 static	GISTool_RegCmd_t		sCoreCmds[] = {
+{ "-mobile",		1, 1, SetMobile,		"Set to true to build Mobile scenery, or false (default) to build for Desktop.", "" },
 { "-region",		1, 1, DoInitWithRegion,	"Init RF to a particular set of region presets.", "" },
 { "-crop", 			0, 0, DoCrop, 			"Crop the map and DEMs to the current extent.", "" },
 { "-cropgrid",		0, 0, DoCropGrid, 		"Crop the map along 1x1 degree grid lines.", "" },

@@ -1441,9 +1441,10 @@ void	HydroReconstruct(Pmwx& ioMap, DEMGeoMap& ioDem, const char * mask_file, con
 	TagOriginalBridges(ioMap);
 	UpdateWaterWithMaskFile(ioMap, ioDem, mask_file, inFunc);
 	ConformWater(ioDem, hydro_dir, false, borders);
-#if !PHONE
-	BuildRivers		  (ioMap, ioDem, borders, inFunc);
-#endif
+	if(!gMobile)
+	{
+		BuildRivers(ioMap, ioDem, borders, inFunc);
+	}
 	DEMGeo foo(ioDem[dem_HydroElevation]), bar;
 	InterpDoubleDEM(foo, bar);
 	ReduceToBorder(bar, foo);
