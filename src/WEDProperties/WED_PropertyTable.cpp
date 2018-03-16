@@ -167,20 +167,7 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
 		sprintf(fmt,"%%%d.%dlf %.6s",inf.digits, inf.decimals, inf.units);  // info.units may be not zero terminated
-		if(inf.round_down)
-		{
-			// We are going to shift our fractional part left 1 more decimal digit to the left than needed.  Why?
-			// The answer: we have to round to nearest to reconstruct numbers like 128.839999999 (as 128.84444444.
-			// But we don't want the round to bump our last digit up (128.825 should NOT become 128.83).  So we do
-			// the round with one EXTRA digit of precision to catch the floating point sliver case.
-			double fract = pow(10.0,inf.decimals);
-			double v = floor(fract * (val.double_val) + 0.05) / fract;
-			snprintf(buf,sizeof(buf),fmt,v);
-		}
-		else
-		{
-			snprintf(buf,sizeof(buf),fmt,val.double_val);
-		}
+		snprintf(buf,sizeof(buf),fmt,val.double_val);
 		the_content.text_val = buf;
 		break;
 	case prop_String:

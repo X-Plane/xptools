@@ -243,10 +243,10 @@ static bool cmp_frequency_type(WED_ATCFrequency* freq1, WED_ATCFrequency* freq2)
 
 static string format_freq(int f)
 {
-	int mhz = f / 100;
-	int khz10 = f % 100;
+	int mhz = f / 1000;
+	int khz = f % 1000;
 	stringstream ss;
-	ss << mhz << "." << std::setw(2) << std::setfill('0') << khz10;
+	ss << mhz << "." << std::setw(3) << std::setfill('0') << khz;
 	return ss.str();
 }
 
@@ -716,8 +716,6 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 		for(vector<WED_ATCFrequency*>::iterator freq = itr->begin(); freq != itr->end(); ++freq)
 		{
 			(*freq)->Export(freq_info);
-			int mhz = freq_info.freq / 100;
-			int last_digit = freq_info.freq % 10;
 			string freq_str = format_freq(freq_info.freq);
 
 			all_freqs[freq_info.freq].push_back(*freq);
@@ -730,24 +728,29 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 			else if(is_xplane_atc_related)
 				has_atc.push_back(*freq);
 
-			if(mhz < 0 || mhz > 1000)
+			if(freq_info.freq <= 0 || freq_info.freq >= 1000000)
 			{
 				msgs.push_back(validation_error_t(string("Frequency ") + freq_str + " not between 0 and 1000 Mhz.", err_freq_not_between_0_and_1000_mhz, *freq,who));
 				continue;
 			}
 
-			bool in_civilian_band = mhz >= 118 && mhz <= 136;
-
 			//We only care about Delivery, Ground, and Tower frequencies
 			if(is_xplane_atc_related)
 			{
+				bool in_civilian_band = freq_info.freq >= 118000 && freq_info.freq < 137000;
+
 				if(in_civilian_band == false)
 				{
 					found_one_oob = true;
 				}
 				else
 				{
-					if(last_digit == 0 || last_digit == 2 || last_digit == 5 || last_digit == 7)
+					int mod25 = freq_info.freq % 25;
+					
+					bool is_25k_raster = mod25 == 0;
+					bool is_83k_raster = mod25 == 5 || mod25 == 10 || mod25 == 15;
+					
+					if(gExportTarget < wet_xplane_1130 ? is_25k_raster : is_25k_raster || is_83k_raster)
 					{
 						found_one_valid = true;
 					}

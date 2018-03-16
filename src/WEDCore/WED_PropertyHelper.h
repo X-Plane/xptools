@@ -200,15 +200,17 @@ public:
 
 class	WED_PropFrequencyText : public WED_PropDoubleText {
 public:
-	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals)  : WED_PropDoubleText(parent, title, initial, digits, decimals, "MHz") { }
+	WED_PropFrequencyText(WED_PropertyHelper * parent, const char * title, double initial, int digits, int decimals) 
+		: WED_PropDoubleText(parent, title, initial, digits, decimals) { AssignFrom1Khz(GetAs1Khz()); }
+	
 
 	WED_PropFrequencyText& operator=(double v) { WED_PropDoubleText::operator=(v); return *this; }
 
-	virtual void		GetPropertyInfo(PropertyInfo_t& info);
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
 	virtual	void		ToXML(WED_XMLElement * parent);
 	
-	int		GetAs10Khz(void) const;
-	void	AssignFrom10Khz(int freq_10khz);
+	int		GetAs1Khz(void) const;
+	void	AssignFrom1Khz(int freq_1khz);
 
 };
 

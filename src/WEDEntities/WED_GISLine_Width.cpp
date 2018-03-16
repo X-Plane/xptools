@@ -91,7 +91,6 @@ void		WED_GISLine_Width::GetNthPropertyInfo(int n, PropertyInfo_t& info) const
 		info.prop_name = kRwyPropNames[n];
 		info.prop_kind = prop_Double;
 		info.synthetic = true;
-		info.round_down = false;
 		info.units = "";
 	}
 

@@ -407,6 +407,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_Export1021:gExportTarget = wet_xplane_1021;	Refresh(); return 1;
 	case wed_Export1050:gExportTarget = wet_xplane_1050;	Refresh(); return 1;
 	case wed_Export1100:gExportTarget = wet_xplane_1100;	Refresh(); return 1;
+	case wed_Export1130:gExportTarget = wet_xplane_1130;	Refresh(); return 1;
 	case wed_ExportGateway:gExportTarget = wet_gateway;	Refresh(); return 1;
 	
 #if WITHNWLINK
@@ -522,6 +523,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
 	case wed_Export1050:ioCheck = gExportTarget == wet_xplane_1050;	return 1;
 	case wed_Export1100:ioCheck = gExportTarget == wet_xplane_1100;	return 1;
+	case wed_Export1130:ioCheck = gExportTarget == wet_xplane_1130;	return 1;
 	
 	case wed_ExportGateway:ioCheck = gExportTarget == wet_gateway;	return 1;
 	
