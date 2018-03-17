@@ -17,6 +17,14 @@ WED 1.7.1
     - Allow to pre-select 'Split Walls' when placing facades
     - Enable splitting of line/area features into 2 separate things by selecting non-adjacent nodes, Edit->Split
     - Added "Convert to" feature for converting between taxiways, draped polygon, taxi lines and lines.
+    - Enable merging of two line/area features into one:
+      - Line feature: Select an endpoint of each line feature, Edit->Merge 
+        If endpoints are already snapped, you can also simply select both line features
+      - Area feature: Select at least two adjacent points on each area feature, Edit->Merge
+        If the points are already snapped, you can also simply select both area features
+    - Enable converting a taxiline between open and closed:
+      - Select point on closed taxiline, Edit->Split
+      - Select two ends of open taxiline, Edit->Merge
 
 WED 1.7.0 rc1 ?
    - WED-995 fix update of runway textures & properties not showing immediately
