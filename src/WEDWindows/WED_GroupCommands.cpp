@@ -3086,16 +3086,32 @@ static void do_ring_merge(ISelection * sel, ring_merge_info_t info)
 			sel->Insert(points[i].front());
 
 		// Keep only one copy of points that are snapped together.
-		if (points_snapped(points[i].back(), points[(i + 1) % 2].front()))
+		WED_GISPoint * p_this = points[i].back();
+		WED_GISPoint * p_other = points[(i + 1) % 2].front();
+		if (points_snapped(p_this, p_other))
 		{
-			points[i].back()->SetParent(NULL, 0);
-			to_delete.insert(points[i].back());
+			// Merge the low Bezier handle into the point we're snapped to.
+			IGISPoint_Bezier * bez_this = dynamic_cast<IGISPoint_Bezier*>(p_this);
+			IGISPoint_Bezier * bez_other = dynamic_cast<IGISPoint_Bezier*>(p_other);
+			if (bez_this && bez_other)
+			{
+				Point2 loc_this, loc_other, handle;
+				bez_this->GetLocation(gis_Geo, loc_this);
+				bez_other->GetLocation(gis_Geo, loc_other);
+				bez_this->GetControlHandleLo(gis_Geo, handle);
+				handle += Vector2(loc_this, loc_other);
+				bez_other->SetSplit(true);
+				bez_other->SetControlHandleLo(gis_Geo, handle);
+			}
+
+			p_this->SetParent(NULL, 0);
+			to_delete.insert(p_this);
 			points[i].pop_back();
 		}
 		else
 		{
 			if (!info.select_whole_ring)
-				sel->Insert(points[i].back());
+				sel->Insert(p_this);
 		}
 
 		// Re-insert all points into the first chain.
