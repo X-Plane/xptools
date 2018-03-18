@@ -89,8 +89,8 @@
 #include "WED_Taxiway.h"
 
 #include <algorithm>
+#include <map>
 #include <sstream>
-#include <unordered_map>
 
 #if DEV
 #include "WED_Globals.h"
@@ -2706,7 +2706,7 @@ static bool are_adjacent(set<int> idx, int num_points, int * first, int * last)
 static bool ring_info_from_points(const vector<ISelectable*> selected, vector<ring_merge_info_t::entry> * rings)
 {
 	// Must have points selected that belong to exactly two WED_GISChain parents.
-	typedef std::unordered_map<WED_GISChain *, set<int> > ChainToPoints;
+	typedef std::map<WED_GISChain *, set<int> > ChainToPoints;
 	ChainToPoints chain_to_points;
 	for (size_t i = 0; i < selected.size(); ++i)
 	{
@@ -2766,7 +2766,7 @@ static bool ring_info_from_chains(const vector<ISelectable*> selected, vector<ri
 	}
 
 	// For all points in the first chain, create a map from location to index.
-	unordered_map<Point2, int> points_0;
+	map<Point2, int> points_0;
 	for (int i = 0; i < chains[0]->GetNumPoints(); ++i)
 	{
 		Point2 p;
@@ -2780,7 +2780,7 @@ static bool ring_info_from_chains(const vector<ISelectable*> selected, vector<ri
 	{
 		Point2 p;
 		chains[1]->GetNthPoint(i)->GetLocation(gis_Geo, p);
-		unordered_map<Point2, int>::iterator iter = points_0.find(p);
+		map<Point2, int>::iterator iter = points_0.find(p);
 		if (iter != points_0.end())
 		{
 			idx[0].insert(iter->second);

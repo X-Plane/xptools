@@ -133,11 +133,14 @@ struct Point2 {
 
 namespace std
 {
-template <> struct hash<Point2>
+template <> struct less<Point2>
 {
-	size_t operator()(const Point2 & p) const
+	bool operator()(const Point2 & lhs, const Point2 & rhs) const
 	{
-		return std::hash<double>()(p.x()) + std::hash<double>()(p.y());
+		if (lhs.x() != rhs.x())
+			return lhs.x() < rhs.x();
+		else
+			return lhs.y() < rhs.y();
 	}
 };
 }
