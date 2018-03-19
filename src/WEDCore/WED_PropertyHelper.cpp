@@ -365,22 +365,29 @@ int		WED_PropFrequencyText::GetAs1Khz(void) const
 	// so 123.125 might be 123.124999999999, and there might be other similar rounding crap.
 	// Plus there is that 8.33kHz logic with most but not all 5kHz raster numbers allowed
 	
-	return 5 * round(this->value * 200.0);
+	return round(this->value * 1000.0);
 }
 
 void	WED_PropFrequencyText::AssignFrom1Khz(int freq_1khz)
 {
-	// round to 5kHz
-	freq_1khz = 5 * ((freq_1khz + 2) / 5);
-
-	int last_two_dig = freq_1khz % 100;
-	if(last_two_dig == 20 || last_two_dig == 70) 
-		freq_1khz += 5;
+	if (freq_1khz >= 118000 && freq_1khz < 137000)
+	{
+		// round to 5kHz
+		freq_1khz = 5 * ((freq_1khz + 2) / 5);
 		
-	if(freq_1khz % 25 == 0)
-		strncpy(mUnit,"(25k)",6);
+		int last_two_dig = freq_1khz % 100;
+		if(last_two_dig == 20 || last_two_dig == 70)
+			freq_1khz += 5;
+			
+		if(freq_1khz % 25 == 0)
+			strncpy(mUnit,"(25k)",6);
+		else
+			strncpy(mUnit,"(8.3k)",6);
+	}
 	else
-		strncpy(mUnit,"(8.3k)",6);
+	{
+		strncpy(mUnit,"MHz",6);
+	}
 		
 	double mhz = (double) freq_1khz / 1000.0;
 	*this = mhz;
