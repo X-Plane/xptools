@@ -127,6 +127,12 @@
  * STL AND OTHER GLOBAL INCLUDES THAT WE LIKE ENOUGH TO HAVE EVERYWHERE
  ************************************************************************************************************************************************************************/
 
+#if defined(_MSC_VER)
+	#define _CRT_SECURE_NO_WARNING
+	#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#endif
+
+ 
 #ifdef __cplusplus
 
 #include <vector>
@@ -181,7 +187,6 @@ using namespace std;
 #define SUPPORT_STL
 
 #ifdef __cplusplus
-
 
 #if __GNUC__							// gnuc is the x-code compiler
 
@@ -239,7 +244,8 @@ using namespace std;
 #if defined(_MSC_VER)
 
 	#ifdef __cplusplus
-	#define _USE_MATH_DEFINES
+		#define _USE_MATH_DEFINES
+		#define _SILENCE_STDEXT_HASH_WARNINGS
 		#include <hash_map>
 		using namespace stdext;	// Ben says - can't entirely blame MSVC for this - hash maps are NOT stardard - a weakness of the STL that causes much grief!
 		using namespace std;
@@ -258,6 +264,7 @@ using namespace std;
 
 	#define ENOERR 0
 	#define snprintf _snprintf
+	#define strdup _strdup
 
 #if __cplusplus
 	static __inline double round(double v) { return floor(v+0.5); }
@@ -307,9 +314,19 @@ public:
 private:
 	_Myfb _Filebuffer;
 };
-
-
 #endif
+#endif
+
+#if LIN
+// This is to put an case-insensitive fopen in place, see in FileUtils.cpp
+
+#ifdef __cplusplus
+extern "C" FILE* x_fopen(const char * _Filename, const char * _Mode);
+#else
+extern FILE* x_fopen(const char * _Filename, const char * _Mode);
+#endif
+
+#define fopen(_Filename,_Mode) x_fopen(_Filename, _Mode)
 #endif
 
 #if APL

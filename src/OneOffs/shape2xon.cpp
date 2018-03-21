@@ -69,7 +69,7 @@ struct pt_t {
 	}
 	
 	void print(void) const {
-		printf("(%lf,%lf [0x%016llx,0x%016llx] ",x,y,x,y);
+		printf("(%lf,%lf [0x%016llx,0x%016llx] ",x,y,(long long) x, (long long) y);
 	}
 };
 

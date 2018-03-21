@@ -28,7 +28,6 @@
 #include "FileUtils.h"
 #include "AssertUtils.h"
 #include "WED_Messages.h"
-#include "FileUtils.h"
 
 #define CUSTOM_PACKAGE_PATH	"Custom Scenery"
 #define GLOBAL_PACKAGE_PATH	"Global Scenery"
@@ -68,10 +67,20 @@ static bool package_scan_func(const char * fileName, bool is_dir, void * ref)
 	return false;
 }
 
-void		WED_PackageMgr::SetXPlaneFolder(const string& root)
+bool		WED_PackageMgr::SetXPlaneFolder(const string& root)
 {
+	// Check for the presence of the two folders WED really cares about.
+	string dir = root + DIR_STR + CUSTOM_PACKAGE_PATH;
+	if (MF_GetFileType(dir.c_str(),mf_CheckType) != mf_Directory)
+		return false;
+
+	dir = root + DIR_STR + DEFAULT_PACKAGE_PATH;
+	if (MF_GetFileType(dir.c_str(),mf_CheckType) != mf_Directory)
+		return false;
+	
 	system_path = root;
 	Rescan();
+	return true;
 }
 
 int			WED_PackageMgr::CountCustomPackages(void) const
@@ -246,6 +255,21 @@ void		WED_PackageMgr::Rescan(void)
 	for (int i=0; i<default_package_names.size(); ++i)
 			default_package_hasPublicItems.push_back(false);
 
+	XPversion = "Unknown";
+	string logfile_name = system_path + DIR_STR "Log.txt";
+	string logfile_contents;
+	if (FILE_exists(logfile_name.c_str()) &&
+		FILE_read_file_to_string(logfile_name, logfile_contents) == 0)
+	{
+		size_t v_pos = logfile_contents.find("X-Plane");  // version string is the one behind the X-plane keyword
+		if (v_pos != string::npos && v_pos < 100)
+		{
+			char v[16];
+			sscanf(logfile_contents.c_str()+v_pos+8,"%15s",v);
+			XPversion = v;
+		}
+	}
+
 	BroadcastMessage(msg_SystemFolderChanged,0);
 }
 
@@ -288,4 +312,14 @@ string		WED_PackageMgr::ReducePath(const string& package, const string& full_fil
 		partial = string("../") + partial;
 	}
 	return partial;
+}
+
+const char * WED_PackageMgr::GetXPversion() const
+{
+	return XPversion.c_str();
+}
+
+bool		WED_PackageMgr::IsSameXPVersion( const string& version) const
+{
+	return (XPversion == version);   // might have to refine that, i.e. consider various all release candidates to be equivalent ?
 }

@@ -330,7 +330,7 @@ void WED_Sign_Parser::append_parser_out_info(parser_glyph_t glyph)
 		if(side.back().glyph_color != glyphColor)
 		{
 			return; // silently drop unwanted separator next to a color change in the sign
-			append_error(sem_pipe_color_mismatch);
+//			append_error(sem_pipe_color_mismatch);
 		}
 	}
 	
@@ -345,7 +345,6 @@ void WED_Sign_Parser::append_parser_out_info(parser_glyph_t glyph)
 WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState)
 {
 	char curChar = mInput.input[mPosition];
-	stringstream ss;
 	parser_glyph_t glyph;
 	
 	// Important: we should not have gotten out of I_ACCUM_GLYPHS without flushing the glyph buf,
@@ -494,6 +493,8 @@ WED_Sign_Parser::FSM WED_Sign_Parser::LookUpTable(FSM curState)
 			return O_ACCUM_GLYPHS;
 		}
 		break;
+	default:
+		return O_ACCUM_GLYPHS;
 	}
 }
 //---------------------------------------------------------

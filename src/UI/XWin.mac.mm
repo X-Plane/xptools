@@ -579,13 +579,18 @@ void	XWin::initCommon(int dnd, const char * title, int attributes, int x, int y,
 
 	int mask = 0;
 	
-	switch(attributes & xwin_style_modal) {
-	case xwin_style_thin:		break;
-	case xwin_style_movable:	mask = NSTitledWindowMask|NSClosableWindowMask;		break;
-	case xwin_style_resizable:	mask =	NSTitledWindowMask|NSClosableWindowMask|NSResizableWindowMask|NSMiniaturizableWindowMask; break;
-	case xwin_style_modal:		mask = NSTitledWindowMask;			break;
-	}
-	
+	if (attributes & xwin_style_modal)
+    {
+        mask = NSTitledWindowMask;
+        if(attributes & xwin_style_resizable)
+            mask |= NSResizableWindowMask;
+    }
+    else if (attributes & (xwin_style_movable | xwin_style_resizable))
+    {
+        mask =	NSTitledWindowMask | NSClosableWindowMask;
+        if(attributes & xwin_style_resizable)
+            mask |= NSMiniaturizableWindowMask | NSResizableWindowMask;
+    }
 	float h = [[[NSScreen screens] objectAtIndex:0] frame].size.height;
 
 	XWinCocoa * window;
@@ -625,7 +630,7 @@ void	XWin::initCommon(int dnd, const char * title, int attributes, int x, int y,
 	{
 		[window zoom:NULL];
 	}
-	if((attributes & xwin_style_modal) == xwin_style_modal)
+	if(attributes & xwin_style_modal)
 	{
 		// Since modals are popped up NOW, they have to be visible, otherwise NS puts
 		// the window up and GUI thinks we're hidden and doesn't draw.
@@ -669,7 +674,7 @@ void	XWin::initCommon(int dnd, const char * title, int attributes, int x, int y,
 	// THEN at the main loop, the block runs, runs the modal loop, and the window's close box will kill the modal loop.
 	//
 	// The rest of GUI doesn't care - it's still getting app call-outs.
-	if((attributes & xwin_style_modal) == xwin_style_modal)
+	if(attributes & xwin_style_modal)
 		dispatch_async(dispatch_get_main_queue(),^{
 			[[NSApplication sharedApplication] runModalForWindow:mWindow];
 		});

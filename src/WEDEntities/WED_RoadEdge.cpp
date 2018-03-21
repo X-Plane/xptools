@@ -57,10 +57,10 @@ TRIVIAL_COPY(WED_RoadEdge, WED_GISEdge)
 
 
 WED_RoadEdge::WED_RoadEdge(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	start_layer(this,"Start Layer",SQL_Name("WED_roadedge", "layer"),XML_Name("road_edge","layer"),0,2),
-	end_layer(this,"End Layer",SQL_Name("WED_roadedge", "layer"),XML_Name("road_edge","end_layer"),0,2),
-	subtype(this,"Type",SQL_Name("WED_roadedge", "subtype"),XML_Name("road_edge","sub_type"), 1, 3),
-	resource(this,"Resource",SQL_Name("",""), XML_Name("road_edge","resource"),"")
+	start_layer(this,"Start Layer",  XML_Name("road_edge","layer"),     0,2),
+	end_layer(this,"End Layer",      XML_Name("road_edge","end_layer"), 0,2),
+	subtype(this,"Type",             XML_Name("road_edge","sub_type"),  1,3),
+	resource(this,"Resource",        XML_Name("road_edge","resource"),  "")
 {
 }
 

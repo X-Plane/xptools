@@ -56,13 +56,13 @@ static void get_runway_parts(int rwy, set<int>& rwy_parts)
 DEFINE_PERSISTENT(WED_TaxiRoute)
 
 WED_TaxiRoute::WED_TaxiRoute(WED_Archive * a, int i) : WED_GISEdge(a,i),
-	vehicle_class(this,	"Allowed Vehicles",		SQL_Name("",""),								XML_Name("taxi_route","vehicle_class"),	ATCVehicleClass,atc_Vehicle_Aircraft),
-	oneway(this,		"One-Way",				SQL_Name("WED_taxiroute","oneway"),				XML_Name("taxi_route","oneway"),		1),
-	runway(this,		"Runway",				SQL_Name("WED_taxiroute","runway"),				XML_Name("taxi_route","runway"),		ATCRunwayTwoway, atc_rwy_None),
-	hot_depart(this,	"Departures",			SQL_Name("WED_taxiroute_depart","departures"),	XML_Name("departures","runway"),		ATCRunwayOneway,false),
-	hot_arrive(this,	"Arrivals",				SQL_Name("WED_taxiroute_arrive","arrivals"),	XML_Name("arrivals","runway"),			ATCRunwayOneway,false),
-	hot_ils(this,		"ILS Precision Area",	SQL_Name("WED_taxiroute_ils","ils"),			XML_Name("ils_holds","runway"),			ATCRunwayOneway,false),
-	width(this,			"Size",					SQL_Name("",""),								XML_Name("taxi_route","width"),			ATCIcaoWidth, width_E)
+	vehicle_class(this,PROP_Name("Allowed Vehicles",  XML_Name("taxi_route","vehicle_class")),ATCVehicleClass,atc_Vehicle_Aircraft),
+	oneway       (this,PROP_Name("One-Way",           XML_Name("taxi_route","oneway")),   1),
+	runway       (this,PROP_Name("Runway",            XML_Name("taxi_route","runway")),   ATCRunwayTwoway, atc_rwy_None),
+	hot_depart   (this,PROP_Name("Departures",        XML_Name("departures","runway")),   ATCRunwayOneway,false),
+	hot_arrive   (this,PROP_Name("Arrivals",          XML_Name("arrivals","runway")),     ATCRunwayOneway,false),
+	hot_ils      (this,PROP_Name("ILS Precision Area",XML_Name("ils_holds","runway")),    ATCRunwayOneway,false),
+	width        (this,PROP_Name("Size",              XML_Name("taxi_route","width")),    ATCIcaoWidth, width_E)
 {
 }
 
@@ -112,6 +112,22 @@ void		WED_TaxiRoute::SetHotILS(const set<int>& rwys)
 	hot_ils = rwys;
 }
 
+set<int> WED_TaxiRoute::GetHotDepart()
+{
+	return hot_depart;
+}
+
+set<int> WED_TaxiRoute::GetHotArrive()
+{
+	return hot_arrive;
+}
+
+set<int> WED_TaxiRoute::GetHotILS()
+{
+	return hot_ils;
+}
+
+
 void WED_TaxiRoute::SetWidth(int w)
 {
 	width= w;
@@ -135,11 +151,11 @@ void	WED_TaxiRoute::Import(const AptRouteEdge_t& info, void (* print_func)(void 
 			print_func(ref,"Runway name %s is illegal.\n", info.name.c_str());
 			runway = atc_rwy_None;
 		} else
-			runway = r;
+		runway = r;
 	}
 	else
 		runway = atc_rwy_None;
-
+		
 	width = ENUM_Import(ATCIcaoWidth, info.width);
 	if(width == -1)
 	{
@@ -345,6 +361,8 @@ bool	WED_TaxiRoute::HasHotArrival(void) const
 	// BEN SAYS: we used to treat being a runway as being hot.  But the UI needs to distinguish between
 	// "I am a runway and hot because I am a runway" and "Ia m a runway and hot for a CROSSING runway" -e.g.
 	// a LAHSO marking.  So only return TRUE hotness.
+	if(!AllowAircraft()) return 0;
+	
 	set<int>	runway_parts;
 	get_runway_parts(runway.value,runway_parts);
 
@@ -356,6 +374,8 @@ bool	WED_TaxiRoute::HasHotArrival(void) const
 
 bool	WED_TaxiRoute::HasHotDepart(void) const
 {
+	if(!AllowAircraft()) return 0;
+	
 	set<int>	runway_parts;
 	get_runway_parts(runway.value,runway_parts);
 
@@ -367,6 +387,8 @@ bool	WED_TaxiRoute::HasHotDepart(void) const
 
 bool	WED_TaxiRoute::HasHotILS(void) const
 {
+	if(!AllowAircraft()) return 0;
+	
 	set<int>	runway_parts;
 	get_runway_parts(runway.value,runway_parts);
 
@@ -429,6 +451,19 @@ bool	WED_TaxiRoute::CanBeCurved() const
 #endif
 }
 
+void  WED_TaxiRoute::PropEditCallback(int before)
+{
+	static int    old_rwy_tag;            // we want to catch changes of the name property, only
 
+	if (before)
+	{
+		StateChanged(wed_Change_Properties);
+		old_rwy_tag = runway.value;
+	}
+	else if(old_rwy_tag != runway.value)
+	{
+		SetName(string(ENUM_Desc(runway.value)));
+	}
+}
 #endif
 

@@ -52,31 +52,18 @@
 #define	MIN_HANDLE_RECURSE_SIZE 20
 #define SNAP_RADIUS 4
 
-const double kCornerBlend0[5] = { 0.5, 0.5, 0.25, 0.0, 0.0 };
-const double kCornerBlend1[5] = { 0.0, 0.5, 0.25, 0.0, 0.5 };
-const double kCornerBlend2[5] = { 0.0, 0.0, 0.25, 0.5, 0.5 };
-const double kCornerBlend3[5] = { 0.5, 0.0, 0.25, 0.5, 0.0 };
-
 const double kRunwayBlend0[4] = { 0.75,		0.0,	0.75,	0.0		};
 const double kRunwayBlend1[4] = { 0.0,		0.25,	0.0,	0.25	};
 const double kRunwayBlend2[4] = { 0.0,		0.75,	0.0,	0.75	};
 const double kRunwayBlend3[4] = { 0.25,		0.0,	0.25,	0.0		};
-
-static double kImageBlend0[10] = { 1.0,	0.0, 0.0, 0.0, 0.5,	0.0, 0.0, 0.5,  0.55, -0.05 };
-static double kImageBlend1[10] = { 0.0,	1.0, 0.0, 0.0, 0.5,	0.5, 0.0, 0.0, -0.05,  0.55 };
-static double kImageBlend2[10] = { 0.0,	0.0, 1.0, 0.0, 0.0,	0.5, 0.5, 0.0, -0.05,  0.55 };
-static double kImageBlend3[10] = { 0.0,	0.0, 0.0, 1.0, 0.0,	0.0, 0.5, 0.5,  0.55, -0.05 };
 
 const double kQuadBlend0[9] = { 1.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.5, 0.25 };
 const double kQuadBlend1[9] = { 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.25 };
 const double kQuadBlend2[9] = { 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.25 };
 const double kQuadBlend3[9] = { 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5, 0.25 };
 
-
 const int kSourceIndex[5] = { 2, 2, 2, 2, 2 };
 const int kTargetIndex[5] = { 0, 1, 3, 4, 5 };
-
-
 
 
 WED_VertexTool::WED_VertexTool(
@@ -97,7 +84,7 @@ WED_VertexTool::WED_VertexTool(
 		mNewSplitPoint(NULL),
 		mIsScale(0),
 		mRotateIndex(-1),
-		mSnapToGrid(this,"Snap To Vertices", SQL_Name("",""),XML_Name("",""), 0)
+		mSnapToGrid(this,PROP_Name("Snap To Vertices", XML_Name("","")), 0)
 {
 	SetControlProvider(this);
 }
@@ -385,18 +372,18 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		{
 			if(active) *active = 0;
 			if(con_type) *con_type = handle_None;
-			Bezier2 bez; Segment2 seg;
-			if(!s->GetSide(gis_Geo,n/4, seg, bez))
-			{
-				bez.p1 = bez.c1 = seg.p1;
-				bez.p2 = bez.c2 = seg.p2;
-			}
+			Bezier2 bez;
+			s->GetSide(gis_Geo,n/4, bez);
+			
 			if(p)
-			switch(n % 4) {
-			case 0: *p = bez.p1;	break;
-			case 1: *p = bez.c1;	break;
-			case 2: *p = bez.p2;	break;
-			case 3: *p = bez.c2;	break;
+			{
+				switch(n % 4) 
+				{
+					case 0: *p = bez.p1;	break;
+					case 1: *p = bez.c1;	break;
+					case 2: *p = bez.p2;	break;
+					case 3: *p = bez.c2;	break;
+				}
 			}
 			return;
 		}
@@ -407,11 +394,10 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 		if(e)
 		{
 			Bezier2	b;
-			Segment2 s;
 			if(con_type) *con_type = handle_None;
 			if(active) *active = 0;
 			
-			if(e->GetSide(gis_Geo, 0, s, b))
+			if(e->GetSide(gis_Geo, 0, b))
 			{
 				switch(n) {
 				case 0:
@@ -440,19 +426,19 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 			{
 				switch(n) {
 				case 0:
-					*p = s.p1;
+					*p = b.p1;
 					if(con_type) *con_type = handle_VertexSharp;
 					break;
 				case 1:
-					*p = s.p1;
+					*p = b.p1;
 					if(con_type) *con_type = handle_None;
 					break;
 				case 2:
-					*p = s.p2;
+					*p = b.p2;
 					if(con_type) *con_type = handle_None;
 					break;
 				case 3:
-					*p = s.p2;
+					*p = b.p2;
 					if(con_type) *con_type = handle_VertexSharp;
 					break;
 				}
@@ -508,7 +494,6 @@ void	WED_VertexTool::GetNthLinkInfo		(intptr_t id, int n, bool * active, LinkTyp
 
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	IGISPoint_Bezier * pt_b;
-	IGISEdge * e;
 
 	switch(en->GetGISClass()) {
 	case gis_Point_Bezier:
@@ -764,12 +749,13 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
 		{
+			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 			if (!mInEdit)
 			{
 				pt_b->GetLocation(gis_Geo,p);
 				Point2 dummy;
 				mInEdit = 1;
-				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
+
 				if ((mods & gui_OptionAltFlag) && (mods & gui_ShiftFlag))
 				{
 					if (n == 1) { pt_b->SetSplit(true);	if (pt_b->GetControlHandleLo(gis_Geo,dummy))	pt_b->DeleteHandleLo(); else pt_b->SetControlHandleLo(gis_Geo,p+delta); }
@@ -794,8 +780,13 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			case 1:	if (!pt_b->GetControlHandleLo(gis_Geo,p)) n=3;	break;
 			case 2: if (!pt_b->GetControlHandleHi(gis_Geo,p)) n=3;	break;
 			}
-			io_pt += delta;
-			SnapMovePoint(io_pt,p, en);
+			io_pt += delta;	
+
+			if (mods & gui_OptionAltFlag)
+				p = io_pt;
+			else
+				SnapMovePoint(io_pt,p, en);
+
 			switch(n) {
 			case 0:	pt_b->SetLocation(gis_Geo,p);	break;
 			case 1:	pt_b->SetControlHandleLo(gis_Geo,p);	break;
@@ -858,9 +849,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Edge:
 		if((e = SAFE_CAST(IGISEdge,en)) != NULL)
 		{
-			Segment2 s;
 			Bezier2 b;
-			if(e->GetSide(gis_Geo, 0, s, b))
+			if(e->GetSide(gis_Geo, 0, b))
 			{
 				if(n == 1)
 					b.c1 += delta;
@@ -883,13 +873,23 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	if(seq && !mInEdit)
 	{
 		mInEdit = 1;
+		Point2 p1,p2;
+		int np = seq->GetNumPoints();
+		seq->GetNthPoint(c)->GetLocation(gis_Geo,p1);
+		seq->GetNthPoint((c+1) % np)->GetLocation(gis_Geo,p2);
+		mPointOffset1 = Vector2(io_pt,p1);
+		mPointOffset2 = Vector2(io_pt,p2);
+
 		if (mods & gui_OptionAltFlag)
 		{
 			mNewSplitPoint = seq->SplitSide(io_pt, GetZoomer()->GetClickRadius(4));
-		} else
+		}
+		else
+		{
 			mNewSplitPoint = NULL;
-		
-	}	
+		}
+	}
+
 	Bbox2	old_b(Point2(0,0),Point2(1,1));
 	Bbox2	new_b(old_b);
 	
@@ -901,27 +901,63 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 	else if(seq)
 	{
 		int np = seq->GetNumPoints();
-		IGISPoint * p1 = seq->GetNthPoint(c);
-		IGISPoint * p2 = seq->GetNthPoint((c+1) % np);
+		IGISPoint * gp1 = seq->GetNthPoint(c);
+		IGISPoint * gp2 = seq->GetNthPoint((c+1) % np);
 
-		if ( mods & gui_ControlFlag )
+		Point2 p1,p2;
+		gp1->GetLocation(gis_Geo,p1);
+		gp2->GetLocation(gis_Geo,p2);
+
+		io_pt += delta;
+
+		if (mods & gui_ControlFlag)
 		{
-			Point2 a,b ;
-			p1->GetLocation(gis_Geo,a);
-			p2->GetLocation(gis_Geo,b);
-			Vector2 n = VectorLLToMeters(a,Vector2(a,b));
+			mPointOffset1 = Vector2(io_pt,p1);
+			mPointOffset2 = Vector2(io_pt,p2);
+
+			Vector2 n = VectorLLToMeters(p1,Vector2(p1,p2));
 			n = n.perpendicular_ccw();
-			Vector2 delta_m = VectorLLToMeters(a,delta);
-			new_b += VectorMetersToLL(a,n.projection(delta_m));
+			Vector2 delta_m = VectorLLToMeters(p1,delta);
+			new_b += VectorMetersToLL(p1,n.projection(delta_m)); 
+
+			gp1->Rescale(gis_Geo, old_b, new_b);
+			gp2->Rescale(gis_Geo, old_b, new_b);
 		}
 		else
 		{
-			new_b += delta;
-		}
+			double dist1 = 9.9e9;
+			double dist2 = 9.9e9;
+			Point2 sp1,sp2;
 
-		p1->Rescale(gis_Geo, old_b, new_b);
-		p2->Rescale(gis_Geo, old_b, new_b);
+			if(SnapMovePoint(io_pt + mPointOffset1,sp1,gp1))
+			{
+				dist1 = Vector2(
+				GetZoomer()->LLToPixel(p1),
+				GetZoomer()->LLToPixel(sp1)).squared_length();
+			}
+
+			if(SnapMovePoint(io_pt + mPointOffset2,sp2,gp2))
+			{
+				dist2 = Vector2(
+				GetZoomer()->LLToPixel(p2),
+				GetZoomer()->LLToPixel(sp2)).squared_length();
+			}
+			
+			//mroe: thats to makes sure that [at least] the snap points exactly matches . 
+			//the vector math is precise  , so this is possibly a bit paranoid .  
+			if(dist1 <= dist2) 
+			{
+				gp1->SetLocation(gis_Geo,sp1);
+				gp2->SetLocation(gis_Geo,p2 + Vector2(p1,sp1));
+			}
+			else
+			{
+				gp1->SetLocation(gis_Geo,p1 + Vector2(p2,sp2));
+				gp2->SetLocation(gis_Geo,sp2);
+			}
+		}
 	}
+
 #if 1    // redrape upon splitting of a segment
 	WED_Thing * node = dynamic_cast <WED_Thing *> (en);
 	WED_DrapedOrthophoto * ortho = SAFE_CAST(WED_DrapedOrthophoto,node->GetParent());
@@ -1149,7 +1185,7 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 	}
 }
 
-void		WED_VertexTool::SnapMovePoint(
+bool		WED_VertexTool::SnapMovePoint(
 					const Point2&			ideal_track_pt,		// This is the ideal place the user is TRYING to drag the thing, without snapping
 					Point2&					io_thing_pt,		// And this is where the thing is right now - we will move it to a NEW loc
 					IGISEntity *			who)
@@ -1157,6 +1193,7 @@ void		WED_VertexTool::SnapMovePoint(
 	Point2	modi(ideal_track_pt);
 	double smallest_dist=9.9e9;
 	Point2	best(modi);
+	bool IsSnap = false;
 
 	if (mSnapToGrid)
 	{
@@ -1174,7 +1211,6 @@ void		WED_VertexTool::SnapMovePoint(
 		}
 
 		Point2  posi;
-		IGISPoint * pt;
 		GetEntityInternal();
 		for(int n = 0; n < mSnapCache.size(); ++n)
 		if (mSnapCache[n].second != who)
@@ -1189,11 +1225,13 @@ void		WED_VertexTool::SnapMovePoint(
 			{
 				smallest_dist = dist;
 				best = posi;
+				IsSnap = true;
 			}
 		}
 	}
 
 	io_thing_pt = best;
+	return IsSnap;
 }
 
 

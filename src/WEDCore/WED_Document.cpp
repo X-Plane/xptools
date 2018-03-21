@@ -41,11 +41,11 @@
 #include "WED_Root.h"
 #include "WED_Messages.h"
 #include "WED_EnumSystem.h"
-#include <sqlite3.h>
 #include "WED_XMLWriter.h"
 #include "WED_Errors.h"
 #include "GUI_Resources.h"
 #include "GUI_Prefs.h"
+#include "WED_Globals.h"
 #include "PlatformUtils.h"
 #include "WED_TexMgr.h"
 #include "WED_LibraryMgr.h"
@@ -88,24 +88,6 @@ WED_Document::WED_Document(
 	mArchive.SetUndoManager(&mUndo);
 
 	string buf;
-
-//	GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
-//	if (res == NULL)
-//		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf.c_str());
-//
-//	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
-//	GUI_UnloadResource(res);
-
-#if AIRPORT_ROUTING
-//	string buf2;
-//
-//	GUI_Resource res2 = GUI_LoadResource("WED_DataModel2.sql");
-//	if (res2 == NULL)
-//		WED_ThrowPrintf("Unable to open SQL code resource: %s.", buf2.c_str());
-//
-//	sql_do_bulk_range(mDB.get(), GUI_GetResourceBegin(res2), GUI_GetResourceEnd(res2));
-//	GUI_UnloadResource(res2);
-#endif
 
 	mBounds[0] = inBounds[0];
 	mBounds[1] = inBounds[1];
@@ -180,43 +162,11 @@ void	WED_Document::Save(void)
 {
 	BroadcastMessage(msg_DocWillSave, reinterpret_cast<uintptr_t>(static_cast<IDocPrefs *>(this)));
 
-/*Old SQL version
-	int result = sql_do(mDB.get(),"BEGIN TRANSACTION;");
-	mArchive.SaveToDB(mDB.get());
-	ENUM_write(mDB.get());
-
-	int err;
-	{
-		sql_command	clear_table(mDB.get(),"DELETE FROM WED_doc_prefs WHERE 1;",NULL);
-		err = clear_table.simple_exec();
-		if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
-	}
-
-	{
-		sql_command add_item(mDB.get(),"INSERT INTO WED_doc_prefs VALUES(@k,@v);","@k,@v");
-		for(map<string,string>::iterator i = mDocPrefs.begin(); i != mDocPrefs.end(); ++i)
-		{
-			sql_row2<string,string>	r;
-			r.a = i->first;
-			r.b = i->second;
-			err = add_item.simple_exec(r);
-			if (err != SQLITE_DONE)	WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(mDB.get()),err);
-		}
-	}
-
-	result = sql_do(mDB.get(),"COMMIT TRANSACTION;");
-*/
-
-	/* Annnoymous enum and Stage: Used for switch statements throughout this method
-	* none: For when there is no earth.wed.xml (a brand new document is created)
-	* nobackup: For when the .bak file hasn't been created yet
-	* both: for when the .bak and regular files are in place
-	*/
 	enum {none,nobackup,both};
 	int stage = none;
 
 	//Create the strings path.
-	//.earth.wed.xml,
+	//earth.wed.xml,
 	//earth.wed.bak.xml,
 	//earth.wed.bak.bak.xml, deleted before the user sees it.
 
@@ -338,7 +288,7 @@ void	WED_Document::Revert(void)
 			return;
 	}
 
-		mDocPrefs.clear();
+	mDocPrefs.clear();
 	mUndo.__StartCommand("Revert from Saved.",__FILE__,__LINE__);
 
 	try {
@@ -362,44 +312,6 @@ void	WED_Document::Revert(void)
 		}
 		else
 		{
-			// If XML fails because it's AWOL, go back and do the SQL-style read-in.
-			sql_db db(mFilePath.c_str(), SQLITE_OPEN_READWRITE);
-			if(db.get())
-			{
-				GUI_Resource res = GUI_LoadResource("WED_DataModel.sql");
-				if (res == NULL)
-					WED_ThrowPrintf("Unable to open SQL code resource.",0);
-
-				sql_do_bulk_range(db.get(), GUI_GetResourceBegin(res), GUI_GetResourceEnd(res));
-				GUI_UnloadResource(res);
-
-
-
-
-
-				enum_map_t	mapping;
-				ENUM_read(db.get(), mapping);
-				mArchive.ClearAll();
-				mArchive.LoadFromDB(db.get(), mapping);
-
-				int err;
-				{
-					sql_command	get_prefs(db.get(),"SELECT key,value FROM WED_doc_prefs WHERE 1;",NULL);
-
-					sql_row2<string, string>	p;
-					get_prefs.begin();
-					while((err = get_prefs.get_row(p)) == SQLITE_ROW)
-					{
-						mDocPrefs[p.a] = p.b;
-						sGlobalPrefs[p.a] = p.b;
-					}
-					if (err != SQLITE_DONE)
-						WED_ThrowPrintf("%s (%d)",sqlite3_errmsg(db.get()),err);
-				}				
-				mOnDisk=true;
-			}
-			else
-			{
 				/* We have a brand new blank doc.  In WED 1.0, we ran a SQL script that built the core objects,
 				 * then we IO-ed it in.  In WED 1.1 we just build the world and the few named objs immediately. */
 				 
@@ -422,7 +334,6 @@ void	WED_Document::Revert(void)
 				sel->SetName("selection");
 				key->SetName("choices");
 				wrl->SetName("world");
-			}
 
 		}
 	} catch(...) {
@@ -648,10 +559,16 @@ static void PrefCB(const char * key, const char * value, void * ref)
 void	WED_Document::ReadGlobalPrefs(void)
 {
 	GUI_EnumSection("doc_prefs", PrefCB, NULL);
+	
+	*(int *) &gIsFeet  = atoi(GUI_GetPrefString("preferences","use_feet","0"));    // This is ugly, but I really wanna override the write protection 
+	*(int *) &gInfoDMS = atoi(GUI_GetPrefString("preferences","InfoDMS","0"));     // given in WED_Globals.h to these variables here.
 }
 
 void	WED_Document::WriteGlobalPrefs(void)
 {
+	GUI_SetPrefString("preferences","use_feet",gIsFeet ? "1" : "0");
+	GUI_SetPrefString("preferences","InfoDMS",gInfoDMS ? "1" : "0");
+	
 	for (map<string,string>::iterator i = sGlobalPrefs.begin(); i != sGlobalPrefs.end(); ++i)
 		GUI_SetPrefString("doc_prefs", i->first.c_str(), i->second.c_str());
 }

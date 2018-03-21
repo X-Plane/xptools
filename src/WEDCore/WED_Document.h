@@ -25,7 +25,6 @@
 #define WED_DOCUMENT_H
 
 #include "WED_XMLReader.h"
-//#include "WED_Globals.h"
 #include "GUI_Destroyable.h"
 //#include "MeshDefs.h"
 #include "AptDefs.h"
@@ -33,8 +32,7 @@
 #include "IDocPrefs.h"
 //#include "MapDefs.h"
 //#include "DEMDefs.h"
-//#include "WED_Properties.h"
-#include "SQLUtils.h"
+#include "PlatformUtils.h"
 #include "WED_Archive.h"
 #include "WED_UndoMgr.h"
 
@@ -47,7 +45,6 @@ class	WED_ResourceMgr;
 class	WED_Server;
 class	WED_NWLinkAdapter;
 #endif
-typedef struct sqlite3 sqlite3;
 
 #include "GUI_Broadcaster.h"
 #include "IResolver.h"

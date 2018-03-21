@@ -41,11 +41,10 @@
 #define DUMP_GTIF 0
 
 #if IBM
-	#include <libxtiff/xtiffio.h>
 	#include "GUI_Unicode.h"
-#else
-	#include <xtiffio.h>
 #endif
+#include <xtiffio.h>
+
 void	make_cache_file_path(const char * cache_base, int west, int south, const char * cache_name, char path[1024])
 {
 	sprintf(path, "%s%s%+03d%+04d%s%+03d%+04d.%s.txt", cache_base, DIR_STR, latlon_bucket (south), latlon_bucket (west), DIR_STR, (int) south, (int) west, cache_name);
@@ -56,8 +55,13 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 {
     /* Try to transform the coordinate into PCS space */
     if( !GTIFImageToPCS( gtif, &x, &y ) )
+    {
+#if DEV
+			printf( "GTIF to PCS failed\n");
+			fflush(stdout);
+#endif
         return false;
-	
+	}
     if( defn->Model == ModelTypeGeographic )
     {
 #if DEV
@@ -68,15 +72,27 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
     	outLat = y;
     	return true;
     }
-    else    
+    else
 	{
         if( GTIFProj4ToLatLong( defn, 1, &x, &y ) )
         {
 			outLon = x;
 			outLat = y;
+#if DEV
+			printf( "GTIF Proj4 worked: %lf %lf\n",x,y);
+			fflush(stdout);
+#endif
 			return true;
 		}
+#if DEV
+	else
+	{
+		printf( "GTIF Proj4 failed\n");
+		fflush(stdout);
+	}
+#endif
 
+#if USE_GEOJPEG2K
 		int size = 0;
 		tagtype_t type = TYPE_UNKNOWN;
 		int key_count = GTIFKeyInfo(gtif, GTCitationGeoKey, &size, &type);
@@ -111,6 +127,7 @@ static	bool	TransformTiffCorner(GTIF * gtif, GTIFDefn * defn, double x, double y
 				}
 			}
 		}
+#endif
 	}
 	return false;
 }
@@ -133,23 +150,25 @@ bool	FetchTIFFCorners(const char * inFileName, double corners[8], int& post_pos)
 	return retVal;
 }
 
-static int pm(char * s, void * v)
-{
-	printf("%s",s);
-	return 0;
-}
-
 bool	FetchTIFFCornersWithTIFF(TIFF * tiffFile, double corners[8], int& post_pos, int width, int height)
 {
 	bool retVal = false;
 	GTIF * gtif = GTIFNew(tiffFile);
 	if (gtif)
 	{
-//		GTIFPrint(gtif, pm, NULL);
-
+#if DEV
+		GTIFPrint(gtif, 0, 0);
+#endif
 		GTIFDefn 	defn;
         if( GTIFGetDefn( gtif, &defn ) )
         {
+#if DEV
+			printf( "\n");
+			GTIFPrintDefn(&defn, stdout);
+			
+			printf( "\nPROJ.4 Definition: %s\n", GTIFGetProj4Defn(&defn));
+			fflush(stdout);
+#endif
         	int xs, ys;
 			double xsize,ysize;
             TIFFGetField( tiffFile, TIFFTAG_IMAGEWIDTH, &xs );
@@ -438,6 +457,11 @@ void	UTMToLonLat(double x, double y, int zone, double * outLon, double * outLat)
 
 	if (outLon) *outLon = sUV.u * RAD_TO_DEG;
 	if (outLat) *outLat = sUV.v * RAD_TO_DEG;
+}
+
+double	LonLatDistMeters(Point2 lonlat1, Point2 lonlat2)
+{
+	return LonLatDistMeters(lonlat1.x(), lonlat1.y(), lonlat2.x(), lonlat2.y());
 }
 
 

@@ -95,7 +95,6 @@ void CACHE_FileCacheInitializer::init()
 {
 	//Get the cache folder path
 	{
-		char    base[TEMP_FILES_DIR_LEN];
 		string cache_folder = GetCacheFolder();
 		if(cache_folder.empty() == true)
 		{
@@ -110,7 +109,6 @@ void CACHE_FileCacheInitializer::init()
 	//Attempt to get the folder, if non-existant make it
 	int num_files = FILE_get_directory_recursive(CACHE_folder, files, dirs);
 
-	time_t t = time(NULL);
 	sort(files.begin(), files.end(), less<string>());
 
 	if(num_files == -1)
@@ -157,7 +155,10 @@ void CACHE_FileCacheInitializer::init()
 			}
 			else
 			{
-				paired_files.push_back(make_pair<string,string>(files[i], files[i+1]));
+//				paired_files.push_back(make_pair<string,string>(files[i], files[i+1]));  // msvc 2017 will not take this
+				pair<string,string> fp;
+				fp.first=files[i]; fp.second=files[i+1];
+				paired_files.push_back(fp);
 				i += 2;
 			}
 		}

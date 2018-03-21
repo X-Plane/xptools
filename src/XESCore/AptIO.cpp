@@ -617,7 +617,6 @@ string	ReadAptFileMem(const char * inBegin, const char * inEnd, AptVector& outAp
 				&p1y,
 				&p1x) != 3) ok = "Illegal straight end.";
 				open_poly->back().pt = POINT2(p1x, p1y);
-printf("read open_poly %i elements\n",int(open_poly->size()));
 			break;
 		case apt_end_crv:
 			if (vers < 850) ok = "Error: new end curves allowed before 850";
@@ -703,7 +702,7 @@ printf("read open_poly %i elements\n",int(open_poly->size()));
 						
 						//Loop through every string in ramp_air_operation_type
 						//including the end of the array (a null terminator)
-						for (int i = 0; i <= NUM_RAMP_OP_TYPES && ok == ""; i++)
+						for (int i = 0; i < NUM_RAMP_OP_TYPES && ok == ""; i++)
 						{
 							//If we've loop through the whole array of ramp_ai_opperation_types
 							//we have a problem
@@ -1180,7 +1179,7 @@ bool	WriteAptFileProcs(int (* fprintf)(void * fi, const char * fmt, ...), void *
 				key == "region_code")
 			{
 				//Convert each to
-				transform(value.begin(), value.end(), value.begin(), (int(*)(int))toupper);
+				::transform(value.begin(), value.end(), value.begin(), ::toupper);
 			}
 			
 			fprintf(fi, "%d %s %s" CRLF, apt_meta_data, key.c_str(), value.c_str());

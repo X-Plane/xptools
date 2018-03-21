@@ -23,36 +23,47 @@
 
 #include "WED_Runway.h"
 #include "WED_EnumSystem.h"
+#include "WED_Airport.h"
+#include "WED_HierarchyUtils.h"
+#include "WED_TaxiRoute.h"
+#include "WED_AirportSign.h"
+#include "WED_ATCFlow.h"
+#include "WED_ATCRunwayUse.h"
+#include "WED_ToolUtils.h"
 #include "GISUtils.h"
 #include "XESConstants.h"
 #include "AptDefs.h"
 #include "MathUtils.h"
 #include "STLUtils.h"
+#include "PlatformUtils.h"
+
+#include <sstream>
+
 
 DEFINE_PERSISTENT(WED_Runway)
 TRIVIAL_COPY(WED_Runway, WED_GISLine_Width)
 
 WED_Runway::WED_Runway(WED_Archive * a, int i) : WED_GISLine_Width(a,i),
-	surface			(this,"Surface",					SQL_Name("WED_runway","surface"),		XML_Name("runway","surface"),		Surface_Type,	surf_Concrete),
-	shoulder		(this,"Shoulder",					SQL_Name("WED_runway","shoulder"),		XML_Name("runway","shoulder"),		Shoulder_Type,	shoulder_None),
-	roughness		(this,"Roughness",					SQL_Name("WED_runway","roughness"),		XML_Name("runway","roughness"),		0.25,4,2),
-	center_lites	(this,"Centerline Lights",			SQL_Name("WED_runway","center_lites"),	XML_Name("runway","center_lites"),	1),
-	edge_lites		(this,"Edge Lights",				SQL_Name("WED_runway","edge_lites"),	XML_Name("runway","edge_lites"),	Edge_Lights,	edge_MIRL),
-	remaining_signs	(this,"Distance Signs",				SQL_Name("WED_runway","distance_signs"),XML_Name("runway","distance_signs"),1),
+	surface			(this,PROP_Name("Surface",				XML_Name("runway","surface")),		Surface_Type,	surf_Concrete),
+	shoulder		(this,PROP_Name("Shoulder",				XML_Name("runway","shoulder")),		Shoulder_Type,	shoulder_None),
+	roughness		(this,PROP_Name("Roughness",			XML_Name("runway","roughness")),	0.25,4,2),
+	center_lites	(this,PROP_Name("Centerline Lights",	XML_Name("runway","center_lites")),	1),
+	edge_lites		(this,PROP_Name("Edge Lights",			XML_Name("runway","edge_lites")),	Edge_Lights,	edge_MIRL),
+	remaining_signs	(this,PROP_Name("Distance Signs",		XML_Name("runway","distance_signs")),1),
 
-	disp1			(this,"Displaced Threshold 1",		SQL_Name("WED_runway","displaced1"),	XML_Name("runway","displaced1"),	0,6,1),
-	blas1			(this,"Blastpad 1",					SQL_Name("WED_runway","blastpad1"),		XML_Name("runway","blastpad1"),		0,6,1),
-	mark1			(this,"Markings 1",					SQL_Name("WED_runway","markings1"),		XML_Name("runway","markings1"),		Runway_Markings,	mark_NonPrecis),
-	appl1			(this,"Approach Lights 1",			SQL_Name("WED_runway","app_lites1"),	XML_Name("runway","app_lites1"),	Light_App,			app_MALSF),
-	tdzl1			(this,"TDZ Lights 1",				SQL_Name("WED_runway","TDZL1"),			XML_Name("runway","TDZL1"),			1),
-	reil1			(this,"REIL 1",						SQL_Name("WED_runway","REIL1"),			XML_Name("runway","REIL1"),			REIL_Lights,		reil_None),
+	disp1			(this,PROP_Name("Displaced Threshold 1",XML_Name("runway","displaced1")),	0,6,1),
+	blas1			(this,PROP_Name("Blastpad 1",			XML_Name("runway","blastpad1")),	0,6,1),
+	mark1			(this,PROP_Name("Markings 1",			XML_Name("runway","markings1")),	Runway_Markings,mark_NonPrecis),
+	appl1			(this,PROP_Name("Approach Lights 1",	XML_Name("runway","app_lites1")),	Light_App,		app_MALSF),
+	tdzl1			(this,PROP_Name("TDZ Lights 1",			XML_Name("runway","TDZL1")),		1),
+	reil1			(this,PROP_Name("REIL strobes 1",		XML_Name("runway","REIL1")),		REIL_Lights,	reil_None),
 
-	disp2			(this,"Displaced Threshold 2",		SQL_Name("WED_runway","displaced2"),	XML_Name("runway","displaced2"),	0,6,1),
-	blas2			(this,"Blastpad 2",					SQL_Name("WED_runway","blastpad2"),		XML_Name("runway","blastpad2"),		0,6,1),
-	mark2			(this,"Markings 2",					SQL_Name("WED_runway","markings2"),		XML_Name("runway","markings2"),		Runway_Markings,	mark_NonPrecis),
-	appl2			(this,"Approach Lights 2",			SQL_Name("WED_runway","app_lites2"),	XML_Name("runway","app_lites2"),	Light_App,			app_MALSF),
-	tdzl2			(this,"TDZ Lights 2",				SQL_Name("WED_runway","TDZL2"),			XML_Name("runway","TDZL2"),			1),
-	reil2			(this,"REIL 2",						SQL_Name("WED_runway","REIL2"),			XML_Name("runway","REIL2"),			REIL_Lights,		reil_None)
+	disp2			(this,PROP_Name("Displaced Threshold 2",XML_Name("runway","displaced2")),	0,6,1),
+	blas2			(this,PROP_Name("Blastpad 2",			XML_Name("runway","blastpad2")),	0,6,1),
+	mark2			(this,PROP_Name("Markings 2",			XML_Name("runway","markings2")),	Runway_Markings,mark_NonPrecis),
+	appl2			(this,PROP_Name("Approach Lights 2",	XML_Name("runway","app_lites2")),	Light_App,		app_MALSF),
+	tdzl2			(this,PROP_Name("TDZ Lights 2",			XML_Name("runway","TDZL2")),		1),
+	reil2			(this,PROP_Name("REIL strobes 2",		XML_Name("runway","REIL2")),		REIL_Lights,	reil_None)
 {
 }
 
@@ -154,7 +165,7 @@ bool		WED_Runway::GetCornersBlas1(Point2 corners[4]) const
 	GetSource()->GetLocation(gis_Geo,p1);
 	GetTarget()->GetLocation(gis_Geo,p2);
 
-	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+	double my_len = LonLatDistMeters(p1,p2);
 	if (my_len == 0.0) return false;
 
 	double frac = blas1.value / my_len;
@@ -180,7 +191,7 @@ bool		WED_Runway::GetCornersBlas2(Point2 corners[4]) const
 	GetSource()->GetLocation(gis_Geo,p1);
 	GetTarget()->GetLocation(gis_Geo,p2);
 
-	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+	double my_len = LonLatDistMeters(p1,p2);
 	if (my_len == 0.0) return false;
 
 	double frac = blas2.value / my_len;
@@ -206,7 +217,7 @@ bool		WED_Runway::GetCornersDisp1(Point2 corners[4]) const
 	GetSource()->GetLocation(gis_Geo,p1);
 	GetTarget()->GetLocation(gis_Geo,p2);
 
-	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+	double my_len = LonLatDistMeters(p1,p2);
 	if (my_len == 0.0) return false;
 
 	double frac = disp1.value / my_len;
@@ -232,7 +243,7 @@ bool		WED_Runway::GetCornersDisp2(Point2 corners[4]) const
 	GetSource()->GetLocation(gis_Geo,p1);
 	GetTarget()->GetLocation(gis_Geo,p2);
 
-	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+	double my_len = LonLatDistMeters(p1,p2);
 	if (my_len == 0.0) return false;
 
 	double frac = disp2.value / my_len;
@@ -257,7 +268,7 @@ bool		WED_Runway::GetCornersShoulders(Point2 corners[8]) const
 	GetSource()->GetLocation(gis_Geo,p1);
 	GetTarget()->GetLocation(gis_Geo,p2);
 
-	double my_len = LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y());
+	double my_len = LonLatDistMeters(p1,p2);
 	if (my_len == 0.0) return false;
 
 	if (blas1.value != 0.0)
@@ -483,6 +494,193 @@ void	WED_Runway::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 	if(n == PropertyItemNumber(&surface) && surface.value != surf_Water)
 	{
 		dict.erase(surf_Water);
+	}
+}
+
+
+void  WED_Runway::PropEditCallback(int before)
+{
+	static int    old_enum;            // we want to catch changes of the name property, only
+	static pair<int,int> old_enum_1wy;
+	static set<int> old_all_rwys;
+	static WED_Airport * apt ;
+	
+	if (before)
+	{
+		StateChanged(wed_Change_Properties);
+		old_enum = GetRunwayEnumsTwoway();
+		old_enum_1wy = GetRunwayEnumsOneway();
+		apt = WED_GetParentAirport(this);
+		if (apt) WED_GetAllRunwaysTwoway(apt, old_all_rwys);
+	}
+	else
+	{
+		int new_enum = GetRunwayEnumsTwoway();
+		
+		if (old_enum == atc_rwy_None) return;
+		
+		if (new_enum == atc_rwy_None)
+		{
+			int	res = ConfirmMessage("New Runway Name is illegal, Smart Runway Rename can not be applied.", 
+						"Proceed with new name", "Keep old name");
+			if(res == 0)
+				SetName(string(ENUM_Desc(old_enum)));
+			return;
+		}
+		else if(new_enum != old_enum)
+		{
+			int renamed_taxi=0;         // keep statistics of modified items
+			int renamed_flows=0;
+			int renamed_signs=0;
+			
+			vector<WED_TaxiRoute *>	taxi_routes;
+			if(apt) CollectRecursive(apt,back_inserter(taxi_routes), WED_TaxiRoute::sClass);
+			vector<WED_ATCFlow *> flows;
+			if(apt) CollectRecursive(apt,back_inserter(flows), IgnoreVisiblity, TakeAlways, WED_ATCFlow::sClass);
+			vector<WED_ATCRunwayUse *> uses;
+			if(apt) CollectRecursive(apt, back_inserter(uses), IgnoreVisiblity, TakeAlways, WED_ATCRunwayUse::sClass);
+			vector<WED_AirportSign *> signs;
+			if(apt) CollectRecursive(apt, back_inserter(signs), WED_AirportSign::sClass);
+			
+			if (old_all_rwys.find(new_enum) != old_all_rwys.end())
+			{
+				DoUserAlert("Another runway of same name already exists, Smart Runway Rename will not be applied.");
+				return;
+			}
+	
+			if(apt) 
+			{
+				apt->CommitCommand();
+				apt->StartCommand("Smart Runway Rename");
+			}
+			
+			pair<int,int> new_enum_1wy = GetRunwayEnumsOneway();
+			
+			for(vector<WED_TaxiRoute *>::iterator t = taxi_routes.begin(); t != taxi_routes.end(); ++t)
+			{
+				// move all hotzone tags
+				bool renamed = false;
+				set<int> hotZ;
+				hotZ = (*t)->GetHotArrive();
+				if (hotZ.erase(old_enum_1wy.first))
+				{
+					renamed=true;
+					hotZ.insert(new_enum_1wy.first);
+				}
+				if( hotZ.erase(old_enum_1wy.second))
+				{
+					renamed=true;
+					hotZ.insert(new_enum_1wy.second);
+				}
+				(*t)->SetHotArrive(hotZ);
+				
+				hotZ = (*t)->GetHotDepart();
+				if (hotZ.erase(old_enum_1wy.first))
+				{
+					renamed=true;
+					hotZ.insert(new_enum_1wy.first);
+				}
+				if( hotZ.erase(old_enum_1wy.second))
+				{
+					renamed=true;
+					hotZ.insert(new_enum_1wy.second);
+				}
+				(*t)->SetHotDepart(hotZ);
+				
+				hotZ = (*t)->GetHotILS();
+				if (hotZ.erase(old_enum_1wy.first))
+				{
+					renamed=true;
+					hotZ.insert(new_enum_1wy.first);
+				}
+				if( hotZ.erase(old_enum_1wy.second))
+				{
+					renamed=true;
+					hotZ.insert(new_enum_1wy.second);
+				}
+				(*t)->SetHotILS(hotZ);
+			
+				if ((*t)->GetRunway() == old_enum)
+				{
+					renamed=true;
+					(*t)->SetRunway(new_enum);
+				}
+				if (renamed) renamed_taxi++;
+			}
+			for(vector<WED_ATCFlow *>::iterator f = flows.begin(); f != flows.end(); ++f)
+			{
+				bool renamed = false;
+				int r = (*f)->GetPatternRunway();
+				if(r = old_enum_1wy.first)
+				{
+					renamed=true;
+					(*f)->SetPatternRunway(new_enum_1wy.first);
+				}
+				else if(r = old_enum_1wy.second)
+				{
+					renamed=true;
+					(*f)->SetPatternRunway(new_enum_1wy.second);
+				}
+				if (renamed) renamed_flows++;
+			}
+			for(vector<WED_ATCRunwayUse *>::iterator u = uses.begin(); u != uses.end(); ++u)
+			{
+				int r = (*u)->GetRunway();
+				if(r = old_enum_1wy.first)
+					(*u)->SetRunway(new_enum_1wy.first);
+				else if(r = old_enum_1wy.second)
+					(*u)->SetRunway(new_enum_1wy.second);
+			}
+			// create list of strings to replace
+			vector<string> old_rwys, new_rwys;
+			old_rwys.push_back(ENUM_Desc(old_enum_1wy.second));
+			new_rwys.push_back(ENUM_Desc(new_enum_1wy.second));
+			old_rwys.push_back(ENUM_Desc(old_enum_1wy.first));
+			new_rwys.push_back(ENUM_Desc(new_enum_1wy.first));
+			
+			if (old_rwys.back()[0] == '0')  // also search & replace a sign that has no leading zero in rwy number
+			{
+				old_rwys.push_back(old_rwys.back().substr(1));
+				new_rwys.push_back(new_rwys.back().substr(1));
+			}
+			for(vector<WED_AirportSign *>::iterator s = signs.begin(); s != signs.end(); ++s)
+			{
+				bool renamed = false;
+				string label; (*s)->GetName(label);
+				for (int i = 0; i < old_rwys.size(); ++i)
+				{
+					string old_rwy = old_rwys[i];
+					string new_rwy = new_rwys[i];
+					size_t pos;
+					if ((pos = label.find(old_rwy)) != string::npos)
+					{
+						size_t len = label.length();
+						size_t next_pos = pos + old_rwy.length();
+						
+						char prec_char = len > 0 ? label[pos-1] : '!';
+						char next_char = next_pos < len ? label[next_pos] : '!';
+						
+						// gotta be a bit more conservative than just looking for a substring,
+						// don't change a sign "GATE 12" when renaming Rwy 12.
+						if (!isalnum(prec_char) && !isalnum(next_char))
+						{
+							renamed=true;
+							label = label.replace(pos, old_rwy.length(), new_rwy);
+							(*s)->SetName(label);
+						}
+					}
+				}
+				if (renamed) renamed_signs++;
+			}
+
+			if (renamed_flows || renamed_signs || renamed_taxi)
+			{
+				stringstream ss;
+				ss << "Smart Runway Rename completed:\n" << renamed_taxi << " taxi route edges\n";
+				ss << renamed_flows << " ATC flows\n" << renamed_signs << " taxi signs\nrefering to this runway were updated." ;
+				DoUserAlert(ss.str().c_str());
+			}
+		}
 	}
 }
 

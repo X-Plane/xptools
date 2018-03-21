@@ -32,12 +32,13 @@
 #include "WED_MetaDataDefaults.h"
 #include "WED_Menus.h"
 
+#include "WED_Document.h"
+
 #include "PlatformUtils.h"
 #include "FileUtils.h"
 #include "curl_http.h"
 #include "RAII_Classes.h"
 #include "WED_FileCache.h"
-#include "WED_MetaDataDefaults.h"
 
 #include "WED_DSFExport.h"
 #include "WED_Globals.h"
@@ -51,6 +52,7 @@
 #include "WED_ToolUtils.h"
 #include "WED_Airport.h"
 #include "ILibrarian.h"
+#include "WED_PackageMgr.h"
 #include "WED_SceneryPackExport.h"
 #include "WED_AptIE.h"
 #include "GUI_Application.h"
@@ -307,7 +309,7 @@ enum expt_dialog_stage
 
 class	WED_GatewayExportDialog : public GUI_FormWindow, public GUI_Timer {
 public:
-	WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver);
+	WED_GatewayExportDialog(WED_Airport * apt, WED_Document * resolver);
 
 	//When pressed, opens up the developer blog post about the Gateway 
 	virtual void AuxiliaryAction();
@@ -341,8 +343,8 @@ private:
 	curl_http_get_file*     mCurl;
 
 	//The phase of the state in the dialog box
-	expt_dialog_stage	mPhase;
-	IResolver *				mResolver;
+	expt_dialog_stage		mPhase;
+	WED_Document *			mResolver;
 
 	string					mParID;
 	set<WED_Thing *>		mProblemChildren;
@@ -371,7 +373,7 @@ int WED_CanExportToGateway(IResolver * resolver)
 #endif	
 }
 
-void WED_DoExportToGateway(IResolver * resolver)
+void WED_DoExportToGateway(WED_Document * resolver)
 {
 	#if BULK_SPLAT_IO
 
@@ -415,10 +417,10 @@ void WED_DoExportToGateway(IResolver * resolver)
 
 int Iterate_JSON_One_Airport(ISelectable * what, void * ref)
 {
-	IResolver * resolver = (IResolver *) ref;	
+	WED_Document * resolver = (WED_Document *) ref;
 	WED_Airport * apt = SAFE_CAST(WED_Airport,what);
 	if(!apt)
-		return 0;			
+		return 0;
 	WED_GatewayExportDialog * dlg = new WED_GatewayExportDialog(apt, resolver);
 	dlg->Submit();
 	#if !BULK_SPLAT_IO
@@ -469,7 +471,7 @@ static string InterpretNetworkError(curl_http_get_file* curl)
 	return ss.str();
 }
 
-WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, IResolver * resolver) : 
+WED_GatewayExportDialog::WED_GatewayExportDialog(WED_Airport * apt, WED_Document * resolver) :
 	GUI_FormWindow(gApplication, "Airport Scenery Gateway", 500, 400),
 	mAirportMetadataCURLHandle(NULL),
 	mApt(apt),
@@ -559,7 +561,7 @@ void WED_GatewayExportDialog::Submit()
 		WED_Export_Target old_target = gExportTarget;
 		gExportTarget = wet_gateway;
 
-		if(!WED_ValidateApt(mResolver, apt))
+		if(!WED_ValidateApt(mResolver, NULL, apt))
 		{
 			gExportTarget = old_target;
 			return;
@@ -567,21 +569,16 @@ void WED_GatewayExportDialog::Submit()
 
 		ILibrarian * lib = WED_GetLibrarian(mResolver);
 
-		string temp_folder("tempXXXXXX");
-		lib->LookupPath(temp_folder);
-		vector<char> temp_chars(temp_folder.begin(),temp_folder.end());
-		temp_chars.push_back(0);
+		string targ_folder("tempXXXXXX");
+		lib->LookupPath(targ_folder);
 
-		if(!mktemp(&temp_chars[0]))
+		if(!mkdtemp((char *) targ_folder.c_str()))    // its safe, as length will never change
 		{
 			gExportTarget = old_target;
 			return;
 		}
-		temp_chars.pop_back();
-		string targ_folder(temp_chars.begin(),temp_chars.end());
 		targ_folder += DIR_STR;
-
-		printf("Dest: %s\n", targ_folder.c_str());
+//		printf("Dest: %s\n", targ_folder.c_str());
 
 		string targ_folder_zip = icao + "_gateway_upload.zip";
 		lib->LookupPath(targ_folder_zip);
@@ -589,10 +586,6 @@ void WED_GatewayExportDialog::Submit()
 		{
 			FILE_delete_file(targ_folder_zip.c_str(), false);
 		}
-
-		DebugAssert(!FILE_exists(targ_folder.c_str()));
-
-		FILE_make_dir_exist(targ_folder.c_str());
 
 		if(has_dsf(apt))
 		if(DSF_ExportAirportOverlay(mResolver, apt, targ_folder, mProblemChildren))
@@ -689,10 +682,11 @@ void WED_GatewayExportDialog::Submit()
 		if (has_atc_ground_routes(apt))
 			features += "," + to_string(ATC_GROUND_ROUTES_TAG);
 
-		if(!features.empty())
+		if(!features.empty())                        // remove leading ","
 			features.erase(features.begin());
 
 		scenery["features"] = features;
+		scenery["validatedAgainst"] = gPackageMgr->GetXPversion();
 		scenery["icao"] = icao;
 		scenery["masterZipBlob"] = uu64;
 		
@@ -763,8 +757,6 @@ void WED_GatewayExportDialog::Submit()
 
 void WED_GatewayExportDialog::TimerFired()
 {
-	string good_msg = "";
-	string bad_msg = "";
 		
 	if(mPhase == expt_dialog_download_airport_metadata)
 	{
@@ -777,12 +769,23 @@ void WED_GatewayExportDialog::TimerFired()
 			{
 				WED_GatewayExportDialog::mAirportMetadataCSVPath = res.out_path;
 				mPhase = expt_dialog_upload_to_gateway;
-				good_msg = "Airport metadata defaults have been downloaded succesfully.";
+
+				string ver(gPackageMgr->GetXPversion());
+				if(ver.find('r') != ver.npos )
+					this->AddLabel("Airport metadata defaults have been downloaded succesfully.");
+				else
+				{
+					stringstream ss;
+					ss << "The selected X-Plane Folder contains an unreleased X-plane version " << ver << "\n";
+					ss << "This can cause validation to miss deprecated or unavailable items.\n \n";
+					ss << "All submissions are re-validated with the last officially released X-Plane version.";
+					this->AddLabel(ss.str().c_str());
+				}
 			}
 			else if(res.out_status == cache_status_error)
 			{
 				mPhase = expt_dialog_done;
-				bad_msg = InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle());
+				this->AddLabel(InterpretNetworkError(&this->mAirportMetadataCURLHandle->get_curl_handle()));
 			}
 		}
 		return;
@@ -793,7 +796,10 @@ void WED_GatewayExportDialog::TimerFired()
 		if(mCurl->is_done())
 		{
 			Stop();
-		
+
+			string good_msg = "";
+			string bad_msg = "";
+
 			mPhase = expt_dialog_done;
 			if(mCurl->is_ok())
 			{

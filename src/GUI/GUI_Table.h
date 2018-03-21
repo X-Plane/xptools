@@ -275,6 +275,7 @@ private:
 			GUI_Table *				mTable;
 			int						mClickCellY;
 			int						mLocked;
+			int						mWideY;
 };
 
 

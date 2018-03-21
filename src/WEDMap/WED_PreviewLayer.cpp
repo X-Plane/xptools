@@ -27,7 +27,6 @@
 #include "WED_TexMgr.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
-#include "WED_TexMgr.h"
 #include "MatrixUtils.h"
 #include "GUI_GraphState.h"
 #include "GUI_DrawUtils.h"
@@ -512,7 +511,21 @@ struct	preview_forest : public preview_polygon {
 			interp(0,0.5,1,0.3,fst->GetDensity()),
 			interp(0,0.1,1,0.0,fst->GetDensity()));
 
-		preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+		if(fst->GetFillMode() == dsf_fill_area)
+			preview_polygon::draw_it(zoomer,g,mPavementAlpha);
+		else if(fst->GetFillMode() == dsf_fill_line)
+		{
+			IGISPointSequence * ps = fst->GetOuterRing();
+			for(int i = 0; i < ps->GetNumSides(); ++i)
+			{
+				vector<Point2>	pts;
+				SideToPoints(ps,i,zoomer, pts);
+				glLineWidth(5);
+				glShape2v(GL_LINES/*GL_LINE_STRIP*/, &*pts.begin(), pts.size());
+				glLineWidth(1);
+
+			}			
+		}
 	}
 };
 
@@ -555,12 +568,9 @@ struct	preview_facade : public preview_polygon {
 				int param = 0;
 				if(fac->HasCustomWalls())				
 				{
-					Segment2	sp;
 					Bezier2		bp;
-					if(ps->GetSide(gis_Param,i,sp,bp))
-						param = bp.p1.x();
-					else
-						param = sp.p1.x();
+					ps->GetSide(gis_Param,i,bp);
+					param = bp.p1.x();
 				}
 				
 				float colors[24] = {  1, 0, 0, 0.75,
@@ -977,7 +987,6 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 {
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(GetResolver());
 		ILibrarian * lmgr = WED_GetLibrarian(GetResolver());
-		ITexMgr *	tman = WED_GetTexMgr(GetResolver());
 		string vpath;
 		pol_info_t	pol_info;
 
@@ -1003,8 +1012,6 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	if (sub_class == WED_Helipad::sClass)			heli = SAFE_CAST(WED_Helipad,entity);
 	if (sub_class == WED_Sealane::sClass)			sea = SAFE_CAST(WED_Sealane,entity);
 	if (sub_class == WED_Taxiway::sClass)			taxi = SAFE_CAST(WED_Taxiway,entity);
-
-	float							storage[4];
 
 	if(rwy)		mPreviewItems.push_back(new preview_runway(rwy,mRunwayLayer++,0));
 	if(rwy)		mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1));
@@ -1037,7 +1044,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	if(fac)		if(fac->GetShowLevel() <= mObjDensity) mPreviewItems.push_back(new preview_facade(fac,group_Objects));
 	if(forst)	
 #if AIRPORT_ROUTING
-	if(forst->GetGISClass() == gis_Polygon)
+//	if(forst->GetGISClass() == gis_Polygon || forst->GetGISClass() == gis_Ring )
 #endif
 		mPreviewItems.push_back(new preview_forest(forst,group_Objects));
 	

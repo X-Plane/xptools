@@ -39,7 +39,15 @@ private:
 	FILE_case_correct_path& operator=(const FILE_case_correct_path& rhs);
 };
 
-//Tests for file/folder case correctness on LIN, returns 1/0, or always 1 on IBM or APL
+/* Tests and corrects path as needed for file/folder case correctness 
+   on LIN it
+   returns 1 if file exists using case-sensitive filename matching
+   returns 1 if file exists, but path is not case-correct, aka file-insensitive match. In this case the path is corrected to case-match the actual file name.
+   returns 0 is file can not be found at all with case-insensitive match
+
+   On APL or IBM its does nothing and always returns 1, as these file systems are always case insensitive.
+*/
+
 int FILE_case_correct(char * buf);
 
 /* FILE API Overview
@@ -47,6 +55,7 @@ int FILE_case_correct(char * buf);
 	exists                      | Does file exist?                              | N/A                 | True/false
 	get_file_extension          | Gets the chars from the last dot to the end   | N/A                 | non-empty (".txt",".jpeg". No case change), empty string
 	get_file_meta_data          | Get file info like creation time and date     | No                  | 0, -1
+	get_dir_name                | Get directory part of filename                | N/A                 | non-empty, empty string
 	get_file_name               | Get file name w/o directory, can use / or \   | N/A                 | non-empty, empty string
 	get_file_name_wo_extensions | Get file name w/o directory or any extensions | N/A                 | non-empty, empty string
 	delete_file                 | rm 1 file or folder                           | No                  | 0, last_error
@@ -68,14 +77,18 @@ int FILE_case_correct(char * buf);
 	get_directory_recursive's vectors of strings contain fully qualified names, unlike get_directory.
 /*/
 
-//Returns true if the file exists, returns false if it doesn't
+//Returns true if the file (or directory) exists, returns false if it doesn't
 bool FILE_exists(const char * path);
 
+// returns file extension, NOT including the dot, always as lower case
 string FILE_get_file_extension(const string& path);
 
 int FILE_get_file_meta_data(const string& path, struct stat& meta_data);
 
 string FILE_get_file_name(const string& path);
+
+// returns directory name, i.e. path to file w/o filename, including the final directory separator
+string FILE_get_dir_name(const string& path);
 
 string FILE_get_file_name_wo_extensions(const string& path);
 
@@ -124,4 +137,9 @@ enum date_cmpr_result_t
 * Return -2: There's been an error
 */
 date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second);
+
+#if IBM
+char * mkdtemp(char *dirname);
+#endif
+
 #endif

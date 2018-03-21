@@ -128,10 +128,14 @@ void	WED_DoSelectPolygon(IResolver * resolver);
 int		WED_CanSelectConnected(IResolver * resolver);
 void	WED_DoSelectConnected(IResolver * resolver);
 
+void	WED_select_zero_recursive(WED_Thing * t, set<WED_GISEdge*> *s);
 bool	WED_DoSelectZeroLength(IResolver * resolver, WED_Thing * sub_tree=NULL);			// These return true if they did an operation to change selection due to there being work to do.
+
+set<WED_Thing*> WED_select_doubles(WED_Thing * t);
 bool	WED_DoSelectDoubles(IResolver * resolver, WED_Thing * sub_tree=NULL);				// They do not show any UI but they do select the failures.
 
-set<WED_GISEdge*> do_select_crossing(vector<WED_GISEdge* > edges);
+set<WED_GISEdge*> WED_do_select_crossing(WED_Thing * t);
+set<WED_GISEdge*> WED_do_select_crossing(const vector<WED_GISEdge*> edges);
 bool	WED_DoSelectCrossing(IResolver * resolver, WED_Thing * sub_tree=NULL);
 
 void	WED_DoSelectMissingObjects(IResolver * resolver);
@@ -155,7 +159,10 @@ int		WED_CanReplaceVehicleObj(IResolver* resolver);
 int		WED_CanReplaceVehicleObj(WED_Airport* airport);
 void	WED_DoReplaceVehicleObj(IResolver* resolver, WED_Airport* apt = NULL);
 
-int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
 
+int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* sel);
 void WED_UpgradeRampStarts(IResolver * resolver);
+void WED_AlignAirports(IResolver * resolver);
+
+
 #endif /* WED_GroupCommands_H */

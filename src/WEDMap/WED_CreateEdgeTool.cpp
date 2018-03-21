@@ -70,20 +70,20 @@ WED_CreateEdgeTool::WED_CreateEdgeTool(
 	1,						// close allowed?
 	0),						// close required
 	mType(tool),
-	mVehicleClass(tool == create_TaxiRoute ? this : NULL,"Allowed Vehicles",SQL_Name("",""),XML_Name("",""), ATCVehicleClass, atc_Vehicle_Aircraft),
-	mName(this, "Name", SQL_Name("",""),XML_Name("",""), "N"),
-	mOneway(tool == create_TaxiRoute ? this : NULL, "Oneway", SQL_Name("",""),XML_Name("",""), 1),
-	mRunway(tool == create_TaxiRoute ? this : NULL, "Runway", SQL_Name("",""),XML_Name("",""), ATCRunwayTwoway, atc_rwy_None),
-	mHotDepart(tool == create_TaxiRoute ? this : NULL, "Departure", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
-	mHotArrive(tool == create_TaxiRoute ? this : NULL, "Arrival", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
-	mHotILS(tool == create_TaxiRoute ? this : NULL, "ILS", SQL_Name("",""),XML_Name("",""), ATCRunwayOneway,false),
-	mWidth(tool == create_TaxiRoute ? this : NULL, "Size", SQL_Name("",""),XML_Name("",""), ATCIcaoWidth, width_E),
+	mVehicleClass(tool == create_TaxiRoute ? this : NULL,PROP_Name("Allowed Vehicles",XML_Name("","")), ATCVehicleClass, atc_Vehicle_Aircraft),
+	mName(                                   this,       PROP_Name("Name",            XML_Name("","")), "N"),
+	mOneway(tool == create_TaxiRoute ?       this : NULL,PROP_Name("Oneway",          XML_Name("","")), 1),
+	mRunway(tool == create_TaxiRoute ?       this : NULL,PROP_Name("Runway",          XML_Name("","")), ATCRunwayTwoway, atc_rwy_None),
+	mHotDepart(tool == create_TaxiRoute ?    this : NULL,PROP_Name("Departure",       XML_Name("","")), ATCRunwayOneway,false),
+	mHotArrive(tool == create_TaxiRoute ?    this : NULL,PROP_Name("Arrival",         XML_Name("","")), ATCRunwayOneway,false),
+	mHotILS(tool == create_TaxiRoute ?       this : NULL,PROP_Name("ILS",             XML_Name("","")), ATCRunwayOneway,false),
+	mWidth(tool == create_TaxiRoute ?        this : NULL,PROP_Name("Size",            XML_Name("","")), ATCIcaoWidth, width_E),
 #if ROAD_EDITING
-	mLayer(tool == create_Road ? this : NULL, "Layer", SQL_Name("",""),XML_Name("",""), 0, 2),
-	mSubtype(tool == create_Road ? this : NULL, "Type", SQL_Name("",""),XML_Name("",""), 1, 3),
-	mResource(tool == create_Road ? this : NULL, "Resource",SQL_Name("",""),XML_Name("",""), "lib/g10/roads.net"),
+	mLayer(tool == create_Road ?             this : NULL,PROP_Name("Layer",           XML_Name("","")), 0, 2),
+	mSubtype(tool == create_Road ?           this : NULL,PROP_Name("Type",            XML_Name("","")), 1, 3),
+	mResource(tool == create_Road ?          this : NULL,PROP_Name("Resource",        XML_Name("","")), "lib/g10/roads.net"),
 #endif
-	mSlop(this, "Slop", SQL_Name("",""),XML_Name("",""), 10, 2)
+	mSlop(                                   this,        PROP_Name("Slop",           XML_Name("","")), 10, 2)
 {
 }
 
@@ -213,7 +213,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	int stop = closed ? pts.size() : pts.size()-1;
 	int start = 0;
 
-	WED_GISPoint * c;
+	WED_GISPoint * c = NULL;
 	WED_Thing * src = NULL, * dst = NULL;
 	double	dist=frame_dist*frame_dist;
 	if(src == NULL)	
@@ -315,7 +315,7 @@ void		WED_CreateEdgeTool::AcceptPath(
 	CollectRecursive(host_for_parent, back_inserter(all_edges));
 
 	//filter them for just the crossing ones
-	set<WED_GISEdge*> crossing_edges = do_select_crossing(all_edges);
+	set<WED_GISEdge*> crossing_edges = WED_do_select_crossing(all_edges);
 
 	//convert, and run split!
 	vector<split_edge_info_t> edges_to_split;
@@ -450,8 +450,7 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 				for(int n = 0; n < ns; ++n)
 				{
 					Bezier2 b;
-					Segment2 s;
-					if(ps->GetSide(gis_Geo,n,s,b))
+					if(ps->GetSide(gis_Geo,n,b))
 					{
 						if(loc != b.p1 && loc != b.p2)
 						{								
@@ -466,9 +465,9 @@ void WED_CreateEdgeTool::FindNearP2S(WED_Thing * host, IGISEntity * ent, const c
 					}
 					else					
 					{
-						if(loc != s.p1 && loc != s.p2)
+						if(loc != b.p1 && loc != b.p2)
 						{
-							double d = s.squared_distance(loc);
+							double d = b.as_segment().squared_distance(loc);
 							if(d < out_dsq)
 							{
 								out_dsq = d;

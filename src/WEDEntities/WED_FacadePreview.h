@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, Laminar Research.
+ * Copyright (c) 2017, Laminar Research.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,9 +20,24 @@
  * THE SOFTWARE.
  *
  */
-#ifndef BUILDINSTALLER_H
-#define BUILDINSTALLER_H
 
-int		BuildInstaller(const char * inOldBase, const char * inNewBase, const char * inInstallerExe);
+#ifndef WED_FacadePreview_H
+#define WED_FacadePreview_H
+
+#ifndef WED_ResourceMgr_H
+#include "WED_ResourceMgr.h"
+#endif
+
+struct wall_map_t {
+	
+	wall_map_t() : vert(), hori(), min_w(), max_w(999.0) { }
+
+	float	vert[4];   // for now planning to only collect ONE example for wall type.
+	float	hori[4];
+	float	min_w, max_w;   // range of widths supported by this wall definition
+};
+
+bool WED_MakeFacadePreview(fac_info_t& info, vector<wall_map_t> walls, string wall_tex, 
+					float roof_uv[4], string roof_tex);
 
 #endif

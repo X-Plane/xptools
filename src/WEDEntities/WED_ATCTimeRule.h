@@ -40,6 +40,7 @@ public:
 	void		Export(		 AptTimeRule_t& info) const;
 
 	virtual const char *	HumanReadableType(void) const { return "Time Rule"; }
+	virtual	void        	PropEditCallback(int before);
 
 private:
 

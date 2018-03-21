@@ -74,14 +74,14 @@ public:
 	string		GetResourceParent(const string& r);
 	void		GetResourceChildren(const string& r, int filter_package, vector<string>& children);	// Pass empty resource to get roots
 	int			GetResourceType(const string& r);
-	string		GetResourcePath(const string& r);
+	string		GetResourcePath(const string& r, int variant = 0);
 	
 				// This returns true if the resource whose virtual path is "r" comes from the default library that x-plane ships with.
 	bool		IsResourceDefault(const string& r);
 	bool		IsResourceLocal(const string& r);
 	bool		IsResourceLibrary(const string& r);
 	bool		IsResourceDeprecatedOrPrivate(const string& r);
-	
+		
 	string		CreateLocalResourcePath(const string& r);
 
 	virtual	void	ReceiveMessage(
@@ -91,6 +91,8 @@ public:
 
 				// This returns true if the package number 'package_number' adds at least one item to the library.
 	bool		DoesPackHaveLibraryItems(int package_number);
+				// indicates if art asset exported by multiple exports, i.e. has randomized appearance
+	int			GetNumVariants(const string& r);
 
 private:
 
@@ -100,8 +102,8 @@ private:
 
 	struct	res_info_t {
 		int			res_type;
-		set<int>	packages;
-		string		real_path;
+		set<int>	packages;       // points out if same items is exported by multiple libraries
+		vector<string> real_paths;  // holds all the variants causeed by multiple EXPORTS commands
 		bool		is_backup;
 		bool		is_default;
 		int			status;

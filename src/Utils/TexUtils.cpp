@@ -117,7 +117,6 @@ bool LoadTextureFromFile(
 						float *  		outS,
 						float * 		outT)
 {
-	bool	ok = false;
 	struct ImageInfo	im = { 0 };
 
 /*	MFMemFile * mf = MemFile_Open(inFileName);

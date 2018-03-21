@@ -328,8 +328,6 @@ void WED_MapPane::SetResource(const string& r, int res_type)
 	}
 }
 
-
-
 void	WED_MapPane::ZoomShowAll(void)
 {
 //	double l,b,r,t;
@@ -338,13 +336,17 @@ void	WED_MapPane::ZoomShowAll(void)
 	mMap->ZoomShowAll();
 }
 
-void WED_MapPane::ZoomShowSel(void)
+void WED_MapPane::ZoomShowSel(double scale)   // by default show just a bit more than the objects size
 {
 	Bbox2 box;
 	GetExtentSel(box, mResolver); 
 	if(!box.is_empty() && !box.is_null())
-		mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	
-	mMap->Refresh(); 
+	{
+		double x = max(box.xspan(),box.yspan()) * max(0.0, scale - 1.0);  // limit zoom to show at least full selection
+		box.expand(x);
+		mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());
+	}
+	mMap->Refresh();
 }
 
 int		WED_MapPane::Map_KeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFlags)
@@ -394,7 +396,7 @@ int		WED_MapPane::Map_HandleCommand(int command)
 
 	case wed_ZoomWorld:		mMap->ZoomShowArea(-180,-90,180,90);	mMap->Refresh(); return 1;
 	case wed_ZoomAll:		GetExtentAll(box, mResolver); mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	mMap->Refresh(); return 1;
-	case wed_ZoomSelection:	GetExtentSel(box, mResolver); mMap->ZoomShowArea(box.p1.x(),box.p1.y(),box.p2.x(),box.p2.y());	mMap->Refresh(); return 1;
+	case wed_ZoomSelection:	ZoomShowSel(); return 1;
 
 	default:		return 0;
 	}

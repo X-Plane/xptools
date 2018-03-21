@@ -7,9 +7,10 @@ CFLAGS		+= -include ./src/Obj/XDefs.h
 CXXFLAGS	+= -include ./src/Obj/XDefs.h
 #FORCEREBUILD_SUFFIX := _xg
 
+LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+
 ifdef PLAT_LINUX
 #LDFLAGS		+= -nodefaultlibs
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 LIBS		+= -lQtCore -lQtGui -lpthread
 endif #PLAT_LINUX
 
@@ -17,13 +18,11 @@ ifdef PLAT_MINGW
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 WIN_RESOURCES	+= ./src/XPTools/XGrinder.rc
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 LIBS		+= -lcomctl32 -luuid -lcomdlg32 -lole32 -lgdi32
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-LDFLAGS		+= -framework Carbon
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
+LDFLAGS		+= -framework Carbon -framework AppKit
 endif #PLAT_DARWIN
 
 
@@ -46,6 +45,7 @@ endif #PLAT_MINGW
 ifdef PLAT_DARWIN
 SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/UI/XWin.mac.cpp
+SOURCES += ./src/UI/ObjCUtils.cpp
 endif #PLAT_DARWIN
 
 SOURCES += ./src/Utils/EndianUtils.c

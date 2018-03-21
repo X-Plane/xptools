@@ -4,9 +4,6 @@
     <Filter Include="WEDCore">
       <UniqueIdentifier>{92914035-ec28-45d5-bff1-5852f4a29139}</UniqueIdentifier>
     </Filter>
-    <Filter Include="WEDDocs">
-      <UniqueIdentifier>{4fc0b295-5e2e-4978-9875-ebe96a18b985}</UniqueIdentifier>
-    </Filter>
     <Filter Include="WEDEntities">
       <UniqueIdentifier>{2c535d37-b2a7-4836-aa67-4e8252ab5457}</UniqueIdentifier>
     </Filter>
@@ -63,9 +60,6 @@
     </Filter>
     <Filter Include="XESCore">
       <UniqueIdentifier>{288927bc-9dc2-46ee-a91d-3c451344b887}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLite">
-      <UniqueIdentifier>{81bee108-7857-464e-a673-c18b4b57b1fd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Interfaces">
       <UniqueIdentifier>{5e1ce0f9-593b-4814-aeba-ae3ddfa3caa7}</UniqueIdentifier>
@@ -124,9 +118,6 @@
       <Filter>WEDCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_Persistent.cpp">
-      <Filter>WEDCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDCore\WED_Properties.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDCore\WED_PropertyHelper.cpp">
@@ -403,9 +394,6 @@
       <Filter>WEDMap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp">
-      <Filter>WEDMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDMap\WED_TerraserverLayer.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp">
@@ -696,9 +684,6 @@
     <ClCompile Include="..\..\src\Utils\TexUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Utils\SQLUtils.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Utils\CompGeomUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -707,9 +692,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\XESCore\AptIO.cpp">
       <Filter>XESCore</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.c">
-      <Filter>SQLite</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\GUI\GUI_FormWindow.cpp">
       <Filter>GUI</Filter>
@@ -807,6 +789,12 @@
     <ClCompile Include="..\..\src\WEDCore\WED_HierarchyUtils.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDEntities\WED_FacadePreview.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -861,9 +849,6 @@
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_Persistent.h">
-      <Filter>WEDCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDCore\WED_Properties.h">
       <Filter>WEDCore</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_PropertyHelper.h">
@@ -930,9 +915,6 @@
       <Filter>WEDEntities</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophoto.h">
-      <Filter>WEDEntities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDEntities\WED_DrapedOrthophotoBoundary.h">
       <Filter>WEDEntities</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDEntities\WED_Entity.h">
@@ -1146,9 +1128,6 @@
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h">
-      <Filter>WEDMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDMap\WED_TerraserverLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h">
@@ -1454,9 +1433,6 @@
     <ClInclude Include="..\..\src\Utils\TexUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Utils\SQLUtils.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\Utils\CompGeomUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -1468,12 +1444,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\XESCore\AptIO.h">
       <Filter>XESCore</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3.h">
-      <Filter>SQLite</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\msvc_libs\sqlite-3.6.21\sqlite3ext.h">
-      <Filter>SQLite</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Interfaces\IArray.h">
       <Filter>Interfaces</Filter>
@@ -1601,9 +1571,14 @@
     <ClInclude Include="..\..\src\GUI\GUI_FilterBar.h">
       <Filter>GUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Interfaces\IFilterable.h" />
     <ClInclude Include="..\..\src\Utils\STLUtils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDCore\WED_ValidateList.h">
+      <Filter>WEDCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1615,7 +1590,7 @@
     <Image Include="..\..\src\WEDResources\about.png">
       <Filter>WEDResources</Filter>
     </Image>
-    <Image Include="..\..\src\WEDResources\checkbutton.png">
+    <Image Include="..\..\src\WEDResources\check_buttons.png">
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\colors.png">
@@ -1631,12 +1606,6 @@
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\push_buttons.png">
-      <Filter>WEDResources</Filter>
-    </Image>
-    <Image Include="..\..\src\WEDResources\pushbutton.png">
-      <Filter>WEDResources</Filter>
-    </Image>
-    <Image Include="..\..\src\WEDResources\radiobutton.png">
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\scroll_btn_h.png">
@@ -1692,9 +1661,6 @@
     <None Include="..\..\src\WEDResources\WED_Info.plist">
       <Filter>WEDResources</Filter>
     </None>
-    <None Include="..\..\src\WEDResources\WEDManual.pdf">
-      <Filter>WEDResources</Filter>
-    </None>
     <None Include="..\..\src\WEDResources\tables\arrows.png">
       <Filter>WEDResources\table</Filter>
     </None>
@@ -1721,6 +1687,9 @@
     </None>
     <None Include="..\..\src\WEDResources\tables\sider.png">
       <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\worldmap.jpg">
+      <Filter>WEDResources</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

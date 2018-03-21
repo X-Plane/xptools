@@ -8,16 +8,16 @@ CXXFLAGS	+= -include ./src/Obj/XDefs.h
 DEFINES		+= -DUSE_JPEG=1 -DUSE_TIF=1
 #FORCEREBUILD_SUFFIX := _ov
 
-ifdef PLAT_LINUX
-#LDFLAGS		+= -nodefaultlibs
-LDFLAGS		+= -Wl,--exclude-libs,libpng.a
 LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
+
+ifdef PLAT_LINUX
+#LDFLAGS		+= -nodefaultlibs
+LDFLAGS		+= -Wl,--exclude-libs,libpng.a
 LIBS		+= -lQtCore -lQtGui -lQtOpenGL -lGL -lGLU -ldl -lpthread
 endif #PLAT_LINUX
 
@@ -25,26 +25,12 @@ ifdef PLAT_MINGW
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
 WIN_RESOURCES	+= ./src/XPTools/ObjView.rc
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 LIBS		+= -lglu32 -lopengl32 -lgdi32 -lole32 -lcomctl32 -lcomdlg32
 LIBS		+= -luuid
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
+LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
 endif #PLAT_DARWIN
 
 
@@ -71,6 +57,7 @@ ifdef PLAT_DARWIN
 SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/UI/XWin.mac.cpp
 SOURCES += ./src/UI/XWinGL.mac.cpp
+SOURCES += ./src/UI/ObjCUtils.cpp
 endif #PLAT_DARWIN
 
 SOURCES += ./src/Obj/ObjPointPool.cpp
@@ -80,6 +67,8 @@ SOURCES += ./src/Obj/ObjDraw.cpp
 SOURCES += ./src/ObjEdit/OE_Zoomer3d.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
 SOURCES += ./src/Utils/BitmapUtils.cpp
+SOURCES += ./src/Utils/FileUtils.cpp
+SOURCES += ./src/Utils/zip.c
 SOURCES += ./src/Utils/TexUtils.cpp
 SOURCES += ./src/Utils/trackball.c
 SOURCES += ./src/Utils/XUtils.cpp

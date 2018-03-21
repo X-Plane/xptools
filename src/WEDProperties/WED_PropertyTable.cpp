@@ -166,7 +166,7 @@ void	WED_PropertyTable::GetCellContent(
 	case prop_Double:
 		the_content.content_type = gui_Cell_Double;
 		the_content.double_val = val.double_val;
-		sprintf(fmt,"%%%d.%dlf %s",inf.digits, inf.decimals, inf.units);
+		sprintf(fmt,"%%%d.%dlf %.6s",inf.digits, inf.decimals, inf.units);  // info.units may be not zero terminated
 		if(inf.round_down)
 		{
 			// We are going to shift our fractional part left 1 more decimal digit to the left than needed.  Why?
@@ -248,7 +248,7 @@ void	WED_PropertyTable::GetCellContent(
 	//THIS IS A HACK to stop the user from being able to disclose arrows during search mode
 	if (mSearchFilter.empty() == false)
 	{
-		if (the_content.can_disclose == true)
+		if (the_content.can_disclose)
 		{
 			the_content.is_disclosed = true;
 		}
@@ -627,7 +627,8 @@ int		WED_PropertyTable::TabAdvance(
 		}
 		if (reverse==0)reverse=1;
 		++tries;
-	} while (start_x != io_x || start_y != io_y || tries <= 1);
+	} while ((start_x != io_x || start_y != io_y || tries <= 1) 
+				&& tries < 100);                 // prevent infinite loop if nothing in table is "advanceable" to, e.g. a taxi route edge runway segment
 	return 0;
 }
 

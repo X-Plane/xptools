@@ -176,8 +176,10 @@ void		GUI_Button::Draw(GUI_GraphState * state)
 		{
 			GUI_DrawCentered(state, mResource.c_str(), bounds, -1, 0, tile_p, &w, &h);
 
+			h = GUI_GetLineAscent(font_UI_Basic);
+			h = (bounds[3] - bounds[1] - h) / 2;
 			if (!desc.empty())
-				GUI_FontDraw(state, font_UI_Basic, c, bounds[0] + w, bounds[1], desc.c_str());
+				GUI_FontDraw(state, font_UI_Basic, c, bounds[0] + w + 3 , bounds[1] + h, desc.c_str());
 		}
 		break;
 	}

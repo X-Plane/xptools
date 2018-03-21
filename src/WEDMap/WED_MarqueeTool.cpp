@@ -449,11 +449,11 @@ void WED_MarqueeTool::GetEntityInternal(vector<IGISEntity *>& e)
 }
 */
 #if OPTIMIZE
-	hrm - ths is a case where bulk fetch would be more efficient by a factor of, um, 8??
+/*	hrm - ths is a case where bulk fetch would be more efficient by a factor of, um, 8??
 	but - this is a special case.  in most cases the data model can produce answers quickly,
 	and having to COPY the handle set sucks.  So probably its better for the  whole app to
 	solve this with caching.  Thought: if the sel had generation change numbers, we could
-	inval the cache when the sel changes.   We could also just respod to an "any changed" msg.
+	inval the cache when the sel changes.   We could also just respod to an "any changed" msg. */
 #endif
 
 bool	WED_MarqueeTool::GetTotalBounds(void) const
@@ -469,7 +469,6 @@ bool	WED_MarqueeTool::GetTotalBounds(void) const
 	mCacheIconic = false;
 
 	vector<ISelectable *>	iu;
-	int ret = false;
 
 	sel->GetSelectionVector(iu);
 	if (iu.empty()) return false;

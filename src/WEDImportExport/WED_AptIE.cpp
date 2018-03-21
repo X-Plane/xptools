@@ -57,6 +57,7 @@
 
 //Utils
 #include "PlatformUtils.h"
+#include "FileUtils.h"
 #include "STLUtils.h"
 
 //WEDUtils
@@ -257,9 +258,8 @@ static void MakeEdgeRouting(vector<WED_TaxiRoute *>& edges, AptNetwork_t& net, v
 		vector<IGISPoint *>::iterator pos_dst = std::find(nodes->begin(), nodes->end(), (*e)->GetNthPoint(1));
 		base->dst = std::distance(nodes->begin(), pos_dst);;
 		
-		Segment2 s;
 		Bezier2 b;
-		if((*e)->GetSide(gis_Geo, 0, s, b))
+		if((*e)->GetSide(gis_Geo, 0, b))
 		{
 			base->shape.push_back(make_pair(b.c1,true));
 			base->shape.push_back(make_pair(b.c2,true));
@@ -489,9 +489,9 @@ int		WED_CanExportApt(IResolver * resolver)
 	return wrl->CountChildren() > 0;
 }
 
-void	WED_DoExportApt(IResolver * resolver)
+void	WED_DoExportApt(WED_Document * resolver, WED_MapPane * pane)
 {
-	if (!WED_ValidateApt(resolver)) return;
+	if (!WED_ValidateApt(resolver, pane)) return;
 
 	WED_Thing * wrl = WED_GetWorld(resolver);
 	char path[1024];
@@ -602,6 +602,7 @@ void LazyPrintf(void * ref, const char * fmt, ...)
 	LazyLog_t * l = (LazyLog_t *) ref;
 	if (l->fi == NULL) l->fi = fopen(l->path,"w");
 	if (l->fi) vfprintf(l->fi,fmt,arg);
+	va_end(arg);
 }
 
 //A set of values describing the desired hierarchy order
@@ -1141,6 +1142,16 @@ void	WED_DoImportApt(WED_Document * resolver, WED_Archive * archive, WED_MapPane
 	
 	for(vector<string>::iterator f = fnames.begin(); f != fnames.end(); ++f)
 	{
+
+		string parent_dir = FILE_get_dir_name(*f);
+		parent_dir = parent_dir + ".." + DIR_STR;
+		
+		if( FILE_exists((parent_dir + "COPYING").c_str()) && 
+				(FILE_exists((parent_dir + "README.txt").c_str()) || FILE_exists((parent_dir + "README").c_str())) )
+			if(!ConfirmMessage("Warning !\nIt is not recommended to import the apt.dat for scenery gateway airports.\n"
+			                   "Use File->Import the from scenery gateway instead.", "Proceed import of apt.dat", "Cancel"))
+				return;
+		
 		string result = ReadAptFile(f->c_str(), one_apt);
 		if (!result.empty())
 		{

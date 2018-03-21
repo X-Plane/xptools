@@ -388,7 +388,11 @@ typedef CGAL::Arr_extended_dcel<Traits_2,
 								GIS_halfedge_data,
 								GIS_face_data,
 								CGAL::Arr_vertex_base<Point_2>,
+#if CGAL_VERSION_NR < 1041001000
 								CGAL::Arr_halfedge_base<X_monotone_curve_2>,
+#else
+								CGAL::Gps_halfedge_base<X_monotone_curve_2>,
+#endif
 								CGAL::Gps_face_base>									Dcel;
 
 typedef CGAL::Arrangement_2<Traits_2,Dcel>					Arrangement_2;
@@ -555,7 +559,6 @@ static void	InsetPolygon_2(
 	if (!outChain.is_empty())
 		outChain.clear();
 
-	int n = 0;
 	vector<Segment_2>	segments, orig_segments;
 
 	// First we calculate the inset edges of each side of the polygon.
@@ -675,6 +678,8 @@ static void	InsetPolygon_2(
 	}
 }
 
+#if CGAL_VERSION_NR < 1041001000
+
 
 inline bool operator<(const Face_handle& lhs, const Face_handle& rhs)			{	return &*lhs < &*rhs;	}
 inline bool operator<(const Vertex_handle& lhs, const Vertex_handle& rhs)		{	return &*lhs < &*rhs;	}
@@ -683,7 +688,7 @@ inline bool operator<(const Face_const_handle& lhs, const Face_const_handle& rhs
 inline bool operator<(const Vertex_const_handle& lhs, const Vertex_const_handle& rhs)		{	return &*lhs < &*rhs;	}
 inline bool operator<(const Halfedge_const_handle& lhs, const Halfedge_const_handle& rhs)	{	return &*lhs < &*rhs;	}
 
-
+#endif
 
 
 

@@ -24,8 +24,8 @@
 #include "WED_LibraryMgr.h"
 #include "WED_PackageMgr.h"
 #include "WED_Messages.h"
-#include "XUtils.h"
 #include "AssertUtils.h"
+#include "FileUtils.h"
 #include "PlatformUtils.h"
 #include "MemFileUtils.h"
 #include <time.h>
@@ -33,15 +33,15 @@
 static void clean_vpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
-	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-		s[p] = '/';
+		if(s[p] == '\\' || s[p] == ':')
+			s[p] = '/';
 }
 
 static void clean_rpath(string& s)
 {
 	for(string::size_type p = 0; p < s.size(); ++p)
-	if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
-		s[p] = DIR_CHAR;
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+			s[p] = DIR_CHAR;
 }
 
 // checks if path includes enough '..' to possibly not be a true subdirectory of the current directory
@@ -160,23 +160,20 @@ int			WED_LibraryMgr::GetResourceType(const string& r)
 	return me->second.res_type;
 }
 
-string		WED_LibraryMgr::GetResourcePath(const string& r)
+string		WED_LibraryMgr::GetResourcePath(const string& r, int variant)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return string();
-	return me->second.real_path;
+	DebugAssert(variant < me->second.real_paths.size());
+	return me->second.real_paths[variant];
 }
 
 bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.is_default;	
@@ -185,9 +182,7 @@ bool	WED_LibraryMgr::IsResourceDefault(const string& r)
 bool	WED_LibraryMgr::IsResourceLocal(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.packages.count(pack_Local) && me->second.packages.size() == 1;
@@ -196,9 +191,7 @@ bool	WED_LibraryMgr::IsResourceLocal(const string& r)
 bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return !me->second.packages.count(pack_Local) || me->second.packages.size() > 1;
@@ -207,9 +200,7 @@ bool	WED_LibraryMgr::IsResourceLibrary(const string& r)
 bool	WED_LibraryMgr::IsResourceDeprecatedOrPrivate(const string& r)
 {
 	string fixed(r);
-	for(string::size_type p = 0; p < fixed.size(); ++p)
-	if(fixed[p] == ':' || fixed[p] == '\\')
-		fixed[p] = '/';
+	clean_vpath(fixed);
 	res_map_t::const_iterator me = res_table.find(fixed);
 	if (me==res_table.end()) return false;
 	return me->second.status < status_Yellow;                  // status "Yellow' is still deemed public wrt validation, i.e. allowed on the gateway
@@ -232,6 +223,15 @@ bool	WED_LibraryMgr::DoesPackHaveLibraryItems(int package)
 			return true;
 		}
 	return false;
+}
+
+int		WED_LibraryMgr::GetNumVariants(const string& r)
+{
+	string fixed(r);
+	clean_vpath(fixed);
+	res_map_t::const_iterator me = res_table.find(fixed);
+	if (me==res_table.end()) return 1;
+	return me->second.real_paths.size();
 }
 
 
@@ -320,9 +320,16 @@ void		WED_LibraryMgr::Rescan()
 					MFS_string_eol(&s,&rpath);
 					clean_vpath(vpath);
 					clean_rpath(rpath);
-
+					
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
+					FILE_case_correct( (char *) rpath.c_str());  /* yeah - I know I'm overriding the 'const' protection of the c_str() here.
+					
+					   But I know this operation is never going to change the strings length, so thats OK to do.
+					    
+					   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
+					   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.	
+					   */
 					AccumResource(vpath, p, rpath, is_export_backup, is_default_pack, cur_status);
 				}
 				else if(MFS_string_match(&s,"EXPORT_RATIO",false))
@@ -334,6 +341,7 @@ void		WED_LibraryMgr::Rescan()
 					clean_rpath(rpath);
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
+					FILE_case_correct( (char *) rpath.c_str());  // yeah - I know I'm overriding the 'const' protection of the c_str() here.
 					AccumResource(vpath, p, rpath,false,is_default_pack, cur_status);
 				}
 				else
@@ -388,20 +396,29 @@ void		WED_LibraryMgr::Rescan()
 
 void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default, int status)
 {
-	int								rt = res_None;
-	if(HasExtNoCase(path, ".obj"))	rt = res_Object;
-	if(HasExtNoCase(path, ".agp"))	rt = res_Object;
-	if(HasExtNoCase(path, ".fac"))	rt = res_Facade;
-	if(HasExtNoCase(path, ".for"))	rt = res_Forest;
-	if(HasExtNoCase(path, ".str"))	rt = res_String;
-	if(HasExtNoCase(path, ".ags"))	rt = res_Polygon;
-	if(HasExtNoCase(path, ".lin"))	rt = res_Line;
-	if(HasExtNoCase(path, ".pol"))	rt = res_Polygon;
-	if(HasExtNoCase(path, ".agb"))	rt = res_Polygon;
+
+    // surprise: This function is called 60,300 time upon loading any scenery. Yep, XP11 has that many items in the libraries.
+    // Resultingly the full path was converted to lower case 0.6 million times => 24 million calls to tolower() ... time to optimize
+    
+	string suffix;
+	suffix = FILE_get_file_extension(path);
+	
+	int	rt;
+	
+	if     (suffix == "obj") rt = res_Object;
+	else if(suffix == "agp") rt = res_Object;
+	else if(suffix == "fac") rt = res_Facade;
+	else if(suffix == "for") rt = res_Forest;
+	else if(suffix == "str") rt = res_String;
+	else if(suffix == "lin") rt = res_Line;
+	else if(suffix == "pol") rt = res_Polygon;
+// not sure we want to even list these	
+	else if(suffix == "ags") rt = res_Polygon;
+	else if(suffix == "agb") rt = res_Polygon;
 #if ROAD_EDITING
-	if(HasExtNoCase(path, ".net"))	rt = res_Road;
+	else if(suffix == "net") rt = res_Road;
 #endif
-	if(rt == res_None) return;
+	else return;
 
 	if (package >= 0 && status >= status_Public) gPackageMgr->HasPublicItems(package);
 
@@ -415,7 +432,7 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			new_info.status = status;
 			new_info.res_type = rt;
 			new_info.packages.insert(package);
-			new_info.real_path = rpath;
+			new_info.real_paths.push_back(rpath);
 			new_info.is_backup = is_backup;
 			new_info.is_default = is_default;
 			res_table.insert(res_map_t::value_type(p,new_info));
@@ -428,8 +445,12 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 			if(i->second.is_backup && !is_backup)
 			{
 				i->second.is_backup = false;
-				i->second.real_path = rpath;
+				i->second.real_paths.clear();
 			}
+			// add only unique paths, but need to preserve first path added as first element, so deliberately not using a set<string> !
+			if(std::find(i->second.real_paths.begin(), i->second.real_paths.end(), rpath) == i->second.real_paths.end())
+				i->second.real_paths.push_back(rpath);
+				
 			if(is_default && !i->second.is_default)
 				i->second.is_default = true;
 		}

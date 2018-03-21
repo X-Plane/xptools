@@ -34,6 +34,8 @@
 #include "PlatformUtils.h"
 #include "WED_Group.h"
 #include "WED_Validate.h"
+#include "WED_Document.h"
+
 
 #if TYLER_MODE || 1
 #include "WED_RampPosition.h"
@@ -172,7 +174,7 @@ static void	DoHueristicAnalysisAndAutoUpgrade(IResolver* resolver)
 }
 #endif
 
-void	WED_DoExportPack(IResolver * resolver)
+void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
 #if TYLER_MODE
 	DoHueristicAnalysisAndAutoUpgrade(resolver);
@@ -180,7 +182,7 @@ void	WED_DoExportPack(IResolver * resolver)
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
 	// Special case: in Tyler's bulk-Gateway-export-mode, Tyler can be trusted to run the validation *first*, before attempting to
 	// export... and if the export blows up or something, it's Tyler's fault.
-	if(!TYLER_MODE && !WED_ValidateApt(resolver))
+	if(!TYLER_MODE && !WED_ValidateApt(resolver, pane))
 		return;
 
 	ILibrarian * l = WED_GetLibrarian(resolver);

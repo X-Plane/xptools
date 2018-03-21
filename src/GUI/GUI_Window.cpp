@@ -51,21 +51,9 @@ inline int Client2OGL_X(int x, HWND w) { return x; }
 inline int Client2OGL_Y(int y, HWND w) { RECT r; GetClientRect(w,&r); return r.bottom-y; }
 inline int OGL2Client_X(int x, HWND w) { return x; }
 inline int OGL2Client_Y(int y, HWND w) { RECT c; GetClientRect(w,&c); return c.bottom-y; }
-
-#if MINGW_BUILD
-#define _TRUNCATE 0
-
-static int strncpy_s(char* strDest, size_t numberOfElements, const char* strSource, size_t count)
-{
-	strncpy(strDest, strSource, strlen(strSource));
-	return 0;
-}
-
-#endif /* MINGW_BUILD */
-#endif /* IBM */
+#endif
 
 #if LIN
-
 #define mWindow 0
 
 inline int GUI_Window::Client2OGL_X(int x, void* w) { return x; }
@@ -486,8 +474,14 @@ void CopyMenusRecursive(HMENU src, HMENU dst)
 }
 #endif
 
+#if LIN
+#define DEFAULT_DND 1
+#else
+#define DEFAULT_DND 0
+#endif
+
 GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBounds[4], GUI_Commander * inCommander) : GUI_Commander(inCommander),
-	XWinGL(0, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
+	XWinGL(DEFAULT_DND, inTitle, inAttributes, inBounds[0], inBounds[1], inBounds[2]-inBounds[0], inBounds[3]-inBounds[1], sWindows.empty() ? NULL : *sWindows.begin())
 {
 	mInDrag = 0;
 	#if IBM
@@ -496,7 +490,7 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SetWindowLongPtrW(mWindow,GWLP_USERDATA,(LONG_PTR)this);
 		SetWindowLongPtrW(mWindow,GWLP_WNDPROC,(LONG_PTR)SubclassFunc);
 
-		if (!sWindows.empty())
+		if (!sWindows.empty() && !(inAttributes & xwin_style_modal))
 		{
 			HMENU new_mbar = ::CreateMenu();
 			::SetMenu(mWindow,new_mbar);
@@ -532,12 +526,15 @@ GUI_Window::GUI_Window(const char * inTitle, int inAttributes, const int inBound
 		SendMessage(mToolTip, TTM_ADDTOOL, 0, (LPARAM) &ti);
 	#endif
 	#if LIN
-		this->setMenuBar(gApplication->getqmenu());
-		this->Resize(inBounds[2]-inBounds[0],inBounds[3]-inBounds[1]);
+		if( !(inAttributes & xwin_style_popup) && !(inAttributes & xwin_style_modal))
+		{
+			this->setMenuBar(gApplication->getqmenu());
+			this->Resize(inBounds[2]-inBounds[0],inBounds[3]-inBounds[1]);
+		}
+		else
+			gApplication->setCutnPasteShortcuts(this);
+
 		QApplication::setActiveWindow(this);
-		setFocusPolicy(Qt::StrongFocus);
-		setAcceptDrops(true);
-		setFocus();
 	#endif
 	sWindows.insert(this);
 	mBounds[0] = 0;
@@ -734,8 +731,6 @@ void GUI_Window::Hide(void)
 
 void	GUI_Window::SetBounds(int inBounds[4])
 {
-	int oldBounds[4] = { mBounds[0], mBounds[1], mBounds[2], mBounds[3] };
-
 	XWinGL::MoveTo(inBounds[0], inBounds[1]);
 	XWinGL::Resize(inBounds[2]-inBounds[0], inBounds[3]-inBounds[1]);
 }

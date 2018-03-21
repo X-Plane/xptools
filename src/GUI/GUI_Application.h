@@ -33,6 +33,7 @@
 #include "GUI_Timer.h"
 
 class GUI_QtMenu;
+class GUI_Window;
 
 /*
 	WINDOWS WARNING: MENUS
@@ -86,19 +87,20 @@ public:
 
 #if LIN
     QMenuBar* getqmenu();
+    void      setCutnPasteShortcuts(GUI_Window * parent);
 #endif
 private:
 
+	bool                mDone;
 #if !LIN
 	set<GUI_Menu>		mMenus;
-#endif
-	bool                mDone;
-#if LIN
+#else
 	QList<GUI_QtMenu*>  mMenus;
 	QMenu *             mPopup;
 	QApplication*       qapp;
 #endif
 };
+
 #if LIN
 class GUI_QtMenu : public QMenu
 {

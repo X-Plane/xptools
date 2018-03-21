@@ -13,7 +13,69 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.6.1r1 11/6/17
+WED 1.7.0 r2 3/17/20
+	- fix bug (windows only) preventing gateway submission for some users
+
+WED 1.7.0 r1 3/17/18
+	- WED-995 fix update of runway textures & properties not showing immediately
+
+WED 1.7.0 Beta2 3/6/18
+	- fix crash on OSX at scenery load time with worldmap background enabled
+	- WED-992 fix crash on Windows when re-opening preferences window
+
+WED 1.7.0 Beta1 2/26/18
+	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
+	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
+	- Gateway communication speedup - now using compressed http transfer for all downloads
+	- code fixes to compile under MSVC 2017, XCode 8
+	- improve display speed when zoomed in very far and lots of bezier segments are present in the scenery
+	Features:
+	- WED-515: Validate polygons (incl. holes), Apt Boundaries for crossing & self-intersecting segments
+	- WED-774: Smart Runway Rename: automatically fix TaxiSigns, Flows, Rules & Taxi Routes upon rwy name changes
+	- WED-898: Improve flow validation: each flow must have at least one departure and one arrival rwy specified  
+	- XSG-8227: Validate runway names and locations against list of CIFP required rwys obtained from gateway
+	- WED-918: Print units expected along with property value for ATCFow Ceiling & Visibility, ATCWindRule wind speed
+	- WED-761: Bring up warning box if the apt.dat is imported for gateway scenery airports
+	- WED-926: Allow viewving of full/long property name by clicking on it
+	- WED-954: Bring ATC taxi route validations inline with other validations and report in validation_error.txt
+	- WED-938: Add validation *warnings* if the airport name include akronyms, ICAO codes or the word 'Airport'
+	- XPD-8201: Clearify runway REIL property name by including the word 'strobes'
+	- Warn about unreleased X-plane versions at gateway export
+	- Include X-plane version info as "validatedAgainst" = "11.10b8" in JSON string for gatewy submissions
+	- Flow editing enhancements: Preset METAR ICAO, create meaningfull wind/time rules names
+	- geotiff import enhancements: decode almost any format currently use to encode coordinates, not only WGS84
+	- Previews allow to cycle through all variants for multi-exported items
+	- Previews show textual info on many objects
+	- Primitve, incomplete type 1 facade preview
+	- Validation errors and warnings come up in a browser window to access full list of messages
+	- WED-973: change single-click selection to go by type-basaed priority rather than design hierachy
+	- show green shadow around flinear fill mode forests, aka Facade wall selection
+	- WED-912: Warn about airports currently not accepting submissions at Gateway im/export
+	- WED-929: Print names of ATC Taxiroutes in ATC+Taxi view
+	- Auto Align Airport function can be used to mass-move airports to bring runways into CIFP compliance
+	- Windows and Linux menu bars removed from modal windows - so appearance is more "native"
+	- WED-988: Add validation warnings if no truckroutes but not vehicle parking position available
+	- WED-917: Move meter/feet settings a new "Preferences" Menu, add D.M.S choices for info bar
+	- Julians moderator mode can now be selected in the preferences, affects GW import listing only
+	- WED-78: Increase resolution of World Map background display
+	Bug fixes:
+	- WED 923: fix aspect ratio of non-rectangular textures shown in PreviewPane
+	- WED-913: Allow 2-node polygons for "chain" type facades (no roof and no ring)
+	- WED-919: Fix undesired bezier handle properties shown for ATC Taxi edges
+	- XPD-8307: Fix textures w/upper case suffixes not showing
+	- WED-957: Fix art assets with case-mismatched paths in library.txt not found on linux
+	- Upon splitting a taxi edge, name new node after existing node rather than "unnamed entity(split)"
+	- WED-956: Fix validation not catching all ATC network nodes when networks partially hidden
+	- WED-972: Fix co-located nodes not allowing bezier conversion with vertex snapping on
+	- WED-976: Fix opt-ALT click near edge causing uncommanded move of edge location
+	- WED-974: Fix Bezier-handle conversion not working for co-located nodes in some cases
+	- fix infinite loop when pressing "return" with a taxi route edge selected that has runway tags
+	- WED-984: Fix red ground traffic routes when hotzone tags still set
+	- WED-801: Fix GatewayExport on Win & OSX not always creating a temporary directory for the MasterZipBlob
+	- fix Select Local/Laminar/3rd Party/Missing Items menu function only catching objects, but no polygons/lines etc
+	- runway ATC route validation not running on some runways mentioned in flow, name starting w/no leading zero
+	
+WED 1.6.1r1 12/11/17
 	Features:
 	- XPD-8877: Validation change to allow some XP 11.10 draped orthos on gateway
 	- WED-837: Add new Library Filter "Newly Release Items", hide libraries w/no public resources
@@ -25,8 +87,8 @@ WED 1.6.1r1 11/6/17
 	- WED-855: Fix taxi sign editor problems with separator glyphs
 	- WED-903: Fix missing texturing in WED for .OBJ that use ATTR_draped with TEXTURE and no TEXTURE_DRAPED commands.
 	- WED-909: Rename 'ICAO Identifier' to 'Airport ID' for consistency with the gateway
-    - WED-910: Fix crash at import of erroneous apt.dat or gateway airport that were created with WED 1.6.0 beta1
-    - Increase number of different facade walls selectable from 10 to 16
+	- WED-910: Fix crash at import of erroneous apt.dat or gateway airport that were created with WED 1.6.0 beta1
+	- Increase number of different facade walls selectable from 10 to 16
 
 WED 1.6r1 6/7/17
 	Bug fixes
@@ -42,7 +104,7 @@ WED 1.6r1 6/7/17
 	- WED-851: Fixed crash when importaing apt.dat in full screen mode on Mac OS.
 	- WED-828: Fixed marquee bounds drawing wrong after multiple undo of resizing a polygon.
 	- WED-845: Fixed crash when corner of photo reference image is deleted by accident.
-	- Preformance Boost: Unnecissary drawing removed when the hierachry search filter is in use
+	- Preformance Boost: Unneci-A srcssary drawing removed when the hierachry search filter is in use
 	- Added support for trucks-drive-on-left meta-tag for v11 airports.
 	- Added validation to detect corrupt UV-map coordinates on orthophotos.
 

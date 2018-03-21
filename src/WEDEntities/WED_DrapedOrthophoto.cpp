@@ -25,19 +25,20 @@
 #include "WED_GISUtils.h"
 #include "XESConstants.h"
 #include "MathUtils.h"
+#include "FileUtils.h"
 
 DEFINE_PERSISTENT(WED_DrapedOrthophoto)
 TRIVIAL_COPY(WED_DrapedOrthophoto,WED_GISPolygon)
 
 WED_DrapedOrthophoto::WED_DrapedOrthophoto(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	resource(this,"Resource",     SQL_Name("WED_dsf_overlay", "resource"),  XML_Name("draped_orthophoto","resource"),  ""),
-	heading(this,"Texture Heading",SQL_Name("WED_dsf_overlay", "heading"),  XML_Name("draped_orthophoto","heading"),   0.0,5,1),
-	width(this,"Texture Width",   SQL_Name("WED_dsf_overlay", "width"),     XML_Name("draped_orthophoto","width"),     0.0,5,2),
-	length(this,"Texture Length", SQL_Name("WED_dsf_overlay", "length"),    XML_Name("draped_orthophoto","length"),    0.0,5,2),
-	top(this,"Texture Top",       SQL_Name("WED_dsf_overlay", "tex_top"),   XML_Name("draped_orthophoto","tex_top"),   0.0,5,3),
-	bottom(this,"Texture Bottom", SQL_Name("WED_dsf_overlay", "tex_bottom"),XML_Name("draped_orthophoto","tex_bottom"),0.0,5,3),
-	left(this,"Texture Left",     SQL_Name("WED_dsf_overlay", "tex_left"),  XML_Name("draped_orthophoto","tex_left"),  0.0,5,3),
-	right(this,"Texture Right",   SQL_Name("WED_dsf_overlay", "tex_right"), XML_Name("draped_orthophoto","tex_right"), 0.0,5,3)
+	resource(this,PROP_Name("Resource",       XML_Name("draped_orthophoto","resource")),  ""),
+	heading (this,PROP_Name("Texture Heading",XML_Name("draped_orthophoto","heading")),   0.0,5,1),
+	width   (this,PROP_Name("Texture Width",  XML_Name("draped_orthophoto","width")),     0.0,5,2),
+	length  (this,PROP_Name("Texture Length", XML_Name("draped_orthophoto","length")),    0.0,5,2),
+	top     (this,PROP_Name("Texture Top",    XML_Name("draped_orthophoto","tex_top")),   0.0,5,3),
+	bottom  (this,PROP_Name("Texture Bottom", XML_Name("draped_orthophoto","tex_bottom")),0.0,5,3),
+	left    (this,PROP_Name("Texture Left",   XML_Name("draped_orthophoto","tex_left")),  0.0,5,3),
+	right   (this,PROP_Name("Texture Right",  XML_Name("draped_orthophoto","tex_right")), 0.0,5,3)
 {
 }
 
@@ -78,31 +79,16 @@ void WED_DrapedOrthophoto::SetSizeDisp(double w, double l)
 
 bool WED_DrapedOrthophoto::IsNew(string * out_suffix) 
 {
-	//Find position
-	int pos = resource.value.find_last_of('.',resource.value.size());
-	if(pos == resource.value.npos)
-		return false;
+	string ext = FILE_get_file_extension(resource.value);
 	
-	//get the ending extension
-	string testString = resource.value.substr(pos);
-	
-	//If it is not .pol
-	
-	if(testString != ".pol")
+	if(ext != "pol")
 	{
-		
-		if(out_suffix != NULL)
-		{
-			*out_suffix = testString;
-		}
-		//it is new, therefore true
+		if(out_suffix)
+			*out_suffix = ext;
 		return true;
 	}
 	else
-	{
-		//It is an old .pol file, therefore false
 		return false;
-	}
 }
 
 void  WED_DrapedOrthophoto::GetSubTexture(Bbox2& b)

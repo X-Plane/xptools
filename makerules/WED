@@ -17,17 +17,7 @@ endif
 
 LDFLAGS		+= -rdynamic
 LDFLAGS		+= -Wl,--exclude-libs,ALL
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
+#LDFLAGS		+= -Wl,--verbose
 LIBS		+= -lQtCore
 LIBS		+= -lQtGui
 LIBS		+= -lQtOpenGL
@@ -45,24 +35,9 @@ ifdef PLAT_MINGW
 WIN_RESOURCES	+= ./src/WEDResources/WED.rc
 LDFLAGS		+= -Wl,-subsystem,windows
 DEFINES		+= -D_WIN32_IE=0x0501 -D_WIN32_WINNT=0x0501 -DMINGW_BUILD=1
-DEFINES		+= -DCURL_STATICLIB
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libssl.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcrypto.a
 LIBS		+= -lglu32
 LIBS		+= -lopengl32
 LIBS		+= -lgdi32
@@ -75,18 +50,17 @@ LIBS		+= -lboost_thread
 endif #PLAT_MINGW
 
 ifdef PLAT_DARWIN
-DEFINES		+= -DMAKE_BUILD  -DCURL_STATICLIB 
-LDFLAGS		+= -framework Carbon -framework OpenGL -framework AGL
-LIBS		:= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
+LDFLAGS		+= -framework Carbon -framework OpenGL -framework AppKit
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libboost_thread.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libmpfr.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmp.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgmpxx.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcurl.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libssl.a
+LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libcrypto.a
+endif #PLAT_DARWIN
+
+#LIBS           := ./libs/local$(MULTI_SUFFIX)/lib/libCGAL.a
+#LIBS           += ./libs/local$(MULTI_SUFFIX)/lib/libCGAL_Core.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libexpat.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsquish.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libsqlite3.a
-LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libshp.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libgeotiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libproj.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libfreetype.a
@@ -94,7 +68,7 @@ LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libtiff.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjpeg.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libpng.a
 LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libz.a
-endif #PLAT_DARWIN
+#LIBS		+= ./libs/local$(MULTI_SUFFIX)/lib/libjasper.a
 
 
 ##
@@ -126,6 +100,7 @@ endif #PLAT_LINUX
 ifdef PLAT_DARWIN
 SOURCES += ./src/UI/XWin.mac.cpp
 SOURCES += ./src/UI/XWinGL.mac.cpp
+SOURCES += ./src/UI/ObjCUtils.cpp
 SOURCES += ./src/Utils/PlatformUtils.mac.cpp
 SOURCES += ./src/Network/PCSBSocket.lin.cpp
 SOURCES += ./src/Network/PCSBSocketUDP.lin.cpp
@@ -146,7 +121,6 @@ SOURCES += ./src/WEDCore/WED_Globals.cpp
 SOURCES += ./src/WEDCore/WED_HierarchyUtils.cpp
 SOURCES += ./src/WEDCore/WED_LibraryMgr.cpp
 SOURCES += ./src/WEDCore/WED_Persistent.cpp
-SOURCES += ./src/WEDCore/WED_Properties.cpp
 SOURCES += ./src/WEDCore/WED_PropertyHelper.cpp
 SOURCES += ./src/WEDCore/WED_TexMgr.cpp
 SOURCES += ./src/WEDCore/WED_UndoLayer.cpp
@@ -159,6 +133,7 @@ SOURCES += ./src/WEDCore/WED_GISUtils.cpp
 SOURCES += ./src/WEDCore/WED_Orthophoto.cpp
 SOURCES += ./src/WEDCore/WED_Validate.cpp
 SOURCES += ./src/WEDCore/WED_ValidateATCRunwayChecks.cpp
+SOURCES += ./src/WEDCore/WED_ValidateList.cpp
 SOURCES += ./src/WEDCore/WED_XMLReader.cpp
 SOURCES += ./src/WEDCore/WED_XMLWriter.cpp
 SOURCES += ./src/WEDEntities/WED_AirportBeacon.cpp
@@ -182,6 +157,7 @@ SOURCES += ./src/WEDEntities/WED_Entity.cpp
 SOURCES += ./src/WEDEntities/WED_FacadeNode.cpp
 SOURCES += ./src/WEDEntities/WED_FacadePlacement.cpp
 SOURCES += ./src/WEDEntities/WED_FacadeRing.cpp
+SOURCES += ./src/WEDEntities/WED_FacadePreview.cpp
 SOURCES += ./src/WEDEntities/WED_ForestPlacement.cpp
 SOURCES += ./src/WEDEntities/WED_ForestRing.cpp
 SOURCES += ./src/WEDEntities/WED_GISChain.cpp
@@ -328,7 +304,6 @@ SOURCES += ./src/GUI/GUI_Help.cpp
 SOURCES += ./src/GUI/GUI_Clipboard.cpp
 SOURCES += ./src/GUI/GUI_Unicode.cpp
 SOURCES += ./src/GUI/GUI_Application.cpp
-SOURCES += ./src/Utils/SQLUtils.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MemFileUtils.cpp
 SOURCES += ./src/Utils/FileUtils.cpp
@@ -342,7 +317,7 @@ SOURCES += ./src/Utils/CompGeomUtils.cpp
 SOURCES += ./src/Utils/PolyRasterUtils.cpp
 SOURCES += ./src/Utils/zip.c
 SOURCES += ./src/Utils/unzip.c
-SOURCES += ./src/Utils/XUtils.cpp
+#SOURCES += ./src/Utils/XUtils.cpp
 SOURCES += ./src/Utils/BWImage.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
 #SOURCES += ./src/Utils/Skeleton.cpp
@@ -382,12 +357,17 @@ SOURCES += ./src/lib_json/src/lib_json/json_value.cpp
 ###########
 
 ifdef PLAT_LINUX
-RESOURCES += ./src/WEDResources/WED.ico
+RESOURCES := ./src/WEDResources/WED.ico
+else
+RESOURCES := ./src/WEDResources/WED.icns
+XIB_RESOURCE := ./src/WEDResources/WEDMainMenu.xib
+endif
 RESOURCES += ./src/WEDResources/sans.ttf
-RESOURCES += ./src/WEDResources/pushbutton.png
+//RESOURCES += ./src/WEDResources/pushbutton.png
 RESOURCES += ./src/WEDResources/push_buttons.png
-RESOURCES += ./src/WEDResources/checkbutton.png
-RESOURCES += ./src/WEDResources/radiobutton.png
+//RESOURCES += ./src/WEDResources/checkbutton.png
+RESOURCES += ./src/WEDResources/check_buttons.png
+//RESOURCES += ./src/WEDResources/radiobutton.png
 RESOURCES += ./src/WEDResources/tabs.png
 RESOURCES += ./src/WEDResources/splitter_h.png
 RESOURCES += ./src/WEDResources/splitter_v.png
@@ -439,14 +419,15 @@ RESOURCES += ./src/WEDResources/tables/sider.png
 RESOURCES += ./src/WEDResources/tables/property_bar.png
 RESOURCES += ./src/WEDResources/tables/arrows.png
 RESOURCES += ./src/WEDResources/tables/delete.png
-RESOURCES += ./src/WEDResources/world/earth_12.jpg
-RESOURCES += ./src/WEDResources/world/earth_41.jpg
-RESOURCES += ./src/WEDResources/world/earth_22.jpg
-RESOURCES += ./src/WEDResources/world/earth_31.jpg
-RESOURCES += ./src/WEDResources/world/earth_21.jpg
-RESOURCES += ./src/WEDResources/world/earth_32.jpg
-RESOURCES += ./src/WEDResources/world/earth_11.jpg
-RESOURCES += ./src/WEDResources/world/earth_42.jpg
+#RESOURCES += ./src/WEDResources/world/earth_12.jpg
+#RESOURCES += ./src/WEDResources/world/earth_41.jpg
+#RESOURCES += ./src/WEDResources/world/earth_22.jpg
+#RESOURCES += ./src/WEDResources/world/earth_31.jpg
+#RESOURCES += ./src/WEDResources/world/earth_21.jpg
+#RESOURCES += ./src/WEDResources/world/earth_32.jpg
+#RESOURCES += ./src/WEDResources/world/earth_11.jpg
+#RESOURCES += ./src/WEDResources/world/earth_42.jpg
+RESOURCES += ./src/WEDResources/worldmap.jpg
 RESOURCES += ./src/WEDResources/pavement/dirt.png
 RESOURCES += ./src/WEDResources/pavement/gravel.png
 RESOURCES += ./src/WEDResources/pavement/water.png
@@ -488,6 +469,3 @@ RESOURCES += ./src/WEDResources/parking_spots/ClassC.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassD.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassE.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassF.png
-#RESOURCES += ./src/WEDResources/WEDManual.pdf
-RESOURCES += ./src/WEDCore/WED_DataModel.sql
-endif #PLAT_LINUX

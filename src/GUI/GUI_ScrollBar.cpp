@@ -303,7 +303,6 @@ void		GUI_ScrollBar::TimerFired(void)
 void		GUI_ScrollBar::Draw(GUI_GraphState * state)
 {
 
-	int x, y;
 //	GetMouseLocNow(&x,&y);
 //	if (x > 500)
 //		return;

@@ -43,6 +43,7 @@ SOURCES += ./src/Obj/XObjBuilder.cpp
 SOURCES += ./src/Obj/XObjDefs.cpp
 SOURCES += ./src/Obj/XObjReadWrite.cpp
 SOURCES += ./src/Obj/XObjWriteEmbedded.cpp
+SOURCES += ./src/Utils/FileUtils.cpp
 SOURCES += ./src/Utils/ObjUtils.cpp
 SOURCES += ./src/Utils/AssertUtils.cpp
 SOURCES += ./src/Utils/MatrixUtils.cpp

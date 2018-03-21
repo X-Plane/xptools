@@ -24,19 +24,18 @@
 #include "WED_Map.h"
 #include "WED_MapLayer.h"
 #include "WED_MapToolNew.h"
-#include "WED_Entity.h"
-#include "GUI_GraphState.h"
-#include "XESConstants.h"
-#include "IGIS.h"
-#include "GISUtils.h"
-#include "WED_Airport.h"
-#include "WED_Thing.h"
-#include "ISelection.h"
-#include "MathUtils.h"
 #include "WED_ToolUtils.h"
 #include "WED_Messages.h"
-#include "IResolver.h"
+#include "WED_Globals.h"
+#include "WED_Airport.h"
+#include "GUI_GraphState.h"
 #include "GUI_Fonts.h"
+#include "XESConstants.h"
+#include "IGIS.h"
+#include "ISelection.h"
+#include "IResolver.h"
+#include "GISUtils.h"
+#include "MathUtils.h"
 #include <time.h>
 
 // This is the size that a GIS composite must be to cause us to skip iterating down into it, in pixels.
@@ -49,9 +48,6 @@
 // is surprisingly big.  In other words, we might pick 20 pixels as the cutoff because we have 1 pixel of
 // airport and 19 pixels of slop.
 #define TOO_SMALL_TO_GO_IN 20.0
-
-// display cursor position in D.M.S vs decimal degrees
-#define USE_DMS 0
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -209,7 +205,7 @@ void		WED_Map::Draw(GUI_GraphState * state)
 
 		if (mIsDownExtraCount)
 		{
-			has_d = 1;	dist = LonLatDistMeters(o.x(),o.y(),n.x(),n.y());
+			has_d = 1;	dist = LonLatDistMeters(o,n);
 			has_h = 1;	head = VectorDegs2NorthHeading(o, o, Vector2(o,n));
 			has_a1 = 1; anchor1 = o;
 			has_a2 = 1; anchor2 = n;
@@ -220,47 +216,67 @@ void		WED_Map::Draw(GUI_GraphState * state)
 		}
 	}
 
-    #if USE_DMS
+    if(gInfoDMS)
+    {
 	#define GET_NS(x)	((x) > 0.0 ? 'N' : 'S')
 	#define GET_EW(x)	((x) > 0.0 ? 'E' : 'W')
 	#define GET_DEGS(x) ((int) floor(fabs(x)))
 	#define GET_MINS(x) ((int) (  (fabs(x) - floor(fabs(x))  ) * 60.0) )
 	#define GET_SECS(x) (  (fabs(x * 60.0) - floor(fabs(x * 60.0))  ) * 60.0)
 
-	if (has_a1)         	p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
-												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
-												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
-	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
-	if (has_a2)	            p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
-												GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
-												GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
-    #else
-	if (has_a1)	            p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
-	if (has_a1 && has_a2)	p += sprintf(p, " -> ");
-	if (has_a2)         	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
-    #endif
+		if (has_a1)         	p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
+										GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
+										GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
+		if (has_a1 && has_a2)	p += sprintf(p, " -> ");
+		if (has_a2)	            p += sprintf(p, "%c%02d %02d %03.1lf %c%03d %02d %03.1lf",
+										GET_NS(anchor1.y()),GET_DEGS(anchor1.y()),GET_MINS(anchor1.y()),GET_SECS(anchor1.y()),
+										GET_EW(anchor1.x()),GET_DEGS(anchor1.x()),GET_MINS(anchor1.x()),GET_SECS(anchor1.x()));
+    }
+    else
+	{
+		if (has_a1)	            p += sprintf(p, "%+010.6lf %+011.6lf", anchor1.y(),anchor1.x());
+		if (has_a1 && has_a2)	p += sprintf(p, " -> ");
+		if (has_a2)         	p += sprintf(p, "%+010.6lf %+011.6lf", anchor2.y(),anchor2.x());
+	}
 
 	if (has_d)				p += sprintf(p," %.1lf %s",dist * (gIsFeet ? MTR_TO_FT : 1.0), gIsFeet? "feet" : "meters");
 	if (has_h)				p += sprintf(p," heading: %.1lf", head);
 
 	GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 25, mouse_loc);
-
+	
 	p = mouse_loc;
+	
+#if SHOW_FPS
+	#ifndef GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX
+	#define GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX 0x9049
+	#endif
+	#ifndef TEXTURE_FREE_MEMORY_ATI
+	#define TEXTURE_FREE_MEMORY_ATI 0x87FC
+	#endif
+	static GLint vram_info[4] = { 0,0,0,0 };
 
-	#if SHOW_FPS
 	static clock_t  last_time = 0;
 	static float	fps = 0.0f;
 	static int		cycle = 0;
-		   ++cycle;
-		   if (cycle > 100)
-		   {
-				clock_t now = clock();
-				fps = (100.0f * CLOCKS_PER_SEC) / ((float) (now - last_time));
-				last_time = now;
-				cycle = 0;
-		   }
-		   p += sprintf(p, "%7.1f FPS ", fps);
-	#endif
+	++cycle;
+	if (cycle > 20)
+	{
+#if APL
+		// not sure there is something like this
+#else
+		// get available high speed = VRAM for textures
+		glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram_info);
+		glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, vram_info);
+		glGetError();
+#endif
+		clock_t now = clock();
+		fps = (20.0 * CLOCKS_PER_SEC) / ((float) (now - last_time));
+		last_time = now;
+		cycle = 0;
+	}
+	p += sprintf(p, "%6d MB %6.1f FPS ", vram_info[0]/1024, fps);
+
+#endif
 
 	// print map scale as number
 	// p += sprintf(p, "%7.3lf %s/pixel", (gIsFeet ? MTR_TO_FT : 1.0) / cur->mZoomer->GetPPM(), gIsFeet? "feet" : "meters");
@@ -282,10 +298,10 @@ void		WED_Map::Draw(GUI_GraphState * state)
 	state->SetState(0,0,0,1,1,0,0);
 	glColor4fv(white);
 	glBegin(GL_LINES);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
-	glVertex2i(b[0]+ 50 + SHOW_FPS*80, b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + 15);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 15);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140 + (int)(MIN_BAR_LEN * bar_len / scale), b[1] + 14);
+	glVertex2i(b[0]+ 50 + SHOW_FPS*140, b[1] + 14);
 	glEnd();
 	
     GUI_FontDraw(state, font_UI_Basic, white, b[0]+5,b[1] + 10, mouse_loc);

@@ -26,9 +26,10 @@
 
 #if HAS_GATEWAY
 class	IResolver;
+class	WED_Document;
 
 int		WED_CanExportToGateway(IResolver * resolver);
-void	WED_DoExportToGateway(IResolver * resolver);
+void	WED_DoExportToGateway(WED_Document * resolver);
 
 #endif
 

@@ -29,8 +29,8 @@ DEFINE_PERSISTENT(WED_OverlayImage)
 TRIVIAL_COPY(WED_OverlayImage, WED_GISPolygon)
 
 WED_OverlayImage::WED_OverlayImage(WED_Archive * a, int i) : WED_GISPolygon(a,i),
-	mImageFile(this, "File", SQL_Name("WED_overlayimage", "file"), XML_Name("overlay_image","file_path"),""),
-	mAlpha(this,"Alpha",SQL_Name("",""),XML_Name("overlay_image","alpha"), 1.0, 3.0, 1.0)
+	mImageFile(this,PROP_Name("File",  XML_Name("overlay_image","file_path")),""),
+	mAlpha    (this,PROP_Name("Alpha", XML_Name("overlay_image","alpha")), 1.0, 3.0, 1.0)
 {
 }
 
@@ -50,7 +50,6 @@ double		WED_OverlayImage::GetAlpha(void) const
 
 void		WED_OverlayImage::SetImage(const string& image_file)
 {
-	int x = 1;
 	mImageFile = image_file;
 }
 

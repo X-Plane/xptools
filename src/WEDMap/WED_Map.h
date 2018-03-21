@@ -30,8 +30,6 @@
 #include "GUI_Listener.h"
 #include <stdint.h>
 
-extern	int	gDMS;		// degrees, mins, seconds
-
 class	WED_MapLayer;
 class	WED_MapToolNew;
 class	IResolver;
