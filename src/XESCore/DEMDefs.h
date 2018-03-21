@@ -41,7 +41,7 @@
 
 	DEMGeos can run in either "post" mode (mPost=1) where each pixel sits 
 	use center-pixel notation, meaning the edge pixels sit _on_ the edges of the DEM.
-	(This was the default and only option for RF for years and matches the SRMT data.)
+	(This was the default and only option for RF for years and matches the SRTM data.)
 	If post = 0 the pixels are area-centric - they sit _inside_ the bounds and their
 	sample center is 0.5 pixels in from the edge.
 	
