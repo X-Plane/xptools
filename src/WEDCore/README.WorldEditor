@@ -16,6 +16,9 @@ CHANGE HISTORY
 WED 1.7.1
 	- WED-1001 fix crash when clearing hierarchy search box
 
+WED 1.7.0 r2 3/17/20
+	- fix bug (windows only) preventing gateway submission for some users
+
 WED 1.7.0 r1 3/17/18
 	- WED-995 fix update of runway textures & properties not showing immediately
 

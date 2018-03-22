@@ -42,13 +42,12 @@ char * mkdtemp(char *dirname)
 {
 	if(_wmktemp((wchar_t *) convert_str_to_utf16(dirname).c_str()))
 	{
-		if(FILE_delete_file(dirname, false))
+		if(FILE_exists(dirname))
 		{
-			if (FILE_make_dir_exist(dirname))
-			{
-				return dirname;
-			}
+			FILE_delete_file(dirname, false);
 		}
+		FILE_make_dir_exist(dirname);
+		return dirname;
 	}
 	return NULL;
 }
@@ -480,9 +479,11 @@ int FILE_make_dir_exist(const char * in_dir)
 		const char * dc = in_dir + strlen(in_dir) - 1;
 		if(dc > in_dir && *dc == DIR_CHAR) --dc;			// Dir ends in trailing /?  Better pop it off.
 		while(dc > in_dir && *dc != DIR_CHAR) --dc;
-		if(dc > in_dir){
-		string parent(in_dir, dc);
-							result = FILE_make_dir_exist(parent.c_str());}
+		if(dc > in_dir)
+		{
+			string parent(in_dir, dc);
+			result = FILE_make_dir_exist(parent.c_str());
+		}
 		if (result == 0)	result = FILE_make_dir(in_dir);
 	}
 	return result;
