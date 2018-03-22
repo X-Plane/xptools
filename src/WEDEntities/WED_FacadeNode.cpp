@@ -126,6 +126,8 @@ void		WED_FacadeNode::PropEditCallback(int before)
 			fac->SetCustomWalls(true);
 		}
 	}
+
+	WED_GISPoint_Bezier::PropEditCallback(before);
 }
 
 #endif
