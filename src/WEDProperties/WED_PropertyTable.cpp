@@ -134,7 +134,6 @@ void	WED_PropertyTable::GetCellContent(
 
 	//Find the property index in said row or column based on the name
 	int idx = t->FindProperty(mColNames[mVertical ? cell_y : cell_x].c_str());
-	
 	//If there has been one found, use the_content as it is and exit
 	if (idx == -1)
 		return;
@@ -253,7 +252,6 @@ void	WED_PropertyTable::GetCellContent(
 			the_content.is_disclosed = true;
 		}
 	}
-
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && t->CountChildren() > 0;
 //	the_content.can_disclose = !mVertical && (cell_x == 0) && e->GetGISClass() == gis_Composite;
 //	the_content.is_disclosed = 	GetOpen(t->GetID()) && the_content.can_disclose;
@@ -1042,8 +1040,13 @@ void WED_PropertyTable::GetClosed(set<int>& closed_list)
 //--IFilterable----------------------------------------------------------------
 void WED_PropertyTable::SetFilter(const string & filter)
 {
+	if(filter.empty())
+	{
+		RebuildCache();  // rebuild mCache, so any changes of the hierachy list get recognized
+	}
+
 	mSearchFilter = filter;
-	Resort();
+	Resort();            // this only rebuilds the mSortedCache, not the mCache
 
 	BroadcastMessage(GUI_TABLE_CONTENT_RESIZED, 0);
 }
