@@ -86,6 +86,7 @@
 #include "WED_LinePlacement.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_SimpleBoundaryNode.h"
 #include "WED_Taxiway.h"
 
 #include <algorithm>
@@ -4444,10 +4445,10 @@ static void get_chains(WED_Thing * t, vector<WED_GISChain*>& chains)
 static void move_points(WED_Thing * src, WED_Thing * dst)
 {
 	// Collect points from 'src' (before we start removing any childern)
-	vector<WED_GISPoint_Bezier*> points;
+	vector<WED_GISPoint*> points;
 	for (int i = 0; i < src->CountChildren(); ++i)
 	{
-		WED_GISPoint_Bezier * p = dynamic_cast<WED_GISPoint_Bezier*>(src->GetNthChild(i));
+		WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(src->GetNthChild(i));
 		if (p)
 			points.push_back(p);
 	}
@@ -4463,17 +4464,36 @@ static void move_points(WED_Thing * src, WED_Thing * dst)
 		}
 		else
 		{
-			WED_GISPoint_Bezier * dst_node;
+			WED_GISPoint_Bezier * src_bezier = dynamic_cast<WED_GISPoint_Bezier*>(points[i]);
+			WED_GISPoint * dst_node = NULL;
+			WED_GISPoint_Bezier * dst_bezier = NULL;
 			if (want_apt_nodes)
-				dst_node = WED_AirportNode::CreateTyped(dst->GetArchive());
+			{
+				dst_bezier = WED_AirportNode::CreateTyped(dst->GetArchive());
+				dst_node = dst_bezier;
+			}
+			else if (src_bezier)
+			{
+				dst_bezier = WED_SimpleBezierBoundaryNode::CreateTyped(dst->GetArchive());
+				dst_node = dst_bezier;
+			}
 			else
-				dst_node = WED_SimpleBezierBoundaryNode::CreateTyped(dst->GetArchive());
+				dst_node = WED_SimpleBoundaryNode::CreateTyped(dst->GetArchive());
 			string name;
 			points[i]->GetName(name);
 			dst_node->SetName(name);
-			BezierPoint2 location;
-			points[i]->GetBezierLocation(gis_Geo, location);
-			dst_node->SetBezierLocation(gis_Geo, location);
+			if (src_bezier && dst_bezier)
+			{
+				BezierPoint2 location;
+				src_bezier->GetBezierLocation(gis_Geo, location);
+				dst_bezier->SetBezierLocation(gis_Geo, location);
+			}
+			else
+			{
+				Point2 location;
+				points[i]->GetLocation(gis_Geo, location);
+				dst_node->SetLocation(gis_Geo, location);
+			}
 			dst_node->SetParent(dst, i);
 		}
 	}
