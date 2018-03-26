@@ -57,6 +57,7 @@
 #include "WED_RoadEdge.h"
 #endif
 #include "WED_MetadataUpdate.h"
+#include "FileUtils.h"
 
 #include <sstream>
 
@@ -968,45 +969,44 @@ void	WED_DoImportDSFText(IResolver * resolver)
 {
 	WED_Thing * wrl = WED_GetWorld(resolver);
 
-	char * paths = GetMultiFilePathFromUser("Import DSF file...", "Import", FILE_DIALOG_IMPORT_DSF);
-	if(paths)
+	char dir_path[4096];
+	bool success = GetFilePathFromUser(getFile_PickFolder, "Import all files in directory...", "Import", FILE_DIALOG_IMPORT_DSF, dir_path, 4096);
+	const string dir = string(dir_path) + '/';
+	if(success)
 	{
-		char * free_me = paths;
-		
 		wrl->StartOperation("Import DSF");
 		
-		while(*paths)
+		vector<string> all_files;
+		FILE_get_directory(dir, &all_files, NULL);
+		for(vector<string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
 		{
-			if(strstr(paths,".dat"))
-			{			
-				WED_ImportOneAptFile(paths,wrl,NULL);
-				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(paths, wrl)));
+			if(it->find(".dat") != string::npos)
+			{
+				const string path = dir + *it;
+				WED_ImportOneAptFile(path,wrl,NULL);
+				WED_DoInvisibleUpdateMetadata(SAFE_CAST(WED_Airport, get_airport_from_gateway_file_path(path.c_str(), wrl)));
 			}
-			paths = paths + strlen(paths) + 1;
 		}
 		
-		paths = free_me;
-
-		while(*paths)
+		for(vector<string>::const_iterator it = all_files.begin(); it != all_files.end(); ++it)
 		{
-			if(!strstr(paths,".dat"))
+			if(it->find(".dat") == string::npos) // this is something *other* than an apt.dat file
 			{
-				WED_Thing * g = get_airport_from_gateway_file_path(paths, wrl);
+				const string path = dir + *it;
+				WED_Thing * g = get_airport_from_gateway_file_path(path.c_str(), wrl);
 				if(g == NULL)
 				{
 					g = WED_Group::CreateTyped(wrl->GetArchive());
-					g->SetName(paths);
+					g->SetName(path);
 					g->SetParent(wrl,wrl->CountChildren());
 				}
 		//		DSF_Import(path,g);
 				DSF_Importer importer;
-				importer.do_import_txt(paths, g);
-			}	
-			paths = paths + strlen(paths) + 1;
+				importer.do_import_txt(path.c_str(), g);
+			}
 		}
 		
 		wrl->CommitOperation();
-		free(free_me);
 	}
 }
 #endif
