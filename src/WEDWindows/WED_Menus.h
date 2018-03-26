@@ -68,6 +68,7 @@ enum {
 #endif
 	wed_Split,
 	wed_Align,
+	wed_MatchBezierHandles,
 	wed_Orthogonalize,
 	wed_RegularPoly,
 #if AIRPORT_ROUTING

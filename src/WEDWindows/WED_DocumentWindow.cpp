@@ -355,6 +355,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Align:		WED_DoAlign(mDocument); return 1;
+	case wed_MatchBezierHandles:	WED_DoMatchBezierHandles(mDocument); return 1;
 	case wed_Orthogonalize:	WED_DoOrthogonalize(mDocument); return 1;
 	case wed_RegularPoly:	WED_DoMakeRegularPoly(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
@@ -477,6 +478,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Align:		return WED_CanAlign(mDocument);
+	case wed_MatchBezierHandles:	return WED_CanMatchBezierHandles(mDocument);
 	case wed_Orthogonalize:	return WED_CanOrthogonalize(mDocument);
 	case wed_RegularPoly:	return WED_CanMakeRegularPoly(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);

@@ -2121,6 +2121,230 @@ void	WED_DoAlign(IResolver * resolver)
 	op->CommitOperation();
 }
 
+static void get_bezier_points(WED_Thing * t, vector<WED_GISPoint_Bezier *> & points)
+{
+	WED_GISPoint_Bezier * bezier = dynamic_cast<WED_GISPoint_Bezier *>(t);
+	if (bezier)
+	{
+		points.push_back(bezier);
+		return;
+	}
+
+	for (int i = 0; i < t->CountChildren(); ++i)
+		get_bezier_points(t->GetNthChild(i), points);
+}
+
+int		WED_CanMatchBezierHandles(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	if (selected.empty())
+		return false;
+
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * t = dynamic_cast<WED_Thing *>(selected[i]);
+		if (!t)
+			return false;
+		vector<WED_GISPoint_Bezier *> points;
+		get_bezier_points(t, points);
+		if (points.empty())
+			return false;
+	}
+
+	return true;
+}
+
+// Implementation helper for get_snapped_bezier_points().
+static void get_snapped_bezier_points_impl(WED_Thing * t, const set<WED_GISPoint_Bezier *> & ignore,
+	const set<Point2> & points, const Bbox2 & bounds, multimap<Point2, WED_GISPoint_Bezier *> & snapped)
+{
+	IGISEntity * ent = dynamic_cast<IGISEntity *>(t);
+	if (!ent || !ent->IntersectsBox(gis_Geo, bounds))
+		return;
+
+	WED_GISPoint_Bezier * bezier = dynamic_cast<WED_GISPoint_Bezier *>(t);
+	if (bezier && !ignore.count(bezier))
+	{
+		Point2 location;
+		bezier->GetLocation(gis_Geo, location);
+
+		if (points.count(location))
+			snapped.insert(std::pair<const Point2, WED_GISPoint_Bezier *>(location, bezier));
+	}
+
+	for (int i = 0; i < t->CountChildren(); ++i)
+		get_snapped_bezier_points_impl(t->GetNthChild(i), ignore, points, bounds, snapped);
+}
+
+// For the given set of Bezier points in the world 'wrl', finds all Bezier
+// points that are snapped to them and returns them as a map of locations to
+// points.
+static void get_snapped_bezier_points(WED_Thing * wrl,
+	const vector<WED_GISPoint_Bezier *> & points,
+	multimap<Point2, WED_GISPoint_Bezier *> & snapped)
+{
+	set<WED_GISPoint_Bezier *> points_set;
+	set<Point2> locations;
+	Bbox2 bounds;
+	for (size_t i = 0; i < points.size(); ++i)
+	{
+		points_set.insert(points[i]);
+		Point2 location;
+		points[i]->GetLocation(gis_Geo, location);
+		locations.insert(location);
+		bounds += location;
+	}
+
+	get_snapped_bezier_points_impl(wrl, points_set, locations, bounds, snapped);
+}
+
+// Finds the location of the point that is at a position 'relative_pos' relative
+// to 'p' within the containing chain. Returns true if the point was found or
+// false if the chain is not closed and the relative position fell outside the
+// chain.
+static bool get_relative_point(WED_GISPoint * p, int relative_pos, Point2 & location)
+{
+	WED_GISChain * c = dynamic_cast<WED_GISChain *>(p->GetParent());
+	if (!c)
+		return false;
+
+	int absolute_pos = p->GetMyPosition() + relative_pos;
+	if (c->IsClosed())
+	{
+		absolute_pos = absolute_pos % c->GetNumPoints();
+		if (absolute_pos < 0)
+			absolute_pos += c->GetNumPoints();
+	}
+	else
+	{
+		if (absolute_pos < 0 || absolute_pos >= c->GetNumPoints())
+			return false;
+	}
+
+	IGISPoint * point = c->GetNthPoint(absolute_pos);
+	point->GetLocation(gis_Geo, location);
+
+	return true;
+}
+
+namespace {
+// One of the handles of a Bezier point.
+struct BezierHandle {
+	// Side the handle is on. Values are chosen so that they can be passed to
+	// get_relative_point().
+	enum Side { LO = -1, HI = 1 };
+
+	BezierHandle() : p(NULL), side(LO) {}
+	BezierHandle(WED_GISPoint_Bezier * new_p, Side new_side) : p(new_p), side(new_side) {}
+	WED_GISPoint_Bezier * p;
+	Side side;
+};
+}
+
+// Finds the handle of p2 that corresponds to the handle h1. Prerequisites:
+// - p2 must be snapped to h1.p
+// - The neighbors of h1.p and p2 on the side of the matching handles must also
+//   be snapped together
+static bool get_matching_handle(const BezierHandle & h1, WED_GISPoint_Bezier * p2, BezierHandle & h2)
+{
+	Point2 p1_neighbor;
+	if (!get_relative_point(h1.p, h1.side, p1_neighbor))
+		return false;
+	BezierHandle::Side sides[2] = { BezierHandle::LO, BezierHandle::HI };
+	for (int i = 0; i < 2; ++i)
+	{
+		Point2 p2_neighbor;
+		if (get_relative_point(p2, sides[i], p2_neighbor) && p1_neighbor == p2_neighbor)
+		{
+			h2.p = p2;
+			h2.side = sides[i];
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// Copies the location of one Bezier handle to another.
+static void copy_bezier_handle(const struct BezierHandle & dst, const struct BezierHandle & src)
+{
+	Point2 location;
+	if (src.side == BezierHandle::LO)
+		src.p->GetControlHandleLo(gis_Geo, location);
+	else
+		src.p->GetControlHandleHi(gis_Geo, location);
+	if (dst.side == BezierHandle::LO)
+		dst.p->SetControlHandleLo(gis_Geo, location);
+	else
+		dst.p->SetControlHandleHi(gis_Geo, location);
+}
+
+void	WED_DoMatchBezierHandles(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Match Bezier Handles");
+
+	// Find all Bezier points to be matched.
+	vector<WED_GISPoint_Bezier *> points;
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * t = dynamic_cast<WED_Thing *>(selected[i]);
+		if (!t)
+			continue;
+		get_bezier_points(t, points);
+	}
+
+	typedef multimap<Point2, WED_GISPoint_Bezier *> Snapped_t;
+	Snapped_t snapped;
+	get_snapped_bezier_points(wrl, points, snapped);
+
+	for (size_t i = 0; i < points.size(); ++i)
+	{
+		Point2 location;
+		points[i]->GetLocation(gis_Geo, location);
+
+		// Among the Bezier points snapped to us, find matching handles on both sides.
+		vector<BezierHandle> lo_matches, hi_matches;
+		std::pair<Snapped_t::iterator, Snapped_t::iterator> range = snapped.equal_range(location);
+		for (Snapped_t::iterator iter = range.first; iter != range.second; ++iter)
+		{
+			WED_GISPoint_Bezier * p = iter->second;
+
+			BezierHandle handle;
+			if (get_matching_handle(BezierHandle(points[i], BezierHandle::LO), p, handle))
+				lo_matches.push_back(handle);
+			if (get_matching_handle(BezierHandle(points[i], BezierHandle::HI), p, handle))
+				hi_matches.push_back(handle);
+		}
+
+		if (lo_matches.empty() && hi_matches.empty())
+			continue;
+
+		// If we matched with handles of the same point on both sides, our
+		// splitness is equal to the splitness of that point. Otherwise, we're
+		// definitely split.
+		if (lo_matches.size() == 1 && hi_matches.size() == 1 && lo_matches.front().p == hi_matches.front().p)
+			points[i]->SetSplit(lo_matches.front().p->IsSplit());
+		else
+			points[i]->SetSplit(true);
+
+		if (lo_matches.size() == 1)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::LO), lo_matches.front());
+		if (hi_matches.size() == 1)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::HI), hi_matches.front());
+	}
+
+	op->CommitOperation();
+}
+
 static int IterateCanOrthogonalize(ISelectable * what, void * ref)
 {
 	if(!Iterate_IsStructuredObject(what, ref)) return 0;

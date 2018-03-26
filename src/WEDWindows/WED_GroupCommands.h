@@ -95,6 +95,8 @@ edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
+int		WED_CanMatchBezierHandles(IResolver * resolver);
+void	WED_DoMatchBezierHandles(IResolver * resolver);
 int		WED_CanOrthogonalize(IResolver * resolver);
 void	WED_DoOrthogonalize(IResolver * resolver);
 int		WED_CanMakeRegularPoly(IResolver * resolver);

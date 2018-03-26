@@ -25,6 +25,11 @@ WED 1.7.1
     - Enable converting a taxiline between open and closed:
       - Select point on closed taxiline, Edit->Split
       - Select two ends of open taxiline, Edit->Merge
+    - Added "Match Bezier Handles" feature:
+      - Select the object whose Bezier handles should be matched to another object
+      - Ensure that at least two consecutive points are snapped to the points whose Bezier handles are
+        to be matched
+      - Choose Edit->Match Bezier Handles
 
 WED 1.7.0 rc1 ?
    - WED-995 fix update of runway textures & properties not showing immediately

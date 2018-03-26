@@ -100,6 +100,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
 {	"A&lign",				'L',	gui_ControlFlag,				0,	wed_Align		},
+{	"Match Bezier Handles",	'B',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MatchBezierHandles },
 {	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize },
 {	"Make Regular Poly",	'Q',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_RegularPoly },
 #if AIRPORT_ROUTING
@@ -278,9 +279,9 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu convert_to_menu = inApp->CreateMenu(
 #if AIRPORT_ROUTING
-		"Con&vert To", kConvertToMenu, edit_menu, 20);
+		"Con&vert To", kConvertToMenu, edit_menu, 21);
 #else
-		"Con&vert To", kConvertToMenu, edit_menu, 19);
+		"Con&vert To", kConvertToMenu, edit_menu, 20);
 #endif
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
