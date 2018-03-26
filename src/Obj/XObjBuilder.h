@@ -61,6 +61,7 @@ using std::string;
 	void	AddParam(float p);
 	void	AccumLightCustom(float xyz[3], float params[9], const char * dataref);
 	void	AccumSmoke(int cmd, float xyz[3], float size);
+	void	AccumMagnet(const float pos[3], const char * magType);
 
 	// tODO SMOKE PUFFS, SHOW HIDE ANIMS!
 

@@ -93,11 +93,9 @@ cmd_info	gCmds[] = {
 {	attr_Draw_Enable,		type_Attr,	"ATTR_draw_enable",			0,0,1},
 {	attr_Solid_Wall,		type_Attr,	"ATTR_solid_camera",		0,0,1},
 {	attr_No_Solid_Wall,		type_Attr,	"ATTR_no_solid_camera",		0,0,1},
-// 10000
+// 1000
 {	attr_Draped,			type_Attr,	"ATTR_draped",				0,0,1},
 {	attr_NoDraped,			type_Attr,	"ATTR_no_draped",			0,0,1},
-
-
 
 {	attr_Manip_Push,		type_Attr,	"ATTR_manip_push",			1,0,1},
 {	attr_Manip_Radio,		type_Attr,	"ATTR_manip_radio",			1,0,1},
@@ -105,7 +103,21 @@ cmd_info	gCmds[] = {
 {	attr_Manip_Delta,		type_Attr,	"ATTR_manip_delta",			1,0,1},
 {	attr_Manip_Wrap,		type_Attr,	"ATTR_manip_wrap",			1,0,1},
 
+// 1100
+
+{	attr_Cockpit_Device,					type_Attr,	"ATTR_cockpit_device",	0,	1,	1 },
+{	attr_Cockpit_Lit_Only,					type_Attr,	"ATTR_cockpit_lit_only",	0, 1, 0 },
+{	attr_Manip_Drag_Rotate,					type_Attr,	"ATTR_manip_drag_rotate",	0, 1, 1 },
+{	attr_Manip_Command_Knob2,				type_Attr,	"ATTR_manip_command_knob2",	0, 1, 1 },
+{	attr_Manip_Command_Switch_Up_Down2,		type_Attr,	"ATTR_manip_command_switch_up_down2", 0, 1, 1 },
+{	attr_Manip_Command_Switch_Left_Right2,	type_Attr,	"ATTR_manip_command_switch_left_right2", 0, 1, 1 },
+	
+	// Future particle system...
+// Particles
 {	attr_Emitter,			type_Attr,	"EMITTER",					1,0,1},
+
+// Magnets
+{	attr_Magnet,			type_Attr,	"MAGNET",					1,0,1},
 
 {   attr_Max,			type_None,		NULL,				0, 0, 0 }
 
