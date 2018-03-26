@@ -530,6 +530,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 	outObj.texture.clear();
 	outObj.texture_lit.clear();
+	outObj.texture_nrm.clear();
 	outObj.indices.clear();
 	outObj.geo_tri.clear(8);
 	outObj.geo_lines.clear(6);
@@ -612,7 +613,12 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		{
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_lit);
 		}
-		if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_DRAPED", xfals))
+		// TEXTURE_NORMAL <tex>
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_NORMAL", xfals))
+		{
+			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_nrm);
+		}
+		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "TEXTURE_DRAPED", xfals))
 		{
 			TXT_MAP_str_scan_space(cur_ptr, end_ptr, &outObj.texture_draped);
 		}
@@ -718,6 +724,8 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_rotate", xfals))
 		{
 			animation.keyframes.clear();
+			animation.cmd = anim_Rotate;
+			animation.loop = 0.0f;
 			cmd.cmd = anim_Rotate;
 			cmd.idx_offset = outObj.animation.size();
 			animation.loop = 0.0f;
@@ -738,7 +746,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr, end_ptr, "ANIM_trans", xfals))
 		{
 			animation.keyframes.clear();
+			animation.cmd = anim_Translate;
 			cmd.cmd = anim_Translate;
+			animation.loop = 0.0f;
 			cmd.idx_offset = outObj.animation.size();
 			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
@@ -841,7 +851,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_hide", xfals))
 		{
 			animation.keyframes.clear();
+			animation.cmd = anim_Hide;
 			cmd.cmd = anim_Hide;
+			animation.loop = 0.0f;
 			cmd.idx_offset = outObj.animation.size();
 			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
@@ -856,7 +868,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_show", xfals))
 		{
 			animation.keyframes.clear();
+			animation.cmd = anim_Show;
 			cmd.cmd = anim_Show;
+			animation.loop = 0.0f;
 			cmd.idx_offset = outObj.animation.size();
 			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
@@ -872,7 +886,9 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_rotate_begin", xfals))
 		{
 			animation.keyframes.clear();
+			animation.cmd = anim_Rotate;
 			cmd.cmd = anim_Rotate;
+			animation.loop = 0.0f;
 			cmd.idx_offset = outObj.animation.size();
 			animation.loop = 0.0f;
 			outObj.lods.back().cmds.push_back(cmd);
@@ -886,6 +902,8 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 		else if (TXT_MAP_str_match_space(cur_ptr,end_ptr,"ANIM_trans_begin", xfals))
 		{
 			animation.keyframes.clear();
+			animation.cmd = anim_Translate;
+			animation.loop = 0.0f;
 			cmd.cmd = anim_Translate;
 			cmd.idx_offset = outObj.animation.size();
 			animation.loop = 0.0f;
@@ -1389,11 +1407,12 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			manip.mouse_wheel_delta = 0.0f;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			manip.dataref2 = manip.dataref1;
 			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
 			ate_eoln=true;
 			outObj.manips.push_back(manip);
 		}
-		// ATTR_manip_command_switch_up_down2 <currsor> <cmnd> <tooltip>
+		// ATTR_manip_command_switch_up_down2 <cursor> <cmnd> <tooltip>
 		else if(TXT_MAP_str_match_space(cur_ptr, end_ptr, "ATTR_manip_command_switch_up_down2", xfals))
 		{
 			cmd.cmd = attr_Manip_Command_Switch_Up_Down2;
@@ -1403,6 +1422,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			manip.mouse_wheel_delta = 0.0f;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			manip.dataref2 = manip.dataref1;
 			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
 			ate_eoln=true;
 			outObj.manips.push_back(manip);
@@ -1417,6 +1437,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			manip.mouse_wheel_delta = 0.0f;
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.cursor);
 			TXT_MAP_str_scan_space(cur_ptr,end_ptr,&manip.dataref1);
+			manip.dataref2 = manip.dataref1;
 			TXT_MAP_str_scan_eoln(cur_ptr,end_ptr,&manip.tooltip);
 			ate_eoln=true;
 			outObj.manips.push_back(manip);
@@ -1438,7 +1459,6 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 
 			outObj.lods.back().cmds.push_back(cmd);
 		}
-
 /******************************************************************************************************************************/
 		// DEFAULT
 /******************************************************************************************************************************/
@@ -1488,6 +1508,12 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	// TEXTURES
 									fprintf(fi, "TEXTURE %s" CRLF, outObj.texture.c_str());
 	if (!outObj.texture_lit.empty())fprintf(fi, "TEXTURE_LIT %s" CRLF, outObj.texture_lit.c_str());
+	if (!outObj.texture_nrm.empty())fprintf(fi, "TEXTURE_NORMAL %s" CRLF, outObj.texture_nrm.c_str());
+
+	if(outObj.use_metalness)
+		fprintf(fi,"NORMAL_METALNESS" CRLF);
+	if(outObj.glass_blending)
+		fprintf(fi,"BLEND_GLASS" CRLF);
 
 	if(outObj.use_metalness)
 		fprintf(fi,"NORMAL_METALNESS" CRLF);

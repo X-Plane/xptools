@@ -161,8 +161,8 @@ enum {
 	
 	// Future particle system...
 	attr_Emitter,
-	
-	// Magnets, how do they work???
+
+	// v11
 	attr_Magnet,
 	
 	attr_Max
@@ -222,8 +222,13 @@ int	FindIndexForCmd(int inCmd);
  */
 
 struct XObjKey {
+	XObjKey() { key = 0.0f; v[0] = v[1] = v[2] = 0.0f; }
 	float					key;
 	float					v[3];		// angle for rotation, XYZ for translation
+	
+	bool eq_key(const XObjKey& rhs) const { return key == rhs.key;											 }
+	bool eq_val(const XObjKey& rhs) const { return v[0] == rhs.v[0] && v[1] == rhs.v[1] && v[2] == rhs.v[2]; }
+	bool eq	   (const XObjKey& rhs) const { return eq_key(rhs) && eq_val(rhs);								 }
 };
 
 struct XObjDetentRange {
@@ -232,6 +237,7 @@ struct XObjDetentRange {
 };
 
 struct	XObjAnim8 {
+	int						cmd;
 	string					dataref;
 	float					axis[3];	// Used for rotations
 	float					loop;		// If not 0, modulo factor
@@ -239,6 +245,10 @@ struct	XObjAnim8 {
 };
 
 struct XObjManip8 {
+	XObjManip8() : v1_min(0.0f),v1_max(0.0f),v2_min(0.0f),v2_max(0.0f),mouse_wheel_delta(0.0f)
+	{
+		axis[0] = axis[1] = axis[2] = 0.0f;
+	}
 	string					dataref1;				// Commands for, cmd manips!
 	string					dataref2;
 	float					centroid[3];
@@ -289,6 +299,7 @@ struct XObjPanelRegion8 {
 struct	XObj8 {
 	string 					texture;
 	string 					texture_lit;
+	string					texture_nrm;
 	string 					texture_draped;
 	int						use_metalness;
 	int						glass_blending;
