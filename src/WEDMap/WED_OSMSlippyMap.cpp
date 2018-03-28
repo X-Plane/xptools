@@ -51,7 +51,7 @@
 #include <iostream>
 #endif
 
-#define MIN_ZOOM  12        // stop displaying OSM at all below this level
+#define MIN_ZOOM  13        // stop displaying OSM at all below this level
 #define MAX_ZOOM  16
 #define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
 							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
@@ -164,6 +164,7 @@ WED_OSMSlippyMap::~WED_OSMSlippyMap()
 	
 void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 {
+	if (mMapMode ==0) return;
 	finish_loading_tile();
 
 	double map_bounds[4];
@@ -292,7 +293,7 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	GLfloat white[4] = { 1, 1, 1, 1 };
 	GUI_FontDraw(g, font_UI_Basic, white, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
 	
-	if(mMapMode < PREDEFINED_MAPS)
+	if(mMapMode <= PREDEFINED_MAPS)
 	{
 		int txtWidth = GUI_MeasureRange(font_UI_Small,attributions[mMapMode-1],attributions[mMapMode-1]+strlen(attributions[mMapMode-1]));
 		
