@@ -39,6 +39,8 @@ public:
 	virtual	void	DrawVisualization(bool inCurrent, GUI_GraphState * g);
 	virtual	void	GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 	virtual	void	TimerFired(void);
+			void	SetMode(int mode);
+			int		GetMode(void);
 
 private:
 
@@ -49,6 +51,10 @@ private:
 	//The texture cache, where they key is the tile texture path on disk and the value is the texture id
 	map<string,int>				m_cache;
 
+			int		mMapMode;
+			string	url_printf_fmt;
+			string	dir_printf_fmt;
+			bool	is_jpg_not_png;
 };
 
 #endif /* WED_OSMSlippyMap_h */

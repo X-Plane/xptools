@@ -46,6 +46,7 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);
 	extern	int	gIsFeet;
 	extern	int	gInfoDMS;
 	extern	int	gModeratorMode;
+	extern char gCustomSlippyMap[];
 #else
 	/* Is WED running in English or metric units?  (feet == 0 -> metric.) */
 	extern const int gIsFeet;
@@ -55,7 +56,7 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);
 
 	/* Changes the listing in the gateway Import for GW moderation purposes */
 	extern const int gModeratorMode;
-
+	
 #endif
 
 enum WED_Export_Target {
@@ -71,6 +72,7 @@ enum WED_Export_Target {
 /* What target output format does WED want? */
 extern WED_Export_Target gExportTarget;
 
-
+/* Changes the listing in the gateway Import for GW moderation purposes */
+extern string gCustomSlippyMap;
 
 #endif

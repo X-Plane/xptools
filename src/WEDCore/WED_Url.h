@@ -37,7 +37,7 @@
 
 #define WED_URL_CIFP_RUNWAYS   "https://gatewayapi.x-plane.com:3001/runway_coordinates.txt"
 
-#define WED_URL_OSM_FIXTHEMAP  "https://www.openstreetmap.org/fixthemap"
-#define WED_URL_OSM_TILES      "http://a.tile.openstreetmap.org/"
+#define WED_URL_OSM_FIXTHEMAP  "http://www.openstreetmap.org/fixthemap"
+#define WED_URL_OSM_TILES      "http://tile.openstreetmap.org/"
 
 #endif /* WED_Url_H */

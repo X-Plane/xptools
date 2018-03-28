@@ -108,7 +108,10 @@ enum {
 #if WANT_TERRASEVER	
 	wed_ToggleTerraserver,
 #endif	
-	wed_ToggleOSM,
+	wed_SlippyMapNone,
+	wed_SlippyMapOSM,
+	wed_SlippyMapESRI,
+	wed_SlippyMapCustom,
 #if WITHNWLINK
 	wed_ToggleLiveView,
 #endif

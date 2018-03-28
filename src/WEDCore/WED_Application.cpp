@@ -35,11 +35,13 @@
 #include "GUI_Packer.h"
 #include "GUI_Button.h"
 #include "GUI_Label.h"
+#include "GUI_TextField.h"
 
 //#include "WED_Globals.h"
 int gIsFeet = 0;
 int gInfoDMS = 0;
 int gModeratorMode = 0;
+string gCustomSlippyMap = "";
 
 static int settings_bounds[4] = { 0, 0, 512, 384};
 
@@ -53,7 +55,7 @@ public:
 
 RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  int * var, const string& desc, const char * text0, const char * text1)
 {
-	char * texture = "check_buttons.png";
+	const char * texture = "check_buttons.png";
 	int r_yes[4] = { 0, 1, 1, 3 };
 	int r_nil[4] = { 0, 0, 1, 3 };
 
@@ -121,6 +123,11 @@ void WED_Settings::ReceiveMessage(
 	{
 			gModeratorMode = ((GUI_Button *) inParam)->GetValue();
 	}
+	else if(inMsg == (intptr_t) &gCustomSlippyMap)
+	{
+			 ((GUI_TextField *) inParam)->GetDescriptor(gCustomSlippyMap);
+			 printf("%s\n",gCustomSlippyMap.c_str());
+	}
 /*	else if (inMsg == kMsg_Close)
 	{
 		Hide();
@@ -143,7 +150,8 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	
 	int k_yes[4] = { 0, 1, 1, 3 };
 	int k_no[4]  = { 0, 2, 1, 3 };
-	
+	float white[4] = { 1, 1, 1, 1 };
+
 	GUI_Button * moderator_btn = new GUI_Button("check_buttons.png",btn_Check,k_no, k_no, k_yes, k_yes);
 	moderator_btn->SetBounds(350,250,500,250+GUI_GetImageResourceHeight("check_buttons.png")/3);
 	moderator_btn->Show();
@@ -151,6 +159,26 @@ WED_Settings::WED_Settings(GUI_Commander * cmdr) : GUI_Window("WED Preferences",
 	moderator_btn->SetParent(this);
 	moderator_btn->AddListener(this);
 	moderator_btn->SetMsg((intptr_t) &gModeratorMode, (intptr_t) moderator_btn);
+	
+	GUI_TextField * custom_box = new GUI_TextField(true, this);
+	GUI_Label * label = new GUI_Label();
+	custom_box->SetBounds(20,144,490,162);
+	label->SetBounds     (20,164,300,180);
+	custom_box->SetMargins(3,1,3,1);
+	custom_box->SetWidth(1000);
+	custom_box->SetParent(this);
+	custom_box->AddListener(this);
+	custom_box->SetKeyMsg((intptr_t) &gCustomSlippyMap, (intptr_t) custom_box);
+	custom_box->SetDescriptor(gCustomSlippyMap);
+	custom_box->Show();
+	custom_box->SetKeyAllowed(GUI_KEY_RETURN, false);
+	custom_box->SetKeyAllowed(GUI_VK_ESCAPE, false);
+	custom_box->SetKeyAllowed('\\', false);
+
+	label->SetColors(white);
+	label->SetParent(this);
+	label->SetDescriptor("Tile Server Custom URL");
+	label->Show();
 
 /*	GUI_Button * close_btn = new GUI_Button("push_buttons.png",btn_Push,k_no, k_yes, k_no, k_yes);
 	close_btn->SetBounds(220,5,290,5+GUI_GetImageResourceHeight("push_buttons.png")/3);

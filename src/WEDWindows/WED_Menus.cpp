@@ -142,7 +142,7 @@ static const GUI_MenuItem_t kViewMenu[] = {
 #if WANT_TERRASEVER
 {	"Toggle &Terraserver",		0,	0,										0,	wed_ToggleTerraserver },
 #endif
-{	"&Toggle OSM",				0,	0,										0,	wed_ToggleOSM },
+{	"S&lippy Map",				0,	0,										0,	0 },
 #if WITHNWLINK
 {	"Toggle LiveMode",		    0,	0,										0,	wed_ToggleLiveView },
 #endif
@@ -150,6 +150,15 @@ static const GUI_MenuItem_t kViewMenu[] = {
 {	"&Restore Frames",			0,	0,										0,	wed_RestorePanes	},
 {	NULL,						0,	0,										0,	0					},
 };
+
+static const GUI_MenuItem_t kSlippyMapMenu[] = {
+{	"&None",					0,	0,							0,	wed_SlippyMapNone	},
+{	"&OpenStreetMap",			0,	0,							0,	wed_SlippyMapOSM	},
+{	"&ESRI Imagery",			0,	0,							0,	wed_SlippyMapESRI	},
+{	"&Custom",					0,	0,							0,	wed_SlippyMapCustom	},
+{	NULL,						0,	0,							0,	0					}
+};
+
 
 static const GUI_MenuItem_t kPavementMenu[] = {
 {	"&None",					0,	0,							0,	wed_Pavement0		},
@@ -274,10 +283,13 @@ void WED_MakeMenus(GUI_Application * inApp)
 	
 	GUI_Menu	pave_menu = inApp->CreateMenu(
 		"Pavement T&ransparency",	kPavementMenu, view_menu, 6);
-		
+
 	GUI_Menu	objd_menu = inApp->CreateMenu(
 		"&Object Density", kObjDensityMenu, view_menu, 7);
 
+	GUI_Menu	slippy_menu = inApp->CreateMenu(
+		"S&lippy Map",	kSlippyMapMenu, view_menu, 12);
+		
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);
 

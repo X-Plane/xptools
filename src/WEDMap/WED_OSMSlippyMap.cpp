@@ -28,6 +28,7 @@
 
 #include "WED_MapZoomerNew.h"
 #include "WED_Url.h"
+#include "WED_Globals.h"
 #include "MathUtils.h"
 #include "BitmapUtils.h"
 #include "PlatformUtils.h"
@@ -50,17 +51,17 @@
 #include <iostream>
 #endif
 
-#define MIN_ZOOM  13        // stop displaying OSM at all below this level
+#define MIN_ZOOM  12        // stop displaying OSM at all below this level
 #define MAX_ZOOM  16
 #define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
 							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
 							// but saves on average 34% of all tile loads
 
-#define OSM_ZOOM_LEVELS 19
+#define ZOOM_LEVELS 19
 							
 // This table of zoom levels comes from...
 // http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
-static const double k_mpp[OSM_ZOOM_LEVELS] = {
+static const double k_mpp[ZOOM_LEVELS] = {
 	156543.03,
 	78271.52,
 	39135.76,
@@ -81,8 +82,19 @@ static const double k_mpp[OSM_ZOOM_LEVELS] = {
 	1.1943,
 	0.5972 };
 
-// These tile conversion formlas come from...
+// These tile conversion formulas come from...
 // http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#C.2FC.2B.2B
+
+#define PREDEFINED_MAPS 2
+
+static const char * attributions[PREDEFINED_MAPS] = {
+"© OpenStreetMap Contributors",
+// ToDo: Update regularly from http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer?f=pjson
+"© Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN and the GIS User Community" };
+
+static const char * tile_url[PREDEFINED_MAPS] = {
+WED_URL_OSM_TILES "${z}/${x}/${y}.png",
+"http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}.jpg" };
 
 int long2tilex(double lon, int z) 
 { 
@@ -105,15 +117,15 @@ double tiley2lat(int y, int z)
 	return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
-static int get_osm_zoom_for_map_ppm(double in_ppm)
+static int get_zl_for_map_ppm(double in_ppm)
 {
 	double mpp = 1.0 / in_ppm;
-	int osm = 0;
-	while(osm <= MAX_ZOOM && k_mpp[osm]*TILE_FACTOR > mpp)
-		++osm;
+	int zl = 0;
+	while(zl <= MAX_ZOOM && k_mpp[zl]*TILE_FACTOR > mpp)
+		++zl;
 	
-	if(osm > 0) --osm;
-	return osm;
+	if(zl > 0) --zl;
+	return zl;
 }
 
 static void get_ll_box_for_tile(int z, int x, int y, double bounds[4])
@@ -139,7 +151,8 @@ static void get_tile_range_for_box(const double bounds[4], int z, int tiles[4])
 
 WED_OSMSlippyMap::WED_OSMSlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver)
 	: WED_MapLayer(h, zoomer, resolver),
-	m_cache_request(NULL)
+	m_cache_request(NULL),
+	mMapMode(0)
 {
 }
 
@@ -164,7 +177,7 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	map_bounds[3] = doblim(map_bounds[3],-85.0,85.0);
 
 	double ppm = zoomer->GetPPM();
-	int z_max = get_osm_zoom_for_map_ppm(ppm);
+	int z_max = get_zl_for_map_ppm(ppm);
 	if(z_max < MIN_ZOOM) return;
 	
 	int want = 0, got = 0, bad = 0;
@@ -210,15 +223,13 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 				GUI_FontDraw(g, font_UI_Basic, black, (pbounds[0] + pbounds[2]) / 2, (pbounds[1] + pbounds[3]) / 2, msg);
 			}
 #endif
-			stringstream url;
-			url << "http://a.tile.openstreetmap.org/" << z << "/" << x << "/" << y << ".png";
+			char url[200]; snprintf(url,200,url_printf_fmt.c_str(),x,y,z);
 
-			//Folder prefix to match the url format
-			stringstream folder_prefix;
-			folder_prefix << "OSMSlippyMap" << DIR_STR << z << DIR_STR << x;
+			char dir[200]; snprintf(dir,200,dir_printf_fmt.c_str(),x,y,z);                      // make sure ALL args are referenced in the format string
+			string folder_prefix(dir); folder_prefix.erase(folder_prefix.find_last_of(DIR_STR));
 
 			//The potential place the tile could appear on disk, were it to be downloaded or have been downloaded
-			string potential_path = WED_file_cache_url_to_cache_path(WED_file_cache_request("", cache_domain_osm_tile, folder_prefix.str() , url.str()));
+			string potential_path = WED_file_cache_url_to_cache_path(WED_file_cache_request("", cache_domain_osm_tile, folder_prefix , url));
 
 			if (m_cache.count(potential_path))
 			{
@@ -256,7 +267,7 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			}
 			else if(m_cache_request == NULL)
 			{
-				m_cache_request = new WED_file_cache_request("", cache_domain_osm_tile, folder_prefix.str(), url.str());
+				m_cache_request = new WED_file_cache_request("", cache_domain_osm_tile, folder_prefix, url);
 			}
 		}
 	}
@@ -281,21 +292,20 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	GLfloat white[4] = { 1, 1, 1, 1 };
 	GUI_FontDraw(g, font_UI_Basic, white, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
 	
-	
-	string attribution = "© OpenStreetMap contributors";
-	const char * begin = attribution.c_str();
-	const char * end = begin + attribution.size();
-	int txtWidth = GUI_MeasureRange(font_UI_Small,begin,end);
-	
-	g->SetState(0, 0, 0, 0, 1, 0, 0);
-	glColor4f(0,0,0,0.65);
-	glBegin(GL_QUADS);
-		glVertex2f(bnds[2] - 10 - txtWidth, bnds[1] + 12 );
-		glVertex2f(bnds[2],                 bnds[1] + 12 );
-		glVertex2f(bnds[2],                 bnds[1]      );
-		glVertex2f(bnds[2] - 10 - txtWidth, bnds[1]      );
-	glEnd();
-	GUI_FontDraw(g, font_UI_Small, white, bnds[2] - 5, bnds[1] + 2, attribution.c_str(), align_Right);
+	if(mMapMode < PREDEFINED_MAPS)
+	{
+		int txtWidth = GUI_MeasureRange(font_UI_Small,attributions[mMapMode-1],attributions[mMapMode-1]+strlen(attributions[mMapMode-1]));
+		
+		g->SetState(0, 0, 0, 0, 1, 0, 0);
+		glColor4f(0,0,0,0.65);
+		glBegin(GL_QUADS);
+			glVertex2f(bnds[2] - 10 - txtWidth, bnds[1] + 12 );
+			glVertex2f(bnds[2],                 bnds[1] + 12 );
+			glVertex2f(bnds[2],                 bnds[1]      );
+			glVertex2f(bnds[2] - 10 - txtWidth, bnds[1]      );
+		glEnd();
+		GUI_FontDraw(g, font_UI_Small, white, bnds[2] - 5, bnds[1] + 2, attributions[mMapMode-1], align_Right);
+	}
 }
 
 void	WED_OSMSlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
@@ -311,13 +321,20 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 		if (res.out_status == cache_status_available)
 		{
 			struct ImageInfo info;
-			if (CreateBitmapFromPNG(res.out_path.c_str(), &info, false, 0) == 0)
+			int r;
+			if(is_jpg_not_png)
+				r = CreateBitmapFromJPEG(res.out_path.c_str(), &info);
+			else
+				r = CreateBitmapFromPNG(res.out_path.c_str(), &info, false, 0);
+			if (r == 0)
 			{
 				if (info.channels == 3)                                                        // apply to color changes
 					for (int x = 0; x < info.height * (info.width+info.pad) * info.channels; x += info.channels)
 						{
-#define BRIGHTNESS  -140.0
-#define SATURATION  0.4
+							double BRIGHTNESS = -20; 
+							double SATURATION = 1.0;
+							if(mMapMode == 1) { BRIGHTNESS = -140.0; SATURATION = 0.4; }
+
 							int val = 0.3 * info.data[x] + 0.6 * info.data[x+1] + 0.1 * info.data[x+2];  // deliberately not HSV weighing - want red's brighter
 							for (int c = 0; c < info.channels; ++c)
 								info.data[x+c] = intlim((1.0-SATURATION) * val + SATURATION * info.data[x+c] + BRIGHTNESS, 0, 255);
@@ -337,7 +354,7 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 			}
 			else
 			{
-				printf("Bad PNG data.\n");
+				printf("Bad JPG or PNG data.\n");
 				m_cache[res.out_path] = 0;
 			}
 
@@ -361,4 +378,56 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 void	WED_OSMSlippyMap::TimerFired()
 {
 	GetHost()->Refresh();
+}
+
+static bool replace_token(string& str, const string& from, const string& to) 
+{
+    size_t start_pos = str.find(from);
+    if(start_pos == string::npos)
+        return false;
+    str.replace(start_pos, from.length(), to);
+    return true;
+}
+
+void	WED_OSMSlippyMap::SetMode(int mode)
+{
+	if(mode == 0)
+	{
+		mMapMode = 0;
+		SetVisible(0);
+		return;
+	}
+	
+	if(mode <= PREDEFINED_MAPS)
+		url_printf_fmt = tile_url[mode-1];
+	else
+		url_printf_fmt = gCustomSlippyMap;
+		
+	if(replace_token(url_printf_fmt, "${x}", "%1$d") &&
+	   replace_token(url_printf_fmt, "${y}", "%2$d") &&
+	   replace_token(url_printf_fmt, "${z}", "%3$d"))
+	{	
+		dir_printf_fmt = url_printf_fmt.substr(url_printf_fmt.find("//")+2);
+		replace(dir_printf_fmt.begin(), dir_printf_fmt.end(), '/', DIR_CHAR);
+		
+		mMapMode = mode;
+		SetVisible(1);
+		
+		string suffix = url_printf_fmt.substr(url_printf_fmt.length()-4);
+		if (suffix == ".jpg" || suffix == ".JPG")
+			is_jpg_not_png = true;
+		else
+			is_jpg_not_png = false;
+	}
+	else
+	{
+		mMapMode = 0;
+		SetVisible(0);
+		printf("Illegal URL string for SlippyMap\n");
+	}
+}
+
+int		WED_OSMSlippyMap::GetMode(void)
+{
+	return mMapMode;
 }
