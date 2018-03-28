@@ -1,10 +1,26 @@
-//
-//  WED_OSMSlippyMap.cpp
-//  SceneryTools_xcode6
-//
-//  Created by Ben Supnik on 12/18/15.
-//
-//
+/*
+ * Copyright (c) 2015, Laminar Research.
+ *
+ * Created by Ben Supnik on 12/18/15.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include "WED_OSMSlippyMap.h"
 
@@ -40,6 +56,8 @@
 							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
 							// but saves on average 34% of all tile loads
 
+#define OSM_ZOOM_LEVELS 19
+							
 // This table of zoom levels comes from...
 // http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
 static const double k_mpp[OSM_ZOOM_LEVELS] = {
@@ -58,7 +76,7 @@ static const double k_mpp[OSM_ZOOM_LEVELS] = {
 	38.219,
 	19.109,
 	9.5546,
-	4.7773,      // ZL16, the hihest level that is always cached data arther than real-time computed
+	4.7773,      // ZL16, the highest level that is always cached data rather than real-time computed
 	2.3887,
 	1.1943,
 	0.5972 };
@@ -86,8 +104,6 @@ double tiley2lat(int y, int z)
 	double n = M_PI - 2.0 * M_PI * y / pow(2.0, z);
 	return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
-
-
 
 static int get_osm_zoom_for_map_ppm(double in_ppm)
 {
@@ -264,6 +280,22 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	GetHost()->GetBounds(bnds);
 	GLfloat white[4] = { 1, 1, 1, 1 };
 	GUI_FontDraw(g, font_UI_Basic, white, bnds[0] + 10, bnds[1] + 40, zoom_msg.str().c_str());
+	
+	
+	string attribution = "© OpenStreetMap contributors";
+	const char * begin = attribution.c_str();
+	const char * end = begin + attribution.size();
+	int txtWidth = GUI_MeasureRange(font_UI_Small,begin,end);
+	
+	g->SetState(0, 0, 0, 0, 1, 0, 0);
+	glColor4f(0,0,0,0.65);
+	glBegin(GL_QUADS);
+		glVertex2f(bnds[2] - 10 - txtWidth, bnds[1] + 12 );
+		glVertex2f(bnds[2],                 bnds[1] + 12 );
+		glVertex2f(bnds[2],                 bnds[1]      );
+		glVertex2f(bnds[2] - 10 - txtWidth, bnds[1]      );
+	glEnd();
+	GUI_FontDraw(g, font_UI_Small, white, bnds[2] - 5, bnds[1] + 2, attribution.c_str(), align_Right);
 }
 
 void	WED_OSMSlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
