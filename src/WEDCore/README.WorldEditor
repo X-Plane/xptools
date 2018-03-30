@@ -30,6 +30,8 @@ WED 1.7.1
       - Ensure that at least two consecutive points are snapped to the points whose Bezier handles are
         to be matched
       - Choose Edit->Match Bezier Handles
+    - Added "Offset Bezier" feature that offsets a Bezier curve (or polygon) in a certain distance.
+      To use, select the curve, then shift-drag one of its edges.
 
 WED 1.7.0 rc1 ?
    - WED-995 fix update of runway textures & properties not showing immediately
