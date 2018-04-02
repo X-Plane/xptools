@@ -33,8 +33,11 @@ WED 1.7.1
     - Added "Offset Bezier" feature that offsets a Bezier curve (or polygon) in a certain distance.
       To use, select the curve, then shift-drag one of its edges.
 
-WED 1.7.0 rc1 ?
-   - WED-995 fix update of runway textures & properties not showing immediately
+WED 1.7.0 r2 3/17/20
+	- fix bug (windows only) preventing gateway submission for some users
+
+WED 1.7.0 r1 3/17/18
+	- WED-995 fix update of runway textures & properties not showing immediately
 
 WED 1.7.0 Beta2 3/6/18
 	- fix crash on OSX at scenery load time with worldmap background enabled
