@@ -132,6 +132,14 @@ void bbox_for_any<Bezier2p>(const Bezier2p& e, Bbox2& b)
 	b += e.c2;
 }
 
+template <>
+void bbox_for_any<Bezier2uv>(const Bezier2uv& e, Bbox2& b)
+{
+	b += e.p1;
+	b += e.c1;
+	b += e.p2;
+	b += e.c2;
+}
 
 template <typename T>
 void bbox_for_any_vector(const vector<T>& e, Bbox2& b)
@@ -265,6 +273,27 @@ struct split_at_line_h {
 		return 2;
 	}
 
+	int operator()(const Segment2uv& in_seg, Segment2uv out_segs[2])
+	{
+		if((in_seg.p1.y() <= y && in_seg.p2.y() <= y) ||
+			(in_seg.p1.y() >= y && in_seg.p2.y() >= y))
+		{
+			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
+			return 1;
+		}
+		
+		double x = in_seg.x_at_y(y);
+		Point2 uv = in_seg.uv.midpoint(in_seg.t_at_y(y));
+		out_segs[0] = Segment2uv(in_seg.p1,Point2(x,y),in_seg.uv.p1,uv);
+		out_segs[1] = Segment2uv(Point2(x,y),in_seg.p2,uv,in_seg.uv.p2);
+		DebugAssert(!side_is_degenerate(out_segs[0]));
+		DebugAssert(!side_is_degenerate(out_segs[1]));
+		return 2;
+	}
+
+
+
 	int operator()(const Bezier2& in_seg, Bezier2 out_segs[4])
 	{
 		if(in_seg.is_segment())
@@ -385,6 +414,76 @@ struct split_at_line_h {
 		
 		return ret;
 	}
+
+	int operator()(const Bezier2uv& in_seg, Bezier2uv out_segs[4])
+	{
+		if(in_seg.is_segment())
+		{
+			Segment2uv os[2];
+			int n = this->operator()(in_seg.as_segment(),os);
+			for(int i = 0; i < n; ++i)
+			{
+				out_segs[i] = os[i];
+				DebugAssert(!side_is_degenerate(out_segs[i]));
+			}	
+			return n;
+		}
+		
+		double t[3];
+		Point2	p[3];
+		Point2	uv[3];
+		int cuts = in_seg.t_at_y(y,t);
+		if(cuts == 0)
+		{
+			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
+			return 1;
+		}
+		int i;
+		for(i = 0; i < cuts; ++i)
+		{
+			p[i] = in_seg.midpoint(t[i]);
+			p[i].y_ = y;
+			uv[i] = in_seg.uv.midpoint(t[i]);
+		}
+		
+		int ret = 0;
+		if(t[0] > 0.0)
+		{
+			in_seg.subcurve(out_segs[ret],0.0,t[0]);
+			in_seg.uv.subcurve(out_segs[ret].uv,0.0,t[0]);
+			out_segs[ret].p2 = p[0];
+			out_segs[ret].uv.p2 = uv[0];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
+			ret++;
+		}
+		
+		for(i = 1; i < cuts; ++i)
+		{
+			in_seg.subcurve(out_segs[ret],t[i-1],t[i]);
+			in_seg.uv.subcurve(out_segs[ret].uv,t[i-1],t[i]);
+			out_segs[ret].p1 = p[i-1];
+			out_segs[ret].p2 = p[i  ];
+
+			out_segs[ret].uv.p1 = uv[i-1];
+			out_segs[ret].uv.p2 = uv[i  ];
+
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
+			ret++;
+		}
+
+		if(t[cuts-1] < 1.0)
+		{
+			in_seg.subcurve(out_segs[ret],t[cuts-1],1.0);
+			in_seg.uv.subcurve(out_segs[ret].uv,t[cuts-1],1.0);
+			out_segs[ret].p1 = p[cuts-1];
+			out_segs[ret].uv.p1 = uv[cuts-1];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
+			ret++;
+		}
+
+		return ret;
+	}
 	
 	double y;
 };
@@ -427,6 +526,26 @@ struct split_at_line_v {
 		DebugAssert(!side_is_degenerate(out_segs[1]));
 		return 2;
 	}
+
+	int operator()(const Segment2uv& in_seg, Segment2uv out_segs[2])
+	{
+		if((in_seg.p1.x() <= x && in_seg.p2.x() <= x) ||
+			(in_seg.p1.x() >= x && in_seg.p2.x() >= x))
+		{
+			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
+			return 1;
+		}
+		
+		double y = in_seg.y_at_x(x);
+		Point2 uv = in_seg.uv.midpoint(in_seg.t_at_x(x));
+		out_segs[0] = Segment2uv(in_seg.p1,Point2(x,y),in_seg.uv.p1,uv);
+		out_segs[1] = Segment2uv(Point2(x,y),in_seg.p2,uv,in_seg.uv.p2);
+		DebugAssert(!side_is_degenerate(out_segs[0]));
+		DebugAssert(!side_is_degenerate(out_segs[1]));
+		return 2;
+	}
+
 	
 	int operator()(const Bezier2& in_seg, Bezier2 out_segs[4])
 	{
@@ -547,6 +666,74 @@ struct split_at_line_v {
 			out_segs[ret].param = in_seg.param;
 		return ret;
 	}
+
+	int operator()(const Bezier2uv& in_seg, Bezier2uv out_segs[4])
+	{
+		if(in_seg.is_segment())
+		{
+			Segment2uv os[2];
+			int n = this->operator()(in_seg.as_segment(),os);
+			for(int i = 0; i < n; ++i)
+			{
+				out_segs[i] = os[i];
+				DebugAssert(!side_is_degenerate(out_segs[i]));
+			}
+			return n;
+		}
+		
+		double t[3];
+		Point2	p[3];
+		Point2 uv[3];
+		int cuts = in_seg.t_at_x(x,t);
+		if(cuts == 0)
+		{
+			out_segs[0] = in_seg;
+			DebugAssert(!side_is_degenerate(out_segs[0]));
+			return 1;
+		}
+		int i;
+		for(i = 0; i < cuts; ++i)
+		{
+			p[i] = in_seg.midpoint(t[i]);
+			p[i].x_ = x;
+			uv[i] = in_seg.uv.midpoint(t[i]);
+		}
+		
+		int ret = 0;
+		if(t[0] > 0.0)
+		{
+			in_seg.subcurve(out_segs[ret],0.0,t[0]);
+			in_seg.uv.subcurve(out_segs[ret].uv,0.0,t[0]);
+			out_segs[ret].p2 = p[0];
+			out_segs[ret].uv.p2 = uv[0];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
+			ret++;
+		}
+		
+		for(i = 1; i < cuts; ++i)
+		{
+			in_seg.subcurve(out_segs[ret],t[i-1],t[i]);
+			in_seg.uv.subcurve(out_segs[ret].uv,t[i-1],t[i]);
+			out_segs[ret].p1 = p[i-1];
+			out_segs[ret].p2 = p[i  ];
+			out_segs[ret].uv.p1 = uv[i-1];
+			out_segs[ret].uv.p2 = uv[i  ];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
+			ret++;
+		}
+
+		if(t[cuts-1] < 1.0)
+		{
+			in_seg.subcurve(out_segs[ret],t[cuts-1],1.0);
+			in_seg.uv.subcurve(out_segs[ret].uv,t[cuts-1],1.0);
+			out_segs[ret].p1 = p[cuts-1];
+			out_segs[ret].uv.p1 = uv[cuts-1];
+			DebugAssert(!side_is_degenerate(out_segs[ret]));
+			ret++;
+		}
+		return ret;
+	}
+	
 	
 	
 	double x;
@@ -681,11 +868,28 @@ template <typename C, typename S>
 struct construct_segment {
 	C&	c_;
 	construct_segment(C& c) : c_(c) {}
-	void operator()(const Point2& p1, const Point2& p2, const S& example)
+	void operator()(const Point2& p1, const Point2& p2, const S& e1, const S& e2)
 	{
-		S clone(example);
+		S clone(e1);
 		clone.p1 = p1;
 		clone.p2 = p2;
+		c_.push_back(clone);
+	}
+};
+
+template <typename C>
+struct construct_segment<C, Segment2uv> {
+	C&	c_;
+	construct_segment(C& c) : c_(c) {}
+	void operator()(const Point2& p1, const Point2& p2, const Segment2uv& e1, const Segment2uv& e2)
+	{
+		DebugAssert(p1 == e1.p2);
+		DebugAssert(p2 == e2.p1);
+		Segment2uv clone;
+		clone.p1 = p1;
+		clone.p2 = p2;
+		clone.uv.p1 = e1.uv.p2;
+		clone.uv.p2 = e2.uv.p1;
 		c_.push_back(clone);
 	}
 };
@@ -694,9 +898,9 @@ template <typename C>
 struct construct_segment<C, Bezier2> {
 	C&	c_;
 	construct_segment(C& c) : c_(c) {}
-	void operator()(const Point2& p1, const Point2& p2, const Bezier2& example)
+	void operator()(const Point2& p1, const Point2& p2, const Bezier2& e1, const Bezier2& e2)
 	{
-		Bezier2 clone(example);
+		Bezier2 clone(e1);
 		clone.p1 = p1;
 		clone.p2 = p2;
 		clone.c1 = p1;
@@ -709,13 +913,31 @@ template <typename C>
 struct construct_segment<C, Bezier2p> {
 	C&	c_;
 	construct_segment(C& c) : c_(c) {}
-	void operator()(const Point2& p1, const Point2& p2, const Bezier2p& example)
+	void operator()(const Point2& p1, const Point2& p2, const Bezier2p& e1, const Bezier2p& e2)
 	{
-		Bezier2p clone(example);
+		Bezier2p clone(e1);
 		clone.p1 = p1;
 		clone.p2 = p2;
 		clone.c1 = p1;
 		clone.c2 = p2;
+		c_.push_back(clone);
+	}
+};
+
+template <typename C>
+struct construct_segment<C, Bezier2uv> {
+	C&	c_;
+	construct_segment(C& c) : c_(c) {}
+	void operator()(const Point2& p1, const Point2& p2, const Bezier2uv& e1, const Bezier2uv& e2)
+	{
+		DebugAssert(p1 == e1.p2);
+		DebugAssert(p2 == e2.p1);
+		Bezier2uv clone;
+		clone.p1 = clone.c1 = p1;
+		clone.p2 = clone.c2 = p2;
+		clone.uv.p1 = clone.uv.c1 = e1.uv.p2;
+		clone.uv.p2 = clone.uv.c2 = e2.uv.p1;
+		
 		c_.push_back(clone);
 	}
 };
@@ -795,7 +1017,7 @@ bool	cap_edge_h(const C& in_segs, F make_curve, double y, int dir)
 			{
 				if(is_open)
 				{
-					make_curve(Point2(prev_x,y),Point2(now_x,y),*prev_curve);
+					make_curve(Point2(prev_x,y),Point2(now_x,y),*prev_curve, *now_curve);
 					is_open = false;
 				} 
 				else
@@ -827,9 +1049,9 @@ bool	cap_edge_h(const C& in_segs, F make_curve, double y, int dir)
 			if(is_open)
 			{
 				if(dir == 1)
-					make_curve(Point2(prev_x,y),Point2(now_x,y),*prev_curve);
+					make_curve(Point2(prev_x,y),Point2(now_x,y),*prev_curve, *now_curve);
 				else
-					make_curve(Point2(now_x,y),Point2(prev_x,y),*now_curve);
+					make_curve(Point2(now_x,y),Point2(prev_x,y),*now_curve, *prev_curve);
 				prev_x = now_x;
 				prev_curve = now_curve;				
 			}
@@ -855,7 +1077,7 @@ bool	cap_edge_h(const C& in_segs, F make_curve, double y, int dir)
 			{
 				if(is_open)
 				{
-					make_curve(Point2(now_x,y),Point2(prev_x,y),*prev_curve);
+					make_curve(Point2(now_x,y),Point2(prev_x,y),*now_curve, *prev_curve);
 					is_open = false;
 				} else
 				{
@@ -936,7 +1158,7 @@ bool	cap_edge_v(const C& in_segs, F make_curve, double x, int dir)
 			{
 				if(is_open)
 				{
-					make_curve(Point2(x,prev_y),Point2(x,now_y),*prev_curve);
+					make_curve(Point2(x,prev_y),Point2(x,now_y),*prev_curve, *now_curve);
 					is_open = false;
 				} 
 				else
@@ -968,9 +1190,9 @@ bool	cap_edge_v(const C& in_segs, F make_curve, double x, int dir)
 			if(is_open)
 			{
 				if(dir == 1)
-					make_curve(Point2(x,prev_y),Point2(x,now_y),*prev_curve);
+					make_curve(Point2(x,prev_y),Point2(x,now_y),*prev_curve, *now_curve);
 				else
-					make_curve(Point2(x,now_y),Point2(x,prev_y),*now_curve);
+					make_curve(Point2(x,now_y),Point2(x,prev_y),*now_curve, *prev_curve);
 				prev_y = now_y;
 				prev_curve = now_curve;
 			}
@@ -996,7 +1218,7 @@ bool	cap_edge_v(const C& in_segs, F make_curve, double x, int dir)
 			{
 				if(is_open)
 				{
-					make_curve(Point2(x,now_y),Point2(x,prev_y),*now_curve);
+					make_curve(Point2(x,now_y),Point2(x,prev_y),*now_curve, *prev_curve);
 					is_open = false;
 				} else
 				{
@@ -1071,6 +1293,10 @@ struct split_traits<Bezier2> {
 };
 template<>
 struct split_traits<Bezier2p> {		// needed?  I don't know.  C++ paranoia!!
+	static const int N = 4;
+};
+template<>
+struct split_traits<Bezier2uv> {		// needed?  I don't know.  C++ paranoia!!
 	static const int N = 4;
 };
 
@@ -1332,6 +1558,12 @@ int side_of_clipping_line<Segment2p>(const Segment2p& p, const clipping_line& l)
 }
 
 template<>
+int side_of_clipping_line<Segment2uv>(const Segment2uv& p, const clipping_line& l)
+{
+	return side_of_clipping_line<Segment2>(p,l);
+}
+
+template<>
 int side_of_clipping_line<Bezier2>(const Bezier2& b, const clipping_line& l)
 {
 	double t[4];
@@ -1348,6 +1580,12 @@ int side_of_clipping_line<Bezier2>(const Bezier2& b, const clipping_line& l)
 
 template<>
 int side_of_clipping_line<Bezier2p>(const Bezier2p& p, const clipping_line& l)
+{
+	return side_of_clipping_line<Bezier2>(p,l);
+}
+
+template<>
+int side_of_clipping_line<Bezier2uv>(const Bezier2uv& p, const clipping_line& l)
 {
 	return side_of_clipping_line<Bezier2>(p,l);
 }
@@ -1696,12 +1934,22 @@ bool clip_polygon(const vector<Polygon2p>& in_pwh, vector<vector<Polygon2p> >& o
 	return clip_general_polygon(in_pwh,out_pwh_list,box);
 }
 
+bool clip_polygon(const vector<Polygon2uv>& in_pwh, vector<vector<Polygon2uv> >& out_pwh_list, const Bbox2& box)
+{
+	return clip_general_polygon(in_pwh,out_pwh_list,box);
+}
+
 bool	clip_polygon(const vector<BezierPolygon2>& in_pwh, vector<vector<BezierPolygon2> >& out_pwh_list, const Bbox2& box)
 {
 	return clip_general_polygon(in_pwh,out_pwh_list,box);
 }
 
 bool	clip_polygon(const vector<BezierPolygon2p>& in_pwh, vector<vector<BezierPolygon2p> >& out_pwh_list, const Bbox2& box)
+{
+	return clip_general_polygon(in_pwh,out_pwh_list,box);
+}
+
+bool	clip_polygon(const vector<BezierPolygon2uv>& in_pwh, vector<vector<BezierPolygon2uv> >& out_pwh_list, const Bbox2& box)
 {
 	return clip_general_polygon(in_pwh,out_pwh_list,box);
 }
