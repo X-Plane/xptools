@@ -561,12 +561,19 @@ void WED_GatewayExportDialog::Submit()
 		WED_Export_Target old_target = gExportTarget;
 		gExportTarget = wet_gateway;
 
-		if(!WED_ValidateApt(mResolver, NULL, apt))
+		validation_result_t val_res = WED_ValidateApt(mResolver, NULL, apt, true);
+		if(val_res == validation_warnings_only)
+			if(ConfirmMessage("Export to Gateway despite warnings ?", "Proceed", "Cancel"))
+			{
+				val_res = validation_clean;
+			}
+		
+		if( val_res != validation_clean)
 		{
 			gExportTarget = old_target;
 			return;
 		}
-
+		
 		ILibrarian * lib = WED_GetLibrarian(mResolver);
 
 		string targ_folder("tempXXXXXX");

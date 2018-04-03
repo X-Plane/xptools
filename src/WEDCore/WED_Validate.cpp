@@ -2334,7 +2334,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 }
 
 
-bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl)
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2439,7 +2439,7 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 
 	if(!msgs.empty())
 	{
-		new WED_ValidateDialog(resolver, pane, msgs);
+		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs);
 
 /*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");
@@ -2455,9 +2455,10 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 			DoUserAlert((string("No errors exist, but there is at least one warning:\n\n") + msgs.front().msg
 			                     + "\n\nFor a full list of messages see\n" + logfile).c_str());
 */
+		if(first_error == msgs.end())
+			return validation_warnings_only;
+		else
+			return validation_errors;
 	}
-	if(first_error != msgs.end())
-		return GATEWAY_IMPORT_FEATURES;
-	else
-		return msgs.empty() || GATEWAY_IMPORT_FEATURES;
+	else return validation_clean;
 }
