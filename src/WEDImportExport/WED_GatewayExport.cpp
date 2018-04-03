@@ -561,7 +561,7 @@ void WED_GatewayExportDialog::Submit()
 		WED_Export_Target old_target = gExportTarget;
 		gExportTarget = wet_gateway;
 
-		validation_result_t val_res = WED_ValidateApt(mResolver, NULL, apt, true);
+		validation_result_t val_res = WED_ValidateApt(mResolver, NULL, apt, true); // suppress error dialog, as OSX can't handle nested modal windows
 		if(val_res == validation_warnings_only)
 		{
 			if(ConfirmMessage("Validation warnings exist. Continue to export to gateway ?", "Proceed", "Cancel"))
@@ -575,6 +575,7 @@ void WED_GatewayExportDialog::Submit()
 		if( val_res != validation_clean)
 		{
 			gExportTarget = old_target;
+			this->AsyncDestroy();   // save the user having to cancel the submission
 			return;
 		}
 		
