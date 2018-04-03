@@ -563,10 +563,14 @@ void WED_GatewayExportDialog::Submit()
 
 		validation_result_t val_res = WED_ValidateApt(mResolver, NULL, apt, true);
 		if(val_res == validation_warnings_only)
-			if(ConfirmMessage("Export to Gateway despite warnings ?", "Proceed", "Cancel"))
-			{
+		{
+			if(ConfirmMessage("Validation warnings exist. Continue to export to gateway ?", "Proceed", "Cancel"))
 				val_res = validation_clean;
-			}
+		}
+		else if(val_res == validation_errors)
+		{
+			DoUserAlert("Can not export to gateway due to validation errors.");
+		}
 		
 		if( val_res != validation_clean)
 		{
