@@ -984,7 +984,6 @@ void DSF_AccumPolygonWithHolesBezier(
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-//	cbs->BeginPolygonWinding_f(writer);
 	for(vector<BezierPolygon2>::iterator w = poly.begin(); w != poly.end(); ++w)
 	{
 		cbs->BeginPolygonWinding_f(writer);
@@ -999,10 +998,12 @@ void DSF_AccumPolygonWithHolesBezier(
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-	cbs->BeginPolygonWinding_f(writer);
 	for(int n = 0; n < poly.size(); ++n)
-	DSF_AccumPolygonBezier(poly[n], bounds, cbs, writer);
-	cbs->EndPolygonWinding_f(writer);
+	{
+		cbs->BeginPolygonWinding_f(writer);
+		DSF_AccumPolygonBezier(poly[n], bounds, cbs, writer);
+		cbs->EndPolygonWinding_f(writer);
+	}
 }	
 
 void DSF_AccumPolygonWithHolesBezier(
@@ -1011,10 +1012,12 @@ void DSF_AccumPolygonWithHolesBezier(
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-	cbs->BeginPolygonWinding_f(writer);
 	for(int n = 0; n < poly.size(); ++n)
-	DSF_AccumPolygonBezier(poly[n], bounds, cbs, writer);
-	cbs->EndPolygonWinding_f(writer);
+	{
+		cbs->BeginPolygonWinding_f(writer);
+		DSF_AccumPolygonBezier(poly[n], bounds, cbs, writer);
+		cbs->EndPolygonWinding_f(writer);
+	}
 }	
 
 
@@ -1039,10 +1042,12 @@ void DSF_AccumPolygonWithHoles(
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-	cbs->BeginPolygonWinding_f(writer);
 	for(int n = 0; n < poly.size(); ++n)
+	{
+		cbs->BeginPolygonWinding_f(writer);
 		DSF_AccumPolygon(poly[n], bounds, cbs, writer);
-	cbs->EndPolygonWinding_f(writer);
+		cbs->EndPolygonWinding_f(writer);
+	}
 }
 
 void DSF_AccumPolygonWithHoles(
@@ -1051,10 +1056,12 @@ void DSF_AccumPolygonWithHoles(
 						const DSFCallbacks_t *				cbs, 
 						void *								writer)
 {
-	cbs->BeginPolygonWinding_f(writer);
 	for(int n = 0; n < poly.size(); ++n)
+	{
+		cbs->BeginPolygonWinding_f(writer);
 		DSF_AccumPolygon(poly[n], bounds, cbs, writer);
-	cbs->EndPolygonWinding_f(writer);
+		cbs->EndPolygonWinding_f(writer);
+	}
 }
 
 
