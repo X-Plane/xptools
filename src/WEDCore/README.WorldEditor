@@ -13,6 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.7.1 git
+	- fix bezier handle rotation in TCE windows vertex tool
+
 WED 1.7.0 r2 3/29/18
 	- WED-1001 fix crash when clearing hierarchy search box
 	- fix bug (windows only) preventing gateway submission for some users
