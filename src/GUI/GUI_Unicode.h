@@ -79,6 +79,8 @@ inline const UTF8 *		UTF8_prev(const UTF8 * string);
 
 inline		 UTF8 *		UTF8_next(		 UTF8 * string);
 inline const UTF8 *		UTF8_next(const UTF8 * string);
+inline		 UTF8 *		UTF8_next(		 UTF8 * string, UTF8 * stop);
+inline const UTF8 *		UTF8_next(const UTF8 * string, const UTF8 * stop);
 
 inline bool				UTF8_IsValid(const UTF8 * start, const UTF8 * end);					// Is this a valid UTF8 string?  UTF8 has string bit-patterns; often we can tell if we are UTF8 or not!
 inline bool				UTF8_IsValid(const string& utf8_str);								// Just for convenience.
@@ -158,6 +160,26 @@ inline const UTF8 *	UTF8_next(const UTF8 * string)
 		++string;
 	return string;
 }
+
+inline UTF8 *	UTF8_next(		 UTF8 * string, UTF8 * stop)
+{
+	string = UTF8_align(string);
+	++string;
+	while(string != stop && (*string & 0xC0) == 0x80)
+		++string;
+	return string;
+}
+
+inline const UTF8 *	UTF8_next(const UTF8 * string, const UTF8 * stop)
+{
+	string = UTF8_align(string);
+	++string;
+	while(string != stop && (*string & 0xC0) == 0x80)
+		++string;
+	return string;
+}
+
+
 
 
 inline bool			UTF8_IsValid(const UTF8 * s, const UTF8 * e)
