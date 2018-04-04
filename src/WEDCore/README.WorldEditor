@@ -17,6 +17,8 @@ WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool
 	- WED-1006 adjust airport overall size validation for lattitude
 	- WED-1007 fix inability to export to DSF w/validation warnings present
+	- WED-1008 prevent ability to open multiple validation windows on OSX
+	- WED 1009 fix crash on OSX when exporting Orthophotos
 
 WED 1.7.0 r2 3/29/18
 	- WED-1001 fix crash when clearing hierarchy search box
