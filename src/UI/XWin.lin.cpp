@@ -43,12 +43,10 @@ XWin::XWin(
 	// But what comes next?
 	// Anyway, since many have this problem, 'Oxygen' has a property introduced what is now also accepted by qt-curve. 
 	// Perhaps it becomes a standard.
-	setProperty( "_kde_no_window_grab", true ); 
-	//mroe: WA_DeleteOnClose is not set by default , we need this to get the entire thing really removed from memory
-	//to be save we do it only for toplevel windows. All Clientwidges should be signaled by their parents anyway
-	//all XWinGl windows are toplevel
-	if(parent == NULL)
-		setAttribute(Qt::WA_DeleteOnClose, true);
+	setProperty( "_kde_no_window_grab", true );
+	//mroe: WA_DeleteOnClose is not set by default , we need this to get all our destr called
+	//and the entire thing really removed from memory
+	setAttribute(Qt::WA_DeleteOnClose, true);
 
 	setFocusPolicy(Qt::StrongFocus);
 	setMouseTracking(true);
@@ -68,8 +66,7 @@ XWin::XWin(int default_dnd, QWidget *parent) : QMainWindow(parent), mInited(fals
 
 	setProperty( "_kde_no_window_grab", true );
 
-	if(parent == NULL)
-		setAttribute(Qt::WA_DeleteOnClose, true);
+	setAttribute(Qt::WA_DeleteOnClose, true);
 
 	setMouseTracking(true);
 	setFocusPolicy(Qt::StrongFocus);
