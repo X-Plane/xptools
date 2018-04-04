@@ -15,22 +15,23 @@ CHANGE HISTORY
 
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool
-	- WED-1006 adjust airport overall size validation for lattitude
-	- WED-1007 fix inability to export to DSF w/validation warnings present
-	- WED-1008 prevent ability to open multiple validation windows on OSX
-	- WED 1009 fix crash on OSX when exporting Orthophotos
+	- WED-1006: adjust airport overall size validation for lattitude
+	- WED-1007: fix inability to export to DSF w/validation warnings present
+	- WED-1008: prevent ability to open multiple validation windows on OSX
+	- WED-943,1003 fix crashes on export of certain Draped Runway Signs
+	- WED 1009: fix crash on OSX when exporting Orthophotos
 
 WED 1.7.0 r2 3/29/18
-	- WED-1001 fix crash when clearing hierarchy search box
+	- WED-1001: fix crash when clearing hierarchy search box
 	- fix bug (windows only) preventing gateway submission for some users
 	- Fix for infinite loop when word-wrapping long strings that have no newlines
 
 WED 1.7.0 r1 3/17/18
-	- WED-995 fix update of runway textures & properties not showing immediately
+	- WED-995: fix update of runway textures & properties not showing immediately
 
 WED 1.7.0 Beta2 3/6/18
 	- fix crash on OSX at scenery load time with worldmap background enabled
-	- WED-992 fix crash on Windows when re-opening preferences window
+	- WED-992: fix crash on Windows when re-opening preferences window
 
 WED 1.7.0 Beta1 2/26/18
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
