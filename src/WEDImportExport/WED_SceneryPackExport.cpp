@@ -58,7 +58,7 @@ int		WED_CanExportPack(IResolver * resolver)
 void	WED_DoExportPack(WED_Document * resolver, WED_MapPane * pane)
 {
 	// Just don't ever export if we are invalid.  Avoid the case where we write junk to a file!
-	if(WED_ValidateApt(resolver, pane) > validation_warnings_only)
+	if(!WED_ValidateApt(resolver, pane))
 		return;
 
 	ILibrarian * l = WED_GetLibrarian(resolver);
