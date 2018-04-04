@@ -1142,7 +1142,7 @@ static void ExportPOL(const char * relativeDDSP, const char * relativePOLP, WED_
 	float centerLat = (p2.y() + p1.y())/2;
 	float centerLon = (p2.x() + p1.x())/2;
 	//-------------------------------------------
-	pol_info_t out_info = {n,25.000000,25.000000,false,false,"",0,
+	pol_info_t out_info = {n,false,25.000000,25.000000,false,false,"",0,
 		/*<LOAD_CENTER>*/centerLat,centerLon,LonLatDistMeters(p1.x(),p1.y(),p2.x(),p2.y()),inHeight/*/>*/};
 	rmgr->MakePol(relativePOLP,out_info);
 }
