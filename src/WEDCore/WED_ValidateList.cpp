@@ -60,6 +60,7 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 	mZoom(1.05)
 {
 	// mis-using this structure to get the table displayed
+	bool warnings_only = true;
 	for(int i = 0; i < msgs.size(); ++i)
 	{
 		AptInfo_t apt;
@@ -67,7 +68,15 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 			msgs[i].airport->GetICAO(apt.icao);
 		else
 			apt.icao = "Off Airport";
-		apt.name  = msgs[i].err_code > warnings_start_here ? "Warning: " : "Error: ";
+		if(msgs[i].err_code > warnings_start_here)
+		{
+			apt.name  = "Warning: ";
+		}
+		else
+		{
+			apt.name  = "Error: ";
+			warnings_only = false;
+		}
 		apt.name += msgs[i].msg;
 		mMsgs.push_back(apt);
 	}
@@ -160,13 +169,16 @@ WED_ValidateDialog::WED_ValidateDialog(WED_Document * resolver, WED_MapPane * pa
 	holder->SetSticky(1,1,1,0);
 	
 	GUI_Button * cncl_btn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
-	cncl_btn->SetBounds(5,5,155,GUI_GetImageResourceHeight("push_buttons.png") / 3);
-	cncl_btn->Show();
+	cncl_btn->SetBounds(5,5,180,GUI_GetImageResourceHeight("push_buttons.png") / 3);
 	cncl_btn->SetSticky(1,1,0,0);
-	cncl_btn->SetDescriptor("Dismiss & edit scenery");
 	cncl_btn->SetMsg(kMsg_Cancel,0);
 	cncl_btn->SetParent(holder);
 	cncl_btn->AddListener(this);
+	if(warnings_only)
+		cncl_btn->SetDescriptor("Waive warnings & proceed");
+	else
+		cncl_btn->SetDescriptor("Dismiss & edit scenery");
+	cncl_btn->Show();
 
 	mZoomBtn = new GUI_Button("push_buttons.png",btn_Push,k_reg, k_hil,k_reg,k_hil);
 	mZoomBtn->SetBounds(155,5,260,GUI_GetImageResourceHeight("push_buttons.png") / 3);
