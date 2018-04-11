@@ -400,7 +400,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
 #endif	
-	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
+	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
 	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
 	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;

@@ -955,7 +955,7 @@ static void AnyTruckRouteNearRunway( const RunwayInfo& runway_info,
 	
 	for(TaxiRouteInfoVec_t::const_iterator route_itr = all_taxiroutes.begin(); route_itr != all_taxiroutes.end(); ++route_itr)
 	{
-		if (runway_info.corners_geo.intersects(route_itr->taxiroute_segment_geo) == true)
+		if (runway_hit_box.intersects(route_itr->taxiroute_segment_geo) == true)
 		{
 			
 			string msg = "Truck Route " + route_itr->taxiroute_name + " intersects with runway " + runway_info.runway_name;

@@ -274,6 +274,15 @@ struct	Segment2 {
 										if (y == p1.y_) 		return p1.x_;
 										if (y == p2.y_) 		return p2.x_;
 										return p1.x_ + (p2.x_ - p1.x_) * (y - p1.y_) / (p2.y_ - p1.y_); }
+	double t_at_x(double x) const {		if(p1.x_ == p2.x_)		return 0.5;
+										if(x == p1.x_)			return 0.0;
+										if(x == p2.x_)			return 1.0;
+										return (x - p1.x_) / (p2.x_ - p1.x_); }
+	double t_at_y(double y) const {		if(p1.y_ == p2.y_)		return 0.5;
+										if(y == p1.y_)			return 0.0;
+										if(y == p2.y_)			return 1.0;
+										return (y - p1.y_) / (p2.y_ - p1.y_); }
+
 
 	bool	is_vertical(void) const { return p1.x_ == p2.x_; }
 	bool	is_horizontal(void) const { return p1.y_ == p2.y_; }
