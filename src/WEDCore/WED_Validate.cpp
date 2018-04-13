@@ -2034,8 +2034,23 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	WED_GetAllRunwaysOneway(apt,legal_rwy_oneway);
 	WED_GetAllRunwaysTwoway(apt,legal_rwy_twoway);
 
-	if(runways.empty() && helipads.empty() && sealanes.empty())
-		msgs.push_back(validation_error_t(string("The airport '") + name + "' contains no runways, sea lanes, or helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+	switch(apt->GetAirportType())
+	{
+		case type_Airport:
+			if(runways.empty())
+				msgs.push_back(validation_error_t("The airport contains no runways.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+			break;
+		case type_Heliport:
+			if(helipads.empty())
+				msgs.push_back(validation_error_t("The heliport contains no helipads.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+			break;
+		case type_Seaport:
+			if(sealanes.empty())
+				msgs.push_back(validation_error_t("The seaport contains no sea lanes.", err_airport_no_rwys_sealanes_or_helipads, apt,apt));
+			break;
+		default:
+			Assert("Unknown Airport Type");
+	}	
 	
 	#if !GATEWAY_IMPORT_FEATURES
 	WED_DoATCRunwayChecks(*apt, msgs);

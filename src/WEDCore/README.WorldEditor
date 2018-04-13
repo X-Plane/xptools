@@ -13,6 +13,9 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.7.1
+	- WED-1018 make validation for at least one run/sealane, heliport specific to airport type
+
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool
 	- WED-1006: adjust airport overall size validation for lattitude
