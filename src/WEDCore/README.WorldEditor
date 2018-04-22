@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 1.7.1
 	- WED-1018 make validation for at least one run/sealane, heliport specific to airport type
+	- fix typo in CCW wound polygon error text
 
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool

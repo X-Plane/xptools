@@ -535,7 +535,7 @@ static void ValidateOnePolygon(WED_GISPolygon* who, validation_error_vector& msg
 					{
 						string nam; who->GetName(nam);
 						string msg = string(child ? "Hole in " : "") + who->HumanReadableType() + " '" + nam + "' is wound " +
-											(child ? "counter" : "r") + "clock wise. Reverse selected component to fix this.";
+											(child ? "counter" : "") + "clock wise. Reverse selected component to fix this.";
 						msgs.push_back(validation_error_t(msg, 	err_gis_poly_wound_clockwise, who->GetNthChild(child), apt));
 					}
 				}
