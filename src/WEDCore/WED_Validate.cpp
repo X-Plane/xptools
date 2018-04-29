@@ -90,8 +90,8 @@
 #include <iomanip>
 #include <istream>
 
-#define MAX_LON_SPAN_GATEWAY 0.2
-#define MAX_LAT_SPAN_GATEWAY 0.2
+#define MAX_LON_SPAN_GATEWAY 0.15
+#define MAX_LAT_SPAN_GATEWAY 0.15
 
 // Checks for zero length sides - can be turned off for grandfathered airports.
 #define CHECK_ZERO_LENGTH 1
@@ -762,6 +762,14 @@ static void ValidateAirportFrequencies(WED_Airport* who, validation_error_vector
 				{
 					if(is_xplane_atc_related)
 						found_one_valid = true;
+					
+					Bbox2 bounds;
+					who->GetBounds(gis_Geo, bounds);
+					if(!is_25k_raster && (bounds.ymin() < 34.0 || bounds.xmin() < -11.0 || bounds.xmax() > 35.0) )     // rougly the outline of europe
+					{
+						msgs.push_back(validation_error_t(string("ATC frequency ") + freq_str + " on 8.33kHz raster is used outside of Europe.",
+							warn_atc_freq_on_8p33khz_spacing,	*freq, who));
+					}
 				}
 			}
 		}

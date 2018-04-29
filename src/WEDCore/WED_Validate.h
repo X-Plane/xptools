@@ -143,6 +143,7 @@ enum validate_error_t
 	err_truck_parking_no_ground_taxi_routes,
 	warnings_start_here,
 	warn_airport_name_style,
+	warn_atc_freq_on_8p33khz_spacing,
 	warn_truckroutes_but_no_starts,
 	warn_runway_matching_cifp_mislocated
 };

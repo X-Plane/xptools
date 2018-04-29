@@ -13,10 +13,11 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.1
+WED 1.8.0
 	Features:
 	- support X-Plane 1130 apt.dat format: 8.33kHz channel ATC frequencies
 	- validate Runway Use Departure Frequency has matching ATC Departure Frequency
+	- warn if using 8.33k raster frequencies outside of Europe
 
 WED 1.7.0 rc1 ?
    - WED-995 fix update of runway textures & properties not showing immediately
