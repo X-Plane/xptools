@@ -17,6 +17,7 @@ WED 1.7.1
 	- WED-1018: make validation for at least one run/sealane, heliport specific to airport type
 	- fix typo in CCW wound polygon error text
 	- WED-1024: Prevent some nodes turning into Bezier nodes after Marquee tool rotations under OSX
+	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool

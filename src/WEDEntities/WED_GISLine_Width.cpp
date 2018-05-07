@@ -270,7 +270,7 @@ void			WED_GISLine_Width::Rescale(GISLayer_t l,
 	GetCorners(l,corners);
 	for(int n = 0; n < 4; ++n)
 	{
-		corners[n].x_ = old_bounds.rescale_to_x(new_bounds,corners[n].x());
+		corners[n].x_ = old_bounds.rescale_to_x_projected(new_bounds,corners[n].x());
 		corners[n].y_ = old_bounds.rescale_to_y(new_bounds,corners[n].y());
 	}
 

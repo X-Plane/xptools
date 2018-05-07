@@ -56,9 +56,9 @@ GISClass_t		WED_GISPoint_Bezier::GetGISClass		(void				 ) const
 void			WED_GISPoint_Bezier::Rescale			(GISLayer_t l, const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
 	WED_GISPoint::Rescale(l, old_bounds, new_bounds);
-	ctrl_lon_lo.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_lo.value);
+	ctrl_lon_lo.value = old_bounds.rescale_to_xv_projected(new_bounds,ctrl_lon_lo.value);
 	ctrl_lat_lo.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_lo.value );
-	ctrl_lon_hi.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_hi.value);
+	ctrl_lon_hi.value = old_bounds.rescale_to_xv_projected(new_bounds,ctrl_lon_hi.value);
 	ctrl_lat_hi.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_hi.value );
 }
 
