@@ -20,6 +20,7 @@ WED 1.7.1
 	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	- WED-1032: Raise non-modal windows at re-activation to foreground (Windows, Lin/OSX do that already)
 	- WED-1000: Fix window deactivation issue on Linux
+	- WED-998: Prevent accidential moving of whole airports or locked items.
 
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool

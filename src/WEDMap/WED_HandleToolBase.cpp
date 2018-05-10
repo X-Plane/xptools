@@ -21,6 +21,7 @@
  *
  */
 
+#include "WED_Airport.h"
 #include "WED_HandleToolBase.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_ToolUtils.h"
@@ -40,6 +41,8 @@
 #include "IOperation.h"
 #include "WED_UIDefs.h"
 #include "MathUtils.h"
+#include "PlatformUtils.h"
+
 #if APL
 	#include <OpenGL/gl.h>
 #else
@@ -778,8 +781,21 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 	this->HandleClickDrag(inX, inY, inButton, modifiers);
 	if (mDragType == drag_Move)
 	{
-		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
-		if(op) op->CommitOperation();
+		ISelection * sel = WED_GetSelect(GetResolver());
+		IOperation * op = SAFE_CAST(IOperation, sel);
+		if (op)
+		{
+			int includes_airport = sel->IterateSelectionOr(Iterate_IsClass, (void*) WED_Airport::sClass);
+			if (includes_airport)
+			{
+				if(ConfirmMessage("This will move a whole Airport !", "Yes, move it", "No, cancel move"))
+					op->CommitOperation();
+				else
+					op->AbortOperation();
+			}
+			else
+				op->CommitOperation();
+		}
 		mSelManip.clear();
 	}
 	else if (mDragType == drag_PreMove)
