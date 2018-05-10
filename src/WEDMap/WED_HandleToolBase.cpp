@@ -226,60 +226,60 @@ int			WED_HandleToolBase::HandleClickDown			(int inX, int inY, int inButton, GUI
 	//-------------------------------- CONTROL LINK TAG-UP -------------------------------------------------------
 
 	if (mDragType == drag_None && ei_count > 0)
-	for (ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
-	{
-		eid = mHandles->GetNthEntityID(ei);
-		l_count = mHandles->GetLinks(eid);
-		for (n = 0; n < l_count; ++n)
+		for (ei = 0; ei < ei_count && mDragType == drag_None; ++ei)
 		{
-			bool active;
-			mHandles->GetNthLinkInfo(eid,n,&active, NULL);
-			if (!active) continue;
+			eid = mHandles->GetNthEntityID(ei);
+			l_count = mHandles->GetLinks(eid);
+			for (n = 0; n < l_count; ++n)
+			{
+				bool active;
+				mHandles->GetNthLinkInfo(eid,n,&active, NULL);
+				if (!active) continue;
 
-			Bezier2		b;
-			Segment2	s;
-			if (ControlLinkToCurve(mHandles,eid,n,b,s,GetZoomer()))
-			{
-				if (b.is_near(click_pt, LINE_DIST))
+				Bezier2		b;
+				Segment2	s;
+				if (ControlLinkToCurve(mHandles,eid,n,b,s,GetZoomer()))
 				{
-					mHandleIndex = n;
-					mDragType = drag_Links;
-					mHandleEntity = eid;
-					mHandles->BeginEdit();
-					mTrackPoint = GetZoomer()->PixelToLL(click_pt);
-					break;
+					if (b.is_near(click_pt, LINE_DIST))
+					{
+						mHandleIndex = n;
+						mDragType = drag_Links;
+						mHandleEntity = eid;
+						mHandles->BeginEdit();
+						mTrackPoint = GetZoomer()->PixelToLL(click_pt);
+						break;
+					}
 				}
-			}
-			else
-			{
-				if (within_seg(s,click_pt,LINE_DIST))
+				else
 				{
-					mHandleIndex = n;
-					mDragType = drag_Links;
-					mHandleEntity = eid;
-					mHandles->BeginEdit();
-					mTrackPoint = GetZoomer()->PixelToLL(click_pt);
-					break;
+					if (within_seg(s,click_pt,LINE_DIST))
+					{
+						mHandleIndex = n;
+						mDragType = drag_Links;
+						mHandleEntity = eid;
+						mHandles->BeginEdit();
+						mTrackPoint = GetZoomer()->PixelToLL(click_pt);
+						break;
+					}
 				}
 			}
 		}
-	}
 	//----------------------------------- ENTITY DRAG ------------------------------------------------------------
 
 	click_pt = GetZoomer()->PixelToLL(click_pt);
 	if (mDragType == drag_None && ei_count > 0)
-	for (ei = 0; ei < ei_count; ++ei)
-	{
-		eid = mHandles->GetNthEntityID(ei);
-		if (mHandles->PointOnStructure(eid, click_pt))
+		for (ei = 0; ei < ei_count; ++ei)
 		{
-			mDragType = drag_Ent;
-			mHandleEntity = eid;
-			mHandles->BeginEdit();
-			mTrackPoint = click_pt;
-			break;
+			eid = mHandles->GetNthEntityID(ei);
+			if (mHandles->PointOnStructure(eid, click_pt))
+			{
+				mDragType = drag_PreEnt;
+				mHandleEntity = eid;
+				mHandles->BeginEdit();
+				mTrackPoint = click_pt;
+				break;
+			}
 		}
-	}
 
 	//----------------------------------- CREATION DRAG ----------------------------------------------------------
 
@@ -678,6 +678,17 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 	if (inButton > 0) return;
 
 	switch(mDragType) {
+	case drag_PreEnt:
+		{
+			Point2 mSel(mSelX, mSelY);
+			double drag_dist = mSel.squared_distance(Point2(inX,inY));
+
+			if (drag_dist <	DRAG_START_DIST * DRAG_START_DIST)	// see if we drag'd far enough to "break loose" and actually move the object
+			{
+				break;
+			}
+			mDragType = drag_Ent;
+		}
 	case drag_Handles:
 	case drag_Links:
 	case drag_Ent:
@@ -728,7 +739,6 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 				break;
 			else 			// its a drag-move, but we really did not drag a single pixel. So we instead execute a single click select
 			{
-				printf("HandleClickDrag re-select\n");
 				IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 				if(op)
 				{
@@ -798,7 +808,7 @@ void		WED_HandleToolBase::HandleClickUp			(int inX, int inY, int inButton, GUI_K
 		}
 		mSelManip.clear();
 	}
-	else if (mDragType == drag_PreMove)
+	else if (mDragType == drag_PreMove || mDragType == drag_PreEnt)
 	{
 		IOperation * op = SAFE_CAST(IOperation, WED_GetSelect(GetResolver()));
 		if(op) op->AbortOperation();
@@ -839,7 +849,8 @@ void		WED_HandleToolBase::KillOperation(bool mouse_is_down)
 		mSelSave.clear();
 	} else if ( mDragType == drag_Links ||
 				mDragType == drag_Handles ||
-				mDragType == drag_Ent)
+				mDragType == drag_Ent ||
+				mDragType == drag_PreEnt )
 	{
 		mHandles->EndEdit();
 	}
@@ -973,7 +984,8 @@ void		WED_HandleToolBase::PreCommandNotification(GUI_Commander * focus_target, i
 		mSelSave.clear();
 	} else if ( mDragType == drag_Links ||
 				mDragType == drag_Handles ||
-				mDragType == drag_Ent)
+				mDragType == drag_Ent ||
+				mDragType == drag_PreEnt )
 	{
 		mHandles->EndEdit();
 	}

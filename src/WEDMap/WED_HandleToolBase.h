@@ -103,6 +103,7 @@ private:
 		drag_Handles,		// Control handles: We are dragging a single control handle
 		drag_Links,			// Control handles: We are dragging a line/link
 		drag_Ent,			// Control handles: We are dragging an entire entity.
+		drag_PreEnt,		// started marquee move, but still sticky
 		drag_Sel,			// We are selecting things
 		drag_Move,			// we are moving the selection
 		drag_PreMove,		// we have not yet dragged far enough to make the 'move' actually start
