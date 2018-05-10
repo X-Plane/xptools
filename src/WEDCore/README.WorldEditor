@@ -19,6 +19,7 @@ WED 1.7.1
 	- WED-1024: Prevent some nodes turning into Bezier nodes after Marquee tool rotations under OSX
 	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	- WED-1032: Raise non-modal windows at re-activation to foreground (Windows, Lin/OSX do that already)
+	- WED-1000: Fix window deactivation issue on Linux
 
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool
