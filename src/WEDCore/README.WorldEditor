@@ -13,7 +13,36 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.0a19
+WED 1.7.1
+	- WED-1018: make validation for at least one run/sealane, heliport specific to airport type
+	- fix typo in CCW wound polygon error text
+	- WED-1024: Prevent some nodes turning into Bezier nodes after Marquee tool rotations under OSX
+	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
+	- WED-1032: Raise non-modal windows at re-activation to foreground (Windows, Lin/OSX do that already)
+	- WED-1000: Fix window deactivation issue on Linux
+	- WED-1036: Keep "Upgrade  Ramps" from altering ramp start OpsType if such is already set
+
+WED 1.7.0 r3
+	- fix bezier handle rotation in TCE windows vertex tool
+	- WED-1006: adjust airport overall size validation for lattitude
+	- WED-1007: fix inability to export to DSF w/validation warnings present
+	- WED-1008: prevent ability to open multiple validation windows on OSX
+	- WED-943,1003 fix crashes on export of certain Draped Runway Signs
+	- WED 1009: fix crash on OSX when exporting Orthophotos
+
+WED 1.7.0 r2 3/29/18
+	- WED-1001: fix crash when clearing hierarchy search box
+	- fix bug (windows only) preventing gateway submission for some users
+	- Fix for infinite loop when word-wrapping long strings that have no newlines
+
+WED 1.7.0 r1 3/17/18
+	- WED-995: fix update of runway textures & properties not showing immediately
+
+WED 1.7.0 Beta2 3/6/18
+	- fix crash on OSX at scenery load time with worldmap background enabled
+	- WED-992: fix crash on Windows when re-opening preferences window
+
+WED 1.7.0 Beta1 2/26/18
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files
 	- Memory allocation improvements - WED now uses 30% less memory on very large sceneries
 	- Gateway communication speedup - now using compressed http transfer for all downloads
@@ -64,6 +93,7 @@ WED 1.7.0a19
 	- WED-984: Fix red ground traffic routes when hotzone tags still set
 	- WED-801: Fix GatewayExport on Win & OSX not always creating a temporary directory for the MasterZipBlob
 	- fix Select Local/Laminar/3rd Party/Missing Items menu function only catching objects, but no polygons/lines etc
+	- runway ATC route validation not running on some runways mentioned in flow, name starting w/no leading zero
 	
 WED 1.6.1r1 12/11/17
 	Features:

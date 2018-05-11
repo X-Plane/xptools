@@ -88,6 +88,54 @@ void	BezierPointToBezier(const BezierPoint2p& p1,const BezierPoint2p& p2, Bezier
 
 
 
+void	BezierToBezierPointStart (const Bezier2uv& next,BezierPoint2uv& out_pt)
+{
+	out_pt.lo = out_pt.pt = next.p1;
+	out_pt.hi = next.c1;
+	out_pt.uv.lo = out_pt.uv.pt = next.uv.p1;
+	out_pt.uv.hi = next.uv.c1;
+}
+
+void	BezierToBezierPointMiddle(const Bezier2uv& prev,const Bezier2uv& next,BezierPoint2uv& out_pt)
+{
+	// CGAL gives imprecise matching...need to investigate.
+//	DebugAssert(prev.p2 == next.p1);
+	out_pt.lo = prev.c2;
+	out_pt.hi = next.c1;
+	out_pt.pt = next.p1;
+
+	out_pt.uv.lo = prev.uv.c2;
+	out_pt.uv.hi = next.uv.c1;
+	out_pt.uv.pt = next.uv.p1;
+}
+
+void	BezierToBezierPointEnd	 (const Bezier2uv& prev,					BezierPoint2uv& out_pt)
+{
+	out_pt.lo = prev.c2;
+	out_pt.hi = out_pt.pt = prev.p2;
+
+	out_pt.uv.lo = prev.uv.c2;
+	out_pt.uv.hi = out_pt.uv.pt = prev.uv.p2;
+}
+
+void	BezierPointToBezier(const BezierPoint2uv& p1,const BezierPoint2uv& p2, Bezier2uv& b)
+{
+	b.p1 = p1.pt;
+	b.c1 = p1.hi;
+	b.c2 = p2.lo;
+	b.p2 = p2.pt;
+
+	b.uv.p1 = p1.uv.pt;
+	b.uv.c1 = p1.uv.hi;
+	b.uv.c2 = p2.uv.lo;
+	b.uv.p2 = p2.uv.pt;
+}
+
+
+
+
+
+
 /************************************************************************************************************************************************************************************
  *
  ************************************************************************************************************************************************************************************/
@@ -149,6 +197,24 @@ bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2p>& o
 	return true;
 }
 
+bool	WED_VectorForPointSequence(IGISPointSequence * in_seq, vector<Segment2uv>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b, uv;
+		if(in_seq->GetSide(gis_Geo, n, b))
+			return false;
+		if(in_seq->GetSide(gis_UV, n, uv))
+			return false;
+
+		out_pol.push_back(Segment2uv(b.p1,b.p2,uv.p1, uv.p2));
+	}
+	return true;
+}
+
+
+
 bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon2& p, int wanted_orientation)
 {
 	vector<Segment2> pp;
@@ -180,22 +246,23 @@ bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon2p& p, int wante
 	return true;		
 }
 
-bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2p>& out_pol)
+bool WED_PolygonForPointSequence(IGISPointSequence * ps, Polygon2uv& p, int wanted_orientation)
 {
-	out_pol.clear();
-	int nn = in_poly->GetNumHoles();
-	out_pol.reserve(nn+1);
-	out_pol.push_back(Polygon2p());
-	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.back(), COUNTERCLOCKWISE))
+	if(!WED_VectorForPointSequence(ps,p))
 		return false;
-	for(int n = 0; n < nn; ++n)
+	if ((wanted_orientation == CLOCKWISE		&&  is_ccw_polygon_seg(p.begin(),p.end())) ||
+		(wanted_orientation == COUNTERCLOCKWISE && !is_ccw_polygon_seg(p.begin(),p.end())))
 	{
-		out_pol.push_back(Polygon2p());
-		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), out_pol.back(), CLOCKWISE))
-			return false;
+		reverse(p.begin(),p.end());
+		for(Polygon2uv::iterator i = p.begin(); i != p.end(); ++i)
+			swap(i->p1,i->p2);
 	}
-	return true;
+	return true;		
 }
+
+
+
+
 
 bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2>& out_pol)
 {
@@ -214,6 +281,45 @@ bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2>& out
 	return true;
 }
 
+bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2p>& out_pol)
+{
+	out_pol.clear();
+	int nn = in_poly->GetNumHoles();
+	out_pol.reserve(nn+1);
+	out_pol.push_back(Polygon2p());
+	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.back(), COUNTERCLOCKWISE))
+		return false;
+	for(int n = 0; n < nn; ++n)
+	{
+		out_pol.push_back(Polygon2p());
+		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), out_pol.back(), CLOCKWISE))
+			return false;
+	}
+	return true;
+}
+
+bool	WED_PolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<Polygon2uv>& out_pol)
+{
+	out_pol.clear();
+	int nn = in_poly->GetNumHoles();
+	out_pol.reserve(nn+1);
+	out_pol.push_back(Polygon2uv());
+	if (!WED_PolygonForPointSequence(in_poly->GetOuterRing(), out_pol.back(), COUNTERCLOCKWISE))
+		return false;
+	for(int n = 0; n < nn; ++n)
+	{
+		out_pol.push_back(Polygon2uv());
+		if (!WED_PolygonForPointSequence(in_poly->GetNthHole(n), out_pol.back(), CLOCKWISE))
+			return false;
+	}
+	return true;
+}
+
+
+
+
+
+
 void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2>& out_pol)
 {
 	int ns = in_seq->GetNumSides();
@@ -224,7 +330,6 @@ void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2
 		out_pol.push_back(b);
 	}
 }
-
 
 void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2p>& out_pol)
 {
@@ -238,6 +343,21 @@ void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2
 		out_pol.push_back(Bezier2p(b,bp.p1.x()));
 	}
 }
+
+void	WED_BezierVectorForPointSequence(IGISPointSequence * in_seq, vector<Bezier2uv>& out_pol)
+{
+	int ns = in_seq->GetNumSides();
+	for(int n = 0; n < ns; ++n)
+	{
+		Bezier2		b;
+		Bezier2		uv;
+		in_seq->GetSide(gis_Geo, n, b);
+		in_seq->GetSide(gis_UV, n, uv);
+		out_pol.push_back(Bezier2uv(b,uv));
+	}
+}
+
+
 
 void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, BezierPolygon2& out_pol, int orientation)
 {
@@ -269,7 +389,39 @@ void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, BezierPolygon
 			swap(i->c1,i->c2);
 		}
 	}
+}
+
+void	WED_BezierPolygonForPointSequence(IGISPointSequence * in_seq, BezierPolygon2uv& out_pol, int orientation)
+{
+	WED_BezierVectorForPointSequence(in_seq, out_pol);
+
+	if ((orientation == CLOCKWISE		 &&  is_ccw_polygon_seg(out_pol.begin(),out_pol.end())) ||
+		(orientation == COUNTERCLOCKWISE && !is_ccw_polygon_seg(out_pol.begin(),out_pol.end())))
+	{
+		reverse(out_pol.begin(),out_pol.end());
+		for(BezierPolygon2uv::iterator i = out_pol.begin(); i != out_pol.end(); ++i)
+		{
+			swap(i->p1,i->p2);
+			swap(i->c1,i->c2);
+		}
+	}
 	
+}
+
+
+
+void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2>& out_pol)
+{
+	int nn = in_poly->GetNumHoles();
+	out_pol.clear();
+	out_pol.reserve(nn+1);
+	out_pol.push_back(BezierPolygon2());
+	WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(),out_pol.back(), COUNTERCLOCKWISE);
+	for(int n = 0; n < nn; ++n)
+	{
+		out_pol.push_back(BezierPolygon2());
+		WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n),out_pol.back(), CLOCKWISE);
+	}
 }
 
 void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2p>& out_pol)
@@ -286,282 +438,25 @@ void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPo
 	}
 }
 
-void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2>& out_pol)
+void	WED_BezierPolygonWithHolesForPolygon(IGISPolygon * in_poly, vector<BezierPolygon2uv>& out_pol)
 {
 	int nn = in_poly->GetNumHoles();
 	out_pol.clear();
 	out_pol.reserve(nn+1);
-	out_pol.push_back(BezierPolygon2());
+	out_pol.push_back(BezierPolygon2uv());
 	WED_BezierPolygonForPointSequence(in_poly->GetOuterRing(),out_pol.back(), COUNTERCLOCKWISE);
 	for(int n = 0; n < nn; ++n)
 	{
-		out_pol.push_back(BezierPolygon2());
+		out_pol.push_back(BezierPolygon2uv());
 		WED_BezierPolygonForPointSequence(in_poly->GetNthHole(n),out_pol.back(), CLOCKWISE);
 	}
 }
 
 
+/********************************************************************************************************************************************
+ * MORE COMPLEX IGIS-BASED OPERATIONS
+ ********************************************************************************************************************************************/
 
-
-/************************************************************************************************************************************************************************************
- *
- ************************************************************************************************************************************************************************************/
-
-struct uv_vert {
-	uv_vert() { }
-	uv_vert(const Point2& ll, const Point2& st) : xy(ll), uv(st) { }
-	Point2	xy;
-	Point2	uv;
-};
-
-static UVMap_t *			out_map = NULL;
-static vector<const uv_vert *>	verts;
-static GLenum				vert_mode = GL_NONE;
-
-#if !IBM
-#define CALLBACK
-#endif
-
-static void CALLBACK uv_begin(GLenum mode)
-{
-	DebugAssert(verts.empty());
-	DebugAssert(mode == GL_TRIANGLES || mode == GL_TRIANGLE_STRIP || mode == GL_TRIANGLE_FAN);
-	vert_mode = mode;
-}
-
-static void CALLBACK uv_vertex(const GLfloat * v)
-{
-	const uv_vert * vv = (const uv_vert *) v;	
-	verts.push_back(vv);
-}
-
-static void uv_tri(const uv_vert * a,const uv_vert * b,const uv_vert * c)
-{
-	out_map->push_back(Triangle2(a->xy,b->xy,c->xy));
-	out_map->push_back(Triangle2(a->uv,b->uv,c->uv));
-}
-
-static void CALLBACK uv_end()
-{
-	DebugAssert(vert_mode == GL_TRIANGLES || vert_mode == GL_TRIANGLE_STRIP || vert_mode == GL_TRIANGLE_FAN);
-	DebugAssert(out_map != NULL);
-	
-	int i;
-	int nv = verts.size();
-	switch(vert_mode) {
-	case GL_TRIANGLES:
-		for(i = 2; i < nv; i += 3)
-			uv_tri(verts[i-2],verts[i-1],verts[i]);
-		break;
-	case GL_TRIANGLE_STRIP:
-		for(i = 2; i < nv; ++i)
-			if(i % 2)
-				uv_tri(verts[i-1],verts[i-2],verts[i]);
-			else
-				uv_tri(verts[i-2],verts[i-1],verts[i]);
-		break;
-	case GL_TRIANGLE_FAN:
-		for(i = 2; i < nv; ++i)
-			uv_tri(verts[0],verts[i-1],verts[i]);
-		break;
-	}
-	
-	vert_mode = GL_NONE;	
-	verts.clear();
-}
-
-static void	WED_MakeUVMap(const vector<vector<uv_vert> >& poly, UVMap_t& uvmap)
-{
-	uvmap.clear();
-	out_map = &uvmap;
-
-	GLUtriangulatorObj * tess = gluNewTess();
-
-	gluTessCallback(tess, GLU_TESS_BEGIN,	(void (CALLBACK *)(void))uv_begin);
-	gluTessCallback(tess, GLU_TESS_END,		(void (CALLBACK *)(void))uv_end);
-	gluTessCallback(tess, GLU_TESS_VERTEX,	(void (CALLBACK *)(void))uv_vertex);
-
-	gluBeginPolygon(tess);
-	
-	for(vector<vector<uv_vert> >::const_iterator w = poly.begin(); w != poly.end(); ++w)
-	{
-		if(w != poly.begin())
-			gluNextContour(tess, GLU_INTERIOR);
-		
-		for(vector<uv_vert>::const_iterator v = w->begin(); v != w->end(); ++v)
-		{
-			Point2 p = v->xy;
-			double vv[3] = { 
-					p.x(),
-					p.y(),
-					0 };
-			gluTessVertex(tess, vv, (GLvoid*) &*v);
-		}		
-	}
-	
-	
-	gluEndPolygon(tess);
-	gluDeleteTess(tess);	
-	out_map = NULL;
-}
-
-static bool WED_TO_UV_ps(IGISPointSequence * ps, vector<uv_vert>& out_vert)
-{
-	DebugAssert(ps->IsClosed());
-	
-	int n, ns = ps->GetNumSides();
-	for(n = 0; n < ns; ++n)
-	{
-		Bezier2		llb, uvb;
-		
-		if(!ps->HasLayer(gis_UV))
-			return false;
-		
-		bool bez_ll = ps->GetSide(gis_Geo, n, llb);
-		bool bez_uv = ps->GetSide(gis_UV, n, uvb);
-		
-		if(bez_ll != bez_uv)
-			return false;
-			
-		out_vert.push_back(uv_vert(llb.p1,uvb.p1));
-		
-		if(bez_ll)
-		{			
-			if(out_vert.back().xy != llb.c1)
-				out_vert.push_back(uv_vert(llb.c1,uvb.c1));
-			if(out_vert.back().xy != llb.c2 &&
-				llb.c2 != llb.p2)
-			out_vert.push_back(uv_vert(llb.c2,uvb.c2));
-		}
-	}
-	return true;
-}
-
-static bool WED_TO_UV_poly(IGISPolygon * pp, vector<vector<uv_vert> >& out_vert)
-{
-	out_vert.push_back(vector<uv_vert>());
-	if(!WED_TO_UV_ps(pp->GetOuterRing(), out_vert.back()))
-		return false;
-	
-	int h, hc = pp->GetNumHoles();
-	for(h = 0; h < hc; ++h)
-	{
-		if(!WED_TO_UV_ps(pp->GetNthHole(h), out_vert.back()))
-			return false;
-	}
-	return true;
-}
-
-bool	WED_MakeUVMap(
-						IGISPolygon *		poly, UVMap_t&	out_map)
-{
-	vector<vector<uv_vert> > verts;
-	
-	if(!WED_TO_UV_poly(poly,verts))
-		return false;
-	
-	WED_MakeUVMap(verts,out_map);
-	
-	return true;
-}
-	
-
-void WED_MapPoint(const UVMap_t&	in_map, const Point2& ll, Point2& uv)
-{
-	// If we find a point INSIDE a triangle, we take the bathymetric coordinates and we're done.
-	// If we are outside a triangle, we track the CLOSEST outside point, trying closer ones.
-	// We do this so that if the point is SLIGHTLY outside the mesh due to rounding error, we take the nearest
-	// triangle's three points to establish our bathymetric coordinate system.  This will produce basically
-	// perfect results for points just outside the mesh.
-	double									best_dist;
-	bool									found_one = false;
-
-	for(int n = 0; n < in_map.size(); n += 2)
-	{
-		// Special case: most points come from the source geo and need no interpolation - only
-		// points from DSF tile cuts need interp.  But the bathymetric area process is full of
-		// rounding error and borks our UV map.  So if we detect a direct hit on a corner, just
-		// take it verbatim...this cleans the UV map a bit.
-		if(in_map[n].p1 == ll)
-		{
-			uv = in_map[n+1].p1;
-			return;
-		}
-		if(in_map[n].p2 == ll)
-		{
-			uv = in_map[n+1].p2;
-			return;
-		}
-		if(in_map[n].p3 == ll)
-		{
-			uv = in_map[n+1].p3;
-			return;
-		}
-	
-		DebugAssert(in_map[n].is_ccw());
-		
-		bool is_in = in_map[n].inside_ccw(ll);
-		bool want_it = is_in;
-		if(!is_in)
-		{
-			if(found_one)
-			{
-				double my_dist =  	  in_map[n].squared_distance_ccw(ll);
-				if(my_dist < best_dist)
-				{
-					want_it = true;
-					best_dist = my_dist;
-				}
-			}
-			else
-			{
-				want_it = true;
-				found_one = true;
-				best_dist = in_map[n].squared_distance_ccw(ll);
-			}
-		}
-
-		if(want_it)
-		{
-			double a0, a1, a2;
-			if(in_map[n].bathymetric_interp(ll,a0, a1, a2))
-			{
-				uv = Point2(0.0,0.0) + 
-							Vector2(in_map[n+1].p1) * a0 +
-							Vector2(in_map[n+1].p2) * a1 +
-							Vector2(in_map[n+1].p3) * a2;
-				if(is_in)
-					return;
-			}
-			else
-			{
-				DebugAssert(!"Bathymetric failure.");
-			}
-		}
-	}
-}
-
-void	WED_MapPolygon(const UVMap_t&	in_map, const Polygon2& ll, Polygon2& uv)
-{
-	uv.clear();
-	for(Polygon2::const_iterator v = ll.begin(); v != ll.end(); ++v)
-	{
-		Point2	uvp;
-		WED_MapPoint(in_map, *v, uvp);
-		uv.push_back(uvp);
-	}
-}
-
-void	WED_MapPolygonWithHoles(const UVMap_t&	in_map, const vector<Polygon2>& ll, vector<Polygon2>& uv)
-{
-	uv.clear();
-	for(vector<Polygon2>::const_iterator h = ll.begin(); h != ll.end(); ++h)
-	{
-		Polygon2	hole_uv;
-		WED_MapPolygon(in_map, *h, hole_uv);
-		uv.push_back(hole_uv);
-	}
-}
 
 bool	WED_MergePoints(const vector<IGISEntity *>& in_points)
 {

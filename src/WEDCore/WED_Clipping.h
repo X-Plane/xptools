@@ -96,9 +96,10 @@ void	clip_segments(vector<Bezier2p>& out_segs, const Bbox2& box);
 // of out_pwh_list are undefined and should not be uesd.
 bool	clip_polygon(const vector<Polygon2>& in_pwh, vector<vector<Polygon2> >& out_pwh_list, const Bbox2& box);
 bool	clip_polygon(const vector<Polygon2p>& in_pwh, vector<vector<Polygon2p> >& out_pwh_list, const Bbox2& box);
+bool	clip_polygon(const vector<Polygon2uv>& in_pwh, vector<vector<Polygon2uv> >& out_pwh_list, const Bbox2& box);
 
 bool	clip_polygon(const vector<BezierPolygon2>& in_pwh, vector<vector<BezierPolygon2> >& out_pwh_list, const Bbox2& box);
 bool	clip_polygon(const vector<BezierPolygon2p>& in_pwh, vector<vector<BezierPolygon2p> >& out_pwh_list, const Bbox2& box);
-
+bool	clip_polygon(const vector<BezierPolygon2uv>& in_pwh, vector<vector<BezierPolygon2uv> >& out_pwh_list, const Bbox2& box);
 
 #endif

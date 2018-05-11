@@ -26,6 +26,8 @@
 #include "WED_Errors.h"
 #include "GISUtils.h"
 
+#define MIN_BEZ_HANDLE_DEG 1e-7
+
 TRIVIAL_COPY(WED_GISPoint_Bezier, WED_GISPoint)
 
 
@@ -54,9 +56,9 @@ GISClass_t		WED_GISPoint_Bezier::GetGISClass		(void				 ) const
 void			WED_GISPoint_Bezier::Rescale			(GISLayer_t l, const Bbox2& old_bounds, const Bbox2& new_bounds)
 {
 	WED_GISPoint::Rescale(l, old_bounds, new_bounds);
-	ctrl_lon_lo.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_lo.value);
+	ctrl_lon_lo.value = old_bounds.rescale_to_xv_projected(new_bounds,ctrl_lon_lo.value);
 	ctrl_lat_lo.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_lo.value );
-	ctrl_lon_hi.value = old_bounds.rescale_to_xv(new_bounds,ctrl_lon_hi.value);
+	ctrl_lon_hi.value = old_bounds.rescale_to_xv_projected(new_bounds,ctrl_lon_hi.value);
 	ctrl_lat_hi.value = old_bounds.rescale_to_yv(new_bounds,ctrl_lat_hi.value );
 }
 
@@ -255,11 +257,29 @@ void			WED_GISPoint_Bezier::Rotate			(GISLayer_t l, const Point2& ctr, double a)
 
 		WED_GISPoint::Rotate(l,ctr,a);
 		GetLocation(l,p);
-
-		ctrl_lon_lo.value = ctr.x() + v_new_lo.dx - p.x();
-		ctrl_lon_hi.value = ctr.x() + v_new_hi.dx - p.x();
-		ctrl_lat_lo.value = ctr.y() + v_new_lo.dy - p.y();
-		ctrl_lat_hi.value = ctr.y() + v_new_hi.dy - p.y();
+		
+		if(fabs(ctrl_lon_lo.value) > MIN_BEZ_HANDLE_DEG || fabs(ctrl_lat_lo.value) > MIN_BEZ_HANDLE_DEG) // bezier handle non-zero length
+		{
+			ctrl_lon_lo.value = ctr.x() + v_new_lo.dx - p.x();
+			ctrl_lat_lo.value = ctr.y() + v_new_lo.dy - p.y();
+		}
+		else
+		{
+			ctrl_lon_lo.value = 0.0;
+			ctrl_lat_lo.value = 0.0;
+		}
+		
+		if(fabs(ctrl_lon_hi.value) > MIN_BEZ_HANDLE_DEG || fabs(ctrl_lat_hi.value) > MIN_BEZ_HANDLE_DEG)
+		{
+			ctrl_lon_hi.value = ctr.x() + v_new_hi.dx - p.x();
+			ctrl_lat_hi.value = ctr.y() + v_new_hi.dy - p.y();
+		}
+		else
+		{
+			ctrl_lon_hi.value = 0.0;
+			ctrl_lat_hi.value = 0.0;
+		}
+		
 		CacheInval(cache_Spatial);
 		CacheBuild(cache_Spatial);
 

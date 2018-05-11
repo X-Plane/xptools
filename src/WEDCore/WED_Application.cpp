@@ -99,7 +99,7 @@ RadioButton::RadioButton(int x0, int y0, WED_Settings * parent,  int * var, cons
 bool WED_Settings::Closed(void)
 {
 	Hide();
-	return true;
+	return false;  // don't destroy window under MS Windows- just hide it, so we can later Show() it again
 }
 
 

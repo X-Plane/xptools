@@ -211,6 +211,7 @@ void			XWin::UpdateNow(void)
 void			XWin::SetVisible(bool visible)
 {
 	ShowWindow(mWindow, visible ? SW_SHOW : SW_HIDE);
+	if (visible) BringWindowToTop(mWindow);
 }
 
 bool			XWin::GetVisible(void) const

@@ -127,7 +127,9 @@ void	WED_ATCRunwayUse::GetNthPropertyDict(int n, PropertyDict_t& dict) const
 
 void		WED_ATCRunwayUse::PropEditCallback(int before)
 {
-	if (!before)
+	if (before)
+		StateChanged(wed_Change_Properties);
+	else
 	{
 		char buf[20];
 		snprintf(buf,20,"%s%s%s Rwy %s", operations.value.count(atc_Arrivals) ? "Arr" : "",
