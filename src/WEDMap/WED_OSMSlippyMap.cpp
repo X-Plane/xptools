@@ -224,9 +224,13 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 				GUI_FontDraw(g, font_UI_Basic, black, (pbounds[0] + pbounds[2]) / 2, (pbounds[1] + pbounds[3]) / 2, msg);
 			}
 #endif
+#if IBM
+			char url[200]; _sprintf_p(url,200,url_printf_fmt.c_str(),x,y,z);
+			char dir[200]; _sprintf_p(dir,200,dir_printf_fmt.c_str(),x,y,z);     // make sure ALL args are referenced in the format string
+#else
 			char url[200]; snprintf(url,200,url_printf_fmt.c_str(),x,y,z);
-
-			char dir[200]; snprintf(dir,200,dir_printf_fmt.c_str(),x,y,z);                      // make sure ALL args are referenced in the format string
+			char dir[200]; snprintf(dir,200,dir_printf_fmt.c_str(),x,y,z);      // make sure ALL args are referenced in the format string
+#endif
 			string folder_prefix(dir); folder_prefix.erase(folder_prefix.find_last_of(DIR_STR));
 
 			//The potential place the tile could appear on disk, were it to be downloaded or have been downloaded

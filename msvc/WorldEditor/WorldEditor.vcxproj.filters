@@ -795,6 +795,9 @@
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_OSMSlippyMap.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1579,6 +1582,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_ValidateList.h">
       <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_OSMSlippyMap.h">
+      <Filter>WEDMap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
