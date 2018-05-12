@@ -53,7 +53,6 @@ void	debug_mesh_polygon(const Polygon2& p1, float r1, float g1, float b1);
 	extern const int gInfoDMS;
 	/* Changes the listing in the gateway Import for GW moderation purposes */
 	extern const int gModeratorMode;
-martin
 #endif
 
 enum WED_Export_Target {

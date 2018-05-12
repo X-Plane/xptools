@@ -167,7 +167,8 @@ enum {
 	// Help Menu
 	wed_HelpManual,
 	wed_HelpScenery,
-	wed_OSMFixTheMap
+	wed_OSMFixTheMap,
+	wed_ESRIUses
 };
 
 class	GUI_Application;

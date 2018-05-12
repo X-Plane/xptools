@@ -218,6 +218,10 @@ void	WED_Application::OpenFiles(const vector<string>& inFiles)
 int		WED_Application::HandleCommand(int command)
 {
 	switch(command) {
+	case wed_ESRIUses:
+		// as per https://operations.osmfoundation.org/policies/tiles/
+		GUI_LaunchURL(WED_URL_ESRI_USES);
+		return 1;
 	case wed_OSMFixTheMap:
 		// as per https://operations.osmfoundation.org/policies/tiles/
 		GUI_LaunchURL(WED_URL_OSM_FIXTHEMAP);
@@ -254,6 +258,7 @@ int		WED_Application::CanHandleCommand(int command, string& ioName, int& ioCheck
 	case wed_HelpScenery:
 	case wed_HelpManual:
 	case wed_OSMFixTheMap:
+	case wed_ESRIUses:
 							return 1;
 	default:				return GUI_Application::CanHandleCommand(command, ioName, ioCheck);
 	}

@@ -89,29 +89,30 @@ static const double k_mpp[ZOOM_LEVELS] = {
 
 static const char * attributions[PREDEFINED_MAPS] = {
 "© OpenStreetMap Contributors",
-// ToDo: Update regularly from http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer?f=pjson
+// ToDo: use shorter specific ESRI attribution by downloading https://static.arcgis.com/attribution/World_Imagery
+//       and decode it per https://github.com/Esri/esri-leaflet  (which is java code)
 "© Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN and the GIS User Community" };
 
 static const char * tile_url[PREDEFINED_MAPS] = {
-WED_URL_OSM_TILES "${z}/${x}/${y}.png",
-"http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}.jpg" };
+WED_URL_OSM_TILES  "${z}/${x}/${y}.png",
+WED_URL_ESRI_TILES "${z}/${y}/${x}.jpg" };
 
-int long2tilex(double lon, int z) 
+static inline int long2tilex(double lon, int z) 
 { 
 	return (int)(floor((lon + 180.0) / 360.0 * pow(2.0, z))); 
 }
  
-int lat2tiley(double lat, int z)
+static inline int lat2tiley(double lat, int z)
 { 
 	return (int)(floor((1.0 - log( tan(lat * M_PI/180.0) + 1.0 / cos(lat * M_PI/180.0)) / M_PI) / 2.0 * pow(2.0, z))); 
 }
  
-double tilex2long(int x, int z) 
+static inline double tilex2long(int x, int z) 
 {
 	return x / pow(2.0, z) * 360.0 - 180;
 }
- 
-double tiley2lat(int y, int z) 
+
+static inline double tiley2lat(int y, int z) 
 {
 	double n = M_PI - 2.0 * M_PI * y / pow(2.0, z);
 	return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
@@ -149,20 +150,20 @@ static void get_tile_range_for_box(const double bounds[4], int z, int tiles[4])
 }
 
 
-WED_OSMSlippyMap::WED_OSMSlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver)
+WED_SlippyMap::WED_SlippyMap(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver)
 	: WED_MapLayer(h, zoomer, resolver),
 	m_cache_request(NULL),
 	mMapMode(0)
 {
 }
 
-WED_OSMSlippyMap::~WED_OSMSlippyMap()
+WED_SlippyMap::~WED_SlippyMap()
 {
 	delete m_cache_request;
 	m_cache_request = NULL;
 }
 	
-void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
+void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 {
 	if (mMapMode ==0) return;
 	finish_loading_tile();
@@ -313,12 +314,12 @@ void	WED_OSMSlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 	}
 }
 
-void	WED_OSMSlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
+void	WED_SlippyMap::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks)
 {
 	draw_ent_v = draw_ent_s = cares_about_sel = wants_clicks = 0;
 }
 
-void	WED_OSMSlippyMap::finish_loading_tile()
+void	WED_SlippyMap::finish_loading_tile()
 {
 	if (m_cache_request != NULL)
 	{
@@ -380,7 +381,7 @@ void	WED_OSMSlippyMap::finish_loading_tile()
 	}
 }
 
-void	WED_OSMSlippyMap::TimerFired()
+void	WED_SlippyMap::TimerFired()
 {
 	GetHost()->Refresh();
 }
@@ -394,7 +395,7 @@ static bool replace_token(string& str, const string& from, const string& to)
     return true;
 }
 
-void	WED_OSMSlippyMap::SetMode(int mode)
+void	WED_SlippyMap::SetMode(int mode)
 {
 	if(mode == 0)
 	{
@@ -432,7 +433,7 @@ void	WED_OSMSlippyMap::SetMode(int mode)
 	}
 }
 
-int		WED_OSMSlippyMap::GetMode(void)
+int		WED_SlippyMap::GetMode(void)
 {
 	return mMapMode;
 }

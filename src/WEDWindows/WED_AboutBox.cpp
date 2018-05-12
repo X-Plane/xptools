@@ -69,11 +69,11 @@ void		WED_AboutBox::Draw(GUI_GraphState * state)
 		"This software is available under an open license.",
 		"Visit http://developer.x-plane.com/code/ for more info.",
 		"",
-		"OSM map data is available under CC-BY-SA 2.0 license.",
+		"OSM map data available under CC-BY-SA 2.0 license,",
 		"see http://www.openstreetmap.org/copyright",
 		"",
-		"Special thanks to the OpenStreetMap Foundation",
-		"for granting the use of their tile servers by WED.",
+		"World Imagery provided by ESRI http://www.esri.com,",
+		"see 'Permitted Uses' in the Help menu",
 		0
 	};
 	

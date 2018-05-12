@@ -40,4 +40,8 @@
 #define WED_URL_OSM_FIXTHEMAP  "http://www.openstreetmap.org/fixthemap"
 #define WED_URL_OSM_TILES      "http://tile.openstreetmap.org/"
 
+#define WED_URL_ESRI_USES		"https://www.arcgis.com/home/item.html?id=8e90a00a0a6845a49262e0b756f57a10"
+#define WED_URL_ESRI_TILES		"http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/"
+
+
 #endif /* WED_Url_H */
