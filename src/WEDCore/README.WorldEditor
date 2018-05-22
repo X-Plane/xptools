@@ -22,6 +22,7 @@ WED 1.7.1
 	- WED-1000: Fix window deactivation issue on Linux
 	- WED-1036: Keep "Upgrade  Ramps" from altering ramp start OpsType if such is already set
 	- fix preview for lines w/multiple, differing width layers
+	- validate Datum meta tags to be within the airport's bounding box
 
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool
