@@ -575,32 +575,45 @@ struct	preview_line : WED_PreviewItem {
 				glFrontFace(GL_CCW);
 				for (int l = 0; l < linfo.s1.size(); ++l)
 				{
-					double half_width = (linfo.s2[l]-linfo.s1[l]) * linfo.scale_s * 0.5 * zoomer->GetPPM();
-					double offset = ((linfo.s2[l]+linfo.s1[l]) / 2.0 - linfo.sm[l]) * linfo.scale_s * zoomer->GetPPM();
-					double uv_t = 0.0;
+					double half_width =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s * zoomer->GetPPM();
+					double offset     = ((linfo.s2[l]+linfo.s1[l]) / 2.0 - linfo.sm[l]) * linfo.scale_s * zoomer->GetPPM();
+					double uv_t2 = 0.0;      // accumulator for texture t, so each starts where the previous ended
+					                         // currection factor for 'slanted' texture ends
+					double uv_dt      =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s / linfo.scale_t; 
 					
-					for(int i = 0; i < lin->GetNumSides(); ++i)
+					vector<Point2>	pts;
+					vector<int> cont;
+					PointSequenceToVector(ps,zoomer,pts,false,cont,0);
+						
+					Vector2	dir2(pts[1],pts[0]);
+					dir2.normalize();
+					dir2 = dir2.perpendicular_ccw();
+					
+					for (int j = 0; j < pts.size()-1; ++j)
 					{
-						vector<Point2>	pts;
-						SideToPoints(ps,i,zoomer, pts);
-						for (int j = 0; j < pts.size()-1; ++j)
-						{
-							Vector2	dir, off;
-							dir = Vector2(pts[j+1],pts[j]);
-							dir = dir.perpendicular_ccw();
-							dir.normalize();
-							off = dir * offset;
-							dir *= half_width;
-
-							double uv_t0 = uv_t;
-							uv_t += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / zoomer->GetPPM() / linfo.scale_t;
-							glBegin(GL_QUADS);
-								glTexCoord2f(linfo.s1[l],uv_t);  glVertex2(pts[j+1] - dir + off);
-								glTexCoord2f(linfo.s1[l],uv_t0); glVertex2(pts[j]   - dir + off);
-								glTexCoord2f(linfo.s2[l],uv_t0); glVertex2(pts[j]   + dir + off);
-								glTexCoord2f(linfo.s2[l],uv_t);  glVertex2(pts[j+1] + dir + off);
-							glEnd();
+						Vector2	dir1(dir2);
+						Vector2 dir = Vector2(pts[j+1],pts[j]);
+						dir.normalize();
+						if(j < pts.size()-2) 
+						{ 
+							Vector2 dir3(pts[j+2],pts[j+1]); 
+							dir3.normalize(); 
+							dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
 						}
+						else dir2 = dir;
+						dir2 = dir2.perpendicular_ccw();
+
+						double uv_t1(uv_t2);
+						uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / zoomer->GetPPM() / linfo.scale_t;
+						double d1 = uv_dt * dir.dot(dir1);
+						double d2 = uv_dt * dir.dot(dir2);
+						
+						glBegin(GL_QUADS);
+							glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(pts[j+1] + dir2 * (offset - half_width));
+							glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(pts[j]   + dir1 * (offset - half_width));
+							glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(pts[j]   + dir1 * (offset + half_width));
+							glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(pts[j+1] + dir2 * (offset + half_width));
+						glEnd();
 					}
 				}
 				glFrontFace(GL_CW);
