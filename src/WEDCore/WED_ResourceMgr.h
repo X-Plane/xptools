@@ -93,6 +93,7 @@ struct	lin_info_t {
 	float		scale_s;
 	float		scale_t;
 	float		eff_width;
+	float		rgb[3];
 	vector<float>	s1,sm,s2;
 };
 

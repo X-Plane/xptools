@@ -195,6 +195,9 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	out_info.s1.clear();
 	out_info.sm.clear();
 	out_info.s2.clear();
+	out_info.rgb[0] = 0.6;   // some dirty dark yellow
+	out_info.rgb[1] = 0.4;
+	out_info.rgb[2] = 0.1;
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * lin = MemFile_Open(p.c_str());
@@ -225,6 +228,12 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 		else if (MFS_string_match(&s,"TEX_WIDTH", false))
 		{
 			tex_width = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"PREVIEW_RGB", false))
+		{
+			out_info.rgb[0] = MFS_double(&s);
+			out_info.rgb[1] = MFS_double(&s);
+			out_info.rgb[2] = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"S_OFFSET", false))
 		{
