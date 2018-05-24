@@ -38,6 +38,8 @@
 #include "WED_Sealane.h"
 #include "WED_Helipad.h"
 #include "WED_LinePlacement.h"
+#include "WED_AirportChain.h"
+#include "WED_AirportNode.h"
 #include "WED_ObjPlacement.h"
 #include "WED_ForestPlacement.h"
 #include "WED_FacadePlacement.h"
@@ -621,6 +623,158 @@ struct	preview_line : WED_PreviewItem {
 	}
 };
 
+struct	preview_airportchain : WED_PreviewItem {
+	WED_AirportChain * chn;
+	map<int,lin_info_t> linfo;
+	map<int,int> tex_id;
+	
+	preview_airportchain(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c)
+	{ 
+	
+	// Todo: load only the line types actually needed, add & use function like PkgMgr::LineType2vpath(int i, string& vpath)
+	
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(r);
+		ITexMgr *	tman = WED_GetTexMgr(r);
+		for(int i = 1; i < 60; ++i)
+		{
+			string vpath;
+			lin_info_t info;
+			switch(i)
+			{
+				case 1: vpath = "lib/airport/lines/1_single_taxi.lin"; break;
+				case 2: vpath = "lib/airport/lines/2_single_taxi_dash.lin"; break;
+				case 3: vpath = "lib/airport/lines/3_double_taxi.lin"; break;
+				case 4: vpath = "lib/airport/lines/4_double_hold.lin"; break;
+				case 5: vpath = "lib/airport/lines/5_single_hold.lin"; break;
+				case 6: vpath = "lib/airport/lines/6_ils_hold.lin"; break;
+				case 7: vpath = "lib/airport/lines/7_taxi_hold.lin"; break;
+				case 8: vpath = "lib/airport/lines/8_single_parking.lin"; break;
+				case 9: vpath = "lib/airport/lines/9_double_parking.lin"; break;
+				case 51: vpath = "lib/airport/lines/51_single_taxi_b.lin"; break;
+				case 52: vpath = "lib/airport/lines/52_single_taxi_dash_b.lin"; break;
+				case 53: vpath = "lib/airport/lines/53_double_taxi_b.lin"; break;
+				case 54: vpath = "lib/airport/lines/54_double_hold_b.lin"; break;
+				case 55: vpath = "lib/airport/lines/55_single_hold_b.lin"; break;
+				case 56: vpath = "lib/airport/lines/56_ils_hold_b.lin"; break;
+				case 57: vpath = "lib/airport/lines/57_taxi_hold_b.lin"; break;
+				case 58: vpath = "lib/airport/lines/58_single_parking_b.lin"; break;
+				case 59: vpath = "lib/airport/lines/59_double_parking_b.lin"; break;
+				default: continue;
+			}
+			if (!rmgr->GetLin(vpath,info)) continue;
+			linfo[i]=info;
+			TexRef tref = tman->LookupTexture(info.base_tex.c_str(),true,tex_Compress_Ok);
+			if(tref) tex_id[i] = tman->GetTexID(tref);
+		}
+	}
+
+	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
+	{
+
+// todo: refactor to share code common with preview_lines::draw_it
+
+		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
+		if(ps)
+			if(zoomer->GetPPM() > 30.0)             // cutoff size for real preview
+			{
+				glFrontFace(GL_CCW);
+				glColor3f(1,1,1);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+				
+				int i = 0;
+				while (i < ps->GetNumSides())
+				{
+					set<int> attrs;
+					WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
+					if (apt_node) apt_node->GetAttributes(attrs);
+					
+					int t = 0;
+					for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
+					{
+						if (*a >= line_SolidYellow && *a <= line_BWideBrokenDouble ) 
+						{
+							t = ENUM_Export(*a);
+							break;
+						}
+					}
+					
+					if(tex_id.find(t) != tex_id.end())
+					{
+						vector<Point2> pts;
+						
+						g->SetState(false,1,false,true,true,false,false);
+						g->BindTex(tex_id[t],0);
+
+						for ( ; i < ps->GetNumSides(); ++i)
+						{
+							if (pts.size()) pts.pop_back();
+							SideToPoints(ps, i, zoomer, pts);
+							
+							if(i < ps->GetNumSides()-1) 
+							{
+								apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i+1));
+								if (apt_node) apt_node->GetAttributes(attrs);
+								int tn = 0;
+								for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
+								{
+									if (*a >= line_SolidYellow && *a <= line_BWideBrokenDouble )
+									{
+										tn = ENUM_Export(*a);
+										break;
+									}
+								}
+								if (tn != t) { ++i; break; }           // stop, as next segment will need different line type;
+							}
+						}
+
+						for (int l = 0; l < linfo[t].s1.size(); ++l)
+						{
+							double half_width =  (linfo[t].s2[l]-linfo[t].s1[l]) / 2.0 * linfo[t].scale_s * zoomer->GetPPM();
+							double offset     = ((linfo[t].s2[l]+linfo[t].s1[l]) / 2.0 - linfo[t].sm[l]) * linfo[t].scale_s * zoomer->GetPPM();
+							double uv_t2 = 0.0;      // accumulator for texture t, so each starts where the previous ended
+													 // currection factor for 'slanted' texture ends
+							double uv_dt      =  (linfo[t].s2[l]-linfo[t].s1[l]) / 2.0 * linfo[t].scale_s / linfo[t].scale_t; 
+							
+							Vector2	dir2(pts[1],pts[0]);
+							dir2.normalize();
+							dir2 = dir2.perpendicular_ccw();
+							
+							for (int j = 0; j < pts.size()-1; ++j)
+							{
+								Vector2	dir1(dir2);
+								Vector2 dir = Vector2(pts[j+1],pts[j]);
+								dir.normalize();
+								if(j < pts.size()-2) 
+								{ 
+									Vector2 dir3(pts[j+2],pts[j+1]); 
+									dir3.normalize(); 
+									dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
+								}
+								else dir2 = dir;
+								dir2 = dir2.perpendicular_ccw();
+
+								double uv_t1(uv_t2);
+								uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / zoomer->GetPPM() / linfo[t].scale_t;
+								double d1 = uv_dt * dir.dot(dir1);
+								double d2 = uv_dt * dir.dot(dir2);
+								
+								glBegin(GL_QUADS);
+									glTexCoord2f(linfo[t].s1[l],uv_t2 + d2); glVertex2(pts[j+1] + dir2 * (offset - half_width));
+									glTexCoord2f(linfo[t].s1[l],uv_t1 + d1); glVertex2(pts[j]   + dir1 * (offset - half_width));
+									glTexCoord2f(linfo[t].s2[l],uv_t1 - d1); glVertex2(pts[j]   + dir1 * (offset + half_width));
+									glTexCoord2f(linfo[t].s2[l],uv_t2 - d2); glVertex2(pts[j+1] + dir2 * (offset + half_width));
+								glEnd();
+							}
+						}
+					}
+					else
+						++i; // in case we cang get the attributes, skip to next node. If we dont, we'll loop indefinitely;
+				}
+				glFrontFace(GL_CW);
+			}
+	}
+};
+
 
 struct	preview_facade : public preview_polygon {
 	WED_FacadePlacement * fac;	
@@ -1094,7 +1248,6 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	WED_Helipad * heli = NULL;
 	WED_Taxiway * taxi = NULL;
 	WED_Sealane * sea = NULL;
-	WED_LinePlacement * line = NULL;
 	
 	IGISPolygon * gis_poly = NULL;
 
@@ -1137,11 +1290,17 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	if(forst)
 		mPreviewItems.push_back(new preview_forest(forst, group_Objects));
 
-	if (sub_class == WED_LinePlacement::sClass)
+	if(sub_class == WED_LinePlacement::sClass)
 	{
-		line = SAFE_CAST(WED_LinePlacement, entity);
+		WED_LinePlacement * line = SAFE_CAST(WED_LinePlacement, entity);
 		if(line)
 			mPreviewItems.push_back(new preview_line(line, group_Markings, GetResolver()));
+	}
+	else if(sub_class == WED_AirportChain::sClass)
+	{
+		WED_AirportChain * chn = SAFE_CAST(WED_AirportChain, entity);
+		if(chn)
+			mPreviewItems.push_back(new preview_airportchain(chn, group_Markings, GetResolver()));
 	}
 
 	/******************************************************************************************************************************
@@ -1149,11 +1308,11 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	 ******************************************************************************************************************************/
 
 	if (sub_class == WED_ObjPlacement::sClass && (obj = SAFE_CAST(WED_ObjPlacement, entity)) != NULL)
-	if(obj->GetShowLevel() <= mObjDensity) 	
-	mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
+		if(obj->GetShowLevel() <= mObjDensity) 	
+			mPreviewItems.push_back(new preview_object(obj,group_Objects, mObjDensity, GetResolver()));
 
 	if (sub_class == WED_TruckParkingLocation::sClass && (trk = SAFE_CAST(WED_TruckParkingLocation, entity)) != NULL)
-	mPreviewItems.push_back(new preview_truck(trk, group_Objects, mObjDensity, GetResolver()));
+		mPreviewItems.push_back(new preview_truck(trk, group_Objects, mObjDensity, GetResolver()));
 
 	return true;
 }
