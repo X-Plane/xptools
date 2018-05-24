@@ -195,9 +195,9 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	out_info.s1.clear();
 	out_info.sm.clear();
 	out_info.s2.clear();
-	out_info.rgb[0] = 0.6;   // some dirty dark yellow
-	out_info.rgb[1] = 0.4;
-	out_info.rgb[2] = 0.1;
+	out_info.rgb[0] = 0.75;   // taxi line yellow
+	out_info.rgb[1] = 0.6;
+	out_info.rgb[2] = 0.15;
 
 	string p = mLibrary->GetResourcePath(path);
 	MFMemFile * lin = MemFile_Open(p.c_str());

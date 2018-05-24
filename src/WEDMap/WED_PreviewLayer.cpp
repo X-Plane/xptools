@@ -562,7 +562,19 @@ struct	preview_line : WED_PreviewItem {
 			if(linfo.eff_width * zoomer->GetPPM() < 5.0 || !tex_id)             // cutoff size for real preview
 			{
 				g->SetState(false,0,false,false,false,false,false);
-				glColor3fv(linfo.rgb);
+				
+				int locked = 0;
+				WED_Entity * thing = dynamic_cast<WED_Entity *>(lin);
+				while(thing)
+				{
+					if(thing->GetLocked())	{ locked=1; break; }
+					thing = dynamic_cast<WED_Entity *>(thing->GetParent());
+				}
+				if (locked)
+					glColor3fv(linfo.rgb);
+				else                           // do some color correction to account for the green vs grey line
+					glColor3f(min(1.0,linfo.rgb[0]+0.2),max(0.0,linfo.rgb[1]-0.0),min(1.0,linfo.rgb[2]+0.2));
+					
 				for(int i = 0; i < lin->GetNumSides(); ++i)
 				{
 					vector<Point2>	pts;
@@ -675,7 +687,7 @@ struct	preview_airportchain : WED_PreviewItem {
 
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
 		if(ps)
-			if(zoomer->GetPPM() > 30.0)             // cutoff size for real preview
+			if(zoomer->GetPPM() > 20.0)             // cutoff size for real preview
 			{
 				glFrontFace(GL_CCW);
 				glColor3f(1,1,1);
@@ -747,7 +759,7 @@ struct	preview_airportchain : WED_PreviewItem {
 								if(j < pts.size()-2) 
 								{ 
 									Vector2 dir3(pts[j+2],pts[j+1]); 
-									dir3.normalize(); 
+									dir3.normalize();
 									dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
 								}
 								else dir2 = dir;
