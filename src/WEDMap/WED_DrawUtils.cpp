@@ -482,6 +482,14 @@ void DrawLineAttrs(GUI_GraphState * state, const Point2 * pts, int count, const 
 		glLineStipple(1,0x7000);
 		glShapeOffset2v(GL_LINE_STRIP, pts, count, -5);
 		break;
+	default:
+		if(ENUM_Export(*a) < 100)
+		{
+			glColor4f(1,1,1,1);
+			glLineWidth(1);
+			glDisable(GL_LINE_STIPPLE);
+			glShape2v(GL_LINE_STRIP, pts, count);
+		}
 	}
 
 	glLineWidth(1);

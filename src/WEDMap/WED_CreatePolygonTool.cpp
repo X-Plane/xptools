@@ -84,8 +84,8 @@ WED_CreatePolygonTool::WED_CreatePolygonTool(
 		mHeading(tool     == create_Taxi   || tool == create_Polygon ? 
 		                                      this : NULL,PROP_Name("Heading",  XML_Name("","")),0,5,2),
 		mMarkings(tool    <= create_Hole    ? this : NULL,PROP_Name(".Markings",XML_Name("","")), LinearFeature, 0),
-		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",line_SolidYellow,line_BWideBrokenDouble, 1),
-		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings",line_TaxiCenter,line_BoundaryEdge, 1),
+		mMarkingsLines(tool <= create_Hole  ? this : NULL,PROP_Name("Markings", XML_Name("","")), ".Markings",   1,  99, 1),
+		mMarkingsLights(tool <= create_Hole ? this : NULL,PROP_Name("Lights",   XML_Name("","")), ".Markings", 101, 199, 1),
 
 		mResource(tool >  create_Hole    ? this : NULL,PROP_Name("Resource", XML_Name("","")), ""),
 		mHeight(tool   == create_Facade  ? this : NULL,PROP_Name("Height",   XML_Name("","")), 10.0, 4, 2),

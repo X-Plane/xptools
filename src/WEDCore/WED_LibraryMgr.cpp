@@ -24,6 +24,7 @@
 #include "WED_LibraryMgr.h"
 #include "WED_PackageMgr.h"
 #include "WED_Messages.h"
+#include "WED_EnumSystem.h"
 #include "AssertUtils.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
@@ -108,6 +109,18 @@ WED_LibraryMgr::~WED_LibraryMgr()
 string WED_LibraryMgr::GetLocalPackage() const
 {
 	return local_package;
+}
+
+bool WED_LibraryMgr::GetLineVpath(int lt, string& vpath)
+{
+	map<int,string>::iterator l = default_lines.find(lt);
+	if(l == default_lines.end())
+		return false;
+	else
+	{
+		vpath = default_lines[lt];
+		return true;
+	}
 }
 
 string		WED_LibraryMgr::GetResourceParent(const string& r)
@@ -260,13 +273,9 @@ struct local_scan_t {
 
 void		WED_LibraryMgr::Rescan()
 {
-	//Clear the reasource table
 	res_table.clear();
-
-	//Number of packages?
 	int np = gPackageMgr->CountPackages();
 
-	//For the number of packages
 	for(int p = 0; p < np; ++p)
 	{
 		//the physical directory of the scenery pack
@@ -274,32 +283,21 @@ void		WED_LibraryMgr::Rescan()
 		//Get the pack's physical location
 		gPackageMgr->GetNthPackagePath(p,pack_base);
 		
-		//concatinate string
 		pack_base += DIR_STR "library.txt";
 
-		//
 		bool is_default_pack = gPackageMgr->IsPackageDefault(p);
 
 		//Connects the physical Library.txt to the virual Memory File system? (95% sure) -Ted
 		MFMemFile * lib = MemFile_Open(pack_base.c_str());
 
-		//If there is a lib file
 		if(lib)
 		{
-			//Get the package again
 			gPackageMgr->GetNthPackagePath(p,pack_base);
-			
-			//Create a memory scanner
 			MFScanner	s;
-
-			//Initialize the Memory File System
 			MFS_init(&s, lib);
 
 			int cur_status = status_Public;
-
-			//Set the library version
 			int lib_version[] = { 800, 0 };
-
 			
 			if(MFS_xplane_header(&s,lib_version,"LIBRARY",NULL))
 			while(!MFS_done(&s))
@@ -311,10 +309,8 @@ void		WED_LibraryMgr::Rescan()
 				bool is_export_exclude = MFS_string_match(&s,"EXPORT_EXCLUDE",false);
 				bool is_export_backup  = MFS_string_match(&s,"EXPORT_BACKUP",false);
 
-				if( is_export_export  ||
-					is_export_extend  ||
-					is_export_exclude ||
-					is_export_backup)
+				if(is_export_export || is_export_extend ||
+				   is_export_exclude || is_export_backup )
 				{
 					MFS_string(&s,&vpath);
 					MFS_string_eol(&s,&rpath);
@@ -324,9 +320,7 @@ void		WED_LibraryMgr::Rescan()
 					if (is_no_true_subdir_path(rpath)) break; // ignore paths that lead outside current scenery directory
 					rpath=pack_base+DIR_STR+rpath;
 					FILE_case_correct( (char *) rpath.c_str());  /* yeah - I know I'm overriding the 'const' protection of the c_str() here.
-					
 					   But I know this operation is never going to change the strings length, so thats OK to do.
-					    
 					   And I have to case-correct the path right here, as this path later is not only used by the case insensitive MF_open()
 					   but also to derive the paths to the textures referenced in those assets. And those textures are loaded with case-sensitive fopen.	
 					   */
@@ -378,6 +372,7 @@ void		WED_LibraryMgr::Rescan()
 			MemFile_Close(lib);
 		}
 	}
+	RescanLines();
 
 	string package_base;
 	package_base=gPackageMgr->ComputePath(local_package,"");
@@ -392,6 +387,45 @@ void		WED_LibraryMgr::Rescan()
 	}
 
 	BroadcastMessage(msg_LibraryChanged,0);
+}
+
+void WED_LibraryMgr::RescanLines()
+{
+	vector<int> existing_line_enums;
+	DOMAIN_Members(LinearFeature, existing_line_enums);
+	
+	set<int> existing_line_types;
+	for(vector<int>::iterator e = existing_line_enums.begin(); e != existing_line_enums.end(); ++e)
+	{
+		existing_line_types.insert(ENUM_Export(*e));
+	}
+	default_lines.clear();
+	res_map_t::iterator m = res_table.begin();
+	while(m != res_table.end() && m->first.find("lib/airport/lines/",0) == string::npos )
+		++m;
+
+	while(m != res_table.end() && m->first.find("lib/airport/lines/",0) != string::npos )
+	{
+		string resnam(m->first);
+		resnam.erase(0,strlen("lib/airport/lines/"));
+
+		if(resnam[0] >= '0' && resnam[0] <= '9' &&
+//		   m->second.is_default &&
+		   m->second.status == status_Public && resnam.substr(resnam.size()-4) == ".lin"  )
+		{
+			int linetype;
+			sscanf(resnam.c_str(),"%d",&linetype);
+			if(linetype > 0 && linetype < 100)
+			{
+				default_lines[linetype] = m->first;
+				if(existing_line_types.count(linetype) == 0)
+				{
+					ENUM_Create(LinearFeature, "line_SolidWhite", resnam.c_str(), linetype);  // todo format that name nicely, get correct color icon rather than white line
+				}
+			}
+		}
+		m++;
+	}
 }
 
 void WED_LibraryMgr::AccumResource(const string& path, int package, const string& rpath, bool is_backup, bool is_default, int status)

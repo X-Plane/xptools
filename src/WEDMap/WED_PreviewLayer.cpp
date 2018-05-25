@@ -24,6 +24,7 @@
 #include "WED_PreviewLayer.h"
 #include "ILibrarian.h"
 #include "WED_ResourceMgr.h"
+#include "WED_LibraryMgr.h"
 #include "WED_TexMgr.h"
 #include "WED_PolygonPlacement.h"
 #include "WED_DrapedOrthophoto.h"
@@ -532,6 +533,45 @@ struct	preview_forest : public preview_polygon {
 	}
 };
 
+static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo, int l, double PPM)
+{
+	double half_width =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s * PPM;
+	double offset     = ((linfo.s2[l]+linfo.s1[l]) / 2.0 - linfo.sm[l]) * linfo.scale_s * PPM;
+	double uv_dt      =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s / linfo.scale_t; // correction factor for 'slanted' texture ends
+	double uv_t2      = 0.0;                                                              // accumulator for texture t, so each starts where the previous ended
+
+	Vector2	dir2(pts[1],pts[0]);
+	dir2.normalize();
+	dir2 = dir2.perpendicular_ccw();
+
+	for (int j = 0; j < pts.size()-1; ++j)
+	{
+		Vector2	dir1(dir2);
+		Vector2 dir = Vector2(pts[j+1],pts[j]);
+		dir.normalize();
+		if(j < pts.size()-2)
+		{
+			Vector2 dir3(pts[j+2],pts[j+1]);
+			dir3.normalize();
+			dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
+		}
+		else dir2 = dir;
+		dir2 = dir2.perpendicular_ccw();
+
+		double uv_t1(uv_t2);
+		uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / PPM / linfo.scale_t;
+		double d1 = uv_dt * dir.dot(dir1);
+		double d2 = uv_dt * dir.dot(dir2);
+
+		glBegin(GL_QUADS);
+			glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(pts[j+1] + dir2 * (offset - half_width));
+			glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(pts[j]   + dir1 * (offset - half_width));
+			glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(pts[j]   + dir1 * (offset + half_width));
+			glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(pts[j+1] + dir2 * (offset + half_width));
+		glEnd();
+	}
+}
+
 struct	preview_line : WED_PreviewItem {
 	WED_LinePlacement * lin;
 	IResolver * resolver;
@@ -589,46 +629,10 @@ struct	preview_line : WED_PreviewItem {
 				glFrontFace(GL_CCW);
 				for (int l = 0; l < linfo.s1.size(); ++l)
 				{
-					double half_width =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s * zoomer->GetPPM();
-					double offset     = ((linfo.s2[l]+linfo.s1[l]) / 2.0 - linfo.sm[l]) * linfo.scale_s * zoomer->GetPPM();
-					double uv_t2 = 0.0;      // accumulator for texture t, so each starts where the previous ended
-					                         // currection factor for 'slanted' texture ends
-					double uv_dt      =  (linfo.s2[l]-linfo.s1[l]) / 2.0 * linfo.scale_s / linfo.scale_t; 
-					
 					vector<Point2>	pts;
 					vector<int> cont;
 					PointSequenceToVector(ps,zoomer,pts,false,cont,0);
-						
-					Vector2	dir2(pts[1],pts[0]);
-					dir2.normalize();
-					dir2 = dir2.perpendicular_ccw();
-					
-					for (int j = 0; j < pts.size()-1; ++j)
-					{
-						Vector2	dir1(dir2);
-						Vector2 dir = Vector2(pts[j+1],pts[j]);
-						dir.normalize();
-						if(j < pts.size()-2) 
-						{ 
-							Vector2 dir3(pts[j+2],pts[j+1]); 
-							dir3.normalize(); 
-							dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
-						}
-						else dir2 = dir;
-						dir2 = dir2.perpendicular_ccw();
-
-						double uv_t1(uv_t2);
-						uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / zoomer->GetPPM() / linfo.scale_t;
-						double d1 = uv_dt * dir.dot(dir1);
-						double d2 = uv_dt * dir.dot(dir2);
-						
-						glBegin(GL_QUADS);
-							glTexCoord2f(linfo.s1[l],uv_t2 + d2); glVertex2(pts[j+1] + dir2 * (offset - half_width));
-							glTexCoord2f(linfo.s1[l],uv_t1 + d1); glVertex2(pts[j]   + dir1 * (offset - half_width));
-							glTexCoord2f(linfo.s2[l],uv_t1 - d1); glVertex2(pts[j]   + dir1 * (offset + half_width));
-							glTexCoord2f(linfo.s2[l],uv_t2 - d2); glVertex2(pts[j+1] + dir2 * (offset + half_width));
-						glEnd();
-					}
+					draw_line_preview(pts, linfo, l, zoomer->GetPPM());
 				}
 				glFrontFace(GL_CW);
 			}
@@ -643,37 +647,18 @@ struct	preview_airportchain : WED_PreviewItem {
 	preview_airportchain(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c)
 	{ 
 	
-	// Todo: load only the line types actually needed, add & use function like PkgMgr::LineType2vpath(int i, string& vpath)
+	// Todo: load only the line types actually needed ?
 	
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(r);
-		ITexMgr *	tman = WED_GetTexMgr(r);
-		for(int i = 1; i < 60; ++i)
+		ITexMgr         * tman = WED_GetTexMgr(r);
+		WED_LibraryMgr  * lmgr = WED_GetLibraryMgr(r);
+		
+		for(int i = 1; i < 99; ++i)
 		{
 			string vpath;
 			lin_info_t info;
-			switch(i)
-			{
-				case 1: vpath = "lib/airport/lines/1_single_taxi.lin"; break;
-				case 2: vpath = "lib/airport/lines/2_single_taxi_dash.lin"; break;
-				case 3: vpath = "lib/airport/lines/3_double_taxi.lin"; break;
-				case 4: vpath = "lib/airport/lines/4_double_hold.lin"; break;
-				case 5: vpath = "lib/airport/lines/5_single_hold.lin"; break;
-				case 6: vpath = "lib/airport/lines/6_ils_hold.lin"; break;
-				case 7: vpath = "lib/airport/lines/7_taxi_hold.lin"; break;
-				case 8: vpath = "lib/airport/lines/8_single_parking.lin"; break;
-				case 9: vpath = "lib/airport/lines/9_double_parking.lin"; break;
-				case 51: vpath = "lib/airport/lines/51_single_taxi_b.lin"; break;
-				case 52: vpath = "lib/airport/lines/52_single_taxi_dash_b.lin"; break;
-				case 53: vpath = "lib/airport/lines/53_double_taxi_b.lin"; break;
-				case 54: vpath = "lib/airport/lines/54_double_hold_b.lin"; break;
-				case 55: vpath = "lib/airport/lines/55_single_hold_b.lin"; break;
-				case 56: vpath = "lib/airport/lines/56_ils_hold_b.lin"; break;
-				case 57: vpath = "lib/airport/lines/57_taxi_hold_b.lin"; break;
-				case 58: vpath = "lib/airport/lines/58_single_parking_b.lin"; break;
-				case 59: vpath = "lib/airport/lines/59_double_parking_b.lin"; break;
-				default: continue;
-			}
-			if (!rmgr->GetLin(vpath,info)) continue;
+			if (!lmgr->GetLineVpath(i, vpath)) continue;
+			if (!rmgr->GetLin(vpath, info)) continue;
 			linfo[i]=info;
 			TexRef tref = tman->LookupTexture(info.base_tex.c_str(),true,tex_Compress_Ok);
 			if(tref) tex_id[i] = tman->GetTexID(tref);
@@ -682,9 +667,6 @@ struct	preview_airportchain : WED_PreviewItem {
 
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
-
-// todo: refactor to share code common with preview_lines::draw_it
-
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
 		if(ps)
 			if(zoomer->GetPPM() > 20.0)             // cutoff size for real preview
@@ -703,9 +685,10 @@ struct	preview_airportchain : WED_PreviewItem {
 					int t = 0;
 					for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
 					{
-						if (*a >= line_SolidYellow && *a <= line_BWideBrokenDouble ) 
+						int n = ENUM_Export(*a);
+						if(n < 100)
 						{
-							t = ENUM_Export(*a);
+							t = n;
 							break;
 						}
 					}
@@ -713,7 +696,7 @@ struct	preview_airportchain : WED_PreviewItem {
 					if(tex_id.find(t) != tex_id.end())
 					{
 						vector<Point2> pts;
-						
+
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id[t],0);
 
@@ -729,9 +712,10 @@ struct	preview_airportchain : WED_PreviewItem {
 								int tn = 0;
 								for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
 								{
-									if (*a >= line_SolidYellow && *a <= line_BWideBrokenDouble )
+									int n = ENUM_Export(*a);
+									if (n < 100)
 									{
-										tn = ENUM_Export(*a);
+										tn = n;
 										break;
 									}
 								}
@@ -741,42 +725,7 @@ struct	preview_airportchain : WED_PreviewItem {
 
 						for (int l = 0; l < linfo[t].s1.size(); ++l)
 						{
-							double half_width =  (linfo[t].s2[l]-linfo[t].s1[l]) / 2.0 * linfo[t].scale_s * zoomer->GetPPM();
-							double offset     = ((linfo[t].s2[l]+linfo[t].s1[l]) / 2.0 - linfo[t].sm[l]) * linfo[t].scale_s * zoomer->GetPPM();
-							double uv_t2 = 0.0;      // accumulator for texture t, so each starts where the previous ended
-													 // currection factor for 'slanted' texture ends
-							double uv_dt      =  (linfo[t].s2[l]-linfo[t].s1[l]) / 2.0 * linfo[t].scale_s / linfo[t].scale_t; 
-							
-							Vector2	dir2(pts[1],pts[0]);
-							dir2.normalize();
-							dir2 = dir2.perpendicular_ccw();
-							
-							for (int j = 0; j < pts.size()-1; ++j)
-							{
-								Vector2	dir1(dir2);
-								Vector2 dir = Vector2(pts[j+1],pts[j]);
-								dir.normalize();
-								if(j < pts.size()-2) 
-								{ 
-									Vector2 dir3(pts[j+2],pts[j+1]); 
-									dir3.normalize();
-									dir2 = (dir + dir3) / (1.0 + dir.dot(dir3));
-								}
-								else dir2 = dir;
-								dir2 = dir2.perpendicular_ccw();
-
-								double uv_t1(uv_t2);
-								uv_t2 += sqrt(Vector2(pts[j+1], pts[j]).squared_length()) / zoomer->GetPPM() / linfo[t].scale_t;
-								double d1 = uv_dt * dir.dot(dir1);
-								double d2 = uv_dt * dir.dot(dir2);
-								
-								glBegin(GL_QUADS);
-									glTexCoord2f(linfo[t].s1[l],uv_t2 + d2); glVertex2(pts[j+1] + dir2 * (offset - half_width));
-									glTexCoord2f(linfo[t].s1[l],uv_t1 + d1); glVertex2(pts[j]   + dir1 * (offset - half_width));
-									glTexCoord2f(linfo[t].s2[l],uv_t1 - d1); glVertex2(pts[j]   + dir1 * (offset + half_width));
-									glTexCoord2f(linfo[t].s2[l],uv_t2 - d2); glVertex2(pts[j+1] + dir2 * (offset + half_width));
-								glEnd();
-							}
+							draw_line_preview(pts, linfo[t], l, zoomer->GetPPM());
 						}
 					}
 					else

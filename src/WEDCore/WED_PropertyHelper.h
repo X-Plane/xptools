@@ -411,4 +411,20 @@ public:
 	virtual	bool		WantsAttribute(const char * ele, const char * att_name, const char * att_value);
 };
 
+// VIRTUAL ITEM: A FILTERED matrix display.
+// This item doesn't REALLY create data - it provides a filtered view of another enum set, showing only the enums within a given range.
+// This is used to take ALL taxiway attributes and show only lights or only lines.
+
+class	WED_PropIntEnumSetFilterVal : public WED_PropIntEnumSetFilter {
+public:
+
+	WED_PropIntEnumSetFilterVal(WED_PropertyHelper * parent, const char * title, const char * ihost, int iminv, int imaxv, int iexclusive)  : 
+		WED_PropIntEnumSetFilter(parent, title, ihost, iminv, imaxv, iexclusive) { }
+
+	virtual	void		GetPropertyDict(PropertyDict_t& dict);
+	virtual void		GetProperty(PropertyVal_t& val) const;
+	virtual void		SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent);
+};
+
+
 #endif
