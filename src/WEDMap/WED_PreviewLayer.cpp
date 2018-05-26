@@ -592,8 +592,8 @@ struct	preview_line : WED_PreviewItem {
 		if(tex_id)
 		{
 			g->SetState(false,1,false,true,true,false,false);
-			glColor3f(1,1,1);
 			g->BindTex(tex_id,0);
+			glColor3f(1,1,1);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		}
 
@@ -672,8 +672,6 @@ struct	preview_airportchain : WED_PreviewItem {
 			if(zoomer->GetPPM() > 20.0)             // cutoff size for real preview
 			{
 				glFrontFace(GL_CCW);
-				glColor3f(1,1,1);
-				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 				
 				int i = 0;
 				while (i < ps->GetNumSides())
@@ -699,6 +697,8 @@ struct	preview_airportchain : WED_PreviewItem {
 
 						g->SetState(false,1,false,true,true,false,false);
 						g->BindTex(tex_id[t],0);
+						glColor3f(1,1,1);
+						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 						for ( ; i < ps->GetNumSides(); ++i)
 						{

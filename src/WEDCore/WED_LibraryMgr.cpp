@@ -118,7 +118,7 @@ bool WED_LibraryMgr::GetLineVpath(int lt, string& vpath)
 		return false;
 	else
 	{
-		vpath = default_lines[lt];
+		vpath = l->second;
 		return true;
 	}
 }
@@ -431,14 +431,13 @@ void WED_LibraryMgr::RescanLines()
 			
 			if(linetype > 0 && linetype < 100)
 			{
+				default_lines[linetype] = m->first;
 				if(existing_line_types.count(linetype) == 0)
 				{
 					const char * icon = "line_Unknown";
 					// try to find the right icon, in case the particular number wasn't yet added to the ENUMS.h
 #if 0
-					// that would be nice - but we can't parse the .lin statement here
-					WED_ResourceMgr * rmgr = NULL; // WED_GetResourceMgr(GetResolver());
-
+					// that would be nice - but we can't parse the .lin statement here, the ResourceMgr isn't available
 					lin_info_t linfo;
 					if (rmgr->GetLin(m->first,linfo))
 					{
@@ -465,22 +464,27 @@ void WED_LibraryMgr::RescanLines()
 						}
 					}
 #else
-					if(resnam.find("_taxi") != string::npos)
+					if(resnam.find("_red") != string::npos)
 					{
-					    if(resnam.find("_wide") != string::npos)    icon = linetype < 50 ? "line_SolidYellowW" : "line_BSolidYellowW";
-					    else                                        icon = linetype < 50 ? "line_SolidYellow"  : "line_BSolidYellow";
-					}
-					else if(resnam.find("_red") != string::npos)
-					{
-					    if(resnam.find("_dash") != string::npos)    icon = linetype < 50 ? "line_BrokendRed" : "line_BBrokenRed";
+					    if(resnam.find("_dash") != string::npos)    icon = linetype < 50 ? "line_BrokenRed" : "line_BBrokenRed";
 					    else                                        icon = linetype < 50 ? "line_SolidRed"   : "line_BSolidRed";  
 					}
 					else if(resnam.find("_orange") != string::npos) icon = linetype < 50 ? "line_SolidOrange": "line_BSolidOrange";
 					else if(resnam.find("_green") != string::npos)  icon = linetype < 50 ? "line_SolidGreen" : "line_BSolidGreen";
 					else if(resnam.find("_blue") != string::npos)   icon = linetype < 50 ? "line_SolidBlue"  : "line_BSolidBlue";
+					else if(resnam.find("_yellow") != string::npos || resnam.find("_taxi") != string::npos)
+					{
+					    if(resnam.find("_wide") != string::npos)    icon = linetype < 50 ? "line_SolidYellowW" : "line_BSolidYellowW";
+					    else                                        icon = linetype < 50 ? "line_SolidYellow"  : "line_BSolidYellow";
+					}
+					else if(resnam.find("_white") != string::npos || resnam.find("_road") != string::npos)
+					{
+					    if(resnam.find("_dash") != string::npos)    icon = "line_BrokenWhite";
+					    else                                        icon = "line_SolidWhite";  
+					}
 #endif
-					default_lines[linetype] = m->first;
 					ENUM_Create(LinearFeature, icon, nice_name, linetype);
+					existing_line_types.insert(linetype);                      // keep track in case of erroneously supplied duplicate vpath's
 				}
 			}
 		}
