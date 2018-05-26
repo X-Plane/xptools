@@ -413,14 +413,74 @@ void WED_LibraryMgr::RescanLines()
 //		   m->second.is_default &&
 		   m->second.status == status_Public && resnam.substr(resnam.size()-4) == ".lin"  )
 		{
+			resnam.erase(resnam.size()-4);
+
 			int linetype;
-			sscanf(resnam.c_str(),"%d",&linetype);
+			char nice_name[30];
+			sscanf(resnam.c_str(),"%d%*c%29s",&linetype,nice_name);
+			for(int i = 0; i < 29; ++i)
+			{
+				if(nice_name[i] == 0) break;
+				if(i == 0) nice_name[0] = toupper(nice_name[0]);
+				if(nice_name[i] == '_')
+				{
+					nice_name[i] = ' ';
+					if (nice_name[i+1] != 0) nice_name[i+1] = toupper(nice_name[i+1]);
+				}
+			}
+			
 			if(linetype > 0 && linetype < 100)
 			{
-				default_lines[linetype] = m->first;
 				if(existing_line_types.count(linetype) == 0)
 				{
-					ENUM_Create(LinearFeature, "line_SolidWhite", resnam.c_str(), linetype);  // todo format that name nicely, get correct color icon rather than white line
+					const char * icon = "line_Unknown";
+					// try to find the right icon, in case the particular number wasn't yet added to the ENUMS.h
+#if 0
+					// that would be nice - but we can't parse the .lin statement here
+					WED_ResourceMgr * rmgr = NULL; // WED_GetResourceMgr(GetResolver());
+
+					lin_info_t linfo;
+					if (rmgr->GetLin(m->first,linfo))
+					{
+						// determine Chroma & Hue for the preview color line
+						float R = linfo.rgb[0], G = linfo.rgb[1], B = linfo.rgb[2];
+						float M = fltmax3(R,G,B);
+						float m = fltmin3(R,G,B);
+						float C = M-m;
+						if(C < 0.3)        icon = linetype < 50 ? "line_SolidWite"  : "line_BSolidWhite";
+						else
+						{
+							float H = 0.0;
+							if     (R == M) H = fmod((G-B) / C, 6.0);
+							else if(G == M) H = (B-R) / C + 2.0;
+							else if(B == M) H = (R-G) / C + 4.0;
+							H = fltwrap(H * 60.0, 0.0, 360.0);
+							
+							if     (H > 330.0 ||
+									H < 20.0)  icon = linetype < 50 ? "line_SolidRed"   : "line_BSolidRed";
+							else if(H < 45.0)  icon = linetype < 50 ? "line_SolidOrange": "line_BSolidOrange";
+							else if(H < 70.0)  icon = linetype < 50 ? "line_SolidYellow": "line_BSolidYellow";
+							else if(H < 135.0) icon = linetype < 50 ? "line_SolidGreen" : "line_BSolidGreen";
+							else               icon = linetype < 50 ? "line_SolidBlue"  : "line_BSolidBlue";
+						}
+					}
+#else
+					if(resnam.find("_taxi") != string::npos)
+					{
+					    if(resnam.find("_wide") != string::npos)    icon = linetype < 50 ? "line_SolidYellowW" : "line_BSolidYellowW";
+					    else                                        icon = linetype < 50 ? "line_SolidYellow"  : "line_BSolidYellow";
+					}
+					else if(resnam.find("_red") != string::npos)
+					{
+					    if(resnam.find("_dash") != string::npos)    icon = linetype < 50 ? "line_BrokendRed" : "line_BBrokenRed";
+					    else                                        icon = linetype < 50 ? "line_SolidRed"   : "line_BSolidRed";  
+					}
+					else if(resnam.find("_orange") != string::npos) icon = linetype < 50 ? "line_SolidOrange": "line_BSolidOrange";
+					else if(resnam.find("_green") != string::npos)  icon = linetype < 50 ? "line_SolidGreen" : "line_BSolidGreen";
+					else if(resnam.find("_blue") != string::npos)   icon = linetype < 50 ? "line_SolidBlue"  : "line_BSolidBlue";
+#endif
+					default_lines[linetype] = m->first;
+					ENUM_Create(LinearFeature, icon, nice_name, linetype);
 				}
 			}
 		}
