@@ -109,8 +109,39 @@ private:
 		int			status;
 	};
 
+	// Not only case-insensitive, but also sort of leading zero (number) insensitive for the basename part:
+	// all leading digits are treated as a number - so 3a.lin is listed after 20a.lin, aka numeric order.
+	// If two start with the same number (e.g. 01, 001 and 1) - its normal lexicographic order again.
+	// e.g.  0  00  01aa  1aa  009x 10aa 10bb  aa  bb
+
 	struct compare_str_no_case {
 		bool operator()(const string& lhs, const string& rhs) const {
+			string::size_type pl = lhs.find_last_of('/') ;
+			string::size_type pr = rhs.find_last_of('/') ;
+
+			if(pl == pr)
+			{
+				if(pl == string::npos)
+					pl = 0;
+				else
+				{
+					int path_cmp = strncasecmp(lhs.c_str(),rhs.c_str(),pl);
+					if(path_cmp != 0) return path_cmp < 0;
+					pl += 1;
+				}
+				const char * l = lhs.c_str() + pl;
+				const char * r = rhs.c_str() + pl;
+
+				if((*l >= '0' && *l <= '9') || (*r >= '0' && *r <= '9'))
+				{
+					int int_l, int_r;
+					if(sscanf(l,"%d",&int_l) > 0)
+						if(sscanf(r,"%d",&int_r) > 0)
+							if(int_l != int_r)
+								return int_l < int_r;
+				}
+				return strcasecmp(l,r) < 0;
+			}
 			return strcasecmp(lhs.c_str(),rhs.c_str()) < 0;
 		}
 	};
