@@ -68,8 +68,8 @@ protected:
 		WED_PropDoubleText				mRoughness;
 		WED_PropDoubleText				mHeading;
 		WED_PropIntEnumSet				mMarkings;
-		WED_PropIntEnumSetFilter		mMarkingsLines;
-		WED_PropIntEnumSetFilter		mMarkingsLights;
+		WED_PropIntEnumSetFilterVal		mMarkingsLines;
+		WED_PropIntEnumSetFilterVal		mMarkingsLights;
 
 		WED_PropStringText				mResource;
 		WED_PropDoubleText				mHeight;

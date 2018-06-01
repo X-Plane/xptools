@@ -415,8 +415,9 @@ void WED_LibraryMgr::RescanLines()
 		{
 			resnam.erase(resnam.size()-4);
 
+			// create human readable Description (also used as XML keyword) from resource file name
 			int linetype;
-			char nice_name[30];
+			char nice_name[37];
 			sscanf(resnam.c_str(),"%d%*c%29s",&linetype,nice_name);
 			for(int i = 0; i < 29; ++i)
 			{
@@ -425,7 +426,15 @@ void WED_LibraryMgr::RescanLines()
 				if(nice_name[i] == '_')
 				{
 					nice_name[i] = ' ';
-					if (nice_name[i+1] != 0) nice_name[i+1] = toupper(nice_name[i+1]);
+					if(nice_name[i+1] != 0)
+					{
+						nice_name[i+1] = toupper(nice_name[i+1]);
+						if(nice_name[i+2] == 0)
+						{
+							nice_name[i+1] = 0;
+							strcat(nice_name,"(Black)");
+						}
+					}
 				}
 			}
 			
