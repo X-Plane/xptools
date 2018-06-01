@@ -474,6 +474,34 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	//-----------------------------------------------------------------
 }
 
+int GUI_TextTable::CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int> enum_vals, GUI_EnumDictionary& dict)
+{
+	for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
+	if(!di->second.second)
+		di->second.first.insert(0,";");
+
+	int i = 0;
+	int current_sel = -1;
+	for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
+	{
+		enum_vals[i] = it->first;
+		items[i].name = it->second.first.c_str();
+		items[i].key = 0;
+		items[i].flags = 0;
+		items[i].cmd = 0;
+		if (mEditInfo.int_val == it->first)
+		{
+			current_sel = i;
+			
+			//Saves the selected enum's text value to mEditInfo
+			//So the value can be used in whatever calls Accept Edit
+			mEditInfo.text_val = it->second.first.c_str();
+		}
+		items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
+	}
+	return current_sel;
+}
+
 int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, int mouse_x, int mouse_y, int button, GUI_KeyFlags flags, int& want_lock)
 {
 	want_lock = 1;
@@ -686,33 +714,10 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
-				for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
-				if(!di->second.second)
-					di->second.first.insert(0,";");
-			
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
-				int i = 0;
-				int cur = -1;
-				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
-				{
-					enum_vals[i] = it->first;
-					items[i].name = it->second.first.c_str();
-					items[i].key = 0;
-					items[i].flags = 0;
-					items[i].cmd = 0;
-					if (mEditInfo.int_val == it->first)
-					{
-						cur = i;
-						
-						//Saves the selected enum's text value to mEditInfo
-						//So the value can be used in whatever calls Accept Edit
-						mEditInfo.text_val = it->second.first.c_str();
-					}
-					items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
-				}
+				int cur = CreateMenuFromDict(items, enum_vals, dict);
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
-				
 				if (choice >= 0 && choice < enum_vals.size())
 				{
 					mEditInfo.int_val = enum_vals[choice];
@@ -729,24 +734,9 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 			mContent->GetEnumDictionary(cell_x, cell_y,dict);
 			if (!dict.empty())
 			{
-				for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
-				if(!di->second.second)
-					di->second.first.insert(0,";");
-			
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
-				int i = 0;
-				int cur = -1;
-				for (GUI_EnumDictionary::iterator it = dict.begin(); it != dict.end(); ++it, ++i)
-				{
-					enum_vals[i] = it->first;
-					items[i].name = it->second.first.c_str();
-					items[i].key = 0;
-					items[i].flags = 0;
-					items[i].cmd = 0;
-					items[i].checked = (mEditInfo.int_set_val.count(it->first) > 0);
-					if (items[i].checked && cur == -1) cur = i;
-				}
+				int cur = CreateMenuFromDict(items, enum_vals, dict);
 				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 				if (choice >= 0 && choice < enum_vals.size())
 				{
@@ -1136,14 +1126,6 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_
 			mCatcher->Show();
 		}
 
-//		float	cell_h = cell_bounds[3] - cell_bounds[1];
-//		float	line_h = GUI_GetLineHeight(mFont);
-//		int		descent = GUI_GetLineDescent(mFont);
-//		float	cell2line = (cell_h - line_h + descent) * 0.5f;
-
-//		float pad_bottom = cell2line - descent;
-//		float pad_top = cell_h - line_h - pad_bottom;
-			
 		int cb[4];
 		memcpy(cb,cell_bounds,sizeof(cb));
 			
@@ -1152,7 +1134,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const string& text, bool is_
 						
 		cb[0] += mEditInfo.indent_level * mCellIndent;
 		
-		cb[1] = cb[3] - 280;
+		cb[1] = cb[3] - 280;  // desired size for Sign Editor
 		cb[2] = cb[0] + 600;
 		
 		int dx = 0, dy = 0;

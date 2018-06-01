@@ -175,7 +175,7 @@ int					ENUM_Create(int domain, const char * value, const char * desc, int expor
 		sDomains[domain].enum_end   = max(sDomains[domain].enum_end, idx+1);
 	}
 
-	printf("Creating new enum %s value=%d in domain %d (%s)\n", value, idx, domain, sEnums[domain].name.c_str());
+//	printf("Creating new enum %s value=%d in domain %d (%s)\n", value, idx, domain, sEnums[domain].name.c_str());
 
 	enum_Info e;
 	e.domain = domain;
