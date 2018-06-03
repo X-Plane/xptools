@@ -633,6 +633,8 @@
 		<Unit filename="../../src/WEDWindows/WED_HierarchyFilterBar.h" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_LibraryFilterBar.h" />
+		<Unit filename="../../src/WEDWindows/WED_Line_Selector.cpp" />
+		<Unit filename="../../src/WEDWindows/WED_Line_Selector.h" />
 		<Unit filename="../../src/WEDWindows/WED_Menus.cpp" />
 		<Unit filename="../../src/WEDWindows/WED_Menus.h" />
 		<Unit filename="../../src/WEDWindows/WED_PackageListAdapter.cpp" />

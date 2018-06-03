@@ -218,6 +218,7 @@ void	WED_PropertyTable::GetCellContent(
 			t->GetNthPropertyDictItem(idx,*iter,label);
 			if (ENUM_Domain(*iter) == LinearFeature)
 			{
+				the_content.content_type = gui_Cell_LineEnumSet;
 				label = ENUM_Name(*iter);
 				label += ".png";
 				the_content.string_is_resource = 1;
@@ -329,12 +330,13 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Int		&& content.content_type != gui_Cell_Integer	)	continue;
 		if (inf.prop_kind == prop_Double	&& content.content_type != gui_Cell_Double	)	continue;
 		if (inf.prop_kind == prop_String	&& content.content_type != gui_Cell_EditText)	continue;
-		if (inf.prop_kind == prop_TaxiSign && content.content_type != gui_Cell_TaxiText) continue;
+		if (inf.prop_kind == prop_TaxiSign	&& content.content_type != gui_Cell_TaxiText)	continue;
 		if (inf.prop_kind == prop_FilePath	&& content.content_type != gui_Cell_FileText)	continue;
 		if (inf.prop_kind == prop_Bool		&& content.content_type != gui_Cell_CheckBox)	continue;
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
-		if (inf.prop_kind == prop_EnumSet	&& content.content_type != gui_Cell_EnumSet	)	continue;
-
+		if (inf.prop_kind == prop_EnumSet	&& ( content.content_type != gui_Cell_EnumSet &&
+												 content.content_type != gui_Cell_LineEnumSet ))	continue;
+		
 		switch(inf.prop_kind) {
 		case prop_Int:
 			val.prop_kind = prop_Int;
