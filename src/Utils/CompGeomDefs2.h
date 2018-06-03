@@ -46,7 +46,13 @@ struct Bezier2;
 
 //This code is only for MSVC
 #if defined(_MSC_VER)
-	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
+	inline double cbrt(double x)
+	{
+		if (x >= 0.0)
+			return pow(x, 1.0/3.0);
+		else
+			return -pow(-x, 1.0/3.0);
+	}
 #endif
 
 enum {
