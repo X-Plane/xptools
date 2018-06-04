@@ -14,34 +14,34 @@ menu to view it online.
 CHANGE HISTORY
 
 WED 1.7.1
-    - Allow to pre-select 'Split Walls' when placing facades
-    - Enable splitting of line/area features into 2 separate things by selecting non-adjacent nodes, Edit->Split
-    - Added "Convert to" feature for converting between taxiways, draped polygon, taxi lines and lines.
-    - Enable merging of two line/area features into one:
-      - Line feature: Select an endpoint of each line feature, Edit->Merge 
-        If endpoints are already snapped, you can also simply select both line features
-      - Area feature: Select at least two adjacent points on each area feature, Edit->Merge
-        If the points are already snapped, you can also simply select both area features
-    - Enable converting a taxiline between open and closed:
-      - Select point on closed taxiline, Edit->Split
-      - Select two ends of open taxiline, Edit->Merge
-    - Added "Match Bezier Handles" feature:
-      - Select the object whose Bezier handles should be matched to another object
-      - Ensure that at least two consecutive points are snapped to the points whose Bezier handles are
-        to be matched
-      - Choose Edit->Match Bezier Handles
-    - Added "Offset Bezier" feature that offsets a Bezier curve (or polygon) in a certain distance.
-      To use, select the curve, then shift-drag one of its edges.
+	Features:
+	- Add pre-select for 'Split Walls' when placing facades
+	- Split line/area features into 2 separate things (selecti non-adjacent nodes, Edit->Split)
+	- Merge two line features into one (select end-nodes Edit-Merge)
+	- Merge two area features into one (select 2 nodes in eacg, Edit-Merge)
+    - Convert taxiline open/closed (select single node, Edit->Split or endpoints, Edit->Merge)
+    - Add matching of two line/area objects (select both objects, snap 2 nodes, Edit->Match Bezier Handles)
+    - Create parallel running bezier curved lines (duplicate bezier curve, shift-drag one of its segements)
 
-WED 1.7.0 r2 3/17/20
+WED 1.7.0 r3
+	- fix bezier handle rotation in TCE windows vertex tool
+	- WED-1006: adjust airport overall size validation for lattitude
+	- WED-1007: fix inability to export to DSF w/validation warnings present
+	- WED-1008: prevent ability to open multiple validation windows on OSX
+	- WED-943,1003 fix crashes on export of certain Draped Runway Signs
+	- WED 1009: fix crash on OSX when exporting Orthophotos
+
+WED 1.7.0 r2 3/29/18
+	- WED-1001: fix crash when clearing hierarchy search box
 	- fix bug (windows only) preventing gateway submission for some users
+	- Fix for infinite loop when word-wrapping long strings that have no newlines
 
 WED 1.7.0 r1 3/17/18
-	- WED-995 fix update of runway textures & properties not showing immediately
+	- WED-995: fix update of runway textures & properties not showing immediately
 
 WED 1.7.0 Beta2 3/6/18
 	- fix crash on OSX at scenery load time with worldmap background enabled
-	- WED-992 fix crash on Windows when re-opening preferences window
+	- WED-992: fix crash on Windows when re-opening preferences window
 
 WED 1.7.0 Beta1 2/26/18
 	- WED-759: Code cleanup - remove all sql code. Eliminates capability to read WED 1.0 format earth.wed files

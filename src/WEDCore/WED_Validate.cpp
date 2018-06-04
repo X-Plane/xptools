@@ -2090,7 +2090,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 	{
 		Bbox2 bounds;
 		apt->GetBounds(gis_Geo, bounds);
-		if(bounds.xspan() > MAX_LON_SPAN_GATEWAY ||
+		if(bounds.xspan() > MAX_LON_SPAN_GATEWAY / cos(bounds.centroid().y() * M_PI / 180.0) ||         // correction for higher lattitudes
 				bounds.yspan() > MAX_LAT_SPAN_GATEWAY)
 		{
 			msgs.push_back(validation_error_t("This airport is impossibly large. Perhaps a part of the airport has been accidentally moved far away or is not correctly placed in the hierarchy?", err_airport_impossible_size, apt,apt));
@@ -2334,7 +2334,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 }
 
 
-bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl)
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wrl, bool skipErrorDialog)
 {
 #if DEBUG_VIS_LINES
 	//Clear the previously drawn lines before every validation
@@ -2439,7 +2439,7 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 
 	if(!msgs.empty())
 	{
-		new WED_ValidateDialog(resolver, pane, msgs);
+		if(!skipErrorDialog) new WED_ValidateDialog(resolver, pane, msgs);
 
 /*		ISelection * sel = WED_GetSelect(resolver);
 		wrl->StartOperation("Select Invalid");
@@ -2455,9 +2455,10 @@ bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * wr
 			DoUserAlert((string("No errors exist, but there is at least one warning:\n\n") + msgs.front().msg
 			                     + "\n\nFor a full list of messages see\n" + logfile).c_str());
 */
+		if(first_error == msgs.end())
+			return validation_warnings_only;
+		else
+			return validation_errors;
 	}
-	if(first_error != msgs.end())
-		return GATEWAY_IMPORT_FEATURES;
-	else
-		return msgs.empty() || GATEWAY_IMPORT_FEATURES;
+	else return validation_clean;
 }

@@ -483,7 +483,8 @@ std::string WordWrap( std::string str, size_t width )
 	#endif
 		{
 			spacePos = str.rfind(' ', maxPos);     // look for a space just before the line gets too long
-			if( spacePos == std::string::npos || spacePos <= lastCR)   // no joy, i.e. a very long word
+			if( spacePos == std::string::npos ||
+			   (lastCR != string::npos && spacePos <= lastCR))   // no joy, i.e. a very long word
 			{
 				spacePos = str.find(' ', maxPos);  // so we look for a good place after that word,
 			}                                      // as we have no better choice here.
