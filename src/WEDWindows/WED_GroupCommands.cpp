@@ -4200,23 +4200,26 @@ static int wed_upgrade_airports_recursive(WED_Thing * who, WED_ResourceMgr * rmg
 		
 		for(vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
 		{
-			int rt = (*r)->GetType();
-			if(rt == atc_Ramp_Gate)
+			if ((*r)->GetRampOperationType() == ramp_operation_none)
 			{
-				(*r)->SetRampOperationType(ramp_operation_Airline);
-				did_work = 1;
-			}
-			if(rt == atc_Ramp_TieDown)
-			{
-				did_work = 1;
-				
-				set<int> eq;
-				(*r)->GetEquipment(eq);
-				
-				if(eq.count(atc_Heavies))
+				int rt = (*r)->GetType();
+				if(rt == atc_Ramp_Gate)
+				{
 					(*r)->SetRampOperationType(ramp_operation_Airline);
-				else
-					(*r)->SetRampOperationType(ramp_operation_GeneralAviation);
+					did_work = 1;
+				}
+				if(rt == atc_Ramp_TieDown)
+				{
+					did_work = 1;
+					
+					set<int> eq;
+					(*r)->GetEquipment(eq);
+					
+					if(eq.count(atc_Heavies))
+						(*r)->SetRampOperationType(ramp_operation_Airline);
+					else
+						(*r)->SetRampOperationType(ramp_operation_GeneralAviation);
+				}
 			}
 		}		
 		

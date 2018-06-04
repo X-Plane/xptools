@@ -51,8 +51,8 @@
 // selection circle radius for control handles, in pixels
 #define	HANDLE_RAD 5
 
-// distance a drag_Move needs to drag before actually moving selection, i.e. item is initially "sticky"
-#define DRAG_START_DIST 4
+// distance in pixels a drag_Move needs to drag before actually moving selection, i.e. item is initially "sticky"
+#define DRAG_START_DIST 6
 
 #if DEV
 #define DEBUG_PRINTF_N_LINES 0
@@ -701,12 +701,12 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			Point2	np(GetZoomer()->XPixelToLon(   inX),GetZoomer()->YPixelToLat(   inY));
 			Vector2 delta(op,np);
 			mDragX = inX; mDragY = inY;
-			Bbox2	old_b(0,0,1,1);
-			Bbox2	new_b(0,0,1,1);
-			new_b.p1 += delta;
-			new_b.p2 += delta;
 			for (vector<IGISEntity *>::iterator e =	mSelManip.begin(); e != mSelManip.end(); ++e)
 			{
+				Bbox2	old_b;
+				(*e)->GetBounds(gis_Geo,old_b);
+				Bbox2	new_b(old_b);
+				new_b+=delta;
 				(*e)->Rescale(gis_Geo,old_b, new_b);
 			}
 		}
