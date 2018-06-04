@@ -17,7 +17,6 @@ WED 1.7.1
 	- WED-1018: make validation for at least one run/sealane, heliport specific to airport type
 	- fix typo in CCW wound polygon error text
 	- WED-1024: Prevent some nodes turning into Bezier nodes after Marquee tool rotations under OSX
-	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	- WED-1032: Raise non-modal windows at re-activation to foreground (Windows, Lin/OSX do that already)
 	- WED-1000: Fix window deactivation issue on Linux
 	- WED-1036: Keep "Upgrade  Ramps" from altering ramp start OpsType if such is already set
@@ -27,7 +26,8 @@ WED 1.7.1
 	- WED-1042: Suppress listing of .ags and .agb in the library pane until propper support for these is added
 	Features:
 	- WED-998: Extend hierachical locking effectiveness, require confirmation before moving of whole airports.
-
+	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
+	
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool
 	- WED-1006: adjust airport overall size validation for lattitude
