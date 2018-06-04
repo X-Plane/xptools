@@ -90,8 +90,9 @@ struct	fac_info_t {
 
 struct	lin_info_t {
 	string		base_tex;
-	float		proj_s;
-	float		proj_t;
+	float		scale_s;
+	float		scale_t;
+	float		eff_width;
 	vector<float>	s1,sm,s2;
 };
 

@@ -1525,86 +1525,53 @@ static void ValidateAirportMetadata(WED_Airport* who, validation_error_vector& m
 		all_keys.push_back(country);
 	}
 
-	int lat_lon_problems = 0;
-	bool valid_lat = false;
-	if(who->ContainsMetaDataKey(wed_AddMetaDataDatumLat))
+	bool lat_lon_problems = false;
+	if(who->ContainsMetaDataKey(wed_AddMetaDataDatumLat) || who->ContainsMetaDataKey(wed_AddMetaDataDatumLon))
 	{
-		string datum_lat        = who->GetMetaDataValue(wed_AddMetaDataDatumLat);
-		if(datum_lat.empty() == false)
+		string datum_lat = who->ContainsMetaDataKey(wed_AddMetaDataDatumLat) ? who->GetMetaDataValue(wed_AddMetaDataDatumLat) : "";
+		string datum_lon = who->ContainsMetaDataKey(wed_AddMetaDataDatumLon) ? who->GetMetaDataValue(wed_AddMetaDataDatumLon) : "";
+		
+		if(datum_lat.size() || datum_lon.size())
 		{
-			string error_content;
-			if(is_a_number(datum_lat) == true)
+			lat_lon_problems = true;
+			if(!is_a_number(datum_lat))
 			{
-				double latitude;
-
-				istringstream iss(datum_lat);
-				iss >> latitude;
-				if(latitude < -90.00 || latitude > 90.00)
+				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat, "Not a number", who, msgs, apt);
+			}
+			if(!is_a_number(datum_lon))
+			{
+				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon, "Not a number", who, msgs, apt);
+			}
+			if(is_a_number(datum_lon) && is_a_number(datum_lat))
+			{
+				Point2 apt_datum;
+				Bbox2 apt_bounds; 
+				apt->GetBounds(gis_Geo, apt_bounds);
+				
+				istringstream iss_lon (datum_lon);
+				istringstream iss_lat (datum_lat);
+				iss_lon >> apt_datum.x_;
+				iss_lat >> apt_datum.y_;
+				
+				if(apt_bounds.contains(apt_datum))
 				{
-					error_content = "Datum latitude is out of range";
-					valid_lat = false;
+					lat_lon_problems = false;
+				}
+				else
+				{
+					if(apt_datum.x() < apt_bounds.xmin() || apt_datum.x() > apt_bounds.xmax())
+						add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon, 
+						"Coordinates not within the airport's area. Delete both datum meta tags.", who, msgs, apt);
+					if(apt_datum.y() < apt_bounds.ymin() || apt_datum.y() > apt_bounds.ymax())
+						add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat, 
+						"Coordinates not within the airport's area. Delete both datum meta tags.", who, msgs, apt);
 				}
 			}
-			else
-			{
-				error_content = "Datum latitude must be a number";
-				valid_lat = false;
-			}
-
-			if(error_content.empty() == false)
-			{
-				++lat_lon_problems;
-				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLat, error_content, who, msgs, apt);
-			}
-			else
-			{
-				valid_lat = true;
-			}
 		}
-		all_keys.push_back(datum_lat);
 	}
-
-	bool valid_lon = false;
-	if(who->ContainsMetaDataKey(wed_AddMetaDataDatumLon))
+	if(lat_lon_problems)
 	{
-		string datum_lon        = who->GetMetaDataValue(wed_AddMetaDataDatumLon);
-		if(datum_lon.empty() == false)
-		{
-			string error_content;
-			if(is_a_number(datum_lon) == true)
-			{
-				double longitude;
-
-				istringstream iss(datum_lon);
-				iss >> longitude;
-				if(longitude < -180.00 || longitude > 180.00)
-				{
-					error_content = "Datum longitude is out of range";
-					valid_lon = false;
-				}
-			}
-			else
-			{
-				error_content = "Datum longitude must be a number";
-				valid_lon = false;
-			}
-
-			if(error_content.empty() == false)
-			{
-				++lat_lon_problems;
-				add_formated_metadata_error(error_template, wed_AddMetaDataDatumLon, error_content, who, msgs, apt);
-			}
-			else
-			{
-				valid_lon = true;
-			}
-		}
-		all_keys.push_back(datum_lon);
-	}
-
-	if(lat_lon_problems > 0 && (valid_lat == false || valid_lon == false))
-	{
-		msgs.push_back(validation_error_t(string("Metadata datum latitude and longitude must both be valid and come in a pair"), err_airport_metadata_invalid, who, apt)); 
+		msgs.push_back(validation_error_t(string("Metadata 'Datum latitude / longitude' must both be valid and come in a pair"), err_airport_metadata_invalid, who, apt)); 
 	}
 
 	if(who->ContainsMetaDataKey(wed_AddMetaDataFAA))
