@@ -51,39 +51,14 @@
 #include <iostream>
 #endif
 
+#define SHOW_DEBUG_INFO 1
+
 #define MIN_ZOOM  13        // stop displaying OSM at all below this level
-#define MAX_ZOOM  16
-#define TILE_FACTOR 0.8     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
+#define MAX_ZOOM  16        // for custom mode maps (predefined maps have their own limits below)
+
+#define TILE_FACTOR 0.7     // save tiles by zooming in a bit later than at 1:1 pixel ratio.
 							// Since zoom goes by 1.2x steps - it matters little w.r.t "sharpness"
 							// but saves on average 34% of all tile loads
-
-#define ZOOM_LEVELS 19
-							
-// This table of zoom levels comes from...
-// http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
-static const double k_mpp[ZOOM_LEVELS] = {
-	156543.03,
-	78271.52,
-	39135.76,
-	19567.88,
-	9783.94,
-	4891.97,
-	2445.98,
-	1222.99,
-	611.50,
-	305.75,
-	152.87,
-	76.437,
-	38.219,
-	19.109,
-	9.5546,
-	4.7773,      // ZL16, the highest level that is always cached data rather than real-time computed
-	2.3887,
-	1.1943,
-	0.5972 };
-
-// These tile conversion formulas come from...
-// http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#C.2FC.2B.2B
 
 #define PREDEFINED_MAPS 2
 
@@ -96,6 +71,11 @@ static const char * attributions[PREDEFINED_MAPS] = {
 static const char * tile_url[PREDEFINED_MAPS] = {
 WED_URL_OSM_TILES  "${z}/${x}/${y}.png",
 WED_URL_ESRI_TILES "${z}/${y}/${x}.jpg" };
+
+static const int max_zoom[PREDEFINED_MAPS] = {
+16,        // OSM tiles below this zoom are not cached, but on-demand generated. Openstreetmap foundation asks to limit their use.
+17 };      // ESRI maps are available down to this level in general
+ 
 
 static inline int long2tilex(double lon, int z) 
 { 
@@ -118,18 +98,22 @@ static inline double tiley2lat(int y, int z)
 	return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
-static int get_zl_for_map_ppm(double in_ppm)
+int WED_SlippyMap::get_zl_for_map_ppm(double in_ppm)
 {
 	double mpp = 1.0 / in_ppm;
+	double zl_mpp = 156543.03 * TILE_FACTOR / 2.0;
 	int zl = 0;
-	while(zl <= MAX_ZOOM && k_mpp[zl]*TILE_FACTOR > mpp)
-		++zl;
+	int max_zl = mMapMode <= PREDEFINED_MAPS ? max_zoom[mMapMode-1] : MAX_ZOOM;
 	
-	if(zl > 0) --zl;
+	while(zl < max_zl && zl_mpp > mpp)
+	{
+		zl_mpp *= 0.5;
+		++zl;
+	}
 	return zl;
 }
 
-static void get_ll_box_for_tile(int z, int x, int y, double bounds[4])
+static int get_ll_box_for_tile(int z, int x, int y, double bounds[4])
 {
 	bounds[0] = tilex2long(x,z  );
 	bounds[2] = tilex2long(x+1,z);
@@ -203,7 +187,7 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 			pbounds[1] = zoomer->LatToYPixel(tbounds[1]);
 			pbounds[3] = zoomer->LatToYPixel(tbounds[3]);
 
-#if DEV && 0
+#if DEV && SHOW_DEBUG_INFO
 			//Draw border around tile
 			g->SetState(0, 0, 0, 0, 0, 0, 0);
 			GLfloat black[4] = { 0, 0, 0, 1 };
@@ -260,11 +244,11 @@ void	WED_SlippyMap::DrawVisualization(bool inCurrent, GUI_GraphState * g)
 						glVertex2f(pbounds[0],pbounds[1]);
 					glEnd();
 
-					#if DEV && 0
+#if DEV && SHOW_DEBUG_INFO
 						stringstream ss;
 						ss << potential_path.substr(28) << " Id: " << id;
 						GUI_FontDraw(g, font_UI_Basic, black, pbounds[0] + 5, pbounds[1] - 15, ss.str().c_str()+20);
-					#endif
+#endif
 				}
 				else
 				{

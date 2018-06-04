@@ -39,12 +39,13 @@ public:
 	virtual	void	DrawVisualization(bool inCurrent, GUI_GraphState * g);
 	virtual	void	GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& cares_about_sel, bool& wants_clicks);
 	virtual	void	TimerFired(void);
-			void	SetMode(int mode);
+			void	SetMode(int mode);  // mode 0 = custom map string, 1..2 OSM and ERSI maps
 			int		GetMode(void);
 
 private:
 
 			void	finish_loading_tile();
+			int 	get_zl_for_map_ppm(double in_ppm);
 
 	WED_file_cache_request* m_cache_request;
 
