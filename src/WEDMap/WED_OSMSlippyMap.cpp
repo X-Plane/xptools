@@ -51,7 +51,7 @@
 #include <iostream>
 #endif
 
-#define SHOW_DEBUG_INFO 1
+#define SHOW_DEBUG_INFO 0
 
 #define MIN_ZOOM  13        // stop displaying OSM at all below this level
 #define MAX_ZOOM  16        // for custom mode maps (predefined maps have their own limits below)
