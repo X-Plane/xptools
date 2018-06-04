@@ -23,10 +23,13 @@ WED 1.7.1
 	- WED-1036: Keep "Upgrade  Ramps" from altering ramp start OpsType if such is already set
 	- fix preview panel display for lines w/multiple, differing width layers
 	- validate Datum meta tags to be within the airport's bounding box
-	Features:
-	- real-time preview of lines and taxilines in the map
 	- make listing order leading-numbers sensitive, so 10_line.lin is listed below 2_line.lin
-
+	- WED-1042: Suppress listing of .ags and .agb in the library pane until propper support for these is added
+	Features:
+	- real-time preview of lines and taxilines on the map
+	- WED-1039: support new line types for taxilines if available in LR default libraries
+	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
+	
 WED 1.7.0 r3
 	- fix bezier handle rotation in TCE windows vertex tool
 	- WED-1006: adjust airport overall size validation for lattitude

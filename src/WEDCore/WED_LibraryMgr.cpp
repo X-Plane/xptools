@@ -519,9 +519,10 @@ void WED_LibraryMgr::AccumResource(const string& path, int package, const string
 	else if(suffix == "str") rt = res_String;
 	else if(suffix == "lin") rt = res_Line;
 	else if(suffix == "pol") rt = res_Polygon;
-// not sure we want to even list these	
-	else if(suffix == "ags") rt = res_Polygon;
-	else if(suffix == "agb") rt = res_Polygon;
+// not sure we want to even list these ?
+// per Ben's explanation of May 2nd 2018 - we don't, until we support all parameters for these.
+//	else if(suffix == "ags") rt = res_Polygon;
+//	else if(suffix == "agb") rt = res_Polygon;
 #if ROAD_EDITING
 	else if(suffix == "net") rt = res_Road;
 #endif

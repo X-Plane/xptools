@@ -36,20 +36,14 @@
 #include "WED_Sign_Editor.h"
 #include "WED_Line_Selector.h"
 
+#define USE_LINE_SELECTOR_POPUP 0      // not yet quite ready for production
+
 #define RESIZE_MARGIN 4
 
 #if APL
 	#include <OpenGL/gl.h>
 #else
 	#include <GL/gl.h>
-#endif
-
-#if BENTODO
-	numeric precision control?
-#endif
-
-#if OPTIMIZE
-	provider to provide content IN BULK?
 #endif
 
 #define CELL_MARGIN 3
@@ -476,7 +470,7 @@ void		GUI_TextTable::CellDraw	 (int cell_bounds[4], int cell_x, int cell_y, GUI_
 	//-----------------------------------------------------------------
 }
 
-int GUI_TextTable::CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int> enum_vals, GUI_EnumDictionary& dict)
+int GUI_TextTable::CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>& enum_vals, GUI_EnumDictionary& dict)
 {
 	for(GUI_EnumDictionary::iterator di = dict.begin(); di != dict.end(); ++di)
 	if(!di->second.second)
@@ -491,15 +485,19 @@ int GUI_TextTable::CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>
 		items[i].key = 0;
 		items[i].flags = 0;
 		items[i].cmd = 0;
-		if (mEditInfo.int_val == it->first)
+		if (mEditInfo.content_type == gui_Cell_Enum)
 		{
-			current_sel = i;
-			
-			//Saves the selected enum's text value to mEditInfo
-			//So the value can be used in whatever calls Accept Edit
-			mEditInfo.text_val = it->second.first.c_str();
+			items[i].checked = (mEditInfo.int_val == it->first);
+			if (items[i].checked)
+			{
+				//Saves the selected enum's text value to mEditInfo
+				//So the value can be used in whatever calls Accept Edit
+				mEditInfo.text_val = it->second.first.c_str();
+			}
 		}
-		items[i].checked = (mEditInfo.int_val == it->first) ? 1 : 0;
+		else
+			items[i].checked = mEditInfo.int_set_val.count(it->first) > 0;
+		if(items[i].checked && current_sel == -1) current_sel = i;            // select the first already selected item
 	}
 	return current_sel;
 }
@@ -719,12 +717,24 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
 				int cur = CreateMenuFromDict(items, enum_vals, dict);
-				int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
-				if (choice >= 0 && choice < enum_vals.size())
+#if USE_LINE_SELECTOR_POPUP
+				if(mEditInfo.content_type == gui_Cell_LineEnumSet)
 				{
-					mEditInfo.int_val = enum_vals[choice];
-
-					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
+					CreateEdit(cell_bounds,&items);
+					mClickCellX = cell_x;
+					mClickCellY = cell_y;
+					return 1;
+				}
+				else
+#endif
+				{
+					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
+					if (choice >= 0 && choice < enum_vals.size())
+					{
+						mEditInfo.int_val = enum_vals[choice];
+						mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
+					}
 				}
 			}
 			mEditInfo.content_type = gui_Cell_None;
@@ -740,23 +750,17 @@ int			GUI_TextTable::CellMouseDown(int cell_bounds[4], int cell_x, int cell_y, i
 				vector<GUI_MenuItem_t>	items(dict.size()+1);
 				vector<int>				enum_vals(dict.size());
 				int cur = CreateMenuFromDict(items, enum_vals, dict);
-				
+#if USE_LINE_SELECTOR_POPUP
 				if(mEditInfo.content_type == gui_Cell_LineEnumSet)
 				{
-
 					cell_bounds[0] -= mEditInfo.indent_level * mCellIndent;	// clean out bounds...will get changed again later anyway
-
-#if 1
 					CreateEdit(cell_bounds,&items);
 					mClickCellX = cell_x;
 					mClickCellY = cell_y;
 					return 1;
-#else
-					WED_EnumSelectDialog * dia = new WED_EnumSelectDialog(this,&mEditInfo,dict);
-					mContent->AcceptEdit(cell_x, cell_y, mEditInfo, all_edit);
-#endif
 				}
 				else
+#endif
 				{	
 					int choice = mParent->PopupMenuDynamic(&*items.begin(), cell_bounds[0],cell_bounds[3],button, cur);
 					if (choice >= 0 && choice < enum_vals.size())
@@ -1312,7 +1316,7 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 			else if(s)
 				s->GetSignText(mEditInfo.text_val);
 			else
-				l->GetSelection(mEditInfo.int_set_val);
+				l->GetSelection(mEditInfo.int_val);   // lines are also exclusive sets, so only int_val is set in AcceptEdit();
 				
 			switch(mEditInfo.content_type) {
 			case gui_Cell_Integer:
@@ -1475,9 +1479,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 
 	if(inVK == GUI_VK_RETURN && HasEdit())
 	{
-
-	printf("RX TermEdit Return\n");
-
+//	printf("RX TermEdit Return\n");
 		TerminateEdit(true, inFlags & (gui_OptionAltFlag | gui_ControlFlag), true);
 		return 1;
 	}
@@ -1500,9 +1502,7 @@ int			GUI_TextTable::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFla
 
 	if(inKey == GUI_KEY_ESCAPE && HasEdit())
 	{
-	
-	printf("RX TermEdit Escape\n");
-	
+//	printf("RX TermEdit Escape\n");
 		TerminateEdit(false, false, true);
 		return 1;
 	}

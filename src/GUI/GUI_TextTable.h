@@ -364,7 +364,7 @@ private:
 			int				TerminateEdit(bool inSave, bool inAll, bool inDone);
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
 			bool			HasEdit() { return mSignField != NULL || mTextField != NULL || mLineField != NULL; }
-			int 			CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int> enum_vals, GUI_EnumDictionary& dict);
+			int 			CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>& enum_vals, GUI_EnumDictionary& dict);
 
 	GUI_TextTableProvider * mContent;
 	int						mClickCellX;
