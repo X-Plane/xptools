@@ -189,8 +189,8 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	}
 
 	out_info.base_tex.clear();
-	out_info.proj_s=100;
-	out_info.proj_t=100;
+	out_info.scale_s=100;
+	out_info.scale_t=100;
 	float tex_width = 1024;
 	out_info.s1.clear();
 	out_info.sm.clear();
@@ -219,8 +219,8 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 		}
 		else if (MFS_string_match(&s,"SCALE", false))
 		{
-			out_info.proj_s = MFS_double(&s);
-			out_info.proj_t = MFS_double(&s);
+			out_info.scale_s = MFS_double(&s);
+			out_info.scale_t = MFS_double(&s);
 		}
 		else if (MFS_string_match(&s,"TEX_WIDTH", false))
 		{
@@ -245,8 +245,8 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	
 	if (out_info.s1.size() < 1) 
 		return false;
-	
-	out_info.proj_s = out_info.proj_s * (out_info.s2[0]-out_info.s1[0]);
+
+	out_info.eff_width = out_info.scale_s * ( out_info.s2[0] - out_info.s1[0] - 4 / tex_width ); // assume 2 transparent pixels on each side
 
 	process_texture_path(p,out_info.base_tex);
 	mLin[path] = out_info;

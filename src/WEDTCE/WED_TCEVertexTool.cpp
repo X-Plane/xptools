@@ -83,11 +83,11 @@ int			WED_TCEVertexTool::CountControlHandles(intptr_t id						  ) const
 
 void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
-	bool dummy_a;
-	Point2 dummy_p;
-	HandleType_t dummy_h;
-	if(!active) active=&dummy_a;
-	if(!p)		p=&dummy_p;
+	bool                      dummy_a;
+	Point2                    dummy_p;
+	HandleType_t              dummy_h;
+	if(!active)   active   = &dummy_a;
+	if(!p)		  p        = &dummy_p;
 	if(!con_type) con_type = &dummy_h;
 
 	if(direction) *direction = Vector2(1,0);
@@ -124,10 +124,12 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 		case 1:
 			*con_type = handle_Bezier;
 			*active = pt_bt->GetControlHandleLo(gis_UV,*p);
+			if (direction) { Point2 dummy; pt_bt->GetLocation(gis_UV,dummy);*direction=Vector2(*p,dummy); }
 			break;
 		case 2:
 			*con_type = handle_Bezier;
 			*active = pt_bt->GetControlHandleHi(gis_UV,*p);
+			if (direction) { Point2 dummy; pt_bt->GetLocation(gis_UV,dummy);*direction=Vector2(*p,dummy); }
 			break;
 		}
 		break;

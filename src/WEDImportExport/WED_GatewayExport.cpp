@@ -561,12 +561,24 @@ void WED_GatewayExportDialog::Submit()
 		WED_Export_Target old_target = gExportTarget;
 		gExportTarget = wet_gateway;
 
-		if(!WED_ValidateApt(mResolver, NULL, apt))
+		validation_result_t val_res = WED_ValidateApt(mResolver, NULL, apt, true); // suppress error dialog, as OSX can't handle nested modal windows
+		if(val_res == validation_warnings_only)
+		{
+			if(ConfirmMessage("Validation warnings exist. Continue to export to gateway ?", "Proceed", "Cancel"))
+				val_res = validation_clean;
+		}
+		else if(val_res == validation_errors)
+		{
+			DoUserAlert("Can not export to gateway due to validation errors.");
+		}
+		
+		if( val_res != validation_clean)
 		{
 			gExportTarget = old_target;
+			this->AsyncDestroy();   // save the user having to cancel the submission
 			return;
 		}
-
+		
 		ILibrarian * lib = WED_GetLibrarian(mResolver);
 
 		string targ_folder("tempXXXXXX");

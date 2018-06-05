@@ -101,6 +101,12 @@ void	WED_RampPosition::SetRampOperationType(int ait)
 	ramp_op_type = ait;
 }
 
+int 	WED_RampPosition::GetRampOperationType() const
+{
+	return ramp_op_type;
+}
+
+
 static bool two_adjacent_spaces(char lhs, char rhs)
 {
 	return (lhs == rhs) && (lhs == ' ');

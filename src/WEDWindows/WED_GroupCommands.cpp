@@ -3083,27 +3083,30 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 		int rt = (*r)->GetType();
 		if (rt == atc_Ramp_Gate)
 		{
-			(*r)->SetRampOperationType(ramp_operation_Airline);
-			did_work = 1;
-		}
-		if (rt == atc_Ramp_TieDown)
-		{
-			did_work = 1;
-
-			set<int> eq;
-			(*r)->GetEquipment(eq);
-
-			if (eq.count(atc_Heavies))
-				(*r)->SetRampOperationType(ramp_operation_Airline);
-			else
-				(*r)->SetRampOperationType(ramp_operation_GeneralAviation);
-		}
-	}
-
-	for (vector<obj_conflict_info>::iterator o = objs.begin(); o != objs.end(); ++o)
-	{
-		bool alive = true;
-		for (vector<WED_RampPosition *>::iterator r = ramps.begin(); r != ramps.end(); ++r)
+			if ((*r)->GetRampOperationType() == ramp_operation_none)
+			{
+				int rt = (*r)->GetType();
+				if(rt == atc_Ramp_Gate)
+				{
+					(*r)->SetRampOperationType(ramp_operation_Airline);
+					did_work = 1;
+				}
+				if(rt == atc_Ramp_TieDown)
+				{
+					did_work = 1;
+					
+					set<int> eq;
+					(*r)->GetEquipment(eq);
+					
+					if(eq.count(atc_Heavies))
+						(*r)->SetRampOperationType(ramp_operation_Airline);
+					else
+						(*r)->SetRampOperationType(ramp_operation_GeneralAviation);
+				}
+			}
+		}		
+		
+		for(vector<obj_conflict_info>::iterator o = objs.begin(); o != objs.end(); ++o)
 		{
 
 			Point2 rp; double rs;

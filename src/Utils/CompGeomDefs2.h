@@ -274,6 +274,15 @@ struct	Segment2 {
 										if (y == p1.y_) 		return p1.x_;
 										if (y == p2.y_) 		return p2.x_;
 										return p1.x_ + (p2.x_ - p1.x_) * (y - p1.y_) / (p2.y_ - p1.y_); }
+	double t_at_x(double x) const {		if(p1.x_ == p2.x_)		return 0.5;
+										if(x == p1.x_)			return 0.0;
+										if(x == p2.x_)			return 1.0;
+										return (x - p1.x_) / (p2.x_ - p1.x_); }
+	double t_at_y(double y) const {		if(p1.y_ == p2.y_)		return 0.5;
+										if(y == p1.y_)			return 0.0;
+										if(y == p2.y_)			return 1.0;
+										return (y - p1.y_) / (p2.y_ - p1.y_); }
+
 
 	bool	is_vertical(void) const { return p1.x_ == p2.x_; }
 	bool	is_horizontal(void) const { return p1.y_ == p2.y_; }
@@ -400,8 +409,10 @@ struct	Bbox2 {
 						p.y() < ymin() ? ymin() : (p.y() > ymax() ? ymax() : p.y())); };
 
 	double		rescale_to_x (const Bbox2& new_box, double x) const;
+	double		rescale_to_x_projected (const Bbox2& new_box, double x) const;
 	double		rescale_to_y (const Bbox2& new_box, double y) const;
 	double		rescale_to_xv(const Bbox2& new_box, double x) const;
+	double		rescale_to_xv_projected(const Bbox2& new_box, double x) const;
 	double		rescale_to_yv(const Bbox2& new_box, double y) const;
 
 	Point2	p1;
@@ -1010,6 +1021,12 @@ inline double		Bbox2::rescale_to_x(const Bbox2& new_box, double x) const
 	return new_box.p1.x_ + (x - p1.x_) * (new_box.p2.x_ - new_box.p1.x_) / (p2.x_ - p1.x_);
 }
 
+inline double		Bbox2::rescale_to_x_projected(const Bbox2& new_box, double x) const
+{
+	if (p2.x_ == p1.x_) return (new_box.p1.x_ + new_box.p2.x_) * 0.5;
+	return new_box.p1.x_ + (x - p1.x_) * (new_box.p2.x_ - new_box.p1.x_) / (p2.x_ - p1.x_) / cos(new_box.p1.y_ * M_PI / 180.0) * cos(p1.y_ * M_PI / 180.0);
+}
+
 inline double		Bbox2::rescale_to_y(const Bbox2& new_box, double y) const
 {
 	if (p2.y_ == p1.y_) return (new_box.p1.y_ + new_box.p2.y_) * 0.5;
@@ -1020,6 +1037,12 @@ inline double		Bbox2::rescale_to_xv(const Bbox2& new_box, double x) const
 {
 	if (p2.x_ == p1.x_) return x;
 	return x * (new_box.p2.x_ - new_box.p1.x_) / (p2.x_ - p1.x_);
+}
+
+inline double		Bbox2::rescale_to_xv_projected(const Bbox2& new_box, double x) const
+{
+	if (p2.x_ == p1.x_) return x;
+	return x * (new_box.p2.x_ - new_box.p1.x_) / (p2.x_ - p1.x_) / cos(new_box.p1.y_ * M_PI / 180.0) * cos(p1.y_ *  M_PI / 180.0);
 }
 
 inline double		Bbox2::rescale_to_yv(const Bbox2& new_box, double y) const

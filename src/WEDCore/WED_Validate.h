@@ -178,7 +178,14 @@ struct	validation_error_t {
 
 typedef vector<validation_error_t> validation_error_vector;
 
+enum validation_result_t {
+	validation_errors = 0,
+	validation_warnings_only,
+	validation_clean
+};
+
 // Collection primitives - these recursively walk the composition and pull out all entities of a given type.
-bool	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL);	// if root not null, only do this sub-tree
+validation_result_t	WED_ValidateApt(WED_Document * resolver, WED_MapPane * pane, WED_Thing * root = NULL, bool skipErrorDialog = false);	// if root not null, only do this sub-tree
+
 
 #endif
