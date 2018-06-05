@@ -3108,7 +3108,6 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 		
 		for(vector<obj_conflict_info>::iterator o = objs.begin(); o != objs.end(); ++o)
 		{
-
 			Point2 rp; double rs;
 			center_and_radius_for_ramp_start(*r, rp, rs);
 
@@ -3116,17 +3115,15 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 				
 			if(d < (o->approx_radius_m + rs))
 			{
-				//debug_mesh_line(rp, o->loc_ll, 1,0,0,1,0,0);
-				alive = false;
+				// Tyler says: is this legit?
+				/*
+				sel->Erase(o->obj);
+				o->obj->SetParent(NULL, 0);
+				o->obj->Delete();
+				did_work = 1;
+				 */
 				break;
 			}
-		}
-		if(!alive)
-		{
-			sel->Erase(o->obj);
-			o->obj->SetParent(NULL, 0);
-			o->obj->Delete();
-			did_work = 1;
 		}
 	}
 	return did_work;

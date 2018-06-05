@@ -45,7 +45,6 @@ public:
 	int		GetType() const;
 	int		GetWidth() const;
 	void	GetEquipment(set<int>& out_eq) const;
-	int		GetRampOperationType() const;
 	
 	static string CorrectAirlinesString(const string &a);
 
