@@ -51,6 +51,7 @@
 #include "MathUtils.h"
 #include "WED_UIDefs.h"
 #include "WED_EnumSystem.h"
+#include "AptDefs.h"
 #include "GUI_Resources.h"
 #include "XESConstants.h"
 #include "WED_TruckParkingLocation.h"
@@ -63,7 +64,7 @@
 #include <GL/gl.h>
 #endif
 
-#define MIN_PIXELS_PREVIEW 6.0
+#define MIN_PIXELS_PREVIEW 5.0
 
 /***************************************************************************************************************************************************
  * MISC DRAWING UTILS
@@ -753,7 +754,7 @@ struct	preview_airportchain : WED_PreviewItem {
 	{
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
 		if(ps)
-			if(zoomer->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)             // cutoff size for real preview, average line is 0.2m
+			if(zoomer->GetPPM() * 0.3 > MIN_PIXELS_PREVIEW)       // cutoff size for real preview, average line width is 0.3m
 			{
 				glFrontFace(GL_CCW);
 				
@@ -848,7 +849,7 @@ struct	preview_airportlights : WED_PreviewItem {
 	{
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
 		if(ps)
-			if(zoomer->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)             // cutoff size for real preview, average light is 0.2m
+			if(zoomer->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)    // cutoff size for real preview, the average light wodth is 0.2m
 			{
 				
 				int i = 0;
@@ -872,8 +873,10 @@ struct	preview_airportlights : WED_PreviewItem {
 					if(sinfo.find(t) != sinfo.end())
 					{
 						vector<Point2> pts;
-						double ds = 5.0;                              // default for taxilights ?
-						double d0 = 0.0;
+						double ds = 8.0;                     // default spacing, e.g. taxiline center lights
+						if(t == apt_light_taxi_edge || t == apt_light_bounary) ds = 20.0;          // twy edge lights
+						if(t == apt_light_hold_short || t == apt_light_hold_short_flash) ds = 2.0;  // hold lights
+						double d0 = ds/2.0;
 						
 						g->SetState(false,1,false,true,true,false,false);
 						glColor3f(1,1,1);
