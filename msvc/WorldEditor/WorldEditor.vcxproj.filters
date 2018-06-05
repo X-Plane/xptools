@@ -795,6 +795,9 @@
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1579,6 +1582,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDCore\WED_ValidateList.h">
       <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h">
+      <Filter>WEDWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

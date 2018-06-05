@@ -30,6 +30,7 @@ class	GUI_Pane;
 class	GUI_TextField;
 class	GUI_MouseCatcher;
 class	WED_Sign_Editor;
+class	WED_Line_Selector;
 
 /*
 
@@ -55,12 +56,13 @@ enum GUI_CellContentType {
 	gui_Cell_Disclose,			// n/a - this is used as an internal symbol for disclosure tris
 	gui_Cell_EditText,			// string&string		string
 	gui_Cell_FileText,			// string&string		string
-	gui_Cell_TaxiText,			// string			string
+	gui_Cell_TaxiText,			// string				string
 	gui_Cell_CheckBox,			// int val				int val
 	gui_Cell_Integer,			// string&int val		int val
 	gui_Cell_Double,			// string&double val	double val
 	gui_Cell_Enum,				// string&int			string&int
-	gui_Cell_EnumSet			// string val&int set	int set, int
+	gui_Cell_EnumSet,			// string val&int set	int set, int
+	gui_Cell_LineEnumSet		// string val&int set	int set, int
 };
 
 enum GUI_BoolIcon {
@@ -358,11 +360,11 @@ private:
 		gui_Insert_Top
 	};
 
-			void			CreateEdit(int cell_bounds[4], const string& text, bool is_sign);
+			void			CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t> * dict = NULL);
 			int				TerminateEdit(bool inSave, bool inAll, bool inDone);
 			GUI_DragPart	GetCellDragPart(int cell_bounds[4], int x, int y, int vertical);
-			bool			HasEdit() { return mSignField != NULL || mTextField != NULL; }
-	
+			bool			HasEdit() { return mSignField != NULL || mTextField != NULL || mLineField != NULL; }
+			int 			CreateMenuFromDict(vector<GUI_MenuItem_t>& items, vector<int>& enum_vals, GUI_EnumDictionary& dict);
 
 	GUI_TextTableProvider * mContent;
 	int						mClickCellX;
@@ -372,8 +374,9 @@ private:
 	int						mTrackLeft;
 	int						mTrackRight;
 	GUI_Table *				mParent;
-	GUI_TextField *			mTextField;
-	WED_Sign_Editor *		mSignField;
+	WED_Sign_Editor *		mSignField;   // handles gui_Cell_TaxiText     editing
+	WED_Line_Selector *		mLineField;	  // handles gui_Cell_LinesEnumSet editing
+	GUI_TextField *			mTextField;   // handles every thing else
 	GUI_MouseCatcher *		mCatcher;
 	GUI_TableGeometry *		mGeometry;
 

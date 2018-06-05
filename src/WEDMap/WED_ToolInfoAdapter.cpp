@@ -125,12 +125,15 @@ void	WED_ToolInfoAdapter::GetCellContent(
 				if (iter!=val.set_val.begin()) the_content.text_val += ",";
 				string label;
 				mTool->GetNthPropertyDictItem(cell_x / 2,*iter,label);
-				if(0)	// do not do this for now - looks ugly in the tool info adapter
 				if (ENUM_Domain(*iter) == LinearFeature)
 				{
+//xxx					the_content.content_type = gui_Cell_LineEnumSet;
+					
+#if 0				// do not do this for now - looks ugly in the tool info adapter
 					label = ENUM_Name(*iter);
 					label += ".png";
 					the_content.string_is_resource = 1;
+#endif
 				}
 				the_content.text_val += label;
 			}

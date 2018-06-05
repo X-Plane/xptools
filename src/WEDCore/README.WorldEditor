@@ -21,7 +21,7 @@ WED 1.7.1
 	- WED-1032: Raise non-modal windows at re-activation to foreground (Windows, Lin/OSX do that already)
 	- WED-1000: Fix window deactivation issue on Linux
 	- WED-1036: Keep "Upgrade  Ramps" from altering ramp start OpsType if such is already set
-	- fix preview for lines w/multiple, differing width layers
+	- fix preview panel display for lines w/multiple, differing width layers
 	- validate Datum meta tags to be within the airport's bounding box
 	- make listing order leading-numbers sensitive, so 10_line.lin is listed below 2_line.lin
 	- WED-1042: Suppress listing of .ags and .agb in the library pane until propper support for these is added

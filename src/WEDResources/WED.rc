@@ -108,6 +108,23 @@ line_BRunwayHold.png			GUI_RES		line_types/line_BRunwayHold.png
 line_BOtherHold.png				GUI_RES		line_types/line_BOtherHold.png
 line_BWideBrokenSingle.png		GUI_RES		line_types/line_BWideBrokenSingle.png
 line_BILSCriticalCenter.png		GUI_RES		line_types/line_BILSCriticalCenter.png
+line_Unknown.png			GUI_RES		line_types/line_Unknown.png
+line_SolidRed.png			GUI_RES		line_types/line_SolidRed.png
+line_BSolidRed.png			GUI_RES		line_types/line_BSolidRed.png
+line_BrokenRed.png			GUI_RES		line_types/line_BrokenRed.png
+line_BBrokenRed.png			GUI_RES		line_types/line_BBrokenRed.png
+line_SolidOrange.png			GUI_RES		line_types/line_SolidOrange.png
+line_BSolidOrange.png			GUI_RES		line_types/line_BSolidOrange.png
+line_SolidGreen.png			GUI_RES		line_types/line_SolidGreen.png
+line_BSolidGreen.png			GUI_RES		line_types/line_BSolidGreen.png
+line_SolidBlue.png			GUI_RES		line_types/line_SolidBlue.png
+line_BSolidBlue.png			GUI_RES		line_types/line_BSolidBlue.png
+line_SolidYellowW.png			GUI_RES		line_types/line_SolidYellowW.png
+line_BSolidYellowW.png			GUI_RES		line_types/line_BSolidYellowW.png
+line_ILSCriticalCenterW.png		GUI_RES		line_types/line_ILSCriticalCenterW.png
+line_BILSCriticalCenterW.png		GUI_RES		line_types/line_BILSCriticalCenterW.png
+line_TaxiCenterUni.png			GUI_RES		line_types/line_TaxiCenterUni.png
+line_HoldShortCenterUni.png		GUI_RES		line_types/line_HoldShortCenterUni.png
 
 /* parking spots*/
 ClassA.png						GUI_RES		parking_spots/ClassA.png
