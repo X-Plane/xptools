@@ -27,6 +27,7 @@
 // for segment crossing because we get an interval in the form of 't'.
 // Hrm - would this really improve our intersection quality?
 
+#include <float.h>
 #include <math.h>
 #include <vector>
 #include <algorithm>
@@ -46,7 +47,13 @@ struct Bezier2;
 
 //This code is only for MSVC
 #if defined(_MSC_VER)
-	inline double cbrt(double x) { return pow(x, 1.0/3.0); }
+	inline double cbrt(double x)
+	{
+		if (x >= 0.0)
+			return pow(x, 1.0/3.0);
+		else
+			return -pow(-x, 1.0/3.0);
+	}
 #endif
 
 enum {
@@ -1684,10 +1691,10 @@ inline double	Bezier2::approx_t_for_xy(double x, double y) const
 	// There isn't a really good way to do this - so we use sort of a bad way.
 	// Basically an X or Y probe may return up to 3 hits if it's "over" the airspace
 	// of the curve and we have an S curve.  So when we hit one root in either direction,
-	// we take it.  if we hit more than one root in both, we compare each pair of roots
-	// and take the X root for which there exists the smallest root-pair distance.
-	// For points ON the curve, this difference should be rounding error.
-	//
+	// we take it.  If we hit more than one root in both, we compare each pair of roots
+	// and take the root pair that is closest together. Of these two roots, we choose the
+	// one that takes us closest to the desired point.
+	// For points ON the curve, the difference should be zero up to rounding error.
 	// For points off the curve...YMMV.
 	double x_roots[3], y_roots[3];
 	int xc = t_at_x(x,x_roots);
@@ -1697,28 +1704,28 @@ inline double	Bezier2::approx_t_for_xy(double x, double y) const
 	if(xc == 0) return y_roots[0];
 	if(yc == 0) return x_roots[0];
 	
-	int idx = -1;
-	double d = 9.9e9;
+	double best_dist = DBL_MAX;
+	double best_t_x = 0.5, best_t_y = 0.5;
 	for(int ix = 0; ix < xc; ++ix)
 	{
-		double xd = 9.9e9;
 		for(int iy = 0; iy < yc; ++iy)
 		{
-			double rel = fabs(x_roots[ix] - y_roots[iy]);
-			if(rel < xd)
-				xd = rel;
-		}
-		if(xd < d)
-		{
-			 d = xd;
-			 idx = ix;
+			double dist = fabs(x_roots[ix] - y_roots[iy]);
+			if (dist < best_dist)
+			{
+				best_t_x = x_roots[ix];
+				best_t_y = y_roots[iy];
+				best_dist = dist;
+			}
 		}
 	}
-	if(idx >= 0)
-		return x_roots[idx];
-	
-	DebugAssert(!"How did we get here?");
-	return 0.5;
+
+	Point2 pt_x = midpoint(best_t_x);
+	Point2 pt_y = midpoint(best_t_y);
+	if (pt_x.squared_distance(Point2(x, y)) < pt_y.squared_distance(Point2(x, y)))
+		return best_t_x;
+	else
+		return best_t_y;
 }
 
 
