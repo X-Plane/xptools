@@ -113,7 +113,7 @@ int WED_SlippyMap::get_zl_for_map_ppm(double in_ppm)
 	return zl;
 }
 
-static int get_ll_box_for_tile(int z, int x, int y, double bounds[4])
+static void get_ll_box_for_tile(int z, int x, int y, double bounds[4])
 {
 	bounds[0] = tilex2long(x,z  );
 	bounds[2] = tilex2long(x+1,z);
