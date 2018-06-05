@@ -26,7 +26,7 @@ WED 1.7.1
 	- make listing order leading-numbers sensitive, so 10_line.lin is listed below 2_line.lin
 	- WED-1042: Suppress listing of .ags and .agb in the library pane until propper support for these is added
 	Features:
-	- real-time preview of lines and taxilines on the map
+	- real-time preview of lines, strings and taxilines on the map
 	- WED-1039: support new line types for taxilines if available in LR default libraries
 	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	

@@ -347,6 +347,13 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 		case res_Forest:
 			if(!mResMgr->GetFor(mRes,o))
 				break;
+		case res_String:
+			if(!o)
+			{
+				str_info_t str;
+				if(mResMgr->GetStr(mRes,str))
+					o = str.previews[0];             // do the cheap thing: show only the first object. Could show a whole line ...
+			}
 #if 1 
 		// facade preview, not yet ready for primetime
 		case res_Facade:
@@ -523,6 +530,7 @@ void	WED_LibraryPreviewPane::Draw(GUI_GraphState * g)
 				break;
 			case res_Object:
 			case res_Forest:
+			case res_String:
 				if (o)
 				{
 					int n = sprintf(buf2,"max h=%.1f%s", o->xyz_max[1] / (gIsFeet ? 0.3048 : 1.0), gIsFeet ? "'" : "m");

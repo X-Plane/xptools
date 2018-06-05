@@ -389,6 +389,7 @@ void		WED_LibraryMgr::Rescan()
 	BroadcastMessage(msg_LibraryChanged,0);
 }
 
+
 void WED_LibraryMgr::RescanLines()
 {
 	vector<int> existing_line_enums;
@@ -400,6 +401,7 @@ void WED_LibraryMgr::RescanLines()
 		existing_line_types.insert(ENUM_Export(*e));
 	}
 	default_lines.clear();
+	
 	res_map_t::iterator m = res_table.begin();
 	while(m != res_table.end() && m->first.find("lib/airport/lines/",0) == string::npos )
 		++m;
@@ -417,9 +419,9 @@ void WED_LibraryMgr::RescanLines()
 
 			// create human readable Description (also used as XML keyword) from resource file name
 			int linetype;
-			char nice_name[37];
+			char nice_name[40];
 			sscanf(resnam.c_str(),"%d%*c%29s",&linetype,nice_name);
-			for(int i = 0; i < 29; ++i)
+			for(int i = 0; i < 30; ++i)
 			{
 				if(nice_name[i] == 0) break;
 				if(i == 0) nice_name[0] = toupper(nice_name[0]);
@@ -494,6 +496,59 @@ void WED_LibraryMgr::RescanLines()
 #endif
 					ENUM_Create(LinearFeature, icon, nice_name, linetype);
 					existing_line_types.insert(linetype);                      // keep track in case of erroneously supplied duplicate vpath's
+				}
+			}
+		}
+		m++;
+	}
+	
+	m=res_table.begin();
+	while(m != res_table.end() && m->first.find("lib/airport/lights/slow/",0) == string::npos )
+		++m;
+
+	while(m != res_table.end() && m->first.find("lib/airport/lights/slow/",0) != string::npos )
+	{
+		string resnam(m->first);
+		resnam.erase(0,strlen("lib/airport/lights/slow/"));
+
+		if(resnam[0] >= '0' && resnam[0] <= '9' &&
+//		   m->second.is_default &&
+		   m->second.status == status_Public && resnam.substr(resnam.size()-4) == ".str"  )
+		{
+			resnam.erase(resnam.size()-4);
+
+			// create human readable Description (also used as XML keyword) from resource file name
+			int lighttype;
+			char nice_name[60];
+			sscanf(resnam.c_str(),"%d%*c%29s",&lighttype,nice_name);
+			for(int i = 0; i < 30; ++i)
+			{
+				if(nice_name[i] == 0) break;
+				if(i == 0) nice_name[0] = toupper(nice_name[0]);
+				if(nice_name[i] == '_')
+				{
+					nice_name[i] = ' ';
+					if(nice_name[i+1] != 0)
+					{
+						if(strcmp(nice_name+i+1,"G_uni") == 0) strcpy(nice_name+i+1,"(Unidirectional Green)");
+						else if(strcmp(nice_name+i+1,"YG_uni") == 0) strcpy(nice_name+i+1,"(Unidirectional Amber/Green)");
+						else nice_name[i+1] = toupper(nice_name[i+1]);
+					}
+				}
+			}
+			
+			if(lighttype > 100 && lighttype < 200)
+			{
+				default_lines[lighttype] = m->first;
+				if(existing_line_types.count(lighttype) == 0)
+				{
+					const char * icon = "line_Unknown";
+					// try to find the right icon, in case the particular number wasn't yet added to the ENUMS.h
+					if(resnam.find("_G_uni") != string::npos)       icon = "line_TaxiCenterUni";
+					else if(resnam.find("_YG_uni") != string::npos) icon = "line_HoldShortCenterUni";
+					
+					ENUM_Create(LinearFeature, icon, nice_name, lighttype);
+					existing_line_types.insert(lighttype);                      // keep track in case of erroneously supplied duplicate vpath's
 				}
 			}
 		}

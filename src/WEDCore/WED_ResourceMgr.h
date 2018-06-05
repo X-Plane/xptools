@@ -97,6 +97,12 @@ struct	lin_info_t {
 	vector<float>	s1,sm,s2;
 };
 
+struct	str_info_t {
+	float		offset;
+	float		rotation;
+	vector<XObj8 *> previews;
+};
+
 struct	road_info_t {
 	map<int, string>	vroad_types;
 };
@@ -129,6 +135,7 @@ public:
 			bool	GetPol(const string& path, pol_info_t& out_info);
 			bool 	SetPolUV(const string& path, Bbox2 box);
 			bool	GetLin(const string& path, lin_info_t& out_info);
+			bool	GetStr(const string& path, str_info_t& out_info);
 			bool	GetFor(const string& path, XObj8 *& obj);
 			int		GetNumVariants(const string& path);
 
@@ -152,6 +159,7 @@ private:
 	map<string,vector<fac_info_t> > mFac;
 	map<string,pol_info_t>		mPol;
 	map<string,lin_info_t>		mLin;
+	map<string,str_info_t>		mStr;
 	map<string,XObj8 *>			mFor;
 	map<string,vector<XObj8 *> > mObj;
 

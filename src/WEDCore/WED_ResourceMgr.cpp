@@ -70,12 +70,16 @@ void	WED_ResourceMgr::Purge(void)
 		for(vector<fac_info_t>::iterator j = i->second.begin(); j != i->second.end(); ++j)
 			for(vector<XObj8 *>::iterator k = j->previews.begin(); k != j->previews.end(); ++k)
 				delete *k;
-		
+	for(map<string, str_info_t>::iterator i = mStr.begin(); i != mStr.end(); ++i)
+		for(vector<XObj8 *>::iterator j = i->second.previews.begin(); j != i->second.previews.end(); ++j)
+			delete *j;
+						
 	mPol.clear();
 	mLin.clear();
 	mObj.clear();
 	mFor.clear();
 	mFac.clear();
+	mStr.clear();
 }
 
 int		WED_ResourceMgr::GetNumVariants(const string& path)
@@ -262,6 +266,96 @@ bool	WED_ResourceMgr::GetLin(const string& path, lin_info_t& out_info)
 	
 	return true;
 }
+
+#if IBM
+#define DIR_CHAR '\\'
+#define DIR_STR "\\"
+#else
+#define DIR_CHAR '/'
+#define DIR_STR "/"
+#endif
+
+static void clean_rpath(string& s)
+{
+	for(string::size_type p = 0; p < s.size(); ++p)
+		if(s[p] == '\\' || s[p] == ':' || s[p] == '/')
+			s[p] = DIR_CHAR;
+}
+
+bool	WED_ResourceMgr::GetStr(const string& path, str_info_t& out_info)
+{
+	map<string,str_info_t>::iterator i = mStr.find(path);
+	if(i != mStr.end())
+	{
+		out_info = i->second;
+		return true;
+	}
+
+	out_info.offset = 0.0;
+	out_info.rotation = 0.0;
+	out_info.previews.clear();
+
+	string p = mLibrary->GetResourcePath(path);
+	MFMemFile * str = MemFile_Open(p.c_str());
+	if(!str) return false;
+
+	MFScanner	s;
+	MFS_init(&s, str);
+
+	int versions[] = { 850, 0 };
+
+	if(!MFS_xplane_header(&s,versions,"OBJECT_STRING",NULL))
+	{
+		MemFile_Close(str);
+		return false;
+	}
+
+	while(!MFS_done(&s))
+	{
+		if (MFS_string_match(&s,"OFFSET", false))
+		{
+			out_info.offset = MFS_double(&s);
+		}
+		else if (MFS_string_match(&s,"OBJECT", false))
+		{
+			out_info.rotation = MFS_double(&s);
+			int ignore = MFS_double(&s);
+			string obj_res;
+			MFS_string(&s,&obj_res);
+			
+			clean_rpath(obj_res);
+			obj_res= FILE_get_dir_name(p) + obj_res;
+			FILE_case_correct( (char *) obj_res.c_str()); 
+
+			XObj8 * obj = new XObj8;
+			if(!XObj8Read(obj_res.c_str(),*obj))
+			{
+				XObj obj7;
+				if(XObjRead(obj_res.c_str(),obj7))
+				{
+					Obj7ToObj8(obj7,*obj);
+				}
+				else
+				{
+					delete obj;
+					obj = NULL;
+					return false;
+				}
+			}
+			process_texture_path(p,obj->texture);
+			if (obj->texture_draped.length() > 0)
+				process_texture_path(p,obj->texture_draped);
+			else
+				obj->texture_draped = obj->texture;
+			out_info.previews.push_back(obj);
+		}
+		MFS_string_eol(&s,NULL);
+	}
+	MemFile_Close(str);
+	mStr[path] = out_info;
+	return true;
+}
+
 
 bool	WED_ResourceMgr::GetPol(const string& path, pol_info_t& out_info)
 {

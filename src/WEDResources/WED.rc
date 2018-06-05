@@ -123,6 +123,8 @@ line_SolidYellowW.png			GUI_RES		line_types/line_SolidYellowW.png
 line_BSolidYellowW.png			GUI_RES		line_types/line_BSolidYellowW.png
 line_ILSCriticalCenterW.png		GUI_RES		line_types/line_ILSCriticalCenterW.png
 line_BILSCriticalCenterW.png		GUI_RES		line_types/line_BILSCriticalCenterW.png
+line_TaxiCenterUni.png			GUI_RES		line_types/line_TaxiCenterUni.png
+line_HoldShortCenterUni.png		GUI_RES		line_types/line_HoldShortCenterUni.png
 
 /* parking spots*/
 ClassA.png						GUI_RES		parking_spots/ClassA.png
