@@ -725,16 +725,16 @@ struct	preview_string : WED_PreviewItem {
 };
 
 
-struct	preview_airportchain : WED_PreviewItem {
-	WED_AirportChain * chn;
+struct	preview_airportlines : WED_PreviewItem {
+	IGISPointSequence * ps;
 	IResolver * res;
 	
-	preview_airportchain(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c), res(r) {}
+	preview_airportlines(IGISPointSequence * ips, int l, IResolver * r) : WED_PreviewItem(l), ps(ips), res(r) {}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 //		if(zoomer->GetPPM() * 0.3 < MIN_PIXELS_PREVIEW) return;      // cutoff size for real preview, average line width is 0.3m
-		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
-		if(!ps) return;
+//		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
+//		if(!ps) return;
 
 		glFrontFace(GL_CCW);
 		int i = 0;
@@ -814,10 +814,10 @@ struct	preview_airportchain : WED_PreviewItem {
 
 
 struct	preview_airportlights : WED_PreviewItem {
-	WED_AirportChain * chn;
+	IGISPointSequence * ps;
 	IResolver * res;
 
-	preview_airportlights(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c), res(r) {}
+	preview_airportlights(IGISPointSequence * ips, int l, IResolver * r) : WED_PreviewItem(l), ps(ips), res(r) {}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
@@ -825,9 +825,6 @@ struct	preview_airportlights : WED_PreviewItem {
 		ITexMgr         * tman = WED_GetTexMgr(res);
 		                  
 //		if(zoomer->GetPPM() * 0.2 < MIN_PIXELS_PREVIEW) return;   // cutoff size for real preview, the average light wodth is 0.2m
-		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
-		if(!ps) return;
-				
 		int i = 0;
 		while (i < ps->GetNumSides())
 		{
@@ -1378,7 +1375,29 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 	if(rwy)		mPreviewItems.push_back(new preview_runway(rwy,mShoulderLayer++,1));
 	if(heli)	mPreviewItems.push_back(new preview_helipad(heli,mRunwayLayer++));
 	if(sea)		mPreviewItems.push_back(new preview_sealane(sea,mRunwayLayer++));
-	if(taxi)	mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
+	if(taxi)	
+	{
+		mPreviewItems.push_back(new preview_taxiway(taxi,mTaxiLayer++));
+		
+		double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
+
+		if(ppm * 0.3 > MIN_PIXELS_PREVIEW)
+		{
+			IGISPointSequence * ps = taxi->GetOuterRing();
+			mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
+			if(ppm * 0.2 > MIN_PIXELS_PREVIEW)
+				mPreviewItems.push_back(new preview_airportlights(ps, group_Objects, GetResolver()));
+				
+			int n = taxi->GetNumHoles();
+			for (int i = 0; i < n; ++i)
+			{
+				IGISPointSequence * ps = taxi->GetNthHole(i);
+				mPreviewItems.push_back(new preview_airportlines(ps, group_Markings, GetResolver()));
+				if(ppm * 0.2 > MIN_PIXELS_PREVIEW)
+					mPreviewItems.push_back(new preview_airportlights(ps, group_Objects, GetResolver()));
+			}
+		}
+	}
 
 	/******************************************************************************************************************************
 	 * POLYGON & LINE PREVIEW: forests, facades, polygons (ortho and landuse)
@@ -1417,7 +1436,7 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		{
 			double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
 			if(ppm * 0.3 > MIN_PIXELS_PREVIEW)
-				mPreviewItems.push_back(new preview_airportchain(chn, group_Markings, GetResolver()));
+				mPreviewItems.push_back(new preview_airportlines(chn, group_Markings, GetResolver()));
 			if(ppm * 0.2 > MIN_PIXELS_PREVIEW)
 				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
 		}
