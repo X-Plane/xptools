@@ -579,7 +579,7 @@ static void draw_line_preview(const vector<Point2>& pts, const lin_info_t& linfo
 struct	preview_line : WED_PreviewItem {
 	WED_LinePlacement * lin;
 	IResolver * resolver;
-	preview_line(WED_LinePlacement * ln, int l, IResolver * r) : WED_PreviewItem(l), lin(ln), resolver(r) { }
+	preview_line(WED_LinePlacement * ln, int l, IResolver * r) : WED_PreviewItem(l), lin(ln), resolver(r) {}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
@@ -691,7 +691,6 @@ struct	preview_string : WED_PreviewItem {
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
 		WED_ResourceMgr * rmgr = WED_GetResourceMgr(resolver);
-		ITexMgr         * tman = WED_GetTexMgr(resolver);
 		string vpath;
 		str_info_t sinfo;
 		str->GetResource(vpath);
@@ -706,6 +705,7 @@ struct	preview_string : WED_PreviewItem {
 
 			if(real_radius * zoomer->GetPPM() > MIN_PIXELS_PREVIEW)             // cutoff size for real preview
 			{
+				ITexMgr * tman = WED_GetTexMgr(resolver);
 				g->SetState(false,1,false,false,true,false,false);
 				glColor3f(1,1,1);
 	
@@ -727,188 +727,165 @@ struct	preview_string : WED_PreviewItem {
 
 struct	preview_airportchain : WED_PreviewItem {
 	WED_AirportChain * chn;
-	map<int,lin_info_t> linfo;
-	map<int,int> tex_id;
+	IResolver * res;
 	
-	preview_airportchain(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c)
-	{ 
-	// Todo: load only the line types actually needed ?
-	
-		WED_ResourceMgr * rmgr = WED_GetResourceMgr(r);
-		ITexMgr         * tman = WED_GetTexMgr(r);
-		WED_LibraryMgr  * lmgr = WED_GetLibraryMgr(r);
-
-		for(int i = 1; i < 99; ++i)
-		{
-			string vpath;
-			lin_info_t info;
-			if (!lmgr->GetLineVpath(i, vpath)) continue;
-			if (!rmgr->GetLin(vpath, info)) continue;
-			linfo[i]=info;
-			TexRef tref = tman->LookupTexture(info.base_tex.c_str(),true,tex_Compress_Ok);
-			if(tref) tex_id[i] = tman->GetTexID(tref);
-		}
-	}
-
+	preview_airportchain(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c), res(r) {}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
+//		if(zoomer->GetPPM() * 0.3 < MIN_PIXELS_PREVIEW) return;      // cutoff size for real preview, average line width is 0.3m
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
-		if(ps)
-			if(zoomer->GetPPM() * 0.3 > MIN_PIXELS_PREVIEW)       // cutoff size for real preview, average line width is 0.3m
+		if(!ps) return;
+
+		glFrontFace(GL_CCW);
+		int i = 0;
+		while (i < ps->GetNumSides())
+		{
+			set<int> attrs;
+			WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
+			if (apt_node) apt_node->GetAttributes(attrs);
+			
+			int t = 0;
+			for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
 			{
-				glFrontFace(GL_CCW);
-				
-				int i = 0;
-				while (i < ps->GetNumSides())
+				int n = ENUM_Export(*a);
+				if(n < 100)
 				{
-					set<int> attrs;
-					WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
-					if (apt_node) apt_node->GetAttributes(attrs);
-					
-					int t = 0;
-					for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
-					{
-						int n = ENUM_Export(*a);
-						if(n < 100)
-						{
-							t = n;
-							break;
-						}
-					}
-					
-					if(tex_id.find(t) != tex_id.end())
-					{
-						vector<Point2> pts;
+					t = n;
+					break;
+				}
+			}
+			string vpath;
+			lin_info_t linfo;
+			int tex_id = 0;
+			WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
+			ITexMgr         * tman = WED_GetTexMgr(res);
+			WED_LibraryMgr  * lmgr = WED_GetLibraryMgr(res);
 
-						g->SetState(false,1,false,true,true,false,false);
-						g->BindTex(tex_id[t],0);
-						glColor3f(1,1,1);
-						glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			if (lmgr->GetLineVpath(t, vpath))
+				if (rmgr->GetLin(vpath, linfo))
+				{
+					TexRef tref = tman->LookupTexture(linfo.base_tex.c_str(),true,tex_Compress_Ok);
+					if(tref) tex_id = tman->GetTexID(tref);
+				}
+			
+			if(tex_id)
+			{
+				vector<Point2> pts;
 
-						for ( ; i < ps->GetNumSides(); ++i)
+				g->SetState(false,1,false,true,true,false,false);
+				g->BindTex(tex_id,0);
+				glColor3f(1,1,1);
+				glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+				for ( ; i < ps->GetNumSides(); ++i)
+				{
+					if (pts.size()) pts.pop_back();
+					SideToPoints(ps, i, zoomer, pts);
+					
+					if(i < ps->GetNumSides()-1) 
+					{
+						apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i+1));
+						if (apt_node) apt_node->GetAttributes(attrs);
+						int tn = 0;
+						for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
 						{
-							if (pts.size()) pts.pop_back();
-							SideToPoints(ps, i, zoomer, pts);
-							
-							if(i < ps->GetNumSides()-1) 
+							int n = ENUM_Export(*a);
+							if (n < 100)
 							{
-								apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i+1));
-								if (apt_node) apt_node->GetAttributes(attrs);
-								int tn = 0;
-								for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
-								{
-									int n = ENUM_Export(*a);
-									if (n < 100)
-									{
-										tn = n;
-										break;
-									}
-								}
-								if (tn != t) { ++i; break; }           // stop, as next segment will need different line type;
+								tn = n;
+								break;
 							}
 						}
-
-						for (int l = 0; l < linfo[t].s1.size(); ++l)
-						{
-							draw_line_preview(pts, linfo[t], l, zoomer->GetPPM());
-						}
+						if (tn != t) { ++i; break; }           // stop, as next segment will need different line type;
 					}
-					else
-						++i; // in case we cang get the attributes, skip to next node. If we dont, we'll loop indefinitely;
 				}
-				glFrontFace(GL_CW);
+
+				for (int l = 0; l < linfo.s1.size(); ++l)
+				{
+					draw_line_preview(pts, linfo, l, zoomer->GetPPM());
+				}
 			}
+			else
+				++i; // in case we cang get the attributes, skip to next node. If we dont, we'll loop indefinitely;
+		}
+		glFrontFace(GL_CW);
 	}
 };
 
 
 struct	preview_airportlights : WED_PreviewItem {
 	WED_AirportChain * chn;
-	map<int,str_info_t> sinfo;
-	ITexMgr          * tman ;
-	
-	preview_airportlights(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c)
-	{ 
-	// Todo: load only the light types actually needed ?
-	
-		WED_ResourceMgr * rmgr = WED_GetResourceMgr(r);
-		WED_LibraryMgr  * lmgr = WED_GetLibraryMgr(r);
-		                  tman = WED_GetTexMgr(r);
+	IResolver * res;
 
-		for(int i = 101; i < 120; ++i)
-		{
-			string vpath;
-			str_info_t info;
-			if (!lmgr->GetLineVpath(i, vpath)) continue;
-			if (!rmgr->GetStr(vpath, info)) continue;
-			sinfo[i]=info;
-		}
-	}
-
+	preview_airportlights(WED_AirportChain * c, int l, IResolver * r) : WED_PreviewItem(l), chn(c), res(r) {}
 	virtual void draw_it(WED_MapZoomerNew * zoomer, GUI_GraphState * g, float mPavementAlpha)
 	{
+		WED_ResourceMgr * rmgr = WED_GetResourceMgr(res);
+		WED_LibraryMgr  * lmgr = WED_GetLibraryMgr(res);
+		ITexMgr         * tman = WED_GetTexMgr(res);
+		                  
+//		if(zoomer->GetPPM() * 0.2 < MIN_PIXELS_PREVIEW) return;   // cutoff size for real preview, the average light wodth is 0.2m
 		IGISPointSequence * ps = SAFE_CAST(IGISPointSequence,chn);
-		if(ps)
-			if(zoomer->GetPPM() * 0.2 > MIN_PIXELS_PREVIEW)    // cutoff size for real preview, the average light wodth is 0.2m
-			{
+		if(!ps) return;
 				
-				int i = 0;
-				while (i < ps->GetNumSides())
+		int i = 0;
+		while (i < ps->GetNumSides())
+		{
+			set<int> attrs;
+			WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
+			if (apt_node) apt_node->GetAttributes(attrs);
+			
+			int t = 0;
+			for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
+			{
+				int n = ENUM_Export(*a);
+				if(n > 100 && n < 200)
 				{
-					set<int> attrs;
-					WED_AirportNode * apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i));
-					if (apt_node) apt_node->GetAttributes(attrs);
-					
-					int t = 0;
-					for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
-					{
-						int n = ENUM_Export(*a);
-						if(n > 100 && n < 120)
-						{
-							t = n;
-							break;
-						}
-					}
-					
-					if(sinfo.find(t) != sinfo.end())
-					{
-						vector<Point2> pts;
-						double ds = 8.0;                     // default spacing, e.g. taxiline center lights
-						if(t == apt_light_taxi_edge || t == apt_light_bounary) ds = 20.0;          // twy edge lights
-						if(t == apt_light_hold_short || t == apt_light_hold_short_flash) ds = 2.0;  // hold lights
-						double d0 = ds/2.0;
-						
-						g->SetState(false,1,false,true,true,false,false);
-						glColor3f(1,1,1);
-
-						for ( ; i < ps->GetNumSides(); ++i)
-						{
-							if (pts.size()) pts.pop_back();
-							SideToPoints(ps, i, zoomer, pts);
-							
-							if(i < ps->GetNumSides()-1) 
-							{
-								apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i+1));
-								if (apt_node) apt_node->GetAttributes(attrs);
-								int tn = 0;
-								for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
-								{
-									int n = ENUM_Export(*a);
-									if(n > 100 && n < 120)
-									{
-										tn = n;
-										break;
-									}
-								}
-								if (tn != t) { ++i; break; }           // stop, as next segment will need different line type;
-							}
-						}
-						draw_string_preview(pts, d0, ds, sinfo[t], zoomer, g, tman);
-					}
-					else
-						++i; // in case we can't get the attributes, skip to next node. If we dont, we'll loop indefinitely;
+					t = n;
+					break;
 				}
 			}
+			string vpath;
+			str_info_t sinfo;
+			int tex_id = 0;
+			if (t && lmgr->GetLineVpath(t, vpath) && rmgr->GetStr(vpath, sinfo))
+			{
+				vector<Point2> pts;
+				double ds = 8.0;                     // default spacing, e.g. taxiline center lights
+				if(t == apt_light_taxi_edge || t == apt_light_bounary) ds = 20.0;          // twy edge lights
+				if(t == apt_light_hold_short || t == apt_light_hold_short_flash) ds = 2.0;  // hold lights
+				double d0 = ds/2.0;
+				
+				g->SetState(false,1,false,true,true,false,false);
+				glColor3f(1,1,1);
+
+				for ( ; i < ps->GetNumSides(); ++i)
+				{
+					if (pts.size()) pts.pop_back();
+					SideToPoints(ps, i, zoomer, pts);
+					
+					if(i < ps->GetNumSides()-1) 
+					{
+						apt_node = dynamic_cast<WED_AirportNode*>(ps->GetNthPoint(i+1));
+						if (apt_node) apt_node->GetAttributes(attrs);
+						int tn = 0;
+						for(set<int>::const_iterator a = attrs.begin(); a != attrs.end(); ++a)
+						{
+							int n = ENUM_Export(*a);
+							if(n > 100 && n < 200)
+							{
+								tn = n;
+								break;
+							}
+						}
+						if (tn != t) { ++i; break; }           // stop, as next segment will need different line type;
+					}
+				}
+				draw_string_preview(pts, d0, ds, sinfo, zoomer, g, tman);
+			}
+			else
+				++i; // in case we can't get the attributes, skip to next node. If we dont, we'll loop indefinitely;
+		}
 	}
 };
 
@@ -1438,8 +1415,11 @@ bool		WED_PreviewLayer::DrawEntityVisualization		(bool inCurrent, IGISEntity * e
 		WED_AirportChain * chn = SAFE_CAST(WED_AirportChain, entity);
 		if(chn)
 		{
-			mPreviewItems.push_back(new preview_airportchain(chn, group_Markings, GetResolver()));
-			mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
+			double ppm = GetZoomer()->GetPPM();       // there can be so many, make visibility decision here already for performance
+			if(ppm * 0.3 > MIN_PIXELS_PREVIEW)
+				mPreviewItems.push_back(new preview_airportchain(chn, group_Markings, GetResolver()));
+			if(ppm * 0.2 > MIN_PIXELS_PREVIEW)
+				mPreviewItems.push_back(new preview_airportlights(chn, group_Objects, GetResolver()));
 		}
 	}
 	else if(sub_class == WED_StringPlacement::sClass)
