@@ -949,6 +949,8 @@ void	LoadDEMTables(void)
 	{
 		printf("%s\n", FetchTokenString(*f));
 	}*/
+
+	DebugAssertWithExplanation(!gNaturalTerrainRules.empty(), "No terrain rules defined by your config files");
 }
 
 #pragma mark -
@@ -993,6 +995,7 @@ int	FindNaturalTerrain(
 	DebugAssert(DEM_NO_DATA != 	urban_radial);
 	DebugAssert(DEM_NO_DATA != 	urban_trans);
 	DebugAssert(DEM_NO_DATA != 	lat);
+	DebugAssertWithExplanation(!gNaturalTerrainRules.empty(), "No terrain rules defined... you won't get far trying to FindNaturalTerrain() with no terrain rules to match!");
 
 	// OPTIMIZE - figure out what the major keys should be.
 

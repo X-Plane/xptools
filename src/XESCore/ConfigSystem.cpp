@@ -151,7 +151,7 @@ bool	LoadConfigFileFullPath(const char * inFilename)
 	bool ok = false;
 	f = MemFile_Open(inFilename);
 	if (!f) {
-		printf("Unable to load config file %s\n", inFilename);
+		DebugAssertPrintf("Unable to load config file %s\n", inFilename);
 		return ok;
 	}
 
@@ -172,13 +172,15 @@ bool	LoadConfigFileFullPath(const char * inFilename)
 				if (h == sHandlerTable.end())
 				{
 					string	line(TextScanner_GetBegin(scanner), TextScanner_GetEnd(scanner));
-					printf("Unable to parse line: %s\n", line.c_str());
+					DebugAssertPrintf("Unable to parse line: %s\nfrom file: %s", line.c_str(), inFilename);
 					goto bail;
 				}
-				if (!h->second.first(tokens,h->second.second))
+				ProcessConfigString_f &handler_fn = h->second.first;
+				void * ref = h->second.second;
+				if(!handler_fn(tokens, ref))
 				{
 					string	line(TextScanner_GetBegin(scanner), TextScanner_GetEnd(scanner));
-					printf("Parse error in file %s line: %s\n", inFilename, line.c_str());
+					DebugAssertPrintf("Parse error in file %s line: %s\n", inFilename, line.c_str());
 					goto bail;
 				}
 			}

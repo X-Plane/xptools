@@ -42,9 +42,16 @@
 	#define DebugAssert(__Condition)		\
 		((__Condition) ? ((void) 0) : __DebugAssertHandler(#__Condition, __FILE__, __LINE__))
 
+	#define DebugAssertWithExplanation(__Condition, explanation_string) \
+		((__Condition) ? ((void) 0) : __DebugAssertHandler(explanation_string, __FILE__, __LINE__))
+
+	#define DebugAssertPrintf(...) AssertPrintf(__VA_ARGS__);
+
 #else
 
 	#define DebugAssert(__Condition)
+	#define DebugAssertWithExplanation(__Condition, explanation_on_failure)
+	#define DebugAssertPrintf(...) printf(__VA_ARGS__)
 
 #endif
 
