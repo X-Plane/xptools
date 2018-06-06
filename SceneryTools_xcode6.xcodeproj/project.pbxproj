@@ -1016,6 +1016,7 @@
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		69B49EC203FBF5193A66182D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCLayer.cpp; sourceTree = "<group>"; };
 		D60075371C56A30E0096D4D9 /* WED_ATCLayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCLayer.h; sourceTree = "<group>"; };
 		D60418960D86E15200AF6E16 /* README.meshtool */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = README.meshtool; sourceTree = "<group>"; };
@@ -3268,6 +3269,7 @@
 				D6DBA33A10576739004E1089 /* BugTest.cpp */,
 				D62F3A54138D4E8900F2C120 /* MeshSimplify.h */,
 				D62F3A55138D4E8900F2C120 /* MeshSimplify.cpp */,
+				69B49EC203FBF5193A66182D /* README.md */,
 			);
 			path = XESCore;
 			sourceTree = "<group>";
