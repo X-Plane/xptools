@@ -1,10 +1,21 @@
-Hi Andrew,
+RenderFarm Readme
+===========================
 
-First of all, my apologies for taking so long to get back to you...as indicated by your previous emails, you've gone way, way further with the MeshTool source than I thought anyone ever would, so the questions you're bringing up have long involved complex answers.  And...the 'e' key on my laptop broke last week, making typing emails sort of hellish.  But...the replacement key came last night, so onward. :-)
 
-I will respond to the other thread about numeric accuracy separately, but regarding custom terrain...
+Acronyms used throughout the code
+--------------------------------------------
+- XES (**X**-Plane **E**ditable **S**cenery)---this is a high level binary format for GIS data used by RenderFarm
+- DEM (**D**igital **E**levation **M**odel)---a raster based format (i.e., uses a bunch of cells in a grid)
+- SRTM (**S**huttle **R**adar **T**opography **M**ission)---high res topographic data for the earth
+- PMWX (**P**lanar **M**ap **W**ith interse**X**ions)---this is "the map"; the 2-d arrangement of our planes/edges/etc. 
+    It's a sub-class of `CGAL::Arrangement_2` that is used for the "big" map (there's a separate class for single blocks).
+    A Pmwx's x/y coordinates are always lon/lat, which makes it analogous to `CGAL::Planar_map_2` in modern CGAL 
+    (but RenderFarm was written based on "rull rull old" CGAL). 
 
-You may know some of this from reading the code, but fundamentally there are high level "terrain types" and then there are rules that result in actual terrain file selections.  When we use the rendering farm (same code as meshtool) in its default mode, we only have three terrain types:
+About Terrain Types
+-----------------------------------
+
+Fundamentally there are high level "terrain types" and then there are rules that result in actual terrain file selections.  When we use the rendering farm (same code as meshtool) in its default mode, we only have three terrain types:
 
 - Natural
 - Airport
@@ -46,42 +57,35 @@ Basically you need to decide how rule driven vs. data driven you want to be.  Fo
 
 This would essentially override terrain file selection.
 
-Since you've already replaced part of my algorithms, it's probably not necessary to point you at files, but...
+Code Overview
+---------------------------------------
 
-XESCore/DEMTables.h/cpp - contains;
+`XESCore/DEMTables.h` and `.cpp` contain a few key pieces of code:
 
-NaturalTerrainInfo_t - this struct defines one "rule" for picking a final terrain file based on a host of conditions and
+- `NaturalTerrainInfo_t`---this struct defines one "rule" for picking a final terrain file based on a host of conditions and
+- `FindNaturalTerrain()`---this is the function that, given about a billion things it reads out of the mesh, picks a final terrain based on the global table of `NaturalTerrainInfo_t` (`gNaturalTerrainInfo`).
+- `LoadDEMTables()`---init code where the global rules tables get built from config files.
 
-FindNaturalTerrain() - this is the function that, given about a billion things it reads out of the mesh, picks a final terrain based on the global table of NaturalTerrainInfo_t.
+`XESCore/EnumSystem.h` contains the token table.  Basically the idea is that all "enumerated" codes live in a global number space...when a XES files is read in, it contains its own mapping from its own enum numbers to string names, so this lets us translate from the old numbering (from when the file was written) to the current numbering, adding any new codes that are in the XES file but not hard-coded into MeshTool.
 
-LoadDEMTables() - init code where this stuff gets built from config files.
+I mention this because you'll see a huge list of types in `ParamDefs.h` including those started at `lu_usgs_INTERRUPTED_AREAS`---those are our internal codes for the GLCC landuse data. The reason there are two kinds of urban data is Sergio took the dataset and refined some of the landuse types using photoshop, for example differentiating two kinds of urban.
 
-XESCore/EnumSystem.h - contains the token table.  Basically the idea is that all "enumerated" codes live in a global number space...when a XES files is read in, it contains its own mapping from its own enum numbers to string names, so this lets us translate from the old numbering from when the file was written) to the current numbering, adding any new codes that are in the XES file but not hard-coded into MeshTool.
-
-I mention this because you'll see a huge list of types in ParamDefs.h including those started at lu_usgs_INTERRUPTED_AREAS - those are our internal codes for the GLCC landuse data...the reason there are two kinsd of urban data is Sergio took the dataset and refined some of the landuse types using photoshop, for example differentiating two kinds of urban.
-
-In the config files, oge2_import.txt maps the numeric codes as published in the raw GLCC to our string enums, and landuse_translate.txt then does a mapping that "dumbs them down" - Sergio looked at the data and went "I don't need this many land uses and most of them are wrong anyway".
+In the config files, `oge2_import.txt` maps the numeric codes as published in the raw GLCC to our string enums, and `landuse_translate.txt` then does a mapping that "dumbs them down"---Sergio looked at the data and went "I don't need this many land uses and most of them are wrong anyway".
 
 So hopefully that will give you some leads...this is stuff I don't normally post in the MeshTool docs because it requires code changes, but with a little hacking you can probably get just about any landuse-assignment effect you want.
 
 
 
-
-
-
-hi Andrew,
-
-So first of all, the fact that you went in, hacked the low level numerics of my planar map, and it got better is really pretty impressive.  I didn't think the code was readable, let alone user modifiable.
-
-I am turning these emails into "docs" for the code tree because a lot of these issues are not described anywhere.  With that in mind...a few thoughts:
+Numeric Types, CGAL, etc.
+----------------------------------
 
 There are three fundamentally tricky GIS algorithms in the rendering process (everything else is application and raster data)...
 
 - Planar map with intersections, used to both merge down polygonal terrain type descriptions and to find the smallest contiguous areas around vector features.
-
 - Delauney triangulation with constraints for the mesh with induced triangle edges for terrain type changes.
-
 - Buffers around polygons, used to buffer out (for airports) and in (for city blocks)...two separate algs are actually used.
+
+[**Tyler notes**: From here on in this section is suspect! We no longer have a hand-rolled PMWX... we're just using a `CGAL::Arrangement_2` types!]
 
 When I started the code, CGAL didn't have the third and I used CGAL for the first two.  At the time, their planar map with intersections was buggy, and after trying to fix bugs only to hit other ones for a while, I got so fed up I rolled my own.  In particular, the templating was so heavy in the CGAL implementation that, for the compilers at the time (CodeWarrior!  Yuck!) the code was very opaque to debug.
 
@@ -92,7 +96,7 @@ While the CGAL implementation of the planar map attempts to be correct using a k
 
 So you're seeing issues with the near_collinear test and location, but there's actually another operation that can go haywire: there is a counter-clockwise-inbetween predicate (given three vectors out of a vertex, how are they ordered?) that is used to sort the edges out of a vertex...assuming you've figured out who is connected to whom, this sorting is needed to build polygons that don't overlap each other...there are various precision cases that can make this primitive blow up.
 
-Unfortunately I always seem to work on the scenery code under fire, which is why we've limped along with the mess we have now for two renders (the 820 render and the 900 render - I think the 800 us-only render was done with CGAL's pmwx, which was also painful at the time).
+Unfortunately I always seem to work on the scenery code under fire, which is why we've limped along with the mess we have now for two renders (the 820 render and the 900 render---I think the 800 us-only render was done with CGAL's pmwx, which was also painful at the time).
 
 I think I am faced with three possible strategies:
 
@@ -108,9 +112,9 @@ Of the three choices, 3 is the least preferable to me...the reason is that I wou
 
 So my question is: what was the total set of changes you had to make to the planar map, topointegrate function, and map merge/overlay functions to get your data to "sink"?  Having not mucked with the latest CGAL in a while, I would really like your input on whether option 1 (trust CGAL to work right) is an option.
 
-cheers
-Ben
 
 
-
+What can I pipe to `wed_cmds`?
+----------------------------------------
+In `RF_Main.cpp`, see `sUtilCmds` for a list of all "utility" commands you can use to modify the behavior of RenderFarmUI.
 
