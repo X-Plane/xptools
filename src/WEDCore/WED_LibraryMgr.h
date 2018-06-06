@@ -54,8 +54,10 @@ enum {
 
 enum {
 	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
-	status_Deprecated	= 1,
+	status_Deprecated	= 1,		// fully deprecated - invisible in hierarchy and validation failure for gateway.
+	// Order matters - everything LESS than yellow is going to fail validation
 	status_Yellow		= 2,		// half-deprecated items, visibility of deprecated, validates as public
+	// Order matters - everything GEQUAL to public is going to be public
 	status_Public		= 3,
 	status_New			= 4
 };
