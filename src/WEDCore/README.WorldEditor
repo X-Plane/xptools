@@ -25,7 +25,7 @@ WED 1.7.1
 	- make listing order leading-numbers sensitive, so 10_line.lin is listed below 2_line.lin
 	- WED-1042: Suppress listing of .ags and .agb in the library pane until propper support for these is added
 	Features:
-	- WED-998: Extend hierachical locking effectiveness, require confirmation before moving of whole airports.
+	- WED-998: Extend hierachical locking effectiveness, highlight interior of selected items, confirm moving airports
 	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	
 WED 1.7.0 r3
