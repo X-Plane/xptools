@@ -29,8 +29,8 @@ TRIVIAL_COPY(WED_AirportNode, WED_GISPoint_Bezier)
 
 WED_AirportNode::WED_AirportNode(WED_Archive * a, int i) : WED_GISPoint_Bezier(a,i),
 	attrs (this,PROP_Name(".Attributes",      XML_Name("markings","marking")),LinearFeature, 0),
-	lines (this,PROP_Name("Line Attributes",  XML_Name("","")),".Attributes",line_SolidYellow,line_BWideBrokenDouble, 1),
-	lights(this,PROP_Name("Light Attributes", XML_Name("","")),".Attributes",line_TaxiCenter,line_BoundaryEdge, 1)
+	lines (this,PROP_Name("Line Attributes",  XML_Name("","")),".Attributes",   1,  99, 1),
+	lights(this,PROP_Name("Light Attributes", XML_Name("","")),".Attributes", 101, 199, 1)
 {
 }
 
@@ -47,4 +47,3 @@ void		WED_AirportNode::GetAttributes(set<int>& out_attrs) const
 {
 	out_attrs = attrs.value;
 }
-

@@ -795,8 +795,13 @@
     <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="..\..\src\WEDMap\WED_OSMSlippyMap.cpp">
       <Filter>WEDMap</Filter>
+=======
+    <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp">
+      <Filter>WEDWindows</Filter>
+>>>>>>> wed_170_release
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1585,6 +1590,8 @@
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_OSMSlippyMap.h">
       <Filter>WEDMap</Filter>
+    <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h">
+      <Filter>WEDWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

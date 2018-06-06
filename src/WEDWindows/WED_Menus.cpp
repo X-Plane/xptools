@@ -100,6 +100,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
 {	"A&lign",				'L',	gui_ControlFlag,				0,	wed_Align		},
+{	"Match Bezier Handles",	'B',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MatchBezierHandles },
 {	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize },
 {	"Make Regular Poly",	'Q',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_RegularPoly },
 #if AIRPORT_ROUTING
@@ -108,6 +109,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rever&se",				'R',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Reverse		},
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
+{	"Con&vert To",			0,		0,								0,	0				},
 //{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 #if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
@@ -120,6 +122,14 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Explode Special Agps",   0,    0,                              0,  wed_BreakApartSpecialAgps  },
 {	"Replace Vehicle Objects", 0,	0,								0,  wed_ReplaceVehicleObj	},
 {	NULL,					0,		0,								0,	0				},
+};
+
+static const GUI_MenuItem_t kConvertToMenu[] = {
+{	"Draped &Polygon",			0,	0,							0,	wed_ConvertToPolygon	},
+{	"&Taxiway",					0,	0,							0,	wed_ConvertToTaxiway	},
+{	"&Airport Line Marking",	0,	0,							0,	wed_ConvertToTaxiline	},
+{	"&Line",					0,	0,							0,	wed_ConvertToLine		},
+{	NULL,						0,	0,							0,	0						}
 };
 
 static const GUI_MenuItem_t kViewMenu[] = {
@@ -278,6 +288,13 @@ void WED_MakeMenus(GUI_Application * inApp)
 
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
+
+	GUI_Menu convert_to_menu = inApp->CreateMenu(
+#if AIRPORT_ROUTING
+		"Con&vert To", kConvertToMenu, edit_menu, 21);
+#else
+		"Con&vert To", kConvertToMenu, edit_menu, 20);
+#endif
 
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
