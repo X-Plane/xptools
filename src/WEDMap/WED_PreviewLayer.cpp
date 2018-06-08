@@ -96,7 +96,7 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 	g->SetState(false,1,false,true,true,false,false);
 	glColor4f(1,1,1,alpha);
 	g->BindTex(tex_id,0);
-	double ppm = z->GetPPM() * 12.5;
+	double ppm = z->GetPPM() * 6.25;
 	GLdouble	m1[16] = { 1.0,		0.0,		0.0, 					 0.0,
 							0.0, 		1.0,	0.0, 					 0.0,
 							0.0, 		0.0,		1.0, 					 0.0,
@@ -104,7 +104,7 @@ static bool setup_taxi_texture(int surface_code, double heading, const Point2& c
 
 	double l,b,r,t;
 
-	for (int n = 0; n < 16; ++n)
+	for (int n = 0; n < 6; ++n)
 		m1[n] /= ppm;
 
 	z->GetPixelBounds(l,b,r,t);
@@ -154,16 +154,45 @@ static bool setup_pol_texture(ITexMgr * tman, pol_info_t& pol, double heading, b
 
 	if(no_proj)
 	{
+#if 0
+		double ppm = z->GetPPM();
+		GLdouble	m1[16] = { 1.0,		0.0,	0.0, 	 0.0,
+								0.0, 	1.0,	0.0, 	 0.0,
+								0.0, 	0.0,	1.0, 	 0.0,
+								0.0, 	0.0,	0.0, 	 1.0 };
+		m1[0] /= (ppm * pol.proj_s);
+		m1[5] /= (ppm * pol.proj_t);
+
+		double	proj_tex_s[4], proj_tex_t[4];
+
+		proj_tex_s[0] = m1[0 ];
+		proj_tex_s[1] = m1[4 ];
+		proj_tex_s[2] = m1[8 ];
+		proj_tex_s[3] = m1[12];
+		proj_tex_t[0] = m1[1 ];
+		proj_tex_t[1] = m1[5 ];
+		proj_tex_t[2] = m1[9 ];
+		proj_tex_t[3] = m1[13];
+
+//		double l,b,r,t;
+//		z->GetPixelBounds(l,b,r,t);
+//		applyTranslation(m1, l-centroid.x(),b-centroid.y(),0);
+
+		glEnable(GL_TEXTURE_GEN_S);	glTexGeni(GL_S,GL_TEXTURE_GEN_MODE,GL_OBJECT_LINEAR);	glTexGendv(GL_S,GL_OBJECT_PLANE,proj_tex_s);
+		glEnable(GL_TEXTURE_GEN_T);	glTexGeni(GL_T,GL_TEXTURE_GEN_MODE,GL_OBJECT_LINEAR);	glTexGendv(GL_T,GL_OBJECT_PLANE,proj_tex_t);
+		
+#else
 		glDisable(GL_TEXTURE_GEN_S);
 		glDisable(GL_TEXTURE_GEN_T);
+#endif
 	}
 	else
 	{
 		double ppm = z->GetPPM();
-		GLdouble	m1[16] = { 1.0,		0.0,		0.0, 					 0.0,
-								0.0, 		1.0,	0.0, 					 0.0,
-								0.0, 		0.0,		1.0, 					 0.0,
-								0.0, 		0.0,		0.0, 					 1.0 };
+		GLdouble	m1[16] = { 1.0,		0.0,	0.0, 	 0.0,
+								0.0, 	-1.0,	0.0, 	 0.0,
+								0.0, 	0.0,	1.0, 	 0.0,
+								0.0, 	1.0,	0.0, 	 1.0 };
 
 		double l,b,r,t;
 

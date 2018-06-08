@@ -59,6 +59,63 @@ struct	ImageInfo {
 	short			channels;
 };
 
+// DD surface flags
+#define DDSD_CAPS               0x00000001l     // default
+#define DDSD_HEIGHT             0x00000002l
+#define DDSD_WIDTH              0x00000004l
+#define DDSD_PITCH              0x00000008l		// rowbytes to mac nerds
+#define DDSD_PIXELFORMAT        0x00001000l
+#define DDSD_MIPMAPCOUNT        0x00020000l
+#define DDSD_LINEARSIZE         0x00080000l
+
+// DD Pixel format flags
+#define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
+#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
+#define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
+
+// DD surface caps
+#define DDSCAPS_TEXTURE			0x00001000l
+#define DDSCAPS_MIPMAP          0x00400000l
+#define DDSCAPS_COMPLEX         0x00000008l
+
+#if APL || LIN
+	#define DWORD unsigned int
+#endif
+
+struct TEX_dds_caps2 {
+    DWORD       dwCaps;         // capabilities of surface wanted
+    DWORD       dwCaps2;
+    DWORD       dwCaps3;
+    DWORD       dwCaps4;
+};
+
+struct TEX_dds_pixelformat {
+    DWORD       dwSize;                 // size of structure (must be 32)
+    DWORD       dwFlags;                // pixel format flags
+    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.
+	DWORD		dwRGBBitCount;          // how many bits per pixel
+	DWORD		dwRBitMask;             // mask for red bit
+	DWORD		dwGBitMask;             // mask for green bits
+	DWORD		dwBBitMask;             // mask for blue bits
+	DWORD		dwRGBAlphaBitMask;      // mask for alpha channel
+};
+
+struct TEX_dds_desc {
+	char				dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
+
+    DWORD               dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
+    DWORD               dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
+    DWORD               dwHeight;               // height of surface to be created
+    DWORD               dwWidth;                // width of input surface
+	DWORD				dwLinearSize;           // Formless late-allocated optimized surface size
+    DWORD               dwDepth;				// Vol texes-depth.
+	DWORD				dwMipMapCount;          // number of mip-map levels requestde
+	DWORD               dwReserved1[11];        //
+	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
+    TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
+    DWORD               dwReserved2;			//
+};
+
 /* STANDARDS FOR CreateNewBitmapFromX: Returns 0 for all good, else each has its
  * own error codes we all wish were documented and standardized*/
 
@@ -73,7 +130,7 @@ int		CreateBitmapFromFile(const char * inFilePath, struct ImageInfo * outImageIn
 /* Yada yada yada, libPNG.  Gamma is the gamma color curve we want our pixels in.  Since gamma is recorded on the png file
  * we have to tell libpng to convert it.  Use 0.0 for no conversion, just the raw 8-bit values.  */
 int		CreateBitmapFromPNG(const char * inFilePath, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma);
-int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma);
+int		CreateBitmapFromPNGData(const void * inBytes, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma, bool flipY = true);
 
 /* Create a 4-channel image from a DDS file. */
 int		CreateBitmapFromDDS(const char * inFilePath, struct ImageInfo * outImageInfo);

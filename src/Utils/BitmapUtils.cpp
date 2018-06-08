@@ -88,70 +88,6 @@ struct	BMPImageDesc {
 #endif
 
 
-
-// DD surface flags
-#define DDSD_CAPS               0x00000001l     // default
-#define DDSD_HEIGHT             0x00000002l
-#define DDSD_WIDTH              0x00000004l
-#define DDSD_PITCH              0x00000008l		// rowbytes to mac nerds
-#define DDSD_PIXELFORMAT        0x00001000l
-#define DDSD_MIPMAPCOUNT        0x00020000l
-#define DDSD_LINEARSIZE         0x00080000l
-
-// DD Pixel format flags
-#define DDPF_ALPHAPIXELS        0x00000001l		// has alpha in addition to RGB
-#define DDPF_FOURCC             0x00000004l		// Is 4cc compressed
-#define DDPF_RGB				0x00000040l		// Is RGB (may have alpha)
-
-// DD surface caps
-#define DDSCAPS_TEXTURE			0x00001000l
-#define DDSCAPS_MIPMAP          0x00400000l
-#define DDSCAPS_COMPLEX         0x00000008l
-
-#if APL || LIN
-	#define DWORD unsigned int
-#endif
-
-struct TEX_dds_caps2 {
-    DWORD       dwCaps;         // capabilities of surface wanted
-    DWORD       dwCaps2;
-    DWORD       dwCaps3;
-    DWORD       dwCaps4;
-};
-
-struct TEX_dds_pixelformat {
-    DWORD       dwSize;                 // size of structure (must be 32)
-    DWORD       dwFlags;                // pixel format flags
-    char        dwFourCC[4];               // (FOURCC code)		D X T 3 in memory string.
-	DWORD		dwRGBBitCount;          // how many bits per pixel
-	DWORD		dwRBitMask;             // mask for red bit
-	DWORD		dwGBitMask;             // mask for green bits
-	DWORD		dwBBitMask;             // mask for blue bits
-	DWORD		dwRGBAlphaBitMask;      // mask for alpha channel
-};
-
-struct TEX_dds_desc {
-	char				dwMagic[4];				// D D S <space> sequential string in memory.  This is not REALLY in the struct, but good enough for me.
-
-    DWORD               dwSize;                 // size of the DDSURFACEDESC structure		(Must be 124)
-    DWORD               dwFlags;                // determines what fields are valid			(DDSD_CAPS, DDSD_PIXELFORMAT, DDSD_WIDTH, DDSD_HEIGHT.)
-    DWORD               dwHeight;               // height of surface to be created
-    DWORD               dwWidth;                // width of input surface
-	DWORD				dwLinearSize;           // Formless late-allocated optimized surface size
-    DWORD               dwDepth;				// Vol texes-depth.
-	DWORD				dwMipMapCount;          // number of mip-map levels requestde
-	DWORD               dwReserved1[11];        //
-	TEX_dds_pixelformat	ddpfPixelFormat;        // pixel format description of the surface
-    TEX_dds_caps2       ddsCaps;                // direct draw surface capabilities			DDSCAPS_TEXTURE, DDSCAPS_MIPMAP, DDSCAPS_COMPLEX		TEXTURE, LINEARSIZE, COMPLEX, MIPMAP, FOURCC)
-    DWORD               dwReserved2;			//
-};
-
-
-
-
-
-
-
 /*
 	NOTES ON ENDIAN CHAOS!!!!!!!!!!!!!!!!!!!
 
@@ -996,7 +932,7 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 
 		int linesize = outImageInfo->width * outImageInfo->channels;
 		int linecount = outImageInfo->height;
-		unsigned char * p = outImageInfo->data + (linecount - 1) * linesize;
+		unsigned char * p = outImageInfo->data; // + (linecount - 1) * linesize;
 		while (linecount--)
 		{
 			if (jpeg_read_scanlines (&cinfo, &p, 1) == 0)
@@ -1007,14 +943,16 @@ int		CreateBitmapFromJPEG(const char * inFilePath, struct ImageInfo * outImageIn
 				if (cinfo.output_components == 1)
 					p[n*3+2] = p[n*3+1] = p[n*3] = p[n];
 				else
-					swap(p[n*3+2],p[n*3]);
+					swap(p[n*3+2],p[n*3]);                          // another RGB -> BGR swap. Why on earth ?
 			}
-			p -= linesize;
+			p += linesize;             // dont flip ....
 		}
 
 		jpeg_finish_decompress(&cinfo);
 
 		jpeg_destroy_decompress(&cinfo);
+		
+		
 		fclose(fi);
 		return 0;
 	} catch (...) {
@@ -1078,7 +1016,7 @@ int		CreateBitmapFromJPEGData(void * inBytes, int inLength, struct ImageInfo * o
 				if (cinfo.output_components == 1)
 					p[n*3+2] = p[n*3+1] = p[n*3] = p[n];
 				else
-					swap(p[n*3+2],p[n*3]);
+					swap(p[n*3+2],p[n*3]);                         // another RGB -> BGR swap
 			}
 			p -= linesize;
 		}
@@ -1134,12 +1072,12 @@ int		CreateBitmapFromPNG(const char * fname, struct ImageInfo * outImageInfo, bo
 		return -1;
 	}
 	fclose(file);
-	int result = CreateBitmapFromPNGData(buffer, fileLength, outImageInfo, leaveIndexed, target_gamma);
+	int result = CreateBitmapFromPNGData(buffer, fileLength, outImageInfo, leaveIndexed, target_gamma, false);
 	delete [] buffer;
 	return result;
 }
 
-int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma)
+int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInfo * outImageInfo, bool leaveIndexed, float target_gamma, bool flipY)
 {
 	png_uint_32	width, height;
 	int bit_depth,color_type,interlace_type,compression_type,P_filter_type;
@@ -1221,10 +1159,16 @@ int		CreateBitmapFromPNGData(const void * inStart, int inLength, struct ImageInf
 	rows=(char**)malloc(height*sizeof(char*));
 	if (!rows) goto bail;
 
+if(flipY)
 	// Set our rows to reverse order to flip the image.
 	for(int i=0;i<height;i++)
 	{
 		rows[i]=(char*)outImageInfo->data     +((outImageInfo->height-1-i)*(outImageInfo->width)*(outImageInfo->channels));
+	}
+else
+	for(int i=0;i<height;i++)
+	{
+		rows[i]=(char*)outImageInfo->data     +((                        i)*(outImageInfo->width)*(outImageInfo->channels));          // but only do this for non-GUI Resources
 	}
 
 	png_read_image(pngPtr,(png_byte**)rows);										// Now we just tell pnglib to read in the data.  When done our row ptrs will be filled in.
@@ -1360,10 +1304,11 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 			outImageInfo->height = h;
 			outImageInfo->channels = 4;
 			outImageInfo->pad = 0;
-			int	count = outImageInfo->width * outImageInfo->height;
-			unsigned char * d = outImageInfo->data;
+			int	cnt = outImageInfo->width * outImageInfo->height;
+			unsigned char * d = outImageInfo->data + 4 * outImageInfo->width * (outImageInfo->height - 1);
 			unsigned char * s = (unsigned char *) raster;
-			while (count--)
+			int r = 0;
+			while (cnt--)
 			{
 #if BIG
 				d[0] = s[1];	// B
@@ -1380,6 +1325,8 @@ int		CreateBitmapFromTIF(const char * inFilePath, struct ImageInfo * outImageInf
 #endif
 				s += 4;
 				d += 4;
+				r++;
+				if (r % outImageInfo->width == 0) d -= 4 * 2 * outImageInfo->width;
 			}
 			result = 0;
 	    }

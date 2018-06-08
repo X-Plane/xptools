@@ -633,7 +633,7 @@ bool	XObj8Read(const char * inFile, XObj8& outObj)
 			stdat[4] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[5] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			stdat[6] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
-			stdat[7] = TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
+			stdat[7] = 1.0 - TXT_MAP_flt_scan(cur_ptr, end_ptr, xfals);
 			outObj.geo_tri.set(tricount++, stdat);
 		}
 		// VLINE <x> <y> <z> <r> <g> <b>

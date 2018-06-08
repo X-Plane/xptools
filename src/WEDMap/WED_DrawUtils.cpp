@@ -121,7 +121,7 @@ void PointSequenceToVector(
 static void CALLBACK TessBegin(GLenum mode)		{ glBegin(mode);				}
 static void CALLBACK TessEnd(void)				{ glEnd();						}
 static void CALLBACK TessVertex(const Point2 * p){																  glVertex2d(p->x(),p->y());	}
-static void CALLBACK TessVertexUV(const Point2 * p){ const Point2 * uv = p; ++uv; glTexCoord2f(uv->x(), uv->y()); glVertex2d(p->x(),p->y());	}
+static void CALLBACK TessVertexUV(const Point2 * p){ const Point2 * uv = p; ++uv; glTexCoord2f(uv->x(), 1.0-uv->y()); glVertex2d(p->x(),p->y());	}
 
 void glPolygon2(const Point2 * pts, bool has_uv, const int * contours, int n)
 {

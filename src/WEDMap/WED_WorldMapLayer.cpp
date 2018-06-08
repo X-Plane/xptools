@@ -107,16 +107,16 @@ void		WED_WorldMapLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 					{
 						g->BindTex(tex_id, 0);
 						glBegin(GL_QUADS);
-						glTexCoord2f(0.0, 0.0);
-						glVertex2f( GetZoomer()->LonToXPixel( x    ),
-									GetZoomer()->LatToYPixel( y    ));
 						glTexCoord2f(0.0, 1.0);
 						glVertex2f( GetZoomer()->LonToXPixel( x    ),
-									GetZoomer()->LatToYPixel( y+10 ));
-						glTexCoord2f(1.0, 1.0);
-						glVertex2f( GetZoomer()->LonToXPixel( x+10 ),
+									GetZoomer()->LatToYPixel( y    ));
+						glTexCoord2f(0.0, 0.0);
+						glVertex2f( GetZoomer()->LonToXPixel( x    ),
 									GetZoomer()->LatToYPixel( y+10 ));
 						glTexCoord2f(1.0, 0.0);
+						glVertex2f( GetZoomer()->LonToXPixel( x+10 ),
+									GetZoomer()->LatToYPixel( y+10 ));
+						glTexCoord2f(1.0, 1.0);
 						glVertex2f( GetZoomer()->LonToXPixel( x+10 ),
 									GetZoomer()->LatToYPixel( y    ));
 						glEnd();

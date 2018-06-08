@@ -85,36 +85,39 @@ WED_TexMgr::TexInfo *	WED_TexMgr::LoadTexture(const char * path, bool is_absolut
 	string fpath;
 
 	fpath = is_absolute ? path : gPackageMgr->ComputePath(mPackage, path);
-
 	TexInfo * inf = new TexInfo;
 
-	ImageInfo	im;
-
-/*
+	GLuint tn;
+	glGenTextures(1,&tn);
+#if 1
 	MFMemFile * dds_file;
-	dds_file = MemFile_Open(path);
+	dds_file = MemFile_Open(fpath.c_str());
 	if(dds_file)
 	{
+//printf("Trying DDS %s",fpath.c_str());
 		if (LoadTextureFromDDS((unsigned const char *) MemFile_GetBegin(dds_file),(unsigned const char *) MemFile_GetEnd(dds_file),tn,0,&inf->act_x, &inf->act_y))
 		{
+//printf(" OK !\n");
 			inf->tex_id = tn;
 			inf->org_x = inf->vis_x = inf->act_x;
 			inf->org_y = inf->vis_y = inf->act_y;
 			MemFile_Close(dds_file);
+			
+			mTexes[path] = inf;
 			return inf;
 		}
+//		printf("Nope !\n");
 		MemFile_Close(dds_file);
 	}
-*/
+//printf("Trying normal load\n%s\n%s\n", path, fpath.c_str());
+#endif
+	ImageInfo	im;
 	int res = MakeSupportedType(fpath.c_str(),&im);
 	if(res != 0)
 	{
 		delete inf;
 		return NULL;
 	}
-
-	GLuint tn;
-	glGenTextures(1,&tn);
 
 	inf->tex_id = tn;
 	inf->org_x = im.width;
