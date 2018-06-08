@@ -39,15 +39,14 @@ static void process_texture_path(const string& path_of_obj, string& path_of_tex)
 {
 	string parent;
 
-	parent = FILE_get_dir_name(path_of_obj.c_str()) + FILE_get_dir_name(path_of_tex.c_str()) 
-			+ FILE_get_file_name_wo_extensions(path_of_tex.c_str());
-	
-	                                       path_of_tex = parent + ".dds";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".DDS";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".png";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".PNG";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".bmp";
-	if(!FILE_exists(path_of_tex.c_str()))  path_of_tex = parent + ".BMP";
+	parent = FILE_get_dir_name(path_of_obj) + FILE_get_dir_name(path_of_tex)
+					+ FILE_get_file_name_wo_extensions(path_of_tex);
+
+	path_of_tex = parent + ".dds";          // no need to also check for .DDS, filename case desense will take care of it
+	if(FILE_exists(path_of_tex.c_str()))  return;
+	path_of_tex = parent + ".png";
+	if(FILE_exists(path_of_tex.c_str()))  return;
+	path_of_tex = parent + ".bmp";
 }
 
 WED_ResourceMgr::WED_ResourceMgr(WED_LibraryMgr * in_library) : mLibrary(in_library)
@@ -116,9 +115,13 @@ bool	WED_ResourceMgr::GetObjRelative(const string& obj_path, const string& paren
 		}
 	}
 
-	process_texture_path(p,obj->texture);
+	if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
 	if (obj->texture_draped.length() > 0)
+	{
 		process_texture_path(p,obj->texture_draped);
+		if(obj->texture.length() == 0)
+			obj->texture = obj->texture_draped;
+	}
 	else
 		obj->texture_draped = obj->texture;
 
@@ -159,9 +162,13 @@ bool	WED_ResourceMgr::GetObj(const string& path, XObj8 *& obj, int variant)
 				return false;
 			}
 		}
-		process_texture_path(p,obj->texture);
+		if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
 		if (obj->texture_draped.length() > 0)
+		{
 			process_texture_path(p,obj->texture_draped);
+			if(obj->texture.length() == 0)
+				obj->texture = obj->texture_draped;
+		}
 		else
 			obj->texture_draped = obj->texture;
 
@@ -342,11 +349,16 @@ bool	WED_ResourceMgr::GetStr(const string& path, str_info_t& out_info)
 					return false;
 				}
 			}
-			process_texture_path(p,obj->texture);
+			if (obj->texture.length() > 0) 	process_texture_path(p,obj->texture);
 			if (obj->texture_draped.length() > 0)
+			{
 				process_texture_path(p,obj->texture_draped);
+				if(obj->texture.length() == 0)
+					obj->texture = obj->texture_draped;
+			}
 			else
 				obj->texture_draped = obj->texture;
+
 			out_info.previews.push_back(obj);
 		}
 		MFS_string_eol(&s,NULL);
