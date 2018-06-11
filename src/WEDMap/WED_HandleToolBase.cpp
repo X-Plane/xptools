@@ -551,6 +551,7 @@ void WED_HandleToolBase::ProcessSelection(
 
 		//	gis_PointSequence,  gis_Composite - not expected to ever come up.
 		
+#undef printf
 #if DEBUG_PRINTF_N_LINES
 		for(set<IGISEntity *> ::iterator i = result.begin(); i != result.end(); ++i)
 			printf("Total selected GISClass #%d Subtype %s\n", (*i)->GetGISClass()-gis_Point, (*i)->GetGISSubtype());
@@ -679,6 +680,7 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 
 	switch(mDragType) {
 	case drag_PreEnt:
+		if(WantSticky())
 		{
 			Point2 mSel(mSelX, mSelY);
 			double drag_dist = mSel.squared_distance(Point2(inX,inY));
@@ -687,8 +689,8 @@ void		WED_HandleToolBase::HandleClickDrag			(int inX, int inY, int inButton, GUI
 			{
 				break;
 			}
-			mDragType = drag_Ent;
 		}
+		mDragType = drag_Ent;
 	case drag_Handles:
 	case drag_Links:
 	case drag_Ent:
