@@ -635,7 +635,7 @@ struct	preview_line : WED_PreviewItem {
 				{
 					vector<Point2>	pts;
 					vector<int> cont;
-					PointSequenceToVector(ps,zoomer,pts,false,cont,0);
+					PointSequenceToVector(ps,zoomer,pts,false,cont,0,true);
 					draw_line_preview(pts, linfo, l, zoomer->GetPPM());
 				}
 				glFrontFace(GL_CW);
