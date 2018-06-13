@@ -404,7 +404,7 @@ void	WED_SlippyMap::SetMode(int mode)
 		SetVisible(1);
 		
 		string suffix = url_printf_fmt.substr(url_printf_fmt.length()-4);
-		if (suffix == ".jpg" || suffix == ".JPG")
+		if (suffix == ".jpg" || suffix == ".JPG" || suffix == "jpeg")
 			is_jpg_not_png = true;
 		else
 			is_jpg_not_png = false;
