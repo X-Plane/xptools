@@ -23,6 +23,11 @@
 #ifndef DEMTABLES_H
 #define DEMTABLES_H
 
+// Sergio's rule spreadsheets from v8/v9 used an older syntax.  Andras has since normalized the syntax
+// using new commands for v10.  This code base is meant to run with v10.  For v9-compatible rules,
+// use the MeshTool release branch to avoid this fundamental change!
+#define OLD_SERGIO_RULES 0
+
 #include "CompGeomDefs2.h"
 #include "ConfigSystem.h"
 #include "ProgressUtils.h"
@@ -105,9 +110,16 @@ struct	NaturalTerrainRule_t {
 	int				urban_square;
 	float			lat_min;
 	float			lat_max;
-//	int				variant;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5.  This is a SELECTOR for terrain.
 
-	int				name;
+	// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5.  This is a SELECTOR for terrain.
+	// In v9, this was used for two purposes:
+	//	  * to break up big chunks of the same texture
+	//	  * to fix "smearing" of hills
+	// Modern code uses *shader* tricks for this which replace pre-specified variants in the DSF.
+	// (For backward compatibility, modern code can just use variant 0 everywhere.)
+	int				variant;
+
+	int				name;			// this is the name *ID* for this rule, used throughout the codebase
 
 };
 

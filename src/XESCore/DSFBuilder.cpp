@@ -825,7 +825,7 @@ string		get_terrain_name(int composite)
 {
 	if (composite == terrain_Water)
 	{
-		return gMobile ? "RESOURCE:water.ter" : FetchTokenString(composite);
+		return FetchTokenString(composite);
 	}
 	else if (gNaturalTerrainInfo.count(composite) > 0)
 	{
@@ -842,7 +842,7 @@ string		get_terrain_name(int composite)
 		else
 		{
 			// TODO: Add real prefix for mobile!
-			const string prefix = gMobile ? "" : "lib/g10/";
+			const string prefix = gMobile ? "lib/g8/" : "lib/g10/";
 			return prefix + string(FetchTokenString(composite)) + ".ter";
 		}
 	}

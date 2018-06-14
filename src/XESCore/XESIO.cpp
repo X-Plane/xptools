@@ -26,6 +26,7 @@
 #include "XChunkyFileUtils.h"
 #include "SimpleIO.h"
 #include "EnumSystem.h"
+#include "GISTool_Globals.h"
 
 const	int	kMapID = 'MAP1';
 const	int	kDemDirID = 'DEMd';
@@ -138,6 +139,13 @@ void	ReadXESFile(
 			if (demID == dem_LandUse || demID == dem_Climate)	// || demID == dem_NudeColor)
 				RemapEnumDEM(aDem, conversionMap);
 			//inDEM->insert(DEMGeoMap::value_type(demID, aDem));
+
+			// Massage the XES data to support old-ass Mobile config files
+			// Legacy Mobile code reads in all its climate data to the dem_Climate enum,
+			// but the modern codebase expects it in dem_ClimStyle, so... make the switch!
+			if(gMobile && demID == dem_Climate)
+				demID = dem_ClimStyle;
+
 			(*inDEM)[demID] = aDem;
 		}
 	}

@@ -2035,7 +2035,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 
 	if (inProg) inProg(0, 1, "Assigning Landuses", 0.0);
 
-//	DEMGeo&	inClimate(inDEMs[dem_Clima0te]);
+//	DEMGeo&	inClimate(inDEMs[dem_Climate]);
 	DEMGeo&	inClimStyle(inDEMs[dem_ClimStyle]);
 	DEMGeo&	inAgriStyle(inDEMs[dem_AgriStyle]);
 	DEMGeo&	inSoilStyle(inDEMs[dem_SoilStyle]);

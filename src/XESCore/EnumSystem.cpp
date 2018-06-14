@@ -20,6 +20,11 @@
  * THE SOFTWARE.
  *
  */
+#define DEBUG_CONVERSIONS 0
+#if DEBUG_CONVERSIONS
+	#include <iostream>
+#endif
+
 #include "EnumSystem.h"
 #include "XChunkyFileUtils.h"
 #include "DEMDefs.h"	// For NO_DATA
@@ -96,11 +101,43 @@ void	BuildTokenReverseMap(
 	}
 }
 
+#if DEBUG_CONVERSIONS
+void dumpTokenMap(const TokenMap &m)
+{
+	for(int i = 0; i < m.size(); ++i)
+	{
+		cout << i << ": " << m[i] << endl;
+	}
+}
+void dumpRevTokenMap(const TokenReverseMap &m)
+{
+	for(const auto &kv : m)
+	{
+		cout << kv.second << ": " << kv.first << endl;
+	}
+}
+
+void dumpTokenConversions(const TokenConversionMap &c, const TokenMap &source, const TokenMap &dest)
+{
+	for(int i = 0; i < c.size(); ++i)
+	{
+		cout << i << " " << source[i] << ": " << dest[c[i]] << endl;
+	}
+}
+#endif
+
 void	BuildTokenConversionMap(
 						TokenMap&			ioDestination,
 						const TokenMap&		inSource,
 						TokenConversionMap&	outConversion)
 {
+#if DEBUG_CONVERSIONS
+	cout << "From file:" << endl;
+	dumpTokenMap(inSource);
+	cout << "gTokens:" << endl;
+	dumpTokenMap(ioDestination);
+#endif
+
 	TokenReverseMap	knownTokens;
 	BuildTokenReverseMap(ioDestination, knownTokens);
 	outConversion.clear();
@@ -115,6 +152,11 @@ void	BuildTokenConversionMap(
 			ioDestination.push_back(inSource[src]);
 		}
 	}
+
+#if DEBUG_CONVERSIONS
+	cout << "outConversion:" << endl;
+	dumpTokenConversions(outConversion, inSource, ioDestination);
+#endif
 }
 
 void	WriteEnumsAtomToFile(FILE * inFile, const TokenMap& inTokens, int atomCode)

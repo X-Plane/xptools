@@ -28,11 +28,6 @@
 #include <ctype.h>
 //#include "CoverageFinder.h"
 
-// Sergio's rule spreadsheets from v8/v9 used an older syntax.  Andras has since normalized the syntax 
-// using new commands for v10.  This code base is meant to run with v10.  For v9-compatible rules, 
-// use the MeshTool release branch to avoid this fundamental change!
-#define OLD_SERGIO_RULES 0
-
 //static int s_is_city = 0;
 //static int s_is_forest = 0;
 
@@ -116,7 +111,7 @@ bool	ReadEnumColor(const vector<string>& tokens, void * ref)
 	RGBColor_t	col;
 	if (tokens.size() != 3 || !TokenizeColor(tokens[2], col))
 	{
-		printf("Parse error for enum colors.\n");
+		DebugAssertPrintf("Parse error for enum colors.\n");
 		return false;
 	}
 
@@ -279,7 +274,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 		rule.urban_trans_min = rule.urban_trans_max = 0.0;
 		rule.urban_square = 0;
 		rule.slope_heading_min = rule.slope_heading_max = 0.0;
-//		rule.variant = 0;
+		rule.variant = 0;
 		if (rule.elev_min > rule.elev_max)
 			{ fprintf(stderr, "Illegal elevation\n"); return false; }
 		if (rule.slope_min > rule.slope_max)	
@@ -511,9 +506,9 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	int						auto_vary;									// 0 = none. 1 = 4 variations, all fake. 2 = 4 variations, 2 & 2. 3 = 4 variations for HEADING.
 
 	rule.zoning = NO_VALUE;
-	info.clim_style = NO_VALUE;
-	info.agri_style = NO_VALUE;
-	info.soil_style = NO_VALUE;
+	rule.clim_style = NO_VALUE;
+	rule.agri_style = NO_VALUE;
+	rule.soil_style = NO_VALUE;
 	rule.urban_density_min = rule.urban_density_max = 0.0;
 	rule.urban_radial_min = rule.urban_radial_max = 0.0;
 	rule.urban_trans_min = rule.urban_trans_max = 0.0;
@@ -571,7 +566,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		if (TokenizeLine(tokens, " eeeffffffffiffffffffffffiffisifsiPssefff",
 			&rule.terrain,
 			&rule.landuse,
-			&rule.climate,
+			&rule.clim_style,
 			&rule.elev_min,
 			&rule.elev_max,
 			&rule.slope_min,
@@ -628,7 +623,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 		if (TokenizeLine(tokens, " eeeffffffffffiffffffffffffiffisifsPssefff",
 			&rule.terrain,
 			&rule.landuse,
-			&rule.climate,
+			&rule.clim_style,
 			&rule.elev_min,
 			&rule.elev_max,
 			&rule.slope_min,
@@ -762,8 +757,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	// layers.  As of MT2/V9, we still use 4 layers to do HEADING-based terrain.
 	if (auto_vary < 3)
 	{
-
-//		rule.variant = 0;			// Auto case - we don't use a variant-selector!
+		rule.variant = 0;			// Auto case - we don't use a variant-selector!
 //		rule.related = -1;			// Auto case - we don't need related.
 
 		string rep_name = ter_name;
@@ -1001,7 +995,7 @@ int	FindNaturalTerrain(
 
 	for (int rec_num = 0; rec_num < gNaturalTerrainRules.size(); ++rec_num)
 	{
-		NaturalTerrainRule_t& rec = gNaturalTerrainRules[rec_num];
+		const NaturalTerrainRule_t& rec = gNaturalTerrainRules[rec_num];
 
 //		float slope_to_use = rec.proj_angle == proj_Down ? slope : slope_tri;
 		float slope_to_use = slope_tri;
@@ -1349,7 +1343,7 @@ void MakeDirectRules(void)
 
 		rule.lat_min=0.0;
 		rule.lat_max=0.0;
-//		rule.variant=0;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
+		rule.variant=0;		// 0 = use all. 1-4 = flat variants. 5-8 = sloped variants, CW from N=5
 //		printf("Adding rule: %s->%s\n", FetchTokenString(rule.terrain), FetchTokenString(rule.name));
 
 		rule.name = all_names->first;
