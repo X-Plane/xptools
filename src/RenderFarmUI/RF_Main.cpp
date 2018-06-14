@@ -599,7 +599,6 @@ int main(int argc, char * argv[])
 	
 	// Check for a custom config directory
 	int arg = 1;
-	bool next_arg_is_config_file = false;
 	while(arg < argc)
 	{
 		if(!strcmp(argv[arg], "--config") || !strcmp(argv[arg], "-c"))
