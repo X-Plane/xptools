@@ -1,4 +1,4 @@
--------------------------------------------------------------------------------
+﻿-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -25,6 +25,7 @@ WED 1.7.1 b1
 	- make listing order leading-numbers sensitive, so 10_line.lin is listed below 2_line.lin
 	- WED-1042: Suppress listing of .ags and .agb in the library pane until propper support for these is added
 	- fix splitting of bezier segements for curves that run nearly vertical
+	- fix symbolic links for directories not recognized with certain versions of mfc100.dll
 	Features:
 	- Add pre-select for 'Split Walls' when placing facades
 	- Split line/area features into 2 separate things (selecti non-adjacent nodes, Edit->Split)
