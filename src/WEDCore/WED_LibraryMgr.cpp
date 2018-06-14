@@ -475,6 +475,8 @@ void WED_LibraryMgr::RescanLines()
 						}
 					}
 #else
+					for(int i = 0; i < resnam.length(); ++i) resnam[i] = tolower(resnam[i]); // C11 would make this so much easier ...
+					
 					if(resnam.find("_red") != string::npos)
 					{
 					    if(resnam.find("_dash") != string::npos)    icon = linetype < 50 ? "line_BrokenRed" : "line_BBrokenRed";
@@ -483,15 +485,22 @@ void WED_LibraryMgr::RescanLines()
 					else if(resnam.find("_orange") != string::npos) icon = linetype < 50 ? "line_SolidOrange": "line_BSolidOrange";
 					else if(resnam.find("_green") != string::npos)  icon = linetype < 50 ? "line_SolidGreen" : "line_BSolidGreen";
 					else if(resnam.find("_blue") != string::npos)   icon = linetype < 50 ? "line_SolidBlue"  : "line_BSolidBlue";
-					else if(resnam.find("_yellow") != string::npos || resnam.find("_taxi") != string::npos)
+					else if(resnam.find("_yellow") != string::npos || resnam.find("_taxi") != string::npos || resnam.find("_hold") != string::npos)
 					{
-					    if(resnam.find("_wide") != string::npos)    icon = linetype < 50 ? "line_SolidYellowW" : "line_BSolidYellowW";
-					    else                                        icon = linetype < 50 ? "line_SolidYellow"  : "line_BSolidYellow";
+						if(resnam.find("_hold") != string::npos)
+						{
+							if(resnam.find("_ils") != string::npos)         icon = linetype < 50 ? "line_ILSHold"   : "line_BILSHold";
+							else if(resnam.find("_double") != string::npos ||
+							        resnam.find("_runway") != string::npos) icon = linetype < 50 ? "line_RunwayHold": "line_BRunwayHold";
+							else                                            icon = linetype < 50 ? "line_OtherHold" : "line_BOtherHold";
+						}
+						else if(resnam.find("_wide") != string::npos) icon = linetype < 50 ? "line_SolidYellowW" : "line_BSolidYellowW";
+						else                                          icon = linetype < 50 ? "line_SolidYellow"  : "line_BSolidYellow";
 					}
 					else if(resnam.find("_white") != string::npos || resnam.find("_road") != string::npos)
 					{
 					    if(resnam.find("_dash") != string::npos)    icon = "line_BrokenWhite";
-					    else                                        icon = "line_SolidWhite";  
+					    else                                        icon = linetype < 50 ? "line_SolidWhite" : "line_BSolidWhite";
 					}
 #endif
 					ENUM_Create(LinearFeature, icon, nice_name, linetype);

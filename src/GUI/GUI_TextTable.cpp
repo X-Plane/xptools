@@ -36,7 +36,7 @@
 #include "WED_Sign_Editor.h"
 #include "WED_Line_Selector.h"
 
-#define USE_LINE_SELECTOR_POPUP 0      // not yet quite ready for production
+#define USE_LINE_SELECTOR_POPUP 1     // not yet quite ready for production
 
 #define RESIZE_MARGIN 4
 
@@ -76,9 +76,10 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) 
 	mClickCellY(-1),
 	mParent(NULL),
 	mTextField(NULL),
-	mSignField(NULL),
-	mLineField(NULL),
+//	mSignField(NULL),
+//	mLineField(NULL),
 	mCatcher(NULL),
+	mEditor(NULL),
 	mSelStartX(-1),
 	mSelStartY(-1),
 	mDragX(-1),
@@ -1127,108 +1128,82 @@ GUI_DragOperation	GUI_TextTable::CellDrop		(int cell_bounds[4], int cell_x, int 
 	return mLastOp;
 }
 
-
-
 void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t> * dict)
 {
 	if(mEditInfo.content_type == gui_Cell_TaxiText || mEditInfo.content_type == gui_Cell_LineEnumSet)
 	{
-		if(!mLineField && !mSignField)
+		int pb[4];
+		GUI_Pane * parent = mParent;
+		while(parent->GetParent())
+			parent = parent->GetParent();
+		parent->GetBounds(pb);
+
+		if(!mEditor)
 		{
-		
-			if(mEditInfo.content_type == gui_Cell_TaxiText)
-				mSignField = new WED_Sign_Editor(this);
-			else
-			{
-				if (dict == NULL) return;
-				mLineField = new WED_Line_Selector(this);
-				mLineField->SetChoices(dict);
-			}
 			if(mCatcher == NULL) 
 			{
 				mCatcher = new GUI_MouseCatcher(GUI_MOUSE_OUTSIDE_BOUNDS);
 				mCatcher->AddListener(this);
 			}
-						
-			GUI_Pane * parent = mParent;
-			while(parent->GetParent())
-				parent = parent->GetParent();
 			if(mEditInfo.content_type == gui_Cell_TaxiText)
-				mSignField->SetParent(mCatcher);
+			{
+				mEditor = new WED_Sign_Editor(this);
+			}
 			else
-				mLineField->SetParent(mCatcher);
+			{
+				if (dict == NULL) return;
+				WED_Line_Selector * mLineField = new WED_Line_Selector(this);
+				mLineField->SetChoices(dict);
+				mEditor = mLineField;
+			}
+			mEditor->SetParent(mCatcher);
 			mCatcher->SetParent(parent);
-			
-			int pb[4];
-			parent->GetBounds(pb);
 			mCatcher->SetBounds(pb);
 			mCatcher->Show();
 		}
 
-		int cb[4];
-		memcpy(cb,cell_bounds,sizeof(cb));
-
-		int wb[4];
-		mCatcher->GetBounds(wb);
-
-		cb[0] += mEditInfo.indent_level * mCellIndent;
-
-		cb[1] = cb[3] - 280;  // desired size for Sign Editor
-		cb[2] = cb[0] + 600;
+		int w,h;
+		mEditor->GetSizeHint(&w, &h);
+		int eb[4];
+		eb[0] = cell_bounds[0];      // ideally, editor aligns with top left corner of cell to edit
+		eb[1] = cell_bounds[3] - h;
+		eb[2] = cell_bounds[0] + w;
+		eb[3] = cell_bounds[3];
 		
-		int dx = 0, dy = 0;            // move window to stay inside parent window
-		if(cb[2] > wb[2])
-			dx = wb[2] - cb[2];
-		if(cb[0] < wb[0])
-			dx = wb[0] - cb[0];
-		cb[0] += dx;
-		cb[2] += dx;
-		
-		if(cb[1] < wb[1])
-			dy = wb[1] - cb[1];
-		if(cb[3] > wb[3])
-			dy = wb[3] - cb[3];
-		cb[1] += dy;
-		cb[3] += dy;
-		
-		if(mEditInfo.content_type == gui_Cell_TaxiText)
-			mSignField->SetBounds(cb);
-		else
-			mLineField->SetBounds(cb);
-
-		if(mEditInfo.content_type == gui_Cell_TaxiText)
+		if (eb[2] > pb[2])           // does right fit ? If not, make flush with right side
 		{
-			if(!mSignField->SetSignText(mEditInfo.text_val))
-			{
-				mSignField->Hide();
-				delete mSignField;
-				mSignField = NULL;
-				mCatcher->Hide();
-			}
-			else
-			{
-				mCatcher->Show();
-				mSignField->Show();
-				mSignField->TakeFocus();
-				mSignField->Refresh();			
-			}
+			eb[2] = pb[2];
+			eb[0] = eb[2] - w;
+		}
+		if (eb[0] < pb[0])           // does left fit ? If not, make flush with left side
+		{
+			eb[0] = pb[0];
+			eb[2] = eb[0] + w;
+		}
+		if (eb[1] < pb[1])           // does bottom fit ? If not, move up
+		{
+			eb[1] = pb[1];
+			eb[3] = eb[1] + h;
+		}
+		if (eb[3] > pb[3])           // does top fit ? If not, move down
+		{
+			eb[3] = pb[3];
+			eb[1] = eb[3] - h;
+		}                            // At the end - the top left corner of the EditorInsert is always visible
+		mEditor->SetBounds(eb);      // even if the EditorInsert does not completely fit into the DocumentWindow
+		
+		if(!mEditor->SetData(mEditInfo))
+		{
+			mEditor->Hide();
+			delete mEditor;
+			mEditor = NULL;
+			mCatcher->Hide();
 		}
 		else
 		{
-			if(!mLineField->SetSelection(mEditInfo.int_set_val))
-			{
-				mLineField->Hide();
-				delete mLineField;
-				mLineField = NULL;
-				mCatcher->Hide();
-			}
-			else
-			{
-				mCatcher->Show();
-				mLineField->Show();
-				mLineField->TakeFocus();
-				mLineField->Refresh();			
-			}
+			mCatcher->Show();
+			mEditor->Show();
+			mEditor->TakeFocus();
 		}
 	}
 	else
@@ -1282,8 +1257,7 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 {
 	GUI_Commander * cmd_field = NULL;
 	if     (mTextField) cmd_field = (GUI_Commander *) mTextField;
-	else if(mSignField) cmd_field = (GUI_Commander *) mSignField;
-	else if(mLineField) cmd_field = (GUI_Commander *) mLineField;
+	else if(mEditor)    cmd_field = (GUI_Commander *) mEditor;
 	
 	if (cmd_field && cmd_field->IsFocused() &&
 		(mEditInfo.content_type == gui_Cell_EditText || mEditInfo.content_type == gui_Cell_TaxiText ||  mEditInfo.content_type == gui_Cell_Integer || 
@@ -1300,23 +1274,19 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 		// This is, at best, hokey...maybe revisit someday?
 		
 		GUI_TextField * f = mTextField;
-		WED_Sign_Editor * s = mSignField;
-		WED_Line_Selector * l = mLineField;
+		GUI_EditorInsert * e = mEditor;
 		if(in_close) {
 			mTextField = NULL;
-			mSignField = NULL;
-			mLineField = NULL;
+			mEditor = NULL;
 		}
-		DebugAssert(f != NULL || s != NULL || l != NULL);	
+		DebugAssert(f != NULL || e != NULL);
 			
 		if (inSave)
 		{
 			if(f)
 				f->GetDescriptor(mEditInfo.text_val);
-			else if(s)
-				s->GetSignText(mEditInfo.text_val);
 			else
-				l->GetSelection(mEditInfo.int_val);   // lines are also exclusive sets, so only int_val is set in AcceptEdit();
+				e->GetData(mEditInfo);
 				
 			switch(mEditInfo.content_type) {
 			case gui_Cell_Integer:
@@ -1331,24 +1301,17 @@ int			GUI_TextTable::TerminateEdit(bool inSave, bool in_all, bool in_close)
 		if(in_close)
 		{
 			mTextField = NULL;
-			mSignField = NULL;
-			mLineField = NULL;
+			mEditor = NULL;
 			this->TakeFocus();
 			if(f)
 			{
 				f->Hide();
 				delete f;
 			}
-			else if(s)
-			{
-				s->Hide();
-				delete s;
-				mCatcher->Hide();
-			}
 			else
 			{
-				l->Hide();
-				delete l;
+				e->Hide();
+				delete e;
 				mCatcher->Hide();
 			}
 			mEditInfo.content_type = gui_Cell_None;
