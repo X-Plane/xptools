@@ -481,6 +481,7 @@ RESOURCES += ./src/WEDResources/line_types/line_ILSCriticalCenterW.png
 RESOURCES += ./src/WEDResources/line_types/line_BILSCriticalCenterW.png
 RESOURCES += ./src/WEDResources/line_types/line_TaxiCenterUni.png
 RESOURCES += ./src/WEDResources/line_types/line_HoldShortCenterUni.png
+RESOURCES += ./src/WEDResources/line_types/line_BSolidWhite.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassA.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassB.png
 RESOURCES += ./src/WEDResources/parking_spots/ClassC.png
