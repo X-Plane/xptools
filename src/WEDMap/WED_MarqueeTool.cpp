@@ -27,11 +27,13 @@
 #include "WED_ToolUtils.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_DrapedOrthophoto.h"
+#include "WED_Airport.h"
 #include "WED_Ring.h"
 #include "AssertUtils.h"
 #include "IGIS.h"
 #include "WED_GroupCommands.h"
 #include "GISUtils.h"
+#include "PlatformUtils.h"
 
 //	HANDLES			LINKS
 // 2-3-4			+2-3+
@@ -119,7 +121,20 @@ void	WED_MarqueeTool::EndEdit(void)
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
-	op->CommitOperation();
+	if (op)
+	{
+		int has_airport = sel->IterateSelectionOr(Iterate_IsClass, (void*) WED_Airport::sClass);
+
+		if (has_airport)
+		{
+			if(ConfirmMessage("This will move a whole Airport !", "Yes, move it", "No, cancel move"))
+				op->CommitOperation();
+			else
+				op->AbortOperation();
+		}
+		else
+			op->CommitOperation();
+	}
 	mEditMode=mm_None;
 }
 

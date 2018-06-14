@@ -413,7 +413,7 @@ void WED_LibraryMgr::RescanLines()
 
 		if(resnam[0] >= '0' && resnam[0] <= '9' &&
 //		   m->second.is_default &&
-		   m->second.status == status_Public && resnam.substr(resnam.size()-4) == ".lin"  )
+		   m->second.status >= status_Public && resnam.substr(resnam.size()-4) == ".lin"  )
 		{
 			resnam.erase(resnam.size()-4);
 
@@ -513,7 +513,7 @@ void WED_LibraryMgr::RescanLines()
 
 		if(resnam[0] >= '0' && resnam[0] <= '9' &&
 //		   m->second.is_default &&
-		   m->second.status == status_Public && resnam.substr(resnam.size()-4) == ".str"  )
+		   m->second.status >= status_Public && resnam.substr(resnam.size()-4) == ".str"  )
 		{
 			resnam.erase(resnam.size()-4);
 

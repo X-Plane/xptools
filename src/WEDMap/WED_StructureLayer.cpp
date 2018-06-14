@@ -59,6 +59,7 @@
 #include "WED_TaxiRoute.h"
 #include "WED_TaxiRouteNode.h"
 #include "WED_RoadNode.h"
+#include "WED_AirportBoundary.h"
 
 #if APL
 	#include <OpenGL/gl.h>
@@ -67,6 +68,8 @@
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 #endif
+
+#define HILIGHT_ALPHA 0.33           // transparency of highlighting for selected itemss area
 
 #if 0
 // This was experimental code to draw lagrange polynomials for taxiway lines.  Turns out that they don't look very good and aren't useful.
@@ -120,9 +123,6 @@ void DrawLaGrange(const vector<Point2>& p)
 	}
 }
 #endif
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 WED_StructureLayer::WED_StructureLayer(GUI_Pane * h, WED_MapZoomerNew * zoomer, IResolver * resolver) :
@@ -163,10 +163,7 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 	IGISPolygon *					poly;
 	IGISBoundingBox *				box;
 
-	WED_Taxiway *					taxi;
-	WED_OverlayImage *				overlay;
 	WED_Sealane *					sea;
-
 	WED_Runway *					rwy;
 	WED_Helipad *					helipad = NULL;
 
@@ -228,6 +225,14 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 		glVertex2(Segment2(corners[0],corners[3]).midpoint(0.5));
 		glVertex2(Segment2(corners[1],corners[2]).midpoint(0.5));
 		glEnd();
+
+		if(selected)
+		{
+			glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
+			glBegin(GL_QUADS);
+			glVertex2v(corners,4);
+			glEnd();
+		}
 
 		if (has_shoulders)
 		{
@@ -503,7 +508,6 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 					GUI_PlotIcon(g,"handle_arrowhead_lg.png", pts.back().x(), pts.back().y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);
 				}
 			}
-
 			if (mVertices && kind != gis_Edge)	// Gis EDGE points will be picked up separately!  That way we can get their hilite right.
 			{
 				n = ps->GetNumPoints();
@@ -568,25 +572,50 @@ bool		WED_StructureLayer::DrawEntityStructure		(bool inCurrent, IGISEntity * ent
 			glVertex2f(pts[1].x(), pts[1].y());
 			glVertex2f(pts[1].x(), pts[0].y());
 			glEnd();
+
+			if(selected)    // ToDo: - why are exclusion zones not passed in here as selected if they are ????
+			{
+				glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
+				glBegin(GL_QUADS);
+				glVertex2f(pts[0].x(), pts[0].y());
+				glVertex2f(pts[0].x(), pts[1].y());
+				glVertex2f(pts[1].x(), pts[1].y());
+				glVertex2f(pts[1].x(), pts[0].y());
+				glEnd();
+			}
 		}
 		break;
 
+	case gis_Composite:
+		if(sub_class != WED_AirportBoundary::sClass)      // boundaries are not down-clickable in the interior, but still get a highlighted interior 
+			break;
 	case gis_Polygon:
 		/******************************************************************************************************************************************************
 		 * POLYGONS (TAXIWAYAS, ETC.)
 		 ******************************************************************************************************************************************************/
-		taxi = NULL;
-		overlay = NULL;
-		if (sub_class == WED_Taxiway::sClass && (taxi = SAFE_CAST(WED_Taxiway, entity)) != NULL) poly = taxi;
-		else if (sub_class == WED_OverlayImage::sClass && (overlay = SAFE_CAST(WED_OverlayImage, entity)) != NULL) poly = overlay;
-		else								     poly = SAFE_CAST(IGISPolygon,entity);
-
+		poly = SAFE_CAST(IGISPolygon,entity);
 		if (poly)
 		{
 			this->DrawEntityStructure(inCurrent,poly->GetOuterRing(),g,selected);
 			int n = poly->GetNumHoles();
 			for (int c = 0; c < n; ++c)
 				this->DrawEntityStructure(inCurrent,poly->GetNthHole(c),g,selected);
+
+			if(selected)
+			{
+				vector<Point2>	pts;
+				vector<int>		is_hole_start;
+
+				PointSequenceToVector(poly->GetOuterRing(), GetZoomer(), pts, false, is_hole_start, 0);
+				int n = poly->GetNumHoles();
+				for (int i = 0; i < n; ++i)
+					PointSequenceToVector(poly->GetNthHole(i), GetZoomer(), pts, false, is_hole_start, 1);
+
+				glColor4fv(WED_Color_RGBA_Alpha(struct_color, HILIGHT_ALPHA, storage));
+				glFrontFace(GL_CCW);
+				glPolygon2(&*pts.begin(), false, &*is_hole_start.begin(), pts.size());
+				glFrontFace(GL_CW);
+			}
 		}
 		break;
 	}
