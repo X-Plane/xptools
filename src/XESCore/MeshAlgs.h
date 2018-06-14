@@ -53,6 +53,14 @@ struct	MeshPrefs_t {
 extern MeshPrefs_t	gMeshPrefs;
 
 void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * mesh_folder, ProgressFunc inFunc);
+
+/**
+ * Determines the type of terrain we'll assign to a tri.
+ * This is *the* most important function in the scenery generation process.
+ * For each point in your map, it "stares" at the DEM data you passed in and matches it
+ * against the global terrain rules (by calling FindNaturalTerrain()) to determine the final terrain type.
+ * Afterward, it adds in all your terrain borders, and writes the resulting output to the specified mesh_folder.
+ */
 void	AssignLandusesToMesh(	DEMGeoMap& inDems,
 								CDT& ioMesh,
 								const char * mesh_folder,
