@@ -39,6 +39,7 @@
 #include "MemFileUtils.h"
 #include "GISUtils.h"
 #include "XESInit.h"
+#include "MeshAlgs.h"
 
 #if OPENGL_MAP
 #include "RF_Notify.h"
@@ -2964,10 +2965,28 @@ static const char * eu_latlon[] = {
 NULL
 };
 
+static const bool arg_is_true(const char * arg)
+{
+	return arg[0] == 't' || arg[0] == 'T' || !strcmp(arg, "1");
+}
+
 static int SetMobile(const vector<const char *>& args)
 {
 	DebugAssert(args.size() == 1 && strlen(args[0]));
-	gMobile = args[0][0] == 't' || args[0][0] == 'T' || !strcmp(args[0], "1");
+	gMobile = arg_is_true(args[0]);
+	SetMeshMode(gMobile ? mesh_mobile : mesh_desktop);
+	return 0;
+}
+static int SetHd(const vector<const char *>& args)
+{
+	DebugAssert(args.size() == 1 && strlen(args[0]));
+	SetMeshMode(arg_is_true(args[0]) ? mesh_hd : mesh_desktop);
+	return 0;
+}
+static int SetUHd(const vector<const char *>& args)
+{
+	DebugAssert(args.size() == 1 && strlen(args[0]));
+	SetMeshMode(arg_is_true(args[0]) ? mesh_uhd : mesh_desktop);
 	return 0;
 }
 
@@ -2992,11 +3011,14 @@ static int DoInitWithRegion(const vector<const char *>& args)
 		gRegion = rf_usa;
 	
 	XESInit(gMobile);
+	SetMeshMode(gMobile ? mesh_mobile : mesh_desktop);
 	return 0;
 }
 
 static	GISTool_RegCmd_t		sCoreCmds[] = {
 { "-mobile",		1, 1, SetMobile,		"Set to true to build Mobile scenery, or false (default) to build for Desktop.", "" },
+{ "-hd",			1, 1, SetHd,			"Set to true to build high-definition desktop scenery, or false (default) to build normal quality Desktop.", "" },
+{ "-uhd",			1, 1, SetUHd,			"Set to true to build ultra-high-definition desktop scenery, or false (default) to build normal quality Desktop.", "" },
 { "-region",		1, 1, DoInitWithRegion,	"Init RF to a particular set of region presets.", "" },
 { "-crop", 			0, 0, DoCrop, 			"Crop the map and DEMs to the current extent.", "" },
 { "-cropgrid",		0, 0, DoCropGrid, 		"Crop the map along 1x1 degree grid lines.", "" },

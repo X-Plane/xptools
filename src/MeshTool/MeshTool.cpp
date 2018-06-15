@@ -34,6 +34,8 @@
 #include "GISUtils.h"
 #include "FileUtils.h"
 #include "PlatformUtils.h"
+#include "MeshAlgs.h"
+
 #if LIN
 #include <execinfo.h>
 #include <stdarg.h>
@@ -103,6 +105,7 @@ int	main(int argc, char * argv[])
 		// call exit!
 		CGAL::set_error_handler(CGALFailure);
 
+		SetMeshMode(mesh_desktop);
 		XESInit(false);			// no forests
 		MakeDirectRules();
 

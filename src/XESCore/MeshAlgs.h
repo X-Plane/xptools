@@ -74,6 +74,15 @@ int		CalcMeshError(CDT& mesh, DEMGeo& elev, float& out_min, float& out_max, floa
 int		CalcMeshTextures(CDT& inMesh, map<int, int>& out_lus);
 
 
+enum mesh_mode {
+	mesh_mobile,
+	mesh_desktop,
+	mesh_hd,
+	mesh_uhd,
+};
+// Configures a bunch of global global variables for a particular level of mesh quality
+void	SetMeshMode(mesh_mode new_mode);
+
 // This routine is inline because we need a semi-global definition of what a "real" edge of the pmwx is.
 
 inline bool must_burn_he(Halfedge_handle he)

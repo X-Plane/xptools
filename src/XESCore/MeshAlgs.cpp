@@ -49,22 +49,11 @@
 
 //typedef CGAL::Mesh_2::Is_locally_conforming_Delaunay<CDT>	LCP;
 
-#if HD_MESH
-	// This is the frequency of triangulation in open water, where we have no height, as
-	// a multiple of DEM pts.
-	#define LOW_RES_WATER_INTERVAL 80
-	// This is the freuqency of forced triangulation at airports as a multiple of DEM points.
-	#define APT_INTERVAL 8
-#elif UHD_MESH
-	#define LOW_RES_WATER_INTERVAL 140
-	#define APT_INTERVAL 14
-#elif PHONE
-	#define LOW_RES_WATER_INTERVAL 50
-	#define APT_INTERVAL 40
-#else
-	#define LOW_RES_WATER_INTERVAL 40
-	#define APT_INTERVAL 2
-#endif
+// This is the frequency of triangulation in open water, where we have no height, as
+// a multiple of DEM pts.
+static int s_low_res_water_interval = 40;
+// This is the freuqency of forced triangulation at airports as a multiple of DEM points.
+static int s_apt_interval = 2;
 
 // This adds more vertices to cliffs.
 #define SPLIT_CLIFFS 1
@@ -85,11 +74,7 @@
 
 // This guarantees that we don't have "beached" triangles - that is, water triangles where all 3 points are coastal, and thus the water depth is ZERO in the entire
 // thing.
-#if PHONE
-	#define SPLIT_BEACHED_WATER 0
-#else
-	#define SPLIT_BEACHED_WATER 1
-#endif
+static bool s_split_beached_water = true;
 
 // This sets the range of legal edges for subdivisions of constrained edges - in meters.
 #define MAX_EDGE_DIST	500.0
@@ -105,16 +90,8 @@
 #define MAX_BORDER_MATCH 0.001
 
 // Andras: define max slope for non flattened water edges and the number of iterations
-#if UHD_MESH
-	#define MAX_WATER_SLOPE 0.4
-	#define WATER_SMOOTHER_ITERATIONS 15
-#elif HD_MESH
-	#define MAX_WATER_SLOPE 0.4
-	#define WATER_SMOOTHER_ITERATIONS 15
-#else
-	#define MAX_WATER_SLOPE 0.2
-	#define WATER_SMOOTHER_ITERATIONS 25
-#endif
+static double s_max_water_slope = 0.2;
+static int s_water_smoother_iterations = 15;
 
 #if SHOW_STEPS
 
@@ -137,39 +114,29 @@
 #define TIMER(x)
 #endif
 
-#ifndef PHONE
-#define PHONE 0
-#endif
+#define mesh_pref_def(name_suffix, max_points, max_error, border_match, optimize_borders, max_tri_size_m, rep_switch_m) \
+		const MeshPrefs_t s_mesh_prefs_##name_suffix = { max_points, max_error, border_match, optimize_borders, max_tri_size_m, rep_switch_m };
 
+	//			  s_mesh_prefs_xxx		max_points	max_error	border_match	optimize_borders	max_tri_size_m	rep_switch_m
+	mesh_pref_def(mobile,				25000,		15,			1,				1,					6000,			50000)
+	mesh_pref_def(desktop,				78000,		5.0,		1,				1,					1500,			50000)
+	mesh_pref_def(desktop_hd,			350000,		2.2,		1,				1,					250,			50000)
+	mesh_pref_def(desktop_uhd,			800000,		0.7,		1,				1,					200,			50000)
 
-#if HD_MESH
-	MeshPrefs_t gMeshPrefs = {		/*iphone*/
-	/* max_points		*/	PHONE ?		25000	: 350000,
-	/* max_error		*/	PHONE ?		15		: 2.2,
-	/* border_match		*/	PHONE ?		1		: 1,
-	/* optimize_borders	*/	PHONE ?		1		: 1,
-	/* max_tri_size_m	*/	PHONE ?		6000	: 250,
-	/* rep_switch_m		*/	PHONE ?		50000	: 50000
-	};
-#elif UHD_MESH
-	MeshPrefs_t gMeshPrefs = {		/*iphone*/
-	/* max_points		*/	PHONE ?		25000	: 800000,
-	/* max_error		*/	PHONE ?		15		: 0.7,
-	/* border_match		*/	PHONE ?		1		: 1,
-	/* optimize_borders	*/	PHONE ?		1		: 1,
-	/* max_tri_size_m	*/	PHONE ?		6000	: 200,
-	/* rep_switch_m		*/	PHONE ?		50000	: 50000
-	};
-#else
-	MeshPrefs_t gMeshPrefs = {		/*iphone*/
-	/* max_points		*/	PHONE ?		25000	: 78000,
-	/* max_error		*/	PHONE ?		15		: 5.0,
-	/* border_match		*/	PHONE ?		1		: 1,
-	/* optimize_borders	*/	PHONE ?		1		: 1,
-	/* max_tri_size_m	*/	PHONE ?		6000	: 1500,
-	/* rep_switch_m		*/	PHONE ?		50000	: 50000
-	};
-#endif
+#undef mesh_pref_def
+
+MeshPrefs_t gMeshPrefs = {0};
+
+void	SetMeshMode(mesh_mode new_mode)
+{
+	switch(new_mode)
+	{
+		case mesh_mobile:	gMeshPrefs = s_mesh_prefs_mobile;			s_split_beached_water = false;	s_low_res_water_interval = 50;	s_apt_interval = 40;	s_max_water_slope = 0.2;	s_water_smoother_iterations = 25;	break;
+		case mesh_desktop:	gMeshPrefs = s_mesh_prefs_desktop;			s_split_beached_water = true;	s_low_res_water_interval = 40;	s_apt_interval = 2;		s_max_water_slope = 0.2;	s_water_smoother_iterations = 25;	break;
+		case mesh_hd:		gMeshPrefs = s_mesh_prefs_desktop_hd;		s_split_beached_water = true;	s_low_res_water_interval = 80;	s_apt_interval = 8;		s_max_water_slope = 0.4;	s_water_smoother_iterations = 15;	break;
+		case mesh_uhd:		gMeshPrefs = s_mesh_prefs_desktop_uhd;		s_split_beached_water = true;	s_low_res_water_interval = 140;	s_apt_interval = 14;	s_max_water_slope = 0.4;	s_water_smoother_iterations = 15;	break;
+	}
+}
 
 Pmwx::Halfedge_handle	mesh_to_pmwx_he(CDT& io_mesh, CDT::Edge& e);
 
@@ -1415,7 +1382,7 @@ void FlattenWater(CDT& ioMesh)
 	//Andras: Water smoothing for rivers etc.
 	/////////////////////////////////////////////
 
-	for(int it_n = 0; it_n < WATER_SMOOTHER_ITERATIONS; ++it_n)
+	for(int it_n = 0; it_n < s_water_smoother_iterations; ++it_n)
 	{
 		int water_vertices=0;
 		int changed_vertices=0;
@@ -1460,7 +1427,7 @@ void FlattenWater(CDT& ioMesh)
 							//printf("--- ---  %p: has  x: %lf y: %lf height %lf , height_diff %lf , distance %lf , slope %lf \n", &*vs, CGAL::to_double(vs->point().x()), CGAL::to_double(vs->point().y()), vs_height, height_diff, dist_m, vvs_slope);
 
 							// here we are only looking for points which are lower than central vertex and the slope to them is steeper than we are comfortable with
-							if(vvs_slope > MAX_WATER_SLOPE) {
+							if(vvs_slope > s_max_water_slope) {
 								if(is_first) {
 									steepest_height = vs_height;
 									steepest_slope = vvs_slope;
@@ -1482,7 +1449,7 @@ void FlattenWater(CDT& ioMesh)
 				if(!is_first)
 				{
 					changed_vertices++;
-					double new_height = steepest_height + (MAX_WATER_SLOPE * steepest_dist);
+					double new_height = steepest_height + (s_max_water_slope * steepest_dist);
 
 					//printf("###   %p: was %lf, must be %lf\n", &*v, v_height, new_height);
 					v->info().height = new_height;
@@ -1736,8 +1703,8 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	
 	/* TRIANGULATE WATER INTERIOR */
 	
-	double wet_ratio = CopyWetPoints(orig, deriv, outMesh, LOW_RES_WATER_INTERVAL, terrain_Water, inMap);
-					   CopyWetPoints(orig, deriv, outMesh,APT_INTERVAL, terrain_Airport, inMap);
+	double wet_ratio = CopyWetPoints(orig, deriv, outMesh, s_low_res_water_interval, terrain_Water, inMap);
+					   CopyWetPoints(orig, deriv, outMesh, s_apt_interval, terrain_Airport, inMap);
 	double dry_ratio = 1.0 - wet_ratio;
 
 	PAUSE_STEP("Finished water interior")
@@ -1873,55 +1840,54 @@ void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * 
 	// find two-side coastal triangles and subdivide.  If we have a single wet tri, we insert the centroid; otherwise
 	// we subdivide the 'open' side (to try to get less slivery triangles).
 
-#if SPLIT_BEACHED_WATER
-
-	set<Point_2> splits_needed;
-	int ctr=0,tot=outMesh.number_of_faces();
-	for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f,++ctr)
+	if(s_split_beached_water)
 	{
-		if( f->info().terrain == terrain_Water)
+		set<Point_2> splits_needed;
+		int ctr=0,tot=outMesh.number_of_faces();
+		for (CDT::Finite_faces_iterator f = outMesh.finite_faces_begin(); f != outMesh.finite_faces_end(); ++f,++ctr)
 		{
-			PROGRESS_SHOW(prog,1,3,"Calculating Wet Areas",ctr,tot);
-			int c0 = CategorizeVertex(outMesh, f->vertex(0), terrain_Water);
-			int c1 = CategorizeVertex(outMesh, f->vertex(1), terrain_Water);
-			int c2 = CategorizeVertex(outMesh, f->vertex(2), terrain_Water);
-			
-			if(c1 == 0 && c2 == 0 && c0 == 0)
+			if( f->info().terrain == terrain_Water)
 			{
-				Point_2 c(CGAL::centroid(outMesh.triangle(f)));
-				splits_needed.insert(c);
-//				debug_mesh_point(cgal2ben(c),1,1,0);
+				PROGRESS_SHOW(prog,1,3,"Calculating Wet Areas",ctr,tot);
+				int c0 = CategorizeVertex(outMesh, f->vertex(0), terrain_Water);
+				int c1 = CategorizeVertex(outMesh, f->vertex(1), terrain_Water);
+				int c2 = CategorizeVertex(outMesh, f->vertex(2), terrain_Water);
+
+				if(c1 == 0 && c2 == 0 && c0 == 0)
+				{
+					Point_2 c(CGAL::centroid(outMesh.triangle(f)));
+					splits_needed.insert(c);
+	//				debug_mesh_point(cgal2ben(c),1,1,0);
+				}
 			}
 		}
+
+		PROGRESS_DONE(prog,1,3,"Calculating Wet Areas");
+
+		printf("Need %zd splits for beaches.\n", splits_needed.size());
+		hint = CDT::Face_handle();
+		set<CDT::Face_handle>	who;
+		for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
+		{
+			CDT::Vertex_handle v = InsertAnyPoint(orig, outMesh, *n, hint);
+			CDT::Face_circulator circ,stop;
+			circ=stop=outMesh.incident_faces(v);
+			do {
+				who.insert(circ);
+			} while(++circ != stop);
+		}
+
+		SetTerrainForConstraints(outMesh, orig);
+
+		for(set<CDT::Face_handle>::iterator w = who.begin(); w != who.end(); ++w)
+		{
+			DebugAssert((*w)->info().terrain == terrain_Water);
+		}
+
+		FlattenWater(outMesh);
+
+		PAUSE_STEP("Split Beached Water")
 	}
-
-	PROGRESS_DONE(prog,1,3,"Calculating Wet Areas");
-
-	printf("Need %zd splits for beaches.\n", splits_needed.size());
-	hint = CDT::Face_handle();
-	set<CDT::Face_handle>	who;
-	for(set<Point_2>::iterator n = splits_needed.begin(); n != splits_needed.end(); ++n)
-	{
-		CDT::Vertex_handle v = InsertAnyPoint(orig, outMesh, *n, hint);
-		CDT::Face_circulator circ,stop;
-		circ=stop=outMesh.incident_faces(v);
-		do {
-			who.insert(circ);
-		} while(++circ != stop);
-	}
-	
-	SetTerrainForConstraints(outMesh, orig);
-
-	for(set<CDT::Face_handle>::iterator w = who.begin(); w != who.end(); ++w)
-	{
-		DebugAssert((*w)->info().terrain == terrain_Water);
-	}
-
-	FlattenWater(outMesh);
-
-	PAUSE_STEP("Split Beached Water")
-
-#endif
 
 	/*********************************************************************************************************************
 	 * CLEANUP - CALC MESH NORMALS
