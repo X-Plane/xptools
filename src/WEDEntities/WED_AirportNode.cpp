@@ -38,6 +38,27 @@ WED_AirportNode::~WED_AirportNode()
 {
 }
 
+void 	WED_AirportNode::GetResource(string& r) const
+{
+	r.clear();
+	
+	PropertyVal_t line;
+	lines.GetProperty(line);
+	PropertyVal_t light;
+	lights.GetProperty(light);
+	
+	if(line.set_val.size() == 1)
+		r += ENUM_Desc(*line.set_val.begin());
+	
+	if(light.set_val.size() == 1)
+	{
+		if(!r.empty()) r +=  "$^"; 
+		r += ENUM_Desc(*light.set_val.begin());
+	}
+}
+
+
+
 void	WED_AirportNode::SetAttributes(const set<int>& in_attrs)
 {
 	attrs = in_attrs;
