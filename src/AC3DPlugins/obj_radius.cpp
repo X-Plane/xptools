@@ -21,6 +21,8 @@
  *
  */
 
+#include <stdio.h>
+
 #include "obj_radius.h"
 #include "XObjDefs.h"
 

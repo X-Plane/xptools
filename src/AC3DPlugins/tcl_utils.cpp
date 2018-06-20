@@ -22,7 +22,9 @@
  */
 
 #include "tcl_utils.h"
+#include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <ac_plugin.h>
 
 

@@ -147,6 +147,10 @@
     <ClInclude Include="..\..\src\Obj\XObjDefs.h" />
     <ClInclude Include="..\..\src\Obj\XObjReadWrite.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\AC3DPlugins\README" />
+    <None Include="..\..\src\AC3DPlugins\XPlaneSupport.tcl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

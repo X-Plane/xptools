@@ -333,7 +333,7 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 		List 	*vertices, *surfaces, *kids;
 		List 	*p;
 
-//    printf("outputing %s\n", ac_object_get_name(obj));
+    printf("outputing %s tex_id %d\n", ac_object_get_name(obj), tex_id);
 
     ac_object_get_contents(obj, &numvert, &numsurf, &numkids,
         &vertices, &surfaces, &kids);
@@ -639,6 +639,8 @@ void obj8_output_object(XObjBuilder * builder, ACObject * obj, ACObject * root, 
 
 int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, int do_prefix, int tex_id, int do_misc)
 {
+//printf("do_obj8_save_common object %s  tex_id %d\n", ac_object_get_name(obj), tex_id);
+
 	printf("Saving file: %s.  We have %d panel regions enabled.\n",fname,get_sub_panel_count());
 	XObj8	obj8;
 
@@ -650,6 +652,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	obj8.geo_lines.clear(6);
 	obj8.geo_lights.clear(6);
 	obj8.texture_lit.clear();
+	obj8.texture_normal_map.clear();
 
 	gTexName.clear();
 	gErrMissingTex = 0;
@@ -663,6 +666,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	gErrBadHard = false;
 
 	XObjBuilder		builder(&obj8);
+printf("do_obj8_save_common builder %x\n", &builder);
 
 	if (get_default_layer_group() && get_default_layer_group()[0] && strcmp(get_default_layer_group(),"none"))
 		builder.SetAttribute1Named(attr_Layer_Group, get_default_layer_offset(), get_default_layer_group());
@@ -698,12 +702,24 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 			obj8.texture_lit = tex_lit;
 		}
 	}
+
 	if (tex_dir_idx != gTexName.npos)
-	gTexName.erase(0,tex_dir_idx+1);
+		gTexName.erase(0,tex_dir_idx+1);
+
     obj8.texture = gTexName;
+
+	// if an option is set to export a TEXTURE_NORMAL line, take the texture name and use it for the normal map name
+	if (get_export_texture_normal_map())
+		{
+		string tex_nm(gTexName);
+		if (tex_nm.size() > 4)
+			tex_nm.insert(tex_nm.length()-4,"_normal");
+		obj8.texture_normal_map = tex_nm;
+		}
 
 	if (!obj8.texture.empty())		obj8.texture.insert(0,get_texture_prefix());
 	if (!obj8.texture_lit.empty())	obj8.texture_lit.insert(0,get_texture_prefix());
+	if (!obj8.texture_normal_map.empty())	obj8.texture_normal_map.insert(0,get_texture_prefix());
 
 	if (do_prefix)
 		export_path.insert(export_filename_idx+1,string(get_export_prefix()));

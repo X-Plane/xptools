@@ -777,7 +777,10 @@ ACObject *	do_obj8_load(char *filename)
 				break;
 			case anim_End:
 				stuff_obj = NULL;
-				anim_obj.pop_back();
+				if (!anim_obj.empty())
+				  anim_obj.pop_back();
+				else
+				  printf("WARNING: anim_End without corresponding anim_begin (ignored)\n");
 				break;
 			case anim_Translate:
 				{

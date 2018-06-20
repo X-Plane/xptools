@@ -18,10 +18,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
 # THE SOFTWARE.
 
+# Updated for AC3D 8 by Inivis
+# fixed window titles and global variable decls for remap/rescale texture coords
+# changed width of Tooltip field from 50 to 40
+# scale widget in sync_dataref updated to tk::scale with label widget to display the value 
+# added pref setting chckbox for TEXTURE-NORMAL option
 
 
-#Import combo-box from AC3D for datarefs
-catch {namespace import combobox::*}
+# these aliases make it easier to convert the UI to the new one used in AC3D 8
+interp alias {} button {} ac_button
+interp alias {} label {} ac_label
+interp alias {} frame {} ac_frame
+interp alias {} labelframe {} ac_labelframe
+interp alias {} spinbox {} ac_spinbox
+interp alias {} entry {} ac_entry
+interp alias {} checkbutton {} ac_checkbutton
+interp alias {} radiobutton {} ac_radiobutton
+interp alias {} menubutton {} ac_menubutton
+interp alias {} scrollbar {} ac_scrollbar
+
+
+
 
 #These constants cannot be changed - they match mirror constants inside the C plugin; changing them will probably cause hard crashes.
 # Note: the key-frame RFC doesn't post a max number of keyframes, but more than 50 seems like a lot.
@@ -57,8 +74,9 @@ proc make_labeled_entry { path name var width } {
 	frame $varc
 	label $varl -text "$name"
 	entry $vare -textvariable $var -width $width
-	pack $varl $vare -side left -anchor nw
-	pack $varc -side top -anchor nw
+	pack $varl -side left -anchor w -fill x
+	pack $vare -side left
+	pack $varc -side top 
 }
 
 proc make_labeled_entry_pair { path name1 var1 name2 var2 } {
@@ -73,7 +91,7 @@ proc make_labeled_entry_pair { path name1 var1 name2 var2 } {
 	entry $vare1 -textvariable $var1 -width 7
 	entry $vare2 -textvariable $var2 -width 7
 	pack $varl1 $vare1 $varl2 $vare2 -side left -anchor nw
-	pack $varc -side top -anchor nw
+	pack $varc -side top 
 }
 
 proc packtext { w t } {
@@ -114,7 +132,7 @@ ac3d add_pref window_geom_xplane_seltex_dialog ""
 proc xplane_tex_select_dialog {} {
 	global stex_s1
 	global stex_t1
-	global stex_s1
+	global stex_s2
 	global stex_t2
 
 	if ![winfo exists .xp_seltex] {
@@ -123,7 +141,7 @@ proc xplane_tex_select_dialog {} {
 		set stex_s2 1
 		set stex_t2 1
 
-		new_toplevel_tracked .xp_seltex "Rescale texture coordinates" prefs_window_geom_xplane_seltex_dialog
+		new_toplevel_tracked .xp_seltex "Select by texture coordinates" prefs_window_geom_xplane_seltex_dialog
 		label	.xp_seltex.s1_stex_label -text "Select Left:"
 		spinbox .xp_seltex.s1_stex_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable stex_s1 -width 15
 		label	.xp_seltex.t1_stex_label -text "Select Bottom:"
@@ -133,7 +151,7 @@ proc xplane_tex_select_dialog {} {
 		label	.xp_seltex.t2_stex_label -text "Select Top:"
 		spinbox .xp_seltex.t2_stex_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable stex_t2 -width 15
 		frame	.xp_seltex.buttons
-		button	.xp_seltex.buttons.apply -text "Remap Selected" -command {
+		button	.xp_seltex.buttons.apply -text "Select" -command {
 			set strarg "\"$stex_s1 $stex_t1 $stex_s2 $stex_t2 \""
 			eval ac3d xplane_select_tex $strarg
 			ac3d redraw_all
@@ -146,7 +164,7 @@ proc xplane_tex_select_dialog {} {
 		grid 	.xp_seltex.t2_stex_label .xp_seltex.t2_stex_spinbox -sticky news
 		grid 	.xp_seltex.buttons -columnspan 4 -sticky ns
 
-		grid	columnconfigure .xp_seltex { 1 3 } -weight 1 -minsize 40
+		grid	columnconfigure .xp_seltex { 0 1 } -weight 1 -minsize 40
 
 	}
 
@@ -164,11 +182,11 @@ proc xplane_tex_select_dialog {} {
 proc xplane_tex_rescale_dialog {} {
 	global old_s1
 	global old_t1
-	global old_s1
+	global old_s2
 	global old_t2
 	global new_s1
 	global new_t1
-	global new_s1
+	global new_s2
 	global new_t2
 
 	if ![winfo exists .xp_rescale] {
@@ -247,12 +265,16 @@ proc xplane_keyframe_rescale_dialog {} {
 	global hi
 
 	if ![winfo exists .xp_rescale_keyframe] {
+		# ttk spinbox requires globals
+		global old_lo new_lo old_hi new_hi
+		
 		set old_lo 0
 		set old_hi 1
 		set new_lo 1
 		set new_hi 0
+		
 
-		new_toplevel_tracked .xp_rescale_keyframe "Rescale texture coordinates" prefs_window_geom_xplane_rescale_keyframe
+		new_toplevel_tracked .xp_rescale_keyframe "Rescale keyframes" prefs_window_geom_xplane_rescale_keyframe
 		label	.xp_rescale_keyframe.lo_old_label -text "Old Low Value:"
 		spinbox .xp_rescale_keyframe.lo_old_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable old_lo -width 15
 		label	.xp_rescale_keyframe.lo_new_label -text "New Low Value:"
@@ -261,21 +283,21 @@ proc xplane_keyframe_rescale_dialog {} {
 		spinbox .xp_rescale_keyframe.hi_old_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable old_hi -width 15
 		label	.xp_rescale_keyframe.hi_new_label -text "New High Value:"
 		spinbox .xp_rescale_keyframe.hi_new_spinbox -from 0.0 -increment 0.125 -to 1.0 -textvariable new_hi -width 15
-
-		button	.xp_rescale_keyframe.apply -text "Remap Selected" -command {
-			ac3d xplane_rescale_keyframe $old_lo $new_lo $old_hi $new_hi
-			ac3d redraw_all
-		}
-		pack	.xp_rescale_keyframe.apply -side left
 		
 		grid 	.xp_rescale_keyframe.lo_old_label .xp_rescale_keyframe.lo_old_spinbox -sticky news
 		grid 	.xp_rescale_keyframe.lo_new_label .xp_rescale_keyframe.lo_new_spinbox -sticky news
 		grid 	.xp_rescale_keyframe.hi_old_label .xp_rescale_keyframe.hi_old_spinbox -sticky news
 		grid 	.xp_rescale_keyframe.hi_new_label .xp_rescale_keyframe.hi_new_spinbox -sticky news
+		
+
+		grid	columnconfigure .xp_rescale_keyframe { 0 1 } -weight 1 -minsize 40
+
+		button	.xp_rescale_keyframe.apply -text "Rescale" -command {
+			ac3d xplane_rescale_keyframe $old_lo $new_lo $old_hi $new_hi
+			ac3d redraw_all
+		}
 		grid 	.xp_rescale_keyframe.apply -columnspan 2 -sticky ns
-
-		grid	columnconfigure .xp_rescale_keyframe { 1 3 } -weight 1 -minsize 40
-
+		
 	}
 
 	wm deiconify .xp_rescale_keyframe
@@ -292,7 +314,8 @@ proc xplane_prefs_dialog {} {
 
 	global xplane_layer_group_options
 #	global prefs_xplane_default_layer_group
-	
+
+
 	if ![winfo exists .xp_prefs] {
 
 #		if { [set prefs_xplane_default_layer_group] == "NULL" } {
@@ -302,7 +325,7 @@ proc xplane_prefs_dialog {} {
 		new_toplevel_tracked .xp_prefs "X-Plane export prefs" prefs_window_geom_xplane_prefs_dialog
 
 		label		.xp_prefs.layer_btn_label -text "Default Layer Group:"
-		menubutton .xp_prefs.layer_btn -menu .xp_prefs.layer_btn.menu -direction flush -textvariable prefs_xplane_default_layer_group -padx 30 -pady 5
+		menubutton .xp_prefs.layer_btn -menu .xp_prefs.layer_btn.menu -direction flush -textvariable prefs_xplane_default_layer_group 
 		menu .xp_prefs.layer_btn.menu
 		foreach item $xplane_layer_group_options {
 			.xp_prefs.layer_btn.menu add radiobutton -label $item -variable prefs_xplane_default_layer_group
@@ -313,6 +336,9 @@ proc xplane_prefs_dialog {} {
 		
 #		checkbutton .xp_prefs.apt_lights		-variable prefs_xplane_export_airport_lights -text "Export as airport light"
 		checkbutton .xp_prefs.triangles			-variable prefs_xplane_export_triangles	  -text "Export Geometry"
+
+		checkbutton .xp_prefs.export_texture_normline -variable prefs_xplane_export_texture_normal_map -text "Export TEXTURE_NORMAL lines"
+		add_balloon .xp_prefs.export_texture_normline "Export a TEXTURE_NORMAL line with a filename made from the main texure but with _normal appended.\ne.g.:\n    TEXTURE A.bmp\n    TEXTURE_NORMAL A_normal.bmp"
 		
 		label	.xp_prefs.default_lod_label -text "Default LOD:"
 		spinbox .xp_prefs.default_lod_value -from 0 -increment 100 -to 1000 -textvariable prefs_xplane_default_LOD
@@ -328,6 +354,8 @@ proc xplane_prefs_dialog {} {
 		grid	.xp_prefs.layer_offset_label .xp_prefs.layer_offset
 
 		grid	x .xp_prefs.triangles -sticky news
+		grid	x .xp_prefs.export_texture_normline -sticky news
+
 		grid	.xp_prefs.default_lod_label	.xp_prefs.default_lod_value -sticky news
 		grid	.xp_prefs.export_prefix_label .xp_prefs.export_prefix
 		grid	.xp_prefs.texture_prefix_label .xp_prefs.texture_prefix
@@ -356,7 +384,7 @@ proc refilter_listbox_dref { lb tv } {
 	global $tv
 	set now [set $tv]
 	set drefs [list none]
-	$lb list delete 0 end
+#	$lb list delete 0 end
 
 	if {$now == "none"} {
 		set now ""
@@ -373,10 +401,12 @@ proc refilter_listbox_dref { lb tv } {
 	set now [string map { [ \\[ ] \\] } $now]
 
 	set drefs [lsearch -all -inline $all_datarefs $now]
-	$lb list insert end "none"
-	foreach x $drefs {
-		$lb list insert end $x
-	}
+#	$lb list insert end "none"
+#	foreach x $drefs {
+#		$lb list insert end $x
+#	}
+	$lb configure -values $drefs
+
 }
 
 proc refilter_listbox_cmnd { lb tv } {
@@ -384,7 +414,7 @@ proc refilter_listbox_cmnd { lb tv } {
 	global $tv
 	set now [set $tv]
 	set cmnds [list none]
-	$lb list delete 0 end
+#	$lb list delete 0 end
 
 	if {$now == "none"} {
 		set now ""
@@ -401,25 +431,29 @@ proc refilter_listbox_cmnd { lb tv } {
 	set now [string map { [ \\[ ] \\] } $now]
 
 	set cmnds [lsearch -all -inline $all_cmnds $now]
-	$lb list insert end "none"
-	foreach x $cmnds {
-		$lb list insert end $x
-	}
+#	$lb list insert end "none"
+#	foreach x $cmnds {
+#		$lb list insert end $x
+#	}
+	$lb configure -values $cmnds
+
 }
 
 
 proc build_listbox_dref { listbox scrollbar textvar } {
 
-	namespace import combobox::*
-	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox_dref $listbox $textvar"
+#	namespace import combobox::*
+#	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox_dref $listbox $textvar"
+	ac_combobox $listbox -textvariable $textvar -width 50 -postcommand "refilter_listbox_dref $listbox $textvar"
 	pack $listbox
 
 }
 
 proc build_listbox_cmnd { listbox scrollbar textvar } {
 
-	namespace import combobox::*
-	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox_cmnd $listbox $textvar"
+#	namespace import combobox::*
+#	combobox $listbox -editable true -textvariable $textvar -width 50 -opencommand "refilter_listbox_cmnd $listbox $textvar"
+	ac_combobox $listbox -textvariable $textvar -width 50 -postcommand "refilter_listbox_cmnd $listbox $textvar"
 	pack $listbox
 
 }
@@ -503,7 +537,7 @@ proc fetch_all_cmnds {} {
 
 
 proc xplane_inspector_sync {} {
-	global MAX_SEL
+	global MAX_SEL XPANEL
 	if ![winfo exists .xp_view] return
 	
 	ac3d xplane_editor_sync		
@@ -511,14 +545,14 @@ proc xplane_inspector_sync {} {
 	set sel_count [ac3d xplane_get_sel_count]
 
 	for {set x 0} {$x<$MAX_SEL} {incr x} {
-		pack forget .xp_view.v$x
+		pack forget $XPANEL($x)
 	}
 	
 	for {set x 0} {$x<$sel_count} {incr x} {
 		set sel_type [ac3d xplane_get_sel_type $x]
 		set anim_type [ac3d xplane_can_animate $x]
 		
-		set container .xp_view.v$x
+		set container $XPANEL($x)
 		
 		pack $container -side left -anchor nw
 
@@ -569,9 +603,9 @@ proc xplane_light_sync { x container } {
 }
 
 proc xplane_light_sync_all {} {
-	global MAX_SEL
+	global MAX_SEL XPANEL
 	for {set idx 0} {$idx < $MAX_SEL} {incr idx} {
-		xplane_light_sync $idx .xp_view.v$idx
+		xplane_light_sync $idx $XPANEL($idx)
 	}
 }
 
@@ -822,9 +856,9 @@ proc xplane_obj_sync { idx container } {
 
 
 proc xplane_obj_sync_all {} {
-	global MAX_SEL
+	global MAX_SEL XPANEL
 	for {set idx 0} {$idx < $MAX_SEL} {incr idx} {
-		xplane_obj_sync $idx .xp_view.v$idx
+		xplane_obj_sync $idx $XPANEL($idx)
 	}
 }
 
@@ -832,7 +866,7 @@ ac3d add_pref window_geom_xplane_inspector ""
 
 proc xplane_inspector {} {
 	global MAX_KEYFRAMES
-	global MAX_SEL
+	global MAX_SEL XPANEL
 
 	for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
 		for {set x 0} {$x<$MAX_KEYFRAMES} {incr x} {
@@ -851,8 +885,24 @@ proc xplane_inspector {} {
 	if ![winfo exists .xp_view] {
 
 		new_toplevel_tracked .xp_view "X-Plane Properties" prefs_window_geom_xplane_inspector
-		
+		.xp_view configure -relief sunken
+
+		# there's a huge amount of stuff in each frame, so withdraw the window until later
+		wm withdraw .xp_view
+
+		# adding a scrolled contaner aroudn the panels slows down the widget creation (even more!)
+		if {0} {
+			set topscroll [VertScrollFrame create .xp_view.scrollcp ]
+			pack $topscroll -side top -fill both -expand 1 -padx 8 -pady 8
+			set panelcont [VertScrollFrame get_container $topscroll]
+		} else {
+			set panelcont .xp_view
+		}
+
 		for {set idx 0} {$idx<$MAX_SEL} {incr idx} {
+
+			display_message "Creating X-Plane UI frame $idx"
+			set_progress_bar [expr ((double($idx)/double($MAX_SEL))*100)]
 
 #			global xplane_anim_type$idx
 #			global xplane_poly_os$idx
@@ -877,7 +927,9 @@ proc xplane_inspector {} {
 #			global xplane_light_t2$idx
 #			global xplane_light_dataref$idx
 		
-			set container .xp_view.v$idx
+			set container $panelcont.v$idx
+			set XPANEL($idx) $container
+
 			frame $container
 			frame $container.none
 			frame $container.light
@@ -897,7 +949,7 @@ proc xplane_inspector {} {
 			label $container.light.name -textvariable xplane_obj_name$idx
 			pack $container.light.name_label $container.light.name -anchor nw
 
-			menubutton $container.light.light_type_btn -menu $container.light.light_type_btn.menu -direction flush  -textvariable xplane_light_type$idx -padx 30 -pady 5
+			menubutton $container.light.light_type_btn -menu $container.light.light_type_btn.menu -direction flush  -textvariable xplane_light_type$idx 
 			menu $container.light.light_type_btn.menu
 			foreach light $xplane_light_options {
 				$container.light.light_type_btn.menu add radiobutton -label $light -variable xplane_light_type$idx -command xplane_light_sync_all
@@ -949,12 +1001,13 @@ proc xplane_inspector {} {
 			label $container.obj.name_label -text "Name:"
 #			global xplane_obj_name$idx
 			entry $container.obj.name -textvariable xplane_obj_name$idx -width 20
-			pack $container.obj.name_label $container.obj.name
+			pack $container.obj.name_label 
+			pack $container.obj.name -fill x
 
 			# Ben says: this would make a static label showing the animation type - not needed since the group that surrounds the animation type handles this.
 #			label $container.obj.anim_type_btn -textvariable xplane_anim_type$idx -padx 30 -pady 5
 			# This creates a popup letting us see the animation type.  We have this disabled because changing an animation's type will cause insanity.
-#			menubutton $container.obj.anim_type_btn -menu $container.obj.anim_type_btn.menu -direction flush  -textvariable xplane_anim_type$idx -padx 30 -pady 5
+#			menubutton $container.obj.anim_type_btn -menu $container.obj.anim_type_btn.menu -direction flush  -textvariable xplane_anim_type$idx 
 #			menu $container.obj.anim_type_btn.menu
 #			foreach anim_mode [list "no animation" "rotate" "translate" "static" "show" "hide" ] {
 #				$container.obj.anim_type_btn.menu add radiobutton -label $anim_mode -variable xplane_anim_type$idx -command "xplane_obj_sync_all"
@@ -963,10 +1016,10 @@ proc xplane_inspector {} {
 			
 			labelframe $container.obj.none -text "Object:"		
 				label	$container.obj.none.poly_os_label -text "Polygon Offset:"
-				spinbox $container.obj.none.poly_os_value -from 0 -increment 1 -to 5 -textvariable xplane_poly_os$idx
+				spinbox $container.obj.none.poly_os_value -from 0 -increment 1 -to 5 -textvariable xplane_poly_os$idx -width 6
 				pack	$container.obj.none.poly_os_label	$container.obj.none.poly_os_value
 				label $container.obj.none.hard_surf_label -text "Surface:"
-				menubutton $container.obj.none.hard_surf_btn -menu $container.obj.none.hard_surf_btn.menu -direction flush -textvariable xplane_hard_surf$idx -padx 30 -pady 5
+				menubutton $container.obj.none.hard_surf_btn -menu $container.obj.none.hard_surf_btn.menu -direction flush -textvariable xplane_hard_surf$idx
 				menu $container.obj.none.hard_surf_btn.menu
 				foreach surf $xplane_hard_surface_options {
 					$container.obj.none.hard_surf_btn.menu add radiobutton -label $surf -variable xplane_hard_surf$idx -command "xplane_obj_sync_all"
@@ -995,7 +1048,7 @@ proc xplane_inspector {} {
 				labelframe $container.obj.none.manip -text "Manipulators:"					
 
 					label $container.obj.none.manip.type_label -text "Kind:"
-					menubutton $container.obj.none.manip.type_btn -menu $container.obj.none.manip.type_btn.menu -direction flush -text "None" -padx 30 -pady 5
+					menubutton $container.obj.none.manip.type_btn -menu $container.obj.none.manip.type_btn.menu -direction flush -text "None"
 					menu $container.obj.none.manip.type_btn.menu
 					for {set i 0} {$i< [llength $xplane_manip_types] } {incr i} {					
 						$container.obj.none.manip.type_btn.menu add radiobutton -value $i -label [lindex $xplane_manip_types $i] -variable xplane_manip_type$idx -command "xplane_obj_sync_all"
@@ -1015,7 +1068,7 @@ proc xplane_inspector {} {
 					make_labeled_entry $container.obj.none.manip "Max:" xplane_manip_v2_max$idx 10
 
 					label $container.obj.none.manip.cursor_label -text "Cursor:"
-					menubutton $container.obj.none.manip.cursor_btn -menu $container.obj.none.manip.cursor_btn.menu -direction flush -textvariable xplane_manip_cursor$idx -padx 30 -pady 5
+					menubutton $container.obj.none.manip.cursor_btn -menu $container.obj.none.manip.cursor_btn.menu -direction flush -textvariable xplane_manip_cursor$idx 
 					menu $container.obj.none.manip.cursor_btn.menu
 					foreach surf $xplane_cursor_options {
 						$container.obj.none.manip.cursor_btn.menu add radiobutton -label $surf -variable xplane_manip_cursor$idx
@@ -1026,7 +1079,7 @@ proc xplane_inspector {} {
 					build_listbox_dref $container.obj.none.manip.dref2 $container.obj.none.dref2_scroll xplane_manip_dref2$idx
 					build_listbox_cmnd $container.obj.none.manip.cmnd1 $container.obj.none.cmnd1_scroll xplane_manip_cmnd1$idx
 					build_listbox_cmnd $container.obj.none.manip.cmnd2 $container.obj.none.cmnd2_scroll xplane_manip_cmnd2$idx
-					make_labeled_entry $container.obj.none.manip "tooltip" xplane_manip_tooltip$idx 50
+					make_labeled_entry $container.obj.none.manip "tooltip" xplane_manip_tooltip$idx 40
 					make_labeled_entry $container.obj.none.manip "wheel" xplane_manip_wheel$idx 10
 					
 				pack $container.obj.none.manip
@@ -1050,7 +1103,7 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.obj.rotate "loop" xplane_anim_loop$idx 10
 				# This would make a dataref text field instead of popup menu
 #				make_labeled_entry $container.obj.rotate "dataref" xplane_anim_dataref$idx 10
-#				menubutton $container.obj.rotate.dref_btn -menu $container.obj.rotate.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				menubutton $container.obj.rotate.dref_btn -menu $container.obj.rotate.dref_btn.test_menu -direction flush  -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.rotate.dref_btn xplane_anim_dataref$idx
 #				pack $container.obj.rotate.dref_btn
 			pack $container.obj.rotate
@@ -1072,7 +1125,7 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.obj.trans "anchor" xplane_anim_keyframe_root$idx 10
 				make_labeled_entry $container.obj.trans "loop" xplane_anim_loop$idx 10
 #				make_labeled_entry $container.obj.trans "dataref" xplane_anim_dataref$idx
-#				menubutton $container.obj.trans.dref_btn -menu $container.obj.trans.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				menubutton $container.obj.trans.dref_btn -menu $container.obj.trans.dref_btn.test_menu -direction flush -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.trans.dref_btn xplane_anim_dataref$idx
 #				pack $container.obj.trans.dref_btn
 			pack $container.obj.trans
@@ -1087,7 +1140,7 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.obj.show "low value" xplane_anim_value0$idx 10
 				make_labeled_entry $container.obj.show "high value" xplane_anim_value1$idx 10
 #				make_labeled_entry $container.obj.show "dataref" xplane_anim_dataref$idx
-#				menubutton $container.obj.show.dref_btn -menu $container.obj.show.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				menubutton $container.obj.show.dref_btn -menu $container.obj.show.dref_btn.test_menu -direction flush -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.show.dref_btn xplane_anim_dataref$idx
 #				pack $container.obj.show.dref_btn
 			pack $container.obj.show
@@ -1096,7 +1149,7 @@ proc xplane_inspector {} {
 				make_labeled_entry $container.obj.hide "low value" xplane_anim_value0$idx 10
 				make_labeled_entry $container.obj.hide "high value" xplane_anim_value1$idx 10
 #				make_labeled_entry $container.obj.hide "dataref" xplane_anim_dataref$idx 10
-#				menubutton $container.obj.hide.dref_btn -menu $container.obj.hide.dref_btn.test_menu -direction flush -padx 30 -pady 5 -textvariable xplane_anim_dataref$idx
+#				menubutton $container.obj.hide.dref_btn -menu $container.obj.hide.dref_btn.test_menu -direction flush -textvariable xplane_anim_dataref$idx
 #				build_popup $container.obj.hide.dref_btn xplane_anim_dataref$idx
 #				pack $container.obj.hide.dref_btn
 			pack $container.obj.hide
@@ -1117,7 +1170,7 @@ proc xplane_inspector {} {
 
 			labelframe $container.grp.layer_group -text "Layer Group:"
 
-				menubutton $container.grp.layer_group.layer_btn -menu $container.grp.layer_group.layer_btn.menu -direction flush -textvariable xplane_layer_group$idx -padx 30 -pady 5
+				menubutton $container.grp.layer_group.layer_btn -menu $container.grp.layer_group.layer_btn.menu -direction flush -textvariable xplane_layer_group$idx
 				menu $container.grp.layer_group.layer_btn.menu
 				foreach item $xplane_layer_group_options {
 					$container.grp.layer_group.layer_btn.menu add radiobutton -label $item -variable xplane_layer_group$idx
@@ -1140,7 +1193,9 @@ proc xplane_inspector {} {
 			pack $container.grp
 			pack $container.multi
 
-			pack $container
+#			pack $container -side left
+
+#			display_message "end of frame"
 		}
 		
 		checkbutton .xp_view.multi_edit -variable xplane_multi_edit -text "Apply to All"
@@ -1148,6 +1203,8 @@ proc xplane_inspector {} {
 		xplane_inspector_sync
 	}
 
+	set_progress_bar 0
+	display_message ""
 
 	wm deiconify			.xp_view
 	raise					.xp_view
@@ -1315,12 +1372,24 @@ proc clean_anim {} {
 		}
 	}
 }
+
+
 proc kill_dataref { dref } {
 	global ANIM_INNER
 	destroy $ANIM_INNER.label_$dref
 	destroy $ANIM_INNER.$dref
 	destroy $ANIM_INNER.sel_$dref
+	destroy $ANIM_INNER.valuelabel_$dref
 }
+
+# note that for display purposes, the anim value is rounded to 3 decimal places in dataref_slidermoved and sync_dataref
+
+proc dataref_slidermoved { dref value } {
+	global ANIM_INNER
+	ac3d xplane_set_anim_now $dref $value
+	$ANIM_INNER.valuelabel_$dref configure -text [expr round(1000*$value)/1000.0]
+}
+
 
 proc sync_dataref { dref name now minv maxv } {
 	global ANIM_INNER
@@ -1328,14 +1397,18 @@ proc sync_dataref { dref name now minv maxv } {
 
 		if ![winfo exists $ANIM_INNER.label_$dref] {
 			label $ANIM_INNER.label_$dref -text $dref
-			scale $ANIM_INNER.$dref -command "ac3d xplane_set_anim_now $dref" -from 0 -to 360 -orient horiz -length 150 -width 10 -resolution 0
+#			scale $ANIM_INNER.$dref -command "ac3d xplane_set_anim_now $dref" -from 0 -to 360 -orient horiz -length 150 -width 10 -resolution 0
+
+			ttk::scale $ANIM_INNER.$dref -command "dataref_slidermoved $dref" -from 0 -to 360 -orient horiz -length 150
+			label $ANIM_INNER.valuelabel_$dref -text "" -width 10
 			button $ANIM_INNER.sel_$dref -command "ac3d xplane_anim_select $dref" -text "Select"
-			grid $ANIM_INNER.label_$dref $ANIM_INNER.$dref $ANIM_INNER.sel_$dref -sticky news
+			grid $ANIM_INNER.label_$dref $ANIM_INNER.$dref $ANIM_INNER.valuelabel_$dref $ANIM_INNER.sel_$dref -sticky news
 		}
 
 		$ANIM_INNER.label_$dref configure -text $name
 		$ANIM_INNER.$dref configure -from $minv -to $maxv
-		$ANIM_INNER.$dref set $now		
+		$ANIM_INNER.$dref set $now	
+		$ANIM_INNER.valuelabel_$dref configure -text  [expr round(1000*$now)/1000.0]
 	}
 }
 
@@ -1361,7 +1434,7 @@ proc ScrolledVertCanvas_hack { c width height region } {
 	pack $c.yscroll -side right -fill y
 	pack $c.canvas -side left -fill both -expand true
 
-	set f [frame $c.canvas.f -bd 0]
+	set f [frame $c.canvas.f]
 
 	$c.canvas create window 0 0 -anchor nw -window $f
 
@@ -1381,7 +1454,7 @@ proc xplane_anim_window {} {
 		checkbutton .xp_anim.invis -text "List Invisible" -variable xplane_anim_invis
 		button	.xp_anim.sync -text "Resync" -command "ac3d xplane_resync_anim"
 		button  .xp_anim.sel_all -text "Select All Animation" -command "ac3d xplane_anim_select_all"
-		grid .xp_anim.enable .xp_anim.invis .xp_anim.sync .xp_anim.sel_all -sticky nw
+		grid .xp_anim.enable .xp_anim.invis .xp_anim.sync .xp_anim.sel_all -sticky nw -padx 4
 
 #		frame .xp_anim.drefs
 		set ANIM_INNER [ ScrolledVertCanvas_hack .xp_anim.drefs 300 500 { 0 0 300 10000 } ]

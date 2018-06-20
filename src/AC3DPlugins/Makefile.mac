@@ -2,8 +2,8 @@
 # compile with "make -f Makefile.mac", then create release tgz with "make -f Makefile.mac release"
 
 
-OSXVER=	  -mmacosx-version-min=10.7
-LDOSXVER= -macosx_version_min  10.7
+OSXVER=	  -mmacosx-version-min=10.6
+LDOSXVER= -macosx_version_min 10.6 
 
 ARCH=-arch i386 $(OSXVER)
 DYNAMIC=        -dynamic -undefined suppress -bundle -flat_namespace
@@ -27,7 +27,7 @@ XPINC=-I../../src/DSF -I../../src/DSF/tri_stripper_101 -I../../src/DSFTools -I..
 INCLUDE=-I../src -I../../sdk/ac3d -I../../src/Obj $(XPINC) -I/usr/include/c++/4.2.1
 
 # -Wno-write-strings surpresses 'warning: deprecated conversion from string constant to ‘char*’'
-CFLAGS=  -dynamic -DMAC -DMACINTOSH -DAPL $(INCLUDE) $(ARCH) -Wno-write-strings
+CFLAGS=  -dynamic -DMAC -DMACINTOSH -DAPL $(INCLUDE) $(ARCH) -Wno-write-strings -g
 
 CC=gcc
 LD=ld
@@ -61,7 +61,7 @@ XPlaneSupportMac.p:	 $(OBJS)
 		$(LD) $(DYNAMIC) (LDOSXVER) $*.o -o $*.p
 
 clean:
-		rm -f *.p *.o *.obj *.exp *.lib
+		rm -f *.p *.o *.obj $(EXTOBJS) *.exp *.lib
 
 release:
 		tar cvfz ac3dxplane.tgz *.p XPlaneSupport.tcl README

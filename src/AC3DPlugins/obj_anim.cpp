@@ -35,9 +35,13 @@
 #include <GL/gl.h>
 #endif
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <set>
 #include <list>
 #include <map>
+#include <algorithm> // needed for Linux
 #include "ac_utils.h"
 #include "XObjDefs.h"
 using std::swap;
@@ -413,7 +417,7 @@ void	sync_datarefs()
 		string tcl_name(buf);
 		string dref_q(dref->first);
 		quote_dref(dref_q);
-		tcl_command((char*)"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
+		tcl_command((char*)"sync_dataref \"%s\" \"%s\" %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
 		g_tcl_mapping[tcl_name] = dref->first;
 		++n;
 	}
