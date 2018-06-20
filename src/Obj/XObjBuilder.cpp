@@ -137,6 +137,17 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.cursor == rhs.data.cursor &&
 				data.tooltip == rhs.data.tooltip;
 	case attr_Manip_Drag_Axis:
+		if(!data.dataref2.empty())
+		{
+			if (data.dataref2 != rhs.data.dataref2 ||
+				data.centroid[0] != rhs.data.centroid[0] ||
+				data.centroid[1] != rhs.data.centroid[1] ||
+				data.centroid[2] != rhs.data.centroid[2] ||
+				data.v2_min != rhs.data.v2_min ||
+				data.v2_max != rhs.data.v2_max )
+			return false;
+		}
+		// INTENTIONAL
 	case attr_Manip_Drag_Axis_Pix:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.axis[0] == rhs.data.axis[0] &&
@@ -148,6 +159,9 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.tooltip == rhs.data.tooltip &&
 				data.mouse_wheel_delta == rhs.data.mouse_wheel_delta;
 	case attr_Manip_Command:
+	case attr_Manip_Command_Switch_Left_Right2:
+	case attr_Manip_Command_Switch_Up_Down2:
+	case attr_Manip_Command_Knob2:
 		return	data.dataref1 == rhs.data.dataref1 &&
 				data.cursor == rhs.data.cursor &&
 				data.tooltip == rhs.data.tooltip;
@@ -200,6 +214,25 @@ bool XObjBuilder::manip_data::operator==(const manip_data& rhs) const
 				data.v1_max == rhs.data.v1_max &&
 				data.cursor == rhs.data.cursor &&
 				data.tooltip == rhs.data.tooltip;
+	case attr_Manip_Drag_Rotate:
+		return	data.dataref1 == rhs.data.dataref1 &&
+				data.dataref2 == rhs.data.dataref2 &&
+				data.axis[0] == rhs.data.axis[0] &&
+				data.axis[1] == rhs.data.axis[1] &&
+				data.axis[2] == rhs.data.axis[2] &&
+				data.centroid[0] == rhs.data.centroid[0] &&
+				data.centroid[1] == rhs.data.centroid[1] &&
+				data.centroid[2] == rhs.data.centroid[2] &&
+				data.v1_min == rhs.data.v1_min &&
+				data.v1_max == rhs.data.v1_max &&
+				data.v2_min == rhs.data.v2_min &&
+				data.v2_max == rhs.data.v2_max &&
+				data.angle_min == rhs.data.angle_min &&
+				data.angle_max == rhs.data.angle_max &&
+				data.lift == rhs.data.lift &&
+				data.cursor == rhs.data.cursor &&
+				data.tooltip == rhs.data.tooltip;
+			
 	default:
 		return true;
 	}
@@ -508,6 +541,21 @@ void	XObjBuilder::AccumSmoke(int cmd, float xyz[3], float size)
 	lod->cmds.back().params[2] = xyz[2];
 	lod->cmds.back().params[3] = size;
 }
+
+void	XObjBuilder::AccumMagnet(const float xyz[3], const char * magType)
+{
+	AssureLOD();
+	lod->cmds.push_back(XObjCmd8());
+	lod->cmds.back().cmd = attr_Magnet;
+	lod->cmds.back().params[0] = xyz[0];
+	lod->cmds.back().params[1] = xyz[1];
+	lod->cmds.back().params[2] = xyz[2];
+	lod->cmds.back().params[3] = 0.0f;
+	lod->cmds.back().params[4] = 0.0f;
+	lod->cmds.back().params[5] = 0.0f;
+	lod->cmds.back().name = magType;
+}
+
 
 void	XObjBuilder::AccumAnimBegin(void)
 {

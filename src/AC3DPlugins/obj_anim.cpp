@@ -904,7 +904,7 @@ static void delete_keyframe(int argc, char * argv[])
 			int m = OBJ_get_anim_keyframe_count(obj);
 			if (n < m && n >= 0 && m > 2)
 			{
-				add_undoable_all((char*)"Add Keyframe");
+				add_undoable_all((char*)"Delete Keyframe");
 				if (OBJ_get_anim_type(obj) == anim_trans)
 				{
 					SVertex * dead = surface_get_svertex_at(obj_get_first_surf(obj), n);
@@ -925,6 +925,65 @@ static void delete_keyframe(int argc, char * argv[])
 		}
 	}
 }
+
+static void add_detent(int argc, char * argv[])
+{
+	if (argc > 2)
+	{
+		ACObject * obj = get_sel_single_obj(atoi(argv[2]));
+		if (obj)
+		{
+			int n = atoi(argv[1]);
+			int m = OBJ_get_manip_detent_count(obj);
+			{
+				add_undoable_all((char*)"Add Detent");
+
+				for (int k = m; k > n; --k)
+				{
+					OBJ_set_manip_nth_detent_lo(obj, k, OBJ_get_manip_nth_detent_lo(obj, k-1));
+					OBJ_set_manip_nth_detent_hi(obj, k, OBJ_get_manip_nth_detent_hi(obj, k-1));
+					OBJ_set_manip_nth_detent_hgt(obj, k, OBJ_get_manip_nth_detent_hgt(obj, k-1));
+				}
+
+				OBJ_set_manip_detent_count(obj,  1+OBJ_get_manip_detent_count(obj));
+				if (g_anim_inited)
+				{
+					redraw_all();
+				}
+			}
+		}
+	}
+}
+
+static void delete_detent(int argc, char * argv[])
+{
+	if (argc > 2)
+	{
+		ACObject * obj = get_sel_single_obj(atoi(argv[2]));
+		if (obj)
+		{
+			int n = atoi(argv[1]);
+			int m = OBJ_get_manip_detent_count(obj);
+			if (n < m && n >= 0 && m > 1)
+			{
+				add_undoable_all((char*)"Delete Detent");
+				for (int k = n; k < (m-1); ++k)
+				{
+					OBJ_set_manip_nth_detent_lo(obj, k, OBJ_get_manip_nth_detent_lo(obj, k+1));
+					OBJ_set_manip_nth_detent_hi(obj, k, OBJ_get_manip_nth_detent_hi(obj, k+1));
+					OBJ_set_manip_nth_detent_hgt(obj, k, OBJ_get_manip_nth_detent_hgt(obj, k+1));
+				}
+				OBJ_set_manip_detent_count(obj,  OBJ_get_manip_detent_count(obj)-1);
+				if (g_anim_inited)
+				{
+					redraw_all();
+				}
+			}
+		}
+	}
+}
+
+
 
 static void	obj_changed_cb(ACObject * obj)
 {
@@ -1171,6 +1230,10 @@ void setup_obj_anim(void)
 	ac_add_command_full((char*)"xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_set_anim_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
 	ac_add_command_full((char*)"xplane_add_keyframe", CAST_CMD(add_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_add_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
 	ac_add_command_full((char*)"xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_delete_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
+
+	ac_add_command_full((char*)"xplane_add_detent", CAST_CMD(add_detent), 3, (char*)"argv", (char*)"ac3d xplane_add_detent <detent index> <obj idx>", (char*)"add a detent to the detent table");
+	ac_add_command_full((char*)"xplane_delete_detent", CAST_CMD(delete_detent), 3, (char*)"argv", (char*)"ac3d xplane_delete_detent <detent index> <obj idx>", (char*)"delete 1 detent in the detent table");
+
 
 	ac_add_command_full((char*)"xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, (char*)"ac3d xplane_reverse_keyframe", (char*)"reverse key frames of selection");
 	ac_add_command_full((char*)"xplane_rescale_keyframe", CAST_CMD(rescale_sel), 5, (char*)"argv", (char*)"ac3d xplane_rescale_keyframe <old lo> <new lo> <old hi> <new hi>", (char*)"rescale key frames of selection");

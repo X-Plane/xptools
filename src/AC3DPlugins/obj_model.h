@@ -56,7 +56,14 @@ enum {
 	manip_command_switch_lr = 15,
 	manip_dref_knob = 16,
 	manip_dref_switch_ud = 17,
-	manip_dref_switch_lr = 18
+	manip_dref_switch_lr = 18,
+	
+	manip_rotate = 19,
+	manip_axis_detent = 20,
+	manip_command_knob2 = 21,
+	manip_command_switch_ud2 = 22,
+	manip_command_switch_lr2 = 23,
+	
 };
 
 void		OBJ_set_name(ACObject * obj, const char * name);
@@ -110,6 +117,8 @@ void		OBJ_set_anim_loop(ACObject * obj, float v);
 //void		OBJ_set_anim_low_angle(ACObject * obj, float a1);
 //void		OBJ_set_anim_high_angle(ACObject * obj, float a2);
 
+void		OBJ_set_magnet_type(ACObject * obj, const char * name);
+
 void		OBJ_set_anim_nth_value(ACObject * obj, int n, float v);
 void		OBJ_set_anim_nth_angle(ACObject * obj, int n, float a);
 void		OBJ_set_anim_keyframe_count(ACObject * obj, int n);
@@ -119,15 +128,27 @@ void		OBJ_set_manip_type(ACObject * obj, int n);
 void		OBJ_set_manip_dx(ACObject * obj, float dx);
 void		OBJ_set_manip_dy(ACObject * obj, float dy);
 void		OBJ_set_manip_dz(ACObject * obj, float dz);
+
+void		OBJ_set_manip_centroid_x(ACObject * obj, float dx);
+void		OBJ_set_manip_centroid_y(ACObject * obj, float dy);
+void		OBJ_set_manip_centroid_z(ACObject * obj, float dz);
+
 void		OBJ_set_manip_v1_min(ACObject * obj, float v);
 void		OBJ_set_manip_v1_max(ACObject * obj, float v);
 void		OBJ_set_manip_v2_min(ACObject * obj, float v);
 void		OBJ_set_manip_v2_max(ACObject * obj, float v);
+void		OBJ_set_manip_angle_min(ACObject * obj, float v);
+void		OBJ_set_manip_angle_max(ACObject * obj, float v);
+void		OBJ_set_manip_lift(ACObject * obj, float v);
 void		OBJ_set_manip_dref1(ACObject * obj, const char * dref);
 void		OBJ_set_manip_dref2(ACObject * obj, const char * dref);
 void		OBJ_set_manip_tooltip(ACObject * obj, const char * dref);
 void		OBJ_set_manip_cursor(ACObject * obj, const char * cursor);
 void		OBJ_set_manip_wheel(ACObject * obj, float v);
+void		OBJ_set_manip_nth_detent_lo(ACObject * obj, int n, float v);
+void		OBJ_set_manip_nth_detent_hi(ACObject * obj, int n, float v);
+void		OBJ_set_manip_nth_detent_hgt(ACObject * obj, int n, float v);
+void		OBJ_set_manip_detent_count(ACObject * obj, int count);
 
 void		OBJ_set_has_panel_regions(ACObject * obj, int e);
 void		OBJ_set_num_panel_regions(ACObject * obj, int k);
@@ -191,6 +212,8 @@ float			OBJ_get_anim_loop(ACObject * obj);
 //float			OBJ_get_anim_low_angle(ACObject * obj);
 //float			OBJ_get_anim_high_angle(ACObject * obj);
 
+const char *	OBJ_get_magnet_type(ACObject * obj, char * buf);
+
 float			OBJ_get_anim_nth_value(ACObject * obj, int n);
 float			OBJ_get_anim_nth_angle(ACObject * obj, int n);
 int				OBJ_get_anim_keyframe_count(ACObject * obj);
@@ -200,15 +223,25 @@ int				OBJ_get_manip_type(ACObject * obj);
 float			OBJ_get_manip_dx(ACObject * obj);
 float			OBJ_get_manip_dy(ACObject * obj);
 float			OBJ_get_manip_dz(ACObject * obj);
+float			OBJ_get_manip_centroid_x(ACObject * obj);
+float			OBJ_get_manip_centroid_y(ACObject * obj);
+float			OBJ_get_manip_centroid_z(ACObject * obj);
 float			OBJ_get_manip_v1_min(ACObject * obj);
 float			OBJ_get_manip_v1_max(ACObject * obj);
 float			OBJ_get_manip_v2_min(ACObject * obj);
 float			OBJ_get_manip_v2_max(ACObject * obj);
+float			OBJ_get_manip_angle_min(ACObject * obj);
+float			OBJ_get_manip_angle_max(ACObject * obj);
+float			OBJ_get_manip_lift(ACObject * obj);
 const char *	OBJ_get_manip_dref1(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_dref2(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_tooltip(ACObject * obj, char * buf);
 const char *	OBJ_get_manip_cursor(ACObject * obj, char * buf);
 float			OBJ_get_manip_wheel(ACObject * obj);
+float			OBJ_get_manip_nth_detent_lo(ACObject * obj, int n);
+float			OBJ_get_manip_nth_detent_hi(ACObject * obj, int n);
+float			OBJ_get_manip_nth_detent_hgt(ACObject * obj, int n);
+int				OBJ_get_manip_detent_count(ACObject * obj);
 
 int				OBJ_get_has_panel_regions(ACObject * obj);
 int				OBJ_get_num_panel_regions(ACObject * obj);
