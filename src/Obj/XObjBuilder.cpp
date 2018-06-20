@@ -24,6 +24,7 @@
 #include "XObjBuilder.h"
 #include "XObjDefs.h"
 #include <algorithm>
+#include <string.h>
 #include <math.h>
 
 // janos says: msvc doesn't know any of the new (lol) c99 functions, we're using
