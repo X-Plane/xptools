@@ -1558,7 +1558,7 @@ bool	XObj8Write(const char * inFile, const XObj8& outObj)
 	int extra = outObj.indices.size() % 10;
 	int trans = outObj.indices.size() - extra;
 
-	for (n = 0; n < outObj.indices.size(); ++n)
+	for (n = 0; n < (int)outObj.indices.size(); ++n)
 	{
 		if (n >= trans) fprintf(fi, "IDX");
 		else if ((n % 10) == 0) fprintf(fi, "IDX10");

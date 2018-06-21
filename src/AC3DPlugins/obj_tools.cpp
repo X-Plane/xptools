@@ -295,7 +295,7 @@ void do_named_group(char * str)
 	object_set_name(new_obj, str);
 
 	if (!objs.empty())
-	for (int n = objs.size()-1; n >= 0 ; --n)
+	for (int n = (int)objs.size()-1; n >= 0 ; --n)
 		object_reparent(objs[n], new_obj);
 
 	object_add_child(*parents.begin(), new_obj);

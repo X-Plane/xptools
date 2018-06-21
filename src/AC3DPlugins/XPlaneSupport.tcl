@@ -18,11 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
 # THE SOFTWARE.
 
+
 # Updated for AC3D 8 by Inivis
 # fixed window titles and global variable decls for remap/rescale texture coords
 # changed width of Tooltip field from 50 to 40
 # scale widget in sync_dataref updated to tk::scale with label widget to display the value 
-# added pref setting chckbox for TEXTURE-NORMAL option
+# added pref setting checkbox for TEXTURE-NORMAL option
+
+# 20th June 2018 (getting ready for 64-bit AC3D)
+# switched off the ---- tearoff menu item from popup menus
+# added (Ben): magnet to light options
+# added (Ben): Manipulators: rotate axis-detent command-knob-2way command-switch-up/down-2way command-switch-left/right-2way
+
+
+
 
 
 # these aliases make it easier to convert the UI to the new one used in AC3D 8
@@ -37,6 +46,8 @@ interp alias {} radiobutton {} ac_radiobutton
 interp alias {} menubutton {} ac_menubutton
 interp alias {} scrollbar {} ac_scrollbar
 
+# hide the tearoff able item from popup menus
+option add *Menu*tearOff 0
 
 
 
@@ -1097,7 +1108,8 @@ proc xplane_inspector {} {
 			pack $container.light.smoke_white
 
 			labelframe $container.light.magnet -text "Magnet:"
-			menubutton $container.light.magnet.type -menu $container.light.magnet.type.menu -direction flush  -textvariable xplane_magnet_type$idx -padx 30 -pady 5
+			menubutton $container.light.magnet.type -menu $container.light.magnet.type.menu -direction flush  -textvariable xplane_magnet_type$idx
+			# -padx 30 -pady 5
 			menu $container.light.magnet.type.menu
 			foreach magnet $xplane_magnet_options {
 				$container.light.magnet.type.menu add radiobutton -label $magnet -variable xplane_magnet_type$idx

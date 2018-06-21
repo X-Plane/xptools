@@ -58,11 +58,13 @@ enum {
 	manip_dref_switch_ud = 17,
 	manip_dref_switch_lr = 18,
 	
-	manip_rotate = 19,
-	manip_axis_detent = 20,
-	manip_command_knob2 = 21,
-	manip_command_switch_ud2 = 22,
-	manip_command_switch_lr2 = 23,
+	// added for 1110
+	manip_rotate = 19, // ATTR_manip_drag_rotate
+	manip_axis_detent = 20, // ATTR_manip_drag_rotate
+	manip_command_knob2 = 21, // ATTR_manip_command_knob2
+	manip_command_switch_ud2 = 22, // ATTR_manip_command_switch_up_down2
+	manip_command_switch_lr2 = 23, // ATTR_manip_command_switch_left_right2
+
 	
 };
 

@@ -144,7 +144,7 @@ static void anim_add_any(
 		surface_add_vertex(s, *vv, 0.0, 0.0);
 
 	OBJ_set_anim_type(new_obj, anim_kind);
-	OBJ_set_anim_keyframe_count(new_obj, keys.size());
+	OBJ_set_anim_keyframe_count(new_obj, (int)keys.size());
 	OBJ_set_anim_loop(new_obj,loop);
 	int n;
 	for (n = 0, i = keys.begin(); i != keys.end(); ++i, ++n)
@@ -468,7 +468,7 @@ static void make_anim_group(void)
 	object_set_name(new_obj, (char*)"Animation");
 
 	if (!objs.empty())
-	for (int n = objs.size()-1; n >= 0 ; --n)
+	for (int n = (int)objs.size()-1; n >= 0 ; --n)
 		object_reparent(objs[n], new_obj);
 
 	object_add_child(*parents.begin(), new_obj);
@@ -1022,7 +1022,7 @@ static void build_key_table(ACObject * ob, vector<XObjKey>& table, int * root)
 	}
 	if (table.size() > 1 && table.front().key > table.back().key)
 	{
-		if (root) *root = table.size()-*root-1;
+		if (root) *root = (int)table.size()-*root-1;
 		reverse(table.begin(),table.end());
 	}
 }
@@ -1084,7 +1084,7 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 			{
 				int root = OBJ_get_anim_keyframe_root(ob);
 				build_key_table(ob, table,&root);
-				if (root >= table.size()) root = (table.size()-1);
+				if (root >= (int)table.size()) root = ((int)table.size()-1);
 				if (!table.empty())
 					glTranslatef(key_extrap(now_v,table,0) - table[root].v[0],
 								 key_extrap(now_v,table,1) - table[root].v[1],

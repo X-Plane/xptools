@@ -82,8 +82,8 @@ using std::list;
 
 static void stuff_in_detents(ACObject * obj, const vector<float>& detents)
 {
-	OBJ_set_manip_detent_count(obj, detents.size() / 3);
-	for(int i = 0; i < detents.size(); i += 3)
+	OBJ_set_manip_detent_count(obj, (int)detents.size() / 3);
+	for(unsigned int i = 0; i < detents.size(); i += 3)
 	{
 		OBJ_set_manip_nth_detent_lo(obj, i / 3, detents[i]);
 		OBJ_set_manip_nth_detent_hi(obj, i / 3, detents[i+1]);

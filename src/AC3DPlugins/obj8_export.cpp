@@ -49,6 +49,14 @@ attributes.
 
 */
 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <list>
+#include <set>
+#include <math.h>
+
+
 #include "TclStubs.h"
 #include "ac_plugin.h"
 #include "Undoable.h"
@@ -69,11 +77,7 @@ attributes.
 #include "ObjConvert.h"
 #include "XObjBuilder.h"
 #include "prefs.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <list>
-#include <set>
-#include <math.h>
+
 using std::list;
 using std::set;
 
@@ -190,8 +194,8 @@ void obj8_output_polygon(XObjBuilder * builder, Surface *s)
 	if (!gHasTexNow && !builder->IsCockpit() && builder->IsVisible())
 		++gErrMissingTex;
 
-	bool	is_two_sided = surface_get_twosided(s);
-	bool	is_smooth = surface_get_shading(s);
+	bool	is_two_sided = surface_get_twosided(s) == 1;
+	bool	is_smooth = surface_get_shading(s) == 1;
 
 	if (OBJ_get_use_materials(object_of_surface(s)))
 	{

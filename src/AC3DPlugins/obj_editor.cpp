@@ -350,7 +350,7 @@ static void OBJ_get_sel_count_tcl(void)
 	vector<ACObject *>		objs;
 	find_all_selected_objects_flat(objs);
 	if(objs.empty())						command_result_append_int(1);
-	else if(objs.size() <= MAX_MULTI_COUNT) command_result_append_int(objs.size());
+	else if( (int)objs.size() <= MAX_MULTI_COUNT) command_result_append_int((int)objs.size());
 	else									command_result_append_int(1);
 }
 
@@ -390,7 +390,7 @@ static void OBJ_editor_sync(ACObject * changed)
 	vector<ACObject *>		objs;
 	find_all_selected_objects_flat(objs);
 
-	int total = (objs.size() <= MAX_MULTI_COUNT) ? objs.size() : 1;
+	int total = ((int)objs.size() <= MAX_MULTI_COUNT) ? (int)objs.size() : 1;
 
 	for (int idx = 0; idx < total; ++idx)
 	{
