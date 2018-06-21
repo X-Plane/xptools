@@ -5,8 +5,8 @@
 OSXVER=	  -mmacosx-version-min=10.6
 LDOSXVER= -macosx_version_min 10.6 
 
-ARCH=-arch i386 $(OSXVER)
-DYNAMIC=        -dynamic -undefined suppress -bundle -flat_namespace
+ARCH=$(OSXVER)
+DYNAMIC=        -dynamiclib -undefined suppress -flat_namespace
 
 
 XPINC=-I../../src/DSF -I../../src/DSF/tri_stripper_101 -I../../src/DSFTools -I../../src/GUI -I../../src/Interfaces \
@@ -30,7 +30,7 @@ INCLUDE=-I../src -I../../sdk/ac3d -I../../src/Obj $(XPINC) -I/usr/include/c++/4.
 CFLAGS=  -dynamic -DMAC -DMACINTOSH -DAPL $(INCLUDE) $(ARCH) -Wno-write-strings -g
 
 CC=gcc
-LD=ld
+LD=gcc
 
 
 PLUGINS=XPlaneSupportMac.p
@@ -48,7 +48,7 @@ OBJS=     obj_anim.o	obj_panel.o obj_update.o uv_mapper.o \
 					 TclStubs.o $(EXTOBJS)
 
 XPlaneSupportMac.p:	 $(OBJS)
-		$(LD) $(DYNAMIC) $(LDOSXVER) $(OBJS) -o $*.p 
+		$(LD) $(DYNAMIC) $(OBJS) -o $*.p 
 
 .cpp.o:
 		$(CC) $(CFLAGS) -c $*.cpp -o $*.o

@@ -798,7 +798,7 @@ int do_obj8_save_common(char * fname, ACObject * obj, convert_choice convert, in
 	gInnerTransForAutoManip = NULL;
 
 	XObjBuilder		builder(&obj8);
-printf("do_obj8_save_common builder %x\n", &builder);
+//printf("do_obj8_save_common builder %p\n", &builder);
 
 	if (get_default_layer_group() && get_default_layer_group()[0] && strcmp(get_default_layer_group(),"none"))
 		builder.SetAttribute1Named(attr_Layer_Group, get_default_layer_offset(), get_default_layer_group());
