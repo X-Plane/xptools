@@ -72,10 +72,10 @@ int main(int argc, char * argv[])
 				fprintf(err_fi,"Converted %s to %s\n",argv[n], f2);
 			else
 				{ fprintf(err_fi,"ERROR: Error convertiong %s to %s\n", argv[n], f2); exit(1); }
+			n = argc - 1;
 		}
-
-		if (!strcmp(argv[n], "-text2dsf") ||
-			!strcmp(argv[n], "--text2dsf"))
+		else if(!strcmp(argv[n], "-text2dsf") ||
+				!strcmp(argv[n], "--text2dsf"))
 		{
 			++n;
 			if (n >= argc) goto help;
@@ -83,6 +83,7 @@ int main(int argc, char * argv[])
 			++n;
 			if (n >= argc) goto help;
 			const char * f2 = argv[n];
+			++n;
 
 			printf("Converting %s from text to DSF as %s\n", f1, f2);
 			if (Text2DSF(f1, f2))
@@ -90,9 +91,14 @@ int main(int argc, char * argv[])
 			else
 				{ fprintf(err_fi, "ERROR: Error convertiong %s to %s\n", f1, f2); exit(1); }
 		}
-		if (!strcmp(argv[n], "--version"))
+		else if(!strcmp(argv[n], "--version"))
 		{
 			print_product_version("DSFTool", DSFTOOL_VER, DSFTOOL_EXTRAVER);
+		}
+		else
+		{
+			fprintf(err_fi, "Unknown argument \"%s\"\n", argv[n]);
+			goto help;
 		}
 	}
 
