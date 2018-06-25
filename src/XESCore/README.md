@@ -5,12 +5,18 @@ RenderFarm Readme
 Acronyms used throughout the code
 --------------------------------------------
 - XES (**X**-Plane **E**ditable **S**cenery)---this is a high level binary format for GIS data used by RenderFarm
-- DEM (**D**igital **E**levation **M**odel)---a raster based format (i.e., uses a bunch of cells in a grid)
-- SRTM (**S**huttle **R**adar **T**opography **M**ission)---high res topographic data for the earth
+- [DEM](https://en.wikipedia.org/wiki/USGS_DEM) (**D**igital **E**levation **M**odel)---a raster based format (i.e., uses a bunch of cells in a grid)
+- [SRTM](https://en.wikipedia.org/wiki/Shuttle_Radar_Topography_Mission) (**S**huttle **R**adar **T**opography **M**ission)---high res topographic data for the earth
 - PMWX (**P**lanar **M**ap **W**ith interse**X**ions)---this is "the map"; the 2-d arrangement of our planes/edges/etc. 
     It's a sub-class of `CGAL::Arrangement_2` that is used for the "big" map (there's a separate class for single blocks).
     A Pmwx's x/y coordinates are always lon/lat, which makes it analogous to `CGAL::Planar_map_2` in modern CGAL 
-    (but RenderFarm was written based on "rull rull old" CGAL). 
+    (but RenderFarm was written based on "rull rull old" CGAL).
+- CDT: **C**onstrained **D**elaunay **t**riangulation
+    - [Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation): no point in the set of triangulated point is inside the circumcircle of any triangle in the DT
+    - Avoids sliver triangles
+    - Maximizes the minimum angle, not the edge length of the triangles 
+- CCB (**C**ounter **C**lockwise **B**oundary)---a set of half-edges, the left side of which face... well, the face they define.
+    - Holes in the face are instead clockwise (again, so that their left side is to the face)
 
 About Terrain Types
 -----------------------------------
@@ -74,7 +80,20 @@ In the config files, `oge2_import.txt` maps the numeric codes as published in th
 
 So hopefully that will give you some leads...this is stuff I don't normally post in the MeshTool docs because it requires code changes, but with a little hacking you can probably get just about any landuse-assignment effect you want.
 
+Overview of the scenery generation process
+---------------------------------------------
 
+The process of generating scenery is a series of data transformations. At a high level, it looks like this:
+
+1. Read DEM data into gDem (via `raster_import` and maybe `-load` commands)
+2. Prepare the global vector map (`gMap`, a PMWX)---maybe via `-load`ing XES data, maybe via... well, lots of other places
+    - Includes burning in airports from `gApts`
+3. Triangulate a CDT mesh (`gTriangulationHi`) out of the global map and DEM data (`gMap` and `gDem`, respectively)
+4. Assign terrain types to the mesh (`gTriangulationHi`) based on the `gDem` data
+5. Build the DSF.
+    - Takes point objects, polygons, and network data from `gMap` vector data
+    - Takes elevation, bathymetry, and urban density data from `gDem`
+    - Takes mesh data from the `gTriangulationHi` CDT
 
 Numeric Types, CGAL, etc.
 ----------------------------------
