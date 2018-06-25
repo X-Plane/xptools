@@ -36,7 +36,7 @@ const	int	kTokensID = 'TOKN';
 
 const	int	kAptID = 'aptD';
 
-void	WriteXESFile(
+bool	WriteXESFile(
 				const char *	inFileName,
 				const Pmwx&		inMap,
 					  CDT&		inMesh,
@@ -45,7 +45,7 @@ void	WriteXESFile(
 				ProgressFunc	inFunc)
 {
 	FILE * fi = fopen(inFileName, "wb");
-	if (!fi) return;
+	if (!fi) return false;
 
 	WriteEnumsAtomToFile(fi, gTokens, kTokensID);
 	WriteMap(fi, inMap, inFunc, kMapID);
@@ -73,6 +73,7 @@ void	WriteXESFile(
 	}
 
 	fclose(fi);
+	return true;
 }
 
 void	ReadXESFile(

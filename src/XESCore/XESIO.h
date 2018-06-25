@@ -43,7 +43,10 @@
 
 class CDT;
 
-void	WriteXESFile(
+/**
+ * @return true if we were able to write to the file, false if it failed (probably because file-open failed)
+ */
+bool	WriteXESFile(
 				const char *	inFileName,
 				const Pmwx&		inMap,
 					  CDT&		inMesh,

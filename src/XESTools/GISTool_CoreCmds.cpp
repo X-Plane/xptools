@@ -339,8 +339,7 @@ static int DoSave(const vector<const char *>& args)
 	if (/*!gDem.empty() || */(nland > 0) || distance(gMap.unbounded_face()->holes_begin(),gMap.unbounded_face()->holes_end()) > 1)
 	{
 		if (gVerbose) printf("Saving file %s\n", args[0]);
-		WriteXESFile(args[0], gMap, gTriangulationHi, gDem, gApts, gProgress);
-		return 0;
+		return !WriteXESFile(args[0], gMap, gTriangulationHi, gDem, gApts, gProgress);
 	} else {
 		printf("Not writing file %s - no DEMs and no land!\n", args[0]);
 		fprintf(stderr, "Not writing file %s - no DEMs and no land!\n", args[0]);
