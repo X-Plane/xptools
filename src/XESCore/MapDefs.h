@@ -150,7 +150,7 @@ typedef vector<GISNetworkSegment_t>		GISNetworkSegmentVector;
 /* GISPointFeature_t
  *
  * A point feature is a 0-dimensional thing in the GIS data.
- * A point feature contains a seriers of parameters indicating
+ * A point feature contains a series of parameters indicating
  * vaguely what it is.  They are stored within the GT-polygon
  * that contains them.
  *

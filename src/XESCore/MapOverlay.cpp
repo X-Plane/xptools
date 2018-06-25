@@ -127,7 +127,10 @@ public:
 	Replace overlay trates: "contained" faces in arrangement B replace what is below.  Any edges fully inside a contained
 	area are put on the "dead" list (because they should not exist and need to be later removed) and do not have meta data
 	copied.  Meta data is copied based on the "overlay-replace area" principle.
-	
+
+	 SUPER DUPER USERFUL EXPLANATION OF WHAT THESE TRAITS DO:
+	 p. 143 of CGAL Arrangements and Their Applications by Efi Fogel, Dan Halperin, Ron Wein
+	 https://books.google.com/books?id=u0CONtnwi9YC&pg=PA143&lpg=PA143&dq=cgal+%22contained%22+overlay&source=bl#v=onepage&q=cgal%20%22contained%22%20overlay&f=true
  */
 
 template <class ArrangementA, class ArrangementB, class ArrangementR>
@@ -152,11 +155,15 @@ public:
 
 	vector<Halfedge_handle_R> *		dead;
 
+	// Handle the case where a new vertex is induced by coinciding vertices in A and B
+	// See p. 143 of CGAL Arrangements and Their Applications by Efi Fogel, Dan Halperin, Ron Wein
+	// https://books.google.com/books?id=u0CONtnwi9YC&pg=PA143&lpg=PA143&dq=cgal+%22contained%22+overlay&source=bl#v=onepage&q=cgal%20%22contained%22%20overlay&f=true
 	virtual void create_vertex (Vertex_handle_A v1, Vertex_handle_B v2, Vertex_handle_R v) const
 	{
 		v->set_data(v2->data());		// Co-located vertices - top layer wins.
 	}
-	
+
+	// Handle the case where a new vertex is induced by a vertex in A that lies on an edge in B
 	virtual void create_vertex (Vertex_handle_A v1, Halfedge_handle_B e2, Vertex_handle_R v) const
 	{
 		if (!e2->face()->contained() ||
@@ -165,33 +172,39 @@ public:
 			v->set_data(v1->data());
 		}
 	}
-	
+
+	// Handle the case where a new vertex is induced by by a vertex in A that is contained in a face in B
 	virtual void create_vertex (Vertex_handle_A v1, Face_handle_B f2, Vertex_handle_R v) const
 	{
 		if(!f2->contained())
 			v->set_data(v1->data());
 	}
-	
+
+	// Handle the case where a new vertex is induced by a vertex in B that lies on an edge in A
 	virtual void create_vertex (Halfedge_handle_A e1, Vertex_handle_B v2, Vertex_handle_R v) const
 	{
 		v->set_data(v2->data());
 	}
-	
+
+	// Handle the case where a new vertex is induced by a vertex in B that is contained in a face in A
 	virtual void create_vertex (Face_handle_A f1, Vertex_handle_B v2, Vertex_handle_R v) const
 	{
 		v->set_data(v2->data());
 	}
-	
+
+	// Handle the case where a new vertex is induced by the intersection of two halfedges
 	virtual void create_vertex (Halfedge_handle_A e1, Halfedge_handle_B e2, Vertex_handle_R v) const
 	{
 	}
 
+	// Handle the case where a new half-edge is induced by the (possibly partial) overlap of two halfedges
 	virtual void create_edge (Halfedge_handle_A e1, Halfedge_handle_B e2, Halfedge_handle_R e) const
 	{
 		e->		   set_data (e2->data());
 		e->twin()->set_data (e2->twin()->data());
 	}
-	
+
+	// Handle the case where a new half-edge is induced by an edge in A that is contained in a face in B
 	virtual void create_edge (Halfedge_handle_A e1, Face_handle_B f2, Halfedge_handle_R e) const
 	{
 		if(!f2->contained())
@@ -201,13 +214,15 @@ public:
 		} else if(dead)
 			dead->push_back(e);
 	}
-	
+
+	// Handle the case where a new half-edge is induced by an edge in B that is contained in a face in A
 	virtual void create_edge (Face_handle_A f1, Halfedge_handle_B e2, Halfedge_handle_R e) const
 	{
 		e->set_data (e2->data());
 		e->twin()->set_data (e2->twin()->data());
 	}
 
+	// Handle the case where a new face is induced by the overlap of two faces in A and B
 	virtual void create_face (Face_handle_A f1, Face_handle_B f2, Face_handle_R f) const
 	{
 		f->set_contained(f2->contained());															// overlay face drives containment after merge - that is, we copy the overlay pattern.  If we wanted
