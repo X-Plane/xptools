@@ -90,6 +90,11 @@ The process of generating scenery is a series of data transformations. At a high
     - Includes burning in airports from `gApts`
 3. Triangulate a CDT mesh (`gTriangulationHi`) out of the global map and DEM data (`gMap` and `gDem`, respectively)
 4. Assign terrain types to the mesh (`gTriangulationHi`) based on the `gDem` data
+    - Note that if you ever need the *vector* face (a `GIS_face_data` struct) that a mesh triangle was created from, you can get it from the `MeshFaceInfo::orig_face` handle, like so:
+    
+            CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin();
+            MeshFaceInfo &mesh_face = ffi->info();
+            GIS_face_data &vector_face = mesh_face.orig_face->data();
 5. Build the DSF.
     - Takes point objects, polygons, and network data from `gMap` vector data
     - Takes elevation, bathymetry, and urban density data from `gDem`
