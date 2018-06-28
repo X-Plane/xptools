@@ -37,6 +37,7 @@ WED 1.7.1 b1
 	- real-time preview of lines, strings and taxilines on the map
 	- WED-1039: support new line & light types for taxilines if available in LR default libraries
 	- WED-998: Extend hierachical locking effectiveness, highlight interior of selected items, confirm moving airports
+	- Make taxiway & taxiline "lights", "lines" attributes selectable with the hierachy pane filter function
 	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	
 WED 1.7.0 r3 6/4/18

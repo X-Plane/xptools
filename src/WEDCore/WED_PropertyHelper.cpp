@@ -961,7 +961,10 @@ void		WED_PropIntEnumSetUnion::GetProperty(PropertyVal_t& val) const
 			if (idx != -1)
 			{
 				inf->GetNthProperty(idx, local);
-				copy(local.set_val.begin(), local.set_val.end(), set_inserter(val.set_val));
+				if(local.set_val.size())
+					copy(local.set_val.begin(), local.set_val.end(), set_inserter(val.set_val));
+				else
+					val.set_val.insert(0);
 			}
 		}
 	}
