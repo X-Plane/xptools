@@ -25,6 +25,7 @@
 #include "IODefs.h"
 #include "WED_Errors.h"
 #include "GISUtils.h"
+#include "WED_ToolUtils.h"
 
 TRIVIAL_COPY(WED_GISPoint, WED_Entity)
 
@@ -114,7 +115,7 @@ printf("%10.8lf %10.8lf\n",old_bounds.xmax()-old_bounds.xmin(), old_bounds.ymin(
 	}
 }
 
-void	WED_GISPoint::GetLocation(GISLayer_t l,     Point2& p) const
+void	WED_GISPoint::GetLocationExpl(GISLayer_t l,     Point2& p) const
 {
 	// Bit of a hack: a client can call this to build its own bounding box cache.
 	// So re-validate OUR cache here.  (Otherwise our change of location won't
@@ -140,7 +141,92 @@ void	WED_GISPoint::GetLocation(GISLayer_t l,     Point2& p) const
 	}
 }
 
+void	WED_GISPoint::GetLocation(GISLayer_t l,     Point2& p) const
+{
+		GetLocationExpl(l,p);
+}
+
+bool	WED_GISPoint::IsLinked(void	) const
+{
+//TODO:mroe we should check the type of src or viewers here
+	if(CountViewers() > 0 )
+	{
+		return true;
+	}
+
+	if(CountSources() > 0 )
+	{
+		return true;
+	}
+	
+	return false;
+}
+
+bool	WED_GISPoint::IsViewer(void	) const
+{
+	if(CountSources() > 0)
+	{
+		WED_Thing * t = GetNthSource(0);
+		if(t)	//TODO:mroe check for type
+			return true;
+	}
+
+	return false;
+}
+
+WED_GISPoint * 	WED_GISPoint::GetSourcePoint(void) const
+{	
+	if(CountSources() == 1)
+	{	
+		WED_Thing * t = GetNthSource(0);
+		if(t)
+			return dynamic_cast<WED_GISPoint * >(t);
+	}
+
+	return NULL;
+}
+IGISPoint *	WED_GISPoint::GetSrcPoint(void) const
+{
+	if(CountSources() == 1)
+	{	
+		WED_Thing * t = GetNthSource(0);
+		return dynamic_cast<IGISPoint * >(t);
+	}
+	return NULL;
+}
+
 void	WED_GISPoint::SetLocation(GISLayer_t l, const Point2& p)
+{
+	// if this is a viewer (linked) then redir to srcnode  from where all viewers get updated
+	WED_GISPoint * wgp = GetSourcePoint();
+	if(wgp)
+	{	
+		//ISelection * sel = WED_GetSelect(GetArchive()->GetResolver());
+		//if(!Iterate_HasSelectedParent(wgp,sel))
+		{
+			wgp->SetLocation(l,p);
+			return;
+		}
+	}
+
+	// set to all of our linked nodes as well
+	int viewer_cnt = CountViewers();
+	if( viewer_cnt > 0)
+	{
+		set<WED_Thing *> viewers;
+		GetAllViewers(viewers);
+		for (set<WED_Thing *>::iterator i = viewers.begin(); i != viewers.end(); ++i)
+		{
+			WED_GISPoint * wgp = dynamic_cast<WED_GISPoint*>(*i);
+			if(wgp)
+				wgp->SetLocationExpl(l,p);	
+		}
+	}
+
+	SetLocationExpl(l,p);
+}
+
+void	WED_GISPoint::SetLocationExpl(GISLayer_t l, const Point2& p)
 {
 	DebugAssert(l==gis_Geo);
 

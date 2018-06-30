@@ -865,7 +865,7 @@ void		WED_HandleToolBase::GetCaps(bool& draw_ent_v, bool& draw_ent_s, bool& care
 	draw_ent_v = draw_ent_s = cares_about_sel = wants_clicks = 0;
 }
 
-void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
+void		WED_HandleToolBase::DrawStructure(bool inCurrent, GUI_GraphState * g)
 {
 	if (!inCurrent && !mDrawAlways) return;
 	if (mHandles != NULL)
@@ -960,6 +960,18 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 				case handle_Arrow:			GUI_PlotIcon(g,"handle_arrowhead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
 				case handle_RotateHead:
 				case handle_Rotate:			GUI_PlotIcon(g,"handle_rotatehead.png", scrpt.x(),scrpt.y(),atan2(orient.dx,orient.dy) * RAD_TO_DEG,1.0);	break;
+
+				}
+				
+				if(1)
+				{
+					g->SetState(0,0,0,0,0,0,0);
+					glPointSize(3);
+					glColor4fv(WED_Color_RGBA(wed_TextField_Hilite));
+					glBegin(GL_POINT);
+					glVertex2d(scrpt.x(), scrpt.y());
+					glEnd();
+					glPointSize(1);
 				}
 			}
 		}
@@ -974,6 +986,37 @@ void		WED_HandleToolBase::DrawStructure			(bool inCurrent, GUI_GraphState * g)
 		glVertex2i(max(mDragX, mSelX),max(mDragY,mSelY));
 		glVertex2i(max(mDragX, mSelX),min(mDragY,mSelY));
 		glEnd();
+	}
+}
+
+
+void		WED_HandleToolBase::DrawSelected(bool inCurrent, GUI_GraphState * g)
+{
+	//draw pins on linked node	
+	if (!inCurrent) return;
+	if (mHandles != NULL)
+	{
+		int ei_count = mHandles->CountEntities();
+		
+		g->SetState(0,0,0,0,0,0,0);
+		glColor4fv(WED_Color_RGBA(wed_TextField_Hilite));
+		glPointSize(3);
+		for (int ei = 0; ei < ei_count; ++ei)
+		{
+			intptr_t eid = mHandles->GetNthEntityID(ei);
+			IGISEntity * en = reinterpret_cast<IGISEntity *>(eid);
+			IGISPoint * gp= dynamic_cast<IGISPoint *>(en);
+			if(gp && gp->IsLinked())
+			{
+				Point2 p;
+				gp->GetLocation(gis_Geo,p);
+				Point2 pp  = GetZoomer()->LLToPixel(p);
+				glBegin(GL_POINTS);
+				glVertex2d(pp.x(), pp.y());
+				glEnd();				
+			}
+		}
+		glPointSize(1);		
 	}
 }
 

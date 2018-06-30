@@ -59,11 +59,20 @@ public:
 	virtual	void			Rescale			(GISLayer_t l,const Bbox2& old_bounds, const Bbox2& new_bounds);
 	virtual	void			Rotate			(GISLayer_t l,const Point2& center, double angle);
 	// IGISPoint
-	virtual	void	GetLocation(GISLayer_t l,      Point2& p) const;
-	virtual	void	SetLocation(GISLayer_t l,const Point2& p)      ;
+	virtual	void			GetLocation(GISLayer_t l,      Point2& p) const;
+	virtual	void			SetLocation(GISLayer_t l,const Point2& p)      ;
 
-	virtual	void				PropEditCallback(int before);
-
+	virtual	void			PropEditCallback(int before);
+	//IGISPoint
+	virtual	bool			IsLinked(void	) const;
+	virtual	bool			IsViewer(void	) const;
+	virtual	IGISPoint *		GetSrcPoint(void) const;
+	
+	// linked node
+	WED_GISPoint *			GetSourcePoint(void) const;
+	void					GetLocationExpl(GISLayer_t l, Point2& p)const;
+	void					SetLocationExpl(GISLayer_t l,const Point2& p);
+	
 private:
 
 		WED_PropDoubleText		latitude;

@@ -128,9 +128,12 @@ public:
 class	IGISPoint : public virtual IGISEntity {
 public:
 
-	virtual	void	GetLocation(GISLayer_t layer,      Point2& p) const=0;
-	virtual	void	SetLocation(GISLayer_t layer,const Point2& p)      =0;
-
+	virtual	void		GetLocation(GISLayer_t layer,      Point2& p) const=0;
+	virtual	void		SetLocation(GISLayer_t layer,const Point2& p)      =0;
+	//additions for linked nodes
+	virtual	bool		IsLinked(void								) const=0;
+	virtual	bool		IsViewer(void								) const=0;
+	virtual	IGISPoint *	GetSrcPoint(void							) const=0;
 };
 
 class	IGISPoint_Bezier : public virtual IGISPoint {

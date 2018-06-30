@@ -271,7 +271,7 @@ void	WED_VertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, Hand
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
 		{
-				Point2 dummy;
+			Point2 dummy;
 			if (active) *active = (n == 0);
 			switch(n) {
 			case 0:	pt_b->GetLocation(gis_Geo,*p);
@@ -741,8 +741,9 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		{
 			io_pt += delta;
 			pt->GetLocation(gis_Geo,p);
-			SnapMovePoint(io_pt,p, en);
+			SnapMovePoint(io_pt,p,pt->IsViewer() ? pt->GetSrcPoint() : pt);
 			pt->SetLocation(gis_Geo,p);
+
 			return;
 		}
 		break;
@@ -785,7 +786,7 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			if (mods & gui_OptionAltFlag)
 				p = io_pt;
 			else
-				SnapMovePoint(io_pt,p, en);
+				SnapMovePoint(io_pt,p, n== 0 && pt_b->IsViewer() ? pt_b->GetSrcPoint() : pt_b);
 
 			switch(n) {
 			case 0:	pt_b->SetLocation(gis_Geo,p);	break;
@@ -1134,14 +1135,14 @@ void	WED_VertexTool::ControlsLinksBy	 (intptr_t id, int c, const Vector2& delta,
 			double dist2 = 9.9e9;
 			Point2 sp1,sp2;
 
-			if(SnapMovePoint(io_pt + mPointOffset1,sp1,gp1))
+			if(SnapMovePoint(io_pt + mPointOffset1,sp1,gp1->IsViewer() ? gp1->GetSrcPoint() : gp1))
 			{
 				dist1 = Vector2(
 				GetZoomer()->LLToPixel(p1),
 				GetZoomer()->LLToPixel(sp1)).squared_length();
 			}
 
-			if(SnapMovePoint(io_pt + mPointOffset2,sp2,gp2))
+			if(SnapMovePoint(io_pt + mPointOffset2,sp2,gp2->IsViewer() ? gp2->GetSrcPoint() : gp2))
 			{
 				dist2 = Vector2(
 				GetZoomer()->LLToPixel(p2),
@@ -1329,16 +1330,23 @@ void		WED_VertexTool::AddSnapPointRecursive(IGISEntity * e, const Bbox2& vis_are
 		pt = SAFE_CAST(IGISPoint, e);
 		if (pt)
 		{
-			pt->GetLocation(gis_Geo,loc);
-			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			if(!pt->IsViewer())
+			{
+				pt->GetLocation(gis_Geo,loc);
+				mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			}
 		}
 		break;
 	case gis_Point_Bezier:
 		bt = SAFE_CAST(IGISPoint_Bezier, e);
 		if (bt)
 		{
-			bt->GetLocation(gis_Geo,loc);
-			mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			if(!bt->IsViewer())
+			{
+				bt->GetLocation(gis_Geo,loc);
+				mSnapCache.push_back(pair<Point2,IGISEntity *>(loc, e));
+			}
+
 //			if (sel->IsSelected(e))
 			{
 				if (bt->GetControlHandleLo(gis_Geo,loc))
