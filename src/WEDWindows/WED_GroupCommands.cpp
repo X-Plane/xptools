@@ -3220,8 +3220,18 @@ static void do_chain_merge(ISelection * sel, const chain_merge_info_t & info)
 		for (size_t i = 0; i < points.size(); ++i)
 			points[i]->SetParent(info.c0, info.c0->CountChildren());
 
-		info.c1->SetParent(NULL, 0);
-		to_delete.insert(info.c1);
+		WED_GISPolygon * poly = dynamic_cast<WED_GISPolygon *>(info.c1->GetParent());
+		if (poly)
+		{
+			poly->SetParent(NULL, 0);
+			to_delete.insert(poly);
+		}
+		else
+		{
+			info.c1->SetParent(NULL, 0);
+			to_delete.insert(info.c1);
+		}
+
 	}
 
 	WED_AddChildrenRecursive(to_delete);
