@@ -99,6 +99,7 @@ void	WED_VertexTool::BeginEdit(void)
 	mIsRotate = 0;
 	mIsSymetric = 0;
 	mIsScale = 0;
+	mLastSnapPoint = NULL;
 	ISelection * sel = WED_GetSelect(GetResolver());
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	DebugAssert(sel != NULL && op != NULL);
@@ -117,6 +118,7 @@ void	WED_VertexTool::EndEdit(void)
 	mIsSymetric = 0;
 	mIsScale = 0;
 	mIsTaxiSpin = 0;
+	mLastSnapPoint = NULL;
 }
 
 int		WED_VertexTool::CountEntities(void) const
@@ -648,6 +650,8 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	IGISEntity * en = reinterpret_cast<IGISEntity *>(id);
 	WED_Runway * rwy = (en->GetGISSubtype() == WED_Runway::sClass) ? SAFE_CAST(WED_Runway, en) : NULL;
 	IGISQuad * quad = (en->GetGISSubtype() == WED_ExclusionZone::sClass || en->GetGISSubtype() == WED_OverlayImage::sClass || en->GetGISClass() == gis_Point_HeadingWidthLength || en->GetGISClass() == gis_Line_Width) ? dynamic_cast<IGISQuad *>(en) : NULL;
+   
+	GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 
 	IGISPoint * pt;
 	IGISPoint_Bezier * pt_b;
@@ -693,7 +697,6 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			mInEdit = 1;
 			if (n < 8)
 			{
-				GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 				mIsScale = mods & gui_ShiftFlag;
 				if (mods & gui_OptionAltFlag)
 				{
@@ -741,7 +744,16 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 		{
 			io_pt += delta;
 			pt->GetLocation(gis_Geo,p);
-			SnapMovePoint(io_pt,p,pt->IsViewer() ? pt->GetSrcPoint() : pt);
+			if(SnapMovePoint(io_pt,p,pt->IsViewer() ? pt->GetSrcPoint() : pt))
+			{
+				if(mods & gui_ControlFlag)
+				{
+					IGISPoint * tgt = mLastSnapPoint;
+					if(tgt)
+					pt->IsLinked() ? pt->Unlink() : pt->Link(tgt);
+				}
+			}
+			
 			pt->SetLocation(gis_Geo,p);
 
 			return;
@@ -750,7 +762,6 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 	case gis_Point_Bezier:
 		if ((pt_b = SAFE_CAST(IGISPoint_Bezier,en)) != NULL)
 		{
-			GUI_KeyFlags mods = GetHost()->GetModifiersNow();
 			if (!mInEdit)
 			{
 				pt_b->GetLocation(gis_Geo,p);
@@ -786,7 +797,16 @@ void	WED_VertexTool::ControlsHandlesBy(intptr_t id, int n, const Vector2& delta,
 			if (mods & gui_OptionAltFlag)
 				p = io_pt;
 			else
-				SnapMovePoint(io_pt,p, n== 0 && pt_b->IsViewer() ? pt_b->GetSrcPoint() : pt_b);
+				if(SnapMovePoint(io_pt,p,pt_b->IsViewer() ? pt_b->GetSrcPoint() : pt_b))
+				{
+					if((mods & gui_ControlFlag && n == 0))
+					{
+						IGISPoint * tgt = mLastSnapPoint;
+						if(tgt) pt_b->Link(tgt);		
+					}
+				}
+				else if(mods & gui_ControlFlag)		
+					pt_b->Unlink();
 
 			switch(n) {
 			case 0:	pt_b->SetLocation(gis_Geo,p);	break;
@@ -1406,6 +1426,7 @@ bool		WED_VertexTool::SnapMovePoint(
 	Point2	modi(ideal_track_pt);
 	double smallest_dist=9.9e9;
 	Point2	best(modi);
+	IGISEntity * best_ent = NULL;
 	bool IsSnap = false;
 
 	if (mSnapToGrid)
@@ -1438,12 +1459,14 @@ bool		WED_VertexTool::SnapMovePoint(
 			{
 				smallest_dist = dist;
 				best = posi;
+				best_ent = mSnapCache[n].second;
 				IsSnap = true;
 			}
 		}
 	}
 
 	io_thing_pt = best;
+	mLastSnapPoint = dynamic_cast<IGISPoint *>(best_ent);
 	return IsSnap;
 }
 

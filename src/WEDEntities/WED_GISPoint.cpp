@@ -143,7 +143,18 @@ void	WED_GISPoint::GetLocationExpl(GISLayer_t l,     Point2& p) const
 
 void	WED_GISPoint::GetLocation(GISLayer_t l,     Point2& p) const
 {
-		GetLocationExpl(l,p);
+	WED_GISPoint * wgp = GetSourcePoint();
+	if(wgp)
+	{	
+		//ISelection * sel = WED_GetSelect(GetArchive()->GetResolver());
+		//if(!Iterate_HasSelectedParent(wgp,sel))
+		{
+			wgp->GetLocationExpl(l,p);
+			return;
+		}
+	}
+
+	GetLocationExpl(l,p);	
 }
 
 bool	WED_GISPoint::IsLinked(void	) const
@@ -238,6 +249,51 @@ void	WED_GISPoint::SetLocationExpl(GISLayer_t l, const Point2& p)
 		CacheInval(cache_Spatial);
 		CacheBuild(cache_Spatial);
 	}
+}
+
+void	WED_GISPoint::Link(IGISPoint * tgt) 
+{
+	
+	WED_GISPoint * tgt_point = dynamic_cast<WED_GISPoint *>(tgt);
+
+	Point2 tgt_loc , my_loc;
+	GetLocation(gis_Geo,my_loc);
+	tgt_point->GetLocation(gis_Geo,tgt_loc);
+	
+	//DebugAssert(IsLinked() || tgt_point->IsLinked());
+		
+
+	// position does not match
+	if( ( tgt_loc.x() != my_loc.x() ) || ( tgt_loc.y() != my_loc.y() ) )
+		return;
+
+	AddSource(tgt_point,0);
+
+}
+
+void	WED_GISPoint::Unlink()
+{
+	// this is a srcnode 
+	if( CountViewers() > 0 )
+	{
+		set<WED_Thing *> viewers;
+		GetAllViewers(viewers);
+		set<WED_Thing *>::iterator v1 = viewers.begin();
+		(*v1)->RemoveSource(this);
+		set<WED_Thing *>::iterator  v = v1;
+		++v;
+		for( v ;v != viewers.end();++v)
+		{
+			(*v)->ReplaceSource(this,*v1);
+		}
+	}	
+
+	//detach from source
+	if( CountSources() > 0 )
+	{	
+		RemoveSource(GetNthSource(0));
+	}
+	
 }
 
 void			WED_GISPoint::Rotate			(GISLayer_t l, const Point2& ctr, double a)

@@ -67,6 +67,9 @@ public:
 	virtual	bool			IsLinked(void	) const;
 	virtual	bool			IsViewer(void	) const;
 	virtual	IGISPoint *		GetSrcPoint(void) const;
+
+	virtual	void			Link(IGISPoint * tgt) ;
+	virtual	void			Unlink(void) 		  ;
 	
 	// linked node
 	WED_GISPoint *			GetSourcePoint(void) const;

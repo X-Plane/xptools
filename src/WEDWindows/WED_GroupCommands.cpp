@@ -594,7 +594,24 @@ void	WED_DoClear(IResolver * resolver)
 		WED_AirportNode * n = dynamic_cast<WED_AirportNode*>(*i);
 		if(n && n->CountViewers() == 2)
 			common_nodes.insert(n);
+
+		//handle linked nodes here , 
+		WED_GISPoint * wgp = dynamic_cast<WED_GISPoint *>(*i);
+		if(wgp && wgp->CountViewers() > 0)
+		{
+			set<WED_Thing *> viewers;
+			wgp->GetAllViewers(viewers);
+			set<WED_Thing *>::iterator v1 = viewers.begin();
+			(*v1)->RemoveSource(wgp);
+			set<WED_Thing *>::iterator  v = v1;
+			++v;
+			for( v ;v != viewers.end();++v)
+			{
+				(*v)->ReplaceSource(wgp,*v1);
+			}
+		}	
 	}
+
 	for(set<WED_AirportNode *>::iterator n = common_nodes.begin(); n != common_nodes.end(); ++n)
 	{
 		set<WED_Thing *> viewers;
@@ -619,6 +636,8 @@ void	WED_DoClear(IResolver * resolver)
 		e2->RemoveSource(other_node);
 		who.insert(e2);
 	}
+
+	
 
 	WED_RecursiveDelete(who);
 

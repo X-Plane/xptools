@@ -115,6 +115,7 @@ private:
 		mutable long long				mEntityCacheKeyArchive;
 		mutable long long				mEntityCacheKeyZoomer;
 
+		IGISPoint * 									mLastSnapPoint;
 		mutable vector<pair<Point2,IGISEntity *> >		mSnapCache;
 		mutable long long								mSnapCacheKeyArchive;
 		mutable long long								mSnapCacheKeyZoomer;
