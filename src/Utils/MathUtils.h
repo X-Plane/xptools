@@ -92,6 +92,7 @@ inline int fltbox (const float x ,const float y ,const float x1,const float y1,c
 			return true;}
 
 inline float flt_abs	(const float in){return (in>=0.0f)?in:-in;}		// TYPICAL case: fabs() takes 6.3% of the CPU time, according to profiling!
+inline double dob_abs	(const double in){return (in>=0.0f)?in:-in;}
 inline int int_abs	(const int in){return (in>=0   )?in:-in;}		// going to this proc instead takes 0.1%! 6.2% speed boost with no performance loss! BAM!
 
 inline int intlim(const int in,const int min,const int max){
@@ -232,5 +233,20 @@ inline int dec_needed(const float val){
 	if(flt_abs(val)>  99.9)return 2;
 	if(flt_abs(val)>   9.9)return 3;
 						   return 4;}
+
+const double degrees_to_radians = 3.14159265358979 / 180;
+
+// Degrees of latitude are parallel, so the distance between each degree remains (almost) constant.
+// This is approximate, however, since the true length of a degree latitude varies
+// (due to Earth's slightly ellipsoid shape) from 110.567 km at the equator to 111.699 km at the poles.
+const int degree_latitude_to_m = 111133;
+
+// Degrees of longitude are farthest apart at the equator and converge at the poles,
+// so their distance varies greatly with the latitude you're at.
+inline double degree_longitude_to_m(double degrees_latitude)
+{
+	const int degree_longitude_to_m_at_equator = 111321;
+	return cos((long double)degrees_latitude * degrees_to_radians) * degree_longitude_to_m_at_equator;
+}
 
 #endif

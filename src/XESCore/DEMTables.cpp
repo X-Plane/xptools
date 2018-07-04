@@ -409,7 +409,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			
 		}
 
-		info.regionalization = -1;
+		info.regionalization = OLD_SERGIO_RULES ? 0 : -1;
 		string ter_string(FetchTokenString(ter_name));
 		for(int r = 0; r < gRegionalizations.size(); ++r)
 		{

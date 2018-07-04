@@ -2216,6 +2216,7 @@ VOCAB    terrain/rainforest_flat1
 VOCAB    terrain/rainforest_flat2
 VOCAB    terrain/rainforest_flat3
 VOCAB    terrain/rainforest_flat4
+VOCAB    terrain/mobile_orthophoto
 VOCAB    terrain/any
 VOCAB    lu_usgs_GRASSLAND
 VOCAB    lu_usgs_CONIFER

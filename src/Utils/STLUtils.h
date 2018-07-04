@@ -49,6 +49,15 @@ void tokenize_string_func(InputIterator begin, InputIterator end, OutputIterator
 template <class InputIterator, class String>
 bool filter_match(const String& txt, InputIterator begin, InputIterator end);
 
+// CONTAINS - A simple helper function to determine whether a value is contained in
+// an STL container.
+// NOTE that set has been specialized.
+template<class T> inline
+bool contains(const set<T>& container, const T& value)		{ return (container.count(value) > 0); }
+
+template<class TContainer, class T> inline
+bool contains(const TContainer& container, const T& value)	{ return (find(container.begin(), container.end(), value) != container.end()); }
+
 // SET UTILS
 
 // Simple inserter and eraser output iterator adapter for STL sets.

@@ -659,6 +659,7 @@
 	TOKEN(terrain_Urban1)
 	TOKEN(terrain_Urban2)
 	TOKEN(terrain_Urban3)
+	TOKEN(terrain_PseudoOrthophoto) // A pseudo-orthophoto used by Mobile's "autogen terrain"
 
 	// NOTE: this terrain is at the END of the terrain enums so we can serialize
 	// specific natural terrain after this!

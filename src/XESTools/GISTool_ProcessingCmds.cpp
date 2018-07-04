@@ -51,6 +51,9 @@
 #include "MapHelpers.h"
 #include "ForestTables.h"
 #include "GISUtils.h"
+#include "MapCreate.h"
+#include "MapOverlay.h"
+#include "MobileAutogenAlgs.h"
 
 // Hack to avoid forest pre-processing - to be used to speed up --instobjs for testing AG algos when
 // we don't NEED good forest fill.
@@ -514,6 +517,110 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 
 }
 
+
+Pmwx s_autogen_grid;
+
+static int DoMobileAutogenTerrain(const vector<const char *> &args)
+{
+	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
+	const DEMGeo & climate_style(gDem[dem_ClimStyle]);
+	DebugAssertWithExplanation(climate_style.mWidth > 0 && climate_style.mHeight > 0, "No climate data available");
+
+	const Bbox_2 bounding_box = Bbox_2(climate_style.mWest, climate_style.mSouth, climate_style.mEast, climate_style.mNorth);
+	vector<Segment_2> grid_params;
+	const int degrees_lon = intround(climate_style.mEast  - climate_style.mWest);
+	const int degrees_lat = intround(climate_style.mNorth - climate_style.mSouth);
+	DebugAssertWithExplanation(flt_abs(climate_style.mEast  - climate_style.mWest  - degrees_lon) < 0.01, "Working area should be an integer number of degrees longitude");
+	DebugAssertWithExplanation(flt_abs(climate_style.mNorth - climate_style.mSouth - degrees_lat) < 0.01, "Working area should be an integer number of degrees latitude");
+
+	for(int degree_lon = 0; degree_lon < degrees_lon; ++degree_lon)
+	for(int degree_lat = 0; degree_lat < degrees_lat; ++degree_lat)
+	{
+		const double lon_min = climate_style.mWest  + degree_lon;
+		const double lon_max = climate_style.mWest  + degree_lon + 1;
+		const double lat_min = climate_style.mSouth + degree_lat;
+		const double lat_max = climate_style.mSouth + degree_lat + 1;
+
+		const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m, 0.5 * (lat_min + lat_max));
+		for(int x = 0; x <= divisions_lon; ++x)
+		{
+			double lon = lon_min + ((double)x / divisions_lon);
+			grid_params.push_back(Segment_2(Point_2(lon, lat_min), Point_2(lon, lat_max)));
+		}
+
+		const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m);
+		for(int y = 0; y <= divisions_lat; ++y)
+		{
+			const double lat = lat_min + ((double)y / divisions_lat);
+			grid_params.push_back(Segment_2(Point_2(lon_min, lat), Point_2(lon_max, lat)));
+		}
+	}
+
+//	for(int y = 0; y <= degrees_lat * squares_per_degree; ++y)
+//	{
+//		double lat = climate_style.mSouth + ((double)y / squares_per_degree);
+//		grid_params.push_back(Segment_2(Point_2(bounding_box.xmin(), lat), Point_2(bounding_box.xmax(), lat)));
+//	}
+
+	// These are effectively the gridlines for every grid square
+	vector<vector<Pmwx::Halfedge_handle> >	halfedge_handles;
+	// Edges will be adjacent to faces where we want to set the terrain type
+	Map_CreateReturnEdges(s_autogen_grid, grid_params, halfedge_handles);
+
+	// TODO: set the underlying terrain types based on real level of urbanization in the DEMs
+	int idx = 0;
+	for(Pmwx::Face_handle f = s_autogen_grid.faces_begin(); f != s_autogen_grid.faces_end(); ++f)
+	{
+		GIS_face_data &fd = f->data();
+		fd.mTerrainType = NO_VALUE;
+		fd.mTemp1 = NO_VALUE;
+		fd.mTemp2 = NO_VALUE;
+		#if OPENGL_MAP
+			memset(fd.mGLColor, sizeof(fd.mGLColor), 0);
+		#endif
+
+		if(!f->is_unbounded() && idx % 30 == 0)
+		{
+			f->set_contained(true);
+			fd.mTerrainType = terrain_PseudoOrthophoto;
+			fd.mAreaFeature.mParams[af_Height] = idx;
+		}
+		++idx;
+	}
+	return 0;
+}
+
+static int MergeTylersAg(const vector<const char *>& args)
+{
+	// Tyler says:
+	// I think we need 3 layers here (from bottom to top):
+	// 0. The global map as it exists before we manipulate it---no faces marked as "contained"
+	// 1. The AG map overlaid on top of that, with all faces marked as "contained"
+	//     - This will blit over important features in urban areas like water and airports!
+	// 2. The original map *again*, with its important features (like water & airports) marked as contained
+	//     - This lets us recover what the AG tried to clear
+	Pmwx intermediate_autogen_on_top;
+	MapOverlay(gMap, s_autogen_grid, intermediate_autogen_on_top);
+
+	vector<int> terrain_types_to_keep;
+	terrain_types_to_keep.push_back(terrain_Water);
+	terrain_types_to_keep.push_back(terrain_VisualWater);
+	terrain_types_to_keep.push_back(terrain_Airport);
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	{
+		GIS_face_data &fd = f->data();
+		if(!f->is_unbounded() && contains(terrain_types_to_keep, fd.mTerrainType))
+		{
+			f->set_contained(true);
+		}
+	}
+
+	Pmwx final;
+	MapOverlay(intermediate_autogen_on_top, gMap, final);
+	gMap = final;
+	return 0;
+}
+
 static int DoBuildRoads(const vector<const char *>& args)
 {
 	if (gVerbose) printf("Building roads...\n");
@@ -575,10 +682,12 @@ static	GISTool_RegCmd_t		sProcessCmds[] = {
 { "-derivedems", 	1, 1, DoDeriveDEMs, 	"Derive DEM data.", 				  "" },
 { "-removedupes", 	0, 0, DoRemoveDupeObjs, "Remove duplicate objects.", 		  "" },
 { "-instobjs", 		0, 0, DoInstantiateObjs, "Instantiate Objects.", 			  "" },
+{ "-autogenterrain",	0, 0, DoMobileAutogenTerrain,	"Mobile 'orthophoto'-based autogen.", "" },
 { "-buildroads", 	0, 0, DoBuildRoads, 	"Pick Road Types.", 	  			"" },
 { "-assignterrain", 1, 1, DoAssignLandUse, 	"Assign Terrain to Mesh.", 	 		 "" },
 { "-exportdsf", 	2, 2, DoBuildDSF, 		"Build DSF file.", 					  "" },
 
+{ "-merge_ag_terrain",	0, 0, MergeTylersAg,	"Merge AG terrain into the map.", "" },
 
 
 { 0, 0, 0, 0, 0, 0 }

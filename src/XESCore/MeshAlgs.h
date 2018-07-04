@@ -43,6 +43,8 @@ class	CDT;
 //class	Pmwx;
 
 struct	MeshPrefs_t {
+	bool operator==(const MeshPrefs_t &other) const { return max_points == other.max_points && max_error == other.max_error && border_match == other.border_match && optimize_borders == other.optimize_borders && max_tri_size_m == other.max_tri_size_m && rep_switch_m == other.rep_switch_m; }
+	bool operator!=(const MeshPrefs_t &other) const { return !(*this == other); }
 	int		max_points;
 	float	max_error;
 	int		border_match;

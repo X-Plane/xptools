@@ -26,7 +26,7 @@
 // Sergio's rule spreadsheets from v8/v9 used an older syntax.  Andras has since normalized the syntax
 // using new commands for v10.  This code base is meant to run with v10.  For v9-compatible rules,
 // use the MeshTool release branch to avoid this fundamental change!
-#define OLD_SERGIO_RULES 0
+#define OLD_SERGIO_RULES 1
 
 #include "CompGeomDefs2.h"
 #include "ConfigSystem.h"

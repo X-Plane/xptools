@@ -1153,6 +1153,13 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 	}
 
 	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi)
+	// Tyler says: I'm lazy... let's pass through the terrain type from the original face (assigned in DoMobileAutogenTerrain()) down to the underlying face
+	if(ffi->info().orig_face->data().mTerrainType == terrain_PseudoOrthophoto)
+	{
+		ffi->info().terrain = terrain_PseudoOrthophoto;
+		ffi->info().feature = terrain_PseudoOrthophoto;
+	}
+	else
 	if (ffi->info().terrain == terrain_Water)
 	for (int vi = 0; vi < 3; ++vi)
 	{
@@ -1992,7 +1999,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 								const char * mesh_folder,
 								ProgressFunc	inProg)
 {
-
+	DebugAssertWithExplanation(gMeshPrefs != s_mesh_prefs_mobile || OLD_SERGIO_RULES, "Since you're not building a mobile mesh, you almost certainly want turn off the old Sergio rules compile flag.");
 
 		CDT::Finite_faces_iterator tri;
 		CDT::Finite_vertices_iterator vert;
@@ -2035,6 +2042,16 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			landuse(x,y) = DEM_NO_DATA;
 	}
 	landuse.fill_nearest();
+
+	int ortho_enum = -1;
+	for(map<int, NaturalTerrainInfo_t>::const_iterator it = gNaturalTerrainInfo.begin(); it != gNaturalTerrainInfo.end(); ++it)
+	{
+		if(it->second.regionalization == 0 && it->second.layer > 9990)
+		{
+			ortho_enum = it->first;
+			break; // Note that our STERRAIN rule automatically creates 4 variants... we only care about the one
+		}
+	}
 
 	/***********************************************************************************************
 	 * ASSIGN BASIC LAND USES TO MESH
@@ -2210,9 +2227,7 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				//fprintf(stderr, "->%d", terrain);
 
 				tri->info().terrain = terrain;
-
 			}
-
 		}
 	}
 
@@ -2447,6 +2462,11 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 				CDT::Face_handle b2 = border->neighbor(1);
 				CDT::Face_handle b3 = border->neighbor(2);
 
+				// Only spread terrain if:
+				// - we haven't already visited the tri
+				// - we're not going in the outside of the triangulation
+				// - we're not over water
+				// - we're not lower priority
 				if (b1->info().flag != visited && !ioMesh.is_infinite(b1) && b1->info().terrain != terrain_Water && !border->info().get_edge_feature(0) && LowerPriorityNaturalTerrain(b1->info().terrain, layer))	to_visit.insert(b1);
 				if (b2->info().flag != visited && !ioMesh.is_infinite(b2) && b2->info().terrain != terrain_Water && !border->info().get_edge_feature(1) && LowerPriorityNaturalTerrain(b2->info().terrain, layer))	to_visit.insert(b2);
 				if (b3->info().flag != visited && !ioMesh.is_infinite(b3) && b3->info().terrain != terrain_Water && !border->info().get_edge_feature(2) && LowerPriorityNaturalTerrain(b3->info().terrain, layer))	to_visit.insert(b3);

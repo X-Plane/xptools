@@ -37,6 +37,7 @@
 #include "MathUtils.h"
 #include "PerfUtils.h"
 #include "GISTool_Globals.h"
+#include "MobileAutogenAlgs.h"
 
 /*
 	TODO:
@@ -1227,6 +1228,16 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;
 
+	int ortho = -1;
+	for(map<int, NaturalTerrainInfo_t>::const_iterator it = gNaturalTerrainInfo.begin(); it != gNaturalTerrainInfo.end(); ++it)
+	{
+		if(it->second.regionalization == 0 && it->second.layer > 9990)
+		{
+			ortho = it->first;
+			break; // Note that our STERRAIN rule automatically creates 4 variants... we only care about the one
+		}
+	}
+
 	if(writer1)
 	for (prog_c = 0.0, lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked, prog_c += 1.0)
 	{
@@ -1299,6 +1310,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		if (sHiResLU[cur_id].count(lu_ranked->first))
 		{
 			TriFanBuilder	fan_builder(&inHiresMesh);
+			bool is_mobile_ortho = false;
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
 			{
 				f = sHiResTris[cur_id][tri];
@@ -1308,6 +1320,11 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
 					fan_builder.AddTriToFanPool(f);
+
+					if(f->info().terrain >= ortho && f->info().terrain <= ortho + 4)
+					{
+						is_mobile_ortho = true;
+					}
 
 					++debug_add_tri_fan;
 				}
@@ -1322,7 +1339,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 				!IsCustomOverWaterSoft(lu_ranked->first))			// custom over soft water - we get physics from who is underneath
 				flags |= dsf_Flag_Physical;
 
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, is_water ? 7 : (pinfo ? 7 : 5), writer1);
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, (is_water || pinfo || is_mobile_ortho ? 7 : 5), writer1);
 			list<CDT::Vertex_handle>				primv;
 			list<CDT::Vertex_handle>::iterator		vert;
 			int										primt;
@@ -1367,6 +1384,26 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						DebugAssert(coords8[5] >= 0.0);
 						DebugAssert(coords8[5] <= 1.0);
 						DebugAssert(coords8[6] >= 0.0);
+						DebugAssert(coords8[6] <= 1.0);
+					}
+					else if(is_mobile_ortho)
+					{
+						const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(coords8[0], coords8[1]);
+
+						tex_proj_info ortho_projection = {};
+						ortho_projection.corners[0] = ortho_grid_square.bottom_left();
+						ortho_projection.corners[1] = ortho_grid_square.bottom_right();
+						ortho_projection.corners[2] = ortho_grid_square.top_right();
+						ortho_projection.corners[3] = ortho_grid_square.top_left();
+						ortho_projection.ST[0] = Point2(0, 0);
+						ortho_projection.ST[1] = Point2(1, 0);
+						ortho_projection.ST[2] = Point2(1, 1);
+						ortho_projection.ST[3] = Point2(0, 1);
+
+						ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
+						DebugAssert(coords8[5] >= 0.0); // s
+						DebugAssert(coords8[5] <= 1.0);
+						DebugAssert(coords8[6] >= 0.0); // t
 						DebugAssert(coords8[6] <= 1.0);
 					}
 					DebugAssert(coords8[3] >= -1.0);
