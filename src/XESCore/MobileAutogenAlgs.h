@@ -7,6 +7,7 @@
 #define MOBILEAUTOGENALGS_H
 
 #include "CompGeomDefs2.h"
+#include "MeshDefs.h"
 
 // The width and height of our square pseudo-orthophotos
 const int g_ortho_width_m = 1000;
@@ -30,7 +31,7 @@ int divisions_longitude_per_degree(double desired_division_width_m, double latit
  * @return The bounds, in terms of latitude and longitude, for the grid square of width g_ortho_width_m
  *         that contains the specified lon/lat.
  */
-Bbox2 get_ortho_grid_square_bounds(double longitude_degrees, double latitude_degrees);
+Bbox2 get_ortho_grid_square_bounds(const Point2 &vertex, const CDT::Face_handle &tri, const Bbox2 &containing_dsf);
 
 
 

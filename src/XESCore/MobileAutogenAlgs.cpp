@@ -30,15 +30,36 @@ int divisions_longitude_per_degree(double desired_division_width_m, double latit
 	return snap_division(degree_longitude_to_m(latitude_degrees), desired_division_width_m, exact_division_width_m);
 }
 
-Bbox2 get_ortho_grid_square_bounds(double lon, double lat)
+Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
 {
-	const Bbox2 containing_dsf((int)(lon - 1), (int)lat, (int)lon, (int)(lat + 1));
+	Polygon2 out;
+	out.reserve(3);
+	for(int vert_idx = 0; vert_idx < 3; ++vert_idx)
+	{
+		CDT::Vertex_handle vert = tri->vertex(vert_idx);
+		out.push_back(Point2(doblim(CGAL::to_double(vert->point().x()), containing_dsf.xmin(), containing_dsf.xmax()),
+							 doblim(CGAL::to_double(vert->point().y()), containing_dsf.ymin(), containing_dsf.ymax())));
+	}
+	DebugAssert(out.is_ccw());
+	DebugAssert(out.area() > 0);
+	return out;
+}
+
+Bbox2 get_ortho_grid_square_bounds(const Point2 &vertex, const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
+{
+	const Polygon2 ben_tri = cgal_tri_to_ben(tri, containing_dsf);
+	const Point2 centroid = ben_tri.centroid();
+	DebugAssert(ben_tri.inside(centroid));
 
 	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m, containing_dsf.centroid().y());
 	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m);
 
-	const double delta_lon = dob_abs(containing_dsf.xmin() - lon);
-	const double delta_lat = dob_abs(containing_dsf.ymin() - lat);
+	// Note: we use the *tri*'s centroid to decide the grid coords, because the *vertex* itself might be shared
+	//       between multiple tris in *different* grid squares.
+	//       (There's gonna be one tri with a vertex is at (1, 1) in UV, and another sharing the same vertex,
+	//        but needing UV coords of (0,0).)
+	const double delta_lon = dob_abs(containing_dsf.xmin() - centroid.x());
+	const double delta_lat = dob_abs(containing_dsf.ymin() - centroid.y());
 	const int x_grid_coord = delta_lon * divisions_lon;
 	const int y_grid_coord = delta_lat * divisions_lat;
 
@@ -49,8 +70,16 @@ Bbox2 get_ortho_grid_square_bounds(double lon, double lat)
 			containing_dsf.ymin() + ((double)(y_grid_coord + 1) / divisions_lat));
 	DebugAssert(out.xmin() < out.xmax());
 	DebugAssert(out.ymin() < out.ymax());
-	DebugAssert(out.contains(Point2(lon, lat)));
+	DebugAssert(containing_dsf.contains(out));
+	DebugAssert(out.contains(centroid));
 	DebugAssert(out.area() > 0);
+
+	// Tyler says: We can't actually guarantee this due to double precision limits.
+	//             If the vertex is on the edge of the grid square, it may be "outside"
+	//             the grid square's bounds by, say, 3 x 10^-10.
+	//             This appears not to end up mattering...
+	//DebugAssert(out.contains(vertex));
+
 	return out;
 }
 

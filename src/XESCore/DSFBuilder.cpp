@@ -1374,7 +1374,8 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						}
 						else if(is_mobile_ortho)
 						{
-							const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(coords8[0], coords8[1]);
+							const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(Point2(coords8[0], coords8[1]), f,
+																						 Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
 
 							tex_proj_info ortho_projection = {};
 							ortho_projection.corners[0] = ortho_grid_square.bottom_left();
