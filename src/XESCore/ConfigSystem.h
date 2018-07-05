@@ -77,6 +77,7 @@ bool				TokenizeEnumSet(const string& tokens, set<int>& slots);
 // S - enum set
 // P - Point2, splatted
 //   - skip
+// @return The actual number of tokens processed
 int				TokenizeLine(const vector<string>& tokens, const char * fmt, ...);
 
 #endif
