@@ -334,7 +334,8 @@ enum {
     tex_not_custom = 0,
     tex_custom_no_water = 1,
     tex_custom_hard_water = 2,
-    tex_custom_soft_water = 3
+    tex_custom_soft_water = 3,
+    tex_custom_pseudo_ortho = 4, // Used for Mobile scenery's "autogen terrain"
 };
 
 inline bool	LowerPriorityNaturalTerrain(int lhs, int rhs)

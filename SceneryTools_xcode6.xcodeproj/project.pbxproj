@@ -110,7 +110,6 @@
 		D60734960D197C1300E08F61 /* ParamDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */; };
 		D60734970D197C1500E08F61 /* SceneryPackages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386D0AB22C85003949C5 /* SceneryPackages.cpp */; };
 		D60734980D197C1600E08F61 /* SimpleIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386F0AB22C85003949C5 /* SimpleIO.cpp */; };
-		D60734990D197C1900E08F61 /* TriFan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38710AB22C85003949C5 /* TriFan.cpp */; };
 		D607349A0D197C1F00E08F61 /* XESIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387A0AB22C85003949C5 /* XESIO.cpp */; };
 		D60734B40D197C8900E08F61 /* BitmapUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC376D0AB22C85003949C5 /* BitmapUtils.cpp */; };
 		D60734BB0D197C9900E08F61 /* GISUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC377E0AB22C85003949C5 /* GISUtils.cpp */; };
@@ -271,7 +270,6 @@
 		D62436080AE403F4004F00E3 /* ParamDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */; };
 		D62436090AE403F4004F00E3 /* SceneryPackages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386D0AB22C85003949C5 /* SceneryPackages.cpp */; };
 		D624360A0AE403F4004F00E3 /* SimpleIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386F0AB22C85003949C5 /* SimpleIO.cpp */; };
-		D624360B0AE403F4004F00E3 /* TriFan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38710AB22C85003949C5 /* TriFan.cpp */; };
 		D624360E0AE403F4004F00E3 /* XESInit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38780AB22C85003949C5 /* XESInit.cpp */; };
 		D624360F0AE403F4004F00E3 /* XESIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387A0AB22C85003949C5 /* XESIO.cpp */; };
 		D62436100AE403F4004F00E3 /* Zoning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387C0AB22C85003949C5 /* Zoning.cpp */; };
@@ -393,7 +391,6 @@
 		D65E4B990B65453A004D7887 /* ParamDefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */; };
 		D65E4B9A0B65453B004D7887 /* SceneryPackages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386D0AB22C85003949C5 /* SceneryPackages.cpp */; };
 		D65E4B9B0B65453D004D7887 /* SimpleIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC386F0AB22C85003949C5 /* SimpleIO.cpp */; };
-		D65E4B9C0B65453E004D7887 /* TriFan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38710AB22C85003949C5 /* TriFan.cpp */; };
 		D65E4B9D0B654542004D7887 /* Zoning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387C0AB22C85003949C5 /* Zoning.cpp */; };
 		D65E4B9E0B654543004D7887 /* XESIO.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC387A0AB22C85003949C5 /* XESIO.cpp */; };
 		D65E4B9F0B654545004D7887 /* ObjTables.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6BC38690AB22C85003949C5 /* ObjTables.cpp */; };
@@ -1851,8 +1848,6 @@
 		D6BC386E0AB22C85003949C5 /* SceneryPackages.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SceneryPackages.h; sourceTree = "<group>"; };
 		D6BC386F0AB22C85003949C5 /* SimpleIO.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SimpleIO.cpp; sourceTree = "<group>"; };
 		D6BC38700AB22C85003949C5 /* SimpleIO.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SimpleIO.h; sourceTree = "<group>"; };
-		D6BC38710AB22C85003949C5 /* TriFan.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = TriFan.cpp; sourceTree = "<group>"; };
-		D6BC38720AB22C85003949C5 /* TriFan.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TriFan.h; sourceTree = "<group>"; };
 		D6BC38750AB22C85003949C5 /* WTPM.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = WTPM.cpp; sourceTree = "<group>"; };
 		D6BC38760AB22C85003949C5 /* WTPM.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = WTPM.h; sourceTree = "<group>"; };
 		D6BC38770AB22C85003949C5 /* XESConstants.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = XESConstants.h; sourceTree = "<group>"; };
@@ -3258,8 +3253,6 @@
 				D6BC38700AB22C85003949C5 /* SimpleIO.h */,
 				D67685250CC6A0690032B90C /* TensorRoads.h */,
 				D67685260CC6A0690032B90C /* TensorRoads.cpp */,
-				D6BC38710AB22C85003949C5 /* TriFan.cpp */,
-				D6BC38720AB22C85003949C5 /* TriFan.h */,
 				D6BC38750AB22C85003949C5 /* WTPM.cpp */,
 				D6BC38760AB22C85003949C5 /* WTPM.h */,
 				D6BC38770AB22C85003949C5 /* XESConstants.h */,
@@ -4096,7 +4089,6 @@
 				D60734960D197C1300E08F61 /* ParamDefs.cpp in Sources */,
 				D60734970D197C1500E08F61 /* SceneryPackages.cpp in Sources */,
 				D60734980D197C1600E08F61 /* SimpleIO.cpp in Sources */,
-				D60734990D197C1900E08F61 /* TriFan.cpp in Sources */,
 				D607349A0D197C1F00E08F61 /* XESIO.cpp in Sources */,
 				D60734B40D197C8900E08F61 /* BitmapUtils.cpp in Sources */,
 				D60734BB0D197C9900E08F61 /* GISUtils.cpp in Sources */,
@@ -4181,7 +4173,6 @@
 				D62436080AE403F4004F00E3 /* ParamDefs.cpp in Sources */,
 				D62436090AE403F4004F00E3 /* SceneryPackages.cpp in Sources */,
 				D624360A0AE403F4004F00E3 /* SimpleIO.cpp in Sources */,
-				D624360B0AE403F4004F00E3 /* TriFan.cpp in Sources */,
 				D604AEB61C0E7D7B006DC1F0 /* GLDebugMacros.cpp in Sources */,
 				D624360E0AE403F4004F00E3 /* XESInit.cpp in Sources */,
 				D624360F0AE403F4004F00E3 /* XESIO.cpp in Sources */,
@@ -4332,7 +4323,6 @@
 				D65E4B990B65453A004D7887 /* ParamDefs.cpp in Sources */,
 				D65E4B9A0B65453B004D7887 /* SceneryPackages.cpp in Sources */,
 				D65E4B9B0B65453D004D7887 /* SimpleIO.cpp in Sources */,
-				D65E4B9C0B65453E004D7887 /* TriFan.cpp in Sources */,
 				D65E4B9D0B654542004D7887 /* Zoning.cpp in Sources */,
 				D65E4B9E0B654543004D7887 /* XESIO.cpp in Sources */,
 				D65E4B9F0B654545004D7887 /* ObjTables.cpp in Sources */,

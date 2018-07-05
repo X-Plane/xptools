@@ -28,7 +28,6 @@
 #include "ForestTables.h"
 #include "NetPlacement.h"
 #include "MeshAlgs.h"
-#include "TriFan.h"
 #include "DEMAlgs.h"
 #include "DEMTables.h"
 #include "GISUtils.h"
@@ -424,6 +423,11 @@ inline bool IsCustomOverWaterAny(int n)
 	if (n == terrain_VisualWater)	return false;
 	return gNaturalTerrainInfo[n].custom_ter == tex_custom_hard_water ||
 			gNaturalTerrainInfo[n].custom_ter == tex_custom_soft_water;
+}
+
+inline bool IsCustomOrtho(int n)
+{
+	return n != terrain_Water && gNaturalTerrainInfo[n].custom_ter == tex_custom_pseudo_ortho;
 }
 
 inline bool IsCustom(int n)
@@ -830,7 +834,7 @@ string		get_terrain_name(int composite)
 	}
 	else if (gNaturalTerrainInfo.count(composite) > 0)
 	{
-		if(IsCustom(composite))
+		if(IsCustom(composite) && !IsCustomOrtho(composite))
 		{
 			if(IsCustomOverWaterAny(composite))
 			{
@@ -842,7 +846,6 @@ string		get_terrain_name(int composite)
 		}
 		else
 		{
-			// TODO: Add real prefix for mobile!
 			const string prefix = gMobile ? "lib/g8/" : "lib/g10/";
 			return prefix + string(FetchTokenString(composite)) + ".ter";
 		}
@@ -962,7 +965,6 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		double	coords8[8];
 		double							x, y, v;
 		CDT::Finite_faces_iterator		fi;
-		CDT::Face_handle				f;
 		CDT::Vertex_handle				avert;
 		CDT::Finite_vertices_iterator	vert;
 		map<int, int, SortByLULayer>::iterator 		lu_ranked;
@@ -1228,16 +1230,6 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 
 	if (inProgress && inProgress(0, 5, "Compiling Mesh", 1.0)) return;
 
-	int ortho = -1;
-	for(map<int, NaturalTerrainInfo_t>::const_iterator it = gNaturalTerrainInfo.begin(); it != gNaturalTerrainInfo.end(); ++it)
-	{
-		if(it->second.regionalization == 0 && it->second.layer > 9990)
-		{
-			ortho = it->first;
-			break; // Note that our STERRAIN rule automatically creates 4 variants... we only care about the one
-		}
-	}
-
 	if(writer1)
 	for (prog_c = 0.0, lu_ranked = landuses.begin(); lu_ranked != landuses.end(); ++lu_ranked, prog_c += 1.0)
 	{
@@ -1309,113 +1301,107 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		for (cur_id = 0; cur_id < (get_patch_dim_hi()*get_patch_dim_hi()); ++cur_id)
 		if (sHiResLU[cur_id].count(lu_ranked->first))
 		{
-			TriFanBuilder	fan_builder(&inHiresMesh);
-			bool is_mobile_ortho = false;
-			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)
+			vector<CDT::Face_handle> &hiResTris = sHiResTris[cur_id];
+			int prev_ter_enum = -1;
+			for(tri = 0; tri < hiResTris.size(); ++tri)
 			{
-				f = sHiResTris[cur_id][tri];
-				if (f->info().terrain == lu_ranked->first ||
-					(IsCustomOverWaterHard(f->info().terrain) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
-					(IsCustomOverWaterSoft(f->info().terrain) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water
+				CDT::Face_handle f = hiResTris[tri];
+				const int ter_enum = f->info().terrain;
+				if (ter_enum == lu_ranked->first ||
+					(IsCustomOverWaterHard(ter_enum) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
+					(IsCustomOverWaterSoft(ter_enum) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water
 				{
 					CHECK_TRI(f->vertex(0),f->vertex(1),f->vertex(2));
-					fan_builder.AddTriToFanPool(f);
 
-					if(f->info().terrain >= ortho && f->info().terrain <= ortho + 4)
+					++total_tris;
+					++tris_this_patch;
+
+					map<int, NaturalTerrainInfo_t>::const_iterator terrain = gNaturalTerrainInfo.find(ter_enum);
+					const bool is_mobile_ortho = terrain != gNaturalTerrainInfo.end() && terrain->second.custom_ter == tex_custom_pseudo_ortho;
+
+					tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
+
+					int flags = 0;
+					if(is_overlay)  flags |= dsf_Flag_Overlay;
+					if(lu_ranked->first != terrain_VisualWater &&			// Every patch is physical EXCEPT: visual water, obviously just for looks!
+						!IsCustomOverWaterSoft(lu_ranked->first))			// custom over soft water - we get physics from who is underneath
+						flags |= dsf_Flag_Physical;
+
+					if(prev_ter_enum != ter_enum)
 					{
-						is_mobile_ortho = true;
+						if(prev_ter_enum >= 0)
+						{
+							cbs.EndPatch_f(writer1);
+							cout << "Changing ter enum from " << prev_ter_enum << " to " << ter_enum << endl;
+						}
+						cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, (is_water || pinfo || is_mobile_ortho ? 7 : 5), writer1);
+						++total_patches;
+						prev_ter_enum = ter_enum;
 					}
 
-					++debug_add_tri_fan;
+					cbs.BeginPrimitive_f(dsf_Tri, writer1);
+					for(int vert_idx = 2; vert_idx >= 0; --vert_idx)
+					{
+						CDT::Vertex_handle vert = f->vertex(vert_idx);
+
+						// Ben says: the use of doblim warrants some explanation: CGAL provides EXACT arithmetic, but it does not give exact
+						// conversion back to float EVEN when that is possible!!  So the edge of our tile is guaranteed to be exactly on the DSF
+						// border but is not guaranteed to be within the DSF border once rounded.
+						// Because of this, we have to clamp our output to the double-precision bounds after conversion, since DSFLib is sensitive
+						// to out-of-boundary conditions!
+						DebugAssert(vert->point().x() >= inElevation.mWest  && vert->point().x() <= inElevation.mEast );
+						DebugAssert(vert->point().y() >= inElevation.mSouth && vert->point().y() <= inElevation.mNorth);
+						coords8[0] = doblim(CGAL::to_double(vert->point().x()),inElevation.mWest ,inElevation.mEast );
+						coords8[1] = doblim(CGAL::to_double(vert->point().y()),inElevation.mSouth,inElevation.mNorth);
+						DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
+						DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
+						coords8[2] =USE_DEM_H( vert->info().height, is_water,inHiresMesh,vert);
+						coords8[3] =USE_DEM_N( vert->info().normal[0]);
+						coords8[4] =USE_DEM_N(-vert->info().normal[1]);
+						if (is_water)
+						{
+							coords8[5] = GetWaterBlend(vert, inElevation, inBathymetry);
+							coords8[6] = CategorizeVertex(inHiresMesh,vert,terrain_Water) >= 0 ? 0.0 : 1.0;
+							DebugAssert(coords8[5] >= 0.0);
+							DebugAssert(coords8[5] <= 1.0);
+						}
+						else if (pinfo)	{
+							ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
+							DebugAssert(coords8[5] >= 0.0);
+							DebugAssert(coords8[5] <= 1.0);
+							DebugAssert(coords8[6] >= 0.0);
+							DebugAssert(coords8[6] <= 1.0);
+						}
+						else if(is_mobile_ortho)
+						{
+							const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(coords8[0], coords8[1]);
+
+							tex_proj_info ortho_projection = {};
+							ortho_projection.corners[0] = ortho_grid_square.bottom_left();
+							ortho_projection.corners[1] = ortho_grid_square.bottom_right();
+							ortho_projection.corners[2] = ortho_grid_square.top_right();
+							ortho_projection.corners[3] = ortho_grid_square.top_left();
+							ortho_projection.ST[0] = Point2(0, 0);
+							ortho_projection.ST[1] = Point2(1, 0);
+							ortho_projection.ST[2] = Point2(1, 1);
+							ortho_projection.ST[3] = Point2(0, 1);
+
+							ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
+							DebugAssert(coords8[5] >= 0.0); // s
+							DebugAssert(coords8[5] <= 1.0);
+							DebugAssert(coords8[6] >= 0.0); // t
+							DebugAssert(coords8[6] <= 1.0);
+						}
+						DebugAssert(coords8[3] >= -1.0);
+						DebugAssert(coords8[3] <=  1.0);
+						DebugAssert(coords8[4] >= -1.0);
+						DebugAssert(coords8[4] <=  1.0);
+						cbs.AddPatchVertex_f(coords8, writer1);
+					}
+					cbs.EndPrimitive_f(writer1);
 				}
+				cbs.EndPatch_f(writer1);
 			}
-			fan_builder.CalcFans();
-
-			tex_proj_info * pinfo = (gTexProj.count(lu_ranked->first)) ? &gTexProj[lu_ranked->first] : NULL;
-
-			int flags = 0;
-			if(is_overlay)  flags |= dsf_Flag_Overlay;
-			if(lu_ranked->first != terrain_VisualWater &&			// Every patch is physical EXCEPT: visual water, obviously just for looks!
-				!IsCustomOverWaterSoft(lu_ranked->first))			// custom over soft water - we get physics from who is underneath
-				flags |= dsf_Flag_Physical;
-
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, (is_water || pinfo || is_mobile_ortho ? 7 : 5), writer1);
-			list<CDT::Vertex_handle>				primv;
-			list<CDT::Vertex_handle>::iterator		vert;
-			int										primt;
-			while(1)
-			{
-                primt = fan_builder.GetNextPrimitive(primv);
-                if(primv.empty()) break;
-                if(primt != dsf_Tri)
-                 {
-                    ++total_tri_fans;
-                    total_tris += (primv.size() - 2);
-                } else {
-                    total_tris += (primv.size() / 3);
-                    tris_this_patch += (primv.size() / 3);
-                }
-                cbs.BeginPrimitive_f(primt, writer1);
-                for(vert = primv.begin(); vert != primv.end(); ++vert)
-                {
-					// Ben says: the use of doblim warrants some explanation: CGAL provides EXACT arithmetic, but it does not give exact
-					// conversion back to float EVEN when that is possible!!  So the edge of our tile is guaranteed to be exactly on the DSF
-					// border but is not guaranteed to be within the DSF border once rounded.
-					// Because of this, we have to clamp our output to the double-precision bounds after conversion, since DSFLib is sensitive
-					// to out-of-boundary conditions!
-					DebugAssert((*vert)->point().x() >= inElevation.mWest  && (*vert)->point().x() <= inElevation.mEast );
-					DebugAssert((*vert)->point().y() >= inElevation.mSouth && (*vert)->point().y() <= inElevation.mNorth);
-					coords8[0] = doblim(CGAL::to_double((*vert)->point().x()),inElevation.mWest ,inElevation.mEast );
-					coords8[1] = doblim(CGAL::to_double((*vert)->point().y()),inElevation.mSouth,inElevation.mNorth);
-					DebugAssert(coords8[0] >= inElevation.mWest  && coords8[0] <= inElevation.mEast );
-					DebugAssert(coords8[1] >= inElevation.mSouth && coords8[1] <= inElevation.mNorth);
-					coords8[2] =USE_DEM_H( (*vert)->info().height, is_water,inHiresMesh,(*vert));
-					coords8[3] =USE_DEM_N( (*vert)->info().normal[0]);
-					coords8[4] =USE_DEM_N(-(*vert)->info().normal[1]);
-					if (is_water)
-					{
-						coords8[5] = GetWaterBlend((*vert), inElevation, inBathymetry);
-						coords8[6] = CategorizeVertex(inHiresMesh,*vert,terrain_Water) >= 0 ? 0.0 : 1.0;
-						DebugAssert(coords8[5] >= 0.0);
-						DebugAssert(coords8[5] <= 1.0);
-					}
-					else if (pinfo)	{
-						ProjectTex(coords8[0],coords8[1],coords8[5],coords8[6],pinfo);
-						DebugAssert(coords8[5] >= 0.0);
-						DebugAssert(coords8[5] <= 1.0);
-						DebugAssert(coords8[6] >= 0.0);
-						DebugAssert(coords8[6] <= 1.0);
-					}
-					else if(is_mobile_ortho)
-					{
-						const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(coords8[0], coords8[1]);
-
-						tex_proj_info ortho_projection = {};
-						ortho_projection.corners[0] = ortho_grid_square.bottom_left();
-						ortho_projection.corners[1] = ortho_grid_square.bottom_right();
-						ortho_projection.corners[2] = ortho_grid_square.top_right();
-						ortho_projection.corners[3] = ortho_grid_square.top_left();
-						ortho_projection.ST[0] = Point2(0, 0);
-						ortho_projection.ST[1] = Point2(1, 0);
-						ortho_projection.ST[2] = Point2(1, 1);
-						ortho_projection.ST[3] = Point2(0, 1);
-
-						ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
-						DebugAssert(coords8[5] >= 0.0); // s
-						DebugAssert(coords8[5] <= 1.0);
-						DebugAssert(coords8[6] >= 0.0); // t
-						DebugAssert(coords8[6] <= 1.0);
-					}
-					DebugAssert(coords8[3] >= -1.0);
-					DebugAssert(coords8[3] <=  1.0);
-					DebugAssert(coords8[4] >= -1.0);
-					DebugAssert(coords8[4] <=  1.0);
-					cbs.AddPatchVertex_f(coords8, writer1);
-				}
-				cbs.EndPrimitive_f(writer1);
-			}
-			cbs.EndPatch_f(writer1);
-			++total_patches;
 		}
 
 		/***************************************************************************************************************************************
@@ -1432,7 +1418,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 			tris_this_patch = 0;
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)				// For each tri
 			{
-				f = sHiResTris[cur_id][tri];
+				CDT::Face_handle f = sHiResTris[cur_id][tri];
 				if (f->info().terrain_border.count(lu_ranked->first))			// If it has this border...
 				{
 					float	bblend[3];

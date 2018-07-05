@@ -492,6 +492,7 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 }
 
 #if OLD_SERGIO_RULES
+static inline bool case_insensitive_compare(char a, char b) { return toupper(a) == toupper(b); }
 bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 {
 	NaturalTerrainInfo_t	info;
@@ -709,6 +710,17 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 //		sForests[info.forest_type] = orig_forest;
 //	}
 
+	const string ortho_substring = "orthophoto";
+	const bool is_pseudo_ortho = ter_name.end() != std::search(ter_name.begin(), ter_name.end(),
+																ortho_substring.begin(), ortho_substring.end(),
+																case_insensitive_compare);
+	if(is_pseudo_ortho)
+	{
+		DebugAssertWithExplanation(info.layer > 999,
+				"You've hit Tyler's shitty code for doing Mobile \"autogen terrain\", "
+				"but didn't specify a ridiculous layer... perhaps you didn't intend for this?");
+		info.custom_ter = tex_custom_pseudo_ortho;
+	}
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
 	if (proj == "EW")	info.proj_angle = proj_EastWest;
