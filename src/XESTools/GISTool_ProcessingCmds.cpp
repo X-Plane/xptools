@@ -522,6 +522,7 @@ Pmwx s_autogen_grid;
 
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
+	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
 	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
 	const DEMGeo & climate_style(gDem[dem_ClimStyle]);
 	DebugAssertWithExplanation(climate_style.mWidth > 0 && climate_style.mHeight > 0, "No climate data available");
@@ -556,45 +557,56 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		}
 	}
 
-//	for(int y = 0; y <= degrees_lat * squares_per_degree; ++y)
-//	{
-//		double lat = climate_style.mSouth + ((double)y / squares_per_degree);
-//		grid_params.push_back(Segment_2(Point_2(bounding_box.xmin(), lat), Point_2(bounding_box.xmax(), lat)));
-//	}
-
 	// These are effectively the gridlines for every grid square
 	vector<vector<Pmwx::Halfedge_handle> >	halfedge_handles;
 	// Edges will be adjacent to faces where we want to set the terrain type
 	Map_CreateReturnEdges(s_autogen_grid, grid_params, halfedge_handles);
 
-	// TODO: set the underlying terrain types based on real level of urbanization in the DEMs
-	int idx = 0;
 	for(Pmwx::Face_handle f = s_autogen_grid.faces_begin(); f != s_autogen_grid.faces_end(); ++f)
 	{
-		GIS_face_data &fd = f->data();
-		fd.mTerrainType = NO_VALUE;
-		fd.mTemp1 = NO_VALUE;
-		fd.mTemp2 = NO_VALUE;
-		#if OPENGL_MAP
-			memset(fd.mGLColor, sizeof(fd.mGLColor), 0);
-		#endif
-
-		if(!f->is_unbounded() && idx % 30 == 0)
+		if(!f->is_unbounded())
 		{
-			f->set_contained(true);
-			fd.mTerrainType = terrain_PseudoOrthophoto;
-//			fd.mOverlayType = terrain_PseudoOrthophoto;		// This would make an overlay.
-			fd.mAreaFeature.mParams[af_Height] = idx;
-			
-			// Must burn EVERY grid square.  This is mandatory for overlays so they aren't optimized away,
-			// and for base terrain so that adjacent terrain gets a dividing edge in the mesh.
-			Pmwx::Ccb_halfedge_circulator circ, stop;
-			circ = stop = f->outer_ccb();
+			GIS_face_data &fd = f->data();
+			fd.mTerrainType = NO_VALUE;
+			fd.mTemp1 = NO_VALUE;
+			fd.mTemp2 = NO_VALUE;
+			#if OPENGL_MAP
+				memset(fd.mGLColor, sizeof(fd.mGLColor), 0);
+			#endif
+
+			double sum_urbanization = 0;
+			int num_edges = 0;
+			Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
 			do {
-				circ->data().mParams[he_MustBurn] = 1;
-			} while(++circ != stop);
+				const Point_2 &source = edge->source()->point();
+				const double urbanization = gDem[dem_UrbanDensity].value_linear(
+						CGAL::to_double(source.x()),
+						CGAL::to_double(source.y()));
+				if(urbanization != DEM_NO_DATA)
+				{
+					sum_urbanization += urbanization;
+					++num_edges;
+
+					// Must burn EVERY grid square.  This is mandatory for overlays so they aren't optimized away,
+					// and for base terrain so that adjacent terrain gets a dividing edge in the mesh.
+					edge->data().mParams[he_MustBurn] = 1;
+				}
+				--edge;
+			} while(edge != f->outer_ccb());
+
+			if(num_edges > 0)
+			{
+				double mean_urbanization = sum_urbanization / num_edges;
+
+				static const double min_urbanization_for_ortho = 0.1;
+				if(mean_urbanization > min_urbanization_for_ortho)
+				{
+					f->set_contained(true);
+					fd.mTerrainType = terrain_PseudoOrthophoto;
+					//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
+				}
+			}
 		}
-		++idx;
 	}
 	return 0;
 }

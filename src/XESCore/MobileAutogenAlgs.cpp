@@ -45,16 +45,19 @@ Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_ds
 	return out;
 }
 
-Bbox2 get_ortho_grid_square_bounds(const Point2 &vertex, const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
+Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
 {
+	DebugAssertWithExplanation(dob_abs(containing_dsf.xspan() - 1) < 0.01, "Your 'DSF' is not 1x1 degree");
+	DebugAssertWithExplanation(dob_abs(containing_dsf.yspan() - 1) < 0.01, "Your 'DSF' is not 1x1 degree");
 	const Polygon2 ben_tri = cgal_tri_to_ben(tri, containing_dsf);
+	DebugAssert(containing_dsf.contains(ben_tri.bounds()));
 	const Point2 centroid = ben_tri.centroid();
 	DebugAssert(ben_tri.inside(centroid));
 
 	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m, containing_dsf.centroid().y());
 	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m);
 
-	// Note: we use the *tri*'s centroid to decide the grid coords, because the *vertex* itself might be shared
+	// Note: we use the *tri*'s centroid to decide the grid coords, because any *vertex* might be shared
 	//       between multiple tris in *different* grid squares.
 	//       (There's gonna be one tri with a vertex is at (1, 1) in UV, and another sharing the same vertex,
 	//        but needing UV coords of (0,0).)
@@ -74,11 +77,22 @@ Bbox2 get_ortho_grid_square_bounds(const Point2 &vertex, const CDT::Face_handle 
 	DebugAssert(out.contains(centroid));
 	DebugAssert(out.area() > 0);
 
-	// Tyler says: We can't actually guarantee this due to double precision limits.
-	//             If the vertex is on the edge of the grid square, it may be "outside"
-	//             the grid square's bounds by, say, 3 x 10^-10.
-	//             This appears not to end up mattering...
-	//DebugAssert(out.contains(vertex));
+#if DEV
+	vector<Point2> ensure_within_bounds = ben_tri;
+	for(vector<Point2>::const_iterator pt = ensure_within_bounds.begin(); pt != ensure_within_bounds.end(); ++pt)
+	{
+		const Point2 &p = *pt;
+		// Tyler says: We can't actually guarantee this due to double precision limits.
+		//             If the vertex is on the edge of the grid square, it may be "outside"
+		//             the grid square's bounds by, say, 3 x 10^-10.
+		//             This appears not to end up mattering...
+		//DebugAssert(out.contains(*pt));
+		DebugAssert(out.xmin() - pt->x() <  0.001);
+		DebugAssert(out.xmax() - pt->x() > -0.001);
+		DebugAssert(out.ymin() - pt->y() <  0.001);
+		DebugAssert(out.ymax() - pt->y() > -0.001);
+	}
+#endif
 
 	return out;
 }

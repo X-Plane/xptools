@@ -29,9 +29,9 @@ int divisions_longitude_per_degree(double desired_division_width_m, double latit
 
 /**
  * @return The bounds, in terms of latitude and longitude, for the grid square of width g_ortho_width_m
- *         that contains the specified lon/lat.
+ *         that contains the specified tri.
  */
-Bbox2 get_ortho_grid_square_bounds(const Point2 &vertex, const CDT::Face_handle &tri, const Bbox2 &containing_dsf);
+Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &containing_dsf);
 
 
 

@@ -1384,8 +1384,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						else if(is_mobile_ortho)
 						{
 							// COPY PASTA warning - see same use of get_ortho_grid_square_bounds for border tris but with more UV coordinates.
-							const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(Point2(coords8[0], coords8[1]), f,
-																						 Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
+							const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(f, Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
 
 							tex_proj_info ortho_projection = {};
 							ortho_projection.corners[0] = ortho_grid_square.bottom_left();
@@ -1483,8 +1482,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 							if(is_mobile_ortho)
 							{
 								// COPY PASTA WARNING - this is stolen from the base mesh case.
-								const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(Point2(coords8[0], coords8[1]), f,
-																							 Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
+								const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(f, Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
 
 								tex_proj_info ortho_projection = {};
 								ortho_projection.corners[0] = ortho_grid_square.bottom_left();
