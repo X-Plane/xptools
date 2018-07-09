@@ -844,6 +844,11 @@ string		get_terrain_name(int composite)
 			}
 			return FetchTokenString(composite);
 		}
+		else if(IsCustomOrtho(composite))
+		{
+			const string prefix = "lib/mobile/autogen/";
+			return prefix + string(FetchTokenString(composite)) + ".ter";
+		}
 		else
 		{
 			const string prefix = gMobile ? "lib/g8/" : "lib/g10/";
@@ -859,8 +864,12 @@ string		get_terrain_name(int composite)
 struct SortByLULayer {
 	bool operator()(const int& lhs, const int& rhs) const {
 		if (lhs >= terrain_Natural && rhs >= terrain_Natural)
-		if (!IsCustom(lhs) && !IsCustom(rhs))
-			return LowerPriorityNaturalTerrain(lhs,rhs);
+		{
+			bool custom_lhs = IsCustom(lhs) && !IsCustomOrtho(lhs);
+			bool custom_rhs = IsCustom(rhs) && !IsCustomOrtho(rhs);
+			if (!custom_lhs && !custom_rhs)
+				return LowerPriorityNaturalTerrain(lhs,rhs);
+		}
 		return lhs < rhs;
 	}
 };

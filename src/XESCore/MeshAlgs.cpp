@@ -1153,13 +1153,6 @@ void	SetTerrainForConstraints(CDT& ioMesh, const DEMGeo& allPts)
 	}
 
 	for (CDT::Finite_faces_iterator ffi = ioMesh.finite_faces_begin(); ffi != ioMesh.finite_faces_end(); ++ffi)
-	// Tyler says: I'm lazy... let's pass through the terrain type from the original face (assigned in DoMobileAutogenTerrain()) down to the underlying face
-	if(ffi->info().orig_face->data().mTerrainType == terrain_PseudoOrthophoto)
-	{
-		ffi->info().terrain = terrain_PseudoOrthophoto;
-		ffi->info().feature = terrain_PseudoOrthophoto;
-	}
-	else
 	if (ffi->info().terrain == terrain_Water)
 	for (int vi = 0; vi < 3; ++vi)
 	{

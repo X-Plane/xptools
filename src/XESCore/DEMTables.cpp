@@ -492,6 +492,17 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 }
 
 #if OLD_SERGIO_RULES
+
+// auto-variation codes for the AUTO_VARY flag of "sterrain" records. These control how auto-vary terrains are built and how scre is managed.  Tyler's orthos are jammed in here too.
+// This code JUST controls how rules are processed - it does NOT end up in the final run-time 'rules'!
+enum {
+	avc_none = 0,				// No auto-variation.  Terrain is just used.
+	avc_auto_vary = 1,			// Generate single-terrain auto-vary
+	avc_auto_vary2 = 2,			// Generate auto-vary terrain and a second "2" terrain.
+	avc_variant_by_heading = 3,	// Generate manual variations for variant codes 5-8 by heading for scree
+	avc_mobile_orthophoto = 4	// No auto-variation, but terrain is mobile orthophoto
+};
+
 static inline bool case_insensitive_compare(char a, char b) { return toupper(a) == toupper(b); }
 bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 {
@@ -689,7 +700,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	if (rule.urban_trans_min > rule.urban_trans_max)	return false;
 	if (rule.urban_square < 0 || rule.urban_square > 2)	return false;
 	if (rule.lat_min > rule.lat_max)					return false;
-	if (auto_vary != 0 && auto_vary != 1 && auto_vary != 2) 	return false;
+	if (auto_vary != avc_none && auto_vary != avc_auto_vary && auto_vary != avc_auto_vary2 && auto_vary != avc_mobile_orthophoto) 	return false;
 
 	info.map_rgb.rgb[0] /= 255.0;
 	info.map_rgb.rgb[1] /= 255.0;
@@ -710,12 +721,10 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 //		sForests[info.forest_type] = orig_forest;
 //	}
 
-	const string ortho_substring = "orthophoto";
-	const bool is_pseudo_ortho = ter_name.end() != std::search(ter_name.begin(), ter_name.end(),
-																ortho_substring.begin(), ortho_substring.end(),
-																case_insensitive_compare);
+	const bool is_pseudo_ortho = auto_vary == avc_mobile_orthophoto;
 	if(is_pseudo_ortho)
 	{
+		auto_vary = avc_none;
 		DebugAssertWithExplanation(info.layer > 999,
 				"You've hit Tyler's shitty code for doing Mobile \"autogen terrain\", "
 				"but didn't specify a ridiculous layer... perhaps you didn't intend for this?");
@@ -724,7 +733,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 						info.proj_angle = proj_Down;
 	if (proj == "NS")	info.proj_angle = proj_NorthSouth;
 	if (proj == "EW")	info.proj_angle = proj_EastWest;
-	if (proj == "HDG")	auto_vary = 3;
+	if (proj == "HDG")	auto_vary = avc_variant_by_heading;
 
 	string::size_type nstart = tex_name.find_last_of("\\/:");
 	if (nstart == tex_name.npos)	nstart = 0; else nstart++;
@@ -767,23 +776,24 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	// both auto-vary and NOT auto-vary.  Note that auto-vary in our code is ALWAYS truly "auto-vary".
 	// In other words, as of now (v9.0 + MT2.0) we always use on-shader to vary terrain, _NOT_ 4 separate
 	// layers.  As of MT2/V9, we still use 4 layers to do HEADING-based terrain.
-	if (auto_vary < 3)
+	if (auto_vary != avc_variant_by_heading)
 	{
 		rule.variant = 0;			// Auto case - we don't use a variant-selector!
 //		rule.related = -1;			// Auto case - we don't need related.
 
 		string rep_name = ter_name;
-		if(auto_vary > 0) rep_name += "_av";
+		if(auto_vary > avc_none) rep_name += "_av";
 
-		LowerCheckName(rep_name);
+		if (info.custom_ter != tex_custom_pseudo_ortho)
+			LowerCheckName(rep_name);
 		rule.name = LookupTokenCreate(rep_name.c_str());
 		info.base_tex = tex_name;
 		info.autogen_mode = BARE;
-		if(auto_vary == 2)								// Auto-vary with two textures - convention is "2" on end of second texture.
+		if(auto_vary == avc_auto_vary2)								// Auto-vary with two textures - convention is "2" on end of second texture.
 		{
 			info.compo_tex = MakeCompo(info.base_tex);
 		}
-		if(auto_vary > 0)
+		if(auto_vary > avc_none)
 			info.shader = shader_vary;							// Auto-vary FLAG set when we use auto-vary.
 		else
 			info.shader = shader_normal;
@@ -811,7 +821,7 @@ bool	ReadNaturalTerrainInfo(const vector<string>& tokens, void * ref)
 	// The variant is: 0 = none, 1 = vary by spatial blobs, 2 = vary by spatial blobs (2tex) 3 = vary by slope heading
 	// The resulting codes in the struct are: 0 - no vary, 1-4 = spatial variants (all equal), 5-8 = heading variatns (N,E,S,W)
 	// For now we only generate 5-8.
-	if (auto_vary == 3)			// For the scree case
+	if (auto_vary == avc_variant_by_heading)			// For the scree case
 	{
 		// -1 for related field means no relation.  Otherwise it is the index of the FIRST of four variants.
 		// So...
