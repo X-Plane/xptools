@@ -297,6 +297,7 @@ class GIS_face_data {
 public:
 	//	int							mIsWater;
 	int							mTerrainType;		// This is a feature type for matching.  EXCEPTION: terrain_Water is both a feature and terrain.
+	int							mOverlayType;		// IF a terrain type is going to be rule-matched as an overlay, it is stashed here, e.g. outlay/town-overlays for mobile DSFs.
 	GISParamMap					mParams;
 	GISPointFeatureVector		mPointFeatures;
 	GISPolygonFeatureVector		mPolygonFeatures;
@@ -323,9 +324,10 @@ public:
 	#if DEV
 		~GIS_face_data() { mTerrainType = 0xDEADBEEF; }
 	#endif
-	GIS_face_data() : mTerrainType(0) { mAreaFeature.mFeatType = 0; }
+	GIS_face_data() : mTerrainType(0), mOverlayType(0) { mAreaFeature.mFeatType = 0; }
 	GIS_face_data(const GIS_face_data &x) {
 		mTerrainType = x.mTerrainType;
+		mOverlayType = x.mOverlayType;
 		mParams = x.mParams;
 		mPointFeatures = x.mPointFeatures;
 		mPolygonFeatures = x.mPolygonFeatures;

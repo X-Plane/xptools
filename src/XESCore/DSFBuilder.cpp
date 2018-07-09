@@ -971,7 +971,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		double	coords4[4];
 		double	coords2[2];
 		//double	coords6[6];
-		double	coords8[8];
+		double	coords8[9];
 		double							x, y, v;
 		CDT::Finite_faces_iterator		fi;
 		CDT::Vertex_handle				avert;
@@ -1383,6 +1383,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						}
 						else if(is_mobile_ortho)
 						{
+							// COPY PASTA warning - see same use of get_ortho_grid_square_bounds for border tris but with more UV coordinates.
 							const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(Point2(coords8[0], coords8[1]), f,
 																						 Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
 
@@ -1423,7 +1424,11 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		if (lu_ranked->first >= terrain_Natural)
 		if (sHiResBO[cur_id].count(lu_ranked->first))							// Quick check: do we have ANY border tris in this layer in this patch?
 		{
-			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, get_terrain_far_border_lod(), dsf_Flag_Overlay, /*is_composite ? 8 :*/ 7, writer1);
+
+			map<int, NaturalTerrainInfo_t>::const_iterator terrain = gNaturalTerrainInfo.find(lu_ranked->first);
+			const bool is_mobile_ortho = terrain != gNaturalTerrainInfo.end() && terrain->second.custom_ter == tex_custom_pseudo_ortho;
+
+			cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_BORDER_LOD, get_terrain_far_border_lod(), dsf_Flag_Overlay, /*is_composite ? 8 :*/ is_mobile_ortho ? 9 : 7, writer1);
 			cbs.BeginPrimitive_f(dsf_Tri, writer1);
 			tris_this_patch = 0;
 			for (tri = 0; tri < sHiResTris[cur_id].size(); ++tri)				// For each tri
@@ -1474,8 +1479,35 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 							coords8[3] =USE_DEM_N( f->vertex(vi)->info().normal[0]);
 							coords8[4] =USE_DEM_N(-f->vertex(vi)->info().normal[1]);
 //							coords8[5] = f->vertex(vi)->info().border_blend[lu_ranked->first];
-							coords8[5] = vi == border_pass ? 0.0 : bblend[vi];
-							coords8[6] = GetTightnessBlend(inHiresMesh, f, f->vertex(vi), lu_ranked->first);
+
+							if(is_mobile_ortho)
+							{
+								// COPY PASTA WARNING - this is stolen from the base mesh case.
+								const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(Point2(coords8[0], coords8[1]), f,
+																							 Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
+
+								tex_proj_info ortho_projection = {};
+								ortho_projection.corners[0] = ortho_grid_square.bottom_left();
+								ortho_projection.corners[1] = ortho_grid_square.bottom_right();
+								ortho_projection.corners[2] = ortho_grid_square.top_right();
+								ortho_projection.corners[3] = ortho_grid_square.top_left();
+								ortho_projection.ST[0] = Point2(0, 0);
+								ortho_projection.ST[1] = Point2(1, 0);
+								ortho_projection.ST[2] = Point2(1, 1);
+								ortho_projection.ST[3] = Point2(0, 1);
+
+								ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
+								// DSF sucks!  We have to replicate the UV coordinates of the base texture into the mask
+								// to get a correct border triangle.  Maybe someday we can optimize this out.
+								coords8[7] = coords8[5];
+								coords8[8] = coords8[6];
+
+							}
+							else
+							{
+								coords8[5] = vi == border_pass ? 0.0 : bblend[vi];
+								coords8[6] = GetTightnessBlend(inHiresMesh, f, f->vertex(vi), lu_ranked->first);
+							}
 							DebugAssert(coords8[5] >= 0.0);
 							DebugAssert(coords8[5] <= 1.0);
 							DebugAssert(coords8[6] >= 0.0);

@@ -583,7 +583,16 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		{
 			f->set_contained(true);
 			fd.mTerrainType = terrain_PseudoOrthophoto;
+//			fd.mOverlayType = terrain_PseudoOrthophoto;		// This would make an overlay.
 			fd.mAreaFeature.mParams[af_Height] = idx;
+			
+			// Must burn EVERY grid square.  This is mandatory for overlays so they aren't optimized away,
+			// and for base terrain so that adjacent terrain gets a dividing edge in the mesh.
+			Pmwx::Ccb_halfedge_circulator circ, stop;
+			circ = stop = f->outer_ccb();
+			do {
+				circ->data().mParams[he_MustBurn] = 1;
+			} while(++circ != stop);
 		}
 		++idx;
 	}

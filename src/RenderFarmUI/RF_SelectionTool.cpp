@@ -523,6 +523,9 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 //		if (the_face->data().mTerrainType != terrain_Natural)
 			n += sprintf(buf+n,"Art.Terrain:%s ", FetchTokenString(the_face->data().mTerrainType));
 
+		if (the_face->data().mOverlayType != NO_VALUE)
+			n += sprintf(buf+n,"Overlay:%s ", FetchTokenString(the_face->data().mOverlayType));
+
 		if (the_face->data().mAreaFeature.mFeatType != NO_VALUE)
 		{
 			n += sprintf(buf+n, "Area Feature:%s ", FetchTokenString(the_face->data().mAreaFeature.mFeatType));

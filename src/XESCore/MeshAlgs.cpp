@@ -2467,6 +2467,41 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 		}
 	}
 
+	//
+	// MOBILE ORTHOPHOTO OVERLAY BORDER GENERATION
+	//
+	// This code goes through and finds the triangles that have overlay orthophotos and forces the borders in.
+	for (tri = ioMesh.finite_faces_begin(); tri != ioMesh.finite_faces_end(); ++tri)
+	if (tri->info().terrain != terrain_Water)
+	if (tri->info().orig_face != Face_handle())
+	if (tri->info().orig_face->data().mOverlayType != NO_VALUE)
+	{
+		// The original terrain is a meta-terrain (e.g like terrain_Airport) from the pmwx.  We have to map it via the rule file
+		// to a real terrain.
+		int ot = tri->info().orig_face->data().mOverlayType;
+		
+		int rt = NO_VALUE;
+		// TODO: this is an abuse of the rule-mapping system...maybe make a separate faster hash table for mobile overlays?
+		for(NaturalTerrainRuleVector::iterator r = gNaturalTerrainRules.begin(); r != gNaturalTerrainRules.end(); ++r)
+		if(r->terrain == ot)
+		{
+			rt = r->name;
+			break;
+		}
+		// No real terrain, punt?
+		Assert(rt != NO_VALUE);
+		
+		// Force a border tri into the stack.
+		CDT::Vertex_handle v1 = tri->vertex(0);
+		CDT::Vertex_handle v2 = tri->vertex(1);
+		CDT::Vertex_handle v3 = tri->vertex(2);
+		v1->info().border_blend[rt] = 0.5;	// Why 0.5?  If we set the overlay values to 0 I think the tri MIGHT get skipped . If we set them to 1.0 then the mesh code
+		v2->info().border_blend[rt] = 0.5;	// decides the border is 100% opaque and optimizes it into a base tri.  0.5 ensures it is preserved, but any (0..1) number would have
+		v3->info().border_blend[rt] = 0.5;	// been fine and preserved the data.
+		tri->info().terrain_border.insert(rt);
+	}
+
+
 	/***********************************************************************************************
 	 * DEAL WITH INTRUSION FROM OUR MASTER SIDE
 	 ***********************************************************************************************/
