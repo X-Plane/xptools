@@ -931,6 +931,22 @@ static int IsAliased(int lu)
 	return 0;
 }
 
+tex_proj_info project_ortho(const CDT::Face_handle &face, const DEMGeo &dsf_bounds)
+{
+	const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(face, Bbox2(dsf_bounds.mWest, dsf_bounds.mSouth, dsf_bounds.mEast, dsf_bounds.mNorth));
+
+	tex_proj_info ortho_projection = {};
+	ortho_projection.corners[0] = ortho_grid_square.bottom_left();
+	ortho_projection.corners[1] = ortho_grid_square.bottom_right();
+	ortho_projection.corners[2] = ortho_grid_square.top_right();
+	ortho_projection.corners[3] = ortho_grid_square.top_left();
+	ortho_projection.ST[0] = Point2(0, 0);
+	ortho_projection.ST[1] = Point2(1, 0);
+	ortho_projection.ST[2] = Point2(1, 1);
+	ortho_projection.ST[3] = Point2(0, 1);
+	return ortho_projection;
+}
+
 void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
@@ -1383,19 +1399,8 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						}
 						else if(is_mobile_ortho)
 						{
-							// COPY PASTA warning - see same use of get_ortho_grid_square_bounds for border tris but with more UV coordinates.
-							const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(f, Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
-
-							tex_proj_info ortho_projection = {};
-							ortho_projection.corners[0] = ortho_grid_square.bottom_left();
-							ortho_projection.corners[1] = ortho_grid_square.bottom_right();
-							ortho_projection.corners[2] = ortho_grid_square.top_right();
-							ortho_projection.corners[3] = ortho_grid_square.top_left();
-							ortho_projection.ST[0] = Point2(0, 0);
-							ortho_projection.ST[1] = Point2(1, 0);
-							ortho_projection.ST[2] = Point2(1, 1);
-							ortho_projection.ST[3] = Point2(0, 1);
-
+							// COPY PASTA warning - see same use of project_ortho() for border tris but with more UV coordinates.
+							tex_proj_info ortho_projection = project_ortho(f, inElevation);
 							ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
 							DebugAssert(coords8[5] >= 0.0); // s
 							DebugAssert(coords8[5] <= 1.0);
@@ -1482,24 +1487,12 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 							if(is_mobile_ortho)
 							{
 								// COPY PASTA WARNING - this is stolen from the base mesh case.
-								const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(f, Bbox2(inElevation.mWest, inElevation.mSouth, inElevation.mEast, inElevation.mNorth));
-
-								tex_proj_info ortho_projection = {};
-								ortho_projection.corners[0] = ortho_grid_square.bottom_left();
-								ortho_projection.corners[1] = ortho_grid_square.bottom_right();
-								ortho_projection.corners[2] = ortho_grid_square.top_right();
-								ortho_projection.corners[3] = ortho_grid_square.top_left();
-								ortho_projection.ST[0] = Point2(0, 0);
-								ortho_projection.ST[1] = Point2(1, 0);
-								ortho_projection.ST[2] = Point2(1, 1);
-								ortho_projection.ST[3] = Point2(0, 1);
-
+								tex_proj_info ortho_projection = project_ortho(f, inElevation);
 								ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
 								// DSF sucks!  We have to replicate the UV coordinates of the base texture into the mask
 								// to get a correct border triangle.  Maybe someday we can optimize this out.
 								coords8[7] = coords8[5];
 								coords8[8] = coords8[6];
-
 							}
 							else
 							{
