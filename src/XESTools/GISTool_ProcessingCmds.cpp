@@ -557,6 +557,79 @@ inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f)
 	return out;
 }
 
+int choose_ortho_terrain(int land_use, double mean_urbanization)
+{
+	static const double min_urbanization_for_any_ortho = 0.001;
+	static const double min_urbanization_for_ortho_on_non_matching_land_use = 0.1;
+	if(land_use != lu_globcover_WATER &&
+			mean_urbanization > min_urbanization_for_any_ortho)
+	{
+		switch(land_use)
+		{
+			case lu_globcover_URBAN_CROP_TOWN:
+			case lu_globcover_URBAN_SQUARE_CROP_TOWN:
+			case lu_globcover_URBAN_SQUARE_TOWN:
+			case lu_globcover_URBAN_TOWN:
+				return terrain_PseudoOrthoTown1;
+			case lu_globcover_URBAN_LOW:
+			case lu_globcover_URBAN_MEDIUM:
+			case lu_globcover_URBAN_SQUARE_LOW:
+			case lu_globcover_URBAN_SQUARE_MEDIUM:
+			case lu_globcover_URBAN_HIGH:
+			case lu_globcover_URBAN_SQUARE_HIGH:
+				if(mean_urbanization <= 0.35)
+				{
+					return terrain_PseudoOrthoOuter1;
+				}
+				else if(mean_urbanization >= 0.55)
+				{
+					return terrain_PseudoOrthoInner1;
+				}
+				else if(land_use == lu_globcover_URBAN_HIGH || land_use == lu_globcover_URBAN_SQUARE_HIGH)
+				{
+					return terrain_PseudoOrthoInner1;
+				}
+				else
+				{
+					return terrain_PseudoOrthoOuter1;
+				}
+			case lu_globcover_INDUSTRY:
+			case lu_globcover_INDUSTRY_SQUARE:
+				return terrain_PseudoOrthoIndustrial1;
+			default:
+				if(mean_urbanization < min_urbanization_for_ortho_on_non_matching_land_use)
+				{
+					return NO_VALUE;
+				}
+				else if(mean_urbanization <= 0.15)
+				{
+					return terrain_PseudoOrthoTown1;
+				}
+				else if(mean_urbanization <= 0.4)
+				{
+					return terrain_PseudoOrthoOuter1;
+				}
+				else
+				{
+					return terrain_PseudoOrthoInner1;
+				}
+				break;
+		}
+	}
+	return NO_VALUE;
+}
+
+void dump_histogram(const vector<double> &vals)
+{
+	cout << "histogram([";
+	for(vector<double>::const_iterator t = vals.begin(); t != vals.end(); ++t)
+	{
+		cout << *t << ',';
+	}
+	cout << "], bins=20)" << endl;
+}
+
+//#define s_autogen_grid gMap
 Pmwx s_autogen_grid;
 
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
@@ -648,78 +721,20 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 
 			if(num_edges > 0)
 			{
-				double mean_urbanization = sum_urbanization / num_edges;
-
-				const grid_coord_desc grid_pt = get_orth_grid_xy(cgal_face_to_ben(f).centroid());
-
-				// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
-				const int variant = (grid_pt.x + grid_pt.y) % 2;
-
-				static const double min_urbanization_for_any_ortho = 0.001;
-				static const double min_urbanization_for_ortho_on_non_matching_land_use = 0.1;
+				const double mean_urbanization = sum_urbanization / num_edges;
 				const int land_use = MAJORITY_RULES(land_uses);
-				if(land_use != lu_globcover_WATER &&
-						mean_urbanization > min_urbanization_for_any_ortho)
+
+				fd.mTerrainType = choose_ortho_terrain(land_use, mean_urbanization);
+				//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
+
+				if(fd.mTerrainType != NO_VALUE)
 				{
 					f->set_contained(true);
-					//fd.mTerrainType = terrain_PseudoOrthophoto;
-					//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
 
-					switch(land_use)
-					{
-						case lu_globcover_URBAN_CROP_TOWN:
-						case lu_globcover_URBAN_SQUARE_CROP_TOWN:
-						case lu_globcover_URBAN_SQUARE_TOWN:
-						case lu_globcover_URBAN_TOWN:
-							fd.mTerrainType = terrain_PseudoOrthoTown1;
-							break;
-						case lu_globcover_URBAN_LOW:
-						case lu_globcover_URBAN_MEDIUM:
-						case lu_globcover_URBAN_SQUARE_LOW:
-						case lu_globcover_URBAN_SQUARE_MEDIUM:
-						case lu_globcover_URBAN_HIGH:
-						case lu_globcover_URBAN_SQUARE_HIGH:
-							if(mean_urbanization <= 0.35)
-							{
-								fd.mTerrainType = terrain_PseudoOrthoOuter1;
-							}
-							else if(mean_urbanization >= 0.55)
-							{
-								fd.mTerrainType = terrain_PseudoOrthoInner1;
-							}
-							else
-							{
-								const int t = (land_use == lu_globcover_URBAN_HIGH || land_use == lu_globcover_URBAN_SQUARE_HIGH) ? terrain_PseudoOrthoInner1 : terrain_PseudoOrthoOuter1;
-								fd.mTerrainType = t;
-							}
-							break;
-						case lu_globcover_INDUSTRY:
-						case lu_globcover_INDUSTRY_SQUARE:
-							fd.mTerrainType = terrain_PseudoOrthoIndustrial1;
-							break;
-						default:
-							if(mean_urbanization < min_urbanization_for_ortho_on_non_matching_land_use)
-							{
-								fd.mTerrainType = NO_VALUE;
-							}
-							else if(mean_urbanization <= 0.1)
-							{
-								fd.mTerrainType = terrain_PseudoOrthoTown1;
-							}
-							else if(mean_urbanization <= 0.4)
-							{
-								fd.mTerrainType = terrain_PseudoOrthoOuter1;
-							}
-							else
-							{
-								fd.mTerrainType = terrain_PseudoOrthoInner1;
-							}
-							break;
-					}
-					if(fd.mTerrainType != NO_VALUE)
-					{
-						fd.mTerrainType += variant;
-					}
+					const grid_coord_desc grid_pt = get_orth_grid_xy(cgal_face_to_ben(f).centroid());
+					// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
+					const int variant = (grid_pt.x + grid_pt.y) % 2;
+					fd.mTerrainType += variant;
 				}
 			}
 		}
