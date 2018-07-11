@@ -702,7 +702,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 							{
 								fd.mTerrainType = NO_VALUE;
 							}
-							if(mean_urbanization <= 0.1)
+							else if(mean_urbanization <= 0.1)
 							{
 								fd.mTerrainType = terrain_PseudoOrthoTown1;
 							}
