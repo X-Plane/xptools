@@ -660,7 +660,7 @@ void SafeSmearBorder(CDT& mesh, CDT::Vertex_handle vert, int layer)
  * TRANSITIONS
  ************************************************************************************************************************/
 
-inline int MAJORITY_RULES(int a, int b, int c, int d)
+static inline int MAJORITY_RULES(int a, int b, int c, int d)
 {
 	int la = 1, lb = 1, lc = 1, ld = 1;
 	if (a == b) ++la, ++lb;

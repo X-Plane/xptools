@@ -22,12 +22,12 @@ int snap_division(double available_width, double desired_division_width, double 
 
 int divisions_latitude_per_degree(double desired_division_width_m, double * exact_division_width_m)
 {
-	return snap_division(degree_latitude_to_m, desired_division_width_m, exact_division_width_m);
+	return int_abs(snap_division(degree_latitude_to_m, desired_division_width_m, exact_division_width_m));
 }
 
 int divisions_longitude_per_degree(double desired_division_width_m, double latitude_degrees, double * exact_division_width_m)
 {
-	return snap_division(degree_longitude_to_m(latitude_degrees), desired_division_width_m, exact_division_width_m);
+	return int_abs(snap_division(degree_longitude_to_m(latitude_degrees), desired_division_width_m, exact_division_width_m));
 }
 
 Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
@@ -45,6 +45,30 @@ Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_ds
 	return out;
 }
 
+grid_coord_desc get_orth_grid_xy(const Point2 &point)
+{
+	const double dsf_min_lon = floor(point.x());
+	const double dsf_min_lat = floor(point.y());
+	const double dsf_center_lat = dsf_min_lat + 0.5;
+
+	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m, dsf_center_lat);
+	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m);
+
+	// Note: we use the *tri*'s centroid to decide the grid coords, because any *vertex* might be shared
+	//       between multiple tris in *different* grid squares.
+	//       (There's gonna be one tri with a vertex is at (1, 1) in UV, and another sharing the same vertex,
+	//        but needing UV coords of (0,0).)
+	const double delta_lon = dob_abs(dsf_min_lon - point.x());
+	const double delta_lat = dob_abs(dsf_min_lat - point.y());
+	const int x_grid_coord = delta_lon * divisions_lon;
+	const int y_grid_coord = delta_lat * divisions_lat;
+
+	grid_coord_desc out = { x_grid_coord, y_grid_coord, divisions_lon, divisions_lat };
+	DebugAssert(out.x < out.dx);
+	DebugAssert(out.y < out.dy);
+	return out;
+}
+
 Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &containing_dsf)
 {
 	DebugAssertWithExplanation(dob_abs(containing_dsf.xspan() - 1) < 0.01, "Your 'DSF' is not 1x1 degree");
@@ -54,23 +78,13 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 	const Point2 centroid = ben_tri.centroid();
 	DebugAssert(ben_tri.inside(centroid));
 
-	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m, containing_dsf.centroid().y());
-	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m);
-
-	// Note: we use the *tri*'s centroid to decide the grid coords, because any *vertex* might be shared
-	//       between multiple tris in *different* grid squares.
-	//       (There's gonna be one tri with a vertex is at (1, 1) in UV, and another sharing the same vertex,
-	//        but needing UV coords of (0,0).)
-	const double delta_lon = dob_abs(containing_dsf.xmin() - centroid.x());
-	const double delta_lat = dob_abs(containing_dsf.ymin() - centroid.y());
-	const int x_grid_coord = delta_lon * divisions_lon;
-	const int y_grid_coord = delta_lat * divisions_lat;
+	const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
 
 	Bbox2 out(
-			containing_dsf.xmin() + ((double)x_grid_coord / divisions_lon),
-			containing_dsf.ymin() + ((double)y_grid_coord / divisions_lat),
-			containing_dsf.xmin() + ((double)(x_grid_coord + 1) / divisions_lon),
-			containing_dsf.ymin() + ((double)(y_grid_coord + 1) / divisions_lat));
+			containing_dsf.xmin() + ((double)grid_pt.x / grid_pt.dx),
+			containing_dsf.ymin() + ((double)grid_pt.y / grid_pt.dy),
+			containing_dsf.xmin() + ((double)(grid_pt.x + 1) / grid_pt.dx),
+			containing_dsf.ymin() + ((double)(grid_pt.y + 1) / grid_pt.dy));
 	DebugAssert(out.xmin() < out.xmax());
 	DebugAssert(out.ymin() < out.ymax());
 	DebugAssert(containing_dsf.contains(out));

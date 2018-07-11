@@ -518,11 +518,51 @@ static int DoInstantiateObjs(const vector<const char *>& args)
 }
 
 
+static inline int MAJORITY_RULES(int a, int b, int c, int d)
+{
+	int la = 1, lb = 1, lc = 1, ld = 1;
+	if (a == b) ++la, ++lb;
+	if (a == c) ++la, ++lc;
+	if (a == d) ++la, ++ld;
+	if (b == c) ++lb, ++lc;
+	if (b == d) ++lb, ++ld;
+	if (c == d) ++lc, ++ld;
+
+	if (la >= lb && la >= lc && la >= ld) return a;
+	if (lb >= la && lb >= lc && lb >= ld) return b;
+	if (lc >= la && lc >= lb && lc >= ld) return c;
+	if (ld >= la && ld >= lb && ld >= lc) return d;
+	return a;
+}
+
+static inline int MAJORITY_RULES(vector<int> values)
+{
+	DebugAssert(values.size() == 4);
+	return MAJORITY_RULES(values[0], values[1], values[2], values[3]);
+}
+
+inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f)
+{
+	Polygon2 out;
+	Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
+	const Point2 source_ben = cgal2ben(edge->source()->point());
+	const double dsf_min_lon = floor(source_ben.x());
+	const double dsf_min_lat = floor(source_ben.y());
+	do {
+		const Point2 source_ben = cgal2ben(edge->source()->point());
+		out.push_back(Point2(doblim(source_ben.x(), dsf_min_lon, dsf_min_lon + 1),
+							 doblim(source_ben.y(), dsf_min_lat, dsf_min_lat + 1)));
+		--edge;
+	} while(edge != f->outer_ccb());
+	return out;
+}
+
 Pmwx s_autogen_grid;
 
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
 	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
+	DebugAssertWithExplanation(gDem.count(dem_LandUse), "Tried to add autogen terrain with no DEM land use data; you probably need to change the order of your scenery gen commands");
 	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
 	const DEMGeo & climate_style(gDem[dem_ClimStyle]);
 	DebugAssertWithExplanation(climate_style.mWidth > 0 && climate_style.mHeight > 0, "No climate data available");
@@ -575,13 +615,14 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			#endif
 
 			double sum_urbanization = 0;
+			vector<int> land_uses;
 			int num_edges = 0;
 			Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
 			do {
-				const Point_2 &source = edge->source()->point();
-				const double urbanization = gDem[dem_UrbanDensity].value_linear(
-						CGAL::to_double(source.x()),
-						CGAL::to_double(source.y()));
+				const Point2 source_ben = cgal2ben(edge->source()->point());
+				const float urbanization = gDem[dem_UrbanDensity].value_linear(
+						source_ben.x(),
+						source_ben.y());
 				if(urbanization != DEM_NO_DATA)
 				{
 					sum_urbanization += urbanization;
@@ -591,6 +632,17 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 					// and for base terrain so that adjacent terrain gets a dividing edge in the mesh.
 					edge->data().mParams[he_MustBurn] = 1;
 				}
+
+				const int land_use = intround(
+						gDem[dem_LandUse].xy_nearest_raw(
+								source_ben.x(),
+								source_ben.y())
+				);
+				if(land_use != DEM_NO_DATA)
+				{
+					land_uses.push_back(land_use);
+				}
+
 				--edge;
 			} while(edge != f->outer_ccb());
 
@@ -598,12 +650,76 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			{
 				double mean_urbanization = sum_urbanization / num_edges;
 
-				static const double min_urbanization_for_ortho = 0.1;
-				if(mean_urbanization > min_urbanization_for_ortho)
+				const grid_coord_desc grid_pt = get_orth_grid_xy(cgal_face_to_ben(f).centroid());
+
+				// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
+				const int variant = (grid_pt.x + grid_pt.y) % 2;
+
+				static const double min_urbanization_for_any_ortho = 0.001;
+				static const double min_urbanization_for_ortho_on_non_matching_land_use = 0.1;
+				const int land_use = MAJORITY_RULES(land_uses);
+				if(land_use != lu_globcover_WATER &&
+						mean_urbanization > min_urbanization_for_any_ortho)
 				{
 					f->set_contained(true);
-					fd.mTerrainType = terrain_PseudoOrthophoto;
+					//fd.mTerrainType = terrain_PseudoOrthophoto;
 					//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
+
+					switch(land_use)
+					{
+						case lu_globcover_URBAN_CROP_TOWN:
+						case lu_globcover_URBAN_SQUARE_CROP_TOWN:
+						case lu_globcover_URBAN_SQUARE_TOWN:
+						case lu_globcover_URBAN_TOWN:
+							fd.mTerrainType = terrain_PseudoOrthoTown1;
+							break;
+						case lu_globcover_URBAN_LOW:
+						case lu_globcover_URBAN_MEDIUM:
+						case lu_globcover_URBAN_SQUARE_LOW:
+						case lu_globcover_URBAN_SQUARE_MEDIUM:
+						case lu_globcover_URBAN_HIGH:
+						case lu_globcover_URBAN_SQUARE_HIGH:
+							if(mean_urbanization <= 0.35)
+							{
+								fd.mTerrainType = terrain_PseudoOrthoOuter1;
+							}
+							else if(mean_urbanization >= 0.55)
+							{
+								fd.mTerrainType = terrain_PseudoOrthoInner1;
+							}
+							else
+							{
+								const int t = (land_use == lu_globcover_URBAN_HIGH || land_use == lu_globcover_URBAN_SQUARE_HIGH) ? terrain_PseudoOrthoInner1 : terrain_PseudoOrthoOuter1;
+								fd.mTerrainType = t;
+							}
+							break;
+						case lu_globcover_INDUSTRY:
+						case lu_globcover_INDUSTRY_SQUARE:
+							fd.mTerrainType = terrain_PseudoOrthoIndustrial1;
+							break;
+						default:
+							if(mean_urbanization < min_urbanization_for_ortho_on_non_matching_land_use)
+							{
+								fd.mTerrainType = NO_VALUE;
+							}
+							if(mean_urbanization <= 0.1)
+							{
+								fd.mTerrainType = terrain_PseudoOrthoTown1;
+							}
+							else if(mean_urbanization <= 0.4)
+							{
+								fd.mTerrainType = terrain_PseudoOrthoOuter1;
+							}
+							else
+							{
+								fd.mTerrainType = terrain_PseudoOrthoInner1;
+							}
+							break;
+					}
+					if(fd.mTerrainType != NO_VALUE)
+					{
+						fd.mTerrainType += variant;
+					}
 				}
 			}
 		}

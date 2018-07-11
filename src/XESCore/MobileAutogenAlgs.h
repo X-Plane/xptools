@@ -27,6 +27,14 @@ const int g_ortho_width_m = 1000;
 int divisions_latitude_per_degree( double desired_division_width_m,								double * exact_division_width_m=NULL);
 int divisions_longitude_per_degree(double desired_division_width_m, double latitude_degrees,	double * exact_division_width_m=NULL);
 
+struct grid_coord_desc {
+	int x;
+	int y;
+	int dx; // the number of columns (x dimension)
+	int dy; // the number of rows (y dimension)
+};
+grid_coord_desc get_orth_grid_xy(const Point2 &point);
+
 /**
  * @return The bounds, in terms of latitude and longitude, for the grid square of width g_ortho_width_m
  *         that contains the specified tri.

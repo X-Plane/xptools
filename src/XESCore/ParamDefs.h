@@ -659,7 +659,29 @@
 	TOKEN(terrain_Urban1)
 	TOKEN(terrain_Urban2)
 	TOKEN(terrain_Urban3)
+
 	TOKEN(terrain_PseudoOrthophoto) // A pseudo-orthophoto used by Mobile's "autogen terrain"
+	TOKEN(terrain_PseudoOrthoInner1)
+	TOKEN(terrain_PseudoOrthoInner2)
+	TOKEN(terrain_PseudoOrthoInnerSpecial1)
+	TOKEN(terrain_PseudoOrthoInnerSpecial2)
+	TOKEN(terrain_PseudoOrthoInnerPark)
+	TOKEN(terrain_PseudoOrthoInnerStadium)
+	TOKEN(terrain_PseudoOrthoTown1)
+	TOKEN(terrain_PseudoOrthoTown2)
+	TOKEN(terrain_PseudoOrthoTownSpecial1)
+	TOKEN(terrain_PseudoOrthoTownSpecial2)
+	TOKEN(terrain_PseudoOrthoTownLgBuilding)
+	TOKEN(terrain_PseudoOrthoIndustrial1)
+	TOKEN(terrain_PseudoOrthoIndustrial2)
+	TOKEN(terrain_PseudoOrthoIndustrialSpecial1)
+	TOKEN(terrain_PseudoOrthoIndustrialSpecial2)
+	TOKEN(terrain_PseudoOrthoOuter1)
+	TOKEN(terrain_PseudoOrthoOuter2)
+	TOKEN(terrain_PseudoOrthoOuterStadium)
+	TOKEN(terrain_PseudoOrthoOuterBuilding)
+	TOKEN(terrain_PseudoOrthoOuterSpecial1)
+	TOKEN(terrain_PseudoOrthoOuterSpecial2)
 
 	// NOTE: this terrain is at the END of the terrain enums so we can serialize
 	// specific natural terrain after this!
