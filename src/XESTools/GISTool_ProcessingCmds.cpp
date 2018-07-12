@@ -629,14 +629,17 @@ void dump_histogram(const vector<double> &vals)
 	cout << "], bins=20)" << endl;
 }
 
-//#define s_autogen_grid gMap
 Pmwx s_autogen_grid;
 
-static int DoMobileAutogenTerrain(const vector<const char *> &args)
+struct ag_terrain_dsf_description {
+	int dsf_lon;
+	int dsf_lat;
+	int divisions_lon;
+	int divisions_lat;
+};
+
+static vector<ag_terrain_dsf_description> initialize_autogen_pmwx()
 {
-	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
-	DebugAssertWithExplanation(gDem.count(dem_LandUse), "Tried to add autogen terrain with no DEM land use data; you probably need to change the order of your scenery gen commands");
-	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
 	const DEMGeo & climate_style(gDem[dem_ClimStyle]);
 	DebugAssertWithExplanation(climate_style.mWidth > 0 && climate_style.mHeight > 0, "No climate data available");
 
@@ -646,6 +649,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	const int degrees_lat = intround(climate_style.mNorth - climate_style.mSouth);
 	DebugAssertWithExplanation(flt_abs(climate_style.mEast  - climate_style.mWest  - degrees_lon) < 0.01, "Working area should be an integer number of degrees longitude");
 	DebugAssertWithExplanation(flt_abs(climate_style.mNorth - climate_style.mSouth - degrees_lat) < 0.01, "Working area should be an integer number of degrees latitude");
+
+	vector<ag_terrain_dsf_description> out;
+	out.reserve(degrees_lon * degrees_lat);
 
 	for(int degree_lon = 0; degree_lon < degrees_lon; ++degree_lon)
 	for(int degree_lat = 0; degree_lat < degrees_lat; ++degree_lat)
@@ -668,6 +674,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			const double lat = lat_min + ((double)y / divisions_lat);
 			grid_params.push_back(Segment_2(Point_2(lon_min, lat), Point_2(lon_max, lat)));
 		}
+
+		ag_terrain_dsf_description desc = {lon_min, lat_min, divisions_lon, divisions_lat};
+		out.push_back(desc);
 	}
 
 	// These are effectively the gridlines for every grid square
@@ -675,6 +684,94 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// Edges will be adjacent to faces where we want to set the terrain type
 	Map_CreateReturnEdges(s_autogen_grid, grid_params, halfedge_handles);
 
+	return out;
+}
+
+
+struct pair_comparator
+{
+	bool operator()(const pair<int, int> &a, const pair<int, int> &b) const {
+		return a.first * a.second < b.first * b.second;
+	}
+};
+
+static int DoMobileAutogenTerrain(const vector<const char *> &args)
+{
+	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
+	DebugAssertWithExplanation(gDem.count(dem_LandUse), "Tried to add autogen terrain with no DEM land use data; you probably need to change the order of your scenery gen commands");
+	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
+
+	const vector<ag_terrain_dsf_description> all_dsfs = initialize_autogen_pmwx();
+
+	typedef map<pair<int, int>, vector<vector<int> >, pair_comparator> dsf_to_ortho_terrain_map;
+	dsf_to_ortho_terrain_map ortho_terrain_by_dsf;
+	for(vector<ag_terrain_dsf_description>::const_iterator dsf = all_dsfs.begin(); dsf != all_dsfs.end(); ++dsf)
+	{
+		const pair<int, int> dsf_lon_lat = make_pair(dsf->dsf_lon, dsf->dsf_lat);
+		vector<vector<int> > &ortho_terrain_assignments = ortho_terrain_by_dsf[dsf_lon_lat];
+		ortho_terrain_assignments.resize(dsf->divisions_lon);
+		for(int lon_offset = 0; lon_offset < dsf->divisions_lon; ++lon_offset)
+		{
+			ortho_terrain_assignments[lon_offset].resize(dsf->divisions_lat);
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	// PASS 1
+	// Choose a "starting point" orthophoto for each tile in the grid
+	// based on land class and urban density data.
+	// If we stopped here, it would look like shit, because:
+	//   a) there would be no nice transitions between tile types
+	//   b) we would never have used the "special" tiles of each type (e.g., sports stadiums)
+	//   c) we wouldn't have done anything about standalone tiles, which just look awkward
+	//--------------------------------------------------------------------------------------------------------
+	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
+	for(int x = 0; x < dsf->second.size(); ++x)
+	for(int y = 0; y < dsf->second[x].size(); ++y)
+	{
+		const pair<int, int> &dsf_lon_lat = dsf->first;
+
+		double sum_urbanization = 0;
+		vector<int> land_uses;
+		int num_corners = 0;
+		for(int corner_x = 0; corner_x < 2; ++corner_x)
+		for(int corner_y = 0; corner_y < 2; ++corner_y)
+		{
+			const double lon = dsf_lon_lat.first + (double)(x + corner_x) / dsf->second.size();
+			const double lat = dsf_lon_lat.second + (double)(y + corner_y) / dsf->second[x].size();
+			const float urbanization = gDem[dem_UrbanDensity].value_linear(lon, lat);
+			if(urbanization != DEM_NO_DATA)
+			{
+				sum_urbanization += urbanization;
+				++num_corners;
+			}
+
+			const int land_use = intround(gDem[dem_LandUse].xy_nearest_raw(lon, lat));
+			if(land_use != DEM_NO_DATA)
+			{
+				land_uses.push_back(land_use);
+			}
+		}
+
+		if(num_corners > 0)
+		{
+			const double mean_urbanization = sum_urbanization / num_corners;
+			const int land_use = MAJORITY_RULES(land_uses);
+
+			const int ter_enum = choose_ortho_terrain(land_use, mean_urbanization);
+			if(ter_enum != NO_VALUE)
+			{
+				// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
+				const int variant = (x + y) % 2;
+				dsf->second[x][y] = ter_enum + variant;
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	// FINALLY
+	// Assign the selected terrain types to the Pmwx
+	//--------------------------------------------------------------------------------------------------------
 	for(Pmwx::Face_handle f = s_autogen_grid.faces_begin(); f != s_autogen_grid.faces_end(); ++f)
 	{
 		if(!f->is_unbounded())
@@ -687,54 +784,28 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				memset(fd.mGLColor, sizeof(fd.mGLColor), 0);
 			#endif
 
-			double sum_urbanization = 0;
-			vector<int> land_uses;
-			int num_edges = 0;
-			Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
-			do {
-				const Point2 source_ben = cgal2ben(edge->source()->point());
-				const float urbanization = gDem[dem_UrbanDensity].value_linear(
-						source_ben.x(),
-						source_ben.y());
-				if(urbanization != DEM_NO_DATA)
-				{
-					sum_urbanization += urbanization;
-					++num_edges;
-
-					// Must burn EVERY grid square.  This is mandatory for overlays so they aren't optimized away,
-					// and for base terrain so that adjacent terrain gets a dividing edge in the mesh.
-					edge->data().mParams[he_MustBurn] = 1;
-				}
-
-				const int land_use = intround(
-						gDem[dem_LandUse].xy_nearest_raw(
-								source_ben.x(),
-								source_ben.y())
-				);
-				if(land_use != DEM_NO_DATA)
-				{
-					land_uses.push_back(land_use);
-				}
-
-				--edge;
-			} while(edge != f->outer_ccb());
-
-			if(num_edges > 0)
+			const Point2 centroid = cgal_face_to_ben(f).centroid();
+			const pair<int, int> dsf = make_pair(floor(centroid.x()), floor(centroid.y()));
+			const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
+			DebugAssert(ortho_terrain_by_dsf.count(dsf) || cgal_face_to_ben(f).bounds().area() == 0);
+			if(ortho_terrain_by_dsf.count(dsf))
 			{
-				const double mean_urbanization = sum_urbanization / num_edges;
-				const int land_use = MAJORITY_RULES(land_uses);
-
-				fd.mTerrainType = choose_ortho_terrain(land_use, mean_urbanization);
-				//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
-
-				if(fd.mTerrainType != NO_VALUE)
+				DebugAssert(ortho_terrain_by_dsf[dsf].size() > grid_pt.x);
+				DebugAssert(ortho_terrain_by_dsf[dsf][grid_pt.x].size() > grid_pt.y);
+				const int ter_enum = ortho_terrain_by_dsf[dsf][grid_pt.x][grid_pt.y];
+				if(ter_enum != NO_VALUE)
 				{
 					f->set_contained(true);
-
-					const grid_coord_desc grid_pt = get_orth_grid_xy(cgal_face_to_ben(f).centroid());
-					// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
-					const int variant = (grid_pt.x + grid_pt.y) % 2;
-					fd.mTerrainType += variant;
+					fd.mTerrainType = ter_enum;
+					//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
+					
+					Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
+					do {
+						// Must burn EVERY grid square.  This is mandatory for overlays so they aren't optimized away,
+						// and for base terrain so that adjacent terrain gets a dividing edge in the mesh.
+						edge->data().mParams[he_MustBurn] = 1;
+						--edge;
+					} while(edge != f->outer_ccb());
 				}
 			}
 		}

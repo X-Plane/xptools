@@ -32,6 +32,8 @@ struct grid_coord_desc {
 	int y;
 	int dx; // the number of columns (x dimension)
 	int dy; // the number of rows (y dimension)
+	int dsf_lon;
+	int dsf_lat;
 };
 grid_coord_desc get_orth_grid_xy(const Point2 &point);
 
