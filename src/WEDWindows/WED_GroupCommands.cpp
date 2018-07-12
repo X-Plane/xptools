@@ -61,6 +61,7 @@
 #include "WED_TaxiRouteNode.h"
 
 #include "WED_EnumSystem.h"
+#include "WED_GISUtils.h"
 #include "WED_HierarchyUtils.h"
 #include "WED_LibraryMgr.h"
 #include "WED_Menus.h"
@@ -69,7 +70,27 @@
 #include "WED_ResourceMgr.h"
 #include "WED_ToolUtils.h"
 #include "WED_UIDefs.h"
+#include "XObjDefs.h"
+#include "CompGeomDefs2.h"
+#include "CompGeomUtils.h"
+#include "WED_GISEdge.h"
+#include "GISUtils.h"
+#include "MathUtils.h"
+#include "WED_EnumSystem.h"
+#include "CompGeomUtils.h"
+#include "WED_AirportChain.h"
+#include "WED_HierarchyUtils.h"
+#include "WED_Orthophoto.h"
+#include "WED_FacadePlacement.h"
+#include "WED_GISUtils.h"
+#include "WED_LinePlacement.h"
+#include "WED_PolygonPlacement.h"
+#include "WED_SimpleBezierBoundaryNode.h"
+#include "WED_SimpleBoundaryNode.h"
+#include "WED_Taxiway.h"
 
+#include <algorithm>
+#include <map>
 #include <sstream>
 
 #if DEV
@@ -479,6 +500,20 @@ static bool WED_NoLongerViable(WED_Thing * t, bool strict)
 	return false;
 }
 
+// For every object in 'who', adds all of its descendents to 'who'.
+static void WED_AddChildrenRecursive(set<WED_Thing *>& who)
+{
+	// Make a copy of the roots of the search, as we don't want to modify 'who' while we're
+	// iterating over it.
+	vector<WED_Thing*> roots(who.begin(), who.end());
+
+	for (size_t i = 0; i < roots.size(); ++i)
+		CollectRecursive(roots[i], inserter(who, who.end()), IgnoreVisiblity, TakeAlways);
+}
+
+// Deletes everything in 'who', along with any parents, sources and viewers that the deletion
+// makes unviable.
+// Requirement: For every object in 'who', all of its children must also be be in 'who'.
 static void WED_RecursiveDelete(set<WED_Thing *>& who)
 {
 	// This is sort of a scary mess.  We are going to delete everyone in 'who'.  But this might have
@@ -1450,15 +1485,318 @@ static int collect_edges(ISelectable * base, void * ref)
 	return 0;
 }
 
+namespace
+{
+struct chain_split_info_t {
+	WED_GISChain * c;
+	WED_GISPoint * p;
+};
+
+struct ring_split_info_t {
+	WED_GISChain * c;
+	WED_GISPoint * p0;
+	WED_GISPoint * p1;
+	int pos_0;
+	int pos_1;
+};
+}
+
+static bool is_chain_split(ISelection * sel, chain_split_info_t * info)
+{
+	// Must have exactly one point selected
+	if(sel->GetSelectionCount() != 1)
+		return false;
+	WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(sel->GetNthSelection(0));
+	if(!p)
+		return false;
+
+	// The point must have a WED_GISChain parent
+	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p->GetParent());
+	if(!c)
+		return false;
+
+	if(c->IsClosed())
+	{
+		// If the chain is closed, it must be a WED_AirportChain, and its parent must not be a WED_GISPolygon.
+		if (!dynamic_cast<WED_AirportChain *>(c) || dynamic_cast<WED_GISPolygon *>(c->GetParent()))
+			return false;
+	}
+	else
+	{
+		// If the chain is open, the point must not be the first or last point in the chain.
+		int pos = p->GetMyPosition();
+		if (pos == 0 || pos == c->CountChildren()-1)
+			return false;
+	}
+
+	if(info)
+	{
+		info->c = c;
+		info->p = p;
+	}
+
+	return true;
+}
+
+static bool is_ring_split(ISelection * sel, ring_split_info_t * info)
+{
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	// Must have exactly two points selected
+	if(selected.size() != 2)
+		return false;
+	WED_GISPoint * p0 = dynamic_cast<WED_GISPoint*>(selected[0]);
+	WED_GISPoint * p1 = dynamic_cast<WED_GISPoint *>(selected[1]);
+	if(!p0 || !p1)
+		return false;
+
+	// The points must have the same WED_GISChain parent
+	WED_GISChain * c = dynamic_cast<WED_GISChain*>(p0->GetParent());
+	if(!c || c != p1->GetParent())
+		return false;
+
+	// The chain must be closed (i.e. it must be a ring).
+	if(!c->IsClosed())
+		return false;
+
+	// The points must not be adjacent
+	int pos_0 = p0->GetMyPosition();
+	int pos_1 = p1->GetMyPosition();
+	if(pos_0 > pos_1)
+	{
+		std::swap(pos_0, pos_1);
+		std::swap(p0, p1);
+	}
+	if(pos_1 == pos_0 + 1)
+		return false;
+	if(pos_0 == 0 && pos_1 == c->CountChildren()-1)
+		return false;
+
+	if(info)
+	{
+		info->p0 = p0;
+		info->p1 = p1;
+		info->pos_0 = pos_0;
+		info->pos_1 = pos_1;
+		info->c = c;
+	}
+
+	return true;
+}
+
+static bool is_edge_split(ISelection * sel)
+{
+	if (sel->GetSelectionCount() == 0)
+		return false;
+	if (sel->IterateSelectionOr(unsplittable, sel))
+		return false;
+	return true;
+}
+
 int		WED_CanSplit(IResolver * resolver)
 {
 	ISelection * sel = WED_GetSelect(resolver);
-	if (sel->GetSelectionCount() == 0) return false;
-	if (sel->IterateSelectionOr(unsplittable, sel)) return 0;
-	return 1;
+	return is_chain_split(sel, NULL) || is_ring_split(sel, NULL) || is_edge_split(sel)? 1 : 0;
 }
 
+static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
+{
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Split chain");
 
+	int pos = info.p->GetMyPosition();
+
+	if (info.c->IsClosed())
+	{
+		WED_AirportChain * ac = dynamic_cast<WED_AirportChain *>(info.c);
+		if (!ac)
+		{
+			op->AbortOperation();
+			return;
+		}
+
+		for (int i = 0; i < pos; ++i)
+		{
+			WED_Thing * t = ac->GetNthChild(0);
+			t->SetParent(NULL, 0);
+			t->SetParent(ac, ac->CountChildren());
+		}
+
+		WED_Thing * clone = dynamic_cast<WED_Thing *>(ac->GetNthChild(0)->Clone());
+		if (clone)
+		{
+			clone->SetParent(ac, ac->CountChildren());
+			sel->Insert(clone);
+		}
+		else
+			clone->Delete();
+
+		ac->SetClosed(0);
+	}
+	else
+	{
+		WED_GISChain * chain_clone = dynamic_cast<WED_GISChain*>(info.c->Clone());
+		chain_clone->SetParent(info.c->GetParent(), info.c->GetMyPosition()+1);
+
+		sel->Insert(chain_clone->GetNthChild(pos));
+
+		set<WED_Thing*> to_delete;
+		for (int i = 0; i < info.c->CountChildren(); ++i)
+		{
+			if (i < pos)
+				to_delete.insert(chain_clone->GetNthChild(i));
+			if (i > pos)
+				to_delete.insert(info.c->GetNthChild(i));
+		}
+
+		WED_AddChildrenRecursive(to_delete);
+		WED_RecursiveDelete(to_delete);
+	}
+
+	op->CommitOperation();
+}
+
+// Returns which side of the line formed by p1 and p2 the hole is on
+// (LEFT_TURN or RIGHT_TURN). Returns COLLINEAR if the hole intersects the
+// line.
+static int hole_side(IGISPointSequence * hole, IGISPoint * p1, IGISPoint * p2)
+{
+	vector<Bezier2> pol;
+	WED_BezierVectorForPointSequence(hole, pol);
+
+	Point2 point1, point2;
+	p1->GetLocation(gis_Geo, point1);
+	p2->GetLocation(gis_Geo, point2);
+	Segment2 segment(point1, point2);
+
+	// Collect all points in the hole, including control points.
+	vector<Point2> points;
+	for (int i = 0; i < hole->GetNumPoints(); ++i)
+	{
+		IGISPoint * igis_point = hole->GetNthPoint(i);
+		Point2 hole_point;
+		igis_point->GetLocation(gis_Geo, hole_point);
+		points.push_back(hole_point);
+
+		IGISPoint_Bezier * bezier_point = dynamic_cast<IGISPoint_Bezier*>(igis_point);
+		if (bezier_point)
+		{
+			bezier_point->GetControlHandleLo(gis_Geo, hole_point);
+			points.push_back(hole_point);
+			bezier_point->GetControlHandleHi(gis_Geo, hole_point);
+			points.push_back(hole_point);
+		}
+	}
+
+	if (points.empty())
+		return COLLINEAR;
+
+	int side = segment.side_of_line(points[0]);
+	for (size_t i = 1; i < points.size(); ++i)
+	{
+		if (segment.side_of_line(points[i]) != side)
+			return COLLINEAR;
+	}
+
+	return side;
+}
+
+static void delete_bezier_handle(IGISPoint * p, int handle) {
+	IGISPoint_Bezier * bezier = dynamic_cast<IGISPoint_Bezier*>(p);
+	if (!bezier)
+		return;
+
+	bezier->SetSplit(true);
+	if (handle == 0)
+		bezier->DeleteHandleLo();
+	else
+		bezier->DeleteHandleHi();
+}
+
+static void do_ring_split(ISelection * sel, const ring_split_info_t & info)
+{
+	WED_Thing * parent = info.c->GetParent();
+	if (!parent)
+		return;
+
+	WED_GISPolygon * polygon = dynamic_cast<WED_GISPolygon*>(info.c->GetParent());
+	vector<int> hole_sides;
+	if (polygon && info.c == polygon->GetOuterRing())
+	{
+		// For each hole, check which side of the split it is on.
+		hole_sides.resize(polygon->GetNumHoles());
+		for (int i = 0; i < polygon->GetNumHoles(); ++i)
+		{
+			IGISPointSequence * hole = polygon->GetNthHole(i);
+			hole_sides[i] = hole_side(hole, info.p0, info.p1);
+			if (hole_sides[i] == COLLINEAR)
+			{
+				// We could theoretically do this check already in
+				// is_ring_split(), but it would be too hard for the user to
+				// understand why the Split function is sometimes available
+				// and sometimes greyed out. Instead, we do the check here so
+				// we can display a meaningful message.
+				DoUserAlert("Cannot split across holes");
+				return;
+			}
+		}
+	}
+
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Split ring");
+
+	set<WED_Thing*> to_delete;
+	WED_GISChain * chain_clone = NULL;
+
+	// Is the ring the outer ring of a polygon?
+	if (polygon && info.c == polygon->GetOuterRing())
+	{
+		// Clone the entire polygon
+		WED_GISPolygon * polygon_clone = dynamic_cast<WED_GISPolygon*>(polygon->Clone());
+		polygon_clone->SetParent(polygon->GetParent(), polygon->GetMyPosition()+1);
+		chain_clone = dynamic_cast<WED_GISChain*>(polygon_clone->GetOuterRing());
+
+		// Distribute the holes between the original polygon and the clone
+		for (int i = 0; i < polygon->GetNumHoles(); ++i)
+		{
+			if (hole_sides[i] == RIGHT_TURN)
+				to_delete.insert(dynamic_cast<WED_Thing*>(polygon->GetNthHole(i)));
+			else
+				to_delete.insert(dynamic_cast<WED_Thing*>(polygon_clone->GetNthHole(i)));
+		}
+	}
+	else
+	{
+		// Clone just the chain
+		chain_clone = dynamic_cast<WED_GISChain*>(info.c->Clone());
+		chain_clone->SetParent(info.c->GetParent(), info.c->GetMyPosition()+1);
+	}
+
+	sel->Insert(chain_clone->GetNthChild(info.pos_0));
+	sel->Insert(chain_clone->GetNthChild(info.pos_1));
+
+	// On the two shared points, delete the Bezier handles that face the other
+	// polygon to make the two halves fit together exactly
+	delete_bezier_handle(info.c->GetNthPoint(info.pos_0), 1);
+	delete_bezier_handle(info.c->GetNthPoint(info.pos_1), 0);
+	delete_bezier_handle(chain_clone->GetNthPoint(info.pos_0), 0);
+	delete_bezier_handle(chain_clone->GetNthPoint(info.pos_1), 1);
+
+	// Distribute the points among the the original and the clone
+	for (int i = 0; i < info.c->CountChildren(); ++i)
+	{
+		if (i > info.pos_0 && i < info.pos_1)
+			to_delete.insert(info.c->GetNthChild(i));
+		if (i < info.pos_0 || i > info.pos_1)
+			to_delete.insert(chain_clone->GetNthChild(i));
+	}
+
+	WED_AddChildrenRecursive(to_delete);
+	WED_RecursiveDelete(to_delete);
+
+	op->CommitOperation();
+}
 
 map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>& edges)
 {
@@ -1561,9 +1899,8 @@ map<WED_Thing*,vector<WED_Thing*> > run_split_on_edges(vector<split_edge_info_t>
 	return new_pieces;
 }
 
-void	WED_DoSplit(IResolver * resolver)
+void do_edge_split(ISelection * sel)
 {
-	ISelection * sel = WED_GetSelect(resolver);
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 
 	vector<WED_Thing *> who;
@@ -1656,6 +1993,27 @@ void	WED_DoSplit(IResolver * resolver)
 	}
 
 	op->CommitOperation();
+}
+
+void	WED_DoSplit(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+
+	chain_split_info_t chain_info;
+	if (is_chain_split(sel, &chain_info))
+	{
+		do_chain_split(sel, chain_info);
+		return;
+	}
+
+	ring_split_info_t ring_info;
+	if (is_ring_split(sel, &ring_info))
+	{
+		do_ring_split(sel, ring_info);
+		return;
+	}
+
+	do_edge_split(sel);
 }
 
 static int collect_pnts(ISelectable * base,void * ref)
@@ -1758,6 +2116,230 @@ void	WED_DoAlign(IResolver * resolver)
 	for(set<WED_DrapedOrthophoto *>::iterator it = os.begin(); it != os.end();++it)
 	{
 		 (*it)->Redrape();
+	}
+
+	op->CommitOperation();
+}
+
+static void get_bezier_points(WED_Thing * t, vector<WED_GISPoint_Bezier *> & points)
+{
+	WED_GISPoint_Bezier * bezier = dynamic_cast<WED_GISPoint_Bezier *>(t);
+	if (bezier)
+	{
+		points.push_back(bezier);
+		return;
+	}
+
+	for (int i = 0; i < t->CountChildren(); ++i)
+		get_bezier_points(t->GetNthChild(i), points);
+}
+
+int		WED_CanMatchBezierHandles(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	if (selected.empty())
+		return false;
+
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * t = dynamic_cast<WED_Thing *>(selected[i]);
+		if (!t)
+			return false;
+		vector<WED_GISPoint_Bezier *> points;
+		get_bezier_points(t, points);
+		if (points.empty())
+			return false;
+	}
+
+	return true;
+}
+
+// Implementation helper for get_snapped_bezier_points().
+static void get_snapped_bezier_points_impl(WED_Thing * t, const set<WED_GISPoint_Bezier *> & ignore,
+	const set<Point2> & points, const Bbox2 & bounds, multimap<Point2, WED_GISPoint_Bezier *> & snapped)
+{
+	IGISEntity * ent = dynamic_cast<IGISEntity *>(t);
+	if (!ent || !ent->IntersectsBox(gis_Geo, bounds))
+		return;
+
+	WED_GISPoint_Bezier * bezier = dynamic_cast<WED_GISPoint_Bezier *>(t);
+	if (bezier && !ignore.count(bezier))
+	{
+		Point2 location;
+		bezier->GetLocation(gis_Geo, location);
+
+		if (points.count(location))
+			snapped.insert(std::pair<const Point2, WED_GISPoint_Bezier *>(location, bezier));
+	}
+
+	for (int i = 0; i < t->CountChildren(); ++i)
+		get_snapped_bezier_points_impl(t->GetNthChild(i), ignore, points, bounds, snapped);
+}
+
+// For the given set of Bezier points in the world 'wrl', finds all Bezier
+// points that are snapped to them and returns them as a map of locations to
+// points.
+static void get_snapped_bezier_points(WED_Thing * wrl,
+	const vector<WED_GISPoint_Bezier *> & points,
+	multimap<Point2, WED_GISPoint_Bezier *> & snapped)
+{
+	set<WED_GISPoint_Bezier *> points_set;
+	set<Point2> locations;
+	Bbox2 bounds;
+	for (size_t i = 0; i < points.size(); ++i)
+	{
+		points_set.insert(points[i]);
+		Point2 location;
+		points[i]->GetLocation(gis_Geo, location);
+		locations.insert(location);
+		bounds += location;
+	}
+
+	get_snapped_bezier_points_impl(wrl, points_set, locations, bounds, snapped);
+}
+
+// Finds the location of the point that is at a position 'relative_pos' relative
+// to 'p' within the containing chain. Returns true if the point was found or
+// false if the chain is not closed and the relative position fell outside the
+// chain.
+static bool get_relative_point(WED_GISPoint * p, int relative_pos, Point2 & location)
+{
+	WED_GISChain * c = dynamic_cast<WED_GISChain *>(p->GetParent());
+	if (!c)
+		return false;
+
+	int absolute_pos = p->GetMyPosition() + relative_pos;
+	if (c->IsClosed())
+	{
+		absolute_pos = absolute_pos % c->GetNumPoints();
+		if (absolute_pos < 0)
+			absolute_pos += c->GetNumPoints();
+	}
+	else
+	{
+		if (absolute_pos < 0 || absolute_pos >= c->GetNumPoints())
+			return false;
+	}
+
+	IGISPoint * point = c->GetNthPoint(absolute_pos);
+	point->GetLocation(gis_Geo, location);
+
+	return true;
+}
+
+namespace {
+// One of the handles of a Bezier point.
+struct BezierHandle {
+	// Side the handle is on. Values are chosen so that they can be passed to
+	// get_relative_point().
+	enum Side { LO = -1, HI = 1 };
+
+	BezierHandle() : p(NULL), side(LO) {}
+	BezierHandle(WED_GISPoint_Bezier * new_p, Side new_side) : p(new_p), side(new_side) {}
+	WED_GISPoint_Bezier * p;
+	Side side;
+};
+}
+
+// Finds the handle of p2 that corresponds to the handle h1. Prerequisites:
+// - p2 must be snapped to h1.p
+// - The neighbors of h1.p and p2 on the side of the matching handles must also
+//   be snapped together
+static bool get_matching_handle(const BezierHandle & h1, WED_GISPoint_Bezier * p2, BezierHandle & h2)
+{
+	Point2 p1_neighbor;
+	if (!get_relative_point(h1.p, h1.side, p1_neighbor))
+		return false;
+	BezierHandle::Side sides[2] = { BezierHandle::LO, BezierHandle::HI };
+	for (int i = 0; i < 2; ++i)
+	{
+		Point2 p2_neighbor;
+		if (get_relative_point(p2, sides[i], p2_neighbor) && p1_neighbor == p2_neighbor)
+		{
+			h2.p = p2;
+			h2.side = sides[i];
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// Copies the location of one Bezier handle to another.
+static void copy_bezier_handle(const struct BezierHandle & dst, const struct BezierHandle & src)
+{
+	Point2 location;
+	if (src.side == BezierHandle::LO)
+		src.p->GetControlHandleLo(gis_Geo, location);
+	else
+		src.p->GetControlHandleHi(gis_Geo, location);
+	if (dst.side == BezierHandle::LO)
+		dst.p->SetControlHandleLo(gis_Geo, location);
+	else
+		dst.p->SetControlHandleHi(gis_Geo, location);
+}
+
+void	WED_DoMatchBezierHandles(IResolver * resolver)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Match Bezier Handles");
+
+	// Find all Bezier points to be matched.
+	vector<WED_GISPoint_Bezier *> points;
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * t = dynamic_cast<WED_Thing *>(selected[i]);
+		if (!t)
+			continue;
+		get_bezier_points(t, points);
+	}
+
+	typedef multimap<Point2, WED_GISPoint_Bezier *> Snapped_t;
+	Snapped_t snapped;
+	get_snapped_bezier_points(wrl, points, snapped);
+
+	for (size_t i = 0; i < points.size(); ++i)
+	{
+		Point2 location;
+		points[i]->GetLocation(gis_Geo, location);
+
+		// Among the Bezier points snapped to us, find matching handles on both sides.
+		vector<BezierHandle> lo_matches, hi_matches;
+		std::pair<Snapped_t::iterator, Snapped_t::iterator> range = snapped.equal_range(location);
+		for (Snapped_t::iterator iter = range.first; iter != range.second; ++iter)
+		{
+			WED_GISPoint_Bezier * p = iter->second;
+
+			BezierHandle handle;
+			if (get_matching_handle(BezierHandle(points[i], BezierHandle::LO), p, handle))
+				lo_matches.push_back(handle);
+			if (get_matching_handle(BezierHandle(points[i], BezierHandle::HI), p, handle))
+				hi_matches.push_back(handle);
+		}
+
+		if (lo_matches.empty() && hi_matches.empty())
+			continue;
+
+		// If we matched with handles of the same point on both sides, our
+		// splitness is equal to the splitness of that point. Otherwise, we're
+		// definitely split.
+		if (lo_matches.size() == 1 && hi_matches.size() == 1 && lo_matches.front().p == hi_matches.front().p)
+			points[i]->SetSplit(lo_matches.front().p->IsSplit());
+		else
+			points[i]->SetSplit(true);
+
+		if (lo_matches.size() == 1)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::LO), lo_matches.front());
+		if (hi_matches.size() == 1)
+			copy_bezier_handle(BezierHandle(points[i], BezierHandle::HI), hi_matches.front());
 	}
 
 	op->CommitOperation();
@@ -2168,10 +2750,359 @@ static int iterate_can_merge(ISelectable * who, void * ref)
 	return 1;
 }
 
-//Returns true if every node can be merged with each other, by type and by location
-int	WED_CanMerge(IResolver * resolver)
+namespace
 {
-	//Preformance notes 1/6/2017:
+// Information for merging two non-closed chains
+struct chain_merge_info_t {
+	// The chains in question
+	WED_GISChain * c0;
+	WED_GISChain * c1;
+
+	// Indexes of the selected points in the two chains (either the first or last point in each case)
+	int pos_0;
+	int pos_1;
+
+	// Whether to merge the two selected points into one (i.e. whether they are snapped)
+	bool merge_points;
+
+	// Whether to select the whole chain once the merge is complete
+	// (this is set if two entire chains were selected to merge)
+	bool select_whole_chain;
+};
+
+// Information for merging two rings
+struct ring_merge_info_t {
+	// Information for each ring
+	struct entry {
+		// The ring in question (a closed chain)
+		WED_GISChain * c;
+		// The ring's polygon parent (null if the ring does not belong to a polygon)
+		WED_GISPolygon * poly;
+		// The indexes of the first and last points that will be retained after the merge
+		int first;
+		int last;
+	};
+	entry e[2];
+
+	// Whether to select the whole ring once the merge is complete
+	// (this is set if two entire rings were selected to merge)
+	bool select_whole_ring;
+};
+};
+
+static bool points_snapped(WED_GISPoint * p0, WED_GISPoint * p1)
+{
+	Point2 loc_0, loc_1;
+	p0->GetLocation(gis_Geo, loc_0);
+	p1->GetLocation(gis_Geo, loc_1);
+	return loc_0 == loc_1;
+}
+
+// Tests whether the either of the endpoints of c0 and c1 are snapped together and, if so, returns them in p0 and p1.
+static bool chains_snapped(WED_GISChain * c0, WED_GISChain * c1, WED_GISPoint ** p0, WED_GISPoint ** p1)
+{
+	if (c0->CountChildren() == 0 || c1->CountChildren() == 0)
+		return false;
+
+	for (int i0 = 0; i0 < 2; ++i0)
+		for (int i1 = 0; i1 < 2; ++i1)
+		{
+			WED_GISPoint * p0_tmp = dynamic_cast<WED_GISPoint *>(c0->GetNthChild(i0 * (c0->CountChildren() - 1)));
+			WED_GISPoint * p1_tmp = dynamic_cast<WED_GISPoint *>(c1->GetNthChild(i1 * (c1->CountChildren() - 1)));
+
+			if (p0_tmp && p1_tmp && points_snapped(p0_tmp, p1_tmp))
+			{
+				*p0 = p0_tmp;
+				*p1 = p1_tmp;
+				return true;
+			}
+		}
+
+	return false;
+}
+
+static bool is_chain_merge(ISelection * sel, chain_merge_info_t * info)
+{
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	// Must have exactly two points or two chains selected
+	if (selected.size() != 2)
+		return false;
+
+	WED_GISPoint * p0 = dynamic_cast<WED_GISPoint*>(selected[0]);
+	WED_GISPoint * p1 = dynamic_cast<WED_GISPoint*>(selected[1]);
+	bool select_whole_chain = false;
+	if (!p0 || !p1)
+	{
+		WED_GISChain * c0 = dynamic_cast<WED_GISChain*>(selected[0]);
+		WED_GISChain * c1 = dynamic_cast<WED_GISChain*>(selected[1]);
+
+		if (!c0 || !c1)
+			return false;
+
+		if (!chains_snapped(c0, c1, &p0, &p1))
+			return false;
+
+		select_whole_chain = true;
+	}
+
+	// Make p0 always be the point that is higher in the hierarchy
+	if (!WED_ComesBeforeInHierarchy(p0, p1))
+		std::swap(p0, p1);
+
+	// The points must have two WED_GISChain parents that are:
+	// - open
+	// - of the same class
+	// - different or, if they are the same, a WED_AirportChain
+	WED_GISChain * c0 = dynamic_cast<WED_GISChain*>(p0->GetParent());
+	WED_GISChain * c1 = dynamic_cast<WED_GISChain*>(p1->GetParent());
+	if (!c0 || !c1 || c0->IsClosed() || c1->IsClosed() || c0->GetClass() != c1->GetClass())
+		return false;
+	if (c0 == c1 && !dynamic_cast<WED_AirportChain*>(c0))
+		return false;
+
+	// The points must lie at the end of the chain
+	int pos_0 = p0->GetMyPosition();
+	if (pos_0 != 0 && pos_0 != c0->CountChildren() - 1)
+		return false;
+	int pos_1 = p1->GetMyPosition();
+	if (pos_1 != 0 && pos_1 != c1->CountChildren() - 1)
+		return false;
+
+	if (info)
+	{
+		info->c0 = c0;
+		info->c1 = c1;
+		info->pos_0 = pos_0;
+		info->pos_1 = pos_1;
+
+		info->merge_points = points_snapped(p0, p1);
+		info->select_whole_chain = select_whole_chain;
+	}
+
+	return true;
+}
+
+// Returns whether a set of points in a ring (identified by their indexes 'idx') are adjacent to each other.
+// 'num_points' is the number of points in the ring. The points with indexes 0 and num_points-1 are taken to be adjacent.
+// If the points are all adjacent, the indexes of the first and last point in the sequence are returned in *first and *last.
+static bool are_adjacent(set<int> idx, int num_points, int * first, int * last)
+{
+	if (idx.empty())
+		return false;
+
+	// Pick an arbitrary starting point.
+	int start = *idx.begin();
+
+	// Move forwards through the ring until we find a point that is not contained in 'idx'.
+	int i = start;
+	while (true)
+	{
+		idx.erase(i);
+		int next = (i + 1) % num_points;
+		if (!idx.count(next))
+		{
+			*last = i;
+			break;
+		}
+		i = next;
+	}
+
+	// Now move backwards.
+	i = start;
+	while(true)
+	{
+		int next = (i + num_points - 1) % num_points;
+		if (!idx.count(next))
+		{
+			*first = i;
+			break;
+		}
+		idx.erase(next);
+		i = next;
+	}
+
+	// If we visited all points, they were adjacent.
+	return idx.empty();
+}
+
+// Checks whether the selection identifies two rings to be merged through a number of points selected on each ring.
+static bool ring_info_from_points(const vector<ISelectable*> selected, vector<ring_merge_info_t::entry> * rings)
+{
+	// Must have points selected that belong to exactly two WED_GISChain parents.
+	typedef std::map<WED_GISChain *, set<int> > ChainToPoints;
+	ChainToPoints chain_to_points;
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(selected[i]);
+		if (!p)
+			return false;
+		WED_GISChain * c = dynamic_cast<WED_GISChain*>(p->GetParent());
+		if (!c)
+			return false;
+		chain_to_points[c].insert(p->GetMyPosition());
+	}
+	if (chain_to_points.size() != 2)
+		return false;
+
+	for (ChainToPoints::iterator iter = chain_to_points.begin(); iter != chain_to_points.end(); ++iter)
+	{
+		// Chains must be closed, and at least two points must be selected per chain.
+		if (!iter->first->IsClosed())
+			return false;
+		if (iter->second.size() < 2)
+			return false;
+
+		ring_merge_info_t::entry entry;
+		entry.c = iter->first;
+		entry.poly = dynamic_cast<WED_GISPolygon *>(entry.c->GetParent());
+
+		// Points must be adjacent. The last selected point is the first to remain in the chain.
+		if (!are_adjacent(iter->second, iter->first->GetNumPoints(), &entry.last, &entry.first))
+			return false;
+		rings->push_back(entry);
+	}
+
+	return true;
+}
+
+// Checks whether the selection contains two rings or polygons to be merged (with the points to merge snapped together).
+static bool ring_info_from_chains(const vector<ISelectable*> selected, vector<ring_merge_info_t::entry> * rings)
+{
+	// Must have exactly two chains or two polygons selected.
+	if (selected.size() != 2)
+		return false;
+
+	WED_GISChain * chains[2];
+	for (size_t i =0; i < 2; ++i)
+	{
+		WED_GISPolygon * p = dynamic_cast<WED_GISPolygon *>(selected[i]);
+		if (p)
+		{
+			chains[i] = dynamic_cast<WED_GISChain *>(p->GetOuterRing());
+			if (chains[i] == NULL)
+				return false;
+			continue;
+		}
+		chains[i] = dynamic_cast<WED_GISChain *>(selected[i]);
+		if (!chains[i] || !chains[i]->IsClosed())
+			return false;
+	}
+
+	// For all points in the first chain, create a map from location to index.
+	map<Point2, int> points_0;
+	for (int i = 0; i < chains[0]->GetNumPoints(); ++i)
+	{
+		Point2 p;
+		chains[0]->GetNthPoint(i)->GetLocation(gis_Geo, p);
+		points_0[p] = i;
+	}
+
+	// Find points in both chains that are snapped to counterparts in the other chain.
+	set<int> idx[2];
+	for (int i = 0; i < chains[1]->GetNumPoints(); ++i)
+	{
+		Point2 p;
+		chains[1]->GetNthPoint(i)->GetLocation(gis_Geo, p);
+		map<Point2, int>::iterator iter = points_0.find(p);
+		if (iter != points_0.end())
+		{
+			idx[0].insert(iter->second);
+			idx[1].insert(i);
+		}
+	}
+
+	for (int i = 0; i < 2; ++i)
+	{
+		// At least two points must be selected per chain.
+		if (idx[i].size() < 2)
+			return false;
+
+		ring_merge_info_t::entry entry;
+		entry.c = chains[i];
+		entry.poly = dynamic_cast<WED_GISPolygon *>(entry.c->GetParent());
+
+		// Points must be adjacent. The last selected point is the first to remain in the chain.
+		if (!are_adjacent(idx[i], chains[i]->GetNumPoints(), &entry.last, &entry.first))
+			return false;
+		rings->push_back(entry);
+	}
+
+	return true;
+}
+
+static bool is_ring_merge(ISelection * sel, ring_merge_info_t * info)
+{
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+
+	vector<ring_merge_info_t::entry> rings;
+	bool select_whole_ring = false;
+	if (ring_info_from_chains(selected, &rings))
+		select_whole_ring = true;
+	else if (!ring_info_from_points(selected, &rings))
+		return false;
+
+	// Either both chains belong to a polygon or neither does
+	bool is_poly_0 = (rings[0].poly != NULL);
+	bool is_poly_1 = (rings[1].poly != NULL);
+	if (is_poly_0 != is_poly_1)
+		return false;
+
+	if (is_poly_0)
+	{
+		// The polygons must be of the same class
+		if (rings[0].poly->GetClass() != rings[1].poly->GetClass())
+			return false;
+
+		// The chains must either both be outer rings or they must both be holes
+		bool is_outer_ring_0 = (rings[0].c->GetMyPosition() == 0);
+		bool is_outer_ring_1 = (rings[1].c->GetMyPosition() == 0);
+		if (is_outer_ring_0 != is_outer_ring_1)
+			return false;
+
+		// If the chains are outer rings, the polygons must be different.
+		// If the chains are holes, the polygons must be the same.
+		if (is_outer_ring_0)
+		{
+			if (rings[0].poly == rings[1].poly)
+				return false;
+			// Make poly_0 always be the polygon that is higher in the hierarchy
+			if (!WED_ComesBeforeInHierarchy(rings[0].poly, rings[1].poly))
+				std::swap(rings[0], rings[1]);
+		}
+		else
+		{
+			if (rings[0].poly != rings[1].poly)
+				return false;
+		}
+	}
+	else
+	{
+		// The chains must be of the same class
+		if (rings[0].c->GetClass() != rings[1].c->GetClass())
+			return false;
+
+		// Make c0 always be the chain that is higher in the hierarchy
+		if (!WED_ComesBeforeInHierarchy(rings[0].c, rings[1].c))
+			std::swap(rings[0], rings[1]);
+	}
+
+	if (info)
+	{
+		info->e[0] = rings[0];
+		info->e[1] = rings[1];
+		info->select_whole_ring = select_whole_ring;
+	}
+
+	return true;
+}
+
+//Returns true if every node can be merged with each other, by type and by location
+static bool is_node_merge(IResolver * resolver)
+{
+	//Performance notes 1/6/2017:
 	//Release build -> 1300 nodes collected
 	//Completed test in
 	//   0.001130 seconds.
@@ -2181,19 +3112,20 @@ int	WED_CanMerge(IResolver * resolver)
 	//   0.016719 seconds.
 	//StElapsedTime can_merge_timer("WED_CanMerge");
 	ISelection * sel = WED_GetSelect(resolver);
+
 	if(sel->GetSelectionCount() < 2)
-		return 0;		// can't merge 1 thing!
+		return false;		// can't merge 1 thing!
 
 	//1. Ensure all of the selection is mergeable, collect
 	merge_class_map sinkmap;
 	if (!sel->IterateSelectionAnd(iterate_can_merge, &sinkmap))
 	{
-		return 0;
+		return false;
 	}
 
 	if (sinkmap.size() > 10000 || sinkmap.size() < 2)
 	{
-		return 0;
+		return false;
 	}
 
 	//2. Sort by location, a small optimization
@@ -2227,25 +3159,217 @@ int	WED_CanMerge(IResolver * resolver)
 	//Ensure expected UI behavior - Only perfect merges are allowed
 	if (can_snap_objects.size() == sinkmap.size())
 	{
-		return 1;
+		return true;
 	}
 	else
 	{
-		return 0;
+		return false;
 	}
 }
 
-//WED_DoMerge will merge every node in the selection possible, any nodes that could not be merged are left as is.
-//Ex: 0-0-0-0---------------------0 will turn into 0-------------------------0.
-//If WED_CanMerge is called first this behavior would not be possible
-void WED_DoMerge(IResolver * resolver)
+int	WED_CanMerge(IResolver * resolver)
 {
-	//Preformance notes 1/6/2017:
+	ISelection * sel = WED_GetSelect(resolver);
+
+	return is_chain_merge(sel, NULL) || is_ring_merge(sel, NULL) || is_node_merge(resolver)? 1 : 0;
+}
+
+static void do_chain_merge(ISelection * sel, const chain_merge_info_t & info)
+{
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Merge chains");
+
+	sel->Clear();
+
+	// Make sure points to be merged are at end of first chain and beginning of second chain.
+	if (info.pos_0 == 0)
+		info.c0->Reverse(gis_Geo);
+	if (info.pos_1 != 0)
+		info.c1->Reverse(gis_Geo);
+
+	WED_Thing * p0 =  info.c0->GetNthChild(info.c0->CountChildren() -1);
+	WED_Thing * p1 =  info.c1->GetNthChild(0);
+
+	set<WED_Thing*> to_delete;
+	if (info.merge_points)
+	{
+		p0->SetParent(NULL, 0);
+		to_delete.insert(p0);
+	}
+	else
+	{
+		if (!info.select_whole_chain)
+			sel->Insert(p0);
+	}
+	if (info.select_whole_chain)
+		sel->Insert(info.c0);
+	else
+		sel->Insert(p1);
+
+	if (info.c0 == info.c1)
+	{
+		WED_AirportChain * ac = dynamic_cast<WED_AirportChain *>(info.c0);
+		if (ac)
+			ac->SetClosed(1);
+	}
+	else
+	{
+		vector<WED_Thing *> points;
+		for (int i = 0; i < info.c1->CountChildren(); ++i)
+			points.push_back(info.c1->GetNthChild(i));
+		for (size_t i = 0; i < points.size(); ++i)
+			points[i]->SetParent(info.c0, info.c0->CountChildren());
+
+		info.c1->SetParent(NULL, 0);
+		to_delete.insert(info.c1);
+	}
+
+	WED_AddChildrenRecursive(to_delete);
+	WED_RecursiveDelete(to_delete);
+
+	op->CommitOperation();
+}
+
+static bool is_ccw(WED_GISChain * c)
+{
+	vector<Point2> points(c->GetNumPoints());
+	for (int i = 0; i < c->GetNumPoints(); ++i)
+		c->GetNthPoint(i)->GetLocation(gis_Geo, points[i]);
+	return is_ccw_polygon_pt(points.begin(), points.end());
+}
+
+static void do_ring_merge(ISelection * sel, ring_merge_info_t info)
+{
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("Merge rings");
+
+	sel->Clear();
+
+	// Do we need to merge polygons?
+	set<WED_Thing*> to_delete;
+	if (info.e[0].poly != info.e[1].poly)
+	{
+		// Transfer all of the holes to the first polygon
+		while (info.e[1].poly->GetNumHoles() > 0)
+			info.e[0].poly->AddHole(info.e[1].poly->GetNthHole(0));
+
+		to_delete.insert(info.e[1].poly);
+	}
+	else
+	{
+		to_delete.insert(info.e[1].c);
+	}
+
+	// Make sure chains are both counter-clockwise.
+	for (int i = 0; i < 2; ++i)
+	{
+		if (!is_ccw(info.e[i].c))
+		{
+			info.e[i].c->Reverse(gis_Geo);
+			std::swap(info.e[i].first, info.e[i].last);
+			info.e[i].first = info.e[i].c->CountChildren() - 1 - info.e[i].first;
+			info.e[i].last = info.e[i].c->CountChildren() - 1 - info.e[i].last;
+		}
+	}
+
+	// Collect the points that will make up the finished merged ring.
+	vector<WED_GISPoint *> points[2];
+	for (int i = 0; i < 2; ++i)
+	{
+		// First, take all the points out of the ring.
+		int num_children = info.e[i].c->CountChildren();
+		for (int child = 0; child < num_children; ++child)
+		{
+			int n = (child + info.e[i].first) % num_children;
+			WED_GISPoint * p = dynamic_cast<WED_GISPoint *>(info.e[i].c->GetNthChild(n));
+			if (!p)
+				continue;
+			points[i].push_back(p);
+		}
+		for (size_t p = 0; p < points[i].size(); ++p)
+			points[i][p]->SetParent(NULL, 0);
+
+		// Mark the extraneous points for deletion.
+		int points_to_keep = (info.e[i].last - info.e[i].first + num_children) % num_children + 1;
+		while (points[i].size() > points_to_keep)
+		{
+			to_delete.insert(points[i].back());
+			points[i].pop_back();
+		}
+
+		if (points[i].empty())
+		{
+			DebugAssert(false);
+			op->AbortOperation();
+			return;
+		}
+	}
+
+	for (int i = 0; i < 2; ++i)
+	{
+		if (!info.select_whole_ring)
+			sel->Insert(points[i].front());
+
+		// Keep only one copy of points that are snapped together.
+		WED_GISPoint * p_this = points[i].back();
+		WED_GISPoint * p_other = points[(i + 1) % 2].front();
+		if (points_snapped(p_this, p_other))
+		{
+			// Merge the low Bezier handle into the point we're snapped to.
+			IGISPoint_Bezier * bez_this = dynamic_cast<IGISPoint_Bezier*>(p_this);
+			IGISPoint_Bezier * bez_other = dynamic_cast<IGISPoint_Bezier*>(p_other);
+			if (bez_this && bez_other)
+			{
+				Point2 loc_this, loc_other, handle;
+				bez_this->GetLocation(gis_Geo, loc_this);
+				bez_other->GetLocation(gis_Geo, loc_other);
+				bez_this->GetControlHandleLo(gis_Geo, handle);
+				handle += Vector2(loc_this, loc_other);
+				bez_other->SetSplit(true);
+				bez_other->SetControlHandleLo(gis_Geo, handle);
+			}
+
+			p_this->SetParent(NULL, 0);
+			to_delete.insert(p_this);
+			points[i].pop_back();
+		}
+		else
+		{
+			if (!info.select_whole_ring)
+				sel->Insert(p_this);
+		}
+
+		// Re-insert all points into the first chain.
+		for (size_t p = 0; p < points[i].size(); ++p)
+			points[i][p]->SetParent(info.e[0].c, info.e[0].c->CountChildren());
+	}
+
+	if (info.select_whole_ring)
+	{
+		if (info.e[0].poly != info.e[1].poly)
+			sel->Insert(info.e[0].poly);
+		else
+			sel->Insert(info.e[0].c);
+	}
+
+	WED_AddChildrenRecursive(to_delete);
+	WED_RecursiveDelete(to_delete);
+
+	op->CommitOperation();
+}
+
+//do_node_merge will merge every node in the selection possible, any nodes that could not be merged are left as is.
+//Ex: 0-0-0-0---------------------0 will turn into 0-------------------------0.
+//If is_node_merge is called first this behavior would not be possible
+static void do_node_merge(IResolver * resolver)
+{
+	//Performance notes 1/6/2017:
 	//Release build -> 1300 nodes collected
 	//Completed snapping and merged to ~900 in
 	//   0.023290 seconds
 	//StElapsedTime can_merge_timer("WED_DoMerge");
 	ISelection * sel = WED_GetSelect(resolver);
+
 	IOperation * op = dynamic_cast<IOperation *>(sel);
 	op->StartOperation("Merge Nodes");
 
@@ -2337,6 +3461,26 @@ void WED_DoMerge(IResolver * resolver)
 	op->CommitOperation();
 }
 
+void WED_DoMerge(IResolver * resolver)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+
+	chain_merge_info_t chain_info;
+	if (is_chain_merge(sel, &chain_info))
+	{
+		do_chain_merge(sel, chain_info);
+		return;
+	}
+
+	ring_merge_info_t ring_info;
+	if (is_ring_merge(sel, &ring_info))
+	{
+		do_ring_merge(sel, ring_info);
+		return;
+	}
+
+	do_node_merge(resolver);
+}
 
 static int IterateNonReversable(ISelectable * what, void * ref)
 {
@@ -3484,4 +4628,312 @@ void WED_AlignAirports(IResolver * resolver)
 		ss << "Moved " << moved_count << " airports.\n\n" << unchanged_count << " airports with *NO* changes have been selected.";
 		DoUserAlert(ss.str().c_str());
 	}
+}
+
+int		WED_CanConvertTo(IResolver * resolver, IsTypeFunc isDstType, bool dstIsPolygon)
+{
+	ISelection * sel = WED_GetSelect(resolver);
+	if (sel->GetSelectionCount() == 0)
+		return 0;
+
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * t = dynamic_cast<WED_Thing*>(selected[i]);
+		if (!t)
+			return 0;
+
+		// Must not already be of type we're converting to
+		if (isDstType(t))
+			return 0;
+
+		// Must be one of the four types we can convert from
+		if (!dynamic_cast<WED_PolygonPlacement*>(t) &&
+			!dynamic_cast<WED_Taxiway*>(t) &&
+			!dynamic_cast<WED_AirportChain*>(t) &&
+			!dynamic_cast<WED_LinePlacement*>(t))
+		{
+			return 0;
+		}
+
+		// Parent must not be a WED_GISPolygon (which can happen if it's a WED_AirportChain)
+		if (dynamic_cast<WED_GISPolygon*>(t->GetParent()))
+			return 0;
+
+		// If the destination is a polygon and the chain is a source, it must be closed
+		// with at least three points
+		WED_GISChain * chain = dynamic_cast<WED_GISChain*>(t);
+		if (chain != NULL && dstIsPolygon)
+		{
+			if (!chain->IsClosed() || chain->GetNumPoints() < 3)
+				return 0;
+		}
+	}
+
+	return 1;
+}
+
+// Gets all the WED_GISChains in 't', including 't' itself if it is a WED_GISChain.
+static void get_chains(WED_Thing * t, vector<WED_GISChain*>& chains)
+{
+	if (!t)
+		return;
+
+	WED_GISChain * c = dynamic_cast<WED_GISChain*>(t);
+	if (c)
+	{
+		chains.push_back(c);
+		return;
+	}
+
+	vector<WED_Thing*> children(t->CountChildren());
+	for (int child = 0; child < t->CountChildren(); ++child)
+	{
+		c = dynamic_cast<WED_GISChain*>(t->GetNthChild(child));
+		if (c)
+			chains.push_back(c);
+	}
+}
+
+// Moves Bezier points from 'src' to 'dst'. Converts between WED_AirportNode and WED_SimpleBezierBoundaryNode
+// as necessitated by the type of 'dst'. Nodes may be removed from 'src' (if no conversion is necessary)
+// but are not guaranteed to be.
+static void move_points(WED_Thing * src, WED_Thing * dst)
+{
+	// Collect points from 'src' (before we start removing any childern)
+	vector<WED_GISPoint*> points;
+	for (int i = 0; i < src->CountChildren(); ++i)
+	{
+		WED_GISPoint * p = dynamic_cast<WED_GISPoint*>(src->GetNthChild(i));
+		if (p)
+			points.push_back(p);
+	}
+
+	bool want_apt_nodes = (dynamic_cast<WED_AirportChain*>(dst) != NULL);
+
+	for (int i = 0; i < points.size(); ++i)
+	{
+		bool have_apt_node = (dynamic_cast<WED_AirportNode*>(points[i]) != NULL);
+		if (have_apt_node == want_apt_nodes)
+		{
+			points[i]->SetParent(dst, i);
+		}
+		else
+		{
+			WED_GISPoint_Bezier * src_bezier = dynamic_cast<WED_GISPoint_Bezier*>(points[i]);
+			WED_GISPoint * dst_node = NULL;
+			WED_GISPoint_Bezier * dst_bezier = NULL;
+			if (want_apt_nodes)
+			{
+				dst_bezier = WED_AirportNode::CreateTyped(dst->GetArchive());
+				dst_node = dst_bezier;
+			}
+			else if (src_bezier)
+			{
+				dst_bezier = WED_SimpleBezierBoundaryNode::CreateTyped(dst->GetArchive());
+				dst_node = dst_bezier;
+			}
+			else
+				dst_node = WED_SimpleBoundaryNode::CreateTyped(dst->GetArchive());
+			string name;
+			points[i]->GetName(name);
+			dst_node->SetName(name);
+			if (src_bezier && dst_bezier)
+			{
+				BezierPoint2 location;
+				src_bezier->GetBezierLocation(gis_Geo, location);
+				dst_bezier->SetBezierLocation(gis_Geo, location);
+			}
+			else
+			{
+				Point2 location;
+				points[i]->GetLocation(gis_Geo, location);
+				dst_node->SetLocation(gis_Geo, location);
+			}
+			dst_node->SetParent(dst, i);
+		}
+	}
+}
+
+// Adds copies of the given chains to 'dst'; creates chains of the appropriate type for 'dst'. The source chains are not
+// deleted or reparented, but nodes may be removed from them.
+static void add_chains(WED_Thing * dst, const vector<WED_GISChain*>& chains)
+{
+	for (int i = 0; i < chains.size(); ++i)
+	{
+		WED_GISChain * dst_chain;
+		if (dynamic_cast<WED_Taxiway*>(dst))
+		{
+			WED_AirportChain *ac = WED_AirportChain::CreateTyped(dst->GetArchive());
+			ac->SetClosed(true);
+			dst_chain = ac;
+		}
+		else
+			dst_chain = WED_Ring::CreateTyped(dst->GetArchive());
+		move_points(chains[i], dst_chain);
+		if (!is_ccw(dst_chain))
+			dst_chain->Reverse(gis_Geo);
+		dst_chain->SetParent(dst, i);
+	}
+}
+
+static void copy_heading(WED_Thing * src, WED_Thing * dst)
+{
+	int src_prop = src->FindProperty("Heading");
+	if (src_prop == -1)
+		src_prop = src->FindProperty("Texture Heading");
+	int dst_prop = dst->FindProperty("Heading");
+	if (dst_prop == -1)
+		dst_prop = dst->FindProperty("Texture Heading");
+	if (src_prop != -1 && dst_prop != -1)
+	{
+		PropertyVal_t val;
+		src->GetNthProperty(src_prop, val);
+		dst->SetNthProperty(dst_prop, val);
+	}
+}
+
+static int get_surface(WED_Thing * t)
+{
+	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
+	if (taxiway)
+		return taxiway->GetSurface();
+	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
+	if (polygon)
+	{
+		string resource;
+		polygon->GetResource(resource);
+		if (resource.find("concrete") != string::npos)
+			return surf_Concrete;
+	}
+	return surf_Asphalt;
+}
+
+static void set_surface(WED_Thing * t, int surface)
+{
+	WED_Taxiway * taxiway = dynamic_cast<WED_Taxiway*>(t);
+	if (taxiway)
+	{
+		taxiway->SetSurface(surface);
+		return;
+	}
+	WED_PolygonPlacement * polygon = dynamic_cast<WED_PolygonPlacement*>(t);
+	if (polygon)
+	{
+		if (surface == surf_Asphalt)
+			polygon->SetResource("lib/airport/pavement/asphalt_1D.pol");
+		else
+			polygon->SetResource("lib/airport/pavement/concrete_1D.pol");
+	}
+}
+
+static void set_closed(WED_Thing * t, bool closed)
+{
+	WED_AirportChain * ac = dynamic_cast<WED_AirportChain*>(t);
+	if (ac)
+	{
+		ac->SetClosed(closed ? 1 : 0);
+		return;
+	}
+	WED_LinePlacement * lp = dynamic_cast<WED_LinePlacement*>(t);
+	if (lp)
+		lp->SetClosed(closed ? 1 : 0);
+}
+
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create)
+{
+	WED_Thing * wrl = WED_GetWorld(resolver);
+	ISelection * sel = WED_GetSelect(resolver);
+
+	// First create a dummy object to find out various properties of the destination type
+	IOperation * op = dynamic_cast<IOperation *>(sel);
+	op->StartOperation("");
+	WED_Thing * tmp = create(wrl->GetArchive());
+	string dst_type_name = tmp->HumanReadableType();
+	bool dst_is_polygon = (dynamic_cast<WED_GISPolygon*>(tmp) != NULL);
+	bool dst_is_apt_type = dynamic_cast<WED_Taxiway*>(tmp) != NULL || dynamic_cast<WED_AirportChain*>(tmp) != NULL;
+	tmp->Delete();
+	op->AbortOperation();
+
+	// If the destination type is an airport object, make sure all selected objects are underneath an airport.
+	// We do this here rather than in WED_CanConvertTo() so we can explain to the user what the problem is.
+	if (dst_is_apt_type)
+	{
+		vector<ISelectable*> selected;
+		sel->GetSelectionVector(selected);
+		for (size_t i = 0; i < selected.size(); ++i)
+		{
+			if (WED_GetParentAirport(dynamic_cast<WED_Thing*>(selected[i])) == NULL)
+			{
+				DoUserAlert("All objects to convert must be in an airport in the hierarchy");
+				return;
+			}
+		}
+	}
+
+	string op_name = string("Convert to ") + dst_type_name;
+	op->StartOperation(op_name.c_str());
+
+	set<WED_Thing*> to_delete;
+	vector<ISelectable*> selected;
+	sel->GetSelectionVector(selected);
+	for (size_t i = 0; i < selected.size(); ++i)
+	{
+		WED_Thing * src = dynamic_cast<WED_Thing*>(selected[i]);
+		vector<WED_GISChain*> chains;
+		get_chains(src, chains);
+		if (chains.empty())
+		{
+			DoUserAlert("No chains");
+			op->AbortOperation();
+			return;
+		}
+
+		if (dst_is_polygon)
+		{
+			WED_Thing * dst = create(wrl->GetArchive());
+
+			add_chains(dst, chains);
+
+			string name;
+			src->GetName(name);
+			dst->SetName(name);
+
+			copy_heading(src, dst);
+
+			set_surface(dst, get_surface(src));
+
+			sel->Insert(dst);
+			dst->SetParent(src->GetParent(), src->GetMyPosition() + 1);
+		}
+		else
+		{
+			for (int i = 0; i < chains.size(); ++i)
+			{
+				WED_Thing * dst = create(wrl->GetArchive());
+
+				string name;
+				src->GetName(name);
+				dst->SetName(name);
+
+				set_closed(dst, chains[i]->IsClosed());
+
+				move_points(chains[i], dst);
+
+				sel->Insert(dst);
+				dst->SetParent(src->GetParent(), src->GetMyPosition() + 1 + i);
+			}
+		}
+
+		sel->Erase(src);
+		src->SetParent(NULL, 0);
+
+		to_delete.insert(src);
+	}
+
+	WED_AddChildrenRecursive(to_delete);
+	WED_RecursiveDelete(to_delete);
+
+	op->CommitOperation();
 }

@@ -2231,7 +2231,7 @@ static void ValidateOneAirport(WED_Airport* apt, validation_error_vector& msgs, 
 			stringstream ss;
 			ss  << "Could not find runway(s) ";
 			for(set<int>::iterator i = rwys_missing.begin(); i != rwys_missing.end(); ++i)
-				ss << ENUM_Desc(*i) << " ";
+				if(*i > 1) ss << ENUM_Desc(*i) << " ";
 			ss << "required by CIFP data at airport " << icao << ". ";
 			msgs.push_back(validation_error_t(ss.str(), err_airport_no_runway_matching_cifp, apt, apt));
 		}

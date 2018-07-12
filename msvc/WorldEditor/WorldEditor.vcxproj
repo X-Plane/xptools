@@ -244,6 +244,7 @@
     <ClCompile Include="..\..\src\WEDWindows\WED_GroupCommands.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_LibraryFilterBar.cpp" />
+    <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_Menus.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageListAdapter.cpp" />
     <ClCompile Include="..\..\src\WEDWindows\WED_PackageStatusPane.cpp" />
@@ -505,6 +506,7 @@
     <ClInclude Include="..\..\src\WEDWindows\WED_GroupCommands.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_HierarchyFilterBar.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_LibraryFilterBar.h" />
+    <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_Menus.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageListAdapter.h" />
     <ClInclude Include="..\..\src\WEDWindows\WED_PackageStatusPane.h" />

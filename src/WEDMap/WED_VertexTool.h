@@ -104,7 +104,11 @@ private:
 		mutable	Vector2			mPointOffset2;
 
 		IGISPoint *				mNewSplitPoint;		// When we option-click to get a split point...this is the newly born point.
-		
+
+		// Anchor point and original Bezier curve for Bezier offsetting.
+		Point2					mAnchor;
+		vector<BezierPoint2>	mSrcBezier;
+
 		WED_PropBoolText		mSnapToGrid;
 
 		mutable vector<IGISEntity *>	mEntityCache;

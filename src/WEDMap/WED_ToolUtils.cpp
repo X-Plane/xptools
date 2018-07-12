@@ -128,6 +128,29 @@ WED_Thing *	WED_FindParent(ISelection * isel, WED_Thing * require_this, WED_Thin
 }
 
 
+bool	WED_ComesBeforeInHierarchy(WED_Thing * a, WED_Thing * b)
+{
+	list<WED_Thing *> a_lin, b_lin;
+	GetLineage(a,a_lin);
+	GetLineage(b,b_lin);
+
+	list<WED_Thing *>::iterator a_it = a_lin.begin(), b_it = b_lin.begin();
+	while (a_it != a_lin.end() && b_it != b_lin.end() && *a_it == *b_it)
+	{
+		++a_it;
+		++b_it;
+	}
+
+	if (a_it == a_lin.end() || b_it == b_lin.end())
+	{
+		DebugAssert(false);
+		return false;
+	}
+
+	return (*a_it)->GetMyPosition() < (*b_it)->GetMyPosition();
+}
+
+
 WED_Airport *		WED_GetCurrentAirport(IResolver * resolver)
 {
 	return SAFE_CAST(WED_Airport,resolver->Resolver_Find("choices.airport"));

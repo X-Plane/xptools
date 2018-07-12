@@ -45,6 +45,9 @@ WED_Thing *		WED_FindParent(ISelection * isel,	// Selected objects
 					WED_Thing * require_this,		// Our common container will be at or below this in the hiearchy
 					WED_Thing * backup_choice);		// If selection is empty, we'll use this.
 
+// Returns whether 'a' comes before 'b' in the object hierarchy
+bool			WED_ComesBeforeInHierarchy(WED_Thing * a, WED_Thing * b);
+
 void			WED_GetSelectionInOrder(IResolver * resolver, vector<WED_Thing *>& out_sel);
 void			WED_GetSelectionRecursive(IResolver * resolver, set<WED_Thing *>& out_sel);
 bool			WED_IsSelectionNested(IResolver * resolver);		// Returns true if there are parent-children who are selected!

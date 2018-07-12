@@ -54,8 +54,10 @@ enum {
 
 enum {
 	status_Private		= 0,		// Intentionally SORTED so that the most EXPOSED status is the HIGHEST number!
-	status_Deprecated	= 1,
+	status_Deprecated	= 1,		// fully deprecated - invisible in hierarchy and validation failure for gateway.
+	// Order matters - everything LESS than yellow is going to fail validation
 	status_Yellow		= 2,		// half-deprecated items, visibility of deprecated, validates as public
+	// Order matters - everything GEQUAL to public is going to be public
 	status_Public		= 3,
 	status_New			= 4
 };
@@ -93,10 +95,13 @@ public:
 	bool		DoesPackHaveLibraryItems(int package_number);
 				// indicates if art asset exported by multiple exports, i.e. has randomized appearance
 	int			GetNumVariants(const string& r);
+				// get vpath for a apt.dat taxiline line type #.
+	bool		GetLineVpath(int lt, string& vpath);
 
 private:
 
 	void			Rescan();
+	void			RescanLines();
 	void			AccumResource(const string& path, int package, const string& real_path, bool is_backup, bool is_default, int status);
 	static	bool	AccumLocalFile(const char * fileName, bool isDir, void * ref);
 
@@ -147,10 +152,10 @@ private:
 	};
 
 	typedef map<string,res_info_t,compare_str_no_case>	res_map_t;
-	res_map_t						res_table;
+	res_map_t			res_table;
 
-	string							local_package;
-
+	string				local_package;
+	map<int, string>	default_lines;  // list of art assets for sim default lines
 };
 
 #endif /* WED_LibraryMgr_H */

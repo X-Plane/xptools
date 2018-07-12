@@ -25,10 +25,11 @@
 #define WED_TAXIWAY_H
 
 #include "WED_GISPolygon.h"
+#include "IHasResource.h"
 
 struct	AptTaxiway_t;
 
-class	WED_Taxiway : public WED_GISPolygon {
+class	WED_Taxiway : public WED_GISPolygon, public IHasResourceOrAttr {
 
 DECLARE_PERSISTENT(WED_Taxiway)
 public:
@@ -43,6 +44,7 @@ public:
 	void		Import(const AptTaxiway_t& x, void (* print_func)(void *, const char *, ...), void * ref);
 	void		Export(		 AptTaxiway_t& x) const;
 
+	virtual void			GetResource(string& r) const;
 	virtual const char *	HumanReadableType(void) const { return "Taxiway"; }
 
 	virtual		void	GetNthPropertyDict(int n, PropertyDict_t& dict) const;

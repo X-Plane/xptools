@@ -35,6 +35,7 @@
 
 #include "WED_GISComposite.h"
 #include "WED_Airport.h"
+#include "WED_AirportNode.h"
 #include "WED_Group.h"
 #include "WED_Root.h"
 #include "WED_ATCFlow.h"
@@ -213,11 +214,13 @@ void	WED_PropertyTable::GetCellContent(
 		the_content.text_val.clear();
 		for(set<int>::iterator iter=val.set_val.begin();iter != val.set_val.end(); ++iter)
 		{
-			if (iter!=val.set_val.begin()) the_content.text_val += ",";
+			if(*iter == 0) continue;                                // SetUnion can now insert 0 to indicate lines with partial blank setgemnts
+			if (!the_content.text_val.empty()) the_content.text_val += ",";
 			string label;
 			t->GetNthPropertyDictItem(idx,*iter,label);
 			if (ENUM_Domain(*iter) == LinearFeature)
 			{
+				the_content.content_type = gui_Cell_LineEnumSet;
 				label = ENUM_Name(*iter);
 				label += ".png";
 				the_content.string_is_resource = 1;
@@ -225,7 +228,7 @@ void	WED_PropertyTable::GetCellContent(
 			the_content.text_val += label;
 		}
 		if (the_content.text_val.empty())	the_content.text_val="None";
-		if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);
+		if(inf.exclusive && the_content.int_set_val.empty()) the_content.int_set_val.insert(0);   // not needed any more now that SetUnion adds this ?
 		break;
 	}
 	int unused_vis, unused_kids;
@@ -237,7 +240,6 @@ void	WED_PropertyTable::GetCellContent(
 		GetFilterStatus(t, s, unused_vis, unused_kids, the_content.can_disclose,the_content.is_disclosed);
 		the_content.indent_level = GetThingDepth(t);	/// as long as "cell 0" is the diclose level, might as well have it be the indent level too.
 	}
-
 
 	the_content.can_delete = inf.can_delete;
 	the_content.can_edit = inf.can_edit;
@@ -329,12 +331,13 @@ void	WED_PropertyTable::AcceptEdit(
 		if (inf.prop_kind == prop_Int		&& content.content_type != gui_Cell_Integer	)	continue;
 		if (inf.prop_kind == prop_Double	&& content.content_type != gui_Cell_Double	)	continue;
 		if (inf.prop_kind == prop_String	&& content.content_type != gui_Cell_EditText)	continue;
-		if (inf.prop_kind == prop_TaxiSign && content.content_type != gui_Cell_TaxiText) continue;
+		if (inf.prop_kind == prop_TaxiSign	&& content.content_type != gui_Cell_TaxiText)	continue;
 		if (inf.prop_kind == prop_FilePath	&& content.content_type != gui_Cell_FileText)	continue;
 		if (inf.prop_kind == prop_Bool		&& content.content_type != gui_Cell_CheckBox)	continue;
 		if (inf.prop_kind == prop_Enum		&& content.content_type != gui_Cell_Enum	)	continue;
-		if (inf.prop_kind == prop_EnumSet	&& content.content_type != gui_Cell_EnumSet	)	continue;
-
+		if (inf.prop_kind == prop_EnumSet	&& ( content.content_type != gui_Cell_EnumSet &&
+												 content.content_type != gui_Cell_LineEnumSet ))	continue;
+		
 		switch(inf.prop_kind) {
 		case prop_Int:
 			val.prop_kind = prop_Int;
@@ -1068,23 +1071,26 @@ int collect_recusive(WED_Thing * thing, const ci_string& isearch_filter, vector<
 	string thing_name;
 	thing->GetName(thing_name);
 	ci_string ithing_name(thing_name.begin(),thing_name.end());
-
 	bool is_match = ithing_name.find(isearch_filter) != ci_string::npos;
-	//Stop if the cheap test succeeds
+	IHasResourceOrAttr * has_resource_thing = NULL;
+
 	if (is_match == false)
 	{
-		IHasResource * has_resource_thing = dynamic_cast<IHasResource*>(thing);
-		if (has_resource_thing != NULL)
+		has_resource_thing = dynamic_cast<IHasResourceOrAttr*>(thing);
+		if (has_resource_thing)
 		{
 			string res;
 			has_resource_thing->GetResource(res);
-
+//			string n; thing->GetName(n);
+//			printf("%s: r=%s\n",n.c_str(), res.c_str());
+			res = string ("^") + res + "$";       // Adding ^ and $ are to emulate regex-style line start/end makers, so to
+			                                      // allow macthing one of "Red Line", "Red Line (Black)" or "Wide Red Line"
 			is_match |= ci_string(res.begin(), res.end()).find(isearch_filter) != ci_string::npos;
 		}
 	}
 
 	int nc = thing->CountChildren();
-	if (nc == 0) //thing is a leaf
+	if (nc == 0 || (has_resource_thing && is_match))    // prevent showing nodes for uniformly set taxilines or taxiways
 	{
 		if (is_match)
 		{
@@ -1190,8 +1196,6 @@ void		WED_PropertyTable::GetFilterStatus(WED_Thing * what, ISelection * sel,
 	if (!mSelOnly || !sel || sel->IsSelected(what))
 	if (mFilter.empty() || mFilter.count(what->GetClass()))
 		visible = 1;
-
-	//TODO - use mSearchFilter here?
 
 	recurse_children = what->CountChildren();
 

@@ -31,6 +31,7 @@ class	IResolver;
 
 class	Point2;
 
+class	WED_Archive;
 class	WED_GISEdge;
 class	WED_MapZoomerNew;
 class	WED_Thing;
@@ -101,6 +102,8 @@ edge_to_child_edges_map_t run_split_on_edges(vector<split_edge_info_t>& edges);
 void	WED_DoSplit(IResolver * resolver);
 int		WED_CanAlign(IResolver * resolver);
 void	WED_DoAlign(IResolver * resolver);
+int		WED_CanMatchBezierHandles(IResolver * resolver);
+void	WED_DoMatchBezierHandles(IResolver * resolver);
 int		WED_CanOrthogonalize(IResolver * resolver);
 void	WED_DoOrthogonalize(IResolver * resolver);
 int		WED_CanMakeRegularPoly(IResolver * resolver);
@@ -164,5 +167,17 @@ int wed_upgrade_one_airport(WED_Thing* who, WED_ResourceMgr* rmgr, ISelection* s
 void WED_UpgradeRampStarts(IResolver * resolver);
 void WED_AlignAirports(IResolver * resolver);
 
+// Tests if 'thing' is of a specific type.
+typedef bool (*IsTypeFunc)(WED_Thing * thing);
+
+// Checks whether the selected objects can be converted to the type checked for by 'isDstType'.
+// 'dstIsPolygon' specifies whether the destination type is a subclass of WED_GISPolygon.
+int		WED_CanConvertTo(IResolver * resolver, IsTypeFunc isDstType, bool dstIsPolygon);
+
+// Factory function for a certain subclass of WED_Thing.
+typedef WED_Thing * (*CreateThingFunc)(WED_Archive * parent);
+
+// Converts the selected objects to the type produced by 'create'.
+void	WED_DoConvertTo(IResolver * resolver, CreateThingFunc create);
 
 #endif /* WED_GroupCommands_H */

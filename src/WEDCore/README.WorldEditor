@@ -1,4 +1,4 @@
--------------------------------------------------------------------------------
+﻿-------------------------------------------------------------------------------
                          WorldEditor Release Notes
 -------------------------------------------------------------------------------
 
@@ -13,22 +13,38 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.1
+WED 1.7.1 b2
+	- WED-1052: Fix "New" button hanging under windows
+	- WED-1040: Fix crash when validating unparseable runway names under windows
+
+WED 1.7.1 b1
 	- WED-1018: make validation for at least one run/sealane, heliport specific to airport type
 	- fix typo in CCW wound polygon error text
 	- WED-1024: Prevent some nodes turning into Bezier nodes after Marquee tool rotations under OSX
-	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	- WED-1032: Raise non-modal windows at re-activation to foreground (Windows, Lin/OSX do that already)
 	- WED-1000: Fix window deactivation issue on Linux
 	- WED-1036: Keep "Upgrade  Ramps" from altering ramp start OpsType if such is already set
-	- fix preview for lines w/multiple, differing width layers
+	- fix preview panel display for lines w/multiple, differing width layers
 	- validate Datum meta tags to be within the airport's bounding box
 	- make listing order leading-numbers sensitive, so 10_line.lin is listed below 2_line.lin
 	- WED-1042: Suppress listing of .ags and .agb in the library pane until propper support for these is added
+	- fix splitting of bezier segements for curves that run nearly vertical
+	- fix symbolic links for directories not recognized with certain versions of mfc100.dll
 	Features:
+	- Add pre-select for 'Split Walls' when placing facades
+	- Split line/area features into 2 separate things (selecti non-adjacent nodes, Edit->Split)
+	- Merge two line features into one (select end-nodes Edit-Merge)
+	- Merge two area features into one (select 2 nodes in eacg, Edit-Merge)
+	- Convert taxiline open/closed (select single node, Edit->Split or endpoints, Edit->Merge)
+	- Add matching of two line/area objects (select both objects, snap 2 nodes, Edit->Match Bezier Handles)
+	- Create parallel running bezier curved lines (duplicate bezier curve, shift-drag one of its segements)
+	- real-time preview of lines, strings and taxilines on the map
+	- WED-1039: support new line & light types for taxilines if available in LR default libraries
+	- WED-998: Extend hierachical locking effectiveness, highlight interior of selected items, confirm moving airports
+	- Make taxiway & taxiline "lights", "lines" attributes selectable with the hierachy pane filter function
 	- WED-1013: Drag & scale operations use projection, prevents distortion when moving across large lattitude range
 	
-WED 1.7.0 r3
+WED 1.7.0 r3 6/4/18
 	- fix bezier handle rotation in TCE windows vertex tool
 	- WED-1006: adjust airport overall size validation for lattitude
 	- WED-1007: fix inability to export to DSF w/validation warnings present

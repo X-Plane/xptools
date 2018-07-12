@@ -13,6 +13,7 @@
 #include "GUI_Pane.h"
 #include "GUI_Commander.h"
 #include "GUI_Timer.h"
+#include "GUI_TextTable.h"
 
 class GUI_GraphState;
 
@@ -48,7 +49,7 @@ int plot_token(const sign_token& sign, int x, int y, float scale, GUI_GraphState
 
 void RenderSign(GUI_GraphState * state, int x, int y, const string& sign_text, float scale, int font_id, const float color[4]);
 	
-class WED_Sign_Editor : public GUI_Pane, public GUI_Commander, public GUI_Timer {
+class WED_Sign_Editor : public GUI_Timer, public GUI_EditorInsert {
 public:
 
 						WED_Sign_Editor(GUI_Commander * parent);
@@ -64,8 +65,10 @@ public:
 							}
 
 	virtual	void		TimerFired(void);
-			bool		SetSignText(const string& outDesc);
-			void		GetSignText(string& outDesc);
+	virtual bool	 	SetData(const GUI_CellContent& c);
+	virtual void		GetData(GUI_CellContent& c);
+	virtual	void		GetSizeHint(int * w, int * h);  // returns window desired size
+
 protected:
 
 	virtual	int				AcceptTakeFocus();
