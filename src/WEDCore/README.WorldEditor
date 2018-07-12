@@ -15,6 +15,7 @@ CHANGE HISTORY
 
 WED 1.7.1 b2
 	- WED-1052: Fix "New" button hanging under windows
+	- WED-1040: Fix crash when validating unparseable runway names under windows
 
 WED 1.7.1 b1
 	- WED-1018: make validation for at least one run/sealane, heliport specific to airport type
