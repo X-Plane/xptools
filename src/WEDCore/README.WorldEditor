@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.1 b2
+WED 1.7.1 b2 7/13/18
 	- WED-1052: Fix "New" button hanging under windows
 	- WED-1040: Fix crash when validating unparseable runway names under windows
 
