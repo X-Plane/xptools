@@ -36,7 +36,7 @@
 #include "WED_Sign_Editor.h"
 #include "WED_Line_Selector.h"
 
-#define USE_LINE_SELECTOR_POPUP 1     // not yet quite ready for production
+#define USE_LINE_SELECTOR_POPUP 1
 
 #define RESIZE_MARGIN 4
 

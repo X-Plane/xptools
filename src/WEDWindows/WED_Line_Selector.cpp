@@ -118,8 +118,8 @@ int		WED_Line_Selector::MouseDown(int x, int y, int button)
 //	printf("click @ %d,%d: r,c %d,%d\n",x,y, mR,mC);
 	mChoice = mDict[mR][mC].enu;
 
-	if(mChoice >= 0) 
-		DispatchKeyPress(GUI_KEY_RETURN, GUI_VK_RETURN, 0);
+	if(mChoice >= 0)
+		DispatchKeyPress(GUI_KEY_RETURN, GUI_VK_RETURN, GetModifiersNow());
 
 	return 1;
 }

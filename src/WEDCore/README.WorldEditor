@@ -13,11 +13,14 @@ menu to view it online.
 
 CHANGE HISTORY
 
+WED 1.7.1 r1
+	- WED-1054: Fix multi property edits (ALT-click) not working with new line/light GUI selection
+
 WED 1.7.1 b2 7/13/18
 	- WED-1052: Fix "New" button hanging under windows
 	- WED-1040: Fix crash when validating unparseable runway names under windows
 
-WED 1.7.1 b1
+WED 1.7.1 b1 6/29/18
 	- WED-1018: make validation for at least one run/sealane, heliport specific to airport type
 	- fix typo in CCW wound polygon error text
 	- WED-1024: Prevent some nodes turning into Bezier nodes after Marquee tool rotations under OSX
