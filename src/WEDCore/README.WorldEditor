@@ -15,7 +15,8 @@ CHANGE HISTORY
 
 WED 1.7.1 r1
 	- WED-1054: Fix multi property edits (ALT-click) not working with new line/light GUI selection
-
+	- Fix issue creating malformed polygon after merging two open facades
+	
 WED 1.7.1 b2 7/13/18
 	- WED-1052: Fix "New" button hanging under windows
 	- WED-1040: Fix crash when validating unparseable runway names under windows
