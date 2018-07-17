@@ -356,6 +356,8 @@
 		D63F725D117FB60900AB7C1F /* BlockAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */; };
 		D63F72751180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
 		D63F72761180917800AB7C1F /* BlockFill.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D63F72741180917800AB7C1F /* BlockFill.cpp */; };
+		D645FD191FA7996000A82CFF /* FileUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D6ED3AFC0B67F0B000D5484E /* FileUtils.cpp */; };
+		D645FD1A1FA7997100A82CFF /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = D69FD7450B6CF765008E3AEC /* zip.c */; };
 		D64A08AA127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
 		D64A08AB127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
 		D64A08AC127AFDC1000D58A7 /* NetAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */; };
@@ -1005,7 +1007,7 @@
 		D6A2672F0F992DDE00E1E754 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = /Applications/ac3dmac/plugins/;
+			dstPath = /Applications/ac3dmac/AC3D.app/plugins;
 			dstSubfolderSpec = 0;
 			files = (
 				D6A267060F992A9700E1E754 /* XPlaneSupport.tcl in CopyFiles */,
@@ -4493,6 +4495,7 @@
 				D6A266AA0F99274300E1E754 /* obj_panel.cpp in Sources */,
 				D6A266AC0F99274300E1E754 /* obj_radius.cpp in Sources */,
 				D6A266AE0F99274300E1E754 /* obj_tools.cpp in Sources */,
+				D645FD1A1FA7997100A82CFF /* zip.c in Sources */,
 				D6A266B00F99274300E1E754 /* obj_update.cpp in Sources */,
 				D6A266B20F99274300E1E754 /* prefs.cpp in Sources */,
 				D6A266B40F99274300E1E754 /* tcl_utils.cpp in Sources */,
@@ -4501,6 +4504,7 @@
 				D6A266BC0F99274300E1E754 /* xp_plugin.cpp in Sources */,
 				D6A266E60F99296100E1E754 /* ObjConvert.cpp in Sources */,
 				D6A266E80F99296400E1E754 /* ObjPointPool.cpp in Sources */,
+				D645FD191FA7996000A82CFF /* FileUtils.cpp in Sources */,
 				D6A266EA0F99296900E1E754 /* XObjBuilder.cpp in Sources */,
 				D6A266EC0F99296B00E1E754 /* XObjDefs.cpp in Sources */,
 				D6A266EE0F99296D00E1E754 /* XObjReadWrite.cpp in Sources */,
@@ -5555,6 +5559,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
@@ -5564,16 +5569,13 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
-					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					SDK/mac_i386/lib/libz.a,
+					SDK/mac_i386/lib/libsquish.a,
+					SDK/mac_i386/lib/libpng.a,
 				);
 				PRODUCT_NAME = XPlaneSupportMac;
 			};
@@ -5583,6 +5585,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
@@ -5597,16 +5600,13 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
-					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					SDK/mac_i386/lib/libz.a,
+					SDK/mac_i386/lib/libsquish.a,
+					SDK/mac_i386/lib/libpng.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5617,6 +5617,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
@@ -5631,16 +5632,13 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
-					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					SDK/mac_i386/lib/libz.a,
+					SDK/mac_i386/lib/libsquish.a,
+					SDK/mac_i386/lib/libpng.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;
@@ -5651,6 +5649,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
 				BUNDLE_LOADER = /Applications/ac3dmac/ac3d.app/Contents/MacOS/ac3d;
 				COMBINE_HIDPI_IMAGES = YES;
 				DYLIB_COMPATIBILITY_VERSION = "";
@@ -5661,16 +5660,13 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					SDK/ac3d,
-					"$(inherited)",
+					SDK/mac_i386/include,
 				);
 				MACH_O_TYPE = mh_bundle;
 				OTHER_LDFLAGS = (
-					libs/local/lib/libsquish.a,
-					libs/local/lib/libz.a,
-					libs/local/lib/libpng.a,
-					libs/local/lib/libjasper.a,
-					libs/local/lib/libjpeg.a,
-					"$(inherited)",
+					SDK/mac_i386/lib/libz.a,
+					SDK/mac_i386/lib/libsquish.a,
+					SDK/mac_i386/lib/libpng.a,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = XPlaneSupportMac;

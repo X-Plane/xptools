@@ -23,6 +23,8 @@
 #ifndef _EndianUtils_h_
 #define _EndianUtils_h_
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -72,8 +74,8 @@ PlatformType	GetNativePlatformType(void);
  *
  */
 
-void	EndianFlipShort(short * ioShort);
-void	EndianFlipLong(long * ioLong);
+void	EndianFlipShort(int16_t * ioShort);
+void	EndianFlipLong(int32_t * ioLong);
 
 
 

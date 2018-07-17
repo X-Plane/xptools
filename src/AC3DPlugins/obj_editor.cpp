@@ -37,6 +37,7 @@
 
 
 const int NUM_KEYFRAMES = 50;
+const int NUM_DETENTS = 15;
 const int MAX_MULTI_COUNT = 5;
 
 /****************************************************************************************************************/
@@ -115,17 +116,25 @@ static ACObject * get_sel_single_light(int n)
 	SIMPLE_PROPERTY_FLT(manip_dx,get_sel_single_obj,OBJ_set_manip_dx,OBJ_get_manip_dx) \
 	SIMPLE_PROPERTY_FLT(manip_dy,get_sel_single_obj,OBJ_set_manip_dy,OBJ_get_manip_dy) \
 	SIMPLE_PROPERTY_FLT(manip_dz,get_sel_single_obj,OBJ_set_manip_dz,OBJ_get_manip_dz) \
+	SIMPLE_PROPERTY_FLT(manip_centroid_x,get_sel_single_obj,OBJ_set_manip_centroid_x,OBJ_get_manip_centroid_x) \
+	SIMPLE_PROPERTY_FLT(manip_centroid_y,get_sel_single_obj,OBJ_set_manip_centroid_y,OBJ_get_manip_centroid_y) \
+	SIMPLE_PROPERTY_FLT(manip_centroid_z,get_sel_single_obj,OBJ_set_manip_centroid_z,OBJ_get_manip_centroid_z) \
 	SIMPLE_PROPERTY_FLT(manip_v1_min,get_sel_single_obj,OBJ_set_manip_v1_min,OBJ_get_manip_v1_min) \
 	SIMPLE_PROPERTY_FLT(manip_v1_max,get_sel_single_obj,OBJ_set_manip_v1_max,OBJ_get_manip_v1_max) \
 	SIMPLE_PROPERTY_FLT(manip_v2_min,get_sel_single_obj,OBJ_set_manip_v2_min,OBJ_get_manip_v2_min) \
 	SIMPLE_PROPERTY_FLT(manip_v2_max,get_sel_single_obj,OBJ_set_manip_v2_max,OBJ_get_manip_v2_max) \
+	SIMPLE_PROPERTY_FLT(manip_angle_min,get_sel_single_obj,OBJ_set_manip_angle_min,OBJ_get_manip_angle_min) \
+	SIMPLE_PROPERTY_FLT(manip_angle_max,get_sel_single_obj,OBJ_set_manip_angle_max,OBJ_get_manip_angle_max) \
+	SIMPLE_PROPERTY_FLT(manip_lift,get_sel_single_obj,OBJ_set_manip_lift,OBJ_get_manip_lift) \
 	SIMPLE_PROPERTY_STR(manip_dref1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \
 	SIMPLE_PROPERTY_STR(manip_dref2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
 	SIMPLE_PROPERTY_STR(manip_cmnd1,get_sel_single_obj,OBJ_set_manip_dref1,OBJ_get_manip_dref1,"", "") \
 	SIMPLE_PROPERTY_STR(manip_cmnd2,get_sel_single_obj,OBJ_set_manip_dref2,OBJ_get_manip_dref2,"", "") \
 	SIMPLE_PROPERTY_STR(manip_tooltip,get_sel_single_obj,OBJ_set_manip_tooltip,OBJ_get_manip_tooltip,"", "") \
 	SIMPLE_PROPERTY_STR(manip_cursor,get_sel_single_obj,OBJ_set_manip_cursor,OBJ_get_manip_cursor,"", "") \
-	SIMPLE_PROPERTY_FLT(manip_wheel,get_sel_single_obj,OBJ_set_manip_wheel,OBJ_get_manip_wheel)
+	SIMPLE_PROPERTY_FLT(manip_wheel,get_sel_single_obj,OBJ_set_manip_wheel,OBJ_get_manip_wheel) \
+	SIMPLE_PROPERTY_INT(manip_detent_count, get_sel_single_obj,OBJ_set_manip_detent_count,OBJ_get_manip_detent_count)
+
 //	SIMPLE_PROPERTY_FLT(anim_low_value,get_sel_single_obj,OBJ_set_anim_low_value,OBJ_get_anim_low_value) \
 //	SIMPLE_PROPERTY_FLT(anim_low_angle,get_sel_single_obj,OBJ_set_anim_low_angle,OBJ_get_anim_low_angle) \
 //	SIMPLE_PROPERTY_FLT(anim_high_value,get_sel_single_obj,OBJ_set_anim_high_value,OBJ_get_anim_high_value) \
@@ -139,6 +148,7 @@ static ACObject * get_sel_single_light(int n)
 
 #define	SIMPLE_PROPERTY_MAPPINGS_LGT	\
 	SIMPLE_PROPERTY_STR(light_type,get_sel_single_light,OBJ_set_light_named, OBJ_get_light_named,"","none") \
+	SIMPLE_PROPERTY_STR(magnet_type,get_sel_single_light,OBJ_set_magnet_type, OBJ_get_magnet_type,"","none") \
 	SIMPLE_PROPERTY_STR(light_dataref,get_sel_single_light,OBJ_set_light_dataref, OBJ_get_light_dataref,"","") \
 	SIMPLE_PROPERTY_FLT(light_red,get_sel_single_light,OBJ_set_light_red,OBJ_get_light_red) \
 	SIMPLE_PROPERTY_FLT(light_green,get_sel_single_light,OBJ_set_light_green,OBJ_get_light_green) \
@@ -260,11 +270,31 @@ static void xplane_anim_angle_cb(double value, int idx, void * ref, TCL_linked_v
 	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_anim_nth_angle(obj, (uintptr_t) ref, value))
 }
 
+static void xplane_detent_lo_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
+{
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_manip_nth_detent_lo(obj, (uintptr_t) ref, value))
+}
+
+static void xplane_detent_hi_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
+{
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_manip_nth_detent_hi(obj, (uintptr_t) ref, value))
+}
+
+static void xplane_detent_hgt_cb(double value, int idx, void * ref, TCL_linked_vardv * who)
+{
+	APPLY_SET_ONE_OR_MANY(get_sel_single_obj(idx),OBJ_set_manip_nth_detent_hgt(obj, (uintptr_t) ref, value))
+}
+
 TCL_linked_variv * blend_enable_var = NULL;
 TCL_linked_vardv * blend_level_var = NULL;
 TCL_linked_varsv * anim_type_var = NULL;
 TCL_linked_vardv * anim_value_vars[NUM_KEYFRAMES] = { 0 };
 TCL_linked_vardv * anim_angle_vars[NUM_KEYFRAMES] = { 0 };
+
+
+TCL_linked_vardv * detent_lo_vars[NUM_DETENTS] = { 0 };
+TCL_linked_vardv * detent_hi_vars[NUM_DETENTS] = { 0 };
+TCL_linked_vardv * detent_hgt_vars[NUM_DETENTS] = { 0 };
 
 
 /****************************************************************************************************************/
@@ -320,7 +350,7 @@ static void OBJ_get_sel_count_tcl(void)
 	vector<ACObject *>		objs;
 	find_all_selected_objects_flat(objs);
 	if(objs.empty())						command_result_append_int(1);
-	else if(objs.size() <= MAX_MULTI_COUNT) command_result_append_int(objs.size());
+	else if( (int)objs.size() <= MAX_MULTI_COUNT) command_result_append_int((int)objs.size());
 	else									command_result_append_int(1);
 }
 
@@ -360,7 +390,7 @@ static void OBJ_editor_sync(ACObject * changed)
 	vector<ACObject *>		objs;
 	find_all_selected_objects_flat(objs);
 
-	int total = (objs.size() <= MAX_MULTI_COUNT) ? objs.size() : 1;
+	int total = ((int)objs.size() <= MAX_MULTI_COUNT) ? (int)objs.size() : 1;
 
 	for (int idx = 0; idx < total; ++idx)
 	{
@@ -390,6 +420,12 @@ static void OBJ_editor_sync(ACObject * changed)
 				{
 					anim_value_vars[n]->set(idx, OBJ_get_anim_nth_value(obj,n));
 					anim_angle_vars[n]->set(idx, OBJ_get_anim_nth_angle(obj,n));
+				}
+				for(int n = 0; n < OBJ_get_manip_detent_count(obj); ++n)
+				{
+					detent_lo_vars[n]->set(idx,OBJ_get_manip_nth_detent_lo(obj,n));
+					detent_hi_vars[n]->set(idx,OBJ_get_manip_nth_detent_hi(obj,n));
+					detent_hgt_vars[n]->set(idx,OBJ_get_manip_nth_detent_hgt(obj,n));
 				}
 			}
 			if (seltype == sel_light && (changed == obj || changed == NULL))
@@ -442,7 +478,7 @@ void	OBJ_editor_init(void)
 	blend_level_var = new TCL_linked_vardv(ac_get_tcl_interp(), "xplane_blend_level", MAX_MULTI_COUNT, xplane_blend_level_cb, NULL, 0.0);
 	anim_type_var = new TCL_linked_varsv(ac_get_tcl_interp(),"xplane_anim_type",MAX_MULTI_COUNT, xplane_anim_type_cb,NULL,"no animation");
 
-	for (uintptr_t n = 0; n < NUM_KEYFRAMES; ++n)
+	for (int n = 0; n < NUM_KEYFRAMES; ++n)
 	{
 		char	buf[25];
 		sprintf(buf,"xplane_anim_value%d", n);
@@ -450,6 +486,19 @@ void	OBJ_editor_init(void)
 		sprintf(buf,"xplane_anim_angle%d", n);
 		anim_angle_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_anim_angle_cb, (void *) n, 0);
 	}
+	
+	for(int n = 0; n < NUM_DETENTS; ++n)
+	{
+		char buf[25];
+		sprintf(buf,"xplane_manip_detent_lo%d", n);
+		detent_lo_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_detent_lo_cb, (void *) n, 0);
+		sprintf(buf,"xplane_manip_detent_hi%d", n);
+		detent_hi_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_detent_hi_cb, (void *) n, 0);
+		sprintf(buf,"xplane_manip_detent_hgt%d", n);
+		detent_hgt_vars[n] = new TCL_linked_vardv(ac_get_tcl_interp(), STRING(buf), MAX_MULTI_COUNT, xplane_detent_hgt_cb, (void *) n, 0);
+	}
+	
+	
 
 	multi_edit =  new TCL_linked_vari(ac_get_tcl_interp(), "xplane_multi_edit", NULL, NULL, 0);
 

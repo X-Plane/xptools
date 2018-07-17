@@ -1,12 +1,12 @@
-# Makefile Hack for Mac OSX AC3D Plugin
-# compile with "make -f Makefile.mac", then create release tgz with "make -f Makefile.mac release"
+# Makefile Hack for Linux AC3D Plugin
+# compile with "make -f Makefile.linux", then create release tgz with "make -f Makefile.linux release"
 
 
-OSXVER=	  -mmacosx-version-min=10.6
-LDOSXVER= -macosx_version_min 10.6 
+OSXVER=
+LDOSXVER= 
 
-ARCH=$(OSXVER)
-DYNAMIC=        -dynamiclib -undefined suppress -flat_namespace
+ARCH=-m32
+DYNAMIC=        -shared -m32 -g
 
 
 XPINC=-I../../src/DSF -I../../src/DSF/tri_stripper_101 -I../../src/DSFTools -I../../src/GUI -I../../src/Interfaces \
@@ -27,13 +27,13 @@ XPINC=-I../../src/DSF -I../../src/DSF/tri_stripper_101 -I../../src/DSFTools -I..
 INCLUDE=-I../src -I../../sdk/ac3d -I../../src/Obj $(XPINC) -I/usr/include/c++/4.2.1
 
 # -Wno-write-strings surpresses 'warning: deprecated conversion from string constant to ‘char*’'
-CFLAGS=  -dynamic -DMAC -DMACINTOSH -DAPL $(INCLUDE) $(ARCH) -Wno-write-strings -g
+CFLAGS=  -DLINUX -DLIN $(INCLUDE) $(ARCH) -Wno-write-strings -g
 
-CC=gcc
-LD=gcc
+CC=g++
+LD=g++
 
 
-PLUGINS=XPlaneSupportMac.p
+PLUGINS=XPlaneSupportLinux.p
 
 
 all:    $(PLUGINS)
@@ -47,8 +47,8 @@ OBJS=     obj_anim.o	obj_panel.o obj_update.o uv_mapper.o \
 					 bitmap_match.o obj8_import.o obj_model.o obj_tools.o tcl_utils.o xp_plugin.o \
 					 TclStubs.o $(EXTOBJS)
 
-XPlaneSupportMac.p:	 $(OBJS)
-		$(LD) $(DYNAMIC) $(OBJS) -o $*.p 
+XPlaneSupportLinux.p:	 $(OBJS)
+		$(LD) $(DYNAMIC) $(LDOSXVER) $(OBJS) -o $*.p 
 
 .cpp.o:
 		$(CC) $(CFLAGS) -c $*.cpp -o $*.o
@@ -64,5 +64,5 @@ clean:
 		rm -f *.p *.o *.obj $(EXTOBJS) *.exp *.lib
 
 release:
-		tar cvfz ac3dxplane.tgz *.p XPlaneSupport.tcl README
+		tar cvfz ac3dxplanelx.tgz *.p XPlaneSupport.tcl README
 
