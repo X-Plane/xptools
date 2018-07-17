@@ -13,7 +13,7 @@ menu to view it online.
 
 CHANGE HISTORY
 
-WED 1.7.1 r1
+WED 1.7.1 r1 7/17/18
 	- WED-1054: Fix multi-property edits (ALT-click) not working with new line/light GUI selection
 	- Fix issue creating malformed polygon after merging two open facades
 
