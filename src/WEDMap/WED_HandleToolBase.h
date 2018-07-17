@@ -100,6 +100,8 @@ private:
 								double				icon_dist_v,
 								set<IGISEntity *>&	result);
 
+			void				GetSelTotalBounds(Bbox2 &bounds);
+
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything
 		drag_Handles,		// Control handles: We are dragging a single control handle
