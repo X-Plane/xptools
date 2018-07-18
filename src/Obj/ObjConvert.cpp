@@ -23,7 +23,6 @@
 #include "ObjConvert.h"
 #include "XObjDefs.h"
 #include <math.h>
-#include <string.h>
 
 #include "stdafx.h"
 #include "tri_stripper.h"
@@ -119,7 +118,6 @@ static int append_st(ObjPointPool * pool, const vec_tex& st)
 void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 {
 	obj8.texture = obj7.texture + ".png";
-	obj8.texture_normal_map = obj7.texture + "_normal.png";
 	obj8.texture_lit = obj7.texture + "_LIT.png";
 	obj8.indices.clear();
 	obj8.geo_tri.clear(8);
@@ -131,7 +129,7 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 	obj8.lods.back().cmds.clear();
 
 	XObjCmd8	cmd8;
-	unsigned int 		n;
+	int 		n;
 	int			idx_base;
 
 	bool		is_hard = false;
@@ -153,7 +151,7 @@ void	Obj7ToObj8(const XObj& obj7, XObj8& obj8)
 		case obj_Light:
 			cmd8.cmd = obj8_Lights;
 			cmd8.idx_offset = obj8.geo_lights.count();
-			cmd8.idx_count = (int)cmd->rgb.size();
+			cmd8.idx_count = cmd->rgb.size();
 			for (n = 0; n < cmd->rgb.size(); ++n)
 				append_rgb(&obj8.geo_lights, cmd->rgb[n]);
 			obj8.lods.back().cmds.push_back(cmd8);

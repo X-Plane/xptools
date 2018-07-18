@@ -22,8 +22,6 @@
  */
 
 
-#include <stdio.h>
-#include <string.h>
 #include "TclStubs.h"
 #include <ac_plugin.h>
 #include "obj_panel.h"

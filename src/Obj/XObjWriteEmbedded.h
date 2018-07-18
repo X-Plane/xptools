@@ -13,6 +13,5 @@
 #include "XObjDefs.h"
 
 bool	XObjWriteEmbedded(const char * inFile, const XObj8& inObj);
-void	XObjFixKeyframes(XObj8& inObj8);
 
 #endif

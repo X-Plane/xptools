@@ -36,7 +36,6 @@
 #include <jasper/jasper.h>
 #endif
 #include "AssertUtils.h"
-#include <stdint.h>
 
 #if IBM
 #include "GUI_Unicode.h"
@@ -62,23 +61,23 @@
 struct	BMPHeader {
 	char			signature1;
 	char			signature2;
-	int32_t			fileSize;
-	int32_t			reserved;
-	int32_t			dataOffset;
+	long			fileSize;
+	long			reserved;
+	long			dataOffset;
 };
 
 struct	BMPImageDesc {
-	int32_t			structSize;
-	int32_t			imageWidth;
-	int32_t			imageHeight;
-	int16_t			planes;
-	int16_t			bitCount;
-	int32_t			compressionType;
-	int32_t			imageSize;
-	int32_t			xPixelsPerM;	//130B0000?  B013 = 45075?
-	int32_t			yPixelsPerM;
-	int32_t			colorsUsed;
-	int32_t			colorsImportant;
+	long			structSize;
+	long			imageWidth;
+	long			imageHeight;
+	short			planes;
+	short			bitCount;
+	long			compressionType;
+	long			imageSize;
+	long			xPixelsPerM;	//130B0000?  B013 = 45075?
+	long			yPixelsPerM;
+	long			colorsUsed;
+	long			colorsImportant;
 };
 
 #if APL

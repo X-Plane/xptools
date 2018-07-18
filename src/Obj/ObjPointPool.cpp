@@ -20,12 +20,7 @@
  * THE SOFTWARE.
  *
  */
-
-#include <stdlib.h>
-#include <string.h>
-
 #include "ObjPointPool.h"
-
 using std::min;
 using std::max;
 

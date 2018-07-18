@@ -231,7 +231,7 @@ void	RF_MapView::MakeMenus(void)
 	for(int n = 0; n < DEMChoiceCount; ++n)
 		dem_menus[n].cmd = viewCmd_DEMDataChoice_Start + n;
 
-	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 2);
+	gApplication->CreateMenu("DEM Data Choice", &*dem_menus.begin(),view_menu, 4);
 
 }
 

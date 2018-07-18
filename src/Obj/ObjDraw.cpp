@@ -28,7 +28,6 @@
 	#include <GL/gl.h>
 #endif
 #include <math.h>
-#include <stdio.h>
 #include <algorithm>
 
 #define	CHECK_GL_ERR		GL_ERR(glGetError());

@@ -13,9 +13,6 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-
-
- test
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -27,9 +24,6 @@
 #ifndef PREFS_H
 #define PREFS_H
 
-// AC - in tcl/tk, the prefs will be accessable by prefs_xplane_<name>
-// in c, access the prefs with get_<name>
-
 #define PREFS_LIST \
 	DEFINE_PREF_STRING(default_layer_group, "none") \
 	DEFINE_PREF_INT(default_layer_offset, 0) \
@@ -37,7 +31,6 @@
 	DEFINE_PREF_DOUBLE(default_LOD, 0.0f) \
 	DEFINE_PREF_STRING(export_prefix, "") \
 	DEFINE_PREF_STRING(texture_prefix, "") \
-	DEFINE_PREF_INT(export_texture_normal_map, 0) \
 	DEFINE_PREF_INT(enable_regions, 0) \
 	DEFINE_PREF_INT(region_count, 1) \
 	DEFINE_PREF_INT(region_l0, 0) \

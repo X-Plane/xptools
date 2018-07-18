@@ -33,8 +33,9 @@ const char * TCL_init_stubs(void)
 {
 	int lost = 0;
 #if IBM
-	HMODULE	hmod = GetModuleHandle(L"tcl86t");
-	if(hmod == NULL) return "Could not locate tcl8.6";
+	HMODULE	hmod = GetModuleHandle(L"tcl85");
+	if(hmod == NULL) hmod = GetModuleHandle(L"tcl84");
+	if(hmod == NULL) return "Could not locate tcl84 or tcl85";
 #endif
 #if APL || LIN
 #define TCL_PROC(ret,name,args) \
