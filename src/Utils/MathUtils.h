@@ -25,6 +25,7 @@
 #define MATHUTILS_H
 
 #include <math.h>
+#include <numeric>
 
 //******************************************************************************************************************************************************************************
 // GENERAL MATH PROCS
@@ -233,6 +234,23 @@ inline int dec_needed(const float val){
 	if(flt_abs(val)>  99.9)return 2;
 	if(flt_abs(val)>   9.9)return 3;
 						   return 4;}
+
+
+// Euclid's method for GCD
+inline int greatest_common_denominator(int a, int b)
+{
+	while(true)
+	{
+		if(a == 0) return b;
+		b %= a;
+		if(b == 0) return a;
+		a %= b;
+	}
+}
+
+inline int lcm(int a,	int b)														{ return a * b / greatest_common_denominator(a, b); }
+inline int least_common_multiple(const int * range_begin, const int * range_end)	{ return std::accumulate(range_begin + 1, range_end, *range_begin, lcm); }
+inline int least_common_multiple(const vector<int> &numbers)						{ return least_common_multiple(&*numbers.begin(), &*numbers.begin() + numbers.size()); }
 
 const double degrees_to_radians = 3.14159265358979 / 180;
 

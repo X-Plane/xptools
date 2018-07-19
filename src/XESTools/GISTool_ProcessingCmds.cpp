@@ -695,6 +695,53 @@ struct pair_comparator
 	}
 };
 
+struct special_ter_repeat_rule {
+	special_ter_repeat_rule(int min, int max, int ter_1) : min_radius(min), target_max_radius(max) { compatible_terrains.push_back(ter_1); compatible_terrains.push_back(ter_1 + 1); }
+	int min_radius; // in terms of grid squares
+	int target_max_radius; // in terms of grid squares
+	vector<int> compatible_terrains;
+};
+
+static bool has_matching_ter_enum_in_radius(int ter_enum, int min_radius, const grid_coord_desc &point, const vector<vector<int> > &tile_assignments)
+{
+	DebugAssert(!tile_assignments.empty());
+	for(int x = max(point.x - min_radius, 0); x <= intmin2(point.x + min_radius, tile_assignments.size()    - 1); ++x)
+	for(int y = max(point.y - min_radius, 0); y <= intmin2(point.y + min_radius, tile_assignments[x].size() - 1); ++y)
+	{
+		if(x != point.x && y != point.y &&
+				tile_assignments[x][y] == ter_enum)
+		{
+				return true;
+		}
+	}
+	return false;
+}
+
+static void attempt_assign_special_ter_enum(int ter_enum, const map<int, special_ter_repeat_rule> &special_ter_repeat_rules, const grid_coord_desc &point, vector<vector<int> > &tile_assignments)
+{
+	DebugAssert(special_ter_repeat_rules.count(ter_enum));
+	const special_ter_repeat_rule &rule = special_ter_repeat_rules.at(ter_enum);
+	if(contains(rule.compatible_terrains, tile_assignments[point.x][point.y]) &&
+			!has_matching_ter_enum_in_radius(ter_enum, rule.min_radius, point, tile_assignments))
+	{
+		tile_assignments[point.x][point.y] = ter_enum;
+		//cout << "Assigned special terrain " << FetchTokenString(ter_enum) << " at (" << point.x << ", " << point.y << ")" << endl;
+	}
+}
+
+static const int s_pseudorand[] = {918,422,359,512,181,657,814,87,418,288,944,295,56,755,709,56,211,394,408,936,959,752,143,866,664,511,434,562,81,899,22,758,803,145,578,648,874,841,60,738,275,507,899,941,263,156,346,722,889,124,988,458,318,447,189,532,557,209,98,946,909,629,375,246,812,563,489,744,890,334,95,808,249,967,608,803,428,258,962,747,864,875,645,58,518,124,794,868,125,896,203,501,801,557,353,65,646,759,347,413,50,608,442,289,183,34,104,196,458,430,375,992,308,515,120,203,888,626,652,411,495,64,960,991,588,398,815,107,813,948,410,186,444,748,724,195,373,165,474,989,934,580,221,953,542,338,990,819,754,454,360,308,888,634,326,30,599,399,970,3,405,415,712,40,204,779,554,379,145,318,229,540,633,945,215,161,351,457,32,304,210,874,664,0,302,24,492,818,605,760,574,490,282,761,360,992,120,802,449,312,130,573,599,696,12,946,785,82,129,471,438,924,879,224,122,97,420,260,497,581,360,589,7,390,547,985,359,604,408,802,847,388,653,466,148,708,160,924,655,274,508,595,469,964,73,580,490,533,700,0,17,473,842,383,709,735,728,713,931,57,5,555,484,226,216,787,66,753,880,211,434,262,855,389,60,26,889,257,903,65,514,825,868,376,191,617,396,331,681,545,771,469,154,566,36,674,84,771,890,487,15,259,709,103,861,309,359,172,778,336,373,532,365,996,40,28,242,539,854,67,415,178,525,767,243,360,73,175,231,989,26,48,88,41,58,979,496,524,827,889,310,58,629,441,813,606,618,344,537,485,108,885,412,472,572,452,832,829,748,147,798,174,756,293,466,890,170,158,196,107,702,976,451,868,213,429,316,672,808,826,421,444,681,868,525,848,217,261,753,836,589,703,927,523,806,284,518,266,370,168,233,718,985,775,326,484,376,507,76,41,678,233,427,927,505,176,601,259,613,386,784,768,271,902,651,474,265,733,80,286,820,32,715,234,237,653,381,288,922,515,195,329,234,602,725,851,174,117,873,112,650,856,411,883,8,869,490,559,222,513,802,930,884,75,707,513,982,471,764,487,638,805,605,447,765,464,371,143,279,643,764,475,240,767,36,823,763,507,713,739,571,891,355,275,741,689,705,403,688,797,438,181,567,593,98,258,723,288,31,291,585,27,169,753,536,290,284,731,331,463,437,725,530,369,401,485,445,748,449,379,693,104,208,1000,899,900,888,964,4,791,278,791,265,23,507,178,812,356,713,738,950,299,218,84,84,981,444,119,991,464,488,545,853,967,72,917,868,286,11,511,533,386,833,805,214,35,228,289,294,831,469,400,520,549,419,2,747,777,492,919,672,448,404,627,540,773,952,143,83,735,598,54,190,502,559,651,712,380,576,804,401,105,435,298,992,366,222,582,911,888,672,179,755,860,521,948,821,391,237,952,210,694,558,346,240,5,864,846,201,285,609,293,536,157,514,340,694,427,504,669,154,115,623,869,983,910,205,200,651,952,21,249,957,959,31,405,401,392,751,740,437,386,122,542,506,459,400,952,113,202,184,297,994,567,976,628,1,739,636,791,966,717,420,252,184,384,656,457,606,991,830,704,790,689,105,41,964,399,858,129,606,356,334,19,400,708,736,496,756,429,163,596,133,442,845,682,350,551,37,73,319,782,696,85,477,16,889,586,798,720,441,835,212,862,864,595,185,960,744,935,267,870,94,368,281,110,647,622,599,992,286,420,10,632,612,945,742,977,313,415,273,503,768,86,685,314,406,784,767,572,954,241,649,120,930,258,801,154,531,909,986,576,855,435,452,553,145,366,512,847,183,255,40,99,164,92,882,230,643,499,782,393,830,653,868,196,741,88,714,88,13,352,600,602,398,276,417,564,382,907,323,698,919,795,859,775,369,635,434,502,87,197,941,785,599,624,226,464,847,541,707,798,780,517,668,348,132,268,408,624,550,938,650,141,537,697,445,729,66,961,67,887,864,943,233,644,558,113,557,33,883,103,169,865,325,541,204,534,135,896,123,650,983,849,890,114,501,513,163,741,29,793,693,954,19,706,203,194,7,946,284,981,474,13,351,195,982,741,64,877,420,936,964,67,810,64,95,30,240,519,388,908,603,690,511,284,564,818,346,505,7,49,616,213,720,822,244,854,432,400,95,985,741,469,981,854,768,521,440,723,63,333,833,919,27,374,406,504,920,692,871,353,110,121,150,776,188,325,263,73,704,150,291,165,858,225,5,793,471,184,235,481,777,888,173,941,142,600,311,747};
+
+/**
+ * A repeatable method for scattering tile placements in apparently random places.
+ */
+static int pseudorandom_in_range(const special_ter_repeat_rule &rule, const pair<int, int> &dsf, int dim, int dsf_delta_dim)
+{
+	DebugAssert(rule.min_radius < rule.target_max_radius);
+	const int offset = int_abs(dim + dsf.first * dsf.second * dsf_delta_dim * rule.min_radius * rule.target_max_radius);
+	int pseudo_rand = s_pseudorand[offset % sizeof(s_pseudorand)];
+	return rule.min_radius + pseudo_rand % (rule.target_max_radius - rule.min_radius);
+}
+
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
 	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
@@ -725,9 +772,11 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	//   b) we would never have used the "special" tiles of each type (e.g., sports stadiums)
 	//   c) we wouldn't have done anything about standalone tiles, which just look awkward
 	//--------------------------------------------------------------------------------------------------------
+	const int dx = ortho_terrain_by_dsf.begin()->second.size();
+	const int dy = ortho_terrain_by_dsf.begin()->second[0].size();
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
-	for(int x = 0; x < dsf->second.size(); ++x)
-	for(int y = 0; y < dsf->second[x].size(); ++y)
+	for(int x = 0; x < dx; ++x)
+	for(int y = 0; y < dy; ++y)
 	{
 		const pair<int, int> &dsf_lon_lat = dsf->first;
 
@@ -737,8 +786,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		for(int corner_x = 0; corner_x < 2; ++corner_x)
 		for(int corner_y = 0; corner_y < 2; ++corner_y)
 		{
-			const double lon = dsf_lon_lat.first + (double)(x + corner_x) / dsf->second.size();
-			const double lat = dsf_lon_lat.second + (double)(y + corner_y) / dsf->second[x].size();
+			const double lon = dsf_lon_lat.first + (double)(x + corner_x) / dx;
+			const double lat = dsf_lon_lat.second + (double)(y + corner_y) / dy;
 			const float urbanization = gDem[dem_UrbanDensity].value_linear(lon, lat);
 			if(urbanization != DEM_NO_DATA)
 			{
@@ -765,6 +814,74 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				const int variant = (x + y) % 2;
 				dsf->second[x][y] = ter_enum + variant;
 			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	// PASS 2
+	// Go through the existing map looking for point features which would correspond to our "special" orthophotos.
+	//--------------------------------------------------------------------------------------------------------
+	map<int, special_ter_repeat_rule> special_ter_repeat_rules;
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoInnerPark,				special_ter_repeat_rule(2, 5, terrain_PseudoOrthoInner1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoInnerStadium,			special_ter_repeat_rule(3, 7, terrain_PseudoOrthoInner1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoOuterBuilding,			special_ter_repeat_rule(2, 5, terrain_PseudoOrthoOuter1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoOuterStadium,			special_ter_repeat_rule(3, 7, terrain_PseudoOrthoOuter1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoTownLgBuilding,		special_ter_repeat_rule(2, 3, terrain_PseudoOrthoTown1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoTownSpecial2,			special_ter_repeat_rule(2, 3, terrain_PseudoOrthoTown1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial1,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial2,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
+
+	vector<int> large_building_features;
+	large_building_features.push_back(feat_CommercialOffice);
+	large_building_features.push_back(feat_CommercialShoppingPlaza);
+	large_building_features.push_back(feat_Government);
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	{
+		if(!f->is_unbounded())
+		{
+			const GIS_face_data &fd = f->data();
+			const Point2 centroid = cgal_face_to_ben(f).centroid();
+			const pair<int, int> dsf_coords = make_pair(floor(centroid.x()), floor(centroid.y()));
+			dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.find(dsf_coords);
+			if(dsf != ortho_terrain_by_dsf.end())
+			{
+				const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
+				int &ter_enum = dsf->second[grid_pt.x][grid_pt.y];
+				if(ter_enum != NO_VALUE)
+				{
+					for(GISPointFeatureVector::const_iterator i = fd.mPointFeatures.begin(); i != fd.mPointFeatures.end(); ++i)
+					{
+						if(contains(large_building_features, i->mFeatType))
+						{
+							attempt_assign_special_ter_enum(terrain_PseudoOrthoOuterBuilding, special_ter_repeat_rules, grid_pt, dsf->second);
+							attempt_assign_special_ter_enum(terrain_PseudoOrthoTownLgBuilding, special_ter_repeat_rules, grid_pt, dsf->second);
+						}
+						else if(i->mFeatType == feat_GolfCourse)
+						{
+							attempt_assign_special_ter_enum(terrain_PseudoOrthoInnerPark, special_ter_repeat_rules, grid_pt, dsf->second);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	// PASS 3
+	// Ensure we're using the "special" terrain types with "just enough" regularity...
+	// They should look "randomly" placed, and not too frequent.
+	// (You shouldn't have stadiums too close to each other!)
+	// At the same time, we don't want to *never* use the special terrain types!
+	//--------------------------------------------------------------------------------------------------------
+	for(map<int, special_ter_repeat_rule>::const_iterator rule = special_ter_repeat_rules.begin(); rule != special_ter_repeat_rules.end(); ++rule)
+	{
+		const int dy_for_randomization = dx == dy ? dy + 13 : dy;
+		for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
+		for(int x = 0; x < dx; x += pseudorandom_in_range(rule->second, dsf->first, x, dx))
+		for(int y = 0; y < dy; y += pseudorandom_in_range(rule->second, dsf->first, y, dy_for_randomization))
+		{
+			grid_coord_desc pt = {x, y, dx, dy, dsf->first.first, dsf->first.second};
+			attempt_assign_special_ter_enum(rule->first, special_ter_repeat_rules, pt, dsf->second);
 		}
 	}
 
