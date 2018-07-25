@@ -45,6 +45,7 @@ class	WED_StructureLayer;
 class	WED_ATCLayer;
 class	WED_PreviewLayer;
 class	WED_WorldMapLayer;
+class	WED_NavaidLayer;
 //class	WED_TileServerLayer;
 
 class	WED_CreatePointTool;
@@ -109,6 +110,7 @@ private:
 	WED_ATCLayer *			mATCLayer;
 	WED_PreviewLayer *		mPreview;
 	WED_WorldMapLayer *		mWorldMap;
+	WED_NavaidLayer *		mNavaidMap;
 #if WITHNWLINK
 	WED_NWInfoLayer *		mNWInfoLayer;
 #endif
