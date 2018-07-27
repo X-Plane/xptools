@@ -29,7 +29,6 @@
 #include "GUI_Fonts.h"
 #include "GUI_GraphState.h"
 
-//#include "GUI_Resources.h"
 #include "WED_Colors.h"
 #include "WED_MapZoomerNew.h"
 #include "WED_PackageMgr.h"
@@ -43,26 +42,28 @@
 	#include <GL/gl.h>
 #endif
 
-
 WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IResolver * resolver) :
 	WED_MapLayer(host,zoomer,resolver)
 {
+
+// ToDo: move this into PackageMgr, so its updated when XPlaneFolder changes and re-used when another scenery is opened
+
 	string resourcePath;
 	gPackageMgr->GetXPlaneFolder(resourcePath);
 	
 	// deliberately ignoring any Custom Data/earth_424.dat or Custom Data/earth_nav.dat files that a user may have ... to avoid confusion
 	string globalNavaids  = resourcePath + DIR_STR "Resources" DIR_STR "default data" DIR_STR "earth_nav.dat";
 	string airportNavaids = resourcePath + DIR_STR "Custom Scenery" DIR_STR "Global Airports" DIR_STR "Earth nav data" DIR_STR "earth_nav.dat";
-	string userNavaids    = resourcePath + DIR_STR "Custom Data" DIR_STR "user_nav.dat";
 	
 	MFMemFile * str = MemFile_Open(globalNavaids.c_str());
 	if(str)
 	{
-//		printf("Reading %s\n\n",globalNavaids.c_str());
 		MFScanner	s;
 		MFS_init(&s, str);
 		
 		int versions[] = { 740, 810, 1100, 0 };
+		
+		mNavaids.reserve(25000);    // about 2.5 MBytes, as of 2018 its some 20,200 navaids
 		
 		if(MFS_xplane_header(&s,versions,NULL,NULL))
 			while(!MFS_done(&s))
@@ -75,13 +76,11 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 					n.lonlat.y_ = MFS_double(&s);
 					n.lonlat.x_ = MFS_double(&s);
 					MFS_int(&s);   // skip elevation
-					n.freq = MFS_int(&s);
+					n.freq  = MFS_int(&s);   // skip frequency
 					MFS_int(&s);   // skip range
 					n.heading   = MFS_double(&s);
 					MFS_string(&s, &n.name);
 					MFS_string(&s, &n.icao);
-					MFS_string(&s, &n.region);
-					MFS_string(&s, &n.runway);
 					if (type == 6)
 					{
 						double slope = floor(n.heading / 1000.0);
@@ -94,30 +93,9 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 		MemFile_Close(str);
 	}
 
-	if(0)
-	{  // dupe cheking
-		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end() - 1; ++i)
-			for (vector<navaid_t>::iterator j = i+1; j != mNavaids.end(); ++j)
-			{
-				if(j->type >= 4 && j->type == i->type )
-				{ 
-					double d = LonLatDistMeters(j->lonlat, i->lonlat);
-					
-					if (j->icao == i->icao && (j->name == i->name || j->runway == i->runway))
-						printf("Dupe %2d  %d,%d  %s,%s  %s,%s  %s,%s  %s,%s d=%5.1lfm\n", i->type, i->freq, j->freq, i->name.c_str(), j->name.c_str(), i->icao.c_str(), j->icao.c_str(), i->region.c_str(), j->region.c_str(),
-							i->runway.c_str(), j->runway.c_str(), d );
-					else if (d < 20.0)
-						printf("Colo %2d  %d,%d  %s,%s  %s,%s  %s,%s  %s,%s d=%5.1lfm\n", i->type,  i->freq, j->freq, i->name.c_str(), j->name.c_str(), i->icao.c_str(), j->icao.c_str(), i->region.c_str(), j->region.c_str(),
-							i->runway.c_str(), j->runway.c_str(), d);
-					
-				}
-			}
-	}
-	
 	str = MemFile_Open(airportNavaids.c_str());
 	if(1 && str)
 	{
-//		printf("\nMerging %s\n\n", airportNavaids.c_str());
 		MFScanner	s;
 		MFS_init(&s, str);
 		
@@ -134,65 +112,82 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 					n.lonlat.y_ = MFS_double(&s);
 					n.lonlat.x_ = MFS_double(&s);
 					MFS_int(&s);   // skip elevation
-					n.freq = MFS_int(&s);
+					n.freq = MFS_int(&s);   // skip frequency
 					MFS_int(&s);   // skip range
 					n.heading   = MFS_double(&s);
 					MFS_string(&s, &n.name);
 					MFS_string(&s, &n.icao);
-					MFS_string(&s, &n.region);
-					MFS_string(&s, &n.runway);
 					if (type == 6)
 					{
 						double slope = floor(n.heading / 1000.0);
 						n.heading -= slope * 1000.0;
 					}
+
 					// now check for duplicates before adding this one:
+					float closest_d = 9999.0;
+					vector<navaid_t>::iterator closest_i;
 
 					vector<navaid_t>::iterator i = mNavaids.begin();
-					float d;
-
-					while (i != mNavaids.end())
+					while(i != mNavaids.end())
 					{
-						if(n.type == i->type) 
+						if(n.type == i->type && n.icao == i->icao)
 						{
-							d = LonLatDistMeters(n.lonlat, i->lonlat);
-							if( (n.icao == i->icao && n.name == i->name) || d < 20.0 ) break;
+							float d = LonLatDistMeters(n.lonlat, i->lonlat);
+							if (n.name == i->name) 
+							{
+#if DEV
+								printf("Replacing exact type %d, icao %s & name %s match. d=%5.1lfm\n", n.type, n.icao.c_str(), n.name.c_str(), d);
+#endif
+								*i = n;
+								break;
+							}
+							if(d < closest_d)
+							{
+								closest_d = d;
+								closest_i = i;
+#if DEV
+								printf("Name mismatch, keeping type %d, icao %s at d=%5.1lfm in mind, name=%s,%s\n", n.type, n.icao.c_str(), d, i->name.c_str(), n.name.c_str());
+#endif
+							}
 						}
 						++i;
 					}
 					
 					if (i == mNavaids.end())
-					{ 
-//						printf("Adding  %2d %s %s %s %s\n", n.type, n.name.c_str(), n.icao.c_str(), n.region.c_str(), n.runway.c_str());
-						mNavaids.push_back(n);
-					}
-					else
 					{
-/*						if (i->name != n.name) printf("N");
-						if (i->icao != n.icao) printf("I");
-						if (i->region != n.region) printf("G");
-						if (i->runway != n.runway) printf("R");
-						if (i->freq != n.freq) printf("F");
-
-						printf(" %2d %d %s %s %s %s",  i->type,  i->freq, i->name.c_str(), i->icao.c_str(), i->region.c_str(), i->runway.c_str());
-						printf("  by %d %s %s %s %s d=%5.1lfm\n",n.freq,  n.name.c_str(),  n.icao.c_str(),  n.region.c_str(),  n.runway.c_str(), d);
-*/						*i = n;
+						if (closest_d < 20.0)
+						{
+#if 1 // DEV
+							printf("Replacing despite name %s,%s", closest_i->name.c_str(), n.name.c_str());
+							if (closest_i->freq != n.freq) printf(" and frequency %d,%d", closest_i->freq, n.freq );
+							printf(" mismatch, type %d, icao %s d=%5.1lfm\n", n.type, n.icao.c_str(), closest_d);
+#endif
+							*closest_i = n;
+						}
+						else
+						{
+#if DEV
+							printf("Adding new %d %s %s\n", n.type, n.name.c_str(), n.icao.c_str());
+#endif
+							mNavaids.push_back(n);
+						}
 					}
 				}
 				MFS_string_eol(&s,NULL);
 			}
-		
 		MemFile_Close(str);
 	}
 	
-	
+// Todo: speedup drawing by converting mNavaids into list sorted by longitude (aka map / multimap) - for quicker selection of visible navaids
+//       improve data locality - store coords as 32 bit fixed point (9mm resolution is plenty), heading, type as short = 12 bytes total (now 96)
+//       although for now Navaid map drawing is under 1 msec on a 3.6 GHz CPU at all times == good enough
 }
 
 WED_NavaidLayer::~WED_NavaidLayer()
 {
 }
 
-#define NAVAID_EXTRA_RANGE 0.03  // degree's lon/lat, allow ILS beams to show even if the ILS is just outside of the map window
+#define NAVAID_EXTRA_RANGE 0.03  // degree's lon/lat, allows ILS beams to show even if the ILS is outside of the map window
 
 void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 {
@@ -214,8 +209,8 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 	float red[4] = { 1.0, 0.4, 0.4, 0.66 };
 	glLineWidth(1.8);
 
-	if (PPM > 0.002)          // stop displaying navaids when zoomed out - display speed sucks for that many, icons overlap anyways
-		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)
+	if (PPM > 0.001)          // stop displaying navaids when zoomed out - gets too crowded
+		for(vector<navaid_t>::iterator i = mNavaids.begin(); i != mNavaids.end(); ++i)  // this is brain dead - use list sorted by longitude
 		{
 			if(i->lonlat.x() > vl && i->lonlat.x() < vr && 
 			   i->lonlat.y() > vb && i->lonlat.y() < vt)
@@ -261,10 +256,8 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 
 				if (PPM  > 1.0)
 				{
-					GUI_FontDraw(g, font_UI_Basic, red, pt.x(),pt.y()-20.0, i->name.c_str());
-					GUI_FontDraw(g, font_UI_Basic, red, pt.x(),pt.y()-32.0, i->icao.c_str());
-					GUI_FontDraw(g, font_UI_Basic, red, pt.x(),pt.y()-44.0, i->region.c_str());
-					GUI_FontDraw(g, font_UI_Basic, red, pt.x(),pt.y()-56.0, i->runway.c_str());
+					GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-25.0, i->name.c_str());
+					GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-40.0, i->icao.c_str());
 				}
 			}
 		}

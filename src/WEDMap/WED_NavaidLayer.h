@@ -29,13 +29,11 @@
 
 struct navaid_t {
 	int		type;
-	float	heading;
 	Point2	lonlat;
-	int		freq;
-	string	icao;
+	float	heading;
 	string	name;
-	string  region;
-	string	runway;
+	string	icao;
+	int     freq;
 };
 
 class WED_NavaidLayer : public WED_MapLayer {
