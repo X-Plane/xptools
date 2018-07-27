@@ -94,7 +94,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 	}
 
 	str = MemFile_Open(airportNavaids.c_str());
-	if(1 && str)
+	if(str)
 	{
 		MFScanner	s;
 		MFS_init(&s, str);
@@ -157,7 +157,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 					{
 						if (closest_d < 20.0)
 						{
-#if 1 // DEV
+#if DEV
 							printf("Replacing despite name %s,%s", closest_i->name.c_str(), n.name.c_str());
 							if (closest_i->freq != n.freq) printf(" and frequency %d,%d", closest_i->freq, n.freq );
 							printf(" mismatch, type %d, icao %s d=%5.1lfm\n", n.type, n.icao.c_str(), closest_d);
