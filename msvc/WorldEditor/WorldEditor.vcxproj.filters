@@ -390,6 +390,9 @@
     <ClCompile Include="..\..\src\WEDMap\WED_MarqueeTool.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDMap\WED_NavaidLayer.cpp">
+      <Filter>WEDMap</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_PreviewLayer.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
@@ -1125,6 +1128,9 @@
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_MarqueeTool.h">
+      <Filter>WEDMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDMap\WED_NavaidLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_PreviewLayer.h">

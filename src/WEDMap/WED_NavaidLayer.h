@@ -34,6 +34,7 @@ struct navaid_t {
 	string	name;
 	string	icao;
 	int     freq;
+	string	rwy;
 };
 
 class WED_NavaidLayer : public WED_MapLayer {

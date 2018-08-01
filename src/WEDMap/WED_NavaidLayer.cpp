@@ -63,7 +63,7 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 		
 		int versions[] = { 740, 810, 1100, 0 };
 		
-		mNavaids.reserve(25000);    // about 2.5 MBytes, as of 2018 its some 20,200 navaids
+		mNavaids.reserve(25000);    // about 3 MBytes, as of 2018 its some 20,200 navaids
 		
 		if(MFS_xplane_header(&s,versions,NULL,NULL))
 			while(!MFS_done(&s))
@@ -76,11 +76,16 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 					n.lonlat.y_ = MFS_double(&s);
 					n.lonlat.x_ = MFS_double(&s);
 					MFS_int(&s);   // skip elevation
-					n.freq  = MFS_int(&s);   // skip frequency
+					n.freq  = MFS_int(&s);
 					MFS_int(&s);   // skip range
 					n.heading   = MFS_double(&s);
 					MFS_string(&s, &n.name);
 					MFS_string(&s, &n.icao);
+					if (type >= 4 && type <= 9)   // ILS components
+					{
+						MFS_string(&s, NULL);  // skip region
+						MFS_string(&s, &n.rwy);
+					}
 					if (type == 6)
 					{
 						double slope = floor(n.heading / 1000.0);
@@ -117,6 +122,8 @@ WED_NavaidLayer::WED_NavaidLayer(GUI_Pane * host, WED_MapZoomerNew * zoomer, IRe
 					n.heading   = MFS_double(&s);
 					MFS_string(&s, &n.name);
 					MFS_string(&s, &n.icao);
+					MFS_string(&s, NULL);  // skip region
+					MFS_string(&s, &n.rwy);
 					if (type == 6)
 					{
 						double slope = floor(n.heading / 1000.0);
@@ -257,7 +264,7 @@ void		WED_NavaidLayer::DrawVisualization		(bool inCurrent, GUI_GraphState * g)
 				if (PPM  > 1.0)
 				{
 					GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-25.0, i->name.c_str());
-					GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-40.0, i->icao.c_str());
+					GUI_FontDraw(g, font_UI_Basic, red, pt.x()+20.0,pt.y()-40.0, (i->icao + " " + i->rwy).c_str());
 				}
 			}
 		}
