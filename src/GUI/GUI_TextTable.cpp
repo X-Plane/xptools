@@ -34,9 +34,11 @@
 #include "GUI_Resources.h"
 #include "AssertUtils.h"
 #include "WED_Sign_Editor.h"
-#include "WED_Line_Selector.h"
 
+#if WED
 #define USE_LINE_SELECTOR_POPUP 1
+#include "WED_Line_Selector.h"
+#endif
 
 #define RESIZE_MARGIN 4
 
@@ -76,8 +78,6 @@ GUI_TextTable::GUI_TextTable(GUI_Commander * parent, int indent, int live_edit) 
 	mClickCellY(-1),
 	mParent(NULL),
 	mTextField(NULL),
-//	mSignField(NULL),
-//	mLineField(NULL),
 	mCatcher(NULL),
 	mEditor(NULL),
 	mSelStartX(-1),
@@ -1149,6 +1149,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 			{
 				mEditor = new WED_Sign_Editor(this);
 			}
+#if USE_LINE_SELECTOR_POPUP
 			else
 			{
 				if (dict == NULL) return;
@@ -1156,6 +1157,7 @@ void		GUI_TextTable::CreateEdit(int cell_bounds[4], const vector<GUI_MenuItem_t>
 				mLineField->SetChoices(dict);
 				mEditor = mLineField;
 			}
+#endif
 			mEditor->SetParent(mCatcher);
 			mCatcher->SetParent(parent);
 			mCatcher->SetBounds(pb);
