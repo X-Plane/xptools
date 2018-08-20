@@ -1636,8 +1636,23 @@ static void do_chain_split(ISelection * sel, const chain_split_info_t & info)
 	}
 	else
 	{
-		WED_GISChain * chain_clone = dynamic_cast<WED_GISChain*>(info.c->Clone());
-		chain_clone->SetParent(info.c->GetParent(), info.c->GetMyPosition()+1);
+		WED_GISPolygon * polygon = dynamic_cast<WED_GISPolygon*>(info.c->GetParent());
+		WED_GISChain * chain_clone = NULL;
+
+		// Is the chain the outer "ring" of a polygon? 
+		if (polygon && info.c == polygon->GetOuterRing())
+		{
+			// Clone the entire polygon
+			WED_GISPolygon * polygon_clone = dynamic_cast<WED_GISPolygon*>(polygon->Clone());
+			polygon_clone->SetParent(polygon->GetParent(), polygon->GetMyPosition()+1);
+			chain_clone = dynamic_cast<WED_GISChain*>(polygon_clone->GetOuterRing());
+		}
+		else
+		{
+			// Clone just the chain
+			chain_clone = dynamic_cast<WED_GISChain*>(info.c->Clone());
+			chain_clone->SetParent(info.c->GetParent(), info.c->GetMyPosition()+1);
+		}
 
 		sel->Insert(chain_clone->GetNthChild(pos));
 
