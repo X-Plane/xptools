@@ -54,6 +54,8 @@
 #include "MapCreate.h"
 #include "MapOverlay.h"
 #include "MobileAutogenAlgs.h"
+#include "BitmapUtils.h"
+#include "PlatformUtils.h"
 
 // Hack to avoid forest pre-processing - to be used to speed up --instobjs for testing AG algos when
 // we don't NEED good forest fill.
@@ -742,6 +744,49 @@ static int pseudorandom_in_range(const special_ter_repeat_rule &rule, const pair
 	return rule.min_radius + pseudo_rand % (rule.target_max_radius - rule.min_radius);
 }
 
+int find_terrain_rule_name(int ter_enum)
+{
+	for(NaturalTerrainRuleVector::const_iterator rule = gNaturalTerrainRules.begin(); rule != gNaturalTerrainRules.end(); ++rule)
+	{
+		if(rule->terrain == ter_enum)
+		{
+			return rule->name;
+		}
+	}
+	return -1;
+}
+
+string ter_lib_path_to_png_path(string lib_path)
+{
+	if(lib_path.find("../autogen/US/") == 0)
+	{
+		str_replace_all(lib_path, "../autogen/US/", "");
+
+		map<string, string> prefixes;
+		prefixes["OUT_"] = "temp_city_sq_out/";
+		prefixes["IND_"] = "temp_city_sq_ind/";
+		prefixes["IN_"] = "temp_city_sq_in/City_";
+		prefixes["TWN_"] = "temp_city_sq_twn/";
+		for(map<string, string>::const_iterator prefix = prefixes.begin(); prefix != prefixes.end(); ++prefix)
+		{
+			if(lib_path.find(prefix->first) == 0)
+			{
+				lib_path = prefix->second + lib_path;
+				break;
+			}
+		}
+		DebugAssertWithExplanation(lib_path.find("temp_") == 0, "Failed to match prefix");
+
+		str_replace_all(lib_path, ".ter", ".png");
+		return "Global Scenery/Mobile_Autogen_Lib/US/Textures/orthogonal_land_textures/" + lib_path;
+	}
+	else
+	{
+		DebugAssertWithExplanation(false, "Unknown lib path");
+		return "";
+	}
+}
+
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
 	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
@@ -884,6 +929,86 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			attempt_assign_special_ter_enum(rule->first, special_ter_repeat_rules, pt, dsf->second);
 		}
 	}
+
+
+#if DEV
+	//--------------------------------------------------------------------------------------------------------
+	// Debugging: output an image that joins all this together
+	//--------------------------------------------------------------------------------------------------------
+	// Prep images for outputting
+	vector<int> base_terrain_types;
+	base_terrain_types.push_back(terrain_PseudoOrthoOuter1);
+	base_terrain_types.push_back(terrain_PseudoOrthoInner1);
+	base_terrain_types.push_back(terrain_PseudoOrthoIndustrial1);
+	base_terrain_types.push_back(terrain_PseudoOrthoTown1);
+
+	map<int, ImageInfo> pngs; // maps terrain types to their bitmaps
+	for(vector<int>::const_iterator base_ter = base_terrain_types.begin(); base_ter != base_terrain_types.end(); ++base_ter)
+		for(int i = 0; i < 6; ++i)
+		{
+			const int ter = *base_ter + i;
+			const int rule_name = find_terrain_rule_name(ter);
+			NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
+			if(ter_info != gNaturalTerrainInfo.end())
+			{
+				const string &ter_lib_path = ter_info->second.base_tex;
+				const string png_on_disk = ter_lib_path_to_png_path(ter_lib_path);
+				int error = CreateBitmapFromPNG(png_on_disk.c_str(), &pngs[ter], false, GAMMA_SRGB);
+				if(error)
+				{
+					printf("Error loading %s\n", png_on_disk.c_str());
+				}
+			}
+			else
+			{
+				printf("Unknown terrain %d\n", ter);
+			}
+		}
+
+	const int compressed_dim_px = 256 / 2;
+	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
+	{
+		const vector<vector<int> > &grid = dsf->second;
+
+		ImageInfo out_bmp = {};
+		out_bmp.width = compressed_dim_px * dx;
+		out_bmp.height = compressed_dim_px * dy;
+		out_bmp.channels = 3; // rgb
+		const long data_size = out_bmp.width * out_bmp.height * out_bmp.channels;
+		out_bmp.data = new unsigned char[data_size];
+		memset(out_bmp.data, 0, data_size * sizeof(out_bmp.data[0]));
+		const string empty_path = stl_printf("Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "Empty.png", latlon_bucket(dsf->first.second), latlon_bucket(dsf->first.first));
+		WriteBitmapToPNG(&out_bmp, empty_path.c_str(), NULL, 0, GAMMA_SRGB);
+
+		for(int x = 0; x < dx; ++x)
+		for(int y = 0; y < dy; ++y)
+		{
+			const int ter = grid[x][y];
+			if(ter > 0)
+			{
+				DebugAssertWithExplanation(pngs.count(ter), "Couldn't find PNG for terrain");
+				const ImageInfo * png = &pngs[ter];
+				CopyBitmapSection(png, &out_bmp,
+								  0, 0,
+								  png->width, png->height,
+								  compressed_dim_px * x, compressed_dim_px * y,
+								  compressed_dim_px * (x + 1), compressed_dim_px * (y + 1));
+			}
+		}
+
+		const string out_path = stl_printf("Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", latlon_bucket(dsf->first.second), latlon_bucket(dsf->first.first), dsf->first.second, dsf->first.first) + ".png";
+		const int error = WriteBitmapToPNG(&out_bmp, out_path.c_str(), NULL, 0, GAMMA_SRGB);
+		if(!error)
+		{
+			printf("Wrote %s\n", out_path.c_str());
+		}
+		else
+		{
+			printf("Error %d writing %s\n", error, out_path.c_str());
+		}
+	}
+	return 0;
+#endif // DEV
 
 	//--------------------------------------------------------------------------------------------------------
 	// FINALLY

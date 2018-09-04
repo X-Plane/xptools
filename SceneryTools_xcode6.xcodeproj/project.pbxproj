@@ -52,7 +52,9 @@
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
 		69B490ED80B36EBBB192E0C7 /* MobileAutogenAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69B49F9D46554ADF96B87C22 /* MobileAutogenAlgs.cpp */; };
+		69B4912C59E74E8EDED57E13 /* STLUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67B28660C5647EF00A21ABC /* STLUtils.cpp */; };
 		69B4985FC24FE199C68B71EA /* MobileAutogenAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69B49F9D46554ADF96B87C22 /* MobileAutogenAlgs.cpp */; };
+		69B4996984A692A68D0D15B3 /* STLUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67B28660C5647EF00A21ABC /* STLUtils.cpp */; };
 		D60075381C56A30E0096D4D9 /* WED_ATCLayer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */; };
 		D604AE9E1C0D5D8F006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
 		D604AEA31C0DF420006DC1F0 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D604AE9C1C0D5D58006DC1F0 /* AppKit.framework */; };
@@ -4292,6 +4294,7 @@
 				D6E4C95F18EC9201000D98B8 /* json_reader.cpp in Sources */,
 				D63A82E21A9F9E37008D218D /* ObjTables.cpp in Sources */,
 				69B490ED80B36EBBB192E0C7 /* MobileAutogenAlgs.cpp in Sources */,
+				69B4912C59E74E8EDED57E13 /* STLUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4392,6 +4395,7 @@
 				D6C46B7E14376BD30067B004 /* XUtils.cpp in Sources */,
 				D6BC020D146CC17800A941C6 /* Hydro2.cpp in Sources */,
 				69B4985FC24FE199C68B71EA /* MobileAutogenAlgs.cpp in Sources */,
+				69B4996984A692A68D0D15B3 /* STLUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

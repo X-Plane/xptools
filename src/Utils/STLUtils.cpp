@@ -62,3 +62,11 @@ std::ostream& operator<<(std::ostream& os, const ci_string& str)
 {
 	return os.write(str.data(), str.size());
 }
+
+void str_replace_all(string& s, const string& a, const string& b){
+	string::size_type p=0;
+	while((p=(s.find(a,p)))!=s.npos){
+		s.erase(p,a.size());
+		s.insert(p,b);
+		p += b.size();}
+}

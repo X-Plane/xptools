@@ -58,6 +58,22 @@ bool contains(const set<T>& container, const T& value)		{ return (container.coun
 template<class TContainer, class T> inline
 bool contains(const TContainer& container, const T& value)	{ return (find(container.begin(), container.end(), value) != container.end()); }
 
+#if !defined(_MSC_VER) // MSVC blows up on the attribute annotation stuff!
+#define CHECK_PRINTF_ARGS(f, a)		__attribute__((__format__ (__printf__, f, a)))
+#define NO_IGNORE_RETURN		__attribute__((warn_unused_result))
+#else
+#define CHECK_PRINTF_ARGS(f, a)
+	#define NO_IGNORE_RETURN
+#endif
+
+// String utils
+inline string stl_vprintf(const char * fmt, va_list args);
+
+CHECK_PRINTF_ARGS(1,2)
+inline string stl_printf(const char * fmt, ...);
+
+void str_replace_all(string& s, const string& search, const string& replace_with);
+
 // SET UTILS
 
 // Simple inserter and eraser output iterator adapter for STL sets.
@@ -538,6 +554,35 @@ void sequence_push_back(T& container, S& seq)
 		container.push_back(*seq);
 		++seq;
 	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark Implementation of inline functions
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+inline string stl_vprintf(const char * fmt, va_list args)
+{
+	char temp[10];
+	va_list args2;
+	va_copy(args2,args);
+	int chars = vsnprintf(temp,sizeof(temp),fmt,args);
+
+	if(chars > (sizeof(temp)-1)) // if vsnprintf() wrote more than 10 chars, we need to re-try this with a buffer exactly the right size
+	{
+		vector<char>	big_buf;
+		big_buf.resize(chars+1);
+		int chars2 = vsnprintf(&*big_buf.begin(),chars+1,fmt,args2); // write the formatted string to our new, perfectly-sized big_buf
+		string ret(big_buf.begin(),big_buf.begin() + chars);
+		return ret;
+	}
+	else
+		return string(temp);
+}
+inline string stl_printf(const char * fmt, ...)
+{
+	va_list va;
+	va_start(va,fmt);
+	return stl_vprintf(fmt, va);
 }
 
 #endif /* STLUtils_H */
