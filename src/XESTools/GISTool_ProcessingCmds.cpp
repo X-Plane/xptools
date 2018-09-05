@@ -572,7 +572,7 @@ int choose_ortho_terrain(int land_use, double mean_urbanization)
 			case lu_globcover_URBAN_SQUARE_CROP_TOWN:
 			case lu_globcover_URBAN_SQUARE_TOWN:
 			case lu_globcover_URBAN_TOWN:
-				return terrain_PseudoOrthoTown1;
+				return terrain_PseudoOrthoTown;
 			case lu_globcover_URBAN_LOW:
 			case lu_globcover_URBAN_MEDIUM:
 			case lu_globcover_URBAN_SQUARE_LOW:
@@ -581,23 +581,23 @@ int choose_ortho_terrain(int land_use, double mean_urbanization)
 			case lu_globcover_URBAN_SQUARE_HIGH:
 				if(mean_urbanization <= 0.35)
 				{
-					return terrain_PseudoOrthoOuter1;
+					return terrain_PseudoOrthoOuter;
 				}
 				else if(mean_urbanization >= 0.55)
 				{
-					return terrain_PseudoOrthoInner1;
+					return terrain_PseudoOrthoInner;
 				}
 				else if(land_use == lu_globcover_URBAN_HIGH || land_use == lu_globcover_URBAN_SQUARE_HIGH)
 				{
-					return terrain_PseudoOrthoInner1;
+					return terrain_PseudoOrthoInner;
 				}
 				else
 				{
-					return terrain_PseudoOrthoOuter1;
+					return terrain_PseudoOrthoOuter;
 				}
 			case lu_globcover_INDUSTRY:
 			case lu_globcover_INDUSTRY_SQUARE:
-				return terrain_PseudoOrthoIndustrial1;
+				return terrain_PseudoOrthoIndustrial;
 			default:
 				if(mean_urbanization < min_urbanization_for_ortho_on_non_matching_land_use)
 				{
@@ -605,15 +605,15 @@ int choose_ortho_terrain(int land_use, double mean_urbanization)
 				}
 				else if(mean_urbanization <= 0.15)
 				{
-					return terrain_PseudoOrthoTown1;
+					return terrain_PseudoOrthoTown;
 				}
 				else if(mean_urbanization <= 0.4)
 				{
-					return terrain_PseudoOrthoOuter1;
+					return terrain_PseudoOrthoOuter;
 				}
 				else
 				{
-					return terrain_PseudoOrthoInner1;
+					return terrain_PseudoOrthoInner;
 				}
 				break;
 		}
@@ -787,6 +787,111 @@ string ter_lib_path_to_png_path(string lib_path)
 	}
 }
 
+ortho_urbanization conform_terrain_to_expectations(const ortho_urbanization &non_matching_tile)
+{
+	vector<int> out = non_matching_tile.to_vector();
+	if(non_matching_tile.count_sides(NO_VALUE) == 3)
+	{
+		for(vector<int>::iterator it = out.begin(); it != out.end(); ++it)
+		{
+			if(*it != NO_VALUE)
+			{
+				*it = terrain_PseudoOrthoTown;
+				break;
+			}
+		}
+	}
+	return out;
+}
+
+int to_scorable_value(int ortho_enum)
+{
+	switch(ortho_enum)
+	{
+		case NO_VALUE:						return 0;
+		case terrain_PseudoOrthoTown:		return 1;
+		case terrain_PseudoOrthoOuter:		return 2;
+		case terrain_PseudoOrthoInner:		return 3;
+		case terrain_PseudoOrthoIndustrial:	return 4;
+		default: DebugAssert(!"illegal ortho enum"); return 9999;
+	}
+}
+
+const char * abbreviated_ortho_str(int ortho_enum)
+{
+	const char * full = FetchTokenString(ortho_enum);
+	const char * sub_to_nuke = "terrain_PseudoOrtho";
+	if(strstr(full, sub_to_nuke) == full)
+	{
+		return full + strlen(sub_to_nuke);
+	}
+	return full;
+}
+void dump_tile_diff(const ortho_urbanization &from, const ortho_urbanization &to)
+{
+	if(from.top_left     == to.top_left    ) printf("\t%17s ",  abbreviated_ortho_str(from.top_left    )); else printf("\t%17s ",  stl_printf("%s->%s", abbreviated_ortho_str(from.top_left    ), abbreviated_ortho_str(to.top_left    )).c_str());
+	if(from.top_right    == to.top_right   ) printf(  "%17s\n", abbreviated_ortho_str(from.top_right   )); else printf(  "%17s\n", stl_printf("%s->%s", abbreviated_ortho_str(from.top_right   ), abbreviated_ortho_str(to.top_right   )).c_str());
+	if(from.bottom_left  == to.bottom_left ) printf("\t%17s ",  abbreviated_ortho_str(from.bottom_left )); else printf("\t%17s ",  stl_printf("%s->%s", abbreviated_ortho_str(from.bottom_left ), abbreviated_ortho_str(to.bottom_left )).c_str());
+	if(from.bottom_right == to.bottom_right) printf(  "%17s\n", abbreviated_ortho_str(from.bottom_right)); else printf(  "%17s\n", stl_printf("%s->%s", abbreviated_ortho_str(from.bottom_right), abbreviated_ortho_str(to.bottom_right)).c_str());
+}
+
+int score_distance(int ortho_enum_1, int ortho_enum_2)
+{
+	int scorable_1 = to_scorable_value(ortho_enum_1);
+	int scorable_2 = to_scorable_value(ortho_enum_2);
+	return int_abs(scorable_1 - scorable_2);
+}
+
+int score_distance(const ortho_urbanization &tile_1, const ortho_urbanization &tile_2)
+{
+	return score_distance(tile_1.bottom_left, tile_2.bottom_left) +
+			score_distance(tile_1.bottom_right, tile_2.bottom_right) +
+			score_distance(tile_1.top_left, tile_2.top_left) +
+			score_distance(tile_1.top_right, tile_2.top_right);
+}
+
+int s_count_exact = 0;
+int s_count_nonexact = 0;
+int s_sum_nonexact_scores = 0;
+
+int choose_nearest_terrain(const ortho_urbanization &tile, const map<ortho_urbanization, int> & options)
+{
+	map<ortho_urbanization, int>::const_iterator ter_to_use = options.find(tile);
+	if(ter_to_use != options.end())
+	{
+		++s_count_exact;
+		return ter_to_use->second;
+	}
+	else // find the tile of minimum distance
+	{
+		map<ortho_urbanization, int>::const_iterator best_match = options.end();
+		int best_score = 9999;
+		for(map<ortho_urbanization, int>::const_iterator option = options.begin(); option != options.end(); ++option)
+		{
+			const int score = score_distance(tile, option->first);
+			if(score < best_score)
+			{
+				best_match = option;
+				best_score = score;
+			}
+		}
+		++s_count_nonexact;
+		s_sum_nonexact_scores += best_score;
+
+		#if DEV
+			if(best_score > 1)
+			{
+				printf("Nonexact match to %s with score %d\n", abbreviated_ortho_str(best_match->second), best_score);
+				dump_tile_diff(tile, best_match->first);
+			}
+		#endif
+		DebugAssert(best_match != options.end());
+		return best_match->second;
+	}
+}
+
+
+
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
 	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
@@ -808,6 +913,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		}
 	}
 
+	const map<ortho_urbanization, int> ter_with_transitions = get_terrain_transition_descriptions();
+
 	//--------------------------------------------------------------------------------------------------------
 	// PASS 1
 	// Choose a "starting point" orthophoto for each tile in the grid
@@ -817,6 +924,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	//   b) we would never have used the "special" tiles of each type (e.g., sports stadiums)
 	//   c) we wouldn't have done anything about standalone tiles, which just look awkward
 	//--------------------------------------------------------------------------------------------------------
+	map<ortho_urbanization, int> missing_transitions_count;
 	const int dx = ortho_terrain_by_dsf.begin()->second.size();
 	const int dy = ortho_terrain_by_dsf.begin()->second[0].size();
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
@@ -825,42 +933,52 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	{
 		const pair<int, int> &dsf_lon_lat = dsf->first;
 
-		double sum_urbanization = 0;
-		vector<int> land_uses;
+		vector<int> land_uses(4, DEM_NO_DATA); // counterclockwise from lower left
+		vector<float> urbanization(4, DEM_NO_DATA);
+		bool has_some_urbanization_data = false;
 		int num_corners = 0;
 		for(int corner_x = 0; corner_x < 2; ++corner_x)
 		for(int corner_y = 0; corner_y < 2; ++corner_y)
 		{
+			const int corner_idx = corner_y == 0 ? corner_x : 3 - corner_x;
 			const double lon = dsf_lon_lat.first + (double)(x + corner_x) / dx;
 			const double lat = dsf_lon_lat.second + (double)(y + corner_y) / dy;
-			const float urbanization = gDem[dem_UrbanDensity].value_linear(lon, lat);
-			if(urbanization != DEM_NO_DATA)
-			{
-				sum_urbanization += urbanization;
-				++num_corners;
-			}
+			const float urb = gDem[dem_UrbanDensity].value_linear(lon, lat);
+			urbanization[corner_idx] = urb;
+			has_some_urbanization_data |= urb != DEM_NO_DATA;
 
 			const int land_use = intround(gDem[dem_LandUse].xy_nearest_raw(lon, lat));
-			if(land_use != DEM_NO_DATA)
-			{
-				land_uses.push_back(land_use);
-			}
+			land_uses[corner_idx] = land_use;
 		}
 
-		if(num_corners > 0)
+		if(has_some_urbanization_data)
 		{
-			const double mean_urbanization = sum_urbanization / num_corners;
-			const int land_use = MAJORITY_RULES(land_uses);
-
-			const int ter_enum = choose_ortho_terrain(land_use, mean_urbanization);
-			if(ter_enum != NO_VALUE)
+			vector<int> corners(4, NO_VALUE);
+			for(int i = 0; i < 4; ++i)
 			{
-				// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
-				const int variant = (x + y) % 2;
-				dsf->second[x][y] = ter_enum + variant;
+				corners[i] = choose_ortho_terrain(land_uses[i], urbanization[i]);
+			}
+
+			ortho_urbanization desired_urb_pattern(corners);
+			if(!desired_urb_pattern.is_uniform() || desired_urb_pattern.bottom_left != NO_VALUE)
+			{
+				int ter_enum = choose_nearest_terrain(desired_urb_pattern, ter_with_transitions);
+				const bool needs_variation =
+						ter_enum == terrain_PseudoOrthoInner1 || ter_enum == terrain_PseudoOrthoTown1 ||
+						ter_enum == terrain_PseudoOrthoOuter1 || ter_enum == terrain_PseudoOrthoIndustrial1;
+				if(needs_variation)
+				{
+					// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
+					ter_enum += (x + y) % 2;
+				}
+				dsf->second[x][y] = ter_enum;
 			}
 		}
 	}
+
+	printf("Exact matches: %d\n", s_count_exact);
+	printf("Nonexact matches: %d\n", s_count_nonexact);
+	printf("Average distance: %f\n", (float)s_sum_nonexact_scores / s_count_nonexact);
 
 	//--------------------------------------------------------------------------------------------------------
 	// PASS 2
@@ -930,40 +1048,36 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		}
 	}
 
+	//--------------------------------------------------------------------------------------------------------
+	// PASS 4
+	// Add transitions between types
+	//--------------------------------------------------------------------------------------------------------
 
 #if DEV
 	//--------------------------------------------------------------------------------------------------------
 	// Debugging: output an image that joins all this together
 	//--------------------------------------------------------------------------------------------------------
 	// Prep images for outputting
-	vector<int> base_terrain_types;
-	base_terrain_types.push_back(terrain_PseudoOrthoOuter1);
-	base_terrain_types.push_back(terrain_PseudoOrthoInner1);
-	base_terrain_types.push_back(terrain_PseudoOrthoIndustrial1);
-	base_terrain_types.push_back(terrain_PseudoOrthoTown1);
-
 	map<int, ImageInfo> pngs; // maps terrain types to their bitmaps
-	for(vector<int>::const_iterator base_ter = base_terrain_types.begin(); base_ter != base_terrain_types.end(); ++base_ter)
-		for(int i = 0; i < 6; ++i)
+	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
+	{
+		const int rule_name = find_terrain_rule_name(ter);
+		NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
+		if(ter_info != gNaturalTerrainInfo.end())
 		{
-			const int ter = *base_ter + i;
-			const int rule_name = find_terrain_rule_name(ter);
-			NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
-			if(ter_info != gNaturalTerrainInfo.end())
+			const string &ter_lib_path = ter_info->second.base_tex;
+			const string png_on_disk = ter_lib_path_to_png_path(ter_lib_path);
+			int error = CreateBitmapFromPNG(png_on_disk.c_str(), &pngs[ter], false, GAMMA_SRGB);
+			if(error)
 			{
-				const string &ter_lib_path = ter_info->second.base_tex;
-				const string png_on_disk = ter_lib_path_to_png_path(ter_lib_path);
-				int error = CreateBitmapFromPNG(png_on_disk.c_str(), &pngs[ter], false, GAMMA_SRGB);
-				if(error)
-				{
-					printf("Error loading %s\n", png_on_disk.c_str());
-				}
-			}
-			else
-			{
-				printf("Unknown terrain %d\n", ter);
+				printf("Error loading %s\n", png_on_disk.c_str());
 			}
 		}
+		else
+		{
+			printf("Unknown terrain %d\n", ter);
+		}
+	}
 
 	const int compressed_dim_px = 256 / 2;
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
@@ -977,8 +1091,6 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		const long data_size = out_bmp.width * out_bmp.height * out_bmp.channels;
 		out_bmp.data = new unsigned char[data_size];
 		memset(out_bmp.data, 0, data_size * sizeof(out_bmp.data[0]));
-		const string empty_path = stl_printf("Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "Empty.png", latlon_bucket(dsf->first.second), latlon_bucket(dsf->first.first));
-		WriteBitmapToPNG(&out_bmp, empty_path.c_str(), NULL, 0, GAMMA_SRGB);
 
 		for(int x = 0; x < dx; ++x)
 		for(int y = 0; y < dy; ++y)
@@ -1007,6 +1119,29 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			printf("Error %d writing %s\n", error, out_path.c_str());
 		}
 	}
+
+	// Dump to the console
+	printf("Complete assignment set:\n");
+	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
+	{
+		const vector<vector<int> > &grid = dsf->second;
+		for(int y = dy - 1; y >= 0; --y)
+		{
+			for(int x = 0; x < intmin2(dx, 20); ++x)
+			{
+				if(grid[x][y] == NO_VALUE)
+				{
+					printf("%20s ", " ");
+				}
+				else
+				{
+					printf("%20s ", abbreviated_ortho_str(grid[x][y]));
+				}
+			}
+			printf("\n");
+		}
+	}
+
 	return 0;
 #endif // DEV
 

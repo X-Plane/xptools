@@ -45,4 +45,26 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 
 
 
+struct ortho_urbanization
+{
+	ortho_urbanization(int bl, int br, int tr, int tl);
+	ortho_urbanization(const vector<int> &from_ccw_vector); // ccw from lower left
+
+	int bottom_left; // the "base" ter enum for the bottom left; one of terrain_PseudoOrthoInner, terrain_PseudoOrthoTown, terrain_PseudoOrthoOuter, or terrain_PseudoOrthoIndustrial
+	int bottom_right;
+	int top_right;
+	int top_left;
+
+	ortho_urbanization rotate(int deg) const;
+	bool is_uniform() const;
+	int count_sides(int ter_enum) const;
+	vector<int> to_vector() const; // ccw from lower left
+
+	float hash() const;
+	bool operator<(const ortho_urbanization &other) const;
+};
+
+// maps desired urb levels in the corners to the terrain enum
+map<ortho_urbanization, int> get_terrain_transition_descriptions();
+
 #endif // defined(MOBILEAUTOGENALGS_H)
