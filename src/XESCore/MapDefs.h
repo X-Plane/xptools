@@ -306,6 +306,7 @@ public:
 	// Stuff that's been hand placed in the area by object propagation
 	GISObjPlacementVector		mObjs;
 	GISPolyObjPlacementVector	mPolyObjs;
+	int							mRotationDeg;					// Rotate the texture this many degrees
 	int							mTemp1;							// Per face temp value
 	int							mTemp2;							// Per face temp value
 

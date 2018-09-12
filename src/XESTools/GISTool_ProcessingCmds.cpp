@@ -697,6 +697,11 @@ struct pair_comparator
 	}
 };
 
+
+
+typedef vector<vector<tile_assignment> > dsf_assignment;
+typedef map<pair<int, int>, dsf_assignment, pair_comparator> dsf_to_ortho_terrain_map;
+
 struct special_ter_repeat_rule {
 	special_ter_repeat_rule(int min, int max, int ter_1) : min_radius(min), target_max_radius(max) { compatible_terrains.push_back(ter_1); compatible_terrains.push_back(ter_1 + 1); }
 	int min_radius; // in terms of grid squares
@@ -704,14 +709,14 @@ struct special_ter_repeat_rule {
 	vector<int> compatible_terrains;
 };
 
-static bool has_matching_ter_enum_in_radius(int ter_enum, int min_radius, const grid_coord_desc &point, const vector<vector<int> > &tile_assignments)
+static bool has_matching_ter_enum_in_radius(int ter_enum, int min_radius, const grid_coord_desc &point, const dsf_assignment &tile_assignments)
 {
 	DebugAssert(!tile_assignments.empty());
 	for(int x = max(point.x - min_radius, 0); x <= intmin2(point.x + min_radius, tile_assignments.size()    - 1); ++x)
 	for(int y = max(point.y - min_radius, 0); y <= intmin2(point.y + min_radius, tile_assignments[x].size() - 1); ++y)
 	{
 		if(x != point.x && y != point.y &&
-				tile_assignments[x][y] == ter_enum)
+				tile_assignments[x][y].ter_enum == ter_enum)
 		{
 				return true;
 		}
@@ -719,11 +724,11 @@ static bool has_matching_ter_enum_in_radius(int ter_enum, int min_radius, const 
 	return false;
 }
 
-static void attempt_assign_special_ter_enum(int ter_enum, const map<int, special_ter_repeat_rule> &special_ter_repeat_rules, const grid_coord_desc &point, vector<vector<int> > &tile_assignments)
+static void attempt_assign_special_ter_enum(int ter_enum, const map<int, special_ter_repeat_rule> &special_ter_repeat_rules, const grid_coord_desc &point, dsf_assignment &tile_assignments)
 {
 	DebugAssert(special_ter_repeat_rules.count(ter_enum));
 	const special_ter_repeat_rule &rule = special_ter_repeat_rules.at(ter_enum);
-	if(contains(rule.compatible_terrains, tile_assignments[point.x][point.y]) &&
+	if(contains(rule.compatible_terrains, tile_assignments[point.x][point.y].ter_enum) &&
 			!has_matching_ter_enum_in_radius(ter_enum, rule.min_radius, point, tile_assignments))
 	{
 		tile_assignments[point.x][point.y] = ter_enum;
@@ -890,6 +895,16 @@ int choose_nearest_terrain(const ortho_urbanization &tile, const map<ortho_urban
 	}
 }
 
+map<int, ortho_urbanization> fucking_reverse_map(const map<ortho_urbanization, int> & in)
+{
+	map<int, ortho_urbanization> out;
+	for(map<ortho_urbanization, int>::const_iterator it = in.begin(); it != in.end(); ++it)
+	{
+		out.insert(make_pair(it->second, it->first));
+	}
+	return out;
+}
+
 
 
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
@@ -900,12 +915,11 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 
 	const vector<ag_terrain_dsf_description> all_dsfs = initialize_autogen_pmwx();
 
-	typedef map<pair<int, int>, vector<vector<int> >, pair_comparator> dsf_to_ortho_terrain_map;
 	dsf_to_ortho_terrain_map ortho_terrain_by_dsf;
 	for(vector<ag_terrain_dsf_description>::const_iterator dsf = all_dsfs.begin(); dsf != all_dsfs.end(); ++dsf)
 	{
 		const pair<int, int> dsf_lon_lat = make_pair(dsf->dsf_lon, dsf->dsf_lat);
-		vector<vector<int> > &ortho_terrain_assignments = ortho_terrain_by_dsf[dsf_lon_lat];
+		dsf_assignment &ortho_terrain_assignments = ortho_terrain_by_dsf[dsf_lon_lat];
 		ortho_terrain_assignments.resize(dsf->divisions_lon);
 		for(int lon_offset = 0; lon_offset < dsf->divisions_lon; ++lon_offset)
 		{
@@ -963,14 +977,6 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			if(!desired_urb_pattern.is_uniform() || desired_urb_pattern.bottom_left != NO_VALUE)
 			{
 				int ter_enum = choose_nearest_terrain(desired_urb_pattern, ter_with_transitions);
-				const bool needs_variation =
-						ter_enum == terrain_PseudoOrthoInner1 || ter_enum == terrain_PseudoOrthoTown1 ||
-						ter_enum == terrain_PseudoOrthoOuter1 || ter_enum == terrain_PseudoOrthoIndustrial1;
-				if(needs_variation)
-				{
-					// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
-					ter_enum += (x + y) % 2;
-				}
 				dsf->second[x][y] = ter_enum;
 			}
 		}
@@ -985,7 +991,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// Go through the existing map looking for point features which would correspond to our "special" orthophotos.
 	//--------------------------------------------------------------------------------------------------------
 	map<int, special_ter_repeat_rule> special_ter_repeat_rules;
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoInnerPark,				special_ter_repeat_rule(2, 5, terrain_PseudoOrthoInner1)));
+	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoInnerPark,				special_ter_repeat_rule(3, 5, terrain_PseudoOrthoInner1)));
 	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoInnerStadium,			special_ter_repeat_rule(3, 7, terrain_PseudoOrthoInner1)));
 	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoOuterBuilding,			special_ter_repeat_rule(2, 5, terrain_PseudoOrthoOuter1)));
 	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoOuterStadium,			special_ter_repeat_rule(3, 7, terrain_PseudoOrthoOuter1)));
@@ -1009,8 +1015,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			if(dsf != ortho_terrain_by_dsf.end())
 			{
 				const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
-				int &ter_enum = dsf->second[grid_pt.x][grid_pt.y];
-				if(ter_enum != NO_VALUE)
+				tile_assignment &assignment = dsf->second[grid_pt.x][grid_pt.y];
+				if(assignment.ter_enum != NO_VALUE)
 				{
 					for(GISPointFeatureVector::const_iterator i = fd.mPointFeatures.begin(); i != fd.mPointFeatures.end(); ++i)
 					{
@@ -1050,6 +1056,22 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 
 	//--------------------------------------------------------------------------------------------------------
 	// PASS 4
+	// Add rotations of analogous types
+	//--------------------------------------------------------------------------------------------------------
+	const map<int, ortho_urbanization> terrain_desc_by_enum = fucking_reverse_map(ter_with_transitions);
+	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
+	{
+		dsf_assignment &grid = dsf->second;
+		for(int x = 0; x < dx; ++x)
+		for(int y = 0; y < dy; ++y)
+		{
+			grid[x][y] = get_analogous_ortho_terrain(grid[x][y].ter_enum, x, y, terrain_desc_by_enum);
+
+		}
+	}
+
+	//--------------------------------------------------------------------------------------------------------
+	// PASS 5
 	// Add transitions between types
 	//--------------------------------------------------------------------------------------------------------
 
@@ -1058,7 +1080,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// Debugging: output an image that joins all this together
 	//--------------------------------------------------------------------------------------------------------
 	// Prep images for outputting
-	map<int, ImageInfo> pngs; // maps terrain types to their bitmaps
+	map<tile_assignment, ImageInfo> pngs; // maps (rotated) terrain types to their bitmaps
 	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
 	{
 		const int rule_name = find_terrain_rule_name(ter);
@@ -1067,10 +1089,23 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		{
 			const string &ter_lib_path = ter_info->second.base_tex;
 			const string png_on_disk = ter_lib_path_to_png_path(ter_lib_path);
-			int error = CreateBitmapFromPNG(png_on_disk.c_str(), &pngs[ter], false, GAMMA_SRGB);
+			int error = CreateBitmapFromPNG(png_on_disk.c_str(), &pngs[tile_assignment(ter, 0)], false, GAMMA_SRGB);
 			if(error)
 			{
 				printf("Error loading %s\n", png_on_disk.c_str());
+			}
+			else
+			{
+				for(int rot = 90; rot < 360; rot += 90)
+				{
+					const ImageInfo &copy_from = pngs[tile_assignment(ter, rot - 90)];
+					ImageInfo * copy_to = &pngs[tile_assignment(ter, rot)];
+					*copy_to = copy_from;
+					const long size = copy_from.width * copy_from.height * copy_from.channels;
+					copy_to->data = (unsigned char *) malloc(size);
+					memcpy(copy_to->data, copy_from.data, size);
+					RotateBitmapCCW(&pngs[tile_assignment(ter, rot)]);
+				}
 			}
 		}
 		else
@@ -1082,7 +1117,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	const int compressed_dim_px = 256 / 2;
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
 	{
-		const vector<vector<int> > &grid = dsf->second;
+		const dsf_assignment &grid = dsf->second;
 
 		ImageInfo out_bmp = {};
 		out_bmp.width = compressed_dim_px * dx;
@@ -1095,11 +1130,11 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		for(int x = 0; x < dx; ++x)
 		for(int y = 0; y < dy; ++y)
 		{
-			const int ter = grid[x][y];
-			if(ter > 0)
+			const tile_assignment &assignment = grid[x][y];
+			if(assignment.ter_enum > 0)
 			{
-				DebugAssertWithExplanation(pngs.count(ter), "Couldn't find PNG for terrain");
-				const ImageInfo * png = &pngs[ter];
+				DebugAssertWithExplanation(pngs.count(assignment), "Couldn't find PNG for terrain");
+				const ImageInfo * png = &pngs[assignment];
 				CopyBitmapSection(png, &out_bmp,
 								  0, 0,
 								  png->width, png->height,
@@ -1124,25 +1159,23 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	printf("Complete assignment set:\n");
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
 	{
-		const vector<vector<int> > &grid = dsf->second;
+		const dsf_assignment &grid = dsf->second;
 		for(int y = dy - 1; y >= 0; --y)
 		{
 			for(int x = 0; x < intmin2(dx, 20); ++x)
 			{
-				if(grid[x][y] == NO_VALUE)
+				if(grid[x][y].ter_enum == NO_VALUE)
 				{
 					printf("%20s ", " ");
 				}
 				else
 				{
-					printf("%20s ", abbreviated_ortho_str(grid[x][y]));
+					printf("%20s ", abbreviated_ortho_str(grid[x][y].ter_enum));
 				}
 			}
 			printf("\n");
 		}
 	}
-
-	return 0;
 #endif // DEV
 
 	//--------------------------------------------------------------------------------------------------------
@@ -1165,15 +1198,18 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			const pair<int, int> dsf = make_pair(floor(centroid.x()), floor(centroid.y()));
 			const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
 			DebugAssert(ortho_terrain_by_dsf.count(dsf) || cgal_face_to_ben(f).bounds().area() == 0);
-			if(ortho_terrain_by_dsf.count(dsf))
+			dsf_to_ortho_terrain_map::iterator dsf_it = ortho_terrain_by_dsf.find(dsf);
+			if(dsf_it != ortho_terrain_by_dsf.end())
 			{
-				DebugAssert(ortho_terrain_by_dsf[dsf].size() > grid_pt.x);
-				DebugAssert(ortho_terrain_by_dsf[dsf][grid_pt.x].size() > grid_pt.y);
-				const int ter_enum = ortho_terrain_by_dsf[dsf][grid_pt.x][grid_pt.y];
-				if(ter_enum != NO_VALUE)
+				const dsf_assignment &grid = dsf_it->second;
+				DebugAssert(grid.size() > grid_pt.x);
+				DebugAssert(grid[grid_pt.x].size() > grid_pt.y);
+				const tile_assignment &assignment = grid[grid_pt.x][grid_pt.y];
+				if(assignment.ter_enum != NO_VALUE)
 				{
 					f->set_contained(true);
-					fd.mTerrainType = ter_enum;
+					fd.mTerrainType = assignment.ter_enum;
+					fd.mRotationDeg = assignment.rotation_deg;
 					//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
 					
 					Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();

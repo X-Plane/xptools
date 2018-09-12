@@ -121,6 +121,15 @@ bool ortho_urbanization::operator<(const ortho_urbanization &other) const
 {
 	return hash() < other.hash();
 }
+bool ortho_urbanization::operator==(const ortho_urbanization &other) const
+{
+	return bottom_left == other.bottom_left && bottom_right == other.bottom_right &&
+			top_left == other.top_left && top_right == other.top_right;
+}
+bool ortho_urbanization::operator!=(const ortho_urbanization &other) const
+{
+	return !(*this == other);
+}
 
 #define AssertLegalOrtho(member) DebugAssert(member == NO_VALUE || member == terrain_PseudoOrthoInner || member == terrain_PseudoOrthoTown || member == terrain_PseudoOrthoOuter || member == terrain_PseudoOrthoIndustrial);
 
@@ -250,6 +259,46 @@ map<ortho_urbanization, int> get_terrain_transition_descriptions()
 	return ter_with_transitions;
 }
 
+tile_assignment get_analogous_ortho_terrain(int ter_enum, int x, int y, const map<int, ortho_urbanization> &terrain_desc_by_enum)
+{
+	if(ter_enum == NO_VALUE)
+		return tile_assignment(ter_enum, 0);
 
+	const bool needs_tiling =
+			ter_enum == terrain_PseudoOrthoInner1 || ter_enum == terrain_PseudoOrthoTown1 ||
+			ter_enum == terrain_PseudoOrthoOuter1 || ter_enum == terrain_PseudoOrthoIndustrial1;
+	if(needs_tiling)
+	{
+		// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
+		const int new_ter = ter_enum + (x + y) % 2;
+		// Industrial has big shadows... don't rotate it or we make it look even worse!
+		const int rot = ter_enum == terrain_PseudoOrthoIndustrial1 ? 0 : 90 * ((x + x * y) % 4));
+		return tile_assignment(new_ter, rot;
+	}
+	else
+	{
+		map<int, ortho_urbanization>::const_iterator to_be_matched = terrain_desc_by_enum.find(ter_enum);
+		if(to_be_matched != terrain_desc_by_enum.end())
+		{
+			vector<tile_assignment> candidates;
+			candidates.reserve(4);
+			candidates.push_back(tile_assignment(to_be_matched->first, 0));
+			for(map<int, ortho_urbanization>::const_iterator rotation_candidate = terrain_desc_by_enum.begin(); rotation_candidate != terrain_desc_by_enum.end(); ++rotation_candidate)
+			{
+				for(int rotation = 90; rotation < 360; rotation += 90)
+				{
+					if(rotation_candidate->second.rotate(rotation) == to_be_matched->second)
+					{
+						candidates.push_back(tile_assignment(rotation_candidate->first, rotation));
+					}
+				}
+			}
+
+			DebugAssert(candidates.size() == 4);
+			return candidates[ (x + x * y) % candidates.size() ];
+		}
+	}
+	return tile_assignment(ter_enum, 0);
+}
 
 

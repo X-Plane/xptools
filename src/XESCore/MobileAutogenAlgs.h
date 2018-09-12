@@ -62,9 +62,26 @@ struct ortho_urbanization
 
 	float hash() const;
 	bool operator<(const ortho_urbanization &other) const;
+	bool operator==(const ortho_urbanization &other) const;
+	bool operator!=(const ortho_urbanization &other) const;
 };
 
 // maps desired urb levels in the corners to the terrain enum
 map<ortho_urbanization, int> get_terrain_transition_descriptions();
+
+
+struct tile_assignment
+{
+	tile_assignment(int tile=NO_VALUE, int rotation=0) : ter_enum(tile), rotation_deg(rotation) { }
+
+	int hash() const { return (13 + ter_enum) * (71 + rotation_deg); }
+	bool operator<(const tile_assignment &other) const { return hash() < other.hash(); }
+
+	int ter_enum;
+	int rotation_deg;
+};
+
+// Returns a ter enum plus a rotation in degrees for a tile that is interchangable with the one you passed in.
+tile_assignment get_analogous_ortho_terrain(int ter_enum, int tiling_seed_1, int tiling_seed_2, const map<int, ortho_urbanization> &terrain_desc_by_enum);
 
 #endif // defined(MOBILEAUTOGENALGS_H)
