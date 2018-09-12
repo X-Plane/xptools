@@ -2036,16 +2036,6 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 	}
 	landuse.fill_nearest();
 
-	int ortho_enum = -1;
-	for(map<int, NaturalTerrainInfo_t>::const_iterator it = gNaturalTerrainInfo.begin(); it != gNaturalTerrainInfo.end(); ++it)
-	{
-		if(it->second.regionalization == 0 && it->second.layer > 9990)
-		{
-			ortho_enum = it->first;
-			break; // Note that our STERRAIN rule automatically creates 4 variants... we only care about the one
-		}
-	}
-
 	/***********************************************************************************************
 	 * ASSIGN BASIC LAND USES TO MESH
 	 ***********************************************************************************************/
