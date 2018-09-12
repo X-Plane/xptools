@@ -1208,10 +1208,17 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				if(assignment.ter_enum != NO_VALUE)
 				{
 					f->set_contained(true);
-					fd.mTerrainType = assignment.ter_enum;
 					fd.mRotationDeg = assignment.rotation_deg;
-					//fd.mOverlayType = terrain_PseudoOrthophoto;		// Ben says: This would make an overlay.
-					
+					const bool needs_overlay = intrange(assignment.ter_enum, terrain_PseudoOrthoTownTransBottom, terrain_PseudoOrthoTownTransUR_Full);
+					if(needs_overlay)
+					{
+						fd.mOverlayType = assignment.ter_enum;
+					}
+					else // cover the full tile, don't do an overlay
+					{
+						fd.mTerrainType = assignment.ter_enum;
+					}
+
 					Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
 					do {
 						// Must burn EVERY grid square.  This is mandatory for overlays so they aren't optimized away,

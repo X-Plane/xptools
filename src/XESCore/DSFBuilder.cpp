@@ -1501,8 +1501,9 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 
 							if(is_mobile_ortho)
 							{
+								const int rotation = f->info().orig_face->data().mRotationDeg;
 								// COPY PASTA WARNING - this is stolen from the base mesh case.
-								tex_proj_info ortho_projection = project_ortho(f, inElevation, 0); // TODO: Real rotation
+								tex_proj_info ortho_projection = project_ortho(f, inElevation, rotation);
 								ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
 								// DSF sucks!  We have to replicate the UV coordinates of the base texture into the mask
 								// to get a correct border triangle.  Maybe someday we can optimize this out.
