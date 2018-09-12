@@ -190,10 +190,10 @@ ortho_urbanization ortho_urbanization::rotate(int deg) const
 	while(deg > 0)
 	{
 		const int old_bl = out.bottom_left;
-		out.bottom_left = out.top_left;
-		out.top_left = out.top_right;
-		out.top_right = out.bottom_right;
-		out.bottom_right = old_bl;
+		out.bottom_left = out.bottom_right;
+		out.bottom_right = out.top_right;
+		out.top_right = out.top_left;
+		out.top_left = old_bl;
 		deg -= 90;
 	}
 	return out;
@@ -272,8 +272,8 @@ tile_assignment get_analogous_ortho_terrain(int ter_enum, int x, int y, const ma
 		// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
 		const int new_ter = ter_enum + (x + y) % 2;
 		// Industrial has big shadows... don't rotate it or we make it look even worse!
-		const int rot = ter_enum == terrain_PseudoOrthoIndustrial1 ? 0 : 90 * ((x + x * y) % 4));
-		return tile_assignment(new_ter, rot;
+		const int rot = ter_enum == terrain_PseudoOrthoIndustrial1 ? 0 : 90 * ((x + x * y) % 4);
+		return tile_assignment(new_ter, rot);
 	}
 	else
 	{

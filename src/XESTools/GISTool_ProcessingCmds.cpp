@@ -1096,9 +1096,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			}
 			else
 			{
-				for(int rot = 90; rot < 360; rot += 90)
+				for(int rot = 270; rot > 0; rot -= 90)
 				{
-					const ImageInfo &copy_from = pngs[tile_assignment(ter, rot - 90)];
+					const ImageInfo &copy_from = pngs[tile_assignment(ter, intwrap(rot + 90, 0, 359))];
 					ImageInfo * copy_to = &pngs[tile_assignment(ter, rot)];
 					*copy_to = copy_from;
 					const long size = copy_from.width * copy_from.height * copy_from.channels;

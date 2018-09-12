@@ -931,7 +931,7 @@ static int IsAliased(int lu)
 	return 0;
 }
 
-tex_proj_info project_ortho(const CDT::Face_handle &face, const DEMGeo &dsf_bounds)
+tex_proj_info project_ortho(const CDT::Face_handle &face, const DEMGeo &dsf_bounds, int rotation_deg)
 {
 	const Bbox2 ortho_grid_square = get_ortho_grid_square_bounds(face, Bbox2(dsf_bounds.mWest, dsf_bounds.mSouth, dsf_bounds.mEast, dsf_bounds.mNorth));
 
@@ -944,6 +944,18 @@ tex_proj_info project_ortho(const CDT::Face_handle &face, const DEMGeo &dsf_boun
 	ortho_projection.ST[1] = Point2(1, 0);
 	ortho_projection.ST[2] = Point2(1, 1);
 	ortho_projection.ST[3] = Point2(0, 1);
+
+	DebugAssert(rotation_deg % 90 == 0);
+	while(rotation_deg > 0)
+	{
+		const Point2 old_bl = ortho_projection.ST[0];
+		ortho_projection.ST[0] = ortho_projection.ST[1];
+		ortho_projection.ST[1] = ortho_projection.ST[2];
+		ortho_projection.ST[2] = ortho_projection.ST[3];
+		ortho_projection.ST[3] = old_bl;
+		rotation_deg -= 90;
+	}
+
 	return ortho_projection;
 }
 
@@ -1328,10 +1340,12 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 		{
 			vector<CDT::Face_handle> &hiResTris = sHiResTris[cur_id];
 			int prev_ter_enum = -1;
+			int prev_ter_rotation = 0;
 			for(tri = 0; tri < hiResTris.size(); ++tri)
 			{
 				CDT::Face_handle f = hiResTris[tri];
 				const int ter_enum = f->info().terrain;
+				const int rotation = f->info().orig_face->data().mRotationDeg;
 				if (ter_enum == lu_ranked->first ||
 					(IsCustomOverWaterHard(ter_enum) && lu_ranked->first == terrain_VisualWater) ||		// Take hard cus tris when doing vis water
 					(IsCustomOverWaterSoft(ter_enum) && lu_ranked->first == terrain_Water))				// Take soft cus tris when doing real water
@@ -1352,7 +1366,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						!IsCustomOverWaterSoft(lu_ranked->first))			// custom over soft water - we get physics from who is underneath
 						flags |= dsf_Flag_Physical;
 
-					if(prev_ter_enum != ter_enum)
+					if(prev_ter_enum != ter_enum || rotation != prev_ter_rotation)
 					{
 						if(prev_ter_enum >= 0)
 						{
@@ -1362,6 +1376,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, (is_water || pinfo || is_mobile_ortho ? 7 : 5), writer1);
 						++total_patches;
 						prev_ter_enum = ter_enum;
+						prev_ter_rotation = rotation;
 					}
 
 					cbs.BeginPrimitive_f(dsf_Tri, writer1);
@@ -1400,7 +1415,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						else if(is_mobile_ortho)
 						{
 							// COPY PASTA warning - see same use of project_ortho() for border tris but with more UV coordinates.
-							tex_proj_info ortho_projection = project_ortho(f, inElevation);
+							tex_proj_info ortho_projection = project_ortho(f, inElevation, rotation);
 							ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
 							DebugAssert(coords8[5] >= 0.0); // s
 							DebugAssert(coords8[5] <= 1.0);
@@ -1487,7 +1502,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 							if(is_mobile_ortho)
 							{
 								// COPY PASTA WARNING - this is stolen from the base mesh case.
-								tex_proj_info ortho_projection = project_ortho(f, inElevation);
+								tex_proj_info ortho_projection = project_ortho(f, inElevation, 0); // TODO: Real rotation
 								ProjectTex(coords8[0], coords8[1], coords8[5], coords8[6], &ortho_projection);
 								// DSF sucks!  We have to replicate the UV coordinates of the base texture into the mask
 								// to get a correct border triangle.  Maybe someday we can optimize this out.

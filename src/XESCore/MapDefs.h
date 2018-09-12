@@ -325,9 +325,10 @@ public:
 	#if DEV
 		~GIS_face_data() { mTerrainType = 0xDEADBEEF; }
 	#endif
-	GIS_face_data() : mTerrainType(0), mOverlayType(0) { mAreaFeature.mFeatType = 0; }
+	GIS_face_data() : mTerrainType(0), mOverlayType(0), mRotationDeg(0) { mAreaFeature.mFeatType = 0; }
 	GIS_face_data(const GIS_face_data &x) {
 		mTerrainType = x.mTerrainType;
+		mRotationDeg = x.mRotationDeg;
 		mOverlayType = x.mOverlayType;
 		mParams = x.mParams;
 		mPointFeatures = x.mPointFeatures;
