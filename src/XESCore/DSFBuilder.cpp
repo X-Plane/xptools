@@ -1341,6 +1341,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 			vector<CDT::Face_handle> &hiResTris = sHiResTris[cur_id];
 			int prev_ter_enum = -1;
 			int prev_ter_rotation = 0;
+			const int prev_patch_tris = tris_this_patch;
 			for(tri = 0; tri < hiResTris.size(); ++tri)
 			{
 				CDT::Face_handle f = hiResTris[tri];
@@ -1371,7 +1372,6 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						if(prev_ter_enum >= 0)
 						{
 							cbs.EndPatch_f(writer1);
-							cout << "Changing ter enum from " << prev_ter_enum << " to " << ter_enum << endl;
 						}
 						cbs.BeginPatch_f(lu_ranked->second, TERRAIN_NEAR_LOD, TERRAIN_FAR_LOD, flags, (is_water || pinfo || is_mobile_ortho ? 7 : 5), writer1);
 						++total_patches;
@@ -1430,7 +1430,11 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 					}
 					cbs.EndPrimitive_f(writer1);
 				}
-				cbs.EndPatch_f(writer1);
+				
+				if(tris_this_patch > prev_patch_tris)
+				{
+					cbs.EndPatch_f(writer1);
+				}
 			}
 		}
 
