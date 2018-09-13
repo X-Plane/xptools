@@ -24,6 +24,12 @@
 #ifndef ASSERTUTILS_H
 #define ASSERTUTILS_H
 
+#if __clang__
+	#define ATTR_DISABLE_UB_SAN __attribute__((no_sanitize("undefined")))
+#else
+	#define ATTR_DISABLE_UB_SAN
+#endif
+
 /************************************************************
  * ASSERTION MACROS
  ************************************************************/

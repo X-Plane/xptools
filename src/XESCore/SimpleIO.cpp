@@ -22,6 +22,7 @@
  */
 #include "SimpleIO.h"
 #include "EndianUtils.h"
+#include "AssertUtils.h"
 
 #if IBM
 typedef	unsigned short UInt16;
@@ -94,6 +95,7 @@ MemFileReader::~MemFileReader()
 {
 }
 
+ATTR_DISABLE_UB_SAN // Allow misaligned pointer use
 void	MemFileReader::ReadShort(short& x)
 {
 	if (mPtr >= mEnd)	return;
@@ -102,6 +104,7 @@ void	MemFileReader::ReadShort(short& x)
 	EndianSwapBuffer(mPlatform, platform_Native, kSwapTwo, &x);
 }
 
+ATTR_DISABLE_UB_SAN // Allow misaligned pointer use
 void	MemFileReader::ReadInt(int& x)
 {
 	if (mPtr >= mEnd)	return;
@@ -110,6 +113,7 @@ void	MemFileReader::ReadInt(int& x)
 	EndianSwapBuffer(mPlatform, platform_Native, kSwapFour, &x);
 }
 
+ATTR_DISABLE_UB_SAN // Allow misaligned pointer use
 void	MemFileReader::ReadFloat(float& x)
 {
 	if (mPtr >= mEnd)	return;
@@ -118,6 +122,7 @@ void	MemFileReader::ReadFloat(float& x)
 	EndianSwapBuffer(mPlatform, platform_Native, kSwapFour, &x);
 }
 
+ATTR_DISABLE_UB_SAN // Allow misaligned pointer use
 void	MemFileReader::ReadDouble(double& x)
 {
 	if (mPtr >= mEnd)	return;

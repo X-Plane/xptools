@@ -1003,7 +1003,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// PASS 2
 	// Go through the existing map looking for point features which would correspond to our "special" orthophotos.
 	//--------------------------------------------------------------------------------------------------------
-	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules();
+	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
 	
 	vector<int> large_building_features;
 	large_building_features.push_back(feat_CommercialOffice);

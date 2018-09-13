@@ -23,7 +23,7 @@
 #include "XChunkyFileUtils.h"
 #include <vector>
 #include <string.h>
-
+#include "AssertUtils.h"
 
 using std::vector;
 
@@ -313,7 +313,7 @@ XSpan::XSpan() :
 {
 }
 
-
+ATTR_DISABLE_UB_SAN // Allow misaligned pointer use
 uint32_t	XAtom::GetID(void)
 {
 	if (begin == NULL) return 0;
@@ -321,6 +321,7 @@ uint32_t	XAtom::GetID(void)
 	return SWAP32(header->id);
 }
 
+ATTR_DISABLE_UB_SAN // Allow misaligned pointer use
 uint32_t	XAtom::GetContentLength(void)
 {
 	if (begin == NULL) return 0;
@@ -328,6 +329,7 @@ uint32_t	XAtom::GetContentLength(void)
 	return SWAP32(header->length) - sizeof(XAtomHeader_t);
 }
 
+ATTR_DISABLE_UB_SAN // Allow misaligned pointer use
 uint32_t	XAtom::GetContentLengthWithHeader(void)
 {
 	if (begin == NULL) return 0;
