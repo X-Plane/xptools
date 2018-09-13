@@ -964,7 +964,6 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		vector<int> land_uses(4, DEM_NO_DATA); // counterclockwise from lower left
 		vector<float> urbanization(4, DEM_NO_DATA);
 		bool has_some_urbanization_data = false;
-		int num_corners = 0;
 		for(int corner_x = 0; corner_x < 2; ++corner_x)
 		for(int corner_y = 0; corner_y < 2; ++corner_y)
 		{
@@ -1120,21 +1119,26 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		}
 	}
 
+	const int output_x_min = 0;
+	const int output_x_max = 35;
+	const int output_y_min = 28;
+	const int output_y_max = 51;
+
 	const int compressed_dim_px = 256 / 2;
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
 	{
 		const dsf_assignment &grid = dsf->second;
 
 		ImageInfo out_bmp = {};
-		out_bmp.width = compressed_dim_px * dx;
-		out_bmp.height = compressed_dim_px * dy;
+		out_bmp.width = compressed_dim_px * (output_x_max - output_x_min);
+		out_bmp.height = compressed_dim_px * (output_y_max - output_y_min);
 		out_bmp.channels = 3; // rgb
 		const long data_size = out_bmp.width * out_bmp.height * out_bmp.channels;
 		out_bmp.data = new unsigned char[data_size];
 		memset(out_bmp.data, 0, data_size * sizeof(out_bmp.data[0]));
 
-		for(int x = 0; x < dx; ++x)
-		for(int y = 0; y < dy; ++y)
+		for(int x = output_x_min; x < output_x_max; ++x)
+		for(int y = output_y_min; y < output_y_max; ++y)
 		{
 			const tile_assignment &assignment = grid[x][y];
 			if(assignment.ter_enum > 0)
@@ -1166,9 +1170,10 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
 	{
 		const dsf_assignment &grid = dsf->second;
-		for(int y = dy - 1; y >= 0; --y)
+		for(int y = output_y_max; y >= output_y_min; --y)
 		{
-			for(int x = 0; x < intmin2(dx, 20); ++x)
+			printf("%03d ", y);
+			for(int x = output_x_min; x < output_x_max; ++x)
 			{
 				if(grid[x][y].ter_enum == NO_VALUE)
 				{
