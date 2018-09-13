@@ -1367,7 +1367,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 						!IsCustomOverWaterSoft(lu_ranked->first))			// custom over soft water - we get physics from who is underneath
 						flags |= dsf_Flag_Physical;
 
-					if(prev_ter_enum != ter_enum || rotation != prev_ter_rotation)
+					if(prev_ter_enum != ter_enum)
 					{
 						if(prev_ter_enum >= 0)
 						{
@@ -1430,7 +1430,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 					}
 					cbs.EndPrimitive_f(writer1);
 				}
-				
+
 				if(tris_this_patch > prev_patch_tris)
 				{
 					cbs.EndPatch_f(writer1);
