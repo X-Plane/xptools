@@ -709,6 +709,20 @@ struct special_ter_repeat_rule {
 	vector<int> compatible_terrains;
 };
 
+map<int, special_ter_repeat_rule> get_special_ter_repeat_rules()
+{
+	map<int, special_ter_repeat_rule> out;
+	out.insert(make_pair(terrain_PseudoOrthoInnerPark,			special_ter_repeat_rule(3, 5, terrain_PseudoOrthoInner1)));
+	out.insert(make_pair(terrain_PseudoOrthoInnerStadium,		special_ter_repeat_rule(3, 7, terrain_PseudoOrthoInner1)));
+	out.insert(make_pair(terrain_PseudoOrthoOuterBuilding,		special_ter_repeat_rule(2, 5, terrain_PseudoOrthoOuter1)));
+	out.insert(make_pair(terrain_PseudoOrthoOuterStadium,		special_ter_repeat_rule(3, 7, terrain_PseudoOrthoOuter1)));
+	out.insert(make_pair(terrain_PseudoOrthoTownLgBuilding,		special_ter_repeat_rule(2, 3, terrain_PseudoOrthoTown1)));
+	out.insert(make_pair(terrain_PseudoOrthoTownSpecial2,		special_ter_repeat_rule(2, 3, terrain_PseudoOrthoTown1)));
+	out.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial1,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
+	out.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial2,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
+	return out;
+}
+
 static bool has_matching_ter_enum_in_radius(int ter_enum, int min_radius, const grid_coord_desc &point, const dsf_assignment &tile_assignments)
 {
 	DebugAssert(!tile_assignments.empty());
@@ -745,7 +759,7 @@ static int pseudorandom_in_range(const special_ter_repeat_rule &rule, const pair
 {
 	DebugAssert(rule.min_radius < rule.target_max_radius);
 	const int offset = int_abs(dim + dsf.first * dsf.second * dsf_delta_dim * rule.min_radius * rule.target_max_radius);
-	int pseudo_rand = s_pseudorand[offset % sizeof(s_pseudorand)];
+	int pseudo_rand = s_pseudorand[offset % (sizeof(s_pseudorand) / sizeof(s_pseudorand[0]))];
 	return rule.min_radius + pseudo_rand % (rule.target_max_radius - rule.min_radius);
 }
 
@@ -990,16 +1004,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// PASS 2
 	// Go through the existing map looking for point features which would correspond to our "special" orthophotos.
 	//--------------------------------------------------------------------------------------------------------
-	map<int, special_ter_repeat_rule> special_ter_repeat_rules;
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoInnerPark,				special_ter_repeat_rule(3, 5, terrain_PseudoOrthoInner1)));
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoInnerStadium,			special_ter_repeat_rule(3, 7, terrain_PseudoOrthoInner1)));
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoOuterBuilding,			special_ter_repeat_rule(2, 5, terrain_PseudoOrthoOuter1)));
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoOuterStadium,			special_ter_repeat_rule(3, 7, terrain_PseudoOrthoOuter1)));
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoTownLgBuilding,		special_ter_repeat_rule(2, 3, terrain_PseudoOrthoTown1)));
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoTownSpecial2,			special_ter_repeat_rule(2, 3, terrain_PseudoOrthoTown1)));
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial1,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
-	special_ter_repeat_rules.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial2,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
-
+	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules();
+	
 	vector<int> large_building_features;
 	large_building_features.push_back(feat_CommercialOffice);
 	large_building_features.push_back(feat_CommercialShoppingPlaza);
