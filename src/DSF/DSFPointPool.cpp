@@ -36,6 +36,11 @@ using namespace	triangle_stripper;
 #include <utility>
 using std::pair;
 
+#if __cplusplus <= 199711L
+	#define DATA(container) ((container).empty() ? NULL : &(container)[0])
+#else
+	#define DATA(container) (container).data()
+#endif
 
 
 #pragma mark -
@@ -315,7 +320,7 @@ int			DSFSharedPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 				shorts.push_back((*i)[j]);
 			}
 		}
-		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int16_t *) &*shorts.begin());
+		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int16_t *) DATA(shorts));
 	}
 	return mPools.size();
 }
@@ -488,7 +493,7 @@ int			DSFContiguousPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 			}
 		}
 //		printf("\n");
-		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int16_t *) &*shorts.begin());
+		WritePlanarNumericAtomShort(fi, pool->mScale.size(), pool->mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int16_t *) DATA(shorts));
 	}
 	return mPools.size();
 }
@@ -598,7 +603,7 @@ int				DSF32BitPointPool::WritePoolAtoms(FILE * fi, int32_t id)
 			longs.push_back((*i)[j]);
 		}
 	}
-	WritePlanarNumericAtomInt(fi, mScale.size(), mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int *) &*longs.begin());
+	WritePlanarNumericAtomInt(fi, mScale.size(), mPoints.size(), xpna_Mode_RLE_Differenced, 1, (int *) DATA(longs));
 
 	return 1;
 }
