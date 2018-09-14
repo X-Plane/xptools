@@ -959,6 +959,21 @@ tex_proj_info project_ortho(const CDT::Face_handle &face, const DEMGeo &dsf_boun
 	return ortho_projection;
 }
 
+bool has_some_border(const vector<CDT::Face_handle> &hi_res_tris, int land_use)
+{
+	if(hi_res_tris.empty())
+		return false;
+
+	for(vector<CDT::Face_handle>::const_iterator face = hi_res_tris.begin(); face != hi_res_tris.end(); ++face)
+	{
+		if((*face)->info().terrain_border.count(land_use))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void	BuildDSF(
 			const char *	inFileName1,
 			const char *	inFileName2,
@@ -1445,9 +1460,9 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 #if !NO_BORDERS
 		for (cur_id = 0; cur_id < (get_patch_dim_hi()*get_patch_dim_hi()); ++cur_id)		// For each triangle in this patch
 		if (lu_ranked->first >= terrain_Natural)
-		if (sHiResBO[cur_id].count(lu_ranked->first))							// Quick check: do we have ANY border tris in this layer in this patch?
+		if (sHiResBO[cur_id].count(lu_ranked->first) &&					// Quick check: do we have ANY border tris in this layer in this patch?
+			has_some_border(sHiResTris[cur_id], lu_ranked->first))		// This ensures we don't accidentally make an empty patch
 		{
-
 			map<int, NaturalTerrainInfo_t>::const_iterator terrain = gNaturalTerrainInfo.find(lu_ranked->first);
 			const bool is_mobile_ortho = terrain != gNaturalTerrainInfo.end() && terrain->second.custom_ter == tex_custom_pseudo_ortho;
 
