@@ -78,6 +78,66 @@ enum apt_fill_mode {
 };
 
 
+static inline bool must_burn_he(Halfedge_handle he)
+{
+	Halfedge_handle tw = he->twin();
+	Face_handle f1 = he->face();
+	Face_handle f2 = tw->face();
+	
+	if(f1->is_unbounded() || f2->is_unbounded())
+		return false;
+	return he->data().mParams.count(he_MustBurn) ||
+		tw->data().mParams.count(he_MustBurn) ||
+		f1->data().mTerrainType != f2->data().mTerrainType;
+}
+
+static inline bool must_burn_v(Vertex_handle v)
+{
+	Pmwx::Halfedge_around_vertex_circulator circ, stop;
+	circ = stop = v->incident_halfedges();
+	do {
+		if(must_burn_he(circ))
+			return true;
+	} while (++circ != stop);
+	return false;
+}
+
+static void verify_map_bounds(Pmwx& map, DEMGeo& dem)
+{
+	NT west(dem.mWest);
+	NT east(dem.mEast);
+	NT north(dem.mNorth);
+	NT south(dem.mSouth);
+	{
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		DebugAssert(gMap.unbounded_face()->number_of_holes() == 1);
+		circ = stop = Pmwx::Halfedge_iterator(*map.unbounded_face()->holes_begin());//->outer_ccb();
+		do
+		{
+			if(must_burn_v(circ->target()))
+			{
+				Point_2 p(circ->target()->point());
+				if(p.x() != west && p.x() != east && p.y() != south && p.y() != north)
+				{
+					const double x = CGAL::to_double(p.x());
+					const double y = CGAL::to_double(p.y());
+					const double w = CGAL::to_double(west);
+					const double e = CGAL::to_double(east);
+					const double n = CGAL::to_double(north);
+					const double s = CGAL::to_double(south);
+					fprintf(stderr, "ERROR: Bad point: %.12lf,%.12lf; expected in range (%.12lf, %.12lf) -> (%.12lf, %.12lf)\n", x, y, w, s, e, n);
+					fprintf(stderr, "As hex that is: %llx,%llx; expected in range (%llx, %llx) -> (%llx, %llx)\n",
+							(uint64_t)x,(uint64_t)y,
+							(uint64_t)w,(uint64_t)s,
+							(uint64_t)e,(uint64_t)n);
+					DebugAssert(!"Point is not on an edge.");
+				}
+				//				debug_mesh_point(cgal2ben(circ->target()->point()),1,1,1);
+			}
+		} while(++circ != stop);
+	}
+}
+
 static void GetPadWidth(
 		bool						is_rwy,
 		double&						pad_width_m,
@@ -698,6 +758,8 @@ void ProcessAirports(const AptVector& apts, Pmwx& ioMap, DEMGeo& elevation, DEMG
 		SimplifyMap(ioMap, kill_rivers, prog);
 	}
 	
+	verify_map_bounds(ioMap, elevation);
+	verify_map_bounds(ioMap, transport);
 	
 	
 //	wet_area = 0;
