@@ -398,8 +398,11 @@ bool	ReadNewTerrainInfo(const vector<string>& tokens, void * ref)
 			&info.normal_scale,
 			&info.normal,
 			&shader_mode) != 14)
-		return false;
-		
+		{
+			fprintf(stderr, "ERROR: Failed to read line\n");
+			return false;
+		}
+
 		if(info.autogen_mode != BARE &&
 			info.autogen_mode != FOREST &&
 			info.autogen_mode != URBAN)
