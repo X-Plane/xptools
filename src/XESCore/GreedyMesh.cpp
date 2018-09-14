@@ -168,10 +168,10 @@ void	CalcOneTriError(CDT::Face_handle face, double size_lim)
 		p2.x() < 0 || p2.x() > sCurrentDEM->mWidth ||
 		p2.y() < 0 || p2.y() > sCurrentDEM->mHeight)
 	{
-		fprintf(stderr, "%lf %lf, %lf %lf, %lf %lf\n",
-				CGAL::to_double(face->vertex(0)->point().x()), CGAL::to_double(face->vertex(0)->point().y()),
-				CGAL::to_double(face->vertex(1)->point().x()), CGAL::to_double(face->vertex(1)->point().y()),
-				CGAL::to_double(face->vertex(2)->point().x()), CGAL::to_double(face->vertex(2)->point().y()));
+//		fprintf(stderr, "Tri error: %lf %lf, %lf %lf, %lf %lf\n",
+//				CGAL::to_double(face->vertex(0)->point().x()), CGAL::to_double(face->vertex(0)->point().y()),
+//				CGAL::to_double(face->vertex(1)->point().x()), CGAL::to_double(face->vertex(1)->point().y()),
+//				CGAL::to_double(face->vertex(2)->point().x()), CGAL::to_double(face->vertex(2)->point().y()));
 		face->info().insert_err = 0.0;
 		return;
 	}
@@ -374,9 +374,9 @@ void	GreedyMeshBuild(CDT& inCDT, const DEMGeo& inAvail, DEMMask& ioUsed, double 
 		bool hh = ioUsed.get(the_face->info().insert_x, the_face->info().insert_y);
 		if(hh)
 		{
-			printf("ERROR: we want to do this.\n");
-			printf("Inserting: 0x%p, %d,%d, err was %f\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, the_face->info().insert_err);
-			printf("But the point is not available for insert.\n");
+			fprintf(stderr, "ERROR: we want to do this.\n");
+			fprintf(stderr, "Inserting: 0x%p, %d,%d, err was %f\n",&*the_face, the_face->info().insert_x,the_face->info().insert_y, the_face->info().insert_err);
+			fprintf(stderr, "But the point is not available for insert.\n");
 		}
 		DebugAssert(!hh);
 		#endif

@@ -226,21 +226,21 @@ someday check footer when in sloooow mode
 	if ((inStart - inStop) < (sizeof(DSFHeader_t) + sizeof(DSFFooter_t)))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: this file appears to not be atomic.\n");
+		fprintf(stderr, "DSF ERROR: this file appears to not be atomic.\n");
 #endif
 		return dsf_ErrNoAtoms;
 	}
 	if (dsf_container.begin >= dsf_container.end)
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: this file appears to not to have any atoms.\n");
+		fprintf(stderr, "DSF ERROR: this file appears to not to have any atoms.\n");
 #endif
 		return dsf_ErrNoAtoms;
 	}
 	if (strncmp(header->cookie, DSF_COOKIE, strlen(DSF_COOKIE)) != 0)
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We hit a bad cookie.  Expected: '%s', got: '%c%c%c%c%c%c%c%c'\n",
+		fprintf(stderr, "DSF ERROR: We hit a bad cookie.  Expected: '%s', got: '%c%c%c%c%c%c%c%c'\n",
 			DSF_COOKIE,
 			header->cookie[0],header->cookie[1],header->cookie[2],header->cookie[3],
 			header->cookie[4],header->cookie[5],header->cookie[6],header->cookie[7]);
@@ -250,7 +250,7 @@ someday check footer when in sloooow mode
 	if (SWAP32(header->version) != DSF_MASTER_VERSION)
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We hit a bad version.  Expected: %d, got: %d\n", DSF_MASTER_VERSION, header->version);
+		fprintf(stderr, "DSF ERROR: We hit a bad version.  Expected: %d, got: %d\n", DSF_MASTER_VERSION, header->version);
 #endif
 		return dsf_ErrBadVersion;
 	}
@@ -266,28 +266,28 @@ someday check footer when in sloooow mode
 	if (!dsf_container.GetNthAtomOfID(dsf_MetaDataAtom, 0, headAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the metadata atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the metadata atom.\n");
 #endif
 		return	dsf_ErrMissingAtom;
 	}
 	if (!dsf_container.GetNthAtomOfID(dsf_DefinitionsAtom, 0, defnAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the definitions atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the definitions atom.\n");
 #endif
 		return	dsf_ErrMissingAtom;
 	}
 	if (!dsf_container.GetNthAtomOfID(dsf_GeoDataAtom, 0, geodAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the geodata atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the geodata atom.\n");
 #endif
 		return	dsf_ErrMissingAtom;
 	}
 	if (!dsf_container.GetNthAtomOfID(dsf_CommandsAtom, 0, cmdsAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the commands atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the commands atom.\n");
 #endif
 		return	dsf_ErrMissingAtom;
 	}
@@ -299,35 +299,35 @@ someday check footer when in sloooow mode
 	if (!headContainer.GetNthAtomOfID(dsf_PropertyAtom, 0, propAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the properties atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the properties atom.\n");
 #endif
 		return dsf_ErrMissingAtom;
 	}
 	if (!defnContainer.GetNthAtomOfID(dsf_TerrainTypesAtom, 0, tertAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the terrain types atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the terrain types atom.\n");
 #endif
 		return dsf_ErrMissingAtom;
 	}
 	if (!defnContainer.GetNthAtomOfID(dsf_ObjectsAtom, 0, objtAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the object defs atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the object defs atom.\n");
 #endif
 		return dsf_ErrMissingAtom;
 	}
 	if (!defnContainer.GetNthAtomOfID(dsf_PolygonAtom, 0, polyAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the polygon defs atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the polygon defs atom.\n");
 #endif
 		return dsf_ErrMissingAtom;
 	}
 	if (!defnContainer.GetNthAtomOfID(dsf_NetworkAtom, 0, netwAtom))
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We are missing the networks atom.\n");
+		fprintf(stderr, "DSF ERROR: We are missing the networks atom.\n");
 #endif
 		return dsf_ErrMissingAtom;
 	}
@@ -372,7 +372,7 @@ someday check footer when in sloooow mode
 		if (scalAtom.Overrun())
 		{
 #if DEBUG_MESSAGES
-			printf("DSF ERROR: We overran our 16-bit scaling atom.\n");
+			fprintf(stderr, "DSF ERROR: We overran our 16-bit scaling atom.\n");
 #endif
 			return dsf_ErrMisformattedScalingAtom;
 		}
@@ -392,7 +392,7 @@ someday check footer when in sloooow mode
 		if (scalAtom.Overrun())
 		{
 #if DEBUG_MESSAGES
-			printf("DSF ERROR: We overran our 32-bit scaling atom.\n");
+			fprintf(stderr, "DSF ERROR: We overran our 32-bit scaling atom.\n");
 #endif
 			return dsf_ErrMisformattedScalingAtom;
 		}
@@ -529,7 +529,7 @@ someday check footer when in sloooow mode
 				if (str2 == NULL)
 				{
 		#if DEBUG_MESSAGES
-					printf("DSF ERROR: We have an odd number of property strings.  The overhanging property is: %s\n", str);
+					fprintf(stderr, "DSF ERROR: We have an odd number of property strings.  The overhanging property is: %s\n", str);
 		#endif
 					return dsf_ErrBadProperties;
 				}
@@ -645,7 +645,7 @@ someday check footer when in sloooow mode
 		 **************************************************************************************************************/
 		case dsf_Cmd_Reserved					:
 #if DEBUG_MESSAGES
-			printf("DSF ERROR: We hit the reserved command.\n");
+			fprintf(stderr, "DSF ERROR: We hit the reserved command.\n");
 #endif
 			return dsf_ErrBadCommand;
 		case dsf_Cmd_PoolSelect					:
@@ -653,7 +653,7 @@ someday check footer when in sloooow mode
 			if (currentPool >= planarData.size() && currentPool >= planarData32.size())
 			{
 #if DEBUG_MESSAGES
-				printf("DSF ERROR: Pool out of range at pool select.  Desired = %d.  Normal pools = %zd.  32-bit pools = %zd.\n", 
+				fprintf(stderr, "DSF ERROR: Pool out of range at pool select.  Desired = %d.  Normal pools = %zd.  32-bit pools = %zd.\n",
 						currentPool, planarData.size(), planarData32.size());
 #endif
 				return dsf_ErrPoolOutOfRange;
@@ -729,7 +729,7 @@ someday check footer when in sloooow mode
 					} else {
 #if DEBUG_MESSAGES
 						if(counter == 0 || counter == count-1)
-							printf("DSF ERROR: Road contains a shape point for one of it's ends.\n");
+							fprintf(stderr, "DSF ERROR: Road contains a shape point for one of it's ends.\n");
 #endif			
 
 						inCallbacks->AddSegmentShapePoint_f(segCoord, hasCurve, ref);
@@ -936,7 +936,7 @@ someday check footer when in sloooow mode
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
+					fprintf(stderr, "DSF ERROR: Pool out of range at triange cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
@@ -991,7 +991,7 @@ someday check footer when in sloooow mode
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange strip cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
+					fprintf(stderr, "DSF ERROR: Pool out of range at triange strip cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
@@ -1048,7 +1048,7 @@ someday check footer when in sloooow mode
 				if (pool >= planarData.size())
 				{
 #if DEBUG_MESSAGES
-					printf("DSF ERROR: Pool out of range at triange fan cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
+					fprintf(stderr, "DSF ERROR: Pool out of range at triange fan cross-pool.  Desired = %d.  Normal pools = %zd.\n", pool, planarData.size());
 #endif
 					return dsf_ErrPoolOutOfRange;
 				}
@@ -1131,7 +1131,7 @@ someday check footer when in sloooow mode
 			break;
 		default:
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We have an unknown command 0x%02X\n", cmdID);
+		fprintf(stderr, "DSF ERROR: We have an unknown command 0x%02X\n", cmdID);
 #endif
 			return dsf_ErrBadCommand;
 		}
@@ -1141,7 +1141,7 @@ someday check footer when in sloooow mode
 	if (cmdsAtom.Overrun())
 	{
 #if DEBUG_MESSAGES
-		printf("DSF ERROR: We overran the command atom.\n");
+		fprintf(stderr, "DSF ERROR: We overran the command atom.\n");
 #endif
 		return dsf_ErrMisformattedCommandAtom;
 		}

@@ -161,7 +161,7 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 	if (inData[0] < sWest || inData[0] > sEast ||
 		inData[1] < sSouth || inData[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inData[0], inData[1]);
+		fprintf(stderr, "ERROR: out of bounds pt %lf, %lf\n", inData[0], inData[1]);
 		sBad = true;
 	}
 
@@ -175,7 +175,7 @@ void DSFPrint_AddPatchVertex(double * inData, void * inRef)
 			if (sTri_SaveLast[0] == inData[0] &&
 				sTri_SaveLast[1] == inData[1])
 			{
-				fprintf(stderr,"DSF Duplicate vertex check failed on tri (previous).\n");
+				ffprintf(stderr, stderr,"DSF Duplicate vertex check failed on tri (previous).\n");
 			}
 
 			if (sTri_SaveFirst[0] == inData[0] &&
@@ -276,7 +276,7 @@ void DSFPrint_AddObject(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
+		fprintf(stderr, "ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 
@@ -297,7 +297,7 @@ void DSFPrint_BeginSegment(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
+		fprintf(stderr, "ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 	++sDSF_Chains;
@@ -319,7 +319,7 @@ void DSFPrint_AddSegmentShapePoint(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
+		fprintf(stderr, "ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 	++sDSF_ShapePoints;
@@ -339,7 +339,7 @@ void DSFPrint_EndSegment(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
+		fprintf(stderr, "ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 #if PRINT_IT
@@ -376,7 +376,7 @@ void DSFPrint_AddPolygonPoint(
 	if (inCoordinates[0] < sWest || inCoordinates[0] > sEast ||
 		inCoordinates[1] < sSouth || inCoordinates[1] > sNorth)
 	{
-		printf("ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
+		fprintf(stderr, "ERROR: out of bounds pt %lf, %lf\n", inCoordinates[0], inCoordinates[1]);
 		sBad = true;
 	}
 #if PRINT_IT

@@ -648,9 +648,9 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 							double	east = parse_field_float(&s, e) / 3600.0; double	north = parse_field_float(&s, e)  / 3600.0;
 	s=b+852;	e=b+864;	int k = parse_field_int(&s, e); int profiles = parse_field_int(&s, e);
 
-	if (geo != 0)		{printf("ERROR: %s not geo projected.\n", inFileName);	goto bail;}
-	if (hunits != 3)	{printf("ERROR: %s not in arc seconds.\n", inFileName);	goto bail;}
-	if (vunits != 2)	{printf("ERROR: %s not in meters.\n", inFileName);		goto bail;}
+	if (geo != 0)		{fprintf(stderr, "ERROR: %s not geo projected.\n", inFileName);	goto bail;}
+	if (hunits != 3)	{fprintf(stderr, "ERROR: %s not in arc seconds.\n", inFileName);	goto bail;}
+	if (vunits != 2)	{fprintf(stderr, "ERROR: %s not in meters.\n", inFileName);		goto bail;}
 
 	printf("File name: '%s'\n", fname.c_str());
 	printf("Geocoding: %d\n", geo);
@@ -659,7 +659,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	printf("Profiles: %d\n", profiles);
 	printf("Bounds: %lf %lf -> %lf %lf\n", west, south, east, north);
 
-	if (k != 1) { printf("ERROR: expect 1 count of profiles.\n");	goto bail; }
+	if (k != 1) { fprintf(stderr, "ERROR: expect 1 count of profiles.\n");	goto bail; }
 	inMap.mWest = west;
 	inMap.mEast = east;
 	inMap.mNorth = north;
@@ -671,7 +671,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 	while (profiles > 0)
 	{
 		int ox, oy, count;
-		if (p >= MemFile_GetEnd(fi)) { printf("ERROR: out of files bounds.\n"); goto bail; }
+		if (p >= MemFile_GetEnd(fi)) { fprintf(stderr, "ERROR: out of files bounds.\n"); goto bail; }
 		s=p    ;	e=p+ 12;	oy = parse_field_int(&s,e)-1; ox = parse_field_int(&s,e)-1;
 		s=p +12;	e=p+ 24;	count = parse_field_int(&s,e); k = parse_field_int(&s,e);
 		s=p +72;	e=p+ 96;	trim_down(&s,&e);		string datum(s,e);
@@ -695,7 +695,7 @@ bool	ExtractUSGSNaturalFile(DEMGeo& inMap, const char * inFileName)
 			for (int nn = 0; nn < num_read; ++nn)
 			{
 				int elev = parse_field_int(&o, e);
-				if (o >= e) {printf("ERROR: overrun, n = %d\n", nn); goto bail; }
+				if (o >= e) {fprintf(stderr, "ERROR: overrun, n = %d\n", nn); goto bail; }
 				inMap(ox, oy) = elev;
 				++oy;
 			}

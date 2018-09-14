@@ -121,7 +121,7 @@ void	WTPM_FindLineConnections(const WTPM_LineVector& inLines)
 		meSpur = find(us->startNode->lines.begin(), us->startNode->lines.end(), usLeft);
 #if DEV
 		if (meSpur == us->startNode->lines.end())
-			printf("ASSERTION ERROR: cannot find spur in start node list.\n");
+			fprintf(stderr, "ASSERTION ERROR: cannot find spur in start node list.\n");
 #endif
 		++meSpur;
 		if (meSpur == us->startNode->lines.end())
@@ -137,7 +137,7 @@ void	WTPM_FindLineConnections(const WTPM_LineVector& inLines)
 		meSpur = find(us->endNode->lines.begin(), us->endNode->lines.end(), usRight);
 #if DEV
 		if (meSpur == us->endNode->lines.end())
-			printf("ASSERTION ERROR: cannot find spur in end node list.\n");
+			fprintf(stderr, "ASSERTION ERROR: cannot find spur in end node list.\n");
 #endif
 		++meSpur;
 		if (meSpur == us->endNode->lines.end())

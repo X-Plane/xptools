@@ -275,7 +275,7 @@ struct	road_coords_checker {
 		{
 //			debug_mesh_point(Point2(c[0],c[1]),1,1,1);
 //			debug_mesh_point(Point2(last[0],last[1]),1,0,0);
-			printf("ERROR: double point: %c %lf, %lf (%lf) to %c %lf, %lf (%lf) (%p)\n", lm, last[0],last[1], last[2], m, c[0], c[1], c[2], ptr);
+			fprintf(stderr, "ERROR: double point: %c %lf, %lf (%lf) to %c %lf, %lf (%lf) (%p)\n", lm, last[0],last[1], last[2], m, c[0], c[1], c[2], ptr);
 			exit(1);
 		}
 		last[0] = c[0]; last[1] = c[1];

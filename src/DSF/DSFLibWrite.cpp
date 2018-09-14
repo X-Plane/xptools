@@ -565,7 +565,7 @@ static void analyze_cmd_mem_use(XAtomPackedData& cmdsAtom)
 		const char * cmd_start = cmdsAtom.position;
 		int cmd = cmdsAtom.ReadUInt8();
 		if(cmd < 0 || cmd > 34)
-			printf("PARSER ERROR.\n");
+			fprintf(stderr, "PARSER ERROR.\n");
 		switch(cmd) {
 		case dsf_Cmd_PoolSelect					:
 			cmdsAtom.ReadUInt16();
@@ -816,7 +816,7 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 		loc = terrainPool[prims->first].AcceptShared((*prim)->vertices[n]);
 		if(loc.second > 65536)
 		{
-			printf("ERROR: just sank at %d,%d\n",loc.first,loc.second);
+			fprintf(stderr, "ERROR: just sank at %d,%d\n",loc.first,loc.second);
 			Assert("!Out of bounds sink.");
 		}
 		if (loc.first == -1 || loc.second == -1)

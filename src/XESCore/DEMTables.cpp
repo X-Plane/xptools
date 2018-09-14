@@ -195,11 +195,11 @@ static void 	AddRuleInfoPair(NaturalTerrainRule_t& rule, NaturalTerrainInfo_t& i
 		gNaturalTerrainInfo.insert(NaturalTerrainInfoMap::value_type(rule.name, info));
 	else
 	{
-//		if (i->second.forest_type	!= info.forest_type	)	printf("ERROR:  terrain 'forest type' does not match.  name = %s, layers = %s vs %s\n", FetchTokenString(rule.name), FetchTokenString(i->second.forest_type),FetchTokenString(info.forest_type));
-		if (i->second.layer    		!= info.layer    	)	printf("ERROR:  terrain 'layer' does not match.  name = %s, layers = %d vs %d\n", FetchTokenString(rule.name), i->second.layer,info.layer);
-		if (i->second.xon_dist 		!= info.xon_dist 	)	printf("ERROR:  terrain 'xon_dist' does not match.  name = %s, layers = %f vs %f\n", FetchTokenString(rule.name), i->second.xon_dist,info.xon_dist);
-		if (i->second.base_tex    	!= info.base_tex    )	printf("ERROR:  terrain 'base_tex' does not match.  name = %s, layers = %s vs %s\n", FetchTokenString(rule.name), i->second.base_tex.c_str(),info.base_tex.c_str());
-		if (i->second.base_res		!= info.base_res	)	printf("ERROR:  terrain 'base_res' does not match.  name = %s, layers = %lfx%lf vs %lfx%lf\n", FetchTokenString(rule.name), i->second.base_res.x(),i->second.base_res.y(),info.base_res.x(),info.base_res.y());
+//		if (i->second.forest_type	!= info.forest_type	)	fprintf(stderr, "ERROR:  terrain 'forest type' does not match.  name = %s, layers = %s vs %s\n", FetchTokenString(rule.name), FetchTokenString(i->second.forest_type),FetchTokenString(info.forest_type));
+		if (i->second.layer    		!= info.layer    	)	fprintf(stderr, "ERROR:  terrain 'layer' does not match.  name = %s, layers = %d vs %d\n", FetchTokenString(rule.name), i->second.layer,info.layer);
+		if (i->second.xon_dist 		!= info.xon_dist 	)	fprintf(stderr, "ERROR:  terrain 'xon_dist' does not match.  name = %s, layers = %f vs %f\n", FetchTokenString(rule.name), i->second.xon_dist,info.xon_dist);
+		if (i->second.base_tex    	!= info.base_tex    )	fprintf(stderr, "ERROR:  terrain 'base_tex' does not match.  name = %s, layers = %s vs %s\n", FetchTokenString(rule.name), i->second.base_tex.c_str(),info.base_tex.c_str());
+		if (i->second.base_res		!= info.base_res	)	fprintf(stderr, "ERROR:  terrain 'base_res' does not match.  name = %s, layers = %lfx%lf vs %lfx%lf\n", FetchTokenString(rule.name), i->second.base_res.x(),i->second.base_res.y(),info.base_res.x(),info.base_res.y());
 
 //		if(i->second != info)
 //		{

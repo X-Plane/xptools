@@ -1699,7 +1699,7 @@ void	CalcSlopeParams(DEMGeoMap& ioDEMs, bool force, ProgressFunc inProg)
 				++x1;
 
 			if (x0 < 0 && x1 >= elev.mWidth)
-				printf("ERROR: MISSING SCANLINED %d from dem.\n", y);
+				fprintf(stderr, "ERROR: MISSING SCANLINED %d from dem.\n", y);
 			else if (x0 == 0)
 			{
 				e1 = elev(x1, y);

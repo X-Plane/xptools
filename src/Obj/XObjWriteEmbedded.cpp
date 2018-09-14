@@ -352,7 +352,7 @@ int light_from_name(const char * name)
 		if(strcmp(k_light_info[n].name,name)==0) return n;
 		++n;
 	}
-	printf("ERROR: unknown light %s\n", name);	
+	fprintf(stderr, "ERROR: unknown light %s\n", name);
 	exit(1);
 }
 

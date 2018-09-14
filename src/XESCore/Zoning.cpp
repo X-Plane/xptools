@@ -76,7 +76,7 @@ static bool ReadLandClassRule(const vector<string>& tokens, void * ref)
 
 	if(gLandClassInfo.count(lc))
 	{
-		printf("ERROR: land class %s already in table.\n", FetchTokenString(lc));
+		fprintf(stderr, "ERROR: land class %s already in table.\n", FetchTokenString(lc));
 		return false;
 	}
 	gLandClassInfo[lc] = info;
@@ -207,7 +207,7 @@ static bool ReadFillRule(const vector<string>& tokens, void * ref)
 
 	if(r.agb_slop_depth == 0.0 && r.agb_id != NO_VALUE)
 	{
-		printf("ERROR: AGB %s has 0 slop depth.\n", FetchTokenString(r.agb_id));
+		fprintf(stderr, "ERROR: AGB %s has 0 slop depth.\n", FetchTokenString(r.agb_id));
 		return false;
 	}
 

@@ -211,7 +211,7 @@ bool ReadTwinRule(const vector<string>& tokens, void * ref)
 	if(gTwinRules.count(type_1) || 
 		gTwinRules.count(type_2))
 	{
-		printf("ERROR: duplicate twin rule.\n");
+		fprintf(stderr, "ERROR: duplicate twin rule.\n");
 		return false;
 	}
 	gTwinRules[type_1] = type_2;

@@ -35,7 +35,7 @@
 static void GL_ERR(int err)
 {
 	if (err != 0)
-		printf("GL ERROR: %d\n", err);
+		fprintf(stderr, "GL ERROR: %d\n", err);
 }
 
 static void	Default_SetupPoly(void * ref)

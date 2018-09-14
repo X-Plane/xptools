@@ -474,7 +474,7 @@ void	MergeNearJunctions(Net_JunctionInfoSet& juncs, Net_ChainInfoSet& chains, do
 						(*c)->start_junction->location.y(),
 						(*c)->end_junction->location.x(),
 						(*c)->end_junction->location.y());
-			printf("ERROR: junctions too close together (%p, %p).\n", 
+			fprintf(stderr, "ERROR: junctions too close together (%p, %p).\n",
 						(*c)->start_junction,(*c)->end_junction);
 		}
 	}
