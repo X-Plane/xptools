@@ -346,7 +346,10 @@ static float CheckFifo(void)
 				str = NULL;
 				if(tok == NULL)
 					break;
-				args.push_back(tok);
+				if(strlen(tok) > 0)
+				{
+					args.push_back(tok);
+				}
 			}
 			printf("Eval:\n");
 			for (int nn = 0; nn < args.size(); ++nn)

@@ -126,54 +126,102 @@ int	GISTool_PrintHelpCommand(const char * inCommand)
 
 int	GISTool_ParseCommands(const vector<const char *>& args)
 {
+	// First run through the entire set of args and make sure we can make sense of them...
+	// don't bother doing *shit* if we're just going to die in the middle!
 	int n = 0;
+	bool precheck_passed = true;
+	while (n < args.size())
+	{
+		GISTool_Command_f cmd;
+		int minp, maxp;
+		if(GISTool_FindCommand(args[n], minp, maxp, cmd))
+		{
+			++n;
+			int cmd_args = 0;
+			while(n < args.size() && !GISTool_IsCommand(args[n]) && (maxp == -1 || cmd_args < maxp))
+			{
+				++cmd_args;
+				++n;
+			}
+		}
+		else
+		{
+			fprintf(stderr, "ERROR: Command %s (index %d; length %ld) not known.\n", args[n], n, strlen(args[n]));
+			if(n > 2)
+			{
+				fprintf(stderr, ". . . %s %s", args[n - 2], args[n - 1]);
+			}
+			fprintf(stderr, "%s ", args[n]);
+			if(n < args.size() - 2)
+			{
+				fprintf(stderr, "%s %s . . .", args[n + 1], args[n + 2]);
+			}
+			fprintf(stderr, "\n");
+
+			precheck_passed = false;
+			++n;
+			while(n < args.size() && !GISTool_IsCommand(args[n]))
+			{
+				++n;
+			}
+		}
+	}
+
+	if(!precheck_passed)
+	{
+		fprintf(stderr, "Complete (failed) args were:\n");
+		for(vector<const char *>::const_iterator arg = args.begin(); arg != args.end(); ++arg)
+		{
+			fprintf(stderr, "%s ", *arg);
+		}
+		fprintf(stderr, "\n");
+		return 1;
+	}
+
 	GISTool_Command_f	cmd;
 	int					minp;
 	int					maxp;
 	const char *		cname;
+	n = 0;
 	while (n < args.size())
 	{
 		cname = args[n];
-		if (!GISTool_FindCommand(cname, minp, maxp, cmd))
+		GISTool_FindCommand(cname, minp, maxp, cmd); // guaranteed to work based on previous pre-checking
+
+		printf("Doing: %s ",cname);
+		++n;
+		vector<const char *> cmdargs;
+		while (n < args.size() && !GISTool_IsCommand(args[n]) && (maxp == -1 || cmdargs.size() < maxp))
 		{
-			fprintf(stderr, "Command %s not known.\n", cname);
+			printf("%s ",args[n]);
+			cmdargs.push_back(args[n]);
+			++n;
+		}
+		printf("\n");
+
+		if (cmdargs.size() < minp || cmdargs.size() > maxp)
+		{
+			fprintf(stderr, "%s - needs %d-%d args, got %llu args.\n",
+				cname, minp, maxp, (unsigned long long)cmdargs.size());
 			return 1;
 		} else {
-			printf("Doing: %s ",cname);
-			++n;
-			vector<const char *> cmdargs;
-			while (n < args.size() && !GISTool_IsCommand(args[n]) && (maxp == -1 || cmdargs.size() < maxp))
+			if(sSkip > 0)
 			{
-				printf("%s ",args[n]);
-				cmdargs.push_back(args[n]);
-				++n;
+				--sSkip;
 			}
-			printf("\n");
-
-			if (cmdargs.size() < minp || cmdargs.size() > maxp)
+			else
 			{
-				fprintf(stderr, "%s - needs %d-%d args, got %llu args.\n",
-					cname, minp, maxp, (unsigned long long)cmdargs.size());
-				return 1;
-			} else {
-				if(sSkip > 0)
-				{
-					--sSkip;
-				}
-				else
-				{
-					try {
-						StElapsedTime * timer = (gTiming ? new StElapsedTime(cname) : NULL);
-						int result = cmd(cmdargs);
-						delete timer;
-						if (result != 0) return result;
-					} catch(const char * msg) {
-						printf("Caught: %s\n", msg);
-						return 1;
-					} catch(exception& x) {
-						printf("%s\n",x.what());
-						return 1;
-					}	
+				try {
+					StElapsedTime * timer = (gTiming ? new StElapsedTime(cname) : NULL);
+					int result = cmd(cmdargs);
+					delete timer;
+					if (result != 0) return result;
+				} catch(const char * msg) {
+					printf("Caught: %s\n", msg);
+					return 1;
+				} catch(exception& x) {
+					printf("%s\n",x.what());
+					return 1;
 				}
 			}
 		}

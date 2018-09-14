@@ -126,14 +126,12 @@ int	main(int argc, char * argv[])
 		RegisterImageCmds();
 		
 		vector<const char *>	args;
-
-
-
-
-
 		for (int n = start_arg; n < argc; ++n)
 		{
-			args.push_back(argv[n]);
+			if(strlen(argv[n]) > 0)
+			{
+				args.push_back(argv[n]);
+			}
 		}
 
 
