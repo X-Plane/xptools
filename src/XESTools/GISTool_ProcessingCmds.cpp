@@ -283,15 +283,59 @@ static int DoCalcMesh(const vector<const char *>& args)
 	return 0;
 }
 
+static void verify_map_bounds()
+{
+#if DEV
+	NT west(gDem[dem_Elevation].mWest);
+	NT east(gDem[dem_Elevation].mEast);
+	NT north(gDem[dem_Elevation].mNorth);
+	NT south(gDem[dem_Elevation].mSouth);
+	{
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		DebugAssert(gMap.unbounded_face()->number_of_holes() == 1);
+		circ = stop = Pmwx::Halfedge_iterator(*gMap.unbounded_face()->holes_begin());//->outer_ccb();
+		do
+		{
+			if(must_burn_v(circ->target()))
+			{
+				Point_2 p(circ->target()->point());
+				if(p.x() != west && p.x() != east && p.y() != south && p.y() != north)
+				{
+					const double x = CGAL::to_double(p.x());
+					const double y = CGAL::to_double(p.y());
+					const double w = CGAL::to_double(west);
+					const double e = CGAL::to_double(east);
+					const double n = CGAL::to_double(north);
+					const double s = CGAL::to_double(south);
+					fprintf(stderr, "ERROR: Bad point: %.12lf,%.12lf; expected in range (%.12lf, %.12lf) -> (%.12lf, %.12lf)\n", x, y, w, s, e, n);
+					fprintf(stderr, "As hex that is: %llx,%llx; expected in range (%llx, %llx) -> (%llx, %llx)\n",
+							(uint64_t)x,(uint64_t)y,
+							(uint64_t)w,(uint64_t)s,
+							(uint64_t)e,(uint64_t)n);
+					DebugAssert(!"Point is not on an edge.");
+				}
+				//				debug_mesh_point(cgal2ben(circ->target()->point()),1,1,1);
+			}
+		} while(++circ != stop);
+	}
+#endif
+}
+
 static int DoBurnAirports(const vector<const char *>& args)
 {
+	verify_map_bounds();
+	
 	if (gVerbose)	printf("Burning airports into vector map...\n");
 	ProcessAirports(gApts, gMap, gDem[dem_Elevation], gDem[dem_UrbanTransport], true, true, true, gProgress);
+	
+	verify_map_bounds();
 	return 0;
 }
 
 static int DoZoning(const vector<const char *>& args)
 {
+	verify_map_bounds();
+	
 	if (gVerbose)	printf("Calculating zoning info...\n");
 	ZoneManMadeAreas(gMap, gDem[dem_Elevation], gDem[dem_LandUse], gDem[dem_ForestType], gDem[dem_ParkType], gDem[dem_Slope],gApts,	Pmwx::Face_handle(), 	gProgress);
 	return 0;
@@ -331,6 +375,8 @@ static int DoBridgeRebuild(const vector<const char *>& args)
 
 static int DoDeriveDEMs(const vector<const char *>& args)
 {
+	verify_map_bounds();
+	
 	if (gVerbose)	printf("Deriving raster parameters...\n");
 	DeriveDEMs(gMap, gDem,gApts, gAptIndex, atoi(args[0]), gProgress);
 	return 0;
