@@ -49,13 +49,13 @@ public:
 
 static	void	DefaultDebugAssert(const char * cond, const char * file, int line)
 {
-	printf("ERROR: Debug Assert Failed: %s (%s, %d.)\n", cond, file, line);
+	fprintf(stderr, "ERROR: Debug Assert Failed: %s (%s, %d.)\n", cond, file, line);
 	throw assert_fail_exception(cond,file, line);
 }
 
 static	void	DefaultAssert(const char * cond, const char * file, int line)
 {
-	printf("ERROR: Assert Failed: %s (%s, %d.)\n", cond, file, line);
+	fprintf(stderr, "ERROR: Assert Failed: %s (%s, %d.)\n", cond, file, line);
 	throw assert_fail_exception(cond,file, line);
 }
 
@@ -120,7 +120,7 @@ void	TEST_SetInteractive(bool interactive)
 
 bool	TEST_Handler(const char * c, const char * f, int l)
 {
-	printf("Test failed: %s\n(%s, %d.)\n", c, f, l);
+	fprintf(stderr, "Test failed: %s\n(%s, %d.)\n", c, f, l);
 	if (sTestInteractive)
 	{
 		return true;
