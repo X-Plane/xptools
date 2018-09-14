@@ -167,7 +167,16 @@ int	GISTool_ParseCommands(const vector<const char *>& args)
 		}
 	}
 
-	if(!precheck_passed)
+	if(precheck_passed)
+	{
+		printf("Beginning work with args:\n");
+		for(vector<const char *>::const_iterator arg = args.begin(); arg != args.end(); ++arg)
+		{
+			printf("%s ", *arg);
+		}
+		printf("\n");
+	}
+	else
 	{
 		fprintf(stderr, "Complete (failed) args were:\n");
 		for(vector<const char *>::const_iterator arg = args.begin(); arg != args.end(); ++arg)
