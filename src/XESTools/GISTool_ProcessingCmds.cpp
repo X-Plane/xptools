@@ -1148,8 +1148,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				CopyBitmapSection(png, &out_bmp,
 								  0, 0,
 								  png->width, png->height,
-								  compressed_dim_px * x, compressed_dim_px * y,
-								  compressed_dim_px * (x + 1), compressed_dim_px * (y + 1));
+								  compressed_dim_px * (x - output_x_min), compressed_dim_px * (y - output_y_min),
+								  compressed_dim_px * (x - output_x_min + 1), compressed_dim_px * (y - output_y_min + 1));
 			}
 		}
 
