@@ -119,6 +119,13 @@ void	CropMap(
 			bool			inKeepOutside,	// If true, keep outside crop zone (cut a hole), otherwise keep only inside (normal crop)
 			ProgressFunc	inProgress);
 
+void	CropMap(
+			Pmwx&			ioMap,
+			const Point_2 &	inSouthWest,
+			const Point_2 &	inNorthEast,
+			bool			inKeepOutside,	// If true, keep outside crop zone (cut a hole), otherwise keep only inside (normal crop)
+			ProgressFunc	inProgress);
+
 // Keep
 //void	CutInside(
 //			Pmwx&				ioMap,
@@ -142,6 +149,20 @@ void	CropMap(
 			Pmwx&					outCutout,
 			const vector<Point_2>&	inRingCCW,
 			ProgressFunc			inProgress);
+
+/**
+ * @return True if all points in the map are within the specified bounds
+ */
+bool	MapIsWithinBounds(
+			Pmwx &			ioMap,
+			double			inWest,
+			double			inSouth,
+			double			inEast,
+			double			inNorth);
+bool	MapIsWithinBounds(
+			Pmwx &			ioMap,
+			const Point_2 &	inSouthWest,
+			const Point_2 &	inNorthEast);
 
 //void	SwapFace(
 //			Pmwx&			inMaster,

@@ -181,6 +181,22 @@ void	CropMap(
 }
 
 void	CropMap(
+			Pmwx&			ioMap,
+			const Point_2 &	inSouthWest,
+			const Point_2 &	inNorthEast,
+			bool			inKeepOutside,	// If true, keep outside crop zone (cut a hole), otherwise keep only inside (normal crop)
+			ProgressFunc	inProgress)
+{
+	Polygon_2 p;
+	p.push_back(inSouthWest);
+	p.push_back(Point_2(inNorthEast.x(), inSouthWest.y()));
+	p.push_back(inNorthEast);
+	p.push_back(Point_2(inSouthWest.x(), inNorthEast.y()));
+	CutInside(ioMap, p, inKeepOutside,inProgress);
+	DebugAssert(inKeepOutside || MapIsWithinBounds(ioMap, inSouthWest, inNorthEast));
+}
+
+void	CropMap(
 			Pmwx&					ioMap,
 			Pmwx&					outCutout,
 			const vector<Point_2>&	inRingCCW,
@@ -339,9 +355,24 @@ void	CutInside(
 			CGAL::Bounded_side v1 = inBoundary.bounded_side(e->source()->point());
 			CGAL::Bounded_side v2 = inBoundary.bounded_side(e->target()->point());
 
+			Point_2 p1(e->source()->point());
+			const double x1 = CGAL::to_double(p1.x());
+			const double y1 = CGAL::to_double(p1.y());
+			Point_2 p2(e->target()->point());
+			const double x2 = CGAL::to_double(p2.x());
+			const double y2 = CGAL::to_double(p2.y());
+
+			if(x1 > -93 || x2 > -93)
+			{
+				printf("This edge should be nuked.\n");
+				printf("(%.18f, %.18f) -> (%.18f, %.18f)\n", x1, y1, x2, y2);
+			}
+
 			// Sanity check - having burned in our edge, no edge should now SPAN our polygon.
+		#if DEV
 			if (v1 == CGAL::ON_BOUNDED_SIDE) DebugAssert(v2 != CGAL::ON_UNBOUNDED_SIDE);
 			if (v2 == CGAL::ON_BOUNDED_SIDE) DebugAssert(v1 != CGAL::ON_UNBOUNDED_SIDE);
+		#endif
 
 			if(inWantOutside)
 			if(v1 == CGAL::ON_BOUNDED_SIDE || v2 == CGAL::ON_BOUNDED_SIDE)	kill.push_back(e);
@@ -380,6 +411,93 @@ void	CutInside(
 //	DebugAssert(CGAL::is_valid(ioMap));
 	DebugAssert(inBoundary.is_simple());
 
+}
+
+static inline bool must_burn_he(Halfedge_handle he)
+{
+	Halfedge_handle tw = he->twin();
+	Face_handle f1 = he->face();
+	Face_handle f2 = tw->face();
+
+	if(f1->is_unbounded() || f2->is_unbounded())
+		return false;
+	return he->data().mParams.count(he_MustBurn) ||
+			tw->data().mParams.count(he_MustBurn) ||
+			f1->data().mTerrainType != f2->data().mTerrainType;
+}
+
+static inline bool must_burn_v(Vertex_handle v)
+{
+	Pmwx::Halfedge_around_vertex_circulator circ, stop;
+	circ = stop = v->incident_halfedges();
+	do {
+		if(must_burn_he(circ))
+			return true;
+	} while (++circ != stop);
+	return false;
+}
+
+bool MapIsWithinBounds(Pmwx &map, double w, double s, double e, double n)
+{
+	Pmwx::Ccb_halfedge_circulator circ, stop;
+	DebugAssert(map.unbounded_face()->number_of_holes() == 1);
+	circ = stop = Pmwx::Halfedge_iterator(*map.unbounded_face()->holes_begin());//->outer_ccb();
+	do
+	{
+		if(must_burn_v(circ->target()))
+		{
+			Point_2 p(circ->target()->point());
+			if(p.x() != w && p.x() != e && p.y() != s && p.y() != n)
+			{
+				const double x = CGAL::to_double(p.x());
+				const double y = CGAL::to_double(p.y());
+				#if DEV
+				fprintf(stderr, "ERROR: Bad point: %.18lf,%.18lf; expected in range (%.18lf, %.18lf) -> (%.12lf, %.12lf)\n", x, y, w, s, e, n);
+				fprintf(stderr, "As hex that is: %llx,%llx; expected in range (%llx, %llx) -> (%llx, %llx)\n",
+						(uint64_t)x,(uint64_t)y,
+						(uint64_t)w,(uint64_t)s,
+						(uint64_t)e,(uint64_t)n);
+				#endif
+				return false;
+			}
+		}
+	} while(++circ != stop);
+	return true;
+}
+
+bool	MapIsWithinBounds(
+			Pmwx &			map,
+			const Point_2 &	inSouthWest,
+			const Point_2 &	inNorthEast)
+{
+	Pmwx::Ccb_halfedge_circulator circ, stop;
+	DebugAssert(map.unbounded_face()->number_of_holes() == 1);
+	circ = stop = Pmwx::Halfedge_iterator(*map.unbounded_face()->holes_begin());//->outer_ccb();
+	do
+	{
+		if(must_burn_v(circ->target()))
+		{
+			Point_2 p(circ->target()->point());
+			if(p.x() != inSouthWest.x() && p.x() != inNorthEast.x() && p.y() != inSouthWest.y() && p.y() != inNorthEast.y())
+			{
+				const double x = CGAL::to_double(p.x());
+				const double y = CGAL::to_double(p.y());
+				const double w = CGAL::to_double(inSouthWest.x());
+				const double s = CGAL::to_double(inSouthWest.y());
+				const double e = CGAL::to_double(inNorthEast.x());
+				const double n = CGAL::to_double(inNorthEast.y());
+				#if DEV
+				fprintf(stderr, "ERROR: Bad point: %.18lf,%.18lf; expected in range (%.18lf, %.18lf) -> (%.12lf, %.12lf)\n", x, y, w, s, e, n);
+				fprintf(stderr, "As hex that is: %llx,%llx; expected in range (%llx, %llx) -> (%llx, %llx)\n",
+						(uint64_t)x,(uint64_t)y,
+						(uint64_t)w,(uint64_t)s,
+						(uint64_t)e,(uint64_t)n);
+				#endif
+				return false;
+			}
+		}
+	} while(++circ != stop);
+	return true;
 }
 
 #if 0
@@ -1627,13 +1745,18 @@ Face_handle SafeInsertRing(Pmwx * inPmwx, Face_handle parent, const vector<Point
  ************************************************************************************************/
 #pragma mark -
 
+void expand_bounds(const Point_2 &new_point, Point_2 *io_sw, Point_2 *io_ne)
+{
+	*io_sw = Point_2(min(io_sw->x(), new_point.x()), min(io_sw->y(), new_point.y()));
+	*io_ne = Point_2(max(io_ne->x(), new_point.x()), max(io_ne->y(), new_point.y()));
+}
+
 void	CalcBoundingBox(
 			const Pmwx&		inMap,
 			Point_2&			sw,
 			Point_2&			ne)
 {
-	bool		inited = false;
-	Bbox2		box;
+	bool inited = false;
 
 	Face_const_handle	uf = inMap.unbounded_face();
 
@@ -1642,21 +1765,18 @@ void	CalcBoundingBox(
 		Pmwx::Ccb_halfedge_const_circulator	cur, last;
 		cur = last = *holes;
 		do {
-
-			if (!inited)
+			if(!inited)
 			{
-				box = Bbox2(cgal2ben(cur->source()->point()));
+				sw = cur->source()->point();
+				ne = sw;
 				inited = true;
 			}
 
-			box += cgal2ben(cur->source()->point());
-			box += cgal2ben(cur->target()->point());
-
+			expand_bounds(cur->source()->point(), &sw, &ne);
+			expand_bounds(cur->target()->point(), &sw, &ne);
 			++cur;
 		} while (cur != last);
 	}
-	sw = ben2cgal<Point_2>(box.p1);
-	ne = ben2cgal<Point_2>(box.p2);
 }
 
 
