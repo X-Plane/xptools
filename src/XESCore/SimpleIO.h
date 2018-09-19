@@ -25,7 +25,7 @@
 
 #include "IODefs.h"
 #include <zlib.h>
-#include <zip.h>
+#include "zip.h"
 #include "EndianUtils.h"
 
 const char	kSwapTwo[] = { 2, 0 };

@@ -1012,12 +1012,18 @@
 
 /* Begin PBXFileReference section */
 		20286C33FDCF999611CA2CEA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		2F013D7B2152CAB800E0A96B /* CGALAlgs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CGALAlgs.h; sourceTree = "<group>"; };
+		2F013D7C2152CAB900E0A96B /* CGALDefs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CGALDefs.h; sourceTree = "<group>"; };
+		2F013D7D2152CAF500E0A96B /* RTree2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RTree2.h; sourceTree = "<group>"; };
+		2F013D7E2152CB1B00E0A96B /* Hydro2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Hydro2.h; sourceTree = "<group>"; };
+		2F013D7F2152CB6C00E0A96B /* UTL_interval.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UTL_interval.h; sourceTree = "<group>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		69B49742D87ADF4893E08B8F /* MobileAutogenAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobileAutogenAlgs.h; sourceTree = "<group>"; };
+		69B49931A29FCF1D644B7832 /* CGALAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGALAlgs.h; sourceTree = "<group>"; };
 		69B49EC203FBF5193A66182D /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		69B49F9D46554ADF96B87C22 /* MobileAutogenAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MobileAutogenAlgs.cpp; sourceTree = "<group>"; };
 		D60075361C56A30E0096D4D9 /* WED_ATCLayer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ATCLayer.cpp; sourceTree = "<group>"; };
@@ -2953,6 +2959,7 @@
 				D6BC379C0AB22C85003949C5 /* RLERegion.h */,
 				D6BC379D0AB22C85003949C5 /* RoadNetUtils.cpp */,
 				D6BC379E0AB22C85003949C5 /* RoadNetUtils.h */,
+				2F013D7D2152CAF500E0A96B /* RTree2.h */,
 				D6BC379F0AB22C85003949C5 /* Skeleton.cpp */,
 				D6BC37A00AB22C85003949C5 /* Skeleton.h */,
 				D6BC37A10AB22C85003949C5 /* TexUtils.cpp */,
@@ -2961,6 +2968,7 @@
 				D6BC37A40AB22C85003949C5 /* trackball.h */,
 				D6BC37A50AB22C85003949C5 /* UIUtils.cpp */,
 				D6BC37A60AB22C85003949C5 /* UIUtils.h */,
+				2F013D7F2152CB6C00E0A96B /* UTL_interval.h */,
 				D6BC37AA0AB22C85003949C5 /* XCarBoneUtils.cpp */,
 				D6BC37AB0AB22C85003949C5 /* XCarBoneUtils.h */,
 				D6BC37AC0AB22C85003949C5 /* XChunkyFileUtils.cpp */,
@@ -3161,6 +3169,7 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				2F013D7E2152CB1B00E0A96B /* Hydro2.h */,
 				D6BC020B146CC17800A941C6 /* Hydro2.cpp */,
 				D6D408271406C6A20061EBF9 /* BezierApprox.cpp */,
 				D6D408281406C6A20061EBF9 /* BezierApprox.h */,
@@ -3180,6 +3189,8 @@
 				D63F725B117FB60900AB7C1F /* BlockAlgs.cpp */,
 				D63F72731180917800AB7C1F /* BlockFill.h */,
 				D63F72741180917800AB7C1F /* BlockFill.cpp */,
+				2F013D7B2152CAB800E0A96B /* CGALAlgs.h */,
+				2F013D7C2152CAB900E0A96B /* CGALDefs.h */,
 				D6BC38370AB22C85003949C5 /* CGALTypes.h */,
 				D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */,
 				D6BC383B0AB22C85003949C5 /* ConfigSystem.h */,
@@ -3271,6 +3282,7 @@
 				69B49EC203FBF5193A66182D /* README.md */,
 				69B49F9D46554ADF96B87C22 /* MobileAutogenAlgs.cpp */,
 				69B49742D87ADF4893E08B8F /* MobileAutogenAlgs.h */,
+				69B49931A29FCF1D644B7832 /* CGALAlgs.h */,
 			);
 			path = XESCore;
 			sourceTree = "<group>";

@@ -114,7 +114,7 @@
 #endif
 
 #include <zlib.h>
-#include <unzip.h>
+#include "unzip.h"
 
 #define REGTYPE	 '0'		/* regular file */
 #define AREGTYPE '\0'		/* regular file */
