@@ -78,11 +78,6 @@ enum apt_fill_mode {
 };
 
 
-static void verify_map_bounds(Pmwx& map, DEMGeo& dem)
-{
-	DebugAssert(MapIsWithinBounds(map, Point_2(dem.mWest, dem.mSouth), Point_2(dem.mEast, dem.mNorth)));
-}
-
 static void GetPadWidth(
 		bool						is_rwy,
 		double&						pad_width_m,
@@ -408,6 +403,8 @@ void BurnInAirport(
 // faces that we made...clients need that.
 void	SimplifyAirportAreasAndSplat(Pmwx& inDstMap, Polygon_set_2& in_area, bool do_simplify, set<Face_handle>& outDstFaces, apt_fill_mode inFillWater, Locator * loc)
 {
+	DebugAssert(inDstMap.number_of_faces() > 0);
+	DebugAssert(inDstMap.unbounded_face()->number_of_holes() == 1);
 	Polygon_set_2	area(in_area);
 	if(do_simplify)
 	{
