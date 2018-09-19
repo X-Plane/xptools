@@ -27,6 +27,8 @@
 #include "SimpleIO.h"
 #include "EnumSystem.h"
 #include "GISTool_Globals.h"
+#include "MeshAlgs.h" // for verify_triangulation_bounds()
+#include "MapAlgs.h" // for verify_map_bounds()
 
 const	int	kMapID = 'MAP1';
 const	int	kDemDirID = 'DEMd';
@@ -150,4 +152,6 @@ void	ReadXESFile(
 			(*inDEM)[demID] = aDem;
 		}
 	}
+	verify_triangulation_bounds(gDem[dem_Elevation], gTriangulationHi);
+	verify_map_bounds();
 }

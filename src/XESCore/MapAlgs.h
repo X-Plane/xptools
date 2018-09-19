@@ -163,6 +163,7 @@ bool	MapIsWithinBounds(
 			Pmwx &			ioMap,
 			const Point_2 &	inSouthWest,
 			const Point_2 &	inNorthEast);
+void	verify_map_bounds(); // equivalent to DebugAsserting the global map is within the global DEM bounds
 
 //void	SwapFace(
 //			Pmwx&			inMaster,

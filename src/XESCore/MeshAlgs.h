@@ -54,6 +54,9 @@ struct	MeshPrefs_t {
 };
 extern MeshPrefs_t	gMeshPrefs;
 
+// Asserts the triangulation is within the given bounds
+void verify_triangulation_bounds(const DEMGeo &dem, CDT &inMesh);
+
 void	TriangulateMesh(Pmwx& inMap, CDT& outMesh, DEMGeoMap& inDEMs, const char * mesh_folder, ProgressFunc inFunc);
 
 /**

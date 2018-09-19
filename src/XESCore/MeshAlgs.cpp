@@ -572,6 +572,8 @@ void	match_border(CDT& ioMesh, mesh_match_t& ioBorder, int side_num)
 
 	// Step 3.  Go through all unmatched masters and insert them directly into the mesh.
 	CDT::Face_handle	nearf = CDT::Face_handle();
+	if(ioBorder.vertices.size() > 1000)
+		printf("%zu vertices in your border\n", ioBorder.vertices.size());
 	for (vector<mesh_match_vertex_t>::iterator pts = ioBorder.vertices.begin(); pts != ioBorder.vertices.end(); ++pts)
 	if (pts->buddy == CDT::Vertex_handle())
 	{	
@@ -827,6 +829,42 @@ void InsertMidPoints(const DEMGeo& in_orig, CDT& io_mesh, CDT::Vertex_handle v1,
 	NT d_sqr = CGAL::squared_distance(v1->point(),v2->point());
 	bool want_split = d_sqr > (MAX_EDGE_DIST * MAX_EDGE_DIST * MTR_TO_DEG_LAT * MTR_TO_DEG_LAT);
 	Point_2 midp(CGAL::midpoint(v1->point(),v2->point()));
+
+	double mx = CGAL::to_double(midp.x());
+	double my = CGAL::to_double(midp.y());
+	// Tyler says: Sometimes CGAL's midpoint code is... just wrong?
+	// I've seen cases like this:
+	//   - v1's x is 32, exactly
+	//   - v2's x is 32, exactly
+	//   - the midpoint's x is something like 31.999999999999996
+	// So... let's put some bounds checking on this shit I guess. :(
+	//
+	// NOTE: The "=" here (and below) is important! For reasons I don't quite understand,
+	//       when this is *just* less-than/greater-than, we *still* end up with the precision errors
+	//       later. My guess is the CGAL version of the number gets *rounded* to the exact number
+	//       (due to double precision limits), but isn't actually *equal* to it.
+	//       ...????????
+	if(mx <= in_orig.mWest)
+	{
+		mx = in_orig.mWest;
+		midp = Point_2(mx, midp.y());
+	}
+	else if(mx >= in_orig.mEast)
+	{
+		mx = in_orig.mEast;
+		midp = Point_2(mx, midp.y());
+	}
+	if(my <= in_orig.mSouth)
+	{
+		my = in_orig.mSouth;
+		midp = Point_2(midp.x(), my);
+	}
+	else if(my >= in_orig.mNorth)
+	{
+		my = in_orig.mNorth;
+		midp = Point_2(midp.x(), my);
+	}
+
 	if(want_split)
 	{
 //		debug_mesh_point(cgal2ben(midp),1,1,0);
@@ -835,7 +873,7 @@ void InsertMidPoints(const DEMGeo& in_orig, CDT& io_mesh, CDT::Vertex_handle v1,
 	{
 		float h1 = in_orig.value_linear(CGAL::to_double(v1->point().x()),CGAL::to_double(v1->point().y()));
 		float h2 = in_orig.value_linear(CGAL::to_double(v2->point().x()),CGAL::to_double(v2->point().y()));
-		float hc = in_orig.value_linear(CGAL::to_double(midp.x()),CGAL::to_double(midp.y()));
+		float hc = in_orig.value_linear(mx, my);
 		float ha = (h1 + h2) * 0.5;
 		if (fabs(ha - hc) > gMeshPrefs.max_error)
 		{
@@ -2479,6 +2517,8 @@ void	AssignLandusesToMesh(	DEMGeoMap& inDEMs,
 			break;
 		}
 		// No real terrain, punt?
+		if(rt == NO_VALUE)
+			fprintf(stderr, "ERROR: No value found for ot %d (%s)\n", ot, FetchTokenString(ot));
 		Assert(rt != NO_VALUE);
 		
 		// Force a border tri into the stack.
@@ -3036,4 +3076,21 @@ Pmwx::Halfedge_handle	mesh_to_pmwx_he(CDT& ioMesh, CDT::Edge& e)
 	}
 
 	return halfedge_for_vertices<Pmwx,must_burn_he>(orig_source,orig_target, wrong_ways);
-}	
+}
+
+void verify_triangulation_bounds(const DEMGeo &dem, CDT &inMesh)
+{
+#if DEV
+	for(CDT::Finite_faces_iterator fi = inMesh.finite_faces_begin(); fi != inMesh.finite_faces_end(); ++fi)
+	for(int n = 0; n < 3; ++n)
+	{
+		const double x = CGAL::to_double(fi->vertex(n)->point().x());
+		const double y = CGAL::to_double(fi->vertex(n)->point().y());
+
+		DebugAssert(x >= dem.mWest  || fi->vertex(n)->point().x() == dem.mWest);
+		DebugAssert(x <= dem.mEast  || fi->vertex(n)->point().x() == dem.mEast);
+		DebugAssert(y >= dem.mSouth || fi->vertex(n)->point().y() == dem.mSouth);
+		DebugAssert(y <= dem.mNorth || fi->vertex(n)->point().y() == dem.mNorth);
+	}
+#endif
+}

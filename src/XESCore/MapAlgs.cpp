@@ -439,29 +439,32 @@ static inline bool must_burn_v(Vertex_handle v)
 
 bool MapIsWithinBounds(Pmwx &map, double w, double s, double e, double n)
 {
-	Pmwx::Ccb_halfedge_circulator circ, stop;
-	DebugAssert(map.unbounded_face()->number_of_holes() == 1);
-	circ = stop = Pmwx::Halfedge_iterator(*map.unbounded_face()->holes_begin());//->outer_ccb();
-	do
+	if(map.unbounded_face()->number_of_holes() > 0)
 	{
-		if(must_burn_v(circ->target()))
+		Pmwx::Ccb_halfedge_circulator circ, stop;
+		DebugAssert(map.unbounded_face()->number_of_holes() == 1);
+		circ = stop = Pmwx::Halfedge_iterator(*map.unbounded_face()->holes_begin());//->outer_ccb();
+		do
 		{
-			Point_2 p(circ->target()->point());
-			if(p.x() != w && p.x() != e && p.y() != s && p.y() != n)
+			if(must_burn_v(circ->target()))
 			{
-				const double x = CGAL::to_double(p.x());
-				const double y = CGAL::to_double(p.y());
-				#if DEV
-				fprintf(stderr, "ERROR: Bad point: %.18lf,%.18lf; expected in range (%.18lf, %.18lf) -> (%.12lf, %.12lf)\n", x, y, w, s, e, n);
-				fprintf(stderr, "As hex that is: %llx,%llx; expected in range (%llx, %llx) -> (%llx, %llx)\n",
-						(uint64_t)x,(uint64_t)y,
-						(uint64_t)w,(uint64_t)s,
-						(uint64_t)e,(uint64_t)n);
-				#endif
-				return false;
+				Point_2 p(circ->target()->point());
+				if(p.x() != w && p.x() != e && p.y() != s && p.y() != n)
+				{
+					const double x = CGAL::to_double(p.x());
+					const double y = CGAL::to_double(p.y());
+					#if DEV
+					fprintf(stderr, "ERROR: Bad point: %.18lf,%.18lf; expected in range (%.18lf, %.18lf) -> (%.12lf, %.12lf)\n", x, y, w, s, e, n);
+					fprintf(stderr, "As hex that is: %llx,%llx; expected in range (%llx, %llx) -> (%llx, %llx)\n",
+							(uint64_t)x,(uint64_t)y,
+							(uint64_t)w,(uint64_t)s,
+							(uint64_t)e,(uint64_t)n);
+					#endif
+					return false;
+				}
 			}
-		}
-	} while(++circ != stop);
+		} while(++circ != stop);
+	}
 	return true;
 }
 
@@ -498,6 +501,11 @@ bool	MapIsWithinBounds(
 		}
 	} while(++circ != stop);
 	return true;
+}
+
+void verify_map_bounds()
+{
+	DebugAssert(MapIsWithinBounds(gMap, gDem[dem_Elevation].mWest, gDem[dem_Elevation].mSouth, gDem[dem_Elevation].mEast, gDem[dem_Elevation].mNorth));
 }
 
 #if 0

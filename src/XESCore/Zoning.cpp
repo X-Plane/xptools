@@ -1395,7 +1395,10 @@ void	ZoneManMadeAreas(
 					edge_t.insert(CGAL::to_double(p.x()));
 				else
 				{
-					printf("Bad point: %lf,%lf\n",CGAL::to_double(p.x()),CGAL::to_double(p.y()));
+					fprintf(stderr, "ERROR: Bad point: %.12lf,%.12lf; expected in range (%.12lf, %.12lf) -> (%.12lf, %.12lf)\n",
+							CGAL::to_double(p.x()),CGAL::to_double(p.y()),
+							CGAL::to_double(west),CGAL::to_double(south),
+							CGAL::to_double(east),CGAL::to_double(north));
 					DebugAssert(!"Point is not on an edge.");
 				}
 //				debug_mesh_point(cgal2ben(circ->target()->point()),1,1,1);

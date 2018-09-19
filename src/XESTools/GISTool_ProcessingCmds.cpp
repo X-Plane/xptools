@@ -275,51 +275,17 @@ static int DoCalcSlope(const vector<const char *>& args)
 
 static int DoCalcMesh(const vector<const char *>& args)
 {
+	verify_map_bounds();
+
 	if (gVerbose)	printf("Calculating Mesh...\n");
 	TriangulateMesh(gMap, gTriangulationHi, gDem, args[0], gProgress);
 	
 //	build_water_surface_dem(gTriangulationHi, gDem[dem_Elevation], gDem[dem_WaterSurface], gDem[dem_Bathymetry]);
 
+	verify_map_bounds();
 	return 0;
 }
 
-static void verify_map_bounds()
-{
-#if DEV
-	NT west(gDem[dem_Elevation].mWest);
-	NT east(gDem[dem_Elevation].mEast);
-	NT north(gDem[dem_Elevation].mNorth);
-	NT south(gDem[dem_Elevation].mSouth);
-	{
-		Pmwx::Ccb_halfedge_circulator circ, stop;
-		DebugAssert(gMap.unbounded_face()->number_of_holes() == 1);
-		circ = stop = Pmwx::Halfedge_iterator(*gMap.unbounded_face()->holes_begin());//->outer_ccb();
-		do
-		{
-			if(must_burn_v(circ->target()))
-			{
-				Point_2 p(circ->target()->point());
-				if(p.x() != west && p.x() != east && p.y() != south && p.y() != north)
-				{
-					const double x = CGAL::to_double(p.x());
-					const double y = CGAL::to_double(p.y());
-					const double w = CGAL::to_double(west);
-					const double e = CGAL::to_double(east);
-					const double n = CGAL::to_double(north);
-					const double s = CGAL::to_double(south);
-					fprintf(stderr, "ERROR: Bad point: %.12lf,%.12lf; expected in range (%.12lf, %.12lf) -> (%.12lf, %.12lf)\n", x, y, w, s, e, n);
-					fprintf(stderr, "As hex that is: %llx,%llx; expected in range (%llx, %llx) -> (%llx, %llx)\n",
-							(uint64_t)x,(uint64_t)y,
-							(uint64_t)w,(uint64_t)s,
-							(uint64_t)e,(uint64_t)n);
-					DebugAssert(!"Point is not on an edge.");
-				}
-				//				debug_mesh_point(cgal2ben(circ->target()->point()),1,1,1);
-			}
-		} while(++circ != stop);
-	}
-#endif
-}
 
 static int DoBurnAirports(const vector<const char *>& args)
 {
@@ -969,6 +935,7 @@ map<int, ortho_urbanization> fucking_reverse_map(const map<ortho_urbanization, i
 
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
+	verify_map_bounds();
 	DebugAssertWithExplanation(gDem.count(dem_UrbanDensity), "Tried to add autogen terrain with no DEM urbanization data; you probably need to change the order of your scenery gen commands");
 	DebugAssertWithExplanation(gDem.count(dem_LandUse), "Tried to add autogen terrain with no DEM land use data; you probably need to change the order of your scenery gen commands");
 	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
@@ -1331,6 +1298,9 @@ static int DoBuildRoads(const vector<const char *>& args)
 
 static int DoAssignLandUse(const vector<const char *>& args)
 {
+	verify_map_bounds();
+	verify_triangulation_bounds(gDem[dem_Elevation], gTriangulationHi);
+
 	if (gVerbose) printf("Assigning land use...\n");
 	AssignLandusesToMesh(gDem,gTriangulationHi,args[0],gProgress);
 	
@@ -1346,12 +1316,16 @@ static int DoAssignLandUse(const vector<const char *>& args)
 //	for(multimap<int,int>::iterator s = sorted.begin(); s != sorted.end(); ++s)
 //		printf("%f (%d): %s\n", (float) s->first / (float) t, s->first, FetchTokenString(s->second));
 
+	verify_triangulation_bounds(gDem[dem_Elevation], gTriangulationHi);
+	verify_map_bounds();
 	return 0;
 }
 
 
 static int DoBuildDSF(const vector<const char *>& args)
 {
+	verify_map_bounds();
+	verify_triangulation_bounds(gDem[dem_Elevation], gTriangulationHi);
 	char buf1[1024], buf2[1024];
 	if (gVerbose) printf("Build DSF...\n");
 	char * b1 = buf1, * b2 = buf2;
@@ -1364,6 +1338,9 @@ static int DoBuildDSF(const vector<const char *>& args)
 		gDem[dem_Bathymetry],
 		gDem[dem_UrbanDensity],
 		gTriangulationHi, /*gTriangulationLo,*/ gMap, gProgress);
+
+	verify_triangulation_bounds(gDem[dem_Elevation], gTriangulationHi);
+	verify_map_bounds();
 	return 0;
 }
 
