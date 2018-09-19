@@ -224,7 +224,11 @@ int	GISTool_ParseCommands(const vector<const char *>& args)
 					StElapsedTime * timer = (gTiming ? new StElapsedTime(cname) : NULL);
 					int result = cmd(cmdargs);
 					delete timer;
-					if (result != 0) return result;
+					if (result != 0)
+					{
+						fprintf(stderr, "ERROR: Non-zero result running command %s\n", cname);
+						return result;
+					}
 				} catch(const char * msg) {
 					printf("Caught: %s\n", msg);
 					return 1;
