@@ -141,6 +141,7 @@ static int DoAptExport(const vector<const char *>& args)
 
 static int DoAptBulkExport(const vector<const char *>& args)
 {
+	const string out_dir = args[0][strlen(args[0]) - 1] == DIR_CHAR ? args[0] : string(args[0]) + DIR_CHAR;
 	if (gProgress)		gProgress(0, 1, "Indexing apt.dat", 0.0);
 	for (int y = -90; y < 90; ++y)
 	{
@@ -160,10 +161,10 @@ static int DoAptBulkExport(const vector<const char *>& args)
 			if (!aptCopy.empty())
 			{
 				char	path[1024];
-				sprintf(path, "%s%+03d%+04d%c", args[0],
+				sprintf(path, "%s%+03d%+04d%c", out_dir.c_str(),
 								latlon_bucket(y), latlon_bucket(x), DIR_CHAR);
 				FILE_make_dir_exist(path);
-				sprintf(path, "%s%+03d%+04d%c%+03d%+04d.apt", args[0],
+				sprintf(path, "%s%+03d%+04d%c%+03d%+04d.apt", out_dir.c_str(),
 								latlon_bucket(y), latlon_bucket(x), DIR_CHAR, y, x);
 				WriteAptFile(path, aptCopy, LATEST_APT_VERSION);
 			}
