@@ -23,12 +23,52 @@
 #include "RF_Selection.h"
 #include "RF_Notify.h"
 #include "RF_Msgs.h"
+#include "GUI_Defs.h"
+#include "GUI_Application.h"
+
 int							gSelectionMode = rf_Select_Face;
 
 set<Pmwx::Face_handle>		gFaceSelection;
 set<Pmwx::Halfedge_handle>	gEdgeSelection;
 set<Pmwx::Vertex_handle>	gVertexSelection;
 set<PointFeatureSelection>	gPointFeatureSelection;
+
+
+GUI_MenuItem_t	kSelectionItems[] = {
+{	"Vertex",			'0',	gui_ControlFlag + gui_OptionAltFlag + gui_ShiftFlag,	0,	selCmd_Vertex	},
+{	"Edge",				'1',	gui_ControlFlag + gui_OptionAltFlag + gui_ShiftFlag,	0,	selCmd_Edge		},
+{	"Face",				'2',	gui_ControlFlag + gui_OptionAltFlag + gui_ShiftFlag,	0,	selCmd_Face		},
+{	"Point Features",	'3',	gui_ControlFlag + gui_OptionAltFlag + gui_ShiftFlag,	0,	selCmd_Point	},
+{	0,					0,		0,														0,	0				}};
+
+
+void RF_RegisterSelectionCommands()
+{
+	GUI_Menu special_menu = gApplication->CreateMenu("Selection", kSelectionItems, gApplication->GetMenuBar(), 0);
+}
+
+int command_to_selection_mode(int cmd)
+{
+	switch(cmd) {
+		case selCmd_Vertex:	return rf_Select_Vertex;
+		case selCmd_Edge:	return rf_Select_Edge;
+		case selCmd_Face:	return rf_Select_Face;
+		case selCmd_Point:	return rf_Select_PointFeatures;
+	}
+	return -1;
+}
+
+void RF_HandleSelectionCommand(int cmd)
+{
+	RF_SetSelectionMode(command_to_selection_mode(cmd));
+}
+
+int RF_CanHandleSelectionCommand(int command, string& ioName, int &ioCheck)
+{
+	const int sel_mode = command_to_selection_mode(command);
+	ioCheck = sel_mode == gSelectionMode;
+	return 1;
+}
 
 void	RF_SetSelectionMode(int mode)
 {

@@ -32,6 +32,7 @@
 #include "RF_FileCommands.h"
 #include "RF_EditCommands.h"
 #include "RF_SpecialCommands.h"
+#include "RF_Selection.h"
 #include "RF_MapView.h"
 #include "RF_Assert.h"
 #include "DEMTables.h"
@@ -628,6 +629,7 @@ int main(int argc, char * argv[])
 
 	RF_MapView * map_view = new RF_MapView(main_window);
 	map_view->MakeMenus();
+	RF_RegisterSelectionCommands();
 	RegisterSpecialCommands();
 
 	map_view->SetParent(main_window);

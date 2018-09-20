@@ -260,7 +260,13 @@ void	RF_MapView_HandleDEMDataMenuCommand(void *, void *);
 
 int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 {
-	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums) return 1;
+	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums)
+		return 1;
+	else if(command >= selCmd_Start && command < selCmd_DIM)
+	{
+		return RF_CanHandleSelectionCommand(command, ioName, ioCheck);
+	}
+
 	switch(command) {
 	case viewCmd_DEMChoice:
 	case viewCmd_DEMDataChoice:
@@ -309,7 +315,16 @@ int		RF_MapView::CanHandleCommand(int command, string& ioName, int& ioCheck)
 
 int		RF_MapView::HandleCommand(int command)
 {
-	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums) { HandleSpecialCommand(command); return 1; }
+	if(command >= specCmd_Screenshot && command <= specCmd_CheckEnums)
+	{
+		HandleSpecialCommand(command);
+		return 1;
+	}
+	else if(command >= selCmd_Start && command < selCmd_DIM)
+	{
+		RF_HandleSelectionCommand(command);
+		return 1;
+	}
 
 	if(command >= viewCmd_DEMChoice_Start && command < viewCmd_DEMChoice_Stop)
 	{

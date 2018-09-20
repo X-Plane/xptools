@@ -58,5 +58,8 @@ extern set<PointFeatureSelection>	gPointFeatureSelection;
 
 void	RF_SetSelectionMode(int mode);
 
+void	RF_RegisterSelectionCommands();
+void	RF_HandleSelectionCommand(int cmd);
+int		RF_CanHandleSelectionCommand(int command, string &ioName, int &ioCheck);
 
 #endif

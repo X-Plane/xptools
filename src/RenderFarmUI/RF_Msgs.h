@@ -97,6 +97,13 @@ enum {
 	viewCmd_DEMDataChoice_Start,
 	viewCmd_DEMDataChoice_Stop = viewCmd_DEMDataChoice_Start + num_dem_cmds, 
 	
+	selCmd_Start,
+	selCmd_Vertex=selCmd_Start,
+	selCmd_Edge,
+	selCmd_Face,
+	selCmd_Point,
+	selCmd_DIM,
+
 	specCmd_Screenshot,
 	specCmd_CreateTerrainPackage,
 	specCmd_UpdateTerrainPackage,
