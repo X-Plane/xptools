@@ -1133,9 +1133,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	}
 
 	const int output_x_min = 0;
-	const int output_x_max = 35;
-	const int output_y_min = 28;
-	const int output_y_max = 51;
+	const int output_x_max = dx;
+	const int output_y_min = 0;
+	const int output_y_max = dy;
 
 	const int compressed_dim_px = 256 / 2;
 	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)

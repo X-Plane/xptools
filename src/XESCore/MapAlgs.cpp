@@ -362,12 +362,6 @@ void	CutInside(
 			const double x2 = CGAL::to_double(p2.x());
 			const double y2 = CGAL::to_double(p2.y());
 
-			if(x1 > -93 || x2 > -93)
-			{
-				printf("This edge should be nuked.\n");
-				printf("(%.18f, %.18f) -> (%.18f, %.18f)\n", x1, y1, x2, y2);
-			}
-
 			// Sanity check - having burned in our edge, no edge should now SPAN our polygon.
 		#if DEV
 			if (v1 == CGAL::ON_BOUNDED_SIDE) DebugAssert(v2 != CGAL::ON_UNBOUNDED_SIDE);

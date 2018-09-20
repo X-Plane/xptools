@@ -599,7 +599,7 @@ char *	RF_SelectionTool::GetStatusText(int x, int y)
 	{
 		double d1 = CGAL::to_double((*(gVertexSelection.begin()))->point().x());
 		double d2 = CGAL::to_double((*(gVertexSelection.begin()))->point().y());
-		n += sprintf(buf+n, "%lf,%lf %.16llX, %.16llX ",
+		n += sprintf(buf+n, "%.18f,%.18f %.16llX, %.16llX ",
 			d1, d2,	*(unsigned long long*)&d1,*(unsigned long long*)&d2);
 			
 		int score = score_for_junction(*gVertexSelection.begin());
