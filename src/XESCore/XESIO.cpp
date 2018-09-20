@@ -27,6 +27,7 @@
 #include "SimpleIO.h"
 #include "EnumSystem.h"
 #include "GISTool_Globals.h"
+#include "FileUtils.h"
 #include "MeshAlgs.h" // for verify_triangulation_bounds()
 #include "MapAlgs.h" // for verify_map_bounds()
 
@@ -46,6 +47,10 @@ bool	WriteXESFile(
 				const AptVector& inApts,
 				ProgressFunc	inFunc)
 {
+	// Create directories "recursively" up to this path
+	const string containing_dir = FILE_get_dir_name(inFileName);
+	FILE_make_dir_exist(containing_dir.c_str());
+	
 	FILE * fi = fopen(inFileName, "wb");
 	if (!fi) return false;
 
