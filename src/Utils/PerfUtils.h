@@ -145,8 +145,9 @@ public:
 class	StElapsedTime {
 	unsigned long long 	mStartTime;
 	const char *		mName;
+	const double		mMinSecondsToPrint;
 public:
-	StElapsedTime(const char * inName): mName(inName)
+	StElapsedTime(const char * inName, double minToPrint=-1): mName(inName), mMinSecondsToPrint(minToPrint)
 	{
 		mStartTime = query_hpc();
 	}
@@ -154,7 +155,11 @@ public:
 	{
 		unsigned long long stopTime = query_hpc();
 		unsigned long long delta = stopTime - mStartTime;
-		printf("%s - %lf seconds.\n", mName, hpc_to_microseconds(delta) / 1000000.0);
+		const double deltaSeconds = hpc_to_microseconds(delta) / 1000000.0;
+		if(deltaSeconds > mMinSecondsToPrint)
+		{
+			printf("%s - %lf seconds.\n", mName, deltaSeconds);
+		}
 	}
 };
 
