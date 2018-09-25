@@ -1123,14 +1123,11 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// PASS 4
 	// Add rotations of analogous types
 	//--------------------------------------------------------------------------------------------------------
-	if(dsf_desc.style != style_europe)
+	const map<int, ortho_urbanization> terrain_desc_by_enum = fucking_reverse_map(ter_with_transitions);
+	for(int x = 0; x < dx; ++x)
+	for(int y = 0; y < dy; ++y)
 	{
-		const map<int, ortho_urbanization> terrain_desc_by_enum = fucking_reverse_map(ter_with_transitions);
-		for(int x = 0; x < dx; ++x)
-		for(int y = 0; y < dy; ++y)
-		{
-			ortho_terrain_assignments[x][y] = get_analogous_ortho_terrain(ortho_terrain_assignments[x][y].ter_enum, x, y, terrain_desc_by_enum);
-		}
+		ortho_terrain_assignments[x][y] = get_analogous_ortho_terrain(ortho_terrain_assignments[x][y].ter_enum, x, y, terrain_desc_by_enum);
 	}
 
 	//--------------------------------------------------------------------------------------------------------
@@ -1269,7 +1266,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				{
 					f->set_contained(true);
 					fd.mRotationDeg = assignment.rotation_deg;
-					const bool needs_overlay = intrange(assignment.ter_enum, terrain_PseudoOrthoTownTransBottom, terrain_PseudoOrthoTownTransUR_Full);
+					const bool needs_overlay =
+							intrange(assignment.ter_enum, terrain_PseudoOrthoTownTransBottom, terrain_PseudoOrthoTownTransUR_Full) ||
+							intrange(assignment.ter_enum, terrain_PseudoOrthoEuroTransBottom, terrain_PseudoOrthoEuroTransUR_Full);
 					if(needs_overlay)
 					{
 						fd.mOverlayType = assignment.ter_enum;
