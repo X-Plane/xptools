@@ -1053,6 +1053,9 @@
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
+		2F918105215ACCEE00132D12 /* WED_ATCTimeRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCTimeRule.h; sourceTree = "<group>"; };
+		2F918106215ACCEE00132D12 /* WED_ATCWindRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCWindRule.h; sourceTree = "<group>"; };
+		2F918107215ACD0200132D12 /* WED_FacadePreview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WED_FacadePreview.h; sourceTree = "<group>"; };
 		508344B209E5C41E0093A071 /* ObjView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObjView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		69B49742D87ADF4893E08B8F /* MobileAutogenAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MobileAutogenAlgs.h; sourceTree = "<group>"; };
 		69B49931A29FCF1D644B7832 /* CGALAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CGALAlgs.h; sourceTree = "<group>"; };
@@ -3522,6 +3525,9 @@
 		D6ED413C0B6ADE0100D5484E /* WEDEntities */ = {
 			isa = PBXGroup;
 			children = (
+				2F918107215ACD0200132D12 /* WED_FacadePreview.h */,
+				2F918105215ACCEE00132D12 /* WED_ATCTimeRule.h */,
+				2F918106215ACCEE00132D12 /* WED_ATCWindRule.h */,
 				D6AF0A511F44E7B400CC7328 /* WED_FacadePreview.cpp */,
 				D6240D6B1476EAAE00A28A6F /* WED_ATCTimeRule.cpp */,
 				D6240D6C1476EAAE00A28A6F /* WED_ATCWindRule.cpp */,
