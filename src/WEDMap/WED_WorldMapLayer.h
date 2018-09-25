@@ -25,6 +25,7 @@
 #define WED_WorldMapLayer_H
 
 #include "WED_MapLayer.h"
+class ITexMgr;
 
 class WED_WorldMapLayer : public WED_MapLayer {
 public:
@@ -38,8 +39,8 @@ public:
 private:
 
 	bool			mVisible;
-
-
+	ITexMgr *		mTexMgr;
+	string			mBitmapPath;
 };
 
 #endif /* WED_WorldMapLayer_H */

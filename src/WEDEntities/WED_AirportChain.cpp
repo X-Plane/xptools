@@ -65,9 +65,7 @@ IGISPoint *	WED_AirportChain::SplitSide   (int n)
 	if (n > c) return NULL;
 
 	Bezier2		b;
-	Segment2	s;
-
-	if (GetSide(n, s, b))
+	if (GetSide(n, b))
 	{
 		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
 
@@ -84,8 +82,8 @@ IGISPoint *	WED_AirportChain::SplitSide   (int n)
 
 		WED_AirportNode * node = WED_AirportNode::CreateTyped(GetArchive());
 
-		node->SetLocation(s.midpoint(0.5));
-		node->SetControlHandleHi(s.midpoint(0.5));
+		node->SetLocation(b.as_segment().midpoint(0.5));
+		node->SetControlHandleHi(b.as_segment().midpoint(0.5));
 
 		node->SetParent(this, n+1);
 		return node;
@@ -147,4 +145,37 @@ void	WED_AirportChain::Import(const AptMarking_t& x, void (* print_func)(void *,
 void	WED_AirportChain::Export(		 AptMarking_t& x) const
 {
 	GetName(x.name);
+}
+
+void 	WED_AirportChain::GetResource(string& r) const
+{
+	r.clear();                    // return a string ONLY if lines and light are set uniformly throughout all nodes
+
+	PropertyVal_t line;
+	lines.GetProperty(line);
+	PropertyVal_t light;
+	lights.GetProperty(light);
+
+//	string n; this->GetName(n);
+//	printf("%s: lin=%d lgt=%d\n",n.c_str(), line.set_val.size(), light.set_val.size());
+
+	if(line.set_val.size() == 1)
+	{
+		const char * c = ENUM_Desc(*line.set_val.begin());
+		if(c) r += c;
+	}
+	else if (line.set_val.size() > 1)
+		return;
+
+	if(light.set_val.size() == 1)
+	{
+		const char * c = ENUM_Desc(*light.set_val.begin());
+		if(c)
+		{
+			if(!r.empty()) r +=  "$^";
+			r += c;
+		}
+	}
+	else
+		return;
 }

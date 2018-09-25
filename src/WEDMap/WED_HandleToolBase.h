@@ -54,6 +54,8 @@ public:
 	virtual	void		HandleClickUp			(int inX, int inY, int inButton, GUI_KeyFlags modifiers);
 	virtual	int			HandleToolKeyPress(char inKey, int inVK, GUI_KeyFlags inFlags);
 	virtual	void		KillOperation(bool mouse_is_down);
+	virtual bool 		WantSticky() { return true; }             // requireing drag-Move to exceed a few pixelsbefore commencing
+
 
 	// GUI_Commander_Notifiable
 	virtual	void		PreCommandNotification(GUI_Commander * focus_target, int command);
@@ -85,19 +87,30 @@ protected:
 
 private:
 
-			int					ProcessSelectionRecursive(
-									IGISEntity *		entity,
-									const Bbox2&		bounds,
-									set<IGISEntity *>&	result,
-									bool				is_root);
+			void ProcessSelection(
+								IGISEntity *		entity,
+								Bbox2&				bounds,
+								set<IGISEntity *>&	result);
+									
+			void ProcessSelectionRecursive(
+								IGISEntity *		entity,
+								const Bbox2&		bounds,
+								int					pt_sel,
+								double				icon_dist_h,
+								double				icon_dist_v,
+								set<IGISEntity *>&	result);
+
+			void				GetSelTotalBounds(Bbox2 &bounds);
 
 	enum	DragType_t {
 		drag_None,			// We are not dragging anything
 		drag_Handles,		// Control handles: We are dragging a single control handle
 		drag_Links,			// Control handles: We are dragging a line/link
 		drag_Ent,			// Control handles: We are dragging an entire entity.
+		drag_PreEnt,		// started marquee move, but still sticky
 		drag_Sel,			// We are selecting things
 		drag_Move,			// we are moving the selection
+		drag_PreMove,		// we have not yet dragged far enough to make the 'move' actually start
 		drag_Create
 	};
 
@@ -110,14 +123,14 @@ private:
 
 		// Variables for drag tracking
 		DragType_t				mDragType;
-		int						mDragX;
+		int						mDragX;	            // pixel coordinates where the drag started
 		int						mDragY;
 		int						mSelX;
 		int						mSelY;
 
 		intptr_t				mHandleEntity;		// Which entity do we drag
 		int						mHandleIndex;
-		Point2					mTrackPoint;
+		Point2					mTrackPoint;        // geo coordinates where the drag started
 
 		vector<IGISEntity *>	mSelManip;
 

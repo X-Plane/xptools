@@ -35,9 +35,13 @@
 #include <GL/gl.h>
 #endif
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <set>
 #include <list>
 #include <map>
+#include <algorithm> // needed for Linux
 #include "ac_utils.h"
 #include "XObjDefs.h"
 using std::swap;
@@ -140,7 +144,7 @@ static void anim_add_any(
 		surface_add_vertex(s, *vv, 0.0, 0.0);
 
 	OBJ_set_anim_type(new_obj, anim_kind);
-	OBJ_set_anim_keyframe_count(new_obj, keys.size());
+	OBJ_set_anim_keyframe_count(new_obj, (int)keys.size());
 	OBJ_set_anim_loop(new_obj,loop);
 	int n;
 	for (n = 0, i = keys.begin(); i != keys.end(); ++i, ++n)
@@ -413,7 +417,7 @@ void	sync_datarefs()
 		string tcl_name(buf);
 		string dref_q(dref->first);
 		quote_dref(dref_q);
-		tcl_command((char*)"sync_dataref %s %s %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
+		tcl_command((char*)"sync_dataref \"%s\" \"%s\" %f %f %f", tcl_name.c_str(), dref_q.c_str(), dref->second.now_v, dref->second.min_v, dref->second.max_v);
 		g_tcl_mapping[tcl_name] = dref->first;
 		++n;
 	}
@@ -464,7 +468,7 @@ static void make_anim_group(void)
 	object_set_name(new_obj, (char*)"Animation");
 
 	if (!objs.empty())
-	for (int n = objs.size()-1; n >= 0 ; --n)
+	for (int n = (int)objs.size()-1; n >= 0 ; --n)
 		object_reparent(objs[n], new_obj);
 
 	object_add_child(*parents.begin(), new_obj);
@@ -900,7 +904,7 @@ static void delete_keyframe(int argc, char * argv[])
 			int m = OBJ_get_anim_keyframe_count(obj);
 			if (n < m && n >= 0 && m > 2)
 			{
-				add_undoable_all((char*)"Add Keyframe");
+				add_undoable_all((char*)"Delete Keyframe");
 				if (OBJ_get_anim_type(obj) == anim_trans)
 				{
 					SVertex * dead = surface_get_svertex_at(obj_get_first_surf(obj), n);
@@ -921,6 +925,65 @@ static void delete_keyframe(int argc, char * argv[])
 		}
 	}
 }
+
+static void add_detent(int argc, char * argv[])
+{
+	if (argc > 2)
+	{
+		ACObject * obj = get_sel_single_obj(atoi(argv[2]));
+		if (obj)
+		{
+			int n = atoi(argv[1]);
+			int m = OBJ_get_manip_detent_count(obj);
+			{
+				add_undoable_all((char*)"Add Detent");
+
+				for (int k = m; k > n; --k)
+				{
+					OBJ_set_manip_nth_detent_lo(obj, k, OBJ_get_manip_nth_detent_lo(obj, k-1));
+					OBJ_set_manip_nth_detent_hi(obj, k, OBJ_get_manip_nth_detent_hi(obj, k-1));
+					OBJ_set_manip_nth_detent_hgt(obj, k, OBJ_get_manip_nth_detent_hgt(obj, k-1));
+				}
+
+				OBJ_set_manip_detent_count(obj,  1+OBJ_get_manip_detent_count(obj));
+				if (g_anim_inited)
+				{
+					redraw_all();
+				}
+			}
+		}
+	}
+}
+
+static void delete_detent(int argc, char * argv[])
+{
+	if (argc > 2)
+	{
+		ACObject * obj = get_sel_single_obj(atoi(argv[2]));
+		if (obj)
+		{
+			int n = atoi(argv[1]);
+			int m = OBJ_get_manip_detent_count(obj);
+			if (n < m && n >= 0 && m > 1)
+			{
+				add_undoable_all((char*)"Delete Detent");
+				for (int k = n; k < (m-1); ++k)
+				{
+					OBJ_set_manip_nth_detent_lo(obj, k, OBJ_get_manip_nth_detent_lo(obj, k+1));
+					OBJ_set_manip_nth_detent_hi(obj, k, OBJ_get_manip_nth_detent_hi(obj, k+1));
+					OBJ_set_manip_nth_detent_hgt(obj, k, OBJ_get_manip_nth_detent_hgt(obj, k+1));
+				}
+				OBJ_set_manip_detent_count(obj,  OBJ_get_manip_detent_count(obj)-1);
+				if (g_anim_inited)
+				{
+					redraw_all();
+				}
+			}
+		}
+	}
+}
+
+
 
 static void	obj_changed_cb(ACObject * obj)
 {
@@ -959,7 +1022,7 @@ static void build_key_table(ACObject * ob, vector<XObjKey>& table, int * root)
 	}
 	if (table.size() > 1 && table.front().key > table.back().key)
 	{
-		if (root) *root = table.size()-*root-1;
+		if (root) *root = (int)table.size()-*root-1;
 		reverse(table.begin(),table.end());
 	}
 }
@@ -1021,7 +1084,7 @@ static void anim_post_func(ACObject * ob, Boolean is_primary_render)
 			{
 				int root = OBJ_get_anim_keyframe_root(ob);
 				build_key_table(ob, table,&root);
-				if (root >= table.size()) root = (table.size()-1);
+				if (root >= (int)table.size()) root = ((int)table.size()-1);
 				if (!table.empty())
 					glTranslatef(key_extrap(now_v,table,0) - table[root].v[0],
 								 key_extrap(now_v,table,1) - table[root].v[1],
@@ -1167,6 +1230,10 @@ void setup_obj_anim(void)
 	ac_add_command_full((char*)"xplane_set_anim_keyframe", CAST_CMD(set_anim_for_sel_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_set_anim_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
 	ac_add_command_full((char*)"xplane_add_keyframe", CAST_CMD(add_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_add_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
 	ac_add_command_full((char*)"xplane_delete_keyframe", CAST_CMD(delete_keyframe), 3, (char*)"argv", (char*)"ac3d xplane_delete_keyframe <kf index> <obj idx>", (char*)"set animation to this keyframe");
+
+	ac_add_command_full((char*)"xplane_add_detent", CAST_CMD(add_detent), 3, (char*)"argv", (char*)"ac3d xplane_add_detent <detent index> <obj idx>", (char*)"add a detent to the detent table");
+	ac_add_command_full((char*)"xplane_delete_detent", CAST_CMD(delete_detent), 3, (char*)"argv", (char*)"ac3d xplane_delete_detent <detent index> <obj idx>", (char*)"delete 1 detent in the detent table");
+
 
 	ac_add_command_full((char*)"xplane_reverse_keyframe", CAST_CMD(reverse_sel), 0, NULL, (char*)"ac3d xplane_reverse_keyframe", (char*)"reverse key frames of selection");
 	ac_add_command_full((char*)"xplane_rescale_keyframe", CAST_CMD(rescale_sel), 5, (char*)"argv", (char*)"ac3d xplane_rescale_keyframe <old lo> <new lo> <old hi> <new hi>", (char*)"rescale key frames of selection");

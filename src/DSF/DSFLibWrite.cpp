@@ -23,8 +23,12 @@
 #include "DSFLib.h"
 #include "AssertUtils.h"
 #include "FileUtils.h"
+#if WED
+  #include "PlatformUtils.h"
+#endif
 #include "XChunkyFileUtils.h"
 #include <stdio.h>
+#include <errno.h>
 #include "md5.h"
 #include "DSFDefs.h"
 #include "DSFPointPool.h"
@@ -1072,7 +1076,16 @@ void DSFFileWriterImp::WriteToFile(const char * inPath)
 
 	FILE * fi = fopen(inPath, "wb");
 	if (fi == NULL)
-		AssertPrintf("DSF File open for write failed: %s", inPath);
+	{
+#if WED
+		char msg[1024];
+		snprintf(msg, 1024,"DSFLibWrite failed to open file for writing:\n%s\n%s", inPath, strerror(errno));
+		DoUserAlert(msg);
+#else
+		AssertPrintf("DSF File open for write failed: %s %s", inPath,strerror(errno));
+#endif
+		return;
+	}
 	StCloseAndKill	noCrappyFiles(fi, inPath);
 	DSFHeader_t header;
 	memcpy(header.cookie, DSF_COOKIE, sizeof(header.cookie));

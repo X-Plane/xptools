@@ -562,6 +562,7 @@ void sequence_push_back(T& container, S& seq)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline string stl_vprintf(const char * fmt, va_list args)
 {
+#if 0
 	char temp[10];
 	va_list args2;
 	va_copy(args2,args);
@@ -577,6 +578,14 @@ inline string stl_vprintf(const char * fmt, va_list args)
 	}
 	else
 		return string(temp);
+#else // Tyler says: clang can't find va_copy()...???
+	vector<char> big_buf;
+	const int max_size = 1024;
+	big_buf.resize(max_size);
+	const int actual = vsnprintf(&*big_buf.begin(), max_size, fmt, args);
+	DebugAssert(actual < max_size);
+	return string(big_buf.begin(),big_buf.begin() + actual);
+#endif
 }
 inline string stl_printf(const char * fmt, ...)
 {

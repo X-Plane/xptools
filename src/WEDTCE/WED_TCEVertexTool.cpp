@@ -83,11 +83,11 @@ int			WED_TCEVertexTool::CountControlHandles(intptr_t id						  ) const
 
 void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, HandleType_t * con_type, Point2 * p, Vector2 * direction, float * radius) const
 {
-	bool dummy_a;
-	Point2 dummy_p;
-	HandleType_t dummy_h;
-	if(!active) active=&dummy_a;
-	if(!p)		p=&dummy_p;
+	bool                      dummy_a;
+	Point2                    dummy_p;
+	HandleType_t              dummy_h;
+	if(!active)   active   = &dummy_a;
+	if(!p)		  p        = &dummy_p;
 	if(!con_type) con_type = &dummy_h;
 
 	if(direction) *direction = Vector2(1,0);
@@ -124,10 +124,12 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 		case 1:
 			*con_type = handle_Bezier;
 			*active = pt_bt->GetControlHandleLo(gis_UV,*p);
+			if (direction) { Point2 dummy; pt_bt->GetLocation(gis_UV,dummy);*direction=Vector2(*p,dummy); }
 			break;
 		case 2:
 			*con_type = handle_Bezier;
 			*active = pt_bt->GetControlHandleHi(gis_UV,*p);
+			if (direction) { Point2 dummy; pt_bt->GetLocation(gis_UV,dummy);*direction=Vector2(*p,dummy); }
 			break;
 		}
 		break;
@@ -142,17 +144,14 @@ void		WED_TCEVertexTool::GetNthControlHandle(intptr_t id, int n, bool * active, 
 		{
 			*active = 0;
 			*con_type = handle_None;
-			Bezier2 bez; Segment2 seg;
-			if(!s->GetSide(gis_UV,n/4, seg, bez))
+			Bezier2 bez;
+			s->GetSide(gis_UV,n/4, bez);
+			switch(n % 4) 
 			{
-				bez.p1 = bez.c1 = seg.p1;
-				bez.p2 = bez.c2 = seg.p2;
-			}
-			switch(n % 4) {
-			case 0: *p = bez.p1;	break;
-			case 1: *p = bez.c1;	break;
-			case 2: *p = bez.p2;	break;
-			case 3: *p = bez.c2;	break;
+				case 0: *p = bez.p1;	break;
+				case 1: *p = bez.c1;	break;
+				case 2: *p = bez.p2;	break;
+				case 3: *p = bez.c2;	break;
 			}
 		}
 		break;

@@ -22,6 +22,7 @@
  */
 
 #include "../XPTools/version.h"
+#include "DSF2Text.h"
 #include <stdio.h>
 #include "AssertUtils.h"
 
@@ -38,15 +39,12 @@ void AssertShellBail(const char * condition, const char * file, int line)
 	exit(1);
 }
 
-bool DSF2Text(char ** inDSF, int n, const char * inFileName);
-bool Text2DSF(const char * inFileName, const char * inDSF);
-
 int main(int argc, char * argv[])
 {
 	InstallDebugAssertHandler(AssertShellBail);
 	InstallAssertHandler(AssertShellBail);
 
-	if (argc < 2) goto help;
+	if (argc < 2 || !strcmp(argv[1],"-h")) goto help;
 
 	if(!strcmp(argv[1],"--auto_config"))
 	{
@@ -104,10 +102,9 @@ int main(int argc, char * argv[])
 
 	return 0;
 help:
-	fprintf(err_fi, "Usage: dsftool --dsf2text [dsffile] [textfile]\n");
-	fprintf(err_fi, "       dsftool --text2dsf [textfile] [dsffile]\n");
-	fprintf(err_fi, "       dsftool --env2overlay [envfile] [dsffile]\n");
-	fprintf(err_fi, "       dsftool --version\n");
+	fprintf(err_fi, "Usage: %s --dsf2text [dsffile] [textfile]\n",argv[0]);
+	fprintf(err_fi, "       %s --text2dsf [textfile] [dsffile]\n",argv[0]);
+	fprintf(err_fi, "       %s --version\n",argv[0]);
 	fprintf(err_fi, "Please note: dsftool still supports single-hyphen (-dsf2text) syntax for backward compatibility.\n");
 	return 1;
 }

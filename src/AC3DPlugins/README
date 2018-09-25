@@ -13,6 +13,18 @@ KNOWN BUGS:
 	- OBJ7 import/export does not handle panel tex quads or hard quads.
 	- Ac3d texture repeat/offset cannot be used with panel textures for exporting.
 
+	
+Version 3.4b1
+    - moved to 64 bit
+	- added quotes around call to sync_dref - handles blank names
+	- added check for anim_end without corresponding anim_begin in obj8 loader (crashed with some bad files on Linux)
+    - switched off the ---- tearoff menu item from popup menus
+    - added magnet to light options
+    - added 1110 Manipulators: rotate axis-detent command-knob-2way command-switch-up/down-2way command-switch-left/right-2way
+Version 3.3b3
+	- fixed divide by error caused by compilation bug
+Version 3.3b2
+	- added option to export TEXURE_NORMAL line with filename based on the texture name with _normal inserted
 Version 3.3b1
     - support for all 1050 manipulators in ac3d and obj code.
 Version 3.2.1r2

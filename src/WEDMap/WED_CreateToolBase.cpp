@@ -363,11 +363,8 @@ void		WED_CreateToolBase::CreationUp(const Point2& start_pt, const Point2& now_p
 
 void		WED_CreateToolBase::DoEmit(int do_close)
 {
-	int closed = mMustClose || do_close;
-
 	if (do_close)
 	{
-		do_close = 1;
 		mPts.pop_back();
 		mIsSplit.pop_back();
 		mHasDirs.pop_back();
@@ -375,7 +372,7 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 		mControlHi.pop_back();
 	}
 
-	this->AcceptPath(mPts,mControlLo, mControlHi, mHasDirs, mIsSplit, closed);
+	this->AcceptPath(mPts,mControlLo, mControlHi, mHasDirs, mIsSplit, mMustClose || do_close);
 	mPts.clear();
 	mHasDirs.clear();
 	mIsSplit.clear();
@@ -386,18 +383,17 @@ void		WED_CreateToolBase::DoEmit(int do_close)
 	ClearAnchor2();
 	ClearDistance();
 	ClearHeading();
-
-
 }
 
 void			WED_CreateToolBase::KillOperation(bool mouse_is_down)
 {
 	WED_HandleToolBase::KillOperation(mouse_is_down);
-		if (mPts.size() >= mMinPts)
-		{
-			DoEmit(0);
-			RecalcHeadings();
-		}
+	
+	if (mPts.size() >= mMinPts)
+	{
+		DoEmit(0);
+		RecalcHeadings();
+	}
 
 	mPts.clear();
 	mHasDirs.clear();
@@ -482,7 +478,7 @@ void		WED_CreateToolBase::RecalcHeadings(void)
 	{
 		SetAnchor1(mPts[mPts.size()-2]);
 		SetAnchor2(mPts[mPts.size()-1]);
-		SetDistance (LonLatDistMeters(mPts[mPts.size()-2].x(),mPts[mPts.size()-2].y(),mPts[mPts.size()-1].x(),mPts[mPts.size()-1].y()));
+		SetDistance(LonLatDistMeters(mPts[mPts.size()-2],mPts[mPts.size()-1]));
 		SetHeading(VectorMeters2NorthHeading(mPts[mPts.size()-2],mPts[mPts.size()-2],Vector2(mPts[mPts.size()-2],mPts[mPts.size()-1])));
 	}
 	else if (mPts.size() > 0)

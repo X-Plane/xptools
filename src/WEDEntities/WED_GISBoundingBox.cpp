@@ -84,16 +84,16 @@ bool			WED_GISBoundingBox::PtOnFrame		(GISLayer_t l,const Point2& p, double d) c
 	Bbox2	me;
 	GetBounds(l,me);
 
-	if (p.x() < me.xmin() ||
-		p.x() > me.xmax() ||
-		p.y() < me.ymin() ||
-		p.y() > me.ymax())
+	if (p.x() < me.xmin()-d ||
+		p.x() > me.xmax()+d ||
+		p.y() < me.ymin()-d ||
+		p.y() > me.ymax()+d )
 		return false;
 
-	if (p.x() > me.xmin() &&
-		p.x() < me.xmax() &&
-		p.y() > me.ymin() &&
-		p.y() < me.ymax())
+	if (p.x() > me.xmin()+d &&
+		p.x() < me.xmax()-d &&
+		p.y() > me.ymin()+d &&
+		p.y() < me.ymax()-d )
 		return false;
 
 	return true;

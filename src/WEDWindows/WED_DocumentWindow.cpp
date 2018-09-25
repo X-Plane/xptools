@@ -49,25 +49,37 @@
 #include "WED_GatewayExport.h"
 #include "WED_GatewayImport.h"
 
+#include "WED_AirportChain.h"
 #include "WED_DSFImport.h"
 #include "WED_PropertyHelper.h"
 #include "WED_LibraryPane.h"
 #include "WED_LibraryPreviewPane.h"
+#include "WED_LinePlacement.h"
 //#include "WED_Orthophoto.h"
+#include "WED_PolygonPlacement.h"
 #include "WED_Routing.h"
+#include "WED_Taxiway.h"
 #include "WED_ToolUtils.h"
 #include "WED_Validate.h"
-
 
 #if WITHNWLINK
 #include "WED_Server.h"
 #endif
-#if LIN
-// temporary, testing stuff here
-#include "GUI_Fonts.h"
-#include "GUI_Resources.h"
-#include "WED_ToolInfoAdapter.h"
-#endif
+
+namespace
+{
+template<class T>
+WED_Thing * CreateThing(WED_Archive * parent)
+{
+	return T::CreateTyped(parent);
+}
+
+template<class T>
+bool IsType(WED_Thing * thing)
+{
+	return dynamic_cast<T*>(thing) != NULL;
+}
+}
 
 int kDefaultDocSize[4] = { 0, 0, 1024, 768 };
 
@@ -283,7 +295,7 @@ WED_DocumentWindow::WED_DocumentWindow(
 
 	mMapPane->FromPrefs(inDocument);
 	mPropPane->FromPrefs(inDocument,0);
-	gIsFeet = inDocument->ReadIntPref("doc/use_feet",gIsFeet);
+	// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
 	gExportTarget = (WED_Export_Target) inDocument->ReadIntPref("doc/export_target",gExportTarget);
 	
 	//#if DEV
@@ -343,6 +355,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 #endif
 	case wed_Split:		WED_DoSplit(mDocument); return 1;
 	case wed_Align:		WED_DoAlign(mDocument); return 1;
+	case wed_MatchBezierHandles:	WED_DoMatchBezierHandles(mDocument); return 1;
 	case wed_Orthogonalize:	WED_DoOrthogonalize(mDocument); return 1;
 	case wed_RegularPoly:	WED_DoMakeRegularPoly(mDocument); return 1;
 	case wed_Reverse:	WED_DoReverse(mDocument); return 1;
@@ -350,6 +363,10 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case gui_Duplicate:	WED_DoDuplicate(mDocument, true); return 1;
 	case wed_Group:		WED_DoGroup(mDocument); return 1;
 	case wed_Ungroup:	WED_DoUngroup(mDocument); return 1;
+	case wed_ConvertToPolygon:	WED_DoConvertTo(mDocument, &CreateThing<WED_PolygonPlacement>);	return 1;
+	case wed_ConvertToTaxiway:	WED_DoConvertTo(mDocument, &CreateThing<WED_Taxiway>);	return 1;
+	case wed_ConvertToTaxiline:	WED_DoConvertTo(mDocument, &CreateThing<WED_AirportChain>);	return 1;
+	case wed_ConvertToLine:		WED_DoConvertTo(mDocument, &CreateThing<WED_LinePlacement>);	return 1;
 	case wed_MoveFirst:	WED_DoReorder(mDocument,-1,1);	return 1;
 	case wed_MovePrev:	WED_DoReorder(mDocument,-1,0);	return 1;
 	case wed_MoveNext:	WED_DoReorder(mDocument, 1,0);	return 1;
@@ -364,7 +381,7 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_AddATCWindRule: WED_DoMakeNewATCWindRule(mDocument); return 1;	
 #endif
 	case wed_UpgradeRamps:	WED_UpgradeRampStarts(mDocument);	return 1;
-	case wed_RenameRwys:	WED_RenameRunwayNames(mDocument);	return 1;
+	case wed_AlignApt:	WED_AlignAirports(mDocument);	return 1;
 	case wed_CreateApt:	WED_DoMakeNewAirport(mDocument); return 1;
 	case wed_EditApt:	WED_DoSetCurrentAirport(mDocument); return 1;
 	case gui_Close:		mDocument->TryClose();	return 1;
@@ -392,8 +409,8 @@ int	WED_DocumentWindow::HandleCommand(int command)
 	case wed_SelectMissingObjects:		WED_DoSelectMissingObjects(mDocument); return 1;
 #endif
 	case wed_UpdateMetadata:     WED_DoUpdateMetadata(mDocument); return 1;
-	case wed_ExportApt:		WED_DoExportApt(mDocument); return 1;
-	case wed_ExportPack:	WED_DoExportPack(mDocument); return 1;
+	case wed_ExportApt:		WED_DoExportApt(mDocument, mMapPane); return 1;
+	case wed_ExportPack:	WED_DoExportPack(mDocument, mMapPane); return 1;
 #if HAS_GATEWAY	
 	case wed_ExportToGateway:		WED_DoExportToGateway(mDocument); return 1;
 #endif	
@@ -403,15 +420,12 @@ int	WED_DocumentWindow::HandleCommand(int command)
 		mMapPane->Map_HandleCommand(command);
 		return 1;
 #if HAS_GATEWAY		
-	case wed_ImportGateway: WED_DoImportFromGateway(mDocument,mMapPane); return 1;
+	case wed_ImportGateway: WED_DoImportFromGateway(mDocument, mMapPane); return 1;
 #endif	
 #if GATEWAY_IMPORT_FEATURES
 	case wed_ImportGatewayExtract:	WED_DoImportDSFText(mDocument); return 1;
 #endif	
-	case wed_Validate:		if (WED_ValidateApt(mDocument)) DoUserAlert("Your layout is valid - no problems were found."); return 1;
-
-	case wed_UnitFeet:	gIsFeet=1;Refresh(); return 1;
-	case wed_UnitMeters:gIsFeet=0;Refresh(); return 1;
+	case wed_Validate:		if (WED_ValidateApt(mDocument, mMapPane) == validation_clean) DoUserAlert("Your layout is valid - no problems were found."); return 1;
 
 	case wed_Export900:	gExportTarget = wet_xplane_900;	Refresh(); return 1;
 	case wed_Export1000:gExportTarget = wet_xplane_1000;	Refresh(); return 1;
@@ -464,6 +478,7 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Close:															return 1;
 	case wed_Split:		return WED_CanSplit(mDocument);
 	case wed_Align:		return WED_CanAlign(mDocument);
+	case wed_MatchBezierHandles:	return WED_CanMatchBezierHandles(mDocument);
 	case wed_Orthogonalize:	return WED_CanOrthogonalize(mDocument);
 	case wed_RegularPoly:	return WED_CanMakeRegularPoly(mDocument);
 	case wed_Reverse:	return WED_CanReverse(mDocument);
@@ -471,14 +486,18 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 	case gui_Duplicate:	return WED_CanDuplicate(mDocument);
 	case wed_Group:		return WED_CanGroup(mDocument);
 	case wed_Ungroup:	return WED_CanUngroup(mDocument);
+	case wed_ConvertToPolygon:	return WED_CanConvertTo(mDocument, &IsType<WED_PolygonPlacement>, true);
+	case wed_ConvertToTaxiway:	return WED_CanConvertTo(mDocument, &IsType<WED_Taxiway>, true);
+	case wed_ConvertToTaxiline:	return WED_CanConvertTo(mDocument, &IsType<WED_AirportChain>, false);
+	case wed_ConvertToLine:		return WED_CanConvertTo(mDocument, &IsType<WED_LinePlacement>, false);
 	case wed_AddATCFreq:return WED_CanMakeNewATCFreq(mDocument);
 #if AIRPORT_ROUTING
 	case wed_AddATCFlow:return WED_CanMakeNewATCFlow(mDocument);
-	case wed_AddATCRunwayUse: return WED_CanMakeNewATCRunwayUse(mDocument);
-	case wed_AddATCTimeRule:return WED_CanMakeNewATCTimeRule(mDocument);
-	case wed_AddATCWindRule:return WED_CanMakeNewATCWindRule(mDocument);
-	case wed_UpgradeRamps:	return 1;
-	case wed_RenameRwys:	return 1;
+	case wed_AddATCRunwayUse:return WED_CanMakeNewATCRunwayUse(mDocument);
+	case wed_AddATCTimeRule: return WED_CanMakeNewATCTimeRule(mDocument);
+	case wed_AddATCWindRule: return WED_CanMakeNewATCWindRule(mDocument);
+	case wed_UpgradeRamps:   return 1;
+	case wed_AlignApt:      return 1;
 
 #endif
 	case wed_CreateApt:	return WED_CanMakeNewAirport(mDocument);
@@ -528,9 +547,6 @@ int	WED_DocumentWindow::CanHandleCommand(int command, string& ioName, int& ioChe
 #endif	
 	case wed_Validate:		return 1;
 
-	case wed_UnitFeet:	ioCheck= gIsFeet;return 1;
-	case wed_UnitMeters:ioCheck=!gIsFeet;return 1;
-
 	case wed_Export900:	ioCheck = gExportTarget == wet_xplane_900;	return 1;
 	case wed_Export1000:ioCheck = gExportTarget == wet_xplane_1000;	return 1;
 	case wed_Export1021:ioCheck = gExportTarget == wet_xplane_1021;	return 1;
@@ -565,8 +581,8 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mMapPane->ToPrefs(prefs);
 		mPropPane->ToPrefs(prefs,0);
 
-		prefs->WriteIntPref("doc/use_feet",gIsFeet);
-		prefs->WriteIntPref("doc/export_target",gExportTarget);		
+		// not writing doc/use_feet any more. Its a global preference now.
+		prefs->WriteIntPref("doc/export_target",gExportTarget);
 		prefs->WriteIntPref("window/main_split",mMainSplitter->GetSplitPoint());
 		prefs->WriteIntPref("window/main_split2",mMainSplitter2->GetSplitPoint());
 		prefs->WriteIntPref("window/prop_split",mPropSplitter->GetSplitPoint());
@@ -589,7 +605,7 @@ void	WED_DocumentWindow::ReceiveMessage(
 		mMapPane->FromPrefs(prefs);
 		mPropPane->FromPrefs(prefs,0);
 
-		gIsFeet = prefs->ReadIntPref("doc/use_feet",gIsFeet);
+		// doc/use_feet and doc/InfoDMS are global only preferences now, not read from each document any more
 		gExportTarget = (WED_Export_Target) mDocument->ReadIntPref("doc/export_target",gExportTarget);
 		XWin::SetFilePath(NULL,mDocument->IsDirty());
 	}

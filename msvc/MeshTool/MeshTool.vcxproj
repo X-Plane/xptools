@@ -65,6 +65,7 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
+      <AdditionalIncludeDirectories>..\..\src\WEDCore;..\..\src\RenderFarmUI;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

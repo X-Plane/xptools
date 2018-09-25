@@ -22,17 +22,16 @@
  */
 
 #include "WED_PropertyHelper.h"
-#include "AssertUtils.h"
 #include "WED_Errors.h"
+#include "WED_Globals.h"
+#include "WED_XMLWriter.h"
+#include "WED_EnumSystem.h"
+#include "AssertUtils.h"
 #include "IODefs.h"
 #include "STLUtils.h"
 #include "MathUtils.h"
 #include "XESConstants.h"
-#include "WED_EnumSystem.h"
 #include <algorithm>
-#include "WED_XMLWriter.h"
-
-int gIsFeet = 0;
 
 inline int remap(const map<int,int>& m, int v)
 {
@@ -962,7 +961,10 @@ void		WED_PropIntEnumSetUnion::GetProperty(PropertyVal_t& val) const
 			if (idx != -1)
 			{
 				inf->GetNthProperty(idx, local);
-				copy(local.set_val.begin(), local.set_val.end(), set_inserter(val.set_val));
+				if(local.set_val.size())
+					copy(local.set_val.begin(), local.set_val.end(), set_inserter(val.set_val));
+				else
+					val.set_val.insert(0);
 			}
 		}
 	}
@@ -1024,4 +1026,59 @@ void		WED_PropIntEnumSetUnion::ToXML(WED_XMLElement * parent)
 bool		WED_PropIntEnumSetUnion::WantsAttribute(const char * ele, const char * att_name, const char * att_value)
 {
 	return false;
+}
+
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void		WED_PropIntEnumSetFilterVal::GetPropertyDict(PropertyDict_t& dict)
+{
+	int me = mParent->FindProperty(host);
+	PropertyDict_t	d;
+	mParent->GetNthPropertyDict(me,d);
+	
+	for (PropertyDict_t::iterator i = d.begin(); i != d.end(); ++i)
+	{
+//		if (i->first >= minv && i->first <= maxv)
+		int v = ENUM_Export(i->first);
+		if (v >= minv && v <= maxv)
+			dict.insert(PropertyDict_t::value_type(i->first,i->second));
+	}
+}
+
+void		WED_PropIntEnumSetFilterVal::GetProperty(PropertyVal_t& val) const
+{
+	int me = mParent->FindProperty(host);
+	PropertyVal_t	local;
+	mParent->GetNthProperty(me,local);
+	val = local;
+	val.set_val.clear();
+	for(set<int>::iterator i = local.set_val.begin(); i != local.set_val.end(); ++i)
+	{
+		int n = ENUM_Export(*i);
+		if (n >= minv && n <= maxv)
+			val.set_val.insert(*i);
+	}
+
+}
+
+void		WED_PropIntEnumSetFilterVal::SetProperty(const PropertyVal_t& val, WED_PropertyHelper * parent)
+{
+	int me = mParent->FindProperty(host);
+	PropertyVal_t	clone(val), old;
+	clone.set_val.clear();
+	set<int>::const_iterator i;
+	mParent->GetNthProperty(me, old);
+	for(i=old.set_val.begin();i!=old.set_val.end();++i)
+	{
+		int n = ENUM_Export(*i);
+		if(n < minv || n > maxv)
+			clone.set_val.insert(*i);
+	}
+	for(i=val.set_val.begin();i!=val.set_val.end();++i)
+	{
+		int n = ENUM_Export(*i);
+		if(n >= minv && n <= maxv)
+			clone.set_val.insert(*i);
+	}
+	mParent->SetNthProperty(me,clone);
 }

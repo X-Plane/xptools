@@ -41,7 +41,7 @@ static const GUI_MenuItem_t	kAppMenu[] = {
 static const GUI_MenuItem_t	kFileMenu[] = {
 {	"&New Package...",		'N',	gui_ControlFlag,				0,	wed_NewPackage		},
 {	"&Open Package...",		'O',	gui_ControlFlag,				0,	wed_OpenPackage		},
-{	"Chan&ge X-System Folder...",0,	0,								0,	wed_ChangeSystem	},
+{	"Change X-System Folder...",0,	0,								0,	wed_ChangeSystem	},
 {	"-",					0,  	0,								0,	0					},
 {	"&Close",				'W',	gui_ControlFlag,				0,	gui_Close			},
 {	"&Save",				'S',	gui_ControlFlag,				0,	gui_Save			},
@@ -100,6 +100,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"-",					0,  	0,								0,	0				},
 {	"Spl&it",				'E',	gui_ControlFlag,				0,	wed_Split		},
 {	"A&lign",				'L',	gui_ControlFlag,				0,	wed_Align		},
+{	"Match Bezier Handles",	'B',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_MatchBezierHandles },
 {	"&Orthogonalize",		'Q',	gui_ControlFlag,				0,	wed_Orthogonalize },
 {	"Make Regular Poly",	'Q',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_RegularPoly },
 #if AIRPORT_ROUTING
@@ -108,6 +109,7 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	"Rever&se",				'R',	gui_ControlFlag+gui_ShiftFlag,	0,	wed_Reverse		},
 {	"Rotate",				'R',	gui_ControlFlag,				0,	wed_Rotate		},
 {	"Cr&op Unselected",		0,		0,								0,	wed_Crop		},
+{	"Con&vert To",			0,		0,								0,	0				},
 //{	"Make Draped Pol&ygons",0,		0,								0,	wed_Overlay		},
 #if AIRPORT_ROUTING
 //{	"Make Routing",			0,		0,								0,	wed_MakeRouting },
@@ -122,14 +124,22 @@ static const GUI_MenuItem_t	kEditMenu[] = {
 {	NULL,					0,		0,								0,	0				},
 };
 
+static const GUI_MenuItem_t kConvertToMenu[] = {
+{	"Draped &Polygon",			0,	0,							0,	wed_ConvertToPolygon	},
+{	"&Taxiway",					0,	0,							0,	wed_ConvertToTaxiway	},
+{	"&Airport Line Marking",	0,	0,							0,	wed_ConvertToTaxiline	},
+{	"&Line",					0,	0,							0,	wed_ConvertToLine		},
+{	NULL,						0,	0,							0,	0						}
+};
+
 static const GUI_MenuItem_t kViewMenu[] = {
 {	"Zoom Worl&d",				'/',gui_ControlFlag+gui_ShiftFlag,			0,	wed_ZoomWorld		},	// This conflicts with a Mac key strkoe but zoom world is not THAT useful
 {	"&Zoom Package",			'/',gui_ControlFlag+gui_OptionAltFlag,		0,	wed_ZoomAll			},
 {	"Zoom &Selection",			'/',gui_ControlFlag,						0,	wed_ZoomSelection	},	// simple cmd-slash for MOST imoprtant zoom command!
 {	"-",						0,	0,										0,	0					},
-{	"&Feet",					0,	0,										0,	wed_UnitFeet		},
-{	"&Meters",					0,	0,										0,	wed_UnitMeters		},
-{	"-",						0,	0,										0,	0					},
+//{	"&Feet",					0,	0,										0,	wed_UnitFeet		},
+//{	"&Meters",					0,	0,										0,	wed_UnitMeters		},
+//{	"-",						0,	0,										0,	0					},
 {	"Show &Line Markings",		0,	0,										0,	wed_ToggleLines		},
 {	"Show &Vertices",			0,	0,										0,	wed_ToggleVertices	},
 {	"Pavement Transparenc&y",	0,	0,										0,	0					},
@@ -185,11 +195,11 @@ static const GUI_MenuItem_t kSelectMenu[] = {
 {	"Select Crossing Ed&ges",	0,			0,							0,	wed_SelectCrossing	},
 #endif
 {	"-",						0,			0,							0,	0					},
-{	"Select Local Ob&jects",		0,			0,							0,	wed_SelectLocalObjects },
-{	"Select L&ibrary Objects",	0,			0,							0,	wed_SelectLibraryObjects },
-{	"Select &Laminar Library Objects",0,		0,							0,	wed_SelectDefaultObjects },
-{	"Select &Third Party Library Objects",0,	0,							0,	wed_SelectThirdPartyObjects },
-{	"Select &Missing Objects",	0,			0,							0,	wed_SelectMissingObjects },
+{	"Select Local Items",		0,			0,							0,	wed_SelectLocalObjects },
+{	"Select Library Items",		0,			0,							0,	wed_SelectLibraryObjects },
+{	"Select &Laminar Library Items",0,		0,							0,	wed_SelectDefaultObjects },
+{	"Select &Third Party Library Items",0,	0,							0,	wed_SelectThirdPartyObjects },
+{	"Select &Missing Items",	0,			0,							0,	wed_SelectMissingObjects },
 {	NULL,						0,			0,							0,	0					},
 };
 
@@ -207,7 +217,7 @@ static const GUI_MenuItem_t kAirportMenu[] = {
 {	"No Airport Selected",		'E',	gui_ControlFlag+gui_ShiftFlag,			0, wed_EditApt	},
 {	"-",							0,		0,									0,	0			},
 {	"Upgrade Ramps",				0,		0,									0,	wed_UpgradeRamps},
-{	"Auto Rename Runways",			0,		0,									0,	wed_RenameRwys},
+{	"Align Airports",			0,		0,									0,	wed_AlignApt},
 {	NULL,						0,		0,										0, 0,				}
 };
 
@@ -267,14 +277,21 @@ void WED_MakeMenus(GUI_Application * inApp)
 	GUI_Menu edit_menu = inApp->CreateMenu(
 		"&Edit", kEditMenu, inApp->GetMenuBar(), 0);
 
+	GUI_Menu convert_to_menu = inApp->CreateMenu(
+#if AIRPORT_ROUTING
+		"Con&vert To", kConvertToMenu, edit_menu, 21);
+#else
+		"Con&vert To", kConvertToMenu, edit_menu, 20);
+#endif
+
 	GUI_Menu  view_menu = inApp->CreateMenu(
 		"&View", kViewMenu, inApp->GetMenuBar(), 0);
 	
 	GUI_Menu	pave_menu = inApp->CreateMenu(
-		"Pavement T&ransparency",	kPavementMenu, view_menu, 9);
+		"Pavement T&ransparency",	kPavementMenu, view_menu, 6);
 		
 	GUI_Menu	objd_menu = inApp->CreateMenu(
-		"&Object Density", kObjDensityMenu, view_menu, 10);
+		"&Object Density", kObjDensityMenu, view_menu, 7);
 
 	GUI_Menu  sel_menu = inApp->CreateMenu(
 		"&Select", kSelectMenu, inApp->GetMenuBar(), 0);

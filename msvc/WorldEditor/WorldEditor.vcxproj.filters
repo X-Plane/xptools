@@ -4,9 +4,6 @@
     <Filter Include="WEDCore">
       <UniqueIdentifier>{92914035-ec28-45d5-bff1-5852f4a29139}</UniqueIdentifier>
     </Filter>
-    <Filter Include="WEDDocs">
-      <UniqueIdentifier>{4fc0b295-5e2e-4978-9875-ebe96a18b985}</UniqueIdentifier>
-    </Filter>
     <Filter Include="WEDEntities">
       <UniqueIdentifier>{2c535d37-b2a7-4836-aa67-4e8252ab5457}</UniqueIdentifier>
     </Filter>
@@ -63,9 +60,6 @@
     </Filter>
     <Filter Include="XESCore">
       <UniqueIdentifier>{288927bc-9dc2-46ee-a91d-3c451344b887}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SQLite">
-      <UniqueIdentifier>{81bee108-7857-464e-a673-c18b4b57b1fd}</UniqueIdentifier>
     </Filter>
     <Filter Include="Interfaces">
       <UniqueIdentifier>{5e1ce0f9-593b-4814-aeba-ae3ddfa3caa7}</UniqueIdentifier>
@@ -400,9 +394,6 @@
       <Filter>WEDMap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_StructureLayer.cpp">
-      <Filter>WEDMap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\WEDMap\WED_TerraserverLayer.cpp">
       <Filter>WEDMap</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\WEDMap\WED_ToolInfoAdapter.cpp">
@@ -801,6 +792,12 @@
     <ClCompile Include="..\..\src\WEDEntities\WED_FacadePreview.cpp">
       <Filter>WEDCore</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\WEDCore\WED_ValidateList.cpp">
+      <Filter>WEDCore</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\WEDWindows\WED_Line_Selector.cpp">
+      <Filter>WEDWindows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\WEDCore\WED_Application.h">
@@ -1134,9 +1131,6 @@
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_StructureLayer.h">
-      <Filter>WEDMap</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\WEDMap\WED_TerraserverLayer.h">
       <Filter>WEDMap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\WEDMap\WED_ToolInfoAdapter.h">
@@ -1586,6 +1580,12 @@
     <ClInclude Include="..\..\src\Interfaces\IFilterable.h">
       <Filter>Interfaces</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\WEDCore\WED_ValidateList.h">
+      <Filter>WEDCore</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\WEDWindows\WED_Line_Selector.h">
+      <Filter>WEDWindows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\src\WEDResources\ui_measurements.txt">
@@ -1596,7 +1596,7 @@
     <Image Include="..\..\src\WEDResources\about.png">
       <Filter>WEDResources</Filter>
     </Image>
-    <Image Include="..\..\src\WEDResources\checkbutton.png">
+    <Image Include="..\..\src\WEDResources\check_buttons.png">
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\colors.png">
@@ -1612,12 +1612,6 @@
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\push_buttons.png">
-      <Filter>WEDResources</Filter>
-    </Image>
-    <Image Include="..\..\src\WEDResources\pushbutton.png">
-      <Filter>WEDResources</Filter>
-    </Image>
-    <Image Include="..\..\src\WEDResources\radiobutton.png">
       <Filter>WEDResources</Filter>
     </Image>
     <Image Include="..\..\src\WEDResources\scroll_btn_h.png">
@@ -1673,9 +1667,6 @@
     <None Include="..\..\src\WEDResources\WED_Info.plist">
       <Filter>WEDResources</Filter>
     </None>
-    <None Include="..\..\src\WEDResources\WEDManual.pdf">
-      <Filter>WEDResources</Filter>
-    </None>
     <None Include="..\..\src\WEDResources\tables\arrows.png">
       <Filter>WEDResources\table</Filter>
     </None>
@@ -1702,6 +1693,9 @@
     </None>
     <None Include="..\..\src\WEDResources\tables\sider.png">
       <Filter>WEDResources\table</Filter>
+    </None>
+    <None Include="..\..\src\WEDResources\worldmap.jpg">
+      <Filter>WEDResources</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

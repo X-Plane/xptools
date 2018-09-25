@@ -1,0 +1,12 @@
+--- src/WEDWindows/WED_GroupCommands.cpp
++++ src/WEDWindows/WED_GroupCommands.cpp
+@@ -73,7 +73,9 @@
+ #include "WED_HierarchyUtils.h"
+ #include "WED_Orthophoto.h"
+ #include "WED_FacadePlacement.h"
++#include "WED_GISUtils.h"
+ 
++#include <algorithm>
+ #include <sstream>
+ 
+ #if DEV

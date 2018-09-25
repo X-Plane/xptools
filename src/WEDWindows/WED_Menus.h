@@ -68,6 +68,7 @@ enum {
 #endif
 	wed_Split,
 	wed_Align,
+	wed_MatchBezierHandles,
 	wed_Orthogonalize,
 	wed_RegularPoly,
 #if AIRPORT_ROUTING
@@ -81,6 +82,11 @@ enum {
 	wed_MoveLast,
 	wed_BreakApartSpecialAgps,
 	wed_ReplaceVehicleObj,
+	// Convert To menu
+	wed_ConvertToPolygon,
+	wed_ConvertToTaxiway,
+	wed_ConvertToTaxiline,
+	wed_ConvertToLine,
 	// Pavement menu
 	wed_Pavement0,
 	wed_Pavement25,
@@ -98,8 +104,8 @@ enum {
 	wed_ZoomWorld,
 	wed_ZoomAll,
 	wed_ZoomSelection,
-	wed_UnitFeet,
-	wed_UnitMeters,
+//	wed_UnitFeet,
+//	wed_UnitMeters,
 	wed_ToggleLines,
 	wed_ToggleVertices,
 	wed_PickOverlay,
@@ -140,7 +146,7 @@ enum {
 	wed_AddATCWindRule,
 #endif
 	wed_UpgradeRamps,
-	wed_RenameRwys,
+	wed_AlignApt,
 	//-- Add Metadata Keys Menu--
 	//Organized by alphabetical order
 	wed_AddMetaDataBegin,//WARNING: DO NOT USE!

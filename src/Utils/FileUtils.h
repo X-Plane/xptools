@@ -137,4 +137,9 @@ enum date_cmpr_result_t
 * Return -2: There's been an error
 */
 date_cmpr_result_t FILE_date_cmpr(const char * first, const char * second);
+
+#if IBM
+char * mkdtemp(char *dirname);
+#endif
+
 #endif

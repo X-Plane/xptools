@@ -26,8 +26,7 @@
 #include "WED_Colors.h"
 #include "GUI_Resources.h"
 #include "GUI_Messages.h"
-
-#include "WED_HierarchyFilterBar.h"
+#include "GUI_FilterBar.h"
 
 WED_PropertyPane::WED_PropertyPane(
 						GUI_Commander *			inCommander,
@@ -84,7 +83,7 @@ WED_PropertyPane::WED_PropertyPane(
 
 	if (pane_style == propPane_Hierarchy)
 	{
-		mFilter = new WED_HierarchyFilterBar(this);
+		mFilter = new GUI_FilterBar(this, GUI_FILTER_FIELD_CHANGED, 0, "Search:", "", false);
 		mFilter->Show();
 		mFilter->SetParent(this);
 		mFilter->AddListener(this);

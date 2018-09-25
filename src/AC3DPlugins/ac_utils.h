@@ -24,6 +24,10 @@
 #ifndef AC_UTILS_H
 #define AC_UTILS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "TclStubs.h"
 #include <ac_plugin.h>
 #include <vector>

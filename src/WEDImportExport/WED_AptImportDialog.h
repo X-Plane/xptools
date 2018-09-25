@@ -24,30 +24,18 @@
 #ifndef WED_AptImportDialog_H
 #define WED_AptImportDialog_H
 
-
-class	GUI_ScrollerPane;
-class	GUI_Table;
-class	GUI_Header;
-class	GUI_Packer;
-
-class	GUI_TextTable;
-class	GUI_TextTableHeader;
-
-class	WED_Document;
-class	IResolver;
+#include "WED_Document.h"
 class	WED_Archive;
 class	GUI_FilterBar;
 class	WED_MapPane;
 
 #include "GUI_Window.h"
-#include "GUI_TextTable.h"
-#include "GUI_SimpleTableGeometry.h"
-#include "GUI_Broadcaster.h"
 #include "GUI_Listener.h"
 #include "GUI_Destroyable.h"
+
 #include "WED_AptTable.h"
 
-#include "AptDefs.h"
+class GUI_Broadcaster;
 
 class WED_AptImportDialog : public GUI_Window, public GUI_Listener, public GUI_Destroyable {
 		

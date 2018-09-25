@@ -1,0 +1,68 @@
+# Makefile Hack for Linux AC3D Plugin
+# compile with "make -f Makefile.linux", then create release tgz with "make -f Makefile.linux release"
+
+
+OSXVER=
+LDOSXVER= 
+
+ARCH=-m32
+DYNAMIC=        -shared -m32 -g
+
+
+XPINC=-I../../src/DSF -I../../src/DSF/tri_stripper_101 -I../../src/DSFTools -I../../src/GUI -I../../src/Interfaces \
+                      -I../../src/Env -I../../src/lib_json/include -I../../src/Network -I../../src/ObjEdit -I../../src/Obj \
+                      -I../../src/OGLE -I../../src/RenderFarmUI -I../../src/RawImport -I../../src/Utils -I../../src/WEDCore \
+                      -I../../src/WEDEntities -I../../src/WEDXPlugin -I../../src/WEDWindows -I../../src/WEDTCE -I../../src/WEDResources \
+                      -I../../src/WEDProperties -I../../src/WEDNetwork -I../../src/WEDMap -I../../src/WEDLibrary -I../../src/XESCore \
+                      -I../../src/WEDImportExport -I../../src/XESTools -I../../src/UI -I../../src/XPCompat -I../../msvc_libs/boost_1_57_0 \
+                      -I../../msvc_libs/CGAL-4.5.2/include -I../../msvc_libs/CGAL-4.5.2/build/include \
+                      -I../../msvc_libs/CGAL-4.5.2/auxiliary/gmp/include -I../../msvc_libs/Expat\ 2.1.0/Source/lib \
+                      -I../../msvc_libs/jpeg-9a -I../../msvc_libs/jasper-1.701.0.GEO/src/libjasper/include \
+                      -I../../msvc_libs/libgeotiff-1.2.5 -I../../msvc_libs/libgeotiff-1.2.5/libxtiff \
+                      -I../../msvc_libs/libpng_zlib_BFOLDER/libpng-1.2.41 -I../../msvc_libs/libpng_zlib_BFOLDER/zlib \
+                      -I../../msvc_libs/tiff-4.0.3/libtiff -I../../msvc_libs/sqlite-3.6.21 -I../../msvc_libs/squish-1.11 \
+                      -I../../msvc_libs/proj-4.7.0/src -I../../msvc_libs/shapelib-1.3.0 -I../../msvc_libs/freetype-2.2.1/include \
+
+
+INCLUDE=-I../src -I../../sdk/ac3d -I../../src/Obj $(XPINC) -I/usr/include/c++/4.2.1
+
+# -Wno-write-strings surpresses 'warning: deprecated conversion from string constant to ‘char*’'
+CFLAGS=  -DLINUX -DLIN $(INCLUDE) $(ARCH) -Wno-write-strings -g
+
+CC=g++
+LD=g++
+
+
+PLUGINS=XPlaneSupportLinux.p
+
+
+all:    $(PLUGINS)
+
+EXTOBJS=		../../src/obj/ObjConvert.o ../../src/obj/ObjDraw.o ../../src/obj/ObjPointPool.o ../../src/DSF/tri_stripper_101/tri_stripper.o \
+				../../src/obj/XObjDefs.o ../../src/obj/XObjReadWrite.o ../../src/obj/XObjBuilder.o
+
+
+OBJS=     obj_anim.o	obj_panel.o obj_update.o uv_mapper.o \
+					 ac_utils.o	obj8_export.o obj_editor.o obj_radius.o prefs.o \
+					 bitmap_match.o obj8_import.o obj_model.o obj_tools.o tcl_utils.o xp_plugin.o \
+					 TclStubs.o $(EXTOBJS)
+
+XPlaneSupportLinux.p:	 $(OBJS)
+		$(LD) $(DYNAMIC) $(LDOSXVER) $(OBJS) -o $*.p 
+
+.cpp.o:
+		$(CC) $(CFLAGS) -c $*.cpp -o $*.o
+
+.cpp.p:
+		$(CC) $(CFLAGS) -c $*.cpp -o $*.o
+		$(LD) $(DYNAMIC) $(LDOSCVER) $*.o -o $*.p
+.c.p:
+		$(CC) $(CFLAGS) -c $*.c -o $*.o
+		$(LD) $(DYNAMIC) (LDOSXVER) $*.o -o $*.p
+
+clean:
+		rm -f *.p *.o *.obj $(EXTOBJS) *.exp *.lib
+
+release:
+		tar cvfz ac3dxplanelx.tgz *.p XPlaneSupport.tcl README
+

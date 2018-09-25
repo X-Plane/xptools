@@ -304,7 +304,7 @@ struct	edge_wrapper {
 #endif
 
 HASH_MAP_NAMESPACE_START
-#if MSC
+#if 0 // MSC
 template<> inline
 size_t hash_value<edge_wrapper>(const edge_wrapper& key)
 {

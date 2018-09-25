@@ -268,13 +268,13 @@ bool	sign_data::from_code(const string& code)
 	front.clear();
 	back.clear();
 	
-	transform(
+	::transform(
 		output.out_sign.front.begin(),
 		output.out_sign.front.end(),
 		back_inserter(front),
 		make_from_parser);
 
-	transform(
+	::transform(
 		output.out_sign.back.begin(),
 		output.out_sign.back.end(),
 		back_inserter(back),
@@ -540,7 +540,7 @@ int plot_token(const sign_token& sign, int x, int y, float scale, GUI_GraphState
 
 #pragma mark -
 
-WED_Sign_Editor::WED_Sign_Editor(GUI_Commander * parent) : GUI_Commander(parent),
+WED_Sign_Editor::WED_Sign_Editor(GUI_Commander * parent) : GUI_EditorInsert(parent),
 	mEditSide(0), mEditStart(0), mEditEnd(0),mCaret(1), mColor(sign_color_yellow)
 {
 	mData.from_code("{@L}B{@Y}TEST{@@,@R}18-22{@B}1");
@@ -882,6 +882,13 @@ int		WED_Sign_Editor::HandleKeyPress(uint32_t inKey, int inVK, GUI_KeyFlags inFl
 	return 0;
 }
 
+void		WED_Sign_Editor::GetSizeHint(int * w, int * h)
+{
+	*w = 500;
+	*h = 280;
+}
+
+
 void		WED_Sign_Editor::TimerFired(void)
 {
 	mCaret = !mCaret;
@@ -971,21 +978,18 @@ void		WED_Sign_Editor::selection_changed()
 	}
 }
 
-bool		WED_Sign_Editor::SetSignText(const string& inDesc)
+bool 	WED_Sign_Editor::SetData(const GUI_CellContent& c)
 {
-	if(!mData.from_code(inDesc))
+	if(!mData.from_code(c.text_val))
 		return false;
 	selection_changed();	
 	return true;	
 }
 
-
-void		WED_Sign_Editor::GetSignText(string& outDesc)
+void		WED_Sign_Editor::GetData(GUI_CellContent& c)
 {
-	outDesc = mData.to_code();
+	c.text_val = mData.to_code();
 }
-
-
 
 void RenderSign(GUI_GraphState * state, int x, int y, const string& sign_text, float scale, int font_id, const float color[4])
 {

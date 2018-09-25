@@ -21,6 +21,10 @@
  *
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "uv_mapper.h"
 #include <set>
 #include <map>
