@@ -560,14 +560,14 @@ inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f)
 {
 	Polygon2 out;
 	Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
-	const Point2 source_ben = cgal2ben(edge->source()->point());
+	Point2 source_ben = cgal2ben(edge->source()->point());
 	const double dsf_min_lon = floor(source_ben.x());
 	const double dsf_min_lat = floor(source_ben.y());
 	do {
-		const Point2 source_ben = cgal2ben(edge->source()->point());
 		out.push_back(Point2(doblim(source_ben.x(), dsf_min_lon, dsf_min_lon + 1),
 							 doblim(source_ben.y(), dsf_min_lat, dsf_min_lat + 1)));
 		--edge;
+		source_ben = cgal2ben(edge->source()->point());
 	} while(edge != f->outer_ccb());
 	return out;
 }
