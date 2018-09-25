@@ -9,8 +9,16 @@
 #include "CompGeomDefs2.h"
 #include "MeshDefs.h"
 
+enum ag_terrain_style {
+	style_us,
+	style_europe,
+	ag_terrain_style_DIM
+};
+ag_terrain_style choose_style(int dsf_lon_west, int dsf_lat_south);
+
 // The width and height of our square pseudo-orthophotos
-const int g_ortho_width_m = 1000;
+const int g_ortho_width_m[ag_terrain_style_DIM] = {1000, 2000};
+const int g_ortho_width_px[ag_terrain_style_DIM] = {256, 512};
 
 /**
  * Suppose to you have some available area, measured in degrees of latitude or longitude,
@@ -35,7 +43,7 @@ struct grid_coord_desc {
 	int dsf_lon;
 	int dsf_lat;
 };
-grid_coord_desc get_orth_grid_xy(const Point2 &point);
+grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style);
 
 /**
  * @return The bounds, in terms of latitude and longitude, for the grid square of width g_ortho_width_m
@@ -50,7 +58,7 @@ struct ortho_urbanization
 	ortho_urbanization(int bl, int br, int tr, int tl);
 	ortho_urbanization(const vector<int> &from_ccw_vector); // ccw from lower left
 
-	int bottom_left; // the "base" ter enum for the bottom left; one of terrain_PseudoOrthoInner, terrain_PseudoOrthoTown, terrain_PseudoOrthoOuter, or terrain_PseudoOrthoIndustrial
+	int bottom_left; // the "base" ter enum for the bottom left; one of terrain_PseudoOrthoEuro, terrain_PseudoOrthoEuroSortaIndustrial, terrain_PseudoOrthoInner, terrain_PseudoOrthoTown, terrain_PseudoOrthoOuter, or terrain_PseudoOrthoIndustrial
 	int bottom_right;
 	int top_right;
 	int top_left;
@@ -67,7 +75,7 @@ struct ortho_urbanization
 };
 
 // maps desired urb levels in the corners to the terrain enum
-map<ortho_urbanization, int> get_terrain_transition_descriptions();
+map<ortho_urbanization, int> get_terrain_transition_descriptions(ag_terrain_style style);
 
 
 struct tile_assignment

@@ -1,6 +1,17 @@
 #include "MobileAutogenAlgs.h"
 #include "MathUtils.h"
 
+ag_terrain_style choose_style(int dsf_lon_west, int dsf_lat_south)
+{
+	// Far east edge of Scotland is roughly -10 lon
+	// Far west edge of Poland is +24 lon
+	// Far south edge of Spain is 36 lat
+	// Farthest north big city I could find is Bergen, Norway at 60 lat
+	if(intrange(dsf_lon_west, -11, 31) && intrange(dsf_lat_south, 36, 60))
+		return style_europe;
+	return style_us;
+}
+
 /**
  * Suppose to you have some available area, and you want to divide it into sections of a certain size.
  * You want to know both:
@@ -45,14 +56,14 @@ Polygon2 cgal_tri_to_ben(const CDT::Face_handle &tri, const Bbox2 &containing_ds
 	return out;
 }
 
-grid_coord_desc get_orth_grid_xy(const Point2 &point)
+grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style)
 {
 	const double dsf_min_lon = floor(point.x());
 	const double dsf_min_lat = floor(point.y());
 	const double dsf_center_lat = dsf_min_lat + 0.5;
 
-	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m, dsf_center_lat);
-	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m);
+	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m[style], dsf_center_lat);
+	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m[style]);
 
 	// Note: we use the *tri*'s centroid to decide the grid coords, because any *vertex* might be shared
 	//       between multiple tris in *different* grid squares.
@@ -73,12 +84,13 @@ Bbox2 get_ortho_grid_square_bounds(const CDT::Face_handle &tri, const Bbox2 &con
 {
 	DebugAssertWithExplanation(dob_abs(containing_dsf.xspan() - 1) < 0.01, "Your 'DSF' is not 1x1 degree");
 	DebugAssertWithExplanation(dob_abs(containing_dsf.yspan() - 1) < 0.01, "Your 'DSF' is not 1x1 degree");
+	const ag_terrain_style style = choose_style(containing_dsf.xmin(), containing_dsf.ymin());
 	const Polygon2 ben_tri = cgal_tri_to_ben(tri, containing_dsf);
 	DebugAssert(containing_dsf.contains(ben_tri.bounds()));
 	const Point2 centroid = ben_tri.centroid();
 	DebugAssert(ben_tri.inside(centroid));
 
-	const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
+	const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, style);
 
 	Bbox2 out(
 			containing_dsf.xmin() + ((double)grid_pt.x / grid_pt.dx),
@@ -131,7 +143,7 @@ bool ortho_urbanization::operator!=(const ortho_urbanization &other) const
 	return !(*this == other);
 }
 
-#define AssertLegalOrtho(member) DebugAssert(member == NO_VALUE || member == terrain_PseudoOrthoInner || member == terrain_PseudoOrthoTown || member == terrain_PseudoOrthoOuter || member == terrain_PseudoOrthoIndustrial);
+#define AssertLegalOrtho(member) DebugAssert(member == NO_VALUE || member == terrain_PseudoOrthoInner || member == terrain_PseudoOrthoTown || member == terrain_PseudoOrthoOuter || member == terrain_PseudoOrthoIndustrial || member == terrain_PseudoOrthoEuro || member == terrain_PseudoOrthoEuroSortaIndustrial);
 
 ortho_urbanization::ortho_urbanization(int bl, int br, int tr, int tl) :
 		bottom_left(bl),
@@ -160,7 +172,9 @@ ortho_urbanization::ortho_urbanization(const vector<int> &ccw_vector) :
 
 bool ortho_urbanization::is_uniform() const
 {
-	return bottom_left == bottom_right == top_left == top_right;
+	return bottom_left == bottom_right &&
+			bottom_right == top_left &&
+			top_left == top_right;
 }
 
 int ortho_urbanization::count_sides(int ter_enum) const
@@ -199,7 +213,7 @@ ortho_urbanization ortho_urbanization::rotate(int deg) const
 	return out;
 }
 
-map<ortho_urbanization, int> get_terrain_transition_descriptions()
+map<ortho_urbanization, int> get_terrain_transition_descriptions_us()
 {
 	map<ortho_urbanization, int> ter_with_transitions; // maps desired urb levels in the corners to the terrain enum
 	//										Bottom left						Bottom right					Top right						Top left
@@ -259,6 +273,31 @@ map<ortho_urbanization, int> get_terrain_transition_descriptions()
 	return ter_with_transitions;
 }
 
+map<ortho_urbanization, int> get_terrain_transition_descriptions_euro()
+{
+	map<ortho_urbanization, int> ter_with_transitions; // maps desired urb levels in the corners to the terrain enum
+	//										Bottom left						Bottom right					Top right						Top left
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuro1;
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuroSortaIndustrial,		terrain_PseudoOrthoEuroSortaIndustrial,		terrain_PseudoOrthoEuroSortaIndustrial,		terrain_PseudoOrthoEuroSortaIndustrial		)] = terrain_PseudoOrthoEuroSemiInd;
+	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransBottom;
+	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE					)] = terrain_PseudoOrthoEuroTransLeft;
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransRight;
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE					)] = terrain_PseudoOrthoEuroTransUpper;
+	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro,		NO_VALUE					)] = terrain_PseudoOrthoEuroTransLL_Half;
+	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransLL_Full;
+	ter_with_transitions[ortho_urbanization(NO_VALUE,						NO_VALUE,						NO_VALUE,						terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransLR_Half;
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		NO_VALUE,						terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransLR_Full;
+	ter_with_transitions[ortho_urbanization(NO_VALUE,						terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE					)] = terrain_PseudoOrthoEuroTransUL_Half;
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE					)] = terrain_PseudoOrthoEuroTransUL_Full;
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		NO_VALUE,						NO_VALUE,						NO_VALUE					)] = terrain_PseudoOrthoEuroTransUR_Half;
+	ter_with_transitions[ortho_urbanization(terrain_PseudoOrthoEuro,		terrain_PseudoOrthoEuro,		NO_VALUE,						terrain_PseudoOrthoEuro		)] = terrain_PseudoOrthoEuroTransUR_Full;
+	return ter_with_transitions;
+}
+map<ortho_urbanization, int> get_terrain_transition_descriptions(ag_terrain_style style)
+{
+	return style == style_europe ? get_terrain_transition_descriptions_euro() : get_terrain_transition_descriptions_us();
+}
+
 tile_assignment get_analogous_ortho_terrain(int ter_enum, int x, int y, const map<int, ortho_urbanization> &terrain_desc_by_enum)
 {
 	if(ter_enum == NO_VALUE)
@@ -266,13 +305,14 @@ tile_assignment get_analogous_ortho_terrain(int ter_enum, int x, int y, const ma
 
 	const bool needs_tiling =
 			ter_enum == terrain_PseudoOrthoInner1 || ter_enum == terrain_PseudoOrthoTown1 ||
-			ter_enum == terrain_PseudoOrthoOuter1 || ter_enum == terrain_PseudoOrthoIndustrial1;
+			ter_enum == terrain_PseudoOrthoOuter1 || ter_enum == terrain_PseudoOrthoIndustrial1 ||
+			ter_enum == terrain_PseudoOrthoEuro1;
 	if(needs_tiling)
 	{
 		// The variant gives us the perfect checkerboard tiling of the two "normal" variants of each ortho
 		const int new_ter = ter_enum + (x + y) % 2;
 		// Industrial has big shadows... don't rotate it or we make it look even worse!
-		const int rot = ter_enum == terrain_PseudoOrthoIndustrial1 ? 0 : 90 * ((x + x * y) % 4);
+		const int rot = ter_enum == terrain_PseudoOrthoIndustrial1 || ter_enum == terrain_PseudoOrthoEuroSemiInd ? 0 : 90 * ((x + x * y) % 4);
 		return tile_assignment(new_ter, rot);
 	}
 	else

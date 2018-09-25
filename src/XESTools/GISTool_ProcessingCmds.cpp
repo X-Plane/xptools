@@ -572,7 +572,7 @@ inline Polygon2 cgal_face_to_ben(Pmwx::Face_handle f)
 	return out;
 }
 
-int choose_ortho_terrain(int land_use, double mean_urbanization)
+int choose_ortho_terrain_us(int land_use, double mean_urbanization)
 {
 	static const double min_urbanization_for_any_ortho = 0.001;
 	static const double min_urbanization_for_ortho_on_non_matching_land_use = 0.1;
@@ -634,6 +634,45 @@ int choose_ortho_terrain(int land_use, double mean_urbanization)
 	return NO_VALUE;
 }
 
+int choose_ortho_terrain_euro(int land_use, double mean_urbanization)
+{
+	static const double min_urbanization_for_any_ortho = 0.001;
+	static const double min_urbanization_for_ortho_on_non_matching_land_use = 0.1;
+	if(land_use != lu_globcover_WATER &&
+			mean_urbanization > min_urbanization_for_any_ortho)
+	{
+		switch(land_use)
+		{
+			case lu_globcover_URBAN_CROP_TOWN:
+			case lu_globcover_URBAN_SQUARE_CROP_TOWN:
+			case lu_globcover_URBAN_SQUARE_TOWN:
+			case lu_globcover_URBAN_TOWN:
+			case lu_globcover_URBAN_LOW:
+			case lu_globcover_URBAN_MEDIUM:
+			case lu_globcover_URBAN_SQUARE_LOW:
+			case lu_globcover_URBAN_SQUARE_MEDIUM:
+			case lu_globcover_URBAN_HIGH:
+			case lu_globcover_URBAN_SQUARE_HIGH:
+				return terrain_PseudoOrthoEuro;
+			case lu_globcover_INDUSTRY:
+			case lu_globcover_INDUSTRY_SQUARE:
+				return terrain_PseudoOrthoEuroSortaIndustrial;
+			default:
+				if(mean_urbanization > 0.25)
+				{
+					return terrain_PseudoOrthoEuro;
+				}
+				break;
+		}
+	}
+	return NO_VALUE;
+}
+
+int choose_ortho_terrain(int land_use, double mean_urbanization, ag_terrain_style style)
+{
+	return style == style_europe ? choose_ortho_terrain_euro(land_use, mean_urbanization) : choose_ortho_terrain_us(land_use, mean_urbanization);
+}
+
 void dump_histogram(const vector<double> &vals)
 {
 	cout << "histogram([";
@@ -651,9 +690,10 @@ struct ag_terrain_dsf_description {
 	int dsf_lat;
 	int divisions_lon;
 	int divisions_lat;
+	ag_terrain_style style;
 };
 
-static vector<ag_terrain_dsf_description> initialize_autogen_pmwx()
+static ag_terrain_dsf_description initialize_autogen_pmwx()
 {
 	const DEMGeo & climate_style(gDem[dem_ClimStyle]);
 	DebugAssertWithExplanation(climate_style.mWidth > 0 && climate_style.mHeight > 0, "No climate data available");
@@ -664,34 +704,25 @@ static vector<ag_terrain_dsf_description> initialize_autogen_pmwx()
 	const int degrees_lat = intround(climate_style.mNorth - climate_style.mSouth);
 	DebugAssertWithExplanation(flt_abs(climate_style.mEast  - climate_style.mWest  - degrees_lon) < 0.01, "Working area should be an integer number of degrees longitude");
 	DebugAssertWithExplanation(flt_abs(climate_style.mNorth - climate_style.mSouth - degrees_lat) < 0.01, "Working area should be an integer number of degrees latitude");
+	Assert(degrees_lon * degrees_lat == 1);
 
-	vector<ag_terrain_dsf_description> out;
-	out.reserve(degrees_lon * degrees_lat);
+	const double lon_min = climate_style.mWest;
+	const double lat_min = climate_style.mSouth;
 
-	for(int degree_lon = 0; degree_lon < degrees_lon; ++degree_lon)
-	for(int degree_lat = 0; degree_lat < degrees_lat; ++degree_lat)
+	const ag_terrain_style style = choose_style(lon_min, lat_min);
+
+	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m[style], lat_min + 0.5);
+	for(int x = 0; x <= divisions_lon; ++x)
 	{
-		const double lon_min = climate_style.mWest  + degree_lon;
-		const double lon_max = climate_style.mWest  + degree_lon + 1;
-		const double lat_min = climate_style.mSouth + degree_lat;
-		const double lat_max = climate_style.mSouth + degree_lat + 1;
+		double lon = lon_min + ((double)x / divisions_lon);
+		grid_params.push_back(Segment_2(Point_2(lon, lat_min), Point_2(lon, lat_min + 1)));
+	}
 
-		const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m, 0.5 * (lat_min + lat_max));
-		for(int x = 0; x <= divisions_lon; ++x)
-		{
-			double lon = lon_min + ((double)x / divisions_lon);
-			grid_params.push_back(Segment_2(Point_2(lon, lat_min), Point_2(lon, lat_max)));
-		}
-
-		const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m);
-		for(int y = 0; y <= divisions_lat; ++y)
-		{
-			const double lat = lat_min + ((double)y / divisions_lat);
-			grid_params.push_back(Segment_2(Point_2(lon_min, lat), Point_2(lon_max, lat)));
-		}
-
-		ag_terrain_dsf_description desc = {lon_min, lat_min, divisions_lon, divisions_lat};
-		out.push_back(desc);
+	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m[style]);
+	for(int y = 0; y <= divisions_lat; ++y)
+	{
+		const double lat = lat_min + ((double)y / divisions_lat);
+		grid_params.push_back(Segment_2(Point_2(lon_min, lat), Point_2(lon_min + 1, lat)));
 	}
 
 	// These are effectively the gridlines for every grid square
@@ -699,7 +730,7 @@ static vector<ag_terrain_dsf_description> initialize_autogen_pmwx()
 	// Edges will be adjacent to faces where we want to set the terrain type
 	Map_CreateReturnEdges(s_autogen_grid, grid_params, halfedge_handles);
 
-	return out;
+	return {lon_min, lat_min, divisions_lon, divisions_lat, style};
 }
 
 
@@ -713,7 +744,6 @@ struct pair_comparator
 
 
 typedef vector<vector<tile_assignment> > dsf_assignment;
-typedef map<pair<int, int>, dsf_assignment, pair_comparator> dsf_to_ortho_terrain_map;
 
 struct special_ter_repeat_rule {
 	special_ter_repeat_rule(int min, int max, int ter_1) : min_radius(min), target_max_radius(max) { compatible_terrains.push_back(ter_1); compatible_terrains.push_back(ter_1 + 1); }
@@ -722,7 +752,7 @@ struct special_ter_repeat_rule {
 	vector<int> compatible_terrains;
 };
 
-map<int, special_ter_repeat_rule> get_special_ter_repeat_rules()
+map<int, special_ter_repeat_rule> get_special_ter_repeat_rules_us()
 {
 	map<int, special_ter_repeat_rule> out;
 	out.insert(make_pair(terrain_PseudoOrthoInnerPark,			special_ter_repeat_rule(3, 5, terrain_PseudoOrthoInner1)));
@@ -734,6 +764,20 @@ map<int, special_ter_repeat_rule> get_special_ter_repeat_rules()
 	out.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial1,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
 	out.insert(make_pair(terrain_PseudoOrthoIndustrialSpecial2,	special_ter_repeat_rule(2, 3, terrain_PseudoOrthoIndustrial1)));
 	return out;
+}
+
+map<int, special_ter_repeat_rule> get_special_ter_repeat_rules_euro()
+{
+	map<int, special_ter_repeat_rule> out;
+	out.insert(make_pair(terrain_PseudoOrthoEuroSemiInd,		special_ter_repeat_rule(3, 5, terrain_PseudoOrthoEuro1)));
+	out.insert(make_pair(terrain_PseudoOrthoEuroIndustrial,		special_ter_repeat_rule(3, 7, terrain_PseudoOrthoEuro1)));
+	return out;
+}
+
+
+map<int, special_ter_repeat_rule> get_special_ter_repeat_rules(ag_terrain_style style)
+{
+	return style == style_europe ? get_special_ter_repeat_rules_euro() : get_special_ter_repeat_rules_us();
 }
 
 static bool has_matching_ter_enum_in_radius(int ter_enum, int min_radius, const grid_coord_desc &point, const dsf_assignment &tile_assignments)
@@ -812,6 +856,12 @@ string ter_lib_path_to_png_path(string lib_path)
 		str_replace_all(lib_path, ".ter", ".png");
 		return "Global Scenery/Mobile_Autogen_Lib/US/Textures/orthogonal_land_textures/" + lib_path;
 	}
+	else if(lib_path.find("../autogen/Europe/") == 0)
+	{
+		str_replace_all(lib_path, "../autogen/Europe/", "");
+		str_replace_all(lib_path, ".ter", ".png");
+		return "Global Scenery/Mobile_Autogen_Lib/Europe/Textures/orthogonal_land_textures/" + lib_path;
+	}
 	else
 	{
 		DebugAssertWithExplanation(false, "Unknown lib path");
@@ -840,12 +890,14 @@ int to_scorable_value(int ortho_enum)
 {
 	switch(ortho_enum)
 	{
-		case NO_VALUE:						return 0;
-		case terrain_PseudoOrthoTown:		return 1;
-		case terrain_PseudoOrthoOuter:		return 2;
-		case terrain_PseudoOrthoInner:		return 3;
-		case terrain_PseudoOrthoIndustrial:	return 4;
-		default: DebugAssert(!"illegal ortho enum"); return 9999;
+		case NO_VALUE:									return 0;
+		case terrain_PseudoOrthoTown:					return 1;
+		case terrain_PseudoOrthoEuro:					return 1;
+		case terrain_PseudoOrthoOuter:					return 2;
+		case terrain_PseudoOrthoInner:					return 3;
+		case terrain_PseudoOrthoIndustrial:				return 4;
+		case terrain_PseudoOrthoEuroSortaIndustrial:	return 4;
+		default: DebugAssert(!"illegal ortho enum");	return 9999;
 	}
 }
 
@@ -941,21 +993,17 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	DebugAssertWithExplanation(gDem.count(dem_LandUse), "Tried to add autogen terrain with no DEM land use data; you probably need to change the order of your scenery gen commands");
 	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
 
-	const vector<ag_terrain_dsf_description> all_dsfs = initialize_autogen_pmwx();
+	const ag_terrain_dsf_description dsf_desc = initialize_autogen_pmwx();
 
-	dsf_to_ortho_terrain_map ortho_terrain_by_dsf;
-	for(vector<ag_terrain_dsf_description>::const_iterator dsf = all_dsfs.begin(); dsf != all_dsfs.end(); ++dsf)
+	const int dx = dsf_desc.divisions_lon;
+	const int dy = dsf_desc.divisions_lat;
+	dsf_assignment ortho_terrain_assignments(dx);
+	for(int lon_offset = 0; lon_offset < dx; ++lon_offset)
 	{
-		const pair<int, int> dsf_lon_lat = make_pair(dsf->dsf_lon, dsf->dsf_lat);
-		dsf_assignment &ortho_terrain_assignments = ortho_terrain_by_dsf[dsf_lon_lat];
-		ortho_terrain_assignments.resize(dsf->divisions_lon);
-		for(int lon_offset = 0; lon_offset < dsf->divisions_lon; ++lon_offset)
-		{
-			ortho_terrain_assignments[lon_offset].resize(dsf->divisions_lat);
-		}
+		ortho_terrain_assignments[lon_offset].resize(dy);
 	}
 
-	const map<ortho_urbanization, int> ter_with_transitions = get_terrain_transition_descriptions();
+	const map<ortho_urbanization, int> ter_with_transitions = get_terrain_transition_descriptions(dsf_desc.style);
 
 	//--------------------------------------------------------------------------------------------------------
 	// PASS 1
@@ -967,14 +1015,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	//   c) we wouldn't have done anything about standalone tiles, which just look awkward
 	//--------------------------------------------------------------------------------------------------------
 	map<ortho_urbanization, int> missing_transitions_count;
-	const int dx = ortho_terrain_by_dsf.begin()->second.size();
-	const int dy = ortho_terrain_by_dsf.begin()->second[0].size();
-	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
 	for(int x = 0; x < dx; ++x)
 	for(int y = 0; y < dy; ++y)
 	{
-		const pair<int, int> &dsf_lon_lat = dsf->first;
-
 		vector<int> land_uses(4, DEM_NO_DATA); // counterclockwise from lower left
 		vector<float> urbanization(4, DEM_NO_DATA);
 		bool has_some_urbanization_data = false;
@@ -982,8 +1025,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		for(int corner_y = 0; corner_y < 2; ++corner_y)
 		{
 			const int corner_idx = corner_y == 0 ? corner_x : 3 - corner_x;
-			const double lon = dsf_lon_lat.first + (double)(x + corner_x) / dx;
-			const double lat = dsf_lon_lat.second + (double)(y + corner_y) / dy;
+			const double lon = dsf_desc.dsf_lon + (double)(x + corner_x) / dx;
+			const double lat = dsf_desc.dsf_lat + (double)(y + corner_y) / dy;
 			const float urb = gDem[dem_UrbanDensity].value_linear(lon, lat);
 			urbanization[corner_idx] = urb;
 			has_some_urbanization_data |= urb != DEM_NO_DATA;
@@ -997,14 +1040,14 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			vector<int> corners(4, NO_VALUE);
 			for(int i = 0; i < 4; ++i)
 			{
-				corners[i] = choose_ortho_terrain(land_uses[i], urbanization[i]);
+				corners[i] = choose_ortho_terrain(land_uses[i], urbanization[i], dsf_desc.style);
 			}
 
 			ortho_urbanization desired_urb_pattern(corners);
 			if(!desired_urb_pattern.is_uniform() || desired_urb_pattern.bottom_left != NO_VALUE)
 			{
 				int ter_enum = choose_nearest_terrain(desired_urb_pattern, ter_with_transitions);
-				dsf->second[x][y] = ter_enum;
+				ortho_terrain_assignments[x][y] = ter_enum;
 			}
 		}
 	}
@@ -1017,7 +1060,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// PASS 2
 	// Go through the existing map looking for point features which would correspond to our "special" orthophotos.
 	//--------------------------------------------------------------------------------------------------------
-	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
+	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(dsf_desc.style); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
 	
 	vector<int> large_building_features;
 	large_building_features.push_back(feat_CommercialOffice);
@@ -1028,25 +1071,29 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		if(!f->is_unbounded())
 		{
 			const GIS_face_data &fd = f->data();
-			const Point2 centroid = cgal_face_to_ben(f).centroid();
-			const pair<int, int> dsf_coords = make_pair(floor(centroid.x()), floor(centroid.y()));
-			dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.find(dsf_coords);
-			if(dsf != ortho_terrain_by_dsf.end())
+			Polygon2 ben_poly = cgal_face_to_ben(f);
+			if(ben_poly.area() > 0) // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
 			{
-				const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
-				tile_assignment &assignment = dsf->second[grid_pt.x][grid_pt.y];
-				if(assignment.ter_enum != NO_VALUE)
+				const Point2 centroid = ben_poly.centroid();
+				DebugAssert(dsf_desc.dsf_lon == floor(centroid.x()));
+				DebugAssert(dsf_desc.dsf_lat == floor(centroid.y()));
 				{
-					for(GISPointFeatureVector::const_iterator i = fd.mPointFeatures.begin(); i != fd.mPointFeatures.end(); ++i)
+					const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, dsf_desc.style);
+					tile_assignment &assignment = ortho_terrain_assignments[grid_pt.x][grid_pt.y];
+					if(dsf_desc.style == style_us && // Europe doesn't have the special types we assign below
+							assignment.ter_enum != NO_VALUE)
 					{
-						if(contains(large_building_features, i->mFeatType))
+						for(GISPointFeatureVector::const_iterator i = fd.mPointFeatures.begin(); i != fd.mPointFeatures.end(); ++i)
 						{
-							attempt_assign_special_ter_enum(terrain_PseudoOrthoOuterBuilding, special_ter_repeat_rules, grid_pt, dsf->second);
-							attempt_assign_special_ter_enum(terrain_PseudoOrthoTownLgBuilding, special_ter_repeat_rules, grid_pt, dsf->second);
-						}
-						else if(i->mFeatType == feat_GolfCourse)
-						{
-							attempt_assign_special_ter_enum(terrain_PseudoOrthoInnerPark, special_ter_repeat_rules, grid_pt, dsf->second);
+							if(contains(large_building_features, i->mFeatType))
+							{
+								attempt_assign_special_ter_enum(terrain_PseudoOrthoOuterBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
+								attempt_assign_special_ter_enum(terrain_PseudoOrthoTownLgBuilding, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
+							}
+							else if(i->mFeatType == feat_GolfCourse)
+							{
+								attempt_assign_special_ter_enum(terrain_PseudoOrthoInnerPark, special_ter_repeat_rules, grid_pt, ortho_terrain_assignments);
+							}
 						}
 					}
 				}
@@ -1064,12 +1111,11 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	for(map<int, special_ter_repeat_rule>::const_iterator rule = special_ter_repeat_rules.begin(); rule != special_ter_repeat_rules.end(); ++rule)
 	{
 		const int dy_for_randomization = dx == dy ? dy + 13 : dy;
-		for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
-		for(int x = 0; x < dx; x += pseudorandom_in_range(rule->second, dsf->first, x, dx))
-		for(int y = 0; y < dy; y += pseudorandom_in_range(rule->second, dsf->first, y, dy_for_randomization))
+		for(int x = 0; x < dx; x += pseudorandom_in_range(rule->second, make_pair(dsf_desc.dsf_lon, dsf_desc.dsf_lat), x, dx))
+		for(int y = 0; y < dy; y += pseudorandom_in_range(rule->second, make_pair(dsf_desc.dsf_lon, dsf_desc.dsf_lat), y, dy_for_randomization))
 		{
-			grid_coord_desc pt = {x, y, dx, dy, dsf->first.first, dsf->first.second};
-			attempt_assign_special_ter_enum(rule->first, special_ter_repeat_rules, pt, dsf->second);
+			grid_coord_desc pt = {x, y, dx, dy, dsf_desc.dsf_lon, dsf_desc.dsf_lat};
+			attempt_assign_special_ter_enum(rule->first, special_ter_repeat_rules, pt, ortho_terrain_assignments);
 		}
 	}
 
@@ -1077,15 +1123,13 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// PASS 4
 	// Add rotations of analogous types
 	//--------------------------------------------------------------------------------------------------------
-	const map<int, ortho_urbanization> terrain_desc_by_enum = fucking_reverse_map(ter_with_transitions);
-	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
+	if(dsf_desc.style != style_europe)
 	{
-		dsf_assignment &grid = dsf->second;
+		const map<int, ortho_urbanization> terrain_desc_by_enum = fucking_reverse_map(ter_with_transitions);
 		for(int x = 0; x < dx; ++x)
 		for(int y = 0; y < dy; ++y)
 		{
-			grid[x][y] = get_analogous_ortho_terrain(grid[x][y].ter_enum, x, y, terrain_desc_by_enum);
-
+			ortho_terrain_assignments[x][y] = get_analogous_ortho_terrain(ortho_terrain_assignments[x][y].ter_enum, x, y, terrain_desc_by_enum);
 		}
 	}
 
@@ -1127,10 +1171,6 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 				}
 			}
 		}
-		else
-		{
-			printf("Unknown terrain %d\n", ter);
-		}
 	}
 
 	const int output_x_min = 0;
@@ -1138,10 +1178,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	const int output_y_min = 0;
 	const int output_y_max = dy;
 
-	const int compressed_dim_px = 256 / 2;
-	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
+	const int compressed_dim_px = g_ortho_width_px[dsf_desc.style] / 2;
 	{
-		const dsf_assignment &grid = dsf->second;
+		const dsf_assignment &grid = ortho_terrain_assignments;
 
 		ImageInfo out_bmp = {};
 		out_bmp.width = compressed_dim_px * (output_x_max - output_x_min);
@@ -1157,6 +1196,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			const tile_assignment &assignment = grid[x][y];
 			if(assignment.ter_enum > 0)
 			{
+				DebugAssert(assignment.ter_enum < 500000);
 				DebugAssertWithExplanation(pngs.count(assignment), "Couldn't find PNG for terrain");
 				const ImageInfo * png = &pngs[assignment];
 				CopyBitmapSection(png, &out_bmp,
@@ -1183,21 +1223,19 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 
 	// Dump to the console
 	printf("Complete assignment set:\n");
-	for(dsf_to_ortho_terrain_map::iterator dsf = ortho_terrain_by_dsf.begin(); dsf != ortho_terrain_by_dsf.end(); ++dsf)
 	{
-		const dsf_assignment &grid = dsf->second;
-		for(int y = output_y_max; y >= output_y_min; --y)
+		for(int y = output_y_max - 1; y >= output_y_min; --y)
 		{
 			printf("%03d ", y);
 			for(int x = output_x_min; x < output_x_max; ++x)
 			{
-				if(grid[x][y].ter_enum == NO_VALUE)
+				if(ortho_terrain_assignments[x][y].ter_enum == NO_VALUE)
 				{
 					printf("%20s ", " ");
 				}
 				else
 				{
-					printf("%20s ", abbreviated_ortho_str(grid[x][y].ter_enum));
+					printf("%20s ", abbreviated_ortho_str(ortho_terrain_assignments[x][y].ter_enum));
 				}
 			}
 			printf("\n");
@@ -1222,16 +1260,11 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			#endif
 
 			const Point2 centroid = cgal_face_to_ben(f).centroid();
-			const pair<int, int> dsf = make_pair(floor(centroid.x()), floor(centroid.y()));
-			const grid_coord_desc grid_pt = get_orth_grid_xy(centroid);
-			DebugAssert(ortho_terrain_by_dsf.count(dsf) || cgal_face_to_ben(f).bounds().area() == 0);
-			dsf_to_ortho_terrain_map::iterator dsf_it = ortho_terrain_by_dsf.find(dsf);
-			if(dsf_it != ortho_terrain_by_dsf.end())
+			const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, dsf_desc.style);
 			{
-				const dsf_assignment &grid = dsf_it->second;
-				DebugAssert(grid.size() > grid_pt.x);
-				DebugAssert(grid[grid_pt.x].size() > grid_pt.y);
-				const tile_assignment &assignment = grid[grid_pt.x][grid_pt.y];
+				DebugAssert(ortho_terrain_assignments.size() > grid_pt.x);
+				DebugAssert(ortho_terrain_assignments[grid_pt.x].size() > grid_pt.y);
+				const tile_assignment &assignment = ortho_terrain_assignments[grid_pt.x][grid_pt.y];
 				if(assignment.ter_enum != NO_VALUE)
 				{
 					f->set_contained(true);

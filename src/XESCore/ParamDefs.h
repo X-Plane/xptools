@@ -737,6 +737,26 @@
 	TOKEN(terrain_PseudoOrthoOuterTransUR_Half)
 	TOKEN(terrain_PseudoOrthoOuterTransUR_Full)
 
+	// Euro versions of our orthos
+	TOKEN(terrain_PseudoOrthoEuro) // Placeholder for "some sorta European" (maybe full, maybe transitional)
+	TOKEN(terrain_PseudoOrthoEuro1)
+	TOKEN(terrain_PseudoOrthoEuro2)
+	TOKEN(terrain_PseudoOrthoEuroSortaIndustrial) // Placeholder for either of our "special" full tiles that kinda look industrial
+	TOKEN(terrain_PseudoOrthoEuroSemiInd)
+	TOKEN(terrain_PseudoOrthoEuroIndustrial)
+	TOKEN(terrain_PseudoOrthoEuroTransBottom)
+	TOKEN(terrain_PseudoOrthoEuroTransLeft)
+	TOKEN(terrain_PseudoOrthoEuroTransRight)
+	TOKEN(terrain_PseudoOrthoEuroTransUpper)
+	TOKEN(terrain_PseudoOrthoEuroTransLL_Half)
+	TOKEN(terrain_PseudoOrthoEuroTransLL_Full)
+	TOKEN(terrain_PseudoOrthoEuroTransLR_Half)
+	TOKEN(terrain_PseudoOrthoEuroTransLR_Full)
+	TOKEN(terrain_PseudoOrthoEuroTransUL_Half)
+	TOKEN(terrain_PseudoOrthoEuroTransUL_Full)
+	TOKEN(terrain_PseudoOrthoEuroTransUR_Half)
+	TOKEN(terrain_PseudoOrthoEuroTransUR_Full)
+
 	TOKEN(terrain_PseudoOrthophotoEnd)
 
 	// NOTE: this terrain is at the END of the terrain enums so we can serialize
