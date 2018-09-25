@@ -56,6 +56,7 @@
 #include "MobileAutogenAlgs.h"
 #include "BitmapUtils.h"
 #include "PlatformUtils.h"
+#include "FileUtils.h"
 
 // Hack to avoid forest pre-processing - to be used to speed up --instobjs for testing AG algos when
 // we don't NEED good forest fill.
@@ -1166,7 +1167,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			}
 		}
 
-		const string out_path = stl_printf("Earth nav data" DIR_STR "%+03d%+04d" DIR_STR "%+03d%+04d.dsf", latlon_bucket(dsf->first.second), latlon_bucket(dsf->first.first), dsf->first.second, dsf->first.first) + ".png";
+		const string out_dir = stl_printf("Earth nav data" DIR_STR "%+03d%+04d" DIR_STR, latlon_bucket(dsf_desc.dsf_lat), latlon_bucket(dsf_desc.dsf_lon));
+		FILE_make_dir_exist(out_dir.c_str());
+		const string out_path = stl_printf("%s%+03d%+04d.dsf", out_dir.c_str(), dsf_desc.dsf_lat, dsf_desc.dsf_lon) + ".png";
 		const int error = WriteBitmapToPNG(&out_bmp, out_path.c_str(), NULL, 0, GAMMA_SRGB);
 		if(!error)
 		{
