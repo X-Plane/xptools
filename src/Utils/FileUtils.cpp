@@ -588,6 +588,20 @@ int FILE_delete_dir_recursive(const string& path)
 	return r;
 }
 
+void FILE_process_texture_path(const string& path_of_obj, string& path_of_tex)
+{
+	string parent;
+
+	parent = FILE_get_dir_name(path_of_obj) + FILE_get_dir_name(path_of_tex)
+			+ FILE_get_file_name_wo_extensions(path_of_tex);
+
+	path_of_tex = parent + ".dds";          // no need to also check for .DDS, filename case desense will take care of it
+	if(FILE_exists(path_of_tex.c_str()))  return;
+	path_of_tex = parent + ".png";
+	if(FILE_exists(path_of_tex.c_str()))  return;
+	path_of_tex = parent + ".bmp";
+}
+
 #if WED	
 static int compress_one_file(zipFile archive, const string& src, const string& dst)
 {

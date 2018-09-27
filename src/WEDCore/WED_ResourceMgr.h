@@ -51,6 +51,7 @@
 #include "CompGeomDefs2.h"
 
 class	WED_LibraryMgr;
+class	agp_t;
 
 struct	XObj8;
 
@@ -107,21 +108,6 @@ struct	road_info_t {
 	map<int, string>	vroad_types;
 };
 
-#if AIRPORT_ROUTING
-struct agp_t {
-	struct obj {
-		double  x,y,r;			// annotation position
-		int		show_lo,show_hi;
-		string	name;
-	};
-	string			base_tex;
-	string			mesh_tex;
-	int				hide_tiles;
-	vector<double>	tile;	// the base tile in x,y,s,t quads.
-	vector<obj>		objs;
-};
-#endif
-
 
 class WED_ResourceMgr : public GUI_Broadcaster, public GUI_Listener, public virtual IBase {
 public:
@@ -144,9 +130,9 @@ public:
 			bool	GetObj(const string& path, XObj8 *& obj, int variant = 0);
 			bool	GetObjRelative(const string& obj_path, const string& parent_path, XObj8 *& obj);
 #if AIRPORT_ROUTING
-			bool	GetAGP(const string& path, agp_t& out_info);
+			bool	GetAGP(const string& library_path, agp_t& out_info);
 			bool	GetRoad(const string& path, road_info_t& out_info);
-#endif			
+#endif
 
 
 	virtual	void	ReceiveMessage(

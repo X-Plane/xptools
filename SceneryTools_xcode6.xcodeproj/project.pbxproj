@@ -72,6 +72,9 @@
 		02B03C4320C72130000F81F0 /* line_BBrokenRed.png in Resources */ = {isa = PBXBuildFile; fileRef = 02B03C1120C720A1000F81F0 /* line_BBrokenRed.png */; };
 		02F4A70C204E6F4700E241B3 /* worldmap.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 02F4A70A204E6F1700E241B3 /* worldmap.jpg */; };
 		2F1515C61D0BA700002224B1 /* WED_MetaDataKeys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */; };
+		2F67CC40215D480900D815FC /* Agp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F67CC3E215D480800D815FC /* Agp.cpp */; };
+		2F67CC41215D480900D815FC /* Agp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F67CC3E215D480800D815FC /* Agp.cpp */; };
+		2F67CC42215D480900D815FC /* Agp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F67CC3E215D480800D815FC /* Agp.cpp */; };
 		2F8378A01D070F000033848D /* CACHE_DomainPolicy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */; };
 		69B490ED80B36EBBB192E0C7 /* MobileAutogenAlgs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 69B49F9D46554ADF96B87C22 /* MobileAutogenAlgs.cpp */; };
 		69B4912C59E74E8EDED57E13 /* STLUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D67B28660C5647EF00A21ABC /* STLUtils.cpp */; };
@@ -1051,6 +1054,8 @@
 		2F013D7F2152CB6C00E0A96B /* UTL_interval.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UTL_interval.h; sourceTree = "<group>"; };
 		2F1515C41D0BA700002224B1 /* WED_MetaDataKeys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_MetaDataKeys.cpp; sourceTree = "<group>"; };
 		2F1515C51D0BA700002224B1 /* WED_MetaDataKeys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_MetaDataKeys.h; sourceTree = "<group>"; };
+		2F67CC3E215D480800D815FC /* Agp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Agp.cpp; sourceTree = "<group>"; };
+		2F67CC3F215D480900D815FC /* Agp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Agp.h; sourceTree = "<group>"; };
 		2F83789E1D070F000033848D /* CACHE_DomainPolicy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CACHE_DomainPolicy.cpp; sourceTree = "<group>"; };
 		2F83789F1D070F000033848D /* CACHE_DomainPolicy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CACHE_DomainPolicy.h; sourceTree = "<group>"; };
 		2F918105215ACCEE00132D12 /* WED_ATCTimeRule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_ATCTimeRule.h; sourceTree = "<group>"; };
@@ -3191,6 +3196,8 @@
 		D6BC382D0AB22C85003949C5 /* XESCore */ = {
 			isa = PBXGroup;
 			children = (
+				2F67CC3E215D480800D815FC /* Agp.cpp */,
+				2F67CC3F215D480900D815FC /* Agp.h */,
 				2F013D7E2152CB1B00E0A96B /* Hydro2.h */,
 				D6BC020B146CC17800A941C6 /* Hydro2.cpp */,
 				D6D408271406C6A20061EBF9 /* BezierApprox.cpp */,
@@ -4256,6 +4263,7 @@
 				D633FA6E0E12DF7400A3913F /* PCSBSocketUDP.lin.cpp in Sources */,
 				D6734B360EACE5930002C4C1 /* MapCreate.cpp in Sources */,
 				D6734BA60EACFCEE0002C4C1 /* MapOverlay.cpp in Sources */,
+				2F67CC40215D480900D815FC /* Agp.cpp in Sources */,
 				D6734D1C0EAE30A00002C4C1 /* MapBuffer.cpp in Sources */,
 				D6734D210EAE30AF0002C4C1 /* MapPolygon.cpp in Sources */,
 				D68E28830EBF5D3A0015648F /* ShapeIO.cpp in Sources */,
@@ -4362,6 +4370,7 @@
 				D65E4B930B65451F004D7887 /* CompGeomDefs2_TEST.cpp in Sources */,
 				D65E4B940B654529004D7887 /* XESInit.cpp in Sources */,
 				D65E4B990B65453A004D7887 /* ParamDefs.cpp in Sources */,
+				2F67CC42215D480900D815FC /* Agp.cpp in Sources */,
 				D65E4B9A0B65453B004D7887 /* SceneryPackages.cpp in Sources */,
 				D65E4B9B0B65453D004D7887 /* SimpleIO.cpp in Sources */,
 				D65E4B9D0B654542004D7887 /* Zoning.cpp in Sources */,
@@ -4704,6 +4713,7 @@
 				D6E0658D0BDE42240070E31C /* WED_VertexTool.cpp in Sources */,
 				D6E067770BDE91990070E31C /* WED_ToolInfoAdapter.cpp in Sources */,
 				D6FEC58B0BE0E231006A99CC /* WED_CreatePointTool.cpp in Sources */,
+				2F67CC41215D480900D815FC /* Agp.cpp in Sources */,
 				D6FEC6EF0BE0F019006A99CC /* WED_CreateLineTool.cpp in Sources */,
 				D6FEC7390BE0F280006A99CC /* WED_RunwayNode.cpp in Sources */,
 				D659755F0BEA6D18001FC7C3 /* GUI_ChangeView.cpp in Sources */,
