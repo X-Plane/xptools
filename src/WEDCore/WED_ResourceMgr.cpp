@@ -927,7 +927,7 @@ bool	WED_ResourceMgr::GetAGP(const string& path, agp_t& out_info)
 		return true;
 	}
 
-	const bool loaded = ForceLoadAGP(mLibrary->GetResourcePath(path), out_info);
+	const bool loaded = load_agp(mLibrary->GetResourcePath(path), out_info);
 	if(loaded)
 	{
 		mAGP[path] = out_info;

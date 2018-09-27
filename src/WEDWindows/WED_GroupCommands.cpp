@@ -45,6 +45,7 @@
 #include "PlatformUtils.h"
 
 #include "AptDefs.h"
+#include "Agp.h"
 #include "XObjDefs.h"
 #include "XESConstants.h"
 

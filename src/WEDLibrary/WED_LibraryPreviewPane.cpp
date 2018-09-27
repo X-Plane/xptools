@@ -26,6 +26,7 @@
 #include "ITexMgr.h"
 #include "TexUtils.h"
 #include "MathUtils.h"
+#include "Agp.h"
 
 #include "GUI_DrawUtils.h"
 #include "GUI_Broadcaster.h"

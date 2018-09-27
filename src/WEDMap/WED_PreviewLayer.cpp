@@ -57,6 +57,7 @@
 #include "WED_TruckParkingLocation.h"
 #include "WED_EnumSystem.h"
 #include "GISUtils.h"
+#include "Agp.h"
 
 #if APL
 #include <OpenGL/gl.h>
