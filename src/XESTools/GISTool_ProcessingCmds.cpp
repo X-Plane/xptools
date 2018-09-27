@@ -57,6 +57,7 @@
 #include "BitmapUtils.h"
 #include "PlatformUtils.h"
 #include "FileUtils.h"
+#include "Agp.h"
 
 // Hack to avoid forest pre-processing - to be used to speed up --instobjs for testing AG algos when
 // we don't NEED good forest fill.
@@ -869,6 +870,13 @@ string ter_lib_path_to_png_path(string lib_path)
 	}
 }
 
+string ter_lib_path_to_agp_disk_path(string lib_path)
+{
+	str_replace_all(lib_path, "../autogen", "");
+	str_replace_all(lib_path, ".ter", ".agp");
+	return "Global Scenery/Mobile_Autogen_Lib/" + lib_path;
+}
+
 ortho_urbanization conform_terrain_to_expectations(const ortho_urbanization &non_matching_tile)
 {
 	vector<int> out = non_matching_tile.to_vector();
@@ -1239,6 +1247,28 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		}
 	}
 #endif // DEV
+
+	//--------------------------------------------------------------------------------------------------------
+	// Prep the AGPs we will read OBJ point positions from.
+	// Mobile doesn't support AGPs directly, so instead we treat the AGPs as a *spec* from which we
+	// read the relative locations of a bunch of OBJs; those OBJs then get baked directly into the DSF.
+	//--------------------------------------------------------------------------------------------------------
+	map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
+	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
+	{
+		const int rule_name = find_terrain_rule_name(ter);
+		NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
+		if(ter_info != gNaturalTerrainInfo.end())
+		{
+			const string &ter_lib_path = ter_info->second.base_tex;
+			const string agp_disk_path = ter_lib_path_to_agp_disk_path(ter_lib_path);
+			agp_t agp;
+			if(load_agp(agp_disk_path, agp))
+			{
+				agps.insert(make_pair(ter, agp));
+			}
+		}
+	}
 
 	//--------------------------------------------------------------------------------------------------------
 	// FINALLY
