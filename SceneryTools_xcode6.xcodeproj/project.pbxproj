@@ -1291,8 +1291,6 @@
 		D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetAlgs.cpp; sourceTree = "<group>"; };
 		D64A08AD127AFDEA000D58A7 /* NetHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NetHelpers.h; sourceTree = "<group>"; };
 		D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NetHelpers.cpp; sourceTree = "<group>"; };
-		D64A0E83110F820A006172C3 /* ObjPlacement2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjPlacement2.h; sourceTree = "<group>"; };
-		D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ObjPlacement2.cpp; sourceTree = "<group>"; };
 		D64E06F60C25970F004B20D0 /* GUI_MemoryHog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GUI_MemoryHog.h; sourceTree = "<group>"; };
 		D64E06F70C25970F004B20D0 /* GUI_MemoryHog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GUI_MemoryHog.cpp; sourceTree = "<group>"; };
 		D652F3E21D5B5A46008566F8 /* WED_ValidateATCRunwayChecks.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WED_ValidateATCRunwayChecks.cpp; sourceTree = "<group>"; };
@@ -1838,7 +1836,7 @@
 		D6BC38370AB22C85003949C5 /* CGALTypes.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = CGALTypes.h; sourceTree = "<group>"; };
 		D6BC383A0AB22C85003949C5 /* ConfigSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ConfigSystem.cpp; sourceTree = "<group>"; };
 		D6BC383B0AB22C85003949C5 /* ConfigSystem.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ConfigSystem.h; sourceTree = "<group>"; };
-		D6BC383E0AB22C85003949C5 /* DEMAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DEMAlgs.cpp; sourceTree = "<group>"; };
+		D6BC383E0AB22C85003949C5 /* DEMAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DEMAlgs.cpp; sourceTree = "<group>"; };
 		D6BC383F0AB22C85003949C5 /* DEMAlgs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DEMAlgs.h; sourceTree = "<group>"; };
 		D6BC38400AB22C85003949C5 /* DEMDefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DEMDefs.cpp; sourceTree = "<group>"; };
 		D6BC38410AB22C85003949C5 /* DEMDefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DEMDefs.h; sourceTree = "<group>"; };
@@ -1852,8 +1850,6 @@
 		D6BC38490AB22C85003949C5 /* DSFBuilder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DSFBuilder.h; sourceTree = "<group>"; };
 		D6BC384A0AB22C85003949C5 /* EnumSystem.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = EnumSystem.cpp; sourceTree = "<group>"; };
 		D6BC384B0AB22C85003949C5 /* EnumSystem.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = EnumSystem.h; sourceTree = "<group>"; };
-		D6BC384E0AB22C85003949C5 /* Forests.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Forests.cpp; sourceTree = "<group>"; };
-		D6BC384F0AB22C85003949C5 /* Forests.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Forests.h; sourceTree = "<group>"; };
 		D6BC38500AB22C85003949C5 /* GreedyMesh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = GreedyMesh.cpp; sourceTree = "<group>"; };
 		D6BC38510AB22C85003949C5 /* GreedyMesh.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = GreedyMesh.h; sourceTree = "<group>"; };
 		D6BC38520AB22C85003949C5 /* Hydro.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Hydro.cpp; sourceTree = "<group>"; };
@@ -1874,8 +1870,6 @@
 		D6BC38640AB22C85003949C5 /* NetPlacement.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = NetPlacement.h; sourceTree = "<group>"; };
 		D6BC38650AB22C85003949C5 /* NetTables.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = NetTables.cpp; sourceTree = "<group>"; };
 		D6BC38660AB22C85003949C5 /* NetTables.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = NetTables.h; sourceTree = "<group>"; };
-		D6BC38670AB22C85003949C5 /* ObjPlacement.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ObjPlacement.cpp; sourceTree = "<group>"; };
-		D6BC38680AB22C85003949C5 /* ObjPlacement.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ObjPlacement.h; sourceTree = "<group>"; };
 		D6BC38690AB22C85003949C5 /* ObjTables.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ObjTables.cpp; sourceTree = "<group>"; };
 		D6BC386A0AB22C85003949C5 /* ObjTables.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ObjTables.h; sourceTree = "<group>"; };
 		D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ParamDefs.cpp; sourceTree = "<group>"; };
@@ -1963,10 +1957,6 @@
 		D6D408281406C6A20061EBF9 /* BezierApprox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BezierApprox.h; sourceTree = "<group>"; };
 		D6DA657F1ACC593D007B6A75 /* README.WorldEditor */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.WorldEditor; sourceTree = "<group>"; };
 		D6DB376F0C452B0400DE04F0 /* handle_rotatehead.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = handle_rotatehead.png; sourceTree = "<group>"; };
-		D6DBA1E010572F33004E1089 /* AptRouting.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AptRouting.h; sourceTree = "<group>"; };
-		D6DBA1E110572F33004E1089 /* AptRouting.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AptRouting.cpp; sourceTree = "<group>"; };
-		D6DBA33910576739004E1089 /* BugTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BugTest.h; sourceTree = "<group>"; };
-		D6DBA33A10576739004E1089 /* BugTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BugTest.cpp; sourceTree = "<group>"; };
 		D6DEB3441055994000C378BE /* AptAlgs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AptAlgs.h; sourceTree = "<group>"; };
 		D6DEB3451055994000C378BE /* AptAlgs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AptAlgs.cpp; sourceTree = "<group>"; };
 		D6DEB6471056F6A100C378BE /* WED_GISEdge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WED_GISEdge.h; sourceTree = "<group>"; };
@@ -3209,8 +3199,6 @@
 				D6BC38340AB22C85003949C5 /* AptIO.h */,
 				D6DEB3441055994000C378BE /* AptAlgs.h */,
 				D6DEB3451055994000C378BE /* AptAlgs.cpp */,
-				D6DBA1E010572F33004E1089 /* AptRouting.h */,
-				D6DBA1E110572F33004E1089 /* AptRouting.cpp */,
 				D6BC38350AB22C85003949C5 /* Beaches.cpp */,
 				D6BC38360AB22C85003949C5 /* Beaches.h */,
 				D63F7255117FAB3500AB7C1F /* BlockDefs.h */,
@@ -3239,8 +3227,6 @@
 				D6BC38490AB22C85003949C5 /* DSFBuilder.h */,
 				D6BC384A0AB22C85003949C5 /* EnumSystem.cpp */,
 				D6BC384B0AB22C85003949C5 /* EnumSystem.h */,
-				D6BC384E0AB22C85003949C5 /* Forests.cpp */,
-				D6BC384F0AB22C85003949C5 /* Forests.h */,
 				D6E941D810DC717300192A02 /* ForestTables.cpp */,
 				D6E941D910DC717300192A02 /* ForestTables.h */,
 				D6E941DA10DC717300192A02 /* MapRaster.cpp */,
@@ -3281,10 +3267,6 @@
 				D64A08A9127AFDC1000D58A7 /* NetAlgs.cpp */,
 				D64A08AD127AFDEA000D58A7 /* NetHelpers.h */,
 				D64A08AE127AFDEA000D58A7 /* NetHelpers.cpp */,
-				D6BC38670AB22C85003949C5 /* ObjPlacement.cpp */,
-				D6BC38680AB22C85003949C5 /* ObjPlacement.h */,
-				D64A0E83110F820A006172C3 /* ObjPlacement2.h */,
-				D64A0E84110F820A006172C3 /* ObjPlacement2.cpp */,
 				D6BC38690AB22C85003949C5 /* ObjTables.cpp */,
 				D6BC386A0AB22C85003949C5 /* ObjTables.h */,
 				D6BC386B0AB22C85003949C5 /* ParamDefs.cpp */,
@@ -3304,8 +3286,6 @@
 				D6BC387B0AB22C85003949C5 /* XESIO.h */,
 				D6BC387C0AB22C85003949C5 /* Zoning.cpp */,
 				D6BC387D0AB22C85003949C5 /* Zoning.h */,
-				D6DBA33910576739004E1089 /* BugTest.h */,
-				D6DBA33A10576739004E1089 /* BugTest.cpp */,
 				D62F3A54138D4E8900F2C120 /* MeshSimplify.h */,
 				D62F3A55138D4E8900F2C120 /* MeshSimplify.cpp */,
 				69B49EC203FBF5193A66182D /* README.md */,
