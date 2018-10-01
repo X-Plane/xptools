@@ -25,6 +25,7 @@
 #define Agp_H
 
 #include "XObjDefs.h"
+#include "CompGeomDefs2.h"
 
 #if AIRPORT_ROUTING
 struct agp_t {
@@ -36,8 +37,18 @@ struct agp_t {
 	string			base_tex;
 	string			mesh_tex;
 	int				hide_tiles;
-	vector<double>	tile;	// the base tile in x,y,s,t quads.
+
+	// The base tile in x,y,s,t quads.
+	// Tyler says: OBVIOUSLY this is a vector of size 16, with values:
+	//   Index:   0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15
+	//   Meaning: x1  y1  s1  t1  x2  y1  s2  t1  x2  y2  s2  t2  x1  y2  s1  t2
+	// where (x1, y1) *may be* greater than (x2, y2).
+	// This is designed basically for immediate use in WED's renderer.
+	// (I can't believe you didn't know that........)
+	vector<double>	tile;
 	vector<obj>		objs;
+
+	Bbox2 bounds_meters() const;
 };
 
 /**

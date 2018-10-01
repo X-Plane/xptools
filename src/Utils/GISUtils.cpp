@@ -578,6 +578,7 @@ void MetersToLLE(const Point2& ref, int count, Point2 * pts)
 	while(count--)
 	{
 		pts->y_ = ref.y() + pts->y() * MTR_TO_DEG_LAT;
+		// NOTE the ordering dependency here! pts->y() must be modified *first* or else it is still in *meters*, not degrees lat
 		pts->x_ = ref.x() + pts->x() * MTR_TO_DEG_LAT / cos(pts->y() * DEG_TO_RAD);
 
 		++pts;

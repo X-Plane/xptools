@@ -201,7 +201,7 @@ public:
  * generation or by the user. */
 struct	GISObjPlacement_t {
 public:
-	int				mRepType;
+	int				mRepType; // global enum; you may need to register your OBJ via NewToken() first to get this
 	Point2			mLocation;
 	double			mHeading;
 	bool			mDerived;

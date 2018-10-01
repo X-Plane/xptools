@@ -2,6 +2,7 @@
 #include "MemFileUtils.h"
 #include "CompGeomDefs2.h"
 #include "FileUtils.h"
+#include "MathUtils.h"
 
 
 inline void	do_rotate(int n, double& io_x, double& io_y)
@@ -170,4 +171,12 @@ bool load_agp(const string &disk_path, agp_t& out_info)
 	
 	MemFile_Close(agp);
 	return true;
+}
+
+Bbox2 agp_t::bounds_meters() const
+{
+	return Bbox2(
+			Point2(dobmin2(tile[0], tile[8]), dobmin2(tile[1], tile[9])),
+			Point2(dobmax2(tile[0], tile[8]), dobmax2(tile[1], tile[9]))
+	);
 }
