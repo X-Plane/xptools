@@ -1709,7 +1709,7 @@ void	DSFFileWriterImp::AddObject(
 		REF(inRef)->objectPool3d.AccumulatePoint(p) :
 		REF(inRef)->objectPool.AccumulatePoint(p);
 	if (loc.first == -1 || loc.second == -1) {
-		printf("ERROR: could not place object %lf, %lf, %lf\n", inCoordinates[0], inCoordinates[1], inCoordinates[2]);
+		fprintf(stderr, "ERROR: could not place object %lf, %lf, %lf\n", inCoordinates[0], inCoordinates[1], inCoordinates[2]);
 		Assert(!"ERROR: could not place object.\n");
 	} else {
 		ObjectSpec o;

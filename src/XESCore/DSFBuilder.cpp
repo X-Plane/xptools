@@ -1733,7 +1733,10 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 	if (!pf->is_unbounded())
 	{
 		for (pointObj = pf->data().mObjs.begin(); pointObj != pf->data().mObjs.end(); ++pointObj)
+		{
+			DebugAssert(intrange(pointObj->mRepType, 0, gTokens.size() - 1));
 			objects.insert(map<int, int, ObjPrio>::value_type(pointObj->mRepType, 0));
+		}
 		for (polyObj = pf->data().mPolyObjs.begin(); polyObj != pf->data().mPolyObjs.end(); ++polyObj)
 			facades.insert(map<int, int>::value_type(polyObj->mRepType, 0));
 	}
@@ -1745,6 +1748,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 	for (obdef_prio = objects.begin(); obdef_prio != objects.end(); ++obdef_prio, ++cur_id)
 	{
 		obdef_prio->second = cur_id;
+		DebugAssert(intrange(obdef_prio->first, 0, gTokens.size() - 1));
 		objects_reversed[cur_id] = obdef_prio->first;
 		if (IsFeatureObject(obdef_prio->first))
 			lowest_required = min(lowest_required, cur_id);
@@ -1775,12 +1779,14 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 	{
 		for (pointObj = pf->data().mObjs.begin(); pointObj != pf->data().mObjs.end(); ++pointObj)
 		{
-			coords2[0] = CGAL::to_double(pointObj->mLocation.x());
-			coords2[1] = CGAL::to_double(pointObj->mLocation.y());
+			double lat_lon_rot[] = {
+					CGAL::to_double(pointObj->mLocation.x()),
+					CGAL::to_double(pointObj->mLocation.y()),
+					(pointObj->mHeading < 0.0) ? (pointObj->mHeading + 360.0) : pointObj->mHeading};
 			cbs.AddObject_f(
 				objects[pointObj->mRepType],
-				coords2,
-				(pointObj->mHeading < 0.0) ? (pointObj->mHeading + 360.0) : pointObj->mHeading,
+				lat_lon_rot,
+				3,
 				writer2);
 			++total_objs;
 		}
@@ -1834,6 +1840,7 @@ set<int>					sLoResLU[get_patch_dim_lo() * get_patch_dim_lo()];
 	{
 		Assert(obdef->second != NO_VALUE);
 		Assert(obdef->second != DEM_NO_DATA);
+		DebugAssert(intrange(obdef->second, 0, gTokens.size() - 1));
 		string objName = gObjLibPrefix + FetchTokenString(obdef->second);
 		objName += ".obj";
 		cbs.AcceptObjectDef_f(objName.c_str(), writer2);
