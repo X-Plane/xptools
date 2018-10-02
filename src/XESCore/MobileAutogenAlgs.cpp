@@ -200,7 +200,7 @@ ortho_urbanization ortho_urbanization::rotate(int deg) const
 {
 	DebugAssert(deg % 90 == 0);
 	ortho_urbanization out = *this;
-	deg = intwrap(deg, 0, 360);
+	deg = intwrap(deg, 0, 359);
 	while(deg > 0)
 	{
 		const int old_bl = out.bottom_left;
