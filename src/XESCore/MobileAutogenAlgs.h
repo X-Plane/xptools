@@ -63,7 +63,7 @@ struct ortho_urbanization
 	int top_right;
 	int top_left;
 
-	ortho_urbanization rotate(int deg) const;
+	ortho_urbanization rotate(int clockwise_deg) const;
 	bool is_uniform() const;
 	int count_sides(int ter_enum) const;
 	vector<int> to_vector() const; // ccw from lower left

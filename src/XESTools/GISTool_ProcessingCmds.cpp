@@ -808,11 +808,26 @@ static void attempt_assign_special_ter_enum(int ter_enum, const map<int, special
 	}
 }
 
-Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, const grid_coord_desc &grid_pt)
+Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, const grid_coord_desc &grid_pt, double rotation_deg)
 {
+	DebugAssert(rotation_deg - intround(rotation_deg) == 0);
+	DebugAssert(intround(rotation_deg) % 90 == 0);
+
 	const Bbox2 agp_bounds_m = agp.bounds_meters();
-	const double x_offset_m = interp(agp_bounds_m.xmin(), 0, agp_bounds_m.xmax(), agp_bounds_m.xmax() - agp_bounds_m.xmin(), obj.x); DebugAssert(x_offset_m >= 0);
-	const double y_offset_m = interp(agp_bounds_m.ymin(), 0, agp_bounds_m.ymax(), agp_bounds_m.ymax() - agp_bounds_m.ymin(), obj.y); DebugAssert(y_offset_m >= 0);
+	const double width_m = agp_bounds_m.xmax() - agp_bounds_m.xmin();
+	DebugAssert(dob_abs(width_m - (agp_bounds_m.ymax() - agp_bounds_m.ymin())) < 0.1); // These AGPs damn well better be square!
+	double x_offset_m = interp(agp_bounds_m.xmin(), 0, agp_bounds_m.xmax(), width_m, obj.x); DebugAssert(x_offset_m >= 0);
+	double y_offset_m = interp(agp_bounds_m.ymin(), 0, agp_bounds_m.ymax(), width_m, obj.y); DebugAssert(y_offset_m >= 0);
+
+	int deg = intround(rotation_deg);
+	while(deg > 0)
+	{
+		const double old_x = x_offset_m;
+		x_offset_m = y_offset_m;
+		y_offset_m = width_m - old_x;
+		deg -= 90;
+	}
+
 	const double out_lat = dsf_desc.dsf_lat + (y_offset_m + grid_pt.y * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT;
 	const double out_lon = dsf_desc.dsf_lon + (x_offset_m + grid_pt.x * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT / cos(out_lat * DEG_TO_RAD);
 	return Point2(out_lon, out_lat);
@@ -1338,7 +1353,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 					for(vector<agp_t::obj>::const_iterator obj = agp->second.objs.begin(); obj != agp->second.objs.end(); ++obj)
 					{
 						// Is this OBJ within this face's bounds?
-						const Point2 loc = obj_rel_placement_to_lat_lon(*obj, agp->second, dsf_desc, grid_pt);
+						const Point2 loc = obj_rel_placement_to_lat_lon(*obj, agp->second, dsf_desc, grid_pt, assignment.rotation_deg);
 						const bool face_contains_obj = ben_face.inside(loc);
 						if(face_contains_obj)
 						{
@@ -1348,7 +1363,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 							placement.mRepType = it->second;
 							DebugAssert(intrange(placement.mRepType, NUMBER_OF_DEFAULT_TOKENS + 1, gTokens.size() - 1));
 							placement.mLocation = loc;
-							placement.mHeading = obj->r;
+							placement.mHeading = dobwrap(obj->r + assignment.rotation_deg, 0, 360);
 							placement.mDerived = true;
 							fd.mObjs.push_back(placement);
 							++objects_placed;
