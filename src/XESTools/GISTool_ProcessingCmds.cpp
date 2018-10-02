@@ -808,7 +808,7 @@ static void attempt_assign_special_ter_enum(int ter_enum, const map<int, special
 	}
 }
 
-Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, const grid_coord_desc &grid_pt, double rotation_deg)
+Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, int grid_x, int grid_y, double rotation_deg)
 {
 	DebugAssert(rotation_deg - intround(rotation_deg) == 0);
 	DebugAssert(intround(rotation_deg) % 90 == 0);
@@ -828,8 +828,8 @@ Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, co
 		deg -= 90;
 	}
 
-	const double out_lat = dsf_desc.dsf_lat + (y_offset_m + grid_pt.y * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT;
-	const double out_lon = dsf_desc.dsf_lon + (x_offset_m + grid_pt.x * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT / cos(out_lat * DEG_TO_RAD);
+	const double out_lat = dsf_desc.dsf_lat + (y_offset_m + grid_y * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT;
+	const double out_lon = dsf_desc.dsf_lon + (x_offset_m + grid_x * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT / cos(out_lat * DEG_TO_RAD);
 	return Point2(out_lon, out_lat);
 }
 
@@ -1276,48 +1276,16 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 #endif // DEV
 
 	//--------------------------------------------------------------------------------------------------------
-	// Prep the AGPs we will read OBJ point positions from.
-	// Mobile doesn't support AGPs directly, so instead we treat the AGPs as a *spec* from which we
-	// read the relative locations of a bunch of OBJs; those OBJs then get baked directly into the DSF.
-	//--------------------------------------------------------------------------------------------------------
-	map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
-	map<string, int> obj_tokens; // maps agp_t::obj::name values to the global enums we register for them
-	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
-	{
-		const int rule_name = find_terrain_rule_name(ter);
-		NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
-		if(ter_info != gNaturalTerrainInfo.end())
-		{
-			const string &ter_lib_path = ter_info->second.base_tex;
-			const string agp_disk_path = ter_lib_path_to_agp_disk_path(ter_lib_path);
-			agp_t agp;
-			const bool loaded = load_agp(agp_disk_path, agp);
-			DebugAssert(loaded);
-			if(loaded)
-			{
-				agps.insert(make_pair(ter, agp));
-				for(vector<agp_t::obj>::const_iterator obj = agp.objs.begin(); obj != agp.objs.end(); ++obj)
-				{
-					const string no_ext = FILE_get_file_name_wo_extensions(obj->name);
-					const int token = NewToken(no_ext.c_str());
-					DebugAssert(token > NUMBER_OF_DEFAULT_TOKENS);
-					obj_tokens.insert(make_pair(obj->name, token));
-				}
-			}
-		}
-	}
-
-	//--------------------------------------------------------------------------------------------------------
 	// FINALLY
 	// Assign the selected terrain types to the Pmwx
 	//--------------------------------------------------------------------------------------------------------
-	size_t objects_placed = 0;
 	for(Pmwx::Face_handle f = s_autogen_grid.faces_begin(); f != s_autogen_grid.faces_end(); ++f)
 	{
 		if(!f->is_unbounded())
 		{
 			GIS_face_data &fd = f->data();
 			fd.mTerrainType = NO_VALUE;
+			fd.mOverlayType = NO_VALUE;
 			fd.mTemp1 = NO_VALUE;
 			fd.mTemp2 = NO_VALUE;
 			#if OPENGL_MAP
@@ -1328,6 +1296,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			const Point2 centroid = ben_face.centroid();
 			const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, dsf_desc.style);
 			{
+				fd.mTemp1 = grid_pt.x;
+				fd.mTemp2 = grid_pt.y;
 				DebugAssert(ortho_terrain_assignments.size() > grid_pt.x);
 				DebugAssert(ortho_terrain_assignments[grid_pt.x].size() > grid_pt.y);
 				const tile_assignment &assignment = ortho_terrain_assignments[grid_pt.x][grid_pt.y];
@@ -1345,29 +1315,6 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 					else // cover the full tile, don't do an overlay
 					{
 						fd.mTerrainType = assignment.ter_enum;
-					}
-
-					// Place the associated OBJs based on this tile's AGP spec
-					map<int, agp_t>::const_iterator agp = agps.find(assignment.ter_enum);
-					DebugAssert(agp != agps.end());
-					for(vector<agp_t::obj>::const_iterator obj = agp->second.objs.begin(); obj != agp->second.objs.end(); ++obj)
-					{
-						// Is this OBJ within this face's bounds?
-						const Point2 loc = obj_rel_placement_to_lat_lon(*obj, agp->second, dsf_desc, grid_pt, assignment.rotation_deg);
-						const bool face_contains_obj = ben_face.inside(loc);
-						if(face_contains_obj)
-						{
-							GISObjPlacement_t placement;
-							map<string, int>::const_iterator it = obj_tokens.find(obj->name);
-							DebugAssert(it != obj_tokens.end());
-							placement.mRepType = it->second;
-							DebugAssert(intrange(placement.mRepType, NUMBER_OF_DEFAULT_TOKENS + 1, gTokens.size() - 1));
-							placement.mLocation = loc;
-							placement.mHeading = dobwrap(obj->r + assignment.rotation_deg, 0, 360);
-							placement.mDerived = true;
-							fd.mObjs.push_back(placement);
-							++objects_placed;
-						}
 					}
 
 					Pmwx::Ccb_halfedge_circulator edge = f->outer_ccb();
@@ -1412,6 +1359,86 @@ static int MergeTylersAg(const vector<const char *>& args)
 	Pmwx final;
 	MapOverlay(intermediate_autogen_on_top, gMap, final);
 	gMap = final;
+
+	//--------------------------------------------------------------------------------------------------------
+	// Prep the AGPs we will read OBJ point positions from.
+	// Mobile doesn't support AGPs directly, so instead we treat the AGPs as a *spec* from which we
+	// read the relative locations of a bunch of OBJs; those OBJs then get baked directly into the DSF.
+	//--------------------------------------------------------------------------------------------------------
+	map<int, agp_t> agps; // maps terrain enum to the AGP describing its building placements
+	map<string, int> obj_tokens; // maps agp_t::obj::name values to the global enums we register for them
+	for(int ter = terrain_PseudoOrthophoto; ter < terrain_PseudoOrthophotoEnd; ++ter)
+	{
+		const int rule_name = find_terrain_rule_name(ter);
+		NaturalTerrainInfoMap::const_iterator ter_info = gNaturalTerrainInfo.find(rule_name);
+		if(ter_info != gNaturalTerrainInfo.end())
+		{
+			const string &ter_lib_path = ter_info->second.base_tex;
+			const string agp_disk_path = ter_lib_path_to_agp_disk_path(ter_lib_path);
+			agp_t agp;
+			const bool loaded = load_agp(agp_disk_path, agp);
+			DebugAssert(loaded);
+			if(loaded)
+			{
+				agps.insert(make_pair(ter, agp));
+				for(vector<agp_t::obj>::const_iterator obj = agp.objs.begin(); obj != agp.objs.end(); ++obj)
+				{
+					const string no_ext = FILE_get_file_name_wo_extensions(obj->name);
+					const int token = NewToken(no_ext.c_str());
+					DebugAssert(token > NUMBER_OF_DEFAULT_TOKENS);
+					obj_tokens.insert(make_pair(obj->name, token));
+				}
+			}
+		}
+	}
+
+
+	//--------------------------------------------------------------------------------------------------------
+	// Place OBJs
+	// This must come *after* the map merge to ensure we don't stick buildings in the water!
+	//--------------------------------------------------------------------------------------------------------
+	const int lon_min = gDem[dem_ClimStyle].mWest;
+	const int lat_min = gDem[dem_ClimStyle].mSouth;
+	const ag_terrain_style style = choose_style(lon_min, lat_min);
+	const ag_terrain_dsf_description dsf_desc = {
+			lon_min, lat_min,
+			divisions_longitude_per_degree(g_ortho_width_m[style], lat_min + 0.5),
+			divisions_latitude_per_degree(g_ortho_width_m[style]),
+			style};
+	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
+	{
+		GIS_face_data &fd = f->data();
+		const int ter_enum = fd.mOverlayType == NO_VALUE ? fd.mTerrainType : fd.mOverlayType;
+		if(ter_enum != NO_VALUE)
+		{
+			const Polygon2 ben_face = cgal_face_to_ben(f); // not *that* Ben face! https://secure.gravatar.com/ben2212171
+
+			// Place the associated OBJs based on this tile's AGP spec
+			map<int, agp_t>::const_iterator agp = agps.find(ter_enum);
+			if(agp != agps.end())
+			{
+				for(vector<agp_t::obj>::const_iterator obj = agp->second.objs.begin(); obj != agp->second.objs.end(); ++obj)
+				{
+					// Is this OBJ within this face's bounds?
+					// Note that mTemp1 and mTemp2 were previously set to the containing grid point's x & y
+					const Point2 loc = obj_rel_placement_to_lat_lon(*obj, agp->second, dsf_desc, fd.mTemp1, fd.mTemp2, fd.mRotationDeg);
+					const bool face_contains_obj = ben_face.inside(loc);
+					if(face_contains_obj)
+					{
+						GISObjPlacement_t placement;
+						map<string, int>::const_iterator it = obj_tokens.find(obj->name);
+						DebugAssert(it != obj_tokens.end());
+						placement.mRepType = it->second;
+						DebugAssert(intrange(placement.mRepType, NUMBER_OF_DEFAULT_TOKENS + 1, gTokens.size() - 1));
+						placement.mLocation = loc;
+						placement.mHeading = dobwrap(obj->r + fd.mRotationDeg, 0, 360);
+						placement.mDerived = true;
+						fd.mObjs.push_back(placement);
+					}
+				}
+			}
+		}
+	}
 	return 0;
 }
 
