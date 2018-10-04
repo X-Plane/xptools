@@ -712,14 +712,14 @@ static ag_terrain_dsf_description initialize_autogen_pmwx()
 
 	const ag_terrain_style style = choose_style(lon_min, lat_min);
 
-	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m[style], lat_min + 0.5);
+	const int divisions_lon = divisions_longitude_per_degree(g_desired_ortho_dim_m[style], lat_min + 0.5);
 	for(int x = 0; x <= divisions_lon; ++x)
 	{
 		double lon = lon_min + ((double)x / divisions_lon);
 		grid_params.push_back(Segment_2(Point_2(lon, lat_min), Point_2(lon, lat_min + 1)));
 	}
 
-	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m[style]);
+	const int divisions_lat = divisions_latitude_per_degree(g_desired_ortho_dim_m[style]);
 	for(int y = 0; y <= divisions_lat; ++y)
 	{
 		const double lat = lat_min + ((double)y / divisions_lat);
@@ -806,31 +806,6 @@ static void attempt_assign_special_ter_enum(int ter_enum, const map<int, special
 		tile_assignments[point.x][point.y] = ter_enum;
 		//cout << "Assigned special terrain " << FetchTokenString(ter_enum) << " at (" << point.x << ", " << point.y << ")" << endl;
 	}
-}
-
-Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, int grid_x, int grid_y, double rotation_deg)
-{
-	DebugAssert(rotation_deg - intround(rotation_deg) == 0);
-	DebugAssert(intround(rotation_deg) % 90 == 0);
-
-	const Bbox2 agp_bounds_m = agp.bounds_meters();
-	const double width_m = agp_bounds_m.xmax() - agp_bounds_m.xmin();
-	DebugAssert(dob_abs(width_m - (agp_bounds_m.ymax() - agp_bounds_m.ymin())) < 0.1); // These AGPs damn well better be square!
-	double x_offset_m = interp(agp_bounds_m.xmin(), 0, agp_bounds_m.xmax(), width_m, obj.x); DebugAssert(x_offset_m >= 0);
-	double y_offset_m = interp(agp_bounds_m.ymin(), 0, agp_bounds_m.ymax(), width_m, obj.y); DebugAssert(y_offset_m >= 0);
-
-	int deg = intround(rotation_deg);
-	while(deg > 0)
-	{
-		const double old_x = x_offset_m;
-		x_offset_m = y_offset_m;
-		y_offset_m = width_m - old_x;
-		deg -= 90;
-	}
-
-	const double out_lat = dsf_desc.dsf_lat + (y_offset_m + grid_y * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT;
-	const double out_lon = dsf_desc.dsf_lon + (x_offset_m + grid_x * g_ortho_width_m[dsf_desc.style]) * MTR_TO_DEG_LAT / cos(out_lat * DEG_TO_RAD);
-	return Point2(out_lon, out_lat);
 }
 
 static const int s_pseudorand[] = {918,422,359,512,181,657,814,87,418,288,944,295,56,755,709,56,211,394,408,936,959,752,143,866,664,511,434,562,81,899,22,758,803,145,578,648,874,841,60,738,275,507,899,941,263,156,346,722,889,124,988,458,318,447,189,532,557,209,98,946,909,629,375,246,812,563,489,744,890,334,95,808,249,967,608,803,428,258,962,747,864,875,645,58,518,124,794,868,125,896,203,501,801,557,353,65,646,759,347,413,50,608,442,289,183,34,104,196,458,430,375,992,308,515,120,203,888,626,652,411,495,64,960,991,588,398,815,107,813,948,410,186,444,748,724,195,373,165,474,989,934,580,221,953,542,338,990,819,754,454,360,308,888,634,326,30,599,399,970,3,405,415,712,40,204,779,554,379,145,318,229,540,633,945,215,161,351,457,32,304,210,874,664,0,302,24,492,818,605,760,574,490,282,761,360,992,120,802,449,312,130,573,599,696,12,946,785,82,129,471,438,924,879,224,122,97,420,260,497,581,360,589,7,390,547,985,359,604,408,802,847,388,653,466,148,708,160,924,655,274,508,595,469,964,73,580,490,533,700,0,17,473,842,383,709,735,728,713,931,57,5,555,484,226,216,787,66,753,880,211,434,262,855,389,60,26,889,257,903,65,514,825,868,376,191,617,396,331,681,545,771,469,154,566,36,674,84,771,890,487,15,259,709,103,861,309,359,172,778,336,373,532,365,996,40,28,242,539,854,67,415,178,525,767,243,360,73,175,231,989,26,48,88,41,58,979,496,524,827,889,310,58,629,441,813,606,618,344,537,485,108,885,412,472,572,452,832,829,748,147,798,174,756,293,466,890,170,158,196,107,702,976,451,868,213,429,316,672,808,826,421,444,681,868,525,848,217,261,753,836,589,703,927,523,806,284,518,266,370,168,233,718,985,775,326,484,376,507,76,41,678,233,427,927,505,176,601,259,613,386,784,768,271,902,651,474,265,733,80,286,820,32,715,234,237,653,381,288,922,515,195,329,234,602,725,851,174,117,873,112,650,856,411,883,8,869,490,559,222,513,802,930,884,75,707,513,982,471,764,487,638,805,605,447,765,464,371,143,279,643,764,475,240,767,36,823,763,507,713,739,571,891,355,275,741,689,705,403,688,797,438,181,567,593,98,258,723,288,31,291,585,27,169,753,536,290,284,731,331,463,437,725,530,369,401,485,445,748,449,379,693,104,208,1000,899,900,888,964,4,791,278,791,265,23,507,178,812,356,713,738,950,299,218,84,84,981,444,119,991,464,488,545,853,967,72,917,868,286,11,511,533,386,833,805,214,35,228,289,294,831,469,400,520,549,419,2,747,777,492,919,672,448,404,627,540,773,952,143,83,735,598,54,190,502,559,651,712,380,576,804,401,105,435,298,992,366,222,582,911,888,672,179,755,860,521,948,821,391,237,952,210,694,558,346,240,5,864,846,201,285,609,293,536,157,514,340,694,427,504,669,154,115,623,869,983,910,205,200,651,952,21,249,957,959,31,405,401,392,751,740,437,386,122,542,506,459,400,952,113,202,184,297,994,567,976,628,1,739,636,791,966,717,420,252,184,384,656,457,606,991,830,704,790,689,105,41,964,399,858,129,606,356,334,19,400,708,736,496,756,429,163,596,133,442,845,682,350,551,37,73,319,782,696,85,477,16,889,586,798,720,441,835,212,862,864,595,185,960,744,935,267,870,94,368,281,110,647,622,599,992,286,420,10,632,612,945,742,977,313,415,273,503,768,86,685,314,406,784,767,572,954,241,649,120,930,258,801,154,531,909,986,576,855,435,452,553,145,366,512,847,183,255,40,99,164,92,882,230,643,499,782,393,830,653,868,196,741,88,714,88,13,352,600,602,398,276,417,564,382,907,323,698,919,795,859,775,369,635,434,502,87,197,941,785,599,624,226,464,847,541,707,798,780,517,668,348,132,268,408,624,550,938,650,141,537,697,445,729,66,961,67,887,864,943,233,644,558,113,557,33,883,103,169,865,325,541,204,534,135,896,123,650,983,849,890,114,501,513,163,741,29,793,693,954,19,706,203,194,7,946,284,981,474,13,351,195,982,741,64,877,420,936,964,67,810,64,95,30,240,519,388,908,603,690,511,284,564,818,346,505,7,49,616,213,720,822,244,854,432,400,95,985,741,469,981,854,768,521,440,723,63,333,833,919,27,374,406,504,920,692,871,353,110,121,150,776,188,325,263,73,704,150,291,165,858,225,5,793,471,184,235,481,777,888,173,941,142,600,311,747};
@@ -1018,6 +993,7 @@ map<int, ortho_urbanization> fucking_reverse_map(const map<ortho_urbanization, i
 }
 
 
+static ag_terrain_dsf_description s_dsf_desc;
 
 static int DoMobileAutogenTerrain(const vector<const char *> &args)
 {
@@ -1026,19 +1002,19 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	DebugAssertWithExplanation(gDem.count(dem_LandUse), "Tried to add autogen terrain with no DEM land use data; you probably need to change the order of your scenery gen commands");
 	DebugAssertWithExplanation(gDem.count(dem_ClimStyle), "No climate data loaded");
 
-	const ag_terrain_dsf_description dsf_desc = initialize_autogen_pmwx();
+	s_dsf_desc = initialize_autogen_pmwx();
 
-	gObjLibPrefix = string("lib/mobile/autogen/") + (dsf_desc.style == style_us ? "US/" : "Europe/");
+	gObjLibPrefix = string("lib/mobile/autogen/") + (s_dsf_desc.style == style_us ? "US/" : "Europe/");
 
-	const int dx = dsf_desc.divisions_lon;
-	const int dy = dsf_desc.divisions_lat;
+	const int dx = s_dsf_desc.divisions_lon;
+	const int dy = s_dsf_desc.divisions_lat;
 	dsf_assignment ortho_terrain_assignments(dx);
 	for(int lon_offset = 0; lon_offset < dx; ++lon_offset)
 	{
 		ortho_terrain_assignments[lon_offset].resize(dy);
 	}
 
-	const map<ortho_urbanization, int> ter_with_transitions = get_terrain_transition_descriptions(dsf_desc.style);
+	const map<ortho_urbanization, int> ter_with_transitions = get_terrain_transition_descriptions(s_dsf_desc.style);
 
 	//--------------------------------------------------------------------------------------------------------
 	// PASS 1
@@ -1060,8 +1036,8 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 		for(int corner_y = 0; corner_y < 2; ++corner_y)
 		{
 			const int corner_idx = corner_y == 0 ? corner_x : 3 - corner_x;
-			const double lon = dsf_desc.dsf_lon + (double)(x + corner_x) / dx;
-			const double lat = dsf_desc.dsf_lat + (double)(y + corner_y) / dy;
+			const double lon = s_dsf_desc.dsf_lon + (double)(x + corner_x) / dx;
+			const double lat = s_dsf_desc.dsf_lat + (double)(y + corner_y) / dy;
 			const float urb = gDem[dem_UrbanDensity].value_linear(lon, lat);
 			urbanization[corner_idx] = urb;
 			has_some_urbanization_data |= urb != DEM_NO_DATA;
@@ -1075,7 +1051,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			vector<int> corners(4, NO_VALUE);
 			for(int i = 0; i < 4; ++i)
 			{
-				corners[i] = choose_ortho_terrain(land_uses[i], urbanization[i], dsf_desc.style);
+				corners[i] = choose_ortho_terrain(land_uses[i], urbanization[i], s_dsf_desc.style);
 			}
 
 			ortho_urbanization desired_urb_pattern(corners);
@@ -1095,7 +1071,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	// PASS 2
 	// Go through the existing map looking for point features which would correspond to our "special" orthophotos.
 	//--------------------------------------------------------------------------------------------------------
-	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(dsf_desc.style); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
+	const map<int, special_ter_repeat_rule> special_ter_repeat_rules = get_special_ter_repeat_rules(s_dsf_desc.style); // Tyler says: for reasons unclear to me, we get UB deep within std::map::end() if this isn't const
 	
 	vector<int> large_building_features;
 	large_building_features.push_back(feat_CommercialOffice);
@@ -1110,12 +1086,12 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			if(ben_poly.area() > 0) // <= 0 is possible when the face extends beyond the DSF boundary, or when its points are "real" close together
 			{
 				const Point2 centroid = ben_poly.centroid();
-				DebugAssert(dsf_desc.dsf_lon == floor(centroid.x()));
-				DebugAssert(dsf_desc.dsf_lat == floor(centroid.y()));
+				DebugAssert(s_dsf_desc.dsf_lon == floor(centroid.x()));
+				DebugAssert(s_dsf_desc.dsf_lat == floor(centroid.y()));
 				{
-					const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, dsf_desc.style);
+					const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, s_dsf_desc.style);
 					tile_assignment &assignment = ortho_terrain_assignments[grid_pt.x][grid_pt.y];
-					if(dsf_desc.style == style_us && // Europe doesn't have the special types we assign below
+					if(s_dsf_desc.style == style_us && // Europe doesn't have the special types we assign below
 							assignment.ter_enum != NO_VALUE)
 					{
 						for(GISPointFeatureVector::const_iterator i = fd.mPointFeatures.begin(); i != fd.mPointFeatures.end(); ++i)
@@ -1146,10 +1122,10 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	for(map<int, special_ter_repeat_rule>::const_iterator rule = special_ter_repeat_rules.begin(); rule != special_ter_repeat_rules.end(); ++rule)
 	{
 		const int dy_for_randomization = dx == dy ? dy + 13 : dy;
-		for(int x = 0; x < dx; x += pseudorandom_in_range(rule->second, make_pair(dsf_desc.dsf_lon, dsf_desc.dsf_lat), x, dx))
-		for(int y = 0; y < dy; y += pseudorandom_in_range(rule->second, make_pair(dsf_desc.dsf_lon, dsf_desc.dsf_lat), y, dy_for_randomization))
+		for(int x = 0; x < dx; x += pseudorandom_in_range(rule->second, make_pair(s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat), x, dx))
+		for(int y = 0; y < dy; y += pseudorandom_in_range(rule->second, make_pair(s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat), y, dy_for_randomization))
 		{
-			grid_coord_desc pt = {x, y, dx, dy, dsf_desc.dsf_lon, dsf_desc.dsf_lat};
+			grid_coord_desc pt = {x, y, dx, dy, s_dsf_desc.dsf_lon, s_dsf_desc.dsf_lat};
 			attempt_assign_special_ter_enum(rule->first, special_ter_repeat_rules, pt, ortho_terrain_assignments);
 		}
 	}
@@ -1210,7 +1186,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	const int output_y_min = 0;
 	const int output_y_max = dy;
 
-	const int compressed_dim_px = g_ortho_width_px[dsf_desc.style] / 2;
+	const int compressed_dim_px = g_ortho_width_px[s_dsf_desc.style] / 2;
 	{
 		const dsf_assignment &grid = ortho_terrain_assignments;
 
@@ -1239,9 +1215,9 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 			}
 		}
 
-		const string out_dir = stl_printf("Earth nav data" DIR_STR "%+03d%+04d" DIR_STR, latlon_bucket(dsf_desc.dsf_lat), latlon_bucket(dsf_desc.dsf_lon));
+		const string out_dir = stl_printf("Earth nav data" DIR_STR "%+03d%+04d" DIR_STR, latlon_bucket(s_dsf_desc.dsf_lat), latlon_bucket(s_dsf_desc.dsf_lon));
 		FILE_make_dir_exist(out_dir.c_str());
-		const string out_path = stl_printf("%s%+03d%+04d.dsf", out_dir.c_str(), dsf_desc.dsf_lat, dsf_desc.dsf_lon) + ".png";
+		const string out_path = stl_printf("%s%+03d%+04d.dsf", out_dir.c_str(), s_dsf_desc.dsf_lat, s_dsf_desc.dsf_lon) + ".png";
 		const int error = WriteBitmapToPNG(&out_bmp, out_path.c_str(), NULL, 0, GAMMA_SRGB);
 		if(!error)
 		{
@@ -1294,7 +1270,7 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 
 			const Polygon2 ben_face = cgal_face_to_ben(f); // not *that* Ben face! https://secure.gravatar.com/ben2212171
 			const Point2 centroid = ben_face.centroid();
-			const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, dsf_desc.style);
+			const grid_coord_desc grid_pt = get_ortho_grid_xy(centroid, s_dsf_desc.style);
 			{
 				fd.mTemp1 = grid_pt.x;
 				fd.mTemp2 = grid_pt.y;
@@ -1330,6 +1306,37 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	}
 	return 0;
 }
+
+static Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, int grid_x, int grid_y, double rotation_deg)
+{
+	const Bbox2 agp_bounds_m = agp.bounds_meters();
+
+	int deg = intround(rotation_deg);
+	DebugAssert(rotation_deg - deg == 0);
+	DebugAssert(deg % 90 == 0);
+
+	const double agp_width_m = agp_bounds_m.xmax() - agp_bounds_m.xmin();
+	DebugAssert(dob_abs(agp_width_m - agp_bounds_m.yspan()) < 0.01); // These AGPs damn well better be square!
+	double x_rot = obj.x;
+	double y_rot = obj.y;
+	while(deg > 0)
+	{
+		const double old_x = x_rot;
+		x_rot = y_rot;
+		y_rot = agp_width_m - old_x;
+		deg -= 90;
+	}
+
+	const Bbox2 grid_square_bounds_latlon = Bbox2(
+			(double)dsf_desc.dsf_lon + (double)(grid_x)     / dsf_desc.divisions_lon, (double)dsf_desc.dsf_lat + (double)(grid_y)     / dsf_desc.divisions_lat,
+			(double)dsf_desc.dsf_lon + (double)(grid_x + 1) / dsf_desc.divisions_lon, (double)dsf_desc.dsf_lat + (double)(grid_y + 1) / dsf_desc.divisions_lat);
+	const double out_lon = double_interp(agp_bounds_m.xmin(), grid_square_bounds_latlon.xmin(), agp_bounds_m.xmax(), grid_square_bounds_latlon.xmax(), x_rot);
+	const double out_lat = double_interp(agp_bounds_m.ymin(), grid_square_bounds_latlon.ymin(), agp_bounds_m.ymax(), grid_square_bounds_latlon.ymax(), y_rot);
+	const Point2 out(out_lon, out_lat);
+	DebugAssert(grid_square_bounds_latlon.contains(out));
+	return out;
+}
+
 
 static int MergeTylersAg(const vector<const char *>& args)
 {
@@ -1392,7 +1399,6 @@ static int MergeTylersAg(const vector<const char *>& args)
 		}
 	}
 
-
 	//--------------------------------------------------------------------------------------------------------
 	// Place OBJs
 	// This must come *after* the map merge to ensure we don't stick buildings in the water!
@@ -1400,11 +1406,6 @@ static int MergeTylersAg(const vector<const char *>& args)
 	const int lon_min = gDem[dem_ClimStyle].mWest;
 	const int lat_min = gDem[dem_ClimStyle].mSouth;
 	const ag_terrain_style style = choose_style(lon_min, lat_min);
-	const ag_terrain_dsf_description dsf_desc = {
-			lon_min, lat_min,
-			divisions_longitude_per_degree(g_ortho_width_m[style], lat_min + 0.5),
-			divisions_latitude_per_degree(g_ortho_width_m[style]),
-			style};
 	for(Pmwx::Face_handle f = gMap.faces_begin(); f != gMap.faces_end(); ++f)
 	{
 		GIS_face_data &fd = f->data();
@@ -1421,7 +1422,7 @@ static int MergeTylersAg(const vector<const char *>& args)
 				{
 					// Is this OBJ within this face's bounds?
 					// Note that mTemp1 and mTemp2 were previously set to the containing grid point's x & y
-					const Point2 loc = obj_rel_placement_to_lat_lon(*obj, agp->second, dsf_desc, fd.mTemp1, fd.mTemp2, fd.mRotationDeg);
+					const Point2 loc = obj_rel_placement_to_lat_lon(*obj, agp->second, s_dsf_desc, fd.mTemp1, fd.mTemp2, fd.mRotationDeg);
 					const bool face_contains_obj = ben_face.inside(loc);
 					if(face_contains_obj)
 					{

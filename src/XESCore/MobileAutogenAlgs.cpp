@@ -62,8 +62,8 @@ grid_coord_desc get_ortho_grid_xy(const Point2 &point, ag_terrain_style style)
 	const double dsf_min_lat = floor(point.y());
 	const double dsf_center_lat = dsf_min_lat + 0.5;
 
-	const int divisions_lon = divisions_longitude_per_degree(g_ortho_width_m[style], dsf_center_lat);
-	const int divisions_lat = divisions_latitude_per_degree(g_ortho_width_m[style]);
+	const int divisions_lon = divisions_longitude_per_degree(g_desired_ortho_dim_m[style], dsf_center_lat);
+	const int divisions_lat = divisions_latitude_per_degree(g_desired_ortho_dim_m[style]);
 
 	// Note: we use the *tri*'s centroid to decide the grid coords, because any *vertex* might be shared
 	//       between multiple tris in *different* grid squares.

@@ -16,8 +16,10 @@ enum ag_terrain_style {
 };
 ag_terrain_style choose_style(int dsf_lon_west, int dsf_lat_south);
 
-// The width and height of our square pseudo-orthophotos
-const int g_ortho_width_m[ag_terrain_style_DIM] = {1000, 2000};
+// The "stated" width and height of our square pseudo-orthophotos.
+// This size will *not* tile perfectly onto your DSF; you'll have to use the exact dimensions
+// output by divisions_xxx_per_degree() for that.
+const int g_desired_ortho_dim_m[ag_terrain_style_DIM] = {1000, 2000};
 const int g_ortho_width_px[ag_terrain_style_DIM] = {256, 512};
 
 /**
