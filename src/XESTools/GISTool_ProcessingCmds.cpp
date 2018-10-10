@@ -1307,31 +1307,35 @@ static int DoMobileAutogenTerrain(const vector<const char *> &args)
 	return 0;
 }
 
-static Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, int grid_x, int grid_y, double rotation_deg)
+Point2 rotate_clockwise(const Point2 &p, double clockwise_rotation_deg)
 {
-	const Bbox2 agp_bounds_m = agp.bounds_meters();
+	// https://en.wikipedia.org/wiki/Rotation_of_axes
+	return Point2( p.x() * cos(clockwise_rotation_deg * DEG_TO_RAD) + p.y() * sin(clockwise_rotation_deg * DEG_TO_RAD),
+				  -p.x() * sin(clockwise_rotation_deg * DEG_TO_RAD) + p.y() * cos(clockwise_rotation_deg * DEG_TO_RAD));
+}
 
-	int deg = intround(rotation_deg);
-	DebugAssert(rotation_deg - deg == 0);
-	DebugAssert(deg % 90 == 0);
+Bbox2 rotate_clockwise(const Bbox2 &b, double clockwise_rotation_deg)
+{
+	const Point2 rotated_1 = rotate_clockwise(b.p1, clockwise_rotation_deg);
+	const Point2 rotated_2 = rotate_clockwise(b.p2, clockwise_rotation_deg);
+	return Bbox2(dobmin2(rotated_1.x(), rotated_2.x()), dobmin2(rotated_1.y(), rotated_2.y()),
+				 dobmax2(rotated_1.x(), rotated_2.x()), dobmax2(rotated_1.y(), rotated_2.y()));
+}
 
-	const double agp_width_m = agp_bounds_m.xmax() - agp_bounds_m.xmin();
-	DebugAssert(dob_abs(agp_width_m - agp_bounds_m.yspan()) < 0.01); // These AGPs damn well better be square!
-	double x_rot = obj.x;
-	double y_rot = obj.y;
-	while(deg > 0)
-	{
-		const double old_x = x_rot;
-		x_rot = y_rot;
-		y_rot = agp_width_m - old_x;
-		deg -= 90;
-	}
+static Point2 obj_rel_placement_to_lat_lon(const agp_t::obj & obj, const agp_t &agp, const ag_terrain_dsf_description &dsf_desc, int grid_x, int grid_y, double clockwise_rotation_deg)
+{
+	DebugAssert((int)clockwise_rotation_deg - clockwise_rotation_deg == 0);
+	DebugAssert((int)clockwise_rotation_deg % 90 == 0);
+	DebugAssert(dob_abs(agp.bounds_meters().xspan() - agp.bounds_meters().yspan()) < 0.01); // These AGPs damn well better be square!
+
+	const Bbox2 agp_bounds_m = rotate_clockwise(agp.bounds_meters(), clockwise_rotation_deg);
+	const Point2 rotated_loc = rotate_clockwise(Point2(obj.x, obj.y), clockwise_rotation_deg);
 
 	const Bbox2 grid_square_bounds_latlon = Bbox2(
 			(double)dsf_desc.dsf_lon + (double)(grid_x)     / dsf_desc.divisions_lon, (double)dsf_desc.dsf_lat + (double)(grid_y)     / dsf_desc.divisions_lat,
 			(double)dsf_desc.dsf_lon + (double)(grid_x + 1) / dsf_desc.divisions_lon, (double)dsf_desc.dsf_lat + (double)(grid_y + 1) / dsf_desc.divisions_lat);
-	const double out_lon = double_interp(agp_bounds_m.xmin(), grid_square_bounds_latlon.xmin(), agp_bounds_m.xmax(), grid_square_bounds_latlon.xmax(), x_rot);
-	const double out_lat = double_interp(agp_bounds_m.ymin(), grid_square_bounds_latlon.ymin(), agp_bounds_m.ymax(), grid_square_bounds_latlon.ymax(), y_rot);
+	const double out_lon = double_interp(agp_bounds_m.xmin(), grid_square_bounds_latlon.xmin(), agp_bounds_m.xmax(), grid_square_bounds_latlon.xmax(), rotated_loc.x());
+	const double out_lat = double_interp(agp_bounds_m.ymin(), grid_square_bounds_latlon.ymin(), agp_bounds_m.ymax(), grid_square_bounds_latlon.ymax(), rotated_loc.y());
 	const Point2 out(out_lon, out_lat);
 	DebugAssert(grid_square_bounds_latlon.contains(out));
 	return out;
